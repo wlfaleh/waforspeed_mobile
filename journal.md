@@ -4877,3 +4877,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - Banc `realisme` complet en cours, pour comparer les indices de fidélité avec `main`.
 - 63 tests CPU OK, parcours 0 écart.
 - Captures avant / après dans `qa/pr/WFS-263/` (42 paires) : perf des 4 cartes en Haute et Basse, course de nuit, route mouillée, phares en Basse.
+
+### 2026-11-08 02:26:13 — WFS-297 attribué à Claude, agent 1 (accord de l'utilisateur) (po-scrum-master)
