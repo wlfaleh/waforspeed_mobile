@@ -170,7 +170,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     // WFS-293 (RG-07) : à 10-20 img/s, la même course rejouée à 120 Hz (mêmes commandes à chaque pas, caméra calculée
                     // à chaque pas) : écart de chaque image rendue à cette référence au même instant simulé
                     double ecartRef = -1;
-                    if (fps <= 20 && passe < 2) {
+                    if ((fps <= 20 || std::getenv("WFS_REF_TOUS")) && passe < 2) {
                         setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                         courseBenchRules(true);
                         const bool ok2 = g.init(r, "golf", carte);
