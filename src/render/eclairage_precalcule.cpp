@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include "../core/jobs.h"
+#include "../core/log.h"
 
 namespace wfs::precalcul {
 
@@ -90,6 +91,7 @@ private:
 
 namespace {
 std::unique_ptr<Grille> g_grilleTour;   // WFS-161 : grille gardée pour les murs du kit (voir le .h)
+std::vector<std::array<std::vector<float>, 2>> g_kit;   // occlusion gardée des murs du kit, par bâtiment et par niveau
 
 inline int cellule(float c) { return (int)std::floor(c / VOXEL_M); }
 
@@ -136,11 +138,11 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
         // pas d'un voxel (un mur, coque d'un voxel d'épaisseur, n'est jamais sauté : les bâtiments sont creux dans la grille) ;
         // dans une cellule de 8 m vide, saut direct à sa sortie (le ciel au-dessus des toits : quelques pas seulement)
         bool touche = false;
-        for (float t = VOXEL_M * 0.5f; t <= PORTEE_M;) {
-            const vec3 q = o + d * t;
+        for (float s = VOXEL_M * 0.5f; s <= PORTEE_M;) {   // s : distance parcourue (m)
+            const vec3 q = o + d * s;
             const int ix = cellule(q.x), iy = cellule(q.y), iz = cellule(q.z);
             if (g.contient(ix, iy, iz, cu)) { touche = true; break; }
-            if (cu.bits) { t += VOXEL_M; continue; }
+            if (cu.bits) { s += VOXEL_M; continue; }
             const float C = 16 * VOXEL_M;   // côté d'une cellule (m)
             float sortie = PORTEE_M;
             const float bornes[3][2] = {{(float)(ix >> 4) * C, (float)((ix >> 4) + 1) * C}, {(float)(iy >> 4) * C, (float)((iy >> 4) + 1) * C},
@@ -148,7 +150,7 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
             const float qq[3] = {q.x, q.y, q.z}, dd[3] = {d.x, d.y, d.z};
             for (int a = 0; a < 3; a++)
                 if (std::fabs(dd[a]) > 1e-6f) sortie = std::min(sortie, ((dd[a] > 0 ? bornes[a][1] : bornes[a][0]) - qq[a]) / dd[a]);
-            t += std::max(sortie, 0.f) + VOXEL_M * 0.05f;
+            s += std::max(sortie, 0.f) + VOXEL_M * 0.05f;
         }
         libres += !touche;
     }
@@ -219,8 +221,48 @@ Bilan occlusionDecor(std::vector<Lot>& lots, bool garder) {
     return bil;
 }
 
-const Grille* grilleDuTour() { return g_grilleTour.get(); }
-void libererGrille() { g_grilleTour.reset(); }
-float occlusionPoint(const Grille& g, const vec3& p, const vec3& n) { return 1 - (1 - OCCLUSION_MIN) * (1 - ciel(g, p, n)); }
+Bilan occlusionKit(size_t n, const SommetsKit& sommets) {
+    const auto t0 = std::chrono::steady_clock::now();
+    Bilan bil;
+    g_kit.clear();
+    if (!g_grilleTour) return bil;
+    const Grille& g = *g_grilleTour;
+    std::vector<std::array<std::vector<float>, 2>> kit(n);
+    std::atomic<size_t> nb{0};
+    std::atomic<long long> somme{0};
+    jobs().parallelFor((int)n, 4, [&](int b0, int e0) {
+        std::vector<Vertex> v;
+        size_t c = 0; long long sm = 0;
+        for (int k = b0; k < e0; k++) for (int lod = 0; lod < 2; lod++) {
+            v.clear();
+            sommets((size_t)k, lod, v);
+            std::vector<float>& ao = kit[(size_t)k][(size_t)lod];
+            ao.resize(v.size());
+            for (size_t j = 0; j < v.size(); j++) {
+                const vec3 nn{v[j].nx, v[j].ny, v[j].nz};
+                const float l = length(nn);
+                ao[j] = l > 1e-6f ? 1 - (1 - OCCLUSION_MIN) * (1 - ciel(g, {v[j].px, v[j].py, v[j].pz}, nn * (1 / l))) : 1.f;
+                sm += std::lround(ao[j] * 1000);
+            }
+            c += v.size();
+        }
+        nb += c; somme += sm;
+    });
+    g_kit = std::move(kit);
+    g_grilleTour.reset();
+    bil.sommets = nb;
+    bil.moyenne = bil.sommets ? (double)somme / 1000.0 / (double)bil.sommets : 1.0;
+    bil.ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    WFS_LOG("décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, %zu sommets (niveaux 0 et 1), moyenne %.2f, %.0f ms",
+            bil.sommets, bil.moyenne, bil.ms);
+    return bil;
+}
+
+void appliquerKit(size_t k, int lod, std::vector<Vertex>& v, size_t debut) {
+    if (k >= g_kit.size() || lod < 0 || lod > 1) return;
+    const std::vector<float>& ao = g_kit[k][(size_t)lod];
+    if (debut > v.size() || ao.size() != v.size() - debut) return;
+    for (size_t j = 0; j < ao.size(); j++) { Vertex& s = v[debut + j]; s.nx *= ao[j]; s.ny *= ao[j]; s.nz *= ao[j]; }
+}
 
 } // namespace wfs::precalcul

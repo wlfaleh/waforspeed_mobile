@@ -257,8 +257,8 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         }
         if (!P.promeneurs.empty()) lieux.push_back({"carte-ville-chien", (int64_t)P.promeneurs[0].s, 12, false});
         if (!P.carrefours.empty()) lieux.push_back({"carte-ville-pigeons", P.carrefours[0].croise - (int64_t)(15 / SEG_M), -20, false});
-        // WFS-269 : gros plans de l'occlusion précalculée : pied de façade d'un immeuble de plus de 15 m, vu du bord opposé de la
-        // chaussée à hauteur d'homme (cam 3) ; 3 immeubles répartis sur le tour, le premier aussi de nuit (WFS_SANS_AO : même vue sans)
+        // WFS-269 : gros plans de l'occlusion précalculée : pied de façade d'un immeuble de plus de 15 m, vu du trottoir à hauteur
+        // d'homme (cam 3) ; 3 immeubles répartis sur le tour, le premier aussi de nuit (WFS_SANS_AO : même vue sans)
         std::vector<int64_t> hauts;
         for (int64_t a = 0; a < (int64_t)P.objets.size(); a++)
             if (a >= (int64_t)P.voie.size() || P.voie[(size_t)a] == 0)
@@ -287,10 +287,10 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
                 break;
             }
         }
-        if (l.cam == 3) {   // WFS-269 : œil au bord opposé de la chaussée, 1,7 m, 12 m avant l'immeuble ; visé : pied de la façade, 15 m plus loin
+        if (l.cam == 3) {   // WFS-269 : gros plan : œil sur le trottoir (2 m du bord), 1,6 m, 6 m avant ; visé : pied de la façade (6,5 m du bord) 8 m plus loin
             const double s = (l.seg & 1) ? 1 : -1;
-            const TrackPoint o = t.point((double)(segL - (int64_t)(12 / SEG_M)) * SEG, -s * RW), c = t.point((double)(segL + (int64_t)(15 / SEG_M)) * SEG, s * (RW + 6.5));
-            g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.7f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + 2.f, (float)c.z};
+            const TrackPoint o = t.point((double)(segL - (int64_t)(6 / SEG_M)) * SEG, s * (RW + 2)), c = t.point((double)(segL + (int64_t)(8 / SEG_M)) * SEG, s * (RW + 6.5));
+            g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.6f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + 3.f, (float)c.z};
             g_vueHaute.fov = 55; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;
         }
         g.render(502); g.render(502.02); r.capturePng(out + "/" + nom + ".png");

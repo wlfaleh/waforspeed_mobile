@@ -476,7 +476,7 @@ public:
             px[c * 4] = (h >> 16) & 255; px[c * 4 + 1] = (h >> 8) & 255; px[c * 4 + 2] = h & 255; px[c * 4 + 3] = 255;
         }
         palTex_ = r.vk().uploadTexture(px, PAL_W, 1, true);
-        Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE | MAT_AO;   // petits objets vus de tous les côtés ; WFS-269 : MAT_AO
+        Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE;   // petits objets vus de tous les côtés
         mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
         Material mo; const vec3 w = linHex(night_ ? 0x0a1828 : 0x1e7fa8);   // ENV.water
         mo.color = {w.x, w.y, w.z, 1}; mo.rough = 0.12f; mo.flags = MAT_DOUBLE;
@@ -501,9 +501,9 @@ public:
         initEtabs(r, *g.track);   // WFS-181
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = len_;
-            {   // WFS-269 (accroche) : occlusion précalculée : décor uni, chaume et bois (MAT_AO) la reçoivent ; pas les rochers ni les trottoirs (crénelage et taches sous les palmiers, revue du lead dev)
+            {   // WFS-269 (accroche) : occlusion précalculée : chaume et bois (MAT_AO) la reçoivent ; ni les rochers, ni les trottoirs, ni le décor uni (terrain du surplomb, façades : dents de scie, traînées et taches, 2 revues du lead dev)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
-                lots_.occlusion(b({P_UNI, P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
+                lots_.occlusion(b({P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
                 if (archi::carte::actif()) {   // villas du kit (WFS-161, niveau allégé) : elles cachent le ciel ; leurs murs reçoivent l'occlusion
                     std::vector<Vertex> v; std::vector<uint32_t> i;
                     archi::carte::geometrie(1, v, i);

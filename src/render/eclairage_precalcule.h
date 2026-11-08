@@ -8,6 +8,7 @@
 // calculés à chaque image (RG-03) ; voitures et personnages ne sont pas concernés (aucun MAT_AO).
 #include <cmath>
 #include <cstdint>
+#include <functional>
 #include <vector>
 #include "renderer.h"
 
@@ -34,15 +35,18 @@ struct Lot {
 struct Bilan { size_t voxels = 0, sommets = 0; double ms = 0, msGrille = 0, moyenne = 1, memoireMo = 0; };
 
 // calcule l'occlusion de tous les sommets des lots « recoit » (en parallèle, jobs()) ; rend le bilan (journal, RG-04).
-// garder : la grille du tour reste en mémoire (grilleDuTour) pour les murs des bâtiments du kit (WFS-161), construits à la volée
-// en course : leur occlusion est calculée juste après, au chargement (archi_carte.cpp), puis la grille est rendue (libererGrille)
+// garder : la grille du tour reste en mémoire pour les murs des bâtiments du kit (WFS-161), construits à la volée
+// en course : leur occlusion est calculée juste après, au chargement (occlusionKit), puis la grille est rendue
 Bilan occlusionDecor(std::vector<Lot>& lots, bool garder = false);
 
-class Grille;
-const Grille* grilleDuTour();   // nullptr : aucune grille gardée
-void libererGrille();
-// occlusion (OCCLUSION_MIN à 1) d'un point p de normale unitaire n sur la grille g
-float occlusionPoint(const Grille& g, const vec3& p, const vec3& n);
+// bâtiments du kit (WFS-161), construits à la volée en course : sommets des murs du bâtiment k au niveau lod (0 ou 1), dans le monde
+using SommetsKit = std::function<void(size_t k, int lod, std::vector<Vertex>& v)>;
+// au chargement : occlusion des murs de n bâtiments (niveaux 0 et 1) sur la grille gardée, valeurs gardées par bâtiment,
+// puis la grille est rendue ; sans grille gardée : les valeurs d'une carte précédente sont oubliées, rien n'est calculé
+Bilan occlusionKit(size_t n, const SommetsKit& sommets);
+// en course (construction d'un morceau) : normales de v[debut..] × occlusion gardée du bâtiment k (rien si absente ou si le
+// nombre de sommets diffère)
+void appliquerKit(size_t k, int lod, std::vector<Vertex>& v, size_t debut);
 
 // occlusion lue dans un sommet (longueur de la normale), pour les tests
 inline float occlusionSommet(const Vertex& s) { return std::sqrt(s.nx * s.nx + s.ny * s.ny + s.nz * s.nz); }

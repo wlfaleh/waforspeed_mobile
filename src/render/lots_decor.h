@@ -43,7 +43,7 @@ public:
     // la longueur de la normale y règle tout l'éclairage, soleil compris). Avant preparer().
     void occlusion(uint64_t recoit, uint64_t occulte, uint64_t vtint) { aoRecoit_ = recoit; aoOcculte_ = occulte; aoVtint_ = vtint; }
     // WFS-269 : triangles qui cachent aussi le ciel sans faire partie du décor fixe (bâtiments du kit, WFS-161, construits à la
-    // volée) : la grille est alors gardée après la préparation pour leurs murs (precalcul::grilleDuTour). Avant preparer().
+    // volée) : la grille est alors gardée après la préparation pour leurs murs (precalcul::occlusionKit). Avant preparer().
     void occultants(std::vector<Vertex> v, std::vector<uint32_t> i) { occV_ = std::move(v); occI_ = std::move(i); }
     static constexpr float FORCE_VTINT = 0.6f;
     void liberer(Renderer& r);
