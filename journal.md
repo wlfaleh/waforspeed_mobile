@@ -3546,3 +3546,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 13:45:34 — WFS-258 : PR #263 corrigée après le retour du lead dev, rappel du lead dev (Claude, agent dev conduite)
 - Point 1 du lead dev (bloquant) : la file du maintien de voie est reprise à la position de la voiture (reset, grille, arrêt, voiture déplacée) ; test du départ de la grille (cap 0, x immobile ; sur 9833d7d : 0,30 rad, x de 0,50 à 0,05).
 - Point 2 : décision écrite du PO, option A : la limite de l'aide cède quand le joueur braque à 0,35 et plus ou freine ; volant lâché : 0 sortie sur les 4 cartes ; volant tenu en Course à 5 : 4/5, 2/5, 2/5, 4/5 (main 2/5 partout avec 96 à 260 images hors route). 70 tests CPU OK.
+
+### 2026-11-08 13:54:49 — WFS-258 (point 1) fusionné par le lead dev (lead-dev)
+- PR #263, 2e revue du commit 0f43287 : le développeur a répondu point par point sous la revue. J'ai regardé les 8 paires de `qa/pr/WFS-258/` : l'aide freine de 236 à 97 km/h avant l'épingle, et la voiture reste droite dans sa file (avant : 296 km/h, la voiture arrivait en travers avec le bandeau « ACCIDENT ! »).
+- J'ai relu tout le diff (`player.cpp`, `player.h`, accroche de 2 lignes dans `course5.cpp`, banc `virages`, `test_aide_ralentit`). Défaut du 1er refus corrigé : la file est reprise au `reset()`, sous 5 m/s et après un déplacement par un autre système. J'ai reconstruit et relancé les tests : 70 tests CPU OK. Départ de la grille : cap 0,000 rad. Volant lâché : 0 sortie sur les 4 cartes.
+- Option A du PO appliquée : la limite cède dès que le volant atteint 0,35 ou que le joueur freine.
+- Revue « ✅ Approuvé » publiée en commentaire (GitHub refuse l'approbation quand la PR vient du même compte). Fusion en squash : b76c6b4. WFS-258 passe en « 🔧 En cours — point 1 fusionné #263 (🟡 à valider) ». Ligne #263 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
