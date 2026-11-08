@@ -22,6 +22,7 @@
 #include "../game/sauvegarde.h"   // WFS-24
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../world/cartes_v2/paquet_carte.h"   // WFS-301 : paquet de la carte ou secours, 2e source de readAsset
 #include "../ui/ecrans/cgu.h"   // WFS-308 : conditions d'utilisation au premier lancement
 #include "../ui/ecrans/chargement.h"
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
@@ -37,6 +38,7 @@
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
 bool readAsset(const std::string& path, std::vector<uint8_t>& out) {
+    if (carte::lireDansPaquet(path, out)) { memoire::compteurs().octetsLus += (int64_t)out.size(); return true; }   // WFS-301 (RG-03) : paquet vérifié d'abord
     if (!g_assets) return false;
     AAsset* a = AAssetManager_open(g_assets, path.c_str(), AASSET_MODE_BUFFER);
     if (!a) return false;
@@ -178,11 +180,12 @@ static void initGraphics(App& app, android_app* a) {
 static void chargerJeu(App& app, android_app* a, double tVk) {   // WFS-308 : chargement, après les CGU acceptées
     veilleur::debutChargement(); struct Fin { android_app* a; ~Fin() { veilleur::finChargement(a); } } fin{a};   // WFS-284, aussi après les CGU
     ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
+    cartes_v2::preparerCarte(sauvegarde().map);   // WFS-301 (RG-06) : paquet vérifié de la carte, sinon carte du code
     if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(true); return; }   // WFS-24 : voiture et carte gardées ; WFS-146 : « Quitter »
     ecrans::chargement().fin();
     app.game.allerA(Ecran::Menu);   // WFS-38 : l'application s'ouvre sur le menu après le chargement
     // WFS-74 : écran de chargement de WFS-35 au changement de carte (« Rouler »), étapes réelles, message rouge en cas d'échec
-    Game::demandes().debutChargement = [&app] { veilleur::debutChargement(); ecrans::chargement().debut(app.renderer, nowSeconds()); };
+    Game::demandes().debutChargement = [&app] { veilleur::debutChargement(); ecrans::chargement().debut(app.renderer, nowSeconds()); cartes_v2::preparerCarte(sauvegarde().map); };   // WFS-301 : carte choisie (sauvegarde().map, écrite par changerCarte)
     Game::demandes().progression = ecrans::Chargement::progression;
     Game::demandes().finChargement = [a](bool ok) { if (ok) ecrans::chargement().fin(); else ecrans::chargement().erreur(); veilleur::finChargement(a); };
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
@@ -286,6 +289,7 @@ void android_main(android_app* a) {
     configCheminTelephone(a->activity->externalDataPath ? a->activity->externalDataPath : "");   // WFS-128 : configgame.json posé sur le téléphone
     qualite::dossierMesure = a->activity->externalDataPath ? a->activity->externalDataPath : "";   // WFS-246 (accroche, RG-06) : rendu-mesure.txt
     cache_pipelines::dossier = a->activity->internalDataPath ? a->activity->internalDataPath : "";   // WFS-262 (accroche, RG-01) : pipelines.cache
+    carte::dossierPaquets() = std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/paquets";   // WFS-301 (RG-01)
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
     veilleur::demarrer(a);   // WFS-284
