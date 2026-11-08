@@ -1344,7 +1344,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     float depth = length(c - camPos_);
     // WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : 4 niveaux de détail choisis par la taille de la voiture à l'écran, fondu tramé
     // écran complémentaire entre deux niveaux (scene.frag) ; jamais de cubes ; Basse, fantôme, police en lots : vehicule_lod.h
-    const auto lod = vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
+    // WFS-265 (2e retour du lead dev, PR #268) : la voiture du joueur est toujours complète, sans fondu (WFS-134), quelle que soit
+    // sa taille à l'écran (vue haute, résolution dynamique) ; les autres suivent les niveaux de détail
+    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{&m.parts, &m.parts, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
