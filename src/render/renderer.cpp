@@ -8,6 +8,7 @@
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "cache_pipelines.h"        // WFS-262 (RG-01)
+#include "shader_leger.h"           // WFS-264 (RG-06)
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "../core/memoire.h"   // WFS-297 (RG-06)
@@ -1387,9 +1388,10 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     p.vis = vis;
     {   // WFS-263 (RG-01) : variante légère si l'objet entier est au-delà de 70 m (fin du fondu de scene.frag) et n'est ni
         // voiture, ni route, ni transparent, ni vitre d'immeuble (mêmes exclusions que F_COMPLET de scene.frag)
-        constexpr uint32_t COMPLET = MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR;
+        static_assert(shader_leger::COMPLET == (MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR),
+                      "shader_leger.h : exclusions différentes des drapeaux du moteur");
         const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
-        p.loin = !(mat.flags & COMPLET) && sp.r >= 0 && length(sp.c - camPos_) - sp.r > 70.f;
+        p.loin = shader_leger::eligible(mat.flags, length(sp.c - camPos_), sp.r);   // WFS-264 (RG-06) : règle isolée et testée
     }
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
