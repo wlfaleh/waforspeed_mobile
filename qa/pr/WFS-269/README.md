@@ -87,3 +87,7 @@ Branche `feature/waforspeed-269` comparée à `origin/main` ; bancs : ville corn
 | `carte-ville-virage-2` | ![avant](avant-carte-ville-virage-2.jpg) | ![après](apres-carte-ville-virage-2.jpg) |
 | `carte-ville-virage-3-haut` | ![avant](avant-carte-ville-virage-3-haut.jpg) | ![après](apres-carte-ville-virage-3-haut.jpg) |
 | `carte-ville-virage-3` | ![avant](avant-carte-ville-virage-3.jpg) | ![après](apres-carte-ville-virage-3.jpg) |
+
+## Gros plans sans / avec occlusion
+
+Voir `pr.md` : `sans-ao-*.jpg`, `avec-ao-*.jpg`, `ecart-x16-*.jpg` (même cadrage, même binaire, `WFS_SANS_AO=1`).
