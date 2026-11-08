@@ -3405,3 +3405,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - le rappel de `build()` pendant `mix` est à durcir pour tous les modules du son ;
   - le banc `chocs` rend « 4 écart(s) ÉCHEC » aussi sur `main` (WFS-256).
 - **Arrêt** : à la demande de l'utilisateur (« termine la tâche en cours et arrête de prendre des US »), arwa-4 ne demande plus de ticket au PO. Sa ligne de `track-agent.md` est à ⏹️ arrêté.
+
+### 2026-11-08 11:51:02 — WFS-299 attribué à Claude, agent 1 (01UY1Vv2) (po-scrum-master)
+- Ordre « Commence » de l'utilisateur ; WFS-297 fusionné (#257, 8d05958, 🟡). Épic E11 + E4 / E13, P1 [TECHNIQUE]. Zone : piétons (niveaux de détail, instances) et lumières de nuit en Basse ; pas `lots_decor.*` (WFS-268 / WFS-273).
+- Règles : `regles-de-gestion/WFS-299.md` (RG-01 à RG-04 ; RG-04 reprend les 2 remarques du lead dev sur WFS-297 : `choisirVue(VueCamera::Proche)` dans le banc, `courseBenchSetTime` plus bas pour garder le HUD).
