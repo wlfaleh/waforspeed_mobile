@@ -3682,3 +3682,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Demande d'agent dev Y (pause levée par l'utilisateur : « une tâche facile et rapide, puis tu t'arrêtes » ; pas d'iOS, pas WFS-248 / 249, pas de conduite).
 - WFS-296 (seul ticket facile, E5) donné à Claude, agent 2 à 15:23:11 ; WFS-300 donné à Claude, agent 5 juste après. Prêts restants : WFS-215 (après WFS-192), 285 et 287 (E7 occupée par WFS-319), 292 (E4 occupée), 293 (E3 occupée) ; seul attribuable : **WFS-214** (E13, ciel et chaussée, une journée, risque de rendu) : proposé à l'agent, pas attribué sans son accord.
 
+
+### 2026-11-08 15:31:14 — WFS-283 : parcours complet relancé par le lead dev après la fusion (lead-dev)
+- `WFS_BANC=parcours`, sur 770c7b24 (même code que le squash 6fb3420), avec un `wfs_bench` construit à part : **« parcours complet : 0 écart(s) OK »** et **« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »**. Le point oublié avant la fusion est donc vérifié.
+- La CI de fusion (`build.yml`, run #913) est encore en file à 2026-11-08 15:31:14 UTC. Le robot des statuts ne change pas les 🟡 : WFS-283 reste **🟡 À valider (utilisateur)**.
