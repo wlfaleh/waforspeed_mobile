@@ -1,0 +1,17 @@
+# WFS-295 : direction dans les virages
+## 8. Direction à haute vitesse (WFS-258, point 3) : ligne droite de la Ville, Golf, quart de volant 0,5 s
+- avant, 150 km/h, quart de volant 0,5 s : décalage de 2.55 m vers la droite
+- avant, 190 km/h, quart de volant 0,5 s : décalage de 2.61 m vers la droite
+- avant, 230 km/h, quart de volant 0,5 s : décalage de 2.65 m vers la droite
+- après, 150 km/h, quart de volant 0,5 s : décalage de 0.74 m vers la droite
+- après, 190 km/h, quart de volant 0,5 s : décalage de 0.74 m vers la droite
+- après, 230 km/h, quart de volant 0,5 s : décalage de 0.74 m vers la droite
+## 10 bis. Course à 5 de 2 km, aide activée, doigt tenu (« Glisser ») : direction de main / réduite au-dessus de 100 km/h
+- ville, volant tenu (Glisser), direction de main (avant le point 3) : arrivé, place 4/5, 54.3 s de course, 87 image(s) hors route
+- ville, volant tenu (Glisser), direction réduite (point 3) : arrivé, place 5/5, 56.2 s de course, 0 image(s) hors route
+- campagne, volant tenu (Glisser), direction de main (avant le point 3) : arrivé, place 2/5, 46.9 s de course, 0 image(s) hors route
+- campagne, volant tenu (Glisser), direction réduite (point 3) : arrivé, place 2/5, 49.9 s de course, 0 image(s) hors route
+- plage, volant tenu (Glisser), direction de main (avant le point 3) : arrivé, place 2/5, 50.9 s de course, 0 image(s) hors route
+- plage, volant tenu (Glisser), direction réduite (point 3) : arrivé, place 3/5, 55.2 s de course, 0 image(s) hors route
+- circuit, volant tenu (Glisser), direction de main (avant le point 3) : arrivé, place 4/5, 50.7 s de course, 0 image(s) hors route
+- circuit, volant tenu (Glisser), direction réduite (point 3) : arrivé, place 5/5, 52.2 s de course, 0 image(s) hors route

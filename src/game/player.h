@@ -46,6 +46,8 @@ inline bool g_avantWfs295 = false;
 // WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages et ne tient pas la file
 // (comportement de main) ; faux dans le jeu
 inline bool g_avantWfs258 = false;
+// WFS-258 (point 3) : banc seulement : angle des roues d'avant au-dessus de 100 km/h (direction vive) ; faux dans le jeu
+inline bool g_avantWfs258Vif = false;
 // WFS-258 : vitesse où un ordinateur de la Course à 5 reste sur la chaussée (unités/s, course5::vitesseVirage), donnée par
 // course5.cpp au chargement du programme ; nulle quand course5.cpp n'est pas lié (tests sans Course à 5)
 inline double (*g_vitesseVirageCourse5)(const Track&, double) = nullptr;
@@ -106,6 +108,7 @@ private:
     void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
     bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
     std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
+    bool cedeAuDoigt_ = true;   // WFS-258 : la limite de l'aide cède au doigt (sous 95 km/h ; reprend au-dessus de 100 km/h)
     double fileAide_ = 0;   // WFS-258 : file (demi-largeurs) où le joueur a laissé la voiture (maintien de voie de l'aide)
     double finPasX_ = 1e9, finPasD_ = 1e9;   // WFS-258 : pose à la fin du pas précédent (ancienne conduite)
     double facRoute_ = 1;   // WFS-295 : 1 − k·n (rayon à l'écart n de l'axe), au moins 0,2
