@@ -25,3 +25,4 @@ verdict OK / KO / À REVOIR par point avec l'image qui le prouve, rapport `qa/ra
 8. **Foule en Ville** (−70 %, WFS-317) et **menu fluide** (WFS-329) si visibles.
 9. **Écran de chargement** v0.1.928.
 10. **Tout autre défaut visible.**
+11. **Ajout du PO (22:12 UTC)** : voiture rouge collée au joueur, de travers, à sa vitesse (video1, 232,9 → 229,5 s) → ANO-180 / WFS-333 ; voiture noire qui semble entrer dans l'habitacle (video4, 40,4 s) : à confirmer.
