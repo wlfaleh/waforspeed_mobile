@@ -134,7 +134,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); nPas += g.pasDerniereImage(); t += 1.0 / 60; g.calculerVue(t); }   // décompte (4 s)
                     std::vector<Echantillon> ech; int pas[4] = {}; double braquage = 0;
                     // WFS-293 (RG-07) : commandes de chaque image (pas [debut, fin)) pour rejouer la course à 120 Hz, et poses rendues
-                    struct Commande { int64_t debut, fin; DriveInput in; };
+                    struct Commande { int64_t debut, fin; DriveInput in; double dist, x; };
                     std::vector<Commande> cmds; std::vector<fluidite::Pose> rendues;
                     const double moy = 1.0 / fps;
                     for (double duree = 0; duree < 14; ) {
@@ -151,7 +151,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                         const int64_t pas0 = nPas;
                         g.update(dt);
                         nPas += g.pasDerniereImage();
-                        cmds.push_back({pas0, nPas, g.manette});
+                        cmds.push_back({pas0, nPas, g.manette, g.player().dist, g.player().playerX});
                         const double tSim = ((double)nPas - 1 + g.alphaRendu()) / 120.0;   // état rendu : entre les pas n−1 et n
                         const Game::Vue v = g.calculerVue(t);
                         if (duree < 4) continue;   // mise en vitesse (≈ 150 km/h) et caméra posée
@@ -175,17 +175,26 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                             g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.camMode = 0; choisirVue(cam ? VueCamera::Poursuite : VueCamera::Proche); g.allerA(Ecran::Course);
                             double t2 = 1000; int64_t n2 = 0;
                             for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); n2 += g.pasDerniereImage(); t2 += 1.0 / 60; g.calculerVue(t2); }
-                            std::vector<fluidite::Pose> ref; size_t k = 0;
+                            std::vector<fluidite::Pose> ref; size_t k = 0; int rejeuLogs = 0;
                             while (!cmds.empty() && n2 < cmds.back().fin) {
                                 while (k + 1 < cmds.size() && n2 >= cmds[k].fin) k++;
                                 g.manette = cmds[k].in;
                                 g.update(1.0 / 120); n2 += g.pasDerniereImage(); t2 += 1.0 / 120;
+                                if (n2 == cmds[k].fin && std::getenv("WFS_FLUIDITE_TRACE")) {   // essai local : la simulation rejouée est-elle la même ?
+                                    const double dd = (g.player().dist - cmds[k].dist) * M, dx = (g.player().playerX - cmds[k].x) * RW;
+                                    if (std::abs(dd) + std::abs(dx) > 1e-4 && rejeuLogs++ < 4) { WFS_LOG("REJEU %d img/s pas %lld : écart dist %.5f m, latéral %.5f m", fps, (long long)n2, dd, dx); }
+                                }
                                 const double tr = ((double)n2 - 1 + g.alphaRendu()) / 120.0;
                                 const Game::Vue v = g.calculerVue(t2);
                                 const mat4 V = lookAt(v.eye, v.look, {0, 1, 0});
                                 ref.push_back({tr, V.transformPoint(v.carPos)});
                             }
                             g.shutdown();
+                            if (std::getenv("WFS_FLUIDITE_TRACE")) {   // essai local : séries rendue et de référence
+                                std::ofstream fr(out + "/ref-" + (passe ? "apres-" : "avant-") + sc.nom + "-" + (cam ? "poursuite-" : "proche-") + std::to_string(fps) + ".csv"); fr.precision(10);
+                                for (const fluidite::Pose& x : rendues) fr << "R " << x.t << ' ' << x.p.x << ' ' << x.p.y << ' ' << x.p.z << '\n';
+                                for (const fluidite::Pose& x : ref) fr << "F " << x.t << ' ' << x.p.x << ' ' << x.p.y << ' ' << x.p.z << '\n';
+                            }
                             int nc = 0;
                             ecartRef = fluidite::ecartMaxMm(rendues, ref, &nc);
                             if (nc < (int)rendues.size() * 9 / 10) WFS_ERR("fluidite : référence 120 Hz incomplète (%d / %zu images)", nc, rendues.size());
