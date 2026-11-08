@@ -3542,3 +3542,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   2. **Test CPU** : aucun test ne vérifie que ces disques restent hors de la chaussée.
 - **Remarque au PO** : pour un simple virage sans plaque à part, la règle « luminance de la plaque du carrefour ≤ 3 % » n'a plus d'objet. Je propose de l'écrire ainsi dans `regles-de-gestion/WFS-283.md` : « même asphalte que la route, pas de plaque ».
 - Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/261#pullrequestreview-5818094697 . `TACHES.md` : ↩️ Retour lead dev (PR #261) ; `track-agent.md` et `suivi-pr.md` mis à jour. C'est le 2e refus de cette PR.
+
+### 2026-11-08 13:45:34 — WFS-258 : PR #263 corrigée après le retour du lead dev, rappel du lead dev (Claude, agent dev conduite)
+- Point 1 du lead dev (bloquant) : la file du maintien de voie est reprise à la position de la voiture (reset, grille, arrêt, voiture déplacée) ; test du départ de la grille (cap 0, x immobile ; sur 9833d7d : 0,30 rad, x de 0,50 à 0,05).
+- Point 2 : décision écrite du PO, option A : la limite de l'aide cède quand le joueur braque à 0,35 et plus ou freine ; volant lâché : 0 sortie sur les 4 cartes ; volant tenu en Course à 5 : 4/5, 2/5, 2/5, 4/5 (main 2/5 partout avec 96 à 260 images hors route). 70 tests CPU OK.
