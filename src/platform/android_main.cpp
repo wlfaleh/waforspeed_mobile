@@ -25,6 +25,7 @@
 #include "chauffe_android.cpp"     // WFS-123 : état thermique, setFrameRate 60 (API 30+, dlsym)
 #include "plantage_android.cpp"    // WFS-126 : rapport de plantage (signaux, 200 dernières lignes, déclencheur de test)
 #include "../render/qualite_auto.h"   // WFS-246 (accroche, RG-06) : dossier de rendu-mesure.txt
+#include "../render/cache_pipelines.h"   // WFS-262 (accroche, RG-01)
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -96,6 +97,7 @@ static void onCmd(android_app* a, int32_t cmd) {
         case APP_CMD_GAINED_FOCUS: app.focused = true; app.last = nowSeconds(); break;
         case APP_CMD_PAUSE:   // WFS-39 RG-04 : arrière-plan ou perte du focus en course → pause (web blur / visibilitychange)
             sauvegarde().enregistrer();   // WFS-24 RG-06 : sauvegarde au passage en arrière-plan
+            if (app.ready) app.renderer.enregistrerCachePipelines();   // WFS-262 (accroche, RG-01) : cache de pipelines
             [[fallthrough]];
         case APP_CMD_LOST_FOCUS: if (app.ready && app.game.ecran() == Ecran::Course) app.game.allerA(Ecran::Pause);
             if (cmd == APP_CMD_LOST_FOCUS) app.focused = false;
@@ -159,6 +161,7 @@ void android_main(android_app* a) {
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
     configCheminTelephone(a->activity->externalDataPath ? a->activity->externalDataPath : "");   // WFS-128 : configgame.json posé sur le téléphone
     qualite::dossierMesure = a->activity->externalDataPath ? a->activity->externalDataPath : "";   // WFS-246 (accroche, RG-06) : rendu-mesure.txt
+    cache_pipelines::dossier = a->activity->internalDataPath ? a->activity->internalDataPath : "";   // WFS-262 (accroche, RG-01) : pipelines.cache
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
     while (!a->destroyRequested) {
@@ -198,7 +201,12 @@ void android_main(android_app* a) {
             else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); retourSystemeApresImage(app.game); app.game.render(t - app.start); }   // WFS-22 : manette ; WFS-116
             // WFS-123 (RG-06) : 30 images/s hors course (batterie), 60 en course : attente du reste de la période de l'image
             // (la synchro FIFO tient déjà 60 sur un écran 60 Hz ; l'attente ne sert qu'aux menus et aux écrans plus rapides)
-            if (const double reste = t + 1.0 / chauffe::plafondCourant() - nowSeconds(); reste > 0.002) {
+            // WFS-262 (accroche, RG-04) : sous 60 img/s (cadence 30, menus), échéances sur une grille fixe (précédente + période),
+            // réveil 3 ms avant : la synchro de l'écran (FIFO) place l'image ; à 60, la synchro seule (aucune dérive de grille)
+            static double echeance = 0;
+            const double periode = 1.0 / chauffe::plafondCourant();
+            echeance = periode > 0.018 && echeance > 0 && nowSeconds() - echeance < periode ? echeance + periode : t + periode;
+            if (const double reste = echeance - (periode > 0.018 ? 0.003 : 0.0) - nowSeconds(); reste > 0.002) {
                 const timespec d{0, (long)((reste - 0.001) * 1e9)};
                 nanosleep(&d, nullptr);
             }

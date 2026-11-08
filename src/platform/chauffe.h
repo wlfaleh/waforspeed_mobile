@@ -12,6 +12,7 @@
 #pragma once
 #include <string>
 #include "../core/ecran.h"
+#include "../render/qualite_auto.h"   // WFS-262 (accroche, RG-04) : cadence de la course
 
 namespace wfs {
 class Game; class Renderer;
@@ -35,7 +36,7 @@ void avancerTempsCourse(double dt);
 
 // RG-06 : plafond d'images/s selon l'écran (Course = décompte, course et écran de fin ; le reste : menus, garage, terrain,
 // pause, salon, chargement) ; plafondCourant() est lu par la boucle android_main après chaque image
-inline int plafondIps(Ecran e) { return e == Ecran::Course ? 60 : 30; }
+inline int plafondIps(Ecran e) { return e == Ecran::Course ? qualite::cadenceCourse : 30; }   // WFS-262 (accroche, RG-04) : 60 ou 30 (qualite_auto.h)
 int plafondCourant();
 void definirPlafond(int ips);
 
