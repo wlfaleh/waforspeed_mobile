@@ -1,7 +1,12 @@
 // WaForSpeed — point d'entrée Android (NativeActivity) : cycle de vie de la fenêtre, tactile, boucle de jeu.
 #include <android/asset_manager.h>
 #include <jni.h>
+#include <algorithm>
 #include <atomic>
+#include <cmath>
+#include <chrono>
+#include <mutex>
+#include <thread>
 #include <android/native_window.h>
 #include <android_native_app_glue.h>
 #include <time.h>
@@ -60,8 +65,105 @@ struct App {
     int fpsFrames = 0; double fpsT0 = 0;
 };
 
+// ---------------------------------------------------------------------------------------------------------------------
+// WFS-284 (ANO-153) : veilleur des entrées. Android affiche « … isn't responding » (ANR) si un appui reste plus de 5 s
+// dans la file des entrées sans être rendu. Le fil du jeu ne lit cette file qu'entre deux images ; or un chargement le
+// bloque longtemps (émulateur : étape « Construction de la route » 47 s, sans aucun rappel de progression), et une image
+// du GPU logiciel peut durer 3 à 10 s. Rappeler la progression plus souvent demanderait des appels dans tout le code de
+// chargement (hors zone) sans garantie : un petit fil lit donc la file à la place du fil du jeu quand celui-ci est occupé :
+//  - pendant tout chargement (premier chargement, changement de carte, « Réessayer ») : toutes les 50 ms ; les appuis et
+//    la touche Retour sont pris et ignorés (RG-01, RG-03 : rien n'est rejoué ensuite), les autres touches (volume…)
+//    restent à Android ; à la fin, ligne « chargement : entrées lues, plus long écart N ms » (RG-05) ;
+//  - hors chargement, seulement si le fil du jeu n'a pas lu la file depuis 1 s (jamais à 30-60 images/s) : appuis et
+//    Retour gardés dans un tampon et rejoués par le fil du jeu au début de l'image suivante, dans l'ordre (manette : laissée).
+// La lecture de la file est exclusive (verrou g_file, pris aussi par le fil du jeu autour de process_input) et protégée
+// par a->mutex, que la colle Android prend quand elle change de file (APP_CMD_INPUT_CHANGED).
+namespace veilleur {
+struct Evenement { bool retour; int32_t id; float x, y; bool down; int repetition; };
+static std::mutex g_file, g_tamponVerrou;
+static std::vector<Evenement> g_tampon;                 // lu par le veilleur hors chargement, rejoué par le fil du jeu
+static std::atomic<bool> g_chargement{false}, g_arret{false}, g_enAttente{false};
+static std::atomic<double> g_dernierLu{0};              // dernière lecture de la file (fil du jeu ou veilleur)
+static double g_lectureChargement = 0, g_plusLongEcart = 0; static int g_ignores = 0;   // sous g_file
+static std::thread g_fil;
+
+// un événement lu par le veilleur : vrai = gardé (rendu à Android comme traité)
+static bool traiter(AInputEvent* e) {
+    const int32_t type = AInputEvent_getType(e);
+    if (type == AINPUT_EVENT_TYPE_KEY) {
+        if (AKeyEvent_getKeyCode(e) != AKEYCODE_BACK) return false;   // volume, manette… : à Android
+        const int32_t act = AKeyEvent_getAction(e);
+        if (g_chargement) { g_ignores++; return true; }               // RG-01 : Retour pris et ignoré
+        if (act == AKEY_EVENT_ACTION_DOWN || act == AKEY_EVENT_ACTION_UP) {
+            std::lock_guard<std::mutex> l(g_tamponVerrou);
+            g_tampon.push_back({true, 0, 0, 0, act == AKEY_EVENT_ACTION_DOWN, AKeyEvent_getRepeatCount(e)});
+        }
+        return true;
+    }
+    if (type != AINPUT_EVENT_TYPE_MOTION) return false;
+    if (g_chargement) { g_ignores++; return true; }                   // RG-01, RG-03 : appui ignoré, jamais rejoué
+    if ((AInputEvent_getSource(e) & AINPUT_SOURCE_JOYSTICK) == AINPUT_SOURCE_JOYSTICK) return false;   // manette : à Android
+    const int32_t action = AMotionEvent_getAction(e), kind = action & AMOTION_EVENT_ACTION_MASK;
+    const size_t idx = (size_t)((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
+    std::lock_guard<std::mutex> l(g_tamponVerrou);
+    auto garder = [&](size_t i, bool down) { g_tampon.push_back({false, AMotionEvent_getPointerId(e, i), AMotionEvent_getX(e, i), AMotionEvent_getY(e, i), down, 0}); };
+    switch (kind) {   // même découpage que onInput
+        case AMOTION_EVENT_ACTION_DOWN: case AMOTION_EVENT_ACTION_POINTER_DOWN: garder(idx, true); break;
+        case AMOTION_EVENT_ACTION_MOVE: for (size_t i = 0; i < AMotionEvent_getPointerCount(e); i++) garder(i, true); break;
+        case AMOTION_EVENT_ACTION_UP: case AMOTION_EVENT_ACTION_POINTER_UP: garder(idx, false); break;
+        case AMOTION_EVENT_ACTION_CANCEL: for (size_t i = 0; i < AMotionEvent_getPointerCount(e); i++) garder(i, false); break;
+        default: break;
+    }
+    return true;
+}
+
+// lit toute la file (g_file tenu par l'appelant), comme process_input de la colle Android
+static void lire(android_app* a, double t) {
+    pthread_mutex_lock(&a->mutex);
+    if (AInputQueue* q = a->inputQueue) {
+        AInputEvent* e = nullptr;
+        while (AInputQueue_getEvent(q, &e) >= 0) {
+            if (AInputQueue_preDispatchEvent(q, e)) continue;   // clavier à l'écran : l'événement reviendra
+            AInputQueue_finishEvent(q, e, traiter(e) ? 1 : 0);
+        }
+    }
+    pthread_mutex_unlock(&a->mutex);
+    if (g_chargement) { g_plusLongEcart = std::max(g_plusLongEcart, t - g_lectureChargement); g_lectureChargement = t; }
+    g_dernierLu = t;
+}
+
+static void demarrer(android_app* a) {
+    g_arret = false; g_dernierLu = nowSeconds();   // android_main peut repartir dans le même processus
+    g_fil = std::thread([a] {
+        while (!g_arret) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            const double t = nowSeconds();
+            if (!g_chargement && (g_enAttente || t - g_dernierLu < 1.0)) continue;   // le fil du jeu lit lui-même
+            std::lock_guard<std::mutex> l(g_file);
+            lire(a, t);
+        }
+    });
+}
+static void arreter() { g_arret = true; if (g_fil.joinable()) g_fil.join(); }
+
+// début / fin d'un chargement (fil du jeu) ; fin : dernière lecture (appuis du chargement ignorés), puis ligne RG-05
+static void debutChargement() {
+    std::lock_guard<std::mutex> l(g_file);
+    g_lectureChargement = nowSeconds(); g_plusLongEcart = 0; g_ignores = 0; g_chargement = true;
+}
+static void finChargement(android_app* a) {
+    std::lock_guard<std::mutex> l(g_file);
+    if (!g_chargement) return;
+    lire(a, nowSeconds());
+    g_chargement = false;
+    WFS_LOG("chargement : entrées lues, plus long écart %d ms (%d événements ignorés)", (int)std::lround(g_plusLongEcart * 1000), g_ignores);
+}
+} // namespace veilleur
+
 static void initGraphics(App& app, android_app* a) {
     if (app.ready || !a->window) return;
+    veilleur::debutChargement();   // WFS-284 : entrées lues par le veilleur jusqu'à la fin, même en cas d'échec
+    struct Fin { android_app* a; ~Fin() { veilleur::finChargement(a); } } fin{a};
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
     const double tVk = nowSeconds();
     app.renderer.init(app.vk);
@@ -71,9 +173,9 @@ static void initGraphics(App& app, android_app* a) {
     ecrans::chargement().fin();
     app.game.allerA(Ecran::Menu);   // WFS-38 : l'application s'ouvre sur le menu après le chargement
     // WFS-74 : écran de chargement de WFS-35 au changement de carte (« Rouler »), étapes réelles, message rouge en cas d'échec
-    Game::demandes().debutChargement = [&app] { ecrans::chargement().debut(app.renderer, nowSeconds()); };
+    Game::demandes().debutChargement = [&app] { veilleur::debutChargement(); ecrans::chargement().debut(app.renderer, nowSeconds()); };
     Game::demandes().progression = ecrans::Chargement::progression;
-    Game::demandes().finChargement = [](bool ok) { if (ok) ecrans::chargement().fin(); else ecrans::chargement().erreur(); };
+    Game::demandes().finChargement = [a](bool ok) { if (ok) ecrans::chargement().fin(); else ecrans::chargement().erreur(); veilleur::finChargement(a); };
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();
@@ -142,6 +244,17 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
     return 1;
 }
 
+// WFS-284 : appuis et Retour lus par le veilleur pendant une image trop longue, rejoués dans l'ordre (mêmes chemins que onInput)
+static void rejouerEntrees(App& app) {
+    std::vector<veilleur::Evenement> evs;
+    { std::lock_guard<std::mutex> l(veilleur::g_tamponVerrou); evs.swap(veilleur::g_tampon); }
+    for (const auto& ev : evs) {
+        if (ev.retour) { if (app.ready) retourSysteme(app.game, ev.down, ev.repetition); }   // « laissé à Android » : sans effet
+        else if (ecrans::chargement().enErreur()) ecrans::chargement().toucher(ev.id, ev.x, ev.y, ev.down);
+        else if (app.ready) app.game.onTouch({ev.id, ev.x, ev.y, ev.down});
+    }
+}
+
 void android_main(android_app* a) {
     static App app;
     a->userData = &app;
@@ -164,13 +277,20 @@ void android_main(android_app* a) {
     cache_pipelines::dossier = a->activity->internalDataPath ? a->activity->internalDataPath : "";   // WFS-262 (accroche, RG-01) : pipelines.cache
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
+    veilleur::demarrer(a);   // WFS-284
     while (!a->destroyRequested) {
         int events; android_poll_source* src;
+        rejouerEntrees(app);   // WFS-284 : avant les événements suivants (ordre gardé)
         // en pause : on attend les événements sans consommer de batterie
+        veilleur::g_enAttente = true;
         while (ALooper_pollOnce((app.ready && app.focused) ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
-            if (src) src->process(a, src);
+            veilleur::g_enAttente = false;
+            if (src && src->id == LOOPER_ID_INPUT) { std::lock_guard<std::mutex> l(veilleur::g_file); src->process(a, src); veilleur::g_dernierLu = nowSeconds(); }
+            else if (src) src->process(a, src);   // commandes (chargement compris : le veilleur lit la file pendant ce temps)
             if (a->destroyRequested) break;
+            veilleur::g_enAttente = true;
         }
+        veilleur::g_enAttente = false; veilleur::g_dernierLu = nowSeconds();
         if (a->destroyRequested) break;
         if (ecrans::chargement().reessaiDemande()) {   // WFS-146 (RG-10) : « Réessayer » (carte) ou « Quitter » (moteur)
             if (app.ready) { Game::demandes().carte = sauvegarde().map; Game::demandes().nuit = sauvegarde().tod == "nuit"; }
@@ -221,5 +341,6 @@ void android_main(android_app* a) {
         }
     }
     termGraphics(app);
+    veilleur::arreter();
     jobs().stop();
 }
