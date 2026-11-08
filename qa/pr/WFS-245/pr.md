@@ -12,7 +12,7 @@
   - `tests/test_bandeau_gps.cpp` (nouveau, `CMakeLists.txt`).
 - **Comment c'est vérifié** :
   - `test_bandeau_gps` : tailles ≥ 2 × les anciennes, bandeau ≤ 60, vue calculée avec 38, deux rangées dans le bandeau (flèche et distance, consigne au-dessus du liseré), nom dans son étiquette ; **toutes** les consignes (21), distances (219) et noms de rue possibles (248) mesurés avec la police du jeu (stb_truetype, sans carte graphique) : aucun coupé, consignes ≥ 16 (« Carrefour à feux, tout droit »), distances ≥ 28,5 (« Maintenant »), noms ≥ 15 (7 noms).
-  - 63 tests CPU OK ; parcours complet (`WFS_BANC=parcours`) : **0 écart** (accueil → course → fin → retour) ; banc `hud` en 2400 × 1080 et 1280 × 720 : lignes « (WFS-245 RG-09) » (tailles ci-dessus).
+  - 64 tests CPU OK ; parcours complet (`WFS_BANC=parcours`) : **0 écart** (accueil → course → fin → retour) ; banc `hud` en 2400 × 1080 et 1280 × 720 : lignes « (WFS-245 RG-09) » (tailles ci-dessus).
 - **Limites et risques connus** :
   - le bandeau couvre 18 de plus du haut de la carte : la route visible devant le joueur passe à ≈ 77 % (accepté par le PO) ; sur `minicarte-ligne`, à 300 m, le coude du virage annoncé est caché sous le bandeau ;
   - deux consignes restent sous 2 × l'ancienne taille, pour tenir sans être coupées : « Au rond-point, Ne sortie » (18,5) et « Carrefour à feux, tout droit » (16) ;
