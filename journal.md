@@ -4070,3 +4070,9 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - **RG-11 / ANO-164 (≤ 1 %) sort de WFS-268** et devient **RG-06 de WFS-273** (même développeur, après la fusion de #248). Reste bloquant dans #248 : **rien du décor ne manque** (butte et mur courbe du lacet du haut visibles sur `carte-plage-lacets-dessus`, ou corrigés).
 - Consigne : synchroniser avec `main` (conflit `journal.md`), bancs `parcours` et `perf` sur la tête notés au journal, captures `captures_pr.sh` sur la tête (Ville et Corniche jour / nuit, lacets-dessus, marina), description « Agent : Claude, Agent 0 developer », réponse « corrigé dans » sous la revue, `suivi-pr.md` 🔁, rappel du lead dev. **Échéance : 23:30 UTC.**
 - Écrit dans `regles-de-gestion/WFS-268.md` (Suivi), `regles-de-gestion/WFS-273.md` (RG-06), `anno.md` (ANO-164) ; commentaire dans la PR #248.
+
+### 2026-11-08 20:17:58 — WFS-281 : décision du PO sur la mesure de RG-02 après le 3e refus (po-scrum-master)
+- À la demande du lead dev (3e refus, entrée 20:16:35, PR #249, 158cdee). Détail dans `regles-de-gestion/WFS-281.md` (Suivi).
+- Aucune décision « en moyenne » n'existe : le commentaire du test qui y renvoie est à retirer ; la moyenne reste refusée.
+- Nouvelle mesure (sans affaiblir le but) : **P90 des images sur des fenêtres de 30 s** ; référence R = plus haute P90 de la 1re minute ; à **chaque** fenêtre jusqu'à 10 min, Haute et Basse, 4 cartes, 10 graines : voitures dessinées ≤ max(1,3 × R ; R + 2) et ≤ 8 ; appels et triangles ≤ max(1,3 × R ; R + 2 × coût d'une voiture) ; total constant ; **0 fenêtre hors règle**.
+- Les 6 autres points du lead dev restent à corriger par agent arwa ; ticket inchangé (↩️ Retour lead dev, PR #249).
