@@ -118,9 +118,10 @@ float feuCroisement(vec3 w, vec3 D, float d, float range) {
 vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     int n = int(F.spotN.x + 0.5);
+    int parPixel = F.spotN.y > 0.5 ? int(F.spotN.y + 0.5) : 12, vus = 0;   // WFS-263 (RG-02) : 4 lumières par pixel au plus en Basse
     float NoV = max(dot(N, V), 1e-3);
     for (int i = 0; i < 12; i++) {   // WFS-226 : 12 projecteurs au plus
-        if (i >= n) break;
+        if (i >= n || vus >= parPixel) break;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);
@@ -129,6 +130,8 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         bool croisement = F.spotCone[i].z > 0.5;   // WFS-218
         if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;   // WFS-226 : hors faisceau
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
+        if (range > 0.0 && d >= range) continue;   // WFS-263 : hors de portée, n'éclaire pas ce pixel (et ne compte pas)
+        vus++;   // WFS-263 : lumière qui éclaire vraiment ce pixel (dans le faisceau et à portée)
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
         float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
         vec3 H = normalize(V + L);
@@ -180,4 +183,20 @@ void iblRemplacer(inout vec3 skyAmb, inout vec3 env, inout vec3 Fe, inout float 
     vec2 ab = texture(iblBrdf, vec2(clamp(NoV, 0.0, 1.0), clamp(rough, 0.0, 1.0))).rg;
     Fe = f0 * ab.x + ab.y;
     if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
+}
+
+// WFS-263 (RG-01) : ambiance et reflet du shader léger (décor au-delà de 60 m) : mêmes formules que le complet (ciel analytique
+// sans sonde ; avec sonde : harmoniques sphériques et table BRDF exacte), mais UNE seule lecture de la sonde (le cube dominant
+// du mélange A / B) au lieu de trois (skyColor + iblPrefiltre lisent chacun les deux cubes). Seule autre différence avec le
+// complet : pas de carte de normales (relief invisible au-delà de 60 m).
+void iblLeger(inout vec3 skyAmb, out vec3 env, inout vec3 Fe, inout float specOcc, vec3 N, vec3 R, float NoV, float rough, float sunK, vec3 f0, bool vtint) {
+    if (F.iblA.x > 0.5) {
+        skyAmb = iblDiffus(N);
+        specOcc = 1.0;
+        float r = clamp(rough, 0.0, 1.0);
+        env = F.iblA.y >= 0.5 ? textureLod(iblCubeB, R, r * F.iblA.w).rgb * F.iblB.z : textureLod(iblCubeA, R, r * F.iblA.z).rgb * F.iblB.y;
+        vec2 ab = texture(iblBrdf, vec2(clamp(NoV, 0.0, 1.0), r)).rg;
+        Fe = f0 * ab.x + ab.y;
+    } else env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
+    if (vtint) { Fe = vec3(0.0); env = vec3(0.0); }   // feuillage : Lambert sans reflet (comme iblRemplacer)
 }

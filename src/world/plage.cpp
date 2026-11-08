@@ -501,6 +501,15 @@ public:
         initEtabs(r, *g.track);   // WFS-181
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = len_;
+            {   // WFS-269 (accroche) : occlusion précalculée : chaume et bois (MAT_AO) la reçoivent ; ni les rochers, ni les trottoirs, ni le décor uni (terrain du surplomb, façades : dents de scie, traînées et taches, 2 revues du lead dev)
+                auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
+                lots_.occlusion(b({P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
+                if (archi::carte::actif()) {   // villas du kit (WFS-161, niveau allégé) : elles cachent le ciel ; leurs murs reçoivent l'occlusion
+                    std::vector<Vertex> v; std::vector<uint32_t> i;
+                    archi::carte::geometrie(1, v, i);
+                    lots_.occultants(std::move(v), std::move(i));
+                }
+            }
             lots_.preparer(r, *g.track, P_COUNT, 3, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {   // 3 morceaux (115 m) : débord au bout de la fenêtre ≤ 2 morceaux (mer dégagée)
                 Geo out[P_COUNT];
                 buildChunk(*g.track, c, lod, out);
@@ -1392,9 +1401,9 @@ public:
         genererMatieres(pa, bo);
         pailleTex_ = r.vk().uploadTexture(pa.data(), 128, 128, true);
         boisTex_ = r.vk().uploadTexture(bo.data(), 128, 128, true);
-        Material mp; mp.rough = 0.95f; mp.flags = MAT_DOUBLE;   // chaume : diélectrique très rugueux
+        Material mp; mp.rough = 0.95f; mp.flags = MAT_DOUBLE | MAT_AO;   // chaume : diélectrique très rugueux
         mats_[P_PAILLE] = r.makeMaterial(mp, &pailleTex_, nullptr, nullptr);
-        Material mb; mb.rough = 0.8f; mb.flags = MAT_DOUBLE;    // bois brut patiné
+        Material mb; mb.rough = 0.8f; mb.flags = MAT_DOUBLE | MAT_AO;    // bois brut patiné
         mats_[P_BOIS] = r.makeMaterial(mb, &boisTex_, nullptr, nullptr);
         // vitrages : de jour verre (diélectrique, rugosité 0,08 ; teinte bleu-gris qui tient lieu du reflet du ciel, comme les vitrines de commerces.cpp) ; la nuit éclairés de l'intérieur, LED blanc
         // chaud 3000 K (bars, cafés, casino) ou blanc neutre 4000 K (galerie) — DA-realisme.md : LED 3000-4000 K

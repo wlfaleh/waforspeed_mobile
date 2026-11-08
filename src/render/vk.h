@@ -16,11 +16,12 @@ namespace wfs {
 
 #define VK_OK(x) do { VkResult r_ = (x); WFS_CHECK(r_ == VK_SUCCESS, "Vulkan : %s a échoué (%d) %s:%d", #x, (int)r_, __FILE__, __LINE__); } while (0)
 
-struct Buffer { VkBuffer buf = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkDeviceSize size = 0; void* mapped = nullptr; };
+struct Buffer { VkBuffer buf = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkDeviceSize size = 0; void* mapped = nullptr; VkDeviceSize alloue = 0; };   // WFS-297 : alloue (octets réels)
 struct Image {
     VkImage img = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkImageView view = VK_NULL_HANDLE;
     VkFormat format = VK_FORMAT_UNDEFINED; uint32_t w = 0, h = 0, mips = 1;
     size_t octetsTexture = 0;   // WFS-149 : octets comptés dans VkCtx::octetsTextures (textures envoyées seulement)
+    VkDeviceSize alloue = 0;    // WFS-297 (RG-06) : octets alloués (mémoire de la carte graphique), 0 si mémoire paresseuse
 };
 
 class VkCtx {

@@ -435,6 +435,7 @@ void CarteDecor::preparerDecor(Renderer& r) {
     lotsTente_ = true;
     if (!lots::g_lotsDecor || !LOTS_CARTES_SOCLE) return;
     limiteTour_ = len();
+    lots_.occlusion(1ull << P_UNI, (1ull << P_UNI) | (1ull << P_FEUILLU) | (1ull << P_CONIF), 1ull << P_UNI);   // WFS-269 (accroche) : occlusion précalculée
     lots_.preparer(r, *track_, P_COUNT, 4, [this](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
         Geo out[P_COUNT];
         buildChunk(*track_, c, lod, out);

@@ -1,6 +1,7 @@
 // WaForSpeed — conduite du joueur (port de la partie « conduite » de js/game/update.js).
 // Unités du jeu web : position/dist en unités (6 mm), speed en unités/s, playerX en demi-largeurs de route.
 #pragma once
+#include <algorithm>
 #include "cars.h"
 #include "conduite_monde.h"   // WFS-241 : conduite en coordonnées du monde
 #include "chocs_decor.h"      // WFS-256 : chocs avec le décor
@@ -38,6 +39,9 @@ inline bool g_conduiteMonde = false;   // WFS-258 (RG-00) : repli sur l'ancien m
 // WFS-253 : ABS, antipatinage, ESP de la voiture du joueur : toujours activés dans le jeu ; le banc les coupe un par un pour les mesurer
 struct AidesVoiture { bool abs = true, antipatinage = true, esp = true; };
 inline AidesVoiture g_aidesVoiture;
+// WFS-295 : banc seulement (WFS_BANC=virages) : rejoue le comportement d'avant la correction (avance sans 1/(1 − k·n), blocage de
+// 0,6 + 1,2 × impact après un accident, braquage remis à zéro) pour les captures « avant » ; toujours faux dans le jeu
+inline bool g_avantWfs295 = false;
 
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};
@@ -49,7 +53,12 @@ struct Player {
     double playerSpin = 0, spinYaw = 0, controlLock = 0;
     Aide aide = Aide::Web;   // WFS-217 : gardée par reset()
     void reset(const CarDef& c);
-    void accident(double impact, int side) { playerSpin = side * (3 + impact * 9); controlLock = 0.6 + impact * 1.2; }
+    // WFS-295 (RG-03) : commandes bloquées 0,5 s au plus après un accident (avant : 0,6 + 1,2 × impact, jusqu'à 1,8 s)
+    // (voiture du joueur ; l'ordinateur, Aide::Web, garde les règles du jeu web, référence de test_course)
+    void accident(double impact, int side) {
+        playerSpin = side * (3 + impact * 9);
+        controlLock = aide == Aide::Web || g_avantWfs295 ? 0.6 + impact * 1.2 : 0.2 + 0.3 * std::clamp(impact, 0.0, 1.0);
+    }
     // une étape de conduite (dt en secondes) ; analog : braquage continu (-1..1) du tactile
     void update(double dt, const DriveInput& in, Track& track, bool playing);
     // WFS-217 : cap et position latérale de la voiture du joueur (aide Activee / Desactivee), voir player.cpp
@@ -76,6 +85,7 @@ private:
     void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
     bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
     std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
+    double facRoute_ = 1;   // WFS-295 : 1 − k·n (rayon à l'écart n de l'axe), au moins 0,2
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
     void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
     void synchroniser(Track& track);

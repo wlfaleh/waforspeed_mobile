@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "../core/configgame.h"   // WFS-128
 #include <algorithm>
 #include <cmath>
@@ -32,6 +33,7 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
+    memoire::debutChargement();   // WFS-297 (RG-06) : « Lus » du chargement de cette partie
     chargerConfig();   // WFS-128 : configgame.json lu à chaque partie (téléphone, APK ; PC : WFS_CONFIG ou ./configgame.json)
     if (r.gpuLogiciel()) {   // WFS-59 : émulateur de la QA → ombres du soleil coupées (dt et rendu : plafondDt, vk.cpp)
         r.forceNoShadows = true;

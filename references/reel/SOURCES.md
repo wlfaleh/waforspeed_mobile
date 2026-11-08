@@ -20,6 +20,7 @@ Reproduire les fichiers extraits : `outils/extraire.py` (jeux de données libres
 | Fichier | Contenu (RG-01) |
 |---|---|
 | `voitures.json` | (a) dimensions constructeur des 20 voitures : longueur, largeur sans rétroviseurs, hauteur, empattement, voies, pneus (diamètre ETRTO dérivé) |
+| `deux_roues.json` | WFS-232 (RG-01) : longueur, empattement et hauteur de selle des 3 deux-roues du trafic (scooter, routière, sportive) |
 | `marquage.json` | (b) largeur des voies, lignes discontinues T1 / T3, passages piétons |
 | `photometrie.json` | (c) éclairements (lux) du soleil, du ciel, de la lune ; flux (lm) des lampadaires et phares ; températures de couleur ; EV100 |
 | `materiaux.json` | (d) albédo, rugosité, métal, F0 de 19 matériaux |
