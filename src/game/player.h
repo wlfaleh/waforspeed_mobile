@@ -42,6 +42,9 @@ inline AidesVoiture g_aidesVoiture;
 // WFS-295 : banc seulement (WFS_BANC=virages) : rejoue le comportement d'avant la correction (avance sans 1/(1 − k·n), blocage de
 // 0,6 + 1,2 × impact après un accident, braquage remis à zéro) pour les captures « avant » ; toujours faux dans le jeu
 inline bool g_avantWfs295 = false;
+// WFS-316 : banc seulement : rejoue le comportement d'avant la correction (force centrifuge forfaitaire et cap borné appliqués
+// même volant tenu) pour les mesures « avant » ; toujours faux dans le jeu
+inline bool g_avantWfs316 = false;
 
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};

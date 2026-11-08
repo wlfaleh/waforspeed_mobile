@@ -13,6 +13,7 @@ static constexpr double ANTICIPE_MAX = 8.0;    // m
 static constexpr double VOLANT_PLEIN = 0.35;   // braquage au-delà duquel l'aide laisse tout au joueur
 static constexpr double ELARGI_M = 8.0;        // m : borne du cap élargie de 8 m × courbure (rayon 14 m : +0,57 rad)
 static constexpr double ELARGI_MAX = 0.6;      // rad
+static constexpr double VOLANT_TENU = 0.05;    // WFS-316 (RG-02) : au-delà, le joueur tient le volant
 
 // WFS-217 (RG-01, RG-02) : le cap de la voiture est compté par rapport à la route sous elle. Dans le jeu web, la route
 // « porte » la voiture : quand elle tourne, la voiture tourne avec elle sans volant, et le joueur qui braque pour suivre le
@@ -53,7 +54,10 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     const double maxH = clampd(Phys::maxHeading - std::abs(v) * 0.0045, 0.16, Phys::maxHeading) + elargi;
     // réalignement doux (jeu web : 3 /s, double après un accident), seulement près de la direction (demi-tour libre, WFS-90)
     if (std::abs(dev) <= Phys::maxHeading + elargi) dev *= std::exp(-dt * Phys::align * w * (locked ? 2 : 1));
-    if (std::abs(v) >= Phys::vLibre && std::abs(dev) > maxH) {   // cap borné : ramené vers la borne, jamais d'un coup
+    // WFS-316 (RG-02) : volant tenu (|volant| ≥ 0,05), plus de borne : elle ramenait le cap vers l'axe, donc la voiture vers
+    // l'extérieur d'un virage serré (l'axe y tourne vite) ; lâché, borne gardée
+    const bool tenu = std::abs(steer) >= VOLANT_TENU && !g_avantWfs316;
+    if (!tenu && std::abs(v) >= Phys::vLibre && std::abs(dev) > maxH) {   // cap borné : ramené vers la borne, jamais d'un coup
         const double exces = std::abs(dev) - maxH;
         dev = (dev > 0 ? 1 : -1) * (maxH + std::max(0.0, exces - RENVOI_MAX * dt));
     }
@@ -127,9 +131,11 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     dist += avanceAxe;
     odo += dt * speed;   // WFS-90
     playerX += v * std::sin(heading) * dt / RW;
-    // force centrifuge dans les virages
+    // force centrifuge dans les virages (jeu web : la route y « porte » la voiture). WFS-316 (RG-02) : voiture du joueur, volant
+    // tenu : plus de force forfaitaire, la route tourne déjà sous la voiture (guider, repère de Frenet) : l'ajouter faisait compter
+    // le virage deux fois (3,2 m/s vers l'extérieur à 50 km/h dans l'anneau de 14 m) ; lâché ou ordinateur : inchangé
     const double sp = std::min(speedPct, 1.1);
-    playerX -= dt * 2 * sp * sp * courbe * CENTRIFUGAL;
+    if (aide == Aide::Web || std::abs(steer) < VOLANT_TENU || g_avantWfs316) playerX -= dt * 2 * sp * sp * courbe * CENTRIFUGAL;
 
     // ---------- moteur, freins, frottements (m/s²) ----------
     nitroOn = playing && in.nitro && nitro > 0.01;
