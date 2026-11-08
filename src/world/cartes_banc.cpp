@@ -11,6 +11,7 @@
 #include "../core/log.h"
 #include "../core/system.h"   // WFS-212 : caméra haute du banc
 #include "../game/course_system.h"   // WFS-137 : courseBenchRules
+#include "../game/course5.h"   // WFS-283 : Course à 5 au carrefour de la Ville
 #include "../game/game.h"
 #include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu ; WFS-140 : sections du Grand Prix
 #include "../game/track.h"
@@ -316,6 +317,26 @@ int benchRondsPoints(Game& g, Renderer& r, const std::string& out) {
             }
         }
         WFS_LOG("ronds-points : %s : %d", carte, n);
+    }
+    // WFS-283 : Course à 5 (2 km, pilote automatique) qui passe à l'ancien rond-point de la Ville (carrefour simple) : capture
+    // quand le joueur est 15 m avant l'entrée, adversaires autour (sur la route, pas dans le décor) : rondpoint-ville-course5
+    {
+        Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+        int64_t lieu = -1;
+        for (const trace::Section& s : t.sections()) if ((s.type == trace::Type::RondPoint || s.exRondPoint) && lieu < 0) lieu = s.debut;
+        unsetenv("WFS_DEPART"); setenv("WFS_MOMENT", "jour", 1);
+        const ModeCourse m0 = modeCourse(); const int km0 = kmCourse5();
+        modeCourse() = ModeCourse::Course5; kmCourse5() = 2;
+        if (lieu >= 0 && g.init(r, "compass", "ville")) {   // voiture la plus lente : les adversaires passent le carrefour devant elle
+            g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
+            double tt = 600; int i = 0;
+            for (; i < 120 * 60 && g.player().dist < (double)lieu * SEG - 15 / M; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(tt += 0.5); }
+            g.render(tt += 0.02); g.render(tt += 0.02); r.capturePng(out + "/rondpoint-ville-course5.png");
+            WFS_LOG("capture rondpoint-ville-course5 : %.2f km, %.0f km/h, %.1f s", g.player().dist * M / 1000, g.player().kmh(), i / 60.0);
+            if (i >= 120 * 60) ecarts++;
+            g.shutdown();
+        } else ecarts++;
+        modeCourse() = m0; kmCourse5() = km0;
     }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
     return ecarts;
