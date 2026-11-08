@@ -120,8 +120,8 @@ bool lancer(Game& g, Renderer& r, const char* carte, int64_t depart, bool aide, 
 }
 void capturer(Game& g, Renderer& r, double temps, const std::string& out, const char* nom, int i) {
     g.render(temps + 0.005);
-    char f[128]; std::snprintf(f, sizeof f, "%s/virages-%s-%02d.png", out.c_str(), nom, i);
-    r.capturePng(f);
+    char n[96]; std::snprintf(n, sizeof n, "/virages-%s-%02d.png", nom, i);
+    r.capturePng(out + n);   // WFS-316 : chemin entier (un tampon de 128 caractères tronquait les dossiers longs)
     const Player& p = g.player();
     WFS_LOG("capture virages-%s-%02d : %3.0f km/h, volant %+5.2f, écart %+5.2f m, cap %+5.2f rad, blocage %.2f s", nom, i, p.kmh(), p.steer,
             p.playerX * RW, p.heading, p.controlLock);
