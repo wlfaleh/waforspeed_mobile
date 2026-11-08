@@ -570,8 +570,11 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     if (type != g.typePrec && g.typePrec != -1 && (ouvrage || g.typePrec == (int)trace::Type::Tunnel || g.typePrec == (int)trace::Type::Pont)) g.forcerCapture = true;
     g.typePrec = type;
     // WFS-222 (RG-03) : captures suspendues par la baisse automatique, sauf la toute première (aucune sonde encore)
+    // WFS-264 (RG-01) : en Basse, une capture par zone seulement : la première (départ, sous le chargement et le décompte) et
+    // à chaque changement de zone (entrée et sortie de tunnel ou de pont : forcerCapture) ; plus de capture tous les « esp » m
+    const bool parZone = niveau == qualite::BASSE;
     if (!environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
-        if (g.aucuneDemande || g.forcerCapture || length(point - g.dernierPoint) > esp) {
+        if (g.aucuneDemande || g.forcerCapture || (!parZone && length(point - g.dernierPoint) > esp)) {
             // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
             const vec3 p = g.forcerCapture && g.iterations > 0 ? g.dernierPoint : point;
