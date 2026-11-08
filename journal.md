@@ -5253,3 +5253,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - la recherche d'une voiture touchée n'est prouvée que par le test (distances) ;
   - graves peu rendus par un petit haut-parleur ;
   - rien n'a été écouté sur un vrai téléphone.
+
+### 2026-11-08 05:19:43 — WFS-282 fusionné par le lead dev (lead-dev)
+- PR #251 (RG-01 à RG-05), 3e revue, tête d33e5987 : approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », GitHub refuse l'approbation au même compte), puis fusion en squash 9dcafcc.
+- Captures ouvertes : 4 gros plans du rétroviseur (Golf jour, Golf nuit Ville, Golf et SF90 Plage de nuit), 21 paires avant / après, X5 Plage de nuit. Rétroviseur de nuit sur la Plage : glace 14,6 contre ciel 24,9 (Golf), 16,3 contre 16,1 (SF90), mesurés par le lead dev.
+- Diff relu en entier (5 fichiers, zone E10 / E3) ; `test_regard_cockpit` recompilé et relancé : OK. Mesures dans les seuils de l'arbitrage n° 2 du PO.
+- Statut : 🟡 À valider (utilisateur) ; ligne dans `qa/Check.md` ; ligne #251 retirée de `suivi-pr.md` ; développeur libre (suivant réservé : WFS-315).
