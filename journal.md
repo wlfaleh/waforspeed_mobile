@@ -4037,12 +4037,7 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - **À-coup au départ** : μ lu sur la fiche (`physique::adherencePneu`, partagé avec `etalonner`), plus aucun étalonnage dans la course ni au chargement. Premier pas de `course5::avancer` après le « GO » (processus froid, 4 ordinateurs) : **84 à 86 ms avant → 0,22 ms après**.
 - Chiffres de la description refaits sur un vrai lancement : 75 tests OK ; RG-02 Ville / Campagne / Corniche 7/8, Grand Prix 6/8, 1 victoire par carte ; partie 5e → 3e. Commits 0cec0369, 7aa452a3 ; suivi-pr 🔁 ; lead dev rappelé.
 
-### 2026-11-08 20:15:25 — WFS-327 fusionné par le lead dev (lead-dev)
-- PR #277, 2e revue sur 7aa452a : réponse « corrigé dans » présente pour les 3 points du refus.
-- Captures ouvertes : épingle de la Corniche 6 paires avant / après (avant, les ordinateurs ressortent de l'épingle en ≈ 3 s ; après, ils la passent à la vitesse possible, sur la chaussée) ; `course5-fin` 5e → 3e ; `course5-rejouer` 5e → 4e.
-- Diff entier relu : μ lu par `physique::adherencePneu` (plus d'étalonnage au départ), interrupteur de banc faux en jeu, rien dans `player.*`. Fusion d'essai avec `main` (WFS-308 compris) : sans conflit, `test_course5_ordinateurs` et `test_course5` OK.
-- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash b995396 (`expectedHeadSha` 7aa452a). Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne retirée de `suivi-pr.md`. Agent dev conduite libéré.
-- **Pour le PO** : vitesse visée Normale 0,90 → 0,95 (+ 5,5 
+
 ### 2026-11-08 20:15:34 — WFS-327 fusionné par le lead dev (lead-dev)
 - PR #277, 2e revue sur 7aa452a : réponse « corrigé dans » présente pour les 3 points du refus.
 - Captures ouvertes : épingle de la Corniche, 6 paires avant / après (avant, les ordinateurs ressortent de l'épingle en ≈ 3 s ; après, ils la passent à la vitesse possible, sur la chaussée) ; `course5-fin` 5e → 3e ; `course5-rejouer` 5e → 4e.
