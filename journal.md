@@ -4680,3 +4680,14 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - B : attribut ou textures d'éclairage (noyau) ;
   - C : critère de coût « neutre » au lieu d'« en baisse ».
 - **Décision attendue de** : PO. En attendant, je code la partie commune : occlusion calculée au chargement sur une grille de voxels du bloc (`src/render/eclairage_precalcule.*`), avec son test CPU.
+
+### 2026-11-08 01:09:53 — Recette de nuit du 2026-11-08 planifiée : WFS-292, WFS-293, WFS-294 créés ; ANO-160 à 167 rangées (po-scrum-master)
+- **ANO-165** (fumée invisible de jour, WFS-224) + **ANO-167** (Golf bleue gris argent la nuit en Campagne) + remarque VABF (`choc-etincelles`, `accident-fumee` : « accidents 0 », plus aucun choc au banc d'effets) → **WFS-292** P2 (E4 + E10, exception PO : `effets_*`, `bench_effets.*`, `eclairementRouteAutour()`), ⏳ Prêt, 🟡 après fusion.
+  **Arbitrage ANO-167** : WFS-230 RG-04 (vision de nuit, `post.frag`) gardée ; correction côté WFS-270 (part diffuse K), WFS-292 RG-04.
+- **ANO-166** (à-coup non compté en virage, banc de fluidité de WFS-247) → **WFS-293** [TECHNIQUE] P2 (E0 + E3) : seuils fixés par le PO (< 5 mm partout à ≥ 30 img/s, ≤ 10 mm à 10-20 img/s), carrefour à la place du rond-point (WFS-283), correction de l'à-coup dans la même PR ; ⏳ Prêt, 🟡 après fusion.
+- **ANO-135, ANO-136** (notification d'APK : WFS-252 fusionné sans elles), **ANO-160** (artefact 1 jour), **ANO-161** (durée du run non écrite ; mesure du QA : #844 53 min, #885 48 min, #887 63 min, groupe `texte` le plus long), **ANO-162** (« Recette QA prête » annonce l'émulateur vert) → **WFS-294** [TECHNIQUE] P3 (E7), ⏳ En attente de la fin du gel de la CI (pas avant le 2026-11-09).
+- **ANO-164** (écart 1,19 % / 2,1 % > 1 %, WFS-268) : non acceptée ; ramenée à ≤ 1 % par la livraison 2 (PR #248) → WFS-268 RG-11.
+- **ANO-163** (planche transparente, WFS-246) : corrigée au banc par WFS-282 RG-00 (dd41283) ; à confirmer sur téléphone.
+- Points relevés : **WFS-258** n'a livré que RG-00 (repli) : restent RG-00b, RG-05 à 07 ; ANO-138 et ANO-140 restent ouvertes (modèle de WFS-241 hors jeu, à corriger avant tout retour). **WFS-282** : RG-01 à 05 en cours (branche poussée 01:04) ; ANO-152 reste ouverte (rétroviseur noir, planche sombre la nuit). WFS-224 passé 🟡 (ticket né d'un essai de l'utilisateur).
+- **Banc `realisme-2`** rouge au run du matin du 07/11 (panne corrigée par WFS-267) : à vérifier aux bancs du matin du 08/11 (04:00 heure de Paris, pas encore lancés) ; s'il est encore rouge → US technique P1 « correction bancs du matin ».
+- Tickets ⏳ Prêt : 9 (WFS-214, 215, 264, 265, 273, 287, 290, 292, 293). Rien d'iOS. Règles : `regles-de-gestion/WFS-292.md`, `WFS-293.md`, `WFS-294.md` ; suivis ajoutés à WFS-224, 230, 247, 252, 258, 268, 270, 282.
