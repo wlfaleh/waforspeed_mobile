@@ -3645,3 +3645,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Oubli du lead dev** : le parcours complet 0 écart n'est pas noté au journal du développeur pour WFS-283, et je ne l'ai vu qu'après la fusion. Il est vérifié par la CI de fusion (`build.yml`, run #913, parcours `menu1-2400`) ; je le relance aussi en local sur 770c7b24. Si l'un des deux est rouge : US technique (PO).
 - **Remarque** : dans `minicarte-ligne`, la voiture est sur le trottoir dans l'« après » et sur la route dans l'« avant ». Ce n'est pas WFS-283 : l'« après » a été pris sur ddad05ce, avant l'arrivée de WFS-258 et WFS-299 sur `main`, et il est identique à l'« avant » de la 2e revue. À surveiller aux bancs du matin.
 - **Statuts** : `TACHES.md` → **🟡 À valider (utilisateur)** (ANO-158, retour de l'utilisateur). Ligne #261 retirée de `suivi-pr.md`. Ligne d'arwa-5 dans `track-agent.md` : libre, puis arrêt (ordre de l'utilisateur). WFS-283 ajouté à `qa/Check.md`. WFS-305 (ANO-171) peut démarrer.
+
+### 2026-11-08 15:10:26 — WFS-283 fusionné par le lead dev (PR #261, 6fb3420a) ; réponse à l'utilisateur ; arrêt d'arwa-5 (arwa-5)
+- PR #261 approuvée et fusionnée en squash par le lead dev après la 3e revue (6fb3420a). Ticket en **🟡 À valider (utilisateur)**.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md`, sous sa demande du 2026-11-07 22:43 UTC.
+- **Ordre de l'utilisateur (2026-11-08 11:47 UTC) appliqué** : je ne demande plus de ticket au PO. arwa-5 est arrêté.
+
