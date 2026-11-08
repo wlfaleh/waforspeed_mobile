@@ -1,10 +1,10 @@
 ## Agent : Claude, agent dev conduite
 
-**Ticket** : WFS-258 — règles : `regles-de-gestion/WFS-258.md`
+**Ticket** : WFS-258 (P1, ANO-131), **point 1 de RG-00b** : « aide activée, la voiture doit passer virages et ronds-points » — règles : `regles-de-gestion/WFS-258.md` (décision écrite du PO dans son Suivi : option A). Livré seul, comme le repli RG-00 (#217).
 
-## Description (à remplir par le développeur avant d'ouvrir la PR)
+## Description
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
+- **Demande de l'utilisateur** : avec l'aide à la direction activée, la voiture doit passer les virages ; vidéo : Grand Prix, aide activée, 228 km/h, la voiture part tout droit dans le bac à sable au 1er virage (l'aide doit freiner / ralentir à temps).
 - **Ce qui change** (conduite du jeu, l'ancienne depuis RG-00 ; aide **activée** seulement) :
   - `src/game/player.cpp` : **l'aide ralentit à temps, volant lâché ou presque** : au-dessus de la vitesse permise pour les virages des 600 m qui viennent, gaz et nitro coupés, puis frein. Vitesse permise = la plus basse de (a) l'adhérence et le freinage de cette conduite (`Phys::grip` 18 m/s², `Phys::brake` 12,5 m/s² : si WFS-259 change l'adhérence, l'aide suit) et (b) 90 % de la vitesse où un ordinateur de la Course à 5 reste sur la chaussée (`course5::vitesseVirage`, branchée par un pointeur de fonction, accroche de 2 lignes dans `course5.cpp`).
   - **La limite cède quand le joueur conduit lui-même** (décision écrite du PO, option A) : **seuils** : doigt ou flèche à **0,35 et plus** (`VOLANT_PLEIN`, le même seuil où l'aide lui laisse déjà tout le volant depuis WFS-217 ; une flèche vaut 1) **ou frein appuyé**. En dessous (volant lâché ou presque), l'aide ralentit ; au-dessus, le joueur garde le gaz et peut sortir s'il exagère.
@@ -39,25 +39,20 @@
   - Point 3 (direction moins vive à haute vitesse, sans toucher l'adhérence) et suite de RG-00b : prochaine PR. RG-05/06/07 (adhérence) : WFS-259.
   - À confirmer par l'utilisateur sur son téléphone (🟡).
 
-## Captures pour le lead dev (16 après)
+## Captures pour le lead dev (16 images, banc `virages`, 1280 × 720, rendu de la CI)
 
-Dossier : [`qa/pr/WFS-258`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258) — produit par `tools/qa/captures_pr.sh`.
+Dossier : [`qa/pr/WFS-258`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258) — `tools/qa/captures_pr.sh` (`FILTRE='virages-gp-aide-*'`, `SANS_AVANT=1` : les images « avant » sont produites par le banc avec `g_avantWfs258`). Classement et mesures : `qa/pr/WFS-258/virages.txt`.
 
-| Capture | Avant (main) | Après (branche) |
-|---|---|---|
-| `virages-gp-aide-apres-00` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-00.jpg?raw=true) |
-| `virages-gp-aide-apres-01` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-01.jpg?raw=true) |
-| `virages-gp-aide-apres-02` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-02.jpg?raw=true) |
-| `virages-gp-aide-apres-03` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-03.jpg?raw=true) |
-| `virages-gp-aide-apres-04` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-04.jpg?raw=true) |
-| `virages-gp-aide-apres-05` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-05.jpg?raw=true) |
-| `virages-gp-aide-apres-06` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-06.jpg?raw=true) |
-| `virages-gp-aide-apres-07` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-07.jpg?raw=true) |
-| `virages-gp-aide-avant-00` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-00.jpg?raw=true) |
-| `virages-gp-aide-avant-01` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-01.jpg?raw=true) |
-| `virages-gp-aide-avant-02` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-02.jpg?raw=true) |
-| `virages-gp-aide-avant-03` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-03.jpg?raw=true) |
-| `virages-gp-aide-avant-04` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-04.jpg?raw=true) |
-| `virages-gp-aide-avant-05` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-05.jpg?raw=true) |
-| `virages-gp-aide-avant-06` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-06.jpg?raw=true) |
-| `virages-gp-aide-avant-07` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-07.jpg?raw=true) |
+### 1er virage du Grand Prix (épingle de 20 m), Gallardo lancée à pleine vitesse, aide activée, gaz tenu, volant lâché ; 8 images de 150 m avant à 60 m après
+Avant : 296 km/h à l'entrée, la voiture arrive en travers dans le virage (93 km/h, fumée, « ACCIDENT ! »). Après : l'aide freine de 236 à 97 km/h avant le virage (« aide qui freine : oui » au journal), la voiture passe dans sa file.
+
+| Avant (main) | Après |
+|---|---|
+| ![avant-00](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-00.jpg?raw=true) | ![apres-00](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-00.jpg?raw=true) |
+| ![avant-01](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-01.jpg?raw=true) | ![apres-01](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-01.jpg?raw=true) |
+| ![avant-02](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-02.jpg?raw=true) | ![apres-02](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-02.jpg?raw=true) |
+| ![avant-03](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-03.jpg?raw=true) | ![apres-03](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-03.jpg?raw=true) |
+| ![avant-04](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-04.jpg?raw=true) | ![apres-04](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-04.jpg?raw=true) |
+| ![avant-05](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-05.jpg?raw=true) | ![apres-05](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-05.jpg?raw=true) |
+| ![avant-06](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-06.jpg?raw=true) | ![apres-06](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-06.jpg?raw=true) |
+| ![avant-07](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-avant-07.jpg?raw=true) | ![apres-07](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-258/qa/pr/WFS-258/apres-virages-gp-aide-apres-07.jpg?raw=true) |
