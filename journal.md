@@ -3811,3 +3811,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 16:55:09 — Captures de l'APK 916 : mesure du téléphone (triangles → temps GPU), WFS-326 (ANO-175) et WFS-327 (ANO-176) créés (po-scrum-master)
 
 ### 2026-11-08 16:57:29 — Vue Cockpit : validation de l'utilisateur après WFS-323 à 325, pas urgent (po-scrum-master)
+
+### 2026-11-08 16:59:07 — Sortie publique reportée : d'abord cartes téléchargées testées et gain de performance (décision de l'utilisateur) (po-scrum-master)
+- WFS-301, 302, 306, 308 en P1 ; gel de la CI levé pour WFS-302 ; WFS-319 / 320 continuent.

@@ -145,3 +145,6 @@ demande utilisateur :
 
 - Vue Cockpit : j'ai déjà proposé une amélioration, je valide après ces tâches, pas urgent (2026-11-08 16:57 UTC)
 ( PO : noté — WFS-282 et 315 restent 🟡, vous validerez la vue Cockpit à la fin de WFS-323 à 325 ; WFS-323 peut commencer sans attendre (agent 2), sans urgence. )
+
+- Sans la fonctionnalité des cartes téléchargées testée et sans gain de performance, ça ne sert à rien de mettre le jeu sur Google Play (2026-11-08 16:59 UTC)
+( PO : noté — sortie publique reportée. Priorité : performance (WFS-265, 317, 268, 273) et paquets de cartes (WFS-308, 301, 306, 302 passés en P1 ; gel de la CI levé pour WFS-302). WFS-319 et 320 continuent pour être prêts le jour venu. )
