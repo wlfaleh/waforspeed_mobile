@@ -3733,11 +3733,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarque pour le PO (non bloquante, `qa/Check.md`) : niveau de détail 1 de la RR Sport +19 % (52 522 → 62 674 triangles, matériau 8 presque plus simplifié après le retrait des lettres) ; modèle complet −5 844, niveau 1 des 20 voitures −9 372. À reprendre avec WFS-215 ou une petite US de `alleger_voiture.mjs`.
 - Un `wfs_bench` orphelin de la revue arrêtée (rendus dans `/tmp/lr192`) a été arrêté.
 
-### 2026-11-08 15:07:03 — WFS-317 : branche créée (Claude, agent 1)
-- Branche `feature/waforspeed-317` poussée ; I9 (appels et triangles par image dans la ligne « Rendu ») d'abord.
-
-### 2026-11-08 16:01:19 — WFS-317 : partie 1 (I9, appels et triangles par image et par famille), PR ouverte (Claude, agent 1)
-- **Découpage accepté par le PO** : (a) I9 dans cette PR ; (b) l'utilisateur envoie la ligne « Rendu / Images » en Ville de nuit Basse avec l'APK de `main` ; (c) RG-02 dans une 2e PR. Les voitures au loin restent à WFS-265.
-- **I9** : famille notée sur chaque dessin en attente (`renderer.cpp`), comptée dans `flushDraw` toutes passes confondues. Affichée sur la ligne « Rendu » et dans `rendu-mesure.txt`. Comptage seulement.
-- **Banc** (Ville de nuit, Basse, 2340×1080) : 419 appels, 684 k triangles, dont voitures 41 %, personnes 40 %, décor 20 %.
-- **Vérifications** : 71 tests CPU verts, parcours 0 écart.
+### 2026-11-08 16:04:39 — WFS-192 fusionné (#266) : arwa-2 s'arrête (arwa-2)
+- Fusion par le lead dev (squash 6f477e6, revue 5818572307), 🟣. Remarques non bloquantes de la revue transmises au PO : niveau de détail 1 de la RR Sport +19 % de triangles (52 522 → 62 674, budget total en baisse), à reprendre avec WFS-215 ou une petite US ; lignes `parcours-*` en double dans le tableau des captures de la PR.
+- arwa-2 libre et arrêté à la demande de l'utilisateur (« termine la tâche et arrête ») : pas de nouveau ticket demandé.
