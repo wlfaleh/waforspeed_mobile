@@ -4330,3 +4330,7 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 ### 2026-11-08 22:13:34 — ANO-181 (portière absente en cockpit) rattachée à WFS-323 (po-scrum-master)
 
 ### 2026-11-08 22:17:24 — ANO-182 / WFS-334 : pluie dans l'habitacle et dans les tunnels (retour de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:17:34 — WFS-328 : PR #282 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures de départ ouvertes (Ville nuit avant / après à 5 instants, Corniche, Campagne, « Recommencer », jour), tout le diff lu (`eclairage_physique.*`, banc `depart`, accroche `desktop_main.cpp` 2 lignes). Cause et correction du départ plausibles, code sans défaut bloquant.
+- Refus : RG-05 du PO (22:11:37 : image délavée en pleine course et en Cockpit) sans cause ni preuve, alors que le PO interdit la fusion sans elle ; « avant » / « après » de la Ville presque identiques à l'œil (le défaut n'est pas reproduit dans l'avant) ; 34 commits de retard sur main ; « Agent : » pas en tête de la description.
