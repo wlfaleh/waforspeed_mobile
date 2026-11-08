@@ -5018,3 +5018,17 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **ANO-170** (mineure, `anno.md`) : défaut du jeu signalé par arwa-2 (WFS-239 RG-05) : limite de 120 m du trafic en Basse mesurée sur la place simulée de la voiture et non sur sa place dessinée. 🆕, à ranger dans le prochain lot du trafic après la fusion de WFS-281 et WFS-232 (`traffic_system.cpp` tenu) ; pas de micro-ticket.
 - **Tickets prêts** : 13 (WFS-214, 215, 264, 265, 273, 285, 287, 290, 292, 293, 296, 299, 300) sur E0 + E3, E4, E5, E7, E8, E10, E11, E13.
 - **Alertes** : WFS-283 (P1, arwa-5) : aucun envoi depuis 01:04 UTC (2 h 12, captures en cours) ; WFS-268 (P1, agent 5) : rien depuis 01:18 UTC (≈ 2 h, retour du lead dev de 02:16 à corriger) ; WFS-281 (P1, agent arwa) : rien depuis 01:25 UTC. Moins de 10 h : aucun retrait. Robot `archives.yml` pas encore passé le 2026-11-08 (dernier commit `(robot archives)` le 2026-11-07) : à vérifier au prochain appel.
+
+### 2026-11-08 03:19:01 — WFS-232 refusé par le lead dev, 2e revue (PR #245) (lead-dev)
+- **Revue** : commit c5a9cb7, 58 images ouvertes et agrandies, tout le diff lu, textures des 3 modèles ouvertes ; 65 tests CPU verts (lancés depuis la racine du dépôt) ; banc `motos` relancé sur la branche (6 min 16 s, mêmes images, 0 écart entre deux-roues et pilotes). Revue écrite dans la PR (commentaire, GitHub refuse « changements demandés » pour le même compte) : https://github.com/wlfaleh/waforspeed_mobile/pull/245#pullrequestreview-5816345193
+- **Corrigé (8 points sur 9)** : description, deux-roues lisibles la nuit de près, feu arrière sur les 3 modèles, un pilote sur chaque deux-roues, roues qui tournent, chute et glissade, banc « de près », captures complètes (sans deux-roues, courbe à la vitesse du trafic, trafic normal, phare vu de face).
+- **Défauts (chacun bloque)** :
+  1. RG-01 : hauteur de selle hors des ±1 % (scooter −2,5 %, sportive −1,8 %), sans décision écrite du PO ;
+  2. RG-01 « sans marque » : autocollants « Kawasaki », « Ninja » et « ZX-6R » sur la sportive (matériau n° 5, texture n° 9), logo « ola » sur la carrosserie du scooter (texture n° 3) ; les fichiers de licence disent le contraire ;
+  3. RG-05 : après la chute, le pilote couché n'est pas visible (seul le casque dépasse) ; il est posé jusqu'à 1,6 m du côté de la chute, sans limite au bord de la route, donc dans la bordure du trottoir sur `choc-3`.
+- Statut WFS-232 : ↩️ Retour lead dev (PR #245) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+- **Pour le PO** : décider par écrit dans `regles-de-gestion/WFS-232.md` :
+  - si l'écart des selles est accepté (avec une seule échelle, aucune valeur ne tient à la fois la longueur, l'empattement et la selle), ou s'il faut d'autres modèles ;
+  - si le ralentissement des deux-roues avant les courbes (inclinaison de confort de 25°) est accepté, alors que RG-03 dit « vitesses du trafic existant » ;
+  - si les 7 pilotes sur 10 qui sont des hommes conviennent.
+  - À noter pour un ticket de nuit : chaque deux-roues reçoit le flux d'une paire de phares de voiture (3 000 lm), et ses halos sont doublés.
