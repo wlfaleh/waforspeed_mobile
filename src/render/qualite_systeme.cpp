@@ -188,7 +188,28 @@ void bandeauGraphismesRapides() { g_banniere = 2.5; g_banniereChauffe = true; } 
 std::string qualite::ligneRendu() {
     if (!g_r) return "Rendu : --";
     const std::string l = texteRendu(niveauAffiche(ecrans::reglages().qualite), g_r->vk().renderScale * g_r->echelleDynamiqueActuelle(), (int)g_r->vk().msaa, g_ips, chauffeNiveau());
-    return modeDiagnostic() ? l + " · " + passes::texteCouts(passes::coutsFenetre()) : l;   // WFS-150 (RG-05) : coût de chaque passe
+    const std::string d = texteDessin(false);   // WFS-317 (I9) : appels et triangles de l'image, part de chaque famille
+    const std::string ld = d.empty() ? l : l + " · " + d;
+    return modeDiagnostic() ? ld + " · " + passes::texteCouts(passes::coutsFenetre()) : ld;   // WFS-150 (RG-05) : coût de chaque passe
+}
+// WFS-317 (I9) : comptes du Renderer (flushDraw, toutes passes : ombres, reflet, capture, scène), par famille
+std::string qualite::texteDessin(bool detail) {
+    if (!g_r) return "";
+    const Renderer::ComptesImage& c = g_r->comptesImage();
+    uint32_t a = 0, t = 0;
+    for (int f = 0; f < Renderer::FAM_N; f++) { a += c.appels[f]; t += c.triangles[f]; }
+    if (!a) return "";
+    static const char* const NOM[Renderer::FAM_N] = {"décor", "voitures", "personnes"};
+    char b[256];
+    if (!detail) {
+        std::snprintf(b, sizeof b, "%u appels · %u k triangles (décor %u %%, voitures %u %%, personnes %u %%)", a, (t + 500) / 1000,
+                      (unsigned)std::lround(100.0 * c.triangles[0] / std::max(t, 1u)), (unsigned)std::lround(100.0 * c.triangles[1] / std::max(t, 1u)),
+                      (unsigned)std::lround(100.0 * c.triangles[2] / std::max(t, 1u)));
+        return b;
+    }
+    std::string s = "dessin de l'image (toutes passes) : " + std::to_string(a) + " appels, " + std::to_string(t) + " triangles";
+    for (int f = 0; f < Renderer::FAM_N; f++) s += std::string(" ; ") + NOM[f] + " " + std::to_string(c.appels[f]) + " appels, " + std::to_string(c.triangles[f]) + " triangles";
+    return s;
 }
 // WFS-246 (RG-06) : chiffres de la mesure du téléphone
 namespace {
@@ -217,6 +238,7 @@ std::string qualite::texteMesure() {
     t += "fenêtre : " + virgule(st.secondes) + " s de course, " + std::to_string(st.images) + " images\n";
     t += "durée d'image : médiane " + virgule(st.mediane) + " ms, 95 % " + virgule(st.p95) + " ms, 99 % " + virgule(st.p99) + " ms, écart type " + virgule(st.ecartType) + " ms\n";
     t += "cadence de la course (WFS-262) : " + std::to_string(qualite::cadenceCourse) + " images/s\n";
+    t += texteDessin(true) + "\n";   // WFS-317 (I9)
     t += "images de plus de 33 ms : " + std::to_string(st.plus33) + " ; de plus de 50 ms : " + std::to_string(st.plus50) + "\n";
     if (g_r && g_r->gpuPasses().mesuree) {
         const Renderer::GpuPasses& p = g_r->gpuPasses();

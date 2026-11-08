@@ -131,3 +131,11 @@ demande utilisateur :
 
 - Test interne aujourd'hui, public demain sur le Play Store ; pourquoi attendre 3 jours pour la CI ? (conversation avec le PO, 2026-11-08 14:10 UTC)
 ( PO : c'est lancé — gel de la CI levé pour la publication seulement ; **WFS-319** (expert ci) : AAB 1.0 signé + guide ; **WFS-320** : points bloquants de la sortie publique. **À faire par vous** : 1) compte Google Play Console ; 2) clé de publication créée sur votre ordinateur et mise dans les secrets du dépôt (GitHub › Settings › Secrets › Actions, noms dans `store/signature.md`) — jamais dans le chat ; 3) choisir où publier la politique de confidentialité ; 4) la décision « gratuit sans pub ni achat » pour la 1re version (licences NC). )
+
+- (Question de Claude, agent 1, 2026-11-08, WFS-317 : une seule mesure) Avec l'APK de `main` qui contient la PR #270 : **Ville de nuit, Basse**, roule 20 s, mets en pause, ouvre **Réglages** et envoie une **capture des deux lignes du bas** (« Rendu : … appels · … triangles (décor, voitures, personnes) » et « Images (20 s) : … GPU ombre / reflet / capture / scène / post »). Elle dira ce qui coûte vraiment sur ton téléphone ; je corrige ensuite les 2 postes les plus lourds.
+
+- Vue cockpit : peut-on faire quelque chose de proche de cette référence (angle, rétroviseurs, caméra, intérieur propre à chaque voiture) ? (image, conversation avec le PO, 2026-11-08 16:20 UTC)
+( PO : oui — 3 tickets créés, après la validation de WFS-282 et WFS-315 : **WFS-323** cadrage et habitacle large comme la référence ; **WFS-324** rétroviseurs avec vrai reflet (coût limité : ≤ 2 img/s) ; **WFS-325** intérieur détaillé propre à chaque voiture, par lots. )
+
+- Je viens de tester le mode aide à la conduite, il fonctionne bien (2026-11-08 16:30 UTC)
+( PO : noté — WFS-258 point 1 ✅ validé ; l'agent dev conduite est prévenu et continue le point 3. )

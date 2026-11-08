@@ -14,7 +14,7 @@ Where it was found: public GitHub repository https://github.com/tomfanhm/tesla, 
 read on 2026-11-06. scene.gltf SHA-256 80911d5818829504016cd899c2b7da119654c2928442522e5baf56e568d3e3b5,
 scene.bin SHA-256 c87f3de68f7ab18041e5388ca4fdee292a5a771e921e8fa464e9e4d4f7a818b7.
 
-Modifications for WaForSpeed: geometry simplified with meshoptimizer (684 315 → 160 805 triangles, bounded error, body paint 4 times
+Modifications for WaForSpeed: geometry simplified with meshoptimizer (684 315 → 160 805 triangles, bounded error, body paint 4 times Modèle modifié pour WaForSpeed (WFS-192) : logos et noms de marque effacés ou retirés (tools/effacer_logos.mjs, tools/logos.json).
 finer), converted to the game's .wfm format (tools/convert_car.mjs), textures re-encoded (JPEG / PNG, 1024 px at most), scaled and
 wheels adjusted to the manufacturer's dimensions (tools/corriger_voitures.cpp), a neutral European number plate added
 (tools/plaques_voitures.mjs). The body colour is changed in game; body normals are recomputed at load.
