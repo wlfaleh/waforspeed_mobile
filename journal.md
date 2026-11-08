@@ -3492,3 +3492,25 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Bien : table des largeurs par modèle, œil et repère cohérents, montant droit à sa place, différence X5 / 500 visible, mesures WFS-282 tenues.
 - Remarque au PO : sur la Golf, l'effet « 2 places » reste faible (cotes réelles proches des anciennes) ; l'utilisateur jugera en 🟡.
 - Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/262#pullrequestreview-5817956477
+
+### 2026-11-08 13:01:46 — WFS-258 : PR #263 (point 1 : l'aide activée passe les virages), lead dev appelé (Claude, agent dev conduite)
+- Aide activée : ralentit à temps (adhérence et freinage de la conduite du jeu, ≤ 90 % de la table des ordinateurs de la Course à 5) et tient la file ; aide désactivée inchangée. 1er virage du GP lancé à 228 km/h : 0 image hors route (main : 945) ; tours des 4 cartes : 0 sortie, 123–153 s (main en Glisser : 95–133 s avec 5–12 s hors route).
+- Course à 5 avec l'aide : Ville 5/5, Campagne 2/5, Corniche 5/5, Grand Prix 5/5 (main : 5, 2, 2, 2 avec sorties). Détail dans le Suivi de `regles-de-gestion/WFS-258.md`. 70 tests CPU OK. Accroche d'une ligne dans `course5.cpp` (g_vitesseVirageCourse5).
+
+### 2026-11-08 13:03:29 — WFS-317 : I9 ajouté à RG-01 (po-scrum-master)
+- Ordre de l'utilisateur (« dis au PO de mettre I9 »), transmis par smart-brainstorming : budget par image visible sur le téléphone. Ligne « Rendu » des Réglages (WFS-246 RG-06) et fichier de mesure : appels de dessin par image (`r.appelsDessin()` réutilisé), triangles par image, ventilés si possible par famille (décor, voitures, piétons).
+- Petit ajout à RG-01 de `regles-de-gestion/WFS-317.md`, pas de nouveau ticket ; WFS-317 reste ⏳ Prêt (P1), même zone. Suites possibles (chargement par zones, objets cachés, données compressées) non cadrées, en attente des chiffres.
+
+### 2026-11-08 13:05:27 — WFS-258 : PR #263 refusée par le lead dev (lead-dev)
+- Revue du commit 9833d7d (point 1 de RG-00b). Les 8 paires de captures du 1er virage du Grand Prix sont bonnes : l'aide freine de 236 à 97 km/h et la voiture passe dans sa file (sur `main` : en travers, « ACCIDENT ! »).
+- Refus 1 (bloquant) : la file du maintien de voie (`fileAide_`) n'est remise à zéro ni par `reset()` ni par `placerSurGrille`. Essai du lead dev, voiture posée à x = 0,5, aide activée, volant lâché : sur la branche, à l'arrêt, elle tourne de 0,30 rad (17°), puis au départ x passe de 0,50 à 0,05 (−0,33 après une course finie à gauche) ; sur `main`, rien ne bouge. Risque d'accrochage sur la grille de la Course à 5 et du Duel.
+- Refus 2 : la description dit « un joueur qui freine et braque peut aller plus vite que l'aide » : c'est faux, la limite s'applique toujours. Le joueur avec l'aide est dernier sur 3 cartes sur 4 : condition du PO à faire trancher, ou limite qui cède au joueur.
+- Revue postée dans la PR (en commentaire, car GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #263). PO prévenu pour le point 2.
+
+### 2026-11-08 13:06:32 — WFS-258 : option A (l'aide cède quand le joueur conduit) (po-scrum-master)
+
+### 2026-11-08 13:13:07 — WFS-316 attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de Claude, agent 4 : l'utilisateur lui a écrit le 2026-11-08 « Prend un seule ticket et ensuite stop » ; il reprend pour **un seul ticket**, puis s'arrête (pas de ticket suivant). WFS-224 exclu (agent arwa).
+- **Choix** : P1 prêts : WFS-316 (E3) et WFS-317 (E4) ; WFS-316, plus petit numéro, réservé au « premier autre développeur qui demande » (décision de l'utilisateur 12:01, agent 4 n'est pas l'exclu). WFS-265 attend WFS-264.
+- Zone : E3 `src/game/player.cpp`, `direction.*`, `virages_banc.h`, `tests/**` ; **pas** les fichiers de WFS-283, WFS-281, WFS-315. Coordination avec WFS-258 (agent dev conduite, PR #263, même `player.cpp`, dernier envoi 13:11:56 UTC) : se synchroniser avec `main` souvent, conflits résolus en gardant les deux.
+- Règles : `regles-de-gestion/WFS-316.md` ; skills `agent-developer`, `waforspeed-natif`, `expert-conduite`. Branche `feature/waforspeed-316`, premier commit poussé tout de suite. Ticket de conduite né d'un essai : 🟡 après la fusion, jamais ✅ sur la CI.
