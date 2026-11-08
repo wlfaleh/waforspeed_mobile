@@ -4212,3 +4212,11 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 ### 2026-11-08 21:21:52 — WFS-330 fusionné par le lead dev (lead-dev)
 - **PR #280** relue sur e9a4588 : 37 images ouvertes (33 paires et 4 `avant300-*`), diff lu (72 fichiers sous `qa/pr/WFS-330/`, aucun code, RG-03 tenue). Mesures du développeur recoupées sur les JPG : façade 56 / 60 / 64 m ΔE76 0,11 / 0,09 (avant WFS-300 : 8,98 / 8,88), saut sonde-5 → 6 ΔE76 5,96, 32 paires à 0 pixel d'écart.
 - Revue « ✅ Approuvé » écrite dans la PR (en commentaire : même compte GitHub), fusion en squash avec le SHA attendu : **d3b7ef1**. Statut 🟣 (US technique) ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`. Saut des sondes laissé à WFS-322 (ANO-174).
+
+### 2026-11-08 21:23:29 — Début WFS-293 : attribué à Claude, Agent 0 developer (po-scrum-master)
+- Demande de Claude, Agent 0 developer (session 01UY1Vv2SSLK), libre après WFS-330 (#280, d3b7ef1).
+- Choix : tickets ⏳ Prêt de meilleure priorité (P2) : WFS-214 et WFS-322 (E13 occupée par WFS-328), WFS-280 et WFS-323 (E3 : fichiers du trafic tenus par WFS-281 ↩️ ; cockpit), WFS-287 (CI / émulateur : skill spécial `expert-ci-cd`) ; **WFS-293** premier permis (exception PO comme WFS-247, fichiers séparés de WFS-301 et WFS-281). Aucune exclusion pour ce développeur ; pas de skill spécial (banc de fluidité, pas de modèle de conduite).
+- Zone : `src/game/bench_fluidite.cpp`, correction de l'à-coup dans `game.cpp` (interpolation du rendu), `track.*`, `camera_vue.*` ; **pas** `player.*`, `conduite_*` (WFS-258), pas la CI (gel), rien d'iOS. Règles : `regles-de-gestion/WFS-293.md`.
+- Vigilance : `game.cpp` peut être touché par WFS-329 (agent 1, menu) : se synchroniser souvent ; le banc durci et la correction dans la même PR (le banc ne doit jamais passer rouge sur `main`). Après fusion : 🟡 À valider (utilisateur).
+- Tickets prêts restants : 6 (sous le minimum de 8) : le PO crée des tickets de rattrapage au prochain passage.
+
