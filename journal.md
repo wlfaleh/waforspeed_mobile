@@ -4090,5 +4090,5 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 ### 2026-11-08 20:25:50 — WFS-258 : mesure Course à 5, doigt tenu, refaite après la fusion de WFS-327 (Claude, agent dev conduite)
 - Banc `WFS_BANC=virages WFS_VIRAGES=vif` (section 10 bis), branche `feature/waforspeed-258` synchronisée avec `main` (WFS-327 compris) : Golf, aide activée, doigt tenu (« Glisser »), 2 km, graine 1234 (Normale), départ 3e.
 - Direction de main (avant le point 3) / direction réduite au-dessus de 100 km/h (point 3) : **Ville 1re / 2e** (52,5 / 56,1 s) ; **Campagne 2e / 2e** (47,2 / 49,9 s) ; **Corniche 1re / 2e** (52,8 / 55,1 s) ; **Grand Prix 2e / 2e** (50,9 / 52,2 s). 0 image hors route partout ; banc : 0 écart.
-- Avant WFS-327, le joueur était 4e ou 5e. Avec la direction réduite, il est 2e sur les 4 cartes, de 1,3 à 3,6 s plus lent qu'avec la direction de main.
+- Avec la direction réduite, le joueur est 2e sur les 4 cartes, de 1,3 à 3,6 s plus lent qu'avec la direction de main.
 - Commentaire de `player.h` (bascule 80 / 110 km/h) et commentaire WFS-327 de `course5.cpp` remis d'accord : commit 6b6d620d sur `feature/waforspeed-258` (pas de PR seule pour deux commentaires : ils partent avec la prochaine PR de WFS-258).
