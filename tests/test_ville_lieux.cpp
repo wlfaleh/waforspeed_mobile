@@ -40,6 +40,24 @@ int main() {
         for (int64_t d = -(int64_t)std::ceil((ville::RUE_TRANS_M + 1.5) / SEG_M); d <= (int64_t)std::ceil((ville::RUE_TRANS_M + 1.5) / SEG_M); d++)
             for (const ville::Objet& o : P.objets[(size_t)(((c.croise + d) % L + L) % L)])
                 VERIFIE(o.t == ville::LAMPE, "objet %d sur la rue transversale du carrefour %d (segment %lld)", (int)o.t, c.feu, (long long)(c.croise + d));
+    // WFS-326 (ANO-175) : chaque commerce gardé (sur toute sa vitrine) et chaque panneau (6 m) a un immeuble posé derrière lui, du
+    // même côté : plus de vitrine allumée, de store ni d'enseigne dans le vide là où l'immeuble a été retiré
+    {
+        auto couvert = [&](int64_t s, int side) {
+            for (int64_t a = 0; a < L; a++) for (const ville::Objet& o : P.objets[(size_t)a]) {
+                if (o.t != ville::IMMEUBLE || o.side != side) continue;
+                const int64_t d = ((s - a) % L + L) % L;
+                if (d * SEG_M <= o.len) return true;
+            }
+            return false;
+        };
+        auto bati = [&](int64_t s, int side, float len) { for (int64_t j = 0; j * SEG_M <= len; j++) if (!couvert(s + j, side)) return false; return true; };
+        int nc = 0;
+        for (const ville::Commerce& c : P.commerces) { nc++;
+            VERIFIE(bati(c.seg + (int64_t)std::floor(c.decal / SEG_M), c.side, c.len), "commerce sans immeuble derrière (segment %lld, côté %d, %.0f m)", (long long)c.seg, c.side, c.len); }
+        for (const ville::Panneau& b : P.panneaux) VERIFIE(bati(b.seg, b.side, 6.f), "panneau sans immeuble derrière (segment %lld, côté %d)", (long long)b.seg, b.side);
+        VERIFIE(nc > 50, "commerces gardés : %d (trop peu : le filtre retire tout ?)", nc);
+    }
     // RG-02 : 4 piétons par carrefour, sur le trottoir au départ
     const auto ps = ville::passants(mapById("ville"), t);
     VERIFIE(ps.size() == 4 * P.carrefours.size(), "piétons des passages : %zu", ps.size());

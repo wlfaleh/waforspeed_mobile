@@ -3924,3 +3924,44 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - Virage rapide du Grand Prix, doigt à 12 % : aide désactivée 0,819 / 0,906 / 0,925 ; aide activée 0,752 / 0,354 / 0,247.
   - Mêmes valeurs avant et après au doigt à 6 % (tableau complet dans `test_direction_anneau`).
 
+
+### 2026-11-08 18:15:44 — Début WFS-328 et WFS-292 : attribués à agent arwa (po-scrum-master)
+- Demande d'agent arwa (Claude, session trafic) : WFS-284 (#250, 94f6f41) et WFS-266 (#252, 8c8bdc7) fusionnés par le lead dev ; WFS-281 (E3) reste à lui (2e retour du lead dev, PR #249). Plusieurs tickets en parallèle, épics différentes : autorisation de l'utilisateur (déjà notée).
+- **WFS-328** (P1, E13, ANO-177) : départ de nuit blanc / rose. E13 libre (aucun ticket 🔧). Zone : `shaders/post*`, `shaders/eclairage*`, `src/render/eclairage_*`, `post_*`, exposition automatique ; accroche ≤ 10 lignes annoncée au journal si l'exposition se règle hors E13. Interdit : `nuit.cpp` (E4), `qualite_banc.cpp` (WFS-300), fichiers de WFS-317. Plan : chercher la régression APK 916 → 918 (WFS-317 #270, WFS-258 #271 / #274, WFS-296 #273, WFS-192 #266, exposition WFS-276), exposition juste dès la 1re image (départ, pause, Recommencer), captures RG-04. Règles : `regles-de-gestion/WFS-328.md`.
+- **WFS-292** (P2, E4 + E10 en exception PO déjà écrite dans le ticket) : fumée des pneus, choc du banc d'effets, Golf bleue de nuit en Campagne. Zone : `src/render/effets_*`, `src/render/bench_effets.*`, `eclairementRouteAutour()` et peinture de nuit de `shaders/vehicule.glsl` seuls. Interdit : `post.frag`, `eclairage_*`, `nuit.cpp`, règles des chocs (WFS-256), `player.*`, `conduite_*`. Parallèle de WFS-317 (agent 1) : fichiers séparés. Règles : `regles-de-gestion/WFS-292.md`. 🟡 après fusion.
+- Rappels : skill `agent-developer`, branches `feature/waforspeed-328` et `feature/waforspeed-292` poussées dans l'heure, synchronisation avec `main`, PR + captures `tools/qa/captures_pr.sh` (AGENT obligatoire, ≥ 3 captures après), lead dev appelé, seul à fusionner (squash), graphisme réaliste (DA-realisme.md), Android seulement, gel iOS, aucune taille d'interface, `regles-reseau.md`.
+
+### 2026-11-08 18:17:28 — WFS-316 fusionné par le lead dev (lead-dev)
+- PR #267 relue sur c5032944 (3e revue) : réponse « corrigé dans » présente, captures regardées (2 planches caméra Arrière jour / nuit, 6 vues de dessus), diff entier relu.
+- `main` avait reçu WFS-258 #274 (`player.cpp`) après la synchronisation : fusion sans conflit, construite localement avec le `main` actuel : 74 tests CPU réussis ; tableau RG-05 identique avant / après.
+- Revue « ✅ Approuvé » écrite dans la PR (GitHub refuse « Approve » pour le même compte), fusion squash 7dbea2f. Ticket de conduite : 🟡 À valider (utilisateur). Agent 4 libéré.
+
+### 2026-11-08 18:19:00 — WFS-326 : retour du lead dev corrigé (commit 7db895c7), PR #275 à relire (Claude, agent dev Y)
+- **Les 5 points de la revue sont corrigés** :
+  - le commerce est vérifié sur toute sa longueur, de `seg + décalage` sur `len` (panneau : 6 m) ;
+  - la portée de la recherche est `lmax`, le plus long immeuble du plan, au lieu de 60 m en dur ;
+  - test CPU dans `test_ville_lieux` : 15 échecs sans le correctif, vert avec ;
+  - captures aux deux lieux de l'utilisateur, `apk916-5` (vue Arrière) et `apk916-2` (vue Proche), de nuit, en Haute et en Basse ;
+  - taille de l'accroche harmonisée : 10 lignes ajoutées et 3 modifiées dans `adapter()`.
+- **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
+- **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
+
+### 2026-11-08 18:23:09 — WFS-326 fusionné par le lead dev (lead-dev)
+- **PR #275**, 2e revue sur e0ceeb93. Le développeur a répondu point par point : les 5 points de la 1re revue sont corrigés (captures aux deux lieux de l'utilisateur en Haute et en Basse, test CPU, longueur entière, `lmax`, taille de l'accroche).
+- **18 captures ouvertes** :
+  - les vitrines et stores sans immeuble des virages 1 et 2, de nuit, ont disparu ;
+  - de jour, les terrasses et les kiosques posés sur la pelouse ont disparu ;
+  - aux lieux `apk916-5` et `apk916-2`, avant et après sont identiques, sans rien qui flotte ;
+  - rien n'est dégradé.
+- **Diff entier relu.** `test_ville_lieux` et `test_direction_anneau` relancés sur la fusion locale avec `main` (WFS-316 compris) : OK.
+- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash 4a0eb90 (`expectedHeadSha` e0ceeb93).
+- Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
+- **Pour le PO** : sur le téléphone (`apk916-5`), les « losanges » ressemblent aux fenêtres du rez-de-chaussée, à leur place dans la façade, avec un cadre rouge et un mur presque noir.
+  - Le banc ne reproduit pas ce rendu.
+  - Si l'utilisateur dit non, la suite tient plutôt à l'éclairage du mur et à l'exposition de nuit (WFS-230) qu'aux commerces.
+
+### 2026-11-08 18:29:41 — WFS-317, partie 2 : PR #276 refusée par le lead dev (lead-dev)
+- 1re revue, commit b1ac2ca : 23 paires de captures ouvertes, diff relu en entier (`pietons.cpp`, `conducteurs.*`, `foule_apparition.h`, `qualite_auto`, 3 tests). **Le code est bon** : niveau de détail sur la vraie distance à la caméra, Ville 3 sur 10 par liste, Basse 8 / 20 / 30 m pour les conducteurs, `texteComptes` testé.
+- **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
+- À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
+- Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
