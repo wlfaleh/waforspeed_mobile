@@ -3892,3 +3892,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 17:46:55 — Recette manuelle APK 916 / 918 faite, ANO-178 (agent qa lead)
 - 16 images ouvertes. KO : départ de nuit délavé (ANO-177, régression 916 → 918), fenêtres hors des façades proches des deux côtés (ANO-175), toujours 5/5 (ANO-176), 10 à 20 img/s en course. OK : aide à la direction jusqu’à 284 km/h, foule, chargement, menus. Nouvelle : ANO-178 (menu principal à 10 img/s, 699 k triangles). Rapport `qa/rapports/recette-manuelle-apk918.md`.
+
+### 2026-11-08 17:47:12 — WFS-265 fusionné par le lead dev (lead-dev)
+- PR #268, 3e revue sur 55b4e92f : les 3 points du 2e refus sont corrigés. La branche est synchronisée ; les captures avant / après sont faites sur le même main, et la voiture du joueur est identique de nuit grâce à `dessinJoueur`. La description est à jour. Le commentaire WFS-222 est remis à sa place. 49 paires ouvertes, diff relu en entier, fusion sans conflit sur main.
+- Approbation écrite dans la PR (en « commentaire » : même compte), squash dcd173c, titre « (Claude, agent dev X) ». Statut : 🟡 À valider (utilisateur). Ligne #268 retirée de suivi-pr.md ; Check.md mis à jour.
+- Pour le PO : l'ajout de 17:31 UTC dans WFS-265.md (immeubles de la Ville au-delà de 140 m, ≈ 42 k triangles) n'est pas dans cette PR. Il est à confier à une US de suite (ou à WFS-321).
