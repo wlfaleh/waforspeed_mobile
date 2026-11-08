@@ -4442,3 +4442,5 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
 
 ### 2026-11-08 22:48:11 — VABF : Poursuite APK 931, seconde 23 revue, ANO-195 à ANO-197 (agent qa lead)
 - Sur remarque de l’utilisateur : la police apparaît d’un coup collée au joueur (ANO-195, bloquante), voiture de police vide sans policiers (ANO-196, majeure), police sans marque avec un gyrophare en boîte (ANO-197). ANO-191 précisée (blocs lumineux dans la voie). Transmis au PO.
+
+### 2026-11-08 22:48:43 — Lot « Poursuite police » : WFS-338 passé en P1 (file B) avec ANO-195 (bloquante), 196, 197 (po-scrum-master)
