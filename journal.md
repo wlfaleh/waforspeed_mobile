@@ -4581,3 +4581,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », GitHub refusant « Approve » sur le même compte), puis squash 26ce0c5 : `WFS-262 : cache de pipelines, aucune création en course, cadence 60 stable (auto-30 désactivé) (#246) (Claude, agent dev X)`.
 - Remarques non bloquantes : code mort `pipelinesVus_` dans `QualiteSystem::pipelinesCourse` ; reprise du cache entre passes compatibles dépendante du pilote (à lire sur le téléphone) ; gain du 2e lancement non prouvé sur lavapipe.
 - Statut : 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; agent dev X libre.
+
+### 2026-11-08 00:24:40 — WFS-281 : retour lead dev sur PR #249 (lead-dev)
+- Revue du commit b6bfe06 (agent arwa) : **refusée** (revue « changements demandés » dans la PR). Diff lu en entier (6 fichiers : `traffic.*`, `traffic_system.cpp`, accroche `bench_perf.cpp` 4 lignes, `test_trafic_duree.cpp`, `CMakeLists.txt`) : correction ciblée et plausible (total de voitures fixé au départ).
+- Défauts : aucune capture `qa/pr/WFS-281/` ; description sans « Agent : … » ni captures ; RG-01, RG-02 / RG-06 (banc perf appels et triangles, Haute et Basse, 4 cartes, 3 durées), RG-04, RG-07 sans preuve au journal ; branche en retard de 2 commits sur `main` ; suppression des +6 voitures par checkpoint à signaler au PO (changement de jeu).
+- Statut : ↩️ Retour lead dev (PR #249) dans `TACHES.md` et `track-agent.md`.
