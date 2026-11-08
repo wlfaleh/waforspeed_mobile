@@ -32,8 +32,8 @@ Difficulte difficulteDeCle(const std::string& v) { return v == "facile" ? FACILE
 // plus la vitesse de pointe : les ordinateurs visaient 0,98 × la fiche en Normale au lieu de 0,90 (joueur toujours battu)
 // WFS-327 (RG-01) : adhérence des ordinateurs en virage : celle du jeu (Phys::grip), à l'échelle de la fiche de la voiture
 // (μ de la voiture / μ de la Golf, la voiture de référence du joueur) ; RG-02 mesuré sans autre facteur (× 1,2 : le joueur
-// moyen avec l'aide n'est plus dans les 3 premiers une fois sur deux)
-static const double MU_REFERENCE = physique::params(carById("golf")).mu;
+// moyen avec l'aide n'est plus dans les 3 premiers une fois sur deux). μ lu sur la fiche (physique::adherencePneu), sans
+// étalonnage de la voiture : aucun à-coup au premier pas après le « GO » (85,9 ms mesurés avec l'étalonnage des 4 ordinateurs)
 static double vitessePointe(const CarDef& c) { return MAX_SPEED * 0.995 * c.spec.vmax / 260.0; }
 
 // peintures du jeu web (PAINTS), tirées au hasard pour les ordinateurs
@@ -174,7 +174,8 @@ double vitesseVirage(const Track& t, double s) {
 // avec l'adhérence du jeu (Phys::grip) mise à l'échelle de la fiche de la voiture (μ de la voiture / μ de la Golf) et le freinage
 // du jeu ; et au plus la table « où la voiture reste sur la chaussée » (vitesseVirage)
 double vitesseVirageOrdinateur(const Track& t, double s, const CarDef& c) {
-    const double gLat = Phys::grip / 9.81 * physique::params(c).mu / MU_REFERENCE;
+    static const double muGolf = physique::adherencePneu(carById("golf"));   // μ de la voiture de référence du joueur
+    const double gLat = Phys::grip / 9.81 * physique::adherencePneu(c) / muGolf;
     return std::min(vitesseVirage(t, s), vitesseVirageAide(t, s, gLat, Phys::brake / 9.81) / M);
 }
 // WFS-327 (RG-01) : la vitesse permise est calculée par points de 4 m (paliers) : l'ordinateur (et le pilote des tests) regarde
@@ -274,7 +275,7 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         cible = std::min(cible, plafond);
         bool virageFrein = false;   // WFS-189 (RG-02 bis) : virage serré devant : vitesse permise, freinage du joueur
         if (piste) {
-            const double vp = vitesseVirageOrdinateurDevant(*piste, o.g.rd, c);   // WFS-327 (RG-01)
+            const double vp = g_avantWfs327 ? vitesseVirage(*piste, o.g.rd) : vitesseVirageOrdinateurDevant(*piste, o.g.rd, c);   // WFS-327 (RG-01)
             if (vp < cible) { cible = vp; virageFrein = o.g.v > vp; }
         }
         if (virageFrein) o.g.v = std::max(cible, o.g.v - (double)Phys::brake / M * dt);

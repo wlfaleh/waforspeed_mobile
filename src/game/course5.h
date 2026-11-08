@@ -123,6 +123,8 @@ constexpr double DERIVE_MAX = 0.8;        // WFS-189 (RG-02 bis) : dérive laté
 constexpr double COURBURE_VIRAGE = 4;     // WFS-189 (RG-02 bis) : courbure au-delà de laquelle un segment compte comme virage
 constexpr double PLAFOND_JOUEUR = 1.10;   // WFS-189 (RG-02 ter) : vitesse visée ≤ facteur × 1,10 × pointe du joueur
 double vitesseVirage(const Track& t, double s);   // WFS-189 (RG-02 bis) : vitesse permise (unités/s) en s
+// WFS-327 : banc d'essai seulement (captures « avant » de l'épingle) : rejoue la table arcade seule (vitesseVirage) ; faux en jeu
+inline bool g_avantWfs327 = false;
 double vitesseVirageOrdinateur(const Track& t, double s, const CarDef& c);   // WFS-327 (RG-01) : vitesse permise à un ordinateur (unités/s)
 double vitesseVirageOrdinateurDevant(const Track& t, double s, const CarDef& c);   // WFS-327 : la même, en regardant 4 et 8 m plus loin (ordinateurs)
 // RG-05 : une voiture en (s, x) est dans l'aspiration d'une des voitures de `os` (même file, moins de aspirationM devant)
