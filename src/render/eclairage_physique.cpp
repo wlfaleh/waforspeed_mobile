@@ -63,6 +63,7 @@ struct Etat_ {
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
     const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
     double ev = 15; bool evInit = false, recaler = true; double dtImage = 0; int generation = 0;
+    double tScene = 0;   // WFS-328 : temps de la dernière nouvelle scène (retard de capture du banc)
     double hCache = -1000, kCache = 0;
     // ciel (pour la sonde du ciel calculée sur le CPU)
     struct Ciel { bool nuit = false; double K = 0, Lnuit = 0; vec3 haut{}, horizon{}, sol{}, brume{}, soleil{}; } ciel;
@@ -435,7 +436,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         if (!g.init || autreScene || fp.night != g.nuitPrec) g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR;
         // WFS-328 (RG-02) : toute nouvelle scène (aussi « Recommencer » et téléportation) se recale dès sa première image
         g.evInit = false;
-        remettreAZero(); g.init = true; dt = 0;
+        remettreAZero(); g.init = true; dt = 0; g.tScene = t;
     }
     g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
     dt = std::clamp(dt, 0.0, 0.25);
@@ -581,7 +582,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-264 (RG-01) : en Basse, une capture par zone seulement : la première (départ, sous le chargement et le décompte) et
     // à chaque changement de zone (entrée et sortie de tunnel ou de pont : forcerCapture) ; plus de capture tous les « esp » m
     const bool parZone = niveau == qualite::BASSE;
-    if (!environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
+    const bool retardee = g.forc.actif && t - g.tScene < g.forc.retardCapture;   // WFS-328 : banc, sonde lente comme sur le téléphone
+    if (!retardee && !environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
         if (g.aucuneDemande || g.forcerCapture || (!parZone && length(point - g.dernierPoint) > esp)) {
             // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
