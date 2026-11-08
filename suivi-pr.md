@@ -16,7 +16,7 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #245 | WFS-232 | arwa-3 | ↩️ Retour lead dev | e77870e | 2026-11-08 01:07 |
-| #248 | WFS-268 | Claude, agent 5 | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | ad1934c | 2026-11-08 02:13 |
+| #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev (2e revue : captures après périmées, RG-11 / ANO-164, resynchroniser) | 213df11 | 2026-11-08 02:16 |
 | #249 | WFS-281 | agent arwa | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | 98d22f7 | 2026-11-08 02:13 |
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev | 851cacb | 2026-11-08 01:13 |
 | #250 | WFS-284 | agent arwa | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | — | 2026-11-08 02:13 |

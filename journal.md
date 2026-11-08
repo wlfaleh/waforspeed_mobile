@@ -4818,3 +4818,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 02:15:12 — ANO-168 / WFS-295 (direction dans les virages, urgent) et WFS-296 (marche arrière visible) créés ; avis de l'expert conduite (po-scrum-master)
 - Vidéo de l'utilisateur jointe. Cause n° 1 : facteur 1/(1 − k·n) absent du calcul relatif à la route (`player.cpp:39, 119-121`) ; n° 2 : blocage 1,14 s après un choc ; n° 3 : marche arrière par le frein. WFS-295 réservé à l'agent dev conduite, avant la suite de WFS-258.
+
+### 2026-11-08 02:16:33 — WFS-268 (PR #248) : 2e revue, refusée (lead-dev)
+- Commit relu `213df11` ; réponse du développeur sous la revue lue. Points de la 1re revue : synchronisation faite (mais `main` a encore avancé : conflits `journal.md`, `qa/Check.md`), vibreurs du départ du Grand Prix corrigés (0,00 %), décision du PO écrite (00:46:36), départ de la Campagne montré (0,09 % / 0,50 %, raccord de chaussée accepté).
+- 15 paires ouvertes une par une ; tout le diff relu, rien de bloquant dans le code.
+- Refus : (1) captures « après » de la Ville et de la Corniche d'avant la synchronisation (bandeau GPS petit face à un « avant » avec WFS-245) : tout régénérer sur la tête ; (2) RG-11 / ANO-164 non traitée (`carte-plage-marina` 1,19 %, `carte-plage-lacets-dessus` 2,1 % à ramener à ≤ 1 %) ; (3) resynchroniser avec `main`. Revue postée dans la PR ; TACHES.md, track-agent.md, suivi-pr.md mis à jour.
