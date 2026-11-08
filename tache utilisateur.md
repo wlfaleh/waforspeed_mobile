@@ -92,3 +92,9 @@ demande utilisateur :
 
 - Dans les virages, à gauche ou à droite, la voiture ne tourne pas assez ; régler, demander l'avis de l'expert conduite, créer les tâches urgentes (vidéo, conversation avec le PO, 2026-11-08 02:15 UTC)
 ( PO : c'est fait — avis de l'expert dans **WFS-295** (P1 urgent, agent dev conduite, avant la suite de WFS-258) : erreur de calcul dans les virages (la voiture tourne moins large au bord et sur le bas-côté), commandes bloquées 1,1 s après un choc ; **WFS-296** (P2) : marche arrière bien visible ; **ANO-168**. )
+
+- Le jeu est devenu grave : il rame beaucoup ; 1re partie Corniche plus ou moins bonne, la 2e une catastrophe ; il faut voir de près (vidéo, conversation avec le PO, 2026-11-08 02:19 UTC)
+( PO : c'est créé — **ANO-169** et **WFS-297** (P1 urgent, en tête) : vos chiffres montrent 25 img/s à la 1re partie et 10 img/s à la 2e (la carte graphique travaille 2,6 fois plus) : quelque chose s'accumule d'une partie à l'autre. Mesure de 3 parties de suite, cause nommée, rien ne doit s'accumuler, décor chargé avant la conduite. )
+
+- Afficher au chargement combien de données le jeu a chargé et, dans les Réglages, combien de mémoire il consomme ; dans le même sujet que l'agent 1 (conversation avec le PO, 2026-11-08 02:29 UTC)
+( PO : c'est ajouté à **WFS-297** (RG-06) : chiffres au chargement (données chargées, objets, mémoire à la fin) et dans les Réglages (mémoire du jeu, de la carte graphique, numéro de la partie) ; l'agent 1 est prévenu. )

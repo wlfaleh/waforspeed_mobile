@@ -15,10 +15,8 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #245 | WFS-232 | arwa-3 | ↩️ Retour lead dev | e77870e | 2026-11-08 01:07 |
-| #248 | WFS-268 | Claude, agent 5 | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | ad1934c | 2026-11-08 02:13 |
-| #249 | WFS-281 | agent arwa | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | 98d22f7 | 2026-11-08 02:13 |
-| #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev | 851cacb | 2026-11-08 01:13 |
-| #250 | WFS-284 | agent arwa | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | — | 2026-11-08 02:13 |
-| #254 | WFS-288 | arwa-4 (Claude, session 01Us6uCw) | 👀 En revue — lead-dev, 02:08 UTC | — | 2026-11-08 02:08 |
-| #252 | WFS-266 | (à lire dans la PR) | 👀 En revue — lead-dev (session utilisateur), 02:13 UTC | — | 2026-11-08 02:13 |
+| #245 | WFS-232 | arwa-3 | 👀 En revue — lead-dev, 2026-11-08 02:50 | c5a9cb7 | 2026-11-08 02:50 |
+| #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev (2e revue : captures après périmées, RG-11 / ANO-164, resynchroniser) | 213df11 | 2026-11-08 02:16 |
+| #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
+| #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev (2e refus) | f97172f | 2026-11-08 02:40 |
+| #255 | WFS-239 | arwa-2 (Claude, session 01Us6uCu) | 👀 En revue — lead-dev, 2026-11-08 02:45 | 5573be1 | 2026-11-08 02:45 |

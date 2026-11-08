@@ -21,6 +21,10 @@
 #   5. .wfp version 3 : sommets de 84 octets (tangente ajoutée après l'uv) ; texture de couleur unie (teinte de peau neutre,
 #      multipliée par l'apparence), normales plates ; plages « corps-0 », « corps-1 », « corps-2 » (WFS-211 : niveaux de détail,
 #      tools/convert_people_lod.py) ; tête et cou jamais habillés (ANO-111).
+#   6. WFS-266 (ANO-134), adultes seulement (enfants inchangés) : globes oculaires de MakeHuman en partie 1 (centre du globe dans
+#      _cloth.xyz : iris et pupille dessinés par scene_skin.frag) ; cuir chevelu peint en partie 2 (cuir_chevelu, VOLUME_CHEVEUX,
+#      comme les enfants) ; 4 femmes sur 6 aux cheveux longs : « Hair_Long » de femme.wfp (Quaternius CC0, comme WFS-240) posé
+#      sur la tête et ajouté aux plages corps-<lod> (aucun appel de dessin de plus) ; dents et langue non reprises.
 import argparse, hashlib, io, json, math, pathlib, struct, sys
 import numpy as np
 from PIL import Image
@@ -120,16 +124,19 @@ def joint_du_jeu(nom):
     return None
 
 # ---------------------------------------------------------------- lecture
+# WFS-266 (RG-02) : globes oculaires de MakeHuman (groupes « helper-l-eye » / « helper-r-eye » de base.obj, mêmes cibles et mêmes
+# poids que le corps : os eye.L / eye.R → Head) ; dents, langue, cils et aides de vêtements ne sont pas repris (RG-03 : masqués)
+GROUPES_YEUX = ('helper-l-eye', 'helper-r-eye')
 def lire_obj(chemin):
-    V, VT, F = [], [], []
+    V, VT, F, FY = [], [], [], []
     groupe = None
     for l in open(chemin, encoding='utf-8', errors='replace'):
         if l.startswith('v '): V.append([float(x) for x in l.split()[1:4]])
         elif l.startswith('vt '): VT.append([float(x) for x in l.split()[1:3]])
         elif l.startswith('g '): groupe = l.split()[1]
-        elif l.startswith('f ') and groupe == 'body':
-            F.append([(int(t.split('/')[0]) - 1, int(t.split('/')[1]) - 1) for t in l.split()[1:]])
-    return np.array(V), np.array(VT), F
+        elif l.startswith('f ') and (groupe == 'body' or groupe in GROUPES_YEUX):
+            (F if groupe == 'body' else FY).append([(int(t.split('/')[0]) - 1, int(t.split('/')[1]) - 1) for t in l.split()[1:]])
+    return np.array(V), np.array(VT), F, FY
 
 def lire_cible(chemin, n):
     d = np.zeros((n, 3))
@@ -200,6 +207,32 @@ def lire_wfp(chemin):
         O.append(dict(nom=nom, parent=par, t=np.array(f[0:3]), r=np.array(f[3:7]), s=np.array(f[7:10])))
     nPal, = struct.unpack_from('<I', b, o); o += 4 + 4 * nPal
     return O, b[o:], nC
+
+# WFS-266 (RG-01) : coiffure « Hair_<nom>-<lod> » d'un personnage du jeu (femme.wfp, Quaternius CC0, version 2), comme WFS-240 :
+# sommets de la plage (position, normale, uv, os du jeu et poids), triangles renumérotés
+def lire_coiffure(chemin, plage):
+    b = open(chemin, 'rb').read(); o = 4
+    ver, nT = struct.unpack_from('<2I', b, o); o += 8
+    assert ver == 2, chemin
+    for i in range(nT):
+        n, = struct.unpack_from('<I', b, o); o += 4 + n
+    o += 28
+    nV, nI, nP, nO, nC = struct.unpack_from('<5I', b, o); o += 20
+    v = np.frombuffer(b, np.dtype([('p', '<f4', 3), ('n', '<f4', 3), ('uv', '<f4', 2), ('pal', 'u1', 4), ('w', '<f4', 4), ('cl', '<f4', 4)]), nV, o)
+    o += nV * 68
+    I = np.frombuffer(b, '<u4', nI, o); o += nI * 4
+    pl = {}
+    for i in range(nP):
+        pl[b[o:o + 32].split(b'\0')[0].decode()] = struct.unpack_from('<2I', b, o + 32); o += 40
+    o += nO * (32 + 4 + 40 + 64)
+    nPal, = struct.unpack_from('<I', b, o)
+    palette = np.array(struct.unpack_from('<%dI' % nPal, b, o + 4))
+    a, c = pl[plage]
+    ix = I[a:a + c]
+    u, tri = np.unique(ix, return_inverse=True)
+    vv = v[u]
+    return dict(P=vv['p'].astype(float), N=vv['n'].astype(float), UV=vv['uv'].astype(float), os=palette[vv['pal']],
+                w=vv['w'].astype(float), tri=tri.reshape(-1, 3).astype(np.uint32), nO=nO)
 
 def repos(O):
     R, p = [None] * len(O), [None] * len(O)
@@ -365,14 +398,16 @@ def convertir(mh, jeu, morpho, sortie, cache):
 # ---------------------------------------------------------------- maillage, attributs, écriture
 CHAINES = {'bras': ('upperarm', 'lowerarm', 'hand'), 'jambe': ('thigh', 'calf', 'foot', 'ball')}
 
-def maillage(r, mh):
-    """sommets uniques (position, uv) du groupe « body », triangles, normales, tangentes"""
-    F, VT = mh['F'], mh['VT']
-    cle, sv, tri = {}, [], []
-    for f in F:
+def maillage(r, mh, yeux=False):
+    """sommets uniques (position, uv) du groupe « body » (et des globes oculaires si yeux : WFS-266), triangles, normales,
+    tangentes ; masque des sommets des yeux"""
+    F, VT = mh['F'] + (mh['FY'] if yeux else []), mh['VT']
+    nF = len(mh['F'])
+    cle, sv, tri, oeil = {}, [], [], []
+    for k_f, f in enumerate(F):
         ids = []
         for v, t in f:
-            if (v, t) not in cle: cle[(v, t)] = len(sv); sv.append((v, t))
+            if (v, t) not in cle: cle[(v, t)] = len(sv); sv.append((v, t)); oeil.append(k_f >= nF)
             ids.append(cle[(v, t)])
         for k in range(1, len(ids) - 1): tri.append((ids[0], ids[k], ids[k + 1]))
     sv = np.array(sv); tri = np.array(tri, dtype=np.uint32)
@@ -399,7 +434,7 @@ def maillage(r, mh):
     Tv -= N * (Tv * N).sum(1, keepdims=True)
     Tv /= np.maximum(np.linalg.norm(Tv, axis=1, keepdims=True), 1e-12)
     w = np.where((np.cross(N, Tv) * Bv).sum(1) < 0, -1.0, 1.0)
-    return sv, tri, P, N, UV, np.concatenate([Tv, w[:, None]], 1)
+    return sv, tri, P, N, UV, np.concatenate([Tv, w[:, None]], 1), np.array(oeil, dtype=bool)
 
 def attribut_cloth(r, P, Wv, cheveux=None):
     """_cloth (bras, hauteur, jambe, partie) de chaque sommet (WFS-72)"""
@@ -442,13 +477,41 @@ def cuir_chevelu(P, Wv, pos, idx):
     f = np.where(t >= 0, LIGNE_COTE + (LIGNE_FRONT - LIGNE_COTE) * t, LIGNE_COTE + (LIGNE_COTE - LIGNE_NUQUE) * t)
     return tete & ((P[:, 1] - base[1]) > f * (haut - base[1]))
 
+# WFS-266 (RG-01) : coiffure longue (« Hair_Long » de femme.wfp, Quaternius CC0, déjà portée par les filles dans WFS-240) pour 4
+# femmes sur 6 ; les 2 autres (f04, f06) et les 6 hommes : cheveux courts peints sur le cuir chevelu (WFS-233). Niveaux de détail
+# comme WFS-240 : Hair_Long-1 (1 104 triangles) de près et à moyenne distance, Hair_Long-2 (377) au loin
+CHEVEUX_LONGS = ('f01', 'f02', 'f03', 'f05')
+COIFFURE_LOD = ('Hair_Long-1', 'Hair_Long-1', 'Hair_Long-2')
+ECART_CRANE = 0.003   # une mèche n'entre jamais dans la tête : 3 mm au moins au-dessus de la peau (le long de sa normale)
+
+def boite_tete(P, wtete):
+    """boîte de la tête : sommets portés surtout par l'os Head (visage et crâne)"""
+    m = wtete > 0.5
+    return P[m].min(0), P[m].max(0)
+
+def poser_coiffure(c, femme_corps, P, N, Wv, idx):
+    """coiffure de femme.wfp mise sur la tête de l'humain : boîte de la tête de la femme du jeu → boîte de la tête de l'humain
+    (échelle par axe, pose de repos commune : bras en T, visage vers +z), puis mèches sorties de la peau (ECART_CRANE)"""
+    h = idx['Head']
+    lo_f, hi_f = boite_tete(femme_corps['P'], (femme_corps['w'] * (femme_corps['os'] == h)).sum(1))
+    lo_h, hi_h = boite_tete(P, Wv[:, h])
+    s = (hi_h - lo_h) / (hi_f - lo_f)
+    Q = lo_h + (c['P'] - lo_f) * s
+    Nq = c['N'] / s; Nq /= np.maximum(np.linalg.norm(Nq, axis=1, keepdims=True), 1e-12)
+    tete = np.where((Wv[:, h] + Wv[:, idx['neck_01']] > 0.3) | (P[:, 1] > lo_h[1] - 0.25))[0]   # tête, cou, épaules, haut du dos
+    for i in range(len(Q)):
+        d = ((P[tete] - Q[i]) ** 2).sum(1); j = tete[d.argmin()]
+        e = float((Q[i] - P[j]) @ N[j])
+        if e < ECART_CRANE: Q[i] += N[j] * (ECART_CRANE - e)
+    return Q, Nq
+
 def ecrire_wfp(chemin, r, mh):
-    sv, tri, P, N, UV, TG = maillage(r, mh)
+    adulte = not est_enfant(r['nom'])
+    sv, tri, P, N, UV, TG, oeil = maillage(r, mh, yeux=adulte)   # WFS-266 : yeux des adultes (enfants : inchangés)
     Wfull = r['W'][sv[:, 0]]
-    cheveux = None
-    if est_enfant(r['nom']):   # WFS-233 : cuir chevelu peint et légèrement épaissi
-        cheveux = cuir_chevelu(P, Wfull, r['pos'], r['idx'])
-        P = P + N * (VOLUME_CHEVEUX * cheveux[:, None])
+    # WFS-233 : cuir chevelu peint et légèrement épaissi ; WFS-266 (RG-01) : aussi chez les 12 adultes (même ligne des cheveux)
+    cheveux = cuir_chevelu(P, Wfull, r['pos'], r['idx']) & ~oeil
+    P = P + N * (VOLUME_CHEVEUX * cheveux[:, None])
     # 4 poids au plus, renormalisés
     top = np.argsort(-Wfull, 1)[:, :4]
     wt = np.take_along_axis(Wfull, top, 1); wt /= np.maximum(wt.sum(1, keepdims=True), 1e-9)
@@ -457,6 +520,13 @@ def ecrire_wfp(chemin, r, mh):
     vers_pal = {o: i for i, o in enumerate(utilises)}
     pal = np.vectorize(lambda o: vers_pal.get(int(o), 0))(top).astype(np.uint8)
     cl = attribut_cloth(r, P, Wfull, cheveux)
+    if adulte:
+        cl[cheveux, 0] = 0.0   # WFS-266 : cheveux d'un humain réaliste adulte (scene_skin.frag : couleur de la palette telle quelle)
+        # WFS-266 (RG-02) : partie 1 (yeux) ; _cloth.xyz = centre du globe (pose de repos) : iris et pupille dessinés au pixel
+        # par scene_skin.frag autour de l'axe du regard (+z)
+        for cote in (P[:, 0] > 0, P[:, 0] <= 0):
+            m = oeil & cote
+            cl[m, 0:3] = P[m].mean(0); cl[m, 3] = 1.0
     O, Rq, pos, idx = r['O'], r['Rq'], r['pos'], r['idx']
     # repères du corps (comme les personnages du jeu) : cou = y de neck_01, taille = 80 % du bassin à spine_01, profondeur du cou
     cou, sp1, bas = pos[idx['neck_01']], pos[idx['spine_01']], pos[idx['pelvis']]
@@ -473,6 +543,29 @@ def ecrire_wfp(chemin, r, mh):
     verrou = np.abs(P[:, 0]) < 0.008
     for a in (P[:, 0].argmin(), P[:, 0].argmax(), P[:, 1].argmin(), P[:, 1].argmax()): verrou[a] = True
     niveaux = [tri] + [simplifier(P, tri, int(len(tri) * f), verrou, e) for f, e in zip(LOD_PART[1:], LOD_ECART[1:])]
+    if r['nom'] in CHEVEUX_LONGS:   # WFS-266 (RG-01) : mèches ajoutées à chaque niveau (aucun appel de dessin de plus)
+        femme_corps = mh['femme_corps']
+        poses = {}
+        for k, nom in enumerate(COIFFURE_LOD):
+            if nom not in poses:
+                c = mh['coiffures'][nom]
+                Q, Nq = poser_coiffure(c, femme_corps, P, N, Wfull, idx)
+                W = np.zeros((len(Q), Wfull.shape[1]))
+                for j in range(4): np.add.at(W, (np.arange(len(Q)), c['os'][:, j]), c['w'][:, j])
+                t = np.cross(Nq, [0.0, 1.0, 0.0]); t = np.where(np.linalg.norm(t, axis=1, keepdims=True) < 1e-6, [[1.0, 0.0, 0.0]], t)
+                t /= np.linalg.norm(t, axis=1, keepdims=True)
+                cq = np.stack([np.ones(len(Q)), Q[:, 1], -np.ones(len(Q)), np.full(len(Q), 2.0)], 1)   # partie 2, mèche (x = 1)
+                poses[nom] = len(P)
+                P = np.concatenate([P, Q]); N = np.concatenate([N, Nq]); UV = np.concatenate([UV, c['UV']])
+                TG = np.concatenate([TG, np.concatenate([t, np.ones((len(Q), 1))], 1)]); Wfull = np.concatenate([Wfull, W])
+                cl = np.concatenate([cl, cq])
+            niveaux[k] = np.concatenate([niveaux[k], mh['coiffures'][nom]['tri'] + poses[nom]]).astype(np.uint32)
+        top = np.argsort(-Wfull, 1)[:, :4]
+        wt = np.take_along_axis(Wfull, top, 1); wt /= np.maximum(wt.sum(1, keepdims=True), 1e-9)
+        utilises = sorted({int(o) for o, w in zip(top.ravel(), wt.ravel()) if w > 0})
+        assert len(utilises) <= 64, len(utilises)
+        vers_pal = {o: i for i, o in enumerate(utilises)}
+        pal = np.vectorize(lambda o: vers_pal.get(int(o), 0))(top).astype(np.uint8)
     plages, debut = [], 0
     for k, t in enumerate(niveaux):
         plages.append(('corps-%d' % k, debut, len(t) * 3)); debut += len(t) * 3
@@ -501,9 +594,11 @@ def main():
     ap.add_argument('--seulement', default='')
     a = ap.parse_args()
     d = pathlib.Path(a.makehuman)
-    V, VT, F = lire_obj(d / 'base.obj')
-    mh = dict(dossier=d, V=V, VT=VT, F=F, sk=json.load(open(d / 'default.mhskel')), poids=json.load(open(d / 'default_weights.mhw'))['weights'])
+    V, VT, F, FY = lire_obj(d / 'base.obj')
+    mh = dict(dossier=d, V=V, VT=VT, F=F, FY=FY, sk=json.load(open(d / 'default.mhskel')), poids=json.load(open(d / 'default_weights.mhw'))['weights'])
     jeu = {1: lire_wfp(a.homme), 0: lire_wfp(a.femme)}
+    mh['femme_corps'] = lire_coiffure(a.femme, 'corps-0')   # WFS-266 : tête de la femme du jeu (repère des coiffures)
+    mh['coiffures'] = {n: lire_coiffure(a.femme, n) for n in set(COIFFURE_LOD)}
     pathlib.Path(a.sortie).mkdir(parents=True, exist_ok=True)
     cache = {}
     choix = [s for s in a.seulement.split(',') if s]

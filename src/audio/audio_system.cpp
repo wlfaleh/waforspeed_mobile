@@ -38,6 +38,9 @@
 #include "../game/course5.h"           // WFS-272 : adversaires de la Course à 5 (lecture seule)
 #include "../game/duel_system.h"       // WFS-272 : adversaires du Duel (duelSession().ghosts(), lecture seule)
 #include "../game/poursuite.h"         // WFS-272 : police de la Poursuite (lecture seule)
+#include "pluie_sons.h"                // WFS-288 : son de la pluie (averse, tambourinage, essuie-glaces)
+#include "../world/meteo.h"            // WFS-288 : meteo::pluieActive (lecture seule)
+#include "../game/camera_vue.h"        // WFS-288 : vue choisie (vueCamera, VUES), lecture seule
 
 namespace wfs {
 
@@ -67,9 +70,10 @@ public:
         lieux_.build((float)OUT_RATE, nuit); tunnel_.build((float)OUT_RATE);
         voitures_.build((float)OUT_RATE); attribution_.reset(); candidats_.reserve(128);   // WFS-272
         echos_.build((float)OUT_RATE);   // WFS-275
+        pluie_.build((float)OUT_RATE);   // WFS-288
         const int rate = audioOutStart([this](float* out, int n) { remplir(out, n); });
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
-        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); echos_.build((float)rate); }   // WFS-261, WFS-272, WFS-275
+        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); echos_.build((float)rate); pluie_.build((float)rate); }   // WFS-261, WFS-272, WFS-275, WFS-288
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
         // WFS-76 : musique (une fois par lancement) et ambiance de la carte de cette partie (moment : WFS_MOMENT, comme la plage)
         musique().build((float)(rate ? rate : OUT_RATE));
@@ -127,6 +131,7 @@ public:
         sonsLieux(g);        // WFS-261
         sonsVoitures(dt, g); // WFS-272
         sonsParois(dt, g);   // WFS-275
+        sonsPluie(dt, g);    // WFS-288
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
             const int n = (int)g_rec.acc; g_rec.acc -= n;
@@ -179,6 +184,7 @@ private:
         }
         const int amb = g.ecran == Ecran::Course && !g.sceneDediee ? 1 : 0;
         lieuxActifs_ = amb; lieux_.active(amb);   // WFS-261 : sources placées et écho comme l'ambiance (écran Course seulement)
+        pluie_.active(amb);                       // WFS-288 (RG-02) : la pluie aussi
         if (!amb) tunnel_.dedans(false);
         if (amb != ambActive_) {
             ambActive_ = amb; ambiance_.active(amb);
@@ -211,6 +217,7 @@ private:
             echos_.process(bus, G, D, k);    // WFS-275 : écho des murs (même bus) ; sans mur, rien n'est ajouté
             musique().mix(m, k, master); ambiance_.mix(m, k, master);
             lieux_.mix(G, D, k, master);   // RG-02 à RG-04
+            pluie_.mix(G, D, k, master);   // WFS-288 : hors de l'écho (dehors) ; muette hors pluie : rien n'est touché
             lieux::entrelacer(m, G, D, out + (size_t)fait * (size_t)canaux, k, canaux);
             fait += k;
         }
@@ -375,6 +382,19 @@ private:
         if (etat != parLog_ && horlogeParois_ >= 1) { horlogeParois_ = 0; parLog_ = etat; WFS_LOG("PAROIS gauche %.0f m, droite %.0f m", a, b); }
     }
     double horlogeParois_ = 1;
+    // WFS-288 : pluie de la Ville de nuit (même expression que sfx.cpp) ; essuie-glaces avancés à chaque pas avec les mêmes entrées
+    // que l'image (camera_vue.cpp : dt, vitesse, pluie ; rien si ni joueur ni voiture) ; entendus en vue Cockpit (intérieur du modèle)
+    pluie::SonsPluie pluie_; pluie::Surfaces surfacesPluie_; const CarDef* carPluie_ = nullptr; int pluieLog_ = -1;
+    void sonsPluie(double dt, const GameView& g) {
+        if (!g.player || !g.car) return;
+        const char* mo = std::getenv("WFS_MOMENT");
+        const bool pluie = meteo::pluieActive(g.map ? g.map->id : nullptr, mo && std::strcmp(mo, "nuit") == 0);
+        const bool cockpit = VUES[(int)vueCamera()].cockpit, balais = cockpit && cockpit::interieurPour(g.car->id) != nullptr;
+        if (carPluie_ != g.car) { carPluie_ = g.car; surfacesPluie_ = pluie::surfaces(g.car->d.L, g.car->d.W, g.car->d.H, g.car->d.wb); }
+        pluie_.pas((float)dt, g.player->kmh(), pluie, cockpit, balais, tunnelLog_, surfacesPluie_);
+        const int etat = pluie && lieuxActifs_ ? 1 + cockpit : 0;   // journal du banc : une ligne quand la pluie ou la vue change
+        if (etat != pluieLog_) { pluieLog_ = etat; WFS_LOG("PLUIE %s", etat == 0 ? "muette" : etat == 1 ? "vue extérieure" : "vue Cockpit"); }
+    }
     void sonsVoitures(double dt, const GameView& g) {
         candidats_.clear();
         const bool actif = lieuxActifs_ && g.track && g.player;
@@ -625,6 +645,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     lieux::benchLieux(out, g_rec.pcm);   // WFS-261 : lieu-<source>.wav / .png (stéréo), lieu-tunnel, coût
     voitures::benchVoitures(out);        // WFS-272 : voitures-course5, voitures-trafic, voitures-police (stéréo, hauteur), coût
     parois::benchParois(out, g_rec.pcm); // WFS-275 et WFS-278 : parois-*, masque-* (ville, corniche, campagne, stands), coût
+    pluie::benchPluie(out, g_rec.pcm);   // WFS-288 : pluie-arriere, pluie-cockpit, pluie-tunnel, coût
 }
 
 } // namespace wfs
