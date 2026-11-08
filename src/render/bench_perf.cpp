@@ -16,6 +16,7 @@
 #include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes
 #include "eclairage.h"                // WFS-297 : lampadaires déclarés
 #include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/chargement.h"   // WFS-297 (RG-06) : écran de chargement et ses chiffres
 #include "passes.h"
 #include "qualite_auto.h"
 #include "renderer.h"
@@ -113,8 +114,19 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             Game::Demandes& d = Game::demandes(); d.carte = carte; d.nuit = nuit;
             g.update(1.0 / 60); g.render(t); t += 1.0 / 60;
         }
+        {   // RG-06 : écran de chargement à 100 % (chiffres du chargement et mémoire), capturé à chaque partie
+            FrameParams fp; fp.view = mat4::identity(); fp.proj = mat4::identity(); fp.camPos = {0, 0, 0};
+            if (r.beginFrame(fp)) { ecrans::dessinerChargement(r, (float)r.width(), (float)r.height(), 1, "Prêt", false, 1); r.endFrame(); }
+            r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-chargement.png");
+        }
         g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
         for (int i = 0; i < 4 * 60; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }   // décompte et départ
+        {   // RG-06 : panneau Réglages depuis la pause (rendu, mémoire, numéro de la partie)
+            g.allerA(Ecran::Pause); g.update(1.0 / 60);
+            ecrans::ouvrirReglagesBanc(true);
+            g.render(t); g.render(t + 0.02); r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-reglages.png");
+            ecrans::ouvrirReglagesBanc(false); g.allerA(Ecran::Course); g.update(1.0 / 60);
+        }
         for (int f = 0; f < 3; f++) {
             if (f > 0) for (int i = 0; i < MINUTE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }
             for (int i = 0; i < 30; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }   // images complètes avant la mesure

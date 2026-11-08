@@ -10,6 +10,7 @@
 #include "cache_pipelines.h"        // WFS-262 (RG-01)
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #include "../core/platform.h"   // WFS-222 : nowSeconds (banc de profilage)
@@ -1043,6 +1044,7 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     creationsMaillages_++;   // WFS-268 (RG-04)
+    memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
     // WFS-149 (RG-04) : géométrie générée (route, décor, charte…) sans tangentes : calculées ici, une fois, sur une copie
     // (tampon réutilisé). updateMesh (halos, particules : jamais de carte de normales) n'en calcule pas.
@@ -1075,10 +1077,11 @@ void Renderer::updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vect
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
 }
 
-void Renderer::destroy(Mesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
+void Renderer::destroy(Mesh& m) { if (m.vb.buf) memoire::compteurs().objets3d--; vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }   // WFS-297 : objets 3D vivants
 
 SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx) {
     SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
+    memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r < 0 ? b.r : b.r * 1.5f; }   // WFS-82 : marge pour l'animation
     m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m.i16 = v.size() <= 65536;   // WFS-210 (RG-05) : moins de 65 536 sommets → indices 16 bits (mémoire GPU ÷ 2 pour les indices)
@@ -1087,7 +1090,7 @@ SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const st
     return m;
 }
 
-void Renderer::destroy(SkinnedMesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
+void Renderer::destroy(SkinnedMesh& m) { if (m.vb.buf) memoire::compteurs().objets3d--; vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }   // WFS-297
 
 void Renderer::destroy(Model& m) {
     for (auto& mat : m.mats) if (mat.set) {

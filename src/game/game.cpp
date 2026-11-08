@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "../core/configgame.h"   // WFS-128
 #include <algorithm>
 #include <cmath>
@@ -59,6 +60,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression && !car_.ok) return false;   // WFS-35 : voiture introuvable, l'écran garde l'étape où l'erreur a eu lieu
     if (progression) progression(0.70f, "Construction de la ville");   // WFS-35
     systemsInit();
+    if (car_.ok) memoire::compteurs().partie++;   // WFS-297 (RG-06) : numéro de la partie depuis le lancement
     return car_.ok;
 }
 

@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "../../core/log.h"
+#include "../../core/memoire.h"   // WFS-297 (RG-06) : mémoire du jeu, de la carte graphique, numéro de la partie
 #include "../../core/system.h"
 #include "../../game/course_system.h"
 #include "../../game/camera_vue.h"
@@ -281,7 +282,11 @@ private:
         g_fermer = {fx, fy, fw, bh};
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »
-        ui::text(r, x0, lm.empty() ? fy + (bh - 15 * k) / 2 : fy + bh / 2 - 15 * k, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        {   // WFS-297 (RG-06) : rendu puis mémoire sur la même ligne, réduite pour tenir avant « Fermer » (aucun bouton ne bouge)
+            const std::string lr = qualite::ligneRendu() + " · " + memoire::texteMemoire();
+            const float tr = std::min(15 * k, 15 * k * (fx - x0 - 8 * k) / std::max(ui::width(15 * k, lr, 0.02f), 1.f));
+            ui::text(r, x0, lm.empty() ? fy + (bh - tr) / 2 : fy + bh / 2 - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        }
         if (!lm.empty()) { const float tm = std::min(12 * k, 12 * k * (fx - x0 - 8 * k) / std::max(ui::width(12 * k, lm, 0.f), 1.f)); g_mesure = {x0, fy, fx - x0 - 8 * k, bh};
                            ui::text(r, x0, fy + bh / 2 + 1 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
         biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
@@ -355,7 +360,11 @@ private:
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
         }
         // WFS-134 (RG-01) : rendu réellement utilisé, sous les deux colonnes
-        ui::text(r, x0, py + ph - 26 * k, 14 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        {   // WFS-297 (RG-06) : rendu puis mémoire du jeu, de la carte graphique et numéro de la partie, réduits s'ils ne tiennent pas
+            const std::string lr = qualite::ligneRendu() + " · " + memoire::texteMemoire();
+            const float tr = std::min(14 * k, 14 * k * (pw - 48 * k) / std::max(ui::width(14 * k, lr, 0.02f), 1.f));
+            ui::text(r, x0, py + ph - 12 * k - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        }
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne sous le rendu (toucher : partager)
         if (!lm.empty()) { const float tm = std::min(10 * k, 10 * k * (pw - 48 * k) / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, pw - 48 * k, 28 * k};
                            ui::text(r, x0, py + ph - 11 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
@@ -369,6 +378,7 @@ private:
 
 Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
+void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
 bool toucheReglages(float x, float y) { return g_ouvert || g_bouton.contient(x, y); }
 
 // WFS-80 : banc manette du garage (pastilles) et des réglages : le focus va à la zone visée par la croix (chemin le plus

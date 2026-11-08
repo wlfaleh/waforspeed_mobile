@@ -12,6 +12,7 @@
 #include <time.h>
 #include <string>
 #include <vector>
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "../core/gpu_logiciel.h"
 #include "../core/jobs.h"
 #include "../core/log.h"
@@ -42,6 +43,7 @@ bool readAsset(const std::string& path, std::vector<uint8_t>& out) {
     out.resize(n);
     int rd = AAsset_read(a, out.data(), n);
     AAsset_close(a);
+    memoire::compteurs().octetsLus += (int64_t)n;   // WFS-297 (RG-06)
     return rd == (int)n;
 }
 double nowSeconds() { timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return t.tv_sec + t.tv_nsec * 1e-9; }

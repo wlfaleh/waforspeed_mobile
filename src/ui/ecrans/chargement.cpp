@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cmath>
 #include "../../core/log.h"
+#include "../../core/memoire.h"   // WFS-297 (RG-06)
+#include "../../game/traffic_system.h"   // WFS-297 : voitures du trafic chargées
 #include "../../core/platform.h"
 #include "../../core/system.h"
 #include "../../game/game.h"
@@ -133,7 +135,14 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
         dessin2d::biseau(r, x, by, bw, bh, 14 * kb, dessin2d::uni(hex(ACCENT, op)));
         ui::text(r, x + bw / 2, by + (bh - tp) / 2, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
     }
-    else ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
+    else {
+        ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
+        // WFS-297 (RG-06) : données chargées et mémoire utilisée, en petit sous l'étape (pendant et à la fin du chargement)
+        const Traffic* tr = activeTraffic();
+        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
+        ui::text(r, x, y + txt + 8 * k, tm, memoire::texteChargement(tr ? (int)tr->cars.size() : 0), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+        ui::text(r, x, y + txt + 10 * k + tm, tm, memoire::texteMemoire(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+    }
 }
 
 const char* versionJeu() { return WFS_VERSION; }   // WFS-279
