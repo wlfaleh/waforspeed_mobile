@@ -4859,3 +4859,21 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Vérifié en local** (main cc9b632 + branche) : compilation sans avertissement, `test_audio_pluie` 16 cas OK, **65 tests CPU OK** (`tools/qa/tests_cpu.sh`, 173 s). Les commits de `main` arrivés depuis (WFS-266, WFS-284, PO) ne touchent ni `src/audio` ni `CMakeLists.txt`.
 - **Mesure du lead dev** sur les .wav du banc : l'averse du dehors est 25 dB sous le moteur du banc, et sous lui dans chaque octave (−10 dB à 8 kHz). C'est la borne de RG-07 (pneus +3,7 dB au-dessus de l'averse à 50 km/h). Point à écouter sur le téléphone, noté dans `qa/Check.md`.
 - **Statut** : 🟣 (ni retour de l'utilisateur ni conduite : ✅ par les bancs du matin). Ligne #254 retirée de `suivi-pr.md` ; arwa-4 libre. Remarques non bloquantes dans la revue : ρ G / D = 0,195 pour un seuil de 0,2 ; pas de cas « Son : Coupé » dans le test ; `(void)cad;` inutile.
+
+### 2026-11-08 02:25:00 — WFS-263 : shader léger au loin, mesures et captures (Claude, agent dev X)
+- **RG-01** : variante légère de `scene.frag` par la constante de spécialisation `LEGER` (id 1, `common.glsl`).
+  - Elle s'applique au décor au-delà de 60 m, avec un fondu de 60 à 70 m.
+  - Elle retire : la carte de normales, la table BRDF (remplacée par l'approximation de Karis), le ciel analytique et la 2e lecture de sonde. Il ne reste qu'une lecture de reflet (cube le plus récent) ; ambiance par harmoniques sphériques ; diffus et soleil inchangés.
+  - Toujours en shader complet : voitures, route, transparents, vitres d'immeuble.
+  - Pipelines `opaqueLeger_` et `opaqueLegerDouble_`, avec et sans retrait des faces : un objet y passe si toute sa sphère est au-delà de 70 m (`Pending::loin`). Ils sont créés au chargement et mis en cache avec les variantes MSAA (WFS-262).
+  - Dans le shader complet, le même calcul s'arrête pour chaque pixel au-delà de 70 m.
+- **RG-02** : en Basse, 4 lumières au plus par pixel (`spotLights`, `F.spotN.y`) et 4 lectures au lieu de 12 pour le reflet de la route mouillée (`F.spotN.z`).
+- **Mesures au banc** (lavapipe, indicatif ; Ville, 90 images ; `main` → branche) :
+  - passe de scène : Haute 526,5 → 517,9 ms (−1,6 %), Basse 257,2 → 250,7 ms (−2,5 %) ;
+  - le choix de pipeline seul (`WFS_LEGER=0`) ne gagne rien sur lavapipe, qui compile les sauts du shader ; le gain attendu est sur le GPU du téléphone (registres, lectures de texture), à mesurer avec la ligne « Images (20 s) ».
+- **Réalisme (seuil de 3 %)** : 0 pixel changé de plus de 16 sur 255 ; écart maximal de 10 sur 255.
+  - Pixels modifiés au-delà de 60 m : luminance moyenne 48,1 → 47,2 (−1,9 %) en Haute, 58,8 → 57,9 (−1,4 %) en Basse.
+  - Basse de nuit à la Corniche : 0,46 % de pixels changés (plafond de 4 lumières), sans écart visible.
+  - Banc `realisme` complet en cours, pour comparer les indices de fidélité avec `main`.
+- 63 tests CPU OK, parcours 0 écart.
+- Captures avant / après dans `qa/pr/WFS-263/` (42 paires) : perf des 4 cartes en Haute et Basse, course de nuit, route mouillée, phares en Basse.
