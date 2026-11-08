@@ -185,23 +185,18 @@ void iblRemplacer(inout vec3 skyAmb, inout vec3 env, inout vec3 Fe, inout float 
     if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
 }
 
-// WFS-263 (RG-01) : ambiance et reflet du shader léger (décor au-delà de 60 m) : même sonde que iblRemplacer, mais une seule
-// lecture (cube le plus récent, au niveau de la rugosité) et le Fresnel intégré approché sans la table BRDF (Karis 2014,
-// « Physically Based Shading on Mobile », écart < 2 % sur la luminance de l'objet) ; sans sonde : ciel moyen, sans disque solaire.
-vec3 envBrdfApprox(vec3 f0, float r, float NoV) {
-    const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022), c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-    vec4 r4 = r * c0 + c1;
-    float a004 = min(r4.x * r4.x, exp2(-9.28 * NoV)) * r4.x + r4.y;
-    vec2 ab = vec2(-1.04, 1.04) * a004 + r4.zw;
-    return f0 * ab.x + ab.y;
-}
-void iblLeger(inout vec3 skyAmb, out vec3 env, inout vec3 Fe, inout float specOcc, vec3 N, vec3 R, float NoV, float rough, vec3 f0, bool vtint) {
-    env = mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5) * F.misc.z;
+// WFS-263 (RG-01) : ambiance et reflet du shader léger (décor au-delà de 60 m) : mêmes formules que le complet (ciel analytique
+// sans sonde ; avec sonde : harmoniques sphériques et table BRDF exacte), mais UNE seule lecture de la sonde (le cube dominant
+// du mélange A / B) au lieu de trois (skyColor + iblPrefiltre lisent chacun les deux cubes). Seule autre différence avec le
+// complet : pas de carte de normales (relief invisible au-delà de 60 m).
+void iblLeger(inout vec3 skyAmb, out vec3 env, inout vec3 Fe, inout float specOcc, vec3 N, vec3 R, float NoV, float rough, float sunK, vec3 f0, bool vtint) {
     if (F.iblA.x > 0.5) {
         skyAmb = iblDiffus(N);
         specOcc = 1.0;
-        env = textureLod(iblCubeB, R, clamp(rough, 0.0, 1.0) * F.iblA.w).rgb * F.iblB.z;
-        Fe = envBrdfApprox(f0, clamp(rough, 0.0, 1.0), clamp(NoV, 0.0, 1.0));
-    }
+        float r = clamp(rough, 0.0, 1.0);
+        env = F.iblA.y >= 0.5 ? textureLod(iblCubeB, R, r * F.iblA.w).rgb * F.iblB.z : textureLod(iblCubeA, R, r * F.iblA.z).rgb * F.iblB.y;
+        vec2 ab = texture(iblBrdf, vec2(clamp(NoV, 0.0, 1.0), r)).rg;
+        Fe = f0 * ab.x + ab.y;
+    } else env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
     if (vtint) { Fe = vec3(0.0); env = vec3(0.0); }   // feuillage : Lambert sans reflet (comme iblRemplacer)
 }

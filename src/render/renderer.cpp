@@ -1186,8 +1186,13 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
         // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
         u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, 0};
+        // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
+        // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
+        int ordre[FrameParams::SPOTS_MAX];
+        for (int i = 0; i < n; i++) ordre[i] = i;
+        if (qualiteBasse) std::stable_sort(ordre, ordre + n, [&](int a, int b) { return length(fp.spots[a].pos - fp.camPos) < length(fp.spots[b].pos - fp.camPos); });
         for (int i = 0; i < n; i++) {
-            const FrameParams::Spot& s = fp.spots[i];
+            const FrameParams::Spot& s = fp.spots[ordre[i]];
             vec3 dir = normalize(s.target - s.pos);
             if (length(dir) < 0.5f) dir = {0, -1, 0};
             // r128 sans lumières physiques : irradiance × PI (lights_fragment_begin), compensée par le 1/PI du Lambert

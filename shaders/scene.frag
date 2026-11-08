@@ -133,7 +133,7 @@ void main() {
     // WFS-263 (RG-01) : version légère de l'ambiance et du reflet (au-delà de 60 m), mélangée sur le fondu
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     vec3 skyAmbL = skyAmb, envL = vec3(0.0), FeL = Fe; float specOccL = specOcc;
-    if (kL > 0.0) iblLeger(skyAmbL, envL, FeL, specOccL, N, R, NoV, roughEnv, f0, vtint);
+    if (kL > 0.0) iblLeger(skyAmbL, envL, FeL, specOccL, N, R, NoV, roughEnv, sunK, f0, vtint);
     vec3 env = vec3(0.0);
     if (kL < 1.0) {
     env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
