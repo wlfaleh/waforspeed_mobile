@@ -4155,3 +4155,19 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - WFS-300 🟣 fusionné (#272) : agent libre. Demande de l'utilisateur relayée : « Demande un sujet facile ».
 - **WFS-215** (P3, E10, ANO-107 / ANO-110, une demi-journée, modèles de 3 voitures) : premier ticket prêt facile dans l'ordre du PO. Exception PO : en parallèle de WFS-292 (E4 + E10, `vehicule.glsl` seul), fichiers séparés. Zone, interdits et captures : `regles-de-gestion/WFS-215.md` (Suivi).
 - Écartés : WFS-214 / 322 (rendu, E13 tenue par WFS-328), WFS-287 (CI, E7 tenue par WFS-319 et 285), WFS-293 / 280 / 323 (gros, proches de la conduite ou de la caméra). Stock prêt : 7 (193, 214, 280, 287, 293, 322, 323 ; WFS-329 déjà 🔧) : sous le seuil de 8, tickets de rattrapage à créer au prochain passage du PO.
+
+### 2026-11-08 21:01:16 — WFS-301 : partie B retirée, le ticket se termine avec la PR #278 (po-scrum-master)
+- Demande de Claude, agent 3 (01UY1Vv3) : la partie B reposait sur `lots_decor` de WFS-268, **décliné par l'utilisateur** (20:42:00).
+- **Décision du PO : option 1.** WFS-301 finit avec la partie A (#278). RG-04 réduite à « fichiers du paquet identiques à l'APK (29 / 29), même image »
+  + cuissons identiques octet par octet ; RG-07 mesurée sur le paquet partiel (journal ou petit complément de #278) ; `decor_regroupe` reste vide et réservé.
+  Décor préparé dans le paquet → **WFS-331** (sa RG-02) ou la nouvelle Ville (WFS-309). Aucun code retiré, aucun fichier du décor touché.
+- Débloque à la fusion de #278 : **WFS-306** (avec WFS-308 🟣) et **WFS-302**. Rien n'est réservé : WFS-306 sera donné à la demande du développeur.
+- Règles : `regles-de-gestion/WFS-301.md` (Suivi) ; `TACHES.md` (WFS-301, WFS-306) ; `track-agent.md`.
+
+
+### 2026-11-08 21:04:02 — WFS-301 (partie A) fusionné par le lead dev, PR #278 (lead-dev)
+- 1re revue sur la tête 7719b431 : 4 captures `cuisson-*` ouvertes (sans paquet, corrompu, paquet partiel jour et nuit : même Ville, aucun défaut) et 40 paires `carte-ville-*` ouvertes, identiques octet par octet (`cmp`, écart 0).
+- Tout le diff relu (`carte_cuite.*`, `paquet_carte.*`, `test_carte_cuite.cpp`, accroches `readAsset()` Android et PC, `CMakeLists.txt`) : lecture bornée, CRC de l'en-tête vérifié avant la table, `.part` refusé, secours sans plantage ; accroches ≤ 10 lignes, aucun fichier de #248, rien d'iOS. `test_carte_cuite` relancé : OK.
+- Approbation écrite dans la PR (revue « ✅ Approuvé », même compte GitHub), puis squash 8b84a83. Pas de CI de branche demandée : la CI de `main` confirmera la compilation Android.
+- Remarques pour la partie B (dans la revue) : carte passée à `preparerCarte` au changement de carte, verrou de `carteActive()`, seuil de temps du test, RG-08 complet (accueil → course → retour), journal : ne déplacer que ses entrées.
+- Décision du PO écrite pendant la revue (227566e6, 21:01) : WFS-301 se termine avec la partie A. Le code fusionné est bon, mais deux preuves manquent encore : **RG-07** (temps de chargement construction / paquet, médiane de 5, au journal) et **RG-08** (parcours accueil → Ville → course → retour avec le paquet partiel présent puis absent ; le banc `cuisson` charge la Ville directement). WFS-301 reste donc 🔧 au même développeur pour une petite PR de complément, puis 🟣. WFS-306 et WFS-302 peuvent démarrer (le socle est sur `main`). Ligne #278 retirée de `suivi-pr.md`.
