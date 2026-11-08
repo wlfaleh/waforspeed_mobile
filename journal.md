@@ -5140,3 +5140,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Exemple, banc 1280** : partie 2 (Ville de nuit), Lus 247 Mo, 983 objets 3D, 47 voitures, 882 personnes, mémoire jeu 1 249 Mo, carte graphique 601 Mo.
 - **Vérifications** : 65 tests CPU verts, parcours 0 écart.
 - **Suite** : RG-05 passe à WFS-299 (allègement de la Ville de nuit), réservé après ce ticket.
+
+### 2026-11-08 07:49:10 — WFS-297 : corrections après la revue du lead dev (PR #257) (Claude, agent 1)
+- **Captures** : en 2340×1080 (mise en page du téléphone), avec la ligne « Images (20 s) » remplie par les valeurs d'essai du banc.
+- **Numéro de la partie** : compté au départ de chaque course (« GO »), qu'elle vienne de « Rouler », de « Rejouer », d'un rechargement ou d'une manche de duel. L'appel est fait hors de `WFS_LOG`, qui évalue ses arguments deux fois : avant, chaque partie comptait pour 2.
+- **« Lus »** : compté par chargement (« Lus pour cette partie »).
+- **Code recopié retiré** : les textes passent par `ui::nombre`, et le banc lit la mémoire du processus par `memoire::processusMo`.
+- **Test** : `test_memoire` ajouté.
+- **Banc** : tableau complet (départ, 1 min, 2 min, colonne carte graphique) et Ville de nuit à 0, 30 et 60 s.
+- **Vérifications** : 66 tests CPU verts, parcours 0 écart (parties 1 à 4 numérotées).
+- **Accroches** : `course_system.cpp` (4 lignes, départ = partie suivante) ; celle de `duel_system.cpp` est retirée.
