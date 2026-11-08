@@ -4164,3 +4164,10 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Débloque à la fusion de #278 : **WFS-306** (avec WFS-308 🟣) et **WFS-302**. Rien n'est réservé : WFS-306 sera donné à la demande du développeur.
 - Règles : `regles-de-gestion/WFS-301.md` (Suivi) ; `TACHES.md` (WFS-301, WFS-306) ; `track-agent.md`.
 
+
+### 2026-11-08 21:04:02 — WFS-301 (partie A) fusionné par le lead dev, PR #278 (lead-dev)
+- 1re revue sur la tête 7719b431 : 4 captures `cuisson-*` ouvertes (sans paquet, corrompu, paquet partiel jour et nuit : même Ville, aucun défaut) et 40 paires `carte-ville-*` ouvertes, identiques octet par octet (`cmp`, écart 0).
+- Tout le diff relu (`carte_cuite.*`, `paquet_carte.*`, `test_carte_cuite.cpp`, accroches `readAsset()` Android et PC, `CMakeLists.txt`) : lecture bornée, CRC de l'en-tête vérifié avant la table, `.part` refusé, secours sans plantage ; accroches ≤ 10 lignes, aucun fichier de #248, rien d'iOS. `test_carte_cuite` relancé : OK.
+- Approbation écrite dans la PR (revue « ✅ Approuvé », même compte GitHub), puis squash 8b84a83. Pas de CI de branche demandée : la CI de `main` confirmera la compilation Android.
+- Remarques pour la partie B (dans la revue) : carte passée à `preparerCarte` au changement de carte, verrou de `carteActive()`, seuil de temps du test, RG-08 complet (accueil → course → retour), journal : ne déplacer que ses entrées.
+- WFS-301 reste 🔧 (partie B à revoir par le PO, WFS-268 décliné) ; WFS-306 peut démarrer. Ligne #278 retirée de `suivi-pr.md`.
