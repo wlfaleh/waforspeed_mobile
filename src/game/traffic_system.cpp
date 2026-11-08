@@ -205,7 +205,7 @@ private:
         const TrackPoint p = t.pointLisse(s, (c.offPrec + (c.offset - c.offPrec) * al) * RW);
         const double yaw = c.yawPrec + (c.laneYaw - c.yawPrec) * al + (c.crashed ? c.crashYaw : 0);
         const float incl = (float)(c.inclPrec + (c.inclinaison - c.inclPrec) * al);
-        const mat4 chaussee = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-p.th) * rotateX((float)p.slope);
+        const mat4 chaussee = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-p.th) * rotateX((float)p.slope);   // sans le cap
         const mat4 sol = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
         const int k = c.deuxRoues - 1;
         const deux_roues::Gabarit& G = deux_roues::GABARITS[k];
@@ -231,7 +231,17 @@ private:
             r.draw(rouesDR_[k][w], m * roues::matrice(rm, rp), nullptr, nullptr);
         }
         // RG-02 : un pilote sur chaque deux-roues dessiné ; RG-05 : éjecté et couché au sol après un accident
-        deux_roues::noter(m, k, (uint32_t)ci + 2, c.crashed && std::abs(incl) > 0.8f, chaussee, incl >= 0 ? 1 : -1);   // éjecté passé 45° de chute
+        // RG-05 : passé 45° de chute, le pilote est éjecté : couché en travers de la chaussée, 1,8 m derrière le deux-roues et 1 m du
+        // côté opposé à la chute, borné à 1 m des bords de la chaussée (jamais sur le trottoir ni sous la moto)
+        const bool ejecte = c.crashed && std::abs(incl) > 0.8f;
+        mat4 solPilote = chaussee;
+        if (ejecte) {
+            const double latB = (c.offPrec + (c.offset - c.offPrec) * al) * RW;
+            const double latP = std::clamp(latB - (incl >= 0 ? 1.0 : -1.0), -(RW - 1.0), RW - 1.0);
+            const TrackPoint pp = t.pointLisse(s - 1.8 / M, latP);
+            solPilote = translate({(float)pp.x, (float)pp.y, (float)pp.z}) * rotateY((float)-pp.th) * rotateX((float)pp.slope);
+        }
+        deux_roues::noter(m, k, (uint32_t)ci + 2, ejecte, solPilote, incl >= 0 ? 1 : -1);
     }
     // ---------- trafic vivant (WFS-67) ----------
     // silhouette lointaine (makeCarFar / makeCarLow du jeu web) : caisse peinte + habitacle sombre, 2 appels de dessin
@@ -486,7 +496,8 @@ void benchTrafficScenes(Game& g, Renderer& r, const std::string& out) {
 // même vue sans eux (…-sans) ; (c) de près, à 4,5 m de chaque côté et à 10 m devant (trafic-motos-pres-*, …-sans) ; (d) dans la 1re
 // courbe serrée (18 à 60 m de rayon) à la vitesse du trafic, sans vitesse imposée : 4 images (entrée, milieu, sortie)
 // (trafic-motos-virage-<carte>-<moment>-1…4, …-sans) ; (e) la nuit, un deux-roues derrière la Golf vu de face (phare)
-// (trafic-motos-phare-*). Ville de jour : (f) accident en 3 images (avant, chute, glissade) (trafic-motos-choc-1…3).
+// (trafic-motos-phare-*). Ville de jour : (f) accident en 3 images (avant, chute, glissade) (trafic-motos-choc-1…3) ; (g) chaque
+// modèle de côté, de près (trafic-motos-cote-<modèle> : aucune marque visible).
 // Journal : modèle, distance, vitesse, rayon, inclinaison et équilibre ; deux-roues dessinés et pilotes dessinés (égaux, RG-02).
 void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
     int ecarts = 0;
@@ -598,7 +609,18 @@ void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
                     capture("trafic-motos-phare-" + suffixe, v);
                     g.camMode = 1;
                 }
-                if (!std::strcmp(carte, "ville") && !std::strcmp(moment, "jour")) {   // (f) accident : routière à 12 m dans la file de la Golf
+                if (!std::strcmp(carte, "ville") && !std::strcmp(moment, "jour")) {   // (g) de côté, de près, de jour : chaque modèle seul,
+                    // arrêté à 3,4 m à droite de la Golf, caméra à 6,5 m à droite de la Golf (vitrine) : le deux-roues à 3 m, vu de flanc
+                    for (int k = 0; k < DEUX_ROUES_COUNT; k++) {
+                        v.clear(); v.push_back(poser(k, 2, 0, 30)); ecarter(v);
+                        TrafficCar& c = T.cars[v[0]]; c.speed = c.want = 0;
+                        c.offset = c.prevOff = c.offPrec = 3.4 / RW;   // hors de l'axe de sa file : aucun pas de simulation (il
+                        g.camMode = 2; g.orbit = 3.14159265f / 2;       // glisserait vers sa file en pivotant sur place)
+                        capture(std::string("trafic-motos-cote-") + DEUX_ROUES[k].id, v);
+                    }
+                    g.camMode = 1;
+                }
+                if (!std::strcmp(carte, "ville") && !std::strcmp(moment, "jour")) {   // (f) accident : routière à 9 m dans la file de la Golf
                     v.clear(); v.push_back(poser(1, 1, 9, 40)); ecarter(v); g.update(1.0 / 60);
                     capture("trafic-motos-choc-1", v);
                     Traffic::crash(T.cars[v[0]], 0.6, 1);   // même glissade que le choc du joueur (Traffic::collide)

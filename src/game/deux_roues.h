@@ -32,8 +32,8 @@ constexpr float CASQUE_RX = 0.130f, CASQUE_RY = 0.150f, CASQUE_RZ = 0.165f, CASQ
 
 bool preparer(Renderer& r);                                 // humains, poses, casques (une fois) ; faux : pas de pilote (journal)
 void detruire(Renderer& r);
-// deux-roues dessiné : monde = matrice du .wfm (inclinaison comprise) ; ejecte : accident, pilote couché au sol à côté (sol :
-// repère de la chaussée sous le deux-roues, sans l'inclinaison ni la toupie de l'accident ; sens : côté de la chute, ±1)
+// deux-roues dessiné : monde = matrice du .wfm (inclinaison comprise) ; ejecte : accident, pilote couché au sol (sol : repère de
+// la chaussée à l'endroit où il est couché, choisi par le trafic sur la chaussée ; sens : côté de la chute, ±1)
 void noter(const mat4& monde, int modele, uint32_t graine, bool ejecte = false, const mat4& sol = mat4::identity(), int sens = 1);
 void dessinerFile(Renderer& r, const vec3& cam);            // pilotes de la file, puis file vidée
 int dessinesDerniereImage();                                 // pilotes dessinés à la dernière image (banc d'essai)

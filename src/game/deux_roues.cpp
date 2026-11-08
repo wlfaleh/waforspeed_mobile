@@ -153,15 +153,17 @@ bool poserCouche(Humain& H) {
 
 bool preparer(Renderer& r) {
     if (g_pret) return true;
+    // échec (fichier absent ou incomplet) : les personnages déjà chargés sont rendus tout de suite (detruire ne voit que g_pret)
+    auto echec = [&r]() { for (Humain& h : g_h) if (h.p.ok) { detruirePersonnage(r, h.p); h.p.ok = false; } return false; };
     for (int i = 0; i < 2; i++) {
         Humain& H = g_h[i];
         H.indice = i ? HUMAIN_F : HUMAIN_H; H.femme = conducteurs::humaineFemme(H.indice);
         const std::string chemin = std::string("people/humains/") + conducteurs::HUMAINS[H.indice] + ".wfp";
-        if (!chargerPersonnage(r, chemin, H.p)) { WFS_ERR("deux-roues : %s illisible : pas de pilote (WFS-232)", chemin.c_str()); return false; }
+        if (!chargerPersonnage(r, chemin, H.p)) { WFS_ERR("deux-roues : %s illisible : pas de pilote (WFS-232)", chemin.c_str()); return echec(); }
         for (int lod = 0; lod < 3; lod++) H.corps[lod] = plageParNom(H.p, "corps-" + std::to_string(lod));
         for (int k = 0; k < 3; k++)
-            if (!poser(H, k) || !H.corps[0]) { WFS_ERR("deux-roues : %s : os ou corps absents : pas de pilote (WFS-232)", chemin.c_str()); return false; }
-        if (!poserCouche(H)) { WFS_ERR("deux-roues : %s : pose couchée impossible (WFS-232)", chemin.c_str()); return false; }
+            if (!poser(H, k) || !H.corps[0]) { WFS_ERR("deux-roues : %s : os ou corps absents : pas de pilote (WFS-232)", chemin.c_str()); return echec(); }
+        if (!poserCouche(H)) { WFS_ERR("deux-roues : %s : pose couchée impossible (WFS-232)", chemin.c_str()); return echec(); }
     }
     // casque : coque (ellipsoïde ouverte en bas, au niveau du cou) et visière fumée devant les yeux, un peu en avant de la coque
     std::vector<Vertex> v; std::vector<uint32_t> ix;
@@ -196,7 +198,7 @@ void noter(const mat4& monde, int modele, uint32_t graine, bool ejecte, const ma
 }
 
 // RG-02 : un pilote par deux-roues noté (le trafic en note 14 au plus, PILOTES_MAX = 16), à toute distance ; du plus proche au plus
-// loin (ordre des niveaux de détail) ; accident : couché sur le dos au sol, 1,4 m devant le deux-roues et 0,8 m du côté de la chute
+// loin (ordre des niveaux de détail) ; accident : couché sur le dos, en travers, dans le repère au sol donné par le trafic
 void dessinerFile(Renderer& r, const vec3& cam) {
     g_dessines = 0; g_notesDerniere = g_notes; g_notes = 0;
     if (!g_pret) { g_n = 0; return; }
@@ -213,7 +215,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
         app.peau = peauApparence(conducteurs::albedoPeau(H.indice)); app.corps = H.p.corps;
         tenue::tenueLieu(tenue::carteCourante(), e.graine, H.femme, app);
         app.vetement.x = 1.95f; app.vetement.y = 1.9f;   // manches longues et pantalon (tenue de deux-roues)
-        const mat4 monde = e.ejecte ? e.sol * translate({0.8f * (float)e.sens, 0, -1.4f}) * rotateY(PI_F / 2 + 0.5f * (float)e.sens) * H.placeCouche
+        const mat4 monde = e.ejecte ? e.sol * rotateY(PI_F / 2 * (float)e.sens) * H.placeCouche   // en travers, tête vers le deux-roues
                                     : e.monde * H.place[e.modele];
         const int lod = e.d2 < LOD_PILOTE_M[0] * LOD_PILOTE_M[0] ? 0 : e.d2 < LOD_PILOTE_M[1] * LOD_PILOTE_M[1] ? 1 : 2;
         const Plage* c = H.corps[lod] ? H.corps[lod] : H.corps[0];

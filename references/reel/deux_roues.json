@@ -69,7 +69,8 @@
     "valeur": 0.01,
     "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
    },
-   "modele_mm": 772
+   "modele_mm": 772,
+   "ecart_accepte": "hors des ±1 % (scooter −2,5 %, sportive −1,8 %) : écart accepté par le PO le 2026-11-08 (regles-de-gestion/WFS-232.md, « Décision du PO ») : proportions du modèle, une seule échelle permise ; correction à tenter dans WFS-280 (RG-05)"
   },
   {
    "id": "deux_roues.routiere.longueur",
@@ -163,7 +164,8 @@
     "valeur": 0.01,
     "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
    },
-   "modele_mm": 815
+   "modele_mm": 815,
+   "ecart_accepte": "hors des ±1 % (scooter −2,5 %, sportive −1,8 %) : écart accepté par le PO le 2026-11-08 (regles-de-gestion/WFS-232.md, « Décision du PO ») : proportions du modèle, une seule échelle permise ; correction à tenter dans WFS-280 (RG-05)"
   }
  ],
  "mesure_modele": "modele_mm : mesuré sur le .wfm converti (assets/cars/deux_roues) : longueur = boîte du modèle entier ; empattement = écart des centres des roues (cylindres de WFS_ROUES_2R) ; selle = point le plus bas du dessus de la selle (sommets à normale vers le haut, à moins de 6 cm du plan du deux-roues), à la place du pilote. Écarts de selle : scooter -2,5 %, sportive -1,8 % (proportions des modèles : seule une échelle uniforme est permise, une échelle par axe ovaliserait les roues), routière +0,6 % de 834 (+1,1 % de 830)."

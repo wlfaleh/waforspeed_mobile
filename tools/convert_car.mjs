@@ -37,7 +37,7 @@
 //   WFS_PIECE=avant|arriere : n'écrit que cette roue (même repère que le modèle entier) ; sans WFS_PIECE, le modèle est écrit
 //     sans ses roues. La mise à l'échelle et la boîte de l'en-tête du corps restent celles du modèle entier.
 // WFS-158 (RG-A, M-04) : WFS_PLAQUE=<regex matériau> : plaques avant et arrière remises au format européen 520 × 110 mm ;
-// WFS_TEXTURES=« matériau|couleur=fichier[|normale=fichier] ; … » : images du dépôt à la place des textures d'un matériau
+// WFS_TEXTURES=« matériau|couleur=fichier[|normale=fichier][|mr=fichier] ; … » : images du dépôt à la place des textures d'un matériau
 // (plaques au nom de l'auteur du modèle, remplacées par les plaques neutres de tools/plaques_neutres.mjs).
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
@@ -289,7 +289,7 @@ for (const [cle, ps] of groups) {
     col, metal: unie ? 0.45 : m ? m.getMetallicFactor() : 0, rough: unie ? 0.32 : m ? m.getRoughnessFactor() : 0.6, em: unie ? [0, 0, 0] : em,
     cut: m ? m.getAlphaCutoff() : 0.5,
     tC: unie ? -1 : await tex(m && m.getBaseColorTexture(), true, rem.couleur), tN: unie ? -1 : await tex(m && m.getNormalTexture(), false, rem.normale),
-    tMR: unie ? -1 : await tex(m && m.getMetallicRoughnessTexture(), false), flags, name,
+    tMR: unie ? -1 : await tex(m && m.getMetallicRoughnessTexture(), false, rem.mr), flags, name,   // WFS-232 : « mr=fichier »
   });
   // fusion des primitives du matériau
   let nv = 0, ni = 0; for (const p of ps) { nv += p.pos.length / 3; ni += p.idx.length; }
