@@ -32,7 +32,7 @@ Le calcul intègre de D = 0,5 à 8 mm (règle de Simpson, `pluie::reference`). L
 | Vitesse de chute à 1 / 2 / 5 mm (Atlas) | 4,00 / 6,55 / 9,14 m/s (valeurs de Gunn et Kinzer données par le PO : 4,0 / 6,5 / 9,1 ; écart ≤ 1 %) |
 
 ## 3. Pare-brise et toit (RG-04)
-Le pare-brise de la Golf a une pente dy / dz de 0,655 (`cockpit::PENTE_PARE_BRISE`), soit **α = 33,2°** sur l'horizontale. Vues de la voiture,
+Le pare-brise de la Golf a une pente dy / dz de 0,655, soit **α = 33,2°** sur l'horizontale. La valeur vient de la géométrie du cockpit de WFS-235 : du pied (−0,22 ; −1,10) au haut (+0,16 ; −0,52) par rapport à l'œil. WFS-282 a retiré la constante de `vehicule_cockpit.h`, elle est donc gardée dans `pluie::PENTE_PARE_BRISE`. Vues de la voiture,
 les gouttes arrivent avec la vitesse (0, −v(D), +V). Le flux à travers le pare-brise vaut donc ∫ N · (v · cos α + V · sin α) dD, soit
 **flux · cos α + V · sin α · concentration**. Le toit est horizontal : son flux ne dépend que de la chute.
 
@@ -44,7 +44,7 @@ les gouttes arrivent avec la vitesse (0, −v(D), +V). Le flux à travers le par
 
 Surfaces de la voiture du joueur, estimées depuis ses dimensions (WFS-158) **[proportions de la Golf 8, à vérifier pour les autres]** :
 - toit : 0,60 × l'empattement de long et 0,70 × la largeur de large. Pour la Golf : **1,97 m²**, soit 4 145 impacts par seconde.
-- pare-brise : 0,26 × la hauteur de haut (Golf : du pied à −0,22 m jusqu'au haut à +0,16 m de l'œil, `vehicule_cockpit.h`), sur 0,80 × la largeur. Pour la Golf : **0,99 m²**, soit 1 743 impacts par seconde à l'arrêt et 14 160 à 130 km/h.
+- pare-brise : 0,26 × la hauteur de haut (Golf : du pied à −0,22 m jusqu'au haut à +0,16 m de l'œil), sur 0,80 × la largeur. Pour la Golf : **0,99 m²**, soit 1 743 impacts par seconde à l'arrêt et 14 160 à 130 km/h.
 
 Chaque impact tire la taille d'une goutte selon son poids dans le flux : N·v pour la chute, N pour la part balayée par la voiture. Son amplitude
 suit la quantité de mouvement de la goutte, (D / 2 mm)³ × vitesse normale / v(2 mm), bornée à 4.

@@ -59,7 +59,7 @@ float fluxPareBrise(const Reference& r, float kmh, float pente) {
 Surfaces surfaces(float L, float W, float H, float wb) {
     (void)L;
     Surfaces s;
-    s.pente = cockpit::PENTE_PARE_BRISE;
+    s.pente = PENTE_PARE_BRISE;
     s.toit = (0.60f * wb) * (0.70f * W);
     const float hauteurPb = 0.26f * H, longueurPb = hauteurPb / std::sin(std::atan(s.pente));
     s.pareBrise = longueurPb * 0.80f * W;

@@ -16,9 +16,13 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "../render/vehicule_cockpit.h"   // cockpit::EtatEssuie, PENTE_PARE_BRISE (lecture seule)
+#include "../render/vehicule_cockpit.h"   // cockpit::EtatEssuie, cadenceEssuie (lecture seule)
 
 namespace wfs::pluie {
+
+// pente dy / dz du pare-brise de la Golf, vue de l'œil : du pied (−0,22 ; −1,10) au haut (+0,16 ; −0,52), soit 33,2° sur l'horizontale
+// (géométrie lue dans vehicule_cockpit.h de WFS-235, constante retirée par WFS-282 ; gardée ici pour le flux du pare-brise)
+constexpr float PENTE_PARE_BRISE = 0.655f;
 
 // ---------- RG-01 : pluie de référence (calcul pur) ----------
 constexpr float PLUIE_MMH = 5.f;                  // pluie modérée (décision du PO : 2,5 à 7,6 mm/h [à vérifier])
@@ -41,11 +45,11 @@ struct Reference {
 Reference reference(float R = PLUIE_MMH);         // intégration numérique (D de 0,5 à 8 mm)
 // RG-04 : impacts par m² et par seconde sur un pare-brise de pente dy / dz (incliné de atan(pente) sur l'horizontale), voiture à
 // kmh : concentration × vitesse relative (chute + vitesse de la voiture) projetée sur la normale = flux · cos α + V · sin α · concentration
-float fluxPareBrise(const Reference& r, float kmh, float pente = cockpit::PENTE_PARE_BRISE);
+float fluxPareBrise(const Reference& r, float kmh, float pente = PENTE_PARE_BRISE);
 // surfaces de la voiture (m²), estimées depuis ses dimensions (WFS-158, L × W × H, empattement) : toit 0,60 × empattement de long
-// et 0,70 × largeur de large ; pare-brise : 0,26 × hauteur de haut (Golf : du pied à −0,22 m au haut à +0,16 m de l'œil, vehicule_cockpit.h)
+// et 0,70 × largeur de large ; pare-brise : 0,26 × hauteur de haut (Golf : du pied à −0,22 m au haut à +0,16 m de l'œil, ci-dessus)
 // sur 0,80 × largeur, pente de la Golf [proportions de la Golf 8, à vérifier pour les autres]
-struct Surfaces { float toit = 0, pareBrise = 0, pente = cockpit::PENTE_PARE_BRISE; };
+struct Surfaces { float toit = 0, pareBrise = 0, pente = PENTE_PARE_BRISE; };
 Surfaces surfaces(float L, float W, float H, float empattement);
 
 // ---------- niveaux (RG-07 : décision du PO, niveau absolu non mesurable : le volume dépend du téléphone) ----------
