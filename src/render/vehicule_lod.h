@@ -19,7 +19,11 @@ constexpr int NIVEAUX = 4;
 // longueur de la voiture à l'écran (pixels de la scène) sous laquelle le niveau k + 1 remplace le niveau k.
 // 60 px ≈ 64 m de la caméra pour une Golf (4,26 m) en poursuite (champ vertical 64°, scène de 1080 px de haut) : l'ancien
 // passage de WFS-134 ; 36 px ≈ 105 m ; 22 px ≈ 170 m (voitures dessinées jusqu'à 200 m, masquage::distanceMax).
-constexpr float SEUILS_PX[NIVEAUX - 1] = {60.f, 36.f, 22.f};
+// WFS-265 (RG-01 ; levier 4 de WFS-246, ANO-125) : modèle complet (190 à 275 k triangles) seulement au-dessus de 200 px (une Golf à 18 m) :
+// avant, chaque adversaire à moins de 64 m gardait le complet (≈ 1 M de triangles par image en Haute). Seuils 2 et 3 un peu
+// plus hauts (48 et 26 px, 77 et 140 m) pour garder le même écart entre niveaux. La voiture du joueur (poursuite, cockpit)
+// reste toujours au-dessus de 200 px : complète.
+constexpr float SEUILS_PX[NIVEAUX - 1] = {200.f, 48.f, 26.f};   // WFS-158 : {60, 36, 22}
 constexpr float BANDE = 1.f / 9;   // largeur du fondu, en part du seuil (de S à S × 8/9)
 
 // longueur à l'écran (px) d'un objet de longueur L (m) à la distance d (m) ; focalePx = |proj(1,1)| × hauteur de la scène / 2
