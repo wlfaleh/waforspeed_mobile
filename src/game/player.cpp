@@ -14,6 +14,8 @@ static constexpr double VOLANT_PLEIN = 0.35;   // braquage au-delà duquel l'aid
 static constexpr double ELARGI_M = 8.0;        // m : borne du cap élargie de 8 m × courbure (rayon 14 m : +0,57 rad)
 static constexpr double ELARGI_MAX = 0.6;      // rad
 static constexpr double VOLANT_TENU = 0.05;    // WFS-316 (RG-02) : au-delà, le joueur tient le volant
+static constexpr double FILE_GAIN = 0.6;       // WFS-258 : maintien de voie, rad de cap par demi-largeur d'écart à la file
+static constexpr double FILE_CORR_MAX = 0.3;   // WFS-258 : correction de cap du maintien de voie, au plus (rad)
 
 // WFS-217 (RG-01, RG-02) : le cap de la voiture est compté par rapport à la route sous elle. Dans le jeu web, la route
 // « porte » la voiture : quand elle tourne, la voiture tourne avec elle sans volant, et le joueur qui braque pour suivre le
@@ -47,7 +49,14 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     // direction visée : celle de la route un peu plus loin dans le sens de marche (± π à contresens, WFS-90)
     const double axe = std::abs(heading) > PI_D / 2 ? (heading > 0 ? PI_D : -PI_D) : 0.0, sens = axe == 0 ? 1.0 : -1.0;
     const double d = std::min(ANTICIPE_MAX, ANTICIPE_S * std::abs(v));
-    const double cible = axe + track.point(dist + sens * d / M, 0).th - th0;
+    // WFS-258 (RG-00b, point 1) : maintien de voie : volant lâché, l'aide ramène la voiture vers la file où le joueur l'a
+    // laissée (sans cela, la dérive vers l'extérieur des virages n'était jamais corrigée) ; seulement la part de l'aide (w)
+    // la file est reprise à la position de la voiture quand le joueur braque, sous 5 m/s (grille de départ, arrêt) et quand un
+    // autre système a déplacé la voiture depuis le pas précédent (placement sur la grille, remise en piste, choc)
+    const bool deplacee = playerX != finPasX_ || dist != finPasD_;
+    if (std::abs(steer) > 0.05 || !active || g_avantWfs258 || std::abs(v) < 5 || deplacee) fileAide_ = playerX;   // banc « avant » : sans maintien de voie
+    const double corrFile = clampd(-(playerX - fileAide_) * FILE_GAIN, -FILE_CORR_MAX, FILE_CORR_MAX) * sens * w;
+    const double cible = axe + track.point(dist + sens * d / M, 0).th - th0 + corrFile;
     double dev = heading - cible;
     // borne élargie du côté intérieur du virage seulement (trajectoire serrée permise ; vers l'extérieur, borne du jeu web)
     const double elargi = dev * k * sens > 0 ? std::min(ELARGI_MAX, std::abs(k) * ELARGI_M) : 0.0;
@@ -70,6 +79,7 @@ void Player::reset(const CarDef& c) {
     position = dist = playerX = speed = steer = heading = odo = 0;
     latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
+    fileAide_ = playerX; finPasX_ = 1e9;   // WFS-258 : maintien de voie repris à la position de la voiture
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
@@ -138,13 +148,29 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     if (aide == Aide::Web || std::abs(steer) < VOLANT_TENU || g_avantWfs316) playerX -= dt * 2 * sp * sp * courbe * CENTRIFUGAL;
 
     // ---------- moteur, freins, frottements (m/s²) ----------
-    nitroOn = playing && in.nitro && nitro > 0.01;
+    // WFS-258 (RG-00b, point 1) : aide activée, la voiture ralentit à temps pour le virage qui vient (épingle du Grand Prix prise
+    // à 228 km/h dans la vidéo de l'utilisateur) : au-dessus de la vitesse permise, gaz et nitro coupés, puis frein. Vitesse
+    // permise : adhérence et freinage de cette conduite (Phys::grip, Phys::brake) sur les 600 m qui viennent, et au plus 90 % de
+    // celle des ordinateurs de la Course à 5 (vitesseVirage, course5.cpp : la plus haute où la voiture reste sur la chaussée ;
+    // trop optimiste dans les chicanes pour un joueur qui braque). Le joueur peut toujours freiner plus tôt ; aide désactivée,
+    // rien n'est fait à sa place (RG-07 de WFS-241).
+    DriveInput cmd = in;
+    freinAide = false;
+    // Décision du PO (option A) : la limite CÈDE quand le joueur conduit lui-même : il braque fort (doigt ou flèche à 0,35 et plus,
+    // VOLANT_PLEIN : l'aide lui laisse déjà tout le volant) ou il freine ; elle ne ralentit que volant lâché ou presque
+    const bool joueurConduit = std::abs(in.steer) >= VOLANT_PLEIN || in.brake;
+    if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258 && !joueurConduit) {
+        double vp = vitesseVirageAide(track, dist, Phys::grip / 9.81, Phys::brake / 9.81);
+        if (g_vitesseVirageCourse5) vp = std::min(vp, g_vitesseVirageCourse5(track, dist) * M * 0.9);
+        if (v > vp) { cmd.gas = false; cmd.nitro = false; if (v > vp * 1.03 && v > Phys::vRecul * 2) { cmd.brake = true; freinAide = true; } }
+    }
+    nitroOn = playing && cmd.nitro && nitro > 0.01;
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
     const double top = MAX_SPEED * perf.top * (nitroOn ? perf.nitroMult : 1);
-    const bool accelerating = playing && !locked && in.gas && !in.brake;
+    const bool accelerating = playing && !locked && cmd.gas && !cmd.brake;
     // WFS-90 (RG-03) : marche arrière sans attendre l'arrêt complet (sous 3 m/s, le frein enchaîne sur la marche arrière)
-    reversing = playing && !locked && in.brake && !in.gas && speed * M < Phys::vRecul;
-    braking = playing && !locked && in.brake && speed > 0 && !reversing;
+    reversing = playing && !locked && cmd.brake && !cmd.gas && speed * M < Phys::vRecul;
+    braking = playing && !locked && cmd.brake && speed > 0 && !reversing;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
     // WFS-188 (RG-06) : résistance du bas-côté proportionnelle à la vitesse (pleine dès 15 m/s) : à l'arrêt dans l'herbe,
@@ -191,6 +217,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
             projeterPose(track, x, z, cap);
         }
     }
+    finPasX_ = playerX; finPasD_ = dist;   // WFS-258 : pose laissée par ce pas (déplacement par un autre système détecté au suivant)
 }
 
 // ================================================================ WFS-241 : conduite en coordonnées du monde

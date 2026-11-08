@@ -175,7 +175,8 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         const cockpit::InterieurDef* idef = cockpit::interieurPour(car.id);
         // WFS-201 (RG-07) : œil = assise du modèle + hauteur des yeux assis d'ANSUR-II (cockpit commun : H × 0,74)
         const float oeil = idef ? cockpit::hauteurOeil(*idef) : d.H * 0.74f;
-        eyeL = {-0.36f, oeil, -d.L * 0.02f};
+        // WFS-315 (RG-01) : écart œil-axe du modèle (cockpit commun : 0,36 m)
+        eyeL = {idef ? -cockpit::largeurPour(*idef).oeil : -0.36f, oeil, -d.L * 0.02f};
         regarderRoute(track, pl, carM, eyeL, fdt);   // WFS-235 : regard et tête (repère de la voiture)
         // l'intérieur reste attaché à la voiture, à la place de l'œil (la tête tourne et bouge dedans)
         g_ck.repere = carM * translate(eyeL);

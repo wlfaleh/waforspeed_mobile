@@ -3514,3 +3514,44 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Choix** : P1 prêts : WFS-316 (E3) et WFS-317 (E4) ; WFS-316, plus petit numéro, réservé au « premier autre développeur qui demande » (décision de l'utilisateur 12:01, agent 4 n'est pas l'exclu). WFS-265 attend WFS-264.
 - Zone : E3 `src/game/player.cpp`, `direction.*`, `virages_banc.h`, `tests/**` ; **pas** les fichiers de WFS-283, WFS-281, WFS-315. Coordination avec WFS-258 (agent dev conduite, PR #263, même `player.cpp`, dernier envoi 13:11:56 UTC) : se synchroniser avec `main` souvent, conflits résolus en gardant les deux.
 - Règles : `regles-de-gestion/WFS-316.md` ; skills `agent-developer`, `waforspeed-natif`, `expert-conduite`. Branche `feature/waforspeed-316`, premier commit poussé tout de suite. Ticket de conduite né d'un essai : 🟡 après la fusion, jamais ✅ sur la CI.
+
+### 2026-11-08 13:28:10 — WFS-283 : corrections de la revue du lead dev (PR #261), luminance du raccord (arwa-5)
+- **Corniche** (point 1) : le trou du sol au centre du virage de 22 m (on voyait la mer) est bouché par les disques de sol de WFS-212, posés aussi au carrefour simple (`plage.cpp`, fcb006b2).
+- **Campagne** (point 2) : les « marches » venaient des bandes de sol rectangulaires, coupées à la mi-distance de l'autre branche à une distance qui change d'un segment à l'autre ; on voyait le sol de fond dans les marches. Autour du carrefour simple, les bandes sont maintenant des trapèzes, qui rejoignent la coupe du segment suivant (`decor_carte.cpp`). Le profil est aussi coupé à 90 % du rayon intérieur (`campagne.cpp`). Les trois commerces du village sont dans `commercesVillage()`. 69 tests CPU OK.
+- **Captures** (point 3) : `AGENT='arwa-5' FILTRE='[mr][io]*' bash tools/qa/captures_pr.sh WFS-283 rondspoints:1280x720 hud:1280x720`, en une fois, 57 min. Cela donne 29 captures « après » (19 `rondpoint-*`, 10 `minicarte-*`), commit 7ae33adf.
+- **Luminance du raccord** (point 4). Calcul de `tools/qa/luminance_route.py` (sRGB → linéaire, Rec. 709), en **médiane** par rectangle pour que les marquages ne comptent pas. Vue `rondpoint-*-course-*` : plaque du virage (500-720 × 150-190 px) contre la droite qui arrive (470-800 × 255-295 px).
+
+  | Carte | Jour, branche | Jour, `main` (giratoire) | Nuit, branche | Nuit, `main` |
+  |---|---|---|---|---|
+  | Campagne | +0,0 % | +0,0 % | −5,7 % | −11,0 % |
+  | Corniche | +2,1 % | −1,6 % | −43,1 % | −63,7 % |
+  | Ville | −6,8 % | +3,9 % | −66,0 % | −77,4 % |
+
+  - Ville de jour : le virage a le même asphalte que tous les virages de rue de la Ville, sans plaque à part. Sur la même chaussée du virage, la moitié gauche et la moitié droite du rectangle diffèrent déjà de 6,5 % (0,172 contre 0,184) : l'écart vient de l'éclairage et des taches du revêtement, pas du matériau.
+  - La nuit, les lampadaires et les phares font la luminance, sur `main` comme sur la branche : ces chiffres ne mesurent pas le raccord.
+- « Corrigé dans » posté sous la revue. `TACHES.md` : 🔀 En PR #261 ; `suivi-pr.md` : 🔁 ; lead dev rappelé.
+
+### 2026-11-08 13:31:18 — WFS-315 fusionné par le lead dev (lead-dev)
+- PR #262, 2e revue sur 57399019 : réponses « Bien reçu » et « corrigé dans 04d33494 » présentes. 24 paires et 2 agrandissements ouverts : plus de plaque au-dessus de la planche passager (jour, pluie, Plage de nuit), joints de la boîte à gants mats ; différence X5 / 500 visible ; rien de dégradé. Diff complet relu (5 fichiers) : couvercle posé entre le point haut et la lèvre, jamais au-dessus du point haut de la planche. Revue « ✅ Approuvé par le lead dev » écrite dans la PR (approbation formelle refusée par GitHub : même compte), fusion en squash b59e67d. Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ajoutée ; développeur libre.
+
+### 2026-11-08 13:38:11 — WFS-283 : PR #261 refusée par le lead dev, 2e revue (lead-dev)
+- **Relu** : commit 3e76065 (fcb006b2, fc23a3fd, 7ae33adf). J'ai lu la réponse « corrigé dans » d'arwa-5, ouvert une par une les 29 captures « après » et les 28 « avant », et lu le diff depuis 6200ea1. J'ai relancé `test_trace`, `test_rien_sur_chaussee`, `test_navigation` et `test_ville_lieux` : OK.
+- **Corrigé** : la Campagne n'a plus de marches dans l'herbe ; les captures sont refaites sur la branche synchronisée ; la luminance est notée. J'ai refait le calcul et trouvé les mêmes chiffres. Le −6,8 % de la Ville vient du bruit sur la même chaussée, pas d'une plaque.
+- **Bloquant** :
+  1. **Corniche** : les disques de sol de WFS-212, posés aussi au carrefour simple, se dessinent **sur la chaussée**. Le sable couvre une partie de la voie intérieure, la ligne de rive (il n'en reste qu'un trait isolé), la bordure et le trottoir intérieurs. Le défaut se voit sur les 6 `rondpoint-plage-*`, de jour et de nuit. Cause probable : les disques des segments de transition (rayon de 26 à 39 m) sont centrés sur leur propre centre de courbure, et ils sont posés plus haut que l'enrobé.
+  2. **Test CPU** : aucun test ne vérifie que ces disques restent hors de la chaussée.
+- **Remarque au PO** : pour un simple virage sans plaque à part, la règle « luminance de la plaque du carrefour ≤ 3 % » n'a plus d'objet. Je propose de l'écrire ainsi dans `regles-de-gestion/WFS-283.md` : « même asphalte que la route, pas de plaque ».
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/261#pullrequestreview-5818094697 . `TACHES.md` : ↩️ Retour lead dev (PR #261) ; `track-agent.md` et `suivi-pr.md` mis à jour. C'est le 2e refus de cette PR.
+
+### 2026-11-08 13:45:34 — WFS-258 : PR #263 corrigée après le retour du lead dev, rappel du lead dev (Claude, agent dev conduite)
+- Point 1 du lead dev (bloquant) : la file du maintien de voie est reprise à la position de la voiture (reset, grille, arrêt, voiture déplacée) ; test du départ de la grille (cap 0, x immobile ; sur 9833d7d : 0,30 rad, x de 0,50 à 0,05).
+- Point 2 : décision écrite du PO, option A : la limite de l'aide cède quand le joueur braque à 0,35 et plus ou freine ; volant lâché : 0 sortie sur les 4 cartes ; volant tenu en Course à 5 : 4/5, 2/5, 2/5, 4/5 (main 2/5 partout avec 96 à 260 images hors route). 70 tests CPU OK.
+
+### 2026-11-08 13:54:49 — WFS-258 (point 1) fusionné par le lead dev (lead-dev)
+- PR #263, 2e revue du commit 0f43287 : le développeur a répondu point par point sous la revue. J'ai regardé les 8 paires de `qa/pr/WFS-258/` : l'aide freine de 236 à 97 km/h avant l'épingle, et la voiture reste droite dans sa file (avant : 296 km/h, la voiture arrivait en travers avec le bandeau « ACCIDENT ! »).
+- J'ai relu tout le diff (`player.cpp`, `player.h`, accroche de 2 lignes dans `course5.cpp`, banc `virages`, `test_aide_ralentit`). Défaut du 1er refus corrigé : la file est reprise au `reset()`, sous 5 m/s et après un déplacement par un autre système. J'ai reconstruit et relancé les tests : 70 tests CPU OK. Départ de la grille : cap 0,000 rad. Volant lâché : 0 sortie sur les 4 cartes.
+- Option A du PO appliquée : la limite cède dès que le volant atteint 0,35 ou que le joueur freine.
+- Revue « ✅ Approuvé » publiée en commentaire (GitHub refuse l'approbation quand la PR vient du même compte). Fusion en squash : b76c6b4. WFS-258 passe en « 🔧 En cours — point 1 fusionné #263 (🟡 à valider) ». Ligne #263 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-08 14:00:57 — WFS-318 créé : fantôme du record réglable et étiqueté (po-scrum-master)
+- Question de l'utilisateur (voiture fantôme en Checkpoint = WFS-125). Après WFS-290 → WFS-291 (onglets) → WFS-318.
