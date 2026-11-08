@@ -4260,3 +4260,13 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Les 14 captures ont été ouvertes : les parcours avec et sans paquet sont identiques (mode, terrain, course de nuit, fin, accueil), et les 4 `cuisson-*` sont propres. Tout le diff a été lu, sans défaut bloquant.
 - Remarques non bloquantes : `WFS_MOMENT` et `WFS_DEPART` restent posés après la mesure RG-07 ; RG-08 n'est montré que de nuit.
 - WFS-301 passe en 🟣 (#278 + #284). Le développeur est libéré. La ligne #284 est retirée de `suivi-pr.md`.
+
+### 2026-11-08 21:55:32 — WFS-329 fusionné par le lead dev (lead-dev)
+- **PR #281** (Claude, agent 1), 2e revue sur 51981d2 : la réponse « corrigé dans » est bien sous la 1re revue. J'ai ouvert les 8 paires de captures : elles sont identiques à l'œil, et la ligne « Rendu » affiche « 0 appel · 0 k triangles · fond figé ». J'ai lu tout le diff (`renderer.*`, `game.*`, `fond_fige.h`, `qualite_systeme.cpp`, `bench_perf.cpp`, accroches `traffic_system.cpp` et `pietons.cpp`, `core/system.h`, test).
+- **Les 5 points de la 1re revue sont corrigés** : tous les `render()` tournent (son, img/s, chauffe) ; le moteur ignore les dessins 3D ; les listes de l'image sont vidées dans `beginFrame` ; les accroches ne sautent que du dessin ; la résolution dynamique invalide le fond. `test_fond_fige` est relancé : OK.
+- **Revue « ✅ Approuvé » écrite dans la PR** (en commentaire : même compte GitHub), puis **fusion en squash** avec le SHA attendu : **087228b**. Statut **🟡 À valider (utilisateur)** : ≥ 30 img/s au menu sur le téléphone et musique qui continue. Ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+- **Remarques non bloquantes** :
+  - le développeur n'a écrit aucune entrée de journal pour WFS-329 : il doit annoncer ses accroches (`game.cpp`, `game.h`, `core/system.h`, trafic, piétons) et ses preuves ;
+  - `echelleDynamique(1)` peut être appelé au milieu d'une image par `QualiteSystem` ; dans un cas rare, un fond incomplet peut alors être gardé ; il faudrait fixer l'état « figé » au `beginFrame` ;
+  - `lotsSuivant_` n'est pas remis à faux dans `beginFrame` ;
+  - un commentaire de `pietons.cpp` a été déplacé.
