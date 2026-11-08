@@ -234,6 +234,7 @@ public:
         mats_[P_CONIF] = r.makeMaterial(mc, leafTex_.img ? &leafTex_ : nullptr, nullptr, nullptr);
         // plan des quartiers (partagé avec les commerces et les enseignes) ; lampadaires pour la nuit (WFS-09)
         plan_ = &ville::adapter(*g.map, *g.track);   // WFS-137 (RG-C1) : plan adapté aux sections du tracé 2 (inchangé au tracé 1)
+        carreaux_ = &ville::carreauxSol(*g.map, *g.track);   // WFS-305 (ANO-171) : sol fermé côté intérieur des courbes serrées
         {   // WFS-137 (RG-A, ANO-81) : segments bordés d'un immeuble, par côté (bit 0 gauche, bit 1 droite) : trottoir jusqu'à la façade
             const int64_t L = (int64_t)plan_->objets.size();
             bati_.assign((size_t)L, 0);
@@ -520,8 +521,19 @@ public:
                     // WFS-137 (RG-A) : devant un immeuble, la pelouse ou le béton commencent derrière le trottoir prolongé
                     const float ba = i == 0 && facade(a, s) ? std::max(b.a, (float)RW + FACADE_TROTTOIR) : b.a;
                     if (ba >= std::min(l0, l1) || ba >= b.b) continue;
+                    // WFS-305 (ANO-171) : bord coupé par Plan::lim à la hauteur de la bande à cet endroit (avant : celle de la fin de la
+                    // bande, 0,45 m au parc : la pelouse coupée remontait en rebord au-dessus de la fosse)
+                    const float e0 = std::min(b.b, l0), e1 = std::min(b.b, l1);
+                    auto yb = [&](float e) { return b.ya + (b.yb - b.ya) * (e - b.a) / (b.b - b.a); };
                     carte::quadSol(out[P_UNI], carte::lateral(p, s * ba, b.ya), carte::lateral(p1, s * ba, b.ya),
-                                   carte::lateral(p1, s * std::min(b.b, l1), b.yb), carte::lateral(p, s * std::min(b.b, l0), b.yb), col);
+                                   carte::lateral(p1, s * e1, yb(e1)), carte::lateral(p, s * e0, yb(e0)), col);
+                }
+                // WFS-305 (ANO-171) : carreaux qui ferment le sol au-delà de Plan::lim (côté intérieur des courbes serrées)
+                const vec2 colB = uvc(U_BETON), colP = uvc(U_PELOUSE);
+                for (const ville::CarreauSol& q : (*carreaux_)[(size_t)seg]) {
+                    const float h = ville::CARREAU_SOL / 2;
+                    carte::quadSol(out[P_UNI], {q.x - h, q.y, q.z - h}, {q.x - h, q.y, q.z + h}, {q.x + h, q.y, q.z + h}, {q.x + h, q.y, q.z - h},
+                                   std::strcmp(z, "parc") ? colB : colP);   // comme la bande (pelouse au parc, béton au port)
                 }
             }
             for (const ville::Objet& o : P.objets[(size_t)seg]) {
@@ -1724,7 +1736,7 @@ public:
         if (betonTex_.img) { r.vk().destroy(betonTex_); betonTex_ = Image{}; }
         for (Model& m : autos_) if (m.ok) { r.destroy(m); m = Model{}; }
         portiques_.clear(); riv_ = Riviere{}; tun_ = {-1, -1}; au_ = {-1, -1}; solActif_ = false;
-        plan_ = nullptr;
+        plan_ = nullptr; carreaux_ = nullptr;
         pilote_ = false;
         active_ = false;
     }
@@ -1779,6 +1791,7 @@ private:
     Material lentilleEteinte_, lentille_[3], eauJet_;
     bool active_ = false, nuit_ = false;   // nuit_ : WFS-94
     const ville::Plan* plan_ = nullptr;
+    const std::vector<std::vector<ville::CarreauSol>>* carreaux_ = nullptr;   // WFS-305
     int64_t depart_ = 0;   // banc d'essai : départ du joueur avancé de depart_ segments (WFS_DEPART)
     bool pilote_ = false;  // pilote automatique vu à l'image de temps piloteT_ (GameView::time)
     double piloteT_ = 0;
