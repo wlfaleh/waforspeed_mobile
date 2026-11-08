@@ -3736,3 +3736,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 16:04:39 — WFS-192 fusionné (#266) : arwa-2 s'arrête (arwa-2)
 - Fusion par le lead dev (squash 6f477e6, revue 5818572307), 🟣. Remarques non bloquantes de la revue transmises au PO : niveau de détail 1 de la RR Sport +19 % de triangles (52 522 → 62 674, budget total en baisse), à reprendre avec WFS-215 ou une petite US ; lignes `parcours-*` en double dans le tableau des captures de la PR.
 - arwa-2 libre et arrêté à la demande de l'utilisateur (« termine la tâche et arrête ») : pas de nouveau ticket demandé.
+
+### 2026-11-08 16:10:48 — WFS-317 (partie 1, PR #270) fusionné par le lead dev (lead-dev)
+- Synchronisation e0e3dde relue : `journal.md` ne fait plus partie du diff ; `src/` et `qa/` identiques à e4f9d07 (code approuvé en 96228b8) ; diff `src/` relu de nouveau, 7 captures rouvertes.
+- Approbation écrite dans la PR (revue « ✅ Approuvé par le lead dev », GitHub refuse APPROVE sur le même compte), puis fusion en squash avec `expectedHeadSha` e0e3dde : commit c29cc05.
+- WFS-317 reste 🔧 En cours (partie 2 : mesure sur le téléphone puis RG-02) ; ligne #270 retirée de `suivi-pr.md` ; ligne ajoutée dans `qa/Check.md`.
