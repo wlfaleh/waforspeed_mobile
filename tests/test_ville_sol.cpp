@@ -2,9 +2,12 @@
 // Avant : la pelouse du parc (et le béton du port) s'arrêtait à Plan::lim (90 % du plus petit rayon des 60 m qui suivent) alors
 // que le sol de base continuait au rayon local : dans les 60 m avant le virage, on voyait ce sol, plus bas et sans herbe (fosse).
 //  - RG-04 : sur une grille de 1 m autour de chaque courbe serrée de la Ville (rayon < 60 m), entre le trottoir et 60 m au-delà,
-//    chaque point de la zone d'une bande (parc, port) est couvert par une bande ou un raccord : 0 trou après (« avant » au rapport) ;
-//  - RG-02 : marche entre deux surfaces voisines ≤ 5 cm (points à 0,25 m l'un de l'autre, pente des bandes comprise) ;
-//  - RG-05 : aucun raccord sur une chaussée ni sur un trottoir (RW + 6 m de tout point du tracé), ni au-delà de la bande.
+//    chaque point où passerait une bande (parc, port) sans cette limite est couvert par une bande ou un carreau
+//    (ville::carreauxSol) : 0 trou après (« avant » au rapport) ;
+//  - RG-02 : aucune marche de plus de 5 cm créée par les carreaux (points à 0,25 m) ; les marches entre deux bandes existantes,
+//    là où la fosse n'était qu'une fente, sont comptées à part (rapport) ;
+//  - RG-05 : aucun carreau sur une chaussée ni sur un trottoir (RW + 6 m de tout point du tracé).
+// Mise au point : WFS_DETAIL=1 (points en défaut), WFS_CARTE=<n° de courbe> (carte en caractères : # route, b bande, c carreau, . trou).
 // usage : test_ville_sol
 #include <algorithm>
 #include <cmath>
@@ -24,7 +27,7 @@ static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
 
 namespace {
-struct Tri { float ax, az, bx, bz, cx, cz, ya, yb, yc, minx, maxx, minz, maxz; int raccord; };   // 0 bande, 1 carreau, 2 carreau de bord
+struct Tri { float ax, az, bx, bz, cx, cz, ya, yb, yc, minx, maxx, minz, maxz; int genre; };   // 0 bande, 1 carreau, 2 carreau de bord
 bool dans(const Tri& t, float x, float z, float& y) {
     if (x < t.minx || x > t.maxx || z < t.minz || z > t.maxz) return false;
     const float d = (t.bz - t.cz) * (t.ax - t.cx) + (t.cx - t.bx) * (t.az - t.cz);
@@ -43,9 +46,9 @@ struct Sol {
     void ajoute(P3 a, P3 b, P3 c, int r) {
         tris.push_back({a.x, a.z, b.x, b.z, c.x, c.z, a.y, b.y, c.y, std::min({a.x, b.x, c.x}), std::max({a.x, b.x, c.x}), std::min({a.z, b.z, c.z}), std::max({a.z, b.z, c.z}), r});
     }
-    bool haut(float x, float z, float& y, int* raccord = nullptr) const {   // surface la plus haute au-dessus de (x, z)
+    bool haut(float x, float z, float& y, int* genre = nullptr) const {   // surface la plus haute au-dessus de (x, z)
         bool ok = false; float yy;
-        for (const Tri& t : tris) if (dans(t, x, z, yy) && (!ok || yy > y)) { y = yy; ok = true; if (raccord) *raccord = t.raccord; }
+        for (const Tri& t : tris) if (dans(t, x, z, yy) && (!ok || yy > y)) { y = yy; ok = true; if (genre) *genre = t.genre; }
         return ok;
     }
     Sol autour(float x, float z, float r) const {   // triangles qui touchent le carré de côté 2r centré en (x, z)
@@ -63,7 +66,7 @@ int main() {
     const auto& rac = ville::carreauxSol(map, t);
     const int64_t L = (int64_t)t.segmentCount();
     const float R = (float)RW;
-    VERIFIE((int64_t)rac.size() == L, "raccords : %zu segments au lieu de %lld", rac.size(), (long long)L);
+    VERIFIE((int64_t)rac.size() == L, "carreaux : %zu segments au lieu de %lld", rac.size(), (long long)L);
     auto pose = [&](int64_t a, float lat, float dy) {   // comme carte::lateral(carte::poseAt(t, a), lat, dy)
         const TrackPoint p = t.point((double)a * SEG, 0);
         return P3{(float)p.x + std::cos((float)p.th) * lat, (float)p.y + dy, (float)p.z + std::sin((float)p.th) * lat};
@@ -200,7 +203,7 @@ int main() {
     std::printf("dont entre deux carreaux : %d ; marches entre deux bandes existantes, là où la fosse n'était qu'une fente (gardées) : %d (au plus %.1f cm)\n",
                 marchesInternes, marchesFente, pireFente * 100);
     VERIFIE(courbes >= 3, "courbes serrées de la Ville introuvables (%d)", courbes);
-    VERIFIE(trousAvant > 0, "le défaut d'avant n'est plus mesuré (0 trou sans raccord) : test sans effet");
+    VERIFIE(trousAvant > 0, "le défaut d'avant n'est plus mesuré (0 trou sans les carreaux) : test sans effet");
     VERIFIE(trousApres == 0, "RG-04 : %d trou(s) de 1 m dans le sol, côté intérieur des courbes serrées", trousApres);
     VERIFIE(marches == 0, "RG-02 : %d marche(s) de plus de 5 cm créées par les carreaux (au plus %.1f cm)", marches, pireMarche * 100);
     std::printf("sol de la Ville dans les courbes serrées (WFS-305) : %s\n", echecs ? "ÉCHEC" : "OK");
