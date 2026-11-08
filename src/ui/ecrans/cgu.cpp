@@ -13,6 +13,7 @@
 #include "../../game/game.h"
 #include "../../game/sauvegarde.h"
 #include "../../render/renderer.h"
+#include "../../render/vk.h"   // rotation de l'écran avant le chargement (Cgu::image)
 #include "../petit_ecran.h"
 #include "../text.h"
 #include "reglages.h"
@@ -235,6 +236,32 @@ void Cgu::noterAcceptation() {
     WFS_LOG("CGU (WFS-308) : version %d acceptée, gardée dans la sauvegarde", VERSION_CGU);
 }
 
+bool Cgu::demarrer(Renderer& r) {
+    if (!cguAMontrer(sauvegarde().actif(), sauvegarde().cgu)) return false;
+    ui::chargerPolice(r);
+    ouvrir(r, Mode::Premier);
+    essaisRotation_ = 0;
+    return true;
+}
+
+void Cgu::perdreFenetre(Renderer& r) {
+    ui::libererPolice(r);   // sinon l'atlas reste lié à l'ancien appareil Vulkan et chargerPolice ne le refait pas (F.ready)
+    etat_ = Etat::Ferme;
+    WFS_LOG("CGU (WFS-308) : fenêtre perdue, police libérée (écran rouvert au retour)");
+}
+
+Cgu::Etat Cgu::image(VkCtx& vk, uint32_t lf, uint32_t hf, double maintenant) {
+    if (etat_ == Etat::Accepte) { noterAcceptation(); return Etat::Accepte; }
+    if (etat_ == Etat::Quitter) { etat_ = Etat::Ferme; return Etat::Quitter; }
+    if (!ouvert() || !r_) return etat_;
+    // l'appli démarre souvent en portrait puis passe en paysage (même contrôle que la boucle de jeu d'android_main.cpp)
+    const bool tourne = (lf >= hf) != (r_->width() >= r_->height());
+    if (vk.surfaceChanged() || (tourne && essaisRotation_++ < 8)) { vk.waitIdle(); if (vk.createSwapchain()) r_->resize(); }
+    r_->setViewSize(lf, hf);
+    dessinerImage(maintenant);
+    return etat_;
+}
+
 Cgu& cgu() { static Cgu c; return c; }
 
 // ---------------------------------------------------------------- banc d'essai (WFS_BANC=cgu)
@@ -278,7 +305,15 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
     // relance après le refus : rien n'a été accepté, l'écran revient
     sauvegarde().attendre(); sauvegarde().charger(chemin);
     verifier(cguAMontrer(sauvegarde().actif(), sauvegarde().cgu), "relance après refus → écran des CGU à nouveau");
-    c.ouvrir(r, Cgu::Mode::Premier); image();
+    verifier(c.demarrer(r), "demarrer : écran ouvert (police chargée)"); image();
+    {   // fenêtre perdue pendant les CGU (touche Accueil, écran verrouillé) : police libérée, renderer fermé puis rouvert, écran rouvert
+        VkCtx& vk = r.vk();
+        c.perdreFenetre(r); r.shutdown();
+        verifier(!c.ouvert() && !ui::fontReady(), "fenêtre perdue : écran fermé, police libérée");
+        r.init(vk);
+        verifier(c.demarrer(r) && ui::fontReady(), "fenêtre retrouvée : écran rouvert, police rechargée");
+        capture("cgu-reprise", "après la perte de la fenêtre : texte lisible, case décochée");
+    }
     verifier(!c.caseCochee(), "case décochée à la réouverture");
     appui(5, c.zoneCase()); appui(6, c.zoneAccepter());
     verifier(c.etat() == Cgu::Etat::Accepte, "case puis « Accepter » → accepté");

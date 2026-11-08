@@ -12,11 +12,13 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "../../core/system.h"   // Marges
 
 namespace wfs {
 class Renderer;
 class Game;
+class VkCtx;
 namespace ecrans {
 
 // version des CGU et de la confidentialité présentées ; la changer (et la ligne « Version N » de store/cgu.md, vérifiée par
@@ -51,6 +53,14 @@ public:
     bool toucher(int id, float x, float y, bool down);
     // RG-04 : version acceptée écrite dans la sauvegarde et enregistrée ; l'écran se ferme
     void noterAcceptation();
+    // ---- plateforme (android_main.cpp), avant Game::init
+    // RG-03 : écran ouvert (police chargée) si la sauvegarde le demande ; vrai : le chargement attend l'acceptation
+    bool demarrer(Renderer& r);
+    // fenêtre perdue pendant l'écran : police libérée (avant Renderer::shutdown), écran fermé (rouvert par demarrer au retour)
+    void perdreFenetre(Renderer& r);
+    // une image (rotation de l'écran vérifiée comme en jeu, 8 essais ; taille de la fenêtre en pixels) ; renvoie Accepte (acceptation
+    // notée, lancer le chargement) ou Quitter (fermer l'appli) une seule fois, sinon l'état courant. Sans écran : rien, Ferme.
+    Etat image(VkCtx& vk, uint32_t largeurFenetre, uint32_t hauteurFenetre, double maintenant);
 
     Etat etat() const { return etat_; }
     bool ouvert() const { return etat_ == Etat::Ouvert || etat_ == Etat::Refuse; }
@@ -78,6 +88,7 @@ private:
     float largeurPage_ = -1, kPage_ = -1, hauteurTexte_ = 0;
     float defil_ = 0, defilMax_ = 0;
     double tRefus_ = -1, maintenant_ = 0;
+    int essaisRotation_ = 0;
     int doigt_ = -1; float yDoigt_ = 0; int cible_ = 0;   // cible du doigt posé : 0 rien, 1 texte, 2 case, 3 accepter, 4 refuser, 5 fermer
     Zone zCase_, zAccepter_, zRefuser_, zFermer_, zTexte_;
 };

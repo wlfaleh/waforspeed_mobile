@@ -66,12 +66,12 @@ const Ligne LIGNES[13] = {
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
        L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, N_LIGNES = 13 };
 
-Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-308 : g_cgu, « Conditions d'utilisation »
+Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
 float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
     const float tp = 13 * k; const std::string t = ui::majuscules("Conditions d'utilisation"); const float w = ui::width(tp, t, 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
     g_cgu = {x - w, y + (h - zh) / 2, w, zh}; biseau(r, x - w - 1, y - 1, w + 2, h + 2, 8 * k, BORD); biseau(r, x - w, y, w, h, 8 * k, GLASS);
     ui::text(r, x - w / 2, y + (h - tp) / 2, tp, t, hex(ACCENT2), ui::CENTRE, 0.12f, false); return w;
-}   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager)
+}
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
 
