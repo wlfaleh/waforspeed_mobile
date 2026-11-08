@@ -3448,3 +3448,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   (WFS-295 et WFS-241 refusés) ; l'exception du 2026-11-07 17:02 ne s'applique pas à WFS-316, la règle des KO s'applique.
 - Écrit dans `TACHES.md` (bandeau et ligne WFS-316), `regles-de-gestion/WFS-316.md` (Développeur, Suivi), `tache utilisateur.md`, `track-agent.md`.
 - WFS-316 reste ⏳ Prêt (P1), donné au premier autre développeur qui demande, avec le skill `expert-conduite`. Aucune attribution d'avance.
+
+### 2026-11-08 12:03:49 — WFS-315 attribué à Claude, agent 2 ; RG-03 tranché (po-scrum-master)
+- Sur ordre de l'utilisateur (transmis par Claude, agent 2) : **WFS-315** (P2, E10 + E3, Vue Cockpit : vraie largeur de la voiture) → 🔧 En cours, Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-315`.
+  WFS-282 est 🟡 À valider (utilisateur) après la PR #251 (9dcafcc). WFS-192 (E10, arwa-2) reste en cours en parallèle, fichiers séparés (décision PO).
+- RG-03 tranché dans `regles-de-gestion/WFS-315.md` : seuils de WFS-282 (arbitrage n° 2) repris ; intérieur en regard Normal **≤ 42 %** pour toutes les voitures, ligne droite et virage,
+  le gain venant seulement de la planche côté passager ; le reste inchangé. 500 Abarth = `abarth` (`cars.h`).
