@@ -3846,3 +3846,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 17:18:30 — WFS-300 : PR #272 refusée par le lead dev (lead-dev auto)
 - Revue complète (1re) : captures ouvertes (`voiture-lod-passage-56/60/64`, `voiture-sonde-4/6`, `voiture-basse-poursuite`) : conformes à la décision du PO (option A) ; tout le diff de `qualite_banc.cpp` lu : juste (`sondesStables`, « dessinées ensemble », mesure RG-05), zone respectée.
 - Refus (commentaire valant « changements demandés ») : branche en retard de 24 commits sur `main` avec 2 conflits (`journal.md`, `track-agent.md`) ; captures à régénérer après la synchronisation (RG-04).
+
+### 2026-11-08 17:21:02 — WFS-308 : PR #269 refusée par le lead dev (2e refus) (lead-dev)
+- Commit relu 538a588f : les 4 points du 1er refus sont corrigés ; 21 captures ouvertes, sans défaut visible (les « après » des Réglages sont un peu anciens : `menu2` relancé sur 538a588f, la ligne « Rendu » est complète).
+- **Bloquant** : `android_main.cpp` teste `cgu().ouvert()` sans distinguer le premier lancement de la lecture depuis les Réglages. Si on ouvre la lecture puis qu'on appuie sur Accueil, la boucle tourne à délai 0 en arrière-plan ; au retour, `initGraphics` ne réinitialise rien et `cgu().image` travaille sur Vulkan fermé, ce qui donne un jeu bloqué ou un plantage. Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/269 ; statut « ↩️ Retour lead dev (PR #269) ».
