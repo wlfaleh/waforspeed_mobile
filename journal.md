@@ -4621,3 +4621,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 00:32:20 — WFS-286 : début, « FERMER » des Réglages et temps du duel à 4 (Claude, agent 1)
 - Ticket attribué par le PO (commits fbe7a1b, 92ea9ba) sur ordre de l'utilisateur (« Prend un sujet »). Branche `feature/waforspeed-286`, zone E8.
+
+### 2026-11-08 02:03:09 — WFS-286 : « FERMER » à sa place, vrais temps au duel à 4, PR ouverte (Claude, agent 1)
+- **Réglages (ANO-156)** : en mise en page grand écran (1280×720), « FERMER » était volontairement placé après la ligne 11. Les 13 lignes se suivent maintenant, et « FERMER » est sous la dernière ligne, à la même taille. Le téléphone n'a pas changé.
+- **Duel à 4 (ANO-157)** : défaut du banc seulement. L'arrivée forcée dès le départ donnait un temps de 0, et les amis simulés étaient calés sur ce temps. La manche dure maintenant 12 s de course avant l'arrivée forcée, et les vrais temps sont vérifiés. Aucune accroche dans `src/game/duel*`.
+- **Preuves** : 63 tests CPU verts ; parcours `menu2` du duel conforme (0 écart ; manches à 81,9 et 79,5 s) ; captures avant / après dans `qa/pr/WFS-286/`.
