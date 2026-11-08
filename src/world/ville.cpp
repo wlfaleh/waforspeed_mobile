@@ -202,6 +202,7 @@ public:
                 const float c = 0x1a / 255.f, k = effets::versHdr(c, 1.1f) / std::pow(c, 2.2f);
                 m.emissive = {k, k, k}; m.flags |= MAT_EMTEX;
             }
+            m.flags |= MAT_AO;   // WFS-269 (accroche) : occlusion précalculée du décor fixe
             mats_[P_FACADE_A + v] = r.makeMaterial(m, &facadeTex_[v], nullptr, nullptr);
         }
         auto plain = [&](Part p, vec3 c, float rough, float metal, vec3 em = {0, 0, 0}) {
@@ -217,7 +218,7 @@ public:
                 mats_[P_FEN_CHAUD + k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
             }
         }
-        { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, m); }   // comme le trottoir de Game (WFS-205, accroche)
+        { Material m; m.flags = MAT_WALK | MAT_AO; m.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, m); }   // comme le trottoir de Game (WFS-205, accroche)
         initVegetation(r);
         plain(P_LAMP, {1.f, 0.95f, 0.85f}, 0.3f, 0.f, {0.6f, 0.55f, 0.45f});
         // couleurs unies : palette sRGB, éclairage du feuillage (MAT_VTINT, sans reflet), comme CarteDecor
@@ -275,6 +276,15 @@ public:
         WFS_LOG("Ville : %zu lampadaires%s", nl, depart_ ? " (départ avancé, banc d'essai)" : "");
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = (int64_t)plan_->objets.size();
+            {   // WFS-269 (accroche) : occlusion précalculée : façades, béton, trottoirs (MAT_AO) la reçoivent ; ni le sol ni le décor uni (bandes sur les pelouses, essai au banc)
+                auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
+                lots_.occlusion(b({P_FACADE_A, P_FACADE_B, P_BETON, P_TROTTOIR}), b({P_FACADE_A, P_FACADE_B, P_BETON, P_VOUTE, P_UNI, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_CONIF, P_METAL}), 0);
+                if (archi::carte::actif()) {   // immeubles du kit (WFS-161, niveau allégé : 0,5 s de moins que le complet au banc, même image à 0,5/255 près) : ils cachent le ciel ; leurs murs reçoivent l'occlusion (archi_carte.cpp)
+                    std::vector<Vertex> v; std::vector<uint32_t> i;
+                    archi::carte::geometrie(1, v, i);
+                    lots_.occultants(std::move(v), std::move(i));
+                }
+            }
             lots_.preparer(r, *g.track, P_COUNT, 4, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
                 Geo out[P_COUNT];
                 buildChunk(*g.track, c, lod, out);
@@ -738,7 +748,7 @@ public:
             }
             betonTex_ = r.vk().uploadTexture(px.data(), N, N, true);
             // éclairé d'un seul côté (pas MAT_VTINT) : les lumières du tunnel n'éclairent pas la face extérieure des têtes
-            Material m; m.rough = 0.9f; m.flags = MAT_DOUBLE;
+            Material m; m.rough = 0.9f; m.flags = MAT_DOUBLE | MAT_AO;   // WFS-269 : MAT_AO
             mats_[P_BETON] = r.makeMaterial(m, &betonTex_, nullptr, nullptr);
             // voûte : le moteur n'a ni occultation ambiante ni éclairage d'environnement (DA-realisme.md § 1) ; sous la dalle, la
             // lumière du ciel n'arrive pas : couleur × 0,4 (comme la voûte de la Corniche, × 0,3 sous la roche)

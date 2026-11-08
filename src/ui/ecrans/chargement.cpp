@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cmath>
 #include "../../core/log.h"
+#include "../../core/memoire.h"   // WFS-297 (RG-06)
+#include "../../game/traffic_system.h"   // WFS-297 : voitures du trafic chargées
 #include "../../core/platform.h"
 #include "../../core/system.h"
 #include "../../game/game.h"
@@ -79,6 +81,7 @@ float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
     return y;
 }
 
+static std::string texteChargement();   // WFS-297 (RG-06), plus bas
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
     // WFS-147 (RG-01, RG-02) : téléphone couché : logo de 100 dp au plus, libellé de 19 dp, bouton de 48 dp (dp réels)
     const bool cp = ui::petitEcran(W, H);
@@ -133,10 +136,30 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
         dessin2d::biseau(r, x, by, bw, bh, 14 * kb, dessin2d::uni(hex(ACCENT, op)));
         ui::text(r, x + bw / 2, by + (bh - tp) / 2, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
     }
-    else ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
+    else {
+        ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
+        // WFS-297 (RG-06) : données chargées et mémoire utilisée, en petit sous l'étape (pendant et à la fin du chargement)
+        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
+        ui::text(r, x, y + txt + 8 * k, tm, texteChargement(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+        ui::text(r, x, y + txt + 10 * k + tm, tm, texteMemoire(true), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+    }
 }
 
 const char* versionJeu() { return WFS_VERSION; }   // WFS-279
+
+// WFS-297 (RG-06) : chiffres mesurés (src/core/memoire.h), milliers avec ui::nombre
+std::string texteMemoire(bool enChargement) {
+    const double p = memoire::processusMo();
+    const int n = memoire::compteurs().partie.load() + (enChargement ? 1 : 0);
+    return "Mémoire : jeu " + (p < 0 ? std::string("?") : ui::nombre(std::llround(p))) + " Mo · carte graphique " + ui::nombre(std::llround(memoire::gpuMo())) +
+           " Mo · " + (n > 0 ? "partie " + std::to_string(n) : std::string("aucune partie"));
+}
+static std::string texteChargement() {   // « Lus pour cette partie : 136 Mo · 983 objets 3D · 47 voitures · 114 personnes »
+    const Traffic* tr = activeTraffic();
+    const memoire::Compteurs& c = memoire::compteurs();
+    return "Lus pour cette partie : " + ui::nombre(std::llround(memoire::lusChargementMo())) + " Mo · " + ui::nombre(c.objets3d.load()) + " objets 3D · " +
+           ui::nombre(tr ? (long long)tr->cars.size() : 0) + " voitures · " + ui::nombre(c.personnes.load()) + " personnes";
+}
 
 // ---------------------------------------------------------------- écran plein (avant la scène)
 static void image(Renderer& r, float p, const std::string& lib, bool err) {
