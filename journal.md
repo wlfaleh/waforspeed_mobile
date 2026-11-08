@@ -3605,6 +3605,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Critères : RG-01 à RG-06 (parcours complet installation neuve → CGU → refuser → relancer → accepter → course → retour), captures avant / après ≥ 3, PR relue par `lead-dev`.
 
 
+### 2026-11-08 14:25:01 — WFS-308 : début, plan et accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-308` créée depuis `main` (2ffac6fe). Skills chargés : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`.
+- Plan : écran neuf `src/ui/ecrans/cgu.*` (texte défilant CGU puis confidentialité, case « J'ai lu et j'accepte », « Accepter » actif après la case, « Refuser » → message puis fermeture), dessiné avant le chargement comme l'écran de chargement (Renderer direct, avant `Game::init`) ; `store/cgu.md` neuf.
+- Accroches annoncées (≤ 10 lignes chacune) : (1) `src/game/sauvegarde.*` : clé `cgu=<version acceptée>` ; (2) `src/platform/android_main.cpp` : écran CGU affiché après l'init Vulkan et avant le chargement si la version acceptée < version des CGU, touchers routés vers l'écran, fermeture sur refus ; (3) `android/app/build.gradle` : `store/cgu.md` et `store/confidentialite.md` copiés dans les assets générés (`cgu/`) ; (4) `src/ui/ecrans/reglages.cpp` : bouton « Conditions d'utilisation » (lecture seule) ; (5) `src/platform/desktop_main.cpp` : banc `WFS_BANC=cgu` (captures).
+
 ### 2026-11-08 14:36:07 — WFS-268 (PR #248, reprise par Claude, Agent 0 developer) : RG-11 / ANO-164 corrigée, accroche du renderer annoncée (Claude, Agent 0 developer)
 - **Cause d'ANO-164** : `DecorFixe::dessiner` dessinait un bloc entier (3 à 4 morceaux) dès qu'il touchait la fenêtre : jusqu'à 2 morceaux de décor en trop au bout de la fenêtre (vue de dessus des lacets) et une colline en trop dont l'ombre tombait sur la mer (marina). **Correction** (commit b12e80a9) : fin des index de chaque morceau gardée dans le bloc ; seuls les morceaux de la fenêtre sont dessinés, chacun à son niveau de détail (même règle que l'ancienne gestion), morceaux voisins de même niveau en un appel.
 - **Accroche du renderer** (`src/render/renderer.h` / `.cpp`, 2 lignes) : `Mesh::premier` (premier index dessiné, 0 par défaut) lu par `Renderer::draw(Mesh)` : une vue sur une partie des index d'un bloc, sans nouveau tampon.
@@ -3686,6 +3691,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 15:31:14 — WFS-283 : parcours complet relancé par le lead dev après la fusion (lead-dev)
 - `WFS_BANC=parcours`, sur 770c7b24 (même code que le squash 6fb3420), avec un `wfs_bench` construit à part : **« parcours complet : 0 écart(s) OK »** et **« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »**. Le point oublié avant la fusion est donc vérifié.
 - La CI de fusion (`build.yml`, run #913) est encore en file à 2026-11-08 15:31:14 UTC. Le robot des statuts ne change pas les 🟡 : WFS-283 reste **🟡 À valider (utilisateur)**.
+
+### 2026-11-08 15:40:24 — WFS-308 : écran des CGU fini, preuves, PR à ouvrir (Claude, agent 3 (01UY1Vv3))
+- Livré : écran `src/ui/ecrans/cgu.*` (+ `cgu_texte.cpp`), `store/cgu.md` (version 1, brouillon, relecture juridique conseillée), clé `cgu=` de la sauvegarde, bouton « Conditions d'utilisation » des Réglages (lecture seule), banc `WFS_BANC=cgu`, test `test_cgu`.
+- **Accroches réellement faites** : `sauvegarde.*` 4 lignes ; `android/app/build.gradle` 1 ligne (+ 2 de mise en forme du bloc) ; `desktop_main.cpp` 2 lignes ; `reglages.*` ≈ 12 lignes (bouton, toucher, dessin) ; `android_main.cpp` ≈ 15 lignes : **au-delà des 10 annoncées** (chargement mis dans `chargerJeu` par déplacement, écran des CGU avant lui avec rotation, touchers, perte de fenêtre) ; signalé au PO et au lead dev dans la PR.
+- Preuves : 72 tests CPU OK ; banc `cgu` en 1280×720 et 2400×1080 : parcours RG-06 0 écart (installation neuve → CGU → « Accepter » inactif → défilement → case → refuser → fermeture → relance → CGU → accepter → `cgu=1` relu → relance sans CGU → version changée → CGU ; chargement → menu → Réglages → Conditions → Fermer → course → menu) ; captures `qa/pr/WFS-308/` (cgu et menu2 en 2400×1080, 13 après / 7 avant) regardées : seul le bouton neuf change dans les Réglages.
+- Limite : `android_main.cpp` non compilé en local (pas de NDK) ; à vérifier par la CI de `main` et sur le téléphone. Texte envoyé à l'agent expert ci pour `store/confidentialite.md` et `store/fiche-fr.md` (WFS-320), vers 14:30 UTC.
 
 ### 2026-11-08 15:45:28 — WFS-316 (PR #267) refusé par le lead dev (lead-dev)
 - Commit relu 2cb172f ; 6 vues de dessus ouvertes (anneau, épingle, 90°) ; tout le diff lu (`player.cpp/.h`, `virages_banc.cpp`, `test_direction_anneau.cpp`, `CMakeLists.txt`) : code conforme à RG-02, pas de défaut bloquant.
@@ -3842,3 +3853,194 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Captures regardées (8) : virage de la Ville et virage à 90° de nuit en caméra Arrière, ainsi que les 3 vues de dessus. Rien de pire et la voiture reste sur la chaussée. Après, elle tient mieux l'intérieur.
 - Diff entier lu : rien de bloquant (`partTenu` limitée à 70 km/h, borne coupée seulement sous 60 km/h, ordinateur inchangé). RG-01, 03 et 05 sont conformes à l'arbitrage du PO de 15:56.
 - **Refus sur un seul point** : la branche a 12 commits de retard sur main, dont f72d1925 (WFS-258 #271, direction au-dessus de 100 km/h), qui touche la même zone. Il y a 2 conflits (`CMakeLists.txt`, `virages_banc.cpp`). À faire : synchroniser, relancer les tests et les bancs, refaire le tableau RG-05. Une fois que tout est vert, la fusion se fait sans nouvelle capture.
+
+### 2026-11-08 17:18:30 — WFS-300 : PR #272 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (`voiture-lod-passage-56/60/64`, `voiture-sonde-4/6`, `voiture-basse-poursuite`) : conformes à la décision du PO (option A) ; tout le diff de `qualite_banc.cpp` lu : juste (`sondesStables`, « dessinées ensemble », mesure RG-05), zone respectée.
+- Refus (commentaire valant « changements demandés ») : branche en retard de 24 commits sur `main` avec 2 conflits (`journal.md`, `track-agent.md`) ; captures à régénérer après la synchronisation (RG-04).
+
+### 2026-11-08 17:21:02 — WFS-308 : PR #269 refusée par le lead dev (2e refus) (lead-dev)
+- Commit relu 538a588f : les 4 points du 1er refus sont corrigés ; 21 captures ouvertes, sans défaut visible (les « après » des Réglages sont un peu anciens : `menu2` relancé sur 538a588f, la ligne « Rendu » est complète).
+- **Bloquant** : `android_main.cpp` teste `cgu().ouvert()` sans distinguer le premier lancement de la lecture depuis les Réglages. Si on ouvre la lecture puis qu'on appuie sur Accueil, la boucle tourne à délai 0 en arrière-plan ; au retour, `initGraphics` ne réinitialise rien et `cgu().image` travaille sur Vulkan fermé, ce qui donne un jeu bloqué ou un plantage. Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/269 ; statut « ↩️ Retour lead dev (PR #269) ».
+
+### 2026-11-08 17:23:18 — WFS-296 : PR #273 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Pastille rouge inclinée avec un grand « R » noir en marche arrière (vue normale : à gauche du compteur ; Cockpit : à droite du panneau de vitesse) ; `src/ui/hud.cpp` seul ; aucun bouton changé ; banc `hud` : 4 captures de marche arrière (avant = main + banc seul) ; 72 tests verts, parcours 0 écart.
+
+### 2026-11-08 17:25:39 — WFS-296 fusionné par le lead dev (lead-dev)
+- PR #273 relue : 14 paires de captures ouvertes (pastille « R » rouge bien visible jour, nuit et Cockpit ; marche avant identique au pixel ; aucun bouton déplacé), diff `src/ui/hud.cpp` lu en entier (dessin seul, RG-02 tenu). Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation au même compte), fusion squash 8444b61. Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne #273 retirée de `suivi-pr.md`.
+
+### 2026-11-08 17:27:04 — Ville : −70 % de personnes (décision de l'utilisateur), RG-03 de WFS-317 (po-scrum-master)
+
+### 2026-11-08 17:31:18 — WFS-258 : seuils de bascule 80 / 110 km/h validés (po-scrum-master)
+
+### 2026-11-08 17:31:22 — WFS-258 : PR #274 (plus de bascule de l'aide autour de 100 km/h), lead dev appelé (Claude, agent dev conduite)
+- Doigt tenu, frein de l'aide qui change en moins de 0,5 s : main 221 à 1 317 fois par tour → 1 à 7 ; 0 sortie. Écarts : doigt tenu, la limite reprend au-dessus de 110 km/h et recède sous 80 km/h (seuils 95 / 100 du PO insuffisants, mesurés : 76 par tour) ; frein tenu jusqu'à la vitesse permise. PO prévenu pour valider les seuils. 72 tests CPU OK.
+
+### 2026-11-08 17:31:48 — WFS-317 : personnes allégées et −70 % en Ville faits ; décor au loin → WFS-265 (po-scrum-master)
+
+### 2026-11-08 17:34:51 — WFS-258 fusionné par le lead dev (PR #274, bascule de l'aide) (lead-dev)
+- Revue du commit 2a875bc : 8 paires de captures ouvertes (identiques à ±2 km/h, c'est attendu) ; diff complet relu (`player.cpp`, `player.h`, `test_aide_ralentit.cpp`) ; `test_aide_ralentit` relancé : OK (0 à 7 changements rapides du frein de l'aide par tour, 0 sortie). Seuils 80 / 110 km/h validés par le PO à 17:31:18.
+- GitHub refuse l'approbation venant du même compte : la revue « ✅ Approuvé par le lead dev » est écrite dans la PR, puis fusion en squash b9702bf. WFS-258 : 🔧 En cours (point 1 ✅, point 3 et bascule fusionnés, 🟡 à valider).
+- Remarque non bloquante : le commentaire de `cedeAuDoigt_` dans `player.h` indique encore 95 / 100 km/h.
+- Incident : pendant la prise de la PR, le dossier de travail partagé était passé sur `feature/waforspeed-327` (le développeur venait d'en changer). Mon commit de synchronisation ebe7d2f8 a donc été poussé sur `main` avec le commit 8bbd71b7 de cette branche (une ligne de `track-agent.md`, déjà identique sur `main`). Aucun fichier de `main` n'a changé, rien n'a été réécrit. Ensuite, travail dans des worktrees séparés.
+
+### 2026-11-08 17:39:42 — WFS-317 : conclusion de RG-01 et partie 2 (personnes, RG-03) (Claude, agent 1)
+- **RG-01, mesure du téléphone (APK 916, Ville de nuit, Basse 60 %)** : 10 img/s → 372 appels, 439 k triangles (décor 32 %, voitures 41 %, personnes 27 %), GPU scène 88,7 ms ; 20 img/s → 225 appels, 212 k triangles, scène 43,4 ms ; ombre, reflet et capture à 0. **Ce qui prend le temps : la passe de scène, qui suit le nombre de triangles.** Familles approchées : conducteurs et pilotes comptés en personnes, poussettes en décor.
+- **Relevé objet par objet au banc** (diagnostic local, non livré) : 80 % des triangles « personnes » venaient de 2 défauts : (1) le niveau de détail des piétons se choisissait sur la distance le long de la route depuis la voiture (adultes et enfants en niveau 0, 15 000 à 27 000 triangles, à 14-17 m de la caméra) ; (2) conducteurs au niveau 2 jusqu'à 50 m, sans niveau 3.
+- **Corrigé** (branche feature/waforspeed-317, accord de zone du PO) : distance réelle à la caméra pour les piétons ; conducteurs en Basse 8/20/30 m + niveau 3 ; **RG-03** (décision de l'utilisateur) : Ville, 3 sur 10 gardés par liste (marcheurs, terrasses, passages piétons), promeneurs avec chien gardés : 882 → 263 personnes.
+- **Banc (lavapipe, 2340×1080, image 301)** : personnes 171 k → 40 k triangles (−77 %) ; scène 413 k → 280 k (−32 %). Au départ : personnes 547 k → 88 k.
+- Décor au loin (≈ 42 k triangles en gros morceaux à plus de 140 m) : WFS-265 (décision du PO).
+
+### 2026-11-08 17:42:02 — WFS-265 : corrections après le 2e refus du lead dev, PR #268 en 🔁 (Claude, agent dev X)
+- Branche synchronisée avec `main` (b9671851) ; 73 tests CPU OK, parcours 0 écart. Captures régénérées, avant et après sur le même `main` (f139b49b).
+- **Défaut trouvé** : dans la vue haute du banc, la voiture du joueur (≈ 200 px) basculait en fondu vers le niveau 1. Correctif : `Renderer::dessinJoueur` (accroche `game.cpp` +2), la voiture du joueur est toujours complète.
+- Description de la PR réécrite (limites : tramé visible au téléobjectif, `mustang.wfm` sans `.lod`, `lod-ville-300`).
+
+### 2026-11-08 17:43:52 — APK 918 : vidéos de l'utilisateur regardées ; ANO-177 / WFS-328 (flash blanc au départ de nuit) créé (po-scrum-master)
+
+### 2026-11-08 17:44:20 — WFS-327 : (A) si RG-02 tenue, sinon (B) (po-scrum-master)
+
+### 2026-11-08 17:44:52 — Recette manuelle demandée au QA sur les retours APK 916 / 918 (`qa/recette-manuelle-apk918.md`) (po-scrum-master)
+
+### 2026-11-08 17:46:55 — Recette manuelle APK 916 / 918 faite, ANO-178 (agent qa lead)
+- 16 images ouvertes. KO : départ de nuit délavé (ANO-177, régression 916 → 918), fenêtres hors des façades proches des deux côtés (ANO-175), toujours 5/5 (ANO-176), 10 à 20 img/s en course. OK : aide à la direction jusqu’à 284 km/h, foule, chargement, menus. Nouvelle : ANO-178 (menu principal à 10 img/s, 699 k triangles). Rapport `qa/rapports/recette-manuelle-apk918.md`.
+
+### 2026-11-08 17:47:12 — WFS-265 fusionné par le lead dev (lead-dev)
+- PR #268, 3e revue sur 55b4e92f : les 3 points du 2e refus sont corrigés. La branche est synchronisée ; les captures avant / après sont faites sur le même main, et la voiture du joueur est identique de nuit grâce à `dessinJoueur`. La description est à jour. Le commentaire WFS-222 est remis à sa place. 49 paires ouvertes, diff relu en entier, fusion sans conflit sur main.
+- Approbation écrite dans la PR (en « commentaire » : même compte), squash dcd173c, titre « (Claude, agent dev X) ». Statut : 🟡 À valider (utilisateur). Ligne #268 retirée de suivi-pr.md ; Check.md mis à jour.
+- Pour le PO : l'ajout de 17:31 UTC dans WFS-265.md (immeubles de la Ville au-delà de 140 m, ≈ 42 k triangles) n'est pas dans cette PR. Il est à confier à une US de suite (ou à WFS-321).
+
+### 2026-11-08 17:47:44 — Recette manuelle du QA (APK 916 / 918) : ANO-178 → WFS-329 ; régression 916 → 918 notée dans WFS-328 (po-scrum-master)
+
+### 2026-11-08 17:54:24 — WFS-326 : PR #275 ouverte, cause d'ANO-175 trouvée (Claude, agent dev Y)
+- **Cause (RG-01)** : les « losanges » lumineux n'étaient pas des fenêtres. Les vitres du kit d'architecture sont dans leurs façades : 518 424 sommets de vitre contrôlés par le calcul, 0 hors façade. Avant un virage serré, `ville::adapter` retire l'immeuble qui déborde la limite du virage (R + 6,5 m + profondeur). Il ne retirait son commerce que si la limite passait sous R + 10,5 m. Entre les deux, la vitrine allumée de `commerces.cpp`, le store rayé rouge et blanc, l'enseigne et la terrasse restaient seuls dans le vide : la nuit, un grand rectangle blanc saturé bordé de rouge. Essai A/B en local : en coupant les vitres du kit ou les fenêtres des abords, les rectangles restent ; en retirant ces commerces, ils disparaissent.
+- **Accroche E2 annoncée** : `src/world/ville_quartiers.cpp`, 8 lignes dans `adapter()`. Un commerce ou un panneau n'est gardé que devant un immeuble encore posé, du même côté et sur sa longueur. Commerces retirés : 108 → 119 ; panneaux inchangés. Le fichier est aussi visé par WFS-305 (en attente) : la modification est isolée dans le filtre des commerces. Banc : `cartes_banc.cpp`, les vues `carte-ville-virage-N` sont aussi prises de nuit.
+- **Vérifié en local** : 73 tests CPU verts après synchronisation, parcours complet 0 écart. Banc `ville` avant / après : seules changent les vues des virages, `ao-3-d` et `chien`, où ces commerces étaient visibles. Corniche et Campagne de nuit regardées. Captures dans `qa/pr/WFS-326/`.
+- **Limite** : les vraies fenêtres et vitrines restent très lumineuses la nuit (31,8 cd/m² pour une exposition vers EV 4) : relève de WFS-230.
+
+### 2026-11-08 17:57:04 — WFS-326 (PR #275) refusé par le lead dev (lead-dev)
+- Captures regardées une à une (5 paires) : les vitrines et les stores sans immeuble ont disparu dans `virage-1-nuit`, `virage-2-nuit`, `virage-1` et `virage-2`, et `virage-3-nuit` n'a pas changé. Rien n'est dégradé. Le diff est lu en entier (`ville_quartiers.cpp`, `cartes_banc.cpp`).
+- Raisons du refus :
+  1. Les captures 1 et 2 demandées par `regles-de-gestion/WFS-326.md` manquent : l'avenue du Belvédère en vue Arrière, 100 m avant le virage à gauche, et l'avenue des Mimosas, côté gauche, de `apk916-2`.
+  2. Aucun test CPU ne vérifie qu'un immeuble est posé derrière chaque commerce et chaque panneau.
+  3. `bati()` ne vérifie que le premier segment du commerce, alors que la PR dit « sur sa longueur ».
+  4. Le nombre 60 n'est pas expliqué.
+  5. Le nombre de lignes de l'accroche n'est pas le même partout (6 ou 8).
+- La revue est dans la PR (COMMENT, car GitHub refuse de « demander des changements » sur une PR du même compte). Le ticket passe en ↩️ Retour lead dev (PR #275).
+
+### 2026-11-08 18:07:30 — WFS-316 : PR #267 synchronisée avec main après WFS-258 (#271) (Claude, agent 4 (011cpqZan))
+- Conflits `CMakeLists.txt` et `virages_banc.cpp` résolus en gardant les deux côtés (`test_direction_anneau` et `test_direction_vitesse` ; sections du banc de WFS-258, celles de WFS-316 renumérotées 10 et 11). Tête de branche c5032944.
+- 73 tests CPU OK (`test_direction_anneau`, `test_direction_vitesse`, `test_aide_ralentit` compris) ; bancs `virages`, `conduite` et `parcours` (vue normale et cockpit) à 0 écart. Le banc ne change pas les captures de WFS-316.
+- **RG-05 refait sur la nouvelle base** : lacet dans le monde (rad/s) identique avant / après à 150, 190 et 230 km/h, doigt tenu 1 s, 20 img/s, Golf.
+  - Ligne droite, doigt à 12 % : aide désactivée 0,454 / 0,359 / 0,296 ; aide activée 0,295 / 0,249 / 0,203.
+  - Virage rapide du Grand Prix, doigt à 12 % : aide désactivée 0,819 / 0,906 / 0,925 ; aide activée 0,752 / 0,354 / 0,247.
+  - Mêmes valeurs avant et après au doigt à 6 % (tableau complet dans `test_direction_anneau`).
+
+
+### 2026-11-08 18:15:44 — Début WFS-328 et WFS-292 : attribués à agent arwa (po-scrum-master)
+- Demande d'agent arwa (Claude, session trafic) : WFS-284 (#250, 94f6f41) et WFS-266 (#252, 8c8bdc7) fusionnés par le lead dev ; WFS-281 (E3) reste à lui (2e retour du lead dev, PR #249). Plusieurs tickets en parallèle, épics différentes : autorisation de l'utilisateur (déjà notée).
+- **WFS-328** (P1, E13, ANO-177) : départ de nuit blanc / rose. E13 libre (aucun ticket 🔧). Zone : `shaders/post*`, `shaders/eclairage*`, `src/render/eclairage_*`, `post_*`, exposition automatique ; accroche ≤ 10 lignes annoncée au journal si l'exposition se règle hors E13. Interdit : `nuit.cpp` (E4), `qualite_banc.cpp` (WFS-300), fichiers de WFS-317. Plan : chercher la régression APK 916 → 918 (WFS-317 #270, WFS-258 #271 / #274, WFS-296 #273, WFS-192 #266, exposition WFS-276), exposition juste dès la 1re image (départ, pause, Recommencer), captures RG-04. Règles : `regles-de-gestion/WFS-328.md`.
+- **WFS-292** (P2, E4 + E10 en exception PO déjà écrite dans le ticket) : fumée des pneus, choc du banc d'effets, Golf bleue de nuit en Campagne. Zone : `src/render/effets_*`, `src/render/bench_effets.*`, `eclairementRouteAutour()` et peinture de nuit de `shaders/vehicule.glsl` seuls. Interdit : `post.frag`, `eclairage_*`, `nuit.cpp`, règles des chocs (WFS-256), `player.*`, `conduite_*`. Parallèle de WFS-317 (agent 1) : fichiers séparés. Règles : `regles-de-gestion/WFS-292.md`. 🟡 après fusion.
+- Rappels : skill `agent-developer`, branches `feature/waforspeed-328` et `feature/waforspeed-292` poussées dans l'heure, synchronisation avec `main`, PR + captures `tools/qa/captures_pr.sh` (AGENT obligatoire, ≥ 3 captures après), lead dev appelé, seul à fusionner (squash), graphisme réaliste (DA-realisme.md), Android seulement, gel iOS, aucune taille d'interface, `regles-reseau.md`.
+
+### 2026-11-08 18:17:28 — WFS-316 fusionné par le lead dev (lead-dev)
+- PR #267 relue sur c5032944 (3e revue) : réponse « corrigé dans » présente, captures regardées (2 planches caméra Arrière jour / nuit, 6 vues de dessus), diff entier relu.
+- `main` avait reçu WFS-258 #274 (`player.cpp`) après la synchronisation : fusion sans conflit, construite localement avec le `main` actuel : 74 tests CPU réussis ; tableau RG-05 identique avant / après.
+- Revue « ✅ Approuvé » écrite dans la PR (GitHub refuse « Approve » pour le même compte), fusion squash 7dbea2f. Ticket de conduite : 🟡 À valider (utilisateur). Agent 4 libéré.
+
+### 2026-11-08 18:19:00 — WFS-326 : retour du lead dev corrigé (commit 7db895c7), PR #275 à relire (Claude, agent dev Y)
+- **Les 5 points de la revue sont corrigés** :
+  - le commerce est vérifié sur toute sa longueur, de `seg + décalage` sur `len` (panneau : 6 m) ;
+  - la portée de la recherche est `lmax`, le plus long immeuble du plan, au lieu de 60 m en dur ;
+  - test CPU dans `test_ville_lieux` : 15 échecs sans le correctif, vert avec ;
+  - captures aux deux lieux de l'utilisateur, `apk916-5` (vue Arrière) et `apk916-2` (vue Proche), de nuit, en Haute et en Basse ;
+  - taille de l'accroche harmonisée : 10 lignes ajoutées et 3 modifiées dans `adapter()`.
+- **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
+- **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
+
+### 2026-11-08 16:04:24 — WFS-308 : corrections du 1er refus du lead dev (PR #269) (Claude, agent 3 (01UY1Vv3))
+- **1. Police perdue si la fenêtre disparaît pendant les CGU** : cause : `termGraphics` fermait le renderer sans libérer l'atlas (`ui::unload` seulement via `game.shutdown`), `F.ready` restait vrai et `chargerPolice` ne refaisait rien sur le nouveau renderer. Correction : `Cgu::perdreFenetre` appelle `ui::libererPolice` (accroche de 2 lignes dans `text.h` / `text.cpp`, enveloppe publique de `unload`) avant `renderer.shutdown()` ; au retour `Cgu::demarrer` recharge la police. Preuve : banc `cgu`, cas « fenêtre perdue puis retrouvée » (shutdown puis init du renderer pendant les CGU) : police libérée puis rechargée, capture `cgu-reprise` lisible.
+- **2. Texte figé pendant le glissement** : cause : délai de 33 ms de `ALooper_pollOnce`, la boucle ne sortait pas tant que les MOVE arrivaient. Choix : délai 0 pendant les CGU, comme en jeu ; l'image est rythmée par la présentation (FIFO) dans `Cgu::image`, donc une image par lot d'entrées, sans attente active hors présentation.
+- **3. Accroche de `android_main.cpp`** : logique sortie dans `cgu.cpp` (`demarrer`, `perdreFenetre`, `image` : rotation 8 essais, taille de la fenêtre, image, état) ; reste ≈ 22 lignes, **accordées par écrit par le PO** (WFS-308.md § Suivi, 15:55:45 UTC, commit 8ba03698).
+- **4.** Commentaire WFS-246 de `g_mesure` remis sur sa ligne (`reglages.cpp`).
+
+### 2026-11-08 16:56:13 — WFS-308 : CI de branche (seule permise, confiance ≤ 50 %) et captures régénérées (Claude, agent 3 (01UY1Vv3))
+- CI de branche **run #915** (id 42498019211, `workflow_dispatch` de `build.yml` sur 2d846064, branche synchronisée avec `main`) : vérifie la **compilation Android** de `android_main.cpp` (non compilable en local, pas de NDK) : jobs `android` (APK et AAB construits et signés, pages de 16 Ko) et `compilation` **verts** à 16:10 UTC ; endurance et bancs encore en cours au moment de l'écriture.
+- 72 tests CPU OK (`test_audio_chocs` a échoué une fois sur le seuil de temps RG-07 pendant que la machine compilait, 0,0438 ms pour 0,05 permis ; vert en relançant : test sans lien avec WFS-308).
+- Captures `qa/pr/WFS-308/` régénérées (cgu et menu2 en 2400×1080) : 14 après dont `cgu-reprise` (texte lisible après perte puis retour de la fenêtre), 7 avant.
+
+### 2026-11-08 17:29:31 — WFS-308 : corrections du 2e refus du lead dev (PR #269) (Claude, agent 3 (01UY1Vv3))
+- **Cause** : les conditions CGU d'`android_main.cpp` testaient `cgu().ouvert()`, vrai aussi pour la **lecture depuis les Réglages** ; touche Accueil pendant la lecture → `termGraphics` (branche normale) laissait la lecture ouverte → boucle à délai 0 en arrière-plan, puis `initGraphics` sautée au retour et `Cgu::image` sur un Vulkan fermé.
+- **Correction** : `Cgu::premierLancement()` (ouvert ET mode `Premier`) remplace `ouvert()` dans les 5 conditions d'`android_main.cpp` (même nombre de lignes, accord du PO inchangé) ; `Cgu::image` ne fait rien hors du premier lancement ; la lecture se ferme à l'arrêt du jeu (`shutdown` du système des Réglages, appelé par `Game::shutdown` dans `termGraphics`).
+- **Preuve** : banc `cgu` : lecture ouverte depuis les Réglages (`premierLancement` faux : OK) → `g.shutdown` (lecture fermée : OK) → `r.shutdown`, `r.init`, `g.init` (jeu rechargé, lecture fermée, pas d'écran des CGU : OK) ; capture `cgu-retour-jeu` (menu revenu) ; parcours complet 0 écart. Entrée du journal de 15:40:24 remise à sa place.
+
+### 2026-11-08 18:23:09 — WFS-326 fusionné par le lead dev (lead-dev)
+- **PR #275**, 2e revue sur e0ceeb93. Le développeur a répondu point par point : les 5 points de la 1re revue sont corrigés (captures aux deux lieux de l'utilisateur en Haute et en Basse, test CPU, longueur entière, `lmax`, taille de l'accroche).
+- **18 captures ouvertes** :
+  - les vitrines et stores sans immeuble des virages 1 et 2, de nuit, ont disparu ;
+  - de jour, les terrasses et les kiosques posés sur la pelouse ont disparu ;
+  - aux lieux `apk916-5` et `apk916-2`, avant et après sont identiques, sans rien qui flotte ;
+  - rien n'est dégradé.
+- **Diff entier relu.** `test_ville_lieux` et `test_direction_anneau` relancés sur la fusion locale avec `main` (WFS-316 compris) : OK.
+- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash 4a0eb90 (`expectedHeadSha` e0ceeb93).
+- Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
+- **Pour le PO** : sur le téléphone (`apk916-5`), les « losanges » ressemblent aux fenêtres du rez-de-chaussée, à leur place dans la façade, avec un cadre rouge et un mur presque noir.
+  - Le banc ne reproduit pas ce rendu.
+  - Si l'utilisateur dit non, la suite tient plutôt à l'éclairage du mur et à l'exposition de nuit (WFS-230) qu'aux commerces.
+
+### 2026-11-08 18:29:41 — WFS-317, partie 2 : PR #276 refusée par le lead dev (lead-dev)
+- 1re revue, commit b1ac2ca : 23 paires de captures ouvertes, diff relu en entier (`pietons.cpp`, `conducteurs.*`, `foule_apparition.h`, `qualite_auto`, 3 tests). **Le code est bon** : niveau de détail sur la vraie distance à la caméra, Ville 3 sur 10 par liste, Basse 8 / 20 / 30 m pour les conducteurs, `texteComptes` testé.
+- **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
+- À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
+- Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 18:38:08 — WFS-308 : PR #269 refusée par le lead dev, 3e revue (lead-dev)
+- 3e revue, commit 38ad6a8a. Le développeur a répondu « Bien reçu », puis « corrigé dans » point par point.
+- **Le bloquant du 2e refus est corrigé** : `Cgu::premierLancement()` est utilisé dans les 5 conditions d'`android_main.cpp`, et la lecture des Réglages se ferme par `Reglages::shutdown`, appelé par `Game::shutdown` (vérifié dans `game.cpp`). Le cas est couvert par le banc `cgu` (`cgu-retour-jeu`).
+- 15 captures « après » et 7 « avant » ouvertes, toutes bonnes. Diff entier relu : **le code est bon**.
+- **Bloquant** :
+  - La branche ne se fusionne plus : conflit dans `journal.md` avec `main` (WFS-326, #275, fusionné à 18:22:43, juste avant la synchronisation).
+  - Les captures « après » (7224e2c3) ont été faites **avant** la synchronisation, sans WFS-265 ni WFS-316. Par exemple, `reglages-menu` affiche 2752 k triangles avant et 3247 k après.
+- Remarque non bloquante : il reste une petite fenêtre si la fenêtre est perdue dans le même lot d'événements que « Accepter » (état `Accepte`) : `termGraphics` ne ferme alors ni le renderer ni Vulkan.
+- Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
+- **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
+
+### 2026-11-08 18:39:16 — WFS-308 : 3e refus du lead dev (PR #269) : synchronisation, captures après synchronisation, cas « Accepter » puis fenêtre perdue (Claude, agent 3 (01UY1Vv3))
+- **Cas rare signalé par le lead dev** : fenêtre perdue dans le même lot d'événements que l'appui sur « Accepter » (état `Accepte`, pas encore traité par `Cgu::image`) : `termGraphics` ne fermait ni le renderer ni Vulkan. Correction : `Cgu::tientLaFenetre()` (premier lancement ouvert ou `Accepte`) dans la condition de `termGraphics` (même ligne) ; `perdreFenetre` note alors l'acceptation, puis le chargement normal se fait au retour. Preuve au banc `cgu`.
+- Branche synchronisée avec `main` **avant** les captures ; captures régénérées ensuite (commit des captures après celui de la synchronisation).
+### 2026-11-08 18:41:32 — WFS-317 : marcheurs répartis sur tout le tour en Ville, à nombre égal (po-scrum-master)
+
+### 2026-11-08 18:59:35 — WFS-327 : PR #277 (adversaires de la Course à 5 sur une vitesse de virage possible), lead dev appelé (Claude, agent dev conduite)
+- Ordinateurs limités par la même règle que l'aide du joueur (adhérence du jeu × fiche, freinage du jeu, anticipation 8 m) ; vitesse visée Normale 0,95 (+ 5,5 %), Difficile 1,00. Aide activée volant lâché : dans les 3 premiers 6 à 8 fois sur 8 par carte (main : 0 à 1) ; sans aide : 1 victoire par carte. Banc course5 (Ville) : 5e → 3e. 74 tests CPU OK. Détail dans le Suivi de WFS-327.md.
+
+### 2026-11-08 19:03:33 — WFS-327 refusé par le lead dev, PR #277 (lead-dev)
+Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `course5-rejouer` 5e → 4e ; 16 paires identiques octet pour octet (bancs figés). `test_course5_ordinateurs` recompilé et relancé : OK (7, 7, 7, 6 / 8). Refus : (1) RG-04, aucune capture de l'épingle ; (2) à-coup au départ : `physique::params` (étalonnage complet, 5 à 80 ms par voiture sur PC) appelé au premier pas après le GO pour lire μ, et à l'initialisation statique (`MU_REFERENCE`) ; (3) chiffres de la description à remettre d'accord avec un vrai lancement. Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-08 19:10:00 — WFS-317 : retour du lead dev sur #276, correction en cours (Claude, agent 1)
+- **Chiffre corrigé** : « 882 → 263 personnes » venait d'une construction intermédiaire (promeneurs avec chien encore réduits). Sur la base actuelle de `main` (WFS-326 compris), la Ville passe de **814 à 248 personnes** (−70 %), les 5 promeneurs avec chien restant tous.
+- **Marcheurs répartis sur tout le tour** (accord du PO, 18:41) : sur `main`, les 110 marcheurs près de la route sont tous dans le 1er km du tour de 6,8 km (plafond `PEOPLE_MAX = 220` de life.js). Désormais, en Ville, environ 33 marcheurs (3 sur 10) sont placés au plus près de places à pas réguliers sur tout le tour, en alternant les côtés : de 4 à 7 marcheurs par kilomètre, écart médian de 141 m, plus grand écart de 661 m (dans les quartiers sans trottoir candidat). Autres cartes inchangées.
+- Captures refaites sur une seule base (branche synchronisée, aucune fusion de `main` pendant les captures), avec la Ville de jour et de nuit à 30 et 60 s de course.
+
+### 2026-11-08 19:38:11 — WFS-308 fusionné par le lead dev (lead-dev)
+- PR #269, 4e revue, commit relu `49211811` : les 2 points bloquants du 3e refus sont corrigés. La branche est synchronisée avec `main` (`5e7c5efd`, WFS-326 compris, aucun conflit) et les captures viennent après la synchronisation (ligne « Rendu » identique avant et après).
+- 22 captures ouvertes (15 « après », 7 « avant »). Diff relu : la seule différence de code depuis la 3e revue est `d758edc2` (`Cgu::tientLaFenetre`, acceptation gardée si la fenêtre est perdue juste après « Accepter »).
+- GitHub refuse l'approbation (même compte) : la revue « ✅ Approuvé par le lead dev » est écrite en commentaire. Fusion en squash `5f2725e`. Statut 🟣 Fusionné, ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`, développeur libéré.
+- Remarques non bloquantes : fenêtre perdue pendant les 2,5 s du refus (renderer non fermé, l'application se ferme de toute façon) ; 4 lignes « À REMPLIR » du gabarit restées dans `qa/pr/WFS-308/pr.md`.
+
+### 2026-11-08 19:42:01 — Demande de ticket d'agent 3 (cartes) : aucun ticket du chantier « Paquets de cartes » prêt (po-scrum-master)
+- Claude, agent 3 (01UY1Vv3), domaine cartes (skill `expert-cartes`), libre après WFS-308 (#269, 5f2725e, lead dev).
+- WFS-308 reste **🟣** (pas 🟡) : fonction neuve, pas la correction d'un défaut vu par l'utilisateur, pas un ticket de conduite ; le ✅ viendra des bancs du matin.
+- Chantier « Paquets de cartes » : **aucun ticket prêt**. WFS-301 dépend de WFS-268 (PR #248, ↩️ retour lead dev, dernier envoi 17:32:25 UTC, Agent 0 developer) : même code `lots_decor.*` (RG-04 de WFS-301 compare aux vues de WFS-268). La décision de 16:59 UTC passe WFS-301 → 306 → 302 en P1 mais ne lève pas cette dépendance : ordre gardé tel qu'écrit. WFS-306 et WFS-302 attendent WFS-301 ; WFS-303, 304, 307, 309, 313, 314 plus loin.
+- Aucun ticket d'une autre épic donné (demande d'agent 3) ; agent 3 prévient l'utilisateur. WFS-301 lui sera proposé dès la fusion de WFS-268, à sa demande.
+
+### 2026-11-08 20:11:15 — WFS-327 : retour du lead dev sur #277 corrigé (Claude, agent dev conduite)
+- **Épingle (RG-04)** : séquence au banc `course5` (1re épingle de la Corniche, 4 ordinateurs à 90 km/h, 6 vues de dessus, avant rejoué par `course5::g_avantWfs327`, interrupteur du banc) : avant jusqu'à **+ 87,5 %** au-dessus de la vitesse possible (130 km/h pour 72, 6,05 g) ; après **+ 0,0 %**.
+- **À-coup au départ** : μ lu sur la fiche (`physique::adherencePneu`, partagé avec `etalonner`), plus aucun étalonnage dans la course ni au chargement. Premier pas de `course5::avancer` après le « GO » (processus froid, 4 ordinateurs) : **84 à 86 ms avant → 0,22 ms après**.
+- Chiffres de la description refaits sur un vrai lancement : 75 tests OK ; RG-02 Ville / Campagne / Corniche 7/8, Grand Prix 6/8, 1 victoire par carte ; partie 5e → 3e. Commits 0cec0369, 7aa452a3 ; suivi-pr 🔁 ; lead dev rappelé.
+
+
+### 2026-11-08 20:15:34 — WFS-327 fusionné par le lead dev (lead-dev)
+- PR #277, 2e revue sur 7aa452a : réponse « corrigé dans » présente pour les 3 points du refus.
+- Captures ouvertes : épingle de la Corniche, 6 paires avant / après (avant, les ordinateurs ressortent de l'épingle en ≈ 3 s ; après, ils la passent à la vitesse possible, sur la chaussée) ; `course5-fin` 5e → 3e ; `course5-rejouer` 5e → 4e.
+- Diff entier relu : μ lu par `physique::adherencePneu` (plus d'étalonnage au départ), interrupteur de banc faux en jeu, rien dans `player.*`. Fusion d'essai avec `main` (WFS-308 compris) : sans conflit, `test_course5_ordinateurs` et `test_course5` OK.
+- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash b995396 (`expectedHeadSha` 7aa452a). Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne retirée de `suivi-pr.md`. Agent dev conduite libéré.
+- **Pour le PO** : vitesse visée Normale 0,90 → 0,95 (+ 5,5 %), au lieu des « ≈ 3 % » de l'option (A) ; écart écrit dans le Suivi de WFS-327, RG-02 tenue. Remarque de style : commentaire WFS-327 de `course5.cpp` mal placé (au-dessus de `vitessePointe`).

@@ -13,6 +13,15 @@ static constexpr double ANTICIPE_MAX = 8.0;    // m
 static constexpr double VOLANT_PLEIN = 0.35;   // braquage au-delà duquel l'aide laisse tout au joueur
 static constexpr double ELARGI_M = 8.0;        // m : borne du cap élargie de 8 m × courbure (rayon 14 m : +0,57 rad)
 static constexpr double ELARGI_MAX = 0.6;      // rad
+static constexpr double VOLANT_TENU = 0.05;    // WFS-316 (RG-02) : au-delà, le joueur tient le volant
+// WFS-316 (RG-05) : la correction ne vaut qu'aux vitesses des virages serrés : pleine jusqu'à 50 km/h, nulle à 70 km/h et au-delà
+// (à 150-230 km/h, sans borne, l'aide activée donnait un lacet 1,6 à 3,5 fois plus vif : test_direction_anneau)
+static constexpr double TENU_PLEIN = 50 / 3.6, TENU_NUL = 70 / 3.6;   // m/s
+// part de la correction WFS-316 : 1 volant tenu à basse vitesse, 0 volant lâché, au-dessus de 70 km/h, ou au banc « avant »
+static double partTenu(double steer, double v) {
+    if (std::abs(steer) < VOLANT_TENU || g_avantWfs316) return 0;
+    return clampd((TENU_NUL - std::abs(v)) / (TENU_NUL - TENU_PLEIN), 0, 1);
+}
 static constexpr double FILE_GAIN = 0.6;       // WFS-258 : maintien de voie, rad de cap par demi-largeur d'écart à la file
 static constexpr double FILE_CORR_MAX = 0.3;   // WFS-258 : correction de cap du maintien de voie, au plus (rad)
 
@@ -76,7 +85,10 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     const double maxH = clampd(Phys::maxHeading - std::abs(v) * 0.0045, 0.16, Phys::maxHeading) + elargi;
     // réalignement doux (jeu web : 3 /s, double après un accident), seulement près de la direction (demi-tour libre, WFS-90)
     if (std::abs(dev) <= Phys::maxHeading + elargi) dev *= std::exp(-dt * Phys::align * w * (locked ? 2 : 1));
-    if (std::abs(v) >= Phys::vLibre && std::abs(dev) > maxH) {   // cap borné : ramené vers la borne, jamais d'un coup
+    // WFS-316 (RG-02) : volant tenu (|volant| ≥ 0,05) sous 60 km/h, plus de borne : elle ramenait le cap vers l'axe, donc la voiture
+    // vers l'extérieur d'un virage serré (l'axe y tourne vite) ; lâché, ou au-dessus de 60 km/h (RG-05), borne gardée
+    const bool tenu = partTenu(steer, v) >= 0.5;   // jusqu'à 60 km/h
+    if (!tenu && std::abs(v) >= Phys::vLibre && std::abs(dev) > maxH) {   // cap borné : ramené vers la borne, jamais d'un coup
         const double exces = std::abs(dev) - maxH;
         dev = (dev > 0 ? 1 : -1) * (maxH + std::max(0.0, exces - RENVOI_MAX * dt));
     }
@@ -151,9 +163,13 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     dist += avanceAxe;
     odo += dt * speed;   // WFS-90
     playerX += v * std::sin(heading) * dt / RW;
-    // force centrifuge dans les virages
+    // force centrifuge dans les virages (jeu web : la route y « porte » la voiture). WFS-316 (RG-02) : voiture du joueur, volant
+    // tenu : plus de force forfaitaire jusqu'à 50 km/h (effacée de 50 à 70 km/h, RG-05), la route tourne déjà sous la voiture (guider,
+    // repère de Frenet) : l'ajouter faisait compter le virage deux fois (3,2 m/s vers l'extérieur à 50 km/h dans l'anneau de 14 m) ;
+    // lâché, au-dessus de 70 km/h, ou ordinateur : inchangé
     const double sp = std::min(speedPct, 1.1);
-    playerX -= dt * 2 * sp * sp * courbe * CENTRIFUGAL;
+    const double fTenu = aide == Aide::Web ? 0.0 : partTenu(steer, v);   // RG-05 : effacée de 50 à 70 km/h
+    playerX -= (1 - fTenu) * dt * 2 * sp * sp * courbe * CENTRIFUGAL;
 
     // ---------- moteur, freins, frottements (m/s²) ----------
     // WFS-258 (RG-00b, point 1) : aide activée, la voiture ralentit à temps pour le virage qui vient (épingle du Grand Prix prise
