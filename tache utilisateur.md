@@ -127,3 +127,6 @@ demande utilisateur :
 - Voiture fantôme en mode Checkpoint : c'est quoi ? la mettre dans les Réglages ; les réglages en onglets sont-ils créés ? (conversation avec le PO, 2026-11-08 14:00 UTC)
 ( PO : c'est le fantôme de votre record (WFS-125). **WFS-318** (P3) créé : réglage « Fantôme du record : Affiché / Caché » dans l'onglet Affichage + étiquette « Votre record · temps ». Les onglets : oui, **WFS-291** existe (P3, après WFS-290 boutons Réglages / Fermer) ; WFS-318 passe juste après. )
 ( PO, 2026-11-08 14:05 UTC — noté : WFS-290, 291 et 318 passent **après** le chantier « Paquets de cartes » (téléchargement des cartes). )
+
+- Test interne aujourd'hui, public demain sur le Play Store ; pourquoi attendre 3 jours pour la CI ? (conversation avec le PO, 2026-11-08 14:10 UTC)
+( PO : c'est lancé — gel de la CI levé pour la publication seulement ; **WFS-319** (expert ci) : AAB 1.0 signé + guide ; **WFS-320** : points bloquants de la sortie publique. **À faire par vous** : 1) compte Google Play Console ; 2) clé de publication créée sur votre ordinateur et mise dans les secrets du dépôt (GitHub › Settings › Secrets › Actions, noms dans `store/signature.md`) — jamais dans le chat ; 3) choisir où publier la politique de confidentialité ; 4) la décision « gratuit sans pub ni achat » pour la 1re version (licences NC). )

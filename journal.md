@@ -3585,3 +3585,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 14:09:58 — WFS-299 fusionné par le lead dev (lead-dev)
 - PR #264 relue au commit 5cbe9a4 (synchronisation avec main seule, aucun code changé depuis c19db89, `journal.md` sans marqueur de conflit) ; approbation écrite dans la PR, puis fusion en squash : **fd207d3**.
 - WFS-299 → 🟡 À valider (utilisateur) ; ligne #264 retirée de `suivi-pr.md` ; Claude, agent 1 libre ; ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-08 14:10:11 — Play Store : test interne aujourd'hui, public demain (décision de l'utilisateur) ; WFS-319 et WFS-320 créés ; gel de la CI levé pour la publication (po-scrum-master)
