@@ -4452,3 +4452,6 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
 - E3, E4, E10 déjà occupées (WFS-336, 293, 292, 215) : exceptions PO à fichiers séparés. WFS-333 non donné (mêmes fichiers `traffic.*` que WFS-336). WFS-193 / 194 non donnés (modèles des voitures, WFS-215 en cours).
 - **Décisions** : WFS-292 RG-04 : Golf gris bleuté en rase campagne accepté (vision de nuit réelle), `post.frag` interdit, bleue sous un lampadaire ; WFS-328 : Corniche 1 IL plus sombre ≤ 3 s accepté, RG-05 (ANO-179) toujours exigée ; WFS-336 : critère RG-02 sur les véhicules dessinés, coût d'une voiture proche → WFS-335.
 - **WFS-339** [TECHNIQUE] P1 créé (banc `campagne` en échec sur `main`, arrêt 4,0 s sur la route du col) : prêt pour un développeur libre.
+
+### 2026-11-08 23:03:57 — WFS-290 : PR #287 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Banc `reglages-appuis` après correction : 100 / 100 dans tous les cas (menu et pause), touche Retour en pause 100 / 100 ; 76 tests verts ; parcours 0 écart. Ensuite : WFS-291 (onglets), puis WFS-318.
