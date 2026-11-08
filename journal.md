@@ -5229,3 +5229,27 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Approbation : GitHub refuse l'approbation formelle (même compte) → revue « ✅ Approuvé par le lead dev » postée en commentaire avant la fusion. Remarques non bloquantes : pas de test CPU neuf, indentation d'un bloc de `scene.frag`, 65 / 66 tests selon la source, gain à mesurer sur le téléphone.
 - Statut : **🟡 À valider (utilisateur)** ; ligne ajoutée à `qa/Check.md` ; agent dev X libre ; ligne #259 retirée de `suivi-pr.md`.
 
+
+### 2026-11-08 04:53:09 — WFS-298 : son des chocs en PR #260, revue du lead dev demandée (arwa-4)
+- **Décision du PO (02:39, option A)** : synthèse modale en direct dans le thread audio. La clarté suit exactement v^(1/5), sans tampon par vitesse. Le son ne passe pas par `SonsVoitures::jouer` ; `voitures_sons.*` n'est pas touché.
+- **RG-02, source** : `jmrplens/phonometry` (MIT), commit d1a9027f050796d89e03d21c7c848910ef22bf5e, relu par clone partiel en lecture seule dans `/tmp`, sans rien exécuter ; seuls les nombres sont repris.
+  - `src/phonometry/solids/data/bies-2017-table-c1.json`, SHA-256 dd68038e84266d272957a4bb4dfd29fb34f704b34fb9d4979febf9669266a03f (Bies, *Engineering Noise Control*, 5e éd., tableau C.1, η en place) ;
+  - `cremer-2005-table-4-3.json`, SHA-256 4533d2af9740a96e7c0d7895d29b191d07015094264133fe833a1d1372332721 (Cremer, Heckl, Petersson 2005, tableau 4.3 : η interne seulement) ;
+  - `hopkins-2007-table-a2.json`, SHA-256 84dca877ee2ef73ae1e8eb2399479dddaf33301c9de737e41f584e9b0d28f141.
+- **η retenus** : acier boulonné 0,01, tôle 0,02, bois 0,05, plastique 0,1, verre 0,02.
+- **T60 = 2,2 / (f·η)** : poteau 1,17 s, arbre 0,142 s, mobilier 0,229 s, voiture 0,379 s ; béton 0,08 s (valeur du PO : un mur tenu par le sol n'est pas un panneau). Modes [à vérifier] ; mât d'éclairage en tube de 120 × 3,5 mm sur 6 m. Tout est dans `references/reel/son/chocs.md`.
+- **RG-03** : amplitude ∝ v (7 à 80 km/h). Force de contact en demi-sinus de Hertz (Johnson 1985 : t ∝ v^(−1/5)) ; durées à 30 km/h [à vérifier] : 0,25 / 0,5 / 0,25 / 4 / 0,33 ms. 4 variantes par famille, jamais deux fois de suite.
+- **RG-04** : au pas où `bumps` ou `accidents` monte, l'obstacle du registre à 0,5 m au plus de la voiture, sinon l'autre voiture à 1 m au plus ; côté par `voitures::panExistant`. Vitesse de l'accident : celle du joueur au pas d'avant, au moins 14 m/s (`lastImpact` n'est donné qu'aux petits chocs). Aucune accroche dans `src/game`.
+- **RG-05, niveaux** (décision : volume absolu non mesurable) : crête à 30 km/h −4,5 dB du coup sourd au centre, −1,6 dB du côté de l'obstacle ; à l'accident, 5,7 à 9,6 dB sous le son d'accident ; pire cas du bus 0,48.
+- **Accroches** : `CMakeLists.txt` 1 ligne (`test_audio_chocs`) ; `pluie_sons.cpp` 1 ligne retirée (RG-00, `(void)cad;`).
+- **Vérifié** :
+  - `test_audio_chocs` : 13 cas OK ; T60 ±6 % au plus, +5,8 à +6,3 dB par doublement, coupure 2^(1/5) exacte, 16 dB du bon côté, coût 0,031 ms par bloc avec 4 voix (plafond 0,05) ;
+  - 67 tests CPU OK après synchronisation (aab9555) ;
+  - parcours complet 0 écart, vue Cockpit 0 écart ;
+  - captures : les 27 courbes audio existantes sont identiques octet pour octet à main, ainsi que les .wav de la pluie ; 11 `chocs-*` nouvelles.
+- **Banc `chocs` (WFS-256)** : les 4 chocs qui ont lieu donnent tous la bonne famille (arbre 34 et 8 km/h, poteau 59 km/h deux fois, à droite). Mais le banc rend « 4 écart(s) ÉCHEC » (« 0 capture(s) sur 3, le choc n'a pas eu lieu ? » sur les 4 cartes). **`main` fait de même** (compilé à part, mêmes lignes) : ce n'est pas dû à WFS-298. À signaler au PO pour WFS-256.
+- **Limites** :
+  - le parcours avec un choc voulu contre un lampadaire puis contre une voiture du trafic n'existe pas, et `src/game` est hors zone ;
+  - la recherche d'une voiture touchée n'est prouvée que par le test (distances) ;
+  - graves peu rendus par un petit haut-parleur ;
+  - rien n'a été écouté sur un vrai téléphone.
