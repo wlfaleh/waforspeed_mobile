@@ -650,7 +650,9 @@ void Renderer::createTargets() {
 // (les lectures bilinéaires de la passe finale et du bloom, jusqu'à e × capacité, ne touchent jamais un pixel non dessiné ;
 // champ rogné de 2 / sw_ ≈ 0,15 %) ; e = 1 : toute la cible, image identique à avant
 void Renderer::echelleDynamique(float e) {
+    const float avant = echelleDyn_;
     echelleDyn_ = e >= 0.999f ? 1.f : std::clamp(e, 0.1f, 1.f);
+    if (echelleDyn_ != avant) sceneValide_ = false;   // WFS-329 : autre part de la cible dessinée : fond figé à redessiner
     if (echelleDyn_ >= 1.f || !cw_) { sw_ = cw_; sh_ = ch_; return; }
     sw_ = std::min(cw_, (uint32_t)std::ceil(cw_ * echelleDyn_) + 2); sh_ = std::min(ch_, (uint32_t)std::ceil(ch_ * echelleDyn_) + 2);
 }
@@ -1319,7 +1321,7 @@ inline const vec3 VERRE{1.f, 0.0103f, 0.0513f};   // RG-13 : verre rouge du feu 
 }
 
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {
-    if (!inFrame_ || !m.ok) return;
+    if (!inFrame_ || sceneFigee() || !m.ok) return;   // WFS-329 : fond figé : dessins 3D ignorés
     // WFS-134 (RG-05, RG-07) : ombre de contact (≈ 1,1 × la longueur) si la voiture n'a pas déjà la sienne ; fantôme sans
     const bool fantome = fantomeSuivant_, ombreDejaLa = ombreFaite_, lots = lotsSuivant_ && qualiteBasse;
     const bool adversaire = adversaireSuivant_;   // WFS-243 (ANO-117) : lu et remis à faux pour chaque voiture
@@ -1396,7 +1398,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
-    if (!inFrame_ || !m.indexCount) return;
+    if (!inFrame_ || sceneFigee() || !m.indexCount) return;   // WFS-329 : fond figé : dessins 3D ignorés
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
     const uint8_t vis = classer(sp);   // WFS-82
     if (!vis) return;
@@ -1425,7 +1427,7 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
 
 void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
                            const ApparencePersonnage* ap, float fondu) {
-    if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
+    if (!inFrame_ || sceneFigee() || !m.indexCount || !os || nOs <= 0) return;   // WFS-329 : fond figé : dessins 3D ignorés
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
     // WFS-265 (RG-01) : personnes au loin effacées en fondu tramé (lod_distance.h) ; la simulation et leur nombre ne changent pas
     const float part = lod_distance::partVisible(length(sp.c - camPos_), lod_distance::personnesMax(qualiteBasse));
@@ -1458,7 +1460,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
 
 // ---------- WFS-09 : quads transitoires, halos, feux des voitures ----------
 void Renderer::drawQuads(const Vertex* v, int nQuads, const Material& mat) {
-    if (!inFrame_ || nQuads <= 0 || quadsUsed_ + nQuads > QUADS_MAX) return;
+    if (!inFrame_ || sceneFigee() || nQuads <= 0 || quadsUsed_ + nQuads > QUADS_MAX) return;   // WFS-329 : fond figé : dessins 3D ignorés
     std::memcpy((Vertex*)quadVb_[cur_].mapped + (size_t)quadsUsed_ * 4, v, sizeof(Vertex) * 4 * (size_t)nQuads);
     vec3 c{};
     for (int i = 0; i < nQuads * 4; i++) c += vec3{v[i].px, v[i].py, v[i].pz};

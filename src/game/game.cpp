@@ -373,16 +373,19 @@ void Game::render(double time) {
         r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee, camMode == 2, fondAnime), sig));
     }
     if (!r_->beginFrame(fp)) return;
-    if (r_->sceneFigee()) { systemsUi(); r_->endFrame(); return; }   // WFS-329 : interface seule par-dessus la scène gardée
+    // WFS-329 (revue du lead dev) : tous les systèmes tournent encore quand le fond est figé (son, mesure des img/s, chauffe…) ;
+    // le moteur ignore alors leurs dessins 3D (Renderer::draw…) et ceux de Game ci-dessous (route, joueur, conducteurs)
+    view_.fondFige = r_->sceneFigee();
 
     const mat4 I = mat4::identity();
-    if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
+    const bool dessin3d = !view_.fondFige;   // WFS-329 : fond figé : route, joueur et conducteurs non soumis (dessins ignorés)
+    if (dessin3d && (!dediee || sd.route)) for (auto& [k, c] : chunks_) {
         if (!solPropre) r_->draw(c.ground, groundMat_, I);
         if (!trottoirPropre) r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
     systemsRender(eye, look, fp.view, fp.proj, time);
-    if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
+    if (dessin3d && (!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
         RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
@@ -392,7 +395,7 @@ void Game::render(double time) {
         r_->dessinJoueur = false;
         if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
     }
-    conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
+    if (dessin3d) conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();

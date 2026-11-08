@@ -148,6 +148,7 @@ public:
     // voitures visibles (30 m derrière à 300 m devant), les plus proches d'abord, 14 au plus (LOD : WFS-20)
     void render(Renderer& r, const GameView& g) override {
         if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
+        if (g.fondFige) return;   // WFS-329 (accroche) : fond figé du menu : dessin seul (dessins ignorés), rien à calculer
         const Player& pl = *g.player; Track& t = *g.track;
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
         const TrafficCar* vis[TRAFIC_DESSINES_MAX];

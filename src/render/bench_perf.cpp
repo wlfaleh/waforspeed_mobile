@@ -27,7 +27,7 @@
 namespace wfs {
 namespace {
 
-struct Cumul { double update = 0, render = 0, ui = 0, autre = 0; double appels = 0, triangles = 0, pire = 0, avant = 0; };
+struct Cumul { double update = 0, render = 0, ui = 0, autre = 0; double appels = 0, triangles = 0, pire = 0, avant = 0; int rendus = 0; };   // WFS-329 : rendus = appels de render()
 std::map<std::string, Cumul>& cumuls() { static std::map<std::string, Cumul> c; return c; }
 
 // mesure d'un appel (ms) ajoutée au cumul `champ` du système
@@ -52,6 +52,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         uint32_t a0, t0, a1, t1; r.fileScene(a0, t0);
         { Mesure m(c_.render); s_->render(r, g); }
+        c_.rendus++;
         r.fileScene(a1, t1); c_.appels += a1 - a0; c_.triangles += t1 - t0;   // ce que le système a mis en file (vu par la caméra)
     }
     void drawUi(Renderer& r, const GameView& g) override { Mesure m(c_.ui); s_->drawUi(r, g); }
@@ -198,6 +199,13 @@ static void benchMenu(Game& g, Renderer& r, const std::string& out, const std::s
             const int k = i < 30 ? 0 : 1;
             if (i >= 2 && i != 30) { ms[k] += (nowSeconds() - t0) * 1000; appels[k] += r.appelsDessin(); tri[k] += r.chronoImage().triangles; n[k]++; }
             if (i == 29) r.capturePng(out + "/" + nom + "-1s.png");
+            if (i == 30) for (auto& [nm, c] : cumuls()) c.rendus = 0;   // WFS-329 (revue) : systèmes qui tournent encore, fond figé
+        }
+        {   // revue du lead dev : son (AudioSystem) et mesure des img/s (QualiteSystem) continuent quand le fond est figé
+            int sys = 0, tous = 0; std::string audio = "?", qual = "?";
+            for (auto& [nm, c] : cumuls()) { tous++; if (c.rendus > 0) sys++; if (nm.find("Audio") != std::string::npos) audio = std::to_string(c.rendus); if (nm.find("Qualite") != std::string::npos) qual = std::to_string(c.rendus); }
+            WFS_LOG("menu (WFS-329) : %s : images 31 à 90 : %d système(s) sur %d appelés à chaque image ; render() du son : %s, de la qualité : %s ; %s",
+                    nom.c_str(), sys, tous, audio.c_str(), qual.c_str(), qualite::ligneRendu().c_str());
         }
         r.capturePng(out + "/" + nom + "-3s.png");
         for (int k = 0; k < 2; k++) if (n[k]) { appels[k] /= n[k]; tri[k] /= n[k]; ms[k] /= n[k]; }
