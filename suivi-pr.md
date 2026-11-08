@@ -17,6 +17,6 @@
 |---|---|---|---|---|---|
 | #245 | WFS-232 | arwa-3 | ↩️ Retour lead dev | e77870e | 2026-11-08 01:07 |
 | #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev | ad1934c | 2026-11-08 01:07 |
-| #249 | WFS-281 | agent arwa | ↩️ Retour lead dev | b6bfe06 | 2026-11-08 01:07 |
+| #249 | WFS-281 | agent arwa | 🔁 Corrigée, à relire | 98d22f7 | 2026-11-08 01:30 |
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev | 851cacb | 2026-11-08 01:13 |
 | #250 | WFS-284 | agent arwa | 🆕 À relire | — | 2026-11-08 01:20 |
