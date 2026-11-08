@@ -1,0 +1,428 @@
+{
+ "m4": {
+  "materiaux": 51,
+  "textures": [
+   {
+    "rang": 4,
+    "sha256": "f6f94205a494453a",
+    "role": "couleur",
+    "couleur": "#000000",
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "note": "image de la rondelle BMW, utilisée en entier par les caches des 4 roues (matériau 22), les rondelles du coffre et du capot (28, 29 : pièces retirées) et le centre du volant (41) : unie, couleur de la jante (matériau 21, albédo 0)",
+    "materiau": 22,
+    "comparer": [
+     {
+      "materiau": 22,
+      "voisin": 21
+     },
+     {
+      "materiau": 41,
+      "voisin": 9
+     }
+    ]
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 5,
+    "triangles": [
+     8420,
+     64
+    ],
+    "trianglesAvant": 8860,
+    "boite": [
+     -0.0535,
+     0.9082,
+     2.2985,
+     0.0286,
+     0.99,
+     2.3061
+    ],
+    "nom": "Cylinder001 (fond de la rondelle du coffre)"
+   },
+   {
+    "materiau": 25,
+    "triangles": [
+     0,
+     14
+    ],
+    "trianglesAvant": 56,
+    "boite": [
+     -0.9098,
+     0.2512,
+     -1.4106,
+     -0.898,
+     0.3176,
+     -1.3781
+    ],
+    "nom": "Brake_Material"
+   },
+   {
+    "materiau": 25,
+    "triangles": [
+     14,
+     14
+    ],
+    "trianglesAvant": 56,
+    "boite": [
+     -0.8469,
+     0.2622,
+     1.4549,
+     -0.8469,
+     0.3015,
+     1.4792
+    ],
+    "nom": "Brake001_Material"
+   },
+   {
+    "materiau": 25,
+    "triangles": [
+     28,
+     14
+    ],
+    "trianglesAvant": 56,
+    "boite": [
+     0.7881,
+     0.2496,
+     -1.4038,
+     0.8015,
+     0.3163,
+     -1.367
+    ],
+    "nom": "Brake002_Material"
+   },
+   {
+    "materiau": 25,
+    "triangles": [
+     42,
+     14
+    ],
+    "trianglesAvant": 56,
+    "boite": [
+     0.8257,
+     0.2593,
+     1.4297,
+     0.8257,
+     0.2988,
+     1.4652
+    ],
+    "nom": "Brake003_Material"
+   },
+   {
+    "materiau": 27,
+    "triangles": [
+     0,
+     64
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     -0.0597,
+     0.9019,
+     2.2822,
+     0.0347,
+     0.9963,
+     2.3056
+    ],
+    "nom": "Cylinder001 (cerclage chromé de la rondelle du coffre)"
+   },
+   {
+    "materiau": 28,
+    "triangles": [
+     0,
+     94
+    ],
+    "trianglesAvant": 94,
+    "boite": [
+     -0.0514,
+     0.9102,
+     2.2993,
+     0.0265,
+     0.9878,
+     2.3068
+    ],
+    "nom": "Cylinder001_Material"
+   },
+   {
+    "materiau": 29,
+    "triangles": [
+     0,
+     94
+    ],
+    "trianglesAvant": 94,
+    "boite": [
+     -0.0498,
+     0.6983,
+     -2.3641,
+     0.0233,
+     0.7382,
+     -2.3052
+    ],
+    "nom": "Cylinder002_Material"
+   },
+   {
+    "materiau": 30,
+    "triangles": [
+     0,
+     887
+    ],
+    "trianglesAvant": 2408,
+    "boite": [
+     -0.2984,
+     0.6252,
+     -2.3711,
+     -0.215,
+     0.6539,
+     -2.3494
+    ],
+    "nom": "Frontlogo_Material"
+   },
+   {
+    "materiau": 30,
+    "triangles": [
+     887,
+     507
+    ],
+    "trianglesAvant": 2408,
+    "boite": [
+     0.3343,
+     0.9275,
+     2.2401,
+     0.4391,
+     0.959,
+     2.265
+    ],
+    "nom": "rear_logo_Material"
+   },
+   {
+    "materiau": 30,
+    "triangles": [
+     1394,
+     1014
+    ],
+    "trianglesAvant": 2408,
+    "boite": [
+     -0.9775,
+     0.6828,
+     -1.1101,
+     0.9532,
+     0.6996,
+     -1.0231
+    ],
+    "nom": "sidelogos_Material"
+   },
+   {
+    "materiau": 31,
+    "triangles": [
+     0,
+     8
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     -0.2407,
+     0.6378,
+     -2.3682,
+     -0.2263,
+     0.651,
+     -2.3655
+    ],
+    "nom": "Frontlogo_Material"
+   },
+   {
+    "materiau": 31,
+    "triangles": [
+     8,
+     8
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     0.3431,
+     0.9392,
+     2.2618,
+     0.3628,
+     0.9581,
+     2.2644
+    ],
+    "nom": "rear_logo_Material"
+   },
+   {
+    "materiau": 31,
+    "triangles": [
+     16,
+     16
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     -0.9775,
+     0.6895,
+     -1.0726,
+     0.9514,
+     0.6992,
+     -1.0574
+    ],
+    "nom": "sidelogos_Material"
+   },
+   {
+    "materiau": 32,
+    "triangles": [
+     0,
+     438
+    ],
+    "trianglesAvant": 1752,
+    "boite": [
+     -0.292,
+     0.6304,
+     -2.3688,
+     -0.2237,
+     0.6347,
+     -2.3584
+    ],
+    "nom": "Frontlogo_Material"
+   },
+   {
+    "materiau": 32,
+    "triangles": [
+     438,
+     438
+    ],
+    "trianglesAvant": 1752,
+    "boite": [
+     0.3397,
+     0.9296,
+     2.247,
+     0.4337,
+     0.9366,
+     2.2646
+    ],
+    "nom": "rear_logo_Material"
+   },
+   {
+    "materiau": 32,
+    "triangles": [
+     876,
+     876
+    ],
+    "trianglesAvant": 1752,
+    "boite": [
+     -0.9772,
+     0.6841,
+     -1.1068,
+     0.9531,
+     0.6885,
+     -1.0259
+    ],
+    "nom": "sidelogos_Material"
+   },
+   {
+    "materiau": 33,
+    "triangles": [
+     0,
+     8
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     -0.2466,
+     0.6377,
+     -2.3676,
+     -0.2325,
+     0.651,
+     -2.3648
+    ],
+    "nom": "Frontlogo_Material"
+   },
+   {
+    "materiau": 33,
+    "triangles": [
+     8,
+     8
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     0.3517,
+     0.9393,
+     2.2605,
+     0.3709,
+     0.9582,
+     2.2633
+    ],
+    "nom": "rear_logo_Material"
+   },
+   {
+    "materiau": 33,
+    "triangles": [
+     16,
+     16
+    ],
+    "trianglesAvant": 64,
+    "boite": [
+     -0.9774,
+     0.6896,
+     -1.073,
+     0.9517,
+     0.6991,
+     -1.0585
+    ],
+    "nom": "sidelogos_Material"
+   },
+   {
+    "materiau": 34,
+    "triangles": [
+     0,
+     8
+    ],
+    "trianglesAvant": 426,
+    "boite": [
+     -0.2527,
+     0.6376,
+     -2.3669,
+     -0.2386,
+     0.6509,
+     -2.364
+    ],
+    "nom": "Frontlogo_Material"
+   },
+   {
+    "materiau": 34,
+    "triangles": [
+     8,
+     8
+    ],
+    "trianglesAvant": 426,
+    "boite": [
+     0.3601,
+     0.9393,
+     2.2591,
+     0.3793,
+     0.9584,
+     2.2622
+    ],
+    "nom": "rear_logo_Material"
+   },
+   {
+    "materiau": 34,
+    "triangles": [
+     16,
+     16
+    ],
+    "trianglesAvant": 426,
+    "boite": [
+     -0.9773,
+     0.6897,
+     -1.0776,
+     0.952,
+     0.6993,
+     -1.0542
+    ],
+    "nom": "sidelogos_Material"
+   }
+  ]
+ }
+}
