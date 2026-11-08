@@ -661,9 +661,11 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
         const char* nomE = ecran == 0 ? "menu" : "pause";
         if (ecran == 0) allerAuMenu(); else allerEnPause();
         if (g_ouvert) { g_ouvert = false; image(true); }
-        for (int cas = 0; cas < 7; cas++) {
+        const char* ne = std::getenv("WFS_APPUIS_ESSAIS");   // 0 : captures seules (le tableau des 100 appuis prend ≈ 40 min en 2340 × 1080)
+        const int essais = ne ? std::max(0, std::atoi(ne)) : 100;
+        for (int cas = 0; cas < 7 && essais > 0; cas++) {
             int ok[2] = {0, 0};
-            for (int essai = 0; essai < 100; essai++) {
+            for (int essai = 0; essai < essais; essai++) {
                 attendre(24);   // 0,4 s entre deux gestes (temps de réaction d'un joueur)
                 if (g_ouvert) { g_ouvert = false; image(true); }   // départ : panneau fermé
                 if (essai % 25 == 0) image(true);   // une image dessinée de temps en temps (zones relevées au dessin)
@@ -700,7 +702,8 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
             appui(g_fermer, 0); capture("reglages-appuis-pause-ferme", "appui sur « Fermer » : retour à la pause");
             // RG-04 : touche Retour du téléphone, réglages ouverts en pause : panneau fermé, on reste en pause (avant : la course reprenait)
             int okRetour = 0;
-            for (int i = 0; i < 100; i++) {
+            const char* ne2 = std::getenv("WFS_APPUIS_ESSAIS");
+            for (int i = 0; i < (ne2 ? std::max(0, std::atoi(ne2)) : 100); i++) {
                 attendre(24); appui(g_bouton, 0); image(true); attendre(24);
                 retourSysteme(g, true, 0); image(false); retourSysteme(g, false, 0); image(true);
                 okRetour += !g_ouvert && g.ecran() == Ecran::Pause;
