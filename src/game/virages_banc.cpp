@@ -10,7 +10,8 @@
 //     aide activée, gaz tenu, volant lâché, 1er virage (épingle de 20 m) ; « avant » : l'aide ne ralentit pas (g_avantWfs258) ;
 //  7. classement (sans capture) : Course à 5 de 2 km sur les 4 cartes (tirage fixe), joueur gaz tenu, volant lâché ou presque (pilote
 //     automatique) puis tenu (« Glisser »), aide activée, avec et sans ralentissement de l'aide : place, temps, images hors route (virages.txt ; décision du PO : jamais systématiquement dernier).
-//  8. WFS-316 : virages-anneau-dessus-, virages-epingle-30-dessus-, virages-virage90-dessus- -avant / -apres (20 images/s).
+//  8. WFS-316 : virages-anneau-dessus-, virages-epingle-30-dessus-, virages-virage90-dessus- -avant / -apres (20 images/s) ;
+//  9. WFS-316 : virages-ville-arriere-avant-NN / -apres-NN et virages-virage90-nuit-arriere-avant-NN / -apres-NN (caméra Arrière).
 // Mesures sans GPU (rayons, épingles, choc) : virages.txt (mêmes calculs que tests/test_virages_fleches.cpp).
 #include <cstdio>
 #include <cstdlib>
@@ -273,6 +274,45 @@ int classementCourse5(Game& g, Renderer& r, const char* carte, bool avant, bool 
     return 0;
 }
 
+// 9. WFS-316 (captures 2 et 4 du ticket) : la scène dans la partie, caméra Arrière (poursuite proche), images de 50 à 75 ms
+// (20 images/s irrégulières, comme le téléphone de l'utilisateur), Golf, aide désactivée, avant (g_avantWfs316) / après, 8 images :
+//  - tenu : virage de la Ville (ex-rond-point, WFS-283) : élan sur la voie, puis « Glisser » tenu à 6 % vers l'intérieur dès le
+//    cœur du virage (sTenu), 50 → 25 km/h en 2,5 s ; images à intervalles réguliers pendant ces 2,5 s ;
+//  - sinon : joueur qui suit sa voie (Glisser) de debutU à finU à kmh, images réparties sur le virage (de nuit si demandé)
+int arriere316(Game& g, Renderer& r, const char* carte, double debutU, double finU, double sTenu, int sens, double kmh, bool tenu, bool nuit,
+               bool avant, const char* nom, const std::string& out, double& temps) {
+    if (nuit) setenv("WFS_MOMENT", "nuit", 1);
+    const double sDepart = (tenu ? sTenu : debutU) - 160 / M;
+    const bool ok = lancer(g, r, carte, (int64_t)(sDepart / SEG), false, temps);
+    if (nuit) unsetenv("WFS_MOMENT");
+    if (!ok) return 1;
+    g_avantWfs316 = avant;
+    Track& t = banc_conduite::piste(carte);
+    const Player& p = g.player();
+    uint32_t graine = 316;
+    double tTenu = -1;
+    int pris = 0, herbe = 0;
+    for (int n = 0; n < 2000 && pris < 8; n++) {
+        const bool enTenu = tenu && p.dist >= sTenu;
+        if (enTenu && tTenu < 0) tTenu = temps;
+        const double vise = enTenu ? std::max(25.0, kmh - 25.0 * (temps - tTenu) / 2.5) : kmh;
+        DriveInput in = tenir(p, vise, enTenu ? braquageGlisser(1000, 1000 + sens * 0.06f * 2400, 2400) : piloter(p, t, 0, false));
+        if (p.kmh() > vise + 2) { in.gas = false; in.brake = true; }
+        graine = graine * 1664525u + 1013904223u;
+        const double dt = 0.050 + 0.025 * ((graine >> 8) / 16777216.0);
+        g.manette = in; g.update(dt); temps += dt;
+        if (enTenu || (p.dist > debutU && p.dist < finU)) herbe += std::abs(p.playerX) > 1;
+        const bool prendre = tenu ? (tTenu >= 0 && temps - tTenu >= 2.5 * pris / 7)
+                                  : p.dist >= debutU - 10 / M + (finU - debutU + 25 / M) * pris / 7;
+        if (n % 4 == 0 || prendre) g.render(temps);
+        if (prendre) capturer(g, r, temps, out, nom, pris++);
+    }
+    WFS_LOG("virages-%s : %d image(s) de jeu hors de la chaussée", nom, herbe);
+    g_avantWfs316 = false;
+    g.manette = DriveInput{}; g.modeManette = false; g.shutdown();
+    return pris < 8 ? 1 : 0;
+}
+
 } // namespace
 
 int benchVirages(Game& g, Renderer& r, const std::string& out) {
@@ -329,6 +369,16 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
             if (v90) ecarts += dessus316(ville, v90->debut * SEG, v90->fin * SEG, 40, 40, false, 0, avant, "virage90-dessus", out, rapport);
         }
         if (!rp316 || !v90) { WFS_ERR("virages (WFS-316) : rond-point ou virage à 90° de la Ville introuvable"); ecarts++; }
+        else {   // 9. captures 2 et 4 : la scène en caméra Arrière, avant / après
+            double m = (rp316->debut + rp316->fin) * 0.5 * SEG, kMax = 0;
+            for (double x = rp316->debut * SEG; x < rp316->fin * SEG; x += 0.5 / M) if (std::abs(courbure(ville, x)) > kMax) { kMax = std::abs(courbure(ville, x)); m = x; }
+            for (bool avant : {true, false}) {
+                ecarts += arriere316(g, r, "ville", rp316->debut * SEG, rp316->fin * SEG, m - 4 / M, courbure(ville, m) > 0 ? 1 : -1, 50, true, false, avant,
+                                     avant ? "ville-arriere-avant" : "ville-arriere-apres", out, temps);
+                ecarts += arriere316(g, r, "ville", v90->debut * SEG, v90->fin * SEG, 0, 0, 40, false, true, avant,
+                                     avant ? "virage90-nuit-arriere-avant" : "virage90-nuit-arriere-apres", out, temps);
+            }
+        }
     }
     reglagesConduite().aideDirection = aideAvant; courseBenchRules(reglesAvant);
     { std::ofstream f(out + "/virages.txt"); f << rapport; }
