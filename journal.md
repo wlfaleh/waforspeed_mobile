@@ -4879,3 +4879,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Captures avant / après dans `qa/pr/WFS-263/` (42 paires) : perf des 4 cartes en Haute et Basse, course de nuit, route mouillée, phares en Basse.
 
 ### 2026-11-08 02:26:13 — WFS-297 attribué à Claude, agent 1 (accord de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 02:26:57 — WFS-297 : début, ralentissement d'une partie à l'autre (Claude, agent 1)
+- Ticket attribué par le PO (message de la session PO), accord de l'utilisateur confirmé dans ma session. Branche `feature/waforspeed-297`.
