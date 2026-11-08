@@ -434,6 +434,9 @@ void CarteDecor::preparerDecor(Renderer& r) {
     if (!active_ || lotsTente_) return;
     lotsTente_ = true;
     if (!lots::g_lotsDecor || !LOTS_CARTES_SOCLE) return;
+    // revue du lead dev (PR #248) : tour du Grand Prix impair (5159 segments) → les vibreurs du tour 0 n'alternent pas à la ligne
+    // de départ ; son décor reste sur l'ancienne gestion jusqu'à WFS-273 (route, immeubles du kit et commerces : préparés)
+    if (!std::strcmp(carteId(), "circuit")) return;
     limiteTour_ = len();
     lots_.preparer(r, *track_, P_COUNT, 4, [this](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
         Geo out[P_COUNT];

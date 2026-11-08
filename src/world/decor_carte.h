@@ -34,7 +34,8 @@ enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_TEXTE0, P_TEXTE1, P_TE
 constexpr int PAL_W = 128;                // cases de la palette
 constexpr int AHEAD = 22, BEHIND = 2;     // morceaux dessinés (comme la route de Game)
 // WFS-268 : Campagne et Grand Prix aussi préparés au chargement (ordre de l'utilisateur, 2026-11-07 : « le max possible dans le
-// chargement, même 1 Go ») ; false = ancienne gestion par morceaux en course pour ces deux cartes
+// chargement, même 1 Go ») ; false = ancienne gestion par morceaux en course pour ces deux cartes. Exception : le décor du
+// Grand Prix reste sur l'ancienne gestion (revue du lead dev, PR #248 : parité des vibreurs, WFS-273), voir preparerDecor
 constexpr bool LOTS_CARTES_SOCLE = true;
 constexpr double LOD_FAR_M = 200;         // au-delà : arbres allégés, petits objets non dessinés (SMALL_DECOR)
 
