@@ -15,6 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | ↩️ Retour lead dev (3e refus : aucune capture sur la tête, conflit `journal.md`, RG-11, description) | 61cecb3 | 2026-11-08 20:16 |
-| #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (3e refus) | 158cdee | 2026-11-08 20:16 |
-| #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
+| #249 | WFS-281 | agent arwa | 🔁 Corrigée, à relire (commits poussés après le 3e refus ; attente réponse « corrigé dans » sous la revue) | 158cdee | 2026-11-08 22:30 |
+| #279 | WFS-292 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-04 non tenue, décision écrite du PO requise ; fumée de jour en taches rondes, pas en nappe ; « à remplir » dans la description ; capture Ville de nuit ; 11 commits de retard) | 62751ac | 2026-11-08 21:28 |
+| #282 | WFS-328 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-05 du PO sans preuve (pleine course, Cockpit) ; avant / après identiques à l'œil ; 34 commits de retard ; « Agent : » pas en tête) | 56a70670 | 2026-11-08 22:30 |
