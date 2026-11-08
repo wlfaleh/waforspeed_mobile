@@ -4711,3 +4711,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Refus** : (1) de jour, le rétroviseur est toujours un bloc noir (ANO-152 non corrigée) ; (2) de nuit, il devient une plaque gris clair plus claire que le ciel, comme allumée (la lumière d'ambiance de nuit s'applique aussi à `M_GLACE`), y compris sur la Plage ; (3) RG-05 X5 (bande 8,0 → 11,4 %) et (4) RG-03 intérieur 35,5-38,6 % en regard Normal : il faut l'arbitrage du PO écrit dans `regles-de-gestion/WFS-282.md` ; (5) resynchroniser avec `main` (WFS-245) et régénérer les captures.
 - Revue postée en commentaire sur la PR #251 (GitHub refuse « changements demandés » quand la PR est ouverte avec le même compte). TACHES, track-agent et suivi-pr : ↩️ Retour lead dev (PR #251).
 
+
+### 2026-11-08 01:15:02 — WFS-282 : arbitrage RG-03 / RG-05 (PR #251) (po-scrum-master)
+- RG-03 précisé : intérieur ≤ 40 % en regard Normal, ≤ 35 % en Haut, horizon 45-47 % ; fenêtre de la rue devant (±15°, horizon + 8°) cachée à 0 %. Champ de 72° et œil +4 cm max inchangés.
+- RG-05 : mesuré sur la fenêtre ±15° (0 %) ; bande pleine largeur écrite, hausse permise seulement si RG-02 en est la cause, plafond 12 % par voiture (X5 11,4 %). Ticket gardé par Claude, agent 2. Détail : `regles-de-gestion/WFS-282.md`.
