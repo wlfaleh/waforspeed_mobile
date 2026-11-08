@@ -39,6 +39,7 @@ constexpr float PED_LOD_M[3] = {16.f, 50.f, 1e9f};   // Moyenne et Haute : pas d
 // au-delà de 25-30 m) : moyen jusqu'à 20 m, loin de 20 à 30 m, puis niveau 3 « très simple » (≈ 0,8 k avec la coiffure, fabriqué au
 // chargement par squelette.cpp à partir du niveau 2)
 constexpr float PED_LOD_BASSE_M[3] = {8.f, 20.f, 30.f};
+constexpr float PED_LOD_BASSE_AVANT_M[3] = {8.f, 30.f, 1e9f};   // banc seulement (WFS_PIETONS_AVANT) : seuils d'avant WFS-299, pour les captures avant / après
 constexpr int PEOPLE_MAX = 220;        // life.js
 // WFS-257 (cause d'ANO-130) : les 8 places de WFS-19 (8 piétons × 2 dessins) faisaient apparaître et disparaître les gens
 // sous les yeux du joueur à chaque changement des « 8 plus proches ». Désormais toute personne dans le cadre est dessinée :
@@ -248,7 +249,8 @@ public:
         const double carLat = g.player->playerX * RW;
         const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
         if (etat_.size() != gens_.size()) { etat_.assign(gens_.size(), apparition::Etat{}); candDe_.assign(gens_.size(), -1); pos_.assign(gens_.size(), vec3{}); yaw_.assign(gens_.size(), 0.f); }
-        const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
+        static const bool avant299 = std::getenv("WFS_PIETONS_AVANT") != nullptr;   // WFS-299 : banc, comparaison avant / après
+        const float* seuils = r.qualiteBasse ? (avant299 ? PED_LOD_BASSE_AVANT_M : PED_LOD_BASSE_M) : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
         const mat4 pv = g.proj * g.view;
         // 1. WFS-257 : chaque personne de la portée : place dans le monde, dans le cadre ou non (RG-02)
         cand_.clear();
@@ -363,7 +365,6 @@ public:
                     std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, lod); coiffure = plageParNom(*D.M, nom);
                     if (!coiffure && lod == 3) { std::snprintf(nom, sizeof nom, "%s-2", D.coiffure); coiffure = plageParNom(*D.M, nom); }
                 }
-                if (std::getenv("WFS_ESSAI_LOD_TRACE") && corps) { static int fr = 0; static long tri[4]; static int n[4]; if (k == 0 && passe == 0) { if (fr++ % 120 == 1) WFS_LOG("ESSAI lod : n %d/%d/%d/%d tri %ld/%ld/%ld/%ld, nd %d", n[0], n[1], n[2], n[3], tri[0], tri[1], tri[2], tri[3], nd); for (int q = 0; q < 4; q++) { tri[q] = 0; n[q] = 0; } } n[std::clamp(lod, 0, 3)]++; tri[std::clamp(lod, 0, 3)] += corps->nombre / 3 + (coiffure ? coiffure->nombre / 3 : 0); }   // ESSAI WFS-299
                 for (const Plage* pl : {corps, coiffure})
                     if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app, fondu);
             }

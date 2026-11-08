@@ -130,6 +130,10 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             const bool villeNuit = carte == "ville" && nuit && k > 0;   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
             if (f > 0) for (int i = 0; i < MINUTE; i++) {
                 g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60;
+                if (f == 1 && villeNuit && i >= 10 * 60 && i < 13 * 60 && i % 30 == 0) {   // WFS-299 : suite à 0,5 s d'écart (piétons qui se rapprochent : niveaux de détail)
+                    g.render(t); g.render(t + 0.02);
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-suite-" + std::to_string((i - 10 * 60) / 30) + ".png");
+                }
                 if (f == 1 && villeNuit && (i == 0 || (i + 1) % (30 * 60) == 0) && i < 61 * 60) {   // 0, 30 et 60 s
                     g.render(t); g.render(t + 0.02);
                     r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string((i + 1) / 60) + "s.png");
