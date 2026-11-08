@@ -36,10 +36,10 @@ if veut routiere; then  # Draco décompressé, allégé (erreur 0,006), bagage /
   WFS_ALLEGER='HondaTire4_M=0.12!;Chain_M=0.15!;preto_fosco_l=0.45!;preto_semibrilho=0.45!;preto_fosco=0.5!;borracha=0.5!;disco_freio=0.5!;aco_parafuso=0.5!' \
     conv routiere "$TMP/cb500x_s.glb" 2.155 auto 'Lanterna|Stoplight'
 fi
-if veut sportive; then  # allégé (erreur 0,002) ; feu arrière et phare sortis du matériau partagé ; autocollants de marque retirés
+if veut sportive; then  # allégé (erreur 0,002) ; feu arrière et phare sortis du matériau partagé ; autocollants de marque retirés (couleur et métal / rugosité)
   node simplifier_voiture.mjs "${SPORTIVE:?}" "$TMP/zx6r.glb" Panels 0.002   # carénages (Panels) 4 fois plus fins
   WFS_ALLEGER='Panels=0.55;Engine=0.5;Mesh=0.6' WFS_OPAQUE='Panels|Engine|Mesh|Decal' WFS_FEU='^Taillight' WFS_PHARE='^Headlight' \
-  WFS_TEXTURES='Decal|couleur=deux_roues/sportive-autocollants-sans-marque.png' \
+  WFS_TEXTURES='Decal|couleur=deux_roues/sportive-autocollants-sans-marque.png|mr=deux_roues/sportive-autocollants-metal-rugosite-sans-marque.png' \
   WFS_ROUES_2R='^(Front Wheel|Front Rim|Brakes|Brakes Too|Rear Wheel|Rear Rim|Rear Brakes|Rear Brakes Too\.|Rear Main Brakes)_Mesh_0 ' \
     conv sportive "$TMP/zx6r.glb" 2.007 180 ''
 fi

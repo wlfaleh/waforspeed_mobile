@@ -16,7 +16,7 @@ Agent : arwa-3 (Claude, session 01Us6uCt)
     - licences corrigées.
   - **3e revue** :
     - routière : les lettres « 500X » des deux flancs sont retirées (pièces du modèle supprimées à la conversion, flanc refermé : vérifié en 2340 × 1080, vues en bas de page) ; 32 matériaux, 48,6 k triangles ;
-    - sportive : pixels transparents de la planche d'autocollants remis à RVB 0 (plus de couleur cachée sous la transparence) ;
+    - sportive : pixels transparents de la planche d'autocollants remis à RVB 0, et mêmes zones repeintes dans la texture métal / rugosité (`sportive-autocollants-metal-rugosite-sans-marque.png`, option `mr=`) : plus aucune lettre de marque cachée dans le fichier ; rendu identique au pixel près (banc `motos`, 48 images comparées avant / après ce changement) ;
     - accident : image `choc-2` prise 0,13 s après le choc (moto déjà inclinée à 27°, pas encore couchée) et commentaire du banc corrigé ;
     - test du placement du pilote éjecté (`lateralPiloteEjecte` : jamais à moins de 1 m du bord, au plus 6,50 m de l'axe) ;
     - version de draco notée (`draco3dgltf@1.5.9`) dans le script de conversion ; commentaire périmé de `deux_roues.cpp` mis à jour.
