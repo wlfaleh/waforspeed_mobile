@@ -129,8 +129,9 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         float NoL = max(dot(N, L), 0.0);
         bool croisement = F.spotCone[i].z > 0.5;   // WFS-218
         if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;   // WFS-226 : hors faisceau
-        vus++;   // WFS-263 : lumière qui éclaire ce pixel
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
+        if (range > 0.0 && d >= range) continue;   // WFS-263 : hors de portée, n'éclaire pas ce pixel (et ne compte pas)
+        vus++;   // WFS-263 : lumière qui éclaire vraiment ce pixel (dans le faisceau et à portée)
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
         float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
         vec3 H = normalize(V + L);
