@@ -57,7 +57,7 @@ void cle(const std::vector<float>& tm, float t, size_t& k, float& f) {
 }
 } // namespace
 
-// WFS-299 (RG-01) : niveau de détail 3 « très simple » des piétons lointains (Basse, au-delà de 45 m), fabriqué au chargement
+// WFS-299 (RG-01) : niveau de détail 3 « très simple » des piétons lointains (Basse, au-delà de 30 m), fabriqué au chargement
 // à partir du niveau 2 de chaque plage (« corps-2 » → « corps-3 », « <coiffure>-2 » → « <coiffure>-3 ») par regroupement des
 // sommets (vertex clustering, Rossignac et Borrel 1993) : la pose de repos est découpée en cubes de CUBE_M ; chaque sommet est
 // remplacé par le premier sommet de son cube (il garde ses os, ses poids, son UV : le skinning reste juste) ; les triangles

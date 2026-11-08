@@ -250,7 +250,7 @@ public:
         const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
         if (etat_.size() != gens_.size()) { etat_.assign(gens_.size(), apparition::Etat{}); candDe_.assign(gens_.size(), -1); pos_.assign(gens_.size(), vec3{}); yaw_.assign(gens_.size(), 0.f); }
         static const bool avant299 = std::getenv("WFS_PIETONS_AVANT") != nullptr;   // WFS-299 : banc, comparaison avant / après
-        const float* seuils = r.qualiteBasse ? (avant299 ? PED_LOD_BASSE_AVANT_M : PED_LOD_BASSE_M) : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
+        const float* seuils = r.qualiteBasse ? (avant299 ? PED_LOD_BASSE_AVANT_M : PED_LOD_BASSE_M) : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 20 m, loin à 30 m, puis niveau 3 (WFS-299)
         const mat4 pv = g.proj * g.view;
         // 1. WFS-257 : chaque personne de la portée : place dans le monde, dans le cadre ou non (RG-02)
         cand_.clear();
