@@ -246,7 +246,8 @@ public:
     }
 
     void render(Renderer& r, const GameView& g) override {
-        if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;   // WFS-216 : la foule de la fête dans les vues du banc
+        if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;
+        if (g.fondFige) return;   // WFS-329 (accroche) : fond figé du menu : poses et dessin inutiles (dessins ignorés par le moteur)   // WFS-216 : la foule de la fête dans les vues du banc
         Track& tr = *g.track;
         const double len = (double)tr.segmentCount(), aP = g.player->position / SEG, aMod = std::fmod(std::fmod(aP, len) + len, len);
         const double carLat = g.player->playerX * RW;

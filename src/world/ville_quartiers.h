@@ -89,6 +89,21 @@ float etendue(const Objet& o);
 // Renvoie le nombre de bandes (0 : centre et résidentiel gardent le sol et les trottoirs de Game).
 struct Bande { float a, b, ya, yb; };
 int bandes(const char* zone, Bande out[2]);
+// WFS-305 (ANO-171) : sol fermé côté intérieur des courbes serrées. La pelouse du parc et le béton du port s'arrêtent à Plan::lim
+// (90 % du plus petit rayon des 60 m qui suivent), alors que le sol de base (Game, solChunk) continue au rayon local : avant le
+// virage, on voyait ce sol, plus bas et sans herbe (« fosse »). Carreaux de 0,5 m posés là où la bande d'un segment passerait sans
+// cette limite et où rien ne couvre le sol (aucune autre bande, ni chaussée ni trottoir à RW + 6 m d'un point du tracé), à la
+// hauteur lissée entre les bandes qui l'entourent, 1 cm plus bas (la bande voisine le cache là où ils se touchent). Rangés par segment de la
+// piste (celui dont la bande passe dessous) ; bande 0 ou 1 (couleur : pelouse ou béton de la zone). Calculé une fois, au chargement.
+struct CarreauSol {
+    int32_t gx, gz;        // case du réseau : de (gx, gz) × CARREAU_SOL à (gx + 1, gz + 1) × CARREAU_SOL (monde)
+    float y;               // hauteur absolue du centre
+    float coin[4];         // hauteurs des coins (−,−) (−,+) (+,+) (+,−) : moyenne des carreaux qui les partagent (sol continu, sans fente)
+    uint8_t bande; bool bord;   // bord : case à moitié sous une bande posée (à sa hauteur)
+};
+constexpr float CARREAU_SOL = 0.5f;                     // côté (m)
+const std::vector<std::vector<CarreauSol>>& carreauxSol(const MapDef& map, Track& t);   // par segment (vide hors Ville)
+
 // hauteur du sol (groundY du jeu web) à lat m de l'axe dans la zone : trottoir (0,15 m) jusqu'à RW + 6, puis les
 // bandes de la zone (au-delà : hauteur de fin de la dernière) ; profil du web (0,15 → −0,3 m) hors parc et port
 float solY(const char* zone, float lat);

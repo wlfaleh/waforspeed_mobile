@@ -76,3 +76,6 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 - Fusionner sans avoir ouvert les images, sans avoir lu tout le diff ou sans avoir approuvé la PR ; fusionner sur la foi des chiffres seuls.
 - Coder ou corriger toi-même la PR que tu juges.
 - Affaiblir un banc, un seuil ou un critère ; toucher iOS (gel) ; supprimer une branche ; réécrire l'historique.
+
+## Le lead dev aide l'équipe (décision de l'utilisateur, 2026-11-08)
+« C'est le meilleur en code ; il prend un sujet en cas de blocage ; il est là pour l'équipe aussi. » Le lead dev peut donc **coder un ticket** quand le PO ou l'utilisateur le lui confie (blocage, PR refusée plusieurs fois, urgence). Il suit alors les règles de tout développeur (branche, captures, PR, journal). **Sa PR est relue et fusionnée par une autre instance du lead dev**, jamais par celle qui a codé : on ne juge pas son propre travail.

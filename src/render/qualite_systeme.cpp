@@ -189,7 +189,8 @@ std::string qualite::ligneRendu() {
     if (!g_r) return "Rendu : --";
     const std::string l = texteRendu(niveauAffiche(ecrans::reglages().qualite), g_r->vk().renderScale * g_r->echelleDynamiqueActuelle(), (int)g_r->vk().msaa, g_ips, chauffeNiveau());
     const std::string d = texteDessin(false);   // WFS-317 (I9) : appels et triangles de l'image, part de chaque famille
-    const std::string ld = d.empty() ? l : l + " · " + d;
+    std::string ld = d.empty() ? l : l + " · " + d;
+    if (g_r->sceneFigee()) ld = l + " · 0 appel · 0 k triangles · fond figé";   // WFS-329 : menu, choix du terrain : scène dessinée une fois, relue ensuite
     return modeDiagnostic() ? ld + " · " + passes::texteCouts(passes::coutsFenetre()) : ld;   // WFS-150 (RG-05) : coût de chaque passe
 }
 // WFS-317 (I9) : comptes du Renderer (flushDraw, toutes passes : ombres, reflet, capture, scène), par famille
