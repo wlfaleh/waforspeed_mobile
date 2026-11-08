@@ -1,4 +1,3833 @@
 {
+ "a45": {
+  "materiaux": 25,
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 10,
+    "triangles": [
+     37444,
+     6
+    ],
+    "trianglesAvant": 37450,
+    "boite": [
+     -0.0873,
+     0.511,
+     -2.1357,
+     0.0843,
+     0.693,
+     -2.098
+    ],
+    "nom": "Object_14…24 : étoile de la calandre (fond)"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     0,
+     6
+    ],
+    "trianglesAvant": 3662,
+    "boite": [
+     -0.0816,
+     0.5582,
+     -2.1264,
+     0.0749,
+     0.6911,
+     -2.0989
+    ],
+    "nom": "Object_33/34 : étoile de la calandre (branches chromées)"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     0,
+     218
+    ],
+    "trianglesAvant": 37450,
+    "boite": [
+     -0.0436,
+     0.8979,
+     2.0124,
+     0.0417,
+     0.9762,
+     2.0559
+    ],
+    "nom": "Object_14…24 : étoile du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     218,
+     175
+    ],
+    "trianglesAvant": 37450,
+    "boite": [
+     -0.4342,
+     0.8978,
+     2.0139,
+     -0.2542,
+     0.9155,
+     2.0423
+    ],
+    "nom": "Object_14…24 : lettres « AMG » du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     741,
+     139
+    ],
+    "trianglesAvant": 37450,
+    "boite": [
+     0.3003,
+     0.8916,
+     2.0082,
+     0.4385,
+     0.9187,
+     2.0379
+    ],
+    "nom": "Object_14…24 : lettres « A 45 » du hayon"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     109,
+     6
+    ],
+    "trianglesAvant": 3662,
+    "boite": [
+     -0.85,
+     0.2978,
+     1.4183,
+     -0.8479,
+     0.3641,
+     1.495
+    ],
+    "nom": "Object_33/34 : étoile d'un cache de roue"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     374,
+     6
+    ],
+    "trianglesAvant": 3662,
+    "boite": [
+     0.8464,
+     0.2978,
+     1.4183,
+     0.8484,
+     0.3641,
+     1.495
+    ],
+    "nom": "Object_33/34 : étoile d'un cache de roue"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     658,
+     6
+    ],
+    "trianglesAvant": 3662,
+    "boite": [
+     0.8464,
+     0.2978,
+     -1.2906,
+     0.8484,
+     0.3641,
+     -1.2139
+    ],
+    "nom": "Object_33/34 : étoile d'un cache de roue"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     976,
+     6
+    ],
+    "trianglesAvant": 3662,
+    "boite": [
+     -0.85,
+     0.2978,
+     -1.2906,
+     -0.8479,
+     0.3641,
+     -1.2139
+    ],
+    "nom": "Object_33/34 : étoile d'un cache de roue"
+   },
+   {
+    "materiau": 9,
+    "triangles": [
+     0,
+     638
+    ],
+    "trianglesAvant": 638,
+    "boite": [
+     0.8598,
+     0.7245,
+     -0.9629,
+     0.868,
+     0.7545,
+     -0.8109
+    ],
+    "nom": "Object_13 : « TURBO » de l'aile avant droite"
+   },
+   {
+    "materiau": 23,
+    "triangles": [
+     0,
+     875
+    ],
+    "trianglesAvant": 875,
+    "boite": [
+     -0.8689,
+     0.7276,
+     -0.8775,
+     0.868,
+     0.735,
+     -0.8177
+    ],
+    "nom": "Object_45 : « 4MATIC » des deux ailes avant"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     2403,
+     265
+    ],
+    "trianglesAvant": 37450,
+    "boite": [
+     -0.8685,
+     0.7247,
+     -0.9592,
+     -0.8622,
+     0.7545,
+     -0.8077
+    ],
+    "nom": "Object_14…24 : « TURBO » de l'aile avant gauche"
+   }
+  ]
+ },
+ "abarth": {
+  "materiaux": 57,
+  "textures": [
+   {
+    "rang": 2,
+    "sha256": "2fd4f48531c83d48",
+    "role": "couleur",
+    "materiau": 2,
+    "zones": [
+     {
+      "disque": [
+       0.499,
+       0.499,
+       0.057
+      ],
+      "couleur": "#3e3e3e",
+      "reference": {
+       "disque": [
+        0.499,
+        0.499,
+        0.08
+       ]
+      },
+      "note": "scorpion du centre de jante : gris de l'anneau du cache"
+     }
+    ],
+    "sha256Apres": "d8f639012c63fbe1"
+   },
+   {
+    "rang": 3,
+    "sha256": "2dffc85ecbca2f0b",
+    "role": "couleur",
+    "materiau": 3,
+    "zones": [
+     {
+      "disque": [
+       0.499,
+       0.499,
+       0.057
+      ],
+      "couleur": "#3e3e3e",
+      "reference": {
+       "disque": [
+        0.499,
+        0.499,
+        0.08
+       ]
+      },
+      "note": "scorpion du centre de jante : gris de l'anneau du cache"
+     }
+    ],
+    "sha256Apres": "92005e1b281d3ccc"
+   },
+   {
+    "rang": 4,
+    "sha256": "ebb5679c549f5df8",
+    "role": "couleur",
+    "materiau": 4,
+    "zones": [
+     {
+      "disque": [
+       0.499,
+       0.499,
+       0.057
+      ],
+      "couleur": "#3e3e3e",
+      "reference": {
+       "disque": [
+        0.499,
+        0.499,
+        0.08
+       ]
+      },
+      "note": "scorpion du centre de jante : gris de l'anneau du cache"
+     }
+    ],
+    "sha256Apres": "b3948b09d35ac264"
+   },
+   {
+    "rang": 5,
+    "sha256": "dc8b736d34d86ad6",
+    "role": "couleur",
+    "materiau": 5,
+    "zones": [
+     {
+      "rect": [
+       0.5889,
+       0.459,
+       0.6074,
+       0.541
+      ],
+      "couleur": "#b91e24",
+      "note": "mot ABARTH dans la bande rouge (zone non affichée)",
+      "reference": {
+       "rect": [
+        0.5918,
+        0.4297,
+        0.6045,
+        0.4551
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.7412,
+       0.459,
+       0.7588,
+       0.541
+      ],
+      "couleur": "#b71d25",
+      "note": "mot ABARTH dans la bande rouge (zone non affichée)",
+      "reference": {
+       "rect": [
+        0.7441,
+        0.4297,
+        0.7549,
+        0.4551
+       ]
+      }
+     }
+    ],
+    "sha256Apres": "3c0d7123a6543f9d"
+   },
+   {
+    "rang": 11,
+    "sha256": "766c91c1957bd1d4",
+    "role": "couleur",
+    "materiau": 13,
+    "zones": [
+     {
+      "rect": [
+       0.1016,
+       0.1953,
+       0.3906,
+       0.6875
+      ],
+      "couleur": "#2f2f31",
+      "note": "écusson au scorpion de la calandre (pièce gardée, RG-10) : intérieur coloré → noir de la bordure",
+      "reference": {
+       "rect": [
+        0.0586,
+        0.3906,
+        0.0898,
+        0.5469
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.1953,
+       0.1484,
+       0.3125,
+       0.1953
+      ],
+      "couleur": "#2f2f31",
+      "note": "haut de l'écusson",
+      "reference": {
+       "rect": [
+        0.0586,
+        0.3906,
+        0.0898,
+        0.5469
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.1172,
+       0.6875,
+       0.3906,
+       0.8281
+      ],
+      "couleur": "#2f2f31",
+      "note": "mot ABARTH de l'écusson",
+      "reference": {
+       "rect": [
+        0.0586,
+        0.3906,
+        0.0898,
+        0.5469
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.5,
+       0.0,
+       0.9336,
+       0.4922
+      ],
+      "couleur": "#efeff9",
+      "note": "petit écusson tricolore des ailes (pièces retirées) : fond blanc ; zone plus affichée"
+     },
+     {
+      "rect": [
+       0.6797,
+       0.75,
+       0.8164,
+       0.875
+      ],
+      "couleur": "#e9eaed",
+      "note": "« 500 » de la barre chromée du hayon : chrome autour",
+      "reference": {
+       "rect": [
+        0.6445,
+        0.7266,
+        0.8516,
+        0.8984
+       ]
+      }
+     }
+    ],
+    "sha256Apres": "7f69915f1a37dd1e"
+   },
+   {
+    "rang": 12,
+    "sha256": "a04e9e0985b11dbf",
+    "role": "normale",
+    "materiau": 13,
+    "zones": [
+     {
+      "rect": [
+       0.1016,
+       0.1953,
+       0.3906,
+       0.6875
+      ],
+      "note": "écusson au scorpion de la calandre (pièce gardée, RG-10) : intérieur coloré → noir de la bordure"
+     },
+     {
+      "rect": [
+       0.1953,
+       0.1484,
+       0.3125,
+       0.1953
+      ],
+      "note": "haut de l'écusson"
+     },
+     {
+      "rect": [
+       0.1172,
+       0.6875,
+       0.3906,
+       0.8281
+      ],
+      "note": "mot ABARTH de l'écusson"
+     },
+     {
+      "rect": [
+       0.5,
+       0.0,
+       0.9336,
+       0.4922
+      ],
+      "note": "petit écusson tricolore des ailes (pièces retirées) : fond blanc"
+     },
+     {
+      "rect": [
+       0.6797,
+       0.75,
+       0.8164,
+       0.875
+      ],
+      "note": "« 500 » de la barre chromée du hayon : chrome autour"
+     }
+    ],
+    "sha256Apres": "c26e6c329f852858"
+   },
+   {
+    "rang": 19,
+    "sha256": "06690c9b141c6cff",
+    "role": "couleur",
+    "materiau": 24,
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "couleur": "#39343a",
+      "note": "écusson du centre du volant (pièce gardée, RG-10) : plastique de la planche autour"
+     }
+    ],
+    "comparer": [
+     {
+      "materiau": 24,
+      "voisin": 16
+     }
+    ],
+    "sha256Apres": "b6db3b1846d8204f"
+   },
+   {
+    "rang": 26,
+    "sha256": "eb087f2c9d74c53a",
+    "role": "couleur",
+    "materiau": 35,
+    "zones": [
+     {
+      "rect": [
+       0.0547,
+       0.125,
+       0.9609,
+       0.8906
+      ],
+      "couleur": "#040000",
+      "note": "« ASSETTO CORSA » de l'écran de la planche : fond noir"
+     }
+    ],
+    "sha256Apres": "4f43d3e50e12d370"
+   },
+   {
+    "rang": 32,
+    "sha256": "2fca59e2cb123393",
+    "role": "couleur",
+    "materiau": 52,
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "couleur": "#f6f6f6",
+      "note": "ancienne plaque « ASSETTO CORSA » (cachée derrière la plaque de WFS-158) : unie"
+     }
+    ],
+    "sha256Apres": "5a4a98bc20f5a055"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 13,
+    "triangles": [
+     431,
+     67
+    ],
+    "trianglesAvant": 1090,
+    "boite": [
+     -0.7738,
+     0.7991,
+     0.6957,
+     -0.7535,
+     0.8484,
+     0.7893
+    ],
+    "nom": "Geo_FontBumper_SUB4 (CAR_Loghi) : petit écusson tricolore de l'aile gauche"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     498,
+     67
+    ],
+    "trianglesAvant": 1090,
+    "boite": [
+     0.753,
+     0.7991,
+     0.694,
+     0.7747,
+     0.8484,
+     0.7872
+    ],
+    "nom": "Geo_FontBumper_SUB4 (CAR_Loghi) : petit écusson tricolore de l'aile droite"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     565,
+     145
+    ],
+    "trianglesAvant": 1090,
+    "boite": [
+     -0.0551,
+     0.9462,
+     1.5015,
+     0.0552,
+     1.0295,
+     1.5712
+    ],
+    "nom": "Geo_FontBumper_SUB4 (CAR_Loghi) : écusson au scorpion du hayon"
+   },
+   {
+    "materiau": 50,
+    "triangles": [
+     0,
+     8
+    ],
+    "trianglesAvant": 8,
+    "boite": [
+     0.3879,
+     0.8517,
+     -0.4459,
+     0.4773,
+     0.8825,
+     -0.4197
+    ],
+    "nom": "Geometry82_SUB12 (INT_Logo_500) : « 500 » de la planche de bord"
+   }
+  ]
+ },
+ "compass": {
+  "materiaux": 15,
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 2,
+    "triangles": [
+     2098,
+     112
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.0019,
+     1.15,
+     2.1298,
+     0.0358,
+     1.1831,
+     2.1555
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2210,
+     120
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.0406,
+     1.1418,
+     2.1298,
+     0.076,
+     1.1829,
+     2.1608
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2330,
+     59
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.0781,
+     1.149,
+     2.1229,
+     -0.0402,
+     1.1929,
+     2.1558
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2389,
+     106
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.0362,
+     1.15,
+     2.1298,
+     -0.0026,
+     1.1831,
+     2.1544
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2495,
+     104
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.3405,
+     0.8169,
+     2.1595,
+     0.3766,
+     0.8376,
+     2.1669
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2599,
+     68
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.3792,
+     0.8169,
+     2.1579,
+     0.3898,
+     0.8373,
+     2.1634
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2667,
+     103
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.4531,
+     0.8169,
+     2.1428,
+     0.4917,
+     0.8373,
+     2.1531
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2770,
+     180
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.4952,
+     0.8169,
+     2.1343,
+     0.5333,
+     0.8373,
+     2.1462
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2950,
+     123
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.537,
+     0.8169,
+     2.1245,
+     0.576,
+     0.8379,
+     2.1372
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3073,
+     254
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.3932,
+     0.8169,
+     2.1518,
+     0.4367,
+     0.8376,
+     2.1619
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3327,
+     67
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.4396,
+     0.8169,
+     2.1497,
+     0.4502,
+     0.8373,
+     2.1558
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « LIMITED » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3394,
+     159
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.5555,
+     0.814,
+     2.1296,
+     -0.5097,
+     0.8413,
+     2.1423
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « 4x4 » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3553,
+     158
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.4652,
+     0.814,
+     2.1473,
+     -0.4191,
+     0.8413,
+     2.1574
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « 4x4 » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3711,
+     104
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.5126,
+     0.8135,
+     2.1372,
+     -0.462,
+     0.8344,
+     2.151
+    ],
+    "nom": "Object_12 (00_-_CHROME) : « 4x4 » du hayon"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     5216,
+     232
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.885,
+     0.6803,
+     -0.4538,
+     0.8953,
+     0.7081,
+     -0.4006
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     5448,
+     312
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8855,
+     0.6859,
+     -0.4416,
+     0.8945,
+     0.7026,
+     -0.4133
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     5760,
+     262
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8805,
+     0.6853,
+     -0.608,
+     0.8892,
+     0.697,
+     -0.5831
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     6022,
+     276
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8861,
+     0.6819,
+     -0.4059,
+     0.8964,
+     0.7092,
+     -0.3471
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     6298,
+     285
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8823,
+     0.6861,
+     -0.5571,
+     0.8911,
+     0.6986,
+     -0.5322
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     6583,
+     977
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8816,
+     0.6779,
+     -0.5696,
+     0.8937,
+     0.706,
+     -0.4541
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     7560,
+     704
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8776,
+     0.6726,
+     -0.6675,
+     0.8882,
+     0.6988,
+     -0.6207
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     8264,
+     467
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8792,
+     0.6745,
+     -0.6212,
+     0.89,
+     0.7012,
+     -0.5685
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     15608,
+     244
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.0002,
+     0.9718,
+     -2.1081,
+     0.03,
+     0.9991,
+     -2.0856
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du capot"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     15852,
+     243
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.0325,
+     0.9718,
+     -2.1081,
+     -0.0023,
+     0.9991,
+     -2.0856
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du capot"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     16643,
+     152
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.0321,
+     0.9721,
+     -2.1075,
+     0.066,
+     1.0084,
+     -2.0781
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du capot"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     16795,
+     239
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.0669,
+     0.9649,
+     -2.1134,
+     -0.0349,
+     0.9986,
+     -2.0858
+    ],
+    "nom": "Object_12 (00_-_CHROME) : lettres « Jeep » du capot"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     17345,
+     74
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.885,
+     0.6814,
+     -0.4538,
+     0.8951,
+     0.7068,
+     -0.4011
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     17419,
+     969
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8931,
+     0.6745,
+     -0.6066,
+     -0.8801,
+     0.7049,
+     -0.4911
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     18388,
+     174
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8868,
+     0.688,
+     -0.4024,
+     0.8958,
+     0.7036,
+     -0.3648
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     18562,
+     728
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     0.8757,
+     0.6708,
+     -0.7139,
+     0.8863,
+     0.6973,
+     -0.667
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant droite"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     19290,
+     731
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8958,
+     0.6811,
+     -0.44,
+     -0.8857,
+     0.7073,
+     -0.3937
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     20021,
+     272
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8923,
+     0.6872,
+     -0.5285,
+     -0.8836,
+     0.6996,
+     -0.5036
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     20293,
+     468
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8944,
+     0.679,
+     -0.4917,
+     -0.8841,
+     0.706,
+     -0.4392
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     20761,
+     278
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8939,
+     0.6901,
+     -0.4776,
+     -0.8854,
+     0.7018,
+     -0.4527
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     21175,
+     430
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8876,
+     0.6716,
+     -0.7134,
+     -0.8764,
+     0.6983,
+     -0.6538
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     21605,
+     266
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8883,
+     0.6782,
+     -0.6472,
+     -0.8793,
+     0.6949,
+     -0.6191
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     21871,
+     318
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8891,
+     0.6726,
+     -0.6599,
+     -0.8783,
+     0.7004,
+     -0.6066
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     22189,
+     740
+    ],
+    "trianglesAvant": 28979,
+    "boite": [
+     -0.8968,
+     0.683,
+     -0.3937,
+     -0.8868,
+     0.7089,
+     -0.3474
+    ],
+    "nom": "Object_12 (00_-_CHROME) : nom en lettres chromées de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     2420,
+     170
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.0792,
+     1.1379,
+     2.1151,
+     0.079,
+     1.1949,
+     2.1577
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir des lettres « Jeep » du hayon"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3155,
+     40
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8914,
+     0.6817,
+     -0.4529,
+     0.8943,
+     0.7065,
+     -0.4021
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3195,
+     36
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8857,
+     0.6758,
+     -0.6201,
+     0.8889,
+     0.6998,
+     -0.5704
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3231,
+     36
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8934,
+     0.6804,
+     -0.4904,
+     -0.8904,
+     0.7044,
+     -0.4405
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3267,
+     29
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8927,
+     0.6833,
+     -0.4043,
+     0.8954,
+     0.7076,
+     -0.3487
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3296,
+     40
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8883,
+     0.6741,
+     -0.6587,
+     -0.8848,
+     0.699,
+     -0.6079
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3336,
+     29
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8864,
+     0.6728,
+     -0.7121,
+     -0.8829,
+     0.6968,
+     -0.657
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3365,
+     48
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8921,
+     0.679,
+     -0.5422,
+     -0.8888,
+     0.7033,
+     -0.4926
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3419,
+     38
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8822,
+     0.672,
+     -0.7126,
+     0.8854,
+     0.6957,
+     -0.6684
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3457,
+     10
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8895,
+     0.6798,
+     -0.5166,
+     0.8927,
+     0.7046,
+     -0.4553
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3467,
+     38
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8841,
+     0.6736,
+     -0.6665,
+     0.887,
+     0.6974,
+     -0.6222
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3505,
+     38
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8958,
+     0.6841,
+     -0.3924,
+     -0.8931,
+     0.7076,
+     -0.3487
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3543,
+     10
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8904,
+     0.6758,
+     -0.6055,
+     -0.8867,
+     0.7014,
+     -0.5441
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     3553,
+     38
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     -0.8948,
+     0.6825,
+     -0.4389,
+     -0.8921,
+     0.7057,
+     -0.3949
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant gauche"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     4088,
+     48
+    ],
+    "trianglesAvant": 68023,
+    "boite": [
+     0.8881,
+     0.6793,
+     -0.5685,
+     0.8908,
+     0.7025,
+     -0.5182
+    ],
+    "nom": "Object_29 (00_-_PLASTIC_BLACK) : fond noir du nom de la porte avant droite"
+   }
+  ]
+ },
+ "corsa": {
+  "materiaux": 17,
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 3,
+    "triangles": [
+     0,
+     247
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     -0.0735,
+     0.5711,
+     -2.0175,
+     0.0715,
+     0.6839,
+     -2.0032
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau de la calandre"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     9750,
+     675
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     -0.5628,
+     0.7795,
+     1.8369,
+     -0.4068,
+     0.8078,
+     1.8727
+    ],
+    "nom": "Object_19 (chrome) : « CORSA » et symbole du hayon"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     515,
+     270
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     0.8616,
+     0.2846,
+     -1.1918,
+     0.8641,
+     0.3246,
+     -1.1408
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau du cache de roue avant droit"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     247,
+     268
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     -0.8676,
+     0.2848,
+     -1.1906,
+     -0.8644,
+     0.3249,
+     -1.1397
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau du cache de roue avant gauche"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     1185,
+     316
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     0.8633,
+     0.2843,
+     1.321,
+     0.8658,
+     0.3246,
+     1.3719
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau du cache de roue arrière droit"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     1750,
+     240
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     0.8631,
+     0.2843,
+     1.321,
+     0.8656,
+     0.3246,
+     1.37
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau du cache de roue arrière droit"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     859,
+     326
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     -0.8657,
+     0.2846,
+     1.3219,
+     -0.8628,
+     0.3244,
+     1.3731
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau du cache de roue arrière gauche"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     1501,
+     249
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     -0.8657,
+     0.2848,
+     1.3219,
+     -0.8625,
+     0.3249,
+     1.3731
+    ],
+    "nom": "Object_19 (chrome) : éclair et anneau du cache de roue arrière gauche"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     10677,
+     131
+    ],
+    "trianglesAvant": 10889,
+    "boite": [
+     -0.0747,
+     0.8559,
+     1.9467,
+     0.0767,
+     0.8844,
+     1.9558
+    ],
+    "nom": "Object_19 (chrome) : éclair du hayon (l'anneau reste, RG-10)"
+   }
+  ]
+ },
+ "elantra": {
+  "materiaux": 27,
+  "textures": [
+   {
+    "rang": 0,
+    "sha256": "537efb03102505fd",
+    "role": "couleur",
+    "materiau": 0,
+    "zones": [
+     {
+      "rect": [
+       0.2637,
+       0.0039,
+       0.7168,
+       0.248
+      ],
+      "couleur": "#222222",
+      "note": "logo H (pièces retirées)"
+     },
+     {
+      "rect": [
+       0.1016,
+       0.25,
+       0.7324,
+       0.6016
+      ],
+      "couleur": "#222222",
+      "note": "logo N (pièces retirées)"
+     },
+     {
+      "rect": [
+       0.0,
+       0.25,
+       0.1016,
+       0.4883
+      ],
+      "couleur": "#222222",
+      "note": "logo N, bord gauche"
+     },
+     {
+      "rect": [
+       0.0,
+       0.6035,
+       1.0,
+       1.0
+      ],
+      "couleur": "#222222",
+      "note": "lettres ELANTRA (pièces retirées)"
+     },
+     {
+      "rect": [
+       0.7891,
+       0.0,
+       1.0,
+       0.5859
+      ],
+      "couleur": "#7f7f7f",
+      "note": "logo N du panneau gris (la tranche du bas de caisse, x 0,78, reste grise)"
+     }
+    ],
+    "sha256Apres": "98a5c8ebb040efb4"
+   },
+   {
+    "rang": 1,
+    "sha256": "249e490d664abdcd",
+    "role": "normale",
+    "materiau": 0,
+    "zones": [
+     {
+      "rect": [
+       0.2617,
+       0.0039,
+       0.7188,
+       0.25
+      ],
+      "note": "logo H"
+     },
+     {
+      "rect": [
+       0.1016,
+       0.25,
+       0.7344,
+       0.6016
+      ],
+      "note": "logo N"
+     },
+     {
+      "rect": [
+       0.0,
+       0.25,
+       0.1016,
+       0.4883
+      ],
+      "note": "logo N, bord"
+     },
+     {
+      "rect": [
+       0.0,
+       0.6055,
+       1.0,
+       1.0
+      ],
+      "note": "lettres ELANTRA"
+     },
+     {
+      "rect": [
+       0.7891,
+       0.0,
+       1.0,
+       0.5859
+      ],
+      "note": "logo N du panneau"
+     }
+    ],
+    "sha256Apres": "820b3cfb4941e7b6"
+   },
+   {
+    "rang": 14,
+    "sha256": "50873c050e01680c",
+    "role": "couleur",
+    "materiau": 7,
+    "zones": [
+     {
+      "rect": [
+       0.7285,
+       0.0039,
+       0.9922,
+       0.0391
+      ],
+      "couleur": "#272727",
+      "reference": {
+       "rect": [
+        0.7031,
+        0.0469,
+        1.0,
+        0.0664
+       ]
+      },
+      "note": "« BOSE » (marque de la sono)"
+     },
+     {
+      "rect": [
+       0.0508,
+       0.7266,
+       0.2344,
+       0.8477
+      ],
+      "couleur": "#171717",
+      "reference": {
+       "rect": [
+        0.0098,
+        0.8555,
+        0.0488,
+        0.8711
+       ]
+      },
+      "note": "petit logo N (sellerie, volant)"
+     },
+     {
+      "rect": [
+       0.2383,
+       0.7227,
+       0.5312,
+       0.8711
+      ],
+      "couleur": "#282828",
+      "reference": {
+       "rect": [
+        0.5469,
+        0.8594,
+        0.8594,
+        0.8789
+       ]
+      },
+      "note": "grand logo N"
+     },
+     {
+      "rect": [
+       0.543,
+       0.8184,
+       0.8555,
+       0.8535
+      ],
+      "couleur": "#282828",
+      "reference": {
+       "rect": [
+        0.5469,
+        0.8594,
+        0.8594,
+        0.8789
+       ]
+      },
+      "note": "« ELANTRA »"
+     }
+    ],
+    "sha256Apres": "4c3d124fde3460cb"
+   },
+   {
+    "rang": 15,
+    "sha256": "fe26116047881755",
+    "role": "normale",
+    "materiau": 7,
+    "zones": [
+     {
+      "rect": [
+       0.7285,
+       0.0039,
+       0.9922,
+       0.0391
+      ],
+      "note": "« BOSE » (marque de la sono)"
+     },
+     {
+      "rect": [
+       0.0508,
+       0.7266,
+       0.2344,
+       0.8477
+      ],
+      "note": "petit logo N (sellerie, volant)"
+     },
+     {
+      "rect": [
+       0.2383,
+       0.7227,
+       0.5312,
+       0.8711
+      ],
+      "note": "grand logo N"
+     },
+     {
+      "rect": [
+       0.543,
+       0.8184,
+       0.8555,
+       0.8535
+      ],
+      "note": "« ELANTRA »"
+     }
+    ],
+    "sha256Apres": "063619a308ee9f7a"
+   },
+   {
+    "rang": 18,
+    "sha256": "686ad3826f3b7207",
+    "role": "couleur",
+    "materiau": 0,
+    "zones": [
+     {
+      "rect": [
+       0.0879,
+       0.375,
+       0.9102,
+       0.6172
+      ],
+      "couleur": "#e8e8e8",
+      "note": "« ELANTRA N » (texture non utilisée par le modèle)"
+     }
+    ],
+    "sha256Apres": "6d75c1b1e84fb933"
+   },
+   {
+    "rang": 23,
+    "sha256": "7d348981993d6b2d",
+    "role": "couleur",
+    "materiau": 14,
+    "zones": [
+     {
+      "rect": [
+       0.0059,
+       0.043,
+       0.5039,
+       0.2598
+      ],
+      "couleur": "#262626",
+      "reference": {
+       "rect": [
+        0.5859,
+        0.6055,
+        0.6641,
+        0.7227
+       ]
+      },
+      "note": "grand logo N (moteur)"
+     },
+     {
+      "rect": [
+       0.0117,
+       0.2656,
+       0.4727,
+       0.3672
+      ],
+      "couleur": "#262626",
+      "reference": {
+       "rect": [
+        0.5859,
+        0.6055,
+        0.6641,
+        0.7227
+       ]
+      },
+      "note": "étiquette HYUNDAI / Shell Helix du moteur"
+     },
+     {
+      "rect": [
+       0.2793,
+       0.6016,
+       0.5703,
+       0.7266
+      ],
+      "couleur": "#262626",
+      "reference": {
+       "rect": [
+        0.5859,
+        0.6055,
+        0.6641,
+        0.7227
+       ]
+      },
+      "note": "petit logo N (moteur)"
+     }
+    ],
+    "sha256Apres": "3a685bd645df888e"
+   },
+   {
+    "rang": 24,
+    "sha256": "2d4d2d34a7f5d5a8",
+    "role": "normale",
+    "materiau": 14,
+    "zones": [
+     {
+      "rect": [
+       0.0,
+       0.0391,
+       0.5176,
+       0.2637
+      ],
+      "note": "relief du grand logo N"
+     },
+     {
+      "rect": [
+       0.2832,
+       0.5859,
+       0.5664,
+       0.7227
+      ],
+      "note": "relief du petit logo N"
+     },
+     {
+      "rect": [
+       0.3223,
+       0.8594,
+       0.8887,
+       0.9766
+      ],
+      "note": "relief « TURBO » du cache moteur"
+     }
+    ],
+    "sha256Apres": "2cff3bf847c96bf5"
+   },
+   {
+    "rang": 34,
+    "sha256": "4d54fd40d4a4cd19",
+    "role": "couleur",
+    "materiau": 23,
+    "zones": [
+     {
+      "rect": [
+       0.0117,
+       0.0156,
+       0.3281,
+       0.1602
+      ],
+      "couleur": "#1b1b1b",
+      "note": "logo N des caches de roue"
+     },
+     {
+      "anneau": [
+       0.5,
+       0.5,
+       0.2305,
+       0.3789
+      ],
+      "couleur": "#242424",
+      "note": "flanc des pneus : « MICHELIN PILOT SPORT » et marquages (flanc uni de la même couleur)"
+     }
+    ],
+    "sha256Apres": "2327b3f6ecab43d4"
+   },
+   {
+    "rang": 35,
+    "sha256": "21b0d66da5c4ea32",
+    "role": "normale",
+    "materiau": 23,
+    "zones": [
+     {
+      "rect": [
+       0.0117,
+       0.0156,
+       0.3281,
+       0.1602
+      ],
+      "note": "relief du logo N des caches"
+     }
+    ],
+    "sha256Apres": "61871e87282af873"
+   },
+   {
+    "rang": 36,
+    "sha256": "26c511ed48c8c33e",
+    "role": "metal",
+    "materiau": 23,
+    "zones": [
+     {
+      "rect": [
+       0.0117,
+       0.0156,
+       0.3281,
+       0.1602
+      ],
+      "couleur": "#ffff1b",
+      "note": "logo N des caches dans la carte métal / rugosité"
+     }
+    ],
+    "sha256Apres": "6864332eae316204"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 0,
+    "triangles": [
+     6,
+     3
+    ],
+    "trianglesAvant": 478,
+    "boite": [
+     0.3267,
+     0.5439,
+     -2.3071,
+     0.39,
+     0.5738,
+     -2.2949
+    ],
+    "nom": "H:Badge_Badge_Geo (Badge_Mat) : « N » de la calandre"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     9,
+     166
+    ],
+    "trianglesAvant": 478,
+    "boite": [
+     -0.0941,
+     0.6374,
+     -2.2922,
+     0.0941,
+     0.6938,
+     -2.2172
+    ],
+    "nom": "H:Badge_Badge_Geo (Badge_Mat) : logo H du capot"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     243,
+     5
+    ],
+    "trianglesAvant": 478,
+    "boite": [
+     0.4277,
+     0.7368,
+     2.2092,
+     0.4918,
+     0.7659,
+     2.2328
+    ],
+    "nom": "H:Badge_Badge_Geo (Badge_Mat) : « N » du coffre"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     248,
+     14
+    ],
+    "trianglesAvant": 478,
+    "boite": [
+     -0.2876,
+     0.7781,
+     2.2192,
+     0.2917,
+     0.7987,
+     2.2403
+    ],
+    "nom": "H:Badge_Badge_Geo (Badge_Mat) : lettres « ELANTRA » du coffre"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     262,
+     158
+    ],
+    "trianglesAvant": 478,
+    "boite": [
+     -0.0738,
+     0.9022,
+     2.2051,
+     0.0738,
+     0.9696,
+     2.2342
+    ],
+    "nom": "H:Badge_Badge_Geo (Badge_Mat) : logo H du coffre"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     426,
+     20
+    ],
+    "trianglesAvant": 478,
+    "boite": [
+     -0.3883,
+     0.8681,
+     -0.4697,
+     -0.3264,
+     0.8975,
+     -0.4553
+    ],
+    "nom": "H:Badge_Badge_Geo (Badge_Mat) : logo H du volant"
+   },
+   {
+    "materiau": 24,
+    "triangles": [
+     0,
+     2
+    ],
+    "trianglesAvant": 4,
+    "boite": [
+     -0.8563,
+     0.3195,
+     -1.6065,
+     -0.8543,
+     0.3961,
+     -1.5607
+    ],
+    "nom": "H:Calliper_LF (Callipers décalque) : marquage de l'étrier avant gauche"
+   },
+   {
+    "materiau": 24,
+    "triangles": [
+     2,
+     2
+    ],
+    "trianglesAvant": 4,
+    "boite": [
+     0.8538,
+     0.3191,
+     -1.6062,
+     0.8558,
+     0.3956,
+     -1.5604
+    ],
+    "nom": "H:Calliper_RF (Callipers décalque) : marquage de l'étrier avant droit"
+   }
+  ]
+ },
+ "gallardo": {
+  "materiaux": 18,
+  "source": "lambo-gallardo (RG-09 : 16 matériaux de la source = 16 premiers du .wfm, triangles égaux ; 16 et 17 = plaques WFS-158)",
+  "textures": [
+   {
+    "rang": 18,
+    "sha256": "26d73b81f231cd60",
+    "role": "couleur",
+    "materiau": 13,
+    "couleur": "#1c1c1c",
+    "zones": [
+     {
+      "rect": [
+       0.055,
+       0.22,
+       0.825,
+       0.945
+      ],
+      "reference": [
+       0.72,
+       0.0,
+       1.0,
+       0.24
+      ]
+     },
+     {
+      "rect": [
+       0.235,
+       0.055,
+       0.725,
+       0.22
+      ],
+      "reference": [
+       0.72,
+       0.0,
+       1.0,
+       0.24
+      ]
+     }
+    ],
+    "note": "bouclier Lamborghini des caches de roue (MAT_Tire_Hub) : uni, couleur de la jante autour du cache (zone sombre 28 de l'atlas, où sont les rayons de la jante)",
+    "sha256Apres": "c7aa1593aaa32f0a"
+   },
+   {
+    "rang": 6,
+    "sha256": "f173a9c0906a2008",
+    "role": "couleur",
+    "materiau": 7,
+    "couleur": "auto",
+    "zones": [
+     {
+      "rect": [
+       0.045,
+       0.555,
+       0.955,
+       0.73
+      ]
+     }
+    ],
+    "note": "lettrage « Lamborghini » des étriers (MAT_Tire_Brake)",
+    "sha256Apres": "515c95542bdc7a49"
+   },
+   {
+    "rang": 7,
+    "sha256": "b8166eeddbaf7d92",
+    "role": "couleur",
+    "materiau": 8,
+    "couleur": "auto",
+    "zones": [
+     {
+      "rect": [
+       0.77,
+       0.03,
+       0.96,
+       0.235
+      ],
+      "reference": [
+       0.755,
+       0.005,
+       0.995,
+       0.255
+      ]
+     },
+     {
+      "rect": [
+       0.01,
+       0.282,
+       0.39,
+       0.377
+      ],
+      "couleur": "#232323",
+      "reference": [
+       0.0,
+       0.255,
+       0.395,
+       0.372
+      ]
+     },
+     {
+      "rect": [
+       0.43,
+       0.285,
+       0.473,
+       0.608
+      ],
+      "couleur": "#ababab",
+      "reference": [
+       0.412,
+       0.27,
+       0.486,
+       0.622
+      ]
+     }
+    ],
+    "note": "tableau de bord (MAT_Details_INT) : bouclier Lamborghini, lettrage « Lamborghini » (bandeau gris 35), nom « GALLARDO » (bandeau gris 171)",
+    "sha256Apres": "389a109a73a313c7"
+   },
+   {
+    "rang": 8,
+    "sha256": "37111c6e69dd8a83",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0.77,
+       0.03,
+       0.96,
+       0.235
+      ]
+     },
+     {
+      "rect": [
+       0.01,
+       0.282,
+       0.39,
+       0.377
+      ]
+     }
+    ],
+    "note": "relief du bouclier et du lettrage du tableau de bord",
+    "sha256Apres": "23ec6d9c98aeadd1"
+   },
+   {
+    "rang": 10,
+    "sha256": "90909034d1f08ddd",
+    "role": "couleur",
+    "materiau": 9,
+    "couleur": "#bdbdbd",
+    "zones": [
+     {
+      "rect": [
+       0.725,
+       0.315,
+       0.98,
+       0.366
+      ],
+      "reference": [
+       0.72,
+       0.312,
+       0.995,
+       0.395
+      ]
+     }
+    ],
+    "note": "lettrage « Lamborghini » sur la plaque du moteur (MAT_Details_Engine) : gris de la plaque (189), anneau hétérogène (bande sombre au-dessus)",
+    "sha256Apres": "79d2bd2e6066ef71"
+   },
+   {
+    "rang": 4,
+    "sha256": "e7f91cc6db171ad3",
+    "role": "couleur",
+    "materiau": 5,
+    "couleur": "#303030",
+    "zones": [
+     {
+      "rect": [
+       0.025,
+       0.245,
+       0.54,
+       0.85
+      ]
+     }
+    ],
+    "note": "bouclier Lamborghini du capot avant (pièce gardée, RG-10 : la carrosserie est ouverte derrière, 48 % de rayons sans face) : plaque noire brillante unie, albédo 0,03 (conseil de l'expert réalisme 3D, cache de radar)",
+    "sha256Apres": "c2bcde2a9b81b092"
+   },
+   {
+    "rang": 5,
+    "sha256": "ad686c74c77c3659",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0.025,
+       0.245,
+       0.54,
+       0.85
+      ]
+     }
+    ],
+    "note": "relief du bouclier du capot avant (taureau, LAMBORGHINI) : plat",
+    "sha256Apres": "5b57f2966c7d35e3"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 5,
+    "triangles": [
+     0,
+     98
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     0.9078,
+     0.2499,
+     0.7181,
+     0.9103,
+     0.2678,
+     0.8334
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (badge « LP 560-4 » du bas de caisse droit)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     98,
+     98
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     -0.9115,
+     0.2499,
+     0.7181,
+     -0.9072,
+     0.2678,
+     0.8332
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (badge « LP 560-4 » du bas de caisse gauche)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     196,
+     897
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     -0.0983,
+     0.752,
+     2.1049,
+     0.0984,
+     0.7786,
+     2.1154
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (lettrage « Lamborghini » du capot arrière)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     1255,
+     1
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     -0.0579,
+     0.7528,
+     2.1123,
+     -0.0523,
+     0.7561,
+     2.1138
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (lettrage « Lamborghini » du capot arrière)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     1608,
+     985
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     -0.0543,
+     0.7459,
+     2.1067,
+     0.0979,
+     0.773,
+     2.1174
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (lettrage « Lamborghini » du capot arrière)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     2593,
+     68
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     0.906,
+     0.2499,
+     0.7181,
+     0.9103,
+     0.268,
+     0.8334
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (badge « LP 560-4 » du bas de caisse droit)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     2661,
+     68
+    ],
+    "trianglesAvant": 2847,
+    "boite": [
+     -0.9115,
+     0.2499,
+     0.7181,
+     -0.9057,
+     0.268,
+     0.8334
+    ],
+    "nom": "D_Body_33 MAT_Details_EXT (badge « LP 560-4 » du bas de caisse gauche)"
+   }
+  ]
+ },
+ "giulia": {
+  "materiaux": 66,
+  "source": "alfa-giulia (RG-09 : 66 matériaux, triangles égaux pour les 66 ; 64 et 65 = plaques WFS-158)",
+  "textures": [
+   {
+    "rang": 37,
+    "sha256": "c3d17af8c4269cc5",
+    "role": "couleur",
+    "materiau": 45,
+    "couleur": "#272727",
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "comparer": [
+     {
+      "materiau": 45,
+      "voisin": 58
+     }
+    ],
+    "note": "atlas des écussons extérieurs (EXT_logo : coffre, calandre, trèfles des ailes, 4 caches de roue ; pièces gardées, RG-10 : ouvertes derrière, 22 à 58 % de rayons sans face) : uni noir, albédo 0,02 de la jante (matériau 58)",
+    "sha256Apres": "ffe68bfd341719c2"
+   },
+   {
+    "rang": 38,
+    "sha256": "615703c194ce38d0",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       0.945,
+       1
+      ]
+     }
+    ],
+    "note": "relief des écussons extérieurs (la bande u > 0,945 sert aussi au matériau 50 des phares : gardée)",
+    "sha256Apres": "d42b6c43631f1a24"
+   },
+   {
+    "rang": 31,
+    "sha256": "8872b4762e8d113d",
+    "role": "couleur",
+    "materiau": 36,
+    "couleur": "#242424",
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "comparer": [
+     {
+      "materiau": 36,
+      "voisin": 21
+     }
+    ],
+    "note": "écusson du centre du volant (INT_logo, pièce gardée : 13 % de rayons sans face, creux de 13 cm) : uni, albédo du cuir du volant (matériau 21, 0,018)",
+    "sha256Apres": "af52737eb8cf4f8b"
+   },
+   {
+    "rang": 26,
+    "sha256": "c95ba708f3df562e",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "note": "relief des écussons du volant et des sièges",
+    "sha256Apres": "ed70dab163146674"
+   },
+   {
+    "rang": 22,
+    "sha256": "18a15aa35bdb1402",
+    "role": "couleur",
+    "materiau": 25,
+    "couleur": "auto",
+    "zones": [
+     {
+      "rect": [
+       0.545,
+       0.365,
+       0.737,
+       0.84
+      ],
+      "reference": [
+       0.74,
+       0.4,
+       0.84,
+       0.8
+      ]
+     }
+    ],
+    "note": "écusson Alfa Romeo affiché au centre de l'écran du tableau de bord",
+    "sha256Apres": "130e9a371fbdc7ef"
+   },
+   {
+    "rang": 44,
+    "sha256": "4bdb091d5a903b23",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0.835,
+       0.218,
+       0.97,
+       0.786
+      ]
+     }
+    ],
+    "note": "lettrage « Alfa Romeo » en relief des étriers (seulement dans la carte de normales)",
+    "sha256Apres": "c260ce0817be1f90"
+   },
+   {
+    "rang": 7,
+    "sha256": "7d1ae1d8b2cfa291",
+    "role": "couleur",
+    "materiau": 10,
+    "couleur": "#000000",
+    "zones": [
+     {
+      "rect": [
+       0.218,
+       0.167,
+       0.325,
+       0.218
+      ],
+      "transparent": true
+     },
+     {
+      "rect": [
+       0.646,
+       0.141,
+       0.701,
+       0.237
+      ],
+      "transparent": true
+     },
+     {
+      "rect": [
+       0.005,
+       0.938,
+       0.25,
+       0.997
+      ],
+      "transparent": true
+     }
+    ],
+    "note": "décalques intérieurs à masque (INT_decals) : lettrage « Alfa Romeo » et trèfle des compteurs, « harman/kardon » : rendus transparents",
+    "sha256Apres": "b9a6b1eb475501ce"
+   },
+   {
+    "rang": 6,
+    "sha256": "f380d1c7447c7b0a",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0.218,
+       0.167,
+       0.325,
+       0.218
+      ]
+     },
+     {
+      "rect": [
+       0.646,
+       0.141,
+       0.701,
+       0.237
+      ]
+     },
+     {
+      "rect": [
+       0.005,
+       0.938,
+       0.25,
+       0.997
+      ]
+     }
+    ],
+    "note": "relief des mêmes décalques",
+    "sha256Apres": "5bc416ba652c73a8"
+   },
+   {
+    "rang": 45,
+    "sha256": "89d1048df71e832e",
+    "role": "couleur",
+    "materiau": 59,
+    "couleur": "#1b1b1b",
+    "zones": [
+     {
+      "rect": [
+       0.005,
+       0.225,
+       0.12,
+       0.67
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.875,
+       0.32,
+       0.995,
+       0.73
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.04,
+       0.64,
+       0.12,
+       0.75
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.09,
+       0.73,
+       0.21,
+       0.85
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.18,
+       0.82,
+       0.33,
+       0.92
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.64,
+       0.07,
+       0.8,
+       0.17
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.76,
+       0.12,
+       0.88,
+       0.26
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.84,
+       0.2,
+       0.95,
+       0.36
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.47,
+       0.0,
+       0.67,
+       0.075
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "rect": [
+       0.35,
+       0.915,
+       0.54,
+       0.995
+      ],
+      "reference": [
+       0.15,
+       0.15,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "note": "flancs des pneus : « MICHELIN » (2), bibendums, « PILOT SPORT », dimensions, « MICHELIN Total Performance » (2) : gris du flanc (27)",
+    "sha256Apres": "483d74e6d1dbba9f"
+   },
+   {
+    "rang": 46,
+    "sha256": "c950e9a5458946d2",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0.005,
+       0.225,
+       0.12,
+       0.67
+      ]
+     },
+     {
+      "rect": [
+       0.875,
+       0.32,
+       0.995,
+       0.73
+      ]
+     },
+     {
+      "rect": [
+       0.04,
+       0.64,
+       0.12,
+       0.75
+      ]
+     },
+     {
+      "rect": [
+       0.09,
+       0.73,
+       0.21,
+       0.85
+      ]
+     },
+     {
+      "rect": [
+       0.18,
+       0.82,
+       0.33,
+       0.92
+      ]
+     },
+     {
+      "rect": [
+       0.64,
+       0.07,
+       0.8,
+       0.17
+      ]
+     },
+     {
+      "rect": [
+       0.76,
+       0.12,
+       0.88,
+       0.26
+      ]
+     },
+     {
+      "rect": [
+       0.84,
+       0.2,
+       0.95,
+       0.36
+      ]
+     },
+     {
+      "rect": [
+       0.47,
+       0.0,
+       0.67,
+       0.075
+      ]
+     },
+     {
+      "rect": [
+       0.35,
+       0.915,
+       0.54,
+       0.995
+      ]
+     }
+    ],
+    "note": "relief des mêmes textes des flancs",
+    "sha256Apres": "6daa1f9dd059a1ac"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 47,
+    "triangles": [
+     0,
+     389
+    ],
+    "trianglesAvant": 389,
+    "boite": [
+     0.3839,
+     0.9355,
+     2.1565,
+     0.5432,
+     0.9594,
+     2.2154
+    ],
+    "nom": "GEO_body_bodyparts EXT_badge (lettrage « Giulia » du coffre, 6 lettres)"
+   },
+   {
+    "materiau": 9,
+    "triangles": [
+     0,
+     6
+    ],
+    "trianglesAvant": 12,
+    "boite": [
+     -0.7151,
+     0.7309,
+     -0.5418,
+     -0.712,
+     0.7382,
+     -0.4918
+    ],
+    "nom": "INT_decals_chrome (badge « harman/kardon » du haut-parleur de la porte gauche)"
+   },
+   {
+    "materiau": 9,
+    "triangles": [
+     6,
+     6
+    ],
+    "trianglesAvant": 12,
+    "boite": [
+     0.7113,
+     0.7309,
+     -0.5404,
+     0.7143,
+     0.7382,
+     -0.4904
+    ],
+    "nom": "INT_decals_chrome (badge « harman/kardon » du haut-parleur de la porte droite)"
+   },
+   {
+    "materiau": 27,
+    "triangles": [
+     0,
+     14
+    ],
+    "trianglesAvant": 28,
+    "boite": [
+     0.7132,
+     0.3491,
+     -0.5955,
+     0.7436,
+     0.3545,
+     -0.3092
+    ],
+    "nom": "INT_threshold (seuil de porte droit, décalque « Alfa Romeo »)"
+   },
+   {
+    "materiau": 27,
+    "triangles": [
+     14,
+     14
+    ],
+    "trianglesAvant": 28,
+    "boite": [
+     -0.7442,
+     0.3491,
+     -0.597,
+     -0.7139,
+     0.3545,
+     -0.3107
+    ],
+    "nom": "INT_threshold (seuil de porte gauche, décalque « Alfa Romeo »)"
+   },
+   {
+    "materiau": 28,
+    "triangles": [
+     0,
+     3
+    ],
+    "trianglesAvant": 6,
+    "boite": [
+     -0.3965,
+     1.061,
+     0.3172,
+     -0.3457,
+     1.117,
+     0.3186
+    ],
+    "nom": "INT_logo_seat (écusson brodé du siège gauche)"
+   },
+   {
+    "materiau": 28,
+    "triangles": [
+     3,
+     3
+    ],
+    "trianglesAvant": 6,
+    "boite": [
+     0.3436,
+     1.061,
+     0.3179,
+     0.3943,
+     1.117,
+     0.3193
+    ],
+    "nom": "INT_logo_seat (écusson brodé du siège droit)"
+   }
+  ]
+ },
+ "golf": {
+  "materiaux": 21,
+  "textures": [
+   {
+    "rang": 1,
+    "sha256": "87647d3605e4cb71",
+    "role": "couleur",
+    "materiau": 1,
+    "zones": [
+     {
+      "anneau": [
+       0.5,
+       0.5,
+       0.385,
+       0.465
+      ],
+      "couleur": "#1e1e1e",
+      "reference": {
+       "anneau": [
+        0.5,
+        0.5,
+        0.31,
+        0.37
+       ]
+      },
+      "note": "flanc des pneus : marque et dimensions en relief peint (flanc uni de la même couleur)"
+     }
+    ],
+    "sha256Apres": "e5422723202121f6"
+   },
+   {
+    "rang": 2,
+    "sha256": "c100ea4019787b9a",
+    "role": "couleur",
+    "materiau": 2,
+    "zones": [
+     {
+      "disque": [
+       0.0947,
+       0.8516,
+       0.0918
+      ],
+      "couleur": "#101010",
+      "note": "rondelle VW des caches de roue : noir du moyeu autour",
+      "reference": {
+       "rect": [
+        0.293,
+        0.6836,
+        0.3516,
+        0.7227
+       ]
+      }
+     }
+    ],
+    "sha256Apres": "bf2d30c21fe5c9ab"
+   },
+   {
+    "rang": 3,
+    "sha256": "c74e90512050e47e",
+    "role": "metal",
+    "materiau": 2,
+    "zones": [
+     {
+      "disque": [
+       0.0947,
+       0.8516,
+       0.0918
+      ],
+      "couleur": "#ffff1a",
+      "note": "même rondelle dans la carte métal / rugosité : valeur du moyeu autour"
+     }
+    ],
+    "sha256Apres": "52b139b4bf119bc2"
+   },
+   {
+    "rang": 8,
+    "sha256": "97c4b9988c72fead",
+    "role": "couleur",
+    "materiau": 10,
+    "zones": [
+     {
+      "rect": [
+       0.3145,
+       0.3008,
+       0.543,
+       0.377
+      ],
+      "couleur": "#949494",
+      "note": "GTI grand (lettres en relief du hayon, retirées) : plaque grise ; zone plus affichée (les lettres sont retirées)",
+      "reference": {
+       "rect": [
+        0.5459,
+        0.3145,
+        0.5479,
+        0.3652
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.6523,
+       0.6182,
+       0.8838,
+       0.6836
+      ],
+      "couleur": "#101010",
+      "note": "GTI de la calandre : plaque sombre",
+      "reference": {
+       "rect": [
+        0.6836,
+        0.6865,
+        0.8594,
+        0.6904
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.6641,
+       0.5244,
+       0.7324,
+       0.5469
+      ],
+      "couleur": "#78100e",
+      "note": "GTI de l'aile avant droite : bande rouge",
+      "reference": {
+       "rect": [
+        0.6396,
+        0.5322,
+        0.6621,
+        0.5391
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.7959,
+       0.5723,
+       0.8623,
+       0.5938
+      ],
+      "couleur": "#78100e",
+      "note": "GTI de l'aile avant gauche : bande rouge",
+      "reference": {
+       "rect": [
+        0.8633,
+        0.5781,
+        0.8789,
+        0.5879
+       ]
+      }
+     },
+     {
+      "disque": [
+       0.835,
+       0.7637,
+       0.0723
+      ],
+      "couleur": "#101010",
+      "note": "rondelle VW de la calandre et du hayon : disque sombre",
+      "reference": {
+       "rect": [
+        0.9102,
+        0.752,
+        0.918,
+        0.7764
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.3301,
+       0.4453,
+       0.3936,
+       0.4756
+      ],
+      "couleur": "#252525",
+      "note": "« IQ. » du phare droit : onglet gris",
+      "reference": {
+       "rect": [
+        0.3105,
+        0.4492,
+        0.3271,
+        0.4736
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.5107,
+       0.6113,
+       0.5732,
+       0.6445
+      ],
+      "couleur": "#232323",
+      "note": "« IQ. » du phare gauche : onglet gris",
+      "reference": {
+       "rect": [
+        0.5762,
+        0.6152,
+        0.5859,
+        0.6406
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.0625,
+       0.8311,
+       0.0859,
+       0.9717
+      ],
+      "couleur": "#310101",
+      "note": "« IQ.LIGHT » du feu arrière : fond rouge sombre",
+      "reference": {
+       "rect": [
+        0.0195,
+        0.8496,
+        0.0586,
+        0.9668
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.1328,
+       0.8311,
+       0.1582,
+       0.9678
+      ],
+      "couleur": "#310101",
+      "note": "« IQ.LIGHT » du feu arrière : fond rouge sombre",
+      "reference": {
+       "rect": [
+        0.0928,
+        0.8496,
+        0.127,
+        0.9668
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.9795,
+       0.1855,
+       0.9902,
+       0.2354
+      ],
+      "couleur": "#7a0f0e",
+      "note": "« IQ.LIGHT » du phare : bande rouge",
+      "reference": {
+       "rect": [
+        0.9922,
+        0.1855,
+        0.998,
+        0.2354
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.96,
+       0.4844,
+       0.9727,
+       0.542
+      ],
+      "couleur": "#7a0f0e",
+      "note": "« IQ.LIGHT » du phare : bande rouge",
+      "reference": {
+       "rect": [
+        0.9756,
+        0.4844,
+        0.9863,
+        0.542
+       ]
+      }
+     }
+    ],
+    "sha256Apres": "468793eff9b91690"
+   },
+   {
+    "rang": 9,
+    "sha256": "30a9af2f4d31c4c2",
+    "role": "couleur",
+    "materiau": 12,
+    "zones": [
+     {
+      "disque": [
+       0.8281,
+       0.3916,
+       0.0186
+      ],
+      "couleur": "auto",
+      "note": "rondelle VW du centre du volant (le mot AIRBAG reste)"
+     }
+    ],
+    "sha256Apres": "e3879af6e4e48e15"
+   },
+   {
+    "rang": 10,
+    "sha256": "476ddeb8df72e5e9",
+    "role": "couleur",
+    "materiau": 13,
+    "zones": [
+     {
+      "rect": [
+       0.3145,
+       0.3008,
+       0.543,
+       0.377
+      ],
+      "couleur": "#949494",
+      "note": "GTI grand (lettres en relief du hayon, retirées) : plaque grise ; zone plus affichée (les lettres sont retirées)",
+      "reference": {
+       "rect": [
+        0.5459,
+        0.3145,
+        0.5479,
+        0.3652
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.6523,
+       0.6182,
+       0.8838,
+       0.6836
+      ],
+      "couleur": "#101010",
+      "note": "GTI de la calandre : plaque sombre",
+      "reference": {
+       "rect": [
+        0.6836,
+        0.6865,
+        0.8594,
+        0.6904
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.6641,
+       0.5244,
+       0.7324,
+       0.5469
+      ],
+      "couleur": "#78100e",
+      "note": "GTI de l'aile avant droite : bande rouge",
+      "reference": {
+       "rect": [
+        0.6396,
+        0.5322,
+        0.6621,
+        0.5391
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.7959,
+       0.5723,
+       0.8623,
+       0.5938
+      ],
+      "couleur": "#78100e",
+      "note": "GTI de l'aile avant gauche : bande rouge",
+      "reference": {
+       "rect": [
+        0.8633,
+        0.5781,
+        0.8789,
+        0.5879
+       ]
+      }
+     },
+     {
+      "disque": [
+       0.835,
+       0.7637,
+       0.0723
+      ],
+      "couleur": "#101010",
+      "note": "rondelle VW de la calandre et du hayon : disque sombre",
+      "reference": {
+       "rect": [
+        0.9102,
+        0.752,
+        0.918,
+        0.7764
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.3301,
+       0.4453,
+       0.3936,
+       0.4756
+      ],
+      "couleur": "#252525",
+      "note": "« IQ. » du phare droit : onglet gris",
+      "reference": {
+       "rect": [
+        0.3105,
+        0.4492,
+        0.3271,
+        0.4736
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.5107,
+       0.6113,
+       0.5732,
+       0.6445
+      ],
+      "couleur": "#232323",
+      "note": "« IQ. » du phare gauche : onglet gris",
+      "reference": {
+       "rect": [
+        0.5762,
+        0.6152,
+        0.5859,
+        0.6406
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.0625,
+       0.8311,
+       0.0859,
+       0.9717
+      ],
+      "couleur": "#310101",
+      "note": "« IQ.LIGHT » du feu arrière : fond rouge sombre",
+      "reference": {
+       "rect": [
+        0.0195,
+        0.8496,
+        0.0586,
+        0.9668
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.1328,
+       0.8311,
+       0.1582,
+       0.9678
+      ],
+      "couleur": "#310101",
+      "note": "« IQ.LIGHT » du feu arrière : fond rouge sombre",
+      "reference": {
+       "rect": [
+        0.0928,
+        0.8496,
+        0.127,
+        0.9668
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.9795,
+       0.1855,
+       0.9902,
+       0.2354
+      ],
+      "couleur": "#7a0f0e",
+      "note": "« IQ.LIGHT » du phare : bande rouge",
+      "reference": {
+       "rect": [
+        0.9922,
+        0.1855,
+        0.998,
+        0.2354
+       ]
+      }
+     },
+     {
+      "rect": [
+       0.96,
+       0.4844,
+       0.9727,
+       0.542
+      ],
+      "couleur": "#7a0f0e",
+      "note": "« IQ.LIGHT » du phare : bande rouge",
+      "reference": {
+       "rect": [
+        0.9756,
+        0.4844,
+        0.9863,
+        0.542
+       ]
+      }
+     }
+    ],
+    "sha256Apres": "b5bc572fc0d0198d"
+   },
+   {
+    "rang": 11,
+    "sha256": "e73bbd27de1afb02",
+    "role": "couleur",
+    "materiau": 15,
+    "zones": [
+     {
+      "disque": [
+       0.0947,
+       0.8516,
+       0.0918
+      ],
+      "couleur": "#101010",
+      "note": "copie de la texture des roues, rondelle non affichée (effacée aussi)",
+      "reference": {
+       "rect": [
+        0.293,
+        0.6836,
+        0.3516,
+        0.7227
+       ]
+      }
+     }
+    ],
+    "sha256Apres": "8eb0fe17ae925646"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 10,
+    "triangles": [
+     752,
+     14
+    ],
+    "trianglesAvant": 12295,
+    "boite": [
+     -0.006,
+     0.7508,
+     2.059,
+     0.0297,
+     0.779,
+     2.0613
+    ],
+    "nom": "Object_12 (pièce unique du matériau) : lettres « GTI » en relief du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     812,
+     41
+    ],
+    "trianglesAvant": 12295,
+    "boite": [
+     -0.056,
+     0.7511,
+     2.0585,
+     0.061,
+     0.7798,
+     2.0611
+    ],
+    "nom": "Object_12 (pièce unique du matériau) : lettres « GTI » en relief du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     7818,
+     32
+    ],
+    "trianglesAvant": 12295,
+    "boite": [
+     0.0425,
+     0.7511,
+     2.0561,
+     0.061,
+     0.7792,
+     2.0611
+    ],
+    "nom": "Object_12 (pièce unique du matériau) : lettres « GTI » en relief du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     8021,
+     39
+    ],
+    "trianglesAvant": 12295,
+    "boite": [
+     -0.056,
+     0.7511,
+     2.0564,
+     -0.0172,
+     0.78,
+     2.0611
+    ],
+    "nom": "Object_12 (pièce unique du matériau) : lettres « GTI » en relief du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     8065,
+     26
+    ],
+    "trianglesAvant": 12295,
+    "boite": [
+     -0.0487,
+     0.7558,
+     2.0569,
+     -0.0172,
+     0.7686,
+     2.0611
+    ],
+    "nom": "Object_12 (pièce unique du matériau) : lettres « GTI » en relief du hayon"
+   },
+   {
+    "materiau": 10,
+    "triangles": [
+     8355,
+     38
+    ],
+    "trianglesAvant": 12295,
+    "boite": [
+     -0.006,
+     0.7508,
+     2.0566,
+     0.0297,
+     0.7792,
+     2.0613
+    ],
+    "nom": "Object_12 (pièce unique du matériau) : lettres « GTI » en relief du hayon"
+   }
+  ]
+ },
+ "gt86": {
+  "materiaux": 15,
+  "source": "toyota-gt86 (RG-09 : 13 matériaux de la source = 13 premiers du .wfm, triangles égaux ; 13 et 14 = plaques WFS-158 ; une seule texture : la plaque)",
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 1,
+    "triangles": [
+     0,
+     1472
+    ],
+    "trianglesAvant": 1759,
+    "boite": [
+     -0.0505,
+     0.8232,
+     1.98,
+     0.0504,
+     0.8862,
+     1.997
+    ],
+    "nom": "Object_3 (emblème Toyota du hayon)"
+   },
+   {
+    "materiau": 1,
+    "triangles": [
+     1472,
+     287
+    ],
+    "trianglesAvant": 1759,
+    "boite": [
+     -0.0492,
+     0.5992,
+     -2.1132,
+     0.0496,
+     0.6413,
+     -2.0603
+    ],
+    "nom": "Object_3 (emblème Toyota de la calandre)"
+   },
+   {
+    "materiau": 4,
+    "triangles": [
+     0,
+     684
+    ],
+    "trianglesAvant": 684,
+    "boite": [
+     -0.8056,
+     0.8018,
+     -0.7242,
+     0.8058,
+     0.8387,
+     -0.636
+    ],
+    "nom": "Object_6 (badges « 86 » des ailes avant, gauche et droite)"
+   }
+  ]
+ },
  "m4": {
   "materiaux": 51,
   "textures": [
@@ -28,7 +3857,26 @@
       "materiau": 41,
       "voisin": 9
      }
-    ]
+    ],
+    "sha256Apres": "889cd01b527ee389"
+   },
+   {
+    "rang": 6,
+    "sha256": "d2535e9808699bbb",
+    "role": "couleur",
+    "couleur": "#000000",
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "note": "logo M tricolore des 4 décalcomanies d'étrier (matériau 25, pièces retirées) : texture sans autre usage, mise en uni pour qu'aucun logo ne reste dans le fichier",
+    "sha256Apres": "77c13b67177163b3"
    }
   ],
   "pieces": [
@@ -422,6 +4270,2181 @@
      -1.0542
     ],
     "nom": "sidelogos_Material"
+   }
+  ]
+ },
+ "model3": {
+  "materiaux": 37,
+  "source": "tesla-model-3 : pas de source locale (RG-09 : pièces repérées par leur position dans le .wfm, boîtes ci-dessous ; 36 = plaque WFS-158)",
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 2,
+    "triangles": [
+     0,
+     2
+    ],
+    "trianglesAvant": 4,
+    "boite": [
+     0.935,
+     0.2847,
+     -1.445,
+     0.935,
+     0.4078,
+     -1.4186
+    ],
+    "nom": "pièce sans nom (pas de source locale) : décalque « TESLA » de l'étrier avant droit (texture 1)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2,
+     2
+    ],
+    "trianglesAvant": 4,
+    "boite": [
+     -0.9242,
+     0.2846,
+     -1.4433,
+     -0.9242,
+     0.4075,
+     -1.4171
+    ],
+    "nom": "sans nom : décalque « TESLA » de l'étrier avant gauche (texture 1)"
+   },
+   {
+    "materiau": 4,
+    "triangles": [
+     2816,
+     704
+    ],
+    "trianglesAvant": 6346,
+    "boite": [
+     -0.0479,
+     0.8775,
+     2.2928,
+     0.0486,
+     0.9684,
+     2.3118
+    ],
+    "nom": "sans nom : emblème « T » du coffre (repéré par sa position : centre arrière, y 0,88-0,97)"
+   },
+   {
+    "materiau": 4,
+    "triangles": [
+     4810,
+     682
+    ],
+    "trianglesAvant": 6346,
+    "boite": [
+     -0.0479,
+     0.6499,
+     -2.2591,
+     0.0486,
+     0.6965,
+     -2.1778
+    ],
+    "nom": "sans nom : emblème « T » du nez avant (centre avant, y 0,65-0,70)"
+   },
+   {
+    "materiau": 6,
+    "triangles": [
+     2,
+     74
+    ],
+    "trianglesAvant": 76,
+    "boite": [
+     -0.2088,
+     0.6935,
+     2.3015,
+     0.1882,
+     0.7451,
+     2.3236
+    ],
+    "nom": "sans nom : lettrage « TESLA » sous le bord du coffre (5 lettres, 40 cm)"
+   }
+  ]
+ },
+ "mustang": {
+  "materiaux": 25,
+  "source": "ford-mustang (RG-09 : 24 matériaux de la source = 24 premiers du .wfm, triangles égaux ; 24 = plaque WFS-158)",
+  "textures": [
+   {
+    "rang": 21,
+    "sha256": "a8e97747a9cdfe1d",
+    "role": "couleur",
+    "materiau": 15,
+    "couleur": "auto",
+    "zones": [
+     {
+      "rect": [
+       0.14,
+       0.012,
+       0.84,
+       0.985
+      ]
+     }
+    ],
+    "note": "cobra Shelby de la grille d'aération du capot (Grille6, pièce gardée : sous elle le moteur, 4 cm plus bas) : gris uni du fond",
+    "sha256Apres": "b88e3e3c6549aba0"
+   },
+   {
+    "rang": 22,
+    "sha256": "8887d5f1cdb85095",
+    "role": "normale",
+    "zones": [
+     {
+      "rect": [
+       0.14,
+       0.012,
+       0.84,
+       0.985
+      ]
+     }
+    ],
+    "note": "relief du cobra de la grille du capot",
+    "sha256Apres": "846aaf387087f8d9"
+   },
+   {
+    "rang": 5,
+    "sha256": "402f88089e511902",
+    "role": "metal",
+    "couleur": "auto",
+    "zones": [
+     {
+      "rect": [
+       0.005,
+       0.01,
+       0.355,
+       0.17
+      ]
+     }
+    ],
+    "note": "ovale Ford dessiné dans la carte métal / rugosité des caches de roue (Wheel1A : ovale brillant sur le cache noir)",
+    "sha256Apres": "4f0f657f344fe2d7"
+   },
+   {
+    "rang": 23,
+    "sha256": "7c6b1eed43f63dd4",
+    "role": "couleur",
+    "materiau": 16,
+    "couleur": "#2d2d2d",
+    "zones": [
+     {
+      "rect": [
+       0.25,
+       0.065,
+       0.37,
+       0.152
+      ],
+      "reference": [
+       0.371,
+       0.09,
+       0.392,
+       0.15
+      ]
+     },
+     {
+      "rect": [
+       0.618,
+       0.398,
+       0.662,
+       0.484
+      ],
+      "couleur": "#262626",
+      "reference": [
+       0.606,
+       0.44,
+       0.616,
+       0.47
+      ]
+     },
+     {
+      "rect": [
+       0.362,
+       0.398,
+       0.505,
+       0.443
+      ],
+      "couleur": "#262626",
+      "reference": [
+       0.36,
+       0.385,
+       0.5,
+       0.397
+      ]
+     }
+    ],
+    "note": "habitacle (InteriorA) : cobra des dossiers / ciel de toit (fond 45), petit cobra du centre du volant et « RECARO » des sièges (fond 38)",
+    "sha256Apres": "e25c52b864308728"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 0,
+    "triangles": [
+     0,
+     8
+    ],
+    "trianglesAvant": 8,
+    "boite": [
+     -0.929,
+     0.2697,
+     -1.2708,
+     0.9289,
+     0.4907,
+     1.4772
+    ],
+    "nom": "polySurface97-100 CalliperBadge (décalques de marque des 4 étriers)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     0,
+     2
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     -0.0399,
+     0.5454,
+     -2.2756,
+     0.0428,
+     0.6666,
+     -2.262
+    ],
+    "nom": "Badge_Geo BadgeA (cobra de la calandre)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     2,
+     2
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     -0.0497,
+     0.7623,
+     2.2375,
+     0.0476,
+     0.878,
+     2.3195
+    ],
+    "nom": "BadgeA (cobra du coffre)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     4,
+     18
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     0.2622,
+     0.9317,
+     -0.4712,
+     0.3547,
+     0.9597,
+     -0.4595
+    ],
+    "nom": "BadgeA (« GT500 » / « PERFORMANCE » de la planche de bord, 1/2)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     22,
+     28
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     -0.7923,
+     0.3374,
+     -0.2168,
+     0.7918,
+     0.3416,
+     0.0174
+    ],
+    "nom": "BadgeA (seuils de porte gauche et droit : lettrage)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     50,
+     8
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     0.2815,
+     0.9443,
+     -0.4648,
+     0.3511,
+     0.9536,
+     -0.46
+    ],
+    "nom": "BadgeA (planche de bord, 2/2)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     58,
+     2
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     -0.3872,
+     0.8442,
+     -0.2187,
+     -0.3504,
+     0.8919,
+     -0.1999
+    ],
+    "nom": "BadgeA (cobra du volant)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     60,
+     20
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     0.2661,
+     0.9339,
+     -0.4673,
+     0.3486,
+     0.9578,
+     -0.4578
+    ],
+    "nom": "BadgeA (planche de bord, chiffres et lettrage)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     80,
+     2
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     -0.9269,
+     0.6352,
+     -0.8704,
+     -0.9174,
+     0.7281,
+     -0.8072
+    ],
+    "nom": "BadgeA (cobra de l'aile avant gauche)"
+   },
+   {
+    "materiau": 5,
+    "triangles": [
+     82,
+     2
+    ],
+    "trianglesAvant": 84,
+    "boite": [
+     0.9178,
+     0.6352,
+     -0.8704,
+     0.9273,
+     0.7281,
+     -0.8072
+    ],
+    "nom": "BadgeA (cobra de l'aile avant droite)"
+   }
+  ]
+ },
+ "p208": {
+  "materiaux": 17,
+  "source": "peugeot-208 (RG-09 : 17 matériaux, triangles égaux pour les 17 ; 15 et 16 = plaques WFS-158 ; aucune texture de logo : logos en relief dans Object_2 et Object_90)",
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 0,
+    "triangles": [
+     274,
+     146
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.0443,
+     0.6038,
+     -1.9919,
+     0.0441,
+     0.6981,
+     -1.9719
+    ],
+    "nom": "Object_2 (lion de la calandre)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     909,
+     32
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     0.0263,
+     0.7527,
+     -1.9376,
+     0.0668,
+     0.7709,
+     -1.9207
+    ],
+    "nom": "Object_2 (chiffre du « 208 » du capot, 1/3)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     963,
+     18
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.0239,
+     0.7522,
+     -1.9378,
+     0.0234,
+     0.7702,
+     -1.922
+    ],
+    "nom": "Object_2 (« 208 » du capot, 2/3)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1373,
+     35
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.0682,
+     0.7519,
+     -1.9378,
+     -0.0246,
+     0.77,
+     -1.9215
+    ],
+    "nom": "Object_2 (« 208 » du capot, 3/3)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1002,
+     14
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     0.1376,
+     0.9071,
+     1.9441,
+     0.1542,
+     0.9198,
+     1.9488
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT » du hayon)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1063,
+     19
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     0.0421,
+     0.9071,
+     1.9485,
+     0.056,
+     0.9195,
+     1.9524
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT »)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1082,
+     23
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.1545,
+     0.9064,
+     1.9444,
+     -0.1379,
+     0.9191,
+     1.948
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT »)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1108,
+     17
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.106,
+     0.9066,
+     1.9471,
+     -0.0916,
+     0.9191,
+     1.9512
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT »)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1131,
+     20
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.0592,
+     0.9066,
+     1.9485,
+     -0.0431,
+     0.9195,
+     1.9522
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT »)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1158,
+     21
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     0.0879,
+     0.9066,
+     1.9471,
+     0.1077,
+     0.9198,
+     1.9495
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT »)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1299,
+     25
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.0095,
+     0.9066,
+     1.949,
+     0.008,
+     0.9198,
+     1.9517
+    ],
+    "nom": "Object_2 (lettre de « PEUGEOT »)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1179,
+     84
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.0324,
+     0.9646,
+     1.8652,
+     0.0283,
+     1.0077,
+     1.9154
+    ],
+    "nom": "Object_2 (lion du hayon)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     231,
+     41
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.3856,
+     0.6784,
+     1.8871,
+     -0.3513,
+     0.6971,
+     1.8978
+    ],
+    "nom": "Object_2 (« 208 » du hayon, 1/3)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     872,
+     22
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.4239,
+     0.6781,
+     1.8798,
+     -0.3861,
+     0.6969,
+     1.8886
+    ],
+    "nom": "Object_2 (« 208 » du hayon, 2/3)"
+   },
+   {
+    "materiau": 0,
+    "triangles": [
+     1337,
+     32
+    ],
+    "trianglesAvant": 1408,
+    "boite": [
+     -0.4575,
+     0.6789,
+     1.8713,
+     -0.4261,
+     0.6976,
+     1.884
+    ],
+    "nom": "Object_2 (« 208 » du hayon, 3/3)"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     1108,
+     312
+    ],
+    "trianglesAvant": 7664,
+    "boite": [
+     0.7804,
+     0.2927,
+     -1.2147,
+     0.785,
+     0.3338,
+     -1.1753
+    ],
+    "nom": "Object_90 (cache de roue avant droit, lion)"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     2530,
+     336
+    ],
+    "trianglesAvant": 7664,
+    "boite": [
+     0.7804,
+     0.2927,
+     1.3316,
+     0.785,
+     0.3337,
+     1.371
+    ],
+    "nom": "Object_90 (cache de roue arrière droit, lion)"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     4980,
+     352
+    ],
+    "trianglesAvant": 7664,
+    "boite": [
+     -0.7854,
+     0.2927,
+     1.3341,
+     -0.7808,
+     0.3337,
+     1.3735
+    ],
+    "nom": "Object_90 (cache de roue arrière gauche, lion)"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     7288,
+     376
+    ],
+    "trianglesAvant": 7664,
+    "boite": [
+     -0.7854,
+     0.2925,
+     -1.2123,
+     -0.7808,
+     0.3336,
+     -1.1728
+    ],
+    "nom": "Object_90 (cache de roue avant gauche, lion)"
+   }
+  ]
+ },
+ "p911": {
+  "materiaux": 13,
+  "textures": [
+   {
+    "rang": 3,
+    "sha256": "fe2291c1194b8ac7",
+    "role": "couleur",
+    "couleur": "auto",
+    "materiau": 9,
+    "zones": [
+     {
+      "rect": [
+       0.1758,
+       0.4648,
+       0.8311,
+       0.5576
+      ]
+     }
+    ],
+    "note": "bandeau des feux arrière (matériau 9, tex_shiny) : inscriptions « 911 Carrera S » et « PORSCHE » sur le fond noir transparent : effacées (couleur et alpha de l'anneau)",
+    "sha256Apres": "bc534db29e03c5d3"
+   },
+   {
+    "rang": 1,
+    "sha256": "25f0e607dd8afcc4",
+    "role": "normale",
+    "materiau": 5,
+    "zones": [
+     {
+      "rect": [
+       0.0254,
+       0.2285,
+       0.0664,
+       0.416
+      ]
+     },
+     {
+      "rect": [
+       0.4473,
+       0.1211,
+       0.5195,
+       0.3086
+      ]
+     },
+     {
+      "rect": [
+       0.2715,
+       0.041,
+       0.3887,
+       0.0879
+      ]
+     },
+     {
+      "rect": [
+       0.0547,
+       0.0645,
+       0.1445,
+       0.1777
+      ]
+     },
+     {
+      "rect": [
+       0.1621,
+       0.4551,
+       0.3809,
+       0.502
+      ]
+     },
+     {
+      "rect": [
+       0.3926,
+       0.3652,
+       0.4824,
+       0.4707
+      ]
+     }
+    ],
+    "note": "carte de normales des pneus (matériau 5) : textes moulés du flanc (« BFGoodrich » ×2, DOT, dimensions) : relief effacé ; couleur = normale médiane du flanc autour (139, 129, 254), pas la normale plate",
+    "couleur": "#8B81FE",
+    "sha256Apres": "f91b37ec4fece086"
+   },
+   {
+    "rang": 2,
+    "sha256": "b0d0f30246ed95c8",
+    "role": "metal",
+    "couleur": "#FF41FD",
+    "materiau": 5,
+    "zones": [
+     {
+      "rect": [
+       0.0254,
+       0.2285,
+       0.0664,
+       0.416
+      ]
+     },
+     {
+      "rect": [
+       0.4473,
+       0.1211,
+       0.5195,
+       0.3086
+      ]
+     },
+     {
+      "rect": [
+       0.2715,
+       0.041,
+       0.3887,
+       0.0879
+      ]
+     },
+     {
+      "rect": [
+       0.0547,
+       0.0645,
+       0.1445,
+       0.1777
+      ]
+     },
+     {
+      "rect": [
+       0.1621,
+       0.4551,
+       0.3809,
+       0.502
+      ]
+     },
+     {
+      "rect": [
+       0.3926,
+       0.3652,
+       0.4824,
+       0.4707
+      ]
+     }
+    ],
+    "note": "carte métal / rugosité des pneus (matériau 5) : mêmes textes du flanc ; couleur = valeur médiane du flanc autour (255, 65, 253) : anneau trop hétérogène pour « auto »",
+    "sha256Apres": "d23543eca9aad875"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 10,
+    "triangles": [
+     0,
+     4
+    ],
+    "trianglesAvant": 4,
+    "boite": [
+     -0.0377,
+     0.6017,
+     -2.0449,
+     0.0374,
+     0.6402,
+     -1.9667
+    ],
+    "nom": "boot.007 (écusson Porsche du capot avant, quadrilatère texturé)"
+   }
+  ]
+ },
+ "rrsport": {
+  "materiaux": 21,
+  "textures": [],
+  "pieces": [
+   {
+    "materiau": 13,
+    "triangles": [
+     0,
+     670
+    ],
+    "trianglesAvant": 1338,
+    "boite": [
+     0.5784,
+     1.0484,
+     2.3504,
+     0.6533,
+     1.0838,
+     2.3776
+    ],
+    "nom": "Object_2729 / Badges (ovale de marque du hayon, à droite)"
+   },
+   {
+    "materiau": 13,
+    "triangles": [
+     670,
+     668
+    ],
+    "trianglesAvant": 1338,
+    "boite": [
+     -0.3863,
+     0.9294,
+     -2.3771,
+     -0.3111,
+     0.9648,
+     -2.3545
+    ],
+    "nom": "Object_2729 / Badges (ovale de marque de la calandre, à gauche)"
+   },
+   {
+    "materiau": 20,
+    "triangles": [
+     2642,
+     188
+    ],
+    "trianglesAvant": 17010,
+    "boite": [
+     0.5734,
+     1.0459,
+     2.306,
+     0.6582,
+     1.086,
+     2.3765
+    ],
+    "nom": "Object_9416 / ChromeTrims1_2 (socle chromé de l'ovale du hayon)"
+   },
+   {
+    "materiau": 8,
+    "triangles": [
+     24316,
+     130
+    ],
+    "trianglesAvant": 25084,
+    "boite": [
+     -0.3912,
+     0.9269,
+     -2.3754,
+     -0.3064,
+     0.9672,
+     -2.3123
+    ],
+    "nom": "Object_263 / BlackChrome1 (socle de l'ovale de la calandre)"
+   },
+   {
+    "materiau": 8,
+    "triangles": [
+     23670,
+     214
+    ],
+    "trianglesAvant": 25084,
+    "boite": [
+     -0.4234,
+     1.0577,
+     -2.3198,
+     0.4139,
+     1.0773,
+     -2.2639
+    ],
+    "nom": "Object_263 / BlackChrome1 (lettres « RANGE » du bord du capot)"
+   },
+   {
+    "materiau": 8,
+    "triangles": [
+     23888,
+     284
+    ],
+    "trianglesAvant": 25084,
+    "boite": [
+     -0.1748,
+     1.058,
+     -2.3315,
+     0.1667,
+     1.0767,
+     -2.3036
+    ],
+    "nom": "Object_263 / BlackChrome1 (lettres « ROVER » du bord du capot)"
+   },
+   {
+    "materiau": 8,
+    "triangles": [
+     14036,
+     3690
+    ],
+    "trianglesAvant": 25084,
+    "boite": [
+     -0.4123,
+     1.1332,
+     2.4161,
+     0.4256,
+     1.1593,
+     2.4539
+    ],
+    "nom": "Object_263 / BlackChrome1 (lettres « RANGE ROVER » du bandeau du hayon)"
+   }
+  ]
+ },
+ "s3": {
+  "materiaux": 29,
+  "textures": [
+   {
+    "rang": 18,
+    "sha256": "db1e895ccc4ee1af",
+    "role": "couleur",
+    "couleur": "auto",
+    "materiau": 25,
+    "zones": [
+     {
+      "rect": [
+       0.05,
+       0.33,
+       0.95,
+       0.67
+      ]
+     }
+    ],
+    "note": "caches des roues (matériau 25, RIMLOGO) : quatre anneaux Audi sur fond gris : effacés (gris du fond)",
+    "sha256Apres": "63322abf137cb586"
+   },
+   {
+    "rang": 19,
+    "sha256": "6d6b09e156f64b28",
+    "role": "couleur",
+    "couleur": "#1E1E1E",
+    "materiau": 26,
+    "zones": [
+     {
+      "rect": [
+       0.3125,
+       0.0273,
+       0.6885,
+       0.0977
+      ]
+     },
+     {
+      "rect": [
+       0.293,
+       0.8936,
+       0.7275,
+       0.9912
+      ]
+     },
+     {
+      "rect": [
+       0.7324,
+       0.7568,
+       0.9082,
+       0.9033
+      ]
+     }
+    ],
+    "note": "couleur des pneus (matériau 26) : « BRIDGESTONE », « POTENZA », « RE050A » sur le flanc : effacés ; couleur fixe (30, 30, 30) = médiane des anneaux (28 à 30) : l'anneau de « RE050A » est trop hétérogène pour « auto »",
+    "sha256Apres": "f8da897b7343ce9c"
+   },
+   {
+    "rang": 20,
+    "sha256": "f31bc51d06ce7e32",
+    "role": "normale",
+    "materiau": 26,
+    "zones": [
+     {
+      "rect": [
+       0.3125,
+       0.0273,
+       0.6885,
+       0.0977
+      ]
+     },
+     {
+      "rect": [
+       0.293,
+       0.8936,
+       0.7275,
+       0.9912
+      ]
+     },
+     {
+      "rect": [
+       0.7324,
+       0.7568,
+       0.9082,
+       0.9033
+      ]
+     }
+    ],
+    "note": "normales des pneus (matériau 26) : relief des mêmes textes : plat (normale médiane de l'anneau (128, 126, 253), presque plate)",
+    "sha256Apres": "c625474916bf3032"
+   },
+   {
+    "rang": 11,
+    "sha256": "ce9875baaeb4afa7",
+    "role": "couleur",
+    "couleur": "#000000",
+    "materiau": 14,
+    "zones": [
+     {
+      "rect": [
+       0.016,
+       0.925,
+       0.31,
+       0.985
+      ]
+     }
+    ],
+    "note": "boutons de l'intérieur (matériau 14, BOTOES) : nom de marque audio « BANG & OLUFSEN » : effacé (fond noir ; anneau trop chargé d'autres icônes pour « auto »)",
+    "sha256Apres": "a784e6caf647b36c"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 2,
+    "triangles": [
+     2744,
+     102
+    ],
+    "trianglesAvant": 3830,
+    "boite": [
+     -0.368,
+     0.85,
+     -0.365,
+     -0.3224,
+     0.8686,
+     -0.3555
+    ],
+    "nom": "Object_4 / INTCROM (anneaux du centre du volant, 1/6)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2864,
+     49
+    ],
+    "trianglesAvant": 3830,
+    "boite": [
+     -0.3788,
+     0.85,
+     -0.3648,
+     -0.3357,
+     0.8678,
+     -0.3558
+    ],
+    "nom": "Object_4 / INTCROM (anneaux du volant, 2/6)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     2944,
+     121
+    ],
+    "trianglesAvant": 3830,
+    "boite": [
+     -0.381,
+     0.8495,
+     -0.3659,
+     -0.3215,
+     0.8684,
+     -0.3555
+    ],
+    "nom": "Object_4 / INTCROM (anneaux du volant, 3/6)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3446,
+     49
+    ],
+    "trianglesAvant": 3830,
+    "boite": [
+     -0.3675,
+     0.8501,
+     -0.3648,
+     -0.3228,
+     0.8683,
+     -0.3557
+    ],
+    "nom": "Object_4 / INTCROM (anneaux du volant, 4/6)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3506,
+     22
+    ],
+    "trianglesAvant": 3830,
+    "boite": [
+     -0.3793,
+     0.8501,
+     -0.3647,
+     -0.3358,
+     0.8676,
+     -0.3557
+    ],
+    "nom": "Object_4 / INTCROM (anneaux du volant, 5/6)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     3553,
+     57
+    ],
+    "trianglesAvant": 3830,
+    "boite": [
+     -0.3808,
+     0.8499,
+     -0.3658,
+     -0.3219,
+     0.8682,
+     -0.3557
+    ],
+    "nom": "Object_4 / INTCROM (anneaux du volant, 6/6)"
+   },
+   {
+    "materiau": 12,
+    "triangles": [
+     19377,
+     328
+    ],
+    "trianglesAvant": 32059,
+    "boite": [
+     -0.1471,
+     0.5412,
+     -2.2062,
+     0.1479,
+     0.6529,
+     -2.1307
+    ],
+    "nom": "Object_17 / BLACK (fond noir en forme d'anneaux de la calandre)"
+   },
+   {
+    "materiau": 12,
+    "triangles": [
+     19705,
+     36
+    ],
+    "trianglesAvant": 32059,
+    "boite": [
+     0.2357,
+     0.5799,
+     -2.1754,
+     0.3043,
+     0.6009,
+     -2.1602
+    ],
+    "nom": "Object_17 / BLACK (fond noir du monogramme « S3 » de la calandre)"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     0,
+     933
+    ],
+    "trianglesAvant": 8044,
+    "boite": [
+     -0.4791,
+     0.6626,
+     2.0764,
+     0.0969,
+     0.9181,
+     2.1457
+    ],
+    "nom": "Object_23 / CROM (anneaux et monogramme « S3 » du coffre)"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     6498,
+     536
+    ],
+    "trianglesAvant": 8044,
+    "boite": [
+     -0.139,
+     0.549,
+     -2.2111,
+     0.137,
+     0.644,
+     -2.1732
+    ],
+    "nom": "Object_23 / CROM (anneaux de la calandre)"
+   },
+   {
+    "materiau": 16,
+    "triangles": [
+     7034,
+     392
+    ],
+    "trianglesAvant": 8044,
+    "boite": [
+     0.2424,
+     0.5801,
+     -2.177,
+     0.3032,
+     0.6009,
+     -2.1647
+    ],
+    "nom": "Object_23 / CROM (monogramme « S3 » de la calandre)"
+   },
+   {
+    "materiau": 23,
+    "triangles": [
+     168,
+     2
+    ],
+    "trianglesAvant": 7513,
+    "boite": [
+     -0.4775,
+     0.6641,
+     2.0787,
+     -0.4308,
+     0.6997,
+     2.0905
+    ],
+    "nom": "Object_40 / RED2 (fond rouge du « S » du monogramme du coffre)"
+   }
+  ]
+ },
+ "sf90": {
+  "materiaux": 54,
+  "textures": [
+   {
+    "rang": 0,
+    "sha256": "f91a2516c4426f89",
+    "role": "couleur",
+    "couleur": "#1C1B1B",
+    "materiau": 0,
+    "zones": [
+     {
+      "rect": [
+       0.02,
+       0.07,
+       0.395,
+       0.565
+      ]
+     },
+     {
+      "rect": [
+       0.64,
+       0.02,
+       0.97,
+       0.56
+      ]
+     },
+     {
+      "rect": [
+       0.165,
+       0.575,
+       0.425,
+       0.835
+      ]
+     },
+     {
+      "rect": [
+       0.43,
+       0.0,
+       0.62,
+       0.075
+      ]
+     }
+    ],
+    "note": "atlas des écussons (matériau 0) : écusson à cheval, plaque « FERRARI » à cheval, rond à cheval, motif rouge du haut : fond sombre de la texture (28, 27, 27). Pièces qui la voient, gardées (RG-10 : découpe de la carrosserie ou envers derrière) : écusson du nez avant, rond de la planche de bord ; caches des roues avant : sombres comme les arrière (qui voient déjà ce fond)",
+    "sha256Apres": "461390a1c832eed5"
+   },
+   {
+    "rang": 5,
+    "sha256": "d789ea76aa91a633",
+    "role": "couleur",
+    "couleur": "#211F20",
+    "materiau": 8,
+    "zones": [
+     {
+      "rect": [
+       0.0117,
+       0.7148,
+       0.9922,
+       0.8281
+      ]
+     },
+     {
+      "rect": [
+       0.7656,
+       0.0859,
+       0.8887,
+       0.1973
+      ]
+     }
+    ],
+    "note": "atlas de l'intérieur (matériau 8) : « SF90 XX STRADALE » (seuils de porte) et « JBL » (haut-parleurs) : fond sombre (33, 31, 32)",
+    "sha256Apres": "7f2dcb33416a149f"
+   },
+   {
+    "rang": 16,
+    "sha256": "daa2a84de8423813",
+    "role": "couleur",
+    "couleur": "auto",
+    "materiau": 27,
+    "zones": [
+     {
+      "rect": [
+       0.252,
+       0.4375,
+       0.7822,
+       0.5479
+      ]
+     }
+    ],
+    "note": "écran du tableau de bord (matériau 27) : « SF90 XX STRADALE » : fond noir",
+    "sha256Apres": "616d63f38a9cb8dc"
+   },
+   {
+    "rang": 37,
+    "sha256": "16cd7428051556d7",
+    "role": "couleur",
+    "couleur": "#080808",
+    "materiau": 49,
+    "zones": [
+     {
+      "rect": [
+       0.4004,
+       0.0293,
+       0.7812,
+       0.1094
+      ]
+     },
+     {
+      "rect": [
+       0.1562,
+       0.0732,
+       0.415,
+       0.2168
+      ]
+     },
+     {
+      "rect": [
+       0.2148,
+       0.8594,
+       0.6055,
+       0.9531
+      ]
+     },
+     {
+      "rect": [
+       0.5957,
+       0.7471,
+       0.8789,
+       0.9277
+      ]
+     }
+    ],
+    "note": "couleur des pneus (matériau 49) : « MICHELIN » ×2 (avec le bonhomme) et « PILOT SPORT 4 S » ×2 : flanc uni (8, 8, 8)",
+    "sha256Apres": "19aeac96537a007d"
+   },
+   {
+    "rang": 38,
+    "sha256": "36e441187c5d6b5e",
+    "role": "normale",
+    "materiau": 49,
+    "zones": [
+     {
+      "rect": [
+       0.4004,
+       0.0293,
+       0.7812,
+       0.1094
+      ]
+     },
+     {
+      "rect": [
+       0.1562,
+       0.0732,
+       0.415,
+       0.2168
+      ]
+     },
+     {
+      "rect": [
+       0.2148,
+       0.8594,
+       0.6055,
+       0.9531
+      ]
+     },
+     {
+      "rect": [
+       0.5957,
+       0.7471,
+       0.8789,
+       0.9277
+      ]
+     }
+    ],
+    "note": "normales des pneus (matériau 49) : relief des mêmes textes : plat (normale de l'anneau (128, 127, 255))",
+    "sha256Apres": "3772444d3e9b6cbd"
+   },
+   {
+    "rang": 1,
+    "sha256": "5b2d16317cf9fdaf",
+    "role": "couleur",
+    "couleur": "#303030",
+    "materiau": 1,
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "comparer": [
+     {
+      "materiau": 1,
+      "voisin": 4
+     }
+    ],
+    "note": "écussons des ailes avant (matériau 1, seul à l'utiliser) : la carrosserie est découpée sous l'écusson (rayons : 94 à 96 % sans rien derrière) : pièce gardée (RG-10), texture unie, couleur des garnitures sombres voisines (matériau 4, albédo 0,03)",
+    "sha256Apres": "566d1ddbc302c489"
+   },
+   {
+    "rang": 13,
+    "sha256": "3faf7fe548920e7e",
+    "role": "couleur",
+    "couleur": "#303030",
+    "materiau": 24,
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "comparer": [
+     {
+      "materiau": 24,
+      "voisin": 4
+     }
+    ],
+    "note": "écusson du volant (matériau 24, seul à l'utiliser) : 15 % de rayons sans surface derrière : pièce gardée (RG-10), unie, couleur du volant autour (matériau 4, albédo 0,03)",
+    "sha256Apres": "483fda80d5197b1e"
+   },
+   {
+    "rang": 27,
+    "sha256": "7801a78ae72423b2",
+    "role": "couleur",
+    "couleur": "#6B6B6B",
+    "materiau": 39,
+    "zones": [
+     {
+      "rect": [
+       0.665,
+       0.011,
+       0.998,
+       0.108
+      ]
+     }
+    ],
+    "note": "atlas du moteur (matériau 39) : plaque « FERRARI » (2 triangles du couvercle moteur, sans surface derrière à 40 % : gardée) : plaque grise unie (107, 107, 107)",
+    "sha256Apres": "de21c434b1f50b94"
+   },
+   {
+    "rang": 28,
+    "sha256": "0a5495e17fab9f40",
+    "role": "couleur",
+    "couleur": "#999999",
+    "materiau": 40,
+    "zones": [
+     {
+      "rect": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    "note": "décor du moteur (matériau 40, seul à l'utiliser) : cheval, « SF90 XX STRADALE » : 60 % de rayons sans surface derrière : pièce gardée, texture unie, gris du fond (153)",
+    "sha256Apres": "cf2ba8110ed9feb8"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 2,
+    "triangles": [
+     0,
+     4
+    ],
+    "trianglesAvant": 4,
+    "boite": [
+     -0.0417,
+     0.6832,
+     -1.5883,
+     0.0417,
+     0.6885,
+     -1.5747
+    ],
+    "nom": "Object_21 / PLASTIC_INT_2 (décor du capot avant, motif de la marque)"
+   },
+   {
+    "materiau": 46,
+    "triangles": [
+     0,
+     2
+    ],
+    "trianglesAvant": 8,
+    "boite": [
+     -0.9333,
+     0.3114,
+     -1.03,
+     -0.9292,
+     0.3768,
+     -1.0015
+    ],
+    "nom": "Object_1291 / PLASTIC_INT_47 (inscription « Brembo » de l'étrier avant gauche)"
+   },
+   {
+    "materiau": 46,
+    "triangles": [
+     2,
+     2
+    ],
+    "trianglesAvant": 8,
+    "boite": [
+     -0.9075,
+     0.3219,
+     1.3155,
+     -0.9061,
+     0.3875,
+     1.3441
+    ],
+    "nom": "Object_1291 (« Brembo », étrier arrière gauche)"
+   },
+   {
+    "materiau": 46,
+    "triangles": [
+     4,
+     2
+    ],
+    "trianglesAvant": 8,
+    "boite": [
+     0.9292,
+     0.3114,
+     -1.03,
+     0.9332,
+     0.3768,
+     -1.0015
+    ],
+    "nom": "Object_1291 (« Brembo », étrier avant droit)"
+   },
+   {
+    "materiau": 46,
+    "triangles": [
+     6,
+     2
+    ],
+    "trianglesAvant": 8,
+    "boite": [
+     0.906,
+     0.3219,
+     1.3155,
+     0.9075,
+     0.3875,
+     1.3441
+    ],
+    "nom": "Object_1291 (« Brembo », étrier arrière droit)"
+   }
+  ]
+ },
+ "tcross": {
+  "materiaux": 22,
+  "textures": [
+   {
+    "rang": 3,
+    "sha256": "cc14daf2138876e1",
+    "role": "couleur",
+    "couleur": "#181818",
+    "materiau": 11,
+    "zones": [
+     {
+      "disque": [
+       0.8594,
+       0.8496,
+       0.0645
+      ]
+     }
+    ],
+    "note": "atlas des roues (matériau 11) : logo VW des caches de roue : gris très sombre de la couronne autour (24, 24, 24) ; anneau chromé du cache gardé",
+    "sha256Apres": "e95a0fd91655e77b"
+   },
+   {
+    "rang": 6,
+    "sha256": "d359aa780b90d59d",
+    "role": "couleur",
+    "couleur": "#141414",
+    "materiau": 13,
+    "zones": [
+     {
+      "disque": [
+       0.7617,
+       0.9453,
+       0.0322
+      ]
+     }
+    ],
+    "note": "atlas de l'intérieur (matériau 13) : logo VW du centre du volant : sombre du moyeu (20, 20, 20) ; anneau chromé gardé",
+    "sha256Apres": "eabe98f27f3a452f"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 3,
+    "triangles": [
+     7685,
+     202
+    ],
+    "trianglesAvant": 19823,
+    "boite": [
+     -0.0693,
+     0.6923,
+     -2.0487,
+     0.0693,
+     0.8222,
+     -2.0025
+    ],
+    "nom": "08_inner_metal_fj_chrome / chrome (logo VW de la calandre)"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     13848,
+     2289
+    ],
+    "trianglesAvant": 19823,
+    "boite": [
+     -0.5194,
+     0.6982,
+     1.9732,
+     0.5148,
+     1.0194,
+     2.0351
+    ],
+    "nom": "chrome (hayon : logo VW et trois inscriptions)"
+   }
+  ]
+ },
+ "v60": {
+  "materiaux": 23,
+  "textures": [
+   {
+    "rang": 0,
+    "sha256": "32b2d1c377c55ff4",
+    "role": "couleur",
+    "couleur": "auto",
+    "materiau": 15,
+    "zones": [
+     {
+      "rect": [
+       0.125,
+       0.33,
+       0.87,
+       0.66
+      ]
+     }
+    ],
+    "note": "volvo_logo.tex (matériau 15) : « VOLVO » blanc sur bleu marine, vu par les caches des 4 roues : bleu marine uni",
+    "sha256Apres": "9741c29ba84f8967"
+   },
+   {
+    "rang": 1,
+    "sha256": "0e18c8abde548c88",
+    "role": "normale",
+    "materiau": 15,
+    "zones": [
+     {
+      "rect": [
+       0.125,
+       0.33,
+       0.87,
+       0.66
+      ]
+     }
+    ],
+    "note": "normales de volvo_logo.tex : relief des lettres : plat",
+    "sha256Apres": "4d5071106f8b5434"
+   },
+   {
+    "rang": 4,
+    "sha256": "e1a5f044d242948d",
+    "role": "couleur",
+    "couleur": "#3E414C",
+    "materiau": 17,
+    "zones": [
+     {
+      "rect": [
+       0.418,
+       0.3633,
+       0.5547,
+       0.4082
+      ]
+     }
+    ],
+    "note": "cadre des plaques (matériau 17) : logo et nom « Sketchfab » du haut du cadre : gris du cadre (62, 65, 76) ; relief plat déjà",
+    "sha256Apres": "f8918cae23acae59"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 7,
+    "triangles": [
+     0,
+     184
+    ],
+    "trianglesAvant": 918,
+    "boite": [
+     -0.2792,
+     0.5352,
+     -2.33,
+     0.2941,
+     0.9972,
+     2.245
+    ],
+    "nom": "body_body / body_chrome (lettres « VOLVO » du hayon et cercle fléché de la calandre)"
+   },
+   {
+    "materiau": 7,
+    "triangles": [
+     278,
+     242
+    ],
+    "trianglesAvant": 918,
+    "boite": [
+     -0.2792,
+     0.5235,
+     -2.3311,
+     0.2941,
+     0.9972,
+     2.245
+    ],
+    "nom": "body_body / body_chrome (lettres du hayon, barre diagonale et cercle de la calandre)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     0,
+     8
+    ],
+    "trianglesAvant": 72,
+    "boite": [
+     -0.0726,
+     0.586,
+     -2.3311,
+     0.0726,
+     0.622,
+     -2.3243
+    ],
+    "nom": "body_volvo_logo.tex (plaque « VOLVO » de la barre de calandre)"
+   }
+  ]
+ },
+ "x5": {
+  "materiaux": 29,
+  "textures": [
+   {
+    "rang": 34,
+    "sha256": "29964b00d56f0fe4",
+    "role": "couleur",
+    "couleur": "#0E0E0E",
+    "materiau": 26,
+    "zones": [
+     {
+      "disque": [
+       0.5625,
+       0.547,
+       0.355
+      ]
+     },
+     {
+      "rect": [
+       0.025,
+       0.07,
+       0.355,
+       0.2
+      ]
+     }
+    ],
+    "note": "jantes (matériau 26) : rondelle BMW des caches (lettres, quartiers) et logo M tricolore : noir de la couronne de la rondelle (13 à 15) ; anneau argent du cache gardé",
+    "sha256Apres": "57be6b39e54b0e46"
+   },
+   {
+    "rang": 35,
+    "sha256": "5f85a76395aa88ac",
+    "role": "normale",
+    "materiau": 26,
+    "zones": [
+     {
+      "disque": [
+       0.5625,
+       0.547,
+       0.355
+      ]
+     },
+     {
+      "rect": [
+       0.025,
+       0.07,
+       0.355,
+       0.2
+      ]
+     }
+    ],
+    "note": "normales des jantes : relief de la rondelle (lettres, croix) et du M : plat (le centre du cache devient plat, le bord bombé reste)",
+    "sha256Apres": "7774d0dd0fe0b67a"
+   },
+   {
+    "rang": 29,
+    "sha256": "0dacc06b73632a9b",
+    "role": "couleur",
+    "couleur": "#09306B",
+    "materiau": 24,
+    "zones": [
+     {
+      "rect": [
+       0.47,
+       0.18,
+       0.995,
+       0.405
+      ]
+     },
+     {
+      "rect": [
+       0.765,
+       0.465,
+       0.995,
+       0.975
+      ]
+     }
+    ],
+    "note": "étriers (matériau 24, DISK) : logos M tricolores (deux) : bleu de l'étrier (9, 48, 107)",
+    "sha256Apres": "3f20a27dfe2a99bf"
+   },
+   {
+    "rang": 30,
+    "sha256": "c4cf8f9f3534c5a7",
+    "role": "normale",
+    "materiau": 24,
+    "zones": [
+     {
+      "rect": [
+       0.47,
+       0.18,
+       0.995,
+       0.405
+      ]
+     },
+     {
+      "rect": [
+       0.765,
+       0.465,
+       0.995,
+       0.975
+      ]
+     }
+    ],
+    "note": "normales des étriers : relief des M : plat",
+    "sha256Apres": "42dd17169500d4fe"
+   },
+   {
+    "rang": 0,
+    "sha256": "57e823143e357342",
+    "role": "couleur",
+    "couleur": "#1E1E1E",
+    "materiau": 0,
+    "zones": [
+     {
+      "disque": [
+       0.177734375,
+       0.814453125,
+       0.1484375
+      ]
+     },
+     {
+      "rect": [
+       0.328,
+       0.894,
+       0.547,
+       0.992
+      ]
+     }
+    ],
+    "note": "atlas de l'intérieur (matériaux 0, 1, 6, 16) : rondelle BMW (volant, intérieur) et logo M : sombre du fond (30) ; anneau blanc de la rondelle gardé",
+    "sha256Apres": "625cd190da17821e"
+   },
+   {
+    "rang": 4,
+    "sha256": "d0726ea38a835b7d",
+    "role": "couleur",
+    "couleur": "#1E1E1E",
+    "materiau": 3,
+    "zones": [
+     {
+      "disque": [
+       0.177734375,
+       0.814453125,
+       0.1484375
+      ]
+     },
+     {
+      "rect": [
+       0.328,
+       0.894,
+       0.547,
+       0.992
+      ]
+     }
+    ],
+    "note": "variante de l'atlas de l'intérieur (matériau 3) : mêmes rondelle et M",
+    "sha256Apres": "3aa4dd403a87aabd"
+   },
+   {
+    "rang": 14,
+    "sha256": "934dce9070291d02",
+    "role": "couleur",
+    "couleur": "#101010",
+    "materiau": 10,
+    "zones": [
+     {
+      "disque": [
+       0.351,
+       0.4015,
+       0.27
+      ]
+     }
+    ],
+    "note": "BADGES (matériau 10) : rondelles BMW du capot et du hayon : la carrosserie est percée sous la rondelle (rayons : 82 à 97 % sans surface, ou l'envers de l'intérieur) : pièces gardées (RG-10), centre et lettres unis du noir de la couronne (16) ; anneau argent gardé",
+    "sha256Apres": "81ea77e19d7fe6d4"
+   },
+   {
+    "rang": 15,
+    "sha256": "3ce6b0c935aabd4e",
+    "role": "normale",
+    "materiau": 10,
+    "zones": [
+     {
+      "disque": [
+       0.351,
+       0.4015,
+       0.27
+      ]
+     }
+    ],
+    "note": "normales de BADGES : relief des lettres et de la croix : plat",
+    "sha256Apres": "beaf5fd453ed768b"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 15,
+    "triangles": [
+     25004,
+     50
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     -0.5663,
+     0.8943,
+     2.3117,
+     -0.5072,
+     0.9236,
+     2.3331
+    ],
+    "nom": "x5:SK_Trunk_101 / x5dummy_material_7 (lettres « X5 » du hayon)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     21578,
+     32
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     0.4775,
+     0.8978,
+     2.3119,
+     0.5786,
+     0.9127,
+     2.335
+    ],
+    "nom": "lettres « xDrive40i » du hayon (1/6)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     21997,
+     24
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     0.4864,
+     0.8975,
+     2.3088,
+     0.579,
+     0.9127,
+     2.3345
+    ],
+    "nom": "lettres « xDrive40i » (2/6)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     23035,
+     19
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     0.4775,
+     0.8977,
+     2.3119,
+     0.5782,
+     0.9121,
+     2.335
+    ],
+    "nom": "lettres « xDrive40i » (3/6)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     23450,
+     57
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     0.5307,
+     0.9009,
+     2.3171,
+     0.5588,
+     0.9095,
+     2.3241
+    ],
+    "nom": "lettres « xDrive40i » (4/6)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     23977,
+     53
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     0.5577,
+     0.9009,
+     2.3134,
+     0.5716,
+     0.9072,
+     2.3174
+    ],
+    "nom": "lettres « xDrive40i » (5/6)"
+   },
+   {
+    "materiau": 15,
+    "triangles": [
+     24160,
+     28
+    ],
+    "trianglesAvant": 25280,
+    "boite": [
+     0.5137,
+     0.9009,
+     2.324,
+     0.5311,
+     0.91,
+     2.3276
+    ],
+    "nom": "lettres « xDrive40i » (6/6)"
    }
   ]
  }

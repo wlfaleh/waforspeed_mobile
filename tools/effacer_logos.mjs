@@ -19,7 +19,8 @@
 // logos.json : { "<id>": { "materiaux": <nombre>, "textures": [ { "rang": n, "sha256": "<16 hex>", "sha256Apres": "<16 hex>",
 //   "role": "couleur" | "normale" | "metal", "zones": [ { "rect": [u0, v0, u1, v1] } | { "disque": [cu, cv, r] }, … ],
 //   "couleur": "auto" | "#rrggbb", "materiau": k (matériau qui l'utilise, pour l'albédo), "comparer": [ { "materiau": a, "voisin": b } ] } ], "pieces": [ { "materiau": k, "triangles": [debut, nombre], "trianglesAvant": t,
-//   "boite": [x0, y0, z0, x1, y1, z1], "nom": "…" } ] } } ; le maillage d'une pièce est celui de son matériau (un seul par matériau) ; uv de 0 à 1, v vers le bas de l'image ; « auto » : couleur médiane d'un
+//   "boite": [x0, y0, z0, x1, y1, z1], "nom": "…" } ] } } ; zone : { "rect" | "disque" | "anneau": [cu, cv, r0, r1] (flanc de pneu),
+//   "couleur" (propre à la zone), "reference" (surface voisine dans un atlas : zone ou [u0, v0, u1, v1]), "transparent": true (alpha 0) } ; le maillage d'une pièce est celui de son matériau (un seul par matériau) ; uv de 0 à 1, v vers le bas de l'image ; « auto » : couleur médiane d'un
 //   anneau de 3 % autour de la zone (la pièce voisine) ; normale : (128, 128, 255) plat.
 import fs from 'fs';
 import crypto from 'crypto';
@@ -128,6 +129,7 @@ async function pixels(blob) {
 const dansZone = (W, H, x, y, z, marge) => {
   const u = (x + 0.5) / W, v = (y + 0.5) / H, mu = marge / W, mv = marge / H;
   if (z.rect) { const [a, b, c, d] = z.rect; return u >= a - mu && u <= c + mu && v >= b - mv && v <= d + mv; }
+  if (z.anneau) { const [cu, cv, r0, r1] = z.anneau, d = Math.hypot(u - cu, v - cv), m = Math.max(mu, mv); return d >= r0 - m && d <= r1 + m; }   // flanc de pneu
   const [cu, cv, r] = z.disque; return Math.hypot(u - cu, v - cv) <= r + Math.max(mu, mv);
 };
 const BORD = 2;                 // la zone repeinte déborde de 2 texels (aucun liseré du logo ne reste)
@@ -138,6 +140,12 @@ function bande(W, H, z, de, a) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (dansZone(W, H, x, y, z, a) && !dansZone(W, H, x, y, z, de)) out.push((y * W + x) * 4);
   return out;
 }
+// texels de référence d'une zone : « reference » (zone, ou [u0, v0, u1, v1]) = la surface de la même pièce dans un atlas, hors de la
+// zone ; sinon l'anneau de 3 % autour (qui, dans un atlas, mêle d'autres pièces)
+const referenceZone = (W, H, z) => z.reference
+  ? dedans(W, H, Array.isArray(z.reference) ? { rect: z.reference } : z.reference, 0).filter((i) => { const q = i / 4, x = q % W; return !dansZone(W, H, x, (q - x) / W, z, BORD); })
+  : bande(W, H, z, BORD, BORD + ANNEAU(W));
+const couleurZone = (t, z) => z.couleur ?? t.couleur ?? 'auto';
 const dedans = (W, H, z, marge) => { const out = []; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (dansZone(W, H, x, y, z, marge)) out.push((y * W + x) * 4); return out; };
 // grain de l'anneau : écart type de L* une fois retirée la moyenne locale 9 × 9 (uni suffisant si σ ≤ 1,5)
 function grain(P, idx) {
@@ -165,13 +173,14 @@ async function mesurer(w, t, avant, apres) {
   const A = await pixels(avant), B = await pixels(apres), { W, H } = A, f = couleurMateriau(w, t.materiau ?? 0);
   const sorties = [], alertes = [];
   for (const [n, z] of t.zones.entries()) {
-    const zb = moyenneTronquee(B.px, dedans(W, H, z, BORD)), nom = `zone ${n + 1}`;
-    const an = bande(W, H, z, BORD, BORD + ANNEAU(W));
+    const nom = `zone ${n + 1}`;
+    if (z.transparent) { sorties.push(`${nom} : transparente (décalque retiré)`); continue; }
+    const zb = moyenneTronquee(B.px, dedans(W, H, z, BORD)), an = referenceZone(W, H, z);
     if (an.length) {
       const d = deltaE2000(versLab(...zb, f), versLab(...moyenneTronquee(A.px, an), f)), g = grain(A, an);
       const bord = bande(W, H, z, BORD, BORD + 4), lz = versLab(...zb, f);
       let lis = 0; for (const i of bord) lis = Math.max(lis, deltaE2000(lz, versLab(B.px[i], B.px[i + 1], B.px[i + 2], f)));
-      sorties.push(`${nom} ↔ anneau ΔE2000 ${d.toFixed(2)} (grain σ ${g.toFixed(2)}, liseré max ${lis.toFixed(1)})`);
+      sorties.push(`${nom} ↔ ${z.reference ? 'référence' : 'anneau'} ΔE2000 ${d.toFixed(2)} (grain σ ${g.toFixed(2)}, liseré max ${lis.toFixed(1)})`);
       if (d > 2) alertes.push(`${nom} : ΔE2000 ${d.toFixed(2)} > 2`);
       if (g > 1.5) alertes.push(`${nom} : grain σ ${g.toFixed(2)} > 1,5 (l'uni ferait une tache lisse)`);
     }
@@ -206,19 +215,22 @@ async function retoucher(blob, t) {
   const { data, info } = await img.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const W = info.width, H = info.height, px = new Uint8Array(data.buffer, data.byteOffset, data.length);
   for (const [n, z] of t.zones.entries()) {
-    let couleur;
-    if (t.role === 'normale') couleur = [128, 128, 255, 255];
-    else if (t.couleur && t.couleur !== 'auto') { const h = parseInt(t.couleur.slice(1), 16); couleur = [h >> 16 & 255, h >> 8 & 255, h & 255, 255]; }
+    let couleur; const cz = couleurZone(t, z), auto = cz === 'auto' && t.role !== 'normale';
+    if (cz !== 'auto') { const h = parseInt(cz.slice(1), 16); couleur = [h >> 16 & 255, h >> 8 & 255, h & 255, 255]; }   // normale : normale moyenne du fond
+    else if (t.role === 'normale') couleur = [128, 128, 255, 255];
     else {
-      const an = bande(W, H, z, BORD, BORD + ANNEAU(W));
-      if (an.length < 200) throw new Error(`texture ${t.rang}, zone ${n + 1} : anneau de ${an.length} texels (≥ 200) : couleur à donner`);
+      const an = referenceZone(W, H, z);
+      if (an.length < 200) throw new Error(`texture ${t.rang}, zone ${n + 1} : référence de ${an.length} texels (≥ 200) : couleur à donner`);
       const Ls = an.map((i) => versLab(px[i], px[i + 1], px[i + 2])[0]), iqr = quantile(Ls, 0.75) - quantile(Ls, 0.25);
       const mt = moyenneTronquee(px, an), med = [0, 1, 2].map((c) => Math.round(quantile(an.map((i) => px[i + c]), 0.5)));
       const dm = deltaE2000(versLab(...mt), versLab(...med));
-      if (iqr > 3 || dm > 1) throw new Error(`texture ${t.rang}, zone ${n + 1} : anneau hétérogène (écart interquartile L* ${iqr.toFixed(1)}, médiane ↔ moyenne ΔE2000 ${dm.toFixed(2)}) : couleur à donner`);
-      couleur = [...mt, 255];
+      if (iqr > 3 || dm > 1) throw new Error(`texture ${t.rang}, zone ${n + 1} : référence hétérogène (écart interquartile L* ${iqr.toFixed(1)}, médiane ↔ moyenne ΔE2000 ${dm.toFixed(2)}) : couleur à donner`);
+      couleur = [...mt, Math.round(quantile(an.map((i) => px[i + 3]), 0.5))];   // alpha aussi : lettres opaques sur un fond transparent
     }
-    for (const i of dedans(W, H, z, BORD)) for (let c = 0; c < 4; c++) px[i + c] = c === 3 ? (meta.hasAlpha ? px[i + 3] : 255) : couleur[c];
+    // « transparent » (décalque d'un matériau à masque alpha) : alpha 0, le décalque disparaît ; « alpha » de la texture : valeur imposée
+    if (z.transparent && !meta.hasAlpha) throw new Error(`texture ${t.rang}, zone ${n + 1} : « transparent » sans canal alpha`);
+    const alpha = (i) => (!meta.hasAlpha ? 255 : z.transparent ? 0 : t.alpha !== undefined ? t.alpha : auto ? couleur[3] : px[i + 3]);
+    for (const i of dedans(W, H, z, BORD)) { px[i + 3] = alpha(i); for (let c = 0; c < 3; c++) px[i + c] = couleur[c]; }
   }
   const s = sharp(Buffer.from(px.buffer, px.byteOffset, px.length), { raw: { width: W, height: H, channels: 4 } });
   const png = blob[0] === 0x89;
