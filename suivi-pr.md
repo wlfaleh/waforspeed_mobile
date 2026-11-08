@@ -15,7 +15,8 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #245 | WFS-232 | arwa-3 | ↩️ Retour lead dev | e77870e | 2026-11-08 01:07 |
+| #245 | WFS-232 | arwa-3 | ↩️ Retour lead dev (2e revue : décision du PO sur les selles, marques Kawasaki / ola, pilote au sol après la chute) | c5a9cb7 | 2026-11-08 03:19 |
 | #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev (2e revue : captures après périmées, RG-11 / ANO-164, resynchroniser) | 213df11 | 2026-11-08 02:16 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
-| #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (attente réponse « corrigé dans » sous la revue) | 851cacb | 2026-11-08 02:17 |
+| #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | f97172f | 2026-11-08 03:17 |
+| #256 | WFS-269 | Claude, Agent 0 developer | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 2861e5a | 2026-11-08 03:17 |
