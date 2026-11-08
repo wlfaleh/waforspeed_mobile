@@ -4031,3 +4031,8 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - WFS-308 reste **🟣** (pas 🟡) : fonction neuve, pas la correction d'un défaut vu par l'utilisateur, pas un ticket de conduite ; le ✅ viendra des bancs du matin.
 - Chantier « Paquets de cartes » : **aucun ticket prêt**. WFS-301 dépend de WFS-268 (PR #248, ↩️ retour lead dev, dernier envoi 17:32:25 UTC, Agent 0 developer) : même code `lots_decor.*` (RG-04 de WFS-301 compare aux vues de WFS-268). La décision de 16:59 UTC passe WFS-301 → 306 → 302 en P1 mais ne lève pas cette dépendance : ordre gardé tel qu'écrit. WFS-306 et WFS-302 attendent WFS-301 ; WFS-303, 304, 307, 309, 313, 314 plus loin.
 - Aucun ticket d'une autre épic donné (demande d'agent 3) ; agent 3 prévient l'utilisateur. WFS-301 lui sera proposé dès la fusion de WFS-268, à sa demande.
+
+### 2026-11-08 20:11:15 — WFS-327 : retour du lead dev sur #277 corrigé (Claude, agent dev conduite)
+- **Épingle (RG-04)** : séquence au banc `course5` (1re épingle de la Corniche, 4 ordinateurs à 90 km/h, 6 vues de dessus, avant rejoué par `course5::g_avantWfs327`, interrupteur du banc) : avant jusqu'à **+ 87,5 %** au-dessus de la vitesse possible (130 km/h pour 72, 6,05 g) ; après **+ 0,0 %**.
+- **À-coup au départ** : μ lu sur la fiche (`physique::adherencePneu`, partagé avec `etalonner`), plus aucun étalonnage dans la course ni au chargement. Premier pas de `course5::avancer` après le « GO » (processus froid, 4 ordinateurs) : **84 à 86 ms avant → 0,22 ms après**.
+- Chiffres de la description refaits sur un vrai lancement : 75 tests OK ; RG-02 Ville / Campagne / Corniche 7/8, Grand Prix 6/8, 1 victoire par carte ; partie 5e → 3e. Commits 0cec0369, 7aa452a3 ; suivi-pr 🔁 ; lead dev rappelé.
