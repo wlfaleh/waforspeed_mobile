@@ -98,6 +98,7 @@ else()
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_cache_pipelines tests/test_cache_pipelines.cpp src/render/cache_pipelines.cpp)   # WFS-262 (RG-01)
   add_executable(test_shader_leger tests/test_shader_leger.cpp)   # WFS-264 (RG-06)
+  add_executable(test_lod_distance tests/test_lod_distance.cpp)   # WFS-265 (RG-01)
   add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
   add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
@@ -160,6 +161,7 @@ else()
   add_executable(test_audio_chocs tests/test_audio_chocs.cpp src/audio/chocs_sons.cpp src/audio/voitures_sons.cpp src/audio/ambiance_lieux.cpp src/audio/engine_synth.cpp src/game/track.cpp src/game/player.cpp)   # WFS-298 : son des chocs
   add_executable(test_chocs tests/test_chocs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : chocs avec le décor (poteau, mur, test continu)
   add_executable(test_virages_fleches tests/test_virages_fleches.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-295 : rayon juste partout, épingles aux flèches, réponse après un choc
+  add_executable(test_direction_vitesse tests/test_direction_vitesse.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-258 (point 3) : direction moins vive au-dessus de 100 km/h
   add_executable(test_aide_ralentit tests/test_aide_ralentit.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)
   target_link_libraries(test_aide_ralentit Threads::Threads)   # WFS-258 : aide activée, la voiture ralentit à temps (1er virage du GP à 228 km/h, tours des 4 cartes)
   add_executable(test_chocs_cartes tests/test_chocs_cartes.cpp src/game/chocs_declaration.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/world/giratoire.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : obstacles de la Ville et des îlots, aucun mur invisible
