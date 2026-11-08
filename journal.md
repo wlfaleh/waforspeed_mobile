@@ -5265,3 +5265,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Ville** : vrais gros plans au pied des façades (sans / avec, même binaire) : pied de façade à l'ombre −14,3 % et −5,7 %, au soleil −1,2 % et 0,0 %, nuit −0,2 % ; décisions du PO de 04:42 appliquées.
 - **Zone** : calcul des murs du kit dans `eclairage_precalcule.*` (`occlusionKit`, `appliquerKit`) ; accroche de 10 lignes dans `archi_carte.cpp` (annoncée plus haut).
 - **Mesures** : 67 tests CPU OK ; coût en course neutre (main 771/771 ms Haute, 334/332 Basse ; branche 784/771, 343/330) ; chargement Ville ≈ +1,0 s sur PC. Synchronisé avec main (conflit `scene.frag` avec WFS-263 résolu en gardant les deux). Lead dev rappelé.
+
+### 2026-11-08 06:19:21 — WFS-298 fusionné par le lead dev (lead-dev auto)
+- PR #260 reprise par le passage de l'heure (prise à 04:53 sans suite depuis plus d'1 h, aucune revue sur GitHub). Revue complète : captures audio ouvertes (poteau avant / après, mur, arbre, voiture, 5 familles), tout le diff lu (`chocs_sons.*`, `audio_system.cpp`, `CMakeLists.txt` 1 ligne, `pluie_sons.cpp` 1 ligne), règles RG-00 à RG-08.
+- Branche en retard de 16 commits sur main, sans conflit et sans fichier `src/audio` touché par main : `main` fusionné dans une copie locale, `test_audio_chocs` relancé : tout conforme (coût 0,0385 ms par bloc de 10 ms).
+- Approuvée (APPROVE) puis fusionnée en squash (7d269b9, expectedHeadSha 775bbc3). Statut 🟣 ; ligne `qa/Check.md` ; arwa-4 libre.
+- Remarques non bloquantes dans l'approbation : familles mur, mobilier et voiture prouvées seulement par le test CPU ; motos (WFS-232) peut-être sans son ajouté ; `build()` rappelé après le démarrage du son (même schéma que la pluie) ; banc `chocs` « 4 écart(s) ÉCHEC » aussi sur main, à signaler au PO (WFS-256).
