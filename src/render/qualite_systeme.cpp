@@ -31,6 +31,7 @@ float g_ips = -1;            // −1 : pas encore mesuré (banc d'essai hors éc
 double g_ipsT = 0; int g_ipsN = 0;
 std::string g_ligneVue;      // dernière ligne écrite au journal (sans les images/s)
 qualite::MesureImages g_mesure;   // WFS-246 (RG-06) : 20 dernières secondes de course
+qualite::Cadence g_cadence; qualite::MesureImages::Stats g_stats1s; double g_statsT = 0;   // WFS-262 (RG-04) : statistiques recalculées chaque seconde
 bool g_enCoursePrec = false; double g_fichierT = 0;   // WFS-246 : fin de course (journal), fichier écrit toutes les 5 s
 
 class QualiteSystem : public System {
@@ -54,7 +55,8 @@ public:
     }
 
     // une mesure par image réellement affichée ; l'état « en course » = partie lancée (décompte fini), comme 'play'
-    void render(Renderer&, const GameView& g) override {
+    void render(Renderer& r, const GameView& g) override {
+        pipelinesCourse(r, g.ecran == Ecran::Course && !g.sceneDediee);   // WFS-262 (RG-02) : aussi au banc
         if (!actif_ && !mesure_) return;
         const double t = nowSeconds();
         const double dt = dernier_ < 0 ? 0 : t - dernier_;
@@ -64,7 +66,7 @@ public:
         if (g_ipsT >= 1) { g_ips = (float)(g_ipsN / g_ipsT); g_ipsT = 0; g_ipsN = 0; }
         if (!actif_) return;
         const ecrans::Reglages& R = ecrans::reglages();
-        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; g_auto.palier = 0; r_->echelleDynamique(1.f); }   // changé dans les réglages (WFS-246 : palier, zone dessinée)
+        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; g_auto.palier = 0; r_->echelleDynamique(1.f); g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : cadence remise à 60   // changé dans les réglages (WFS-246 : palier, zone dessinée)
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
         const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing();
@@ -120,10 +122,36 @@ public:
     }
 
 private:
+    // WFS-262 (RG-02) : pipelines créés pendant la course (décompte compris), au journal en sortant de la course (0 attendu) ;
+    // le cache de pipelines est enregistré à ce moment (hors course : aucun à-coup d'écriture)
+    void pipelinesCourse(Renderer& r, bool scene) {
+        if (r.pipelinesCrees() != pipelinesVus_) {   // hors course (menu, pause) : changement de qualité demandé par le joueur
+            pipelinesVus_ = r.pipelinesCrees();
+        }
+        if (scene && !sceneCourse_) {
+            sceneCourse_ = true; pipelinesDebut_ = r.pipelinesCrees();
+            WFS_LOG("pipelines (WFS-262) : course affichée, %u pipelines créés depuis le lancement", pipelinesDebut_);
+        } else if (!scene && sceneCourse_) {
+            sceneCourse_ = false;
+            const uint32_t n = r.pipelinesCrees() - pipelinesDebut_;
+            if (n) WFS_ERR("pipelines (WFS-262 RG-02) : %u pipeline(s) créé(s) pendant la course (0 attendu)", n);
+            else WFS_LOG("pipelines (WFS-262 RG-02) : 0 pipeline créé pendant la course : OK");
+            r.enregistrerCachePipelines();
+        }
+    }
+    bool sceneCourse_ = false; uint32_t pipelinesDebut_ = 0, pipelinesVus_ = 0;
     // WFS-246 (RG-06) : durées d'image de la course ; fichier rendu-mesure.txt toutes les 5 s de course, ligne au journal à la fin
     void mesurer(double dt, bool enCourse) {
+        if (enCourse && !g_enCoursePrec) { g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : chaque course part à 60
         if (enCourse) {
             g_mesure.ajouter((float)(dt * 1000));
+            if ((g_statsT += dt) >= 1) { g_statsT = 0; g_stats1s = g_mesure.stats(); }
+            // WFS-262 (RG-04) : cadence 60 / 30 ; « au plancher » : scène déjà à 60 % et effets allégés
+            const bool plancher = g_auto.echelle <= g_auto.echelleMin() + 1e-4f && g_auto.palier >= 1;
+            if (qualite::cadenceAuto && g_cadence.image(dt, true, plancher, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1)) {
+                qualite::cadenceCourse = g_cadence.ips;
+                WFS_LOG("cadence (WFS-262) : %d images/s (95 %% des images à %.1f ms, GPU %.1f ms)", g_cadence.ips, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1.0);
+            }
             g_fichierT += dt;
             if (g_fichierT >= 5) { g_fichierT = 0; ecrireFichier(); }
         } else if (g_enCoursePrec && g_mesure.n) {
@@ -173,7 +201,7 @@ std::string virgule(double v) { char b[24]; std::snprintf(b, sizeof b, "%.1f", v
 std::string qualite::ligneMesure() {
     const MesureImages::Stats st = g_mesure.stats();
     if (!st.images) return "";
-    std::string l = "Images (20 s) : méd. " + virgule(st.mediane) + " · 95 % " + virgule(st.p95) + " · 99 % " + virgule(st.p99) + " ms · > 33 ms : " +
+    std::string l = "Images (20 s) : méd. " + virgule(st.mediane) + " · 95 % " + virgule(st.p95) + " · 99 % " + virgule(st.p99) + " · écart " + virgule(st.ecartType) + " ms · cadence " + std::to_string(qualite::cadenceCourse) + " · > 33 ms : " +
                     std::to_string(st.plus33) + " · > 50 ms : " + std::to_string(st.plus50);
     if (g_r && g_r->gpuPasses().mesuree) {
         const Renderer::GpuPasses& p = g_r->gpuPasses();
@@ -187,7 +215,8 @@ std::string qualite::texteMesure() {
     if (!st.images) return "";
     std::string t = "WaForSpeed : mesure du rendu sur le téléphone (WFS-246, RG-06)\n" + ligneRendu() + "\n";
     t += "fenêtre : " + virgule(st.secondes) + " s de course, " + std::to_string(st.images) + " images\n";
-    t += "durée d'image : médiane " + virgule(st.mediane) + " ms, 95 % " + virgule(st.p95) + " ms, 99 % " + virgule(st.p99) + " ms\n";
+    t += "durée d'image : médiane " + virgule(st.mediane) + " ms, 95 % " + virgule(st.p95) + " ms, 99 % " + virgule(st.p99) + " ms, écart type " + virgule(st.ecartType) + " ms\n";
+    t += "cadence de la course (WFS-262) : " + std::to_string(qualite::cadenceCourse) + " images/s\n";
     t += "images de plus de 33 ms : " + std::to_string(st.plus33) + " ; de plus de 50 ms : " + std::to_string(st.plus50) + "\n";
     if (g_r && g_r->gpuPasses().mesuree) {
         const Renderer::GpuPasses& p = g_r->gpuPasses();
