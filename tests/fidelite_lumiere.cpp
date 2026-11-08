@@ -175,6 +175,22 @@ int main(int argc, char** argv) {
         std::printf("WFS-249 : borne de nuit −3,5 atteinte à %.1f m d'une lampe de 15 lx (8 m), pente max %.3f EV/m\n", d2, sautMax);
     }
 
+    // ---- WFS-276 : basses lumières de la nuit (post.frag) : continu au seuil, rien au-dessus, flaque ≥ 2 IL au-dessus d'un paysage
+    // 7 IL plus bas (RG-02), paysage sorti du noir ; constantes identiques dans le shader
+    {
+        const double flaque = 0.18, paysage = flaque / 128;   // flaque au gris moyen, paysage sous la lune 7 IL plus bas
+        const double ecartIL = std::log2(basseLumiereNuit(flaque) / basseLumiereNuit(paysage));
+        VERIFIE(basseLumiereNuit(flaque) == flaque && basseLumiereNuit(SEUIL_NUIT) == SEUIL_NUIT && std::fabs(basseLumiereNuit(SEUIL_NUIT * 0.999999) - SEUIL_NUIT) < 1e-6,
+                "basses lumières : rien au-dessus du seuil, continu au seuil");
+        VERIFIE(ecartIL >= 2 && ecartIL < 7 && basseLumiereNuit(paysage) > paysage * 4, "flaque / paysage : %.2f IL (≥ 2), paysage relevé de %.1f IL", ecartIL, std::log2(basseLumiereNuit(paysage) / paysage));
+        bool mono = true; double prec = 0;
+        for (double y = 1e-6; y < 1; y *= 1.1) { const double v = basseLumiereNuit(y); mono = mono && v >= prec; prec = v; }
+        VERIFIE(mono, "basses lumières : courbe croissante (aucune inversion de clarté)");
+        std::string shader; { FILE* f = std::fopen(WFS_SOURCE_DIR "/shaders/post.frag", "rb"); char b[4096]; size_t n; while (f && (n = std::fread(b, 1, sizeof b, f)) > 0) shader.append(b, n); if (f) std::fclose(f); }
+        VERIFIE(shader.find("const float SEUIL_NUIT = 0.08, PUISSANCE_NUIT = 0.45;") != std::string::npos, "post.frag : mêmes constantes que eclairage_exposition.h");
+        std::printf("WFS-276 : flaque / paysage %.2f IL (7 IL dans la scène), paysage relevé de %.2f IL\n", ecartIL, std::log2(basseLumiereNuit(paysage) / paysage));
+    }
+
     // ---- WFS-213 (RG-03) : 3 enchaînements init / shutdown, mesures valides puis invalides (NaN, infini, sonde absurde de
     // 1,36·10¹¹ cd/m² du banc vitrines) : l'EV reste dans les bornes du jour (10 à 15), jamais non fini
     {

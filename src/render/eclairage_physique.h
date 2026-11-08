@@ -61,7 +61,7 @@ struct Etat {
     double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
 };
 const Etat& etat();
-float kVisionNuit();   // WFS-230 (RG-04) : exposition pour la vision de nuit (post.frag) ; 0 de jour
+float kVisionNuit();   // WFS-230 (RG-04) : exposition pour la vision de nuit (post.frag) ; 0 de jour ; WFS-276 : négative = sans relèvement des basses lumières (Ville)
 
 // RG-01 à RG-06 : passe fp en unités physiques (appelé par Game::render après les ambiances ; dediee = scène dédiée : rien)
 void physique(FrameParams& fp, bool dediee, const GameView& g);
