@@ -23,7 +23,7 @@ static int echecs = 0;
 namespace {
 struct Simu { int place = 5; double temps = 0, nitroS = 0, jauge30 = 0; int depasses = 0; double colle = 0; bool fini = false; };
 // freinVirage : le joueur simulé freine avant les virages serrés (comme un joueur qui ne sort pas de la route), à la même
-// vitesse permise que les ordinateurs (vitesseVirageOrdinateur depuis WFS-327, 30 m devant)
+// vitesse permise que les ordinateurs (vitesseVirageOrdinateurDevant depuis WFS-327)
 Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char* carte, double km, bool nitro, bool recharge = true, int trace = 0, bool freinVirage = false) {
     static Track t; static std::string carteFaite;
     const int version = trace ? trace : trace::versionCarte(carte);   // 0 : tracé du jeu (2 en Ville)
@@ -43,7 +43,7 @@ Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char
         DriveInput in; in.gas = true;
         in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
         in.nitro = nitro && pl.nitro > 0.5;
-        if (freinVirage && pl.speed > course5::vitesseVirageOrdinateur(t, pl.dist + 30 / M, carById(car))) { in.gas = false; in.brake = true; in.nitro = false; }   // WFS-327 : vitesse permise aux ordinateurs
+        if (freinVirage && pl.speed > course5::vitesseVirageOrdinateurDevant(t, pl.dist, carById(car))) { in.gas = false; in.brake = true; in.nitro = false; }   // WFS-327 : vitesse permise aux ordinateurs
         if (!r.fini) pl.update(dt, in, t, true);
         if (!r.fini && pl.nitroOn) r.nitroS += dt;
         course5::avancer(os, dt, finish, tc, pl.dist, pl.playerX, pl.speed, &t);
@@ -309,7 +309,7 @@ int main() {
             for (int i = 0; i < 120 * 200 && !tj; i++) {
                 DriveInput in; in.gas = true; in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
                 // WFS-327 : le pilote freine avant les virages à la vitesse permise aux ordinateurs (même règle des deux côtés)
-                if (pl.speed > course5::vitesseVirageOrdinateur(piste, pl.dist + 30 / M, carById(v))) { in.gas = false; in.brake = true; }
+                if (pl.speed > course5::vitesseVirageOrdinateurDevant(piste, pl.dist, carById(v))) { in.gas = false; in.brake = true; }
                 pl.update(dt, in, piste, true); if (pl.dist * M >= 4000) tj = (i + 1) * dt;
             }
             auto os = course5::tirer(1, v); os.resize(1); os[0].car = v; course5::grille(os, -1);

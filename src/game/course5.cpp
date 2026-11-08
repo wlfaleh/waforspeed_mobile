@@ -177,6 +177,11 @@ double vitesseVirageOrdinateur(const Track& t, double s, const CarDef& c) {
     const double gLat = Phys::grip / 9.81 * physique::params(c).mu / MU_REFERENCE;
     return std::min(vitesseVirage(t, s), vitesseVirageAide(t, s, gLat, Phys::brake / 9.81) / M);
 }
+// WFS-327 (RG-01) : la vitesse permise est calculée par points de 4 m (paliers) : l'ordinateur (et le pilote des tests) regarde
+// aussi 4 et 8 m plus loin, sinon il a un palier de retard en entrant dans le virage (jusqu'à + 20 % mesuré ; + 1,6 % au plus ainsi)
+double vitesseVirageOrdinateurDevant(const Track& t, double s, const CarDef& c) {
+    return std::min({vitesseVirageOrdinateur(t, s, c), vitesseVirageOrdinateur(t, s + 4 / M, c), vitesseVirageOrdinateur(t, s + 8 / M, c)});
+}
 // WFS-258 (accroche) : l'aide à la direction du joueur s'en sert pour ralentir à temps (player.cpp)
 static const bool g_vitesseVirageDonnee = (g_vitesseVirageCourse5 = &vitesseVirage, true);
 
@@ -269,7 +274,7 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         cible = std::min(cible, plafond);
         bool virageFrein = false;   // WFS-189 (RG-02 bis) : virage serré devant : vitesse permise, freinage du joueur
         if (piste) {
-            const double vp = vitesseVirageOrdinateur(*piste, o.g.rd, c);   // WFS-327 (RG-01)
+            const double vp = vitesseVirageOrdinateurDevant(*piste, o.g.rd, c);   // WFS-327 (RG-01)
             if (vp < cible) { cible = vp; virageFrein = o.g.v > vp; }
         }
         if (virageFrein) o.g.v = std::max(cible, o.g.v - (double)Phys::brake / M * dt);
