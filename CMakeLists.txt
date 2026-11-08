@@ -148,6 +148,7 @@ else()
   target_compile_definitions(test_archi_kit PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD)
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_fluidite_reference tests/test_fluidite_reference.cpp)   # WFS-293 (RG-10) : l'indicateur à 10-20 img/s voit les sauts
   add_executable(test_fidelite_lumiere_precalcule tests/fidelite_lumiere_precalcule.cpp src/render/eclairage_precalcule.cpp src/core/jobs.cpp)   # WFS-269 : occlusion du décor fixe précalculée
   target_link_libraries(test_fidelite_lumiere_precalcule Threads::Threads)
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL

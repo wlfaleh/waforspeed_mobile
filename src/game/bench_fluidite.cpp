@@ -28,6 +28,7 @@
 #include "../core/log.h"
 #include "camera_vue.h"
 #include "course_system.h"
+#include "fluidite_reference.h"   // WFS-293 (RG-07)
 
 namespace wfs {
 
@@ -129,8 +130,12 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.camMode = 0; choisirVue(cam ? VueCamera::Poursuite : VueCamera::Proche); g.allerA(Ecran::Course);
                     Mulberry32 R(221u * 31u + (uint32_t)fps);
                     double t = 1000;
-                    for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); t += 1.0 / 60; g.calculerVue(t); }   // décompte (4 s)
+                    int64_t nPas = 0;   // WFS-293 (RG-07) : pas de simulation depuis le chargement (instant simulé de chaque image)
+                    for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); nPas += g.pasDerniereImage(); t += 1.0 / 60; g.calculerVue(t); }   // décompte (4 s)
                     std::vector<Echantillon> ech; int pas[4] = {}; double braquage = 0;
+                    // WFS-293 (RG-07) : commandes de chaque image (pas [debut, fin)) pour rejouer la course à 120 Hz, et poses rendues
+                    struct Commande { int64_t debut, fin; DriveInput in; };
+                    std::vector<Commande> cmds; std::vector<fluidite::Pose> rendues;
                     const double moy = 1.0 / fps;
                     for (double duree = 0; duree < 14; ) {
                         const double dt = moy * (0.7 + 0.6 * R.next());
@@ -143,16 +148,49 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                         const double vise = std::clamp(-pj.playerX * 0.8 - pj.heading * 1.2, -0.6, 0.6);
                         braquage += (vise - braquage) * (1 - std::exp(-dt / 0.3));   // pouce : braquage lissé (0,3 s)
                         g.manette.steer = (float)braquage;
+                        const int64_t pas0 = nPas;
                         g.update(dt);
+                        nPas += g.pasDerniereImage();
+                        cmds.push_back({pas0, nPas, g.manette});
+                        const double tSim = ((double)nPas - 1 + g.alphaRendu()) / 120.0;   // état rendu : entre les pas n−1 et n
                         const Game::Vue v = g.calculerVue(t);
                         if (duree < 4) continue;   // mise en vitesse (≈ 150 km/h) et caméra posée
                         pas[std::min(g.pasDerniereImage(), 3)]++;
                         const mat4 V = lookAt(v.eye, v.look, {0, 1, 0});
                         const vec3 pc = V.transformPoint(v.carPos), fc = normalize(V.transformDir(v.fwd));
+                        if (!(g.player().controlLock > 0 || g.player().playerSpin != 0)) rendues.push_back({tSim, pc});   // chocs exclus
                         const vec3 h = normalize(vec3{v.fwd.x, 0, v.fwd.z});
                         ech.push_back({t, pc, std::atan2(fc.x, -fc.z), std::asin(std::clamp(fc.y, -1.f, 1.f)), (double)dot(v.carPos - v.eye, h), g.player().kmh(), g.player().controlLock > 0 || g.player().playerSpin != 0, v.carPos, v.eye, g.player().playerX, g.player().heading});
                     }
                     g.shutdown();
+                    // WFS-293 (RG-07) : à 10-20 img/s, la même course rejouée à 120 Hz (mêmes commandes à chaque pas, caméra calculée
+                    // à chaque pas) : écart de chaque image rendue à cette référence au même instant simulé
+                    double ecartRef = -1;
+                    if (fps <= 20 && passe < 2) {
+                        setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
+                        courseBenchRules(true);
+                        const bool ok2 = g.init(r, "golf", carte);
+                        unsetenv("WFS_DEPART");
+                        if (ok2) {
+                            g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.camMode = 0; choisirVue(cam ? VueCamera::Poursuite : VueCamera::Proche); g.allerA(Ecran::Course);
+                            double t2 = 1000; int64_t n2 = 0;
+                            for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); n2 += g.pasDerniereImage(); t2 += 1.0 / 60; g.calculerVue(t2); }
+                            std::vector<fluidite::Pose> ref; size_t k = 0;
+                            while (!cmds.empty() && n2 < cmds.back().fin) {
+                                while (k + 1 < cmds.size() && n2 >= cmds[k].fin) k++;
+                                g.manette = cmds[k].in;
+                                g.update(1.0 / 120); n2 += g.pasDerniereImage(); t2 += 1.0 / 120;
+                                const double tr = ((double)n2 - 1 + g.alphaRendu()) / 120.0;
+                                const Game::Vue v = g.calculerVue(t2);
+                                const mat4 V = lookAt(v.eye, v.look, {0, 1, 0});
+                                ref.push_back({tr, V.transformPoint(v.carPos)});
+                            }
+                            g.shutdown();
+                            int nc = 0;
+                            ecartRef = fluidite::ecartMaxMm(rendues, ref, &nc);
+                            if (nc < (int)rendues.size() * 9 / 10) WFS_ERR("fluidite : référence 120 Hz incomplète (%d / %zu images)", nc, rendues.size());
+                        }
+                    }
                     if (const char* tr = std::getenv("WFS_FLUIDITE_TRACE")) {   // essai local : série image par image
                         std::ofstream f(out + "/trace-" + (passe ? "apres-" : "avant-") + sc.nom + "-" + (cam ? "poursuite-" : "proche-") + std::to_string(fps) + ".csv");
                         f.precision(10);
@@ -162,8 +200,9 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     const Resultat res = analyser(ech, pas);
                     const double parS = res.allersRetours / 10.0;
                     char l[320];
-                    std::snprintf(l, sizeof l, "%s | %s | %s | %s | %d | %d | %d/%d/%d/%d | %.2f | %.3f | %.2f | %.1f\n", passe ? "après" : "avant", sc.nom, carte,
-                                  cam ? "Poursuite" : "Proche", fps, res.images, res.pas[0], res.pas[1], res.pas[2], res.pas[3], res.acoupMm, res.sautDeg, res.allerRetourCm, parS);
+                    char refTxt[24]; if (ecartRef >= 0) std::snprintf(refTxt, sizeof refTxt, "%.2f", ecartRef); else std::snprintf(refTxt, sizeof refTxt, "-");
+                    std::snprintf(l, sizeof l, "%s | %s | %s | %s | %d | %d | %d/%d/%d/%d | %.2f | %s | %.3f | %.2f | %.1f\n", passe ? "après" : "avant", sc.nom, carte,
+                                  cam ? "Poursuite" : "Proche", fps, res.images, res.pas[0], res.pas[1], res.pas[2], res.pas[3], res.acoupMm, refTxt, res.sautDeg, res.allerRetourCm, parS);
                     rap << l;
                     WFS_LOG("fluidite : %s", l);
                     if (passe == 1) {
