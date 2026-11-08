@@ -107,3 +107,6 @@ demande utilisateur :
 
 - Créer une tâche urgente pour supprimer les ronds-points dans toutes les maps, c'est une catastrophe (conversation avec le PO, 2026-11-07 22:43 UTC)
 ( PO : c'est créé — **WFS-283** (P1, en tête de liste) : chaque rond-point devient un carrefour simple, sur toutes les cartes ; course, trafic, police, GPS et chocs suivent ; le code des giratoires est gardé de côté, rien n'est effacé. WFS-248 ❌, **ANO-158**. )
+
+- Le bouton Réglages et le bouton Fermer des réglages ne passent pas toujours (jeu et menu) ; réglages en onglets (2 ou 3), plus clair, pas urgent (conversation avec le PO, 2026-11-08 00:04 UTC)
+( PO : c'est créé — **WFS-290** (P2) avec **ANO-159** : chaque appui ouvre ou ferme les réglages, 100 fois sur 100, sans déplacer de bouton ; **WFS-291** (P3, après WFS-290) : réglages en 2 ou 3 onglets (Affichage, Conduite, Son), tous les réglages gardés. )
