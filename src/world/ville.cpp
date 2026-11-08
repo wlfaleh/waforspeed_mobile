@@ -276,9 +276,9 @@ public:
         WFS_LOG("Ville : %zu lampadaires%s", nl, depart_ ? " (départ avancé, banc d'essai)" : "");
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = (int64_t)plan_->objets.size();
-            {   // WFS-269 (accroche) : occlusion précalculée : façades, béton, trottoirs (MAT_AO) et décor uni (MAT_VTINT) la reçoivent ; pas le sol (bandes sous les feuillages)
+            {   // WFS-269 (accroche) : occlusion précalculée : façades, béton, trottoirs (MAT_AO) la reçoivent ; ni le sol ni le décor uni (bandes sur les pelouses, essai au banc)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
-                lots_.occlusion(b({P_FACADE_A, P_FACADE_B, P_BETON, P_TROTTOIR, P_UNI}), b({P_FACADE_A, P_FACADE_B, P_BETON, P_VOUTE, P_UNI, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_CONIF, P_METAL}), b({P_UNI}));
+                lots_.occlusion(b({P_FACADE_A, P_FACADE_B, P_BETON, P_TROTTOIR}), b({P_FACADE_A, P_FACADE_B, P_BETON, P_VOUTE, P_UNI, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_CONIF, P_METAL}), 0);
             }
             lots_.preparer(r, *g.track, P_COUNT, 4, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
                 Geo out[P_COUNT];
