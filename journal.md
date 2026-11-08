@@ -4439,3 +4439,6 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
   - 71e540e ajoute à 158cdee le test RG-02 « chaque fenêtre » (règle du 20:17 : P90 sur 30 s, 10 graines, 0 hors règle sur 1600) et la régulation à 0,8 (à 1,0 : 6 fenêtres hors règle sur 1600) ;
   - la règle du 20:37 (médianes glissantes de 128 images, appels et triangles) n'est pas tenue au banc, à cause du coût d'une voiture proche (voir le risque ci-dessus).
 - **Aucune CI de branche lancée** ; pas de fusion.
+
+### 2026-11-08 22:48:11 — VABF : Poursuite APK 931, seconde 23 revue, ANO-195 à ANO-197 (agent qa lead)
+- Sur remarque de l’utilisateur : la police apparaît d’un coup collée au joueur (ANO-195, bloquante), voiture de police vide sans policiers (ANO-196, majeure), police sans marque avec un gyrophare en boîte (ANO-197). ANO-191 précisée (blocs lumineux dans la voie). Transmis au PO.
