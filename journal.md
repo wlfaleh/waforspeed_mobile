@@ -3492,3 +3492,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Bien : table des largeurs par modèle, œil et repère cohérents, montant droit à sa place, différence X5 / 500 visible, mesures WFS-282 tenues.
 - Remarque au PO : sur la Golf, l'effet « 2 places » reste faible (cotes réelles proches des anciennes) ; l'utilisateur jugera en 🟡.
 - Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/262#pullrequestreview-5817956477
+
+### 2026-11-08 13:01:46 — WFS-258 : PR #263 (point 1 : l'aide activée passe les virages), lead dev appelé (Claude, agent dev conduite)
+- Aide activée : ralentit à temps (adhérence et freinage de la conduite du jeu, ≤ 90 % de la table des ordinateurs de la Course à 5) et tient la file ; aide désactivée inchangée. 1er virage du GP lancé à 228 km/h : 0 image hors route (main : 945) ; tours des 4 cartes : 0 sortie, 123–153 s (main en Glisser : 95–133 s avec 5–12 s hors route).
+- Course à 5 avec l'aide : Ville 5/5, Campagne 2/5, Corniche 5/5, Grand Prix 5/5 (main : 5, 2, 2, 2 avec sorties). Détail dans le Suivi de `regles-de-gestion/WFS-258.md`. 70 tests CPU OK. Accroche d'une ligne dans `course5.cpp` (g_vitesseVirageCourse5).
