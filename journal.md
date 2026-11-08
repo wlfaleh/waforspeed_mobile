@@ -4171,3 +4171,52 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Approbation écrite dans la PR (revue « ✅ Approuvé », même compte GitHub), puis squash 8b84a83. Pas de CI de branche demandée : la CI de `main` confirmera la compilation Android.
 - Remarques pour la partie B (dans la revue) : carte passée à `preparerCarte` au changement de carte, verrou de `carteActive()`, seuil de temps du test, RG-08 complet (accueil → course → retour), journal : ne déplacer que ses entrées.
 - Décision du PO écrite pendant la revue (227566e6, 21:01) : WFS-301 se termine avec la partie A. Le code fusionné est bon, mais deux preuves manquent encore : **RG-07** (temps de chargement construction / paquet, médiane de 5, au journal) et **RG-08** (parcours accueil → Ville → course → retour avec le paquet partiel présent puis absent ; le banc `cuisson` charge la Ville directement). WFS-301 reste donc 🔧 au même développeur pour une petite PR de complément, puis 🟣. WFS-306 et WFS-302 peuvent démarrer (le socle est sur `main`). Ligne #278 retirée de `suivi-pr.md`.
+- WFS-301 reste 🔧 (partie B à revoir par le PO, WFS-268 décliné) ; WFS-306 peut démarrer. Ligne #278 retirée de `suivi-pr.md`.
+
+### 2026-11-08 21:04:45 — WFS-292 en PR #279 : fumée des pneus de jour, choc du banc d'effets, Golf bleue de nuit à arbitrer (agent arwa (Claude, session trafic))
+- **RG-01 / RG-02 (ANO-165)**
+  - **Cause** : la fumée émettait un gris fixe (`fumeeHdr`, calé sur l'ancienne exposition 0,85). Avec l'exposition physique (WFS-207 / 230), elle sortait plus sombre que l'asphalte de jour et ne se voyait plus.
+  - **Correction** (`effets_systeme.cpp`) : la volute devient une matière diffuse claire (albédo 0,75, `MAT_VTINT`, normale vers le haut), éclairée par la scène : soleil et ciel le jour, phares et lampadaires la nuit, rien dans le noir. Opacité au plus dense 0,53, soit environ 0,44 à la naissance (0,25 avant). Une volute toutes les 35 ms au lieu de 50 ms.
+  - `effets_particules.h` : effacement en fondu^1,2 au lieu de 1,5. Profil sans bord net de WFS-224 gardé, seuil de glisse inchangé.
+  - **Mesure** sur `fumee-derapage-jour` : fumée / chaussée 1,17 en médiane, 1,34 au 90e centile, 1,95 au cœur des volutes. De nuit : 1,30 au 90e centile, sous les lampadaires seulement.
+- **RG-03**
+  - **Pourquoi le choc ne se faisait plus** (journal de la CI 42414202799, c9eda61) : le pilote automatique, encore actif après `trafficBenchPlace`, changeait de file pour éviter la voiture de devant (x 0,44 → 0,77, 171 km/h, 0 accident en 3 s).
+  - Sur le main actuel, le choc se refait déjà (1 accident, 20 étincelles, banc seul comme `partie1b`). Le scénario restait fragile : le pilote automatique est maintenant coupé dès le placement (`bench_effets.cpp`, 4 lignes), sans toucher aux règles des chocs de WFS-256.
+  - **Après** : 1 accident et 20 étincelles, de jour comme de nuit ; 57 bouffées dans `accident-fumee`.
+- **RG-04 (ANO-167) : non tenue, risque signalé au PO**. Mesures sur `carte-campagne-cascade-nuit` :
+  - Sur `main` : (76,76,99), saturation 0,23, carrosserie / route voisine 1,23.
+  - Trois variantes du shader de peinture, sans effet :
+    - K 2,0 → 1,0 avec la part diffuse teintée × 2 : (76,76,98) ;
+    - reflet du ciel du vernis mis à 0 : identique ;
+    - peinture forcée bleu pur à luminance égale : (78,78,102).
+  - La teinte est donc perdue dans la vision de nuit de `post.frag` (WFS-230, gardée par l'arbitrage), pas dans `eclairementRouteAutour()`. Une pré-compensation calquée sur le poids de Purkinje n'a gagné que +0,03 de saturation : je l'ai retirée. `vehicule.glsl` n'est pas modifié.
+  - **Proposition** : un plafond du poids scotopique s sur les peintures, ou un bleu moins mêlé aux bâtonnets, dans `post.frag` (WFS-328, autre agent) ; ou un arbitrage du PO qui accepte gris bleuté. Décision attendue : PO.
+- **RG-05** : `carte-campagne-cascade` de jour et de nuit identiques au pixel ; aucun shader modifié, donc rien ne change en Ville de nuit hors fumée.
+- **Vérifications** :
+  - 74 tests CPU OK.
+  - Parcours complet 0 écart, vue normale et Cockpit.
+  - Le banc `campagne` sort en « échec » des deux côtés (arrêt de 4,0 s sur la route du col, limite 3 s) : défaut déjà présent sur main, il ne vient pas de ce ticket.
+- **Captures** : 8 avant / après dans `qa/pr/WFS-292/`. Ligne 🆕 ajoutée dans `suivi-pr.md`.
+- **Fichiers touchés** : `src/render/effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`. Aucune accroche.
+
+### 2026-11-08 21:18:17 — WFS-292 : PR #279 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : 5 paires de captures ouvertes, tout le diff lu (`bench_effets.cpp`, `effets_particules.h`, `effets_systeme.cpp`). Bon : RG-03 (vrai choc au banc, cause nommée : le pilote automatique évitait la voiture), RG-02 (rien de lumineux la nuit), zone respectée.
+- Refus : (1) RG-04 non tenue (Golf grise de nuit en Campagne) : l'arbitrage du PO excluait `post.frag`, une nouvelle décision écrite du PO est nécessaire ; (2) fumée de jour en taches rondes espacées et non en nappe, rapport médian 1,17 < 1,3 ; (3) « à remplir » resté dans la description ; (4) capture de Ville de nuit (RG-05) manquante ; (5) 11 commits de retard sur main.
+- **Pour le PO** : trancher RG-04 de WFS-292 (retirer de ce ticket et créer un ticket à part, ou autoriser `post.frag`).
+
+### 2026-11-08 21:18:50 — WFS-330 : captures du banc qualité régénérées, PR #280 (Claude, Agent 0 developer)
+- **RG-01** : `FILTRE='voiture-*' bash tools/qa/captures_pr.sh WFS-330 qualite` sur `main` (69239955), 33 paires ; plus 4 captures de `main` d'avant WFS-300 (`d88e426b^`).
+- **RG-02** (mesures sur les PNG ; ΔE2000 vérifié sur les paires de Sharma 2005) : stabilité entre deux lancements du même code : 32 vues sur 33 identiques au pixel, `voiture-basse-poursuite` 0,002 % (inchangée) ; façade de droite à 56 / 60 / 64 m : ΔE2000 0,12 et 0,11 (avant WFS-300 : 6,51 et 6,46) ; suite `voiture-sonde-0` à `-9` : saut de ΔE2000 5,47 entre `sonde-5` et `sonde-6` (arrivée de la sonde, visible) → WFS-322 / ANO-174, non corrigé ici.
+- **RG-03** : aucun code changé. PR #280 ouverte, lead dev appelé.
+
+### 2026-11-08 21:21:52 — WFS-330 fusionné par le lead dev (lead-dev)
+- **PR #280** relue sur e9a4588 : 37 images ouvertes (33 paires et 4 `avant300-*`), diff lu (72 fichiers sous `qa/pr/WFS-330/`, aucun code, RG-03 tenue). Mesures du développeur recoupées sur les JPG : façade 56 / 60 / 64 m ΔE76 0,11 / 0,09 (avant WFS-300 : 8,98 / 8,88), saut sonde-5 → 6 ΔE76 5,96, 32 paires à 0 pixel d'écart.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire : même compte GitHub), fusion en squash avec le SHA attendu : **d3b7ef1**. Statut 🟣 (US technique) ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`. Saut des sondes laissé à WFS-322 (ANO-174).
+
+### 2026-11-08 21:23:29 — Début WFS-293 : attribué à Claude, Agent 0 developer (po-scrum-master)
+- Demande de Claude, Agent 0 developer (session 01UY1Vv2SSLK), libre après WFS-330 (#280, d3b7ef1).
+- Choix : tickets ⏳ Prêt de meilleure priorité (P2) : WFS-214 et WFS-322 (E13 occupée par WFS-328), WFS-280 et WFS-323 (E3 : fichiers du trafic tenus par WFS-281 ↩️ ; cockpit), WFS-287 (CI / émulateur : skill spécial `expert-ci-cd`) ; **WFS-293** premier permis (exception PO comme WFS-247, fichiers séparés de WFS-301 et WFS-281). Aucune exclusion pour ce développeur ; pas de skill spécial (banc de fluidité, pas de modèle de conduite).
+- Zone : `src/game/bench_fluidite.cpp`, correction de l'à-coup dans `game.cpp` (interpolation du rendu), `track.*`, `camera_vue.*` ; **pas** `player.*`, `conduite_*` (WFS-258), pas la CI (gel), rien d'iOS. Règles : `regles-de-gestion/WFS-293.md`.
+- Vigilance : `game.cpp` peut être touché par WFS-329 (agent 1, menu) : se synchroniser souvent ; le banc durci et la correction dans la même PR (le banc ne doit jamais passer rouge sur `main`). Après fusion : 🟡 À valider (utilisateur).
+- Tickets prêts restants : 6 (sous le minimum de 8) : le PO crée des tickets de rattrapage au prochain passage.
+
