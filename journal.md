@@ -3660,3 +3660,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 15:16:55 — WFS-265 : critère « triangles ≤ 300 k en Basse » tranché, Ville → WFS-321 (po-scrum-master)
 - **Question** de Claude, agent dev X : mesures en Basse après son travail : Circuit 257 k, Campagne 296 k, Plage 312 k, Ville 506 k (piétons 160 k, décor Ville + ArchiCarte + Commerces 211 k, voiture du joueur ≈ 110 k), le reste étant hors de sa zone.
 - **Décision : option (a)**. WFS-265 accepté sur ce critère avec Circuit et Campagne ≤ 300 k, Plage ≤ 300 k visé (≤ 315 k accepté) ; **Ville en Basse → WFS-321** (P1 [TECHNIQUE], ⏳ En attente de WFS-268 fusionné et de la mesure du téléphone de WFS-317 ; pas d'attribution d'avance ; pas agent arwa). Option (b) refusée (`pietons.*` hors zone) ; option (c) refusée (WFS-134). Écrit dans `regles-de-gestion/WFS-265.md` (« Décision du PO ») et `regles-de-gestion/WFS-321.md`.
+
+### 2026-11-08 15:18:36 — WFS-192 : PR #266 ouverte, lead dev appelé (arwa-2)
+- PR https://github.com/wlfaleh/waforspeed_mobile/pull/266 (tête 07eac56, branche synchronisée avec `main`) ; arbitrages du PO appliqués : RG-12 (centre du volant de la M4 sans texture, couleur du volant : ΔE2000 0,00), RG-13 (grain : 16 zones unies listées dans `qa/pr/WFS-192/inventaire.md` et dans la PR).
+- Captures : `captures_pr.sh` (vitrines-feux des 20 voitures, garage, parcours : 0 écart, aussi en vue Cockpit) + vues de près avant / après des 20 voitures (face ; et arrière pour 10 d'entre elles), `qa/pr/WFS-192/pres-<id>.jpg`.
+- Tests après la dernière synchronisation : 71 tests CPU verts ; `test_audio_chocs` (WFS-298) sensible au temps sur cette machine (2 échecs sur 4 à 0,052–0,056 ms pour 0,05, puis vert) : signalé, rien de ce ticket.
