@@ -4452,3 +4452,22 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
 - E3, E4, E10 déjà occupées (WFS-336, 293, 292, 215) : exceptions PO à fichiers séparés. WFS-333 non donné (mêmes fichiers `traffic.*` que WFS-336). WFS-193 / 194 non donnés (modèles des voitures, WFS-215 en cours).
 - **Décisions** : WFS-292 RG-04 : Golf gris bleuté en rase campagne accepté (vision de nuit réelle), `post.frag` interdit, bleue sous un lampadaire ; WFS-328 : Corniche 1 IL plus sombre ≤ 3 s accepté, RG-05 (ANO-179) toujours exigée ; WFS-336 : critère RG-02 sur les véhicules dessinés, coût d'une voiture proche → WFS-335.
 - **WFS-339** [TECHNIQUE] P1 créé (banc `campagne` en échec sur `main`, arrêt 4,0 s sur la route du col) : prêt pour un développeur libre.
+
+### 2026-11-08 23:03:57 — WFS-290 : PR #287 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Banc `reglages-appuis` après correction : 100 / 100 dans tous les cas (menu et pause), touche Retour en pause 100 / 100 ; 76 tests verts ; parcours 0 écart. Ensuite : WFS-291 (onglets), puis WFS-318.
+
+### 2026-11-08 23:04:56 — WFS-291 : découpage des onglets validé (po-scrum-master)
+Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affichage (5 lignes + place WFS-318), Conduite (6), Son (2) ; en-tête et bas communs ; clé `onglet` gardée. Écrit dans `regles-de-gestion/WFS-291.md` (Suivi). Le ticket reste en attente de la fusion de WFS-290 (PR #287).
+
+### 2026-11-08 23:07:15 — WFS-290 : PR #287 refusée par le lead dev (lead-dev)
+- Commit relu 7a247292 ; 8 captures ouvertes (menu et pause, avant / après identiques : aucun bouton déplacé, RG-03 tenue) ; diff complet relu (14 fichiers) ; causes et banc `reglages-appuis` solides.
+- **Défauts** : (1) RG-04 non faite : pas de changement de couleur à l'appui sur « Réglages » / « Fermer » (règle remplacée sans décision du PO) ; (2) aucun test CPU de la cible de 48 dp, de l'anti-rebond ni du cas Retour en pause réglages ouverts (banc hors CI) ; (3) petit : commentaire « 95 × 25 dp » faux (82), README des captures sans colonne « Avant ».
+- TACHES : ↩️ Retour lead dev (PR #287) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 23:10:10 — Mode `WFS_BANC=cuire` : complément de WFS-301, débloque WFS-302 (po-scrum-master)
+- Demande de l'agent expert ci cd (WFS-302) ; option A choisie par l'utilisateur, faite par Claude, agent 3 (ordre de l'utilisateur).
+- Décision : **complément de WFS-301** (branche `feature/waforspeed-301`, petite PR, lead dev), zone `paquet_carte.*` + 1 ligne d'accroche `desktop_main.cpp` à annoncer au journal par agent 3. WFS-301 reste 🟣 ; WFS-306 reste à agent 3, non mélangé. Règles : `regles-de-gestion/WFS-301.md` (RG-C1 à C3) et `WFS-302.md` (Dépend de, Suivi). Ligne WFS-302 de `TACHES.md` non touchée.
+
+### 2026-11-08 23:11:17 — WFS-302 : outil cartes.json, script de publication et paquets.yml poussés ; attend le mode WFS_BANC=cuire (agent expert ci cd)
+- Branche `feature/waforspeed-302` (commits 285a48ce, 5ce0d94f) : `tools/qa/cartes_json.py` + test (15 contrôles verts ; format repris de `ListePaquets.java` de WFS-306, vérifié avec javac : ASTC / ETC2 / RGBA8 choisis, APK 926 refusé), `tools/qa/publier_paquets.sh` (deux cuissons comparées, liste, Release `paquets`, noms publiés versionnés par le SHA-256, retrait des anciens paquets après la nouvelle liste), `.github/workflows/paquets.yml` (à la main sur main ; aucune CI lancée).
+- Blocage levé par l'utilisateur (option A) et le PO (commit 26788de0) : agent 3 ajoute le mode `WFS_BANC=cuire` (complément de WFS-301). Premier lancement de `paquets.yml` après sa fusion ; `matin.yml` n'est pas touché d'ici là.
