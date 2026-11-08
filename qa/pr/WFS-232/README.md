@@ -44,13 +44,17 @@ Branche `feature/waforspeed-232` comparée à `origin/main` ; bancs : motos (san
 | `parcours-fin` | ![avant](avant-parcours-fin.jpg) | ![après](apres-parcours-fin.jpg) |
 | `course-cam0-0` | ![avant](avant-course-cam0-0.jpg) | ![après](apres-course-cam0-0.jpg) |
 
-> Colonne « Avant » des vues `trafic-motos-*` : le banc `motos` est nouveau (absent de `main`) ; à sa place, la **même vue au même instant, deux-roues retirés** (captures `…-sans` du même banc ; pour les courbes, à côté de l'image n° 2). `course-cam0-0` et `parcours-*` : vrai « avant » de `main` (captures du passage précédent, code de ces vues inchangé depuis).
+> Colonne « Avant » des vues `trafic-motos-*` : le banc `motos` est nouveau (absent de `main`) ; à sa place, la **même vue au même instant, deux-roues retirés** (captures `…-sans` du même banc ; pour les courbes, à côté de l'image n° 2). `course-cam0-0` et `parcours-*` : vrai « avant » de `main` (passage du 2026-11-08 02:30, code de ces vues inchangé depuis).
 
-### Agrandissements des captures « après », recadrées autour des deux-roues
+### Agrandissements et vues de côté en 2340 × 1080 (résolution du téléphone)
 
+![zoom-cote-routiere](zoom-cote-routiere.jpg)
+![zoom-hd2340-reservoir-routiere](zoom-hd2340-reservoir-routiere.jpg)
+![hd2340-cote-routiere](hd2340-cote-routiere.jpg)
+![hd2340-cote-sportive](hd2340-cote-sportive.jpg)
+![hd2340-cote-scooter](hd2340-cote-scooter.jpg)
 ![zoom-cote-sportive](zoom-cote-sportive.jpg)
 ![zoom-cote-scooter](zoom-cote-scooter.jpg)
-![zoom-cote-routiere](zoom-cote-routiere.jpg)
 ![zoom-choc-2](zoom-choc-2.jpg)
 ![zoom-choc-3](zoom-choc-3.jpg)
 ![zoom-pres-ville-jour](zoom-pres-ville-jour.jpg)
