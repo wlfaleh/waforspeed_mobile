@@ -300,8 +300,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     for (int k = 0; k < M_N; k++) {
         Material& m = matsNuit_[(size_t)k];
         const bool lumineux = m.emissive.x + m.emissive.y + m.emissive.z > 0.f;
-        if (k == M_GLACE) {   // glace de nuit : position nuit d'un rétroviseur (réflexion 1 %, sans diffus, reflets flous) : jamais plus claire que le ciel de nuit
-            m.color = {0.01f, 0.01f, 0.01f, m.color.w}; m.metal = 1.f; m.rough = 0.6f;   // métal, rugosité : constantes du dessin
+        if (k == M_GLACE) {   // glace de nuit : position nuit d'un rétroviseur (réflexion 0,5 %, sans diffus, glace lisse : les lampes ne laissent qu'un petit reflet) : jamais plus claire que le ciel de nuit
+            m.color = {0.005f, 0.005f, 0.005f, m.color.w}; m.metal = 1.f; m.rough = 0.15f;   // métal, rugosité : constantes du dessin
             continue;
         }
         if (lumineux) continue;
