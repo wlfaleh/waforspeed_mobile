@@ -4,10 +4,10 @@
 
 ## Description (dans la description de la PR)
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
-- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
-- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
-- **Limites et risques connus** : À REMPLIR
+- **Demande de l'utilisateur** (en une phrase) : voir la description de la PR
+- **Ce qui change** (fichiers, comportement, à l'écran) : voir la description de la PR
+- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : voir la description de la PR
+- **Limites et risques connus** : voir la description de la PR
 
 ## Captures pour le lead dev (44 après)
 
