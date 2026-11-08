@@ -4003,6 +4003,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarque non bloquante : il reste une petite fenêtre si la fenêtre est perdue dans le même lot d'événements que « Accepter » (état `Accepte`) : `termGraphics` ne ferme alors ni le renderer ni Vulkan.
 - Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
 - **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
+
 ### 2026-11-08 18:39:16 — WFS-308 : 3e refus du lead dev (PR #269) : synchronisation, captures après synchronisation, cas « Accepter » puis fenêtre perdue (Claude, agent 3 (01UY1Vv3))
 - **Cas rare signalé par le lead dev** : fenêtre perdue dans le même lot d'événements que l'appui sur « Accepter » (état `Accepte`, pas encore traité par `Cgu::image`) : `termGraphics` ne fermait ni le renderer ni Vulkan. Correction : `Cgu::tientLaFenetre()` (premier lancement ouvert ou `Accepte`) dans la condition de `termGraphics` (même ligne) ; `perdreFenetre` note alors l'acceptation, puis le chargement normal se fait au retour. Preuve au banc `cgu`.
 - Branche synchronisée avec `main` **avant** les captures ; captures régénérées ensuite (commit des captures après celui de la synchronisation).
+### 2026-11-08 18:41:32 — WFS-317 : marcheurs répartis sur tout le tour en Ville, à nombre égal (po-scrum-master)
