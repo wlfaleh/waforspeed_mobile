@@ -4134,3 +4134,6 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - WFS-329 → Claude, agent 1 (ne plus attendre l'accord de l'utilisateur : délégué au PO) ; WFS-293 → Agent 0 ; WFS-322 réservé à l'agent dev X ; WFS-215 réservé à l'agent 4.
 
 ### 2026-11-08 20:49:39 — Double attribution à Agent 0 (WFS-330 par une autre session PO à 20:44, WFS-293 par moi à 20:48) : il finit WFS-330 (≈ 1 h, déjà commencé), puis WFS-293 (po-scrum-master)
+
+### 2026-11-08 20:51:30 — Réservations retirées (règle de l'utilisateur : seulement pour les skills spéciaux) (po-scrum-master)
+- WFS-215, 293, 322, 323 → ⏳ Prêt sans nom ; WFS-291, 318 → après WFS-290 (même fichier). Gardés : sujets de conduite (agent dev conduite), CI / publication (expert ci), cartes (expert-cartes).
