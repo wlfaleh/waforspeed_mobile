@@ -127,7 +127,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             ecrans::ouvrirReglagesBanc(false); g.allerA(Ecran::Course); g.update(1.0 / 60);
         }
         for (int f = 0; f < 3; f++) {
-            const bool villeNuit = carte == "ville" && nuit && k > 0;   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
+            const bool villeNuit = carte == "ville" && nuit;   // WFS-299 : aussi en 1re partie   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
             if (f > 0) for (int i = 0; i < MINUTE; i++) {
                 g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60;
                 if (f == 1 && villeNuit && i >= 10 * 60 && i < 13 * 60 && i % 30 == 0) {   // WFS-299 : suite à 0,5 s d'écart (piétons qui se rapprochent : niveaux de détail)
