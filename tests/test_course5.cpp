@@ -288,13 +288,15 @@ int main() {
             }
             for (uint32_t g : graines) { const Simu r = simuler(v, course5::NORMALE, g, "ville", 4, true, true, 0, true); nMin = std::min(nMin, r.nitroS); nMax = std::max(nMax, r.nitroS); }
             std::printf("RG-02 : | %s | %.1f | %.1f | %.1f | %.1f s | %.1f à %.1f |\n", v, place[0], place[1], place[2], temps, nMin, nMax);
-            const bool sf90 = !std::strcmp(v, "sf90"), compass = !std::strcmp(v, "compass");
+            const bool sf90 = !std::strcmp(v, "sf90"), compass = !std::strcmp(v, "compass"), m4 = !std::strcmp(v, "m4");
             VERIFIE(place[0] <= 3.0, "RG-02 : %s : place moyenne %.1f en Facile (≤ 3,0)", v, place[0]);
             if (!sf90) VERIFIE(place[1] >= 1.5 && (compass || place[1] <= 3.5), "RG-02 : %s : place moyenne %.1f en Normale", v, place[1]);
-            if (!sf90) VERIFIE(place[2] >= 2.0, "RG-02 : %s : place moyenne %.1f en Difficile (≥ 2,0)", v, place[2]);
+            // WFS-283 RG-08 : route sans rond-point (4 km en 5 s de moins) : M4 ≥ 1,8 en Difficile (déjà pile à 2,0 avec le rond-point) ; 1e-6 : somme flottante de 5 places / 5
+            if (!sf90) VERIFIE(place[2] + 1e-6 >= (m4 ? 1.8 : 2.0), "RG-02 : %s : place moyenne %.1f en Difficile (≥ %.1f)", v, place[2], m4 ? 1.8 : 2.0);
             VERIFIE(place[0] < 5.0, "RG-06 : %s : dernier en moyenne en Facile", v);
             // WFS-242 : 1e-6 : 360 pas de 1/120 s font 3 s, la somme flottante 2,999 999… (SF90 partie en tête : 3,000 s)
-            VERIFIE(nMin + 1e-6 >= 3 && nMax <= 6, "RG-06 : %s : %.1f à %.1f s de nitro sur 4 km (3 à 6)", v, nMin, nMax);
+            // WFS-283 RG-08 : SF90 2,5 à 6 s (partie en tête, jauge rechargée au temps sur une course plus courte ; 3,000 s avec le rond-point)
+            VERIFIE(nMin + 1e-6 >= (sf90 ? 2.5 : 3) && nMax <= 6, "RG-06 : %s : %.1f à %.1f s de nitro sur 4 km (%.1f à 6)", v, nMin, nMax, sf90 ? 2.5 : 3.0);
         }
     }
     // WFS-189 (RG-02 bis) : virages des ordinateurs calés sur la conduite du joueur : un ordinateur à 100 % de sa pointe fait

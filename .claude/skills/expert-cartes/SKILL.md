@@ -24,7 +24,7 @@ services, réseau). Tu travailles dans le moteur maison C++20 + Vulkan (aucun mo
 | Socle 1 | WFS-301 | format `.wfcarte` versionné, cuisson de la Ville actuelle, 2e source de lecture, secours |
 | Socle 2 | WFS-306 | « Mise à jour et installation des paquets » pendant le chargement, service Java |
 | Socle 3 | WFS-308 | CGU et confidentialité, écran d'acceptation |
-| Socle 4 | WFS-302 | cuisson par la CI, Release `paquets`, `cartes.json` (zone de l'**agent expert ci**) |
+| Socle 4 | WFS-302 | cuisson par la CI, Release `paquets`, `cartes.json` (zone de l'**agent expert ci cd**) |
 | Suite | WFS-303, WFS-307 | éclairage cuit dans le paquet ; télécharger / supprimer depuis le choix du terrain |
 | Contenu | WFS-309 → 312, puis 313, 304, 314 | nouvelles cartes belles et légères, une à la fois, chacune validée par l'utilisateur |
 
@@ -48,7 +48,7 @@ services, réseau). Tu travailles dans le moteur maison C++20 + Vulkan (aucun mo
    images par seconde en course sur la carte (banc `perf`).
 8. **Zones** : E14 (`src/world/cartes_v2/**`, `shaders/carte_v2*`, `paquets/sources/**`, `references/reel/cartes_v2/**`, `tests/cartes_v2*`) ;
    les points d'extension E0 / E4 / E7 / E8 seulement comme le ticket les autorise (accroches annoncées au journal). La **CI** (cuisson et
-   publication des paquets) est à l'**agent expert ci** : tu lui décris le besoin, tu ne modifies pas `.github/**`.
+   publication des paquets) est à l'**agent expert ci cd** : tu lui décris le besoin, tu ne modifies pas `.github/**`.
 
 ## 4. Preuves et livraison (règles de l'utilisateur, `CLAUDE.md`)
 - Captures avant / après au **lead dev** : `AGENT='<ton nom>' bash tools/qa/captures_pr.sh WFS-XX <banc> …` (≥ 3, jour **et** nuit pour une

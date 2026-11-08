@@ -581,16 +581,20 @@ void benchMiniCarte(Game& g, Renderer& r, const std::string& out) {
             const Course* c = activeCourse();
             if (c && c->state == RaceState::Play) {
                 if (!g_piste) { image(i); continue; }
-                const nav::Prochaine p = nav::prochaine(trace::sections(*g_piste), g.player().dist, g_piste->length(), c->duelFinish, M);
-                if (voulu(p.m) && p.distanceM >= dMin && p.distanceM <= dMax) return true;
+                const auto& secs = trace::sections(*g_piste);
+                const nav::Prochaine p = nav::prochaine(secs, g.player().dist, g_piste->length(), c->duelFinish, M);
+                if (voulu(p, secs) && p.distanceM >= dMin && p.distanceM <= dMax) return true;
             }
             g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t);   // une image sur 30 : banc plus court sur la CI
         }
         return false;
     };
-    auto rondPoint = [](nav::Manoeuvre m) { return m == nav::Manoeuvre::RondPoint; };
-    auto serre = [](nav::Manoeuvre m) { return m == nav::Manoeuvre::SerreGauche || m == nav::Manoeuvre::SerreDroite || m == nav::Manoeuvre::EpingleGauche ||
-                                              m == nav::Manoeuvre::EpingleDroite || m == nav::Manoeuvre::Lacets; };
+    // WFS-283 (RG-01) : sans rond-point, le banc attend le carrefour simple qui le remplace (section exRondPoint), mêmes captures
+    auto rondPoint = [](const nav::Prochaine& p, const std::vector<trace::Section>& secs) {
+        return p.m == nav::Manoeuvre::RondPoint || (p.section >= 0 && p.section < (int)secs.size() && secs[p.section].exRondPoint); };
+    auto serre = [](const nav::Prochaine& p, const std::vector<trace::Section>&) { const nav::Manoeuvre m = p.m;
+        return m == nav::Manoeuvre::SerreGauche || m == nav::Manoeuvre::SerreDroite || m == nav::Manoeuvre::EpingleGauche ||
+               m == nav::Manoeuvre::EpingleDroite || m == nav::Manoeuvre::Lacets; };
     courseBenchRules(true);
     // 1) Checkpoint sur la Ville, pilote automatique : capture quand le prochain checkpoint est entre 100 et 300 m devant
     //    (WFS-173 : nom gardé pour la comparaison avant / après)
@@ -633,7 +637,7 @@ void benchMiniCarte(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(true); g.camMode = 0;
         rouler(60 * 4);
         const bool ok = k.rp ? jusqua(rondPoint, 80, 200, 120) : jusqua(serre, 80, 200, 120);
-        if (!ok) WFS_LOG("minicarte : %s : %s non atteint en 120 s", k.carte, k.rp ? "rond-point" : "virage serré");
+        if (!ok) WFS_LOG("minicarte : %s : %s non atteint en 120 s", k.carte, k.rp ? (trace::rondsPoints() ? "rond-point" : "carrefour (ex-rond-point)") : "virage serré");
         capture(std::string("minicarte-") + k.carte + (nuit ? "-nuit" : "-jour"));
         g.setAutopilot(false);
         g.shutdown(); g_piste = nullptr;
