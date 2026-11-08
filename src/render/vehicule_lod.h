@@ -4,7 +4,7 @@
 // mêmes sommets et matériaux, seulement d'autres indices ; jamais de cube). Le niveau dépend de la longueur de la voiture à
 // l'écran, en pixels de la scène 3D (seuils ci-dessous) ; entre deux niveaux, fondu tramé écran complémentaire de WFS-134
 // (scene.frag) sur une bande de 1/9 du seuil (de 64 à 72 m pour l'ancien passage complète → allégée : même rapport).
-// Qualité Basse : complète, puis version en 4 pièces (partsBasse, moins d'appels de dessin) au 1er seuil, comme WFS-134.
+// Qualité Basse : complète, niveau 1, puis niveaux 2 et 3 en 4 pièces (partsBasseNiveaux, moins d'appels de dessin ; WFS-335).
 // Sans dépendance au moteur (gabarits) : testé seul par tests/test_vehicule_lod.cpp.
 #include <algorithm>
 #include <cmath>
@@ -43,8 +43,8 @@ inline Choix choisir(float px, int nNiveaux) {
     return {nNiveaux - 1, nNiveaux - 1, 0.f};
 }
 
-// Listes de pièces à dessiner pour un modèle M (champs parts, partsLod, partsBasse, partsNiveaux, bmin, bmax) :
-// a, puis b en fondu si t > 0. fantome : complet seul (WFS-134, RG-07) ; lots (police en Basse) : partsBasse seule.
+// Listes de pièces à dessiner pour un modèle M (champs parts, partsLod, partsBasse, partsBasseNiveaux, partsNiveaux, bmin, bmax) :
+// a, puis b en fondu si t > 0. fantome : complet seul (WFS-134, RG-07) ; lots (police en Basse) : versions en 4 pièces seules.
 template <class M>
 struct Dessin { const decltype(M::parts)* a = nullptr; const decltype(M::parts)* b = nullptr; float t = 0; int niveau = 0; };
 
@@ -54,20 +54,34 @@ Dessin<M> dessin(const M& m, float distance, float focalePx, bool basse, bool lo
     const Liste* l[NIVEAUX] = {&m.parts};
     int n = 1;
     const bool versBasse = basse && !m.partsBasse.empty();
-    if (!fantome && versBasse) {
+    // WFS-335 (RG-02) : en Basse, au loin, les niveaux 2 et 3 en 4 pièces (partsBasseNiveaux) : avant, la version en 4 pièces
+    // gardait la forme du niveau 1 (40 à 60 k triangles) jusqu'à 200 m et plus (relevé du banc : 52 k triangles pour 8 px)
+    auto loinBasse = [&] {
+        for (size_t k = 0; k < m.partsBasseNiveaux.size() && n < NIVEAUX; k++)
+            if (!m.partsBasseNiveaux[k].empty()) l[n++] = &m.partsBasseNiveaux[k]; else break;
+    };
+    if (lots && versBasse && !fantome) {
+        // police en lots : version en 4 pièces même de près (moins d'appels), puis niveaux 2 et 3 en 4 pièces au loin, aux mêmes
+        // seuils que les autres (48 et 26 px) : le 1er passage (200 px) se fait entre deux listes identiques, donc sans fondu
+        l[0] = l[1] = &m.partsBasse; n = 2;
+        loinBasse();
+        if (n == 2) return {&m.partsBasse, &m.partsBasse, 0.f, 1};
+    } else if (!fantome && versBasse) {
         // WFS-265 (retour du lead dev, PR #268) : en Basse, complète au-dessus de 200 px, puis niveau 1 (feux, vitres et lunette
-        // intacts) jusqu'à 48 px (≈ 77 m), puis la version en 4 pièces au loin (WFS-134 : avant, dès 64 m)
+        // intacts) jusqu'à 48 px (≈ 77 m), puis les versions en 4 pièces au loin (WFS-134 : avant, dès 64 m)
         if (!m.partsLod.empty()) l[n++] = &m.partsLod;
-        l[n++] = &m.partsBasse;
+        const int n0 = n;
+        if (n == 2) loinBasse();
+        if (n == n0) l[n++] = &m.partsBasse;   // sans niveaux 2 et 3 : version en 4 pièces du niveau 1 (ou de la complète)
     } else if (!fantome) {
         if (!m.partsLod.empty()) l[n++] = &m.partsLod;
         // niveaux 2 et 3 : qualité Moyenne et plus
         for (size_t k = 0; n == (int)k + 2 && k < m.partsNiveaux.size() && n < NIVEAUX; k++)
             if (!m.partsNiveaux[k].empty()) l[n++] = &m.partsNiveaux[k];
     }
-    if (lots && versBasse && !fantome) return {&m.partsBasse, &m.partsBasse, 0.f, 1};
     const float L = std::max({m.bmax.x - m.bmin.x, m.bmax.y - m.bmin.y, m.bmax.z - m.bmin.z});
-    const Choix c = choisir(pixels(L, focalePx, distance), n);
+    Choix c = choisir(pixels(L, focalePx, distance), n);
+    if (l[c.a] == l[c.b]) { c.b = c.a; c.t = 0.f; }   // fondu entre deux listes identiques : une seule suffit
     return {l[c.a], l[c.b], c.t, c.a};
 }
 

@@ -17,7 +17,7 @@ static int echecs = 0;
 struct Piece { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; int8_t feuArriere = 0; };
 struct V3 { float x, y, z; };
 struct Modele {
-    std::vector<Piece> parts, partsLod, partsBasse; std::vector<std::vector<Piece>> partsNiveaux;
+    std::vector<Piece> parts, partsLod, partsBasse; std::vector<std::vector<Piece>> partsNiveaux, partsBasseNiveaux;
     V3 bmin{-0.9f, 0, -2.13f}, bmax{0.9f, 1.45f, 2.13f};   // Golf : 4,26 m
 };
 
@@ -55,7 +55,7 @@ int main() {
         VERIFIE(d(40, false, false, false).a == &mo.partsLod, "Haute, 40 m : niveau 1 (WFS-265)");
         VERIFIE(d(100, false, false, false).a == &mo.partsNiveaux[0], "Haute, 100 m : niveau 2");
         VERIFIE(d(200, false, false, false).a == &mo.partsNiveaux[1], "Haute, 200 m : niveau 3");
-        VERIFIE(d(190, true, false, false).a == &mo.partsBasse, "Basse, 190 m : version en 4 pièces");
+        VERIFIE(d(190, true, false, false).a == &mo.partsBasse, "Basse, 190 m : version en 4 pièces (sans niveaux 2 et 3 en 4 pièces)");
         VERIFIE(d(10, true, false, false).a == &mo.parts && d(40, true, false, false).a == &mo.partsLod && d(70, true, false, false).a == &mo.partsLod,
                 "Basse (WFS-265, PR #268) : complète près, niveau 1 de 18 à 77 m (feux et vitres intacts), pas la version en 4 pièces");
         VERIFIE(d(100, true, false, false).a == &mo.partsBasse, "Basse, 100 m : version en 4 pièces");
@@ -63,6 +63,23 @@ int main() {
         VERIFIE(d(10, true, false, false).a == &mo.parts && vehicule_lod::dessin(sansLod, 40, F, true, false, false).a == &sansLod.partsBasse, "Basse sans .lod : complète puis 4 pièces");
         VERIFIE(d(10, true, true, false).a == &mo.partsBasse && d(10, true, true, false).t == 0, "police en lots : partsBasse seule, même de près");
         VERIFIE(d(190, false, false, true).a == &mo.parts, "fantôme : complet à toute distance");
+        {   // WFS-335 (RG-02) : Basse au loin : niveaux 2 et 3 en 4 pièces ; près, rien ne change (complète, puis niveau 1)
+            Modele b = mo; b.partsBasseNiveaux = {{{57, 6, 0, 0}}, {{63, 3, 0, 0}}};
+            auto e = [&](float dist, bool lots) { return vehicule_lod::dessin(b, dist, F, true, lots, false); };
+            VERIFIE(e(10, false).a == &b.parts && e(40, false).a == &b.partsLod && e(70, false).a == &b.partsLod, "Basse : complète puis niveau 1, comme avant");
+            VERIFIE(e(100, false).a == &b.partsBasseNiveaux[0] && e(200, false).a == &b.partsBasseNiveaux[1], "Basse : niveau 2 puis 3 en 4 pièces au loin");
+            int rangAvant = 0; bool monotone = true, fonduVu = false;
+            for (float dist = 1; dist < 400; dist += 0.25f) {
+                const auto c = e(dist, false);
+                if (c.niveau < rangAvant) monotone = false;
+                rangAvant = c.niveau; fonduVu |= c.t > 0 && c.niveau >= 1;
+                VERIFIE(c.t == 0 || c.a != c.b, "fondu entre deux listes différentes seulement");
+            }
+            VERIFIE(monotone && fonduVu, "Basse : niveaux croissants avec la distance, fondu tramé entre eux");
+            VERIFIE(e(10, true).a == &b.partsBasse && e(10, true).t == 0 && e(19.5f, true).t == 0, "police en lots : 4 pièces de près, sans fondu inutile");
+            VERIFIE(e(100, true).a == &b.partsBasseNiveaux[0] && e(200, true).a == &b.partsBasseNiveaux[1], "police en lots : niveaux 2 et 3 en 4 pièces au loin");
+            VERIFIE(vehicule_lod::dessin(b, 200, F, false, false, false).a == &b.partsNiveaux[1], "Haute : inchangée");
+        }
         const auto f = d(19.5f, false, false, false);   // WFS-265 : fondu de 18,4 à 20,7 m (64 à 72 m avant)
         VERIFIE(f.a == &mo.parts && f.b == &mo.partsLod && f.t > 0, "19,5 m : fondu complète → niveau 1");
         Modele seul; seul.parts = mo.parts;

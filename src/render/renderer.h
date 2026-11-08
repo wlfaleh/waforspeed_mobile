@@ -73,6 +73,7 @@ struct Model {
     std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
     std::vector<ModelPart> partsBasse; // WFS-134 (RG-11) : 4 pièces au plus (peinture, feux, vitres, reste), qualité Basse au loin
     std::vector<std::vector<ModelPart>> partsNiveaux;   // WFS-158 (RG-04) : niveaux de détail 2 et 3 (<id>.lod), après partsLod
+    std::vector<std::vector<ModelPart>> partsBasseNiveaux;   // WFS-335 (RG-02) : niveaux 2 et 3 en 4 pièces (comme partsBasse), Basse au loin
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;
@@ -196,6 +197,11 @@ public:
     enum Famille : uint8_t { FAM_DECOR = 0, FAM_VOITURES = 1, FAM_PERSONNES = 2, FAM_N = 3 };
     struct ComptesImage { uint32_t appels[FAM_N] = {}, triangles[FAM_N] = {}; };
     const ComptesImage& comptesImage() const { return comptesPrec_; }
+    // WFS-335 (RG-01) : relevé voiture par voiture de la dernière image (banc seulement, releverVoitures = vrai) : distance réelle
+    // à la caméra, longueur à l'écran, niveau de détail, triangles et appels mis en file pour la scène (une passe)
+    struct ReleveVoiture { float distance = 0, px = 0; int niveau = 0; uint32_t triangles = 0, appels = 0; bool joueur = false; };
+    bool releverVoitures = false;
+    const std::vector<ReleveVoiture>& releveVoitures() const { return releve_; }   // image terminée (vidé au début de la suivante)
     // WFS-329 (ANO-178) : fond figé des écrans hors course (menu, choix du terrain). Demandé par Game ; tant qu'il l'est et que
     // la scène de l'image précédente est encore valable (cibles non recréées), endFrame ne refait que la passe finale (relecture
     // de la scène HDR et du bloom gardés) et l'interface : même image, sans ombres, reflet, captures, scène ni bloom
@@ -328,6 +334,7 @@ private:
     struct Bloom; Bloom* bloom_ = nullptr;   // WFS-100 : chaîne du bloom « dual filter » (renderer.cpp)
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
     ComptesImage comptes_, comptesPrec_;   // WFS-317 (I9)
+    std::vector<ReleveVoiture> releve_;   // WFS-335 (RG-01)
     bool figer_ = false, sceneValide_ = false;   // WFS-329 : fond figé demandé ; image de scène HDR gardée valable
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
