@@ -93,11 +93,16 @@ static bool lire(const std::string& chemin, Wfp& w) {
     return o <= b.size();
 }
 
+// WFS-266 : sommet d'une mèche (coiffure longue ajoutée : partie 2, _cloth.x = 1) ou d'un œil (partie 1) : hors du corps mesuré
+static bool horsCorps(const Wfp& w, uint32_t v) {
+    const float part = w.C[v * 4 + 3];
+    return (part > 1.5f && w.C[v * 4] > 0.5f) || (part > 0.5f && part < 1.5f);
+}
 // mêmes définitions que mesurer() de tools/convert_people_makehuman.py
 struct Mesures { double stature, entrejambe, envergure, menton; };
-// utilise : sommets du niveau de détail mesuré (vide : tous)
+// utilise : sommets du niveau de détail mesuré (vide : tous) ; mèches et yeux jamais mesurés (WFS-266)
 static Mesures mesurer(const Wfp& w, const std::vector<bool>& utilise = {}) {
-    auto pris = [&](uint32_t v) { return utilise.empty() || utilise[v]; };
+    auto pris = [&](uint32_t v) { return (utilise.empty() || utilise[v]) && !horsCorps(w, v); };
     double y0 = 1e9, y1 = -1e9, x0 = 1e9, x1 = -1e9;
     for (uint32_t v = 0; v < w.nV; v++) {
         if (!pris(v)) continue; y0 = std::min(y0, (double)w.P[v * 3 + 1]); y1 = std::max(y1, (double)w.P[v * 3 + 1]); x0 = std::min(x0, (double)w.P[v * 3]); x1 = std::max(x1, (double)w.P[v * 3]); }
@@ -153,7 +158,7 @@ static double ecartForme(const Wfp& w, uint32_t a0, uint32_t n0, uint32_t a, uin
     }
     std::vector<bool> vu(w.nV, false); double pire = 0;
     for (uint32_t i = a0; i < a0 + n0; i++) {
-        const uint32_t v = w.I[i]; if (vu[v]) continue; vu[v] = true;
+        const uint32_t v = w.I[i]; if (vu[v] || horsCorps(w, v)) continue; vu[v] = true;   // WFS-266 : mèches (niveaux propres, WFS-240)
         const V3 p = P(v); double m = 1e9;
         const int ci = (int)std::floor(p.x / cel), cj = (int)std::floor(p.y / cel), ck = (int)std::floor(p.z / cel);
         for (int r = 0; r <= 8 && m > (r - 1) * cel; r++)   // anneau r : les cases plus loin sont à ≥ r × cel ; arrêt dès que m est sûr
@@ -176,6 +181,7 @@ int main(int argc, char** argv) {
     Wfp jeu[2];
     cas("personnages du jeu lisibles (squelette de référence)", lire(depot + "/assets/people/femme.wfp", jeu[0]) && lire(depot + "/assets/people/homme.wfp", jeu[1]));
     const char* const sexes[2] = {"femmes", "hommes"};
+    int femmesCheveuxLongs = 0;   // WFS-266 (RG-01) : au moins 3 femmes sur 6 aux cheveux mi-longs ou longs
     for (int s = 0; s < 2; s++) {
         std::vector<double> st;
         for (int k = 1; k <= 6; k++) {
@@ -193,8 +199,23 @@ int main(int argc, char** argv) {
             cas(id + " : squelette du jeu (noms, ordre, parents), palette ≤ 64, corps-0, clips",
                 w.os == jeu[s].os && w.parents == jeu[s].parents && w.nPal <= 64 && w.nClips == jeu[s].nClips
                 && std::find(w.plages.begin(), w.plages.end(), "corps-0") != w.plages.end());
-            const Mesures m = mesurer(w);
+            Mesures m = mesurer(w);
+            m.stature -= 0.004;   // WFS-266 : cuir chevelu peint épaissi de 4 mm (comme les enfants, WFS-233)
             st.push_back(m.stature);
+            // WFS-266 (RG-01, RG-02) : cheveux peints sur le crâne, deux yeux en partie 1 (centre du globe dans _cloth.xyz)
+            int cheveux = 0, cheveuxBas = 0, meches = 0, yeux[2] = {0, 0};
+            double cx[2] = {0, 0}, cy[2] = {0, 0};
+            for (uint32_t v = 0; v < w.nV; v++) {
+                const float* c = &w.C[v * 4];
+                if (c[3] > 1.5f && c[0] > 0.5f) meches++;
+                else if (c[3] > 1.5f) { cheveux++; if (w.P[v * 3 + 1] < w.corps[0]) cheveuxBas++; }
+                else if (c[3] > 0.5f) { const int k = c[0] > 0 ? 0 : 1; yeux[k]++; cx[k] = c[0]; cy[k] = c[1]; }
+            }
+            cas(id + " : cheveux peints (" + std::to_string(cheveux) + " sommets), tous au-dessus du cou", cheveux > 100 && cheveuxBas == 0);
+            if (s == 0) femmesCheveuxLongs += meches > 300;
+            char ty[160]; std::snprintf(ty, sizeof ty, " : 2 yeux (%d + %d sommets), écart des pupilles %.1f mm (réel 55-70 mm), à %.2f m", yeux[0], yeux[1], (cx[0] - cx[1]) * 1000, cy[0]);
+            cas(id + ty, yeux[0] > 30 && yeux[1] > 30 && cx[0] - cx[1] > 0.055 && cx[0] - cx[1] < 0.075 && std::fabs(cy[0] - cy[1]) < 0.002
+                         && cy[0] > m.stature * 0.9 && cy[0] < m.stature * 0.96);
             // WFS-211 (RG-01) : 3 niveaux de détail ; M-01 et M-02 tenus à chacun (sommets réellement dessinés par la plage)
             int niveaux = 0; bool memes = true;
             for (int lod = 0; lod < 3; lod++) {
@@ -241,6 +262,7 @@ int main(int argc, char** argv) {
         const wfs::reel::Json* m = R.mesure(std::string("humain.") + sexes[s] + ".stature");
         mesure(std::string(sexes[s]) + " : M-01 écart-type de la stature (m)", ec, m ? m->nombre("ecart_type", 0) / 1000 : 0, 0.01);
     }
+    cas("WFS-266 : " + std::to_string(femmesCheveuxLongs) + " femmes sur 6 aux cheveux longs (≥ 3)", femmesCheveuxLongs >= 3);
     // WFS-233 (RG-01) : 8 enfants (garçon g, fille f ; 4, 7, 10, 14 ans) : même format et même squelette que les adultes,
     // 3 niveaux de détail ; M-01 stature = médiane CDC 2000 ± 1 % (cheveux peints de 4 mm retirés) ; proportions (tête,
     // entrejambe) contre les valeurs de contrôle « à confirmer » de l'expert ; cuir chevelu peint (partie 2) sur la tête seulement
