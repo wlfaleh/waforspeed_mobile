@@ -45,6 +45,20 @@ struct Material {
 
 struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (repère local)
 
+// WFS-273 (RG-01) : exemplaires d'un maillage dessinés en un appel (arbres du décor préparé). Un exemplaire = les 3 premières
+// lignes de sa matrice monde (l0, l1, l2 : rotation × échelle uniforme + translation) et x.x = facteur de la normale après
+// transformation (teinte MAT_VTINT ÷ échelle : la longueur de la normale porte la luminosité du feuillage, l'échelle ne doit
+// pas la changer) ; x.yzw libres. Tampon de sommets lu au rythme des exemplaires (binding 1, scene.vert et shadow.vert).
+struct Instance { float l0[4], l1[4], l2[4], x[4]; };
+static_assert(sizeof(Instance) == 64, "Instance : 64 octets (binding 1 de scene.vert)");
+inline Instance instance(const mat4& m, float facteurNormale) {
+    Instance i{};
+    for (int c = 0; c < 4; c++) { i.l0[c] = m.at(0, c); i.l1[c] = m.at(1, c); i.l2[c] = m.at(2, c); }
+    i.x[0] = facteurNormale;
+    return i;
+}
+struct Instances { Buffer buf; uint32_t n = 0; };
+
 // maillage animé par squelette (WFS-63, point d'extension) : sommet = position, normale, uv + 4 os (indices dans la
 // palette de l'instance) et 4 poids ; dessiné avec une palette de matrices d'os (skinning dans le vertex shader).
 // WFS-72 : cloth = attribut _cloth du jeu web (bras, hauteur, jambe, partie 0 corps / 1 yeux / 2 cheveux)
@@ -134,6 +148,9 @@ public:
     uint64_t creationsMaillages_ = 0, creationsMateriaux_ = 0;
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
+    // WFS-273 (RG-01) : tampon d'exemplaires créé une fois (au chargement) ; rendu par destroy
+    Instances makeInstances(const std::vector<Instance>& v);
+    void destroy(Instances& i);
     void destroy(Model& m);
     void destroy(Material& m);   // WFS-187 (accroche E0) : rend le jeu de descripteurs du matériau (GPU arrêté sur ce jeu) ; vide : rien
     // WFS-63 : maillage à squelette (les maillages rigides ne changent pas)
@@ -145,6 +162,9 @@ public:
     bool beginFrame(const FrameParams& fp);
     void draw(const Model& m, const mat4& world, const vec3* paint = nullptr, const RouesPose* roues = nullptr);   // WFS-60 : sans pose = rendu inchangé
     void draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth = 0);
+    // WFS-273 (RG-01) : exemplaires [premier, premier + nombre) de `ex` du maillage m en un seul appel ; bornes = sphère monde
+    // qui les contient tous (masquage et ombres comme un seul objet)
+    void drawInstances(const Mesh& m, const Material& mat, const Instances& ex, uint32_t premier, uint32_t nombre, vec3 centre, float rayon);
     // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
     void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
@@ -218,7 +238,7 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; };   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; VkBuffer inst = VK_NULL_HANDLE; uint32_t instPremier = 0, instNombre = 1; };   // WFS-273 : exemplaires (VK_NULL_HANDLE : identité)   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
@@ -335,6 +355,7 @@ private:
     Buffer refletUbo_[2]; VkDescriptorSet refletSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
     bool refletsOn_ = false;
     Buffer quadVb_[2], quadIb_; int quadsUsed_ = 0;
+    Buffer instIdentite_;   // WFS-273 : un exemplaire identité (dessins ordinaires : binding 1 toujours lié)
     Material haloMat_;
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;

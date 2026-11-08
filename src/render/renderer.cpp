@@ -262,6 +262,10 @@ bool Renderer::init(VkCtx& vk) {
             std::memcpy(&qi[(size_t)q * 6], a, sizeof a);
         }
         quadIb_ = vk.uploadBuffer(qi.data(), qi.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        {   // WFS-273 (RG-01) : exemplaire identité, lié au binding 1 de tous les dessins ordinaires
+            const Instance id = instance(mat4::identity(), 1.f);
+            instIdentite_ = vk.uploadBuffer(&id, sizeof id, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        }
     }
     ETAPE_RENDU("ressources par image");
     VkDescriptorSetAllocateInfo dai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
@@ -788,8 +792,8 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     const VkSpecializationInfo spec{2, entrees, sizeof valeurs, valeurs};
     if (sansDiscard || legerPipeline_) st[1].pSpecializationInfo = &spec;
 
-    VkVertexInputBindingDescription bind{};
-    VkVertexInputAttributeDescription attr[6]{};
+    VkVertexInputBindingDescription bind{}, binds[2]{};
+    VkVertexInputAttributeDescription attr[8]{};
     VkPipelineVertexInputStateCreateInfo vi{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     if (vertexKind == 1) {   // scène : position, normale, uv
         bind = {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
@@ -797,8 +801,11 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         attr[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12};
         attr[2] = {2, 0, VK_FORMAT_R32G32_SFLOAT, 24};
         attr[3] = {3, 0, VK_FORMAT_R8G8B8A8_SNORM, 32};   // WFS-149 (RG-04) : tangente (format obligatoire des tampons de sommets)
-        vi.vertexBindingDescriptionCount = 1; vi.pVertexBindingDescriptions = &bind;
-        vi.vertexAttributeDescriptionCount = 4; vi.pVertexAttributeDescriptions = attr;
+        // WFS-273 (RG-01) : binding 1, un exemplaire (Instance, 64 octets) : 3 lignes de matrice + facteur de la normale
+        binds[0] = bind; binds[1] = {1, sizeof(Instance), VK_VERTEX_INPUT_RATE_INSTANCE};
+        for (uint32_t k = 0; k < 4; k++) attr[4 + k] = {4 + k, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 16 * k};
+        vi.vertexBindingDescriptionCount = 2; vi.pVertexBindingDescriptions = binds;
+        vi.vertexAttributeDescriptionCount = 8; vi.pVertexAttributeDescriptions = attr;
     } else if (vertexKind == 3) {   // WFS-63 : sommet à squelette (position, normale, uv, 4 os, 4 poids)
         bind = {0, sizeof(SkinVertex), VK_VERTEX_INPUT_RATE_VERTEX};
         attr[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};
@@ -1265,12 +1272,13 @@ void Renderer::flushDraw(const Pending& p) {
     VkDeviceSize zero = 0;
     vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &zero);
 #endif
+    if (p.osOfs < 0) { const VkBuffer ib1 = p.inst ? p.inst : instIdentite_.buf; const VkDeviceSize z1 = 0; vkCmdBindVertexBuffers(cb, 1, 1, &ib1, &z1); }   // WFS-273
     vkCmdBindIndexBuffer(cb, p.ib, 0, p.i16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);   // WFS-210 (RG-05)
     const VkPipelineLayout lay = p.osOfs >= 0 ? skinLayout_ : sceneLayout_;   // WFS-63 : palette d'os en set 2
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, lay, 1, 1, &p.mat->set, 0, nullptr);
     if (p.osOfs >= 0) { const uint32_t ofs = (uint32_t)p.osOfs; vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skinLayout_, 2, 1, &osSet_[cur_], 1, &ofs); }
     vkCmdPushConstants(cb, lay, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC), &p.pc);
-    vkCmdDrawIndexed(cb, p.count, 1, p.first, vofs, 0);
+    vkCmdDrawIndexed(cb, p.count, p.instNombre, p.first, vofs, p.instPremier);
 }
 
 // WFS-84 : feux de nuit naturels. Réglages en un seul endroit (RG-06), à ajuster après un essai sur téléphone.
@@ -1395,6 +1403,32 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     if (mat.flags & MAT_SHADOWBLOB) { p.pc.color.w *= 0.45f / 0.75f; ombreFaite_ = true; } else ombreFaite_ = false;
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
 }
+
+void Renderer::drawInstances(const Mesh& m, const Material& mat, const Instances& ex, uint32_t premier, uint32_t nombre, vec3 centre, float rayon) {
+    if (!inFrame_ || !m.indexCount || !ex.buf.buf || nombre == 0 || premier + nombre > ex.n) return;
+    const masquage::Sphere sp{centre, rayon};
+    const uint8_t vis = classer(sp);
+    if (!vis) return;
+    Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(centre - camPos_)};
+    p.vis = vis; p.inst = ex.buf.buf; p.instPremier = premier; p.instNombre = nombre;
+    constexpr uint32_t COMPLET = MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR;
+    p.loin = !(mat.flags & COMPLET) && rayon >= 0 && length(centre - camPos_) - rayon > 70.f;   // WFS-263 : même règle que draw
+    p.pc.model = mat4::identity(); p.pc.color = mat.color;
+    p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
+    p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
+    if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
+}
+
+Instances Renderer::makeInstances(const std::vector<Instance>& v) {
+    Instances r;
+    if (v.empty()) return r;
+    creationsMaillages_++;   // WFS-268 (RG-04) : compté comme une création de tampon
+    r.buf = vk_->uploadBuffer(v.data(), v.size() * sizeof(Instance), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    r.n = (uint32_t)v.size();
+    return r;
+}
+
+void Renderer::destroy(Instances& i) { if (i.buf.buf) vk_->destroy(i.buf); i.n = 0; }
 
 void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
                            const ApparencePersonnage* ap, float fondu) {
@@ -1728,6 +1762,7 @@ void Renderer::shutdown() {
         if (p) vkDestroyPipeline(d, p, nullptr);
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
+    vk_->destroy(instIdentite_);
     if (refletPass_) vkDestroyRenderPass(d, refletPass_, nullptr);
     for (auto& b : osBuf_) vk_->destroy(b);
     if (skinLayout_) vkDestroyPipelineLayout(d, skinLayout_, nullptr);
