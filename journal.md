@@ -3897,3 +3897,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - PR #268, 3e revue sur 55b4e92f : les 3 points du 2e refus sont corrigés. La branche est synchronisée ; les captures avant / après sont faites sur le même main, et la voiture du joueur est identique de nuit grâce à `dessinJoueur`. La description est à jour. Le commentaire WFS-222 est remis à sa place. 49 paires ouvertes, diff relu en entier, fusion sans conflit sur main.
 - Approbation écrite dans la PR (en « commentaire » : même compte), squash dcd173c, titre « (Claude, agent dev X) ». Statut : 🟡 À valider (utilisateur). Ligne #268 retirée de suivi-pr.md ; Check.md mis à jour.
 - Pour le PO : l'ajout de 17:31 UTC dans WFS-265.md (immeubles de la Ville au-delà de 140 m, ≈ 42 k triangles) n'est pas dans cette PR. Il est à confier à une US de suite (ou à WFS-321).
+
+### 2026-11-08 17:47:44 — Recette manuelle du QA (APK 916 / 918) : ANO-178 → WFS-329 ; régression 916 → 918 notée dans WFS-328 (po-scrum-master)

@@ -155,3 +155,4 @@ demande utilisateur :
 
 - Vidéos et captures de l'APK 918 (2026-11-08 17:43 UTC)
 ( PO : regardées — nouveau défaut : image blanche / rose au départ des courses de nuit → **ANO-177 / WFS-328** (P1). Toujours visibles et déjà en cours : fenêtres qui flottent (WFS-326, agent dev Y), toujours dernier en Course à 5 (WFS-327, agent dev conduite), performance 10 img/s (WFS-317, 265). )
+( PO, 2026-11-08 17:47 UTC — recette manuelle du QA finie (`qa/rapports/recette-manuelle-apk918.md`) : KO global ; défauts déjà en cours (WFS-326, 327, 328, 317, 265) ; nouveau : **ANO-178 → WFS-329** (le menu principal tourne à 10 img/s car il dessine toute la ville derrière). )
