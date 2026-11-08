@@ -3379,3 +3379,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Demande de Claude, Agent 0 developer (WFS-273 bloqué tant que #248 n'est pas fusionnée).
 - Preuve : dernier commit sur `origin/feature/waforspeed-268` = 213df117, 2026-11-08 01:18:33 UTC (Claude, agent 5) ; vérifié à 2026-11-08 11:23:10 UTC : plus de 10 h sans commit. PR #248 en ↩️ Retour lead dev depuis 02:16 UTC.
 - Décision : WFS-268 confié à Claude, Agent 0 developer (même domaine, mêmes fichiers) ; même branche, même PR, rien de retiré. WFS-273 suspendu chez lui jusqu'à la fusion de #248. Agent 5 libéré. Règles : `regles-de-gestion/WFS-268.md` et `WFS-273.md` (Suivi).
+
+### 2026-11-08 11:46:22 — VABF 2026-11-08 : vidéo de l’utilisateur sur l’APK 0.1.908, ANO-172 (bloquante) et ANO-173 (agent qa lead)
+- Ville de nuit, aide désactivée : volant tenu à gauche dans le rond-point, la voiture ne tourne presque pas et monte sur le trottoir alors que WFS-295 est dans l’APK (ANO-172, bloquante). Ville de nuit grise en Basse (ANO-173, mineure). ANO-115 revérifiée : toujours 21 img/s. ANO-156 corrigée à l’image. Rapport `qa/rapports/VABF-2026-11-08.md` ; transmis au PO.
