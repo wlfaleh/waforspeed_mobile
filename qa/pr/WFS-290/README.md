@@ -4,7 +4,11 @@ Branche `feature/waforspeed-290` comparée à `origin/main` ; bancs : reglages-a
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
-| `reglages-appuis-menu-ferme` | — | ![après](apres-reglages-appuis-menu-ferme.jpg) |
-| `reglages-appuis-menu-ouvert` | — | ![après](apres-reglages-appuis-menu-ouvert.jpg) |
-| `reglages-appuis-pause-ferme` | — | ![après](apres-reglages-appuis-pause-ferme.jpg) |
-| `reglages-appuis-pause-ouvert` | — | ![après](apres-reglages-appuis-pause-ouvert.jpg) |
+| `reglages-appuis-menu-ferme` | ![avant](avant-reglages-appuis-menu-ferme.jpg) | ![après](apres-reglages-appuis-menu-ferme.jpg) |
+| `reglages-appuis-menu-fermer-appuye` | ![avant](avant-reglages-appuis-menu-fermer-appuye.jpg) | ![après](apres-reglages-appuis-menu-fermer-appuye.jpg) |
+| `reglages-appuis-menu-ouvert` | ![avant](avant-reglages-appuis-menu-ouvert.jpg) | ![après](apres-reglages-appuis-menu-ouvert.jpg) |
+| `reglages-appuis-menu-reglages-appuye` | ![avant](avant-reglages-appuis-menu-reglages-appuye.jpg) | ![après](apres-reglages-appuis-menu-reglages-appuye.jpg) |
+| `reglages-appuis-pause-ferme` | ![avant](avant-reglages-appuis-pause-ferme.jpg) | ![après](apres-reglages-appuis-pause-ferme.jpg) |
+| `reglages-appuis-pause-fermer-appuye` | ![avant](avant-reglages-appuis-pause-fermer-appuye.jpg) | ![après](apres-reglages-appuis-pause-fermer-appuye.jpg) |
+| `reglages-appuis-pause-ouvert` | ![avant](avant-reglages-appuis-pause-ouvert.jpg) | ![après](apres-reglages-appuis-pause-ouvert.jpg) |
+| `reglages-appuis-pause-reglages-appuye` | ![avant](avant-reglages-appuis-pause-reglages-appuye.jpg) | ![après](apres-reglages-appuis-pause-reglages-appuye.jpg) |
