@@ -3807,3 +3807,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - À corriger : 0 régression en Glisser (tableau main / branche), banc course5 volant tenu au journal, description complétée, 3 captures aide activée doigt tenu. Revue écrite dans la PR (COMMENT : même compte GitHub).
 
 ### 2026-11-08 16:51:30 — WFS-258 point 3 : au-dessus de 100 km/h, l'aide ne cède qu'au frein (po-scrum-master)
+
+### 2026-11-08 16:55:09 — Captures de l'APK 916 : mesure du téléphone (triangles → temps GPU), WFS-326 (ANO-175) et WFS-327 (ANO-176) créés (po-scrum-master)

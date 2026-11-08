@@ -139,3 +139,6 @@ demande utilisateur :
 
 - Je viens de tester le mode aide à la conduite, il fonctionne bien (2026-11-08 16:30 UTC)
 ( PO : noté — WFS-258 point 1 ✅ validé ; l'agent dev conduite est prévenu et continue le point 3. )
+
+- Captures de l'APK 916 (Réglages avec les nouveaux chiffres, courses de nuit, cockpit, chargement) (2026-11-08 16:55 UTC)
+( PO : analysées — performance : le téléphone ralentit avec le nombre de triangles, les voitures en tête → WFS-265 prioritaire, WFS-317 suit ; **WFS-326** (fenêtres qui flottent hors des façades, ANO-175) et **WFS-327** (Course à 5 : toujours dernier, ANO-176) créés en urgence avant la sortie publique. )
