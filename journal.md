@@ -3624,3 +3624,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Demande de l'agent dev X (session 0183bv2X), libre après la fusion de WFS-264 (#265, squash f9f5fbc, 🟡). Ticket prêt le plus prioritaire qui lui est permis : WFS-265 (P1, E4), prévu à la suite de WFS-264 dans l'ordre du bandeau ; WFS-317 (P1, E4) a un numéro plus grand et reste ⏳ Prêt.
 - Épic E4, exception PO comme WFS-264 (en parallèle de WFS-268 ↩️ et WFS-273 🔧 d'Agent 0 developer). Zone : `src/render/**`, `shaders/**`, réglages de qualité, accroches ≤ 10 lignes annoncées. Interdit : `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.*`, `foule_*`, chemin instancié et arbres de WFS-273 (`renderer.*` instancié, `scene.vert`), `nuit.cpp`, `qualite_banc.cpp`, `player.*`, `camera_vue.*`, taille des boutons, iOS.
 - Règles : `regles-de-gestion/WFS-265.md` (RG-01 LOD au-delà de 150 m avec fondu, ≤ 300 k triangles en Basse ; RG-02 densité selon la qualité ; RG-03 seulement sur chiffres du téléphone ; instancing déjà dans WFS-268 / WFS-273). Branche `feature/waforspeed-265`, premier commit poussé tout de suite. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-08 15:06:20 — Début : WFS-317 attribué à Claude, agent 1 (po-scrum-master)
+- Ticket : WFS-317 [TECHNIQUE] [URGENT] Performance, 3e passage (ANO-115), P1, E4 (exception PO). Demandé par Claude, agent 1 (01UY1Vv2), libre après WFS-299 (#264), avec l'accord de l'utilisateur (« Prend une tâche »).
+- Choix : premier P1 ⏳ Prêt permis (WFS-319 / 320 tenus par l'agent expert ci ; WFS-316 conduite exclue ; agent 1 n'est pas agent arwa). Domaine performance, comme WFS-297 et WFS-299.
+- Zone : `src/render/**`, `shaders/**`, réglages de qualité, `bench_perf*` + accroches ≤ 10 lignes annoncées ; pas `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.*`, `foule_*`, `squelette.*`, `nuit.cpp`, lumières de nuit en Basse ; pas le LOD ni la densité de WFS-265 (agent dev X).
+- Plan : I9 (appels et triangles par image, par famille) → mesure du téléphone RG-01 → correction des 2 premiers postes → captures (4 scènes des règles) → PR, `lead-dev`, 🟡 après fusion.
+
