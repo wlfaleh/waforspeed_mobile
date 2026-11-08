@@ -8,6 +8,7 @@ Branche `feature/waforspeed-308` comparée à `origin/main` ; bancs : cgu:2400x1
 | `cgu-defile` | — | ![après](apres-cgu-defile.jpg) |
 | `cgu-premier` | — | ![après](apres-cgu-premier.jpg) |
 | `cgu-refus` | — | ![après](apres-cgu-refus.jpg) |
+| `cgu-reprise` | — | ![après](apres-cgu-reprise.jpg) |
 | `reglages-cgu-bouton` | — | ![après](apres-reglages-cgu-bouton.jpg) |
 | `reglages-cgu-lecture` | — | ![après](apres-reglages-cgu-lecture.jpg) |
 | `reglages-108` | ![avant](avant-reglages-108.jpg) | ![après](apres-reglages-108.jpg) |

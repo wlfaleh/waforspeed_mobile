@@ -3748,3 +3748,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **2. Texte figé pendant le glissement** : cause : délai de 33 ms de `ALooper_pollOnce`, la boucle ne sortait pas tant que les MOVE arrivaient. Choix : délai 0 pendant les CGU, comme en jeu ; l'image est rythmée par la présentation (FIFO) dans `Cgu::image`, donc une image par lot d'entrées, sans attente active hors présentation.
 - **3. Accroche de `android_main.cpp`** : logique sortie dans `cgu.cpp` (`demarrer`, `perdreFenetre`, `image` : rotation 8 essais, taille de la fenêtre, image, état) ; reste ≈ 22 lignes, **accordées par écrit par le PO** (WFS-308.md § Suivi, 15:55:45 UTC, commit 8ba03698).
 - **4.** Commentaire WFS-246 de `g_mesure` remis sur sa ligne (`reglages.cpp`).
+
+### 2026-11-08 16:56:13 — WFS-308 : CI de branche (seule permise, confiance ≤ 50 %) et captures régénérées (Claude, agent 3 (01UY1Vv3))
+- CI de branche **run #915** (id 42498019211, `workflow_dispatch` de `build.yml` sur 2d846064, branche synchronisée avec `main`) : vérifie la **compilation Android** de `android_main.cpp` (non compilable en local, pas de NDK) : jobs `android` (APK et AAB construits et signés, pages de 16 Ko) et `compilation` **verts** à 16:10 UTC ; endurance et bancs encore en cours au moment de l'écriture.
+- 72 tests CPU OK (`test_audio_chocs` a échoué une fois sur le seuil de temps RG-07 pendant que la machine compilait, 0,0438 ms pour 0,05 permis ; vert en relançant : test sans lien avec WFS-308).
+- Captures `qa/pr/WFS-308/` régénérées (cgu et menu2 en 2400×1080) : 14 après dont `cgu-reprise` (texte lisible après perte puis retour de la fenêtre), 7 avant.
