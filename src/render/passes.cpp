@@ -277,8 +277,8 @@ void debutImage(Renderer& r) {
     }
     g.ecrites[f] = 0;
     if (VkQueryPool p = AccesRendu::horodatages(r); p && AccesRendu::horodatagesEcrits(r, f)) {
-        uint64_t t[4];
-        if (vkGetQueryPoolResults(AccesRendu::vk(r).device, p, (uint32_t)f * 4, 4, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) == VK_SUCCESS) {
+        uint64_t t[4];   // WFS-246 (RG-06) : 5 horodatages par image (le 5e : fin de la passe finale)
+        if (vkGetQueryPoolResults(AccesRendu::vk(r).device, p, (uint32_t)f * Renderer::HORODATAGES, 4, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) == VK_SUCCESS) {
             const double k = AccesRendu::vk(r).props.limits.timestampPeriod * 1e-6;
             ajouter(MAX_PASSES + R_OMBRES, (double)(t[1] - t[0]) * k);
             ajouter(MAX_PASSES + R_REFLETS, (double)(t[2] - t[1]) * k);

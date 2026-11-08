@@ -3,6 +3,8 @@
 // (watchPerf du jeu web, logique dans qualite_auto.h) ; bandeau « Graphismes rapides — pour plus de fluidité ».
 // Inactif hors écran (banc d'essai : captures inchangées) et en mode GPU logiciel (WFS-59 gère déjà l'échelle).
 #include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <string>
 #include "../core/log.h"
@@ -28,6 +30,9 @@ Renderer* g_r = nullptr;
 float g_ips = -1;            // −1 : pas encore mesuré (banc d'essai hors écran)
 double g_ipsT = 0; int g_ipsN = 0;
 std::string g_ligneVue;      // dernière ligne écrite au journal (sans les images/s)
+qualite::MesureImages g_mesure;   // WFS-246 (RG-06) : 20 dernières secondes de course
+qualite::Cadence g_cadence; qualite::MesureImages::Stats g_stats1s; double g_statsT = 0;   // WFS-262 (RG-04) : statistiques recalculées chaque seconde
+bool g_enCoursePrec = false; double g_fichierT = 0;   // WFS-246 : fin de course (journal), fichier écrit toutes les 5 s
 
 class QualiteSystem : public System {
 public:
@@ -36,6 +41,9 @@ public:
     void init(Renderer& r, const GameView&) override {
         r_ = &r; g_r = &r; dernier_ = -1; effets_ = 0;
         actif_ = !r.vk().offscreen && !r.gpuLogiciel();
+        if (std::getenv("WFS_MESURE_ESSAI") && !g_mesure.n) {   // WFS-246 : banc PC, ligne de la mesure dans les captures des Réglages
+            static float v[1200]; for (int i = 0; i < 1200; i++) v[i] = i % 100 == 0 ? 52.f : i % 25 == 0 ? 36.f : 16.7f; qualite::mesureEssai(v, 1200);
+        }
         mesure_ = !r.vk().offscreen;   // WFS-134 (RG-01) : images/s mesurées sur le téléphone, même en GPU logiciel
         static bool annonce = false;
         if (actif_ && !annonce) {
@@ -47,7 +55,8 @@ public:
     }
 
     // une mesure par image réellement affichée ; l'état « en course » = partie lancée (décompte fini), comme 'play'
-    void render(Renderer&, const GameView& g) override {
+    void render(Renderer& r, const GameView& g) override {
+        pipelinesCourse(r, g.ecran == Ecran::Course && !g.sceneDediee);   // WFS-262 (RG-02) : aussi au banc
         if (!actif_ && !mesure_) return;
         const double t = nowSeconds();
         const double dt = dernier_ < 0 ? 0 : t - dernier_;
@@ -57,10 +66,12 @@ public:
         if (g_ipsT >= 1) { g_ips = (float)(g_ipsN / g_ipsT); g_ipsT = 0; g_ipsN = 0; }
         if (!actif_) return;
         const ecrans::Reglages& R = ecrans::reglages();
-        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; }   // changé dans les réglages
+        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; g_auto.palier = 0; r_->echelleDynamique(1.f); g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : cadence remise à 60   // changé dans les réglages (WFS-246 : palier, zone dessinée)
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
-        effets_ |= g_auto.imageChauffe(dt, g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing(), chauffeNiveau());
+        const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing();
+        effets_ |= g_auto.imageChauffe(dt, enCourse, chauffeNiveau(), r_->gpuImageMs());   // WFS-246 : marge du GPU
+        mesurer(dt, enCourse);
         if (g_auto.mesures != mesuresVues_) {   // WFS-150 (RG-04) : la Haute tient-elle (Ultra proposé) ?
             mesuresVues_ = g_auto.mesures; const bool avant = qualite::tenueUltra.tenue;
             qualite::tenueUltra.mesure(g_auto.fpsMesure, R.qualite, chauffeNiveau());
@@ -81,16 +92,18 @@ public:
             g_banniere = 2.5; g_banniereChauffe = false;
             WFS_LOG("qualité : rétrogradation automatique au niveau %d (%.0f images/s à l'échelle 0,6)", g_auto.niveau, g_auto.fpsMesure);
         }
-        const float avant = r_->vk().renderScale;
-        r_->vk().renderScale = qualite::echelleScene(g_auto.niveau, g_auto.echelle);   // WFS-104 / WFS-134 : jamais sous la netteté du garage
-        if (r_->vk().renderScale != avant) r_->resize();
-        // WFS-104 : téléphone lent → bloom puis ombres coupés, la résolution de la voiture ne bouge pas
-        const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.echelle);
+        // WFS-246 (RG-07) : cibles à la capacité du niveau de netteté (recréées seulement si elle change : jamais pour la
+        // résolution dynamique) ; la résolution dynamique ne change que la zone dessinée, sans attente du GPU
+        const float cap = qualite::echelleScene(g_auto.niveau, 1.f), voulu = qualite::echelleScene(g_auto.niveau, g_auto.echelle);
+        if (r_->vk().renderScale != cap) { r_->vk().renderScale = cap; r_->resize(); }
+        r_->echelleDynamique(voulu / cap);
+        // WFS-246 : effets coupés seulement une fois la scène à 60 % (paliers de qualite_auto.h)
+        const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.palier);
         r_->bloomForce = al.bloom ? qualite::bloomNiveau(g_auto.niveau) : 0.f;
         r_->forceNoShadows = !al.ombres;
         r_->forceSansReflets = !al.reflets; eclairage::suspendreCaptures(!al.captures);   // WFS-222 (RG-03)
-        WFS_LOG("qualité : %.0f images/s → facteur dynamique %.2f (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s, reflets %s, captures %s)", g_auto.fpsMesure,
-                g_auto.echelle, r_->vk().renderScale * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées",
+        WFS_LOG("qualité : %.0f images/s, GPU %.1f ms → facteur dynamique %.2f, palier %d (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s, reflets %s, captures %s)", g_auto.fpsMesure,
+                r_->gpuImageMs(), g_auto.echelle, g_auto.palier, r_->vk().renderScale * r_->echelleDynamiqueActuelle() * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées",
                 al.reflets ? "oui" : "coupés", al.captures ? "oui" : "suspendues");
         effets_ = 0;
     }
@@ -109,11 +122,53 @@ public:
     }
 
 private:
+    // WFS-262 (RG-02) : pipelines créés pendant la course (décompte compris), au journal en sortant de la course (0 attendu) ;
+    // le cache de pipelines est enregistré à ce moment (hors course : aucun à-coup d'écriture)
+    void pipelinesCourse(Renderer& r, bool scene) {
+        if (r.pipelinesCrees() != pipelinesVus_) {   // hors course (menu, pause) : changement de qualité demandé par le joueur
+            pipelinesVus_ = r.pipelinesCrees();
+        }
+        if (scene && !sceneCourse_) {
+            sceneCourse_ = true; pipelinesDebut_ = r.pipelinesCrees();
+            WFS_LOG("pipelines (WFS-262) : course affichée, %u pipelines créés depuis le lancement", pipelinesDebut_);
+        } else if (!scene && sceneCourse_) {
+            sceneCourse_ = false;
+            const uint32_t n = r.pipelinesCrees() - pipelinesDebut_;
+            if (n) WFS_ERR("pipelines (WFS-262 RG-02) : %u pipeline(s) créé(s) pendant la course (0 attendu)", n);
+            else WFS_LOG("pipelines (WFS-262 RG-02) : 0 pipeline créé pendant la course : OK");
+            r.enregistrerCachePipelines();
+        }
+    }
+    bool sceneCourse_ = false; uint32_t pipelinesDebut_ = 0, pipelinesVus_ = 0;
+    // WFS-246 (RG-06) : durées d'image de la course ; fichier rendu-mesure.txt toutes les 5 s de course, ligne au journal à la fin
+    void mesurer(double dt, bool enCourse) {
+        if (enCourse && !g_enCoursePrec) { g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : chaque course part à 60
+        if (enCourse) {
+            g_mesure.ajouter((float)(dt * 1000));
+            if ((g_statsT += dt) >= 1) { g_statsT = 0; g_stats1s = g_mesure.stats(); }
+            // WFS-262 (RG-04) : cadence 60 / 30 ; « au plancher » : scène déjà à 60 % et effets allégés
+            const bool plancher = g_auto.echelle <= g_auto.echelleMin() + 1e-4f && g_auto.palier >= 1;
+            if (qualite::cadenceAuto && g_cadence.image(dt, true, plancher, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1)) {
+                qualite::cadenceCourse = g_cadence.ips;
+                WFS_LOG("cadence (WFS-262) : %d images/s (95 %% des images à %.1f ms, GPU %.1f ms)", g_cadence.ips, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1.0);
+            }
+            g_fichierT += dt;
+            if (g_fichierT >= 5) { g_fichierT = 0; ecrireFichier(); }
+        } else if (g_enCoursePrec && g_mesure.n) {
+            WFS_LOG("mesure du rendu (WFS-246, RG-06) : %s", qualite::ligneMesure().c_str());
+            ecrireFichier();
+        }
+        g_enCoursePrec = enCourse;
+    }
+    static void ecrireFichier() {
+        if (qualite::dossierMesure.empty()) return;
+        if (FILE* f = std::fopen((qualite::dossierMesure + "/rendu-mesure.txt").c_str(), "w")) { std::fputs(qualite::texteMesure().c_str(), f); std::fclose(f); }
+    }
     // WFS-134 (RG-01) : la ligne « Rendu » (sans les images/s, qui bougent sans cesse) écrite au journal quand elle change ;
     // le journal est celui du rapport partagé de WFS-126
     void journalRendu() {
         if (!r_) return;
-        const std::string l = qualite::texteRendu(qualite::niveauAffiche(ecrans::reglages().qualite), r_->vk().renderScale, (int)r_->vk().msaa, -1, chauffeNiveau());
+        const std::string l = qualite::texteRendu(qualite::niveauAffiche(ecrans::reglages().qualite), r_->vk().renderScale * r_->echelleDynamiqueActuelle(), (int)r_->vk().msaa, -1, chauffeNiveau());
         if (l == g_ligneVue) return;
         g_ligneVue = l;
         WFS_LOG("%s (netteté du niveau %d, %.0f images/s)", qualite::ligneRendu().c_str(), qualite::niveauNettete(ecrans::reglages().qualite), g_ips);
@@ -132,7 +187,44 @@ void bandeauGraphismesRapides() { g_banniere = 2.5; g_banniereChauffe = true; } 
 // WFS-134 (RG-01) : rendu réellement utilisé, lu en direct
 std::string qualite::ligneRendu() {
     if (!g_r) return "Rendu : --";
-    const std::string l = texteRendu(niveauAffiche(ecrans::reglages().qualite), g_r->vk().renderScale, (int)g_r->vk().msaa, g_ips, chauffeNiveau());
+    const std::string l = texteRendu(niveauAffiche(ecrans::reglages().qualite), g_r->vk().renderScale * g_r->echelleDynamiqueActuelle(), (int)g_r->vk().msaa, g_ips, chauffeNiveau());
     return modeDiagnostic() ? l + " · " + passes::texteCouts(passes::coutsFenetre()) : l;   // WFS-150 (RG-05) : coût de chaque passe
 }
+// WFS-246 (RG-06) : chiffres de la mesure du téléphone
+namespace {
+double coutCapture() {   // passe enfichable de capture d'environnement (horodatages des passes, WFS-150)
+    for (const passes::Cout& c : passes::coutsFenetre()) if (c.nom.rfind("capture", 0) == 0) return c.ms;
+    return 0;
+}
+std::string virgule(double v) { char b[24]; std::snprintf(b, sizeof b, "%.1f", v); for (char* p = b; *p; p++) if (*p == '.') *p = ','; return b; }
+}
+std::string qualite::ligneMesure() {
+    const MesureImages::Stats st = g_mesure.stats();
+    if (!st.images) return "";
+    std::string l = "Images (20 s) : méd. " + virgule(st.mediane) + " · 95 % " + virgule(st.p95) + " · 99 % " + virgule(st.p99) + " · écart " + virgule(st.ecartType) + " ms · cadence " + std::to_string(qualite::cadenceCourse) + " · > 33 ms : " +
+                    std::to_string(st.plus33) + " · > 50 ms : " + std::to_string(st.plus50);
+    if (g_r && g_r->gpuPasses().mesuree) {
+        const Renderer::GpuPasses& p = g_r->gpuPasses();
+        l += " · GPU ombre " + virgule(p.ombre) + " reflet " + virgule(p.reflet) + " capture " + virgule(coutCapture()) + " scène " + virgule(p.scene) +
+             " post " + virgule(p.post) + " ms";
+    }
+    return l;
+}
+std::string qualite::texteMesure() {
+    const MesureImages::Stats st = g_mesure.stats();
+    if (!st.images) return "";
+    std::string t = "WaForSpeed : mesure du rendu sur le téléphone (WFS-246, RG-06)\n" + ligneRendu() + "\n";
+    t += "fenêtre : " + virgule(st.secondes) + " s de course, " + std::to_string(st.images) + " images\n";
+    t += "durée d'image : médiane " + virgule(st.mediane) + " ms, 95 % " + virgule(st.p95) + " ms, 99 % " + virgule(st.p99) + " ms, écart type " + virgule(st.ecartType) + " ms\n";
+    t += "cadence de la course (WFS-262) : " + std::to_string(qualite::cadenceCourse) + " images/s\n";
+    t += "images de plus de 33 ms : " + std::to_string(st.plus33) + " ; de plus de 50 ms : " + std::to_string(st.plus50) + "\n";
+    if (g_r && g_r->gpuPasses().mesuree) {
+        const Renderer::GpuPasses& p = g_r->gpuPasses();
+        t += "temps GPU (ms, lissé) : ombre " + virgule(p.ombre) + ", reflet " + virgule(p.reflet) + ", capture " + virgule(coutCapture()) +
+             ", scène " + virgule(p.scene) + ", post (bloom, image finale, interface) " + virgule(p.post) + "\n";
+    } else t += "temps GPU : horodatages non disponibles sur ce téléphone\n";
+    char e[64]; std::snprintf(e, sizeof e, "échelle dynamique %.2f, palier d'allègement %d\n", g_r ? g_r->echelleDynamiqueActuelle() : 1.f, g_auto.palier);
+    return t + e;
+}
+void qualite::mesureEssai(const float* ms, int n) { g_mesure.vider(); for (int i = 0; i < n; i++) g_mesure.ajouter(ms[i]); }
 } // namespace wfs

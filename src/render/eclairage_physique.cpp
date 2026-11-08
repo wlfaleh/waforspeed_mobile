@@ -56,6 +56,8 @@ struct Etat_ {
     double heureMoment[(int)atmosphere::Moment::NB] = {-100, -100, -100, -100, -100, -100, -100}, ecoule = 0, acceleration = 1;
     // image courante (physique → avantImage)
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
+    bool releverNuit = true;   // WFS-276 : basses lumières relevées la nuit (pas dans la Ville éclairée)
+    double eRecu = 0;   // WFS-230 : éclairement horizontal reçu par le conducteur la nuit (lx)
     bool capturesSuspendues = false;   // WFS-222 (RG-03)
     // scène
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
@@ -364,6 +366,9 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 } // namespace
 
 const Etat& etat() { return g.etat; }
+// WFS-230 (RG-04) : exposition k pour la vision de nuit de la passe finale (post.frag) ; 0 de jour ou sans éclairage physique
+// WFS-276 : signe = relèvement des basses lumières (post.frag) : + Campagne, Corniche, Grand Prix ; − Ville éclairée (inchangée, RG-04)
+float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.moment == (int)atmosphere::Moment::Nuit ? (float)(g.releverNuit ? g.k : -g.k) : 0.f; }   // heure bleue : inchangée (RG-05)
 void forcer(const Forcage& f) { g.forc = f; }
 void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
     g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
@@ -392,6 +397,24 @@ void irradiance(const vec3& n, double E[3]) {
 }
 
 // WFS-208 (RG-04) : couverture nuageuse de la carte (part du ciel couverte, été méditerranéen : littoral plus dégagé)
+// WFS-230 (RG-01) : éclairement horizontal reçu au point p par les lampadaires de la carte (copie la plus proche du joueur de
+// chaque lampadaire du tour, à moins de 160 m : au-delà, moins de 0,02 lx) : pilote la borne basse de l'exposition de nuit
+double eclairementLampes(const GameView& gv, vec3 p) {
+    if (!gv.track || lampadaires().empty()) return 0;
+    Track& t = *gv.track;
+    const double L = t.length(), z = gv.player ? gv.player->position : 0;
+    if (!(L > 0)) return 0;
+    double E = 0;
+    for (const Lampadaire& l : lampadaires()) {
+        double s = (double)l.seg * SEG;
+        s += std::round((z - s) / L) * L;
+        if (std::fabs(s - z) * M > 160) continue;
+        const TrackPoint q = t.point(s, l.lat);
+        E += eclairementLampe(E_LAMPE_SOL, std::hypot(q.x - p.x, q.z - p.z), l.y);
+    }
+    return E;
+}
+
 double couvertureNuages(const GameView& gv) {
     const char* id = gv.map ? gv.map->id : "";
     return !std::strcmp(id, "plage") ? 0.15 : !std::strcmp(id, "ville") ? 0.25 : !std::strcmp(id, "circuit") ? 0.30 : 0.35;
@@ -399,6 +422,7 @@ double couvertureNuages(const GameView& gv) {
 
 void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.imageActive = false;
+    g.releverNuit = !(gv.map && !std::strcmp(gv.map->id, "ville"));   // WFS-276 (RG-04)
     if (dediee || g.desactive) { g.etat.actif = false; return; }
     // ---- scène : temps, remise à zéro (changement de carte, de moment, téléportation)
     const double t = fp.time;
@@ -468,7 +492,20 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
-    cible = std::clamp(cible, evMin, evMax);
+    // WFS-230 (RG-01) : nuit au clair de lune : l'exposition dépend de l'éclairement reçu par le conducteur (lune, ciel et lampadaires
+    // proches). Loin des lampes, posemètre incident (evIncidentNuit) jusqu'à −3,5 (WFS-249).
+    // La mesure réfléchie des sondes n'est pas prise la nuit : la tache des phares la tirait vers EV 2 (essai du 2026-11-07 :
+    // 0,49 cd/m² en rase campagne) et le paysage restait noir. Passage continu par l'adaptation de l'œil (RG-02).
+    // Rue éclairée (≥ 3 lx reçus) : bornes et mesure d'avant (EV 3 à 5, RG-01) ; rase campagne (≤ 0,63 lx) : posemètre incident
+    // (jusqu'à −3,5) ; entre les deux, fondu en EV (partRue).
+    double evMinLu = evMin;
+    if (lune) {
+        g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);
+        const double w = partRue(g.eRecu);
+        cible = w * std::clamp(cible, EV_NUIT_MIN, evMax) + (1 - w) * evIncidentNuit(g.eRecu);
+        evMinLu = EV_LUNE_MIN;
+    }
+    cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
     if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
@@ -477,7 +514,12 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.dtImage = dt;
     const double k = exposition(g.ev);
     const double expOrig = fp.exposure;
-    const double facteur = expOrig * k / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
+    // WFS-230 (RG-03) : adaptation locale de l'œil : les lumières artificielles (phares, lampadaires, néons, halos, voile des villes)
+    // ne suivent l'exposition que jusqu'à EV 3 (rue éclairée) ; en dessous (clair de lune), elles restent comme à EV 3 : le paysage
+    // se lit au clair de lune sans que les phares et les lampes ne deviennent « tout blanc » (Thompson, Shirley et Ferwerda 2002 :
+    // l'œil adapté à la nuit ne voit pas les lampes brûlées). De jour (EV ≥ 10), rien ne change (RG-05).
+    const double kLumieres = lune ? exposition(std::max(g.ev, EV_LUMIERES_MIN)) : k;   // heure bleue et jour : inchangés (RG-05)
+    const double facteur = expOrig * kLumieres / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
     // ---- ciel, sol, brouillard (cd/m²)
     // WFS-207 (RG-02) : de jour, teintes du ciel tirées de l'atmosphère (zénith, horizon) ; la nuit, celles de la carte (lot 2)
     auto teinte = [](const double c[3]) { const double y = std::max(luminanceRgb(c), 1e-12); return vec3{(float)(c[0] / y), (float)(c[1] / y), (float)(c[2] / y)}; };
@@ -545,6 +587,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     e.ev = g.ev; e.evCible = cible; e.k = k; e.facteurArtistique = facteur; e.couleurSoleil = couleur;
     e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = lune ? astre.phase : 0;   // WFS-207
     e.moment = (int)mom; e.heureUtc = heure; e.eSol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;   // WFS-208
+    e.eRecu = lune ? g.eRecu : -1; e.evMin = evMinLu;   // WFS-230
     e.sondeCaptureActive = g.B.capture; e.positionSonde = g.B.pos; e.poidsB = g.w; e.luminanceMesuree = Lmes;
 }
 

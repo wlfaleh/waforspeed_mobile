@@ -46,6 +46,7 @@ struct Etat {
     double luminanceZenith = 0;      // cd/m² (modèle)
     double facteurCie = 0;           // K : L = K f(γ) φ(Z)
     double ev = 15, evCible = 15;    // EV100 appliqué et visé
+    double eRecu = -1, evMin = 0;    // WFS-230 : éclairement reçu la nuit (lx, −1 de jour) et borne basse appliquée
     double k = 0;                    // exposition (pré-exposition)
     double facteurArtistique = 1;    // RG-06 : multiplicateur des émissions, halos et projecteurs
     vec3 couleurSoleil{1, 1, 1};     // sRGB linéaire, luminance relative 1
@@ -60,6 +61,7 @@ struct Etat {
     double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
 };
 const Etat& etat();
+float kVisionNuit();   // WFS-230 (RG-04) : exposition pour la vision de nuit (post.frag) ; 0 de jour ; WFS-276 : négative = sans relèvement des basses lumières (Ville)
 
 // RG-01 à RG-06 : passe fp en unités physiques (appelé par Game::render après les ambiances ; dediee = scène dédiée : rien)
 void physique(FrameParams& fp, bool dediee, const GameView& g);

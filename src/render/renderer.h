@@ -1,5 +1,6 @@
 // WaForSpeed — moteur de rendu : passe de scène HDR (MSAA), passe finale (tonemapping + interface).
 #pragma once
+#include <chrono>
 #include <cstddef>
 #include <string>
 #include <unordered_set>
@@ -58,7 +59,7 @@ struct ApparencePersonnage {
 };
 struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; bool i16 = false; };   // WFS-210 (RG-05) : indices 16 bits   // WFS-82 : sphère englobante (pose de repos × 1,5)
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
-constexpr int SKIN_MAX_INSTANCES = 48;    // instances animées par image (RG-05 de WFS-19 : 8 piétons × 2 ; WFS-73 RG-06 : + 16 conducteurs × 2)
+constexpr int SKIN_MAX_INSTANCES = 152;   // instances animées par image (WFS-73 RG-06 : 16 conducteurs × 2 ; WFS-257 : + 120 pour les piétons du cadre)
 
 struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; int8_t feuArriere = 0; };   // WFS-60 : roue 0-3, −1 = fixe ; WFS-109 : 1 feu arrière découpé, 2 3e feu stop
 // WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le
@@ -125,6 +126,11 @@ public:
     // ressources
     Material makeMaterial(const Material& m, const Image* color, const Image* normal, const Image* mr);
     Mesh makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic = false);
+    // WFS-268 (accroche, RG-04) : créations de tampons de maillages (makeMesh) et de jeux de descripteurs (makeMaterial)
+    // depuis le lancement : un écart nul pendant la course = rien n'est créé en course
+    uint64_t creationsMaillages() const { return creationsMaillages_; }
+    uint64_t creationsMateriaux() const { return creationsMateriaux_; }
+    uint64_t creationsMaillages_ = 0, creationsMateriaux_ = 0;
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
     void destroy(Model& m);
@@ -141,7 +147,7 @@ public:
     // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
     void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
-                     uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr);
+                     uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr, float fondu = 0);   // WFS-257 : fondu (tramage, pc.emissive.w)
     // WFS-09 : quads transitoires de l'image (4 sommets par quad, triangles 0-1-2 / 0-2-3), dessinés avec les objets
     // transparents ; nQuads ≤ 4096 par image. halo : quad face à la caméra (MAT_ADD), couleur linéaire × intensité ;
     // haloSol : quad couché (repère monde : centre c, axes r et f, demi-tailles), additif ; tache des phares : MAT_POOL
@@ -155,6 +161,7 @@ public:
     // WFS-134 (RG-07, ANO-60) : la prochaine voiture dessinée par draw(Model) est le fantôme du record : translucide
     // (α 0,45), teintée cyan, sans ombre de contact, sans feux
     void fantomeProchaineVoiture() { fantomeSuivant_ = true; feuxProchaineVoiture(FeuxVoiture{}); }
+    void adversaireProchaineVoiture() { adversaireSuivant_ = true; }   // WFS-243 (ANO-117) : adversaire (Course à 5, Duel) : sans limite de distance (WFS-82), champ seul
     // WFS-144 (RG-03 a) : en qualité Basse, la prochaine voiture dessinée par draw(Model) prend sa version en lots de matériaux
     // (partsBasse : peinture, feux, vitres, reste) à toute distance : police de la poursuite, moins d'appels de dessin, jamais de cubes
     void lotsProchaineVoiture() { lotsSuivant_ = true; }
@@ -182,6 +189,20 @@ public:
     // (enregistrement des passes et envoi) et triangles de la dernière image ; mesure seule, aucun effet sur le rendu
     struct ChronoImage { double attenteGpuMs = 0, finImageMs = 0; uint32_t triangles = 0; };
     const ChronoImage& chronoImage() const { return chronoPrec_; }
+    // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
+    double gpuImageMs() const { return gpuImageMs_; }
+    // WFS-246 (RG-06) : temps GPU de chaque passe (ms, lissé) ; mesuree = faux sans horodatages
+    static constexpr uint32_t HORODATAGES = 5;   // WFS-246 (RG-06) : horodatages par image (ombre, reflet, scène, fin de scène, fin de la passe finale)
+    struct GpuPasses { double ombre = 0, reflet = 0, scene = 0, post = 0; bool mesuree = false; };
+    const GpuPasses& gpuPasses() const { return gpuPasses_; }
+    // WFS-246 (RG-07) : résolution dynamique (0,1 à 1 de la capacité) sans recréer les cibles ; appliquée à l'image suivante
+    void echelleDynamique(float e);
+    float echelleDynamiqueActuelle() const { return echelleDyn_; }
+    uint32_t recreations() const { return recreations_; }   // WFS-246 : appels de resize()
+    // WFS-262 : cache de pipelines (RG-01) et compteur des pipelines créés (RG-02 : 0 attendu pendant la course)
+    void enregistrerCachePipelines();
+    uint32_t pipelinesCrees() const { return pipelinesCrees_; }
+    double msDepuisInit() const { return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - debutChargement_).count(); }
     // objets en file pour la passe de scène (vus par la caméra) : appels et triangles, comptés par système au banc
     void fileScene(uint32_t& appels, uint32_t& triangles) const {
         appels = triangles = 0;
@@ -202,7 +223,7 @@ private:
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
     // WFS-227 : bit VIS_CASCADE0 << k (16, 32, 64, 128) : objet dans la cascade d'ombre k
     enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CAPTURE = 8, VIS_CASCADE0 = 16 };
-    uint8_t classer(const masquage::Sphere& s);
+    uint8_t classer(const masquage::Sphere& s, bool sansDistance = false);   // WFS-243 : sansDistance pour les adversaires
     float texelCasc_[4] = {};   // WFS-227 : taille d'un texel de chaque cascade (1re : 0, tout objet y porte ombre)
     vec3 regardCasc_{0, 0, -1};  // WFS-227 : regard de la caméra (tranches des cascades)
     masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4]; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
@@ -210,6 +231,7 @@ private:
     void destroyTargets();
     void createPipelines();
     void createScenePipelines();   // WFS-144 : pipelines de la passe de scène (nombre d'échantillons vk.msaa)
+    void prechaufferMsaa();        // WFS-262 (RG-02) : variantes MSAA des pipelines de scène dans le cache
     bool appliquerNettete();       // WFS-144 (RG-04) : MSAA et anisotrope du niveau de netteté ; true : passe de scène à refaire
     VkPipeline makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
                             VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false, int melange = 0,
@@ -232,7 +254,9 @@ private:
     VkCtx* vk_ = nullptr;
     uint32_t lw_ = 0, lh_ = 0;   // taille logique (tampon)
     uint32_t vw_ = 0, vh_ = 0;   // taille d'affichage (fenêtre), 0 = identique
-    uint32_t sw_ = 0, sh_ = 0;   // taille de la scène 3D (logique × renderScale)
+    uint32_t sw_ = 0, sh_ = 0;   // zone dessinée de la scène 3D (WFS-246 : capacité × échelle dynamique, + 2 px)
+    uint32_t cw_ = 0, ch_ = 0;   // WFS-246 (RG-07) : taille des cibles de la scène (logique × renderScale), fixe en course
+    float echelleDyn_ = 1.f;     // WFS-246 : part de la capacité lue par la passe finale
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
     Image msaaColor_, depth_, hdr_;
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;
@@ -275,6 +299,11 @@ private:
     VkPipeline skinOpaque_ = VK_NULL_HANDLE, skinShadow_ = VK_NULL_HANDLE, skinShadowMask_ = VK_NULL_HANDLE;
     // WFS-222 : opaques avec découpe (shader avec discard) ; opaque_ et skinOpaque_ sont sans discard (early-Z)
     VkPipeline opaqueDecoupe_ = VK_NULL_HANDLE, skinOpaqueDecoupe_ = VK_NULL_HANDLE;
+    // WFS-246 (levier 1) : opaques fermés sans faces arrière (VK_CULL_MODE_BACK_BIT) ; MAT_DOUBLE (feuillage, panneaux
+    // fins), découpe et vitres gardent les deux faces. cullPipeline_ : mode de la prochaine makePipeline (0 aucun, 1 arrière)
+    VkPipeline opaqueCull_ = VK_NULL_HANDLE, skinOpaqueCull_ = VK_NULL_HANDLE;
+    int cullPipeline_ = 0;
+    bool facesArriere_ = true;   // retrait actif (WFS_FACES=0 au banc : désactivé, pour comparer)
     VkPipeline skyApres_ = VK_NULL_HANDLE;   // WFS-222 : ciel dessiné après les opaques, test de profondeur (pixels vides seulement)
     std::vector<uint32_t> ordreOpaques_;     // WFS-222 : opaques de la passe de scène, du plus proche au plus loin
     Buffer osBuf_[2]; VkDescriptorSet osSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
@@ -285,6 +314,11 @@ private:
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
+    double gpuImageMs_ = -1;   // WFS-246
+    GpuPasses gpuPasses_;      // WFS-246 (RG-06)
+    uint32_t recreations_ = 0;  // WFS-246 (RG-07)
+    VkPipelineCache cachePipelines_ = VK_NULL_HANDLE; uint32_t pipelinesCrees_ = 0;   // WFS-262
+    std::chrono::steady_clock::time_point debutChargement_{};   // WFS-262 : durée du chargement (journal)
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     // WFS-09 / WFS-16 : lumières de nuit et reflets
@@ -301,7 +335,7 @@ private:
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
     // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
-    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false;
+    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false, adversaireSuivant_ = false;
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;
     vec3 camPos_{};

@@ -8,6 +8,13 @@
 
 namespace wfs::cockpit {
 
+// WFS-282 : pièces construites par code, vues de l'intérieur : jamais de retrait des faces arrière (WFS-246 retire les faces
+// arrière des matériaux opaques sans MAT_DOUBLE : le dessus de la planche de bord disparaissait, on voyait la route au travers)
+static Material deuxFaces(Material m) { m.flags |= MAT_DOUBLE; return m; }
+
+bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
+const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
+
 // définitions par modèle (DEFS, interieurPour) : vehicule_cockpit_defs.cpp (sans rendu : testées par tests/test_cockpit.cpp)
 
 // ---------------------------------------------------------------- géométrie
@@ -247,18 +254,18 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     mats_.assign(M_N, Material{});
     auto mat = [&](int k, unsigned c, float rough, float metal, bool grain = false) {
         Material m; const vec3 l = lin(c); m.color = {l.x, l.y, l.z, 1}; m.rough = rough; m.metal = metal;
-        mats_[(size_t)k] = r.makeMaterial(m, nullptr, grain && grain_.view ? &grain_ : nullptr, nullptr);
+        mats_[(size_t)k] = r.makeMaterial(deuxFaces(m), nullptr, grain && grain_.view ? &grain_ : nullptr, nullptr);
     };
     auto ecran = [&](int k, unsigned c, float force) {
         Material m; m.color = {0, 0, 0, 1}; m.rough = 0.2f; m.metal = 0; m.emissive = lin(c) * force;
-        mats_[(size_t)k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        mats_[(size_t)k] = r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr);
     };
     // cuir du volant : couleur du cuir ramenée dans la plage de la charte (albédo linéaire ≥ 0,04 : cuir noir réel ≈ 0,04-0,05)
     {
         Material m; vec3 l = lin(d.cuir); const float y = 0.2126f * l.x + 0.7152f * l.y + 0.0722f * l.z;
         if (y < 0.04f) l = y > 1e-5f ? l * (0.045f / y) : vec3{0.045f, 0.045f, 0.045f};
         m.color = {l.x, l.y, l.z, 1}; m.rough = 0.65f; m.metal = 0;
-        mats_[M_CUIR] = r.makeMaterial(m, nullptr, grain_.view ? &grain_ : nullptr, nullptr);
+        mats_[M_CUIR] = r.makeMaterial(deuxFaces(m), nullptr, grain_.view ? &grain_ : nullptr, nullptr);
     }
     mat(M_PLANCHE_HAUT, d.plancheHaut, 0.72f, 0, true);    // haut de planche : cuir ou matière moussée grainée
     mat(M_PLANCHE_BAS, d.plancheBas, 0.85f, 0, true);      // plastique grainé (aucun reflet métallique)
@@ -405,7 +412,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     }
     // essuie-glaces : bras + balai, dans le repère du balai (x le long du bras, y vers le haut du pare-brise)
     {
-        Material m; m.color = {0.012f, 0.012f, 0.012f, 1}; m.rough = 0.55f; m.metal = 0; brasMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        Material m; m.color = {0.012f, 0.012f, 0.012f, 1}; m.rough = 0.55f; m.metal = 0; brasMat_ = r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr);
         for (int k = 0; k < 2; k++) {
             const float L = k == 0 ? d.balaiG : d.balaiD;
             if (L <= 0) continue;
@@ -422,9 +429,10 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         octets_ += DYN_SOMMETS * sizeof(Vertex) + DYN_SOMMETS / 4 * 6 * 4;
         dv_[k].clear(); di_[k].clear();
     }
-    auto emis = [&](unsigned c, float f) { Material m; m.color = {0, 0, 0, 1}; m.rough = 0.2f; m.emissive = lin(c) * f; return r.makeMaterial(m, nullptr, nullptr, nullptr); };
+    auto emis = [&](unsigned c, float f) { Material m; m.color = {0, 0, 0, 1}; m.rough = 0.2f; m.emissive = lin(c) * f; return r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr); };
     const unsigned cols[D_N] = {d.combineActif, 0x2c3440, d.combineAlerte, 0xc8d0da, 0xff6a00};
     for (int k = 0; k < D_N; k++) { dynMat_[k] = emis(cols[k], 1.0f); dynNuit_[k] = emis(cols[k], 0.45f); }   // nuit : moins lumineux, jamais éblouissant
+    { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {16, 0, 16}; cleMat_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }   // banc (WFS-235, RG-05)
     WFS_LOG("cockpit (WFS-197) : intérieur %s construit : %zu pièces, %.2f Mo", d.car, pieces_.size(), octets_ / 1048576.0);
     return true;
 }
@@ -441,6 +449,8 @@ void Interieur::detruire(Renderer& r) {
     for (int k = 0; k < D_N; k++) { r.destroy(dyn_[k]); r.destroy(dynMat_[k]); r.destroy(dynNuit_[k]); dyn_[k] = {}; dynMat_[k] = dynNuit_[k] = {}; }
     for (Mesh& m : bras_) m = {};
     brasMat_ = {};
+    if (cleMat_.set) r.destroy(cleMat_);
+    cleMat_ = {};
     if (grain_.view) r.vk().destroy(grain_);
     grain_ = {};
     def_ = nullptr; octets_ = 0;
@@ -563,7 +573,7 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     for (int k : {D_FOND, D_ACTIF, D_ALERTE}) {
         if (di_[k].empty()) continue;
         r.updateMesh(dyn_[k], dv_[k], di_[k]);
-        r.draw(dyn_[k], val.nuit ? dynNuit_[k] : dynMat_[k], M); appels_++;
+        r.draw(dyn_[k], mat(val.nuit ? dynNuit_[k] : dynMat_[k]), M); appels_++;
     }
 }
 
@@ -592,7 +602,7 @@ void Interieur::dessinerCarte(Renderer& r, const mat4& cam, const std::vector<ve
     for (int k : {D_ROUTE, D_FLECHE}) {
         if (di_[k].empty()) continue;
         r.updateMesh(dyn_[k], dv_[k], di_[k]);
-        r.draw(dyn_[k], nuit ? dynNuit_[k] : dynMat_[k], M); appels_++;
+        r.draw(dyn_[k], mat(nuit ? dynNuit_[k] : dynMat_[k]), M); appels_++;
     }
 }
 
@@ -604,7 +614,7 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        r.draw(p.m, mats_[(size_t)m], p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
+        r.draw(p.m, mat(mats_[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {
@@ -620,15 +630,15 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
         };
         switch (d.essuie) {
         case Essuie::Paralleles:
-            if (bras_[0].indexCount) { r.draw(bras_[0], brasMat_, cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
-            if (bras_[1].indexCount) { r.draw(bras_[1], brasMat_, cam * repere(base + vec3{0.08f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[1].indexCount) { r.draw(bras_[1], mat(brasMat_), cam * repere(base + vec3{0.08f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
             break;
         case Essuie::Opposition:
-            if (bras_[0].indexCount) { r.draw(bras_[0], brasMat_, cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
-            if (bras_[1].indexCount) { r.draw(bras_[1], brasMat_, cam * repere(base + vec3{0.62f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[1].indexCount) { r.draw(bras_[1], mat(brasMat_), cam * repere(base + vec3{0.62f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
             break;
         case Essuie::Unique:
-            if (bras_[0].indexCount) { r.draw(bras_[0], brasMat_, cam * repere(base + vec3{-0.02f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.02f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
             break;
         }
     }

@@ -28,6 +28,8 @@
 #include "decor_carte.h"
 #include "enseignes.h"   // AtlasTextes (WFS-71) : texte des panneaux publicitaires (WFS-93)
 #include "pietons.h"     // WFS-199 : spectateurs (personnages du jeu allégés, foule::silhouette)
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : tribunes déclarées au son des lieux
+#include "../audio/parois_sons.h"      // WFS-275 (accroche) : murs des stands, garages, tribunes (écho)
 
 namespace wfs {
 namespace carte {
@@ -81,6 +83,7 @@ public:
     const char* name() const override { return "circuit"; }
     void init(Renderer& r, const GameView& g) override {
         basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = tribunes_ = spectateurs_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
+        parois::effacer("circuit");   // WFS-275 (accroche)
         CarteDecor::init(r, g);
         for (auto& T : ad_) T = {};
         if (!active_) return;
@@ -94,6 +97,7 @@ public:
         if (night_) mats_[P_TEXTE0 + 1] = atlas_.materiau(r, LETTRES[1], 1.4f, SEUIL_PANNEAUX);
         for (int k = 0; k < 4; k++) ad_[k] = atlas_.texte(AD_TEXTS[k]);
         for (int k = 0; k < 8; k++) tx_[k] = atlas_.texte(TEXTES[k]);
+        preparerDecor(r);   // WFS-268 (accroche) : décor fixe préparé ici, une fois les panneaux prêts
     }
 
 protected:
@@ -261,6 +265,10 @@ protected:
         if (basse_ && it.petit && section && (impair_++ & 1)) return false;
         item(n, it);
         refuses_--; if (section) { refusesSec_--; posesSec_++; }
+        if (it.t == T_PITWALL || it.t == T_GARAGE || it.t == T_STAND)   // WFS-275 (accroche) : murs qui renvoient le son (mur des stands vitré 2,7 m)
+            parois::declarer("circuit", len(), it.t == T_PITWALL ? n : n + (int64_t)std::lround(it.l / SEG_M / 2), it.side, it.lat,
+                             it.t == T_PITWALL ? 2.7f : it.t == T_GARAGE ? 7.f : hauteurRang(it.k - 1) + 2.f, it.t == T_PITWALL ? 3 * (float)SEG_M : it.l,
+                             it.t == T_PITWALL ? 0.4f : it.t == T_GARAGE ? 12.f : it.k * RANG, it.t == T_GARAGE ? parois::ALPHA_DUR : parois::ALPHA_BETON);   // WFS-278 : obstacle, matériau
         return true;
     }
 
@@ -330,10 +338,12 @@ protected:
         };
         auto pneus = [&](int64_t n0, int64_t n1, int side, float lat) { for (int64_t n = n0; n < n1; n += 4) poser(n, objet(T_TIRES, side, lat, true), true); };
         // WFS-199 (RG-01) : 2 tribunes au plus : id 0 face à la grille de départ, 1 à l'extérieur de l'épingle
+        std::vector<lieux::Lieu> tribunesSon;   // WFS-261 (accroche) : centre de chaque tribune posée (foule du son des lieux)
         auto tribune = [&](int64_t n, int side, float lat, int rangs, int segs, int id) {
             Item it = objet(T_STAND, side, lat); it.l = segs * SM - 1; it.k = rangs; it.col = id;
             if (!poser(n, it, true)) return;
             tribunes_++;
+            tribunesSon.push_back({mod(n + (int64_t)std::lround(it.l / SM / 2)), 0.f, side * (lat + (rangs - 1) * RANG * 0.5f), hauteurRang(rangs / 2) + 0.9f, 0});
             sieges(it, [&](int, float, bool occupe, uint32_t) { spectateurs_ += occupe; });
             for (float d = 4; d < it.l - 2; d += 9)   // drapeaux agités au dernier rang (animes)
                 drapeaux_.push_back({mod(n + (int64_t)(d / SM)), side, lat + (rangs - 1) * RANG + 0.1f, hauteurRang(rangs - 1) + 1.2f, (int)(mod(n) + (int64_t)d) % 6});
@@ -431,6 +441,7 @@ protected:
                     for (int r = 0; r < 4; r++) { Item te = objet(T_TENTE, side, R + 24 + r * 7.5f, true); te.col = (int)((n + r * 5) % 6); te.along = (r % 2) * 2.f; poser(n, te, true); }
             }
         }
+        lieux::poser("circuit", lieux::TRIBUNE, std::move(tribunesSon));   // WFS-261 (accroche)
     }
 
     // ---------------------------------------------------------------- WFS-140 : objets animés (animes)

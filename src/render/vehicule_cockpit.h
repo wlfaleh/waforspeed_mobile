@@ -112,6 +112,9 @@ struct EtatInterieur {
     float essuie = 0;      // angle des balais (rad)
 };
 
+// banc « cockpit » (WFS-235, RG-05) : vrai = l'intérieur est dessiné d'une couleur clé (mesure de la part de rue visible)
+extern bool g_interieurCle;
+
 class Interieur {
 public:
     bool construire(Renderer& r, const InterieurDef& d);
@@ -135,6 +138,8 @@ private:
     std::vector<Material> mats_;
     Image grain_{};                          // normal map du cuir (grain), calculée
     Mesh bras_[2]{}; Material brasMat_{};    // essuie-glaces (dessinés selon l'angle de l'image)
+    Material cleMat_{};                      // banc : toutes les pièces d'une couleur clé (g_interieurCle, WFS-235)
+    const Material& mat(const Material& m) const;
     // écrans dynamiques : un maillage par couleur (actif, fond, alerte ; route, flèche)
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
     std::vector<Vertex> dv_[5]; std::vector<uint32_t> di_[5];

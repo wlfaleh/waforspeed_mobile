@@ -34,11 +34,14 @@
 #include "../game/chocs_decor.h"   // WFS-256 (accroche)
 #include "../render/eclairage.h"
 #include "giratoire.h"   // WFS-248 : giratoire reconstruit
+#include "../render/lots_decor.h"   // WFS-268
 #include "../render/renderer.h"
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 #include "enseignes.h"   // WFS-180 : vie::Baigneur (danseurs et joueurs pour les piétons), vie::hauteurSable
 #include "vegetation.h"
 #include "zones.h"
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : rivage déclaré au son des lieux
+#include "../audio/parois_sons.h"      // WFS-275 (accroche) : falaise et villas (écho)
 
 namespace wfs {
 
@@ -496,6 +499,16 @@ public:
         }
         initPlage(r, *g.track, *g.map);
         initEtabs(r, *g.track);   // WFS-181
+        if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
+            limiteTour_ = len_;
+            lots_.preparer(r, *g.track, P_COUNT, 3, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {   // 3 morceaux (115 m) : débord au bout de la fenêtre ≤ 2 morceaux (mer dégagée)
+                Geo out[P_COUNT];
+                buildChunk(*g.track, c, lod, out);
+                for (int p = 0; p < P_COUNT; p++) { v[p] = std::move(out[p].v); i[p] = std::move(out[p].i); }
+            }, "plage");
+            limiteTour_ = INT64_MAX;
+            for (const FeuDecor& fd : feux_) dessineLentilles(r, *g.track, mod(fd.ligne));   // lentilles des feux, tour 0 (rien n'est dessiné hors image)
+        }
     }
 
     // stipe (2 texels : BARK.palm / palm2), palmes (atlas du jeu web, case 2) vertes et sèches
@@ -1156,6 +1169,21 @@ public:
             lampadaires().push_back({mod(l.seg + (int64_t)(14 / SEG_M)), plage::FETE_LAT - 1, 1.2f, StyleLampadaire::Ville});
         }
         WFS_LOG("Plage (WFS-180) : %zu bateaux (voiliers, yachts, jet-skis, paquebot)", bateaux_.size());
+        {   // WFS-261 (accroche) : rivage tous les 24 m là où la mer est libre (son des vagues) : pied de la falaise, bord de l'eau
+            std::vector<lieux::Lieu> rivage;   // de la plage (RW + 46 : sable mouillé sous la mer), des rochers (RW + 40), quai du port
+            for (int64_t n = 0; n < len_; n += 20) if (large(n)) {
+                const char* z = zoneId(map, n, len_);
+                const float lat = formeCote(n, 1) == K_MER ? finFalaise(t, n) : !std::strcmp(z, "rochers") ? R + 40 : !std::strcmp(z, "marina") ? R + 7.2f : R + 46;
+                rivage.push_back({n, 0.f, lat, OCEAN_Y - (float)t.pose(n).y, 0});
+            }
+            lieux::poser("plage", lieux::VAGUES, std::move(rivage));
+        }
+        parois::effacer("plage");   // WFS-275 (accroche) : paroi de roche côté montagne (face raide de 3,5 m, au milieu), villas
+        // WFS-278 (accroche) : la roche masque aussi le son : obstacle de la face jusqu'au bout de la pente de garrigue (RW + 90), sans
+        // dépasser le bord du sol de cette branche (bordSol : 0,9 × rayon intérieur, mi-distance de la branche suivante) ; calcaire
+        for (int64_t n = 0; n < len_; n++) if (formeCote(n, -1) == K_TERRE) { const float x0 = villagePerche(t, n) ? R + 22 : R + 4.6f;
+            parois::declarer("plage", len_, n, -1, x0 + 1.75f, hauteurParoi(n), (float)SEG_M, std::max(3.5f, std::min(R + 90, bordSol(t, n, -1)) - x0), parois::ALPHA_PIERRE); }
+        for (const Objet& o : objets_) if (o.t == O_VILLA) parois::declarer("plage", len_, o.seg, o.side, o.lat, o.h, o.w, o.d, parois::ALPHA_DUR);
     }
 
     // décor fixe d'une fête ou d'un terrain de jeux, posé dans le morceau qui contient son segment (repère du segment)
@@ -1982,9 +2010,10 @@ public:
         const int64_t a0 = c * CH;
         const float R = (float)RW, WALK_W = 4.0f, CURB_H = 0.15f;
         Geo G;
+        const int nCH = limiteTour_ == INT64_MAX ? CH : (int)std::min<int64_t>(CH, limiteTour_ - a0);   // WFS-268 : dernier morceau borné au tour (préparation)
         auto strip = [&](const std::vector<std::pair<float, float>>& prof) {
             const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)G.v.size();
-            for (int i = 0; i <= CH; i++) {
+            for (int i = 0; i <= nCH; i++) {
                 const double s = (double)(a0 + i) * SEG;
                 const trace::Rayon ri = trace::rayonInterieur(t, s);
                 for (uint32_t k = 0; k < cols; k++) {
@@ -1993,7 +2022,7 @@ public:
                     G.v.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
                 }
             }
-            for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+            for (int i = 0; i < nCH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
                 const uint32_t q = base + i * cols + k;
                 G.i.insert(G.i.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
             }
@@ -2021,7 +2050,7 @@ public:
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
         const MapDef& map = *t.map();
         const int64_t len = (int64_t)t.segmentCount();
-        const int64_t a0 = c * CH, a1 = a0 + CH;
+        const int64_t a0 = c * CH, a1 = std::min(a0 + CH, limiteTour_);   // WFS-268 : borné au tour à la préparation
         // sol et mer, segment par segment (WFS-139 : forme du bas-côté selon la section du tracé 2, bandes rabotées au bord
         // permis ; roche texturée, uv en mètres / ROC_TUILE)
         const bool t2 = !trace::sections(t).empty();
@@ -2144,6 +2173,16 @@ public:
         frame_++;
         Track& t = *g.track;
         const int64_t pc = (int64_t)std::floor(g.player->dist / SEG) / CH;
+        int draws = 0;
+        auto dessinPart = [&](int p, const Mesh& m, const mat4& M) {
+            if (p == P_ROUTE) r.draw(m, mats_[p], M, 4.5f);   // rue transversale : 9 m
+            else if (p == P_GIR) r.draw(m, mats_[p], M, 100.f);   // WFS-248 : anneau (aucun marquage de la chaussée)
+            else r.draw(m, mats_[p], M);
+            draws++;
+        };
+        if (lots::g_lotsDecor && lots_.pret()) {   // WFS-268 : blocs préparés au chargement, aucune création en course
+            lots_.dessiner(t, pc * CH, BEHIND * CH, (AHEAD + 1) * CH - 1, LOD_FAR_M, dessinPart);
+        } else {   // ancienne gestion (repli) : morceaux construits en course
         for (auto it = chunks_.begin(); it != chunks_.end();) {
             const bool far = std::abs(it->first - pc) * CH * SEG_M > LOD_FAR_M;
             if (it->first < pc - BEHIND || it->first > pc + AHEAD || far != it->second.lod) {
@@ -2167,18 +2206,13 @@ public:
             if (frame_ > it->first + 3) { r.destroy(it->second); it = graveyard_.erase(it); } else ++it;
         }
         const mat4 I = mat4::identity();
-        int draws = 0;
-        for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) {
-            if (p == P_ROUTE) r.draw(ch.m[p], mats_[p], I, 4.5f);   // rue transversale : 9 m
-            else if (p == P_GIR) r.draw(ch.m[p], mats_[p], I, 100.f);   // WFS-248 : anneau (aucun marquage de la chaussée)
-            else r.draw(ch.m[p], mats_[p], I);
-            draws++;
+        for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) dessinPart(p, ch.m[p], I);
         }
         draws += dessineLentilles(r, t, (int64_t)std::floor(g.player->dist / SEG));
         draws += dessineMer(r, t, (int64_t)std::floor(g.player->dist / SEG), g.time, !trace::sections(t).empty());   // WFS-180
         draws += dessineAnimaux(r, t, (int64_t)std::floor(g.player->dist / SEG), g.time);   // WFS-181
         lastDraws_ = draws;
-        if (frame_ % 300 == 1) WFS_LOG("Plage : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
+        if (frame_ % 300 == 1) { unsigned long long cm, cmat; lots_.creationsEnCourse(r, cm, cmat); WFS_LOG("Plage : %d appels de dessin (%zu morceaux, %d blocs préparés) ; créations en course (tout le jeu) : %llu maillages, %llu matériaux", draws, chunks_.size(), lots_.blocs(), cm, cmat); }
     }
 
     // WFS-139 (RG-01) : lampes du feu tricolore, allumées selon trace::feuA (rouge, orange, vert) ; maillages construits à
@@ -2191,6 +2225,11 @@ public:
             int64_t abs = segJoueur - mod(segJoueur) + mod(fd.ligne);
             if (abs - segJoueur > len_ / 2) abs -= len_; else if (segJoueur - abs > len_ / 2) abs += len_;
             if (std::abs(abs - segJoueur) * SEG_M > 400) continue;
+            // WFS-268 : décor préparé : lentilles construites une fois dans le tour 0 (init), dessinées avec la matrice du tour
+            const bool tour0 = lots::g_lotsDecor && lots_.pret();
+            const int64_t kt = tour0 ? lots_.tourDe(abs) : 0;
+            abs -= kt * len_;
+            const mat4 M = tour0 ? lots_.matrice(t, kt) : mat4::identity();
             Lentilles& le = lentilles_[i];
             if (le.abs != abs) {
                 for (Mesh& m : le.m) if (m.vb.buf) { graveyard_.push_back({frame_, m}); m = Mesh{}; }
@@ -2208,7 +2247,7 @@ public:
             }
             const trace::Feu f = trace::feuA(fd.feu);
             const int allume = f == trace::Feu::Rouge ? 0 : f == trace::Feu::Orange ? 1 : f == trace::Feu::Vert ? 2 : -1;
-            for (int k = 0; k < 3; k++) if (le.m[k].indexCount) { r.draw(le.m[k], k == allume ? lentille_[k] : lentilleEteinte_, mat4::identity()); draws++; }
+            for (int k = 0; k < 3; k++) if (le.m[k].indexCount) { r.draw(le.m[k], k == allume ? lentille_[k] : lentilleEteinte_, M); draws++; }
         }
         return draws;
     }
@@ -2219,6 +2258,7 @@ public:
         r.vk().waitIdle();
         for (auto& [k, ch] : chunks_) for (Mesh& m : ch.m) if (m.vb.buf) r.destroy(m);
         chunks_.clear();
+        lots_.liberer(r);   // WFS-268
         for (auto& gm : graveyard_) r.destroy(gm.second);
         graveyard_.clear();
         for (Material& m : mats_) r.destroy(m);
@@ -2272,7 +2312,9 @@ private:
     Material mats_[P_COUNT];
     Image palTex_{}, leafTex_{}, barkTex_{};
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
-    std::map<int64_t, Chunk> chunks_;
+    std::map<int64_t, Chunk> chunks_;   // ancienne gestion (repli, lots::g_lotsDecor = false)
+    lots::DecorFixe lots_;   // WFS-268 : décor du tour 0, préparé au chargement
+    int64_t limiteTour_ = INT64_MAX;   // WFS-268 : fin des morceaux (longueur du tour pendant la préparation)
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
     int lastDraws_ = 0;

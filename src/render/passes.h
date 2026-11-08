@@ -125,8 +125,8 @@ struct AccesRendu {
     static VkCtx& vk(Renderer& r) { return *r.vk_; }
     static int image(const Renderer& r) { return r.cur_; }
     static constexpr int images() { return Renderer::FRAMES; }
-    static uint32_t largeurScene(const Renderer& r) { return r.sw_; }
-    static uint32_t hauteurScene(const Renderer& r) { return r.sh_; }
+    static uint32_t largeurScene(const Renderer& r) { return r.cw_; }   // WFS-246 (RG-07) : capacité, fixe en course
+    static uint32_t hauteurScene(const Renderer& r) { return r.ch_; }
     static const FrameUBO& ubo(const Renderer& r) { return *static_cast<const FrameUBO*>(r.fr_[r.cur_].ubo.mapped); }
     static VkDescriptorSet setImage(const Renderer& r, int f) { return r.fr_[f].frameSet; }
     static VkDescriptorSetLayout dispositionImage(const Renderer& r) { return r.frameLayout_; }

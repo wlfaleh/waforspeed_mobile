@@ -14,6 +14,7 @@
 #include "route_mesures.h"   // WFS-206 (RG-05)
 #include <array>
 #include <cstdlib>
+#include <fstream>
 #include <sstream>
 #include <tuple>
 #include "../core/log.h"
@@ -245,6 +246,95 @@ double tcpMcCamy(const vec3& c) {
 }
 std::string carteDuLieu(const char* carte) { return std::string("lieu.") + carte; }
 
+// ---------------- WFS-251 : banc coupé en deux parties (WFS_REALISME_PARTIE=1|2), fusionnées ensuite (WFS_REALISME_PARTIE=fusion)
+// Le banc est fait de 7 étapes ; chacune range ses lignes du rapport, ses mesures et ses informations dans son « morceau ». Le rapport
+// final est l'assemblage des morceaux dans l'ordre des étapes : banc complet (sans variable) et fusion des deux parties suivent le même
+// chemin, donc les mêmes lignes dans le même ordre. Étape 6 (soleil du jeu) relit la lumière relevée à l'étape 0 : même partie.
+enum Etape { E_CAPTURES, E_COUT, E_ETALON, E_TEXTURE_KTX2, E_PASSES, E_LUMIERE, E_SOLEIL_DONNEES, NB_ETAPES };
+// partie de chaque étape, d'après les durées mesurées en local avec lavapipe (journal WFS-251) : partie 1 = captures, coût par carte,
+// soleil et données ; partie 2 = étalonnage, texture d'essai KTX2 (WFS-149 : seule la partie 2 la lit), passes (WFS-150), lumière (WFS-151).
+// La lumière reste après les passes : sans elles, M-03 change à la 4e décimale (17,501 → 17,500), essai du journal WFS-251.
+constexpr int PARTIE_DE[NB_ETAPES] = {1, 1, 2, 2, 2, 2, 1};
+struct Morceau { bool fait = false; std::vector<reel::LigneRapport> lignes; std::string mesures, infos; };
+
+std::string echapper(const std::string& s) {
+    std::string o; o.reserve(s.size());
+    for (char c : s) { if (c == '\\') o += "\\\\"; else if (c == '\t') o += "\\t"; else if (c == '\n') o += "\\n"; else o += c; }
+    return o;
+}
+std::string desechapper(const std::string& s) {
+    std::string o; o.reserve(s.size());
+    for (size_t i = 0; i < s.size(); i++) {
+        if (s[i] != '\\' || i + 1 == s.size()) { o += s[i]; continue; }
+        const char c = s[++i]; o += c == 't' ? '\t' : c == 'n' ? '\n' : c;
+    }
+    return o;
+}
+// fichier des morceaux d'une partie : texte, longueurs en tête des blocs libres, une ligne échappée par ligne du rapport
+bool ecrireMorceaux(const std::string& chemin, const Morceau (&m)[NB_ETAPES]) {
+    std::ofstream f(chemin, std::ios::binary);
+    f << "WFS-251 morceaux 1\n";
+    for (int e = 0; e < NB_ETAPES; e++) {
+        if (!m[e].fait) continue;
+        f << "etape " << e << "\nmesures " << m[e].mesures.size() << "\n" << m[e].mesures << "\ninfos " << m[e].infos.size() << "\n" << m[e].infos
+          << "\nlignes " << m[e].lignes.size() << "\n";
+        for (const reel::LigneRapport& l : m[e].lignes)
+            f << echapper(l.domaine) << '\t' << echapper(l.id) << '\t' << echapper(l.grandeur) << '\t' << echapper(l.jeu) << '\t' << echapper(l.reel) << '\t'
+              << echapper(l.tolerance) << '\t' << echapper(l.statutReel) << '\t' << (int)l.etat << '\t' << echapper(l.raison) << "\n";
+    }
+    f << "fin\n";
+    return (bool)f;
+}
+bool lireBloc(std::istream& f, const char* mot, std::string& texte) {
+    std::string m; size_t n = 0;
+    if (!(f >> m >> n) || m != mot || f.get() != '\n') return false;
+    texte.assign(n, '\0'); f.read(texte.data(), (std::streamsize)n);
+    return (bool)f && f.get() == '\n';
+}
+// lit les morceaux d'une partie et les ajoute ; faux si le fichier est illisible ou si une étape y est déjà (jamais comptée deux fois)
+bool lireMorceaux(const std::string& chemin, Morceau (&m)[NB_ETAPES], std::string& erreur) {
+    std::ifstream f(chemin, std::ios::binary);
+    std::string ligne;
+    if (!std::getline(f, ligne) || ligne != "WFS-251 morceaux 1") { erreur = chemin + " absent ou illisible"; return false; }
+    while (f >> ligne) {
+        if (ligne == "fin") return true;
+        int e = -1; size_t n = 0; std::string mot;
+        if (ligne != "etape" || !(f >> e) || e < 0 || e >= NB_ETAPES || f.get() != '\n') { erreur = chemin + " : étape mal écrite"; return false; }
+        if (m[e].fait) { erreur = chemin + " : étape " + std::to_string(e) + " déjà présente"; return false; }
+        if (!lireBloc(f, "mesures", m[e].mesures) || !lireBloc(f, "infos", m[e].infos) || !(f >> mot >> n) || mot != "lignes" || f.get() != '\n') {
+            erreur = chemin + " : étape " + std::to_string(e) + " mal écrite"; return false;
+        }
+        for (size_t i = 0; i < n; i++) {
+            if (!std::getline(f, ligne)) { erreur = chemin + " : lignes du rapport tronquées"; return false; }
+            std::vector<std::string> c; size_t p0 = 0;
+            for (size_t p; (p = ligne.find('\t', p0)) != std::string::npos; p0 = p + 1) c.push_back(ligne.substr(p0, p - p0));
+            c.push_back(ligne.substr(p0));
+            if (c.size() != 9 || c[7].size() != 1 || c[7][0] < '0' || c[7][0] > '2') { erreur = chemin + " : ligne du rapport mal écrite"; return false; }
+            reel::LigneRapport l{desechapper(c[0]), desechapper(c[1]), desechapper(c[2]), desechapper(c[3]), desechapper(c[4]), desechapper(c[5]),
+                                 desechapper(c[6]), (reel::Etat)(c[7][0] - '0'), desechapper(c[8])};
+            m[e].lignes.push_back(std::move(l));
+        }
+        m[e].fait = true;
+    }
+    erreur = chemin + " : « fin » absente (fichier tronqué)";
+    return false;
+}
+// rapports finaux (realisme-fidelite.txt, realisme-mesures.txt) à partir des morceaux des 7 étapes, dans l'ordre des étapes
+int ecrireRapports(const std::string& out, const std::string& nomFidelite, const std::string& nomMesures, const Morceau (&m)[NB_ETAPES]) {
+    reel::Rapport rap; std::string mesures, infos;
+    for (const Morceau& x : m) { rap.lignes.insert(rap.lignes.end(), x.lignes.begin(), x.lignes.end()); mesures += x.mesures; infos += x.infos; }
+    std::string titre = "WaForSpeed — rapport de fidélité au réel (WFS-148, RG-05) : ÉTAT ZÉRO de l'axe Réalisme\n";
+    if (const char* sha = std::getenv("GITHUB_SHA")) titre += std::string("Commit ") + sha + "\n";
+    titre += "Avant (main) = après (branche) : WFS-148 ne change pas l'image du jeu ; ce rapport est la base des US suivantes (RG-07).\n"
+             "Valeurs réelles : references/reel/*.json (sources : references/reel/SOURCES.md) ; statut « a_confirmer » = page de la source non ouverte.\n";
+    std::ofstream(out + "/" + nomFidelite) << rap.texte(titre) + "\n== Informations (hors indice) ==\n" + infos;
+    std::ofstream(out + "/" + nomMesures) << mesures;
+    for (const auto& [d, i] : rap.indices())
+        WFS_LOG("réalisme : indice %s = %s (%d / %d conformes, %d non mesurables)", d.c_str(), i.enTexte().c_str(), i.conformes, i.conformes + i.nonConformes, i.nonMesurables);
+    WFS_LOG("réalisme : %zu mesures, rapports %s et %s", rap.lignes.size(), nomFidelite.c_str(), nomMesures.c_str());
+    return 0;
+}
+
 } // namespace
 
 int benchRealisme(Game& g, Renderer& r, const std::string& out) {
@@ -255,13 +345,32 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         std::ofstream(out + "/passes-mesures.txt") << m.str() << "\n" << i.str();
         return e;
     }
+    // WFS-251 : partie du banc (1, 2) ; « fusion » : rapports finaux à partir des morceaux des deux parties, rien n'est rendu
+    const std::string partie = std::getenv("WFS_REALISME_PARTIE") ? std::getenv("WFS_REALISME_PARTIE") : "";
+    if (!partie.empty() && partie != "1" && partie != "2" && partie != "fusion") { WFS_ERR("réalisme : WFS_REALISME_PARTIE=%s inconnue (1, 2 ou fusion)", partie.c_str()); return 1; }
+    Morceau morceaux[NB_ETAPES];
+    if (partie == "fusion") {
+        std::string erreur;
+        for (const char* n : {"1", "2"})
+            if (!lireMorceaux(out + "/realisme-partie-" + n + ".morceaux", morceaux, erreur)) { WFS_ERR("réalisme : fusion impossible : %s", erreur.c_str()); return 1; }
+        for (int e = 0; e < NB_ETAPES; e++)
+            if (!morceaux[e].fait) { WFS_ERR("réalisme : fusion impossible : étape %d absente des deux parties", e); return 1; }
+        return ecrireRapports(out, "realisme-fidelite.txt", "realisme-mesures.txt", morceaux);
+    }
+    const auto dansPartie = [&](int e) { return partie.empty() || PARTIE_DE[e] == partie[0] - '0'; };
     reel::Referentiel R;
     if (!R.charger("references/reel")) { WFS_ERR("réalisme : référentiel illisible : %s", R.erreur.c_str()); return 1; }
     if (std::getenv("WFS_LUMIERE_SEUL")) { reel::Rapport l; std::ostringstream m, i; const int e = benchLumiere(g, r, out, R, l, m, i); std::ofstream(out + "/lumiere-fidelite.txt") << l.texte("WFS-151 (essai local)") << m.str() << i.str(); return e; }   // WFS-151
     ecrans::Reglages& reglages = ecrans::reglages();
     const int q0 = reglages.qualite;
-    std::ostringstream mesures;
-    mesures << "WaForSpeed — mesures du banc de référence du réalisme (WFS-148, RG-06)\n"
+    std::ostringstream mesures, infos;
+    reel::Rapport rap;
+    // WFS-251 : à la fin de chaque étape, ses lignes, mesures et informations partent dans son morceau
+    const auto ranger = [&](int e) {
+        Morceau& m = morceaux[e]; m.fait = dansPartie(e);
+        m.lignes = std::move(rap.lignes); rap.lignes.clear(); m.mesures = mesures.str(); mesures.str(""); m.infos = infos.str(); infos.str("");
+    };
+    if (dansPartie(E_CAPTURES)) mesures << "WaForSpeed — mesures du banc de référence du réalisme (WFS-148, RG-06)\n"
             << "Banc PC de la CI : Vulkan logiciel (lavapipe) : le « GPU » est le processeur de la machine ; ms et images/s ne\n"
             << "représentent PAS un téléphone, ils servent à comparer une US à l'autre sur la même machine (avant / après).\n"
             << "Taille " << r.width() << "x" << r.height() << ". Mémoire textures : compteur VkCtx::octetsTextures (WFS-149 : textures envoyées,\n"
@@ -274,6 +383,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     double t = 2000;
     const char* qualites[2] = {"basse", "haute"};
     for (const Vue& v : VUES) {
+        if (!dansPartie(E_CAPTURES)) break;
         int64_t depart = segmentDepart(v);
         if (depart < 0) { WFS_ERR("réalisme : zone %s absente de %s", v.zone, v.carte); erreurs++; continue; }
         if (v.choix == Choix::Terrasse) {   // première terrasse : connue une fois la ville construite (commerces.cpp)
@@ -305,14 +415,17 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         }
     }
 
+    ranger(E_CAPTURES);
+
     // ---------------- RG-06 : coût par carte (jour), Basse et Haute : 130 images rendues (le Renderer écrit le coût GPU
     // moyen de ses passes toutes les 120 images, horodatages Vulkan)
-    mesures << "\n== coût par carte (jour, scène figée, 130 images) ==\n  carte | qualité | ms par image (mur) | images/s (banc) | ms GPU ombre | ms GPU scène | ms GPU reflets | VmRSS / VmHWM (Mo)\n";
+    if (dansPartie(E_COUT)) mesures << "\n== coût par carte (jour, scène figée, 130 images) ==\n  carte | qualité | ms par image (mur) | images/s (banc) | ms GPU ombre | ms GPU scène | ms GPU reflets | VmRSS / VmHWM (Mo)\n";
     for (const char* carte : {"ville", "campagne", "plage", "circuit"}) for (int q = 0; q < 2; q++) {
+        if (!dansPartie(E_COUT)) break;
         setenv("WFS_MOMENT", "jour", 1); unsetenv("WFS_DEPART");
         reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
         g_banc.oeil = {-8, 0, 2}; g_banc.cible = {80, 0, 0.5f}; g_banc.fov = 60;
-        if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+        if (!g.init(r, "golf", carte)) { WFS_ERR("réalisme : coût de %s (%s) : chargement impossible", carte, qualites[q]); erreurs++; continue; }
         g.allerA(ECRAN_BANC);
         for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
         const double t0 = nowSeconds();
@@ -327,11 +440,11 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
 
+    ranger(E_COUT);
+
     // ---------------- RG-04 : scène d'étalonnage (Campagne, champs ouverts en plein soleil, jour, Haute, départ) : charte vue de dessus, 3,2 m au-dessus
-    reel::Rapport rap;
-    std::ostringstream infos;
     g_banc.albedos.clear();
-    for (int k = 1; k <= 25; k++) {
+    for (int k = 1; k <= 25 && dansPartie(E_ETALON); k++) {
         char id[32]; std::snprintf(id, sizeof id, "cc.%02d.albedo", k);
         const reel::Json* m = k == 25 ? R.mesure("mat.charte_grise_18.albedo") : R.mesure(id);
         const reel::Json* v = m ? m->get("valeur") : nullptr;
@@ -356,7 +469,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                   << " (sans unité), exposition " << fmt(L.exposure, 2) << ", ambiance " << fmt(L.ambient, 2) << ".\n"
                   << "Couleur relevée après tonemapping (PNG, moyenne de 9 × 9 pixels au centre de chaque case). Avant tonemapping (HDR) : non mesurable\n"
                   << "dans WFS-148 (le Renderer ne relit pas la cible HDR ; ajout proposé pour WFS-150, passes enfichables).\n";
-            if (!px) { rap.nonMesurable("couleurs", "cc.*", "charte rendue", "capture realisme-etalon.png illisible"); erreurs++; }
+            if (!px) { rap.nonMesurable("couleurs", "cc.*", "charte rendue", "capture realisme-etalon.png illisible"); WFS_ERR("réalisme : capture realisme-etalon.png illisible"); erreurs++; }
             else {
                 const double s = g.player().dist;
                 Track piste; piste.build(mapById("campagne"));
@@ -419,12 +532,14 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                 stbi_image_free(px);
             }
             g.shutdown();
-        } else erreurs++;
+        } else { WFS_ERR("réalisme : scène d'étalonnage : chargement de la Campagne impossible"); erreurs++; }
         g_banc.etalon = false;
     }
+    ranger(E_ETALON);
+
     // ---------------- WFS-149 (RG-01) : texture d'essai KTX2 (Campagne, ligne droite des Champs, jour) : Haute (anisotrope ×8),
     // puis Basse (×4, WFS-144)
-    {
+    if (dansPartie(E_TEXTURE_KTX2)) {
         const Vue v{"texture-essai", "campagne", "Champs", Choix::LigneDroite, {-3, 4.2f, 1.7f}, {12, 1.8f, 1.0f}, 60, "texture d'essai KTX2"};
         const int64_t depart = segmentDepart(v);
         g_banc.essai = true; g_banc.fov = v.fov;
@@ -433,7 +548,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             setenv("WFS_MOMENT", "jour", 1); setenv("WFS_DEPART", std::to_string(depart).c_str(), 1);
             reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
             g_banc.oeil = v.oeil; g_banc.cible = v.cible;
-            if (!g.init(r, "golf", v.carte)) { erreurs++; continue; }
+            if (!g.init(r, "golf", v.carte)) { WFS_ERR("réalisme : texture d'essai KTX2 : chargement de %s impossible", v.carte); erreurs++; continue; }
             g.setAutopilot(false); g.camMode = 0; g.allerA(ECRAN_BANC);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
             for (int i = 0; i < 3; i++) g.render(t);
@@ -447,14 +562,18 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         }
         g_banc.essai = false;
     }
+    ranger(E_TEXTURE_KTX2);
     g_banc = EtatBanc{};   // système inactif : plus rien ne change dans les images suivantes
     reglages.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
-    eclairage::desactiver(true); erreurs += benchPasses(g, r, out, mesures, infos); eclairage::desactiver(false);   // WFS-150 : passes, pré-passe, capture, Ultra ; WFS-151 : sans sondes
-    erreurs += benchLumiere(g, r, out, R, rap, mesures, infos);   // WFS-151 : étalonnage HDR, ciel, tunnel
+    if (dansPartie(E_PASSES)) { eclairage::desactiver(true); erreurs += benchPasses(g, r, out, mesures, infos); eclairage::desactiver(false); }   // WFS-150 : passes, pré-passe, capture, Ultra ; WFS-151 : sans sondes
+    ranger(E_PASSES);
+    if (dansPartie(E_LUMIERE)) erreurs += benchLumiere(g, r, out, R, rap, mesures, infos);   // WFS-151 : étalonnage HDR, ciel, tunnel
+    ranger(E_LUMIERE);
 
     // ---------------- soleil et lumière du jeu contre le lieu et le moment de chaque carte (lieux.json)
     for (const char* carte : {"ville", "campagne", "plage", "circuit"}) {
+        if (!dansPartie(E_SOLEIL_DONNEES)) break;
         const reel::Json *lat = R.mesure(carteDuLieu(carte) + ".latitude"), *lon = R.mesure(carteDuLieu(carte) + ".longitude"), *jour = R.mesure(carteDuLieu(carte) + ".jour");
         const auto lj = lumieres.find(std::string(carte) + ".jour"), ln = lumieres.find(std::string(carte) + ".nuit");
         int a, mo, j; double h;
@@ -484,6 +603,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         }
         rap.comparer(R, "photometrie", "lum.soleil_midi.intensite", lumiere::eclairementSoleilNormal(hj) * std::sin(reel::rad(hj)), 1, "lx", std::string("éclairement du soleil au sol, ") + carte + " (WFS-151, RG-01)");
     }
+    if (dansPartie(E_SOLEIL_DONNEES)) {   // WFS-251 : lignes fixes et mesures des données, étape 6
     rap.nonMesurable("materiaux", "mat.*", "albédo, rugosité et F0 des surfaces du jeu", "matériaux procéduraux (scene.frag) : mesure dans l'image HDR non disponible (WFS-150) ; mesurés par WFS-155 (routes) et WFS-159 (véhicules)");
     for (const route::MesureRevetement& m : route::mesurerBibliotheque(".")) {   // WFS-206 (RG-05, accroche) : revêtements de route (M-01, M-02)
         LigneRapport l; l.domaine = "revetements"; l.id = "route." + m.id; l.grandeur = m.grandeur + " (carte de couleur ou ORM, test_fidelite_routes)";
@@ -497,18 +617,17 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     std::vector<std::string> cars; for (int i = 0; i < CAR_COUNT; i++) cars.push_back(CARS[i].id);
     reel::mesuresDonnees(R, rap, ".", cars);
     archi::mesuresArchitecture(R, rap);   // WFS-161 (accroche, ST-6) : domaine « architecture »
+    }
+    ranger(E_SOLEIL_DONNEES);
 
-    // ---------------- écriture des rapports
-    std::string titre = "WaForSpeed — rapport de fidélité au réel (WFS-148, RG-05) : ÉTAT ZÉRO de l'axe Réalisme\n";
-    if (const char* sha = std::getenv("GITHUB_SHA")) titre += std::string("Commit ") + sha + "\n";
-    titre += "Avant (main) = après (branche) : WFS-148 ne change pas l'image du jeu ; ce rapport est la base des US suivantes (RG-07).\n"
-             "Valeurs réelles : references/reel/*.json (sources : references/reel/SOURCES.md) ; statut « a_confirmer » = page de la source non ouverte.\n";
-    const std::string texte = rap.texte(titre) + "\n== Informations (hors indice) ==\n" + infos.str();
-    std::ofstream(out + "/realisme-fidelite.txt") << texte;
-    std::ofstream(out + "/realisme-mesures.txt") << mesures.str();
-    for (const auto& [d, i] : rap.indices())
-        WFS_LOG("réalisme : indice %s = %s (%d / %d conformes, %d non mesurables)", d.c_str(), i.enTexte().c_str(), i.conformes, i.conformes + i.nonConformes, i.nonMesurables);
-    WFS_LOG("réalisme : %zu mesures, rapports realisme-fidelite.txt et realisme-mesures.txt, %d erreur(s)", rap.lignes.size(), erreurs);
+    // ---------------- écriture des rapports : banc complet = assemblage des 7 morceaux ; partie = ses morceaux (fusion ensuite)
+    // et ses rapports partiels lisibles (realisme-fidelite-N.txt, realisme-mesures-N.txt)
+    if (partie.empty()) ecrireRapports(out, "realisme-fidelite.txt", "realisme-mesures.txt", morceaux);
+    else {
+        if (!ecrireMorceaux(out + "/realisme-partie-" + partie + ".morceaux", morceaux)) { WFS_ERR("réalisme : morceaux de la partie %s non écrits", partie.c_str()); erreurs++; }
+        ecrireRapports(out, "realisme-fidelite-" + partie + ".txt", "realisme-mesures-" + partie + ".txt", morceaux);
+    }
+    WFS_LOG("réalisme : partie %s, %d erreur(s)", partie.empty() ? "complète" : partie.c_str(), erreurs);
     return erreurs;
 }
 

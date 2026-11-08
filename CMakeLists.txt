@@ -48,6 +48,10 @@ list(APPEND ENGINE_SOURCES src/platform/manette.cpp src/platform/manette_jeu.cpp
 list(APPEND ENGINE_SOURCES src/platform/retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone (Android ; compilé aussi au banc)
 list(APPEND ENGINE_SOURCES src/platform/chauffe.cpp src/platform/chauffe_systeme.cpp)   # WFS-123 : chauffe, 30 / 60 images/s
 list(APPEND ENGINE_SOURCES src/platform/plantage.cpp)   # WFS-126 : rapport de plantage (Android, banc)
+# WFS-279 : version de l'écran de chargement : versionName de android/app/build.gradle (seule source, -DWFS_VERSION) ;
+# PC, bancs et tests : « dev » (captures identiques d'un run à l'autre) ; seuls chargement.cpp et son test la reçoivent
+set(WFS_VERSION "dev" CACHE STRING "Version de l'APK affichée à l'écran de chargement (WFS-279)")
+set_source_files_properties(src/ui/ecrans/chargement.cpp tests/test_version_chargement.cpp PROPERTIES COMPILE_DEFINITIONS "WFS_VERSION=\"${WFS_VERSION}\"")
 
 if(MSVC)
   set(WARN /W3)
@@ -92,9 +96,11 @@ else()
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
+  add_executable(test_cache_pipelines tests/test_cache_pipelines.cpp src/render/cache_pipelines.cpp)   # WFS-262 (RG-01)
   add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
   add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
+  add_executable(test_version_chargement tests/test_version_chargement.cpp)   # WFS-279 : version de l'écran de chargement
   add_executable(test_minicarte tests/test_minicarte.cpp)   # WFS-173 : place et projection de la mini-carte
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
@@ -103,6 +109,7 @@ else()
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
   add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
+  add_executable(test_regard_cockpit tests/test_regard_cockpit.cpp src/core/configgame.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-235 : regard du conducteur en vue Cockpit
   add_executable(test_tangentes tests/test_tangentes.cpp src/render/mesh.cpp)   # WFS-149 (RG-04, M-02) : tangentes, .wfm versionnés
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
@@ -123,6 +130,7 @@ else()
   add_executable(test_vehicule_lod tests/test_vehicule_lod.cpp)   # WFS-158 (RG-04) : 4 niveaux de détail des voitures
   target_compile_definitions(test_vehicule_lod PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_conducteurs tests/conducteurs_test.cpp)   # WFS-73 : conducteurs (pavillon mesuré, placement)
+  add_executable(test_apparition_pietons tests/apparition_pietons_test.cpp)   # WFS-257 : apparition naturelle des personnes (ANO-130)
   add_executable(test_fidelite_routes tests/fidelite_routes.cpp src/render/ktx2.cpp src/render/route_revetements_defs.cpp src/render/route_mesures.cpp)   # WFS-205 : revêtements de route (M-01, M-02)
   target_compile_definitions(test_fidelite_routes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(corriger_voitures tools/corriger_voitures.cpp src/game/roues.cpp)   # WFS-158 (ST-2) : échelle et roues d'après le référentiel
@@ -142,11 +150,19 @@ else()
   add_executable(test_aide_direction tests/test_aide_direction.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-217 : aide à la direction
   add_executable(test_conduite tests/test_conduite.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-241 : banc de conduite sans GPU (fiches, 6 virages, RG-07, déterminisme)
   add_executable(test_sons_conduite tests/test_sons_conduite.cpp src/audio/engine_synth.cpp)   # WFS-255 : sons et vibrations liés aux forces
+  add_executable(test_audio_lieux tests/test_audio_lieux.cpp src/audio/ambiance_lieux.cpp src/game/track.cpp src/game/player.cpp)   # WFS-261 : son des lieux
+  add_executable(test_audio_voitures tests/test_audio_voitures.cpp src/audio/voitures_sons.cpp src/audio/ambiance_lieux.cpp src/audio/engine_synth.cpp src/game/track.cpp src/game/player.cpp)   # WFS-272 : son des autres voitures
+  add_executable(test_audio_parois tests/test_audio_parois.cpp src/audio/parois_sons.cpp src/audio/ambiance_lieux.cpp src/game/track.cpp src/game/player.cpp)   # WFS-275 : écho des murs, sons masqués
+  add_executable(test_audio_pluie tests/test_audio_pluie.cpp src/audio/pluie_sons.cpp src/audio/engine_synth.cpp src/game/track.cpp src/game/player.cpp)   # WFS-288 : son de la pluie
   add_executable(test_chocs tests/test_chocs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : chocs avec le décor (poteau, mur, test continu)
+  add_executable(test_virages_fleches tests/test_virages_fleches.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-295 : rayon juste partout, épingles aux flèches, réponse après un choc
   add_executable(test_chocs_cartes tests/test_chocs_cartes.cpp src/game/chocs_declaration.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/world/giratoire.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : obstacles de la Ville et des îlots, aucun mur invisible
   add_executable(test_chocs_voitures tests/test_chocs_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-256 : jamais deux voitures l'une dans l'autre
   target_link_libraries(test_chocs_voitures Threads::Threads)
   add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
+  add_executable(test_hud_lisible tests/test_hud_lisible.cpp)   # WFS-245 : textes du HUD lisibles (tailles, surfaces, contrastes)
+  add_executable(test_bandeau_gps tests/test_bandeau_gps.cpp)   # WFS-245 (RG-09) : textes du bandeau de la carte GPS (tailles, place, toutes les consignes et rues)
+  add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
   add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)
   # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
   get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)

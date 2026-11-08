@@ -78,6 +78,9 @@ public:
             if (!s.checkStart()) return;
             // startDuelRace : resetRace('play', hashStr(code) + round × 977), compte à rebours de 3 s
             pl.reset(*pl.car);
+            // WFS-242 (RG-05) : chaque joueur à sa place de la grille, derrière la ligne (avant : tous sur la ligne, l'un dans l'autre)
+            course5::placerSurGrille(pl, *g.track, course5::placeGrille(s.place()));
+            WFS_LOG("duel : place %d sur la grille", s.place() + 1);
             trafficRestartSeed(s.seed(), pl.position);
             if (c) { c->reset(); c->duelFinish = s.finish(); }
             overT_ = 0;
@@ -122,6 +125,7 @@ public:
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
             const CarDef& cd = carById(gh.car.c_str());
             const vec3 paint = hexLin(cd.paint);
+            r.adversaireProchaineVoiture();   // WFS-243 (ANO-117, accroche) : visible jusqu'à 600 m, pas coupé à 150 / 200 m
             r.draw(it->second, m, &paint);
             conducteurs::ajouter(it->second, m, cd.id, (uint32_t)std::hash<std::string>{}(id) | 1u);   // WFS-73 (accroche) : adversaire
         }
@@ -212,7 +216,7 @@ private:
         y += rh;
         for (const auto& row : rows) {
             const float k = (float)std::clamp(row.d / s.finish(), 0.0, 1.0);
-            const std::string km = row.d >= s.finish() ? "Arrivé" : ui::decimal(std::min(row.d, s.finish()) * 0.006 / 1000, 2) + " km";
+            const std::string km = row.d >= s.finish() ? "Arrivé" : ui::decimal(std::clamp(row.d, 0.0, s.finish()) * 0.006 / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
             ui::text(r, x + 1.2f * u, y + 0.6f * u, px, row.name, row.me ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false);
             ui::text(r, x + w - 1.2f * u, y + 0.6f * u, px, km, TEXTE, ui::DROITE, 0.f, false);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, w - 2.4f * u, 0.5f * u, PISTE);
@@ -242,7 +246,7 @@ private:
             const auto& row = rows[i];
             std::string tm;
             if (row.parti) tm = "Parti";   // WFS-122 (RG-02) : a quitté le salon pendant la manche
-            else if (!row.done) tm = ui::decimal(row.d * 0.006 / 1000, 2) + " km";
+            else if (!row.done) tm = ui::decimal(std::max(0.0, row.d) * 0.006 / 1000, 2) + " km";   // WFS-242
             else if (row.ft >= 9e9) tm = "Arrivé";
             else if (i == 0 || lead < 0) tm = ui::chrono(row.ft / 1000);
             else tm = "+" + ui::decimal((row.ft - lead) / 1000, 1) + " s";

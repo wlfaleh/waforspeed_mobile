@@ -48,23 +48,29 @@ inline float bloomNiveau(int n) { return n == BASSE ? 0.f : 1.f; }
 // WFS-104 (RG-02) : la résolution ne descend plus sous la netteté du garage : plancher 100 % en Haute, 90 % en Moyenne
 // (≈ 0,9 pixel CSS du jeu web) ; Basse fixe à 50 % (choix du joueur). Un téléphone trop lent perd d'autres coûts
 // (allegement : bloom puis ombres), jamais la netteté de la voiture.
-inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 : 0,9 ;   // plancher de la Moyenne (WFS-86 : 0,6)
-inline float plancher(int n) { return n == HAUTE ? 1.f : n == MOYENNE ? PLANCHER : echelleNiveau(BASSE); }   // WFS-134 : Basse 75 %   // Moyenne : qualite.plancher_moyenne
+// WFS-246 (RG-02, levier 3 ; ANO-125 : 10 img/s en Haute sur le téléphone) : RÉSOLUTION ADAPTATIVE à tous les niveaux. Le
+// téléphone rend la scène à la définition de son écran (2400 × 1080 et plus : 3 fois les pixels du banc). Au-delà du budget
+// de l'image (budgetMs : 16,7 ms en Basse, 22 ms en Moyenne / Haute), la scène descend jusqu'à 60 % AVANT toute coupe
+// d'effet ; l'interface reste à la pleine définition ; remontée dès que le GPU a de la marge. Remplace les planchers fixes
+// de WFS-104 / WFS-134 (Haute 100 %, Moyenne 90 %, Basse 75 % fixe), qui laissaient la Haute à 10 img/s.
+constexpr float ECHELLE_MIN = 0.6f;
+inline float budgetMs(int n) { return n == BASSE ? 16.7f : 22.f; }
+inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 (clé qualite.plancher_moyenne) : plus lue depuis WFS-246
+inline float plancher(int) { return ECHELLE_MIN; }
 inline float echelleRendu(int n, float dynamique) {
-    if (n == BASSE) return echelleNiveau(BASSE);
-    const float e = echelleNiveau(n) * dynamique, p = plancher(n);
-    return e < p ? p : (e > 1.f ? 1.f : e);
+    const float m = echelleNiveau(n), e = m * dynamique;
+    return e < ECHELLE_MIN ? ECHELLE_MIN : (e > m ? m : e);
 }
-// WFS-104 : coûts baissés à la place de la résolution quand la résolution dynamique voudrait descendre
-// (facteur dynamique ≤ 0,8 : bloom coupé ; ≤ 0,6 : ombres du soleil coupées) ; rétablis quand les images/s remontent
-// WFS-222 (RG-03) : au plancher (≤ 0,6, sous 40 images/s), à tous les niveaux, Basse comprise : reflets de la route mouillée
-// coupés et captures d'environnement suspendues (les sondes en place restent : aucun saut de lumière) ; netteté intacte
+// WFS-246 (levier 3) : les effets ne sont coupés qu'APRÈS la résolution, quand la scène est déjà à 60 % et l'image toujours
+// hors budget : palier 1 (une mesure de 2 s de plus) : bloom, reflets de la route mouillée et captures d'environnement
+// (WFS-222 : les sondes en place restent, aucun saut de lumière) ; palier 2 : ombres du soleil. Rétablis dans l'ordre
+// inverse, avant toute remontée de la résolution.
 struct Allegement { bool bloom = true, ombres = true, reflets = true, captures = true; };
-inline Allegement allegement(int n, float dynamique) {
+inline Allegement allegement(int n, int palier) {
     Allegement a;
-    a.reflets = a.captures = dynamique > 0.6f + 1e-4f;
-    if (n == BASSE) { a.bloom = false; a.ombres = false; return a; }   // réglages de la Basse (WFS-41)
-    a.bloom = dynamique > 0.8f + 1e-4f; a.ombres = dynamique > 0.6f + 1e-4f;
+    a.reflets = a.captures = a.bloom = palier < 1;
+    a.ombres = palier < 2;
+    if (n == BASSE) { a.bloom = false; a.ombres = false; }   // réglages de la Basse (WFS-41)
     return a;
 }
 
@@ -95,6 +101,47 @@ std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauf
 // ligne du rendu réellement utilisé, lue en direct (qualite_systeme.cpp) : Réglages, journal, rapport partagé
 std::string ligneRendu();
 
+// WFS-246 (RG-06) : mesure sur le téléphone : durées des images sur une fenêtre glissante de 20 s de course (médiane, 95 %,
+// 99 %, images > 33 ms et > 50 ms). Calcul seul (testé par tests/test_qualite.cpp) ; le système de qualité l'alimente.
+struct MesureImages {
+    static constexpr double FENETRE_S = 20;
+    static constexpr int CAP = 20 * 144;     // 144 Hz au plus
+    float ms[CAP] = {}; int n = 0, tete = 0; double duree = 0;   // tete : prochaine place ; duree : somme des n gardées (ms)
+    void ajouter(float msImage);
+    void vider() { n = 0; tete = 0; duree = 0; }
+    struct Stats { float mediane = 0, p95 = 0, p99 = 0, ecartType = 0; int plus33 = 0, plus50 = 0, images = 0; float secondes = 0; };   // WFS-262 (RG-05) : écart type
+    Stats stats() const;
+};
+// WFS-262 (RG-04) : cadence de la course, choisie automatiquement : 60 img/s ; 30 quand le téléphone ne tient pas 60 alors
+// que la scène est déjà à 60 % et les effets allégés (95 % des images > 20 ms pendant 6 s) : 30 régulières se sentent mieux
+// que 40 à 55 irrégulières. Retour à 60 quand le GPU a de la marge (< 11 ms pendant 10 s) ; sans horodatages GPU, nouvel
+// essai à 60 toutes les 30 s (jamais bloquée à 30). Remise à 60 au début de chaque course. Lu par chauffe::plafondIps.
+// DÉSACTIVÉE par défaut (cadenceAuto = faux : 60 toujours) : l'utilisateur n'a pas encore accepté 30 img/s comme étape
+// (question du PO, tache utilisateur.md, 2026-11-07 17:14) ; s'active par un réglage (décision du PO, WFS-262).
+struct Cadence {
+    int ips = 60; double tSous = 0, tMarge = 0;
+    // dt : durée de l'image (s) ; p95 : 95 % des images de la fenêtre (ms) ; gpuMs ≤ 0 : inconnu ; renvoie vrai si changée
+    bool image(double dt, bool enCourse, bool auPlancher, float p95, double gpuMs) {
+        if (!enCourse) { tSous = tMarge = 0; return false; }
+        const int avant = ips;
+        if (ips == 60) { tSous = auPlancher && p95 > 20.f ? tSous + dt : 0; if (tSous >= 6) { ips = 30; tSous = 0; } }
+        else {
+            if (gpuMs > 0) tMarge = gpuMs < 11 ? tMarge + dt : 0;
+            else tMarge += dt / 3;   // sans mesure du GPU : 30 s à 30 img/s, puis nouvel essai à 60
+            if (tMarge >= 10) { ips = 60; tMarge = 0; }
+        }
+        return ips != avant;
+    }
+};
+inline int cadenceCourse = 60;   // plafond des images/s en course (chauffe::plafondIps)
+inline bool cadenceAuto = false;  // WFS-262 : passage automatique à 30 permis (faux tant que l'utilisateur n'a pas dit oui)
+
+// texte du fichier rendu-mesure.txt (et de la feuille de partage), ligne courte des Réglages ; vides avant toute mesure
+std::string texteMesure();
+std::string ligneMesure();
+void mesureEssai(const float* ms, int n);   // banc : remplit la fenêtre (capture des Réglages)
+inline std::string dossierMesure;   // Android : externalDataPath (android_main.cpp) ; vide : aucun fichier écrit
+
 // premier lancement (aucun réglage enregistré) : Haute comme le jeu web, Basse sur un GPU logiciel
 inline int niveauInitial(bool gpuLogiciel) { return gpuLogiciel ? BASSE : HAUTE; }
 
@@ -107,13 +154,18 @@ struct Auto {
 
     enum Effet { RIEN = 0, ECHELLE = 1, RETRO = 2 };
     // une image de durée réelle `dt` (s) ; enCourse = état 'play' du jeu web ; renvoie ce qui a changé
-    int image(double dt, bool enCourse);
+    // WFS-246 : gpuMs = temps GPU de l'image 3D (horodatages, moyenne lissée ; ≤ 0 : inconnu) : seule mesure de la marge
+    // quand l'image est calée sur 60 Hz (images/s plafonnées par l'écran)
+    int image(double dt, bool enCourse, double gpuMs = -1);
     // WFS-123 (RG-03) : chauffe modérée ou plus (chauffe ≥ 1) : la résolution dynamique ne remonte plus (aucun +0,1)
-    int imageChauffe(double dt, bool enCourse, int chauffe) {
-        const float e0 = echelle; int ef = image(dt, enCourse);
+    int imageChauffe(double dt, bool enCourse, int chauffe, double gpuMs = -1) {
+        const float e0 = echelle; const int p0 = palier; int ef = image(dt, enCourse, gpuMs);
         if (chauffe >= 1 && echelle > e0) { echelle = e0; ef &= ~ECHELLE; }
+        if (chauffe >= 1 && palier < p0) palier = p0;   // WFS-246 : les effets coupés ne reviennent pas non plus
         return ef;
     }
+    int palier = 0;               // WFS-246 : allègement des effets (0 aucun, 1 bloom / reflets / captures, 2 + ombres)
+    float echelleMin() const;     // WFS-246 : facteur qui met la scène à 60 % (Basse : 0,8 × 75 %)
     float fpsMesure = 0;          // dernière mesure sur 2 s (journal)
     int mesures = 0;              // WFS-150 : nombre de mesures de 2 s faites (tenue de la Haute pour proposer Ultra)
 };
