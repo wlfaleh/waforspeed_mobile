@@ -3945,3 +3945,17 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - taille de l'accroche harmonisée : 10 lignes ajoutées et 3 modifiées dans `adapter()`.
 - **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
 - **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
+
+### 2026-11-08 18:23:09 — WFS-326 fusionné par le lead dev (lead-dev)
+- **PR #275**, 2e revue sur e0ceeb93. Le développeur a répondu point par point : les 5 points de la 1re revue sont corrigés (captures aux deux lieux de l'utilisateur en Haute et en Basse, test CPU, longueur entière, `lmax`, taille de l'accroche).
+- **18 captures ouvertes** :
+  - les vitrines et stores sans immeuble des virages 1 et 2, de nuit, ont disparu ;
+  - de jour, les terrasses et les kiosques posés sur la pelouse ont disparu ;
+  - aux lieux `apk916-5` et `apk916-2`, avant et après sont identiques, sans rien qui flotte ;
+  - rien n'est dégradé.
+- **Diff entier relu.** `test_ville_lieux` et `test_direction_anneau` relancés sur la fusion locale avec `main` (WFS-316 compris) : OK.
+- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash 4a0eb90 (`expectedHeadSha` e0ceeb93).
+- Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
+- **Pour le PO** : sur le téléphone (`apk916-5`), les « losanges » ressemblent aux fenêtres du rez-de-chaussée, à leur place dans la façade, avec un cadre rouge et un mur presque noir.
+  - Le banc ne reproduit pas ce rendu.
+  - Si l'utilisateur dit non, la suite tient plutôt à l'éclairage du mur et à l'exposition de nuit (WFS-230) qu'aux commerces.
