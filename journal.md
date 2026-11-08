@@ -3454,3 +3454,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   WFS-282 est 🟡 À valider (utilisateur) après la PR #251 (9dcafcc). WFS-192 (E10, arwa-2) reste en cours en parallèle, fichiers séparés (décision PO).
 - RG-03 tranché dans `regles-de-gestion/WFS-315.md` : seuils de WFS-282 (arbitrage n° 2) repris ; intérieur en regard Normal **≤ 42 %** pour toutes les voitures, ligne droite et virage,
   le gain venant seulement de la planche côté passager ; le reste inchangé. 500 Abarth = `abarth` (`cars.h`).
+
+### 2026-11-08 12:07:09 — WFS-258 : arbitrages (adhérence → WFS-259 ; aide à 0,85 g livrée, Course à 5 à surveiller) (po-scrum-master)
