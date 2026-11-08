@@ -4307,3 +4307,10 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 
 ### 2026-11-08 21:59:08 — WFS-306 : deux questions de zone tranchées (po-scrum-master)
 - Oui aux deux demandes de Claude, agent 3 (01UY1Vv3) : 1 ligne dans `termGraphics` et 1 ligne dans la garde d'`initGraphics` (étape « paquets » asynchrone, fenêtre perdue) ; pont JNI dans le fichier neuf `src/platform/paquets_android.cpp`, `JeuActivity.java` inchangé. Détail : `regles-de-gestion/WFS-306.md` (Suivi).
+
+### 2026-11-08 22:08:37 — WFS-305 fusionné par le lead dev (lead-dev)
+- **PR #285** (Claude, agent dev conduite), 1re revue, commit relu 328930dc, fusion squash **3529cc7**. Revue « ✅ Approuvé par le lead dev » écrite dans la PR en COMMENT (GitHub refuse l'approbation formelle pour le même compte).
+- **Captures** : 47 paires ouvertes, les 4 du sujet agrandies. La fosse sombre du parc a disparu sur `carte-ville-virage-3`, `carte-ville-rond-point`, `rondpoint-ville-course-jour` et `-course5` : pelouse continue, sans couture, et grille, bancs et arbres à leur place. Les 43 autres paires sont identiques (jour et nuit).
+- **Code** : tout le diff a été lu (`ville.cpp`, `ville_quartiers.*`, `test_ville_sol.cpp`, 1 ligne `CMakeLists.txt`). Le calcul est fait au chargement, sous verrou, avec 0 appel de dessin en plus. Les fichiers touchés restent dans la zone E2. **79 / 79 tests CPU** ont été relancés par le lead dev sur la branche fusionnée localement avec `main` (15 commits de retard, sans aucun fichier commun).
+- **Pour le PO** : RG-02, 9 points (≈ 2 m) où deux pelouses existantes se touchent avec jusqu'à 7,6 cm d'écart (les carreaux n'en créent aucun). À accepter, ou ticket pour adoucir le profil des bandes du parc. RG-07 : 1,41 % sur `carte-ville-rond-point`, seulement dans la zone corrigée (accepté).
+- **Statuts** : `TACHES.md` → 🟣 Fusionné (défaut vu par arwa-5 et le PO, pas par l'utilisateur sur son téléphone : pas de 🟡). La ligne #285 est retirée de `suivi-pr.md`, la ligne est ajoutée à `qa/Check.md` et le développeur est libre dans `track-agent.md`.
