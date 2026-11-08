@@ -38,7 +38,7 @@ Sphere monde(const mat4& m, const Sphere& s) {
 
 float distanceMax(float rayon, bool basse, float finBrouillard) {
     if (rayon < 0) return 1e9f;
-    if (rayon < 3) return basse ? 150.f : 200.f;
+    if (rayon < 3) return basse ? 110.f : 200.f;   // WFS-265 (RG-01) : Basse 150 → 110 m (fondu tramé de 15 m, lod_distance.h)
     if (rayon < 10) return basse ? std::min(finBrouillard, 420.f) : finBrouillard;
     return 1e9f;
 }

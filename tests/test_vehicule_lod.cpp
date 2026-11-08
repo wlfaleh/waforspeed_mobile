@@ -25,9 +25,9 @@ static void ecrire32(std::vector<uint8_t>& b, uint32_t v) { for (int k = 0; k < 
 
 int main() {
     const float F = 864.f;   // champ vertical 64°, scène de 1080 px de haut
-    {   // seuils : 60 px ≈ 64 m pour une Golf (ancien passage de WFS-134), niveaux de plus en plus hauts avec la distance
+    {   // seuils (WFS-265) : 200 px ≈ 18 m pour une Golf (60 px ≈ 64 m avant), niveaux de plus en plus hauts avec la distance
         const float L = 4.26f;
-        VERIFIE(std::fabs(L * F / vehicule_lod::SEUILS_PX[0] - 61.3f) < 1.f, "1er seuil à %.1f m (≈ 61 m attendus)", L * F / vehicule_lod::SEUILS_PX[0]);
+        VERIFIE(std::fabs(L * F / vehicule_lod::SEUILS_PX[0] - 18.4f) < 1.f, "1er seuil à %.1f m (≈ 18 m attendus, WFS-265)", L * F / vehicule_lod::SEUILS_PX[0]);
         int avant = 0; float tAvant = 0;
         bool monotone = true, fondus[3] = {false, false, false};
         for (float d = 1; d < 400; d += 0.25f) {
@@ -43,7 +43,7 @@ int main() {
         VERIFIE(vehicule_lod::choisir(1000.f, 4).a == 0 && vehicule_lod::choisir(5.f, 4).a == 3, "près : complet ; très loin : niveau 3");
         VERIFIE(vehicule_lod::choisir(5.f, 2).a == 1 && vehicule_lod::choisir(5.f, 1).a == 0, "niveaux absents : le plus haut disponible");
         // fondu sur 1/9 du seuil : de 64 à 72 m dans l'ancien banc, au même rapport
-        const vehicule_lod::Choix m = vehicule_lod::choisir(60.f * (1 - vehicule_lod::BANDE / 2), 4);
+        const vehicule_lod::Choix m = vehicule_lod::choisir(vehicule_lod::SEUILS_PX[0] * (1 - vehicule_lod::BANDE / 2), 4);
         VERIFIE(m.a == 0 && m.b == 1 && std::fabs(m.t - 0.5f) < 0.01f, "milieu du fondu : t = %.3f", m.t);
     }
     {   // listes dessinées : Haute (4 niveaux), Basse (complète puis partsBasse), fantôme (complète), police en lots (partsBasse)
@@ -52,14 +52,19 @@ int main() {
         mo.partsNiveaux = {{{48, 6, 0, 0}}, {{54, 3, 0, 0}}};
         auto d = [&](float dist, bool basse, bool lots, bool fantome) { return vehicule_lod::dessin(mo, dist, F, basse, lots, fantome); };
         VERIFIE(d(10, false, false, false).a == &mo.parts, "Haute, 10 m : complète");
-        VERIFIE(d(90, false, false, false).a == &mo.partsLod, "Haute, 90 m : niveau 1");
-        VERIFIE(d(130, false, false, false).a == &mo.partsNiveaux[0], "Haute, 130 m : niveau 2");
+        VERIFIE(d(40, false, false, false).a == &mo.partsLod, "Haute, 40 m : niveau 1 (WFS-265)");
+        VERIFIE(d(100, false, false, false).a == &mo.partsNiveaux[0], "Haute, 100 m : niveau 2");
         VERIFIE(d(200, false, false, false).a == &mo.partsNiveaux[1], "Haute, 200 m : niveau 3");
         VERIFIE(d(190, true, false, false).a == &mo.partsBasse, "Basse, 190 m : version en 4 pièces");
+        VERIFIE(d(10, true, false, false).a == &mo.parts && d(40, true, false, false).a == &mo.partsLod && d(70, true, false, false).a == &mo.partsLod,
+                "Basse (WFS-265, PR #268) : complète près, niveau 1 de 18 à 77 m (feux et vitres intacts), pas la version en 4 pièces");
+        VERIFIE(d(100, true, false, false).a == &mo.partsBasse, "Basse, 100 m : version en 4 pièces");
+        Modele sansLod = mo; sansLod.partsLod.clear();
+        VERIFIE(d(10, true, false, false).a == &mo.parts && vehicule_lod::dessin(sansLod, 40, F, true, false, false).a == &sansLod.partsBasse, "Basse sans .lod : complète puis 4 pièces");
         VERIFIE(d(10, true, true, false).a == &mo.partsBasse && d(10, true, true, false).t == 0, "police en lots : partsBasse seule, même de près");
         VERIFIE(d(190, false, false, true).a == &mo.parts, "fantôme : complet à toute distance");
-        const auto f = d(64.5f, false, false, false);
-        VERIFIE(f.a == &mo.parts && f.b == &mo.partsLod && f.t > 0, "64,5 m : fondu complète → niveau 1");
+        const auto f = d(19.5f, false, false, false);   // WFS-265 : fondu de 18,4 à 20,7 m (64 à 72 m avant)
+        VERIFIE(f.a == &mo.parts && f.b == &mo.partsLod && f.t > 0, "19,5 m : fondu complète → niveau 1");
         Modele seul; seul.parts = mo.parts;
         VERIFIE(d(10, false, false, false).niveau == 0 && vehicule_lod::dessin(seul, 300, F, false, false, false).a == &seul.parts, "sans .lod : complète partout");
         Modele trou = mo; trou.partsLod.clear();

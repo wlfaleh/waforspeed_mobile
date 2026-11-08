@@ -3871,3 +3871,56 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - GitHub refuse l'approbation venant du même compte : la revue « ✅ Approuvé par le lead dev » est écrite dans la PR, puis fusion en squash b9702bf. WFS-258 : 🔧 En cours (point 1 ✅, point 3 et bascule fusionnés, 🟡 à valider).
 - Remarque non bloquante : le commentaire de `cedeAuDoigt_` dans `player.h` indique encore 95 / 100 km/h.
 - Incident : pendant la prise de la PR, le dossier de travail partagé était passé sur `feature/waforspeed-327` (le développeur venait d'en changer). Mon commit de synchronisation ebe7d2f8 a donc été poussé sur `main` avec le commit 8bbd71b7 de cette branche (une ligne de `track-agent.md`, déjà identique sur `main`). Aucun fichier de `main` n'a changé, rien n'a été réécrit. Ensuite, travail dans des worktrees séparés.
+
+### 2026-11-08 17:39:42 — WFS-317 : conclusion de RG-01 et partie 2 (personnes, RG-03) (Claude, agent 1)
+- **RG-01, mesure du téléphone (APK 916, Ville de nuit, Basse 60 %)** : 10 img/s → 372 appels, 439 k triangles (décor 32 %, voitures 41 %, personnes 27 %), GPU scène 88,7 ms ; 20 img/s → 225 appels, 212 k triangles, scène 43,4 ms ; ombre, reflet et capture à 0. **Ce qui prend le temps : la passe de scène, qui suit le nombre de triangles.** Familles approchées : conducteurs et pilotes comptés en personnes, poussettes en décor.
+- **Relevé objet par objet au banc** (diagnostic local, non livré) : 80 % des triangles « personnes » venaient de 2 défauts : (1) le niveau de détail des piétons se choisissait sur la distance le long de la route depuis la voiture (adultes et enfants en niveau 0, 15 000 à 27 000 triangles, à 14-17 m de la caméra) ; (2) conducteurs au niveau 2 jusqu'à 50 m, sans niveau 3.
+- **Corrigé** (branche feature/waforspeed-317, accord de zone du PO) : distance réelle à la caméra pour les piétons ; conducteurs en Basse 8/20/30 m + niveau 3 ; **RG-03** (décision de l'utilisateur) : Ville, 3 sur 10 gardés par liste (marcheurs, terrasses, passages piétons), promeneurs avec chien gardés : 882 → 263 personnes.
+- **Banc (lavapipe, 2340×1080, image 301)** : personnes 171 k → 40 k triangles (−77 %) ; scène 413 k → 280 k (−32 %). Au départ : personnes 547 k → 88 k.
+- Décor au loin (≈ 42 k triangles en gros morceaux à plus de 140 m) : WFS-265 (décision du PO).
+
+### 2026-11-08 17:42:02 — WFS-265 : corrections après le 2e refus du lead dev, PR #268 en 🔁 (Claude, agent dev X)
+- Branche synchronisée avec `main` (b9671851) ; 73 tests CPU OK, parcours 0 écart. Captures régénérées, avant et après sur le même `main` (f139b49b).
+- **Défaut trouvé** : dans la vue haute du banc, la voiture du joueur (≈ 200 px) basculait en fondu vers le niveau 1. Correctif : `Renderer::dessinJoueur` (accroche `game.cpp` +2), la voiture du joueur est toujours complète.
+- Description de la PR réécrite (limites : tramé visible au téléobjectif, `mustang.wfm` sans `.lod`, `lod-ville-300`).
+
+### 2026-11-08 17:43:52 — APK 918 : vidéos de l'utilisateur regardées ; ANO-177 / WFS-328 (flash blanc au départ de nuit) créé (po-scrum-master)
+
+### 2026-11-08 17:44:20 — WFS-327 : (A) si RG-02 tenue, sinon (B) (po-scrum-master)
+
+### 2026-11-08 17:44:52 — Recette manuelle demandée au QA sur les retours APK 916 / 918 (`qa/recette-manuelle-apk918.md`) (po-scrum-master)
+
+### 2026-11-08 17:46:55 — Recette manuelle APK 916 / 918 faite, ANO-178 (agent qa lead)
+- 16 images ouvertes. KO : départ de nuit délavé (ANO-177, régression 916 → 918), fenêtres hors des façades proches des deux côtés (ANO-175), toujours 5/5 (ANO-176), 10 à 20 img/s en course. OK : aide à la direction jusqu’à 284 km/h, foule, chargement, menus. Nouvelle : ANO-178 (menu principal à 10 img/s, 699 k triangles). Rapport `qa/rapports/recette-manuelle-apk918.md`.
+
+### 2026-11-08 17:47:12 — WFS-265 fusionné par le lead dev (lead-dev)
+- PR #268, 3e revue sur 55b4e92f : les 3 points du 2e refus sont corrigés. La branche est synchronisée ; les captures avant / après sont faites sur le même main, et la voiture du joueur est identique de nuit grâce à `dessinJoueur`. La description est à jour. Le commentaire WFS-222 est remis à sa place. 49 paires ouvertes, diff relu en entier, fusion sans conflit sur main.
+- Approbation écrite dans la PR (en « commentaire » : même compte), squash dcd173c, titre « (Claude, agent dev X) ». Statut : 🟡 À valider (utilisateur). Ligne #268 retirée de suivi-pr.md ; Check.md mis à jour.
+- Pour le PO : l'ajout de 17:31 UTC dans WFS-265.md (immeubles de la Ville au-delà de 140 m, ≈ 42 k triangles) n'est pas dans cette PR. Il est à confier à une US de suite (ou à WFS-321).
+
+### 2026-11-08 17:47:44 — Recette manuelle du QA (APK 916 / 918) : ANO-178 → WFS-329 ; régression 916 → 918 notée dans WFS-328 (po-scrum-master)
+
+### 2026-11-08 17:54:24 — WFS-326 : PR #275 ouverte, cause d'ANO-175 trouvée (Claude, agent dev Y)
+- **Cause (RG-01)** : les « losanges » lumineux n'étaient pas des fenêtres. Les vitres du kit d'architecture sont dans leurs façades : 518 424 sommets de vitre contrôlés par le calcul, 0 hors façade. Avant un virage serré, `ville::adapter` retire l'immeuble qui déborde la limite du virage (R + 6,5 m + profondeur). Il ne retirait son commerce que si la limite passait sous R + 10,5 m. Entre les deux, la vitrine allumée de `commerces.cpp`, le store rayé rouge et blanc, l'enseigne et la terrasse restaient seuls dans le vide : la nuit, un grand rectangle blanc saturé bordé de rouge. Essai A/B en local : en coupant les vitres du kit ou les fenêtres des abords, les rectangles restent ; en retirant ces commerces, ils disparaissent.
+- **Accroche E2 annoncée** : `src/world/ville_quartiers.cpp`, 8 lignes dans `adapter()`. Un commerce ou un panneau n'est gardé que devant un immeuble encore posé, du même côté et sur sa longueur. Commerces retirés : 108 → 119 ; panneaux inchangés. Le fichier est aussi visé par WFS-305 (en attente) : la modification est isolée dans le filtre des commerces. Banc : `cartes_banc.cpp`, les vues `carte-ville-virage-N` sont aussi prises de nuit.
+- **Vérifié en local** : 73 tests CPU verts après synchronisation, parcours complet 0 écart. Banc `ville` avant / après : seules changent les vues des virages, `ao-3-d` et `chien`, où ces commerces étaient visibles. Corniche et Campagne de nuit regardées. Captures dans `qa/pr/WFS-326/`.
+- **Limite** : les vraies fenêtres et vitrines restent très lumineuses la nuit (31,8 cd/m² pour une exposition vers EV 4) : relève de WFS-230.
+
+### 2026-11-08 17:57:04 — WFS-326 (PR #275) refusé par le lead dev (lead-dev)
+- Captures regardées une à une (5 paires) : les vitrines et les stores sans immeuble ont disparu dans `virage-1-nuit`, `virage-2-nuit`, `virage-1` et `virage-2`, et `virage-3-nuit` n'a pas changé. Rien n'est dégradé. Le diff est lu en entier (`ville_quartiers.cpp`, `cartes_banc.cpp`).
+- Raisons du refus :
+  1. Les captures 1 et 2 demandées par `regles-de-gestion/WFS-326.md` manquent : l'avenue du Belvédère en vue Arrière, 100 m avant le virage à gauche, et l'avenue des Mimosas, côté gauche, de `apk916-2`.
+  2. Aucun test CPU ne vérifie qu'un immeuble est posé derrière chaque commerce et chaque panneau.
+  3. `bati()` ne vérifie que le premier segment du commerce, alors que la PR dit « sur sa longueur ».
+  4. Le nombre 60 n'est pas expliqué.
+  5. Le nombre de lignes de l'accroche n'est pas le même partout (6 ou 8).
+- La revue est dans la PR (COMMENT, car GitHub refuse de « demander des changements » sur une PR du même compte). Le ticket passe en ↩️ Retour lead dev (PR #275).
+
+### 2026-11-08 18:07:30 — WFS-316 : PR #267 synchronisée avec main après WFS-258 (#271) (Claude, agent 4 (011cpqZan))
+- Conflits `CMakeLists.txt` et `virages_banc.cpp` résolus en gardant les deux côtés (`test_direction_anneau` et `test_direction_vitesse` ; sections du banc de WFS-258, celles de WFS-316 renumérotées 10 et 11). Tête de branche c5032944.
+- 73 tests CPU OK (`test_direction_anneau`, `test_direction_vitesse`, `test_aide_ralentit` compris) ; bancs `virages`, `conduite` et `parcours` (vue normale et cockpit) à 0 écart. Le banc ne change pas les captures de WFS-316.
+- **RG-05 refait sur la nouvelle base** : lacet dans le monde (rad/s) identique avant / après à 150, 190 et 230 km/h, doigt tenu 1 s, 20 img/s, Golf.
+  - Ligne droite, doigt à 12 % : aide désactivée 0,454 / 0,359 / 0,296 ; aide activée 0,295 / 0,249 / 0,203.
+  - Virage rapide du Grand Prix, doigt à 12 % : aide désactivée 0,819 / 0,906 / 0,925 ; aide activée 0,752 / 0,354 / 0,247.
+  - Mêmes valeurs avant et après au doigt à 6 % (tableau complet dans `test_direction_anneau`).
+
