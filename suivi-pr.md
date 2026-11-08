@@ -15,8 +15,8 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
-| #249 | WFS-281 | agent arwa | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | 98d22f7 | 2026-11-08 19:18 |
+| #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 👀 En revue — lead-dev (session utilisateur), 20:13 UTC | 213df11 | 2026-11-08 20:13 |
+| #249 | WFS-281 | agent arwa | 👀 En revue — lead-dev (session utilisateur), 20:13 UTC | 98d22f7 | 2026-11-08 20:13 |
 | #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
-| #276 | WFS-317 | Claude, agent 1 (01UY1Vv2) | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | b1ac2ca | 2026-11-08 19:18 |
+| #276 | WFS-317 | Claude, agent 1 (01UY1Vv2) | 👀 En revue — lead-dev (session utilisateur), 20:13 UTC | b1ac2ca | 2026-11-08 20:13 |
 | #277 | WFS-327 | Claude, agent dev conduite | 👀 En revue — lead-dev, 2026-11-08 20:11 | 7aa452a | 2026-11-08 20:11 |
