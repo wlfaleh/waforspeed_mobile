@@ -87,7 +87,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
     const char* CARTES[] = {"ville", "campagne", "plage", "circuit"};
     std::ostringstream rap;
     rap << "WaForSpeed — banc fluidite (WFS-221) : voiture du joueur vue par la caméra, temps d'image irrégulier (± 30 %)\n"
-           "colonnes : passe | scénario | carte | vue | cadence | img/s | images | pas par image (0/1/2/3) | à-coup max (mm, WFS-247) | écart à la référence 120 Hz (mm, 10-20 img/s, WFS-293) | saut d'angle max (°) | aller-retour max (cm) | allers-retours > 2 cm par s\n";
+           "colonnes : passe | scénario | carte | vue | cadence | img/s | images | pas par image (0/1/2/3) | à-coup max (mm, WFS-247) | écart à la référence 120 Hz (mm, juge, WFS-293) | saut d'angle max (°) | aller-retour max (cm) | allers-retours > 2 cm par s\n";
     int manques = 0;
     double pireApres[4] = {0, 0, 0, 0};
     for (const Scenario& sc : SCEN) {
@@ -170,7 +170,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     // WFS-293 (RG-07) : à 10-20 img/s, la même course rejouée à 120 Hz (mêmes commandes à chaque pas, caméra calculée
                     // à chaque pas) : écart de chaque image rendue à cette référence au même instant simulé
                     double ecartRef = -1;
-                    if ((fps <= 20 || std::getenv("WFS_REF_TOUS")) && passe < 2) {
+                    if (passe < 2) {   // WFS-293 (RG-12) : référence à toutes les cadences
                         setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                         courseBenchRules(true);
                         const bool ok2 = g.init(r, "golf", carte);
@@ -201,6 +201,15 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                             }
                             int nc = 0;
                             ecartRef = fluidite::ecartMaxMm(rendues, ref, &nc);
+                            // WFS-293 (RG-14) : la référence voit-elle un saut dans l'épingle à 30 img/s ? saut de 5 mm injecté sur une image
+                            if (passe == 1 && sc.type == trace::Type::Epingle && fps == 30 && !regulier && rendues.size() > 10) {
+                                std::vector<fluidite::Pose> saut = rendues;
+                                saut[saut.size() / 2].p = saut[saut.size() / 2].p + vec3{0.005f, 0, 0};
+                                const double vu = fluidite::ecartMaxMm(saut, ref);
+                                char ls[200]; std::snprintf(ls, sizeof ls, "RG-14 : épingle, %s, 30 img/s : saut de 5 mm injecté, mesuré %.2f mm par la référence (≥ 4)\n", cam ? "Poursuite" : "Proche", vu);
+                                rap << ls; WFS_LOG("fluidite : %s", ls);
+                                if (vu < 4) manques++;
+                            }
                             if (nc < (int)rendues.size() * 9 / 10) WFS_ERR("fluidite : référence 120 Hz incomplète (%d / %zu images)", nc, rendues.size());
                         }
                     }
@@ -226,12 +235,18 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                         // WFS-293 (RG-01, RG-08) : à-coup compté dans TOUS les scénarios, virages et carrefour compris : à ≥ 30 img/s,
                         // indicateur de WFS-247 < 5 mm ; à 10-20 img/s, écart à la même course rejouée à 120 Hz ≤ 10 mm (RG-07) ; 26 img/s
                         // (téléphone, entre les deux) : pour information. Saut d'angle (≤ 0,2°) : ligne droite et montée, comme avant.
+                        // WFS-293 (RG-12, RG-13, décision du PO du 2026-11-08 23:53 UTC) : la référence 120 Hz juge tous les scénarios à
+                        // toutes les cadences (< 5 mm à ≥ 30 img/s, ≤ 10 mm à 10-20) ; l'indicateur de WFS-247 juge EN PLUS à ≥ 30 img/s en
+                        // ligne droite, en montée et en virage serré (sans plancher là : il voit une irrégularité de la simulation elle-même) ;
+                        // dans l'épingle et au carrefour, il a un plancher mesuré (baisse en h² à h³ avec la cadence) : pour information
                         const bool droite = sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee;
-                        if (fps >= 30) pireApres[0] = std::max(pireApres[0], res.acoupMm);
-                        if (fps <= 20) pireApres[3] = std::max(pireApres[3], ecartRef);
+                        const bool sansPlancher = droite || (sc.type == trace::Type::Virage && !sc.carrefour);
+                        if (fps >= 30 && sansPlancher) pireApres[0] = std::max(pireApres[0], res.acoupMm);
+                        if (fps >= 30 || fps <= 20) pireApres[3] = std::max(pireApres[3], ecartRef);
                         if (droite) pireApres[1] = std::max(pireApres[1], res.sautDeg);
                         pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
-                        if ((fps >= 30 && res.acoupMm >= 5) || (fps <= 20 && (ecartRef < 0 || ecartRef > 10)) || (droite && res.sautDeg > 0.2) || res.allerRetourCm > 2) manques++;
+                        const bool refManque = ecartRef < 0 || (fps >= 30 && ecartRef >= 5) || (fps <= 20 && ecartRef > 10);
+                        if (refManque || (fps >= 30 && sansPlancher && res.acoupMm >= 5) || (droite && res.sautDeg > 0.2) || res.allerRetourCm > 2) manques++;
                     }
                 }
     }
@@ -274,7 +289,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
     g.modeManette = false; g.manette = DriveInput{};
     Game::interpolation = true; Game::cameraTempsSimule = true; Track::penteLissee = true; g_cameraFiltreExact = true; choisirVue(VueCamera::Poursuite);
     char f[400];
-    std::snprintf(f, sizeof f, "après, pire cas : à-coup %.2f mm (tous scénarios, 30-90 img/s ; objectif < 5), écart à la référence 120 Hz %.2f mm (tous scénarios, 10-20 img/s ; ≤ 10), saut d'angle %.3f° (ligne droite et montée ; ≤ 0,2), aller-retour %.2f cm (tous scénarios ; ≤ 2) ; objectifs manqués : %d\n",
+    std::snprintf(f, sizeof f, "après, pire cas : à-coup WFS-247 %.2f mm (ligne droite, montée, virage serré, 30-90 img/s ; < 5), écart à la référence 120 Hz %.2f mm (tous scénarios ; < 5 à ≥ 30 img/s, ≤ 10 à 10-20), saut d'angle %.3f° (ligne droite et montée ; ≤ 0,2), aller-retour %.2f cm (tous scénarios ; ≤ 2) ; objectifs manqués : %d\n",
                   pireApres[0], pireApres[3], pireApres[1], pireApres[2], manques);
     rap << f;
     std::ofstream(out + "/fluidite.txt") << rap.str();
