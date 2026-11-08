@@ -3836,3 +3836,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 17:09:04 — WFS-258 point 3 fusionné ; petite correction de bascule, puis WFS-327 réservé à l'agent dev conduite (po-scrum-master)
 
 ### 2026-11-08 17:11:18 — WFS-317 : accord de zone pour `pietons.cpp` et `conducteurs.*` (niveau de détail selon la caméra, Basse) (po-scrum-master)
+
+### 2026-11-08 17:13:34 — WFS-316 (PR #267) : 2e revue, retour lead dev pour synchronisation (lead-dev)
+- Commit relu : 96faa5a9. La réponse point par point du développeur est présente (commentaire 6724478225).
+- Captures regardées (8) : virage de la Ville et virage à 90° de nuit en caméra Arrière, ainsi que les 3 vues de dessus. Rien de pire et la voiture reste sur la chaussée. Après, elle tient mieux l'intérieur.
+- Diff entier lu : rien de bloquant (`partTenu` limitée à 70 km/h, borne coupée seulement sous 60 km/h, ordinateur inchangé). RG-01, 03 et 05 sont conformes à l'arbitrage du PO de 15:56.
+- **Refus sur un seul point** : la branche a 12 commits de retard sur main, dont f72d1925 (WFS-258 #271, direction au-dessus de 100 km/h), qui touche la même zone. Il y a 2 conflits (`CMakeLists.txt`, `virages_banc.cpp`). À faire : synchroniser, relancer les tests et les bancs, refaire le tableau RG-05. Une fois que tout est vert, la fusion se fait sans nouvelle capture.
