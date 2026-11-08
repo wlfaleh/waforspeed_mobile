@@ -299,6 +299,7 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
                 for (auto& [nom, k] : cumuls()) { const double d = k.update + k.render + k.ui + k.autre - k.avant; sys += d; k.pire = std::max(k.pire, d); }
                 if (cpu - sys > pireHors) pireHors = cpu - sys;
             }
+            if (std::getenv("WFS_PERF_CAPTURE")) r.capturePng(out + "/perf-" + c.carte + "-" + c.nom + ".png");   // WFS-336 (accroche) : dernière image mesurée (captures de la PR)
             if (double ma, mt, md; trafficMedianes(IMAGES, ma, mt, md)) WFS_LOG("perf %s %s : trafic, médianes sur %d images : %.0f appels, %.0f triangles, %.0f véhicules dessinés ; %zu actifs (WFS-281)", c.carte, c.nom, std::min(IMAGES, 128), ma, mt, md, activeTraffic() ? activeTraffic()->cars.size() : (size_t)0);
             {   // pires images : par système, et moteur hors systèmes (Game, Renderer)
                 std::vector<std::pair<double, std::string>> p;
