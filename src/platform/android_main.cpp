@@ -63,6 +63,8 @@ extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeMar
 struct App {
     VkCtx vk; Renderer renderer; Game game;
     bool ready = false, focused = false;
+    bool fenetre = true;          // WFS-285 : surface Vulkan présente (faux entre APP_CMD_TERM_WINDOW et APP_CMD_INIT_WINDOW)
+    double tFenetre = 0;          // WFS-285 (RG-02) : arrivée de la nouvelle fenêtre, jusqu'à la première image dessinée
     double last = 0, start = 0;
     int checkFrames = 0, orientRetries = 0;
     int fpsFrames = 0; double fpsT0 = 0;
@@ -163,8 +165,48 @@ static void finChargement(android_app* a) {
 }
 } // namespace veilleur
 
+// ---------------------------------------------------------------------------------------------------------------------
+// WFS-285 (ANO-154) : fenêtre perdue puis rendue (arrière-plan, écran verrouillé, appel). Avant, termGraphics arrêtait
+// tout (partie, rendu, GPU) et initGraphics rechargeait tout : 80 s d'écran noir sur l'émulateur. Maintenant :
+//  - RG-01 : fenêtre perdue → seules la swapchain et la surface Vulkan sont détruites ; le device, le Renderer (pipelines,
+//    textures, maillages) et la partie (carte, voiture, course, menus) restent en mémoire ;
+//  - RG-02 : fenêtre rendue → nouvelle surface sur le même GPU et la même file, swapchain, cibles d'écran (Renderer::resize),
+//    reprise au même écran (en course : la Pause, posée à APP_CMD_PAUSE, RG-03) ; ligne « surface recréée en N ms » à la
+//    première image dessinée ;
+//  - RG-04 : si la surface ou la swapchain ne se refait pas, repli : tout arrêter et tout recharger (chemin d'avant).
+// Les membres de VkCtx sont publics : la surface est refaite ici, sans toucher au contexte Vulkan partagé.
+static void lacherSurface(App& app) {
+    VkCtx& vk = app.vk;
+    vk.waitIdle(); vk.destroySwapchain();
+    if (vk.surface) vkDestroySurfaceKHR(vk.instance, vk.surface, nullptr);
+    vk.surface = VK_NULL_HANDLE; vk.window = nullptr;
+    app.fenetre = false;
+}
+static bool reprendreSurface(App& app, ANativeWindow* w) {
+    VkCtx& vk = app.vk;
+    VkAndroidSurfaceCreateInfoKHR sci{VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR}; sci.window = w;
+    if (!vk.device || vk.surface || vkCreateAndroidSurfaceKHR(vk.instance, &sci, nullptr, &vk.surface) != VK_SUCCESS) return false;
+    vk.window = w;
+    VkBool32 present = VK_FALSE;   // même file que le premier lancement : elle doit savoir présenter sur la nouvelle surface
+    if (vkGetPhysicalDeviceSurfaceSupportKHR(vk.gpu, vk.queueFamily, vk.surface, &present) != VK_SUCCESS || !present) return false;
+    return vk.createSwapchain() && app.renderer.resize();
+}
+
 static void chargerJeu(App& app, android_app* a, double tVk);
 static void initGraphics(App& app, android_app* a) {
+    if (app.ready && !app.fenetre && a->window) {   // WFS-285 (RG-02) : moteur gardé, seule la surface est refaite
+        app.tFenetre = nowSeconds();
+        if (reprendreSurface(app, a->window)) {
+            app.fenetre = true; app.last = nowSeconds();
+            app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
+            WFS_LOG("surface : fenêtre rendue, moteur gardé (écran %s)", app.game.ecran() == Ecran::Pause ? "Pause" : app.game.ecran() == Ecran::Menu ? "Menu" : "autre");
+            return;
+        }
+        WFS_ERR("surface : repli, rechargement complet");   // RG-04 : chemin d'avant (ANO-52, WFS-100)
+        app.tFenetre = 0;
+        app.game.shutdown(); app.renderer.shutdown(); app.vk.shutdown();
+        app.ready = false; app.fenetre = true;
+    }
     if (app.ready || !a->window || ecrans::cgu().premierLancement()) return;
     veilleur::debutChargement();   // WFS-284 : entrées lues par le veilleur jusqu'à la fin, même en cas d'échec
     struct Fin { android_app* a; ~Fin() { veilleur::finChargement(a); } } fin{a};
@@ -191,9 +233,14 @@ static void chargerJeu(App& app, android_app* a, double tVk) {   // WFS-308 : ch
     WFS_LOG("QA pret : moteur initialise");
 }
 
-static void termGraphics(App& app) {
+// complet = faux : APP_CMD_TERM_WINDOW (fenêtre perdue, moteur gardé : WFS-285) ; vrai : fin de l'application (RG-05)
+static void termGraphics(App& app, bool complet) {
     if (!app.ready && ecrans::cgu().tientLaFenetre()) { ecrans::cgu().perdreFenetre(app.renderer); app.renderer.shutdown(); app.vk.shutdown(); return; }   // WFS-308
     if (!app.ready) return;
+    if (!complet) {   // WFS-285 (RG-01)
+        if (app.fenetre) { lacherSurface(app); WFS_LOG("surface : fenêtre perdue, moteur gardé"); }   // cache des pipelines : déjà à APP_CMD_PAUSE
+        return;
+    }
     app.game.shutdown();
     app.renderer.shutdown();
     // ANO-52 : Renderer::shutdown remet l'objet à neuf depuis WFS-100 (RG-W1) ; contournement retiré (WFS-111 RG-10)
@@ -205,7 +252,7 @@ static void onCmd(android_app* a, int32_t cmd) {
     App& app = *static_cast<App*>(a->userData);
     switch (cmd) {
         case APP_CMD_INIT_WINDOW: chauffeAndroidFenetre(a->window); initGraphics(app, a); break;   // WFS-123 (RG-04)
-        case APP_CMD_TERM_WINDOW: termGraphics(app); break;
+        case APP_CMD_TERM_WINDOW: termGraphics(app, false); break;   // WFS-285 : surface seulement
         case APP_CMD_GAINED_FOCUS: app.focused = true; app.last = nowSeconds(); break;
         case APP_CMD_PAUSE:   // WFS-39 RG-04 : arrière-plan ou perte du focus en course → pause (web blur / visibilitychange)
             sauvegarde().enregistrer();   // WFS-24 RG-06 : sauvegarde au passage en arrière-plan
@@ -216,7 +263,7 @@ static void onCmd(android_app* a, int32_t cmd) {
             break;
         case APP_CMD_CONFIG_CHANGED:
         case APP_CMD_WINDOW_RESIZED:
-            if (app.ready) { app.vk.waitIdle(); if (app.vk.createSwapchain()) app.renderer.resize(); }
+            if (app.ready && app.fenetre) { app.vk.waitIdle(); if (app.vk.createSwapchain()) app.renderer.resize(); }   // WFS-285 : pas sans surface
             break;
         default: break;
     }
@@ -294,7 +341,7 @@ void android_main(android_app* a) {
         rejouerEntrees(app);   // WFS-284 : avant les événements suivants (ordre gardé)
         // en pause : on attend les événements sans consommer de batterie
         veilleur::g_enAttente = true;
-        while (ALooper_pollOnce((app.ready && app.focused) || ecrans::cgu().premierLancement() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
+        while (ALooper_pollOnce((app.ready && app.focused && app.fenetre) || ecrans::cgu().premierLancement() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
             veilleur::g_enAttente = false;
             if (src && src->id == LOOPER_ID_INPUT) { std::lock_guard<std::mutex> l(veilleur::g_file); src->process(a, src); veilleur::g_dernierLu = nowSeconds(); }
             else if (src) src->process(a, src);   // commandes (chargement compris : le veilleur lit la file pendant ce temps)
@@ -312,7 +359,7 @@ void android_main(android_app* a) {
             if (app.ready) { Game::demandes().carte = sauvegarde().map; Game::demandes().nuit = sauvegarde().tod == "nuit"; }
             else ANativeActivity_finish(a->activity);
         }
-        if (app.ready && app.focused) {
+        if (app.ready && app.focused && app.fenetre && a->window) {   // WFS-285 : rien à dessiner sans surface
             // l'appli démarre souvent en portrait puis passe en paysage : la nouvelle taille et la rotation
             // n'arrivent pas toujours avec l'événement de changement ; on les vérifie régulièrement.
             if (++app.checkFrames >= 15) {
@@ -335,6 +382,7 @@ void android_main(android_app* a) {
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
             else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); retourSystemeApresImage(app.game); app.game.render(t - app.start); }   // WFS-22 : manette ; WFS-116
+            if (app.tFenetre > 0) { WFS_LOG("surface recréée en %d ms", (int)std::lround((nowSeconds() - app.tFenetre) * 1000)); app.tFenetre = 0; }   // WFS-285 (RG-02)
             // WFS-123 (RG-06) : 30 images/s hors course (batterie), 60 en course : attente du reste de la période de l'image
             // (la synchro FIFO tient déjà 60 sur un écran 60 Hz ; l'attente ne sert qu'aux menus et aux écrans plus rapides)
             // WFS-262 (accroche, RG-04) : sous 60 img/s (cadence 30, menus), échéances sur une grille fixe (précédente + période),
@@ -356,7 +404,7 @@ void android_main(android_app* a) {
             }
         }
     }
-    termGraphics(app);
+    termGraphics(app, true);   // RG-05 : arrêt complet
     veilleur::arreter();
     jobs().stop();
 }
