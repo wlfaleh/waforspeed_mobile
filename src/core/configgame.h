@@ -45,7 +45,7 @@ struct ConfigJeu {
     } nitro;
     struct Course5 {
         int ordinateurs = 4;                             // voitures pilotées par l'ordinateur
-        double facteur[3] = {0.80, 0.90, 0.97};          // part de la vitesse de pointe visée : facile, normale, difficile
+        double facteur[3] = {0.80, 0.95, 1.00};          // part de la vitesse de pointe visée : facile, normale, difficile (WFS-327 : 0,90 → 0,95 et 0,97 → 1,00 : les virages arcade ne compensent plus)
         double ecartMinM = 1.2;                          // m : jamais plus près de la voiture de devant
         double rattrapageDerriereM = 150, rattrapageDevantM = 250;   // WFS-133 (RG-04) : rattrapage, écart au joueur (m)
         double rattrapageBonus = 0.08, rattrapageMalus = 0.06, rattrapageMalusFacile = 0.10;

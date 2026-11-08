@@ -51,6 +51,8 @@ namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
+#include "../world/cartes_v2/paquet_carte.h"   // WFS-301 (accroche) : WFS_BANC=cuisson, 2e source de readAsset
 #include "../ui/ecrans/chargement.h"
 #include "manette_jeu.h"   // WFS-22
 #include "endurance_banc.h"   // WFS-91
@@ -71,6 +73,7 @@ namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }
 namespace wfs {
 static std::string g_root = "assets/";
 bool readAsset(const std::string& path, std::vector<uint8_t>& out) {
+    if (carte::lireDansPaquet(path, out)) { memoire::compteurs().octetsLus += (int64_t)out.size(); return true; }   // WFS-301 (RG-03) : paquet vérifié d'abord
     std::ifstream f(g_root + path, std::ios::binary);
     if (!f) return false;
     out.assign(std::istreambuf_iterator<char>(f), {});
@@ -173,6 +176,9 @@ int main(int argc, char** argv) {
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
+    carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
+    if (banc == "cuisson") { const int e = cartes_v2::benchCuisson(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-301 (accroche) : paquets de la Ville
+    if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*

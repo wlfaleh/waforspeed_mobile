@@ -105,6 +105,8 @@ else()
   add_executable(test_version_chargement tests/test_version_chargement.cpp)   # WFS-279 : version de l'écran de chargement
   add_executable(test_minicarte tests/test_minicarte.cpp)   # WFS-173 : place et projection de la mini-carte
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
+  add_executable(test_course5_ordinateurs tests/test_course5_ordinateurs.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-327 : adversaires sur une vitesse de virage possible, course disputée
+  target_link_libraries(test_course5_ordinateurs Threads::Threads)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
@@ -121,6 +123,8 @@ else()
   target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/audio/trafic_sons.cpp src/game/player.cpp src/game/track.cpp)   # WFS-121 : sons du trafic
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
+  add_executable(test_carte_cuite tests/test_carte_cuite.cpp src/core/carte_cuite.cpp)   # WFS-301 : paquets de cartes (format, vérification, 2e source)
+  add_executable(test_cgu tests/test_cgu.cpp src/ui/ecrans/cgu_texte.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-308 : CGU (texte, version, clé cgu=)
   add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
   add_executable(test_fidelite_soleil tests/fidelite_soleil.cpp)   # WFS-148 (RG-02) : soleil (NOAA) contre 10 valeurs de contrôle

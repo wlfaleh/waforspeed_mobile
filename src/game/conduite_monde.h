@@ -294,6 +294,10 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
     e.ax += (Fx / m - e.ax) * k; e.ay += (Fy / m - e.ay) * k;
 }
 
+// adhérence des pneus tirée de la fiche (grip 5 : SUV → 0,99 ; grip 10 : sportive → 1,10, à confirmer), sans étalonnage :
+// lue aussi par les ordinateurs de la Course à 5 (WFS-327, course5.cpp), sans calcul en pleine course
+inline double adherencePneu(const CarDef& c) { return 0.88 + 0.022 * c.grip; }
+
 // paramètres d'une voiture tirés de sa fiche, étalonnés : vitesse maximale exacte (traînée), 0-100 de la fiche (puissance
 // aux roues, et adhérence au départ pour les voitures que l'adhérence limite)
 inline Params etalonner(const CarDef& c) {
@@ -308,7 +312,7 @@ inline Params etalonner(const CarDef& c) {
     p.h = 0.37 * c.d.H;         // centre de gravité ≈ 37 % de la hauteur (à confirmer) : 0,54 m pour la Golf, 0,67 m pour le Range Rover
     p.voie = 0.86 * c.d.W;
     p.Iz = p.masse * p.a * p.b; // inertie de lacet ≈ m · a · b (approximation usuelle)
-    p.mu = 0.88 + 0.022 * c.grip; p.muLong = p.mu * 1.08;   // grip 5 (SUV) → 0,99 ; grip 10 (sportive) → 1,10 (à confirmer)
+    p.mu = adherencePneu(c); p.muLong = p.mu * 1.08;
     p.pmax = c.spec.ch * 735.5;
     p.wP = 6500 * 2 * PI_D / 60; p.wMax = 1.12 * p.wP;     // puissance maxi à 6 500 tr/min, coupure à 7 280 (à confirmer)
     p.rayonRoue = c.d.rw > 0.2 ? c.d.rw : 0.33;

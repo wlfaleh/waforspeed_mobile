@@ -96,6 +96,17 @@ int main() {
     }
     cas("RG-01 : niveaux de détail : corps-0 en vue Proche (6 m), corps-1 à 12 m, corps-2 au-delà de 20 m",
         niveauDetail(36.f) == 0 && niveauDetail(144.f) == 1 && niveauDetail(30.f * 30.f) == 2);
+    // WFS-317 (RG-02) : Basse : 3e seuil à 30 m (corps-3 « très simple ») ; Moyenne / Haute : corps-2 jusqu'au bout de la file
+    cas("WFS-317 : Basse : corps-0 à 6 m, corps-1 à 12 m, corps-2 à 25 m, corps-3 à 35 et 50 m",
+        niveauDetail(36.f, -1, true) == 0 && niveauDetail(144.f, -1, true) == 1 && niveauDetail(25.f * 25.f, -1, true) == 2 &&
+        niveauDetail(35.f * 35.f, -1, true) == 3 && niveauDetail(50.f * 50.f, -1, true) == 3);
+    cas("WFS-317 : Haute : pas de corps-3, même à 50 m", niveauDetail(35.f * 35.f) == 2 && niveauDetail(50.f * 50.f) == 2);
+    {   // hystérésis autour de 30 m en Basse ; retour en Haute depuis corps-3 : corps-2 tout de suite
+        Attribution A; A.choisir(9);
+        const int a = A.niveau(9, 29.8f * 29.8f, true), b = A.niveau(9, 30.3f * 30.3f, true), c = A.niveau(9, 30.6f * 30.6f, true), d = A.niveau(9, 29.7f * 29.7f, true);
+        cas("WFS-317 : hystérésis à 30 m : 29,8 → 30,3 m gardent corps-2 ; 30,6 m passe en corps-3 ; 29,7 m le garde", a == 2 && b == 2 && c == 3 && d == 3);
+        cas("WFS-317 : passage en Haute depuis corps-3 : corps-2", A.niveau(9, 31.f * 31.f, false) == 2);
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("conducteurs : tout est OK\n");
     return 0;
