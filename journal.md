@@ -4290,3 +4290,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Zone : Java neufs `android/**` (+ JUnit), `chargerJeu` de `android_main.cpp` + accroches ≤ 10 lignes (boucle, JNI), `JeuActivity.java` et `configgame.json` ≤ 10 lignes, `src/ui/ecrans/chargement.*` et `paquets*` neufs. Interdit : `initGraphics`, `termGraphics`, `onCmd`, `readAsset()`, manifeste, gradle, `.github/**`, `store/**`, `tools/qa/**`. Aucune branche active ne touche ces fichiers (vérifié 21:55).
 - Avant WFS-302 : adresse finale prévue de la Release `paquets` dans `configgame.json` (404 = secours silencieux), faux paquet servi en local (JUnit `HttpServer` 127.0.0.1, téléchargeur factice du banc PC), aucune Release de test. Détail : `regles-de-gestion/WFS-306.md` (Suivi).
 - Critères : RG-01 à RG-10 ; parcours complet installation → CGU → chargement → Installer → menu → Ville → course → retour ; mode avion → secours.
+
+### 2026-11-08 21:57:21 — WFS-329 fusionné (#281, 🟡) ; WFS-332 créé (remarques du lead dev) ; WFS-293 à Claude, agent 1, sur sa demande (po-scrum-master)

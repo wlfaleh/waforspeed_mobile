@@ -14,14 +14,14 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-08 21:55:13 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-08 21:57:21 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-281, WFS-328, WFS-292 | tickets en parallèle (autorisation de l'utilisateur), épics différentes : P1 WFS-281 trafic qui s'accumule (E3, exception PO) : ↩️ retour lead dev sur PR #249 (3e refus, 158cdee) : à corriger ; **P1 WFS-328** départ de nuit blanc / rose (ANO-177, E13) : 🔀 PR #282 ouverte 21:25 UTC (56a70670), à relire ; **P2 WFS-292** fumée des pneus de jour, choc du banc d'effets, Golf bleue de nuit (ANO-165, ANO-167 ; E4 + E10 en exception PO : `effets_*`, `bench_effets.*`, `eclairementRouteAutour()` de `vehicule.glsl`), 🔀 PR #279 ouverte (lead dev ; RG-04 à arbitrer par le PO) ; avant : WFS-284 🟣 (#250, 94f6f41), WFS-266 🟣 (#252, 8c8bdc7) | 281 : 19:06 (158cdee) ; 328 : 19:31 (bc1f616) ; 292 : PR #279 (62751ac) | 🔧 en cours ; ↩️ retour lead dev sur PR #279 (WFS-292) : à corriger |
-| Claude, agent 1 (01UY1Vv2) | — | WFS-329 fusionné par le lead dev (#281, squash 087228b), 🟡 à valider par l'utilisateur ; à faire : entrée de journal (accroches game.cpp, system.h, trafic, piétons ; preuves). WFS-317 fusionné (#276), 🟡 | 329 : `feature/waforspeed-329` (gardée) | 🟢 libre |
+| Claude, agent 1 (01UY1Vv2) | WFS-293 | P2 banc de fluidité complet, à-coup en virage et au carrefour corrigé (ANO-166) ; attribué 21:57 sur sa demande ; WFS-329 fusionné (#281, 🟡) | 293 : branche à créer | 🔧 en cours |
 | Claude, agent 2 (01UY1Vv5) | WFS-290 | Réglages : boutons Réglages / Fermer (WFS-290), puis onglets (WFS-291) et fantôme du record (WFS-318) ; attribué 20:44 (décision de l'utilisateur) | 290 : branche à créer | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-306 | domaine **cartes et téléchargement** (skill `expert-cartes`) : P1 WFS-306 « Mise à jour et installation des paquets » pendant le chargement (téléchargeur Java neuf, `Range` / `.part` / SHA-256, taille et règle Wi-Fi, astuces, secours = Ville du code ; faux paquet servi en local par les tests JUnit et le banc PC) ; zone : Java neufs `android/**`, `chargerJeu` + accroches ≤ 10 lignes `android_main.cpp` / `JeuActivity.java` / `configgame.json`, `src/ui/ecrans/chargement.*` ; attribué 21:55 UTC à sa demande ; avant : WFS-301 🟣 (#278 8b84a83, #284 82a2c7e), WFS-308 🟣 (#269) | 306 : branche `feature/waforspeed-306` à créer et pousser | 🔧 en cours |
 | Claude, agent 4 (011cpqZan) | — (WFS-316 fusionné) | direction, 2e passage (un seul ticket sur ordre de l'utilisateur, puis arrêt) : PR #267 fusionnée par le lead dev (squash 7dbea2f), 🟡 à valider par l'utilisateur | 316 : fusionnée 18:17 (7dbea2f, #267) | 🟢 libre |
