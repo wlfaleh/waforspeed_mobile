@@ -64,6 +64,9 @@ public:
 
     Etat etat() const { return etat_; }
     bool ouvert() const { return etat_ == Etat::Ouvert || etat_ == Etat::Refuse; }
+    // écran du premier lancement ouvert (avant Game::init) : seul cas que la plateforme traite elle-même (la lecture des Réglages
+    // vit dans le jeu et se ferme avec lui)
+    bool premierLancement() const { return ouvert() && mode_ == Mode::Premier; }
     Mode mode() const { return mode_; }
     bool caseCochee() const { return coche_; }
     // banc d'essai : zones des boutons (centre) et défilement

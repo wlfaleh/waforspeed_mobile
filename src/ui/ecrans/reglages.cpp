@@ -184,6 +184,7 @@ public:
         if (reglages().qualite != QUALITE_HAUTE) appliquerQualite(r);
     }
     void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_bouton = {}; cgu().fermer(); }
+    void shutdown(Renderer&) override { if (cgu().mode() == Cgu::Mode::Lecture) cgu().fermer(); }   // WFS-308 : fenêtre perdue en jeu (termGraphics)
 
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause) return false;

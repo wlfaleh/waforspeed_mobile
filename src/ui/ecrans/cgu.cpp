@@ -253,7 +253,7 @@ void Cgu::perdreFenetre(Renderer& r) {
 Cgu::Etat Cgu::image(VkCtx& vk, uint32_t lf, uint32_t hf, double maintenant) {
     if (etat_ == Etat::Accepte) { noterAcceptation(); return Etat::Accepte; }
     if (etat_ == Etat::Quitter) { etat_ = Etat::Ferme; return Etat::Quitter; }
-    if (!ouvert() || !r_) return etat_;
+    if (!premierLancement() || !r_) return etat_;   // lecture des Réglages : dessinée par le jeu, jamais ici
     // l'appli démarre souvent en portrait puis passe en paysage (même contrôle que la boucle de jeu d'android_main.cpp)
     const bool tourne = (lf >= hf) != (r_->width() >= r_->height());
     if (vk.surfaceChanged() || (tourne && essaisRotation_++ < 8)) { vk.waitIdle(); if (vk.createSwapchain()) r_->resize(); }
@@ -341,6 +341,22 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
     captureJeu("reglages-cgu-lecture", "conditions en lecture seule, bouton « Fermer »");
     { const Cgu::Zone& z = c.zoneFermer(); toucherJeu(8, z.x + z.w / 2, z.y + z.h / 2); }
     verifier(!c.ouvert() && reglagesOuverts(), "« Fermer » → retour aux Réglages");
+    {   // fenêtre perdue en jeu pendant la lecture (touche Accueil) : chemin de termGraphics puis initGraphics d'android_main.cpp
+        toucherJeu(9, bx, by);
+        verifier(c.ouvert() && !c.premierLancement(), "lecture ouverte depuis les Réglages : pas le premier lancement");
+        VkCtx& vk = r.vk();
+        g.shutdown();
+        verifier(!c.ouvert(), "fenêtre perdue en jeu (Game::shutdown) : lecture fermée");
+        r.shutdown(); r.init(vk);
+        const bool ok = g.init(r, "golf", "ville");
+        verifier(ok && !c.ouvert() && !c.premierLancement(), "fenêtre retrouvée : jeu rechargé, lecture fermée, pas d'écran des CGU");
+        if (!ok) { sauvegarde().desactiver(); std::remove(chemin.c_str()); return ecarts; }
+        g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 30; i++) g.update(1.0 / 60);
+        g.allerA(Ecran::Menu);
+        for (int i = 0; i < 60; i++) imageJeu();
+        captureJeu("cgu-retour-jeu", "après la perte de la fenêtre pendant la lecture : menu revenu, sans écran des CGU");
+    }
     ouvrirReglagesBanc(false); imageJeu();
     g.allerA(Ecran::Course);
     for (int i = 0; i < 120; i++) imageJeu();

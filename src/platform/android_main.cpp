@@ -165,7 +165,7 @@ static void finChargement(android_app* a) {
 
 static void chargerJeu(App& app, android_app* a, double tVk);
 static void initGraphics(App& app, android_app* a) {
-    if (app.ready || !a->window || ecrans::cgu().ouvert()) return;
+    if (app.ready || !a->window || ecrans::cgu().premierLancement()) return;
     veilleur::debutChargement();   // WFS-284 : entrées lues par le veilleur jusqu'à la fin, même en cas d'échec
     struct Fin { android_app* a; ~Fin() { veilleur::finChargement(a); } } fin{a};
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
@@ -192,7 +192,7 @@ static void chargerJeu(App& app, android_app* a, double tVk) {   // WFS-308 : ch
 }
 
 static void termGraphics(App& app) {
-    if (!app.ready && ecrans::cgu().ouvert()) { ecrans::cgu().perdreFenetre(app.renderer); app.renderer.shutdown(); app.vk.shutdown(); return; }   // WFS-308
+    if (!app.ready && ecrans::cgu().premierLancement()) { ecrans::cgu().perdreFenetre(app.renderer); app.renderer.shutdown(); app.vk.shutdown(); return; }   // WFS-308
     if (!app.ready) return;
     app.game.shutdown();
     app.renderer.shutdown();
@@ -231,9 +231,9 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
         if (!app.ready) return 1;   // chargement : pris et ignoré (RG-03)
         return retourSysteme(app.game, act == AKEY_EVENT_ACTION_DOWN, AKeyEvent_getRepeatCount(e)) ? 1 : 0;
     }
-    if ((ecrans::chargement().enErreur() || (ecrans::cgu().ouvert() && !app.ready)) && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-146 (RG-10) : bouton de l'écran d'erreur ; WFS-308 : CGU
+    if ((ecrans::chargement().enErreur() || (ecrans::cgu().premierLancement() && !app.ready)) && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-146 (RG-10) : bouton de l'écran d'erreur ; WFS-308 : CGU
         const int32_t k = AMotionEvent_getAction(e) & AMOTION_EVENT_ACTION_MASK;
-        if (ecrans::cgu().ouvert() && !app.ready) return ecrans::cgu().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
+        if (ecrans::cgu().premierLancement() && !app.ready) return ecrans::cgu().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
         return ecrans::chargement().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
     }
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
@@ -294,7 +294,7 @@ void android_main(android_app* a) {
         rejouerEntrees(app);   // WFS-284 : avant les événements suivants (ordre gardé)
         // en pause : on attend les événements sans consommer de batterie
         veilleur::g_enAttente = true;
-        while (ALooper_pollOnce((app.ready && app.focused) || ecrans::cgu().ouvert() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
+        while (ALooper_pollOnce((app.ready && app.focused) || ecrans::cgu().premierLancement() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
             veilleur::g_enAttente = false;
             if (src && src->id == LOOPER_ID_INPUT) { std::lock_guard<std::mutex> l(veilleur::g_file); src->process(a, src); veilleur::g_dernierLu = nowSeconds(); }
             else if (src) src->process(a, src);   // commandes (chargement compris : le veilleur lit la file pendant ce temps)
