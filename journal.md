@@ -4284,6 +4284,7 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
   - image 1 s / 3 s : identique de jour ; de nuit, moins de 1 % par pixel.
 - **Suite proposée au PO** (remarque 2 du lead dev) : rare fond incomplet si `QualiteSystem` appelle `echelleDynamique(1)` au milieu d'une image figée (Haute ↔ Ultra au menu, après une course sous 100 %). Correction : fixer l'état figé au `beginFrame`. Petit ticket au choix du PO ; aussi : commentaire WFS-216 de `pietons.cpp` à remettre en place.
 - 🟡 : l'utilisateur confirme sur son téléphone ≥ 30 img/s au menu et la musique qui continue.
+
 ### 2026-11-08 21:55:13 — WFS-306 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
 - **Début** : WFS-306 (P1, paquets de cartes, socle 2), E7 + E8 en exception PO, à la demande du développeur (WFS-301 🟣, libre) ; dépendances finies (WFS-301 #278 + #284, WFS-308 #269). Aucun autre P1 prêt.
 - Zone : Java neufs `android/**` (+ JUnit), `chargerJeu` de `android_main.cpp` + accroches ≤ 10 lignes (boucle, JNI), `JeuActivity.java` et `configgame.json` ≤ 10 lignes, `src/ui/ecrans/chargement.*` et `paquets*` neufs. Interdit : `initGraphics`, `termGraphics`, `onCmd`, `readAsset()`, manifeste, gradle, `.github/**`, `store/**`, `tools/qa/**`. Aucune branche active ne touche ces fichiers (vérifié 21:55).
