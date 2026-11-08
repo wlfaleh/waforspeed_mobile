@@ -20,7 +20,7 @@ namespace wfs {
 struct CamPoursuite { float dist, h, ahead, lookH; };
 // WFS-191 : noms affichés des 20 voitures (section « voitures » : marque et modèle par id de src/game/cars.h, même ordre).
 // Textes UTF-8 de 1 à 16 caractères (marque) et de 1 à 24 (modèle) ; les tampons gardent la place des accents (4 octets).
-constexpr int VOITURES_NB = 20, MARQUE_MAX = 16, MODELE_MAX = 24;
+constexpr int VOITURES_NB = 20, MARQUE_MAX = 16, MODELE_MAX = 24, ADRESSE_MAX = 200;   // ADRESSE_MAX : WFS-306
 inline constexpr const char* VOITURES_IDS[VOITURES_NB] = {"golf", "m4", "p911", "gallardo", "p208", "abarth", "tcross", "compass", "s3", "x5",
                                                          "giulia", "a45", "model3", "corsa", "gt86", "elantra", "v60", "rrsport", "mustang", "sf90"};
 struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 + 1]; };
@@ -84,6 +84,9 @@ struct ConfigJeu {
         float plancherMoyenne = 0.9f;   // échelle de rendu la plus basse en qualité Moyenne (WFS-104)
         float refletRouteMouillee = 1.f;   // WFS-142 (RG-04) : force du reflet de la scène sur la route mouillée (0 à 1,5)
     } qualite;
+    struct Paquets {   // WFS-306 : liste des paquets de cartes (cartes.json de la Release « paquets », WFS-302) ; adresse https seulement
+        char adresseListe[ADRESSE_MAX * 4 + 1] = "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json";
+    } paquets;
 };
 
 // valeurs en cours (une seule instance, lue une fois par chargement ; jamais de fichier lu ici)
