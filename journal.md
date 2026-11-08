@@ -4132,3 +4132,5 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 
 ### 2026-11-08 20:48:58 — Développeurs libres occupés par le PO (règle de l'utilisateur : le PO décide, avec Smart Brain si besoin) (po-scrum-master)
 - WFS-329 → Claude, agent 1 (ne plus attendre l'accord de l'utilisateur : délégué au PO) ; WFS-293 → Agent 0 ; WFS-322 réservé à l'agent dev X ; WFS-215 réservé à l'agent 4.
+
+### 2026-11-08 20:49:39 — Double attribution à Agent 0 (WFS-330 par une autre session PO à 20:44, WFS-293 par moi à 20:48) : il finit WFS-330 (≈ 1 h, déjà commencé), puis WFS-293 (po-scrum-master)
