@@ -88,14 +88,19 @@ int main(int argc, char** argv) {
         if (s.type == trace::Type::RondPoint && !rp) rp = &s;
         if (s.type == trace::Type::Virage && std::abs(s.angle) >= 80 && std::abs(s.angle) <= 100 && s.rayon < 40 && !v90) v90 = &s;
     }
-    VERIFIE(rp, "rond-point de la Ville introuvable");
+    // RG-04 : après WFS-283 (ronds-points supprimés), le virage de rue qui le remplace : le virage serré (R < 30 m) de la Ville le
+    // plus proche de l'ancien anneau (1 400 m)
+    if (!rp) for (const trace::Section& s : trace::sections(ville))
+        if (s.type == trace::Type::Virage && s.rayon < 30 && (!rp || std::abs(s.debut * SEG_M - 1400) < std::abs(rp->debut * SEG_M - 1400))) rp = &s;
+    VERIFIE(rp, "rond-point de la Ville (ou virage de rue qui le remplace) introuvable");
     if (!rp) { std::printf("test_direction_anneau : %d échec(s)\n", echecs); return 1; }
+    if (v90 == rp) { v90 = nullptr; for (const trace::Section& s : trace::sections(ville)) if (&s != rp && s.type == trace::Type::Virage && std::abs(s.angle) >= 80 && std::abs(s.angle) <= 100 && s.rayon < 40 && !v90) v90 = &s; }
     // milieu de l'anneau : courbure la plus forte
     double sMil = (rp->debut + rp->fin) * 0.5 * SEG, kMax = 0;
     for (double s = rp->debut * SEG; s < rp->fin * SEG; s += 0.5 / M) if (std::abs(courbure(ville, s)) > kMax) { kMax = std::abs(courbure(ville, s)); sMil = s; }
     const int sens = courbure(ville, sMil) > 0 ? 1 : -1;
     const double sDebutAnneau = sMil - 4 / M;   // un peu avant le cœur de l'anneau : la voiture y est quand le braquage est établi
-    std::printf("## Rond-point de la Ville : anneau de %.1f m de rayon au %.0f m, virage %s\n", 1 / kMax, sMil * M, sens > 0 ? "à droite" : "à gauche");
+    std::printf("## %s de la Ville : %.1f m de rayon au %.0f m, virage %s\n", rp->type == trace::Type::RondPoint ? "Anneau du rond-point" : "Virage de rue qui remplace le rond-point (WFS-283)", 1 / kMax, sMil * M, sens > 0 ? "à droite" : "à gauche");
 
     // ---------- RG-01, RG-03 : rayon volant tenu, anneau contre ligne droite ----------
     std::printf("\n## RG-01 / RG-03 : rayon de la trajectoire dans le monde, volant tenu (Golf, aide désactivée)\n");

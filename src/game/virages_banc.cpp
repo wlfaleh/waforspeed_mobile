@@ -313,10 +313,12 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     {   // 8. WFS-316 : anneau (doigt tenu), épingle et virage à 90° (voie suivie), vues de dessus avant / après
         rapport += "## 8. WFS-316 : vues de dessus à 20 images/s, aide désactivée (rouge : avant, vert : après)\n";
         const trace::Section *rp316 = nullptr, *v90 = nullptr;
-        for (const trace::Section& s : trace::sections(ville)) {
-            if (s.type == trace::Type::RondPoint && !rp316) rp316 = &s;
-            if (s.type == trace::Type::Virage && std::abs(s.angle) >= 80 && std::abs(s.angle) <= 100 && s.rayon < 40 && !v90) v90 = &s;
-        }
+        for (const trace::Section& s : trace::sections(ville)) if (s.type == trace::Type::RondPoint && !rp316) rp316 = &s;
+        // après WFS-283 (ronds-points supprimés) : le virage de rue qui le remplace, le serré (R < 30 m) le plus proche de 1 400 m
+        if (!rp316) for (const trace::Section& s : trace::sections(ville))
+            if (s.type == trace::Type::Virage && s.rayon < 30 && (!rp316 || std::abs(s.debut * SEG_M - 1400) < std::abs(rp316->debut * SEG_M - 1400))) rp316 = &s;
+        for (const trace::Section& s : trace::sections(ville))
+            if (&s != rp316 && s.type == trace::Type::Virage && std::abs(s.angle) >= 80 && std::abs(s.angle) <= 100 && s.rayon < 40 && !v90) v90 = &s;
         for (bool avant : {true, false}) {
             if (rp316) {   // cœur de l'anneau : courbure la plus forte de la section (comme tests/test_direction_anneau.cpp)
                 double m = (rp316->debut + rp316->fin) * 0.5 * SEG, kMax = 0;
