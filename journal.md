@@ -4143,4 +4143,4 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 ### 2026-11-08 20:58:02 — Début WFS-215 : attribué à Claude, agent 5, à sa demande (« un sujet facile ») (po-scrum-master)
 - WFS-300 🟣 fusionné (#272) : agent libre. Demande de l'utilisateur relayée : « Demande un sujet facile ».
 - **WFS-215** (P3, E10, ANO-107 / ANO-110, une demi-journée, modèles de 3 voitures) : premier ticket prêt facile dans l'ordre du PO. Exception PO : en parallèle de WFS-292 (E4 + E10, `vehicule.glsl` seul), fichiers séparés. Zone, interdits et captures : `regles-de-gestion/WFS-215.md` (Suivi).
-- Écartés : WFS-214 / 322 (rendu, E13 tenue par WFS-328), WFS-287 (CI, E7 tenue par WFS-319 et 285), WFS-293 / 280 / 323 (gros, proches de la conduite ou de la caméra). Stock prêt : 8 (193, 214, 280, 287, 293, 322, 323, 329).
+- Écartés : WFS-214 / 322 (rendu, E13 tenue par WFS-328), WFS-287 (CI, E7 tenue par WFS-319 et 285), WFS-293 / 280 / 323 (gros, proches de la conduite ou de la caméra). Stock prêt : 7 (193, 214, 280, 287, 293, 322, 323 ; WFS-329 déjà 🔧) : sous le seuil de 8, tickets de rattrapage à créer au prochain passage du PO.
