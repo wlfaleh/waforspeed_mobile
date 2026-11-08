@@ -1940,69 +1940,6 @@
     "sha256Apres": "6d75c1b1e84fb933"
    },
    {
-    "rang": 23,
-    "sha256": "7d348981993d6b2d",
-    "role": "couleur",
-    "materiau": 14,
-    "zones": [
-     {
-      "rect": [
-       0.0059,
-       0.043,
-       0.5039,
-       0.2598
-      ],
-      "couleur": "#262626",
-      "reference": {
-       "rect": [
-        0.5859,
-        0.6055,
-        0.6641,
-        0.7227
-       ]
-      },
-      "note": "grand logo N (moteur)"
-     },
-     {
-      "rect": [
-       0.0117,
-       0.2656,
-       0.4727,
-       0.3672
-      ],
-      "couleur": "#262626",
-      "reference": {
-       "rect": [
-        0.5859,
-        0.6055,
-        0.6641,
-        0.7227
-       ]
-      },
-      "note": "étiquette HYUNDAI / Shell Helix du moteur"
-     },
-     {
-      "rect": [
-       0.2793,
-       0.6016,
-       0.5703,
-       0.7266
-      ],
-      "couleur": "#262626",
-      "reference": {
-       "rect": [
-        0.5859,
-        0.6055,
-        0.6641,
-        0.7227
-       ]
-      },
-      "note": "petit logo N (moteur)"
-     }
-    ],
-    "sha256Apres": "3a685bd645df888e"
-   },
-   {
     "rang": 24,
     "sha256": "2d4d2d34a7f5d5a8",
     "role": "normale",
@@ -2681,7 +2618,7 @@
      }
     ],
     "note": "écusson Alfa Romeo affiché au centre de l'écran du tableau de bord",
-    "sha256Apres": "130e9a371fbdc7ef"
+    "sha256Apres": "f1917de5c87349cc"
    },
    {
     "rang": 44,
@@ -3222,15 +3159,7 @@
        0.377
       ],
       "couleur": "#949494",
-      "note": "GTI grand (lettres en relief du hayon, retirées) : plaque grise ; zone plus affichée (les lettres sont retirées)",
-      "reference": {
-       "rect": [
-        0.5459,
-        0.3145,
-        0.5479,
-        0.3652
-       ]
-      }
+      "note": "GTI grand (lettres en relief du hayon, retirées) : plaque grise ; zone plus affichée (les lettres sont retirées) : pas de surface voisine à mesurer"
      },
      {
       "rect": [
@@ -3846,16 +3775,12 @@
       ]
      }
     ],
-    "note": "image de la rondelle BMW, utilisée en entier par les caches des 4 roues (matériau 22), les rondelles du coffre et du capot (28, 29 : pièces retirées) et le centre du volant (41) : unie, couleur de la jante (matériau 21, albédo 0)",
+    "note": "image de la rondelle BMW, utilisée en entier par les caches des 4 roues (matériau 22), les rondelles du coffre et du capot (28, 29 : pièces retirées) ; unie, couleur de la jante (matériau 21, albédo 0). Le centre du volant (41) ne l'utilise plus (RG-12)",
     "materiau": 22,
     "comparer": [
      {
       "materiau": 22,
       "voisin": 21
-     },
-     {
-      "materiau": 41,
-      "voisin": 9
      }
     ],
     "sha256Apres": "889cd01b527ee389"
@@ -4270,6 +4195,29 @@
      -1.0542
     ],
     "nom": "sidelogos_Material"
+   }
+  ],
+  "materiauxRetouches": [
+   {
+    "rang": 41,
+    "avant": {
+     "couleur": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "tC": 4
+    },
+    "apres": {
+     "couleur": [
+      0.03504772484302521,
+      0.03504772484302521,
+      0.03504772484302521
+     ],
+     "tC": -1
+    },
+    "voisin": 9,
+    "note": "centre du volant (rondelle BMW, Steering Wheel #1063) : gardé (RG-10 : 38 % des rayons voient l'envers du volant) ; sans texture, couleur du tour du volant (matériau 9) ; métal 0 et rugosité 0,89 gardés (décision du PO, RG-12)"
    }
   ]
  },

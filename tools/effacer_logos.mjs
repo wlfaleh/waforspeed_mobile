@@ -19,7 +19,7 @@
 // logos.json : { "<id>": { "materiaux": <nombre>, "textures": [ { "rang": n, "sha256": "<16 hex>", "sha256Apres": "<16 hex>",
 //   "role": "couleur" | "normale" | "metal", "zones": [ { "rect": [u0, v0, u1, v1] } | { "disque": [cu, cv, r] }, … ],
 //   "couleur": "auto" | "#rrggbb", "materiau": k (matériau qui l'utilise, pour l'albédo), "comparer": [ { "materiau": a, "voisin": b } ] } ], "pieces": [ { "materiau": k, "triangles": [debut, nombre], "trianglesAvant": t,
-//   "boite": [x0, y0, z0, x1, y1, z1], "nom": "…" } ] } } ; zone : { "rect" | "disque" | "anneau": [cu, cv, r0, r1] (flanc de pneu),
+//   "boite": [x0, y0, z0, x1, y1, z1], "nom": "…" } ], "materiauxRetouches": [ { "rang", "avant", "apres", "voisin" } ] (RG-12) } } ; zone : { "rect" | "disque" | "anneau": [cu, cv, r0, r1] (flanc de pneu),
 //   "couleur" (propre à la zone), "reference" (surface voisine dans un atlas : zone ou [u0, v0, u1, v1]), "transparent": true (alpha 0) } ; le maillage d'une pièce est celui de son matériau (un seul par matériau) ; uv de 0 à 1, v vers le bas de l'image ; « auto » : couleur médiane d'un
 //   anneau de 3 % autour de la zone (la pièce voisine) ; normale : (128, 128, 255) plat.
 import fs from 'fs';
@@ -180,9 +180,12 @@ async function mesurer(w, t, avant, apres) {
       const d = deltaE2000(versLab(...zb, f), versLab(...moyenneTronquee(A.px, an), f)), g = grain(A, an);
       const bord = bande(W, H, z, BORD, BORD + 4), lz = versLab(...zb, f);
       let lis = 0; for (const i of bord) lis = Math.max(lis, deltaE2000(lz, versLab(B.px[i], B.px[i + 1], B.px[i + 2], f)));
-      sorties.push(`${nom} ↔ ${z.reference ? 'référence' : 'anneau'} ΔE2000 ${d.toFixed(2)} (grain σ ${g.toFixed(2)}, liseré max ${lis.toFixed(1)})`);
-      if (d > 2) alertes.push(`${nom} : ΔE2000 ${d.toFixed(2)} > 2`);
-      if (g > 1.5) alertes.push(`${nom} : grain σ ${g.toFixed(2)} > 1,5 (l'uni ferait une tache lisse)`);
+      // une couleur donnée sans « reference » a été mesurée à la main sur la pièce voisine (notes de logos.json) : l'anneau, qui dans un
+      // atlas ou sur un flanc de pneu mêle d'autres pièces ou des lettres, n'est alors qu'une information
+      const juge = couleurZone(t, z) === 'auto' || z.reference;
+      sorties.push(`${nom} ↔ ${z.reference ? 'référence' : 'anneau'} ΔE2000 ${d.toFixed(2)}${juge ? '' : ' (pour information : couleur mesurée sur la pièce voisine)'} (grain σ ${g.toFixed(2)}, liseré max ${lis.toFixed(1)})`);
+      if (juge && d > 2) alertes.push(`${nom} : ΔE2000 ${d.toFixed(2)} > 2`);
+      if (juge && g > 1.5) alertes.push(`${nom} : grain σ ${g.toFixed(2)} > 1,5 (l'uni ferait une tache lisse)`);
     }
     for (const c of t.comparer || []) {
       const tv = textureCouleur(w, c.voisin);
@@ -278,8 +281,32 @@ async function traiter(id) {
     }
     mailAFaire.push([mi, ps]);
   }
-  if (!texAFaire.length && !mailAFaire.length) return { id, change: false, journal: [...journal, 'rien à faire'] };
-  if (verifier) return { id, change: false, journal: [...journal, `à faire : ${texAFaire.length} texture(s), ${mailAFaire.length} maillage(s)`] };
+  // RG-12 (décision du PO du 2026-11-08) : matériau qui ne sert qu'à un logo et dont la texture est partagée avec une autre pièce
+  // (M4 : centre du volant et caches des roues) : sa texture de couleur est retirée (-1) et sa couleur de base devient celle de la pièce
+  // voisine ; métal, rugosité, autres textures, nombre et ordre des matériaux inchangés. « avant » / « apres » : { couleur: [r, g, b], tC }.
+  const lireMat = (k) => ({ couleur: couleurMateriau(w, k), tC: textureCouleur(w, k) });
+  const egalMat = (a, b) => a.tC === b.tC && a.couleur.every((x, i) => Math.abs(x - b.couleur[i]) < 1e-6);
+  const matAFaire = [];
+  for (const m of L.materiauxRetouches || []) {
+    if (m.rang >= w.nM) throw new Error(`matériau ${m.rang} absent`);
+    const c = lireMat(m.rang);
+    if (egalMat(c, m.apres)) { journal.push(`matériau ${m.rang} (couleur) : déjà fait`); continue; }
+    if (!egalMat(c, m.avant)) throw new Error(`matériau ${m.rang} : couleur ${c.couleur.map((x) => x.toFixed(4))}, texture ${c.tC} ; attendu ${JSON.stringify(m.avant)} (ou après)`);
+    matAFaire.push(m);
+  }
+  if (!texAFaire.length && !mailAFaire.length && !matAFaire.length) return { id, change: false, journal: [...journal, 'rien à faire'] };
+  if (verifier) return { id, change: false, journal: [...journal, `à faire : ${texAFaire.length} texture(s), ${mailAFaire.length} maillage(s), ${matAFaire.length} matériau(x)`] };
+  if (matAFaire.length) {
+    w.materiaux = Buffer.from(w.materiaux);   // copie : le tampon lu reste l'original
+    for (const m of matAFaire) {
+      const o = 56 * m.rang;
+      m.apres.couleur.forEach((x, i) => w.materiaux.writeFloatLE(x, o + 4 * i));
+      w.materiaux.writeInt32LE(m.apres.tC, o + 40);
+      const v = m.voisin === undefined ? '' : textureCouleur(w, m.voisin) >= 0 ? ` ; matériau ${m.voisin} texturé : écart non mesuré`
+        : ` ; albédo ↔ matériau ${m.voisin} ΔE2000 ${deltaE2000(versLab(255, 255, 255, couleurMateriau(w, m.rang)), versLab(255, 255, 255, couleurMateriau(w, m.voisin))).toFixed(2)}`;
+      journal.push(`matériau ${m.rang} : texture de couleur ${m.avant.tC} → ${m.apres.tC}, couleur de base ${m.avant.couleur.map((x) => x.toFixed(3))} → ${m.apres.couleur.map((x) => x.toFixed(3))}${v}`);
+    }
+  }
   for (const t of texAFaire) {
     const nouveau = await retoucher(w.textures[t.rang], t);
     const m = t.role === 'couleur' ? await mesurer(w, t, w.textures[t.rang], nouveau) : null;
