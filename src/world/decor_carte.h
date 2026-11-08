@@ -20,6 +20,7 @@
 #include "../game/track.h"
 #include "../game/chocs_decor.h"   // WFS-256 (accroche)
 #include "../render/lots_decor.h"   // WFS-268 : décor fixe préparé au chargement
+#include "../render/lots_decor_tour.h"   // WFS-273 : passage d'un tour au suivant (arbres en exemplaires)
 #include "../render/renderer.h"
 #include "giratoire.h"   // WFS-248 : giratoires reconstruits
 #include "vegetation.h"
@@ -122,7 +123,8 @@ protected:
     bool dansMorceau(int64_t seg, int64_t a0, int64_t a1, int64_t& abs) const;
 
     // DECOR.tree (life.js) pour la campagne et le circuit : feuillu (chêne), sapin / pin, cyprès, sous-bois
-    void arbre(Track& t, const Item& it, int64_t a, bool lod, Geo out[P_COUNT]) const;
+    // sansArbre (WFS-273) : l'arbre est dessiné en exemplaire, seul le sous-bois va dans le morceau
+    void arbre(Track& t, const Item& it, int64_t a, bool lod, Geo out[P_COUNT], bool sansArbre = false) const;
     // DECOR.verge : touffes d'herbe des bas-côtés (aucun tirage du décor)
     void touffes(Track& t, int64_t a, Geo out[P_COUNT]) const;
     // DECOR.lamp : lampadaire de ville (village) ou projecteur de circuit (flood)
@@ -142,6 +144,26 @@ protected:
     std::vector<giratoire::Giratoire> gir_;
     std::vector<int64_t> girSeg_;
     void preparerDecor(Renderer& r);   // WFS-268 : décor fixe préparé (fin de l'init de la carte)
+    // WFS-273 (RG-01) : arbres dessinés en exemplaires : un modèle par essence (détail et allégé, écorce et feuillage), chaque
+    // arbre = un exemplaire tourné, mis à sa hauteur et teinté ; préparés au chargement, triés par segment du tour 0.
+    // Dessin : par essence et par partie, un appel pour les exemplaires proches (détail), un pour les lointains (allégé).
+    // WFS_ARBRES_INSTANCES=0 : arbres dans les morceaux (rendu d'avant, banc avant / après)
+    enum Essence { E_CYPRES, E_PIN, E_SAPIN_FORET, E_SAPIN, E_CHENE_FORET, E_CHENE, E_NB };
+    struct ArbresEssence {
+        Mesh m[2][2]{};             // [0 détail, 1 allégé][0 écorce, 1 feuillage]
+        Instances ex[2];            // [0 écorce, 1 feuillage], dans l'ordre de seg
+        std::vector<int64_t> seg;   // segment (tour 0) de chaque exemplaire
+        std::vector<vec3> pied;     // pied de chaque arbre (tour 0)
+        float h0 = 10, hMax = 0;    // hauteur du modèle ; plus grand arbre
+    };
+    ArbresEssence arbres_[E_NB];
+    bool arbresPrets_ = false;
+    lots::Tour tourArbres_{};
+    void preparerArbres(Renderer& r);
+    int dessinerArbres(Renderer& r, int64_t aP);
+    // arbre de l'objet it du segment a : essence, pied, hauteur, luminosité du feuillage, lacet ; false : pas posé (giratoire,
+    // autre chaussée : mêmes règles que buildChunk)
+    bool exemplaireArbre(Track& t, const Item& it, int64_t a, int& essence, vec3& pied, float& tk, float& lacet) const;
     bool surGiratoire(const vec3& q, float marge) const { for (const giratoire::Giratoire& g : gir_) if (giratoire::dansOuvrage(g, q, marge)) return true; return false; }
 
 private:

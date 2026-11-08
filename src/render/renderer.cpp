@@ -1404,7 +1404,8 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
 }
 
-void Renderer::drawInstances(const Mesh& m, const Material& mat, const Instances& ex, uint32_t premier, uint32_t nombre, vec3 centre, float rayon) {
+void Renderer::drawInstances(const Mesh& m, const Material& mat, const Instances& ex, uint32_t premier, uint32_t nombre, vec3 centre, float rayon,
+                             const mat4* monde) {
     if (!inFrame_ || !m.indexCount || !ex.buf.buf || nombre == 0 || premier + nombre > ex.n) return;
     const masquage::Sphere sp{centre, rayon};
     const uint8_t vis = classer(sp);
@@ -1413,7 +1414,7 @@ void Renderer::drawInstances(const Mesh& m, const Material& mat, const Instances
     p.vis = vis; p.inst = ex.buf.buf; p.instPremier = premier; p.instNombre = nombre;
     constexpr uint32_t COMPLET = MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR;
     p.loin = !(mat.flags & COMPLET) && rayon >= 0 && length(centre - camPos_) - rayon > 70.f;   // WFS-263 : même règle que draw
-    p.pc.model = mat4::identity(); p.pc.color = mat.color;
+    p.pc.model = monde ? *monde : mat4::identity(); p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);

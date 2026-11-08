@@ -163,8 +163,9 @@ public:
     void draw(const Model& m, const mat4& world, const vec3* paint = nullptr, const RouesPose* roues = nullptr);   // WFS-60 : sans pose = rendu inchangé
     void draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth = 0);
     // WFS-273 (RG-01) : exemplaires [premier, premier + nombre) de `ex` du maillage m en un seul appel ; bornes = sphère monde
-    // qui les contient tous (masquage et ombres comme un seul objet)
-    void drawInstances(const Mesh& m, const Material& mat, const Instances& ex, uint32_t premier, uint32_t nombre, vec3 centre, float rayon);
+    // qui les contient tous (masquage et ombres comme un seul objet) ; monde : matrice appliquée à tous (tour suivant), nullptr : identité
+    void drawInstances(const Mesh& m, const Material& mat, const Instances& ex, uint32_t premier, uint32_t nombre, vec3 centre, float rayon,
+                       const mat4* monde = nullptr);
     // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
     void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
