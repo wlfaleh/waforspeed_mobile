@@ -1,13 +1,28 @@
-## Agent : arwa-3 (Claude, session 01Us6uCt)
+Agent : arwa-3 (Claude, session 01Us6uCt)
 
 **Ticket** : WFS-232 — règles : `regles-de-gestion/WFS-232.md`
 
-## Description (à remplir par le développeur avant d'ouvrir la PR)
+## Description
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
-- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
-- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
-- **Limites et risques connus** : À REMPLIR
+- **Demande de l'utilisateur** (2026-11-07 12:51 UTC, « il n'y a pas de motos dans la rue ») : voir en Ville et sur la Corniche, de jour comme de nuit, de vrais scooters et de vraies motos dans la circulation, avec un pilote casqué, qui se penchent dans les virages et qui ont leurs feux la nuit.
+- **Ce qui change** :
+  - 3 deux-roues réels CC BY 4.0 (`assets/cars/deux_roues/`) : scooter (OLA S1 Pro), **routière Honda CB500X 2019** (remplace la CB750 de la 1re version : roue avant braquée de 20° dans ce modèle, selle à +9 %), sportive (Kawasaki ZX-6R) ; chacun en 3 fichiers : corps, roue avant, roue arrière (`tools/convert_car.mjs` : `WFS_ROUES_2R`, `WFS_FEU`, `WFS_PHARE`, `WFS_EXCLURE_NOEUD`, `WFS_ALLEGER`, `WFS_TEXTURE_MAX`, `WFS_PIECE`), niveaux de détail ; licences et SHA-256 au journal.
+  - Trafic (`src/game/traffic.*`) : quota par carte (Ville et Corniche 12,5 %, Campagne 5 %, Grand Prix 0) à nombre de véhicules égal ; côté droit de la voie ; inclinaison φ = atan(v²/(gR)) lissée (roulis ≤ 60°/s) ; **ralentissement avant les courbes** à l'inclinaison de confort de 25° (75 % des inclinaisons de tous les jours, étude BASt) par un freinage doux de 4 m/s² ; **accident** : chute sur le flanc (pendule inversé, couché à 77° en ≈ 0,4 s), glissade, peu de rotation ; sélection des véhicules dessinés partagée avec les tests (`Traffic::dessines`).
+  - Rendu (`src/game/traffic_system.cpp`, `src/game/deux_roues.*`) : **roues qui tournent** à v/r autour de leur axe ; **un pilote sur chaque deux-roues dessiné**, à toute distance (16 places ≥ 14 véhicules dessinés), buste penché selon la moto (sportive ≈ 30°), casque porté par l'os de la tête ; après une chute, pilote couché au sol à côté ; **feu arrière et phare des 3 modèles** ; roues dessinées sans les feux d'une voiture (corrige les taches blanches de nuit) ; modèle ou pilote manquant → aucun deux-roues dans le trafic.
+  - Banc `motos` (accroche d'une ligne dans `desktop_main.cpp`, aussi à la fin du banc « trafic vivant ») : trafic normal, ligne droite, de près, courbe à la vitesse du trafic (4 images), phare vu de face la nuit, accident (3 images), chaque vue aussi sans deux-roues.
+- **Comment c'est vérifié** :
+  - 65 tests CPU réussis (branche synchronisée avec `main`, 33fa189) ; `test_trace` : parts 11,2 / 12,4 / 4,7 / 0 % ; **mêmes véhicules aux mêmes places sans deux-roues** (5 graines × 4 cartes) ; inclinaison ≤ 25,0° en 2 min de trafic, saut ≤ 1°/pas ; choc : couché en 0,37 s puis immobile ; 2 × 14 400 images : chaque deux-roues dessiné a son pilote (jusqu'à 300 m).
+  - Banc `motos` : 0 écart entre deux-roues dessinés et pilotes dessinés (toutes les vues).
+  - Parcours accueil → course → fin → retour : **0 écart** avant et après (vue normale et vue Cockpit).
+  - Coût (banc `perf`, Ville, 150 images, lavapipe, `main` 5264639 contre la branche) : Haute 1025 → 988 appels de dessin, processeur 3,0 → 2,7 ms (pire 10,4 → 4,4) ; Basse 348 → 348 appels, 2,4 → 2,4 ms (pire 5,3 → 4,0).
+  - Hauteur de selle mesurée sur les modèles (point le plus bas du dessus de la selle) : routière 839 mm (fiche 830 à 834 : +0,6 % de 834), sportive 815 mm (830 : −1,8 %), scooter 772 mm (792 : −2,5 %). Longueurs et empattements à ±1 %. L'écart des selles vient des proportions des modèles : seule une échelle uniforme est permise, une échelle par axe rendrait les roues ovales.
+- **Limites et risques connus** :
+  - Selles du scooter (−2,5 %) et de la sportive (−1,8 %) hors des ±1 % (voir ci-dessus) : c'est au PO de dire s'il accepte l'écart ou s'il faut d'autres modèles.
+  - 7 pilotes sur 10 sont des hommes : choix de conception, le PO tranche.
+  - La borne de 45° n'est plus atteinte dans le trafic (les deux-roues ralentissent avant les courbes).
+  - Le chargement écrit « feu non trouvé : *-roue-* » pour les 6 roues (journal du moteur, sans effet : les roues n'ont pas de feux).
+  - `trafic-motos-virage-plage-nuit` : la Golf claire et la bande sombre du ciel sont aussi sur la vue « sans deux-roues », donc hors de ce ticket.
+  - Poids : 11,9 Mo pour les 3 deux-roues (corps, roues, niveaux de détail), contre 11,2 Mo dans la 1re version.
 
 ## Captures pour le lead dev (36 vues après, avec leur « avant » ou leur vue « sans deux-roues »)
 
