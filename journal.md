@@ -3442,3 +3442,25 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Grain des 18 zones unies** : option A. RG-13 : uni accepté (ΔE2000 ≤ 2), liste des zones au journal, dans la PR et dans `qa/Check.md` ; US de suite seulement si la QA
   ou l'utilisateur voit une tache lisse.
 - Règles : `regles-de-gestion/WFS-192.md` (section « deux arbitrages »). Branche : dernier envoi 11:49 UTC (3572da8).
+
+### 2026-11-08 12:01:07 — WFS-316 : autre développeur que l'agent dev conduite, décision de l'utilisateur (po-scrum-master)
+- Réponse de l'utilisateur à la question du PO (transmise par l'agent qa lead) : « autre développeur ». WFS-316 n'est **pas** confié à Claude, agent dev conduite
+  (WFS-295 et WFS-241 refusés) ; l'exception du 2026-11-07 17:02 ne s'applique pas à WFS-316, la règle des KO s'applique.
+- Écrit dans `TACHES.md` (bandeau et ligne WFS-316), `regles-de-gestion/WFS-316.md` (Développeur, Suivi), `tache utilisateur.md`, `track-agent.md`.
+- WFS-316 reste ⏳ Prêt (P1), donné au premier autre développeur qui demande, avec le skill `expert-conduite`. Aucune attribution d'avance.
+
+### 2026-11-08 12:03:49 — WFS-315 attribué à Claude, agent 2 ; RG-03 tranché (po-scrum-master)
+- Sur ordre de l'utilisateur (transmis par Claude, agent 2) : **WFS-315** (P2, E10 + E3, Vue Cockpit : vraie largeur de la voiture) → 🔧 En cours, Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-315`.
+  WFS-282 est 🟡 À valider (utilisateur) après la PR #251 (9dcafcc). WFS-192 (E10, arwa-2) reste en cours en parallèle, fichiers séparés (décision PO).
+- RG-03 tranché dans `regles-de-gestion/WFS-315.md` : seuils de WFS-282 (arbitrage n° 2) repris ; intérieur en regard Normal **≤ 42 %** pour toutes les voitures, ligne droite et virage,
+  le gain venant seulement de la planche côté passager ; le reste inchangé. 500 Abarth = `abarth` (`cars.h`).
+
+### 2026-11-08 12:07:09 — WFS-258 : arbitrages (adhérence → WFS-259 ; aide à 0,85 g livrée, Course à 5 à surveiller) (po-scrum-master)
+
+### 2026-11-08 12:10:20 — WFS-283 : PR #261 refusée par le lead dev (lead-dev)
+- **Captures** : les 60 « après » et les 58 « avant » de `qa/pr/WFS-283/` sont ouvertes une par une (bancs `rondspoints`, `hud` pour la carte GPS, `course5`) et tout le diff est lu (15 fichiers). J'ai relancé `test_trace`, `test_rien_sur_chaussee`, `test_navigation` et `test_ville_lieux` : OK. Les ronds-points ont disparu des 3 cartes, le GPS dit « Virage serré à gauche », le code est propre (interrupteur, code des giratoires gardé, suite des cartes à 0,64 m).
+- **Refus** : (1) à la Corniche, un trou bleu-gris dans le sable à l'intérieur du virage, de jour et de nuit (`plage.cpp` l. 657 : terre-plein `S_PLACE` de RW + 30 m posé sur un virage de 22 m) ; (2) à la Campagne, des « marches » vert foncé dans l'herbe à l'intérieur du virage, de jour et de nuit, ce que ne couvre aucune décision du PO (ANO-171 vaut seulement pour la Ville) ; (3) les captures « après » datent d'avant la synchronisation avec `main` 3e039812 (WFS-269, WFS-232, WFS-282) ; (4) la luminance du raccord n'est pas notée au journal.
+- **Remarques pour le PO** : le « carrefour simple » est un virage de rue sans rue qui croise, donc sans cédez-le-passage (déjà noté par le PO le 2026-11-07 à 23:21) : à écrire tel quel dans le critère. La grille du parc de la Ville, pliée au même coin que la fosse, va avec WFS-305.
+- Revue postée en commentaire sur la PR #261 (GitHub refuse « changements demandés » sur une PR ouverte avec le même compte). `TACHES.md`, `track-agent.md` et `suivi-pr.md` : ↩️ Retour lead dev (PR #261).
+
+### 2026-11-08 12:12:47 — WFS-299 : RG-01 seul, RG-03 après mesure sur le téléphone (po-scrum-master)
