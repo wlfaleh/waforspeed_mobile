@@ -8,6 +8,8 @@
 //  5. virages-cercle-10kmh : cercles volant à fond à 10 km/h (Golf en bleu, M4 en rouge) et cercle de la fiche (blanc) ;
 //  6. virages-gp-aide-avant-NN / -apres-NN (WFS-258, vidéo de l'utilisateur) : Grand Prix, Gallardo lancée à pleine vitesse,
 //     aide activée, gaz tenu, volant lâché, 1er virage (épingle de 20 m) ; « avant » : l'aide ne ralentit pas (g_avantWfs258) ;
+//  8. virages-vif-dessus-avant / -apres (WFS-258, point 3) : ligne droite de la Ville vue de dessus, quart de volant 0,5 s à
+//     150, 190 et 230 km/h ; 9. virages-vif-avant-NN / -apres-NN : la même chose dans la partie (Grand Prix, Gallardo) ;
 //  7. classement (sans capture) : Course à 5 de 2 km sur les 4 cartes (tirage fixe), joueur gaz tenu, volant lâché ou presque (pilote
 //     automatique) puis tenu (« Glisser »), aide activée, avec et sans ralentissement de l'aide : place, temps, images hors route (virages.txt ; décision du PO : jamais systématiquement dernier).
 // Mesures sans GPU (rayons, épingles, choc) : virages.txt (mêmes calculs que tests/test_virages_fleches.cpp).
@@ -228,6 +230,58 @@ int classementCourse5(Game& g, Renderer& r, const char* carte, bool avant, bool 
     return 0;
 }
 
+// 8. WFS-258 (point 3) : ligne droite de la Ville vue de dessus (120 m, avant le virage qui suit), Golf à 150, 190 et 230 km/h (vert, orange, rouge), un quart
+// de volant à droite tenu 0,5 s puis lâché, aide désactivée ; « avant » : angle des roues de main (g_avantWfs258Vif)
+void dessusVif(Track& ville, bool avant, const std::string& out, std::string& rapport) {
+    g_avantWfs258Vif = avant;
+    Dessin d;
+    const double s0 = 50 / M;
+    double xmin = 1e9, xmax = -1e9, zmin = 1e9, zmax = -1e9;
+    for (double s = s0 - 10 / M; s < s0 + 130 / M; s += 1 / M) for (double n : {-RW - 4, RW + 4}) {
+        const TrackPoint P = ville.pointLisse(s, n); xmin = std::min(xmin, P.x); xmax = std::max(xmax, P.x); zmin = std::min(zmin, P.z); zmax = std::max(zmax, P.z);
+    }
+    d.cadrer(xmin, xmax, zmin, zmax);
+    d.route(ville, s0 - 10 / M, s0 + 130 / M);
+    char l[200];
+    const double kmhs[3] = {150, 190, 230};
+    for (int i = 0; i < 3; i++) {
+        Player p = voiture("golf", Aide::Desactivee, ville, s0, -0.6 * RW, kmhs[i]);
+        double ecart = 0;
+        for (int k = 0; k < 120 * 3 && p.dist < s0 + 120 / M; k++) {
+            p.update(DT, tenir(p, kmhs[i], k < 60 ? 0.25f : 0.f), ville, true);
+            const PoseMonde q = pose(p, ville);
+            d.point(q.x, q.z, COULEURS[i + 1][0], COULEURS[i + 1][1], COULEURS[i + 1][2], 2);
+            if (k == 60) ecart = (p.playerX + 0.6) * RW;
+        }
+        std::snprintf(l, sizeof l, "- %s, %3.0f km/h, quart de volant 0,5 s : décalage de %.2f m vers la droite\n", avant ? "avant" : "après", kmhs[i], ecart);
+        rapport += l;
+    }
+    d.ecrire(out + (avant ? "/virages-vif-dessus-avant.png" : "/virages-vif-dessus-apres.png"));
+    g_avantWfs258Vif = false;
+}
+
+// 9. WFS-258 (point 3) : ligne droite du Grand Prix, Gallardo lancée gaz tenu (≈ 200 km/h et plus), aide désactivée, un quart de
+// volant à droite tenu 0,5 s ; 6 images toutes les 0,3 s depuis le coup de volant
+int changementDeFile(Game& g, Renderer& r, bool avant, const std::string& out, double& temps) {
+    if (!lancer(g, r, "circuit", 0, false, temps, "gallardo")) return 1;
+    g_avantWfs258Vif = avant;
+    const Player& p = g.player();
+    const char* nom = avant ? "vif-avant" : "vif-apres";
+    int n = 0;
+    for (; n < 60 * 30 && p.kmh() < 200; n++) { DriveInput in; in.gas = true; g.manette = in; g.update(1.0 / 60); temps += 1.0 / 60; if (n % 20 == 0) g.render(temps); }
+    const double x0 = p.playerX;
+    int pris = 0;
+    for (int k = 0; k <= 90 && pris < 6; k++) {
+        if (k % 18 == 0) { capturer(g, r, temps, out, nom, pris++); WFS_LOG("  %s : décalage %+.2f m depuis le coup de volant", nom, (p.playerX - x0) * RW); }
+        DriveInput in; in.gas = true; in.steer = k < 30 ? 0.25f : 0.f;
+        g.manette = in; g.update(1.0 / 60); temps += 1.0 / 60;
+        if (k % 6 == 0) g.render(temps);
+    }
+    g_avantWfs258Vif = false;
+    g.manette = DriveInput{}; g.modeManette = false; g.shutdown();
+    return pris < 6 ? 1 : 0;
+}
+
 } // namespace
 
 int benchVirages(Game& g, Renderer& r, const std::string& out) {
@@ -240,12 +294,16 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     const Epingle* gauche = nullptr;
     for (const Epingle& e : ep) if (e.sens < 0) { gauche = &e; break; }
     if (!gauche) { WFS_ERR("virages : épingle à gauche des lacets introuvable"); return 1; }
+    // WFS_VIRAGES=vif : seulement les sections 8 et 9 (direction à haute vitesse), pour les captures de cette PR
+    const char* seul = std::getenv("WFS_VIRAGES");
+    const bool tout = !seul || std::strcmp(seul, "vif") != 0;
+    double temps = 9000;
+    if (tout) {
     rapport += "## 1. Épingle à gauche des lacets de la Corniche, vue de dessus (bleu 10, vert 20, orange 30, rouge 50 km/h)\n";
     dessus(plage, *gauche, true, out, rapport);
     dessus(plage, *gauche, false, out, rapport);
     rapport += "## 5. Cercles volant à fond à 10 km/h\n";
     cercles(ville, out, rapport);
-    double temps = 9000;
     for (bool avant : {true, false}) {   // 2. épingle en vue Proche, aux flèches, file extérieure
         g_avantWfs295 = avant;
         ecarts += sequence(g, r, "plage", gauche->debut, gauche->fin, 0.6, 20, false, avant ? "proche-avant" : "proche-apres", out, temps);
@@ -255,6 +313,13 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     ecarts += choc(g, r, false, out, temps);
     ecarts += premierVirageGP(g, r, true, out, temps);    // 6. WFS-258 : aide qui ralentit à temps
     ecarts += premierVirageGP(g, r, false, out, temps);
+    }
+    rapport += "## 8. Direction à haute vitesse (WFS-258, point 3) : ligne droite de la Ville, Golf, quart de volant 0,5 s\n";
+    dessusVif(ville, true, out, rapport);
+    dessusVif(ville, false, out, rapport);
+    ecarts += changementDeFile(g, r, true, out, temps);    // 9. dans la partie, Grand Prix
+    ecarts += changementDeFile(g, r, false, out, temps);
+    if (tout) {
     rapport += "## 7. Course à 5 de 2 km, joueur gaz tenu (pilote automatique), aide activée : avec et sans ralentissement de l'aide\n";
     for (const char* carte : {"ville", "campagne", "plage", "circuit"})   // tirage fixe du banc (graine 1234 sous WFS_BANC)
         for (bool volant : {false, true}) for (bool avant : {true, false}) ecarts += classementCourse5(g, r, carte, avant, volant, rapport, temps);
@@ -265,6 +330,7 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
         ecarts += sequence(g, r, "ville", rp->debutU, rp->finU, 0.6, 30, false, "rond-point-sans-aide", out, temps);
         ecarts += sequence(g, r, "ville", rp->debutU, rp->finU, 0.6, 30, true, "rond-point-aide", out, temps);
     } else { WFS_ERR("virages : rond-point de la Ville introuvable"); ecarts++; }
+    }
     reglagesConduite().aideDirection = aideAvant; courseBenchRules(reglesAvant);
     { std::ofstream f(out + "/virages.txt"); f << rapport; }
     WFS_LOG("banc des virages (WFS-295) : %d écart(s)%s", ecarts, ecarts ? " ÉCHEC" : " OK");
