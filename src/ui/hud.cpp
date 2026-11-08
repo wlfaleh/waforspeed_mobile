@@ -199,9 +199,9 @@ public:
             ui::text(r, cx, ccy - 30 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
             const vec4 clair = hex(ETIQUETTE_ARC);
             label(r, cx, ccy + 8 * k - (BASE - CAPITALES) * labelPx(k), k, arriere ? "R · km/h" : "km/h", ui::CENTRE, &clair);
-            if (arriere) {   // WFS-296 : au-dessus du compteur, centrée (sur la route, rien d'autre du HUD à cet endroit)
+            if (arriere) {   // WFS-296 : à gauche du compteur, à mi-hauteur (au-dessus, elle cachait la voiture du joueur)
                 const float hp = 64 * k, wp = hp * 0.95f + hp * 0.176f;
-                pastilleArriere(r, cx - wp * 0.5f, ccy - R - 10 * k - hp, hp, k);
+                pastilleArriere(r, cx - R - 14 * k - wp, ccy - hp * 0.5f, hp, k);
             }
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
             const vec4 lumineux = hex(SUCCESS);
