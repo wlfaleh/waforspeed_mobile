@@ -217,7 +217,7 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; };   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; };   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
@@ -302,6 +302,9 @@ private:
     // WFS-246 (levier 1) : opaques fermés sans faces arrière (VK_CULL_MODE_BACK_BIT) ; MAT_DOUBLE (feuillage, panneaux
     // fins), découpe et vitres gardent les deux faces. cullPipeline_ : mode de la prochaine makePipeline (0 aucun, 1 arrière)
     VkPipeline opaqueCull_ = VK_NULL_HANDLE, skinOpaqueCull_ = VK_NULL_HANDLE;
+    // WFS-263 (RG-01) : variante légère de scene.frag (LEGER), faces arrière retirées ou non ; legerPipeline_ : prochaine makePipeline
+    VkPipeline opaqueLeger_ = VK_NULL_HANDLE, opaqueLegerDouble_ = VK_NULL_HANDLE;
+    bool legerPipeline_ = false, legerActif_ = true;
     int cullPipeline_ = 0;
     bool facesArriere_ = true;   // retrait actif (WFS_FACES=0 au banc : désactivé, pour comparer)
     VkPipeline skyApres_ = VK_NULL_HANDLE;   // WFS-222 : ciel dessiné après les opaques, test de profondeur (pixels vides seulement)
