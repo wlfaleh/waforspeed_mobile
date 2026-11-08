@@ -5094,3 +5094,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-303 / 304** : cuites par la CI et téléchargées ; WFS-304 dépend aussi de WFS-306 et 307. Découpage en 6 tickets d'une journée au plus.
 - **Questions à l'utilisateur** : (1) hébergement : Play Asset Delivery (recommandé ; ne marche que si le jeu est installé par Google Play, au moins en test interne) ou stockage à nous ; (2) carte par défaut (proposé : Ville) ; (3) taille et durée maximales du premier téléchargement. Le site d'hébergement passera par `regles-reseau.md` après accord de l'utilisateur.
 
+### 2026-11-08 03:30:34 — WFS-302 / WFS-306 : carte par défaut = la Ville (po-scrum-master)
+- **Réponse de l'utilisateur** (transmise par le coordinateur) à la question 2 : la carte par défaut est **la Ville**. Inscrit dans `regles-de-gestion/WFS-302.md` (RG-03, `cartes.json` ; pack PAD) et `WFS-306.md` (RG-02). Questions 1 (hébergement) et 3 (50 Mo / 1 min) toujours ouvertes.
