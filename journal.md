@@ -3887,3 +3887,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 17:43:52 — APK 918 : vidéos de l'utilisateur regardées ; ANO-177 / WFS-328 (flash blanc au départ de nuit) créé (po-scrum-master)
 
 ### 2026-11-08 17:44:20 — WFS-327 : (A) si RG-02 tenue, sinon (B) (po-scrum-master)
+
+### 2026-11-08 17:44:52 — Recette manuelle demandée au QA sur les retours APK 916 / 918 (`qa/recette-manuelle-apk918.md`) (po-scrum-master)
