@@ -3959,3 +3959,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Pour le PO** : sur le téléphone (`apk916-5`), les « losanges » ressemblent aux fenêtres du rez-de-chaussée, à leur place dans la façade, avec un cadre rouge et un mur presque noir.
   - Le banc ne reproduit pas ce rendu.
   - Si l'utilisateur dit non, la suite tient plutôt à l'éclairage du mur et à l'exposition de nuit (WFS-230) qu'aux commerces.
+
+### 2026-11-08 18:29:41 — WFS-317, partie 2 : PR #276 refusée par le lead dev (lead-dev)
+- 1re revue, commit b1ac2ca : 23 paires de captures ouvertes, diff relu en entier (`pietons.cpp`, `conducteurs.*`, `foule_apparition.h`, `qualite_auto`, 3 tests). **Le code est bon** : niveau de détail sur la vraie distance à la caméra, Ville 3 sur 10 par liste, Basse 8 / 20 / 30 m pour les conducteurs, `texteComptes` testé.
+- **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
+- À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
+- Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
