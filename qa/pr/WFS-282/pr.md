@@ -2,22 +2,12 @@
 
 **Ticket** : WFS-282 — règles : `regles-de-gestion/WFS-282.md`
 
-## Description
+## Description (à remplir par le développeur avant d'ouvrir la PR)
 
-- **Demande de l'utilisateur** (en une phrase) : « règle la vue cockpit, remets le tableau de bord et la carcasse de voiture » (WFS-235 refusé, ANO-152) ; cette PR est la 2e partie du ticket (RG-01 à RG-05, après RG-00 + RG-06 fusionnés en #244) et traite les 4 remarques du lead dev sur #244.
-- **Ce qui change** :
-  - `src/game/camera_vue.h`, `.cpp` (partie cockpit) — **RG-02 regard plus doux** : la tête suit 40 % de l'angle du virage (avant 60 %), ±7° au plus (avant ±12°), seulement au-dessus de 20 km/h (plein suivi à 30 km/h), point visé à 20-40 m (avant 12-40 m), lissage 1,5 /s (avant 2,5 /s) ; à l'arrêt, regard droit devant. Mouvement de tête 2 cm / 1,5 cm au plus (avant 3 / 2 cm), toujours coupé par « Réduire les mouvements ». **RG-01** gardé : œil sans retard, réglage « Regard cockpit ».
-  - **RG-03** : œil de la caméra 4 cm au-dessus de l'œil du siège (marge permise 2-4 cm), l'intérieur reste dans le repère du siège : la planche descend dans l'image. Le rétroviseur n'est plus un bloc noir : glace argentée teintée (reflète la rue et le ciel) dans un cadre noir de 7 mm, à sa place (≈ +12° au-dessus de l'horizon, au-dessus de la rue).
-  - `src/render/vehicule_cockpit.cpp`, `.h` — **RG-04 nuit** : la nuit, chaque matière de l'habitacle reçoit une petite lumière d'ambiance (émission = 25 % de son albédo, un tiers pour les métaux ; mêmes unités que les écrans) : planche, volant, montants et essuie-glaces lisibles, sans aplat noir. Copies de nuit des matériaux : même jeu de descripteurs, aucune ressource en plus. Rien dans `nuit.cpp`.
-  - Code mort retiré : `fovHorizontalCockpit`, `fovVerticalDepuisHorizontal`, `COCKPIT_FOV_H` (`camera_vue.h`).
-  - Banc `cockpit` : mesure de la part de l'image prise par l'intérieur et de la place de l'horizon ; nouvelle capture **départ de nuit sur la Plage** (`cockpit-<voiture>-plage-nuit-depart`), comme la capture de l'utilisateur.
-  - `tests/test_regard_cockpit.cpp` : nouvelles valeurs (40 %, ±7°, 20 km/h, 20 m, 1,5 /s, tête 2 cm).
-- **Comment c'est vérifié** : 63 tests CPU verts (après synchronisation avec main) ; banc `cockpit` en **2340 × 1080** (taille du téléphone de l'utilisateur), Golf, SF90, X5, avant (main) / après (branche) : 24 captures ci-dessous, jour, nuit, virage, braquage, carte, pluie, départ de nuit sur la Plage. Mesures du banc (regard Normal) : **fenêtre de la rue (±15° autour de l'axe, horizon à +8°) cachée 0,0 %** sur toutes les captures ; horizon à 45,9 % depuis le haut ; intérieur dans toute l'image : Golf 38,6 % (jour), X5 35,5 %, Plage 38,1 % ; bande de la rue (horizon à +8°, toute la largeur) : Golf 15,6 → 10,5 %, SF90 16,0 → 12,8 %, virages Golf 20,4 → 12,7 %, SF90 21,0 → 11,4 %.
-- **Limites et risques connus** :
-  - **RG-03, intérieur 30-35 %** : atteint en regard Haut (32-35 %), pas en Normal (35,5 à 38,6 %) : avec le champ de 72° de configgame (RG-00) et l'horizon à 40-45 %, la planche réelle (mesures WFS-197) ne peut pas descendre plus ; l'horizon est à 45,9 % (un peu au-dessus de la cible). Arbitrage au PO si besoin (champ ou cible).
-  - **RG-05, X5** : la « bande de la rue » mesurée passe de 8,0 à 11,4 % sur la X5 (Golf et SF90 gagnent). Cause vérifiée au banc : ce n'est ni l'œil plus haut (11,6 % sans lui) ni la glace ; c'est le regard plus doux de RG-02 (moins tourné vers le virage qui arrive) : le montant gauche reste dans le bord de l'image ; la rue devant (fenêtre de la rue) reste dégagée à 0 %. Ce n'est pas de la rue en moins devant le conducteur, c'est le cadrage.
-  - La capture du départ sur la Plage n'a pas d'« avant » (le banc de main ne la fait pas) : la référence est la capture de l'utilisateur, `qa/retours/2026-11-07-cockpit-nuit-plage.jpg`.
-  - Cockpit commun (Corsa, voitures sans intérieur propre) : regard plus doux et œil +4 cm aussi ; pas de lumière de nuit (hors des intérieurs par modèle).
+- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
+- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
+- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
+- **Limites et risques connus** : À REMPLIR
 
 ## Captures pour le lead dev (24 après)
 
@@ -49,7 +39,3 @@ Dossier : [`qa/pr/WFS-282`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `cockpit-x5-plage-nuit-depart` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-282/qa/pr/WFS-282/apres-cockpit-x5-plage-nuit-depart.jpg?raw=true) |
 | `cockpit-x5-pluie` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-282/qa/pr/WFS-282/avant-cockpit-x5-pluie.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-282/qa/pr/WFS-282/apres-cockpit-x5-pluie.jpg?raw=true) |
 | `cockpit-x5-virage` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-282/qa/pr/WFS-282/avant-cockpit-x5-virage.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-282/qa/pr/WFS-282/apres-cockpit-x5-virage.jpg?raw=true) |
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-https://claude.ai/code/session_01UY1Vv5pG5V2148UwYk53fJ

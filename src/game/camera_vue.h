@@ -85,9 +85,9 @@ enum class RegardCockpit { Bas = 0, Normal = 1, Haut = 2 };
 RegardCockpit regardCockpit();
 void choisirRegard(RegardCockpit r);
 // inclinaison du regard sous l'horizontale (rad, négatif = vers le bas) : un conducteur regarde la route à 20-40 m, quelques
-// degrés sous l'horizon (RG-02 « légèrement plongeant ») ; Bas −7°, Normal −3,5°, Haut 0°
+// degrés sous l'horizon (RG-02 « légèrement plongeant ») ; Bas −7°, Normal −3° (WFS-282 : −3,5° avant ; horizon à 45-47 %, intérieur ≤ 40 %, arbitrage du PO), Haut 0°
 inline float inclinaisonRegard(RegardCockpit r) {
-    return r == RegardCockpit::Bas ? -7.f * 3.14159265f / 180.f : r == RegardCockpit::Haut ? 0.f : -3.5f * 3.14159265f / 180.f;
+    return r == RegardCockpit::Bas ? -7.f * 3.14159265f / 180.f : r == RegardCockpit::Haut ? 0.f : -3.f * 3.14159265f / 180.f;
 }
 // WFS-282 (RG-02) : regard plus doux : la tête vise le point de la route à ≈ 1,5 s (20 à 40 m), en suit 40 % de l'angle,
 // ±7° au plus ; à l'arrêt et sous 20 km/h, regard droit devant (rien à suivre : une petite erreur de file au départ faisait
