@@ -728,14 +728,11 @@ void Renderer::refletPass(VkCommandBuffer cb) {
     VkClearValue clears[2]{};
     clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};
     VkRenderPassBeginInfo bi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-    // WFS-264 (RG-02) : Moyenne : reflet dessiné à moitié de sa résolution (coin supérieur gauche de sa cible, lu par scene.frag
-    // avec spotN.w = 0,5) ; Haute : toute la cible (demi-résolution de la scène, comme avant)
-    const uint32_t w = refletDemi() ? std::max(1u, rw_ / 2) : rw_, h = refletDemi() ? std::max(1u, rh_ / 2) : rh_;
-    bi.renderPass = refletPass_; bi.framebuffer = refletFb_[cur_]; bi.renderArea = {{0, 0}, {w, h}};
+    bi.renderPass = refletPass_; bi.framebuffer = refletFb_[cur_]; bi.renderArea = {{0, 0}, {rw_, rh_}};
     bi.clearValueCount = 2; bi.pClearValues = clears;
     vkCmdBeginRenderPass(cb, &bi, VK_SUBPASS_CONTENTS_INLINE);
-    VkViewport vpt{0, 0, (float)w, (float)h, 0, 1};
-    VkRect2D sc{{0, 0}, {w, h}};
+    VkViewport vpt{0, 0, (float)rw_, (float)rh_, 0, 1};
+    VkRect2D sc{{0, 0}, {rw_, rh_}};
     vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &refletSet_[cur_], 0, nullptr);
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refSky_);
@@ -1198,8 +1195,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         }
         const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
         // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
-        // WFS-264 (RG-02) : w = part de la cible du reflet de la route dessinée (0,5 en Moyenne, 1 sinon)
-        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, refletDemi() ? 0.5f : 1.f};
+        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, 0};
         // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
         // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
         int ordre[FrameParams::SPOTS_MAX];
@@ -1219,7 +1215,9 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         }
     }
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
-    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets && !qualiteBasse;   // WFS-222 (RG-03) ; WFS-264 (RG-02) : coupé en Basse (ciel et sonde seuls)
+    // WFS-264 (RG-02) : reflet temps réel en Haute seulement (nuit.cpp : fp.reflets = Haute, déjà avant ce ticket) ; coupé en Basse
+    // ici aussi, quoi que demande la scène (ciel et sonde seuls)
+    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets && !qualiteBasse;   // WFS-222 (RG-03)
     u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
     // WFS-142 (RG-04, RG-08) : w = force du reflet sur la chaussée (configgame) ; WFS_REFLETS=0 : −1, aucun reflet (mesure du banc)
     const char* eR = std::getenv("WFS_REFLETS");

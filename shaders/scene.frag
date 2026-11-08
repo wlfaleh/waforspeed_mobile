@@ -163,9 +163,7 @@ void main() {
             float t = (float(i) + j0) / float(lectures) - 0.5;          // −0,5 .. 0,5
             float wt = 1.0 - abs(t) * 1.6;                              // tente : le centre compte plus
             vec2 o = vec2((fract(float(i) * 0.618) - 0.5) * spread * 0.15, t * spread);
-            // WFS-264 (RG-02) : spotN.w = part de la cible du reflet dessinée (0,5 en Moyenne : coin d'un quart), bornée au coin
-            float kR = F.spotN.w > 0.0 ? F.spotN.w : 1.0;
-            rs += texture(reflTex, clamp(suv + o, vec2(0.0), vec2(1.0)) * kR).rgb * wt; ws += wt;
+            rs += texture(reflTex, suv + o).rgb * wt; ws += wt;
         }
         rs /= ws;
         float dist = length(F.camPos.xyz - vWorld);
