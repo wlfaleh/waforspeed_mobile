@@ -3552,3 +3552,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - J'ai relu tout le diff (`player.cpp`, `player.h`, accroche de 2 lignes dans `course5.cpp`, banc `virages`, `test_aide_ralentit`). Défaut du 1er refus corrigé : la file est reprise au `reset()`, sous 5 m/s et après un déplacement par un autre système. J'ai reconstruit et relancé les tests : 70 tests CPU OK. Départ de la grille : cap 0,000 rad. Volant lâché : 0 sortie sur les 4 cartes.
 - Option A du PO appliquée : la limite cède dès que le volant atteint 0,35 ou que le joueur freine.
 - Revue « ✅ Approuvé » publiée en commentaire (GitHub refuse l'approbation quand la PR vient du même compte). Fusion en squash : b76c6b4. WFS-258 passe en « 🔧 En cours — point 1 fusionné #263 (🟡 à valider) ». Ligne #263 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-08 14:00:57 — WFS-318 créé : fantôme du record réglable et étiqueté (po-scrum-master)
+- Question de l'utilisateur (voiture fantôme en Checkpoint = WFS-125). Après WFS-290 → WFS-291 (onglets) → WFS-318.
