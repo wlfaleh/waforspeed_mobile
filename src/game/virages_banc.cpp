@@ -5,7 +5,9 @@
 //  2. virages-proche-avant-NN / -apres-NN : la même épingle dans la partie (vue Proche), aux flèches, file extérieure, 20 km/h ;
 //  3. virages-choc-avant-NN / -apres-NN : accident à 60 km/h (impact 0,45) flèche droite tenue : 2 s d'images après le choc ;
 //  4. virages-rond-point-sans-aide-NN / -aide-NN : rond-point de la Ville aux flèches, aide désactivée puis activée ;
-//  5. virages-cercle-10kmh : cercles volant à fond à 10 km/h (Golf en bleu, M4 en rouge) et cercle de la fiche (blanc).
+//  5. virages-cercle-10kmh : cercles volant à fond à 10 km/h (Golf en bleu, M4 en rouge) et cercle de la fiche (blanc) ;
+//  6. virages-gp-aide-avant-NN / -apres-NN (WFS-258, vidéo de l'utilisateur) : Grand Prix, Gallardo lancée à pleine vitesse,
+//     aide activée, gaz tenu, volant lâché, 1er virage (épingle de 20 m) ; « avant » : l'aide ne ralentit pas (g_avantWfs258).
 // Mesures sans GPU (rayons, épingles, choc) : virages.txt (mêmes calculs que tests/test_virages_fleches.cpp).
 #include <cstdio>
 #include <cstdlib>
@@ -97,11 +99,11 @@ void cercles(Track& ville, const std::string& out, std::string& rapport) {
 }
 
 // lance la partie sur `carte`, départ au segment `depart`, aide réglée ; rend faux si le chargement échoue
-bool lancer(Game& g, Renderer& r, const char* carte, int64_t depart, bool aide, double& temps) {
+bool lancer(Game& g, Renderer& r, const char* carte, int64_t depart, bool aide, double& temps, const char* voiture = "golf") {
     reglagesConduite().aideDirection = aide;
     setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, depart)).c_str(), 1);
     courseBenchRules(true);
-    const bool ok = g.init(r, "golf", carte);
+    const bool ok = g.init(r, voiture, carte);
     unsetenv("WFS_DEPART");
     if (!ok) return false;
     g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.camMode = 0;
@@ -162,6 +164,36 @@ int choc(Game& g, Renderer& r, bool avant, const std::string& out, double& temps
     return pris < 6 ? 1 : 0;
 }
 
+// 6. WFS-258 : 1er virage du Grand Prix, Gallardo lancée gaz tenu, aide activée, volant lâché ; 8 images de 150 m avant à 60 m après
+int premierVirageGP(Game& g, Renderer& r, bool avant, const std::string& out, double& temps) {
+    Track& t = banc_conduite::piste("circuit");
+    double d0 = 0, d1 = 0; bool dans = false;   // 1er virage : rayon < 150 m après 200 m (comme tests/test_aide_ralentit.cpp)
+    for (double s = 200 / M; s < t.length(); s += 1 / M) {
+        const double R = 1 / std::max(1e-9, std::abs(courbure(t, s)));
+        if (R < 150 && !dans) { dans = true; d0 = s; }
+        if (dans && R > 300) { d1 = s; break; }
+    }
+    if (!lancer(g, r, "circuit", 0, true, temps, "gallardo")) return 1;
+    g_avantWfs258 = avant;
+    const Player& p = g.player();
+    const char* nom = avant ? "gp-aide-avant" : "gp-aide-apres";
+    const double a = d0 - 150 / M, b = d1 + 60 / M;
+    int pris = 0, herbe = 0; double vMax = 0;
+    for (int n = 0; n < 60 * 120 && pris < 8; n++) {
+        DriveInput in; in.gas = true;
+        g.manette = in; g.update(1.0 / 60); temps += 1.0 / 60;
+        vMax = std::max(vMax, p.kmh());
+        if (p.dist > d0 - 20 / M && p.dist < b) herbe += std::abs(p.playerX) > 1;
+        const bool prendre = p.dist >= a + (b - a) * pris / 7 || (n > 60 * 110);
+        if (n % 10 == 0 || prendre) g.render(temps);
+        if (prendre) { capturer(g, r, temps, out, nom, pris++); WFS_LOG("  %s : %+.0f m du virage, aide qui freine : %s", nom, (p.dist - d0) * M, p.freinAide ? "oui" : "non"); }
+    }
+    WFS_LOG("virages-%s : %.0f km/h au plus haut, %d image(s) de jeu hors route dans le virage", nom, vMax, herbe);
+    g_avantWfs258 = false;
+    g.manette = DriveInput{}; g.modeManette = false; g.shutdown();
+    return pris < 8 ? 1 : 0;
+}
+
 } // namespace
 
 int benchVirages(Game& g, Renderer& r, const std::string& out) {
@@ -187,6 +219,8 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     }
     ecarts += choc(g, r, true, out, temps);    // 3. choc puis flèche
     ecarts += choc(g, r, false, out, temps);
+    ecarts += premierVirageGP(g, r, true, out, temps);    // 6. WFS-258 : aide qui ralentit à temps
+    ecarts += premierVirageGP(g, r, false, out, temps);
     const banc_conduite::Virage* rp = nullptr;   // 4. rond-point de la Ville, aide désactivée puis activée
     const std::vector<banc_conduite::Virage> vs = banc_conduite::virages();
     for (const auto& v : vs) if (std::strstr(v.nom, "rond-point de la Ville")) rp = &v;

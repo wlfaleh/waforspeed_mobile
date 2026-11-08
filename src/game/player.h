@@ -2,6 +2,7 @@
 // Unités du jeu web : position/dist en unités (6 mm), speed en unités/s, playerX en demi-largeurs de route.
 #pragma once
 #include <algorithm>
+#include <cmath>
 #include "cars.h"
 #include "conduite_monde.h"   // WFS-241 : conduite en coordonnées du monde
 #include "chocs_decor.h"      // WFS-256 : chocs avec le décor
@@ -42,6 +43,21 @@ inline AidesVoiture g_aidesVoiture;
 // WFS-295 : banc seulement (WFS_BANC=virages) : rejoue le comportement d'avant la correction (avance sans 1/(1 − k·n), blocage de
 // 0,6 + 1,2 × impact après un accident, braquage remis à zéro) pour les captures « avant » ; toujours faux dans le jeu
 inline bool g_avantWfs295 = false;
+// WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages (comportement de main) ; faux dans le jeu
+inline bool g_avantWfs258 = false;
+
+// WFS-258 : vitesse permise (m/s) à `dist` : accélération latérale `gLat` au plus dans le rayon de chaque virage des 600 m qui
+// viennent, freinage de `gFrein` pour l'atteindre avant le virage. Aide à la direction activée de la voiture du joueur : adhérence
+// d'un pneu sur route sèche (0,85 g en virage : épingle de 20 m à 46 km/h, courbe de 250 m à 165 km/h ; 0,8 g au freinage) ;
+// pilote automatique (vitessePilote, aide_direction_banc.h, WFS-241) : 0,6 g et 0,7 g, plus prudent
+inline double vitesseVirageAide(const Track& t, double dist, double gLat = 0.85, double gFrein = 0.8) {
+    double v = 1e9;
+    for (double m = 0; m <= 600; m += 4) {
+        const double k = std::abs(t.findSegment(t.wrap(dist + m / M)).curve) * CURVE_K / SEG_M;
+        if (k > 1e-4) v = std::min(v, std::sqrt(gLat * 9.81 / k + 2 * gFrein * 9.81 * m));
+    }
+    return v;
+}
 
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};
@@ -77,6 +93,7 @@ struct Player {
     // WFS-256 : chocs avec le décor depuis la dernière lecture (lus et remis à zéro par le système chocs_decor.cpp) :
     // nombre, vitesse d'impact la plus forte (m/s, vers l'obstacle) et genre de l'objet touché
     struct ChocsDuPas { int n = 0; double impact = 0; chocs::Genre genre = chocs::Genre::Autre; } chocsDecor;
+    bool freinAide = false;   // WFS-258 : l'aide à la direction freine ou coupe le gaz avant un virage (ce pas)
 private:
     // WFS-256 : test continu du pas (pose de départ → pose (x, z, cap) d'arrivée) et réaction de corps rigide ; vrai si contact
     // (pose et vitesse corrigées). Commun aux deux modèles de conduite (conduite réelle et conduite d'avant)

@@ -132,13 +132,22 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     playerX -= dt * 2 * sp * sp * courbe * CENTRIFUGAL;
 
     // ---------- moteur, freins, frottements (m/s²) ----------
-    nitroOn = playing && in.nitro && nitro > 0.01;
+    // WFS-258 (RG-00b, point 1) : aide activée, la voiture ralentit à temps pour le virage qui vient (épingle du Grand Prix prise
+    // à 228 km/h dans la vidéo de l'utilisateur) : au-dessus de la vitesse permise (vitesseVirageAide), gaz et nitro coupés,
+    // puis frein. Le joueur peut toujours freiner plus tôt ; aide désactivée, rien n'est fait à sa place (RG-07 de WFS-241)
+    DriveInput cmd = in;
+    freinAide = false;
+    if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258) {
+        const double vp = vitesseVirageAide(track, dist);
+        if (v > vp) { cmd.gas = false; cmd.nitro = false; if (v > vp * 1.03 && v > Phys::vRecul * 2) { cmd.brake = true; freinAide = true; } }
+    }
+    nitroOn = playing && cmd.nitro && nitro > 0.01;
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
     const double top = MAX_SPEED * perf.top * (nitroOn ? perf.nitroMult : 1);
-    const bool accelerating = playing && !locked && in.gas && !in.brake;
+    const bool accelerating = playing && !locked && cmd.gas && !cmd.brake;
     // WFS-90 (RG-03) : marche arrière sans attendre l'arrêt complet (sous 3 m/s, le frein enchaîne sur la marche arrière)
-    reversing = playing && !locked && in.brake && !in.gas && speed * M < Phys::vRecul;
-    braking = playing && !locked && in.brake && speed > 0 && !reversing;
+    reversing = playing && !locked && cmd.brake && !cmd.gas && speed * M < Phys::vRecul;
+    braking = playing && !locked && cmd.brake && speed > 0 && !reversing;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
     // WFS-188 (RG-06) : résistance du bas-côté proportionnelle à la vitesse (pleine dès 15 m/s) : à l'arrêt dans l'herbe,

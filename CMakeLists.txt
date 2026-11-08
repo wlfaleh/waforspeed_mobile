@@ -156,6 +156,7 @@ else()
   add_executable(test_audio_pluie tests/test_audio_pluie.cpp src/audio/pluie_sons.cpp src/audio/engine_synth.cpp src/game/track.cpp src/game/player.cpp)   # WFS-288 : son de la pluie
   add_executable(test_chocs tests/test_chocs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : chocs avec le décor (poteau, mur, test continu)
   add_executable(test_virages_fleches tests/test_virages_fleches.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-295 : rayon juste partout, épingles aux flèches, réponse après un choc
+  add_executable(test_aide_ralentit tests/test_aide_ralentit.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-258 : aide activée, la voiture ralentit à temps (1er virage du GP à 228 km/h, tours des 4 cartes)
   add_executable(test_chocs_cartes tests/test_chocs_cartes.cpp src/game/chocs_declaration.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/world/giratoire.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : obstacles de la Ville et des îlots, aucun mur invisible
   add_executable(test_chocs_voitures tests/test_chocs_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-256 : jamais deux voitures l'une dans l'autre
   target_link_libraries(test_chocs_voitures Threads::Threads)
