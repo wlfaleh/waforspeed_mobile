@@ -3631,3 +3631,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Zone : `src/render/**`, `shaders/**`, réglages de qualité, `bench_perf*` + accroches ≤ 10 lignes annoncées ; pas `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.*`, `foule_*`, `squelette.*`, `nuit.cpp`, lumières de nuit en Basse ; pas le LOD ni la densité de WFS-265 (agent dev X).
 - Plan : I9 (appels et triangles par image, par famille) → mesure du téléphone RG-01 → correction des 2 premiers postes → captures (4 scènes des règles) → PR, `lead-dev`, 🟡 après fusion.
 
+
+### 2026-11-08 15:07:03 — WFS-317 : branche créée (Claude, agent 1)
+- Branche `feature/waforspeed-317` poussée ; I9 (appels et triangles par image dans la ligne « Rendu ») d'abord.
