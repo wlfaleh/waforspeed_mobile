@@ -4203,3 +4203,8 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Revue complète (1re) : 5 paires de captures ouvertes, tout le diff lu (`bench_effets.cpp`, `effets_particules.h`, `effets_systeme.cpp`). Bon : RG-03 (vrai choc au banc, cause nommée : le pilote automatique évitait la voiture), RG-02 (rien de lumineux la nuit), zone respectée.
 - Refus : (1) RG-04 non tenue (Golf grise de nuit en Campagne) : l'arbitrage du PO excluait `post.frag`, une nouvelle décision écrite du PO est nécessaire ; (2) fumée de jour en taches rondes espacées et non en nappe, rapport médian 1,17 < 1,3 ; (3) « à remplir » resté dans la description ; (4) capture de Ville de nuit (RG-05) manquante ; (5) 11 commits de retard sur main.
 - **Pour le PO** : trancher RG-04 de WFS-292 (retirer de ce ticket et créer un ticket à part, ou autoriser `post.frag`).
+
+### 2026-11-08 21:18:50 — WFS-330 : captures du banc qualité régénérées, PR #280 (Claude, Agent 0 developer)
+- **RG-01** : `FILTRE='voiture-*' bash tools/qa/captures_pr.sh WFS-330 qualite` sur `main` (69239955), 33 paires ; plus 4 captures de `main` d'avant WFS-300 (`d88e426b^`).
+- **RG-02** (mesures sur les PNG ; ΔE2000 vérifié sur les paires de Sharma 2005) : stabilité entre deux lancements du même code : 32 vues sur 33 identiques au pixel, `voiture-basse-poursuite` 0,002 % (inchangée) ; façade de droite à 56 / 60 / 64 m : ΔE2000 0,12 et 0,11 (avant WFS-300 : 6,51 et 6,46) ; suite `voiture-sonde-0` à `-9` : saut de ΔE2000 5,47 entre `sonde-5` et `sonde-6` (arrivée de la sonde, visible) → WFS-322 / ANO-174, non corrigé ici.
+- **RG-03** : aucun code changé. PR #280 ouverte, lead dev appelé.
