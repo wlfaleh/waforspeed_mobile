@@ -761,12 +761,16 @@ void Renderer::destroyTargets() {
 
 bool Renderer::resize() {
     recreations_++;   // WFS-246 (RG-07) : compté par le banc perf (aucune pendant la résolution dynamique)
+    const uint32_t pipelinesAvant = pipelinesCrees_; const auto t0 = std::chrono::steady_clock::now();   // WFS-262
     vk_->waitIdle();
     destroyTargets();
     const bool refaire = appliquerNettete();   // WFS-144 : MSAA / anisotrope du niveau (Basse : ×2 / ×4)
     createTargets();
     if (refaire) createScenePipelines();
     passes::redimensionner(*this);   // WFS-150 : cibles des passes à la taille de la scène
+    // WFS-262 (RG-02) : changement de qualité (menu, pause) : pipelines repris du cache, durée au journal
+    if (pipelinesCrees_ != pipelinesAvant) WFS_LOG("pipelines (WFS-262 RG-02) : %u pipeline(s) repris du cache en %.0f ms (changement de qualité)", pipelinesCrees_ - pipelinesAvant,
+                                                std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count());
     return true;
 }
 
@@ -870,6 +874,7 @@ void Renderer::createPipelines() {
     VkShaderModule kf2 = mod(SPV_SCENE_SKIN_FRAG, sizeof(SPV_SCENE_SKIN_FRAG));   // WFS-72 : vêtements (pedMaterial)
     modScene_[0] = sv; modScene_[1] = sf; modScene_[2] = kv; modScene_[3] = kf; modScene_[4] = kv2; modScene_[5] = kf2;
     createScenePipelines();   // WFS-144 : refaites quand le MSAA change (appliquerNettete)
+    prechaufferMsaa();   // WFS-262 (RG-02)
     post_ = makePipeline(pv, pf, 0, false, false, false, false, finalPass_, VK_SAMPLE_COUNT_1_BIT, postPLayout_);
     ui_ = makePipeline(uv, uf, 2, true, true, false, false, finalPass_, VK_SAMPLE_COUNT_1_BIT, postPLayout_);
     VkShaderModule hv = mod(SPV_SHADOW_VERT, sizeof(SPV_SHADOW_VERT)), hf = mod(SPV_SHADOW_FRAG, sizeof(SPV_SHADOW_FRAG));
@@ -907,6 +912,44 @@ void Renderer::createScenePipelines() {
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
     addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
+}
+
+// WFS-262 (RG-02) : variantes MSAA (×1, ×2, ×4 que le GPU accepte, hors celle en service) des pipelines de scène créées une
+// fois au chargement dans une passe compatible (mêmes formats et échantillons), puis détruites : elles restent dans le cache
+// de pipelines (RG-01). Un changement de « Graphismes » (menu ou pause) les reprend du cache au lieu de recompiler.
+void Renderer::prechaufferMsaa() {
+    if (!cachePipelines_ || !scenePass_) return;
+    VkDevice d = vk_->device;
+    const VkSampleCountFlags sc = vk_->props.limits.framebufferColorSampleCounts & vk_->props.limits.framebufferDepthSampleCounts;
+    const VkSampleCountFlagBits enService = vk_->msaa;
+    const uint32_t avant = pipelinesCrees_;
+    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_};
+    VkPipeline garde[std::size(membres)];
+    for (size_t i = 0; i < std::size(membres); i++) garde[i] = *membres[i];
+    const VkRenderPass passeGardee = scenePass_;
+    int variantes = 0;
+    for (VkSampleCountFlagBits e : {VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_2_BIT, VK_SAMPLE_COUNT_4_BIT}) {
+        if (e == enService || !(sc & e) || e > msaaMax_) continue;
+        const bool ms = e != VK_SAMPLE_COUNT_1_BIT;
+        VkAttachmentDescription at[3]{};
+        for (VkAttachmentDescription& a : at) { a.loadOp = a.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; a.storeOp = a.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; a.finalLayout = VK_IMAGE_LAYOUT_GENERAL; }
+        at[0].format = HDR_FORMAT; at[0].samples = e; at[1].format = vk_->depthFormat; at[1].samples = e; at[2].format = HDR_FORMAT; at[2].samples = VK_SAMPLE_COUNT_1_BIT;
+        VkAttachmentReference colRef{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, depRef{1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}, resRef{2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+        VkSubpassDescription sp{}; sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        sp.colorAttachmentCount = 1; sp.pColorAttachments = &colRef; sp.pDepthStencilAttachment = &depRef; if (ms) sp.pResolveAttachments = &resRef;
+        VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+        rpci.attachmentCount = ms ? 3 : 2; rpci.pAttachments = at; rpci.subpassCount = 1; rpci.pSubpasses = &sp;
+        VkRenderPass p = VK_NULL_HANDLE;
+        if (vkCreateRenderPass(d, &rpci, nullptr, &p) != VK_SUCCESS) continue;
+        vk_->msaa = e; scenePass_ = p;
+        createScenePipelines();
+        for (VkPipeline* m : membres) { if (*m) vkDestroyPipeline(d, *m, nullptr); *m = VK_NULL_HANDLE; }
+        vkDestroyRenderPass(d, p, nullptr);
+        variantes++;
+    }
+    vk_->msaa = enService; scenePass_ = passeGardee;
+    for (size_t i = 0; i < std::size(membres); i++) *membres[i] = garde[i];
+    WFS_LOG("pipelines (WFS-262 RG-02) : %d variante(s) MSAA de la scène mises en cache au chargement (%u pipelines)", variantes, pipelinesCrees_ - avant);
 }
 
 // WFS-144 (RG-04, WFS-134 RG-03 / RG-04) : netteté de la Basse = MSAA ×2 et anisotrope ×4 ; Moyenne et Haute : MSAA ×4,

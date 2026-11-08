@@ -114,7 +114,10 @@ struct MesureImages {
 };
 // WFS-262 (RG-04) : cadence de la course, choisie automatiquement : 60 img/s ; 30 quand le téléphone ne tient pas 60 alors
 // que la scène est déjà à 60 % et les effets allégés (95 % des images > 20 ms pendant 6 s) : 30 régulières se sentent mieux
-// que 40 à 55 irrégulières. Retour à 60 quand le GPU a de la marge (< 11 ms pendant 10 s). Lu par chauffe::plafondIps.
+// que 40 à 55 irrégulières. Retour à 60 quand le GPU a de la marge (< 11 ms pendant 10 s) ; sans horodatages GPU, nouvel
+// essai à 60 toutes les 30 s (jamais bloquée à 30). Remise à 60 au début de chaque course. Lu par chauffe::plafondIps.
+// DÉSACTIVÉE par défaut (cadenceAuto = faux : 60 toujours) : l'utilisateur n'a pas encore accepté 30 img/s comme étape
+// (question du PO, tache utilisateur.md, 2026-11-07 17:14) ; s'active par un réglage (décision du PO, WFS-262).
 struct Cadence {
     int ips = 60; double tSous = 0, tMarge = 0;
     // dt : durée de l'image (s) ; p95 : 95 % des images de la fenêtre (ms) ; gpuMs ≤ 0 : inconnu ; renvoie vrai si changée
@@ -122,11 +125,16 @@ struct Cadence {
         if (!enCourse) { tSous = tMarge = 0; return false; }
         const int avant = ips;
         if (ips == 60) { tSous = auPlancher && p95 > 20.f ? tSous + dt : 0; if (tSous >= 6) { ips = 30; tSous = 0; } }
-        else { tMarge = gpuMs > 0 && gpuMs < 11 ? tMarge + dt : 0; if (tMarge >= 10) { ips = 60; tMarge = 0; } }
+        else {
+            if (gpuMs > 0) tMarge = gpuMs < 11 ? tMarge + dt : 0;
+            else tMarge += dt / 3;   // sans mesure du GPU : 30 s à 30 img/s, puis nouvel essai à 60
+            if (tMarge >= 10) { ips = 60; tMarge = 0; }
+        }
         return ips != avant;
     }
 };
 inline int cadenceCourse = 60;   // plafond des images/s en course (chauffe::plafondIps)
+inline bool cadenceAuto = false;  // WFS-262 : passage automatique à 30 permis (faux tant que l'utilisateur n'a pas dit oui)
 
 // texte du fichier rendu-mesure.txt (et de la feuille de partage), ligne courte des Réglages ; vides avant toute mesure
 std::string texteMesure();

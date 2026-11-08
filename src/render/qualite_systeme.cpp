@@ -125,6 +125,9 @@ private:
     // WFS-262 (RG-02) : pipelines créés pendant la course (décompte compris), au journal en sortant de la course (0 attendu) ;
     // le cache de pipelines est enregistré à ce moment (hors course : aucun à-coup d'écriture)
     void pipelinesCourse(Renderer& r, bool scene) {
+        if (r.pipelinesCrees() != pipelinesVus_) {   // hors course (menu, pause) : changement de qualité demandé par le joueur
+            pipelinesVus_ = r.pipelinesCrees();
+        }
         if (scene && !sceneCourse_) {
             sceneCourse_ = true; pipelinesDebut_ = r.pipelinesCrees();
             WFS_LOG("pipelines (WFS-262) : course affichée, %u pipelines créés depuis le lancement", pipelinesDebut_);
@@ -136,15 +139,16 @@ private:
             r.enregistrerCachePipelines();
         }
     }
-    bool sceneCourse_ = false; uint32_t pipelinesDebut_ = 0;
+    bool sceneCourse_ = false; uint32_t pipelinesDebut_ = 0, pipelinesVus_ = 0;
     // WFS-246 (RG-06) : durées d'image de la course ; fichier rendu-mesure.txt toutes les 5 s de course, ligne au journal à la fin
     void mesurer(double dt, bool enCourse) {
+        if (enCourse && !g_enCoursePrec) { g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : chaque course part à 60
         if (enCourse) {
             g_mesure.ajouter((float)(dt * 1000));
             if ((g_statsT += dt) >= 1) { g_statsT = 0; g_stats1s = g_mesure.stats(); }
             // WFS-262 (RG-04) : cadence 60 / 30 ; « au plancher » : scène déjà à 60 % et effets allégés
             const bool plancher = g_auto.echelle <= g_auto.echelleMin() + 1e-4f && g_auto.palier >= 1;
-            if (g_cadence.image(dt, true, plancher, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1)) {
+            if (qualite::cadenceAuto && g_cadence.image(dt, true, plancher, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1)) {
                 qualite::cadenceCourse = g_cadence.ips;
                 WFS_LOG("cadence (WFS-262) : %d images/s (95 %% des images à %.1f ms, GPU %.1f ms)", g_cadence.ips, g_stats1s.p95, r_ ? r_->gpuImageMs() : -1.0);
             }

@@ -231,6 +231,7 @@ private:
     void destroyTargets();
     void createPipelines();
     void createScenePipelines();   // WFS-144 : pipelines de la passe de scène (nombre d'échantillons vk.msaa)
+    void prechaufferMsaa();        // WFS-262 (RG-02) : variantes MSAA des pipelines de scène dans le cache
     bool appliquerNettete();       // WFS-144 (RG-04) : MSAA et anisotrope du niveau de netteté ; true : passe de scène à refaire
     VkPipeline makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
                             VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false, int melange = 0,
