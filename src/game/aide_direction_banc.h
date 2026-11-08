@@ -52,14 +52,7 @@ inline DriveInput joueurLigneIdeale(const Player& p, Track& t, bool volant = tru
 //    de 0,7 g pour l'atteindre avant le virage ;
 //  - direction : la file voulue est relue dans la commande reçue (évitement du trafic : « (file − écart) × 5 − cap × 4 »),
 //    puis visée 0,8 s devant (poursuite pure, comme le joueur simulé) ; sans trafic, la voiture va au centre.
-inline double vitessePilote(const Track& t, double dist) {
-    double v = 1e9;
-    for (double m = 0; m <= 600; m += 4) {
-        const double k = std::abs(t.findSegment(t.wrap(dist + m / M)).curve) * CURVE_K / SEG_M;
-        if (k > 1e-4) v = std::min(v, std::sqrt(0.6 * 9.81 / k + 2 * 0.7 * 9.81 * m));
-    }
-    return v;   // m/s
-}
+inline double vitessePilote(const Track& t, double dist) { return vitesseVirageAide(t, dist, 0.6, 0.7); }   // m/s (player.h, WFS-258)
 inline void limiterPilote(const Player& p, Track& t, DriveInput& in) {
     if (!p.modeleMonde()) return;
     const double v = p.speed * M, vp = vitessePilote(t, p.dist);
