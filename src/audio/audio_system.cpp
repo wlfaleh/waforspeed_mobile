@@ -41,6 +41,7 @@
 #include "pluie_sons.h"                // WFS-288 : son de la pluie (averse, tambourinage, essuie-glaces)
 #include "../world/meteo.h"            // WFS-288 : meteo::pluieActive (lecture seule)
 #include "../game/camera_vue.h"        // WFS-288 : vue choisie (vueCamera, VUES), lecture seule
+#include "chocs_sons.h"                // WFS-298 : son des chocs selon ce qu'on touche (chocs::registre en lecture seule)
 
 namespace wfs {
 
@@ -71,9 +72,10 @@ public:
         voitures_.build((float)OUT_RATE); attribution_.reset(); candidats_.reserve(128);   // WFS-272
         echos_.build((float)OUT_RATE);   // WFS-275
         pluie_.build((float)OUT_RATE);   // WFS-288
+        chocsSon_.build((float)OUT_RATE);   // WFS-298
         const int rate = audioOutStart([this](float* out, int n) { remplir(out, n); });
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
-        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); echos_.build((float)rate); pluie_.build((float)rate); }   // WFS-261, WFS-272, WFS-275, WFS-288
+        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); echos_.build((float)rate); pluie_.build((float)rate); chocsSon_.build((float)rate); }   // WFS-261, WFS-272, WFS-275, WFS-288, WFS-298
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
         // WFS-76 : musique (une fois par lancement) et ambiance de la carte de cette partie (moment : WFS_MOMENT, comme la plage)
         musique().build((float)(rate ? rate : OUT_RATE));
@@ -130,6 +132,7 @@ public:
         preparerParois(g);   // WFS-275 : immeubles proches (masques), avant les sources
         sonsLieux(g);        // WFS-261
         sonsVoitures(dt, g); // WFS-272
+        sonsChocs(g);        // WFS-298 (après les voitures : leurs positions du pas)
         sonsParois(dt, g);   // WFS-275
         sonsPluie(dt, g);    // WFS-288
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
@@ -213,6 +216,7 @@ private:
             renderInto(m, k, now); sfx_.mix(m, k, now, G, D);   // WFS-272 : la sirène sort à gauche / à droite (G, D)
             for (int i = 0; i < k; i++) bus[i] = m[i] + 0.5f * (G[i] + D[i]);   // écho : moteur, bruitages, sirène
             voitures_.mix(G, D, bus, k, sfx_.master, now - sfx_.lastUpdate.load() < 0.25);   // WFS-272 : autres voitures, passage, klaxon
+            chocsSon_.mix(G, D, bus, k, master);   // WFS-298 : son de l'obstacle touché (gauche / droite, écho du tunnel) ; sans choc : rien
             tunnel_.process(bus, G, D, k);   // RG-05 (WFS-261) ; RG-07 (WFS-272) : les voitures passent dans l'écho
             echos_.process(bus, G, D, k);    // WFS-275 : écho des murs (même bus) ; sans mur, rien n'est ajouté
             musique().mix(m, k, master); ambiance_.mix(m, k, master);
@@ -394,6 +398,53 @@ private:
         pluie_.pas((float)dt, g.player->kmh(), pluie, cockpit, balais, tunnelLog_, surfacesPluie_);
         const int etat = pluie && lieuxActifs_ ? 1 + cockpit : 0;   // journal du banc : une ligne quand la pluie ou la vue change
         if (etat != pluieLog_) { pluieLog_ = etat; WFS_LOG("PLUIE %s", etat == 0 ? "muette" : etat == 1 ? "vue extérieure" : "vue Cockpit"); }
+    }
+    // WFS-298 (RG-04) : quand un compteur de la course monte (petit choc, accident : lus comme SfxEvenements de sfx.cpp, qui garde
+    // son coup sourd), l'obstacle du registre le plus proche de la voiture (≤ 0,5 m), sinon l'autre voiture la plus proche (≤ 1 m),
+    // dit la famille du son ; le côté vient de son azimut (panoramique de WFS-272). Vitesse d'impact : celle du petit choc
+    // (lastImpact × vitesse max, comme chocs_cartes.cpp) ; accident : vitesse du joueur au pas d'avant (≥ 14 m/s, seuil de l'accident)
+    sonchocs::SonsChocs chocsSon_; const Course* courseChoc_ = nullptr; int bumpsVus_ = 0, accidentsVus_ = 0; float vAvant_ = 0;
+    void sonsChocs(const GameView& g) {
+        const Course* c = activeCourse();
+        const float vJoueur = g.player ? (float)std::abs(g.player->speed * M) : 0.f;
+        if (!c || !g.player || !g.track || !g.car) { courseChoc_ = nullptr; vAvant_ = vJoueur; return; }
+        if (c != courseChoc_ || c->bumps < bumpsVus_ || c->accidents < accidentsVus_) {   // nouvelle course ou remise à zéro
+            courseChoc_ = c; bumpsVus_ = c->bumps; accidentsVus_ = c->accidents; vAvant_ = vJoueur; return;
+        }
+        const bool petit = c->bumps > bumpsVus_, accident = c->accidents > accidentsVus_;
+        bumpsVus_ = c->bumps; accidentsVus_ = c->accidents;
+        if (petit || accident) {
+            const float v = accident ? std::max(14.f, vAvant_) : (float)(c->lastImpact * MAX_SPEED * M);
+            const Player& pl = *g.player; Track& t = *g.track;
+            const TrackPoint P = t.pointLisse(pl.dist, pl.playerX * RW);
+            sonchocs::Rect moi; moi.x = P.x; moi.z = P.z; moi.cap = P.th + pl.heading; moi.hl = g.car->d.L / 2; moi.hw = g.car->d.W / 2;
+            double best = 1e30, qx = 0, qz = 0; chocs::Genre genre = chocs::Genre::Autre;
+            chocs::registre().autour(t, pl.dist, std::hypot(moi.hl, moi.hw) + 1.5, [&](const chocs::Obstacle& o) {
+                double x, z; const double d = sonchocs::distance(moi, o, x, z);
+                if (d < best) { best = d; qx = x; qz = z; genre = o.genre; }
+            });
+            int fam = best <= sonchocs::PORTEE_OBSTACLE ? sonchocs::famillePour(genre) : sonchocs::AUCUNE;
+            const char* quoi = best <= sonchocs::PORTEE_OBSTACLE ? chocs::nomGenre(genre) : "rien";
+            if (best > sonchocs::PORTEE_OBSTACLE) {   // sinon : une autre voiture (trafic, adversaires, police)
+                double bestV = 1e30;
+                for (const voitures::Candidat& k : candidats_) {
+                    if (!k.car) continue;
+                    sonchocs::Rect r; r.x = k.p.x; r.z = k.p.z; r.hl = k.car->d.L / 2; r.hw = k.car->d.W / 2;
+                    r.cap = std::hypot(k.v.x, k.v.z) > 0.5f ? std::atan2(k.v.x, -k.v.z) : moi.cap;
+                    double x, z; const double d = sonchocs::distance(moi, r, x, z);
+                    if (d < bestV) { bestV = d; if (d <= sonchocs::PORTEE_VOITURE) { qx = x; qz = z; } }
+                }
+                if (bestV <= sonchocs::PORTEE_VOITURE) { fam = sonchocs::VOITURE; quoi = "voiture"; best = bestV; }
+            }
+            if (fam != sonchocs::AUCUNE && v >= sonchocs::V_MIN) {
+                const float az = sonchocs::azimut(moi, qx, qz);
+                const voitures::Pan pan = voitures::panExistant(az);
+                chocsSon_.choc(fam, v, pan.g, pan.d, accident);
+                WFS_LOG("SON CHOC %s %.0f km/h %s (%s à %.2f m%s)", sonchocs::nomFamille(fam), v * 3.6f, az >= 0 ? "droite" : "gauche", quoi, best,
+                        accident ? ", accident" : "");
+            } else WFS_LOG("SON CHOC aucun %.0f km/h (rien à moins de 0,5 m ni de voiture à moins de 1 m)", v * 3.6f);
+        }
+        vAvant_ = vJoueur;
     }
     void sonsVoitures(double dt, const GameView& g) {
         candidats_.clear();
@@ -646,6 +697,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     voitures::benchVoitures(out);        // WFS-272 : voitures-course5, voitures-trafic, voitures-police (stéréo, hauteur), coût
     parois::benchParois(out, g_rec.pcm); // WFS-275 et WFS-278 : parois-*, masque-* (ville, corniche, campagne, stands), coût
     pluie::benchPluie(out, g_rec.pcm);   // WFS-288 : pluie-arriere, pluie-cockpit, pluie-tunnel, coût
+    sonchocs::benchChocs(out);           // WFS-298 : chocs-<famille>, chocs-<famille>-avant, chocs-familles, coût
 }
 
 } // namespace wfs

@@ -10,6 +10,7 @@
 #include "cache_pipelines.h"        // WFS-262 (RG-01)
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #include "../core/platform.h"   // WFS-222 : nowSeconds (banc de profilage)
@@ -782,10 +783,11 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     st[0].stage = VK_SHADER_STAGE_VERTEX_BIT; st[0].module = vs; st[0].pName = "main";
     st[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; st[1].module = fs; st[1].pName = "main";
     // WFS-222 : constante de spécialisation 0 (SANS_DISCARD, booléen 32 bits) : shader sans discard → early-Z
-    const VkBool32 vrai = VK_TRUE;
-    const VkSpecializationMapEntry entree{0, 0, sizeof(VkBool32)};
-    const VkSpecializationInfo spec{1, &entree, sizeof(VkBool32), &vrai};
-    if (sansDiscard) st[1].pSpecializationInfo = &spec;
+    // WFS-263 (RG-01) : constante 1 (LEGER) : variante légère de scene.frag (legerPipeline_)
+    const VkBool32 valeurs[2] = {sansDiscard ? VK_TRUE : VK_FALSE, legerPipeline_ ? VK_TRUE : VK_FALSE};
+    const VkSpecializationMapEntry entrees[2] = {{0, 0, sizeof(VkBool32)}, {1, sizeof(VkBool32), sizeof(VkBool32)}};
+    const VkSpecializationInfo spec{2, entrees, sizeof valeurs, valeurs};
+    if (sansDiscard || legerPipeline_) st[1].pSpecializationInfo = &spec;
 
     VkVertexInputBindingDescription bind{};
     VkVertexInputAttributeDescription attr[6]{};
@@ -907,7 +909,12 @@ void Renderer::createScenePipelines() {
     cullPipeline_ = 1;   // WFS-246 (levier 1)
     opaqueCull_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
     skinOpaqueCull_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_, false, 0, true);
+    legerPipeline_ = true;   // WFS-263 (RG-01) : décor entièrement au-delà de 70 m, avec et sans faces arrière
+    opaqueLeger_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
     cullPipeline_ = 0;
+    opaqueLegerDouble_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+    legerPipeline_ = false;
+    { const char* f = std::getenv("WFS_LEGER"); legerActif_ = !(f && f[0] == '0'); }   // banc : WFS_LEGER=0 (comparaison)
     { const char* f = std::getenv("WFS_FACES"); facesArriere_ = !(f && f[0] == '0'); }
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
@@ -923,7 +930,7 @@ void Renderer::prechaufferMsaa() {
     const VkSampleCountFlags sc = vk_->props.limits.framebufferColorSampleCounts & vk_->props.limits.framebufferDepthSampleCounts;
     const VkSampleCountFlagBits enService = vk_->msaa;
     const uint32_t avant = pipelinesCrees_;
-    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_};
+    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_, &opaqueLeger_, &opaqueLegerDouble_};
     VkPipeline garde[std::size(membres)];
     for (size_t i = 0; i < std::size(membres); i++) garde[i] = *membres[i];
     const VkRenderPass passeGardee = scenePass_;
@@ -978,7 +985,7 @@ bool Renderer::appliquerNettete() {
     const bool refaire = ms != vk_->msaa;
     if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
         VkDevice d = vk_->device;
-        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_, &opaqueLeger_, &opaqueLegerDouble_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -1043,6 +1050,7 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     creationsMaillages_++;   // WFS-268 (RG-04)
+    memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
     // WFS-149 (RG-04) : géométrie générée (route, décor, charte…) sans tangentes : calculées ici, une fois, sur une copie
     // (tampon réutilisé). updateMesh (halos, particules : jamais de carte de normales) n'en calcule pas.
@@ -1075,10 +1083,11 @@ void Renderer::updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vect
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
 }
 
-void Renderer::destroy(Mesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
+void Renderer::destroy(Mesh& m) { if (m.vb.buf) memoire::compteurs().objets3d--; vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }   // WFS-297 : objets 3D vivants
 
 SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx) {
     SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
+    memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r < 0 ? b.r : b.r * 1.5f; }   // WFS-82 : marge pour l'animation
     m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m.i16 = v.size() <= 65536;   // WFS-210 (RG-05) : moins de 65 536 sommets → indices 16 bits (mémoire GPU ÷ 2 pour les indices)
@@ -1087,7 +1096,7 @@ SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const st
     return m;
 }
 
-void Renderer::destroy(SkinnedMesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
+void Renderer::destroy(SkinnedMesh& m) { if (m.vb.buf) memoire::compteurs().objets3d--; vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }   // WFS-297
 
 void Renderer::destroy(Model& m) {
     for (auto& mat : m.mats) if (mat.set) {
@@ -1178,9 +1187,15 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
         const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
-        u.spotN = {(float)n, 0, 0, 0};
+        // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
+        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, 0};
+        // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
+        // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
+        int ordre[FrameParams::SPOTS_MAX];
+        for (int i = 0; i < n; i++) ordre[i] = i;
+        if (qualiteBasse) std::stable_sort(ordre, ordre + n, [&](int a, int b) { return length(fp.spots[a].pos - fp.camPos) < length(fp.spots[b].pos - fp.camPos); });
         for (int i = 0; i < n; i++) {
-            const FrameParams::Spot& s = fp.spots[i];
+            const FrameParams::Spot& s = fp.spots[ordre[i]];
             vec3 dir = normalize(s.target - s.pos);
             if (length(dir) < 0.5f) dir = {0, -1, 0};
             // r128 sans lumières physiques : irradiance × PI (lights_fragment_begin), compensée par le 1/PI du Lambert
@@ -1370,6 +1385,12 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.vis = vis;
+    {   // WFS-263 (RG-01) : variante légère si l'objet entier est au-delà de 70 m (fin du fondu de scene.frag) et n'est ni
+        // voiture, ni route, ni transparent, ni vitre d'immeuble (mêmes exclusions que F_COMPLET de scene.frag)
+        constexpr uint32_t COMPLET = MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR;
+        const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
+        p.loin = !(mat.flags & COMPLET) && sp.r >= 0 && length(sp.c - camPos_) - sp.r > 70.f;
+    }
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
@@ -1594,7 +1615,9 @@ void Renderer::endFrame() {
         const float det = mo.at(0, 0) * (mo.at(1, 1) * mo.at(2, 2) - mo.at(2, 1) * mo.at(1, 2)) - mo.at(0, 1) * (mo.at(1, 0) * mo.at(2, 2) - mo.at(2, 0) * mo.at(1, 2)) +
                           mo.at(0, 2) * (mo.at(1, 0) * mo.at(2, 1) - mo.at(2, 0) * mo.at(1, 1));
         const bool cull = !d && facesArriere_ && det > 0 && p.mat && !(p.mat->flags & (MAT_DOUBLE | MAT_GLASS | MAT_ROAD | MAT_WALK | MAT_GROUND));
-        const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : cull ? skinOpaqueCull_ : skinOpaque_) : (d ? opaqueDecoupe_ : cull ? opaqueCull_ : opaque_);   // WFS-63
+        const bool leger = p.loin && !d && legerActif_;   // WFS-263 (RG-01) : décor entièrement au-delà de 70 m
+        const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : cull ? skinOpaqueCull_ : skinOpaque_)
+                                              : (d ? opaqueDecoupe_ : leger ? (cull ? opaqueLeger_ : opaqueLegerDouble_) : cull ? opaqueCull_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
     }
@@ -1704,7 +1727,7 @@ void Renderer::shutdown() {
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
     for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_, skyApres_,
-                         poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_, opaqueCull_, skinOpaqueCull_})
+                         poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_, opaqueCull_, skinOpaqueCull_, opaqueLeger_, opaqueLegerDouble_})
         if (p) vkDestroyPipeline(d, p, nullptr);
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
@@ -1737,6 +1760,7 @@ void Renderer::shutdown() {
     opaque_ = blend_ = sky_ = post_ = ui_ = shadowPipe_ = shadowMaskPipe_ = skinOpaque_ = skinShadow_ = skinShadowMask_ = VK_NULL_HANDLE;
     opaqueDecoupe_ = skinOpaqueDecoupe_ = skyApres_ = VK_NULL_HANDLE;   // WFS-222
     opaqueCull_ = skinOpaqueCull_ = VK_NULL_HANDLE;   // WFS-246
+    opaqueLeger_ = opaqueLegerDouble_ = VK_NULL_HANDLE;   // WFS-263
     poolPipe_ = addPipe_ = refOpaque_ = refBlend_ = refSky_ = refAdd_ = VK_NULL_HANDLE;
     pool_ = VK_NULL_HANDLE; sampler_ = clampSampler_ = shadowSampler_ = VK_NULL_HANDLE; tsPool_ = VK_NULL_HANDLE;
     postSet_ = fontSet_ = VK_NULL_HANDLE; osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;

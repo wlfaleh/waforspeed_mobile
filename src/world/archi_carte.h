@@ -5,8 +5,10 @@
 // (RG-05 : < 120 m complet, < 300 m allégé, au-delà volume seul), et les dessine en un appel par matériau et par morceau.
 // Repli (RG-05) : WFS_ARCHI=0 (ou aucun bâtiment posé) → actif() rend false et la carte garde ses anciennes boîtes.
 #include <cstdint>
+#include <vector>
 #include "../core/math.h"
 #include "archi_kit.h"
+#include "../render/renderer.h"   // WFS-269 : Vertex
 
 namespace wfs::archi::carte {
 
@@ -17,5 +19,7 @@ void vider();
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine);
 // vrai si le kit remplace les boîtes de la carte (bâtiments posés et kit non désactivé)
 bool actif();
+// WFS-269 (accroche) : tous les bâtiments posés au niveau lod, dans le monde (ils cachent le ciel : DecorFixe::occultants)
+void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i);
 
 } // namespace wfs::archi::carte

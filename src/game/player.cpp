@@ -28,7 +28,11 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     const double th0 = track.point(dist, 0).th;
     const double k = (track.point(dist + LISSAGE_M / M, 0).th - track.point(dist - LISSAGE_M / M, 0).th) / (2 * LISSAGE_M);   // 1/m
     courbeLisse_ = k * SEG_M / CURVE_K;   // même unité que Segment::curve (force centrifuge)
-    const double avance = speed * M * std::cos(heading);   // m/s le long de la route (négatif à contresens)
+    // WFS-295 (RG-01) : à l'écart n de l'axe (n > 0 à droite, k > 0 virage à droite), le rayon est 1/k − n : un mètre parcouru
+    // par la voiture fait avancer l'axe de 1 / (1 − k·n) m et tourner la route d'autant (repère de Frenet). Sans ce facteur,
+    // la voiture à l'extérieur du virage tournait comme sur un rayon (1 + n/R) fois trop grand (épingles : ×1,34 au bord)
+    facRoute_ = g_avantWfs295 ? 1.0 : std::max(0.2, 1 - k * playerX * RW);
+    const double avance = speed * M * std::cos(heading) / facRoute_;   // m/s le long de l'axe de la route (négatif à contresens)
     const bool active = aide == Aide::Activee;
     double w = !active ? 0.0 : locked ? 1.0 : 1.0 - clampd(std::abs(steer) / VOLANT_PLEIN, 0, 1);   // part de l'aide
     if (active && !locked && steer * k > 0) {   // braqué dans le virage : l'aide porte ce que l'adhérence ne permet pas
@@ -87,13 +91,14 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
         double target = clampd(in.steer, -1, 1);
         double rate = (std::abs(target) < 1e-3 || signf((float)target) != signf((float)steer)) ? Phys::steerOut : Phys::steerIn;
         steer += clampd(target - steer, -dt * rate, dt * rate);
-    } else steer += -steer * std::min(1.0, dt * 4);
+    } else if (!playing || aide == Aide::Web || g_avantWfs295) steer += -steer * std::min(1.0, dt * 4);   // WFS-295 (RG-03) : joueur, braquage gardé après un choc
     // angle des roues plus petit à haute vitesse
     const double wheelAngle = steer * Phys::maxSteer / (1 + std::abs(v) / Phys::steerV);
     double yawRate = v / perf.wb * std::tan(wheelAngle) * perf.handling;
     const double yawLim = Phys::grip * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence
     yawRate = clampd(yawRate, -yawLim, yawLim);
     double courbe = seg.curve;   // courbure de la force centrifuge (unités de Segment::curve)
+    facRoute_ = 1;   // ordinateur (jeu web) : la route porte la voiture, avance inchangée
     if (aide != Aide::Web) {   // WFS-217 : voiture du joueur (aide à la direction activée ou désactivée)
         guider(dt, yawRate, v, locked, track);
         courbe = courbeLisse_;
@@ -117,8 +122,9 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     }
     latAcc = v * yawRate;
     const double prevSpeed = speed;
-    position = track.wrap(position + dt * speed * std::cos(heading));
-    dist += dt * speed * std::cos(heading);
+    const double avanceAxe = dt * speed * std::cos(heading) / facRoute_;   // WFS-295 (RG-01) : avance de l'axe de la route
+    position = track.wrap(position + avanceAxe);
+    dist += avanceAxe;
     odo += dt * speed;   // WFS-90
     playerX += v * std::sin(heading) * dt / RW;
     // force centrifuge dans les virages
