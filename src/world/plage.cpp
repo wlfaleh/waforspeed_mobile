@@ -476,7 +476,7 @@ public:
             px[c * 4] = (h >> 16) & 255; px[c * 4 + 1] = (h >> 8) & 255; px[c * 4 + 2] = h & 255; px[c * 4 + 3] = 255;
         }
         palTex_ = r.vk().uploadTexture(px, PAL_W, 1, true);
-        Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE;   // petits objets vus de tous les côtés
+        Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE | MAT_AO;   // petits objets vus de tous les côtés ; WFS-269 : MAT_AO
         mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
         Material mo; const vec3 w = linHex(night_ ? 0x0a1828 : 0x1e7fa8);   // ENV.water
         mo.color = {w.x, w.y, w.z, 1}; mo.rough = 0.12f; mo.flags = MAT_DOUBLE;
@@ -501,6 +501,10 @@ public:
         initEtabs(r, *g.track);   // WFS-181
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = len_;
+            {   // WFS-269 (accroche) : occlusion précalculée : décor uni, rochers, trottoirs, chaume et bois (MAT_AO) la reçoivent
+                auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
+                lots_.occlusion(b({P_UNI, P_ROC, P_TROTTOIR, P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
+            }
             lots_.preparer(r, *g.track, P_COUNT, 3, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {   // 3 morceaux (115 m) : débord au bout de la fenêtre ≤ 2 morceaux (mer dégagée)
                 Geo out[P_COUNT];
                 buildChunk(*g.track, c, lod, out);
@@ -545,7 +549,7 @@ public:
         rocTex_ = r.vk().uploadTexture(c.data(), 256, 256, true);
         rocNrm_ = r.vk().uploadTexture(n.data(), 256, 256, false);
         rocMr_ = r.vk().uploadTexture(m.data(), 256, 256, false);
-        Material mr; mr.rough = 1.f; mr.flags = MAT_DOUBLE;   // rugosité × texture (0,86-1,0), roche non métallique
+        Material mr; mr.rough = 1.f; mr.flags = MAT_DOUBLE | MAT_AO;   // rugosité × texture (0,86-1,0), roche non métallique ; WFS-269 : MAT_AO
         mats_[P_ROC] = r.makeMaterial(mr, &rocTex_, &rocNrm_, &rocMr_);
         // voûte : le moteur n'a ni occultation ambiante ni éclairage d'environnement (DA-realisme.md § 1) ; sous 200 m de
         // roche, la lumière du ciel n'arrive pas : couleur × 0,3 pour ne pas éclairer la voûte comme dehors
@@ -562,7 +566,7 @@ public:
         Material mo; mo.flags = MAT_ROAD; mo.rough = 0.8f;   // même surface procédurale que la chaussée de Game
         mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, mo);   // WFS-205 (accroche)
         mats_[P_GIR] = route::creerMateriau(r, route::chaussee(), mo);   // WFS-248 : anneau du giratoire = chaussée de la route
-        { Material mw; mw.flags = MAT_WALK; mw.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, mw); }   // comme le trottoir de Game
+        { Material mw; mw.flags = MAT_WALK | MAT_AO; mw.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, mw); }   // comme le trottoir de Game
         // lentilles du feu tricolore : éteinte (verre sombre), rouge, orange, vert (LED, allumées)
         Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
         lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
@@ -1392,9 +1396,9 @@ public:
         genererMatieres(pa, bo);
         pailleTex_ = r.vk().uploadTexture(pa.data(), 128, 128, true);
         boisTex_ = r.vk().uploadTexture(bo.data(), 128, 128, true);
-        Material mp; mp.rough = 0.95f; mp.flags = MAT_DOUBLE;   // chaume : diélectrique très rugueux
+        Material mp; mp.rough = 0.95f; mp.flags = MAT_DOUBLE | MAT_AO;   // chaume : diélectrique très rugueux
         mats_[P_PAILLE] = r.makeMaterial(mp, &pailleTex_, nullptr, nullptr);
-        Material mb; mb.rough = 0.8f; mb.flags = MAT_DOUBLE;    // bois brut patiné
+        Material mb; mb.rough = 0.8f; mb.flags = MAT_DOUBLE | MAT_AO;    // bois brut patiné
         mats_[P_BOIS] = r.makeMaterial(mb, &boisTex_, nullptr, nullptr);
         // vitrages : de jour verre (diélectrique, rugosité 0,08 ; teinte bleu-gris qui tient lieu du reflet du ciel, comme les vitrines de commerces.cpp) ; la nuit éclairés de l'intérieur, LED blanc
         // chaud 3000 K (bars, cafés, casino) ou blanc neutre 4000 K (galerie) — DA-realisme.md : LED 3000-4000 K
