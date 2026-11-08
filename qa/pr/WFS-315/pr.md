@@ -6,20 +6,27 @@ Agent : Claude, agent 2 (01UY1Vv5)
 
 - **Demande de l'utilisateur** (en une phrase) : « c'est bien, j'aime ce mode caméra Cockpit, mais j'ai l'impression que c'est une voiture à une seule place ; la géométrie largeur / longueur est à regarder » (2026-11-08 04:00 UTC).
 - **Ce qui change** :
-  - `src/render/vehicule_cockpit.h`, `vehicule_cockpit_defs.cpp` — **RG-01, largeur réelle par modèle** : nouvelle table `LARGEURS` (largeur intérieure aux coudes, écart œil-axe, écart des pieds de montants) pour les 20 intérieurs ; avant, toutes les voitures avaient une planche de 1,56 m et l'œil à 0,36 m de l'axe. Exemples : 500 Abarth 1,31 m, Golf 1,47 m, X5 1,55 m, Range Rover Sport 1,58 m. Cotes et sources au journal (1b66a9a2) : avis d'`expert-realisme-3d`, **aucune vérifiée** (sites des constructeurs bloqués par `regles-reseau.md`), statut AC (fiches US citées de mémoire) ou E (méthode écrite).
-  - `src/render/vehicule_cockpit.cpp` — planche, jonc, pavillon, montants (pieds à l'écart réel), portières suivent ces cotes ; **RG-02, place passager** : boîte à gants (porte en relief, joint sombre) et couvercle du sac gonflable passager sur le dessus de planche.
+  - `src/render/vehicule_cockpit.h`, `vehicule_cockpit_defs.cpp` — **RG-01, largeur réelle par modèle** : table `LARGEURS` (largeur aux coudes, écart œil-axe, écart des pieds de montants) pour les 20 intérieurs ; avant, planche de 1,56 m et œil à 0,36 m pour toutes. Exemples : 500 Abarth 1,31 m, Golf 1,47 m, X5 1,55 m, Range Rover Sport 1,58 m. Cotes et sources au journal (1b66a9a2) : avis d'`expert-realisme-3d`, **aucune vérifiée** (sites des constructeurs bloqués), statut AC ou E.
+  - `src/render/vehicule_cockpit.cpp` — planche, jonc, pavillon, montants (pieds à l'écart réel), portières suivent ces cotes ; **RG-02, place passager** : boîte à gants (porte en relief, joint mat) et couvercle du sac gonflable passager, **posé sur la partie plate du dessus de planche** (1er refus : posé à hauteur fixe sur la pente, il flottait d'≈ 3 cm devant la rue).
   - `src/game/camera_vue.cpp` (cockpit) — œil de la caméra à l'écart œil-axe du modèle (cockpit commun : 0,36 m, inchangé).
-  - `tests/test_cockpit.cpp` — une cote par modèle ; deux adultes et la console tiennent (≥ 2 × 0,447 m + 0,20 m) ; œil ≈ 0,25 × coudes ; pieds des montants à ≤ 0,10 m des coudes ; montant droit ≥ 2,5 fois plus loin de l'œil que le gauche ; X5 plus large que la 500 d'au moins 0,20 m.
+  - `tests/test_cockpit.cpp` — une cote par modèle ; deux adultes et la console tiennent ; œil ≈ 0,25 × coudes ; montants ; montant droit ≥ 2,5 fois plus loin que le gauche ; X5 plus large que la 500.
   - Aucun bouton changé, champ de 72° inchangé (RG-04, décisions du PO).
-- **Comment c'est vérifié** : 69 tests CPU verts ; branche synchronisée avec `main` (3d22bd92) ; banc `cockpit` en **2340 × 1080**, Golf / X5 / 500 Abarth, avant (main) / après (branche), même run. Mesures en regard Normal (seuils du PO du 2026-11-08 12:03:49 UTC), avant → après :
-  - **Fenêtre de la rue devant : 0,0 % caché sur toutes les captures**, avant et après.
-  - Intérieur (≤ 42 %) : Golf jour 38,0 → 36,8, virage 39,1 → 37,8 ; X5 jour 34,9 → 34,3, virage 36,0 → 35,3 ; 500 jour 38,9 → 36,8, virage 40,0 → 38,1 ; Plage de nuit 34,2-36,5 %.
-  - Bande de la rue (≤ 12 %) : 9,9 à 11,9 % (toutes égales ou meilleures qu'avant). Horizon (45-47 %) : 46,4-46,6 %.
-  - Regards Haut / Bas (sans seuil) : Haut intérieur 31,4-33,9 %, bande 11,4-12,7 % ; Bas intérieur 38,2-40,7 %, bande 9,4-11,7 %.
-- **Limites et risques connus** (à dire franchement, décision du PO du 12:15:35) :
-  - **La place passager de la planche (bas droit de l'image) est sous les boutons NITRO, FREIN et GAZ** : la boîte à gants ne se voit pas sur les captures. RG-02 se juge sur ce qui se voit au-dessus des boutons : dessus de planche jusqu'au montant droit, jonc, montant droit à sa place (≈ 41° du centre sur la Golf), différence X5 / 500. Le banc ne sait pas masquer le HUD (le faire toucherait le HUD, hors zone) : pas de capture « sans HUD ».
-  - **Sur la Golf, le changement visible est faible** : ses vraies cotes (1,47 m, œil 0,37 m, montants 1,45 m) sont proches des anciennes valeurs communes. L'écart se voit surtout entre voitures (X5 contre 500). Avec 115° de champ horizontal, la vitre latérale gauche prend un tiers de l'image : c'est une grande part de l'impression de « monoplace ». Le PO a posé la question à l'utilisateur (boutons semi-transparents en vue Cockpit, ou champ un peu plus serré), dans un autre ticket et seulement sur son ordre.
+- **Comment c'est vérifié** : 69 tests CPU verts ; branche synchronisée avec `main` (b314ed5a) ; banc `cockpit` en **2340 × 1080**, Golf / X5 / 500 Abarth, avant (main) / après (branche), même run. Mesures en regard Normal (seuils du PO, 12:03:49 UTC), avant → après :
+  - **Fenêtre de la rue devant : 0,0 % caché sur toutes les captures**.
+  - Intérieur (≤ 42 %) : Golf jour 38,0 → 36,6, virage 39,1 → 37,7 ; X5 jour 34,9 → 34,2, virage 36,0 → 35,2 ; 500 jour 38,9 → 36,7, virage 40,0 → 38,0 ; Plage de nuit 34,1-36,3 %.
+  - Bande de la rue (≤ 12 %) : 9,9 à 11,9 % (égales ou meilleures qu'avant). Horizon (45-47 %) : 46,4-46,6 %.
+  - **Agrandissements de la planche passager** (Golf de jour, X5 au départ de nuit sur la Plage) ci-dessous : plus rien ne dépasse de la ligne de la planche.
+- **Limites et risques connus** (décision du PO du 12:15:35) :
+  - **La place passager de la planche (bas droit de l'image) est sous les boutons NITRO, FREIN et GAZ** : la boîte à gants se devine à peine. RG-02 se juge sur ce qui se voit au-dessus des boutons. Le banc ne sait pas masquer le HUD (hors zone) : pas de capture « sans HUD ».
+  - **Sur la Golf, le changement visible est faible** : ses vraies cotes sont proches des anciennes valeurs communes ; l'écart se voit surtout entre voitures (X5 contre 500). Avec 115° de champ horizontal, la vitre gauche prend un tiers de l'image. Le PO a posé la question à l'utilisateur (boutons semi-transparents ou champ plus serré, dans un autre ticket).
   - Cotes au statut AC / E ; les moins sûres : SF90 (±0,06 m), Range Rover Sport (±0,05 m), écarts des montants (±0,05 à 0,08 m).
+
+### Agrandissements de la planche passager
+
+| | Avant (main) | Après (branche) |
+|---|---|---|
+| Golf, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-315/qa/pr/WFS-315/avant-zoom-planche-passager-golf-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-315/qa/pr/WFS-315/apres-zoom-planche-passager-golf-jour.jpg?raw=true) |
+| X5, Plage, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-315/qa/pr/WFS-315/avant-zoom-planche-passager-x5-plage-nuit-depart.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-315/qa/pr/WFS-315/apres-zoom-planche-passager-x5-plage-nuit-depart.jpg?raw=true) |
 
 ## Captures pour le lead dev (24 après)
 
