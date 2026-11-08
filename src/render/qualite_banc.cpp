@@ -17,12 +17,15 @@ namespace wfs {
 namespace {
 
 // WFS-239 (RG-02) : position (unités de la piste) du joueur tel qu'il est dessiné. Depuis WFS-221, l'image montre l'état
-// interpolé entre les deux derniers pas de 1/120 s (Game::alphaRendu : part du pas suivant déjà écoulée) ; le dernier pas a
-// avancé de pas × vitesse × cos(cap) (Player::update). À 150 km/h, le joueur dessiné est jusqu'à 35 cm derrière le joueur simulé.
-double positionDessinee(const Game& g) {
-    const Player& p = g.player();
-    const double a = Game::interpolation ? g.alphaRendu() : 1.0;
-    return p.position - (1.0 - a) * (1.0 / 120.0) * p.speed * std::cos(p.heading);
+// interpolé entre les deux derniers pas de 1/120 s : avant + (après − avant) × Game::alphaRendu (part du pas suivant déjà
+// écoulée ; au banc, presque 0 : le joueur dessiné est un pas derrière le joueur simulé, 15 cm à 67 km/h). Le banc fait
+// exactement un pas (Game::pasDerniereImage) en notant la position d'avant : position dessinée exacte, quelle que soit la conduite.
+double unPasPuisPositionDessinee(Game& g) {
+    const double avant = g.player().position;
+    g.update(1.0 / 120 + 1e-9);   // un pas : le reste du pas précédent (< 1/120 s) plus 1/120 s
+    if (g.pasDerniereImage() != 1) WFS_ERR("ERREUR placement (WFS-239 RG-02) : %d pas au lieu d'un avant le placement", g.pasDerniereImage());
+    const double apres = g.player().position, a = Game::interpolation ? g.alphaRendu() : 1.0;
+    return avant + (apres - avant) * a;
 }
 // WFS-239 (RG-02) : voiture du trafic posée à d m devant le joueur dessiné, au décalage x (demi-largeurs de route), à la vitesse
 // du joueur ; état d'avant le pas remis (WFS-221 : sinon, après un saut de moins de 20 m, elle est dessinée entre son ancienne
@@ -43,10 +46,10 @@ void ranger(TrafficCar& c, double posDessinee, size_t i, double vitesse) {   // 
 // (« ERREUR placement ») si une voiture posée en deçà de la limite de dessin du niveau (Basse : 120 m inclus ; Haute : 300 m)
 // n'est pas dessinée, ou si elle est dessinée à plus de 0,5 m de sa place. L'état des voitures est remis à la fin.
 struct Posee { size_t i; double d; };
-int controler(Game& g, Renderer& r, const std::string& nom, const std::vector<Posee>& posees, bool basse, double t) {
+int controler(Game& g, Renderer& r, const std::string& nom, const std::vector<Posee>& posees, bool basse, double t, double pos) {
     Traffic* tr = activeTrafficMut();
     if (!tr || posees.empty()) return 0;
-    const double limite = basse ? 120 : 300, pos = positionDessinee(g), a = Game::interpolation ? g.alphaRendu() : 1.0;
+    const double limite = basse ? 120 : 300, a = Game::interpolation ? g.alphaRendu() : 1.0;
     std::vector<TrafficCar> garde;
     for (const Posee& p : posees) garde.push_back(tr->cars[p.i]);
     auto appels = [&]() { g.render(t); g.render(t); return r.appelsDessin(); };
@@ -139,8 +142,9 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(true); g.camMode = 0;
         for (int i = 0; i < 240; i++) { g.update(1.0 / 60); if (i % 8 == 0) g.render(910 + i / 60.0); }
         std::vector<Posee> posees;
+        const double posT = pr.trafic ? unPasPuisPositionDessinee(g) : 0;   // WFS-239 (RG-02) : distances depuis le joueur dessiné
         if (pr.trafic) if (Traffic* tr = activeTrafficMut()) {
-            const double pos = positionDessinee(g), D[3] = {10, 25, 50};   // WFS-239 (RG-02) : depuis le joueur dessiné
+            const double pos = posT, D[3] = {10, 25, 50};
             for (size_t i = 0; i < tr->cars.size(); i++) {   // 3 voitures placées devant, les autres loin derrière (hors champ)
                 TrafficCar& c = tr->cars[i];
                 if (i < 3) { c.lane = c.target = (int)(i % LANES); poser(c, pos, D[i], LANE_X[(i + 2) % LANES], g.player().speed); posees.push_back({i, D[i]}); }
@@ -152,16 +156,17 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 4; i++) g.render(914 + i / 60.0);
         r.capturePng(out + "/" + pr.nom + ".png");
         WFS_LOG("capture %s (WFS-134) : %s, %.0f km/h", pr.nom, qualite::ligneRendu().c_str(), g.player().kmh());
-        controler(g, r, pr.nom, posees, pr.niveau == qualite::BASSE, 914 + 3 / 60.0);   // WFS-239 (RG-03)
+        controler(g, r, pr.nom, posees, pr.niveau == qualite::BASSE, 914 + 3 / 60.0, posT);   // WFS-239 (RG-03)
         g.shutdown();
     }
     // WFS-134 (RG-13) : la même voiture du trafic devant le joueur, à 10, 25, 50, 60, 80, 120 et 180 m, même caméra, Haute et
     // Basse (voiture-distance-<m>[-basse]) ; passage complète → allégée à 56, 60 et 64 m (voiture-lod-passage-<m>)
     {
         // WFS-239 (RG-02) : distance comptée depuis le joueur dessiné (WFS-221), état d'avant le pas remis
+        double posD = 0;
         auto placer = [&](double d) {
             Traffic* tr = activeTrafficMut(); if (!tr) return;
-            const double pos = positionDessinee(g);
+            const double pos = posD = unPasPuisPositionDessinee(g);
             for (size_t i = 0; i < tr->cars.size(); i++) {
                 if (i == 0) poser(tr->cars[i], pos, d, 0, g.player().speed); else ranger(tr->cars[i], pos, i, g.player().speed);
             }
@@ -179,14 +184,14 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
                 const std::string nom = "voiture-distance-" + std::to_string((int)d) + (niveau == qualite::BASSE ? "-basse" : "");
                 r.capturePng(out + "/" + nom + ".png");
                 WFS_LOG("capture %s (WFS-134 RG-13) : voiture du trafic à %.0f m, %u appels de dessin", nom.c_str(), d, r.appelsDessin());
-                controler(g, r, nom, {{0, d}}, niveau == qualite::BASSE, 944 + 2 / 60.0);   // WFS-239 (RG-03)
+                controler(g, r, nom, {{0, d}}, niveau == qualite::BASSE, 944 + 2 / 60.0, posD);   // WFS-239 (RG-03)
             }
             if (niveau == qualite::HAUTE) for (double d : {56.0, 60.0, 64.0}) {
                 placer(d);
                 for (int i = 0; i < 3; i++) g.render(946 + i / 60.0);
                 r.capturePng(out + "/voiture-lod-passage-" + std::to_string((int)d) + ".png");
                 WFS_LOG("capture voiture-lod-passage-%d (WFS-134 RG-12) : complète → allégée, fondu de 56 à 64 m du joueur", (int)d);
-                controler(g, r, "voiture-lod-passage-" + std::to_string((int)d), {{0, d}}, false, 946 + 2 / 60.0);   // WFS-239 (RG-03)
+                controler(g, r, "voiture-lod-passage-" + std::to_string((int)d), {{0, d}}, false, 946 + 2 / 60.0, posD);   // WFS-239 (RG-03)
             }
             g.shutdown();
         }
@@ -201,8 +206,9 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
             for (int i = 0; i < 8 * 60; i++) { g.update(1.0 / 60); if (i % 8 == 0) g.render(920 + i / 60.0); }
             size_t places = 0;
             std::vector<Posee> posees;
+            const double posP = unPasPuisPositionDessinee(g);   // WFS-239 (RG-02)
             if (Traffic* tr = activeTrafficMut()) {
-                const double pos = positionDessinee(g);   // WFS-239 (RG-02)
+                const double pos = posP;
                 for (size_t i = 0; i < tr->cars.size(); i++) {
                     TrafficCar& c = tr->cars[i];
                     if (i < 14) { poser(c, pos, 8 + 11.0 * (double)i, LANE_X[i % LANES], g.player().speed); posees.push_back({i, 8 + 11.0 * (double)i}); places++; }
@@ -214,7 +220,7 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
             r.capturePng(out + "/voiture-basse-poursuite.png");
             WFS_LOG("capture voiture-basse-poursuite (WFS-134) : %s, %zu voitures du trafic de 8 à 151 m, vrais modèles (aucun cube), "
                     "%u appels de dessin par image", qualite::ligneRendu().c_str(), places, appels / 4);
-            controler(g, r, "voiture-basse-poursuite", posees, true, 930 + 3 / 60.0);   // WFS-239 (RG-03)
+            controler(g, r, "voiture-basse-poursuite", posees, true, 930 + 3 / 60.0, posP);   // WFS-239 (RG-03)
             g.shutdown();
         }
         courseBenchRules(false); modeCourse() = ModeCourse::Checkpoint;
