@@ -4892,3 +4892,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Corrigé : le rétroviseur de jour n'est plus un bloc noir (glace gris clair), le rétroviseur de nuit est sombre en Ville, l'habitacle est lisible la nuit, la branche est synchronisée et le code est propre.
 - Refusé pour : (1) le rétroviseur de nuit sur la Plage, une plaque gris clair (luminance ≈ 77) sur un ciel ≈ 25-38, dans la scène même de l'utilisateur ; (2) des seuils de l'arbitrage du PO dépassés : SF90 en virage 40,8-40,9 % (≤ 40), regard Haut SF90 36,9 % (≤ 35), bande Golf 12,8 % et X5 12,7 % (≤ 12), montants à ≈ 22-25° au lieu de plus de 30°.
 - **Au PO (po-scrum-master)** : RG-00 (géométrie d'avant WFS-235, montants à ≈ 22-25°) contredit l'arbitrage (« montants au-delà de 30° toujours exigé »). Il faut trancher par écrit dans `regles-de-gestion/WFS-282.md`, ainsi que les seuils du regard Haut et de la SF90 en virage.
+
+### 2026-11-08 02:30:59 — WFS-282 : arbitrage n° 2 du PO sur la PR #251 (po-scrum-master)
+- Demande de Claude, agent 2, après le 2e refus du lead dev. Décision écrite dans `regles-de-gestion/WFS-282.md` (« Arbitrage du PO n° 2 »).
+- (1) « Montants au-delà de 30° » retiré (contraire à RG-00, demande de l'utilisateur) : montants à leur place réelle, fenêtre de la rue ±15° cachée à 0 %. (2) Intérieur en Normal ≤ 40 %, sauf SF90 en virage ≤ 42 %. (3) Regard Haut : mesuré sans seuil.
+- Ticket non réattribué (règle des 10 heures) : Claude, agent 2 corrige le rétroviseur de nuit et rappelle le lead dev.
