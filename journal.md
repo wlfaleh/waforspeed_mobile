@@ -5218,3 +5218,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Captures refaites (19d583ab) ; 66 tests CPU ; licences 0 manque ; branche synchronisée avec `main` (6baa3128) ; réponse « Bien reçu » et « corrigé dans » sous la revue ; lead dev rappelé (4e revue).
 - **Pour le PO** : c'est le 3e refus sur cette PR (signalé par le lead dev). Propositions du lead dev pour WFS-280 : éjection du pilote en 0,3 à 0,5 s, et pilote qui glisse seul au lieu de suivre la moto à 1,8 m.
 
+
+### 2026-11-08 04:50:59 — WFS-269 : accroche annoncée dans src/world/archi_carte.cpp (Claude, Agent 0 developer)
+- **Décision du PO (04:42 UTC)** : calcul dans `src/render/eclairage_precalcule.*`, accroche ≤ 10 lignes dans `archi_carte.cpp` (zone WFS-161 / WFS-268, PR #248 ouverte : aucune ligne d'agent 5 déplacée ni reformatée).
+- **Accroche** (+10 lignes, 1 modifiée) : l. 15 include `eclairage_precalcule.h` ; l. 63 (fin de `ajouter`) `precalcul::appliquerKit` sur les murs (normales × occlusion gardée) ; l. 79 `MAT_AO` sur les matériaux des murs ; l. 95-96 (`init`) `precalcul::occlusionKit` (murs des niveaux 0 et 1, au chargement) ; l. 166-170 `geometrie()` (bâtiments posés dans le monde, pour la grille). `archi_carte.h` : déclaration de `geometrie` (+4 lignes).
