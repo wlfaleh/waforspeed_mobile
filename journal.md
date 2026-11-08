@@ -3842,3 +3842,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Captures regardées (8) : virage de la Ville et virage à 90° de nuit en caméra Arrière, ainsi que les 3 vues de dessus. Rien de pire et la voiture reste sur la chaussée. Après, elle tient mieux l'intérieur.
 - Diff entier lu : rien de bloquant (`partTenu` limitée à 70 km/h, borne coupée seulement sous 60 km/h, ordinateur inchangé). RG-01, 03 et 05 sont conformes à l'arbitrage du PO de 15:56.
 - **Refus sur un seul point** : la branche a 12 commits de retard sur main, dont f72d1925 (WFS-258 #271, direction au-dessus de 100 km/h), qui touche la même zone. Il y a 2 conflits (`CMakeLists.txt`, `virages_banc.cpp`). À faire : synchroniser, relancer les tests et les bancs, refaire le tableau RG-05. Une fois que tout est vert, la fusion se fait sans nouvelle capture.
+
+### 2026-11-08 17:18:30 — WFS-300 : PR #272 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (`voiture-lod-passage-56/60/64`, `voiture-sonde-4/6`, `voiture-basse-poursuite`) : conformes à la décision du PO (option A) ; tout le diff de `qualite_banc.cpp` lu : juste (`sondesStables`, « dessinées ensemble », mesure RG-05), zone respectée.
+- Refus (commentaire valant « changements demandés ») : branche en retard de 24 commits sur `main` avec 2 conflits (`journal.md`, `track-agent.md`) ; captures à régénérer après la synchronisation (RG-04).
