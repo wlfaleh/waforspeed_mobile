@@ -299,7 +299,9 @@ public:
             const int i = cand_[k].i;
             Personne& P = gens_[(size_t)i];
             apparition::Etat& e = etat_[(size_t)i];
-            const double dm = std::fabs(P.rel) * SEG_M;
+            // WFS-317 (RG-02) : niveau de détail selon la distance réelle à la caméra (avant : distance le long de la route depuis la
+            // voiture, sans l'écart du trottoir ni le recul de la caméra : niveau complet jusqu'à 17 m de la caméra en vue Proche)
+            const double dm = length(pos_[(size_t)i] - g.camPos);
             apparition::avancerOpacite(e, true, true, place_[k] != 0, apparition::opaciteDistance(P.rel * SEG_M, PED_RANGE1 * SEG_M), dt);
             apparition::avancerNiveau(e, (float)dm, seuils, dt);
             if (e.op <= 0 || nd >= DESSINES) continue;

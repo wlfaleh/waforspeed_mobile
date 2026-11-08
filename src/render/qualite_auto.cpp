@@ -95,4 +95,21 @@ std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauf
     return b;
 }
 
+// WFS-317 (I9) : « 420 appels · 744 k triangles (décor 63 %, voitures 13 %, personnes 24 %) » ou le détail de chaque famille
+std::string texteComptes(const uint32_t appels[3], const uint32_t triangles[3], bool detail) {
+    uint32_t a = 0, t = 0;
+    for (int f = 0; f < 3; f++) { a += appels[f]; t += triangles[f]; }
+    if (!a) return "";
+    static const char* const NOM[3] = {"décor", "voitures", "personnes"};
+    if (!detail) {
+        const auto part = [&](int f) { return (unsigned)std::lround(100.0 * triangles[f] / std::max(t, 1u)); };
+        char b[160];
+        std::snprintf(b, sizeof b, "%u appels · %u k triangles (décor %u %%, voitures %u %%, personnes %u %%)", a, (t + 500) / 1000, part(0), part(1), part(2));
+        return b;
+    }
+    std::string s = "dessin de l'image (toutes passes) : " + std::to_string(a) + " appels, " + std::to_string(t) + " triangles";
+    for (int f = 0; f < 3; f++) s += std::string(" ; ") + NOM[f] + " " + std::to_string(appels[f]) + " appels, " + std::to_string(triangles[f]) + " triangles";
+    return s;
+}
+
 } // namespace wfs::qualite
