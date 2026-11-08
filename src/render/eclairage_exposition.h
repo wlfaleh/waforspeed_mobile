@@ -30,6 +30,10 @@ inline bool kFacesValides(const double k[6]) {
 // 10 /255 hors phares : noir sur le téléphone (refus de l'utilisateur, WFS-225). À −3,5 : 1,6 IL sous le jour, lisible, et
 // toujours une nuit (les lumières artificielles restent à l'aspect EV 3 : adaptation locale, eclairage_physique.cpp).
 constexpr double EV_LUNE_MIN = -3.5, C_INCIDENTE = 250.0;
+// WFS-276 : basses lumières de la nuit relevées dans la passe finale (shaders/post.frag, basseLumiereNuit, MÊMES valeurs : vérifié par
+// test_fidelite_lumiere) : sous le seuil (luminance exposée), Y → seuil × (Y / seuil)^puissance ; au-dessus, rien ne change
+constexpr double SEUIL_NUIT = 0.08, PUISSANCE_NUIT = 0.45;
+inline double basseLumiereNuit(double Y) { return Y >= SEUIL_NUIT || Y <= 0 ? Y : SEUIL_NUIT * std::pow(Y / SEUIL_NUIT, PUISSANCE_NUIT); }
 // adaptation locale (RG-03) : sous EV 3, les lumières artificielles gardent l'exposition d'une rue éclairée (eclairage_physique.cpp)
 constexpr double EV_LUMIERES_MIN = 3.0;
 // lampadaire routier : éclairement horizontal sous la lampe 15 lx (classe P1 de l'EN 13201-2:2015, valeur moyenne [à vérifier])
