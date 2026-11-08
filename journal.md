@@ -4463,3 +4463,7 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - Commit relu 7a247292 ; 8 captures ouvertes (menu et pause, avant / après identiques : aucun bouton déplacé, RG-03 tenue) ; diff complet relu (14 fichiers) ; causes et banc `reglages-appuis` solides.
 - **Défauts** : (1) RG-04 non faite : pas de changement de couleur à l'appui sur « Réglages » / « Fermer » (règle remplacée sans décision du PO) ; (2) aucun test CPU de la cible de 48 dp, de l'anti-rebond ni du cas Retour en pause réglages ouverts (banc hors CI) ; (3) petit : commentaire « 95 × 25 dp » faux (82), README des captures sans colonne « Avant ».
 - TACHES : ↩️ Retour lead dev (PR #287) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 23:10:10 — Mode `WFS_BANC=cuire` : complément de WFS-301, débloque WFS-302 (po-scrum-master)
+- Demande de l'agent expert ci cd (WFS-302) ; option A choisie par l'utilisateur, faite par Claude, agent 3 (ordre de l'utilisateur).
+- Décision : **complément de WFS-301** (branche `feature/waforspeed-301`, petite PR, lead dev), zone `paquet_carte.*` + 1 ligne d'accroche `desktop_main.cpp` à annoncer au journal par agent 3. WFS-301 reste 🟣 ; WFS-306 reste à agent 3, non mélangé. Règles : `regles-de-gestion/WFS-301.md` (RG-C1 à C3) et `WFS-302.md` (Dépend de, Suivi). Ligne WFS-302 de `TACHES.md` non touchée.
