@@ -4130,3 +4130,5 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Plus prioritaires écartés : WFS-329 (réservé à agent 1, accord de l'utilisateur), WFS-323 (agent 2), WFS-214 / 322 (E13 tenue par WFS-328), WFS-215 / 193 (E10 tenue par WFS-292), WFS-287 (E7 : WFS-319, WFS-285), WFS-280 / 293 (E3 tenue par WFS-281, E0 par WFS-301).
 - Stock prêt après attribution : 9 (193, 214, 215, 280, 287, 293, 322, 323, 329).
 
+### 2026-11-08 20:48:58 — Développeurs libres occupés par le PO (règle de l'utilisateur : le PO décide, avec Smart Brain si besoin) (po-scrum-master)
+- WFS-329 → Claude, agent 1 (ne plus attendre l'accord de l'utilisateur : délégué au PO) ; WFS-293 → Agent 0 ; WFS-322 réservé à l'agent dev X ; WFS-215 réservé à l'agent 4.
