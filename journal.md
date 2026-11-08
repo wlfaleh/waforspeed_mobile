@@ -4555,3 +4555,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - journal du jeu : « 1 variante(s) MSAA de la scène mises en cache au chargement (11 pipelines) », « Renderer::init en 3770 ms, 33 pipelines créés », « 0 pipeline créé pendant la course : OK » ;
   - parcours : 0 écart, 0 pipeline en course (avant ce correctif) ; il repasse sur la version finale.
   - Second lancement : cache relu. Lavapipe ne remplit pas son cache (32 octets) : le gain de chargement se mesurera sur le téléphone, avec la ligne « Renderer::init en … ms ».
+
+### 2026-11-08 00:05:46 — Recette, lot M5 (US techniques) : WFS-251 et WFS-267 VALIDÉS, WFS-252 et WFS-277 PASSABLES (QA-arwa)
+- **WFS-251 : VALIDÉ** (deux parties = 354 mesures comme le banc complet, durées 23 / 24 min). **WFS-267 : VALIDÉ** (cause WFS-227 nommée, 6 lignes dans `environnement.cpp`, 27 erreurs nommées, CI de branche #876 verte) ; réalisme vert **sur main** à confirmer aux bancs du matin (03:00 UTC).
+- **WFS-252 : PASSABLE** — ANO-160 (artefact de compilation gardé 1 jour), ANO-161 (durée avant / après non écrite ; groupe `texte` devenu le plus long) ; ANO-135 et ANO-136 **encore là** (WFS-252 fusionné sans elles).
+- **WFS-277 : PASSABLE** — bancs du matin en place (14 groupes, une publication) ; ANO-162 : le message « Recette QA prête » dit l'émulateur vert alors qu'il a échoué.
+- **Rouge des bancs du matin #2 (c9eda61)** : seul `realisme-2` (sortie du tunnel sans adaptation : panne de WFS-227, corrigée par WFS-267 fusionné après le lancement). Pas de nouvelle US ; si `realisme-*` est encore rouge au matin du 2026-11-08 → US technique P1 et WFS-267 rouvert. CI de journée : #887 vert.
