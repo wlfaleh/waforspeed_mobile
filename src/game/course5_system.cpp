@@ -23,6 +23,8 @@
 #include "sauvegarde.h"
 #include "traffic.h"
 #include "traffic_system.h"
+#include "trace_cartes.h"
+#include "virages_banc.h"   // WFS-327 : épingles de la Corniche (banc)
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
 
 namespace wfs {
@@ -39,6 +41,8 @@ bool g_vueDessusBanc = false;   // WFS-242 (RG-06) : banc d'essai : grille de d�
 std::vector<double> g_bancAdversaires; double g_bancJoueurM = 0; bool g_journalAdversaires = false;
 bool g_bancAvant = false;   // WFS-243 : banc : image « avant » (adversaires coupés par la distance, comme avant le ticket)
 bool g_figerBanc = false;   // WFS-243 : banc : ordinateurs arrêtés là où le banc les a posés
+// WFS-327 (RG-04) : banc : ordinateurs posés à g_bancVitesseKmh (km/h) ; vue de dessus au-dessus de l'épingle en g_bancEpingleM (m)
+double g_bancVitesseKmh = 0, g_bancEpingleM = 0;
 
 const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
@@ -101,7 +105,7 @@ public:
             for (size_t k = 0; k < os_.size() && k < g_bancAdversaires.size(); k++) {
                 course5::Ordinateur& o = os_[k];
                 o.file = (int)(k % 3); o.g.x = o.cibleX = course5::FILES[o.file];
-                o.g.rd = o.g.rdPrec = pl.dist + g_bancAdversaires[k] / M; o.g.xPrec = o.g.x; o.g.v = 0;
+                o.g.rd = o.g.rdPrec = pl.dist + g_bancAdversaires[k] / M; o.g.xPrec = o.g.x; o.g.v = g_bancVitesseKmh / 3.6 / M;
             }
             g_bancAdversaires.clear();
         }
@@ -162,10 +166,11 @@ public:
     // l'image vers l'avant de la course ; Game dessine la route (et la ligne de départ) et la voiture du joueur, render() les ordinateurs
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         if (!g_vueDessusBanc || !actif_ || !g.track || g.ecran != Ecran::Course) return false;
-        const double s0 = course5::placeGrille(2).s;
-        const TrackPoint a = g.track->point(s0, 0), b = g.track->point(s0 + 10 / M, 0);
-        const vec3 cible{(float)a.x, (float)a.y, (float)a.z}, avant = normalize(vec3{(float)(b.x - a.x), 0, (float)(b.z - a.z)});
-        const vec3 oeil = cible - avant * 4.f + vec3{0, 42, 0};
+        const bool epingle = g_bancEpingleM > 0;   // WFS-327 (RG-04) : toute l'épingle, à 75 m de haut, entrée en bas de l'image
+        const double s0 = epingle ? g_bancEpingleM / M : course5::placeGrille(2).s;
+        const TrackPoint a = g.track->point(s0, 0), b = g.track->point(epingle ? s0 - 30 / M : s0 + 10 / M, 0);
+        const vec3 cible{(float)a.x, (float)a.y, (float)a.z}, avant = normalize(epingle ? vec3{(float)(a.x - b.x), 0, (float)(a.z - b.z)} : vec3{(float)(b.x - a.x), 0, (float)(b.z - a.z)});
+        const vec3 oeil = cible - avant * 4.f + vec3{0, epingle ? 75.f : 42.f, 0};
         fp.view = lookAt(oeil, cible, avant); fp.camPos = oeil;
         s.cible = cible; s.route = true; s.joueur = true; s.commandes = false;
         return true;
@@ -350,6 +355,54 @@ WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) 
 int benchParcoursCourse5(Game& g, Renderer& r, const std::string& out);   // WFS-133 : modes_ecran.cpp
 
 // ---------- banc d'essai (WFS_BANC=course5) ----------
+// WFS-327 (RG-04) : 1re épingle des lacets de la Corniche (R ≈ 22 m) : 4 ordinateurs lancés à 90 km/h, 35 à 80 m avant l'entrée ;
+// suite de 6 vues de dessus toutes les 0,75 s, avant (table arcade seule et niveaux 0,90 / 0,97 : comportement de main, rejoué
+// par g_avantWfs327) puis après ; journal : vitesse de chaque ordinateur, vitesse physiquement possible pour sa voiture, g latéral
+template <class Images, class Capture>
+static void benchEpingleCourse5(Game& g, Renderer& r, const std::string&, Images& images, Capture& capture) {
+    for (const bool avant : {true, false}) {
+        course5::g_avantWfs327 = avant;
+        double facteur[3]; std::copy(std::begin(g_configJeu.course5.facteur), std::end(g_configJeu.course5.facteur), facteur);
+        if (avant) { g_configJeu.course5.facteur[1] = 0.90; g_configJeu.course5.facteur[2] = 0.97; }
+        g_graineBanc = 20261105u;
+        if (g.init(r, "golf", "plage")) {
+            static Track t;   // même tracé que la partie (épingles, vitesses du journal)
+            if (!t.segmentCount()) t.build(mapById("plage"), trace::versionCarte("plage"));
+            const std::vector<banc_virages::Epingle> ep = banc_virages::epingles(t);
+            if (!ep.empty()) {
+                const banc_virages::Epingle& e = ep[0];
+                g.allerA(Ecran::Menu); images(30, 10);
+                g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(false);
+                for (int i = 0; i < 4 * 60; i++) g.update(1.0 / 60);   // fin du décompte
+                g_bancJoueurM = e.debut * M - 120; g_bancAdversaires = {40, 55, 70, 85}; g_bancVitesseKmh = 90;
+                g_bancEpingleM = (e.debut + e.fin) / 2 * M;
+                g.update(1.0 / 60);   // placement
+                const char* quand = avant ? "avant" : "apres";
+                double pire = 0;
+                for (int n = 1; n <= 6; n++) {
+                    for (int i = 0; i < 45; i++) {
+                        g.update(1.0 / 60);
+                        for (const course5::Ordinateur& o : *course5Ordinateurs())
+                            pire = std::max(pire, o.g.v / course5::vitesseVirageOrdinateur(t, o.g.rd, carById(o.car.c_str())) - 1);
+                    }
+                    g_vueDessusBanc = true; capture((std::string("course5-epingle-") + quand + "-" + std::to_string(n)).c_str()); g_vueDessusBanc = false;
+                    for (const course5::Ordinateur& o : *course5Ordinateurs()) {
+                        const double vp = course5::vitesseVirageOrdinateur(t, o.g.rd, carById(o.car.c_str())) * M, v = o.g.v * M;
+                        WFS_LOG("capture course5-epingle-%s-%d : %s (%s) à %.0f m de l'entrée : %.0f km/h, possible %.0f km/h (%+.0f %%), %.2f g latéral",
+                                quand, n, o.nom.c_str(), o.car.c_str(), (o.g.rd - e.debut) * M, v * 3.6, vp * 3.6, 100 * (v / vp - 1),
+                                v * v * std::abs(banc_virages::courbure(t, o.g.rd)) / 9.81);
+                    }
+                }
+                WFS_LOG("course à 5 : épingle de la Corniche (%s) : ordinateurs au plus %+.1f %% de la vitesse physiquement possible", quand, 100 * pire);
+            }
+            g_bancAdversaires.clear(); g_bancVitesseKmh = 0; g_bancEpingleM = 0;
+            g.shutdown();
+        }
+        std::copy(std::begin(facteur), std::end(facteur), g_configJeu.course5.facteur);
+    }
+    course5::g_avantWfs327 = false;
+}
+
 // 1) panneau des modes ouvert au menu, 2) grille de départ pendant le décompte, 3) course (4 ordinateurs, aucun trafic),
 // 4) écran de fin après l'arrivée du joueur (pilote automatique, 2 km)
 void benchCourse5(Game& g, Renderer& r, const std::string& out) {
@@ -438,6 +491,7 @@ void benchCourse5(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
         r.qualiteBasse = avant;
     }
+    benchEpingleCourse5(g, r, out, images, capture);
     g_graineBanc = 0;
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
     courseBenchRules(false);
