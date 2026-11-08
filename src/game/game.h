@@ -1,5 +1,6 @@
 // WaForSpeed — la partie : piste, voiture du joueur, route générée par morceaux, caméra, commandes tactiles.
 #pragma once
+#include "fond_fige.h"   // WFS-329
 #include <functional>
 #include <map>
 #include <string>
@@ -73,6 +74,7 @@ private:
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frameNo_ = 0;
+    fond_fige::Suivi fondFige_;   // WFS-329 : fond figé du menu et du choix du terrain
     Material roadMat_, walkMat_, groundMat_, shadowMat_;
     Mesh shadowQuad_;
     double lastTime_ = 0;

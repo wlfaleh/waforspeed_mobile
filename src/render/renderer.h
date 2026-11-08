@@ -196,6 +196,11 @@ public:
     enum Famille : uint8_t { FAM_DECOR = 0, FAM_VOITURES = 1, FAM_PERSONNES = 2, FAM_N = 3 };
     struct ComptesImage { uint32_t appels[FAM_N] = {}, triangles[FAM_N] = {}; };
     const ComptesImage& comptesImage() const { return comptesPrec_; }
+    // WFS-329 (ANO-178) : fond figé des écrans hors course (menu, choix du terrain). Demandé par Game ; tant qu'il l'est et que
+    // la scène de l'image précédente est encore valable (cibles non recréées), endFrame ne refait que la passe finale (relecture
+    // de la scène HDR et du bloom gardés) et l'interface : même image, sans ombres, reflet, captures, scène ni bloom
+    void figerScene(bool f) { figer_ = f; }
+    bool sceneFigee() const { return figer_ && sceneValide_; }
     const ChronoImage& chronoImage() const { return chronoPrec_; }
     // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
     double gpuImageMs() const { return gpuImageMs_; }
@@ -323,6 +328,7 @@ private:
     struct Bloom; Bloom* bloom_ = nullptr;   // WFS-100 : chaîne du bloom « dual filter » (renderer.cpp)
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
     ComptesImage comptes_, comptesPrec_;   // WFS-317 (I9)
+    bool figer_ = false, sceneValide_ = false;   // WFS-329 : fond figé demandé ; image de scène HDR gardée valable
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
