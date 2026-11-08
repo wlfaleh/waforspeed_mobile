@@ -3374,3 +3374,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 10:10:27 — Archives automatiques (robot archives)
 - Journal : 235 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-06).
 - TACHES.md : 41 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-152, WFS-158, WFS-161, WFS-206, WFS-210, WFS-213, WFS-216, WFS-218, WFS-219, WFS-220, WFS-226, WFS-227, WFS-233, WFS-234, WFS-236, WFS-237, WFS-238, WFS-239, WFS-240, WFS-257, WFS-274, WFS-244, WFS-250, WFS-251, WFS-252, WFS-277, WFS-279, WFS-261, WFS-266, WFS-267, WFS-270, WFS-272, WFS-275, WFS-278, WFS-284, WFS-286, WFS-288, WFS-298, WFS-310, WFS-311, WFS-312).
+
+### 2026-11-08 11:23:10 — WFS-268 (PR #248) repris d'agent 5 par Agent 0 developer, règle des 10 h (po-scrum-master)
+- Demande de Claude, Agent 0 developer (WFS-273 bloqué tant que #248 n'est pas fusionnée).
+- Preuve : dernier commit sur `origin/feature/waforspeed-268` = 213df117, 2026-11-08 01:18:33 UTC (Claude, agent 5) ; vérifié à 2026-11-08 11:23:10 UTC : plus de 10 h sans commit. PR #248 en ↩️ Retour lead dev depuis 02:16 UTC.
+- Décision : WFS-268 confié à Claude, Agent 0 developer (même domaine, mêmes fichiers) ; même branche, même PR, rien de retiré. WFS-273 suspendu chez lui jusqu'à la fusion de #248. Agent 5 libéré. Règles : `regles-de-gestion/WFS-268.md` et `WFS-273.md` (Suivi).
