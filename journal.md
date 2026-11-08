@@ -4972,3 +4972,24 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Pour le PO** :
   - selles du scooter (−2,5 %) et de la sportive (−1,8 %) : accepter l'écart, ou d'autres modèles ;
   - 7 pilotes sur 10 sont des hommes : choix de conception à trancher.
+
+### 2026-11-08 02:50:37 — WFS-269 : occlusion du décor fixe précalculée au chargement, prête pour la PR (Claude, Agent 0 developer)
+- **Arbitrage du PO** : A + C (Suivi de WFS-269.md). Pas de SH9 par bloc : le rebond local, ce sont les sondes de WFS-151.
+- **Fait** :
+  - module `src/render/eclairage_precalcule.*` : part du ciel vue depuis chaque sommet du décor fixe des blocs (WFS-268), sur une grille d'occupation à deux niveaux (voxels de 0,5 m, cellules de 8 m), 8 rayons en cosinus jusqu'à 5 m ; les rayons vers le bas sont libres (la sonde tient déjà compte du sol) ;
+  - rangement : dans la **longueur de la normale** (aucun octet de plus par sommet) ;
+  - lecture : accroche de 3 lignes dans `shaders/scene.frag`, drapeau `MAT_AO` (1 ligne, `renderer.h`), qui n'agit que sur l'ambiance et le reflet du ciel ; pour les matériaux MAT_VTINT, occlusion atténuée (0,6) car elle touche aussi le soleil.
+- **Cartes** :
+  - Ville : façades, béton, trottoirs ;
+  - Corniche : décor uni, rochers, trottoirs, chaume, bois ;
+  - Campagne / Grand Prix : décor uni (MAT_VTINT) ;
+  - accroches dans `ville.cpp`, `plage.cpp`, `decor_carte.cpp` (masques et MAT_AO) et `lots_decor.*` (appel).
+- **Chargement (RG-04)**, Ville, PC 4 cœurs : 0,73 s pour l'occlusion (788 000 sommets, 3,3 millions de voxels), 7 Mo temporaires. Essais écartés : table plate de clés (5,5 s puis 1,5 s), tri des clés (1,2 s), clés non triées (580 Mo).
+- **Coût en course (C)**, banc `perf` Ville : Haute 747 → 772 ms, Basse 322 → 326 ms, dans le bruit (±4 %).
+- **Captures** (`qa/pr/WFS-269`, 99 paires, Ville, Corniche, Campagne, jour et nuit) :
+  - Corniche : dessous des arcades et façades à l'ombre plus sombres ;
+  - Ville : bas des façades sous les avancées et au fond des rues ;
+  - Campagne : presque inchangée (maisons du kit WFS-161, hors blocs).
+- **Corrigé après les premières captures** : façades dégagées assombries en entier (sol compté comme obstacle) et bandes sur les pelouses de la Ville (sol et décor uni ne reçoivent plus).
+- **Tests** : `test_fidelite_lumiere_precalcule` (9 contrôles : sol dégagé 1,00, pied du mur 0,62, sous l'auvent 0,53, mur dégagé uniforme, végétation intacte, reproductible) ; tests CPU OK.
+- **Limite** : pas de captures du Grand Prix (même code que la Campagne). Gain de réalisme modeste : l'occlusion n'agit que sur la lumière du ciel.
