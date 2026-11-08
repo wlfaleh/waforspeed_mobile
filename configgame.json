@@ -96,6 +96,9 @@
     "plancher_moyenne": 0.9,
     "reflet_route_mouillee": 1.0
   },
+  "paquets": {
+    "adresse_liste": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json"
+  },
   "voitures": {
     "golf": {
       "marque": "Folg",
