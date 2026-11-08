@@ -1,0 +1,110 @@
+graine  1 ville    : total 48 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 9 hors règle ; immobilité max 6.7 s
+ÉCHEC : graine 1 ville : RG-02 : 10 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+ÉCHEC : graine 1 ville : RG-02 : 9 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  1 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 7, pire 13, limite 8.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 5.7 s
+ÉCHEC : graine 1 plage : RG-02 : 10 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 7)
+graine  1 campagne : total 29 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 9 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 7.0 s
+ÉCHEC : graine 1 campagne : RG-02 : 9 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+graine  1 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 7 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 1 circuit : RG-02 : 7 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+graine  2 ville    : total 49 (constant : non), actifs 115 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 14 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 16 hors règle ; immobilité max 8.4 s
+ÉCHEC : graine 2 ville : RG-02 : 14 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 2 ville : RG-02 : 16 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  2 plage    : total 36 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 14 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 14 hors règle ; immobilité max 7.0 s
+ÉCHEC : graine 2 plage : RG-02 : 14 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 2 plage : RG-02 : 14 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  2 campagne : total 30 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 7, pire 14, limite 8.0, 8 fenêtre(s) hors règle sur 20 ; Basse R 5, pire 6, limite 7.0, 0 hors règle ; immobilité max 7.5 s
+ÉCHEC : graine 2 campagne : RG-02 : 8 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 7)
+graine  2 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 7 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 5 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 2 circuit : RG-02 : 7 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 2 circuit : RG-02 : 5 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  3 ville    : total 49 (constant : non), actifs 115 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 10 hors règle ; immobilité max 7.4 s
+ÉCHEC : graine 3 ville : RG-02 : 10 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+ÉCHEC : graine 3 ville : RG-02 : 10 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  3 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 8, pire 14, limite 8.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 6, pire 6, limite 8.0, 0 hors règle ; immobilité max 7.5 s
+ÉCHEC : graine 3 plage : RG-02 : 13 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 8)
+graine  3 campagne : total 29 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 13, limite 8.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 8 hors règle ; immobilité max 8.0 s
+ÉCHEC : graine 3 campagne : RG-02 : 10 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+ÉCHEC : graine 3 campagne : RG-02 : 8 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  3 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 12, limite 7.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 8 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 3 circuit : RG-02 : 10 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 3 circuit : RG-02 : 8 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  4 ville    : total 48 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 12 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 8 hors règle ; immobilité max 6.4 s
+ÉCHEC : graine 4 ville : RG-02 : 12 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 4 ville : RG-02 : 8 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  4 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 12 hors règle ; immobilité max 4.3 s
+ÉCHEC : graine 4 plage : RG-02 : 15 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 4 plage : RG-02 : 12 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  4 campagne : total 30 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 3, pire 12, limite 5.0, 16 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 7 hors règle ; immobilité max 5.6 s
+ÉCHEC : graine 4 campagne : RG-02 : 16 fenêtre(s) au-dessus de 5.0 véhicules (Haute, R = 3)
+ÉCHEC : graine 4 campagne : RG-02 : 7 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  4 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 3, pire 14, limite 5.0, 11 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 8 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 4 circuit : RG-02 : 11 fenêtre(s) au-dessus de 5.0 véhicules (Haute, R = 3)
+ÉCHEC : graine 4 circuit : RG-02 : 8 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  5 ville    : total 48 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 12, limite 6.0, 16 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 9 hors règle ; immobilité max 6.9 s
+ÉCHEC : graine 5 ville : RG-02 : 16 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 5 ville : RG-02 : 9 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  5 plage    : total 36 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 11 fenêtre(s) hors règle sur 20 ; Basse R 5, pire 6, limite 7.0, 0 hors règle ; immobilité max 7.1 s
+ÉCHEC : graine 5 plage : RG-02 : 11 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+graine  5 campagne : total 30 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 9 hors règle ; immobilité max 7.4 s
+ÉCHEC : graine 5 campagne : RG-02 : 15 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 5 campagne : RG-02 : 9 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  5 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 8 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 5 circuit : RG-02 : 10 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 5 circuit : RG-02 : 8 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  6 ville    : total 48 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 11 hors règle ; immobilité max 7.1 s
+ÉCHEC : graine 6 ville : RG-02 : 13 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 6 ville : RG-02 : 11 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  6 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 13 hors règle ; immobilité max 6.6 s
+ÉCHEC : graine 6 plage : RG-02 : 15 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 6 plage : RG-02 : 13 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  6 campagne : total 30 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 14 hors règle ; immobilité max 5.5 s
+ÉCHEC : graine 6 campagne : RG-02 : 13 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 6 campagne : RG-02 : 14 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  6 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 13, limite 6.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 5 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 6 circuit : RG-02 : 13 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 6 circuit : RG-02 : 5 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  7 ville    : total 47 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 7 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 8 hors règle ; immobilité max 7.5 s
+ÉCHEC : graine 7 ville : RG-02 : 7 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+ÉCHEC : graine 7 ville : RG-02 : 8 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  7 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 7, pire 14, limite 8.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 6.2 s
+ÉCHEC : graine 7 plage : RG-02 : 13 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 7)
+graine  7 campagne : total 30 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 11 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 7.6 s
+ÉCHEC : graine 7 campagne : RG-02 : 11 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+graine  7 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 3, pire 14, limite 5.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 6 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 7 circuit : RG-02 : 15 fenêtre(s) au-dessus de 5.0 véhicules (Haute, R = 3)
+ÉCHEC : graine 7 circuit : RG-02 : 6 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  8 ville    : total 48 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 12, limite 7.0, 14 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 10 hors règle ; immobilité max 7.0 s
+ÉCHEC : graine 8 ville : RG-02 : 14 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 8 ville : RG-02 : 10 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  8 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 1.3 s
+ÉCHEC : graine 8 plage : RG-02 : 15 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+graine  8 campagne : total 29 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 4, pire 14, limite 6.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 11 hors règle ; immobilité max 7.2 s
+ÉCHEC : graine 8 campagne : RG-02 : 13 fenêtre(s) au-dessus de 6.0 véhicules (Haute, R = 4)
+ÉCHEC : graine 8 campagne : RG-02 : 11 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  8 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 2, pire 14, limite 4.0, 16 fenêtre(s) hors règle sur 20 ; Basse R 1, pire 6, limite 3.0, 15 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 8 circuit : RG-02 : 16 fenêtre(s) au-dessus de 4.0 véhicules (Haute, R = 2)
+ÉCHEC : graine 8 circuit : RG-02 : 15 fenêtre(s) au-dessus de 3.0 véhicules (Basse, R = 1)
+graine  9 ville    : total 47 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 10 fenêtre(s) hors règle sur 20 ; Basse R 3, pire 6, limite 5.0, 10 hors règle ; immobilité max 7.4 s
+ÉCHEC : graine 9 ville : RG-02 : 10 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 9 ville : RG-02 : 10 fenêtre(s) au-dessus de 5.0 véhicules (Basse, R = 3)
+graine  9 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 7.3 s
+ÉCHEC : graine 9 plage : RG-02 : 13 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+graine  9 campagne : total 29 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 3, pire 13, limite 5.0, 16 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 10 hors règle ; immobilité max 7.1 s
+ÉCHEC : graine 9 campagne : RG-02 : 16 fenêtre(s) au-dessus de 5.0 véhicules (Haute, R = 3)
+ÉCHEC : graine 9 campagne : RG-02 : 10 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine  9 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 2, pire 14, limite 4.0, 17 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 11 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 9 circuit : RG-02 : 17 fenêtre(s) au-dessus de 4.0 véhicules (Haute, R = 2)
+ÉCHEC : graine 9 circuit : RG-02 : 11 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine 10 ville    : total 49 (constant : non), actifs 115 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 12, limite 7.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 16 hors règle ; immobilité max 7.9 s
+ÉCHEC : graine 10 ville : RG-02 : 15 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+ÉCHEC : graine 10 ville : RG-02 : 16 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+graine 10 plage    : total 35 (constant : non), actifs 113 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 6, pire 14, limite 8.0, 9 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 8.1 s
+ÉCHEC : graine 10 plage : RG-02 : 9 fenêtre(s) au-dessus de 8.0 véhicules (Haute, R = 6)
+graine 10 campagne : total 30 (constant : non), actifs 114 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 5, pire 14, limite 7.0, 13 fenêtre(s) hors règle sur 20 ; Basse R 4, pire 6, limite 6.0, 0 hors règle ; immobilité max 5.0 s
+ÉCHEC : graine 10 campagne : RG-02 : 13 fenêtre(s) au-dessus de 7.0 véhicules (Haute, R = 5)
+graine 10 circuit  : total 16 (constant : non), actifs 112 au plus ; véhicules dessinés (P90 de 30 s) : Haute R 2, pire 14, limite 4.0, 15 fenêtre(s) hors règle sur 20 ; Basse R 2, pire 6, limite 4.0, 6 hors règle ; immobilité max 0.0 s
+ÉCHEC : graine 10 circuit : RG-02 : 15 fenêtre(s) au-dessus de 4.0 véhicules (Haute, R = 2)
+ÉCHEC : graine 10 circuit : RG-02 : 6 fenêtre(s) au-dessus de 4.0 véhicules (Basse, R = 2)
+véhicules dessinés (Haute, P90 de 30 s, moyenne des cartes et graines) : 1re minute 4.11, minutes 2 à 10 8.84
+RG-02 : 771 fenêtre(s) hors règle sur 1600 (Haute et Basse, 10 graine(s), 4 cartes ; attendu : 0)
