@@ -42,6 +42,9 @@ public:
     // (leur matériau porte MAT_AO, ou MAT_VTINT), de ceux qui cachent le ciel, et de ceux en MAT_VTINT (occlusion atténuée :
     // la longueur de la normale y règle tout l'éclairage, soleil compris). Avant preparer().
     void occlusion(uint64_t recoit, uint64_t occulte, uint64_t vtint) { aoRecoit_ = recoit; aoOcculte_ = occulte; aoVtint_ = vtint; }
+    // WFS-269 : triangles qui cachent aussi le ciel sans faire partie du décor fixe (bâtiments du kit, WFS-161, construits à la
+    // volée) : la grille est alors gardée après la préparation pour leurs murs (precalcul::grilleDuTour). Avant preparer().
+    void occultants(std::vector<Vertex> v, std::vector<uint32_t> i) { occV_ = std::move(v); occI_ = std::move(i); }
     static constexpr float FORCE_VTINT = 0.6f;
     void liberer(Renderer& r);
     bool pret() const { return pret_; }
@@ -82,6 +85,7 @@ private:
     std::array<Cache, 8> cache_{};
     uint64_t orig_[2] = {UINT64_MAX, UINT64_MAX};
     uint64_t aoRecoit_ = 0, aoOcculte_ = 0, aoVtint_ = 0;   // WFS-269
+    std::vector<Vertex> occV_; std::vector<uint32_t> occI_;  // WFS-269 : occultants en plus (kit)
 };
 
 inline double segmentsVersMetres(int64_t n) { return (double)n * SEG_M; }

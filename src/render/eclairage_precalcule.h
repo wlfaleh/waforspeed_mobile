@@ -15,9 +15,9 @@ namespace wfs::precalcul {
 
 // paramètres (réglés au banc ; test fidelite_lumiere_precalcule)
 constexpr float VOXEL_M = 0.5f;          // côté d'un voxel de la grille d'occupation (m) ; 0,75 : bande sombre au pied des murs (la cellule du mur englobe le sol voisin)
-constexpr float PORTEE_M = 20.0f;        // distance de recherche des obstacles (m) : au-delà, le ciel est vu ; 20 m : la rue entière
-                                         // (immeuble d'en face) ; 5 m ne voyait que les avancées : effet invisible en Ville (revue du lead dev)
-constexpr float PAS_CROISSANCE = 0.15f;  // le pas des rayons grandit avec la distance (+15 % par pas) : ≈ 35 pas jusqu'à 20 m
+constexpr float PORTEE_M = 40.0f;        // distance de recherche des obstacles (m) : au-delà, le ciel est vu ; 40 m : la rue entière (28 m de façade à façade)
+                                         // (immeuble d'en face : bas des façades plus sombre que le haut) ; 5 m ne voyait que les avancées : effet
+                                         // invisible en Ville (revue du lead dev) ; 20 m n'atteignait pas l'autre côté de la rue
 constexpr float DECALAGE_M = 0.55f;      // départ des rayons au-dessus de la surface (> 1 voxel : la surface ne s'occulte pas elle-même)
 constexpr int RAYONS = 8;                // directions par sommet, réparties en cosinus dans l'hémisphère de la normale
 constexpr float OCCLUSION_MIN = 0.25f;   // plancher : jamais noir (lumière rebondie que la grille ne voit pas)
@@ -33,8 +33,16 @@ struct Lot {
 
 struct Bilan { size_t voxels = 0, sommets = 0; double ms = 0, msGrille = 0, moyenne = 1, memoireMo = 0; };
 
-// calcule l'occlusion de tous les sommets des lots « recoit » (en parallèle, jobs()) ; rend le bilan (journal, RG-04)
-Bilan occlusionDecor(std::vector<Lot>& lots);
+// calcule l'occlusion de tous les sommets des lots « recoit » (en parallèle, jobs()) ; rend le bilan (journal, RG-04).
+// garder : la grille du tour reste en mémoire (grilleDuTour) pour les murs des bâtiments du kit (WFS-161), construits à la volée
+// en course : leur occlusion est calculée juste après, au chargement (archi_carte.cpp), puis la grille est rendue (libererGrille)
+Bilan occlusionDecor(std::vector<Lot>& lots, bool garder = false);
+
+class Grille;
+const Grille* grilleDuTour();   // nullptr : aucune grille gardée
+void libererGrille();
+// occlusion (OCCLUSION_MIN à 1) d'un point p de normale unitaire n sur la grille g
+float occlusionPoint(const Grille& g, const vec3& p, const vec3& n);
 
 // occlusion lue dans un sommet (longueur de la normale), pour les tests
 inline float occlusionSommet(const Vertex& s) { return std::sqrt(s.nx * s.nx + s.ny * s.ny + s.nz * s.nz); }

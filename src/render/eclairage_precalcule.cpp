@@ -10,7 +10,6 @@
 #include "../core/jobs.h"
 
 namespace wfs::precalcul {
-namespace {
 
 // grille d'occupation à deux niveaux : cellules de 16 × 16 × 16 voxels (8 m) repérées par une table de hachage à adressage ouvert,
 // chacune un masque de 4096 bits (512 octets). Remplie une fois (une grille par tâche, puis fusion par OU des masques), puis lue
@@ -89,6 +88,9 @@ private:
     uint64_t derniere_ = VIDE;
 };
 
+namespace {
+std::unique_ptr<Grille> g_grilleTour;   // WFS-161 : grille gardée pour les murs du kit (voir le .h)
+
 inline int cellule(float c) { return (int)std::floor(c / VOXEL_M); }
 
 // voxels touchés par un triangle (points du triangle échantillonnés à 0,9 voxel : aucun trou qu'un rayon, qui avance d'un
@@ -131,10 +133,22 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
         // rayon vers le bas : il verrait le sol, dont la sonde d'éclairage (SH9, plus sombre en bas) tient déjà compte ; le
         // compter comme caché assombrirait deux fois toute façade dégagée (essai au banc : casino de la Corniche) : libre
         if (d.y < -0.05f) { libres++; continue; }
+        // pas d'un voxel (un mur, coque d'un voxel d'épaisseur, n'est jamais sauté : les bâtiments sont creux dans la grille) ;
+        // dans une cellule de 8 m vide, saut direct à sa sortie (le ciel au-dessus des toits : quelques pas seulement)
         bool touche = false;
-        for (float t = VOXEL_M * 0.5f; t <= PORTEE_M && !touche; t += std::max(VOXEL_M * 0.5f, t * PAS_CROISSANCE)) {
+        for (float t = VOXEL_M * 0.5f; t <= PORTEE_M;) {
             const vec3 q = o + d * t;
-            touche = g.contient(cellule(q.x), cellule(q.y), cellule(q.z), cu);
+            const int ix = cellule(q.x), iy = cellule(q.y), iz = cellule(q.z);
+            if (g.contient(ix, iy, iz, cu)) { touche = true; break; }
+            if (cu.bits) { t += VOXEL_M; continue; }
+            const float C = 16 * VOXEL_M;   // côté d'une cellule (m)
+            float sortie = PORTEE_M;
+            const float bornes[3][2] = {{(float)(ix >> 4) * C, (float)((ix >> 4) + 1) * C}, {(float)(iy >> 4) * C, (float)((iy >> 4) + 1) * C},
+                                        {(float)(iz >> 4) * C, (float)((iz >> 4) + 1) * C}};
+            const float qq[3] = {q.x, q.y, q.z}, dd[3] = {d.x, d.y, d.z};
+            for (int a = 0; a < 3; a++)
+                if (std::fabs(dd[a]) > 1e-6f) sortie = std::min(sortie, ((dd[a] > 0 ? bornes[a][1] : bornes[a][0]) - qq[a]) / dd[a]);
+            t += std::max(sortie, 0.f) + VOXEL_M * 0.05f;
         }
         libres += !touche;
     }
@@ -143,7 +157,7 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
 
 } // namespace
 
-Bilan occlusionDecor(std::vector<Lot>& lots) {
+Bilan occlusionDecor(std::vector<Lot>& lots, bool garder) {
     const auto t0 = std::chrono::steady_clock::now();
     Bilan bil;
     // chaque tâche remplit sa propre grille pour une suite de lots voisins (morceaux consécutifs le long de la route : une région
@@ -170,7 +184,8 @@ Bilan occlusionDecor(std::vector<Lot>& lots) {
     });
     size_t cellules = 0;
     for (const auto& p : partielles) cellules += p->cellules();
-    Grille g;
+    auto gt = std::make_unique<Grille>();
+    Grille& g = *gt;
     g.reserver(cellules + 1024);
     for (auto& p : partielles) { g.fusionner(*p); p.reset(); }
     g.recompter();
@@ -200,7 +215,12 @@ Bilan occlusionDecor(std::vector<Lot>& lots) {
     bil.sommets = sommets;
     bil.moyenne = bil.sommets ? (double)somme / 1000.0 / (double)bil.sommets : 1.0;
     bil.ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    g_grilleTour = garder ? std::move(gt) : nullptr;
     return bil;
 }
+
+const Grille* grilleDuTour() { return g_grilleTour.get(); }
+void libererGrille() { g_grilleTour.reset(); }
+float occlusionPoint(const Grille& g, const vec3& p, const vec3& n) { return 1 - (1 - OCCLUSION_MIN) * (1 - ciel(g, p, n)); }
 
 } // namespace wfs::precalcul

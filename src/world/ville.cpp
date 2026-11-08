@@ -279,6 +279,11 @@ public:
             {   // WFS-269 (accroche) : occlusion précalculée : façades, béton, trottoirs (MAT_AO) la reçoivent ; ni le sol ni le décor uni (bandes sur les pelouses, essai au banc)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
                 lots_.occlusion(b({P_FACADE_A, P_FACADE_B, P_BETON, P_TROTTOIR}), b({P_FACADE_A, P_FACADE_B, P_BETON, P_VOUTE, P_UNI, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_CONIF, P_METAL}), 0);
+                if (archi::carte::actif()) {   // immeubles du kit (WFS-161, niveau allégé : 0,5 s de moins que le complet au banc, même image à 0,5/255 près) : ils cachent le ciel ; leurs murs reçoivent l'occlusion (archi_carte.cpp)
+                    std::vector<Vertex> v; std::vector<uint32_t> i;
+                    archi::carte::geometrie(1, v, i);
+                    lots_.occultants(std::move(v), std::move(i));
+                }
             }
             lots_.preparer(r, *g.track, P_COUNT, 4, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
                 Geo out[P_COUNT];

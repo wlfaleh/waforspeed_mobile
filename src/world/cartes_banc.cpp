@@ -27,13 +27,13 @@ namespace campagne { int64_t troupeau(int espece); bool sommet(vec3& s); }   // 
 // WFS-212 : caméra haute du banc (vue de dessus d'un lieu) : réglée par le crochet ambiance, sans scène dédiée : la carte entière
 // reste dessinée (la Ville ne dessine rien en scène dédiée). Inactive hors banc.
 namespace {
-struct VueHaute { bool actif = false; vec3 oeil{}, cible{}; float fov = 50; } g_vueHaute;
+struct VueHaute { bool actif = false; vec3 oeil{}, cible{}; float fov = 50; vec3 haut{0, 0, -1}; } g_vueHaute;   // WFS-269 : haut {0, 1, 0} (vue à hauteur d'homme)
 class VueHauteBanc : public System {
 public:
     const char* name() const override { return "vue-haute-banc"; }
     void ambiance(FrameParams& fp, const GameView& g) override {
         if (!g_vueHaute.actif) return;
-        fp.view = lookAt(g_vueHaute.oeil, g_vueHaute.cible, {0, 0, -1});
+        fp.view = lookAt(g_vueHaute.oeil, g_vueHaute.cible, g_vueHaute.haut);
         fp.proj = perspectiveVk(g_vueHaute.fov * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.1f);
         fp.camPos = g_vueHaute.oeil;
     }
@@ -257,16 +257,27 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         }
         if (!P.promeneurs.empty()) lieux.push_back({"carte-ville-chien", (int64_t)P.promeneurs[0].s, 12, false});
         if (!P.carrefours.empty()) lieux.push_back({"carte-ville-pigeons", P.carrefours[0].croise - (int64_t)(15 / SEG_M), -20, false});
+        // WFS-269 : gros plans de l'occlusion précalculée : pied de façade d'un immeuble de plus de 15 m, vu du bord opposé de la
+        // chaussée à hauteur d'homme (cam 3) ; 3 immeubles répartis sur le tour, le premier aussi de nuit (WFS_SANS_AO : même vue sans)
+        std::vector<int64_t> hauts;
+        for (int64_t a = 0; a < (int64_t)P.objets.size(); a++)
+            if (a >= (int64_t)P.voie.size() || P.voie[(size_t)a] == 0)
+                for (const ville::Objet& o : P.objets[(size_t)a]) if (o.t == ville::IMMEUBLE && o.h >= 15 && o.len >= 12) { hauts.push_back(a * 2 + (o.side > 0)); break; }
+        for (int n = 0; n < 3 && !hauts.empty(); n++) for (int c = 0; c < 2; c++) {   // les deux côtés de la rue (l'un est à l'ombre)
+            const int64_t h = hauts[hauts.size() * (size_t)(2 * n + 1) / 6];
+            lieux.push_back({"carte-ville-ao-" + std::to_string(n + 1) + (c ? "-d" : "-g"), (h & ~1ll) | c, 0, n == 0, 3});
+        }
     }
     const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : un seul lieu (préfixe du nom)
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {
-        const std::string nom = l.nom + (n ? "-nuit" : "");
+        const std::string nom = l.nom + (n ? "-nuit" : "") + (l.cam == 3 && std::getenv("WFS_SANS_AO") ? "-sans" : "");
         if (seul && nom.rfind(seul, 0) != 0) continue;
+        const int64_t segL = l.cam == 3 ? l.seg / 2 : l.seg;   // cam 3 : seg = segment · 2 + côté
         setenv("WFS_MOMENT", n ? "nuit" : "jour", 1);
-        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, l.seg - (int64_t)(l.avant / SEG_M))).c_str(), 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, segL - (int64_t)(l.avant / SEG_M))).c_str(), 1);
         courseBenchRules(true);
         if (!g.init(r, "golf", "ville")) { WFS_ERR("banc ville : chargement impossible"); continue; }
-        g.setAutopilot(false); g.camMode = l.cam == 2 ? 0 : l.cam; g.allerA(Ecran::Course);
+        g.setAutopilot(false); g.camMode = l.cam >= 2 ? 0 : l.cam; g.allerA(Ecran::Course);
         for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(500 + i / 60.0); }   // décompte : voiture arrêtée
         if (l.cam == 2) {   // WFS-212 : vue de dessus centrée sur le rond-point (centre de l'anneau), 70 m au-dessus
             const ville::Plan& P = ville::adapter(mapById("ville"), t);
@@ -276,8 +287,14 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
                 break;
             }
         }
+        if (l.cam == 3) {   // WFS-269 : œil au bord opposé de la chaussée, 1,7 m, 12 m avant l'immeuble ; visé : pied de la façade, 15 m plus loin
+            const double s = (l.seg & 1) ? 1 : -1;
+            const TrackPoint o = t.point((double)(segL - (int64_t)(12 / SEG_M)) * SEG, -s * RW), c = t.point((double)(segL + (int64_t)(15 / SEG_M)) * SEG, s * (RW + 6.5));
+            g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.7f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + 2.f, (float)c.z};
+            g_vueHaute.fov = 55; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;
+        }
         g.render(502); g.render(502.02); r.capturePng(out + "/" + nom + ".png");
-        g_vueHaute.actif = false;
+        g_vueHaute.actif = false; g_vueHaute.fov = 50; g_vueHaute.haut = {0, 0, -1};
         WFS_LOG("capture %s : segment %lld, %.0f m avant, %.0f m, %u appels de dessin", nom.c_str(), (long long)l.seg, l.avant, g.player().dist * M, r.appelsDessin());   // WFS-175 : coût
         g.shutdown();
     }

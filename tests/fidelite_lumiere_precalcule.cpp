@@ -2,7 +2,7 @@
 // Scène d'essai : un sol de 40 × 40 m, un mur de 6 m de haut et 20 m de long, un auvent de 3 × 6 m à 3 m de haut.
 // Vérifié : sol dégagé ≈ ciel entier ; pied du mur nettement plus sombre ; dessous de l'auvent plus sombre encore ; mur dégagé
 // uniforme (les rayons vers le bas sont libres : la sonde tient déjà compte du sol) ; jamais sous le plancher ; même résultat à chaque calcul ; la végétation (recoit = false) n'est pas
-// modifiée ; durée mesurée (RG-04).
+// modifiée ; durée mesurée (RG-04) ; rue de 28 m entre deux immeubles : bas des façades plus sombre que le haut.
 #include <cmath>
 #include <cstdio>
 #include <vector>
@@ -75,6 +75,18 @@ int main() {
     for (size_t k = 0; k < sol.size(); k++) pareil = pareil && std::fabs(precalcul::occlusionSommet(sol[k]) - premier[k]) < 1e-5f;
     VERIFIE(pareil, "reproductible : même occlusion au second calcul");
     VERIFIE(b.ms < 2000, "durée du calcul de la scène d'essai : %.1f ms", b.ms);
+
+    // rue de 28 m de façade à façade (Ville : 2 × 7,5 m de chaussée + 2 × 6,5 m de trottoir), immeubles de 20 m : le bas de la
+    // façade voit l'immeuble d'en face (portée 40 m), le haut voit le ciel : bas nettement plus sombre que le haut
+    {
+        std::vector<Vertex> f1, f2; std::vector<uint32_t> i1, i2;
+        quad(f1, i1, {-30, 0, 0}, {60, 0, 0}, {0, 20, 0}, 120, 40, {0, 0, 1});
+        quad(f2, i2, {-30, 0, 28}, {60, 0, 0}, {0, 20, 0}, 120, 40, {0, 0, -1});
+        std::vector<precalcul::Lot> R{{&f1, &i1, true, true}, {&f2, &i2, true, false}};
+        precalcul::occlusionDecor(R);
+        const float bas = aoPres(f1, {0, 0.5f, 0}), haut = aoPres(f1, {0, 19.5f, 0});
+        VERIFIE(bas < haut - 0.05f, "rue de 28 m : bas de façade plus sombre que le haut (%.2f contre %.2f)", bas, haut);
+    }
 
     std::printf("fidelite_lumiere_precalcule : %d contrôles, %d échec(s)\n", g_controles, g_echecs);
     return g_echecs ? 1 : 0;
