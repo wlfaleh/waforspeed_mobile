@@ -2,7 +2,7 @@
 
 **Ticket** : WFS-308 — règles : `regles-de-gestion/WFS-308.md`
 
-## Description (à remplir par le développeur avant d'ouvrir la PR)
+## Description (dans la description de la PR #269)
 
 - **Demande de l'utilisateur** (en une phrase) : À REMPLIR
 - **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
