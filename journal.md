@@ -3631,3 +3631,17 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Zone : `src/render/**`, `shaders/**`, réglages de qualité, `bench_perf*` + accroches ≤ 10 lignes annoncées ; pas `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.*`, `foule_*`, `squelette.*`, `nuit.cpp`, lumières de nuit en Basse ; pas le LOD ni la densité de WFS-265 (agent dev X).
 - Plan : I9 (appels et triangles par image, par famille) → mesure du téléphone RG-01 → correction des 2 premiers postes → captures (4 scènes des règles) → PR, `lead-dev`, 🟡 après fusion.
 
+
+### 2026-11-08 15:09:08 — WFS-283 fusionné par le lead dev (lead-dev)
+- **PR #261**, 3e revue, commit relu **770c7b24** : acceptée. Revue écrite dans la PR (« ✅ Approuvé par le lead dev », en commentaire : GitHub refuse l'approbation d'une PR ouverte avec le même compte). Fusion en squash **6fb3420**, liée au commit relu.
+- **Réponse du développeur** : « corrigé dans » posté point par point sous la 2e revue (c57d399c pour les deux points bloquants).
+- **Captures** : les 57 de `qa/pr/WFS-283/` sont ouvertes une par une (29 « après », 28 « avant »). Les 6 `rondpoint-plage-*` sont aussi comparées à celles de 3e76065, avec un agrandissement du bord intérieur. Sur la Corniche, de jour et de nuit, la ligne de rive intérieure, la bordure et le trottoir sont continus. Le sable reste derrière le trottoir, sans trou bleu ni bloc. Campagne et Ville : mêmes fichiers qu'à la 2e revue. GPS : « 200 m, Virage serré à gauche » sur les 3 cartes.
+- **Code** (diff depuis 3e76065) :
+  - `src/world/bouchons_sol.h` : le calcul des épingles et des lacets ne change pas. Au carrefour simple, le rayon de chaque disque est borné par la distance à l'axe, moins RW + 0,6 m. Aucun point du disque n'est donc sur la chaussée.
+  - `plage.cpp` lit ce calcul, avec la même hauteur et la même teinte.
+  - Nouveau cas dans `test_rien_sur_chaussee` : bord des disques à 8,10 m de l'axe avec la borne, à −7,95 m sans. Il voit donc le défaut de 3e76065.
+  - Les synchronisations ddad05ce et 770c7b24 ne touchent aucun fichier du ticket.
+- **Tests relancés par le lead dev** sur 770c7b24, dans une construction à part : `test_rien_sur_chaussee`, `test_trace`, `test_navigation`, `test_ville_lieux`, `test_aide_direction`, `test_conduite`, `test_aide_ralentit` et `test_course5`. Tous **OK**. La luminance de la Corniche, recalculée sur les captures, donne **+3,7 %** (moitiés du rectangle 0,182 / 0,191) : même asphalte, acceptée.
+- **Oubli du lead dev** : le parcours complet 0 écart n'est pas noté au journal du développeur pour WFS-283, et je ne l'ai vu qu'après la fusion. Il est vérifié par la CI de fusion (`build.yml`, run #913, parcours `menu1-2400`) ; je le relance aussi en local sur 770c7b24. Si l'un des deux est rouge : US technique (PO).
+- **Remarque** : dans `minicarte-ligne`, la voiture est sur le trottoir dans l'« après » et sur la route dans l'« avant ». Ce n'est pas WFS-283 : l'« après » a été pris sur ddad05ce, avant l'arrivée de WFS-258 et WFS-299 sur `main`, et il est identique à l'« avant » de la 2e revue. À surveiller aux bancs du matin.
+- **Statuts** : `TACHES.md` → **🟡 À valider (utilisateur)** (ANO-158, retour de l'utilisateur). Ligne #261 retirée de `suivi-pr.md`. Ligne d'arwa-5 dans `track-agent.md` : libre, puis arrêt (ordre de l'utilisateur). WFS-283 ajouté à `qa/Check.md`. WFS-305 (ANO-171) peut démarrer.
