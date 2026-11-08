@@ -20,4 +20,4 @@
 | #267 | WFS-316 | Claude, agent 4 (011cpqZan) | ↩️ Retour lead dev (2e revue : seulement la synchronisation avec main, 2 conflits avec WFS-258 #271, tableau RG-05 à refaire) | 96faa5a9 | 2026-11-08 17:13 |
 | #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (2e refus : lecture des CGU depuis les Réglages + touche Accueil) | 538a588f | 2026-11-08 17:20 |
 | #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
-| #275 | WFS-326 | Claude, agent dev Y | 👀 En revue — lead-dev, 2026-11-08 17:54 | 93c4ce8b | 2026-11-08 17:54 |
+| #275 | WFS-326 | Claude, agent dev Y | ↩️ Retour lead dev (1re revue : captures des 2 lieux de l'utilisateur en vue Arrière manquantes, test CPU absent, bati() ne couvre que le 1er segment) | 5a4d7c8a | 2026-11-08 17:57 |

@@ -3905,3 +3905,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Accroche E2 annoncée** : `src/world/ville_quartiers.cpp`, 8 lignes dans `adapter()`. Un commerce ou un panneau n'est gardé que devant un immeuble encore posé, du même côté et sur sa longueur. Commerces retirés : 108 → 119 ; panneaux inchangés. Le fichier est aussi visé par WFS-305 (en attente) : la modification est isolée dans le filtre des commerces. Banc : `cartes_banc.cpp`, les vues `carte-ville-virage-N` sont aussi prises de nuit.
 - **Vérifié en local** : 73 tests CPU verts après synchronisation, parcours complet 0 écart. Banc `ville` avant / après : seules changent les vues des virages, `ao-3-d` et `chien`, où ces commerces étaient visibles. Corniche et Campagne de nuit regardées. Captures dans `qa/pr/WFS-326/`.
 - **Limite** : les vraies fenêtres et vitrines restent très lumineuses la nuit (31,8 cd/m² pour une exposition vers EV 4) : relève de WFS-230.
+
+### 2026-11-08 17:57:04 — WFS-326 (PR #275) refusé par le lead dev (lead-dev)
+- Captures regardées une à une (5 paires) : les vitrines et les stores sans immeuble ont disparu dans `virage-1-nuit`, `virage-2-nuit`, `virage-1` et `virage-2`, et `virage-3-nuit` n'a pas changé. Rien n'est dégradé. Le diff est lu en entier (`ville_quartiers.cpp`, `cartes_banc.cpp`).
+- Raisons du refus :
+  1. Les captures 1 et 2 demandées par `regles-de-gestion/WFS-326.md` manquent : l'avenue du Belvédère en vue Arrière, 100 m avant le virage à gauche, et l'avenue des Mimosas, côté gauche, de `apk916-2`.
+  2. Aucun test CPU ne vérifie qu'un immeuble est posé derrière chaque commerce et chaque panneau.
+  3. `bati()` ne vérifie que le premier segment du commerce, alors que la PR dit « sur sa longueur ».
+  4. Le nombre 60 n'est pas expliqué.
+  5. Le nombre de lignes de l'accroche n'est pas le même partout (6 ou 8).
+- La revue est dans la PR (COMMENT, car GitHub refuse de « demander des changements » sur une PR du même compte). Le ticket passe en ↩️ Retour lead dev (PR #275).
