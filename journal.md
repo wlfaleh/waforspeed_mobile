@@ -4638,3 +4638,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-261** : stéréo réelle (droite +14,4 à +15,9 dB à 90°, règle ≥ 9 dB), portée et tunnel conformes. **WFS-272** : côtés conformes, Doppler de la police 1,1587 pour 1,1588 théorique, 8 voix au plus, aucun clic. **WFS-275** : délais d'écho 63,6 à 113,7 ms, niveaux à ≤ 0,3 dB de la loi, masque de la Ville ≈ −21 dB. **WFS-278** : casino 113,7 ms et centre commercial 224,5 ms, masques ≈ 20-24 dB, absorption sourcée.
 - Crête ≤ 0,28 (musique 0,90), aucun échantillon saturé ; aucune image changée hors les 3 courbes `parois-*` (effet voulu). Aucune anomalie.
 - Rappel : le Son est Coupé chez l'utilisateur ; rien de tout cela ne s'entend tant qu'il ne le remet pas.
+
+### 2026-11-08 00:55:35 — Recette, lot M1 (conduite et course) : 4 VALIDÉS, WFS-224 et WFS-247 PASSABLES (QA-arwa)
+- Preuves : `apercu` (c9eda61) ; WFS-243 sur banc local `course5` ; 62 tests CPU verts en local (5bcdfd2).
+- **WFS-258 (RG-00, repli)** : VALIDÉ pour le seul livrable fusionné — ancienne conduite en jeu ; aide activée, épingle et rond-point passent (écart 0,4 m, 0 image hors route) ; aide désactivée, tout droit (dérive 0°). Reste du ticket non livré. ANO-138 et ANO-140 encore présentes dans le modèle de WFS-241 gardé hors jeu.
+- **WFS-242 : VALIDÉ** (grille sans chevauchement, place variable, chrono à 0 jusqu'au GO). **WFS-243 : VALIDÉ** (adversaires à leur vraie distance, 0 pas faux sur 21 600). **WFS-256 : VALIDÉ** (voiture arrêtée par chaque type d'objet à 30, 80, 150 km/h, 0 mur invisible).
+- **WFS-224 : PASSABLE** — plus de boules grises ; ANO-165 : fumée invisible de jour en vrai dérapage. **WFS-247 : PASSABLE** — aller-retour en virage ≤ 1,93 cm de 10 à 90 img/s (ANO-139 corrigée pour l'aller-retour) ; ANO-166 : à-coup en virage et rond-point non comptés au banc.
+- Vérifiées au banc : ANO-114, 117, 120, 122, 123, 124, 126, 129, 150. Remarque VABF : `choc-etincelles` et `accident-fumee` ne montrent plus aucun choc (« accidents 0 »).
