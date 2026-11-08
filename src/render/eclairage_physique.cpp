@@ -69,6 +69,7 @@ struct Etat_ {
     float signatureCiel[16]{}; bool cielAFaire = true;
     // sondes
     Sonde A, B, sondeCiel; double w = 1;
+    Sh9 shAffiche; bool shInit = true;   // WFS-322 : diffus affiché, lissé dans le temps (lisserSh9) ; shInit : prendre la cible telle quelle
     vec3 dernierPoint{}; bool aucuneDemande = true; int typePrec = -1; bool forcerCapture = false;
     bool eclaireLoin = false; int iterations = 0;   // RG-03 : rebonds par recaptures au même point (voir physique())
     // relecture
@@ -385,6 +386,7 @@ void remettreAZero() {
     if (g.B.gpu.img) retirer(g.B.gpu, Buffer{});
     g.A = Sonde{}; g.B = Sonde{};
     g.cielAFaire = true; g.w = 1;
+    g.shInit = true;   // WFS-322 : remise à zéro (saut de plus de 80 m) : lumière reprise sans fondu
 }
 
 void irradiance(const vec3& n, double E[3]) {
@@ -623,9 +625,15 @@ void avantImage(VkCtx& vk, FrameUBO& u, VkDescriptorSet image, VkDescriptorSet r
     u.iblA = {actif ? 1.f : 0.f, (float)w, (float)std::max(0, A.niveaux - 1), (float)std::max(0, B.niveaux - 1)};
     u.iblB = {(float)g.k, (float)(g.k / std::max(A.echelle, 1e-12f)), (float)(g.k / std::max(B.echelle, 1e-12f)), actif ? (float)g.facteur : 1.f};
     u.cielP = actif ? g.cielP : vec4{};
+    {   // WFS-322 (ANO-174) : mélange A / B lissé dans le temps (une nouvelle sonde ne change plus le diffus en une image)
+        Sh9 cible;
+        for (int i = 0; i < 9; i++) for (int q = 0; q < 3; q++) cible.c[i][q] = A.sh.c[i][q] * (1 - w) + B.sh.c[i][q] * w;
+        lisserSh9(g.shAffiche, cible, g.dtImage, SH_TAU_S, g.shInit || !actif);
+        g.shInit = false;
+    }
     for (int i = 0; i < 9; i++) {
         double c[3];
-        for (int q = 0; q < 3; q++) c[q] = (A.sh.c[i][q] * (1 - w) + B.sh.c[i][q] * w) * SH_A[i] / PI_L * g.k;
+        for (int q = 0; q < 3; q++) c[q] = g.shAffiche.c[i][q] * SH_A[i] / PI_L * g.k;
         u.iblSH[i] = actif ? vec4{(float)c[0], (float)c[1], (float)c[2], 0} : vec4{};
     }
     // liaisons 3 à 5 des jeux de cette image (leur image précédente est terminée : barrière attendue)

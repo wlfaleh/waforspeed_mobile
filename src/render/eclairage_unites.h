@@ -179,6 +179,14 @@ inline void baseSh9(double x, double y, double z, double Y[9]) {
 }
 constexpr double SH_A[9] = {PI_L, 2 * PI_L / 3, 2 * PI_L / 3, 2 * PI_L / 3, PI_L / 4, PI_L / 4, PI_L / 4, PI_L / 4, PI_L / 4};
 struct Sh9 { double c[9][3] = {}; };   // coefficients de la luminance (rgb)
+// WFS-322 (ANO-174) : éclairage indirect diffus affiché, rapproché de la cible (mélange des sondes A et B) avec une constante de temps
+// tau (s) : l'arrivée d'une sonde (remplacement de A, première capture après la sonde du ciel) ne change plus la lumière en une image.
+// dt ≤ 0 (image redessinée au même temps : bancs) : une image compte pour 1/60 s ; init : valeur prise telle quelle (début, remise à zéro)
+constexpr double SH_TAU_S = 0.6;
+inline void lisserSh9(Sh9& affiche, const Sh9& cible, double dt, double tau, bool init) {
+    const double a = init ? 1.0 : 1.0 - std::exp(-(dt > 0 ? dt : 1.0 / 60) / (tau > 1e-6 ? tau : 1e-6));
+    for (int i = 0; i < 9; i++) for (int q = 0; q < 3; q++) affiche.c[i][q] += (cible.c[i][q] - affiche.c[i][q]) * a;
+}
 // éclairement E(n) (lx si la luminance est en cd/m²) reçu par une surface de normale n
 inline void irradianceSh9(const Sh9& sh, double x, double y, double z, double E[3]) {
     double Y[9]; baseSh9(x, y, z, Y);
