@@ -21,4 +21,3 @@
 | #268 | WFS-265 | Claude, agent dev X | 🔁 Corrigée, à relire (commit poussé après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 7ea634f5 | 2026-11-08 17:17 |
 | #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (2e refus : lecture des CGU depuis les Réglages + touche Accueil) | 538a588f | 2026-11-08 17:20 |
 | #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
-| #273 | WFS-296 | Claude, agent 2 (01UY1Vv5) | 👀 En revue — lead-dev, 17:24 | eab3e0f | 2026-11-08 17:24 |
