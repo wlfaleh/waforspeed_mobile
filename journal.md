@@ -3780,3 +3780,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Bloquant : (1) la branche a 14 commits de retard sur `main`, dont 6f477e65 (WFS-192, modèles des voitures) et c29cc053 (WFS-317, renderer). Les « avant » du banc `lod` sont faits avec WFS-192, les « après » sans : de nuit, la voiture du joueur passe de bleu nuit à bleu vif, ce que le diff n'explique pas. Il faut synchroniser et régénérer les captures. (2) La description de la PR n'est pas à jour : « 22 paires », 4 images `perf-*` cassées, le banc `lod` et l'accroche ne sont pas décrits, et la limite annoncée n'y est pas.
 - Remarques : `lod-ville-300` ne montre qu'un mur ; tramé visible au téléobjectif sur les animaux (Haute, 150 m) et les personnes (Basse, 90 m) ; commentaire WFS-222 déplacé dans `desktop_main.cpp` ; `mustang` (remplaçant) sans `.lod`.
 - Statut WFS-265 : ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-08 16:30:43 — WFS-258 point 1 (aide à la direction) validé par l'utilisateur sur téléphone (po-scrum-master)

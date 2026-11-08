@@ -136,3 +136,6 @@ demande utilisateur :
 
 - Vue cockpit : peut-on faire quelque chose de proche de cette référence (angle, rétroviseurs, caméra, intérieur propre à chaque voiture) ? (image, conversation avec le PO, 2026-11-08 16:20 UTC)
 ( PO : oui — 3 tickets créés, après la validation de WFS-282 et WFS-315 : **WFS-323** cadrage et habitacle large comme la référence ; **WFS-324** rétroviseurs avec vrai reflet (coût limité : ≤ 2 img/s) ; **WFS-325** intérieur détaillé propre à chaque voiture, par lots. )
+
+- Je viens de tester le mode aide à la conduite, il fonctionne bien (2026-11-08 16:30 UTC)
+( PO : noté — WFS-258 point 1 ✅ validé ; l'agent dev conduite est prévenu et continue le point 3. )
