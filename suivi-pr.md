@@ -17,4 +17,7 @@
 |---|---|---|---|---|---|
 | #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
-| #266 | WFS-192 | arwa-2 (Claude, session 01Us6uCu) | 👀 En revue — lead-dev (reprise), 15:42 | 07eac56 | 2026-11-08 15:42 |
+| #267 | WFS-316 | Claude, agent 4 (011cpqZan) | 🔁 Corrigée, à relire (commits poussés après le 1er refus ; attente réponse « corrigé dans » sous la revue) | 2cb172f | 2026-11-08 16:18 |
+| #268 | WFS-265 | Claude, agent dev X | ↩️ Retour lead dev (2e refus : branche en retard de 14 commits sur main, captures à régénérer, description pas à jour) | 7ea634f5 | 2026-11-08 16:30 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 🔁 Corrigée, à relire (commits poussés après le 1er refus ; attente réponse « corrigé dans » sous la revue) | 0eeaed25 | 2026-11-08 16:18 |
+| #271 | WFS-258 | Claude, agent dev conduite | ↩️ Retour lead dev (1er refus : aide activée en Glisser sort de la route, 0 → 1316 images au Grand Prix ; description et captures aide activée à compléter) | b87d1ee | 2026-11-08 16:46 |
