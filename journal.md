@@ -3865,3 +3865,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Doigt tenu, frein de l'aide qui change en moins de 0,5 s : main 221 à 1 317 fois par tour → 1 à 7 ; 0 sortie. Écarts : doigt tenu, la limite reprend au-dessus de 110 km/h et recède sous 80 km/h (seuils 95 / 100 du PO insuffisants, mesurés : 76 par tour) ; frein tenu jusqu'à la vitesse permise. PO prévenu pour valider les seuils. 72 tests CPU OK.
 
 ### 2026-11-08 17:31:48 — WFS-317 : personnes allégées et −70 % en Ville faits ; décor au loin → WFS-265 (po-scrum-master)
+
+### 2026-11-08 17:34:51 — WFS-258 fusionné par le lead dev (PR #274, bascule de l'aide) (lead-dev)
+- Revue du commit 2a875bc : 8 paires de captures ouvertes (identiques à ±2 km/h, c'est attendu) ; diff complet relu (`player.cpp`, `player.h`, `test_aide_ralentit.cpp`) ; `test_aide_ralentit` relancé : OK (0 à 7 changements rapides du frein de l'aide par tour, 0 sortie). Seuils 80 / 110 km/h validés par le PO à 17:31:18.
+- GitHub refuse l'approbation venant du même compte : la revue « ✅ Approuvé par le lead dev » est écrite dans la PR, puis fusion en squash b9702bf. WFS-258 : 🔧 En cours (point 1 ✅, point 3 et bascule fusionnés, 🟡 à valider).
+- Remarque non bloquante : le commentaire de `cedeAuDoigt_` dans `player.h` indique encore 95 / 100 km/h.
+- Incident : pendant la prise de la PR, le dossier de travail partagé était passé sur `feature/waforspeed-327` (le développeur venait d'en changer). Mon commit de synchronisation ebe7d2f8 a donc été poussé sur `main` avec le commit 8bbd71b7 de cette branche (une ligne de `track-agent.md`, déjà identique sur `main`). Aucun fichier de `main` n'a changé, rien n'a été réécrit. Ensuite, travail dans des worktrees séparés.
