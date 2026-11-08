@@ -5140,3 +5140,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - Les fichiers déjà livrés sont reproduits au bit près, sauf les deux textures sans marque.
   - Pour la sportive, la simplification se fait avec le motif de peinture « Panels » (106 979 triangles).
 - **Preuves** : 65 tests CPU réussis ; banc `motos` sans écart ; licences : 0 manque ; captures refaites et regardées (`qa/pr/WFS-232`) ; branche d9cffcac synchronisée avec `main`.
+
+### 2026-11-08 03:48:58 — Textures des nouvelles cartes : seulement GitHub (po-scrum-master)
+- **Réponse de l'utilisateur** : « seulement GitHub » ; aucun nouveau site (ni ambientcg.com ni polyhaven.com), § 1 de `regles-reseau.md` inchangé. Noté dans WFS-309 (RG-04) et WFS-313, 304, 314 (RG-04).
+
