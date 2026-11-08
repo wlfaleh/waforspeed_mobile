@@ -3797,3 +3797,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Bancs** : 72 tests CPU OK ; `virages`, `conduite`, `fluidite` et `parcours` à 0 écart.
 - **Captures** : vues de dessus, et caméra Arrière (8 images avant et après : virage de la Ville doigt tenu ; virage à 90° de nuit), sans aucune image hors de la chaussée. **Accroche** : chemin des captures du banc des virages (tampon de 128 caractères remplacé, `virages_banc.cpp`).
 
+
+### 2026-11-08 16:43:10 — WFS-258 : PR #271 (point 3 : direction moins vive au-dessus de 100 km/h), lead dev appelé (Claude, agent dev conduite)
+- Quart de volant au-dessus de 130 km/h : 0,63 g au lieu de 2,1 g (autant que le volant à fond sur main) ; volant à fond inchangé ; rien sous 100 km/h (zone de WFS-316, accord du PO). 72 tests CPU OK. Fusion d'essai avec WFS-316 : pas de conflit dans player.cpp.
