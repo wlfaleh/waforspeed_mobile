@@ -239,7 +239,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         else if (s.type == T::Tunnel && !tu) { tu = true; lieux.push_back({"carte-ville-tunnel", s.debut, 40, true}); }
         else if (s.type == T::Pont && !po) { po = true; lieux.push_back({"carte-ville-pont", s.debut, 40, true}); }
         else if (s.type == T::Virage && s.rayon < 60 && virages < 3) {
-            lieux.push_back({"carte-ville-virage-" + std::to_string(++virages), s.debut, 35, false});
+            lieux.push_back({"carte-ville-virage-" + std::to_string(++virages), s.debut, 35, true});   // WFS-326 : aussi de nuit (vitrines)
             lieux.push_back({"carte-ville-virage-" + std::to_string(virages) + "-haut", (s.debut + s.fin) / 2, 18, false, 1});   // au cœur du virage
         }
         if (s.exRondPoint) lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});   // WFS-283 : plus de fontaine

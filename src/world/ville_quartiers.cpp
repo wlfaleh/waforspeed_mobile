@@ -408,10 +408,14 @@ const Plan& adapter(const MapDef& map, const Track& t) {
     }
     const float facade = (float)RW + 6.5f + 4.f;   // commerces et panneaux : devant les façades
     const size_t nc = P.commerces.size(), np = P.panneaux.size();
+    // WFS-326 (ANO-175, accroche E2) : un commerce ou un panneau n'est gardé que devant un immeuble encore posé (même côté, sur
+    // sa longueur) : l'immeuble retiré avant un virage serré laissait sa vitrine allumée, son store et son enseigne dans le vide
+    auto bati = [&](int64_t s, int side) { for (int64_t k = 0; k <= (int64_t)(60 / SEG_M); k++) for (const Objet& o : P.objets[(size_t)(((s - k) % L + L) % L)])
+        if (o.t == IMMEUBLE && o.side == side && k * SEG_M <= o.len) return true; return false; };
     P.commerces.erase(std::remove_if(P.commerces.begin(), P.commerces.end(), [&](const Commerce& c) {
-        return voieSur(c.seg, c.len) != RUE || surRue(c.seg, c.len) || facade > limite(c.seg, c.side, c.len); }), P.commerces.end());
+        return voieSur(c.seg, c.len) != RUE || surRue(c.seg, c.len) || facade > limite(c.seg, c.side, c.len) || !bati(c.seg, c.side); }), P.commerces.end());
     P.panneaux.erase(std::remove_if(P.panneaux.begin(), P.panneaux.end(), [&](const Panneau& b) {
-        return voieSur(b.seg, 6.f) != RUE || surRue(b.seg, 6.f) || facade > limite(b.seg, b.side, 6.f); }), P.panneaux.end());
+        return voieSur(b.seg, 6.f) != RUE || surRue(b.seg, 6.f) || facade > limite(b.seg, b.side, 6.f) || !bati(b.seg, b.side); }), P.panneaux.end());
     lieuxVille(map, P, L, limite, voieSur, surRue);   // WFS-176
     WFS_LOG("Ville (WFS-137) : plan adapté au tracé 2 (%zu sections) : %zu / %zu objets, %zu commerces et %zu panneaux retirés "
             "(courbes serrées, autoroute, tunnel, pont, rues des carrefours) ; %zu carrefour(s) à feux, %zu rond(s)-point(s)", secs.size(), retires, avant,
