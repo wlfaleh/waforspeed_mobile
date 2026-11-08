@@ -15,7 +15,7 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #245 | WFS-232 | arwa-3 | 🔁 Corrigée, à relire (3e revue : « 500X » retiré, métal / rugosité de la sportive nettoyée ; réponse sous la revue) | 6baa3128 | 2026-11-08 04:49 |
+| #245 | WFS-232 | arwa-3 | 👀 En revue — lead-dev (session 01Us6uCt), 2026-11-08 04:51 | 6baa3128 | 2026-11-08 04:51 |
 | #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev (2e revue : captures après périmées, RG-11 / ANO-164, resynchroniser) | 213df11 | 2026-11-08 02:16 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | f97172f | 2026-11-08 03:17 |
