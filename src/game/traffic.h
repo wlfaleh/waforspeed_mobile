@@ -122,8 +122,12 @@ public:
     // WFS-281 (ANO-151, RG-02) : nombre total de voitures fixé au départ. Vrai (module du jeu) : reset() fixe `plafond`
     // au nombre de voitures posées et addCars n'en ajoute plus au-delà (les +6 voitures par checkpoint de la course
     // menaient à 110 voitures après ≈ 2 min). Faux (tests de référence du jeu web) : addCars sans limite, comme le jeu web.
+    // SANS_PLAFOND : aucune limite au nombre de voitures (comportement du jeu web)
+    static constexpr int SANS_PLAFOND = 1 << 30;
     bool totalFixe = false;
-    int plafond = 1 << 30;
+    int plafond = SANS_PLAFOND;
+    // fixe le total de voitures que addCars ne dépasse pas (poursuite : trafic dense) et passe en total fixé
+    void fixerTotal(int n) { totalFixe = true; plafond = n; }
     uint32_t seed = 1;
     double clock = 0, sim = 0;
     bool parallel = true;

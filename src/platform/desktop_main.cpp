@@ -105,6 +105,7 @@ static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
         if (ok) WFS_LOG("parcours : %s (attendu)", etape); else { ecarts++; WFS_ERR("parcours : %s → écran %s (ÉCHEC)", etape, nomEcran(g.ecran())); }
     };
     g.allerA(Ecran::Course); g.setAutopilot(true); images(60 * 6);   // décompte puis course en pilote automatique
+    if (const char* d = std::getenv("WFS_PARCOURS_COURSE_S")) for (int i = 0, k = std::atoi(d) * 60; i < k; i++) { g.update(1.0 / 60); t += 1.0 / 60; }   // WFS-281 (accroche) : course longue (10 min : 600), sans rendu
     attendu(g.ecran() == Ecran::Course && activeCourse() && activeCourse()->state == RaceState::Play, "course en cours");
     ecarts += parcoursPauseRetour(g, t); g.setAutopilot(true); images(60);   // WFS-129 (RG-08) : pause par Retour, « Reprendre »
     g.setAutopilot(false);

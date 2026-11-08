@@ -67,7 +67,7 @@ public:
         if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
         if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
         if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) {
-            traffic_.plafond = n;   // WFS-281 : la poursuite fixe son propre total (trafic dense)
+            traffic_.fixerTotal(n);   // WFS-281 : la poursuite fixe son propre total (trafic dense)
             traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
         }
         const bool playing = !course || course->playing();
@@ -335,14 +335,17 @@ private:
         denseT_ -= dt;
         if (denseT_ > 0) return;
         denseT_ = 1.0;
-        int behind = -1; double bestBehind = -1e18;
+        int behind = -1, vues = 0; double bestBehind = -1e18;
         for (size_t i = 0; i < traffic_.cars.size(); i++) {
             const TrafficCar& c = traffic_.cars[i];
             const double dz = t.relZ(c.z - pl.position) * M;
             if (!c.crashed && dz > 40 && dz < 160) return;
+            if (!c.cache && dz >= -30 && dz <= 300) vues++;   // fenêtre de dessin de render()
             if (!c.crashed && dz < -40 && dz > bestBehind) { bestBehind = dz; behind = (int)i; }
         }
-        if (behind < 0) return;
+        // WFS-281 (ANO-151) : une voiture n'est ramenée devant que si la fenêtre de dessin en a moins de 2 ; sinon, au fil des
+        // minutes, les voitures ramenées s'ajoutaient aux files rattrapées et le banc dessinait 3 à 9 fois plus de voitures
+        if (behind < 0 || vues >= 2) return;
         int lane = 0; double far = -1;
         for (int l = 0; l < LANES; l++) if (std::abs(LANE_X[l] - pl.playerX) > far) { far = std::abs(LANE_X[l] - pl.playerX); lane = l; }
         TrafficCar& c = traffic_.cars[(size_t)behind];
