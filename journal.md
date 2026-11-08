@@ -5372,3 +5372,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarques non bloquantes, pour WFS-299 (le PO est prévenu par cette entrée) :
   - le banc ne passe pas en vue Proche : les captures sont en vue Arrière, alors que la PR et le journal disent « vue Proche » ;
   - `courseBenchSetTime(1e6)` cache le HUD dès le 2e checkpoint (`hud.cpp:106`) : les mesures à 1 et 2 min se font sans HUD.
+
+### 2026-11-08 08:06:51 — Statuts automatiques, bancs du matin #3 (robot statuts)
+- Run vert (schedule, commit ebb6a21) : WFS-161 ✅ (PR #207, 4fe82c8), WFS-226 ✅ (PR #214, ea9aa64), WFS-227 ✅ (PR #210, ca20e9e), WFS-234 ✅ (PR #209, 777c1b4), WFS-239 ✅ (PR #255, 0f0eee4), WFS-257 ✅ (PR #220, e1fad76), WFS-244 ✅ (PR #218, 4a0fbb9), WFS-250 ✅ (PR #215, a91cc8d), WFS-251 ✅ (PR #224, e0ddfa0), WFS-252 ✅ (PR #230, fcbe69b), WFS-277 ✅ (PR #233, 3e3b217), WFS-279 ✅ (PR #241, 08e611b), WFS-261 ✅ (PR #219, 3b07e48), WFS-266 ✅ (PR #252, 8c8bdc7), WFS-267 ✅ (PR #232, 466a4c8), WFS-270 ✅ (PR #231, ceb4b18), WFS-272 ✅ (PR #227, e134cac), WFS-275 ✅ (PR #237, ce592cb), WFS-278 ✅ (PR #240, 84e1c4d), WFS-284 ✅ (PR #250, 94f6f41), WFS-286 ✅ (PR #253, def95c4), WFS-288 ✅ (PR #254, 0a76fe8), WFS-298 ✅ (PR #260, 7d269b9).
+- À corriger par le PO : `track-agent.md` l. 23 : WFS-284 : forme de l'État non reconnue (ligne laissée telle quelle).
+- À corriger par le PO : `track-agent.md` l. 23 : WFS-266 : forme de l'État non reconnue (ligne laissée telle quelle).
