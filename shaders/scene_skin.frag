@@ -104,6 +104,9 @@ void main() {
         vec4 uCloth = B.look[6], uBody = B.look[7];
         vec3 tex = pow(max(base.rgb, vec3(0.0)), vec3(1.0 / 2.2)), col = tex;
         float part = vCloth.w, cm = 0.0;
+        // WFS-266 : ligne des cheveux d'un humain réaliste adulte (partie interpolée entre 0 et 2, _cloth.x entre −1 et 0) :
+        // peau ou cheveux, jamais œil (sinon liseré clair au front)
+        if (vCloth.x > -0.999 && vCloth.z < -0.5 && part > 0.5 && part < 1.5) part = part < 1.0 ? 0.0 : 2.0;
         float lum = dot(tex, vec3(0.299, 0.587, 0.114));
         if (part < 0.5) {
             // corps : la peau garde la texture (visage, mains), teinte selon la personne
@@ -126,7 +129,20 @@ void main() {
             cm = max(max(top, bot), shoe);
             col = mix(baseC, cloth * shade * hem, cm);
         } else if (part > 1.5) {
-            col = uHair * (0.35 + lum * 1.25);                          // sourcils et cheveux : texture grise teintée
+            // sourcils et cheveux : texture grise teintée ; WFS-266 : humains réalistes adultes (_cloth.x > −1, texture de peau unie) :
+            // couleur de la palette telle quelle
+            col = vCloth.x > -0.999 ? uHair : uHair * (0.35 + lum * 1.25);
+        } else if (vCloth.z > -0.5) {
+            // WFS-266 (RG-02) : œil d'un humain réaliste : _cloth.xyz = centre du globe (pose de repos), regard vers +z ; iris de
+            // 11,7 mm de diamètre visible, pupille de 3,5 mm (jour), limbe plus sombre ; sclère jamais blanc pur
+            // (references/reel/humains/oeil.md)
+            vec3 d = vBind - vCloth.xyz;
+            const float lisse = 2.5e-4;   // bord adouci de 0,25 mm (pas de dérivée dans une branche par sommet)
+            float rr = length(d.xy), dos = 1.0 - step(0.0, d.z);
+            vec3 sclere = vec3(0.76, 0.72, 0.68), iris = vec3(0.30, 0.19, 0.11), limbe = vec3(0.16, 0.10, 0.06), pupille = vec3(0.03);
+            vec3 c = mix(iris, limbe, smoothstep(0.0040, 0.00585, rr));
+            c = mix(pupille, c, smoothstep(0.00175 - lisse, 0.00175 + lisse, rr));
+            col = mix(c, sclere, max(smoothstep(0.00585 - lisse, 0.00585 + lisse, rr), dos));
         }
         base.rgb = pow(max(col, vec3(0.0)), vec3(2.2));
         // WFS-210 : rugosités mesurées (peau 0,5 PB-MAT ; tissus : TISSUS ; sclère 0,35 ; chaussures cuir 0,45)
