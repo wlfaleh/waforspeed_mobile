@@ -349,6 +349,13 @@ void CarteDecor::lampe(const Pose& p, int s, bool flood, Geo out[P_COUNT]) const
     box(out[P_NEON], lateral(p, s * (R - 1.9f), 7.36f), p.r, p.f, 0.9f, 0.12f, 0.38f, uv(C_LAMP_W));
 }
 
+// WFS-283 (RG-02) : segment à 100 segments au plus du carrefour simple qui remplace un rond-point (section exRondPoint)
+static bool presCarrefourSimple(const Track& t, int64_t a, int64_t L) {
+    const int64_t m = ((a % L) + L) % L;
+    for (const trace::Section& s : trace::sections(t)) if (s.exRondPoint && m >= s.debut - 100 && m < s.fin + 100) return true;
+    return false;
+}
+
 // ---------------------------------------------------------------- morceaux (buildChunk de renderer.js)
 void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
     const int64_t a0 = c * CH, a1 = std::min(a0 + CH, limiteTour_), L = len();   // WFS-268 : borné au tour à la préparation
@@ -371,11 +378,16 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
                 quadSol(out[P_UNI], lateral(p0, x0, 0.02f), lateral(p0, x0 + R / 5, 0.02f), lateral(p1, x0 + R / 5, 0.02f), lateral(p1, x0, 0.02f), uv(k % 2 ? C_CHECK_W : C_CHECK_B));
             }
         const bool serre = procheSerre(a);   // WFS-212 : rond-point, épingle
+        // WFS-283 (RG-02) : autour du carrefour simple, chaque bande rejoint au segment suivant sa coupe du segment suivant
+        // (trapèze) : le sol coupé à la mi-distance de l'autre branche ne fait plus de marches (on y voyait le sol de fond)
+        const bool lisse = !serre && presCarrefourSimple(t, a, L);
         for (int s : {-1, 1}) {
             Band b[6] = {}; const int n = profil(z, a, s, b);
+            Band b1[6] = {}; const int n1 = lisse ? profil(z, a + 1, s, b1) : 0;
             for (int i = 0; i < n; i++) {
                 if (!serre) {
-                    quadSol(out[P_UNI], lateral(p0, s * b[i].a, b[i].ya), lateral(p1, s * b[i].a, b[i].ya), lateral(p1, s * b[i].b, b[i].yb), lateral(p0, s * b[i].b, b[i].yb), uv(b[i].col));
+                    const Band& q = n1 == n && b1[i].col == b[i].col ? b1[i] : b[i];   // bord au segment suivant
+                    quadSol(out[P_UNI], lateral(p0, s * b[i].a, b[i].ya), lateral(p1, s * q.a, q.ya), lateral(p1, s * q.b, q.yb), lateral(p0, s * b[i].b, b[i].yb), uv(b[i].col));
                     continue;
                 }
                 // WFS-212 (RG-02) : bande découpée en pas de 1 m (même surface) jusqu'à RW + 40 m ; un pas posé sur une autre branche

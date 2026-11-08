@@ -750,7 +750,29 @@ private:
         return std::llabs(m - (auDeb_ + PEAGE_SEG)) * SEG_M < 15;
     }
 
+    // WFS-283 (RG-02) : côté intérieur du carrefour simple qui remplace le rond-point (virage de rue de 22 m) : profil coupé
+    // à 90 % du rayon intérieur, comme les bas-côtés de Game (WFS-136) et le sol de la Corniche (bordSol). Sans cela, les
+    // bandes de 220 m des segments du virage se croisaient derrière son centre (« marches » sombres dans l'herbe)
     int borner(int64_t a, int s, Band out[6], int n) const {
+        n = bornerLibre(a, s, out, n);
+        if (!presExRondPoint(a)) return n;
+        const trace::Rayon ri = trace::rayonInterieur(*track_, (double)a * SEG);
+        const double rs = s > 0 ? ri.droite : ri.gauche;
+        if (rs >= 60) return n;
+        const float lim = (float)(0.9 * rs);
+        for (int i = 0; i < n; i++) {
+            Band& b = out[i];
+            if (b.a >= lim) { b.a = b.b = lim; b.yb = b.ya; }
+            else if (b.b > lim) { b.yb = b.ya + (b.yb - b.ya) * (lim - b.a) / (b.b - b.a); b.b = lim; }
+        }
+        return n;
+    }
+    bool presExRondPoint(int64_t a) const {   // segment à 20 segments au plus du carrefour simple
+        const int64_t L = len(), m = ((a % L) + L) % L;
+        for (const trace::Section& sec : trace::sections(*track_)) if (sec.exRondPoint && m >= sec.debut - 20 && m < sec.fin + 20) return true;
+        return false;
+    }
+    int bornerLibre(int64_t a, int s, Band out[6], int n) const {
         const Libre* l = libreA(a, s);
         if (!l || l->m >= out[n - 1].b) return n;
         const float R = (float)RW, m = std::max(l->m, out[0].b + 0.5f);
@@ -855,19 +877,14 @@ private:
                 for (int64_t a = sec.debut + 1; a < sec.fin; a++) if (track_->segAt(a).curve * track_->segAt(sec.debut + 2).curve < 0) { if (e0 < 0) e0 = a; e1 = a; }
                 if (e0 >= 0) for (int64_t a = e0; a <= e1; a += (int64_t)(11 / SEG_M)) poserLampe(a, ext);
                 poserLampe(sec.debut - (int64_t)(10 / SEG_M), 1); poserLampe(sec.fin + (int64_t)(10 / SEG_M), 1);
-                // supermarché et parking à l'entrée du village (180 m avant le rond-point), garage 60 m après
-                commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);
-                commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
-                commerce(sec.fin + 100, -1, CO_BOULANGERIE, 9, 9, 6.f, 4);
+                commercesVillage(sec);
             }
             if (sec.exRondPoint) {   // WFS-283 (RG-02) : carrefour simple du village (plus de rond-point) : mêmes commerces et
                 // mêmes lampes à l'approche et à la sortie, mâts sur le bord extérieur du virage (à droite), sans îlot ni fontaine
                 vigilance_.push_back(sec.debut);
                 for (int64_t a = sec.debut + 2; a < sec.fin; a += (int64_t)(11 / SEG_M)) poserLampe(a, 1);
                 poserLampe(sec.debut - (int64_t)(10 / SEG_M), 1); poserLampe(sec.fin + (int64_t)(10 / SEG_M), 1);
-                commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);
-                commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
-                commerce(sec.fin + 100, -1, CO_BOULANGERIE, 9, 9, 6.f, 4);
+                commercesVillage(sec);
             }
             if (sec.type == trace::Type::Feux && feuSeg_ < 0 && !sec.depart) {   // feu du village : un poteau de chaque côté
                 feuSeg_ = sec.ligneArret; feuIdx_ = sec.feu; vigilance_.push_back(sec.ligneArret);
@@ -956,6 +973,13 @@ private:
         if (!G.i.empty()) sommetsMesh_ = r.makeMesh(G.v, G.i);
     }
     // WFS-178 : commerce du village au segment n, côté side, en retrait de « recul » m du bord de la chaussée
+    // supermarché et parking à l'entrée du village (180 m avant le carrefour), garage 60 m après, boulangerie en face :
+    // mêmes places au rond-point gardé (RG-04) et au carrefour simple qui le remplace (WFS-283)
+    void commercesVillage(const trace::Section& sec) {
+        commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);
+        commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
+        commerce(sec.fin + 100, -1, CO_BOULANGERIE, 9, 9, 6.f, 4);
+    }
     void commerce(int64_t n, int side, int k, float w, float d, float h, float recul) {
         Item it; it.t = T_COMMERCE; it.side = side; it.k = k; it.w = w; it.d = d; it.h = h; it.lat = (float)RW + recul; it.col = k;
         const Libre* l = libreA(n, side);

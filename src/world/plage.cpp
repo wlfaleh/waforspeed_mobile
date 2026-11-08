@@ -696,7 +696,9 @@ public:
         // jamais sous la mer (altitude fixe au tracé 2 : côté falaise, le pied descend à −2 m et la mer recouvrait le disque)
         bouchons_.clear();
         for (const trace::Section& s : S) {
-            if (s.type != trace::Type::Epingle && s.type != trace::Type::Lacets) continue;
+            // WFS-283 (RG-02) : aussi au carrefour simple qui remplace le rond-point (virage de rue de 22 m) : sans bouchon, on
+            // voyait la mer sous le trou du sol, côté intérieur du virage (plaque bleu-gris sur le sable)
+            if (s.type != trace::Type::Epingle && s.type != trace::Type::Lacets && !s.exRondPoint) continue;
             for (int64_t n = s.debut; n < s.fin; ) {
                 const double c = t.segAt(n).curve;
                 const double r = std::abs(c) > 1e-9 ? SEG_M / (std::abs(c) * CURVE_K) : 1e9;
