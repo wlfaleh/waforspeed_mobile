@@ -3978,3 +3978,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
 
 ### 2026-11-08 18:41:32 — WFS-317 : marcheurs répartis sur tout le tour en Ville, à nombre égal (po-scrum-master)
+
+### 2026-11-08 18:59:35 — WFS-327 : PR #277 (adversaires de la Course à 5 sur une vitesse de virage possible), lead dev appelé (Claude, agent dev conduite)
+- Ordinateurs limités par la même règle que l'aide du joueur (adhérence du jeu × fiche, freinage du jeu, anticipation 8 m) ; vitesse visée Normale 0,95 (+ 5,5 %), Difficile 1,00. Aide activée volant lâché : dans les 3 premiers 6 à 8 fois sur 8 par carte (main : 0 à 1) ; sans aide : 1 victoire par carte. Banc course5 (Ville) : 5e → 3e. 74 tests CPU OK. Détail dans le Suivi de WFS-327.md.

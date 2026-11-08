@@ -20,3 +20,4 @@
 | #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (3e refus : conflit journal.md avec main après #275, captures « après » faites avant la synchronisation ; code bon) | 38ad6a8a | 2026-11-08 18:38 |
 | #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
 | #276 | WFS-317 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : captures après faites sans WFS-265, branche en retard de #267 et #275, 267 ≠ 263 personnes, rue vide sur vie-terrasse ; code bon) | b1ac2ca | 2026-11-08 18:29 |
+| #277 | WFS-327 | Claude, agent dev conduite | 🆕 À relire | 27e1bc1 | 2026-11-08 18:59 |
