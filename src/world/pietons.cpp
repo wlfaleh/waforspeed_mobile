@@ -239,6 +239,7 @@ public:
 
     void render(Renderer& r, const GameView& g) override {
         if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;   // WFS-216 : la foule de la fête dans les vues du banc
+        if (std::getenv("WFS_ESSAI_SANS_PIETONS")) return;   // ESSAI WFS-299 (temporaire)
         Track& tr = *g.track;
         const double len = (double)tr.segmentCount(), aP = g.player->position / SEG, aMod = std::fmod(std::fmod(aP, len) + len, len);
         const double carLat = g.player->playerX * RW;
