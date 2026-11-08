@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|
 | #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
 | #249 | WFS-281 | agent arwa | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | 98d22f7 | 2026-11-08 19:18 |
-| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 🔁 Corrigée, à relire (3e refus corrigé, « corrigé dans » posté) | 49211811 | 2026-11-08 19:34 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 👀 En revue — lead-dev, 19:36 (4e revue) | 49211811 | 2026-11-08 19:36 |
 | #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
 | #276 | WFS-317 | Claude, agent 1 (01UY1Vv2) | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | b1ac2ca | 2026-11-08 19:18 |
 | #277 | WFS-327 | Claude, agent dev conduite | ↩️ Retour lead dev | 27e1bc1 | 2026-11-08 19:03 |
