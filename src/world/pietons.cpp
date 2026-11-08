@@ -181,28 +181,28 @@ public:
     const char* name() const override { return "pietons"; }
 
     void init(Renderer& r, const GameView& g) override {
-        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; etat_.clear(); tPrec_ = 0; premiere_ = true;
+        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; omisVille_ = 0; for (int& t : tirageVille_) t = 0; etat_.clear(); tPrec_ = 0; premiere_ = true;
         if (!g.map || !g.track) return;
         const char* id = g.map->id;
         tenue::carte() = id;   // WFS-210 : tenue des conducteurs selon la carte
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
-        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder()) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville)
+        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder()) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville) ; WFS-317 : tous gardés (le chien est dessiné par la Ville)
         piste_ = g.track;   // WFS-179
         const size_t nProm = gens_.size();
         peupler(*g.map, (int64_t)g.track->segmentCount());
         const size_t nMarche = gens_.size();
         {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
             const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;
-            for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
+            for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { if (!garderVille(VILLE_TERRASSES)) continue; P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
             for (const vie::Serviette& v : vie::serviettes(*g.map, L)) { P.s = v.s + 0.4; P.lat = v.lat; P.pose = 2; P.y = vie::hauteurSable(v.lat) + 0.03; P.yawRel = 1.5708f + v.rot; gens_.push_back(P); }
             P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
             for (const vie::Baigneur& b : plage::gens(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 4; P.y = vie::hauteurSable(b.lat) + 0.02; P.yawRel = b.yaw; gens_.push_back(P); }   // WFS-180 : foule des fêtes, joueurs
         }
         const size_t nDecor = gens_.size();
         if (ville_) for (const ville::Passant& c : ville::passants(*g.map, *g.track)) {   // WFS-137 (RG-02) : piétons des passages zébrés
-            if (!garder()) continue;   // WFS-222 (RG-07)
+            if (!garder() || !garderVille(VILLE_PASSANTS)) continue;   // WFS-222 (RG-07) ; WFS-317 (RG-03)
             Personne P; P.s = c.s; P.lat = c.lat; P.v = c.v; P.dir = c.dir; P.feu = c.feu; P.pose = 5; P.yawFixe = true; P.y = 0.15; gens_.push_back(P); }
         if (gens_.empty()) return;
         if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0]) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1])) {
@@ -215,6 +215,7 @@ public:
         actif_ = true;
         zoneDense();   // WFS-257 (banc)
         WFS_LOG("Piétons : %zu personnes (%s)", gens_.size(), id);
+        if (ville_) WFS_LOG("Piétons (WFS-317, RG-03) : Ville : %d personnes omises (3 sur 10 gardées par liste)", omisVille_);
         memoire::compteurs().personnes = (int)gens_.size();   // WFS-297 (RG-06, accroche)
         // WFS-222 (RG-07) : détail (marcheurs, promeneurs et passants : moitié des tirages ; assis et baigneurs : inchangés)
         WFS_LOG("Piétons (WFS-222) : %zu à pied (promeneurs %zu, marcheurs %zu, passants %zu ; %d omis sur ordre de l'utilisateur), %zu assis ou baigneurs",
@@ -470,15 +471,23 @@ private:
 
     // addPerson (life.js) : direction, vitesse et phase tirées à la graine (le jeu web utilise Math.random)
     void ajouter(double s, double lat, int pose, Mulberry32& A, double v = 0, double latMin = 0, double latMax = 0) {
-        if ((int)gens_.size() + omis_ >= PEOPLE_MAX) return;   // plafond du jeu web compté sur la liste d'origine (WFS-222)
+        if ((int)gens_.size() + omis_ + omisVille_ >= PEOPLE_MAX) return;   // plafond du jeu web compté sur la liste d'origine (WFS-222 ; WFS-317 : omis de la Ville compris)
         Personne P; P.s = s; P.lat = lat; P.pose = pose; P.latMin = latMin; P.latMax = latMax;   // WFS-233 : bande du trottoir
         P.dir = A.next() < 0.5 ? -1 : 1; P.v = v > 0 ? v : 1.1 + A.next() * 0.6; P.ph = A.next() * 6.28;
-        if (garder()) gens_.push_back(P);   // WFS-222 (RG-07) : tirages inchangés (mêmes places pour ceux qui restent)
+        if (garder() && garderVille(VILLE_MARCHEURS)) gens_.push_back(P);   // WFS-222 (RG-07) : tirages inchangés (mêmes places pour ceux qui restent) ; WFS-317 (RG-03)
     }
     // WFS-222 (RG-07, ordre de l'utilisateur du 2026-11-07) : au moins 50 % de personnes à pied en moins, sur toutes les cartes :
     // une sur deux des listes d'origine (promeneurs, marcheurs, passants), dans l'ordre des tirages ; les clients attablés,
     // les personnes sur les serviettes et les baigneurs ne sont pas concernés
     bool garder() { const bool g = (tirage_++ % 2) == 1; if (!g) omis_++; return g; }
+    // WFS-317 (RG-03) : Ville : 3 sur 10 de chaque liste (apparition::garderVille, foule_apparition.h), compteur propre à chaque liste ; autres cartes : tous
+    enum ListeVille { VILLE_MARCHEURS, VILLE_TERRASSES, VILLE_PASSANTS, VILLE_NB };
+    bool garderVille(int liste) {
+        if (!ville_) return true;
+        const bool g = apparition::garderVille(tirageVille_[liste]++);
+        if (!g) omisVille_++;
+        return g;
+    }
 
     // populatePeople (life.js), même graine mulberry32(seed × 13 + 5) et mêmes tirages
     void peupler(const MapDef& map, int64_t len) {
@@ -684,6 +693,7 @@ private:
     bool premiere_ = true;   // WFS-257 : 1re image de la partie
     int omis_ = 0, tirage_ = 0;   // WFS-222 (RG-07)
     double tPrec_ = 0;
+    int tirageVille_[VILLE_NB] = {}, omisVille_ = 0;   // WFS-317 (RG-03)
     bool actif_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
     const Track* piste_ = nullptr;   // WFS-179
 };

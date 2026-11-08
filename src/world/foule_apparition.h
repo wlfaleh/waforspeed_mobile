@@ -105,4 +105,12 @@ inline void choisirPlaces(std::vector<Candidat>& c, std::vector<int>& ordre, int
     }
 }
 
+// WFS-317 (RG-03, décision de l'utilisateur du 2026-11-08 : « pour la Ville, il faut encore −70 % des personnes ») : en Ville,
+// toutes qualités, on garde 3 personnes sur 10 de chaque liste (marcheurs, clients des terrasses, passants des passages piétons ; les rares
+// promeneurs avec chien restent tous : leur chien est dessiné par la Ville), dans
+// l'ordre des tirages et réparties régulièrement (la n-ième est gardée si ⌊(n+1)·3/10⌋ > ⌊n·3/10⌋) : aucune longue portion vide,
+// mêmes proportions ; les familles se forment ensuite parmi les marcheurs gardés (même part d'enfants)
+constexpr int VILLE_GARDES_SUR_10 = 3;
+inline bool garderVille(int n) { return n >= 0 && ((n + 1) * VILLE_GARDES_SUR_10) / 10 > (n * VILLE_GARDES_SUR_10) / 10; }
+
 } // namespace wfs::apparition

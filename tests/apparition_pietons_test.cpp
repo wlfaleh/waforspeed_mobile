@@ -1,5 +1,6 @@
 // WFS-257 (ANO-130) : apparition naturelle des personnes, règles pures de src/world/foule_apparition.h, sans GPU.
 #include <cmath>
+#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -86,6 +87,13 @@ int main() {
         Etat e; e.lieu = Lieu::HorsCadre; e.op = 1; e.lod = 1;
         avancerOpacite(e, false, false, false, 0.f, dt);
         cas("hors de la portée : absente, détail oublié", e.op == 0.f && e.lieu == Lieu::Absente && e.lod < 0);
+    }
+    {   // WFS-317 (RG-03) : Ville : 3 sur 10 gardés, réguliers (jamais plus de 3 omis de suite), sur toute longueur de liste
+        int gardes = 0, trou = 0, trouMax = 0;
+        for (int n = 0; n < 1000; n++) { if (garderVille(n)) { gardes++; trou = 0; } else trouMax = std::max(trouMax, ++trou); }
+        int g10 = 0; for (int n = 0; n < 10; n++) g10 += garderVille(n);
+        cas("WFS-317 : Ville : 300 gardés sur 1 000, 3 sur chaque dizaine, au plus 3 omis de suite", gardes == 300 && g10 == 3 && trouMax <= 3);
+        cas("WFS-317 : rang négatif : jamais gardé", !garderVille(-1));
     }
     std::printf("apparition : %s (%d échec(s))\n", echecs ? "ÉCHEC" : "OK", echecs);
     return echecs ? 1 : 0;
