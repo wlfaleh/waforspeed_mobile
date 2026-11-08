@@ -3956,6 +3956,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - taille de l'accroche harmonisée : 10 lignes ajoutées et 3 modifiées dans `adapter()`.
 - **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
 - **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
+
 ### 2026-11-08 16:04:24 — WFS-308 : corrections du 1er refus du lead dev (PR #269) (Claude, agent 3 (01UY1Vv3))
 - **1. Police perdue si la fenêtre disparaît pendant les CGU** : cause : `termGraphics` fermait le renderer sans libérer l'atlas (`ui::unload` seulement via `game.shutdown`), `F.ready` restait vrai et `chargerPolice` ne refaisait rien sur le nouveau renderer. Correction : `Cgu::perdreFenetre` appelle `ui::libererPolice` (accroche de 2 lignes dans `text.h` / `text.cpp`, enveloppe publique de `unload`) avant `renderer.shutdown()` ; au retour `Cgu::demarrer` recharge la police. Preuve : banc `cgu`, cas « fenêtre perdue puis retrouvée » (shutdown puis init du renderer pendant les CGU) : police libérée puis rechargée, capture `cgu-reprise` lisible.
 - **2. Texte figé pendant le glissement** : cause : délai de 33 ms de `ALooper_pollOnce`, la boucle ne sortait pas tant que les MOVE arrivaient. Choix : délai 0 pendant les CGU, comme en jeu ; l'image est rythmée par la présentation (FIFO) dans `Cgu::image`, donc une image par lot d'entrées, sans attente active hors présentation.
@@ -3972,6 +3973,36 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Correction** : `Cgu::premierLancement()` (ouvert ET mode `Premier`) remplace `ouvert()` dans les 5 conditions d'`android_main.cpp` (même nombre de lignes, accord du PO inchangé) ; `Cgu::image` ne fait rien hors du premier lancement ; la lecture se ferme à l'arrêt du jeu (`shutdown` du système des Réglages, appelé par `Game::shutdown` dans `termGraphics`).
 - **Preuve** : banc `cgu` : lecture ouverte depuis les Réglages (`premierLancement` faux : OK) → `g.shutdown` (lecture fermée : OK) → `r.shutdown`, `r.init`, `g.init` (jeu rechargé, lecture fermée, pas d'écran des CGU : OK) ; capture `cgu-retour-jeu` (menu revenu) ; parcours complet 0 écart. Entrée du journal de 15:40:24 remise à sa place.
 
+### 2026-11-08 18:23:09 — WFS-326 fusionné par le lead dev (lead-dev)
+- **PR #275**, 2e revue sur e0ceeb93. Le développeur a répondu point par point : les 5 points de la 1re revue sont corrigés (captures aux deux lieux de l'utilisateur en Haute et en Basse, test CPU, longueur entière, `lmax`, taille de l'accroche).
+- **18 captures ouvertes** :
+  - les vitrines et stores sans immeuble des virages 1 et 2, de nuit, ont disparu ;
+  - de jour, les terrasses et les kiosques posés sur la pelouse ont disparu ;
+  - aux lieux `apk916-5` et `apk916-2`, avant et après sont identiques, sans rien qui flotte ;
+  - rien n'est dégradé.
+- **Diff entier relu.** `test_ville_lieux` et `test_direction_anneau` relancés sur la fusion locale avec `main` (WFS-316 compris) : OK.
+- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash 4a0eb90 (`expectedHeadSha` e0ceeb93).
+- Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
+- **Pour le PO** : sur le téléphone (`apk916-5`), les « losanges » ressemblent aux fenêtres du rez-de-chaussée, à leur place dans la façade, avec un cadre rouge et un mur presque noir.
+  - Le banc ne reproduit pas ce rendu.
+  - Si l'utilisateur dit non, la suite tient plutôt à l'éclairage du mur et à l'exposition de nuit (WFS-230) qu'aux commerces.
+
+### 2026-11-08 18:29:41 — WFS-317, partie 2 : PR #276 refusée par le lead dev (lead-dev)
+- 1re revue, commit b1ac2ca : 23 paires de captures ouvertes, diff relu en entier (`pietons.cpp`, `conducteurs.*`, `foule_apparition.h`, `qualite_auto`, 3 tests). **Le code est bon** : niveau de détail sur la vraie distance à la caméra, Ville 3 sur 10 par liste, Basse 8 / 20 / 30 m pour les conducteurs, `texteComptes` testé.
+- **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
+- À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
+- Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 18:38:08 — WFS-308 : PR #269 refusée par le lead dev, 3e revue (lead-dev)
+- 3e revue, commit 38ad6a8a. Le développeur a répondu « Bien reçu », puis « corrigé dans » point par point.
+- **Le bloquant du 2e refus est corrigé** : `Cgu::premierLancement()` est utilisé dans les 5 conditions d'`android_main.cpp`, et la lecture des Réglages se ferme par `Reglages::shutdown`, appelé par `Game::shutdown` (vérifié dans `game.cpp`). Le cas est couvert par le banc `cgu` (`cgu-retour-jeu`).
+- 15 captures « après » et 7 « avant » ouvertes, toutes bonnes. Diff entier relu : **le code est bon**.
+- **Bloquant** :
+  - La branche ne se fusionne plus : conflit dans `journal.md` avec `main` (WFS-326, #275, fusionné à 18:22:43, juste avant la synchronisation).
+  - Les captures « après » (7224e2c3) ont été faites **avant** la synchronisation, sans WFS-265 ni WFS-316. Par exemple, `reglages-menu` affiche 2752 k triangles avant et 3247 k après.
+- Remarque non bloquante : il reste une petite fenêtre si la fenêtre est perdue dans le même lot d'événements que « Accepter » (état `Accepte`) : `termGraphics` ne ferme alors ni le renderer ni Vulkan.
+- Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
+- **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
 ### 2026-11-08 18:39:16 — WFS-308 : 3e refus du lead dev (PR #269) : synchronisation, captures après synchronisation, cas « Accepter » puis fenêtre perdue (Claude, agent 3 (01UY1Vv3))
 - **Cas rare signalé par le lead dev** : fenêtre perdue dans le même lot d'événements que l'appui sur « Accepter » (état `Accepte`, pas encore traité par `Cgu::image`) : `termGraphics` ne fermait ni le renderer ni Vulkan. Correction : `Cgu::tientLaFenetre()` (premier lancement ouvert ou `Accepte`) dans la condition de `termGraphics` (même ligne) ; `perdreFenetre` note alors l'acceptation, puis le chargement normal se fait au retour. Preuve au banc `cgu`.
 - Branche synchronisée avec `main` **avant** les captures ; captures régénérées ensuite (commit des captures après celui de la synchronisation).
