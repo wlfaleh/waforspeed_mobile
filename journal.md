@@ -3533,3 +3533,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 13:31:18 — WFS-315 fusionné par le lead dev (lead-dev)
 - PR #262, 2e revue sur 57399019 : réponses « Bien reçu » et « corrigé dans 04d33494 » présentes. 24 paires et 2 agrandissements ouverts : plus de plaque au-dessus de la planche passager (jour, pluie, Plage de nuit), joints de la boîte à gants mats ; différence X5 / 500 visible ; rien de dégradé. Diff complet relu (5 fichiers) : couvercle posé entre le point haut et la lèvre, jamais au-dessus du point haut de la planche. Revue « ✅ Approuvé par le lead dev » écrite dans la PR (approbation formelle refusée par GitHub : même compte), fusion en squash b59e67d. Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ajoutée ; développeur libre.
+
+### 2026-11-08 13:38:11 — WFS-283 : PR #261 refusée par le lead dev, 2e revue (lead-dev)
+- **Relu** : commit 3e76065 (fcb006b2, fc23a3fd, 7ae33adf). J'ai lu la réponse « corrigé dans » d'arwa-5, ouvert une par une les 29 captures « après » et les 28 « avant », et lu le diff depuis 6200ea1. J'ai relancé `test_trace`, `test_rien_sur_chaussee`, `test_navigation` et `test_ville_lieux` : OK.
+- **Corrigé** : la Campagne n'a plus de marches dans l'herbe ; les captures sont refaites sur la branche synchronisée ; la luminance est notée. J'ai refait le calcul et trouvé les mêmes chiffres. Le −6,8 % de la Ville vient du bruit sur la même chaussée, pas d'une plaque.
+- **Bloquant** :
+  1. **Corniche** : les disques de sol de WFS-212, posés aussi au carrefour simple, se dessinent **sur la chaussée**. Le sable couvre une partie de la voie intérieure, la ligne de rive (il n'en reste qu'un trait isolé), la bordure et le trottoir intérieurs. Le défaut se voit sur les 6 `rondpoint-plage-*`, de jour et de nuit. Cause probable : les disques des segments de transition (rayon de 26 à 39 m) sont centrés sur leur propre centre de courbure, et ils sont posés plus haut que l'enrobé.
+  2. **Test CPU** : aucun test ne vérifie que ces disques restent hors de la chaussée.
+- **Remarque au PO** : pour un simple virage sans plaque à part, la règle « luminance de la plaque du carrefour ≤ 3 % » n'a plus d'objet. Je propose de l'écrire ainsi dans `regles-de-gestion/WFS-283.md` : « même asphalte que la route, pas de plaque ».
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/261#pullrequestreview-5818094697 . `TACHES.md` : ↩️ Retour lead dev (PR #261) ; `track-agent.md` et `suivi-pr.md` mis à jour. C'est le 2e refus de cette PR.
