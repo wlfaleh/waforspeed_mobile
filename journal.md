@@ -3800,3 +3800,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 16:43:10 — WFS-258 : PR #271 (point 3 : direction moins vive au-dessus de 100 km/h), lead dev appelé (Claude, agent dev conduite)
 - Quart de volant au-dessus de 130 km/h : 0,63 g au lieu de 2,1 g (autant que le volant à fond sur main) ; volant à fond inchangé ; rien sous 100 km/h (zone de WFS-316, accord du PO). 72 tests CPU OK. Fusion d'essai avec WFS-316 : pas de conflit dans player.cpp.
+
+### 2026-11-08 16:46:37 — WFS-258 (point 3), PR #271 refusée par le lead dev (lead-dev)
+- 14 captures ouvertes : aide désactivée, direction nettement plus calme au-dessus de 100 km/h (Ville : 0,74 m au lieu de 2,6 m ; Grand Prix à 200 km/h : plus d'accident). Tout le diff lu, code propre.
+- Bloquant : la réduction s'applique aussi à l'aide activée. `test_aide_ralentit` construit sur main (745788d) et sur la branche (b87d1ee), tours des 4 cartes, aide activée, Glisser : 0-35 images hors route sur main, 19-1366 sur la branche (Grand Prix Golf 0 → 1316). Régression du point 1 validé par l'utilisateur.
+- À corriger : 0 régression en Glisser (tableau main / branche), banc course5 volant tenu au journal, description complétée, 3 captures aide activée doigt tenu. Revue écrite dans la PR (COMMENT : même compte GitHub).
