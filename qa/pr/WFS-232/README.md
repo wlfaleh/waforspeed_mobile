@@ -1,12 +1,15 @@
 # WFS-232 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-232` comparée à `origin/main` ; bancs : motos texte parcours ; filtre : `@(trafic-motos-*|course-cam0-0|parcours-course|parcours-fin)`.
+Branche `feature/waforspeed-232` comparée à `origin/main` ; bancs : motos (sans « avant » : banc nouveau), texte et parcours (avant / après) ; filtres : `trafic-motos-*`, `course-cam0-0`, `parcours-course`, `parcours-fin`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
 | `trafic-motos-choc-1` | — | ![après](apres-trafic-motos-choc-1.jpg) |
 | `trafic-motos-choc-2` | — | ![après](apres-trafic-motos-choc-2.jpg) |
 | `trafic-motos-choc-3` | — | ![après](apres-trafic-motos-choc-3.jpg) |
+| `trafic-motos-cote-routiere` | — | ![après](apres-trafic-motos-cote-routiere.jpg) |
+| `trafic-motos-cote-scooter` | — | ![après](apres-trafic-motos-cote-scooter.jpg) |
+| `trafic-motos-cote-sportive` | — | ![après](apres-trafic-motos-cote-sportive.jpg) |
 | `trafic-motos-normal-plage-jour` | — | ![après](apres-trafic-motos-normal-plage-jour.jpg) |
 | `trafic-motos-normal-plage-nuit` | — | ![après](apres-trafic-motos-normal-plage-nuit.jpg) |
 | `trafic-motos-normal-ville-jour` | — | ![après](apres-trafic-motos-normal-ville-jour.jpg) |
@@ -41,14 +44,17 @@ Branche `feature/waforspeed-232` comparée à `origin/main` ; bancs : motos text
 | `parcours-fin` | ![avant](avant-parcours-fin.jpg) | ![après](apres-parcours-fin.jpg) |
 | `course-cam0-0` | ![avant](avant-course-cam0-0.jpg) | ![après](apres-course-cam0-0.jpg) |
 
-> Colonne « Avant » des vues `trafic-motos-*` : le banc `motos` est nouveau (absent de `main`) ; à sa place, la **même vue au même instant, deux-roues retirés** (captures `…-sans` du même banc ; pour les courbes, à côté de l'image n° 2). `course-cam0-0` et `parcours-*` : vrai « avant » de `main`.
+> Colonne « Avant » des vues `trafic-motos-*` : le banc `motos` est nouveau (absent de `main`) ; à sa place, la **même vue au même instant, deux-roues retirés** (captures `…-sans` du même banc ; pour les courbes, à côté de l'image n° 2). `course-cam0-0` et `parcours-*` : vrai « avant » de `main` (captures du passage précédent, code de ces vues inchangé depuis).
 
-### Agrandissements (×2 à ×3) des captures « après », recadrées autour des deux-roues
+### Agrandissements des captures « après », recadrées autour des deux-roues
 
+![zoom-cote-sportive](zoom-cote-sportive.jpg)
+![zoom-cote-scooter](zoom-cote-scooter.jpg)
+![zoom-cote-routiere](zoom-cote-routiere.jpg)
+![zoom-choc-2](zoom-choc-2.jpg)
+![zoom-choc-3](zoom-choc-3.jpg)
 ![zoom-pres-ville-jour](zoom-pres-ville-jour.jpg)
 ![zoom-pres-ville-nuit](zoom-pres-ville-nuit.jpg)
 ![zoom-pres-plage-nuit](zoom-pres-plage-nuit.jpg)
 ![zoom-virage-ville-jour-2](zoom-virage-ville-jour-2.jpg)
 ![zoom-phare-plage-nuit](zoom-phare-plage-nuit.jpg)
-![zoom-choc-2](zoom-choc-2.jpg)
-![zoom-choc-3](zoom-choc-3.jpg)
