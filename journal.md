@@ -4121,3 +4121,5 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 
 ### 2026-11-08 20:42:00 — WFS-268 décliné par l'utilisateur : PR #248 fermée sans fusion, WFS-273 décliné, WFS-331 créé (po-scrum-master)
 - Branche gardée. WFS-301 partie B à revoir. Agent 0 libre.
+
+### 2026-11-08 20:44:49 — Réglages (WFS-290 → 291 → 318) donnés à Claude, agent 2, libre (décision de l'utilisateur) (po-scrum-master)

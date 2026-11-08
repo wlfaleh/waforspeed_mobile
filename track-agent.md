@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-08 20:42:00 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-08 20:44:49 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-281, WFS-328, WFS-292 | tickets en parallèle (autorisation de l'utilisateur), épics différentes : P1 WFS-281 trafic qui s'accumule (E3, exception PO) : ↩️ retour lead dev sur PR #249 (3e refus, 158cdee) : à corriger ; **P1 WFS-328** départ de nuit blanc / rose (ANO-177, E13), attribué 18:15 UTC ; **P2 WFS-292** fumée des pneus de jour, choc du banc d'effets, Golf bleue de nuit (ANO-165, ANO-167 ; E4 + E10 en exception PO : `effets_*`, `bench_effets.*`, `eclairementRouteAutour()` de `vehicule.glsl`), attribué 18:15 UTC ; avant : WFS-284 🟣 (#250, 94f6f41), WFS-266 🟣 (#252, 8c8bdc7) | 281 : 19:06 (158cdee) ; 328 : 19:31 (bc1f616) ; 292 : 19:38 (7ffbfa0) | 🔧 en cours |
 | Claude, agent 1 (01UY1Vv2) |  | P1 [TECHNIQUE] performance : partie 1 (I9) fusionnée (#270) ; partie 2 (personnes, conducteurs, Ville à 30 %) en PR #276, lead dev appelé ; ensuite WFS-329 (accord de l'utilisateur) | 317 : branche `feature/waforspeed-317`, PR #276 | ✅ PR #276 fusionnée par le lead dev (56377bb, 20:18 UTC) : libre pour WFS-329 |
-| Claude, agent 2 (01UY1Vv5) |  | P2 Marche arrière bien visible : pastille « R » au HUD | 296 : 17:23 (eab3e0f) ; PR #273 ouverte, `lead-dev` appelé | 🟢 Libre (PR #273 fusionnée par le lead dev, 8444b61) |
+| Claude, agent 2 (01UY1Vv5) | WFS-290 | Réglages : boutons Réglages / Fermer (WFS-290), puis onglets (WFS-291) et fantôme du record (WFS-318) ; attribué 20:44 (décision de l'utilisateur) | 290 : branche à créer | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-301 | domaine **cartes et téléchargement** (skill `expert-cartes`) : P1 [TECHNIQUE] WFS-301 paquets de cartes, socle 1 ; **partie A maintenant** (format `.wfcarte`, `verifier_carte`, 2e source de `readAsset()`, secours, tests, banc `cuisson` partiel ; fichiers neufs `src/core/carte_cuite.*` + accroches E0 ≤ 10 lignes), **partie B après la fusion de WFS-268** (`lots_decor.*`, RG-04, RG-07) ; deux PR ; attribué 20:15 UTC à sa demande (décision de l'utilisateur « Go ») ; avant : WFS-308 🟣 (#269, 5f2725e) | 301 : 20:17 (fc95fc5) | 🔧 en cours |
 | Claude, agent 4 (011cpqZan) | — (WFS-316 fusionné) | direction, 2e passage (un seul ticket sur ordre de l'utilisateur, puis arrêt) : PR #267 fusionnée par le lead dev (squash 7dbea2f), 🟡 à valider par l'utilisateur | 316 : fusionnée 18:17 (7dbea2f, #267) | 🟢 libre |
 | Claude, agent 5 (011cpqZaDiS2) | WFS-300 | **un ticket facile et rapide sur ordre de l'utilisateur, puis arrêt** : P2 [TECHNIQUE] WFS-300 banc qualité, captures stables (sondes prêtes avant chaque capture, plus de façades bleues), journal plus clair (E4, exception PO : `src/render/qualite_banc.cpp` seul) ; attribué 15:25 UTC à sa demande ; avant : WFS-268 repris par Agent 0 developer à 11:23 UTC (règle des 10 h) | 300 : 17:04 (22390b9) | ↩️ retour lead dev sur PR #272 : à corriger (synchroniser avec main, 2 conflits ; captures à régénérer) |
