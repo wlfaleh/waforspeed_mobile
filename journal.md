@@ -4387,3 +4387,55 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - À la demande de l’utilisateur (« sortir plus d’anomalies ») : pluie dans l’habitacle, volant du cockpit fixe, compteur illisible, halo des lampadaires décalé, flammes sur le trafic, bandeau Travaux sans chantier, encart Police inutile, score qui baisse, pluie verticale. ANO-175 et ANO-152 toujours là. Transmis au PO.
 
 ### 2026-11-08 22:46:35 — Relecture QA de la Poursuite (APK 931) : ANO-186 à 194 rattachées (334, 323, 333) ; WFS-337 (halos) et WFS-338 (Poursuite) créés en P2 (po-scrum-master)
+
+### 2026-11-08 22:47:11 — WFS-281 : fin de mon travail (PR #249 fermée à 22:33, remplacée par WFS-336) ; mesures et code laissés au lead dev (agent arwa)
+- **Contexte** : #249 est fermée sans fusion (décision de l'utilisateur, 22:33:47 UTC) ; WFS-336 est confié au lead dev. Je ne pousse plus rien sur #249. Ce qui suit sert à WFS-336 : branche `feature/waforspeed-281` à **d1f33c3**, synchronisée avec `main` à 22:4x, à reprendre ou à copier.
+- **Code (158cdee, 71e540e, synchronisé d1f33c3)** :
+  - montée de difficulté gardée et plafonnée (décision 2 du PO) : réserve préparée à `reset`, +15 % (`MONTEE_MAX`), activée par `addCars` sans aucune création en course, total constant ;
+  - `Traffic::regulerDensite` (une fois par seconde, jeu seulement) : hors de la vue (devant 300–700 m, derrière −400 à −40 m), une zone au-dessus de 0,8 × la densité moyenne envoie ses voitures les plus lentes à plus de 800 m du joueur. Rien à l'écran : la vue du trafic va de −30 à +300 m, et ni rétroviseur ni caméra arrière ne dessinent le trafic ;
+  - `keepTrafficInView` = celui de `main` (décision 3) ;
+  - `trafficMedianes` pour le banc perf.
+- **Fonctions touchées** (coordination WFS-232, fusionné) : `Traffic::reset`, `addCars`, `tirerZ` (nouvelle, extraite d'`addCars`, mêmes tirages), `advance`, `regulerDensite` (nouvelle) ; `TrafficSystem::render` (mesure), `trafficMedianes` (nouvelle).
+- **Accroches annoncées** : `src/render/bench_perf.cpp` (5 lignes : `WFS_PERF_AVANCE_RENDU`, ligne « trafic : N voitures », ligne des médianes) ; `src/platform/desktop_main.cpp` (1 ligne : `WFS_PARCOURS_COURSE_S`, course longue du parcours, sans rendu).
+- **RG-01**, relevé toutes les 30 s pendant 10 min (graine 1, `test_trafic_duree --journal`, avec ou sans `--avant`, P90 de chaque fenêtre de 30 s) :
+| carte | version | total (30 s → 600 s) | < 150 m | dessinés Haute (P90 30 s) | dessinés Basse (P90 30 s) | arrêtées | immobilité max |
+|---|---|---|---|---|---|---|---|
+| Ville | avant (main) | 60 78 90 102 114 114 114 114 114 114 114 114 114 114 114 114 114 114 114 114 | 0 2 6 6 2 4 7 10 4 9 2 4 13 13 10 15 9 6 6 6 | 3 6 12 13 6 8 8 12 10 11 7 5 14 14 12 14 14 6 5 6 | 3 3 3 6 5 6 6 3 6 5 5 2 4 6 6 6 6 4 5 6 | 0 0 0 0 0 2 1 2 1 0 0 0 1 2 5 0 1 1 0 0 | 6.7 s |
+| Ville | après | 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 | 1 1 1 2 1 0 2 1 2 0 2 2 0 1 1 1 1 1 1 1 | 2 2 1 2 2 2 2 3 2 2 2 2 2 2 2 2 2 3 2 2 | 1 1 1 2 2 1 2 2 1 2 1 2 2 2 1 2 1 2 1 1 | 0 0 0 1 0 2 0 2 1 0 0 0 1 1 0 2 2 0 0 0 | 5.2 s |
+| Corniche | avant (main) | 47 59 77 89 101 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 | 4 2 1 5 3 5 5 11 14 10 11 4 3 12 7 3 5 6 10 8 | 5 7 5 6 8 11 7 12 10 11 11 8 5 13 13 13 8 8 11 12 | 2 4 1 5 6 5 3 6 6 6 6 6 4 6 5 6 4 4 6 6 | 0 0 0 0 0 0 2 1 7 0 0 0 0 0 0 2 5 3 0 0 | 5.7 s |
+| Corniche | après | 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 | 0 1 1 2 2 1 3 2 1 1 0 2 1 1 0 0 1 1 1 0 | 3 2 2 2 2 2 2 2 2 1 2 2 2 3 2 2 3 2 2 3 | 2 2 2 2 2 1 2 2 2 1 2 0 2 2 2 2 2 1 2 2 | 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 2 0 0 | 7.0 s |
+| Campagne | avant (main) | 41 53 71 89 101 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 | 2 4 2 4 4 10 6 5 1 7 6 8 6 5 5 6 4 5 11 19 | 4 5 5 5 5 9 7 8 8 7 8 9 6 7 10 14 4 5 12 14 | 3 4 3 3 4 6 6 5 4 5 4 6 4 4 4 6 3 4 6 6 | 0 0 0 0 0 0 2 4 2 0 0 0 0 0 0 0 2 5 0 0 | 7.0 s |
+| Campagne | après | 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 | 0 0 1 0 0 0 2 2 2 1 1 1 0 2 1 0 0 2 1 2 | 1 2 2 1 1 2 2 2 2 2 2 2 3 2 1 2 3 2 2 3 | 1 1 1 1 1 2 1 1 2 1 1 1 2 1 1 1 2 1 1 2 | 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 | 0.9 s |
+| Grand Prix | avant (main) | 28 40 58 76 94 106 112 112 112 112 112 112 112 112 112 112 112 112 112 112 | 3 6 1 0 4 9 2 3 7 10 4 5 9 8 6 7 7 8 1 1 | 4 6 5 2 8 8 6 6 11 11 7 5 14 11 10 13 12 8 5 2 | 2 4 3 1 5 5 4 3 6 5 5 4 6 6 4 6 6 5 4 1 | 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 | 0.0 s |
+| Grand Prix | après | 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 | 1 0 0 1 0 2 1 1 0 0 0 1 1 0 1 1 1 1 1 0 | 2 1 0 1 1 2 2 2 1 0 0 1 1 0 1 1 1 1 1 1 | 1 1 0 0 1 1 1 2 1 0 0 0 1 0 0 1 1 1 1 1 | 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 | 0.0 s |
+- **RG-02 (règle du PO du 20:17:58)** : `test_trafic_duree`, 10 graines, 4 cartes, Haute et Basse, chaque fenêtre de 30 s.
+  - Après : **0 fenêtre hors règle sur 1600**. Avant (`main`) : 771 sur 1600. Témoin `--ideal` (trafic reposé au hasard) : 10 sur 1600.
+  - P90 des véhicules dessinés : 1re minute 2,01, minutes 2 à 10 : 1,74 (avant : 4,11 → 8,84).
+- **Banc perf** (médianes sur 90 images, avant → après, R = plus haute médiane de la 1re minute) :
+| carte | qualité | R après (plus haute médiane de la 1re minute) : appels / triangles / véhicules | ≈ 2,8 min : avant → après | ≈ 10 min : avant → après | limite 20:17 (appels / triangles / véhicules) | tenu (20:37 : ≤ 1,3 × R ; 20:17 : ≤ max(1,3 R ; R + 2c)) |
+|---|---|---|---|---|---|---|
+| Ville | Haute | 22 / 9547 / 2 | 41 / 44899 / 6 → 0 / 0 / 2 | 69 / 53156 / 4 → 94 / 58020 / 3 | 44 / 19094 / 4 | non ; non |
+| Ville | Basse | 5 / 31908 / 1 | 17 / 24427 / 2 → 0 / 0 / 2 | 24 / 77442 / 3 → 30 / 32680 / 2 | 15 / 95724 / 3 | non ; non |
+| Corniche | Haute | 11 / 14403 / 2 | 89 / 30501 / 12 → 85 / 98709 / 4 | 331 / 520410 / 14 → 93 / 37005 / 3 | 22 / 28806 / 4 | non ; non |
+| Corniche | Basse | 9 / 8709 / 2 | 5 / 22111 / 2 → 31 / 88744 / 4 | 121 / 274659 / 6 → 3 / 27265 / 1 | 18 / 17418 / 4 | non ; non |
+| Campagne | Haute | 132 / 46898 / 4 | 103 / 118200 / 4 → 46 / 31311 / 2 | 184 / 74345 / 14 → 49 / 53156 / 3 | 198 / 70347 / 6 | oui ; oui |
+| Campagne | Basse | 4 / 45546 / 1 | 21 / 31908 / 1 → 9 / 59177 / 2 | 29 / 70134 / 2 → 9 / 66559 / 2 | 12 / 136638 / 3 | non ; oui |
+| Grand Prix | Haute | 62 / 53890 / 3 | 90 / 147207 / 8 → 116 / 77023 / 4 | 47 / 47221 / 5 → 26 / 17654 / 3 | 103 / 89817 / 5 | non ; non |
+| Grand Prix | Basse | 30 / 41697 / 2 | 87 / 144448 / 5 → 33 / 78224 / 2 | 29 / 32678 / 3 → 3 / 27265 / 1 | 60 / 83394 / 4 | non ; oui |
+
+Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : voir colonne)
+- **Reproduction exacte du ticket** (Ville Haute, `WFS_PERF_AVANCE=10000 WFS_PERF_CHAUFFE=30 WFS_PERF_IMAGES=90`) :
+  - avant : 95 voitures, moyenne 77 appels / 88 166 triangles, médiane 58 / 92 120 / 6 véhicules ;
+  - après : 54 voitures, moyenne 25 / 11 331, médiane 47 / 21 246 / 2.
+  - Les 644 du ticket ont été mesurés sur c9eda61 : ≈ 46 appels par voiture alors, ≈ 13 aujourd'hui (non vérifié sur c9eda61).
+- **Risque signalé au PO (format § 6 du skill)** :
+  - Constat : au banc perf, les véhicules dessinés tiennent RG-02 (8 cas sur 8), mais les appels et triangles ne la tiennent pas à chaque mesure (règle du 20:37 : 1 cas sur 8 ; règle du 20:17 : 3 sur 8). Ils dépendent de la distance de la voiture la plus proche : modèle complet ≈ 30 à 47 appels, voiture lointaine ≈ 6 à 12. Exemple, Ville Haute : départ 2 voitures lointaines = 22 appels ; 10 min 3 voitures dont une proche = 94 appels. Il n'y a plus d'accumulation : Corniche Haute à 10 min, avant 331 appels et 14 voitures, après 93 et 3.
+  - Conséquence : le critère « appels ≤ 1,3 × le départ » ne peut pas être tenu par le trafic seul.
+  - Proposition : critère sur les véhicules dessinés (tenu), ou ticket E4 (rendu) pour réduire le coût d'une voiture proche (matériaux regroupés, 1er seuil de LOD). Autre option : un plafond de voitures proches à pleine qualité, qui changerait le rendu.
+  - Décision attendue de : PO.
+- **Pilote automatique du banc** (hors zone) : à 10000 images en Ville, la Golf sort de la route avant comme après ; à 10600, `main` est sur le trottoir et l'après sur la chaussée. Captures : `qa/pr/WFS-281/` (12 paires, 71e540e).
+- **RG-07** : tests CPU **80 réussis** ; parcours complet, en standard et avec 10 min de course (`WFS_PARCOURS_COURSE_S=600`), vue normale et vue Cockpit : **0 écart** (d1f33c3).
+- **Pour WFS-336** :
+  - 71e540e ajoute à 158cdee le test RG-02 « chaque fenêtre » (règle du 20:17 : P90 sur 30 s, 10 graines, 0 hors règle sur 1600) et la régulation à 0,8 (à 1,0 : 6 fenêtres hors règle sur 1600) ;
+  - la règle du 20:37 (médianes glissantes de 128 images, appels et triangles) n'est pas tenue au banc, à cause du coût d'une voiture proche (voir le risque ci-dessus).
+- **Aucune CI de branche lancée** ; pas de fusion.
