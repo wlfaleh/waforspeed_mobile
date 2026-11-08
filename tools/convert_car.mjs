@@ -23,12 +23,25 @@
 // WFS_ROUES=forme : pièces en forme de roue (rondes, posées au sol, sur un côté) regroupées à part avec le drapeau 128,
 // pour les modèles dont les roues n'ont pas de nom reconnaissable et partagent leur matériau avec la carrosserie (GT86).
 // WFS-232 : WFS_OPAQUE=<regex matériau> : matériaux BLEND traités en alpha découpé (surfaces opaques mal exportées).
+// WFS-232 (retour du lead dev) : deux-roues :
+//   WFS_FEU=<regex nœud>, WFS_PHARE=<regex nœud> : pièces sorties de leur matériau partagé (un matériau à part, mêmes réglages),
+//     marquées feu arrière (drapeau 4) ou phare (drapeau 8) : feux d'un modèle dont l'optique partage le matériau du cadre ;
+//   WFS_EXCLURE_NOEUD=<regex nœud> : pièces retirées par nom de nœud (bagage posé sur la selle, logos) ;
+//   WFS_ALLEGER=« matériau=part ; … » : matériaux allégés à cette part de leurs triangles (meshoptimizer, bords libres, sommets
+//     compactés), pour les pièces que tools/simplifier_voiture.mjs ne réduit pas (bords verrouillés : pneus sculptés, chaîne) ;
+//     « matériau=part! » : sommets soudés par position d'abord (maillages en soupe de triangles) ;
+//   WFS_ROUES_2R=<regex> : pièces qui tournent avec les roues (nom de nœud ou de matériau : pneus, jantes, disques), coupées
+//     triangle par triangle en roue avant (z < 0) et roue arrière (z > 0) ; WFS_ROUES_2R_CYL=<regex> : dans ces matériaux
+//     partagés (rayons, moyeux mêlés au chrome du cadre), seuls les triangles entièrement dans le cylindre d'une roue
+//     (rayon 0,80 × celui du pneu, à 6,5 cm au plus du plan de la roue) ; le cylindre est tiré de WFS_ROUES_2R ;
+//   WFS_PIECE=avant|arriere : n'écrit que cette roue (même repère que le modèle entier) ; sans WFS_PIECE, le modèle est écrit
+//     sans ses roues. La mise à l'échelle et la boîte de l'en-tête du corps restent celles du modèle entier.
 // WFS-158 (RG-A, M-04) : WFS_PLAQUE=<regex matériau> : plaques avant et arrière remises au format européen 520 × 110 mm ;
 // WFS_TEXTURES=« matériau|couleur=fichier[|normale=fichier] ; … » : images du dépôt à la place des textures d'un matériau
 // (plaques au nom de l'auteur du modèle, remplacées par les plaques neutres de tools/plaques_neutres.mjs).
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { MeshoptDecoder } from 'meshoptimizer';
+import { MeshoptDecoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import fs from 'fs';
 import { tangentes } from './tangentes.mjs';   // WFS-149 (RG-04)
@@ -105,6 +118,7 @@ let list = prims.filter((p) => {
 });
 // WFS-134 (RG-11) : WFS_EXCLURE=<regex> retire des pièces par nom de matériau (LOD du jeu web : silhouette « wfs_far »)
 if (process.env.WFS_EXCLURE) { const rx = new RegExp(process.env.WFS_EXCLURE); list = list.filter((p) => !rx.test((p.mat && p.mat.getName()) || '')); }
+if (process.env.WFS_EXCLURE_NOEUD) { const rx = new RegExp(process.env.WFS_EXCLURE_NOEUD); list = list.filter((p) => !rx.test(p.name)); }   // WFS-232
 
 // ---------- orientation, échelle, pose au sol ----------
 const rot = (deg) => { const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a); for (const p of list) for (const arr of [p.pos, p.nrm]) for (let i = 0; i < arr.length; i += 3) { const x = arr[i], z = arr[i + 2]; arr[i] = c * x + s * z; arr[i + 2] = -s * x + c * z; } };
@@ -152,6 +166,52 @@ if (process.env.WFS_PLAQUE) {
   b = boxOf(list);
 }
 
+// ---------- WFS-232 : roues des deux-roues sorties du modèle (corps sans roues, ou une seule roue) ----------
+const boiteModele = b.slice();
+let rouesInfo = '';
+if (process.env.WFS_ROUES_2R) {
+  const rxR = new RegExp(process.env.WFS_ROUES_2R, 'i'), rxC = process.env.WFS_ROUES_2R_CYL ? new RegExp(process.env.WFS_ROUES_2R_CYL, 'i') : null;
+  const nomDe = (p) => p.name + ' ' + ((p.mat && p.mat.getName()) || '');
+  const centreTri = (p, t) => [0, 1, 2].map((k) => (p.pos[p.idx[t] * 3 + k] + p.pos[p.idx[t + 1] * 3 + k] + p.pos[p.idx[t + 2] * 3 + k]) / 3);
+  // cylindre de chaque roue : boîte des triangles des pièces entières (0 avant, 1 arrière)
+  const bx = [[1e9, 1e9, 1e9, -1e9, -1e9, -1e9], [1e9, 1e9, 1e9, -1e9, -1e9, -1e9]];
+  for (const p of list) if (rxR.test(nomDe(p))) for (let t = 0; t < p.idx.length; t += 3) {
+    const r = centreTri(p, t)[2] < 0 ? 0 : 1;
+    for (let k = 0; k < 3; k++) for (let c = 0; c < 3; c++) { const v = p.pos[p.idx[t + k] * 3 + c]; bx[r][c] = Math.min(bx[r][c], v); bx[r][c + 3] = Math.max(bx[r][c + 3], v); }
+  }
+  const cyl = bx.map((q) => ({ c: [(q[0] + q[3]) / 2, (q[1] + q[4]) / 2, (q[2] + q[5]) / 2], R: (q[4] - q[1]) / 2 }));
+  const dansCylindre = (p, t, r) => [0, 1, 2].every((k) => {
+    const i = p.idx[t + k] * 3, dy = p.pos[i + 1] - cyl[r].c[1], dz = p.pos[i + 2] - cyl[r].c[2];
+    return Math.hypot(dy, dz) < 0.80 * cyl[r].R && Math.abs(p.pos[i] - cyl[r].c[0]) < 0.065;
+  });
+  const voulu = process.env.WFS_PIECE === 'avant' ? 0 : process.env.WFS_PIECE === 'arriere' ? 1 : -1;
+  let nRoue = [0, 0];
+  const garde = [];
+  for (const p of list) {
+    const entiere = rxR.test(nomDe(p)), partagee = !entiere && rxC && rxC.test(nomDe(p));
+    if (!entiere && !partagee) { if (voulu < 0) garde.push(p); continue; }
+    const tris = [];
+    for (let t = 0; t < p.idx.length; t += 3) {
+      const r = centreTri(p, t)[2] < 0 ? 0 : 1, roue = entiere || dansCylindre(p, t, r);
+      if (roue) nRoue[r]++;
+      if (voulu < 0 ? !roue : roue && r === voulu) tris.push(p.idx[t], p.idx[t + 1], p.idx[t + 2]);
+    }
+    if (!tris.length) continue;
+    // sommets compactés : seuls ceux des triangles gardés (sinon l'autre roue resterait dans le fichier, sans triangle)
+    const neuf = new Map(), pos = [], nrm = [], uv = [];
+    p.idx = new Uint32Array(tris.map((i) => {
+      if (!neuf.has(i)) { neuf.set(i, neuf.size); pos.push(p.pos[i * 3], p.pos[i * 3 + 1], p.pos[i * 3 + 2]); nrm.push(p.nrm[i * 3], p.nrm[i * 3 + 1], p.nrm[i * 3 + 2]); uv.push(p.uv[i * 2], p.uv[i * 2 + 1]); }
+      return neuf.get(i);
+    }));
+    p.pos = new Float32Array(pos); p.nrm = new Float32Array(nrm); p.uv = new Float32Array(uv);
+    garde.push(p);
+  }
+  list = garde;
+  rouesInfo = `roues : avant ${nRoue[0]} triangles (centre y ${cyl[0].c[1].toFixed(3)} z ${cyl[0].c[2].toFixed(3)}, rayon ${cyl[0].R.toFixed(3)}), ` +
+              `arrière ${nRoue[1]} (centre y ${cyl[1].c[1].toFixed(3)} z ${cyl[1].c[2].toFixed(3)}, rayon ${cyl[1].R.toFixed(3)}) ; écrit : ${voulu < 0 ? 'corps sans roues' : process.env.WFS_PIECE}`;
+  b = voulu < 0 ? boiteModele : boxOf(list);
+}
+
 // ---------- WFS-77 : roues reconnues à leur forme (looksLikeWheel du jeu web, en mètres, après la mise à l'échelle) ----------
 let nRouesForme = 0;
 if (process.env.WFS_ROUES === 'forme') for (const p of list) {
@@ -176,7 +236,8 @@ async function tex(t, color, fichier) {
   if (texIndex.has(cle)) return texIndex.get(cle);
   const img = fichier ? fs.readFileSync(fichier) : t.getImage(); if (!img) return -1;
   let s = sharp(Buffer.from(img)), meta = await s.metadata();
-  if ((meta.width || 0) > 1024 || (meta.height || 0) > 1024) s = s.resize(1024, 1024, { fit: 'inside' });
+  const TMAX = parseInt(process.env.WFS_TEXTURE_MAX || '1024', 10);   // WFS-232 : 512 pour les roues des deux-roues (petites à l'écran)
+  if ((meta.width || 0) > TMAX || (meta.height || 0) > TMAX) s = s.resize(TMAX, TMAX, { fit: 'inside' });
   const alpha = color && meta.hasAlpha;
   const buf = alpha ? await s.png({ compressionLevel: 9 }).toBuffer() : await s.jpeg({ quality: 88 }).toBuffer();
   texBlobs.push(buf); texIndex.set(cle, texBlobs.length - 1);
@@ -186,18 +247,27 @@ async function tex(t, color, fichier) {
 // ---------- matériaux (regroupement des primitives par matériau) ----------
 const groups = new Map();   // clé (matériau gltf, ou matériau + « roue » pour WFS_ROUES=forme) -> primitives
 const cleRoue = new Map();
+const rxFeu = process.env.WFS_FEU ? new RegExp(process.env.WFS_FEU) : null, rxPhare = process.env.WFS_PHARE ? new RegExp(process.env.WFS_PHARE) : null;
+const rxSep = rxFeu || rxPhare;
+const cleSep = new Map();   // WFS-232 : matériau + feu / phare -> clé de groupe
 for (const p of list) {
   let k = p.mat;
+  const sep = rxFeu && rxFeu.test(p.name) ? 'feu' : rxPhare && rxPhare.test(p.name) ? 'phare' : '';
+  if (sep) { const c = `${(p.mat && p.mat.getName()) || ''}|${sep}`; if (!cleSep.has(c)) cleSep.set(c, { sep, mat: p.mat }); k = cleSep.get(c); }
   if (p.roue) { if (!cleRoue.has(p.mat)) cleRoue.set(p.mat, { roue: true, mat: p.mat }); k = cleRoue.get(p.mat); }
   if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p);
 }
 const mats = [], meshes = [];
+const allegements = new Map((process.env.WFS_ALLEGER || '').split(';').map((x) => x.trim()).filter(Boolean).map((x) => { const [n, k] = x.split('='); return [n.trim(), { k: parseFloat(k), sloppy: k.trim().endsWith('!') }]; }));
+const allegesInfo = [];
+if (allegements.size) { await MeshoptSimplifier.ready; MeshoptSimplifier.useExperimentalFeatures = true; }   // « Prune » : petites pièces isolées retirées
 for (const [cle, ps] of groups) {
-  const m = cle && cle.roue ? cle.mat : cle, estRoue = !!(cle && cle.roue);
-  const name = ((m && m.getName()) || '') + (estRoue ? ' (roue)' : ''), names = ps.map((p) => p.name).join(' ');
+  const m = cle && (cle.roue || cle.sep) ? cle.mat : cle, estRoue = !!(cle && cle.roue);
+  const name = ((m && m.getName()) || '') + (estRoue ? ' (roue)' : '') + (cle && cle.sep ? ` (${cle.sep})` : ''), names = ps.map((p) => p.name).join(' ');
   let flags = 0;
   const all = (re) => re.test(name) || ps.every((p) => re.test(p.name));
-  if (rx.paint.test(name) && !estRoue) flags |= 1;
+  if (cle && cle.sep) flags |= cle.sep === 'feu' ? 4 : 8;   // WFS-232 : WFS_FEU / WFS_PHARE
+  else if (rx.paint.test(name) && !estRoue) flags |= 1;
   else if (all(rx.tail)) flags |= 4;
   else if (all(rx.head)) flags |= 8;
   // WFS-232 : WFS_OPAQUE=<regex matériau> : surfaces opaques exportées en BLEND par Sketchfab (carénages, moteur des deux-roues) :
@@ -230,6 +300,38 @@ for (const [cle, ps] of groups) {
     for (let i = 0; i < p.idx.length; i++) ix[oi + i] = p.idx[i] + ov;
     ov += n; oi += p.idx.length;
   }
+  // WFS-232 : WFS_ALLEGER : part des triangles gardée pour ce matériau (bords libres), puis sommets compactés
+  const part = allegements.get((m && m.getName()) || '');
+  if (part && ix.length > 300) {
+    // « ! » après la part : sommets soudés par position avant (soupe de triangles : pneus sculptés, chaîne) ; chaque sommet soudé
+    // garde la normale et l'uv de sa première occurrence (pièces sombres et mates : aucune couture visible)
+    const cible = Math.max(3, Math.floor(ix.length / 3 * part.k) * 3);
+    let ixS = ix, vS = v;
+    if (part.sloppy) {
+      const cle = new Map(), garde = [];
+      ixS = new Uint32Array(ix.length);
+      const q = (x) => Math.round(x * 1e4);
+      for (let i = 0; i < ix.length; i++) {
+        const o = ix[i], c = `${q(v[o * 8])},${q(v[o * 8 + 1])},${q(v[o * 8 + 2])}`;
+        if (!cle.has(c)) { cle.set(c, garde.length); garde.push(o); }
+        ixS[i] = cle.get(c);
+      }
+      vS = new Float32Array(garde.length * 8);
+      garde.forEach((o, i) => vS.set(v.subarray(o * 8, o * 8 + 8), i * 8));
+    }
+    const [res] = MeshoptSimplifier.simplify(ixS, vS, 8, cible, 1.0, ['Prune']);
+    const vSrc = vS;
+    const neuf = new Map(), v2 = [];
+    const ix2 = new Uint32Array(res.length);
+    for (let i = 0; i < res.length; i++) {
+      const o = res[i];
+      if (!neuf.has(o)) { neuf.set(o, neuf.size); for (let c = 0; c < 8; c++) v2.push(vSrc[o * 8 + c]); }
+      ix2[i] = neuf.get(o);
+    }
+    allegesInfo.push(`${name} ${ix.length / 3} → ${ix2.length / 3}`);
+    meshes.push({ mat: mats.length - 1, v: new Float32Array(v2), ix: ix2 });
+    continue;
+  }
   meshes.push({ mat: mats.length - 1, v, ix });
 }
 
@@ -250,4 +352,5 @@ const tris = meshes.reduce((s, m) => s + m.ix.length / 3, 0);
 console.log(out.split('/').pop(), `${(fs.statSync(out).size / 1e6).toFixed(2)} Mo`, `${mats.length} matériaux`, `${texBlobs.length} textures`, `${Math.round(tris / 1000)}k triangles`,
   `taille ${(b[3] - b[0]).toFixed(2)}×${(b[4] - b[1]).toFixed(2)}×${(b[5] - b[2]).toFixed(2)} m`, 'peinture:', mats.filter((m) => m.flags & 1).map((m) => m.name).join(',') || 'AUCUNE',
   ...(process.env.WFS_ROUES === 'forme' ? ['roues (forme):', `${nRouesForme} pièces`] : []), `tangentes : ${sansUv} sommets sans uv`,
+  ...(rouesInfo ? [rouesInfo] : []), ...(allegesInfo.length ? ['allégés :', allegesInfo.join(', ')] : []), ...(rxSep ? ['pièces séparées :', mats.filter((m) => / \(/.test(m.name) && !/\(roue\)/.test(m.name)).map((m) => `${m.name} [${m.flags & 4 ? 'feu arrière' : m.flags & 8 ? 'phare' : 'drapeaux ' + m.flags}]`).join(', ')] : []),
   ...(plaquesMesurees.length ? ['plaques :', plaquesMesurees.join(', ')] : []), ...(remplacees.size ? ['textures remplacées :', [...remplacees.keys()].join(', ')] : []));

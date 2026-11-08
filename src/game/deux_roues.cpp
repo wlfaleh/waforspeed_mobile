@@ -25,17 +25,55 @@ struct Humain {
     PoseSquelette pose[3];     // une pose par modèle de deux-roues (mains au guidon, pieds posés)
     mat4 place[3];             // repère du personnage → repère du .wfm (assis sur la selle, tourné vers −Z)
     mat4 casque[3];            // repère du casque (repère du personnage) : suit l'os de la tête comme le maillage
+    PoseSquelette couche;      // RG-05 : après un accident, couché sur le dos au sol (pose debout « Idle_Loop » basculée)
+    mat4 placeCouche, casqueCouche;
     const Plage* corps[3] = {nullptr, nullptr, nullptr};
     bool femme = false; int indice = 0;
 };
+vec3 position(const mat4& m) { return {m.at(0, 3), m.at(1, 3), m.at(2, 3)}; }
 Humain g_h[2];
 Mesh g_coque{}, g_visiere{};
 Material g_matCoque[NB_COQUES]{}, g_matVisiere{};
 bool g_pret = false;
-struct Entree { mat4 monde; int modele; uint32_t graine; float d2; };
-Entree g_file[16]; int g_n = 0, g_dessines = 0;
+struct Entree { mat4 monde, sol; int modele; uint32_t graine; float d2; bool ejecte; int sens; };
+Entree g_file[PILOTES_MAX]; int g_n = 0, g_dessines = 0, g_notes = 0, g_notesDerniere = 0;
 
-vec3 position(const mat4& m) { return {m.at(0, 3), m.at(1, 3), m.at(2, 3)}; }
+// ---------- quaternions (buste penché : rotation d'un os autour de l'axe x du personnage, dans le repère du modèle) ----------
+Quat qmul(const Quat& a, const Quat& b) {
+    return {a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y, a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+            a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w, a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z};
+}
+Quat qconj(const Quat& q) { return {-q.x, -q.y, -q.z, q.w}; }
+Quat qnorm(Quat q) { const float l = std::sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w); return {q.x / l, q.y / l, q.z / l, q.w / l}; }
+// rotation (normée) d'une matrice du modèle (colonnes normées : échelle de l'armature retirée)
+Quat quatDe(const mat4& m) {
+    float c[3][3];
+    for (int j = 0; j < 3; j++) {
+        const vec3 v{m.at(0, j), m.at(1, j), m.at(2, j)};
+        const float l = std::max(1e-8f, std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z));
+        c[0][j] = v.x / l; c[1][j] = v.y / l; c[2][j] = v.z / l;
+    }
+    Quat q; const float tr = c[0][0] + c[1][1] + c[2][2];
+    if (tr > 0) { const float s = std::sqrt(tr + 1) * 2; q = {(c[2][1] - c[1][2]) / s, (c[0][2] - c[2][0]) / s, (c[1][0] - c[0][1]) / s, s / 4}; }
+    else if (c[0][0] > c[1][1] && c[0][0] > c[2][2]) { const float s = std::sqrt(1 + c[0][0] - c[1][1] - c[2][2]) * 2; q = {s / 4, (c[0][1] + c[1][0]) / s, (c[0][2] + c[2][0]) / s, (c[2][1] - c[1][2]) / s}; }
+    else if (c[1][1] > c[2][2]) { const float s = std::sqrt(1 + c[1][1] - c[0][0] - c[2][2]) * 2; q = {(c[0][1] + c[1][0]) / s, s / 4, (c[1][2] + c[2][1]) / s, (c[0][2] - c[2][0]) / s}; }
+    else { const float s = std::sqrt(1 + c[2][2] - c[0][0] - c[1][1]) * 2; q = {(c[0][2] + c[2][0]) / s, (c[1][2] + c[2][1]) / s, s / 4, (c[1][0] - c[0][1]) / s}; }
+    return qnorm(q);
+}
+// tourne l'os (et ses enfants) de `angle` autour de l'axe x du modèle (angle > 0 : le haut part vers +Z, vers l'avant du personnage)
+void tournerOs(const Personnage& p, PoseSquelette& P, int os, float angle) {
+    const int parent = p.os[(size_t)os].parent;
+    const Quat rp = parent >= 0 ? quatDe(P.modele[(size_t)parent]) : Quat{};
+    const Quat qx{std::sin(angle / 2), 0, 0, std::cos(angle / 2)};
+    P.r[(size_t)os] = qnorm(qmul(qmul(qconj(rp), qmul(qx, rp)), P.r[(size_t)os]));
+    recalculerPose(p, P);
+}
+// repère du casque (repère du personnage) pour la pose P : matrice de peau de la tête × centre du casque au repos
+mat4 casqueDe(const Personnage& p, const PoseSquelette& P, int tete) {
+    const vec3 t = position(inverse(p.os[(size_t)tete].bindInverse));   // articulation de la tête dans le repère du maillage
+    return P.modele[(size_t)tete] * p.os[(size_t)tete].bindInverse * translate({t.x, t.y + CASQUE_HAUT, t.z + CASQUE_AVANT});
+}
+
 vec3 lin(unsigned h) { auto c = [&](int s) { return std::pow(((h >> s) & 255) / 255.f, 2.2f); }; return {c(16), c(8), c(0)}; }
 // multiplicateur d'apparence de la peau (même conversion que conducteurs.cpp, WFS-211 RG-03 : texture unie 222, 178, 150)
 vec3 peauApparence(const vec3& albedo) {
@@ -67,7 +105,6 @@ bool poser(Humain& H, int k) {
     preparerPose(H.p, P);
     const int bassin = osParNom(H.p, "pelvis"), cuisse = osParNom(H.p, "thigh_l"), tete = osParNom(H.p, "Head");
     if (bassin < 0 || cuisse < 0 || tete < 0) return false;
-    const vec3 teteRepos = position(inverse(H.p.os[(size_t)tete].bindInverse));   // articulation de la tête dans le repère du maillage
     echantillonner(H.p, clipParNom(H.p, "Sitting_Idle_Loop"), 0, P);
     // assise du personnage : articulation de la cuisse − CUISSE_SIEGE × stature, à l'aplomb du bassin
     const float stature = H.p.hauteur > 0 ? H.p.hauteur / 0.9f : 1.7f;   // articulation de la tête ≈ 0,9 × stature (seulement pour CUISSE_SIEGE)
@@ -77,6 +114,15 @@ bool poser(Humain& H, int k) {
     H.place[k] = translate({0, G.selleY, G.selleZ}) * rotateY(PI_F) * translate({-assise.x, -assise.y, -assise.z});
     // point du .wfm → repère du personnage (inverse du repère ci-dessus : demi-tour = (x, y, z) → (−x, y, −z))
     auto versPerso = [&](float x, float y, float z) { return vec3{assise.x - x, assise.y + (y - G.selleY), assise.z - (z - G.selleZ)}; };
+    // buste penché en avant (position de conduite), réparti sur les 3 vertèbres ; la tête se relève d'autant (regard vers la route)
+    if (G.penche > 0) {
+        const int sp[3] = {osParNom(H.p, "spine_01"), osParNom(H.p, "spine_02"), osParNom(H.p, "spine_03")};
+        const float part[3] = {0.40f, 0.35f, 0.25f};
+        for (int i = 0; i < 3; i++) if (sp[i] >= 0) tournerOs(H.p, P, sp[i], G.penche * part[i]);
+        const int cou = osParNom(H.p, "neck_01");
+        if (cou >= 0) tournerOs(H.p, P, cou, -G.penche * 0.5f);
+        tournerOs(H.p, P, tete, -G.penche * 0.5f);
+    }
     for (int cote : {-1, 1}) {   // cote −1 : gauche du deux-roues (x < 0) = gauche du personnage (_l)
         const char* s = cote < 0 ? "_l" : "_r";
         const int epaule = osParNom(H.p, std::string("upperarm") + s), coude = osParNom(H.p, std::string("lowerarm") + s), main = osParNom(H.p, std::string("hand") + s);
@@ -84,9 +130,22 @@ bool poser(Humain& H, int k) {
         if (epaule >= 0 && coude >= 0 && main >= 0) atteindre(H.p, P, epaule, coude, main, versPerso(cote * G.poigneeX, G.poigneeY, G.poigneeZ));
         if (hanche >= 0 && genou >= 0 && pied >= 0) atteindre(H.p, P, hanche, genou, pied, versPerso(cote * G.piedX, G.piedY, G.piedZ));
     }
-    // casque posé dans le repère du maillage (au-dessus et un peu en avant de l'articulation de la tête), puis porté par la matrice de peau de la
-    // tête (modèle × liaison inverse) : il tourne et se déplace avec la tête dessinée, quelle que soit la pose
-    H.casque[k] = P.modele[(size_t)tete] * H.p.os[(size_t)tete].bindInverse * translate({teteRepos.x, teteRepos.y + CASQUE_HAUT, teteRepos.z + CASQUE_AVANT});
+    // casque posé dans le repère du maillage (au-dessus et un peu en avant de l'articulation de la tête), puis porté par la matrice de
+    // peau de la tête (modèle × liaison inverse) : il tourne et se déplace avec la tête dessinée, quelle que soit la pose
+    H.casque[k] = casqueDe(H.p, P, tete);
+    return true;
+}
+
+// RG-05 : pilote éjecté, couché sur le dos : pose debout basculée de −90° autour de x (visage vers le ciel, tête vers −Z), bassin à
+// l'origine, dos posé sur la chaussée (épaisseur du dos ≈ 0,13 m derrière l'axe du corps)
+bool poserCouche(Humain& H) {
+    preparerPose(H.p, H.couche);
+    const int clip = clipParNom(H.p, "Idle_Loop"), bassin = osParNom(H.p, "pelvis"), tete = osParNom(H.p, "Head");
+    if (bassin < 0 || tete < 0) return false;
+    echantillonner(H.p, clip, 0, H.couche);
+    const vec3 b = position(H.couche.modele[(size_t)bassin]);
+    H.placeCouche = translate({0, 0.13f, 0}) * rotateX(-PI_F / 2) * translate({-b.x, -b.y, -b.z});
+    H.casqueCouche = casqueDe(H.p, H.couche, tete);
     return true;
 }
 
@@ -102,6 +161,7 @@ bool preparer(Renderer& r) {
         for (int lod = 0; lod < 3; lod++) H.corps[lod] = plageParNom(H.p, "corps-" + std::to_string(lod));
         for (int k = 0; k < 3; k++)
             if (!poser(H, k) || !H.corps[0]) { WFS_ERR("deux-roues : %s : os ou corps absents : pas de pilote (WFS-232)", chemin.c_str()); return false; }
+        if (!poserCouche(H)) { WFS_ERR("deux-roues : %s : pose couchée impossible (WFS-232)", chemin.c_str()); return false; }
     }
     // casque : coque (ellipsoïde ouverte en bas, au niveau du cou) et visière fumée devant les yeux, un peu en avant de la coque
     std::vector<Vertex> v; std::vector<uint32_t> ix;
@@ -130,21 +190,22 @@ void detruire(Renderer& r) {
     g_pret = false; g_n = 0;
 }
 
-void noter(const mat4& monde, int modele, uint32_t graine) {
-    if (g_pret && g_n < (int)(sizeof(g_file) / sizeof(g_file[0]))) g_file[g_n++] = {monde, std::clamp(modele, 0, 2), graine, 0.f};
+void noter(const mat4& monde, int modele, uint32_t graine, bool ejecte, const mat4& sol, int sens) {
+    g_notes++;
+    if (g_pret && g_n < PILOTES_MAX) g_file[g_n++] = {monde, sol, std::clamp(modele, 0, 2), graine, 0.f, ejecte, sens >= 0 ? 1 : -1};
 }
 
+// RG-02 : un pilote par deux-roues noté (le trafic en note 14 au plus, PILOTES_MAX = 16), à toute distance ; du plus proche au plus
+// loin (ordre des niveaux de détail) ; accident : couché sur le dos au sol, 1,4 m devant le deux-roues et 0,8 m du côté de la chute
 void dessinerFile(Renderer& r, const vec3& cam) {
-    g_dessines = 0;
+    g_dessines = 0; g_notesDerniere = g_notes; g_notes = 0;
     if (!g_pret) { g_n = 0; return; }
-    int n = 0;
     for (int i = 0; i < g_n; i++) {
         const vec3 d = position(g_file[i].monde) - cam;
         g_file[i].d2 = d.x * d.x + d.y * d.y + d.z * d.z;
-        if (g_file[i].d2 <= DISTANCE_MAX_M * DISTANCE_MAX_M) g_file[n++] = g_file[i];
     }
-    std::sort(g_file, g_file + n, [](const Entree& a, const Entree& b) { return a.d2 < b.d2; });
-    for (int i = 0; i < n && i < PILOTES_MAX; i++) {
+    std::sort(g_file, g_file + g_n, [](const Entree& a, const Entree& b) { return a.d2 < b.d2; });
+    for (int i = 0; i < g_n; i++) {
         const Entree& e = g_file[i];
         Mulberry32 R(e.graine * 2654435761u + 0x2d2u);
         const Humain& H = g_h[R.next() < 0.7 ? 0 : 1];   // 7 pilotes sur 10 sont des hommes (choix de conception, à valider par le PO)
@@ -152,12 +213,13 @@ void dessinerFile(Renderer& r, const vec3& cam) {
         app.peau = peauApparence(conducteurs::albedoPeau(H.indice)); app.corps = H.p.corps;
         tenue::tenueLieu(tenue::carteCourante(), e.graine, H.femme, app);
         app.vetement.x = 1.95f; app.vetement.y = 1.9f;   // manches longues et pantalon (tenue de deux-roues)
-        const mat4 monde = e.monde * H.place[e.modele];
-        const int lod = e.d2 < 8.f * 8.f ? 0 : e.d2 < 20.f * 20.f ? 1 : 2;
+        const mat4 monde = e.ejecte ? e.sol * translate({0.8f * (float)e.sens, 0, -1.4f}) * rotateY(PI_F / 2 + 0.5f * (float)e.sens) * H.placeCouche
+                                    : e.monde * H.place[e.modele];
+        const int lod = e.d2 < LOD_PILOTE_M[0] * LOD_PILOTE_M[0] ? 0 : e.d2 < LOD_PILOTE_M[1] * LOD_PILOTE_M[1] ? 1 : 2;
         const Plage* c = H.corps[lod] ? H.corps[lod] : H.corps[0];
-        const PoseSquelette& P = H.pose[e.modele];
+        const PoseSquelette& P = e.ejecte ? H.couche : H.pose[e.modele];
         r.drawSkinned(H.p.maillage, H.p.materiau, monde, P.palette.data(), (int)P.palette.size(), c->premier, c->nombre, &app);
-        const mat4 casque = monde * H.casque[e.modele];
+        const mat4 casque = monde * (e.ejecte ? H.casqueCouche : H.casque[e.modele]);
         r.draw(g_coque, g_matCoque[(int)(R.next() * NB_COQUES) % NB_COQUES], casque);
         r.draw(g_visiere, g_matVisiere, casque);
         g_dessines++;
@@ -166,5 +228,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
 }
 
 int dessinesDerniereImage() { return g_dessines; }
+int notesDerniereImage() { return g_notesDerniere; }
+bool pret() { return g_pret; }
 
 } // namespace wfs::deux_roues

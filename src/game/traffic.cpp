@@ -111,7 +111,7 @@ void Traffic::addCars(int n, double playerPos) {
         if (track_->version() == 2) {   // WFS-232 (RG-03) : deux-roues, tirage à part (celui du jeu web reste le même)
             // quota exact (et non un tirage par véhicule : 29 véhicules en Campagne) : le véhicule i est un deux-roues quand
             // floor((i + 1) × part + phase) dépasse floor(i × part + phase), phase et modèle tirés par la graine
-            const double part = partDeuxRoues(map.id), phase = Mulberry32(seed * 2246822519u + 0x27d4eb2fu).next(), i0 = (double)cars.size();
+            const double part = deuxRouesPermis ? partDeuxRoues(map.id) : 0, phase = Mulberry32(seed * 2246822519u + 0x27d4eb2fu).next(), i0 = (double)cars.size();
             Mulberry32 D(seed * 2246822519u + (uint32_t)(cars.size() + 1) * 3266489917u);
             if (std::floor((i0 + 1) * part + phase) > std::floor(i0 * part + phase)) {
                 const int k = std::min(DEUX_ROUES_COUNT - 1, (int)(D.next() * DEUX_ROUES_COUNT));
@@ -204,8 +204,20 @@ void Traffic::step(double h, const TrafficView& pv) {
             car.offset = clampd(car.offset + car.crashVx * h, -1.12, 1.12);
             car.crashVx *= std::max(0.0, 1 - 2.5 * h);
             car.crashYaw += car.crashSpin * h; car.crashSpin *= std::max(0.0, 1 - 1.8 * h);
+            if (car.deuxRoues) {   // WFS-232 (RG-05) : chute sur le flanc du côté où il penchait (sinon du côté où il est poussé)
+                car.inclPrec = car.inclinaison;
+                const double sens = std::abs(car.inclinaison) > 1e-3 ? (car.inclinaison > 0 ? 1 : -1) : (car.crashVx >= 0 ? 1 : -1);
+                double a = std::max(std::abs(car.inclinaison), AMORCE_CHUTE);
+                if (a < TOMBE) {
+                    car.chute += 9.81 / HAUTEUR_CHUTE * std::sin(a) * h;
+                    a = std::min(TOMBE, a + car.chute * h);
+                    if (a >= TOMBE) car.chute = 0;   // posé au sol
+                }
+                car.inclinaison = sens * a;
+            }
             if (car.crashT > 7 && std::abs(track_->relZ(pv.position - car.z)) > 60 / M) {
                 car.crashed = false; car.speed = 0; car.signal = 0; car.pending = false;
+                car.inclinaison = car.inclPrec = car.chute = 0;   // WFS-232 : relevé (hors de la vue)
                 int best = 0; double bd = 9;
                 for (int l = 0; l < LANES; l++) { const double d = std::abs(LANE_X[l] - car.offset); if (d < bd) { bd = d; best = l; } }
                 car.lane = car.target = best;
@@ -219,8 +231,18 @@ void Traffic::step(double h, const TrafficView& pv) {
         const double gap = gap_[i], leadSpeed = lead_[i];
         // WFS-136 (RG-02, RG-04) : 40 km/h dans l'anneau, 60 km/h dans les épingles (aussi 30 m avant), +15 % sur l'autoroute ;
         // tracé 1 : want = car.want (facteur 1, limite infinie), le calcul du jeu web est inchangé
-        const double want = track_->sections().empty() ? car.want
+        double want = track_->sections().empty() ? car.want
             : std::min({car.want * trace::facteurTrafic(*track_, car.z), trace::vitesseTrafic(*track_, car.z), trace::vitesseTrafic(*track_, car.z + 30 / M)});
+        if (car.deuxRoues) {   // WFS-232 : vitesse de courbe d'un deux-roues : inclinaison de confort au point le plus serré devant lui,
+            // atteinte par un freinage régulier (v² = vc² + 2 · a · d, a = FREIN_VIRAGE) : il ralentit à l'approche, sans à-coup
+            const double v = car.speed * M, vue = VUE_VIRAGE_M + v * v / (2 * FREIN_VIRAGE);
+            double vmax = 1e9;
+            for (double d = 0; d <= vue; d += SEG_M) {
+                const double k = std::abs(track_->findSegment(car.z + d / M).curve * CURVE_K / SEG_M);
+                if (k > 1e-6) vmax = std::min(vmax, std::sqrt(9.81 / k * std::tan(INCLINAISON_CONFORT) + 2 * FREIN_VIRAGE * std::max(0.0, d - 2)));
+            }
+            if (vmax < 1e8) want = std::min(want, vmax / M);
+        }
         // vitesse visée : sa vitesse de croisière, ou celle qui garde la distance de sécurité
         const double safe = SAFE_MIN + car.speed * SAFE_TIME;
         double target = want;
@@ -278,11 +300,30 @@ void Traffic::advance(double dt, const TrafficView& pv) {
     for (int i = 0; i < steps; i++) { step(T_STEP, pv); sim += T_STEP; }
 }
 
+int Traffic::dessines(double position, bool basse, bool dense, const TrafficCar** out) const {
+    struct Vis { double dz; const TrafficCar* c; };
+    Vis vis[64]; int n = 0;
+    for (const auto& c : cars) {
+        if (c.cache) continue;   // WFS-136 (accroche) : voiture qui traverse, hors de son passage
+        const double dz = track_->relZ(c.z - position);
+        if (dz < -30 / M || dz > 300 / M || n >= 64) continue;
+        vis[n++] = {std::abs(dz), &c};
+    }
+    std::sort(vis, vis + n, [](const Vis& a, const Vis& b) { return a.dz < b.dz; });
+    n = std::min(n, dense ? 3 : basse ? 6 : TRAFIC_DESSINES_MAX);   // WFS-134 (RG-11) : Basse : moins de voitures, jamais de cubes
+    if (basse) while (n > 0 && vis[n - 1].dz * M > 120) n--;        // Basse : trafic dessiné jusqu'à 120 m
+    for (int k = 0; k < n; k++) out[k] = vis[k].c;
+    return n;
+}
+
 // crashTraffic(car, impact, side) : la voiture percutée part en glissade
 void Traffic::crash(TrafficCar& car, double impact, int side) {
     car.crashed = true; car.crashT = 0;
     car.crashVx = side * (0.4 + impact * 1.6); car.crashYaw = 0; car.crashSpin = side * (1.5 + impact * 7);
     car.target = car.lane;
+    // WFS-232 (RG-05) : un deux-roues percuté bascule tout de suite (vitesse de chute donnée par le choc) et tourne peu sur
+    // lui-même : il tombe et glisse au lieu de pivoter debout
+    if (car.deuxRoues) { car.crashSpin *= 0.25; car.chute = 1.5 + impact * 2; }
 }
 
 // chocs avec le joueur (hitCar) et quasi-contacts, comme la fin de update() du jeu web

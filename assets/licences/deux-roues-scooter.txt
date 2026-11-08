@@ -12,3 +12,4 @@ This work is based on "OLA Electric Scooter (Red Color)" (https://sketchfab.com/
 
 Found in the public GitHub repository Abhay-s-8/Portfolio (commit fcd781b756aae3d93dfefd20d42c6c8f72f7194e), folder models/ola_electric_scooter_red_color ; files SHA-256: scene.gltf 4d963128…9ef7, scene.bin ae114775…dcfa.
 Modifications for WaForSpeed (WFS-232, 2026-11-07): converted to .wfm by tools/convert_car.mjs ; longueur 1,859 m ; matériaux Second et Base exportés en BLEND traités en alpha découpé (WFS_OPAQUE) ; tourné de 180° ; niveaux de détail (.lod). No brand name is shown in the game.
+Modifications (WFS-232, 2026-11-08) : roues sorties du modèle (corps sans roues, roue avant, roue arrière : tools/convert_car.mjs, WFS_ROUES_2R), qui tournent dans le jeu ; textures des roues réduites à 512 px.

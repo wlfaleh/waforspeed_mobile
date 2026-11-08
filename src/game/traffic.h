@@ -28,7 +28,7 @@ constexpr double FACTEUR_ANNEAU = 0.45, RAMPE_ANNEAU_M = 15;
 // longueur hors tout et largeur (m) des modèles convertis. Ils prennent la place de voitures (même nombre de véhicules qu'avant),
 // tirées à part (le tirage du jeu web ne change pas), seulement au tracé 2 ; ils roulent du côté droit de leur voie (DROITE_VOIE)
 struct DeuxRouesDims { const char* id; double L, W; };
-inline const DeuxRouesDims DEUX_ROUES[] = {{"scooter", 1.859, 0.712}, {"routiere", 2.171, 0.885}, {"sportive", 2.007, 0.710}};
+inline const DeuxRouesDims DEUX_ROUES[] = {{"scooter", 1.859, 0.712}, {"routiere", 2.155, 0.910}, {"sportive", 2.007, 0.710}};
 constexpr int DEUX_ROUES_COUNT = sizeof(DEUX_ROUES) / sizeof(DEUX_ROUES[0]);
 constexpr double DROITE_VOIE = 0.13;            // +1 m vers la droite de l'axe de la voie (demi-largeurs de route)
 constexpr double INCLINAISON_MAX = 0.7853981633974483, LISSAGE_INCLINAISON = 5;   // 45° ; constante du filtre (1/s)
@@ -42,6 +42,14 @@ inline double partDeuxRoues(const char* carte) {
 // RG-04 : inclinaison d'équilibre (rad, + vers la droite) d'un deux-roues à v (m/s) dans une courbe de courbure kappa (1/m,
 // + à droite) : tan φ = v² / (g R), bornée à 45° ; tout droit : 0
 inline double inclinaisonEquilibre(double v, double kappa) { return std::clamp(std::atan(v * v * kappa / 9.81), -INCLINAISON_MAX, INCLINAISON_MAX); }
+// RG-05 (retour du lead dev) : deux-roues accidenté : il tombe sur le flanc (pendule inversé : θ'' = g / h · sin θ, centre de
+// gravité à HAUTEUR_CHUTE), puis glisse couché, posé sur le guidon et le repose-pied (TOMBE ≈ 77°) ; relevé hors de la vue
+// retour du lead dev (8b) : un deux-roues du trafic ralentit avant une courbe pour ne pas pencher plus de INCLINAISON_CONFORT
+// (pilote ordinaire : 35° au plus ; les 45° de la borne restent pour la course) : v ≤ √(g · R · tan 35°) au point le plus serré des
+// VUE_VIRAGE_M (+ distance de freinage) devant lui, atteint en freinant à FREIN_VIRAGE (4 m/s²)
+constexpr double INCLINAISON_CONFORT = 0.6108652381980153, VUE_VIRAGE_M = 15, FREIN_VIRAGE = 4;
+constexpr int TRAFIC_DESSINES_MAX = 14;   // véhicules du trafic dessinés par image, au plus (WFS-20, WFS-134)
+constexpr double TOMBE = 1.35, HAUTEUR_CHUTE = 0.6, AMORCE_CHUTE = 0.08;   // rad, m, rad (inclinaison de départ si droit)
 constexpr double SAFE_TIME = 1.1;           // temps de sécurité derrière la voiture de devant (s)
 constexpr double SAFE_MIN = 5.0 / M;        // distance minimale à l'arrêt (unités)
 constexpr double NEAR_MISS = 0.24;          // marge latérale d'un quasi-contact (demi-largeurs de route)
@@ -84,7 +92,7 @@ struct TrafficCar {
     int traverse = -1, rangTraverse = 0;
     bool cache = false;
     int deuxRoues = 0;                      // WFS-232 : 0 voiture ; 1 + indice dans DEUX_ROUES pour un deux-roues
-    double inclinaison = 0, inclPrec = 0;   // WFS-232 (RG-04) : inclinaison (rad, + à droite), lissée ; avant le dernier pas
+    double inclinaison = 0, inclPrec = 0, chute = 0;   // WFS-232 (RG-04) : inclinaison (rad, + à droite), lissée ; avant le dernier pas
 };
 
 // ---------- trafic vivant (WFS-67) : état d'affichage, calculé à partir de la simulation sans la modifier ----------
@@ -133,6 +141,11 @@ public:
     void step(double h, const TrafficView& pv);
     bool laneFree(const TrafficCar& car, int lane, const TrafficView& pv) const;
     static void crash(TrafficCar& car, double impact, int side);   // crashTraffic
+    bool deuxRouesPermis = true;   // WFS-232 : faux si les modèles ou les pilotes manquent (aucun deux-roues sans pilote, RG-02)
+    // véhicules dessinés à cette image (TrafficSystem::render) : de 30 m derrière à 300 m devant le joueur, les plus proches
+    // d'abord, TRAFIC_DESSINES_MAX au plus (Basse : 6, 3 en poursuite dense, jusqu'à 120 m) ; rend leur nombre (WFS-232 : la même
+    // sélection sert aux tests des pilotes des deux-roues)
+    int dessines(double position, bool basse, bool dense, const TrafficCar** out) const;
     // chocs et quasi-contacts avec le joueur (boucle « for (const car of cars) » de update())
     HitEvents collide(Player& pl, double dt);
     // pendant le compte à rebours (pas de chocs) : suit seulement la position relative des voitures (car.prevDz)
