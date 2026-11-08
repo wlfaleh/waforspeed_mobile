@@ -3595,3 +3595,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Tests** : construction de main (7e9fa2e4) + branche faite par le lead dev, 71 tests CPU OK.
 - **Remarques non bloquantes** : branche en retard sur #262 et #263 (fusion propre) ; RG-ANO-145 à reporter dans `regles-de-gestion/WFS-227.md` ; mesures sur le téléphone attendues.
 - **Statut** : 🟡 À valider (utilisateur) ; agent dev X libéré.
+### 2026-11-08 14:14:54 — Skill et agent `expert-cartes` créés ; publication entière à l'agent expert ci (WFS-319 et WFS-320) (po-scrum-master)
+- Demandes de l'utilisateur : un expert pour les cartes et leur téléchargement ; pas d'autre agent pour la publication.

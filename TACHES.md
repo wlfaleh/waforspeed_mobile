@@ -149,7 +149,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | Priorité | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
 | P1 Urgent | WFS-319 | [URGENT] Version Play Store : AAB 1.0 signé, test interne aujourd'hui, production demain | E7 | 🔧 En cours | agent expert ci (session 01UY1Vv4), 2026-11-08 14:10 UTC | — | `feature/waforspeed-319` |  |  |
-| P1 Urgent | WFS-320 | [URGENT] Sortie publique : points bloquants (licences NC, marques, confidentialité publique, fiche, validations) | PO + E10 + E8 | 🔧 En cours (PO) | po-scrum-master | WFS-319 | — |  |  |
+| P1 Urgent | WFS-320 | [URGENT] Sortie publique : points bloquants (licences NC, marques, confidentialité publique, fiche, validations) | publication (`store/**`) | 🔧 En cours | agent expert ci (session 01UY1Vv4), 2026-11-08 14:14 UTC | WFS-319 | — |  |  |
 | P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | 🔎 Fusionné | Claude (session trafic) | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅ … | `feature/waforspeed-50` | #47 | ⛔ REFUSÉ (SIM-MVP-1 à 4) … |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu | Claude (session trafic) | WFS-78 ✅ | `feature/waforspeed-88` | #76 |  |
