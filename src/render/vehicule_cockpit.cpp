@@ -300,7 +300,11 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     for (int k = 0; k < M_N; k++) {
         Material& m = matsNuit_[(size_t)k];
         const bool lumineux = m.emissive.x + m.emissive.y + m.emissive.z > 0.f;
-        if (lumineux || k == M_GLACE) continue;
+        if (k == M_GLACE) {   // glace de nuit : position nuit d'un rétroviseur (albédo ÷ 20, comme le noir laqué du cadre) : jamais plus claire que le ciel de nuit
+            m.color = {m.color.x * 0.05f, m.color.y * 0.05f, m.color.z * 0.05f, m.color.w};
+            continue;
+        }
+        if (lumineux) continue;
         m.emissive = vec3{m.color.x, m.color.y, m.color.z} * (AMBIANCE_NUIT * (m.metal > 0.5f ? 0.33f : 1.f));
     }
     std::vector<Vertex> v; std::vector<uint32_t> i;
