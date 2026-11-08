@@ -142,3 +142,6 @@ demande utilisateur :
 
 - Captures de l'APK 916 (Réglages avec les nouveaux chiffres, courses de nuit, cockpit, chargement) (2026-11-08 16:55 UTC)
 ( PO : analysées — performance : le téléphone ralentit avec le nombre de triangles, les voitures en tête → WFS-265 prioritaire, WFS-317 suit ; **WFS-326** (fenêtres qui flottent hors des façades, ANO-175) et **WFS-327** (Course à 5 : toujours dernier, ANO-176) créés en urgence avant la sortie publique. )
+
+- Vue Cockpit : j'ai déjà proposé une amélioration, je valide après ces tâches, pas urgent (2026-11-08 16:57 UTC)
+( PO : noté — WFS-282 et 315 restent 🟡, vous validerez la vue Cockpit à la fin de WFS-323 à 325 ; WFS-323 peut commencer sans attendre (agent 2), sans urgence. )
