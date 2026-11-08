@@ -33,6 +33,7 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
+    memoire::debutChargement();   // WFS-297 (RG-06) : « Lus » du chargement de cette partie
     chargerConfig();   // WFS-128 : configgame.json lu à chaque partie (téléphone, APK ; PC : WFS_CONFIG ou ./configgame.json)
     if (r.gpuLogiciel()) {   // WFS-59 : émulateur de la QA → ombres du soleil coupées (dt et rendu : plafondDt, vk.cpp)
         r.forceNoShadows = true;
@@ -60,7 +61,6 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression && !car_.ok) return false;   // WFS-35 : voiture introuvable, l'écran garde l'étape où l'erreur a eu lieu
     if (progression) progression(0.70f, "Construction de la ville");   // WFS-35
     systemsInit();
-    if (car_.ok) memoire::compteurs().partie++;   // WFS-297 (RG-06) : numéro de la partie depuis le lancement
     return car_.ok;
 }
 

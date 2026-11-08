@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "../../core/log.h"
-#include "../../core/memoire.h"   // WFS-297 (RG-06) : mémoire du jeu, de la carte graphique, numéro de la partie
+#include "chargement.h"   // WFS-297 (RG-06) : texteMemoire (mémoire du jeu, de la carte graphique, numéro de la partie)
 #include "../../core/system.h"
 #include "../../game/course_system.h"
 #include "../../game/camera_vue.h"
@@ -283,7 +283,7 @@ private:
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »
         {   // WFS-297 (RG-06) : rendu puis mémoire sur la même ligne, réduite pour tenir avant « Fermer » (aucun bouton ne bouge)
-            const std::string lr = qualite::ligneRendu() + " · " + memoire::texteMemoire();
+            const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
             const float tr = std::min(15 * k, 15 * k * (fx - x0 - 8 * k) / std::max(ui::width(15 * k, lr, 0.02f), 1.f));
             ui::text(r, x0, lm.empty() ? fy + (bh - tr) / 2 : fy + bh / 2 - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
         }
@@ -361,7 +361,7 @@ private:
         }
         // WFS-134 (RG-01) : rendu réellement utilisé, sous les deux colonnes
         {   // WFS-297 (RG-06) : rendu puis mémoire du jeu, de la carte graphique et numéro de la partie, réduits s'ils ne tiennent pas
-            const std::string lr = qualite::ligneRendu() + " · " + memoire::texteMemoire();
+            const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
             const float tr = std::min(14 * k, 14 * k * (pw - 48 * k) / std::max(ui::width(14 * k, lr, 0.02f), 1.f));
             ui::text(r, x0, py + ph - 12 * k - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
         }

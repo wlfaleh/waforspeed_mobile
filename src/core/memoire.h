@@ -4,13 +4,13 @@
 //     à la destruction ;
 //   - octets lus : fichiers lus par readAsset (desktop_main.cpp, android_main.cpp) ;
 //   - objets 3D : maillages vivants (Renderer::makeMesh / makeSkinnedMesh, rendus par destroy) ;
-//   - personnes : piétons de la carte (pietons.cpp) ; numéro de la partie : chargements réussis depuis le lancement (Game::init) ;
+//   - personnes : piétons de la carte (pietons.cpp) ; numéro de la partie : courses démarrées depuis le lancement (course_system.cpp,
+//     duel_system.cpp) ; Mo lus du chargement en cours (début : Game::init) ;
 //   - mémoire du jeu : mémoire résidente du processus (/proc/self/statm, Linux et Android).
 #pragma once
 #include <atomic>
 #include <cstdint>
 #include <cstdio>
-#include <string>
 #if defined(__linux__) || defined(__ANDROID__)
 #include <unistd.h>
 #endif
@@ -20,9 +20,10 @@ namespace wfs::memoire {
 struct Compteurs {
     std::atomic<int64_t> octetsGpu{0};     // mémoire de la carte graphique allouée par le jeu
     std::atomic<int64_t> octetsLus{0};     // cumul des fichiers lus depuis le lancement
+    std::atomic<int64_t> lusDebut{0};      // octetsLus au début du chargement en cours
     std::atomic<int64_t> objets3d{0};      // maillages vivants
     std::atomic<int> personnes{0};         // piétons de la carte en cours
-    std::atomic<int> partie{0};            // chargements de partie réussis depuis le lancement
+    std::atomic<int> partie{0};            // courses démarrées depuis le lancement (0 : aucune encore)
 };
 inline Compteurs& compteurs() { static Compteurs c; return c; }
 
@@ -41,21 +42,10 @@ inline double processusMo() {
 }
 inline double gpuMo() { return compteurs().octetsGpu.load() / (1024.0 * 1024.0); }
 inline double lusMo() { return compteurs().octetsLus.load() / (1024.0 * 1024.0); }
-// « Mémoire : jeu 1 380 Mo · carte graphique 620 Mo · partie 2 » (Réglages) ; espaces fines insécables entre les milliers
-inline std::string milliers(long long v) {
-    std::string s = std::to_string(v < 0 ? -v : v), o;
-    for (size_t i = 0; i < s.size(); i++) { if (i && (s.size() - i) % 3 == 0) o += "\u202F"; o += s[i]; }
-    return (v < 0 ? "-" : "") + o;
-}
-inline std::string texteMemoire() {
-    const double p = processusMo();
-    return "Mémoire : jeu " + (p < 0 ? std::string("?") : milliers((long long)(p + 0.5))) + " Mo · carte graphique " + milliers((long long)(gpuMo() + 0.5)) +
-           " Mo · partie " + std::to_string(compteurs().partie.load());
-}
-// « Lus : 152 Mo · 1 234 objets 3D · 47 voitures · 114 personnes » (écran de chargement) ; voitures : passées par l'appelant
-inline std::string texteChargement(int voitures) {
-    return "Lus : " + milliers((long long)(lusMo() + 0.5)) + " Mo · " + milliers(compteurs().objets3d.load()) + " objets 3D · " + std::to_string(voitures) +
-           " voitures · " + std::to_string(compteurs().personnes.load()) + " personnes";
-}
+// chargement en cours : « Lus » compte ce qui a été lu depuis le début du chargement de la partie (Game::init)
+inline void debutChargement() { compteurs().lusDebut = compteurs().octetsLus.load(); }
+inline double lusChargementMo() { return (compteurs().octetsLus.load() - compteurs().lusDebut.load()) / (1024.0 * 1024.0); }
+// une course qui démarre (« Rouler », « Rejouer », manche de duel) : partie suivante
+inline int nouvellePartie() { return ++compteurs().partie; }
 
 } // namespace wfs::memoire

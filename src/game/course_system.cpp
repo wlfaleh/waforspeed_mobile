@@ -1,5 +1,6 @@
 // WaForSpeed — module « course » (WFS-12) : voir course_system.h.
 #include "course_system.h"
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -64,7 +65,7 @@ public:
             pl.reset(*pl.car);
             trafficRestart(pl.position);
             course_.reset(); nouveauRecord_ = false; attente_ = 0;
-            WFS_LOG("course : nouvelle course (même graine de trafic)");
+            WFS_LOG("course : nouvelle course (même graine de trafic), partie %d", memoire::nouvellePartie());   // WFS-297 (RG-06, accroche)
             demarrerFantome(g);   // WFS-125
             return;
         }

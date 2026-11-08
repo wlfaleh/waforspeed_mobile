@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "../core/log.h"
+#include "../core/memoire.h"   // WFS-297 : mémoire du processus et de la carte graphique
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/game.h"
@@ -77,15 +78,7 @@ struct Resultat {
 // de course (pilote automatique, une image sur 10 dessinée entre les fenêtres) : image, appels et triangles par système, coût GPU
 // des passes, trafic, lampadaires, mémoire du processus (RSS). Une ligne « parties : … » par fenêtre, tableau à la fin.
 namespace {
-double rssMoProcessus() {
-    FILE* f = std::fopen("/proc/self/statm", "r");
-    if (!f) return 0;
-    long pages = 0, res = 0;
-    const int n = std::fscanf(f, "%ld %ld", &pages, &res);
-    std::fclose(f);
-    return n == 2 ? res * 4096.0 / (1024 * 1024) : 0;
-}
-struct Fenetre { std::string partie, quand; double image = 0, gpu = 0, rss = 0; uint32_t appels = 0, triangles = 0; int trafic = 0, lampes = 0; std::string couts, systemes; };
+struct Fenetre { std::string partie, quand; double image = 0, gpu = 0, rss = 0, gpuMo = 0; uint32_t appels = 0, triangles = 0; int trafic = 0, lampes = 0; std::string couts, systemes; };
 }
 
 static void benchParties(Game& g, Renderer& r, const std::string& out, const std::string& liste) {
@@ -128,7 +121,14 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             ecrans::ouvrirReglagesBanc(false); g.allerA(Ecran::Course); g.update(1.0 / 60);
         }
         for (int f = 0; f < 3; f++) {
-            if (f > 0) for (int i = 0; i < MINUTE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }
+            const bool villeNuit = carte == "ville" && nuit && k > 0;   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
+            if (f > 0) for (int i = 0; i < MINUTE; i++) {
+                g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60;
+                if (f == 1 && villeNuit && i % (30 * 60) == 0 && i <= 60 * 60) {
+                    g.render(t); g.render(t + 0.02);
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string(i / 60) + "s.png");
+                }
+            }
             for (int i = 0; i < 30; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }   // images complètes avant la mesure
             for (auto& [n, c] : cumuls()) c = Cumul{};
             passes::remettreAZero();
@@ -148,18 +148,18 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             std::sort(d.begin(), d.end(), [](auto& a, auto& b) { return a.first > b.first; });
             for (size_t i = 0; i < d.size() && i < 6; i++) w.systemes += (i ? " ; " : "") + d[i].second;
             const Traffic* tr = activeTraffic(); w.trafic = tr ? (int)tr->cars.size() : 0;
-            w.lampes = (int)lampadaires().size(); w.rss = rssMoProcessus();
-            WFS_LOG("parties : %s, %s : image %.1f ms, GPU %.2f ms (%s), %u appels, %u triangles, trafic %d, lampadaires %d, RSS %.0f Mo, %.2f km",
-                    w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.couts.c_str(), w.appels, w.triangles, w.trafic, w.lampes, w.rss, g.player().dist * M / 1000);
+            w.lampes = (int)lampadaires().size(); w.rss = memoire::processusMo(); w.gpuMo = memoire::gpuMo();
+            WFS_LOG("parties : %s, %s : image %.1f ms, GPU %.2f ms (%s), %u appels, %u triangles, trafic %d, lampadaires %d, RSS %.0f Mo, carte graphique %.0f Mo, %.2f km",
+                    w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.couts.c_str(), w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo, g.player().dist * M / 1000);
             WFS_LOG("parties : %s, %s : par système : %s", w.partie.c_str(), w.quand.c_str(), w.systemes.c_str());
             res.push_back(w);
             if (f == 0) r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-" + carte + (nuit ? "-nuit" : "-jour") + ".png");
         }
     }
     g.shutdown();
-    WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) |");
+    WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) | carte graphique (Mo) |");
     for (const Fenetre& w : res)
-        WFS_LOG("parties : | %s | %s | %.1f | %.2f | %u | %u | %d | %d | %.0f |", w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.appels, w.triangles, w.trafic, w.lampes, w.rss);
+        WFS_LOG("parties : | %s | %s | %.1f | %.2f | %u | %u | %d | %d | %.0f | %.0f |", w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo);
 }
 
 void benchPerf(Game& g, Renderer& r, const std::string& out) {
