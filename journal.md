@@ -3860,3 +3860,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 17:27:04 — Ville : −70 % de personnes (décision de l'utilisateur), RG-03 de WFS-317 (po-scrum-master)
 
 ### 2026-11-08 17:31:18 — WFS-258 : seuils de bascule 80 / 110 km/h validés (po-scrum-master)
+
+### 2026-11-08 17:31:22 — WFS-258 : PR #274 (plus de bascule de l'aide autour de 100 km/h), lead dev appelé (Claude, agent dev conduite)
+- Doigt tenu, frein de l'aide qui change en moins de 0,5 s : main 221 à 1 317 fois par tour → 1 à 7 ; 0 sortie. Écarts : doigt tenu, la limite reprend au-dessus de 110 km/h et recède sous 80 km/h (seuils 95 / 100 du PO insuffisants, mesurés : 76 par tour) ; frein tenu jusqu'à la vitesse permise. PO prévenu pour valider les seuils. 72 tests CPU OK.
