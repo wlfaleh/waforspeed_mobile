@@ -405,7 +405,11 @@ void irradiance(const vec3& n, double E[3]) {
 double eclairementLampes(const GameView& gv, vec3 p) {
     if (!gv.track || lampadaires().empty()) return 0;
     Track& t = *gv.track;
-    const double L = t.length(), z = gv.player ? gv.player->position : 0;
+    // WFS-328 (RG-05, ANO-179) : distance parcourue (dist), pas l'abscisse ramenée au tour (position) : le point regardé p est sur
+    // la route du tour en cours (camera_vue.cpp : track.point(dist)), et la route de chaque tour est tournée par rapport au
+    // précédent (WFS-268) ; avec position, les lampes étaient cherchées sur le 1er tour, loin de la voiture dès le 2e tour : 0,1 lx
+    // reçus (lune seule), exposition de rase campagne (EV −3,5) en pleine ville, image blanche / rose jusqu'à la fin de la course
+    const double L = t.length(), z = gv.player ? gv.player->dist : 0;
     if (!(L > 0)) return 0;
     double E = 0;
     for (const Lampadaire& l : lampadaires()) {

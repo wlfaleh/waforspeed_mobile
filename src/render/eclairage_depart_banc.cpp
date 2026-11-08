@@ -12,6 +12,7 @@
 #include "../core/log.h"
 #include "../game/course.h"
 #include "../game/course_system.h"
+#include "../game/camera_vue.h"
 #include "../game/game.h"
 #include "../ui/ecrans/reglages.h"
 #include "../ui/text.h"
@@ -83,6 +84,28 @@ struct Depart {
 };
 } // namespace
 
+// WFS-328 (RG-05, ANO-179) : 4 min de course de nuit en Ville (Checkpoint, vue Arrière, Graphismes Basse comme le téléphone de la
+// recette) : une image tous les 1/4 s, EV au journal ; captures autour de 4:00 ; compte les images surexposées de plus de 1 IL par
+// rapport à la rue éclairée (EV < 2 en Ville : le paysage n'y est jamais exposé comme la rase campagne)
+static int courseLongue(Depart& d, const std::string& base, double duree) {
+    int i = 0, n = 0, claires = 0; double evMin = 99, tMin = 0;
+    const double t0 = d.t;
+    for (; d.t - t0 < duree; i++) {
+        d.g.update(1.0 / 60); d.t += 1.0 / 60;
+        if (i % 15) continue;
+        d.g.render(d.t); n++;
+        const eclairage::Etat& e = eclairage::etat();
+        if (e.ev < evMin) { evMin = e.ev; tMin = d.t - t0; }
+        if (e.ev < 2.0) claires++;
+        if (i % 240 == 0) d.journal(base.c_str());
+        const double ecoule = d.t - t0;
+        for (double c : {duree - 20.0, duree - 10.0, duree - 0.02})
+            if (ecoule >= c && ecoule - 0.25 < c) { d.journal(base.c_str()); d.capture(base + "-" + std::to_string((int)std::lround(c))); }
+    }
+    WFS_LOG("%s : %d images, EV mini %.2f à %.1f s, %d image(s) sous EV 2 (surexposées) %s", base.c_str(), n, evMin, tMin, claires, claires ? "ÉCART" : "OK");
+    return claires ? 1 : 0;
+}
+
 int benchDepart(Game& g, Renderer& r, const std::string& out) {
     ui::chargerPolice(r);
     ecrans::reglages().qualite = ecrans::QUALITE_HAUTE;
@@ -90,12 +113,23 @@ int benchDepart(Game& g, Renderer& r, const std::string& out) {
     // la sonde locale arrive ≈ 3 s après le chargement sur le téléphone (APK 918 : image juste vers 0:03), en 0,3 s sur le banc :
     // le banc la retarde de 3 s pour reproduire le téléphone
     eclairage::Forcage f; f.actif = true; f.retardCapture = 3.0; eclairage::forcer(f);
-    const char* seul = std::getenv("WFS_DEPART_SEUL");   // essai local : « recommencer » ne lance que la dernière scène
-    const bool tout = !seul || std::string(seul) != "recommencer";
-    if (tout) for (const char* carte : {"ville", "plage", "campagne"})
+    const char* seul = std::getenv("WFS_DEPART_SEUL");   // essai local : departs, recommencer, longue ou cockpit seulement
+    const std::string quoi = seul ? seul : "";
+    const bool tout = quoi.empty();
+    if (tout || quoi == "longue") {   // RG-05 : 4 min de course de nuit, Basse, vue Arrière (Poursuite)
+        ecrans::reglages().qualite = ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
+        if (d.rouler("ville", true)) d.erreurs += courseLongue(d, "longue-nuit-ville-basse", 245);
+        ecrans::reglages().qualite = ecrans::QUALITE_HAUTE; ecrans::appliquerQualiteNiveau(r);
+    }
+    if (tout || quoi == "cockpit") {   // RG-05 : départ de nuit en vue Cockpit (Ville)
+        const VueCamera v = vueCamera(); choisirVue(VueCamera::Cockpit);
+        if (d.rouler("ville", true)) d.course("depart-cockpit-nuit-ville");
+        choisirVue(v);
+    }
+    if (tout || quoi == "departs") for (const char* carte : {"ville", "plage", "campagne"})
         if (d.rouler(carte, true)) d.course(std::string("depart-nuit-") + carte);
-    if (tout && d.rouler("ville", false)) d.course("depart-jour-ville");
-    if (d.rouler("ville", true)) {   // pause, reprise, puis « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné)
+    if ((tout || quoi == "departs") && d.rouler("ville", false)) d.course("depart-jour-ville");
+    if ((tout || quoi == "recommencer") && d.rouler("ville", true)) {   // pause, reprise, puis « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné)
         for (int i = 0; i < 60 * 6; i++) d.image(i);
         g.allerA(Ecran::Pause); for (int i = 0; i < 60; i++) d.image(i);
         g.allerA(Ecran::Course); g.update(1.0 / 60); g.render(d.t); d.journal("reprise"); d.capture("depart-reprise-nuit-ville");
