@@ -1,0 +1,101 @@
+# WFS-269 — captures avant / après (tools/qa/captures_pr.sh)
+
+Branche `feature/waforspeed-269` comparée à `origin/main` ; bancs : ville corniche ; filtre : `*`.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `carte-plage-bar-nuit` | ![avant](avant-carte-plage-bar-nuit.jpg) | ![après](apres-carte-plage-bar-nuit.jpg) |
+| `carte-plage-bar-vue-nuit` | ![avant](avant-carte-plage-bar-vue-nuit.jpg) | ![après](apres-carte-plage-bar-vue-nuit.jpg) |
+| `carte-plage-bar-vue` | ![avant](avant-carte-plage-bar-vue.jpg) | ![après](apres-carte-plage-bar-vue.jpg) |
+| `carte-plage-bar` | ![avant](avant-carte-plage-bar.jpg) | ![après](apres-carte-plage-bar.jpg) |
+| `carte-plage-bateaux-vue` | ![avant](avant-carte-plage-bateaux-vue.jpg) | ![après](apres-carte-plage-bateaux-vue.jpg) |
+| `carte-plage-bateaux` | ![avant](avant-carte-plage-bateaux.jpg) | ![après](apres-carte-plage-bateaux.jpg) |
+| `carte-plage-cafe-nuit` | ![avant](avant-carte-plage-cafe-nuit.jpg) | ![après](apres-carte-plage-cafe-nuit.jpg) |
+| `carte-plage-cafe-vue-nuit` | ![avant](avant-carte-plage-cafe-vue-nuit.jpg) | ![après](apres-carte-plage-cafe-vue-nuit.jpg) |
+| `carte-plage-cafe-vue` | ![avant](avant-carte-plage-cafe-vue.jpg) | ![après](apres-carte-plage-cafe-vue.jpg) |
+| `carte-plage-cafe` | ![avant](avant-carte-plage-cafe.jpg) | ![après](apres-carte-plage-cafe.jpg) |
+| `carte-plage-casino-nuit` | ![avant](avant-carte-plage-casino-nuit.jpg) | ![après](apres-carte-plage-casino-nuit.jpg) |
+| `carte-plage-casino-vue-nuit` | ![avant](avant-carte-plage-casino-vue-nuit.jpg) | ![après](apres-carte-plage-casino-vue-nuit.jpg) |
+| `carte-plage-casino-vue` | ![avant](avant-carte-plage-casino-vue.jpg) | ![après](apres-carte-plage-casino-vue.jpg) |
+| `carte-plage-casino` | ![avant](avant-carte-plage-casino.jpg) | ![après](apres-carte-plage-casino.jpg) |
+| `carte-plage-dauphins-nuit` | ![avant](avant-carte-plage-dauphins-nuit.jpg) | ![après](apres-carte-plage-dauphins-nuit.jpg) |
+| `carte-plage-dauphins` | ![avant](avant-carte-plage-dauphins.jpg) | ![après](apres-carte-plage-dauphins.jpg) |
+| `carte-plage-epingle-dessus` | ![avant](avant-carte-plage-epingle-dessus.jpg) | ![après](apres-carte-plage-epingle-dessus.jpg) |
+| `carte-plage-falaise-nuit` | ![avant](avant-carte-plage-falaise-nuit.jpg) | ![après](apres-carte-plage-falaise-nuit.jpg) |
+| `carte-plage-falaise` | ![avant](avant-carte-plage-falaise.jpg) | ![après](apres-carte-plage-falaise.jpg) |
+| `carte-plage-fete-nuit` | ![avant](avant-carte-plage-fete-nuit.jpg) | ![après](apres-carte-plage-fete-nuit.jpg) |
+| `carte-plage-fete-vue-nuit` | ![avant](avant-carte-plage-fete-vue-nuit.jpg) | ![après](apres-carte-plage-fete-vue-nuit.jpg) |
+| `carte-plage-fete-vue` | ![avant](avant-carte-plage-fete-vue.jpg) | ![après](apres-carte-plage-fete-vue.jpg) |
+| `carte-plage-fete` | ![avant](avant-carte-plage-fete.jpg) | ![après](apres-carte-plage-fete.jpg) |
+| `carte-plage-feu` | ![avant](avant-carte-plage-feu.jpg) | ![après](apres-carte-plage-feu.jpg) |
+| `carte-plage-galerie-nuit` | ![avant](avant-carte-plage-galerie-nuit.jpg) | ![après](apres-carte-plage-galerie-nuit.jpg) |
+| `carte-plage-galerie-vue-nuit` | ![avant](avant-carte-plage-galerie-vue-nuit.jpg) | ![après](apres-carte-plage-galerie-vue-nuit.jpg) |
+| `carte-plage-galerie-vue` | ![avant](avant-carte-plage-galerie-vue.jpg) | ![après](apres-carte-plage-galerie-vue.jpg) |
+| `carte-plage-galerie` | ![avant](avant-carte-plage-galerie.jpg) | ![après](apres-carte-plage-galerie.jpg) |
+| `carte-plage-jeux-vue` | ![avant](avant-carte-plage-jeux-vue.jpg) | ![après](apres-carte-plage-jeux-vue.jpg) |
+| `carte-plage-jeux` | ![avant](avant-carte-plage-jeux.jpg) | ![après](apres-carte-plage-jeux.jpg) |
+| `carte-plage-lacets-dessus` | ![avant](avant-carte-plage-lacets-dessus.jpg) | ![après](apres-carte-plage-lacets-dessus.jpg) |
+| `carte-plage-marina` | ![avant](avant-carte-plage-marina.jpg) | ![après](apres-carte-plage-marina.jpg) |
+| `carte-plage-mouettes-nuit` | ![avant](avant-carte-plage-mouettes-nuit.jpg) | ![après](apres-carte-plage-mouettes-nuit.jpg) |
+| `carte-plage-mouettes-posees` | ![avant](avant-carte-plage-mouettes-posees.jpg) | ![après](apres-carte-plage-mouettes-posees.jpg) |
+| `carte-plage-mouettes` | ![avant](avant-carte-plage-mouettes.jpg) | ![après](apres-carte-plage-mouettes.jpg) |
+| `carte-plage-paquebot-vue` | ![avant](avant-carte-plage-paquebot-vue.jpg) | ![après](apres-carte-plage-paquebot-vue.jpg) |
+| `carte-plage-rond-point-dessus` | ![avant](avant-carte-plage-rond-point-dessus.jpg) | ![après](apres-carte-plage-rond-point-dessus.jpg) |
+| `carte-plage-rond-point` | ![avant](avant-carte-plage-rond-point.jpg) | ![après](apres-carte-plage-rond-point.jpg) |
+| `carte-plage-scooters-nuit` | ![avant](avant-carte-plage-scooters-nuit.jpg) | ![après](apres-carte-plage-scooters-nuit.jpg) |
+| `carte-plage-scooters-vue-nuit` | ![avant](avant-carte-plage-scooters-vue-nuit.jpg) | ![après](apres-carte-plage-scooters-vue-nuit.jpg) |
+| `carte-plage-scooters-vue` | ![avant](avant-carte-plage-scooters-vue.jpg) | ![après](apres-carte-plage-scooters-vue.jpg) |
+| `carte-plage-scooters` | ![avant](avant-carte-plage-scooters.jpg) | ![après](apres-carte-plage-scooters.jpg) |
+| `carte-plage-tunnel-dedans` | ![avant](avant-carte-plage-tunnel-dedans.jpg) | ![après](apres-carte-plage-tunnel-dedans.jpg) |
+| `carte-plage-tunnel-nuit` | ![avant](avant-carte-plage-tunnel-nuit.jpg) | ![après](apres-carte-plage-tunnel-nuit.jpg) |
+| `carte-plage-tunnel` | ![avant](avant-carte-plage-tunnel.jpg) | ![après](apres-carte-plage-tunnel.jpg) |
+| `carte-plage-village` | ![avant](avant-carte-plage-village.jpg) | ![après](apres-carte-plage-village.jpg) |
+| `carte-plage-yacht-vue` | ![avant](avant-carte-plage-yacht-vue.jpg) | ![après](apres-carte-plage-yacht-vue.jpg) |
+| `carte-ville-ao-1-d-nuit` | — | ![après](apres-carte-ville-ao-1-d-nuit.jpg) |
+| `carte-ville-ao-1-d` | — | ![après](apres-carte-ville-ao-1-d.jpg) |
+| `carte-ville-ao-1-g-nuit` | — | ![après](apres-carte-ville-ao-1-g-nuit.jpg) |
+| `carte-ville-ao-1-g` | — | ![après](apres-carte-ville-ao-1-g.jpg) |
+| `carte-ville-ao-2-d` | — | ![après](apres-carte-ville-ao-2-d.jpg) |
+| `carte-ville-ao-2-g` | — | ![après](apres-carte-ville-ao-2-g.jpg) |
+| `carte-ville-ao-3-d` | — | ![après](apres-carte-ville-ao-3-d.jpg) |
+| `carte-ville-ao-3-g` | — | ![après](apres-carte-ville-ao-3-g.jpg) |
+| `carte-ville-autoroute-nuit` | ![avant](avant-carte-ville-autoroute-nuit.jpg) | ![après](apres-carte-ville-autoroute-nuit.jpg) |
+| `carte-ville-autoroute` | ![avant](avant-carte-ville-autoroute.jpg) | ![après](apres-carte-ville-autoroute.jpg) |
+| `carte-ville-casino-nuit` | ![avant](avant-carte-ville-casino-nuit.jpg) | ![après](apres-carte-ville-casino-nuit.jpg) |
+| `carte-ville-casino` | ![avant](avant-carte-ville-casino.jpg) | ![après](apres-carte-ville-casino.jpg) |
+| `carte-ville-centre-commercial-nuit` | ![avant](avant-carte-ville-centre-commercial-nuit.jpg) | ![après](apres-carte-ville-centre-commercial-nuit.jpg) |
+| `carte-ville-centre-commercial` | ![avant](avant-carte-ville-centre-commercial.jpg) | ![après](apres-carte-ville-centre-commercial.jpg) |
+| `carte-ville-chien` | ![avant](avant-carte-ville-chien.jpg) | ![après](apres-carte-ville-chien.jpg) |
+| `carte-ville-feux-nuit` | ![avant](avant-carte-ville-feux-nuit.jpg) | ![après](apres-carte-ville-feux-nuit.jpg) |
+| `carte-ville-feux` | ![avant](avant-carte-ville-feux.jpg) | ![après](apres-carte-ville-feux.jpg) |
+| `carte-ville-fontaine-dessus` | ![avant](avant-carte-ville-fontaine-dessus.jpg) | ![après](apres-carte-ville-fontaine-dessus.jpg) |
+| `carte-ville-fontaine-nuit` | ![avant](avant-carte-ville-fontaine-nuit.jpg) | ![après](apres-carte-ville-fontaine-nuit.jpg) |
+| `carte-ville-fontaine` | ![avant](avant-carte-ville-fontaine.jpg) | ![après](apres-carte-ville-fontaine.jpg) |
+| `carte-ville-garage-nuit` | ![avant](avant-carte-ville-garage-nuit.jpg) | ![après](apres-carte-ville-garage-nuit.jpg) |
+| `carte-ville-garage` | ![avant](avant-carte-ville-garage.jpg) | ![après](apres-carte-ville-garage.jpg) |
+| `carte-ville-pigeons` | ![avant](avant-carte-ville-pigeons.jpg) | ![après](apres-carte-ville-pigeons.jpg) |
+| `carte-ville-pont-nuit` | ![avant](avant-carte-ville-pont-nuit.jpg) | ![après](apres-carte-ville-pont-nuit.jpg) |
+| `carte-ville-pont` | ![avant](avant-carte-ville-pont.jpg) | ![après](apres-carte-ville-pont.jpg) |
+| `carte-ville-rond-point-haut` | ![avant](avant-carte-ville-rond-point-haut.jpg) | ![après](apres-carte-ville-rond-point-haut.jpg) |
+| `carte-ville-rond-point-nuit` | ![avant](avant-carte-ville-rond-point-nuit.jpg) | ![après](apres-carte-ville-rond-point-nuit.jpg) |
+| `carte-ville-rond-point` | ![avant](avant-carte-ville-rond-point.jpg) | ![après](apres-carte-ville-rond-point.jpg) |
+| `carte-ville-tunnel-nuit` | ![avant](avant-carte-ville-tunnel-nuit.jpg) | ![après](apres-carte-ville-tunnel-nuit.jpg) |
+| `carte-ville-tunnel` | ![avant](avant-carte-ville-tunnel.jpg) | ![après](apres-carte-ville-tunnel.jpg) |
+| `carte-ville-virage-1-haut` | ![avant](avant-carte-ville-virage-1-haut.jpg) | ![après](apres-carte-ville-virage-1-haut.jpg) |
+| `carte-ville-virage-1` | ![avant](avant-carte-ville-virage-1.jpg) | ![après](apres-carte-ville-virage-1.jpg) |
+| `carte-ville-virage-2-haut` | ![avant](avant-carte-ville-virage-2-haut.jpg) | ![après](apres-carte-ville-virage-2-haut.jpg) |
+| `carte-ville-virage-2` | ![avant](avant-carte-ville-virage-2.jpg) | ![après](apres-carte-ville-virage-2.jpg) |
+| `carte-ville-virage-3-haut` | ![avant](avant-carte-ville-virage-3-haut.jpg) | ![après](apres-carte-ville-virage-3-haut.jpg) |
+| `carte-ville-virage-3` | ![avant](avant-carte-ville-virage-3.jpg) | ![après](apres-carte-ville-virage-3.jpg) |
+## Gros plans de l'occlusion (Ville, même caméra, même binaire : WFS_SANS_AO=1 / occlusion)
+
+Œil à 1,7 m au bord opposé de la chaussée, visé : pied de la façade 15 m plus loin (banc `ville`, lieux `carte-ville-ao-*`). Écart × 16 : différence de luminance amplifiée 16 fois (blanc = 6 % d'écart ou plus).
+
+| Gros plan | Sans occlusion | Avec occlusion | Écart × 16 |
+|---|---|---|---|
+| `carte-ville-ao-3-d` (jour, façade à l'ombre à droite) | ![sans](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/sans-ao-carte-ville-ao-3-d.jpg?raw=true) | ![avec](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/avec-ao-carte-ville-ao-3-d.jpg?raw=true) | ![écart](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/ecart-x16-carte-ville-ao-3-d.jpg?raw=true) |
+| `carte-ville-ao-1-d` (jour, rue du centre) | ![sans](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/sans-ao-carte-ville-ao-1-d.jpg?raw=true) | ![avec](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/avec-ao-carte-ville-ao-1-d.jpg?raw=true) | ![écart](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/ecart-x16-carte-ville-ao-1-d.jpg?raw=true) |
+| `carte-ville-ao-1-g` (jour, autre côté) | ![sans](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/sans-ao-carte-ville-ao-1-g.jpg?raw=true) | ![avec](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/avec-ao-carte-ville-ao-1-g.jpg?raw=true) | ![écart](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/ecart-x16-carte-ville-ao-1-g.jpg?raw=true) |
+| `carte-ville-ao-2-d` (jour, façades au soleil (effet faible : le soleil direct n'est pas touché)) | ![sans](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/sans-ao-carte-ville-ao-2-d.jpg?raw=true) | ![avec](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/avec-ao-carte-ville-ao-2-d.jpg?raw=true) | ![écart](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/ecart-x16-carte-ville-ao-2-d.jpg?raw=true) |
+| `carte-ville-ao-1-d-nuit` (nuit (ciel de lune : effet presque nul, lampes et phares inchangés)) | ![sans](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/sans-ao-carte-ville-ao-1-d-nuit.jpg?raw=true) | ![avec](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/avec-ao-carte-ville-ao-1-d-nuit.jpg?raw=true) | ![écart](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-269/qa/pr/WFS-269/ecart-x16-carte-ville-ao-1-d-nuit.jpg?raw=true) |
+
