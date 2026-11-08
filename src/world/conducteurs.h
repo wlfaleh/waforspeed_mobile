@@ -89,11 +89,17 @@ inline float luminance(const vec3& c) { return 0.2126f * c.x + 0.7152f * c.y + 0
 // Hystérésis de ± 0,5 m autour de chaque seuil (precedent : niveau de l'image d'avant, −1 : aucun) : une voiture qui roule
 // autour d'un seuil ne change pas de niveau à chaque image (avis expert-realisme-3d)
 constexpr float LOD_M[2] = {8.f, 20.f}, LOD_HYST_M = 0.5f;
-inline int niveauDetail(float d2, int precedent = -1) {
+// WFS-317 (RG-02) : en Basse, 3e seuil des piétons de WFS-299 : corps-3 « très simple » (regroupement des sommets, squelette.cpp)
+// de 30 m à la fin de la file (50 m) ; Moyenne et Haute inchangées (corps-2 jusqu'à 50 m)
+constexpr float LOD_BASSE_M[3] = {8.f, 20.f, 30.f};
+inline int niveauDetail(float d2, int precedent = -1, bool basse = false) {
     const float d = std::sqrt(d2);
-    int n = d < LOD_M[0] ? 0 : d < LOD_M[1] ? 1 : 2;
-    if (precedent >= 0 && n != precedent) {   // on ne quitte le niveau précédent qu'une fois 0,5 m passé au-delà de son seuil
-        const float seuil = LOD_M[std::min(n, precedent)];
+    const float* s = basse ? LOD_BASSE_M : LOD_M;
+    const int nS = basse ? 3 : 2;
+    int n = 0;
+    while (n < nS && d >= s[n]) n++;
+    if (precedent >= 0 && precedent <= nS && n != precedent) {   // on ne quitte le niveau précédent qu'une fois 0,5 m passé au-delà de son seuil
+        const float seuil = s[std::min(n, precedent)];
         if (std::fabs(d - seuil) < LOD_HYST_M && std::abs(n - precedent) == 1) n = precedent;
     }
     return n;
@@ -120,9 +126,9 @@ struct Attribution {
         if (n < FILE_MAX) { graine[n] = g; modele[n] = (int8_t)m; lod[n] = -1; vu[n] = true; n++; }
         return m;
     }
-    int niveau(uint32_t g, float d2) {   // niveau de détail avec hystérésis, gardé par voiture
-        for (int i = 0; i < n; i++) if (graine[i] == g) return lod[i] = (int8_t)niveauDetail(d2, lod[i]);
-        return niveauDetail(d2);
+    int niveau(uint32_t g, float d2, bool basse = false) {   // niveau de détail avec hystérésis, gardé par voiture
+        for (int i = 0; i < n; i++) if (graine[i] == g) return lod[i] = (int8_t)niveauDetail(d2, lod[i], basse);
+        return niveauDetail(d2, -1, basse);
     }
     void finImage() {   // oublie les voitures sorties de la file
         int k = 0;

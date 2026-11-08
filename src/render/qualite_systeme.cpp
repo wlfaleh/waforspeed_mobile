@@ -195,21 +195,9 @@ std::string qualite::ligneRendu() {
 // WFS-317 (I9) : comptes du Renderer (flushDraw, toutes passes : ombres, reflet, capture, scène), par famille
 std::string qualite::texteDessin(bool detail) {
     if (!g_r) return "";
+    static_assert(Renderer::FAM_N == 3, "texteComptes : 3 familles (décor, voitures, personnes)");
     const Renderer::ComptesImage& c = g_r->comptesImage();
-    uint32_t a = 0, t = 0;
-    for (int f = 0; f < Renderer::FAM_N; f++) { a += c.appels[f]; t += c.triangles[f]; }
-    if (!a) return "";
-    static const char* const NOM[Renderer::FAM_N] = {"décor", "voitures", "personnes"};
-    char b[256];
-    if (!detail) {
-        std::snprintf(b, sizeof b, "%u appels · %u k triangles (décor %u %%, voitures %u %%, personnes %u %%)", a, (t + 500) / 1000,
-                      (unsigned)std::lround(100.0 * c.triangles[0] / std::max(t, 1u)), (unsigned)std::lround(100.0 * c.triangles[1] / std::max(t, 1u)),
-                      (unsigned)std::lround(100.0 * c.triangles[2] / std::max(t, 1u)));
-        return b;
-    }
-    std::string s = "dessin de l'image (toutes passes) : " + std::to_string(a) + " appels, " + std::to_string(t) + " triangles";
-    for (int f = 0; f < Renderer::FAM_N; f++) s += std::string(" ; ") + NOM[f] + " " + std::to_string(c.appels[f]) + " appels, " + std::to_string(c.triangles[f]) + " triangles";
-    return s;
+    return texteComptes(c.appels, c.triangles, detail);
 }
 // WFS-246 (RG-06) : chiffres de la mesure du téléphone
 namespace {
