@@ -4906,3 +4906,20 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - de nuit, en plus : jusqu'à 8 lumières calculées par pixel (Nuit : 41 appels).
 - **Pas de fichier:ligne qui grossit** : aucune croissance mesurée. Les gros postes fixes sont nommés ci-dessus.
 - **Suite** : RG-06 (chiffres de mémoire au chargement et dans les Réglages). L'allègement de la Ville de nuit (piétons au loin, lumières de nuit en Basse) est proposé au PO, car il touche les zones E2 et E4 et les tickets WFS-268 et WFS-281.
+
+### 2026-11-08 03:40:21 — WFS-297 : chiffres de mémoire (RG-06), PR ouverte (Claude, agent 1)
+- **Compteurs mesurés** (`src/core/memoire.h`) :
+  - mémoire de la carte graphique, comptée dans `vk.cpp` ;
+  - octets lus par `readAsset` ;
+  - objets 3D vivants ;
+  - personnes (accroche de 2 lignes dans `pietons.cpp`) ;
+  - numéro de la partie (`Game::init`) ;
+  - mémoire du jeu (`/proc/self/statm`).
+- **Affichage** : à l'écran de chargement (2 lignes sous l'étape) et dans les Réglages (fin de la ligne « Rendu », réduite si besoin). Aucun bouton déplacé.
+- **Accroches annoncées** :
+  - `readAsset` : 1 ligne dans `desktop_main.cpp`, 1 ligne dans `android_main.cpp` ;
+  - `pietons.cpp` : 2 lignes ;
+  - `reglages.h` / `reglages.cpp` : `ouvrirReglagesBanc`, pour le banc.
+- **Exemple, banc 1280** : partie 2 (Ville de nuit), Lus 247 Mo, 983 objets 3D, 47 voitures, 882 personnes, mémoire jeu 1 249 Mo, carte graphique 601 Mo.
+- **Vérifications** : 65 tests CPU verts, parcours 0 écart.
+- **Suite** : RG-05 passe à WFS-299 (allègement de la Ville de nuit), réservé après ce ticket.
