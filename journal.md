@@ -4354,3 +4354,20 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - **Défauts** : (1) bandeau du menu : « Installer » lance le téléchargement sans taille ni phrase des données mobiles (RG-02 / RG-06), texte « prochaine partie » faux (prochain lancement) ; (2) `Paquets.java` : « Plus tard » pendant une coupure laisse la phase sur COUPURE (installation impossible de la session, bandeau figé) ; (3) aucun test CPU de `EtapePaquets` (banc hors CI) ; (4) captures : pas d'« avant » du menu, pas de format téléphone 2400×1080.
 - **Accepté** : écart d'`initGraphics` (ligne après les CGU : correcte, la garde empêcherait de recréer Vulkan au retour de la touche Accueil) ; accroches dans la limite ; aucun fichier interdit ni iOS.
 - TACHES : ↩️ Retour lead dev (PR #286) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 22:41:52 — WFS-322 : cause du saut de couleur à l'arrivée d'une sonde, avis de expert-realisme-3d (Claude, agent 1)
+- **RG-01, cause du saut** (`src/render/eclairage_physique.cpp`) : la nouvelle sonde arrivait sans fondu dans le temps.
+  - `installer()` remplace la sonde A d'un coup : saut de (1 − w) × (nouvelle − A) sur une image. La 1re capture remplace la sonde du ciel d'un coup.
+  - Après un saut de plus de 80 m dans la même scène, l'exposition se recalait d'un coup (`recaler`).
+- **Correction** (branche `feature/waforspeed-322`, a93f3de et f396ba0) :
+  - diffus (harmoniques sphériques) lissé dans le temps, constante de 0,6 s (`lisserSh9`, testé) ;
+  - recalage d'un coup seulement à la 1re capture d'une nouvelle scène.
+- **Banc RG-05** (Ville de jour, Haute) : saut de 5,87 → 2,06 ΔE2000 après le lissage seul ; le 2e chiffre, avec la correction de l'exposition, est en cours.
+- **Bleu qui reste (RG-03)** : sondes stables, façades à l'ombre à b* ≈ −6 (zone RG-05, `voiture-lod-passage-56/60`).
+- **Avis de expert-realisme-3d** :
+  - **Réel attendu** : façade grise à l'ombre, rue ensoleillée, sans balance des blancs : environ 7 000 à 8 000 K, soit L* ≈ 20-23, a* 0 à +1, b* −2 à −3,5. Le relevé actuel (b* −6,3, a* +2,5) est la signature d'un éclairage par le ciel seul.
+  - **Occlusion de WFS-269** : elle est appliquée une 2e fois sur une sonde capturée qui contient déjà les immeubles. Ce double comptage est réel mais ne change que L*.
+  - **Recommandation** :
+    - (1) mesurer, dans la capture, la part des surfaces au soleil dans l'éclairement d'une façade ;
+    - (2) projeter deux jeux d'harmoniques (surfaces, ciel) et n'appliquer l'occlusion qu'au ciel, rapportée à l'occlusion vue par la sonde ;
+    - (3) si b* reste sous −4, ramener la teinte du ciel sur la courbe de la lumière du jour. Pas de soleil ajouté artificiellement.
