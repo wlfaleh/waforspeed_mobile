@@ -4382,3 +4382,6 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Vidéo de l’utilisateur (« catastrophe ») : voitures du trafic et police dans l’habitacle (ANO-183, bloquante), ciel et scène violets / magenta (ANO-184, majeure), planche du cockpit qui clignote (ANO-185, mineure). Il faut deux appuis sur « Fermer » (ANO-159). 22-23 img/s en Basse. Rapport `qa/rapports/VABF-2026-11-08.md` ; transmis au PO.
 
 ### 2026-11-08 22:43:01 — Test Poursuite de l'utilisateur (APK 931, QA) : ANO-183 → WFS-333 (élargi), ANO-184 → WFS-328, ANO-185 → WFS-323, ANO-159 → WFS-290, mesure → WFS-335 (po-scrum-master)
+
+### 2026-11-08 22:45:52 — VABF : Poursuite APK 931 relue à 3 images/s, ANO-186 à ANO-194 (agent qa lead)
+- À la demande de l’utilisateur (« sortir plus d’anomalies ») : pluie dans l’habitacle, volant du cockpit fixe, compteur illisible, halo des lampadaires décalé, flammes sur le trafic, bandeau Travaux sans chantier, encart Police inutile, score qui baisse, pluie verticale. ANO-175 et ANO-152 toujours là. Transmis au PO.
