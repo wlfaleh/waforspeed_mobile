@@ -1,6 +1,5 @@
 // WaForSpeed — module « duel » (WFS-21) : voir duel_system.h.
 #include "duel_system.h"
-#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -84,7 +83,6 @@ public:
             WFS_LOG("duel : place %d sur la grille", s.place() + 1);
             trafficRestartSeed(s.seed(), pl.position);
             if (c) { c->reset(); c->duelFinish = s.finish(); }
-            memoire::nouvellePartie();   // WFS-297 (RG-06, accroche) : chaque manche est une partie
             overT_ = 0;
             // WFS-122 (RG-01) : adversaires de la manche en tête des « Derniers adversaires » du salon
             sauvegarde().noterAdversaires(s.adversaires()); sauvegarde().enregistrer();

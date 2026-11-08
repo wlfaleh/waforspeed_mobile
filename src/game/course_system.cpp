@@ -65,7 +65,7 @@ public:
             pl.reset(*pl.car);
             trafficRestart(pl.position);
             course_.reset(); nouveauRecord_ = false; attente_ = 0;
-            WFS_LOG("course : nouvelle course (même graine de trafic), partie %d", memoire::nouvellePartie());   // WFS-297 (RG-06, accroche)
+            WFS_LOG("course : nouvelle course (même graine de trafic)");
             demarrerFantome(g);   // WFS-125
             return;
         }
@@ -73,6 +73,8 @@ public:
         if (attendreDepart(dt)) return;           // WFS-242 (RG-07) : le « 3 » arrive avec les commandes
         const RaceState before = course_.state; const int cp = course_.level;
         course_.step(dt, pl, activeTrafficMut(), pl.position, dt / std::max(1e-6, course_.echelleDt));   // WFS-70 (RG-05) : chrono en temps réel
+        if (before == RaceState::Count && course_.state == RaceState::Play)   // WFS-297 (RG-06, accroche) : départ d'une course = partie suivante
+            WFS_LOG("course : départ, partie %d depuis le lancement", memoire::nouvellePartie());
         // WFS-125 (RG-05 / RG-06) : horloge de jeu de la course (le ralenti ralentit aussi le fantôme), trace toutes les 0,1 s
         if (course_.state == RaceState::Play) {
             tJeu_ += dt;

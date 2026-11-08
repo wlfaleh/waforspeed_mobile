@@ -124,9 +124,9 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             const bool villeNuit = carte == "ville" && nuit && k > 0;   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
             if (f > 0) for (int i = 0; i < MINUTE; i++) {
                 g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60;
-                if (f == 1 && villeNuit && i % (30 * 60) == 0 && i <= 60 * 60) {
+                if (f == 1 && villeNuit && (i == 0 || (i + 1) % (30 * 60) == 0) && i < 61 * 60) {   // 0, 30 et 60 s
                     g.render(t); g.render(t + 0.02);
-                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string(i / 60) + "s.png");
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string((i + 1) / 60) + "s.png");
                 }
             }
             for (int i = 0; i < 30; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }   // images complètes avant la mesure

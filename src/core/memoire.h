@@ -4,8 +4,8 @@
 //     à la destruction ;
 //   - octets lus : fichiers lus par readAsset (desktop_main.cpp, android_main.cpp) ;
 //   - objets 3D : maillages vivants (Renderer::makeMesh / makeSkinnedMesh, rendus par destroy) ;
-//   - personnes : piétons de la carte (pietons.cpp) ; numéro de la partie : courses démarrées depuis le lancement (course_system.cpp,
-//     duel_system.cpp) ; Mo lus du chargement en cours (début : Game::init) ;
+//   - personnes : piétons de la carte (pietons.cpp) ; numéro de la partie : courses démarrées depuis le lancement (départ au « GO »,
+//     course_system.cpp) ; Mo lus du chargement en cours (début : Game::init) ;
 //   - mémoire du jeu : mémoire résidente du processus (/proc/self/statm, Linux et Android).
 #pragma once
 #include <atomic>
@@ -45,7 +45,7 @@ inline double lusMo() { return compteurs().octetsLus.load() / (1024.0 * 1024.0);
 // chargement en cours : « Lus » compte ce qui a été lu depuis le début du chargement de la partie (Game::init)
 inline void debutChargement() { compteurs().lusDebut = compteurs().octetsLus.load(); }
 inline double lusChargementMo() { return (compteurs().octetsLus.load() - compteurs().lusDebut.load()) / (1024.0 * 1024.0); }
-// une course qui démarre (« Rouler », « Rejouer », manche de duel) : partie suivante
+// une course qui démarre (passage du décompte au « GO » : « Rouler », « Rejouer », rechargement, manche de duel) : partie suivante
 inline int nouvellePartie() { return ++compteurs().partie; }
 
 } // namespace wfs::memoire
