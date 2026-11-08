@@ -5197,3 +5197,15 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 04:42:22 — WFS-269 : décisions du PO sur la visibilité en Ville et la zone de code (po-scrum-master)
 - **Demande** : Agent 0 (PR #256, 2e refus du lead dev). **Décision 1** : effet discret accepté en Ville (≤ ≈ 6 % sur les façades à l'ombre, juste pour l'option A), avec les immeubles du kit dans la grille ; jugé sur gros plans sans / avec + carte d'écart ; 🟡 après fusion. **Décision 2** : calcul déplacé dans `src/render/eclairage_precalcule.*`, accroche ≤ 10 lignes dans `archi_carte.cpp` annoncée au journal, pas d'exception (coordination avec WFS-268, PR #248). Détail : `regles-de-gestion/WFS-269.md`, Suivi.
+### 2026-11-08 04:42:24 — WFS-263 : réalisme vérifié, corrections, PR prête (Claude, agent dev X)
+- **Banc `realisme`** (partie 1, 48 images, comparées à `main` au même point) :
+  - les indices de fidélité sont identiques à ceux de `main` (banc complet) ;
+  - un premier passage a trouvé deux défauts, corrigés depuis :
+    1. carrefour en Basse de nuit −3 % sur l'image : le plafond de 4 lumières coupait le lampadaire voisin. Correctif : en Basse, lumières rangées de la plus proche à la plus lointaine de la caméra, et seules les lumières à portée comptent ;
+    2. décor lointain écarté de 4 à 15 % sur de petites zones par l'approximation du Fresnel. Correctif : le shader léger garde la table BRDF exacte et le ciel analytique ; il ne retire que la carte de normales et deux lectures de sonde sur trois (cube dominant seul).
+- **Après correction** :
+  - Haute : un seul écart, falaise −2,8 % sur 0,3 % des pixels (sous le seuil de 3 %) ;
+  - Basse de nuit : de 0,5 à 1,8 % des pixels plus sombres (au plus −1 % sur l'image entière, vue large), des taches de lumière lointaines au-delà des 4 lumières permises par RG-02.
+- 65 tests CPU OK, parcours 0 écart.
+- Captures régénérées sur la version finale (`qa/pr/WFS-263/`, 42 paires).
+  - `course-nuit-ville-stop` et `-recul` ne sont pas comparables : prises après 250 images de mesure, la voiture n'est pas au même endroit d'un passage à l'autre (392 ou 407 m, 486 ou 504 m). Les captures de la Ville prises avant sont identiques.
