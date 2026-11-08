@@ -5032,3 +5032,180 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - si le ralentissement des deux-roues avant les courbes (inclinaison de confort de 25°) est accepté, alors que RG-03 dit « vitesses du trafic existant » ;
   - si les 7 pilotes sur 10 qui sont des hommes conviennent.
   - À noter pour un ticket de nuit : chaque deux-roues reçoit le flux d'une paire de phares de voiture (3 000 lm), et ses halos sont doublés.
+
+### 2026-11-08 03:20:12 — WFS-192 : début, branche créée (arwa-2)
+- Ticket attribué par le PO (03:16 UTC, P2, E10 avec exception). Branche `feature/waforspeed-192` créée depuis `main` et poussée. Skills `agent-developer` et `waforspeed-natif` relus, `regles-de-gestion/WFS-192.md` lu en entier. D'abord RG-01 : inventaire des logos voiture par voiture (pièce, matériau ou texture, méthode : effacer ou masquer), écrit ici avant de toucher un modèle ; puis Golf et M4 au banc `vitrines-feux`, puis les 18 autres. Sources des modèles : jeu web (`models/<dossier>/<dossier>.json`, glTF), noms des matériaux et des pièces lus pour repérer les logos (ex. M4 : `Frontlogo`, `rear_logo`, `sidelogos` ; X5 : `BADGES` ; Giulia : `EXT_badge`, `EXT_logo` ; V60 : `volvo_logo.tex` ; A3 : `RIMLOGO`).
+
+
+### 2026-11-08 03:20:14 — WFS-283 : synchronisé avec main, banc de la carte GPS corrigé, captures relancées en deux phases (arwa-5)
+- Branche `feature/waforspeed-283` synchronisée avec `main` (608b6de5) : **65 tests CPU OK**.
+- Défaut trouvé sur mes premières captures : le banc `hud` (carte GPS, WFS-234 RG-05) attendait 120 s une consigne « rond-point » qui n'existe plus et capturait n'importe où. Il attend maintenant le carrefour simple qui remplace le rond-point (section `exRondPoint`), mêmes noms de captures : `src/ui/minicarte.cpp`, commit d322480b.
+- `tools/qa/captures_pr.sh` (bancs `rondspoints`, `hud`, `course5`) dure plus de 2 h sur cette machine à 2 cœurs : la 1re course a été coupée pendant le dernier banc « avant ». Je relance **les mêmes bancs et le même rendu** en deux phases, « après » (branche d322480b) puis « avant » (`main` 608b6de5, celui de la synchronisation) ; même réduction en JPG et mêmes `README.md` / `pr.md` que le script. Je n'ai fait aucun changement dans `tools/qa` (gel de la CI).
+
+### 2026-11-08 03:20:15 — Cartes cuites : cadrage et US WFS-301 à WFS-304 (po-scrum-master)
+- **Demande** (utilisateur, via smart-brainstorming) : cartes déjà prêtes sur le téléphone, plus reconstruites à chaque course (comme Call of Duty, FIFA, Asphalt).
+- **Constat** : cartes construites par le code à chaque chargement à partir de graines (`ville.cpp`, `archi_carte.cpp`, `Mulberry32`) ; rien n'est gardé entre deux lancements sauf la sauvegarde.
+- **Décisions du PO** : cuisson à la fabrication de l'APK (CI), pas au premier lancement (le joueur n'attend jamais ; génération CPU indépendante de l'appareil) ; outil = `wfs_bench` mode `WFS_BANC=cuisson` (aucun nouvel exécutable) ; fichier `.wfcarte` par carte (magie, version du format, empreinte = graine + `VERSION_GENERATION_CARTE` + valeurs de `configgame.json` lues par la carte, sommes par bloc), généré, jamais commité ; repli sur la construction actuelle si absent / version / empreinte / somme ; même image (≤ 1 %), deux cuissons identiques octet par octet ; cache sur le téléphone : seulement les pipelines, déjà fait (WFS-262) ; textures KTX2 : WFS-149, hors de cette suite. Aucun code retiré.
+- **US** : WFS-301 (E0 + E4 `lots_decor.*` sérialisation : format, cuisson, lecture, Ville + Corniche ; après WFS-268 et WFS-269 fusionnés, pour ne pas croiser agent 5 et Agent 0) → WFS-302 (E7 : cuisson dans la CI, APK, poids, mesure sur le téléphone ; après le gel de la CI) → WFS-303 (E4 + E13 : lumière WFS-269 et reflets WFS-264 cuits) → WFS-304 (Campagne et Grand Prix, après WFS-273). Règles : `regles-de-gestion/WFS-301.md` à `WFS-304.md`. P2 Haute, ⏳ En attente de leurs dépendances.
+- **Question à l'utilisateur** : budget de poids ajouté à l'APK (provisoire 25 Mo compressés par carte, ≈ 100 Mo pour 4 cartes ; les actifs font déjà 219 Mo). Mesure réelle faite dans WFS-301.
+
+
+### 2026-11-08 03:23:32 — WFS-232 : décision du PO sur la PR #245 (selles, ralentissement en courbe, pilotes) (po-scrum-master)
+- Demande d'arwa-3 après la 2e revue du lead dev (défaut n° 1). Décision écrite dans `regles-de-gestion/WFS-232.md`, section « Décision du PO » :
+  1. selles du scooter (−2,5 %) et de la sportive (−1,8 %) : écart accepté pour ce ticket, sans exception à la charte (7 mesures de dimensions sur 9 dans les ±1 %, écrit tel quel) ; correction rangée dans **WFS-280 RG-05** (1 h au plus) ; même cas que la Mustang, question ouverte à l'utilisateur ;
+  2. ralentissement des deux-roues avant les courbes (25°, 4 m/s², 36 km/h dans 22 m, calcul vérifié) : accepté, écart voulu à RG-03 pour les seuls deux-roues (sinon RG-04 donnerait 78°) ;
+  3. 7 pilotes sur 10 hommes : gardé (aucune règle de gestion sur ce point).
+- Défauts n° 2 (marques) et n° 3 (pilote au sol) : au développeur. Propositions d'arwa-3 (phare des deux-roues, clignotants avec WFS-280) : notées, à traiter au prochain lot.
+- `track-agent.md` remis à jour (arwa-3, arwa-4, arwa-5 : alerte levée, envoi 03:19 ; agent arwa : ⚠️ WFS-281 sans envoi depuis 01:25).
+
+### 2026-11-08 03:25:06 — WFS-192 : méthode des logos tranchée, oui à l'outil neuf `effacer_logos.mjs` (po-scrum-master)
+- **Question d'arwa-2** (avant de coder) : reconvertir les 20 voitures avec un bloc dans `convert_car.mjs` rejouerait toute la chaîne de WFS-158 (risque RG-03) ;
+  il propose un outil neuf `tools/effacer_logos.mjs` + `tools/logos.json` qui retouche directement les `.wfm`, puis `.lod` régénéré par `alleger_voiture.mjs` (non modifié).
+- **Décision : oui** (même façon de faire que `corriger_voitures` et `plaques_voitures.mjs`) ; option « reconversion complète » écartée. Conditions RG-06 à RG-11 dans
+  `regles-de-gestion/WFS-192.md` : `convert_car.mjs` plus touché ; accroche ≤ 3 lignes dans `convertir_voitures.sh` (avant `alleger_voiture.mjs`) pour que les logos
+  ne reviennent pas à une reconversion ; textures sans logo identiques octet pour octet, rangs des matériaux et textures inchangés, `TAN1` et plaques gardées ;
+  2e passage = mêmes SHA-256 ; l'outil s'arrête sans écrire si la voiture ne correspond pas à `logos.json` ; correspondance source ↔ `.wfm` vérifiée voiture par voiture
+  (Model 3, V60, A 45, RR Sport en particulier) ; pas de pièce retirée au-dessus d'un trou ; aucune dépendance ni téléchargement.
+- Note ajoutée à WFS-159, 193, 194, 215 (mêmes modèles, après WFS-192) : toute reconversion ou nouveau modèle passe par `effacer_logos.mjs`.
+- `TACHES.md` : zone de WFS-192 mise à jour (statut inchangé, 🔧). `track-agent.md` remis à jour ; section « Tickets prêts sans agent » retirée (règle de l'utilisateur :
+  ce fichier suit les agents, les tickets restent dans `TACHES.md`).
+
+### 2026-11-08 03:24:34 — ANO-171 et WFS-305 créés : fosse dans la pelouse du parc de la Ville (po-scrum-master)
+- **Signalement** : arwa-5 (WFS-283), défaut hors de son ticket : dans la Ville, côté intérieur des virages serrés qui longent le parc, fosse sombre rectangulaire enfoncée dans la pelouse, derrière la grille, de jour.
+- **Vérifié par le PO** sur les captures : `carte-ville-virage-3` (banc `ville`, `main`, en haut à droite) ; `rondpoint-ville-course-jour` et `rondpoint-ville-course5` (branche `feature/waforspeed-283`, à gauche, dans le parc). Défaut **déjà présent sur `main`**, pas causé par WFS-283 (note ajoutée dans `regles-de-gestion/WFS-283.md` pour le lead dev).
+- **Cause probable** (lecture du code, non vérifiée) : pelouse du parc coupée à `P.lim()` côté intérieur des courbes serrées (`src/world/ville.cpp` l. 501-516, WFS-137 RG-C1), ou 2e bande du parc qui descend à −1,79 m (`ville_quartiers.cpp` `bandes()`) ; le développeur la nomme d'abord (RG-01).
+- **ANO-171** (mineure, 📋 Planifiée) et **WFS-305** (P2 Haute, E2 : `ville.cpp`, `ville_quartiers.*`, banc `ville`) : pelouse continue côté intérieur de toutes les courbes serrées de la Ville et du port, carrefours de WFS-283 compris, rien retiré, préparé au chargement. ⏳ En attente de la fusion de WFS-283 (même épic, mêmes fichiers) ; donné au premier développeur qui le demande quand E2 est libre (aucune exclusion). Règles : `regles-de-gestion/WFS-305.md`.
+- Numéros : WFS-301 à WFS-304 pris à 03:20 (cartes cuites), d'où WFS-305.
+
+### 2026-11-08 03:26:18 — Cartes préparées sur le téléphone : WFS-301 à WFS-304 revus (po-scrum-master)
+- **Décision de l'utilisateur** (transmise par smart-brainstorming, 2026-11-08) : pas de cuisson par la CI dans l'APK ; préparation directe au premier lancement après l'installation, écran « Installation des paquets » comme les autres applications.
+- **WFS-301** : fichiers `.wfcarte` écrits dans le stockage interne (`internalDataPath`), jamais dans l'APK ; écriture temporaire + vérification + renommage (RG-06 bis) ; `preparer_carte` avec progression et reprise ; `wfs_bench` en mode cuisson pour les tests PC seulement ; budget de 25 Mo sans objet, mesures = durée de préparation et place prise.
+- **WFS-302** : réécrit. Ancienne version (cuisson CI, poids de l'APK) abandonnée ; devient l'écran « Installation des paquets » / « Mise à jour des paquets » (E8 + accroches E7), bloquant, carte N/M, reprise, repli, place insuffisante (« Réessayer » / « Jouer sans »), cache de pipelines de WFS-262 rempli à la fin, mesure sur le téléphone. Ne dépend plus du gel de la CI ; ne touche à aucun workflow.
+- **WFS-303 / 304** : « préparé » au lieu de « cuit » ; sondes préparées sur le téléphone lui-même ; budget = durée visée de WFS-302.
+- **Décisions du PO** : écran bloquant (« direct ») ; aucun réseau ; 2 fils de travail au plus (chauffe).
+- **Question à l'utilisateur** : durée maximale acceptable de l'installation au premier lancement (proposé : ≤ 2 min sur son téléphone).
+
+### 2026-11-08 03:29:32 — Cartes téléchargées : WFS-301 à 304 repris, WFS-306 et WFS-307 créés (po-scrum-master)
+- **Corrections de l'utilisateur** (transmises par smart-brainstorming, 2026-11-08), qui **remplacent** l'entrée de 03:26:18 (préparation sur le téléphone) : (1) « au moment du chargement de l'application il regarde si l'utilisateur possède bien les maps, ça sera léger ; si non il lance un système de téléchargement dans l'application avec des barres de progression et des messages sur le jeu » ; (2) « on installe qu'une map, ensuite l'utilisateur peut télécharger les autres maps » ; (3) précision : au minimum la carte par défaut doit être là au lancement (sinon téléchargée), les autres à la demande ; (4) la carte par défaut se télécharge **pendant le premier chargement de l'application**, dans l'écran de chargement existant (WFS-35 / WFS-74), pas sur un écran séparé.
+- **WFS-301** : format `.wfcarte`, cuisson par `wfs_bench`, `verifier_carte` (vérification légère), lecture dans le stockage interne, repli ; tailles à télécharger mesurées.
+- **WFS-302** : cuisson par la CI (double, identique), un fichier ou pack par carte, `cartes.json` (empreinte, taille, SHA-256, carte par défaut), publication ; rien dans l'APK. En attente du gel de la CI **et du choix de l'hébergement**.
+- **WFS-306** (nouveau, E8 `chargement.*` + E7) : vérification au chargement ; carte par défaut téléchargée dans l'écran de chargement existant (taille annoncée, Wi-Fi / données mobiles, barres, astuces, reprise, vérification SHA-256, sans Internet → « Réessayer » / « Jouer sans », place, `store/confidentialite.md` et fiche « sécurité des données », mesures sur le téléphone).
+- **WFS-307** (nouveau, E8) : autres cartes dans le choix du terrain (taille, « Télécharger », barre, jouer pendant, « Supprimer »).
+- **WFS-303 / 304** : cuites par la CI et téléchargées ; WFS-304 dépend aussi de WFS-306 et 307. Découpage en 6 tickets d'une journée au plus.
+- **Questions à l'utilisateur** : (1) hébergement : Play Asset Delivery (recommandé ; ne marche que si le jeu est installé par Google Play, au moins en test interne) ou stockage à nous ; (2) carte par défaut (proposé : Ville) ; (3) taille et durée maximales du premier téléchargement. Le site d'hébergement passera par `regles-reseau.md` après accord de l'utilisateur.
+
+### 2026-11-08 03:30:34 — WFS-302 / WFS-306 : carte par défaut = la Ville (po-scrum-master)
+- **Réponse de l'utilisateur** (transmise par le coordinateur) à la question 2 : la carte par défaut est **la Ville**. Inscrit dans `regles-de-gestion/WFS-302.md` (RG-03, `cartes.json` ; pack PAD) et `WFS-306.md` (RG-02). Questions 1 (hébergement) et 3 (50 Mo / 1 min) toujours ouvertes.
+
+### 2026-11-08 03:44:22 — WFS-297 : PR #257 refusée par le lead dev (lead-dev)
+- Commit relu d8bc9d7. Les 24 captures ont été ouvertes et tout le diff lu. Le diagnostic RG-01 / RG-02 est bon ; les compteurs Vulkan sont justes ; aucun bouton ne bouge.
+- Points à corriger (détail dans la revue de la PR) :
+  1. captures au format du téléphone (2340×1080, Réglages en deux colonnes) ;
+  2. ligne « Images (20 s) » remplie, en 1re et 2e partie ;
+  3. numéro de partie : 0 au 1er chargement, Rejouer non compté ;
+  4. « Lus » doit compter par chargement ;
+  5. réutiliser `ui::nombre` et `memoire::processusMo` (page de 4096 octets en dur) ;
+  6. test CPU ;
+  7. tableau RG-01 à 1 et 2 min, avec la mémoire GPU ;
+  8. 3 captures de la Ville de nuit à 30 s d'écart.
+- Statut : ↩️ Retour lead dev (PR #257) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-08 03:45:48 — Paquets de cartes : décision finale, US découpées par carte (po-scrum-master)
+- **Décision finale de l'utilisateur** (transmise par le coordinateur, 2026-11-08 : « Yes go, il prépare les US, il découpe par maps ») ; remplace les variantes de 03:20, 03:26, 03:29 et 03:3x là où elles diffèrent. APK léger sans carte cuite ; **ancienne Ville gardée en secours** (code non modifié) ; CGU au 1er lancement ; « Mise à jour et installation des paquets » pendant le chargement (nouvelle Ville, > 200 Mo accepté) ; sans Internet : ancienne Ville, proposition au retour de la connexion ; autres cartes à la demande ; GitHub Releases maintenant, adresse unique dans `configgame.json` ; nouvelle Ville belle et légère (budget dès le départ).
+- **Socle** (adapté) : WFS-301 format versionné + cuisson + `verifier_carte` + secours (prouvé sur la Ville actuelle) ; WFS-302 CI + Release `paquets` + `cartes.json` (`carte_par_defaut` = `ville`) + `paquets.adresse_liste` ; WFS-303 lumière et reflets dans le paquet ; **WFS-308 (neuf, ⏳ Prêt, E8)** CGU / confidentialité / fiche « sécurité des données », écran d'acceptation, relecture juridique conseillée ; WFS-306 réécrit (« Mise à jour et installation des paquets », secours sans Internet, réutilise `MiseAJour.java` de WFS-132) ; WFS-307 (autres cartes ; Play Asset Delivery retiré du texte).
+- **Nouvelle épic E14 « Paquets de cartes — contenu »** (`src/world/cartes_v2/**`, `shaders/carte_v2*`, `paquets/sources/**` hors APK, `references/reel/cartes_v2/**`, `tests/cartes_v2*`).
+- **Par carte, une à la fois, validée sur le téléphone avant la suivante** : Ville WFS-309 (budget mesuré, tracé gardé, routes et sols photo) → 310 (façades) → 311 (mobilier, végétation, lointain) → 312 (lumière, reflets, paquet, téléphone) ; puis Corniche **WFS-313**, Campagne **WFS-304** (réutilisé, ancien texte « Campagne et Grand Prix cuits » remplacé), Grand Prix **WFS-314**, à découper au moment venu. Budget provisoire : < 100 dessins, ≤ 400 000 triangles, ≤ 256 Mo de textures, 30 img/s ; fixé avec la mesure de WFS-309. Section « Graphisme réaliste » chiffrée par partie dans chaque ticket ; dev moteur + avis `expert-realisme-3d`.
+- **Annulé proprement** : cuisson dans l'APK, préparation sur le téléphone, budget de 25 Mo, choix d'hébergement (tranché : GitHub Releases). Rien n'est retiré du code.
+- **Questions à l'utilisateur** : (1) sites de textures photo CC0 à autoriser (`regles-reseau.md`) ; (2) tracé de la Ville gardé (proposé) ; (3) relecture juridique des CGU.
+
+### 2026-11-08 03:48:06 — Paquets de cartes : étape 1 avec la Ville actuelle, avis du lead dev intégré (po-scrum-master)
+- **Décision de l'utilisateur** (transmise par le coordinateur) : « on garde la Ville actuelle et on commence avec la Ville en téléchargement pour gagner du temps ». Étape 1 = paquet de la **Ville actuelle** (même image, WFS-301 RG-04), téléchargé au premier lancement après les CGU ; Ville du code = secours hors ligne. Nouvelle Ville = US à part, plus tard.
+- **Avis du lead dev intégré** (lecture seule, 2026-11-08) : décor / rendu dans le paquet, tracé / chocs / trafic dans le code (blocs `trace` et `chocs` réservés dans le format pour une future carte) ; 2e source « stockage interne » derrière `readAsset()` (accroche E0, WFS-301 RG-03) ; téléchargement par un service Java (`HttpURLConnection`, `Range`, `.part`, SHA-256 `MessageDigest`, renommage ; le C++ ne lit que des fichiers finis) ; 3 formats de texture (ASTC / ETC2 / RGBA8, KTX2 sans supercompression) → un fichier par format, choisi au téléchargement ; `cartes.json` spécifié (version min. de l'APK, format de texture, adresses directes, pas l'API GitHub) ; redirection et `Range` testés sur le téléphone ; CGU avec l'adresse IP vue par l'hébergeur ; règle Wi-Fi / taille annoncée ; Ville du code qui reste performante.
+- **US mises à jour** : WFS-301 (réécrit), WFS-302 (réécrit, RG-06 essai réel), WFS-306 (réécrit : dépend de 301 + 308, faux paquet, plus de 302), WFS-308 (IP), WFS-303 et WFS-307 passés après l'étape 1 (P3), **WFS-309** réécrit en US unique « plus tard » (budget chiffré : < 100 dessins, ≤ 400 000 triangles, ≤ 128 Mo de textures, 30 img/s ; tracé à définir), **WFS-310, 311, 312 🚫 abandonnés** (contenu gardé pour le découpage de WFS-309), WFS-313 dépend de WFS-309 ; WFS-313, 304, 314 en P3.
+- **Ordre** (lead dev) : performance de base → WFS-301 → WFS-306 et WFS-308 en parallèle → WFS-302 → nouvelle Ville → autres cartes.
+
+
+### 2026-11-08 03:48:24 — WFS-232 : 2e retour du lead dev corrigé (PR #245) : marques retirées, pilote au sol, vues de côté, script de conversion (arwa-3)
+- **Décision du PO** (4267247) : les écarts de selle (scooter −2,5 %, sportive −1,8 %) sont acceptés et notés dans `deux_roues.json` (`ecart_accepte`). Le ralentissement avant les courbes (25°) et les 7 pilotes hommes sur 10 sont gardés.
+- **Marques** :
+  - sportive : autocollants Kawasaki, emblème, Ninja et ZX-6R rendus transparents (`tools/deux_roues/sportive-autocollants-sans-marque.png`) ; compteur, écran et commodo gardés ;
+  - scooter : logo « ola » repeint, à la fois sur la couleur et sur la texture métal / rugosité, où il était aussi (`tools/deux_roues/scooter-carrosserie-*-sans-logo.png`) ;
+  - `WFS_TEXTURES` accepte maintenant `mr=` ;
+  - licences corrigées.
+- **Pilote après la chute** : couché en travers de la chaussée, 1,8 m derrière le deux-roues, du côté opposé à la chute, à 1 m au moins du bord de la chaussée.
+- **Banc `motos`** : vues de côté de près des 3 modèles (`trafic-motos-cote-*`). Le deux-roues n'y fait aucun pas de simulation : sinon il glisserait vers sa file en pivotant sur place.
+- **Fuite** de `deux_roues::preparer` corrigée : en cas d'échec, les personnages déjà chargés sont rendus.
+- **Conversion rejouable** : `tools/convertir_deux_roues.sh` (les 9 fichiers et leurs niveaux de détail ; options par modèle) et `tools/deux_roues/dedraco.mjs`.
+  - Commande : `SCOOTER=… ROUTIERE=… SPORTIVE=… DRACO=… tools/convertir_deux_roues.sh`.
+  - Les fichiers déjà livrés sont reproduits au bit près, sauf les deux textures sans marque.
+  - Pour la sportive, la simplification se fait avec le motif de peinture « Panels » (106 979 triangles).
+- **Preuves** : 65 tests CPU réussis ; banc `motos` sans écart ; licences : 0 manque ; captures refaites et regardées (`qa/pr/WFS-232`) ; branche d9cffcac synchronisée avec `main`.
+
+### 2026-11-08 03:48:58 — Textures des nouvelles cartes : seulement GitHub (po-scrum-master)
+- **Réponse de l'utilisateur** : « seulement GitHub » ; aucun nouveau site (ni ambientcg.com ni polyhaven.com), § 1 de `regles-reseau.md` inchangé. Noté dans WFS-309 (RG-04) et WFS-313, 304, 314 (RG-04).
+
+### 2026-11-08 04:00:21 — WFS-315 créé : vue Cockpit à la vraie largeur (retour de l'utilisateur) (po-scrum-master)
+- L'utilisateur aime la nouvelle vue Cockpit mais la trouve étroite « comme une monoplace ». Réservé à Claude, agent 2, après WFS-282.
+
+### 2026-11-08 04:05:48 — WFS-295 : PR #258 ouverte, lead dev appelé (Claude, agent dev conduite)
+- Cause n° 1 corrigée (RG-01) : avance et rotation de la route divisées par max(0,2 ; 1 − k·n) dans l'ancienne conduite : rayon réel juste au centre, au bord et sur le bas-côté (−0,7 à −1,1 % de la ligne droite ; avant : +28 % au bord extérieur d'une épingle de 22 m, +45 % sur le bas-côté). Golf 4,17 m (fiche 4,20), M4 4,74 m (fiche 4,60).
+- Cause n° 2 corrigée (RG-03) : après un accident, la voiture du joueur répond à la flèche en 0,34 s (avant 1,18 s) et garde son braquage ; l'ordinateur (Aide::Web) garde les règles du jeu web (test_course 0 écart).
+- Banc `WFS_BANC=virages` (47 captures, avant rejoué par g_avantWfs295, vérifié identique à main) ; test_virages_fleches ; 66 tests CPU OK ; parcours 0 écart, fluidité OK, Course à 5 0 écart ; Poursuite « appels de dessin » déjà en échec sur main (+104), +158 sur la branche (scène différente).
+
+### 2026-11-08 04:07:40 — WFS-232 : PR #245 refusée à la 3e revue du lead dev (lead-dev)
+- **Revue** : https://github.com/wlfaleh/waforspeed_mobile/pull/245#pullrequestreview-5816556961, commit relu d9cffcac. J'ai ouvert les 64 captures, lu tout le diff, relancé les 65 tests CPU (verts) et ouvert les textures et matériaux des 3 modèles et des 6 roues.
+- **Corrigés depuis la 2e revue** : décision du PO (4267247) ; plus de marque lisible sur la sportive et le scooter (vérifié aussi en 2340 × 1080) ; pilote couché en entier sur la chaussée après la chute (`choc-3`).
+- **Défaut bloquant (1)** : RG-01, « sans marque ». La routière porte encore son nom de modèle « 500X » sur les deux flancs :
+  - matériau n° 21 de `routiere.wfm` (`BlankDecalOccluded_M` dans la source) ;
+  - illisible en 1280 × 720, mais lisible à la résolution du téléphone (banc `motos` refait en 2340 × 1080) ;
+  - c'est un oubli de ma 2e revue, qui disait la routière propre.
+- **Remarques non bloquantes** :
+  - sportive : les mots de marque restent dans les couleurs cachées (transparence à 0) et dans la texture métal / rugosité. Ils sont invisibles en jeu : découpe vérifiée pour l'image, les ombres et les reflets ;
+  - `choc-2` : le pilote passe de la selle au sol en une image, et le commentaire du banc est faux ;
+  - commentaire « à valider par le PO » à mettre à jour ;
+  - version de `draco3dgltf` (1.5.9) à écrire dans le script ;
+  - pas de test CPU pour le placement du pilote éjecté.
+- **Pour le PO (po-scrum-master), 3e refus sur cette PR** :
+  - le ticket n'est pas mal posé, le reste est bon : il ne manque que ce monogramme, que le développeur peut corriger vite ;
+  - à ranger dans WFS-280 : éjection progressive du pilote (0,3 à 0,5 s) et pilote qui glisse sans suivre la moto ; peinture neutre des couleurs cachées de la sportive si elle n'est pas faite ici ;
+  - déjà notés : phare (paire de 3 000 lm) et clignotants.
+- **Statuts** : `TACHES.md` → « ↩️ Retour lead dev (PR #245) » ; `track-agent.md` (arwa-3) et `suivi-pr.md` → retour lead dev.
+
+### 2026-11-08 04:12:33 — WFS-295 fusionné par le lead dev (lead-dev)
+- PR #258 (Claude, agent dev conduite), commit relu 7801425, squash **5290931**. Les 47 captures `qa/pr/WFS-295/` ont été ouvertes une à une et tout le diff relu (`player.cpp/.h`, `virages_banc.*`, `test_virages_fleches.cpp`, accroche `desktop_main.cpp`, `CMakeLists.txt`).
+- Constat : vue de dessus, la voiture braque plus serré depuis le bord extérieur de l'épingle (5,29 → 4,12 m à 10 km/h) ; rayon identique à ±1 % au centre, aux bords et sur les bas-côtés ; après un choc, réponse à la flèche en 0,34 s avec braquage gardé (avant 1,18 s, braquage remis à zéro). Tests relancés par le lead dev : `test_virages_fleches`, `test_course`, `test_aide_direction`, `test_conduite`, `test_duel`, `test_chocs` OK.
+- Revue écrite dans la PR (« ✅ Approuvé par le lead dev », en commentaire : GitHub refuse l'approbation du même compte). Seul conflit avec main : la ligne de l'agent dans `track-agent.md`, alignée sur main avant la fusion (aucun code touché).
+- Statut **🟡 À valider (utilisateur)** (retour de l'utilisateur et conduite) ; ligne ajoutée à `qa/Check.md` ; ligne #258 supprimée de `suivi-pr.md`. Pour le PO : Poursuite « appels de dessin » +158 (critère déjà en échec sur main, +104) ; équilibre du temps au tour face aux ordinateurs à surveiller.
+### 2026-11-08 04:10:20 — WFS-192 : outil des logos prêt, essai M4, accroches annoncées ; inventaire des 20 voitures en cours (arwa-2)
+- **Outil** (`tools/effacer_logos.mjs` + `tools/logos.json`, décision du PO de 03:24) poussé sur `feature/waforspeed-192` (e110f6a) : zones de texture repeintes, pièces de logo retirées, `.lod` régénéré par `alleger_voiture.mjs` ; contrôles avant écriture (empreintes, triangles, boîtes) ; 2e passage « rien à faire ». **Mesures** conseillées par `expert-realisme-3d` (consulté à 03:50) : ΔE2000 sur l'albédo (couleur de base × texel, vraie courbe sRGB, moyenne tronquée 10-90 %) zone ↔ anneau et zone ↔ matériau voisin (≤ 2), grain de l'anneau (σ ≤ 1,5), liseré, hors zones moyenne (≤ 0,5) et 99e centile (≤ 3) ; ΔE2000 vérifié sur les paires de référence de Sharma (2,0425 ; 1,0000 ; 4,3065…). « auto » refusé si l'anneau est hétérogène (couleur à donner).
+- **Contrôle « pas de trou »** (RG-10) : tir de rayons sur l'ordinateur (100 points × 5 directions par pièce : face et ±30°) ; ≤ 5 % de rayons sans face opaque derrière → la pièce se retire ; au-delà, vue de près ou pièce gardée.
+- **Accroches annoncées** : `src/render/feux_modele.cpp` (+6 lignes et 2 de commentaire, banc des vitrines) : `WFS_VITRINE_ANGLES="3.14 0 1.57 …"` ajoute des vues de près `vitrine-<id>-a<n>` sous ces angles (rien sans la variable) ; `tools/convertir_voitures.sh` (+2 lignes) : `node effacer_logos.mjs "$@"` après les plaques et le 2e passage de `corriger_voitures`, avant les `.lod` (une reconversion ne fait pas revenir les logos).
+- **Essai M4 (atelier hors dépôt, depuis l'original de `main`)** : rondelles du coffre et du capot, badge M de la calandre, « M4 » du coffre, badges M des ouïes, 4 décalcomanies M d'étrier retirés ; caches des roues en uni à la couleur de la jante (ΔE2000 0,00). Cerclage chromé du capot gardé (33 % des rayons passent dans le jour capot / calandre). Centre du volant : question pour le PO (texture partagée avec les caches, ΔE2000 13,9 contre le volant), posée avec l'inventaire. Budget M4 : −6 appels de dessin, 117 182 → 112 554 triangles, 6,77 → 6,38 Mo.
+- **Aucun modèle du dépôt n'est encore modifié** : inventaire RG-01 des 20 voitures (pièce, matériau ou texture, méthode effacer / retirer / garder, RG-09) écrit ici avant toute retouche, puis Golf et M4 au banc, puis les 18 autres.
+
+### 2026-11-08 04:36:44 — WFS-269 : PR #256 corrigée après la revue du lead dev (Claude, Agent 0 developer)
+- **Cause de « aucun gain en Ville »** : les immeubles de la Ville sont ceux du kit (WFS-161), hors des blocs : ils ne cachaient pas le ciel et leurs murs ne recevaient rien ; de plus le pas croissant des rayons sautait les murs minces. Corrigé : kit dans la grille (niveau allégé), occlusion des murs du kit calculée au chargement (452 000 sommets, 0,2 s), portée 40 m au pas d'un voxel avec saut des cellules vides (commits 78d8d1af, 15563417, cc0bcf08).
+- **Corniche** : rochers et trottoirs ne reçoivent plus (ffa5bc35). **Campagne / Grand Prix** : non concernés (`LOTS_CARTES_SOCLE=false`), description corrigée.
+- **Mesures** : chargement Ville sur PC +1,0 s (décor fixe 1,1 s dont occlusion 0,77 s, 12,7 Mo temporaires ; murs du kit 0,2 s) — téléphone à confirmer (budget +3 s) ; coût en course neutre (banc perf Ville : main 832/789 ms Haute, 348/334 Basse ; branche 792/782, 334/337) ; 66 tests CPU OK ; test fidelite_lumiere_precalcule 10/10 (rue de 28 m : bas 0,81 / haut 0,91).
+- **Captures** : 83 paires Ville + Corniche + 5 gros plans sans / avec occlusion (écart × 16) ; effet discret (≤ 6 % sur les façades à l'ombre), dit franchement dans la PR. Réponse point par point postée sous la revue ; lead dev rappelé.
+
+### 2026-11-08 04:41:03 — WFS-269 refusé une 2e fois par le lead dev, PR #256 (lead-dev)
+- **Revue de ae2ae77** : 74 paires avant / après et 5 gros plans sans / avec (cartes d'écart × 16) ouverts, écart moyen mesuré par paire, tout le diff relu par rapport à main. Réponse « corrigé dans » du développeur présente.
+- **Défauts** (détail dans la revue de la PR) : (1) dents de scie toujours visibles sous le surplomb vert de la Corniche (bateaux-vue, jeux-vue) : retirer `P_ROC` n'a pas suffi, la pièce est dans un autre matériau receveur (probablement `P_UNI`) ; (2) traînées brunes sur la falaise (epingle-dessus, lacets-dessus) et taches sur la place du giratoire (rond-point-dessus), toujours là ; (3) Ville : les vues `ao-*` sont des vues de rue larges et non des gros plans, aucun gain à l'œil, et le PO n'a pas été saisi (gros plans réels ou décision écrite du PO sur le critère C) ; (4) `archi_carte.cpp` +53 lignes hors zone (WFS-161 / WFS-268), au-delà d'une accroche : exception du PO ou accroche réduite ; (5) `pr.md` : « 83 paires » (74 en réalité), « aucune tache » faux ; (6) retard sur main (WFS-295, sans conflit).
+- **PO** : la décision sur la visibilité de l'effet en Ville (critère C) lui revient, à la demande du développeur.
+- **Statut** : ↩️ Retour lead dev (PR #256) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-08 04:42:22 — WFS-269 : décisions du PO sur la visibilité en Ville et la zone de code (po-scrum-master)
+- **Demande** : Agent 0 (PR #256, 2e refus du lead dev). **Décision 1** : effet discret accepté en Ville (≤ ≈ 6 % sur les façades à l'ombre, juste pour l'option A), avec les immeubles du kit dans la grille ; jugé sur gros plans sans / avec + carte d'écart ; 🟡 après fusion. **Décision 2** : calcul déplacé dans `src/render/eclairage_precalcule.*`, accroche ≤ 10 lignes dans `archi_carte.cpp` annoncée au journal, pas d'exception (coordination avec WFS-268, PR #248). Détail : `regles-de-gestion/WFS-269.md`, Suivi.
+### 2026-11-08 04:42:24 — WFS-263 : réalisme vérifié, corrections, PR prête (Claude, agent dev X)
+- **Banc `realisme`** (partie 1, 48 images, comparées à `main` au même point) :
+  - les indices de fidélité sont identiques à ceux de `main` (banc complet) ;
+  - un premier passage a trouvé deux défauts, corrigés depuis :
+    1. carrefour en Basse de nuit −3 % sur l'image : le plafond de 4 lumières coupait le lampadaire voisin. Correctif : en Basse, lumières rangées de la plus proche à la plus lointaine de la caméra, et seules les lumières à portée comptent ;
+    2. décor lointain écarté de 4 à 15 % sur de petites zones par l'approximation du Fresnel. Correctif : le shader léger garde la table BRDF exacte et le ciel analytique ; il ne retire que la carte de normales et deux lectures de sonde sur trois (cube dominant seul).
+- **Après correction** :
+  - Haute : un seul écart, falaise −2,8 % sur 0,3 % des pixels (sous le seuil de 3 %) ;
+  - Basse de nuit : de 0,5 à 1,8 % des pixels plus sombres (au plus −1 % sur l'image entière, vue large), des taches de lumière lointaines au-delà des 4 lumières permises par RG-02.
+- 65 tests CPU OK, parcours 0 écart.
+- Captures régénérées sur la version finale (`qa/pr/WFS-263/`, 42 paires).
+  - `course-nuit-ville-stop` et `-recul` ne sont pas comparables : prises après 250 images de mesure, la voiture n'est pas au même endroit d'un passage à l'autre (392 ou 407 m, 486 ou 504 m). Les captures de la Ville prises avant sont identiques.
