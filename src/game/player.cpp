@@ -16,6 +16,20 @@ static constexpr double ELARGI_MAX = 0.6;      // rad
 static constexpr double FILE_GAIN = 0.6;       // WFS-258 : maintien de voie, rad de cap par demi-largeur d'écart à la file
 static constexpr double FILE_CORR_MAX = 0.3;   // WFS-258 : correction de cap du maintien de voie, au plus (rad)
 
+// WFS-258 (point 3 de RG-00b, ANO-138) : direction moins vive à haute vitesse, voiture du joueur. Au-dessus de 100 km/h, avec
+// l'angle de roues d'avant (maxSteer / (1 + v / steerV)), un quart de volant demandait déjà toute l'adhérence (2,1 g dès
+// 150 km/h, comme le volant à fond) : la moindre touche faisait virer au maximum. L'angle est ramené pour que le volant à fond
+// demande 1,2 × l'adhérence du jeu (Phys::grip, RG-06), un quart de volant à peu près un quart ; réduction progressive de
+// 100 à 130 km/h (aucun à-coup), rien sous 100 km/h (zone de WFS-316). maxSteer, steerV et grip ne changent pas.
+static double reductionBraquageHauteVitesse(double v, double wb) {
+    constexpr double V0 = 100 / 3.6, V1 = 130 / 3.6, MARGE = 1.2;
+    if (v <= V0 || g_avantWfs258Vif) return 1.0;
+    const double roueAvant = Phys::maxSteer / (1 + v / Phys::steerV);                // angle des roues à fond, sans réduction
+    const double roueAdherence = std::atan(MARGE * Phys::grip * wb / (v * v));         // angle qui demande 1,2 × l'adhérence
+    const double f = std::min(1.0, roueAdherence / roueAvant), part = std::min(1.0, (v - V0) / (V1 - V0));
+    return 1.0 - part * (1.0 - f);
+}
+
 // WFS-217 (RG-01, RG-02) : le cap de la voiture est compté par rapport à la route sous elle. Dans le jeu web, la route
 // « porte » la voiture : quand elle tourne, la voiture tourne avec elle sans volant, et le joueur qui braque pour suivre le
 // virage qu'il voit tourne deux fois (cap qui part vers l'intérieur, borné puis réaligné de force : la lutte des épingles et
@@ -103,7 +117,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
         steer += clampd(target - steer, -dt * rate, dt * rate);
     } else if (!playing || aide == Aide::Web || g_avantWfs295) steer += -steer * std::min(1.0, dt * 4);   // WFS-295 (RG-03) : joueur, braquage gardé après un choc
     // angle des roues plus petit à haute vitesse
-    const double wheelAngle = steer * Phys::maxSteer / (1 + std::abs(v) / Phys::steerV);
+    const double wheelAngle = steer * Phys::maxSteer / (1 + std::abs(v) / Phys::steerV) * (aide == Aide::Web ? 1.0 : reductionBraquageHauteVitesse(std::abs(v), perf.wb));
     double yawRate = v / perf.wb * std::tan(wheelAngle) * perf.handling;
     const double yawLim = Phys::grip * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence
     yawRate = clampd(yawRate, -yawLim, yawLim);
