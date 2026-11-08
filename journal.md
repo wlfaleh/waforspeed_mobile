@@ -4234,3 +4234,11 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - **Vérifié en local** : `tools/qa/endurance.sh`, avec les couches de validation Khronos installées par apt (`vulkan-validationlayers`, paquet de la distribution, comme `mesa-vulkan-drivers`), donne 0 erreur de validation, 17 ms et 31 ms, et un repli correct. 77 tests CPU verts, parcours complet 0 écart.
 - **Compilation Android** : pas de NDK dans le conteneur. Contrôle de syntaxe par `g++ -fsyntax-only -D__ANDROID__`, avec en-têtes Android minimaux (scratchpad, hors dépôt) : aucune erreur dans `android_main.cpp`. L'APK sera compilé par la CI de `main`.
 - **Captures** : `qa/pr/WFS-285/`. Elles ont été faites à la main, car `captures_pr.sh` exige Ninja dans un `build/` configuré avec Make ; je n'ai rien supprimé. L'« avant » vient de `origin/main` construit dans un arbre git temporaire, retiré ensuite.
+
+### 2026-11-08 21:28:55 — WFS-329 : PR #281 refusée par le lead dev (lead-dev)
+Commit relu 28c1cc6. J'ai ouvert les 8 paires de captures : menu de jour et de nuit à 1 s et à 3 s, Réglages, Terrain. Avant et après sont identiques à l'œil, et le gain au banc est réel (0 appel au menu). Le chemin figé de `Renderer::endFrame` est sûr côté Vulkan.
+Refus pour deux défauts bloquants, qui ont la même cause : quand le fond est figé, `Game::render` ne passe plus par `systemsRender()`.
+1. La musique du menu se coupe au bout d'environ 1,5 s : `vivant_` n'est mis à jour que dans `AudioSystem::render`, et le fondu de WFS-76 baisse alors le son jusqu'au silence.
+2. Le compteur d'img/s des Réglages reste bloqué sur la valeur de la 1re seconde, car `g_ips` est mesuré dans `QualiteSysteme::render` : RG-02 ne peut pas être vérifié sur le téléphone et RG-03 n'est pas tenu.
+Remarques non bloquantes : la résolution dynamique (`echelleDyn_`) n'est pas dans la signature du fond figé, et la ligne « Rendu » n'affiche plus les appels ni les triangles quand le fond est figé.
+Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/281#pullrequestreview-5819741638
