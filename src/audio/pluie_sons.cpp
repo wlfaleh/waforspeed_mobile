@@ -285,7 +285,6 @@ void SonsPluie::mix(float* G, float* D, int n, float master) {
         } else if (chocT_ < 0.2f) chocT_ = 1e9f;
         G[i] += sG; D[i] += sD;
     }
-    (void)cad;
 }
 
 } // namespace wfs::pluie
