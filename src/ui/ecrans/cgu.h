@@ -67,6 +67,8 @@ public:
     // écran du premier lancement ouvert (avant Game::init) : seul cas que la plateforme traite elle-même (la lecture des Réglages
     // vit dans le jeu et se ferme avec lui)
     bool premierLancement() const { return ouvert() && mode_ == Mode::Premier; }
+    // fenêtre tenue par l'écran du premier lancement (ouvert, ou « Accepter » touché mais pas encore traité par image())
+    bool tientLaFenetre() const { return mode_ == Mode::Premier && (ouvert() || etat_ == Etat::Accepte); }
     Mode mode() const { return mode_; }
     bool caseCochee() const { return coche_; }
     // banc d'essai : zones des boutons (centre) et défilement

@@ -192,7 +192,7 @@ static void chargerJeu(App& app, android_app* a, double tVk) {   // WFS-308 : ch
 }
 
 static void termGraphics(App& app) {
-    if (!app.ready && ecrans::cgu().premierLancement()) { ecrans::cgu().perdreFenetre(app.renderer); app.renderer.shutdown(); app.vk.shutdown(); return; }   // WFS-308
+    if (!app.ready && ecrans::cgu().tientLaFenetre()) { ecrans::cgu().perdreFenetre(app.renderer); app.renderer.shutdown(); app.vk.shutdown(); return; }   // WFS-308
     if (!app.ready) return;
     app.game.shutdown();
     app.renderer.shutdown();

@@ -245,6 +245,7 @@ bool Cgu::demarrer(Renderer& r) {
 }
 
 void Cgu::perdreFenetre(Renderer& r) {
+    if (etat_ == Etat::Accepte && mode_ == Mode::Premier) noterAcceptation();   // « Accepter » dans le même lot : acceptation gardée, chargement au retour
     ui::libererPolice(r);   // sinon l'atlas reste lié à l'ancien appareil Vulkan et chargerPolice ne le refait pas (F.ready)
     etat_ = Etat::Ferme;
     WFS_LOG("CGU (WFS-308) : fenêtre perdue, police libérée (écran rouvert au retour)");
@@ -317,7 +318,13 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
     verifier(!c.caseCochee(), "case décochée à la réouverture");
     appui(5, c.zoneCase()); appui(6, c.zoneAccepter());
     verifier(c.etat() == Cgu::Etat::Accepte, "case puis « Accepter » → accepté");
-    c.noterAcceptation();
+    {   // fenêtre perdue dans le même lot qu'« Accepter » (avant Cgu::image) : chemin de termGraphics d'android_main.cpp
+        verifier(c.tientLaFenetre() && !c.premierLancement(), "« Accepter » pas encore traité : la fenêtre reste tenue par les CGU");
+        VkCtx& vk = r.vk();
+        c.perdreFenetre(r); r.shutdown(); r.init(vk); ui::chargerPolice(r);
+        verifier(!c.tientLaFenetre() && sauvegarde().cgu == VERSION_CGU, "fenêtre perdue après « Accepter » : acceptation gardée, renderer refermé");
+        verifier(!c.demarrer(r), "fenêtre retrouvée après « Accepter » : pas d'écran des CGU, chargement normal");
+    }
     sauvegarde().attendre(); sauvegarde().charger(chemin);
     WFS_LOG("CGU (WFS-308) banc : sauvegarde relue : cgu=%d", sauvegarde().cgu);
     verifier(!cguAMontrer(sauvegarde().actif(), sauvegarde().cgu), "relance après acceptation → pas d'écran des CGU");
