@@ -53,13 +53,28 @@ struct Etat {
     bool arrete = false, gagne = false;
     int chocsTrafic = 0, chocsGlissiere = 0, chocsPolice = 0, quasi = 0;
     int ralentisseurs = 0;            // WFS-119 : ralentisseurs passés trop vite
+    // WFS-338 (RG-03, ANO-193) : chaque perte de points garde sa raison, écrite à l'écran (« −5 CHOC AVEC LE TRAFIC »)
+    int pertes = 0;                   // nombre de pertes depuis le départ (le HUD voit ainsi chaque nouvelle perte)
+    int dernierePerte = 0;            // points de la dernière perte
+    const char* raison = "";          // raison de la dernière perte
 };
-// un choc : −points (score jamais sous 0) ; 0 = arrêté (défaite immédiate)
-void perdre(Etat& e, int points);
+// WFS-338 (RG-03) : raisons d'une perte de points, telles qu'elles s'écrivent à l'écran
+inline constexpr const char* RAISON_TRAFIC = "CHOC AVEC LE TRAFIC";
+inline constexpr const char* RAISON_GLISSIERE = "CHOC CONTRE LA GLISSIÈRE";
+inline constexpr const char* RAISON_POLICE = "CHOC AVEC LA POLICE";
+inline constexpr const char* RAISON_COLLE = "POLICE AU CONTACT";
+inline constexpr const char* RAISON_RALENTISSEUR = "RALENTISSEUR TROP VITE";
+inline constexpr const char* RAISON_PLOT = "CÔNE DE CHANTIER";
+inline constexpr const char* RAISON_CAMION = "CHOC CONTRE LE CAMION";
+// un choc : −points (score jamais sous 0) ; 0 = arrêté (défaite immédiate) ; WFS-338 : raison obligatoire (RG-03)
+void perdre(Etat& e, int points, const char* raison);
 // RG-02 : choc avec le trafic / la glissière (au plus un par seconde chacun) ; contact police (délai porté par la police)
-void chocTrafic(Etat& e);
-void chocGlissiere(Etat& e);
+void chocTrafic(Etat& e, const char* raison = RAISON_TRAFIC);
+void chocGlissiere(Etat& e, const char* raison = RAISON_GLISSIERE);
 void chocPolice(Etat& e);
+// WFS-338 (RG-03) : texte de la perte affiché sous le score : « −5 CHOC AVEC LE TRAFIC »
+std::string textePerte(int points, const char* raison);
+constexpr double PERTE_S = 2.0;   // durée d'affichage de la raison d'une perte (s)
 // RG-01 : quasi-contact réussi : +1 (jamais au-dessus de 100)
 void quasiContact(Etat& e);
 // RG-02 : un pas de dt secondes ; dPoliceM = distance (m) de la police la plus proche
@@ -85,27 +100,54 @@ struct Police {
 struct Obstacle { double s = 0, x = 0, v = 0; };   // voiture du trafic (distance, latéral, vitesse)
 // un pas de conduite de la police (dt en s, t : temps de course) : rattrape le joueur (sJ, xJ, vJ), se place derrière
 // (15 m) ou à côté (18 / 21 m), contourne le trafic ; à tour de rôle, une voiture tente de pousser (ATTAQUE_S secondes
-// toutes les CYCLE_S secondes, décalées) ; trop loin derrière (> 250 m) : revient à 120 m (la poursuite ne se perd pas)
+// toutes les CYCLE_S secondes, décalées) ; trop loin derrière (> PERDUE_M) : revient à APPARITION_M (la poursuite ne se perd pas)
 constexpr double CYCLE_S = 12, ATTAQUE_S = 3;
+// WFS-338 (RG-05, ANO-195) : la police n'apparaît jamais d'un coup ni collée au joueur. Elle est dessinée jusqu'à
+// DESSIN_DERRIERE_M derrière lui (rétroviseur, vue arrière) ; elle naît (renfort) et revient (trop loin) à APPARITION_M
+// derrière, hors de ce rayon, donc hors de toute vue ; elle se rapproche ensuite à vitesse relative bornée (APPROCHE_*),
+// d'autant plus lente qu'elle est près ; à côté du joueur, elle garde toujours une file d'écart (COTE_X), jamais par-dessus.
+constexpr double DESSIN_DERRIERE_M = 160, DESSIN_DEVANT_M = 300;
+constexpr double APPARITION_M = 220, PERDUE_M = 300;
+constexpr double APPROCHE_MIN = 4, APPROCHE_PENTE = 0.3, APPROCHE_MAX = 45;   // m/s : 4 + 0,3 × distance, 45 au plus
+double approcheMax(double relM);   // vitesse de rapprochement permise (m/s) à relM mètres derrière le joueur
+constexpr double CONTACT_L_M = 4.1, CONTACT_W_M = 1.9;   // contact entre deux voitures (m) : longueur et largeur moyennes
+constexpr double COTE_X = 0.62, BORD_X = 0.92;   // écart latéral à côté du joueur, bord de la chaussée (demi-largeurs)
+// file visée par une voiture « à côté » (role 1 : à gauche, 2 : à droite) ; côté impossible (bord) : l'autre côté ;
+// aucun des deux : derrière le joueur (xJ) ; *cote = false dans ce dernier cas
+double placeCote(double xJ, int role, bool* cote = nullptr);
 bool attaque(const Police& p, int indice, double t);
 void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ, double vJ, const std::vector<Obstacle>& obs);
-// renfort : une voiture de plus, 90 m derrière le joueur
+// renfort : une voiture de plus, APPARITION_M derrière le joueur (WFS-338 : avant 90 m, en vue dans le rétroviseur)
 Police renfort(int indice, double sJ, double vJ, uint32_t graine);
 // distance (m) de la police mobile la plus proche du joueur (1e9 sans police)
 double plusProcheM(const std::vector<Police>& ps, double sJ, double xJ);
+// WFS-338 (RG-02, ANO-192) : chiffre de l'encart POLICE : distance à la police la plus proche (« 45 M », « 1,20 KM », « — »)
+std::string texteDistancePolice(double m);
 
 // ---- RG-04 / RG-05 : programme de la course tiré par la graine
 enum class Surprise { Barrage, Deboite, Travaux, Accident, Camion, Ralentisseur, Nombre };   // WFS-119 : Camion, Ralentisseur
 constexpr int TYPES_SURPRISE = (int)Surprise::Nombre;   // 6
 const char* bandeau(Surprise s);   // texte court du bandeau (« BARRAGE DE POLICE »…)
 struct Bouchon { double km = 0, longueurM = 0; int passage = 0; double kmhMin = 20, kmhMax = 40; bool place = false; };
-struct Evenement { double km = 0; Surprise type = Surprise::Barrage; int file = 0; bool declenche = false, rappel = false; };   // rappel : WFS-119
+struct Evenement { double km = 0; Surprise type = Surprise::Barrage; int file = 0; bool declenche = false, rappel = false, place = false; };   // rappel : WFS-119 ; place : WFS-338
+// WFS-338 (RG-01, RG-05) : les obstacles d'une surprise (barrage, chantier, accident, camion, ralentisseur) sont posés
+// PLACE_M avant, au-delà de la distance de dessin (DESSIN_DEVANT_M) : ils ne surgissent jamais à l'écran ; le bandeau
+// vient ensuite, ANNONCE_M avant (chantier : ANNONCE_TRAVAUX_M, quand les cônes se voient)
+constexpr double PLACE_M = 450, ANNONCE_M = 260, ANNONCE_TRAVAUX_M = 200;
+bool sePlaceAvant(Surprise s);   // vrai : obstacles posés PLACE_M avant (tout sauf la voiture qui déboîte)
+// WFS-338 (RG-01, ANO-191) : chantier réel : biseau de cônes en travers de la file fermée, puis cônes le long de la file
+// voisine tous les 10 m ; panneau « travaux » (AK5) devant le biseau. Positions (distance en m depuis le début, x en
+// demi-largeurs) ; la file fermée est entièrement barrée (aucun passage entre deux cônes du biseau)
+struct Cone { double dM = 0, x = 0; };
+std::vector<Cone> chantier(int file);
+constexpr double PANNEAU_AVANT_M = 30;   // panneau AK5, posé avant le biseau, sur le côté de la file fermée
 struct Programme { std::vector<Bouchon> bouchons; std::vector<Evenement> surprises; };
 // 3 embouteillages (300 à 600 m, une file libre = le passage étroit) et 6 surprises (les 6 types, une fois chacun)
 // banc : premier embouteillage et première surprise tout près du départ (captures)
 Programme programme(uint32_t graine, bool banc = false);
 // banc : ralentisseur et camion en travers après l'embouteillage du banc (captures poursuite-ralentisseur, poursuite-camion)
 constexpr double BANC_RALENTISSEUR_KM = 1.55, BANC_CAMION_KM = 1.95;
+constexpr double BANC_TRAVAUX_KM = 2.20;   // WFS-338 : banc : chantier sur la file de gauche (capture poursuite-travaux)
 
 // ---- WFS-119 RG-01 : « CAMION EN TRAVERS » : un gros véhicule existant (x5, rrsport si le joueur roule en x5), agrandi,
 // posé en travers à cheval sur 2 files ; la file `fileLibre` (0 ou 2) reste libre

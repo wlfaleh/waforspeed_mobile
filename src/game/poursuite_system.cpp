@@ -19,6 +19,7 @@
 #include "../ui/ecrans/terrain.h"   // RG-12 : « Rouler »
 #include "../ui/garage.h"           // RG-12 : « Choisir »   // banc : appels de dessin en qualité Basse
 #include "../ui/text.h"
+#include "../world/conducteurs.h"   // WFS-338 (RG-06) : un policier au volant de chaque voiture de police
 #include "course5.h"
 #include "course_system.h"
 #include "duel.h"
@@ -55,7 +56,8 @@ vec3 lin(unsigned h) {
     return {c(16), c(8), c(0)};
 }
 struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
-struct Plot { double s = 0, x = 0; bool tombe = false; };
+struct Plot { double s = 0, x = 0; bool tombe = false; };   // WFS-338 : un cône de chantier (K5a)
+struct Panneau { double s = 0, x = 0; };                     // WFS-338 (RG-01) : panneau « travaux » AK5 sur pied
 struct Camion { double s = 0; Travers tv; int fileLibre = 2; double cd = 0; };   // WFS-119 : camion en travers
 struct Bande { double s = 0; bool passe = false; };                              // WFS-119 : ralentisseur
 
@@ -90,6 +92,73 @@ public:
         matVitre_ = mat(0x15181e, {0, 0, 0}, 0.15f);
         matJaune_ = mat(0xffc400, lin(0xffc400) * 0.7f, 0.6f);   // WFS-119 : ralentisseur jaune et noir
         matNoir_ = mat(0x101010, {0, 0, 0}, 0.7f);
+        initChantierPolice(r);   // WFS-338
+    }
+    // WFS-338 (RG-01, RG-07) : maillages du cône K5a, du panneau AK5, des bandes « POLICE » ; matériaux de la rampe lumineuse
+    void initChantierPolice(Renderer& r) {
+        auto mat = [&](unsigned c, vec3 em, float rough, float metal = 0) { Material m; const vec3 l = lin(c); m.color = {l.x, l.y, l.z, 1}; m.rough = rough; m.metal = metal; m.emissive = em; return r.makeMaterial(m, nullptr, nullptr, nullptr); };
+        // cône K5a de 75 cm (voies rapides) : socle noir de 40 cm, corps orange (sans lumière propre : avant, bloc lumineux),
+        // deux bandes blanches rétroréfléchissantes ; tronc de cône de 17 cm de rayon en bas à 4 cm en haut
+        auto tronc = [](std::vector<Vertex>& v, std::vector<uint32_t>& idx, float y0, float y1) {
+            constexpr int N = 14; constexpr float R0 = 0.17f, R1 = 0.04f, Y0 = 0.04f, Y1 = 0.75f;
+            auto rayon = [&](float y) { return R0 + (R1 - R0) * (y - Y0) / (Y1 - Y0); };
+            const float pente = (R0 - R1) / (Y1 - Y0);
+            const uint32_t k = (uint32_t)v.size();
+            for (int i = 0; i <= N; i++) {
+                const float a = 6.2831853f * i / N, c = std::cos(a), sn = std::sin(a);
+                const vec3 n = normalize(vec3{c, pente, sn});
+                for (float y : {y0, y1}) v.push_back({rayon(y) * c, y, rayon(y) * sn, n.x, n.y, n.z, (float)i / N, y});
+            }
+            for (uint32_t i = 0; i < (uint32_t)N; i++) idx.insert(idx.end(), {k + 2 * i, k + 2 * i + 1, k + 2 * i + 3, k + 2 * i, k + 2 * i + 3, k + 2 * i + 2});
+        };
+        {
+            std::vector<Vertex> v; std::vector<uint32_t> idx;
+            for (auto [a, b] : {std::pair{0.04f, 0.30f}, {0.42f, 0.52f}, {0.62f, 0.75f}}) tronc(v, idx, a, b);
+            coneOrange_ = r.makeMesh(v, idx);
+            v.clear(); idx.clear();
+            for (auto [a, b] : {std::pair{0.30f, 0.42f}, {0.52f, 0.62f}}) tronc(v, idx, a, b);
+            coneBlanc_ = r.makeMesh(v, idx);
+        }
+        {   // triangle équilatéral d'1 m de côté, pointe en haut, face vers +z (vers le conducteur qui arrive)
+            std::vector<Vertex> v = {{-0.5f, 0, 0, 0, 0, 1, 0, 0}, {0.5f, 0, 0, 0, 0, 1, 1, 0}, {0, 0.866f, 0, 0, 0, 1, 0.5f, 1}};
+            triangle_ = r.makeMesh(v, {0, 1, 2});
+        }
+        {   // bandes latérales : un quadrilatère de chaque côté (x = ±0,5 du cube unité), « POLICE » lisible des deux côtés
+            std::vector<Vertex> v; std::vector<uint32_t> idx;
+            for (int sg = -1; sg <= 1; sg += 2) {
+                const uint32_t k = (uint32_t)v.size();
+                for (int i = 0; i < 4; i++) {
+                    const float z = (i == 1 || i == 2) ? 0.5f : -0.5f, y = i >= 2 ? 1.f : 0.f;
+                    // côté +x : le texte se lit de l'arrière (+z) vers l'avant (−z) ; côté −x : de l'avant vers l'arrière
+                    const float uu = sg > 0 ? 0.5f - z : z + 0.5f;
+                    v.push_back({sg * 0.5f, y, z, (float)sg, 0, 0, uu, 1.f - y});
+                }
+                idx.insert(idx.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
+            }
+            bandesMesh_ = r.makeMesh(v, idx);
+        }
+        {   // texture des bandes (320 × 32) : bleu de la police nationale, liseré rouge et blanc, « POLICE » en capitales blanches
+            constexpr int TW = 320, TH = 32;
+            std::vector<uint8_t> px(TW * TH * 4);
+            auto pose = [&](int x, int y, unsigned h) { if (x < 0 || y < 0 || x >= TW || y >= TH) return; uint8_t* q = &px[(size_t)(y * TW + x) * 4]; q[0] = (h >> 16) & 255; q[1] = (h >> 8) & 255; q[2] = h & 255; q[3] = 255; };
+            for (int y = 0; y < TH; y++) for (int x = 0; x < TW; x++) pose(x, y, y >= TH - 3 ? 0xd2232a : y >= TH - 5 ? 0xf2f4f8 : 0x1d3a8c);
+            static const char* LETTRES[6][7] = {   // police à pas fixe 5 × 7 : P O L I C E
+                {"####.", "#...#", "#...#", "####.", "#....", "#....", "#...."}, {".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."},
+                {"#....", "#....", "#....", "#....", "#....", "#....", "#####"}, {"#####", "..#..", "..#..", "..#..", "..#..", "..#..", "#####"},
+                {".####", "#....", "#....", "#....", "#....", "#....", ".####"}, {"#####", "#....", "#....", "####.", "#....", "#....", "#####"}};
+            constexpr int E = 3, PAS = 7 * E, X0 = (TW - 6 * PAS + 2 * E) / 2, Y0 = 3;
+            for (int l = 0; l < 6; l++) for (int ly = 0; ly < 7; ly++) for (int lx = 0; lx < 5; lx++)
+                if (LETTRES[l][ly][lx] == '#') for (int dy = 0; dy < E; dy++) for (int dx = 0; dx < E; dx++) pose(X0 + l * PAS + lx * E + dx, Y0 + ly * E + dy, 0xffffff);
+            bandesTex_ = r.vk().uploadTexture(px.data(), TW, TH, true);
+            Material m; m.rough = 0.35f;
+            matBandes_ = r.makeMaterial(m, &bandesTex_, nullptr, nullptr);
+        }
+        matConeOrange_ = mat(0xe8501a, {0, 0, 0}, 0.55f);
+        matConeBlanc_ = mat(0xeeeeee, {0, 0, 0}, 0.35f);
+        matPanneauRouge_ = mat(0xc8102e, {0, 0, 0}, 0.4f);
+        matPanneauJaune_ = mat(0xf4c400, {0, 0, 0}, 0.45f);
+        matSupport_ = mat(0x2a2c30, {0, 0, 0}, 0.5f, 0.6f);          // rampe lumineuse : socle gris anthracite
+        matVitreBleue_ = mat(0x0a1430, {0, 0, 0}, 0.15f);              // feu bleu éteint : verre bleu sombre
     }
     void shutdown(Renderer& r) override {
         r.vk().waitIdle();
@@ -98,8 +167,11 @@ public:
         if (camionModele_.ok) r.destroy(camionModele_);
         camionModele_ = Model{};
         r.destroy(cube_);
-        for (Material* m : {&matRouge_, &matBleu_, &matPlot_, &matBlanc_, &matBleuCaisse_, &matVitre_, &matJaune_, &matNoir_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
-        police_.clear(); plots_.clear(); actif_ = false;
+        for (Mesh* me : {&coneOrange_, &coneBlanc_, &triangle_, &bandesMesh_}) r.destroy(*me);   // WFS-338
+        r.vk().destroy(bandesTex_);
+        for (Material* m : {&matRouge_, &matBleu_, &matPlot_, &matBlanc_, &matBleuCaisse_, &matVitre_, &matJaune_, &matNoir_, &matConeOrange_, &matConeBlanc_,
+                            &matPanneauRouge_, &matPanneauJaune_, &matSupport_, &matVitreBleue_, &matBandes_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
+        police_.clear(); plots_.clear(); panneaux_.clear(); actif_ = false;
         if (actif == this) actif = nullptr;
     }
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
@@ -189,7 +261,7 @@ public:
                 WFS_LOG("poursuite : renfort à %.2f km, %d voitures de police", km, mobiles + 1);
             }
             surprises(pl, t, tr);
-            if (g_bancFin == 1) { perdre(etat_, etat_.score); g_bancFin = 0; }
+            if (g_bancFin == 1) { perdre(etat_, etat_.score, "ARRÊT DU BANC"); g_bancFin = 0; }
             arrivee(etat_, km);
             if (etat_.arrete && c->state != RaceState::Over) {
                 c->state = RaceState::Over;
@@ -206,6 +278,13 @@ public:
             sfxSirene(dSir, vSir);
         }
         if (banT_ > 0) banT_ -= dt;
+        // WFS-338 (RG-03) : chaque perte de points s'écrit sous le score (cumulée tant que la raison ne change pas)
+        if (perteT_ > 0) perteT_ -= dt;
+        if (etat_.pertes != pertesVues_) {
+            const bool meme = perteT_ > 0 && perteRaison_ == etat_.raison;
+            perteCumul_ = (meme ? perteCumul_ : 0) + etat_.dernierePerte; perteRaison_ = etat_.raison;
+            perteTexte_ = textePerte(perteCumul_, etat_.raison); perteT_ = PERTE_S; pertesVues_ = etat_.pertes;
+        }
         if (c->state == RaceState::Over) {
             if (!fini_) {
                 fini_ = true; ftJoueur_ = c->raceTime; arrivee(etat_, pl.dist * M / 1000);
@@ -233,36 +312,59 @@ public:
         }
         for (const Police& p : police_) {
             const double rel = (p.rd - sP) * M;
-            if (rel < -60 || rel > 300) continue;
+            // WFS-338 (RG-05) : dessinée jusqu'à 160 m derrière (avant : 60 m, elle surgissait puis « s'effaçait » à 60 m)
+            if (rel < -DESSIN_DERRIERE_M || rel > DESSIN_DEVANT_M) continue;
             if (r.qualiteBasse && std::abs(rel) > 90) continue;   // WFS-134 (RG-11) : Basse : police dessinée jusqu'à 90 m (coût)
             const double al = std::abs(p.rd - p.rdPrec) * M > 20 ? 1.0 : g.alpha;   // WFS-221 (accroche) : rendu interpolé
             const TrackPoint q = g.track->pointLisse(p.rdPrec + (p.rd - p.rdPrec) * al, (p.xPrec + (p.x - p.xPrec) * al) * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)) * rotateX((float)q.slope);
             const CarDef& cd = carById(policeCar_);
-            const float L = cd.d.L, W = cd.d.W, H = cd.d.H;
+            const float L = cd.d.L, W = cd.d.W;
+            const int i = (int)(&p - police_.data());
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
-            (void)L;
-            if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
-            // barre lumineuse dessinée par le code : rouge à gauche, bleu à droite, halos alternés (WFS-119 RG-04 : en qualité
-            // Basse, au-delà de 80 m, halos seuls)
-            // WFS-141 (RG-01, ANO-56) : rouge puis bleu, jamais ensemble (lampe éteinte : verre sombre, sans halo) ; halo de
-            // 1,5 × la largeur de la lampe, couleur convertie par versHdr (avant : 1,4 m de demi-côté, × 4 : disque rose)
-            const Gyrophare gy = gyrophare(g.time, (int)(&p - police_.data()));
-            const float lampe = W * 0.32f, demi = HALO_GYRO * lampe / 2;
-            if (!r.qualiteBasse || std::abs(rel) <= 80) {
-                r.draw(cube_, gy.rouge ? matRouge_ : matVitre_, m * translate({-W * 0.17f, H - 0.02f, 0.1f}) * scale({lampe, 0.14f, 0.3f}));
-                r.draw(cube_, gy.bleu ? matBleu_ : matVitre_, m * translate({W * 0.17f, H - 0.02f, 0.1f}) * scale({lampe, 0.14f, 0.3f}));
+            if (!modele_.ok || i >= 16) continue;
+            peintures_[i] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[i]);
+            conducteurs::ajouter(modele_, m, policeCar_, 0x50000000u + (uint32_t)i, true);   // WFS-338 (RG-06) : policier au volant
+            // repère du modèle (m) : sol bmin.y, centre (cx, cz), avant vers −z ; pavillon mesuré au-dessus de la place du
+            // conducteur (Model::siege, WFS-73), sinon le haut du modèle
+            const vec3 b0 = modele_.bmin, b1 = modele_.bmax;
+            const float cx = (b0.x + b1.x) / 2, cz = (b0.z + b1.z) / 2, Hm = b1.y - b0.y;
+            const float toit = modele_.siege.w > 0.5f ? modele_.siege.x : b1.y, zToit = modele_.siege.w > 0.5f ? modele_.siege.z + 0.25f : cz + 0.1f;
+            const bool proche = !r.qualiteBasse || std::abs(rel) <= 80;
+            // WFS-338 (RG-07, ANO-197) : bandes « POLICE » sur les portières (bleu, liseré blanc et rouge), sans marque
+            if (proche) r.draw(bandesMesh_, matBandes_, m * translate({cx, b0.y + 0.40f * Hm, cz - 0.04f * L}) * scale({W + 0.012f, 0.17f * Hm, 0.50f * L}));
+            // WFS-338 (RG-07, ANO-197) : rampe lumineuse posée sur le pavillon : socle gris de 1 m × 30 cm, deux feux bleus qui
+            // clignotent l'un après l'autre (gyrophare(), 2 Hz, une voiture sur deux en opposition) ; feu éteint : verre bleu
+            // sombre ; avant : deux boîtes rouge / bleue de 0,56 m posées sous le haut du modèle, qui traversaient le toit
+            const Gyrophare gy = gyrophare(g.time, i);
+            const float barre = std::min(1.0f, W * 0.58f), feu = barre * 0.40f, xFeu = barre * 0.27f, demi = HALO_GYRO * feu / 2;
+            if (proche) {
+                r.draw(cube_, matSupport_, m * translate({cx, toit - 0.01f, zToit}) * scale({barre, 0.05f, 0.30f}));
+                r.draw(cube_, gy.rouge ? matBleu_ : matVitreBleue_, m * translate({cx - xFeu, toit + 0.04f, zToit}) * scale({feu, 0.07f, 0.26f}));
+                r.draw(cube_, gy.bleu ? matBleu_ : matVitreBleue_, m * translate({cx + xFeu, toit + 0.04f, zToit}) * scale({feu, 0.07f, 0.26f}));
             }
-            if (gy.rouge) r.halo(m.transformPoint({-W * 0.17f, H + 0.14f, 0.1f}), demi, haloRouge_);
-            if (gy.bleu) r.halo(m.transformPoint({W * 0.17f, H + 0.14f, 0.1f}), demi, haloBleu_);
+            if (gy.rouge) r.halo(m.transformPoint({cx - xFeu, toit + 0.08f, zToit}), demi, haloBleu_);
+            if (gy.bleu) r.halo(m.transformPoint({cx + xFeu, toit + 0.08f, zToit}), demi, haloBleu_);
         }
-        for (const Plot& p : plots_) {   // RG-05 : travaux (plots orange)
+        for (const Plot& p : plots_) {   // RG-05 : travaux ; WFS-338 (RG-01) : cônes K5a (socle, corps orange, bandes blanches)
             const double rel = (p.s - sP) * M;
-            if (p.tombe || rel < -30 || rel > 250) continue;
+            if (p.tombe || rel < -30 || rel > DESSIN_DEVANT_M) continue;
             const TrackPoint q = g.track->point(p.s, p.x * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th));
-            r.draw(cube_, matPlot_, m * scale({0.38f, 0.75f, 0.38f}));
+            r.draw(cube_, matNoir_, m * scale({0.40f, 0.04f, 0.40f}));
+            r.draw(coneOrange_, matConeOrange_, m);
+            if (!r.qualiteBasse || rel < 80) r.draw(coneBlanc_, matConeBlanc_, m);
+        }
+        for (const Panneau& pn : panneaux_) {   // WFS-338 (RG-01) : panneau AK5 « travaux » (triangle rouge, fond jaune) sur pied
+            const double rel = (pn.s - sP) * M;
+            if (rel < -30 || rel > DESSIN_DEVANT_M) continue;
+            const TrackPoint q = g.track->point(pn.s, pn.x * RW);
+            const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th));
+            r.draw(cube_, matSupport_, m * translate({0, 0, -0.03f}) * scale({0.05f, 0.40f, 0.05f}));
+            r.draw(cube_, matSupport_, m * translate({0, 0, 0}) * scale({0.70f, 0.03f, 0.40f}));   // pied lesté
+            r.draw(triangle_, matPanneauRouge_, m * translate({0, 0.38f, 0}));
+            r.draw(triangle_, matPanneauJaune_, m * translate({0, 0.38f + 0.289f * 0.30f, 0.008f}) * scale({0.70f, 0.70f, 1}));
         }
         for (const Camion& k : camions_) {   // WFS-119 : camion en travers (modèle existant agrandi), silhouette au loin et en qualité Basse (RG-04)
             const double rel = (k.s - sP) * M;
@@ -305,11 +407,16 @@ public:
             const float px = cx + pw / 2 - 2 * u - (POLICE_MAX - i) * 2.8f * u + 0.6f * u;
             r.uiCircle(px + 1.f * u, y0 + 6.6f * u, 1.f * u, i < mobiles ? ((i % 2) ^ flash ? DANGER : BLEU) : vec4{1, 1, 1, 0.12f});
         }
-        const double reste = std::max(0.0, KM_ARRIVEE - g.player->dist * M / 1000);
-        ui::text(r, cx + pw / 2 - 2 * u, y0 + 9.6f * u, 3 * u, ui::decimal(reste, 2) + " KM", TEXTE, ui::DROITE, 0.06f, false, true);
+        // WFS-338 (RG-02, ANO-192) : distance à la police la plus proche (avant : la distance à l'arrivée, déjà écrite à gauche)
+        ui::text(r, cx + pw / 2 - 2 * u, y0 + 9.6f * u, 3 * u, texteDistancePolice(plusProcheM(police_, g.player->dist, g.player->playerX)), TEXTE, ui::DROITE, 0.06f, false, true);
         const float k = (float)std::clamp(g.player->dist * M / 1000 / KM_ARRIVEE, 0.0, 1.0);
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, pw - 4 * u, 0.6f * u, vec4{1, 1, 1, 0.12f});
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, (pw - 4 * u) * k, 0.6f * u, ui::ORANGE);
+        if (perteT_ > 0 && !perteTexte_.empty()) {   // WFS-338 (RG-03, ANO-193) : raison de la dernière perte, sous l'encart
+            const float tw = ui::width(3 * u, perteTexte_, 0.06f) + 4 * u, ty = y0 + ph + 1.f * u;
+            r.uiRect(cx - tw / 2, ty, tw, 4.6f * u, SURFACE);
+            ui::text(r, cx, ty + 0.8f * u, 3 * u, perteTexte_, DANGER, ui::CENTRE, 0.06f, false, true);
+        }
         if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
             // WFS-141 (RG-02, ANO-57) : à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 + 10 + 40 + 8 + 40 px
             // de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route ; effacé après
@@ -343,7 +450,11 @@ public:
         for (const Police& p : police_) { const double d = plusProcheM({p}, sJ, xJ); n += d >= a && d <= b; }
         return n;
     }
-    void bancScore(int score) { etat_.score = score; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
+    void bancScore(int score) { etat_.score = score; }
+    // banc (WFS-338) : renfort tout de suite (même chemin qu'au passage des 2 km) ; distance (m) derrière le joueur de la
+    // police mobile la plus proche (négatif : devant)
+    void bancRenfort(const Player& pl) { const int n = policeMobiles(); police_.push_back(renfort(n, pl.dist, pl.speed, graine_)); annoncer("RENFORT DE POLICE"); }
+    double bancDerniere(const Player& pl) const { for (size_t i = police_.size(); i-- > 0;) if (!police_[i].fixe) return (pl.dist - police_[i].rd) * M; return 1e9; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
     float orbitAvant_ = 0;
     Zone rejouerZone() const { return rejouerZ_; }
     bool nouveauRecord() const { return nouveauRecord_; }
@@ -360,7 +471,7 @@ private:
         graine_ = g_banc ? 20261105u : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 29u;
         c.duelFinish = KM_ARRIVEE * duel::KM;
         etat_ = Etat{}; prog_ = programme(graine_, g_banc);
-        police_.clear(); plots_.clear(); camions_.clear(); bandes_.clear(); distAvant_ = pl.dist;
+        police_.clear(); plots_.clear(); panneaux_.clear(); camions_.clear(); bandes_.clear(); distAvant_ = pl.dist; pertesVues_ = 0; perteT_ = 0; perteCumul_ = 0; perteTexte_.clear();
         for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); p.rd = pl.dist - (22 + 14 * i) / M; police_.push_back(p); }
         const TrafficStats* st = activeTrafficStats();
         chocsVus_ = st ? st->bumps + st->accidents + st->scrapes : 0; quasiVus_ = st ? st->nearMisses : 0;
@@ -423,12 +534,21 @@ private:
             if (e.declenche && !e.rappel && (e.type == Surprise::Camion || e.type == Surprise::Ralentisseur) && pl.dist >= s - RAPPEL_M / M && pl.dist < s) {
                 e.rappel = true; annoncer(bandeau(e.type));   // WFS-119 : rappel du bandeau à l'approche
             }
-            if (e.declenche || pl.dist < s - 260 / M) continue;
+            // WFS-338 (RG-01, RG-05) : obstacles posés PLACE_M avant (hors de la distance de dessin), bandeau ANNONCE_M avant
+            const bool avance = sePlaceAvant(e.type);
+            if (avance && !e.place && pl.dist >= s - PLACE_M / M) { e.place = true; poser(e, s, pl, t, tr); }
+            if (e.declenche || pl.dist < s - (e.type == Surprise::Travaux ? ANNONCE_TRAVAUX_M : ANNONCE_M) / M) continue;
             e.declenche = true;
+            if (!avance || !e.place) { e.place = true; poser(e, s, pl, t, tr); }
+            annoncer(bandeau(e.type));
+            WFS_LOG("poursuite : surprise « %s » à %.2f km (file %d)", bandeau(e.type), e.km, e.file);
+        }
+    }
+    void poser(const Evenement& e, double s, const Player& pl, Track& t, Traffic* tr) {
             reserves_.clear();
             switch (e.type) {
                 case Surprise::Barrage:   // deux voitures de police en travers de deux files ; la file e.file reste libre
-                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; p.rd = s; p.x = p.cibleX = FILES[f]; p.peinture = f % 2 ? 0x14224a : 0xf2f4f8; police_.push_back(p); }
+                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; p.rd = s; p.x = p.cibleX = FILES[f]; p.peinture = 0xf2f4f8; police_.push_back(p); }
                     break;
                 case Surprise::Deboite: {   // une voiture d'une file voisine se rabat devant le joueur
                     if (!tr) break;
@@ -438,9 +558,12 @@ private:
                     if (c) { c->target = fj; c->signal = fj > fv ? 1 : -1; }
                     break;
                 }
-                case Surprise::Travaux:   // plots sur 90 m : la file e.file est fermée
-                    for (int i = 0; i < 12; i++) plots_.push_back({s + i * 8 / M, FILES[e.file] + (i == 0 ? 0.25 : 0), false});
+                case Surprise::Travaux: {  // WFS-338 (RG-01) : vrai chantier : panneau AK5, biseau de cônes, cônes sur 120 m
+                    for (const Cone& c : chantier(e.file)) plots_.push_back({s + c.dM / M, c.x, false});
+                    const double xp = FILES[e.file] + (e.file == 2 ? 0.22 : -0.22);
+                    panneaux_.push_back({s - PANNEAU_AVANT_M / M, std::clamp(xp, -0.95, 0.95)});
                     break;
+                }
                 case Surprise::Accident:  // deux voitures accidentées en travers d'une file (feux de détresse du trafic vivant)
                     if (!tr) break;
                     for (int i = 0; i < 2; i++)
@@ -457,16 +580,14 @@ private:
                 case Surprise::Ralentisseur: bandes_.push_back({s, false}); break;   // WFS-119 : toute la largeur
                 default: break;
             }
-            annoncer(bandeau(e.type));
-            WFS_LOG("poursuite : surprise « %s » à %.2f km (file %d)", bandeau(e.type), e.km, e.file);
-        }
+            WFS_LOG("poursuite : obstacles de « %s » posés à %.0f m devant (%.2f km)", bandeau(e.type), (s - pl.dist) * M, e.km);
     }
     // plots percutés : −3 comme la glissière, la voiture ralentit, le plot tombe
     void plotsTouches(Player& pl) {
         const double demiL = pl.car->d.L / 2 / M, demiW = pl.car->d.W / 2 / RW;
         for (Plot& p : plots_) {
             if (p.tombe || std::abs(p.s - pl.dist) > demiL + 0.2 / M || std::abs(p.x - pl.playerX) > demiW + 0.03) continue;
-            p.tombe = true; pl.speed *= 0.9; chocGlissiere(etat_);
+            p.tombe = true; pl.speed *= 0.9; chocGlissiere(etat_, RAISON_PLOT);
         }
     }
 
@@ -487,7 +608,7 @@ private:
                 pl.speed = std::min(pl.speed, pl.speed * 0.15);
                 if (k.cd <= 0 && impact > 0.3) { pl.accident(std::min(1.0, impact), cote); c.accident(); }
             }
-            if (k.cd <= 0) { k.cd = 1.0; chocTrafic(etat_); c.bump(std::max(0.1, impact)); WFS_LOG("poursuite : choc contre le camion (%.0f km/h)", impact * 260); }
+            if (k.cd <= 0) { k.cd = 1.0; chocTrafic(etat_, RAISON_CAMION); c.bump(std::max(0.1, impact)); WFS_LOG("poursuite : choc contre le camion (%.0f km/h)", impact * 260); }
         }
     }
     // WFS-119 : le trafic des 2 files fermées s'arrête derrière le camion (la file libre roule) ; une voiture posée
@@ -563,6 +684,10 @@ private:
     std::vector<Police> police_;
     std::vector<Obstacle> obs_;
     std::vector<Plot> plots_;
+    std::vector<Panneau> panneaux_;   // WFS-338
+    Mesh coneOrange_, coneBlanc_, triangle_, bandesMesh_; Image bandesTex_{};   // WFS-338
+    Material matConeOrange_, matConeBlanc_, matPanneauRouge_, matPanneauJaune_, matSupport_, matVitreBleue_, matBandes_;
+    int pertesVues_ = 0, perteCumul_ = 0; double perteT_ = 0; std::string perteTexte_; const char* perteRaison_ = "";   // WFS-338 (RG-03)
     std::vector<const TrafficCar*> reserves_;
     Programme prog_;
     Etat etat_;
@@ -691,6 +816,21 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture poursuite-police-basse : %.2f km, police %d, %u appels de dessin", g.player().dist * M / 1000, s ? s->policeMobiles() : 0, r.appelsDessin());
         R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     }
+    // WFS-338 (RG-05, ANO-195) : suite d'images : un renfort arrive de derrière, hors de la vue au départ (220 m), se
+    // rapproche et se voit derrière (vue arrière du banc : caméra devant la voiture, tournée vers l'arrière) puis en vue
+    // Poursuite ; jamais d'apparition d'un coup
+    if (PoursuiteSystem* s = PoursuiteSystem::actif) {
+        s->bancRenfort(g.player());
+        for (int k = 1; k <= 6; k++) {
+            images(k == 1 ? 6 : 60, 6);
+            char nom[64];
+            WFS_LOG("poursuite (banc) : arrivée du renfort, image %d : à %.0f m derrière le joueur (dessin jusqu'à %.0f m)", k, s->bancDerniere(g.player()), DESSIN_DERRIERE_M);
+            g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.18f;
+            std::snprintf(nom, sizeof nom, "poursuite-arrivee-%d-arriere", k); capture(nom);
+            g.camMode = 0; g.render(t += 0.02);
+            std::snprintf(nom, sizeof nom, "poursuite-arrivee-%d", k); capture(nom);
+        }
+    }
     g.camMode = 0; g.render(t += 0.02);
     basse("police au contact");
     jusqua(0.21, 60 * 60);    // barrage annoncé 260 m avant (0,45 km) ; WFS-141 (RG-02) : 20 m après l'annonce (bandeau de 1,5 s visible)
@@ -714,6 +854,11 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     jusqua(BANC_CAMION_KM - 0.018, 60 * 60);
     capture("poursuite-camion");
     basse("camion en travers");
+    // WFS-338 (RG-01, ANO-191) : chantier sur la file de gauche : bandeau quand les cônes se voient (180 m), puis de près
+    g_bancSautKm = BANC_TRAVAUX_KM - 0.18; images(20, 4);
+    capture("poursuite-travaux");
+    jusqua(BANC_TRAVAUX_KM - 0.05, 30 * 60);
+    capture("poursuite-travaux-proche");
     g_bancFin = 1; images(90, 10);
     capture("poursuite-arrete");
     // RG-07 / RG-12 : vrais touchers sur l'écran de fin : « Rejouer » (nouvelle poursuite), saut à 150 m de l'arrivée
