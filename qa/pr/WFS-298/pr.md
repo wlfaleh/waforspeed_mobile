@@ -52,7 +52,7 @@ Ticket du PO (axe Réalisme, son), tiré de la comparaison au réel : aujourd'hu
   - RG-05 : crêtes conformes ; pire cas (moteur au rupteur, accident et poteau à 80 km/h) : 0,48, sous 1 ;
   - RG-06 : sortie et bus identiques à l'échantillon près sans choc ;
   - RG-07 : coût 0,031 ms par bloc avec les 4 voix actives, plafond 0,05.
-- **66 tests CPU** verts après synchronisation avec `main` (903ba09).
+- **67 tests CPU** verts après la dernière synchronisation avec `main` (aab9555).
 - **Parcours complet** (`WFS_BANC=parcours`) : « parcours complet : 0 écart(s) OK » et « parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK ».
 - **Captures avant / après** (`tools/qa/captures_pr.sh WFS-298 partie2a`, filtre sur les courbes audio) : les 27 courbes audio qui existaient déjà sont **identiques octet pour octet** à `main`, comme les .wav comparés (pluie-arriere, pluie-cockpit, pluie-tunnel, moteur, parois-ville). Le son de la pluie est donc inchangé après RG-00. Les 11 `chocs-*` sont nouvelles. L'« avant » de chaque famille est la scène `chocs-<famille>-avant` du banc (le coup sourd seul, comme `main`), d'où le « — » dans la colonne de gauche : une seconde passe `SANS_AVANT=1` n'apporterait rien.
   - Lampadaire à 30 km/h à droite : `chocs-poteau` (2e choc) contre `chocs-poteau-avant`.
