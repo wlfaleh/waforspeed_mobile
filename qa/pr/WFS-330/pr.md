@@ -2,12 +2,29 @@
 
 **Ticket** : WFS-330 — règles : `regles-de-gestion/WFS-330.md`
 
-## Description (à remplir par le développeur avant d'ouvrir la PR)
+## Description
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
-- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
-- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
-- **Limites et risques connus** : À REMPLIR
+- **Demande de l'utilisateur** (en une phrase) : fusionner ce qui est passable sans risque (WFS-300, PR #272) et créer un ticket pour le reste ; ce ticket fait ce reste : captures du banc qualité régénérées sur `main` à jour, écarts au journal (RG-01, RG-02).
+- **Ce qui change** : **aucun code** (RG-03) ; seulement `qa/pr/WFS-330/` : 33 paires avant / après du banc `qualite` (`FILTRE='voiture-*'`), et 4 captures de `main` d'avant WFS-300 (`avant300-*`, commit `d88e426b^`) pour montrer le correctif de WFS-300.
+- **Comment c'est vérifié** (mesures sur les PNG d'origine, avant la réduction en JPG ; ΔE2000 : script vérifié sur les paires de référence de Sharma, Wu et Dalal 2005, 2,0425 et 1,0000) :
+  - **Stabilité du banc** (RG-02) : deux lancements du même code (avant = `main`, après = branche, aucun code changé) : **32 vues sur 33 identiques au pixel** ; `voiture-basse-poursuite` : 0,002 % (un point lumineux mobile au loin, 12 336 pixels à peine différents) : **inchangée**.
+  - **Façade de droite à 56, 60 et 64 m** (`voiture-lod-passage-*`, zone x 0,80-0,98, y 0,02-0,25) : ΔE2000 / 56 m : **0,12 et 0,11** (sous 1 : même couleur). Avant WFS-300 : **6,51 et 6,46** (couleur différente à 60 et 64 m : le défaut corrigé par WFS-300).
+  - **Suite `voiture-sonde-0` à `-9`** (quart haut droit) : stable de 0 à 5 (L*a*b* 28,8 −0,7 0,8), **saut de ΔE2000 5,47 entre `sonde-5` et `sonde-6`** (24,9 1,2 −3,3, à l'arrivée de la sonde), stable ensuite : visible ; **relève de WFS-322 (ANO-174), non corrigé ici** (hors périmètre).
+- **Limites et risques connus** : aucun risque pour le jeu (aucun code) ; captures faites sur `main` au commit `69239955` (base de la branche, 20:47 UTC) ; depuis, `main` n'a reçu que les paquets de cartes (WFS-301, fichiers nouveaux, sans effet sur ce banc).
+
+### Avant WFS-300 / maintenant (même vue, façade de droite)
+
+| Capture | `main` avant WFS-300 | maintenant |
+|---|---|---|
+| `voiture-lod-passage-56` | ![avant300](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/avant300-voiture-lod-passage-56.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/apres-voiture-lod-passage-56.jpg?raw=true) |
+| `voiture-lod-passage-60` | ![avant300](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/avant300-voiture-lod-passage-60.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/apres-voiture-lod-passage-60.jpg?raw=true) |
+| `voiture-lod-passage-64` | ![avant300](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/avant300-voiture-lod-passage-64.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/apres-voiture-lod-passage-64.jpg?raw=true) |
+
+### Suite des sondes (saut entre 5 et 6, pour WFS-322)
+
+| `voiture-sonde-5` | `voiture-sonde-6` |
+|---|---|
+| ![s5](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/apres-voiture-sonde-5.jpg?raw=true) | ![s6](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-330/qa/pr/WFS-330/apres-voiture-sonde-6.jpg?raw=true) |
 
 ## Captures pour le lead dev (33 après)
 
