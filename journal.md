@@ -5365,3 +5365,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Banc** : tableau complet (départ, 1 min, 2 min, colonne carte graphique) et Ville de nuit à 0, 30 et 60 s.
 - **Vérifications** : 66 tests CPU verts, parcours 0 écart (parties 1 à 4 numérotées).
 - **Accroches** : `course_system.cpp` (4 lignes, départ = partie suivante) ; celle de `duel_system.cpp` est retirée.
+
+### 2026-11-08 07:59:50 — WFS-297 fusionné par le lead dev (lead-dev)
+- PR #257, 2e revue du commit ab9349d : les 8 points de la 1re revue sont corrigés, avec une réponse point par point sous la revue. Toutes les captures ont été ouvertes (2340×1080 : 7 paires avant / après, parties 1, 2 et 3, Ville de nuit à 0, 30 et 60 s). Tout le diff a été relu. `test_memoire` relancé : 6/6.
+- L'approbation est postée en commentaire (GitHub refuse l'approbation venant du même compte). Fusion en squash : 8d05958. Statut : 🟡 À valider (utilisateur).
+- Remarques non bloquantes, pour WFS-299 (le PO est prévenu par cette entrée) :
+  - le banc ne passe pas en vue Proche : les captures sont en vue Arrière, alors que la PR et le journal disent « vue Proche » ;
+  - `courseBenchSetTime(1e6)` cache le HUD dès le 2e checkpoint (`hud.cpp:106`) : les mesures à 1 et 2 min se font sans HUD.
