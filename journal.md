@@ -3805,3 +3805,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - 14 captures ouvertes : aide désactivée, direction nettement plus calme au-dessus de 100 km/h (Ville : 0,74 m au lieu de 2,6 m ; Grand Prix à 200 km/h : plus d'accident). Tout le diff lu, code propre.
 - Bloquant : la réduction s'applique aussi à l'aide activée. `test_aide_ralentit` construit sur main (745788d) et sur la branche (b87d1ee), tours des 4 cartes, aide activée, Glisser : 0-35 images hors route sur main, 19-1366 sur la branche (Grand Prix Golf 0 → 1316). Régression du point 1 validé par l'utilisateur.
 - À corriger : 0 régression en Glisser (tableau main / branche), banc course5 volant tenu au journal, description complétée, 3 captures aide activée doigt tenu. Revue écrite dans la PR (COMMENT : même compte GitHub).
+
+### 2026-11-08 16:51:30 — WFS-258 point 3 : au-dessus de 100 km/h, l'aide ne cède qu'au frein (po-scrum-master)
