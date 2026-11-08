@@ -4455,3 +4455,6 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
 
 ### 2026-11-08 23:03:57 — WFS-290 : PR #287 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
 - Banc `reglages-appuis` après correction : 100 / 100 dans tous les cas (menu et pause), touche Retour en pause 100 / 100 ; 76 tests verts ; parcours 0 écart. Ensuite : WFS-291 (onglets), puis WFS-318.
+
+### 2026-11-08 23:04:56 — WFS-291 : découpage des onglets validé (po-scrum-master)
+Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affichage (5 lignes + place WFS-318), Conduite (6), Son (2) ; en-tête et bas communs ; clé `onglet` gardée. Écrit dans `regles-de-gestion/WFS-291.md` (Suivi). Le ticket reste en attente de la fusion de WFS-290 (PR #287).
