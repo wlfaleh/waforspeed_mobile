@@ -3665,3 +3665,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - PR https://github.com/wlfaleh/waforspeed_mobile/pull/266 (tête 07eac56, branche synchronisée avec `main`) ; arbitrages du PO appliqués : RG-12 (centre du volant de la M4 sans texture, couleur du volant : ΔE2000 0,00), RG-13 (grain : 16 zones unies listées dans `qa/pr/WFS-192/inventaire.md` et dans la PR).
 - Captures : `captures_pr.sh` (vitrines-feux des 20 voitures, garage, parcours : 0 écart, aussi en vue Cockpit) + vues de près avant / après des 20 voitures (face ; et arrière pour 10 d'entre elles), `qa/pr/WFS-192/pres-<id>.jpg`.
 - Tests après la dernière synchronisation : 71 tests CPU verts ; `test_audio_chocs` (WFS-298) sensible au temps sur cette machine (2 échecs sur 4 à 0,052–0,056 ms pour 0,05, puis vert) : signalé, rien de ce ticket.
+
+### 2026-11-08 15:23:11 — WFS-296 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- Demande : « un ticket facile et rapide » (ordre de l'utilisateur, relayé par l'agent 2, libre après WFS-315 #262 et WFS-282, tous deux 🟡).
+- Choix : **WFS-296** (P2, E5 libre) : signal « R » bien visible au HUD quand la voiture recule ; zone `src/ui/**` sauf `src/ui/ecrans/**` ; aucun bouton ne change de taille ni de place (ordre permanent) ; aucune modification de la conduite. Règles : `regles-de-gestion/WFS-296.md`. Captures : marche avant, marche arrière, nuit ; tests CPU ; parcours ; 🟡 après fusion.
+- Écartés : WFS-214 (E13, rendu du ciel : plus risqué), WFS-285 / 287 (E7 occupée par WFS-319), WFS-292 / 300 (E4 occupée), WFS-293 (E3 occupée), WFS-308 (déjà à l'agent 3).
+- Idée de l'agent (banc `cockpit` qui affiche encore les anciennes cibles horizon 40-45 % / intérieur 30-35 %, remarque du lead dev sur #262) : pas de ticket seul (micro-ticket, E10 occupée par WFS-192 #266) ; à ranger dans le prochain ticket cockpit.
