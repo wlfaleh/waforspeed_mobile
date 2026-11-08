@@ -4123,9 +4123,35 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - **#272 (WFS-300) fusionnée** (d88e426) : code jugé bon par le lead dev, banc seulement (`qualite_banc.cpp`), aucun effet sur le jeu ; branche synchronisée par le PO (conflits de documents seulement), 76 tests CPU verts. Suite : WFS-330 (captures régénérées).
 - **#249 (WFS-281) non fusionnée** : risque — sur les captures « après », la voiture du joueur est hors de la route ; mesures manquantes ; 28 commits de retard. Décision du PO sur la mesure de RG-02 écrite dans WFS-281.md.
 - **#248 (WFS-268) non fusionnée** : risque — aucune capture sur le commit de tête, un morceau de décor peut-être disparu (`carte-plage-lacets-dessus`), conflit avec main ; gros changement du rendu.
+
 ### 2026-11-08 20:38:05 — WFS-301 (partie A) : format, 2e source de lecture, secours, banc `cuisson` (Claude, agent 3 (01UY1Vv3))
 - **Livré** : `src/core/carte_cuite.*` (format `.wfcarte` v1, écriture déterministe, `lire` / `verifier_carte` avec 11 verdicts, CRC-32, empreinte FNV-1a, archive de fichiers, paquet actif) ; `src/world/cartes_v2/paquet_carte.*` (empreinte attendue de la carte, `preparerCarte` : paquet vérifié → activé, sinon Ville du code avec la raison au journal du jeu ; cuisson ; banc `WFS_BANC=cuisson`) ; `tests/test_carte_cuite.cpp`.
 - **Accroches E0** : `readAsset()` d'`android_main.cpp` et de `desktop_main.cpp` (1 ligne chacune : paquet vérifié d'abord) ; `android_main.cpp` : dossier `internalDataPath/paquets` (1 ligne), `preparerCarte(sauvegarde().map)` avant le premier chargement (1 ligne) et au changement de carte (même ligne que `debutChargement`) ; `desktop_main.cpp` : dossier `WFS_PAQUETS` ou `build/paquets` et banc `cuisson` (2 lignes + include) ; `CMakeLists.txt` : `test_carte_cuite` (1 ligne). Aucun fichier de la PR #248 touché.
 - **Mesures (PC, lavapipe)** : ville_astc 21,7 Mo (22 textures, 7 maillages), vérifié en 75 à 88 ms ; ville_etc2 5,3 Mo (aucune texture ETC2 dans le dépôt : feuillage seul) ; ville_rgba8 26,3 Mo, vérifié en 115 ms ; deux cuissons identiques octet par octet (3 formats) ; test CPU : paquet de 24 Mo vérifié en ≈ 88 ms.
 - **Banc `cuisson`** : 0 écart : paquet absent → secours ; corrompu (CRC), tronqué (taille), format futur, autre génération (empreinte) → secours avec la raison au journal ; `.part` jamais lu ; paquet valide → activé, fichiers de la Ville lus dans le paquet ; **29 / 29 fichiers du paquet identiques octet par octet à ceux de l'APK** (même image). Écart de pixels donné pour information : 0,58 % entre deux parties sans paquet, 1,67 % entre sans et avec paquet (reflets : la capture d'environnement WFS-150 est prise à un point qui dépend du temps de chargement ; chaque scène comparée est jouée deux fois, seule la 2e est capturée).
 - **Risques pour la partie B** : (1) un paquet complet de la Ville (≈ 160 Mo de données GPU) mettra plus de 200 ms à vérifier avec ce CRC (≈ 3,5 ms par Mo sur PC) : CRC plus rapide (8 octets à la fois) ou vérification par bloc à prévoir ; (2) le paquet actif garde ses fichiers en mémoire (copie à chaque lecture) : acceptable pour 22 Mo, à revoir (lecture directe dans le fichier) pour le paquet complet ; (3) un paquet plus ancien que les fichiers de l'APK sert ses anciens fichiers tant que `VERSION_GENERATION_CARTE` n'est pas augmentée : règle écrite dans `carte_cuite.h`.
+### 2026-11-08 20:42:00 — WFS-268 décliné par l'utilisateur : PR #248 fermée sans fusion, WFS-273 décliné, WFS-331 créé (po-scrum-master)
+- Branche gardée. WFS-301 partie B à revoir. Agent 0 libre.
+
+### 2026-11-08 20:44:49 — Réglages (WFS-290 → 291 → 318) donnés à Claude, agent 2, libre (décision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 20:44:56 — Début WFS-330 : attribué à Claude, Agent 0 developer, à sa demande (po-scrum-master)
+- Agent libre depuis le déclin de WFS-268 / 273 (20:42 UTC ; branches 268 61cecb3b et 273 609b399e gardées, réutilisables pour WFS-331). WFS-328 déjà 🔧 à agent arwa (18:15 UTC) : non pris.
+- **WFS-330** (P3, [TECHNIQUE], E4, suite de WFS-300 fusionné #272) : seul ticket ⏳ Prêt attribuable. Exception PO (comme WFS-300) : en parallèle de WFS-292 (E4, `effets_*`), fichiers séparés. Zone : `src/render/qualite_banc.cpp` seul si besoin, captures `qa/pr/WFS-330/`. Interdits : `effets_*`, `post.frag`, `eclairage_*`, `nuit.cpp`, WFS-328, `lots_decor.*`, CI (gel), iOS. Règles : `regles-de-gestion/WFS-330.md` (section « Captures demandées » ajoutée). Skills : `agent-developer`, `waforspeed-natif`. Captures : `FILTRE='voiture-*' bash tools/qa/captures_pr.sh WFS-330 qualite`, PR, puis `lead-dev`.
+- Plus prioritaires écartés : WFS-329 (réservé à agent 1, accord de l'utilisateur), WFS-323 (agent 2), WFS-214 / 322 (E13 tenue par WFS-328), WFS-215 / 193 (E10 tenue par WFS-292), WFS-287 (E7 : WFS-319, WFS-285), WFS-280 / 293 (E3 tenue par WFS-281, E0 par WFS-301).
+- Stock prêt après attribution : 9 (193, 214, 215, 280, 287, 293, 322, 323, 329).
+
+### 2026-11-08 20:48:58 — Développeurs libres occupés par le PO (règle de l'utilisateur : le PO décide, avec Smart Brain si besoin) (po-scrum-master)
+- WFS-329 → Claude, agent 1 (ne plus attendre l'accord de l'utilisateur : délégué au PO) ; WFS-293 → Agent 0 ; WFS-322 réservé à l'agent dev X ; WFS-215 réservé à l'agent 4.
+
+### 2026-11-08 20:49:39 — Double attribution à Agent 0 (WFS-330 par une autre session PO à 20:44, WFS-293 par moi à 20:48) : il finit WFS-330 (≈ 1 h, déjà commencé), puis WFS-293 (po-scrum-master)
+
+### 2026-11-08 20:51:30 — Réservations retirées (règle de l'utilisateur : seulement pour les skills spéciaux) (po-scrum-master)
+- WFS-215, 293, 322, 323 → ⏳ Prêt sans nom ; WFS-291, 318 → après WFS-290 (même fichier). Gardés : sujets de conduite (agent dev conduite), CI / publication (expert ci), cartes (expert-cartes).
+
+### 2026-11-08 20:53:17 — Réglages WFS-291 et 318 rendus à Claude, agent 2 (confirmation de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 20:58:02 — Début WFS-215 : attribué à Claude, agent 5, à sa demande (« un sujet facile ») (po-scrum-master)
+- WFS-300 🟣 fusionné (#272) : agent libre. Demande de l'utilisateur relayée : « Demande un sujet facile ».
+- **WFS-215** (P3, E10, ANO-107 / ANO-110, une demi-journée, modèles de 3 voitures) : premier ticket prêt facile dans l'ordre du PO. Exception PO : en parallèle de WFS-292 (E4 + E10, `vehicule.glsl` seul), fichiers séparés. Zone, interdits et captures : `regles-de-gestion/WFS-215.md` (Suivi).
+- Écartés : WFS-214 / 322 (rendu, E13 tenue par WFS-328), WFS-287 (CI, E7 tenue par WFS-319 et 285), WFS-293 / 280 / 323 (gros, proches de la conduite ou de la caméra). Stock prêt : 7 (193, 214, 280, 287, 293, 322, 323 ; WFS-329 déjà 🔧) : sous le seuil de 8, tickets de rattrapage à créer au prochain passage du PO.
