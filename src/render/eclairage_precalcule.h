@@ -14,7 +14,7 @@
 namespace wfs::precalcul {
 
 // paramètres (réglés au banc ; test fidelite_lumiere_precalcule)
-constexpr float VOXEL_M = 0.5f;          // côté d'un voxel de la grille d'occupation (m)
+constexpr float VOXEL_M = 0.5f;          // côté d'un voxel de la grille d'occupation (m) ; 0,75 : bande sombre au pied des murs (la cellule du mur englobe le sol voisin)
 constexpr float PORTEE_M = 5.0f;         // distance de recherche des obstacles (m) : au-delà, le ciel est vu
 constexpr float DECALAGE_M = 0.55f;      // départ des rayons au-dessus de la surface (> 1 voxel : la surface ne s'occulte pas elle-même)
 constexpr int RAYONS = 8;                // directions par sommet, réparties en cosinus dans l'hémisphère de la normale
@@ -29,7 +29,7 @@ struct Lot {
     float force = 1;       // 1 : occlusion entière ; < 1 : atténuée (matériau MAT_VTINT, où elle touche aussi le soleil direct)
 };
 
-struct Bilan { size_t voxels = 0, sommets = 0; double ms = 0, moyenne = 1; };
+struct Bilan { size_t voxels = 0, sommets = 0; double ms = 0, msGrille = 0, moyenne = 1, memoireMo = 0; };
 
 // calcule l'occlusion de tous les sommets des lots « recoit » (en parallèle, jobs()) ; rend le bilan (journal, RG-04)
 Bilan occlusionDecor(std::vector<Lot>& lots);

@@ -39,7 +39,7 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
         for (size_t k = 0; k < cpu.size(); k++) for (int p = 0; p < parts_; p++)
             lots.push_back({&cpu[k].v[(size_t)p], &cpu[k].i[(size_t)p], !(k & 1) && ((aoOcculte_ >> p) & 1), ((aoRecoit_ >> p) & 1) != 0, ((aoVtint_ >> p) & 1) ? FORCE_VTINT : 1.f});
         const precalcul::Bilan b = precalcul::occlusionDecor(lots);
-        WFS_LOG("décor fixe (WFS-269) : %s : occlusion précalculée, %zu sommets, %zu voxels, moyenne %.2f, %.0f ms", nom, b.sommets, b.voxels, b.moyenne, b.ms);
+        WFS_LOG("décor fixe (WFS-269) : %s : occlusion précalculée, %zu sommets, %zu voxels, moyenne %.2f, %.0f ms (grille %.0f ms, %.1f Mo, rendus après le calcul)", nom, b.sommets, b.voxels, b.moyenne, b.ms, b.msGrille, b.memoireMo);
     }
     // regroupement : bloc de blocChunks morceaux, un maillage par matériau et par niveau de détail
     const int64_t B = std::max(1, blocChunks);
