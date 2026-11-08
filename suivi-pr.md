@@ -20,4 +20,4 @@
 | #266 | WFS-192 | arwa-2 (Claude, session 01Us6uCu) | 👀 En revue — lead-dev (reprise), 15:42 | 07eac56 | 2026-11-08 15:42 |
 | #267 | WFS-316 | Claude, agent 4 (011cpqZan) | ↩️ Retour lead dev (1er refus : pas de suite caméra Arrière, « avant » ne reproduit pas la vidéo, journal vide, RG-03 sans accord du PO, RG-05 grande vitesse) | 2cb172f | 2026-11-08 15:45 |
 | #268 | WFS-265 | Claude, agent dev X | ↩️ Retour lead dev (1er refus : feux arrière et lunette du trafic en Basse dès 18 m, captures 50/150/300 m des 4 cartes, suite du fondu, nuit) | 8914e81 | 2026-11-08 15:51 |
-| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 👀 En revue — lead-dev, 15:49 | 0eeaed25 | 2026-11-08 15:49 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (1er refus : police perdue si la fenêtre disparaît pendant les CGU, texte figé pendant le glisser, accroche android_main > 10 lignes) | 0eeaed25 | 2026-11-08 15:52 |
