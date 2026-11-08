@@ -103,6 +103,20 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
         if (sc.type == trace::Type::Ligne && carte) seg = ligneDebut;
         if (!carte) { rap << "scénario " << sc.nom << " : aucune section de ce type\n"; continue; }
         if (const char* seul = std::getenv("WFS_FLUIDITE_SEUL"); seul && std::string(seul) != sc.nom) continue;   // essai local
+        if (std::getenv("WFS_FLUIDITE_PISTE")) {   // WFS-293 : diagnostic : à-coup dû au seul tracé (point à vitesse constante, point / pointLisse, axe et 2 m)
+            Track t; t.build(mapById(carte), trace::versionCarte(carte));
+            for (int lisse = 0; lisse < 2; lisse++) for (double lat : {0.0, -2.0}) for (int fps : {15, 30, 60}) {
+                Mulberry32 R(221u * 31u + (uint32_t)fps);
+                std::vector<Echantillon> e; double tt = 0; const double v = sc.kmh / 3.6;
+                for (double du = 0; du < 14;) { const double dt = (1.0 / fps) * (0.7 + 0.6 * R.next()); du += dt; tt += dt;
+                    const double sm = (double)(seg + (int64_t)(120 / SEG_M)) * SEG_M + v * tt;
+                    const TrackPoint q = lisse ? t.pointLisse(sm / M, lat) : t.point(sm / M, lat);
+                    Echantillon x{}; x.t = tt; x.p = {(float)q.x, (float)q.y, (float)q.z}; e.push_back(x); }
+                int pas[4] = {}; const Resultat rr = analyser(e, pas);
+                WFS_LOG("PISTE %s %s lat %.0f %d img/s : à-coup %.2f mm", sc.nom, lisse ? "pointLisse" : "point", lat, fps, rr.acoupMm);
+            }
+            continue;
+        }
         for (int passe = 0; passe < 2; passe++)
             for (int cam = 0; cam < 2; cam++)
                 for (int fps : {10, 15, 20, 26, 30, 60, 90}) {   // WFS-247 (RG-01) : cadences réelles du téléphone (10 à 26 img/s) ajoutées
