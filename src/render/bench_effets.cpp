@@ -161,6 +161,13 @@ void benchEffets(Game& g, Renderer& r, const std::string& out) {
             g.render(t + 0.001);
             r.capturePng(out + "/fumee-derapage-" + moment + ".png");
             WFS_LOG("capture fumee-derapage-%s : %.0f km/h, %d bouffées de fumée", moment, g.player().kmh(), effetsFumee());
+            // WFS-292 (RG-01, revue du lead dev) : suite de jour, 0,5 s et 1 s plus tard (la nappe reste accrochée aux roues)
+            for (int k = 1; moment[0] == 'j' && k <= 2; k++) {
+                for (int i = 0; i < 30; i++) { if (Traffic* tr = activeTrafficMut()) tr->cars.clear(); image(i % 6 == 5); }
+                g.render(t + 0.001);
+                r.capturePng(out + "/fumee-derapage-jour-" + (k == 1 ? "05s" : "1s") + ".png");
+                WFS_LOG("capture fumee-derapage-jour-%s : %.0f km/h, %d bouffées de fumée", k == 1 ? "05s" : "1s", g.player().kmh(), effetsFumee());
+            }
             effetsBancDerapage(false);
             g.shutdown();
         }

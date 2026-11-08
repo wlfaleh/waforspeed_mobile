@@ -87,12 +87,11 @@ public:
         // est maintenant une matière diffuse éclairée par la scène (soleil, ciel, phares, lampadaires) : claire de jour, visible
         // la nuit seulement là où une lumière l'éclaire, jamais un gris lumineux dans le noir. MAT_VTINT : Lambert sans reflet,
         // même éclairage des deux faces (normale des sommets vers le haut, longueur 1 : nuage éclairé par-dessus).
+        // Même matière le jour et la nuit : c'est la lumière de la scène qui fait la différence.
         for (int k = 0; k < NIV; k++) {
-            for (int nuit = 0; nuit < 2; nuit++) {
-                Material m; m.color = {ALBEDO_FUMEE, ALBEDO_FUMEE, ALBEDO_FUMEE * 1.02f, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 0;
-                mats_[nuit][k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
-                mats_[nuit][k].flags |= MAT_BLEND | MAT_DOUBLE | MAT_VTINT;
-            }
+            Material m; m.color = {ALBEDO_FUMEE, ALBEDO_FUMEE, ALBEDO_FUMEE * 1.02f, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 0;
+            mats_[k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
+            mats_[k].flags |= MAT_BLEND | MAT_DOUBLE | MAT_VTINT;
             for (int b = 0; b < 2; b++) {   // réserve pleine (140 bouffées) : jamais réallouée pendant la partie
                 meshes_[b][k] = r.makeMesh(std::vector<Vertex>(140 * 4), std::vector<uint32_t>(140 * 6), true);
                 meshes_[b][k].indexCount = 0;
@@ -107,7 +106,7 @@ public:
     void shutdown(Renderer& r) override {
         for (auto& b : meshes_) for (auto& m : b) r.destroy(m);
         r.vk().destroy(tex_);
-        for (auto& j : mats_) for (Material& m : j) r.destroy(m);
+        for (Material& m : mats_) r.destroy(m);
         r.destroy(matEtincelles_);   // WFS-187 : jeux de descripteurs rendus
         if (g_parts == &parts_) g_parts = nullptr;
     }
@@ -165,10 +164,13 @@ public:
             // WFS-224 (RG-02) : la volute part avec 40 % de la vitesse de la voiture (air entraîné par le sillage juste
             // derrière la caisse, ordre de grandeur des mesures de sillage de véhicule) : elle traîne derrière la voiture au
             // lieu de filer d'un coup vers la caméra
-            const vec3 sillage = monde ? vec3{(float)pl.monde.vx, 0.f, (float)pl.monde.vz} * 0.4f : vec3{};
+            // WFS-292 (RG-01, lead dev : « ronds détachés loin derrière ») : 65 % de la vitesse (sillage proche, juste derrière
+            // les roues : la nappe reste accrochée aux roues au lieu de filer vers la caméra) et 0,8 m/s vers le bas, qui retient
+            // la montée de 1,2 m/s de fumee() : 0,4 m/s net, la fumée de pneu monte peu et s'étale au ras de la chaussée
+            const vec3 sillage = monde ? vec3{(float)pl.monde.vx * 0.65f, -0.8f, (float)pl.monde.vz * 0.65f} : vec3{0, -0.8f, 0};
             for (int sx : {-1, 1}) {
                 const TrackPoint q = g.track->point(pl.dist - L * 0.35 / M, pl.playerX * RW + sx * W * 0.4);
-                parts_.fumee({(float)q.x, (float)q.y + 0.25f, (float)q.z}, 1, (float)q.y, sillage);
+                parts_.fumee({(float)q.x, (float)q.y + 0.15f, (float)q.z}, 1, (float)q.y, sillage);
             }
         }
         // fumée du capot des voitures du trafic accidentées : 5 s, une bouffée toutes les 0,12 s
@@ -243,7 +245,7 @@ public:
             Mesh& m = meshes_[b][k];
             if (vtx_[k].empty()) { m.indexCount = 0; continue; }
             r.updateMesh(m, vtx_[k], idx_[k]);
-            r.draw(m, mats_[g.night ? 1 : 0][k], mat4::identity());
+            r.draw(m, mats_[k], mat4::identity());
         }
         if (nitro_ && !r.gpuLogiciel() && !reglagesRessenti().reduireMouvements && g.ecran == Ecran::Course)
             lignesNitro(r, g, right, up, nrm);
@@ -304,7 +306,7 @@ private:
     bool actif_ = true, nitro_ = false;
     effets::Particules parts_;
     Image tex_;
-    Material mats_[2][NIV], matEtincelles_;   // fumée : [jour, nuit][niveau d'opacité]
+    Material mats_[NIV], matEtincelles_;   // fumée : un matériau par niveau d'opacité (WFS-292 : le même jour et nuit)
     Mesh meshes_[2][NIV];
     std::vector<Vertex> vtx_[NIV], etincelles_, lignes_;
     std::vector<uint32_t> idx_[NIV];
