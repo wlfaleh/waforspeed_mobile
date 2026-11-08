@@ -4668,3 +4668,15 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 01:07:46 — WFS-269 : arbitrage A + C (po-scrum-master)
 - Occlusion précalculée par sommet dans la zone, rebond SH9 par bloc ; critère de coût : neutre ou en baisse ; B (noyau) refusé.
+### 2026-11-08 01:07:42 — WFS-269 : risque signalé (Claude, Agent 0 developer)
+- **Constat** :
+  - WFS-229 (GTAO) n'existe pas (⏳) : rien à retirer en Basse (RG-03).
+  - Le diffus indirect est déjà un SH9 global (`shaders/eclairage.glsl`, `iblDiffus`, 9 multiplications par pixel).
+  - Les postes chers de la passe scène restent dynamiques par RG-03 : ombres PCF 9 lectures, lampes et phares, spéculaire de la sonde (cube + table BRDF).
+  - `Vertex` (36 octets, `renderer.h`) n'a pas de place libre pour 6 jeux de lumière indirecte.
+- **Conséquence** : le critère « temps GPU de la passe scène en baisse » est incertain avec le seul précalcul décrit. Un vrai stockage par sommet ou par texture touche le noyau du renderer (plus de 10 lignes).
+- **Proposition au PO** :
+  - A (recommandée) : occlusion par sommet rangée dans la longueur de la normale, comme la végétation (MAT_VTINT), accroche ≤ 10 lignes ; rebond par bloc et par moment (SH9, interpolé) ; décor rugueux sans lecture du cube spéculaire (gain mesurable) ;
+  - B : attribut ou textures d'éclairage (noyau) ;
+  - C : critère de coût « neutre » au lieu d'« en baisse ».
+- **Décision attendue de** : PO. En attendant, je code la partie commune : occlusion calculée au chargement sur une grille de voxels du bloc (`src/render/eclairage_precalcule.*`), avec son test CPU.
