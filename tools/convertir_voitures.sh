@@ -63,6 +63,7 @@ else echo "⚠️  $CORR absent : construire la cible corriger_voitures (ninja -
 # WFS-158 (ST-3, M-04) : plaques européennes 520 × 110 mm des voitures dont la plaque est une pièce à part (après la
 # correction : la plaque est posée sur la caisse corrigée)
 node plaques_voitures.mjs "$@"
+node vitres_voitures.mjs "$@"   # WFS-215 : vitres avant claires (RR Sport, A 45), verre de l'A 45 sombre, plaque arrière de la Model 3 en rectangle plat
 # une plaque posée devant le bouclier allonge la voiture de quelques millimètres (longueur hors tout, plaques comprises) :
 # 2e passage de la correction (sans effet si la voiture reste dans ses tolérances)
 "$CORR" "$RACINE" "$@"
