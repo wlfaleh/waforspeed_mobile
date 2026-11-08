@@ -3398,3 +3398,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarques non bloquantes du lead dev, laissées pour plus tard (aucun nouveau ticket pris) : `qa/pr/WFS-232/pr.md` dit « 65 tests CPU » (la description de la PR dit 66) ; commentaire du test de `lateralPiloteEjecte` dans `test_trace.cpp` : « 2e revue » au lieu de « 3e ».
 - **arwa-3 libre et arrêté sur demande de l'utilisateur** (2026-11-08 11:48 UTC : « termine la tâche en cours et arrête de prendre des US ») : je ne demande plus de ticket au PO.
 
+
+### 2026-11-08 11:50:23 — WFS-299 : début, alléger la Ville de nuit (Claude, agent 1)
+- Ticket réservé par le PO après WFS-297, départ demandé par l'utilisateur (« Commence »). Branche `feature/waforspeed-299`.
