@@ -583,6 +583,11 @@ static int benchDuelAmis(Game& g, Renderer& r, const std::string& out, double& t
         const Traffic* tr = activeTraffic();
         images(30);
         verifier(!tr || tr->cars.empty(), "course sans trafic (WFS-110 RG-07)");
+        // WFS-286 (RG-03, ANO-157) : la manche dure 12 s de course avant l'arrivée forcée (avant : arrivée dès le départ, temps de
+        // course 0 → vainqueur à 0:00.0 et amis à +0,0 s, car leurs temps se calculent à partir du mien) ; un vrai duel n'a pas ce défaut
+        duelArriveeForcee(false);
+        for (int i = 0; i < 12 * 60; i++) { image(); rouler(-1); }
+        duelArriveeForcee(true);
         double moi = -1; apres = 0;
         for (int i = 0; i < 1200 && !(duelSession().status() == duel::Status::Done && tousFinis()); i++) {
             image(); if (moi < 0 && duelSession().status() == duel::Status::Done) moi = duelSession().myFinish(); rouler(moi);
@@ -591,6 +596,11 @@ static int benchDuelAmis(Game& g, Renderer& r, const std::string& out, double& t
         images(70);   // écran de fin après 0,9 s
         const auto res = duelSession().results();
         verifier(res.size() == 4 && res[0].me && res[1].done && res[3].done && res[1].name == "Nadia" && res[3].name == "Lou", "écran de fin : classement 1 à 4 (moi, Nadia, Sam, Lou) et temps");
+        // WFS-286 (RG-03) : vrais temps : vainqueur après 10 s au moins, écarts non nuls et croissants
+        bool temps = res.size() == 4 && res[0].ft >= 10000;
+        for (size_t i = 1; temps && i < res.size(); i++) temps = res[i].ft > res[i - 1].ft;
+        verifier(temps, "écran de fin : vrais temps (vainqueur ≥ 10 s) et écarts croissants");
+        if (res.size() == 4) WFS_LOG("parcours duel : temps %.1f / %.1f / %.1f / %.1f s", res[0].ft / 1000, res[1].ft / 1000, res[2].ft / 1000, res[3].ft / 1000);
     };
     g.setAutopilot(false); g.camMode = 0;
     choixModeBanc(true); duelArriveeForcee(false);
@@ -622,7 +632,6 @@ static int benchDuelAmis(Game& g, Renderer& r, const std::string& out, double& t
     for (auto& a : amis) a.setReady(true);
     images(10);
     zone(g_pret);
-    duelArriveeForcee(true);   // je passe la ligne dès le départ : la manche dure le compte à rebours
     manche(1);
     capture("salon-amis-fin", "fin du duel : victoire, temps, « Revanche » et « Retour »");
     capture("duel-resultat-4", "WFS-122 : classement 1 à 4 (moi, Nadia, Sam, Lou)");

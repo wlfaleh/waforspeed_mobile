@@ -136,8 +136,10 @@ private:
     const InterieurDef* def_ = nullptr;
     std::vector<Piece> pieces_;
     std::vector<Material> mats_;
+    // WFS-282 (RG-04) : copies de nuit (même jeu de descripteurs, détruites avec mats_) : lumière d'ambiance de l'habitacle
+    std::vector<Material> matsNuit_;
     Image grain_{};                          // normal map du cuir (grain), calculée
-    Mesh bras_[2]{}; Material brasMat_{};    // essuie-glaces (dessinés selon l'angle de l'image)
+    Mesh bras_[2]{}; Material brasMat_{}, brasNuit_{};    // essuie-glaces (dessinés selon l'angle de l'image)
     Material cleMat_{};                      // banc : toutes les pièces d'une couleur clé (g_interieurCle, WFS-235)
     const Material& mat(const Material& m) const;
     // écrans dynamiques : un maillage par couleur (actif, fond, alerte ; route, flèche)

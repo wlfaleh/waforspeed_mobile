@@ -55,6 +55,8 @@ MiseEnPage miseEnPagePetit(float W, float H, float logoMax, float gap);
 // dessine le sur-titre et le logo à partir de y (haut du bloc) ; renvoie y sous le logo + l'espace (gap) suivant
 float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float opacite);
 // dessin de l'écran (sans beginFrame / endFrame) : opacite de 0 à 1 (fondu)
+// WFS-297 (RG-06) : « Mémoire : jeu 1 380 Mo · carte graphique 620 Mo · partie 2 » (chargement : numéro de la partie qui se charge)
+std::string texteMemoire(bool enChargement);
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float opacite);
 // WFS-279 (RG-01, RG-03) : version de l'APK, en petit dans le coin bas droit (écran d'erreur compris). Seule source : versionName de
 // android/app/build.gradle (« 0.1.N »), passé par CMake (WFS_VERSION, chargement.cpp) ; PC, bancs et tests : « dev ».

@@ -438,6 +438,9 @@ void CarteDecor::preparerDecor(Renderer& r) {
     // de départ ; son décor reste sur l'ancienne gestion jusqu'à WFS-273 (route, immeubles du kit et commerces : préparés)
     if (!std::strcmp(carteId(), "circuit")) return;
     limiteTour_ = len();
+    // WFS-269 (accroche) : aucune occlusion précalculée en Campagne et au Grand Prix : le décor uni (P_UNI) la recevait, et c'est lui qui
+    // donnait les dents de scie sous les surplombs à la Corniche (revues du lead dev) ; décor préparé par WFS-268 : image identique à main
+    lots_.occlusion(0, 0, 0);
     lots_.preparer(r, *track_, P_COUNT, 4, [this](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
         Geo out[P_COUNT];
         buildChunk(*track_, c, lod, out);

@@ -1,4 +1,5 @@
 #include "vk.h"
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -220,6 +221,7 @@ Buffer VkCtx::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hos
     mai.allocationSize = req.size;
     mai.memoryTypeIndex = memoryType(req.memoryTypeBits, hostVisible ? (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VK_OK(vkAllocateMemory(device, &mai, nullptr, &b.mem));
+    b.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size;   // WFS-297 (RG-06)
     VK_OK(vkBindBufferMemory(device, b.buf, b.mem, 0));
     if (hostVisible) VK_OK(vkMapMemory(device, b.mem, 0, VK_WHOLE_SIZE, 0, &b.mapped));
     return b;
@@ -228,6 +230,7 @@ Buffer VkCtx::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hos
 void VkCtx::destroy(Buffer& b) {
     if (b.buf) vkDestroyBuffer(device, b.buf, nullptr);
     if (b.mem) vkFreeMemory(device, b.mem, nullptr);
+    memoire::compteurs().octetsGpu -= (int64_t)b.alloue;   // WFS-297
     b = Buffer{};
 }
 
@@ -248,6 +251,7 @@ Image VkCtx::createImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, Vk
     if (transient) mai.memoryTypeIndex = memoryType(req.memoryTypeBits, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT, &lazy);
     if (!lazy) mai.memoryTypeIndex = memoryType(req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VK_OK(vkAllocateMemory(device, &mai, nullptr, &i.mem));
+    if (!lazy) { i.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size; }   // WFS-297 (RG-06) : la mémoire paresseuse reste dans la tuile
     VK_OK(vkBindImageMemory(device, i.img, i.mem, 0));
     VkImageViewCreateInfo vci{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     vci.image = i.img; vci.viewType = VK_IMAGE_VIEW_TYPE_2D; vci.format = fmt;
@@ -262,6 +266,7 @@ void VkCtx::destroy(Image& i) {
     if (i.view) vkDestroyImageView(device, i.view, nullptr);
     if (i.img) vkDestroyImage(device, i.img, nullptr);
     if (i.mem) vkFreeMemory(device, i.mem, nullptr);
+    memoire::compteurs().octetsGpu -= (int64_t)i.alloue;   // WFS-297
     i = Image{};
 }
 

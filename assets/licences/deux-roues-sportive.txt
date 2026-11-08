@@ -1,0 +1,17 @@
+Model Information:
+* title:	Kawasaki ninja ZX-6R
+* source:	https://sketchfab.com/3d-models/kawasaki-ninja-zx-6r-4af2b6840b8045a5af5e8df8a85f04fa
+* author:	valvetin (https://sketchfab.com/valvetin)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Kawasaki ninja ZX-6R" (https://sketchfab.com/3d-models/kawasaki-ninja-zx-6r-4af2b6840b8045a5af5e8df8a85f04fa) by valvetin (https://sketchfab.com/valvetin) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Found in the public GitHub repository siddharth-vss/CAR-Camera-test (commit ea5f593d4a225116481f7a0449b61cae82777155), folder static/kawasaki_ninja_zx-6r ; files SHA-256: scene.gltf 0073d7af…7fa5, scene.bin 450dfaa0…2d.
+Modifications for WaForSpeed (WFS-232, 2026-11-07): converted to .wfm by tools/convert_car.mjs ; allégé de 335 509 à 106 979 triangles (tools/simplifier_voiture.mjs, erreur 0,002) ; longueur 2,007 m (longueur et empattement à ± 1 % de la fiche) ; 4 matériaux BLEND traités en alpha découpé (WFS_OPAQUE) ; tourné de 180° ; niveaux de détail (.lod). No brand name is shown in the game.
+Modifications (WFS-232, 2026-11-08) : roues sorties du modèle (WFS_ROUES_2R), qui tournent dans le jeu ; feu arrière et phare sortis du matériau partagé (WFS_FEU, WFS_PHARE) ; carénages, moteur et cadre allégés (WFS_ALLEGER : 107 k → 49 k triangles pour le corps) ; textures des roues réduites à 512 px.
+Modifications (WFS-232, 2026-11-08, 2e revue) : autocollants « Kawasaki » (et emblème), « Ninja » et « ZX-6R » retirés de la planche d'autocollants (tools/deux_roues/sportive-autocollants-sans-marque.png, WFS_TEXTURES ; compteur, écran et commodo gardés) : aucune marque n'est montrée dans le jeu. Commandes : tools/convertir_deux_roues.sh.
+Modifications (WFS-232, 2026-11-08, 3e revue) : pixels transparents de la planche d'autocollants remis à RVB 0, et mêmes zones repeintes de la valeur unie du fond dans la texture métal / rugosité (tools/deux_roues/sportive-autocollants-metal-rugosite-sans-marque.png, « mr= » de WFS_TEXTURES) : plus aucune lettre de marque cachée dans le fichier ; rendu identique au pixel près (banc motos, 48 images).

@@ -16,6 +16,7 @@ const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F
            F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u,
            F_POOL = 32768u, F_ADD = 65536u,   // WFS-09 : tache des phares (multiplicative), halo (additif)
            F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u,   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
+           F_AO = 4194304u,   // WFS-269 : occlusion du décor fixe précalculée, rangée dans la longueur de la normale
            F_TANGENTE = 524288u;   // WFS-149 : carte de normales dans le repère tangent des sommets
 
 // WFS-149 (RG-05) : code découpé par domaine (déplacé tel quel) : une épic Réalisme par fichier
@@ -49,6 +50,10 @@ void main() {
     }
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
+    // WFS-263 (RG-01) : part « légère » du pixel : 0 jusqu'à 60 m, 1 au-delà de 70 m (fondu sur 10 m, aucune ligne visible) ;
+    // voitures, route, transparents, vitres d'immeuble : toujours complets. Variante LEGER (objet entier au-delà de 70 m) : 1
+    const uint F_COMPLET = F_PAINT | F_GLASS | F_WHEEL | F_TAIL | F_HEAD | F_FANTOME | F_ROAD | F_BLEND | F_INTERIEUR;
+    float kL = LEGER ? 1.0 : ((flags & F_COMPLET) != 0u ? 0.0 : smoothstep(60.0, 70.0, length(F.camPos.xyz - vWorld)));
     bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
     // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
     // triangles enroulés dans l'autre sens → ne pas retourner (sinon le sol ne recevait ni soleil ni ombre, WFS-07)
@@ -62,9 +67,13 @@ void main() {
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
-    if ((flags & F_HASNORMAL) != 0u && (flags & F_TANGENTE) != 0u && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)
-        N = perturbTangente(N, vTan, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
-    else if ((flags & F_HASNORMAL) != 0u) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
+    if (kL < 1.0) {   // WFS-263 : relief de la carte de normales seulement en deçà de 70 m (fondu de 60 à 70 m)
+        vec3 Ng = N;
+        if ((flags & F_HASNORMAL) != 0u && (flags & F_TANGENTE) != 0u && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)
+            N = perturbTangente(N, vTan, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
+        else if ((flags & F_HASNORMAL) != 0u) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
+        if (kL > 0.0) N = normalize(mix(N, Ng, kL));
+    }
     if (!SANS_DISCARD && (flags & F_MASK) != 0u && base.a < pc.params.z) discard;   // WFS-222
 
     // ---------- surfaces procédurales (uv = mètres : x latéral, y le long de la route) ----------
@@ -122,11 +131,21 @@ void main() {
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
-    vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
+    // WFS-263 (RG-01) : version légère de l'ambiance et du reflet (au-delà de 60 m), mélangée sur le fondu
+    float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
+    vec3 skyAmbL = skyAmb, envL = vec3(0.0), FeL = Fe; float specOccL = specOcc;
+    if (kL > 0.0) iblLeger(skyAmbL, envL, FeL, specOccL, N, R, NoV, roughEnv, sunK, f0, vtint);
+    vec3 env = vec3(0.0);
+    if (kL < 1.0) {
+    env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
     // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
     if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
-    float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
+    }
+    if (kL > 0.0) { skyAmb = mix(skyAmb, skyAmbL, kL); env = mix(env, envL, kL); Fe = mix(Fe, FeL, kL); specOcc = mix(specOcc, specOccL, kL); }
+    // WFS-269 (accroche) : occlusion du décor fixe précalculée au chargement (eclairage_precalcule.h), rangée dans la longueur de
+    // la normale : ambiance et reflet du ciel seulement (le soleil, les lampes et les phares restent directs)
+    if ((flags & F_AO) != 0u && !vtint) { float aoPre = clamp(length(vNrm), 0.0, 1.0); skyAmb *= aoPre; env *= aoPre; }
     if (wetRoad && F.nuitA.z > 0.5) {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
         // WFS-142 (RG-04) : il ne REMPLACE plus le reflet du ciel (avant : env = reflet, l'image nette de la rue sur toute la
@@ -138,8 +157,10 @@ void main() {
         float spread = mix(0.08, 0.02, flaque);
         float j0 = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));   // bruit entrelacé (IGN)
         vec3 rs = vec3(0.0); float ws = 0.0;
+        int lectures = F.spotN.z > 0.5 ? int(F.spotN.z + 0.5) : 12;   // WFS-263 (RG-02) : 4 lectures en Basse, 12 sinon
         for (int i = 0; i < 12; i++) {
-            float t = (float(i) + j0) / 12.0 - 0.5;                    // −0,5 .. 0,5
+            if (i >= lectures) break;
+            float t = (float(i) + j0) / float(lectures) - 0.5;          // −0,5 .. 0,5
             float wt = 1.0 - abs(t) * 1.6;                              // tente : le centre compte plus
             vec2 o = vec2((fract(float(i) * 0.618) - 0.5) * spread * 0.15, t * spread);
             rs += texture(reflTex, suv + o).rgb * wt; ws += wt;

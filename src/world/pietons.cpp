@@ -1,4 +1,5 @@
 // WaForSpeed — piétons animés (WFS-19) : voir pietons.h.
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "pietons.h"
 #include <algorithm>
 #include <cmath>
@@ -222,12 +223,14 @@ public:
         actif_ = true;
         zoneDense();   // WFS-257 (banc)
         WFS_LOG("Piétons : %zu personnes (%s) ; WFS-268 (RG-07) : %zu avant la moitié en moins", gens_.size(), id, avant268);
+        memoire::compteurs().personnes = (int)gens_.size();   // WFS-297 (RG-06, accroche)
         // WFS-222 (RG-07) : détail (marcheurs, promeneurs et passants : moitié des tirages ; assis et baigneurs : inchangés)
         WFS_LOG("Piétons (WFS-222) : %zu à pied (promeneurs %zu, marcheurs %zu, passants %zu ; %d omis sur ordre de l'utilisateur), %zu assis ou baigneurs",
                 nProm + (nMarche - nProm) + (gens_.size() - nDecor), nProm, nMarche - nProm, gens_.size() - nDecor, omis_, nDecor - nMarche);
     }
 
     void shutdown(Renderer& r) override {
+        memoire::compteurs().personnes = 0;   // WFS-297 (RG-06, accroche)
         for (Personnage& m : modeles_) if (m.ok) detruirePersonnage(r, m);
         for (Personnage& m : enfants_) if (m.ok) detruirePersonnage(r, m);   // WFS-233
         detruirePoussettes(r);   // WFS-240
