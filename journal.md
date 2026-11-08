@@ -3807,3 +3807,28 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - À corriger : 0 régression en Glisser (tableau main / branche), banc course5 volant tenu au journal, description complétée, 3 captures aide activée doigt tenu. Revue écrite dans la PR (COMMENT : même compte GitHub).
 
 ### 2026-11-08 16:51:30 — WFS-258 point 3 : au-dessus de 100 km/h, l'aide ne cède qu'au frein (po-scrum-master)
+
+### 2026-11-08 16:55:09 — Captures de l'APK 916 : mesure du téléphone (triangles → temps GPU), WFS-326 (ANO-175) et WFS-327 (ANO-176) créés (po-scrum-master)
+
+### 2026-11-08 16:57:29 — Vue Cockpit : validation de l'utilisateur après WFS-323 à 325, pas urgent (po-scrum-master)
+
+### 2026-11-08 16:59:07 — Sortie publique reportée : d'abord cartes téléchargées testées et gain de performance (décision de l'utilisateur) (po-scrum-master)
+- WFS-301, 302, 306, 308 en P1 ; gel de la CI levé pour WFS-302 ; WFS-319 / 320 continuent.
+
+### 2026-11-08 16:59:42 — WFS-258 point 3 accepté (sûreté) ; équilibre de la Course à 5 traité par WFS-327 (po-scrum-master)
+
+### 2026-11-08 17:03:25 — WFS-326 attribué à Claude, agent dev Y (po-scrum-master)
+- Demande d'agent dev Y (« prends un autre sujet », sans exigence de taille ; pas d'iOS, pas WFS-248 / 249, pas de conduite).
+- Choix : bandeau du 16:59 UTC (ordre de l'utilisateur) : performance (WFS-265, 317, 268, 273) et paquets de cartes (WFS-308, 301, 306, 302) déjà tenus ou en attente ; ensuite **WFS-326** (P1, E12, épic libre, aucune exclusion). WFS-327 écarté : conduite des adversaires. WFS-214 (P2) passe après.
+- Zone : E12 `src/world/archi_*` (fenêtres de nuit). Attention : `archi_carte.*` figure dans l'exception de WFS-268 (Agent 0, PR #248) : se synchroniser souvent avec `main`, ne pas toucher au découpage en lots de WFS-268.
+- Règles : `regles-de-gestion/WFS-326.md` (RG-01 cause au journal, RG-02 fenêtres dans leur façade sur Ville, Corniche, Campagne, RG-03 perf et jour inchangés ; captures avant / après). Ticket né d'un essai de l'utilisateur : 🟡 À valider (utilisateur) après fusion. Branche `feature/waforspeed-326`, skill `agent-developer`, consulter `expert-realisme-3d` pour le rendu.
+
+### 2026-11-08 17:04:57 — WFS-258 : PR #271 corrigée (point 3), lead dev rappelé (Claude, agent dev conduite)
+- Retour du lead dev : régression du point 1 (aide activée, doigt tenu : jusqu'à 1 366 images hors route par tour). Correction (précision accordée par le PO) : au-dessus de 100 km/h, la limite de l'aide ne cède qu'au frein. Tours aide activée doigt tenu : 0 sortie sur les 4 cartes (main 0 à 35), exigé par test_aide_ralentit.
+- Course à 5, aide activée, doigt tenu : 4/5, 2/5, 2/5, 4/5 → 5/5, 2/5, 3/5, 5/5 (0 sortie) ; accepté par le PO (adversaires trop rapides : WFS-327, mesure à refaire après sa fusion). 72 tests CPU OK.
+
+### 2026-11-08 17:08:20 — WFS-258 (point 3) fusionné par le lead dev, PR #271 (lead-dev)
+- 2e revue du commit 0179ff1 : réponse du développeur présente (« Bien reçu », puis « corrigé dans » point par point) ; 30 captures ouvertes ; tout le diff lu ; `test_aide_ralentit` (0 sortie volant lâché et tenu, 4 cartes, Golf et Gallardo) et `test_direction_vitesse` reconstruits et relancés : OK.
+- Revue « ✅ Approuvé par le lead dev » écrite dans la PR (COMMENT : GitHub refuse l'approbation au même compte), puis fusion en squash f72d192 (expectedHeadSha 0179ff1).
+- WFS-258 : « 🔧 En cours — point 1 ✅ (#263), point 3 fusionné #271 (🟡 à valider) » ; ligne #271 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+- Remarque non bloquante laissée au développeur : bascule de la limite de l'aide à 100 km/h (oscillation possible autour de 100 km/h doigt tenu dans un virage lent) ; à regarder pendant l'essai de l'utilisateur.
