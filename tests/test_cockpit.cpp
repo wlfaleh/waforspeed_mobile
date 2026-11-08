@@ -161,6 +161,27 @@ int main() {
         bool plusHaut = true; for (int i = 0; i < nombreInterieurs(); i++) plusHaut = plusHaut && hauteurOeil(rrsport) >= hauteurOeil(interieur(i)) - 1e-6f;
         cas("œil : RR Sport le plus haut, Compass au-dessus des berlines, GT86 la plus basse hors supercars", plusHaut && hauteurOeil(compass) > hauteurOeil(golf) && sousGt);
     }
+    {   // WFS-315 (RG-01) : largeur de l'habitacle par modèle : une cote pour chacun ; deux adultes et la console tiennent
+        // (≥ 2 × 0,447 m d'épaules du plus large sur 20, ANSUR-II, + 0,20 m) ; œil ≈ 0,25 × coudes (±0,02) ; pieds des montants
+        // à moins de 0,10 m de la largeur aux coudes ; montant droit plus loin de l'œil que le gauche ; X5 plus large que la 500
+        bool toutes = true, places = true, oeil = true, montants = true, droit = true;
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            const Largeur l = largeurPour(d), defaut{};
+            toutes = toutes && (l.coudes != defaut.coudes || l.oeil != defaut.oeil);
+            places = places && l.coudes >= 2 * 0.447f + 0.20f && l.coudes <= 1.70f;
+            oeil = oeil && std::abs(l.oeil - 0.25f * l.coudes) <= 0.02f;
+            montants = montants && std::abs(l.montants - l.coudes) <= 0.10f;
+            droit = droit && l.oeil + l.montants / 2 > 2.5f * (l.montants / 2 - l.oeil);
+        }
+        cas("largeur : une cote par modèle (WFS-315)", toutes);
+        cas("largeur : deux adultes et la console tiennent, rien au-delà de 1,70 m", places);
+        cas("œil à ≈ 0,25 × la largeur aux coudes de l'axe", oeil);
+        cas("pieds des montants à moins de 0,10 m de la largeur aux coudes", montants);
+        cas("montant droit ≥ 2,5 fois plus loin de l'œil que le gauche (place passager)", droit);
+        const Largeur x5 = largeurPour(*interieurPour("x5")), ab = largeurPour(*interieurPour("abarth"));
+        cas("X5 plus large que la 500 d'au moins 0,20 m", x5.coudes - ab.coudes >= 0.20f);
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
     return 0;
