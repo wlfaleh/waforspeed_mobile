@@ -5032,3 +5032,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - si le ralentissement des deux-roues avant les courbes (inclinaison de confort de 25°) est accepté, alors que RG-03 dit « vitesses du trafic existant » ;
   - si les 7 pilotes sur 10 qui sont des hommes conviennent.
   - À noter pour un ticket de nuit : chaque deux-roues reçoit le flux d'une paire de phares de voiture (3 000 lm), et ses halos sont doublés.
+
+### 2026-11-08 03:20:12 — WFS-192 : début, branche créée (arwa-2)
+- Ticket attribué par le PO (03:16 UTC, P2, E10 avec exception). Branche `feature/waforspeed-192` créée depuis `main` et poussée. Skills `agent-developer` et `waforspeed-natif` relus, `regles-de-gestion/WFS-192.md` lu en entier. D'abord RG-01 : inventaire des logos voiture par voiture (pièce, matériau ou texture, méthode : effacer ou masquer), écrit ici avant de toucher un modèle ; puis Golf et M4 au banc `vitrines-feux`, puis les 18 autres. Sources des modèles : jeu web (`models/<dossier>/<dossier>.json`, glTF), noms des matériaux et des pièces lus pour repérer les logos (ex. M4 : `Frontlogo`, `rear_logo`, `sidelogos` ; X5 : `BADGES` ; Giulia : `EXT_badge`, `EXT_logo` ; V60 : `volvo_logo.tex` ; A3 : `RIMLOGO`).
+
