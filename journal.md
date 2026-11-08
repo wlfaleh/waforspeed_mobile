@@ -3472,3 +3472,45 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 12:15:35 — WFS-315 : place passager sous les boutons du HUD, option (a) (po-scrum-master)
 - Demande de Claude, agent 2 : le coin bas droit de la planche (boîte à gants) est caché par NITRO, FREIN, GAZ. Décision : (a) cotes réelles et détails passager gardés, aucun bouton changé (RG-04), champ 72° inchangé (RG-00 de WFS-282) ; RG-02 jugée sur ce qui se voit au-dessus des boutons ; capture Golf jour sans HUD en plus si le banc le permet. (b) et (c) seulement sur ordre de l'utilisateur, dans un autre ticket : question posée dans `tache utilisateur.md`. Détail : `regles-de-gestion/WFS-315.md`. Branche `feature/waforspeed-315` : dernier envoi 2026-11-08T12:06:19Z.
+
+### 2026-11-08 12:29:46 — WFS-192 : inventaire RG-01 des 20 voitures et retouche faite (arwa-2)
+- **Inventaire RG-01** (détail voiture par voiture, pièce ou texture, méthode, contrôle : `qa/pr/WFS-192/inventaire.md` sur `feature/waforspeed-192`, 32d9b882) : **203 pièces de logo retirées, 181 zones effacées dans 77 textures, 1 matériau retouché** (M4, RG-12). Par voiture (pièces / zones) : a45 12 / 0 · abarth 4 / 18 · compass 53 / 0 · corsa 9 / 0 · elantra 8 / 26 · gallardo 7 / 11 · giulia 7 / 32 · golf 6 / 27 · gt86 3 / 0 · m4 23 / 2 · model3 5 / 0 · mustang 10 / 6 · p208 19 / 0 · p911 1 / 13 · rrsport 7 / 0 · s3 12 / 8 · sf90 5 / 19 · tcross 2 / 2 · v60 3 / 3 · x5 7 / 14. Traités : calandres, coffres et hayons (marques, noms de modèle, monogrammes), ailes et portes, caches de roue, étriers, volants, flancs de pneus (BFGoodrich, Michelin, Bridgestone…), écrans et seuils de porte.
+- **RG-09** : source ↔ `.wfm` identique (nombre de matériaux, triangles par matériau) pour les 19 voitures qui ont une source ; matériaux ajoutés par WFS-158 (plaques) seulement ; Model 3 repérée par la position des pièces (boîtes dans `logos.json`).
+- **RG-10 (pas de trou)** : une pièce posée sur une ouverture est **gardée** et sa texture effacée en uni (bouclier de la Gallardo, écussons de la Giulia, rondelles de la X5, écussons de la SF90, cerclage du capot de la M4, grille du capot de la Mustang). Les pièces retirées sont contrôlées par tir de rayons et, pour les lettres en relief (rayons inclinés qui frôlent la caisse), par une sonde de face : carrosserie 1 à 4 mm derrière ; badges de grille ou d'ouïe : la grille ou l'ouïe du modèle continue derrière.
+- **ΔE2000** (albédo) : ≤ 2 pour toutes les zones jugées (couleur « auto » ou mesurée sur une surface de référence ; caches M4 ↔ jante 0,00 ; centre du volant M4 ↔ volant 0,00 après RG-12) ; hors zones (pertes JPEG q88) : moyenne ≤ 0,36, 99e centile ≤ 2,96. **Grain (RG-13)** : 16 zones unies sur une surface grainée (σ de L* 1,8 à 12) : abarth textures 2, 3, 4 (scorpion des jantes), 5 (zones non affichées), 11 (écusson gardé, 3 zones) ; elantra 14 (BOSE, petit N) ; gallardo 7 (tableau de bord) ; golf 2 (caches), 10 (2 zones), 11 (copie non affichée) ; mustang 23 (cobra des dossiers).
+- **RG-07 / RG-08** : textures non listées identiques octet pour octet ; 2e passage « rien à faire » pour les 20 voitures, SHA-256 des 40 `.wfm` / `.lod` identiques après une passe de plus. Laissé tel quel : étiquettes du moteur invisibles capot fermé (Elantra, Mustang).
+- **Budget du téléphone (RG-03)** : 582 → 559 maillages (−23 appels de dessin), 2 367 870 → 2 324 872 triangles, 2 338 810 → 2 323 941 sommets, 122,1 → 119,8 Mo de `.wfm`. **Tests** : 69 tests CPU verts, dont `test_fidelite_voitures` (±1 %), `test_vehicule_lod`, `test_tangentes`. **Licences** (RG-05) : phrase « Modèle modifié pour WaForSpeed (WFS-192) » ajoutée à la ligne « Modifications » des 20 fichiers.
+- Suite : captures `captures_pr.sh` (vitrines-feux des 20 voitures, garage, parcours) en cours, puis PR et lead dev.
+
+### 2026-11-08 12:48:38 — WFS-315 : PR #262 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Captures 2340 × 1080 Golf / X5 / 500 Abarth avant / après (`qa/pr/WFS-315/`) ; regard Normal : fenêtre de la rue 0 % partout, intérieur 34,2-38,2 % (≤ 42 %), bande ≤ 11,9 %, horizon 46,4-46,6 % ; 69 tests verts. Limites écrites dans la PR : place passager sous les boutons du HUD, changement faible sur la Golf (cotes proches des anciennes).
+
+### 2026-11-08 12:52:33 — WFS-315 refusé par le lead dev, PR #262 (lead-dev)
+- 24 paires ouvertes (Golf, X5, 500 Abarth ; jour, nuit, pluie, virage, braquage, carte, Plage de nuit) et tout le diff lu (commit af6cc82).
+- Bloquant : une plaque sombre (couvercle du sac gonflable passager, posé à Y + 0,008 au-dessus du profil de la planche) flotte au-dessus de la ligne de planche côté passager, devant la rue, sur les 24 captures « après » ; elle brille la nuit à la Plage.
+- À revoir en même temps : bord gauche de la boîte à gants qui fait un trait vertical isolé la nuit.
+- Bien : table des largeurs par modèle, œil et repère cohérents, montant droit à sa place, différence X5 / 500 visible, mesures WFS-282 tenues.
+- Remarque au PO : sur la Golf, l'effet « 2 places » reste faible (cotes réelles proches des anciennes) ; l'utilisateur jugera en 🟡.
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/262#pullrequestreview-5817956477
+
+### 2026-11-08 13:01:46 — WFS-258 : PR #263 (point 1 : l'aide activée passe les virages), lead dev appelé (Claude, agent dev conduite)
+- Aide activée : ralentit à temps (adhérence et freinage de la conduite du jeu, ≤ 90 % de la table des ordinateurs de la Course à 5) et tient la file ; aide désactivée inchangée. 1er virage du GP lancé à 228 km/h : 0 image hors route (main : 945) ; tours des 4 cartes : 0 sortie, 123–153 s (main en Glisser : 95–133 s avec 5–12 s hors route).
+- Course à 5 avec l'aide : Ville 5/5, Campagne 2/5, Corniche 5/5, Grand Prix 5/5 (main : 5, 2, 2, 2 avec sorties). Détail dans le Suivi de `regles-de-gestion/WFS-258.md`. 70 tests CPU OK. Accroche d'une ligne dans `course5.cpp` (g_vitesseVirageCourse5).
+
+### 2026-11-08 13:03:29 — WFS-317 : I9 ajouté à RG-01 (po-scrum-master)
+- Ordre de l'utilisateur (« dis au PO de mettre I9 »), transmis par smart-brainstorming : budget par image visible sur le téléphone. Ligne « Rendu » des Réglages (WFS-246 RG-06) et fichier de mesure : appels de dessin par image (`r.appelsDessin()` réutilisé), triangles par image, ventilés si possible par famille (décor, voitures, piétons).
+- Petit ajout à RG-01 de `regles-de-gestion/WFS-317.md`, pas de nouveau ticket ; WFS-317 reste ⏳ Prêt (P1), même zone. Suites possibles (chargement par zones, objets cachés, données compressées) non cadrées, en attente des chiffres.
+
+### 2026-11-08 13:05:27 — WFS-258 : PR #263 refusée par le lead dev (lead-dev)
+- Revue du commit 9833d7d (point 1 de RG-00b). Les 8 paires de captures du 1er virage du Grand Prix sont bonnes : l'aide freine de 236 à 97 km/h et la voiture passe dans sa file (sur `main` : en travers, « ACCIDENT ! »).
+- Refus 1 (bloquant) : la file du maintien de voie (`fileAide_`) n'est remise à zéro ni par `reset()` ni par `placerSurGrille`. Essai du lead dev, voiture posée à x = 0,5, aide activée, volant lâché : sur la branche, à l'arrêt, elle tourne de 0,30 rad (17°), puis au départ x passe de 0,50 à 0,05 (−0,33 après une course finie à gauche) ; sur `main`, rien ne bouge. Risque d'accrochage sur la grille de la Course à 5 et du Duel.
+- Refus 2 : la description dit « un joueur qui freine et braque peut aller plus vite que l'aide » : c'est faux, la limite s'applique toujours. Le joueur avec l'aide est dernier sur 3 cartes sur 4 : condition du PO à faire trancher, ou limite qui cède au joueur.
+- Revue postée dans la PR (en commentaire, car GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #263). PO prévenu pour le point 2.
+
+### 2026-11-08 13:06:32 — WFS-258 : option A (l'aide cède quand le joueur conduit) (po-scrum-master)
+
+### 2026-11-08 13:13:07 — WFS-316 attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de Claude, agent 4 : l'utilisateur lui a écrit le 2026-11-08 « Prend un seule ticket et ensuite stop » ; il reprend pour **un seul ticket**, puis s'arrête (pas de ticket suivant). WFS-224 exclu (agent arwa).
+- **Choix** : P1 prêts : WFS-316 (E3) et WFS-317 (E4) ; WFS-316, plus petit numéro, réservé au « premier autre développeur qui demande » (décision de l'utilisateur 12:01, agent 4 n'est pas l'exclu). WFS-265 attend WFS-264.
+- Zone : E3 `src/game/player.cpp`, `direction.*`, `virages_banc.h`, `tests/**` ; **pas** les fichiers de WFS-283, WFS-281, WFS-315. Coordination avec WFS-258 (agent dev conduite, PR #263, même `player.cpp`, dernier envoi 13:11:56 UTC) : se synchroniser avec `main` souvent, conflits résolus en gardant les deux.
+- Règles : `regles-de-gestion/WFS-316.md` ; skills `agent-developer`, `waforspeed-natif`, `expert-conduite`. Branche `feature/waforspeed-316`, premier commit poussé tout de suite. Ticket de conduite né d'un essai : 🟡 après la fusion, jamais ✅ sur la CI.
