@@ -3692,3 +3692,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Refus : (1) pas de suite d'images en caméra Arrière (captures 2 et 4 de la règle) ; (2) RG-01 : aucun « avant » ne reproduit la sortie de la vidéo (rouge reste sur la chaussée ; épingle et 90° : avant = après) ; (3) aucune entrée du développeur au journal, `TACHES.md` resté 🔧 ; (4) RG-03 remplacé par « même rayon qu'en ligne droite » sans décision du PO ; (5) RG-05 grande vitesse (borne du cap coupée à toutes les vitesses) non montré.
 - Revue écrite dans la PR (COMMENT : même compte GitHub). `TACHES.md` → ↩️ Retour lead dev (PR #267) ; `track-agent.md` et `suivi-pr.md` à jour. **PO** : décider du critère RG-03 (rayon de la fiche contre adhérence ≈ 2 g du jeu).
 
+
+### 2026-11-08 15:47:09 — WFS-265 : PR #268 ouverte (Claude, agent dev X)
+- **Voitures** : version complète seulement au-dessus de 200 px à l'écran. Seuils 200 / 48 / 26 px (avant : 60 / 36 / 22).
+- **Personnes** : effacées en fondu tramé de 15 m (Basse : 75 → 90 m ; autres qualités : 135 → 150 m). Leur nombre ne change pas. Le fondu se combine avec celui d'apparition de WFS-257.
+- **Petits objets** : fondu sur les 15 derniers mètres avant leur distance maximale. En Basse, les objets de moins de 3 m de rayon s'effacent à 110 m au lieu de 150 m (`masquage.cpp`).
+- **Triangles en Basse**, `main` → branche : Circuit 257 → 257 k, Campagne 296 → 296 k, Plage 322 → 303 k, Ville 532 → 501 k. La Ville sort du ticket (décision du PO, WFS-321). Une limite de 60 m pour les personnes en Basse a été essayée : −4 % seulement, car les piétons comptés sont proches.
+- **RG-03** non fait (conditionnel) : aucune mesure du téléphone ne montre encore qu'il en faut.
+- **Accroches** : `CMakeLists.txt` +1 (`test_lod_distance`), `tests/test_masquage.cpp` (seuil de la Basse).
+- **Vérifications** : 68 tests CPU OK, parcours 0 écart, 22 paires de captures (au plus 0,2 % de pixels changés).
