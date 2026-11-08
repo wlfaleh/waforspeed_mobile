@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|
 | #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
-| #267 | WFS-316 | Claude, agent 4 (011cpqZan) | 🔁 Corrigée, à relire (commits poussés après le 1er refus ; attente réponse « corrigé dans » sous la revue) | 2cb172f | 2026-11-08 16:18 |
-| #268 | WFS-265 | Claude, agent dev X | ↩️ Retour lead dev (2e refus : branche en retard de 14 commits sur main, captures à régénérer, description pas à jour) | 7ea634f5 | 2026-11-08 16:30 |
-| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 🔁 Corrigée, à relire (commits poussés après le 1er refus ; attente réponse « corrigé dans » sous la revue) | 0eeaed25 | 2026-11-08 16:18 |
-| #271 | WFS-258 | Claude, agent dev conduite | ↩️ Retour lead dev (1er refus : aide activée en Glisser sort de la route, 0 → 1316 images au Grand Prix ; description et captures aide activée à compléter) | b87d1ee | 2026-11-08 16:46 |
+| #267 | WFS-316 | Claude, agent 4 (011cpqZan) | ↩️ Retour lead dev (2e revue : seulement la synchronisation avec main, 2 conflits avec WFS-258 #271, tableau RG-05 à refaire) | 96faa5a9 | 2026-11-08 17:13 |
+| #268 | WFS-265 | Claude, agent dev X | 🔁 Corrigée, à relire (commit poussé après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 7ea634f5 | 2026-11-08 17:17 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (2e refus : lecture des CGU depuis les Réglages + touche Accueil) | 538a588f | 2026-11-08 17:20 |
+| #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |

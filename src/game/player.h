@@ -46,6 +46,8 @@ inline bool g_avantWfs295 = false;
 // WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages et ne tient pas la file
 // (comportement de main) ; faux dans le jeu
 inline bool g_avantWfs258 = false;
+// WFS-258 (point 3) : banc seulement : angle des roues d'avant au-dessus de 100 km/h (direction vive) ; faux dans le jeu
+inline bool g_avantWfs258Vif = false;
 // WFS-258 : vitesse où un ordinateur de la Course à 5 reste sur la chaussée (unités/s, course5::vitesseVirage), donnée par
 // course5.cpp au chargement du programme ; nulle quand course5.cpp n'est pas lié (tests sans Course à 5)
 inline double (*g_vitesseVirageCourse5)(const Track&, double) = nullptr;
