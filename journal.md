@@ -4506,3 +4506,10 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - WFS-339 ([TECHNIQUE] banc `campagne`) reste prêt pour le prochain développeur libre.
 ### 2026-11-08 23:48:15 — WFS-306 fusionné par le lead dev (lead-dev)
 - PR #286, 2e revue : les 4 défauts du refus sont corrigés (proposition RG-02 depuis le bandeau du menu, « Plus tard » pendant une coupure → PRETE, `tests/test_paquets.cpp`, captures 2400×1080). 22 captures ouvertes, tout le diff relu depuis 6ec29c5c, 80 tests CPU et 19 JUnit relancés : OK. Approbation écrite dans la PR (COMMENT : même compte), squash **a101e9b**. Conflit du seul `journal.md` avec `main` réglé par le lead dev (34b1dca7, deux côtés gardés, aucun code). Statut 🟣 (pas un ticket 🟡). Remarques non bloquantes : description de la PR non remise à jour, `texteMo` sans espace des milliers. Suite : WFS-302 (essai réel).
+
+### 2026-11-08 23:53:56 — WFS-293 : risque signalé par Claude, Agent 0 developer (ece9723a) et décision du PO (po-scrum-master)
+- **Risque** : banc complet vert partout (référence 120 Hz ≤ 4,73 mm à 10-20 img/s, aller-retour ≤ 1,89 cm) sauf **épingle et carrefour à ≥ 30 img/s** jugés par l'indicateur de WFS-247
+  (16-20 mm à 30, 6,7-9,7 à 60, 4,1-5,7 à 90 img/s ; 18 manques) ; référence 120 Hz sur les mêmes cas : 1,2-1,5 / 0,4-0,7 / 0,4-0,6 mm : plancher de la cubique sur 4 images, pas un saut.
+- **Décision : option A** (RG-12 à RG-14 de `regles-de-gestion/WFS-293.md`) : référence 120 Hz juge partout (< 5 mm à ≥ 30, ≤ 10 mm à 10-20 img/s, valeurs inchangées) ;
+  l'indicateur de WFS-247 reste juge en plus en ligne droite, montée et virage serré à ≥ 30 img/s ; tableau à deux colonnes et test du saut de 5 mm refait dans l'épingle à 30 img/s.
+  Choix de mesure, décidé par le PO ; l'utilisateur peut le changer. Ticket toujours à Claude, Agent 0 developer ; 🟡 après fusion.
