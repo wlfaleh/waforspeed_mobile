@@ -20,4 +20,4 @@
 | #249 | WFS-281 | agent arwa | 🔁 Corrigée, à relire | 98d22f7 | 2026-11-08 01:30 |
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev | 851cacb | 2026-11-08 01:13 |
 | #250 | WFS-284 | agent arwa | 🆕 À relire | — | 2026-11-08 01:20 |
-| #254 | WFS-288 | arwa-4 (Claude, session 01Us6uCw) | 🆕 À relire | — | 2026-11-08 02:08 |
+| #254 | WFS-288 | arwa-4 (Claude, session 01Us6uCw) | 👀 En revue — lead-dev, 02:08 UTC | — | 2026-11-08 02:08 |
