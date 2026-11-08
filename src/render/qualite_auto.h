@@ -4,6 +4,7 @@
 // inférieur une seule fois (« Graphismes rapides pour plus de fluidité »), sauf si le joueur a choisi lui-même.
 // Calcul seul (aucun appel Vulkan) : testé par tests/test_qualite.cpp.
 #pragma once
+#include <cstdint>
 #include <string>
 #include "../core/configgame.h"   // WFS-128
 
@@ -103,6 +104,10 @@ std::string ligneRendu();
 // WFS-317 (I9) : budget de dessin de la dernière image (toutes passes) : « 420 appels · 744 k triangles (décor 63 %, voitures 13 %,
 // personnes 24 %) » ; detail : appels et triangles de chaque famille (fichier de mesure)
 std::string texteDessin(bool detail);
+// mise en forme seule (testée par tests/test_qualite.cpp) : appels et triangles des 3 familles (décor, voitures, personnes) ;
+// "" si aucun appel ; parts arrondies au pour cent ; familles approchées : conducteurs et pilotes comptés en personnes,
+// poussettes et objets non animés en décor
+std::string texteComptes(const uint32_t appels[3], const uint32_t triangles[3], bool detail);
 
 // WFS-246 (RG-06) : mesure sur le téléphone : durées des images sur une fenêtre glissante de 20 s de course (médiane, 95 %,
 // 99 %, images > 33 ms et > 50 ms). Calcul seul (testé par tests/test_qualite.cpp) ; le système de qualité l'alimente.

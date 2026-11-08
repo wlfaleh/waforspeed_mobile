@@ -44,8 +44,8 @@ struct Modele {
     float stature = 1.75f;       // sommet du corps en pose de repos (sommets « corps », hors cheveux), unités du personnage
     vec3 oeil{};                 // œil dans la pose assise (repère du personnage, m)
     float oeilRel = 0.75f, crane = 0.1f;   // œil − contact du siège ; crâne − œil (pose assise)
-    const Plage* corps[3] = {nullptr, nullptr, nullptr};
-    const Plage* coiffure[3][3] = {};
+    const Plage* corps[4] = {nullptr, nullptr, nullptr, nullptr};   // WFS-317 : corps-3 (Basse, au-delà de 30 m)
+    const Plage* coiffure[3][4] = {};
 };
 Modele g_m[2];   // 0 homme, 1 femme (repli)
 Modele g_h[NB_HUMAINS];   // WFS-211 : humains réalistes
@@ -104,10 +104,12 @@ bool chargerModele(Renderer& r, const char* chemin, Modele& M, int sexe) {
     M.oeil = {t.x, t.y + oeilSurTete, t.z + h * OEIL_AVANT};
     M.oeilRel = M.oeil.y - (c.y - h * CUISSE_SIEGE);
     M.crane = h * CRANE_SUR_OEIL;
-    for (int lod = 0; lod < 3; lod++) {
+    for (int lod = 0; lod < 4; lod++) {
         M.corps[lod] = plageParNom(M.p, "corps-" + std::to_string(lod));
         for (int k = 0; k < 3 && sexe >= 0; k++) M.coiffure[k][lod] = plageParNom(M.p, std::string(COIFFURES[sexe][k]) + "-" + std::to_string(lod));
     }
+    // WFS-317 : niveau 3 absent (modèle sans niveau 2) : niveau 2 (même repli que les piétons, pietons.cpp)
+    if (!M.corps[3]) { M.corps[3] = M.corps[2]; for (int k = 0; k < 3; k++) M.coiffure[k][3] = M.coiffure[k][2]; }
     if (sexe < 0) return M.corps[0] && M.corps[1] && M.corps[2] && M.oeilRel > 0.3f;   // WFS-211 : humain réaliste (pas de journal par modèle)
     WFS_LOG("conducteurs : %s : corps de %.3f m, œil assis %.3f m au-dessus du siège, crâne %.3f m au-dessus de l'œil (pose Sitting_Idle_Loop) (WFS-73)",
             chemin, M.stature, M.oeilRel, M.crane);
@@ -190,8 +192,8 @@ void dessinerFile(Renderer& r, const vec3& cam) {
         const Placement P = placer(assise, cible, M.oeilRel, M.crane, mo.siege.x, mo.siege.w > 0.5f);
         const mat4 monde = e.monde * translate({mo.siege.y, P.oeilY, mo.siege.z}) * rotateY(lacet) * scale({P.echelle, P.echelle, P.echelle})
                            * translate({-M.oeil.x, -M.oeil.y, -M.oeil.z});
-        const int lod = g_humains ? g_attr.niveau(e.graine, e.d2) : (e.d2 < 15.f * 15.f ? 0 : 1);
-        const Plage* c = M.corps[lod];
+        const int lod = g_humains ? g_attr.niveau(e.graine, e.d2, r.qualiteBasse) : (e.d2 < 15.f * 15.f ? 0 : 1);   // WFS-317 : 3e seuil en Basse
+        const Plage* c = M.corps[lod] ? M.corps[lod] : M.corps[2];
         r.drawSkinned(M.p.maillage, M.p.materiau, monde, M.pose.palette.data(), (int)M.pose.palette.size(), c->premier, c->nombre, &app);
         if (const Plage* h = M.coiffure[coiffure][lod])
             r.drawSkinned(M.p.maillage, M.p.materiau, monde, M.pose.palette.data(), (int)M.pose.palette.size(), h->premier, h->nombre, &app);
