@@ -15,3 +15,7 @@ Ticket : dernière version de `main` cassée sur le téléphone. Bissection au b
 - Relecture des 5 fusions : aucun pointeur pendant ni double libération trouvés (WFS-343 : registre en `deque`,
   `Game::demandes().carte` est une `std::string` ; WFS-338 : maillages et textures remis à zéro après destruction).
 - **Le défaut ne se reproduit pas au banc PC** : il faut le symptôme de l'utilisateur (RG-01).
+
+## 2026-11-09 23:40 UTC — symptôme reçu et correctif
+- PO (21:32 puis 21:35) : Campagne « bloquée » non confirmée (aucun doigt sur GAZ après le GO dans les vidéos) ; reste ANO-233 et le banc de départ.
+- ANO-233 corrigée (`commandeSous`) ; banc `depart-campagne` : main 6 écarts (nitro sur SCORE), branche 0 écart ; 94 tests CPU verts.
