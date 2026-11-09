@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #297 | WFS-338 | agent arwa (Claude, session trafic) | 🔁 Corrigée, à relire (main fusionnée dans dfa173bd par lead-dev session 01UY1Vv1 : conflit journal.md seulement, 90 tests CPU OK) | 8ccf8937 | 2026-11-09 19:08 |
+| #297 | WFS-338 | agent arwa (Claude, session trafic) | 👀 En revue — lead-dev (instance 2), 19:09 UTC | dfa173bd | 2026-11-09 19:09 |
