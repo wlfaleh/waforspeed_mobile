@@ -192,8 +192,11 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         g_l.albedos.push_back({(float)v->a[0].n, (float)v->a[1].n, (float)v->a[2].n});
     }
     const reel::Json* jSoleil = R.mesure("lum.soleil_midi.intensite"); const reel::Json* jCiel = R.mesure("lum.ciel_clair.intensite");
-    const double eMidi = jSoleil ? jSoleil->nombre("typique", 100000) : 100000, eOmbre = jCiel ? jCiel->nombre("valeur", 6000) : 6000;
+    const double eMidi = jSoleil ? jSoleil->nombre("typique", 100000) : 100000, eOmbreMesure = jCiel ? jCiel->nombre("valeur", 6000) : 6000;
     const double hMidi = hauteurMidi(eMidi);
+    // WFS-214 (RG-02, option A) : la charte à l'ombre reçoit le ciel ENTIER (Krochmann, lum.ciel_clair.plein_ciel) : le moteur n'occulte pas
+    // la lumière du ciel par la plaque (pas d'occlusion du ciel sur les objets mobiles) ; les 6 000 lx « à l'ombre » sont notés pour mémoire
+    const double eOmbre = eclairementCielDiffus(hMidi);
     if (g_l.albedos.size() == 25) {
         preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
         g_l.mode = ETALON; g_l.monde = false; g_l.oeilR = {CHARTE_A + 0.35f, 0, 3.2f}; g_l.cibleR = {CHARTE_A + 0.35f, 0, 0}; g_l.fov = 50;
@@ -275,8 +278,8 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                 if (okO && Y(Do) > 0) {
                     const double rapport = Y(D[24].data()) / Y(Do), attendu = (eMidi + eOmbre) / eOmbre, e3 = rapport / attendu - 1;
                     rap.ajouter(ligne("lum.m03.soleil_ombre", "M-03 : rapport soleil / ombre de la charte grise (part diffuse, HDR)", fmt(rapport, 3),
-                                      fmt(attendu, 3) + " ((" + fmt(eMidi, 0) + " + " + fmt(eOmbre, 0) + ") / " + fmt(eOmbre, 0) + " lx, photometrie.json)", "± 5 %", std::fabs(e3) <= 0.05, "derive",
-                                      "écart " + fmt(e3 * 100, 2) + " % ; à l'ombre : " + fmt(Y(Do) * PI_L / 0.18, 0) + " lx équivalents"));
+                                      fmt(attendu, 3) + " ((" + fmt(eMidi, 0) + " + " + fmt(eOmbre, 0) + ") / " + fmt(eOmbre, 0) + " lx : soleil de photometrie.json, ciel entier de Krochmann ; " + fmt(std::log2(attendu), 2) + " IL)", "± 5 %", std::fabs(e3) <= 0.05, "derive",
+                                      "écart " + fmt(e3 * 100, 2) + " % ; à l'ombre : " + fmt(Y(Do) * PI_L / 0.18, 0) + " lx équivalents (mesure réelle à l'ombre d'un obstacle : " + fmt(eOmbreMesure, 0) + " lx, sans occlusion du ciel dans le moteur)"));
                 } else rap.nonMesurable("lumiere", "lum.m03.soleil_ombre", "rapport soleil / ombre", "charte à l'ombre hors de l'image");
                 // photométrie de l'étalon (informations et mesures)
                 rap.ajouter(ligne("lum.soleil_midi.intensite", "éclairement du soleil seul au sol horizontal, étalon (modèle : masse d'air de Kasten et Young, trouble 2)",

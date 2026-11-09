@@ -539,7 +539,9 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // fondu entre le ciel du jour (CIE) et le ciel uniforme du crépuscule de −1° à +2° : aucune bascule au coucher (RG-02)
     const double hj = std::max(h, 0.05), u = std::clamp((h + 1.0) / 3.0, 0.0, 1.0), w0 = u * u * (3 - 2 * u);
     const double wj = lune ? 0.0 : w0 > 0.999 ? 1.0 : w0 < 0.001 ? 0.0 : w0;   // poids du ciel du jour (bords francs : pas de reste numérique)
-    const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) / 750.0;
+    // WFS-214 (RG-02, condition 3 du PO) : soleil sous l'horizon : crépuscule et nuit inchangés ; le ciel entier de Krochmann ne s'applique
+    // qu'au jour : raccord au niveau d'avant (× 6 000 / 15 825), le fondu de −1° à +2° reste continu
+    const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) * (E_CIEL_CLAIR_MIDI / E_CIEL_PLEIN_MIDI) / 750.0;
     const double Ed = lune ? E_NUIT_SANS_LUNE : wj * eclairementCielDiffus(hj) + (1 - wj) * Ecrep;
     if (std::fabs(hj - g.hCache) > 1e-4) { g.hCache = hj; g.kCache = cieFacteur(hj); }
     const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
