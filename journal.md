@@ -3080,3 +3080,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **WFS-369 à 373 rattachés à E15**, passés P1, chaîne entre cartes coupée : **prêts maintenant WFS-369 (Ville), WFS-372 (Campagne), WFS-373 (Grand Prix)** ; WFS-371 attend WFS-379 et 376 (`plage.cpp`).
 - Règle de validation ajoutée (ordre de l'utilisateur) dans `CLAUDE.md`, le skill `lead-dev` et l'agent `expert-realisme-3d`. Agent des tickets : `dev-artiste-3d` (+ skill `expert-cartes`), nouvelles sessions.
 
+### 2026-11-09 20:12:30 — E15 : conflits enlevés, anomalies de décor abandonnées (po-scrum-master)
+- Ordre de l'utilisateur : « voir tous les sujets pour ne pas créer de conflits ; les anomalies des décors, il faut les abandonner ».
+- Revue de tous les tickets non terminés, des PR ouvertes (#314, 315, 316 : aucune sur le décor) et des 143 anomalies ouvertes.
+- **17 anomalies de décor 🚫 abandonnées** : ANO-65, 82, 83, 121, 137, 171, 175, 206, 214 à 220, 223, 224 (gardées comme liste de contrôle des US E15).
+- **Repris par E15** : WFS-231, 162, 163 (↪). **Rattachés à E15, file Corniche** : WFS-380, 383 (379 / 376 → 380 → 383 → 371 → 386). **WFS-378** limité au hors décor.
+- Gardés : WFS-379 et 376 en cours (règle des 10 h), lumière / brume / phares / lampadaires (WFS-337, 381, 382), perf WFS-321 / 331 (pas en même temps qu'un E15 de la même carte).
+

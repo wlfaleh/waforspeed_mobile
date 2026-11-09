@@ -28,3 +28,10 @@ Créée par le PO le 2026-11-09 (demande de l'utilisateur, `@po`) : « créer un
 | Neige scandinave (Noël) | (WFS-344 contenu, E14) → **WFS-389** décor complet |
 
 Zone de code de l'épic : celle de E12 et la partie décor de E2 / E14 (voir RG-E15-08).
+
+## Nettoyage des conflits (2026-11-09 20:12:30 UTC, ordre de l'utilisateur : « voir tous les sujets pour ne pas créer de conflits ; les anomalies des décors, il faut les abandonner »)
+- **Anomalies de décor abandonnées** (🚫 dans `anno.md`) : ANO-65, 82, 83, 121, 137, 171, 175, 206, 214, 215, 216, 217, 218, 219, 220, 223, 224. Leur contenu sert de **liste de contrôle** aux US de E15 (l'agent 3D vérifie qu'aucun de ces défauts ne reste sur les captures).
+- **Tickets repris par E15** (↪, non commencés) : WFS-231 (portes, fenêtres, vitrines, enseigne à l'envers), WFS-162 (signalisation), WFS-163 (végétation par espèce, terrain) → leur contenu entre dans WFS-369, 370 et 385 à 388.
+- **Tickets rattachés à E15** : WFS-380 (mer) et WFS-383 (sols, pins) dans la file Corniche : WFS-379 et 376 (en cours, hors E15, gardés par leurs développeurs) → 380 → 383 → 371 → 386.
+- **WFS-378** (formes interdites) : limité au **hors décor** (garage, habitacle, véhicules, effets, portiques des checkpoints, menus 3D).
+- **Restent hors E15** (pas du décor) : lumière, brume, phares, halo des lampadaires (WFS-337, 381, 382, ANO-174, 189, 221, 222), routes (E9), voitures (E10), personnes (E11), performance (WFS-321, 331 : jamais en même temps qu'un ticket E15 de la même carte ; ils reprennent les modèles de E15).
