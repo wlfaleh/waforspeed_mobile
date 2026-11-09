@@ -4968,6 +4968,11 @@ PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôm
 - À montrer : agrandissement des montants droit et gauche (Golf et un 2e intérieur), test sur la silhouette vue de l'œil, vue Arrière à la bouche du tunnel, branche synchronisée (WFS-318 fusionné entre-temps).
 - Signalé au PO (hors ticket) : les gouttes de vitre sont aussi dessinées par-dessus le rétroviseur intérieur (déjà sur main).
 - Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/305
+
+### 2026-11-09 10:54:13 — WFS-338 : PR #297 corrigée, à relire (agent arwa (Claude, session trafic))
+- Retour du lead dev traité point par point (réponse sous la revue) : PR sans conflit (16929dde) ; suite « police qui arrive de loin » (220 → 6 m, aucune police à moins de 160 m au départ, vue Arrière et vue arrière du banc) ; chantier visible avec son bandeau de jour et de nuit (bandeau à 80 m, tenu jusqu’au biseau) ; policier visible de jour (gros plan).
+- **Appels de dessin (décision PO 0161316e)**, même banc et mêmes endroits, qualité Basse : branche − main = 0 / −4 / +7 / −19 / −43 (contact, embouteillage, HUD, ralentisseur, camion) ; même image avec / sans WFS-338 : +9 au plus ; écart maximal avec le Checkpoint : +39 sur la branche, +46 sur main (cible ≤ 60 : OK). Tableau complet dans le journal de la branche et dans la PR. Cas a du PO : rien à ramener.
+- Tests CPU 85 OK ; banc course5 : parcours complet 0 écart. `suivi-pr.md` : 🔁 ; `TACHES.md` : 🔀 En PR.
 ### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
 - Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
 
