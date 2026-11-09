@@ -3234,3 +3234,6 @@ L'utilisateur signale mon erreur : j'avais décrit des courses « de nuit » alo
 ### 2026-11-09 21:35:13 — Correction : Campagne non bloquée (recette QA), vrai défaut = lumière JOUR (ANO-232 → WFS-375) (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
 Le QA (commit 586736d5) n'a pas confirmé mon constat « Campagne bloquée ». Je l'ai revérifié à 4 img/s : aucun doigt sur GAZ après le GO. Mon erreur est corrigée auprès de l'utilisateur et de l'agent dev Z (WFS-374). Il ne reste qu'ANO-232 (JOUR → image de nuit) → WFS-375, et ANO-233 (mineure) → WFS-374.
 
+### 2026-11-09 21:37:08 — WFS-375 urgent : session de développeur ouverte sur ordre de l'utilisateur (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ». Le PO ouvre une session `@dev` (« Agent dev WFS-375 ») et lui donne WFS-375 (ordre explicite de l'utilisateur, exception à « attribuer seulement à la demande »). Le développeur écrit lui-même son attribution (🔧) dans `TACHES.md` et `track-agent.md`.
+
