@@ -1041,12 +1041,12 @@ public:
 
     // ---------------------------------------------------------------- WFS-376 : vraie marina (RG-01 à RG-07, décision du PO)
     // Rangée 1 : bateaux amarrés cul au quai (poupe à 1-2 m), perpendiculaires au quai à ±2,3°, proue vers le large, places de
-    // bau + 0,6 à 1,0 m (PIANC), sauf à la racine des pontons ; pontons flottants perpendiculaires au quai tous les 33 à 35 m, de
-    // 42 m, bateaux cul au ponton des deux côtés au-delà d'un chenal de 1,5 × L après la rangée 1 (29 m du quai) ; yachts de 18 m
+    // bau + 0,6 à 1,0 m (PIANC), sauf à la racine des pontons ; pontons flottants perpendiculaires au quai tous les 34 à 36 m, de
+    // 38 m, bateaux cul au ponton des deux côtés au-delà d'un chenal de 1,5 × L après la rangée 1 (29 m du quai) ; yachts de 18 m
     // et grands voiliers en bout de quai (26 premiers et derniers mètres). Les anciens bateaux de la marina (boîte + triangle de
     // voile, WFS-94 / 139) sont retirés ; ceux qui avaient été mis au mouillage au pied de la falaise deviennent de vrais bateaux
     // au mouillage, voiles rangées. Tirage à part (graine · 31 + 376) : le reste du décor ne bouge pas.
-    static constexpr float PONTON_L = 42.f, PONTON_PAS = 33.f, RANG1_MAX = 11.2f, CHENAL_DEBUT = 29.f, BOUT_QUAI = 26.f;
+    static constexpr float PONTON_L = 38.f, PONTON_PAS = 34.f, RANG1_MAX = 11.2f, CHENAL_DEBUT = 29.f, BOUT_QUAI = 26.f;
     void construireModelesMarina() {
         const marina::Couleurs c = couleursMarina();
         for (int m = 0; m < marina::NB_MODELES; m++) modeles_[m] = marina::construire((marina::Modele)m, c);
@@ -1073,7 +1073,12 @@ public:
         std::erase_if(objets_, [&](const Objet& o) { return o.t == O_BATEAU && !std::strcmp(zoneId(map, o.seg, len_), "marina"); });
         const size_t retires = n0 - objets_.size();
         // tronçons de quai : marina, plage (pas falaise, tunnel ni terre-plein)
-        auto quai = [&](int64_t n) { return !std::strcmp(zoneId(map, n, len_), "marina") && formeCote(n, 1) == K_PLAGE && solA(n) == S_PLAGE && !anneau(n); };
+        // tronçons de quai : marina, plage (pas falaise, tunnel ni terre-plein), et route assez basse pour que le quai d'amarrage
+        // abaissé existe (profil : quai à HAUT_QUAI au-dessus de l'eau, sous la promenade) ; ailleurs, pas de bateau à quai
+        auto quai = [&](int64_t n) {
+            return !std::strcmp(zoneId(map, n, len_), "marina") && formeCote(n, 1) == K_PLAGE && solA(n) == S_PLAGE && !anneau(n) &&
+                   OCEAN_Y + HAUT_QUAI - (float)t.pose(n).y < 0.05f;
+        };
         int nb[marina::NB_MODELES] = {}, couleurs[4] = {}, pontons = 0, videes = 0;
         float hautAvant = 0;
         auto pose = [&](float x, int64_t r0, Objet o) {   // x : mètres depuis le début du tronçon, le long de la route
@@ -1097,9 +1102,10 @@ public:
             if (!quai(r0)) { r0++; continue; }
             int64_t r1 = r0; while (r1 < len_ && quai(r1)) r1++;
             const float L = (float)(r1 - r0) * (float)SEG_M;
+            WFS_LOG("Marina (WFS-376) : tronçon de quai [%lld, %lld), %.0f m", (long long)r0, (long long)r1, L);
             hautAvant = 0.1f - (OCEAN_Y - (float)t.pose(r0).y);
             std::vector<float> pp;   // pontons
-            for (float p = 40 + 4 * d(); p < L - 40; p += PONTON_PAS + 2 * d()) {
+            for (float p = 40 + 4 * d(); p < L - 40; p += PONTON_PAS + 1 * d()) {
                 Objet o{0, O_PONTON, 1, Q0}; o.l = PONTON_L;
                 if (pose(p, r0, o)) pp.push_back(p);
             }
@@ -1179,7 +1185,7 @@ public:
                     o.roof = (int)(d() * 3); o.floors = d() < 0.4f ? 2 : 1; o.col = (int)(d() * 6); objets_.push_back(o);
                 }
             } else if (!std::strcmp(z, "marina")) {
-                for (int64_t n = z0 + 2; n < z1; n += 12) objets_.push_back({n, O_BORNE, 1, R + 6.5f});   // WFS-376 : bittes tous les 14,4 m
+                for (int64_t n = z0 + 2; n < z1; n += 24) objets_.push_back({n, O_BORNE, 1, R + 6.5f});   // WFS-376 : bittes tous les 28,8 m
                 for (int64_t n = z0 + 4; n < z1 - 6; n += 6 + (int64_t)(d() * 4)) {
                     Objet o{n, O_BATEAU, 1, R + 13 + d() * 18}; o.l = 7 + d() * 7; o.voile = d() < 0.6f; o.col = (int)(d() * 4); o.rot = (d() - 0.5f) * 0.5f;
                     objets_.push_back(o);

@@ -58,7 +58,7 @@ Maille amarrage(const Bateau& b, Modele m, float s, float ecart, float yQuai, co
 // bitte d'amarrage en fonte (Ø 0,38 m à la base, 0,48 m de haut, tête à rebord), posée sur le quai, base en (0, 0, 0)
 Maille bitte(const Couleurs& c);
 // ponton flottant de longueur l (le long de +z), 2,2 m de large, dessus à 0,5 m au-dessus de l'eau : platelage de béton à
-// bords chanfreinés, lisses de bois, flotteurs, bornes de distribution (eau, électricité) tous les 18 m, pieu de guidage au bout ; passerelle articulée depuis le quai (hautQuai : dessus du quai au-dessus de l'eau, côté z < 0)
+// bords chanfreinés, lisses de bois, flotteurs, borne de distribution (eau, électricité) au milieu, pieu de guidage au bout ; passerelle articulée depuis le quai (hautQuai : dessus du quai au-dessus de l'eau, côté z < 0)
 Maille ponton(float l, float hautQuai, const Couleurs& c, bool loin);
 constexpr float PONTON_LARGEUR = 2.2f, PONTON_HAUT = 0.5f;
 

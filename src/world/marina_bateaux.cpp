@@ -175,7 +175,7 @@ Bateau voilier(const Couleurs& c) {
     Bateau b; const Forme f{V_L, V_B, V_F, V_T, -V_L / 2, false};
     b.L = V_L; b.B = V_B; b.T = V_T; b.francPoupe = f.pontY(0, 0); b.francEtrave = f.franc(1); b.demiPoupe = f.demi(0); b.hautMat = V_HMAT;
     Maille& m = b.pres;
-    coque(m, f, c.gelcoat, 7);
+    coque(m, f, c.gelcoat, 6);
     // rouf : flancs inclinés, dessus bombé, avant qui plonge vers le pont
     const float zs[4] = {-1.5f, -0.3f, 0.9f, 2.0f}, hs[4] = {0.52f, 0.55f, 0.50f, 0.08f}, ks[4] = {1, 1, 0.95f, 0.78f};
     auto wb = [&](int i) { return std::min(1.12f, 0.70f * f.demi(f.uDe(zs[i]))) * ks[i]; };
@@ -253,7 +253,7 @@ Bateau voilier(const Couleurs& c) {
     }
     loft(m, sac, COUL_TOILE, false, vit + eh * 0.1f, bout + eh * 0.1f);
     eventail(m, sac.back(), COUL_TOILE, db);
-    // version moyenne : coque à 4 couples, rouf, mât, bôme et sac, génois enroulé, haubans directs, pataras
+    // version moyenne : coque à 4 couples, rouf, cockpit, mât, bôme et sac, génois enroulé (sans filières ni haubans : décision du PO)
     {
         Maille& mm = b.moyen;
         coque(mm, f, c.gelcoat, 4);
@@ -273,11 +273,6 @@ Bateau voilier(const Couleurs& c) {
         loft(mm, sac2, COUL_TOILE, false, vit + eh * 0.1f, bout + eh * 0.1f);
         eventail(mm, sac2.back(), COUL_TOILE, db);
         loft(mm, {ellipse(amure, e1, e2, 0.07f, 0.07f, 4), ellipse(tetiere, e1, e2, 0.025f, 0.025f, 4)}, COUL_TOILE, true, amure, tetiere);
-        for (float sd : {-1.f, 1.f}) {
-            const vec3 cadene{sd * 0.92f * f.demi(uc), f.pontY(sd * 0.92f * f.demi(uc), uc), V_ZMAT - 0.1f};
-            ligne(mm, {sd * 0.03f, V_HMAT - 0.35f, V_ZMAT}, cadene, 0.02f, c.cable);
-        }
-        ligne(mm, {0, V_HMAT - 0.05f, V_ZMAT - 0.07f}, {0, f.pontY(0, 0) + 0.05f, -V_L / 2 + 0.12f}, 0.02f, c.cable);
     }
     // version allégée : coque de 11 triangles, mât en 2 quads croisés
     coqueLoin(b.loin, f);
@@ -292,7 +287,7 @@ Bateau moteur(const Couleurs& c, bool flybridge) {
     Bateau b; const Forme f{Y_L - Y_PLAT, Y_B, Y_F, Y_T, -Y_L / 2 + Y_PLAT, true};
     b.L = Y_L; b.B = Y_B; b.T = Y_T; b.francPoupe = f.pontY(0, 0); b.francEtrave = f.franc(1); b.demiPoupe = f.demi(0); b.plateforme = Y_PLAT;
     Maille& m = b.pres;
-    coque(m, f, c.pont, 7);
+    coque(m, f, c.pont, 6);
     // plateforme de bain (dessus en teck à 0,40 m, épaisseur 0,18 m)
     const float wp = 0.92f * f.demi(0), za = -Y_L / 2, zb = f.z0 + 0.05f;
     quadPlat(m, {wp, 0.40f, za}, {-wp, 0.40f, za}, {-wp, 0.40f, zb}, {wp, 0.40f, zb}, c.pont, {0, 1, 0});
@@ -450,9 +445,9 @@ Maille ponton(float l, float hautQuai, const Couleurs& c, bool loin) {
              {{W, H - 0.05f, l}, {W - 0.05f, H, l}, {-W + 0.05f, H, l}, {-W, H - 0.05f, l}}}, c.beton, false, {0, -5, -20}, {0, -5, 20});
     if (loin) return m;
     eventail(m, {{W, 0.20f, l}, {W, H - 0.05f, l}, {W - 0.05f, H, l}, {-W + 0.05f, H, l}, {-W, H - 0.05f, l}, {-W, 0.20f, l}}, c.bois, {0, 0, 1});
-    // bornes de distribution (eau, électricité) : colonne à angles abattus, tête plus large, tous les 18 m, en quinconce
+    // borne de distribution (eau, électricité) : colonne à angles abattus, tête plus large, au milieu du ponton
     int k = 0;
-    for (float z = 9; z < l - 3; z += 18, k++) {
+    for (float z = l * 0.5f; z < l - 3; z += 18, k++) {   // une borne, au milieu du ponton
         const float x = (k & 1 ? -1.f : 1.f) * 0.72f;
         std::vector<std::vector<vec3>> an;
         const float cotes[2] = {0.11f, 0.13f}, hs[2] = {H, H + 1.0f};   // fût qui s'évase vers la tête
