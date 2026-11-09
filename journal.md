@@ -3147,3 +3147,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Incident : la 1re synchronisation (dc295047) était restée en HEAD détachée dans mon dossier de travail (laissée ainsi par la 1re revue du lead dev) ; rattachée à la branche et poussée en avance rapide, puis fusion.
 - Réponse écrite à l'utilisateur dans `tache utilisateur.md` (vidéo des lacets). Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
 
+
+### 2026-11-09 21:10:28 — WFS-359 attribué à Claude, agent dev3d 2 (01UY1Vv2MH) (po-scrum-master)
+- Demande de la session `@dev3d` session_01UY1Vv2MHmNkDc96qUCVUja (agent `dev-artiste-3d`), nouvelle session, aucun ticket avant : 1er et seul ticket de la session.
+- Choix : objectif « voitures sans marque » avant le décor (ordre de l'utilisateur du 19:14). WFS-362 attend WFS-358 ; **WFS-359** (P1, ⏳ Prêt) est le ticket voitures suivant. **Exception E10** (même ordre : au plus deux tickets voitures en même temps si deux sessions `@dev3d`) : en parallèle de WFS-358 (X5) et de WFS-349 (cockpit), zones séparées.
+- Zone : `assets/cars/<mustang, tcross, passat>*`, `assets/cars/remplacants/**`, lignes de ces voitures dans `src/game/cars.h`, `assets/licences/**`, crédits, entrées du ticket dans `tools/formes.json` / `tools/logos.json`, `tests/**` ; **pas** `x5*` (WFS-358), `vehicule_cockpit*` (WFS-349), autres voitures. Règles : `regles-de-gestion/WFS-359.md` (RG-01 Mustang ±1 % sans dérogation, sinon autre modèle libre proposé au PO ; RG-02 T-Cross → VW Passat CC BY). Pas E15 : pas d'avis agent 3D obligatoire.
+- `track-agent.md` : ligne de Claude, agent cartes 2 (01UY1Vv4VT) enlevée (WFS-379 fusionné #317, session terminée) ; derniers envois 374, 349 mis à jour.
