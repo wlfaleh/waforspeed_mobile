@@ -18,4 +18,5 @@
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
 | #305 | WFS-354 | Claude, agent dev Y | 👀 En revue — lead-dev, 12:39 UTC | 2eb8c5b3 | 2026-11-09 12:39 |
+| #309 | WFS-355 | Claude, agent 2 (01UY1Vv5) | 👀 En revue — lead-dev, 2026-11-09 12:47 | 2c7c76eb | 2026-11-09 12:47 |
 | #308 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : X5 double calandre devinée (pointe du milieu, restes sous la grille) ; grilles plates aux barres ouvertes qui dépassent de trois quarts ; 208 rectangle sur trapèze ; gros plans à ajouter ; outil rejouable validé) | 51b4d88c | 2026-11-09 12:40 |
