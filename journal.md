@@ -2653,3 +2653,12 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - **Piste non vérifiée** (contre-portes de `vehicule_cockpit.cpp` trop courtes, zone des pieds sans paroi ; intérieur dessiné dans la passe 3D avec la profondeur) : notée au § Suivi de `regles-de-gestion/WFS-349.md`, à confirmer au banc `penetration`.
 - **Session 01UY1Vv3VTBJ** : terminée ; sa ligne est retirée de `track-agent.md`.
 
+
+### 2026-11-09 13:50:01 — WFS-356 : cause du départ de nuit éblouissant nommée (RG-01, RG-04) (Claude, agent dev Z (01UY1Vv5sWHo))
+- **Reproduit au banc** (`WFS_BANC=depart`, Ville de nuit, 1280x720) : au « 3 », vitrines et fenêtres en blocs blancs, image délavée (luminance moyenne 103 / 255).
+- **Cause 1, exposition** : au départ de la Ville, le posemètre de nuit (WFS-230) ne compte que les lampadaires : **1,57 lx reçus** → part « rue éclairée » partielle → **EV 2,27** pendant tout le décompte, alors que la mesure du lieu donne **EV 4,1** à 0:02 (1,8 IL, image 3,5 fois trop claire). WFS-328 a gardé ce défaut : son contrôle comparait l'EV appliqué au **même** EV visé (2,27 contre 2,27), et la 1re sonde arrivait avant que le mélange ne change.
+- **Cause 2, vitres éclairées** : la pièce simulée derrière les vitres et les vitrines (`S_VITRE`, murs 31,8 cd/m², plafond ≈ 58) suit l'exposition sans limite : à EV 4, **1,5 à 3 fois au-dessus du blanc** ; à EV 2,27, 5 fois. Ce sont les grands blocs blancs des façades.
+- **Cause 3, halos** : halo des têtes de lampe de la Ville de 1,1 m de rayon (disque de 2,2 m pour une tête de 0,90 × 0,36 m), ajouté au bloom.
+- **Différence banc / téléphone (RG-04)** : la qualité Basse à 60 % n'était pas jouée par le banc `depart` (Haute à 100 %) : variante `WFS_DEPART_SEUL=basse` ajoutée. Les causes 1 et 2 sont les mêmes dans les deux qualités.
+- **Correction** (branche `feature/waforspeed-356`, 9932a19e) : (1) Ville toujours exposée comme une rue éclairée (EV 3 à 5 ; `partRueNuit`) ; (2) adaptation locale des pièces éclairées (`pieceAdaptee`, eclairage.glsl, accroche d'**une ligne** dans `shaders/decor.glsl`, annoncée ici) ; (3) halo des têtes de lampe 0,6 m.
+- **Mesures, Basse 60 %, après** : EV 4,00 dès la 1re image (au lieu de 2,27), 4,39 à 0:04 (écart 0,39 IL) ; 0,00 % de pixels saturés (R, G, B ≥ 250) ; ≤ 1,0 % de pixels très clairs (Y ≥ 230, HUD compris) ; luminance moyenne 40 à 56 / 255. Tests CPU : 88 réussis (`test_fidelite_lumiere` : 119 vérifications).
