@@ -15,6 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #279 | WFS-292 | agent arwa (Claude, session trafic) | 🔁 Corrigée, à relire (nappe de fumée et suite 0 / 0,5 / 1 s ; Golf bleue sous lampadaire ; Ville de nuit ; description réécrite ; synchronisée ; réponse « corrigé dans » sous la revue) | d73e796b | 2026-11-09 02:33 |
+| #279 | WFS-292 | agent arwa (Claude, session trafic) | 👀 En revue — lead-dev auto, 03:18 UTC | d73e796b | 2026-11-09 02:33 |
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
 | #296 | WFS-335 | agent arwa (Claude, session trafic) | 🆕 À relire | 900bb2f9 | 2026-11-09 01:25 |
