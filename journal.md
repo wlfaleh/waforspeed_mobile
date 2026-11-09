@@ -2847,5 +2847,38 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Captures demandées ajoutées à `regles-de-gestion/WFS-214.md` (ciel ×2, Ultra / Haute, nuit RG-05). Branche `feature/waforspeed-214` à pousser tout de suite.
 
 
+### 2026-11-09 17:00:11 — WFS-346 attribué à Claude, agent cartes (01UY1Vv2dx) (po-scrum-master)
+- Demande de la nouvelle session `@cartes` (session_01UY1Vv2dxNQxhJG6xe4ofua), 1er et seul sujet ; expert cartes.
+- Choix : WFS-343 est 🟣 fusionné (#312) : E14 libre, l'agent 3 a fini (session terminée). Ticket cartes le plus prioritaire attribuable : **WFS-346** (P2, neige lue du paquet ; suite directe de WFS-343, avant WFS-344). WFS-357 (P3, E8) reste prêt.
+- Exception du PO : E3 est tenue par WFS-338 (↩️, `poursuite*`, `hud.*`) ; WFS-346 n'y touche que `roues.*` + accroches ≤ 10 lignes `player.*` / `aide_direction.*` (μ de la neige) : fichiers séparés. Zone complète et captures demandées dans `regles-de-gestion/WFS-346.md`.
+- Skills : `expert-cartes` + `expert-conduite`. Ticket de conduite : 🟡 après la fusion. Branche `feature/waforspeed-346` à pousser tout de suite.
+- `track-agent.md` : lignes des sessions terminées enlevées (agent 3, agent 5, arwa-4, Agent 0, agent dev Z), règle « agent fini = ligne enlevée ».
+
+### 2026-11-09 17:21:04 — WFS-193 : PR #311 (X5) corrigée après la 2e revue, selon RG-05 à RG-07 du PO (Claude, agent 1)
+- Grille d'un seul tenant : cadre et barres au même galbe de 4,5 cm. Ses bords sont 1 à 2 cm derrière le bord de l'ouverture : plus de « pare-buffle ».
+- Le bas de la grille est à 0,63 m, derrière le haut du pare-chocs. L'option `galbeCadre` est retirée : l'outil est identique à `main`.
+- RG-07 essayé : retirer la lèvre du pare-chocs (33 triangles) faisait des dents aux coins de face. L'essai n'est pas gardé ; un éclat reste au coin droit au zoom ×4, noté dans les limites.
+- 90 tests CPU verts. Les captures comprennent les zooms ×4 des deux coins et de la vue basse.
+- Commit ad7aa366. J'ai répondu point par point dans la PR et rappelé le lead dev.
+
+### 2026-11-09 17:24:09 — WFS-193 : PR #311 (X5) refusée une 3e fois, garde-fou du PO appliqué (lead-dev)
+- 3e revue du commit ad7aa366 : 26 paires avant / après ouvertes (face, 3/4 droit et gauche, capot, vue basse, zooms ×4 des deux coins, du centre et de la vue basse, de jour et de nuit, vitrines). Diff relu : `tools/formes.json` (entrée x5), `x5.wfm` / `.lod`, banc `WFS_VITRINE_BAS` (h0 / d0 remis), accroche de 2 lignes `orbitHauteur` / `orbitRecul` : rien de bloquant.
+- Acquis : pare-buffle supprimé (RG-05 tenue), montant gauche net, marque méconnaissable à distance de vitrine.
+- Défauts restants à la jonction (RG-06 non tenue) : bas de la grille en dents de scie (vue basse, zooms), bord droit en peigne et coin haut droit qui passe devant la carrosserie (vue basse de nuit), éclats blancs aux deux coins bas (nouveau à gauche).
+- Garde-fou du PO (suivi du 16:56:49) : X5 sortie de WFS-193 ; WFS-193 fini avec la Compass et la 208 (#308, déjà sur `main`) ; PR #311 fermée sans fusion, branche `feature/waforspeed-193` gardée ; X5 comme sur `main`. Le PO crée une nouvelle US pour la X5 (nouvelle session ou lead dev en renfort, à voir avec WFS-194). Piste notée dans la revue : découper la grille sur le contour exact de l'ouverture.
+- Session du développeur Claude, agent 1 (01UY1Vv2) terminée (un seul ticket par session). Ligne #311 retirée de `suivi-pr.md`.
+
+
+### 2026-11-09 17:25:43 — WFS-193 passé 🟣, X5 sortie vers WFS-358 (po-scrum-master)
+- Suite du 3e refus de la PR #311 (lead dev, 17:24:09) et du garde-fou du 16:56:49.
+- **WFS-193 → 🟣 Fusionné (PR #308, `78540de6`, Compass et 208)** ; le robot des statuts le passe en ✅ avec les bancs du matin.
+- **Nouvelle US WFS-358** (P1, E10, ⏳ Prêt) : calandre de la X5, jonction grille / carrosserie propre. Défauts à faire disparaître : bas en dents de scie (vue basse), bord droit en peigne et coin haut droit devant la carrosserie sous le phare, éclats blancs aux deux coins bas. Méthode au choix : grille découpée sur le contour exact de l'ouverture, ou ouverture fermée par une pièce de carrosserie avant la grille. Acquis repris de `feature/waforspeed-193` (`ad7aa366`) : haricots retirés, pointe repliée sans pli, banc `WFS_VITRINE_BAS`. Règles : `regles-de-gestion/WFS-358.md`.
+- Pour une **nouvelle session** de développeur (ou le lead dev en renfort) ; **pas Claude, agent 1**. Lien avec WFS-194 : si l'utilisateur remplace la X5 (question ouverte dans `tache utilisateur.md`), WFS-358 est annulé. Un seul des deux à la fois en E10 (WFS-349 tient E10 par exception).
+- Claude, agent 1 (01UY1Vv2) : session close, aucun autre ticket (`track-agent.md`).
+
+### 2026-11-09 17:26:11 — WFS-193 : session terminée (Claude, agent 1)
+- WFS-193 est 🟣 avec la Compass et la 208 (#308). La X5 est sortie du ticket par le garde-fou du PO après le 3e refus de #311. La PR est fermée sans fusion et la branche `feature/waforspeed-193` est gardée.
+- J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
+- Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
 ### 2026-11-09 17:00:21 — WFS-214 : début, branche créée (Claude, agent dev W (01UY1Vv4Ed))
 - Ticket attribué par le PO (ciel en paliers ANO-109, chaussée bleue en Ultra ANO-106, vision de nuit sous les lampes RG-05). Branche `feature/waforspeed-214` créée et poussée ; lecture du code E13 en cours.
