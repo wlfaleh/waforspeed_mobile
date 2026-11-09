@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-09 20:01:51 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-09 20:08:29 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -40,7 +40,7 @@
 | dev-artiste-3d | développeur **et** artiste 3D (skills `agent-developer`, `waforspeed-natif`, `artiste-3d`) : voitures sans marque, modèles 3D + code ; demande son ticket au PO (`@devartiste`, `@dev3d`) | créé le 2026-11-09 19:22 UTC (demande de l'utilisateur) ; tickets voitures WFS-358 à 361 |
 | artiste-3d | artiste 3D (skill `artiste-3d`) : choisit, retouche, intègre les modèles et actifs 3D, sans code du moteur ; demande son ticket au PO (`@artiste`) | créé le 2026-11-09 19:22 UTC (demande de l'utilisateur) |
 | expert-cartes | développeur expert des cartes et de leur téléchargement (paquets de cartes, E14, WFS-301 à 314) ; skill `expert-cartes` ; demande son ticket au PO | créé le 2026-11-08 14:14 UTC (demande de l'utilisateur) |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 20:01 : avis décor de l'expert 3D traité (WFS-381 à 384, ANO-215 à 226) ; 19:57 : réponses aux questions de règles de WFS-376 (marina) ; 19:53 : WFS-376 attribué à Claude, agent dev3d (01UY1Vv3u9) ; 19:51 : WFS-374 attribué à Claude, agent dev Z ; ligne d'agent arwa enlevée (WFS-338 fusionné, session terminée) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 20:08 : épic E15 Décors créée (WFS-385 à 389, 369 à 373 rattachés ; prêts 369, 372, 373) ; 20:01 : avis décor de l'expert 3D traité (WFS-381 à 384, ANO-215 à 226) ; 19:57 : réponses aux questions de règles de WFS-376 (marina) ; 19:53 : WFS-376 attribué à Claude, agent dev3d (01UY1Vv3u9) ; 19:51 : WFS-374 attribué à Claude, agent dev Z ; ligne d'agent arwa enlevée (WFS-338 fusionné, session terminée) |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-08 nuit terminée (01:06) : 25 tickets ; ANO-160 à 167 créées, planifiées par le PO à 01:12 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-192 (méthode d'effacement des logos, ΔE2000 ≤ 2) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |

@@ -3072,3 +3072,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Refus sur les preuves** : (1) les captures « après » (54a6cad0, 19:24 UTC) ont été faites avant la synchronisation et sans WFS-356 (vitrines et halos de nuit) : toutes les paires de nuit `penetration` et `cockpit` paraissent brûlées, une fausse régression ; à refaire depuis la branche synchronisée. (2) Huit lignes du tableau de la description ont des liens d'images abîmés.
 - Remarques non bloquantes : bord non compté de 5 px (preuve `-ecarts.png` si possible), teinte magenta du banc sur le X5 à droite (cause à nommer), gabarit construit aussi en course, regard Bas 42,4 % (seuil visé : Normal), temps GPU non mesuré sur téléphone.
 - `TACHES.md` → ↩️ Retour lead dev (PR #316) ; `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-09 20:08:29 — Épic E15 « Décors » créée, 5 US « décor complet », WFS-369 à 373 rattachés (po-scrum-master)
+- Demande de l'utilisateur (`@po`, 2026-11-09 ≈ 20:05 UTC) : épic de l'amélioration graphique des décors ; un décor = 200 Mo minimum, 700 Mo maximum ; 99 % de réalisme ; un agent 3D valide les captures de chaque PR par un commentaire avant la fusion par le lead dev ; commencer au plus tôt, une US par décor.
+- **E15** créée (`regles-de-gestion/E15-decors.md`, RG-E15-01 à 09) : taille mesurée sur la partie décor des données de la carte (paquet `.wfcarte`) ; agent 3D = `expert-realisme-3d` (`@3d`), commentaire « Avis agent 3D : VALIDÉ / À REPRENDRE » ; un ticket actif **par décor** pour avancer en parallèle.
+- **Nouvelles US** : WFS-385 Ville, WFS-386 Corniche, WFS-387 Campagne, WFS-388 Grand Prix (P1), WFS-389 Neige scandinave (P2) — décor complet 200 à 700 Mo.
+- **WFS-369 à 373 rattachés à E15**, passés P1, chaîne entre cartes coupée : **prêts maintenant WFS-369 (Ville), WFS-372 (Campagne), WFS-373 (Grand Prix)** ; WFS-371 attend WFS-379 et 376 (`plage.cpp`).
+- Règle de validation ajoutée (ordre de l'utilisateur) dans `CLAUDE.md`, le skill `lead-dev` et l'agent `expert-realisme-3d`. Agent des tickets : `dev-artiste-3d` (+ skill `expert-cartes`), nouvelles sessions.
+
