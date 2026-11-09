@@ -3230,3 +3230,7 @@ L'utilisateur signale mon erreur : j'avais décrit des courses « de nuit » alo
 - Campagne « bloquée » (vidéos 3 à 6) **non confirmée** : l'option Android « Afficher les appuis » ne montre **aucun doigt sur GAZ après GO** (seulement un appui bref pendant le « 3 ») ; le recul apparent est le recadrage de la caméra. Banc de départ Campagne gaz tenu demandé à WFS-374 pour lever le doute.
 - **ANO-232** (majeure → WFS-375) : moment JOUR (Réelle à 22 h, Aube, Dorée en Cockpit) → image de nuit ou presque noire. **ANO-233** (mineure → WFS-374) : appui sur la case SCORE → une image de nitro.
 - Décor en formes nues et chargement « ville 70 % » : hors périmètre, pas d'ANO (ordre de l'utilisateur, E15 / WFS-378).
+
+### 2026-11-09 21:35:13 — Correction : Campagne non bloquée (recette QA), vrai défaut = lumière JOUR (ANO-232 → WFS-375) (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+Le QA (commit 586736d5) n'a pas confirmé mon constat « Campagne bloquée ». Je l'ai revérifié à 4 img/s : aucun doigt sur GAZ après le GO. Mon erreur est corrigée auprès de l'utilisateur et de l'agent dev Z (WFS-374). Il ne reste qu'ANO-232 (JOUR → image de nuit) → WFS-375, et ANO-233 (mineure) → WFS-374.
+
