@@ -2559,3 +2559,20 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 12:27:32 — Lead dev : détection des régressions et des problèmes de code (po-scrum-master)
 - Demande de l'utilisateur : le lead dev détecte les régressions et les problèmes de code. Skill `lead-dev` : points 10 (régressions : construction et tests refaits, tests non affaiblis, usages du code changé, tout l'écran sur les captures, performance ≤ 5 %, compatibilité des réglages et sauvegardes, anciennes anomalies) et 11 (problèmes de code : mémoire, Vulkan, calculs, threads, performance par image, erreurs, lisibilité, sécurité ; fichier:ligne, exemple, correction attendue) ; interdit de fusionner sans eux.
+
+### 2026-11-09 12:29:13 — WFS-355 : cause du bouton ACCEPTER des CGU sans effet (Claude, agent 2 (01UY1Vv5))
+- **Cause (RG-01)** : boucle principale d'`android_main.cpp`. Elle lit les événements **sans attendre** (`ALooper_pollOnce(0)`) seulement si `cgu().premierLancement()` est vrai. Or cette fonction devient fausse dès l'appui sur « Accepter » (état `Accepte`, plus « ouvert »).
+  La boucle se met alors à **attendre le prochain événement sans fin** (`ALooper_pollOnce(-1)`). `Cgu::image`, qui note l'acceptation et lance le chargement, n'est plus jamais appelée :
+  - l'écran reste figé sur la dernière image (case cochée, ACCEPTER orange) ;
+  - chaque nouvel appui est lu, puis la boucle se rendort ;
+  - en quittant l'appli, `perdreFenetre` enregistre l'acceptation, et au retour le jeu continue (paquets, puis menu).
+
+  C'est exactement la précision de l'utilisateur. Le banc PC ne passe pas par cette boucle, d'où le défaut invisible au banc. **Même piège** sur l'étape des paquets : « Plus tard » ou « Continuer » mettent l'état `Fini` et `tientLaFenetre()` devient faux.
+- **Correction** (accroche de 4 lignes dans `android_main.cpp`) : la condition passe par `cgu_appui::boucleSansAttente(jeu actif, cgu().tientLaFenetre(), paquets tient ou Fini avant le jeu)`. `tientLaFenetre()` reste vrai tant que « Accepter » n'est pas traité.
+- **Causes secondaires corrigées** (émulateur, images de plus d'1 s) :
+  - les appuis lus par le veilleur (WFS-284) sont maintenant rejoués aux CGU et aux paquets (avant : perdus) ;
+  - les cibles des boutons des CGU font 48 dp ;
+  - un appui dont la pose ou le lever s'est perdu compte quand même (premier lancement seulement) ;
+  - « Accepter » change de teinte sous le doigt ;
+  - chaque appui et chaque image lente (> 0,5 s) sont notés au journal.
+- Tests : `test_cgu_appui` (nouveau) et banc `cgu` (appuis injectés, installation neuve, 0 écart). Branche `feature/waforspeed-355`.
