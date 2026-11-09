@@ -60,22 +60,48 @@ int main() {
     VERIFIE(meteo::balaye(0.5f, 0.4f, 0.6f) && meteo::balaye(0.5f, 0.6f, 0.4f), "balai qui passe sur la goutte (aller et retour)");
     VERIFIE(!meteo::balaye(0.8f, 0.4f, 0.6f) && !meteo::balaye(0.5f, 0.5f, 0.5f), "balai qui ne passe pas (ou immobile)");
 
-    // WFS-354 (RG-01) : toute goutte de la vitre (u, v dans 0..1) reste hors des montants dessinés : écart horizontal à l'axe du
-    // montant ≥ demi-section, à toute hauteur ; Golf, X5, 500 Abarth (et tous les intérieurs)
+    // WFS-354 (RG-01) : vue de l'œil (origine), aucun point du bord de la vitre visible (ni ce point décalé vers le montant du
+    // rayon de la plus grosse goutte, 6 mm) n'est caché par une barre de montant (mêmes axes et cotes que barre() de l'intérieur) :
+    // lancer de rayon œil → point contre les deux barres (boîtes orientées). 20 intérieurs, dont Golf, X5 et 500 Abarth
+    auto cache = [&](const vec3 axe[4], vec3 P) {   // vrai : le segment œil → P traverse une barre avant d'atteindre P
+        for (int s = 0; s < 2; s++) {
+            const vec3 a = axe[s ? 1 : 0], b = axe[s ? 2 : 3];
+            const vec3 y = normalize(b - a), ref = std::fabs(y.x) < 0.9f ? vec3{1, 0, 0} : vec3{0, 0, 1};
+            const vec3 x = normalize(cross(y, ref)), z = cross(x, y), c = (a + b) * 0.5f;
+            const vec3 ax[3] = {x, y, z};
+            const float he[3] = {cockpit::LARGEUR_MONTANT * 0.5f, length(b - a) * 0.5f, cockpit::EPAISSEUR_MONTANT * 0.5f};
+            float t0 = 0, t1 = 1;
+            bool dedans = true;
+            for (int k = 0; k < 3 && dedans; k++) {   // plaques de la boîte (repère de la barre)
+                const float o = dot(vec3{0, 0, 0} - c, ax[k]), d = dot(P, ax[k]);
+                if (std::fabs(d) < 1e-9f) { if (std::fabs(o) > he[k]) dedans = false; continue; }
+                float ta = (-he[k] - o) / d, tb = (he[k] - o) / d;
+                if (ta > tb) std::swap(ta, tb);
+                t0 = std::max(t0, ta); t1 = std::min(t1, tb);
+                if (t0 > t1) dedans = false;
+            }
+            if (dedans && t0 < 0.999f) return true;
+        }
+        return false;
+    };
     for (int i = 0; i < cockpit::nombreInterieurs(); i++) {
         const cockpit::InterieurDef& d = cockpit::interieur(i);
         const cockpit::Largeur l = cockpit::largeurPour(d);
-        const float cx = l.oeil, mo = l.montants * 0.5f;
-        vec3 c[4]; cockpit::coinsVitre(cx, mo, d.pareBriseY, d.pareBriseZ, 0.40f, -0.42f, c);
-        float pire = 1e9f;
-        for (int a = 0; a <= 20; a++) for (int s = -1; s <= 1; s += 2) {
-            const float v = a / 20.f;
-            const float xVitre = s < 0 ? c[0].x + (c[3].x - c[0].x) * v : c[1].x + (c[2].x - c[1].x) * v;   // bord de la vitre à la hauteur v
-            const float xAxe = cx + s * (mo + (mo - cockpit::RETRAIT_MONTANT_HAUT - mo) * v);               // axe du montant dessiné
-            pire = std::min(pire, std::fabs(xAxe - xVitre) - cockpit::LARGEUR_MONTANT * 0.5f);
+        vec3 axe[4], v[4];
+        cockpit::coinsVitre(l.oeil, l.montants * 0.5f, d.pareBriseY, d.pareBriseZ, 0.40f, -0.42f, axe);
+        meteo::vitreVue(axe, cockpit::LARGEUR_MONTANT, cockpit::EPAISSEUR_MONTANT, 0.016f, v);
+        int caches = 0;
+        for (int a = 0; a <= 40; a++) {
+            const float t = a / 40.f;
+            const vec3 g = v[0] + (v[3] - v[0]) * t, dr = v[1] + (v[2] - v[1]) * t;   // bords gauche et droit de la vitre
+            for (const vec3& P : {g, dr, g - vec3{0.006f, 0, 0}, dr + vec3{0.006f, 0, 0}}) caches += cache(axe, P);
         }
-        VERIFIE(pire >= 0.f, "%s : la vitre empiète de %.0f mm sur un montant", d.car, -pire * 1000);
-        if (!std::strcmp(d.car, "golf") || !std::strcmp(d.car, "x5") || !std::strcmp(d.car, "abarth")) std::printf("%s : vitre à %.0f mm du montant au plus près\n", d.car, pire * 1000);
+        // contrôle du test : l'ancien bord (axe des montants) est bien caché
+        int anciens = 0; for (int a = 0; a <= 40; a++) anciens += cache(axe, axe[1] + (axe[2] - axe[1]) * (a / 40.f));
+        VERIFIE(caches == 0, "%s : %d points du bord de la vitre cachés par un montant (vus de l'œil)", d.car, caches);
+        VERIFIE(anciens > 0, "%s : le test ne voit pas le montant (contrôle)", d.car);
+        if (!std::strcmp(d.car, "golf") || !std::strcmp(d.car, "x5") || !std::strcmp(d.car, "abarth"))
+            std::printf("%s : bord droit de la vitre en bas à %.0f mm de l'axe du montant (avant WFS-354 : 0)\n", d.car, (axe[1].x - v[1].x) * 1000);
     }
 
     if (echecs) { std::printf("test_pluie : %d échec(s)\n", echecs); return 1; }

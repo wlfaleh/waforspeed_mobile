@@ -126,20 +126,20 @@ extern bool g_interieurCle;
 struct PareBriseVu {
     bool vu = false;                 // vrai : écrit par Interieur::dessiner depuis la dernière lecture (la pluie le remet à faux)
     mat4 repere = mat4::identity();  // repère de l'intérieur (repère de l'œil → monde)
-    vec3 coins[4]{};                 // vitre : bas gauche, bas droit, haut droit, haut gauche (repère de l'œil, m)
+    vec3 coins[4]{};                 // axes des montants : bas gauche, bas droit, haut droit, haut gauche (repère de l'œil, m ; WFS-354)
     int balais = 0;                  // nombre de balais dessinés
     vec3 pivot[2]{}; float sens[2] = {1, 1}, longueur[2] = {0, 0};
     vec3 ex{1, 0, 0}, eu{0, 1, 0};   // plan du pare-brise : axe x et axe « haut » le long des montants
     float angle = 0;                 // angle des balais (rad)
 };
 PareBriseVu& pareBriseVu();
-// WFS-354 (RG-01) : coins de la vitre seule (repère de l'œil) : bord intérieur des montants dessinés (axe du pied à ±montant,
-// en haut rentré de RETRAIT_MONTANT_HAUT, section LARGEUR_MONTANT : Interieur::construire) moins 1 cm de joint, en bas comme
-// en haut (avant : axe extérieur en bas, ×0,88 en haut : gouttes posées sur le montant gauche)
-constexpr float LARGEUR_MONTANT = 0.075f, RETRAIT_MONTANT_HAUT = 0.10f;   // m : mêmes cotes que barre(mont…) d'Interieur::construire
+// WFS-354 (RG-01) : axes des montants dessinés (repère de l'œil) : pieds à ±montant, haut rentré de RETRAIT_MONTANT_HAUT ;
+// barres de LARGEUR_MONTANT × EPAISSEUR_MONTANT (mêmes cotes que barre(mont…) d'Interieur::construire). PareBriseVu::coins les
+// porte ; la vitre visible de l'œil (sans ce que la barre cache) est calculée par la pluie (meteo::vitreVue)
+constexpr float LARGEUR_MONTANT = 0.075f, EPAISSEUR_MONTANT = 0.05f, RETRAIT_MONTANT_HAUT = 0.10f;
 inline void coinsVitre(float cx, float montant, float yb, float zb, float yh, float zh, vec3 c[4]) {
-    const float m = LARGEUR_MONTANT * 0.5f + 0.01f, xb = montant - m, xh = montant - RETRAIT_MONTANT_HAUT - m;
-    c[0] = {cx - xb, yb, zb}; c[1] = {cx + xb, yb, zb}; c[2] = {cx + xh, yh, zh}; c[3] = {cx - xh, yh, zh};
+    const float xh = montant - RETRAIT_MONTANT_HAUT;
+    c[0] = {cx - montant, yb, zb}; c[1] = {cx + montant, yb, zb}; c[2] = {cx + xh, yh, zh}; c[3] = {cx - xh, yh, zh};
 }
 
 class Interieur {
