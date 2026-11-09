@@ -147,19 +147,27 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     WFS_LOG("banc neige (WFS-346) : freinage à fond (ABS) : neige %.0f → 0 km/h en %.1f m (≈ %.0f m depuis 100) ; Ville sèche %.0f → 0 en %.1f m (≈ %.0f m depuis 100) ; rapport %.2f",
             vNeige, dNeige, d100Neige, vSec, dSec, d100Sec, d100Sec > 0 ? d100Neige / d100Sec : 0);
     b.verifier(d100Neige > 2.5 * d100Sec && d100Sec > 25, "sur la neige, la voiture freine 3 à 4 fois plus long qu'au sec");
-    if (b.partir("noel-test", false, VueCamera::Poursuite, 30)) {
+    // même virage, même carte, volant à fond vers 55 km/h : d'abord au sec (saison de la partie remise à « sec » : témoin), puis sur la neige
+    // (images neige-virage-*) ; la limite d'adhérence du modèle de conduite (latAcc) doit suivre μ, la voiture glisser vers l'extérieur
+    double lat[2] = {0, 0}, ecart[2] = {0, 0};
+    for (int neige = 0; neige < 2; neige++) {
+        if (!b.partir("noel-test", false, VueCamera::Poursuite, 30)) continue;
+        const Saison vraie = saisonPartie();
+        if (!neige) { saisonPartie().muChaussee = 1.0f; saisonPartie().muBasCote = Saison{}.muBasCote; }
         Player& p = b.joueur();
         for (int i = 0; i < 60 * 30 && p.kmh() < 55; i++) b.pas(1, 60);
-        const double x0 = p.playerX * RW; double latMax = 0;
+        const double x0 = p.playerX * RW;
         for (int k = 0; k < 5; k++) {
-            b.capture("neige-virage-" + std::to_string(k));
-            for (int i = 0; i < 24; i++) { b.pas(1, 60, 1.f, 6); latMax = std::max(latMax, std::abs(p.latAcc)); }
+            if (neige) b.capture("neige-virage-" + std::to_string(k));
+            for (int i = 0; i < 24; i++) { b.pas(1, 60, 1.f, 6); lat[neige] = std::max(lat[neige], std::abs(p.latAcc)); }
         }
-        WFS_LOG("banc neige (WFS-346) : virage volant à fond vers %.0f km/h : accélération latérale maxi %.2f g (μ sol %.2f), écart latéral gagné %.1f m en 2 s",
-                p.kmh(), latMax / 9.81, saisonPartie().muChaussee, p.playerX * RW - x0);
-        b.verifier(latMax / 9.81 > 0.05 && latMax / 9.81 < saisonPartie().muChaussee * 1.3 + 0.05, "virage sur la neige : accélération latérale limitée par μ (la voiture glisse)");
+        ecart[neige] = p.playerX * RW - x0;
+        saisonPartie() = vraie;
         b.fin();
     }
+    WFS_LOG("banc neige (WFS-346) : virage volant à fond vers 55 km/h : limite latérale du modèle %.2f g au sec, %.2f g sur neige (rapport %.2f, μ %.2f) ; écart gagné %.1f m au sec, %.1f m sur neige",
+            lat[0] / 9.81, lat[1] / 9.81, lat[0] > 0 ? lat[1] / lat[0] : 0, noel->saison.muChaussee, ecart[0], ecart[1]);
+    b.verifier(lat[0] > 0 && lat[1] / lat[0] < noel->saison.muChaussee * 1.3 && lat[1] > 0, "virage sur la neige : adhérence latérale × μ (la voiture tourne moins et glisse)");
     // retour sur une carte du code : sec, sans neige
     if (b.partir("ville", false, VueCamera::Poursuite, 0)) {
         b.verifier(saisonPartie().muChaussee == 1.0f && saisonPartie().neigeChaussee == 0 && saisonPartie().flocons == 0, "retour sur la Ville : sec, sans neige");
