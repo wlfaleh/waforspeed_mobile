@@ -65,7 +65,8 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
                 std::istringstream vues(bas); std::string vue; int k = 0;
                 const float h0 = g.orbitHauteur, d0 = g.orbitRecul;   // valeurs d'avant, remises après les captures
                 while (std::getline(vues, vue, ';')) {
-                    std::istringstream ib(vue); float h = 0.6f, d = 4.f; if (!(ib >> g.orbit >> h >> d)) continue;
+                    std::istringstream ib(vue); float h = 0.6f, d = 4.f; if (!(ib >> g.orbit)) continue;
+                    if (float v; ib >> v) { h = v; if (ib >> v) d = v; }   // hauteur et recul facultatifs (0,6 m et 4 m par défaut)
                     g.orbitHauteur = h; g.orbitRecul = d; g.render(0); g.render(0);
                     r.capturePng(out + "/vitrine-" + id + "-bas" + (k ? std::to_string(k) : "") + ".png"); k++;
                 }
