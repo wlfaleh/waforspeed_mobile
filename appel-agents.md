@@ -8,11 +8,11 @@
 
 1. **`@<agent>` au début du 1er message de la session** : la session **devient** cet agent pour toute la session.
    Elle lit le fichier de l'agent (colonne « Fichier à lire ») et charge ses skills, puis fait ce que dit la suite du message.
-   - Agent **développeur** (`@conduite`, `@cartes`) : il suit la règle « un seul sujet par session » : il ajoute sa ligne dans
+   - Agent **développeur** (`@dev`, `@conduite`, `@cartes`) : il suit la règle « un seul sujet par session » : il ajoute sa ligne dans
      `track-agent.md`, demande **un** ticket au PO (agent `po-scrum-master`), le mène jusqu'à la fusion par le lead dev, puis s'arrête.
      Le texte après l'alias est transmis au PO comme souhait (ex. `@conduite un sujet sur les freins`) ; le PO reste seul à attribuer.
 2. **`@<agent>` plus tard dans la conversation** : la session **appelle** cet agent avec l'outil Agent (`subagent_type` du tableau) et lui
-   passe le texte qui suit l'alias, puis rend compte de sa réponse. Exception : `@conduite` et `@cartes` en cours de session
+   passe le texte qui suit l'alias, puis rend compte de sa réponse. Exception : `@dev`, `@conduite` et `@cartes` en cours de session
    ne lancent **pas** un 2e sujet (règle du 2026-11-09) : la session répond qu'il faut ouvrir une nouvelle session avec cet alias.
 3. **Plusieurs alias** (ex. `@po @leaddev`) : le 1er donne le rôle de la session, les suivants sont appelés comme au point 2.
 4. **Alias inconnu** : la session donne cette liste et demande lequel prendre (seul cas où elle pose une question).
@@ -24,6 +24,7 @@ Remarque : dans Claude Code, « @ » ouvre aussi la suggestion de fichiers ; il 
 
 | Alias (au choix) | Agent | Rôle en une phrase | Fichier à lire / skills | `subagent_type` |
 |---|---|---|---|---|
+| `@dev`, `@developpeur` | Développeur | prend **un** ticket du PO (hors conduite, cartes, CI), code, captures, PR, appelle le lead dev, s'arrête après la fusion | `.claude/agents/dev.md` (skills `agent-developer`, `waforspeed-natif`) | `dev` |
 | `@conduite`, `@expertconduite` | Expert conduite | développeur de la physique de la voiture, des aides et de la conduite des adversaires | `.claude/agents/expert-conduite.md` (skill `expert-conduite`) | `expert-conduite` |
 | `@cartes`, `@expertcartes` | Expert cartes | développeur des cartes, des paquets `.wfcarte` et de leur téléchargement (E14) | `.claude/agents/expert-cartes.md` (skill `expert-cartes`) | `expert-cartes` |
 | `@po`, `@scrum`, `@scrummaster` | PO / Scrum Master | étudie les besoins, crée et priorise les tickets, attribue, tient `TACHES.md`, `track-agent.md`, le journal | `.claude/agents/po-scrum-master.md` | `po-scrum-master` |

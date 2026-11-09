@@ -2540,3 +2540,6 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 
 ### 2026-11-09 12:14:25 — Appels « @ » : seulement nos agents (po-scrum-master)
 - Demande de l'utilisateur : garder seulement les agents qui existent dans `.claude/agents/`. Retirés de `appel-agents.md` et `CLAUDE.md` : `@dev`, `@ui` et les agents généraux de Claude Code. Il reste 8 agents.
+
+### 2026-11-09 12:17:34 — Agent « dev » créé (po-scrum-master)
+- Demande de l'utilisateur : un agent pour les développeurs. Créé `.claude/agents/dev.md` (appelé par `@dev`) ; ajouté à `appel-agents.md`, `CLAUDE.md` et `track-agent.md`. Il y a maintenant 9 agents.
