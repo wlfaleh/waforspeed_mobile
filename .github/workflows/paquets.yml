@@ -1,0 +1,79 @@
+# WFS-302 — Paquets de cartes : cuisson par la CI et publication dans la Release GitHub « paquets » avec la liste cartes.json.
+#  - deux cuissons indépendantes (deux machines, deux compilations) de la Ville dans les 3 formats de texture (ASTC, ETC2, RGBA8),
+#    par le mode « cuisson seule » du jeu (WFS_BANC=cuire, complément de WFS-301) ; comparées octet par octet (RG-01) ;
+#  - cartes.json (tools/qa/cartes_json.py, format lu par le jeu : ListePaquets.java de WFS-306) ; adresses directes des fichiers,
+#    jamais l'API GitHub (RG-03) ; l'adresse de la liste est à un seul endroit dans le jeu : configgame.json → paquets.adresse_liste (RG-04) ;
+#  - publication par tools/qa/publier_paquets.sh avec le GITHUB_TOKEN du workflow, aucune autre clé (RG-02) ; mêmes paquets que la
+#    liste publiée → rien n'est envoyé ; résumé du run : taille de chaque fichier, poids de l'APK, lien de cartes.json (RG-05).
+# Lancement : à la main (Actions → « Paquets de cartes » → Run workflow, sur main), ou appelé par un autre workflow (workflow_call).
+# Hors de main : cuisson et vérification seulement, rien n'est publié.
+name: Paquets de cartes
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paquets-${{ github.ref }}
+  cancel-in-progress: false   # une publication commencée va au bout
+
+env:
+  # versionCode du premier APK qui lit les paquets (WFS-301, fusion #278, run 927 de build.yml) ; à augmenter si le format change
+  VERSION_MIN_APK: 927
+
+jobs:
+  cuisson:
+    name: cuisson (${{ matrix.essai }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: true
+      matrix:
+        essai: [a, b]   # RG-01 : deux cuissons indépendantes
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel, compilateur de shaders)
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - name: Compilation (wfs_bench)
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
+      - name: Cuisson de la Ville (3 formats)
+        # code 3 : deux cuissons différentes ou paquet faux (RG-C2 de WFS-301) → rouge, rien n'est publié
+        run: |
+          mkdir -p paquets sortie
+          WFS_PAQUETS=paquets WFS_BANC=cuire timeout 1200 ./build/wfs_bench sortie assets/ 2>&1 | tee cuisson.log
+          ls -l paquets
+          n=$(find paquets -maxdepth 1 -name '*.wfcarte' | wc -l)
+          [ "$n" -ge 3 ] || { echo "::error::cuisson : $n paquet(s) écrit(s), 3 attendus (ASTC, ETC2, RGBA8)"; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with: { name: "paquets-${{ matrix.essai }}", path: paquets/*.wfcarte, retention-days: 3, if-no-files-found: error }
+
+  publication:
+    needs: cuisson
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: paquets-a, path: cuisson-a }
+      - uses: actions/download-artifact@v4
+        with: { name: paquets-b, path: cuisson-b }
+      - name: Test de l'outil cartes.json
+        run: python3 tools/qa/test_cartes_json.py
+      - name: Comparaison, cartes.json et publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CUISSON_A: cuisson-a
+          CUISSON_B: cuisson-b
+          PUBLIER: ${{ github.ref == 'refs/heads/main' && 'oui' || 'non' }}
+        run: bash tools/qa/publier_paquets.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: cartes-json, path: cartes.json, retention-days: 7, if-no-files-found: ignore }
