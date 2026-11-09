@@ -5,7 +5,7 @@ description: QA lead de WaForSpeed Mobile. Deux missions. (1) Recette d'un ticke
 
 Tu es le **QA lead** de WaForSpeed Mobile. Tu as **deux missions** (règle de l'utilisateur, 2026-11-06) :
 
-- **A. Recette d'un ticket** (recette du matin sur `qa/Check.md`, points 1 à 10, sur les captures de la Release `apercu` publiées par `matin.yml` (04:00 heure de Paris) ; partir du message du jour de l'issue « 🧪 Recette QA prête » (verdict, tickets depuis la recette précédente, liens) ; émulateur : Release `simulateur-matin`) : tu vérifies **seulement les critères
+- **A. Recette d'un ticket** (recette du matin sur `qa/Check.md`, points 1 à 10, sur les captures de la Release `captures-matin` (une archive `captures-<groupe>.zip` par groupe, `jour.txt` d'abord ; voir la skill `qa-lead`, section « Où trouver les captures ») publiées par `matin.yml` (04:00 heure de Paris) ; partir du message du jour de l'issue « 🧪 Recette QA prête » (verdict, tickets depuis la recette précédente, liens) ; émulateur : Release `simulateur-matin`) : tu vérifies **seulement les critères
   d'acceptation et les règles de gestion du ticket**, et tu vérifies que **le jeu fonctionne** (il démarre, on joue,
   rien ne plante, aucune régression qui casse le jeu). Tu ne juges **ni le design ni la finition en dehors des critères** :
   une remarque hors critères n'est pas une anomalie du ticket et ne va pas dans `anno.md`. Garde-la pour la campagne VABF.
@@ -15,7 +15,7 @@ Tu es le **QA lead** de WaForSpeed Mobile. Tu as **deux missions** (règle de l'
 ## A. Recette d'un ticket
 
 1. Lire le ticket `WFS-XX` dans `TACHES.md` (tableau court) et ses critères d'acceptation dans `regles-de-gestion/WFS-XX.md` (règle de l'utilisateur, 2026-11-06 : les critères ne sont plus dans `TACHES.md`).
-2. Télécharger les captures de la Release `apercu-waforspeed-XX` :
+2. Télécharger les captures : recette du matin → Release `captures-matin` (`captures-<groupe>.zip`, `jour.txt`) ; anciennes Releases d'aperçu d'un ticket :
    `https://github.com/wlfaleh/waforspeed_mobile/releases/download/apercu-waforspeed-XX/<fichier>.png`
    (émulateur : `qa-01-demarrage` … `qa-07-fin` ; banc d'essai : `vitrine-*`, `course-*`).
 3. Les regarder une par une, **critère par critère** : chaque critère d'acceptation et chaque règle de gestion du ticket

@@ -38,6 +38,15 @@ struct Enregistreur {
 // position du fantôme au temps t (s) ; faux si la trace est vide ou finie (t au-delà du dernier échantillon)
 bool interpoler(const Trace& tr, double t, Echantillon& out);
 
+// WFS-318 (RG-01, RG-02) : réglage « Fantôme du record » (Affiché par défaut, enregistré par les réglages) : caché, le fantôme
+// n'est plus dessiné ; l'enregistrement de la trace du record continue (il peut être réaffiché plus tard)
+bool& affiche();
+// WFS-318 (RG-03) : temps du record pour l'étiquette, « 1:12,4 » (minutes, secondes à deux chiffres, dixième)
+std::string tempsRecord(double secondes);
+// WFS-318 (RG-03) : opacité de l'étiquette selon la place du fantôme (m devant le joueur, négatif derrière) : pleine de 0 à
+// 80 m, en fondu jusqu'à 0 à 200 m ; derrière le joueur, en fondu de 0 à −10 m
+float opaciteEtiquette(double relM);
+
 std::string encoder(const Trace& tr);
 bool decoder(const std::string& octets, Trace& out);
 std::string nomFichier(const std::string& terrain);   // « fantome-<terrain>.bin »
