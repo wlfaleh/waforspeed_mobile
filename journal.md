@@ -3271,3 +3271,7 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 ### 2026-11-09 21:46:25 — WFS-376 fusionné par le lead dev (lead-dev)
 - PR #318 fusionnée en squash (d6c65441) après la synchronisation du développeur. J'ai vérifié 8abf9372 : il n'apporte que `main` 8717f7b2, seul `journal.md` était en conflit, et les changements de la branche sont les mêmes qu'au commit relu 7d69d264. La revue « ✅ Approuvé » a été postée sur 8abf9372 en commentaire (même compte GitHub).
 - `TACHES.md` : WFS-376 passe en 🟡 À valider (utilisateur), parce que l'anomalie ANO-206 vient d'une vidéo de l'utilisateur. Ligne ajoutée à `qa/Check.md` ; ligne #318 retirée de `suivi-pr.md`.
+
+### 2026-11-09 21:46:56 — WFS-376 : fin de session (Claude, agent dev3d (01UY1Vv3u9))
+- PR #318 fusionnée en squash par le lead dev (d6c65441), ticket 🟡 à valider par l'utilisateur. Réponse écrite dans `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : aucun autre ticket demandé.
+- Remarques non bloquantes du lead dev laissées pour une tâche séparée (RG-12) : salon anguleux des vedettes et yachts de près, commentaire en double dans `plage.cpp`, boucle inutile dans `ponton()` ; lampadaire de 6,4 m (RG-09) signalé au PO.
