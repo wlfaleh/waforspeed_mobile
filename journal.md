@@ -4916,3 +4916,23 @@ Fermé sur son diagnostic (décision du PO du 09:12:58). Diff relu (shaders : re
 ### 2026-11-09 09:24:28 — WFS-350 fusionné par le lead dev (lead-dev)
 
 PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-place.yml`, `qa/pr/WFS-350/pr.md`) et suite vérifiée dans `tools/qa/publier_apercu.sh` (Release recréée si absente). Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash 4180a6c, statut 🟣. Aucun workflow lancé par le lead dev. Remarques pour WFS-352 : ne prendre que le 404 pour « absente » ; captures du matin hors de `apercu`.
+
+### 2026-11-09 09:58:09 — WFS-291 : PR #302 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- 3 onglets (Affichage, Conduite, Son), dernier onglet gardé (clé `onglet`), manette, deux mises en page ; « Fermer » et Retour depuis chaque onglet ; accroche de 1 ligne dans `desktop_main.cpp` (banc `reglages-onglets`) ; 85 tests verts, parcours 0 écart. Ensuite : WFS-318.
+
+### 2026-11-09 10:00:35 — WFS-354 créé et attribué à Claude, agent dev Y (po-scrum-master)
+- Demande : agent dev Y libre (WFS-334 🟡, #293), l'utilisateur lui demande « un autre sujet facile ». Exclus : iOS, WFS-248 / 249, conduite.
+- Tickets prêts examinés : WFS-351, 352, 287 (agent expert ci, CI) ; WFS-332, 337, 341, 214 (E4 / E13 tenues par WFS-353, agent arwa) ; WFS-349 (P1) et WFS-323 : pas faciles (20 voitures × 3 regards, cadrage) ; WFS-194 : E10 tenue par WFS-193. Aucun ticket facile prêt dans une épic libre.
+- **WFS-354** (P3, [TECHNIQUE], E2) créé à partir des remarques non bloquantes du lead dev sur PR #293 : RG-01 gouttes hors des montants, RG-02 un seul état des balais (lecture de `etatCockpit()`), RG-03 coupure de la pluie selon la caméra dans la bouche du tunnel. Zone : `meteo.*`, `tests/test_pluie*`, `pareBriseVu()` ≤ 10 lignes ; `camera_vue.*` en lecture seule. Règles : `regles-de-gestion/WFS-354.md`. 🟡 après fusion (ANO-182).
+
+### 2026-11-09 10:04:59 — WFS-291 fusionné par le lead dev (lead-dev)
+- PR #302, 1re revue sur eeed0f6 : 8 captures ouvertes (4 paires, 2400 × 1080) ; grande mise en page vérifiée par le lead dev (branche construite dans un arbre à part, banc `reglages-onglets` en 1920 × 1440 : onglets sous le titre, rien ne se chevauche) ; diff relu en entier (13 fichiers) ; `test_reglages_appui` et `test_retour_systeme` OK. Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash 8df86cb. Statut 🟡 À valider (utilisateur), comme le demandent les critères du ticket. Accroche hors zone : `desktop_main.cpp` 1 ligne. Remarques non bloquantes : aucun test CPU de la table des onglets (à ajouter avec WFS-318) ; panneau un peu transparent dans la place libre (déjà avant).
+
+### 2026-11-09 10:06:12 — WFS-318 attribué à Claude, agent 2 (po-scrum-master)
+- Demande de Claude, agent 2 (01UY1Vv5) après WFS-291 🟡 (#302, 8df86cb). Suite des Réglages 290 → 291 → 318 confirmée par l'utilisateur (2026-11-08 20:44 UTC).
+- Zone : E8 `src/ui/ecrans/reglages.*` + E3 `src/game/fantome.*` (affichage du fantôme), `tests/**`. Vérifié : aucun ticket actif ne touche `fantome.*` (WFS-338 : `poursuite*` / `hud.*` ; WFS-293 : banc de fluidité ; WFS-343 : cartes) ; `hud.*` reste à WFS-338.
+- Règles : `regles-de-gestion/WFS-318.md` (RG-01 à RG-04, 3 captures demandées). En plus : test CPU de la table des onglets (remarque du lead dev sur #302), capture de la grande mise en page. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-09 10:17:19 — Statuts automatiques, CI main #949 (robot statuts)
+- Run rouge (push, commit 48c423e), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-339, WFS-348, WFS-340, WFS-307, WFS-322.
