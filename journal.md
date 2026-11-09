@@ -2668,3 +2668,55 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
   - `touffes()` : touffes d'herbe facultatives.
   - Raison : RG-05, tout vient des données. Les valeurs par défaut gardent la Campagne et le Grand Prix inchangés (captures avant / après dans la PR).
 - **Test** : `test_cartes_v2_donnees` (ligne ajoutée dans `CMakeLists.txt`) OK.
+### 2026-11-09 13:40:52 — WFS-349 retiré à agent 3 bis, repassé ⏳ Prêt (po-scrum-master)
+- **Ordre de l'utilisateur** (transmis par Claude, agent 3 bis, 01UY1Vv3VTBJ) : « Dit au po de l'attribuer à qq d'autre toi t'es fini selon la nouvelle règle bye bye ». Décision de l'utilisateur : la règle des 10 h ne s'applique pas.
+- **WFS-349** (P1, vue Cockpit, ANO-181 / 183) : ⏳ Prêt, sans responsable, pour la prochaine **nouvelle session** de développeur qui demande un ticket. Branche `feature/waforspeed-349` gardée (1 commit e1440a6f, 2026-11-09 13:36:15 UTC, entrée « Début » seulement ; aucun code).
+- **Piste non vérifiée** (contre-portes de `vehicule_cockpit.cpp` trop courtes, zone des pieds sans paroi ; intérieur dessiné dans la passe 3D avec la profondeur) : notée au § Suivi de `regles-de-gestion/WFS-349.md`, à confirmer au banc `penetration`.
+- **Session 01UY1Vv3VTBJ** : terminée ; sa ligne est retirée de `track-agent.md`.
+
+
+### 2026-11-09 13:50:01 — WFS-356 : cause du départ de nuit éblouissant nommée (RG-01, RG-04) (Claude, agent dev Z (01UY1Vv5sWHo))
+- **Reproduit au banc** (`WFS_BANC=depart`, Ville de nuit, 1280x720) : au « 3 », vitrines et fenêtres en blocs blancs, image délavée (luminance moyenne 103 / 255).
+- **Cause 1, exposition** : au départ de la Ville, le posemètre de nuit (WFS-230) ne compte que les lampadaires : **1,57 lx reçus** → part « rue éclairée » partielle → **EV 2,27** pendant tout le décompte, alors que la mesure du lieu donne **EV 4,1** à 0:02 (1,8 IL, image 3,5 fois trop claire). WFS-328 a gardé ce défaut : son contrôle comparait l'EV appliqué au **même** EV visé (2,27 contre 2,27), et la 1re sonde arrivait avant que le mélange ne change.
+- **Cause 2, vitres éclairées** : la pièce simulée derrière les vitres et les vitrines (`S_VITRE`, murs 31,8 cd/m², plafond ≈ 58) suit l'exposition sans limite : à EV 4, **1,5 à 3 fois au-dessus du blanc** ; à EV 2,27, 5 fois. Ce sont les grands blocs blancs des façades.
+- **Cause 3, halos** : halo des têtes de lampe de la Ville de 1,1 m de rayon (disque de 2,2 m pour une tête de 0,90 × 0,36 m), ajouté au bloom.
+- **Différence banc / téléphone (RG-04)** : la qualité Basse à 60 % n'était pas jouée par le banc `depart` (Haute à 100 %) : variante `WFS_DEPART_SEUL=basse` ajoutée. Les causes 1 et 2 sont les mêmes dans les deux qualités.
+- **Correction** (branche `feature/waforspeed-356`, 9932a19e) : (1) Ville toujours exposée comme une rue éclairée (EV 3 à 5 ; `partRueNuit`) ; (2) adaptation locale des pièces éclairées (`pieceAdaptee`, eclairage.glsl, accroche d'**une ligne** dans `shaders/decor.glsl`, annoncée ici) ; (3) halo des têtes de lampe 0,6 m.
+- **Mesures, Basse 60 %, après** : EV 4,00 dès la 1re image (au lieu de 2,27), 4,39 à 0:04 (écart 0,39 IL) ; 0,00 % de pixels saturés (R, G, B ≥ 250) ; ≤ 1,0 % de pixels très clairs (Y ≥ 230, HUD compris) ; luminance moyenne 40 à 56 / 255. Tests CPU : 88 réussis (`test_fidelite_lumiere` : 119 vérifications).
+
+### 2026-11-09 13:55:03 — Règle « nom de la session » (po-scrum-master)
+- Demande de l'utilisateur : voir dans Claude le numéro du ticket dans le nom de la session d'un développeur, et « Agent <alias> (<id de session>) » pour les autres agents.
+- Règle écrite au point 6 de `appel-agents.md`, avec un renvoi dans `CLAUDE.md` et dans le skill `po-scrum-master`. Chaque session se renomme elle-même avec `set_session_title`. Pas de tâche planifiée : celle qui avait été créée a été supprimée à la demande de l'utilisateur avant d'avoir tourné.
+- Sessions déjà renommées par le PO : WFS-343 (agent 3), WFS-193 (agent 1), WFS-293 (Agent 0), WFS-356 (agent dev Z), « ⏹️ Terminée » (agent 3 bis), Agent po ×2, Agent qa, Agent lead dev, Agent lead dev automatique, Agent cicd, Agent smartbrain. Sessions d'agent 5 et d'agent arwa : introuvables depuis ce compte, non renommées.
+- Accroche accordée à Claude, agent 3 (WFS-343) : 4 lignes dans `src/world/decor_carte.*` (`couleursCarte()`, `touffes()`, valeurs par défaut inchangées). Conditions : annonce au journal, captures avant / après de la Campagne et du Grand Prix, accroche signalée dans la PR.
+
+### 2026-11-09 14:00:17 — WFS-349 attribué à Claude, agent dev Y (01UY1Vv1Yvim) (po-scrum-master)
+- **Demande** : nouvelle session `@dev` (session_01UY1Vv1YvimqoKDHcW3jYhr), aucun ticket avant : 1er et seul ticket de la session (règle du 2026-11-09). Pas de conduite, cartes, CI ni iOS.
+- **Choix** : file A sans ticket permis (WFS-194 attend E10 / modèles tenus par WFS-193 et 215 ; cartes → expert-cartes ; CI → expert ci). File B : **WFS-349** (P1, ANO-183 bloquante, part Cockpit), premier P1 prêt. Exception PO en parallèle de WFS-193 / 215 (fichiers séparés : `vehicule_cockpit*` seulement). Les autres prêts sont dans des épics tenues (E13 / E4 : WFS-356 ; E3 : WFS-293, 338 ; E8 : `terrain.*` / paquets de WFS-343).
+- **Zone** : `src/render/vehicule_cockpit*`, `tests/**` (test neuf), scène des bancs `cockpit` / `penetration` (≤ 10 lignes annoncées au journal). **Interdit** : `camera_vue.*` (WFS-293 ; si la cause est dans la caméra, le dire au PO d'abord), modèles des voitures et `tools/effacer_logos.mjs` (WFS-193, 215), `traffic.*`, `course5*`, `poursuite*`, `player.*`, `conduite_*`, tailles d'interface, CI, iOS.
+- **Branche** : `feature/waforspeed-349` existe (e1440a6f, 13:36:15 UTC, entrée « Début » d'agent 3 bis, aucun code) : la reprendre, synchroniser avec `main`, pousser un commit tout de suite. Piste non vérifiée au § Suivi des règles.
+- **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards, gauche et droite ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin). Captures avant / après dans `qa/pr/WFS-349/`, PR, lead dev, puis 🟡 et arrêt de la session.
+
+### 2026-11-09 14:02:13 — WFS-193 (PR pilote #308) : 3e revue, refus, PO prévenu (lead-dev)
+- **Commit relu** : 47cf8a83 (corrections 6ba20ab7, synchronisation cc6a209c). Réponse « corrigé dans » présente sous la revue.
+- **Vérifié** : outil rejoué depuis les `.wfm` / `.lod` de `main` : 3 `.wfm` et 3 `.lod` identiques octet pour octet ; `--verifier x5 compass p208 golf` code 0 (golf passé sans erreur) ; vitrines `-0`, `-a2`, `-feux`, `-feux-nuit` identiques avant / après ; aucun conflit avec `main`. Les 12 gros plans de nez ouverts (et agrandis pour la X5).
+- **Accepté** : Compass ; 208 (socle du lion parti) ; correction de `convertir_voitures.sh` / `retoucher_formes.mjs`.
+- **Refusé, X5** : (1) `nez-x5-34-jour` : capot encore déchiré derrière le haut du cadre (dents de scie, trous sombres, pointe sombre), éclats clairs en bas à droite ; (2) `nez-x5-face-jour` / `-nuit` : triangles clairs (trous) dans les coins du cadre, montants qui descendent sous la grille ; (3) aplat noir de nuit non corrigé ; (4) plaque rapportée, pas une calandre de série. Piste proposée : rendre les 50 triangles de la pointe (matériau 4) et poser la grille dans l'ouverture des haricots.
+- **3e refus sur la même PR → PO prévenu** (`po-scrum-master`) : proposition de séparer la X5 (à reprendre) de la Compass et de la 208 (acceptées), au choix du PO. Statut WFS-193 → ↩️ Retour lead dev (PR #308).
+### 2026-11-09 14:02:32 — Renommage de la discussion au moment de l'attribution (po-scrum-master)
+- Précision de l'utilisateur : le développeur renomme le titre de sa discussion **au moment où il reçoit son ticket**.
+- Consigne ajoutée juste après « demande ton ticket au PO » dans `.claude/agents/dev.md`, `expert-cartes.md`, `expert-conduite.md` et `expert-ci-cd.md`, à l'étape « Cadrer » du skill `agent-developer` et à l'étape 5 de l'attribution du skill `po-scrum-master` : titre `WFS-XXX — <agent> (<sujet>)` avec `set_session_title`, puis `⏹️ Terminée — …` après la fusion.
+
+### 2026-11-09 14:02:58 — WFS-193 : X5 séparée de la PR #308 (po-scrum-master)
+- 3e refus du lead dev, à cause de la X5 seule. Décision : fusionner la Compass, la 208 et l'outil ; la X5 passe dans une 2e PR (agent 1, même ticket).
+
+### 2026-11-09 14:05:36 — Renommage : seulement par l’agent lui-même (po-scrum-master)
+- Précision de l’utilisateur : c’est l’agent qui change le nom de sa discussion, pas le PO. Le recours « le PO renomme » est retiré de `appel-agents.md`, des fichiers des agents développeurs et du skill `po-scrum-master`.
+
+### 2026-11-09 14:05:59 — Renommage sur place, dès le numéro du ticket (po-scrum-master)
+- Précision de l’utilisateur : l’agent récupère le numéro de son ticket et change le titre de sa discussion sur place, avant toute autre action. Texte précisé dans `appel-agents.md`, dans les 4 fichiers des agents développeurs et dans le skill `agent-developer`.
+
+### 2026-11-09 14:06:38 — WFS-193 (pilote) fusionné par le lead dev (lead-dev)
+- PR #308, 4e revue, commit relu a6b0052e, squash 78540de6. Option (a) du PO vérifiée : `x5.wfm` / `x5.lod` identiques à main, `formes.json` limité à compass et p208, seules les captures X5 et `pr.md` changées depuis 47cf8a83 (hors synchronisation avec main).
+- Relancés : `retoucher_formes.mjs --verifier` (déjà retouchées), `test_fidelite_voitures` OK. 18 paires de captures ouvertes : rien de dégradé.
+- Approbation écrite en commentaire (même compte GitHub). WFS-193 reste 🔧 (X5 en 2e PR). Ligne #308 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
