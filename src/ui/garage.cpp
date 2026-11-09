@@ -72,7 +72,7 @@ const Fiche FICHES[] = {
     {"gt86", "Coupé", "Petit coupé propulsion : léger, joueur et facile à faire glisser.", 0xFF1F4B, "rouge"},
     {"elantra", "Berline sport", "Berline coréenne affûtée sur circuit : vive et précise.", 0x00E5FF, "bleu"},
     {"v60", "Break sport", "Break suédois de 350 ch : rapide, sûr et stable.", 0x00E5FF, "bleu"},
-    {"mustang", "Muscle car", "V8 de 760 ch : la plus puissante, mais lourde à placer.", 0xFF6A00, "bleu"},
+    {"mustang", "Sportive", "V8 de 466 ch en propulsion : vive et précise, à doser en sortie de virage.", 0xFF6A00, "bleu"},   // WFS-359 : Corvette C7
     {"rrsport", "Grand SUV", "SUV de luxe massif : imposant dans les chocs, lourd en virage.", 0xB6FF00, "noir"},
     {"gallardo", "Supercar cabriolet", "V10 à ciel ouvert : 4 roues motrices et plus de 320 km/h.", 0xB6FF00, "jaune"},
     {"sf90", "Hypercar hybride", "Hybride de 1030 ch : la plus rapide du garage, à manier avec soin.", 0xFF1F4B, "rouge"},
