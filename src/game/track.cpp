@@ -100,18 +100,30 @@ TrackPoint Track::pointLisse(double s, double lat) {
     if (!penteLissee) return point(s, lat);   // banc « fluidite », mesure « avant »
     const double fa = s / SEG; const int64_t a = (int64_t)std::floor(fa); const double f = fa - a;
     const Pose q0 = pose(a - 1), q1 = pose(a), q2 = pose(a + 1), q3 = pose(a + 2);
-    // Catmull-Rom uniforme : valeur et dérivée (par unité de f) ; passe par q1 (f = 0) et q2 (f = 1)
+    // Catmull-Rom uniforme : valeur et dérivée (par unité de f) ; passe par q1 (f = 0) et q2 (f = 1) ; pente (y)
     auto cr = [f](double p0, double p1, double p2, double p3, double& d) {
         const double f2 = f * f, f3 = f2 * f;
         d = 0.5 * ((-p0 + p2) + 2 * (2 * p0 - 5 * p1 + 4 * p2 - p3) * f + 3 * (-p0 + 3 * p1 - 3 * p2 + p3) * f2);
         return 0.5 * (2 * p1 + (-p0 + p2) * f + (2 * p0 - 5 * p1 + 4 * p2 - p3) * f2 + (-p0 + 3 * p1 - 3 * p2 + p3) * f3);
     };
-    double dx, dy, dz;
-    const double x = cr(q0.x, q1.x, q2.x, q3.x, dx), y = cr(q0.y, q1.y, q2.y, q3.y, dy), z = cr(q0.z, q1.z, q2.z, q3.z, dz);
+    // WFS-293 (RG-04) : B-spline cubique uniforme (courbure continue) pour la position au sol et le cap. Cause de l'à-coup en virage
+    // (banc « fluidite ») : avec Catmull-Rom, la courbure (dérivée seconde) saute à chaque segment de 1,2 m ; un point écarté de l'axe
+    // (voiture, caméra) est décalé le long d'un cap dont la variation saute aussi : sa vitesse change d'un coup tous les 1,2 m (point
+    // à vitesse constante, 2 m de l'axe, virage serré : 7,8 mm à 30 img/s, 6,6 mm à 60). B-spline : 0,65 et 0,12 mm (épingle). La
+    // B-spline ne passe pas exactement par les poses : écart de L²/(6R) au plus (≈ 6 mm pour un rayon de 40 m), invisible.
+    auto bs = [f](double p0, double p1, double p2, double p3, double& d) {
+        const double f2 = f * f, f3 = f2 * f;
+        d = (-p0 + p2) * 0.5 + (p0 - 2 * p1 + p2) * f + (-p0 + 3 * p1 - 3 * p2 + p3) * 0.5 * f2;
+        return ((p0 + 4 * p1 + p2) + (-3 * p0 + 3 * p2) * f + (3 * p0 - 6 * p1 + 3 * p2) * f2 + (-p0 + 3 * p1 - 3 * p2 + p3) * f3) / 6.0;
+    };
+    double dx, dy, dz, dthInutile;   // dérivée du cap : non lue (le cap seul sert)
+    const double x = bs(q0.x, q1.x, q2.x, q3.x, dx), y = cr(q0.y, q1.y, q2.y, q3.y, dy), z = bs(q0.z, q1.z, q2.z, q3.z, dz);
     TrackPoint o;
-    // sens de th : x += sin(th), z −= cos(th) le long du tracé (Track::pose) ; continuité du tour gardée (th de point() ± π)
-    const double thL = std::atan2(dx, -dz), thP = q1.th + (q2.th - q1.th) * f;
-    o.th = thP + std::remainder(thL - thP, 2 * PI);
+    // sens de th : x += sin(th), z −= cos(th) le long du tracé (Track::pose) ; caps déroulés autour de q1 (continuité du tour : th de
+    // point() ± π gardée)
+    const double t0 = q1.th + std::remainder(q0.th - q1.th, 2 * PI), t2 = q1.th + std::remainder(q2.th - q1.th, 2 * PI),
+                 t3 = t2 + std::remainder(q3.th - q2.th, 2 * PI), thP = q1.th + (q2.th - q1.th) * f;
+    o.th = thP + std::remainder(bs(t0, q1.th, t2, t3, dthInutile) - thP, 2 * PI);
     o.x = x + std::cos(o.th) * lat; o.z = z + std::sin(o.th) * lat; o.y = y;
     o.slope = std::atan2(dy, std::hypot(dx, dz));
     return o;
