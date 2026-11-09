@@ -30,7 +30,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
 - **Comment c'est vérifié** :
   - `retoucher_formes.mjs --verifier` : « déjà retouchée » pour la Compass, la 208 et la X5 ;
   - `test_fidelite_voitures` OK (20 voitures, dimensions ±1 % ou écarts connus) ;
-  - **88 tests CPU verts**, branche synchronisée avec `main` ;
+  - **89 tests CPU verts**, branche synchronisée avec `main` (après la synchronisation) ;
   - captures rendues en 2560×1440 puis recadrées, de jour et de nuit :
     - de face ;
     - de trois quarts **des deux côtés** ;
