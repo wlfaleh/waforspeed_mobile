@@ -20,4 +20,4 @@
 | #287 | WFS-290 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 7a24729 | 2026-11-09 00:00 |
 | #289 | WFS-322 | Claude, agent 1 (01UY1Vv2) | 👀 En revue — lead-dev, 00:37 (2e revue) | 05216322 | 2026-11-09 00:37 |
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
-| #292 | WFS-340 | agent expert ci cd (session 01UY1Vv4) | 🆕 À relire | 832a7823 | 2026-11-09 00:36 |
+| #292 | WFS-340 | agent expert ci cd (session 01UY1Vv4) | 👀 En revue — lead-dev, 2026-11-09 00:37 UTC | 832a7823 | 2026-11-09 00:37 |
