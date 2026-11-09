@@ -16,7 +16,7 @@
 #include "../game/game.h"
 #include "../game/camera_vue.h"   // WFS-299 : vue Proche au banc des parties
 #include "../game/course_system.h"   // WFS-297 : règles de la course au banc des parties
-#include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes
+#include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes ; WFS-281 (accroche) : nombre de voitures
 #include "eclairage.h"                // WFS-297 : lampadaires déclarés
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/chargement.h"   // WFS-297 (RG-06) : écran de chargement et ses chiffres
@@ -268,7 +268,9 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
             double t = 2000;
             // essai local : WFS_PERF_AVANCE=n images de course sans mesure (une image dessinée sur 30) avant la chauffe
             const int AVANCE = std::getenv("WFS_PERF_AVANCE") ? std::atoi(std::getenv("WFS_PERF_AVANCE")) : 0;
-            for (int i = 0; i < AVANCE; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(t); t += 1.0 / 60; }
+            const int AR = std::getenv("WFS_PERF_AVANCE_RENDU") ? std::atoi(std::getenv("WFS_PERF_AVANCE_RENDU")) : 30;   // WFS-281 (accroche) : 0 = rien dessiné
+            for (int i = 0; i < AVANCE; i++) { g.update(1.0 / 60); if (AR > 0 && i % AR == 0) g.render(t); t += 1.0 / 60; }
+            if (const Traffic* tr = activeTraffic()) WFS_LOG("perf %s %s : trafic : %zu voitures au total après %d images (WFS-281)", c.carte, c.nom, tr->cars.size(), AVANCE);
             r.echelleDynamique(echFixe);   // WFS-246
             for (int i = 0; i < CHAUFFE; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }
             const uint32_t recre0 = r.recreations();
@@ -297,6 +299,8 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
                 for (auto& [nom, k] : cumuls()) { const double d = k.update + k.render + k.ui + k.autre - k.avant; sys += d; k.pire = std::max(k.pire, d); }
                 if (cpu - sys > pireHors) pireHors = cpu - sys;
             }
+            if (std::getenv("WFS_PERF_CAPTURE")) r.capturePng(out + "/perf-" + c.carte + "-" + c.nom + ".png");   // WFS-336 (accroche) : dernière image mesurée (captures de la PR)
+            if (double ma, mt, md; trafficMedianes(IMAGES, ma, mt, md)) WFS_LOG("perf %s %s : trafic, médianes sur %d images : %.0f appels, %.0f triangles, %.0f véhicules dessinés ; %zu actifs (WFS-281)", c.carte, c.nom, std::min(IMAGES, 128), ma, mt, md, activeTraffic() ? activeTraffic()->cars.size() : (size_t)0);
             {   // pires images : par système, et moteur hors systèmes (Game, Renderer)
                 std::vector<std::pair<double, std::string>> p;
                 for (auto& [nom, k] : cumuls()) p.push_back({k.pire, nom});

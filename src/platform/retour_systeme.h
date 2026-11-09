@@ -31,6 +31,11 @@ inline ActionRetour actionRetour(Ecran e, bool courseFinie, bool zoneRetour, boo
         default: return zoneRetour ? ActionRetour::BoutonRetour : ActionRetour::Menu;
     }
 }
+// WFS-290 (accroche, RG-04) : réglages ouverts en pause : Retour appuie sur « Fermer » (seule zone retour du panneau), pas « Reprendre »
+inline ActionRetour actionRetourReglages(Ecran e, bool courseFinie, bool zoneRetour, bool panneauModes, bool reglagesOuverts) {
+    if (e == Ecran::Pause && reglagesOuverts && zoneRetour) return ActionRetour::BoutonRetour;
+    return actionRetour(e, courseFinie, zoneRetour, panneauModes);
+}
 const char* nomActionRetour(ActionRetour a);
 
 // touche Retour du téléphone (onInput d'android_main.cpp) : enfoncee = AKEY_EVENT_ACTION_DOWN, repetition = getRepeatCount.

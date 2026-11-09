@@ -69,6 +69,7 @@ struct Etat_ {
     float signatureCiel[16]{}; bool cielAFaire = true;
     // sondes
     Sonde A, B, sondeCiel; double w = 1;
+    Sh9 shAffiche; bool shInit = true, sceneNeuve = true;   // WFS-322 : diffus affiché, lissé dans le temps (lisserSh9) ; shInit : prendre la cible telle quelle
     vec3 dernierPoint{}; bool aucuneDemande = true; int typePrec = -1; bool forcerCapture = false;
     bool eclaireLoin = false; int iterations = 0;   // RG-03 : rebonds par recaptures au même point (voir physique())
     // relecture
@@ -161,6 +162,41 @@ Resultat sondeDuCiel(const Etat_::Ciel& c) {
         float* o = &cube.face(0, f)[((size_t)y * COTE_CIEL + x) * 3]; o[0] = v.x; o[1] = v.y; o[2] = v.z;
     }
     return traiter(cube, {}, false, false);
+}
+
+// WFS-322 (RG-01, avis de expert-realisme-3d) : diagnostic d'une sonde capturée (banc, WFS_DIAG_SONDE) : texels « ciel » (même valeur que
+// le ciel calculé à 2 % près) et « surfaces » ; pour 4 normales horizontales, éclairement de chaque part, part des surfaces et teinte (x, y)
+void diagnostiquerSonde(const CubeF& src, const vec3& pos) {
+    const int N = src.cotes[0];
+    const vec3 normales[4] = {{1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
+    for (const vec3& n : normales) {
+        double Ec[3] = {}, Es[3] = {}, Esol[3] = {};
+        for (int f = 0; f < 6; f++) for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) {
+            double d[3]; directionTexel(f, (x + 0.5) / N, (y + 0.5) / N, d);
+            const double c = d[0] * n.x + d[1] * n.y + d[2] * n.z;
+            if (c <= 0) continue;
+            const float* p = &src.face(0, f)[((size_t)y * N + x) * 3];
+            const vec3 ciel = cielCpu(g.ciel, {(float)d[0], (float)d[1], (float)d[2]});
+            const double cc[3] = {ciel.x, ciel.y, ciel.z}, pp[3] = {p[0], p[1], p[2]};
+            const double lc = std::max(luminanceRgb(cc), 1e-9), lp = luminanceRgb(pp);
+            const bool estCiel = d[1] > 0 && std::fabs(lp - lc) / lc < 0.02;
+            const double w = angleSolideTexel(x, y, N) * c;
+            double* E = estCiel ? Ec : Es;
+            for (int q = 0; q < 3; q++) E[q] += p[q] * w;
+            if (d[1] < 0) for (int q = 0; q < 3; q++) Esol[q] += p[q] * w;   // surfaces sous l'horizon (sol, chaussée)
+        }
+        auto xy = [](const double* e, double& X, double& Y) {   // sRGB linéaire → XYZ → xy
+            const double Xx = 0.4124 * e[0] + 0.3576 * e[1] + 0.1805 * e[2], Yy = 0.2126 * e[0] + 0.7152 * e[1] + 0.0722 * e[2], Zz = 0.0193 * e[0] + 0.1192 * e[1] + 0.9505 * e[2];
+            const double s = std::max(Xx + Yy + Zz, 1e-12); X = Xx / s; Y = Yy / s;
+        };
+        double xc, yc, xs, ys, xt, yt; const double Et[3] = {Ec[0] + Es[0], Ec[1] + Es[1], Ec[2] + Es[2]};
+        xy(Ec, xc, yc); xy(Es, xs, ys); xy(Et, xt, yt);
+        double Eh[3] = {Es[0] - Esol[0], Es[1] - Esol[1], Es[2] - Esol[2]}, xso, yso, xh, yh; xy(Esol, xso, yso); xy(Eh, xh, yh);
+        WFS_LOG("sonde (WFS-322 diagnostic) : sous l'horizon %.0f lx (x %.3f y %.3f), surfaces au-dessus %.0f lx (x %.3f y %.3f)", luminanceRgb(Esol), xso, yso, luminanceRgb(Eh), xh, yh);
+        const double lC = luminanceRgb(Ec), lS = luminanceRgb(Es);
+        WFS_LOG("sonde (WFS-322 diagnostic) en (%.1f %.1f %.1f), normale (%g %g) : ciel %.0f lx (x %.3f y %.3f), surfaces %.0f lx (x %.3f y %.3f), part des surfaces %.0f %%, total x %.3f y %.3f",
+                pos.x, pos.y, pos.z, n.x, n.z, lC, xc, yc, lS, xs, ys, 100 * lS / std::max(lC + lS, 1e-9), xt, yt);
+    }
 }
 
 // ---------------------------------------------------------------- ressources GPU
@@ -302,7 +338,10 @@ public:
             WFS_LOG("éclairage (WFS-151) : sonde %d (%d px, %.1f ms CPU) en (%.1f %.1f %.1f), rebond %d, EV100 %.2f", g.etat.sondesCapturees, g.res.cote, g.res.ms,
                     g.res.pos.x, g.res.pos.y, g.res.pos.z, g.iterations, g.ev);
             installer(std::move(s), premiere);
-            if (premiere) g.recaler = true;
+            // WFS-322 (ANO-174) : exposition et diffus recalés d'un coup à la 1re capture d'une nouvelle scène seulement (carte, moment,
+            // voiture : sous le chargement et le décompte) ; après un saut dans la même scène (plus de 80 m), ils suivent en douceur
+            if (premiere && g.sceneNeuve) { g.recaler = true; g.shInit = true; }
+            if (premiere) g.sceneNeuve = false;
             g.res = Resultat{};
         }
     }
@@ -344,6 +383,7 @@ private:
         vk.destroy(g.tampon);
         g.enCours = true; g.fini = false;
         const vec3 pos = g.posRelue; const int gen = g.generationRelue; const bool loin = g.loinRelu;
+        if (synchrone() && std::getenv("WFS_DIAG_SONDE")) diagnostiquerSonde(*cube, pos);   // WFS-322 (RG-01) : part ciel / surfaces
         if (synchrone()) { g.res = traiter(*cube, pos, true, true); g.res.generation = gen; g.res.eclaireLoin = loin; g.fini = true; }
         else jobs().run([cube, pos, gen, loin] { g.res = traiter(*cube, pos, true, false); g.res.generation = gen; g.res.eclaireLoin = loin; g.fini = true; });
     }
@@ -380,11 +420,13 @@ void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
 void suspendreCaptures(bool oui) { g.capturesSuspendues = oui; }   // WFS-222
 bool sondeCapturePrete() { return g.B.capture && !g.forcerCapture && !g.enCours && !g.relecture && !environnement::enCours(); }
 void remettreAZero() {
-    g.recaler = true; g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
+    g.recaler = g.sceneNeuve || !g.evInit;   // WFS-322 : saut dans la même scène : l'exposition s'adapte (pas de recalage d'un coup)
+    g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
     if (g.A.gpu.img && g.A.gpu.img != g.B.gpu.img) retirer(g.A.gpu, Buffer{});
     if (g.B.gpu.img) retirer(g.B.gpu, Buffer{});
     g.A = Sonde{}; g.B = Sonde{};
     g.cielAFaire = true; g.w = 1;
+    g.shInit = true;   // WFS-322 : remise à zéro (saut de plus de 80 m) : lumière reprise sans fondu
 }
 
 void irradiance(const vec3& n, double E[3]) {
@@ -432,7 +474,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
     const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
     if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
-        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; }
+        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; g.sceneNeuve = true; }
         remettreAZero(); g.init = true; dt = 0;
     }
     g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
@@ -623,9 +665,15 @@ void avantImage(VkCtx& vk, FrameUBO& u, VkDescriptorSet image, VkDescriptorSet r
     u.iblA = {actif ? 1.f : 0.f, (float)w, (float)std::max(0, A.niveaux - 1), (float)std::max(0, B.niveaux - 1)};
     u.iblB = {(float)g.k, (float)(g.k / std::max(A.echelle, 1e-12f)), (float)(g.k / std::max(B.echelle, 1e-12f)), actif ? (float)g.facteur : 1.f};
     u.cielP = actif ? g.cielP : vec4{};
+    {   // WFS-322 (ANO-174) : mélange A / B lissé dans le temps (une nouvelle sonde ne change plus le diffus en une image)
+        Sh9 cible;
+        for (int i = 0; i < 9; i++) for (int q = 0; q < 3; q++) cible.c[i][q] = A.sh.c[i][q] * (1 - w) + B.sh.c[i][q] * w;
+        lisserSh9(g.shAffiche, cible, g.dtImage, SH_TAU_S, g.shInit || !actif);
+        g.shInit = false;
+    }
     for (int i = 0; i < 9; i++) {
         double c[3];
-        for (int q = 0; q < 3; q++) c[q] = (A.sh.c[i][q] * (1 - w) + B.sh.c[i][q] * w) * SH_A[i] / PI_L * g.k;
+        for (int q = 0; q < 3; q++) c[q] = g.shAffiche.c[i][q] * SH_A[i] / PI_L * g.k;
         u.iblSH[i] = actif ? vec4{(float)c[0], (float)c[1], (float)c[2], 0} : vec4{};
     }
     // liaisons 3 à 5 des jeux de cette image (leur image précédente est terminée : barrière attendue)

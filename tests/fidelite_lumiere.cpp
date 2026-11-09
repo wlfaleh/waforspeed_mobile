@@ -212,6 +212,25 @@ int main(int argc, char** argv) {
         VERIFIE(kFacesValides(kBon) && !kFacesValides(kTrou), "capture : face sans exposition connue refusée");
         VERIFIE(!luminanceValide(1.36e11) && !luminanceValide(nan) && luminanceValide(3458) && luminanceValide(0.0912), "sonde : luminance absurde ou non finie refusée");
     }
+    {   // WFS-322 (ANO-174) : diffus des sondes lissé dans le temps (lisserSh9) : pas de saut d'une image à l'autre
+        Sh9 aff, gris, bleu;
+        for (int q = 0; q < 3; q++) { gris.c[0][q] = 1000; bleu.c[0][q] = q == 2 ? 1300 : 800; }
+        lisserSh9(aff, gris, 1.0 / 60, SH_TAU_S, true);
+        VERIFIE(aff.c[0][0] == 1000 && aff.c[0][2] == 1000, "début (ou remise à zéro) : la cible est prise telle quelle");
+        double pire = 0; Sh9 prec = aff;
+        for (int i = 0; i < 600; i++) {   // nouvelle sonde arrivée d'un coup : 10 s à 60 img/s
+            lisserSh9(aff, bleu, 1.0 / 60, SH_TAU_S, false);
+            for (int q = 0; q < 3; q++) pire = std::max(pire, std::fabs(aff.c[0][q] - prec.c[0][q]) / 1000);
+            prec = aff;
+        }
+        VERIFIE(pire < 0.01, "arrivée d'une sonde (écart de 30 %%) : au plus %.3f %% par image (attendu < 1 %%)", pire * 100);
+        VERIFIE(std::fabs(aff.c[0][2] - 1300) < 1 && std::fabs(aff.c[0][0] - 800) < 1, "au bout de 10 s : nouvelle sonde atteinte");
+        Sh9 b = gris; Sh9 c = gris;
+        lisserSh9(b, bleu, 0, SH_TAU_S, false); lisserSh9(c, bleu, 1.0 / 60, SH_TAU_S, false);
+        VERIFIE(b.c[0][2] == c.c[0][2] && b.c[0][2] > 1000 && b.c[0][2] < 1010, "image redessinée au même temps (bancs) : comptée 1/60 s (%.2f)", b.c[0][2]);
+        lisserSh9(b, bleu, 30, SH_TAU_S, false);
+        VERIFIE(std::fabs(b.c[0][2] - 1300) < 1e-6 && std::isfinite(b.c[0][0]), "longue image (reprise) : cible atteinte, valeurs finies");
+    }
     std::printf("fidelite_lumiere : %d vérifications, %d échec(s)\n", verifs, echecs);
     return echecs ? 1 : 0;
 }

@@ -408,13 +408,13 @@ void Game::render(double time) {
 void Game::changerCarte() {
     Demandes& d = demandes();
     const std::string c = d.carte, v = carDef_->id;
-    const bool nuit = d.nuit;
-    d.carte.clear();
+    const bool nuit = d.nuit, recharger = d.recharger;
+    d.carte.clear(); d.recharger = false;
     if (sauvegarde().actif()) { sauvegarde().map = c; sauvegarde().tod = nuit ? "nuit" : "jour"; sauvegarde().enregistrer(); }   // WFS-24
     lacherCommandes();   // RG-07 : aucune commande tenue pendant le chargement
     const char* m = std::getenv("WFS_MOMENT");
     const bool nuitActuelle = m && std::strcmp(m, "nuit") == 0;
-    if (track_.map() && c == track_.map()->id && nuit == nuitActuelle) {   // RG-02
+    if (!recharger && track_.map() && c == track_.map()->id && nuit == nuitActuelle) {   // RG-02 ; WFS-307 (RG-08) : paquet changé → relu
         WFS_LOG("terrain : carte = %s, %s, déjà chargée (pas de reconstruction)", c.c_str(), nuit ? "nuit" : "jour");
         allerA(Ecran::Course);
         return;
