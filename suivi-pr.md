@@ -15,6 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
-| #308 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (2e revue : Compass acceptée ; X5 carrosserie déchirée autour de la grille (bloquant), X5 noire de nuit, silhouette du lion de la 208, convertir_voitures.sh plante hors formes.json) | ce74d358 | 2026-11-09 13:29 |
+| #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : pointe de carrosserie écrasée au centre du bord haut de la grille ; coin bas de 3/4 qui ne suit pas le contour, éclats du pare-chocs) | fff55dac | 2026-11-09 14:45 |
+| #310 | WFS-293 | Claude, Agent 0 developer | 👀 En revue — lead-dev (session 01UY1Vv2SSLK), 2026-11-09 15:01 | dc4dc8bb | 2026-11-09 15:01 |
