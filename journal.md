@@ -2510,3 +2510,5 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Calandre de la police sans logo (déjà retiré par WFS-192, vérifié sur gros plans jour et nuit) ; caisse blanche unie au lieu de grise : peinture du modèle métallisée (0,45) → non métallisée pour la seule copie de la police, blanc #E6E8EA ; capot de jour 140 → 197 (sRGB). Tests CPU 87 OK, banc course5 0 écart, appels de dessin +39 ≤ 60. `suivi-pr.md` 🔁 (34c83618).
 
 ### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-09 11:53:24 — ANO-205 (contact dans les CGU) reportée, décision de l'utilisateur (po-scrum-master)
