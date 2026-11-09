@@ -304,6 +304,8 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         environnement::demander(pointVille);   // point de départ de la Ville (6 m devant, 1,7 m de haut)
         for (int i = 0; i < 60 * 5; i++) image();
         capture("parcours-ultra-course");
+        // WFS-214 (accroche, RG-03, ANO-106) : même image en Haute (même instant, même vue) : chaussée Ultra / Haute comparée (ΔE2000 au journal)
+        niveau(qualite::HAUTE); capture("parcours-haute-course"); niveau(qualite::ULTRA);
         const bool enCourse = g.ecran() == Ecran::Course && g.player().dist > 1;
         const int captures = environnement::capturesFaites() - c0;
         if (enCourse && captures == 1 && environnement::taille() == 256) etapes++;

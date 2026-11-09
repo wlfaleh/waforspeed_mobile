@@ -412,6 +412,7 @@ const Etat& etat() { return g.etat; }
 // WFS-230 (RG-04) : exposition k pour la vision de nuit de la passe finale (post.frag) ; 0 de jour ou sans éclairage physique
 // WFS-276 : signe = relèvement des basses lumières (post.frag) : + Campagne, Corniche, Grand Prix ; − Ville éclairée (inchangée, RG-04)
 float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.moment == (int)atmosphere::Moment::Nuit ? (float)(g.releverNuit ? g.k : -g.k) : 0.f; }   // heure bleue : inchangée (RG-05)
+float lAdaptationNuit() { return kVisionNuit() != 0.f ? (float)luminanceAdaptationNuit(g.ev) : 0.f; }   // WFS-214 (RG-05) : vision de nuit loin des lumières seulement
 void forcer(const Forcage& f) { g.forc = f; }
 void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
     g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;

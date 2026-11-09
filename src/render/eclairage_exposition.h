@@ -65,6 +65,33 @@ inline double pieceAdaptee(double Y) {
     const double x = Y - PIECE_GENOU;
     return PIECE_GENOU + m * x / (x + m);
 }
+// ---- WFS-214 (RG-05, arbitrage du PO du 2026-11-07 23:59:36 UTC) : vision de nuit (WFS-230 RG-04, shaders/post.frag, visionNuit, MÊMES
+// valeurs : vérifié par test_post_wfs214) seulement LOIN des lumières. Avant, le poids scotopique ne dépendait que de la luminance du pixel :
+// une peinture foncée SOUS un lampadaire (Golf bleue : 0,5 cd/m² sous 15 lx) était traitée comme un paysage sous la lune et virait au gris
+// bleuté. L'œil s'adapte au champ qu'il regarde (CIE 191:2010 : système mésopique selon la luminance d'ADAPTATION, pas celle du point
+// regardé) : la luminance d'adaptation est celle que l'exposition automatique a mesurée autour du joueur (EV100 → cd/m², posemètre K 12,5).
+// Rue ou lampadaire (EV ≥ 3 : ≥ 1 cd/m²) : vision de jour presque entière ; rase campagne (EV −3,5 : 0,011 cd/m²) : vision de nuit
+// comme avant. Le pixel plus clair que l'adaptation (phare, flaque de lumière) garde aussi sa couleur, comme avant.
+constexpr double SCOTO_LOG_BAS = -2.3, SCOTO_LOG_PLAGE = 3.0, SCOTO_MAX = 0.9;   // log10 L de 0,005 à 5 cd/m², plafond 0,9 (WFS-230)
+inline double luminanceAdaptationNuit(double ev) { return luminanceEv100(ev); }
+inline double poidsScotopique(double Lpixel, double Ladapt) {
+    const double L = std::max(Lpixel, Ladapt);
+    if (!(L > 0)) return SCOTO_MAX;
+    const double t = std::clamp((std::log10(L) - SCOTO_LOG_BAS) / SCOTO_LOG_PLAGE, 0.0, 1.0);
+    return SCOTO_MAX * (1.0 - t * t * (3.0 - 2.0 * t));
+}
+// couleur linéaire pré-exposée c (L × k) → couleur vue avec la vision de nuit (même calcul que post.frag)
+inline void visionNuit(const double c[3], double k, double Ladapt, double o[3]) {
+    for (int i = 0; i < 3; i++) o[i] = c[i];
+    if (!(k > 0)) return;
+    const double r = std::max(c[0], 0.0), g = std::max(c[1], 0.0), b = std::max(c[2], 0.0);
+    const double X = 0.4124 * r + 0.3576 * g + 0.1805 * b, Y = 0.2126 * r + 0.7152 * g + 0.0722 * b, Z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+    if (Y <= 1e-8 || X <= 1e-8) return;
+    const double V = std::max(Y * (1.33 * (1.0 + (Y + Z) / X) - 1.68), 0.0) / 2.573;
+    const double s = poidsScotopique(Y / k, Ladapt);
+    const double bat[3] = {0.706, 0.990, 1.966};
+    for (int i = 0; i < 3; i++) { const double teinte = 1.0 + (bat[i] - 1.0) * 0.4; o[i] = c[i] + (V * teinte - c[i]) * s; }
+}
 // exposition de nuit visée : posemètre incident, de −3,5 (clair de lune, WFS-249) à 5 (rue très éclairée, borne haute de la nuit)
 inline double evIncidentNuit(double eclairement) {
     if (!std::isfinite(eclairement)) return EV_REF_NUIT;
