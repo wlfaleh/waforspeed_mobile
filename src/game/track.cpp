@@ -13,6 +13,7 @@ static const MapDef MAPS[] = {
     {"circuit", "Grand Prix", 777, {3, 5, 6}, 12, 34, 1.66, 16, 0.5, 0.78},
 };
 const MapDef& mapById(const char* id) {
+    if (g_cartesDonnees) if (const MapDef* d = g_cartesDonnees(id)) return *d;   // WFS-343
     for (const auto& m : MAPS) if (std::strcmp(m.id, id) == 0) return m;
     return MAPS[0];
 }
@@ -34,7 +35,8 @@ void Track::build(const MapDef& map, int version) {
     map_ = &map;
     segs_.clear(); sections_.clear();
     version_ = version == 2 ? 2 : 1;
-    if (version_ == 2) sections_ = trace::construire(*this, map);   // WFS-136 : tracé en sections (graine gardée pour le reste)
+    if (map.construire) { version_ = 2; map.construire(*this, map); }   // WFS-343 : routes et sections lues du paquet
+    else if (version_ == 2) sections_ = trace::construire(*this, map);   // WFS-136 : tracé en sections (graine gardée pour le reste)
     else {
     Mulberry32 R(map.seed);
     addRoad(30, 60, 30, 0, 0);

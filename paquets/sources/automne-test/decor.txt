@@ -1,0 +1,13 @@
+format 1
+ciel 0xe2d2b8 700 0x1a1424 0x0d0a12 480
+herbe 1
+bande 7.5 9 0 -0.05 0x7a6a3a
+bande 9 50 -0.05 0.3 0xa86a2a
+bande 50 160 0.3 4 0xb8823a
+bande 160 400 4 26 0x7a5a30
+repete 30 0 300 maison 0 -16 0 8 8 7 0xe0d2b8 0x9a4a2a
+repete 30 15 300 maison 0 16 0 9 8 6 0xd8c8a8 0x7a3a22
+repete 10 300 900 feuillu 0 -24 12
+repete 11 305 900 feuillu 0 22 10
+repete 25 0 900 cypres 0 -40 14
+repete 40 0 900 lampe 0 -1

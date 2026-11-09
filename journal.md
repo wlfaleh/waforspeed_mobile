@@ -2651,3 +2651,20 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 13:38:27 — WFS-343 : reprise après la limite d'utilisation (Claude, agent 3 (01UY1Vv3))
 - Session arrêtée à 01:12 UTC (limite de 5 h), reprise à la demande du PO. Branche synchronisée avec `main`. Étude du code (tracé, chocs, décor, cartes nommées dans le code) puis plan et accroches à l'entrée suivante.
+
+### 2026-11-09 13:56:47 — WFS-343 : plan et accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- **Plan** : une carte de données est décrite par trois blocs texte de son paquet (`trace`, `chocs`, `decor`, format 1), lus par `src/world/cartes_v2/carte_donnees.*`.
+  - Les cartes sont enregistrées dans un registre, et `mapById` les trouve.
+  - Le tracé est fait des routes `addRoad` du jeu web et des sections typées.
+  - Le décor vient d'une sous-classe de `CarteDecor` (`carte_donnees_decor.cpp`). La distance des checkpoints est propre à la carte.
+  - Le choix du terrain montre les cartes des paquets (RG-03). Un bloc faux rend la carte absente, avec la raison au journal du jeu.
+  - Cartes d'essai cachées : `paquets/sources/noel-test` et `paquets/sources/automne-test` (RG-05, autre saison).
+- **Accroches E0** (autorisées par le ticket) :
+  - `src/game/track.h` (+3 lignes) : champ `MapDef::construire`, pointeur `g_cartesDonnees`, `Track::poserSections`.
+  - `src/game/track.cpp` (+2 lignes) : `mapById` cherche d'abord les cartes de données ; `Track::build` appelle `construire`.
+  - Les 4 cartes du code ne changent pas.
+- **Accroche E2** (accord écrit du PO, 2026-11-09 13:50 UTC) : `src/world/decor_carte.h` (+3 lignes, dont 1 commentaire) et `decor_carte.cpp` (2 lignes changées).
+  - `couleursCarte()` : couleurs de la carte dans les cases libres de la palette.
+  - `touffes()` : touffes d'herbe facultatives.
+  - Raison : RG-05, tout vient des données. Les valeurs par défaut gardent la Campagne et le Grand Prix inchangés (captures avant / après dans la PR).
+- **Test** : `test_cartes_v2_donnees` (ligne ajoutée dans `CMakeLists.txt`) OK.

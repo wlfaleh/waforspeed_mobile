@@ -24,6 +24,7 @@
 #include "../../world/zones.h"        // WFS-96 : noms des quartiers
 #include "../../world/cartes_v2/paquet_carte.h"   // WFS-307 : empreinte attendue de chaque carte
 #include "paquets.h"                  // WFS-307 : paquets des cartes (télécharger, supprimer)
+#include "../../world/cartes_v2/carte_donnees.h"   // WFS-343 : cartes lues des paquets
 
 namespace wfs {
 namespace ecrans {
@@ -42,6 +43,18 @@ const Carte CARTES[4] = {
     {"campagne", "Petites routes entre les champs, les haies, les fermes et les éoliennes.", 0x18200F, 0x8FAE4C, 0xCDB259},
     {"circuit", "Circuit fermé : vibreurs, tribunes, murs de pneus. Tu doubles d'autres pilotes.", 0x14200F, 0x4F7F32, 0xE2262B},
 };
+
+// WFS-343 (RG-03) : cartes montrées : les 4 du code, puis les cartes de données enregistrées (cartes_v2::decouvrir) ; art : dessin de
+// la vignette (0 à 3 : cartes du code ; 4 : vignette générique aux couleurs de la carte). Cartes de test cachées : WFS_CARTES_TEST=1.
+struct CarteVue { std::string id, desc; unsigned solNuit, solJour, accent; int art; };
+std::vector<CarteVue> g_liste;
+void listeCartes() {
+    g_liste.clear();
+    for (int i = 0; i < 4; i++) g_liste.push_back({CARTES[i].id, CARTES[i].desc, CARTES[i].solNuit, CARTES[i].solJour, CARTES[i].accent, i});
+    for (const std::string& id : cartes_v2::cartesDonnees(std::getenv("WFS_CARTES_TEST") != nullptr))
+        if (const cartes_v2::DonneesCarte* d = cartes_v2::donnees(id)) g_liste.push_back({id, d->description, d->vignetteNuit, d->vignetteJour, d->accent, 4});
+}
+int nbCartes() { if (g_liste.empty()) listeCartes(); return (int)g_liste.size(); }
 
 struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
@@ -102,9 +115,9 @@ void ellipse(Renderer& r, float cx, float cy, float rx, float ry, const vec4& c)
 
 // ---------------------------------------------------------------- vignette (mapArt du web, en rectangles et disques)
 // toutes les formes restent dans le cadre (x, y, w, h) ; repère du web : 400 x 250, horizon à 150
-void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nuit) {
-    const Carte& c = CARTES[idx];
-    const MapDef& m = mapById(c.id);
+void vignette(Renderer& r, float X, float Y, float W, float H, const CarteVue& c, bool nuit) {
+    const int idx = c.art;
+    const MapDef& m = mapById(c.id.c_str());
     Mulberry32 R(m.seed * 7 + (nuit ? 3 : 1));
     auto rnd = [&]() { return (float)R.next(); };
     const float sx = W / 400.f, sy = H / 250.f, HZ = Y + 150 * sy;
@@ -156,6 +169,18 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
     } else if (idx == 1) {   // corniche : la mer jusqu'à l'horizon, vaguelettes
         r.uiRect(X, HZ - 2 * sy, W, Y + H - HZ + 2 * sy, hex(nuit ? 0x0C1A2E : 0x1F86B8));
         for (int i = 0; i < 9; i++) r.uiRect(px(rnd() * 340), py(153 + i * 3), (20 + rnd() * 40) * sx, 1.2f * sy, hex(0xFFFFFF, nuit ? 0.18f : 0.5f));
+    } else if (idx == 4) {   // WFS-343 : carte de données : collines aux couleurs de son sol, maisons et sapins en silhouette, lumières la nuit
+        const vec4 coll = melange(hex(nuit ? c.solNuit : c.solJour), hex(nuit ? 0x05050C : 0xFFFFFF), 0.25f);
+        for (int i = 0; i < 40; i++) { const float h0 = 26 + 16 * std::sin(i * 0.29f + 0.7f); r.uiRect(px(i * 10.f), py(150 - h0), 10.5f * sx, h0 * sy, coll); }
+        for (int i = 0; i < 7; i++) {
+            const float x = 18 + i * 55 + rnd() * 18, w = 22 + rnd() * 10, h = 14 + rnd() * 8;
+            r.uiRect(px(x), py(150 - h), w * sx, h * sy, hex(nuit ? 0x1A1C26 : 0x8A6A58));
+            r.uiRect(px(x - 2), py(150 - h - 6), (w + 4) * sx, 6 * sy, hex(nuit ? 0x2A2D3A : 0xF2F4F8));
+            if (nuit) r.uiRect(px(x + w / 2 - 3), py(150 - h + 4), 6 * sx, 5 * sy, hex(0xFFCF7A, 0.9f));
+            const float tx = std::min(x + w + 10, 390.f);
+            for (int k = 0; k < 3; k++) r.uiRect(px(tx - 6 + k * 2), py(150 - 8 - k * 8), (12 - k * 4) * sx, 8 * sy, hex(nuit ? 0x0E1A14 : 0x2E5A3A));
+        }
+        if (nuit) for (int i = 0; i < 26; i++) r.uiCircle(px(10 + i * 15.f), py(128 + 4 * std::sin(i * 0.9f)), 1.6f * sx, hex(i % 3 == 0 ? c.accent : i % 3 == 1 ? 0xFFCF7Au : 0xFF3B30u));
     } else {   // campagne et circuit : collines (bosses en bandes)
         const unsigned c0 = idx == 2 ? (nuit ? 0x141C2C : 0x9AB7A0) : (nuit ? 0x10161C : 0x5F8A52), c1 = nuit ? 0x101622 : 0x7FA45A;
         for (int i = 0; i < 40; i++) {
@@ -214,6 +239,7 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
 
 // zoneNames du web : noms distincts des quartiers de la carte, dans l'ordre (un tour de ZONES[ground])
 std::vector<std::string> quartiers(const MapDef& m) {
+    if (const cartes_v2::DonneesCarte* d = cartes_v2::donnees(m.id)) return d->quartiers;   // WFS-343 : quartiers lus du paquet
     std::vector<std::string> v;
     for (int64_t i = 0; i < 12; i++) {
         const std::string n = zoneName(m, i * ZONE_LEN, (int64_t)1 << 40);
@@ -229,7 +255,9 @@ public:
         doigt_ = -1;
         if (nouveau != Ecran::Terrain) { g_carte = g_prec = g_suiv = g_jour = g_nuit = g_retour = g_rouler = {}; return; }
         // carte en cours présélectionnée (pickMap garde MAP)
-        for (int i = 0; i < 4; i++) if (g.map && std::string(g.map->id) == CARTES[i].id) g_index = i;
+        cartes_v2::decouvrir(); listeCartes();   // WFS-343 (RG-03) : cartes des paquets du téléphone
+        g_index = std::min(g_index, nbCartes() - 1);
+        for (int i = 0; i < nbCartes(); i++) if (g.map && g.map->id == g_liste[(size_t)i].id) g_index = i;
         if (g.time - tListe_ >= 60 || !cartesPaquets().cherche()) {   // WFS-307 : liste des paquets lue en entrant (une fois par minute au plus)
             std::vector<std::pair<std::string, uint64_t>> v;
             for (const Carte& c : CARTES) v.push_back({c.id, cartes_v2::empreinteAttendue(c.id)});
@@ -243,7 +271,7 @@ public:
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Terrain) return false;
-        if (toucherPaquetCarte(CARTES[g_index].id, t.id, t.x, t.y, t.down, g.time)) return true;   // WFS-307 : boutons du paquet de la carte
+        if (toucherPaquetCarte(g_liste[(size_t)g_index].id.c_str(), t.id, t.x, t.y, t.down, g.time)) return true;   // WFS-307 : boutons du paquet de la carte
         const float k = ui::petitEcran(g.uiWidth, g.uiHeight) ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f;   // WFS-147
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; x0_ = t.x; y0_ = t.y; }
@@ -260,9 +288,9 @@ public:
         else if (g_nuit.contient(t.x, t.y)) { g_moment = g_nuitChoisie ? suivant(NUITS, g_moment, Moment::Nuit) : Moment::Nuit; g_nuitChoisie = true; WFS_LOG("terrain : Nuit (%s)", atmosphere::nomMoment(g_moment)); }
         else if (g_retour.contient(t.x, t.y)) { WFS_LOG("terrain : « Retour »"); g.allerA(Ecran::Menu); }
         else if (g_rouler.contient(t.x, t.y)) {   // RG-03 : la partie est reconstruite sur la carte choisie, puis la course
-            WFS_LOG("terrain : « Rouler » sur %s (%s)", CARTES[g_index].id, g_nuitChoisie ? "nuit" : "jour");
-            Game::demandes().carte = CARTES[g_index].id; Game::demandes().nuit = g_nuitChoisie;
-            if (cartesPaquets().changee(CARTES[g_index].id)) { Game::demandes().recharger = true; cartesPaquets().prise(CARTES[g_index].id); WFS_LOG("terrain : paquet de %s changé, carte relue", CARTES[g_index].id); }   // WFS-307 (RG-08)
+            WFS_LOG("terrain : « Rouler » sur %s (%s)", g_liste[(size_t)g_index].id.c_str(), g_nuitChoisie ? "nuit" : "jour");
+            Game::demandes().carte = g_liste[(size_t)g_index].id.c_str(); Game::demandes().nuit = g_nuitChoisie;
+            if (cartesPaquets().changee(g_liste[(size_t)g_index].id.c_str())) { Game::demandes().recharger = true; cartesPaquets().prise(g_liste[(size_t)g_index].id.c_str()); WFS_LOG("terrain : paquet de %s changé, carte relue", g_liste[(size_t)g_index].id.c_str()); }   // WFS-307 (RG-08)
             eclairage::choisirMoment((int)g_moment); if (sauvegarde().actif()) sauvegarde().moment = atmosphere::nomMoment(g_moment);   // WFS-208 (enregistré par Game::changerCarte)
         }
         return true;   // l'écran garde tous les touchers
@@ -282,7 +310,8 @@ public:
         ui::text(r, zl, hy, (cp ? 12 : 13) * k, ui::majuscules("Étape 3 sur 3 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
         ui::text(r, zl, hy + (cp ? 18 : 20) * k, (cp ? 28 : 44) * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
-        const std::string tot = " / 04";
+        char totc[16]; std::snprintf(totc, sizeof totc, " / %02d", nbCartes());
+        const std::string tot = totc;
         ui::text(r, zr, hy + (cp ? 22 : 30) * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
         ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + (cp ? 14 : 22) * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
         // ---------- vignette de la carte (mapCard) ----------
@@ -295,11 +324,11 @@ public:
         // petit écran : vignette plus large que haute (2,4 : 1) pour que les quartiers tiennent sur une ligne
         const float cx0 = zl + (zw - cw) / 2, cy0 = haut;
         g_carte = {cx0, cy0, cw, ch};
-        const Carte& c = CARTES[g_index];
-        const MapDef& m = mapById(c.id);
+        const CarteVue& c = g_liste[(size_t)g_index];
+        const MapDef& m = mapById(c.id.c_str());
         r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(ACCENT2));   // WFS-146 (RG-07, ANO-41) : carte choisie, contour cyan (sélection) pour toutes les cartes
-        vignette(r, cx0, cy0, cw, ch, g_index, g_nuitChoisie);
-        assombrirCarte(r, c.id, cx0, cy0, cw, ch);   // WFS-307 (RG-01) : paquet publié pas encore téléchargé
+        vignette(r, cx0, cy0, cw, ch, c, g_nuitChoisie);
+        assombrirCarte(r, c.id.c_str(), cx0, cy0, cw, ch);   // WFS-307 (RG-01) : paquet publié pas encore téléchargé
         // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
         const std::vector<std::string> qs = quartiers(m);
         const float pf = (cp ? 13 : 12) * k, ph = (cp ? 24 : 22) * k, pg = 6 * k, pmax = cw - 48 * k;
@@ -364,12 +393,12 @@ public:
             ui::text(r, px0 + 10 * k, py0 + (ph - pf) / 2, pf, qs[i], hex(TEXTE), ui::GAUCHE, 0.04f, false);
             lx += pw[i] + pg;
         }
-        dessinerPaquetCarte(r, c.id, cx0, cy0, cw, ch, k, g.time);   // WFS-307 : Télécharger / progression / Supprimer
+        dessinerPaquetCarte(r, c.id.c_str(), cx0, cy0, cw, ch, k, g.time);   // WFS-307 : Télécharger / progression / Supprimer
         // ---------- flèches (.map-arrow), grisées aux extrémités ----------
         const float ar = 26 * kb, ay = cy0 + ch / 2;   // WFS-168 : flèche d'avant WFS-147
         const float ax[2] = {cx0 - 18 * k - ar, cx0 + cw + 18 * k + ar};
         for (int s = 0; s < 2; s++) {
-            const bool actif = s == 0 ? g_index > 0 : g_index < 3;
+            const bool actif = s == 0 ? g_index > 0 : g_index < nbCartes() - 1;
             (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * kb, ay - ar - 10 * kb, 2 * ar + 20 * kb, 2 * ar + 20 * kb} : Zone{};
             r.uiCircle(ax[s], ay, ar + kb, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
             r.uiCircle(ax[s], ay, ar, hex(SURFACE2, actif ? 0.95f : 0.5f));
@@ -378,8 +407,8 @@ public:
         }
         // ---------- points (.map-dots) ----------
         const float dy = cy0 + ch + (cp ? 7 : 16) * k;
-        float dxp = zl + zw / 2 - (3 * 14 * k + 28 * k) / 2;
-        for (int i = 0; i < 4; i++) {
+        float dxp = zl + zw / 2 - ((nbCartes() - 1) * 14 * k + 28 * k) / 2;
+        for (int i = 0; i < nbCartes(); i++) {
             const float w = i == g_index ? 28 * k : 8 * k;
             r.uiRect(dxp, dy, w, 4 * k, i == g_index ? hex(ACCENT) : hex(TEXTE, 0.25f));
             dxp += w + 6 * k;
@@ -413,8 +442,8 @@ public:
     }
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités
-        const int i = std::clamp(g_index + dir, 0, 3);
-        if (i != g_index) { g_index = i; sfxInterface(SfxId::Carte); WFS_LOG("terrain : carte %s (%02d / 04)", CARTES[i].id, i + 1); }
+        const int i = std::clamp(g_index + dir, 0, nbCartes() - 1);
+        if (i != g_index) { g_index = i; sfxInterface(SfxId::Carte); WFS_LOG("terrain : carte %s (%02d / %02d)", g_liste[(size_t)i].id.c_str(), i + 1, nbCartes()); }
     }
     int doigt_ = -1;
     float x0_ = 0, y0_ = 0;
@@ -423,7 +452,7 @@ private:
 
 } // namespace
 
-void choisirCarte(const std::string& id, bool nuit) { for (int i = 0; i < 4; i++) if (id == CARTES[i].id) g_index = i; g_nuitChoisie = nuit; g_moment = nuit ? Moment::Nuit : Moment::Midi; }
+void choisirCarte(const std::string& id, bool nuit) { listeCartes(); for (int i = 0; i < nbCartes(); i++) if (id == g_liste[(size_t)i].id) g_index = i; g_nuitChoisie = nuit; g_moment = nuit ? Moment::Nuit : Moment::Midi; }
 
 bool centreRouler(float& x, float& y) {
     if (g_rouler.w <= 0) return false;
@@ -432,6 +461,7 @@ bool centreRouler(float& x, float& y) {
 }
 
 double longueurKm(const MapDef& m) {   // mapLengthKm (screens.js)
+    if (const cartes_v2::DonneesCarte* d = cartes_v2::donnees(m.id)) return d->segments() * SEG * M / 1000;   // WFS-343 : routes du paquet
     Mulberry32 R(m.seed);
     int n = 120;
     for (int i = 0; i < m.sections; i++) {
@@ -455,7 +485,7 @@ void benchTerrain(Game& g, Renderer& r, const std::string& out) {
     auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; if (++n % 10 == 0) g.render(t); };
     auto capture = [&](const char* nom, const char* quoi) {
         g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
-        WFS_LOG("capture %s : écran %s, carte %s, %s", nom, nomEcran(g.ecran()), CARTES[g_index].id, quoi);
+        WFS_LOG("capture %s : écran %s, carte %s, %s", nom, nomEcran(g.ecran()), g_liste[(size_t)g_index].id.c_str(), quoi);
     };
     auto toucher = [&](int id, const Zone& z) {
         const float x = z.x + z.w / 2, y = z.y + z.h / 2;
