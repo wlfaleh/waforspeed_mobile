@@ -46,8 +46,8 @@ case "$GROUPE" in
     partie=${GROUPE#realisme-}
     if [ "$partie" = 2 ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi   # WFS-149 : KTX2 d'essai, rapport PSNR
     WFS_BANC=realisme WFS_REALISME_PARTIE=$partie ./build/wfs_bench captures assets/ ;;   # morceaux : captures/realisme-partie-N.morceaux
-  complements-a|complements-b)   # WFS-352 (RG-03) : bancs absents des bancs du matin jusque-là ; un écart (code 3) = rouge
-    if [ "$GROUPE" = complements-a ]; then liste="qualite lod perf"; else liste="cuisson cgu paquets virages"; fi
+  complements-a|complements-b|complements-c)   # WFS-352 (RG-03) : bancs absents des bancs du matin jusque-là ; un écart (code 3) = rouge
+    case "$GROUPE" in complements-a) liste="qualite" ;; complements-b) liste="lod perf" ;; *) liste="cuisson cgu paquets virages" ;; esac   # essai local : cuisson 10 min, cgu 3, paquets 3, virages > 9
     for b in $liste; do
       mkdir -p "comp-$b"
       code=0; WFS_BANC=$b ./build/wfs_bench "comp-$b" assets/ > "captures/$b-journal.txt" 2>&1 || code=$?
