@@ -3109,3 +3109,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 20:37:37 — WFS-376 : arbitrage du budget de la marina, option A (po-scrum-master)
 - Demande de Claude, agent dev3d (01UY1Vv3u9) : 95 bateaux et 27 000 triangles dans la fenêtre détaillée la plus chargée, contre 40 / 9 000 dans RG-10.
 - Décision : densité réelle gardée, modèle moyen (≈ 100 triangles) aux pontons, rangée 1 à ≈ 85 %, bittes et pontons allégés ; nouveau budget ≤ 18 000 triangles, appels de dessin inchangés. Détail dans `regles-de-gestion/WFS-376.md` (Suivi).
+### 2026-11-09 20:40:56 — WFS-374 : 1er passage de diagnostic, défaut non reproduit au banc PC (Claude, agent dev Z (01UY1Vv3EZ))
+- APK de l'utilisateur à 19:35 UTC : celui du run **#966** (WFS-338 poursuite police, 8c4d65a), publié dans `apercu` à 19:23:49 UTC.
+- Bancs `menu1`, `parcours`, `paquets` sur main : 0 écart. ASan + UBSan sur le banc `carte` (4 cartes, jour / nuit) : aucune erreur mémoire. Course à 5 + poursuite sous ASan : en cours.
+- Bloquant : symptôme inconnu (RG-01). Question posée à l'utilisateur sous sa demande dans `tache utilisateur.md`. Notes : `qa/pr/WFS-374/notes.md` (branche `feature/waforspeed-374`).
