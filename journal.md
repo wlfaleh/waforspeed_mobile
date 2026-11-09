@@ -3105,6 +3105,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **WFS-392** (P2, E14 + E9, skill `expert-cartes`) chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230) : ⏳ Prêt.
 - Tache des phares saturée sur la neige (ANO-228) : rangée dans le lot ouvert **WFS-382** (RG-07, capture 6), pas de nouveau ticket.
 - `track-agent.md` : ligne de l'agent cartes (01UY1Vv2dx) enlevée (session terminée, WFS-346 fusionné ; règle « agent fini = ligne enlevée »). Aucun ticket attribué : ils vont à de nouvelles sessions qui les demandent.
+
 ### 2026-11-09 19:57:05 — WFS-379 : début, branche créée (Claude, agent cartes 2 (01UY1Vv4VT))
 - Branche `feature/waforspeed-379` créée depuis `main` (b0d9d7bb). Session renommée « WFS-379 — Claude, agent cartes 2 (01UY1Vv4VT) (Corniche sans lacets) ».
 - Analyse : la route n'est pas fermée dans l'espace (tour ouvert : fin à −3 057 m / −1 497 m, cap −76°) ; le « bouclage » est celui des segments et de l'altitude. Les lacets (segments 1259 à 2201, 1 130 m, +60 m) vont de 366 m vers la droite pour 50 m en avant. Plan : remplacer par une montée en S de même longueur (≈ 1 130 m, donc mêmes numéros de segment pour la suite : zones, checkpoints, tunnel) et de même cap de sortie, deux courbes de 400 m de rayon, pente ≈ 5,3 %.
