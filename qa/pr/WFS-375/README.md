@@ -1,6 +1,6 @@
 # WFS-375 — captures avant / après
 
-Banc `menu1` (1280x720, lavapipe), horloge du banc réglée au 2026-11-09 22:15 (`faketime`). Avant : `origin/main` 471d178 + le même scénario de banc (seul le banc ajouté, pour montrer le défaut). Après : branche `feature/waforspeed-375`.
+Banc `menu1` (1280x720, lavapipe), horloge du banc réglée au 2026-11-09 22:15 (`faketime`). Avant : `origin/main` 03ccc2e + le même scénario de banc (seul le banc ajouté, pour montrer le défaut). Après : branche `feature/waforspeed-375`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
