@@ -2880,5 +2880,17 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - WFS-193 est 🟣 avec la Compass et la 208 (#308). La X5 est sortie du ticket par le garde-fou du PO après le 3e refus de #311. La PR est fermée sans fusion et la branche `feature/waforspeed-193` est gardée.
 - J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
 - Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
+
 ### 2026-11-09 17:00:21 — WFS-214 : début, branche créée (Claude, agent dev W (01UY1Vv4Ed))
 - Ticket attribué par le PO (ciel en paliers ANO-109, chaussée bleue en Ultra ANO-106, vision de nuit sous les lampes RG-05). Branche `feature/waforspeed-214` créée et poussée ; lecture du code E13 en cours.
+
+### 2026-11-09 17:31:59 — WFS-214 : arbitrage RG-02, ciel de midi (po-scrum-master)
+- Demande de Claude, agent dev W (01UY1Vv4Ed) : le ciel est calé sur 6 000 lx (éclairement mesuré **à l'ombre**), d'où un zénith à 2,7 kcd/m² au lieu de ≈ 7 à 10 kcd/m² ; avis de l'expert réalisme 3D : option A.
+- **Décision : option A, dans WFS-214** (zone E13) : plein ciel selon Krochmann (≈ 15,8 klx à h 70°) pour le ciel affiché et l'ambiance ; 6 000 lx gardés comme contrôle « à l'ombre ». B refusée (énergie incohérente).
+- Conditions (détail dans `regles-de-gestion/WFS-214.md`, Suivi) : référentiel complété, test adapté sans rien supprimer ni affaiblir, mesures au banc (zénith 6-8 kcd/m², E_d ±15 %, 2,5-3,2 IL), nuit inchangée, captures h 70 / 30 / 10 et ombres de la Ville avant / après ; repli sur C avec US dédiée si A ne tient pas dans la journée. US « occlusion du ciel » seulement si le défaut se voit.
+
+### 2026-11-09 17:34:56 — WFS-346 : plan, accroches annoncées, question « aurore » (Claude, agent cartes (01UY1Vv2dx))
+- Branche `feature/waforspeed-346` poussée (1er commit : valeurs réelles `references/reel/cartes_v2/neige.md`, μ neige tassée 0,25, flocons 2 à 5 mm, 1 à 1,5 m/s).
+- Plan : saison lue du bloc `decor` du paquet (format 2 des blocs : `adherence`, `neige_chaussee`, `flocons`), valeurs par défaut = sec sans neige (cartes du code inchangées) ; chaussée enneigée et traces de roues dans `route.glsl` (neige transmise au matériau de route, sèche sous le toit du tunnel) ; flocons = particules du monde autour de la caméra dans `meteo.cpp` (rien dans l'habitacle, rien sous un tunnel) ; tunnel générique des cartes de données (piédroits et dalle) ; μ dans la conduite du joueur.
+- **Accroches annoncées** : `game.cpp` 2 lignes (include + `cartes_v2::preparerSaison(mapId)` avant `route::preparer`) ; `player.h` 1 ligne (`muSol_`, `kSol_`) ; `player.cpp` 8 lignes (include, μ du sol pour la voiture du joueur ; conduite du jeu (ancien modèle, `g_conduiteMonde` faux) : limite de lacet, freinage et élan × μ, vitesse permise de l'aide × μ ; nouveau modèle : `sol.mu`) ; ordinateurs (`Aide::Web`) et cartes du code : rien ne change (test). `desktop_main.cpp` 1 ligne (banc `neige`). `aide_direction.*`, `direction.*`, `roues.*` : non touchés.
+- **Question au PO (RG-03, « aurore »)** : le ciel est en E13 (`sky*`, interdit à ce ticket, WFS-214 en cours) ; je ne fais pas l'aurore ici. Proposition : la mettre dans WFS-344 (contenu de la carte Neige scandinave) ou une US E13 après WFS-214. Les lumières de Noël sont déjà lues du paquet (WFS-343).
