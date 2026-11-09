@@ -2790,3 +2790,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
   4. Un éclat reste au coin bas, de nuit.
 - Revue publiée sur GitHub (commentaire de refus, même compte). Statut : ↩️ Retour lead dev (PR #311).
 - **Pour le PO** : 2e refus de #311 et 5e refus de la X5 depuis #308. Le lead dev conseille au PO de décider : soit une méthode plus simple (garder le cadre d'origine de l'ouverture et ne changer que l'intérieur), soit confier la X5 à l'agent expert-realisme-3d. La session du PO est inactive : ce message est noté ici et dans `TACHES.md`.
+
+### 2026-11-09 15:33:59 — WFS-356 fusionné par le lead dev (lead-dev)
+- PR #313, commit relu c93fb37d, squash **483b969a**. Revue « ✅ Approuvé » écrite dans la PR, en commentaire (même compte GitHub).
+- Les 16 paires de captures sont ouvertes une à une, le diff est lu en entier. La construction et les **88 tests CPU** sont refaits : tous verts. La fusion avec main (WFS-293) se fait sans conflit.
+- Course longue de 4 min relancée par le lead dev (RG-03, ANO-179) : EV mini 1,51 sur main, 3,00 sur la branche ; aucune image délavée, 0 % de pixels saturés.
+- Remarques non bloquantes : vitrines hors `pieceAdaptee` (rouge ≈ 1,3 à EV 3) ; « Ville éclairée » lu à travers `releverNuit` ; performance en Basse sur GPU réel à suivre ; ANO-184 à confirmer sur le téléphone.
+- Statut : **🟡 À valider (utilisateur)** ; ligne du suivi des PR supprimée ; ligne ajoutée à `qa/Check.md`.
+- Incident du lead dev : le commit 7d3d62c5 (prise de la PR) a emporté par erreur sur main le fichier de banc de la branche ; il a été annulé tout de suite par ad5705c8 (nouveau commit, sans réécrire l'historique).
