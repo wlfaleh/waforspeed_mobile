@@ -148,6 +148,7 @@ int benchDepart(Game& g, Renderer& r, const std::string& out) {
     if (tout || quoi == "departs") for (const char* carte : {"ville", "plage", "campagne"})
         if (d.rouler(carte, true)) d.course(std::string("depart-nuit-") + carte);
     if ((tout || quoi == "departs") && d.rouler("ville", false)) d.course("depart-jour-ville");
+    if ((tout || quoi == "departs") && d.rouler("campagne", false)) d.course("depart-jour-campagne");   // WFS-214 : jour hors de la Ville (ciel entier, ombres)
     if ((tout || quoi == "recommencer") && d.rouler("ville", true)) {   // pause, reprise, puis « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné)
         for (int i = 0; i < 60 * 6; i++) d.image(i);
         g.allerA(Ecran::Pause); for (int i = 0; i < 60; i++) d.image(i);

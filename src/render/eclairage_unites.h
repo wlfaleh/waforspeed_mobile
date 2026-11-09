@@ -106,15 +106,19 @@ inline double ciePhi(double Z, const CieCiel& k = CIE_TYPE_12) {
     const double cz = std::cos(Z);
     return cz <= 1e-6 ? 1.0 : 1 + k.a * std::exp(k.b / cz);
 }
-// niveau absolu : éclairement diffus horizontal du ciel clair E_d(h) = 0,8 + 15,5 √(sin h) klx (forme de H. Krochmann,
-// M. Seidl, « Quantitative data on daylight for illuminating engineering », Lighting Res. Technol. 6, 1974), ramenée à la
-// valeur publiée du référentiel : lum.ciel_clair.intensite = 6 000 lx à l'ombre, ciel bleu clair à midi (h = 70°).
-// Conception WFS-151 : la forme suit Krochmann, le niveau suit le référentiel (statut « conception » dans le rapport).
-constexpr double E_CIEL_CLAIR_MIDI = 6000.0, H_MIDI_DEG = 70.0;
+// niveau absolu : éclairement diffus horizontal du ciel clair, ciel ENTIER (plan horizontal dégagé) :
+// E_d(h) = 0,8 + 15,5 √(sin h) klx (H. Krochmann, M. Seidl, « Quantitative data on daylight for illuminating engineering », Lighting
+// Res. Technol. 6, 1974 ; référentiel : lum.ciel_clair.plein_ciel, ± 15 %, « à confirmer ») : 15 825 lx à h = 70°.
+// WFS-214 (RG-02, ANO-109, arbitrage du PO du 2026-11-09, option A, avis expert-realisme-3d) : avant, cette forme était ramenée à
+// lum.ciel_clair.intensite = 6 000 lx, valeur mesurée À L'OMBRE (l'obstacle cache le soleil, sa couronne et une partie du ciel) : le ciel
+// entier était 2,6 fois trop sombre (zénith 2 669 cd/m² à h 70°, ciel de midi gris-bleu sombre ; ombres 4 IL sous le soleil au lieu de
+// 2,5 à 3). Les 6 000 lx restent le CONTRÔLE « point à l'ombre » : au pied d'un mur qui cache la moitié du ciel côté soleil, le même
+// ciel donne 5 498 lx (−8 %, test_fidelite_lumiere).
+constexpr double E_CIEL_CLAIR_MIDI = 6000.0, H_MIDI_DEG = 70.0;   // contrôle à l'ombre (lum.ciel_clair.intensite)
+constexpr double E_CIEL_PLEIN_MIDI = 15825.0;                     // plein ciel à h = 70° (lum.ciel_clair.plein_ciel, Krochmann 1974)
 inline double eclairementCielDiffus(double hDeg) {
     if (hDeg <= 0) return 0;
-    auto forme = [](double h) { return 0.8 + 15.5 * std::sqrt(std::sin(h * PI_L / 180.0)); };
-    return E_CIEL_CLAIR_MIDI * forme(hDeg) / forme(H_MIDI_DEG);
+    return 1000.0 * (0.8 + 15.5 * std::sqrt(std::sin(hDeg * PI_L / 180.0)));
 }
 // luminance relative f(γ) φ(Z) d'une direction (y vers le haut) pour un soleil de direction s (unitaire)
 inline double cieRelative(const double d[3], const double s[3], const CieCiel& k = CIE_TYPE_12) {
