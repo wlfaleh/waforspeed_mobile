@@ -2633,3 +2633,9 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - Zone (exception PO, E13 + E4) : `src/render/eclairage_*`, `nuit.cpp`, `post_*`, `shaders/post*`, `shaders/eclairage*.glsl`, `tests/fidelite_lumiere*` + test CPU neuf ; **interdit** `player.*`, `conduite_*`, `game.cpp`, `track.*`, `camera_vue.*` (WFS-293), `vehicule_cockpit*`, la CI.
 - Règles complétées : RG-04 (reproduire Basse 60 %, Checkpoint, « 3 », d'abord), RG-05 (≤ 1 % de pixels saturés, halos ≤ 3× la lampe, pas de rose), RG-06 (jour et performance inchangés), captures demandées, critères (`regles-de-gestion/WFS-356.md`). Après fusion : 🟡 À valider (utilisateur).
 - Plan court : reproduire au banc `depart` en Basse 60 %, nommer la cause, corriger l'exposition / les halos, captures avant / après, PR, appel du lead dev, arrêt.
+
+### 2026-11-09 13:29:12 — WFS-193 : PR pilote #308 refusée en 2e revue (lead-dev)
+- Commit relu ce74d358 ; réponse du développeur sous la 1re revue présente. Outil rejoué depuis `main` : 3 `.wfm` et 3 `.lod` identiques octet pour octet ; `--verifier` des deux outils : code 0.
+- 24 gros plans et 36 vitrines ouverts : Compass acceptée ; 208 bonne (trapèze) sauf la silhouette du socle du lion visible entre les barres ; vues `-0`, `-a2`, `-feux`, `-feux-nuit` inchangées (0 pixel).
+- Refus : X5 carrosserie « déchirée » autour de la grille (bord haut en dents de scie après le retrait de la pointe, éclats blancs à droite de trois quarts) ; X5 aplat noir de nuit (non bloquant) ; `convertir_voitures.sh` plante (`set -e`) pour une voiture absente de `formes.json` (non bloquant).
+- TACHES : WFS-193 « ↩️ Retour lead dev (PR #308) » ; track-agent et suivi-pr à jour.
