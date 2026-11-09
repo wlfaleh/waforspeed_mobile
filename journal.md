@@ -4741,3 +4741,24 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - PR #297 ouverte (🆕 dans `suivi-pr.md`, 🔀 dans `TACHES.md`), branche `feature/waforspeed-338` synchronisée avec `main` (093cbefc). Police dessinée jusqu’à 160 m derrière, renfort et retour à 220 m (hors de vue), rapprochement borné (4 m/s + 0,3 × distance), jamais dans la voiture du joueur ; encart POLICE = distance à la police ; raison de chaque perte de points écrite sous le score ; vrai chantier (panneau AK5, biseau de cônes K5a) posé 450 m avant, bandeau à 200 m ; policier en uniforme au volant ; bandes « POLICE » et rampe bleue posée sur le pavillon.
 - Accroche hors zone annoncée : `src/world/conducteurs.h/.cpp` (paramètre `policier`, ≤ 10 lignes).
 - Preuves : tests CPU 83 OK ; banc `course5` : parcours complet 0 écart ; 24 captures « après » dans `qa/pr/WFS-338/` dont la suite `poursuite-arrivee-1` à `-6` (renfort à 229, 204, 158, 114, 81, 56 m derrière). Point pour le lead dev : mesure RG-04 de WFS-119 (Basse, ralentisseur) +128 appels sur ce banc local (Checkpoint de référence anormalement bas, 183).
+
+### 2026-11-09 04:11:00 — Statuts automatiques, CI main #942 (robot statuts)
+- Run rouge (push, commit 2e070cd), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 04:17:37 — WFS-338 : PR #297 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (suite d'arrivée de la police, vues arrière, HUD, travaux, police, bouchon) ; diff lu (`poursuite.*`, `poursuite_system.cpp`, `conducteurs.*`). Bon : RG-02 (distance à la police), RG-03 (raison des pertes), RG-07 (livrée, gyrophare), code de RG-05.
+- Refus : conflit `journal.md` ; arrivée de la police non montrée (une police déjà à 14 m dès la 1re image) ; bandeau « TRAVAUX » sans cône visible à l'image ; policier non montré ; +128 appels de dessin en Basse au ralentisseur (WFS-119 RG-04, cible ≤ 60) sans décision du PO.
+- **Pour le PO** : décision attendue si le dépassement de WFS-119 RG-04 est gardé.
+
+### 2026-11-09 04:43:36 — WFS-333 : PR #298 ouverte, 🆕 à relire par le lead dev (agent arwa (Claude, session trafic))
+- **Cause (RG-01)**, mesurée par simulation (emprises dessinées, axes séparateurs) : `Traffic::collide` oubliait le tête-à-queue du joueur (`spinYaw`) et la rotation d'une voiture accidentée (`crashYaw`) : jusqu'à 2,19 m de carrosserie dans celle du joueur ; une voiture accidentée percutée par l'arrière recevait la vitesse du joueur (voiture de travers qui le suit, ANO-180) ; `duel::contacter` ne déplace que le joueur (adversaires ; police mesurée à 2,11 m, laissée à WFS-338, PR #297, sur demande du coordinateur). ANO-190 : halos des clignotants de 1,5 m pris pour des flammes.
+- Fait : `traffic.h/.cpp` (emprises orientées, séparation finale, voiture accidentée qui garde sa vitesse ; seulement pour la voiture du joueur, la référence du jeu web est intacte), `course5_system.cpp` (2 lignes), `traffic_system.*` (halo 0,7 m, banc `penetration`), accroche d'1 ligne dans `desktop_main.cpp` (`WFS_BANC=penetration`), `tests/test_penetration_voitures.cpp` (nouveau), `tests/test_chocs_voitures.cpp` (voitures tournées mesurées sur leurs emprises dessinées).
+- Vérifié : compilation Release ; tests CPU 84/84 (branche synchronisée) ; `test_penetration_voitures` 0,000 m (3 cartes, 2 aides, 6 graines × 60 s) ; banc `penetration` 0,000 m ; banc `parcours` 0 écart (et Cockpit 0) ; **parcours complet** Poursuite (banc `course5`) accueil → Course solo → Poursuite → garage → terrain → course → fin → Menu → accueil : 0 écart ; course à 5 : 0 écart. 11 captures « après » dans `qa/pr/WFS-333`.
+- Limites : vidéo d'ANO-180 non reproduite à l'identique (les deux mécanismes sont corrigés) ; duel en réseau non traité.
+
+### 2026-11-09 04:43:36 — WFS-333 : risque signalé (agent arwa (Claude, session trafic))
+- Constat : banc `penetration`, `qa/pr/WFS-333/apres-penetration-cockpit-1.jpg` et `-2.jpg` : la voisine, à 1,91 m de centre à centre (**aucun** recouvrement des emprises), est dessinée par-dessus le bas de la portière gauche et la planche : l'habitacle de la vue Cockpit ne masque pas une voiture toute proche sur le côté.
+- Conséquence : une partie de ANO-181 / ANO-183 (« voiture dans l'habitacle » en Cockpit) reste visible même sans pénétration.
+- Proposition : ticket de correction sur `src/render/vehicule_cockpit.cpp` / `camera_vue.*` (portières et côtés de l'habitacle opaques jusqu'au bas du cadre) ; zone interdite à WFS-333, non touchée.
+- Décision attendue de : PO.
