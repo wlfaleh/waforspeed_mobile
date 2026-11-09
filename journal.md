@@ -2981,3 +2981,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Approbation écrite dans la PR (revue COMMENT « ✅ Approuvé », car GitHub refuse l'approbation du même compte), puis squash **8d55c57c**. Branche gardée.
 - Les 4 défauts de jonction grille / carrosserie partent dans **WFS-358**, désormais ⏳ Prêt. Le léger contour de l'ancien logo sur le capot (déjà présent sur `main`) est signalé pour WFS-358.
 
+
+### 2026-11-09 19:27:41 — Décor en formes géométriques : WFS-369 à 373 (po-scrum-master)
+- Demande de l'utilisateur : « des formes géométriques dans les cartes, créer les tâches ». Constat sur les captures de l'APK 954 et dans le code : bancs en pavés, immeubles en boîtes, parasols en cônes, mâts en cylindres, vignes en blocs (ANO-65).
+- US créées (E12 + E2, agent `dev-artiste-3d`, à la suite) : **WFS-369** (P1, ⏳ Prêt) mobilier urbain de la Ville ; **370** (P1) immeubles de la Ville en vrais volumes (avec WFS-231 pour les ouvertures) ; **371** (P2) Corniche ; **372** (P2) Campagne ; **373** (P2) Grand Prix. Chaque US commence par l'inventaire des objets en formes géométriques.
+- PR #311 fusionnée par le lead dev (8d55c57c) ; WFS-358 prêt, avec en plus le contour de l'ancien logo du capot de la X5.
