@@ -109,6 +109,15 @@ int main() {
         std::snprintf(t, sizeof t, "amarrage du modèle %d (%s) : %d triangles = %d annoncés", (int)md, q ? "à quai" : "au mouillage", n, trianglesAmarrage(md, q));
         verifie(n == trianglesAmarrage(md, q), t);
     }
+    for (Modele md : {VOILIER, VEDETTE, YACHT}) {   // version moyenne (pontons, mouillage)
+        const Bateau b = construire(md, c);
+        std::snprintf(t, sizeof t, "version moyenne du modèle %d : %d triangles ≤ 140", (int)md, b.moyen.triangles());
+        verifie(b.moyen.triangles() <= 140 && b.moyen.triangles() > 40, t);
+        qualite(b.moyen, "version moyenne");
+        const Boite bm = boite(b.moyen, -0.01f), bp = boite(b.pres, -0.01f);
+        std::snprintf(t, sizeof t, "version moyenne du modèle %d : mêmes dimensions que le détail (%.2f / %.2f m, haut %.2f / %.2f m)", (int)md, bm.mx.z - bm.mn.z, bp.mx.z - bp.mn.z, bm.mx.y, bp.mx.y);
+        verifie(proche(bm.mx.z - bm.mn.z, bp.mx.z - bp.mn.z, 0.01f) && proche(bm.mx.y, bp.mx.y, 0.02f), t);
+    }
     const Maille bi = bitte(c), po = ponton(42, 1.45f, c, false);
     qualite(bi, "bitte d'amarrage");
     qualite(po, "ponton de 42 m");

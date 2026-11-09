@@ -34,8 +34,10 @@ struct Couleurs { int gelcoat = 0, pont = 0, vitre = 0, mat = 0, cable = 0, cord
 enum Modele { VOILIER, VEDETTE, YACHT, NB_MODELES };
 
 // un modèle : version détaillée (bloc à moins de 200 m) et allégée (au-delà : coque ≤ 12 triangles, mât en 2 quads croisés)
+// et version moyenne (≈ 100 à 130 triangles : sans filières ni barres de flèche ni hublots) pour les bateaux loin de la route
+// (pontons, mouillage), toujours vus derrière la rangée du quai
 struct Bateau {
-    Maille pres, loin;
+    Maille pres, moyen, loin;
     float L = 0, B = 0, T = 0;           // longueur hors tout, bau, tirant d'eau (m, échelle 1)
     float francPoupe = 0;                // hauteur du pont au tableau arrière (m au-dessus de l'eau)
     float francEtrave = 0;               // hauteur du pont à l'étrave
@@ -56,7 +58,7 @@ Maille amarrage(const Bateau& b, Modele m, float s, float ecart, float yQuai, co
 // bitte d'amarrage en fonte (Ø 0,38 m à la base, 0,48 m de haut, tête à rebord), posée sur le quai, base en (0, 0, 0)
 Maille bitte(const Couleurs& c);
 // ponton flottant de longueur l (le long de +z), 2,2 m de large, dessus à 0,5 m au-dessus de l'eau : platelage de béton à
-// bords chanfreinés, lisses de bois, flotteurs, bornes de distribution (eau, électricité) tous les 12 m, pieu de guidage au bout ; passerelle articulée depuis le quai (hautQuai : dessus du quai au-dessus de l'eau, côté z < 0)
+// bords chanfreinés, lisses de bois, flotteurs, bornes de distribution (eau, électricité) tous les 18 m, pieu de guidage au bout ; passerelle articulée depuis le quai (hautQuai : dessus du quai au-dessus de l'eau, côté z < 0)
 Maille ponton(float l, float hautQuai, const Couleurs& c, bool loin);
 constexpr float PONTON_LARGEUR = 2.2f, PONTON_HAUT = 0.5f;
 

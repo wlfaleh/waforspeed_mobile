@@ -1060,7 +1060,7 @@ public:
             if (o.t != O_BATEAU || std::strcmp(zoneId(map, o.seg, len_), "marina") || solA(o.seg) != S_FALAISE) continue;
             o.t = O_BATEAU_M; o.roof = o.voile ? marina::VOILIER : marina::VEDETTE;
             o.h = o.voile ? 0.9f + (o.l - 7) / 7 * 0.3f : 0.56f + (o.l - 7) / 7 * 0.08f;
-            o.l = modeles_[o.roof].L * o.h; o.rot = 0.9f + o.rot * 0.3f; o.w = -1; o.d = 0; o.along = 0;
+            o.l = modeles_[o.roof].L * o.h; o.rot = 0.9f + o.rot * 0.3f; o.w = -1; o.d = 0; o.along = 0; o.voile = true;   // version moyenne
             o.col = coulCoque(); o.floors = coulToile(); mouillage++;
         }
         const size_t n0 = objets_.size();
@@ -1068,7 +1068,7 @@ public:
         const size_t retires = n0 - objets_.size();
         // tronçons de quai : marina, plage (pas falaise, tunnel ni terre-plein)
         auto quai = [&](int64_t n) { return !std::strcmp(zoneId(map, n, len_), "marina") && formeCote(n, 1) == K_PLAGE && solA(n) == S_PLAGE && !anneau(n); };
-        int nb[marina::NB_MODELES] = {}, couleurs[4] = {}, pontons = 0;
+        int nb[marina::NB_MODELES] = {}, couleurs[4] = {}, pontons = 0, videes = 0;
         float hautAvant = 0;
         auto pose = [&](float x, int64_t r0, Objet o) {   // x : mètres depuis le début du tronçon, le long de la route
             const int64_t k = (int64_t)std::floor(x / SEG_M);
@@ -1101,12 +1101,12 @@ public:
                 Objet o = d() < 0.6f ? bateau(marina::VOILIER, 0.9f + 0.15f * d(), 1 + d(), marina::PONTON_HAUT) : bateau(marina::VEDETTE, 0.56f, 1 + d(), marina::PONTON_HAUT);
                 const float w = largeur(o);
                 if (c + w > Q0 + PONTON_L - 0.5f) break;
-                o.lat = c + w / 2; o.rot = sd * PI / 2 + (d() - 0.5f) * 0.08f;
+                o.lat = c + w / 2; o.rot = sd * PI / 2 + (d() - 0.5f) * 0.08f; o.voile = true;   // version moyenne (derrière la rangée 1)
                 pose(p + sd * (marina::PONTON_LARGEUR / 2 + o.w + o.l / 2), r0, o);
                 c += w;
             }
-            int yachts = 0;
-            for (float x = 1.0f; x < L - 1;) {   // rangée 1, cul au quai
+            int yachts = 0; bool vide = false;
+            for (float x = 1.0f; x < L - 1;) {   // rangée 1, cul au quai, occupée à ≈ 85 % (jamais deux places vides de suite)
                 const bool bout = x < BOUT_QUAI || x > L - BOUT_QUAI;
                 Objet o;
                 if (bout && yachts < 2 && d() < 0.5f) { o = bateau(marina::YACHT, 1.0f + 0.05f * d(), 1 + d(), HAUT_QUAI); yachts++; }
@@ -1118,7 +1118,9 @@ public:
                 for (float p : pp) if (std::fabs(x + w / 2 - p) < marina::PONTON_LARGEUR / 2 + 0.6f + w / 2) { x = std::max(x + 0.5f, p + marina::PONTON_LARGEUR / 2 + 0.7f); gene = true; break; }   // toujours en avant
                 if (gene) continue;
                 o.lat = Q0 + o.w + o.l / 2; o.rot = (d() - 0.5f) * 0.08f;   // ±2,3° (RG-02 : ±3°)
-                pose(x + w / 2, r0, o);
+                const bool libre = !vide && !bout && d() < 0.30f;   // place vide (bateau sorti) : ≈ 13 % mesurés (jamais deux de suite)
+                if (!libre) pose(x + w / 2, r0, o); else videes++;
+                vide = libre;
                 x += w;
             }
             r0 = r1;
@@ -1126,12 +1128,33 @@ public:
         const int total = nb[0] + nb[1] + nb[2];
         WFS_LOG("Marina (WFS-376) : quai d'amarrage à %.2f m au-dessus de l'eau (avant : %.2f m), %d pontons, %d bateaux à quai "
                 "(%d voiliers, %d vedettes, %d yachts : %.0f %% de voiliers), coques %d blanc cassé, %d marine, %d grises, %d crème ; "
-                "%d au mouillage, %zu anciens bateaux retirés", HAUT_QUAI, hautAvant, pontons, total, nb[0], nb[1], nb[2],
-                total ? 100.f * nb[0] / total : 0.f, couleurs[0], couleurs[1], couleurs[2], couleurs[3], mouillage, retires);
-        WFS_LOG("Marina (WFS-376) : triangles par modèle, proche (amarrage compris) / loin : voilier %d / %d, vedette %d / %d, yacht %d / %d ; "
-                "ponton %d / %d, bitte %d", modeles_[0].pres.triangles() + marina::trianglesAmarrage(marina::VOILIER, true), modeles_[0].loin.triangles(),
-                modeles_[1].pres.triangles() + marina::trianglesAmarrage(marina::VEDETTE, true), modeles_[1].loin.triangles(),
-                modeles_[2].pres.triangles() + marina::trianglesAmarrage(marina::YACHT, true), modeles_[2].loin.triangles(),
+                "%d au mouillage, %zu anciens bateaux retirés, %d places vides au quai", HAUT_QUAI, hautAvant, pontons, total, nb[0], nb[1], nb[2],
+                total ? 100.f * nb[0] / total : 0.f, couleurs[0], couleurs[1], couleurs[2], couleurs[3], mouillage, retires, videes);
+        {   // budget (RG-10) : la fenêtre la plus chargée de 315 m le long de la route (seuil de 200 m + un bloc de 115 m : un bloc est
+            // détaillé dès que son point le plus proche est à moins de 200 m de la voiture) ; passe de la scène, sans les ombres
+            std::vector<std::pair<float, int>> pos;   // (mètres le long de la route, triangles en détail)
+            for (const Objet& o : objets_) {
+                int tr = 0;
+                if (o.t == O_BATEAU_M) tr = (o.voile ? modeles_[o.roof].moyen : modeles_[o.roof].pres).triangles() + marina::trianglesAmarrage((marina::Modele)o.roof, o.w >= 0);
+                else if (o.t == O_PONTON) tr = ponton_.triangles();
+                else if (o.t == O_BORNE) tr = bitte_.triangles();
+                else continue;
+                pos.push_back({(float)o.seg * (float)SEG_M + o.along, tr});
+            }
+            std::sort(pos.begin(), pos.end());
+            int best = 0, nbB = 0; size_t j = 0; int somme = 0;
+            for (size_t i = 0; i < pos.size(); i++) {
+                somme += pos[i].second;
+                while (pos[i].first - pos[j].first > 315.f) somme -= pos[j++].second;
+                if (somme > best) { best = somme; nbB = 0; for (size_t k = j; k <= i; k++) nbB += pos[k].second > 60 && pos[k].second != ponton_.triangles(); }
+            }
+            WFS_LOG("Marina (WFS-376) : fenêtre détaillée la plus chargée (315 m) : %d triangles dont %d bateaux (passe de la scène, sans ombres)", best, nbB);
+        }
+        WFS_LOG("Marina (WFS-376) : triangles par modèle, détaillé (amarrage compris) / moyen / loin : voilier %d / %d / %d, vedette %d / %d / %d, "
+                "yacht %d / %d / %d ; ponton %d / %d, bitte %d",
+                modeles_[0].pres.triangles() + marina::trianglesAmarrage(marina::VOILIER, true), modeles_[0].moyen.triangles(), modeles_[0].loin.triangles(),
+                modeles_[1].pres.triangles() + marina::trianglesAmarrage(marina::VEDETTE, true), modeles_[1].moyen.triangles(), modeles_[1].loin.triangles(),
+                modeles_[2].pres.triangles() + marina::trianglesAmarrage(marina::YACHT, true), modeles_[2].moyen.triangles(), modeles_[2].loin.triangles(),
                 ponton_.triangles(), pontonLoin_.triangles(), bitte_.triangles());
     }
 
@@ -1150,7 +1173,7 @@ public:
                     o.roof = (int)(d() * 3); o.floors = d() < 0.4f ? 2 : 1; o.col = (int)(d() * 6); objets_.push_back(o);
                 }
             } else if (!std::strcmp(z, "marina")) {
-                for (int64_t n = z0 + 2; n < z1; n += 6) objets_.push_back({n, O_BORNE, 1, R + 6.5f});   // WFS-376 : bittes tous les 7,2 m
+                for (int64_t n = z0 + 2; n < z1; n += 12) objets_.push_back({n, O_BORNE, 1, R + 6.5f});   // WFS-376 : bittes tous les 14,4 m
                 for (int64_t n = z0 + 4; n < z1 - 6; n += 6 + (int64_t)(d() * 4)) {
                     Objet o{n, O_BATEAU, 1, R + 13 + d() * 18}; o.l = 7 + d() * 7; o.voile = d() < 0.6f; o.col = (int)(d() * 4); o.rot = (d() - 0.5f) * 0.5f;
                     objets_.push_back(o);
@@ -1218,7 +1241,7 @@ public:
             const vec3 Z = normalize(r * std::cos(o.rot) + f * std::sin(o.rot)), X = cross(vec3{0, 1, 0}, Z);
             vec3 c = fr.o + r * o.lat + f * o.along; c.y = OCEAN_Y;
             const marina::Bateau& B = modeles_[o.roof];
-            poser(g, lod ? B.loin : B.pres, c, X, Z, o.h, o.col, o.floors);
+            poser(g, lod ? B.loin : o.voile ? B.moyen : B.pres, c, X, Z, o.h, o.col, o.floors);   // voile : version moyenne (PO, option A)
             if (!lod) poser(g, marina::amarrage(B, (marina::Modele)o.roof, o.h, o.w, o.d, couleursMarina()), c, X, Z, 1.f, o.col, o.floors);
             break;
         }
@@ -2673,6 +2696,8 @@ void benchMarina(Game& g, Renderer& r, const std::string& out) {
                 c.appels[Renderer::FAM_DECOR], c.triangles[0] + c.triangles[1] + c.triangles[2]);
     };
     auto capture = [&](const std::string& nom) { g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png"); comptes(nom); };
+    const char* seul = std::getenv("WFS_MARINA_SEUL");   // essai local : seulement les captures dont le nom commence par ce préfixe
+    auto garder = [&](const std::string& nom) { return !seul || nom.rfind(seul, 0) == 0; };
     // roule jusqu'au segment voulu à la vitesse voulue : pilote automatique (plein gaz) sous la vitesse, roue libre au-dessus
     auto rouler = [&](int64_t jusque, double kmh, int imagesMax = 6000) {
         for (int i = 0; i < imagesMax; i++) {
@@ -2692,19 +2717,21 @@ void benchMarina(Game& g, Renderer& r, const std::string& out) {
     const struct { const char* nom; VueCamera v; } VUES[] = {{"cockpit", VueCamera::Cockpit}, {"poursuite", VueCamera::Poursuite}};
     for (const char* mo : {"midi", "doree"}) for (const auto& vu : VUES) for (int kmh : {80, 120}) {
         const std::string nom = std::string("marina-") + vu.nom + "-" + std::to_string(kmh) + "-" + mo;
+        if (!garder(nom)) continue;
         lancer(mo, vu.v);
         rouler(cible, kmh);
         capture(nom);
         WFS_LOG("capture %s : %.0f km/h, %.0f m", nom.c_str(), g.player().kmh(), g.player().dist * M);
         g.shutdown();
     }
-    {   // suite de 4 images en roulant vers le port à 120 km/h (0,5 s entre deux images)
+    if (garder("marina-suite")) {   // suite de 4 images à 120 km/h (0,5 s, 16,7 m entre deux images) quand le port passe le seuil
+        // de détail (blocs dont le point le plus proche est à moins de 200 m de la voiture) : de 215 à 165 m avant le port
         lancer("midi", VueCamera::Poursuite);
-        rouler(m0 - (int64_t)(40 / SEG_M), 120);
+        rouler(m0 - (int64_t)(215 / SEG_M), 120);
         for (int k = 1; k <= 4; k++) { rouler(INT64_MAX, 120, 30); capture("marina-suite-" + std::to_string(k)); }
         g.shutdown();
     }
-    {   // qualité Basse (téléphone de l'utilisateur) : mêmes conditions que marina-poursuite-120-midi
+    if (garder("marina-poursuite-120-midi-basse")) {   // qualité Basse (téléphone de l'utilisateur) : comme marina-poursuite-120-midi
         const int qualite = ecrans::reglages().qualite; const bool basse = r.qualiteBasse;
         ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true;
         lancer("midi", VueCamera::Poursuite);
@@ -2714,10 +2741,12 @@ void benchMarina(Game& g, Renderer& r, const std::string& out) {
         ecrans::reglages().qualite = qualite; r.qualiteBasse = basse;
     }
     choisirVue(VueCamera::Poursuite);
-    // vues libres, voiture arrêtée dans le port : œil et point visé (segment, distance à l'axe, hauteur au-dessus de la route)
-    auto vueLibre = [&](const std::string& nom, const char* moment, int64_t sO, float latO, float hO, int64_t sC, float latC, float yC, float fov) {
+    // vues libres, voiture arrêtée : œil (segment, distance à l'axe, hauteur au-dessus de la route) et point visé (segment, distance à
+    // l'axe, altitude) ; le niveau de détail du décor suit la VOITURE (segment sV, par défaut celui de l'œil), pas la caméra
+    auto vueLibre = [&](const std::string& nom, const char* moment, int64_t sO, float latO, float hO, int64_t sC, float latC, float yC, float fov, int64_t sV = -1) {
+        if (!garder(nom)) return;
         setenv("WFS_MOMENT", moment, 1);
-        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, sO - 30)).c_str(), 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, (sV >= 0 ? sV : sO) - 30)).c_str(), 1);
         g.init(r, "golf", "plage"); g.setAutopilot(false); g.camMode = 0;
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
         const TrackPoint o = t.point((double)sO * SEG, latO), c = t.point((double)sC * SEG, latC);
@@ -2728,11 +2757,14 @@ void benchMarina(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     };
     const float R = (float)RW;
-    const int64_t s15 = (int64_t)(15 / SEG_M), s40 = (int64_t)(40 / SEG_M), s300 = (int64_t)(300 / SEG_M);
+    const int64_t s15 = (int64_t)(15 / SEG_M), s40 = (int64_t)(40 / SEG_M), s100 = (int64_t)(100 / SEG_M), s260 = (int64_t)(260 / SEG_M);
     for (const char* mo : {"midi", "doree"})   // promenade : personne debout (1,7 m) au bord du trottoir, regard vers les poupes
         vueLibre(std::string("marina-gros-plan-") + mo, mo, cible, R + 4.5f, 1.8f, cible + s15, R + 15, OCEAN_Y + 1.2f, 55);
     vueLibre("marina-bassin", "midi", cible - s40, R - 5, 28, cible + s40, R + 28, OCEAN_Y, 60);   // vue d'en haut (28 m)
-    vueLibre("marina-loin", "midi", m0, 0, 2.5f, m0 + s300, R + 20, OCEAN_Y + 4, 22);              // bateaux à 250-330 m
+    // de loin : voiture 260 m avant le port (tout le port dans les blocs allégés), œil sur l'eau à 250 m du quai
+    vueLibre("marina-loin", "midi", m0 + s100, R + 250, OCEAN_Y + 6 - (float)t.pose(m0 + s100).y, m0 + s100, R + 15, OCEAN_Y + 5, 24, m0 - s260);
+    // même cadrage, voiture dans le port (blocs détaillés) : comparaison des deux niveaux de détail
+    vueLibre("marina-loin-detail", "midi", m0 + s100, R + 250, OCEAN_Y + 6 - (float)t.pose(m0 + s100).y, m0 + s100, R + 15, OCEAN_Y + 5, 24, m0 + s100);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 } // namespace wfs
