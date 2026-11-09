@@ -63,9 +63,32 @@ constexpr float ECHELLE_MIN_BASSE = 0.45f;
 // IPS_REMONTEE_45 img/s. À 60 %, 1,78 fois les pixels de 45 % ; part par pixel ≈ 72 % (WFS-348) : image ≈ 1,56 fois plus
 // longue ; 50 img/s à 45 % donnent ≈ 32 img/s à 60 %, au-dessus du seuil de 30 (pas d'aller-retour 45 ↔ 60).
 constexpr float IPS_REMONTEE_45 = 50.f;
-// WFS-353 (RG-01) : lumières par pixel de la Basse (WFS-263 : 4) : les 2 plus fortes au point éclairé en calcul complet, les
-// autres en diffus seul (shaders/eclairage.glsl, spotLights2) ; Moyenne et Haute : 12 (inchangé)
-constexpr int LUMIERES_PAR_PIXEL_BASSE = 2;
+// WFS-353 (RG-01, EN ATTENTE DE LA DÉCISION DU PO, journal 2026-11-09) : lumières par pixel de la Basse. Le jeu garde 4
+// (WFS-263). La variante « 2 lumières » (les 2 plus fortes au point en calcul complet, les autres approchées : spotLights2
+// de shaders/eclairage.glsl, choisie par spotN.y = 2) n'est lancée que par le banc (WFS_PERF_SCENE_LEVIERS=1) : au banc,
+// elle coûte autant que 4 lumières (+ 3 à + 8 %) et la 3e lumière perd son reflet sur la chaussée mouillée dans le faisceau
+// des phares. Moyenne et Haute : 12 (inchangé).
+constexpr int LUMIERES_PAR_PIXEL_BASSE = 4;
+constexpr int LUMIERES_PAR_PIXEL_BASSE_LEGERE = 2;   // variante du banc (spotLights2)
+// WFS-353 (RG-01) : copie C++ des règles de spotLights2 (shaders/eclairage.glsl, à garder identiques), testée par
+// tests/test_qualite.cpp. Choix des 2 lumières gardées en calcul complet : les 2 plus fortes au point éclairé (éclairement
+// reçu e = luminance de la couleur × k), quel que soit leur rang dans la liste ; à égalité, la première de la liste.
+// Lumière qui n'atteint pas le point : e ≤ 0, jamais choisie. i0 / i1 = −1 : aucune.
+inline void deuxPlusFortes(const float* e, int n, int& i0, int& i1) {
+    float e0 = 0.f, e1 = 0.f; i0 = i1 = -1;
+    for (int i = 0; i < n; i++) {
+        if (e[i] > e0) { e1 = e0; i1 = i0; e0 = e[i]; i0 = i; }
+        else if (e[i] > e1) { e1 = e[i]; i1 = i; }
+    }
+}
+// atan2 approché de l'approximation (polynôme de degré 7, erreur ≤ 0,0015 rad)
+inline float atanRapide(float y, float x) {
+    const float ax = x < 0 ? -x : x, ay = y < 0 ? -y : y, mx = ax > ay ? ax : ay, t = (ax < ay ? ax : ay) / (mx > 1e-6f ? mx : 1e-6f), s = t * t;
+    float r = ((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * t + t;
+    if (ay > ax) r = 1.57079637f - r;
+    if (x < 0) r = 3.14159274f - r;
+    return y < 0 ? -r : r;
+}
 inline float budgetMs(int n) { return n == BASSE ? 16.7f : 22.f; }
 inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 (clé qualite.plancher_moyenne) : plus lue depuis WFS-246
 inline float plancher(int n) { return n == BASSE ? ECHELLE_MIN_BASSE : ECHELLE_MIN; }   // WFS-353 : 45 % en Basse

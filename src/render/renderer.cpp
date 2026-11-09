@@ -1214,7 +1214,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         projecteurs_ = n;   // WFS-348 : relevé du banc
         // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
         // WFS-348 : banc seulement : bancLumieresParPixel > 0 remplace les lumières par pixel de la Basse (comparaison des leviers)
-        // WFS-353 (RG-01) : Basse à 2 (les 2 plus fortes au point éclairé, les autres en diffus seul : eclairage.glsl) ; banc : 4 = avant
+        // WFS-353 (RG-01) : valeur de la Basse dans qualite_auto.h (4 ; 2 = variante du banc, décision du PO attendue)
         u.spotN = {(float)n, qualiteBasse ? (float)(bancLumieresParPixel > 0 ? bancLumieresParPixel : qualite::LUMIERES_PAR_PIXEL_BASSE) : 12.f, qualiteBasse ? 4.f : 12.f, 0};
         // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
         // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)

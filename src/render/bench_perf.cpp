@@ -2,6 +2,7 @@
 // Chaque système enregistré (WFS_SYSTEM) est enveloppé, le temps du banc seulement, par un « chronomètre » qui appelle le
 // vrai système et mesure update / render / drawUi : aucune ligne de game.cpp n'est touchée, le registre est rétabli à la fin.
 #include "bench_perf.h"
+#include <cctype>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -305,11 +306,11 @@ static void benchScene(Game& g, Renderer& r, const std::string& out) {
         struct Var { const char* nom; uint32_t sans; float ech; int lpp = 0; };   // lpp : lumières par pixel en Basse (0 : valeur du jeu)   // autres : vraies lumières des autres voitures en Basse (−1 : valeur du jeu)   // leger : début du fondu léger en Basse (m), −1 : valeur du jeu
         std::vector<Var> vars{{"", 0, 0}};
         if (tel && std::getenv("WFS_PERF_SCENE_LEVIERS"))
-            // WFS-353 : « 4 lumières par pixel » = la Basse d'avant WFS-353 (4 premières lumières, les autres coupées) ; la ligne
-            // sans nom = la Basse du jeu (2 lumières, les autres en diffus) ; « scène à 45 % » = plancher de la Basse (RG-03)
-            for (const Var& v : {Var{"4 lumières par pixel (avant WFS-353)", 0, 0, 4}, Var{"scène à 45 %", 0, 0.45f},
-                                 Var{"4 lumières, scène à 45 %", 0, 0.45f, 4}, Var{"scène à 50 %", 0, 0.5f},
-                                 Var{"sans lumières de nuit", 1, 0}, Var{"4 lumières par pixel (avant WFS-353)", 0, 0, 4}, Var{"", 0, 0}}) vars.push_back(v);
+            // WFS-353 : ligne sans nom = la Basse du jeu (4 lumières par pixel, scène à 60 %) ; « 2 lumières approchées » =
+            // variante RG-01 (spotLights2 : 2 plus fortes au point, les autres approchées) ; « scène à 45 % » = plancher RG-03
+            for (const Var& v : {Var{"2 lumieres approchees", 0, 0, qualite::LUMIERES_PAR_PIXEL_BASSE_LEGERE}, Var{"scene a 45", 0, 0.45f},
+                                 Var{"2 lumieres approchees, scene a 45", 0, 0.45f, qualite::LUMIERES_PAR_PIXEL_BASSE_LEGERE}, Var{"scene a 50", 0, 0.5f},
+                                 Var{"sans lumieres de nuit", 1, 0}, Var{"2 lumieres approchees", 0, 0, qualite::LUMIERES_PAR_PIXEL_BASSE_LEGERE}, Var{"", 0, 0}}) vars.push_back(v);
         if (tel && std::getenv("WFS_PERF_SCENE_EFFETS"))
             for (const Var& v : {Var{"sans lumières de nuit", 1, 0}, Var{"sans chaussée mouillée", 2, 0}, Var{"sans sonde IBL", 4, 0},
                                  Var{"sans les trois", 7, 0}, Var{"sans transparents", 8, 0}, Var{"sans découpe", 16, 0},
@@ -335,11 +336,26 @@ static void benchScene(Game& g, Renderer& r, const std::string& out) {
             for (const passes::Cout& c : passes::coutsCumules()) if (c.mesurable && c.images) { w.gpu += c.ms; if (c.renderer && c.nom.rfind("sc", 0) == 0) w.scene += c.ms; }
             w.couts = passes::texteCouts(passes::coutsCumules());
             if (!v.nom[0]) r.capturePng(out + "/scene-" + l.nom + "-" + q.nom + ".png");
+            else if (std::getenv("WFS_PERF_SCENE_CAPTURES")) {   // WFS-353 : capture de chaque variante (avant / après dans la même image)
+                std::string slug;
+                for (const char* c = v.nom; *c; c++) slug += std::isalnum((unsigned char)*c) ? *c : '-';
+                r.capturePng(out + "/scene-" + l.nom + "-" + q.nom + "-" + slug + ".png");
+            }
             WFS_LOG("scène (WFS-348) : %s, %s : GPU %.2f ms (%s), %u appels, %u triangles, %.0f k pixels calculés, %.0f k sommets, %d projecteurs, %s, %.0f km/h", w.lieu.c_str(), w.qualite.c_str(), w.gpu, w.couts.c_str(),
                     w.appels, w.triangles, w.kpx, w.ksom, r.projecteursImage(), qualite::ligneRendu().c_str(), g.player().kmh());
             lignes.push_back(w);
         }
         r.bancSansEffets = 0; r.bancLumieresParPixel = 0;
+        // WFS-353 (RG-02) : WFS_PERF_SCENE_SUITE=1 : 3 captures successives en roulant (0,25 s d'écart) : aucune lumière qui
+        // « saute » ni lampadaire éteint d'un coup d'une image à l'autre
+        if (std::getenv("WFS_PERF_SCENE_SUITE")) {
+            r.echelleDynamique(ech0);
+            for (int k = 0; k < 3; k++) {
+                for (int i = 0; i < 15; i++) { g.update(1.0 / 60); g.render(tt); tt += 1.0 / 60; }
+                r.capturePng(out + "/scene-" + l.nom + "-" + q.nom + "-suite-" + std::to_string(k) + ".png");
+                WFS_LOG("scène (WFS-353) : %s, %s, suite %d : %.0f km/h, %d projecteurs", l.nom.c_str(), q.nom, k, g.player().kmh(), r.projecteursImage());
+            }
+        }
         g.shutdown();
         r.echelleDynamique(1.f); r.forceNoShadows = false; r.forceSansReflets = false; eclairage::suspendreCaptures(false);
     }
