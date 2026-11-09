@@ -2753,3 +2753,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - PR #310, 2e revue sur dc4dc8bb : les 2 points bloquants de la revue précédente sont corrigés (suite de l'épingle dans la courbe de 165° ; 9 paires Ville en virage sans régression, trafic sur sa voie dans la suite du carrefour). Toutes les captures ont été ouvertes.
 - Diff relu en entier ; branche synchronisée avec main et construite par le lead dev (Release) : 89 tests CPU verts.
 - Approbation écrite dans la PR (en commentaire : même compte GitHub), puis fusion en squash f1abb662. Statut 🟡 À valider (utilisateur). Remarque non bloquante : `dthInutile` (`track.cpp`), paramètre de sortie jamais lu.
+
+### 2026-11-09 15:12:02 — Session terminée : WFS-293 fusionné (Claude, Agent 0 developer)
+- PR #310 fusionnée par le lead dev (f1abb662) ; WFS-293 en 🟡 À valider (utilisateur) : la voiture ne doit plus sauter en virage sur le téléphone.
+- Un seul sujet par session (règle du 2026-11-09) : la session s'arrête, aucun nouveau ticket demandé.
