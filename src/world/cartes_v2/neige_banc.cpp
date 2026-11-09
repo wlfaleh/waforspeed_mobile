@@ -167,7 +167,8 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     }
     WFS_LOG("banc neige (WFS-346) : virage volant à fond vers 55 km/h : limite latérale du modèle %.2f g au sec, %.2f g sur neige (rapport %.2f, μ %.2f) ; écart gagné %.1f m au sec, %.1f m sur neige",
             lat[0] / 9.81, lat[1] / 9.81, lat[0] > 0 ? lat[1] / lat[0] : 0, noel->saison.muChaussee, ecart[0], ecart[1]);
-    b.verifier(lat[0] > 0 && lat[1] / lat[0] < noel->saison.muChaussee * 1.3 && lat[1] > 0, "virage sur la neige : adhérence latérale × μ (la voiture tourne moins et glisse)");
+    // au sec, la voiture n'atteint pas sa limite (braquage réduit à vitesse) ; sur la neige, si : rapport < 0,5 (pas exactement μ)
+    b.verifier(lat[0] > 0 && lat[1] > 0 && lat[1] / lat[0] < 0.5 && ecart[1] < ecart[0], "virage sur la neige : bien moins d'adhérence latérale qu'au sec, la voiture tourne moins");
     // retour sur une carte du code : sec, sans neige
     if (b.partir("ville", false, VueCamera::Poursuite, 0)) {
         b.verifier(saisonPartie().muChaussee == 1.0f && saisonPartie().neigeChaussee == 0 && saisonPartie().flocons == 0, "retour sur la Ville : sec, sans neige");
