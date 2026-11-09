@@ -2910,3 +2910,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **RG-05** : vision de nuit selon la luminance d'adaptation (EV mesuré autour du joueur) : Golf sous lampadaire ΔE2000 5,6 → 3,1 (seuil 10), rase campagne inchangée à ΔE ≤ 1,2.
 - **Accroches** (annoncées) : `renderer.cpp` 1 ligne (`pp.bloom[1]`), `bench_passes.cpp` 10 lignes (captures `chaussee-*`). Tests CPU : 91 verts. Captures : `qa/pr/WFS-214/` (12, avant / après). Limite : pas d'occlusion du ciel sur les objets mobiles (ombres un peu plus claires de jour) ; US « occlusion du ciel » laissée au PO si le lead dev ou l'utilisateur le demande.
 
+
+### 2026-11-09 19:15:46 — WFS-194 découpé : une US pour chaque deux modèles (WFS-359, 360, 361) (po-scrum-master)
+- Ordre de l'utilisateur : « pour chaque deux modèles créer une US à part ». Les 5 modèles non commerciaux de WFS-194 : **WFS-359** (P1, ⏳ Prêt) Mustang + T-Cross ; **WFS-360** (P1, après 359) A 45 + Elantra N ; **WFS-361** (P2, après WFS-358 et 360) X5, seule.
+- Règles : `regles-de-gestion/WFS-359.md`, `WFS-360.md`, `WFS-361.md` (règles communes : licence CC0 / CC-BY, ±1 %, nom inventé, sans logo, captures). WFS-194 → ↪ découpé.
+- Décisions toujours attendues de l'utilisateur (question du 2026-11-07 11:12) : dérogation de mesure de la Mustang ; Passat pour le T-Cross ; Classe E W212 pour l'A 45.
+- E10 : une seule US à la fois (WFS-349 en cours, puis WFS-358 et WFS-359 à la suite) ; nouvelle session `@dev` pour chacune.
