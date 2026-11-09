@@ -3024,3 +3024,6 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:47:28 — Vidéo des lacets de la Corniche : ANO-212, 213 et WFS-379 créés (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
 - Vidéo de l'utilisateur (15 s, Corniche, Checkpoint, vues Proche et Capot) : terrain des lacets qui flotte dans le ciel (ANO-212, bloquante), capot flou (ANO-213). Images : `qa/retours/2026-11-09-video2045-*.jpg`.
 - **WFS-379** (P1, `expert-cartes`) : supprimer les 6 lacets de `corniche()` (`trace_cartes.cpp`), les remplacer par une montée simple, retirer leur décor et vérifier toute la carte.
+
+### 2026-11-09 19:49:12 — Mer en aplat bleu : ANO-214 et WFS-380 créés (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
+- Plainte de l'utilisateur sur la mer. Code lu : `P_OCEAN` de `plage.cpp` est un quad plat de couleur unie. ANO-214 (bloquante) → **WFS-380** (P1, `dev` + skill `expert-realisme-3d`) : vagues, reflets, couleur selon la profondeur, écume, pour toute l'eau du jeu.
