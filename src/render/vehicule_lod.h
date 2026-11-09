@@ -4,7 +4,8 @@
 // mêmes sommets et matériaux, seulement d'autres indices ; jamais de cube). Le niveau dépend de la longueur de la voiture à
 // l'écran, en pixels de la scène 3D (seuils ci-dessous) ; entre deux niveaux, fondu tramé écran complémentaire de WFS-134
 // (scene.frag) sur une bande de 1/9 du seuil (de 64 à 72 m pour l'ancien passage complète → allégée : même rapport).
-// Qualité Basse : complète, niveau 1, puis niveaux 2 et 3 en 4 pièces (partsBasseNiveaux, moins d'appels de dessin ; WFS-335).
+// Qualité Basse : complète, niveau 1, puis niveaux 2 et 3 en 4 pièces (partsBasseNiveaux, moins d'appels de dessin ; WFS-335),
+// le niveau 2 dès 100 px (SEUILS_PX_BASSE, décision du PO).
 // Sans dépendance au moteur (gabarits) : testé seul par tests/test_vehicule_lod.cpp.
 #include <algorithm>
 #include <cmath>
@@ -24,6 +25,10 @@ constexpr int NIVEAUX = 4;
 // plus hauts (48 et 26 px, 77 et 140 m) pour garder le même écart entre niveaux. La voiture du joueur (poursuite, cockpit)
 // reste toujours au-dessus de 200 px : complète.
 constexpr float SEUILS_PX[NIVEAUX - 1] = {200.f, 48.f, 26.f};   // WFS-158 : {60, 36, 22}
+// WFS-335 (décision du PO du 2026-11-09 02:35 UTC, RG-03) : qualité Basse seulement, quand les niveaux 2 et 3 en 4 pièces existent :
+// le niveau 2 remplace le niveau 1 dès 100 px (≈ 37 m pour une Golf) au lieu de 48 px (≈ 77 m) : les adversaires de 48 à 100 px
+// passent au niveau 2 (fondu tramé de 100 à 89 px). La voiture du joueur reste complète (dessinJoueur, RG-02).
+constexpr float SEUILS_PX_BASSE[NIVEAUX - 1] = {200.f, 100.f, 26.f};
 constexpr float BANDE = 1.f / 9;   // largeur du fondu, en part du seuil (de S à S × 8/9)
 
 // longueur à l'écran (px) d'un objet de longueur L (m) à la distance d (m) ; focalePx = |proj(1,1)| × hauteur de la scène / 2
@@ -33,10 +38,11 @@ inline float pixels(float longueur, float focalePx, float distance) { return lon
 struct Choix { int a = 0, b = 0; float t = 0; };
 
 // nNiveaux : nombre de niveaux disponibles (1 = complet seul). Plus la voiture est petite à l'écran, plus le niveau est haut.
-inline Choix choisir(float px, int nNiveaux) {
+// seuils : SEUILS_PX (par défaut) ou SEUILS_PX_BASSE.
+inline Choix choisir(float px, int nNiveaux, const float (&seuils)[NIVEAUX - 1] = SEUILS_PX) {
     nNiveaux = std::clamp(nNiveaux, 1, NIVEAUX);
     for (int k = 0; k + 1 < nNiveaux; k++) {
-        const float S = SEUILS_PX[k];
+        const float S = seuils[k];
         if (px >= S) return {k, k, 0.f};
         if (px > S * (1.f - BANDE)) return {k, k + 1, std::clamp((S - px) / (S * BANDE), 0.f, 0.999f)};
     }
@@ -53,22 +59,23 @@ Dessin<M> dessin(const M& m, float distance, float focalePx, bool basse, bool lo
     using Liste = decltype(M::parts);
     const Liste* l[NIVEAUX] = {&m.parts};
     int n = 1;
+    bool seuilsBasse = false;   // WFS-335 : niveaux 2 et 3 en 4 pièces présents → SEUILS_PX_BASSE
     const bool versBasse = basse && !m.partsBasse.empty();
     // WFS-335 (RG-02) : en Basse, au loin, les niveaux 2 et 3 en 4 pièces (partsBasseNiveaux) : avant, la version en 4 pièces
     // gardait la forme du niveau 1 (40 à 60 k triangles) jusqu'à 200 m et plus (relevé du banc : 52 k triangles pour 8 px)
     auto loinBasse = [&] {
         for (size_t k = 0; k < m.partsBasseNiveaux.size() && n < NIVEAUX; k++)
-            if (!m.partsBasseNiveaux[k].empty()) l[n++] = &m.partsBasseNiveaux[k]; else break;
+            if (!m.partsBasseNiveaux[k].empty()) { l[n++] = &m.partsBasseNiveaux[k]; seuilsBasse = true; } else break;
     };
     if (lots && versBasse && !fantome) {
         // police en lots : version en 4 pièces même de près (moins d'appels), puis niveaux 2 et 3 en 4 pièces au loin, aux mêmes
-        // seuils que les autres (48 et 26 px) : le 1er passage (200 px) se fait entre deux listes identiques, donc sans fondu
+        // seuils que les autres (100 et 26 px en Basse, WFS-335) : le 1er passage (200 px) se fait entre deux listes identiques, donc sans fondu
         l[0] = l[1] = &m.partsBasse; n = 2;
         loinBasse();
         if (n == 2) return {&m.partsBasse, &m.partsBasse, 0.f, 1};
     } else if (!fantome && versBasse) {
         // WFS-265 (retour du lead dev, PR #268) : en Basse, complète au-dessus de 200 px, puis niveau 1 (feux, vitres et lunette
-        // intacts) jusqu'à 48 px (≈ 77 m), puis les versions en 4 pièces au loin (WFS-134 : avant, dès 64 m)
+        // intacts) jusqu'à 100 px (≈ 37 m, WFS-335 ; 48 px sans niveaux 2 et 3), puis les versions en 4 pièces au loin
         if (!m.partsLod.empty()) l[n++] = &m.partsLod;
         const int n0 = n;
         if (n == 2) loinBasse();
@@ -80,7 +87,7 @@ Dessin<M> dessin(const M& m, float distance, float focalePx, bool basse, bool lo
             if (!m.partsNiveaux[k].empty()) l[n++] = &m.partsNiveaux[k];
     }
     const float L = std::max({m.bmax.x - m.bmin.x, m.bmax.y - m.bmin.y, m.bmax.z - m.bmin.z});
-    Choix c = choisir(pixels(L, focalePx, distance), n);
+    Choix c = choisir(pixels(L, focalePx, distance), n, seuilsBasse ? SEUILS_PX_BASSE : SEUILS_PX);
     if (l[c.a] == l[c.b]) { c.b = c.a; c.t = 0.f; }   // fondu entre deux listes identiques : une seule suffit
     return {l[c.a], l[c.b], c.t, c.a};
 }
