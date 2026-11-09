@@ -8,6 +8,7 @@
 // - Interieur : géométrie construite par code (vehicule_cockpit_geo.h), écrans dynamiques (combiné, carte), dessin.
 // Repère de la caméra : x à droite, y en haut, −z devant ; œil du conducteur à l'origine.
 #pragma once
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <vector>
@@ -120,6 +121,48 @@ struct EtatInterieur {
 
 // banc « cockpit » (WFS-235, RG-05) : vrai = l'intérieur est dessiné d'une couleur clé (mesure de la part de rue visible)
 extern bool g_interieurCle;
+// WFS-349 (RG-03) : banc « cockpit-voisine » : avec g_interieurCle, dessine aussi en couleur clé le gabarit de ce qui doit rester
+// fermé (dehors, sous la ligne de ceinture, sur les côtés) : un pixel de la voisine dans la clé est un pixel interdit
+extern bool g_gabaritCeinture;
+// WFS-349 : vrai pendant le banc « cockpit-voisine » (mis avant Game::init) : l'intérieur construit aussi le gabarit et la clé
+// douce ; faux en course : rien de plus n'est construit
+extern bool g_bancCockpitVoisine;
+// WFS-349 (RG-02) : ligne de ceinture (bas des vitres latérales, haut des portières), repère de l'œil (m) : haut de la planche
+// moins 1 cm, la hauteur de WFS-315 (portières de WFS-197), inchangée
+inline float ligneCeinture(const InterieurDef& d) { return d.plancheY - 0.01f; }
+// WFS-349 (RG-02) : portière : face intérieure 1 cm en dedans de la largeur aux coudes (WFS-315, inchangée), vitre latérale
+// EPAISSEUR_PORTE plus loin (appui de vitre de 12 cm : portières réelles de 10 à 15 cm, DA-realisme) ; plancher sous l'œil
+// (talon → point H ≈ 0,27 m, cote SAE H30 d'une berline, plus 0,71 m du point H à l'œil : approximation, ±3 cm)
+constexpr float EPAISSEUR_PORTE = 0.12f, PLANCHER_Y = -0.98f;
+inline float faceVitre(float demi) { return demi - 0.01f + EPAISSEUR_PORTE; }   // distance de la vitre latérale à l'axe (m)
+// WFS-349 (RG-02) : boîtes qui ferment l'habitacle (repère de l'œil, centre et taille en m) : portière gauche, portière droite,
+// plancher, tablier. cx, demi : centre de la voiture et demi-largeur aux coudes (largeurPour). Portière : de 6 cm devant le pied
+// du pare-brise (sous le pied du montant) à 0,6 m derrière l'œil, du plancher à la ligne de ceinture ; dessinées par
+// Interieur::construire, vérifiées par tests/test_cockpit_ferme.cpp (rayons de l'œil)
+struct BoiteHab { vec3 centre, taille; };
+inline std::array<BoiteHab, 4> boitesFermeture(const InterieurDef& d, float cx, float demi) {
+    const float yc = ligneCeinture(d), zAv = d.pareBriseZ - 0.06f, zAr = 0.60f;
+    std::array<BoiteHab, 4> b{};
+    for (int k = 0; k < 2; k++) {
+        const float sx = k == 0 ? -1.f : 1.f, xi = cx + sx * (demi - 0.01f), xv = cx + sx * faceVitre(demi);
+        b[(size_t)k] = {{(xi + xv) * 0.5f, (yc + PLANCHER_Y) * 0.5f, (zAv + zAr) * 0.5f}, {EPAISSEUR_PORTE, yc - PLANCHER_Y, zAr - zAv}};
+    }
+    b[2] = {{cx, PLANCHER_Y - 0.01f, (zAv + zAr) * 0.5f}, {2 * demi, 0.02f, zAr - zAv}};   // plancher (moquette)
+    // tablier, sous le bord avant de la planche, monté 1 cm dans la planche (sans ce centimètre, une fente de quelques mm restait
+    // sous le bord avant ; vu de l'œil, le haut du tablier reste caché derrière le dessus de la planche, qui remonte vers lui)
+    const float haut = d.pareBriseY + 0.01f;
+    b[3] = {{cx, (haut + PLANCHER_Y) * 0.5f, d.pareBriseZ}, {2 * demi, haut - PLANCHER_Y, 0.02f}};
+    return b;
+}
+// WFS-349 : couleur linéaire des portières, du plancher et du tablier : celle du bas de planche, luminance ramenée à 0,045 au
+// moins (jamais noir pur : plastique noir réel 0,04-0,05, DA-realisme) ; même règle que le cuir du volant
+inline vec3 couleurPorte(const InterieurDef& d) {
+    auto l = [](unsigned c) { return std::pow((float)(c & 255) / 255.f, 2.2f); };
+    vec3 c{l(d.plancheBas >> 16), l(d.plancheBas >> 8), l(d.plancheBas)};
+    const float y = 0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z;
+    if (y < 0.045f) c = y > 1e-5f ? c * (0.045f / y) : vec3{0.045f, 0.045f, 0.045f};
+    return c;
+}
 
 // WFS-334 (ANO-182, ANO-186) : pare-brise et balais de la dernière image où l'intérieur a été dessiné, lus par la pluie
 // (src/world/meteo.cpp) pour ne dessiner les gouttes que derrière la vitre et sur la vitre, chassées par les balais
@@ -168,6 +211,8 @@ private:
     Image grain_{};                          // normal map du cuir (grain), calculée
     Mesh bras_[2]{}; Material brasMat_{}, brasNuit_{};    // essuie-glaces (dessinés selon l'angle de l'image)
     Material cleMat_{};                      // banc : toutes les pièces d'une couleur clé (g_interieurCle, WFS-235)
+    Mesh gabarit_{};                         // WFS-349 (RG-03) : banc seulement, jamais dessiné en course (g_gabaritCeinture)
+    Material cleDouce_{};                    // WFS-349 (RG-03) : clé du banc « cockpit-voisine » (bords nets)
     const Material& mat(const Material& m) const;
     // écrans dynamiques : un maillage par couleur (actif, fond, alerte ; route, flèche)
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
