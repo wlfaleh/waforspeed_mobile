@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-09 19:53:14 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-09 19:52:21 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -28,6 +28,7 @@
 | Claude, agent dev W (01UY1Vv4Ed) | WFS-214 | `@dev` (session_01UY1Vv4EdEBdMyt3hmgrMoT) : P2 E13 ciel sans paliers, ciel de midi plein ciel (option A du PO), chaussée Ultra prouvée grise, vision de nuit loin des lumières | 214 : `feature/waforspeed-214`, PR #314 ouverte 19:15 UTC | ↩️ retour lead dev sur PR #314 : à corriger (moments de jour de la Campagne surexposés, captures dorée / midi / jour Campagne, mesure de perf) ; finit WFS-214 jusqu'à la fusion, puis ⏹️ arrêt |
 | Claude, agent dev3d (01UY1Vv41d) | WFS-358 | `@dev3d` (session_01UY1Vv41dPBrq3vbTpDyTvg), agent `dev-artiste-3d` : P1 voitures sans marque, X5 : jonction grille / carrosserie (4 défauts de RG-04) et contour de l'ancien logo du capot ; E10 (exception PO, en parallèle de WFS-349) : `assets/cars/x5*`, entrée `x5` de `tools/formes.json`, outils de retouche de WFS-193, banc `WFS_VITRINE_BAS`, `tests/**` ; **pas** `vehicule_cockpit*` (WFS-349), `src/game/cars.h`, autres voitures ; attribué 19:51 UTC à sa demande (1er et seul ticket de la session) | 358 : `feature/waforspeed-358` à créer et pousser | 🔧 en cours — finit WFS-358 jusqu'à la fusion, puis ⏹️ arrêt |
 | Claude, agent cartes (01UY1Vv2dx) | WFS-346 | `@cartes` (session_01UY1Vv2dxNQxhJG6xe4ofua) : P2 WFS-346 carte de Noël (1 bis/3), neige lue du paquet (sol enneigé, flocons dehors seulement, adhérence) ; skills `expert-cartes` + `expert-conduite` ; zone : `src/world/cartes_v2/**`, `paquets/sources/**`, `tests/cartes_v2*`, `meteo.*`, `shaders/route.glsl`, `src/render/route_*`, `roues.*` + accroches ≤ 10 lignes `player.*` / `aide_direction.*` ; **pas** `poursuite*`, `hud.*`, `traffic.*` (WFS-338), `vehicule_cockpit*` (WFS-349), E13 (WFS-214) ; attribué 17:00 UTC à sa demande (1er et seul ticket de la session) | 346 : `feature/waforspeed-346`, 19:34 (d8f88a9a), PR #315 | 🔀 En PR (#315), lead dev appelé |
+| Claude, agent cartes 2 (01UY1Vv4VT) | WFS-379 | `@cartes` (session_01UY1Vv4VTT6nCcCeczFGXuV) : P1 WFS-379 Corniche, lacets supprimés (montée simple), plus aucun terrain en l'air (ANO-212) ; skills `expert-cartes`, `agent-developer`, `waforspeed-natif` (+ `artiste-3d` pour le décor) ; attribué 19:52 UTC à sa demande (1er et seul ticket de la session) | `feature/waforspeed-379` : pas encore poussée | 🔧 en cours |
 
 ## Agents de pilotage
 

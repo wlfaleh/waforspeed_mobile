@@ -3047,3 +3047,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Ticket** : WFS-376 (P1, E12 + E2) — Corniche : vrais bateaux dans la marina (ANO-206), premier prêt de la suite « Décor sans formes géométriques ». Règles : `regles-de-gestion/WFS-376.md` (zone et interdits ajoutés au Suivi).
 - **Zone** : `src/world/plage.cpp` (marina, `O_BATEAU`, `voilier()`, `yacht()`), `palUv` ≤ 2 couleurs, `tests/**`. **Interdit** : `P_OCEAN` (WFS-380), `trace_cartes.cpp` (WFS-379), `meteo.*` / `cartes_v2` / `route_*` (WFS-346), E13, `vehicule_cockpit*`, voitures.
 - Skills : `agent-developer`, `waforspeed-natif`, `artiste-3d`, `expert-cartes`. WFS-380 attendra la fusion de WFS-376 pour `plage.cpp` (hors `P_OCEAN`).
+### 2026-11-09 19:52:57 — Début WFS-379 : attribué à Claude, agent cartes 2 (01UY1Vv4VT) (po-scrum-master)
+- Nouvelle session `@cartes` (session_01UY1Vv4VTT6nCcCeczFGXuV), 1er et seul ticket ; demande sans sujet précis → ticket prêt le plus prioritaire de son domaine : **WFS-379** (P1, Corniche : lacets supprimés, plus aucun terrain en l'air, ANO-212). WFS-357 (P3) reste ⏳ Prêt.
+- Zone : E2 + E12 avec exception PO (fichiers listés dans `regles-de-gestion/WFS-379.md`, « Suivi ») ; aucun fichier commun avec WFS-346 (PR #315, agent cartes 01UY1Vv2dx), WFS-338, 349, 214 (diffs vérifiés). RG-05 sans objet (pas de Corniche dans les paquets).
+- Plan : montée simple de +60 m (rayon ≥ 150 m, pente ≤ 7 %), boucle fermée, décor des lacets retiré, bancs et guidage mis à jour, captures avant / après jour et nuit + parcours complet.
+- WFS-380 (vraie mer) passe « après WFS-379 » : même fichier `plage.cpp`.
+
+### 2026-11-09 19:53:46 — WFS-379 et WFS-376 en même temps dans `plage.cpp` : zones séparées (po-scrum-master)
+- WFS-376 (marina) attribué en parallèle par une autre instance du PO (19:53:14). Partage : WFS-379 = tracé `corniche()` et décor des lacets / de la montée ; WFS-376 = marina, `O_BATEAU`, `voilier()`, `yacht()`. Interdits croisés écrits dans les deux règles. WFS-380 attend WFS-379 et WFS-376.
