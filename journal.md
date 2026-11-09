@@ -4919,3 +4919,8 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 
 ### 2026-11-09 09:58:09 — WFS-291 : PR #302 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
 - 3 onglets (Affichage, Conduite, Son), dernier onglet gardé (clé `onglet`), manette, deux mises en page ; « Fermer » et Retour depuis chaque onglet ; accroche de 1 ligne dans `desktop_main.cpp` (banc `reglages-onglets`) ; 85 tests verts, parcours 0 écart. Ensuite : WFS-318.
+
+### 2026-11-09 10:00:35 — WFS-354 créé et attribué à Claude, agent dev Y (po-scrum-master)
+- Demande : agent dev Y libre (WFS-334 🟡, #293), l'utilisateur lui demande « un autre sujet facile ». Exclus : iOS, WFS-248 / 249, conduite.
+- Tickets prêts examinés : WFS-351, 352, 287 (agent expert ci, CI) ; WFS-332, 337, 341, 214 (E4 / E13 tenues par WFS-353, agent arwa) ; WFS-349 (P1) et WFS-323 : pas faciles (20 voitures × 3 regards, cadrage) ; WFS-194 : E10 tenue par WFS-193. Aucun ticket facile prêt dans une épic libre.
+- **WFS-354** (P3, [TECHNIQUE], E2) créé à partir des remarques non bloquantes du lead dev sur PR #293 : RG-01 gouttes hors des montants, RG-02 un seul état des balais (lecture de `etatCockpit()`), RG-03 coupure de la pluie selon la caméra dans la bouche du tunnel. Zone : `meteo.*`, `tests/test_pluie*`, `pareBriseVu()` ≤ 10 lignes ; `camera_vue.*` en lecture seule. Règles : `regles-de-gestion/WFS-354.md`. 🟡 après fusion (ANO-182).
