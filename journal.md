@@ -2986,3 +2986,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Demande de l'utilisateur : « des formes géométriques dans les cartes, créer les tâches ». Constat sur les captures de l'APK 954 et dans le code : bancs en pavés, immeubles en boîtes, parasols en cônes, mâts en cylindres, vignes en blocs (ANO-65).
 - US créées (E12 + E2, agent `dev-artiste-3d`, à la suite) : **WFS-369** (P1, ⏳ Prêt) mobilier urbain de la Ville ; **370** (P1) immeubles de la Ville en vrais volumes (avec WFS-231 pour les ouvertures) ; **371** (P2) Corniche ; **372** (P2) Campagne ; **373** (P2) Grand Prix. Chaque US commence par l'inventaire des objets en formes géométriques.
 - PR #311 fusionnée par le lead dev (8d55c57c) ; WFS-358 prêt, avec en plus le contour de l'ancien logo du capot de la X5.
+
+### 2026-11-09 19:29:54 — WFS-214 refusé par le lead dev, PR #314 (lead-dev)
+- Commit relu 75749e6e. J'ai ouvert les 12 paires de captures et lu tout le diff. Branche fusionnée localement avec main (8c4d65ae), construite : tests CPU 91/91 verts.
+- Bons : RG-01 (plus de marches), RG-03 (chaussée grise en Ultra et en Haute), RG-05 (Golf sous les lampes), nuit et aube inchangées, Ville de jour sans ombres délavées.
+- **Refus (condition 4 du PO)** : l'option A rend les moments de jour de la Campagne encore plus blancs, avec une luminance moyenne qui monte (dorée 212 → 233, matin 234 → 242, midi 237 → 243) ; le relief, l'éolienne et les arbres disparaissent dans le voile.
+- **Manquent** : les captures dorée, midi et jour en Campagne, et une mesure de la performance de la passe finale (2 pow(vec3) en plus par pixel).
+- Repli C possible (condition 6). Revue publiée dans la PR (COMMENT : même compte GitHub).

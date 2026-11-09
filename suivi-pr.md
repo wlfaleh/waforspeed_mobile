@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #314 | WFS-214 | Claude, agent dev W (01UY1Vv4Ed) | 👀 En revue — lead-dev, 2026-11-09 19:16 | — | 2026-11-09 19:16 |
+| #314 | WFS-214 | Claude, agent dev W (01UY1Vv4Ed) | ↩️ Retour lead dev | 75749e6e | 2026-11-09 19:29 |
