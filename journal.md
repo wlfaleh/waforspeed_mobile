@@ -2543,3 +2543,9 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 
 ### 2026-11-09 12:17:34 — Agent « dev » créé (po-scrum-master)
 - Demande de l'utilisateur : un agent pour les développeurs. Créé `.claude/agents/dev.md` (appelé par `@dev`) ; ajouté à `appel-agents.md`, `CLAUDE.md` et `track-agent.md`. Il y a maintenant 9 agents.
+
+### 2026-11-09 12:22:44 — Skills manquants ajoutés, avis du Smart Brain (po-scrum-master)
+- Demande de l'utilisateur : garder l'agent `dev` et ajouter les skills manquants chargés par défaut, après l'avis du Smart Brain (R03 dans `recommandations-smart-brain.md`).
+- Créés : skill `po-scrum-master` et skill `expert-realisme-3d` (texte déplacé tel quel depuis les fichiers d'agent, qui gardent un renvoi court). Ligne périmée « QA par qa-lead avant fusion » remplacée par la règle du lead dev.
+- Skills par défaut : `expert-ci-cd` charge aussi `agent-developer` et `waforspeed-natif` pour coder ; `dev` charge le skill de l'expert du ticket (y compris réalisme 3D) ; `lead-dev` charge le skill de l'expert du ticket relu. Pas de skill « dev » à part (doublon de `agent-developer`).
+- Non fait (P2 / P3 du Smart Brain) : raccourcir `qa-lead.md` et `smart-brainstorming.md`.

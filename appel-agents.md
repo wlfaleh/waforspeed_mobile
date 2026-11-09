@@ -27,11 +27,11 @@ Remarque : dans Claude Code, « @ » ouvre aussi la suggestion de fichiers ; il 
 | `@dev`, `@developpeur` | Développeur | prend **un** ticket du PO (hors conduite, cartes, CI), code, captures, PR, appelle le lead dev, s'arrête après la fusion | `.claude/agents/dev.md` (skills `agent-developer`, `waforspeed-natif`) | `dev` |
 | `@conduite`, `@expertconduite` | Expert conduite | développeur de la physique de la voiture, des aides et de la conduite des adversaires | `.claude/agents/expert-conduite.md` (skill `expert-conduite`) | `expert-conduite` |
 | `@cartes`, `@expertcartes` | Expert cartes | développeur des cartes, des paquets `.wfcarte` et de leur téléchargement (E14) | `.claude/agents/expert-cartes.md` (skill `expert-cartes`) | `expert-cartes` |
-| `@po`, `@scrum`, `@scrummaster` | PO / Scrum Master | étudie les besoins, crée et priorise les tickets, attribue, tient `TACHES.md`, `track-agent.md`, le journal | `.claude/agents/po-scrum-master.md` | `po-scrum-master` |
+| `@po`, `@scrum`, `@scrummaster` | PO / Scrum Master | étudie les besoins, crée et priorise les tickets, attribue, tient `TACHES.md`, `track-agent.md`, le journal | `.claude/agents/po-scrum-master.md` (skill `po-scrum-master`) | `po-scrum-master` |
 | `@leaddev`, `@lead` | Lead dev | relit une PR (captures + diff), approuve et fusionne en squash, ou refuse avec la liste des défauts | `.claude/agents/lead-dev.md` (skill `lead-dev`) | `lead-dev` |
 | `@qa`, `@qalead` | QA lead | recette des tickets de `qa/Check.md`, verdicts, anomalies ; campagne VABF sur l'émulateur | `.claude/agents/qa-lead.md` (skill `qa-lead`) | `qa-lead` |
-| `@cicd`, `@ci`, `@expertcicd` | Expert CI / CD | pipeline GitHub Actions, rouges de `main`, US techniques, versions, AAB, publication Google Play | `.claude/agents/expert-ci-cd.md` (skill `expert-ci-cd`) | `expert-ci-cd` |
-| `@3d`, `@realisme`, `@expert3d` | Expert réalisme 3D | conseille sur l'aspect du monde 3D (matériaux, lumière, animation, LOD) ; consultant, ne tient pas de ticket de code | `.claude/agents/expert-realisme-3d.md` | `expert-realisme-3d` |
+| `@cicd`, `@ci`, `@expertcicd` | Expert CI / CD | pipeline GitHub Actions, rouges de `main`, US techniques, versions, AAB, publication Google Play | `.claude/agents/expert-ci-cd.md` (skill `expert-ci-cd` ; + `agent-developer`, `waforspeed-natif` pour coder) | `expert-ci-cd` |
+| `@3d`, `@realisme`, `@expert3d` | Expert réalisme 3D | conseille sur l'aspect du monde 3D (matériaux, lumière, animation, LOD) ; consultant, ne tient pas de ticket de code | `.claude/agents/expert-realisme-3d.md` (skill `expert-realisme-3d`) | `expert-realisme-3d` |
 | `@smartbrain`, `@brainstorm`, `@idees` | Smart Brainstorming | diagnostic et idées classées P1–P3 dans `recommandations-smart-brain.md` ; propose, ne décide rien | `.claude/agents/smart-brainstorming.md` (skill `smart-brainstorming`) | `smart-brainstorming` |
 
 ## Exemples
