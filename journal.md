@@ -2611,3 +2611,10 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 13:00:57 — WFS-357 créé (po-scrum-master)
 - Suite de la revue du lead dev sur WFS-355 (PR #309) : boucle sans pause si la fenêtre est perdue après « Plus tard » / « Continuer » des paquets. Ticket P3, tâche facile, E8, ⏳ Prêt. Agent 2 libre mais ne prend rien sans l'accord de l'utilisateur : rien ne lui est attribué.
+
+### 2026-11-09 13:01:09 — WFS-354 fusionné par le lead dev (lead-dev)
+- PR #305, 3e revue, commit relu 2eb8c5b3, squash e972dbb. Approbation écrite dans la PR, en commentaire (même compte GitHub).
+- Défaut de la 2e revue corrigé : en vue Arrière, la pluie est coupée comme sur main (voiture, marge 2 m). Les paires `arriere-bouche` et `arriere-6m` sont identiques à main. Contre-vérification : banc `pluie` relancé par le lead dev, 0 pixel à plus de 20 niveaux d'écart.
+- Branche construite et testée par le lead dev : 87 tests CPU verts. Pluie : 0,007 à 0,035 ms par image.
+- Statut : 🟡 À valider (utilisateur). Ligne ajoutée dans qa/Check.md, ligne retirée de suivi-pr.md.
+- Pour le PO : gouttes de vitre dessinées par-dessus le rétroviseur intérieur (déjà sur main, hors ticket).
