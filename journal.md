@@ -2824,3 +2824,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - WFS-356 fusionné par le lead dev (PR #313, squash 483b969a), **🟡 à valider par l'utilisateur** sur le téléphone : de nuit dans la Ville, mode Checkpoint, au « 3 », au « 2 » et à 0:04, en Basse et en Haute ; aussi la voie rapide en Poursuite (ANO-184).
 - Réponse écrite sous la revue dans la PR. Points non bloquants du lead dev, laissés au PO pour une autre session : (1) vitrines des commerces hors `pieceAdaptee` (léger halo possible en Haute à EV 3) ; (2) booléen « Ville éclairée » lu à travers `releverNuit` (lisibilité) ; (3) performance en Basse non mesurée sur un vrai GPU ; (4) ANO-184 à confirmer.
 - Session terminée, règle « un seul sujet par session » : pas d'autre ticket demandé.
+
+### 2026-11-09 16:31:58 — WFS-343 fusionné par le lead dev (lead-dev)
+- PR #312, 2e relecture du commit 80f197a2 : les deux défauts bloquants de la 1re revue sont corrigés (cdbbbbfc) : maison contrôlée en travers avec `travers()` (largeur, angle), registre en `shared_ptr<const DonneesCarte>` avec copie tenue par le décor ; remarques non bloquantes traitées (paquet inchangé non relu, `carteDuCode()`, `donnees()`, `entier()`, `lumiere`).
+- Construction et `tests_cpu.sh` refaits par le lead dev : 90/90 OK. 10 captures ouvertes ; Campagne et Grand Prix jour / nuit identiques à l'octet près (`cmp`).
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), fusion en squash 529b89e8. WFS-343 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
