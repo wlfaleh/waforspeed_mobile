@@ -2998,3 +2998,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Fait : saison lue du paquet (adhérence, neige au sol, flocons ; format 2 des blocs), chaussée enneigée avec traces de roues (sèche sous l'abri), flocons dehors seulement (Cockpit : vitres ; rien sous un tunnel), tunnel des cartes de données, μ dans la conduite du joueur (ancien et nouveau modèle), banc `neige`.
 - Vérifié : tests CPU 91/91 (nouveau `test_cartes_v2_saison`) ; banc `neige` 0 écart ; banc `paquets` 0 écart (parcours accueil → terrain → course → retour) ; freinage 100-0 dans le jeu : 37 m au sec, ≈ 144 m sur neige (μ 0,25, réel ≈ 150 m) ; flocons 0,07 ms CPU par image.
 - Limites : chaussée sèche sous le 1er tunnel seulement ; rendu vu en lavapipe ; coût GPU du shader de neige non mesuré sur téléphone. Aurore : WFS-344 (décision du PO 19:05:07).
+
+### 2026-11-09 19:35:20 — Dernière version cassée : WFS-374 (P1) créé (po-scrum-master)
+- Demande de l'utilisateur : « la dernière version est niquer ». Symptôme pas encore précisé (question posée dans `tache utilisateur.md`).
+- Fusions du jour : #313 WFS-356 (CI #964 verte), #312 WFS-343 (CI #965 verte, suspect n° 1 : `mapById`, `Track::build`, `CarteDecor::init`, choix du terrain), #297 WFS-338 (CI #966 en cours), #311 WFS-193 (CI #967 en attente).
+- **WFS-374** (P1 Urgent, E0, ⏳ Prêt, en premier) : bissection au banc, correction en avant, aucun revert sans ordre de l'utilisateur ; 🟡 après fusion. Pour une nouvelle session `@dev`.
