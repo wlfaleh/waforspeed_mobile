@@ -1,0 +1,43 @@
+# WFS-350 — Release « apercu » pleine (limite de GitHub : 1 000 fichiers par Release) : l'APK de main ne se publie plus
+# (run 946 : « file_count limited to 1000 assets per release »). Lancé à la main seulement (décision de l'utilisateur, 2026-11-09).
+# Méthode en quelques appels (le quota horaire du GITHUB_TOKEN est commun à tous les jobs : jamais 1 000 suppressions une par une) :
+#   1. la Release pleine garde tous ses fichiers mais change d'étiquette : « apercu-ancien-<date> » (les captures restent lisibles
+#      par la QA à cette adresse) ;
+#   2. l'étiquette « apercu » est libre : le job publication-apk suivant (relancé à la main) recrée la Release « apercu » avec l'APK
+#      (publier_apercu.sh la crée si elle manque), à la même adresse fixe …/releases/download/apercu/WaForSpeed.apk.
+# Seul défaut : quelques minutes sans APK à l'adresse fixe, entre l'étape 1 et la publication suivante.
+name: Place dans la Release apercu
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apercu-place
+  cancel-in-progress: false
+
+jobs:
+  place:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Release apercu pleine renommée en apercu-ancien-<date>
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          n=$(gh api "repos/$GH_REPO/releases/tags/apercu" --jq '.assets | length' 2>/dev/null || echo absente)
+          echo "Release apercu : $n fichier(s) lus (l'API en montre au plus 1 000)"
+          [ "$n" != absente ] || { echo "Release apercu absente : rien à faire"; exit 0; }
+          # garde-fou : on ne touche qu'une Release presque pleine
+          [ "$n" -ge 900 ] || { echo "::error::Release apercu à $n fichiers (< 900) : pas pleine, rien n'est changé"; exit 1; }
+          nouveau="apercu-ancien-$(date -u +%Y%m%d-%H%M)"
+          id=$(gh api "repos/$GH_REPO/releases/tags/apercu" --jq '.id')
+          gh api -X PATCH "repos/$GH_REPO/releases/$id" -f tag_name="$nouveau" -f name="Aperçu (ancien, plein le $(date -u +%Y-%m-%d))" \
+             -F prerelease=true > /dev/null
+          echo "Release pleine renommée : $nouveau (fichiers gardés : $GITHUB_SERVER_URL/$GH_REPO/releases/tag/$nouveau)"
+          echo "### Release apercu : place faite" >> "$GITHUB_STEP_SUMMARY"
+          echo "Ancienne Release (pleine, $n fichiers) : \`$nouveau\`. Relancer le job publication-apk du dernier run de main." >> "$GITHUB_STEP_SUMMARY"

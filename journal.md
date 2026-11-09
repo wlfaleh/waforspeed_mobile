@@ -4903,3 +4903,73 @@ Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, jou
 
 ### 2026-11-09 09:14:26 — WFS-353 : l'utilisateur accepte la résolution 45 % en Basse (agent arwa (Claude, session trafic))
 - Réponse de l'utilisateur (question posée directement) : **oui**, résolution plancher de la Basse à 45 % quand le jeu reste sous 30 img/s, Basse seulement ; dérogation à WFS-134 pour la Basse. Notée dans `tache utilisateur.md`. RG-03 de WFS-353 débloquée.
+
+### 2026-11-09 09:15:42 — Début WFS-353 : Basse, 2 lumières par pixel et résolution 45 % (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-353` poussée (dd954068) : **partie de `feature/waforspeed-348`** (PR #300 pas encore fusionnée, pour ne pas attendre) puis synchronisée avec `main` 633b16a1 ; **dépend de #300** (noté aussi dans la PR) ; `git merge origin/main` dès la fusion de #300.
+- Fiches `regles-de-gestion/WFS-353.md` et `WFS-348.md` lues, tableaux A, B, C de WFS-348 relus. RG-01 (accord E13 du PO) et RG-03 (accord de l'utilisateur, 09:14:26) à faire, en Basse seulement.
+- Plan : plafond de lumières par pixel de la Basse à 2 (les 2 plus fortes au point éclairé, les autres en approximation), plancher de résolution 45 % seulement à 60 %, palier 2 et toujours sous 30 img/s ; tests CPU de la sélection et du plancher ; mesure `WFS_PERF_SCENE_LEVIERS=1` avant / après ; captures `qa/pr/WFS-353/`.
+
+### 2026-11-09 09:17:54 — WFS-348 : PR #300 approuvée et fusionnée (lead-dev auto)
+
+Fermé sur son diagnostic (décision du PO du 09:12:58). Diff relu (shaders : reflet du ciel non calculé quand la sonde le remplace, même image ; accroches du banc à 0 dans le jeu), captures avant / après identiques (0 pixel > 8 niveaux), run 948 de la branche : compilation, APK, endurance verts. Squash 48c423e, statut 🟣. Suite : WFS-353. #297 et #288 sans changement.
+
+### 2026-11-09 09:24:28 — WFS-350 fusionné par le lead dev (lead-dev)
+
+PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-place.yml`, `qa/pr/WFS-350/pr.md`) et suite vérifiée dans `tools/qa/publier_apercu.sh` (Release recréée si absente). Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash 4180a6c, statut 🟣. Aucun workflow lancé par le lead dev. Remarques pour WFS-352 : ne prendre que le 404 pour « absente » ; captures du matin hors de `apercu`.
+
+### 2026-11-09 09:58:09 — WFS-291 : PR #302 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- 3 onglets (Affichage, Conduite, Son), dernier onglet gardé (clé `onglet`), manette, deux mises en page ; « Fermer » et Retour depuis chaque onglet ; accroche de 1 ligne dans `desktop_main.cpp` (banc `reglages-onglets`) ; 85 tests verts, parcours 0 écart. Ensuite : WFS-318.
+
+### 2026-11-09 10:00:35 — WFS-354 créé et attribué à Claude, agent dev Y (po-scrum-master)
+- Demande : agent dev Y libre (WFS-334 🟡, #293), l'utilisateur lui demande « un autre sujet facile ». Exclus : iOS, WFS-248 / 249, conduite.
+- Tickets prêts examinés : WFS-351, 352, 287 (agent expert ci, CI) ; WFS-332, 337, 341, 214 (E4 / E13 tenues par WFS-353, agent arwa) ; WFS-349 (P1) et WFS-323 : pas faciles (20 voitures × 3 regards, cadrage) ; WFS-194 : E10 tenue par WFS-193. Aucun ticket facile prêt dans une épic libre.
+- **WFS-354** (P3, [TECHNIQUE], E2) créé à partir des remarques non bloquantes du lead dev sur PR #293 : RG-01 gouttes hors des montants, RG-02 un seul état des balais (lecture de `etatCockpit()`), RG-03 coupure de la pluie selon la caméra dans la bouche du tunnel. Zone : `meteo.*`, `tests/test_pluie*`, `pareBriseVu()` ≤ 10 lignes ; `camera_vue.*` en lecture seule. Règles : `regles-de-gestion/WFS-354.md`. 🟡 après fusion (ANO-182).
+
+### 2026-11-09 10:04:59 — WFS-291 fusionné par le lead dev (lead-dev)
+- PR #302, 1re revue sur eeed0f6 : 8 captures ouvertes (4 paires, 2400 × 1080) ; grande mise en page vérifiée par le lead dev (branche construite dans un arbre à part, banc `reglages-onglets` en 1920 × 1440 : onglets sous le titre, rien ne se chevauche) ; diff relu en entier (13 fichiers) ; `test_reglages_appui` et `test_retour_systeme` OK. Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash 8df86cb. Statut 🟡 À valider (utilisateur), comme le demandent les critères du ticket. Accroche hors zone : `desktop_main.cpp` 1 ligne. Remarques non bloquantes : aucun test CPU de la table des onglets (à ajouter avec WFS-318) ; panneau un peu transparent dans la place libre (déjà avant).
+
+### 2026-11-09 10:06:12 — WFS-318 attribué à Claude, agent 2 (po-scrum-master)
+- Demande de Claude, agent 2 (01UY1Vv5) après WFS-291 🟡 (#302, 8df86cb). Suite des Réglages 290 → 291 → 318 confirmée par l'utilisateur (2026-11-08 20:44 UTC).
+- Zone : E8 `src/ui/ecrans/reglages.*` + E3 `src/game/fantome.*` (affichage du fantôme), `tests/**`. Vérifié : aucun ticket actif ne touche `fantome.*` (WFS-338 : `poursuite*` / `hud.*` ; WFS-293 : banc de fluidité ; WFS-343 : cartes) ; `hud.*` reste à WFS-338.
+- Règles : `regles-de-gestion/WFS-318.md` (RG-01 à RG-04, 3 captures demandées). En plus : test CPU de la table des onglets (remarque du lead dev sur #302), capture de la grande mise en page. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-09 10:17:19 — Statuts automatiques, CI main #949 (robot statuts)
+- Run rouge (push, commit 48c423e), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-339, WFS-348, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 10:28:00 — WFS-352 fusionné par le lead dev (lead-dev)
+PR #303 (agent expert ci cd) : diff complet relu (`matin.yml`, `publier_captures_matin.sh` neuf, `banc_groupe.sh`, `recette_prete.sh`, `qa/pr/WFS-352/pr.md`) ; noms d'artefacts et bancs (`desktop_main.cpp`) vérifiés. Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash ad54bde, statut 🟣. Aucun workflow lancé par le lead dev. Remarques : mesurer `complements-a` / `complements-b` au premier matin ; groupe rouge à captures partielles non signalé dans `jour.txt`.
+
+### 2026-11-09 10:36:12 — WFS-318 : PR #304 ouverte, accroches annoncées, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Réglage « Fantôme du record : Affiché / Caché » (onglet Affichage, clé `fantome`), étiquette « VOTRE RECORD · 1:12,4 » au-dessus du fantôme (`src/game/fantome_etiquette.cpp`, 12 à 16 dp, fondu au loin et derrière) ; caché : rien n'est dessiné, l'enregistrement continue.
+- **Accroches annoncées** : `src/game/course_system.cpp` / `.h` (10 lignes : fantôme non dessiné quand il est caché ; `fantomeCourant`, position du fantôme et durée du record pour l'étiquette) ; `src/platform/desktop_main.cpp` (2 lignes : banc `fantome`). `hud.*` non touché (WFS-338).
+- Tests `test_fantome_etiquette`, `test_reglages_onglets` (table des onglets, remarque du lead dev sur WFS-291) ; 87 tests verts ; parcours 0 écart ; capture de la grande mise en page (1920 × 1440).
+
+### 2026-11-09 10:38:55 — WFS-318 fusionné par le lead dev (lead-dev)
+PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôme : étiquette au-dessus du fantôme ; caché : plus rien) ; diff relu en entier (26 fichiers) ; tests `test_fantome_etiquette` et `test_reglages_onglets` relancés : OK. Accroches hors zone `course_system.*` (10 lignes) et `desktop_main.cpp` (2 lignes) annoncées. Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash e3246d9. Statut 🟡 À valider (utilisateur). Remarques : étiquette non interpolée (léger tremblement possible), visible à travers les bâtiments.
+
+### 2026-11-09 10:39:35 — WFS-354 : PR #305 ouverte, suite de la pluie en Cockpit (Claude, agent dev Y)
+- **RG-01** : `cockpit::coinsVitre` (`vehicule_cockpit.h`), appelée par `pareBriseVu()`. **Accroche E10 annoncée** : 8 lignes dans l'en-tête et 1 ligne remplacée dans `pareBriseVu()`. La vitre s'arrête au bord intérieur des montants dessinés, plus 1 cm de joint. Le dessin des montants n'est pas touché. Le test couvre les 20 intérieurs : 10 mm de jeu au plus près, contre 37,5 mm d'empiètement avant, en bas.
+- **RG-02** : la pluie n'a plus sa propre copie des balais. Elle balaie à chaque image avec l'angle des balais dessinés (`pareBriseVu().angle`).
+- **RG-03** : la coupure du tunnel suit la caméra (voiture + écart projeté sur la route). Le fondu de 8 m va de 7 m avant la bouche à 1 m sous la voûte.
+- **Accroche E7 annoncée** : 2 lignes dans `desktop_main.cpp` (inclusion et `WFS_BANC=pluie`). Le banc `benchPluie` est dans `meteo.cpp` : montant à 102 km/h, 5 images du balayage, entrée du tunnel en Cockpit, témoin en vue Arrière.
+- **Vérifié en local** : `test_pluie` vert, 85 tests CPU verts, parcours complet 0 écart. Coût de la pluie : 0,030 à 0,033 ms par image en Cockpit.
+- **Constat hors ticket** : `test_audio_chocs` a échoué une fois sur sa mesure de temps (RG-07), lancée pendant un banc. Il passe seul et à la relance. C'est un test sensible à la charge de la machine ; je le signale au PO.
+
+### 2026-11-09 10:41:27 — Skill et agent qa-lead : captures du matin dans `captures-matin` (agent qa lead)
+- Suite de WFS-350 / WFS-352 (expert CI / CD) : archives par groupe + `jour.txt`, `apercu` = APK seulement, anciennes captures dans `apercu-ancien-20261109-0925`. Ajouté aussi : grande recette en lots parallèles avec un seul agent qui numérote les ANO ; vidéos lues à 3 images/s en grand.
+
+### 2026-11-09 10:42:51 — WFS-351 fusionné par le lead dev (lead-dev)
+- PR #306 (agent expert ci cd), 1re revue : diff lu en entier (`tools/qa/emulateur.sh`), 3 preuves ouvertes, points d'appui recalculés sur `cgu.cpp` / `paquets.cpp` / `petit_ecran.h` (2400 × 1080, 420 dpi) : dans les zones. Revue « ✅ Approuvé » en commentaire (même compte GitHub), squash 788c286. Statut 🟣 ; essai réel aux bancs du matin (RG-02).
+
+### 2026-11-09 10:45:24 — WFS-354 refusé par le lead dev, PR #305 (lead-dev)
+- Revue complète : 13 paires de captures ouvertes, avec des agrandissements, et tout le diff lu ; fusion d'essai avec main sans conflit (`test_pluie` vert).
+- **Refus (RG-01)** : une goutte de vitre, avec sa traînée, est posée sur le **montant droit**, environ 20 px dans le montant, sur toutes les captures « après » en Cockpit. `coinsVitre` et le test ne regardent que la section du montant dans le plan de la vitre, pas la silhouette vue de l'œil (barre de 75 × 50 mm vue de biais).
+- À montrer : agrandissement des montants droit et gauche (Golf et un 2e intérieur), test sur la silhouette vue de l'œil, vue Arrière à la bouche du tunnel, branche synchronisée (WFS-318 fusionné entre-temps).
+- Signalé au PO (hors ticket) : les gouttes de vitre sont aussi dessinées par-dessus le rétroviseur intérieur (déjà sur main).
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/305
+
+### 2026-11-09 10:54:13 — WFS-338 : PR #297 corrigée, à relire (agent arwa (Claude, session trafic))
+- Retour du lead dev traité point par point (réponse sous la revue) : PR sans conflit (16929dde) ; suite « police qui arrive de loin » (220 → 6 m, aucune police à moins de 160 m au départ, vue Arrière et vue arrière du banc) ; chantier visible avec son bandeau de jour et de nuit (bandeau à 80 m, tenu jusqu’au biseau) ; policier visible de jour (gros plan).
+- **Appels de dessin (décision PO 0161316e)**, même banc et mêmes endroits, qualité Basse : branche − main = 0 / −4 / +7 / −19 / −43 (contact, embouteillage, HUD, ralentisseur, camion) ; même image avec / sans WFS-338 : +9 au plus ; écart maximal avec le Checkpoint : +39 sur la branche, +46 sur main (cible ≤ 60 : OK). Tableau complet dans le journal de la branche et dans la PR. Cas a du PO : rien à ramener.
+- Tests CPU 85 OK ; banc course5 : parcours complet 0 écart. `suivi-pr.md` : 🔁 ; `TACHES.md` : 🔀 En PR.
