@@ -121,6 +121,19 @@ struct EtatInterieur {
 // banc « cockpit » (WFS-235, RG-05) : vrai = l'intérieur est dessiné d'une couleur clé (mesure de la part de rue visible)
 extern bool g_interieurCle;
 
+// WFS-334 (ANO-182, ANO-186) : pare-brise et balais de la dernière image où l'intérieur a été dessiné, lus par la pluie
+// (src/world/meteo.cpp) pour ne dessiner les gouttes que derrière la vitre et sur la vitre, chassées par les balais
+struct PareBriseVu {
+    bool vu = false;                 // vrai : écrit par Interieur::dessiner depuis la dernière lecture (la pluie le remet à faux)
+    mat4 repere = mat4::identity();  // repère de l'intérieur (repère de l'œil → monde)
+    vec3 coins[4]{};                 // vitre : bas gauche, bas droit, haut droit, haut gauche (repère de l'œil, m)
+    int balais = 0;                  // nombre de balais dessinés
+    vec3 pivot[2]{}; float sens[2] = {1, 1}, longueur[2] = {0, 0};
+    vec3 ex{1, 0, 0}, eu{0, 1, 0};   // plan du pare-brise : axe x et axe « haut » le long des montants
+    float angle = 0;                 // angle des balais (rad)
+};
+PareBriseVu& pareBriseVu();
+
 class Interieur {
 public:
     bool construire(Renderer& r, const InterieurDef& d);
