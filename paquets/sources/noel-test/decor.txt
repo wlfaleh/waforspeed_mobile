@@ -1,0 +1,25 @@
+format 1
+# ciel brouillard_jour lointain_jour horizon_nuit brouillard_nuit lointain_nuit
+ciel 0xdfe7ee 600 0x0c1424 0x070b12 420
+# sol enneigé, sans herbe
+herbe 0
+bande 7.5 9 0 -0.05 0xe6ecf1
+bande 9 40 -0.05 0.2 0xf1f4f7
+bande 40 140 0.2 3 0xe9eef3
+bande 140 400 3 22 0xd9e2ea
+# chalets (murs, toits enneigés) : maison seg lat angle largeur profondeur hauteur couleur_murs couleur_toit
+repete 45 10 1200 maison 0 -18 0 10 8 5.5 0xa8442f 0xf4f6f8
+repete 60 30 1200 maison 0 19 0 9 9 6 0x6e4a32 0xf4f6f8
+repete 90 70 1200 maison 0 -34 15 14 10 8 0x8a6a58 0xeef2f5
+# sapins : sapin seg lat hauteur
+repete 12 0 1220 sapin 0 -30 9
+repete 14 5 1220 sapin 0 28 11
+repete 20 8 1220 sapin 0 -48 14
+# lampadaires de la rue
+repete 30 0 1220 lampe 0 1
+# guirlandes (seg_debut seg_fin lat hauteur pas couleur) et fenêtres éclairées (lumiere seg lat hauteur rayon couleur)
+guirlande 0 1219 -10 4.5 3 0xff3b30
+guirlande 1 1219 -10.1 4.6 3 0x30ff70
+guirlande 2 1219 -10.2 4.5 3 0xffcf7a
+repete 45 10 1200 lumiere 0 -13.9 2.6 0.35 0xffcf7a
+repete 60 30 1200 lumiere 0 14.4 2.8 0.35 0xffcf7a

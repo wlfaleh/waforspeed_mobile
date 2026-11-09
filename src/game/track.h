@@ -25,7 +25,9 @@ struct MapDef {
     const char* id; const char* name;
     uint32_t seed; std::vector<int> curves; int hills; int sections; double edge;
     int trafficN; double trafficMin, trafficMax;
+    void (*construire)(class Track&, const MapDef&) = nullptr;   // WFS-343 : carte de données (tracé lu du paquet, cartes_v2/carte_donnees)
 };
+inline const MapDef* (*g_cartesDonnees)(const char* id) = nullptr;   // WFS-343 : cartes lues des paquets, cherchées avant MAPS
 const MapDef& mapById(const char* id);
 
 struct Segment { double curve; double y1, y2; };
@@ -57,6 +59,7 @@ public:
     // WFS-136 : utilisés par trace::construire (tracé 2) ; addRoad du jeu web, altitude de fin (unités)
     void ajouterRoute(int enter, int hold, int leave, double curve, double y) { addRoad(enter, hold, leave, curve, y); }
     double altitudeFin() const { return lastY(); }
+    void poserSections(std::vector<trace::Section> s) { sections_ = std::move(s); }   // WFS-343 : sections d'une carte de données
 private:
     void addSegment(double curve, double y);
     void addRoad(int enter, int hold, int leave, double curve, double y);

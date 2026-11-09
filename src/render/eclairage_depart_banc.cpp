@@ -3,6 +3,7 @@
 // décompte puis course. Chaque image est rendue (pas de 1/60 s, une image sur deux comme un téléphone à 30 i/s) et
 // l'exposition est écrite au journal ; captures depart-<moment>-<carte>-<instant> au premier décompte (« d3 »), à 0:00,
 // 0:01, 0:02 et 0:04 du chrono. Puis « Recommencer » de nuit (Pause → Menu → Course) et une reprise après pause.
+// WFS-356 : variante « basse » (WFS_DEPART_SEUL=basse) : Basse, scène à 60 %, vues Arrière et Cockpit, comme le téléphone de la recette.
 // Contrôle chiffré (RG-02) : (1) à chaque capture, l'EV appliqué n'est pas plus de 1 IL sous l'EV visé (image au plus deux fois
 // trop claire : aucun flash ; plus sombre que visé, c'est l'adaptation douce vers le sombre, RG-03) ; (2) l'EV de la première
 // image est à moins de 1 IL de l'EV mesuré sur la première sonde locale de la scène (la mesure juste du lieu).
@@ -64,6 +65,12 @@ struct Depart {
             }
             if (prochain < 4 && c >= instants[prochain] - 1e-6) { capture(base + "-" + std::to_string((int)instants[prochain])); prochain++; }
         }
+        // WFS-356 (RG-01) : l'EV visé au départ peut être faux de façon cohérente (WFS-328 comparait l'EV appliqué au même EV visé :
+        // 2,27 contre 2,27 dans la Ville, alors que la mesure du lieu donnait 4,1) : la 1re image est comparée à l'EV de 0:04
+        const double ev4 = eclairage::etat().ev, ecart4 = ev4 - ev0;   // > 0 : 1re image plus claire que la mesure du lieu
+        const bool ok4 = !eclairage::etat().actif || ecart4 <= ECART_MAX_IL;
+        if (!ok4) erreurs++;
+        WFS_LOG("%s : 1re image EV %.2f, EV à 0:04 %.2f, 1re image plus claire de %.2f IL (≤ %.1f) %s", base.c_str(), ev0, ev4, ecart4, ECART_MAX_IL, ok4 ? "OK" : "ÉCART");
     }
     // parcours du joueur : menu et garage de jour, écran Terrain, « Rouler » sur la carte et le moment choisis
     bool rouler(const char* carte, bool nuit) {
@@ -120,6 +127,17 @@ int benchDepart(Game& g, Renderer& r, const std::string& out) {
     if (tout || quoi == "longue") {   // RG-05 : 4 min de course de nuit, Basse, vue Arrière (Poursuite)
         ecrans::reglages().qualite = ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
         if (d.rouler("ville", true)) d.erreurs += courseLongue(d, "longue-nuit-ville-basse", 245);
+        ecrans::reglages().qualite = ecrans::QUALITE_HAUTE; ecrans::appliquerQualiteNiveau(r);
+    }
+    if (tout || quoi == "basse") {   // WFS-356 (RG-04) : conditions du téléphone de la recette (APK 954) : Basse, scène à 60 %, Ville de nuit
+        ecrans::reglages().qualite = ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
+        r.echelleDynamique(0.6f / r.vk().renderScale);   // 60 % de la taille logique (capacité de la Basse : 75 %)
+        WFS_LOG("depart : Basse, scène à %.0f %%", r.vk().renderScale * r.echelleDynamiqueActuelle() * 100);
+        if (d.rouler("ville", true)) d.course("depart-basse60-nuit-ville");
+        const VueCamera v = vueCamera(); choisirVue(VueCamera::Cockpit);
+        if (d.rouler("ville", true)) d.course("depart-basse60-cockpit-nuit-ville");
+        choisirVue(v);
+        r.echelleDynamique(1.f);
         ecrans::reglages().qualite = ecrans::QUALITE_HAUTE; ecrans::appliquerQualiteNiveau(r);
     }
     if (tout || quoi == "cockpit") {   // RG-05 : départ de nuit en vue Cockpit (Ville)

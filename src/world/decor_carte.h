@@ -89,6 +89,9 @@ protected:
     // envFor (maps.js) : jour (couleur et distance du brouillard) ; nuit : horizon, brouillard, distance
     struct Env { uint32_t fogJour; float farJour; uint32_t horizonNuit, fogNuit; float farNuit; };
     virtual Env env() const = 0;
+    // WFS-343 (accroche) : couleurs propres à la carte dans les cases libres de la palette (C_NB à PAL_W − 1) ; touffes d'herbe des bas-côtés
+    virtual void couleursCarte(std::array<uint32_t, PAL_W>&) const {}
+    virtual bool touffes() const { return true; }
     // profil des bas-côtés (GROUND) de la zone, côté side (±1), au segment a (couleurs qui dépendent du segment)
     virtual int profil(const char* zone, int64_t a, int side, Band out[6]) const = 0;
     // objet du décor (deco.items du jeu web) : type propre à la carte (T_TREE, T_VERGE, T_LAMP : communs), paramètres

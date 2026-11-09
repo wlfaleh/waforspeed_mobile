@@ -152,3 +152,24 @@ Mode Diagnostic et Priorisation. L'agent propose, l'utilisateur décide. État r
 ### 5. Ce que l'utilisateur décide (recommandation de l'agent entre parenthèses)
 - Faut-il mettre les fusions non urgentes en pause jusqu'au vert de la CI ? (Oui, seulement jusqu'au vert.)
 - Faut-il réunir WFS-109 et WFS-182 ? (Laisser le PO vérifier les règles des deux tickets avant de trancher.)
+
+## R03 — 2026-11-09 — Skills manquants des agents (mode Diagnostic / Priorisation)
+
+**Demande** (utilisateur, transmise par le PO) : garder l'agent `dev`, ajouter les skills manquants chargés par défaut.
+**Faits vérifiés** (`.claude/agents/`, `.claude/skills/`) : 9 agents, 9 skills. Sans skill : `po-scrum-master` (30 Ko dans le
+fichier d'agent) et `expert-realisme-3d` (4 Ko). `qa-lead.md` (9 Ko) et `smart-brainstorming.md` (13 Ko) ont un skill **et**
+un long fichier d'agent. `po-scrum-master.md` garde des consignes périmées (ligne 124 « QA par `qa-lead` avant fusion » ;
+section « Fusion par confiance », barrée). `expert-ci-cd` ne charge pas `agent-developer` alors qu'il code des US techniques.
+
+| ID | Domaine | Constat | Proposition | Bénéfice | Impact | Complexité | Priorité | Risques |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Outillage agents | PO : 30 Ko de méthode dans l'agent, avec des règles périmées | Skill `po-scrum-master` : SKILL.md (attribution, règles de gestion, ménage, KO, US techniques) + `references/ordres-utilisateur.md` (ordres datés) ; agent réduit à un renvoi type `lead-dev.md` ; supprimer les règles barrées en déplaçant | Un PO qui applique les règles du jour | Élevé | Moyen | P1 | Perdre un ordre en déplaçant : relecture ligne à ligne par le PO |
+| A02 | Outillage agents | Réalisme 3D sans skill : un dev de l'axe Réalisme ne peut pas le charger | Skill `expert-realisme-3d` (méthode, mesures de fidélité, budgets téléphone, renvoi à `DA-realisme.md`) ; agent = renvoi court ; reste conseiller, pas développeur | Choix graphiques mesurés, même méthode pour tous | Moyen | Faible | P1 | Doublon avec `DA-realisme.md` : le skill renvoie, ne recopie pas |
+| A03 | Outillage agents | Skill « dev » distinct | **Ne pas créer** : `agent-developer` + `waforspeed-natif` couvrent déjà le dev ; `dev.md` les charge | Pas de 3e source contradictoire | — | — | — | — |
+| A04 | Outillage agents | `qa-lead.md` et `smart-brainstorming.md` répètent leur skill | Réduire ces agents à un renvoi court, la méthode reste dans le skill | Une seule source par rôle | Moyen | Faible | P2 | Vérifier que rien d'unique ne se perd |
+| A05 | Outillage agents | Skills par défaut incomplets | `expert-ci-cd` : + `agent-developer` + `waforspeed-natif` (US techniques) ; `dev` : + `expert-realisme-3d` si axe Réalisme ; `lead-dev` : + skill de l'expert du ticket relu | Même exigence pour tout code | Moyen | Faible | P2 | Contexte plus lourd : charger « si besoin » |
+| A06 | Outillage agents | Pas de liste agent → skills | Colonne « skills chargés » dans `appel-agents.md` (déjà en partie) comme seule table de référence | Lecture rapide | Faible | Faible | P3 | Tenir à jour à chaque nouveau skill |
+
+**Top 3** : A01 (le plus de règles périmées), A02 (seul expert inutilisable par un dev), A03 (éviter un doublon).
+**Validation** : après A01, lancer `@po` sur une attribution test et vérifier qu'il cite les règles du 2026-11-09 (un seul sujet par session) et plus « QA avant fusion ».
+**Décision** : à l'utilisateur, via le PO.

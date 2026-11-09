@@ -111,6 +111,7 @@ else()
   target_link_libraries(test_course5_ordinateurs Threads::Threads)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_reglages_appui tests/test_reglages_appui.cpp)   # WFS-290 : cible de 48 dp, anti-rebond des réglages
+  add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
   add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
   add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
@@ -130,6 +131,8 @@ else()
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
   add_executable(test_paquets tests/test_paquets.cpp src/ui/ecrans/paquets_etape.cpp src/core/carte_cuite.cpp)   # WFS-306 : étape « Mise à jour et installation des paquets » (machine d'états)
   add_executable(test_carte_cuite tests/test_carte_cuite.cpp src/core/carte_cuite.cpp)   # WFS-301 : paquets de cartes (format, vérification, 2e source)
+  add_executable(test_cartes_v2_donnees tests/test_cartes_v2_donnees.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp)   # WFS-343 : cartes 100 % dynamiques
+  target_compile_definitions(test_cartes_v2_donnees PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cgu tests/test_cgu.cpp src/ui/ecrans/cgu_texte.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-308 : CGU (texte, version, clé cgu=)
   add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
@@ -154,13 +157,14 @@ else()
   target_compile_definitions(test_archi_kit PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD)
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_fluidite_reference tests/test_fluidite_reference.cpp)   # WFS-293 (RG-10) : l'indicateur à 10-20 img/s voit les sauts
   add_executable(test_fidelite_lumiere_precalcule tests/fidelite_lumiere_precalcule.cpp src/render/eclairage_precalcule.cpp src/core/jobs.cpp)   # WFS-269 : occlusion du décor fixe précalculée
   target_link_libraries(test_fidelite_lumiere_precalcule Threads::Threads)
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
   target_compile_definitions(test_fidelite_lumiere PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere_ombres tests/fidelite_lumiere_ombres.cpp)   # WFS-227 : cascades d'ombre, M-01, M-02
   target_compile_definitions(test_fidelite_lumiere_ombres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-  add_executable(test_pluie tests/test_pluie.cpp)   # WFS-334 : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse
+  add_executable(test_pluie tests/test_pluie.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-334 : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse
   add_executable(test_ville_lieux tests/test_ville_lieux.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-137 : lieux de la Ville au tracé 2
   add_executable(test_ville_sol tests/test_ville_sol.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-305 : sol fermé côté intérieur des courbes serrées (ANO-171)
   add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
