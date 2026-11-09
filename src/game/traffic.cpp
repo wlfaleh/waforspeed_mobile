@@ -398,6 +398,8 @@ void Traffic::crash(TrafficCar& car, double impact, int side) {
     if (car.deuxRoues) { car.crashSpin *= 0.25; car.chute = 1.5 + impact * 2; }
 }
 
+bool g_avantWfs333 = false;
+
 // WFS-333 : recouvrement de deux rectangles orientés par les 4 axes séparateurs (axes propres de chaque rectangle)
 double recouvrement(const Emprise& a, const Emprise& b, double* nx, double* nz) {
     const double ax[4][2] = {{std::sin(a.cap), std::cos(a.cap)}, {std::cos(a.cap), -std::sin(a.cap)},
@@ -442,7 +444,7 @@ bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, 
 // références du jeu web (Aide::Web, test_course) gardent exactement les chocs du jeu web.
 HitEvents Traffic::collide(Player& pl, double dt) {
     HitEvents ev;
-    const bool dessine = pl.aide != Aide::Web;   // WFS-333 : emprises dessinées
+    const bool dessine = pl.aide != Aide::Web && !g_avantWfs333;   // WFS-333 : emprises dessinées
     scrapeCd_ -= dt;
     const CarDef& me = *pl.car;
     // emprise réelle de la voiture tournée de « heading » (rectangle orienté) ; WFS-333 : + tête-à-queue (spinYaw), tel que dessiné

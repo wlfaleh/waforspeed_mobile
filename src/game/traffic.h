@@ -149,6 +149,8 @@ Emprise empriseTrafic(const TrafficCar& c, double dz);
 // RG-03 : écarte du joueur une voiture pilotée par le jeu (adversaire de la course à 5 ; utilisable pour la police) d'emprise alignée sur la route :
 // rd (unités, comme Player::dist), x (demi-largeurs) ; vrai si elle a été déplacée. Jeu laissé à JEU_CONTACT_M (contact visible).
 constexpr double JEU_CONTACT_M = 0.02;
+// banc seulement (WFS_AVANT_333=1, banc « penetration ») : chocs d'avant WFS-333, pour les captures « avant » ; faux dans le jeu
+extern bool g_avantWfs333;
 bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, double largeurM);
 
 class Traffic {
