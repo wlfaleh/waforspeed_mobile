@@ -92,6 +92,33 @@ bool basculementPermis() { return appui::basculementPermis(maintenant(), g_derni
 // relâcher dans la cible ; un doigt qui glisse hors de la cible annule l'appui
 enum { P_AUCUN, P_BOUTON, P_FERMER };
 int g_presse = P_AUCUN, g_doigt = -1;
+// WFS-291 (RG-01, découpage validé par le PO le 2026-11-08 23:04:56 UTC) : 3 onglets ; chaque ligne dans un seul onglet, ordre fixe
+enum { O_AFFICHAGE = 0, O_CONDUITE = 1, O_SON = 2, N_ONGLETS = 3 };
+const char* const ONGLETS[N_ONGLETS] = {"Affichage", "Conduite", "Son"};
+constexpr int MAX_PAR_ONGLET = 7;   // Affichage : 5 lignes, 6 avec « Fantôme du record » (WFS-318, prévu en dernière ligne)
+const int LIGNES_ONGLET[N_ONGLETS][MAX_PAR_ONGLET] = {
+    {L_CAMERA, L_QUALITE, L_REGARD, L_MOUVEMENTS, L_BOUTONS, -1, -1},
+    {L_DIRECTION, L_COMMANDES, L_GYRO, L_GYROZONE, L_AIDE, L_VIBRATIONS, -1},
+    {L_SON, L_MUSIQUE, -1, -1, -1, -1, -1},
+};
+bool dansOnglet(int l, int o) { for (int i = 0; i < MAX_PAR_ONGLET && LIGNES_ONGLET[o][i] >= 0; i++) if (LIGNES_ONGLET[o][i] == l) return true; return false; }
+int ongletDe(int l) { for (int o = 0; o < N_ONGLETS; o++) if (dansOnglet(l, o)) return o; return O_AFFICHAGE; }
+int nLignesOnglet(int o) { int n = 0; while (n < MAX_PAR_ONGLET && LIGNES_ONGLET[o][n] >= 0) n++; return n; }
+int g_onglet = O_AFFICHAGE;   // RG-03 : dernier onglet ouvert, gardé (clé « onglet » du fichier des réglages)
+Zone g_onglets[N_ONGLETS];
+// dessine la barre des onglets dans (x, y, w, h) : onglet actif comme un choix actif (fond cyan léger, trait et texte cyan),
+// les autres sur la surface ; zones de toucher = les onglets dessinés (h ≥ 40 dp sur téléphone)
+void dessinerOnglets(Renderer& r, float x, float y, float w, float h, float tp, float gapO, float trait) {
+    const float ow = (w - (N_ONGLETS - 1) * gapO) / N_ONGLETS;
+    for (int o = 0; o < N_ONGLETS; o++) {
+        const float ox = x + o * (ow + gapO);
+        const bool on = o == g_onglet;
+        g_onglets[o] = {ox, y, ow, h};
+        if (on) { r.uiRect(ox, y, ow, h, hex(ACCENT2, 0.16f)); r.uiRect(ox, y + h - trait, ow, trait, hex(ACCENT2)); }
+        else r.uiRect(ox, y, ow, h, hex(SURFACE2));
+        ui::text(r, ox + ow / 2, y + (h - tp) / 2, tp, ui::majuscules(ONGLETS[o]), on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+    }
+}
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
 
@@ -122,6 +149,7 @@ bool lire() {
         if (!std::strcmp(cle, "mouvements")) reglagesRessenti().reduireMouvements = v != 0;   // WFS-80 (RG-02)
         else if (!std::strcmp(cle, "ultra")) qualite::ultraChoisi = v != 0;   // WFS-150 : Ultra (absent de la sauvegarde commune)
         else if (!std::strcmp(cle, "regard")) choisirRegard((RegardCockpit)std::clamp(v, 0, 2));   // WFS-235 (RG-03), comme « mouvements »
+        else if (!std::strcmp(cle, "onglet")) g_onglet = v >= 0 && v < N_ONGLETS ? v : O_AFFICHAGE;   // WFS-291 (RG-03) : inconnu → Affichage
         else if (commune) continue;   // WFS-24 : les autres réglages viennent de la sauvegarde commune
         else if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
         else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
@@ -154,6 +182,7 @@ void ecrire() {
     std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
                  (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
     std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\nultra=%d\nregard=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone, (int)qualite::ultraChoisi, (int)regardCockpit());   // WFS-108 ; WFS-150 ; WFS-235
+    std::fprintf(fp, "onglet=%d\n", g_onglet);   // WFS-291 (RG-03) : pas un réglage, la place où on en était
     std::fclose(fp);
 }
 
@@ -205,7 +234,7 @@ public:
     }
     // WFS-290 : la zone du bouton n'est plus effacée au changement d'écran (même place au menu et en pause) : un appui juste après
     // l'arrivée sur l'écran, avant la 1re image dessinée, comptait pour rien (banc : 0 sur 100) ; hors menu et pause, onTouch l'ignore
-    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_presse = P_AUCUN; cgu().fermer(); }
+    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_presse = P_AUCUN; g_doigt = -1; cgu().fermer(); }   // WFS-291 : g_doigt aussi (remarque du lead dev, PR #287)
     void shutdown(Renderer&) override { if (cgu().mode() == Cgu::Mode::Lecture) cgu().fermer(); }   // WFS-308 : fenêtre perdue en jeu (termGraphics)
 
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -239,8 +268,12 @@ public:
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); g_doigt = t.id; return true; }   // WFS-308 (RG-05)
         if (dansCible(g_fermer, t.x, t.y)) { g_doigt = t.id; g_presse = P_FERMER; return true; }   // WFS-290 : fermé au relâcher
         if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { g_doigt = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
+        for (int o = 0; o < N_ONGLETS; o++) if (g_onglets[o].contient(t.x, t.y)) {   // WFS-291 : changement d'onglet, gardé
+            if (o != g_onglet) { g_onglet = o; WFS_LOG("réglages : onglet %s", ONGLETS[o]); ecrire(); }
+            return true;
+        }
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) {
-            if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
+            if (!dansOnglet(l, g_onglet) || !g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;   // WFS-291 : onglet ouvert seul
             Reglages& R = reglages();
             if (l == L_CAMERA) { R.camera = c; appliquerCamera(); }
             else if (l == L_QUALITE) { qualite::ultraChoisi = c == qualite::ULTRA; R.qualite = std::min(c, (int)QUALITE_HAUTE); R.qualiteChoisie = true; qualite::oublierRetenus(); if (r_) appliquerQualite(*r_); }   // WFS-134
@@ -272,7 +305,8 @@ public:
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
         if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k);
-        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) manette::focus(g_choix[l][c]);
+        for (int o = 0; o < N_ONGLETS; o++) manette::focus(g_onglets[o]);   // WFS-291 : la manette passe d'un onglet à l'autre
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) if (dansOnglet(l, g_onglet)) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
         if (cgu().ouvert()) cgu().dessiner(r, W, H, g.marges, g.time);   // WFS-308 (RG-05) : par-dessus le panneau
     }
@@ -307,9 +341,16 @@ private:
                  ui::GAUCHE, 0.22f, false);
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         boutonCgu(r, px + pw - 36 * k, py + 30 * k, 36 * k, k);   // WFS-308 (RG-05)
-        float y = py + haut;
+        // WFS-291 : onglets sous le titre, puis les lignes de l'onglet ouvert (plus hautes : la place de 13 lignes est gardée,
+        // « Fermer » ne bouge pas) ; les lignes des autres onglets n'ont plus de zone de toucher
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < 4; c++) g_choix[l][c] = {};
+        dessinerOnglets(r, x0, py + haut - 8 * k, pw - 72 * k, 40 * k, 15 * k, 6 * k, 3 * k);
+        const float rowO = 40 * k, gapO = 10 * k;
+        float y = py + haut + 40 * k + 14 * k;
         const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
-        for (int l = 0; l < N_LIGNES; l++) {
+        for (int i = 0; i < nLignesOnglet(g_onglet); i++) {
+            const int l = LIGNES_ONGLET[g_onglet][i];
+            const float rowH = rowO, gap = gapO;
             r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = nChoix(l);
@@ -377,10 +418,15 @@ private:
             ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
         }
         const float colGap = 24 * k, colW = (pw - 48 * k - colGap) / 2, libW = 104 * k, segGap = 6 * k;
-        for (int l = 0; l < N_LIGNES; l++) {
-            const int col = l / PAR_COL, rang = l % PAR_COL;
-            const bool entete = l == L_REGARD;   // WFS-235 (RG-03) : entre le titre et « Fermer »
-            const float cx = entete ? px + (pw - colW) / 2 : x0 + col * (colW + colGap), y = entete ? py + (haut - rowH) / 2 : py + haut + rang * (rowH + gap);
+        // WFS-291 : onglets dans l'en-tête, entre le titre et « Fermer » (place de « Regard cockpit », qui passe dans Affichage) ;
+        // lignes de l'onglet ouvert en deux colonnes de 3 ; taille du panneau inchangée, « Fermer » ne bouge pas
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < 4; c++) g_choix[l][c] = {};
+        dessinerOnglets(r, px + (pw - colW) / 2, py + (haut - rowH) / 2, colW, rowH, 14 * k, segGap, 3 * kb);
+        constexpr int PAR_COL_ONGLET = 3;
+        for (int i = 0; i < nLignesOnglet(g_onglet); i++) {
+            const int l = LIGNES_ONGLET[g_onglet][i];
+            const int col = i / PAR_COL_ONGLET, rang = i % PAR_COL_ONGLET;
+            const float cx = x0 + col * (colW + colGap), y = py + haut + rang * (rowH + gap);
             r.uiRect(cx, y + rowH + gap / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             // libellé : sur deux lignes s'il dépasse sa place (« Réduire les mouvements », « Zone morte gyro »)
             const std::string lib = ui::majuscules(LIGNES[l].libelle);
@@ -485,6 +531,15 @@ static void benchManetteEcrans(Game& g, Renderer& r, const std::string& out) {
     aller((int)manette::zonesPrecedentes().size() - 1);
     appui(manette::A, 6);
     WFS_LOG("manette (WFS-80) : A sur « Réglages » → panneau %s, %zu zones", g_ouvert ? "ouvert" : "fermé", manette::zonesPrecedentes().size());
+    auto zoneDe = [&](const Zone& c) {   // index de la zone de focus de la manette qui correspond à c
+        int k = -1; const std::vector<manette::Zone>& zs = manette::zonesPrecedentes();
+        for (int i = 0; i < (int)zs.size(); i++) if (std::fabs(zs[i].x - c.x) < 0.5f && std::fabs(zs[i].y - c.y) < 0.5f) k = i;
+        return k;
+    };
+    if (!dansOnglet(L_DIRECTION, g_onglet)) {   // WFS-291 : la manette passe à l'onglet « Conduite », puis A
+        aller(zoneDe(g_onglets[O_CONDUITE])); appui(manette::A, 6);
+        WFS_LOG("manette (WFS-291) : A sur l'onglet « Conduite » → onglet %s", ONGLETS[g_onglet]);
+    }
     int cible = -1;
     const std::vector<manette::Zone>& z = manette::zonesPrecedentes();
     const Zone& c = g_choix[L_DIRECTION][1];
@@ -517,12 +572,17 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
         const float x = z.x + z.w / 2, y = z.y + z.h / 2;
         g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); image();
     };
+    // WFS-291 : un choix se touche dans son onglet (l'onglet est d'abord touché s'il n'est pas ouvert, comme un joueur)
+    auto choix = [&](int id, int l, int c) {
+        if (!dansOnglet(l, g_onglet)) { toucher(90 + id, g_onglets[ongletDe(l)]); g.render(t); }
+        toucher(id, g_choix[l][c]);
+    };
     for (int i = 0; i < 30; i++) image();
     g.allerA(Ecran::Menu);
     for (int i = 0; i < 60; i++) image();
     g.render(t); toucher(1, g_bouton);
     capture("reglages-menu", "panneau ouvert depuis le menu");
-    toucher(2, g_choix[L_CAMERA][CAM_CAPOT]); toucher(3, g_fermer);
+    choix(2, L_CAMERA, CAM_CAPOT); toucher(3, g_fermer);
     WFS_LOG("réglages : vue = %s (Capot attendu)", VUES[(int)vueCamera()].nom);
     // course (départ du menu), puis pause → réglages
     g.allerA(Ecran::Course);
@@ -530,16 +590,16 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(4, g_bouton);
     capture("reglages-pause", "panneau ouvert depuis la pause, vue Capot choisie");
     // qualité basse : scène à 50 %, sans ombres du soleil ; capture en course, puis retour à Haute et Proche
-    toucher(5, g_choix[L_QUALITE][QUALITE_BASSE]); toucher(6, g_choix[L_CAMERA][CAM_POURSUITE]); toucher(7, g_fermer);
+    choix(5, L_QUALITE, QUALITE_BASSE); choix(6, L_CAMERA, CAM_POURSUITE); toucher(7, g_fermer);
     g.allerA(Ecran::Course);
     for (int i = 0; i < 60; i++) image();
     capture("reglages-basse", "course en qualité basse");
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(8, g_bouton);
-    toucher(9, g_choix[L_QUALITE][QUALITE_HAUTE]); toucher(11, g_choix[L_MUSIQUE][1]);   // WFS-76 : « Musique : Coupée »
-    capture("reglages-musique", "musique coupée"); toucher(12, g_choix[L_MUSIQUE][0]); toucher(10, g_fermer);
+    choix(9, L_QUALITE, QUALITE_HAUTE); choix(11, L_MUSIQUE, 1);   // WFS-76 : « Musique : Coupée »
+    capture("reglages-musique", "musique coupée"); choix(12, L_MUSIQUE, 0); toucher(10, g_fermer);
     // WFS-75 : depuis la pause, « Commandes : Gaucher » et « Vibrations : Coupées », appliqués sans redémarrer
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(13, g_bouton);
-    toucher(14, g_choix[L_COMMANDES][1]); toucher(15, g_choix[L_VIBRATIONS][1]);
+    choix(14, L_COMMANDES, 1); choix(15, L_VIBRATIONS, 1);
     capture("reglages-commandes", "Commandes : Gaucher, Vibrations : Coupées");
     toucher(16, g_fermer); g.allerA(Ecran::Course); g.setAutopilot(false);
     for (int i = 0; i < 30; i++) image();
@@ -564,10 +624,10 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     // WFS-80 : « Direction : Flèches » et « Réduire les mouvements : Oui » depuis la pause (capture reglages), puis relecture
     g.setAutopilot(true);
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(21, g_bouton);
-    toucher(22, g_choix[L_DIRECTION][1]);
+    choix(22, L_DIRECTION, 1);
     WFS_LOG("réglages : direction du ressenti = %s, steer sauvegardé = %s (Flèches / fleches attendus)",
             reglagesRessenti().direction == ModeDirection::Fleches ? "Flèches" : "Glisser", sauvegarde().steer.c_str());
-    toucher(23, g_choix[L_MOUVEMENTS][1]);
+    choix(23, L_MOUVEMENTS, 1);
     capture("reglages", "8 lignes : Direction Flèches, Réduire les mouvements Oui");
     {   // relancement simulé : écriture du fichier des réglages, mouvements remis à Non, puis relecture
         const std::string f = out + "/reglages-wfs80.txt";
@@ -578,7 +638,7 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     }
     // WFS-108 : « Boutons : Grands », « Gyroscope : Moyen » (capture reglages-108), puis course : inclinaison d'essai de 12°
     // (braquage attendu (12 − 3) / (20 − 3) ≈ 0,53), gaz ; puis frein maintenu jusqu'à la marche arrière (« R » au HUD)
-    toucher(25, g_choix[L_BOUTONS][1]); toucher(26, g_choix[L_GYRO][2]);
+    choix(25, L_BOUTONS, 1); choix(26, L_GYRO, 2);
     capture("reglages-108", "11 lignes : Boutons Grands, Gyroscope Moyen, Zone morte Moyenne");
     reglagesRessenti() = {}; sauvegarde().steer = "glisser";
     gyroscope::capteurPresent(true); gyroscope::publier(9.81f, 0.f);   // téléphone droit : zéro pris au départ de la course
@@ -732,6 +792,58 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
             g_bouton.w / dp, g_bouton.h / dp, g_fermer.w / dp, g_fermer.h / dp, dp);
     WFS_LOG("réglages (WFS-290) : total menu : ouvrir %d / 700, fermer %d ; pause : ouvrir %d / 700, fermer %d", total[0][0], total[0][1], total[1][0], total[1][1]);
     g_ouvert = false; g_horlogeBanc = -1;
+    g.shutdown();
+    courseBenchRules(false);
+}
+
+// WFS-291 (RG-01 à RG-04) : banc des onglets : Affichage au menu, Conduite en pause, Son en pause, Son en gaucher ; dernier
+// onglet relu après un redémarrage simulé ; « Fermer » et la touche Retour ferment le panneau depuis chaque onglet
+void benchReglagesOnglets(Game& g, Renderer& r, const std::string& out) {
+    courseBenchRules(true);
+    if (!g.init(r, "golf", "ville")) { WFS_ERR("réglages (WFS-291) : chargement impossible"); courseBenchRules(false); return; }
+    g.setAutopilot(true); g.camMode = 0;
+    double t = 1200;
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; g_horlogeBanc = t; g.render(t); };
+    auto attendre = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; g_horlogeBanc = t; } };
+    auto capture = [&](const char* nom, const char* quoi) {
+        g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : écran %s, onglet %s, %s", nom, nomEcran(g.ecran()), ONGLETS[g_onglet], quoi);
+    };
+    auto toucher = [&](int id, const Zone& z) {
+        const float x = z.x + z.w / 2, y = z.y + z.h / 2;
+        attendre(24); g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); image();
+    };
+    auto onglet = [&](int o) { toucher(50 + o, g_onglets[o]); };
+    g_onglet = O_AFFICHAGE;
+    g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) image();
+    toucher(1, g_bouton); onglet(O_AFFICHAGE);
+    capture("reglages-onglet-affichage-menu", "menu principal, onglet Affichage (5 lignes)");
+    toucher(2, g_fermer);
+    WFS_LOG("réglages (WFS-291) : « Fermer » depuis Affichage → panneau %s", g_ouvert ? "OUVERT" : "fermé");
+    g.allerA(Ecran::Course); for (int i = 0; i < 60 * 4; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 29) g.render(t); }
+    g.allerA(Ecran::Pause); image();
+    toucher(3, g_bouton);
+    WFS_LOG("réglages (WFS-291) : panneau rouvert en pause sur l'onglet %s (Affichage attendu : dernier ouvert)", ONGLETS[g_onglet]);
+    onglet(O_CONDUITE);
+    capture("reglages-onglet-conduite-pause", "en pause, onglet Conduite (6 lignes)");
+    onglet(O_SON);
+    capture("reglages-onglet-son-pause", "en pause, onglet Son (2 lignes)");
+    // gaucher : « Commandes : Gaucher » dans Conduite, puis retour sur Son
+    onglet(O_CONDUITE); toucher(4, g_choix[L_COMMANDES][1]); onglet(O_SON);
+    capture("reglages-onglet-son-gaucher", "en pause, onglet Son, commandes en gaucher");
+    WFS_LOG("réglages (WFS-291) : commandes %s (Gaucher attendu)", reglages().gaucher ? "Gaucher" : "Droitier");
+    // touche Retour depuis l'onglet Son : panneau fermé, pause gardée
+    retourSysteme(g, true, 0); image(); retourSysteme(g, false, 0); image();
+    WFS_LOG("réglages (WFS-291) : touche Retour depuis l'onglet Son → panneau %s, écran %s", g_ouvert ? "OUVERT" : "fermé", nomEcran(g.ecran()));
+    // RG-03 : dernier onglet gardé après un redémarrage simulé (écriture, oubli, relecture)
+    {
+        const std::string f = out + "/reglages-wfs291.txt";
+        setenv("WFS_REGLAGES", f.c_str(), 1);
+        ecrire(); const int avant = g_onglet; g_onglet = O_AFFICHAGE; lire();
+        WFS_LOG("réglages (WFS-291) : onglet relu après redémarrage : %s (%s attendu)", ONGLETS[g_onglet], ONGLETS[avant]);
+        unsetenv("WFS_REGLAGES"); std::remove(f.c_str());
+    }
+    reglages().gaucher = false; g_onglet = O_AFFICHAGE; g_ouvert = false; g_horlogeBanc = -1;   // banc : défauts
     g.shutdown();
     courseBenchRules(false);
 }
