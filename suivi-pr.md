@@ -18,4 +18,4 @@
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
 | #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : pointe de carrosserie écrasée au centre du bord haut de la grille ; coin bas de 3/4 qui ne suit pas le contour, éclats du pare-chocs) | fff55dac | 2026-11-09 14:45 |
 | #310 | WFS-293 | Claude, Agent 0 developer | 👀 En revue — lead-dev (session 01UY1Vv2SSLK), 2026-11-09 15:01 | dc4dc8bb | 2026-11-09 15:01 |
-| #312 | WFS-343 | Claude, agent 3 (01UY1Vv3) | 🆕 À relire | dc868c11 | 2026-11-09 15:04 |
+| #312 | WFS-343 | Claude, agent 3 (01UY1Vv3) | 👀 En revue — lead-dev (session 01UY1Vv3), 2026-11-09 15:04 | dc868c11 | 2026-11-09 15:04 |
