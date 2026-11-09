@@ -182,8 +182,11 @@ public:
     int niveauCascades() const { return qualiteBasse ? 0 : std::clamp(niveauOmbres, 1, 3); }   // WFS-264 (RG-03) : Basse = 1 cascade de 40 m
     bool dessinJoueur = false;     // WFS-265 : vrai pendant le dessin de la voiture du joueur (game.cpp) : modèle complet
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    uint32_t bancSansEffets = 0;   // WFS-348 (RG-01) : banc perf seulement : 1 lumières de nuit, 2 chaussée mouillée, 4 sonde IBL retirées ;
+                                   // 8 transparents, 16 opaques à découpe (feuillage), 32 sol et trottoirs, 64 voitures non dessinés
     bool forceSansReflets = false; // WFS-222 (RG-03) : baisse automatique : pas de passe de reflet (route mouillée)
     bool rendu221 = false;         // WFS-222 : banc seulement (WFS_AVANT_222=1) : rendu d'avant WFS-222, pour comparer images et coûts
+    int bancLumieresParPixel = 0;   // WFS-348 : banc perf seulement (> 0 : lumières par pixel en Basse, pour comparer ; 0 : 4)
     bool qualiteBasse = false;     // WFS-82 : petits objets coupés plus tôt (150 m) en qualité Basse
     int niveauOmbres = 2;          // WFS-227 : niveau affiché (1 Moyenne : 2 cascades, 2 Haute : 3, 3 Ultra : 4 ; Basse : ombres coupées)
     uint32_t objetsMasques() const { return masquesPrec_; }   // WFS-82 : objets non dessinés à la dernière image (journal)
@@ -212,6 +215,10 @@ public:
     double gpuImageMs() const { return gpuImageMs_; }
     // WFS-246 (RG-06) : temps GPU de chaque passe (ms, lissé) ; mesuree = faux sans horodatages
     static constexpr uint32_t HORODATAGES = 5;   // WFS-246 (RG-06) : horodatages par image (ombre, reflet, scène, fin de scène, fin de la passe finale)
+    // WFS-348 (RG-01) : banc seulement (WFS_STATS_PIPELINE=1) : compteurs de la passe de scène de l'image lue en dernier ; valide = mesurée
+    struct StatsScene { uint64_t sommets = 0, triangles = 0, pixels = 0; bool valide = false; };
+    const StatsScene& statsScene() const { return stats_; }
+    int projecteursImage() const { return projecteurs_; }   // WFS-348 : projecteurs envoyés aux shaders à cette image (banc)
     struct GpuPasses { double ombre = 0, reflet = 0, scene = 0, post = 0; bool mesuree = false; };
     const GpuPasses& gpuPasses() const { return gpuPasses_; }
     // WFS-246 (RG-07) : résolution dynamique (0,1 à 1 de la capacité) sans recréer les cibles ; appliquée à l'image suivante
@@ -338,6 +345,8 @@ private:
     bool figer_ = false, sceneValide_ = false;   // WFS-329 : fond figé demandé ; image de scène HDR gardée valable
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
+    int projecteurs_ = 0;   // WFS-348
+    VkQueryPool statsPool_ = VK_NULL_HANDLE; bool statsEcrit_[2] = {false, false}; StatsScene stats_;   // WFS-348 (RG-01) : banc seulement
     bool tsWritten_[2] = {false, false};
     double gpuImageMs_ = -1;   // WFS-246
     GpuPasses gpuPasses_;      // WFS-246 (RG-06)
