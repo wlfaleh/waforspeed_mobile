@@ -4546,3 +4546,6 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **RG-08 ajoutée** (demande de l'agent) : un paquet installé ou supprimé en cours de jeu sert dès la course suivante, sans relancer l'application (lève la limite de WFS-306) ; jamais pendant une course ; paquet invalide refusé par `verifier_carte`.
 - **Zone** (exception PO E8, WFS-290 d'agent 2 en retour lead dev dans d'autres fichiers) : `src/ui/ecrans/terrain.*`, `paquets*`, fichiers neufs ; Java `Paquets`, `ListePaquets`, `Telechargeur` (+ JUnit) ; `src/core/carte_cuite.*` + accroches ≤ 10 lignes annoncées au journal. **Pas** `reglages.*` / `menu.*` (RG-06 seulement après WFS-290 / 291 / 318, sinon ticket suivant), **pas** la CI ni `cartes.json` réel (WFS-302) : essai avec un faux paquet local.
 - **Critères et captures** : `regles-de-gestion/WFS-307.md` (RG-01 à RG-08, parcours RG-07, section « Captures demandées »). Branche `feature/waforspeed-307`, PR relue et fusionnée par le lead dev ; ✅ par les bancs du matin.
+
+### 2026-11-09 00:15:12 — WFS-307 : début (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-307` depuis `main` (778dbf48). Skills : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`. Plan et accroches à l’entrée suivante.
