@@ -22,6 +22,9 @@ void trafficRestartSeed(uint32_t seed, double playerPos);   // duel (WFS-21) : g
 // (demi-largeurs de route), à sa vitesse + `extraKmh` ; `holdLane` : garde sa file sans freiner (scène de choc)
 void trafficBenchPlace(double metres, double lat, double extraKmh, bool holdLane);
 int trafficBenchCar();   // indice de la voiture visée par le dernier placement
+// WFS-281 (RG-02) : médianes, sur les `images` dernières images dessinées (128 au plus), des appels de dessin, triangles et
+// véhicules dessinés par le trafic ; faux sans partie
+bool trafficMedianes(int images, double& appels, double& triangles, double& dessines);
 // scènes du banc d'essai du trafic (captures trafic-*.png), appelées par src/platform/desktop_main.cpp
 void benchTrafficScenes(Game& g, Renderer& r, const std::string& outDir);
 // WFS-67 : trafic vivant (captures trafic-clignotant.png, trafic-freinage.png, trafic-accident.png)

@@ -4680,6 +4680,11 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - PR #294 (Claude, agent 3 (01UY1Vv3)) relue sur 1021b6b6 : 18 captures ouvertes une par une (10 nouvelles du choix du terrain, du menu et de la course ; 4 paires de WFS-306 identiques), diff de 34 fichiers lu en entier (FilePaquets, Paquets, Telechargeur, pont JNI, CartesPaquets, terrain, banc, tests). RG-01 à RG-05, RG-07, RG-08 tenues ; RG-06 reportée (décision du PO) ; accroches `game.*` conformes à l'accord du PO de 00:16:07.
 - GitHub refuse « Approve » (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire, puis fusion en squash 90ee9b21. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` complété.
 
+### 2026-11-09 01:10:30 — WFS-336 fusionné par le lead dev (lead-dev auto)
+- PR #295 codée par le lead dev (session de l'utilisateur), relue et fusionnée par une autre instance (règle de WFS-336), à sa demande.
+- Revue complète : 9 paires de captures ouvertes, tout le diff lu (`traffic.*`, `traffic_system.*`, `test_trafic_duree`, accroches de banc). Tests relancés sur la branche fusionnée avec main : `test_trafic_duree` 0 sur 1600, `test_trafic_vivant`, `test_chocs_voitures`, `test_rien_sur_chaussee`, `test_lots_decor`, `test_navigation` OK.
+- Approbation en commentaire (même compte), squash c2fd0c5 (expectedHeadSha 52eaf6c). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
+
 ### 2026-11-09 01:10:25 — WFS-343 attribué à Claude, agent 3 (01UY1Vv3) ; WFS-346 et WFS-347 créés (po-scrum-master)
 - **Choix** : files A / B sans ticket attribuable (WFS-193, 335 en cours ; WFS-194 attend E10 ; file B : WFS-333 attend E3 occupée par WFS-336 / 338, WFS-328 et 338 chez arwa). Premier ticket prêt du domaine cartes : **WFS-343** (P2, objectif « cartes téléchargées », dépendances WFS-301, 306, 307 🟣).
 - **Découpage** (un ticket = une journée au plus ; E3 occupée) : la neige (RG-02 et la partie neige / saison de RG-05) passe dans **WFS-346** (P2, E3 + E2 / E4, après WFS-343, skill expert-conduite). WFS-344 dépend de 343 et 346. Rien du contenu demandé n'est retiré.
