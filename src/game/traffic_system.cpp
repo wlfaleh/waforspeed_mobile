@@ -560,8 +560,7 @@ int benchPenetration(Game& g, Renderer& r, const std::string& out) {
         const int frot0 = activeTrafficStats()->scrapes + activeTrafficStats()->bumps;
         for (int img = 1; img <= 4; img++) {
             pas(8);
-            char nom[96]; std::snprintf(nom, sizeof nom, "%s/penetration-%s-%d.png", out.c_str(), nomVue, img);
-            r.capturePng(nom);
+            r.capturePng(out + "/penetration-" + nomVue + "-" + std::to_string(img) + ".png");
             const TrafficCar& c = activeTraffic()->cars[(size_t)k];
             WFS_LOG("capture penetration-%s-%d : joueur %.0f km/h, voisine à %+.2f m en travers, %+.2f m en long, recouvrement %.3f m",
                     nomVue, img, g.player().kmh(), (c.offset - g.player().playerX) * RW, s->track_->relZ(c.z - g.player().position) * M, std::max(0.0, pire()));
@@ -578,8 +577,7 @@ int benchPenetration(Game& g, Renderer& r, const std::string& out) {
         const int h = trafficBenchCar();
         for (int img = 1; img <= 3; img++) {
             pas(img == 1 ? 6 : 60);
-            char nom[96]; std::snprintf(nom, sizeof nom, "%s/penetration-accident-%d.png", out.c_str(), img);
-            r.capturePng(nom);
+            r.capturePng(out + "/penetration-accident-" + std::to_string(img) + ".png");
             if (h >= 0) {
                 const TrafficCar& c = activeTraffic()->cars[(size_t)h];
                 WFS_LOG("capture penetration-accident-%d : %s, joueur %.0f km/h, voiture accidentée %.0f km/h à %+.1f m en long, %+.2f m en travers",

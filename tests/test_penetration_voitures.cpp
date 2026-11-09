@@ -1,11 +1,11 @@
-// WFS-333 (RG-02, RG-03 ; ANO-180, 181, 183) : aucune voiture (trafic, police, adversaire) n'est dessinée dans celle du joueur.
+// WFS-333 (RG-02, RG-03 ; ANO-180, 181, 183) : aucune voiture (trafic, adversaire ; police : WFS-338) n'est dessinée dans celle du joueur.
 // Mesure sur les emprises DESSINÉES (rectangles orientés : cap + tête-à-queue du joueur, cap + rotation d'une voiture accidentée),
 // à la fin de chaque pas de 1/120 s, comme le rendu les lit :
 //  1. trafic : 3 cartes, aide Activée et Désactivée, 6 graines, 60 s de conduite agressive (le joueur vise la voiture la plus
 //     proche devant lui, accidents compris) : recouvrement < 3 cm (avant WFS-333 : 2,19 m, voitures accidentées et tête-à-queue) ;
 //     aucune voiture accidentée collée au joueur à sa vitesse plus d'1 s (RG-02, ANO-180) ;
-//  2. police (poursuite::avancer, attaques au contact, duel::contacter puis separerDuJoueur, comme PoursuiteSystem) : < 3 cm ;
-//  3. adversaire de la course à 5 qui pousse par l'arrière un joueur en tête-à-queue (duel::contacter + separerDuJoueur) : < 3 cm.
+//     (police en Poursuite : WFS-338, PR #297, tests/test_poursuite.cpp)
+//  2. adversaire de la course à 5 qui pousse par l'arrière un joueur en tête-à-queue (duel::contacter + separerDuJoueur) : < 3 cm.
 // usage : test_penetration_voitures
 #include <algorithm>
 #include <cmath>
@@ -13,7 +13,6 @@
 #include <vector>
 #include "../src/game/duel.h"
 #include "../src/game/player.h"
-#include "../src/game/poursuite.h"
 #include "../src/game/trace_cartes.h"
 #include "../src/game/traffic.h"
 using namespace wfs;
@@ -22,7 +21,7 @@ static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
 constexpr double TOLERANCE_M = 0.03;
 
-// recouvrement dessiné d'une voiture alignée sur la route (police, adversaire) avec le joueur
+// recouvrement dessiné d'une voiture alignée sur la route (adversaire) avec le joueur
 static double recouvrementAligne(const Player& p, double rd, double x, const CarDef& c) {
     return recouvrement(empriseJoueur(p), Emprise{x * RW, (rd - p.dist) * M, 0, c.d.L / 2, c.d.W / 2});
 }
@@ -72,42 +71,6 @@ static void trafic(const char* carte) {
     VERIFIE(accidentsCarte > 0, "trafic %s : aucun accident (voitures accidentées et tête-à-queue non essayés)", carte);
 }
 
-static void police() {
-    static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
-    const CarDef& pc = carById("p208");
-    for (bool separer : {false, true}) {
-        double pire = 0; int contacts = 0;
-        for (uint32_t graine = 1; graine <= 4; graine++) {
-            Player p; p.aide = Aide::Activee; p.reset(carById("golf")); p.speed = 120 / 3.6 / M; p.dist = 200 / M; p.position = t.wrap(p.dist);
-            std::vector<poursuite::Police> ps;
-            for (int k = 0; k < 3; k++) { ps.push_back(poursuite::renfort(k, p.dist, p.speed, graine)); ps.back().rd = p.dist - (20 + 6 * k) / M; }
-            const std::vector<poursuite::Obstacle> obs;
-            Mulberry32 R(graine);
-            double cible = 0;
-            for (int n = 0; n < 120 * 40; n++) {
-                const double temps = n / 120.0;
-                if (n % 120 == 0) cible = (R.next() - 0.5) * 1.2;
-                DriveInput in; in.gas = R.next() < 0.8; in.brake = !in.gas && R.next() < 0.5;
-                in.steer = (float)std::clamp((cible - p.playerX) * 4 - p.heading * 3, -1.0, 1.0);
-                p.update(1.0 / 120, in, t, true);
-                poursuite::avancer(ps, 1.0 / 120, temps, p.dist, p.playerX, p.speed, obs);
-                for (poursuite::Police& q : ps) {   // même enchaînement que PoursuiteSystem::collide
-                    duel::Ghost gh; gh.rd = q.rd; gh.x = q.x; gh.v = q.v; gh.car = "p208";
-                    const duel::ContactEvents e = duel::contacter(1.0 / 120, p, t, carById("golf"), gh);
-                    contacts += e.chocs + e.frottements;
-                    if (separer) { double rd = q.rd, x = q.x; if (separerDuJoueur(p, rd, x, pc.d.L, pc.d.W)) { q.rd = rd; q.x = x; if (q.rd < p.dist) q.v = std::min(q.v, p.speed); } }
-                }
-                for (const poursuite::Police& q : ps) pire = std::max(pire, recouvrementAligne(p, q.rd, q.x, pc));
-            }
-        }
-        std::printf("police (attaques au contact, 4 × 40 s) %s : %d contact(s), recouvrement max %.3f m\n", separer ? "avec séparation" : "sans séparation (avant WFS-333)", contacts, std::max(0.0, pire));
-        if (separer) {
-            VERIFIE(contacts > 0, "police : aucun contact");
-            VERIFIE(pire < TOLERANCE_M, "police dessinée dans la voiture du joueur (%.3f m)", pire);
-        }
-    }
-}
-
 static void adversaire() {
     static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
     const CarDef& oc = carById("rrsport");
@@ -131,7 +94,6 @@ int main() {
     VERIFIE(std::abs(recouvrement({0, 0, 0, 2, 1}, {2, 0, 0, 2, 1})) < 1e-9, "emprises côte à côte");
     VERIFIE(std::abs(recouvrement({0, 0, 0, 2, 1}, {0, 2.5, 1.5707963267948966, 2, 1}) - 0.5) < 1e-6, "emprise en travers");
     for (const char* carte : {"ville", "campagne", "plage"}) trafic(carte);
-    police();
     adversaire();
     std::printf("aucune voiture dans celle du joueur (WFS-333) : %s\n", echecs ? "ÉCHEC" : "OK");
     return echecs ? 1 : 0;

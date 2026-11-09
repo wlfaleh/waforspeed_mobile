@@ -178,14 +178,6 @@ public:
                     if (!p.fixe) p.v *= 0.85;
                     if (e.accident) c->accident(); else c->bump(std::max(0.1, e.impact));
                 }
-                // WFS-333 (RG-03, ANO-183) : duel::contacter ne bouge que le joueur : la police ne reste jamais dans sa voiture
-                // (barrage immobile : c'est le joueur qui est écarté)
-                const CarDef& pc = carById(policeCar_);
-                double rd = p.rd, x = p.x;
-                if (separerDuJoueur(pl, rd, x, pc.d.L, pc.d.W)) {
-                    if (!p.fixe) { p.rd = rd; p.x = x; if (p.rd < pl.dist) p.v = std::min(p.v, pl.speed); }
-                    else { pl.dist -= rd - p.rd; pl.position = t.wrap(pl.position - (rd - p.rd)); pl.playerX -= x - p.x; }
-                }
             }
             poursuite::pas(etat_, dt, plusProcheM(police_, pl.dist, pl.playerX));
             // RG-03 : un renfort tous les 2 km (6 au plus)

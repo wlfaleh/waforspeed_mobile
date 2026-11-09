@@ -146,7 +146,7 @@ double recouvrement(const Emprise& a, const Emprise& b, double* nx = nullptr, do
 Emprise empriseJoueur(const Player& pl);
 // emprise dessinée d'une voiture du trafic à dz (unités, relZ) du joueur
 Emprise empriseTrafic(const TrafficCar& c, double dz);
-// RG-03 : écarte du joueur une voiture pilotée par le jeu (police, adversaire de la course à 5) d'emprise alignée sur la route :
+// RG-03 : écarte du joueur une voiture pilotée par le jeu (adversaire de la course à 5 ; utilisable pour la police) d'emprise alignée sur la route :
 // rd (unités, comme Player::dist), x (demi-largeurs) ; vrai si elle a été déplacée. Jeu laissé à JEU_CONTACT_M (contact visible).
 constexpr double JEU_CONTACT_M = 0.02;
 bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, double largeurM);
