@@ -179,3 +179,6 @@ demande utilisateur :
 
 - La dernière version est cassée (« niquer ») (conversation avec le PO, 2026-11-09 19:35 UTC)
 ( PO, 2026-11-09 19:35:20 UTC : c'est pris en urgence. Ticket **WFS-374** (P1, le premier à donner) : trouver le commit fautif et le corriger, sans rien retirer. Aujourd'hui 4 fusions sont arrivées ; la plus risquée est **WFS-343** (cartes de données, #312, APK 965), qui change le chargement de toutes les cartes ; ensuite la poursuite police (#297) et la X5 (#311). **Une question** : qu'est-ce qui est cassé exactement (plantage au démarrage, écran noir, une carte, la conduite, le jeu qui rame…) et quel numéro d'APK ? Une vidéo ou une capture suffit. **Il faut ouvrir une session `@dev`** pour WFS-374 : aucun développeur libre. )
+
+- Vidéo : « Garder que simple mode journée et nuit, c'est quoi ça » (choix du terrain qui affiche Midi, Dorée…) (conversation avec le PO, 2026-11-09 19:3x UTC)
+( PO, 2026-11-09 19:36:22 UTC : vu sur ta vidéo : le bouton Jour fait défiler Midi → Dorée (coucher de soleil) → …, d'où la course au crépuscule. Ticket **WFS-375** (P1) : deux boutons seulement, **JOUR** (soleil haut) et **NUIT**, sans défilement ; une ancienne sauvegarde se range dans l'un des deux. Le reste du code de la lumière n'est pas retiré. Il faut une session `@dev` pour le faire (aucun développeur libre). )

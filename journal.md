@@ -3003,3 +3003,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Demande de l'utilisateur : « la dernière version est niquer ». Symptôme pas encore précisé (question posée dans `tache utilisateur.md`).
 - Fusions du jour : #313 WFS-356 (CI #964 verte), #312 WFS-343 (CI #965 verte, suspect n° 1 : `mapById`, `Track::build`, `CarteDecor::init`, choix du terrain), #297 WFS-338 (CI #966 en cours), #311 WFS-193 (CI #967 en attente).
 - **WFS-374** (P1 Urgent, E0, ⏳ Prêt, en premier) : bissection au banc, correction en avant, aucun revert sans ordre de l'utilisateur ; 🟡 après fusion. Pour une nouvelle session `@dev`.
+
+### 2026-11-09 19:36:22 — Jour / Nuit seulement : WFS-375 (P1) créé (po-scrum-master)
+- Vidéo de l'utilisateur (Corniche, 20:34) : le bouton Jour du choix du terrain fait défiler les moments de WFS-208 (Midi → Dorée…), course partie au crépuscule. Ordre : « garder que simple mode journée et nuit ».
+- **WFS-375** (P1, E8, ⏳ Prêt) : deux boutons JOUR (= midi) et NUIT, sans défilement ; sauvegardes anciennes rangées ; code des moments gardé pour les bancs.
