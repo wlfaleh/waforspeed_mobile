@@ -40,7 +40,8 @@ message="@wlfaleh 🧪 **Recette QA prête** — $(TZ=Europe/Paris date '+%d/%m/
 - Verdict des bancs : $verdict
 $(echo "$RESULTATS" | sed 's/^/  - /')
 - Tickets fusionnés depuis la recette précédente : $tickets
-- Captures du banc d'essai PC : $SERVEUR/$GH_REPO/releases/tag/apercu
+- Captures du banc d'essai PC : une archive par groupe dans $SERVEUR/$GH_REPO/releases/tag/captures-matin (captures-<groupe>.zip ; jour.txt : date, run, commit) — WFS-352
+- APK : $SERVEUR/$GH_REPO/releases/download/apercu/WaForSpeed.apk
 - Émulateur Android (parcours mvp) : $SERVEUR/$GH_REPO/releases/tag/simulateur-matin
 - Run : $SERVEUR/$GH_REPO/actions/runs/$RUN_ID
 $MARQUE"
