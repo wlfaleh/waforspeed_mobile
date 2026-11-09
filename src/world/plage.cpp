@@ -35,6 +35,9 @@
 #include "../game/chocs_decor.h"   // WFS-256 (accroche)
 #include "../render/eclairage.h"
 #include "giratoire.h"   // WFS-248 : giratoire reconstruit
+#include "marina_bateaux.h"   // WFS-376 : bateaux et pontons de la marina, modélisés
+#include "../game/camera_vue.h"   // WFS-376 : vues Cockpit et Poursuite du banc de la marina
+#include "../ui/ecrans/reglages.h"   // WFS-376 : qualité Basse du banc de la marina
 #include "../render/lots_decor.h"   // WFS-268
 #include "../render/renderer.h"
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
@@ -202,7 +205,10 @@ enum Col { C_PROM, C_SABLE, C_MOUILLE, C_DUNE, C_COLLINE, C_ROCHER, C_QUAI, C_HE
            // blanc (0,79), manteau gris (0,34), pointes noires, bec jaune ; dauphin commun : dos gris foncé, ventre blanc
            C_ENDUIT, C_PIERREB, C_ZINC, C_ALU, C_VOLET, C_STORE_B, C_STORE_R, C_TOILE_C, C_TECKF, C_ROTIN, C_COUSSIN0, C_COUSSIN1,
            C_SCOOT0, C_SCOOT1, C_SCOOT2, C_SCOOT3, C_PNEU, C_SELLE, C_DALLE, C_GOEL_BLANC, C_GOEL_GRIS, C_GOEL_NOIR, C_GOEL_BEC,
-           C_DAUPH_DOS, C_DAUPH_VENTRE, C_NB };
+           C_DAUPH_DOS, C_DAUPH_VENTRE,
+           // WFS-376 (RG-07) : gelcoat blanc cassé des coques du port (albédo linéaire ≈ 0,72, jamais un blanc pur), bleu marine
+           // des coques et des toiles (≈ 0,06)
+           C_GELCOAT_P, C_MARINE, C_NB };
 const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c, 0x7d7a70, 0x9a958a, 0x5f6a3a,
                                 0xf2efe6, 0xf2efe6, veg::PALM_SHEATH, veg::PALM_COCO,
                                 0xe2262b, 0xffd23a, 0x1d8fb8, 0xffffff, 0xff6a00,
@@ -215,7 +221,8 @@ const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c
                                 0x24323c, 0xf2c21a, 0x1f63b8, 0xc8322a, 0xa8925f, 0x22262c, 0xf4e04a, 0xc69a76,
                                 0xe0ddd4, 0xc4bba8, 0x6d767c, 0x2c3035, 0x5e8a8c, 0x1f5f8b, 0x9b2a24, 0xece6d6, 0x5a4330, 0x9c7a4e,
                                 0xe9e2d0, 0x2f6f8f, 0xb3261e, 0xe8e8e4, 0x8fc9b0, 0x1c1d20, 0x2a2a2a, 0x2a2422, 0xbfb7a6,
-                                0xe6e6e2, 0x9aa1a7, 0x2b2b2d, 0xe3b52a, 0x3d434b, 0xd9d7d0};
+                                0xe6e6e2, 0x9aa1a7, 0x2b2b2d, 0xe3b52a, 0x3d434b, 0xd9d7d0,
+                                0xe0ded6, 0x283a5c};
 constexpr int PAL_W = 128;   // cases de la palette (≥ C_NB) ; WFS-180 : 64 → 128
 static_assert(C_NB <= PAL_W, "palette trop petite");
 inline vec2 palUv(int c) { return {(c + 0.5f) / PAL_W, 0.5f}; }
@@ -226,7 +233,11 @@ struct Palm { int64_t seg; float lat, h, lean, rot; };          // lat : signé 
 struct Umbrella { int64_t seg; float lat, along; int col; };
 struct Lampe { int64_t seg; int side; };                           // WFS-81 : lampadaire « beach » (decor.js, lamp)
 // WFS-94 : objets des quartiers (DECOR.villa, tower, bollard, boat, rock, guard, tree de decor.js) ; lat non signé, side ±1
-enum TypeObjet { O_VILLA, O_TOUR, O_BORNE, O_BATEAU, O_ROCHER, O_GLISSIERE, O_PIN, O_ARBRE };
+enum TypeObjet { O_VILLA, O_TOUR, O_BORNE, O_BATEAU, O_ROCHER, O_GLISSIERE, O_PIN, O_ARBRE,
+                 O_BATEAU_M, O_PONTON };   // WFS-376 : bateau de la marina (marina_bateaux.h), ponton flottant
+// WFS-376 : bateau de la marina dans Objet : roof = modèle, h = échelle, l = longueur (m), rot = cap par rapport à r (0 : proue
+// vers le large), along = décalage le long de la route, w = écart poupe / ligne d'amarrage (< 0 : au mouillage), d = hauteur du
+// quai ou du ponton au-dessus de l'eau, col = coque, floors = toiles (cases de la palette)
 struct Objet { int64_t seg; int t, side; float lat, w = 0, d = 0, h = 0, l = 0, rot = 0, along = 0; int col = 0, roof = 0, floors = 1; bool voile = false; };
 
 // bande de sol : de a à b (m depuis l'axe, côté positif), hauteurs ya → yb, couleur (ROC : roche texturée, WFS-139)
@@ -236,14 +247,24 @@ constexpr int ROC = -1;
 enum Sol : uint8_t { S_PLAGE, S_FALAISE, S_TUNNEL, S_PLACE };
 enum Cote { K_PLAGE, K_PENTE, K_MER, K_TERRE, K_TUNNEL };
 
-// GROUND.beach du jeu web, à partir du bord extérieur du trottoir de Game (RW + 4 m) ; côté s = +1 mer, −1 terre
-int profil(const char* zone, int s, Band out[4]) {
+// WFS-376 (RG-01, décision du PO du 2026-11-09) : marina : le quai d'amarrage est 1,45 m au-dessus de l'eau (1,85 m avant),
+// 0,40 m sous la promenade (route à 0) : deux marches de 0,20 m, bande d'amarrage de 2,1 m, bord chanfreiné, mur jusque sous l'eau
+constexpr float HAUT_QUAI = 1.45f, MARINA_MUR = 7.2f;
+// GROUND.beach du jeu web, à partir du bord extérieur du trottoir de Game (RW + 4 m) ; côté s = +1 mer, −1 terre ; mer : niveau de
+// la mer par rapport à la route (OCEAN_Y quand la route est à 0)
+int profil(const char* zone, int s, Band out[8], float mer = OCEAN_Y) {
     const float R = (float)RW, W0 = R + 4.f;
     int n = 0;
     if (s > 0) {
         // WFS-139 (RG-A, ANO-82) : après le mur du quai, l'eau du port (plus de bande de rochers sous les voiliers) ; le mur
         // descend sous la surface (OCEAN_Y = −1,75)
-        if (!std::strcmp(zone, "marina")) { out[n++] = {W0, R + 7, 0.1f, 0.1f, C_QUAI}; out[n++] = {R + 7, R + 7.2f, 0.1f, -2.2f, C_QUAI}; }
+        const float q = mer + HAUT_QUAI, m1 = 0.1f + (q - 0.1f) * 0.5f;
+        if (!std::strcmp(zone, "marina") && q < 0.05f) {   // WFS-376 : promenade, deux marches, quai d'amarrage, chanfrein, mur
+            out[n++] = {W0, R + 4.6f, 0.1f, 0.1f, C_PROM}; out[n++] = {R + 4.6f, R + 4.62f, 0.1f, m1, C_QUAI};
+            out[n++] = {R + 4.62f, R + 4.95f, m1, m1, C_QUAI}; out[n++] = {R + 4.95f, R + 4.97f, m1, q, C_QUAI};
+            out[n++] = {R + 4.97f, R + 7.05f, q, q, C_QUAI}; out[n++] = {R + 7.05f, R + 7.1f, q, q - 0.05f, C_QUAI};
+            out[n++] = {R + 7.1f, R + MARINA_MUR, q - 0.05f, mer - 0.45f, C_QUAI};
+        } else if (!std::strcmp(zone, "marina")) { out[n++] = {W0, R + 7, 0.1f, 0.1f, C_QUAI}; out[n++] = {R + 7, R + 7.2f, 0.1f, -2.2f, C_QUAI}; }
         else if (!std::strcmp(zone, "rochers")) { out[n++] = {W0, R + 40, -0.18f, -1.8f, C_ROCHER}; out[n++] = {R + 40, R + 46, -1.8f, -2.4f, C_ROCHER}; }
         else { out[n++] = {W0, R + 5, 0.1f, 0.1f, C_PROM}; out[n++] = {R + 5, R + 38, 0.05f, -1.1f, C_SABLE}; out[n++] = {R + 38, R + 48, -1.1f, -1.9f, C_MOUILLE}; }
     } else {
@@ -257,14 +278,14 @@ int profil(const char* zone, int s, Band out[4]) {
 }
 // sandY du jeu web : hauteur du sable côté mer (corniche) à la distance lat
 float sableY(float lat) {
-    Band b[4] = {}; const int n = profil("corniche", 1, b);
+    Band b[8] = {}; const int n = profil("corniche", 1, b);
     for (int i = 0; i < n; i++) if (lat >= b[i].a && lat <= b[i].b) return b[i].ya + (b[i].yb - b[i].ya) * (lat - b[i].a) / (b[i].b - b[i].a);
     return -1.9f;
 }
 
 // groundY du jeu web : hauteur du sol (depuis la route) à la distance lat du côté side, d'après le profil de la zone
 float solY(const char* zone, int side, float lat) {
-    Band b[4] = {}; const int n = profil(zone, side, b);
+    Band b[8] = {}; const int n = profil(zone, side, b);
     if (lat < (float)RW + 4.f) return 0.15f;   // trottoir de Game
     for (int i = 0; i < n; i++) if (lat >= b[i].a && lat <= b[i].b) return b[i].ya + (b[i].yb - b[i].ya) * (lat - b[i].a) / (b[i].b - b[i].a);
     return n ? b[n - 1].yb : 0.f;
@@ -448,6 +469,27 @@ void paquebot(Geo& g) {
     for (int k = 0; k < 5; k++) box(g, {0, 14.f + k * 9.f, -20.f - k * 6.f}, {1, 0, 0}, {0, 0, 1}, 15.5f - k, 110.f - k * 14.f, 9.f, palUv(k % 2 ? C_VITRE2 : C_GELCOAT));
     box(g, {0, 59.f, -60.f}, {1, 0, 0}, {0, 0, 1}, 4.f, 8.f, 9.f, palUv(C_ROUGE));          // cheminée
 }
+// WFS-376 : pose d'un modèle de la marina (repère local x, y, z → X, haut, Z ; échelle s) ; couleurs choisies à la pose pour
+// la coque et les toiles
+void poser(Geo& g, const marina::Maille& m, vec3 o, vec3 X, vec3 Z, float s, int coque, int toile) {
+    const vec3 Y{0, 1, 0};
+    const uint32_t k0 = (uint32_t)g.v.size();
+    for (const marina::Sommet& v : m.v) {
+        const vec3 p = o + X * (v.p.x * s) + Y * (v.p.y * s) + Z * (v.p.z * s), n = X * v.n.x + Y * v.n.y + Z * v.n.z;
+        const vec2 uv = palUv(v.couleur == marina::COUL_COQUE ? coque : v.couleur == marina::COUL_TOILE ? toile : v.couleur);
+        g.v.push_back({p.x, p.y, p.z, n.x, n.y, n.z, uv.x, uv.y});
+    }
+    for (uint32_t i : m.i) g.i.push_back(k0 + i);
+}
+// cases de la palette des bateaux et du port (RG-07) : gelcoat blanc cassé, pont en teck des bateaux à moteur, vitres teintées,
+// aluminium gris clair des mâts, inox des câbles, cordage blanc, ligne de mouillage sombre, béton et bois des pontons, fonte
+marina::Couleurs couleursMarina() {
+    marina::Couleurs c;
+    c.gelcoat = C_GELCOAT_P; c.pont = C_TECK; c.vitre = C_VITRE2; c.mat = C_MAT; c.cable = C_ZINC; c.corde = C_DACRON;
+    c.amarre = C_PNEU; c.beton = C_QUAI; c.bois = C_PLANCHE; c.flotteur = C_PNEU; c.fonte = C_BORNE;
+    return c;
+}
+
 // sillage d'un jet-ski : écume en V, 18 m derrière (repère local, posé sur l'eau)
 void sillage(Geo& g) {
     quad(g, {-0.6f, 0.03f, -1.6f}, {0.6f, 0.03f, -1.6f}, {4.5f, 0.03f, -19.f}, {-4.5f, 0.03f, -19.f}, {0, 0});
@@ -785,6 +827,7 @@ public:
         }
         placeQuartiers(map, ranges);
         filtrer(t);
+        placeMarina(t);   // WFS-376
         placerEtabs(t);   // WFS-181
         // éclairage de nuit (src/render/nuit.cpp) : lumière du jeu web (scene.js) à RW + 0,6, 5,6 m, côté du poteau
         for (const Lampe& l : lamps_) lampadaires().push_back({l.seg, l.side * (R + 0.6f), 5.6f, StyleLampadaire::Plage});
@@ -920,7 +963,7 @@ public:
         switch (k) {
         case K_PLAGE: {
             const char* z = zoneId(map, a, len_);
-            n = profil(z, anneau(a) ? -1 : side, out);   // anneau : terre des deux côtés (voir la mer plus bas)
+            n = profil(z, anneau(a) ? -1 : side, out, sea);   // anneau : terre des deux côtés (voir la mer plus bas)
             if (side > 0) mer = !std::strcmp(z, "marina") ? R + 7.2f : R + 40;
             if (solA(a) == S_PLACE) {   // terre-plein pavé jusqu'à RW + 30 (rond-point, carrefour), puis le profil de la zone
                 Band tmp[8]; int m = 0; const float P = R + 30;
@@ -996,6 +1039,137 @@ public:
         return n;
     }
 
+    // ---------------------------------------------------------------- WFS-376 : vraie marina (RG-01 à RG-07, décision du PO)
+    // Rangée 1 : bateaux amarrés cul au quai (poupe à 1-2 m), perpendiculaires au quai à ±2,3°, proue vers le large, places de
+    // bau + 0,6 à 1,0 m (PIANC), sauf à la racine des pontons ; pontons flottants perpendiculaires au quai tous les 34 à 36 m, de
+    // 38 m, bateaux cul au ponton des deux côtés au-delà d'un chenal de 1,5 × L après la rangée 1 (29 m du quai) ; yachts de 18 m
+    // et grands voiliers en bout de quai (26 premiers et derniers mètres). Les anciens bateaux de la marina (boîte + triangle de
+    // voile, WFS-94 / 139) sont retirés ; ceux qui avaient été mis au mouillage au pied de la falaise deviennent de vrais bateaux
+    // au mouillage, voiles rangées. Tirage à part (graine · 31 + 376) : le reste du décor ne bouge pas.
+    static constexpr float PONTON_L = 38.f, PONTON_PAS = 34.f, RANG1_MAX = 11.2f, CHENAL_DEBUT = 29.f, BOUT_QUAI = 26.f;
+    void construireModelesMarina() {
+        const marina::Couleurs c = couleursMarina();
+        for (int m = 0; m < marina::NB_MODELES; m++) modeles_[m] = marina::construire((marina::Modele)m, c);
+        bitte_ = marina::bitte(c);
+        ponton_ = marina::ponton(PONTON_L, HAUT_QUAI, c, false); pontonLoin_ = marina::ponton(PONTON_L, HAUT_QUAI, c, true);
+    }
+    void placeMarina(Track& t) {
+        construireModelesMarina();
+        const MapDef& map = *t.map();
+        const float R = (float)RW, Q0 = R + MARINA_MUR;
+        Mulberry32 D(map.seed * 31 + 376);
+        auto d = [&]() { return (float)D.next(); };
+        auto coulCoque = [&]() { const float x = d(); return x < 0.85f ? (int)C_GELCOAT_P : x < 0.95f ? (int)C_MARINE : x < 0.975f ? (int)C_ZINC : (int)C_DALLE; };
+        auto coulToile = [&]() { return d() < 0.6f ? (int)C_MARINE : (int)C_DAUPH_DOS; };
+        int mouillage = 0;
+        for (Objet& o : objets_) {   // bateaux de la marina au pied de la falaise : au mouillage, évités au vent dans le même sens
+            if (o.t != O_BATEAU || std::strcmp(zoneId(map, o.seg, len_), "marina") || solA(o.seg) != S_FALAISE) continue;
+            o.t = O_BATEAU_M; o.roof = o.voile ? marina::VOILIER : marina::VEDETTE;
+            o.h = o.voile ? 0.9f + (o.l - 7) / 7 * 0.3f : 0.56f + (o.l - 7) / 7 * 0.08f;
+            o.l = modeles_[o.roof].L * o.h; o.rot = 0.9f + o.rot * 0.3f; o.w = -1; o.d = 0; o.along = 0; o.voile = true;   // version moyenne
+            o.col = coulCoque(); o.floors = coulToile(); mouillage++;
+        }
+        const size_t n0 = objets_.size();
+        std::erase_if(objets_, [&](const Objet& o) { return o.t == O_BATEAU && !std::strcmp(zoneId(map, o.seg, len_), "marina"); });
+        const size_t retires = n0 - objets_.size();
+        // tronçons de quai : marina, plage (pas falaise, tunnel ni terre-plein)
+        // tronçons de quai : marina, plage (pas falaise, tunnel ni terre-plein), et route assez basse pour que le quai d'amarrage
+        // abaissé existe (profil : quai à HAUT_QUAI au-dessus de l'eau, sous la promenade) ; ailleurs, pas de bateau à quai
+        auto quai = [&](int64_t n) {
+            return !std::strcmp(zoneId(map, n, len_), "marina") && formeCote(n, 1) == K_PLAGE && solA(n) == S_PLAGE && !anneau(n) &&
+                   OCEAN_Y + HAUT_QUAI - (float)t.pose(n).y < 0.05f;
+        };
+        int nb[marina::NB_MODELES] = {}, couleurs[4] = {}, pontons = 0, videes = 0;
+        float hautAvant = 0;
+        auto pose = [&](float x, int64_t r0, Objet o) {   // x : mètres depuis le début du tronçon, le long de la route
+            const int64_t k = (int64_t)std::floor(x / SEG_M);
+            o.seg = mod(r0 + k); o.along = x - (float)k * (float)SEG_M; o.side = 1;
+            const float ext = o.t == O_PONTON ? PONTON_L : o.l;
+            const float latLoin = o.t == O_PONTON ? o.lat + ext : (std::fabs(std::sin(o.rot)) > 0.5f ? o.lat + 2.5f : o.lat + ext * 0.5f);
+            if (!placeLibre(t, o.seg, 1, latLoin, 0.5f, o.t == O_PONTON ? 1.2f : 6.f)) return false;
+            objets_.push_back(o);
+            if (o.t == O_PONTON) pontons++;
+            else { nb[o.roof]++; couleurs[o.col == C_GELCOAT_P ? 0 : o.col == C_MARINE ? 1 : o.col == C_ZINC ? 2 : 3]++; }
+            return true;
+        };
+        auto bateau = [&](int modele, float s, float ecart, float yQuai) {
+            Objet o{0, O_BATEAU_M, 1, 0}; o.roof = modele; o.h = s; o.l = modeles_[modele].L * s; o.w = ecart; o.d = yQuai;
+            o.col = coulCoque(); o.floors = coulToile();
+            return o;
+        };
+        auto largeur = [&](const Objet& o) { return modeles_[o.roof].B * o.h + 0.6f + 0.4f * d(); };   // RG-03 : bau + 0,6 à 1,0 m
+        for (int64_t r0 = 0; r0 < len_;) {
+            if (!quai(r0)) { r0++; continue; }
+            int64_t r1 = r0; while (r1 < len_ && quai(r1)) r1++;
+            const float L = (float)(r1 - r0) * (float)SEG_M;
+            WFS_LOG("Marina (WFS-376) : tronçon de quai [%lld, %lld), %.0f m", (long long)r0, (long long)r1, L);
+            hautAvant = 0.1f - (OCEAN_Y - (float)t.pose(r0).y);
+            std::vector<float> pp;   // pontons
+            for (float p = 40 + 4 * d(); p < L - 40; p += PONTON_PAS + 1 * d()) {
+                Objet o{0, O_PONTON, 1, Q0}; o.l = PONTON_L;
+                if (pose(p, r0, o)) pp.push_back(p);
+            }
+            for (float p : pp) for (float sd : {-1.f, 1.f}) for (float c = Q0 + CHENAL_DEBUT; ;) {   // bateaux cul au ponton
+                Objet o = d() < 0.6f ? bateau(marina::VOILIER, 0.9f + 0.15f * d(), 1 + d(), marina::PONTON_HAUT) : bateau(marina::VEDETTE, 0.56f, 1 + d(), marina::PONTON_HAUT);
+                const float w = largeur(o);
+                if (c + w > Q0 + PONTON_L - 0.5f) break;
+                o.lat = c + w / 2; o.rot = sd * PI / 2 + (d() - 0.5f) * 0.08f; o.voile = true;   // version moyenne (derrière la rangée 1)
+                pose(p + sd * (marina::PONTON_LARGEUR / 2 + o.w + o.l / 2), r0, o);
+                c += w;
+            }
+            int yachts = 0; bool vide = false;
+            for (float x = 1.0f; x < L - 1;) {   // rangée 1, cul au quai, occupée à ≈ 85 % (jamais deux places vides de suite)
+                const bool bout = x < BOUT_QUAI || x > L - BOUT_QUAI;
+                Objet o;
+                if (bout && yachts < 2 && d() < 0.5f) { o = bateau(marina::YACHT, 1.0f + 0.05f * d(), 1 + d(), HAUT_QUAI); yachts++; }
+                else if (d() < 0.55f) o = bateau(marina::VOILIER, 0.9f + (bout ? 0.5f : 0.25f) * d(), 1 + d(), HAUT_QUAI);
+                else o = bateau(marina::VEDETTE, 0.56f + 0.04f * d(), 1 + d(), HAUT_QUAI);
+                if (!bout && o.l > RANG1_MAX) { o.h *= RANG1_MAX / o.l; o.l = RANG1_MAX; }
+                const float w = largeur(o);
+                bool gene = false;
+                for (float p : pp) if (std::fabs(x + w / 2 - p) < marina::PONTON_LARGEUR / 2 + 0.6f + w / 2) { x = std::max(x + 0.5f, p + marina::PONTON_LARGEUR / 2 + 0.7f); gene = true; break; }   // toujours en avant
+                if (gene) continue;
+                o.lat = Q0 + o.w + o.l / 2; o.rot = (d() - 0.5f) * 0.08f;   // ±2,3° (RG-02 : ±3°)
+                const bool libre = !vide && !bout && d() < 0.30f;   // place vide (bateau sorti) : ≈ 13 % mesurés (jamais deux de suite)
+                if (!libre) pose(x + w / 2, r0, o); else videes++;
+                vide = libre;
+                x += w;
+            }
+            r0 = r1;
+        }
+        const int total = nb[0] + nb[1] + nb[2];
+        WFS_LOG("Marina (WFS-376) : quai d'amarrage à %.2f m au-dessus de l'eau (avant : %.2f m), %d pontons, %d bateaux à quai "
+                "(%d voiliers, %d vedettes, %d yachts : %.0f %% de voiliers), coques %d blanc cassé, %d marine, %d grises, %d crème ; "
+                "%d au mouillage, %zu anciens bateaux retirés, %d places vides au quai", HAUT_QUAI, hautAvant, pontons, total, nb[0], nb[1], nb[2],
+                total ? 100.f * nb[0] / total : 0.f, couleurs[0], couleurs[1], couleurs[2], couleurs[3], mouillage, retires, videes);
+        {   // budget (RG-10) : la fenêtre la plus chargée de 315 m le long de la route (seuil de 200 m + un bloc de 115 m : un bloc est
+            // détaillé dès que son point le plus proche est à moins de 200 m de la voiture) ; passe de la scène, sans les ombres
+            std::vector<std::pair<float, int>> pos;   // (mètres le long de la route, triangles en détail)
+            for (const Objet& o : objets_) {
+                int tr = 0;
+                if (o.t == O_BATEAU_M) tr = (o.voile ? modeles_[o.roof].moyen : modeles_[o.roof].pres).triangles() + marina::trianglesAmarrage((marina::Modele)o.roof, o.w >= 0);
+                else if (o.t == O_PONTON) tr = ponton_.triangles();
+                else if (o.t == O_BORNE) tr = bitte_.triangles();
+                else continue;
+                pos.push_back({(float)o.seg * (float)SEG_M + o.along, tr});
+            }
+            std::sort(pos.begin(), pos.end());
+            int best = 0, nbB = 0; size_t j = 0; int somme = 0;
+            for (size_t i = 0; i < pos.size(); i++) {
+                somme += pos[i].second;
+                while (pos[i].first - pos[j].first > 315.f) somme -= pos[j++].second;
+                if (somme > best) { best = somme; nbB = 0; for (size_t k = j; k <= i; k++) nbB += pos[k].second > 60 && pos[k].second != ponton_.triangles(); }
+            }
+            WFS_LOG("Marina (WFS-376) : fenêtre détaillée la plus chargée (315 m) : %d triangles dont %d bateaux (passe de la scène, sans ombres)", best, nbB);
+        }
+        WFS_LOG("Marina (WFS-376) : triangles par modèle, détaillé (amarrage compris) / moyen / loin : voilier %d / %d / %d, vedette %d / %d / %d, "
+                "yacht %d / %d / %d ; ponton %d / %d, bitte %d",
+                modeles_[0].pres.triangles() + marina::trianglesAmarrage(marina::VOILIER, true), modeles_[0].moyen.triangles(), modeles_[0].loin.triangles(),
+                modeles_[1].pres.triangles() + marina::trianglesAmarrage(marina::VEDETTE, true), modeles_[1].moyen.triangles(), modeles_[1].loin.triangles(),
+                modeles_[2].pres.triangles() + marina::trianglesAmarrage(marina::YACHT, true), modeles_[2].moyen.triangles(), modeles_[2].loin.triangles(),
+                ponton_.triangles(), pontonLoin_.triangles(), bitte_.triangles());
+    }
+
     // WFS-94 (RG-01 à RG-04) : objets de beach.corniche, marina, rochers, village (pas et tailles de decor.js). Tirage à
     // part (graine de la carte · 31 + 11) : les palmiers et parasols déjà placés ne bougent pas.
     void placeQuartiers(const MapDef& map, const std::vector<std::pair<int64_t, int64_t>>& ranges) {
@@ -1011,7 +1185,7 @@ public:
                     o.roof = (int)(d() * 3); o.floors = d() < 0.4f ? 2 : 1; o.col = (int)(d() * 6); objets_.push_back(o);
                 }
             } else if (!std::strcmp(z, "marina")) {
-                for (int64_t n = z0 + 2; n < z1; n += 3) objets_.push_back({n, O_BORNE, 1, R + 6.5f});
+                for (int64_t n = z0 + 2; n < z1; n += 24) objets_.push_back({n, O_BORNE, 1, R + 6.5f});   // WFS-376 : bittes tous les 28,8 m
                 for (int64_t n = z0 + 4; n < z1 - 6; n += 6 + (int64_t)(d() * 4)) {
                     Objet o{n, O_BATEAU, 1, R + 13 + d() * 18}; o.l = 7 + d() * 7; o.voile = d() < 0.6f; o.col = (int)(d() * 4); o.rot = (d() - 0.5f) * 0.5f;
                     objets_.push_back(o);
@@ -1069,7 +1243,25 @@ public:
             box(g, b + vec3{0, 4.0f, 0}, r, f, 1.3f, 1.3f, 0.12f, palUv(C_MUR));
             break;
         }
-        case O_BORNE: if (!lod) cylinder(g, fr.o + r * o.lat + vec3{0, 0.1f, 0}, 0.18f, 0.6f, 8, palUv(C_BORNE)); break;
+        case O_BORNE: if (!lod) {   // WFS-376 : bitte d'amarrage en fonte (modèle), sur le quai abaissé
+            vec3 b = fr.o + r * o.lat;
+            const float q = OCEAN_Y + HAUT_QUAI - fr.o.y;
+            b.y = fr.o.y + (q < 0.05f ? q : 0.1f);
+            poser(g, bitte_, b, f, r, 1.f, 0, 0);
+        } break;
+        case O_BATEAU_M: {   // WFS-376 : voilier au port, vedette ou yacht (marina_bateaux.cpp), à flot, avec ses amarres
+            const vec3 Z = normalize(r * std::cos(o.rot) + f * std::sin(o.rot)), X = cross(vec3{0, 1, 0}, Z);
+            vec3 c = fr.o + r * o.lat + f * o.along; c.y = OCEAN_Y;
+            const marina::Bateau& B = modeles_[o.roof];
+            poser(g, lod ? B.loin : o.voile ? B.moyen : B.pres, c, X, Z, o.h, o.col, o.floors);   // voile : version moyenne (PO, option A)
+            if (!lod) poser(g, marina::amarrage(B, (marina::Modele)o.roof, o.h, o.w, o.d, couleursMarina()), c, X, Z, 1.f, o.col, o.floors);
+            break;
+        }
+        case O_PONTON: {   // WFS-376 : ponton flottant perpendiculaire au quai
+            vec3 c = fr.o + r * o.lat + f * o.along; c.y = OCEAN_Y;
+            poser(g, lod ? pontonLoin_ : ponton_, c, cross(vec3{0, 1, 0}, r), r, 1.f, 0, 0);
+            break;
+        }
         case O_BATEAU: {   // coque, cabine, mât et voile (bateaux à voile 6 fois sur 10 dans la marina, barques au village)
             // WFS-139 (RG-A, RG-B) : coque posée sur l'eau (mer à altitude fixe, tirant d'eau 0,35 m), ou échouée sur le sable
             vec3 b = fr.o + r * o.lat;
@@ -1359,7 +1551,7 @@ public:
         for (const plage::Etab& e : etabs_) {
             const int64_t w = plage::demiEtab(e);
             auto dans = [&](int64_t seg, float marge) { return plage::ecart(seg, e.seg, len_) < w + (int64_t)std::ceil(marge / SEG_M); };
-            std::erase_if(objets_, [&](const Objet& o) { return o.side == e.side && o.t != O_BATEAU && o.lat < R + 60 && dans(o.seg, std::max(o.w, o.h) * 0.5f + 2); });
+            std::erase_if(objets_, [&](const Objet& o) { return o.side == e.side && o.t != O_BATEAU && o.t != O_BATEAU_M && o.t != O_PONTON && o.lat < R + 60 && dans(o.seg, std::max(o.w, o.h) * 0.5f + 2); });
             if (e.side < 0) std::erase_if(palms_, [&](const Palm& p) { return p.lat < 0 && dans(p.seg, 3); });
         }
         for (const plage::Etab& e : etabs_) {
@@ -2135,7 +2327,7 @@ public:
             int64_t a; if (!inChunk(pm.seg, a)) continue;
             const int side = pm.lat > 0 ? 1 : -1;
             TrackPoint p = t.point((double)a * SEG, pm.lat);
-            Band b[4] = {}; const int n = profil(zoneId(map, a, len), side, b);
+            Band b[8] = {}; const int n = profil(zoneId(map, a, len), side, b);
             float gy = 0.15f;   // trottoir de Game
             const float al = std::fabs(pm.lat);
             for (int i = 0; i < n; i++) if (al >= b[i].a && al <= b[i].b) gy = b[i].ya + (b[i].yb - b[i].ya) * (al - b[i].a) / (b[i].b - b[i].a);
@@ -2289,6 +2481,8 @@ private:
     bool active_ = false, night_ = false;
     std::vector<Palm> palms_; std::vector<Umbrella> umbrellas_; std::vector<Lampe> lamps_;
     std::vector<Objet> objets_;   // WFS-94
+    marina::Bateau modeles_[marina::NB_MODELES];   // WFS-376 : voilier, vedette, yacht (préparés une fois, lus par les morceaux)
+    marina::Maille bitte_, ponton_, pontonLoin_;   // WFS-376
     // WFS-139 : analyse du tracé 2 (preparer), textures de roche, feux tricolores
     bool basse_ = false;
     std::vector<uint8_t> sol_, cache_;   // nature du sol (Sol), côtés à dégager (bit 1 : gauche, 2 : droite)
@@ -2590,4 +2784,115 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 
+} // namespace wfs
+
+// ---------------------------------------------------------------- banc d'essai WFS-376 : marina (WFS_BANC=marina)
+// Captures du ticket : vues Cockpit et Poursuite depuis la route du port à 80 et 120 km/h, à midi et à l'heure dorée (coucher du
+// soleil) ; suite de 4 images en roulant à 120 km/h vers le port (aucun bateau ne doit clignoter au changement de niveau de
+// détail, blocs à 200 m) ; gros plan depuis la promenade (coques dans l'eau, poupes au quai, places), vue d'en haut du bassin
+// (pontons, chenal, espacement), vue de loin (≥ 200 m) ; une vue en qualité Basse. Triangles et appels de dessin du décor de chaque
+// vue au journal. Le banc n'utilise que l'API du jeu et la vue libre de la carte : il tourne aussi sur main (captures « avant »).
+namespace wfs {
+void benchMarina(Game& g, Renderer& r, const std::string& out) {
+    const MapDef& carte = mapById("plage");
+    Track t; t.build(carte, trace::versionCarte("plage"));
+    const int64_t L = (int64_t)t.segmentCount();
+    int64_t m0 = -1;   // début du port de plaisance au bord de l'eau (route au niveau de la promenade)
+    for (int64_t a = 0; a < L && m0 < 0; a++) if (!std::strcmp(zoneName(carte, a, L), "Port de plaisance") && std::fabs(t.pose(a).y) < 0.5) m0 = a;
+    if (m0 < 0) { WFS_ERR("banc marina (WFS-376) : port de plaisance introuvable"); return; }
+    const int64_t cible = m0 + (int64_t)(140 / SEG_M);   // la voiture à 140 m dans le port
+    const int64_t depart = std::max<int64_t>(0, cible - (int64_t)(600 / SEG_M));
+    auto comptes = [&](const std::string& nom) {
+        const Renderer::ComptesImage& c = r.comptesImage();
+        WFS_LOG("%s : décor %u triangles en %u appels de dessin ; image entière %u triangles", nom.c_str(), c.triangles[Renderer::FAM_DECOR],
+                c.appels[Renderer::FAM_DECOR], c.triangles[0] + c.triangles[1] + c.triangles[2]);
+    };
+    auto capture = [&](const std::string& nom) { g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png"); comptes(nom); };
+    const char* seul = std::getenv("WFS_MARINA_SEUL");   // essai local : seulement les captures dont le nom commence par ce préfixe
+    auto garder = [&](const std::string& nom) { return !seul || nom.rfind(seul, 0) == 0; };
+    // roule jusqu'au segment voulu à la vitesse voulue : pilote automatique (plein gaz) sous la vitesse, roue libre au-dessus
+    auto rouler = [&](int64_t jusque, double kmh, int imagesMax = 6000) {
+        for (int i = 0; i < imagesMax; i++) {
+            g.setAutopilot(g.player().kmh() < kmh);
+            g.update(1.0 / 60);
+            if (i % 60 == 0) g.render(400 + i / 60.0);
+            if ((int64_t)std::floor(g.player().dist / SEG) >= jusque) break;
+        }
+        g.setAutopilot(true);
+    };
+    auto lancer = [&](const char* moment, VueCamera v) {
+        setenv("WFS_MOMENT", moment, 1);
+        setenv("WFS_DEPART", std::to_string(depart).c_str(), 1);
+        choisirVue(v);
+        g.init(r, "golf", "plage"); g.camMode = 0;
+    };
+    const struct { const char* nom; VueCamera v; } VUES[] = {{"cockpit", VueCamera::Cockpit}, {"poursuite", VueCamera::Poursuite}};
+    for (const char* mo : {"midi", "doree"}) for (const auto& vu : VUES) for (int kmh : {80, 120}) {
+        const std::string nom = std::string("marina-") + vu.nom + "-" + std::to_string(kmh) + "-" + mo;
+        if (!garder(nom)) continue;
+        lancer(mo, vu.v);
+        rouler(cible, kmh);
+        capture(nom);
+        WFS_LOG("capture %s : %.0f km/h, %.0f m", nom.c_str(), g.player().kmh(), g.player().dist * M);
+        g.shutdown();
+    }
+    if (garder("marina-suite")) {   // suite de 6 images à 120 km/h (0,5 s, 16,7 m entre deux images) en roulant dans le port, la
+        // rangée du quai à l'écran : les blocs du port devant passent un à un le seuil de détail (point le plus proche à moins de
+        // 200 m de la voiture). L'image où un bloc passe le seuil se voit au saut du nombre de triangles du décor (> 2 000).
+        lancer("midi", VueCamera::Poursuite);
+        rouler(m0 + (int64_t)(30 / SEG_M), 120);
+        uint32_t avant = 0;
+        for (int k = 1; k <= 6; k++) {
+            rouler(INT64_MAX, 120, 30);
+            const std::string nom = "marina-suite-" + std::to_string(k);
+            capture(nom);
+            const uint32_t tri = r.comptesImage().triangles[Renderer::FAM_DECOR];
+            WFS_LOG("%s : %.0f m dans le port%s", nom.c_str(), g.player().dist * M - (double)m0 * SEG_M,
+                    k > 1 && tri > avant + 2000 ? " — un bloc du port passe ici au niveau détaillé (seuil de 200 m)" : "");
+            avant = tri;
+        }
+        g.shutdown();
+    }
+    if (garder("marina-poursuite-120-midi-basse")) {   // qualité Basse (téléphone de l'utilisateur) : comme marina-poursuite-120-midi
+        const int qualite = ecrans::reglages().qualite; const bool basse = r.qualiteBasse;
+        ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true;
+        lancer("midi", VueCamera::Poursuite);
+        rouler(cible, 120);
+        capture("marina-poursuite-120-midi-basse");
+        g.shutdown();
+        ecrans::reglages().qualite = qualite; r.qualiteBasse = basse;
+    }
+    choisirVue(VueCamera::Poursuite);
+    // vues libres, voiture arrêtée : œil (segment, distance à l'axe, hauteur au-dessus de la route) et point visé (segment, distance à
+    // l'axe, altitude) ; le niveau de détail du décor suit la VOITURE (segment sV, par défaut celui de l'œil), pas la caméra
+    auto vueLibre = [&](const std::string& nom, const char* moment, int64_t sO, float latO, float hO, int64_t sC, float latC, float yC, float fov, int64_t sV = -1) {
+        if (!garder(nom)) return;
+        setenv("WFS_MOMENT", moment, 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, (sV >= 0 ? sV : sO) - 30)).c_str(), 1);
+        g.init(r, "golf", "plage"); g.setAutopilot(false); g.camMode = 0;
+        for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
+        const TrackPoint o = t.point((double)sO * SEG, latO), c = t.point((double)sC * SEG, latC);
+        g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + hO, (float)o.z};
+        g_vueDessus.cible = {(float)c.x, yC, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = fov;
+        capture(nom);
+        g_vueDessus.actif = false;
+        g.shutdown();
+    };
+    const float R = (float)RW;
+    const int64_t s15 = (int64_t)(15 / SEG_M), s40 = (int64_t)(40 / SEG_M), s100 = (int64_t)(100 / SEG_M), s260 = (int64_t)(260 / SEG_M);
+    if (garder("marina-poursuite-80-nuit")) {   // nuit : coques et mâts éclairés par les lampadaires du quai
+        lancer("nuit", VueCamera::Poursuite);
+        rouler(cible, 80);
+        capture("marina-poursuite-80-nuit");
+        g.shutdown();
+    }
+    for (const char* mo : {"midi", "doree", "nuit"})   // promenade : personne debout (1,7 m) au bord du trottoir, regard vers les poupes
+        vueLibre(std::string("marina-gros-plan-") + mo, mo, cible, R + 4.5f, 1.8f, cible + s15, R + 15, OCEAN_Y + 1.2f, 55);
+    vueLibre("marina-bassin", "midi", cible - s40, R - 5, 28, cible + s40, R + 28, OCEAN_Y, 60);   // vue d'en haut (28 m)
+    // de loin : voiture 260 m avant le port (tout le port dans les blocs allégés), œil sur l'eau à 250 m du quai
+    vueLibre("marina-loin", "midi", m0 + s100, R + 250, OCEAN_Y + 6 - (float)t.pose(m0 + s100).y, m0 + s100, R + 15, OCEAN_Y + 5, 24, m0 - s260);
+    // même cadrage, voiture dans le port (blocs détaillés) : comparaison des deux niveaux de détail
+    vueLibre("marina-loin-detail", "midi", m0 + s100, R + 250, OCEAN_Y + 6 - (float)t.pose(m0 + s100).y, m0 + s100, R + 15, OCEAN_Y + 5, 24, m0 + s100);
+    unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+}
 } // namespace wfs
