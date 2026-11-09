@@ -130,7 +130,7 @@ public:
         for (unsigned c : SERVIETTES) palette_.uv(c);
         if (ville_ && !atlas_.construire(r)) return;
         palette_.construire(r);
-        vitreNuit_ = neon(r, 0xffcf8a, 1.4f); bougie_ = neon(r, 0xffd9a0, 3.f);
+        vitreNuit_ = neon(r, 0xffcf8a, 0.65f); bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 (accroche E13, ANO-202) : vitrine 0,65 (avant 1,4 : rouge 1,4 au-dessus du blanc et du bloom, blocs blancs) ; Y exposée ≈ 0,44, comme les pièces adaptées (pieceAdaptee)
         Material mv; const vec3 c = lin(0x3b4a58); mv.color = {c.x, c.y, c.z, 1}; mv.rough = 0.15f; mv.metal = 0.3f;
         vitreJour_ = r.makeMaterial(mv, nullptr, nullptr, nullptr);
         actif_ = true;
