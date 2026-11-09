@@ -1,1 +1,136 @@
-{}
+{
+ "x5": {
+  "materiaux": 29,
+  "empreinteAvant": "4fc2afea68dc4d96",
+  "empreinteApres": "7010ad257f0a66ca",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 15,
+    "boite": [
+     -0.47,
+     0.655,
+     -2.5,
+     0.47,
+     0.955,
+     -2.36
+    ],
+    "note": "calandre de marque (deux « haricots », cadre et barres) retirée"
+   },
+   {
+    "retirer": true,
+    "materiau": 10,
+    "boite": [
+     -0.47,
+     0.655,
+     -2.5,
+     0.47,
+     1.0,
+     -2.3
+    ],
+    "note": "fond des haricots retiré"
+   },
+   {
+    "grille": [
+     -0.45,
+     0.675,
+     -2.465,
+     0.45,
+     0.935,
+     -2.4
+    ],
+    "barres": 6,
+    "arrondi": 0.05,
+    "couleur": "#262626",
+    "metal": 0.7,
+    "rugosite": 0.35,
+    "note": "grille générique d'un seul tenant, barres horizontales"
+   }
+  ]
+ },
+ "compass": {
+  "materiaux": 15,
+  "empreinteAvant": "6cdf7b47fac95746",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 2,
+    "boite": [
+     -0.455,
+     0.795,
+     -2.18,
+     0.455,
+     0.995,
+     -2.03
+    ],
+    "note": "calandre de marque à 7 fentes : cadres chromés retirés"
+   },
+   {
+    "retirer": true,
+    "materiau": 7,
+    "boite": [
+     -0.455,
+     0.795,
+     -2.18,
+     0.455,
+     0.995,
+     -2.03
+    ],
+    "note": "calandre de marque à 7 fentes : fond noir retiré"
+   },
+   {
+    "grille": [
+     -0.44,
+     0.81,
+     -2.165,
+     0.44,
+     0.975,
+     -2.09
+    ],
+    "barres": 3,
+    "arrondi": 0.03,
+    "couleur": "#1c1c1c",
+    "metal": 0.6,
+    "rugosite": 0.4,
+    "note": "grille générique à 3 barres horizontales"
+   }
+  ],
+  "empreinteApres": "55cbd3d11a7119d7"
+ },
+ "p208": {
+  "materiaux": 17,
+  "empreinteAvant": "255a507ac4060374",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 0,
+    "boite": [
+     -0.43,
+     0.395,
+     -2.02,
+     0.43,
+     0.785,
+     -1.89
+    ],
+    "note": "calandre de marque (treillis en losanges) retirée, fond sombre gardé"
+   },
+   {
+    "grille": [
+     -0.41,
+     0.41,
+     -1.995,
+     0.41,
+     0.765,
+     -1.955
+    ],
+    "barres": 5,
+    "arrondi": 0.04,
+    "couleur": "#202020",
+    "metal": 0.6,
+    "rugosite": 0.4,
+    "note": "grille générique à barres horizontales devant le fond d'origine"
+   }
+  ],
+  "empreinteApres": "c64bddcb5d23810f"
+ }
+}

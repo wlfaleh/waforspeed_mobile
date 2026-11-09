@@ -14,14 +14,22 @@
 // Normales : transformées par l'inverse de l'échelle puis renormées ; tangentes (section TAN1) recalculées (tools/tangentes.mjs) ;
 // boîte d'en-tête recalculée. Le .lod (indices seuls, sommets partagés) reste valable : il prend la nouvelle forme tel quel.
 //
-// formes.json : { "<id>": { "materiaux": nMat, "empreinteAvant": "…", "empreinteApres": "…",
-//                 "retouches": [ { "materiau": m, "boite": [x0,y0,z0,x1,y1,z1], "pivot": [x,y,z] | "boite",
-//                                  "echelle": [sx,sy,sz], "deplacer": [dx,dy,dz], "fondu": f, "sommets": n, "note": "…" } ] } }
+// formes.json : { "<id>": { "materiaux": nMat, "empreinteAvant": "…", "empreinteApres": "…", "retouches": [ … ] } }
+// Retouches (dans l'ordre) :
+//   déplacement  { "materiau": m, "boite": [...], "pivot": [x,y,z] | "boite", "echelle": [sx,sy,sz], "deplacer": [dx,dy,dz], "fondu": f, "sommets": n }
+//   retrait      { "retirer": true, "materiau": m, "boite": [...], "triangles": n } : triangles dont le centre est dans la boîte
+//                vidés (indices confondus, comme tools/plaques_voitures.mjs), aucun sommet retiré (accord du PO, WFS-193 (A))
+//   grille       { "grille": [x0,y0,z0,x1,y1,z1], "barres": n, "arrondi": r, "couleur": "#rrggbb", "metal": m, "rugosite": r }
+//                grille générique ajoutée à la place d'une calandre de marque : fond à z1, n barres horizontales en relief
+//                jusqu'à z0 (avant), coins du fond arrondis de r ; un matériau ajouté à la FIN (rang des matériaux inchangé,
+//                src/render/correctifs_voitures.h) et un maillage. Le .lod est alors régénéré (tools/alleger_voiture.mjs).
+// Chaque retouche porte une « note ».
 // « sommets » : nombre de sommets dans la boîte (contrôle à la 1re application). Repère du .wfm : avant vers −Z, x à droite, y en haut.
 import fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
 import { tangentes } from './tangentes.mjs';
+import { execFileSync } from 'child_process';
 
 const ICI = path.dirname(new URL(import.meta.url).pathname);
 const RACINE = path.resolve(ICI, '..');
@@ -64,7 +72,7 @@ function ecrire(w) {
   return Buffer.concat(parts);
 }
 // empreinte des sommets de toute la voiture (positions et normales) : état avant / après
-const empreinte = (w) => { const h = crypto.createHash('sha256'); for (const m of w.maillages) h.update(Buffer.from(m.v.buffer)); return h.digest('hex').slice(0, 16); };
+const empreinte = (w) => { const h = crypto.createHash('sha256'); h.update(Buffer.from(w.materiaux)); for (const m of w.maillages) { h.update(Buffer.from(m.v.buffer)); h.update(Buffer.from(m.ix.buffer)); } return h.digest('hex').slice(0, 16); };
 const DRAPEAUX = ['peinture', 'transparent', 'feu-arr', 'phare', 'double', 'decoupe', 'vitre', 'roue'];
 
 function lister(id) {
@@ -111,16 +119,73 @@ function appliquer(w, r) {
   return { k, dedans };
 }
 
+function retirer(w, r) {
+  const ks = w.maillages.map((m, k) => (m.mat === r.materiau ? k : -1)).filter((k) => k >= 0);
+  if (ks.length !== 1) throw new Error(`matériau ${r.materiau} : un maillage attendu`);
+  const m = w.maillages[ks[0]], b = r.boite; let n = 0;
+  for (let t = 0; t + 2 < m.ix.length; t += 3) {
+    if (m.ix[t] === m.ix[t + 1] && m.ix[t] === m.ix[t + 2]) continue;   // déjà vide
+    const c = [0, 1, 2].map((q) => (m.v[m.ix[t] * 8 + q] + m.v[m.ix[t + 1] * 8 + q] + m.v[m.ix[t + 2] * 8 + q]) / 3);
+    if (poids(c, b, 0) < 1) continue;
+    m.ix[t + 1] = m.ix[t + 2] = m.ix[t]; n++;
+  }
+  return { k: ks[0], n };
+}
+
+// grille générique : fond (rectangle aux coins arrondis, plan z = z1) et barres horizontales (pavés de z1 à z0)
+function grille(w, r) {
+  const [x0, y0, z0, x1, y1, z1] = r.grille;
+  const V = [], I = [];
+  const sommet = (x, y, z, nx, ny, nz) => { V.push(x, y, z, nx, ny, nz, (x - x0) / (x1 - x0), (y - y0) / (y1 - y0)); return V.length / 8 - 1; };
+  const quad = (a, b, c, d) => I.push(a, b, c, a, c, d);
+  // fond : éventail depuis le centre, contour arrondi (coins de rayon ra, 6 pas par coin), face vers l'avant (−z)
+  const ra = Math.min(r.arrondi || 0, (x1 - x0) / 2, (y1 - y0) / 2), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const contour = [];
+  const coins = [[x1 - ra, y1 - ra, 0], [x0 + ra, y1 - ra, Math.PI / 2], [x0 + ra, y0 + ra, Math.PI], [x1 - ra, y0 + ra, 1.5 * Math.PI]];
+  for (const [ccx, ccy, a0] of coins) for (let k = 0; k <= 6; k++) { const a = a0 + (k / 6) * Math.PI / 2; contour.push([ccx + ra * Math.cos(a), ccy + ra * Math.sin(a)]); }
+  const c0 = sommet(cx, cy, z1, 0, 0, -1);
+  const bord = contour.map(([x, y]) => sommet(x, y, z1, 0, 0, -1));
+  for (let i = 0; i < bord.length; i++) I.push(c0, bord[(i + 1) % bord.length], bord[i]);
+  // barres : n pavés horizontaux régulièrement espacés, épaisseur 40 % du pas, largeur de la grille moins l'arrondi
+  const n = r.barres || 0, pas = (y1 - y0) / (n + 1), e = pas * 0.4, bx0 = x0 + ra * 0.6, bx1 = x1 - ra * 0.6;
+  for (let k = 1; k <= n; k++) {
+    const yc = y0 + k * pas, ya = yc - e / 2, yb = yc + e / 2;
+    const f = [sommet(bx0, ya, z0, 0, 0, -1), sommet(bx1, ya, z0, 0, 0, -1), sommet(bx1, yb, z0, 0, 0, -1), sommet(bx0, yb, z0, 0, 0, -1)];
+    quad(f[0], f[3], f[2], f[1]);
+    const h = [sommet(bx0, yb, z0, 0, 1, 0), sommet(bx1, yb, z0, 0, 1, 0), sommet(bx1, yb, z1, 0, 1, 0), sommet(bx0, yb, z1, 0, 1, 0)];
+    quad(h[0], h[3], h[2], h[1]);
+    const g = [sommet(bx0, ya, z0, 0, -1, 0), sommet(bx1, ya, z0, 0, -1, 0), sommet(bx1, ya, z1, 0, -1, 0), sommet(bx0, ya, z1, 0, -1, 0)];
+    quad(g[0], g[1], g[2], g[3]);
+  }
+  // matériau ajouté à la fin : couleur, métal, rugosité, pas de texture, double face (16)
+  const col = (r.couleur || '#1a1a1a').match(/[0-9a-f]{2}/gi).map((h) => Math.pow(parseInt(h, 16) / 255, 2.2));
+  const mat = Buffer.alloc(56);
+  [col[0], col[1], col[2], 1, r.metal ?? 0.6, r.rugosite ?? 0.45, 0, 0, 0, 0.5].forEach((x, i) => mat.writeFloatLE(x, 4 * i));
+  mat.writeInt32LE(-1, 40); mat.writeInt32LE(-1, 44); mat.writeInt32LE(-1, 48); mat.writeUInt32LE(16, 52);
+  w.materiaux = Buffer.concat([w.materiaux, mat]); w.nM++;
+  const m = { mat: w.nM - 1, nv: V.length / 8, v: new Float32Array(V), ix: new Uint32Array(I) };
+  w.maillages.push(m); if (w.tan) w.tan.push(Buffer.alloc(m.nv * 4));
+  return { k: w.maillages.length - 1, n: I.length / 3 };
+}
+
 function traiter(id, verifier) {
   const cfg = FORMES[id];
   const chemin = path.join(RACINE, 'assets/cars', id + '.wfm');
   const w = lire(fs.readFileSync(chemin));
-  if (w.nM !== cfg.materiaux) throw new Error(`${id} : ${w.nM} matériaux, ${cfg.materiaux} attendus`);
+  const ajoutes = cfg.retouches.filter((r) => r.grille).length;   // matériaux ajoutés à la fin par les grilles
+  if (w.nM !== cfg.materiaux && w.nM !== cfg.materiaux + ajoutes) throw new Error(`${id} : ${w.nM} matériaux, ${cfg.materiaux} attendus`);
   const e = empreinte(w);
   if (cfg.empreinteApres && e === cfg.empreinteApres) { console.log(`${id} : déjà retouchée (${e})`); return true; }
   if (e !== cfg.empreinteAvant) { console.error(`${id} : empreinte ${e}, ni « avant » (${cfg.empreinteAvant}) ni « après » (${cfg.empreinteApres}) : rien écrit`); return false; }
   const touches = new Set(); const journal = [];
+  let structure = false;   // triangles retirés ou pièce ajoutée : .lod à régénérer
   for (const r of cfg.retouches) {
+    if (r.grille) { const { k, n } = grille(w, r); touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles ajoutés)`); continue; }
+    if (r.retirer) {
+      const { k, n } = retirer(w, r);
+      if (r.triangles !== undefined && n !== r.triangles) { console.error(`${id} : « ${r.note} » : ${n} triangles retirés, ${r.triangles} attendus : rien écrit`); return false; }
+      touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles retirés)`); continue;
+    }
     const { k, dedans } = appliquer(w, r);
     if (r.sommets !== undefined && dedans !== r.sommets) { console.error(`${id} : « ${r.note} » : ${dedans} sommets dans la boîte, ${r.sommets} attendus : rien écrit`); return false; }
     touches.add(k); journal.push(`${r.note} (${dedans} sommets)`);
@@ -133,6 +198,7 @@ function traiter(id, verifier) {
   for (const m of w.maillages) for (const i of m.ix) for (let c = 0; c < 3; c++) { const x = m.v[i * 8 + c]; bb[c] = Math.min(bb[c], x); bb[c + 3] = Math.max(bb[c + 3], x); }
   w.boite = Buffer.from(new Float32Array(bb).buffer);
   fs.writeFileSync(chemin, ecrire(w));
+  if (structure) execFileSync('node', [path.join(ICI, 'alleger_voiture.mjs'), chemin, chemin.replace(/\.wfm$/, '.lod'), '0.3'], { stdio: 'inherit' });   // indices changés : niveaux de détail refaits
   console.log(`${id} : retouchée, empreinte ${apres}${cfg.empreinteApres ? '' : ' (à noter dans formes.json : empreinteApres)'} : ${journal.join(' ; ')}`);
   return true;
 }
