@@ -1,5 +1,6 @@
 // WaForSpeed — paquets de cartes : choix « paquet ou secours », cuisson et banc (WFS-301) : voir paquet_carte.h.
 #include "paquet_carte.h"
+#include "carte_donnees.h"   // WFS-343
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -23,6 +24,7 @@ namespace fs = std::filesystem;
 std::vector<std::string> valeursConfigConstruction(const std::string&) { return {}; }
 
 uint64_t empreinteAttendue(const std::string& c) {
+    if (donnees(c)) return empreinteDonnees(c);   // WFS-343 : carte de données (blocs du paquet, pas de graine du code)
     return carte::empreinte(c, mapById(c.c_str()).seed, trace::versionCarte(c.c_str()), valeursConfigConstruction(c));
 }
 

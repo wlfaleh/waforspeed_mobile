@@ -1,0 +1,28 @@
+format 1
+# WFS-343 : carte d'essai (non montrée aux joueurs) lue d'un paquet : tracé, sections, réglages. Rien de cette carte dans le code.
+nom Village de Noël (essai)
+description Carte d'essai lue d'un paquet : village enneigé, sapins et guirlandes.
+quartiers Place du marché;Rue des chalets;Sapinière
+cache 1
+graine 2512
+bord 1.6
+trafic 12 0.25 0.45
+checkpoint_m 400
+vignette 0x101626 0xe8eef3 0xff3b30
+# route entree tenue sortie courbe montee (addRoad du jeu web : segments de 1,2 m ; montée en segments, somme nulle sur le tour)
+route 30 60 30 0 0
+route 30 80 30 2 6
+route 25 70 25 0 0
+route 30 60 30 -3 -3
+route 25 90 25 0 0
+route 30 50 30 4 0
+route 30 50 30 -4 0
+route 25 100 25 0 -3
+route 30 70 30 2.5 0
+route 20 40 20 0 0
+# section type debut fin [cote rayon angle]
+section ligne 0 120
+section montee 120 260
+section virage 380 500 -1 70 -40
+section virage 640 750 1 55 50
+section virage 750 860 -1 55 -50

@@ -134,7 +134,7 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     const char* dep = std::getenv("WFS_DEPART");   // banc d'essai : zone choisie (segments)
     depart_ = dep ? std::atoll(dep) : 0;
     // palette des couleurs unies (valeurs d'affichage du jeu web : texture sRGB)
-    const auto pal = palette();
+    auto pal = palette(); couleursCarte(pal);   // WFS-343 (accroche) : couleurs de la carte de données
     uint8_t px[PAL_W * 4] = {};
     for (int c = 0; c < PAL_W; c++) {
         const uint32_t h = pal[(size_t)c];
@@ -199,7 +199,7 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     Mulberry32 D(map().seed * 31 + 7);
     for (auto [z0, z1] : ranges) place(zone(z0), z0, z1, D);
     // touffes d'herbe sur les bas-côtés herbeux : aucun tirage D(), le reste du décor ne change pas
-    for (int64_t a = 0; a < L; a += 2) {
+    for (int64_t a = 0; a < L && touffes(); a += 2) {   // WFS-343 (accroche) : touffes facultatives
         const char* z = zone(a);
         if (std::strcmp(z, "village") && std::strcmp(z, "paddock") && std::strcmp(z, "gravier")) { Item v; v.t = T_VERGE; item(a, v); }
     }

@@ -2178,6 +2178,8 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Critères** : RG-01 (tracé, chocs, départs, checkpoints, zones de trafic lus du paquet, carte absente du choix si bloc faux, jamais de plantage), RG-03 (décor générique lu du paquet, carte venue d'un paquet dans le choix du terrain), RG-04 (tests CPU, parcours accueil → terrain → course → retour 0 écart, carte de test, captures au lead dev), RG-05 (rien de propre à une carte dans le code). Règles : `regles-de-gestion/WFS-343.md`.
 - **WFS-347** (P3, E8) créé : RG-06 de WFS-307 (ligne « Cartes : N téléchargées, X Mo » des Réglages), après WFS-290, 291, 318 (agent 2).
 
+### 2026-11-09 01:11:39 — WFS-343 : début (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-343` depuis `main`. Skills : `agent-developer`, `expert-cartes`, `waforspeed-natif`. Périmètre : RG-01, RG-03, RG-04, RG-05 (neige → WFS-346). Étude du tracé et des chocs actuels avant le plan ; accroches `track.*` / `game.*` annoncées à l'entrée suivante.
 ### 2026-11-09 01:25:26 — WFS-335 : PR #296 ouverte, 🆕 à relire par le lead dev (agent arwa (Claude, session trafic))
 - **PR** : https://github.com/wlfaleh/waforspeed_mobile/pull/296 (branche `feature/waforspeed-335`, synchronisée avec main ; 81 tests CPU OK ; parcours complet 0 écart, vues Arrière et Cockpit).
 - **Captures** : `qa/pr/WFS-335/` (31 captures du banc `lod` avant / après, Basse ; Course à 5 de nuit vues Arrière et Proche, trafic de nuit de 10 à 170 m) ; 31 sur 43 identiques au pixel près, les autres ne changent qu'au loin. Le script `captures_pr.sh` avec le banc `nuit` durait plus d'une heure (machine partagée, charge 19) : arrêté, captures `lod` produites et mises en forme à la main.
@@ -2647,6 +2649,25 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin ; captures avant / après dans `qa/pr/WFS-349/`). PR, lead dev, puis 🟡 et arrêt de la session.
 - `track-agent.md` : ligne ajoutée ; lignes des sessions terminées enlevées (arwa-5, agent dev conduite).
 
+### 2026-11-09 13:38:27 — WFS-343 : reprise après la limite d'utilisation (Claude, agent 3 (01UY1Vv3))
+- Session arrêtée à 01:12 UTC (limite de 5 h), reprise à la demande du PO. Branche synchronisée avec `main`. Étude du code (tracé, chocs, décor, cartes nommées dans le code) puis plan et accroches à l'entrée suivante.
+
+### 2026-11-09 13:56:47 — WFS-343 : plan et accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- **Plan** : une carte de données est décrite par trois blocs texte de son paquet (`trace`, `chocs`, `decor`, format 1), lus par `src/world/cartes_v2/carte_donnees.*`.
+  - Les cartes sont enregistrées dans un registre, et `mapById` les trouve.
+  - Le tracé est fait des routes `addRoad` du jeu web et des sections typées.
+  - Le décor vient d'une sous-classe de `CarteDecor` (`carte_donnees_decor.cpp`). La distance des checkpoints est propre à la carte.
+  - Le choix du terrain montre les cartes des paquets (RG-03). Un bloc faux rend la carte absente, avec la raison au journal du jeu.
+  - Cartes d'essai cachées : `paquets/sources/noel-test` et `paquets/sources/automne-test` (RG-05, autre saison).
+- **Accroches E0** (autorisées par le ticket) :
+  - `src/game/track.h` (+3 lignes) : champ `MapDef::construire`, pointeur `g_cartesDonnees`, `Track::poserSections`.
+  - `src/game/track.cpp` (+2 lignes) : `mapById` cherche d'abord les cartes de données ; `Track::build` appelle `construire`.
+  - Les 4 cartes du code ne changent pas.
+- **Accroche E2** (accord écrit du PO, 2026-11-09 13:50 UTC) : `src/world/decor_carte.h` (+3 lignes, dont 1 commentaire) et `decor_carte.cpp` (2 lignes changées).
+  - `couleursCarte()` : couleurs de la carte dans les cases libres de la palette.
+  - `touffes()` : touffes d'herbe facultatives.
+  - Raison : RG-05, tout vient des données. Les valeurs par défaut gardent la Campagne et le Grand Prix inchangés (captures avant / après dans la PR).
+- **Test** : `test_cartes_v2_donnees` (ligne ajoutée dans `CMakeLists.txt`) OK.
 ### 2026-11-09 13:40:52 — WFS-349 retiré à agent 3 bis, repassé ⏳ Prêt (po-scrum-master)
 - **Ordre de l'utilisateur** (transmis par Claude, agent 3 bis, 01UY1Vv3VTBJ) : « Dit au po de l'attribuer à qq d'autre toi t'es fini selon la nouvelle règle bye bye ». Décision de l'utilisateur : la règle des 10 h ne s'applique pas.
 - **WFS-349** (P1, vue Cockpit, ANO-181 / 183) : ⏳ Prêt, sans responsable, pour la prochaine **nouvelle session** de développeur qui demande un ticket. Branche `feature/waforspeed-349` gardée (1 commit e1440a6f, 2026-11-09 13:36:15 UTC, entrée « Début » seulement ; aucun code).
