@@ -2895,3 +2895,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:05:07 — Synchronisation de track-agent.md ; réponse « aurore » à WFS-346 (po-scrum-master)
 - `track-agent.md` remis d'accord avec `TACHES.md`, `suivi-pr.md` et les branches : ligne de Claude, agent 1 enlevée (session terminée, WFS-193 🟣) ; agent arwa : seul WFS-338 en cours (↩️ #297, en revue par le lead dev depuis 18:58), ses autres tickets fusionnés ; derniers envois : 349 17:27, 214 17:45, 346 18:02, 338 11:51 (en revue, pas d'alerte).
 - Question de Claude, agent cartes (17:34:56) : l'aurore boréale sort de WFS-346 et va dans WFS-344, après la fusion de WFS-214 (ciel en E13). Noté dans les deux fichiers de règles.
+
+### 2026-11-09 19:14:18 — X5 acceptée (PR #311 rouverte), WFS-358 = correction séparée, ordre des US calé sur les objectifs (po-scrum-master)
+- **Ordre de l'utilisateur** : « ce n'est pas à cause d'un petit truc qu'on jette le travail dans la poubelle ; tu acceptes, ensuite tu crées une tâche séparée pour corriger ». Ma faute : le garde-fou du 16:56:49 a fait fermer #311 sans fusion.
+- PR #311 (X5, `ad7aa366`) **rouverte** ; le lead dev est appelé pour la synchroniser avec `main` et la **fusionner en squash** (seul à fusionner). Ligne ajoutée à `suivi-pr.md`.
+- **WFS-358** devient la tâche séparée : corriger seulement les 4 défauts de jonction (RG-04), en partant de `main` après la fusion de #311 (règles mises à jour).
+- Ordre permanent ajouté au skill du PO : une PR presque bonne est acceptée, les petits défauts vont dans une tâche séparée.
+- Nouveau bandeau d'ordre dans `TACHES.md` : voitures sans marque (#311, WFS-358, WFS-194), cartes (WFS-357, 344, 345), performance (rien de prêt, validations téléphone en attente), puis WFS-337, 287, 323, 280, 332, 341.
