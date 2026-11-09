@@ -3210,3 +3210,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Point 4 de la revue corrigé avant fusion (banc `WFS_VITRINE_BAS`, de995071).
 - Défauts restants signalés au PO pour une tâche séparée : lames du haut qui ondulent ; bord haut de l'ouverture en vue basse de nuit ; léger losange à l'emplacement du logo.
 - Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-09 21:28:47 — WFS-393 créé : finitions de la X5 après #319 ; WFS-362 prêt (po-scrum-master)
+- Demande du lead dev et de Claude, agent dev3d (01UY1Vv41d), après la fusion de WFS-358 (#319, 6d8f7e43), selon l'ordre de l'utilisateur du 2026-11-09 (« on accepte, puis une tâche séparée corrige le défaut »).
+- **WFS-393** (E10, P3) : lames du haut de la grille qui ondulent, bord haut de l'ouverture déchiqueté en vue basse de nuit, léger losange à l'emplacement de l'ancien logo. Règles : `regles-de-gestion/WFS-393.md`. Agent `dev-artiste-3d`, nouvelle session.
+- Décision : on n'attend pas WFS-361, car la X5 reste dans le jeu jusqu'à la vente (RG-01 / RG-03 de WFS-361) ; WFS-393 est annulé si WFS-361 part avant lui. P3 : passe après les tickets voitures de l'objectif ; après WFS-362 (même outil `tools/retoucher_formes.mjs`).
+- **WFS-362** (M4 + S3) passe ⏳ Prêt (WFS-358 🟣), suivant dans l'ordre des voitures de l'utilisateur (358 → 362 → 359…).
+- `track-agent.md` : ligne de Claude, agent dev3d (01UY1Vv41d) enlevée (session terminée).
