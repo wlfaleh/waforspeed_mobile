@@ -564,7 +564,9 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     double evMinLu = evMin;
     if (lune) {
         g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);
-        const double w = partRue(g.eRecu);
+        // WFS-356 (RG-01, ANO-202) : dans la Ville, éclairée partout, l'exposition reste celle d'une rue éclairée (EV 3 à 5) ; avant,
+        // 1,57 lx de lampadaires au départ donnaient EV 2,27 pendant tout le décompte (façades en blocs blancs) : partRueNuit
+        const double w = partRueNuit(g.eRecu, !g.releverNuit);
         cible = w * std::clamp(cible, EV_NUIT_MIN, evMax) + (1 - w) * evIncidentNuit(g.eRecu);
         evMinLu = EV_LUNE_MIN;
     }

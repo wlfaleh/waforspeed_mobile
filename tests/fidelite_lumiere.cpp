@@ -191,6 +191,41 @@ int main(int argc, char** argv) {
         std::printf("WFS-276 : flaque / paysage %.2f IL (7 IL dans la scène), paysage relevé de %.2f IL\n", ecartIL, std::log2(basseLumiereNuit(paysage) / paysage));
     }
 
+    // ---- WFS-356 (RG-01, RG-02, RG-05, ANO-202) : départ de nuit dans la Ville. (1) 1,57 lx de lampadaires reçus au départ (mesuré au
+    // banc depart, APK 954) : l'EV visé de la Ville reste dans les bornes de la rue éclairée (3 à 5), à moins de 1 IL de la mesure
+    // du lieu (EV 4,1) ; hors Ville, le posemètre incident de WFS-230 ne change pas. (2) Pièces éclairées vues de la rue (murs 31,8
+    // cd/m², plafond × 1,6 × 1,15) : jamais saturées après ACES et gamma, de EV 2 à 5 ; rien sous le genou ; courbe continue,
+    // croissante ; constantes identiques dans le shader
+    {
+        auto viseNuit = [](double E, bool ville) {   // eclairage_physique.cpp (lune) : mélange rue éclairée / posemètre incident
+            const double w = partRueNuit(E, ville);
+            return w * std::clamp(double(EV_REF_NUIT), EV_NUIT_MIN, EV_NUIT_MAX) + (1 - w) * evIncidentNuit(E);
+        };
+        const double evVille = viseNuit(1.57, true), evAilleurs = viseNuit(1.57, false);
+        VERIFIE(evVille >= EV_NUIT_MIN && evVille <= EV_NUIT_MAX && std::fabs(evVille - 4.1) <= 1.0, "Ville, 1,57 lx : EV visé %.2f (3 à 5, à moins de 1 IL de 4,1)", evVille);
+        VERIFIE(std::fabs(evAilleurs - (partRue(1.57) * 4 + (1 - partRue(1.57)) * evIncidentNuit(1.57))) < 1e-12, "hors Ville : posemètre incident inchangé");
+        auto aces = [](double x) { return std::clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); };
+        double pire = 0;
+        for (double ev = 2.0; ev <= 5.0001; ev += 0.25)
+            for (double L : {31.8 * 0.75 * 0.7, 31.8, 31.8 * 1.6 * 1.15}) {   // fond sombre, mur, plafond le plus clair
+                const double Y = pieceAdaptee(L * exposition(ev));
+                pire = std::max(pire, 255 * std::pow(aces(Y), 1 / 2.2));
+            }
+        VERIFIE(pire < 250, "pièce éclairée : %.1f / 255 au plus (sous 250 : jamais saturée)", pire);
+        VERIFIE(pieceAdaptee(0.2) == 0.2 && pieceAdaptee(PIECE_GENOU) == PIECE_GENOU && std::fabs(pieceAdaptee(PIECE_GENOU + 1e-7) - PIECE_GENOU - 1e-7) < 1e-9,
+                "pièce : rien sous le genou, continue et de pente 1 au genou");
+        bool mono = true; double prec = 0;
+        for (double y = 1e-4; y < 100; y *= 1.05) { const double v = pieceAdaptee(y); mono = mono && v >= prec && v <= PIECE_PLAFOND_EXPO; prec = v; }
+        VERIFIE(mono, "pièce : courbe croissante, sous le plafond");
+        // les murs restent plus sombres que le plafond (lecture de la pièce gardée) à l'exposition de la rue (EV 4)
+        const double kRue = exposition(4.0), mur = pieceAdaptee(31.8 * kRue), plafond = pieceAdaptee(31.8 * 1.84 * kRue);
+        VERIFIE(plafond - mur > 0.05, "pièce à EV 4 : plafond %.3f, mur %.3f (écart > 0,05)", plafond, mur);
+        std::string glsl; { FILE* f = std::fopen(WFS_SOURCE_DIR "/shaders/eclairage.glsl", "rb"); char b[4096]; size_t n; while (f && (n = std::fread(b, 1, sizeof b, f)) > 0) glsl.append(b, n); if (f) std::fclose(f); }
+        VERIFIE(glsl.find("const float PIECE_GENOU = 0.25, PIECE_PLAFOND_EXPO = 1.0;") != std::string::npos, "eclairage.glsl : mêmes constantes que eclairage_exposition.h");
+        std::printf("WFS-356 : Ville à 1,57 lx EV %.2f (hors Ville %.2f), pièce éclairée au plus %.1f / 255 de EV 2 à 5, mur %.3f / plafond %.3f à EV 4\n",
+                    evVille, evAilleurs, pire, mur, plafond);
+    }
+
     // ---- WFS-213 (RG-03) : 3 enchaînements init / shutdown, mesures valides puis invalides (NaN, infini, sonde absurde de
     // 1,36·10¹¹ cd/m² du banc vitrines) : l'EV reste dans les bornes du jour (10 à 15), jamais non fini
     {
