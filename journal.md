@@ -4925,15 +4925,16 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 - **Limite signalée au PO** : le rétroviseur de la vue Cockpit n’est qu’un boîtier noir (aucune image rendue, `camera_vue.*` / rendu hors zone) : la police est maintenant dessinée jusqu’à 160 m derrière (toute vue qui regarde derrière la voit) ; la preuve est une caméra du banc placée devant la voiture et tournée vers l’arrière. Un vrai rétroviseur rendu serait un ticket à part (PO).
 
 ### 2026-11-09 08:06:30 — WFS-338 : appels de dessin, branche et main (décision PO 0161316e) et revue du lead dev (agent arwa (Claude, session trafic))
-- **Mesure, même banc (`course5`, 1280x720, qualité Basse, lavapipe, même machine)**. Le banc de `main` ne passe pas aux mêmes endroits que celui de la branche (sur `main`, la voiture reste bloquée au barrage : ralentisseur mesuré à 1,30 km, camion à 1,16 km). Le seul point commun est « police au contact » : 0,18 km sur les deux, **187 appels sur `main`, 187 sur la branche** (écart 0). Pour les autres points, la mesure est faite **dans la même image** : la branche avec et sans les ajouts de WFS-338 (bandes, socle, policier, cônes, panneau).
+- **Mesure, même banc (`course5`, 1280x720, qualité Basse, lavapipe, même machine, `tools/qa/captures_pr.sh`)**, `main` à jour (le banc de `main` passe maintenant aux mêmes endroits que la branche) ; dernière colonne : même image de la branche, avec et sans les ajouts de WFS-338 (bandes, socle, policier, cônes, panneau).
 
-| Endroit (Basse) | main : poursuite / Checkpoint | branche : poursuite / Checkpoint | même image : avec / sans WFS-338 | ajout de WFS-338 |
+| Endroit (Basse) | main : poursuite / Checkpoint (écart) | branche : poursuite / Checkpoint (écart) | branche − main (poursuite) | même image : avec / sans WFS-338 |
 |---|---|---|---|---|
-| police au contact (0,18 km) | 187 / 148 | 187 / 178 | 184 / 184 | **+0** |
-| embouteillage | 156 / 390 (0,35 km) | 341 / 304 (0,45 km) | 341 / 332 | **+9** |
-| HUD | 155 / 307 | 343 / 304 | 342 / 333 | **+9** |
-| ralentisseur | 113 / 197 (1,30 km) | 211 / 216 (1,55 km) | 195 / 195 | **+0** |
-| camion en travers | 112 / 222 (1,16 km) | 395 / 302 (1,95 km) | 291 / 290 | **+1** |
+| police au contact (0,18 km) | 187 / 155 (+32) | 187 / 178 (+9) | **0** | 184 / 184 (+0) |
+| embouteillage (0,45 km) | 345 / 312 (+33) | 341 / 304 (+37) | **−4** | 341 / 332 (+9) |
+| HUD (0,45 km) | 336 / 312 (+24) | 343 / 304 (+39) | **+7** | 342 / 333 (+9) |
+| ralentisseur (1,55 km) | 230 / 224 (+6) | 211 / 183 (+28) | **−19** | 195 / 195 (+0) |
+| camion en travers (1,95 km) | 371 / 325 (+46) | 328 / 333 (−5) | **−43** | 255 / 255 (+0) |
+| écart maximal (cible ≤ 60) | +46 : OK | +39 : OK | | |
 
-- **Verdict (règle du PO, cas a)** : WFS-338 ajoute **+9 appels au plus** (≤ +10). Le dépassement de la cible ≤ 60 (+93 au camion sur la branche) vient de la scène du banc (trafic dense, police), déjà là sur `main` quand le banc y passe ; il est à trancher par le PO dans un ticket [TECHNIQUE]. Moyens de RG-04 appliqués quand même : tous les cônes dans un seul dessin (palette de 4 texels), police au-delà de 80 m sans rampe ni bandes ni policier (halos seuls), bandes et socle jusqu'à 40 m en Basse.
-- **Revue du lead dev (1re)** : (2) nouvelle suite d'arrivée : toute la police repart à 220 m (aucune à moins de 160 m), puis 10 images à 1 s d'écart : 220, 204, 160, 117, 83, 58, 39, 25, 17, 15 m (encart POLICE et journal du banc), vue Arrière du jeu et vue arrière du banc ; (3) bandeau « TRAVAUX » à 80 m, tenu jusqu'au biseau, captures de jour et de nuit ; correction : le dessin fusionné des cônes avait sa matrice à l'origine du monde, et le moteur l'effaçait comme un objet lointain (fondu mesuré depuis l'origine de la matrice) ; son origine est maintenant au premier cône ; (4) gros plan de jour de la police, policier visible derrière le pare-brise ; (5) tableau ci-dessus.
+- **Verdict (règle du PO, cas a)** : WFS-338 ajoute **+9 appels au plus** dans la même image et la branche fait au plus **+7** de plus que `main` au même endroit (≤ +10) ; la cible ≤ 60 de WFS-119 est tenue sur la branche (+39) comme sur `main` (+46). Les « +128 » et « +93 » d'avant venaient de bancs de `main` bloqués au barrage (endroits différents). Moyens de RG-04 appliqués quand même : un seul dessin par cône (au lieu de 3), police au-delà de 80 m sans rampe, sans bandes ni policier (halos seuls), bandes et socle jusqu'à 40 m en Basse.
+- **Revue du lead dev (1re)** : (2) nouvelle suite d'arrivée : toute la police repart à 220 m (aucune à moins de 160 m), puis 10 images à 1 s d'écart, distance dans l'encart POLICE (encart POLICE et journal du banc), vue Arrière du jeu et vue arrière du banc ; (3) bandeau « TRAVAUX » à 80 m, tenu jusqu'au biseau, captures de jour et de nuit ; les cônes étaient trop loin sur les captures : captures refaites à 30 m du biseau (panneau AK5 tout près) et au biseau ; le dessin fusionné de tous les cônes, essayé, est remplacé par un dessin par cône (il ne change rien aux mesures) ; (4) gros plan de jour de la police, policier visible derrière le pare-brise ; (5) tableau ci-dessus.
