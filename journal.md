@@ -2998,3 +2998,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Fait : saison lue du paquet (adhérence, neige au sol, flocons ; format 2 des blocs), chaussée enneigée avec traces de roues (sèche sous l'abri), flocons dehors seulement (Cockpit : vitres ; rien sous un tunnel), tunnel des cartes de données, μ dans la conduite du joueur (ancien et nouveau modèle), banc `neige`.
 - Vérifié : tests CPU 91/91 (nouveau `test_cartes_v2_saison`) ; banc `neige` 0 écart ; banc `paquets` 0 écart (parcours accueil → terrain → course → retour) ; freinage 100-0 dans le jeu : 37 m au sec, ≈ 144 m sur neige (μ 0,25, réel ≈ 150 m) ; flocons 0,07 ms CPU par image.
 - Limites : chaussée sèche sous le 1er tunnel seulement ; rendu vu en lavapipe ; coût GPU du shader de neige non mesuré sur téléphone. Aurore : WFS-344 (décision du PO 19:05:07).
+
+### 2026-11-09 19:38:04 — Recette de la vidéo du soir, ANO-206 à 210, WFS-374 créé (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
+- Vidéo de l'utilisateur (15 s, Corniche, Course à 5, vue Cockpit) lue image par image ; rapport `qa/rapports/recette-manuelle-video-2026-11-09-2032.md`, images `qa/retours/2026-11-09-video2032-*.jpg`.
+- Anomalies : ANO-206 (bloquante, bateaux de la marina en triangles blancs) → **WFS-374** (P1, `dev-artiste-3d`, avant WFS-369, règles avec l'avis de l'expert réalisme 3D) ; ANO-207 (pas de pavillon, rétroviseur en boîte) → WFS-323 / 324 ; ANO-208 (ciel bleu nuit et sol au soleil) ; ANO-209 (bandes de marque sur le volant) → WFS-325 ; ANO-210 (arrêt net au choc d'un lampadaire).
