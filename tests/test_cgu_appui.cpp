@@ -9,6 +9,12 @@ static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
 
 int main() {
+    // cause de WFS-355 : après « Accepter » (état Accepte), premierLancement() est faux mais tientLaFenetre() vrai ; la boucle
+    // Android doit continuer sans attente pour que Cgu::image traite l'acceptation et lance le chargement
+    VERIFIE(boucleSansAttente(false, true, false), "CGU acceptées pas encore traitées : boucle sans attente (avant : attente sans fin)");
+    VERIFIE(boucleSansAttente(false, false, true), "étape des paquets : sans attente");
+    VERIFIE(boucleSansAttente(true, false, false), "jeu actif : sans attente");
+    VERIFIE(!boucleSansAttente(false, false, false), "en pause, rien à l'écran : attente (batterie)");
     // destination (onInput et rejouerEntrees d'android_main.cpp)
     VERIFIE(destination(false, false, true, false) == Destination::Cgu, "CGU du premier lancement : appui aux CGU (cause n° 1 : perdu avant WFS-355)");
     VERIFIE(destination(false, true, false, false) == Destination::Paquets, "étape des paquets : appui aux paquets");

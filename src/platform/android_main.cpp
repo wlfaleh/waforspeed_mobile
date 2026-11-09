@@ -359,9 +359,9 @@ void android_main(android_app* a) {
     while (!a->destroyRequested) {
         int events; android_poll_source* src;
         rejouerEntrees(app);   // WFS-284 : avant les événements suivants (ordre gardé)
-        // en pause : on attend les événements sans consommer de batterie
+        // en pause : on attend les événements sans consommer de batterie. WFS-355 : CGU acceptées ou paquets finis (« Plus tard », « Continuer ») pas encore traités = sans attente
         veilleur::g_enAttente = true;
-        while (ALooper_pollOnce((app.ready && app.focused && app.fenetre) || ecrans::cgu().premierLancement() || ecrans::paquets().tientLaFenetre() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
+        while (ALooper_pollOnce(ecrans::cgu_appui::boucleSansAttente(app.ready && app.focused && app.fenetre, ecrans::cgu().tientLaFenetre(), ecrans::paquets().tientLaFenetre() || (!app.ready && ecrans::paquets().etat() == ecrans::EtapePaquets::Etat::Fini)) ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
             veilleur::g_enAttente = false;
             if (src && src->id == LOOPER_ID_INPUT) { std::lock_guard<std::mutex> l(veilleur::g_file); src->process(a, src); veilleur::g_dernierLu = nowSeconds(); }
             else if (src) src->process(a, src);   // commandes (chargement compris : le veilleur lit la file pendant ce temps)

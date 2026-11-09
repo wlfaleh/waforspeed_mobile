@@ -1,6 +1,12 @@
-// WaForSpeed — appuis de l'écran des CGU avant le jeu (WFS-355, ANO-199) : calculs seuls, testés par tests/test_cgu_appui.cpp.
+// WaForSpeed — appuis de l'écran des CGU avant le jeu (WFS-355, ANO-199, ANO-201) : calculs seuls, testés par tests/test_cgu_appui.cpp.
+//   - boucleSansAttente : la boucle d'android_main.cpp lit les événements sans attendre (puis dessine) tant qu'un écran tient la
+//     fenêtre. CAUSE de WFS-355 : la condition testait cgu().premierLancement(), faux dès « Accepter » (état Accepte) ; la boucle
+//     attendait alors le prochain événement sans fin (ALooper_pollOnce(-1)), Cgu::image n'était plus appelée : l'écran restait
+//     figé, l'acceptation n'était notée qu'en quittant l'appli (perdreFenetre), le jeu repartait au retour. Bonne condition :
+//     cgu().tientLaFenetre() (ouvert OU accepté pas encore traité). Même piège sur l'étape des paquets (« Plus tard »,
+//     « Continuer » → état Fini, tientLaFenetre() faux) : la boucle passe aussi l'état Fini avant le jeu.
 //   - destination : à qui va un appui avant le jeu (onInput ET appuis rejoués du veilleur, android_main.cpp, même ordre).
-//     Cause n° 1 de WFS-355 : les appuis lus par le veilleur (WFS-284, image de plus d'1 s) n'étaient rejoués qu'au jeu ou à
+//     Cause secondaire de WFS-355 (image lente, émulateur surtout) : les appuis lus par le veilleur (WFS-284, image de plus d'1 s) n'étaient rejoués qu'au jeu ou à
 //     l'écran d'erreur : sur les CGU et les paquets ils étaient perdus (pose ou lever d'« Accepter » jamais reçu).
 //   - cibleSous : bouton visé, cible élargie à 48 dp de haut et 4 dp de chaque côté (appui::dansCible, comme les Réglages) ;
 //   - cibleAuLever : appui terminé. Pose perdue (lever seul) : le bouton sous le doigt au lever compte quand même.
@@ -8,6 +14,9 @@
 #include "reglages_appui.h"
 
 namespace wfs::ecrans::cgu_appui {
+
+// jeuActif : jeu chargé, au premier plan, avec sa surface ; cguTient / paquetsTient : tientLaFenetre() des deux écrans
+inline bool boucleSansAttente(bool jeuActif, bool cguTient, bool paquetsTient) { return jeuActif || cguTient || paquetsTient; }
 
 enum class Destination { Rien, Jeu, Erreur, Paquets, Cgu };
 

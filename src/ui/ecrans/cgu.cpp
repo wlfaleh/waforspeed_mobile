@@ -353,6 +353,9 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
     }
     {   // fenêtre perdue dans le même lot qu'« Accepter » (avant Cgu::image) : chemin de termGraphics d'android_main.cpp
         verifier(c.tientLaFenetre() && !c.premierLancement(), "« Accepter » pas encore traité : la fenêtre reste tenue par les CGU");
+        // WFS-355 (cause) : la boucle d'android_main.cpp doit encore tourner sans attente pour que Cgu::image traite « Accepter »
+        verifier(cgu_appui::boucleSansAttente(false, c.tientLaFenetre(), false), "WFS-355 : « Accepter » touché → boucle Android sans attente (image() suivante)");
+        verifier(!cgu_appui::boucleSansAttente(false, c.premierLancement(), false), "WFS-355 : ancienne condition (premierLancement) : boucle bloquée, écran figé — cause du défaut");
         VkCtx& vk = r.vk();
         c.perdreFenetre(r); r.shutdown(); r.init(vk); ui::chargerPolice(r);
         verifier(!c.tientLaFenetre() && sauvegarde().cgu == VERSION_CGU, "fenêtre perdue après « Accepter » : acceptation gardée, renderer refermé");
