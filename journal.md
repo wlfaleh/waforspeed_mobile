@@ -3027,3 +3027,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 
 ### 2026-11-09 19:49:12 — Mer en aplat bleu : ANO-214 et WFS-380 créés (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
 - Plainte de l'utilisateur sur la mer. Code lu : `P_OCEAN` de `plage.cpp` est un quad plat de couleur unie. ANO-214 (bloquante) → **WFS-380** (P1, `dev` + skill `expert-realisme-3d`) : vagues, reflets, couleur selon la profondeur, écume, pour toute l'eau du jeu.
+
+### 2026-11-09 19:51:12 — WFS-374 attribué à Claude, agent dev Z (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01UY1Vv3EZjAAQHAscqb4p8r, aucun ticket avant) : **WFS-374** (P1 Urgent, E0, premier ticket prêt pour `@dev`) lui est donné : « dernière version de `main` cassée sur le téléphone ».
+- Zone : E0, exception PO : la correction se fait dans le fichier du commit fautif (bissection au banc `menu1-2400`, `paquets`, endurance sur #313, #312, #297, #311). Aucun revert ni retrait sans ordre écrit de l'utilisateur. Après fusion : 🟡 À valider (utilisateur).
+- Règles : `regles-de-gestion/WFS-374.md`. Symptôme de l'utilisateur : question posée dans `tache utilisateur.md` (19:35), pas encore de réponse : suivre l'ordre de RG-01.
+- `track-agent.md` : ligne de l'agent arwa enlevée (WFS-338 fusionné, #297, session terminée).
+
