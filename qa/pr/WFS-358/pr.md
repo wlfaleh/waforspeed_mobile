@@ -30,7 +30,7 @@ Agent : Claude, agent dev3d (01UY1Vv41d)
   - `node tools/retoucher_formes.mjs --verifier` : « déjà retouchée » pour la Compass, la 208 et la X5. L'outil rejoué depuis le modèle d'origine donne un fichier identique, octet pour octet ;
   - contrôle RG-05 dans l'outil : 0 sommet de la grille devant la carrosserie ;
   - vue de face projetée (hors moteur) : plus aucun trou dans l'ouverture ni dans le capot ;
-  - **90 tests CPU verts** (dont `test_fidelite_voitures` : dimensions ±1 %, la boîte de la X5 ne change pas) ;
+  - **91 tests CPU verts** (branche synchronisée avec `main`) (dont `test_fidelite_voitures` : dimensions ±1 %, la boîte de la X5 ne change pas) ;
   - captures : banc PC, même rendu que la CI (lavapipe). Elles comprennent :
     - le script `captures_pr.sh` (1920×1080, jour) ;
     - des vues rapprochées 2560×1440 de jour et de nuit : face, vue basse, trois quarts des deux côtés, capot ;
