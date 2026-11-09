@@ -3221,3 +3221,6 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 21:32:21 — 11 vidéos de l'APK 969 : régression de la Campagne, symptôme donné à WFS-374 (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
 Vidéos regardées image par image (1 à 2 img/s). En Campagne, la voiture est bloquée au départ (0–3 km/h, GAZ inactif) sur 4 courses sur 5 ; la Corniche est OK. Le symptôme est envoyé à l'agent dev Z (WFS-374, session 01UY1Vv3EZ) et noté dans `regles-de-gestion/WFS-374.md`. Le QA (`qa-lead`) est appelé pour le rapport et l'ANO (à partir de ANO-232). Aucun nouveau ticket : lumière → WFS-375, décor → E15. Réponse dans `tache utilisateur.md`.
 
+### 2026-11-09 21:33:03 — Correction : les vidéos de la Campagne étaient en JOUR, pas en nuit ; ajouté à WFS-375 (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+L'utilisateur signale mon erreur : j'avais décrit des courses « de nuit » alors qu'il avait choisi JOUR (Réelle, Aube, Dorée). La cause est dans `terrain.cpp:68` : « Réelle » est rangée sous JOUR mais suit l'heure du téléphone. Critère ajouté à WFS-375 : JOUR = plein jour quelle que soit l'heure. QA prévenu.
+
