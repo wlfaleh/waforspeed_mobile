@@ -2,51 +2,68 @@
  "x5": {
   "materiaux": 29,
   "empreinteAvant": "4fc2afea68dc4d96",
-  "empreinteApres": "7010ad257f0a66ca",
   "retouches": [
    {
     "retirer": true,
     "materiau": 15,
     "boite": [
      -0.47,
-     0.655,
+     0.625,
      -2.5,
      0.47,
      0.955,
      -2.36
     ],
-    "note": "calandre de marque (deux « haricots », cadre et barres) retirée"
+    "note": "calandre de marque (deux « haricots » : cadre, barres et arcs du bas) retirée",
+    "triangles": 2640
    },
    {
     "retirer": true,
     "materiau": 10,
     "boite": [
      -0.47,
-     0.655,
+     0.625,
      -2.5,
      0.47,
      1.0,
      -2.3
     ],
-    "note": "fond des haricots retiré"
+    "note": "fond des haricots retiré",
+    "triangles": 240
+   },
+   {
+    "retirer": true,
+    "materiau": 4,
+    "boite": [
+     -0.115,
+     0.85,
+     -2.48,
+     0.115,
+     0.945,
+     -2.36
+    ],
+    "note": "pointe de carrosserie entre les deux haricots retirée (haut de grille en « M »)",
+    "triangles": 50
    },
    {
     "grille": [
      -0.45,
-     0.675,
-     -2.465,
+     0.65,
+     -2.462,
      0.45,
-     0.935,
+     0.94,
      -2.4
     ],
     "barres": 6,
-    "arrondi": 0.05,
+    "galbe": 0.065,
+    "cadre": 0.018,
     "couleur": "#262626",
     "metal": 0.7,
     "rugosite": 0.35,
-    "note": "grille générique d'un seul tenant, barres horizontales"
+    "note": "grille générique d'un seul tenant : cadre, 6 barres horizontales, galbe du nez"
    }
-  ]
+  ],
+  "empreinteApres": "8cf74a0c44480abe"
  },
  "compass": {
   "materiaux": 15,
@@ -63,7 +80,8 @@
      0.995,
      -2.03
     ],
-    "note": "calandre de marque à 7 fentes : cadres chromés retirés"
+    "note": "calandre de marque à 7 fentes : cadres chromés retirés",
+    "triangles": 705
    },
    {
     "retirer": true,
@@ -76,26 +94,28 @@
      0.995,
      -2.03
     ],
-    "note": "calandre de marque à 7 fentes : fond noir retiré"
+    "note": "calandre de marque à 7 fentes : fond noir retiré",
+    "triangles": 15621
    },
    {
     "grille": [
      -0.44,
-     0.81,
-     -2.165,
+     0.805,
+     -2.14,
      0.44,
-     0.975,
-     -2.09
+     0.98,
+     -2.08
     ],
     "barres": 3,
-    "arrondi": 0.03,
+    "galbe": 0.045,
+    "cadre": 0.015,
     "couleur": "#1c1c1c",
     "metal": 0.6,
     "rugosite": 0.4,
-    "note": "grille générique à 3 barres horizontales"
+    "note": "grille générique : cadre, 3 barres horizontales, galbe du nez"
    }
   ],
-  "empreinteApres": "55cbd3d11a7119d7"
+  "empreinteApres": "3479cb3aaa9d323f"
  },
  "p208": {
   "materiaux": 17,
@@ -112,25 +132,28 @@
      0.785,
      -1.89
     ],
-    "note": "calandre de marque (treillis en losanges) retirée, fond sombre gardé"
+    "note": "calandre de marque (treillis en losanges) retirée, fond sombre gardé",
+    "triangles": 251
    },
    {
     "grille": [
-     -0.41,
-     0.41,
-     -1.995,
-     0.41,
-     0.765,
-     -1.955
+     -0.415,
+     0.405,
+     -1.975,
+     0.415,
+     0.76,
+     -1.94
     ],
     "barres": 5,
-    "arrondi": 0.04,
+    "galbe": 0.035,
+    "trapeze": 0.68,
+    "cadre": 0.012,
     "couleur": "#202020",
     "metal": 0.6,
     "rugosite": 0.4,
-    "note": "grille générique à barres horizontales devant le fond d'origine"
+    "note": "grille générique en trapèze (forme de l'ouverture d'origine) : cadre, 5 barres, galbe du nez"
    }
   ],
-  "empreinteApres": "c64bddcb5d23810f"
+  "empreinteApres": "4f43b8d66338ef89"
  }
 }

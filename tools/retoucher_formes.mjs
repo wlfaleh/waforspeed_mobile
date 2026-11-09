@@ -8,21 +8,24 @@
 //   node tools/retoucher_formes.mjs --zone <id> x0 y0 z0 x1 y1 z1   sommets de chaque maillage dans la boîte (repérage)
 //   node tools/retoucher_formes.mjs [--verifier] [id …]  applique (ou contrôle seulement) les retouches de formes.json
 //
-// Une retouche ne crée ni ne retire aucun sommet ni aucun triangle : elle déplace les sommets d'UN maillage (un maillage par
-// matériau) qui tombent dans une boîte, autour d'un pivot : p' = pivot + echelle × (p − pivot) + deplacer. « fondu » (m) : les
-// sommets hors de la boîte, à moins de « fondu » de ses faces, suivent en partie (poids linéaire), pour ne pas déchirer la pièce.
-// Normales : transformées par l'inverse de l'échelle puis renormées ; tangentes (section TAN1) recalculées (tools/tangentes.mjs) ;
-// boîte d'en-tête recalculée. Le .lod (indices seuls, sommets partagés) reste valable : il prend la nouvelle forme tel quel.
+// Trois sortes de retouches (détail plus bas) :
+//   - déplacement : déplace les sommets d'UN maillage (un maillage par matériau) qui tombent dans une boîte, sans créer ni retirer
+//     de sommet ni de triangle ; « fondu » (m) : les sommets hors de la boîte, à moins de « fondu », suivent en partie ;
+//     normales transformées par l'inverse de l'échelle ; le .lod (indices seuls) reste valable et prend la nouvelle forme ;
+//   - retrait : vide des triangles (indices confondus) ; aucun sommet retiré ;
+//   - grille : AJOUTE un matériau (à la fin) et un maillage.
+//   Après un retrait ou une grille, le .lod est régénéré (tools/alleger_voiture.mjs). Dans tous les cas : tangentes (TAN1) des
+//   maillages touchés recalculées (tools/tangentes.mjs), boîte d'en-tête recalculée.
 //
 // formes.json : { "<id>": { "materiaux": nMat, "empreinteAvant": "…", "empreinteApres": "…", "retouches": [ … ] } }
 // Retouches (dans l'ordre) :
 //   déplacement  { "materiau": m, "boite": [...], "pivot": [x,y,z] | "boite", "echelle": [sx,sy,sz], "deplacer": [dx,dy,dz], "fondu": f, "sommets": n }
 //   retrait      { "retirer": true, "materiau": m, "boite": [...], "triangles": n } : triangles dont le centre est dans la boîte
 //                vidés (indices confondus, comme tools/plaques_voitures.mjs), aucun sommet retiré (accord du PO, WFS-193 (A))
-//   grille       { "grille": [x0,y0,z0,x1,y1,z1], "barres": n, "arrondi": r, "couleur": "#rrggbb", "metal": m, "rugosite": r }
-//                grille générique ajoutée à la place d'une calandre de marque : fond à z1, n barres horizontales en relief
-//                jusqu'à z0 (avant), coins du fond arrondis de r ; un matériau ajouté à la FIN (rang des matériaux inchangé,
-//                src/render/correctifs_voitures.h) et un maillage. Le .lod est alors régénéré (tools/alleger_voiture.mjs).
+//   grille       { "grille": [x0,y0,z0,x1,y1,z1], "barres": n, "galbe": g, "trapeze": t, "cadre": c, "couleur": "#rrggbb",
+//                  "metal": m, "rugosite": r } : grille générique à la place d'une calandre de marque (fond, cadre en relief,
+//                barres fermées, galbe du nez, trapèze) ; un matériau ajouté à la FIN (rang des matériaux inchangé,
+//                src/render/correctifs_voitures.h) et un maillage.
 // Chaque retouche porte une « note ».
 // « sommets » : nombre de sommets dans la boîte (contrôle à la 1re application). Repère du .wfm : avant vers −Z, x à droite, y en haut.
 import fs from 'fs';
@@ -132,30 +135,60 @@ function retirer(w, r) {
   return { k: ks[0], n };
 }
 
-// grille générique : fond (rectangle aux coins arrondis, plan z = z1) et barres horizontales (pavés de z1 à z0)
+// grille générique (WFS-193, revue du lead dev sur #308) : fond, cadre en relief et barres horizontales fermées, qui suivent le galbe
+// du nez. Boîte [x0,y0,z0,x1,y1,z1] : z0 = avant des barres et du cadre, z1 = fond (au centre) ; « galbe » (m) : recul du fond, des
+// barres et du cadre aux bords gauche et droit (z + galbe × u², u = −1..1 en largeur) ; « trapeze » : largeur du bas / largeur du
+// haut (1 : rectangle) ; « cadre » : largeur du cadre (m) ; « barres » : nombre de barres. Surfaces découpées en 16 colonnes.
 function grille(w, r) {
   const [x0, y0, z0, x1, y1, z1] = r.grille;
+  const NX = 16, cx = (x0 + x1) / 2, hwH = (x1 - x0) / 2, hwB = hwH * (r.trapeze ?? 1), g = r.galbe ?? 0, ca = r.cadre ?? 0.015;
   const V = [], I = [];
-  const sommet = (x, y, z, nx, ny, nz) => { V.push(x, y, z, nx, ny, nz, (x - x0) / (x1 - x0), (y - y0) / (y1 - y0)); return V.length / 8 - 1; };
+  const hw = (y) => hwB + (hwH - hwB) * ((y - y0) / (y1 - y0));
+  const zg = (x, z) => z + g * Math.pow((x - cx) / hwH, 2);
+  const nf = (x) => { const d = 2 * g * (x - cx) / (hwH * hwH), l = Math.hypot(d, 1); return [d / l, 0, -1 / l]; };   // normale de face (vers −z)
+  const s = (x, y, z, n) => { V.push(x, y, z, n[0], n[1], n[2], (x - x0) / (x1 - x0), (y - y0) / (y1 - y0)); return V.length / 8 - 1; };
   const quad = (a, b, c, d) => I.push(a, b, c, a, c, d);
-  // fond : éventail depuis le centre, contour arrondi (coins de rayon ra, 6 pas par coin), face vers l'avant (−z)
-  const ra = Math.min(r.arrondi || 0, (x1 - x0) / 2, (y1 - y0) / 2), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-  const contour = [];
-  const coins = [[x1 - ra, y1 - ra, 0], [x0 + ra, y1 - ra, Math.PI / 2], [x0 + ra, y0 + ra, Math.PI], [x1 - ra, y0 + ra, 1.5 * Math.PI]];
-  for (const [ccx, ccy, a0] of coins) for (let k = 0; k <= 6; k++) { const a = a0 + (k / 6) * Math.PI / 2; contour.push([ccx + ra * Math.cos(a), ccy + ra * Math.sin(a)]); }
-  const c0 = sommet(cx, cy, z1, 0, 0, -1);
-  const bord = contour.map(([x, y]) => sommet(x, y, z1, 0, 0, -1));
-  for (let i = 0; i < bord.length; i++) I.push(c0, bord[(i + 1) % bord.length], bord[i]);
-  // barres : n pavés horizontaux régulièrement espacés, épaisseur 40 % du pas, largeur de la grille moins l'arrondi
-  const n = r.barres || 0, pas = (y1 - y0) / (n + 1), e = pas * 0.4, bx0 = x0 + ra * 0.6, bx1 = x1 - ra * 0.6;
+  // bande entre deux lignes horizontales (y bas → y haut) à la profondeur z (avant), insettées de « ins » sur chaque bord
+  const face = (ya, yb, z, ins) => {
+    for (let k = 0; k < NX; k++) {
+      const t0 = k / NX, t1 = (k + 1) / NX;
+      const xa0 = cx - hw(ya) + ins + t0 * 2 * (hw(ya) - ins), xa1 = cx - hw(ya) + ins + t1 * 2 * (hw(ya) - ins);
+      const xb0 = cx - hw(yb) + ins + t0 * 2 * (hw(yb) - ins), xb1 = cx - hw(yb) + ins + t1 * 2 * (hw(yb) - ins);
+      quad(s(xa0, ya, zg(xa0, z), nf(xa0)), s(xb0, yb, zg(xb0, z), nf(xb0)), s(xb1, yb, zg(xb1, z), nf(xb1)), s(xa1, ya, zg(xa1, z), nf(xa1)));
+    }
+  };
+  // côté horizontal d'un relief (dessus n = +y, dessous n = −y) entre z0 et z1, le long de y
+  const tranche = (y, ins, haut) => {
+    const n = haut ? [0, 1, 0] : [0, -1, 0];
+    for (let k = 0; k < NX; k++) {
+      const xa = cx - hw(y) + ins + (k / NX) * 2 * (hw(y) - ins), xb = cx - hw(y) + ins + ((k + 1) / NX) * 2 * (hw(y) - ins);
+      const a = s(xa, y, zg(xa, z0), n), b = s(xb, y, zg(xb, z0), n), c = s(xb, y, zg(xb, z1), n), d = s(xa, y, zg(xa, z1), n);
+      if (haut) quad(a, d, c, b); else quad(a, b, c, d);
+    }
+  };
+  // bout fermé d'un relief (côté gauche ou droit) entre ya et yb, à x = bord insetté
+  const bout = (ya, yb, ins, gauche) => {
+    const xa = gauche ? cx - hw(ya) + ins : cx + hw(ya) - ins, xb = gauche ? cx - hw(yb) + ins : cx + hw(yb) - ins;
+    const n = gauche ? [-1, 0, 0] : [1, 0, 0];
+    const a = s(xa, ya, zg(xa, z0), n), b = s(xb, yb, zg(xb, z0), n), c = s(xb, yb, zg(xb, z1), n), d = s(xa, ya, zg(xa, z1), n);
+    if (gauche) quad(a, d, c, b); else quad(a, b, c, d);
+  };
+  // fond (à z1, un peu en retrait derrière le cadre)
+  face(y0, y1, z1 + 0.002, 0);
+  // cadre : bandes haute et basse (face avant + tranches), montants gauche et droit (face avant + côtés)
+  face(y1 - ca, y1, z0, 0); tranche(y1 - ca, ca, false);
+  face(y0, y0 + ca, z0, 0); tranche(y0 + ca, ca, true);
+  for (const gauche of [true, false]) {
+    const xs = (y, ins) => (gauche ? cx - hw(y) + ins : cx + hw(y) - ins);
+    const n0 = nf(xs(y0, 0));
+    quad(s(xs(y0, 0), y0, zg(xs(y0, 0), z0), n0), s(xs(y1, 0), y1, zg(xs(y1, 0), z0), n0), s(xs(y1, ca), y1, zg(xs(y1, ca), z0), n0), s(xs(y0, ca), y0, zg(xs(y0, ca), z0), n0));
+    bout(y0, y1, 0, gauche); bout(y0, y1, ca, !gauche);
+  }
+  // barres : n pavés horizontaux fermés (face avant, dessus, dessous, deux bouts), épaisseur 40 % du pas, entre les montants du cadre
+  const n = r.barres || 0, pas = (y1 - y0 - 2 * ca) / (n + 1), e = pas * 0.4;
   for (let k = 1; k <= n; k++) {
-    const yc = y0 + k * pas, ya = yc - e / 2, yb = yc + e / 2;
-    const f = [sommet(bx0, ya, z0, 0, 0, -1), sommet(bx1, ya, z0, 0, 0, -1), sommet(bx1, yb, z0, 0, 0, -1), sommet(bx0, yb, z0, 0, 0, -1)];
-    quad(f[0], f[3], f[2], f[1]);
-    const h = [sommet(bx0, yb, z0, 0, 1, 0), sommet(bx1, yb, z0, 0, 1, 0), sommet(bx1, yb, z1, 0, 1, 0), sommet(bx0, yb, z1, 0, 1, 0)];
-    quad(h[0], h[3], h[2], h[1]);
-    const g = [sommet(bx0, ya, z0, 0, -1, 0), sommet(bx1, ya, z0, 0, -1, 0), sommet(bx1, ya, z1, 0, -1, 0), sommet(bx0, ya, z1, 0, -1, 0)];
-    quad(g[0], g[1], g[2], g[3]);
+    const yc = y0 + ca + k * pas, ya = yc - e / 2, yb = yc + e / 2;
+    face(ya, yb, z0, ca); tranche(yb, ca, true); tranche(ya, ca, false); bout(ya, yb, ca, true); bout(ya, yb, ca, false);
   }
   // matériau ajouté à la fin : couleur, métal, rugosité, pas de texture, double face (16)
   const col = (r.couleur || '#1a1a1a').match(/[0-9a-f]{2}/gi).map((h) => Math.pow(parseInt(h, 16) / 255, 2.2));
