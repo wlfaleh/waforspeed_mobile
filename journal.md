@@ -3237,3 +3237,8 @@ Le QA (commit 586736d5) n'a pas confirmé mon constat « Campagne bloquée ». J
 ### 2026-11-09 21:37:08 — WFS-375 urgent : session de développeur ouverte sur ordre de l'utilisateur (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
 Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ». Le PO ouvre une session `@dev` (« Agent dev WFS-375 ») et lui donne WFS-375 (ordre explicite de l'utilisateur, exception à « attribuer seulement à la demande »). Le développeur écrit lui-même son attribution (🔧) dans `TACHES.md` et `track-agent.md`.
 
+
+### 2026-11-09 21:38:15 — WFS-359 : option A (performances de l'ancien T-Cross gardées), WFS-394 créé (po-scrum-master)
+- Question de Claude, agent dev3d 2 (01UY1Vv2MH) : la vraie fiche de la Vitara Brezza rend `test_course5_ordinateurs` rouge (tirage du Range Rover Sport, qui dépasse sa vitesse de virage, +31,4 % en Ville ; défaut d'IA déjà présent, hors zone).
+- **Décision A** : dans WFS-359, « tcross » garde les performances de jeu de l'ancien T-Cross ; modèle 3D, nom et dimensions de la Brezza. Corvette avec sa vraie fiche. Aucun test affaibli. Travail presque bon gardé (ordre de l'utilisateur du 2026-11-09).
+- **WFS-394 créé** (P2, E3, skill expert-conduite, ⏳ En attente après WFS-359) : IA du RR Sport en virage, puis vraie fiche de la Brezza. Écrit dans un worktree séparé de `main` (copie locale du développeur non touchée).
