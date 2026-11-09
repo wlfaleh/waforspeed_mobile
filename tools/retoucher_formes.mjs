@@ -138,52 +138,51 @@ function retirer(w, r) {
 // grille générique (WFS-193, revue du lead dev sur #308) : fond, cadre en relief et barres horizontales fermées, qui suivent le galbe
 // du nez. Boîte [x0,y0,z0,x1,y1,z1] : z0 = avant des barres et du cadre, z1 = fond (au centre) ; « galbe » (m) : recul du fond, des
 // barres et du cadre aux bords gauche et droit (z + galbe × u², u = −1..1 en largeur) ; « trapeze » : largeur du bas / largeur du
-// haut (1 : rectangle) ; « cadre » : largeur du cadre (m) ; « galbeCadre » : galbe de la face avant du cadre (par défaut celui des barres) ; « barres » : nombre de barres. Surfaces découpées en 16 colonnes.
+// haut (1 : rectangle) ; « cadre » : largeur du cadre (m) ; « barres » : nombre de barres. Surfaces découpées en 16 colonnes.
 function grille(w, r) {
   const [x0, y0, z0, x1, y1, z1] = r.grille;
   const NX = 16, cx = (x0 + x1) / 2, hwH = (x1 - x0) / 2, hwB = hwH * (r.trapeze ?? 1), g = r.galbe ?? 0, ca = r.cadre ?? 0.015;
-  const gc = r.galbeCadre ?? g;   // galbe de la face avant du cadre (moins que les barres : le cadre couvre la jonction avec la carrosserie)
   const V = [], I = [];
   const hw = (y) => hwB + (hwH - hwB) * ((y - y0) / (y1 - y0));
-  const zg = (x, z, gg = g) => z + gg * Math.pow((x - cx) / hwH, 2);
-  const nf = (x, gg = g) => { const d = 2 * gg * (x - cx) / (hwH * hwH), l = Math.hypot(d, 1); return [d / l, 0, -1 / l]; };   // normale de face (vers −z)
+  const zg = (x, z) => z + g * Math.pow((x - cx) / hwH, 2);
+  const nf = (x) => { const d = 2 * g * (x - cx) / (hwH * hwH), l = Math.hypot(d, 1); return [d / l, 0, -1 / l]; };   // normale de face (vers −z)
   const s = (x, y, z, n) => { V.push(x, y, z, n[0], n[1], n[2], (x - x0) / (x1 - x0), (y - y0) / (y1 - y0)); return V.length / 8 - 1; };
   const quad = (a, b, c, d) => I.push(a, b, c, a, c, d);
   // bande entre deux lignes horizontales (y bas → y haut) à la profondeur z (avant), insettées de « ins » sur chaque bord
-  const face = (ya, yb, z, ins, gg = g) => {
+  const face = (ya, yb, z, ins) => {
     for (let k = 0; k < NX; k++) {
       const t0 = k / NX, t1 = (k + 1) / NX;
       const xa0 = cx - hw(ya) + ins + t0 * 2 * (hw(ya) - ins), xa1 = cx - hw(ya) + ins + t1 * 2 * (hw(ya) - ins);
       const xb0 = cx - hw(yb) + ins + t0 * 2 * (hw(yb) - ins), xb1 = cx - hw(yb) + ins + t1 * 2 * (hw(yb) - ins);
-      quad(s(xa0, ya, zg(xa0, z, gg), nf(xa0, gg)), s(xb0, yb, zg(xb0, z, gg), nf(xb0, gg)), s(xb1, yb, zg(xb1, z, gg), nf(xb1, gg)), s(xa1, ya, zg(xa1, z, gg), nf(xa1, gg)));
+      quad(s(xa0, ya, zg(xa0, z), nf(xa0)), s(xb0, yb, zg(xb0, z), nf(xb0)), s(xb1, yb, zg(xb1, z), nf(xb1)), s(xa1, ya, zg(xa1, z), nf(xa1)));
     }
   };
   // côté horizontal d'un relief (dessus n = +y, dessous n = −y) entre z0 et z1, le long de y
-  const tranche = (y, ins, haut, gg = g) => {   // gg : galbe du bord avant
+  const tranche = (y, ins, haut) => {
     const n = haut ? [0, 1, 0] : [0, -1, 0];
     for (let k = 0; k < NX; k++) {
       const xa = cx - hw(y) + ins + (k / NX) * 2 * (hw(y) - ins), xb = cx - hw(y) + ins + ((k + 1) / NX) * 2 * (hw(y) - ins);
-      const a = s(xa, y, zg(xa, z0, gg), n), b = s(xb, y, zg(xb, z0, gg), n), c = s(xb, y, zg(xb, z1), n), d = s(xa, y, zg(xa, z1), n);
+      const a = s(xa, y, zg(xa, z0), n), b = s(xb, y, zg(xb, z0), n), c = s(xb, y, zg(xb, z1), n), d = s(xa, y, zg(xa, z1), n);
       if (haut) quad(a, d, c, b); else quad(a, b, c, d);
     }
   };
   // bout fermé d'un relief (côté gauche ou droit) entre ya et yb, à x = bord insetté
-  const bout = (ya, yb, ins, gauche, gg = g) => {
+  const bout = (ya, yb, ins, gauche) => {
     const xa = gauche ? cx - hw(ya) + ins : cx + hw(ya) - ins, xb = gauche ? cx - hw(yb) + ins : cx + hw(yb) - ins;
     const n = gauche ? [-1, 0, 0] : [1, 0, 0];
-    const a = s(xa, ya, zg(xa, z0, gg), n), b = s(xb, yb, zg(xb, z0, gg), n), c = s(xb, yb, zg(xb, z1), n), d = s(xa, ya, zg(xa, z1), n);
+    const a = s(xa, ya, zg(xa, z0), n), b = s(xb, yb, zg(xb, z0), n), c = s(xb, yb, zg(xb, z1), n), d = s(xa, ya, zg(xa, z1), n);
     if (gauche) quad(a, d, c, b); else quad(a, b, c, d);
   };
   // fond (à z1, un peu en retrait derrière le cadre)
   face(y0, y1, z1 + 0.002, 0);
   // cadre : bandes haute et basse (face avant + tranches), montants gauche et droit (face avant + côtés)
-  face(y1 - ca, y1, z0, 0, gc); tranche(y1 - ca, ca, false, gc);
-  face(y0, y0 + ca, z0, 0, gc); tranche(y0 + ca, ca, true, gc);
+  face(y1 - ca, y1, z0, 0); tranche(y1 - ca, ca, false);
+  face(y0, y0 + ca, z0, 0); tranche(y0 + ca, ca, true);
   for (const gauche of [true, false]) {
     const xs = (y, ins) => (gauche ? cx - hw(y) + ins : cx + hw(y) - ins);
-    const n0 = nf(xs(y0, 0), gc);
-    quad(s(xs(y0, 0), y0, zg(xs(y0, 0), z0, gc), n0), s(xs(y1, 0), y1, zg(xs(y1, 0), z0, gc), n0), s(xs(y1, ca), y1, zg(xs(y1, ca), z0, gc), n0), s(xs(y0, ca), y0, zg(xs(y0, ca), z0, gc), n0));
-    bout(y0, y1, 0, gauche, gc); bout(y0, y1, ca, !gauche, gc);
+    const n0 = nf(xs(y0, 0));
+    quad(s(xs(y0, 0), y0, zg(xs(y0, 0), z0), n0), s(xs(y1, 0), y1, zg(xs(y1, 0), z0), n0), s(xs(y1, ca), y1, zg(xs(y1, ca), z0), n0), s(xs(y0, ca), y0, zg(xs(y0, ca), z0), n0));
+    bout(y0, y1, 0, gauche); bout(y0, y1, ca, !gauche);
   }
   // barres : n pavés horizontaux fermés (face avant, dessus, dessous, deux bouts), épaisseur 40 % du pas, entre les montants du cadre
   const n = r.barres || 0, pas = (y1 - y0 - 2 * ca) / (n + 1), e = pas * 0.4;

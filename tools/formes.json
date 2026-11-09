@@ -163,23 +163,22 @@
    {
     "grille": [
      -0.48,
-     0.62,
+     0.63,
      -2.43,
      0.48,
      0.915,
      -2.37
     ],
     "barres": 6,
-    "galbe": 0.06,
-    "cadre": 0.02,
+    "galbe": 0.045,
+    "cadre": 0.015,
     "couleur": "#4a4a4a",
     "metal": 0.8,
     "rugosite": 0.3,
-    "note": "grille générique dans l'ouverture d'origine : barres et fond en retrait (galbe 6 cm), cadre presque plat (galbe 2 cm, 2 cm de large) qui couvre la jonction avec le pare-chocs, bas un peu plus large (trapèze 1,05) ; haut à 0,915 m (rien par la fente capot-phares)",
-    "galbeCadre": 0.02,
+    "note": "grille générique d'un seul tenant (RG-05 : cadre et barres au même galbe, 4,5 cm), posée dans l'ouverture d'origine, bords 1 à 2 cm derrière la carrosserie qui cache la jonction (RG-06) ; bas un peu plus large (trapèze 1,05) ; haut à 0,915 m (rien par la fente capot-phares)",
     "trapeze": 1.05
    }
   ],
-  "empreinteApres": "21eccb31aae32e3c"
+  "empreinteApres": "8a664fb46210b69c"
  }
 }
