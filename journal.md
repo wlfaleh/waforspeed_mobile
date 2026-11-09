@@ -4827,3 +4827,11 @@ Cause nommée (pilote des bancs saturé pendant un changement de file en conduit
 - Plan : (1) banc `WFS_BANC=perf WFS_PERF_SCENE=1` : même scène que la mesure de l'utilisateur (Ville de nuit sous la pluie, Checkpoint, vue Arrière, Rue des Mimosas 60 m avant le virage serré à droite, checkpoint 8), Basse dans l'état du téléphone (60 %, ombres, reflets et captures coupés), coût GPU de chaque passe et effets retirés un par un ; (2) même banc sur `b5d8ddbf` (commit de l'APK 928, run 928) ; (3) cause et commit ; (4) correction en Basse seulement dans la passe qui coûte.
 - APK de la mesure à 16 img/s : la plus récente le 2026-11-09 à 00:08 était la 931 (`3529cc7b`) ; entre 928 et 931 : WFS-301, WFS-329, WFS-305 (aucun shader changé depuis l'APK 928).
 - Zone : `src/render/**`, `shaders/**` de la passe en cause, bancs `bench_perf*`, `tests/**` ; une passe E13 (`eclairage_*`, `post*`) : accord du PO d'abord.
+
+### 2026-11-09 06:53:11 — WFS-333 : retours du lead dev corrigés, PR #298 à relire (agent arwa (Claude, session trafic))
+- 1re revue (4 points) corrigée dans 28360b23, branche synchronisée (71bc873d) :
+  - (1) suite RG-02 en vue Arrière (Checkpoint, Ville) : voisine en tête-à-queue contre le joueur à 130 km/h ; après 2 s, joueur à 85 km/h et voiture accidentée arrêtée 34,5 m derrière ;
+  - (2) interrupteur de banc `WFS_AVANT_333=1` (`g_avantWfs333`, faux dans le jeu) : 13 captures avant / 13 après annotées (vitesses, distance, recouvrement). Avant : 1,38 m, et voiture accidentée à la vitesse du joueur (54 = 54 km/h, ANO-180). Après : 0,000 m ;
+  - (3) tache blanche de `cockpit-4` : phares du joueur renvoyés par la voisine blanche, plus le bloom (absente sur `cockpit-4-sans-voisine`) ; aucun halo du trafic dans l'habitacle ;
+  - (4) `pr.md` rempli.
+- Vérifié : tests CPU 84/84 ; `test_penetration_voitures`, `test_chocs_voitures` et `test_pilote_file` OK après la synchronisation ; banc `penetration` 0,000 m ; banc `parcours` 0 écart (et 0 en vue Cockpit). Défaut de dessin de l'habitacle → WFS-349 (hors ticket).
