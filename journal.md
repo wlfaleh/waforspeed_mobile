@@ -2846,3 +2846,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Zone : E13 (`shaders/eclairage*`, `sky*`, `post*`, `src/render/eclairage_*`, `ibl_*`, `atmosphere_*`, `post_*`) ; interdits : `vehicule_cockpit*` (WFS-349), `vehicule_lod*`, `effets_*`, `nuit.cpp`, `traffic.*`, `player.*`, `conduite_*`, `camera_vue.*`, CI.
 - Captures demandées ajoutées à `regles-de-gestion/WFS-214.md` (ciel ×2, Ultra / Haute, nuit RG-05). Branche `feature/waforspeed-214` à pousser tout de suite.
 
+
+### 2026-11-09 17:00:11 — WFS-346 attribué à Claude, agent cartes (01UY1Vv2dx) (po-scrum-master)
+- Demande de la nouvelle session `@cartes` (session_01UY1Vv2dxNQxhJG6xe4ofua), 1er et seul sujet ; expert cartes.
+- Choix : WFS-343 est 🟣 fusionné (#312) : E14 libre, l'agent 3 a fini (session terminée). Ticket cartes le plus prioritaire attribuable : **WFS-346** (P2, neige lue du paquet ; suite directe de WFS-343, avant WFS-344). WFS-357 (P3, E8) reste prêt.
+- Exception du PO : E3 est tenue par WFS-338 (↩️, `poursuite*`, `hud.*`) ; WFS-346 n'y touche que `roues.*` + accroches ≤ 10 lignes `player.*` / `aide_direction.*` (μ de la neige) : fichiers séparés. Zone complète et captures demandées dans `regles-de-gestion/WFS-346.md`.
+- Skills : `expert-cartes` + `expert-conduite`. Ticket de conduite : 🟡 après la fusion. Branche `feature/waforspeed-346` à pousser tout de suite.
+- `track-agent.md` : lignes des sessions terminées enlevées (agent 3, agent 5, arwa-4, Agent 0, agent dev Z), règle « agent fini = ligne enlevée ».
