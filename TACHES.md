@@ -201,6 +201,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-367 | Voitures sans marque : retouches de forme de Model 3 et V60 | E10 | ⏳ En attente (après WFS-366) |  | WFS-366 | `feature/waforspeed-367` |  |  |
 | P2 Haute | WFS-368 | Voitures sans marque : retouches de forme de Abarth 500 (seule, 13e voiture) | E10 | ⏳ En attente (après WFS-367) |  | WFS-367 | `feature/waforspeed-368` |  |  |
 | P1 Urgent | WFS-376 | Corniche : vrais bateaux dans la marina (fin des triangles blancs, ANO-206) | E12 + E2 | ⏳ Prêt (avant WFS-369) |  | — | `feature/waforspeed-376` |  |  |
+| P1 Urgent | WFS-378 | Formes géométriques interdites : inventaire de toutes les zones et découpage en tickets | E12 | ⏳ Prêt |  | — | `feature/waforspeed-378` |  |  |
 | P1 Urgent | WFS-369 | Décor — Ville : mobilier urbain en vrais modèles (bancs, poubelles, bornes, abribus, kiosques) | E12 + E2 | ⏳ Prêt |  | — | `feature/waforspeed-369` |  |  |
 | P1 Urgent | WFS-370 | Décor — Ville : immeubles « boîtes » remplacés par de vrais volumes (toits, corniches, balcons, rez-de-chaussée) | E12 + E2 | ⏳ En attente (après WFS-369) |  | WFS-369 | `feature/waforspeed-370` |  |  |
 | P2 Haute | WFS-371 | Décor — Corniche : parasols, transats, bar de plage, cabines, glissières et rochers en vrais modèles | E12 + E2 | ⏳ En attente (après WFS-370) |  | WFS-370 | `feature/waforspeed-371` |  |  |

@@ -3016,3 +3016,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Signalement de Claude, agent dev W (01UY1Vv4Ed), pendant WFS-214 / PR #314 (remarque du lead dev) : sur `main` (64c14e06, 049efa41), le parcours WFS-150 RG-04 / P-05 du banc `realisme` (`src/render/bench_passes.cpp`, `WFS_PASSES_SEUL=1`) ne trouve plus « Ultra » dans les Réglages à onglets (WFS-291) : 2 / 5 étapes, capture `parcours-ultra-course` en Haute (128 px au lieu de 256), preuve d'ANO-106 non valable.
 - **ANO-211** (mineure, banc d'essai) → **WFS-377** [TECHNIQUE] P2, E0, ⏳ Prêt pour une nouvelle session @dev ; règles `regles-de-gestion/WFS-377.md`. L'agent dev W ne la prend pas (un seul sujet par session).
 - Pour information (pas d'anomalie) : l'exposition figée du banc des moments de WFS-208 (`eclairage_banc.cpp`) est corrigée dans la branche de WFS-214.
+
+### 2026-11-09 19:41:10 — Règle de l'utilisateur : formes géométriques interdites partout, WFS-378 créé (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
+- Règle ajoutée à `CLAUDE.md`, `regles-de-gestion/DA-realisme.md` et aux skills agent-developer, artiste-3d, expert-realisme-3d, expert-cartes, waforspeed-natif, lead-dev (refus de PR), qa-lead (anomalie bloquante) et po-scrum-master. Rappel ajouté dans WFS-323, 325, 344, 369 à 373 et 376.
+- **WFS-378** (P1, `dev-artiste-3d`) : inventaire des formes nues dans toutes les zones, puis découpage en tickets.
