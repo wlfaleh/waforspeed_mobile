@@ -34,7 +34,7 @@ int testPoursuite() {
     arrivee(e, 10.5); VERIFIE(!e.gagne, "arrêté puis 10 km : pas de victoire");
     std::printf("score à 0 : ARRÊTÉ après %d chocs : OK\n", e.chocsTrafic);
     // victoire à 10 km avec au moins 1 point
-    Etat v; perdre(v, v.score - 1);
+    Etat v; perdre(v, v.score - 1, "essai");
     arrivee(v, 9.99); VERIFIE(!v.gagne, "9,99 km : pas encore");
     arrivee(v, 10.0); VERIFIE(v.gagne && v.score == 1, "10 km avec 1 point : victoire");
     std::printf("victoire à 10 km avec 1 point : OK\n");
@@ -152,6 +152,74 @@ int testPoursuite() {
     // WFS-141 (RG-03, ANO-59) : « 2e PLACE » (jamais « 2E »)
     VERIFIE(titrePlace(1) == "VICTOIRE" && titrePlace(2) == "2e PLACE" && titrePlace(5) == "5e PLACE", "titre : %s / %s", titrePlace(1).c_str(), titrePlace(2).c_str());
     std::printf("bandeau 1,5 s ; titres « VICTOIRE », « 2e PLACE » : OK\n");
+    // WFS-338 (RG-05, ANO-195) : la police n'apparaît jamais d'un coup ni collée au joueur
+    {
+        // renfort et retour d'une voiture trop loin : hors de la distance de dessin (donc hors de toute vue)
+        VERIFIE(APPARITION_M > DESSIN_DERRIERE_M && PERDUE_M > APPARITION_M, "apparition %.0f m, dessin %.0f m", APPARITION_M, DESSIN_DERRIERE_M);
+        for (int k = 0; k < 6; k++) { const Police p = renfort(k, 1000 / M, 30 / M, 9); VERIFIE((1000 / M - p.rd) * M > DESSIN_DERRIERE_M, "renfort %d à %.0f m (visible)", k, (1000 / M - p.rd) * M); }
+        // un joueur à 160 km/h, police à 220 m : jamais plus de 1 m de rapprochement par pas de 1/120 s dans la zone dessinée,
+        // vitesse de rapprochement sous approcheMax ; une voiture « à côté » ne recouvre jamais le joueur (≥ 1 file d'écart
+        // latéral quand elles sont côte à côte), joueur contre la glissière de gauche compris (avant : poussée sur lui)
+        for (double xJ : {0.0, -0.66, 0.66, -0.9}) {
+            std::vector<Police> ps = {renfort(0, 0, 0, 3), renfort(1, 0, 0, 3), renfort(2, 0, 0, 3)};
+            double sJ = 0; const double vJ = 160 / 3.6 / M; int sauts = 0, dessus = 0, trop = 0; double prochePlus = 1e9;
+            for (auto& p : ps) p.rd = -APPARITION_M / M, p.v = vJ;
+            ps[1].role = 1; ps[2].role = 2;
+            std::vector<Obstacle> obs;
+            std::vector<double> avant(ps.size());
+            for (int i = 0; i < 120 * 40; i++) {
+                for (size_t k = 0; k < ps.size(); k++) avant[k] = (sJ - ps[k].rd) * M;
+                sJ += vJ / 120;
+                avancer(ps, 1.0 / 120, i / 120.0, sJ, xJ, vJ, obs);
+                for (size_t k = 0; k < ps.size(); k++) {
+                    const double rel = (sJ - ps[k].rd) * M, rapproche = (avant[k] - rel) * 120;   // m/s
+                    if (rel < DESSIN_DERRIERE_M && std::abs(rel - avant[k]) > 1.0) sauts++;
+                    if (rel < DESSIN_DERRIERE_M && rapproche > approcheMax(rel + 1) + 0.5) trop++;
+                    if (std::abs(rel) < CONTACT_L_M - 0.25 && std::abs(ps[k].x - xJ) * RW < CONTACT_W_M - 0.05) dessus++;   // dans la voiture du joueur
+                    prochePlus = std::min(prochePlus, rel);
+                }
+            }
+            VERIFIE(sauts == 0, "x = %.2f : %d saut(s) de la police à l'écran", xJ, sauts);
+            VERIFIE(trop == 0, "x = %.2f : %d pas de rapprochement trop rapide", xJ, trop);
+            VERIFIE(dessus == 0, "x = %.2f : %d pas où la police recouvre le joueur", xJ, dessus);
+            VERIFIE(prochePlus < 20, "x = %.2f : la police n'arrive jamais (%.0f m)", xJ, prochePlus);
+        }
+        bool cote = true;
+        VERIFIE(std::abs(placeCote(-0.9, 1, &cote) - (-0.9 + COTE_X)) < 1e-9 && cote, "côté gauche impossible : à droite");
+        VERIFIE(std::abs(placeCote(0, 2) - COTE_X) < 1e-9, "à droite");
+        std::printf("police : naît et revient hors de vue (%.0f m > %.0f m), se rapproche sans saut ni par-dessus le joueur : OK\n", APPARITION_M, DESSIN_DERRIERE_M);
+    }
+    // WFS-338 (RG-02, ANO-192) : l'encart POLICE donne la distance à la police
+    VERIFIE(texteDistancePolice(45.4) == "45 M" && texteDistancePolice(1204) == "1,20 KM" && texteDistancePolice(1e9) == "\xE2\x80\x94", "distance police : %s / %s", texteDistancePolice(45.4).c_str(), texteDistancePolice(1204).c_str());
+    std::printf("encart POLICE : « 45 M », « 1,20 KM », « — » : OK\n");
+    // WFS-338 (RG-03, ANO-193) : toute perte de points a une raison écrite
+    {
+        Etat e; int n = 0;
+        auto verifie = [&](const char* attendu) { n++; VERIFIE(e.pertes == n && std::string(e.raison) == attendu && e.dernierePerte > 0, "perte %d : « %s » (attendu « %s »)", n, e.raison, attendu); };
+        chocTrafic(e); verifie(RAISON_TRAFIC); pas(e, 1.01, 100);
+        chocGlissiere(e); verifie(RAISON_GLISSIERE); pas(e, 1.01, 100);
+        chocGlissiere(e, RAISON_PLOT); verifie(RAISON_PLOT);
+        chocTrafic(e, RAISON_CAMION); verifie(RAISON_CAMION);
+        chocPolice(e); verifie(RAISON_POLICE);
+        ralentisseur(e, 130); verifie(RAISON_RALENTISSEUR);
+        for (int i = 0; i < 130; i++) pas(e, 1.0 / 120, 5);
+        verifie(RAISON_COLLE);
+        const int avant = e.pertes; pas(e, 1, 100); quasiContact(e);
+        VERIFIE(e.pertes == avant, "aucune perte sans raison");
+        VERIFIE(textePerte(5, RAISON_TRAFIC) == "-5 CHOC AVEC LE TRAFIC", "texte : %s", textePerte(5, RAISON_TRAFIC).c_str());
+        std::printf("score : chaque perte a sa raison à l'écran (%d raisons) : OK\n", n);
+    }
+    // WFS-338 (RG-01, ANO-191) : chantier réel : biseau qui barre toute la file fermée, cônes posés avant d'être dessinés
+    for (int f = 0; f < 3; f++) {
+        const std::vector<Cone> c = chantier(f);
+        double xmin = 9, xmax = -9; int biseau = 0; bool trou = false;
+        for (size_t i = 0; i < c.size(); i++) if (c[i].dM <= 36.01) { biseau++; xmin = std::min(xmin, c[i].x); xmax = std::max(xmax, c[i].x); if (i && std::abs(c[i].x - c[i - 1].x) * RW > 1.6) trou = true; }
+        const double fx = FILES[f];
+        VERIFIE(biseau >= 6 && !trou && xmin < fx - 0.25 && xmax > fx + 0.25, "file %d : biseau %d cônes de %.2f à %.2f (trou %d)", f, biseau, xmin, xmax, (int)trou);
+        VERIFIE(c.size() >= 14, "file %d : %zu cônes", f, c.size());
+    }
+    VERIFIE(PLACE_M > DESSIN_DEVANT_M && ANNONCE_TRAVAUX_M < DESSIN_DEVANT_M && !sePlaceAvant(Surprise::Deboite) && sePlaceAvant(Surprise::Barrage), "pose des obstacles");
+    std::printf("chantier : biseau de cônes qui ferme la file, posé à %.0f m (dessin %.0f m), bandeau à %.0f m : OK\n", PLACE_M, DESSIN_DEVANT_M, ANNONCE_TRAVAUX_M);
     if (echecs) std::printf("poursuite : %d échec(s)\n", echecs);
     else std::printf("poursuite police : tout est OK\n");
     return echecs;

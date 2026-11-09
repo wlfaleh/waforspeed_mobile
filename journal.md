@@ -2512,6 +2512,33 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Calandre de la police sans logo (déjà retiré par WFS-192, vérifié sur gros plans jour et nuit) ; caisse blanche unie au lieu de grise : peinture du modèle métallisée (0,45) → non métallisée pour la seule copie de la police, blanc #E6E8EA ; capot de jour 140 → 197 (sRGB). Tests CPU 87 OK, banc course5 0 écart, appels de dessin +39 ≤ 60. `suivi-pr.md` 🔁 (34c83618).
 
 ### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
+### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
+
+### 2026-11-08 23:04:06 — WFS-338 : plan et accroche annoncée (agent arwa (Claude, session trafic))
+- **Causes trouvées** : (1) police dessinée seulement jusqu’à 60 m derrière, renfort créé à 90 m et retour « trop loin » de 250 à 120 m : elle surgissait et « s’effaçait » ; rapprochement jusqu’à +45 m/s au contact ; voiture « à côté » poussée par-dessus le joueur quand il roule sur une file du bord (côté hors chaussée ramené au bord) ; poussée visée à 2 m du joueur (moitié dans sa voiture). (2) l’encart POLICE affichait la distance à l’arrivée. (3) le score baisse de 1 par seconde quand la police est à moins de 12 m (et des chocs) sans rien d’écrit. (4) « travaux » : 12 cubes orange lumineux en ligne, bandeau 260 m avant, avant qu’ils soient dessinés (250 m). (5) police sans conducteur (aucun appel à `conducteurs::ajouter`). (6) gyrophare : deux boîtes rouge / bleue sous le haut du modèle.
+- **Accroche hors zone (≤ 10 lignes, E2)** : `src/world/conducteurs.h/.cpp` : paramètre `policier` de `conducteurs::ajouter` (uniforme bleu marine ; file pleine : le policier prend la place d’un civil). Aucun fichier `vehicule_*`, `traffic*`, `game.cpp`, `camera_vue.*`, `hud.*` touché (encart POLICE dessiné dans `poursuite_system.cpp`).
+- **Limite signalée au PO** : le rétroviseur de la vue Cockpit n’est qu’un boîtier noir (aucune image rendue, `camera_vue.*` / rendu hors zone) : la police est maintenant dessinée jusqu’à 160 m derrière (toute vue qui regarde derrière la voit) ; la preuve est une caméra du banc placée devant la voiture et tournée vers l’arrière. Un vrai rétroviseur rendu serait un ticket à part (PO).
+
+### 2026-11-09 08:06:30 — WFS-338 : appels de dessin, branche et main (décision PO 0161316e) et revue du lead dev (agent arwa (Claude, session trafic))
+- **Mesure, même banc (`course5`, 1280x720, qualité Basse, lavapipe, même machine, `tools/qa/captures_pr.sh`)**, `main` à jour (le banc de `main` passe maintenant aux mêmes endroits que la branche) ; dernière colonne : même image de la branche, avec et sans les ajouts de WFS-338 (bandes, socle, policier, cônes, panneau).
+
+| Endroit (Basse) | main : poursuite / Checkpoint (écart) | branche : poursuite / Checkpoint (écart) | branche − main (poursuite) | même image : avec / sans WFS-338 |
+|---|---|---|---|---|
+| police au contact (0,18 km) | 187 / 155 (+32) | 187 / 178 (+9) | **0** | 184 / 184 (+0) |
+| embouteillage (0,45 km) | 345 / 312 (+33) | 341 / 304 (+37) | **−4** | 341 / 332 (+9) |
+| HUD (0,45 km) | 336 / 312 (+24) | 343 / 304 (+39) | **+7** | 342 / 333 (+9) |
+| ralentisseur (1,55 km) | 230 / 224 (+6) | 211 / 183 (+28) | **−19** | 195 / 195 (+0) |
+| camion en travers (1,95 km) | 371 / 325 (+46) | 328 / 333 (−5) | **−43** | 255 / 255 (+0) |
+| écart maximal (cible ≤ 60) | +46 : OK | +39 : OK | | |
+
+- **Verdict (règle du PO, cas a)** : WFS-338 ajoute **+9 appels au plus** dans la même image et la branche fait au plus **+7** de plus que `main` au même endroit (≤ +10) ; la cible ≤ 60 de WFS-119 est tenue sur la branche (+39) comme sur `main` (+46). Les « +128 » et « +93 » d'avant venaient de bancs de `main` bloqués au barrage (endroits différents). Moyens de RG-04 appliqués quand même : un seul dessin par cône (au lieu de 3), police au-delà de 80 m sans rampe, sans bandes ni policier (halos seuls), bandes et socle jusqu'à 40 m en Basse.
+- **Revue du lead dev (1re)** : (2) nouvelle suite d'arrivée : toute la police repart à 220 m (aucune à moins de 160 m), puis 10 images à 1 s d'écart, distance dans l'encart POLICE (encart POLICE et journal du banc), vue Arrière du jeu et vue arrière du banc ; (3) bandeau « TRAVAUX » à 80 m, tenu jusqu'au biseau, captures de jour et de nuit ; les cônes étaient trop loin sur les captures : captures refaites à 30 m du biseau (panneau AK5 tout près) et au biseau ; le dessin fusionné de tous les cônes, essayé, est remplacé par un dessin par cône (il ne change rien aux mesures) ; (4) gros plan de jour de la police, policier visible derrière le pare-brise ; (5) tableau ci-dessus.
+
+### 2026-11-09 11:48:25 — WFS-338 : RG-07, logo et caisse blanche de la police (agent arwa (Claude, session trafic))
+- **Logo** : déjà retiré de la 208 par WFS-192 (#266 : lion de la calandre, « 208 », lettres et lion du hayon retirés de `assets/cars/p208.wfm`, `tools/logos.json`) ; gros plans de jour et de nuit : calandre sans logo. Rien de plus à retirer, aucune autre voiture touchée.
+- **Caisse grise** : la peinture du modèle est métallisée (métal 0,45) et reflète le ciel. Correction pour la seule copie du modèle de la police : métal 0 (référence `mat.peinture_voiture` : métal 0, F0 0,04), blanc #E6E8EA (albédo ≈ 0,8). Capot (médiane sRGB) : jour 140,136,131 → 197,194,190 ; nuit 136,110,101 → 165,131,109. Captures `poursuite-police-gros-plan-{jour,nuit}` avec `-avant` dans la même image.
+- Tests CPU 87 OK ; banc course5 : parcours complet 0 écart ; appels de dessin inchangés (+39 ≤ 60).
 
 ### 2026-11-09 11:53:24 — ANO-205 (contact dans les CGU) reportée, décision de l'utilisateur (po-scrum-master)
 
