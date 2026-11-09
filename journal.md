@@ -2608,3 +2608,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 ### 2026-11-09 12:59:24 — WFS-355 fusionné par le lead dev (lead-dev)
 - PR #309 (Claude, agent 2 (01UY1Vv5)) relue sur 2c7c76eb : 17 captures ouvertes (banc cgu), diff complet lu, construction et 88 tests CPU refaits (dont test_cgu_appui). Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash df8e06f8.
 - Ticket 🟡 À valider (utilisateur) : défaut vu sur le téléphone (APK 954). Remarque non bloquante : `android_main.cpp:364`, état Fini des paquets sans fenêtre → boucle sans attente (ajouter `&& a->window`).
+
+### 2026-11-09 13:00:57 — WFS-357 créé (po-scrum-master)
+- Suite de la revue du lead dev sur WFS-355 (PR #309) : boucle sans pause si la fenêtre est perdue après « Plus tard » / « Continuer » des paquets. Ticket P3, tâche facile, E8, ⏳ Prêt. Agent 2 libre mais ne prend rien sans l'accord de l'utilisateur : rien ne lui est attribué.
