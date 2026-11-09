@@ -4908,3 +4908,7 @@ Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, jou
 - Branche `feature/waforspeed-353` poussée (dd954068) : **partie de `feature/waforspeed-348`** (PR #300 pas encore fusionnée, pour ne pas attendre) puis synchronisée avec `main` 633b16a1 ; **dépend de #300** (noté aussi dans la PR) ; `git merge origin/main` dès la fusion de #300.
 - Fiches `regles-de-gestion/WFS-353.md` et `WFS-348.md` lues, tableaux A, B, C de WFS-348 relus. RG-01 (accord E13 du PO) et RG-03 (accord de l'utilisateur, 09:14:26) à faire, en Basse seulement.
 - Plan : plafond de lumières par pixel de la Basse à 2 (les 2 plus fortes au point éclairé, les autres en approximation), plancher de résolution 45 % seulement à 60 %, palier 2 et toujours sous 30 img/s ; tests CPU de la sélection et du plancher ; mesure `WFS_PERF_SCENE_LEVIERS=1` avant / après ; captures `qa/pr/WFS-353/`.
+
+### 2026-11-09 09:17:54 — WFS-348 : PR #300 approuvée et fusionnée (lead-dev auto)
+
+Fermé sur son diagnostic (décision du PO du 09:12:58). Diff relu (shaders : reflet du ciel non calculé quand la sonde le remplace, même image ; accroches du banc à 0 dans le jeu), captures avant / après identiques (0 pixel > 8 niveaux), run 948 de la branche : compilation, APK, endurance verts. Squash 48c423e, statut 🟣. Suite : WFS-353. #297 et #288 sans changement.
