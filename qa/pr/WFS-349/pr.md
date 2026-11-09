@@ -33,7 +33,7 @@ le coin planche / montant / portière était ouvert, et la zone des pieds n'avai
 - **RG-04** (banc `cockpit`, 2340 × 1080, Golf / X5 / 500 Abarth) : fenêtre de la rue cachée 0,0 % ; horizon inchangé (46,4 % Normal, 41,7 % Bas, 50,0 % Haut) ;
   intérieur en regard Normal 35,6 à 39,7 % (≤ 42 %), +1,4 à +1,7 point (la portière se voit) ; pluie (WFS-334) : sur `cockpit-golf-pluie` (après), gouttes seulement derrière les vitres, aucune sur la portière ni la planche (capture regardée, non retenue ici).
 - **RG-05** : `WFS_BANC=parcours` : parcours complet 0 écart, et en vue Cockpit 0 écart ; `WFS_BANC=course5` (Course à 5, Poursuite) : code 0.
-- `penetration` : recouvrement 0,000 m (WFS-333 inchangé). Après synchronisation avec `main` (WFS-293 fusionné, `camera_vue.cpp` changé) : tests CPU 91 réussis (avec `test_cockpit_ferme`), `cockpit-voisine` Golf / X5 / 500 Abarth toujours à 0.
+- `penetration` : recouvrement 0,000 m (WFS-333 inchangé). Après synchronisation avec `main` (WFS-293 fusionné, `camera_vue.cpp` changé) : tests CPU 91 réussis (avec `test_cockpit_ferme`), `cockpit-voisine` Golf / X5 / 500 Abarth toujours à 0 ; 2e synchronisation (WFS-379, 376…, commit cf279275) : 92 tests CPU réussis, Golf toujours à 0 (captures prises sur la base d'avant cette 2e synchronisation : avant et après de la même base).
 
 ## Limites et risques
 - Ligne de ceinture : celle de WFS-315 (haut de planche − 1 cm), pas de cote mesurée par voiture ; plancher à 0,98 m sous l'œil (approximation SAE, ±3 cm).
