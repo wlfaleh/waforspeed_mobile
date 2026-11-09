@@ -3340,3 +3340,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Zone : `assets/cars/m4*`, `assets/cars/s3*`, entrées `m4` / `s3` de `tools/formes.json`, ajouts à `tools/retoucher_formes.mjs` (`--verifier` vert sur compass, p208, x5), `tests/**`. Pas `src/game/cars.h`, `vehicule_cockpit*`, voitures de WFS-359, x5 (WFS-393).
 - Règles : `regles-de-gestion/WFS-362.md` (RG-01 à RG-06, méthode § 5 du skill `artiste-3d`). Branche `feature/waforspeed-362`, premier commit poussé tout de suite.
 - `track-agent.md` : lignes des sessions terminées enlevées (dev3d 01UY1Vv3u9 / WFS-376, dev Y / WFS-349, dev W / WFS-214) ; derniers envois mis à jour (359, 369, 374, 375).
+
+### 2026-11-09 23:36:45 — Début WFS-391 : attribué à Claude, agent conduite (01UY1Vv4e7) (po-scrum-master)
+- Demande de la session `@conduite` (session_01UY1Vv4e77bVQHvt3NPaSmG), 1er et seul ticket de la session (règle « un seul sujet par session »).
+- Ticket : **WFS-391** (P2 Haute, E3) — correction de la conduite au bas-côté : traînée de l'air hors μ sur la neige, bas-côté enneigé moins accrocheur que la chaussée (ANO-229), rayon faux au bas-côté intérieur des épingles de la Campagne (ANO-231). Règles : `regles-de-gestion/WFS-391.md` (RG-01 à RG-06, 5 captures demandées).
+- Choix : seul ticket de conduite ⏳ Prêt (WFS-394 attend WFS-359 ; WFS-258 / 259 / 260 ⏸ ou en attente, réservés à l'agent dev conduite) ; E3 libre (aucun ticket 🔧 / 🔀).
+- Zone autorisée : `src/game/player.*`, `src/game/roues.*`, `tests/**` ; interdit : `aide_direction.*` (sauf accroche ≤ 10 lignes annoncée), `poursuite*`, `hud.*`, `traffic.*`, `camera_vue.*`, `src/world/cartes_v2/**`, la CI. Cause dans le sol de la carte (RG-06) : avertir le PO avant de toucher hors zone.
+- Branche `feature/waforspeed-391`, premier commit à pousser tout de suite. Après la fusion par le lead dev : 🟡 À valider (utilisateur) (ticket de conduite), puis arrêt de la session.
