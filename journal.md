@@ -3137,3 +3137,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - 145 captures ouvertes (montée jour / nuit, Proche / Capot, suite de 6, vue de dessus, parcours complet) : plus de lacets, plus aucun pan de terrain ni plaque dans le ciel sur la montée. Diff entier lu ; branche construite, `tests_cpu.sh` 91/91 verts ; triangles du décor −3 %.
 - Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash refusé par GitHub : conflit dans `journal.md` (entrée du PO de 20:49:16). Le développeur synchronise avec `main` et rappelle le lead dev ; fusion ensuite.
 - À surveiller (non bloquant) : bande de falaise derrière le village sous la descente (`apres-parcours-*-4200`), décor inchangé ; `benchMontee` ne remet pas `modeCourse()`.
+
+### 2026-11-09 21:03:05 — WFS-379 fusionné par le lead dev (lead-dev)
+- PR #317 fusionnée en squash (ed494ea) après la synchronisation du développeur (dc295047 : `main` seul, vérifié). Revue « ✅ Approuvé » postée sur dc295047 (COMMENT : même compte GitHub).
+- `TACHES.md` : WFS-379 en 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne #317 retirée de `suivi-pr.md`.
