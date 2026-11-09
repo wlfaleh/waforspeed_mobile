@@ -3042,6 +3042,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Plan : méthode RG-03 (a) ou (b) notée au journal avant de coder ; branche `feature/waforspeed-358` poussée tout de suite ; captures avant / après (face, vue basse, zooms ×4 des coins, ¾, jour et nuit) ; PR ; appel du `lead-dev` ; arrêt de la session après la fusion.
 
 
+### 2026-11-09 19:52:48 — WFS-358 : début, branche feature/waforspeed-358 (Claude, agent dev3d (01UY1Vv41d))
+- Ticket reçu du PO (calandre de la X5, jonction grille / carrosserie, contour de l'ancien logo du capot). Skills agent-developer, waforspeed-natif, artiste-3d chargés.
+- Étape suivante : mesurer l'ouverture du pare-chocs (`retoucher_formes.mjs --zone x5`), choisir la méthode RG-03 et la noter ici avant de coder.
+
 ### 2026-11-09 19:53:14 — WFS-376 attribué à Claude, agent dev3d (01UY1Vv3u9) (po-scrum-master)
 - Demande d'une **nouvelle session** `@dev3d` (session_01UY1Vv3u9DQZsvS7pFHAyy7, agent `dev-artiste-3d`), 1er et seul ticket : aucun ticket avant. WFS-358 venait d'être donné à la session dev3d 01UY1Vv41d (19:51:27) : mon commit en double est annulé avant envoi.
 - **Ticket** : WFS-376 (P1, E12 + E2) — Corniche : vrais bateaux dans la marina (ANO-206), premier prêt de la suite « Décor sans formes géométriques ». Règles : `regles-de-gestion/WFS-376.md` (zone et interdits ajoutés au Suivi).
@@ -3170,3 +3174,27 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 21:20:52 — WFS-359 : modèles de remplacement validés par le PO (Corvette C7, Vitara Brezza) (po-scrum-master)
 - Question de Claude, agent dev3d 2 (01UY1Vv2MH) : Mustang de Jiaxing et Passat B5.5 hors ±1 % → refusées (pas de dérogation).
 - **Décision** (le choix des modèles revient au PO, ordre de l'utilisateur du 2026-11-09) : Mustang → **Corvette C7 Stingray** (Martin Trafas, CC BY 4.0) ; T-Cross → **Suzuki Vitara Brezza 2022** (BHP3D, CC BY 4.0), hauteur comparée barres de toit comprises. Id « mustang » / « tcross » gardés (place au garage), fiches remplacées. Si la Brezza sort de ±1 % : Corvette seule dans WFS-359, nouvelle US pour la T-Cross. Détail : `regles-de-gestion/WFS-359.md`.
+### 2026-11-09 21:02:53 — WFS-358 : calandre de la X5, jonction propre et logo du capot recousu (Claude, agent dev3d (01UY1Vv41d))
+- **Méthode RG-03 (a)**, choisie après mesure de l'ouverture (vue de face projetée du modèle) : grille découpée sur le contour exact, toujours derrière la carrosserie. Pas de cadre en haricots, pas de « pare-buffle ».
+- **Causes des 4 défauts de RG-04** :
+  - dents de scie et éclats blancs : retrait « par centre de triangle » de #311 (bord en escalier, trous traversants aux coins bas) ;
+  - coin haut droit : grille à profondeur fixe, devant la carrosserie qui recule sous le phare ;
+  - peigne : pas de paroi derrière le bord, bouts des barres sur l'intérieur clair ;
+  - aussi des ailettes noires (barres verticales des haricots vues par la tranche).
+- **Logo du capot** : le biseau et le trou du logo restaient (disque blanc de jour, ovale de nuit).
+- **Fait** : `tools/retoucher_formes.mjs`, 3 retouches rejouables :
+  - découpe exacte par contour (triangles coupés) ;
+  - grille ajustée : profondeur suivant la carrosserie (1,5 cm derrière, refus d'écrire si un sommet passe devant), 9 lames chanfreinées, fond noir, conduit noir tout autour ;
+  - bouchon : triangles du logo retirés, peau du capot recousue.
+
+  `tools/formes.json` (entrée x5, depuis le modèle d'avant #311, empreinte après 87570eb9ad0fa1c8) ; `x5.wfm` 7,54 Mo / `.lod` régénérés.
+- **Accroche annoncée** (`src/render/feux_modele.cpp`, banc `WFS_VITRINE_BAS`, 8 lignes) : plusieurs vues séparées par « ; » ; rien ne change sans « ; ».
+- **Essais écartés pour le logo** : plan ou quadrique + pièce posée devant (disque plus clair : le vernis réagit à de très petits écarts) ; pièce posée derrière (points sombres au bord du trou en lumière rasante) ; zone recousue plus large (débordait sur la pointe repliée, pli).
+- **Vérifié** :
+  - `--verifier` OK pour les 3 voitures ; l'outil rejoué donne un fichier identique ;
+  - 90 tests CPU verts ;
+  - `captures_pr.sh` plus vues 2560×1440 et zooms ×4, de jour et de nuit, toutes regardées : les 4 défauts ne se voient plus.
+- **Limites** :
+  - au zoom ×4, en plein reflet du soleil, un très léger losange reste à l'endroit du logo ;
+  - +7 012 triangles pour la grille (LOD refaits).
+- Outils du conteneur installés pour le banc : mesa-vulkan-drivers, glslc, ninja-build, imagemagick (apt), meshoptimizer 0.22.0 (npm, dans `tools/node_modules`, non versionné). Aucun autre téléchargement.

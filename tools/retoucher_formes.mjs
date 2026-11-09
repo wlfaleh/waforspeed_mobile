@@ -8,14 +8,17 @@
 //   node tools/retoucher_formes.mjs --zone <id> x0 y0 z0 x1 y1 z1   sommets de chaque maillage dans la boîte (repérage)
 //   node tools/retoucher_formes.mjs [--verifier] [id …]  applique (ou contrôle seulement) les retouches de formes.json
 //
-// Trois sortes de retouches (détail plus bas) :
+// Sortes de retouches (détail plus bas) :
 //   - déplacement : déplace les sommets d'UN maillage (un maillage par matériau) qui tombent dans une boîte, sans créer ni retirer
 //     de sommet ni de triangle ; « fondu » (m) : les sommets hors de la boîte, à moins de « fondu », suivent en partie ;
 //     normales transformées par l'inverse de l'échelle ; le .lod (indices seuls) reste valable et prend la nouvelle forme ;
 //   - retrait : vide des triangles (indices confondus) ; aucun sommet retiré ;
-//   - grille : AJOUTE un matériau (à la fin) et un maillage.
-//   Après un retrait ou une grille, le .lod est régénéré (tools/alleger_voiture.mjs). Dans tous les cas : tangentes (TAN1) des
-//   maillages touchés recalculées (tools/tangentes.mjs), boîte d'en-tête recalculée.
+//   - découpe (WFS-358) : retire EXACTEMENT la partie d'un maillage dans un contour vu de face (triangles coupés, bord net) ;
+//   - bouchon (WFS-358) : retire un ancien logo en creux et recoud la peau (étanche) ;
+//   - grille : AJOUTE un matériau (à la fin) et un maillage ;
+//   - grille ajustée (WFS-358) : AJOUTE deux matériaux (lames, fond) ; profondeur qui suit la carrosserie, jamais devant elle.
+//   Après un retrait, une découpe, un bouchon ou une grille, le .lod est régénéré (tools/alleger_voiture.mjs). Dans tous les cas :
+//   tangentes (TAN1) des maillages touchés recalculées (tools/tangentes.mjs), boîte d'en-tête recalculée.
 //
 // formes.json : { "<id>": { "materiaux": nMat, "empreinteAvant": "…", "empreinteApres": "…", "retouches": [ … ] } }
 // Retouches (dans l'ordre) :
@@ -26,6 +29,10 @@
 //                  "metal": m, "rugosite": r } : grille générique à la place d'une calandre de marque (fond, cadre en relief,
 //                barres fermées, galbe du nez, trapèze) ; un matériau ajouté à la FIN (rang des matériaux inchangé,
 //                src/render/correctifs_voitures.h) et un maillage.
+//   découpe      { "decouper": true, "materiau": m, "contour": [[x,y],…] | { "rectangle": [x0,y0,x1,y1], "rayons": [bas, haut], "pas": n },
+//                  "z": [z0, z1], "triangles": n } : contour convexe vu de face (rayons : coins arrondis) ; n = triangles touchés
+//   bouchon      { "boucher": true, "materiau": m, "centre": [x,y], "rayons": [rx,ry], "seuil": s, "z": [z0,z1], "triangles": n }
+//   grille ajustée { "grilleAjustee": { "contour", "z", "ignorer", "recul", "fond", "lames", "lame": {…}, couleurs }, … } (voir plus bas)
 // Chaque retouche porte une « note ».
 // « sommets » : nombre de sommets dans la boîte (contrôle à la 1re application). Repère du .wfm : avant vers −Z, x à droite, y en haut.
 import fs from 'fs';
@@ -201,12 +208,307 @@ function grille(w, r) {
   return { k: w.maillages.length - 1, n: I.length / 3 };
 }
 
+// ---------- WFS-358 : découpe exacte, bouchon, grille ajustée ----------
+const sous = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const vect = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const unite = (a) => { const l = Math.hypot(...a); return l > 1e-20 ? a.map((x) => x / l) : [0, 0, -1]; };
+// contour convexe (vue de face, [[x, y], …]) remis dans le sens trigonométrique
+function contourDirect(c) {
+  let s = 0; for (let i = 0; i < c.length; i++) { const a = c[i], b = c[(i + 1) % c.length]; s += a[0] * b[1] - b[0] * a[1]; }
+  return s >= 0 ? c : [...c].reverse();
+}
+// contour à coins arrondis : { "rectangle": [x0, y0, x1, y1], "rayons": [bas, haut], "pas": n } → polygone convexe
+function contourDe(r) {
+  if (Array.isArray(r)) return contourDirect(r);
+  const [x0, y0, x1, y1] = r.rectangle, [rb, rh] = r.rayons || [0, 0], n = r.pas || 6, P = [];
+  const coin = (cx, cy, ray, a0) => { if (ray <= 0) { P.push([cx, cy]); return; } for (let k = 0; k <= n; k++) { const a = a0 + (k / n) * Math.PI / 2; P.push([cx + ray * Math.cos(a), cy + ray * Math.sin(a)]); } };
+  coin(x0 + rb, y0 + rb, rb, Math.PI); coin(x1 - rb, y0 + rb, rb, -Math.PI / 2); coin(x1 - rh, y1 - rh, rh, 0); coin(x0 + rh, y1 - rh, rh, Math.PI / 2);
+  return contourDirect(P);
+}
+const dedansContour = (P, x, y) => { for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; if ((b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]) < 0) return false; } return true; };
+
+// découpe EXACTE (WFS-358, cause des dents de scie et des trous de WFS-193 : le retrait « par centre de triangle » laissait un bord
+// en escalier) : la partie des triangles d'UN maillage qui tombe dans le prisme { contour convexe vu de face } × [z0, z1] est
+// retirée ; les triangles à cheval sont coupés le long du contour (sommets ajoutés, attributs interpolés) : bord net.
+// { "decouper": true, "materiau": m, "contour": … , "z": [z0, z1], "triangles": n } (n : triangles touchés, contrôle)
+function decouper(w, r) {
+  const ks = w.maillages.map((m, k) => (m.mat === r.materiau ? k : -1)).filter((k) => k >= 0);
+  if (ks.length !== 1) throw new Error(`matériau ${r.materiau} : un maillage attendu`);
+  const m = w.maillages[ks[0]], P = contourDe(r.contour), [z0, z1] = r.z;
+  const V = Array.from(m.v), I = Array.from(m.ix);
+  const bx = [Math.min(...P.map((p) => p[0])), Math.max(...P.map((p) => p[0])), Math.min(...P.map((p) => p[1])), Math.max(...P.map((p) => p[1]))];
+  const sommet = (i) => V.slice(i * 8, i * 8 + 8);
+  const melange = (a, b, t) => { const s = a.map((x, q) => x + t * (b[q] - x)); const n = unite([s[3], s[4], s[5]]); s[3] = n[0]; s[4] = n[1]; s[5] = n[2]; return s; };
+  // coupe d'un polygone (sommets à 8 attributs) par le demi-plan f ≥ 0 (garder = true) ou f < 0
+  const couper = (poly, f, garder) => {
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length], fa = f(a), fb = f(b);
+      const ina = garder ? fa >= 0 : fa < 0, inb = garder ? fb >= 0 : fb < 0;
+      if (ina) out.push(a);
+      if (ina !== inb) out.push(melange(a, b, fa / (fa - fb)));
+    }
+    return out;
+  };
+  const aire = (p) => { let s = 0; for (let i = 1; i + 1 < p.length; i++) s += Math.abs((p[i][0] - p[0][0]) * (p[i + 1][1] - p[0][1]) - (p[i + 1][0] - p[0][0]) * (p[i][1] - p[0][1])); return s / 2; };
+  let n = 0;
+  const nt = I.length;
+  for (let t = 0; t < nt; t += 3) {
+    const c = [I[t], I[t + 1], I[t + 2]];
+    if (c[0] === c[1] && c[1] === c[2]) continue;
+    const T = c.map(sommet);
+    const zc = (T[0][2] + T[1][2] + T[2][2]) / 3;
+    if (zc < z0 || zc > z1) continue;
+    if (Math.max(...T.map((p) => p[0])) <= bx[0] || Math.min(...T.map((p) => p[0])) >= bx[1] || Math.max(...T.map((p) => p[1])) <= bx[2] || Math.min(...T.map((p) => p[1])) >= bx[3]) continue;
+    // triangle entier dans le contour, ou vu par la tranche (pièce verticale, surface vue de face nulle) avec son centre dedans :
+    // retiré en entier (sans cela, les ailettes verticales de l'ancienne calandre restaient)
+    const dedansT = T.filter((p) => dedansContour(P, p[0], p[1])).length;
+    if (dedansT === 3 || (aire(T) <= 1e-9 && dedansContour(P, (T[0][0] + T[1][0] + T[2][0]) / 3, (T[0][1] + T[1][1] + T[2][1]) / 3))) { n++; I[t + 1] = I[t + 2] = I[t]; continue; }
+    // T ∖ contour = ∪ (T ∩ H0 ∩ … ∩ H(i−1) ∩ ¬Hi) ; ce qui reste à la fin (T ∩ contour) est retiré
+    let reste = T; const morceaux = [];
+    for (let i = 0; i < P.length && reste.length >= 3; i++) {
+      const a = P[i], b = P[(i + 1) % P.length];
+      const f = (p) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
+      const dehors = couper(reste, f, false);
+      if (dehors.length >= 3 && aire(dehors) > 1e-12) morceaux.push(dehors);
+      reste = couper(reste, f, true);
+    }
+    if (reste.length < 3 || aire(reste) <= 1e-12) continue;   // rien du triangle dans le contour : inchangé
+    n++;
+    I[t + 1] = I[t + 2] = I[t];   // triangle vidé (comme le retrait), remplacé par ses morceaux hors du contour
+    for (const p of morceaux) {
+      const base = V.length / 8; for (const s of p) V.push(...s);
+      for (let i = 1; i + 1 < p.length; i++) I.push(base, base + i, base + i + 1);
+    }
+  }
+  m.v = new Float32Array(V); m.nv = V.length / 8; m.ix = new Uint32Array(I);
+  if (w.tan) w.tan[ks[0]] = Buffer.alloc(m.nv * 4);
+  return { k: ks[0], n };
+}
+
+// carte de profondeur vue de face (regard vers +z) des maillages de la voiture : z le plus en avant par cellule de « pas » m,
+// seulement pour les triangles dont le z est dans [z0, z1] ; matériaux de « ignorer » laissés de côté
+function profondeurFace(w, bx, pas, z0, z1, ignorer) {
+  const W = Math.ceil((bx[1] - bx[0]) / pas) + 1, H = Math.ceil((bx[3] - bx[2]) / pas) + 1;
+  const Z = new Float64Array(W * H).fill(Infinity);
+  for (const m of w.maillages) {
+    if (ignorer.includes(m.mat)) continue;
+    for (let t = 0; t + 2 < m.ix.length; t += 3) {
+      const c = [m.ix[t], m.ix[t + 1], m.ix[t + 2]]; if (c[0] === c[1] && c[1] === c[2]) continue;
+      const p = c.map((i) => [(m.v[i * 8] - bx[0]) / pas, (m.v[i * 8 + 1] - bx[2]) / pas, m.v[i * 8 + 2]]);
+      if (Math.max(p[0][2], p[1][2], p[2][2]) < z0 || Math.min(p[0][2], p[1][2], p[2][2]) > z1) continue;
+      const d = (p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]);
+      if (Math.abs(d) < 1e-12) continue;
+      const i0 = Math.max(0, Math.ceil(Math.min(p[0][0], p[1][0], p[2][0]))), i1 = Math.min(W - 1, Math.floor(Math.max(p[0][0], p[1][0], p[2][0])));
+      const j0 = Math.max(0, Math.ceil(Math.min(p[0][1], p[1][1], p[2][1]))), j1 = Math.min(H - 1, Math.floor(Math.max(p[0][1], p[1][1], p[2][1])));
+      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+        const l1 = ((p[1][0] - i) * (p[2][1] - j) - (p[2][0] - i) * (p[1][1] - j)) / d;
+        const l2 = ((p[2][0] - i) * (p[0][1] - j) - (p[0][0] - i) * (p[2][1] - j)) / d, l3 = 1 - l1 - l2;
+        if (l1 < -1e-9 || l2 < -1e-9 || l3 < -1e-9) continue;
+        const z = l1 * p[0][2] + l2 * p[1][2] + l3 * p[2][2];
+        if (z >= z0 && z <= z1 && z < Z[j * W + i]) Z[j * W + i] = z;
+      }
+    }
+  }
+  return { W, H, Z, at: (x, y) => { const i = Math.round((x - bx[0]) / pas), j = Math.round((y - bx[2]) / pas); return i < 0 || j < 0 || i >= W || j >= H ? Infinity : Z[j * W + i]; } };
+}
+
+// bouchon (WFS-358, contour de l'ancien logo rond du capot, demande du lead dev) : les triangles du logo (biseau, creux et bord
+// du trou laissé par le logo retiré) d'UN maillage, dans l'ellipse de centre « centre », de rayons « rayons » × « seuil », sont
+// retirés, puis le trou est RECOUSU dans la peau du capot à partir des sommets de son bord (étanche, aucune pièce rapportée).
+// { "boucher": true, "materiau": m, "centre": [x, y], "rayons": [rx, ry], "seuil": s, "z": [z0, z1], "triangles": n }
+// Essais écartés (journal) : plan ou quadrique ajustés + pièce posée devant (disque plus clair), pièce posée derrière (points
+// sombres sur le bord du trou en lumière rasante), zone recousue plus large (elle débordait sur la pointe repliée).
+function boucher(w, r) {
+  const ks = w.maillages.map((m, k) => (m.mat === r.materiau ? k : -1)).filter((k) => k >= 0);
+  if (ks.length !== 1) throw new Error(`matériau ${r.materiau} : un maillage attendu`);
+  const m = w.maillages[ks[0]], [cx, cy] = r.centre, [rx, ry] = r.rayons, [z0, z1] = r.z;
+  const e = (x, y) => Math.hypot((x - cx) / rx, (y - cy) / ry);
+  // 1) triangles du logo retirés : ceux dont les 3 sommets sont dans l'ellipse (biseau, creux, bords du trou)
+  const V = Array.from(m.v), I = Array.from(m.ix);
+  const seuil = r.seuil ?? 1.2;   // X5 : au-delà du biseau (sommets entre 0,97 et 1,02), avant le capot (1,33)
+  const dedansE = (i) => V[i * 8 + 2] >= z0 && V[i * 8 + 2] <= z1 && e(V[i * 8], V[i * 8 + 1]) < seuil;
+  const cle = (i) => `${Math.round(V[i * 8] * 1e5)},${Math.round(V[i * 8 + 1] * 1e5)},${Math.round(V[i * 8 + 2] * 1e5)}`;
+  let dedans = 0;
+  const gardes = new Map();   // arêtes des triangles gardés : clé → [a, b] dans le sens du triangle
+  for (let t = 0; t + 2 < I.length; t += 3) {
+    const c = [I[t], I[t + 1], I[t + 2]]; if (c[0] === c[1] && c[1] === c[2]) continue;
+    if (c.every(dedansE)) { I[t + 1] = I[t + 2] = I[t]; dedans++; continue; }
+    for (let q = 0; q < 3; q++) { const a = c[q], b = c[(q + 1) % 3]; gardes.set(cle(a) + '>' + cle(b), [a, b]); }
+  }
+  // 2) bord du trou : arêtes gardées dont les deux bouts sont dans l'ellipse et dont l'arête inverse n'est portée par aucun
+  // triangle gardé ; parcourues en sens inverse (le remplissage tourne dans le même sens que ses voisins)
+  const suivant = new Map();
+  for (const [k, [a, b]] of gardes) {
+    if (!dedansE(a) || !dedansE(b)) continue;
+    const ka = cle(a), kb = cle(b); if (ka === kb || gardes.has(kb + '>' + ka)) continue;
+    suivant.set(kb, { de: b, vers: a });
+  }
+  // 3) chaque boucle fermée est recousue : couronnes du bord vers le centre ; sommets du bord inchangés (position et normale : les
+  // grands triangles voisins gardent leur éclairage) ; à l'intérieur, hauteur et normale interpolées entre le bord et le centre
+  // (membrane tendue : pas de bosse ni de pli contre les facettes voisines)
+  let nTri = 0;
+  const vus = new Set(), C = 6;
+  for (const [k0, d0] of suivant) {
+    if (vus.has(k0)) continue;
+    const boucle = []; let k = k0, d = d0;
+    while (d && !vus.has(k)) { vus.add(k); boucle.push(d.de); k = cle(d.vers); d = suivant.get(k); }
+    if (k !== k0 || boucle.length < 3) continue;
+    const L = boucle.length;
+    const gx = boucle.reduce((s, i) => s + V[i * 8], 0) / L, gy = boucle.reduce((s, i) => s + V[i * 8 + 1], 0) / L;
+    const nC = unite(boucle.reduce((n, i) => n.map((c, q) => c + V[i * 8 + 3 + q]), [0, 0, 0]));
+    const zC = boucle.reduce((s, i) => s + V[i * 8 + 2], 0) / L;   // membrane tendue entre les sommets du bord
+    const anneaux = [boucle];   // anneaux[0] = bord ; anneaux[r] = r-ième couronne vers le centre
+    for (let r = 1; r < C; r++) {
+      const f = 1 - r / C, ring = [];
+      for (const i of boucle) {
+        const x = gx + f * (V[i * 8] - gx), y = gy + f * (V[i * 8 + 1] - gy);
+        const z = f * V[i * 8 + 2] + (1 - f) * zC;
+        const n = unite([0, 1, 2].map((q) => f * V[i * 8 + 3 + q] + (1 - f) * nC[q]));
+        ring.push(V.length / 8); V.push(x, y, z, n[0], n[1], n[2], V[i * 8 + 6], V[i * 8 + 7]);
+      }
+      anneaux.push(ring);
+    }
+    const centre = V.length / 8; V.push(gx, gy, zC, nC[0], nC[1], nC[2], V[boucle[0] * 8 + 6], V[boucle[0] * 8 + 7]);
+    for (let r = 0; r + 1 < C; r++) for (let q = 0; q < L; q++) {
+      const a = anneaux[r][q], b = anneaux[r][(q + 1) % L], c = anneaux[r + 1][(q + 1) % L], dd = anneaux[r + 1][q];
+      I.push(a, b, c, a, c, dd); nTri += 2;
+    }
+    for (let q = 0; q < L; q++) { I.push(anneaux[C - 1][q], anneaux[C - 1][(q + 1) % L], centre); nTri++; }
+  }
+  m.v = new Float32Array(V); m.nv = V.length / 8; m.ix = new Uint32Array(I);
+  if (w.tan) w.tan[ks[0]] = Buffer.alloc(m.nv * 4);
+  return { k: ks[0], retires: dedans, n: nTri };
+}
+
+// grille ajustée (WFS-358, RG-03 / RG-05) : grille d'un seul tenant dont la profondeur SUIT la carrosserie : partout où la
+// carrosserie passe devant (bords de l'ouverture, cachés par le contour élargi), la grille est « recul » m derrière elle ; dans
+// l'ouverture, la surface est interpolée (équation de Laplace) entre ces bords : galbe naturel du nez, aucun triangle de la
+// grille devant la carrosserie (contrôlé à la fin). Lames horizontales à profil chanfreiné (6 faces, inclinées vers le bas comme
+// des ailettes de série) et fond noir mat « fond » m plus loin. Deux matériaux ajoutés à la fin : lames, puis fond.
+// { "grilleAjustee": { "contour": …, "z": [z0, z1], "ignorer": [mats], "recul": m, "fond": m, "lames": n,
+//   "lame": { "hauteur": m, "profondeur": m, "chanfrein": m, "pente": m }, "couleur", "metal", "rugosite", "couleurFond" } }
+function grilleAjustee(w, r) {
+  const g = r.grilleAjustee, P = contourDe(g.contour), [z0, z1] = g.z;
+  const bx = [Math.min(...P.map((p) => p[0])), Math.max(...P.map((p) => p[0])), Math.min(...P.map((p) => p[1])), Math.max(...P.map((p) => p[1]))];
+  const pas = 0.005, carte = profondeurFace(w, bx, pas, z0, z1, g.ignorer || []);
+  // surface S sur une grille de nœuds de 1 cm : connue (carrosserie + recul) ou interpolée
+  const h = 0.01, NX = Math.ceil((bx[1] - bx[0]) / h) + 1, NY = Math.ceil((bx[3] - bx[2]) / h) + 1;
+  const S = new Float64Array(NX * NY), connu = new Uint8Array(NX * NY);
+  let somme = 0, nb = 0;
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const x = bx[0] + i * h, y = bx[2] + j * h;
+    let z = -Infinity;   // carrosserie la plus PROFONDE autour du nœud (± 1 cm) : la grille reste derrière chacune des surfaces qu'elle croise
+    for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) { const zc = carte.at(x + di * pas, y + dj * pas); if (Number.isFinite(zc)) z = Math.max(z, zc); }
+    if (Number.isFinite(z)) { S[j * NX + i] = z + g.recul; connu[j * NX + i] = 1; somme += z; nb++; }
+  }
+  if (!nb) throw new Error('grille ajustée : aucune carrosserie autour du contour');
+  for (let k = 0; k < S.length; k++) if (!connu[k]) S[k] = somme / nb + g.recul;
+  for (let it = 0; it < 4000; it++) for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const k = j * NX + i; if (connu[k]) continue;
+    let s = 0, c = 0;
+    if (i > 0) { s += S[k - 1]; c++; } if (i < NX - 1) { s += S[k + 1]; c++; } if (j > 0) { s += S[k - NX]; c++; } if (j < NY - 1) { s += S[k + NX]; c++; }
+    S[k] = s / c;
+  }
+  const surf = (x, y) => {   // interpolation bilinéaire de S
+    const fx = Math.min(NX - 1.0001, Math.max(0, (x - bx[0]) / h)), fy = Math.min(NY - 1.0001, Math.max(0, (y - bx[2]) / h));
+    const i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j, k = j * NX + i;
+    return (1 - u) * (1 - v) * S[k] + u * (1 - v) * S[k + 1] + (1 - u) * v * S[k + NX] + u * v * S[k + NX + 1];
+  };
+  const pente = (x, y) => [(surf(x + 0.005, y) - surf(x - 0.005, y)) / 0.01, (surf(x, y + 0.005) - surf(x, y - 0.005)) / 0.01];
+  const ajouter = (V, I, couleur, metal, rugosite) => {
+    const col = (couleur || '#1a1a1a').match(/[0-9a-f]{2}/gi).map((x) => Math.pow(parseInt(x, 16) / 255, 2.2));
+    const mat = Buffer.alloc(56);
+    [col[0], col[1], col[2], 1, metal, rugosite, 0, 0, 0, 0.5].forEach((x, i) => mat.writeFloatLE(x, 4 * i));
+    mat.writeInt32LE(-1, 40); mat.writeInt32LE(-1, 44); mat.writeInt32LE(-1, 48); mat.writeUInt32LE(16, 52);   // double face
+    w.materiaux = Buffer.concat([w.materiaux, mat]); w.nM++;
+    const m = { mat: w.nM - 1, nv: V.length / 8, v: new Float32Array(V), ix: new Uint32Array(I) };
+    w.maillages.push(m); if (w.tan) w.tan.push(Buffer.alloc(m.nv * 4));
+    return w.maillages.length - 1;
+  };
+  // largeur du contour à la hauteur y : [xa, xb]
+  const largeur = (y) => {
+    let xa = Infinity, xb = -Infinity;
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length];
+      if ((a[1] - y) * (b[1] - y) > 0 || a[1] === b[1]) { if (a[1] === y) { xa = Math.min(xa, a[0]); xb = Math.max(xb, a[0]); } continue; }
+      const x = a[0] + (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]); xa = Math.min(xa, x); xb = Math.max(xb, x);
+    }
+    return [xa, xb];
+  };
+  // ---- fond : surface S + fond, cellules de 1 cm dans le contour ----
+  const Vf = [], If = [];
+  const pf = (x, y) => { const [dx, dy] = pente(x, y), n = unite([dx, dy, -1]); Vf.push(x, y, surf(x, y) + g.fond, n[0], n[1], n[2], 0, 0); return Vf.length / 8 - 1; };
+  // grille de sommets partagés : 2 cm en hauteur, 32 colonnes entre les bords du contour (la surface est lisse)
+  const hf = 0.02, NYf = Math.ceil((bx[3] - bx[2]) / hf), C = 32, lignes = [];
+  for (let j = 0; j <= NYf; j++) {
+    const y = Math.min(bx[3], bx[2] + j * hf), [a0, a1] = largeur(y);
+    lignes.push(Number.isFinite(a0) ? Array.from({ length: C + 1 }, (_, k) => pf(a0 + (k / C) * (a1 - a0), y)) : null);
+  }
+  for (let j = 0; j < NYf; j++) {
+    const A = lignes[j], B = lignes[j + 1]; if (!A || !B) continue;
+    for (let k = 0; k < C; k++) If.push(A[k], A[k + 1], B[k + 1], A[k], B[k + 1], B[k]);
+  }
+  // ---- conduit : paroi noire tout autour du contour, du bord avant des lames jusqu'au fond (comme le conduit d'air en plastique
+  // d'une vraie calandre) : derrière le bord de l'ouverture, on voit cette paroi, plus l'intérieur clair de la voiture (bouts des
+  // lames « en peigne » sur fond clair, défaut (2) de RG-04) ----
+  const gx = P.reduce((a, p) => a + p[0], 0) / P.length, gy = P.reduce((a, p) => a + p[1], 0) / P.length;
+  for (let i = 0; i < P.length; i++) {
+    const a = P[i], b = P[(i + 1) % P.length], lg = Math.hypot(b[0] - a[0], b[1] - a[1]), nseg = Math.max(1, Math.ceil(lg / 0.01));
+    let n = unite([-(b[1] - a[1]), b[0] - a[0], 0]);   // vers l'intérieur (contour dans le sens trigonométrique)
+    if (n[0] * (gx - a[0]) + n[1] * (gy - a[1]) < 0) n = n.map((c) => -c);
+    for (let k = 0; k < nseg; k++) {
+      const t0 = k / nseg, t1 = (k + 1) / nseg, x0 = a[0] + t0 * (b[0] - a[0]), y0 = a[1] + t0 * (b[1] - a[1]), x1 = a[0] + t1 * (b[0] - a[0]), y1 = a[1] + t1 * (b[1] - a[1]);
+      const q = Vf.length / 8;
+      Vf.push(x0, y0, surf(x0, y0), ...n, 0, 0, x1, y1, surf(x1, y1), ...n, 0, 0, x1, y1, surf(x1, y1) + g.fond + 0.005, ...n, 0, 0, x0, y0, surf(x0, y0) + g.fond + 0.005, ...n, 0, 0);
+      If.push(q, q + 1, q + 2, q, q + 2, q + 3);
+    }
+  }
+  // ---- lames : profil (dy, dz) autour du bord avant, de haut en bas, extrudé le long de x, sur 48 colonnes ----
+  const L = g.lame, hl = L.hauteur, pr = L.profondeur, ch = L.chanfrein, pt = L.pente;
+  const profil = [[hl / 2 - ch, 0], [hl / 2, ch], [hl / 2 - pt, pr], [-hl / 2 - pt, pr], [-hl / 2, ch], [-hl / 2 + ch, 0]];
+  const Vl = [], Il = [];
+  const yb0 = bx[2], yb1 = bx[3], nl = g.lames, pasL = (yb1 - yb0) / nl;
+  for (let k = 0; k < nl; k++) {
+    const yc = yb0 + (k + 0.5) * pasL;
+    const [xa, xb] = largeur(Math.min(yb1, Math.max(yb0, yc))); if (!Number.isFinite(xa)) continue;
+    const COL = 48, xs = Array.from({ length: COL + 1 }, (_, c) => xa + (c / COL) * (xb - xa));
+    const pos = (x, q) => [x, yc + profil[q][0], surf(x, yc + profil[q][0]) + profil[q][1]];
+    for (let q = 0; q < profil.length; q++) {   // une bande par côté du profil, normales de la face (arêtes vives des chanfreins)
+      const q2 = (q + 1) % profil.length, base = Vl.length / 8;
+      for (const x of xs) {
+        const a = pos(x, q), b = pos(x, q2), tx = sous(pos(x + 0.002, q), pos(x - 0.002, q));
+        let n = unite(vect(tx, sous(b, a)));
+        // dehors du profil : du côté opposé au centre de la lame
+        const mil = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], ctr = [x, yc - pt / 2, surf(x, yc) + pr / 2];
+        if (n[0] * (mil[0] - ctr[0]) + n[1] * (mil[1] - ctr[1]) + n[2] * (mil[2] - ctr[2]) < 0) n = n.map((c) => -c);
+        Vl.push(...a, ...n, 0, 0, ...b, ...n, 0, 0);
+      }
+      for (let c = 0; c < COL; c++) { const i0 = base + 2 * c; Il.push(i0, i0 + 2, i0 + 3, i0, i0 + 3, i0 + 1); }
+    }
+    for (const [x, sens] of [[xa, -1], [xb, 1]]) {   // bouts fermés (cachés sous la carrosserie)
+      const base = Vl.length / 8;
+      for (let q = 0; q < profil.length; q++) Vl.push(...pos(x, q), sens, 0, 0, 0, 0);
+      for (let q = 1; q + 1 < profil.length; q++) Il.push(base, base + q, base + q + 1);
+    }
+  }
+  const kl = ajouter(Vl, Il, g.couleur, g.metal ?? 0.7, g.rugosite ?? 0.3);
+  const kf = ajouter(Vf, If, g.couleurFond || '#0b0b0b', 0, 0.75);
+  // contrôle RG-05 : aucun point de la grille devant la carrosserie (carte faite avant l'ajout)
+  let devant = 0;
+  for (const m of [w.maillages[kl], w.maillages[kf]]) for (let i = 0; i < m.nv; i++) {
+    const o = i * 8, zc = carte.at(m.v[o], m.v[o + 1]);
+    if (Number.isFinite(zc) && m.v[o + 2] < zc - 0.0005) devant++;
+  }
+  return { ks: [kl, kf], n: (Il.length + If.length) / 3, devant };
+}
+
 function traiter(id, verifier) {
   const cfg = FORMES[id];
   if (!cfg) { console.log(`${id} : aucune retouche de forme (absente de formes.json)`); return true; }   // chaîne convertir_voitures.sh
   const chemin = path.join(RACINE, 'assets/cars', id + '.wfm');
   const w = lire(fs.readFileSync(chemin));
-  const ajoutes = cfg.retouches.filter((r) => r.grille).length;   // matériaux ajoutés à la fin par les grilles
+  const ajoutes = cfg.retouches.reduce((s, r) => s + (r.grille ? 1 : r.grilleAjustee ? 2 : 0), 0);   // matériaux ajoutés à la fin par les grilles
   if (w.nM !== cfg.materiaux && w.nM !== cfg.materiaux + ajoutes) throw new Error(`${id} : ${w.nM} matériaux, ${cfg.materiaux} attendus`);
   const e = empreinte(w);
   if (cfg.empreinteApres && e === cfg.empreinteApres) { console.log(`${id} : déjà retouchée (${e})`); return true; }
@@ -215,6 +517,22 @@ function traiter(id, verifier) {
   let structure = false;   // triangles retirés ou pièce ajoutée : .lod à régénérer
   for (const r of cfg.retouches) {
     if (r.grille) { const { k, n } = grille(w, r); touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles ajoutés)`); continue; }
+    if (r.grilleAjustee) {
+      const { ks, n, devant } = grilleAjustee(w, r);
+      if (devant) { console.error(`${id} : « ${r.note} » : ${devant} sommets de la grille devant la carrosserie (RG-05) : rien écrit`); return false; }
+      ks.forEach((k) => touches.add(k)); structure = true; journal.push(`${r.note} (${n} triangles ajoutés, aucun devant la carrosserie)`); continue;
+    }
+    if (r.decouper) {
+      const { k, n } = decouper(w, r);
+      if (r.triangles !== undefined && n !== r.triangles) { console.error(`${id} : « ${r.note} » : ${n} triangles coupés, ${r.triangles} attendus : rien écrit`); return false; }
+      touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles coupés sur le contour)`); continue;
+    }
+    if (r.boucher) {
+      const { k, retires, n } = boucher(w, r);
+      if (r.triangles !== undefined && retires !== r.triangles) { console.error(`${id} : « ${r.note} » : ${retires} triangles du logo, ${r.triangles} attendus : rien écrit`); return false; }
+      if (!n) { console.error(`${id} : « ${r.note} » : trou non refermé : rien écrit`); return false; }
+      touches.add(k); structure = true; journal.push(`${r.note} (${retires} triangles du logo retirés, trou recousu par ${n} triangles)`); continue;
+    }
     if (r.retirer) {
       const { k, n } = retirer(w, r);
       if (r.triangles !== undefined && n !== r.triangles) { console.error(`${id} : « ${r.note} » : ${n} triangles retirés, ${r.triangles} attendus : rien écrit`); return false; }
