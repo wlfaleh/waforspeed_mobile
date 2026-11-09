@@ -56,6 +56,7 @@ public:
     // WFS-149 : le GPU sait échantillonner ce format avec filtre linéaire (fonctions ASTC / ETC2 activées à la création)
     bool formatEchantillonnable(VkFormat fmt) const;
     size_t octetsTextures = 0;   // WFS-149 : mémoire des textures envoyées (niveaux compris), journal et banc du réalisme
+    bool statsPipeline = false;   // WFS-348 (RG-01) : banc seulement (WFS_STATS_PIPELINE=1) : pipelineStatisticsQuery activée
     bool astc = false, etc2 = false;   // WFS-149 : textureCompressionASTC_LDR / textureCompressionETC2 activées
 
     VkInstance instance = VK_NULL_HANDLE;
