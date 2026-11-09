@@ -114,6 +114,7 @@ static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
         if (ok) WFS_LOG("parcours : %s (attendu)", etape); else { ecarts++; WFS_ERR("parcours : %s → écran %s (ÉCHEC)", etape, nomEcran(g.ecran())); }
     };
     g.allerA(Ecran::Course); g.setAutopilot(true); images(60 * 6);   // décompte puis course en pilote automatique
+    if (const char* d = std::getenv("WFS_PARCOURS_COURSE_S")) for (int i = 0, k = std::atoi(d) * 60; i < k; i++) { g.update(1.0 / 60); t += 1.0 / 60; }   // WFS-281 (accroche) : course longue (10 min : 600), sans rendu
     attendu(g.ecran() == Ecran::Course && activeCourse() && activeCourse()->state == RaceState::Play, "course en cours");
     ecarts += parcoursPauseRetour(g, t); g.setAutopilot(true); images(60);   // WFS-129 (RG-08) : pause par Retour, « Reprendre »
     g.setAutopilot(false);
@@ -228,6 +229,7 @@ int main(int argc, char** argv) {
     if (banc == "records") { ui::chargerPolice(r); const int e = benchRecords(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-125 : records par mode, fantôme (aussi à la fin du groupe vitrines)
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
+    if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)

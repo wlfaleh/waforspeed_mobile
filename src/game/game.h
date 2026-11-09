@@ -50,7 +50,7 @@ public:
     // WFS-74 : écran de chargement branché par la plateforme (Game ne dépend pas de src/ui/ecrans) : debutChargement avant la
     // reconstruction, progression passée à init (étapes réelles), finChargement(réussite) après ; rien de branché = sans écran.
     struct Demandes {
-        std::string carte; bool nuit = true;
+        std::string carte; bool nuit = true; bool recharger = false;   // WFS-307 (RG-08) : paquet de la carte changé → reconstruite même si déjà chargée
         std::function<void()> debutChargement;
         void (*progression)(float, const char*) = nullptr;
         std::function<void(bool ok)> finChargement;

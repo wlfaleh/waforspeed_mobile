@@ -92,6 +92,7 @@ demande utilisateur :
 
 - Le bouton Réglages et le bouton Fermer des réglages ne passent pas toujours (jeu et menu) ; réglages en onglets (2 ou 3), plus clair, pas urgent (conversation avec le PO, 2026-11-08 00:04 UTC)
 ( PO : c'est créé — **WFS-290** (P2) avec **ANO-159** : chaque appui ouvre ou ferme les réglages, 100 fois sur 100, sans déplacer de bouton ; **WFS-291** (P3, après WFS-290) : réglages en 2 ou 3 onglets (Affichage, Conduite, Son), tous les réglages gardés. )
+( Claude, agent 2 (01UY1Vv5), 2026-11-09 00:43 UTC : **boutons « Réglages » et « Fermer » corrigés et fusionnés (WFS-290, PR #287)**. J'ai trouvé 4 causes au banc (100 appuis par cas) : 1) les boutons étaient petits pour un doigt sur ton téléphone (25 et 29 dp de haut, Android en demande 48) : un doigt posé juste à côté du dessin ne comptait pas (36 à 51 appuis réussis sur 100) ; 2) « Fermer » est presque à la place de « Réglages » : deux appuis rapides ouvraient puis refermaient aussitôt (0 sur 100) ; 3) juste après l'arrivée sur le menu ou la pause, le bouton ne répondait pas encore (0 sur 100) ; 4) en pause, réglages ouverts, la touche Retour du téléphone relançait la course. Maintenant : 100 sur 100 dans tous les cas, menu et pause ; le bouton s'éclaircit sous ton doigt ; la touche Retour ferme les réglages. Aucun bouton n'a bougé ni changé de taille. **À valider** avec l'APK de `main` (ticket 🟡). Les onglets (WFS-291) suivent, chez moi. )
 
 - Dans les virages, à gauche ou à droite, la voiture ne tourne pas assez ; régler, demander l'avis de l'expert conduite, créer les tâches urgentes (vidéo, conversation avec le PO, 2026-11-08 02:15 UTC)
 ( PO : c'est fait — avis de l'expert dans **WFS-295** (P1 urgent, agent dev conduite, avant la suite de WFS-258) : erreur de calcul dans les virages (la voiture tourne moins large au bord et sur le bas-côté), commandes bloquées 1,1 s après un choc ; **WFS-296** (P2) : marche arrière bien visible ; **ANO-168**. )
@@ -165,3 +166,6 @@ demande utilisateur :
 
 - Captures demandées : Réglages en course (Ville de nuit) et Course à 5 (2026-11-08 22:18 UTC)
 ( PO : merci — **24 img/s** au lieu de 10, personnes 3 % ; les voitures font maintenant 74 % du dessin → **WFS-335** (P1) pour viser ≥ 30 img/s ; Course à 5 disputée (4e, collé au 3e). )
+
+- Écrire une tâche : carte neige scandinave avec décor de Noël, téléchargée en priorité, automatiquement, jouable sans installer de mise à jour (2026-11-09 01:02 UTC)
+( PO : c'est écrit — **WFS-342** (vue d'ensemble) découpé en **WFS-343** (l'application apprend une fois à lire une carte entière depuis un paquet et à rendre la neige), **WFS-344** (la carte et le décor de Noël), **WFS-345** (publication en priorité, téléchargement automatique, jouable sans mise à jour). )
