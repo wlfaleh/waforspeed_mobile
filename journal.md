@@ -3231,6 +3231,43 @@ L'utilisateur signale mon erreur : j'avais décrit des courses « de nuit » alo
 - **ANO-232** (majeure → WFS-375) : moment JOUR (Réelle à 22 h, Aube, Dorée en Cockpit) → image de nuit ou presque noire. **ANO-233** (mineure → WFS-374) : appui sur la case SCORE → une image de nitro.
 - Décor en formes nues et chargement « ville 70 % » : hors périmètre, pas d'ANO (ordre de l'utilisateur, E15 / WFS-378).
 
+### 2026-11-09 21:35:13 — Correction : Campagne non bloquée (recette QA), vrai défaut = lumière JOUR (ANO-232 → WFS-375) (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+Le QA (commit 586736d5) n'a pas confirmé mon constat « Campagne bloquée ». Je l'ai revérifié à 4 img/s : aucun doigt sur GAZ après le GO. Mon erreur est corrigée auprès de l'utilisateur et de l'agent dev Z (WFS-374). Il ne reste qu'ANO-232 (JOUR → image de nuit) → WFS-375, et ANO-233 (mineure) → WFS-374.
+
+### 2026-11-09 21:37:08 — WFS-375 urgent : session de développeur ouverte sur ordre de l'utilisateur (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ». Le PO ouvre une session `@dev` (« Agent dev WFS-375 ») et lui donne WFS-375 (ordre explicite de l'utilisateur, exception à « attribuer seulement à la demande »). Le développeur écrit lui-même son attribution (🔧) dans `TACHES.md` et `track-agent.md`.
+
+
+### 2026-11-09 21:38:15 — WFS-359 : option A (performances de l'ancien T-Cross gardées), WFS-394 créé (po-scrum-master)
+- Question de Claude, agent dev3d 2 (01UY1Vv2MH) : la vraie fiche de la Vitara Brezza rend `test_course5_ordinateurs` rouge (tirage du Range Rover Sport, qui dépasse sa vitesse de virage, +31,4 % en Ville ; défaut d'IA déjà présent, hors zone).
+- **Décision A** : dans WFS-359, « tcross » garde les performances de jeu de l'ancien T-Cross ; modèle 3D, nom et dimensions de la Brezza. Corvette avec sa vraie fiche. Aucun test affaibli. Travail presque bon gardé (ordre de l'utilisateur du 2026-11-09).
+- **WFS-394 créé** (P2, E3, skill expert-conduite, ⏳ En attente après WFS-359) : IA du RR Sport en virage, puis vraie fiche de la Brezza. Écrit dans un worktree séparé de `main` (copie locale du développeur non touchée).
+
+### 2026-11-09 21:38:52 — WFS-375 : pris en charge, branche feature/waforspeed-375 (Claude, agent dev M (01UY1Vv4mu))
+- Ordre urgent de l'utilisateur transmis par le PO : JOUR = midi, NUIT = nuit, plus de défilement des moments. Zone : terrain.cpp + lecture du moment de la sauvegarde.
+
+### 2026-11-09 21:45:07 — WFS-376 (PR #318) relue par le lead dev : approuvée, fusion en attente de synchronisation (lead-dev)
+- 2e relecture sur 7d69d264, après la réponse point par point du développeur. 44 captures ouvertes (22 paires) : la suite `marina-suite-1` à `-6` se passe dans le port, sans aucun clignotement aux passages de seuil ; de nuit (`gros-plan-nuit`, `poursuite-80-nuit`), les coques et les mâts restent lisibles. Rien n'est dégradé ailleurs.
+- Diff complet relu. Branche construite par le lead dev : `tests_cpu.sh` 92/92, dont `test_marina_bateaux`. Budget de 17 454 triangles (≤ 18 000), appels de dessin inchangés, Basse +9,0 %.
+- Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash impossible : conflit dans `journal.md` avec `main`. Le développeur synchronise sa branche et rappelle le lead dev ; la fusion suivra.
+- Remarques non bloquantes : un commentaire en double dans `plage.cpp` ; une boucle restée pour une seule borne de ponton ; le salon des vedettes et des yachts reste anguleux de près (à reprendre si la QA le voit).
+### 2026-11-09 19:54:26 — WFS-376 : branche créée, analyse de la marina (Claude, agent dev3d (01UY1Vv3u9))
+- Branche `feature/waforspeed-376` créée depuis main ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
+- Cause relue dans `src/world/plage.cpp` : `placeQuartiers` (zone marina) + `case O_BATEAU` (boîte + triangle de voile) ; le quai est à ≈ 1,85 m au-dessus de l'eau, coque de 0,55 m cachée derrière le mur.
+- Plan : nouvelle géométrie « marina » (pontons flottants, voiliers au port sans voile, vedettes et yachts), LOD sans gréement au-delà de 150 m, tout dans le Geo du décor (aucun appel de dessin en plus).
+
+### 2026-11-09 20:57:26 — WFS-376 : marina modélisée, captures et PR (Claude, agent dev3d (01UY1Vv3u9))
+- Fait : `src/world/marina_bateaux.{h,cpp}` (voilier au port, yacht, vedette, 3 niveaux de détail ; pontons, bittes, amarrage), `plage.cpp` (zone marina : quai à 1,45 m au-dessus de l'eau au lieu de 1,85 m, placement cul au quai + 8 pontons, 37 bateaux au mouillage modélisés, banc `marina`), test `test_marina_bateaux`.
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes, groupe de banc `marina`), `CMakeLists.txt` (1 ligne, test).
+- Décisions du PO appliquées : disposition des pontons, seuil unique 200 m, quai abaissé, option A (densité réelle, 3 niveaux, budget ≤ 18 000).
+- Vérifié : 92 tests CPU réussis ; banc marina (lavapipe), avant = main + banc seul : fenêtre la plus chargée 17 812 triangles (≤ 18 000), appels de dessin inchangés (361 / 298 / 199), image entière +21 % (Cockpit), +10,3 % (Poursuite 120), +11,1 % (Basse).
+- Limites : Basse au-dessus de l'objectif de +10 % ; RG-09 : lampadaire de 6,4 m (ratio 2,07 ; 1,77 rapporté à 7,5 m). Non vérifié sur téléphone.
+
+### 2026-11-09 21:26:44 — WFS-376 : corrections du retour du lead dev (PR #318) (Claude, agent dev3d (01UY1Vv3u9))
+- Suite de 6 images dans le port (vue Poursuite, 120 km/h), passages de seuil repérés ; vues de nuit `marina-gros-plan-nuit`, `marina-poursuite-80-nuit`.
+- Synchronisation avec main 67f20e1a (WFS-379 : la Corniche a un 2e quai de 634 m au niveau de la mer) : bateaux à quai seulement là où le quai abaissé existe ; allègements (coque détaillée à 6 couples, version moyenne sans haubans, pontons de 38 m, une borne par ponton, bittes tous les 28,8 m) : fenêtre la plus chargée 17 454 triangles (≤ 18 000).
+- Mesures avant / après (main 67f20e1a + banc seul) : appels de dessin inchangés ; image entière +19,7 % (Cockpit), +8,4 % (Poursuite 120), +9,0 % (Basse). 22 captures avant / après regardées.
+
 ### 2026-11-09 14:00:55 — Reprise de WFS-349 : vue Cockpit, habitacle fermé (Claude, agent dev Y (01UY1Vv1Yvim))
 - Branche `feature/waforspeed-349` reprise (commit d'agent 3 bis, aucun code), synchronisée avec `main` et poussée tout de suite. Première étape : cause nommée au banc `penetration` (RG-01).
 
