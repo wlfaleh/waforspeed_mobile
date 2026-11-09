@@ -2951,3 +2951,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:16:53 — PR #297 (WFS-338) synchronisée avec main par le lead dev, sur demande de l’utilisateur (lead-dev)
 - Le développeur n’avait plus poussé depuis environ 7 h. Seul restait le conflit `journal.md` avec main : je l’ai résolu dans dfa173bd en gardant les deux côtés. Compilation OK, 90 tests CPU OK.
 - Une autre instance du lead dev a relu la PR, l’a approuvée et l’a fusionnée en squash (8c4d65ae). On ne juge pas son propre travail.
+
+### 2026-11-09 19:17:25 — Voitures de remplacement : décision du PO, plus de question à l'utilisateur (po-scrum-master)
+- Réponse de l'utilisateur : le choix des voitures et des modèles n'est pas son rôle ; s'il y a un problème, chercher une autre voiture ou un autre modèle.
+- Décisions du PO : **Mustang** sans dérogation (modèle CC BY hors ±1 % → le développeur cherche un autre modèle libre dans ±1 %) ; **T-Cross → VW Passat** ; **A 45 → Classe E W212** ; **Elantra N** et **X5** : recherche par le développeur, choix du PO. Règles de WFS-359, 360, 361 mises à jour ; WFS-359 ⏳ Prêt sans attente.
+- Ordre permanent ajouté au skill du PO ; question du 2026-11-07 11:12 close dans `tache utilisateur.md`.

@@ -96,6 +96,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
   (`src/**`, `shaders/**`, `tests/**`, `tools/**`, `assets/**`, `android/**`, `ios/**`, `serveur/**`, `.github/**`, `CMakeLists.txt`, `configgame.json`).
   Tu n'écris que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et tes réponses dans `tache utilisateur.md`. Le code est le travail des développeurs.
 - **2026-11-09 — On ne jette pas un travail pour un petit défaut (ordre de l'utilisateur, après la X5 de #311)** : quand une PR est presque bonne et n'a plus que des défauts mineurs, elle est **acceptée** (fusion par le lead dev) et le PO crée **une tâche séparée** pour corriger ces défauts. Plus de PR fermée sans fusion par un garde-fou pour des petits défauts.
+- **2026-11-09 — Choix des voitures et des modèles : c'est le PO (ordre de l'utilisateur)** : « ce n'est pas mon rôle de répondre à une question comme ça ». Le PO choisit les voitures et les modèles de remplacement (licence CC0 / CC-BY, ±1 % sans dérogation) ; s'il y a un problème, le développeur cherche une autre voiture ou un autre modèle. Ne plus poser ce genre de question à l'utilisateur.
 - **2026-11-06 — Ne rien retirer sans ordre.** Aucune annulation (revert) ni suppression de code fusionné sans ordre explicite de l'utilisateur.
 
 ## Tes principes (dans cet ordre)
