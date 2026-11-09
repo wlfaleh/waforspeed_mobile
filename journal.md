@@ -4513,3 +4513,7 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **Décision : option A** (RG-12 à RG-14 de `regles-de-gestion/WFS-293.md`) : référence 120 Hz juge partout (< 5 mm à ≥ 30, ≤ 10 mm à 10-20 img/s, valeurs inchangées) ;
   l'indicateur de WFS-247 reste juge en plus en ligne droite, montée et virage serré à ≥ 30 img/s ; tableau à deux colonnes et test du saut de 5 mm refait dans l'épingle à 30 img/s.
   Choix de mesure, décidé par le PO ; l'utilisateur peut le changer. Ticket toujours à Claude, Agent 0 developer ; 🟡 après fusion.
+
+### 2026-11-09 00:01:38 — WFS-215 : PR #288 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (Model 3 plaque, RR Sport jour / nuit, A 45 vitrines), tout le diff lu (`tools/vitres_voitures.mjs`, 1 ligne de `convertir_voitures.sh`, `logos.json`, 3 voitures). RG-01, RG-02 (jour), RG-03, RG-04 tenues à l'œil ; code juste.
+- Refus : conflit `journal.md` avec main (fusion impossible) ; `conducteurs-rrsport-nuit` éblouie avant comme après : conducteur de nuit non montré.
