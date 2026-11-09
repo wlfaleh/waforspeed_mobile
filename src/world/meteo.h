@@ -14,6 +14,13 @@
 #include <cstring>
 #include <vector>
 
+#include <string>
+
+namespace wfs {
+class Game; class Renderer;
+void benchPluie(Game& g, Renderer& r, const std::string& out);   // WFS-354 : banc « pluie » (meteo.cpp)
+}
+
 namespace wfs::meteo {
 
 // RG-01 : ENV.rain = night, sur la carte ville seulement (maps.js : `if (map.id === 'ville') E.rain = night`)

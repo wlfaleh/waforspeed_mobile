@@ -13,6 +13,8 @@
 #include "../game/camera_vue.h"            // WFS-334 : etatCockpit() (lecture seule : vue Cockpit active)
 #include "../game/trace_cartes.h"          // WFS-334 : sections couvertes du tracé (tunnel)
 #include "../render/vehicule_cockpit.h"    // WFS-334 : pare-brise et balais de l'image (pareBriseVu)
+#include "../game/game.h"                  // WFS-354 : banc « pluie »
+#include <string>
 
 namespace wfs {
 
@@ -247,6 +249,59 @@ private:
 };
 
 } // namespace
+
+// ---------- WFS-354 : banc « pluie » (WFS_BANC=pluie) : Ville de nuit sous la pluie, Golf ----------
+// pluie-cockpit-105 (montant gauche à plus de 100 km/h), pluie-balais-1 à 5 (passage d'un balai, à 10, 30, 50, 70 et 90 %
+// de sa course montante), pluie-tunnel-avant / -bouche / -3m / -6m / -milieu (vue Cockpit, la caméra à ces distances de la
+// bouche), pluie-arriere-vitesse (témoin : vue Arrière à plus de 100 km/h)
+void benchPluie(Game& g, Renderer& r, const std::string& out) {
+    setenv("WFS_MOMENT", "nuit", 1);
+    Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+    int64_t tun = -1, tunFin = -1;
+    for (const trace::Section& s : trace::sections(t)) if (s.type == trace::Type::Tunnel && tun < 0) { tun = s.debut; tunFin = s.fin; }
+    double temps = 1000;
+    auto pas = [&](int n, int rendu) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); temps += 1.0 / 60; if (rendu > 0 && i % rendu == 0) g.render(temps); } };
+    auto capture = [&](const std::string& nom) {
+        g.render(temps += 1.0 / 60); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : %.0f km/h, %.1f m, balais %.2f rad", nom.c_str(), g.player().kmh(), g.player().dist * M, cockpit::pareBriseVu().angle);
+    };
+    auto partir = [&](int64_t seg, VueCamera v) {
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, seg)).c_str(), 1);
+        if (!g.init(r, "golf", "ville")) { WFS_ERR("banc pluie : chargement impossible"); return false; }
+        choisirVue(v); g.camMode = 0; g.setAutopilot(true); g.allerA(Ecran::Course);
+        pas(60 * 3 + 30, 2);   // décompte, départ
+        return true;
+    };
+    auto jusqua100 = [&]() { for (int k = 0; k < 60 * 40 && g.player().kmh() < 102; k++) pas(1, 3); };
+    // 1. montant gauche à vitesse, puis passage des balais (rendu à chaque image : les balais dessinés effacent les gouttes)
+    if (partir(0, VueCamera::Cockpit)) {
+        jusqua100();
+        capture("pluie-cockpit-105");
+        const cockpit::InterieurDef* d = cockpit::interieurPour("golf");
+        const float arc = d ? d->arc : 1.5f;
+        float prec = cockpit::pareBriseVu().angle;
+        int n = 0;
+        for (int k = 0; k < 600 && n < 5; k++) {
+            pas(1, 1);
+            const float a = cockpit::pareBriseVu().angle, cible = arc * (0.1f + 0.2f * n);
+            if (a > prec && prec < cible && a >= cible) capture("pluie-balais-" + std::to_string(++n));
+            prec = a;
+        }
+        g.shutdown();
+    }
+    // 2. entrée du tunnel en vue Cockpit : la caméra (à l'œil du conducteur) à −10, 0, 3, 6 m de la bouche et au milieu
+    if (tun >= 0 && partir(tun - (int64_t)(70 / SEG_M), VueCamera::Cockpit)) {
+        const double bouche = tun * SEG_M, milieu = (tun + tunFin) / 2 * SEG_M;
+        const std::pair<double, const char*> etapes[] = {{bouche - 10, "pluie-tunnel-avant"}, {bouche, "pluie-tunnel-bouche"}, {bouche + 3, "pluie-tunnel-3m"},
+                                                          {bouche + 6, "pluie-tunnel-6m"}, {milieu, "pluie-tunnel-milieu"}};
+        size_t e = 0;
+        for (int k = 0; k < 60 * 60 && e < 5; k++) { pas(1, 2); if (g.player().dist * M >= etapes[e].first) capture(etapes[e++].second); }
+        g.shutdown();
+    }
+    // 3. témoin : vue Arrière sous la pluie à vitesse
+    if (partir(0, VueCamera::Poursuite)) { jusqua100(); capture("pluie-arriere-vitesse"); g.shutdown(); }
+    choisirVue(VueCamera::Poursuite); unsetenv("WFS_DEPART"); unsetenv("WFS_MOMENT");
+}
 
 } // namespace wfs
 
