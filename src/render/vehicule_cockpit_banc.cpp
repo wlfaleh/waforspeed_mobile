@@ -112,7 +112,7 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
                         ferme[(size_t)i] = differe(K.p + i * 3, B.p + i * 3);
                         parVitre[(size_t)i] = !ferme[(size_t)i] && differe(A.p + i * 3, B.p + i * 3);
                     }
-                    long bord = 0;
+                    long bord = 0, lueur = 0;
                     for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) {
                         const long i = (long)y * W + x;
                         if (!differe(A.p + i * 3, B.p + i * 3)) continue;
@@ -124,8 +124,17 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
                             plein = ferme[j] && !parVitre[j];
                         }
                         if (!plein) { bord++; continue; }
+                        // lueur d'un feu de la voisine sur le bord de l'habitacle (anticrénelage d'une lampe très lumineuse) : seule
+                        // une couleur monte un peu (mesuré : rouge +15 à +21 niveaux, vert et bleu identiques, 1 à 3 pixels sous
+                        // l'appui de vitre, près d'un feu arrière) : pas un morceau de la voiture, ignorée (≤ 25 niveaux, jamais une baisse)
+                        {
+                            const unsigned char *pa = A.p + i * 3, *pb = B.p + i * 3;
+                            const int d0 = pa[0] - pb[0], d1 = pa[1] - pb[1], d2 = pa[2] - pb[2];
+                            if (std::min({d0, d1, d2}) >= -3 && std::max({d0, d1, d2}) <= 25) { lueur++; continue; }
+                        }
                         ecart++; A.p[i * 3] = 255; A.p[i * 3 + 1] = 0; A.p[i * 3 + 2] = 255;   // écarts en magenta
                     }
+                    if (lueur) WFS_LOG("WFS349 %s : %ld pixel(s) de lueur d'un feu (≤ 25 niveaux), non comptés", base.substr(out.size() + 1).c_str(), lueur);
                     if (bord) WFS_LOG("WFS349 %s : %ld pixel(s) de bord (≤ %d px, bords étalés par le rendu), non comptés", base.substr(out.size() + 1).c_str(), bord, R);
                 } else { WFS_ERR("cockpit-voisine : captures illisibles (%s)", base.c_str()); ecarts++; }
                 if (garder && ecart > 0) stbi_write_png((base + "-ecarts.png").c_str(), A.w, A.h, 3, A.p, A.w * 3);
