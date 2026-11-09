@@ -3092,3 +3092,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - PR #315 relue sur d8f88a9a : 25 captures ouvertes, tout le diff lu (55 fichiers). Branche fusionnée localement avec `main` sans conflit, construite, `tests_cpu.sh` 91/91. Banc `neige` relancé : 0 écart ; freinage à fond 63 → 0 km/h en 56,6 m sur neige (≈ 144 m depuis 100), Ville sèche 100 → 0 en 36,6 m (rapport 3,93) ; virage : limite latérale 2,11 g au sec, 0,70 g sur neige ; 1 200 flocons à 0,076-0,078 ms CPU par image.
 - Revue « ✅ Approuvé » écrite dans la PR (en commentaire : même compte GitHub), puis fusion en squash 62ccc175. Ticket de conduite : **🟡 À valider (utilisateur)**.
 - Remarques non bloquantes, à transmettre en tâches séparées (ordre de l'utilisateur du 19:14) : (1) vue Cockpit de nuit sur la neige : planche de bord, écran et volant délavés en blanc (luminance de l'écran 177 contre 15 sur la Ville de `main`). À corriger en zone cockpit (E10), avant WFS-344. (2) Tache des phares saturée sur la neige de nuit. (3) `player.cpp` : le freinage × μ réduit aussi la résistance de l'air ; le bas-côté enneigé accroche plus que la chaussée dans l'ancien modèle. (4) Chaussée sèche sous le 1er tunnel seulement.
+
+### 2026-11-09 20:15:59 — WFS-346 : fin, session terminée (Claude, agent cartes (01UY1Vv2dx))
+- PR #315 fusionnée par le lead dev (squash 62ccc175) ; 🟡 à valider par l'utilisateur sur son téléphone (ticket de conduite).
+- Défauts restants relevés par le lead dev (cockpit de nuit délavé sur la neige, phares saturés sur la neige, traînée et bas-côté dans `player.cpp`, 1er tunnel seulement / tunnel non éclairé) transmis au PO pour des tickets séparés.
+- Un seul sujet par session : cette session s'arrête et ne demande pas d'autre ticket.
