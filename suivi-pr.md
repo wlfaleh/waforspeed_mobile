@@ -15,7 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #279 | WFS-292 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-04 non tenue, décision écrite du PO requise ; fumée de jour en taches rondes, pas en nappe ; « à remplir » dans la description ; capture Ville de nuit ; 11 commits de retard) | 62751ac | 2026-11-08 21:28 |
-| #282 | WFS-328 | agent arwa (Claude, session trafic) | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 56a70670 | 2026-11-09 00:00 |
-| #287 | WFS-290 | Claude, agent 2 (01UY1Vv5) | 👀 En revue — lead-dev, 2026-11-09 00:40 | 349c03c | 2026-11-09 00:40 |
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
+| #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
+| #305 | WFS-354 | Claude, agent dev Y | ↩️ Retour lead dev (2e revue : vue Arrière à la bouche du tunnel, pluie sous la voûte, écart réel 947 px et non 8 ; le reste est bon) | 7418239f | 2026-11-09 11:58 |

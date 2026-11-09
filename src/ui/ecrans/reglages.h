@@ -41,12 +41,17 @@ void appliquerQualiteNiveau(Renderer& r);   // WFS-15 : applique reglages().qual
 // panneau ouvert : le menu et la pause ne prennent plus les touchers
 bool reglagesOuverts();
 void ouvrirReglagesBanc(bool oui);   // WFS-297 : banc seulement (captures du panneau en 1re, 2e, 3e partie)
-// toucher pour les réglages (panneau ouvert, ou bouton « Réglages » visé) : le menu et la pause le laissent passer
-bool toucheReglages(float x, float y);
+// toucher pour les réglages (panneau ouvert, bouton « Réglages » visé, ou doigt posé sur lui : WFS-290) : le menu et la pause le
+// laissent passer
+bool toucheReglages(float x, float y, int doigt);
 bool boutonCguReglages(float& x, float& y);   // WFS-308 (RG-05) : centre du bouton « Conditions d'utilisation » (banc ; faux si absent)
 
 // banc d'essai : reglages-menu, reglages-pause, reglages-basse (qualité basse en course)
 void benchReglages(Game& g, Renderer& r, const std::string& out);
+// WFS-290 : 100 appuis par cas sur « Réglages » et « Fermer », au menu et en pause (banc reglages-appuis)
+void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out);
+// WFS-291 : onglets Affichage, Conduite, Son (banc reglages-onglets)
+void benchReglagesOnglets(Game& g, Renderer& r, const std::string& out);
 
 } // namespace ecrans
 } // namespace wfs

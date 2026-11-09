@@ -7,6 +7,7 @@
 #include "../game/game.h"
 #include "manette.h"
 #include "manette_jeu.h"
+#include "../ui/ecrans/reglages.h"   // WFS-290 (accroche, RG-04) : réglages ouverts en pause
 
 namespace wfs {
 
@@ -22,7 +23,7 @@ ActionRetour decider(const Game& g) {
     const bool retour = std::any_of(z.begin(), z.end(), [](const manette::Zone& q) { return q.retour; });
     const Course* c = activeCourse();
     const bool finie = c && c->state == RaceState::Over;
-    return actionRetour(g.ecran(), finie, retour, g.ecran() == Ecran::Menu && choixModeOuvert());
+    return actionRetourReglages(g.ecran(), finie, retour, g.ecran() == Ecran::Menu && choixModeOuvert(), ecrans::reglagesOuverts());   // WFS-290
 }
 } // namespace
 

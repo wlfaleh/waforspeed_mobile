@@ -18,6 +18,7 @@
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "deux_roues.h"   // WFS-232 : pilotes casqués des deux-roues
 #include "trace_cartes.h"   // WFS-232 : tracé des captures en courbe
+#include "camera_vue.h"   // WFS-333 : vues Poursuite et Cockpit du banc (lecture seule)
 
 namespace wfs {
 
@@ -64,6 +65,7 @@ public:
         // trafic de la carte (resetRace du jeu web) ; « Rejouer » (WFS-12) repart de la même graine.
         // Graine tirée au hasard à chaque course : avec le menu (WFS-11).
         trafficN_ = (int)std::lround((g.map ? g.map->trafficN : 42) * config().trafic.densite); track_ = g.track;   // WFS-128 : × trafic.densite (1)
+        traffic_.totalFixe = true;   // WFS-281 (ANO-151, RG-02) : le total de voitures ne grandit plus pendant la course
         traffic_.reset(*g.track, seed_, trafficN_, g.player ? g.player->position : 0);
         stats_ = {};
         active_ = this;
@@ -92,7 +94,10 @@ public:
         if (course) course->hold(pl);
         if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
         if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
-        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
+        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) {
+            traffic_.fixerTotal(n);   // WFS-281 : la poursuite fixe son propre total (trafic dense)
+            traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
+        }
         const bool playing = !course || course->playing();
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
@@ -149,6 +154,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
         if (g.fondFige) return;   // WFS-329 (accroche) : fond figé du menu : dessin seul (dessins ignorés), rien à calculer
+        uint32_t a0, t0; r.fileScene(a0, t0);   // WFS-281 : coût du trafic de cette image (médianes du banc perf)
         const Player& pl = *g.player; Track& t = *g.track;
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
         const TrafficCar* vis[TRAFIC_DESSINES_MAX];
@@ -180,9 +186,16 @@ public:
         }
         deux_roues::dessinerFile(r, g.camPos);   // WFS-232 : pilotes des deux-roues les plus proches
         dessineHalos(r, g);   // WFS-67
+        uint32_t a1, t1; r.fileScene(a1, t1);
+        histo_[histoN_++ % HISTO] = {(double)(a1 - a0), (double)(t1 - t0), (double)n};   // WFS-281
     }
 
     static TrafficSystem* active_;
+    friend int benchPenetration(Game& g, Renderer& r, const std::string& out);   // WFS-333 : file visée du banc (holdX_)
+    // WFS-281 (RG-02) : appels, triangles et véhicules dessinés des HISTO dernières images, pour les médianes du banc perf
+    static constexpr int HISTO = 128;
+    struct CoutImage { double appels = 0, triangles = 0, dessines = 0; };
+    CoutImage histo_[HISTO]; uint32_t histoN_ = 0;
     int deuxRouesDessines_ = 0;   // WFS-232 : deux-roues dessinés à la dernière image (banc d'essai : autant de pilotes, RG-02)
     Traffic traffic_;
     TrafficStats stats_;
@@ -301,6 +314,11 @@ private:
     }
     // clignotants (setIndicators) à chaque coin du côté du signal ; feux de détresse si accidentée ; feux stop
     // (haloBrake) au freinage et après un accident (setLights(nuit, frein = accidentée) du jeu web)
+    // WFS-333 (ANO-190) : carré du halo orange d'un clignotant / feu de détresse (m). 1,5 m (sprite du jeu web, borne de WFS-109
+    // RG-10) : avec la texture radiale, le bloom et la pluie, une boule orange de ≈ 1 m collée à l'arrière, prise pour des
+    // flammes sur les voitures qui changent de file (Poursuite, trafic dense). Feu réel : glace de 0,15 à 0,25 m ; 0,7 m donne
+    // un éclat de ≈ 0,35 m centré sur le feu, toujours visible de jour (trafic-clignotant)
+    static constexpr float HALO_CLIGNOTANT_M = 0.7f;
     void feux(const TrafficCar& c, bool freine, const mat4& m, float L, float W, double t) {
         const WebCarFeux& f = WEB_FEUX[c.type];
         const bool on = clignotantAllume(t, c.rng);
@@ -308,7 +326,7 @@ private:
             const bool allume = on && (c.crashed || c.signal == side);
             if (allume)
                 for (float z : {L / 2 + 0.03f + 0.08f, -L / 2 - 0.03f - 0.08f})
-                    halos_[0].push_back({m.transformPoint({side * (W / 2 - 0.05f), z > 0 ? f.tail - 0.22f : f.nose - 0.14f, z}), 1.5f});
+                    halos_[0].push_back({m.transformPoint({side * (W / 2 - 0.05f), z > 0 ? f.tail - 0.22f : f.nose - 0.14f, z}), HALO_CLIGNOTANT_M});
         }
         (void)freine;   // WFS-109 (RG-01) : plus de carré de halo plaqué à côté du feu ; le feu du modèle s'allume (feuxDe)
     }
@@ -441,6 +459,21 @@ void trafficRestart(double playerPos) {
 void trafficRestartSeed(uint32_t seed, double playerPos) {
     if (auto* s = TrafficSystem::active_) { s->seed_ = seed; trafficRestart(playerPos); }
 }
+bool trafficMedianes(int images, double& appels, double& triangles, double& dessines) {
+    const TrafficSystem* s = TrafficSystem::active_;
+    if (!s || images <= 0) return false;
+    const int n = std::min({images, TrafficSystem::HISTO, (int)s->histoN_});
+    if (n == 0) return false;
+    auto mediane = [&](double TrafficSystem::CoutImage::*champ) {
+        double v[TrafficSystem::HISTO];
+        for (int k = 0; k < n; k++) v[k] = s->histo_[(s->histoN_ - 1 - k) % TrafficSystem::HISTO].*champ;
+        std::nth_element(v, v + n / 2, v + n);
+        return v[n / 2];
+    };
+    appels = mediane(&TrafficSystem::CoutImage::appels); triangles = mediane(&TrafficSystem::CoutImage::triangles);
+    dessines = mediane(&TrafficSystem::CoutImage::dessines);
+    return true;
+}
 int trafficBenchCar() { return TrafficSystem::active_ ? TrafficSystem::active_->benchCar_ : -1; }
 static void trafficBenchPeloton(double metres) { if (auto* s = TrafficSystem::active_) { s->pelotonReq_ = true; s->pelotonM_ = metres; } }
 static void trafficBenchDense(bool on) { if (auto* s = TrafficSystem::active_) s->benchDense_ = on; }
@@ -488,6 +521,97 @@ void benchTrafficScenes(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("trafic-choc : écart latéral de la voiture percutée %+.3f (borne ±1,12, jeu web identique), %.1f m du centre",
                 c.offset, c.offset * RW);
     }
+}
+
+// WFS-333 (RG-04) : banc « penetration », Ville de nuit, Golf, Checkpoint. WFS_AVANT_333=1 (banc seulement) : mêmes scènes avec les
+// chocs d'avant WFS-333 (g_avantWfs333), pour les captures « avant ». Chaque capture écrit au journal une ligne « WFS333 <nom> : »
+// (vitesses, écarts, recouvrement des emprises dessinées), reprise sur les images de la PR.
+//  1. vues Poursuite et Cockpit : voisine posée 2,5 m devant, à 1,95 m de centre à centre, le joueur braque vers elle (choc
+//     latéral provoqué) : 4 images à 0,13 s d'écart ; en Cockpit, la 4e est refaite sans la voisine (lumière sur la planche) ;
+//  2. vue Arrière (Poursuite), RG-02 / ANO-180 : à 130 km/h, la voiture voisine (2 m derrière, à côté) part en tête-à-queue vers
+//     le joueur, qui garde le gaz : 4 images (+0,25 s, +0,6 s, +1,2 s, +2 s) ; la voiture heurtée doit rester derrière, le
+//     joueur continuer à plus de 60 km/h.
+// Écart si une voiture est à plus de 3 cm dans celle du joueur (RG-03), ou (après WFS-333) si la voiture accidentée suit le joueur.
+int benchPenetration(Game& g, Renderer& r, const std::string& out) {
+    { const char* e = std::getenv("WFS_AVANT_333"); g_avantWfs333 = e && e[0] == '1'; }
+    int ecarts = 0; double t = 0, pireTout = 0;
+    auto recouv = [&](int seule) {   // recouvrement le plus fort (seule ≥ 0 : de cette voiture seulement)
+        const Traffic* tr = activeTraffic(); const Player& pl = g.player(); const Track& tk = *TrafficSystem::active_->track_;
+        double m = -1;
+        for (size_t i = 0; i < tr->cars.size(); i++) {
+            const TrafficCar& c = tr->cars[i];
+            if (c.cache || (seule >= 0 && (int)i != seule)) continue;
+            const double dz = tk.relZ(c.z - pl.position);
+            if (std::abs(dz) * M < 12) m = std::max(m, recouvrement(empriseJoueur(pl), empriseTrafic(c, dz)));
+        }
+        if (seule < 0) pireTout = std::max(pireTout, m);
+        return std::max(0.0, m);
+    };
+    auto pas = [&](int n) { for (int k = 0; k < n; k++) { g.update(1.0 / 60); t += 1.0 / 60; recouv(-1); } g.render(t); };
+    auto capture = [&](const std::string& nom, int k) {
+        r.capturePng(out + "/" + nom + ".png");
+        const TrafficCar& c = activeTraffic()->cars[(size_t)k]; const Player& pl = g.player();
+        const double dz = TrafficSystem::active_->track_->relZ(c.z - pl.position) * M, dx = (c.offset - pl.playerX) * RW;
+        WFS_LOG("WFS333 %s : joueur %.0f km/h, voiture %.0f km/h%s, distance %.1f m (en long %+.1f, en travers %+.1f), recouvrement %.3f m",
+                nom.c_str(), pl.kmh(), c.speed * M * 3.6, c.crashed ? " (accidentée)" : "", std::hypot(dz, dx), dz, dx, recouv(k));
+    };
+    auto demarrer = [&](VueCamera vue) {
+        setenv("WFS_MOMENT", "nuit", 1);
+        if (!g.init(r, "golf", "ville")) return false;
+        choisirVue(vue); g.camMode = 0; g.setAutopilot(true); g.allerA(Ecran::Course);
+        trafficBenchDense(false);
+        for (int i = 0; i < 60 * 4; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t); }   // décompte et départ
+        return TrafficSystem::active_ != nullptr;
+    };
+    for (VueCamera vue : {VueCamera::Poursuite, VueCamera::Cockpit}) {
+        if (!demarrer(vue)) { WFS_ERR("penetration : chargement impossible"); return ecarts + 1; }
+        const std::string nomVue = vue == VueCamera::Cockpit ? "cockpit" : "poursuite";
+        // 1. choc latéral : voisine 2,5 m devant, à 1,95 m de centre à centre (≈ 0,15 m d'écart), le joueur braque vers elle
+        trafficBenchPlace(2.5, 0.26, 0, true);
+        g.update(1.0 / 60); t += 1.0 / 60;
+        TrafficSystem* s = TrafficSystem::active_;
+        const int k = trafficBenchCar();
+        if (k < 0) { WFS_ERR("penetration : aucune voiture placée"); return ecarts + 1; }
+        s->holdX_ = activeTraffic()->cars[(size_t)k].offset;
+        const int frot0 = activeTrafficStats()->scrapes + activeTrafficStats()->bumps;
+        for (int img = 1; img <= 4; img++) {
+            pas(8);
+            capture("penetration-" + nomVue + "-" + std::to_string(img), k);
+        }
+        if (vue == VueCamera::Cockpit) {   // même image sans la voisine : d'où vient la lumière sur la planche
+            TrafficCar& c = s->traffic_.cars[(size_t)k];
+            c.cache = true; g.render(t); r.capturePng(out + "/penetration-cockpit-4-sans-voisine.png"); c.cache = false;
+            WFS_LOG("WFS333 penetration-cockpit-4-sans-voisine : même image, voisine retirée du dessin");
+        }
+        const int frot = activeTrafficStats()->scrapes + activeTrafficStats()->bumps - frot0;
+        WFS_LOG("penetration (%s) : %d frottement(s) ou choc(s) pendant le choc latéral", nomVue.c_str(), frot);
+        if (frot == 0) { WFS_ERR("penetration (%s) : aucun contact provoqué", nomVue.c_str()); ecarts++; }
+    }
+    // 2. RG-02 (ANO-180) : vue Arrière, la voisine part en tête-à-queue contre le joueur, qui continue
+    if (!demarrer(VueCamera::Poursuite)) { WFS_ERR("penetration : chargement impossible"); return ecarts + 1; }
+    {
+        TrafficSystem* s = TrafficSystem::active_;
+        trafficBenchPlace(-2.0, 0.26, 0, true);   // joueur 2 m devant la voisine, à côté
+        g.update(1.0 / 60); t += 1.0 / 60;
+        const int k = trafficBenchCar();
+        if (k < 0) { WFS_ERR("penetration : aucune voiture placée"); return ecarts + 1; }
+        Player& pl = const_cast<Player&>(g.player());   // banc : vitesse de départ de la scène (130 km/h, la voisine aussi)
+        TrafficCar& c = s->traffic_.cars[(size_t)k];
+        pl.speed = c.speed = c.want = 130 / 260.0 * MAX_SPEED;
+        s->holdX_ = pl.playerX;
+        Traffic::crash(c, 0.4, pl.playerX > c.offset ? 1 : -1);   // glissade et rotation vers le joueur
+        const int duree[4] = {15, 21, 36, 48};   // +0,25 s, +0,6 s, +1,2 s, +2 s
+        for (int img = 1; img <= 4; img++) { pas(duree[img - 1]); capture("penetration-accident-" + std::to_string(img), k); }
+        const double dz = s->track_->relZ(c.z - g.player().position) * M;
+        WFS_LOG("penetration (RG-02) : après 2 s, joueur %.0f km/h, voiture accidentée %.0f km/h à %+.1f m en long", g.player().kmh(), c.speed * M * 3.6, dz);
+        if (!g_avantWfs333 && (g.player().kmh() < 60 || dz > -5)) { WFS_ERR("penetration (RG-02) : la voiture accidentée suit le joueur ou le joueur est arrêté"); ecarts++; }
+    }
+    unsetenv("WFS_MOMENT");
+    choisirVue(VueCamera::Poursuite);
+    WFS_LOG("penetration%s : recouvrement max des emprises dessinées %.3f m (borne 0,03 m)", g_avantWfs333 ? " (AVANT WFS-333)" : "", std::max(0.0, pireTout));
+    if (!g_avantWfs333 && pireTout > 0.03) { WFS_ERR("penetration : voiture dans celle du joueur (%.3f m)", pireTout); ecarts++; }
+    g_avantWfs333 = false;
+    return ecarts;
 }
 
 // ---------- WFS-67 : scènes du banc d'essai du trafic vivant ----------

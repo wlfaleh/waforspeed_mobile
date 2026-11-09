@@ -81,6 +81,7 @@ struct Forcage {
     double azimutSoleil = -1000;     // WFS-207 : azimut forcé (°, du nord vers l'est ; étalon de WFS-151) ; < −500 : celui du soleil calculé
     bool abscisseForcee = false; double abscisse = 0;   // abscisse (unités de la piste) des sondes (tunnels, ponts)
     bool pointForce = false; vec3 point{};             // point des sondes (sinon la voiture)
+    double retardCapture = 0;        // WFS-328 : banc, secondes sans capture de sonde après une nouvelle scène (lenteur du téléphone : ≈ 3 s)
 };
 void forcer(const Forcage& f);
 // WFS-208 : moment de la journée (atmosphere::Moment : aube, matin, midi, heure dorée, heure bleue, nuit, heure réelle), choisi à

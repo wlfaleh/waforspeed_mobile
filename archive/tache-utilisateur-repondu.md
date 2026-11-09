@@ -201,3 +201,6 @@ Une limite à connaître : il faudra télécharger des textures et des personnag
 
 - Tableau journée / matin validé (avec l'agent expert ci, 2026-11-07 ≈ 21:00 UTC)
 ( PO : c'est appliqué dans `CLAUDE.md`, le `qa-lead` et mes consignes — **à chaque fusion** : compilation, tests, parcours, endurance, APK (le ticket reste 🟣) ; **à 4 h** (heure de France) : tous les bancs, le réalisme, l'émulateur ; s'ils sont verts, les tickets passent ✅ ; **à 7 h** : la QA, si « 🧪 Recette QA prête » est publié. **Gel de la CI 2 à 3 jours.** Numéro de version (nom de l'APK + écran de chargement) : **WFS-279** créé. )
+
+- Désormais chaque développeur de session termine sa tâche jusqu'au merge ; un sujet par agent développeur ; les sujets en cours se terminent, mais ensuite il est interdit que le même agent dans la même session prenne plus d'un sujet (conversation avec le PO, 2026-11-09 12:05 UTC)
+( PO : c'est appliqué — règle prioritaire dans `CLAUDE.md`, mes consignes, `agent-developer`, `track-agent.md` : une session = un ticket mené jusqu'à la fusion, puis arrêt ; je refuse toute 2e attribution. Les 7 tickets en cours se terminent, puis ces sessions s'arrêtent. Pour un nouveau sujet, ouvrez une nouvelle session. )

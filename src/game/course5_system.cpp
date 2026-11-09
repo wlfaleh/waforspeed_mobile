@@ -144,6 +144,8 @@ public:
             for (course5::Ordinateur& o : os_) {   // RG-05 : contacts comme au duel (hitGhosts)
                 const duel::ContactEvents e = duel::contacter(dt, pl, *g.track, *g.car, o.g);
                 if (e.accident) c->accident(); else if (e.chocs) c->bump(e.impact);
+                // WFS-333 (RG-03) : duel::contacter ne bouge que le joueur : l'adversaire ne reste jamais dans sa voiture
+                if (const CarDef& oc = carById(o.g.car.c_str()); !g_avantWfs333 && separerDuJoueur(pl, o.g.rd, o.g.x, oc.d.L, oc.d.W) && o.g.rd < pl.dist) o.g.v = std::min(o.g.v, pl.speed);
             }
         if (c->state == RaceState::Over) {
             if (!fini_) {

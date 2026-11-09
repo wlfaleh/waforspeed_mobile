@@ -63,6 +63,9 @@ struct Etat_ {
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
     const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
     double ev = 15; bool evInit = false, recaler = true; double dtImage = 0; int generation = 0;
+    double tScene = 0;   // WFS-328 : temps de la dernière nouvelle scène (retard de capture du banc)
+    double zPrec = 0;    // WFS-328 : abscisse du joueur à l'image précédente (« Recommencer »)
+    bool nuitEstimee = false;   // WFS-328 : image précédente exposée sur l'estimation de nuit (sans sonde locale)
     double hCache = -1000, kCache = 0;
     // ciel (pour la sonde du ciel calculée sur le CPU)
     struct Ciel { bool nuit = false; double K = 0, Lnuit = 0; vec3 haut{}, horizon{}, sol{}, brume{}, soleil{}; } ciel;
@@ -444,7 +447,11 @@ void irradiance(const vec3& n, double E[3]) {
 double eclairementLampes(const GameView& gv, vec3 p) {
     if (!gv.track || lampadaires().empty()) return 0;
     Track& t = *gv.track;
-    const double L = t.length(), z = gv.player ? gv.player->position : 0;
+    // WFS-328 (RG-05, ANO-179) : distance parcourue (dist), pas l'abscisse ramenée au tour (position) : le point regardé p est sur
+    // la route du tour en cours (camera_vue.cpp : track.point(dist)), et la route de chaque tour est tournée par rapport au
+    // précédent (WFS-268) ; avec position, les lampes étaient cherchées sur le 1er tour, loin de la voiture dès le 2e tour : 0,1 lx
+    // reçus (lune seule), exposition de rase campagne (EV −3,5) en pleine ville, image blanche / rose jusqu'à la fin de la course
+    const double L = t.length(), z = gv.player ? gv.player->dist : 0;
     if (!(L > 0)) return 0;
     double E = 0;
     for (const Lampadaire& l : lampadaires()) {
@@ -473,9 +480,17 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-213 (RG-01) : nouvelle scène aussi quand la piste, la carte ou la voiture change (init, changement de carte ou de voiture) :
     // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
     const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
-    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
-        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; g.sceneNeuve = true; }
-        remettreAZero(); g.init = true; dt = 0;
+    // WFS-328 (RG-02) : « Recommencer » tôt dans la course ramène la voiture de moins de 80 m : un recul de plus de 20 m sur la piste
+    // en une image (impossible en roulant, même en marche arrière) est aussi une nouvelle scène
+    const double zPiste = gv.player ? gv.player->dist : 0;   // distance parcourue (position revient à 0 à chaque tour)
+    const bool recul = g.init && gv.track == g.pistePrec && (g.zPrec - zPiste) * M > 20;
+    g.zPrec = zPiste;
+    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene || recul) {
+        if (!g.init || autreScene || fp.night != g.nuitPrec) g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR;
+        // WFS-328 (RG-02) : nouvelle scène et « Recommencer » recalés dès leur 1re image ; WFS-322 : un saut en avant dans la même
+        // scène (plus de 80 m) garde l'adaptation douce
+        if (!g.init || autreScene || fp.night != g.nuitPrec || recul) { g.evInit = false; g.sceneNeuve = true; }
+        remettreAZero(); g.init = true; dt = 0; g.tScene = t;
     }
     g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
     dt = std::clamp(dt, 0.0, 0.25);
@@ -529,9 +544,15 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
     // ---- RG-02 : exposition (mesure sur les sondes, bornée par moment, adaptation de l'œil)
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
-    double Lmes = mesurerLuminance(g.avant);
+    // WFS-328 (ANO-177, RG-01) : avant la première sonde locale d'une scène, la mesure lisait la sonde du ciel : celle de la scène
+    // d'avant à la première image (jour du menu : 3 458 cd/m²), puis le seul ciel de nuit sans lampadaires (0,025 cd/m²) :
+    // exposition 1,3 IL plus claire d'un coup pendant le décompte au banc (image blanche / rose sur le téléphone) jusqu'à la capture (≈ 3 s).
+    // La nuit, la mesure réfléchie attend donc la sonde locale (la valeur du moment, EV_REF_NUIT, la remplace, mêlée au
+    // posemètre incident des lampadaires, connu dès la 1re image) ; de jour, elle attend que la sonde du ciel soit à jour.
+    const bool mesureSure = g.B.capture || (!nuit && !g.cielAFaire);
+    double Lmes = mesureSure ? mesurerLuminance(g.avant) : 0;
     if (!luminanceValide(Lmes)) Lmes = 0;   // WFS-213 (RG-02) : mesure invalide : la dernière exposition juste est gardée
-    double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
+    double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.B.capture ? g.ev : nuit ? EV_REF_NUIT : EV_REF_JOUR;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
     // WFS-230 (RG-01) : nuit au clair de lune : l'exposition dépend de l'éclairement reçu par le conducteur (lune, ciel et lampadaires
@@ -550,8 +571,12 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
-    if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
-    else g.ev = adapter(g.ev, cible, dt);
+    // WFS-328 (RG-02, RG-03) : la nuit, l'image tourne déjà sur l'estimation (valeur du moment) quand la première sonde arrive :
+    // passage doux vers la mesure (adaptation de l'œil, pas de saut visible) ; à temps arrêté (banc) ou de jour, recalage direct
+    const bool doux = g.nuitEstimee && dt > 0;
+    if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0 && !doux)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
+    else { g.ev = adapter(g.ev, cible, dt); if (doux && g.B.capture) g.recaler = false; }
+    g.nuitEstimee = nuit && !mesureSure;
     if (!std::isfinite(g.ev)) g.ev = std::clamp(nuit ? EV_REF_NUIT : EV_REF_JOUR, evMin, evMax);   // WFS-213 (RG-02) : jamais de valeur non finie
     g.dtImage = dt;
     const double k = exposition(g.ev);
@@ -615,7 +640,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-264 (RG-01) : en Basse, une capture par zone seulement : la première (départ, sous le chargement et le décompte) et
     // à chaque changement de zone (entrée et sortie de tunnel ou de pont : forcerCapture) ; plus de capture tous les « esp » m
     const bool parZone = niveau == qualite::BASSE;
-    if (!environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
+    const bool retardee = g.forc.actif && t - g.tScene < g.forc.retardCapture;   // WFS-328 : banc, sonde lente comme sur le téléphone
+    if (!retardee && !environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
         if (g.aucuneDemande || g.forcerCapture || (!parZone && length(point - g.dernierPoint) > esp)) {
             // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente

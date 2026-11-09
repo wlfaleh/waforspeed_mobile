@@ -97,6 +97,21 @@ bool decoder(const std::string& o, Trace& out) {
     return true;
 }
 
+bool& affiche() { static bool a = true; return a; }
+
+std::string tempsRecord(double secondes) {
+    const long dixiemes = std::lround(std::max(0.0, secondes) * 10);
+    char b[32]; std::snprintf(b, sizeof b, "%ld:%02ld,%ld", dixiemes / 600, (dixiemes / 10) % 60, dixiemes % 10);
+    return b;
+}
+
+float opaciteEtiquette(double rel) {
+    if (rel < -10 || rel > 200) return 0.f;
+    if (rel < 0) return (float)(1 + rel / 10);
+    if (rel > 80) return (float)((200 - rel) / 120);
+    return 1.f;
+}
+
 std::string nomFichier(const std::string& terrain) { return "fantome-" + terrain + ".bin"; }
 
 bool lireFichier(const std::string& chemin, Trace& out) {
