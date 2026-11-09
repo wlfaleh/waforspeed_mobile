@@ -2748,3 +2748,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Épingle : suite prise au segment de plus forte courbure, avant / après régénérés (f2221241, 22e8339a).
 - Ville en virage : 9 paires `carte-ville-virage-*` avant / après (0,00 % ; vues hautes 0,40–0,81 %, contours seulement) ; trafic en virage visible dans la suite du carrefour (012bdf18, 8ae83bc0).
 - Remarques non bloquantes corrigées (f2221241). Tests CPU 89 OK ; synchronisé avec main (dc4dc8bb). Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-09 15:11:27 — WFS-293 fusionné par le lead dev (lead-dev)
+- PR #310, 2e revue sur dc4dc8bb : les 2 points bloquants de la revue précédente sont corrigés (suite de l'épingle dans la courbe de 165° ; 9 paires Ville en virage sans régression, trafic sur sa voie dans la suite du carrefour). Toutes les captures ont été ouvertes.
+- Diff relu en entier ; branche synchronisée avec main et construite par le lead dev (Release) : 89 tests CPU verts.
+- Approbation écrite dans la PR (en commentaire : même compte GitHub), puis fusion en squash f1abb662. Statut 🟡 À valider (utilisateur). Remarque non bloquante : `dthInutile` (`track.cpp`), paramètre de sortie jamais lu.
