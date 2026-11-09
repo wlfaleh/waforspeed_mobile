@@ -7,8 +7,8 @@
 // Couleurs unies (sol, parasols, mâts, transats, gaines, noix) : une seule palette (texture 32 × 1) → 1 maillage par
 // morceau ; avec l'océan, le stipe et les palmes : 5 appels de dessin par morceau (≤ 300 au total, journal du banc).
 // Placement des objets généré par la graine de la carte (mulberry32(seed · 31 + 7)), avec les pas du jeu web.
-// WFS-139 : décor posé sur les sections du tracé 2 (WFS-136) : falaise des lacets (paroi de roche côté montagne, glissière
-// et chute de la falaise côté mer, terrasses entre deux branches des lacets), tunnel taillé dans la roche (voûte brute,
+// WFS-139 : décor posé sur les sections du tracé 2 (WFS-136) : falaise de la montée (paroi de roche côté montagne, glissière
+// et chute de la falaise côté mer ; WFS-379 : les lacets et leurs terrasses entre deux branches sont retirés), tunnel taillé dans la roche (voûte brute,
 // éclairage sodium renforcé à l'entrée), rond-point de la station (îlot, palmiers, ancre géante), feu tricolore et rue
 // transversale du front de mer ; mer à altitude fixe ; rien sur la chaussée ni sur une autre branche de la route.
 #include <algorithm>
@@ -46,6 +46,10 @@
 #include "zones.h"
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : rivage déclaré au son des lieux
 #include "../audio/parois_sons.h"      // WFS-275 (accroche) : falaise et villas (écho)
+#include "../game/camera_vue.h"   // WFS-379 : banc de la montée (vues Proche et Capot, lecture seule)
+#include "../game/course5.h"       // WFS-379 : banc de la montée (mode Checkpoint : mini-carte et guidage)
+#include "../game/course_system.h"  // WFS-379 : banc de la montée (règles de course du banc : HUD de course)
+#include "../ui/text.h"           // WFS-379 : banc de la montée (police du HUD)
 
 namespace wfs {
 
@@ -69,7 +73,7 @@ static bool plageLibre(Track& t, const MapDef& map, int64_t len, int64_t n) {
     const char* z = zoneId(map, n, len);
     if (std::strcmp(z, "corniche") && std::strcmp(z, "village")) return false;
     const trace::Section* s = trace::sectionA(t, (double)(((n % len) + len) % len) * SEG);
-    if (s && (t.pose(n).y > 1 || s->type == trace::Type::Lacets || s->type == trace::Type::Tunnel ||
+    if (s && (t.pose(n).y > 1 || s->type == trace::Type::Tunnel ||   // WFS-379 : plus de lacets (montée : route au-dessus d'1 m)
               s->type == trace::Type::RondPoint || s->type == trace::Type::Feux)) return false;
     return trace::rayonInterieur(t, (double)n * SEG).droite > 150;   // côté mer : pas l'intérieur d'une courbe serrée
 }
@@ -111,7 +115,7 @@ const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len) { return 
 // (captures « avant » de la preuve, RG-C5).
 static bool sansEtabs() { const char* e = std::getenv("WFS_PLAGE_AVANT"); return e && *e == '1'; }
 static bool serre(const trace::Section* s) {
-    return s && (s->type == trace::Type::Epingle || s->type == trace::Type::Lacets || s->type == trace::Type::RondPoint ||
+    return s && (s->type == trace::Type::Epingle || s->type == trace::Type::RondPoint ||   // WFS-379 : plus de lacets
                  s->type == trace::Type::Chicane || s->type == trace::Type::Feux || s->type == trace::Type::Tunnel ||
                  (s->type == trace::Type::Virage && s->rayon <= 100));
 }
@@ -691,11 +695,13 @@ public:
                     break;
                 }
         }
-        // nature du sol : falaise = lacets, ou route à plus de 3 m au-dessus de la mer ; tunnel ; place (rond-point, carrefour)
+        // nature du sol : falaise = route à plus de 3 m au-dessus de la mer (et montée, WFS-379) ; tunnel ; place (rond-point, carrefour)
         for (int64_t n = 0; n < L; n++) if (t.pose(n).y > 3.0) sol_[(size_t)n] = S_FALAISE;
         int serres = 0;
         for (const trace::Section& s : S) {
-            if (s.type == trace::Type::Lacets) for (int64_t n = s.debut; n < s.fin; n++) sol_[(size_t)mod(n)] = S_FALAISE;
+            // WFS-379 (RG-02) : la Corniche n'a plus de lacets ; la montée est falaise par son altitude (> 3 m, ci-dessus) et,
+            // seule sur son flanc (aucune autre branche à moins de 230 m), n'a plus de terrasse entre deux branches
+            if (s.type == trace::Type::Montee) for (int64_t n = s.debut; n < s.fin; n++) if (t.pose(n).y > 1.0) sol_[(size_t)mod(n)] = S_FALAISE;
             if (s.type == trace::Type::Tunnel) { tunDeb_ = s.debut; tunFin_ = s.fin; for (int64_t n = s.debut; n < s.fin; n++) sol_[(size_t)mod(n)] = S_TUNNEL; }
             if (s.exRondPoint) for (int64_t n = s.debut - 15; n < s.fin + 15; n++) sol_[(size_t)mod(n)] = S_PLACE;   // WFS-283 : place de la station au carrefour simple
             if (s.type == trace::Type::RondPoint) {
@@ -717,7 +723,7 @@ public:
                 for (int64_t n = croise - 17; n <= croise + 17; n++) sol_[(size_t)mod(n)] = S_PLACE;   // ±20 m : terre-plein
                 for (int64_t n = s.ligneArret - 50; n < s.ligneArret + 10; n++) cache_[(size_t)mod(n)] |= 3;   // 60 m avant le feu
             }
-            const bool serre = s.type == trace::Type::Epingle || s.type == trace::Type::Lacets || s.type == trace::Type::RondPoint ||
+            const bool serre = s.type == trace::Type::Epingle || s.type == trace::Type::RondPoint ||   // WFS-379 : plus de lacets
                                s.type == trace::Type::Chicane || (s.type == trace::Type::Virage && s.rayon <= 100);
             if (!serre) continue;
             serres++;
@@ -741,7 +747,7 @@ public:
         for (const trace::Section& s : S) {
             // WFS-283 (RG-02) : aussi au carrefour simple qui remplace le rond-point (virage de rue de 22 m) : sans bouchon, on
             // voyait la mer sous le trou du sol ; ses disques sont bornés par la distance réelle à la chaussée (bouchons_sol.h)
-            if (s.type != trace::Type::Epingle && s.type != trace::Type::Lacets && !s.exRondPoint) continue;
+            if (s.type != trace::Type::Epingle && !s.exRondPoint) continue;   // WFS-379 : plus de lacets à la Corniche
             // un disque par segment serré, centré sur son propre centre de courbure : l'union suit l'arc réel (un seul disque
             // au rayon le plus serré laissait un coin ouvert contre le trottoir intérieur) ; hauteur et teinte : sol du sommet
             int64_t sommet = -1; float y = 0; int col = C_GARRIGUE;
@@ -938,10 +944,10 @@ public:
         const int64_t m = mod(n), d0 = mod(tunDeb_ - m), d1 = mod(m - (tunFin_ - 1));
         return std::min(d0, d1);
     }
-    // village perché (zone « village » sur la falaise, hors des lacets) : terrasse de maisons côté montagne
+    // village perché (zone « village » sur la falaise, hors de la montée) : terrasse de maisons côté montagne
     bool villagePerche(Track& t, int64_t a) const {
         const trace::Section* s = trace::sectionA(t, (double)mod(a) * SEG);
-        return !std::strcmp(zoneId(*t.map(), a, len_), "village") && !(s && s->type == trace::Type::Lacets);
+        return !std::strcmp(zoneId(*t.map(), a, len_), "village") && !(s && s->type == trace::Type::Montee);   // WFS-379 : pas sur la montée
     }
 
     // bandes du bas-côté side : forme donnée par le segment a, valeurs prises au bout e (a ou a + 1) ; même nombre de
@@ -2519,23 +2525,118 @@ WFS_SYSTEM(Plage, 105)
 // ---------------------------------------------------------------- banc d'essai (WFS-139, RG-C5)
 // Corniche au tracé 2 en caméra de course (pilote automatique), de jour et de nuit, devant chaque lieu des sections :
 // carte-plage-falaise, -tunnel, -tunnel-dedans, -rond-point, -feu, -marina (RG-A), -village (RG-B), et deux vues de dessus
-// (carte-plage-lacets-dessus, carte-plage-rond-point-dessus) pour vérifier qu'aucun décor ne touche la chaussée.
+// (carte-plage-montee-dessus, carte-plage-rond-point-dessus) pour vérifier qu'aucun décor ne touche la chaussée.
+// WFS-379 : les lacets sont remplacés par une montée simple (« la » : 1re section en montée) : -falaise y est prise, et
+// carte-plage-montee-dessus / -montee-courbe-dessus remplacent carte-plage-lacets-dessus / -epingle-dessus.
+// WFS-379 (captures demandées au ticket) : WFS_CORNICHE=montee : seulement la montée de la Corniche (ex-lacets) et le parcours
+// complet, pour les captures avant (main, lacets) / après (montée simple). Lieux pris de la même façon sur les deux tracés :
+// c0 = début de la 1re section qui monte (lacets sur main, montée ici), tunnel = section tunnel :
+//  1. montee-<proche|capot>-<jour|nuit>-<1..3> : c0 + 150 m, c0 + 550 m, 120 m avant le tunnel (vue Proche et vue Capot, jour et nuit) ;
+//  2. montee-suite-<1..6> : 6 images en roulant, une toutes les 3 s depuis 60 m avant c0, vue Proche, mode Checkpoint (HUD,
+//     mini-carte et guidage visibles) ;
+//  3. parcours-<proche|capot>-<NNNN> : tour complet en pilote automatique, une image tous les 200 m (NNNN : mètres depuis le départ) ;
+//  4. montee-dessus : toute la montée vue de dessus, du début de la montée au tunnel.
+// Chaque image est regardée : aucun terrain, rocher, route ni plaque en l'air (RG-03).
+static void benchMontee(Game& g, Renderer& r, const std::string& out) {
+    ui::chargerPolice(r);
+    Track t; t.build(mapById("plage"), trace::versionCarte("plage"));
+    const int64_t L = (int64_t)t.segmentCount();
+    int64_t c0 = -1, tun = -1;
+    for (const trace::Section& s : t.sections()) {
+        if (c0 < 0 && s.denivele > 1) c0 = s.debut;
+        if (tun < 0 && s.type == trace::Type::Tunnel) tun = s.debut;
+    }
+    if (c0 < 0 || tun < 0) { WFS_ERR("banc montée (WFS-379) : montée ou tunnel introuvable"); return; }
+    auto seg = [](double metres) { return (int64_t)std::lround(metres / SEG_M); };
+    WFS_LOG("banc montée (WFS-379) : %lld segments ; montée à %lld (%.0f m), tunnel à %lld (%.0f m)", (long long)L, (long long)c0, c0 * SEG_M, (long long)tun, tun * SEG_M);
+    modeCourse() = ModeCourse::Checkpoint;
+    const bool regles = courseBenchRulesOn();
+    courseBenchRules(true);   // course du banc : HUD, mini-carte et guidage dessinés (comme le banc de la mini-carte)
+    auto rouler = [&](int n, double& temps) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); temps += 1.0 / 60; if (i % 30 == 0) g.render(temps); } };
+    const int64_t LIEUX[3] = {c0 + seg(150), c0 + seg(550), tun - seg(120)};
+    for (bool nuit : {false, true}) for (int v = 0; v < 2; v++) for (int k = 0; k < 3; k++) {
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, LIEUX[k] - seg(45))).c_str(), 1);
+        if (!g.init(r, "golf", "plage")) continue;
+        g.setAutopilot(true); g.camMode = 0; choisirVue(v ? VueCamera::Capot : VueCamera::Proche); g.allerA(Ecran::Course);
+        double temps = 400; rouler(60 * 5, temps);
+        g.render(temps); g.render(temps + 0.02);
+        const std::string nom = std::string("montee-") + (v ? "capot" : "proche") + (nuit ? "-nuit-" : "-jour-") + std::to_string(k + 1);
+        r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : départ %lld, joueur à %.0f m, altitude %.1f m", nom.c_str(), (long long)LIEUX[k], g.player().dist * M, t.point(g.player().dist, 0).y);
+        g.shutdown();
+    }
+    {   // 2. suite de 6 images en roulant sur la montée
+        setenv("WFS_MOMENT", "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, c0 - seg(60))).c_str(), 1);
+        if (g.init(r, "golf", "plage")) {
+            g.setAutopilot(true); g.camMode = 0; choisirVue(VueCamera::Proche); g.allerA(Ecran::Course);
+            double temps = 400; rouler(60 * 4, temps);
+            for (int k = 1; k <= 6; k++) {
+                rouler(60 * 3, temps); g.render(temps); g.render(temps + 0.02);
+                const std::string nom = "montee-suite-" + std::to_string(k);
+                r.capturePng(out + "/" + nom + ".png");
+                WFS_LOG("capture %s : joueur à %.0f m (montée de %.0f à %.0f m), %.0f km/h, altitude %.1f m", nom.c_str(), g.player().dist * M, c0 * SEG_M, tun * SEG_M, g.player().kmh(), t.point(g.player().dist, 0).y);
+            }
+            g.shutdown();
+        }
+    }
+    {   // 4. vue de dessus de toute la montée, jusqu'au tunnel (≈ 1,1 km sur main : lacets ; ≈ 1,4 km ici)
+        setenv("WFS_MOMENT", "jour", 1);
+        setenv("WFS_DEPART", std::to_string(c0).c_str(), 1);
+        if (g.init(r, "golf", "plage")) {
+            g.setAutopilot(false); g.camMode = 0;
+            double temps = 400; rouler(30, temps);
+            const Pose a = t.pose(c0), b = t.pose(tun);
+            const vec3 cible{(float)(a.x + b.x) / 2, (float)(a.y + b.y) / 2, (float)(a.z + b.z) / 2};
+            const float h = std::max(450.f, 0.95f * (float)std::hypot(b.x - a.x, b.z - a.z));
+            g_vueDessus.actif = true; g_vueDessus.cible = cible; g_vueDessus.oeil = cible + vec3{0, h, 0.01f}; g_vueDessus.haut = {0, 0, -1}; g_vueDessus.fov = 50;
+            g.render(temps); g.render(temps + 0.02); r.capturePng(out + "/montee-dessus.png");
+            g_vueDessus.actif = false;
+            WFS_LOG("capture montee-dessus : vue de dessus à %.0f m, de %.0f à %.0f m", h, c0 * SEG_M, tun * SEG_M);
+            g.shutdown();
+        }
+    }
+    for (int v = 0; v < 2; v++) {   // 3. parcours complet, une image tous les 200 m
+        setenv("WFS_MOMENT", "jour", 1); unsetenv("WFS_DEPART");
+        if (!g.init(r, "golf", "plage")) continue;
+        g.setAutopilot(true); g.camMode = 0; choisirVue(v ? VueCamera::Capot : VueCamera::Proche); g.allerA(Ecran::Course);
+        double temps = 400, prochain = 200;
+        const double tour = L * SEG_M;
+        for (int i = 0; i < 60 * 60 * 8 && prochain < tour; i++) {
+            g.update(1.0 / 60); temps += 1.0 / 60;
+            const double d = g.player().dist * M;
+            if (d < prochain) { if (i % 120 == 0) g.render(temps); continue; }
+            g.render(temps); g.render(temps + 0.02);
+            char nom[64]; std::snprintf(nom, sizeof nom, "parcours-%s-%04d", v ? "capot" : "proche", (int)prochain);
+            r.capturePng(out + "/" + nom + ".png");
+            WFS_LOG("capture %s : joueur à %.0f m, altitude %.1f m", nom, d, t.point(g.player().dist, 0).y);
+            prochain += 200;
+        }
+        if (prochain < tour) WFS_ERR("banc montée (WFS-379) : parcours %s arrêté à %.0f m sur %.0f", v ? "capot" : "proche", prochain, tour);
+        g.shutdown();
+    }
+    courseBenchRules(regles);
+    unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+}
+
 void benchCorniche(Game& g, Renderer& r, const std::string& out) {
+    if (const char* e = std::getenv("WFS_CORNICHE"); e && !std::strcmp(e, "montee")) { benchMontee(g, r, out); return; }   // WFS-379
     Track t; t.build(mapById("plage"), trace::versionCarte("plage"));
     const auto& S = t.sections();
     if (S.empty()) { WFS_ERR("banc Corniche (WFS-139) : la Corniche n'est pas au tracé 2"); return; }
     const int64_t L = (int64_t)t.segmentCount();
     const trace::Section *la = nullptr, *tu = nullptr, *rp = nullptr, *fx = nullptr;
     for (const trace::Section& s : S) {
-        if (s.type == trace::Type::Lacets && !la) la = &s;
+        if (s.type == trace::Type::Montee && !la) la = &s;   // WFS-379 : début de la montée de la Corniche
         if (s.type == trace::Type::Tunnel && !tu) tu = &s;
         if ((s.type == trace::Type::RondPoint || s.exRondPoint) && !rp) rp = &s;   // WFS-283 : carrefour simple, même place
         if (s.type == trace::Type::Feux && !fx) fx = &s;
     }
-    int64_t village = -1;   // village au tracé 2 : sur la descente de la falaise, hors des lacets
+    int64_t village = -1;   // village au tracé 2 : sur la descente de la falaise, hors de la montée
     for (int64_t a = 0; a < L && village < 0; a++) {
         const trace::Section* s = trace::sectionA(t, a * SEG);
-        if (!std::strcmp(zoneName(mapById("plage"), a, L), "Village de pêcheurs") && s && s->type != trace::Type::Lacets && t.pose(a).y > 3) village = a + 40;
+        if (!std::strcmp(zoneName(mapById("plage"), a, L), "Village de pêcheurs") && s && s->type != trace::Type::Montee && t.pose(a).y > 3) village = a + 40;
     }
     int64_t fete = -1, jeux = -1;
     for (const plage::Lieu& l : plage::lieux(mapById("plage"), L).lieux) { if (l.fete && fete < 0 && l.seg >= 60) fete = l.seg; if (!l.fete && jeux < 0 && l.seg >= 60) jeux = l.seg; }
@@ -2559,7 +2660,7 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture %s : plage, caméra de course, départ %lld segments, %.0f m", l.nom, (long long)l.depart, g.player().dist * M);
         g.shutdown();
     }
-    // vues de dessus : centre des lacets (≈ 380 m de large), rond-point
+    // vues de dessus : toute la montée (≈ 1,1 km de long, WFS-379), sa 1re courbe, rond-point
     auto dessus = [&](const char* nom, int64_t depart, int64_t centre, float h) {
         setenv("WFS_MOMENT", "jour", 1);
         setenv("WFS_DEPART", std::to_string(depart).c_str(), 1);
@@ -2574,7 +2675,12 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture %s : vue de dessus à %.0f m", nom, h);
         g.shutdown();
     };
-    if (la) { dessus("carte-plage-lacets-dessus", la->debut + 150, la->debut + (la->fin - la->debut) / 2, 520); dessus("carte-plage-epingle-dessus", la->debut + 60, la->debut + 140, 110); }
+    if (la) {   // WFS-379 : centre de la montée (fin de la dernière section en montée avant le tunnel) et milieu de sa 1re courbe
+        int64_t fin = la->fin, courbe = -1;
+        for (const trace::Section& s : S) { if (s.type == trace::Type::Tunnel) break; if (s.type == trace::Type::Montee && s.debut >= la->debut) { fin = s.fin; if (s.rayon > 0 && courbe < 0) courbe = (s.debut + s.fin) / 2; } }
+        dessus("carte-plage-montee-dessus", la->debut + 150, (la->debut + fin) / 2, 1100);
+        if (courbe >= 0) dessus("carte-plage-montee-courbe-dessus", courbe - 60, courbe, 260);
+    }
     if (rp) dessus("carte-plage-rond-point-dessus", rp->debut - 20, (rp->debut + rp->fin) / 2, 110);
     // WFS-180 : vues depuis la promenade (1,7 m au-dessus du trottoir, à RW + 3 m), tournées vers la fête, les jeux et la mer
     auto promenade = [&](const char* nom, int64_t seg, float recul, float latCible, float hCible, bool nuit, float fov = 55, const vec3* vise = nullptr) {

@@ -3056,6 +3056,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:53:46 — WFS-379 et WFS-376 en même temps dans `plage.cpp` : zones séparées (po-scrum-master)
 - WFS-376 (marina) attribué en parallèle par une autre instance du PO (19:53:14). Partage : WFS-379 = tracé `corniche()` et décor des lacets / de la montée ; WFS-376 = marina, `O_BATEAU`, `voilier()`, `yacht()`. Interdits croisés écrits dans les deux règles. WFS-380 attend WFS-379 et WFS-376.
 
+### 2026-11-09 19:57:05 — WFS-379 : début, branche créée (Claude, agent cartes 2 (01UY1Vv4VT))
+- Branche `feature/waforspeed-379` créée depuis `main` (b0d9d7bb). Session renommée « WFS-379 — Claude, agent cartes 2 (01UY1Vv4VT) (Corniche sans lacets) ».
+- Analyse : la route n'est pas fermée dans l'espace (tour ouvert : fin à −3 057 m / −1 497 m, cap −76°) ; le « bouclage » est celui des segments et de l'altitude. Les lacets (segments 1259 à 2201, 1 130 m, +60 m) vont de 366 m vers la droite pour 50 m en avant. Plan : remplacer par une montée en S de même longueur (≈ 1 130 m, donc mêmes numéros de segment pour la suite : zones, checkpoints, tunnel) et de même cap de sortie, deux courbes de 400 m de rayon, pente ≈ 5,3 %.
+- Fichiers prévus : `trace_cartes.cpp` (`corniche()`), `plage.cpp` (décor des lacets), bancs qui cherchent les lacets de la Corniche (`bench_fluidite`, `virages_banc`, `course5_system`, `parois_sons_banc`, `trace_cartes_systeme`), captures `carte-plage-lacets-*`, `tests/test_trace.cpp`.
+
 ### 2026-11-09 19:57:22 — WFS-376 : réponses du PO au développeur sur la marina (po-scrum-master)
 - Question de Claude, agent dev3d (01UY1Vv3u9). Décisions notées dans `regles-de-gestion/WFS-376.md` (Suivi) : RG-02 = axe perpendiculaire à la ligne d'amarrage (quai ou ponton) ±3°, rangée cul au quai + pontons perpendiculaires des deux côtés, chenal ≥ 1,5 × longueur ; un seul seuil de détail à 200 m (`LOD_FAR_M`), mât lointain en 2 quads croisés, budget 9 000 triangles ; quai : baisser seulement la bande d'amarrage si l'écart dépasse 1,5 m, mer et tracé inchangés.
 
@@ -3115,11 +3120,52 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Bancs `menu1`, `parcours`, `paquets` sur main : 0 écart. ASan + UBSan sur le banc `carte` (4 cartes, jour / nuit) : aucune erreur mémoire. Course à 5 + poursuite sous ASan : en cours.
 - Bloquant : symptôme inconnu (RG-01). Question posée à l'utilisateur sous sa demande dans `tache utilisateur.md`. Notes : `qa/pr/WFS-374/notes.md` (branche `feature/waforspeed-374`).
 
+### 2026-11-09 20:46:04 — WFS-379 : PR ouverte, lacets de la Corniche remplacés par une montée simple (Claude, agent cartes 2 (01UY1Vv4VT))
+- Fait : `corniche()` : 6 lacets → montée en S de +60 m (2 courbes de 35°, rayon 400 m, pente ≤ 6,8 %, cap net 0) ; décor des lacets retiré dans `plage.cpp` (bas-côtés bornés par une autre branche 1 581 → 0, disques de sol 341 → 29) ; bancs et tests des épingles passés au col de la Campagne ; nouveau banc `WFS_BANC=corniche WFS_CORNICHE=montee`.
+- Vérifié : 90 tests CPU verts ; captures avant (main + seul banc de la montée) / après dans `qa/pr/WFS-379/` (Proche et Capot, jour et nuit, suite de 6 images, mini-carte, parcours complet tous les 200 m, vue de dessus), regardées : plus aucun terrain ni plaque en l'air. Banc `perf` Corniche : triangles du décor −3,3 % (Haute) / −3,1 % (Basse).
+- Limites : carte +215 m (pente ≤ 7 %) ; RG-06 (D1, vide gris des vues de dessus) = autre cause (sol posé sur une bande de ~220 m autour de la route, mer en plan limité, aussi Ville et Grand Prix) → signalé au PO ; RG-07 (plateaux en escalier) = terrasses des lacets, disparues.
+- Signalé au PO (préexistant sur main, hors ticket) : bas-côté intérieur des épingles de la Campagne, volant à fond à 10 km/h : rayon 11,64 m au lieu de 4,17 m.
+- Aucune accroche hors de la zone donnée par le PO ; `CMakeLists.txt` non modifié.
+
 ### 2026-11-09 20:49:16 — Constats de WFS-379 : ANO-215 (cause trouvée) et ANO-231 (épingles de la Campagne) rangés dans des tickets existants (po-scrum-master)
 - Message de Claude, agent cartes 2 (01UY1Vv4VT), PR #317 (WFS-379) ; il ne demande pas de ticket, sa session s'arrête après la fusion.
 - **ANO-215 (vide gris des vues de dessus)** : autre cause que les terrains qui flottent : sol posé seulement sur une bande d'environ 220 m autour de la route (`plage.cpp`, `K_TERRE` jusqu'à RW + 220 m), mer en plan limité ; même chose Ville et Grand Prix (preuve : `qa/pr/WFS-379/apres-montee-dessus.jpg`). L'anomalie est 🚫 abandonnée par l'ordre de l'utilisateur du 20:12 UTC (pas de conflit avec E15, le décor est refait par WFS-385 à 388) : **pas de nouveau ticket** de décor hors E15 ; la cause et l'attendu sont écrits en **RG-10** de WFS-385, 386, 387, 388 (plus de vide gris vu d'en haut, capture de dessus avant / après). WFS-379 n'en est pas retardé (RG-06 de WFS-379 tenue : le développeur l'a signalé).
 - **ANO-231 créée** (Majeure, conduite, préexistante sur `main`) : épingles du col de la Campagne, bas-côté intérieur, volant à fond à 10 km/h, aide coupée : rayon 11,64 m au lieu de 4,17 m. Rangée dans **WFS-391** (P2, E3, skill expert-conduite, ⏳ Prêt, même sujet « conduite au bas-côté », même zone `player.*` / `roues.*`) en **RG-06** : trouver la cause d'abord, rayon à ± 3 % du centre, test CPU, capture ; si la cause est dans le sol de la carte, le développeur le dit au PO avant de sortir de sa zone. Titre de WFS-391 élargi dans `TACHES.md`.
 - `track-agent.md` remis à jour (derniers envois des branches 376, 374, 349, 214, 358, 379). Aucune attribution.
+
+### 2026-11-09 21:01:09 — WFS-379 (PR #317) relue par le lead dev : approuvée, fusion en attente de synchronisation (lead-dev)
+- 145 captures ouvertes (montée jour / nuit, Proche / Capot, suite de 6, vue de dessus, parcours complet) : plus de lacets, plus aucun pan de terrain ni plaque dans le ciel sur la montée. Diff entier lu ; branche construite, `tests_cpu.sh` 91/91 verts ; triangles du décor −3 %.
+- Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash refusé par GitHub : conflit dans `journal.md` (entrée du PO de 20:49:16). Le développeur synchronise avec `main` et rappelle le lead dev ; fusion ensuite.
+- À surveiller (non bloquant) : bande de falaise derrière le village sous la descente (`apres-parcours-*-4200`), décor inchangé ; `benchMontee` ne remet pas `modeCourse()`.
+
+### 2026-11-09 21:03:05 — WFS-379 fusionné par le lead dev (lead-dev)
+- PR #317 fusionnée en squash (ed494ea) après la synchronisation du développeur (dc295047 : `main` seul, vérifié). Revue « ✅ Approuvé » postée sur dc295047 (COMMENT : même compte GitHub).
+- `TACHES.md` : WFS-379 en 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne #317 retirée de `suivi-pr.md`.
+
+### 2026-11-09 21:03:43 — WFS-379 : fusionné, session terminée (Claude, agent cartes 2 (01UY1Vv4VT))
+- PR #317 fusionnée en squash par le lead dev (ed494ea9) ; ticket 🟡 À valider (utilisateur) ; `qa/Check.md` tenu par le lead dev.
+- Incident : la 1re synchronisation (dc295047) était restée en HEAD détachée dans mon dossier de travail (laissée ainsi par la 1re revue du lead dev) ; rattachée à la branche et poussée en avance rapide, puis fusion.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (vidéo des lacets). Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-09 21:10:28 — WFS-359 attribué à Claude, agent dev3d 2 (01UY1Vv2MH) (po-scrum-master)
+- Demande de la session `@dev3d` session_01UY1Vv2MHmNkDc96qUCVUja (agent `dev-artiste-3d`), nouvelle session, aucun ticket avant : 1er et seul ticket de la session.
+- Choix : objectif « voitures sans marque » avant le décor (ordre de l'utilisateur du 19:14). WFS-362 attend WFS-358 ; **WFS-359** (P1, ⏳ Prêt) est le ticket voitures suivant. **Exception E10** (même ordre : au plus deux tickets voitures en même temps si deux sessions `@dev3d`) : en parallèle de WFS-358 (X5) et de WFS-349 (cockpit), zones séparées.
+- Zone : `assets/cars/<mustang, tcross, passat>*`, `assets/cars/remplacants/**`, lignes de ces voitures dans `src/game/cars.h`, `assets/licences/**`, crédits, entrées du ticket dans `tools/formes.json` / `tools/logos.json`, `tests/**` ; **pas** `x5*` (WFS-358), `vehicule_cockpit*` (WFS-349), autres voitures. Règles : `regles-de-gestion/WFS-359.md` (RG-01 Mustang ±1 % sans dérogation, sinon autre modèle libre proposé au PO ; RG-02 T-Cross → VW Passat CC BY). Pas E15 : pas d'avis agent 3D obligatoire.
+- `track-agent.md` : ligne de Claude, agent cartes 2 (01UY1Vv4VT) enlevée (WFS-379 fusionné #317, session terminée) ; derniers envois 374, 349 mis à jour.
+
+### 2026-11-09 21:12:07 — WFS-376 : PR #318 refusée par le lead dev (lead-dev)
+- Revue du commit 4ee2758d : 18 paires de captures ouvertes, diff lu en entier, branche construite et testée (92 tests CPU réussis, `test_marina_bateaux` réussi).
+- Les bateaux sont réussis (coques à flot cul au quai, gréement, aucune voile hissée, pontons, bittes, quai abaissé), sans appel de dessin en plus, et rien n'est dégradé ailleurs.
+- Refus pour preuves manquantes : (1) la suite `marina-suite-1` à `-4` ne montre aucun bateau (la marina est hors de l'image), alors que le PO l'a rendue obligatoire contre le clignotement entre les niveaux de détail ; (2) aucune capture de nuit. Le code n'est pas à reprendre.
+- Remarques non bloquantes : Basse à +11,1 % (chiffre noté, admis par le PO) ; RG-09 vient du lampadaire de 6,4 m (hors zone, tâche séparée à voir avec le PO) ; captures « doree » identiques à « midi » (E13, ANO-208).
+- `TACHES.md` → « ↩️ Retour lead dev (PR #318) » ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-09 21:12:22 — WFS-369 attribué à Claude, agent dev3d 3 (01UY1Vv5WS) (po-scrum-master)
+- Demande de la session `@dev3d` session_01UY1Vv5WS2KPjVrJGzH9iLM (agent `dev-artiste-3d`), nouvelle session, aucun ticket avant : 1er et seul ticket de la session.
+- Choix : les voitures ne sont pas libres (E10 : WFS-358 et WFS-359 déjà en parallèle, maximum atteint ; WFS-360 attend WFS-359, WFS-362 attend WFS-358). Ticket suivant pour `dev-artiste-3d` : **WFS-369** (P1, ⏳ Prêt, plus petit numéro des décors prêts 369 / 372 / 373) ; file Ville de E15 libre.
+- Zone : `src/world/ville*.cpp`, `ville_quartiers.*`, `commerces.cpp` (mobilier et parasols de terrasse seulement), nouveaux fichiers `src/world/mobilier_*` / `decor_ville_*`, `assets/world/modeles/ville/**`, `assets/textures/decor/ville/**`, `assets/licences/**`, `tests/**` ; communs (`archi_kit.*`, `vegetation.*`, `decor_carte.*`, shaders `decor*`) : ajouts ≤ 10 lignes annoncés au journal. **Pas** `plage.cpp` (WFS-376), immeubles (WFS-370), `lots_decor.*` / `pietons.*` (performance), routes, voitures, lumière.
+- Règles : `regles-de-gestion/WFS-369.md` (RG-01 inventaire au journal d'abord ; RG-02 modèles CC0 / CC BY ±1 %, choix proposé au PO ; parasols ANO-216) et `regles-de-gestion/E15-decors.md` (RG-E15-06 : « Avis agent 3D : VALIDÉ » dans la PR avant le lead dev ; taille ajoutée notée dans la PR, le 200-700 Mo se mesure sur WFS-385).
 ### 2026-11-09 19:54:26 — WFS-376 : branche créée, analyse de la marina (Claude, agent dev3d (01UY1Vv3u9))
 - Branche `feature/waforspeed-376` créée depuis main ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
 - Cause relue dans `src/world/plage.cpp` : `placeQuartiers` (zone marina) + `case O_BATEAU` (boîte + triangle de voile) ; le quai est à ≈ 1,85 m au-dessus de l'eau, coque de 0,55 m cachée derrière le mur.
