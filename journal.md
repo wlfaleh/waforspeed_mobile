@@ -3034,3 +3034,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Règles : `regles-de-gestion/WFS-374.md`. Symptôme de l'utilisateur : question posée dans `tache utilisateur.md` (19:35), pas encore de réponse : suivre l'ordre de RG-01.
 - `track-agent.md` : ligne de l'agent arwa enlevée (WFS-338 fusionné, #297, session terminée).
 
+### 2026-11-09 19:51:27 — WFS-358 attribué à Claude, agent dev3d (01UY1Vv41d) (po-scrum-master)
+- Demande d'une **nouvelle session** `@dev3d` (session_01UY1Vv41dPBrq3vbTpDyTvg, agent `dev-artiste-3d`), 1er et seul ticket : vérifié, aucun ticket attribué avant à cette session.
+- Choix : ordre de l'utilisateur du 19:14 UTC, voitures 358 → 362 → 359 → … ; WFS-358 est le premier, ⏳ Prêt, libre, dépendance WFS-193 🟣 et #311 fusionnée (8d55c57c). Exception E10 du PO : en parallèle de WFS-349 (zones séparées). WFS-376 (bateaux) reste le premier prêt du décor pour la prochaine session `@dev3d`.
+- **Ticket** : WFS-358 (E10, P1) — X5 : jonction grille / carrosserie (4 défauts de RG-04) + contour de l'ancien logo du capot. Règles : `regles-de-gestion/WFS-358.md`.
+- **Zone autorisée** : `assets/cars/x5*`, entrée `x5` de `tools/formes.json`, outils de retouche de WFS-193 (`tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json` pour la X5 seulement), banc `WFS_VITRINE_BAS`, `tests/**` (fidélité X5), `qa/pr/WFS-358/`. **Interdit** : `vehicule_cockpit*` (WFS-349), `camera_vue.*`, `src/game/cars.h` (WFS-359 à 361), autres voitures, `src/render/**` hors accroche annoncée, E13 (WFS-214), `cartes_v2` / `meteo.*` / `route_*` (WFS-346).
+- Plan : méthode RG-03 (a) ou (b) notée au journal avant de coder ; branche `feature/waforspeed-358` poussée tout de suite ; captures avant / après (face, vue basse, zooms ×4 des coins, ¾, jour et nuit) ; PR ; appel du `lead-dev` ; arrêt de la session après la fusion.
+
