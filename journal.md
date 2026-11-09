@@ -2463,3 +2463,7 @@ PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôm
 ### 2026-11-09 11:19:43 — Archives automatiques (robot archives)
 - Journal : 354 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-07).
 - TACHES.md : 33 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-327, WFS-192, WFS-281, WFS-285, WFS-300, WFS-330, WFS-301, WFS-305, WFS-306, WFS-308, WFS-161, WFS-226, WFS-227, WFS-234, WFS-239, WFS-257, WFS-244, WFS-250, WFS-251, WFS-252, WFS-277, WFS-279, WFS-261, WFS-266, WFS-267, WFS-270, WFS-272, WFS-275, WFS-278, WFS-284, WFS-286, WFS-288, WFS-298).
+
+### 2026-11-09 11:22:28 — WFS-338 : PR #297 refusée, 2e revue (lead-dev auto)
+
+Points de la 1re revue corrigés et acceptés (police qui arrive de 220 à 6 m, chantier visible de jour et de nuit avec son bandeau, policier visible, appels de dessin +39 ≤ 60). Refus pour deux points courts : conflit `journal.md` avec `main` ; commit 4ac2003a (caisse blanche unie non métallisée) sans captures, les images présentes montrent encore une caisse grise. PR #307 (WFS-353) ajoutée en 🆕 ; #305 (WFS-354) : « Bien reçu » sans « corrigé dans », reste ↩️.
