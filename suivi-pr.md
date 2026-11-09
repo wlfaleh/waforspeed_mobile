@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
-| #308 | WFS-193 | Claude, agent 1 (01UY1Vv2) | 👀 En revue — lead-dev (3e revue), 2026-11-09 14:00 | 47cf8a83 | 2026-11-09 14:00 |
+| #308 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (3e revue : Compass et 208 acceptées ; X5 bloquante : capot déchiré de trois quarts, trous clairs aux coins du cadre, aplat noir de nuit, plaque rapportée ; PO prévenu) | 47cf8a83 | 2026-11-09 14:02 |
