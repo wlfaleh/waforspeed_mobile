@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "version_liste": 1,
+  "carte_par_defaut": "ville",
+  "version_min_apk": 927,
+  "commit": "a790c0464b129a0a465b02391603ab5e148dc470",
+  "paquets": [
+    {
+      "carte": "ville",
+      "nom": "Ville",
+      "format": "astc",
+      "version_carte": 2,
+      "version_format": 1,
+      "empreinte": "c30f0f40c276b6c1",
+      "version_min_apk": 927,
+      "taille": 22779180,
+      "sha256": "843a6e9c57c46e09e4f8b05dbaab520be69f0ec0e0a701117c1ec14ce03a3c7a",
+      "adresse": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/ville_astc-843a6e9c57c4.wfcarte"
+    },
+    {
+      "carte": "ville",
+      "nom": "Ville",
+      "format": "etc2",
+      "version_carte": 2,
+      "version_format": 1,
+      "empreinte": "c30f0f40c276b6c1",
+      "version_min_apk": 927,
+      "taille": 5562514,
+      "sha256": "f8e3c56c2a9e1851416530e0165d98a220fe737a28b1f0b2d6ab8142d2946055",
+      "adresse": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/ville_etc2-f8e3c56c2a9e.wfcarte"
+    },
+    {
+      "carte": "ville",
+      "nom": "Ville",
+      "format": "rgba8",
+      "version_carte": 2,
+      "version_format": 1,
+      "empreinte": "c30f0f40c276b6c1",
+      "version_min_apk": 927,
+      "taille": 27593777,
+      "sha256": "f982838af5a22c2402d888b89107a4766bf3a44f727b0b930321bc27233cbf7a",
+      "adresse": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/ville_rgba8-f982838af5a2.wfcarte"
+    }
+  ]
+}
