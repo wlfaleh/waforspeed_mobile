@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include "../audio/sfx.h"
 #include "../core/log.h"
@@ -44,7 +45,8 @@ using namespace poursuite;
 
 bool g_banc = false;                 // banc d'essai : programme fixe (captures stables)
 int g_bancFin = 0;                   // banc : 1 = arrêter tout de suite, 2 = sauter près de l'arrivée
-double g_bancSautKm = 0;             // WFS-141 : banc : saut en avant du joueur jusqu'à ce point (km)
+double g_bancSautKm = 0;
+bool g_bancSans338 = false;          // WFS-338 (banc) : sans les ajouts de WFS-338 (bandes, socle, policier, chantier), pour en mesurer le coût             // WFS-141 : banc : saut en avant du joueur jusqu'à ce point (km)
 // voiture existante repeinte (RG-03) : la 208 (la Golf si le joueur roule en 208)
 const char* policeCar(const Player* pl) { return pl && pl->car && !std::strcmp(pl->car->id, "p208") ? "golf" : "p208"; }
 
@@ -337,14 +339,14 @@ public:
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
             if (!modele_.ok || i >= 16) continue;
             peintures_[i] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[i]);
-            if (std::abs(rel) <= 80) conducteurs::ajouter(modele_, m, policeCar_, 0x50000000u + (uint32_t)i, true);   // WFS-338 (RG-06) : policier au volant
+            if (std::abs(rel) <= 80 && !g_bancSans338) conducteurs::ajouter(modele_, m, policeCar_, 0x50000000u + (uint32_t)i, true);   // WFS-338 (RG-06) : policier au volant
             // repère du modèle (m) : sol bmin.y, centre (cx, cz), avant vers −z ; pavillon mesuré au-dessus de la place du
             // conducteur (Model::siege, WFS-73), sinon le haut du modèle
             const vec3 b0 = modele_.bmin, b1 = modele_.bmax;
             const float cx = (b0.x + b1.x) / 2, cz = (b0.z + b1.z) / 2, Hm = b1.y - b0.y;
             const float toit = modele_.siege.w > 0.5f ? modele_.siege.x : b1.y, zToit = modele_.siege.w > 0.5f ? modele_.siege.z + 0.25f : cz + 0.1f;
             const bool proche = std::abs(rel) <= 80;   // WFS-338 (décision PO) : au-delà de 80 m, halos seuls (rampe, bandes, policier : de près)
-            const bool detail = !r.qualiteBasse || std::abs(rel) <= 40;   // Basse : bandes et socle jusqu'à 40 m (coût)
+            const bool detail = (!r.qualiteBasse || std::abs(rel) <= 40) && !g_bancSans338;   // Basse : bandes et socle jusqu'à 40 m (coût)
             // WFS-338 (RG-07, ANO-197) : bandes « POLICE » sur les portières (bleu, liseré blanc et rouge), sans marque
             if (detail) r.draw(bandesMesh_, matBandes_, m * translate({cx, b0.y + 0.40f * Hm, cz - 0.04f * L}) * scale({W + 0.012f, 0.17f * Hm, 0.50f * L}));
             // WFS-338 (RG-07, ANO-197) : rampe lumineuse posée sur le pavillon : socle gris de 1 m × 30 cm, deux feux bleus qui
@@ -364,11 +366,11 @@ public:
             double premier = 1e18, dernier = -1e18;
             for (const Plot& p : plots_) if (!p.tombe) { premier = std::min(premier, p.s); dernier = std::max(dernier, p.s); }
             if (conesSales_) construireCones(r, *g.track);
-            if (conesMesh_.indexCount && (premier - sP) * M < DESSIN_DEVANT_M && (dernier - sP) * M > -30) r.draw(conesMesh_, matCones_, mat4::identity());
+            if (!g_bancSans338 && conesMesh_.indexCount && (premier - sP) * M < DESSIN_DEVANT_M && (dernier - sP) * M > -30) r.draw(conesMesh_, matCones_, mat4::identity());
         }
         for (const Panneau& pn : panneaux_) {   // WFS-338 (RG-01) : panneau AK5 « travaux » (triangle rouge, fond jaune) sur pied
             const double rel = (pn.s - sP) * M;
-            if (rel < -30 || rel > DESSIN_DEVANT_M) continue;
+            if (g_bancSans338 || rel < -30 || rel > DESSIN_DEVANT_M) continue;
             const TrackPoint q = g.track->point(pn.s, pn.x * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th));
             r.draw(cube_, matSupport_, m * translate({0, 0, -0.03f}) * scale({0.05f, 0.40f, 0.05f}));
@@ -464,6 +466,17 @@ public:
     // banc (WFS-338) : renfort tout de suite (même chemin qu'au passage des 2 km) ; distance (m) derrière le joueur de la
     // police mobile la plus proche (négatif : devant)
     void bancRenfort(const Player& pl) { const int n = policeMobiles(); police_.push_back(renfort(n, pl.dist, pl.speed, graine_)); annoncer("RENFORT DE POLICE"); }
+    // banc (WFS-338, revue du lead dev) : toute la police mobile repart à APPARITION_M derrière (aucune à moins de 160 m),
+    // à la vitesse du joueur : elle revient ensuite par la conduite normale
+    void bancEloigner(const Player& pl) {
+        int k = 0;
+        for (Police& p : police_) if (!p.fixe) { p.rd = p.rdPrec = pl.dist - (APPARITION_M + 12 * k++) / M; p.v = pl.speed; p.x = p.xPrec = p.cibleX = FILES[k % 3]; }
+    }
+    // banc (WFS-338, RG-06) : une voiture de police posée à côté du joueur (dzM m devant, x en demi-largeurs), arrêtée
+    void bancPoser(const Player& pl, double dzM, double x) {
+        for (Police& p : police_) if (!p.fixe) { p.rd = p.rdPrec = pl.dist + dzM / M; p.x = p.xPrec = p.cibleX = x; p.v = 0; return; }
+    }
+    double bancProche(const Player& pl) const { return plusProcheM(police_, pl.dist, pl.playerX); }
     double bancDerniere(const Player& pl) const { for (size_t i = police_.size(); i-- > 0;) if (!police_[i].fixe) return (pl.dist - police_[i].rd) * M; return 1e9; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
     float orbitAvant_ = 0;
     Zone rejouerZone() const { return rejouerZ_; }
@@ -559,6 +572,8 @@ private:
     void surprises(const Player& pl, Track& t, Traffic* tr) {
         for (Evenement& e : prog_.surprises) {
             const double s = e.km * duel::KM;
+            // WFS-338 (RG-01) : « TRAVAUX » reste affiché tant que le chantier est devant et visible (ANNONCE_TRAVAUX_M → biseau)
+            if (e.declenche && e.type == Surprise::Travaux && pl.dist < s && ban_ == bandeau(e.type)) banT_ = std::max(banT_, 0.2);
             if (e.declenche && !e.rappel && (e.type == Surprise::Camion || e.type == Surprise::Ralentisseur) && pl.dist >= s - RAPPEL_M / M && pl.dist < s) {
                 e.rappel = true; annoncer(bandeau(e.type));   // WFS-119 : rappel du bandeau à l'approche
             }
@@ -789,6 +804,14 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
         const unsigned n = appelsBasse();
         mesures.push_back({ou, g.player().dist * M / 1000, n});
         WFS_LOG("poursuite (RG-08) : %s en qualité Basse : %u appels de dessin", ou, n);
+        {   // WFS-338 (décision PO) : coût des ajouts de WFS-338 à cet endroit (même scène, même image : ajouts retirés)
+            ecrans::Reglages& R = ecrans::reglages(); const int q0 = R.qualite;
+            R.qualite = 0; ecrans::appliquerQualiteNiveau(r);
+            g_bancSans338 = false; g.render(t); g.render(t); const unsigned avec = r.appelsDessin();
+            g_bancSans338 = true; g.render(t); g.render(t); const unsigned sans = r.appelsDessin();
+            g_bancSans338 = false; R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
+            WFS_LOG("poursuite (WFS-338) : %s en qualité Basse : %u appels avec WFS-338, %u sans : %+d", ou, avec, sans, (int)avec - (int)sans);
+        }
     };
     // RG-12 : parcours au doigt : accueil → « Course solo » (panneau des modes) → carte « Poursuite » → « Continuer » →
     // garage → « Choisir » → terrain → « Rouler » → course de poursuite (la fin et « Menu » → accueil : plus bas)
@@ -871,23 +894,26 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     capture("poursuite-camion");
     basse("camion en travers");
     // WFS-338 (RG-01, ANO-191) : chantier sur la file de gauche : bandeau quand les cônes se voient (180 m), puis de près
-    g_bancSautKm = BANC_TRAVAUX_KM - 0.18; images(20, 4);
+    g_bancSautKm = BANC_TRAVAUX_KM - 0.16; images(20, 4);
+    jusqua(BANC_TRAVAUX_KM - 0.09, 30 * 60);
     capture("poursuite-travaux");
-    jusqua(BANC_TRAVAUX_KM - 0.03, 30 * 60);
+    jusqua(BANC_TRAVAUX_KM - 0.045, 30 * 60);
     capture("poursuite-travaux-proche");
-    // WFS-338 (RG-05, ANO-195), après les mesures d'appels de dessin (mêmes endroits que sur main) : suite d'images : un renfort arrive de derrière, hors de la vue au départ (220 m), se
-    // rapproche et se voit derrière (vue arrière du banc : caméra devant la voiture, tournée vers l'arrière) puis en vue
-    // Poursuite ; jamais d'apparition d'un coup
+    // WFS-338 (RG-05, ANO-195, revue du lead dev), après les mesures d'appels de dessin (mêmes endroits que sur main) : au
+    // départ, aucune police à moins de 160 m (toute la police repart à 220 m derrière, hors du rayon de dessin) ; elle revient
+    // par la conduite normale, une image par seconde, en vue Arrière du jeu (caméra derrière la voiture) et en vue arrière du
+    // banc (caméra devant, tournée vers l'arrière) ; distance dans l'encart POLICE de chaque image et au journal
     if (PoursuiteSystem* s = PoursuiteSystem::actif) {
-        s->bancRenfort(g.player());
-        for (int k = 1; k <= 6; k++) {
-            images(k == 1 ? 6 : 60, 6);
+        s->bancEloigner(g.player()); images(2, 1);
+        WFS_LOG("poursuite (banc) : arrivée de la police : départ, plus proche à %.0f m (dessin jusqu'à %.0f m)", s->bancProche(g.player()), DESSIN_DERRIERE_M);
+        for (int k = 1; k <= 10; k++) {
+            if (k > 1) images(60, 6);
             char nom[64];
-            WFS_LOG("poursuite (banc) : arrivée du renfort, image %d : à %.0f m derrière le joueur (dessin jusqu'à %.0f m)", k, s->bancDerniere(g.player()), DESSIN_DERRIERE_M);
-            g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.5f;
-            std::snprintf(nom, sizeof nom, "poursuite-arrivee-%d-arriere", k); capture(nom);
+            WFS_LOG("poursuite (banc) : arrivée de la police, image %d : la plus proche à %.0f m", k, s->bancProche(g.player()));
+            g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.35f;
+            std::snprintf(nom, sizeof nom, "poursuite-arrivee-%02d-arriere", k); capture(nom);
             g.camMode = 0; g.render(t += 0.02);
-            std::snprintf(nom, sizeof nom, "poursuite-arrivee-%d", k); capture(nom);
+            std::snprintf(nom, sizeof nom, "poursuite-arrivee-%02d", k); capture(nom);
         }
     }
     g.camMode = 0; g.render(t += 0.02);
@@ -954,6 +980,30 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
             WFS_LOG("poursuite (RG-04) : %s, %.2f km : poursuite %u, Checkpoint %u (%.2f km) : écart %+d", ms.ou, ms.km, ms.appels, n, g.player().dist * M / 1000, ecart);
         }
         WFS_LOG("poursuite (RG-04) : écart maximal en qualité Basse : %+d appels de dessin (cible ≤ 60) : %s", pire, pire <= 60 ? "OK" : "ÉCHEC");
+    }
+    // WFS-338 (revue du lead dev) : de jour : policier au volant (gros plan, RG-06), chantier et son bandeau (RG-01)
+    {
+        setenv("WFS_MOMENT", "jour", 1);
+        modeCourse() = ModeCourse::Poursuite;
+        if (g.init(r, "golf", "ville")) {
+            g.allerA(Ecran::Course); g.setAutopilot(false); images(60, 10);   // décompte : la police attend derrière
+            if (PoursuiteSystem* s = PoursuiteSystem::actif) {
+                s->bancPoser(g.player(), -7, std::clamp(g.player().playerX - COTE_X, -BORD_X, BORD_X)); images(2, 1);
+                g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.30f;
+                capture("poursuite-policier-jour");
+                g.orbit = s->orbitAvant_ - 0.30f; g.render(t += 0.02);
+                capture("poursuite-policier-jour-2");
+            }
+            g.camMode = 0; g.setAutopilot(true);
+            for (int i = 0; i < 6 * 60; i++) { const Course* c = activeCourse(); if (c && c->state == RaceState::Play) break; g.update(1.0 / 60); }
+            g_bancSautKm = BANC_TRAVAUX_KM - 0.16; images(20, 4);
+            jusqua(BANC_TRAVAUX_KM - 0.09, 30 * 60);
+            capture("poursuite-travaux-jour");
+            jusqua(BANC_TRAVAUX_KM - 0.045, 30 * 60);
+            capture("poursuite-travaux-jour-proche");
+            g.setAutopilot(false); g.allerA(Ecran::Menu); images(4, 2);
+        }
+        unsetenv("WFS_MOMENT");
     }
     g.setAutopilot(false);
     g_banc = false; g_bancFin = 0;
