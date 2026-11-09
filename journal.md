@@ -4794,3 +4794,7 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 
 ### 2026-11-09 05:16:02 — WFS-339 : CI de branche n° 1 lancée (agent arwa (Claude, session trafic))
 - Run 42566275669 (#944), `workflow_dispatch` de `build.yml` sur `feature/waforspeed-339` (adfbcd71, synchronisée avec `main`) : vérifie compilation, tests CPU (groupe `texte`, avec `test_pilote_file`), parcours `menu1-2400` et APK. Limite : `build.yml` ne lance pas le parcours du banc `campagne` (le groupe `cartes` l'appelle sans parcours, `matin.yml`) : le banc campagne complet est vérifié en local.
+
+### 2026-11-09 05:19:40 — WFS-335 : PR #296 approuvée et fusionnée (lead-dev auto)
+
+2e revue sur bccaa3ae : conflit résolu, décision du PO du 02:35 appliquée (niveau 2 de 100 à 48 px en Basse, joueur complet), diff entier relu, `test_vehicule_lod` OK, captures vues (suite 110 → 40 px sans saut, Course à 5 de nuit). Squash 88f3cde. Statut 🟡 À valider (utilisateur) : img/s à mesurer sur le téléphone ; suite dans WFS-348.
