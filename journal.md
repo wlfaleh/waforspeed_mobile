@@ -4669,3 +4669,10 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - Reproduction du ticket : 54 → 644 ne se reproduit plus tel quel sur le `main` actuel (76 à 2 min 50, 201 à 10 min) ; l'accumulation reste visible sur `main` et disparaît sur la branche.
 - Captures : 9 paires dans `qa/pr/WFS-336/` (Ville jour / nuit, Haute / Basse, 10 min, Golf sur la chaussée ; Poursuite identique à `main`). Limite : à 2 min 50, la Golf du pilote automatique du banc sort de la route sur `main` comme sur la branche.
 - Relecture et fusion : **session « ⚡ Lead dev automatique »**, prévenue directement. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-09 01:07:34 — WFS-334 fusionné par le lead dev (lead-dev)
+- PR #293 (Claude, agent dev Y) relue sur 19371276. Les 24 images ont été ouvertes et tout le diff a été lu (`meteo.*`, `vehicule_cockpit.*`, `cartes_banc.cpp`, `test_pluie`, `CMakeLists.txt`).
+- La branche avait 10 commits de retard (dont WFS-290, interface, sans fichier commun). Fusion locale vérifiée : aucun conflit, construction complète, 82 tests CPU verts.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire : GitHub refuse l'approbation par le même compte), puis squash 92c1a8ce.
+- Ticket en 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, agent dev Y libre.
+- Remarques non bloquantes, écrites dans la PR : gouttes sur le montant gauche ; double état des balais ; pluie encore 6 m dans la bouche en cockpit.
