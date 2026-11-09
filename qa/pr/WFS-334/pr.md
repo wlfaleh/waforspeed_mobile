@@ -26,7 +26,7 @@ Agent : Claude, agent dev Y
   - `test_pluie` est vert : fondu du tunnel, sens des gouttes, quadrilatère, balayage.
   - Banc `cockpit` (Golf, Ville de nuit) : en fin de course, `vitre : 182 gouttes effacées par les balais`.
   - Coût CPU de la pluie : 0,029 ms par image en cockpit (0,005 avant), 0,006 ms en vue Arrière en Haute, 0,013 ms en Basse.
-  - Tests CPU verts, parcours complet 0 écart (synchronisé avec `main`).
+  - 81 tests CPU verts, parcours complet 0 écart (synchronisé avec `main`).
 - **Limites et risques connus**
   - Les vitres latérales sont approchées à l'écran : au-dessus de la ligne de la planche, à plus de 7 % de la hauteur de l'écran du montant.
   - Les 20 voitures ont un intérieur propre (`vehicule_cockpit_defs.cpp`). Une future voiture sans intérieur propre (cockpit commun) n'aurait pas de pare-brise relevé et garderait l'ancienne pluie plein écran.
