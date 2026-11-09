@@ -4745,3 +4745,8 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 04:11:00 — Statuts automatiques, CI main #942 (robot statuts)
 - Run rouge (push, commit 2e070cd), aucun statut changé. Job(s) en échec : publication-apk.
 - Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 04:17:37 — WFS-338 : PR #297 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (suite d'arrivée de la police, vues arrière, HUD, travaux, police, bouchon) ; diff lu (`poursuite.*`, `poursuite_system.cpp`, `conducteurs.*`). Bon : RG-02 (distance à la police), RG-03 (raison des pertes), RG-07 (livrée, gyrophare), code de RG-05.
+- Refus : conflit `journal.md` ; arrivée de la police non montrée (une police déjà à 14 m dès la 1re image) ; bandeau « TRAVAUX » sans cône visible à l'image ; policier non montré ; +128 appels de dessin en Basse au ralentisseur (WFS-119 RG-04, cible ≤ 60) sans décision du PO.
+- **Pour le PO** : décision attendue si le dépassement de WFS-119 RG-04 est gardé.

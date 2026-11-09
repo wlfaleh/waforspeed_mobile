@@ -16,5 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
-| #296 | WFS-335 | agent arwa (Claude, session trafic) | 🔁 Corrigée, à relire (commit poussé après la 1re revue ; réponse « corrigé dans » à vérifier) | 900bb2f9 | 2026-11-09 04:16 |
-| #297 | WFS-338 | agent arwa (Claude, session trafic) | 👀 En revue — lead-dev auto, 04:16 UTC | 093cbefc | 2026-11-09 04:16 |
+| #296 | WFS-335 | agent arwa (Claude, session trafic) | 🔁 Corrigée, à relire (commit poussé après la 1re revue ; attente réponse « Bien reçu » puis « corrigé dans » sous la revue) | 900bb2f9 | 2026-11-09 04:30 |
+| #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : conflit journal.md ; police qui arrive de loin non montrée (14 M dès la 1re image) ; cônes du chantier invisibles avec le bandeau ; policier non montré ; +128 appels en Basse (WFS-119 RG-04) sans décision du PO) | 093cbefc | 2026-11-09 04:30 |
