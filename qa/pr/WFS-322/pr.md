@@ -13,7 +13,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
   - `src/render/environnement.cpp` : la capture d'environnement saute la voiture du joueur (opaques et vitres). Accroche `renderer.*` : `Pending::joueur`, rempli par `dessinJoueur`, 2 lignes. `passes.h` : `AccesRendu::joueur`.
   - `src/render/eclairage_unites.h` : `lisserSh9`, le diffus (harmoniques sphériques) rapproché de la cible avec une constante de 0,6 s. Au début et après une remise à zéro, la cible est prise telle quelle.
   - `src/render/eclairage_physique.cpp` : diffus lissé. Exposition et diffus recalés d'un coup seulement à la 1re capture d'une **nouvelle** scène (carte, moment, voiture : sous le chargement et le décompte). Diagnostic de banc `WFS_DIAG_SONDE` (part du ciel et des surfaces, teinte), sans effet en jeu.
-  - Rien de retiré : sondes, rebonds, occlusion de WFS-269 gardés (RG-04). La capture dessine moins d'objets, et le lissage est un calcul de 27 nombres par image : le coût par image ne monte pas.
+  - Rien de retiré : sondes, rebonds, occlusion de WFS-269 gardés (RG-04).
 - **Comment c'est vérifié** :
   - **80 tests CPU verts**, dont `test_fidelite_lumiere` (lissage : pas plus de 1 % par image, cible atteinte, images au même temps) ; parcours complet 0 écart (vue Arrière et Cockpit), branche synchronisée avec `main` ;
   - **banc `qualite`** (Ville de jour, Haute) :
@@ -24,6 +24,16 @@ Agent : Claude, agent 1 (01UY1Vv2)
     | Façade, `voiture-lod-passage-56` (zone RG-05) | 17,0 / 2,6 / −6,3 | 19,4 / 0,2 / **2,9** | b* ≥ −4 (RG-03) |
     | Façade, `voiture-lod-passage-60` | 17,2 / 2,5 / −6,2 | 19,3 / 0,1 / **1,8** | 56 et 60 pareilles (ΔE ≤ 2) |
 
+  - **RG-04, coût** (même machine, l'un après l'autre, `main` puis branche) :
+
+    | Banc | `main` | Branche |
+    |---|---|---|
+    | `fluidite` (rapport complet) | — | identique ligne pour ligne (0 ligne différente) |
+    | `perf` Ville Haute, processeur par image | 2,1 ms | 2,2 ms |
+    | `perf` Ville Basse, processeur par image | 1,3 ms | 1,2 ms |
+    | Capture d'environnement, GPU (Haute) | 47,8 ms | 39,9 ms (voiture du joueur sautée) |
+
+    La passe de scène au GPU, en rendu logiciel (455 → 461 ms en Haute, 238 → 221 ms en Basse), varie dans le bruit du banc.
   - **Sonde au-dessus de la voiture** (diagnostic) : sol x 0,234 / y 0,213 → x 0,33 / y 0,34 ; éclairement d'une façade x 0,25 / y 0,24 (violet) → x 0,32 / y 0,33 (blanc de jour).
   - Chaussée, ciel et voitures inchangés à l'œil sur les 33 paires.
 - **Limites et risques connus** :
