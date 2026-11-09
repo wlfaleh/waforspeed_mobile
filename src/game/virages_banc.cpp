@@ -1,6 +1,6 @@
 // WaForSpeed — banc de la direction dans les virages (WFS-295, ANO-168, WFS_BANC=virages). Les captures « avant » rejouent le
 // comportement de main avant la correction (g_avantWfs295, banc seulement), les « après » le jeu corrigé :
-//  1. virages-dessus-avant / -apres : épingle à gauche des lacets de la Corniche vue de dessus ; Golf au bord extérieur, flèche
+//  1. virages-dessus-avant / -apres : épingle à gauche des lacets du col de la Campagne (WFS-379 : la Corniche n'en a plus) vue de dessus ; Golf au bord extérieur, flèche
 //     gauche tenue 2 s à 10, 20, 30 et 50 km/h (traces : bleu, vert, orange, rouge), rayon de chaque trace au journal ;
 //  2. virages-proche-avant-NN / -apres-NN : la même épingle dans la partie (vue Proche), aux flèches, file extérieure, 20 km/h ;
 //  3. virages-choc-avant-NN / -apres-NN : accident à 60 km/h (impact 0,45) flèche droite tenue : 2 s d'images après le choc ;
@@ -178,7 +178,7 @@ int choc(Game& g, Renderer& r, bool avant, const std::string& out, double& temps
 // 75 ms, consigne lue une fois par image, simulation au pas de 1/120 s comme game.cpp), aide désactivée, Golf :
 //  - anneau de la Ville : départ au cœur de l'anneau (R = 14 m), « Glisser » tenu à 6 % de la largeur vers l'intérieur 2,5 s,
 //    50 → 25 km/h (scène de la vidéo) ;
-//  - épingle des lacets de la Corniche à 30 km/h et virage à 90° de la Ville à 40 km/h : joueur qui suit sa voie (Glisser).
+//  - épingle des lacets de la Campagne (WFS-379) à 30 km/h et virage à 90° de la Ville à 40 km/h : joueur qui suit sa voie (Glisser).
 // Rend le nombre de sorties de chaussée « après ».
 int dessus316(Track& t, double debut, double fin, double v0, double v1, bool tenu, int sens, bool avant, const char* nom,
               const std::string& out, std::string& rapport) {
@@ -400,9 +400,9 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     ui::chargerPolice(r);
     const bool aideAvant = reglagesConduite().aideDirection, reglesAvant = courseBenchRulesOn();
     int ecarts = 0; std::string rapport = "# WFS-295 : direction dans les virages\n";
-    Track& plage = banc_conduite::piste("plage");
+    Track& col = banc_conduite::piste("campagne");   // WFS-379 : épingles du col de la Campagne (plus de lacets à la Corniche)
     Track& ville = banc_conduite::piste("ville");
-    const std::vector<Epingle> ep = epingles(plage);
+    const std::vector<Epingle> ep = epingles(col);
     const Epingle* gauche = nullptr;
     for (const Epingle& e : ep) if (e.sens < 0) { gauche = &e; break; }
     if (!gauche) { WFS_ERR("virages : épingle à gauche des lacets introuvable"); return 1; }
@@ -411,14 +411,14 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     const bool tout = !seul || std::strcmp(seul, "vif") != 0;
     double temps = 9000;
     if (tout) {
-        rapport += "## 1. Épingle à gauche des lacets de la Corniche, vue de dessus (bleu 10, vert 20, orange 30, rouge 50 km/h)\n";
-        dessus(plage, *gauche, true, out, rapport);
-        dessus(plage, *gauche, false, out, rapport);
+        rapport += "## 1. Épingle à gauche des lacets de la Campagne, vue de dessus (bleu 10, vert 20, orange 30, rouge 50 km/h)\n";
+        dessus(col, *gauche, true, out, rapport);
+        dessus(col, *gauche, false, out, rapport);
         rapport += "## 5. Cercles volant à fond à 10 km/h\n";
         cercles(ville, out, rapport);
         for (bool avant : {true, false}) {   // 2. épingle en vue Proche, aux flèches, file extérieure
             g_avantWfs295 = avant;
-            ecarts += sequence(g, r, "plage", gauche->debut, gauche->fin, 0.6, 20, false, avant ? "proche-avant" : "proche-apres", out, temps);
+            ecarts += sequence(g, r, "campagne", gauche->debut, gauche->fin, 0.6, 20, false, avant ? "proche-avant" : "proche-apres", out, temps);
             g_avantWfs295 = false;
         }
         ecarts += choc(g, r, true, out, temps);    // 3. choc puis flèche
@@ -465,7 +465,7 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
                 for (double x = rp316->debut * SEG; x < rp316->fin * SEG; x += 0.5 / M) if (std::abs(courbure(ville, x)) > kMax) { kMax = std::abs(courbure(ville, x)); m = x; }
                 ecarts += dessus316(ville, m - 4 / M, m - 4 / M, 50, 25, true, courbure(ville, m) > 0 ? 1 : -1, avant, "anneau-dessus", out, rapport);
             }
-            ecarts += dessus316(plage, gauche->debut, gauche->fin, 30, 30, false, 0, avant, "epingle-30-dessus", out, rapport);
+            ecarts += dessus316(col, gauche->debut, gauche->fin, 30, 30, false, 0, avant, "epingle-30-dessus", out, rapport);
             if (v90) ecarts += dessus316(ville, v90->debut * SEG, v90->fin * SEG, 40, 40, false, 0, avant, "virage90-dessus", out, rapport);
         }
         if (!rp316 || !v90) { WFS_ERR("virages (WFS-316) : rond-point ou virage à 90° de la Ville introuvable"); ecarts++; }

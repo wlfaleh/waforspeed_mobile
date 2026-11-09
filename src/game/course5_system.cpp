@@ -24,7 +24,7 @@
 #include "traffic.h"
 #include "traffic_system.h"
 #include "trace_cartes.h"
-#include "virages_banc.h"   // WFS-327 : épingles de la Corniche (banc)
+#include "virages_banc.h"   // WFS-327 : épingles des lacets (banc ; WFS-379 : Campagne)
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
 
 namespace wfs {
@@ -357,7 +357,7 @@ WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) 
 int benchParcoursCourse5(Game& g, Renderer& r, const std::string& out);   // WFS-133 : modes_ecran.cpp
 
 // ---------- banc d'essai (WFS_BANC=course5) ----------
-// WFS-327 (RG-04) : 1re épingle des lacets de la Corniche (R ≈ 22 m) : 4 ordinateurs lancés à 90 km/h, 35 à 80 m avant l'entrée ;
+// WFS-327 (RG-04) : 1re épingle des lacets (R ≈ 22 m ; WFS-379 : col de la Campagne, la Corniche n'a plus de lacets) : 4 ordinateurs lancés à 90 km/h, 35 à 80 m avant l'entrée ;
 // suite de 6 vues de dessus toutes les 0,75 s, avant (table arcade seule et niveaux 0,90 / 0,97 : comportement de main, rejoué
 // par g_avantWfs327) puis après ; journal : vitesse de chaque ordinateur, vitesse physiquement possible pour sa voiture, g latéral
 template <class Images, class Capture>
@@ -367,9 +367,9 @@ static void benchEpingleCourse5(Game& g, Renderer& r, const std::string&, Images
         double facteur[3]; std::copy(std::begin(g_configJeu.course5.facteur), std::end(g_configJeu.course5.facteur), facteur);
         if (avant) { g_configJeu.course5.facteur[1] = 0.90; g_configJeu.course5.facteur[2] = 0.97; }
         g_graineBanc = 20261105u;
-        if (g.init(r, "golf", "plage")) {
+        if (g.init(r, "golf", "campagne")) {
             static Track t;   // même tracé que la partie (épingles, vitesses du journal)
-            if (!t.segmentCount()) t.build(mapById("plage"), trace::versionCarte("plage"));
+            if (!t.segmentCount()) t.build(mapById("campagne"), trace::versionCarte("campagne"));
             const std::vector<banc_virages::Epingle> ep = banc_virages::epingles(t);
             if (!ep.empty()) {
                 const banc_virages::Epingle& e = ep[0];
@@ -395,7 +395,7 @@ static void benchEpingleCourse5(Game& g, Renderer& r, const std::string&, Images
                                 v * v * std::abs(banc_virages::courbure(t, o.g.rd)) / 9.81);
                     }
                 }
-                WFS_LOG("course à 5 : épingle de la Corniche (%s) : ordinateurs au plus %+.1f %% de la vitesse physiquement possible", quand, 100 * pire);
+                WFS_LOG("course à 5 : épingle de la Campagne (%s) : ordinateurs au plus %+.1f %% de la vitesse physiquement possible", quand, 100 * pire);
             }
             g_bancAdversaires.clear(); g_bancVitesseKmh = 0; g_bancEpingleM = 0;
             g.shutdown();

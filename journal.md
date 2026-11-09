@@ -3056,6 +3056,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:53:46 — WFS-379 et WFS-376 en même temps dans `plage.cpp` : zones séparées (po-scrum-master)
 - WFS-376 (marina) attribué en parallèle par une autre instance du PO (19:53:14). Partage : WFS-379 = tracé `corniche()` et décor des lacets / de la montée ; WFS-376 = marina, `O_BATEAU`, `voilier()`, `yacht()`. Interdits croisés écrits dans les deux règles. WFS-380 attend WFS-379 et WFS-376.
 
+### 2026-11-09 19:57:05 — WFS-379 : début, branche créée (Claude, agent cartes 2 (01UY1Vv4VT))
+- Branche `feature/waforspeed-379` créée depuis `main` (b0d9d7bb). Session renommée « WFS-379 — Claude, agent cartes 2 (01UY1Vv4VT) (Corniche sans lacets) ».
+- Analyse : la route n'est pas fermée dans l'espace (tour ouvert : fin à −3 057 m / −1 497 m, cap −76°) ; le « bouclage » est celui des segments et de l'altitude. Les lacets (segments 1259 à 2201, 1 130 m, +60 m) vont de 366 m vers la droite pour 50 m en avant. Plan : remplacer par une montée en S de même longueur (≈ 1 130 m, donc mêmes numéros de segment pour la suite : zones, checkpoints, tunnel) et de même cap de sortie, deux courbes de 400 m de rayon, pente ≈ 5,3 %.
+- Fichiers prévus : `trace_cartes.cpp` (`corniche()`), `plage.cpp` (décor des lacets), bancs qui cherchent les lacets de la Corniche (`bench_fluidite`, `virages_banc`, `course5_system`, `parois_sons_banc`, `trace_cartes_systeme`), captures `carte-plage-lacets-*`, `tests/test_trace.cpp`.
+
 ### 2026-11-09 19:57:22 — WFS-376 : réponses du PO au développeur sur la marina (po-scrum-master)
 - Question de Claude, agent dev3d (01UY1Vv3u9). Décisions notées dans `regles-de-gestion/WFS-376.md` (Suivi) : RG-02 = axe perpendiculaire à la ligne d'amarrage (quai ou ponton) ±3°, rangée cul au quai + pontons perpendiculaires des deux côtés, chenal ≥ 1,5 × longueur ; un seul seuil de détail à 200 m (`LOD_FAR_M`), mât lointain en 2 quads croisés, budget 9 000 triangles ; quai : baisser seulement la bande d'amarrage si l'écart dépasse 1,5 m, mer et tracé inchangés.
 
@@ -3114,6 +3119,13 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - APK de l'utilisateur à 19:35 UTC : celui du run **#966** (WFS-338 poursuite police, 8c4d65a), publié dans `apercu` à 19:23:49 UTC.
 - Bancs `menu1`, `parcours`, `paquets` sur main : 0 écart. ASan + UBSan sur le banc `carte` (4 cartes, jour / nuit) : aucune erreur mémoire. Course à 5 + poursuite sous ASan : en cours.
 - Bloquant : symptôme inconnu (RG-01). Question posée à l'utilisateur sous sa demande dans `tache utilisateur.md`. Notes : `qa/pr/WFS-374/notes.md` (branche `feature/waforspeed-374`).
+
+### 2026-11-09 20:46:04 — WFS-379 : PR ouverte, lacets de la Corniche remplacés par une montée simple (Claude, agent cartes 2 (01UY1Vv4VT))
+- Fait : `corniche()` : 6 lacets → montée en S de +60 m (2 courbes de 35°, rayon 400 m, pente ≤ 6,8 %, cap net 0) ; décor des lacets retiré dans `plage.cpp` (bas-côtés bornés par une autre branche 1 581 → 0, disques de sol 341 → 29) ; bancs et tests des épingles passés au col de la Campagne ; nouveau banc `WFS_BANC=corniche WFS_CORNICHE=montee`.
+- Vérifié : 90 tests CPU verts ; captures avant (main + seul banc de la montée) / après dans `qa/pr/WFS-379/` (Proche et Capot, jour et nuit, suite de 6 images, mini-carte, parcours complet tous les 200 m, vue de dessus), regardées : plus aucun terrain ni plaque en l'air. Banc `perf` Corniche : triangles du décor −3,3 % (Haute) / −3,1 % (Basse).
+- Limites : carte +215 m (pente ≤ 7 %) ; RG-06 (D1, vide gris des vues de dessus) = autre cause (sol posé sur une bande de ~220 m autour de la route, mer en plan limité, aussi Ville et Grand Prix) → signalé au PO ; RG-07 (plateaux en escalier) = terrasses des lacets, disparues.
+- Signalé au PO (préexistant sur main, hors ticket) : bas-côté intérieur des épingles de la Campagne, volant à fond à 10 km/h : rayon 11,64 m au lieu de 4,17 m.
+- Aucune accroche hors de la zone donnée par le PO ; `CMakeLists.txt` non modifié.
 
 ### 2026-11-09 20:49:16 — Constats de WFS-379 : ANO-215 (cause trouvée) et ANO-231 (épingles de la Campagne) rangés dans des tickets existants (po-scrum-master)
 - Message de Claude, agent cartes 2 (01UY1Vv4VT), PR #317 (WFS-379) ; il ne demande pas de ticket, sa session s'arrête après la fusion.
