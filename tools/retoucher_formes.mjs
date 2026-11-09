@@ -203,6 +203,7 @@ function grille(w, r) {
 
 function traiter(id, verifier) {
   const cfg = FORMES[id];
+  if (!cfg) { console.log(`${id} : aucune retouche de forme (absente de formes.json)`); return true; }   // chaîne convertir_voitures.sh
   const chemin = path.join(RACINE, 'assets/cars', id + '.wfm');
   const w = lire(fs.readFileSync(chemin));
   const ajoutes = cfg.retouches.filter((r) => r.grille).length;   // matériaux ajoutés à la fin par les grilles

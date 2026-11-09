@@ -48,23 +48,23 @@
    {
     "grille": [
      -0.44,
-     0.65,
-     -2.462,
+     0.648,
+     -2.482,
      0.44,
-     0.93,
+     0.962,
      -2.4
     ],
     "barres": 6,
-    "galbe": 0.065,
-    "cadre": 0.018,
-    "couleur": "#3a3a3a",
-    "metal": 0.85,
+    "galbe": 0.06,
+    "cadre": 0.022,
+    "couleur": "#4a4a4a",
+    "metal": 0.8,
     "rugosite": 0.3,
-    "note": "grille générique d'un seul tenant : cadre, 6 barres horizontales, galbe du nez, un peu plus étroite en haut",
-    "trapeze": 1.03
+    "note": "grille générique d'un seul tenant : cadre, 6 barres, galbe du nez ; recouvre la coupe de la carrosserie d'au moins 1 cm",
+    "trapeze": 1.068
    }
   ],
-  "empreinteApres": "8021e1531a0b190f"
+  "empreinteApres": "5b9f124cbc973be6"
  },
  "compass": {
   "materiaux": 15,
@@ -137,6 +137,20 @@
     "triangles": 251
    },
    {
+    "retirer": true,
+    "materiau": 8,
+    "boite": [
+     -0.125,
+     0.55,
+     -2.03,
+     0.125,
+     0.75,
+     -1.955
+    ],
+    "note": "socle du lion (relief au centre du fond sombre) retiré devant la grille",
+    "triangles": 748
+   },
+   {
     "grille": [
      -0.415,
      0.405,
@@ -155,6 +169,6 @@
     "note": "grille générique en trapèze (forme de l'ouverture d'origine) : cadre, 5 barres, galbe du nez"
    }
   ],
-  "empreinteApres": "4f43b8d66338ef89"
+  "empreinteApres": "2ff076abf2a391c1"
  }
 }
