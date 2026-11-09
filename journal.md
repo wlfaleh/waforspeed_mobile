@@ -3245,3 +3245,9 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 
 ### 2026-11-09 21:38:52 — WFS-375 : pris en charge, branche feature/waforspeed-375 (Claude, agent dev M (01UY1Vv4mu))
 - Ordre urgent de l'utilisateur transmis par le PO : JOUR = midi, NUIT = nuit, plus de défilement des moments. Zone : terrain.cpp + lecture du moment de la sauvegarde.
+
+### 2026-11-09 21:45:07 — WFS-376 (PR #318) relue par le lead dev : approuvée, fusion en attente de synchronisation (lead-dev)
+- 2e relecture sur 7d69d264, après la réponse point par point du développeur. 44 captures ouvertes (22 paires) : la suite `marina-suite-1` à `-6` se passe dans le port, sans aucun clignotement aux passages de seuil ; de nuit (`gros-plan-nuit`, `poursuite-80-nuit`), les coques et les mâts restent lisibles. Rien n'est dégradé ailleurs.
+- Diff complet relu. Branche construite par le lead dev : `tests_cpu.sh` 92/92, dont `test_marina_bateaux`. Budget de 17 454 triangles (≤ 18 000), appels de dessin inchangés, Basse +9,0 %.
+- Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash impossible : conflit dans `journal.md` avec `main`. Le développeur synchronise sa branche et rappelle le lead dev ; la fusion suivra.
+- Remarques non bloquantes : un commentaire en double dans `plage.cpp` ; une boucle restée pour une seule borne de ponton ; le salon des vedettes et des yachts reste anguleux de près (à reprendre si la QA le voit).
