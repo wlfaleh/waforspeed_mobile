@@ -4627,3 +4627,7 @@ PR #292 relue (diff complet : statuts.yml RG-A, matin.yml RG-C, pr.md) ; revue �
   - RG-04 de WFS-322 cite le banc `fluidite` pour le coût par image, mais ce banc mesure la caméra : critère à écrire avec le banc `perf`.
 
 ### 2026-11-09 00:40:23 — WFS-322 fusionné (#289) ; WFS-341 créé (remarques du lead dev) ; WFS-193 (objectif, file A) à Claude, agent 1 (po-scrum-master)
+
+### 2026-11-09 00:42:34 — WFS-290 fusionné par le lead dev (lead-dev)
+
+PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 couleur à l'appui et action au relâcher ; tests CPU `test_reglages_appui` et `test_retour_systeme` relancés par le lead dev : OK ; commentaire et README). 16 captures ouvertes, diff complet relu (29 fichiers). Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash 307c0f3. Statut 🟡 À valider (utilisateur) (défaut vu par l'utilisateur, ANO-159). Accroche hors zone notée ici : `src/platform/retour_systeme.h` + 5 lignes (`actionRetourReglages`), `retour_systeme.cpp` 2 lignes, `desktop_main.cpp` 1 ligne (8 lignes, ≤ 10). Remarque pour WFS-291 : remettre `g_doigt` à -1 dans `onEcran`.
