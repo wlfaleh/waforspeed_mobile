@@ -12,7 +12,7 @@ Matériel : `qa/retours/2026-11-09-video2032-planche-1.jpg` à `-planche-4.jpg` 
 ## Verdicts par point
 | # | Point | Verdict | Image | Anomalie |
 |---|---|---|---|---|
-| 1 | **Bateaux de la marina** : rangée serrée de grands triangles blancs plats (10 à 17 m), plantés derrière le mur du quai, sans coque ni mât visibles, voiles hissées au port, tous dans le même sens et de la même teinte | **KO bloquant (réalisme)** | `-voiliers-marina.jpg`, planches 1 à 4 | **ANO-206** → **WFS-374** (P1) |
+| 1 | **Bateaux de la marina** : rangée serrée de grands triangles blancs plats (10 à 17 m), plantés derrière le mur du quai, sans coque ni mât visibles, voiles hissées au port, tous dans le même sens et de la même teinte | **KO bloquant (réalisme)** | `-voiliers-marina.jpg`, planches 1 à 4 | **ANO-206** → **WFS-376** (P1) |
 | 2 | **Habitacle sans pavillon** : au-dessus du pare-brise on voit le ciel ; le **rétroviseur** est une grosse boîte grise sans reflet, sa tige monte dans le vide | **KO** | planches 1 à 4 | **ANO-207** → WFS-323 / WFS-324 (suite de ANO-152) |
 | 3 | **Ciel / lumière** : ciel bleu nuit presque noir au zénith alors que le sol est en plein soleil bas (ombres longues, lumière chaude) | **KO mineur** | planches 1 à 4 | **ANO-208** |
 | 4 | **Volant** : trois bandes rouge / bleu clair / bleu foncé en bas du volant = signature d'une marque (règle « voitures sans marque ») | **KO mineur** | planches 1, 4 | **ANO-209** → WFS-325 |
