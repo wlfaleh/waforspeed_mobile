@@ -2556,3 +2556,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 12:24:47 — Skills chargés automatiquement par chaque agent (po-scrum-master)
 - Question de l'utilisateur : les skills se chargent-ils tout seuls ? Champ `skills:` ajouté aux 9 fichiers `.claude/agents/*.md` (Claude Code les charge au démarrage de l'agent, doc : code.claude.com/docs/en/sub-agents). `CLAUDE.md` et `appel-agents.md` : une session qui prend un rôle avec `@` charge ces skills avec l'outil Skill.
+
+### 2026-11-09 12:27:32 — Lead dev : détection des régressions et des problèmes de code (po-scrum-master)
+- Demande de l'utilisateur : le lead dev détecte les régressions et les problèmes de code. Skill `lead-dev` : points 10 (régressions : construction et tests refaits, tests non affaiblis, usages du code changé, tout l'écran sur les captures, performance ≤ 5 %, compatibilité des réglages et sauvegardes, anciennes anomalies) et 11 (problèmes de code : mémoire, Vulkan, calculs, threads, performance par image, erreurs, lisibilité, sécurité ; fichier:ligne, exemple, correction attendue) ; interdit de fusionner sans eux.
