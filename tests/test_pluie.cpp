@@ -2,7 +2,9 @@
 // vitesse (règles pures de src/world/meteo.h, sans GPU).
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include "../src/world/meteo.h"
+#include "../src/render/vehicule_cockpit.h"   // WFS-354 : vitre seule (coinsVitre) et définitions des intérieurs
 
 using namespace wfs;
 
@@ -12,14 +14,17 @@ static int echecs = 0;
 int main() {
     // RG-03 : tunnel de 100 à 300 m : pluie entière dehors, nulle sous la voûte, fondu court aux deux bouches
     VERIFIE(meteo::pluieSousToit(50, 100, 300) == 1.f, "pluie dehors, avant le tunnel");
-    VERIFIE(meteo::pluieSousToit(98, 100, 300) == 1.f, "pluie jusqu'à %.0f m avant la bouche", meteo::TOIT_MARGE);
+    VERIFIE(meteo::pluieSousToit(100 - meteo::TOIT_MARGE, 100, 300) == 1.f, "pluie jusqu'à %.0f m avant la bouche", meteo::TOIT_MARGE);
+    // WFS-354 (RG-03) : la caméra sous la voûte (plus d'1 m dedans) : plus aucune pluie ; fondu de 8 m gardé
+    VERIFIE(meteo::pluieSousToit(101, 100, 300) == 0.f && meteo::pluieSousToit(299, 100, 300) == 0.f, "plus de pluie 1 m sous la voûte");
+    VERIFIE(meteo::TOIT_FONDU == 8.f, "fondu de 8 m (WFS-334)");
     VERIFIE(meteo::pluieSousToit(200, 100, 300) == 0.f, "aucune pluie au milieu du tunnel");
     VERIFIE(meteo::pluieSousToit(100 + meteo::TOIT_FONDU, 100, 300) == 0.f, "aucune pluie %.0f m après l'entrée", meteo::TOIT_FONDU);
     VERIFIE(meteo::pluieSousToit(300 - meteo::TOIT_FONDU, 100, 300) == 0.f, "aucune pluie %.0f m avant la sortie", meteo::TOIT_FONDU);
     {
-        const float a = meteo::pluieSousToit(101, 100, 300), b = meteo::pluieSousToit(103, 100, 300);
-        VERIFIE(a > 0 && a < 1 && b < a, "fondu à l'entrée (%.2f puis %.2f)", a, b);
-        VERIFIE(std::fabs(meteo::pluieSousToit(299, 100, 300) - a) < 1e-5f, "même fondu à la sortie");
+        const float a = meteo::pluieSousToit(96, 100, 300), b = meteo::pluieSousToit(99, 100, 300);
+        VERIFIE(a > 0 && a < 1 && b < a, "fondu à l'approche de la bouche (%.2f puis %.2f)", a, b);
+        VERIFIE(std::fabs(meteo::pluieSousToit(304, 100, 300) - a) < 1e-5f, "même fondu à la sortie");
     }
     VERIFIE(meteo::pluieSousToit(320, 100, 300) == 1.f, "pluie après le tunnel");
 
@@ -54,6 +59,24 @@ int main() {
     // RG-02 : le balai efface la goutte qu'il croise pendant l'image, dans les deux sens de balayage
     VERIFIE(meteo::balaye(0.5f, 0.4f, 0.6f) && meteo::balaye(0.5f, 0.6f, 0.4f), "balai qui passe sur la goutte (aller et retour)");
     VERIFIE(!meteo::balaye(0.8f, 0.4f, 0.6f) && !meteo::balaye(0.5f, 0.5f, 0.5f), "balai qui ne passe pas (ou immobile)");
+
+    // WFS-354 (RG-01) : toute goutte de la vitre (u, v dans 0..1) reste hors des montants dessinés : écart horizontal à l'axe du
+    // montant ≥ demi-section, à toute hauteur ; Golf, X5, 500 Abarth (et tous les intérieurs)
+    for (int i = 0; i < cockpit::nombreInterieurs(); i++) {
+        const cockpit::InterieurDef& d = cockpit::interieur(i);
+        const cockpit::Largeur l = cockpit::largeurPour(d);
+        const float cx = l.oeil, mo = l.montants * 0.5f;
+        vec3 c[4]; cockpit::coinsVitre(cx, mo, d.pareBriseY, d.pareBriseZ, 0.40f, -0.42f, c);
+        float pire = 1e9f;
+        for (int a = 0; a <= 20; a++) for (int s = -1; s <= 1; s += 2) {
+            const float v = a / 20.f;
+            const float xVitre = s < 0 ? c[0].x + (c[3].x - c[0].x) * v : c[1].x + (c[2].x - c[1].x) * v;   // bord de la vitre à la hauteur v
+            const float xAxe = cx + s * (mo + (mo - cockpit::RETRAIT_MONTANT_HAUT - mo) * v);               // axe du montant dessiné
+            pire = std::min(pire, std::fabs(xAxe - xVitre) - cockpit::LARGEUR_MONTANT * 0.5f);
+        }
+        VERIFIE(pire >= 0.f, "%s : la vitre empiète de %.0f mm sur un montant", d.car, -pire * 1000);
+        if (!std::strcmp(d.car, "golf") || !std::strcmp(d.car, "x5") || !std::strcmp(d.car, "abarth")) std::printf("%s : vitre à %.0f mm du montant au plus près\n", d.car, pire * 1000);
+    }
 
     if (echecs) { std::printf("test_pluie : %d échec(s)\n", echecs); return 1; }
     std::printf("test_pluie : OK\n");

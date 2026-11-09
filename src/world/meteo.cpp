@@ -37,9 +37,6 @@ public:
     }
 
     void update(double dt, const GameView& g) override {
-        // WFS-334 : balais : même modèle et mêmes entrées que la caméra (camera_vue.cpp, essuie_.avancer à chaque pas) : même
-        // angle à chaque pas, même quand l'image n'est pas dessinée
-        if (g.player) essuie_.avancer((float)dt, g.player->kmh(), actif_);
         if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course) return;
         preparer(g);
         if (gouttes_.empty()) return;
@@ -64,7 +61,7 @@ public:
         // WFS-334 (RG-02, ANO-182, ANO-186) : vue Cockpit : pluie seulement à travers le pare-brise (aucune goutte sur la planche,
         // le volant ni le toit), et gouttes posées sur la vitre, chassées par les balais
         float quad[8]; const bool cockpit = vitre && quadPareBrise(g, pb, quad);
-        if (cockpit) dessinerVitre(r, g, pb);
+        if (cockpit) { balayerVitre(pb); dessinerVitre(r, g, pb); }   // WFS-354 (RG-02) : balais de l'image dessinée
         if (ciel <= 0.01f) { mesurer(t0); return; }
         // trait rgba(170,190,255,.2), 1 px « CSS » de large (lineWidth = w / innerWidth)
         const float e = 0.5f * k_;
@@ -86,7 +83,7 @@ public:
     void shutdown(Renderer&) override {
         if (images_ > 0)
             WFS_LOG("Pluie : %zu gouttes, coût moyen %.3f ms par image (%d images) ; vitre : %ld gouttes effacées par les balais", gouttes_.size(), tempsUs_ / images_ / 1000.0, images_, balayees_);
-        actif_ = false; gouttes_.clear(); images_ = 0; tempsUs_ = 0; vitre_.clear(); anglePrec_ = 0; essuie_ = {}; balayees_ = 0;
+        actif_ = false; gouttes_.clear(); images_ = 0; tempsUs_ = 0; vitre_.clear(); anglePrec_ = 0; balayees_ = 0;
     }
 
 private:
@@ -108,9 +105,14 @@ private:
         return true;
     }
     // RG-03 : part de la pluie qui tombe autour de la caméra (0 sous la voûte d'un tunnel, fondu à la bouche)
+    // WFS-354 (RG-03) : selon la position de la caméra (et non de la voiture) : en vue Cockpit, la caméra est sous la voûte en même
+    // temps que la voiture ; en vue Arrière, quelques mètres après elle. Distance de la caméra le long de la route = celle de la
+    // voiture + l'écart caméra-voiture projeté sur l'axe de la route (avant = (sin th, −cos th), comme la caméra)
     static float partDuCiel(const GameView& g) {
         if (!g.track || !g.player) return 1.f;
-        const double L = (double)g.track->segmentCount() * SEG_M, d = std::fmod(std::fmod(g.player->dist * M, L) + L, L);
+        const TrackPoint q = g.track->point(g.player->dist, 0);
+        const double avance = (g.camPos.x - q.x) * std::sin(q.th) - (g.camPos.z - q.z) * std::cos(q.th);
+        const double L = (double)g.track->segmentCount() * SEG_M, d = std::fmod(std::fmod(g.player->dist * M + avance, L) + L, L);
         float part = 1.f;
         for (const trace::Section& s : trace::sections(*g.track))
             if (s.type == trace::Type::Tunnel) part = std::min(part, meteo::pluieSousToit(d, s.debut * SEG_M, s.fin * SEG_M));
@@ -120,22 +122,25 @@ private:
     // à plus d'une largeur de montant du pare-brise) ; ailleurs, c'est l'habitacle (planche, volant, montants, toit)
     bool dehors(const float q[8], float x, float y) const {
         if (meteo::dansQuad(q, x, y)) return true;
-        const float seuil = std::min(q[1], q[3]), marge = 0.07f * h_;   // q : bas gauche, bas droit, haut droit, haut gauche
+        // WFS-354 : la vitre s'arrête au bord intérieur des montants : la vitre latérale commence après le montant (montantPx_) et une marge
+        const float seuil = std::min(q[1], q[3]), marge = 0.07f * h_ + montantPx_;   // q : bas gauche, bas droit, haut droit, haut gauche
         if (y >= seuil) return false;
         auto xSur = [&](float ax, float ay, float bx, float by) { return std::abs(by - ay) < 1e-3f ? ax : ax + (bx - ax) * (y - ay) / (by - ay); };
         return x < xSur(q[0], q[1], q[6], q[7]) - marge || x > xSur(q[2], q[3], q[4], q[5]) + marge;
     }
     // pare-brise de l'image, projeté à l'écran (4 sommets) ; faux si un coin est derrière la caméra
-    static bool quadPareBrise(const GameView& g, const cockpit::PareBriseVu& pb, float q[8]) {
+    bool quadPareBrise(const GameView& g, const cockpit::PareBriseVu& pb, float q[8]) {
         for (int i = 0; i < 4; i++) if (!projeter(g, pb.repere.transformPoint(pb.coins[i]), q[2 * i], q[2 * i + 1])) return false;
+        float x, y;   // largeur d'un montant à l'écran, au pied du montant gauche (WFS-354)
+        montantPx_ = projeter(g, pb.repere.transformPoint(pb.coins[0] - pb.ex * cockpit::LARGEUR_MONTANT), x, y) ? std::abs(q[0] - x) : 0.f;
         return true;
     }
+    float montantPx_ = 0;
     // gouttes posées sur le pare-brise (u, v dans 0..1 : de bas gauche à haut droit) ; rayon (m), opacité qui monte
     struct GoutteVitre { float u, v, r, a, amax; };
     static constexpr int VITRE_N = 140;
     std::vector<GoutteVitre> vitre_;
     float anglePrec_ = 0;
-    cockpit::EtatEssuie essuie_;
     long balayees_ = 0;   // gouttes de la vitre effacées par les balais (journal de fin de course)
     vec3 surVitre(const cockpit::PareBriseVu& pb, float u, float v) const {   // point de la vitre (repère de l'œil)
         const vec3 b = pb.coins[0] + (pb.coins[1] - pb.coins[0]) * u, h = pb.coins[3] + (pb.coins[2] - pb.coins[3]) * u;
@@ -148,13 +153,18 @@ private:
     // à vitesse (vent relatif), et le balai efface celles qu'il croise pendant l'image
     void avancerVitre(float dt, float p, const GameView& g) {
         if (vitre_.empty()) { vitre_.resize(VITRE_N); for (GoutteVitre& d : vitre_) { neuve(d); d.a = d.amax * rnd_(); } }
-        const cockpit::PareBriseVu& pb = cockpit::pareBriseVu();
-        const cockpit::InterieurDef* idef = g.car ? cockpit::interieurPour(g.car->id) : nullptr;
-        const float ciel = partDuCiel(g), a1 = idef ? essuie_.angle(idef->arc) : pb.angle;
+        const float ciel = partDuCiel(g);
         for (GoutteVitre& d : vitre_) {
             d.a = std::min(d.amax, d.a + dt * 0.16f * ciel);                   // la pluie mouille la vitre peu à peu (≈ 6 s) ; sous le toit, plus rien n'arrive
             d.v += dt * (d.r > 0.0045f ? -0.05f : 0.f) + dt * p * p * 0.25f;    // grosses gouttes qui coulent ; à vitesse, le vent les pousse en haut
-            if (d.v < 0 || d.v > 1) { neuve(d); continue; }
+            if (d.v < 0 || d.v > 1) neuve(d);
+        }
+    }
+    // WFS-354 (RG-02) : à chaque image dessinée, le balai efface les gouttes qu'il a croisées depuis l'image précédente, avec
+    // l'angle des balais dessinés (pb.angle, écrit par l'intérieur à cette image) : effacement et balai vu sont à la même image
+    void balayerVitre(const cockpit::PareBriseVu& pb) {
+        const float a1 = pb.angle;
+        for (GoutteVitre& d : vitre_) {
             const vec3 P = surVitre(pb, d.u, d.v);
             for (int k = 0; k < pb.balais; k++) {   // balai : de son pivot, le long de ex × sens, tourné vers eu de l'angle a
                 const vec3 w = P - pb.pivot[k];

@@ -133,6 +133,14 @@ struct PareBriseVu {
     float angle = 0;                 // angle des balais (rad)
 };
 PareBriseVu& pareBriseVu();
+// WFS-354 (RG-01) : coins de la vitre seule (repère de l'œil) : bord intérieur des montants dessinés (axe du pied à ±montant,
+// en haut rentré de RETRAIT_MONTANT_HAUT, section LARGEUR_MONTANT : Interieur::construire) moins 1 cm de joint, en bas comme
+// en haut (avant : axe extérieur en bas, ×0,88 en haut : gouttes posées sur le montant gauche)
+constexpr float LARGEUR_MONTANT = 0.075f, RETRAIT_MONTANT_HAUT = 0.10f;   // m : mêmes cotes que barre(mont…) d'Interieur::construire
+inline void coinsVitre(float cx, float montant, float yb, float zb, float yh, float zh, vec3 c[4]) {
+    const float m = LARGEUR_MONTANT * 0.5f + 0.01f, xb = montant - m, xh = montant - RETRAIT_MONTANT_HAUT - m;
+    c[0] = {cx - xb, yb, zb}; c[1] = {cx + xb, yb, zb}; c[2] = {cx + xh, yh, zh}; c[3] = {cx - xh, yh, zh};
+}
 
 class Interieur {
 public:

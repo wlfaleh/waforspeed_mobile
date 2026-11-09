@@ -672,10 +672,8 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
         };
         {   // WFS-334 : pare-brise et balais de l'image, pour la pluie (gouttes derrière la vitre et sur la vitre)
             PareBriseVu& pb = pareBriseVu();
-            const float yb = d.pareBriseY, zb = d.pareBriseZ, xh = montant_ * 0.88f;   // montants légèrement rentrés en haut
             pb.vu = true; pb.repere = cam; pb.ex = ex; pb.eu = eu; pb.angle = e.essuie;
-            pb.coins[0] = {cx_ - montant_, yb, zb}; pb.coins[1] = {cx_ + montant_, yb, zb};
-            pb.coins[2] = {cx_ + xh, haut.y, haut.z}; pb.coins[3] = {cx_ - xh, haut.y, haut.z};
+            coinsVitre(cx_, montant_, d.pareBriseY, d.pareBriseZ, haut.y, haut.z, pb.coins);   // WFS-354 (RG-01) : vitre seule, sans les montants
             const float dx[2] = {d.essuie == Essuie::Unique ? -0.02f : -0.62f, d.essuie == Essuie::Opposition ? 0.62f : 0.08f};
             const float sn[2] = {d.essuie == Essuie::Unique ? -1.f : 1.f, d.essuie == Essuie::Opposition ? -1.f : 1.f};
             pb.balais = 0;
