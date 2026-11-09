@@ -4654,3 +4654,10 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 01:02:50 — Carte « Neige scandinave » de Noël : WFS-342 (vue d'ensemble), 343, 344, 345 créés (demande de l'utilisateur) (po-scrum-master)
 
 ### 2026-11-09 01:05:02 — Principe « tout en dynamique » écrit (WFS-342, 343, skill expert-cartes) (po-scrum-master)
+
+### 2026-11-09 01:06:02 — WFS-336 : PR #295 ouverte (lead-dev)
+- Branche `feature/waforspeed-336` synchronisée avec `main` ; `test_trafic_duree` après synchronisation : **0 fenêtre hors règle sur 1600** (`--avant` : 771) ; tests CPU 80/80 avant la synchronisation, suite relancée après.
+- Banc perf, Ville, TrafficSystem (médiane de 90 images), Haute avant → après : départ 12 / 9 547 → 12 / 9 547 ; ≈ 2 min 50 : 76 / 86 119 → 25 / 11 331 ; 10 min jour : 201 / 170 554 → 94 / 58 020 (3 véhicules dessinés) ; 10 min nuit : 222 / 170 596 → 100 / 58 032. Basse 10 min : 56 / 138 966 → 30 / 32 680. Total de voitures constant (54).
+- Reproduction du ticket : 54 → 644 ne se reproduit plus tel quel sur le `main` actuel (76 à 2 min 50, 201 à 10 min) ; l'accumulation reste visible sur `main` et disparaît sur la branche.
+- Captures : 9 paires dans `qa/pr/WFS-336/` (Ville jour / nuit, Haute / Basse, 10 min, Golf sur la chaussée ; Poursuite identique à `main`). Limite : à 2 min 50, la Golf du pilote automatique du banc sort de la route sur `main` comme sur la branche.
+- Relecture et fusion : **session « ⚡ Lead dev automatique »**, prévenue directement. Après fusion : 🟡 À valider (utilisateur).
