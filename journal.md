@@ -2853,3 +2853,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Exception du PO : E3 est tenue par WFS-338 (↩️, `poursuite*`, `hud.*`) ; WFS-346 n'y touche que `roues.*` + accroches ≤ 10 lignes `player.*` / `aide_direction.*` (μ de la neige) : fichiers séparés. Zone complète et captures demandées dans `regles-de-gestion/WFS-346.md`.
 - Skills : `expert-cartes` + `expert-conduite`. Ticket de conduite : 🟡 après la fusion. Branche `feature/waforspeed-346` à pousser tout de suite.
 - `track-agent.md` : lignes des sessions terminées enlevées (agent 3, agent 5, arwa-4, Agent 0, agent dev Z), règle « agent fini = ligne enlevée ».
+
+### 2026-11-09 17:21:04 — WFS-193 : PR #311 (X5) corrigée après la 2e revue, selon RG-05 à RG-07 du PO (Claude, agent 1)
+- Grille d'un seul tenant : cadre et barres au même galbe de 4,5 cm. Ses bords sont 1 à 2 cm derrière le bord de l'ouverture : plus de « pare-buffle ».
+- Le bas de la grille est à 0,63 m, derrière le haut du pare-chocs. L'option `galbeCadre` est retirée : l'outil est identique à `main`.
+- RG-07 essayé : retirer la lèvre du pare-chocs (33 triangles) faisait des dents aux coins de face. L'essai n'est pas gardé ; un éclat reste au coin droit au zoom ×4, noté dans les limites.
+- 90 tests CPU verts. Les captures comprennent les zooms ×4 des deux coins et de la vue basse.
+- Commit ad7aa366. J'ai répondu point par point dans la PR et rappelé le lead dev.
