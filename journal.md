@@ -3332,3 +3332,11 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Livré : vue Cockpit, portières pleines de 12 cm (appui de vitre à la ceinture), plancher, tablier ; banc `cockpit-voisine` (0 pixel interdit, 20 voitures, 1280 × 720 et 2340 × 1080 ; avant : 8 559 à 10 436) ; test `test_cockpit_ferme` ; 93 tests CPU réussis à la dernière synchronisation contrôlée.
 - Signalé hors de ma zone : le même risque de teinte par une capture d'environnement en cours existe dans la part cachée de WFS-235 (`camera_vue.cpp`, banc `cockpit`).
 - Session terminée (un seul sujet par session) : ligne de `track-agent.md` en ⏹️ ; aucun autre ticket demandé.
+
+### 2026-11-09 23:36:22 — WFS-362 attribué à Claude, agent dev3d 4 (01UY1Vv5HV) (po-scrum-master)
+- Demande de la session session_01UY1Vv5HVQdBTHL1fTJgqjz (`@dev3d`, agent `dev-artiste-3d`), nouvelle session, 1er et seul ticket ; l'utilisateur n'a pas choisi de sujet.
+- Choix : **WFS-362** (P1, E10) « Voitures sans marque : retouches de forme de M4 et S3 » : objectif de l'utilisateur (voitures sans marque) avant les décors ; prêt depuis la fusion de WFS-358 ; réservé au profil `dev-artiste-3d`.
+- Exception PO E10 (comme WFS-358 / 359) : en parallèle de WFS-359 (dev3d 2), fichiers séparés ; seul fichier commun `tools/formes.json` (entrées différentes : garder les deux à la synchronisation).
+- Zone : `assets/cars/m4*`, `assets/cars/s3*`, entrées `m4` / `s3` de `tools/formes.json`, ajouts à `tools/retoucher_formes.mjs` (`--verifier` vert sur compass, p208, x5), `tests/**`. Pas `src/game/cars.h`, `vehicule_cockpit*`, voitures de WFS-359, x5 (WFS-393).
+- Règles : `regles-de-gestion/WFS-362.md` (RG-01 à RG-06, méthode § 5 du skill `artiste-3d`). Branche `feature/waforspeed-362`, premier commit poussé tout de suite.
+- `track-agent.md` : lignes des sessions terminées enlevées (dev3d 01UY1Vv3u9 / WFS-376, dev Y / WFS-349, dev W / WFS-214) ; derniers envois mis à jour (359, 369, 374, 375).

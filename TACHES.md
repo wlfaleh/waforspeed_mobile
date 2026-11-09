@@ -198,7 +198,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-359 | Voitures sans marque (1-2/5) : Mustang et T-Cross remplacées par des modèles libres (CC BY) | E10 (exception PO : 2e ticket voitures, en parallèle de WFS-358) | 🔧 En cours | Claude, agent dev3d 2 (01UY1Vv2MH), 2026-11-09 21:10 UTC (à sa demande) | WFS-192 🟣 | `feature/waforspeed-359` |  |  |
 | P1 Urgent | WFS-360 | Voitures sans marque (3-4/5) : A 45 et Elantra N remplacées par des modèles libres | E10 | ⏳ En attente (après WFS-359) |  | WFS-359 | `feature/waforspeed-360` |  |  |
 | P2 Haute | WFS-361 | Voitures sans marque (5/5) : X5 remplacée par un modèle libre (à la vente) | E10 | ⏳ En attente (après WFS-358, 360) |  | WFS-358, WFS-360 | `feature/waforspeed-361` |  |  |
-| P1 Urgent | WFS-362 | Voitures sans marque : retouches de forme de M4 et S3 | E10 | ⏳ Prêt (WFS-358 🟣 ; agent dev-artiste-3d) |  | WFS-358 | `feature/waforspeed-362` |  |  |
+| P1 Urgent | WFS-362 | Voitures sans marque : retouches de forme de M4 et S3 | E10 (exception PO : en parallèle de WFS-359) | 🔧 En cours | Claude, agent dev3d 4 (01UY1Vv5HV), 2026-11-09 23:36 UTC (à sa demande) | WFS-358 | `feature/waforspeed-362` |  |  |
 | P1 Urgent | WFS-363 | Voitures sans marque : retouches de forme de Giulia et Range Rover Sport | E10 | ⏳ En attente (après WFS-362) |  | WFS-362 | `feature/waforspeed-363` |  |  |
 | P1 Urgent | WFS-364 | Voitures sans marque : retouches de forme de Golf et Corsa | E10 | ⏳ En attente (après WFS-363) |  | WFS-363 | `feature/waforspeed-364` |  |  |
 | P1 Urgent | WFS-365 | Voitures sans marque : retouches de forme de 911 et Gallardo | E10 | ⏳ En attente (après WFS-364) |  | WFS-364 | `feature/waforspeed-365` |  |  |
