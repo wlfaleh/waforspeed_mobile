@@ -3020,3 +3020,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:41:10 — Règle de l'utilisateur : formes géométriques interdites partout, WFS-378 créé (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
 - Règle ajoutée à `CLAUDE.md`, `regles-de-gestion/DA-realisme.md` et aux skills agent-developer, artiste-3d, expert-realisme-3d, expert-cartes, waforspeed-natif, lead-dev (refus de PR), qa-lead (anomalie bloquante) et po-scrum-master. Rappel ajouté dans WFS-323, 325, 344, 369 à 373 et 376.
 - **WFS-378** (P1, `dev-artiste-3d`) : inventaire des formes nues dans toutes les zones, puis découpage en tickets.
+
+### 2026-11-09 19:47:28 — Vidéo des lacets de la Corniche : ANO-212, 213 et WFS-379 créés (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
+- Vidéo de l'utilisateur (15 s, Corniche, Checkpoint, vues Proche et Capot) : terrain des lacets qui flotte dans le ciel (ANO-212, bloquante), capot flou (ANO-213). Images : `qa/retours/2026-11-09-video2045-*.jpg`.
+- **WFS-379** (P1, `expert-cartes`) : supprimer les 6 lacets de `corniche()` (`trace_cartes.cpp`), les remplacer par une montée simple, retirer leur décor et vérifier toute la carte.
