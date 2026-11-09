@@ -200,12 +200,14 @@ int benchTrace(Game& g, Renderer& r, const std::string& out) {
             g.shutdown();
         } else ecarts++;
     } else ecarts++;
-    // ---- Corniche (1er lacet) et Grand Prix (épingle) : au sol, décor actuel
+    // ---- Corniche (1re courbe de la montée, WFS-379 : plus de lacets) et Grand Prix (épingle) : au sol, décor actuel
     for (const char* carte : {"plage", "circuit"}) {
         Track* tk = aller(carte, 0, 0);
         if (!tk) { ecarts++; continue; }
         int64_t ep = -1;
-        for (const Section& s : tk->sections()) if (s.type == Type::Lacets || s.type == Type::Epingle) {
+        const bool corniche = !std::strcmp(carte, "plage");
+        for (const Section& s : tk->sections()) if (corniche ? (s.type == Type::Montee && s.rayon > 0) : (s.type == Type::Lacets || s.type == Type::Epingle)) {
+            if (corniche) { ep = (s.debut + s.fin) / 2; break; }
             for (int64_t a = s.debut; a < s.fin; a++) if (std::abs(tk->segAt(a).curve) > 10) { ep = a; break; }
             break;
         }

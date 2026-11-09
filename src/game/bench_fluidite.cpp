@@ -95,7 +95,9 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
     if (std::getenv("WFS_FLUIDITE_IMAGES")) {
         struct Seq { const char* nom; const char* carte; trace::Type type; bool carrefour; double kmh; int fps; bool poursuite; };
         const Seq SEQ[] = {{"virage-serre-ville-15ips-poursuite", "ville", trace::Type::Virage, false, 90, 15, true},
-                           {"epingle-corniche-30ips-proche", "plage", trace::Type::Lacets, false, 55, 30, false},
+                           // WFS-379 : la Corniche n'a plus de lacets ; la suite « epingle-corniche » est remplacée par la nouvelle montée
+                           // (1re section en montée de la carte, 15 m après son début), même vue Proche et même cadence
+                           {"montee-corniche-30ips-proche", "plage", trace::Type::Montee, false, 55, 30, false},
                            {"carrefour-ville-30ips-poursuite", "ville", trace::Type::Virage, true, 50, 30, true}};
         for (const Seq& q : SEQ) {
             Track tq; tq.build(mapById(q.carte), trace::versionCarte(q.carte));
