@@ -2965,3 +2965,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 
 ### 2026-11-09 19:23:47 — Alias de l'agent dev-artiste-3d : @dev3d au lieu de @voitures (po-scrum-master)
 - Demande de l'utilisateur : appeler l'agent `dev-artiste-3d` par `@dev3d`. `@voitures` remplacé partout (`appel-agents.md`, `CLAUDE.md`, `track-agent.md`, agent, règles WFS-358 à 361) ; `@devartiste` reste possible. `@3d` reste l'expert réalisme 3D.
+
+### 2026-11-09 19:24:56 — Sessions à ouvrir : une seule @dev3d ; exception E10 pour WFS-358 (po-scrum-master)
+- Question de l'utilisateur : une session `@artiste` et une `@dev3d` ? Réponse : seulement `@dev3d` pour l'instant ; aucun ticket n'est fait seulement d'actifs 3D sans code (WFS-358 à 361 demandent les deux).
+- Exception E10 : WFS-358 peut avancer en parallèle de WFS-349 (zones séparées), dès la fusion de #311.
