@@ -103,5 +103,81 @@
    }
   ],
   "empreinteApres": "2ff076abf2a391c1"
+ },
+ "x5": {
+  "materiaux": 29,
+  "empreinteAvant": "4fc2afea68dc4d96",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 15,
+    "boite": [
+     -0.47,
+     0.625,
+     -2.5,
+     0.47,
+     0.955,
+     -2.36
+    ],
+    "note": "calandre de marque (deux « haricots » : cadre, barres et arcs du bas) retirée",
+    "triangles": 2640
+   },
+   {
+    "retirer": true,
+    "materiau": 10,
+    "boite": [
+     -0.47,
+     0.625,
+     -2.5,
+     0.47,
+     1,
+     -2.3
+    ],
+    "note": "fond des haricots retiré",
+    "triangles": 240
+   },
+   {
+    "materiau": 4,
+    "boite": [
+     -0.115,
+     0.85,
+     -2.48,
+     0.115,
+     0.945,
+     -2.36
+    ],
+    "pivot": [
+     0,
+     0.945,
+     -2.42
+    ],
+    "echelle": [
+     1,
+     0.15,
+     1
+    ],
+    "fondu": 0.01,
+    "note": "pointe de carrosserie entre les deux haricots remontée jusqu'au bord du capot (carrosserie continue, sans trou)",
+    "sommets": 45
+   },
+   {
+    "grille": [
+     -0.48,
+     0.63,
+     -2.43,
+     0.48,
+     0.935,
+     -2.37
+    ],
+    "barres": 6,
+    "galbe": 0.06,
+    "cadre": 0.015,
+    "couleur": "#4a4a4a",
+    "metal": 0.8,
+    "rugosite": 0.3,
+    "note": "grille générique en retrait, derrière la carrosserie, dans l'ouverture d'origine"
+   }
+  ],
+  "empreinteApres": "7f394650504493a0"
  }
 }
