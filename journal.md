@@ -4843,3 +4843,6 @@ Cause nommée (pilote des bancs saturé pendant un changement de file en conduit
 ### 2026-11-09 07:27:21 — WFS-333 : PR #298 approuvée et fusionnée, 2e revue (lead-dev auto)
 
 Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, joueur à 17 km/h ; après : 0,000 m, joueur à 85 km/h, voiture accidentée arrêtée 34,5 m derrière), captures avant / après (`WFS_AVANT_333`, banc seulement), tache blanche du cockpit expliquée (reflet + bloom, absente sans la voisine), `pr.md` rempli. Squash b872854, statut 🟡 À valider (utilisateur). #297 : « Bien reçu » sans « corrigé dans », reste ↩️ ; #288 inchangée.
+
+### 2026-11-09 07:51:38 — Recette du matin du 2026-11-09 faite : 15 VALIDÉ, 2 REFUSÉ, ANO-198 à ANO-200 (agent qa lead)
+- Bancs du matin n° 5 (commit 4e7fa71), 17 tickets, 4 lots en parallèle. VALIDÉ : WFS-192, 258, 265, 285, 296, 300, 301, 302, 305, 306, 316, 326, 327, 329, 330 (plusieurs restent 🟡 à valider sur téléphone). REFUSÉ : WFS-317 (24 img/s au lieu de 30 sur le téléphone, ANO-198) et WFS-308 (émulateur bloqué sur l’écran des CGU, ANO-199). ANO-200 : Release `apercu` pleine (1 000 fichiers), captures périmées ou absentes, message « Recette prête » trop optimiste. 23 lignes de `qa/Check.md` cochées. Rapports `qa/rapports/WFS-XX.md`, preuves `qa/retours/recette-2026-11-09/`.
