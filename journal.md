@@ -2714,3 +2714,59 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Refus pour les captures** : la suite « épingle de la Corniche, 30 img/s, Proche » est prise sur la **jambe droite** avant l'épingle (`dedans = début + 15 m` d'une section `Lacets`, qui commence par une droite) : hors sujet. Demandé aussi : une paire avant / après de la Ville avec trafic en virage (`pointLisse` change aussi pour le trafic, le duel, la poursuite, le joueur).
 - Remarques non bloquantes : `if (passe < 2)` toujours vrai, commentaire « 10-20 img/s » périmé, `vPrec` et `dth` inutilisés, 26 img/s sans juge à écrire.
 - Revue postée en commentaire sur la PR (même compte GitHub). TACHES et track-agent : ↩️ Retour lead dev (PR #310).
+
+### 2026-11-09 14:41:43 — WFS-193 : 2e PR (X5) ouverte, #311 (Claude, agent 1)
+- Décision du PO (option (a)) suivie : la X5 reprise dans une 2e PR du même ticket, sur la même branche (poussée sans réécrire l'historique, synchronisée avec `main`).
+- Calandre de marque (2 640 triangles) et fond des haricots (240) retirés ; **capot entier** : la pointe de carrosserie entre les haricots est remontée jusqu'au bord du capot (45 sommets). Grille générique en retrait dans l'ouverture d'origine (6 barres, cadre, galbe 6 cm), haut à 0,915 m : plus haut, un coin passait par la fente entre capot et phares (essai avec la grille en rouge).
+- Vérifié : `--verifier` « déjà retouchée » (Compass, 208, X5), `test_fidelite_voitures` OK, 88 tests CPU verts ; gros plans 2560×1440 de face, de trois quarts et au-dessus du capot, jour et nuit, avant / après.
+- TACHES : WFS-193 reste 🔧 jusqu'à la fusion de la X5 (consigne du PO).
+### 2026-11-08 22:51:35 — WFS-215 : plaque de la Model 3, vitres avant du RR Sport et de l'A 45, verre de l'A 45 (Claude, agent 5)
+- **RG-01 (ANO-107) plaque arrière de la Model 3** : cause : la plaque (matériau 24) était une surface courbe de 148 petits triangles (hauteur médiane 1,6 mm) ; `model_loader.cpp` (WFS-42) la prenait pour un fil très fin (« matériau 24 très fin (1.6 mm) → préfiltré, fils en couverture partielle ») et la dessinait en couverture partielle, la peinture grise au travers. Correction : plaque refaite en rectangle plat et vertical de 2 triangles (520 × 111 mm, z 2,319 m, devant la peinture à 2,306 m), coordonnées de texture reprises (droites des moindres carrés). Plus de ligne « très fin » pour le matériau 24 ; `vitrine-model3-feux` : EY-317-TL net, noir sur blanc, bandes bleues.
+- **RG-02 (ANO-110) vitres avant du RR Sport** et **RG-04 (A 45)** : le shader des voitures (`shaders/vehicule.glsl`, `vitre`, interdit : WFS-292) rend toute vitre F_GLASS à 0,55 + Fresnel d'opacité au moins (≤ 45 % transmis). Pare-brise et vitres latérales avant (triangles au-dessus de y 0,95 m, entre le bas du pare-brise et le montant central : RR Sport z −1,4 à 0,4 m, 434 triangles ; A 45 z −1,25 à 0,2 m, 412 triangles) passés dans un nouveau matériau transparent ordinaire (F_BLEND + double face, sans F_GLASS) : opacité 0,25 = **75 % transmis** (≥ 75 % pare-brise, ≥ 70 % vitres avant : règlement ONU n° 43, transmission régulière de la lumière), gris-vert 0,05 / 0,06 / 0,06, rugosité 0,05. A 45 : verre resté F_GLASS (vitres arrière, lunette, optiques) albédo 0,91 → 0,05 / 0,06 / 0,06 (plus de voile laiteux ; transmission des vitres arrière surteintées : **à confirmer**, pas de source). RR Sport : vitres arrière inchangées (sombres).
+- **Outil** (zone accordée par le PO, b7c5a99) : `tools/vitres_voitures.mjs` (nouveau matériau ajouté à la fin : rangs existants inchangés) + 1 ligne dans `tools/convertir_voitures.sh` après `plaques_voitures.mjs` ; `tools/logos.json` : « materiaux » 21 → 22 (rrsport), 25 → 26 (a45) ; `.lod` régénérés (`alleger_voiture.mjs`). Rejouable : 2e passe de l'outil : rien à écrire ; `alleger_voiture.mjs` relancé : mêmes `.lod` (SHA-256 identiques) ; `effacer_logos.mjs --verifier` : « rien à faire » sur les 3 voitures. Relance complète de `convertir_voitures.sh` impossible ici (sources du jeu web absentes) : chaîne vérifiée outil par outil. `sharp` 0.33.5 installé localement par npm (`tools/node_modules`, ignoré par git) pour les essais.
+- **Captures** (`qa/pr/WFS-215/`, 18) : `vitrine-model3-feux` (plaque nette), `conducteurs-rrsport-jour` (conducteur visible derrière la vitre avant), `vitrine-a45-feux` (lunette sombre, sièges visibles) ; `conducteurs-rrsport-nuit` : image éblouie par une lumière en face, sur `main` comme après : conducteur pas lisible sur cette capture (hors vitres). Aucune autre voiture changée.
+- Vérifications : 78 tests CPU OK ; banc `parcours` 0 écart (normal et Cockpit). PR ouverte pour le lead dev.
+
+### 2026-11-09 13:59:29 — WFS-215 : revue du lead dev (PR #288), conflit et nuit du RR Sport (Claude, agent 5)
+- Réponse « Bien reçu » sous la revue avant toute correction (commentaire 6741407484).
+- (1) Branche synchronisée avec `main` ; `TACHES.md` et `track-agent.md` repris de `main` (lignes en double évitées) ; 88 tests CPU OK.
+- (2) Nuit du RR Sport : `conducteurs-rrsport-nuit` est éblouie par la lumière du départ (banc `conducteurs`, hors zone, non modifié) ; même banc avec `WFS_DEPART=300` (même binaire, modèles de `main` puis de la branche) : de face, sous la pluie, le conducteur (tête, bras, volant) et les sièges se voient derrière le pare-brise après, à peine avant. Captures `avant-` / `apres-conducteurs-rrsport-nuit-depart300` (+ zoom) dans `qa/pr/WFS-215/`. Le banc `vitrines` ne suit pas `WFS_MOMENT=nuit` (essai : scène de jour).
+
+### 2026-11-09 14:45:29 — WFS-193 (X5), PR #311 refusée par le lead dev (lead-dev)
+- 24 captures X5 ouvertes (avant / après), gros plans agrandis ×4 ; diff lu en entier (données : entrée `x5` de `tools/formes.json`, `x5.wfm`, `x5.lod`) ; `retoucher_formes.mjs --verifier` : déjà retouchée (4f457585c333e28d).
+- Bon : haricots retirés (marque non reconnaissable), capot plus déchiré sur les côtés, vitrines propres, dos et feux inchangés.
+- Refus : (1) la pointe de carrosserie écrasée à 15 % (retouche 3) fait un pli froissé au centre du bord haut de la grille (`nez-x5-34-jour`, `-capot-jour/nuit`, `-face-nuit`) ; (2) coin bas de la grille côté 3/4 en bord droit, liseré clair et éclats du pare-chocs (`nez-x5-34-jour/nuit`). Demandé : gros plans des deux côtés, vue basse du pare-chocs, zooms ×4.
+- 4e refus de la X5 en tout (3 sur #308, 1 sur #311) : PO prévenu par le rapport du lead dev.
+
+### 2026-11-09 14:59:07 — WFS-215 fusionné par le lead dev (lead-dev)
+- PR #288, 3e revue, demandée par l'utilisateur (« regarde la pr 288 et merge ») ; captures avant / après ouvertes (plaque Model 3, conducteur RR Sport jour et nuit + zoom, verre A 45, vitrines) : demande satisfaite, aucune régression vue.
+- Diff relu (`tools/vitres_voitures.mjs`, `logos.json`, `convertir_voitures.sh`, 3 voitures) ; branche fusionnée avec `main` construite par le lead dev (`glslc` installé dans le conteneur) : 88 tests CPU verts.
+- 3e conflit de suite sur `journal.md` seul : synchronisation 4e4ad7e faite par le lead dev (deux côtés gardés, aucun code). Approbation écrite en commentaire (même compte GitHub), squash 8bf73d1.
+- Statut 🟡 À valider (utilisateur) (ANO-107, ANO-110) ; `qa/Check.md`, `suivi-pr.md`, `track-agent.md` à jour. Remarque : `lire` / `ecrire` du .wfm recopiés dans 2 outils, à mettre en commun plus tard (US technique au choix du PO).
+
+### 2026-11-09 15:00:44 — WFS-293 : retour lead dev corrigé, PR #310 à relire (Claude, Agent 0 developer)
+- Épingle : suite prise au segment de plus forte courbure, avant / après régénérés (f2221241, 22e8339a).
+- Ville en virage : 9 paires `carte-ville-virage-*` avant / après (0,00 % ; vues hautes 0,40–0,81 %, contours seulement) ; trafic en virage visible dans la suite du carrefour (012bdf18, 8ae83bc0).
+- Remarques non bloquantes corrigées (f2221241). Tests CPU 89 OK ; synchronisé avec main (dc4dc8bb). Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-09 15:11:27 — WFS-293 fusionné par le lead dev (lead-dev)
+- PR #310, 2e revue sur dc4dc8bb : les 2 points bloquants de la revue précédente sont corrigés (suite de l'épingle dans la courbe de 165° ; 9 paires Ville en virage sans régression, trafic sur sa voie dans la suite du carrefour). Toutes les captures ont été ouvertes.
+- Diff relu en entier ; branche synchronisée avec main et construite par le lead dev (Release) : 89 tests CPU verts.
+- Approbation écrite dans la PR (en commentaire : même compte GitHub), puis fusion en squash f1abb662. Statut 🟡 À valider (utilisateur). Remarque non bloquante : `dthInutile` (`track.cpp`), paramètre de sortie jamais lu.
+
+### 2026-11-09 15:12:02 — Session terminée : WFS-293 fusionné (Claude, Agent 0 developer)
+- PR #310 fusionnée par le lead dev (f1abb662) ; WFS-293 en 🟡 À valider (utilisateur) : la voiture ne doit plus sauter en virage sur le téléphone.
+- Un seul sujet par session (règle du 2026-11-09) : la session s'arrête, aucun nouveau ticket demandé.
+
+### 2026-11-09 15:12:36 — WFS-356 : PR #313 ouverte, lead dev appelé (Claude, agent dev Z (01UY1Vv5sWHo))
+- Branche `feature/waforspeed-356` synchronisée avec main (c93fb37d), construction complète, **88 tests CPU réussis**.
+- **Accroches annoncées** (une ligne chacune, hors zone) : `shaders/decor.glsl` (pièce éclairée → `pieceAdaptee`) ; `src/world/commerces.cpp` (vitrine de nuit 0,65 au lieu de 1,4 : rouge 1,4 au-dessus du blanc et du bloom, c'étaient les blocs blancs du rez-de-chaussée, cause 4 ajoutée au diagnostic).
+- Mesures (banc `depart`, 1280x720) : EV 4,00 dès le « 3 » dans la Ville (avant 2,27) ; 0,00 % de pixels saturés ; pixels très clairs au « 3 » de 4,7-6,8 % → ≈ 1 % (HUD compris) ; jour identique au pixel près. Le nouveau contrôle du banc (1re image vs EV à 0:04) échoue sur main pour les 5 départs de nuit en Ville (1,6 à 1,8 IL) et passe sur la branche.
+- Limites : ANO-184 non reproduit au banc (cause probable corrigée, à confirmer sur le téléphone) ; course longue de 4 min non relancée ; performance non mesurée sur vrai GPU.
+
+### 2026-11-09 15:17:45 — WFS-343 : PR #312 refusée par le lead dev (lead-dev)
+- 14 captures ouvertes : cartes de données de Noël et d'automne bonnes (jour, nuit, choix du terrain, retour Ville) ; Campagne et Grand Prix avant / après identiques à l'octet (condition du PO sur l'accroche E2 remplie).
+- Construction et `tests_cpu.sh` refaits sur la branche synchronisée : 89/89 OK.
+- 2 défauts bloquants (revue dans la PR) : (1) `lireDecor` contrôle « maison sur la chaussée » avec la profondeur au lieu de la largeur en travers (et sans l'angle) : une maison peut boucher la route ; (2) `CarteDonnees` garde `d_` et des indices sur une entrée du registre que `decouvrir()` remplace à chaque entrée dans le choix du terrain : lecture hors du tableau possible si le paquet change.
+- Remarques non bloquantes : relecture de tous les paquets à chaque entrée (à-coup futur), `carteDuCode()` pas sûr entre threads, `entier()` sans borne.
+- Statut : ↩️ Retour lead dev (PR #312).
