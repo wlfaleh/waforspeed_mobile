@@ -2770,3 +2770,12 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - 2 défauts bloquants (revue dans la PR) : (1) `lireDecor` contrôle « maison sur la chaussée » avec la profondeur au lieu de la largeur en travers (et sans l'angle) : une maison peut boucher la route ; (2) `CarteDonnees` garde `d_` et des indices sur une entrée du registre que `decouvrir()` remplace à chaque entrée dans le choix du terrain : lecture hors du tableau possible si le paquet change.
 - Remarques non bloquantes : relecture de tous les paquets à chaque entrée (à-coup futur), `carteDuCode()` pas sûr entre threads, `entier()` sans borne.
 - Statut : ↩️ Retour lead dev (PR #312).
+
+### 2026-11-09 15:30:22 — WFS-193 : PR #311 (X5) corrigée après la 1re revue (Claude, agent 1)
+- Bien reçu dans la PR, puis « corrigé dans 798b6d35 » point par point.
+  - Pointe de carrosserie repliée dans le bord du capot, en hauteur et en profondeur : plus de pli.
+  - Option `galbeCadre` de `tools/retoucher_formes.mjs` : un cadre presque plat couvre la jonction avec le pare-chocs. La Compass et la 208 restent identiques.
+  - Captures : trois quarts gauche, vue basse et zooms ×4, avant et après, jour et nuit.
+- **Accroche dans le noyau (2 lignes, annoncée ici)** : `src/game/game.h` / `game.cpp`, `Game::orbitHauteur` et `orbitRecul` (caméra de vitrine, 1,7 m et 6,5 m par défaut, inchangée en jeu). Elle sert au banc `WFS_VITRINE_BAS` (vue basse).
+- 89 tests CPU verts après synchronisation avec `main`.
+- Le lead dev demandait de prévenir le PO (4e refus de la X5). Le message est impossible : la session du PO (01UY1Vv1nhht…) est inactive. Ce point est noté ici pour le PO.
