@@ -6,7 +6,7 @@ layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : blo
 // params : x exposition, y sortie sRGB matérielle, z force du bloom, w exposition physique k la nuit (WFS-230 : vision de nuit ;
 //          0 de jour : image inchangée ; WFS-276 : négative dans la Ville = sans relèvement des basses lumières)
 // bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
-//                   y poids du niveau (remontée), z pas du flou en texels de la source / niveau inférieur présent (remontée)
+//                   y poids du niveau (remontée) ; passe finale : luminance d'adaptation de nuit en cd/m² (WFS-214, 0 de jour), z pas du flou en texels de la source / niveau inférieur présent (remontée)
 layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;
 layout(location = 0) in vec2 vUv;
 layout(location = 0) out vec4 outColor;
@@ -18,17 +18,30 @@ layout(location = 0) out vec4 outColor;
 //    (choix de jeu : l'herbe au clair de lune garde un peu de couleur) ;
 //  - teinte des bâtonnets : chromaticité (0,25 ; 0,25) (Jensen et coll. 2001, « A Physically-Based Night Sky Model ») à 40 % seulement
 //    (choix de jeu, pas de « nuit américaine ») ; aucun grain, aucune teinte globale. Avis expert-realisme-3d du 2026-11-07.
-vec3 visionNuit(vec3 c, float k) {
+// WFS-214 (RG-05) : seulement LOIN des lumières : le poids suit la luminance d'adaptation de l'œil La (cd/m², mesurée par l'exposition
+// automatique autour du joueur, pc.bloom.y) ou celle du pixel si elle est plus forte ; sous un lampadaire (La ≥ 1 cd/m²), une peinture
+// foncée garde sa couleur ; en rase campagne (La ≈ 0,01), rien ne change. Copie C++ et test : eclairage_exposition.h, test_post_wfs214.
+const float SCOTO_LOG_BAS = -2.3, SCOTO_LOG_PLAGE = 3.0, SCOTO_MAX = 0.9;
+vec3 visionNuit(vec3 c, float k, float La) {
     if (k <= 0.0) return c;
     vec3 rgb = max(c, vec3(0.0));
     float X = dot(rgb, vec3(0.4124, 0.3576, 0.1805)), Y = dot(rgb, vec3(0.2126, 0.7152, 0.0722)), Z = dot(rgb, vec3(0.0193, 0.1192, 0.9505));
     if (Y <= 1e-8 || X <= 1e-8) return c;
     float V = max(Y * (1.33 * (1.0 + (Y + Z) / X) - 1.68), 0.0) / 2.573;
-    float t = clamp((log(Y / k) / log(10.0) + 2.3) / 3.0, 0.0, 1.0);
-    float s = 0.9 * (1.0 - t * t * (3.0 - 2.0 * t));
+    float t = clamp((log(max(Y / k, La)) / log(10.0) - SCOTO_LOG_BAS) / SCOTO_LOG_PLAGE, 0.0, 1.0);
+    float s = SCOTO_MAX * (1.0 - t * t * (3.0 - 2.0 * t));
     const vec3 BATONNETS = vec3(0.706, 0.990, 1.966);   // (0,25 ; 0,25) en sRGB linéaire, Y = 1
     vec3 teinte = mix(vec3(1.0), BATONNETS, 0.4);
     return mix(c, V * teinte, s);
+}
+// WFS-214 (RG-01) : fonctions de transfert sRGB exactes (IEC 61966-2-1:1999), les mêmes que l'encodeur matériel de l'écran
+vec3 srgbCode(vec3 l) { l = clamp(l, 0.0, 1.0); return mix(l * 12.92, 1.055 * pow(l, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, l)); }
+vec3 srgbLineaire(vec3 s) { return mix(s / 12.92, pow((s + 0.055) / 1.055, vec3(2.4)), step(0.04045, s)); }
+// bruit triangulaire de −1 à +1 (densité en triangle), fixe à l'écran : deux hachages indépendants du pixel
+float tramageTriangulaire(vec2 p) {
+    float a = fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+    float b = fract(sin(dot(p, vec2(39.3468, 11.1353))) * 24634.6345);
+    return a + b - 1.0;
 }
 vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
 
@@ -92,7 +105,7 @@ void main() {
     int mode = int(pc.bloom.x + 0.5);
     if (mode != 0) { outColor = passeBloom(mode); return; }
     vec2 uvS = vUv * (pc.bloom.w > 0.0 ? pc.bloom.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
-    vec3 c = visionNuit(texture(hdr, uvS).rgb, abs(pc.params.w)) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
+    vec3 c = visionNuit(texture(hdr, uvS).rgb, abs(pc.params.w), pc.bloom.y) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
     c = basseLumiereNuit(c, pc.params.w);   // WFS-276 : basses lumières de la nuit relevées (rien de jour ; params.w < 0 : Ville, rien)
     // léger halo autour des zones très lumineuses (soleil, reflets).
     // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
@@ -112,7 +125,14 @@ void main() {
     c = aces(c);
     vec2 q = vUv - 0.5;
     c *= 1.0 - dot(q, q) * 0.35;
-    if (pc.params.y < 0.5) c = pow(c, vec3(1.0 / 2.2));
-    c += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+    // WFS-214 (RG-01, ANO-109) : tramage AVANT la conversion 8 bits, dans l'espace des codes de l'écran. Avant : ±0,5 / 255 ajouté
+    // en lumière linéaire même quand l'écran encode en sRGB (sortie matérielle, cas du téléphone et du banc) : dans un ciel clair
+    // (code sRGB ≈ 0,7), un pas de code vaut ≈ 1,6 / 255 en linéaire, le bruit ne couvrait qu'un tiers de pas → paliers (anneaux
+    // autour du soleil). Maintenant : bruit triangulaire (somme de deux bruits uniformes) de ±1 code, ajouté au code sRGB puis
+    // ramené en linéaire si l'écran réencode : la marche disparaît à toute clarté, sans biais de teinte (moyenne nulle).
+    // Réf. : R. A. Wannamaker, S. P. Lipshitz, J. Vanderkooy, « A Theory of Nonsubtractive Dither », IEEE Trans. Signal Proc. 48(2), 2000.
+    c = pc.params.y < 0.5 ? pow(c, vec3(1.0 / 2.2)) : srgbCode(c);
+    c += tramageTriangulaire(gl_FragCoord.xy) / 255.0;
+    if (pc.params.y >= 0.5) c = srgbLineaire(clamp(c, 0.0, 1.0));
     outColor = vec4(c, 1.0);
 }

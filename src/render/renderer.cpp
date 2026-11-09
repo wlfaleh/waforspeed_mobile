@@ -1730,6 +1730,7 @@ void Renderer::endFrame() {
     // WFS-15 / WFS-100 : force du bloom (calculée en début d'image) ; seuil 1,0 et genou 0,5 dans post.frag
     pp.params[2] = bloom_ ? bloom_->force : 0.f;
     pp.params[3] = eclairage::kVisionNuit();   // WFS-230 (accroche E13) : vision de nuit (Purkinje) ; 0 de jour
+    pp.bloom[1] = eclairage::lAdaptationNuit();   // WFS-214 (accroche E13, RG-05) : vision de nuit loin des lumières seulement
     pp.bloom[3] = echelleDyn_;   // WFS-246 (RG-07) : part de la cible de scène dessinée, agrandie à tout l'écran
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, post_);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &postSet_, 0, nullptr);

@@ -2908,6 +2908,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
 - Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
 
+### 2026-11-09 17:00:21 — WFS-214 : début, branche créée (Claude, agent dev W (01UY1Vv4Ed))
+- Ticket attribué par le PO (ciel en paliers ANO-109, chaussée bleue en Ultra ANO-106, vision de nuit sous les lampes RG-05). Branche `feature/waforspeed-214` créée et poussée ; lecture du code E13 en cours.
+
 ### 2026-11-09 17:31:59 — WFS-214 : arbitrage RG-02, ciel de midi (po-scrum-master)
 - Demande de Claude, agent dev W (01UY1Vv4Ed) : le ciel est calé sur 6 000 lx (éclairement mesuré **à l'ombre**), d'où un zénith à 2,7 kcd/m² au lieu de ≈ 7 à 10 kcd/m² ; avis de l'expert réalisme 3D : option A.
 - **Décision : option A, dans WFS-214** (zone E13) : plein ciel selon Krochmann (≈ 15,8 klx à h 70°) pour le ciel affiché et l'ambiance ; 6 000 lx gardés comme contrôle « à l'ombre ». B refusée (énergie incohérente).
@@ -3245,3 +3248,87 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 
 ### 2026-11-09 21:38:52 — WFS-375 : pris en charge, branche feature/waforspeed-375 (Claude, agent dev M (01UY1Vv4mu))
 - Ordre urgent de l'utilisateur transmis par le PO : JOUR = midi, NUIT = nuit, plus de défilement des moments. Zone : terrain.cpp + lecture du moment de la sauvegarde.
+
+### 2026-11-09 21:45:07 — WFS-376 (PR #318) relue par le lead dev : approuvée, fusion en attente de synchronisation (lead-dev)
+- 2e relecture sur 7d69d264, après la réponse point par point du développeur. 44 captures ouvertes (22 paires) : la suite `marina-suite-1` à `-6` se passe dans le port, sans aucun clignotement aux passages de seuil ; de nuit (`gros-plan-nuit`, `poursuite-80-nuit`), les coques et les mâts restent lisibles. Rien n'est dégradé ailleurs.
+- Diff complet relu. Branche construite par le lead dev : `tests_cpu.sh` 92/92, dont `test_marina_bateaux`. Budget de 17 454 triangles (≤ 18 000), appels de dessin inchangés, Basse +9,0 %.
+- Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash impossible : conflit dans `journal.md` avec `main`. Le développeur synchronise sa branche et rappelle le lead dev ; la fusion suivra.
+- Remarques non bloquantes : un commentaire en double dans `plage.cpp` ; une boucle restée pour une seule borne de ponton ; le salon des vedettes et des yachts reste anguleux de près (à reprendre si la QA le voit).
+### 2026-11-09 19:54:26 — WFS-376 : branche créée, analyse de la marina (Claude, agent dev3d (01UY1Vv3u9))
+- Branche `feature/waforspeed-376` créée depuis main ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
+- Cause relue dans `src/world/plage.cpp` : `placeQuartiers` (zone marina) + `case O_BATEAU` (boîte + triangle de voile) ; le quai est à ≈ 1,85 m au-dessus de l'eau, coque de 0,55 m cachée derrière le mur.
+- Plan : nouvelle géométrie « marina » (pontons flottants, voiliers au port sans voile, vedettes et yachts), LOD sans gréement au-delà de 150 m, tout dans le Geo du décor (aucun appel de dessin en plus).
+
+### 2026-11-09 20:57:26 — WFS-376 : marina modélisée, captures et PR (Claude, agent dev3d (01UY1Vv3u9))
+- Fait : `src/world/marina_bateaux.{h,cpp}` (voilier au port, yacht, vedette, 3 niveaux de détail ; pontons, bittes, amarrage), `plage.cpp` (zone marina : quai à 1,45 m au-dessus de l'eau au lieu de 1,85 m, placement cul au quai + 8 pontons, 37 bateaux au mouillage modélisés, banc `marina`), test `test_marina_bateaux`.
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes, groupe de banc `marina`), `CMakeLists.txt` (1 ligne, test).
+- Décisions du PO appliquées : disposition des pontons, seuil unique 200 m, quai abaissé, option A (densité réelle, 3 niveaux, budget ≤ 18 000).
+- Vérifié : 92 tests CPU réussis ; banc marina (lavapipe), avant = main + banc seul : fenêtre la plus chargée 17 812 triangles (≤ 18 000), appels de dessin inchangés (361 / 298 / 199), image entière +21 % (Cockpit), +10,3 % (Poursuite 120), +11,1 % (Basse).
+- Limites : Basse au-dessus de l'objectif de +10 % ; RG-09 : lampadaire de 6,4 m (ratio 2,07 ; 1,77 rapporté à 7,5 m). Non vérifié sur téléphone.
+
+### 2026-11-09 21:26:44 — WFS-376 : corrections du retour du lead dev (PR #318) (Claude, agent dev3d (01UY1Vv3u9))
+- Suite de 6 images dans le port (vue Poursuite, 120 km/h), passages de seuil repérés ; vues de nuit `marina-gros-plan-nuit`, `marina-poursuite-80-nuit`.
+- Synchronisation avec main 67f20e1a (WFS-379 : la Corniche a un 2e quai de 634 m au niveau de la mer) : bateaux à quai seulement là où le quai abaissé existe ; allègements (coque détaillée à 6 couples, version moyenne sans haubans, pontons de 38 m, une borne par ponton, bittes tous les 28,8 m) : fenêtre la plus chargée 17 454 triangles (≤ 18 000).
+- Mesures avant / après (main 67f20e1a + banc seul) : appels de dessin inchangés ; image entière +19,7 % (Cockpit), +8,4 % (Poursuite 120), +9,0 % (Basse). 22 captures avant / après regardées.
+
+### 2026-11-09 21:46:25 — WFS-376 fusionné par le lead dev (lead-dev)
+- PR #318 fusionnée en squash (d6c65441) après la synchronisation du développeur. J'ai vérifié 8abf9372 : il n'apporte que `main` 8717f7b2, seul `journal.md` était en conflit, et les changements de la branche sont les mêmes qu'au commit relu 7d69d264. La revue « ✅ Approuvé » a été postée sur 8abf9372 en commentaire (même compte GitHub).
+- `TACHES.md` : WFS-376 passe en 🟡 À valider (utilisateur), parce que l'anomalie ANO-206 vient d'une vidéo de l'utilisateur. Ligne ajoutée à `qa/Check.md` ; ligne #318 retirée de `suivi-pr.md`.
+
+### 2026-11-09 21:46:56 — WFS-376 : fin de session (Claude, agent dev3d (01UY1Vv3u9))
+- PR #318 fusionnée en squash par le lead dev (d6c65441), ticket 🟡 à valider par l'utilisateur. Réponse écrite dans `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : aucun autre ticket demandé.
+- Remarques non bloquantes du lead dev laissées pour une tâche séparée (RG-12) : salon anguleux des vedettes et yachts de près, commentaire en double dans `plage.cpp`, boucle inutile dans `ponton()` ; lampadaire de 6,4 m (RG-09) signalé au PO.
+
+### 2026-11-09 21:51:11 — WFS-369 : inventaire des formes nues du mobilier de la Ville (RG-01) et plan (Claude, agent dev3d 3 (01UY1Vv5WS))
+- Branche `feature/waforspeed-369` créée et poussée ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
+- Inventaire (détail : `qa/pr/WFS-369/inventaire.md` sur la branche) : `ville.cpp` — bancs du parc (2 boîtes), abribus (4 boîtes), grille du parc (2 boîtes par poteau), fontaines du parc (3 cylindres) et de l'îlot (3 cylindres + 2 disques), lampadaires de rue (cylindre + 2 boîtes), panneaux « sens giratoire » (disque), feux tricolores (cylindre + boîte) ; `commerces.cpp` — tables (cylindre + disque), chaises (2 boîtes), parasols (cylindre + cône, ANO-216), bougie (boîte), pots de fleurs (cylindre + boîte). Absents de la carte : poubelles, bornes, kiosques, barrières (ajout = WFS-385). Hors ticket : immeubles, port, stores, ouvrages (WFS-370 / 385).
+- Modèles : aucun modèle libre CC0 / CC BY de ce mobilier aux mesures françaises par les sources permises ; RG-03 appliquée : modélisés par le code au niveau du vrai objet (`src/world/mobilier_ville.*`, nouveau), mesures sourcées dans le fichier. Rien téléchargé.
+- Accroches annoncées : `src/world/cartes_banc.cpp` (banc de la Ville : gros plans `carte-ville-mobilier-*`, ≈ 25 lignes de banc) ; `commerces.cpp` : aucune table de terrasse ni client assis dans l'emprise d'un abribus (ils se chevauchaient sur `main`).
+
+### 2026-11-09 21:51:22 — WFS-214 : retour du lead dev corrigé, PR #314 à relire (Claude, agent dev W (01UY1Vv4Ed))
+- Point 1 (moments de jour plus blancs) : cause = banc des moments de WFS-208 (temps figé, scène non neuve) : exposition restée à celle de l'aube (EV 8,2 à midi, 7 IL de trop), déjà sur main. Correction du banc (c48c2824) : exposition à sa cible avant la capture. Banc corrigé des deux côtés : moments de jour 46-84 → 60-130 / 255, heure dorée de la Campagne 60 → 60, aube, heure bleue et nuit identiques.
+- Point 2 : captures dorée (2), midi (2), matin du circuit, `depart-jour-campagne-4` (départ de jour en Campagne ajouté au banc `depart`).
+- Point 3 (performance) : banc `perf`, 4 cartes × Haute / Basse : image −4,1 % à +0,2 % (2 mesures avant, 1 après ; la 2e mesure après coupée par la limite de temps) ; part hors passes ≤ 2,1 ms sur 420 à 650 ms (lavapipe). Tramage gardé.
+- Remarques : M-03 noté dans le Suivi de WFS-214 ; ANO-211 / WFS-377 créées par le PO ; branche synchronisée, 92 tests CPU verts. Réponses point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-09 23:18:14 — WFS-214 : PR #314 approuvée et fusionnée (2e revue) ; #316 en attente de synchronisation (lead-dev auto)
+
+#314 reprise (prise de plus d'1 h) : points de la 1re revue corrigés (banc des moments : exposition à sa cible avant la capture, défaut du banc présent sur main ; captures de jour Campagne / circuit ajoutées, rien de blanchi : luminance 60→60, 61→90, 46→65 ; performance de la passe finale −4,1 à +0,2 %). Diff : banc seulement. Squash 44c57ce, 🟣. #316 (WFS-349) : approuvée par lead-dev, encore en conflit `journal.md` (main a reçu #318 et #314 depuis la synchronisation de 21:46) : rappel posté au développeur, fusion dès la synchronisation.
+
+### 2026-11-09 23:25:55 — WFS-214 : fusionné, session terminée (Claude, agent dev W (01UY1Vv4Ed))
+- PR #314 fusionnée en squash par le lead dev automatique (44c57ce, 23:18 UTC) après correction du retour (banc des moments, captures, mesure de performance) ; ticket 🟣 (ANO-109 et ANO-106 viennent du QA) ; ligne de `qa/Check.md` écrite par le lead dev.
+- Suites laissées au PO : ANO-211 / WFS-377 (banc des passes : « Ultra » introuvable) ; US « occlusion du ciel » si les ombres de jour paraissent délavées sur le téléphone.
+- Un seul sujet par session : je m'arrête, aucun ticket demandé.
+
+
+### 2026-11-09 14:00:55 — Reprise de WFS-349 : vue Cockpit, habitacle fermé (Claude, agent dev Y (01UY1Vv1Yvim))
+- Branche `feature/waforspeed-349` reprise (commit d'agent 3 bis, aucun code), synchronisée avec `main` et poussée tout de suite. Première étape : cause nommée au banc `penetration` (RG-01).
+
+### 2026-11-09 16:11:22 — WFS-349 : cause nommée (RG-01) et correction en cours (Claude, agent dev Y (01UY1Vv1Yvim))
+- **Reproduit** au banc `penetration` (Golf, Ville de nuit, vue Cockpit, voisine à 1,9 m) : sans voisine, en bas à gauche de l'image, on voit **la route** là où devrait être la portière ; avec la voisine, ses feux arrière se dessinent jusqu'au bas de l'image (comme sur la vidéo de l'utilisateur, APK 928, 40,4 s).
+- **Cause : trou dans l'habitacle, pas d'ordre ni de profondeur de dessin** (l'intérieur est bien dessiné avec la profondeur, plan proche 0,1 m). Dans `vehicule_cockpit.cpp`, chaque contre-porte n'était qu'une plaque de **6 cm**, posée de **15 cm derrière le pied du pare-brise** (z −0,95 m) à 0,35 m, et de la ceinture jusqu'à **0,8 m sous l'œil** ; ni plancher, ni tablier. Vue de l'œil (à 0,38 m de la portière gauche), la plaque est vue par la tranche : la vitre « descend » jusqu'au coin bas de l'image, le coin entre planche, montant et portière est ouvert, et la zone des pieds n'a pas de paroi.
+- **Banc neuf `cockpit-voisine`** (`src/render/vehicule_cockpit_banc.cpp`, accroche de 4 lignes dans `desktop_main.cpp`, annoncée ici) : voisine à 1,8 puis 1,9 m, à gauche et à droite, devant et à côté, regards Bas / Normal / Haut, Ville de jour ; image normale, image sans la voisine, image avec l'habitacle et un **gabarit de ceinture** (plans des vitres latérales sous la ceinture, pied du pare-brise sous la planche) en couleur clé. Pixel interdit = pixel de la voisine dans la zone fermée. Secousse du choc (WFS-70) coupée pendant la mesure (elle bougeait la caméra entre les images). Clé douce (émission 1,5) : celle de WFS-235 (16) débordait de ≈ 10 px.
+- **Avant** (ancienne portière, 1280 × 720) : Golf **10 647** pixels interdits dans la pire image, X5 **10 838**.
+- **Correction** (`vehicule_cockpit.cpp`, `vehicule_cockpit.h`) : portière **pleine de 12 cm** (face intérieure inchangée, WFS-315), appui de vitre à la ligne de ceinture, de 6 cm devant le pied du pare-brise (sous le pied du montant) à 0,6 m derrière l'œil, du plancher à la ceinture ; plancher et tablier ; matière jamais noire (luminance ≥ 0,045). Tout dans le même maillage : **0 appel de dessin de plus**.
+- **Après** (Golf, 1280 × 720) : **0** pixel interdit, 24 images. Test CPU neuf `test_cockpit_ferme` (rayons de l'œil, 20 voitures) : 0 rayon sans paroi ; il a trouvé une fente de quelques mm sous le bord avant de la planche, fermée (tablier monté d'1 cm, caché derrière la planche).
+
+### 2026-11-09 19:50:39 — WFS-349 : mesures finales, PR ouverte (Claude, agent dev Y (01UY1Vv1Yvim))
+- **RG-03** (banc `cockpit-voisine`, 20 voitures, 3 regards, gauche / droite, 1,8 / 1,9 m, devant / à côté) : **0 pixel interdit en 1280 × 720 (39 min) et en 2340 × 1080 (80 min)** ; la voisine devant reste visible par la vitre (≥ 18 900 px en 1280). Les derniers 2 à 25 px (Compass, Corsa, Range Rover, 500 Abarth…) étaient des points très lumineux de la voisine (reflet du soleil, feu) étalés de 3 à 4 px sur le bord de l'appui de vitre, pas des trous : bord non compté porté à 5 px (720 lignes) ; les fentes fines sont prouvées par `test_cockpit_ferme`.
+- **RG-04** (banc `cockpit`, 2340 × 1080) : fenêtre de la rue 0,0 % ; horizon inchangé ; intérieur en Normal 35,6 à 39,7 % (≤ 42 %, +1,4 à +1,7 point) ; en Bas 42,2 / 42,4 % (Golf, 500 Abarth ; seuil visé en Normal). Pluie : gouttes seulement derrière les vitres.
+- **RG-05** : `parcours` 0 écart (et en vue Cockpit 0 écart) ; `course5` code 0. **RG-06** : appels de dessin identiques (32 / 35 / 29), mémoire 1,22 Mo ; temps GPU sur téléphone non mesuré.
+- Synchronisation avec `main` : 91 tests CPU réussis ; Golf, X5, 500 Abarth toujours à 0. Limites : ligne de ceinture de WFS-315 (pas de cote mesurée par voiture), plancher approché (±3 cm) ; X5 voisine à droite : teinte magenta du banc (images retirées de la PR, mesure non touchée).
+
+### 2026-11-09 21:04:20 — WFS-349 : retour du lead dev corrigé (PR #316) (Claude, agent dev Y (01UY1Vv1Yvim))
+- **1. Captures refaites sur la base synchronisée avec `main`** (WFS-356, 343, 338, 193 compris) : `captures_pr.sh WFS-349 penetration:2340x1080 cockpit:2340x1080` ; paires de nuit regardées : éclairage identique avant / après, seule la portière change. Images `cockpit-voisine` refaites sur la même base (avant = ancienne portière) : avant Golf 9 249, X5 8 559, 500 Abarth 10 436 pixels interdits ; après 0.
+- **2. Description de la PR** régénérée par script (`qa/pr/WFS-349/pr.md`) : tous les liens d'images vérifiés.
+- **Remarques** : exemple de bord (`WFS_BORD=2`, Compass : 13 px sur le bord de l'appui de vitre, sous le feu arrière, image agrandie dans la PR) ; gabarit et clé douce construits seulement pendant le banc (`g_bancCockpitVoisine`) ; **teinte magenta du X5 (voisine à droite) : cause** : la capture d'environnement (cube de lumière de WFS-150, une face par image, rendue avec les objets de l'image, intérieur compris) était encore en cours quand la mesure commençait : une face rendue pendant l'image en couleur clé teintait le cube, donc la lumière ambiante ensuite. Le banc attend maintenant la fin de la capture avant de suspendre les captures ; X5 refait : 0 pixel teinté, 0 pixel interdit. (Le même risque existe dans la part cachée de WFS-235, `camera_vue.cpp` : signalé, hors de ma zone.)
+
+### 2026-11-09 23:28:50 — WFS-349 : PR #316 fusionnée après synchronisation (lead-dev auto)
+
+Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des conflits `journal.md`. Synchronisation a3ea5e31 : branche à jour avec main, code identique au commit approuvé 2ae74f81 (vérifié ligne à ligne). Squash 581427c, statut 🟡 À valider (utilisateur). Plus aucune PR ouverte.
+
+### 2026-11-09 23:32:06 — Fin WFS-349 : PR #316 fusionnée, session terminée (Claude, agent dev Y (01UY1Vv1Yvim))
+- PR #316 fusionnée en squash par le lead dev automatique (581427c) ; ticket 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md` (elle manquait après la fusion).
+- Livré : vue Cockpit, portières pleines de 12 cm (appui de vitre à la ceinture), plancher, tablier ; banc `cockpit-voisine` (0 pixel interdit, 20 voitures, 1280 × 720 et 2340 × 1080 ; avant : 8 559 à 10 436) ; test `test_cockpit_ferme` ; 93 tests CPU réussis à la dernière synchronisation contrôlée.
+- Signalé hors de ma zone : le même risque de teinte par une capture d'environnement en cours existe dans la part cachée de WFS-235 (`camera_vue.cpp`, banc `cockpit`).
+- Session terminée (un seul sujet par session) : ligne de `track-agent.md` en ⏹️ ; aucun autre ticket demandé.
