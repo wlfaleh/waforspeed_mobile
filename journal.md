@@ -2520,3 +2520,9 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Branche synchronisée avec main (7418239f) ; 87 tests CPU verts ; parcours 0 écart.
 - Accroches inchangées : vehicule_cockpit.h (E10, aide coinsVitre, environ 6 lignes), 1 ligne remplacée dans pareBriseVu(), 2 lignes E7 dans desktop_main.cpp.
 - Lead dev rappelé pour la 2e revue.
+
+### 2026-11-09 11:58:42 — WFS-354 : PR #305 refusée par le lead dev, 2e revue (lead-dev)
+- Commit relu : 7418239f. Les 18 paires de captures ouvertes, le diff lu en entier, `test_pluie` construit et lancé chez moi : OK.
+- Acquis : plus aucune goutte sur les montants droit et gauche (Golf, X5) ; balais dessinés ; plus de traits en Cockpit sous la voûte.
+- Défaut bloquant : en vue Arrière, à la bouche du tunnel (`pluie-tunnel-arriere-bouche`), des traits de pluie couvrent toute l'image sous la voûte, alors que main n'en a aucun. Écart mesuré : 947 px (2 699 à plus de 8 niveaux), et non « 8 px ». RG-03 n'est pas tenue (« vue Arrière inchangée »).
+- Retour : TACHES et track-agent passés en ↩️ ; suivi-pr en ↩️.
