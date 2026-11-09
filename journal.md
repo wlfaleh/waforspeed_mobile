@@ -2599,3 +2599,8 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - `test_pluie` compare la vue Arrière à la formule de main tous les 0,5 m. Nouvelle paire témoin : voiture à la bouche (fe4aa06b).
 - Les cotes des montants de `Interieur::construire` passent aux constantes (mêmes valeurs) : 2 lignes changées dans l'accroche E10.
 - Synchronisé avec main (bf9fc2d4) : 87 tests CPU verts, parcours 0 écart. Lead dev rappelé.
+
+### 2026-11-09 12:40:47 — WFS-193 (PR #308, pilote) : retour lead dev (lead-dev)
+- Revue de la PR pilote (commit 51b4d88c) : **refusée**, revue écrite dans la PR (en commentaire : même compte GitHub).
+- Bon : l'outil `retoucher_formes.mjs` rejoué depuis les fichiers de `main` donne des `.wfm` et des `.lod` identiques octet pour octet ; `--verifier` OK (et celui de `effacer_logos`) ; `test_fidelite_voitures` OK, mesures X5 / Compass / 208 identiques avant et après ; seule la calandre change sur les 24 paires. La méthode (A) est validée sur le principe ; la Compass n'est plus reconnaissable de face.
+- À corriger : (1) X5, la pointe entre les haricots laisse un haut en « M » (la double calandre se devine, surtout de nuit), avec des restes clairs sous la grille ; (2) grilles plates aux barres ouvertes qui dépassent du nez en « peigne » de trois quarts (les 3 voitures) : fermer les barres, ajouter un cadre, suivre le galbe ; (3) 208 : rectangle posé sur l'ouverture en trapèze ; (4) gros plans du nez à ajouter ; (5) code : en-tête à jour, nombres de triangles dans `formes.json`, 222 au lieu de 240 dans la description, branchement dans `convertir_voitures.sh` ; (6) synchroniser avec `main`.
