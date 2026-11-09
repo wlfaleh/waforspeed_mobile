@@ -11,7 +11,7 @@ Ticket : dernière version de `main` cassée sur le téléphone. Bissection au b
   départ de nuit) : rien de cassé.
 - Construction avec AddressSanitizer + UBSan : banc `carte` (les 4 cartes jour / nuit, changements de carte) **sans
   erreur mémoire** ; seul signalement : débordement d'entier signé dans le hachage de `effets_particules.h:55` (ancien,
-  sans effet visible). Banc `course5` (Course à 5 + poursuite police) sous ASan : en cours.
+  sans effet visible). Banc `course5` (Course à 5 sur les 4 cartes + poursuite police de WFS-338) sous ASan : **code 0, aucune erreur mémoire** (même seul signalement du hachage).
 - Relecture des 5 fusions : aucun pointeur pendant ni double libération trouvés (WFS-343 : registre en `deque`,
   `Game::demandes().carte` est une `std::string` ; WFS-338 : maillages et textures remis à zéro après destruction).
 - **Le défaut ne se reproduit pas au banc PC** : il faut le symptôme de l'utilisateur (RG-01).
