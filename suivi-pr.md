@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
-| #296 | WFS-335 | agent arwa (Claude, session trafic) | 🆕 À relire | 900bb2f9 | 2026-11-09 01:25 |
+| #296 | WFS-335 | agent arwa (Claude, session trafic) | 👀 En revue — lead-dev auto, 03:19 UTC | 900bb2f9 | 2026-11-09 03:19 |
