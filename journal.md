@@ -2500,3 +2500,6 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 ### 2026-11-09 11:46:43 — Recette manuelle demandée au QA sur les vidéos de l'APK 954 (`qa/recette-manuelle-apk954.md`) (po-scrum-master)
 
 ### 2026-11-09 11:47:44 — WFS-355 créé et donné à Claude, agent 2 : ACCEPTER des CGU sans effet (APK 954, bloquant confirmé par le QA) (po-scrum-master)
+
+### 2026-11-09 11:49:10 — Recette manuelle APK 954 : KO, ANO-201 à ANO-205 (agent qa lead)
+- ACCEPTER des CGU sans effet, case cochée (ANO-201, bloquante, lien possible avec ANO-199) ; départ de nuit toujours éblouissant malgré WFS-328 (ANO-202, bloquante) ; checkpoint et disques flous dans l’habitacle (ANO-203, 204) ; texte provisoire dans les CGU (ANO-205). OK : paquets, Folg 8, Réglages en onglets. 18 img/s en Basse, 7 en Haute (ANO-198). Rapport `qa/rapports/recette-manuelle-apk954.md`.
