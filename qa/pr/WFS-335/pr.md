@@ -1,36 +1,52 @@
-## Agent : agent arwa (Claude, session trafic)
+Agent : agent arwa (Claude, session trafic)
 
 **Ticket** : WFS-335 — règles : `regles-de-gestion/WFS-335.md`
 
 ## Description
 
-- **Demande de l'utilisateur** (en une phrase) : le jeu tourne à 22-24 img/s en Ville de nuit, Basse ; les voitures font 74 % des triangles (339 k) : alléger les voitures sans perte visible pour viser 30 img/s ou plus.
+- **Demande de l'utilisateur** (en une phrase) : le jeu tourne à 22-24 img/s en Ville de nuit, Basse, et les voitures font 74 % des triangles : alléger les voitures sans perte visible.
+- **Décision du PO du 2026-11-09 02:35 UTC (appliquée)** : en **Basse seulement**, adversaires de **48 à 100 px** à l'écran au **niveau 2**, sans saut de forme ; **voiture du joueur toujours complète** (refus du LOD1, RG-02) ; critère « triangles ÷ 2 » retiré : le ticket se ferme sur le gain mesuré (suite de l'objectif 30 img/s : WFS-348).
 - **Ce qui change** (fichiers, comportement, à l'écran) :
-  - `src/render/vehicule_lod.h` : en **Basse**, au loin, les voitures passent maintenant aux **niveaux 2 et 3** (versions en 4 pièces) au lieu de garder la forme du **niveau 1** (40 à 60 k triangles) à toute distance au-delà de 48 px. Chaîne Basse : complète (≥ 200 px) → niveau 1 (≥ 48 px, inchangé) → niveau 2 en 4 pièces (≥ 26 px) → niveau 3 en 4 pièces, fondu tramé à chaque passage (seuils de WFS-158 / WFS-265, aucun nouveau seuil). Police en lots (Poursuite, Basse) : 4 pièces de près comme avant, niveaux 2 et 3 en 4 pièces au loin. Haute / Moyenne, fantôme, voiture du joueur : **inchangés**.
-  - `src/render/model_loader.cpp` (accroche de 12 lignes, annoncée au journal) : le regroupement en 4 pièces (`partsBasse`, WFS-134) est fait aussi pour les niveaux 2 et 3 (`partsBasseNiveaux`), un seul matériau sombre partagé.
-  - `src/render/renderer.h/.cpp` : champ `Model::partsBasseNiveaux` ; relevé voiture par voiture (banc seulement, `releverVoitures`) : distance réelle à la caméra, taille à l'écran, niveau, triangles, appels.
-  - `src/render/bench_perf.cpp` : `WFS_PERF_PARTIES=ville:nuit:course5,…` (Course à 5 au banc des parties) et lignes « voitures : … » du relevé (RG-01).
-  - `src/render/bench_lod.*` : captures de WFS-335 (trafic de nuit en Basse de 60 à 170 m ; Course à 5 de nuit en Basse, vues Arrière et Proche).
-  - `tests/test_vehicule_lod.cpp` : nouveaux cas (Basse : complète puis niveau 1 comme avant, niveaux 2 et 3 en 4 pièces au loin, ordre croissant, fondu seulement entre listes différentes ; police en lots ; Haute inchangée).
-- **Comment c'est vérifié** : 81 tests CPU OK après synchronisation avec main (`tools/qa/tests_cpu.sh`) ; parcours complet (`WFS_BANC=parcours`) : 0 écart en vue Arrière et en vue Cockpit ; banc perf `WFS_BANC=perf WFS_PERF_PARTIES=ville:nuit:course5,ville:nuit` avant / après (tableau ci-dessous) ; captures avant / après du banc `lod` (31, comparées au pixel près).
+  - `src/render/vehicule_lod.h` : chaîne **Basse** = complète (≥ 200 px) → niveau 1 (≥ 100 px) → **niveau 2 avec tous ses matériaux (100 à 48 px, nouveau)** → niveau 2 en 4 pièces (48 à 26 px) → niveau 3 en 4 pièces ; fondu tramé à chaque passage (bande de 1/9 du seuil : 100 → 89 px, 48 → 43 px). Le niveau 2 garde phares, calandre et jantes : une première version (5bee02c9) passait directement à la version en 4 pièces à 100 px, la comparaison des captures montrait les phares de la SF90 perdus en vue Proche, d'où 2fcd39a7. Police en lots (Basse) : 4 pièces de près, niveaux 2 et 3 en 4 pièces au loin, passage à 100 px. Haute / Moyenne, fantôme, **voiture du joueur (`dessinJoueur`) : inchangés**.
+  - `src/render/model_loader.cpp` (accroche de 12 lignes, annoncée au journal) : regroupement en 4 pièces aussi pour les niveaux 2 et 3 (`partsBasseNiveaux`), un seul matériau sombre partagé.
+  - `src/render/renderer.h/.cpp` : champ `Model::partsBasseNiveaux` ; relevé voiture par voiture (banc seulement, `releverVoitures`).
+  - `src/render/bench_perf.cpp` : Course à 5 au banc des parties (`ville:nuit:course5`) et lignes « voitures : … » (RG-01).
+  - `src/render/bench_lod.*` : captures WFS-335 (trafic de nuit en Basse de 60 à 170 m ; Course à 5 de nuit en Basse, vues Arrière et Proche).
+  - `tests/test_vehicule_lod.cpp` : **seuil Basse testé** (101 px : niveau 1 seul ; 95 px : fondu niveau 1 → 2 ; 48 à 88,8 px : niveau 2 seul, tous ses matériaux ; 45 px : fondu vers les 4 pièces ; niveau 3 sous 26 px ; Haute à 70 px : niveau 1 ; police en lots ; modèle sans niveaux 2 / 3 en 4 pièces : seuil de 48 px gardé), niveaux croissants avec la distance, fondu seulement entre listes différentes.
+- **Comment c'est vérifié** (branche synchronisée avec `main` b16cb392) :
+  - **83 tests CPU OK** (`bash tools/qa/tests_cpu.sh build`, 417 s), dont `test_vehicule_lod` OK.
+  - **Parcours complet** (`WFS_BANC=parcours`) : **0 écart** en vue Arrière et en vue Cockpit.
+  - Banc `lod` (1280x720) avant (main b16cb392 avec le même `bench_lod.cpp`) / après, comparé au pixel près (seuil 8 niveaux) : **Haute : 12 captures sur 12 identiques** ; Basse : 18 sur 31 identiques ; les 13 autres ne changent que sur des voitures de 48 à 100 px ou lointaines (Course à 5 de nuit vue Arrière 528 px, vue Proche 854 px, trafic de nuit 264 à 492 px, vues de jour à 50 m 67 à 178 px) ; voiture du joueur **identique** sur toutes les captures.
+  - Banc perf avant / après : tableau ci-dessous.
 - **Limites et risques connus** :
-  - **RG-03 (triangles des voitures ÷ 2) n'est pas tenue** : la voiture du joueur fait à elle seule **109 884 triangles** (Golf complète, 40 appels) et reste complète (RG-02, retour du lead dev sur la PR #268) ; les adversaires proches restent au niveau 1 (« voitures proches identiques »). Gain mesuré : **−16 à −24 %** en Course à 5, **−11 %** au départ de la Ville avec trafic, **−73 %** par voiture lointaine. Pour diviser par 2, il faudrait la voiture du joueur au niveau 1 en Basse (−72 k) **et** les adversaires de 48 à 100 px au niveau 2 : changement visible, **décision du PO demandée** (journal).
-  - Intérieur et dessous de caisse : mesuré par un rendu de visibilité (prototype hors dépôt, 48 vues autour de la Golf) : **88 à 97 % des triangles sont visibles** de l'extérieur (vitres comprises) ; les retirer ne gagne presque rien et changerait l'image (intérieur vu par les vitres). Non fait.
-  - Les temps d'image du banc (lavapipe, rendu sur processeur) ne disent pas les img/s du téléphone : à mesurer sur l'APK.
+  - En vue Proche, les adversaires de 48 à 100 px (≈ 37 à 77 m) perdent un peu de finesse de silhouette (arête du toit, flancs) en zoom ×3 ; à la taille réelle, ≈ 10 px de bord. Matériaux (phares, feux, vitres, calandre) gardés. Accepté par le PO (décision 1).
+  - Gain sur la Course à 5 au départ : **−26,7 %** de triangles des voitures (−17,9 % sur l'image) ; pas ÷ 2 : la voiture du joueur (109 884 triangles) reste complète (décision 2).
+  - Img/s : le banc PC (lavapipe) ne mesure pas le téléphone ; à mesurer sur l'APK (Réglages, Ville de nuit, Basse). La suite de l'objectif ≥ 30 img/s est dans WFS-348.
+  - Intérieur et dessous de caisse : 88 à 97 % des triangles visibles de l'extérieur (mesure de la 1re version) : non retirés.
 
-## Chiffres avant / après (banc `WFS_BANC=perf WFS_PERF_PARTIES=ville:nuit:course5,ville:nuit`, Basse, vue Proche, triangles des voitures par image)
+## Chiffres avant / après (banc `WFS_BANC=perf WFS_PERF_PARTIES=ville:nuit:course5,ville:nuit WFS_PERF_MINUTE=600 WFS_PERF_IMAGES=20`, Basse, vue Proche)
 
-| Partie | Moment | Voitures avant (main) | Voitures après | Écart | Triangles de l'image avant → après | Appels voitures |
+Avant = `main` (b52e3d6, même banc) ; « 1re version » = cette PR avant la décision du PO (900bb2f9) ; après = cette PR (2fcd39a7).
+
+| Partie | Moment | Triangles des voitures : avant → 1re version → **après** | Écart après / avant | Triangles de l'image avant → après | Appels voitures | Image du banc (ms) avant → après |
 |---|---|---|---|---|---|---|
-| Course à 5, Ville de nuit | départ (5 voitures) | 262 100 | 218 839 | −16,5 % | 372 692 → 329 431 | 107 → 107 |
-| Course à 5, Ville de nuit | 1 min | 162 341 | 132 761 | −18 % | 339 791 → 310 211 | 44 → 44 |
-| Course à 5, Ville de nuit | 2 min | 162 341 | 123 921 | −24 % | 303 980 → 265 560 | 44 → 44 |
-| Ville de nuit, trafic | départ | 155 428 | 138 575 | −11 % | 228 948 → 212 095 | 43 → 46 (fondu niveaux 2 / 3) |
-| Ville de nuit, trafic | 1 min / 2 min | 109 884 / 129 216 | identiques | 0 | identiques | identiques |
+| Course à 5, Ville de nuit | départ (5 voitures) | 262 100 → 218 839 → **192 065** | **−26,7 %** | 372 692 → 306 102 (−17,9 %) | 107 → 107 | 1 079,7 → 1 051,8 |
+| Course à 5, Ville de nuit | 1 min | 162 341 → 132 761 → **132 761** | −18,2 % | 339 791 → 310 211 | 44 → 44 | 1 077,5 → 1 101,2 |
+| Course à 5, Ville de nuit | 2 min | 162 341 → 123 921 → **123 921** | −23,7 % | 303 980 → 265 560 | 44 → 44 | 1 055,9 → 1 097,6 |
+| Ville de nuit, trafic | départ | 155 428 → 138 575 → **138 575** | −10,8 % | 228 948 → 212 095 | 43 → 46 | 846,6 → 850,4 |
+| Ville de nuit, trafic | 1 min / 2 min | 109 884 / 129 216 | 0 | identiques | identiques | 561,4 → 932,5 / 734,8 → 514,1 |
 
-Relevé voiture par voiture (RG-01, distance réelle à la caméra) : joueur 7 à 11 m, 168 à 276 px, niveau 0, **109 884 triangles, 40 appels** (inchangé) ; adversaire à 58 m (39 px) 45 607 → 20 595 ; à 73 m (28 px) 31 906 → 13 657 ; à **250 m (8 px) 52 457 → 14 037** (−73 %) ; adversaires à 16 et 29 m (104 et 77 px, niveau 1) : inchangés. Img/s : les temps du banc (lavapipe, rendu sur processeur, machine partagée) ne mesurent pas le téléphone : à mesurer sur l'APK (Réglages, Ville de nuit, Basse).
+Ce que change la décision du PO (relevé voiture par voiture, RG-01, distance réelle à la caméra) : adversaire à **28,8 m (77 px)** en Course à 5 : niveau 1, **49 013 → 22 239 triangles (−55 %)**, 21 appels (inchangés : niveau 2 avec tous ses matériaux). Joueur : 7 à 11 m, 168 à 276 px, **complet, 109 884 triangles, 40 appels, inchangé** (refus du PO : pas de LOD1 pour le joueur). Adversaire à 16 m (104 px) : niveau 1, inchangé.
 
-**Comparaison au pixel près (banc `lod`, 1280x720, avant = main b52e3d6 avec le même `bench_lod.cpp`)** : 31 captures sur 43 identiques ; les 12 autres ne changent qu'au loin (pixels écartés de plus de 8 niveaux) : Course à 5 de nuit vue Arrière 278 px, tous dans la bande y 144-173 (adversaires lointains), voiture du joueur et Abarth à côté **identiques** ; vue Proche 311 px dans la bande y 186-209 ; trafic de nuit à 60-100 m : 3 à 25 px ; vues de jour en Basse à 50 m : 41 à 59 px (voiture lointaine). Haute : 12 captures sur 12 identiques.
+**Img/s** : le banc PC (lavapipe, rendu sur processeur, machine partagée à charge 20 sur 4 cœurs) donne ≈ 0,9 à 1,9 img/s avant comme après ; les écarts de temps d'image (−3 % à +4 % sur la Course à 5) sont du bruit de mesure et ne disent pas les img/s du téléphone. La suite de l'objectif ≥ 30 img/s passe à WFS-348 (coût par pixel).
+
+## Course à 5 de nuit, Basse : avant / après en zoom ×3 (en haut : main ; en bas : après)
+
+lod-course5-nuit-arriere-basse : ![zoom](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-335/qa/pr/WFS-335/zoom-lod-course5-nuit-arriere-basse.jpg?raw=true)
+
+lod-course5-nuit-proche-basse : ![zoom](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-335/qa/pr/WFS-335/zoom-lod-course5-nuit-proche-basse.jpg?raw=true)
+
+lod-nuit-trafic-loin-60-basse : ![zoom](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-335/qa/pr/WFS-335/zoom-lod-nuit-trafic-loin-60-basse.jpg?raw=true)
 
 ## Captures pour le lead dev (31 après)
 

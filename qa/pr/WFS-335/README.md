@@ -1,6 +1,6 @@
 # WFS-335 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-335` comparée à `origin/main` (b52e3d6, base de la branche) ; banc : lod:1280x720 ; filtre : `lod-*basse`.
+Branche `feature/waforspeed-335` comparée à `origin/main` (b16cb392, avec le même bench_lod.cpp) ; banc : lod:1280x720 ; filtre : `lod-*basse`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
