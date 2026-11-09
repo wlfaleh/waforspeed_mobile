@@ -4513,8 +4513,24 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **Décision : option A** (RG-12 à RG-14 de `regles-de-gestion/WFS-293.md`) : référence 120 Hz juge partout (< 5 mm à ≥ 30, ≤ 10 mm à 10-20 img/s, valeurs inchangées) ;
   l'indicateur de WFS-247 reste juge en plus en ligne droite, montée et virage serré à ≥ 30 img/s ; tableau à deux colonnes et test du saut de 5 mm refait dans l'épingle à 30 img/s.
   Choix de mesure, décidé par le PO ; l'utilisateur peut le changer. Ticket toujours à Claude, Agent 0 developer ; 🟡 après fusion.
+
 ### 2026-11-08 23:32:02 — WFS-301 (complément) : mode `WFS_BANC=cuire` pour la publication des paquets (WFS-302) (Claude, agent 3 (01UY1Vv3))
 - Demande de l'agent expert ci cd (WFS-302, option A choisie par l'utilisateur), décision du PO (complément de WFS-301, RG-C1 à C3, b52e3d6d).
 - `cartes_v2::cuireSeul` (`paquet_carte.*`, E14) : 3 formats cuits deux fois, comparés octet par octet, écrits (temporaire puis renommage), vérifiés (`verifier_carte`), **laissés** dans `WFS_PAQUETS` ; une ligne par fichier (nom, taille, SHA-256, empreinte) ; `sha256Hex` neuf (FIPS 180-4, vérifié contre `sha256sum`).
 - **Accroche** `desktop_main.cpp` : 1 ligne, **avant l'initialisation de Vulkan** (pas de GPU, ≈ 1,6 s). Code de sortie 0 si tout va bien, 3 en cas d'écart (essai : dossier impossible à écrire → 3). Deux lancements de suite → fichiers identiques (`cmp`). `WFS_BANC=cuisson` inchangé.
 - Sortie sur la branche (ville_astc 22 779 180 octets, ville_etc2 5 562 514, ville_rgba8 27 593 777 ; empreinte c30f0f40c276b6c1).
+### 2026-11-09 00:01:38 — WFS-215 : PR #288 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (Model 3 plaque, RR Sport jour / nuit, A 45 vitrines), tout le diff lu (`tools/vitres_voitures.mjs`, 1 ligne de `convertir_voitures.sh`, `logos.json`, 3 voitures). RG-01, RG-02 (jour), RG-03, RG-04 tenues à l'œil ; code juste.
+- Refus : conflit `journal.md` avec main (fusion impossible) ; `conducteurs-rrsport-nuit` éblouie avant comme après : conducteur de nuit non montré.
+
+### 2026-11-09 00:03:11 — WFS-322 : PR #289 refusée par le lead dev (1re revue) (lead-dev)
+- Revue complète du commit 567e68b2 : 33 paires du banc `qualite` ouvertes, tout le diff lu (`environnement.cpp`, `eclairage_physique.cpp`, `eclairage_unites.h`, accroches `renderer.*` 2 lignes et `passes.h` 1 ligne, test `fidelite_lumiere`).
+- **Images et code bons** : les façades ne sont plus bleues (56 / 60 / 64 m), plus de saut sur `voiture-sonde-0` à `-9`, nuit inchangée ; aucun défaut de logique (`lisserSh9`, `sceneNeuve`, saut de la voiture du joueur dans la capture).
+- **Refus pour preuves manquantes** : (1) banc `fluidite` non mesuré (RG-04, ± 0,2 ms) ; (2) journal sans la vraie cause du bleu (Golf dans la capture, diagnostic `WFS_DIAG_SONDE`) ni les mesures finales (RG-01) ; (3) accroches `renderer.*` / `passes.h` non annoncées ; (4) tests et parcours absents du journal.
+- **Remarque pour le PO** (non bloquante) : la façade à l'ombre est maintenant légèrement chaude (b* +1,8 à +2,9), alors que `expert-realisme-3d` l'attendait légèrement froide (b* −2 à −3,5). RG-03 est tenue ; un ticket de finition est possible (teinte du ciel, occlusion de WFS-269 comptée deux fois).
+- Revue écrite dans la PR (en commentaire : même compte GitHub) ; `TACHES.md` → « ↩️ Retour lead dev (PR #289) », `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-09 00:08:20 — Dernière APK : 16 img/s avec moins de triangles (GPU scène 55,8 ms contre 37,1) : régression du coût par pixel, notée dans WFS-335 (po-scrum-master)
+### 2026-11-09 00:10:28 — WFS-301 (complément, PR #290) : retour lead dev, conflit avec main (lead-dev)
+- 8 captures `cuisson-*` ouvertes : avant et après identiques (RG-C3). Tout le diff est relu : `cuireSeul`, `sha256Hex` (FIPS 180-4) et l'accroche de 1 ligne avant Vulkan sont conformes à RG-C1 à C3. Revue « Approuvé par le lead dev » écrite dans la PR.
+- Fusion en squash refusée par GitHub : conflit dans `journal.md` avec ab305b38 (PO, WFS-335). Agent 3 synchronise, garde les deux entrées et rappelle le lead dev. Aucune autre correction demandée.
