@@ -70,9 +70,9 @@ inline void avancer(std::vector<Goutte>& g, float dt, float w, float h, float p,
 // RG-03 : part de la pluie visible (0..1) pour la caméra à `d` m sur la route, sous un toit de `debut` à `fin` m (tunnel) :
 // 1 dehors, 0 à plus de TOIT_FONDU − TOIT_MARGE m sous le toit ; fondu de TOIT_FONDU m à l'entrée et à la sortie.
 // WFS-354 (RG-03) : `d` est la position de la CAMÉRA (avant : celle de la voiture, et la pluie tombait encore sur les 6
-// premiers mètres en vue Cockpit) : fondu de 7 m avant la bouche à 1 m sous la voûte (quelques gouttes portées par le vent
-// sur ≤ 1 m, puis plus rien)
-constexpr float TOIT_FONDU = 8.f, TOIT_MARGE = 7.f;
+// premiers mètres en vue Cockpit) : fondu de 8 m avant la bouche jusqu'à la bouche ; plus rien dès que la caméra est sous la
+// voûte. En vue Arrière (caméra ≈ 6 m derrière la voiture), c'est le même fondu qu'avant (voiture de −2 à +6 m)
+constexpr float TOIT_FONDU = 8.f, TOIT_MARGE = 8.f;
 inline float pluieSousToit(double d, double debut, double fin) {
     const double dedans = std::min(d - debut, fin - d);   // m sous le toit (négatif : dehors)
     return std::clamp((float)(1.0 - (dedans + TOIT_MARGE) / TOIT_FONDU), 0.f, 1.f);

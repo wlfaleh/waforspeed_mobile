@@ -16,7 +16,7 @@ int main() {
     VERIFIE(meteo::pluieSousToit(50, 100, 300) == 1.f, "pluie dehors, avant le tunnel");
     VERIFIE(meteo::pluieSousToit(100 - meteo::TOIT_MARGE, 100, 300) == 1.f, "pluie jusqu'à %.0f m avant la bouche", meteo::TOIT_MARGE);
     // WFS-354 (RG-03) : la caméra sous la voûte (plus d'1 m dedans) : plus aucune pluie ; fondu de 8 m gardé
-    VERIFIE(meteo::pluieSousToit(101, 100, 300) == 0.f && meteo::pluieSousToit(299, 100, 300) == 0.f, "plus de pluie 1 m sous la voûte");
+    VERIFIE(meteo::pluieSousToit(100, 100, 300) == 0.f && meteo::pluieSousToit(300, 100, 300) == 0.f, "plus de pluie dès la bouche");
     VERIFIE(meteo::TOIT_FONDU == 8.f, "fondu de 8 m (WFS-334)");
     VERIFIE(meteo::pluieSousToit(200, 100, 300) == 0.f, "aucune pluie au milieu du tunnel");
     VERIFIE(meteo::pluieSousToit(100 + meteo::TOIT_FONDU, 100, 300) == 0.f, "aucune pluie %.0f m après l'entrée", meteo::TOIT_FONDU);
