@@ -2496,3 +2496,5 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Conséquence : l'activer rendrait la Basse plus lente et moins fidèle (RG-02).
 - Proposition (recommandée) : garder 4 lumières en Basse (état fusionné) et passer au sol et trottoirs ; autre option : retirer `spotLights2` du shader.
 - Décision attendue de : PO.
+
+### 2026-11-09 11:46:43 — Recette manuelle demandée au QA sur les vidéos de l'APK 954 (`qa/recette-manuelle-apk954.md`) (po-scrum-master)
