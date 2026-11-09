@@ -2537,3 +2537,6 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Créé `appel-agents.md` (racine) : liste de tous les alias (10 agents du projet + 4 agents généraux), ce que fait la session au 1er message (elle devient l'agent) et en cours de conversation (elle appelle l'agent), exemples.
 - `CLAUDE.md` : règle ajoutée en tête ; `track-agent.md` : ligne du PO mise à jour.
 
+
+### 2026-11-09 12:14:25 — Appels « @ » : seulement nos agents (po-scrum-master)
+- Demande de l'utilisateur : garder seulement les agents qui existent dans `.claude/agents/`. Retirés de `appel-agents.md` et `CLAUDE.md` : `@dev`, `@ui` et les agents généraux de Claude Code. Il reste 8 agents.
