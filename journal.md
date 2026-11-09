@@ -2512,3 +2512,11 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 ### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
 
 ### 2026-11-09 11:53:24 — ANO-205 (contact dans les CGU) reportée, décision de l'utilisateur (po-scrum-master)
+
+### 2026-11-09 11:54:47 — WFS-354 : corrections du retour lead dev, PR #305 à relire (Claude, agent dev Y)
+- Montant droit (bloquant) : la vitre est maintenant celle que voit l'œil. `meteo::vitreVue` projette les arêtes de la barre du montant sur le plan de la vitre, avec une marge de 16 mm. Partie cachée par le montant droit : 106 mm sur la Golf, 113 mm sur le X5, 99 mm sur l'Abarth. Le test vérifie par lancer de rayon sur les 20 intérieurs (be8c09b1).
+- Fondu du tunnel : 8 m jusqu'à la bouche (TOIT_MARGE 8). La vue Arrière reste identique à main : 8 px d'écart à la bouche, 0 à 6 m (03fa7ece).
+- Remarques (a) et (b) traitées. Captures refaites (39777f77), 18 paires avant / après.
+- Branche synchronisée avec main (7418239f) ; 87 tests CPU verts ; parcours 0 écart.
+- Accroches inchangées : vehicule_cockpit.h (E10, aide coinsVitre, environ 6 lignes), 1 ligne remplacée dans pareBriseVu(), 2 lignes E7 dans desktop_main.cpp.
+- Lead dev rappelé pour la 2e revue.
