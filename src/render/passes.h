@@ -145,6 +145,7 @@ struct AccesRendu {
     static bool squelette(const Renderer::Pending& p) { return p.osOfs >= 0; }
     static uint32_t drapeaux(const Renderer::Pending& p) { return p.mat->flags; }
     static bool visibleCamera(const Renderer::Pending& p) { return (p.vis & Renderer::VIS_CAM) != 0; }
+    static bool joueur(const Renderer::Pending& p) { return p.joueur; }   // WFS-322 : voiture du joueur
     static void sansMasquage(Renderer& r, bool v) { r.sansMasquage_ = v; }
     static VkQueryPool horodatages(const Renderer& r) { return r.tsPool_; }
     static bool horodatagesEcrits(const Renderer& r, int f) { return r.tsWritten_[f]; }
