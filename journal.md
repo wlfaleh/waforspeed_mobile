@@ -2798,3 +2798,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Remarques non bloquantes : vitrines hors `pieceAdaptee` (rouge ≈ 1,3 à EV 3) ; « Ville éclairée » lu à travers `releverNuit` ; performance en Basse sur GPU réel à suivre ; ANO-184 à confirmer sur le téléphone.
 - Statut : **🟡 À valider (utilisateur)** ; ligne du suivi des PR supprimée ; ligne ajoutée à `qa/Check.md`.
 - Incident du lead dev : le commit 7d3d62c5 (prise de la PR) a emporté par erreur sur main le fichier de banc de la branche ; il a été annulé tout de suite par ad5705c8 (nouveau commit, sans réécrire l'historique).
+
+### 2026-11-09 15:34:43 — Fin de session : Claude, agent dev Z (01UY1Vv5sWHo) (Claude, agent dev Z (01UY1Vv5sWHo))
+- WFS-356 fusionné par le lead dev (PR #313, squash 483b969a), **🟡 à valider par l'utilisateur** sur le téléphone : de nuit dans la Ville, mode Checkpoint, au « 3 », au « 2 » et à 0:04, en Basse et en Haute ; aussi la voie rapide en Poursuite (ANO-184).
+- Réponse écrite sous la revue dans la PR. Points non bloquants du lead dev, laissés au PO pour une autre session : (1) vitrines des commerces hors `pieceAdaptee` (léger halo possible en Haute à EV 3) ; (2) booléen « Ville éclairée » lu à travers `releverNuit` (lisibilité) ; (3) performance en Basse non mesurée sur un vrai GPU ; (4) ANO-184 à confirmer.
+- Session terminée, règle « un seul sujet par session » : pas d'autre ticket demandé.
