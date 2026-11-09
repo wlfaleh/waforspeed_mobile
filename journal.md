@@ -4778,6 +4778,9 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - Conflit `bench_perf.cpp` résolu (c6ffe546, deux côtés gardés) ; synchronisée avec main (0b47a831). Suite `lod-passage` (110 → 40 px) ajoutée au banc `lod` (82bdde0b, 4d41a2bd).
 - Mesure, banc perf Basse, Ville de nuit (`WFS_PERF_PARTIES=ville:nuit:course5,ville:nuit`) : **triangles des voitures** au départ de la Course à 5 : 262 100 (main) → 192 065 (−26,7 %) ; image 372 692 → 306 102 (−17,9 %) ; 1 min 162 341 → 132 761 ; 2 min 162 341 → 123 921 ; Ville avec trafic au départ 155 428 → 138 575 ; adversaire à 77 px 49 013 → 22 239. **Img/s du banc PC** (lavapipe, machine chargée) : Course à 5 au départ 0,93 → 0,95 img/s (1 079,7 → 1 051,8 ms), à 1 min 0,93 → 0,91, à 2 min 0,95 → 0,91 : bruit de mesure, ne dit pas le téléphone ; suite de l'objectif 30 img/s dans WFS-348.
 - Vérifications : 83 tests CPU OK ; parcours 0 écart (Arrière, Cockpit) ; banc `lod` 54 captures, 0 erreur, Haute 12 / 12 identiques à main, Basse : changements seulement sur les adversaires de 48 à 100 px ou lointains ; captures et planche dans `qa/pr/WFS-335/`. Description de la PR mise à jour, réponse point par point sous la revue.
+
+### 2026-11-09 04:49:17 — Début WFS-339 : banc `campagne` en échec, branche créée (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-339` créée depuis `main` (d93aeaee) et poussée. Zone : bancs seulement (exception PO). Reproduction en local en cours : `WFS_BANC=campagne` (build Release dans le scratchpad).
 ### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
 - Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
 
