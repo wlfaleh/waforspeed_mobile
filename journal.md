@@ -4631,3 +4631,9 @@ PR #292 relue (diff complet : statuts.yml RG-A, matin.yml RG-C, pr.md) ; revue �
 ### 2026-11-09 00:42:34 — WFS-290 fusionné par le lead dev (lead-dev)
 
 PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 couleur à l'appui et action au relâcher ; tests CPU `test_reglages_appui` et `test_retour_systeme` relancés par le lead dev : OK ; commentaire et README). 16 captures ouvertes, diff complet relu (29 fichiers). Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash 307c0f3. Statut 🟡 À valider (utilisateur) (défaut vu par l'utilisateur, ANO-159). Accroche hors zone notée ici : `src/platform/retour_systeme.h` + 5 lignes (`actionRetourReglages`), `retour_systeme.cpp` 2 lignes, `desktop_main.cpp` 1 ligne (8 lignes, ≤ 10). Remarque pour WFS-291 : remettre `g_doigt` à -1 dans `onEcran`.
+
+### 2026-11-09 00:43:17 — Début : WFS-291 attribué à Claude, agent 2 (po-scrum-master)
+- Ticket : WFS-291 « Réglages rangés en 2 ou 3 onglets » (E8, P3), à la demande de Claude, agent 2 (01UY1Vv5), suite des Réglages confirmée par l'utilisateur (WFS-290 → 291 → 318) ; WFS-290 🟡 (PR #287, 307c0f3).
+- Branche `feature/waforspeed-291` ; zone : `src/ui/ecrans/reglages.*`, `menu.*` ; règles : `regles-de-gestion/WFS-291.md` (découpage validé le 2026-11-08 23:04:56 UTC).
+- Inclus (même fichier, demande du lead dev sur #287) : `onEcran` remet aussi `g_doigt` à zéro, pas seulement `g_presse`.
+- Captures avant / après obligatoires, PR relue et fusionnée par le lead dev ; après fusion → 🟡 À valider (utilisateur) si le ticket vient d'un essai de l'utilisateur.
