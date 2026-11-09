@@ -4813,3 +4813,17 @@ Code et tests bons (`test_penetration_voitures` et `test_chocs_voitures` OK apr�
 - **Début : WFS-348** ([TECHNIQUE] [URGENT] P1, performance par pixel, Ville de nuit sous la pluie, 16 img/s en Basse, GPU scène 55,8 ms) **attribué à agent arwa (Claude, session trafic)**, à sa demande : premier P1 prêt dont l'épic est libre (WFS-349 et WFS-194 : E10 tenue par WFS-193) ; file A (performance) après WFS-339. Fiche `regles-de-gestion/WFS-348.md`. Branche `feature/waforspeed-348`, premier commit à pousser tout de suite.
 - Zone permise : `src/render/**` et `shaders/**` de la passe en cause, réglages de qualité (Basse seulement), bancs `bench_perf*`, `tests/**`. Une passe E13 (`eclairage_*`, `post*`) : accord du PO noté au journal avant d'y toucher. Interdit : `vehicule_lod*` (WFS-335), `effets_*`, `vehicule_cockpit*` (WFS-349), `traffic.*`, `player.*`, `conduite_*`, `.github/**`, `tools/qa/**`, tailles d'interface (ordre permanent).
 - Critères : tableau des passes avant / après (scène de l'APK 928 contre `main`), cause nommée avec le commit, Basse ≥ 30 img/s (banc : GPU scène ≤ 33 ms), Haute identique, captures avant / après, parcours complet 0 écart, ligne `qa/Check.md`. US technique : CI de branche permise, une à la fois, chaque run au journal. PR relue par le lead dev.
+
+### 2026-11-09 06:23:04 — WFS-339 : PR #299 approuvée et fusionnée (lead-dev auto)
+
+Cause nommée (pilote des bancs saturé pendant un changement de file en conduite d'avant), correction dans `limiterPilote` seulement, `test_pilote_file` OK après fusion avec `main`, 23 captures sur 24 identiques. Squash 39a3de7, statut 🟣. #297 et #298 : « Bien reçu » posté, pas encore de « corrigé dans » : restent ↩️.
+
+### 2026-11-09 06:24:35 — Statuts automatiques, CI main #945 (robot statuts)
+- Run rouge (push, commit 88f3cde), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 06:34:57 — Début WFS-348 : performance par pixel, Ville de nuit sous la pluie (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-348` poussée (e2afe6f0, depuis `main` 7e3659dc). Fiche `regles-de-gestion/WFS-348.md` lue en entier.
+- Plan : (1) banc `WFS_BANC=perf WFS_PERF_SCENE=1` : même scène que la mesure de l'utilisateur (Ville de nuit sous la pluie, Checkpoint, vue Arrière, Rue des Mimosas 60 m avant le virage serré à droite, checkpoint 8), Basse dans l'état du téléphone (60 %, ombres, reflets et captures coupés), coût GPU de chaque passe et effets retirés un par un ; (2) même banc sur `b5d8ddbf` (commit de l'APK 928, run 928) ; (3) cause et commit ; (4) correction en Basse seulement dans la passe qui coûte.
+- APK de la mesure à 16 img/s : la plus récente le 2026-11-09 à 00:08 était la 931 (`3529cc7b`) ; entre 928 et 931 : WFS-301, WFS-329, WFS-305 (aucun shader changé depuis l'APK 928).
+- Zone : `src/render/**`, `shaders/**` de la passe en cause, bancs `bench_perf*`, `tests/**` ; une passe E13 (`eclairage_*`, `post*`) : accord du PO d'abord.
