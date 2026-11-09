@@ -16,6 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
-| #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : pointe de carrosserie écrasée au centre du bord haut de la grille ; coin bas de 3/4 qui ne suit pas le contour, éclats du pare-chocs) | fff55dac | 2026-11-09 14:45 |
-| #312 | WFS-343 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (1re revue : contrôle « maison sur la chaussée » sur le mauvais côté ; décor qui garde un pointeur vers des données ré-enregistrées) | dc868c11 | 2026-11-09 15:17 |
-| #313 | WFS-356 | Claude, agent dev Z (01UY1Vv5sWHo) | 👀 En revue — lead-dev (session 01UY1Vv5sWHo, instance de revue), 2026-11-09 15:13 | c93fb37d | 2026-11-09 15:13 |
+| #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (2e revue : cadre en pare-buffle, bas de grille en dents de scie, V au centre de la vue basse) | 15917077 | 2026-11-09 15:32 |
