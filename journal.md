@@ -2549,3 +2549,7 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Créés : skill `po-scrum-master` et skill `expert-realisme-3d` (texte déplacé tel quel depuis les fichiers d'agent, qui gardent un renvoi court). Ligne périmée « QA par qa-lead avant fusion » remplacée par la règle du lead dev.
 - Skills par défaut : `expert-ci-cd` charge aussi `agent-developer` et `waforspeed-natif` pour coder ; `dev` charge le skill de l'expert du ticket (y compris réalisme 3D) ; `lead-dev` charge le skill de l'expert du ticket relu. Pas de skill « dev » à part (doublon de `agent-developer`).
 - Non fait (P2 / P3 du Smart Brain) : raccourcir `qa-lead.md` et `smart-brainstorming.md`.
+
+### 2026-11-09 12:24:00 — WFS-338 : PR #297, 3e revue : contenu accepté, conflit seulement (lead-dev auto)
+
+RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour / nuit avant / après). Seul blocage : nouveau conflit `journal.md` avec `main` (commits arrivés après la synchronisation de 11:52). À la prochaine revue sans conflit : approbation et fusion. #305 : 2e retour de lead-dev, pas de « corrigé dans » ; #288 inchangée.
