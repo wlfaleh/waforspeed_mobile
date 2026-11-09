@@ -4936,3 +4936,6 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 ### 2026-11-09 10:17:19 — Statuts automatiques, CI main #949 (robot statuts)
 - Run rouge (push, commit 48c423e), aucun statut changé. Job(s) en échec : publication-apk.
 - Tickets 🟣 contenus dans ce run : WFS-339, WFS-348, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 10:28:00 — WFS-352 fusionné par le lead dev (lead-dev)
+PR #303 (agent expert ci cd) : diff complet relu (`matin.yml`, `publier_captures_matin.sh` neuf, `banc_groupe.sh`, `recette_prete.sh`, `qa/pr/WFS-352/pr.md`) ; noms d'artefacts et bancs (`desktop_main.cpp`) vérifiés. Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash ad54bde, statut 🟣. Aucun workflow lancé par le lead dev. Remarques : mesurer `complements-a` / `complements-b` au premier matin ; groupe rouge à captures partielles non signalé dans `jour.txt`.
