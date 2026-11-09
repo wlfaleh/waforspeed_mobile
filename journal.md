@@ -2178,10 +2178,8 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Critères** : RG-01 (tracé, chocs, départs, checkpoints, zones de trafic lus du paquet, carte absente du choix si bloc faux, jamais de plantage), RG-03 (décor générique lu du paquet, carte venue d'un paquet dans le choix du terrain), RG-04 (tests CPU, parcours accueil → terrain → course → retour 0 écart, carte de test, captures au lead dev), RG-05 (rien de propre à une carte dans le code). Règles : `regles-de-gestion/WFS-343.md`.
 - **WFS-347** (P3, E8) créé : RG-06 de WFS-307 (ligne « Cartes : N téléchargées, X Mo » des Réglages), après WFS-290, 291, 318 (agent 2).
 
-<<<<<<< HEAD
 ### 2026-11-09 01:11:39 — WFS-343 : début (Claude, agent 3 (01UY1Vv3))
 - Branche `feature/waforspeed-343` depuis `main`. Skills : `agent-developer`, `expert-cartes`, `waforspeed-natif`. Périmètre : RG-01, RG-03, RG-04, RG-05 (neige → WFS-346). Étude du tracé et des chocs actuels avant le plan ; accroches `track.*` / `game.*` annoncées à l'entrée suivante.
-=======
 ### 2026-11-09 01:25:26 — WFS-335 : PR #296 ouverte, 🆕 à relire par le lead dev (agent arwa (Claude, session trafic))
 - **PR** : https://github.com/wlfaleh/waforspeed_mobile/pull/296 (branche `feature/waforspeed-335`, synchronisée avec main ; 81 tests CPU OK ; parcours complet 0 écart, vues Arrière et Cockpit).
 - **Captures** : `qa/pr/WFS-335/` (31 captures du banc `lod` avant / après, Basse ; Course à 5 de nuit vues Arrière et Proche, trafic de nuit de 10 à 170 m) ; 31 sur 43 identiques au pixel près, les autres ne changent qu'au loin. Le script `captures_pr.sh` avec le banc `nuit` durait plus d'une heure (machine partagée, charge 19) : arrêté, captures `lod` produites et mises en forme à la main.
@@ -2650,7 +2648,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - **Zone** : `src/render/vehicule_cockpit*`, `tests/**` (test neuf), bancs `cockpit` / `penetration` (scène, ≤ 10 lignes annoncées). **Interdit** : `src/game/camera_vue.*` (WFS-293 ; si la cause est le plan proche, le dire au PO avant), modèles des voitures et `tools/effacer_logos.mjs` (WFS-193), `traffic.*`, `course5*`, `poursuite*`, `player.*`, `conduite_*`, tailles d'interface, CI.
 - **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin ; captures avant / après dans `qa/pr/WFS-349/`). PR, lead dev, puis 🟡 et arrêt de la session.
 - `track-agent.md` : ligne ajoutée ; lignes des sessions terminées enlevées (arwa-5, agent dev conduite).
->>>>>>> origin/main
 
 ### 2026-11-09 13:38:27 — WFS-343 : reprise après la limite d'utilisation (Claude, agent 3 (01UY1Vv3))
 - Session arrêtée à 01:12 UTC (limite de 5 h), reprise à la demande du PO. Branche synchronisée avec `main`. Étude du code (tracé, chocs, décor, cartes nommées dans le code) puis plan et accroches à l'entrée suivante.
