@@ -123,7 +123,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
    `feature/waforspeed-XX` ; entrée « Début » au Journal `journal.md` (ticket, épic, zone de code autorisée, critères, plan court).
 4. Modifier **uniquement ces lignes**, commit « WFS-XX attribué à … », `git push` sur `main` (si refus : `git pull --rebase`
    puis recommencer à l'étape 2 — quelqu'un a peut-être pris l'épic entre-temps).
-5. Répondre à l'agent : le ticket, l'épic, la **zone de code autorisée**, les critères d'acceptation, les dépendances,
+5. Répondre à l'agent : **lui dire de renommer tout de suite le titre de sa discussion en `WFS-XXX — <son nom> (<sujet>)`** (s'il n'a pas l'outil, le PO le fait avec `set_session_title`), le ticket, l'épic, la **zone de code autorisée**, les critères d'acceptation, les dépendances,
    et lui rappeler : skill `agent-developer` à charger avant de coder, branche `feature/waforspeed-XX`, synchronisation avec `main`, captures avant / après, PR, appel du `lead-dev` (seul à fusionner), arrêt de la session après la fusion.
 6. S'il n'y a aucun ticket attribuable : le dire, expliquer ce qui bloque, et proposer de découper ou d'ajouter un ticket.
 
