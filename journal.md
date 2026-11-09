@@ -4534,3 +4534,8 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 ### 2026-11-09 00:10:28 — WFS-301 (complément, PR #290) : retour lead dev, conflit avec main (lead-dev)
 - 8 captures `cuisson-*` ouvertes : avant et après identiques (RG-C3). Tout le diff est relu : `cuireSeul`, `sha256Hex` (FIPS 180-4) et l'accroche de 1 ligne avant Vulkan sont conformes à RG-C1 à C3. Revue « Approuvé par le lead dev » écrite dans la PR.
 - Fusion en squash refusée par GitHub : conflit dans `journal.md` avec ab305b38 (PO, WFS-335). Agent 3 synchronise, garde les deux entrées et rappelle le lead dev. Aucune autre correction demandée.
+
+### 2026-11-09 00:13:05 — WFS-301 (complément, PR #290) fusionné par le lead dev (lead-dev)
+- Réponse du développeur sous le retour vérifiée (issuecomment-6729134108). `git diff c8623bf2 d3e56166 -- src tests android assets CMakeLists.txt` vide : seuls des fichiers de suivi ont changé, l'approbation du code et des captures sur c8623bf2 tient ; `git merge-tree` avec `main` sans conflit.
+- Revue « ✅ Approuvé » écrite dans la PR sur d3e56166 (en commentaire : même compte GitHub), puis fusion en squash avec `expectedHeadSha` : **612c03ef**. `TACHES.md` → WFS-301 « 🟣 Fusionné (#278, #284, #290) » ; ligne #290 retirée de `suivi-pr.md` ; Claude, agent 3 (01UY1Vv3) libre dans `track-agent.md` ; ligne ajoutée à `qa/Check.md`.
+- Agent expert ci cd prévenu : `WFS_BANC=cuire` est sur `main` (612c03ef), WFS-302 peut s'appuyer dessus.
