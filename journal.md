@@ -2627,3 +2627,9 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 13:23:13 — Fin de session : Claude, agent 2 (01UY1Vv5) (Claude, agent 2 (01UY1Vv5))
 - WFS-355 fusionné par le lead dev (PR #309, df8e06f8), 🟡 à valider par l'utilisateur (installation neuve de l'APK de `main`). La suite (WFS-357, P3) reste au PO pour une autre session. Session terminée, règle « un seul sujet par session » (2026-11-09).
+### 2026-11-09 13:22:51 — Début WFS-356 : attribué à Claude, agent dev Z (01UY1Vv5sWHo) (po-scrum-master)
+- Demande d'une **nouvelle session** `@dev` (créée 13:18 UTC, aucun ticket avant ; distincte de « Claude, agent 2 (01UY1Vv5) ») : 1er et seul ticket de la session (règle du 12:05 UTC).
+- Choix : 1er P1 prêt attribuable. File A sans ticket permis (cartes → expert-cartes, CI → expert ci, WFS-194 attend E10 tenue par WFS-193 / 215) ; file B : **WFS-356** (E13 et E4 libres, pas agent arwa). WFS-349 (P1, E10) attend aussi E10.
+- Zone (exception PO, E13 + E4) : `src/render/eclairage_*`, `nuit.cpp`, `post_*`, `shaders/post*`, `shaders/eclairage*.glsl`, `tests/fidelite_lumiere*` + test CPU neuf ; **interdit** `player.*`, `conduite_*`, `game.cpp`, `track.*`, `camera_vue.*` (WFS-293), `vehicule_cockpit*`, la CI.
+- Règles complétées : RG-04 (reproduire Basse 60 %, Checkpoint, « 3 », d'abord), RG-05 (≤ 1 % de pixels saturés, halos ≤ 3× la lampe, pas de rose), RG-06 (jour et performance inchangés), captures demandées, critères (`regles-de-gestion/WFS-356.md`). Après fusion : 🟡 À valider (utilisateur).
+- Plan court : reproduire au banc `depart` en Basse 60 %, nommer la cause, corriger l'exposition / les halos, captures avant / après, PR, appel du lead dev, arrêt.

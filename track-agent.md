@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-09 13:21:57 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-09 13:22:51 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -30,7 +30,7 @@
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-293 | P2 [TECHNIQUE] banc de fluidité complet : à-coup compté en virage et au carrefour, cadences régulières, à-coup en virage corrigé (ANO-166 ; E0 + E3 en exception PO comme WFS-247 : `bench_fluidite.cpp`, `game.cpp`, `track.*`, `camera_vue.*` ; **pas** `player.*`, `conduite_*`) ; attribué 21:23 UTC à sa demande ; avant : WFS-330 🟣 (#280, d3b7ef1) | 293 : `feature/waforspeed-293` poussée (dernier envoi 22:40 UTC, 23d7d295) ; risque signalé (à-coup à 15-20 img/s), option A décidée par le PO ; 2e risque (épingle / carrefour à ≥ 30 img/s, ece9723a) : option A, référence 120 Hz juge partout | 🔧 en cours — finit WFS-293, puis ⏹️ arrêt |
 | arwa-5 (Claude, session 01Us6uCwsJ63) | WFS-283 | P1 WFS-283 ronds-points supprimés : 2e refus du lead dev corrigé (disques de sol de la Corniche hors de la chaussée, test `test_rien_sur_chaussee`, captures refaites) ; 71 tests CPU OK. **Ordre de l'utilisateur (2026-11-08 11:47 UTC) : finir WFS-283 puis arrêter, plus aucun ticket à arwa-5** | 283 : 14:57 (c57d399 correction, 9872756 captures, 770c7b2 synchro) ; **fusionné par le lead dev 15:07 (PR #261, squash 6fb3420)** | 🟡 WFS-283 fusionné (à valider par l'utilisateur) : libre ; arrêt (ordre de l'utilisateur, pas de nouveau ticket) |
 | Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-305 | P2 WFS-305 (E2) : fosse sombre dans la pelouse du parc de la Ville (ANO-171), attribué 20:35 UTC à sa demande (« autre sujet loin de ce dernier ticket », demande de l'utilisateur) ; WFS-258 ⏸ suspendu, reste à lui (branche gardée) ; avant : WFS-327 ✅ (validé par l'utilisateur), WFS-258 #274 🟡 | 305 : 🟣 PR #285 fusionnée par le lead dev (3529cc7) ; 258 : 6b6d620d (gardée, sans PR) | libre (WFS-305 fusionné) — ⏹️ session terminée, plus de ticket (WFS-258 ⏸ ira à une nouvelle session) |
-| Claude, agent dev Z (01UY1Vv5sWHo) | — | nouvelle session `@dev` (créée 2026-11-09 13:18 UTC) : demande un ticket au PO | — | ⏳ en attente d'attribution |
+| Claude, agent dev Z (01UY1Vv5sWHo) | WFS-356 | P1 file B : départ de nuit éblouissant, 2e passage (WFS-328 refusé, ANO-202 / 179 / 184) ; E13 + E4 (exception PO : `eclairage_*`, `nuit.cpp`, `post_*`, `shaders/post*`, `shaders/eclairage*`) ; attribué 13:22 UTC à sa demande (1er et seul ticket de la session) | 356 : `feature/waforspeed-356` à créer et pousser | 🔧 en cours — finit WFS-356 jusqu'à la fusion, puis ⏹️ arrêt |
 
 ## Agents de pilotage
 
