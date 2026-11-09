@@ -24,7 +24,7 @@ VOITURES=(
   "elantra|hyundai-elantra-n|4.68|180|^HHyundai_ElantraNRewardRecycled_2022Paint_Material1$||"
   "v60|volvo-v60|4.63|0|^body_paint$||^lamp_backglass$"
   "rrsport|range-rover-sport|4.95|180|^2023_Land_Rover_Range_Rover_Sport_Firenze_Red$||"
-  "mustang|corvette-c7|4.493|auto|^Car_Paint(_2)?$||^Tail_Lights_Red_Cover(_2)?$"   # WFS-359 : Chevrolet Corvette C7 (id gardé), voir CORVETTE
+  "mustang|corvette-c7|4.493|180|^Car_Paint(_2)?$||^Tail_Lights_Red_Cover(_2)?$"   # WFS-359 : Chevrolet Corvette C7 (id gardé), voir CORVETTE
   "sf90|ferrari-sf90|4.85|180|^PLASTIC_INT_10$||"
 )
 # WFS-158 (RG-A, ANO-79) : plaques neutres de tools/plaques_neutres.mjs à la place des plaques au nom de l'auteur du modèle

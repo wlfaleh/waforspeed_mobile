@@ -36,8 +36,9 @@ inline const CarDef CARS[] = {
     {"abarth", "Abarth", "500", "cars/abarth.wfm", {135, 7.9f, 205, 1035}, 10, {3.66f, 1.63f, 1.49f, 0.3f, 2.3f}, 0xb3122b,
      "« Fiat Abarth 500 » par Luquita (Sketchfab), CC BY 4.0"},
     // WFS-359 : id « tcross » gardé (place au garage, sauvegardes) ; modèle CC BY 4.0 d'une Suzuki Vitara Brezza 2022 (SUV compact) à la
-    // place du T-Cross CC BY-NC-SA ; fiche : 1.5 K15C 103 ch, 0-100 en 12,7 s (essai Autocar India), 159 km/h, 1130 kg
-    {"tcross", "Suzuki", "Vitara Brezza", "cars/tcross.wfm", {103, 12.7f, 159, 1130}, 6, {4.00f, 1.79f, 1.69f, 0.33f, 2.50f}, 0xff6a00,
+    // place du T-Cross CC BY-NC-SA. Performances de jeu de l'ancien T-Cross gardées (décision du PO, option A) : performances de la
+    // Brezza (1.5 K15C 103 ch, 0-100 en 12,7 s, 159 km/h, 1130 kg) : WFS-394 (d'abord l'IA du RR Sport en Course à 5)
+    {"tcross", "Suzuki", "Vitara Brezza", "cars/tcross.wfm", {150, 8.9f, 200, 1270}, 6, {4.00f, 1.79f, 1.69f, 0.33f, 2.50f}, 0xff6a00,
      "« 2022 Maruti Suzuki Vitara Brezza » par BHP3D (Sketchfab), CC BY 4.0"},
     {"compass", "Jeep", "Compass", "cars/compass.wfm", {150, 9.5f, 196, 1505}, 5, {4.4f, 1.82f, 1.64f, 0.36f, 2.64f}, 0x1f5a3c,
      "« JEEP COMPASS 2021 » par fazt.3ds (Sketchfab), CC BY 4.0"},
