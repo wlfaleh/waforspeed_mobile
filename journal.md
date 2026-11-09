@@ -3044,3 +3044,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Zone autorisée** : `assets/cars/x5*`, entrée `x5` de `tools/formes.json`, outils de retouche de WFS-193 (`tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json` pour la X5 seulement), banc `WFS_VITRINE_BAS`, `tests/**` (fidélité X5), `qa/pr/WFS-358/`. **Interdit** : `vehicule_cockpit*` (WFS-349), `camera_vue.*`, `src/game/cars.h` (WFS-359 à 361), autres voitures, `src/render/**` hors accroche annoncée, E13 (WFS-214), `cartes_v2` / `meteo.*` / `route_*` (WFS-346).
 - Plan : méthode RG-03 (a) ou (b) notée au journal avant de coder ; branche `feature/waforspeed-358` poussée tout de suite ; captures avant / après (face, vue basse, zooms ×4 des coins, ¾, jour et nuit) ; PR ; appel du `lead-dev` ; arrêt de la session après la fusion.
 
+
+### 2026-11-09 19:54:01 — Avis de l'expert 3D : toutes les captures du jour (Agent 3d (session_01UY1Vv4DeCjYyC5BsYidg6X))
+- Regardées en plus : vidéo 2032 (6 images), PR WFS-192, 193, 338, 343. Complément dans `qa/retours/avis-expert-3d-2026-11-09-corniche.md`.
+- Notes à l'œil : voitures ≈ 70 %, Ville de nuit ≈ 45 %, Ville de jour ≈ 35 %, Campagne ≈ 30 %, carte de Noël ≈ 25 %, Corniche ≈ 20 %.
+- Nouveaux points proposés au PO : N1 phares de nuit brûlés (P1), C1–C2 chalets / sapins / neige de la carte de Noël (P1, avec WFS-344), V2 calandres R4 et Folg 8, V3 anneau néon du garage, N2 halos et fenêtres, N3 rampe police, C3 sols saturés.
