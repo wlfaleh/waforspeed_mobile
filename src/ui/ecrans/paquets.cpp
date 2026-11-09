@@ -16,6 +16,9 @@
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../../world/cartes_v2/paquet_carte.h"   // empreinte attendue, cuisson (banc)
+#include "../../world/cartes_v2/carte_donnees.h"   // WFS-343 : cartes de données (banc)
+#include "../../game/chocs_decor.h"   // WFS-343 : chocs déclarés (banc)
+#include "../../core/configgame.h"
 #include "../petit_ecran.h"
 #include "../text.h"
 
@@ -774,6 +777,56 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         cp.lier(nullptr, formats, 0);
         carte::desactiver();
         retirerCo();
+    }
+    // 9) WFS-343 (RG-01, RG-03, RG-04, RG-05) : cartes de données. Les deux cartes d'essai (paquets/sources) sont cuites en paquet dans le
+    // dossier des paquets, puis le parcours accueil → choix du terrain → course → retour, avec la nuit et l'autre saison.
+    {
+        const char* ids[2] = {"noel-test", "automne-test"};
+        for (const char* id : ids) {
+            carte::Paquet p; std::string err;
+            verifier(cartes_v2::sourcesCarte(racine, id, carte::FormatTexture::RGBA8, p, err), "sources de la carte d'essai lisibles");
+            if (!err.empty()) WFS_ERR("paquets (WFS-343) banc : %s : %s", id, err.c_str());
+            const std::vector<uint8_t> o = carte::ecrire(p);
+            std::ofstream(carte::dossierPaquets() + "/" + carte::nomFichier(id, carte::FormatTexture::RGBA8), std::ios::binary).write((const char*)o.data(), (std::streamsize)o.size());
+        }
+        setenv("WFS_CARTES_TEST", "1", 1);   // cartes d'essai montrées (cachées aux joueurs)
+        int nImages = 0;
+        auto imageD = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); tg += 1.0 / 60; if (++nImages % 10 == 0) g.render(tg); } };
+        auto rouler = [&](const char* c, bool nuit) {
+            g.allerA(Ecran::Terrain); imageD(2);
+            choisirCarte(c, nuit); imageD(2);
+            float rx = 0, ry = 0; centreRouler(rx, ry);
+            toucherJeu(60, rx, ry); imageD(4);
+        };
+        g.allerA(Ecran::Menu); imageD(10);
+        g.allerA(Ecran::Terrain); imageD(2);
+        verifier(cartes_v2::donnees("noel-test") && cartes_v2::donnees("automne-test"), "choix du terrain : 2 cartes d'essai lues des paquets");
+        choisirCarte("noel-test", false); imageD(3);
+        captureJeu("donnees-terrain-noel", "choix du terrain : carte de Noël venue d'un paquet (05 / 06), jour");
+        choisirCarte("noel-test", true); imageD(3);
+        captureJeu("donnees-terrain-noel-nuit", "choix du terrain : carte de Noël, nuit");
+        const double cpDefaut = config().checkpoint.distanceU;
+        rouler("noel-test", false);
+        verifier(std::fabs(config().checkpoint.distanceU * M - 400) < 1e-6, "carte de Noël chargée : checkpoints tous les 400 m (donnée de la carte)");
+        verifier(chocs::registre().taille() > 0, "obstacles et objets solides de la carte déclarés aux chocs");
+        imageD(300);
+        verifier(g.ecran() != Ecran::Terrain && g.ecran() != Ecran::Menu, "course sur la carte de Noël (jour)");
+        captureJeu("donnees-noel-jour", "course sur la carte de Noël lue du paquet (jour)");
+        rouler("noel-test", true);
+        imageD(300);
+        captureJeu("donnees-noel-nuit", "course sur la carte de Noël (nuit) : guirlandes, fenêtres, lampadaires");
+        rouler("automne-test", false);
+        verifier(std::fabs(config().checkpoint.distanceU * M - 700) < 1e-6, "autre saison : checkpoints tous les 700 m (RG-05)");
+        imageD(300);
+        captureJeu("donnees-automne-jour", "autre saison par les données seules : bourg d'automne (jour)");
+        g.allerA(Ecran::Menu); imageD(10);   // retour
+        verifier(g.ecran() == Ecran::Menu, "retour au menu sans écart");
+        rouler("ville", false);
+        verifier(std::fabs(config().checkpoint.distanceU * M - config().checkpoint.distanceM) < 1e-6 && cpDefaut > 0, "retour sur la Ville : checkpoints de configgame.json");
+        imageD(120);
+        captureJeu("donnees-retour-ville", "retour sur la Ville du code après les cartes de données");
+        unsetenv("WFS_CARTES_TEST");
+        for (const char* id : ids) fs::remove(carte::dossierPaquets() + "/" + carte::nomFichier(id, carte::FormatTexture::RGBA8), ec);
     }
     g.shutdown();
     retirer();
