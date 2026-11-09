@@ -4927,3 +4927,8 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 
 ### 2026-11-09 10:04:59 — WFS-291 fusionné par le lead dev (lead-dev)
 - PR #302, 1re revue sur eeed0f6 : 8 captures ouvertes (4 paires, 2400 × 1080) ; grande mise en page vérifiée par le lead dev (branche construite dans un arbre à part, banc `reglages-onglets` en 1920 × 1440 : onglets sous le titre, rien ne se chevauche) ; diff relu en entier (13 fichiers) ; `test_reglages_appui` et `test_retour_systeme` OK. Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash 8df86cb. Statut 🟡 À valider (utilisateur), comme le demandent les critères du ticket. Accroche hors zone : `desktop_main.cpp` 1 ligne. Remarques non bloquantes : aucun test CPU de la table des onglets (à ajouter avec WFS-318) ; panneau un peu transparent dans la place libre (déjà avant).
+
+### 2026-11-09 10:06:12 — WFS-318 attribué à Claude, agent 2 (po-scrum-master)
+- Demande de Claude, agent 2 (01UY1Vv5) après WFS-291 🟡 (#302, 8df86cb). Suite des Réglages 290 → 291 → 318 confirmée par l'utilisateur (2026-11-08 20:44 UTC).
+- Zone : E8 `src/ui/ecrans/reglages.*` + E3 `src/game/fantome.*` (affichage du fantôme), `tests/**`. Vérifié : aucun ticket actif ne touche `fantome.*` (WFS-338 : `poursuite*` / `hud.*` ; WFS-293 : banc de fluidité ; WFS-343 : cartes) ; `hud.*` reste à WFS-338.
+- Règles : `regles-de-gestion/WFS-318.md` (RG-01 à RG-04, 3 captures demandées). En plus : test CPU de la table des onglets (remarque du lead dev sur #302), capture de la grande mise en page. Après fusion : 🟡 À valider (utilisateur).
