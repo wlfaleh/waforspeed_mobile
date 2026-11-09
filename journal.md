@@ -4939,3 +4939,8 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 
 ### 2026-11-09 10:28:00 — WFS-352 fusionné par le lead dev (lead-dev)
 PR #303 (agent expert ci cd) : diff complet relu (`matin.yml`, `publier_captures_matin.sh` neuf, `banc_groupe.sh`, `recette_prete.sh`, `qa/pr/WFS-352/pr.md`) ; noms d'artefacts et bancs (`desktop_main.cpp`) vérifiés. Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash ad54bde, statut 🟣. Aucun workflow lancé par le lead dev. Remarques : mesurer `complements-a` / `complements-b` au premier matin ; groupe rouge à captures partielles non signalé dans `jour.txt`.
+
+### 2026-11-09 10:36:12 — WFS-318 : PR #304 ouverte, accroches annoncées, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Réglage « Fantôme du record : Affiché / Caché » (onglet Affichage, clé `fantome`), étiquette « VOTRE RECORD · 1:12,4 » au-dessus du fantôme (`src/game/fantome_etiquette.cpp`, 12 à 16 dp, fondu au loin et derrière) ; caché : rien n'est dessiné, l'enregistrement continue.
+- **Accroches annoncées** : `src/game/course_system.cpp` / `.h` (10 lignes : fantôme non dessiné quand il est caché ; `fantomeCourant`, position du fantôme et durée du record pour l'étiquette) ; `src/platform/desktop_main.cpp` (2 lignes : banc `fantome`). `hud.*` non touché (WFS-338).
+- Tests `test_fantome_etiquette`, `test_reglages_onglets` (table des onglets, remarque du lead dev sur WFS-291) ; 87 tests verts ; parcours 0 écart ; capture de la grande mise en page (1920 × 1440).
