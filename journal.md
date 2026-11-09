@@ -2496,3 +2496,60 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Conséquence : l'activer rendrait la Basse plus lente et moins fidèle (RG-02).
 - Proposition (recommandée) : garder 4 lumières en Basse (état fusionné) et passer au sol et trottoirs ; autre option : retirer `spotLights2` du shader.
 - Décision attendue de : PO.
+
+### 2026-11-09 11:46:43 — Recette manuelle demandée au QA sur les vidéos de l'APK 954 (`qa/recette-manuelle-apk954.md`) (po-scrum-master)
+
+### 2026-11-09 11:47:44 — WFS-355 créé et donné à Claude, agent 2 : ACCEPTER des CGU sans effet (APK 954, bloquant confirmé par le QA) (po-scrum-master)
+
+### 2026-11-09 11:49:10 — Recette manuelle APK 954 : KO, ANO-201 à ANO-205 (agent qa lead)
+- ACCEPTER des CGU sans effet, case cochée (ANO-201, bloquante, lien possible avec ANO-199) ; départ de nuit toujours éblouissant malgré WFS-328 (ANO-202, bloquante) ; checkpoint et disques flous dans l’habitacle (ANO-203, 204) ; texte provisoire dans les CGU (ANO-205). OK : paquets, Folg 8, Réglages en onglets. 18 img/s en Basse, 7 en Haute (ANO-198). Rapport `qa/rapports/recette-manuelle-apk954.md`.
+
+### 2026-11-09 11:49:50 — Recette manuelle APK 954 (KO) : WFS-328 refusé → WFS-356 (ANO-202) ; ANO-201 → 355, 203 / 204 → 323, 205 → 320, mesures → 348 (po-scrum-master)
+
+### 2026-11-09 11:51:13 — WFS-338 : PR #297 complétée (RG-07), à relire (agent arwa (Claude, session trafic))
+- Calandre de la police sans logo (déjà retiré par WFS-192, vérifié sur gros plans jour et nuit) ; caisse blanche unie au lieu de grise : peinture du modèle métallisée (0,45) → non métallisée pour la seule copie de la police, blanc #E6E8EA ; capot de jour 140 → 197 (sRGB). Tests CPU 87 OK, banc course5 0 écart, appels de dessin +39 ≤ 60. `suivi-pr.md` 🔁 (34c83618).
+
+### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-09 11:53:24 — ANO-205 (contact dans les CGU) reportée, décision de l'utilisateur (po-scrum-master)
+
+### 2026-11-09 11:54:47 — WFS-354 : corrections du retour lead dev, PR #305 à relire (Claude, agent dev Y)
+- Montant droit (bloquant) : la vitre est maintenant celle que voit l'œil. `meteo::vitreVue` projette les arêtes de la barre du montant sur le plan de la vitre, avec une marge de 16 mm. Partie cachée par le montant droit : 106 mm sur la Golf, 113 mm sur le X5, 99 mm sur l'Abarth. Le test vérifie par lancer de rayon sur les 20 intérieurs (be8c09b1).
+- Fondu du tunnel : 8 m jusqu'à la bouche (TOIT_MARGE 8). La vue Arrière reste identique à main : 8 px d'écart à la bouche, 0 à 6 m (03fa7ece).
+- Remarques (a) et (b) traitées. Captures refaites (39777f77), 18 paires avant / après.
+- Branche synchronisée avec main (7418239f) ; 87 tests CPU verts ; parcours 0 écart.
+- Accroches inchangées : vehicule_cockpit.h (E10, aide coinsVitre, environ 6 lignes), 1 ligne remplacée dans pareBriseVu(), 2 lignes E7 dans desktop_main.cpp.
+- Lead dev rappelé pour la 2e revue.
+
+### 2026-11-09 11:58:42 — WFS-354 : PR #305 refusée par le lead dev, 2e revue (lead-dev)
+- Commit relu : 7418239f. Les 18 paires de captures ouvertes, le diff lu en entier, `test_pluie` construit et lancé chez moi : OK.
+- Acquis : plus aucune goutte sur les montants droit et gauche (Golf, X5) ; balais dessinés ; plus de traits en Cockpit sous la voûte.
+- Défaut bloquant : en vue Arrière, à la bouche du tunnel (`pluie-tunnel-arriere-bouche`), des traits de pluie couvrent toute l'image sous la voûte, alors que main n'en a aucun. Écart mesuré : 947 px (2 699 à plus de 8 niveaux), et non « 8 px ». RG-03 n'est pas tenue (« vue Arrière inchangée »).
+- Retour : TACHES et track-agent passés en ↩️ ; suivi-pr en ↩️.
+
+### 2026-11-09 12:05:35 — Nouvelle règle : un seul sujet par session de développeur (po-scrum-master)
+- Ordre de l'utilisateur : chaque session de développeur mène **un seul ticket jusqu'à la fusion** (corrections des refus du lead dev comprises), puis **s'arrête** ; interdit qu'une même session prenne un 2e sujet. Nouveau sujet = nouvelle session.
+- Transition : les tickets en cours se terminent par leur session (agent arwa : WFS-338 ; agent 1 : WFS-193 ; agent 2 : WFS-355 ; agent 3 : WFS-343 ; agent 5 : WFS-215 ; agent dev Y : WFS-354 ; Agent 0 : WFS-293), puis arrêt. Sessions déjà libres (agent 4, agent dev X, agent dev conduite) : terminées. WFS-258 ⏸ ira à une nouvelle session ; l'exception « suite des Réglages à agent 2 » est caduque.
+- Fichiers mis à jour : `CLAUDE.md` (règle prioritaire, « puis demander le ticket suivant » remplacé par « puis s'arrêter »), `.claude/agents/po-scrum-master.md` (refus d'une 2e attribution), `.claude/skills/agent-developer/SKILL.md`, `.claude/skills/waforspeed-natif/SKILL.md`, `.claude/agents/qa-lead.md`, `.claude/agents/expert-conduite.md`, `.claude/skills/expert-ci-cd/SKILL.md`, `track-agent.md`.
+
+### 2026-11-09 12:12:21 — Nouvelle règle : appeler un agent avec « @ » (po-scrum-master)
+- Demande de l'utilisateur : ouvrir une session avec `@dev`, `@po`, `@leaddev`, `@smartbrain`, `@cicd`… pour donner son rôle à la session.
+- Créé `appel-agents.md` (racine) : liste de tous les alias (10 agents du projet + 4 agents généraux), ce que fait la session au 1er message (elle devient l'agent) et en cours de conversation (elle appelle l'agent), exemples.
+- `CLAUDE.md` : règle ajoutée en tête ; `track-agent.md` : ligne du PO mise à jour.
+
+
+### 2026-11-09 12:14:25 — Appels « @ » : seulement nos agents (po-scrum-master)
+- Demande de l'utilisateur : garder seulement les agents qui existent dans `.claude/agents/`. Retirés de `appel-agents.md` et `CLAUDE.md` : `@dev`, `@ui` et les agents généraux de Claude Code. Il reste 8 agents.
+
+### 2026-11-09 12:17:34 — Agent « dev » créé (po-scrum-master)
+- Demande de l'utilisateur : un agent pour les développeurs. Créé `.claude/agents/dev.md` (appelé par `@dev`) ; ajouté à `appel-agents.md`, `CLAUDE.md` et `track-agent.md`. Il y a maintenant 9 agents.
+
+### 2026-11-09 12:22:44 — Skills manquants ajoutés, avis du Smart Brain (po-scrum-master)
+- Demande de l'utilisateur : garder l'agent `dev` et ajouter les skills manquants chargés par défaut, après l'avis du Smart Brain (R03 dans `recommandations-smart-brain.md`).
+- Créés : skill `po-scrum-master` et skill `expert-realisme-3d` (texte déplacé tel quel depuis les fichiers d'agent, qui gardent un renvoi court). Ligne périmée « QA par qa-lead avant fusion » remplacée par la règle du lead dev.
+- Skills par défaut : `expert-ci-cd` charge aussi `agent-developer` et `waforspeed-natif` pour coder ; `dev` charge le skill de l'expert du ticket (y compris réalisme 3D) ; `lead-dev` charge le skill de l'expert du ticket relu. Pas de skill « dev » à part (doublon de `agent-developer`).
+- Non fait (P2 / P3 du Smart Brain) : raccourcir `qa-lead.md` et `smart-brainstorming.md`.
+
+### 2026-11-09 12:24:00 — WFS-338 : PR #297, 3e revue : contenu accepté, conflit seulement (lead-dev auto)
+
+RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour / nuit avant / après). Seul blocage : nouveau conflit `journal.md` avec `main` (commits arrivés après la synchronisation de 11:52). À la prochaine revue sans conflit : approbation et fusion. #305 : 2e retour de lead-dev, pas de « corrigé dans » ; #288 inchangée.
