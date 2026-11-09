@@ -50,7 +50,7 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
     const char* choix = std::getenv("WFS_VOITURES");
     if (choix) { std::istringstream is(choix); std::string id; while (is >> id) ids.push_back(id); }
     else for (const CarDef& c : CARS) ids.push_back(c.id);
-    unsetenv("WFS_MOMENT");
+    if (std::getenv("WFS_VITRINE_NUIT")) setenv("WFS_MOMENT", "nuit", 1); else unsetenv("WFS_MOMENT");   // WFS-193 (banc) : vitrines de nuit
     for (const std::string& id : ids) {
         if (!g.init(r, id.c_str(), "ville")) { WFS_ERR("vitrine feux : chargement de %s impossible", id.c_str()); continue; }
         if (choix) { g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png"); }
@@ -73,6 +73,7 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
         g.onTouch({7, W * 0.66f, H * 0.8f, false});
         g.shutdown();
     }
+    unsetenv("WFS_MOMENT");   // WFS-193 : rien de laissé aux bancs suivants
 }
 
 } // namespace wfs

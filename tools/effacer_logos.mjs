@@ -246,7 +246,8 @@ async function traiter(id) {
   if (!/^[a-z0-9]+$/.test(id) || !LOGOS[id]) throw new Error(`voiture « ${id} » absente de logos.json`);
   const L = LOGOS[id], fichier = path.join(RACINE, 'assets/cars', `${id}.wfm`);
   const avant = fs.readFileSync(fichier), w = lire(avant);
-  if (w.nM !== L.materiaux) throw new Error(`${w.nM} matériaux, ${L.materiaux} attendus`);
+  // WFS-193 : tools/retoucher_formes.mjs ajoute ses matériaux (grilles génériques) à la FIN, après ceux-ci : rang des matériaux inchangé
+  if (w.nM < L.materiaux) throw new Error(`${w.nM} matériaux, ${L.materiaux} attendus`);
   const journal = [];
   // contrôles d'abord (rien n'est écrit si une seule retouche ne correspond pas)
   const texAFaire = [];

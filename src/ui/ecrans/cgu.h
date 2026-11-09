@@ -49,8 +49,9 @@ public:
     void dessiner(Renderer& r, float W, float H, const Marges& m, double maintenant);
     // image complète (beginFrame / endFrame), premier lancement avant le chargement
     void dessinerImage(double maintenant);
-    // toucher (glisser dans le texte = défilement) ; vrai si l'écran est ouvert (le toucher est gardé)
-    bool toucher(int id, float x, float y, bool down);
+    // toucher (glisser dans le texte = défilement) ; vrai si l'écran est ouvert (le toucher est gardé). WFS-355 : boutons visés
+    // à 48 dp (cgu_appui.h) ; premierDoigt : ACTION_DOWN d'Android (aucun autre doigt posé) → un lever perdu avant est oublié
+    bool toucher(int id, float x, float y, bool down, bool premierDoigt = false);
     // RG-04 : version acceptée écrite dans la sauvegarde et enregistrée ; l'écran se ferme
     void noterAcceptation();
     // ---- plateforme (android_main.cpp), avant Game::init
@@ -95,6 +96,8 @@ private:
     double tRefus_ = -1, maintenant_ = 0;
     int essaisRotation_ = 0;
     int doigt_ = -1; float yDoigt_ = 0; int cible_ = 0;   // cible du doigt posé : 0 rien, 1 texte, 2 case, 3 accepter, 4 refuser, 5 fermer
+    float dp_ = 1;   // WFS-355 : pixels par dp de la dernière image (cibles de 48 dp)
+    int imagesLentes_ = 0;   // WFS-355 : images de plus de 0,5 s notées au journal (5 au plus)
     Zone zCase_, zAccepter_, zRefuser_, zFermer_, zTexte_;
 };
 
