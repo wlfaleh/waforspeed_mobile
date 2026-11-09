@@ -16,16 +16,16 @@ Agent : Claude, agent 1 (01UY1Vv2)
     - **grille** : fond, **cadre en relief**, **barres fermées** (faces de bout), **galbe du nez** (recul aux bords), forme en **trapèze** possible. Un matériau est ajouté à la fin (rang des matériaux inchangé) ;
     - déplacement / échelle avec fondu ;
     - empreintes avant / après (sommets, indices, matériaux) : l'outil s'arrête sans rien écrire hors de ces deux états. Le `.lod` est régénéré, les tangentes et la boîte recalculées.
-  - **`tools/convertir_voitures.sh`** : lance `retoucher_formes.mjs` juste après `effacer_logos.mjs`.
+  - **`tools/convertir_voitures.sh`** : lance `retoucher_formes.mjs` juste après `effacer_logos.mjs`. Une voiture absente de `formes.json` est passée sans erreur.
   - **`tools/effacer_logos.mjs`** : accepte les matériaux ajoutés à la fin.
   - **Voitures** :
-    - **X5** : haricots (cadre, barres, arcs du bas : 2 640 triangles), fond (240) et pointe de carrosserie entre les deux (50) retirés. Grille d'un seul tenant à 6 barres, cadre, galbe 6,5 cm, gris métallisé, un peu plus étroite en haut ;
+    - **X5** : haricots (cadre, barres, arcs du bas : 2 640 triangles), fond (240) et pointe de carrosserie entre les deux (50) retirés. Grille d'un seul tenant à 6 barres, galbe 6 cm, gris métallisé clair. Son **cadre passe 2 mm devant la coupe du capot et la recouvre de 1,7 cm** (haut à y 0,962 pour une coupe à 0,945), plus étroit en haut (±0,44 m) qu'en bas (±0,47 m) ;
     - **Compass** : calandre à 7 fentes retirée (705 + 15 621 triangles). Grille à 3 barres, cadre, galbe 4,5 cm ;
-    - **208** : treillis en losanges retiré (251 triangles). Grille **en trapèze** (forme de l'ouverture d'origine) à 5 barres, cadre, galbe 3,5 cm.
+    - **208** : treillis en losanges retiré (251 triangles) et **socle du lion** retiré (relief au centre du fond sombre, 748 triangles). Grille **en trapèze** (forme de l'ouverture d'origine) à 5 barres, cadre, galbe 3,5 cm.
   - **`src/render/feux_modele.cpp`** (banc) : `WFS_VITRINE_NUIT=1` (vitrines de nuit).
 - **Comment c'est vérifié** :
   - `test_fidelite_voitures` OK (20 voitures, dimensions ±1 % ou écarts connus) ;
-  - **87 tests CPU verts** après synchronisation avec `main` ;
+  - **88 tests CPU verts** après synchronisation avec `main` ;
   - `retoucher_formes.mjs --verifier` et `effacer_logos.mjs --verifier` : « déjà fait » partout ;
   - captures :
     - vitrines de jour : `captures_pr.sh`, avant = `main` ;
@@ -34,7 +34,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
     Les « avant » de nuit et des gros plans sont pris avec le même binaire et les `.wfm` / `.lod` de `main`.
 - **Limites et risques connus** :
   - **Pilote** : une retouche (la calandre) par voiture. Feux, jantes et autres signatures (crocs lumineux et feux à 3 griffes de la 208) viendront au lot suivant, avec les 17 autres voitures.
-  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture.
+  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture. Le petit creux au centre, au-dessus de la grille de la X5, est la forme d'origine du capot.
   - Les licences recevront la phrase de modification WFS-193 au lot final (X5 en CC BY-NC-SA, voir WFS-194).
   - Paquets npm `meshoptimizer@0.22.0` (MIT) et `sharp@0.33.5` (Apache-2.0), utilisés pour régénérer le `.lod` : notés au journal.
 
