@@ -44,17 +44,19 @@ declare -A SOURCE=( [model3]="${MODELE3:-}" [mustang]="${CORVETTE:-}" [tcross]="
 #  - mustang : « Chevrolet Corvette (C7) » de Martin Trafas, dépôt JoseJ55/car-showcase-v2, public/models/corvette_c7 :
 #    CORVETTE=<dossier>/scene.gltf ; 1,07 M triangles allégés (erreur 0,002) ; emblèmes des jantes et de la caisse retirés (nœuds) ;
 #  - tcross : « 2022 Maruti Suzuki Vitara Brezza » de BHP3D, dépôt kriteesh/threejs-model, model-2 : BREZZA=<dossier>/scene.gltf ;
-#    478 000 triangles allégés (erreur 0,003), habitacle allégé (WFS_ALLEGER) ; feux arrière sortis du matériau partagé des phares
-#    (WFS_FEU, noms des nœuds) ; barres de toit gardées (la hauteur de la fiche, 1685 mm, les compte).
+#    478 000 triangles allégés (erreur 0,003), habitacle allégé (WFS_ALLEGER) ; feux arrière et phares sortis du matériau partagé avec les voyants
+#    de l'habitacle (WFS_FEU, WFS_PHARE : noms des nœuds) ; barres de toit gardées (la hauteur de la fiche, 1685 mm, les compte).
 declare -A ERREUR=( [mustang]=0.002 [tcross]=0.003 )
 declare -A EXCLURE_NOEUD=( [mustang]='CorvetteWingEmblem' )
 declare -A ALLEGER=( [mustang]='Reflectors=0.4' [tcross]='int_dark.0=0.3 ; wireless_cahrger_conso_le.2=0.3 ; cons_ac_alu.0=0.4 ; int_roof_pads.0=0.4 ; wireless_cahrger_conso_le.3=0.4 ; headsup_plas.0=0.5' )
-declare -A FEU=( [tcross]='^(reverse brake|brake rear main|boot brake light|boot brk lit)' )
+declare -A FEU=( [tcross]='^(reverse brake|brake rear main|boot brake light|boot brk lit|rear fog)' )
+# phares de la Brezza sortis du matériau partagé avec les voyants de l'habitacle (sinon ni phares reconnus ni halos à leur place)
+declare -A PHARE=( [tcross]='^(frnt_lits_plas|signal front|fog front|front main lights|frnt_lightsss)' )
 cd "$ICI"
 for v in "${VOITURES[@]}"; do
   IFS='|' read -r id dossier L rot peinture roues feux <<< "$v"
   export WFS_ROUES="$roues" WFS_PLAQUE="${PLAQUE[$id]:-}" WFS_TEXTURES="${TEXTURES[$id]:-}" WFS_EXCLURE_NOEUD="${EXCLURE_NOEUD[$id]:-}" \
-         WFS_ALLEGER="${ALLEGER[$id]:-}" WFS_FEU="${FEU[$id]:-}"
+         WFS_ALLEGER="${ALLEGER[$id]:-}" WFS_FEU="${FEU[$id]:-}" WFS_PHARE="${PHARE[$id]:-}"
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   echo "== $id ($dossier)"
   src="$WEB/models/$dossier/$dossier.json"

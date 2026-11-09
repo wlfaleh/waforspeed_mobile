@@ -34,7 +34,7 @@ const VOITURES = {
   m4: { plaque: 35, cadre: -1, numero: 'EB-944-KM', dep: '92', ajouts: [{ cote: -1, y0: 0.37 }] },
   sf90: { plaque: 9, cadre: -1, numero: 'GF-190-XS', dep: '06', ajouts: [{ cote: -1, y0: 0.43 }] },
   // WFS-359 : Corvette C7 (id « mustang ») : plaque et cadre à part ; Suzuki Brezza (id « tcross ») : plaques avant et arrière à part
-  mustang: { plaque: 30, cadre: 29, numero: 'FM-509-GT', dep: '33' },
+  mustang: { plaque: 30, cadre: 29, numero: 'FM-509-GT', dep: '33', ajouts: [{ cote: -1, y0: 0.30 }] },   // plaque avant ajoutée sur la traverse de la calandre
   tcross: { plaque: 29, cadre: -1, numero: 'FT-148-CX', dep: '57' },
   model3: { plaque: 24, cadre: -1, numero: 'EY-317-TL', dep: '92', ajouts: [{ cote: -1, y0: 0.44 }] },   // WFS-158 (RG-D) : nouveau modèle
   // aucune plaque à part : plaques ajoutées sur les porte-plaques noirs (Golf), sur les plaques de concession « T-Cross » et

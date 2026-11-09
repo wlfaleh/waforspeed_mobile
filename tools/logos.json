@@ -4315,8 +4315,176 @@
  },
  "mustang": {
   "materiaux": 31,
-  "textures": [],
-  "pieces": []
+  "textures": [
+   {
+    "rang": 0,
+    "sha256": "d1937c3590a98387",
+    "role": "couleur",
+    "materiau": 2,
+    "couleur": "#000000",
+    "zones": [
+     {
+      "rect": [
+       0.09,
+       0.12,
+       0.33,
+       0.29
+      ]
+     },
+     {
+      "rect": [
+       0.68,
+       0.71,
+       0.92,
+       0.89
+      ]
+     }
+    ],
+    "note": "WFS-359 (Corvette C7) : atlas des disques : étiquettes imprimées dans le trou du moyeu (noir du trou)",
+    "sha256Apres": "f58cafa0fd0df920"
+   },
+   {
+    "rang": 1,
+    "sha256": "75129f0ffb5a6fe4",
+    "role": "normale",
+    "materiau": 2,
+    "zones": [
+     {
+      "rect": [
+       0.09,
+       0.12,
+       0.33,
+       0.29
+      ]
+     },
+     {
+      "rect": [
+       0.68,
+       0.71,
+       0.92,
+       0.89
+      ]
+     }
+    ],
+    "note": "WFS-359 : relief des mêmes inscriptions (normale plate)",
+    "sha256Apres": "9f88a80bc7bb7781"
+   },
+   {
+    "rang": 3,
+    "sha256": "efa8285cd444dfc0",
+    "role": "couleur",
+    "materiau": 3,
+    "zones": [
+     {
+      "anneau": [
+       0.5,
+       0.5,
+       0.36,
+       0.5
+      ],
+      "couleur": "#030303",
+      "note": "flanc des pneus : « MICHELIN » et marquages (flanc uni de la même couleur)"
+     }
+    ],
+    "sha256Apres": "316067ce8fea7720"
+   },
+   {
+    "rang": 4,
+    "sha256": "6fd65950dc17c1b5",
+    "role": "normale",
+    "materiau": 3,
+    "zones": [
+     {
+      "anneau": [
+       0.5,
+       0.5,
+       0.36,
+       0.5
+      ]
+     }
+    ],
+    "note": "WFS-359 : relief des marquages des pneus (normale plate)",
+    "sha256Apres": "119b3bc66b43a0a4"
+   },
+   {
+    "rang": 6,
+    "sha256": "e7d76b2c72ce3e87",
+    "role": "couleur",
+    "materiau": 4,
+    "zones": [
+     {
+      "rect": [
+       0.15,
+       0.22,
+       0.31,
+       0.66
+      ],
+      "couleur": "#cc0200",
+      "note": "inscription « CORVETTE » de l'étrier gauche (rouge de l'étrier)"
+     },
+     {
+      "rect": [
+       0.65,
+       0.24,
+       0.77,
+       0.66
+      ],
+      "couleur": "#cc0200",
+      "note": "inscription de l'étrier droit"
+     },
+     {
+      "rect": [
+       0.87,
+       0.0,
+       1.0,
+       0.9
+      ],
+      "couleur": "#000000",
+      "note": "bande d'inscriptions du bord droit"
+     },
+     {
+      "rect": [
+       0.0,
+       0.86,
+       1.0,
+       1.0
+      ],
+      "couleur": "#000000",
+      "note": "bande d'inscriptions du bas"
+     }
+    ],
+    "note": "WFS-359 : atlas des étriers",
+    "sha256Apres": "f68bef8e62b81b08"
+   },
+   {
+    "rang": 7,
+    "sha256": "3dafb99b127b018b",
+    "role": "normale",
+    "materiau": 4,
+    "zones": [
+     {
+      "rect": [
+       0.87,
+       0.0,
+       1.0,
+       0.9
+      ]
+     },
+     {
+      "rect": [
+       0.0,
+       0.86,
+       1.0,
+       1.0
+      ]
+     }
+    ],
+    "note": "WFS-359 : relief des inscriptions des étriers (normale plate)",
+    "sha256Apres": "cd6439116bcb53e0"
+   }
+  ],
+  "pieces": [],
+  "note": "WFS-359 : emblèmes des jantes et de la caisse retirés à la conversion (WFS_EXCLURE_NOEUD de tools/convertir_voitures.sh)"
  },
  "p208": {
   "materiaux": 17,
@@ -5607,9 +5775,81 @@
   ]
  },
  "tcross": {
-  "materiaux": 38,
-  "textures": [],
-  "pieces": []
+  "materiaux": 39,
+  "textures": [
+   {
+    "rang": 20,
+    "sha256": "f736899f4a64294f",
+    "role": "couleur",
+    "materiau": 34,
+    "zones": [
+     {
+      "anneau": [
+       0.5,
+       0.5,
+       0.3,
+       0.48
+      ],
+      "couleur": "#1b1d1c",
+      "note": "flanc des pneus : « KUMHO ECSTA » et dimensions (flanc uni de la même couleur)"
+     }
+    ],
+    "sha256Apres": "be2c60716a815f29"
+   }
+  ],
+  "pieces": [
+   {
+    "materiau": 2,
+    "triangles": [
+     2799,
+     45
+    ],
+    "trianglesAvant": 4835,
+    "boite": [
+     -0.0594,
+     0.8261,
+     -1.9961,
+     0.0597,
+     0.9435,
+     -1.9714
+    ],
+    "nom": "cons_ac_alu.0 (logo « S » de la calandre)"
+   },
+   {
+    "materiau": 2,
+    "triangles": [
+     4012,
+     823
+    ],
+    "trianglesAvant": 4835,
+    "boite": [
+     -0.2653,
+     0.8547,
+     1.9285,
+     0.6255,
+     1.2022,
+     2.0072
+    ],
+    "nom": "cons_ac_alu.0 (hayon : logo « S », « BREZZA » et badge)"
+   },
+   {
+    "materiau": 3,
+    "triangles": [
+     6974,
+     25
+    ],
+    "trianglesAvant": 16608,
+    "boite": [
+     -0.061,
+     0.8261,
+     -1.9913,
+     0.0587,
+     0.9426,
+     -1.971
+    ],
+    "nom": "int_dark.0 (support noir en « S » du logo de la calandre)"
+   }
+  ]
  },
  "v60": {
   "materiaux": 23,
