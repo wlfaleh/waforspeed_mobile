@@ -4524,3 +4524,5 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **Refus pour preuves manquantes** : (1) banc `fluidite` non mesuré (RG-04, ± 0,2 ms) ; (2) journal sans la vraie cause du bleu (Golf dans la capture, diagnostic `WFS_DIAG_SONDE`) ni les mesures finales (RG-01) ; (3) accroches `renderer.*` / `passes.h` non annoncées ; (4) tests et parcours absents du journal.
 - **Remarque pour le PO** (non bloquante) : la façade à l'ombre est maintenant légèrement chaude (b* +1,8 à +2,9), alors que `expert-realisme-3d` l'attendait légèrement froide (b* −2 à −3,5). RG-03 est tenue ; un ticket de finition est possible (teinte du ciel, occlusion de WFS-269 comptée deux fois).
 - Revue écrite dans la PR (en commentaire : même compte GitHub) ; `TACHES.md` → « ↩️ Retour lead dev (PR #289) », `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-09 00:08:20 — Dernière APK : 16 img/s avec moins de triangles (GPU scène 55,8 ms contre 37,1) : régression du coût par pixel, notée dans WFS-335 (po-scrum-master)
