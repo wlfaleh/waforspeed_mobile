@@ -90,6 +90,48 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
            "colonnes : passe | scénario | carte | vue | cadence | img/s | images | pas par image (0/1/2/3) | à-coup max (mm, WFS-247) | écart à la référence 120 Hz (mm, juge, WFS-293) | saut d'angle max (°) | aller-retour max (cm) | allers-retours > 2 cm par s\n";
     int manques = 0;
     double pireApres[4] = {0, 0, 0, 0};
+    // WFS-293 (captures du lead dev) : suites de 5 images successives (la voiture doit rester à la même place dans l'image) ;
+    // WFS_FLUIDITE_IMAGES=1 : seulement ces suites (fluidite-seq-<nom>-0 à 4.png), sans les mesures
+    if (std::getenv("WFS_FLUIDITE_IMAGES")) {
+        struct Seq { const char* nom; const char* carte; trace::Type type; bool carrefour; double kmh; int fps; bool poursuite; };
+        const Seq SEQ[] = {{"virage-serre-ville-15ips-poursuite", "ville", trace::Type::Virage, false, 90, 15, true},
+                           {"epingle-corniche-30ips-proche", "plage", trace::Type::Lacets, false, 55, 30, false},
+                           {"carrefour-ville-30ips-poursuite", "ville", trace::Type::Virage, true, 50, 30, true}};
+        for (const Seq& q : SEQ) {
+            Track tq; tq.build(mapById(q.carte), trace::versionCarte(q.carte));
+            int64_t sq = -1, dedans = 0;
+            for (const trace::Section& x : trace::sections(tq))
+                if (x.type == q.type && x.exRondPoint == q.carrefour) { sq = std::max<int64_t>(0, x.debut - (int64_t)(120 / SEG_M)); dedans = x.debut + (int64_t)(15 / SEG_M); break; }
+            if (sq < 0) { WFS_ERR("fluidite : %s : section introuvable", q.nom); manques++; continue; }
+            Game::interpolation = true; Game::cameraTempsSimule = true; Track::penteLissee = true; g_cameraFiltreExact = true;
+            setenv("WFS_DEPART", std::to_string(sq).c_str(), 1);
+            courseBenchRules(true);
+            const bool ok = g.init(r, "golf", q.carte);
+            unsetenv("WFS_DEPART");
+            if (!ok) { manques++; continue; }
+            g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.camMode = 0; choisirVue(q.poursuite ? VueCamera::Poursuite : VueCamera::Proche); g.allerA(Ecran::Course);
+            Mulberry32 R(293u + (uint32_t)q.fps);
+            double t = 3000, braquage = 0, duree = 0;
+            for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); t += 1.0 / 60; g.calculerVue(t); }
+            int n = 0;
+            while (n < 5 && duree < 40) {   // conduite du banc (douce) ; 5 images rendues de suite une fois 15 m dans la courbe
+                const double dt = (1.0 / q.fps) * (0.7 + 0.6 * R.next());
+                duree += dt; t += dt;
+                const Player& pj = g.player();
+                g.manette.gas = pj.kmh() < q.kmh; g.manette.brake = pj.kmh() > q.kmh + 15;
+                const double vise = std::clamp(-pj.playerX * 0.8 - pj.heading * 1.2, -0.6, 0.6);
+                braquage += (vise - braquage) * (1 - std::exp(-dt / 0.3));
+                g.manette.steer = (float)braquage;
+                g.update(dt);
+                if ((int64_t)std::floor(g.player().dist / SEG) < dedans) { g.calculerVue(t); continue; }
+                g.render(t);
+                r.capturePng(out + "/fluidite-seq-" + q.nom + "-" + std::to_string(n++) + ".png");
+            }
+            g.shutdown();
+        }
+        g.modeManette = false; g.manette = DriveInput{}; choisirVue(VueCamera::Poursuite);
+        return manques;
+    }
     for (const Scenario& sc : SCEN) {
         // première section du type sur les cartes, dans l'ordre (la ligne droite : départ de la Ville)
         const char* carte = nullptr; int64_t seg = 0, ligneDebut = 0;
