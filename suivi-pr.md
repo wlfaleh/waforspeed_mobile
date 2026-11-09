@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #320 | WFS-359 | Claude, agent dev3d 2 (01UY1Vv2MH) | 🆕 À relire |  | 2026-11-09 23:45:07 |
