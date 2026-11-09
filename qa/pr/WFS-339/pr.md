@@ -1,0 +1,41 @@
+## Agent : agent arwa (Claude, session trafic)
+
+**Ticket** : WFS-339 — règles : `regles-de-gestion/WFS-339.md`
+
+## Description (à remplir par le développeur avant d'ouvrir la PR)
+
+- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
+- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
+- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
+- **Limites et risques connus** : À REMPLIR
+
+## Captures pour le lead dev (24 après)
+
+Dossier : [`qa/pr/WFS-339`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339) — produit par `tools/qa/captures_pr.sh`.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `carte-campagne-autoroute-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-autoroute-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-autoroute-nuit.jpg?raw=true) |
+| `carte-campagne-autoroute` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-autoroute.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-autoroute.jpg?raw=true) |
+| `carte-campagne-cascade-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-cascade-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-cascade-nuit.jpg?raw=true) |
+| `carte-campagne-cascade` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-cascade.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-cascade.jpg?raw=true) |
+| `carte-campagne-chevaux-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-chevaux-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-chevaux-nuit.jpg?raw=true) |
+| `carte-campagne-chevaux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-chevaux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-chevaux.jpg?raw=true) |
+| `carte-campagne-col-haut` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-col-haut.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-col-haut.jpg?raw=true) |
+| `carte-campagne-col-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-col-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-col-nuit.jpg?raw=true) |
+| `carte-campagne-col` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-col.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-col.jpg?raw=true) |
+| `carte-campagne-epingle-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-epingle-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-epingle-nuit.jpg?raw=true) |
+| `carte-campagne-epingle` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-epingle.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-epingle.jpg?raw=true) |
+| `carte-campagne-haut-du-col` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-haut-du-col.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-haut-du-col.jpg?raw=true) |
+| `carte-campagne-moutons-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-moutons-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-moutons-nuit.jpg?raw=true) |
+| `carte-campagne-moutons` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-moutons.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-moutons.jpg?raw=true) |
+| `carte-campagne-peage-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-peage-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-peage-nuit.jpg?raw=true) |
+| `carte-campagne-peage` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-peage.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-peage.jpg?raw=true) |
+| `carte-campagne-rondpoint-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-rondpoint-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-rondpoint-nuit.jpg?raw=true) |
+| `carte-campagne-rondpoint` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-rondpoint.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-rondpoint.jpg?raw=true) |
+| `carte-campagne-vaches-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-vaches-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-vaches-nuit.jpg?raw=true) |
+| `carte-campagne-vaches` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-vaches.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-vaches.jpg?raw=true) |
+| `carte-campagne-vignes-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-vignes-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-vignes-nuit.jpg?raw=true) |
+| `carte-campagne-vignes` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-vignes.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-vignes.jpg?raw=true) |
+| `carte-campagne-village-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-village-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-village-nuit.jpg?raw=true) |
+| `carte-campagne-village` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/avant-carte-campagne-village.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-339/qa/pr/WFS-339/apres-carte-campagne-village.jpg?raw=true) |
