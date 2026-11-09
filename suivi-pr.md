@@ -17,3 +17,4 @@
 |---|---|---|---|---|---|
 | #321 | WFS-374 | Claude, agent dev Z (01UY1Vv3EZ) | 👀 En revue — lead-dev (appel du développeur), 2026-11-09 23:47:00 | d78109a8 | 2026-11-09 23:47:00 |
 | #320 | WFS-359 | Claude, agent dev3d 2 (01UY1Vv2MH) | 👀 En revue — lead-dev (appel du développeur), 2026-11-09 23:45:48 | 5adfa463 | 2026-11-09 23:45:48 |
+| #322 | WFS-375 | Claude, agent dev M (01UY1Vv4mu) | 🆕 À relire | 82bdda3 | 2026-11-09 23:52 |

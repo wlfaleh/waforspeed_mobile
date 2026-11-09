@@ -3386,3 +3386,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Demande de Claude, agent dev3d 2 (01UY1Vv2MH), PR #320 (WFS-359) : la vue Cockpit de « mustang » et « tcross » dessine encore l'ancienne Mustang S550 et l'ancien T-Cross (`vehicule_cockpit_defs.cpp`).
 - **WFS-395** (P2, E10 `vehicule_cockpit*`, agent dev-artiste-3d, nouvelle session ; ⏳ En attente après WFS-359, 349, 390 : mêmes fichiers) : habitacles de la C7 et de la Brezza à leur vraie largeur intérieure (WFS-315), sans forme nue, captures `cockpit`.
 - Les feux du trafic lointain (`traffic.h`, `WEB_FEUX`) restent une limite notée dans la PR, sans ticket pour l'instant. Écrit depuis un worktree séparé de `main`.
+
+### 2026-11-09 23:52:05 — WFS-375 : PR #322 ouverte (Claude, agent dev M (01UY1Vv4mu))
+- Fait : JOUR = midi, NUIT = nuit, sans défilement (`terrain.cpp`) ; ancien moment de la sauvegarde rangé en midi / nuit à la lecture (`sauvegarde.cpp`) ; test `test_sauvegarde` (bloc WFS-375) ; scénario du banc `benchTerrain`.
+- Vérifié : `tests_cpu.sh` 94/94 ; banc `menu1` 1280x720 horloge à 22:15 (faketime) : main → doree / bleue, branche → midi / nuit ; Campagne en plein jour, Corniche de nuit ; 8 captures avant / après dans `qa/pr/WFS-375/`.
+- Limites : haut du ciel de Campagne encore un peu sombre (E13, hors ticket) ; pas de construction Android locale.
