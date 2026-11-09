@@ -30,6 +30,7 @@ public:
                 if (o.type == cartes_v2::Objet::Maison || o.type == cartes_v2::Objet::Boite || o.type == cartes_v2::Objet::Cylindre) { prendre(o.couleur); prendre(o.couleur2); }
                 if (o.type == cartes_v2::Objet::Lumiere) prendre(o.couleur);
             }
+            for (const trace::Section& s : d_->sections) if (s.type == trace::Type::Tunnel) { prendre(BETON_TUNNEL); prendre(VOUTE_TUNNEL); break; }
         }
         CarteDecor::init(r, g);
         if (!active_) { d_ = nullptr; return; }
@@ -71,6 +72,12 @@ protected:
             }
             item(o.seg, it);
         };
+        // WFS-346 : tunnel (section « tunnel » du tracé) : piédroits et dalle de béton, un tronçon tous les PAS_TUNNEL segments ; la météo
+        // (meteo.cpp, partDuCiel) ne fait tomber aucun flocon dessous
+        for (const trace::Section& s : d_->sections) {
+            if (s.type != trace::Type::Tunnel) continue;
+            for (int64_t a = s.debut; a < s.fin; a += PAS_TUNNEL) if (a >= z0 && a < z1) { Item it; it.t = T_TUNNEL; it.l = (float)std::min<int64_t>(PAS_TUNNEL, s.fin - a); item(a, it); }
+        }
         for (size_t i = 0; i < d_->objets.size(); i++) poser(d_->objets[i], (int)i);
         for (size_t i = 0; i < d_->obstacles.size(); i++) poser(d_->obstacles[i], (int)(d_->objets.size() + i));
     }
@@ -86,6 +93,13 @@ protected:
     }
     void dessine(Track&, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         if (!d_) return;
+        if (it.t == T_TUNNEL) {   // WFS-346 : tronçon de tunnel (le long de la route : it.l segments ; + 0,3 m de recouvrement dans les courbes)
+            const float L = it.l * (float)SEG_M + 0.3f, H = 5.6f, X = (float)RW + 5.0f;
+            const vec3 m = p.o + p.f * (L * 0.5f - 0.15f);
+            for (int c = -1; c <= 1; c += 2) box(out[P_UNI], m + p.r * (c * (X + 0.4f)) - vec3{0, 0.2f, 0}, p.r, p.f, 0.8f, H + 0.2f, L, uv(kase(BETON_TUNNEL)));
+            box(out[P_UNI], m + vec3{0, H, 0}, p.r, p.f, 2 * X + 1.6f, 0.6f, L, uv(kase(VOUTE_TUNNEL)));
+            return;
+        }
         const cartes_v2::Objet& o = objet(it);
         const float y = solY(zone(a), a, it.side, it.lat);
         const vec3 c = lateral(p, (float)it.side * it.lat, y) + p.f * it.along;
@@ -116,7 +130,10 @@ protected:
     }
 
 private:
-    enum { T_MAISON = T_CARTE, T_LUMIERE, T_OBSTACLE };
+    enum { T_MAISON = T_CARTE, T_LUMIERE, T_OBSTACLE, T_TUNNEL };
+    // WFS-346 : béton des tunnels (piédroits : béton brut, albédo ≈ 0,3 ; dalle : plus sombre, suie) ; un tronçon tous les 5 segments (6 m)
+    static constexpr uint32_t BETON_TUNNEL = 0x96938c, VOUTE_TUNNEL = 0x55534f;
+    static constexpr int64_t PAS_TUNNEL = 5;
     const cartes_v2::Objet& objet(const Item& it) const {
         const size_t i = (size_t)it.col, n = d_->objets.size();
         return i < n ? d_->objets[i] : d_->obstacles[i - n];

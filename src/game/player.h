@@ -124,6 +124,7 @@ private:
     bool mondeOk_ = false, cibleOk_ = false;
     double sDist_ = 0, sX_ = 0, sHead_ = 0, sSpeed_ = 0;   // dernière projection écrite (détection d'un changement extérieur)
     double latCible_ = 0;      // aide : écart latéral (m) de la voie suivie, celui où le joueur a lâché le volant
+    double muSol_ = 1, kSol_ = 1;   // WFS-346 (accroche) : μ du sol sous la voiture (saison de la carte) ; rapport au sol d'avant (route 1, bas-côté MU_HERBE)
 };
 
 } // namespace wfs
