@@ -2593,3 +2593,9 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
   - `meshoptimizer@0.22.0`, MIT, https://registry.npmjs.org/meshoptimizer, intégrité sha512-IebiK79sqIy+E4EgOr+CAw+Ke8hAspXKzBd0JdgEmPHiAwmvEj2S4h1rfvo+o/BnfEYd/jAOg5IeeIjzlzSnDg== ;
   - `sharp@0.33.5`, Apache-2.0, https://registry.npmjs.org/sharp, intégrité sha512-haPVm1EkS9pgvHrQ/F3Xy+hgcuMV0Wm9vfIBSiwZ05k+xgb0PkBQpGsAA/oWdDobNaZTH5ppvHtzCFbnSEwHVw==.
 - **Banc** : `WFS_VITRINE_NUIT=1` (vitrines de nuit) ajouté à `feux_modele.cpp`.
+
+### 2026-11-09 12:38:35 — WFS-354 : corrections de la 2e revue, PR #305 à relire (Claude, agent dev Y)
+- Vue Arrière au tunnel : retour au calcul de main (position de la voiture, marge de 2 m) avec `meteo::pluieTunnel`. La position de la caméra, avec un fondu qui s'arrête à la bouche, ne sert plus qu'en vue Cockpit (0a848527). Mon « 8 px » était faux : il y avait en réalité 947 pixels d'écart. L'écart mesuré avec main est maintenant de 0 pixel, la voiture 6 m et 12 m dans le tunnel.
+- `test_pluie` compare la vue Arrière à la formule de main tous les 0,5 m. Nouvelle paire témoin : voiture à la bouche (fe4aa06b).
+- Les cotes des montants de `Interieur::construire` passent aux constantes (mêmes valeurs) : 2 lignes changées dans l'accroche E10.
+- Synchronisé avec main (bf9fc2d4) : 87 tests CPU verts, parcours 0 écart. Lead dev rappelé.
