@@ -60,10 +60,16 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
             std::istringstream ia(an); float a; int k = 0; g.camMode = 2;
             while (ia >> a) { g.orbit = a; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-a" + std::to_string(k++) + ".png"); }
             // WFS-193 (banc) : vue basse, au niveau du pare-chocs : WFS_VITRINE_BAS="<angle> <hauteur m> <recul m>" → vitrine-<id>-bas
+            // WFS-358 : plusieurs vues séparées par « ; » → vitrine-<id>-bas, -bas1, -bas2…
             if (const char* bas = std::getenv("WFS_VITRINE_BAS")) {
-                std::istringstream ib(bas); float h = 0.6f, d = 4.f; ib >> g.orbit >> h >> d;
-                const float h0 = g.orbitHauteur, d0 = g.orbitRecul;   // valeurs d'avant, remises après la capture
-                g.orbitHauteur = h; g.orbitRecul = d; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-bas.png");
+                std::istringstream vues(bas); std::string vue; int k = 0;
+                const float h0 = g.orbitHauteur, d0 = g.orbitRecul;   // valeurs d'avant, remises après les captures
+                while (std::getline(vues, vue, ';')) {
+                    std::istringstream ib(vue); float h = 0.6f, d = 4.f; if (!(ib >> g.orbit)) continue;
+                    if (float v; ib >> v) { h = v; if (ib >> v) d = v; }   // hauteur et recul facultatifs (0,6 m et 4 m par défaut)
+                    g.orbitHauteur = h; g.orbitRecul = d; g.render(0); g.render(0);
+                    r.capturePng(out + "/vitrine-" + id + "-bas" + (k ? std::to_string(k) : "") + ".png"); k++;
+                }
                 g.orbitHauteur = h0; g.orbitRecul = d0;
             }
         }

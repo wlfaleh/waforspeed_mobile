@@ -3042,6 +3042,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Plan : méthode RG-03 (a) ou (b) notée au journal avant de coder ; branche `feature/waforspeed-358` poussée tout de suite ; captures avant / après (face, vue basse, zooms ×4 des coins, ¾, jour et nuit) ; PR ; appel du `lead-dev` ; arrêt de la session après la fusion.
 
 
+### 2026-11-09 19:52:48 — WFS-358 : début, branche feature/waforspeed-358 (Claude, agent dev3d (01UY1Vv41d))
+- Ticket reçu du PO (calandre de la X5, jonction grille / carrosserie, contour de l'ancien logo du capot). Skills agent-developer, waforspeed-natif, artiste-3d chargés.
+- Étape suivante : mesurer l'ouverture du pare-chocs (`retoucher_formes.mjs --zone x5`), choisir la méthode RG-03 et la noter ici avant de coder.
+
 ### 2026-11-09 19:53:14 — WFS-376 attribué à Claude, agent dev3d (01UY1Vv3u9) (po-scrum-master)
 - Demande d'une **nouvelle session** `@dev3d` (session_01UY1Vv3u9DQZsvS7pFHAyy7, agent `dev-artiste-3d`), 1er et seul ticket : aucun ticket avant. WFS-358 venait d'être donné à la session dev3d 01UY1Vv41d (19:51:27) : mon commit en double est annulé avant envoi.
 - **Ticket** : WFS-376 (P1, E12 + E2) — Corniche : vrais bateaux dans la marina (ANO-206), premier prêt de la suite « Décor sans formes géométriques ». Règles : `regles-de-gestion/WFS-376.md` (zone et interdits ajoutés au Suivi).
@@ -3166,6 +3170,66 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Choix : les voitures ne sont pas libres (E10 : WFS-358 et WFS-359 déjà en parallèle, maximum atteint ; WFS-360 attend WFS-359, WFS-362 attend WFS-358). Ticket suivant pour `dev-artiste-3d` : **WFS-369** (P1, ⏳ Prêt, plus petit numéro des décors prêts 369 / 372 / 373) ; file Ville de E15 libre.
 - Zone : `src/world/ville*.cpp`, `ville_quartiers.*`, `commerces.cpp` (mobilier et parasols de terrasse seulement), nouveaux fichiers `src/world/mobilier_*` / `decor_ville_*`, `assets/world/modeles/ville/**`, `assets/textures/decor/ville/**`, `assets/licences/**`, `tests/**` ; communs (`archi_kit.*`, `vegetation.*`, `decor_carte.*`, shaders `decor*`) : ajouts ≤ 10 lignes annoncés au journal. **Pas** `plage.cpp` (WFS-376), immeubles (WFS-370), `lots_decor.*` / `pietons.*` (performance), routes, voitures, lumière.
 - Règles : `regles-de-gestion/WFS-369.md` (RG-01 inventaire au journal d'abord ; RG-02 modèles CC0 / CC BY ±1 %, choix proposé au PO ; parasols ANO-216) et `regles-de-gestion/E15-decors.md` (RG-E15-06 : « Avis agent 3D : VALIDÉ » dans la PR avant le lead dev ; taille ajoutée notée dans la PR, le 200-700 Mo se mesure sur WFS-385).
+
+### 2026-11-09 21:20:52 — WFS-359 : modèles de remplacement validés par le PO (Corvette C7, Vitara Brezza) (po-scrum-master)
+- Question de Claude, agent dev3d 2 (01UY1Vv2MH) : Mustang de Jiaxing et Passat B5.5 hors ±1 % → refusées (pas de dérogation).
+- **Décision** (le choix des modèles revient au PO, ordre de l'utilisateur du 2026-11-09) : Mustang → **Corvette C7 Stingray** (Martin Trafas, CC BY 4.0) ; T-Cross → **Suzuki Vitara Brezza 2022** (BHP3D, CC BY 4.0), hauteur comparée barres de toit comprises. Id « mustang » / « tcross » gardés (place au garage), fiches remplacées. Si la Brezza sort de ±1 % : Corvette seule dans WFS-359, nouvelle US pour la T-Cross. Détail : `regles-de-gestion/WFS-359.md`.
+### 2026-11-09 21:02:53 — WFS-358 : calandre de la X5, jonction propre et logo du capot recousu (Claude, agent dev3d (01UY1Vv41d))
+- **Méthode RG-03 (a)**, choisie après mesure de l'ouverture (vue de face projetée du modèle) : grille découpée sur le contour exact, toujours derrière la carrosserie. Pas de cadre en haricots, pas de « pare-buffle ».
+- **Causes des 4 défauts de RG-04** :
+  - dents de scie et éclats blancs : retrait « par centre de triangle » de #311 (bord en escalier, trous traversants aux coins bas) ;
+  - coin haut droit : grille à profondeur fixe, devant la carrosserie qui recule sous le phare ;
+  - peigne : pas de paroi derrière le bord, bouts des barres sur l'intérieur clair ;
+  - aussi des ailettes noires (barres verticales des haricots vues par la tranche).
+- **Logo du capot** : le biseau et le trou du logo restaient (disque blanc de jour, ovale de nuit).
+- **Fait** : `tools/retoucher_formes.mjs`, 3 retouches rejouables :
+  - découpe exacte par contour (triangles coupés) ;
+  - grille ajustée : profondeur suivant la carrosserie (1,5 cm derrière, refus d'écrire si un sommet passe devant), 9 lames chanfreinées, fond noir, conduit noir tout autour ;
+  - bouchon : triangles du logo retirés, peau du capot recousue.
+
+  `tools/formes.json` (entrée x5, depuis le modèle d'avant #311, empreinte après 87570eb9ad0fa1c8) ; `x5.wfm` 7,54 Mo / `.lod` régénérés.
+- **Accroche annoncée** (`src/render/feux_modele.cpp`, banc `WFS_VITRINE_BAS`, 8 lignes) : plusieurs vues séparées par « ; » ; rien ne change sans « ; ».
+- **Essais écartés pour le logo** : plan ou quadrique + pièce posée devant (disque plus clair : le vernis réagit à de très petits écarts) ; pièce posée derrière (points sombres au bord du trou en lumière rasante) ; zone recousue plus large (débordait sur la pointe repliée, pli).
+- **Vérifié** :
+  - `--verifier` OK pour les 3 voitures ; l'outil rejoué donne un fichier identique ;
+  - 90 tests CPU verts ;
+  - `captures_pr.sh` plus vues 2560×1440 et zooms ×4, de jour et de nuit, toutes regardées : les 4 défauts ne se voient plus.
+- **Limites** :
+  - au zoom ×4, en plein reflet du soleil, un très léger losange reste à l'endroit du logo ;
+  - +7 012 triangles pour la grille (LOD refaits).
+- Outils du conteneur installés pour le banc : mesa-vulkan-drivers, glslc, ninja-build, imagemagick (apt), meshoptimizer 0.22.0 (npm, dans `tools/node_modules`, non versionné). Aucun autre téléchargement.
+
+### 2026-11-09 21:27:23 — WFS-358 fusionné par le lead dev (lead-dev)
+- PR #319 fusionnée en squash (6d8f7e43), titre `WFS-358 : X5, calandre ajustée à l'ouverture et logo du capot recousu (#319) (Claude, agent dev3d (01UY1Vv41d))`. Revue « ✅ Approuvé » écrite dans la PR, en commentaire, car GitHub refuse l'approbation du même compte.
+- Vérifications : 56 captures ouvertes ; tout le diff lu (`retoucher_formes.mjs` : découpe, bouchon, grille ajustée ; entrée x5 de `formes.json` ; accroche `feux_modele.cpp`) ; construction et `tests_cpu.sh` relancés : 91/91 ; `--verifier` OK pour les 3 voitures ; `x5.wfm` 7,54 Mo et +4,6 % de triangles au niveau 0.
+- 1er essai de fusion refusé par GitHub (conflit `journal.md`). Le développeur a synchronisé la branche et corrigé le point 4 (de995071). J'ai relu ces changements sur d8fdd30c.
+- Statut : 🟣 Fusionné. Défauts restants (lames ondulées, bord haut en vue basse de nuit, losange du logo) : tâche séparée demandée au PO, selon l'ordre de l'utilisateur du 2026-11-09.
+
+### 2026-11-09 21:27:43 — WFS-358 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv41d))
+- PR #319 fusionnée en squash par le lead dev (6d8f7e43) ; ticket 🟣 Fusionné ; `qa/Check.md` tenu par le lead dev.
+- Point 4 de la revue corrigé avant fusion (banc `WFS_VITRINE_BAS`, de995071).
+- Défauts restants signalés au PO pour une tâche séparée : lames du haut qui ondulent ; bord haut de l'ouverture en vue basse de nuit ; léger losange à l'emplacement du logo.
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-09 21:28:47 — WFS-393 créé : finitions de la X5 après #319 ; WFS-362 prêt (po-scrum-master)
+- Demande du lead dev et de Claude, agent dev3d (01UY1Vv41d), après la fusion de WFS-358 (#319, 6d8f7e43), selon l'ordre de l'utilisateur du 2026-11-09 (« on accepte, puis une tâche séparée corrige le défaut »).
+- **WFS-393** (E10, P3) : lames du haut de la grille qui ondulent, bord haut de l'ouverture déchiqueté en vue basse de nuit, léger losange à l'emplacement de l'ancien logo. Règles : `regles-de-gestion/WFS-393.md`. Agent `dev-artiste-3d`, nouvelle session.
+- Décision : on n'attend pas WFS-361, car la X5 reste dans le jeu jusqu'à la vente (RG-01 / RG-03 de WFS-361) ; WFS-393 est annulé si WFS-361 part avant lui. P3 : passe après les tickets voitures de l'objectif ; après WFS-362 (même outil `tools/retoucher_formes.mjs`).
+- **WFS-362** (M4 + S3) passe ⏳ Prêt (WFS-358 🟣), suivant dans l'ordre des voitures de l'utilisateur (358 → 362 → 359…).
+- `track-agent.md` : ligne de Claude, agent dev3d (01UY1Vv41d) enlevée (session terminée).
+
+### 2026-11-09 21:32:21 — 11 vidéos de l'APK 969 : régression de la Campagne, symptôme donné à WFS-374 (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+Vidéos regardées image par image (1 à 2 img/s). En Campagne, la voiture est bloquée au départ (0–3 km/h, GAZ inactif) sur 4 courses sur 5 ; la Corniche est OK. Le symptôme est envoyé à l'agent dev Z (WFS-374, session 01UY1Vv3EZ) et noté dans `regles-de-gestion/WFS-374.md`. Le QA (`qa-lead`) est appelé pour le rapport et l'ANO (à partir de ANO-232). Aucun nouveau ticket : lumière → WFS-375, décor → E15. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-09 21:33:03 — Correction : les vidéos de la Campagne étaient en JOUR, pas en nuit ; ajouté à WFS-375 (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+L'utilisateur signale mon erreur : j'avais décrit des courses « de nuit » alors qu'il avait choisi JOUR (Réelle, Aube, Dorée). La cause est dans `terrain.cpp:68` : « Réelle » est rangée sous JOUR mais suit l'heure du téléphone. Critère ajouté à WFS-375 : JOUR = plein jour quelle que soit l'heure. QA prévenu.
+
+
+### 2026-11-09 21:34:11 — Recette manuelle des 11 vidéos de l'utilisateur (APK v0.1.969, 22:13 → 22:25) (qa-lead)
+- Rapport : `qa/rapports/recette-manuelle-video-2026-11-09-2213.md`. **Pas de catastrophe ni de régression de conduite démontrée** : aucun plantage, la Corniche roule (111 km/h) et la Campagne roule gaz tenu (vidéo 2, 32 km/h).
+- Campagne « bloquée » (vidéos 3 à 6) **non confirmée** : l'option Android « Afficher les appuis » ne montre **aucun doigt sur GAZ après GO** (seulement un appui bref pendant le « 3 ») ; le recul apparent est le recadrage de la caméra. Banc de départ Campagne gaz tenu demandé à WFS-374 pour lever le doute.
+- **ANO-232** (majeure → WFS-375) : moment JOUR (Réelle à 22 h, Aube, Dorée en Cockpit) → image de nuit ou presque noire. **ANO-233** (mineure → WFS-374) : appui sur la case SCORE → une image de nitro.
+- Décor en formes nues et chargement « ville 70 % » : hors périmètre, pas d'ANO (ordre de l'utilisateur, E15 / WFS-378).
 
 ### 2026-11-09 14:00:55 — Reprise de WFS-349 : vue Cockpit, habitacle fermé (Claude, agent dev Y (01UY1Vv1Yvim))
 - Branche `feature/waforspeed-349` reprise (commit d'agent 3 bis, aucun code), synchronisée avec `main` et poussée tout de suite. Première étape : cause nommée au banc `penetration` (RG-01).
