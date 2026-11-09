@@ -85,8 +85,9 @@ struct Depart {
 } // namespace
 
 // WFS-328 (RG-05, ANO-179) : 4 min de course de nuit en Ville (Checkpoint, vue Arrière, Graphismes Basse comme le téléphone de la
-// recette) : une image tous les 1/4 s, EV au journal ; captures autour de 4:00 ; compte les images surexposées de plus de 1 IL par
-// rapport à la rue éclairée (EV < 2 en Ville : le paysage n'y est jamais exposé comme la rase campagne)
+// recette) : une image tous les 1/4 s, EV au journal ; captures vers 3:45 et 3:55 ; compte les images surexposées de plus de 2 IL
+// par rapport à la rue éclairée (EV < 1 en Ville ; ANO-179 : EV −3,5, exposition de rase campagne). Entre deux lampadaires d'une rue
+// peu éclairée (< 3 lx reçus), WFS-230 laisse descendre l'EV vers 1,5 pendant 1 s environ : voulu, pas compté
 static int courseLongue(Depart& d, const std::string& base, double duree) {
     int i = 0, n = 0, claires = 0; double evMin = 99, tMin = 0;
     const double t0 = d.t;
@@ -96,13 +97,13 @@ static int courseLongue(Depart& d, const std::string& base, double duree) {
         d.g.render(d.t); n++;
         const eclairage::Etat& e = eclairage::etat();
         if (e.ev < evMin) { evMin = e.ev; tMin = d.t - t0; }
-        if (e.ev < 2.0) claires++;
+        if (e.ev < 1.0) claires++;
         if (i % 240 == 0) d.journal(base.c_str());
         const double ecoule = d.t - t0;
         for (double c : {duree - 20.0, duree - 10.0, duree - 0.02})
             if (ecoule >= c && ecoule - 0.25 < c) { d.journal(base.c_str()); d.capture(base + "-" + std::to_string((int)std::lround(c))); }
     }
-    WFS_LOG("%s : %d images, EV mini %.2f à %.1f s, %d image(s) sous EV 2 (surexposées) %s", base.c_str(), n, evMin, tMin, claires, claires ? "ÉCART" : "OK");
+    WFS_LOG("%s : %d images, EV mini %.2f à %.1f s, %d image(s) sous EV 1 (surexposées) %s", base.c_str(), n, evMin, tMin, claires, claires ? "ÉCART" : "OK");
     return claires ? 1 : 0;
 }
 
