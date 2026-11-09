@@ -20,6 +20,7 @@
 #include "../game/trace_cartes.h"   // WFS-139 (accroche)
 #include "../game/track.h"
 #include "enseignes.h"
+#include "mobilier_ville.h"   // WFS-369 : tables, chaises, parasols et jardinières modélisés
 #include "ville_quartiers.h"
 #include "zones.h"
 
@@ -52,6 +53,18 @@ float sable(float lat) {   // GROUND.beach (corniche, côté mer) : sable de RW 
     const float R = (float)RW, t = std::clamp((lat - (R + 5)) / 33.f, 0.f, 1.f);
     return 0.05f + (-1.1f - 0.05f) * t;
 }
+// WFS-369 : un abribus du même côté (4,2 m de long) occupe le trottoir : aucune table de terrasse (ni ses clients) dans son
+// emprise, autour du segment sg (plan de la ville, comme Ville le dessine)
+bool sousAbribus(const MapDef& map, int64_t len, double sg, int side) {
+    const ville::Plan& P = ville::plan(map, len);
+    const int64_t NP = (int64_t)P.objets.size();
+    if (NP <= 0) return false;
+    for (int64_t k = -3; k <= 3; k++) {
+        const int64_t a = (((int64_t)std::floor(sg) + k) % NP + NP) % NP;
+        for (const ville::Objet& o : P.objets[(size_t)a]) if (o.t == ville::ABRIBUS && o.side == side) return true;
+    }
+    return false;
+}
 } // namespace
 
 const std::vector<Client>& clientsTerrasses(const MapDef& map, int64_t len) {
@@ -64,6 +77,7 @@ const std::vector<Client>& clientsTerrasses(const MapDef& map, int64_t len) {
         const double debut = c.seg + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
         int k = 0;   // placeShop : bit 2 · table + (sd > 0) = chaise occupée (tirage D() < 0,65 du plan)
         for (float d : tables(c.len)) {
+            if (sousAbribus(map, len, debut + d / SEG_M, c.side)) { k++; continue; }   // WFS-369 : table retirée (abribus)
             for (int sd : {-1, 1}) if (c.clients >> (k * 2 + (sd > 0 ? 1 : 0)) & 1u)
                 out.push_back({debut + (d + sd * 0.62) / SEG_M, c.side * tLat, sd > 0 ? 0.f : PI, 0.15f + 0.05f});
             k++;
@@ -157,6 +171,7 @@ public:
             if (m.pal.indexCount) r.draw(m.pal, palette_.materiau, I);
             if (m.vitre.indexCount) r.draw(m.vitre, g.night ? vitreNuit_ : vitreJour_, I);
             if (g.night ? m.nuit.indexCount : m.jour.indexCount) r.draw(g.night ? m.nuit : m.jour, g.night ? bougie_ : palette_.materiau, I);
+            if (g.night && m.soir.indexCount) r.draw(m.soir, palette_.materiau, I);   // WFS-369 : parasols fermés la nuit
             for (auto& [coul, me] : m.textes) if (me.indexCount) r.draw(me, atlas_.materiau(r, coul, g.night ? 1.4f : 0.6f), I);
         }
     }
@@ -172,13 +187,13 @@ public:
         actif_ = false;
     }
 private:
-    struct Morceau { Mesh pal, vitre, jour, nuit; std::map<unsigned, Mesh> textes; };
+    struct Morceau { Mesh pal, vitre, jour, nuit, soir; std::map<unsigned, Mesh> textes; };
     void cimetiere(Morceau& m) {
-        for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit}) if (x->indexCount) graveyard_.push_back({frame_, *x});
+        for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit, &m.soir}) if (x->indexCount) graveyard_.push_back({frame_, *x});
         for (auto& [c, x] : m.textes) if (x.indexCount) graveyard_.push_back({frame_, x});
     }
     // DECOR.shop (life.js) : vitrine, lumière de vitrine, store à rayures, lambrequin, enseigne, terrasse
-    void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& jour, Geo& nuit, std::map<unsigned, Geo>& textes) {
+    void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& jour, Geo& nuit, Geo& soir, std::map<unsigned, Geo>& textes) {
         const Shop& sh = SHOPS[c.kind];
         const float s = (float)c.side, face = (float)RW + 6.45f, L = c.len;
         const double debut = abs + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
@@ -200,36 +215,41 @@ private:
         plan(textes[sh.fg], lateral(pm, s * (face - 0.18f), 3.75f), pm.f * -s, {0, 1, 0}, versRue, tw, th * std::min(1.f, tw / (th * T.aspect)), T.u0, T.v0, T.u1, T.v1);
         if (!sh.terrasse) return;
         const float tLat = s * (face - 2.2f);
+        // WFS-369 : mobilier de terrasse modélisé (mobilier_ville.*) : table de bistrot Ø 0,70 m, deux chaises de bistrot face à
+        // face, parasol Ø 2,7 m à 8 baleines (toile aux couleurs du store, pans alternés) ouvert le jour, fermé et sanglé la nuit,
+        // photophore allumé la nuit ; jardinières en terre cuite et buis taillé aux deux bouts. Même place qu'avant.
+        const vec2 alu = palette_.uv(0x8e9297), plateau = palette_.uv(0xe9e4da), cannage = palette_.uv(0x9c7444), bois = palette_.uv(0x8a6a48),
+                   fonte = palette_.uv(0x2e3034);
         for (float d : tables(L)) {
+            if (sousAbribus(*map_, len_, debut + d / SEG_M, c.side)) continue;   // abribus à cette place
             const Repere pa = repere(t, (debut + d / SEG_M) * SEG);
             const vec3 b = lateral(pa, tLat, 0.15f);
-            cylindre(pal, b, 0.04f, 0.72f, palette_.uv(0x2a2c30), 6);
-            cylindre(pal, b + vec3{0, 0.72f, 0}, 0.38f, 0.04f, palette_.uv(0xe9e4da), 12);
-            for (int sd : {-1, 1}) {
-                const vec3 cp = b + pa.f * (sd * 0.62f);
-                boite(pal, cp, pa.r, pa.f, 0.42f, 0.45f, 0.42f, palette_.uv(0x3a3d44));
-                boite(pal, cp + pa.f * (sd * 0.19f) + vec3{0, 0.45f, 0}, pa.r, pa.f, 0.42f, 0.45f, 0.05f, palette_.uv(0x3a3d44));
-            }
-            // jour : parasol ; nuit : bougie sur la table
-            cylindre(jour, b, 0.03f, 2.3f, palette_.uv(0xd8d8d8), 6);
-            cone(jour, b + vec3{0, 2.0f, 0}, 1.35f, 0.45f, std::fmod(d, 5.f) < 2.5f ? aw0 : aw1, 10);
-            boite(nuit, b + vec3{0, 0.76f, 0}, pa.r, pa.f, 0.07f, 0.1f, 0.07f, {0, 0});
+            const mobilier::Repere M = mobilier::repere(b, pa.r * s, pa.f);
+            mobilier::tableBistrot(pal, M, plateau, alu);
+            for (int sd : {-1, 1})   // chaises de part et d'autre, tournées vers la table
+                mobilier::chaiseBistrot(pal, mobilier::repere(b + pa.f * (sd * 0.62f), pa.r * (s * (float)sd), pa.f * -(float)sd), cannage, alu);
+            const bool pan = std::fmod(d, 5.f) < 2.5f;
+            mobilier::parasolOuvert(jour, M, pan ? aw0 : aw1, pan ? aw1 : aw0, bois, fonte);   // jour
+            mobilier::parasolFerme(soir, M, aw0, bois, fonte);                                 // nuit
+            mobilier::photophore(nuit, mobilier::repere(b + pa.f * 0.18f + vec3{0, 0.75f, 0}, pa.r, pa.f));
         }
-        for (float d : {0.3f, L - 0.3f}) {   // pots de fleurs aux deux bouts
-            const vec3 b = lateral(repere(t, (debut + d / SEG_M) * SEG), tLat, 0.15f);
-            cylindre(pal, b, 0.25f, 0.5f, palette_.uv(0x5a4a3a), 8);
-            boite(pal, b + vec3{0, 0.5f, 0}, {1, 0, 0}, {0, 0, 1}, 0.6f, 0.5f, 0.6f, palette_.uv(0x3f6f2a));
+        uint32_t graine = (uint32_t)(c.seg * 2 + (c.side > 0));
+        for (float d : {0.3f, L - 0.3f}) {   // jardinières aux deux bouts
+            if (sousAbribus(*map_, len_, debut + d / SEG_M, c.side)) continue;
+            const Repere pa = repere(t, (debut + d / SEG_M) * SEG);
+            mobilier::jardiniere(pal, mobilier::repere(lateral(pa, tLat, 0.15f), pa.r, pa.f), palette_.uv(0xa65a3c), palette_.uv(0x3b2a1e),
+                                 palette_.uv(0x34502a), palette_.uv(0x456b33), graine++);
         }
     }
     void construire(Renderer& r, Track& t, int64_t c) {
-        Geo pal, vitre, jour, nuit; std::map<unsigned, Geo> textes;
+        Geo pal, vitre, jour, nuit, soir; std::map<unsigned, Geo> textes;   // WFS-369 : soir = parasols fermés (nuit, palette)
         const int64_t a0 = c * GROUPE, a1 = a0 + GROUPE;
         const int64_t lap = (int64_t)std::floor((double)a0 / len_) * len_;
         auto dans = [&](int64_t seg, int64_t& abs) {
             for (int64_t L : {lap, lap + len_}) { const int64_t a = seg + L; if (a >= a0 && a < a1) { abs = a; return true; } }
             return false;
         };
-        if (ville_) for (const Commerce& co : commerces(*map_, len_)) { int64_t a; if (dans(co.seg, a)) commerce(t, co, a, pal, vitre, jour, nuit, textes); }
+        if (ville_) for (const Commerce& co : commerces(*map_, len_)) { int64_t a; if (dans(co.seg, a)) commerce(t, co, a, pal, vitre, jour, nuit, soir, textes); }
         if (plage_) for (const Serviette& sv : serviettes(*map_, len_)) {   // DECOR.towel : 0,9 × 1,9 m, tournée de rot
             int64_t a; if (!dans((int64_t)sv.s, a)) continue;
             const Repere p = repere(t, a * SEG);
@@ -239,7 +259,7 @@ private:
         }
         Morceau& m = morceaux_[c];
         auto mk = [&](Geo& gg, Mesh& me) { if (!gg.i.empty()) me = r.makeMesh(gg.v, gg.i); };
-        mk(pal, m.pal); mk(vitre, m.vitre); mk(jour, m.jour); mk(nuit, m.nuit);
+        mk(pal, m.pal); mk(vitre, m.vitre); mk(jour, m.jour); mk(nuit, m.nuit); mk(soir, m.soir);
         for (auto& [coul, gg] : textes) mk(gg, m.textes[coul]);
     }
 
