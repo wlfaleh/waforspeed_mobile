@@ -332,15 +332,16 @@ public:
             const float cx = (b0.x + b1.x) / 2, cz = (b0.z + b1.z) / 2, Hm = b1.y - b0.y;
             const float toit = modele_.siege.w > 0.5f ? modele_.siege.x : b1.y, zToit = modele_.siege.w > 0.5f ? modele_.siege.z + 0.25f : cz + 0.1f;
             const bool proche = !r.qualiteBasse || std::abs(rel) <= 80;
+            const bool detail = !r.qualiteBasse || std::abs(rel) <= 40;   // Basse : bandes et socle jusqu'à 40 m (coût)
             // WFS-338 (RG-07, ANO-197) : bandes « POLICE » sur les portières (bleu, liseré blanc et rouge), sans marque
-            if (proche) r.draw(bandesMesh_, matBandes_, m * translate({cx, b0.y + 0.40f * Hm, cz - 0.04f * L}) * scale({W + 0.012f, 0.17f * Hm, 0.50f * L}));
+            if (detail) r.draw(bandesMesh_, matBandes_, m * translate({cx, b0.y + 0.40f * Hm, cz - 0.04f * L}) * scale({W + 0.012f, 0.17f * Hm, 0.50f * L}));
             // WFS-338 (RG-07, ANO-197) : rampe lumineuse posée sur le pavillon : socle gris de 1 m × 30 cm, deux feux bleus qui
             // clignotent l'un après l'autre (gyrophare(), 2 Hz, une voiture sur deux en opposition) ; feu éteint : verre bleu
             // sombre ; avant : deux boîtes rouge / bleue de 0,56 m posées sous le haut du modèle, qui traversaient le toit
             const Gyrophare gy = gyrophare(g.time, i);
             const float barre = std::min(1.0f, W * 0.58f), feu = barre * 0.40f, xFeu = barre * 0.27f, demi = HALO_GYRO * feu / 2;
             if (proche) {
-                r.draw(cube_, matSupport_, m * translate({cx, toit - 0.01f, zToit}) * scale({barre, 0.05f, 0.30f}));
+                if (detail) r.draw(cube_, matSupport_, m * translate({cx, toit - 0.01f, zToit}) * scale({barre, 0.05f, 0.30f}));
                 r.draw(cube_, gy.rouge ? matBleu_ : matVitreBleue_, m * translate({cx - xFeu, toit + 0.04f, zToit}) * scale({feu, 0.07f, 0.26f}));
                 r.draw(cube_, gy.bleu ? matBleu_ : matVitreBleue_, m * translate({cx + xFeu, toit + 0.04f, zToit}) * scale({feu, 0.07f, 0.26f}));
             }
@@ -857,7 +858,7 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     // WFS-338 (RG-01, ANO-191) : chantier sur la file de gauche : bandeau quand les cônes se voient (180 m), puis de près
     g_bancSautKm = BANC_TRAVAUX_KM - 0.18; images(20, 4);
     capture("poursuite-travaux");
-    jusqua(BANC_TRAVAUX_KM - 0.05, 30 * 60);
+    jusqua(BANC_TRAVAUX_KM - 0.03, 30 * 60);
     capture("poursuite-travaux-proche");
     g_bancFin = 1; images(90, 10);
     capture("poursuite-arrete");
