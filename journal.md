@@ -2908,6 +2908,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
 - Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
 
+### 2026-11-09 17:00:21 — WFS-214 : début, branche créée (Claude, agent dev W (01UY1Vv4Ed))
+- Ticket attribué par le PO (ciel en paliers ANO-109, chaussée bleue en Ultra ANO-106, vision de nuit sous les lampes RG-05). Branche `feature/waforspeed-214` créée et poussée ; lecture du code E13 en cours.
+
 ### 2026-11-09 17:31:59 — WFS-214 : arbitrage RG-02, ciel de midi (po-scrum-master)
 - Demande de Claude, agent dev W (01UY1Vv4Ed) : le ciel est calé sur 6 000 lx (éclairement mesuré **à l'ombre**), d'où un zénith à 2,7 kcd/m² au lieu de ≈ 7 à 10 kcd/m² ; avis de l'expert réalisme 3D : option A.
 - **Décision : option A, dans WFS-214** (zone E13) : plein ciel selon Krochmann (≈ 15,8 klx à h 70°) pour le ciel affiché et l'ambiance ; 6 000 lx gardés comme contrôle « à l'ombre ». B refusée (énergie incohérente).
@@ -3267,6 +3270,36 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 - Suite de 6 images dans le port (vue Poursuite, 120 km/h), passages de seuil repérés ; vues de nuit `marina-gros-plan-nuit`, `marina-poursuite-80-nuit`.
 - Synchronisation avec main 67f20e1a (WFS-379 : la Corniche a un 2e quai de 634 m au niveau de la mer) : bateaux à quai seulement là où le quai abaissé existe ; allègements (coque détaillée à 6 couples, version moyenne sans haubans, pontons de 38 m, une borne par ponton, bittes tous les 28,8 m) : fenêtre la plus chargée 17 454 triangles (≤ 18 000).
 - Mesures avant / après (main 67f20e1a + banc seul) : appels de dessin inchangés ; image entière +19,7 % (Cockpit), +8,4 % (Poursuite 120), +9,0 % (Basse). 22 captures avant / après regardées.
+
+### 2026-11-09 21:46:25 — WFS-376 fusionné par le lead dev (lead-dev)
+- PR #318 fusionnée en squash (d6c65441) après la synchronisation du développeur. J'ai vérifié 8abf9372 : il n'apporte que `main` 8717f7b2, seul `journal.md` était en conflit, et les changements de la branche sont les mêmes qu'au commit relu 7d69d264. La revue « ✅ Approuvé » a été postée sur 8abf9372 en commentaire (même compte GitHub).
+- `TACHES.md` : WFS-376 passe en 🟡 À valider (utilisateur), parce que l'anomalie ANO-206 vient d'une vidéo de l'utilisateur. Ligne ajoutée à `qa/Check.md` ; ligne #318 retirée de `suivi-pr.md`.
+
+### 2026-11-09 21:46:56 — WFS-376 : fin de session (Claude, agent dev3d (01UY1Vv3u9))
+- PR #318 fusionnée en squash par le lead dev (d6c65441), ticket 🟡 à valider par l'utilisateur. Réponse écrite dans `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : aucun autre ticket demandé.
+- Remarques non bloquantes du lead dev laissées pour une tâche séparée (RG-12) : salon anguleux des vedettes et yachts de près, commentaire en double dans `plage.cpp`, boucle inutile dans `ponton()` ; lampadaire de 6,4 m (RG-09) signalé au PO.
+
+### 2026-11-09 21:51:11 — WFS-369 : inventaire des formes nues du mobilier de la Ville (RG-01) et plan (Claude, agent dev3d 3 (01UY1Vv5WS))
+- Branche `feature/waforspeed-369` créée et poussée ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
+- Inventaire (détail : `qa/pr/WFS-369/inventaire.md` sur la branche) : `ville.cpp` — bancs du parc (2 boîtes), abribus (4 boîtes), grille du parc (2 boîtes par poteau), fontaines du parc (3 cylindres) et de l'îlot (3 cylindres + 2 disques), lampadaires de rue (cylindre + 2 boîtes), panneaux « sens giratoire » (disque), feux tricolores (cylindre + boîte) ; `commerces.cpp` — tables (cylindre + disque), chaises (2 boîtes), parasols (cylindre + cône, ANO-216), bougie (boîte), pots de fleurs (cylindre + boîte). Absents de la carte : poubelles, bornes, kiosques, barrières (ajout = WFS-385). Hors ticket : immeubles, port, stores, ouvrages (WFS-370 / 385).
+- Modèles : aucun modèle libre CC0 / CC BY de ce mobilier aux mesures françaises par les sources permises ; RG-03 appliquée : modélisés par le code au niveau du vrai objet (`src/world/mobilier_ville.*`, nouveau), mesures sourcées dans le fichier. Rien téléchargé.
+- Accroches annoncées : `src/world/cartes_banc.cpp` (banc de la Ville : gros plans `carte-ville-mobilier-*`, ≈ 25 lignes de banc) ; `commerces.cpp` : aucune table de terrasse ni client assis dans l'emprise d'un abribus (ils se chevauchaient sur `main`).
+
+### 2026-11-09 21:51:22 — WFS-214 : retour du lead dev corrigé, PR #314 à relire (Claude, agent dev W (01UY1Vv4Ed))
+- Point 1 (moments de jour plus blancs) : cause = banc des moments de WFS-208 (temps figé, scène non neuve) : exposition restée à celle de l'aube (EV 8,2 à midi, 7 IL de trop), déjà sur main. Correction du banc (c48c2824) : exposition à sa cible avant la capture. Banc corrigé des deux côtés : moments de jour 46-84 → 60-130 / 255, heure dorée de la Campagne 60 → 60, aube, heure bleue et nuit identiques.
+- Point 2 : captures dorée (2), midi (2), matin du circuit, `depart-jour-campagne-4` (départ de jour en Campagne ajouté au banc `depart`).
+- Point 3 (performance) : banc `perf`, 4 cartes × Haute / Basse : image −4,1 % à +0,2 % (2 mesures avant, 1 après ; la 2e mesure après coupée par la limite de temps) ; part hors passes ≤ 2,1 ms sur 420 à 650 ms (lavapipe). Tramage gardé.
+- Remarques : M-03 noté dans le Suivi de WFS-214 ; ANO-211 / WFS-377 créées par le PO ; branche synchronisée, 92 tests CPU verts. Réponses point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-09 23:18:14 — WFS-214 : PR #314 approuvée et fusionnée (2e revue) ; #316 en attente de synchronisation (lead-dev auto)
+
+#314 reprise (prise de plus d'1 h) : points de la 1re revue corrigés (banc des moments : exposition à sa cible avant la capture, défaut du banc présent sur main ; captures de jour Campagne / circuit ajoutées, rien de blanchi : luminance 60→60, 61→90, 46→65 ; performance de la passe finale −4,1 à +0,2 %). Diff : banc seulement. Squash 44c57ce, 🟣. #316 (WFS-349) : approuvée par lead-dev, encore en conflit `journal.md` (main a reçu #318 et #314 depuis la synchronisation de 21:46) : rappel posté au développeur, fusion dès la synchronisation.
+
+### 2026-11-09 23:25:55 — WFS-214 : fusionné, session terminée (Claude, agent dev W (01UY1Vv4Ed))
+- PR #314 fusionnée en squash par le lead dev automatique (44c57ce, 23:18 UTC) après correction du retour (banc des moments, captures, mesure de performance) ; ticket 🟣 (ANO-109 et ANO-106 viennent du QA) ; ligne de `qa/Check.md` écrite par le lead dev.
+- Suites laissées au PO : ANO-211 / WFS-377 (banc des passes : « Ultra » introuvable) ; US « occlusion du ciel » si les ombres de jour paraissent délavées sur le téléphone.
+- Un seul sujet par session : je m'arrête, aucun ticket demandé.
+
 
 ### 2026-11-09 14:00:55 — Reprise de WFS-349 : vue Cockpit, habitacle fermé (Claude, agent dev Y (01UY1Vv1Yvim))
 - Branche `feature/waforspeed-349` reprise (commit d'agent 3 bis, aucun code), synchronisée avec `main` et poussée tout de suite. Première étape : cause nommée au banc `penetration` (RG-01).

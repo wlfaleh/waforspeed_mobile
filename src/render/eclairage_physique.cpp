@@ -412,6 +412,7 @@ const Etat& etat() { return g.etat; }
 // WFS-230 (RG-04) : exposition k pour la vision de nuit de la passe finale (post.frag) ; 0 de jour ou sans éclairage physique
 // WFS-276 : signe = relèvement des basses lumières (post.frag) : + Campagne, Corniche, Grand Prix ; − Ville éclairée (inchangée, RG-04)
 float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.moment == (int)atmosphere::Moment::Nuit ? (float)(g.releverNuit ? g.k : -g.k) : 0.f; }   // heure bleue : inchangée (RG-05)
+float lAdaptationNuit() { return kVisionNuit() != 0.f ? (float)luminanceAdaptationNuit(g.ev) : 0.f; }   // WFS-214 (RG-05) : vision de nuit loin des lumières seulement
 void forcer(const Forcage& f) { g.forc = f; }
 void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
     g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
@@ -538,7 +539,9 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // fondu entre le ciel du jour (CIE) et le ciel uniforme du crépuscule de −1° à +2° : aucune bascule au coucher (RG-02)
     const double hj = std::max(h, 0.05), u = std::clamp((h + 1.0) / 3.0, 0.0, 1.0), w0 = u * u * (3 - 2 * u);
     const double wj = lune ? 0.0 : w0 > 0.999 ? 1.0 : w0 < 0.001 ? 0.0 : w0;   // poids du ciel du jour (bords francs : pas de reste numérique)
-    const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) / 750.0;
+    // WFS-214 (RG-02, condition 3 du PO) : soleil sous l'horizon : crépuscule et nuit inchangés ; le ciel entier de Krochmann ne s'applique
+    // qu'au jour : raccord au niveau d'avant (× 6 000 / 15 825), le fondu de −1° à +2° reste continu
+    const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) * (E_CIEL_CLAIR_MIDI / E_CIEL_PLEIN_MIDI) / 750.0;
     const double Ed = lune ? E_NUIT_SANS_LUNE : wj * eclairementCielDiffus(hj) + (1 - wj) * Ecrep;
     if (std::fabs(hj - g.hCache) > 1e-4) { g.hCache = hj; g.kCache = cieFacteur(hj); }
     const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;

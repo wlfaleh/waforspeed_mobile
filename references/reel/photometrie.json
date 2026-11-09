@@ -19,6 +19,14 @@
    "lien": "https://www.iso.org/standard/7690.html",
    "acces": "non_ouvert",
    "note": "formule d'usage courant ; norme payante non ouverte : statut des valeurs converties « à confirmer »"
+  },
+  "KROCHMANN-1974": {
+   "titre": "Quantitative data on daylight for illuminating engineering (éclairement diffus horizontal du ciel clair : E_d = 0,8 + 15,5 √(sin h) klx)",
+   "editeur": "H. Krochmann, M. Seidl, Lighting Research and Technology 6(3)",
+   "annee": "1974",
+   "lien": "https://doi.org/10.1177/096032717400600303",
+   "acces": "non_ouvert",
+   "note": "article payant non ouvert depuis la session : formule reprise de WFS-151 (eclairage_unites.h) ; ordre de grandeur cohérent avec CIE 110-1994 (10 à 20 klx, ciel clair, soleil haut) ; statut « à confirmer » (WFS-214, avis expert-realisme-3d)"
   }
  },
  "mesures": [
@@ -230,6 +238,21 @@
      "url": "https://sciencenotes.org/what-is-airglow/"
     }
    ]
+  },
+  {
+   "id": "lum.ciel_clair.plein_ciel",
+   "domaine": "photometrie",
+   "grandeur": "éclairement diffus horizontal du ciel clair entier (plan dégagé, soleil exclu), soleil à 70°",
+   "unite": "lx",
+   "valeur": 15825,
+   "source": "KROCHMANN-1974",
+   "statut": "a_confirmer",
+   "formule": "E_d = 1000 × (0,8 + 15,5 × √(sin 70°)) lx ; lum.ciel_clair.intensite (6 000 lx) est la même grandeur À L'OMBRE (contrôle : pied d'un mur, 5 498 lx calculés)",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.15,
+    "regle": "DA-realisme.md § 4 ; ± 15 % : dispersion de la formule (WFS-214, arbitrage du PO)"
+   }
   },
   {
    "valeur": 10000,
