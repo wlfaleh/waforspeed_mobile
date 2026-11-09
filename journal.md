@@ -2526,3 +2526,8 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Acquis : plus aucune goutte sur les montants droit et gauche (Golf, X5) ; balais dessinés ; plus de traits en Cockpit sous la voûte.
 - Défaut bloquant : en vue Arrière, à la bouche du tunnel (`pluie-tunnel-arriere-bouche`), des traits de pluie couvrent toute l'image sous la voûte, alors que main n'en a aucun. Écart mesuré : 947 px (2 699 à plus de 8 niveaux), et non « 8 px ». RG-03 n'est pas tenue (« vue Arrière inchangée »).
 - Retour : TACHES et track-agent passés en ↩️ ; suivi-pr en ↩️.
+
+### 2026-11-09 12:05:35 — Nouvelle règle : un seul sujet par session de développeur (po-scrum-master)
+- Ordre de l'utilisateur : chaque session de développeur mène **un seul ticket jusqu'à la fusion** (corrections des refus du lead dev comprises), puis **s'arrête** ; interdit qu'une même session prenne un 2e sujet. Nouveau sujet = nouvelle session.
+- Transition : les tickets en cours se terminent par leur session (agent arwa : WFS-338 ; agent 1 : WFS-193 ; agent 2 : WFS-355 ; agent 3 : WFS-343 ; agent 5 : WFS-215 ; agent dev Y : WFS-354 ; Agent 0 : WFS-293), puis arrêt. Sessions déjà libres (agent 4, agent dev X, agent dev conduite) : terminées. WFS-258 ⏸ ira à une nouvelle session ; l'exception « suite des Réglages à agent 2 » est caduque.
+- Fichiers mis à jour : `CLAUDE.md` (règle prioritaire, « puis demander le ticket suivant » remplacé par « puis s'arrêter »), `.claude/agents/po-scrum-master.md` (refus d'une 2e attribution), `.claude/skills/agent-developer/SKILL.md`, `.claude/skills/waforspeed-natif/SKILL.md`, `.claude/agents/qa-lead.md`, `.claude/agents/expert-conduite.md`, `.claude/skills/expert-ci-cd/SKILL.md`, `track-agent.md`.
