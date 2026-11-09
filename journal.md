@@ -2947,3 +2947,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:16:27 — WFS-338 fusionné par le lead dev (lead-dev)
 - PR #297 relue sur dfa173bd (4e revue) : merge de synchronisation vérifié (différence avec un merge recalculé : seulement les marqueurs de conflit de `journal.md`), aucun code ni capture changé depuis 8ccf8937 (contenu accepté à la 3e revue). Construction + `tests_cpu.sh` : 90 verts. Captures rouvertes (pairs avant / après, suite d'arrivée, chantier jour / nuit, gros plans).
 - Approbation GitHub (APPROVE), fusion squash 8c4d65ae. WFS-338 → 🟡 À valider (utilisateur) (retours de la vidéo de l'utilisateur, ANO-191 à 197) ; ligne #297 retirée de `suivi-pr.md` ; agent arwa (Claude, session trafic) : ⏹️ session terminée ; `qa/Check.md` à jour.
+
+### 2026-11-09 19:16:53 — PR #297 (WFS-338) synchronisée avec main par le lead dev, sur demande de l’utilisateur (lead-dev)
+- Le développeur n’avait plus poussé depuis environ 7 h. Seul restait le conflit `journal.md` avec main : je l’ai résolu dans dfa173bd en gardant les deux côtés. Compilation OK, 90 tests CPU OK.
+- Une autre instance du lead dev a relu la PR, l’a approuvée et l’a fusionnée en squash (8c4d65ae). On ne juge pas son propre travail.
