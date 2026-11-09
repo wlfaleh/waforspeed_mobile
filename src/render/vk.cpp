@@ -1,3 +1,4 @@
+#include <cstdlib>   // WFS-348 : getenv
 #include "vk.h"
 #include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
@@ -79,6 +80,8 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
     // WFS-149 (RG-01) : textures compressées ASTC (Android) et ETC2 (repli), si le GPU les a
     feats.textureCompressionASTC_LDR = supported.textureCompressionASTC_LDR; astc = supported.textureCompressionASTC_LDR;
     feats.textureCompressionETC2 = supported.textureCompressionETC2; etc2 = supported.textureCompressionETC2;
+    // WFS-348 (RG-01) : banc seulement : compteurs de la passe de scène (pixels calculés par le shader, sommets, triangles)
+    if (const char* e = std::getenv("WFS_STATS_PIPELINE"); e && e[0] == '1') { feats.pipelineStatisticsQuery = supported.pipelineStatisticsQuery; statsPipeline = supported.pipelineStatisticsQuery; }
     VkDeviceCreateInfo dci{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     dci.queueCreateInfoCount = 1; dci.pQueueCreateInfos = &qci;
     dci.enabledExtensionCount = (uint32_t)dexts.size(); dci.ppEnabledExtensionNames = dexts.data();

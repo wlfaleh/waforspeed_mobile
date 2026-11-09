@@ -137,9 +137,13 @@ void main() {
     if (kL > 0.0) iblLeger(skyAmbL, envL, FeL, specOccL, N, R, NoV, roughEnv, sunK, f0, vtint);
     vec3 env = vec3(0.0);
     if (kL < 1.0) {   // WFS-263 : ambiance et reflet complets (en deçà de 70 m) ; WFS-264 (RG-05) : bloc réindenté
-        env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
-        // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
-        if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
+        // WFS-348 : reflet du ciel calculé seulement sans sonde : avec la sonde, iblRemplacer le remplace entièrement (même image ;
+        // avant : 1 ou 2 lectures du cube par pixel jetées)
+        if (F.iblA.x < 0.5) {
+            env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
+            // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
+            if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
+        }
         iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     }
     if (kL > 0.0) { skyAmb = mix(skyAmb, skyAmbL, kL); env = mix(env, envL, kL); Fe = mix(Fe, FeL, kL); specOcc = mix(specOcc, specOccL, kL); }

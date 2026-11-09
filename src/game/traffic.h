@@ -134,6 +134,25 @@ struct HitEvents {
     void push(char kind, double impact) { if (count < 16) seq[count++] = {kind, impact}; }
 };
 
+// WFS-333 (ANO-180, 181, 183) : emprise réelle d'une voiture, telle qu'elle est dessinée : rectangle orienté dans le repère
+// de la route, en mètres (x : écart latéral, + à droite ; z : le long de la route, + devant), cap en radians (même sens que
+// Player::heading et TrafficCar::laneYaw : + vers la droite), demi-longueur et demi-largeur. Les emprises de Traffic::collide et
+// de duel::contacter sont des rectangles alignés sur la route : elles oubliaient le tête-à-queue du joueur (spinYaw) et la
+// rotation d'une voiture du trafic accidentée (crashYaw), d'où des voitures dessinées jusqu'à 2,2 m dans celle du joueur.
+struct Emprise { double x = 0, z = 0, cap = 0, demiL = 0, demiW = 0; };
+// recouvrement (m) de deux emprises par les axes séparateurs (≤ 0 : séparées) ; *nx, *nz : direction unitaire pour écarter b de a
+double recouvrement(const Emprise& a, const Emprise& b, double* nx = nullptr, double* nz = nullptr);
+// emprise dessinée de la voiture du joueur (cap + tête-à-queue), centrée en z = 0
+Emprise empriseJoueur(const Player& pl);
+// emprise dessinée d'une voiture du trafic à dz (unités, relZ) du joueur
+Emprise empriseTrafic(const TrafficCar& c, double dz);
+// RG-03 : écarte du joueur une voiture pilotée par le jeu (adversaire de la course à 5 ; utilisable pour la police) d'emprise alignée sur la route :
+// rd (unités, comme Player::dist), x (demi-largeurs) ; vrai si elle a été déplacée. Jeu laissé à JEU_CONTACT_M (contact visible).
+constexpr double JEU_CONTACT_M = 0.02;
+// banc seulement (WFS_AVANT_333=1, banc « penetration ») : chocs d'avant WFS-333, pour les captures « avant » ; faux dans le jeu
+extern bool g_avantWfs333;
+bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, double largeurM);
+
 class Traffic {
 public:
     // resetRace() du jeu web : nouvelle graine, n voitures devant le joueur
@@ -154,6 +173,7 @@ public:
     HitEvents collide(Player& pl, double dt);
     // pendant le compte à rebours (pas de chocs) : suit seulement la position relative des voitures (car.prevDz)
     void watch(const Player& pl);
+    void separer(const Player& pl, TrafficCar& car);   // WFS-333 (RG-03) : voiture écartée de celle du joueur
 
     std::vector<TrafficCar> cars;
     // WFS-281 (ANO-151, RG-02 ; décision du PO du 2026-11-08 02:18) : total de voitures fixé au chargement. Vrai (module du jeu) :

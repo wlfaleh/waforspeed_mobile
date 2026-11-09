@@ -4813,6 +4813,109 @@ Code et tests bons (`test_penetration_voitures` et `test_chocs_voitures` OK apr�
 - **Début : WFS-348** ([TECHNIQUE] [URGENT] P1, performance par pixel, Ville de nuit sous la pluie, 16 img/s en Basse, GPU scène 55,8 ms) **attribué à agent arwa (Claude, session trafic)**, à sa demande : premier P1 prêt dont l'épic est libre (WFS-349 et WFS-194 : E10 tenue par WFS-193) ; file A (performance) après WFS-339. Fiche `regles-de-gestion/WFS-348.md`. Branche `feature/waforspeed-348`, premier commit à pousser tout de suite.
 - Zone permise : `src/render/**` et `shaders/**` de la passe en cause, réglages de qualité (Basse seulement), bancs `bench_perf*`, `tests/**`. Une passe E13 (`eclairage_*`, `post*`) : accord du PO noté au journal avant d'y toucher. Interdit : `vehicule_lod*` (WFS-335), `effets_*`, `vehicule_cockpit*` (WFS-349), `traffic.*`, `player.*`, `conduite_*`, `.github/**`, `tools/qa/**`, tailles d'interface (ordre permanent).
 - Critères : tableau des passes avant / après (scène de l'APK 928 contre `main`), cause nommée avec le commit, Basse ≥ 30 img/s (banc : GPU scène ≤ 33 ms), Haute identique, captures avant / après, parcours complet 0 écart, ligne `qa/Check.md`. US technique : CI de branche permise, une à la fois, chaque run au journal. PR relue par le lead dev.
+
+### 2026-11-09 06:23:04 — WFS-339 : PR #299 approuvée et fusionnée (lead-dev auto)
+
+Cause nommée (pilote des bancs saturé pendant un changement de file en conduite d'avant), correction dans `limiterPilote` seulement, `test_pilote_file` OK après fusion avec `main`, 23 captures sur 24 identiques. Squash 39a3de7, statut 🟣. #297 et #298 : « Bien reçu » posté, pas encore de « corrigé dans » : restent ↩️.
+
+### 2026-11-09 06:24:35 — Statuts automatiques, CI main #945 (robot statuts)
+- Run rouge (push, commit 88f3cde), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 06:34:57 — Début WFS-348 : performance par pixel, Ville de nuit sous la pluie (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-348` poussée (e2afe6f0, depuis `main` 7e3659dc). Fiche `regles-de-gestion/WFS-348.md` lue en entier.
+- Plan : (1) banc `WFS_BANC=perf WFS_PERF_SCENE=1` : même scène que la mesure de l'utilisateur (Ville de nuit sous la pluie, Checkpoint, vue Arrière, Rue des Mimosas 60 m avant le virage serré à droite, checkpoint 8), Basse dans l'état du téléphone (60 %, ombres, reflets et captures coupés), coût GPU de chaque passe et effets retirés un par un ; (2) même banc sur `b5d8ddbf` (commit de l'APK 928, run 928) ; (3) cause et commit ; (4) correction en Basse seulement dans la passe qui coûte.
+- APK de la mesure à 16 img/s : la plus récente le 2026-11-09 à 00:08 était la 931 (`3529cc7b`) ; entre 928 et 931 : WFS-301, WFS-329, WFS-305 (aucun shader changé depuis l'APK 928).
+- Zone : `src/render/**`, `shaders/**` de la passe en cause, bancs `bench_perf*`, `tests/**` ; une passe E13 (`eclairage_*`, `post*`) : accord du PO d'abord.
+
+### 2026-11-09 06:53:11 — WFS-333 : retours du lead dev corrigés, PR #298 à relire (agent arwa (Claude, session trafic))
+- 1re revue (4 points) corrigée dans 28360b23, branche synchronisée (71bc873d) :
+  - (1) suite RG-02 en vue Arrière (Checkpoint, Ville) : voisine en tête-à-queue contre le joueur à 130 km/h ; après 2 s, joueur à 85 km/h et voiture accidentée arrêtée 34,5 m derrière ;
+  - (2) interrupteur de banc `WFS_AVANT_333=1` (`g_avantWfs333`, faux dans le jeu) : 13 captures avant / 13 après annotées (vitesses, distance, recouvrement). Avant : 1,38 m, et voiture accidentée à la vitesse du joueur (54 = 54 km/h, ANO-180). Après : 0,000 m ;
+  - (3) tache blanche de `cockpit-4` : phares du joueur renvoyés par la voisine blanche, plus le bloom (absente sur `cockpit-4-sans-voisine`) ; aucun halo du trafic dans l'habitacle ;
+  - (4) `pr.md` rempli.
+- Vérifié : tests CPU 84/84 ; `test_penetration_voitures`, `test_chocs_voitures` et `test_pilote_file` OK après la synchronisation ; banc `penetration` 0,000 m ; banc `parcours` 0 écart (et 0 en vue Cockpit). Défaut de dessin de l'habitacle → WFS-349 (hors ticket).
+
+### 2026-11-09 07:25:01 — Statuts automatiques, CI main #946 (robot statuts)
+- Run rouge (push, commit 39a3de7), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-339, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 07:27:21 — WFS-333 : PR #298 approuvée et fusionnée, 2e revue (lead-dev auto)
+
+Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, joueur à 17 km/h ; après : 0,000 m, joueur à 85 km/h, voiture accidentée arrêtée 34,5 m derrière), captures avant / après (`WFS_AVANT_333`, banc seulement), tache blanche du cockpit expliquée (reflet + bloom, absente sans la voisine), `pr.md` rempli. Squash b872854, statut 🟡 À valider (utilisateur). #297 : « Bien reçu » sans « corrigé dans », reste ↩️ ; #288 inchangée.
+
+### 2026-11-09 07:51:38 — Recette du matin du 2026-11-09 faite : 15 VALIDÉ, 2 REFUSÉ, ANO-198 à ANO-200 (agent qa lead)
+- Bancs du matin n° 5 (commit 4e7fa71), 17 tickets, 4 lots en parallèle. VALIDÉ : WFS-192, 258, 265, 285, 296, 300, 301, 302, 305, 306, 316, 326, 327, 329, 330 (plusieurs restent 🟡 à valider sur téléphone). REFUSÉ : WFS-317 (24 img/s au lieu de 30 sur le téléphone, ANO-198) et WFS-308 (émulateur bloqué sur l’écran des CGU, ANO-199). ANO-200 : Release `apercu` pleine (1 000 fichiers), captures périmées ou absentes, message « Recette prête » trop optimiste. 23 lignes de `qa/Check.md` cochées. Rapports `qa/rapports/WFS-XX.md`, preuves `qa/retours/recette-2026-11-09/`.
+
+### 2026-11-09 07:53:01 — Recette du matin du 2026-11-09 : 15 VALIDÉS, 2 REFUSÉS ; WFS-350 (main 946 rouge), 351 (ANO-199), 352 (ANO-200) créés ; ANO-198 → WFS-348 (po-scrum-master)
+
+### 2026-11-09 08:22:14 — Statuts automatiques, CI main #947 (robot statuts)
+- Run rouge (push, commit b872854), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-339, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 08:56:45 — WFS-348 : mesure par passe, cause, PR #300 ; décision du PO demandée (agent arwa (Claude, session trafic))
+- **Banc** (branche `feature/waforspeed-348`, outils du banc seulement, rien dans l'APK) : `WFS_BANC=perf WFS_PERF_SCENE=1` refait la scène de l'utilisateur : Ville de nuit sous la pluie, Checkpoint, vue Arrière, « Rue des Mimosas » 60 m avant le virage serré à droite (checkpoint 8, capture identique à `qa/retours/2026-11-09-derniere-apk-scene-16-img-s.jpg`), Basse dans l'état du téléphone (scène à 60 %, palier 2 : ombres, reflets, captures coupés), 2340 × 1080. Image figée (même image pour chaque variante), coût GPU par passe, effets retirés un par un (`WFS_PERF_SCENE_EFFETS=1`), leviers (`WFS_PERF_SCENE_LEVIERS=1`), compteurs du pipeline (`WFS_STATS_PIPELINE=1` : pixels calculés par le shader, sommets).
+- **RG-01, tableau A — même scène, APK 928 contre `main`** (compteurs exacts, indépendants de la charge de la machine) :
+
+| version | appels | triangles | pixels calculés (k) | sommets (k) | projecteurs |
+|---|---|---|---|---|---|
+| APK 928 (`b5d8ddbf`) | 138 | 185 358 | 2 463 (928 + WFS-305 sans ses carreaux) | 226 | 6 |
+| 928 + WFS-305 (`3529cc7b`) | 138 | 191 086 | 2 475 | 243 | 6 |
+| `main` (`7e3659dc`, `c333b0b2`) | 138 | 191 086 | 2 475 | 243 | 6 |
+
+  Aucun shader n'a changé depuis l'APK 928 (`git diff b5d8ddbf origin/main -- shaders` vide). Temps GPU de la scène au banc (lavapipe, machine partagée par d'autres bancs : ± 25 % d'une exécution à l'autre pour le même binaire) : APK 928 521 à 737 ms, `main` 514 à 968 ms : même coût, aux bruits près.
+- **RG-02, cause** : **aucune fusion depuis l'APK 928 n'a augmenté le coût de cette scène** (WFS-305, `3529cc7b`, le seul changement visible : + 0,5 % de pixels calculés, + 5 728 triangles de carreaux de sol au parc). Les 37,1 ms de l'APK 928 ont été mesurés ailleurs (Course à 5, autre lieu, voitures 74 %) ; les 55,8 ms sont le coût **de ce lieu** : chaussée large éclairée par 6 lumières (2 feux de croisement de 200 m de portée + 4 lampadaires) sur presque tout l'écran, pelouse du parc, feuillage à découpe. Le coût est par pixel : la scène à 30 % coûte 54 % de moins (part par pixel ≈ 72 %).
+- **Tableau B — coût de chaque effet, même scène, Basse** (une exécution, variantes l'une après l'autre ; GPU scène lavapipe) :
+
+| variante | GPU scène (ms) | écart | pixels calculés (k) |
+|---|---|---|---|
+| tout (Basse du téléphone) | 670 | — | 2 475 |
+| sans lumières de nuit | 602 | − 10 % (− 17 % dans une 2e exécution) | 2 468 |
+| sans chaussée mouillée | 718 | bruit | 2 467 |
+| sans sonde IBL | 656 | − 2 % | 2 466 |
+| sans transparents (halos, taches des phares) | 687 | bruit | 2 270 (− 8 %) |
+| sans feuillage à découpe | 613 | − 9 % | 2 400 (− 3 %) |
+| sans sol ni trottoirs | 457 | − 32 % | 2 496 (le ciel les remplace) |
+| sans voitures | 589 | − 12 % | 2 451 |
+| scène à 30 % | 307 | − 54 % | 673 |
+
+  Ombres 0, reflets 0, captures 0 (palier 2, comme le téléphone) ; post-traitement : passe finale, hors scène.
+- **Correction livrée (sans changement d'image)** : `scene.frag` et `scene_skin.frag` calculaient le reflet du ciel (1 ou 2 lectures du cube de la sonde par pixel) puis le jetaient quand la sonde est active (`iblRemplacer` le remplace) : il n'est plus calculé. Captures avant / après, Basse et Haute, départ et Rue des Mimosas : **0 pixel différent** (PNG 2340 × 1080, `qa/pr/WFS-348/`). Gain trop petit pour sortir du bruit du banc (≈ 2 %).
+- **RG-04 non atteint** : aucun levier de ma zone ne retire 41 % (55,8 → 33 ms) sans changer l'image. **Tableau C — leviers mesurés** (temps processeur du banc, plus stable) : 2 lumières par pixel au lieu de 4 : − 8 % ; 3 : − 8 % ; scène à 50 % : − 25 % (pixels − 29 %) ; scène à 45 % : − 33 % (pixels − 42 %) ; sans lumières de nuit : − 17 %. Estimation téléphone (part par pixel ≈ 75 %) : 45 % → ≈ 37 ms, 40 % → ≈ 32 ms.
+- Vérifications : 85 tests CPU réussis (`tools/qa/tests_cpu.sh`), parcours complet : voir l'entrée suivante.
+- Parcours complet (`WFS_BANC=parcours`, build de la branche) : **0 écart**, vue Cockpit 0 écart.
+- CI de la branche (US technique) : **run 948** (`workflow_dispatch` de `build.yml`, branche synchronisée avec `main` df7165ed, commit 3a6c1e1c) : vérifie la construction des shaders, le banc et l'APK.
+- PR #300 ouverte (pas de fusion par le développeur) ; `suivi-pr.md` 🆕, `qa/Check.md`, `TACHES.md` 🔀, `track-agent.md`.
+
+### 2026-11-09 08:56:45 — WFS-348 : décision du PO demandée (leviers de la Basse) (agent arwa (Claude, session trafic))
+- Constat : la scène coûte 55,8 ms par son contenu (lumières de nuit sur une grande surface, sol, feuillage) ; aucun levier de ma zone ne retire les 41 % nécessaires sans changer l'image de la Basse.
+- Conséquence : RG-04 (≥ 30 img/s, GPU scène ≤ 33 ms) non atteint par la PR #300 seule.
+- Proposition (recommandée) : **plancher de la résolution de la Basse à 45 %** (au lieu de 60 %), seulement quand la scène est déjà à 60 % et allégée (palier 2) et toujours sous 30 img/s : au banc − 33 % sur la scène, estimation téléphone ≈ 37 ms (40 % : ≈ 32 ms) ; Moyenne et Haute inchangées. Elle touche la règle de WFS-134 (RG-02 : « jamais la netteté de la voiture ») : **décision du PO, ou de l'utilisateur**. Autre option, à ajouter : **accord E13** pour alléger le calcul des feux de croisement et des lampadaires par pixel en Basse (`shaders/eclairage.glsl`, `spotLights`) : au banc 2 lumières par pixel au lieu de 4 : − 8 %, toutes les lumières retirées : − 17 %.
+- Ticket suivant proposé (RG-04) : « [TECHNIQUE] Basse : résolution plancher et lumières par pixel allégées, Ville de nuit ≥ 30 img/s », zone `src/render/qualite_auto.h` et `shaders/eclairage.glsl`, mesure avec `WFS_PERF_SCENE_LEVIERS=1`.
+- Décision attendue de : PO.
+
+### 2026-11-09 09:12:58 — WFS-348 : décision du PO (leviers de la Basse), WFS-353 attribué (po-scrum-master)
+- Demande : agent arwa (Claude, session trafic), entrée du 08:56:45 (tableaux A, B, C).
+- (1) **Résolution plancher 60 % → 45 %** : touche WFS-134 (« jamais la netteté de la voiture », né de la plainte de l'utilisateur sur la qualité des voitures) : **hors du pouvoir du PO**. Question posée par le PO à l'utilisateur dans `tache utilisateur.md`. Sans accord écrit : pas faite (RG-03 de WFS-353).
+- (2) **Accord E13** donné : `shaders/eclairage.glsl`, **2 lumières par pixel en Basse** (les plus fortes au point éclairé, les autres en approximation), Moyenne / Haute identiques au pixel près, flaques de lumière gardées.
+- (3) **WFS-348 fermé sur son diagnostic** (RG-04 le prévoit) : PR #300 à fusionner selon les règles (lead dev, squash), puis 🟣. Ticket suivant **WFS-353** (P1, [TECHNIQUE], E4 + E13) créé (`regles-de-gestion/WFS-353.md`) et **attribué à agent arwa** (à sa demande).
+- **Début WFS-353** : zone `shaders/eclairage.glsl` (Basse), `src/render/qualite_auto.*` (RG-03 seulement après accord de l'utilisateur), `src/render/bench_perf*` ; branche `feature/waforspeed-353` partie de `main` **après la fusion de #300** (même zone, même développeur : exception du PO à « un ticket actif par épic », aucun autre agent dans E4 / E13). Critères : 2 lumières en Basse, gain au banc avant / après, ≥ 30 img/s sur le téléphone (validation de l'utilisateur), captures `qa/pr/WFS-353/`, parcours complet 0 écart. Plan : plafond de la Basse à 2, mesure `WFS_PERF_SCENE_LEVIERS=1`, captures, fusion selon les règles. Rappel : skill `agent-developer`, synchronisation avec `main`, CI de branche permise (US technique, une à la fois). WFS-338 (retour du lead dev) reste à corriger par le même agent.
+
+### 2026-11-09 09:14:26 — WFS-353 : l'utilisateur accepte la résolution 45 % en Basse (agent arwa (Claude, session trafic))
+- Réponse de l'utilisateur (question posée directement) : **oui**, résolution plancher de la Basse à 45 % quand le jeu reste sous 30 img/s, Basse seulement ; dérogation à WFS-134 pour la Basse. Notée dans `tache utilisateur.md`. RG-03 de WFS-353 débloquée.
+
+### 2026-11-09 09:15:42 — Début WFS-353 : Basse, 2 lumières par pixel et résolution 45 % (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-353` poussée (dd954068) : **partie de `feature/waforspeed-348`** (PR #300 pas encore fusionnée, pour ne pas attendre) puis synchronisée avec `main` 633b16a1 ; **dépend de #300** (noté aussi dans la PR) ; `git merge origin/main` dès la fusion de #300.
+- Fiches `regles-de-gestion/WFS-353.md` et `WFS-348.md` lues, tableaux A, B, C de WFS-348 relus. RG-01 (accord E13 du PO) et RG-03 (accord de l'utilisateur, 09:14:26) à faire, en Basse seulement.
+- Plan : plafond de lumières par pixel de la Basse à 2 (les 2 plus fortes au point éclairé, les autres en approximation), plancher de résolution 45 % seulement à 60 %, palier 2 et toujours sous 30 img/s ; tests CPU de la sélection et du plancher ; mesure `WFS_PERF_SCENE_LEVIERS=1` avant / après ; captures `qa/pr/WFS-353/`.
+
+### 2026-11-09 09:17:54 — WFS-348 : PR #300 approuvée et fusionnée (lead-dev auto)
+
+Fermé sur son diagnostic (décision du PO du 09:12:58). Diff relu (shaders : reflet du ciel non calculé quand la sonde le remplace, même image ; accroches du banc à 0 dans le jeu), captures avant / après identiques (0 pixel > 8 niveaux), run 948 de la branche : compilation, APK, endurance verts. Squash 48c423e, statut 🟣. Suite : WFS-353. #297 et #288 sans changement.
+
+### 2026-11-09 09:24:28 — WFS-350 fusionné par le lead dev (lead-dev)
+
+PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-place.yml`, `qa/pr/WFS-350/pr.md`) et suite vérifiée dans `tools/qa/publier_apercu.sh` (Release recréée si absente). Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash 4180a6c, statut 🟣. Aucun workflow lancé par le lead dev. Remarques pour WFS-352 : ne prendre que le 404 pour « absente » ; captures du matin hors de `apercu`.
 ### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
 - Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
 
