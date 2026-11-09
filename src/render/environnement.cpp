@@ -234,12 +234,16 @@ public:
         vkCmdDraw(cb, 3, 1, 0, 0);
         // mêmes objets et mêmes pipelines que la passe de scène (1 échantillon) : opaques dans l'ordre d'appel, puis transparents
         VkPipeline lie = VK_NULL_HANDLE;
+        // WFS-322 (ANO-174) : sauf la voiture du joueur. La sonde est posée 1,5 m au-dessus d'elle : sa peinture remplissait la moitié basse
+        // du cube (« sol » bleu ou rouge selon la voiture), et ce reflet coloré éclairait toutes les façades de la rue
         for (const auto& p : AccesRendu::opaques(r)) {
+            if (AccesRendu::joueur(p)) continue;
             const VkPipeline v = AccesRendu::squelette(p) ? g.squelette : AccesRendu::pipeline(r, 1);
             if (v != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, v); lie = v; }
             AccesRendu::dessiner(r, p);
         }
         for (const auto& p : AccesRendu::transparents(r)) {
+            if (AccesRendu::joueur(p)) continue;   // WFS-322 : vitres de la voiture du joueur
             const uint32_t fl = AccesRendu::drapeaux(p);
             const VkPipeline v = (fl & MAT_POOL) ? g.tache : (fl & MAT_ADD) ? AccesRendu::pipeline(r, 3) : AccesRendu::pipeline(r, 2);
             if (v != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, v); lie = v; }

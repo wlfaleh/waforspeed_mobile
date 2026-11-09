@@ -22,6 +22,8 @@
 #include "../../platform/manette.h"   // WFS-22
 #include "../../audio/sfx.h"          // WFS-96 : son du changement de carte
 #include "../../world/zones.h"        // WFS-96 : noms des quartiers
+#include "../../world/cartes_v2/paquet_carte.h"   // WFS-307 : empreinte attendue de chaque carte
+#include "paquets.h"                  // WFS-307 : paquets des cartes (télécharger, supprimer)
 
 namespace wfs {
 namespace ecrans {
@@ -228,6 +230,11 @@ public:
         if (nouveau != Ecran::Terrain) { g_carte = g_prec = g_suiv = g_jour = g_nuit = g_retour = g_rouler = {}; return; }
         // carte en cours présélectionnée (pickMap garde MAP)
         for (int i = 0; i < 4; i++) if (g.map && std::string(g.map->id) == CARTES[i].id) g_index = i;
+        if (g.time - tListe_ >= 60 || !cartesPaquets().cherche()) {   // WFS-307 : liste des paquets lue en entrant (une fois par minute au plus)
+            std::vector<std::pair<std::string, uint64_t>> v;
+            for (const Carte& c : CARTES) v.push_back({c.id, cartes_v2::empreinteAttendue(c.id)});
+            cartesPaquets().chercher(v); tListe_ = g.time;
+        }
         if (sauvegarde().actif()) {   // WFS-24 : moment de la dernière course (WFS-208 : moment fin, sinon déduit de tod)
             g_moment = atmosphere::momentDepuisNom(sauvegarde().moment.empty() ? sauvegarde().tod.c_str() : sauvegarde().moment.c_str());
             g_nuitChoisie = atmosphere::momentDeNuit(g_moment);
@@ -236,6 +243,7 @@ public:
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Terrain) return false;
+        if (toucherPaquetCarte(CARTES[g_index].id, t.id, t.x, t.y, t.down, g.time)) return true;   // WFS-307 : boutons du paquet de la carte
         const float k = ui::petitEcran(g.uiWidth, g.uiHeight) ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f;   // WFS-147
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; x0_ = t.x; y0_ = t.y; }
@@ -254,6 +262,7 @@ public:
         else if (g_rouler.contient(t.x, t.y)) {   // RG-03 : la partie est reconstruite sur la carte choisie, puis la course
             WFS_LOG("terrain : « Rouler » sur %s (%s)", CARTES[g_index].id, g_nuitChoisie ? "nuit" : "jour");
             Game::demandes().carte = CARTES[g_index].id; Game::demandes().nuit = g_nuitChoisie;
+            if (cartesPaquets().changee(CARTES[g_index].id)) { Game::demandes().recharger = true; cartesPaquets().prise(CARTES[g_index].id); WFS_LOG("terrain : paquet de %s changé, carte relue", CARTES[g_index].id); }   // WFS-307 (RG-08)
             eclairage::choisirMoment((int)g_moment); if (sauvegarde().actif()) sauvegarde().moment = atmosphere::nomMoment(g_moment);   // WFS-208 (enregistré par Game::changerCarte)
         }
         return true;   // l'écran garde tous les touchers
@@ -290,6 +299,7 @@ public:
         const MapDef& m = mapById(c.id);
         r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(ACCENT2));   // WFS-146 (RG-07, ANO-41) : carte choisie, contour cyan (sélection) pour toutes les cartes
         vignette(r, cx0, cy0, cw, ch, g_index, g_nuitChoisie);
+        assombrirCarte(r, c.id, cx0, cy0, cw, ch);   // WFS-307 (RG-01) : paquet publié pas encore téléchargé
         // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
         const std::vector<std::string> qs = quartiers(m);
         const float pf = (cp ? 13 : 12) * k, ph = (cp ? 24 : 22) * k, pg = 6 * k, pmax = cw - 48 * k;
@@ -354,6 +364,7 @@ public:
             ui::text(r, px0 + 10 * k, py0 + (ph - pf) / 2, pf, qs[i], hex(TEXTE), ui::GAUCHE, 0.04f, false);
             lx += pw[i] + pg;
         }
+        dessinerPaquetCarte(r, c.id, cx0, cy0, cw, ch, k, g.time);   // WFS-307 : Télécharger / progression / Supprimer
         // ---------- flèches (.map-arrow), grisées aux extrémités ----------
         const float ar = 26 * kb, ay = cy0 + ch / 2;   // WFS-168 : flèche d'avant WFS-147
         const float ax[2] = {cx0 - 18 * k - ar, cx0 + cw + 18 * k + ar};
@@ -407,9 +418,12 @@ private:
     }
     int doigt_ = -1;
     float x0_ = 0, y0_ = 0;
+    double tListe_ = -1e9;
 };
 
 } // namespace
+
+void choisirCarte(const std::string& id, bool nuit) { for (int i = 0; i < 4; i++) if (id == CARTES[i].id) g_index = i; g_nuitChoisie = nuit; g_moment = nuit ? Moment::Nuit : Moment::Midi; }
 
 bool centreRouler(float& x, float& y) {
     if (g_rouler.w <= 0) return false;

@@ -61,7 +61,7 @@ public:
             if (t.down && boutonVisible(g) && g_menu.contient(t.x, t.y)) { doigt_ = t.id; g.allerA(Ecran::Pause); return true; }
             return t.id == doigt_;        // le doigt du bouton ne pilote pas la voiture
         }
-        if (g.ecran != Ecran::Pause || toucheReglages(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages
+        if (g.ecran != Ecran::Pause || toucheReglages(t.x, t.y, t.id)) return false;   // WFS-68 : bouton et panneau des réglages
         if (!t.down) { if (t.id == doigt_) doigt_ = -1; return true; }
         if (t.id == doigt_) return true;   // le doigt qui a ouvert la pause est encore posé
         if (g_boutons[REPRENDRE].contient(t.x, t.y)) { WFS_LOG("pause : « Reprendre »"); g.allerA(Ecran::Course); }
