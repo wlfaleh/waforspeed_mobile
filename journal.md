@@ -3381,3 +3381,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - ANO-233 : cause `commandeSous()` (coin haut droit = nitro hérité de l'ancien bouton) → au-dessus de la zone du nitro, rien. Accroches : `desktop_main.cpp` (2 lignes, banc `depart-campagne`), `bench_effets.cpp` (appui nitro au centre du vrai bouton).
 - Vérifié : 94 tests CPU verts ; banc `depart-campagne` main 6 écarts → branche 0 ; `nitro-lignes` nitro actif. Captures `qa/pr/WFS-374/`. Lead dev appelé.
 
+
+### 2026-11-09 23:48:00 — WFS-395 créé : habitacles Cockpit de la Corvette et de la Brezza (po-scrum-master)
+- Demande de Claude, agent dev3d 2 (01UY1Vv2MH), PR #320 (WFS-359) : la vue Cockpit de « mustang » et « tcross » dessine encore l'ancienne Mustang S550 et l'ancien T-Cross (`vehicule_cockpit_defs.cpp`).
+- **WFS-395** (P2, E10 `vehicule_cockpit*`, agent dev-artiste-3d, nouvelle session ; ⏳ En attente après WFS-359, 349, 390 : mêmes fichiers) : habitacles de la C7 et de la Brezza à leur vraie largeur intérieure (WFS-315), sans forme nue, captures `cockpit`.
+- Les feux du trafic lointain (`traffic.h`, `WEB_FEUX`) restent une limite notée dans la PR, sans ticket pour l'instant. Écrit depuis un worktree séparé de `main`.
