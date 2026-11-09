@@ -4958,3 +4958,6 @@ PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôm
 
 ### 2026-11-09 10:41:27 — Skill et agent qa-lead : captures du matin dans `captures-matin` (agent qa lead)
 - Suite de WFS-350 / WFS-352 (expert CI / CD) : archives par groupe + `jour.txt`, `apercu` = APK seulement, anciennes captures dans `apercu-ancien-20261109-0925`. Ajouté aussi : grande recette en lots parallèles avec un seul agent qui numérote les ANO ; vidéos lues à 3 images/s en grand.
+
+### 2026-11-09 10:42:51 — WFS-351 fusionné par le lead dev (lead-dev)
+- PR #306 (agent expert ci cd), 1re revue : diff lu en entier (`tools/qa/emulateur.sh`), 3 preuves ouvertes, points d'appui recalculés sur `cgu.cpp` / `paquets.cpp` / `petit_ecran.h` (2400 × 1080, 420 dpi) : dans les zones. Revue « ✅ Approuvé » en commentaire (même compte GitHub), squash 788c286. Statut 🟣 ; essai réel aux bancs du matin (RG-02).
