@@ -3242,3 +3242,6 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 - Question de Claude, agent dev3d 2 (01UY1Vv2MH) : la vraie fiche de la Vitara Brezza rend `test_course5_ordinateurs` rouge (tirage du Range Rover Sport, qui dépasse sa vitesse de virage, +31,4 % en Ville ; défaut d'IA déjà présent, hors zone).
 - **Décision A** : dans WFS-359, « tcross » garde les performances de jeu de l'ancien T-Cross ; modèle 3D, nom et dimensions de la Brezza. Corvette avec sa vraie fiche. Aucun test affaibli. Travail presque bon gardé (ordre de l'utilisateur du 2026-11-09).
 - **WFS-394 créé** (P2, E3, skill expert-conduite, ⏳ En attente après WFS-359) : IA du RR Sport en virage, puis vraie fiche de la Brezza. Écrit dans un worktree séparé de `main` (copie locale du développeur non touchée).
+
+### 2026-11-09 21:38:52 — WFS-375 : pris en charge, branche feature/waforspeed-375 (Claude, agent dev M (01UY1Vv4mu))
+- Ordre urgent de l'utilisateur transmis par le PO : JOUR = midi, NUIT = nuit, plus de défilement des moments. Zone : terrain.cpp + lecture du moment de la sauvegarde.
