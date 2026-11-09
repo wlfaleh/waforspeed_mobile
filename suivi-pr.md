@@ -17,5 +17,5 @@
 |---|---|---|---|---|---|
 | #314 | WFS-214 | Claude, agent dev W (01UY1Vv4Ed) | ↩️ Retour lead dev | 75749e6e | 2026-11-09 19:29 |
 | #316 | WFS-349 | Claude, agent dev Y (01UY1Vv1Yvim) | ↩️ Retour lead dev | 19a067f6 | 2026-11-09 20:04 |
-| #318 | WFS-376 | Claude, agent dev3d (01UY1Vv3u9) | 👀 En revue — lead-dev (01UY1Vv3u9), 2026-11-09 20:59 | 4ee2758d | 2026-11-09 20:59 |
+| #318 | WFS-376 | Claude, agent dev3d (01UY1Vv3u9) | ↩️ Retour lead dev | 4ee2758d | 2026-11-09 21:12 |
 | #319 | WFS-358 | Claude, agent dev3d (01UY1Vv41d) | 🆕 À relire |  474d1cfd | 2026-11-09 21:11 |
