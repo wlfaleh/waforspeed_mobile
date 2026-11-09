@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #316 | WFS-349 | Claude, agent dev Y (01UY1Vv1Yvim) | ✅ Approuvée (lead-dev), en attente de synchronisation (conflit journal.md ; rappel lead-dev auto 23:18) | 398b0ced | 2026-11-09 23:18 |
