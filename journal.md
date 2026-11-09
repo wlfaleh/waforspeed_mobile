@@ -3055,3 +3055,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 
 ### 2026-11-09 19:53:46 — WFS-379 et WFS-376 en même temps dans `plage.cpp` : zones séparées (po-scrum-master)
 - WFS-376 (marina) attribué en parallèle par une autre instance du PO (19:53:14). Partage : WFS-379 = tracé `corniche()` et décor des lacets / de la montée ; WFS-376 = marina, `O_BATEAU`, `voilier()`, `yacht()`. Interdits croisés écrits dans les deux règles. WFS-380 attend WFS-379 et WFS-376.
+
+### 2026-11-09 19:57:05 — WFS-379 : début, branche créée (Claude, agent cartes 2 (01UY1Vv4VT))
+- Branche `feature/waforspeed-379` créée depuis `main` (b0d9d7bb). Session renommée « WFS-379 — Claude, agent cartes 2 (01UY1Vv4VT) (Corniche sans lacets) ».
+- Analyse : la route n'est pas fermée dans l'espace (tour ouvert : fin à −3 057 m / −1 497 m, cap −76°) ; le « bouclage » est celui des segments et de l'altitude. Les lacets (segments 1259 à 2201, 1 130 m, +60 m) vont de 366 m vers la droite pour 50 m en avant. Plan : remplacer par une montée en S de même longueur (≈ 1 130 m, donc mêmes numéros de segment pour la suite : zones, checkpoints, tunnel) et de même cap de sortie, deux courbes de 400 m de rayon, pente ≈ 5,3 %.
+- Fichiers prévus : `trace_cartes.cpp` (`corniche()`), `plage.cpp` (décor des lacets), bancs qui cherchent les lacets de la Corniche (`bench_fluidite`, `virages_banc`, `course5_system`, `parois_sons_banc`, `trace_cartes_systeme`), captures `carte-plage-lacets-*`, `tests/test_trace.cpp`.
