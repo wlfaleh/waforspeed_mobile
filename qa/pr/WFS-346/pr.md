@@ -15,10 +15,10 @@ Agent : Claude, agent cartes (01UY1Vv2dx)
   - Banc `WFS_BANC=neige` (`neige_banc.cpp`, accroche d'1 ligne dans `desktop_main.cpp`).
 - **Comment c'est vérifié** :
   - `bash tools/qa/tests_cpu.sh build` : 91 tests verts, dont le nouveau `test_cartes_v2_saison` (lecture et refus des lignes de saison, valeurs par défaut = μ d'avant, cartes de Noël / automne, code du matériau de route, freinage 100-0 des 20 voitures sur neige ≈ v² / 2μg (écart maxi 6,5 %), virage ≤ μ g, conduite du jeu : 100-0 **36,8 m au sec → 145,2 m sur neige**, 0-50 km/h 3,0 s → 11,4 s, ordinateurs inchangés ; flocons : nombre, boîte qui suit la caméra, toits) et `test_cartes_v2_donnees` (format 2, 6 sections).
-  - Banc `neige` : 0 écart ; freinage à fond dans le jeu : **≈ 144 m depuis 100 km/h sur neige contre 37 m sur la Ville sèche (rapport 3,9 ; réel ≈ 4)**.
+  - Banc `neige` : freinage à fond dans le jeu : **≈ 144 m depuis 100 km/h sur neige contre 37 m sur la Ville sèche (rapport 3,9 ; réel ≈ 4)**.
   - Banc `paquets` (WFS-343) : parcours accueil → choix du terrain → course sur les cartes d'essai (jour, nuit, automne) → retour au menu → Ville.
 - **Limites et risques connus** :
-  - **Aurore (RG-03)** : non faite, le ciel est en E13 (`sky*`, interdit à ce ticket, WFS-214 en cours) : question posée au PO au journal (proposition : WFS-344 ou une US E13).
+  - **Aurore (RG-03)** : sortie de ce ticket par le PO (journal 19:05:07, `regles-de-gestion/WFS-346.md`) : elle va dans WFS-344, après WFS-214 (ciel en E13).
   - Chaussée sèche sous le **1er** tunnel de la carte seulement (une seule place dans le matériau) ; ligne au journal du jeu s'il y en a plusieurs. Les flocons, eux, s'arrêtent sous tous les tunnels.
   - Rendu vérifié en rendu logiciel (lavapipe) seulement ; coût GPU du shader de neige non mesuré sur téléphone (carte de données seulement : les cartes du code passent par une branche à 0).
   - Ticket de conduite : **🟡 À valider par l'utilisateur** sur son téléphone après la fusion.
