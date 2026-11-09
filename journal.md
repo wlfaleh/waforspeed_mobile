@@ -4955,3 +4955,6 @@ PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôm
 - **Accroche E7 annoncée** : 2 lignes dans `desktop_main.cpp` (inclusion et `WFS_BANC=pluie`). Le banc `benchPluie` est dans `meteo.cpp` : montant à 102 km/h, 5 images du balayage, entrée du tunnel en Cockpit, témoin en vue Arrière.
 - **Vérifié en local** : `test_pluie` vert, 85 tests CPU verts, parcours complet 0 écart. Coût de la pluie : 0,030 à 0,033 ms par image en Cockpit.
 - **Constat hors ticket** : `test_audio_chocs` a échoué une fois sur sa mesure de temps (RG-07), lancée pendant un banc. Il passe seul et à la relance. C'est un test sensible à la charge de la machine ; je le signale au PO.
+
+### 2026-11-09 10:41:27 — Skill et agent qa-lead : captures du matin dans `captures-matin` (agent qa lead)
+- Suite de WFS-350 / WFS-352 (expert CI / CD) : archives par groupe + `jour.txt`, `apercu` = APK seulement, anciennes captures dans `apercu-ancien-20261109-0925`. Ajouté aussi : grande recette en lots parallèles avec un seul agent qui numérote les ANO ; vidéos lues à 3 images/s en grand.
