@@ -4839,3 +4839,7 @@ Cause nommée (pilote des bancs saturé pendant un changement de file en conduit
 ### 2026-11-09 07:25:01 — Statuts automatiques, CI main #946 (robot statuts)
 - Run rouge (push, commit 39a3de7), aucun statut changé. Job(s) en échec : publication-apk.
 - Tickets 🟣 contenus dans ce run : WFS-339, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 07:27:21 — WFS-333 : PR #298 approuvée et fusionnée, 2e revue (lead-dev auto)
+
+Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, joueur à 17 km/h ; après : 0,000 m, joueur à 85 km/h, voiture accidentée arrêtée 34,5 m derrière), captures avant / après (`WFS_AVANT_333`, banc seulement), tache blanche du cockpit expliquée (reflet + bloom, absente sans la voisine), `pr.md` rempli. Squash b872854, statut 🟡 À valider (utilisateur). #297 : « Bien reçu » sans « corrigé dans », reste ↩️ ; #288 inchangée.
