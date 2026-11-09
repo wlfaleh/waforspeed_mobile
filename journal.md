@@ -2467,3 +2467,7 @@ PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôm
 ### 2026-11-09 11:22:28 — WFS-338 : PR #297 refusée, 2e revue (lead-dev auto)
 
 Points de la 1re revue corrigés et acceptés (police qui arrive de 220 à 6 m, chantier visible de jour et de nuit avec son bandeau, policier visible, appels de dessin +39 ≤ 60). Refus pour deux points courts : conflit `journal.md` avec `main` ; commit 4ac2003a (caisse blanche unie non métallisée) sans captures, les images présentes montrent encore une caisse grise. PR #307 (WFS-353) ajoutée en 🆕 ; #305 (WFS-354) : « Bien reçu » sans « corrigé dans », reste ↩️.
+
+### 2026-11-09 11:24:15 — WFS-353 : PR #307 approuvée et fusionnée (lead-dev auto)
+
+RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testée (`test_qualite` OK) ; captures Basse / Haute identiques à `main`, 45 % propre ; run 955 : compilation et APK verts. Squash 266e110, statut 🟡 (img/s à mesurer sur le téléphone, estimation ≈ 26). **Pour le PO** : RG-01 (2 lumières par pixel) n'est pas activée dans le jeu (variante du banc seulement : +4 à +5 % et reflet perdu) : décision à prendre (garder 4 ou retirer RG-01).
