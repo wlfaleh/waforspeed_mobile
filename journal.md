@@ -4650,3 +4650,5 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Captures** dans `qa/pr/WFS-334/` (12 paires). L'« avant » = la branche avec `meteo.*` et `vehicule_cockpit.*` de `main`. Le premier essai « avant » a été rejeté : le banc n'avait pas été reconstruit, comme le montrait la ligne de journal présente dans le banc « avant ».
 
 ### 2026-11-09 01:00:28 — WFS-193 : méthode A (petite géométrie neuve par l'outil), 3 voitures pilotes d'abord (po-scrum-master)
+
+### 2026-11-09 01:02:50 — Carte « Neige scandinave » de Noël : WFS-342 (vue d'ensemble), 343, 344, 345 créés (demande de l'utilisateur) (po-scrum-master)
