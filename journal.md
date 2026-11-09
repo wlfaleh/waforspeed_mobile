@@ -4961,3 +4961,10 @@ PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôm
 
 ### 2026-11-09 10:42:51 — WFS-351 fusionné par le lead dev (lead-dev)
 - PR #306 (agent expert ci cd), 1re revue : diff lu en entier (`tools/qa/emulateur.sh`), 3 preuves ouvertes, points d'appui recalculés sur `cgu.cpp` / `paquets.cpp` / `petit_ecran.h` (2400 × 1080, 420 dpi) : dans les zones. Revue « ✅ Approuvé » en commentaire (même compte GitHub), squash 788c286. Statut 🟣 ; essai réel aux bancs du matin (RG-02).
+
+### 2026-11-09 10:45:24 — WFS-354 refusé par le lead dev, PR #305 (lead-dev)
+- Revue complète : 13 paires de captures ouvertes, avec des agrandissements, et tout le diff lu ; fusion d'essai avec main sans conflit (`test_pluie` vert).
+- **Refus (RG-01)** : une goutte de vitre, avec sa traînée, est posée sur le **montant droit**, environ 20 px dans le montant, sur toutes les captures « après » en Cockpit. `coinsVitre` et le test ne regardent que la section du montant dans le plan de la vitre, pas la silhouette vue de l'œil (barre de 75 × 50 mm vue de biais).
+- À montrer : agrandissement des montants droit et gauche (Golf et un 2e intérieur), test sur la silhouette vue de l'œil, vue Arrière à la bouche du tunnel, branche synchronisée (WFS-318 fusionné entre-temps).
+- Signalé au PO (hors ticket) : les gouttes de vitre sont aussi dessinées par-dessus le rétroviseur intérieur (déjà sur main).
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/305
