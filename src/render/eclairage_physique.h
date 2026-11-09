@@ -62,6 +62,7 @@ struct Etat {
 };
 const Etat& etat();
 float kVisionNuit();   // WFS-230 (RG-04) : exposition pour la vision de nuit (post.frag) ; 0 de jour ; WFS-276 : négative = sans relèvement des basses lumières (Ville)
+float lAdaptationNuit();   // WFS-214 (RG-05) : luminance d'adaptation de l'œil la nuit (cd/m², post.frag) ; 0 de jour
 
 // RG-01 à RG-06 : passe fp en unités physiques (appelé par Game::render après les ambiances ; dediee = scène dédiée : rien)
 void physique(FrameParams& fp, bool dediee, const GameView& g);
