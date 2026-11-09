@@ -4798,3 +4798,7 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 05:19:40 — WFS-335 : PR #296 approuvée et fusionnée (lead-dev auto)
 
 2e revue sur bccaa3ae : conflit résolu, décision du PO du 02:35 appliquée (niveau 2 de 100 à 48 px en Basse, joueur complet), diff entier relu, `test_vehicule_lod` OK, captures vues (suite 110 → 40 px sans saut, Course à 5 de nuit). Squash 88f3cde. Statut 🟡 À valider (utilisateur) : img/s à mesurer sur le téléphone ; suite dans WFS-348.
+
+### 2026-11-09 05:22:12 — WFS-333 : PR #298 refusée, 1re revue (lead-dev auto)
+
+Code et tests bons (`test_penetration_voitures` et `test_chocs_voitures` OK après fusion avec `main`, recouvrement 0,000 m). Refus : RG-02 non montrée (sur `penetration-accident-1…3`, voiture accidentée devant le joueur au même écart, joueur arrêté) ; aucune capture avant ; tache blanche dans l'habitacle sur `cockpit-4`, à expliquer ; `qa/pr/WFS-333/pr.md` avec « À REMPLIR ». PR #297 (WFS-338) : nouveau commit eced6204 sans réponse « Bien reçu » / « corrigé dans » sous la revue, reste ↩️.
