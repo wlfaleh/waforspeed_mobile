@@ -115,10 +115,55 @@ float feuCroisement(vec3 w, vec3 D, float d, float range) {
     float v = (el > -1.2 ? 1.0 : 1.0 / (1.0 + t * t)) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
     return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
 }
+// WFS-353 (RG-01, accord E13 du PO du 2026-11-09 09:12:58) : Basse, 2 lumières par pixel (spotN.y = 2). Toutes les lumières
+// qui atteignent le pixel gardent leur éclairement diffus exact (même faisceau, même portée, même 1/d² : flaques de lumière
+// des lampadaires et des phares gardées, aucune lumière ne disparaît) ; seules les 2 plus fortes AU POINT ÉCLAIRÉ
+// (éclairement reçu × luminance de la couleur, pas l'ordre de la liste) reçoivent le calcul complet (Fresnel, GGX) ;
+// les autres passent en approximation : diffus seul, Fresnel pris à l'incidence normale (1 − f0), sans reflet spéculaire.
+vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
+    vec3 sum = vec3(0.0), diffus = (1.0 - metal) * albedo / PI;
+    float e0 = 0.0, e1 = 0.0, k0 = 0.0, k1 = 0.0;   // 2 plus fortes : éclairement reçu (classement) et k
+    int i0 = -1, i1 = -1;
+    vec3 L0 = vec3(0.0), L1 = vec3(0.0), a0 = vec3(0.0), a1 = vec3(0.0);   // direction et part approchée déjà comptée
+    for (int i = 0; i < 12; i++) {
+        if (i >= n) break;
+        vec3 Lv = F.spotPos[i].xyz - p;
+        float d = length(Lv);
+        vec3 L = Lv / max(d, 1e-4);
+        float cosT = dot(L, -F.spotDir[i].xyz);
+        float NoL = max(dot(N, L), 0.0);
+        bool croisement = F.spotCone[i].z > 0.5;
+        if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;
+        float range = F.spotPos[i].w, decay = F.spotDir[i].w;
+        if (range > 0.0 && d >= range) continue;
+        float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
+        float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
+        vec3 approx = (1.0 - f0) * diffus * F.spotCol[i].rgb * k;   // approximation : diffus seul
+        sum += approx;
+        float e = dot(F.spotCol[i].rgb, vec3(0.2126, 0.7152, 0.0722)) * k;   // éclairement reçu (luminance)
+        if (e > e0) { e1 = e0; i1 = i0; k1 = k0; L1 = L0; a1 = a0; e0 = e; i0 = i; k0 = k; L0 = L; a0 = approx; }
+        else if (e > e1) { e1 = e; i1 = i; k1 = k; L1 = L; a1 = approx; }
+    }
+    // les 2 plus fortes : calcul complet (comme spotLights), à la place de leur part approchée
+    float NoV = max(dot(N, V), 1e-3);
+    for (int j = 0; j < 2; j++) {
+        int i = j == 0 ? i0 : i1;
+        if (i < 0) break;
+        vec3 L = j == 0 ? L0 : L1;
+        float k = j == 0 ? k0 : k1;
+        vec3 H = normalize(V + L);
+        float NoL = max(dot(N, L), 0.0), NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
+        vec3 Fs = F_Schlick(f0, VoH);
+        vec3 spec = noSpec ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;
+        sum += (1.0 - Fs) * diffus * F.spotCol[i].rgb * k + min(spec * F.spotCol[i].rgb * k, vec3(SPEC_MAX)) - (j == 0 ? a0 : a1);   // WFS-100 RG-02
+    }
+    return max(sum, vec3(0.0));
+}
 vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     int n = int(F.spotN.x + 0.5);
     int parPixel = F.spotN.y > 0.5 ? int(F.spotN.y + 0.5) : 12, vus = 0;   // WFS-263 (RG-02) : 4 lumières par pixel au plus en Basse
+    if (parPixel == 2) return spotLights2(n, p, N, V, albedo, f0, metal, a, noSpec);   // WFS-353 : Basse (Moyenne / Haute : 12)
     float NoV = max(dot(N, V), 1e-3);
     for (int i = 0; i < 12; i++) {   // WFS-226 : 12 projecteurs au plus
         if (i >= n || vus >= parPixel) break;

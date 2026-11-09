@@ -13,6 +13,13 @@ static int course(Auto& a, double fps, double secondes, bool enCourse = true) {
     int e = 0; for (int i = 0; i < (int)(fps * secondes + 0.5); i++) e |= a.image(1.0 / fps, enCourse); return e;
 }
 
+// WFS-353 : images à `fps` (temps GPU `gpuMs`) jusqu'à la mesure de 2 s suivante (une seule décision) ; renvoie ses effets
+static int uneMesure(Auto& a, double fps, double gpuMs = -1) {
+    const int m0 = a.mesures; int e = 0;
+    while (a.mesures == m0) e |= a.image(1.0 / fps, true, gpuMs);
+    return e;
+}
+
 int main() {
     VERIFIE(niveauInitial(false) == HAUTE && niveauInitial(true) == BASSE, "niveau du premier lancement");
     VERIFIE(echelleNiveau(BASSE) == 0.75f && echelleNiveau(MOYENNE) == 1.f && echelleNiveau(HAUTE) == 1.f, "échelles des niveaux (WFS-104)");
@@ -50,12 +57,13 @@ int main() {
     // WFS-246 (levier 3) : résolution adaptative à tous les niveaux, de 100 % (Basse 75 %) jusqu'à 60 %, jamais en dessous
     bool dansBornes = true;
     for (int q = BASSE; q <= HAUTE; q++) for (float d = 0.3f; d <= 1.0001f; d += 0.05f)
-        dansBornes = dansBornes && echelleRendu(q, d) >= ECHELLE_MIN - 1e-6f && echelleRendu(q, d) <= echelleNiveau(q) + 1e-6f;
-    VERIFIE(dansBornes, "échelle toujours entre 60 %% et celle du niveau");
+        dansBornes = dansBornes && echelleRendu(q, d) >= plancher(q) - 1e-6f && echelleRendu(q, d) <= echelleNiveau(q) + 1e-6f;
+    VERIFIE(dansBornes, "échelle toujours entre le plancher (60 %%, Basse 45 %%) et celle du niveau");
+    VERIFIE(plancher(HAUTE) == ECHELLE_MIN && plancher(MOYENNE) == ECHELLE_MIN && plancher(BASSE) == ECHELLE_MIN_BASSE, "planchers 60 / 60 / 45 %% (WFS-353)");
     VERIFIE(echelleRendu(HAUTE, 1) == 1.f && std::abs(echelleRendu(HAUTE, 0.6f) - 0.6f) < 1e-6f && std::abs(echelleRendu(MOYENNE, 0.8f) - 0.8f) < 1e-6f, "Haute / Moyenne : 100 → 60 %%");
-    VERIFIE(echelleRendu(BASSE, 1) == 0.75f && std::abs(echelleRendu(BASSE, 0.8f) - 0.6f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.6f) - 0.6f) < 1e-6f, "Basse : 75 → 60 %%");
+    VERIFIE(echelleRendu(BASSE, 1) == 0.75f && std::abs(echelleRendu(BASSE, 0.8f) - 0.6f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.6f) - 0.45f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.3f) - 0.45f) < 1e-6f, "Basse : 75 → 60 → 45 %% (WFS-353)");
     VERIFIE(budgetMs(BASSE) < 16.8f && budgetMs(HAUTE) == 22.f && budgetMs(MOYENNE) == 22.f, "budgets 16,7 / 22 ms");
-    std::printf("échelle réelle (WFS-246) : Haute et Moyenne 100 → 60 %%, Basse 75 → 60 %% : OK\n");
+    std::printf("échelle réelle (WFS-246) : Haute et Moyenne 100 → 60 %%, Basse 75 → 60 → 45 %% (WFS-353) : OK\n");
     // WFS-246 : Basse à 50 images/s (20 ms > 16,7) : la résolution descend à 60 % (facteur 0,8), puis les effets
     { Auto f; f.niveau = BASSE; course(f, 50, 2);
       VERIFIE(std::abs(f.echelle - 0.9f) < 1e-6f && f.palier == 0, "Basse 50 img/s : 1re baisse (%.2f)", f.echelle);
@@ -69,6 +77,29 @@ int main() {
       Auto h; h.echelle = 0.7f; for (int i = 0; i < 60 * 6; i++) h.image(1.0 / 60, true, 18.0);
       VERIFIE(std::abs(h.echelle - 0.7f) < 1e-6f, "Haute GPU 18 ms : échelle gardée (%.2f)", h.echelle);
       std::printf("Basse 50 img/s : 75 → 60 %% puis effets ; remontée au temps GPU, sans aller-retour : OK\n"); }
+    // WFS-353 (RG-03) : plancher 45 %% de la Basse : seulement à 60 %%, palier 2 et toujours sous 30 img/s
+    { Auto f; f.niveau = BASSE; course(f, 50, 20);   // 50 img/s : 60 %%, palier 2, jamais sous 60 %%
+      VERIFIE(std::abs(f.echelle - 0.8f) < 1e-6f && f.palier == 2, "Basse 50 img/s : reste à 60 %% (%.2f, palier %d)", f.echelle, f.palier);
+      VERIFIE(std::abs(echelleRendu(BASSE, f.echelle) - 0.6f) < 1e-6f, "Basse 50 img/s : scène à 60 %%");
+      Auto g; g.niveau = BASSE; course(g, 25, 2);   // sous 30 img/s : 75 → 60 %% (pas de 0,2), les effets d'abord
+      VERIFIE(std::abs(g.echelle - 0.8f) < 1e-6f && g.palier == 0, "Basse 25 img/s : 60 %% d'abord (%.2f)", g.echelle);
+      course(g, 25, 2); VERIFIE(g.palier == 1 && std::abs(g.echelle - 0.8f) < 1e-6f, "Basse 25 img/s : palier 1 avant 45 %%");
+      course(g, 25, 2); VERIFIE(g.palier == 2 && std::abs(g.echelle - 0.8f) < 1e-6f, "Basse 25 img/s : palier 2 avant 45 %%");
+      course(g, 25, 2); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f, "Basse 25 img/s : 45 %% après le palier 2 (%.3f)", echelleRendu(BASSE, g.echelle));
+      course(g, 25, 10); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f && g.niveau == BASSE, "Basse : jamais sous 45 %%");
+      // 35 et 45 img/s à 45 %% : ni descente ni remontée (60 %% retomberait sous 30) ; ≥ 50 img/s : retour à 60 %% d'un coup, effets ensuite
+      course(g, 35, 10); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f && g.palier == 2, "Basse 35 img/s à 45 %% : gardé");
+      uneMesure(g, 45); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f, "Basse 45 img/s à 45 %% : gardé");
+      uneMesure(g, 52); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.6f) < 1e-6f && g.palier == 2, "Basse 52 img/s à 45 %% : retour à 60 %% (%.3f)", echelleRendu(BASSE, g.echelle));
+      Auto m; m.niveau = BASSE; course(m, 25, 8); const int e = uneMesure(m, 60, 9.0);
+      VERIFIE(std::abs(echelleRendu(BASSE, m.echelle) - 0.6f) < 1e-6f && m.palier == 2 && (e & Auto::ECHELLE), "Basse GPU 9 ms à 45 %% : 60 %% d'abord, effets ensuite");
+      // Moyenne et Haute : jamais sous 60 %%, même à 20 img/s ; Basse par rétrogradation (netteté de la Moyenne) : 60 %%
+      Auto h; h.choixJoueur = true; course(h, 20, 30); VERIFIE(std::abs(echelleRendu(HAUTE, h.echelle) - 0.6f) < 1e-6f, "Haute 20 img/s : 60 %%");
+      Auto mo; mo.niveau = MOYENNE; mo.choixJoueur = true; course(mo, 20, 30); VERIFIE(std::abs(echelleRendu(MOYENNE, mo.echelle) - 0.6f) < 1e-6f, "Moyenne 20 img/s : 60 %%");
+      retenuAuto = MOYENNE; Auto rb; rb.niveau = BASSE; course(rb, 20, 30);
+      VERIFIE(std::abs(echelleScene(BASSE, rb.echelle) - 0.6f) < 1e-6f, "Basse par rétrogradation : 60 %% (%.3f)", echelleScene(BASSE, rb.echelle));
+      oublierRetenus();
+      std::printf("WFS-353 : Basse 45 %% seulement à 60 %%, palier 2 et sous 30 img/s ; retour à 60 %% à la marge ; Moyenne / Haute 60 %% : OK\n"); }
     // WFS-134 (RG-02) : rétrogradation automatique et chauffe : la résolution reste celle du niveau quitté
     VERIFIE(niveauNettete(BASSE) == BASSE && echelleScene(BASSE, 1) == 0.75f, "sans baisse en cours : niveau du joueur");
     retenuChauffe = HAUTE;   // chauffe sévère : Haute → Moyenne puis → Basse à la course suivante

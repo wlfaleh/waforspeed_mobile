@@ -305,8 +305,11 @@ static void benchScene(Game& g, Renderer& r, const std::string& out) {
         struct Var { const char* nom; uint32_t sans; float ech; int lpp = 0; };   // lpp : lumières par pixel en Basse (0 : valeur du jeu)   // autres : vraies lumières des autres voitures en Basse (−1 : valeur du jeu)   // leger : début du fondu léger en Basse (m), −1 : valeur du jeu
         std::vector<Var> vars{{"", 0, 0}};
         if (tel && std::getenv("WFS_PERF_SCENE_LEVIERS"))
-            for (const Var& v : {Var{"2 lumières par pixel", 0, 0, 2}, Var{"3 lumières par pixel", 0, 0, 3}, Var{"scène à 50 %", 0, 0.5f},
-                                 Var{"scène à 45 %", 0, 0.45f}, Var{"sans lumières de nuit", 1, 0}, Var{"", 0, 0}}) vars.push_back(v);
+            // WFS-353 : « 4 lumières par pixel » = la Basse d'avant WFS-353 (4 premières lumières, les autres coupées) ; la ligne
+            // sans nom = la Basse du jeu (2 lumières, les autres en diffus) ; « scène à 45 % » = plancher de la Basse (RG-03)
+            for (const Var& v : {Var{"4 lumières par pixel (avant WFS-353)", 0, 0, 4}, Var{"scène à 45 %", 0, 0.45f},
+                                 Var{"4 lumières, scène à 45 %", 0, 0.45f, 4}, Var{"scène à 50 %", 0, 0.5f},
+                                 Var{"sans lumières de nuit", 1, 0}, Var{"4 lumières par pixel (avant WFS-353)", 0, 0, 4}, Var{"", 0, 0}}) vars.push_back(v);
         if (tel && std::getenv("WFS_PERF_SCENE_EFFETS"))
             for (const Var& v : {Var{"sans lumières de nuit", 1, 0}, Var{"sans chaussée mouillée", 2, 0}, Var{"sans sonde IBL", 4, 0},
                                  Var{"sans les trois", 7, 0}, Var{"sans transparents", 8, 0}, Var{"sans découpe", 16, 0},
