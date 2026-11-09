@@ -75,3 +75,22 @@ Images regardées en plus : `qa/retours/2026-11-09-video2032-*` (les 6), `qa/pr/
 ## Ordre recommandé (mis à jour)
 1. WFS-379 terrain qui flotte (+ R7) · 2. **N1 phares brûlés** et **R1 brume** (petits, gros gain) · 3. WFS-380 mer + R6 · 4. WFS-376 bateaux ·
 5. WFS-358 X5 (en cours) · 6. WFS-344 chalets et sapins + C2 neige · 7. R2 / C3 sols · 8. WFS-378 inventaire avec R3, R4, R5, V3, N2.
+
+---
+
+# Complément 2 — captures de la CI (décor seulement), 2026-11-09 ≈ 20:10 UTC
+
+Source (fournie par l'agent expert-ci-cd) : Release `apercu-fusion`, run `build.yml` #965 (vert), commit `529b89e` — 29 images de course, poursuite, vie de la ville, menu.
+`apercu` est vide (run #966 en cours) ; captures de nuit / réalisme du banc du matin #5 non téléchargeables (proxy) ; pas de carte de Noël.
+**Je ne regarde que le décor** (pas les voitures, ni l'interface, ni la conduite).
+
+| # | Carte | Constat (images) | Référence réelle | Proposition | Priorité |
+|---|---|---|---|---|---|
+| D1 | Toutes | **Vues de dessus** (`course5-depart-*-dessus`, `course5-epingle-*`) : autour de la route, **vide gris** (Ville, Corniche, Circuit) ou aplat vert (Campagne) ; l'épingle flotte dans le gris | Vu d'en haut, le terrain et le décor existent partout autour de la route | Vérifier si le terrain n'est pas chargé ou coupé par la distance de vue ; même famille que les terrains qui flottent (WFS-379) | P1 (à joindre à WFS-379) |
+| D2 | Ville | **Parasols des terrasses = disques plats** rouges / blancs sur un poteau (`parcours-course-2400`, `vie-terrasse`) | Parasol de terrasse : toile à 8 baleines, mât bois ou alu, lestage, Ø 2,5–3 m | Vrais modèles dans **WFS-370** ou inventaire **WFS-378** | P1 (forme nue très visible, premier plan) |
+| D3 | Ville | Immeubles du fond = **boîtes grises** sans texture ; façades proches avec fenêtres **peintes à plat** (sans profondeur) | Fenêtre réelle en retrait de 15–25 cm, appuis, volets | WFS-370 (déjà prévu) ; ajouter le retrait des fenêtres | P1 (WFS-370) |
+| D4 | Corniche | Plage = **sable uni jaune-vert** ; mer cyan plate ; **scène de concert = boîte** (`vie-plage`) | Sable 0xD8C8A0 avec traces, laisse de mer ; scène avec structure en treillis | Mer : WFS-380 ; sable et scène : **WFS-371** | P1 / P2 |
+| D5 | Campagne | **Grandes boîtes grises** au bout de la route et portique sur poteaux (`endurance-avant-retour-1`) ; champs vert vif uni | Bâtiments agricoles en bardage, hangar, champs cultivés en rangs | **WFS-372** + mélange de sols (R2 / C3) | P2 |
+| D6 | Grand Prix | **Bâtiment des stands = boîte blanche** à bandes ; **piles de pneus = disques** rouges et blancs ; herbe d'un vert uni ; touffes posées en grille régulière | Stands vitrés avec auvent ; murs de pneus empilés et sanglés ; herbe tondue en bandes | **WFS-373** ; touffes en semis aléatoire | P2 |
+| D7 | Ville nuit | Fenêtres = rectangles lumineux uniformes ; bon point : rue mouillée et pont en arc crédibles | 30–50 % de fenêtres allumées, teintes variées | Déjà N2 | P2 |
+| D8 | Toutes | **Bons points** à garder : arbres d'alignement et ombres portées de la Ville, palmiers et lampadaires de la plage de nuit, tribunes avec public du circuit, bordures rouges et blanches | — | Ne pas casser en refaisant le reste | — |

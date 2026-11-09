@@ -3049,3 +3049,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Regardées en plus : vidéo 2032 (6 images), PR WFS-192, 193, 338, 343. Complément dans `qa/retours/avis-expert-3d-2026-11-09-corniche.md`.
 - Notes à l'œil : voitures ≈ 70 %, Ville de nuit ≈ 45 %, Ville de jour ≈ 35 %, Campagne ≈ 30 %, carte de Noël ≈ 25 %, Corniche ≈ 20 %.
 - Nouveaux points proposés au PO : N1 phares de nuit brûlés (P1), C1–C2 chalets / sapins / neige de la carte de Noël (P1, avec WFS-344), V2 calandres R4 et Folg 8, V3 anneau néon du garage, N2 halos et fenêtres, N3 rampe police, C3 sols saturés.
+
+### 2026-11-09 19:57:30 — Avis de l'expert 3D : décor des captures de la CI (Agent 3d (session_01UY1Vv4DeCjYyC5BsYidg6X))
+- Captures `apercu-fusion` (run #965, commit 529b89e) récupérées par l'agent expert-ci-cd ; décor seulement. Points D1 à D8 dans `qa/retours/avis-expert-3d-2026-11-09-corniche.md`.
+- À retenir : D1 vide gris autour de la route en vue de dessus (P1, avec WFS-379), D2 parasols en disques (P1), D3 immeubles boîtes (WFS-370). Retour envoyé au PO.
