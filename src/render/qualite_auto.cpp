@@ -14,6 +14,7 @@ namespace wfs::qualite {
 
 // watchPerf(raw) du jeu web
 float Auto::echelleMin() const { return ECHELLE_MIN / echelleNiveau(niveauNettete(niveau)); }
+float Auto::echelleMinBasse() const { const int q = niveauNettete(niveau); return plancher(q) / echelleNiveau(q); }
 
 int Auto::image(double dt, bool enCourse, double gpuMs) {
     if (!enCourse) { t = 0; n = 0; return RIEN; }
@@ -33,9 +34,17 @@ int Auto::image(double dt, bool enCourse, double gpuMs) {
     // +(x).toFixed(2) : arrondi au centième (pas de dérive 0,6000001)
     // WFS-222 (RG-03) : sous 30 images/s, pas de 0,2 (allègement complet en 4 s au lieu de 8)
     const float pas = fps < 30 ? 0.2f : 0.1f;
+    // WFS-353 (RG-03) : Basse seulement (netteté de la Basse ; plancher 45 %) : sous 60 %, seulement à 60 %, palier 2 et
+    // toujours sous 30 img/s ; remontée à 60 % d'un coup dès que la marge revient, avant tout retour des effets
+    const float bas45 = echelleMinBasse();
+    const bool sous60 = echelle < bas - 1e-4f;
     if (trop) {
         if (echelle > bas + 1e-4f) echelle = std::max(bas, std::round((echelle - pas) * 100) / 100);
         else if (palier < 2) palier++;   // déjà à 60 % : alors seulement, les effets
+        else if (fps < 30 && echelle > bas45 + 1e-4f) echelle = std::max(bas45, std::round((echelle - pas) * 100) / 100);   // WFS-353
+        else if (sous60 && fps >= IPS_REMONTEE_45) echelle = bas;   // WFS-353 : marge revenue (≥ 50 img/s à 45 %)
+    } else if (sous60 && (marge || fps >= IPS_REMONTEE_45)) {
+        echelle = bas;   // WFS-353 (RG-03) : retour à 60 % d'abord
     } else if (marge) {
         if (palier > 0) palier--;
         else if (echelle < 1.f) echelle = std::min(1.f, std::round((echelle + 0.1f) * 100) / 100);
