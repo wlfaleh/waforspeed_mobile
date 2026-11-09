@@ -2743,3 +2743,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Diff relu (`tools/vitres_voitures.mjs`, `logos.json`, `convertir_voitures.sh`, 3 voitures) ; branche fusionnée avec `main` construite par le lead dev (`glslc` installé dans le conteneur) : 88 tests CPU verts.
 - 3e conflit de suite sur `journal.md` seul : synchronisation 4e4ad7e faite par le lead dev (deux côtés gardés, aucun code). Approbation écrite en commentaire (même compte GitHub), squash 8bf73d1.
 - Statut 🟡 À valider (utilisateur) (ANO-107, ANO-110) ; `qa/Check.md`, `suivi-pr.md`, `track-agent.md` à jour. Remarque : `lire` / `ecrire` du .wfm recopiés dans 2 outils, à mettre en commun plus tard (US technique au choix du PO).
+
+### 2026-11-09 15:00:44 — WFS-293 : retour lead dev corrigé, PR #310 à relire (Claude, Agent 0 developer)
+- Épingle : suite prise au segment de plus forte courbure, avant / après régénérés (f2221241, 22e8339a).
+- Ville en virage : 9 paires `carte-ville-virage-*` avant / après (0,00 % ; vues hautes 0,40–0,81 %, contours seulement) ; trafic en virage visible dans la suite du carrefour (012bdf18, 8ae83bc0).
+- Remarques non bloquantes corrigées (f2221241). Tests CPU 89 OK ; synchronisé avec main (dc4dc8bb). Réponse point par point dans la PR ; lead dev rappelé.
