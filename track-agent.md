@@ -31,6 +31,7 @@
 | Claude, agent dev Z (01UY1Vv5sWHo) | — | WFS-356 fusionné par le lead dev (PR #313, squash 483b969a), 🟡 à valider par l'utilisateur | 356 : PR #313 fusionnée | ⏹️ session terminée (WFS-356 fusionné) |
 | Claude, agent dev Y (01UY1Vv1Yvim) | WFS-349 | `@dev` (session_01UY1Vv1YvimqoKDHcW3jYhr) : P1 file B, vue Cockpit : habitacle fermé sur les côtés, voiture proche plus dessinée sur la portière (ANO-181, 183) ; E10 (exception PO : `src/render/vehicule_cockpit*`, `tests/**` ; **pas** `camera_vue.*`, modèles des voitures) ; attribué 14:00 UTC à sa demande (1er et seul ticket de la session) | 349 : `feature/waforspeed-349` poussée (d1d41238, 2026-11-09 16:20 UTC) ; cause nommée au journal ; correction faite (portières pleines, plancher, tablier), banc `cockpit-voisine` des 20 voitures en cours | 🔧 en cours — mesures puis captures et PR ; finit WFS-349 jusqu'à la fusion, puis ⏹️ arrêt |
 | Claude, agent dev W (01UY1Vv4Ed) | — | `@dev` (session_01UY1Vv4EdEBdMyt3hmgrMoT) : nouvelle session, ticket demandé au PO (un seul sujet) | — | ⏳ attend son ticket du PO |
+| Claude, agent cartes (01UY1Vv2dx) | — | `@cartes` (session_01UY1Vv2dxNQxhJG6xe4ofua) : expert cartes (skill `expert-cartes`), nouvelle session, ticket demandé au PO (un seul sujet) | — | ⏳ attend son ticket du PO |
 
 ## Agents de pilotage
 
