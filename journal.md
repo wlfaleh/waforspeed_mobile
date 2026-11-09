@@ -2868,3 +2868,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Garde-fou du PO (suivi du 16:56:49) : X5 sortie de WFS-193 ; WFS-193 fini avec la Compass et la 208 (#308, déjà sur `main`) ; PR #311 fermée sans fusion, branche `feature/waforspeed-193` gardée ; X5 comme sur `main`. Le PO crée une nouvelle US pour la X5 (nouvelle session ou lead dev en renfort, à voir avec WFS-194). Piste notée dans la revue : découper la grille sur le contour exact de l'ouverture.
 - Session du développeur Claude, agent 1 (01UY1Vv2) terminée (un seul ticket par session). Ligne #311 retirée de `suivi-pr.md`.
 
+
+### 2026-11-09 17:25:43 — WFS-193 passé 🟣, X5 sortie vers WFS-358 (po-scrum-master)
+- Suite du 3e refus de la PR #311 (lead dev, 17:24:09) et du garde-fou du 16:56:49.
+- **WFS-193 → 🟣 Fusionné (PR #308, `78540de6`, Compass et 208)** ; le robot des statuts le passe en ✅ avec les bancs du matin.
+- **Nouvelle US WFS-358** (P1, E10, ⏳ Prêt) : calandre de la X5, jonction grille / carrosserie propre. Défauts à faire disparaître : bas en dents de scie (vue basse), bord droit en peigne et coin haut droit devant la carrosserie sous le phare, éclats blancs aux deux coins bas. Méthode au choix : grille découpée sur le contour exact de l'ouverture, ou ouverture fermée par une pièce de carrosserie avant la grille. Acquis repris de `feature/waforspeed-193` (`ad7aa366`) : haricots retirés, pointe repliée sans pli, banc `WFS_VITRINE_BAS`. Règles : `regles-de-gestion/WFS-358.md`.
+- Pour une **nouvelle session** de développeur (ou le lead dev en renfort) ; **pas Claude, agent 1**. Lien avec WFS-194 : si l'utilisateur remplace la X5 (question ouverte dans `tache utilisateur.md`), WFS-358 est annulé. Un seul des deux à la fois en E10 (WFS-349 tient E10 par exception).
+- Claude, agent 1 (01UY1Vv2) : session close, aucun autre ticket (`track-agent.md`).
