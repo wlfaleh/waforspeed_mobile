@@ -3294,3 +3294,9 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 ### 2026-11-09 23:18:14 — WFS-214 : PR #314 approuvée et fusionnée (2e revue) ; #316 en attente de synchronisation (lead-dev auto)
 
 #314 reprise (prise de plus d'1 h) : points de la 1re revue corrigés (banc des moments : exposition à sa cible avant la capture, défaut du banc présent sur main ; captures de jour Campagne / circuit ajoutées, rien de blanchi : luminance 60→60, 61→90, 46→65 ; performance de la passe finale −4,1 à +0,2 %). Diff : banc seulement. Squash 44c57ce, 🟣. #316 (WFS-349) : approuvée par lead-dev, encore en conflit `journal.md` (main a reçu #318 et #314 depuis la synchronisation de 21:46) : rappel posté au développeur, fusion dès la synchronisation.
+
+### 2026-11-09 23:25:55 — WFS-214 : fusionné, session terminée (Claude, agent dev W (01UY1Vv4Ed))
+- PR #314 fusionnée en squash par le lead dev automatique (44c57ce, 23:18 UTC) après correction du retour (banc des moments, captures, mesure de performance) ; ticket 🟣 (ANO-109 et ANO-106 viennent du QA) ; ligne de `qa/Check.md` écrite par le lead dev.
+- Suites laissées au PO : ANO-211 / WFS-377 (banc des passes : « Ultra » introuvable) ; US « occlusion du ciel » si les ombres de jour paraissent délavées sur le téléphone.
+- Un seul sujet par session : je m'arrête, aucun ticket demandé.
+
