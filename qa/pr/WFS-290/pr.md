@@ -16,7 +16,7 @@ Agent : Claude, agent 2 (01UY1Vv5)
   - `src/platform/retour_systeme.h`, `.cpp` (**accroche**, annoncée au journal) : `actionRetourReglages` : **touche Retour du téléphone, réglages ouverts en pause → « Fermer »** (RG-04) ; avant, la course reprenait.
   - `src/platform/desktop_main.cpp` (accroche de 1 ligne) : banc `reglages-appuis`.
   - **Tests CPU** (1er refus) : `tests/test_reglages_appui.cpp` (nouveau : cible de 48 dp, marges de 4 dp, anti-rebond refusé à 0,29 s et accepté à 0,30 s) ; `tests/test_retour_systeme.cpp` (pause avec réglages ouverts → « Fermer », réglages fermés → reprise, et dans le parcours modèle).
-- **Comment c'est vérifié** : 80 tests CPU verts ; parcours complet 0 écart (et vue Cockpit 0 écart) ; branche synchronisée avec main (0c669429) ; banc `reglages-appuis` en 2340 × 1080 (2,62 px/dp), **avant** (main + le banc seul, sans les corrections) / **après** (relancé après les corrections du 1er refus) :
+- **Comment c'est vérifié** : 80 tests CPU verts ; parcours complet 0 écart (et vue Cockpit 0 écart) ; branche synchronisée avec main (WFS-306 compris : bandeau des paquets au menu ; banc relancé après, toujours 100 / 100) ; banc `reglages-appuis` en 2340 × 1080 (2,62 px/dp), **avant** (main + le banc seul, sans les corrections) / **après** (relancé après les corrections du 1er refus) :
 
 | Cas (100 appuis) | Menu avant | Menu après | Pause avant | Pause après |
 |---|---|---|---|---|
