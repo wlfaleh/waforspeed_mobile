@@ -91,12 +91,80 @@ if [ "$SCENARIO" = mvp ]; then
   }
   # étape <nom> <motif> <délai> <capture> : attente, images présentées, capture ; échec = capture de preuve puis arrêt
   etape() { if attendre "$1" "$2" "$3" "${5:-}"; then images; capture "$4"; else capture "$4"; return 1; fi; }
+  # premier <délai s> <motif 1> <motif 2> … : numéro du motif trouvé le premier après la marque (0 = aucun dans le délai) ;
+  # la marque ne bouge pas (l'étape suivante cherche elle-même sa ligne)
+  premier() {
+    local max="$1" t=0 i n meilleur best; shift
+    while [ $t -lt "$max" ]; do
+      best=0; meilleur=""
+      i=0; for m in "$@"; do i=$((i + 1))
+        n=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -nE "$m" | head -1 | cut -d: -f1)
+        if [ -n "$n" ] && { [ -z "$meilleur" ] || [ "$n" -lt "$meilleur" ]; }; then meilleur=$n; best=$i; fi
+      done
+      [ "$best" != 0 ] && { echo "$best"; return 0; }
+      sleep 1; t=$((t + 1))
+    done
+    echo 0
+  }
+  # taille : W, H de la fenêtre du jeu (paysage ; taille logique annoncée par le jeu si elle est là) et densité (pixels par dp)
+  taille() {
+    read W H < <(adb shell wm size | tail -1 | sed -E 's/.* ([0-9]+)x([0-9]+).*/\1 \2/' | awk '{ if ($1 < $2) print $2, $1; else print $1, $2 }')
+    local fen; fen=$(grep -oE "Cibles de rendu : [0-9]+x[0-9]+ \(logique\)" "$LIVE" | tail -1 | grep -oE "[0-9]+x[0-9]+")
+    [ -n "$fen" ] && { W=${fen%x*}; H=${fen#*x}; }
+    DPI=$(adb shell wm density | grep -oE "[0-9]+" | tail -1); [ -n "$DPI" ] || DPI=420
+    log "fenêtre du jeu ${W}x${H}, densité ${DPI} dpi"
+  }
+  # WFS-351 : points d'appui des CGU (src/ui/ecrans/cgu.cpp) et de l'étape des paquets (src/ui/ecrans/paquets.cpp), calculés
+  # comme leur mise en page (marges de l'écran supposées nulles en paysage ; le point visé est loin des bords de chaque zone) :
+  #   d = dpi/160 ; petit écran si H/d ≤ 520 ; k = min(d, H/400, W/800) (petit écran) sinon H/720 ; kb = H/720 ;
+  #   CGU : pw = min(W − 32k, 1040k), px = (W − pw)/2, py = (8 ou 24)k, ph = H − 2·py, bh = 50kb, by = py + ph − 14k − bh ;
+  #         case : centre du carré (px + 24k + 14k, by + bh/2) ; « Accepter » : à 30kb du bord droit (px + pw − 24k − 30kb, by + bh/2)
+  #   paquets : pw = min(W − 32k, 760k), px = (W − pw)/2, ph = (300 ou 340)k, py = max(8k, (H − ph)/2), by = py + ph − 22k − bh ;
+  #         « Installer » : (px + pw − 28k − 30kb, by + bh/2)
+  points_cgu() {
+    read CX CY AX AY IX IY < <(awk -v W="$W" -v H="$H" -v dpi="$DPI" 'BEGIN{
+      d=dpi/160; cp=(H/d<=520); if (cp) { k=d; if (H/400<k) k=H/400; if (W/800<k) k=W/800 } else k=H/720; kb=H/720; bh=50*kb;
+      pw=W-32*k; if (1040*k<pw) pw=1040*k; px=(W-pw)/2; py=(cp?8:24)*k; ph=H-2*py; by=py+ph-14*k-bh;
+      cx=px+24*k+14*k; ax=px+pw-24*k-30*kb;
+      qw=W-32*k; if (760*k<qw) qw=760*k; qx=(W-qw)/2; qh=(cp?300:340)*k; qy=(H-qh)/2; if (qy<8*k) qy=8*k; qby=qy+qh-22*k-bh;
+      printf "%d %d %d %d %d %d\n", cx, by+bh/2, ax, by+bh/2, qx+qw-28*k-30*kb, qby+bh/2 }')
+  }
+  # cgu : la case « J'ai lu et j'accepte », puis « Accepter », comme un joueur ; chaque appui vérifié dans le journal du jeu
+  cgu() {
+    taille; points_cgu
+    appui cgu-case $CX $CY
+    attendre cgu-case "CGU \(WFS-308\) : case .* cochée" 15 || { capture 00-cgu-case; log "ÉCHEC : case des CGU non cochée (appui ${CX},${CY})"; return 1; }
+    capture 00-cgu-case-cochee
+    appui cgu-accepter $AX $AY
+    attendre cgu-accepter "CGU \(WFS-308\) : « Accepter » \(version" 15 || { capture 00-cgu-accepter; log "ÉCHEC : « Accepter » des CGU non reçu (appui ${AX},${AY})"; return 1; }
+  }
+  # paquets : étape « Mise à jour et installation des paquets » (WFS-306) : proposition → « Installer » (vrai téléchargement
+  # depuis la Release « paquets », WFS-302) ; paquet déjà présent ou pas de liste → l'étape finit seule
+  paquets() {
+    local m0=$MARQUE; MARQUE=$BASE_PAQUETS   # l'étape peut commencer avant la ligne « écran complet » du chargement
+    case "$(premier 120 "paquets \(WFS-306\) : proposition" "paquets \(WFS-306\) : fin de l'étape" "Écran : course → menu")" in
+      1) images; capture 01b-paquets-proposition; taille; points_cgu; appui paquets-installer $IX $IY
+         etape paquets "paquets \(WFS-306\) : fin de l'étape" 300 01c-paquets-fin "paquets \(WFS-306\) : échec" || return 1 ;;
+      2) log "paquets : l'étape a fini sans proposition (paquet présent ou pas de liste)"; MARQUE=$m0 ;;
+      3) log "paquets : menu atteint sans étape des paquets"; MARQUE=$m0 ;;
+      *) log "paquets : aucune ligne de l'étape des paquets en 120 s (on continue vers le menu)"; MARQUE=$m0 ;;
+    esac
+  }
   parcours() {
     # délais max : 1 440 s d'étapes + 9 × 30 s d'images = 1 710 s ≈ 28,5 min ≤ 30 min (RG-07) ; jeu ≥ 1 image/s attendu avec WFS-59
+    # WFS-351 (ANO-199) : premier lancement, écran des CGU (WFS-308) avant le chargement : case puis « Accepter », comme un joueur
+    # (aucun raccourci dans le jeu) ; lancement suivant (CGU déjà acceptées) : l'écran n'apparaît pas
+    case "$(premier 120 "CGU \(WFS-308\) : écran ouvert" "écran complet \(police\)")" in
+      1) attendre cgu "CGU \(WFS-308\) : écran ouvert" 5; images; capture 00-cgu; cgu || return 1 ;;
+      2) log "CGU déjà acceptées : pas d'écran des CGU" ;;
+      *) log "ni écran des CGU ni écran de chargement en 120 s" ;;
+    esac
     # 1re image du jeu (RG-04) : l'écran de chargement complet (texte et barre) est écrit par chargement.cpp
     # (« chargement : première image … écran complet (police) … ») ; avant, seul le rail de la barre est dessiné (QA WFS58-5).
     # Jamais l'écran de démarrage Android ; pas de ligne « QA ips » pendant le chargement, d'où 1 s d'attente fixe.
+    BASE_PAQUETS=$MARQUE
     if attendre chargement "écran complet \(police\)" 120; then sleep 1; capture 01-chargement; else capture 01-chargement; return 1; fi
+    paquets || return 1                                                       # WFS-351 : étape des paquets (WFS-306)
     etape menu "Écran : course → menu" 180 02-menu || return 1               # chargement fini, menu (WFS-37)
     read W H < <(adb shell wm size | tail -1 | sed -E 's/.* ([0-9]+)x([0-9]+).*/\1 \2/' | awk '{ if ($1 < $2) print $2, $1; else print $1, $2 }')
     log "écran ${W}x${H} (paysage)"
