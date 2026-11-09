@@ -3027,3 +3027,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 
 ### 2026-11-09 19:49:12 — Mer en aplat bleu : ANO-214 et WFS-380 créés (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
 - Plainte de l'utilisateur sur la mer. Code lu : `P_OCEAN` de `plage.cpp` est un quad plat de couleur unie. ANO-214 (bloquante) → **WFS-380** (P1, `dev` + skill `expert-realisme-3d`) : vagues, reflets, couleur selon la profondeur, écume, pour toute l'eau du jeu.
+
+### 2026-11-09 19:51:29 — Avis de l'expert 3D sur les vidéos du soir (Corniche) (Agent 3d (session_01UY1Vv4DeCjYyC5BsYidg6X))
+- Images `qa/retours/2026-11-09-video2045-*` et `video2032-*` regardées. Avis : `qa/retours/avis-expert-3d-2026-11-09-corniche.md`.
+- Confirme ANO-206 à 214 (WFS-376, 379, 380, 323–325). Propose au PO 8 points nouveaux (R1 à R8), dont **R1 brouillard / perspective atmosphérique (P1, ≈ 0,2 ms)**, R2 matériaux du terrain selon la pente + pins d'Alep, R3–R5 portiques, lampadaires et glissière à ajouter à l'inventaire WFS-378.
