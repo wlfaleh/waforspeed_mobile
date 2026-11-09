@@ -4691,3 +4691,6 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Zone de WFS-343** : `src/world/cartes_v2/**`, `src/core/carte_cuite.*`, `src/ui/ecrans/terrain.*`, `paquets*`, `tests/cartes_v2*`, fichiers neufs ; accroches ≤ 10 lignes annoncées dans `track.*` / `game.*`. Pas `traffic.*`, `traffic_system.*`, `poursuite*`, `hud.*`, `player.*`, `conduite_*`, `reglages.*`, `menu.*`, ni la CI.
 - **Critères** : RG-01 (tracé, chocs, départs, checkpoints, zones de trafic lus du paquet, carte absente du choix si bloc faux, jamais de plantage), RG-03 (décor générique lu du paquet, carte venue d'un paquet dans le choix du terrain), RG-04 (tests CPU, parcours accueil → terrain → course → retour 0 écart, carte de test, captures au lead dev), RG-05 (rien de propre à une carte dans le code). Règles : `regles-de-gestion/WFS-343.md`.
 - **WFS-347** (P3, E8) créé : RG-06 de WFS-307 (ligne « Cartes : N téléchargées, X Mo » des Réglages), après WFS-290, 291, 318 (agent 2).
+
+### 2026-11-09 01:11:39 — WFS-343 : début (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-343` depuis `main`. Skills : `agent-developer`, `expert-cartes`, `waforspeed-natif`. Périmètre : RG-01, RG-03, RG-04, RG-05 (neige → WFS-346). Étude du tracé et des chocs actuels avant le plan ; accroches `track.*` / `game.*` annoncées à l'entrée suivante.
