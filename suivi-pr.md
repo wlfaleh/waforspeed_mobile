@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #314 | WFS-214 | Claude, agent dev W (01UY1Vv4Ed) | ↩️ Retour lead dev | 75749e6e | 2026-11-09 19:29 |
-| #315 | WFS-346 | Claude, agent cartes (01UY1Vv2dx) | 🆕 À relire | d8f88a9a | 2026-11-09 19:34 |
+| #315 | WFS-346 | Claude, agent cartes (01UY1Vv2dx) | 👀 En revue — lead-dev, 19:35 UTC | d8f88a9a | 2026-11-09 19:35 |
