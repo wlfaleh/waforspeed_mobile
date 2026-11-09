@@ -3251,3 +3251,19 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 - Diff complet relu. Branche construite par le lead dev : `tests_cpu.sh` 92/92, dont `test_marina_bateaux`. Budget de 17 454 triangles (≤ 18 000), appels de dessin inchangés, Basse +9,0 %.
 - Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash impossible : conflit dans `journal.md` avec `main`. Le développeur synchronise sa branche et rappelle le lead dev ; la fusion suivra.
 - Remarques non bloquantes : un commentaire en double dans `plage.cpp` ; une boucle restée pour une seule borne de ponton ; le salon des vedettes et des yachts reste anguleux de près (à reprendre si la QA le voit).
+### 2026-11-09 19:54:26 — WFS-376 : branche créée, analyse de la marina (Claude, agent dev3d (01UY1Vv3u9))
+- Branche `feature/waforspeed-376` créée depuis main ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
+- Cause relue dans `src/world/plage.cpp` : `placeQuartiers` (zone marina) + `case O_BATEAU` (boîte + triangle de voile) ; le quai est à ≈ 1,85 m au-dessus de l'eau, coque de 0,55 m cachée derrière le mur.
+- Plan : nouvelle géométrie « marina » (pontons flottants, voiliers au port sans voile, vedettes et yachts), LOD sans gréement au-delà de 150 m, tout dans le Geo du décor (aucun appel de dessin en plus).
+
+### 2026-11-09 20:57:26 — WFS-376 : marina modélisée, captures et PR (Claude, agent dev3d (01UY1Vv3u9))
+- Fait : `src/world/marina_bateaux.{h,cpp}` (voilier au port, yacht, vedette, 3 niveaux de détail ; pontons, bittes, amarrage), `plage.cpp` (zone marina : quai à 1,45 m au-dessus de l'eau au lieu de 1,85 m, placement cul au quai + 8 pontons, 37 bateaux au mouillage modélisés, banc `marina`), test `test_marina_bateaux`.
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes, groupe de banc `marina`), `CMakeLists.txt` (1 ligne, test).
+- Décisions du PO appliquées : disposition des pontons, seuil unique 200 m, quai abaissé, option A (densité réelle, 3 niveaux, budget ≤ 18 000).
+- Vérifié : 92 tests CPU réussis ; banc marina (lavapipe), avant = main + banc seul : fenêtre la plus chargée 17 812 triangles (≤ 18 000), appels de dessin inchangés (361 / 298 / 199), image entière +21 % (Cockpit), +10,3 % (Poursuite 120), +11,1 % (Basse).
+- Limites : Basse au-dessus de l'objectif de +10 % ; RG-09 : lampadaire de 6,4 m (ratio 2,07 ; 1,77 rapporté à 7,5 m). Non vérifié sur téléphone.
+
+### 2026-11-09 21:26:44 — WFS-376 : corrections du retour du lead dev (PR #318) (Claude, agent dev3d (01UY1Vv3u9))
+- Suite de 6 images dans le port (vue Poursuite, 120 km/h), passages de seuil repérés ; vues de nuit `marina-gros-plan-nuit`, `marina-poursuite-80-nuit`.
+- Synchronisation avec main 67f20e1a (WFS-379 : la Corniche a un 2e quai de 634 m au niveau de la mer) : bateaux à quai seulement là où le quai abaissé existe ; allègements (coque détaillée à 6 couples, version moyenne sans haubans, pontons de 38 m, une borne par ponton, bittes tous les 28,8 m) : fenêtre la plus chargée 17 454 triangles (≤ 18 000).
+- Mesures avant / après (main 67f20e1a + banc seul) : appels de dessin inchangés ; image entière +19,7 % (Cockpit), +8,4 % (Poursuite 120), +9,0 % (Basse). 22 captures avant / après regardées.
