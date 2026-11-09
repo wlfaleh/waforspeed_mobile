@@ -15,8 +15,12 @@ static Material deuxFaces(Material m) { m.flags |= MAT_DOUBLE; return m; }
 constexpr float AMBIANCE_NUIT = 0.25f;
 
 bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
+bool g_gabaritCeinture = false;   // WFS-349 (RG-03) : banc « cockpit-voisine » : voir vehicule_cockpit.h
 PareBriseVu& pareBriseVu() { static PareBriseVu p; return p; }   // WFS-334 : voir vehicule_cockpit.h
-const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
+const Material& Interieur::mat(const Material& m) const {
+    if (g_interieurCle && g_gabaritCeinture && cleDouce_.set) return cleDouce_;   // WFS-349 : clé douce du banc « cockpit-voisine »
+    return g_interieurCle && cleMat_.set ? cleMat_ : m;
+}
 
 // définitions par modèle (DEFS, interieurPour) : vehicule_cockpit_defs.cpp (sans rendu : testées par tests/test_cockpit.cpp)
 
@@ -168,7 +172,7 @@ std::vector<uint8_t> grainCuir(int N) {
 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_PORTE, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -276,6 +280,10 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     }
     mat(M_PLANCHE_HAUT, d.plancheHaut, 0.72f, 0, true);    // haut de planche : cuir ou matière moussée grainée
     mat(M_PLANCHE_BAS, d.plancheBas, 0.85f, 0, true);      // plastique grainé (aucun reflet métallique)
+    {   // WFS-349 : portières, plancher et tablier : même plastique grainé que le bas de planche, jamais noir (couleurPorte)
+        Material m; const vec3 l = couleurPorte(d); m.color = {l.x, l.y, l.z, 1}; m.rough = 0.85f; m.metal = 0;
+        mats_[M_PORTE] = r.makeMaterial(deuxFaces(m), nullptr, grain_.view ? &grain_ : nullptr, nullptr);
+    }
     mat(M_ACCENT, d.accent, d.accentRugo, d.accentMetal);   // alu brossé (métal 1), carbone verni (0,3), noir laqué
     mat(M_LAQUE, 0x0a0a0b, 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
     mat(M_BRANCHES, d.branchesCol, d.branchesCol > 0x505050 ? 0.35f : 0.3f, d.branchesCol > 0x505050 ? 1.f : 0.f);
@@ -386,13 +394,15 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         boite(ret, R, 0.24f, 0.065f, 0.025f);
         plan(glace, R * translate({0, 0, 0.0135f}), 0.226f, 0.052f);   // WFS-282 (RG-03) : glace côté conducteur, cadre noir de 7 mm
         boite(ret, translate({cx_ - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
-        // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
-        for (float sx : {-1.f, 1.f}) {
-            const float x = cx_ + sx * (demi_ + 0.02f);   // WFS-315 : portières au bord de l'habitacle
-            boite(porte, translate({x, Y - 0.32f, -0.30f}), 0.06f, 0.62f, 1.30f);
-            boite(porte, translate({x - sx * 0.04f, Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);
-        }
-        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PLANCHE_BAS);
+        // contre-portes : panneau intérieur sous la vitre, accoudoir (place du conducteur et du passager)
+        // WFS-349 (RG-02) : habitacle fermé (boitesFermeture, vehicule_cockpit.h) : chaque portière est un bloc plein de 12 cm, de
+        // la face intérieure (WFS-315, inchangée) à la vitre ; son dessus, l'appui de vitre, est à la ligne de ceinture ; de 6 cm
+        // devant le pied du pare-brise (sous le pied du montant) à 0,6 m derrière l'œil, du plancher à la ceinture ; plancher et
+        // tablier ferment la zone des pieds. Avant : plaque de 6 cm, de 15 cm derrière le pied du pare-brise à 0,8 m sous l'œil :
+        // vue de l'œil, la vitre descendait jusqu'au coin bas de l'image et la voisine s'y voyait (ANO-181, 183)
+        for (const BoiteHab& b : boitesFermeture(d, cx_, demi_)) boite(porte, translate(b.centre), b.taille.x, b.taille.y, b.taille.z);
+        for (float sx : {-1.f, 1.f}) boite(porte, translate({cx_ + sx * (demi_ - 0.02f), Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);   // accoudoirs (même place qu'avant)
+        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PORTE);
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -475,6 +485,19 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     const unsigned cols[D_N] = {d.combineActif, 0x2c3440, d.combineAlerte, 0xc8d0da, 0xff6a00};
     for (int k = 0; k < D_N; k++) { dynMat_[k] = emis(cols[k], 1.0f); dynNuit_[k] = emis(cols[k], 0.45f); }   // nuit : moins lumineux, jamais éblouissant
     { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {16, 0, 16}; cleMat_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }   // banc (WFS-235, RG-05)
+    // WFS-349 (RG-03) : clé douce (émission 1,5 au lieu de 16) : la clé de WFS-235 sature les pixels de bord, et la lueur
+    // déborde de ≈ 10 pixels hors de l'habitacle (vu au banc) ; celle-ci garde des bords nets. Banc seulement
+    { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {1.5f, 0, 1.5f}; cleDouce_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }
+    {   // WFS-349 (RG-03) : gabarit du banc : les parois que l'habitacle doit fermer, vues de l'œil : plan de chaque portière
+        // (plan de la vitre latérale) sous la ligne de ceinture, du pied du pare-brise à 1,5 m derrière l'œil, et plan du pied du
+        // pare-brise sous la planche ; un rayon de l'œil qui traverse ces plans doit rencontrer l'habitacle avant
+        Geo g;
+        const float yc = ligneCeinture(d), bas = -3.f, za = d.pareBriseZ, zb = 1.5f;
+        for (float sx : {-1.f, 1.f})
+            boite(g, translate({cx_ + sx * faceVitre(demi_), (yc + bas) * 0.5f, (za + zb) * 0.5f}), 0.002f, yc - bas, zb - za);   // plan de la vitre latérale
+        boite(g, translate({cx_, (d.pareBriseY + bas) * 0.5f, za - 0.03f}), 2 * faceVitre(demi_), d.pareBriseY - bas, 0.002f);   // devant le tablier
+        gabarit_ = r.makeMesh(g.v, g.i);
+    }
     WFS_LOG("cockpit (WFS-197) : intérieur %s construit : %zu pièces, %.2f Mo", d.car, pieces_.size(), octets_ / 1048576.0);
     return true;
 }
@@ -493,6 +516,10 @@ void Interieur::detruire(Renderer& r) {
     brasMat_ = {}; brasNuit_ = {};
     if (cleMat_.set) r.destroy(cleMat_);
     cleMat_ = {};
+    if (gabarit_.indexCount) r.destroy(gabarit_);
+    gabarit_ = {};
+    if (cleDouce_.set) r.destroy(cleDouce_);
+    cleDouce_ = {};
     if (grain_.view) r.vk().destroy(grain_);
     grain_ = {};
     def_ = nullptr; octets_ = 0;
@@ -696,6 +723,7 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     }
     dessinerCombine(r, cam, e.v);
     dessinerCarte(r, cam, route, joueur, cap, e.v.nuit);
+    if (g_interieurCle && g_gabaritCeinture && gabarit_.indexCount) r.draw(gabarit_, cleDouce_, cam);   // WFS-349 : banc seulement (non compté)
 }
 
 } // namespace wfs::cockpit
