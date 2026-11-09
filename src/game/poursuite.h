@@ -133,7 +133,7 @@ struct Evenement { double km = 0; Surprise type = Surprise::Barrage; int file = 
 // WFS-338 (RG-01, RG-05) : les obstacles d'une surprise (barrage, chantier, accident, camion, ralentisseur) sont posés
 // PLACE_M avant, au-delà de la distance de dessin (DESSIN_DEVANT_M) : ils ne surgissent jamais à l'écran ; le bandeau
 // vient ensuite, ANNONCE_M avant (chantier : ANNONCE_TRAVAUX_M, quand les cônes se voient)
-constexpr double PLACE_M = 450, ANNONCE_M = 260, ANNONCE_TRAVAUX_M = 120;   // WFS-338 : chantier : bandeau à 120 m, tenu jusqu'au biseau
+constexpr double PLACE_M = 450, ANNONCE_M = 260, ANNONCE_TRAVAUX_M = 80;   // WFS-338 : chantier : bandeau à 80 m (panneau AK5 à 50 m, cônes visibles), tenu jusqu'au biseau
 bool sePlaceAvant(Surprise s);   // vrai : obstacles posés PLACE_M avant (tout sauf la voiture qui déboîte)
 // WFS-338 (RG-01, ANO-191) : chantier réel : biseau de cônes en travers de la file fermée, puis cônes le long de la file
 // voisine tous les 10 m ; panneau « travaux » (AK5) devant le biseau. Positions (distance en m depuis le début, x en

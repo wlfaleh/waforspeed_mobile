@@ -114,7 +114,7 @@ public:
             for (uint32_t i = 0; i < (uint32_t)N; i++) idx.insert(idx.end(), {k + 2 * i, k + 2 * i + 1, k + 2 * i + 3, k + 2 * i, k + 2 * i + 3, k + 2 * i + 2});
         };
         {   // WFS-338 (décision PO, RG-04 de WFS-119) : un cône = socle + corps + bandes dans un seul maillage, couleurs lues
-            // dans une palette de 4 texels (orange, blanc, noir) ; tous les cônes du chantier sont fusionnés en un seul dessin
+            // dans une palette de 4 texels (orange, blanc, noir) : un seul dessin par cône (avant : 3)
             coneV_.clear(); coneI_.clear();
             for (auto [a, b] : {std::pair{0.04f, 0.30f}, {0.42f, 0.52f}, {0.62f, 0.75f}}) tronc(coneV_, coneI_, a, b, U_ORANGE);
             for (auto [a, b] : {std::pair{0.30f, 0.42f}, {0.52f, 0.62f}}) tronc(coneV_, coneI_, a, b, U_BLANC);
@@ -131,6 +131,7 @@ public:
             }
             const uint8_t pal[16] = {0xe8, 0x50, 0x1a, 255, 0xee, 0xee, 0xee, 255, 0x10, 0x10, 0x10, 255, 0x10, 0x10, 0x10, 255};
             paletteCones_ = r.vk().uploadTexture(pal, 4, 1, true);
+            coneMesh_ = r.makeMesh(coneV_, coneI_);
             Material m; m.rough = 0.5f;
             matCones_ = r.makeMaterial(m, &paletteCones_, nullptr, nullptr);
         }
@@ -180,8 +181,8 @@ public:
         if (camionModele_.ok) r.destroy(camionModele_);
         camionModele_ = Model{};
         r.destroy(cube_);
-        for (Mesh* me : {&conesMesh_, &triangle_, &bandesMesh_}) if (me->indexCount) r.destroy(*me);   // WFS-338
-        conesMesh_ = Mesh{}; conesSales_ = true;
+        for (Mesh* me : {&coneMesh_, &triangle_, &bandesMesh_}) if (me->indexCount) r.destroy(*me);   // WFS-338
+        coneMesh_ = Mesh{};
         r.vk().destroy(bandesTex_); r.vk().destroy(paletteCones_);
         for (Material* m : {&matRouge_, &matBleu_, &matPlot_, &matBlanc_, &matBleuCaisse_, &matVitre_, &matJaune_, &matNoir_, &matCones_,
                             &matPanneauRouge_, &matPanneauJaune_, &matSupport_, &matVitreBleue_, &matBandes_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
@@ -362,11 +363,11 @@ public:
             if (gy.rouge) r.halo(m.transformPoint({cx - xFeu, toit + 0.08f, zToit}), demi, haloBleu_);
             if (gy.bleu) r.halo(m.transformPoint({cx + xFeu, toit + 0.08f, zToit}), demi, haloBleu_);
         }
-        {   // RG-05 : travaux ; WFS-338 (RG-01) : cônes K5a, tous dans un seul dessin (refait à la pose et quand un cône tombe)
-            double premier = 1e18, dernier = -1e18;
-            for (const Plot& p : plots_) if (!p.tombe) { premier = std::min(premier, p.s); dernier = std::max(dernier, p.s); }
-            if (conesSales_) construireCones(r, *g.track);
-            if (!g_bancSans338 && conesMesh_.indexCount && (premier - sP) * M < DESSIN_DEVANT_M && (dernier - sP) * M > -30) r.draw(conesMesh_, matCones_, mat4::identity());
+        for (const Plot& p : plots_) {   // RG-05 : travaux ; WFS-338 (RG-01) : cônes K5a (socle, corps, bandes : un seul dessin par cône)
+            const double rel = (p.s - sP) * M;
+            if (g_bancSans338 || p.tombe || rel < -30 || rel > DESSIN_DEVANT_M) continue;
+            const TrackPoint q = g.track->point(p.s, p.x * RW);
+            r.draw(coneMesh_, matCones_, translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)));
         }
         for (const Panneau& pn : panneaux_) {   // WFS-338 (RG-01) : panneau AK5 « travaux » (triangle rouge, fond jaune) sur pied
             const double rel = (pn.s - sP) * M;
@@ -494,31 +495,13 @@ private:
         graine_ = g_banc ? 20261105u : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 29u;
         c.duelFinish = KM_ARRIVEE * duel::KM;
         etat_ = Etat{}; prog_ = programme(graine_, g_banc);
-        police_.clear(); plots_.clear(); conesSales_ = true; panneaux_.clear(); camions_.clear(); bandes_.clear(); distAvant_ = pl.dist; pertesVues_ = 0; perteT_ = 0; perteCumul_ = 0; perteTexte_.clear();
+        police_.clear(); plots_.clear(); panneaux_.clear(); camions_.clear(); bandes_.clear(); distAvant_ = pl.dist; pertesVues_ = 0; perteT_ = 0; perteCumul_ = 0; perteTexte_.clear();
         for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); p.rd = pl.dist - (22 + 14 * i) / M; police_.push_back(p); }
         const TrafficStats* st = activeTrafficStats();
         chocsVus_ = st ? st->bumps + st->accidents + st->scrapes : 0; quasiVus_ = st ? st->nearMisses : 0;
         actif_ = true; fini_ = false; nouveauRecord_ = false; ftJoueur_ = 0; overT_ = 0; banT_ = 0; ban_.clear(); contreBord_ = false; sireneT_ = 0;
         WFS_LOG("poursuite : graine %u, %.0f km, score %d, %d voitures de police, %zu embouteillages, %zu surprises", graine_, KM_ARRIVEE,
                 etat_.score, POLICE_DEPART, prog_.bouchons.size(), prog_.surprises.size());
-    }
-    // WFS-338 : maillage unique de tous les cônes debout (repère du monde) ; l'ancien est rendu après l'arrêt du GPU
-    void construireCones(Renderer& r, Track& t) {
-        conesSales_ = false;
-        if (conesMesh_.indexCount) { r.vk().waitIdle(); r.destroy(conesMesh_); conesMesh_ = Mesh{}; }
-        std::vector<Vertex> v; std::vector<uint32_t> idx;
-        for (const Plot& p : plots_) {
-            if (p.tombe) continue;
-            const TrackPoint q = t.point(p.s, p.x * RW);
-            const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th));
-            const uint32_t k = (uint32_t)v.size();
-            for (Vertex c : coneV_) {
-                const vec3 P = m.transformPoint({c.px, c.py, c.pz}), N = normalize(m.transformDir({c.nx, c.ny, c.nz}));
-                c.px = P.x; c.py = P.y; c.pz = P.z; c.nx = N.x; c.ny = N.y; c.nz = N.z; v.push_back(c);
-            }
-            for (uint32_t i : coneI_) idx.push_back(k + i);
-        }
-        if (!idx.empty()) conesMesh_ = r.makeMesh(v, idx);
     }
     void annoncer(const std::string& t) { ban_ = t; banT_ = BANDEAU_S; }   // WFS-141 (RG-02) : 1,5 s (avant : 4 s)
 
@@ -603,7 +586,6 @@ private:
                 }
                 case Surprise::Travaux: {  // WFS-338 (RG-01) : vrai chantier : panneau AK5, biseau de cônes, cônes sur 120 m
                     for (const Cone& c : chantier(e.file)) plots_.push_back({s + c.dM / M, c.x, false});
-                    conesSales_ = true;
                     const double xp = FILES[e.file] + (e.file == 2 ? 0.22 : -0.22);
                     panneaux_.push_back({s - PANNEAU_AVANT_M / M, std::clamp(xp, -0.95, 0.95)});
                     break;
@@ -631,7 +613,7 @@ private:
         const double demiL = pl.car->d.L / 2 / M, demiW = pl.car->d.W / 2 / RW;
         for (Plot& p : plots_) {
             if (p.tombe || std::abs(p.s - pl.dist) > demiL + 0.2 / M || std::abs(p.x - pl.playerX) > demiW + 0.03) continue;
-            p.tombe = true; conesSales_ = true; pl.speed *= 0.9; chocGlissiere(etat_, RAISON_PLOT);
+            p.tombe = true; pl.speed *= 0.9; chocGlissiere(etat_, RAISON_PLOT);
         }
     }
 
@@ -729,8 +711,8 @@ private:
     std::vector<Obstacle> obs_;
     std::vector<Plot> plots_;
     std::vector<Panneau> panneaux_;   // WFS-338
-    Mesh conesMesh_, triangle_, bandesMesh_; Image bandesTex_{}, paletteCones_{};   // WFS-338
-    std::vector<Vertex> coneV_; std::vector<uint32_t> coneI_; bool conesSales_ = true;
+    Mesh coneMesh_, triangle_, bandesMesh_; Image bandesTex_{}, paletteCones_{};   // WFS-338
+    std::vector<Vertex> coneV_; std::vector<uint32_t> coneI_;
     static constexpr float U_ORANGE = 0.125f, U_BLANC = 0.375f, U_NOIR = 0.625f;   // centres des texels de la palette des cônes
     Material matCones_, matPanneauRouge_, matPanneauJaune_, matSupport_, matVitreBleue_, matBandes_;
     int pertesVues_ = 0, perteCumul_ = 0; double perteT_ = 0; std::string perteTexte_; const char* perteRaison_ = "";   // WFS-338 (RG-03)
@@ -895,9 +877,9 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     basse("camion en travers");
     // WFS-338 (RG-01, ANO-191) : chantier sur la file de gauche : bandeau quand les cônes se voient (180 m), puis de près
     g_bancSautKm = BANC_TRAVAUX_KM - 0.16; images(20, 4);
-    jusqua(BANC_TRAVAUX_KM - 0.09, 30 * 60);
+    jusqua(BANC_TRAVAUX_KM - 0.03, 30 * 60);   // bandeau tenu, panneau AK5 tout près, cônes devant
     capture("poursuite-travaux");
-    jusqua(BANC_TRAVAUX_KM - 0.045, 30 * 60);
+    jusqua(BANC_TRAVAUX_KM + 0.005, 30 * 60);   // au biseau : cônes de près
     capture("poursuite-travaux-proche");
     // WFS-338 (RG-05, ANO-195, revue du lead dev), après les mesures d'appels de dessin (mêmes endroits que sur main) : au
     // départ, aucune police à moins de 160 m (toute la police repart à 220 m derrière, hors du rayon de dessin) ; elle revient
@@ -988,18 +970,18 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
         if (g.init(r, "golf", "ville")) {
             g.allerA(Ecran::Course); g.setAutopilot(false); images(60, 10);   // décompte : la police attend derrière
             if (PoursuiteSystem* s = PoursuiteSystem::actif) {
-                s->bancPoser(g.player(), -7, std::clamp(g.player().playerX - COTE_X, -BORD_X, BORD_X)); images(2, 1);
-                g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.30f;
+                s->bancPoser(g.player(), -3.5, std::clamp(g.player().playerX - COTE_X, -BORD_X, BORD_X)); images(2, 1);
+                g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ - 0.45f;
                 capture("poursuite-policier-jour");
-                g.orbit = s->orbitAvant_ - 0.30f; g.render(t += 0.02);
+                g.orbit = s->orbitAvant_ + 0.45f; g.render(t += 0.02);
                 capture("poursuite-policier-jour-2");
             }
             g.camMode = 0; g.setAutopilot(true);
             for (int i = 0; i < 6 * 60; i++) { const Course* c = activeCourse(); if (c && c->state == RaceState::Play) break; g.update(1.0 / 60); }
             g_bancSautKm = BANC_TRAVAUX_KM - 0.16; images(20, 4);
-            jusqua(BANC_TRAVAUX_KM - 0.09, 30 * 60);
+            jusqua(BANC_TRAVAUX_KM - 0.03, 30 * 60);   // bandeau tenu, panneau AK5 tout près, cônes devant
             capture("poursuite-travaux-jour");
-            jusqua(BANC_TRAVAUX_KM - 0.045, 30 * 60);
+            jusqua(BANC_TRAVAUX_KM + 0.005, 30 * 60);   // au biseau : cônes de près
             capture("poursuite-travaux-jour-proche");
             g.setAutopilot(false); g.allerA(Ecran::Menu); images(4, 2);
         }
