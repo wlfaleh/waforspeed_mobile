@@ -207,7 +207,7 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
     std::vector<std::pair<int, Mots>> L;
     if (!deplier({L0.begin() + 1, L0.end()}, L, e)) { e = "bloc decor : " + e; return false; }
     const int64_t S = d.segments();
-    d.objets.clear(); d.sol.clear(); d.herbe = true;
+    d.objets.clear(); d.sol.clear(); d.herbe = true; d.saison = {};
     auto err = [&](int n, const std::string& q) { e = "bloc decor : " + ligneErr(n, q); return false; };
     for (const auto& [n, w] : L) {
         const std::string& k = w[0];
@@ -219,6 +219,19 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
         } else if (k == "herbe") {
             if (w.size() != 2 || (w[1] != "0" && w[1] != "1")) return err(n, "« herbe 0|1 » attendu");
             d.herbe = w[1] == "1";
+        } else if (k == "adherence") {   // WFS-346 : adherence chaussee bas_cote (μ)
+            double a = 0, b = 0;
+            if (w.size() != 3 || !nombre(w[1], a) || !nombre(w[2], b) || a < 0.05 || a > 1.2 || b < 0.05 || b > 1.2) return err(n, "« adherence chaussee bas_cote » attendu (μ de 0,05 à 1,2)");
+            d.saison.muChaussee = (float)a; d.saison.muBasCote = (float)b;
+        } else if (k == "neige_chaussee") {   // WFS-346 : neige_chaussee couverture (0 à 1)
+            double a = 0;
+            if (w.size() != 2 || !nombre(w[1], a) || a < 0 || a > 1) return err(n, "« neige_chaussee couverture » attendu (0 à 1)");
+            d.saison.neigeChaussee = (float)a;
+        } else if (k == "flocons") {   // WFS-346 : flocons intensite chute_m_s taille_mm
+            double a = 0, b = 0, c = 0;
+            if (w.size() != 4 || !nombre(w[1], a) || !nombre(w[2], b) || !nombre(w[3], c) || a < 0 || a > 1 || b < 0.3 || b > 3 || c < 1 || c > 10)
+                return err(n, "« flocons intensite chute taille » attendu (intensité 0 à 1, chute 0,3 à 3 m/s, flocon 1 à 10 mm)");
+            d.saison.flocons = (float)a; d.saison.chuteMs = (float)b; d.saison.floconMm = (float)c;
         } else if (k == "bande") {   // bande a b ya yb couleur : sol de chaque côté, m depuis l'axe
             Bande bd; double x[4] = {};
             if (w.size() != 6 || !couleur(w[5], bd.couleur)) return err(n, "« bande a b ya yb couleur » attendu");
@@ -329,6 +342,16 @@ std::vector<std::string> cartesDonnees(bool cachees) {
     return r;
 }
 void oublier() { std::lock_guard<std::mutex> v(g_m); registre().clear(); g_cartesDonnees = nullptr; }
+
+void preparerSaison(const char* carte) {
+    const auto d = carte ? donnees(carte) : nullptr;
+    saisonPartie() = d ? d->saison : Saison{};
+    if (d) {
+        const Saison& s = saisonPartie();
+        WFS_LOG("cartes de données (WFS-346) : %s : saison : μ chaussée %.2f, bas-côté %.2f ; neige au sol %.2f ; flocons %.2f (%.1f m/s, %.1f mm)",
+                d->id.c_str(), s.muChaussee, s.muBasCote, s.neigeChaussee, s.flocons, s.chuteMs, s.floconMm);
+    }
+}
 
 uint64_t empreinteDonnees(const std::string& id) { return carte::empreinte(id, 0, 100 + FORMAT_DONNEES, {"donnees"}); }
 

@@ -1,4 +1,11 @@
-format 1
+format 2
+# WFS-346 : saison (valeurs réelles : references/reel/cartes_v2/neige.md)
+# adherence chaussee bas_cote : neige tassée μ ≈ 0,25 ; neige poudreuse des bas-côtés ≈ 0,2
+adherence 0.25 0.2
+# neige_chaussee couverture : chaussée couverte de neige tassée, traces de roues plus sombres
+neige_chaussee 1
+# flocons intensite chute_m_s taille_mm : chute modérée, 1,2 m/s, flocons de 3,5 mm
+flocons 0.6 1.2 3.5
 # ciel brouillard_jour lointain_jour horizon_nuit brouillard_nuit lointain_nuit
 ciel 0xdfe7ee 600 0x0c1424 0x070b12 420
 # sol enneigé, sans herbe
@@ -18,8 +25,12 @@ repete 20 8 1220 sapin 0 -48 14
 # lampadaires de la rue
 repete 30 0 1220 lampe 0 1
 # guirlandes (seg_debut seg_fin lat hauteur pas couleur) et fenêtres éclairées (lumiere seg lat hauteur rayon couleur)
-guirlande 0 1219 -10 4.5 3 0xff3b30
-guirlande 1 1219 -10.1 4.6 3 0x30ff70
-guirlande 2 1219 -10.2 4.5 3 0xffcf7a
+# WFS-346 : guirlandes interrompues sous l'abri (tunnel de 880 à 990)
+guirlande 0 875 -10 4.5 3 0xff3b30
+guirlande 1 875 -10.1 4.6 3 0x30ff70
+guirlande 2 875 -10.2 4.5 3 0xffcf7a
+guirlande 996 1219 -10 4.5 3 0xff3b30
+guirlande 997 1219 -10.1 4.6 3 0x30ff70
+guirlande 998 1219 -10.2 4.5 3 0xffcf7a
 repete 45 10 1200 lumiere 0 -13.9 2.6 0.35 0xffcf7a
 repete 60 30 1200 lumiere 0 14.4 2.8 0.35 0xffcf7a

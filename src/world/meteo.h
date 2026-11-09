@@ -152,6 +152,44 @@ inline void vitreVue(const vec3 axe[4], float largeur, float epaisseur, float ma
     }
 }
 
+// ---------- WFS-346 (RG-01, RG-03) : neige qui tombe, lue de la saison de la carte (cartes_v2::Saison) ----------
+// Flocons = particules du MONDE dans une boîte qui suit la caméra (± FLOCONS_DEMI m autour, de FLOCONS_BAS à FLOCONS_HAUT m) : en
+// roulant, on les traverse (perspective juste, traînée par le mouvement de la caméra). Chute à la vitesse de la carte (réel : 1 à
+// 1,5 m/s), dérive douce (balancement de ± 0,25 m/s, flocon qui plane). Nombre : intensité × FLOCONS_MAX ; 0 si « réduire les
+// animations » (comme la pluie, RG-02). Dessin seulement dehors : vue Cockpit à travers les vitres, rien sous un tunnel.
+constexpr int FLOCONS_MAX = 2000;   // 0,6 → 1 200 flocons dans ≈ 2 000 m³ (0,6 par m³ : seuls les flocons proches se voient ; coût mesuré au journal)
+constexpr float FLOCONS_DEMI = 8.f, FLOCONS_BAS = -2.f, FLOCONS_HAUT = 6.f;
+inline int nombreFlocons(float intensite, bool reduit) {
+    if (reduit) return 0;
+    return std::clamp((int)std::lround(std::clamp(intensite, 0.f, 1.f) * FLOCONS_MAX), 0, FLOCONS_MAX);
+}
+struct Flocon { vec3 p; float r, phase; };   // position (m, monde), rayon (m), phase du balancement
+// ramène v dans [c − demi, c + demi)
+inline float boucler(float v, float c, float demi) { const float l = 2 * demi; return c - demi + (v - (c - demi)) - l * std::floor((v - (c - demi)) / l); }
+// n flocons répartis dans la boîte autour de la caméra ; diamètre tiré de 0,6 à 1,4 × taille (mm)
+inline void semerFlocons(std::vector<Flocon>& f, int n, vec3 cam, float tailleMm, Hasard& rnd) {
+    f.resize((size_t)std::max(0, n));
+    for (Flocon& k : f) {
+        k.p = {cam.x + rnd.entre(-FLOCONS_DEMI, FLOCONS_DEMI), cam.y + rnd.entre(FLOCONS_BAS, FLOCONS_HAUT), cam.z + rnd.entre(-FLOCONS_DEMI, FLOCONS_DEMI)};
+        k.r = tailleMm * 0.0005f * rnd.entre(0.6f, 1.4f); k.phase = rnd() * 6.2831853f;
+    }
+}
+// chute (m/s), balancement, puis chaque flocon sorti de la boîte (caméra qui avance, flocon tombé au sol) revient de l'autre côté
+inline void avancerFlocons(std::vector<Flocon>& f, float dt, float chute, float t, vec3 cam) {
+    const float yb = (FLOCONS_HAUT - FLOCONS_BAS) * 0.5f, yc = cam.y + (FLOCONS_HAUT + FLOCONS_BAS) * 0.5f;
+    for (Flocon& k : f) {
+        k.p.y -= chute * dt;
+        k.p.x += 0.25f * std::sin(t * 0.9f + k.phase) * dt;
+        k.p.z += 0.25f * std::cos(t * 0.7f + k.phase * 1.3f) * dt;
+        k.p.x = boucler(k.p.x, cam.x, FLOCONS_DEMI); k.p.z = boucler(k.p.z, cam.z, FLOCONS_DEMI); k.p.y = boucler(k.p.y, yc, yb);
+    }
+}
+// vrai si la distance d (m, le long de la route) est sous un toit : [debut + marge, fin − marge] d'un des intervalles (m)
+inline bool sousToit(double d, const std::vector<std::pair<double, double>>& toits, double marge = 0.5) {
+    for (const auto& [a, b] : toits) if (d >= a + marge && d <= b - marge) return true;
+    return false;
+}
+
 // RG-02 : le balai d'angle a0 → a1 (rad, autour de son pivot) est passé sur l'angle phi pendant l'image
 inline bool balaye(float phi, float a0, float a1) { return std::min(a0, a1) <= phi && phi <= std::max(a0, a1) && a0 != a1; }
 
