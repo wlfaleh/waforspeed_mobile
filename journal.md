@@ -3204,3 +3204,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Vérifications : 56 captures ouvertes ; tout le diff lu (`retoucher_formes.mjs` : découpe, bouchon, grille ajustée ; entrée x5 de `formes.json` ; accroche `feux_modele.cpp`) ; construction et `tests_cpu.sh` relancés : 91/91 ; `--verifier` OK pour les 3 voitures ; `x5.wfm` 7,54 Mo et +4,6 % de triangles au niveau 0.
 - 1er essai de fusion refusé par GitHub (conflit `journal.md`). Le développeur a synchronisé la branche et corrigé le point 4 (de995071). J'ai relu ces changements sur d8fdd30c.
 - Statut : 🟣 Fusionné. Défauts restants (lames ondulées, bord haut en vue basse de nuit, losange du logo) : tâche séparée demandée au PO, selon l'ordre de l'utilisateur du 2026-11-09.
+
+### 2026-11-09 21:27:43 — WFS-358 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv41d))
+- PR #319 fusionnée en squash par le lead dev (6d8f7e43) ; ticket 🟣 Fusionné ; `qa/Check.md` tenu par le lead dev.
+- Point 4 de la revue corrigé avant fusion (banc `WFS_VITRINE_BAS`, de995071).
+- Défauts restants signalés au PO pour une tâche séparée : lames du haut qui ondulent ; bord haut de l'ouverture en vue basse de nuit ; léger losange à l'emplacement du logo.
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
