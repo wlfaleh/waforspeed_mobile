@@ -269,7 +269,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-314 | Grand Prix belle et légère + son paquet (plus tard, à découper par le PO) | E14 | ⏳ En attente (WFS-304 validé par l'utilisateur) |  | WFS-304 validé | `feature/waforspeed-314` |  |  |
 | P2 Haute | WFS-322 | Correction (E13) : façades qui virent au bleu à l'arrivée d'une sonde, Ville de jour (ANO-174) | E13 | 🟣 Fusionné (#289) | Claude, agent 1 (01UY1Vv2), 2026-11-08 21:57 UTC (à sa demande) | WFS-300 (mesure) | `feature/waforspeed-322` |  |  |
 | P3 Moyenne | WFS-341 | [TECHNIQUE] Suite de WFS-322 : façades à l'ombre légèrement froides, critère de coût au banc perf | E13 | ⏳ Prêt |  | WFS-322 | `feature/waforspeed-341` |  |  |
-| P3 Moyenne | WFS-354 | [TECHNIQUE] Suite de WFS-334 : gouttes sur le montant, un seul état des balais, pluie dans la bouche du tunnel | E2 (`meteo.*` ; `pareBriseVu()` ≤ 10 lignes) | 🔀 En PR (#305) | Claude, agent dev Y, 2026-11-09 10:00 UTC (à sa demande) | WFS-334 | `feature/waforspeed-354` | #305 |  |
+| P3 Moyenne | WFS-354 | [TECHNIQUE] Suite de WFS-334 : gouttes sur le montant, un seul état des balais, pluie dans la bouche du tunnel | E2 (`meteo.*` ; `pareBriseVu()` ≤ 10 lignes) | 🟡 À valider (utilisateur) — fusionné #305 | Claude, agent dev Y, 2026-11-09 10:00 UTC (à sa demande) | WFS-334 | `feature/waforspeed-354` | #305 |  |
 
 ## Critères d'acceptation
 
