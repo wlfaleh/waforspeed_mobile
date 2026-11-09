@@ -1,4 +1,4 @@
-## Agent : agent arwa (Claude, session trafic)
+Agent : agent arwa (Claude, session trafic)
 
 **Ticket** : WFS-292 — règles : `regles-de-gestion/WFS-292.md` (décision du PO sur RG-04 : a2d554d, 2026-11-08 22:51 UTC)
 
@@ -17,16 +17,19 @@
   - **Accroches** : aucune. **Fichiers touchés** : `src/render/effets_systeme.cpp`, `src/render/effets_particules.h`, `src/render/bench_effets.cpp`.
 - **Comment c'est vérifié** :
   - Rapport fumée / chaussée juste derrière les roues, moyenne de la zone : 1,32 sur `fumee-derapage-jour`, 1,42 à +0,5 s, 1,39 à +1 s. La nuit : 1,30 sous les lampadaires.
+  - **Sur tout le panache** (condition du PO) : bandes de 15 px de l'arrière de la voiture au bas de l'image, largeur du panache à mi-hauteur, chaussée voisine en référence. Moyenne du panache entier : **1,30** à 0 s, **1,36** à +0,5 s, **1,34** à +1 s. Le corps de la nappe, des roues jusqu'à 4-5 m derrière, est entre 1,31 et 1,48 ; la queue descend à 1,11-1,18 là où la fumée s'efface (RG-01 : effacement en 1 à 2 s).
+  - Essais écartés : fondu^0,9 au lieu de ^1,2 (+0,01 à +0,02 seulement), et effacement près de la caméra (WFS-224, ANO-120) coupé (+0,02 à +0,05 en bas de l'image). La queue plus faible vient de la dilution normale de la fumée, pas d'un réglage : je n'ai rien changé.
   - Banc d'effets : 1 accident et 20 étincelles émises au choc, de jour comme de nuit ; 57 bouffées dans `accident-fumee`.
   - Golf sous les lampadaires en Ville de nuit : RGB (26,21,32), saturation 0,35, B ≥ 1,22 × max(R, G).
   - **RG-05**, Ville de nuit sur les captures de WFS-270 : écart moyen 0,70 % sur `phares-autres-ville-haut` (pluie et adaptation de l'œil) et 0,03 % sur `phares-autres-ville-face` (≤ 1 %). Aucun shader n'est modifié ; `carte-campagne-cascade` de jour et de nuit était identique au pixel au 1er passage.
   - **RG-04, condition du PO** (Golf bleue sous un lampadaire) : sur `fumee-derapage-nuit` (Ville), carrosserie (26,21,32), saturation 0,35, B = 1,22 × max(R, G).
-  - Tests CPU : 79 réussis. Deux tests mesurés au temps, `test_duel` et `test_audio_chocs`, ont échoué une fois sous la charge de la machine ; ils passent seuls et au passage suivant.
-  - Parcours complet : 0 écart, vue normale et Cockpit.
+  - Tests CPU (branche synchronisée avec main, 9ef574af) : **83 réussis**, aucun échec (`bash tools/qa/tests_cpu.sh build`).
+  - Parcours complet (`WFS_BANC=parcours`, même branche) : **0 écart**, vue Arrière et vue Cockpit.
 - **Limites et risques connus** :
   - Sur `phares-autres-course5-go-haut`, la Golf du joueur, éclairée de très près par les phares des 4 adversaires et les lampadaires, se lit gris argent bleuté. Cette image n'a pas changé avec ce ticket : la peinture n'est pas modifiée. La preuve « bleue sous un lampadaire » est donc `fumee-derapage-nuit`. Si le PO veut aussi la Golf bleue dans ce cas, il faut un ticket à part sur le reflet du vernis la nuit (WFS-270).
   - La durée des étincelles (0,33 à 0,66 s, vérifiée par `test_effets`) reste au-dessus de la cible réaliste de 0,3 s.
   - En rase campagne la nuit, la Golf reste gris bleuté, comme le PO l'a accepté.
+  - Fumée : la moyenne du panache entier à 0 s est juste au seuil (1,30) ; la queue qui s'efface est sous 1,3. Si le PO veut ≥ 1,3 jusqu'au bout de la queue, il faut une fumée plus durable ou plus dense, ce qui contredit l'effacement en 1 à 2 s de RG-01 : c'est à lui de trancher.
   - Le banc `campagne` est en « échec » sur `main` aussi (arrêt de 4,0 s au col) : ce défaut ne vient pas de ce ticket.
 
 ## Captures pour le lead dev (10 après)
