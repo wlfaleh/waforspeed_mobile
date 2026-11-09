@@ -2830,11 +2830,21 @@ void benchMarina(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture %s : %.0f km/h, %.0f m", nom.c_str(), g.player().kmh(), g.player().dist * M);
         g.shutdown();
     }
-    if (garder("marina-suite")) {   // suite de 4 images à 120 km/h (0,5 s, 16,7 m entre deux images) quand le port passe le seuil
-        // de détail (blocs dont le point le plus proche est à moins de 200 m de la voiture) : de 215 à 165 m avant le port
+    if (garder("marina-suite")) {   // suite de 6 images à 120 km/h (0,5 s, 16,7 m entre deux images) en roulant dans le port, la
+        // rangée du quai à l'écran : les blocs du port devant passent un à un le seuil de détail (point le plus proche à moins de
+        // 200 m de la voiture). L'image où un bloc passe le seuil se voit au saut du nombre de triangles du décor (> 2 000).
         lancer("midi", VueCamera::Poursuite);
-        rouler(m0 - (int64_t)(215 / SEG_M), 120);
-        for (int k = 1; k <= 4; k++) { rouler(INT64_MAX, 120, 30); capture("marina-suite-" + std::to_string(k)); }
+        rouler(m0 + (int64_t)(30 / SEG_M), 120);
+        uint32_t avant = 0;
+        for (int k = 1; k <= 6; k++) {
+            rouler(INT64_MAX, 120, 30);
+            const std::string nom = "marina-suite-" + std::to_string(k);
+            capture(nom);
+            const uint32_t tri = r.comptesImage().triangles[Renderer::FAM_DECOR];
+            WFS_LOG("%s : %.0f m dans le port%s", nom.c_str(), g.player().dist * M - (double)m0 * SEG_M,
+                    k > 1 && tri > avant + 2000 ? " — un bloc du port passe ici au niveau détaillé (seuil de 200 m)" : "");
+            avant = tri;
+        }
         g.shutdown();
     }
     if (garder("marina-poursuite-120-midi-basse")) {   // qualité Basse (téléphone de l'utilisateur) : comme marina-poursuite-120-midi
@@ -2864,7 +2874,13 @@ void benchMarina(Game& g, Renderer& r, const std::string& out) {
     };
     const float R = (float)RW;
     const int64_t s15 = (int64_t)(15 / SEG_M), s40 = (int64_t)(40 / SEG_M), s100 = (int64_t)(100 / SEG_M), s260 = (int64_t)(260 / SEG_M);
-    for (const char* mo : {"midi", "doree"})   // promenade : personne debout (1,7 m) au bord du trottoir, regard vers les poupes
+    if (garder("marina-poursuite-80-nuit")) {   // nuit : coques et mâts éclairés par les lampadaires du quai
+        lancer("nuit", VueCamera::Poursuite);
+        rouler(cible, 80);
+        capture("marina-poursuite-80-nuit");
+        g.shutdown();
+    }
+    for (const char* mo : {"midi", "doree", "nuit"})   // promenade : personne debout (1,7 m) au bord du trottoir, regard vers les poupes
         vueLibre(std::string("marina-gros-plan-") + mo, mo, cible, R + 4.5f, 1.8f, cible + s15, R + 15, OCEAN_Y + 1.2f, 55);
     vueLibre("marina-bassin", "midi", cible - s40, R - 5, 28, cible + s40, R + 28, OCEAN_Y, 60);   // vue d'en haut (28 m)
     // de loin : voiture 260 m avant le port (tout le port dans les blocs allégés), œil sur l'eau à 250 m du quai
