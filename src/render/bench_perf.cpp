@@ -16,6 +16,7 @@
 #include "../game/game.h"
 #include "../game/camera_vue.h"   // WFS-299 : vue Proche au banc des parties
 #include "../game/course_system.h"   // WFS-297 : règles de la course au banc des parties
+#include "../game/course5.h"   // WFS-335 : Course à 5 au banc des parties
 #include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes ; WFS-281 (accroche) : nombre de voitures
 #include "eclairage.h"                // WFS-297 : lampadaires déclarés
 #include "../ui/ecrans/reglages.h"
@@ -86,13 +87,17 @@ struct Fenetre { std::string partie, quand; double image = 0, gpu = 0, rss = 0, 
 
 static void benchParties(Game& g, Renderer& r, const std::string& out, const std::string& liste) {
     std::vector<std::pair<std::string, bool>> parties;
+    std::vector<bool> modes;   // WFS-335 : vrai = Course à 5
     {   // « carte:moment,… » ; défaut : la suite de l'essai de l'utilisateur (Corniche, Ville de nuit, Ville), puis Ville de nuit encore
         const std::string l = liste == "1" ? "plage:jour,ville:nuit,ville:jour,ville:nuit" : liste;
         size_t p = 0;
         while (p < l.size()) {
             size_t v = l.find(',', p); if (v == std::string::npos) v = l.size();
             const std::string e = l.substr(p, v - p); const size_t d = e.find(':');
-            parties.push_back({e.substr(0, d), d != std::string::npos && e.substr(d + 1) == "nuit"});
+            // WFS-335 (RG-01) : 3e champ facultatif « course5 » (Course à 5 : adversaires, sans trafic)
+            const size_t d2 = d == std::string::npos ? d : e.find(':', d + 1);
+            parties.push_back({e.substr(0, d), d != std::string::npos && e.substr(d + 1, d2 == std::string::npos ? d2 : d2 - d - 1) == "nuit"});
+            modes.push_back(d2 != std::string::npos && e.substr(d2 + 1) == "course5");
             p = v + 1;
         }
     }
@@ -105,6 +110,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
     for (size_t k = 0; k < parties.size(); k++) {
         const auto& [carte, nuit] = parties[k];
         const std::string nom = std::to_string(k + 1) + ". " + carte + (nuit ? " nuit" : " jour");
+        modeCourse() = modes[k] ? ModeCourse::Course5 : ModeCourse::Checkpoint;   // WFS-335 : appliqué au départ de la course
         if (k == 0) {
             setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
             if (!g.init(r, "golf", carte.c_str())) { WFS_ERR("parties : chargement %s impossible", carte.c_str()); return; }
@@ -164,12 +170,28 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             WFS_LOG("parties : %s, %s : image %.1f ms, GPU %.2f ms (%s), %u appels, %u triangles, trafic %d, lampadaires %d, RSS %.0f Mo, carte graphique %.0f Mo, %.2f km",
                     w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.couts.c_str(), w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo, g.player().dist * M / 1000);
             WFS_LOG("parties : %s, %s : par système : %s", w.partie.c_str(), w.quand.c_str(), w.systemes.c_str());
+            {   // WFS-335 (RG-01) : relevé voiture par voiture (une image), distance réelle à la caméra ; triangles par famille
+                r.releverVoitures = true; g.update(1.0 / 60); g.render(t); t += 1.0 / 60; r.releverVoitures = false;
+                auto rv = r.releveVoitures();
+                std::sort(rv.begin(), rv.end(), [](const auto& a, const auto& b) { return a.distance < b.distance; });
+                uint32_t somme = 0;
+                for (const auto& v : rv) {
+                    somme += v.triangles;
+                    WFS_LOG("voitures : %s, %s : %s %6.1f m, %5.0f px, niveau %d, %6u triangles, %3u appels", w.partie.c_str(), w.quand.c_str(),
+                            v.joueur ? "joueur    " : "autre     ", v.distance, v.px, v.niveau, v.triangles, v.appels);
+                }
+                const Renderer::ComptesImage& ce = r.comptesImage();
+                WFS_LOG("voitures : %s, %s : %zu voitures, %u triangles en file (scène) ; toutes passes : voitures %u, décor %u, personnes %u triangles ; appels voitures %u",
+                        w.partie.c_str(), w.quand.c_str(), rv.size(), somme, ce.triangles[Renderer::FAM_VOITURES], ce.triangles[Renderer::FAM_DECOR],
+                        ce.triangles[Renderer::FAM_PERSONNES], ce.appels[Renderer::FAM_VOITURES]);
+            }
             res.push_back(w);
             if (f == 0) r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-" + carte + (nuit ? "-nuit" : "-jour") + ".png");
         }
     }
     g.shutdown();
     courseBenchRules(false);
+    modeCourse() = ModeCourse::Checkpoint;   // WFS-335
     choisirVue(vue0);
     WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) | carte graphique (Mo) |");
     for (const Fenetre& w : res)
