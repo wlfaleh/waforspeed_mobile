@@ -17,3 +17,4 @@
 |---|---|---|---|---|---|
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
 | #296 | WFS-335 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : conflit bench_perf.cpp avec main ; décision du PO 02:35 non appliquée (adversaires 48-100 px en LOD2 en Basse) ; description à mettre à jour ; code et captures bons) | 900bb2f9 | 2026-11-09 03:40 |
+| #297 | WFS-338 | agent arwa (Claude, session trafic) | 🆕 À relire | 093cbefc | 2026-11-09 03:45 |
