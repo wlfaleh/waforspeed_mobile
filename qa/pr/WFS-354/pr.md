@@ -13,7 +13,8 @@ Agent : Claude, agent dev Y
   - **RG-02** : la pluie n'a plus sa propre copie des balais. À chaque image dessinée, `balayerVitre` lit l'angle des balais dessinés (`pareBriseVu().angle`). Au retour en Cockpit, l'angle de départ est remis à l'angle courant, donc rien n'est balayé d'un coup (remarque a).
   - **RG-03** : la coupure du tunnel suit la **position de la caméra** le long de la route.
     - Le fondu de 8 m s'arrête **à la bouche**.
-    - En vue Arrière, c'est le même fondu qu'avant : 8 pixels d'écart à la bouche, 0 à 6 m.
+    - **En vue Arrière (2e retour du lead dev), c'est exactement le calcul de main** : position de la voiture, marge 2 m (`pluieTunnel(false, …)`). Écart mesuré avec main : 0 pixel avec la voiture 6 m et 12 m dans le tunnel.
+    - La position de la caméra, avec un fondu de 8 m qui s'arrête à la bouche (`TOIT_MARGE_COCKPIT`), ne sert qu'en vue Cockpit.
     - En vue Cockpit, plus aucun trait dès que la caméra est sous la voûte.
     - Avant la première image, la caméra n'est pas encore connue : le calcul prend alors la voiture (remarque b).
   - **Banc `WFS_BANC=pluie`** (`benchPluie`, dans `meteo.cpp`), branché par une accroche E7 de 2 lignes dans `desktop_main.cpp`, annoncée au journal. Il prend la Golf et le X5, et les témoins en vue Arrière dehors et à la bouche du tunnel.
@@ -21,13 +22,15 @@ Agent : Claude, agent dev Y
   - **`test_pluie` vert** :
     - lancer de rayon depuis l'œil : sur les 20 intérieurs, aucun point du bord de la vitre n'est caché par un montant, ni ce même point décalé du rayon d'une goutte ;
     - contrôle du test : l'ancien bord, sur l'axe du montant, est bien vu comme caché ;
-    - plus de pluie dès la bouche, fondu de 8 m.
+    - vue Cockpit : plus de pluie dès que la caméra est à la bouche, fondu de 8 m avant ;
+    - vue Arrière : `pluieTunnel(false, …)` comparée tous les 0,5 m, de 80 à 320 m, à la formule de main recopiée telle quelle : identique ; voiture à +6 m de la bouche : part de pluie 0, comme sur main.
   - Banc `pluie` : effacement par les balais dessinés en Cockpit, 0 effacement en vue Arrière.
   - Coût de la pluie : 0,03 ms par image en Cockpit, au plus 0,05 ms.
   - **87 tests CPU verts, parcours complet 0 écart**, branche synchronisée avec `main` (WFS-318 compris).
 - **Limites et risques connus**
   - La suite des balais est de nuit : la pluie n'existe que la nuit en Ville.
   - Les gouttes déjà posées restent sur le pare-brise dans le tunnel jusqu'au passage du balai.
+  - Remarques non bloquantes de la 2e revue : `Interieur::construire` prend maintenant `LARGEUR_MONTANT`, `EPAISSEUR_MONTANT` et `RETRAIT_MONTANT_HAUT` (mêmes valeurs, image inchangée) ; le paramètre inutile `pb` de `surVitre` est retiré.
   - Le banc est dans `world/meteo.cpp`, qui dépend donc de `game/game.h` (remarque c). Je peux le sortir dans un fichier à part si le PO l'ajoute à la zone.
   - Les gouttes passent aussi sur le rétroviseur intérieur (remarque d) : c'est déjà le cas sur `main`, hors de ce ticket, et c'est noté pour le PO.
   - Après la fusion, le ticket passe en 🟡 À valider (utilisateur).
@@ -53,6 +56,7 @@ Dossier : [`qa/pr/WFS-354`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `pluie-tunnel-3m` | caméra 3 m sous la voûte : avant, des traits ; après, aucun (les gouttes déjà posées restent jusqu'au balai) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-3m.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-3m.jpg?raw=true) |
 | `pluie-tunnel-6m` | caméra 6 m sous la voûte : aucun trait | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-6m.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-6m.jpg?raw=true) |
 | `pluie-tunnel-milieu` | milieu du tunnel : aucun trait | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-milieu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-milieu.jpg?raw=true) |
-| `pluie-tunnel-arriere-bouche` | **témoin vue Arrière à la bouche** (caméra de poursuite à la bouche) : identique à main (8 pixels d'écart) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-arriere-bouche.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-arriere-bouche.jpg?raw=true) |
-| `pluie-tunnel-arriere-6m` | témoin vue Arrière, caméra 6 m dans le tunnel : identique à main (0 pixel) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-arriere-6m.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-arriere-6m.jpg?raw=true) |
+| `pluie-tunnel-arriere-voiture-bouche` | **témoin vue Arrière, la voiture à la bouche** (caméra de poursuite encore dehors) : même fondu que main, la pluie s'éclaircit ; seule la place des traits change (tirage au hasard, comme `pluie-arriere-vitesse`) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-arriere-voiture-bouche.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-arriere-voiture-bouche.jpg?raw=true) |
+| `pluie-tunnel-arriere-bouche` | **témoin vue Arrière, la voiture 6 m dans le tunnel** (caméra de poursuite à la bouche) : aucun trait sous la voûte, **identique à main : 0 pixel d'écart** (différence de luminance des deux JPEG, plus de 8 niveaux) ; 1re version de la 2e revue : 2 699 pixels, défaut corrigé | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-arriere-bouche.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-arriere-bouche.jpg?raw=true) |
+| `pluie-tunnel-arriere-6m` | témoin vue Arrière, la voiture 12 m dans le tunnel : identique à main (0 pixel d'écart) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-tunnel-arriere-6m.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-tunnel-arriere-6m.jpg?raw=true) |
 | `pluie-arriere-vitesse` | témoin vue Arrière à 102 km/h, dehors : traits inclinés comme sur main (les traits bougent d'une passe à l'autre) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/avant-pluie-arriere-vitesse.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-354/qa/pr/WFS-354/apres-pluie-arriere-vitesse.jpg?raw=true) |

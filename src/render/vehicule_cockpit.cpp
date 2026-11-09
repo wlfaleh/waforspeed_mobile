@@ -378,8 +378,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     {
         Geo mont, pav, ret, porte, glace;
         const vec3 bas[2] = {{cx_ - montant_, Yb, Zb}, {cx_ + montant_, Yb, Zb}};   // WFS-315 : pieds des montants à leur écart réel
-        const vec3 haut[2] = {{cx_ - (montant_ - 0.10f), 0.40f, -0.42f}, {cx_ + (montant_ - 0.10f), 0.40f, -0.42f}};
-        for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
+        const vec3 haut[2] = {{cx_ - (montant_ - RETRAIT_MONTANT_HAUT), 0.40f, -0.42f}, {cx_ + (montant_ - RETRAIT_MONTANT_HAUT), 0.40f, -0.42f}};
+        for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], LARGEUR_MONTANT, EPAISSEUR_MONTANT);   // WFS-354 : mêmes cotes que la vitre de la pluie
         boite(pav, translate({cx_, 0.43f, -0.28f}), 2 * demi_ - 0.16f, 0.04f, 0.32f);
         // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
         const mat4 R = translate({cx_ - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f);
