@@ -4615,3 +4615,13 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 
 ### 2026-11-09 00:38:44 — WFS-340 fusionné par le lead dev (lead-dev)
 PR #292 relue (diff complet : statuts.yml RG-A, matin.yml RG-C, pr.md) ; revue « ✅ Approuvé » écrite dans la PR (COMMENT, même compte GitHub) sur 832a7823 ; squash 0708e60e. Pas de captures (ticket de CI) : preuves par le faux `gh`. Remarques non bloquantes : un run du jour annulé ou rouge bloque le relancement automatique ce jour-là ; liste des jobs illisible = pas de ✅ (choix prudent). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`, statut 🟣.
+
+### 2026-11-09 00:39:29 — WFS-322 fusionné par le lead dev (lead-dev)
+- PR #289, 2e revue : les 4 points de la 1re revue sont vérifiés.
+  - RG-04 : fichiers de mesure relus. `fluidite.txt` est identique entre `main` et la branche ; `perf` processeur Haute 2,1 → 2,2 ms, Basse 1,3 → 1,2 ms.
+  - Le journal contient la cause complète, les accroches, les tests et le parcours.
+- Le code est identique à celui de la 1re revue. Les captures n'ont pas changé ; les paires clés ont été rouvertes.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire, même compte), puis squash 52d42271. Statut 🟣 : ANO-174 vient d'une mesure de banc, pas d'un retour de l'utilisateur sur son téléphone.
+- Pour le PO, deux remarques :
+  - façade à l'ombre légèrement chaude (b* +1,8 à +2,9) au lieu de légèrement froide : finition possible ;
+  - RG-04 de WFS-322 cite le banc `fluidite` pour le coût par image, mais ce banc mesure la caméra : critère à écrire avec le banc `perf`.
