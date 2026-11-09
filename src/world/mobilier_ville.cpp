@@ -2,9 +2,9 @@
 // Mesures (sources, ±1 %) :
 //   - banc public : longueur 1,80 m, profondeur 0,60 m, assise à 0,45 m, dossier à 0,85 m ; lattes de 95 × 35 mm
 //     (NF EN 581-1 et 581-2 ; catalogues des bancs « ville de Paris » à flancs en fonte) ;
-//   - abribus : 4,0 × 1,8 m, 2,55 m de haut, poteaux 80 × 80 mm, verre trempé 10 mm, panneau d'affichage 120 × 176 cm
+//   - abribus : toit de 4,2 × 1,9 m à 2,53 m, poteaux 80 × 80 mm, verre trempé 10 mm, panneau d'affichage 120 × 176 cm
 //     (format « sucette » 2 m², caisson 1,32 × 1,92 m) ; banc à 0,46 m ;
-//   - grille de parc : 1,15 m, barreaux carrés de 16 mm tous les 13 cm (vide < 11 cm, NF P01-012), lisses plates 40 × 12 mm,
+//   - grille de parc : 1,15 m, barreaux carrés de 16 mm tous les 12 cm au plus (vide < 11 cm, NF P01-012), lisses plates 40 × 12 mm,
 //     poteaux 80 mm à pomme ;
 //   - lampadaire de rue : mât conique galvanisé de 7,4 m (Ø 180 mm au pied, 120 mm en tête), crosse de 2,4 m, luminaire
 //     routier de 0,84 × 0,34 m (EN 40, catalogues des luminaires à LED de voirie) ;
@@ -65,10 +65,15 @@ void relier(Sortie& s, uint32_t a0, uint32_t b0, int m) {
         inverse = dot(g, n) < 0;
         break;
     }
+    auto pos = [&](uint32_t k) { const Vertex& v = s.v[k]; return vec3{v.px, v.py, v.pz}; };
+    auto tri = [&](uint32_t a, uint32_t b, uint32_t c) {   // triangle gardé seulement s'il a une surface (pas aux pôles)
+        const vec3 g = cross(pos(b) - pos(a), pos(c) - pos(a));
+        if (dot(g, g) < 1e-16f) return;
+        if (inverse) s.i.insert(s.i.end(), {a, c, b}); else s.i.insert(s.i.end(), {a, b, c});
+    };
     for (int i = 0; i + 1 < m; i++) {
         const uint32_t a = a0 + i, a1 = a + 1, b = b0 + i, b1 = b + 1;
-        if (inverse) s.i.insert(s.i.end(), {a, b1, a1, a, b, b1});
-        else s.i.insert(s.i.end(), {a, a1, b1, a, b1, b});
+        tri(a, a1, b1); tri(a, b1, b);
     }
 }
 
@@ -205,7 +210,7 @@ void banc(Sortie s, const Repere& R, vec2 bois, vec2 fonte) {
     for (float z : {-0.78f, 0.78f}) {   // flancs en fonte
         barre(s, R, {-0.25f, 0, z}, {-0.22f, 0.43f, z}, Z, 0.055f, 0.04f, 0.008f, fonte);       // pied avant
         barre(s, R, {0.25f, 0, z}, {0.19f, 0.42f, z}, Z, 0.055f, 0.04f, 0.008f, fonte);         // pied arrière
-        barre(s, R, {-0.29f, 0.41f, z}, {0.21f, 0.40f, z}, Z, 0.05f, 0.045f, 0.008f, fonte);    // support d'assise
+        barre(s, R, {-0.29f, 0.393f, z}, {0.21f, 0.388f, z}, Z, 0.05f, 0.045f, 0.008f, fonte);  // support d'assise
         barre(s, R, {0.16f, 0.40f, z}, {0.29f, 0.87f, z}, Z, 0.05f, 0.045f, 0.008f, fonte);     // montant du dossier
         barre(s, R, {-0.23f, 0.13f, z}, {0.23f, 0.13f, z}, Z, 0.03f, 0.035f, 0.006f, fonte);    // entretoise
         for (float x : {-0.245f, 0.245f}) pave(s, R, {x, 0.012f, z}, {0.045f, 0.012f, 0.035f}, 0.005f, fonte);   // patins
@@ -213,13 +218,13 @@ void banc(Sortie s, const Repere& R, vec2 bois, vec2 fonte) {
              0.019f, 6, fonte);   // accoudoir cintré
     }
     for (float x : {-0.235f, -0.125f, -0.015f, 0.095f})   // 4 lattes d'assise 95 × 35 mm, jour de 15 mm
-        pave(s, R, {x, 0.445f, 0}, {0.0475f, 0.0175f, 0.92f}, 0.006f, bois);
+        pave(s, R, {x, 0.4325f, 0}, {0.0475f, 0.0175f, 0.90f}, 0.006f, bois);
     const vec2 a{0.205f, 0.49f}, b{0.30f, 0.86f};   // 3 lattes de dossier, devant les montants, suivant leur pente
     const float L = std::sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
     const vec2 d{(b.x - a.x) / L, (b.y - a.y) / L}, nf{-d.y, d.x};   // nf : vers l'avant du dossier
     for (float t : {0.17f, 0.52f, 0.87f}) {
         const vec3 c{a.x + d.x * L * t + nf.x * 0.04f, a.y + d.y * L * t + nf.y * 0.04f, 0};
-        paveF(s, {R.p(c), R.d({nf.x, nf.y, 0}), R.d({d.x, d.y, 0}), R.z}, {0.0175f, 0.0475f, 0.92f}, 0.006f, bois);
+        paveF(s, {R.p(c), R.d({nf.x, nf.y, 0}), R.d({d.x, d.y, 0}), R.z}, {0.0175f, 0.0475f, 0.90f}, 0.006f, bois);
     }
 }
 
@@ -264,7 +269,7 @@ void grille(Sortie s, vec3 a, vec3 b, vec3 ext, vec2 fonte) {
     tour(s, R, {0, 1.15f, 0}, {{0.05f, 0}, {0.05f, 0.02f}, {0.03f, 0.035f}, {0.042f, 0.07f}, {0.03f, 0.11f}, {0, 0.15f}}, 8, fonte);   // pomme
     const vec3 X{1, 0, 0};
     for (float y : {0.12f, 1.0f}) barre(s, R, {0, y, 0.04f}, {0, y + dy * (Lh - 0.04f) / Lh, Lh - 0.04f}, X, 0.04f, 0.012f, 0.003f, fonte);
-    const int nb = std::max(1, (int)std::floor((Lh - 0.08f) / 0.13f));
+    const int nb = std::max(1, (int)std::ceil((Lh - 0.08f) / 0.12f));   // pas ≤ 12 cm : vide ≤ 10,4 cm
     for (int k = 0; k < nb; k++) {
         const float z = 0.04f + ((float)k + 0.5f) * (Lh - 0.08f) / (float)nb, y0 = 0.05f + dy * z / Lh;
         barreau(s, R.p({0, y0, z}), R.p({0, y0 + 1.05f, z}), R.x, R.z, 0.008f, 0.07f, fonte);
@@ -292,7 +297,7 @@ void lampadaire(Sortie m, Sortie l, const Repere& R, float portee, bool lod) {
     const int n = lod ? 6 : 12;
     const vec2 u{0, 0};
     tour(m, R, {0, 0, 0}, {{0.16f, 0}, {0.16f, 0.025f}, {0.13f, 0.04f}, {0.115f, 0.06f}, {0.11f, 0.55f}, {0.095f, 0.62f}, {0.09f, 0.66f},
-                           {0.06f, 7.25f}, {0.064f, 7.27f}, {0.064f, 7.31f}, {0, 7.33f}}, n, u);   // mât conique, collerette, chapeau
+                           {0.06f, 7.32f}, {0.064f, 7.34f}, {0.064f, 7.38f}, {0, 7.40f}}, n, u);   // mât conique, collerette, chapeau
     const float L = portee;
     tube(m, R, {{0.0f, 7.05f, 0}, {0.05f, 7.30f, 0}, {0.22f, 7.43f, 0}, {0.55f, 7.48f, 0}, {L * 0.6f, 7.47f, 0}, {L - 0.45f, 7.41f, 0}}, 0.032f, lod ? 4 : 8, u);   // crosse
     pave(m, R, {L - 0.08f, 7.35f, 0}, {0.42f, 0.055f, 0.17f}, 0.045f, u);   // corps du luminaire, arêtes arrondies
@@ -352,8 +357,8 @@ void chaiseBistrot(Sortie s, const Repere& R, vec2 cannage, vec2 alu) {
         tube(s, R, {{sx * 0.20f, 0, -0.21f}, {sx * 0.19f, 0.44f, -0.19f}, {sx * 0.186f, 0.62f, -0.215f}, {sx * 0.17f, 0.86f, -0.245f}}, r, 6, alu);   // pied arrière et montant
         tube(s, R, {{sx * 0.197f, 0.15f, 0.195f}, {sx * 0.197f, 0.15f, -0.205f}}, 0.008f, 5, alu);                                // barreau
     }
-    tube(s, R, {{-0.19f, 0.44f, 0.185f}, {0.19f, 0.44f, 0.185f}, {0.19f, 0.44f, -0.19f}, {-0.19f, 0.44f, -0.19f}, {-0.19f, 0.44f, 0.185f}}, 0.01f, 6, alu, false);   // cadre d'assise
-    pave(s, R, {0, 0.455f, -0.003f}, {0.2f, 0.014f, 0.2f}, 0.012f, cannage);   // assise tressée
+    tube(s, R, {{-0.19f, 0.425f, 0.185f}, {0.19f, 0.425f, 0.185f}, {0.19f, 0.425f, -0.19f}, {-0.19f, 0.425f, -0.19f}, {-0.19f, 0.425f, 0.185f}}, 0.01f, 6, alu, false);   // cadre d'assise
+    pave(s, R, {0, 0.436f, -0.003f}, {0.2f, 0.014f, 0.2f}, 0.012f, cannage);   // assise tressée (dessus à 0,45 m)
     for (float y : {0.66f, 0.81f}) {   // dossier : deux bandes tressées cintrées
         const float zb = -0.215f - (y - 0.62f) * 0.125f;
         const vec3 p[3] = {{-0.18f, y, zb}, {0, y, zb - 0.035f}, {0.18f, y, zb}};

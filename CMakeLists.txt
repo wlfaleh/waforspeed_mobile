@@ -158,6 +158,7 @@ else()
   add_executable(test_archi_kit tests/archi_kit.cpp src/world/archi_kit.cpp)   # WFS-161 (ST-1) : kit d'architecture, M-01 et règles des ouvertures
   target_compile_definitions(test_archi_kit PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_marina_bateaux tests/test_marina_bateaux.cpp src/world/marina_bateaux.cpp)   # WFS-376 : bateaux de la marina (mesures RG-04 / RG-05, budget RG-10, aucune voile hissée)
+  add_executable(test_mobilier_ville tests/test_mobilier_ville.cpp src/world/mobilier_ville.cpp)   # WFS-369 : mobilier urbain de la Ville (mesures, vide des grilles, aucune forme nue, faces)
   add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD)
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fluidite_reference tests/test_fluidite_reference.cpp)   # WFS-293 (RG-10) : l'indicateur à 10-20 img/s voit les sauts

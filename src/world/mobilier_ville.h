@@ -46,7 +46,7 @@ void tube(Sortie s, const Repere& R, const std::vector<vec3>& pts, float r, int 
 // ---------- modèles ----------
 // banc public à lattes (1,80 × 0,60 m, assise 0,45 m, dossier 0,85 m), flancs en fonte, accoudoirs
 void banc(Sortie s, const Repere& R, vec2 bois, vec2 fonte);
-// abribus (4,0 × 1,8 m, 2,55 m) : poteaux, toit en porte-à-faux, vitrages encadrés, panneau d'affichage, banc à lattes
+// abribus (toit 4,2 × 1,9 m à 2,53 m) : poteaux, toit en porte-à-faux, vitrages encadrés, panneau d'affichage, banc à lattes
 void abribus(Sortie s, Sortie verre, const Repere& R, vec2 alu, vec2 affiche, vec2 bois);
 // grille de parc entre deux poteaux a et b (monde, au sol), côté extérieur ext : barreaux à pointes, deux lisses
 void grille(Sortie s, vec3 a, vec3 b, vec3 ext, vec2 fonte);
