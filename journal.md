@@ -3267,3 +3267,7 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 - Suite de 6 images dans le port (vue Poursuite, 120 km/h), passages de seuil repérés ; vues de nuit `marina-gros-plan-nuit`, `marina-poursuite-80-nuit`.
 - Synchronisation avec main 67f20e1a (WFS-379 : la Corniche a un 2e quai de 634 m au niveau de la mer) : bateaux à quai seulement là où le quai abaissé existe ; allègements (coque détaillée à 6 couples, version moyenne sans haubans, pontons de 38 m, une borne par ponton, bittes tous les 28,8 m) : fenêtre la plus chargée 17 454 triangles (≤ 18 000).
 - Mesures avant / après (main 67f20e1a + banc seul) : appels de dessin inchangés ; image entière +19,7 % (Cockpit), +8,4 % (Poursuite 120), +9,0 % (Basse). 22 captures avant / après regardées.
+
+### 2026-11-09 21:46:25 — WFS-376 fusionné par le lead dev (lead-dev)
+- PR #318 fusionnée en squash (d6c65441) après la synchronisation du développeur. J'ai vérifié 8abf9372 : il n'apporte que `main` 8717f7b2, seul `journal.md` était en conflit, et les changements de la branche sont les mêmes qu'au commit relu 7d69d264. La revue « ✅ Approuvé » a été postée sur 8abf9372 en commentaire (même compte GitHub).
+- `TACHES.md` : WFS-376 passe en 🟡 À valider (utilisateur), parce que l'anomalie ANO-206 vient d'une vidéo de l'utilisateur. Ligne ajoutée à `qa/Check.md` ; ligne #318 retirée de `suivi-pr.md`.
