@@ -4648,3 +4648,5 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Zone** : `camera_vue.cpp` est seulement lu (`etatCockpit()`, sans accroche). `cartes_banc.cpp` reçoit 3 vues de tunnel pour les captures (RG-05).
 - **Vérifié en local** : `test_pluie` vert, 81 tests CPU verts, parcours complet 0 écart, 182 gouttes effacées par les balais au banc. Coût de la pluie : 0,029 ms par image en cockpit, 0,006 à 0,013 ms en vue Arrière.
 - **Captures** dans `qa/pr/WFS-334/` (12 paires). L'« avant » = la branche avec `meteo.*` et `vehicule_cockpit.*` de `main`. Le premier essai « avant » a été rejeté : le banc n'avait pas été reconstruit, comme le montrait la ligne de journal présente dans le banc « avant ».
+
+### 2026-11-09 01:00:28 — WFS-193 : méthode A (petite géométrie neuve par l'outil), 3 voitures pilotes d'abord (po-scrum-master)
