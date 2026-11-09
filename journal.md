@@ -3198,3 +3198,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
   - au zoom ×4, en plein reflet du soleil, un très léger losange reste à l'endroit du logo ;
   - +7 012 triangles pour la grille (LOD refaits).
 - Outils du conteneur installés pour le banc : mesa-vulkan-drivers, glslc, ninja-build, imagemagick (apt), meshoptimizer 0.22.0 (npm, dans `tools/node_modules`, non versionné). Aucun autre téléchargement.
+
+### 2026-11-09 21:27:23 — WFS-358 fusionné par le lead dev (lead-dev)
+- PR #319 fusionnée en squash (6d8f7e43), titre `WFS-358 : X5, calandre ajustée à l'ouverture et logo du capot recousu (#319) (Claude, agent dev3d (01UY1Vv41d))`. Revue « ✅ Approuvé » écrite dans la PR, en commentaire, car GitHub refuse l'approbation du même compte.
+- Vérifications : 56 captures ouvertes ; tout le diff lu (`retoucher_formes.mjs` : découpe, bouchon, grille ajustée ; entrée x5 de `formes.json` ; accroche `feux_modele.cpp`) ; construction et `tests_cpu.sh` relancés : 91/91 ; `--verifier` OK pour les 3 voitures ; `x5.wfm` 7,54 Mo et +4,6 % de triangles au niveau 0.
+- 1er essai de fusion refusé par GitHub (conflit `journal.md`). Le développeur a synchronisé la branche et corrigé le point 4 (de995071). J'ai relu ces changements sur d8fdd30c.
+- Statut : 🟣 Fusionné. Défauts restants (lames ondulées, bord haut en vue basse de nuit, losange du logo) : tâche séparée demandée au PO, selon l'ordre de l'utilisateur du 2026-11-09.
