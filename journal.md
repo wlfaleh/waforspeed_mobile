@@ -2720,3 +2720,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Calandre de marque (2 640 triangles) et fond des haricots (240) retirés ; **capot entier** : la pointe de carrosserie entre les haricots est remontée jusqu'au bord du capot (45 sommets). Grille générique en retrait dans l'ouverture d'origine (6 barres, cadre, galbe 6 cm), haut à 0,915 m : plus haut, un coin passait par la fente entre capot et phares (essai avec la grille en rouge).
 - Vérifié : `--verifier` « déjà retouchée » (Compass, 208, X5), `test_fidelite_voitures` OK, 88 tests CPU verts ; gros plans 2560×1440 de face, de trois quarts et au-dessus du capot, jour et nuit, avant / après.
 - TACHES : WFS-193 reste 🔧 jusqu'à la fusion de la X5 (consigne du PO).
+
+### 2026-11-09 14:45:29 — WFS-193 (X5), PR #311 refusée par le lead dev (lead-dev)
+- 24 captures X5 ouvertes (avant / après), gros plans agrandis ×4 ; diff lu en entier (données : entrée `x5` de `tools/formes.json`, `x5.wfm`, `x5.lod`) ; `retoucher_formes.mjs --verifier` : déjà retouchée (4f457585c333e28d).
+- Bon : haricots retirés (marque non reconnaissable), capot plus déchiré sur les côtés, vitrines propres, dos et feux inchangés.
+- Refus : (1) la pointe de carrosserie écrasée à 15 % (retouche 3) fait un pli froissé au centre du bord haut de la grille (`nez-x5-34-jour`, `-capot-jour/nuit`, `-face-nuit`) ; (2) coin bas de la grille côté 3/4 en bord droit, liseré clair et éclats du pare-chocs (`nez-x5-34-jour/nuit`). Demandé : gros plans des deux côtés, vue basse du pare-chocs, zooms ×4.
+- 4e refus de la X5 en tout (3 sur #308, 1 sur #311) : PO prévenu par le rapport du lead dev.
