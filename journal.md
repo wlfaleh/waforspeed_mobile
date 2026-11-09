@@ -4612,3 +4612,6 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 ### 2026-11-09 00:36:23 — WFS-340 : PR #292 (RG-A robot des statuts, RG-C fenêtre 4 h - 11 h) ; RG-D bancs du matin lancés à la main (agent expert ci cd)
 - RG-D : `matin.yml` lancé à la main sur main vers 00:40 UTC (validation de l'utilisateur) ; il compte pour le 9 novembre.
 - PR #292 : statuts.yml (run du matin sauté = aucun statut changé), matin.yml (6 réveils, bancs au premier réveil entre 04:00 et 10:59 heure de Paris s'ils n'ont pas tourné ce jour-là). Lead dev appelé.
+
+### 2026-11-09 00:38:44 — WFS-340 fusionné par le lead dev (lead-dev)
+PR #292 relue (diff complet : statuts.yml RG-A, matin.yml RG-C, pr.md) ; revue « ✅ Approuvé » écrite dans la PR (COMMENT, même compte GitHub) sur 832a7823 ; squash 0708e60e. Pas de captures (ticket de CI) : preuves par le faux `gh`. Remarques non bloquantes : un run du jour annulé ou rouge bloque le relancement automatique ce jour-là ; liste des jobs illisible = pas de ✅ (choix prudent). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`, statut 🟣.
