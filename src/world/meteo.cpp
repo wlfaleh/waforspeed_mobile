@@ -14,6 +14,7 @@
 #include "../game/trace_cartes.h"          // WFS-334 : sections couvertes du tracé (tunnel)
 #include "../render/vehicule_cockpit.h"    // WFS-334 : pare-brise et balais de l'image (pareBriseVu)
 #include "../game/game.h"                  // WFS-354 : banc « pluie »
+#include "cartes_v2/carte_donnees.h"        // WFS-346 : saison de la carte (flocons)
 #include <string>
 
 namespace wfs {
@@ -32,15 +33,26 @@ public:
     const char* name() const override { return "pluie"; }
 
     void init(Renderer&, const GameView& g) override {
-        actif_ = pluieDemandee(g);
+        // WFS-346 : la neige de la carte (saison du paquet) prend ce système ; la pluie de la Ville reste prioritaire
+        const cartes_v2::Saison& sz = cartes_v2::saisonPartie();
+        const bool pluie = pluieDemandee(g);
+        neige_ = !pluie && sz.flocons > 0;
+        actif_ = pluie || neige_;
         gouttes_.clear(); w_ = h_ = 0; reduit_ = false;
         tempsUs_ = 0; images_ = 0;
-        if (actif_) WFS_LOG("Pluie : nuit en ville, pluie active");
+        flocons_.clear(); camPrecOk_ = false; toits_.clear(); aAvancer_ = 0;
+        intensite_ = sz.flocons; chute_ = sz.chuteMs; tailleMm_ = sz.floconMm;
+        if (neige_ && g.track) {   // toits du tracé (tunnels) : aucun flocon dessous
+            for (const trace::Section& s : trace::sections(*g.track)) if (s.type == trace::Type::Tunnel) toits_.push_back({s.debut * SEG_M, s.fin * SEG_M});
+        }
+        if (pluie) WFS_LOG("Pluie : nuit en ville, pluie active");
+        if (neige_) WFS_LOG("Neige (WFS-346) : flocons de la carte : intensité %.2f, chute %.1f m/s, %.1f mm, %zu tunnel(s)", intensite_, chute_, tailleMm_, toits_.size());
     }
 
     void update(double dt, const GameView& g) override {
         if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course) return;
         preparer(g);
+        if (neige_) { aAvancer_ += dt; return; }   // WFS-346 : flocons avancés au dessin, avec la caméra de l'image (inconnue ici)
         if (gouttes_.empty()) return;
         const float p = vitesseRelative(g);
         // WFS-334 (ANO-194) : à vitesse, les gouttes partent du point de fuite et viennent vers la caméra
@@ -54,7 +66,7 @@ public:
         if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course) return;
         const auto t0 = std::chrono::steady_clock::now();
         preparer(g);
-        if (gouttes_.empty()) return;
+        if (gouttes_.empty() && !neige_) return;
         const float p = vitesseRelative(g), slant = meteo::inclinaison((float)g.player->steer, p);
         // WFS-334 (RG-03) : sous un toit (tunnel), la pluie s'efface en un fondu court
         const float ciel = partDuCiel(g);
@@ -68,6 +80,7 @@ public:
         float quad[8]; const bool cockpit = vitre && quadPareBrise(g, pb, quad);
         if (cockpit && !cockpitPrec_) anglePrec_ = pb.angle;   // retour en Cockpit : rien à balayer à cette image (remarque a)
         cockpitPrec_ = cockpit;
+        if (neige_) { dessinerFlocons(r, g, cockpit, quad); mesurer(t0); return; }   // WFS-346 : neige (pas de gouttes sur la vitre)
         if (cockpit) { balayerVitre(pb); dessinerVitre(r, g, pb); }   // WFS-354 (RG-02) : balais de l'image dessinée
         if (ciel <= 0.01f) { mesurer(t0); return; }
         // trait rgba(170,190,255,.2), 1 px « CSS » de large (lineWidth = w / innerWidth)
@@ -88,9 +101,11 @@ public:
     }
 
     void shutdown(Renderer&) override {
-        if (images_ > 0)
+        if (images_ > 0 && neige_) WFS_LOG("Neige (WFS-346) : %zu flocons, coût moyen %.3f ms par image (%d images)", flocons_.size(), tempsUs_ / images_ / 1000.0, images_);
+        else if (images_ > 0)
             WFS_LOG("Pluie : %zu gouttes, coût moyen %.3f ms par image (%d images) ; vitre : %ld gouttes effacées par les balais", gouttes_.size(), tempsUs_ / images_ / 1000.0, images_, balayees_);
         actif_ = false; gouttes_.clear(); images_ = 0; tempsUs_ = 0; vitre_.clear(); anglePrec_ = 0; balayees_ = 0;
+        neige_ = false; flocons_.clear(); toits_.clear(); camPrecOk_ = false;
     }
 
 private:
@@ -210,6 +225,69 @@ private:
 
     float fuiteX_ = 0, fuiteY_ = 0;
 
+    // ---------- WFS-346 : flocons (particules du monde, voir meteo.h) ----------
+    // Chaque flocon est projeté à l'écran : taille réelle (rayon × focale / distance, au moins 0,7 px), traînée = déplacement de la
+    // caméra pendant l'image (on roule à travers la neige), effacé au bord de la boîte (pas de « mur » de flocons). Rien sous un
+    // tunnel (distance du flocon le long de la route), rien sur l'habitacle en vue Cockpit (mêmes vitres que la pluie). Nuit : les
+    // flocons ne se voient que dans le faisceau des phares (devant, sous 35 m) et faiblement ailleurs (éclairage de la rue).
+    void dessinerFlocons(Renderer& r, const GameView& g, bool cockpit, const float quad[8]) {
+        const int n = meteo::nombreFlocons(intensite_, reduit_);
+        if (n == 0) { flocons_.clear(); return; }
+        vec3 dcam = camPrecOk_ ? g.camPos - camPrec_ : vec3{};
+        if ((int)flocons_.size() != n || length(dcam) > 8.f) { meteo::semerFlocons(flocons_, n, g.camPos, tailleMm_, rnd_); dcam = {}; }   // départ, saut de caméra
+        camPrec_ = g.camPos; camPrecOk_ = true;
+        dcam = dcam * (float)std::min(1.0, (1.0 / 60) / std::max(aAvancer_, 1e-4));   // traînée d'une exposition de 1/60 s (images espacées au banc)
+        tempsNeige_ += aAvancer_;
+        meteo::avancerFlocons(flocons_, (float)std::min(aAvancer_, 0.25), chute_, (float)tempsNeige_, g.camPos);   // chute du temps écoulé, boîte autour de la caméra
+        aAvancer_ = 0;
+        const vec3 cf = normalize(g.camTarget - g.camPos);
+        const float focale = std::abs(g.proj.at(1, 1)) * g.uiHeight * 0.5f;   // pixels par mètre à 1 m
+        double dCar = 0, L = 1, th = 0, qx = 0, qz = 0;
+        if (g.track && g.player) {
+            const TrackPoint q = g.track->point(g.player->dist, 0);
+            dCar = g.player->dist * M; L = std::max(1.0, (double)g.track->segmentCount() * SEG_M); th = q.th; qx = q.x; qz = q.z;
+        }
+        const double sn = std::sin(th), cs = std::cos(th);
+        const bool nuit = g.night;
+        for (const meteo::Flocon& k : flocons_) {
+            if (!toits_.empty()) {   // distance du flocon le long de la route (avant de la route = (sin th, −cos th), comme partDuCiel)
+                const double d = std::fmod(std::fmod(dCar + (k.p.x - qx) * sn - (k.p.z - qz) * cs, L) + L, L);
+                if (meteo::sousToit(d, toits_)) continue;
+            }
+            const vec3 rel = k.p - g.camPos;
+            const float z = dot(rel, cf);
+            if (z < 0.3f) continue;
+            float x1, y1, x0, y0;
+            if (!projeter(g, k.p, x1, y1) || x1 < -4 || y1 < -4 || x1 > w_ + 4 || y1 > h_ + 4) continue;
+            if (cockpit && !dehors(quad, x1, y1)) continue;
+            if (!projeter(g, k.p + dcam, x0, y0)) { x0 = x1; y0 = y1; }
+            const float px = std::max(1.6f * k_, k.r * focale / z);   // au moins ≈ 1,5 px « CSS » : flou de mise au point et de bougé d'un flocon proche
+            const float horiz = std::sqrt(rel.x * rel.x + rel.z * rel.z);
+            float a = 0.9f * (1 - std::clamp((horiz - 0.7f * meteo::FLOCONS_DEMI) / (0.3f * meteo::FLOCONS_DEMI), 0.f, 1.f)) * std::min(1.f, z);
+            float lum = 0.95f;
+            if (nuit) {   // faisceau des phares : devant, cône de ± 0,35 rad, sous 35 m, sous la hauteur de la caméra + 1 m
+                const float lat = length(rel - cf * z) / z;
+                const float phare = (1 - std::clamp((lat - 0.25f) / 0.2f, 0.f, 1.f)) * (1 - std::clamp((z - 20.f) / 15.f, 0.f, 1.f)) * (rel.y < 1.f ? 1.f : 0.5f);
+                lum = 0.28f + 0.67f * phare;
+            }
+            if (a <= 0.02f) continue;
+            const float cr = 0.93f * lum, cg = 0.95f * lum, cb = 0.98f * lum;
+            float dx = x1 - x0, dy = y1 - y0, l = std::sqrt(dx * dx + dy * dy);
+            if (l < px) { dx = 0; dy = 1; l = 1; x0 = x1; y0 = y1 - px; }   // presque immobile : petit carré du diamètre du flocon
+            const float nx = -dy / l * px * 0.5f, ny = dx / l * px * 0.5f;
+            const float at = l > px * 3 ? a * std::max(0.5f, px * 3 / l) : a;   // traînée longue : plus pâle (même lumière étalée)
+            const UiVertex q[4] = {{x0 + nx, y0 + ny, -1, -1, cr, cg, cb, at * 0.3f}, {x1 + nx, y1 + ny, -1, -1, cr, cg, cb, at},
+                                   {x1 - nx, y1 - ny, -1, -1, cr, cg, cb, at}, {x0 - nx, y0 - ny, -1, -1, cr, cg, cb, at * 0.3f}};
+            r.uiQuad(q);
+        }
+    }
+    bool neige_ = false, camPrecOk_ = false;
+    float intensite_ = 0, chute_ = 1.2f, tailleMm_ = 3.5f;
+    double tempsNeige_ = 0, aAvancer_ = 0;
+    vec3 camPrec_{};
+    std::vector<meteo::Flocon> flocons_;
+    std::vector<std::pair<double, double>> toits_;   // tunnels du tracé (m le long de la route)
+
     static float vitesseRelative(const GameView& g) {
         return g.player ? (float)std::clamp(std::abs(g.player->speed) / MAX_SPEED, 0.0, 1.0) : 0.f;
     }
@@ -220,7 +298,7 @@ private:
         if (g.uiWidth == w_ && g.uiHeight == h_ && reduit == reduit_) return;
         w_ = g.uiWidth; h_ = g.uiHeight; reduit_ = reduit;
         k_ = std::max(1.f, h_ / 720.f);   // échelle de l'écran : pixels de l'interface par pixel « CSS » (comme effets, WFS-65)
-        const int n = meteo::nombreGouttes(w_ / k_, h_ / k_, reduit);
+        const int n = neige_ ? 0 : meteo::nombreGouttes(w_ / k_, h_ / k_, reduit);   // WFS-346 : neige : aucune goutte
         meteo::initRain(gouttes_, n, w_, h_, k_, rnd_);
         fuiteX_ = w_ / 2; fuiteY_ = h_ * 0.45f;   // WFS-334 : jusqu'à la première image
         WFS_LOG("Pluie : %d gouttes (écran %.0fx%.0f%s)", n, w_, h_, reduit ? ", animations réduites" : "");

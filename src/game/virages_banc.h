@@ -1,7 +1,7 @@
 // WaForSpeed — mesures de la direction dans les virages (WFS-295, ANO-168), sans GPU : partagées par le banc WFS_BANC=virages
 // (virages_banc.cpp : captures dans la partie et vues de dessus) et tests/test_virages_fleches.cpp.
 //  - rayon réel du cercle décrit volant à fond (dans le monde), au centre, au bord, sur le bas-côté ;
-//  - épingles des lacets de la Corniche (R = 22 m) ;
+//  - épingles des lacets (R = 22 m ; WFS-379 : col de la Campagne, la Corniche n'en a plus) ;
 //  - joueur simulé aux flèches (−1, 0, +1) ou au volant (« Glisser ») qui vise un point de sa file 9 m devant.
 #pragma once
 #include <algorithm>
@@ -32,15 +32,21 @@ inline DriveInput tenir(const Player& p, double kmh, float steer) { DriveInput i
 // courbure (1/m) de l'axe en s (unités du jeu) ; > 0 : virage à droite
 inline double courbure(Track& t, double s) { return std::remainder(t.point(s + 2 / M, 0).th - t.point(s - 2 / M, 0).th, 2 * 3.14159265358979) / 4; }
 
-// épingles des lacets de la Corniche : virages serrés (R < 40 m) entre 1 750 et 2 850 m ; sens 1 = à droite, −1 = à gauche
+// épingles des lacets (R = 22 m) : virages serrés (R < 40 m) de la 1re section « lacets » de la piste ; sens 1 = à droite,
+// −1 = à gauche. WFS-379 : la Corniche n'a plus de lacets ; les bancs et tests de la direction prennent ceux du col de la
+// Campagne (mêmes épingles de 165° et 22 m, inchangées)
 struct Epingle { double debut, fin; int sens; };
 inline std::vector<Epingle> epingles(Track& t) {
     std::vector<Epingle> e; bool dans = false; Epingle c{};
-    for (double s = 1750 / M; s < 2850 / M; s += 1 / M) {
+    const trace::Section* l = nullptr;
+    for (const trace::Section& s : t.sections()) if (s.type == trace::Type::Lacets) { l = &s; break; }
+    if (!l) return e;
+    for (double s = l->debut * SEG; s < l->fin * SEG; s += 1 / M) {
         const double k = courbure(t, s);
         if (std::abs(k) > 1 / 40.0) { if (!dans) { dans = true; c.debut = s; c.sens = k > 0 ? 1 : -1; } c.fin = s; }
         else if (dans) { dans = false; e.push_back(c); }
     }
+    if (dans) e.push_back(c);
     return e;
 }
 

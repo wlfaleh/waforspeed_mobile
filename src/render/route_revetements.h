@@ -43,7 +43,9 @@ enum class Carte : int { Ville, Campagne, Corniche, Circuit };
 Carte carteDe(const char* mapId);          // « ville », « campagne », « plage », « circuit » ; autre : Ville
 Revetement chaussee(Carte c);              // revêtement de la chaussée de la carte
 Revetement chaussee();                     // … de la carte de la partie (preparer)
-float codeMateriau(int qualite, Carte c);  // valeur de Material::cutoff lue par route.glsl
+// valeur de Material::cutoff lue par route.glsl : mode + 4 × carte + 16 × neige (WFS-346 : neige au sol de la carte, 0 à 1, par huitièmes)
+float codeMateriau(int qualite, Carte c, float neige = 0);
+constexpr int NEIGE_PAS = 8;               // WFS-346 : couverture de neige transmise par huitièmes (route.glsl : neigeRoute)
 
 // M-03 (RG-01) : bandes de roulement : largeur 0,8-1,0 m (± 5 % : voie des voitures) ; écartement des deux bandes d'une voie =
 // voie moyenne des voitures du jeu (references/reel/voitures.json : 23 voies relevées, 1 572 mm) ; mêmes valeurs dans route.glsl

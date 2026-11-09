@@ -1,8 +1,9 @@
 // WFS-295 (ANO-168) : la voiture du joueur doit tourner vraiment dans les virages et les épingles (ancienne conduite, en jeu
 // depuis WFS-258 RG-00 ; flèches, aide désactivée). Mesures sans GPU :
-//  - RG-01 : rayon réel (dans le monde) volant à fond à 10 km/h, identique au centre, au bord et sur le bas-côté d'une épingle
-//    (± 5 %) et égal à celui de la ligne droite ; rayon comparé à la fiche (diamètre entre trottoirs ≈ 4,15 × empattement) ;
-//  - RG-02 : les 6 épingles des lacets de la Corniche (R = 22 m) passées à 20, 25 et 30 km/h aux flèches (−1, 0, +1), sur la
+//  - RG-01 : rayon réel (dans le monde) volant à fond à 10 km/h, identique au centre, au bord et sur le bas-côté d'un virage de
+//    22 m (± 5 %) et égal à celui de la ligne droite ; rayon comparé à la fiche (diamètre entre trottoirs ≈ 4,15 × empattement) ;
+//    WFS-379 : la Corniche n'a plus de lacets ; le virage mesuré est son virage de rue de 22 m (carrefour simple, même sol)
+//  - RG-02 : les épingles des lacets (R = 22 m ; WFS-379 : les 4 du col de la Campagne) passées à 20, 25 et 30 km/h aux flèches (−1, 0, +1), sur la
 //    file extérieure, aide désactivée puis activée, et en « Glisser » (volant proportionnel) : aucune image sur l'herbe ;
 //  - RG-03 : après un accident, la voiture répond à la flèche en 0,5 s au plus, braquage gardé.
 // usage : test_virages_fleches [--rapport]
@@ -39,9 +40,10 @@ static Passage passer(Track& t, const Epingle& e, double kmh, Aide aide, bool fl
 
 int main(int argc, char** argv) {
     const bool rapport = argc > 1 && !std::strcmp(argv[1], "--rapport");
-    static Track ville, plage;
+    static Track ville, plage, col;
     ville.build(mapById("ville"), trace::versionCarte("ville"));
     plage.build(mapById("plage"), trace::versionCarte("plage"));
+    col.build(mapById("campagne"), trace::versionCarte("campagne"));   // WFS-379 : épingles des lacets du col de la Campagne
 
     // ---------- RG-01 : rayon réel, volant à fond, 10 km/h ----------
     std::printf("## RG-01 : rayon réel volant à fond à 10 km/h (aide désactivée)\n");
@@ -50,14 +52,20 @@ int main(int argc, char** argv) {
         std::printf("- %s : ligne droite %.2f m ; fiche (≈ 4,15 × empattement, au centre de la voiture) %.2f m ; écart %+.0f %%\n", id, droit, fiche,
                     100 * (droit / fiche - 1));
     }
-    const std::vector<Epingle> ep = epingles(plage);
+    const std::vector<Epingle> ep = epingles(col);
     VERIFIE(ep.size() >= 4, "épingles des lacets introuvables (%zu)", ep.size());
-    if (!ep.empty()) {
-        // milieu de la 1re épingle (courbure établie), voiture placée au centre, au bord et sur le bas-côté des deux côtés
-        const Epingle& e = ep[0];
+    const trace::Section* rue = nullptr;   // WFS-379 : virage de rue de 22 m de la Corniche (carrefour simple)
+    for (const trace::Section& x : plage.sections()) if (x.exRondPoint) { rue = &x; break; }
+    VERIFIE(rue, "virage de rue de la Corniche introuvable");
+    if (rue) {
+        // milieu de la partie la plus serrée (courbure établie), voiture placée au centre, au bord et sur le bas-côté des deux côtés
+        int64_t a0 = rue->debut, a1 = rue->debut; double cMax = 0;
+        for (int64_t a = rue->debut; a < rue->fin; a++) cMax = std::max(cMax, std::abs(plage.segAt(a).curve));
+        for (int64_t a = rue->debut; a < rue->fin; a++) if (std::abs(plage.segAt(a).curve) > 0.99 * cMax) { if (a0 == rue->debut) a0 = a; a1 = a; }
+        const Epingle e{a0 * SEG, (a1 + 1) * SEG, courbure(plage, (a0 + a1 + 1) * 0.5 * SEG) > 0 ? 1 : -1};
         const double s = (e.debut + e.fin) / 2, R = 1 / std::abs(courbure(plage, s));
         const double droit = rayon("golf", ville, 50 / M, 0, 10, 1.f);
-        std::printf("- épingle de la Corniche à %.0f m (R = %.1f m, virage %s), Golf, volant tourné vers l'intérieur :\n", s * M, R, e.sens > 0 ? "à droite" : "à gauche");
+        std::printf("- virage de rue de la Corniche à %.0f m (R = %.1f m, virage %s), Golf, volant tourné vers l'intérieur :\n", s * M, R, e.sens > 0 ? "à droite" : "à gauche");
         for (double n : {0.0, 7.5, -7.5, 11.5, -11.5}) {
             const double r = rayon("golf", plage, s, n, 10, (float)e.sens), ecart = r / droit - 1;
             const char* ou = n == 0 ? "centre" : std::abs(n) < 8 ? (n * e.sens < 0 ? "bord extérieur" : "bord intérieur") : (n * e.sens < 0 ? "bas-côté extérieur" : "bas-côté intérieur");
@@ -66,14 +74,14 @@ int main(int argc, char** argv) {
         }
     }
 
-    // ---------- RG-02 : épingles des lacets de la Corniche, file extérieure ----------
-    std::printf("## RG-02 : les %zu épingles des lacets de la Corniche, Golf, file extérieure, vitesse tenue\n", ep.size());
+    // ---------- RG-02 : épingles des lacets de la Campagne (WFS-379), file extérieure ----------
+    std::printf("## RG-02 : les %zu épingles des lacets de la Campagne, Golf, file extérieure, vitesse tenue\n", ep.size());
     struct Cas { const char* nom; Aide aide; bool fleches; };
     for (const Cas c : {Cas{"flèches, aide désactivée", Aide::Desactivee, true}, Cas{"flèches, aide activée", Aide::Activee, true},
                         Cas{"Glisser, aide désactivée", Aide::Desactivee, false}, Cas{"Glisser, aide activée", Aide::Activee, false}}) {
         for (double kmh : {20.0, 25.0, 30.0}) {
             int herbe = 0, finies = 0; double ecart = 0;
-            for (const Epingle& e : ep) { const Passage r = passer(plage, e, kmh, c.aide, c.fleches); herbe += r.herbe; finies += r.fini; ecart = std::max(ecart, r.ecartMax); }
+            for (const Epingle& e : ep) { const Passage r = passer(col, e, kmh, c.aide, c.fleches); herbe += r.herbe; finies += r.fini; ecart = std::max(ecart, r.ecartMax); }
             std::printf("- %s, %2.0f km/h : %d / %zu épingle(s) passée(s), %d image(s) sur l'herbe, écart max %.2f demi-largeur\n", c.nom, kmh, finies,
                         ep.size(), herbe, ecart);
             if (!rapport) VERIFIE(herbe == 0 && finies == (int)ep.size(), "%s à %.0f km/h : %d image(s) sur l'herbe", c.nom, kmh, herbe);
@@ -84,7 +92,7 @@ int main(int argc, char** argv) {
     std::printf("## RG-02, cas de la vidéo : voiture au bord extérieur (0,95) ou sur le bas-côté (1,35 demi-largeur) 10 m avant l'épingle, flèches, aide désactivée\n");
     for (double depart : {0.95, 1.35}) for (double kmh : {20.0, 30.0, 50.0}) {
         int herbe = 0, finies = 0; double ecart = 0;
-        for (const Epingle& e : ep) { const Passage r = passer(plage, e, kmh, Aide::Desactivee, true, depart, 10); herbe += r.herbe; finies += r.fini; ecart = std::max(ecart, r.ecartMax); }
+        for (const Epingle& e : ep) { const Passage r = passer(col, e, kmh, Aide::Desactivee, true, depart, 10); herbe += r.herbe; finies += r.fini; ecart = std::max(ecart, r.ecartMax); }
         std::printf("- départ %.2f, %2.0f km/h : %d / %zu passée(s), %d image(s) sur l'herbe (%.1f s par épingle), écart max %.2f demi-largeur\n", depart, kmh, finies, ep.size(),
                     herbe, herbe * DT / std::max<size_t>(1, ep.size()), ecart);
     }
@@ -115,7 +123,7 @@ int main(int argc, char** argv) {
         const Epingle& e = ep[0];
         const double s = (e.debut + e.fin) / 2, droit = rayon("golf", ville, 50 / M, 0, 10, 1.f);
         g_avantWfs295 = true;
-        const double ext = rayon("golf", plage, s, -e.sens * 7.5, 10, (float)e.sens);
+        const double ext = rayon("golf", col, s, -e.sens * 7.5, 10, (float)e.sens);
         g_avantWfs295 = false;
         std::printf("## banc : comportement d'avant rejoué : rayon au bord extérieur %.2f m (%+.0f %% de la ligne droite, %+.0f %% mesuré sur main)\n", ext,
                     100 * (ext / droit - 1), 28.5);

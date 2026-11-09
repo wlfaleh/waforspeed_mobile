@@ -1,7 +1,7 @@
 // WaForSpeed — acoustique des lieux (WFS-275) : banc d'essai PC (RG-09), écouté et regardé par la QA. Scènes de 10 s calculées comme
 // en jeu (parois::Suivi et parois::Echos au pas de 1/120 s, blocs de 400 échantillons), le son du moteur du banc (moteur.wav) en entrée :
 //   parois-ville   : 50 km/h ; rue bordée d'immeubles des deux côtés (façades à RW + 6,5 m), carrefour de 4 à 5 s, rue de 5 à 7 s, parc ensuite ;
-//   parois-falaise : lacets de la Corniche : paroi de roche à gauche seulement (RW + 6,35 m), une trouée de 4,5 à 5,2 s ;
+//   parois-falaise : montée de la Corniche (WFS-379, ex-lacets) : paroi de roche à gauche seulement (RW + 6,35 m), une trouée de 4,5 à 5,2 s ;
 //   parois-stands  : 200 km/h dans la ligne droite des stands : mur vitré à gauche (RW + 1,4 m), tribune à droite de 4 à 6 s ;
 //   masque-ville   : un adversaire passe derrière un immeuble (virage à angle droit) : masque de diffraction ;
 // WFS-278 :
@@ -197,14 +197,15 @@ void benchParois(const std::string& out, const std::vector<float>& moteurBanc) {
         if (t < 6) return {0, 0, false};                                             // carrefour
         return {(float)RW + 31.f, F, false, ALPHA_VERRE, ALPHA};                     // centre commercial à gauche
     }, {3.f, 8.f}, 250.f, "WFS-278");
-    {   // Corniche : roche côté montagne (accroche de plage.cpp : face à RW + 4,6 + 1,75 m, hauteurParoi, profondeur jusqu'à mi-chemin
-        // de la branche suivante des lacets, à 45 m), sur 60 m ; l'adversaire roule sur la branche suivante à 108 km/h
+    {   // Corniche : roche côté montagne (accroche de plage.cpp : face à RW + 4,6 + 1,75 m, hauteurParoi), sur 60 m, profondeur de
+        // 17 m ; l'adversaire roule à 108 km/h de l'autre côté de la roche, à 45 m. WFS-379 : la Corniche n'a plus de lacets (la
+        // scène reste un massif de roche entre l'auditeur et la voiture, mêmes mesures qu'avant pour comparer les journaux)
         effacer("banc-corniche");
         const float x0 = RWf + 4.6f, prof = (45.f + RWf + 1) / 2 - x0;
         for (int n = 0; n < 50; n++)
             declarer("banc-corniche", 1000, n, -1, x0 + 1.75f, 13.f + 3.f * std::sin(n * 0.013f) + 3.f * std::sin(n * 0.051f + 1.3f), (float)SEG_M, prof, ALPHA_PIERRE);
         sceneMasque(out, "masque-corniche", monde("banc-corniche", 30.f), {-45.f, 0.6f, -150.f}, {0, 0, 30.f}, 108, 25.f, "WFS-278",
-                    "adversaire dans le lacet suivant, derrière la roche (60 m de roche, 13 m de haut environ)");
+                    "adversaire derrière la roche de la montée (60 m de roche, 13 m de haut environ)");
     }
     {   // Campagne : maisons à 12 m à droite (10 m de façade, 8 m de profondeur, 6 m de haut), une tous les 14,4 m ; voiture à 35 m, 108 km/h
         effacer("banc-campagne");
