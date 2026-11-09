@@ -2699,3 +2699,18 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - PR #308, 4e revue, commit relu a6b0052e, squash 78540de6. Option (a) du PO vérifiée : `x5.wfm` / `x5.lod` identiques à main, `formes.json` limité à compass et p208, seules les captures X5 et `pr.md` changées depuis 47cf8a83 (hors synchronisation avec main).
 - Relancés : `retoucher_formes.mjs --verifier` (déjà retouchées), `test_fidelite_voitures` OK. 18 paires de captures ouvertes : rien de dégradé.
 - Approbation écrite en commentaire (même compte GitHub). WFS-193 reste 🔧 (X5 en 2e PR). Ligne #308 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-09 14:23:53 — WFS-215 : PR #288, 2e revue : contenu accepté, conflit seulement (lead-dev auto)
+
+Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derrière le pare-brise). Seul blocage : conflit `journal.md` avec `main`. **Pour le PO** : c'est le 4e refus du jour pour un simple conflit de `journal.md` (#297 deux fois, #288 deux fois) : `main` reçoit des entrées toutes les quelques minutes et chaque branche qui écrit au journal entre en conflit avant sa revue. Piste à trancher par le PO : que les développeurs n'écrivent plus `journal.md` sur leur branche (seulement sur `main`), ou que le lead dev puisse fusionner quand le seul conflit est dans `journal.md` / `TACHES.md` / `track-agent.md` en gardant les deux côtés. #297 : toujours en attente de synchronisation.
+
+### 2026-11-09 14:25:16 — WFS-293 : à-coup en virage corrigé, banc durci, PR #310 (Claude, Agent 0 developer)
+- **Causes nommées (RG-04)** : (1) `Track::pointLisse` (Catmull-Rom) : courbure qui saute à chaque segment de 1,2 m → tout point écarté de l'axe change de vitesse d'un coup ; corrigé en B-spline cubique (position et cap) ; (2) `camera_vue.cpp` : distance de la caméra sur `lonAcc` du dernier pas (bascule au gaz tout ou rien, lue une fois par image) ; corrigé par l'accélération de la vitesse lissée (filtre exact 0,3 s).
+- **Banc** (RG-01 à RG-03, RG-07, RG-12 à RG-14) : à-coup compté partout, carrefour de la Ville, cadences régulières et irrégulières, référence 120 Hz par rejeu exact. Branche : **0 manque** (5 scénarios) ; même banc sur main : virage serré 20, épingle 8, carrefour 8 manques. RG-14 : saut de 5 mm injecté dans l'épingle à 30 img/s mesuré 4,92 / 4,84 mm.
+- **Tableau RG-05** (référence 120 Hz, main → branche, Poursuite irrégulière) : virage serré 15 img/s 35,2 → 4,7 mm, 30 img/s 54,1 → 2,5, 90 img/s 18,9 → 0,2 ; épingle 30 img/s 6,6 → 1,5, 90 img/s 12,4 → 0,6 ; carrefour 30 img/s 8,5 → 1,2, 90 img/s 12,3 → 0,3. Tableau complet dans `qa/pr/WFS-293/pr.md`. 89 tests CPU OK, `parcours` 0 écart. PR #310 ouverte, lead dev appelé.
+
+### 2026-11-09 14:36:03 — WFS-293 : PR #310 refusée par le lead dev (lead-dev)
+- Commit relu b0b860ff. Diff lu en entier ; construction refaite (`build-ld`) et **89 tests CPU OK** ; code jugé correct (B-spline, caméra, référence 120 Hz, juges RG-12 / RG-13).
+- **Refus pour les captures** : la suite « épingle de la Corniche, 30 img/s, Proche » est prise sur la **jambe droite** avant l'épingle (`dedans = début + 15 m` d'une section `Lacets`, qui commence par une droite) : hors sujet. Demandé aussi : une paire avant / après de la Ville avec trafic en virage (`pointLisse` change aussi pour le trafic, le duel, la poursuite, le joueur).
+- Remarques non bloquantes : `if (passe < 2)` toujours vrai, commentaire « 10-20 img/s » périmé, `vPrec` et `dth` inutilisés, 26 img/s sans juge à écrire.
+- Revue postée en commentaire sur la PR (même compte GitHub). TACHES et track-agent : ↩️ Retour lead dev (PR #310).
