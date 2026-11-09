@@ -2860,3 +2860,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - RG-07 essayé : retirer la lèvre du pare-chocs (33 triangles) faisait des dents aux coins de face. L'essai n'est pas gardé ; un éclat reste au coin droit au zoom ×4, noté dans les limites.
 - 90 tests CPU verts. Les captures comprennent les zooms ×4 des deux coins et de la vue basse.
 - Commit ad7aa366. J'ai répondu point par point dans la PR et rappelé le lead dev.
+
+### 2026-11-09 17:24:09 — WFS-193 : PR #311 (X5) refusée une 3e fois, garde-fou du PO appliqué (lead-dev)
+- 3e revue du commit ad7aa366 : 26 paires avant / après ouvertes (face, 3/4 droit et gauche, capot, vue basse, zooms ×4 des deux coins, du centre et de la vue basse, de jour et de nuit, vitrines). Diff relu : `tools/formes.json` (entrée x5), `x5.wfm` / `.lod`, banc `WFS_VITRINE_BAS` (h0 / d0 remis), accroche de 2 lignes `orbitHauteur` / `orbitRecul` : rien de bloquant.
+- Acquis : pare-buffle supprimé (RG-05 tenue), montant gauche net, marque méconnaissable à distance de vitrine.
+- Défauts restants à la jonction (RG-06 non tenue) : bas de la grille en dents de scie (vue basse, zooms), bord droit en peigne et coin haut droit qui passe devant la carrosserie (vue basse de nuit), éclats blancs aux deux coins bas (nouveau à gauche).
+- Garde-fou du PO (suivi du 16:56:49) : X5 sortie de WFS-193 ; WFS-193 fini avec la Compass et la 208 (#308, déjà sur `main`) ; PR #311 fermée sans fusion, branche `feature/waforspeed-193` gardée ; X5 comme sur `main`. Le PO crée une nouvelle US pour la X5 (nouvelle session ou lead dev en renfort, à voir avec WFS-194). Piste notée dans la revue : découper la grille sur le contour exact de l'ouverture.
+- Session du développeur Claude, agent 1 (01UY1Vv2) terminée (un seul ticket par session). Ligne #311 retirée de `suivi-pr.md`.
+
