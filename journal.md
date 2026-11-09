@@ -2956,3 +2956,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Réponse de l'utilisateur : le choix des voitures et des modèles n'est pas son rôle ; s'il y a un problème, chercher une autre voiture ou un autre modèle.
 - Décisions du PO : **Mustang** sans dérogation (modèle CC BY hors ±1 % → le développeur cherche un autre modèle libre dans ±1 %) ; **T-Cross → VW Passat** ; **A 45 → Classe E W212** ; **Elantra N** et **X5** : recherche par le développeur, choix du PO. Règles de WFS-359, 360, 361 mises à jour ; WFS-359 ⏳ Prêt sans attente.
 - Ordre permanent ajouté au skill du PO ; question du 2026-11-07 11:12 close dans `tache utilisateur.md`.
+
+### 2026-11-09 19:22:12 — Création du skill artiste-3d et des agents artiste-3d et dev-artiste-3d (po-scrum-master)
+- Demande de l'utilisateur : un skill et un agent « artiste 3D », et un agent qui a les deux skills, développeur et artiste 3D.
+- **Skill** `.claude/skills/artiste-3d` : licences (CC0 / CC BY seulement), recherche de modèles aux vraies mesures (±1 % sans dérogation, contrôle avant téléchargement), chaîne de conversion des outils du dépôt dans l'ordre, voiture sans marque (leçon de la X5 : grille découpée sur le contour de l'ouverture ou ouverture fermée, jamais devant la carrosserie), qualité du modèle, captures du lead dev.
+- **Agent `artiste-3d`** (`@artiste`) : actifs 3D sans code du moteur. **Agent `dev-artiste-3d`** (`@devartiste`, `@voitures`) : skills `agent-developer` + `waforspeed-natif` + `artiste-3d`.
+- Tickets voitures WFS-358 à 361 → `dev-artiste-3d`, une nouvelle session par ticket. Mis à jour : `appel-agents.md`, `CLAUDE.md` (liste des @ et règle des modèles 3D), `track-agent.md`, skill du PO, règles WFS-358 à 361, `TACHES.md`.
