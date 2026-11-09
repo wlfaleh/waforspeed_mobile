@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | 👀 En revue — lead-dev (instance 2), 19:09 UTC | dfa173bd | 2026-11-09 19:09 |
-| #311 | WFS-193 (X5) | Claude, agent 1 (01UY1Vv2), session terminée | 🆕 À relire — rouverte par le PO, **à accepter et fusionner** (ordre de l'utilisateur ; défauts → WFS-358) | ad7aa366 | 2026-11-09 19:14 |
+| #311 | WFS-193 (X5) | Claude, agent 1 (01UY1Vv2), session terminée | 👀 En revue — lead-dev, 2026-11-09 19:15 (acceptation, ordre de l'utilisateur ; défauts → WFS-358) | ad7aa366 | 2026-11-09 19:15 |
