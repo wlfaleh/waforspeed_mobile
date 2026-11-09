@@ -112,18 +112,19 @@ private:
         return true;
     }
     // RG-03 : part de la pluie qui tombe autour de la caméra (0 sous la voûte d'un tunnel, fondu à la bouche)
-    // WFS-354 (RG-03) : selon la position de la caméra (et non de la voiture) : en vue Cockpit, la caméra est sous la voûte en même
-    // temps que la voiture ; en vue Arrière, quelques mètres après elle. Distance de la caméra le long de la route = celle de la
-    // voiture + l'écart caméra-voiture projeté sur l'axe de la route (avant = (sin th, −cos th), comme la caméra)
+    // WFS-354 (RG-03) : en vue Cockpit, selon la position de la caméra (l'œil, sous la voûte en même temps que la voiture) ; dans
+    // les autres vues, selon la voiture, comme sur main (2e retour du lead dev : vue Arrière inchangée). Distance de la caméra le
+    // long de la route = celle de la voiture + l'écart caméra-voiture projeté sur l'axe de la route (avant = (sin th, −cos th))
     static float partDuCiel(const GameView& g) {
         if (!g.track || !g.player) return 1.f;
-        const TrackPoint q = g.track->point(g.player->dist, 0);
-        const bool camConnue = length(g.camPos) > 1e-3f;   // remarque b : avant la 1re image, caméra inconnue : la voiture
-        const double avance = camConnue ? (g.camPos.x - q.x) * std::sin(q.th) - (g.camPos.z - q.z) * std::cos(q.th) : 0.0;
+        // remarque b : avant la 1re image, la caméra est inconnue : on prend la voiture
+        const bool cockpit = etatCockpit().actif && length(g.camPos) > 1e-3f;
+        double avance = 0;
+        if (cockpit) { const TrackPoint q = g.track->point(g.player->dist, 0); avance = (g.camPos.x - q.x) * std::sin(q.th) - (g.camPos.z - q.z) * std::cos(q.th); }
         const double L = (double)g.track->segmentCount() * SEG_M, d = std::fmod(std::fmod(g.player->dist * M + avance, L) + L, L);
         float part = 1.f;
         for (const trace::Section& s : trace::sections(*g.track))
-            if (s.type == trace::Type::Tunnel) part = std::min(part, meteo::pluieSousToit(d, s.debut * SEG_M, s.fin * SEG_M));
+            if (s.type == trace::Type::Tunnel) part = std::min(part, meteo::pluieTunnel(cockpit, d, s.debut * SEG_M, s.fin * SEG_M));
         return part;
     }
     // vue Cockpit : le point de l'écran donne sur la rue (pare-brise, ou vitre latérale au-dessus de la ligne de la planche,
@@ -152,8 +153,8 @@ private:
     std::vector<GoutteVitre> vitre_;
     float anglePrec_ = 0;
     long balayees_ = 0;   // gouttes de la vitre effacées par les balais (journal de fin de course)
-    vec3 surVitre(const cockpit::PareBriseVu& pb, float u, float v) const {   // point de la vitre (repère de l'œil)
-        (void)pb; const vec3* c = vitreCoins_;   // WFS-354 : vitre visible (vitreVue)
+    vec3 surVitre(float u, float v) const {   // point de la vitre visible (vitreVue), repère de l'œil
+        const vec3* c = vitreCoins_;
         const vec3 b = c[0] + (c[1] - c[0]) * u, h = c[3] + (c[2] - c[3]) * u;
         return b + (h - b) * v;
     }
@@ -176,7 +177,7 @@ private:
     void balayerVitre(const cockpit::PareBriseVu& pb) {
         const float a1 = pb.angle;
         for (GoutteVitre& d : vitre_) {
-            const vec3 P = surVitre(pb, d.u, d.v);
+            const vec3 P = surVitre(d.u, d.v);
             for (int k = 0; k < pb.balais; k++) {   // balai : de son pivot, le long de ex × sens, tourné vers eu de l'angle a
                 const vec3 w = P - pb.pivot[k];
                 const float wx = dot(w, pb.ex) * pb.sens[k], wy = dot(w, pb.eu);
@@ -190,14 +191,14 @@ private:
         const bool nuit = g.night;
         for (const GoutteVitre& d : vitre_) {
             if (d.a <= 0.02f) continue;
-            const vec3 P = pb.repere.transformPoint(surVitre(pb, d.u, d.v)), Q = pb.repere.transformPoint(surVitre(pb, d.u, d.v) + pb.ex * d.r);
+            const vec3 P = pb.repere.transformPoint(surVitre(d.u, d.v)), Q = pb.repere.transformPoint(surVitre(d.u, d.v) + pb.ex * d.r);
             float x, y, x2, y2;
             if (!projeter(g, P, x, y) || !projeter(g, Q, x2, y2)) continue;
             const float rp = std::max(1.f, std::abs(x2 - x));
             // goutte d'eau : lentille claire (lumières de la rue réfractées), bord plus sombre en bas, reflet net en haut à gauche
             if (d.r > 0.0045f) {   // grosse goutte qui coule : traînée humide au-dessus d'elle
                 float xt, yt;
-                if (projeter(g, pb.repere.transformPoint(surVitre(pb, d.u, std::min(1.f, d.v + 0.04f))), xt, yt))
+                if (projeter(g, pb.repere.transformPoint(surVitre(d.u, std::min(1.f, d.v + 0.04f))), xt, yt))
                     r.uiQuad(std::array<UiVertex, 4>{UiVertex{x - rp * 0.4f, y, -1, -1, 0.8f, 0.85f, 0.95f, d.a * 0.25f}, UiVertex{x + rp * 0.4f, y, -1, -1, 0.8f, 0.85f, 0.95f, d.a * 0.25f},
                                                      UiVertex{xt + rp * 0.2f, yt, -1, -1, 0.8f, 0.85f, 0.95f, 0}, UiVertex{xt - rp * 0.2f, yt, -1, -1, 0.8f, 0.85f, 0.95f, 0}}.data());
             }
@@ -262,7 +263,7 @@ private:
 // ---------- WFS-354 : banc « pluie » (WFS_BANC=pluie) : Ville de nuit sous la pluie, Golf ----------
 // pluie-cockpit-105 (montants à plus de 100 km/h ; -x5 : 2e intérieur), pluie-balais-1 à 5 (passage d'un balai, à 10, 30, 50, 70 et 90 %
 // de sa course montante), pluie-tunnel-avant / -bouche / -3m / -6m / -milieu (vue Cockpit, la caméra à ces distances de la
-// bouche), pluie-arriere-vitesse (témoin : vue Arrière à plus de 100 km/h), pluie-tunnel-arriere-bouche / -6m (témoin)
+// bouche), pluie-arriere-vitesse (témoin : vue Arrière à plus de 100 km/h), pluie-tunnel-arriere-voiture-bouche / -arriere-bouche / -6m (témoin)
 void benchPluie(Game& g, Renderer& r, const std::string& out) {
     setenv("WFS_MOMENT", "nuit", 1);
     Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
@@ -310,13 +311,14 @@ void benchPluie(Game& g, Renderer& r, const std::string& out) {
     // 3. témoin : vue Arrière sous la pluie à vitesse
     if (partir(0, VueCamera::Poursuite)) { jusqua100(); capture("pluie-arriere-vitesse"); g.shutdown(); }
     // 4. (retour du lead dev, PR #305) 2e intérieur à vitesse (X5 : montants plus écartés) ; témoin vue Arrière à la bouche du
-    // tunnel (la voiture 6 m dans la bouche : la caméra de poursuite à la bouche) et 6 m plus loin
+    // tunnel : la voiture à la bouche (caméra encore dehors : fondu), la voiture 6 m dedans (caméra de poursuite à la bouche), 6 m plus loin
     if (partir(0, VueCamera::Cockpit, "x5")) { jusqua100(); capture("pluie-cockpit-105-x5"); g.shutdown(); }
     if (tun >= 0 && partir(tun - (int64_t)(70 / SEG_M), VueCamera::Poursuite)) {
         const double bouche = tun * SEG_M;
-        const std::pair<double, const char*> etapes[] = {{bouche + 6, "pluie-tunnel-arriere-bouche"}, {bouche + 12, "pluie-tunnel-arriere-6m"}};
+        const std::pair<double, const char*> etapes[] = {{bouche, "pluie-tunnel-arriere-voiture-bouche"}, {bouche + 6, "pluie-tunnel-arriere-bouche"},
+                                                          {bouche + 12, "pluie-tunnel-arriere-6m"}};
         size_t e = 0;
-        for (int k = 0; k < 60 * 60 && e < 2; k++) { pas(1, 2); if (g.player().dist * M >= etapes[e].first) capture(etapes[e++].second); }
+        for (int k = 0; k < 60 * 60 && e < 3; k++) { pas(1, 2); if (g.player().dist * M >= etapes[e].first) capture(etapes[e++].second); }
         g.shutdown();
     }
     choisirVue(VueCamera::Poursuite); unsetenv("WFS_DEPART"); unsetenv("WFS_MOMENT");

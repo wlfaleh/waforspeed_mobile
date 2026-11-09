@@ -68,14 +68,20 @@ inline void avancer(std::vector<Goutte>& g, float dt, float w, float h, float p,
 // ---------- WFS-334 (ANO-182, ANO-186, ANO-194) : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse ----------
 
 // RG-03 : part de la pluie visible (0..1) pour la caméra à `d` m sur la route, sous un toit de `debut` à `fin` m (tunnel) :
-// 1 dehors, 0 à plus de TOIT_FONDU − TOIT_MARGE m sous le toit ; fondu de TOIT_FONDU m à l'entrée et à la sortie.
-// WFS-354 (RG-03) : `d` est la position de la CAMÉRA (avant : celle de la voiture, et la pluie tombait encore sur les 6
-// premiers mètres en vue Cockpit) : fondu de 8 m avant la bouche jusqu'à la bouche ; plus rien dès que la caméra est sous la
-// voûte. En vue Arrière (caméra ≈ 6 m derrière la voiture), c'est le même fondu qu'avant (voiture de −2 à +6 m)
-constexpr float TOIT_FONDU = 8.f, TOIT_MARGE = 8.f;
-inline float pluieSousToit(double d, double debut, double fin) {
+// 1 dehors, 0 à plus de TOIT_FONDU − marge m sous le toit ; fondu de TOIT_FONDU m à l'entrée et à la sortie.
+// WFS-354 (RG-03, 2e retour du lead dev) : deux calculs selon la vue.
+// - vue Arrière (et toute vue hors Cockpit) : celui de main, inchangé : `d` = position de la VOITURE, marge TOIT_MARGE = 2 m
+//   (la caméra de poursuite, derrière la voiture, passe sous la voûte quand la voiture est 6 m dedans : pluie à 0) ;
+// - vue Cockpit : `d` = position de la CAMÉRA (l'œil), marge TOIT_MARGE_COCKPIT = 8 m : fondu de 8 m avant la bouche jusqu'à la
+//   bouche, plus aucun trait dès que la caméra est sous la voûte (avant : la pluie tombait encore sur les 6 premiers mètres)
+constexpr float TOIT_FONDU = 8.f, TOIT_MARGE = 2.f, TOIT_MARGE_COCKPIT = 8.f;
+inline float pluieSousToit(double d, double debut, double fin, float marge = TOIT_MARGE) {
     const double dedans = std::min(d - debut, fin - d);   // m sous le toit (négatif : dehors)
-    return std::clamp((float)(1.0 - (dedans + TOIT_MARGE) / TOIT_FONDU), 0.f, 1.f);
+    return std::clamp((float)(1.0 - (dedans + marge) / TOIT_FONDU), 0.f, 1.f);
+}
+// marge selon la vue : `d` est la position de la caméra en Cockpit (caméra connue), celle de la voiture sinon (comme sur main)
+inline float pluieTunnel(bool cockpit, double d, double debut, double fin) {
+    return pluieSousToit(d, debut, fin, cockpit ? TOIT_MARGE_COCKPIT : TOIT_MARGE);
 }
 
 // RG-02 (ANO-194) : direction d'une goutte à l'écran (unitaire). À l'arrêt : verticale, penchée par `slant` (braquage, jeu
