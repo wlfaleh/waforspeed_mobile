@@ -2498,3 +2498,5 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Décision attendue de : PO.
 
 ### 2026-11-09 11:46:43 — Recette manuelle demandée au QA sur les vidéos de l'APK 954 (`qa/recette-manuelle-apk954.md`) (po-scrum-master)
+
+### 2026-11-09 11:47:44 — WFS-355 créé et donné à Claude, agent 2 : ACCEPTER des CGU sans effet (APK 954, bloquant confirmé par le QA) (po-scrum-master)

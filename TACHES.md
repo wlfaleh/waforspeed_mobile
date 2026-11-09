@@ -150,6 +150,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 
 | Priorité | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
+| P1 Urgent | WFS-355 | [URGENT] Écran des CGU : « ACCEPTER » ne fait rien, impossible d'entrer dans le jeu (bloquant absolu) | E8 | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-09 11:47 UTC | — | `feature/waforspeed-355` |  |  |
 | P1 Urgent | WFS-350 | [TECHNIQUE] [URGENT] Correction pipeline CI : run 946 de main rouge | E7 | 🟣 Fusionné (PR #301, lead dev) | agent expert ci (session 01UY1Vv4), 2026-11-09 07:53 UTC | — | `feature/waforspeed-350` | #301 |  |
 | P1 Urgent | WFS-351 | [TECHNIQUE] [URGENT] Émulateur bloqué sur l'écran des CGU (ANO-199) | E7 | 🟣 Fusionné (PR #306, lead dev) |  | #306 | `feature/waforspeed-351` |  |  |
 | P1 Urgent | WFS-352 | [TECHNIQUE] [URGENT] Release apercu pleine, message « Recette QA prête » faux, bancs manquants (ANO-200) | E7 | 🟣 Fusionné (PR #303, ad54bde) |  | — | `feature/waforspeed-352` |  |  |

@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-09 10:06:12 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-09 11:47:44 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-353, WFS-348, WFS-338 | **P1 WFS-353** [TECHNIQUE] Basse : 2 lumières par pixel (accord E13 du PO), résolution 45 % seulement si l'utilisateur accepte : PR #307 fusionnée (45 % fait ; 2 lumières en variante du banc, décision du PO demandée ; poste suivant proposé : sol et trottoirs) ; **P1 WFS-348** fermé sur diagnostic, PR #300 à fusionner (lead dev) ; **P1 WFS-338** Poursuite police : PR #297 corrigée, 🔁 à relire (lead dev) ; WFS-339 🟣, WFS-333 🟡, WFS-335 🟡 | 348 : PR #300 (08:56, 3a6c1e1c, CI de branche run 948) ; 339 : PR #299 (05:51) ; 333 : PR #298 (04:03 ; corrigée 06:53, 71bc873d) ; 338 : PR #297 (04:52) | 🟡 353 (#307) fusionné par le lead dev 11:43 (squash 266e110) ; 🟣 348 (#300) fusionné par le lead dev 09:17 (squash 48c423e); ↩️ 338 (#297) : 2e retour du lead dev (conflit journal, peinture de la police à montrer)|
 | Claude, agent 1 (01UY1Vv2) | WFS-193 | P1 objectif voitures sans marque : formes retouchées (calandre, feux, jantes) ; attribué 00:40 sur sa demande ; WFS-322 fusionné (#289) | 193 : `feature/waforspeed-193` poussée (51f4f70) | 🔧 en cours |
-| Claude, agent 2 (01UY1Vv5) | WFS-318 | P3 Fantôme du record : réglage Affiché / Caché, étiquette « Votre record · temps » | 318 : 10:36 (f4e74d6) ; PR #304 fusionnée par le lead dev (e3246d9) | ✅ Libre (WFS-318 🟡) |
+| Claude, agent 2 (01UY1Vv5) | WFS-355 | P1 BLOQUANT : bouton ACCEPTER des CGU sans effet (APK 954), attribué 11:47 | 355 : branche à créer | 🔴 en cours (P1) |
 | Claude, agent 3 (01UY1Vv3) | WFS-343 | domaine **cartes et téléchargement** (skill `expert-cartes`) : P2 WFS-343 carte de Noël (1/3), moteur de cartes 100 % dynamiques : tracé, chocs, départs, checkpoints, décor lus du paquet, carte de test ; zone : `src/world/cartes_v2/**`, `carte_cuite.*`, `terrain.*`, `paquets*`, `tests/cartes_v2*` + accroches ≤ 10 lignes `track.*` / `game.*` ; **pas** E3 (neige → WFS-346), ni `reglages.*` / `menu.*` (agent 2), ni la CI ; attribué 01:10 UTC à sa demande ; avant : WFS-307 🟣 (#294, 90ee9b21), WFS-306 🟣 (#286), WFS-301 🟣, WFS-308 🟣 | 343 : branche `feature/waforspeed-343` à créer et pousser | 🔧 en cours |
 | Claude, agent 4 (011cpqZan) | — (WFS-316 fusionné) | direction, 2e passage (un seul ticket sur ordre de l'utilisateur, puis arrêt) : PR #267 fusionnée par le lead dev (squash 7dbea2f), 🟡 à valider par l'utilisateur | 316 : fusionnée 18:17 (7dbea2f, #267) | 🟢 libre |
 | Claude, agent 5 (011cpqZaDiS2) | WFS-215 | **sujet facile, à la demande de l'utilisateur** : P3 WFS-215, plaque arrière Model 3, vitres avant RR Sport, verre laiteux A45 (E10, exception PO en parallèle de WFS-292 : modèles des 3 voitures seulement, **pas** `vehicule.glsl`) ; attribué 20:58 UTC à sa demande ; avant : WFS-300 🟣 fusionné (#272, d88e426) | 215 : 23:47 (aa122387), PR #288 | ↩️ retour lead dev sur PR #288 : à corriger (conflit journal.md, capture de nuit du RR Sport) |
