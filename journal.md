@@ -2839,3 +2839,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Décision : (iii)**, grille d'un seul tenant (cadre et barres au même galbe, plus de cadre séparé), posée dans l'ouverture d'origine, 1 à 2 cm en retrait derrière le bord de la carrosserie ; bord du pare-chocs rentré par l'outil seulement s'il reste un vide ; pas de cadre chromé en haricots. (ii) non retenue (`expert-realisme-3d` n'est pas développeur ; avis possible). Pas d'acceptation en anomalies mineures (défaut visible de face la nuit).
 - **Garde-fou** : dernier essai ; 3e refus de #311 → la X5 sort de WFS-193 (terminé avec Compass et 208), #311 fermée sans fusion, nouvelle US pour une nouvelle session, à voir avec WFS-194.
 - Qui fait quoi : agent 1 corrige #311, régénère les captures demandées (RG-05 à 07 de `regles-de-gestion/WFS-193.md`), répond dans la PR, remet 🔁 dans `suivi-pr.md` et rappelle le lead dev. Le lead dev relit. Le PO tranche après la revue.
+
+### 2026-11-09 16:59:49 — WFS-214 attribué à Claude, agent dev W (01UY1Vv4Ed) (po-scrum-master)
+- Demande de la nouvelle session `@dev` (session_01UY1Vv4EdEBdMyt3hmgrMoT), 1er et seul sujet ; développeur général (pas conduite, cartes, CI, iOS).
+- Choix : P1 prêts non attribuables (WFS-194 : E10 occupée par WFS-349 et WFS-193 ↩️) ; P2 prêts dans une épic libre : WFS-214 (E13) et WFS-337 (E4 / E13) ; à égalité, le plus petit numéro → **WFS-214** (WFS-280 et WFS-323 : E3 / E10 occupées ; WFS-287 : CI).
+- Zone : E13 (`shaders/eclairage*`, `sky*`, `post*`, `src/render/eclairage_*`, `ibl_*`, `atmosphere_*`, `post_*`) ; interdits : `vehicule_cockpit*` (WFS-349), `vehicule_lod*`, `effets_*`, `nuit.cpp`, `traffic.*`, `player.*`, `conduite_*`, `camera_vue.*`, CI.
+- Captures demandées ajoutées à `regles-de-gestion/WFS-214.md` (ciel ×2, Ultra / Haute, nuit RG-05). Branche `feature/waforspeed-214` à pousser tout de suite.
+

@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-09 16:56:49 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-09 16:59:49 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -30,7 +30,7 @@
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | — | ⏹️ session terminée (WFS-293 fusionné, PR #310, f1abb662 ; 🟡 à valider par l'utilisateur) | 293 : fusionné 15:12 | ⏹️ session terminée |
 | Claude, agent dev Z (01UY1Vv5sWHo) | — | WFS-356 fusionné par le lead dev (PR #313, squash 483b969a), 🟡 à valider par l'utilisateur | 356 : PR #313 fusionnée | ⏹️ session terminée (WFS-356 fusionné) |
 | Claude, agent dev Y (01UY1Vv1Yvim) | WFS-349 | `@dev` (session_01UY1Vv1YvimqoKDHcW3jYhr) : P1 file B, vue Cockpit : habitacle fermé sur les côtés, voiture proche plus dessinée sur la portière (ANO-181, 183) ; E10 (exception PO : `src/render/vehicule_cockpit*`, `tests/**` ; **pas** `camera_vue.*`, modèles des voitures) ; attribué 14:00 UTC à sa demande (1er et seul ticket de la session) | 349 : `feature/waforspeed-349` poussée (d1d41238, 2026-11-09 16:20 UTC) ; cause nommée au journal ; correction faite (portières pleines, plancher, tablier), banc `cockpit-voisine` des 20 voitures en cours | 🔧 en cours — mesures puis captures et PR ; finit WFS-349 jusqu'à la fusion, puis ⏹️ arrêt |
-| Claude, agent dev W (01UY1Vv4Ed) | — | `@dev` (session_01UY1Vv4EdEBdMyt3hmgrMoT) : nouvelle session, ticket demandé au PO (un seul sujet) | — | ⏳ attend son ticket du PO |
+| Claude, agent dev W (01UY1Vv4Ed) | WFS-214 | `@dev` (session_01UY1Vv4EdEBdMyt3hmgrMoT) : P2 E13, ciel en paliers et chaussée bleue en Ultra (ANO-109, ANO-106) + RG-05 vision de nuit près des lumières ; attribué 2026-11-09 16:59 UTC (un seul sujet) | `feature/waforspeed-214` : à créer et pousser | 🔧 en cours (branche attendue sous 30 min) |
 | Claude, agent cartes (01UY1Vv2dx) | — | `@cartes` (session_01UY1Vv2dxNQxhJG6xe4ofua) : expert cartes (skill `expert-cartes`), nouvelle session, ticket demandé au PO (un seul sujet) | — | ⏳ attend son ticket du PO |
 
 ## Agents de pilotage
