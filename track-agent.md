@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-09 13:40:52 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-09 14:00:17 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -29,7 +29,7 @@
 | arwa-4 (Claude, session 01Us6uCw) | WFS-298 | domaine **son** : P2 WFS-298 son des chocs selon ce qu'on touche (poteau, arbre, mobilier, mur, voiture), force selon la vitesse, côté gauche / droite ; + RG-00 `(void)cad;` de `pluie_sons.cpp` (remarque du lead dev) (E6, fichiers neufs `src/audio/chocs_sons*` + branchement `audio_system.*` ; lecture seule E3) ; attribué 02:34 à sa demande ; avant : WFS-288 🟣 (PR #254, d8080a2), WFS-278 🟣 (#240), WFS-275 🟣 (#237), WFS-272 🟣 (#227), WFS-261 🟣 (#219) | 298 : 02:37 (f44fae5, début), 04:53 (PR #260 ouverte, branche synchronisée) ; 288 : PR #254 fusionnée 02:23 par le lead dev | ⏹️ arrêté à la demande de l'utilisateur (2026-11-08 11:50 UTC) : WFS-298 ✅ (PR #260, 7d269b9, bancs du matin #3), remarques du lead dev répondues dans la PR ; **ne prend plus de ticket** |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-293 | P2 [TECHNIQUE] banc de fluidité complet : à-coup compté en virage et au carrefour, cadences régulières, à-coup en virage corrigé (ANO-166 ; E0 + E3 en exception PO comme WFS-247 : `bench_fluidite.cpp`, `game.cpp`, `track.*`, `camera_vue.*` ; **pas** `player.*`, `conduite_*`) ; attribué 21:23 UTC à sa demande ; avant : WFS-330 🟣 (#280, d3b7ef1) | 293 : `feature/waforspeed-293` poussée (dernier envoi 22:40 UTC, 23d7d295) ; risque signalé (à-coup à 15-20 img/s), option A décidée par le PO ; 2e risque (épingle / carrefour à ≥ 30 img/s, ece9723a) : option A, référence 120 Hz juge partout | 🔧 en cours — finit WFS-293, puis ⏹️ arrêt |
 | Claude, agent dev Z (01UY1Vv5sWHo) | WFS-356 | P1 file B : départ de nuit éblouissant, 2e passage (WFS-328 refusé, ANO-202 / 179 / 184) ; E13 + E4 (exception PO : `eclairage_*`, `nuit.cpp`, `post_*`, `shaders/post*`, `shaders/eclairage*`) ; attribué 13:22 UTC à sa demande (1er et seul ticket de la session) | 356 : `feature/waforspeed-356` poussée 13:24 (258077a0) | 🔧 en cours — finit WFS-356 jusqu'à la fusion, puis ⏹️ arrêt |
-| Claude, agent dev Y (01UY1Vv1Yvim) | | `@dev` : nouvelle session de développeur (session_01UY1Vv1YvimqoKDHcW3jYhr), demande un ticket au PO | — | ⏳ attend son ticket du PO |
+| Claude, agent dev Y (01UY1Vv1Yvim) | WFS-349 | `@dev` (session_01UY1Vv1YvimqoKDHcW3jYhr) : P1 file B, vue Cockpit : habitacle fermé sur les côtés, voiture proche plus dessinée sur la portière (ANO-181, 183) ; E10 (exception PO : `src/render/vehicule_cockpit*`, `tests/**` ; **pas** `camera_vue.*`, modèles des voitures) ; attribué 14:00 UTC à sa demande (1er et seul ticket de la session) | 349 : `feature/waforspeed-349` (existe : e1440a6f, 13:36 UTC, début d'agent 3 bis, aucun code) ; à reprendre | 🔧 en cours — finit WFS-349 jusqu'à la fusion, puis ⏹️ arrêt |
 
 ## Agents de pilotage
 
