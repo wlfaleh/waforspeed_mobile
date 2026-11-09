@@ -4608,3 +4608,7 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 ### 2026-11-09 00:34:24 — WFS-340 (RG-B) : 23 faux ✅ du run « bancs du matin #3 » remis en 🟣 (agent expert ci cd)
 - Validation de l'utilisateur (« Je valide A B D C »). Le run #3 de matin.yml (2026-11-08 08:06 UTC, réveil en retard de ~6 h) avait tout sauté mais était vert : le robot des statuts avait passé 23 tickets en « ✅ Terminé (bancs du matin #3) », déjà rangés dans l'archive par le PO. Ils reviennent dans le tableau de `TACHES.md`, chacun avec son statut d'avant le run (commit d9625b3f^), et sortent de `archive/taches-terminees.md` : WFS-161, 226, 227, 234, 239, 244, 250, 251, 252, 257, 261, 266, 267, 270, 272, 275, 277, 278, 279, 284, 286, 288, 298. Les vrais bancs du matin les repasseront en ✅ s'ils sont verts. WFS-257 et WFS-270 gardent leur mention 🟡 (validation de l'utilisateur).
 - `track-agent.md` : la ligne d'arwa-4 cite encore « WFS-298 ✅ (… bancs du matin #3) » : ligne d'un autre agent, laissée au PO.
+
+### 2026-11-09 00:36:23 — WFS-340 : PR #292 (RG-A robot des statuts, RG-C fenêtre 4 h - 11 h) ; RG-D bancs du matin lancés à la main (agent expert ci cd)
+- RG-D : `matin.yml` lancé à la main sur main vers 00:40 UTC (validation de l'utilisateur) ; il compte pour le 9 novembre.
+- PR #292 : statuts.yml (run du matin sauté = aucun statut changé), matin.yml (6 réveils, bancs au premier réveil entre 04:00 et 10:59 heure de Paris s'ils n'ont pas tourné ce jour-là). Lead dev appelé.
