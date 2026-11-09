@@ -124,6 +124,9 @@ extern bool g_interieurCle;
 // WFS-349 (RG-03) : banc « cockpit-voisine » : avec g_interieurCle, dessine aussi en couleur clé le gabarit de ce qui doit rester
 // fermé (dehors, sous la ligne de ceinture, sur les côtés) : un pixel de la voisine dans la clé est un pixel interdit
 extern bool g_gabaritCeinture;
+// WFS-349 : vrai pendant le banc « cockpit-voisine » (mis avant Game::init) : l'intérieur construit aussi le gabarit et la clé
+// douce ; faux en course : rien de plus n'est construit
+extern bool g_bancCockpitVoisine;
 // WFS-349 (RG-02) : ligne de ceinture (bas des vitres latérales, haut des portières), repère de l'œil (m) : haut de la planche
 // moins 1 cm, la hauteur de WFS-315 (portières de WFS-197), inchangée
 inline float ligneCeinture(const InterieurDef& d) { return d.plancheY - 0.01f; }

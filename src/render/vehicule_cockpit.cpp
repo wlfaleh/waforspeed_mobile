@@ -16,6 +16,7 @@ constexpr float AMBIANCE_NUIT = 0.25f;
 
 bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
 bool g_gabaritCeinture = false;   // WFS-349 (RG-03) : banc « cockpit-voisine » : voir vehicule_cockpit.h
+bool g_bancCockpitVoisine = false;   // WFS-349 : gabarit et clé douce construits (banc seulement)
 PareBriseVu& pareBriseVu() { static PareBriseVu p; return p; }   // WFS-334 : voir vehicule_cockpit.h
 const Material& Interieur::mat(const Material& m) const {
     if (g_interieurCle && g_gabaritCeinture && cleDouce_.set) return cleDouce_;   // WFS-349 : clé douce du banc « cockpit-voisine »
@@ -487,8 +488,9 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {16, 0, 16}; cleMat_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }   // banc (WFS-235, RG-05)
     // WFS-349 (RG-03) : clé douce (émission 1,5 au lieu de 16) : la clé de WFS-235 sature les pixels de bord, et la lueur
     // déborde de ≈ 10 pixels hors de l'habitacle (vu au banc) ; celle-ci garde des bords nets. Banc seulement
-    { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {1.5f, 0, 1.5f}; cleDouce_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }
-    {   // WFS-349 (RG-03) : gabarit du banc : les parois que l'habitacle doit fermer, vues de l'œil : plan de chaque portière
+    // construits seulement quand le banc « cockpit-voisine » le demande (g_bancCockpitVoisine, avant la construction) : rien en course
+    if (g_bancCockpitVoisine) { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {1.5f, 0, 1.5f}; cleDouce_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }
+    if (g_bancCockpitVoisine) {   // WFS-349 (RG-03) : gabarit du banc : les parois que l'habitacle doit fermer, vues de l'œil : plan de chaque portière
         // (plan de la vitre latérale) sous la ligne de ceinture, du pied du pare-brise à 1,5 m derrière l'œil, et plan du pied du
         // pare-brise sous la planche ; un rayon de l'œil qui traverse ces plans doit rencontrer l'habitacle avant
         Geo g;

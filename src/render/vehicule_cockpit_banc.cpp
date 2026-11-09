@@ -49,6 +49,7 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
     // la voisine frotte la voiture (1,8 m de centre à centre) : la secousse du choc (WFS-70, tirée au hasard à chaque image)
     // bougerait la caméra entre les images de la mesure : coupée pendant le banc (« Réduire les mouvements » ; tête immobile aussi)
     const bool reduireAvant = reglagesRessenti().reduireMouvements;
+    cockpit::g_bancCockpitVoisine = true;   // gabarit et clé douce construits avec l'intérieur (rien en course)
     reglagesRessenti().reduireMouvements = true;
     int ecarts = 0; long pireEcart = 0; double t = 1200;
     auto rouler = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
@@ -163,6 +164,7 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
     unsetenv("WFS_MOMENT");
     choisirVue(vueAvant); choisirRegard(regardAvant);
     reglagesRessenti().reduireMouvements = reduireAvant;
+    cockpit::g_bancCockpitVoisine = false;
     WFS_LOG("cockpit-voisine (WFS-349 RG-03) : %zu voiture(s), pire %ld pixel(s) interdit(s), %d écart(s)%s", voitures.size(), pireEcart, ecarts,
             ecarts ? " ÉCHEC" : " OK");
     return ecarts;

@@ -5,6 +5,8 @@ description: Règles du moteur natif de WaForSpeed Mobile (C++20 + Vulkan, Andro
 
 # WaForSpeed natif — règles du moteur
 
+> 🚫 **FORMES GÉOMÉTRIQUES INTERDITES — 100 % 3D, 99 % RÉALISME (règle de l’utilisateur, 2026-11-09 19:41 UTC, prioritaire, toutes les zones)** : dans **tout le monde 3D** (toutes les cartes et toutes leurs zones, routes et abords, décor, bâtiments, mobilier, végétation, bateaux, véhicules, habitacle et vue Cockpit, personnes, animaux, garage et menus en 3D, effets visibles), **aucun objet visible ne doit être une forme géométrique nue** : pas de cube ni de boîte, pas de triangle plat, pas de cercle ni de disque, pas de cylindre, de cône ou de boule posés tels quels, pas de halo en disque. Chaque objet est un **vrai modèle 3D** (libre CC0 / CC BY, vraies mesures ±1 %, sans marque) ou, à défaut, **modélisé au niveau de détail du vrai objet** (volumes, chanfreins, matériaux PBR justes), fidèle au réel à 99 % (`regles-de-gestion/DA-realisme.md`). **Nouveau code** : interdit d'ajouter une forme nue (le lead dev refuse la PR) ; **code existant** : chaque forme nue est une anomalie (QA) à remplacer, carte par carte (WFS-369 à 373, 376, 378). Seule exception : l'interface 2D (menus, HUD, boutons), qui suit `design-street-racing`, et les formes invisibles (collisions, calculs).
+
 Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dépôt est la seule référence ; l'aspect du monde 3D suit le réel mesuré (`regles-de-gestion/DA-realisme.md`).
 **Pas de Unity, Godot, Unreal ni autre moteur de jeu** : moteur maison. Petites bibliothèques libres autorisées
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.

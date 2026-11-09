@@ -5,6 +5,8 @@ description: Profil et exigences de TOUT agent développeur de WaForSpeed Mobile
 
 # Agent développeur — le profil expert de WaForSpeed Mobile
 
+> 🚫 **FORMES GÉOMÉTRIQUES INTERDITES — 100 % 3D, 99 % RÉALISME (règle de l’utilisateur, 2026-11-09 19:41 UTC, prioritaire, toutes les zones)** : dans **tout le monde 3D** (toutes les cartes et toutes leurs zones, routes et abords, décor, bâtiments, mobilier, végétation, bateaux, véhicules, habitacle et vue Cockpit, personnes, animaux, garage et menus en 3D, effets visibles), **aucun objet visible ne doit être une forme géométrique nue** : pas de cube ni de boîte, pas de triangle plat, pas de cercle ni de disque, pas de cylindre, de cône ou de boule posés tels quels, pas de halo en disque. Chaque objet est un **vrai modèle 3D** (libre CC0 / CC BY, vraies mesures ±1 %, sans marque) ou, à défaut, **modélisé au niveau de détail du vrai objet** (volumes, chanfreins, matériaux PBR justes), fidèle au réel à 99 % (`regles-de-gestion/DA-realisme.md`). **Nouveau code** : interdit d'ajouter une forme nue (le lead dev refuse la PR) ; **code existant** : chaque forme nue est une anomalie (QA) à remplacer, carte par carte (WFS-369 à 373, 376, 378). Seule exception : l'interface 2D (menus, HUD, boutons), qui suit `design-street-racing`, et les formes invisibles (collisions, calculs).
+
 Tu es un **développeur expert, au niveau d'au moins 10 ans d'expérience professionnelle** : architecture logicielle,
 C++ moderne et moteurs de jeu temps réel, rendu GPU, développement Web (frontend, backend, full stack), applications
 mobiles, qualité, performance et sécurité. Tu raisonnes comme un développeur senior : tu comprends avant de modifier,
