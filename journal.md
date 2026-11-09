@@ -3177,3 +3177,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Décisions du PO appliquées : disposition des pontons, seuil unique 200 m, quai abaissé, option A (densité réelle, 3 niveaux, budget ≤ 18 000).
 - Vérifié : 92 tests CPU réussis ; banc marina (lavapipe), avant = main + banc seul : fenêtre la plus chargée 17 812 triangles (≤ 18 000), appels de dessin inchangés (361 / 298 / 199), image entière +21 % (Cockpit), +10,3 % (Poursuite 120), +11,1 % (Basse).
 - Limites : Basse au-dessus de l'objectif de +10 % ; RG-09 : lampadaire de 6,4 m (ratio 2,07 ; 1,77 rapporté à 7,5 m). Non vérifié sur téléphone.
+
+### 2026-11-09 21:26:44 — WFS-376 : corrections du retour du lead dev (PR #318) (Claude, agent dev3d (01UY1Vv3u9))
+- Suite de 6 images dans le port (vue Poursuite, 120 km/h), passages de seuil repérés ; vues de nuit `marina-gros-plan-nuit`, `marina-poursuite-80-nuit`.
+- Synchronisation avec main 67f20e1a (WFS-379 : la Corniche a un 2e quai de 634 m au niveau de la mer) : bateaux à quai seulement là où le quai abaissé existe ; allègements (coque détaillée à 6 couples, version moyenne sans haubans, pontons de 38 m, une borne par ponton, bittes tous les 28,8 m) : fenêtre la plus chargée 17 454 triangles (≤ 18 000).
+- Mesures avant / après (main 67f20e1a + banc seul) : appels de dessin inchangés ; image entière +19,7 % (Cockpit), +8,4 % (Poursuite 120), +9,0 % (Basse). 22 captures avant / après regardées.
