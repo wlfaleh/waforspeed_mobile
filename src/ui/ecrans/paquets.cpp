@@ -234,7 +234,7 @@ EtapePaquets& paquets() { static EtapePaquets e; return e; }
 namespace {
 struct UiTerrain {
     enum Dialogue { Aucun, Supprimer, Mobile } dialogue = Aucun;
-    std::string carteDialogue, message;
+    std::string carteDialogue, message, carteMessage;   // WFS-343 : message montré seulement sur sa carte
     double tMessage = -1e9;
     EtapePaquets::Zone z[4];   // 0 principal, 1 Supprimer / Annuler, 2 confirmer, 3 refuser
     int doigt = -1, zoneDoigt = -1;
@@ -330,7 +330,7 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
     }
     default: break;
     }
-    if (t - u.tMessage < MESSAGE_S && !u.message.empty()) {   // message passager (RG-05, place insuffisante, suppression faite)
+    if (t - u.tMessage < MESSAGE_S && !u.message.empty() && u.carteMessage == c) {   // message passager (RG-05, place insuffisante, suppression faite)
         const float mw = std::min(w - 2 * m, ui::width(tp, u.message) + 40 * k), mh = 40 * k, mx = x + (w - mw) / 2, my = y + h * 0.42f;
         bloc(r, mx, my, mw, mh, k);
         ui::text(r, mx + mw / 2, my + (mh - tp) / 2, tp, u.message, hex(TEXTE), ui::CENTRE, 0.f, false);
@@ -353,7 +353,7 @@ bool toucherPaquetCarte(const std::string& c, int id, float x, float y, bool dow
     if (zi != u.zoneDoigt) { if (u.dialogue != UiTerrain::Aucun && zi < 0 && u.zoneDoigt < 0) u.dialogue = UiTerrain::Aucun; return true; }   // appui à côté : confirmation refermée
     CartesPaquets& cp = cartesPaquets();
     u.message.clear();   // un nouvel appui efface le message passager précédent
-    auto message = [&](const std::string& m) { u.message = m; u.tMessage = t; };
+    auto message = [&](const std::string& m) { u.message = m; u.tMessage = t; u.carteMessage = c; };
     auto lancer = [&]() { std::string m; if (!cp.telecharger(c, m)) message(m); };
     const EtatCarte e = cp.etat(c);
     if (u.dialogue != UiTerrain::Aucun) {
@@ -794,8 +794,9 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         auto imageD = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); tg += 1.0 / 60; if (++nImages % 10 == 0) g.render(tg); } };
         auto rouler = [&](const char* c, bool nuit) {
             g.allerA(Ecran::Terrain); imageD(2);
-            choisirCarte(c, nuit); imageD(2);
-            float rx = 0, ry = 0; centreRouler(rx, ry);
+            choisirCarte(c, nuit); imageD(2); g.render(tg);   // une image dessinée : zone de « Rouler » posée
+            float rx = 0, ry = 0;
+            verifier(centreRouler(rx, ry), "bouton « Rouler » affiché");
             toucherJeu(60, rx, ry); imageD(4);
         };
         g.allerA(Ecran::Menu); imageD(10);
