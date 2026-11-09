@@ -58,7 +58,7 @@ inline double partRue(double eclairement) {
 inline double partRueNuit(double eclairement, bool villeEclairee) { return villeEclairee ? 1.0 : partRue(eclairement); }
 // WFS-356 (RG-02) : adaptation locale aux pièces éclairées vues de la rue (shaders/eclairage.glsl, pieceAdaptee, MÊMES valeurs :
 // vérifié par test_fidelite_lumiere) : luminance exposée Y, rien sous le genou, épaule rationnelle (Reinhard) vers le plafond au-dessus
-constexpr double PIECE_GENOU = 0.25, PIECE_PLAFOND_EXPO = 1.0;
+constexpr double PIECE_GENOU = 0.2, PIECE_PLAFOND_EXPO = 0.6;
 inline double pieceAdaptee(double Y) {
     if (!(Y > PIECE_GENOU)) return Y;
     const double m = PIECE_PLAFOND_EXPO - PIECE_GENOU;

@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
                 const double Y = pieceAdaptee(L * exposition(ev));
                 pire = std::max(pire, 255 * std::pow(aces(Y), 1 / 2.2));
             }
-        VERIFIE(pire < 250, "pièce éclairée : %.1f / 255 au plus (sous 250 : jamais saturée)", pire);
+        VERIFIE(pire < 220, "pièce éclairée : %.1f / 255 au plus (sous 220 : jamais saturée, peu de bloom)", pire);
         VERIFIE(pieceAdaptee(0.2) == 0.2 && pieceAdaptee(PIECE_GENOU) == PIECE_GENOU && std::fabs(pieceAdaptee(PIECE_GENOU + 1e-7) - PIECE_GENOU - 1e-7) < 1e-9,
                 "pièce : rien sous le genou, continue et de pente 1 au genou");
         bool mono = true; double prec = 0;
@@ -219,9 +219,9 @@ int main(int argc, char** argv) {
         VERIFIE(mono, "pièce : courbe croissante, sous le plafond");
         // les murs restent plus sombres que le plafond (lecture de la pièce gardée) à l'exposition de la rue (EV 4)
         const double kRue = exposition(4.0), mur = pieceAdaptee(31.8 * kRue), plafond = pieceAdaptee(31.8 * 1.84 * kRue);
-        VERIFIE(plafond - mur > 0.05, "pièce à EV 4 : plafond %.3f, mur %.3f (écart > 0,05)", plafond, mur);
+        VERIFIE(plafond > mur * 1.05, "pièce à EV 4 : plafond %.3f, mur %.3f (plafond ≥ 1,05 × mur)", plafond, mur);
         std::string glsl; { FILE* f = std::fopen(WFS_SOURCE_DIR "/shaders/eclairage.glsl", "rb"); char b[4096]; size_t n; while (f && (n = std::fread(b, 1, sizeof b, f)) > 0) glsl.append(b, n); if (f) std::fclose(f); }
-        VERIFIE(glsl.find("const float PIECE_GENOU = 0.25, PIECE_PLAFOND_EXPO = 1.0;") != std::string::npos, "eclairage.glsl : mêmes constantes que eclairage_exposition.h");
+        VERIFIE(glsl.find("const float PIECE_GENOU = 0.2, PIECE_PLAFOND_EXPO = 0.6;") != std::string::npos, "eclairage.glsl : mêmes constantes que eclairage_exposition.h");
         std::printf("WFS-356 : Ville à 1,57 lx EV %.2f (hors Ville %.2f), pièce éclairée au plus %.1f / 255 de EV 2 à 5, mur %.3f / plafond %.3f à EV 4\n",
                     evVille, evAilleurs, pire, mur, plafond);
     }

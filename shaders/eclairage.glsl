@@ -216,9 +216,10 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
 // Une pièce à 200 lx (murs ≈ 32 cd/m², plafond ≈ 58) est 4 à 5 IL au-dessus de la chaussée éclairée (1 à 3 cd/m²) : à l'exposition
 // de la rue (EV 3 à 5), elle sortait 1,5 à 3 fois au-dessus du blanc (blocs blancs sur toute la façade). L'œil, adapté localement,
 // y lit encore les murs et le plafond (Thompson, Shirley et Ferwerda 2002 ; même principe que les lumières artificielles de
-// WFS-230 RG-03) : sous le genou (luminance exposée 0,25), rien ne change ; au-dessus, épaule rationnelle (Reinhard) vers 1,0
-// (≈ 230 / 255 après ACES : jamais saturé), continue et de pente 1 au genou ; teinte gardée. Mêmes valeurs dans eclairage_exposition.h.
-const float PIECE_GENOU = 0.25, PIECE_PLAFOND_EXPO = 1.0;
+// WFS-230 RG-03) : sous le genou (luminance exposée 0,2), rien ne change ; au-dessus, épaule rationnelle (Reinhard) vers 0,6
+// (≈ 213 / 255 après ACES : jamais saturé ; rouge ≤ 0,85, à peine au-dessus du genou du bloom à 0,5 : pas de grand halo autour des
+// vitrines), continue et de pente 1 au genou ; teinte gardée. Mêmes valeurs dans eclairage_exposition.h.
+const float PIECE_GENOU = 0.2, PIECE_PLAFOND_EXPO = 0.6;
 vec3 pieceAdaptee(vec3 c) {
     float Y = dot(max(c, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722));
     if (Y <= PIECE_GENOU) return c;
