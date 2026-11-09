@@ -3332,3 +3332,30 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Livré : vue Cockpit, portières pleines de 12 cm (appui de vitre à la ceinture), plancher, tablier ; banc `cockpit-voisine` (0 pixel interdit, 20 voitures, 1280 × 720 et 2340 × 1080 ; avant : 8 559 à 10 436) ; test `test_cockpit_ferme` ; 93 tests CPU réussis à la dernière synchronisation contrôlée.
 - Signalé hors de ma zone : le même risque de teinte par une capture d'environnement en cours existe dans la part cachée de WFS-235 (`camera_vue.cpp`, banc `cockpit`).
 - Session terminée (un seul sujet par session) : ligne de `track-agent.md` en ⏹️ ; aucun autre ticket demandé.
+
+### 2026-11-09 23:36:22 — WFS-362 attribué à Claude, agent dev3d 4 (01UY1Vv5HV) (po-scrum-master)
+- Demande de la session session_01UY1Vv5HVQdBTHL1fTJgqjz (`@dev3d`, agent `dev-artiste-3d`), nouvelle session, 1er et seul ticket ; l'utilisateur n'a pas choisi de sujet.
+- Choix : **WFS-362** (P1, E10) « Voitures sans marque : retouches de forme de M4 et S3 » : objectif de l'utilisateur (voitures sans marque) avant les décors ; prêt depuis la fusion de WFS-358 ; réservé au profil `dev-artiste-3d`.
+- Exception PO E10 (comme WFS-358 / 359) : en parallèle de WFS-359 (dev3d 2), fichiers séparés ; seul fichier commun `tools/formes.json` (entrées différentes : garder les deux à la synchronisation).
+- Zone : `assets/cars/m4*`, `assets/cars/s3*`, entrées `m4` / `s3` de `tools/formes.json`, ajouts à `tools/retoucher_formes.mjs` (`--verifier` vert sur compass, p208, x5), `tests/**`. Pas `src/game/cars.h`, `vehicule_cockpit*`, voitures de WFS-359, x5 (WFS-393).
+- Règles : `regles-de-gestion/WFS-362.md` (RG-01 à RG-06, méthode § 5 du skill `artiste-3d`). Branche `feature/waforspeed-362`, premier commit poussé tout de suite.
+- `track-agent.md` : lignes des sessions terminées enlevées (dev3d 01UY1Vv3u9 / WFS-376, dev Y / WFS-349, dev W / WFS-214) ; derniers envois mis à jour (359, 369, 374, 375).
+
+### 2026-11-09 23:36:45 — Début WFS-391 : attribué à Claude, agent conduite (01UY1Vv4e7) (po-scrum-master)
+- Demande de la session `@conduite` (session_01UY1Vv4e77bVQHvt3NPaSmG), 1er et seul ticket de la session (règle « un seul sujet par session »).
+- Ticket : **WFS-391** (P2 Haute, E3) — correction de la conduite au bas-côté : traînée de l'air hors μ sur la neige, bas-côté enneigé moins accrocheur que la chaussée (ANO-229), rayon faux au bas-côté intérieur des épingles de la Campagne (ANO-231). Règles : `regles-de-gestion/WFS-391.md` (RG-01 à RG-06, 5 captures demandées).
+- Choix : seul ticket de conduite ⏳ Prêt (WFS-394 attend WFS-359 ; WFS-258 / 259 / 260 ⏸ ou en attente, réservés à l'agent dev conduite) ; E3 libre (aucun ticket 🔧 / 🔀).
+- Zone autorisée : `src/game/player.*`, `src/game/roues.*`, `tests/**` ; interdit : `aide_direction.*` (sauf accroche ≤ 10 lignes annoncée), `poursuite*`, `hud.*`, `traffic.*`, `camera_vue.*`, `src/world/cartes_v2/**`, la CI. Cause dans le sol de la carte (RG-06) : avertir le PO avant de toucher hors zone.
+- Branche `feature/waforspeed-391`, premier commit à pousser tout de suite. Après la fusion par le lead dev : 🟡 À valider (utilisateur) (ticket de conduite), puis arrêt de la session.
+
+### 2026-11-09 23:37:40 — Début WFS-382 : attribué à Claude, agent dev N (01UY1Vv5K1) (po-scrum-master)
+- Demande de la session `@dev` session_01UY1Vv5K1S9ZbuUABTub9NM (1er et seul ticket). P1 prêts pour un développeur général : WFS-380, 381, 382 (WFS-378 est réservé à `dev-artiste-3d`). Ordre du PO du 2026-11-09 20:01 UTC : phares (382) et brume (381) avant la mer (380) → **WFS-382** (phares de nuit, ANO-222, + neige ANO-228), E4 libre.
+- Zone : `nuit.cpp`, `phares.h`, `bench_nuit.*`, `tests/**` ; accroches ≤ 10 lignes : bloom de `shaders/post.frag`, albédo de la neige dans `route.glsl` / `route_*`. Interdit : E13 ciel / brume (WFS-381), `vehicule_*` (WFS-359, 362), `terrain.cpp` (WFS-375), E0 (WFS-374), mer (WFS-380). Détail : `regles-de-gestion/WFS-382.md`, section « Suivi ».
+- Skills : `agent-developer`, `waforspeed-natif`, `expert-realisme-3d` (consultation). Hors E15 : pas d'avis 3D obligatoire. Après la fusion : 🟡 À valider (utilisateur). Responsable de WFS-375 rempli (agent dev M, d'après `track-agent.md`).
+
+### 2026-11-09 23:38:48 — Début WFS-380 : attribué à Claude, agent cartes (01UY1Vv4eo) (po-scrum-master)
+- **Ticket** : WFS-380 (P1, E15 file Corniche ; ANO-214) « Vraie mer : vagues, reflets, couleur selon la profondeur, écume ». Demandé par la session `@cartes` (1er et seul ticket de la session). Dépendances finies : WFS-379 (#317) et WFS-376 (#318) fusionnées, `plage.cpp` libre.
+- **Pourquoi lui** : ticket P1 prêt le plus prioritaire du domaine des cartes (décor d'une carte) ; WFS-392 (P2) reste prêt pour une autre session ; WFS-357 attend que E8 soit libre (WFS-375). Aucun conflit : Corniche sans autre ticket actif dans E15 (WFS-369 est la Ville).
+- **Zone** : `plage.cpp` (mer, rivage), shader de l'eau (`shaders/eau*.glsl` neuf ou branche eau de `scene.frag`), `src/render/eau_*`, accroches ≤ 10 lignes `ville.cpp` (eau seulement) et `cartes_v2` (eau), textures CC0 / CC BY, `tests/**` ; détail dans `regles-de-gestion/WFS-380.md` (section Attribution).
+- **Rappels** : avis de l'agent 3D VALIDÉ avant le lead dev (E15) ; 🟡 À valider (utilisateur) après la fusion ; coût en Basse ≤ 1,0 ms GPU (RG-07).
+- **Avec WFS-382** (E4, phares, attribué à 23:37) : fichiers séparés (382 : `nuit.cpp`, `phares.h`, bloom de `post.frag`, neige de `route*` ; 380 : eau seulement, de préférence `shaders/eau*.glsl` neuf). Les deux se synchronisent souvent avec `main`.
