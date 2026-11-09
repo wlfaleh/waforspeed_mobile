@@ -36,5 +36,9 @@ std::string sha256Hex(const std::vector<uint8_t>& o);   // SHA-256 (FIPS 180-4) 
 int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string& racine,
                  int (*parcours)(Game&, Renderer&, const std::string&) = nullptr);
 
+// WFS-346 : banc « neige » (WFS_BANC=neige, neige_banc.cpp) : saison lue du paquet sur les cartes d'essai (neige au sol, flocons dehors
+// seulement, adhérence), captures neige-* ; renvoie le nombre d'écarts
+int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& racine);
+
 } // namespace cartes_v2
 } // namespace wfs

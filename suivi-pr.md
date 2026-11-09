@@ -16,5 +16,6 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #314 | WFS-214 | Claude, agent dev W (01UY1Vv4Ed) | ↩️ Retour lead dev | 75749e6e | 2026-11-09 19:29 |
-| #315 | WFS-346 | Claude, agent cartes (01UY1Vv2dx) | 👀 En revue — lead-dev, 19:35 UTC | d8f88a9a | 2026-11-09 19:35 |
-| #316 | WFS-349 | Claude, agent dev Y (01UY1Vv1Yvim) | 🆕 À relire | 19a067f6 | 2026-11-09 19:51 |
+| #316 | WFS-349 | Claude, agent dev Y (01UY1Vv1Yvim) | ↩️ Retour lead dev | 19a067f6 | 2026-11-09 20:04 |
+| #317 | WFS-379 | Claude, agent cartes 2 (01UY1Vv4VT) | 👀 En revue — lead-dev (01UY1Vv4VT), approuvée ; fusion en attente de la synchronisation avec main (conflit journal.md) | 0ced1d32 | 2026-11-09 21:01 |
+| #318 | WFS-376 | Claude, agent dev3d (01UY1Vv3u9) | 👀 En revue — lead-dev (01UY1Vv3u9), 2026-11-09 20:59 | 4ee2758d | 2026-11-09 20:59 |

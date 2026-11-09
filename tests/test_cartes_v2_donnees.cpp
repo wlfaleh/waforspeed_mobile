@@ -35,7 +35,7 @@ int main() {
     VERIFIER(lireTrace(std::string(pn.bloc("trace")->donnees.begin(), pn.bloc("trace")->donnees.end()), n, e));
     VERIFIER(lireChocs(std::string(pn.bloc("chocs")->donnees.begin(), pn.bloc("chocs")->donnees.end()), n, e));
     VERIFIER(lireDecor(std::string(pn.bloc("decor")->donnees.begin(), pn.bloc("decor")->donnees.end()), n, e));
-    VERIFIER(n.nom == "Village de Noël (essai)" && n.cache && n.segments() == 1220 && n.routes.size() == 10 && n.sections.size() == 5);
+    VERIFIER(n.nom == "Village de Noël (essai)" && n.cache && n.segments() == 1220 && n.routes.size() == 10 && n.sections.size() == 6);   // WFS-346 : + tunnel
     VERIFIER(n.quartiers.size() == 3 && n.quartiers[1] == "Rue des chalets");
     VERIFIER(n.checkpointM == 400 && n.traficN == 12 && !n.herbe && n.sol.size() == 4);
     VERIFIER(n.obstacles.size() == 24 + 15 + 1);    // repete 50 de 25 à 1200 (24), 80 de 40 à 1200 (15), fontaine
@@ -47,7 +47,7 @@ int main() {
 
     // ---- blocs faux : refusés avec une raison (jamais de plantage)
     VERIFIER(lireT(TRACE_MIN, e));
-    VERIFIER(!lireT("format 2\nnom Essai\nroute 50 200 50 0 0\n", e) && e.find("plus récent") != std::string::npos);
+    VERIFIER(!lireT("format 3\nnom Essai\nroute 50 200 50 0 0\n", e) && e.find("plus récent") != std::string::npos);   // WFS-346 : format 2 = saison
     VERIFIER(!lireT("nom Essai\n", e));                                       // pas de « format »
     VERIFIER(!lireT("format 1\nroute 50 200 50 0 0\n", e) && e.find("nom") != std::string::npos);
     VERIFIER(!lireT("format 1\nnom Essai\nroute 10 10 10 0 0\n", e));          // tour trop court
@@ -82,7 +82,7 @@ int main() {
     VERIFIER(std::string(mapById("ville").id) == "ville" && std::string(mapById("inconnue").id) == "ville");   // inchangé
     VERIFIER(mapById("noel-test").trafficN == 12 && mapById("noel-test").edge == 1.6);
     { Track t; t.build(mapById("noel-test"), 1);
-      VERIFIER(t.segmentCount() == 1220 && t.version() == 2 && t.sections().size() == 5 && t.sections()[2].type == trace::Type::Virage);
+      VERIFIER(t.segmentCount() == 1220 && t.version() == 2 && t.sections().size() == 6 && t.sections()[2].type == trace::Type::Virage);
       VERIFIER(std::fabs(t.segAt(121 + 30 + 40).curve - 2) < 1e-9);   // tenue de la 2e route : courbe 2
       Track v; v.build(mapById("ville"), 1);
       VERIFIER(v.segmentCount() != 1220 && v.sections().empty()); }   // cartes du code inchangées
