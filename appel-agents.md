@@ -23,7 +23,7 @@
    Si elle ne connaît pas son identifiant, elle appelle d'abord `get_session` sans argument.
    - **Agent hors développeur** (`@po`, `@leaddev`, `@qa`, `@cicd`, `@smartbrain`, `@3d`) : dès le 1er message, le nom est
      **`Agent <alias> (<id complet de la session>)`**, par exemple `Agent po (session_01UY1Vv5B99mCrTFBmEatAjE)`.
-   - **Développeur** (`@dev`, `@conduite`, `@cartes`) : dès que le PO lui a attribué son ticket, le nom est
+   - **Développeur** (`@dev`, `@conduite`, `@cartes`) : sur place, dès qu'il reçoit le numéro de son ticket du PO et avant toute autre action (avant même la branche), le nom est
      **`WFS-XXX — <nom de l'agent dans track-agent.md> (<sujet en 3 à 5 mots>)`**, par exemple `WFS-343 — Claude, agent 3 (carte de Noël 1/3)`.
      Après la fusion, quand la session s'arrête : **`⏹️ Terminée — <nom de l'agent> (WFS-XXX fusionné)`**.
    - **C'est l'agent lui-même qui renomme sa discussion, jamais le PO** (précision de l'utilisateur, 2026-11-09).

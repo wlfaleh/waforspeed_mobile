@@ -2691,3 +2691,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 14:05:36 — Renommage : seulement par l’agent lui-même (po-scrum-master)
 - Précision de l’utilisateur : c’est l’agent qui change le nom de sa discussion, pas le PO. Le recours « le PO renomme » est retiré de `appel-agents.md`, des fichiers des agents développeurs et du skill `po-scrum-master`.
+
+### 2026-11-09 14:05:59 — Renommage sur place, dès le numéro du ticket (po-scrum-master)
+- Précision de l’utilisateur : l’agent récupère le numéro de son ticket et change le titre de sa discussion sur place, avant toute autre action. Texte précisé dans `appel-agents.md`, dans les 4 fichiers des agents développeurs et dans le skill `agent-developer`.
