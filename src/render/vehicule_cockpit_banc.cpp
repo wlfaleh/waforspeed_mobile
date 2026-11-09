@@ -53,7 +53,7 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
     int ecarts = 0; long pireEcart = 0; double t = 1200;
     auto rouler = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
     for (const std::string& car : voitures) for (const bool nuit : {false, true}) {
-        const bool garder = std::find(captures.begin(), captures.end(), car) != captures.end();
+        const bool garder = std::find(captures.begin(), captures.end(), car) != captures.end() || std::getenv("WFS_GARDER");
         if (nuit && !garder) continue;   // la nuit : images seulement (la lumière des phares voisins sur la planche est permise)
         setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
         if (!g.init(r, car.c_str(), "ville")) { WFS_ERR("cockpit-voisine : chargement impossible (%s)", car.c_str()); ecarts++; continue; }
@@ -100,13 +100,14 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
                 Image3 A(base + "-A.png"), B(base + "-B.png"), K(base + "-K.png");
                 long voisine = 0, ecart = 0, vitre = 0;
                 if (A.ok(B) && A.ok(K)) {
-                    // zone fermée réduite de R pixels (3 sur une image de 720 lignes) : un pixel du bord de l'habitacle (montant,
-                    // appui de vitre, dessus de planche) est en partie habitacle, en partie rue (anticrénelage, filtres de l'image) :
-                    // avec la clé douce, la voisine et la clé se recouvrent sur 1 à 3 pixels le long des bords (mesuré au banc).
-                    // Seuls comptent les pixels dont tout le carré (2R + 1)² est dans la zone fermée, sans pixel de la voisine vue
-                    // par une vitre (pointe fine d'une vitre entre montant et appui) : une fuite réelle (trou de l'habitacle) en a
-                    // des centaines ; les fentes plus fines sont vérifiées par le calcul (tests/test_cockpit_ferme.cpp)
-                    const int W = A.w, H = A.h, R = std::max(2, (int)std::lround(3.0 * H / 720));
+                    // zone fermée réduite de R pixels (5 sur une image de 720 lignes) : un pixel du bord de l'habitacle (montant,
+                    // appui de vitre, dessus de planche) est en partie habitacle, en partie rue (anticrénelage, filtres de l'image),
+                    // et un point très lumineux de la voisine juste au bord (reflet du soleil, feu) s'étale de 3 à 4 pixels sur
+                    // l'habitacle (mesuré au banc : même teinte, plus faible ; Compass, Corsa, Range Rover). Seuls comptent les
+                    // pixels dont tout le carré (2R + 1)² est dans la zone fermée, sans pixel de la voisine vue par une vitre
+                    // (pointe fine d'une vitre entre montant et appui) : une fuite réelle (trou de l'habitacle) en a des milliers
+                    // (avant la correction : plus de 10 000) ; les fentes plus fines sont vérifiées par le calcul (tests/test_cockpit_ferme.cpp)
+                    const int W = A.w, H = A.h, R = std::max(2, (int)std::lround(5.0 * H / 720));
                     std::vector<unsigned char> ferme((size_t)W * H), parVitre((size_t)W * H);
                     for (long i = 0; i < (long)W * H; i++) {
                         ferme[(size_t)i] = differe(K.p + i * 3, B.p + i * 3);
