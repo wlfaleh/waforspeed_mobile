@@ -1356,6 +1356,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        p.joueur = dessinJoueur;   // WFS-322 (accroche) : la sonde posée au-dessus de la voiture ne la capture pas
         p.famille = FAM_VOITURES;   // WFS-317 (I9)
         // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
         // WFS-60) dessinées en un seul appel

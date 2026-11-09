@@ -51,6 +51,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
+#include "../ui/ecrans/paquets.h"   // WFS-306 (accroche) : WFS_BANC=paquets
 #include "../world/cartes_v2/paquet_carte.h"   // WFS-301 (accroche) : WFS_BANC=cuisson, 2e source de readAsset
 #include "../ui/ecrans/chargement.h"
 #include "manette_jeu.h"   // WFS-22
@@ -151,6 +152,7 @@ int main(int argc, char** argv) {
     // taille des captures (WFS_TAILLE=2400x1080 pour tester un grand écran), 1280x720 par défaut
     unsigned cw = 1280, chh = 720;
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
+    if (const char* b = std::getenv("WFS_BANC"); b && !std::strcmp(b, "cuire")) { carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets"; return cartes_v2::cuireSeul(g_root) > 0 ? 3 : 0; }   // WFS-301 (accroche, RG-C1 à C3) : paquets à publier (WFS-302), sans Vulkan
     if (!vk.init(nullptr, cw, chh)) return 1;
     const double tVk = nowSeconds();
     Renderer r; r.init(vk);
@@ -175,6 +177,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
+    if (banc == "paquets") { const int e = ecrans::benchPaquets(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-306 (accroche) : installation des paquets (source factice)
     if (banc == "cuisson") { ui::chargerPolice(r); const int e = cartes_v2::benchCuisson(g, r, out, g_root, [](Game& g2, Renderer& r2, const std::string& o) { return benchParcours(g2, r2, o) + parcoursFinMenu(g2, r2, o); }); finir(); return e > 0 ? 3 : 0; }   // WFS-301 (accroche) : paquets de la Ville ; RG-08 : parcours complet
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
@@ -223,6 +226,7 @@ int main(int argc, char** argv) {
     if (banc == "records") { ui::chargerPolice(r); const int e = benchRecords(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-125 : records par mode, fantôme (aussi à la fin du groupe vitrines)
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
+    if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)

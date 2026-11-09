@@ -66,6 +66,16 @@ jobs:
           fi
           # WFS-277 : source du run (fusion ou matin) et texte du statut
           if [ "$NOM" = "Bancs du matin (captures, réalisme, QA)" ]; then SOURCE=matin; LIBELLE="bancs du matin"; else SOURCE=fusion; LIBELLE="CI main"; fi
+          # WFS-340 (RG-A) : bancs du matin sautés (réveil de GitHub hors de la fenêtre, ou déjà passés ce jour-là) : le run est vert
+          # mais rien n'a tourné ; il ne compte ni comme vert ni comme rouge : aucun statut ne change, rien au journal
+          if [ "$SOURCE" = matin ] && [ "$CONCLUSION" = success ]; then
+            COMPIL=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs?per_page=100" \
+                     --jq '[.jobs[] | select(.name == "compilation") | .conclusion] | first // ""' || true)
+            if [ "$COMPIL" != success ]; then
+              echo "::notice::statuts : bancs du matin #$RUN_NUMBER sautés (compilation : ${COMPIL:-illisible}) : aucun statut changé (WFS-340)"
+              exit 0
+            fi
+          fi
           # RG-03 : jobs en échec du run (vide si le run est vert)
           JOBS=""
           JOBS_JSON=""
