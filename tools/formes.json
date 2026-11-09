@@ -166,7 +166,7 @@
      0.63,
      -2.43,
      0.48,
-     0.935,
+     0.915,
      -2.37
     ],
     "barres": 6,
@@ -175,9 +175,9 @@
     "couleur": "#4a4a4a",
     "metal": 0.8,
     "rugosite": 0.3,
-    "note": "grille générique en retrait, derrière la carrosserie, dans l'ouverture d'origine"
+    "note": "grille générique en retrait, derrière la carrosserie, dans l'ouverture d'origine (haut à 0,915 m : rien ne passe par la fente entre capot et phares)"
    }
   ],
-  "empreinteApres": "7f394650504493a0"
+  "empreinteApres": "4f457585c333e28d"
  }
 }
