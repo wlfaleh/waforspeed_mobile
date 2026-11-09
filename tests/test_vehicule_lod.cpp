@@ -67,18 +67,21 @@ int main() {
             Modele b = mo; b.partsBasseNiveaux = {{{57, 6, 0, 0}}, {{63, 3, 0, 0}}};
             auto e = [&](float dist, bool lots) { return vehicule_lod::dessin(b, dist, F, true, lots, false); };
             VERIFIE(e(10, false).a == &b.parts && e(30, false).a == &b.partsLod && e(30, false).t == 0, "Basse : complète puis niveau 1 au-dessus de 100 px");
-            {   // décision du PO (2026-11-09 02:35 UTC) : en Basse, adversaires de 48 à 100 px au niveau 2 (avant : niveau 1 jusqu'à 48 px)
+            {   // décision du PO (2026-11-09 02:35 UTC) : en Basse, adversaires de 48 à 100 px au niveau 2 (avant : niveau 1 jusqu'à 48 px),
+                // avec tous ses matériaux ; les versions en 4 pièces restent sous 48 px, comme avant
                 const float L = 4.26f;   // Golf : distance où la voiture fait p pixels = L × F / p
                 auto aPx = [&](float p) { return e(L * F / p, false); };
                 VERIFIE(aPx(101.f).a == &b.partsLod && aPx(101.f).t == 0, "Basse, 101 px : niveau 1 seul");
                 const auto f = aPx(95.f);
-                VERIFIE(f.a == &b.partsLod && f.b == &b.partsBasseNiveaux[0] && f.t > 0, "Basse, 95 px : fondu tramé niveau 1 → niveau 2 (sans saut)");
+                VERIFIE(f.a == &b.partsLod && f.b == &b.partsNiveaux[0] && f.t > 0, "Basse, 95 px : fondu tramé niveau 1 → niveau 2 (sans saut)");
                 bool tousNiveau2 = true;
-                for (float p = 48.f; p <= 88.8f; p += 0.5f) tousNiveau2 &= aPx(p).a == &b.partsBasseNiveaux[0] && aPx(p).t == 0;
-                VERIFIE(tousNiveau2, "Basse : de 48 à 88,8 px, niveau 2 seul (fondu de 100 à 88,9 px)");
-                VERIFIE(aPx(30.f).a == &b.partsBasseNiveaux[0] && aPx(20.f).a == &b.partsBasseNiveaux[1], "Basse : niveau 3 sous 26 px, inchangé");
+                for (float p = 48.f; p <= 88.8f; p += 0.5f) tousNiveau2 &= aPx(p).a == &b.partsNiveaux[0] && aPx(p).t == 0;
+                VERIFIE(tousNiveau2, "Basse : de 48 à 88,8 px, niveau 2 seul, tous ses matériaux (fondu de 100 à 88,9 px)");
+                const auto g = aPx(45.f);
+                VERIFIE(g.a == &b.partsNiveaux[0] && g.b == &b.partsBasseNiveaux[0] && g.t > 0, "Basse, 45 px : fondu niveau 2 → niveau 2 en 4 pièces");
+                VERIFIE(aPx(30.f).a == &b.partsBasseNiveaux[0] && aPx(20.f).a == &b.partsBasseNiveaux[1], "Basse : 4 pièces sous 48 px, niveau 3 sous 26 px");
                 VERIFIE(vehicule_lod::dessin(b, L * F / 70.f, F, false, false, false).a == &b.partsLod, "Haute, 70 px : niveau 1, inchangée");
-                VERIFIE(e(L * F / 70.f, true).a == &b.partsBasseNiveaux[0], "police en lots, Basse, 70 px : niveau 2");
+                VERIFIE(e(L * F / 70.f, true).a == &b.partsBasseNiveaux[0], "police en lots, Basse, 70 px : niveau 2 en 4 pièces");
                 VERIFIE(vehicule_lod::dessin(mo, L * F / 70.f, F, true, false, false).a == &mo.partsLod, "Basse sans niveaux 2 et 3 en 4 pièces : seuil de 48 px gardé");
             }
             VERIFIE(e(100, false).a == &b.partsBasseNiveaux[0] && e(200, false).a == &b.partsBasseNiveaux[1], "Basse : niveau 2 puis 3 en 4 pièces au loin");
