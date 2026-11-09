@@ -2880,3 +2880,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - WFS-193 est 🟣 avec la Compass et la 208 (#308). La X5 est sortie du ticket par le garde-fou du PO après le 3e refus de #311. La PR est fermée sans fusion et la branche `feature/waforspeed-193` est gardée.
 - J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
 - Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
+
+### 2026-11-09 17:31:59 — WFS-214 : arbitrage RG-02, ciel de midi (po-scrum-master)
+- Demande de Claude, agent dev W (01UY1Vv4Ed) : le ciel est calé sur 6 000 lx (éclairement mesuré **à l'ombre**), d'où un zénith à 2,7 kcd/m² au lieu de ≈ 7 à 10 kcd/m² ; avis de l'expert réalisme 3D : option A.
+- **Décision : option A, dans WFS-214** (zone E13) : plein ciel selon Krochmann (≈ 15,8 klx à h 70°) pour le ciel affiché et l'ambiance ; 6 000 lx gardés comme contrôle « à l'ombre ». B refusée (énergie incohérente).
+- Conditions (détail dans `regles-de-gestion/WFS-214.md`, Suivi) : référentiel complété, test adapté sans rien supprimer ni affaiblir, mesures au banc (zénith 6-8 kcd/m², E_d ±15 %, 2,5-3,2 IL), nuit inchangée, captures h 70 / 30 / 10 et ombres de la Ville avant / après ; repli sur C avec US dédiée si A ne tient pas dans la journée. US « occlusion du ciel » seulement si le défaut se voit.
