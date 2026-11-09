@@ -4514,6 +4514,11 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
   l'indicateur de WFS-247 reste juge en plus en ligne droite, montée et virage serré à ≥ 30 img/s ; tableau à deux colonnes et test du saut de 5 mm refait dans l'épingle à 30 img/s.
   Choix de mesure, décidé par le PO ; l'utilisateur peut le changer. Ticket toujours à Claude, Agent 0 developer ; 🟡 après fusion.
 
+### 2026-11-08 23:32:02 — WFS-301 (complément) : mode `WFS_BANC=cuire` pour la publication des paquets (WFS-302) (Claude, agent 3 (01UY1Vv3))
+- Demande de l'agent expert ci cd (WFS-302, option A choisie par l'utilisateur), décision du PO (complément de WFS-301, RG-C1 à C3, b52e3d6d).
+- `cartes_v2::cuireSeul` (`paquet_carte.*`, E14) : 3 formats cuits deux fois, comparés octet par octet, écrits (temporaire puis renommage), vérifiés (`verifier_carte`), **laissés** dans `WFS_PAQUETS` ; une ligne par fichier (nom, taille, SHA-256, empreinte) ; `sha256Hex` neuf (FIPS 180-4, vérifié contre `sha256sum`).
+- **Accroche** `desktop_main.cpp` : 1 ligne, **avant l'initialisation de Vulkan** (pas de GPU, ≈ 1,6 s). Code de sortie 0 si tout va bien, 3 en cas d'écart (essai : dossier impossible à écrire → 3). Deux lancements de suite → fichiers identiques (`cmp`). `WFS_BANC=cuisson` inchangé.
+- Sortie sur la branche (ville_astc 22 779 180 octets, ville_etc2 5 562 514, ville_rgba8 27 593 777 ; empreinte c30f0f40c276b6c1).
 ### 2026-11-09 00:01:38 — WFS-215 : PR #288 refusée par le lead dev (lead-dev auto)
 - Revue complète (1re) : captures ouvertes (Model 3 plaque, RR Sport jour / nuit, A 45 vitrines), tout le diff lu (`tools/vitres_voitures.mjs`, 1 ligne de `convertir_voitures.sh`, `logos.json`, 3 voitures). RG-01, RG-02 (jour), RG-03, RG-04 tenues à l'œil ; code juste.
 - Refus : conflit `journal.md` avec main (fusion impossible) ; `conducteurs-rrsport-nuit` éblouie avant comme après : conducteur de nuit non montré.
