@@ -4,7 +4,7 @@ Branche `feature/waforspeed-291` comparée à `origin/main` ; bancs : reglages-o
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
-| `reglages-onglet-affichage-menu` | — | ![après](apres-reglages-onglet-affichage-menu.jpg) |
-| `reglages-onglet-conduite-pause` | — | ![après](apres-reglages-onglet-conduite-pause.jpg) |
-| `reglages-onglet-son-gaucher` | — | ![après](apres-reglages-onglet-son-gaucher.jpg) |
-| `reglages-onglet-son-pause` | — | ![après](apres-reglages-onglet-son-pause.jpg) |
+| `reglages-onglet-affichage-menu` | ![avant](avant-reglages-onglet-affichage-menu.jpg) | ![après](apres-reglages-onglet-affichage-menu.jpg) |
+| `reglages-onglet-conduite-pause` | ![avant](avant-reglages-onglet-conduite-pause.jpg) | ![après](apres-reglages-onglet-conduite-pause.jpg) |
+| `reglages-onglet-son-gaucher` | ![avant](avant-reglages-onglet-son-gaucher.jpg) | ![après](apres-reglages-onglet-son-gaucher.jpg) |
+| `reglages-onglet-son-pause` | ![avant](avant-reglages-onglet-son-pause.jpg) | ![après](apres-reglages-onglet-son-pause.jpg) |
