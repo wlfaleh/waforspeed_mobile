@@ -5,19 +5,17 @@ Agent : Claude, agent dev Y
 ## Description
 
 - **Demande** : finir la pluie en vue Cockpit. Plus de goutte sur le montant ; gouttes effacées au passage du balai dessiné ; plus de pluie dans la bouche du tunnel.
-- **Ce qui change** (2e version, après le refus de la 1re revue)
+- **Ce qui change** (3e version, après les refus de la 1re et de la 2e revue)
   - **RG-01** : la vitre est calculée **telle que l'œil la voit**.
     - `vehicule_cockpit.h` : `coinsVitre` donne les axes des montants. `pareBriseVu()` les porte ; c'est 1 ligne remplacée dans `pareBriseVu()`.
     - `meteo::vitreVue` projette depuis l'œil, sur le plan de la vitre, les 4 arêtes de chaque barre de montant (75 × 50 mm, mêmes axes que `barre()`). Elle garde le bord le plus rentré qu'elles cachent, en bas et en haut, moins 16 mm : 1 cm de joint et 6 mm pour le rayon de la plus grosse goutte.
     - Vu de biais, le montant droit cache environ 10 cm de vitre en bas : 106 mm sur la Golf, 113 mm sur le X5, 99 mm sur l'Abarth.
   - **RG-02** : la pluie n'a plus sa propre copie des balais. À chaque image dessinée, `balayerVitre` lit l'angle des balais dessinés (`pareBriseVu().angle`). Au retour en Cockpit, l'angle de départ est remis à l'angle courant, donc rien n'est balayé d'un coup (remarque a).
-  - **RG-03** : la coupure du tunnel suit la **position de la caméra** le long de la route.
-    - Le fondu de 8 m s'arrête **à la bouche**.
+  - **RG-03** : la coupure du tunnel dépend de la vue (`meteo::pluieTunnel`).
     - **En vue Arrière (2e retour du lead dev), c'est exactement le calcul de main** : position de la voiture, marge 2 m (`pluieTunnel(false, …)`). Écart mesuré avec main : 0 pixel avec la voiture 6 m et 12 m dans le tunnel.
-    - La position de la caméra, avec un fondu de 8 m qui s'arrête à la bouche (`TOIT_MARGE_COCKPIT`), ne sert qu'en vue Cockpit.
-    - En vue Cockpit, plus aucun trait dès que la caméra est sous la voûte.
+    - En vue Cockpit seulement : position de la caméra le long de la route, fondu de 8 m qui s'arrête à la bouche (`TOIT_MARGE_COCKPIT`) ; plus aucun trait dès que la caméra est sous la voûte.
     - Avant la première image, la caméra n'est pas encore connue : le calcul prend alors la voiture (remarque b).
-  - **Banc `WFS_BANC=pluie`** (`benchPluie`, dans `meteo.cpp`), branché par une accroche E7 de 2 lignes dans `desktop_main.cpp`, annoncée au journal. Il prend la Golf et le X5, et les témoins en vue Arrière dehors et à la bouche du tunnel.
+  - **Banc `WFS_BANC=pluie`** (`benchPluie`, dans `meteo.cpp`), branché par une accroche E7 de 2 lignes dans `desktop_main.cpp`, annoncée au journal. Il prend la Golf et le X5, et les témoins en vue Arrière dehors et au tunnel (voiture à la bouche, 6 m et 12 m dedans).
 - **Comment c'est vérifié**
   - **`test_pluie` vert** :
     - lancer de rayon depuis l'œil : sur les 20 intérieurs, aucun point du bord de la vitre n'est caché par un montant, ni ce même point décalé du rayon d'une goutte ;
@@ -26,7 +24,7 @@ Agent : Claude, agent dev Y
     - vue Arrière : `pluieTunnel(false, …)` comparée tous les 0,5 m, de 80 à 320 m, à la formule de main recopiée telle quelle : identique ; voiture à +6 m de la bouche : part de pluie 0, comme sur main.
   - Banc `pluie` : effacement par les balais dessinés en Cockpit, 0 effacement en vue Arrière.
   - Coût de la pluie : 0,03 ms par image en Cockpit, au plus 0,05 ms.
-  - **87 tests CPU verts, parcours complet 0 écart**, branche synchronisée avec `main` (WFS-318 compris).
+  - **87 tests CPU verts, parcours complet 0 écart**, branche synchronisée avec `main` (synchronisée de nouveau après la 2e revue).
 - **Limites et risques connus**
   - La suite des balais est de nuit : la pluie n'existe que la nuit en Ville.
   - Les gouttes déjà posées restent sur le pare-brise dans le tunnel jusqu'au passage du balai.
