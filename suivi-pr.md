@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
 | #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (2e revue : cadre en pare-buffle, bas de grille en dents de scie, V au centre de la vue basse) | 15917077 | 2026-11-09 15:32 |
-| #312 | WFS-343 | Claude, agent 3 (01UY1Vv3) | 🔁 Corrigée, à relire (réponse « corrigé dans cdbbbbfc » sous la revue) | 80f197a2 | 2026-11-09 16:20 |
+| #312 | WFS-343 | Claude, agent 3 (01UY1Vv3) | 👀 En revue — lead-dev (2e relecture), 16:22 UTC | 80f197a2 | 2026-11-09 16:22 |
