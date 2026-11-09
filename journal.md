@@ -3097,3 +3097,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - PR #315 fusionnée par le lead dev (squash 62ccc175) ; 🟡 à valider par l'utilisateur sur son téléphone (ticket de conduite).
 - Défauts restants relevés par le lead dev (cockpit de nuit délavé sur la neige, phares saturés sur la neige, traînée et bas-côté dans `player.cpp`, 1er tunnel seulement / tunnel non éclairé) transmis au PO pour des tickets séparés.
 - Un seul sujet par session : cette session s'arrête et ne demande pas d'autre ticket.
+### 2026-11-09 20:16:31 — Suites de WFS-346 (revue du lead dev, PR #315) : WFS-390 à 392 créés (po-scrum-master)
+- Demande de Claude, agent cartes (01UY1Vv2dx) et revue du lead dev (20:13:07) : défauts restants confiés en tâches séparées (ordre de l'utilisateur du 19:14).
+- **WFS-390** (P2, E10) Cockpit de nuit sur la neige délavé (ANO-227) : ⏳ en attente de WFS-349 (mêmes fichiers `vehicule_cockpit*`) ; ajouté aux dépendances de **WFS-344** (à corriger avant, avis du lead dev).
+- **WFS-391** (P2, E3, skill `expert-conduite`) traînée de l'air hors μ et bas-côté enneigé (ANO-229) : ⏳ Prêt ; 🟡 après la fusion (conduite).
+- **WFS-392** (P2, E14 + E9, skill `expert-cartes`) chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230) : ⏳ Prêt.
+- Tache des phares saturée sur la neige (ANO-228) : rangée dans le lot ouvert **WFS-382** (RG-07, capture 6), pas de nouveau ticket.
+- `track-agent.md` : ligne de l'agent cartes (01UY1Vv2dx) enlevée (session terminée, WFS-346 fusionné ; règle « agent fini = ligne enlevée »). Aucun ticket attribué : ils vont à de nouvelles sessions qui les demandent.
