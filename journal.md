@@ -4787,3 +4787,18 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Cause** (trace par image, diagnostic local non gardé) : ligne droite à 540 m du départ, 185 km/h ; le trafic ralentit devant, le pilote du trafic (`traffic_system.cpp`, « (file − écart) × 5 − cap × 4 ») choisit la file de gauche ; la commande sature (volant à fond 25 m), le cap monte à −0,22 rad (10 m/s de vitesse latérale) et la voiture dépasse sa file jusqu'au bord de la chaussée (écart −1,05 demi-largeur, 610 m) ; elle heurte une balise du bord (chocs du décor, WFS-256) et reste 4,0 s arrêtée, nez dans la balise, avant de se dégager.
 - Le pilote de la conduite réelle (`limiterPilote`, `src/game/aide_direction_banc.h`, WFS-241) borne déjà cela, mais il ne s'applique qu'à la conduite réelle ; le jeu est revenu à la conduite d'avant (WFS-258, RG-00) : en conduite d'avant, le pilote ne borne rien. **Ce n'est ni la route ni le trafic** (le trafic choisit une file libre, à raison) : c'est le pilote automatique des bancs (zone du ticket). La limite de 3 s ne change pas.
 - Correction : `limiterPilote` en conduite d'avant, seulement pendant un changement de file hors virage marqué : cap tenu qui borne la vitesse latérale (3 m/s, puis l'écart restant en 1 s). Dans sa file, commande d'origine inchangée. Test `test_pilote_file` (CMakeLists : 1 ligne, accroche annoncée).
+
+### 2026-11-09 05:15:38 — Statuts automatiques, CI main #943 (robot statuts)
+- Run rouge (push, commit 6a4b7bb), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 05:16:02 — WFS-339 : CI de branche n° 1 lancée (agent arwa (Claude, session trafic))
+- Run 42566275669 (#944), `workflow_dispatch` de `build.yml` sur `feature/waforspeed-339` (adfbcd71, synchronisée avec `main`) : vérifie compilation, tests CPU (groupe `texte`, avec `test_pilote_file`), parcours `menu1-2400` et APK. Limite : `build.yml` ne lance pas le parcours du banc `campagne` (le groupe `cartes` l'appelle sans parcours, `matin.yml`) : le banc campagne complet est vérifié en local.
+
+### 2026-11-09 05:19:40 — WFS-335 : PR #296 approuvée et fusionnée (lead-dev auto)
+
+2e revue sur bccaa3ae : conflit résolu, décision du PO du 02:35 appliquée (niveau 2 de 100 à 48 px en Basse, joueur complet), diff entier relu, `test_vehicule_lod` OK, captures vues (suite 110 → 40 px sans saut, Course à 5 de nuit). Squash 88f3cde. Statut 🟡 À valider (utilisateur) : img/s à mesurer sur le téléphone ; suite dans WFS-348.
+
+### 2026-11-09 05:22:12 — WFS-333 : PR #298 refusée, 1re revue (lead-dev auto)
+
+Code et tests bons (`test_penetration_voitures` et `test_chocs_voitures` OK après fusion avec `main`, recouvrement 0,000 m). Refus : RG-02 non montrée (sur `penetration-accident-1…3`, voiture accidentée devant le joueur au même écart, joueur arrêté) ; aucune capture avant ; tache blanche dans l'habitacle sur `cockpit-4`, à expliquer ; `qa/pr/WFS-333/pr.md` avec « À REMPLIR ». PR #297 (WFS-338) : nouveau commit eced6204 sans réponse « Bien reçu » / « corrigé dans » sous la revue, reste ↩️.
