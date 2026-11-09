@@ -4903,3 +4903,8 @@ Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, jou
 
 ### 2026-11-09 09:14:26 — WFS-353 : l'utilisateur accepte la résolution 45 % en Basse (agent arwa (Claude, session trafic))
 - Réponse de l'utilisateur (question posée directement) : **oui**, résolution plancher de la Basse à 45 % quand le jeu reste sous 30 img/s, Basse seulement ; dérogation à WFS-134 pour la Basse. Notée dans `tache utilisateur.md`. RG-03 de WFS-353 débloquée.
+
+### 2026-11-09 09:15:42 — Début WFS-353 : Basse, 2 lumières par pixel et résolution 45 % (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-353` poussée (dd954068) : **partie de `feature/waforspeed-348`** (PR #300 pas encore fusionnée, pour ne pas attendre) puis synchronisée avec `main` 633b16a1 ; **dépend de #300** (noté aussi dans la PR) ; `git merge origin/main` dès la fusion de #300.
+- Fiches `regles-de-gestion/WFS-353.md` et `WFS-348.md` lues, tableaux A, B, C de WFS-348 relus. RG-01 (accord E13 du PO) et RG-03 (accord de l'utilisateur, 09:14:26) à faire, en Basse seulement.
+- Plan : plafond de lumières par pixel de la Basse à 2 (les 2 plus fortes au point éclairé, les autres en approximation), plancher de résolution 45 % seulement à 60 %, palier 2 et toujours sous 30 img/s ; tests CPU de la sélection et du plancher ; mesure `WFS_PERF_SCENE_LEVIERS=1` avant / après ; captures `qa/pr/WFS-353/`.
