@@ -103,5 +103,82 @@
    }
   ],
   "empreinteApres": "2ff076abf2a391c1"
+ },
+ "x5": {
+  "materiaux": 29,
+  "empreinteAvant": "4fc2afea68dc4d96",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 15,
+    "boite": [
+     -0.47,
+     0.625,
+     -2.5,
+     0.47,
+     0.955,
+     -2.36
+    ],
+    "note": "calandre de marque (deux « haricots » : cadre, barres et arcs du bas) retirée",
+    "triangles": 2640
+   },
+   {
+    "retirer": true,
+    "materiau": 10,
+    "boite": [
+     -0.47,
+     0.625,
+     -2.5,
+     0.47,
+     1,
+     -2.3
+    ],
+    "note": "fond des haricots retiré",
+    "triangles": 240
+   },
+   {
+    "materiau": 4,
+    "boite": [
+     -0.115,
+     0.85,
+     -2.48,
+     0.115,
+     0.945,
+     -2.3
+    ],
+    "pivot": [
+     0,
+     0.945,
+     -2.43
+    ],
+    "echelle": [
+     1,
+     0.15,
+     0.15
+    ],
+    "fondu": 0.01,
+    "note": "pointe de carrosserie entre les deux haricots repliée dans le bord du capot (hauteur et profondeur ×0,15 vers le bord) : bord net, sans pli ni trou",
+    "sommets": 47
+   },
+   {
+    "grille": [
+     -0.48,
+     0.63,
+     -2.43,
+     0.48,
+     0.915,
+     -2.37
+    ],
+    "barres": 6,
+    "galbe": 0.045,
+    "cadre": 0.015,
+    "couleur": "#4a4a4a",
+    "metal": 0.8,
+    "rugosite": 0.3,
+    "note": "grille générique d'un seul tenant (RG-05 : cadre et barres au même galbe, 4,5 cm), posée dans l'ouverture d'origine, bords 1 à 2 cm derrière la carrosserie qui cache la jonction (RG-06) ; bas un peu plus large (trapèze 1,05) ; haut à 0,915 m (rien par la fente capot-phares)",
+    "trapeze": 1.05
+   }
+  ],
+  "empreinteApres": "8a664fb46210b69c"
  }
 }
