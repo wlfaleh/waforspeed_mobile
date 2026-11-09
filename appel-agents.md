@@ -18,6 +18,17 @@
 4. **Alias inconnu** : la session donne cette liste et demande lequel prendre (seul cas où elle pose une question).
 5. Les règles de `CLAUDE.md` restent valables pour tous les rôles (gel iOS, lead dev seul à fusionner, réseau, nom de l'agent dans les commits…).
 
+6. **Nom de la session (règle de l'utilisateur, 2026-11-09 13:55 UTC)** : la session **se renomme elle-même**, sans demander.
+   Elle charge l'outil avec `ToolSearch` (`select:mcp__claude-code-remote__set_session_title`), puis appelle `set_session_title`.
+   Si elle ne connaît pas son identifiant, elle appelle d'abord `get_session` sans argument.
+   - **Agent hors développeur** (`@po`, `@leaddev`, `@qa`, `@cicd`, `@smartbrain`, `@3d`) : dès le 1er message, le nom est
+     **`Agent <alias> (<id complet de la session>)`**, par exemple `Agent po (session_01UY1Vv5B99mCrTFBmEatAjE)`.
+   - **Développeur** (`@dev`, `@conduite`, `@cartes`) : dès que le PO lui a attribué son ticket, le nom est
+     **`WFS-XXX — <nom de l'agent dans track-agent.md> (<sujet en 3 à 5 mots>)`**, par exemple `WFS-343 — Claude, agent 3 (carte de Noël 1/3)`.
+     Après la fusion, quand la session s'arrête : **`⏹️ Terminée — <nom de l'agent> (WFS-XXX fusionné)`**.
+   - Si l'outil n'est pas disponible dans la session, elle le signale au PO, qui la renomme lui-même au moment de l'attribution.
+   - Aucune tâche planifiée pour ce renommage (décision de l'utilisateur, 2026-11-09).
+
 **Skills chargés automatiquement** : chaque fichier `.claude/agents/<nom>.md` liste ses skills dans le champ `skills:`. Quand l'agent est appelé (outil Agent), Claude Code charge ces skills tout seul au démarrage ; quand une session prend le rôle avec `@<agent>`, elle les charge elle-même avec l'outil Skill (règle de `CLAUDE.md`).
 
 Remarque : dans Claude Code, « @ » ouvre aussi la suggestion de fichiers ; il suffit de continuer à taper l'alias puis un espace.
