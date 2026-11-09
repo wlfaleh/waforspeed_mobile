@@ -305,8 +305,12 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     // WFS-134 (RG-11) : version « Basse lointaine » en 4 appels de dessin au plus : carrosserie (peinture), feux arrière,
     // vitres, reste opaque en gris sombre ; même forme que la version allégée (ou complète), indices absolus à la suite.
     // Remplace en qualité Basse la version allégée (au-delà de 60 m du joueur, avec fondu) : jamais de cubes.
-    {
-        const std::vector<ModelPart>& src = lodParts.empty() ? out.parts : out.partsLod;
+    // WFS-335 (RG-02) : même regroupement pour les niveaux 2 et 3 (partsBasseNiveaux), Basse au loin ; un seul matériau sombre
+    int32_t sombre = -1;
+    out.partsBasseNiveaux.assign(out.partsNiveaux.size(), {});
+    for (size_t niv = 0; niv <= out.partsNiveaux.size(); niv++) {
+        const std::vector<ModelPart>& src = niv ? out.partsNiveaux[niv - 1] : lodParts.empty() ? out.parts : out.partsLod;
+        std::vector<ModelPart>& dst = niv ? out.partsBasseNiveaux[niv - 1] : out.partsBasse;
         int32_t matPeinture = -1, matVitre = -1, matFeu = -1;
         std::vector<uint32_t> cat[4];   // 0 peinture, 1 feux arrière, 2 vitres, 3 reste opaque
         for (const ModelPart& p : src) {
@@ -320,14 +324,16 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             for (uint32_t t = 0; t < p.indexCount; t++) cat[c].push_back(idx[p.firstIndex + t] + (uint32_t)p.vertexOffset);
         }
         if (matPeinture >= 0) {
-            const int32_t sombre = (int32_t)raw.size();
-            RawMat d{}; d.col[0] = d.col[1] = d.col[2] = linSrgb(0x1c); d.col[3] = 1; d.metal = 0.2f; d.rough = 0.6f; d.cut = 0.5f;
-            d.tC = d.tN = d.tMR = -1; d.flags = MAT_DOUBLE;
-            raw.push_back(d); partDetail.push_back(0); partFil.push_back(0);
+            if (sombre < 0) {
+                sombre = (int32_t)raw.size();
+                RawMat d{}; d.col[0] = d.col[1] = d.col[2] = linSrgb(0x1c); d.col[3] = 1; d.metal = 0.2f; d.rough = 0.6f; d.cut = 0.5f;
+                d.tC = d.tN = d.tMR = -1; d.flags = MAT_DOUBLE;
+                raw.push_back(d); partDetail.push_back(0); partFil.push_back(0);
+            }
             const int32_t mats[4] = {matPeinture, matFeu >= 0 ? matFeu : sombre, matVitre >= 0 ? matVitre : sombre, sombre};
             for (int c : {0, 3, 1, 2}) {
                 if (cat[c].empty()) continue;
-                out.partsBasse.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0)});
+                dst.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0)});
                 idx.insert(idx.end(), cat[c].begin(), cat[c].end());
             }
         }
@@ -335,6 +341,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     // WFS-170 : matériaux retirés (vernis séparé de la 911…) : leurs pièces ne sont plus dessinées
     std::vector<std::vector<ModelPart>*> listes{&out.parts, &out.partsLod, &out.partsBasse};
     for (std::vector<ModelPart>& n : out.partsNiveaux) listes.push_back(&n);   // WFS-158 (RG-04) : niveaux 2 et 3
+    for (std::vector<ModelPart>& n : out.partsBasseNiveaux) listes.push_back(&n);   // WFS-335
     for (std::vector<ModelPart>* l : listes)
         l->erase(std::remove_if(l->begin(), l->end(), [&](const ModelPart& p) { return p.material < retire.size() && retire[p.material]; }), l->end());
     // vitres et pièces transparentes dessinées après les pièces opaques

@@ -1162,6 +1162,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     if (qualiteBasse && ombresBasse) { shadowsOn_ = fp.shadows && !fp.night; night_ = fp.night; }
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
     comptesPrec_ = comptes_; comptes_ = ComptesImage{};   // WFS-317 (I9)
+    releve_.clear();   // WFS-335 (RG-01)
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
     if (bloom_) bloom_->force = gpuLogiciel() ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);
@@ -1394,8 +1395,16 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         else opaqueQ_.push_back(p);
     }
     };
+    const size_t o0 = opaqueQ_.size(), t0 = transparent_.size();
     emettre(*lod.a, lod.t > 0.f ? -(3.f + lod.t) : 0.f);   // niveau a : pixels où le seuil ≥ t
     if (lod.t > 0.f) emettre(*lod.b, -(1.f + lod.t));    // niveau b : pixels où le seuil < t
+    if (releverVoitures) {   // WFS-335 (RG-01) : banc seulement
+        ReleveVoiture rv; rv.distance = depth; rv.niveau = lod.niveau; rv.joueur = dessinJoueur;
+        rv.px = vehicule_lod::pixels(std::max({m.bmax.x - m.bmin.x, m.bmax.y - m.bmin.y, m.bmax.z - m.bmin.z}), focalePx_, depth);
+        for (size_t i = o0; i < opaqueQ_.size(); i++) { rv.triangles += opaqueQ_[i].count / 3; rv.appels++; }
+        for (size_t i = t0; i < transparent_.size(); i++) { rv.triangles += transparent_[i].count / 3; rv.appels++; }
+        releve_.push_back(rv);
+    }
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
