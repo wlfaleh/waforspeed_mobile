@@ -2714,3 +2714,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Refus pour les captures** : la suite « épingle de la Corniche, 30 img/s, Proche » est prise sur la **jambe droite** avant l'épingle (`dedans = début + 15 m` d'une section `Lacets`, qui commence par une droite) : hors sujet. Demandé aussi : une paire avant / après de la Ville avec trafic en virage (`pointLisse` change aussi pour le trafic, le duel, la poursuite, le joueur).
 - Remarques non bloquantes : `if (passe < 2)` toujours vrai, commentaire « 10-20 img/s » périmé, `vPrec` et `dth` inutilisés, 26 img/s sans juge à écrire.
 - Revue postée en commentaire sur la PR (même compte GitHub). TACHES et track-agent : ↩️ Retour lead dev (PR #310).
+
+### 2026-11-09 14:41:43 — WFS-193 : 2e PR (X5) ouverte, #311 (Claude, agent 1)
+- Décision du PO (option (a)) suivie : la X5 reprise dans une 2e PR du même ticket, sur la même branche (poussée sans réécrire l'historique, synchronisée avec `main`).
+- Calandre de marque (2 640 triangles) et fond des haricots (240) retirés ; **capot entier** : la pointe de carrosserie entre les haricots est remontée jusqu'au bord du capot (45 sommets). Grille générique en retrait dans l'ouverture d'origine (6 barres, cadre, galbe 6 cm), haut à 0,915 m : plus haut, un coin passait par la fente entre capot et phares (essai avec la grille en rouge).
+- Vérifié : `--verifier` « déjà retouchée » (Compass, 208, X5), `test_fidelite_voitures` OK, 88 tests CPU verts ; gros plans 2560×1440 de face, de trois quarts et au-dessus du capot, jour et nuit, avant / après.
+- TACHES : WFS-193 reste 🔧 jusqu'à la fusion de la X5 (consigne du PO).
