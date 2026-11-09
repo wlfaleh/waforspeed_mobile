@@ -2731,3 +2731,9 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Réponse « Bien reçu » sous la revue avant toute correction (commentaire 6741407484).
 - (1) Branche synchronisée avec `main` ; `TACHES.md` et `track-agent.md` repris de `main` (lignes en double évitées) ; 88 tests CPU OK.
 - (2) Nuit du RR Sport : `conducteurs-rrsport-nuit` est éblouie par la lumière du départ (banc `conducteurs`, hors zone, non modifié) ; même banc avec `WFS_DEPART=300` (même binaire, modèles de `main` puis de la branche) : de face, sous la pluie, le conducteur (tête, bras, volant) et les sièges se voient derrière le pare-brise après, à peine avant. Captures `avant-` / `apres-conducteurs-rrsport-nuit-depart300` (+ zoom) dans `qa/pr/WFS-215/`. Le banc `vitrines` ne suit pas `WFS_MOMENT=nuit` (essai : scène de jour).
+
+### 2026-11-09 14:45:29 — WFS-193 (X5), PR #311 refusée par le lead dev (lead-dev)
+- 24 captures X5 ouvertes (avant / après), gros plans agrandis ×4 ; diff lu en entier (données : entrée `x5` de `tools/formes.json`, `x5.wfm`, `x5.lod`) ; `retoucher_formes.mjs --verifier` : déjà retouchée (4f457585c333e28d).
+- Bon : haricots retirés (marque non reconnaissable), capot plus déchiré sur les côtés, vitrines propres, dos et feux inchangés.
+- Refus : (1) la pointe de carrosserie écrasée à 15 % (retouche 3) fait un pli froissé au centre du bord haut de la grille (`nez-x5-34-jour`, `-capot-jour/nuit`, `-face-nuit`) ; (2) coin bas de la grille côté 3/4 en bord droit, liseré clair et éclats du pare-chocs (`nez-x5-34-jour/nuit`). Demandé : gros plans des deux côtés, vue basse du pare-chocs, zooms ×4.
+- 4e refus de la X5 en tout (3 sur #308, 1 sur #311) : PO prévenu par le rapport du lead dev.

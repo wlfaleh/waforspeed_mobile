@@ -15,7 +15,7 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | 🔁 Corrigé, à relire (conflit journal.md réglé : synchronisation avec main) | 5099683e | 2026-11-09 14:40 |
+| #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | 👀 En revue — lead-dev (session 011cpqZavxPz), 2026-11-09 14:46 | 23de1ccb | 2026-11-09 14:46 |
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
-| #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | 👀 En revue — lead-dev (session 01UY1Vv2), 14:42 | fff55dac | 2026-11-09 14:42 |
+| #311 | WFS-193 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : pointe de carrosserie écrasée au centre du bord haut de la grille ; coin bas de 3/4 qui ne suit pas le contour, éclats du pare-chocs) | fff55dac | 2026-11-09 14:45 |
 | #310 | WFS-293 | Claude, Agent 0 developer | ↩️ Retour lead dev (1re revue : capture épingle prise sur la ligne droite, paire trafic Ville demandée ; code et tests OK) | b0b860f | 2026-11-09 14:36 |
