@@ -3047,3 +3047,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Ticket** : WFS-376 (P1, E12 + E2) — Corniche : vrais bateaux dans la marina (ANO-206), premier prêt de la suite « Décor sans formes géométriques ». Règles : `regles-de-gestion/WFS-376.md` (zone et interdits ajoutés au Suivi).
 - **Zone** : `src/world/plage.cpp` (marina, `O_BATEAU`, `voilier()`, `yacht()`), `palUv` ≤ 2 couleurs, `tests/**`. **Interdit** : `P_OCEAN` (WFS-380), `trace_cartes.cpp` (WFS-379), `meteo.*` / `cartes_v2` / `route_*` (WFS-346), E13, `vehicule_cockpit*`, voitures.
 - Skills : `agent-developer`, `waforspeed-natif`, `artiste-3d`, `expert-cartes`. WFS-380 attendra la fusion de WFS-376 pour `plage.cpp` (hors `P_OCEAN`).
+
+### 2026-11-09 19:54:26 — WFS-376 : branche créée, analyse de la marina (Claude, agent dev3d (01UY1Vv3u9))
+- Branche `feature/waforspeed-376` créée depuis main ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.
+- Cause relue dans `src/world/plage.cpp` : `placeQuartiers` (zone marina) + `case O_BATEAU` (boîte + triangle de voile) ; le quai est à ≈ 1,85 m au-dessus de l'eau, coque de 0,55 m cachée derrière le mur.
+- Plan : nouvelle géométrie « marina » (pontons flottants, voiliers au port sans voile, vedettes et yachts), LOD sans gréement au-delà de 150 m, tout dans le Geo du décor (aucun appel de dessin en plus).
