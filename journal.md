@@ -2999,6 +2999,15 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Vérifié : tests CPU 91/91 (nouveau `test_cartes_v2_saison`) ; banc `neige` 0 écart ; banc `paquets` 0 écart (parcours accueil → terrain → course → retour) ; freinage 100-0 dans le jeu : 37 m au sec, ≈ 144 m sur neige (μ 0,25, réel ≈ 150 m) ; flocons 0,07 ms CPU par image.
 - Limites : chaussée sèche sous le 1er tunnel seulement ; rendu vu en lavapipe ; coût GPU du shader de neige non mesuré sur téléphone. Aurore : WFS-344 (décision du PO 19:05:07).
 
+### 2026-11-09 19:35:20 — Dernière version cassée : WFS-374 (P1) créé (po-scrum-master)
+- Demande de l'utilisateur : « la dernière version est niquer ». Symptôme pas encore précisé (question posée dans `tache utilisateur.md`).
+- Fusions du jour : #313 WFS-356 (CI #964 verte), #312 WFS-343 (CI #965 verte, suspect n° 1 : `mapById`, `Track::build`, `CarteDecor::init`, choix du terrain), #297 WFS-338 (CI #966 en cours), #311 WFS-193 (CI #967 en attente).
+- **WFS-374** (P1 Urgent, E0, ⏳ Prêt, en premier) : bissection au banc, correction en avant, aucun revert sans ordre de l'utilisateur ; 🟡 après fusion. Pour une nouvelle session `@dev`.
+
+### 2026-11-09 19:36:22 — Jour / Nuit seulement : WFS-375 (P1) créé (po-scrum-master)
+- Vidéo de l'utilisateur (Corniche, 20:34) : le bouton Jour du choix du terrain fait défiler les moments de WFS-208 (Midi → Dorée…), course partie au crépuscule. Ordre : « garder que simple mode journée et nuit ».
+- **WFS-375** (P1, E8, ⏳ Prêt) : deux boutons JOUR (= midi) et NUIT, sans défilement ; sauvegardes anciennes rangées ; code des moments gardé pour les bancs.
+
 ### 2026-11-09 19:38:04 — Recette de la vidéo du soir, ANO-206 à 210, WFS-376 créé (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
 - Vidéo de l'utilisateur (15 s, Corniche, Course à 5, vue Cockpit) lue image par image ; rapport `qa/rapports/recette-manuelle-video-2026-11-09-2032.md`, images `qa/retours/2026-11-09-video2032-*.jpg`.
 - Anomalies : ANO-206 (bloquante, bateaux de la marina en triangles blancs) → **WFS-376** (P1, `dev-artiste-3d`, avant WFS-369, règles avec l'avis de l'expert réalisme 3D) ; ANO-207 (pas de pavillon, rétroviseur en boîte) → WFS-323 / 324 ; ANO-208 (ciel bleu nuit et sol au soleil) ; ANO-209 (bandes de marque sur le volant) → WFS-325 ; ANO-210 (arrêt net au choc d'un lampadaire).
