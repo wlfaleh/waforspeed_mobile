@@ -3011,3 +3011,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:38:04 — Recette de la vidéo du soir, ANO-206 à 210, WFS-376 créé (Agent po (session_01UY1Vv42j7p6X3zS9Jhfwdm))
 - Vidéo de l'utilisateur (15 s, Corniche, Course à 5, vue Cockpit) lue image par image ; rapport `qa/rapports/recette-manuelle-video-2026-11-09-2032.md`, images `qa/retours/2026-11-09-video2032-*.jpg`.
 - Anomalies : ANO-206 (bloquante, bateaux de la marina en triangles blancs) → **WFS-376** (P1, `dev-artiste-3d`, avant WFS-369, règles avec l'avis de l'expert réalisme 3D) ; ANO-207 (pas de pavillon, rétroviseur en boîte) → WFS-323 / 324 ; ANO-208 (ciel bleu nuit et sol au soleil) ; ANO-209 (bandes de marque sur le volant) → WFS-325 ; ANO-210 (arrêt net au choc d'un lampadaire).
+
+### 2026-11-09 19:40:22 — ANO-211 créée et US technique WFS-377 (po-scrum-master)
+- Signalement de Claude, agent dev W (01UY1Vv4Ed), pendant WFS-214 / PR #314 (remarque du lead dev) : sur `main` (64c14e06, 049efa41), le parcours WFS-150 RG-04 / P-05 du banc `realisme` (`src/render/bench_passes.cpp`, `WFS_PASSES_SEUL=1`) ne trouve plus « Ultra » dans les Réglages à onglets (WFS-291) : 2 / 5 étapes, capture `parcours-ultra-course` en Haute (128 px au lieu de 256), preuve d'ANO-106 non valable.
+- **ANO-211** (mineure, banc d'essai) → **WFS-377** [TECHNIQUE] P2, E0, ⏳ Prêt pour une nouvelle session @dev ; règles `regles-de-gestion/WFS-377.md`. L'agent dev W ne la prend pas (un seul sujet par session).
+- Pour information (pas d'anomalie) : l'exposition figée du banc des moments de WFS-208 (`eclairage_banc.cpp`) est corrigée dans la branche de WFS-214.
