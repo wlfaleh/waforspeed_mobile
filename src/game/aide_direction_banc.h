@@ -53,14 +53,30 @@ inline DriveInput joueurLigneIdeale(const Player& p, Track& t, bool volant = tru
 //  - direction : la file voulue est relue dans la commande reçue (évitement du trafic : « (file − écart) × 5 − cap × 4 »),
 //    puis visée 0,8 s devant (poursuite pure, comme le joueur simulé) ; sans trafic, la voiture va au centre.
 inline double vitessePilote(const Track& t, double dist) { return vitesseVirageAide(t, dist, 0.6, 0.7); }   // m/s (player.h, WFS-258)
+// WFS-339 : en conduite d'avant (g_conduiteMonde faux, modèle du jeu depuis WFS-258 RG-00), la vitesse et la direction du pilote
+// restent celles de game.cpp et du trafic, sauf pendant un changement de file : la commande « (file − écart) × 5 − cap × 4 »
+// sature (volant à fond pendant 25 m à 185 km/h), la voiture dépasse sa file jusqu'au bord de la chaussée (écart −1,05) et
+// s'arrête 4 s contre une balise du bord (chocs du décor, WFS-256) : banc campagne en échec, 610 m après le départ. Pendant le
+// changement de file, hors virage marqué, le volant tient un cap qui borne la vitesse latérale (3 m/s, puis l'écart restant
+// en 1 s) : la voiture rejoint sa file sans la dépasser. Dans sa file (écart < 0,05 demi-largeur), rien ne change.
 inline void limiterPilote(const Player& p, Track& t, DriveInput& in) {
-    if (!p.modeleMonde()) return;
-    const double v = p.speed * M, vp = vitessePilote(t, p.dist);
-    if (v > vp) { in.gas = false; in.nitro = false; in.brake = v > vp * 1.03; }
+    const bool monde = p.modeleMonde();
+    const double v = p.speed * M;
+    if (monde) { const double vp = vitessePilote(t, p.dist); if (v > vp) { in.gas = false; in.nitro = false; in.brake = v > vp * 1.03; } }
     if (std::abs(p.heading) > 1.2) return;   // demi-tour, contresens : commande reçue gardée
     // file voulue, ramenée à la file du trafic la plus proche (−2/3, 0, 2/3 : LANE_X) : elle ne suit pas la voiture qui élargit
     const double brute = p.playerX + (in.steer + 4 * p.heading) / 5;
     const double file = std::abs(brute) < 1.0 / 3 ? 0.0 : (brute > 0 ? 2.0 / 3 : -2.0 / 3);   // demi-largeurs
+    if (!monde) {
+        // dans sa file, ou dans un virage marqué (|courbe| ≥ 3 : épingles, lacets ; le cap y compense la force centrifuge du
+        // modèle d'avant, la commande d'origine la tient mieux) : commande gardée
+        if (p.aide == Aide::Web || std::abs(file - p.playerX) < 0.05 || std::abs(t.findSegment(p.position).curve) >= 3) return;
+        // changement de file : vitesse latérale voulue = écart restant en 1 s, 3 m/s au plus ; cap voulu correspondant, tenu
+        // par le volant (gain 10 par radian) : la voiture rejoint sa file sans la dépasser
+        const double vl = std::clamp((file - p.playerX) * RW, -3.0, 3.0), capVoulu = std::asin(vl / std::max(std::abs(v), 5.0));
+        in.steer = (float)std::clamp((capVoulu - p.heading) * 10, -1.0, 1.0);
+        return;
+    }
     const double vv = std::max(std::abs(v), 1.0), ld = std::max(8.0, 0.8 * vv);
     const TrackPoint P = t.point(p.dist, p.playerX * RW), T = t.point(p.dist + ld / M, file * RW);
     const double psi = P.th + p.heading, dx = T.x - P.x, dz = T.z - P.z;

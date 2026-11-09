@@ -111,6 +111,9 @@ else()
   target_link_libraries(test_course5_ordinateurs Threads::Threads)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_reglages_appui tests/test_reglages_appui.cpp)   # WFS-290 : cible de 48 dp, anti-rebond des réglages
+  add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
+  add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
+  add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
@@ -158,7 +161,7 @@ else()
   target_compile_definitions(test_fidelite_lumiere PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere_ombres tests/fidelite_lumiere_ombres.cpp)   # WFS-227 : cascades d'ombre, M-01, M-02
   target_compile_definitions(test_fidelite_lumiere_ombres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-  add_executable(test_pluie tests/test_pluie.cpp)   # WFS-334 : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse
+  add_executable(test_pluie tests/test_pluie.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-334 : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse
   add_executable(test_ville_lieux tests/test_ville_lieux.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-137 : lieux de la Ville au tracé 2
   add_executable(test_ville_sol tests/test_ville_sol.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-305 : sol fermé côté intérieur des courbes serrées (ANO-171)
   add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
@@ -177,8 +180,11 @@ else()
   add_executable(test_aide_ralentit tests/test_aide_ralentit.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)
   target_link_libraries(test_aide_ralentit Threads::Threads)   # WFS-258 : aide activée, la voiture ralentit à temps (1er virage du GP à 228 km/h, tours des 4 cartes)
   add_executable(test_chocs_cartes tests/test_chocs_cartes.cpp src/game/chocs_declaration.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/world/giratoire.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : obstacles de la Ville et des îlots, aucun mur invisible
+  add_executable(test_pilote_file tests/test_pilote_file.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-339 : pilote des bancs, changement de file sans sortir de la chaussée
   add_executable(test_chocs_voitures tests/test_chocs_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-256 : jamais deux voitures l'une dans l'autre
   target_link_libraries(test_chocs_voitures Threads::Threads)
+  add_executable(test_penetration_voitures tests/test_penetration_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-333 : aucune voiture dans celle du joueur
+  target_link_libraries(test_penetration_voitures Threads::Threads)
   add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
   add_executable(test_hud_lisible tests/test_hud_lisible.cpp)   # WFS-245 : textes du HUD lisibles (tailles, surfaces, contrastes)
   add_executable(test_bandeau_gps tests/test_bandeau_gps.cpp)   # WFS-245 (RG-09) : textes du bandeau de la carte GPS (tailles, place, toutes les consignes et rues)

@@ -1,0 +1,7 @@
+Captures : Release apercu, commit 4e7fa71 (construction 5), banc : success
+Captures : 1000 au total, 965 nouvelles ou modifiées, 35 inchangées
+ÉCHEC : envoi du fichier d'empreintes empreintes-5-1.sha256 (délai maximal du job atteint)
+##[warning]fichier d'empreintes final non envoyé : la prochaine publication renverra les captures non vérifiées
+##[warning]80 capture(s) non publiée(s) (envoi en échec) : course5-adversaires-190m-basse-avant.png course5-adversaires-190m-basse.png course5-adversaires-190m-haute-avant.png course5-adversaires-190m-haute.png course5-adversaires-400m-basse-avant.png course5-adversaires-400m-basse.png course5-adversaires-400m-haute-avant.png course5-adversaires-400m-haute.png course
+##[warning]405 capture(s) non envoyée(s) (délai maximal du job presque atteint) : elles restent dans l'artefact du run
+Captures : 480 envoyées, 35 inchangées, 80 ratées, 405 non envoyées, 0 périmées retirées ; 1601 appels à l'API ; quota restant : 3087 sur 5000

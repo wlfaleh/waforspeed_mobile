@@ -2,9 +2,11 @@
 // Chaque système enregistré (WFS_SYSTEM) est enveloppé, le temps du banc seulement, par un « chronomètre » qui appelle le
 // vrai système et mesure update / render / drawUi : aucune ligne de game.cpp n'est touchée, le registre est rétabli à la fin.
 #include "bench_perf.h"
+#include <cctype>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <sys/resource.h>   // WFS-348 : temps processeur du processus (lavapipe : le « GPU » est le processeur)
 #include <map>
 #include <memory>
 #include <string>
@@ -16,8 +18,13 @@
 #include "../game/game.h"
 #include "../game/camera_vue.h"   // WFS-299 : vue Proche au banc des parties
 #include "../game/course_system.h"   // WFS-297 : règles de la course au banc des parties
+#include "../game/course5.h"   // WFS-335 : Course à 5 au banc des parties
+#include "../game/trace_cartes.h"   // WFS-348 : sections du tracé (lieu de la mesure de l'utilisateur)
+#include "../game/track.h"          // WFS-348
+#include "../ui/navigation.h"       // WFS-348 : noms de rues (Rue des Mimosas)
 #include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes ; WFS-281 (accroche) : nombre de voitures
 #include "eclairage.h"                // WFS-297 : lampadaires déclarés
+#include "eclairage_physique.h"       // WFS-348 : captures suspendues (état du téléphone)
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/chargement.h"   // WFS-297 (RG-06) : écran de chargement et ses chiffres
 #include "passes.h"
@@ -86,13 +93,17 @@ struct Fenetre { std::string partie, quand; double image = 0, gpu = 0, rss = 0, 
 
 static void benchParties(Game& g, Renderer& r, const std::string& out, const std::string& liste) {
     std::vector<std::pair<std::string, bool>> parties;
+    std::vector<bool> modes;   // WFS-335 : vrai = Course à 5
     {   // « carte:moment,… » ; défaut : la suite de l'essai de l'utilisateur (Corniche, Ville de nuit, Ville), puis Ville de nuit encore
         const std::string l = liste == "1" ? "plage:jour,ville:nuit,ville:jour,ville:nuit" : liste;
         size_t p = 0;
         while (p < l.size()) {
             size_t v = l.find(',', p); if (v == std::string::npos) v = l.size();
             const std::string e = l.substr(p, v - p); const size_t d = e.find(':');
-            parties.push_back({e.substr(0, d), d != std::string::npos && e.substr(d + 1) == "nuit"});
+            // WFS-335 (RG-01) : 3e champ facultatif « course5 » (Course à 5 : adversaires, sans trafic)
+            const size_t d2 = d == std::string::npos ? d : e.find(':', d + 1);
+            parties.push_back({e.substr(0, d), d != std::string::npos && e.substr(d + 1, d2 == std::string::npos ? d2 : d2 - d - 1) == "nuit"});
+            modes.push_back(d2 != std::string::npos && e.substr(d2 + 1) == "course5");
             p = v + 1;
         }
     }
@@ -105,6 +116,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
     for (size_t k = 0; k < parties.size(); k++) {
         const auto& [carte, nuit] = parties[k];
         const std::string nom = std::to_string(k + 1) + ". " + carte + (nuit ? " nuit" : " jour");
+        modeCourse() = modes[k] ? ModeCourse::Course5 : ModeCourse::Checkpoint;   // WFS-335 : appliqué au départ de la course
         if (k == 0) {
             setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
             if (!g.init(r, "golf", carte.c_str())) { WFS_ERR("parties : chargement %s impossible", carte.c_str()); return; }
@@ -164,12 +176,28 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             WFS_LOG("parties : %s, %s : image %.1f ms, GPU %.2f ms (%s), %u appels, %u triangles, trafic %d, lampadaires %d, RSS %.0f Mo, carte graphique %.0f Mo, %.2f km",
                     w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.couts.c_str(), w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo, g.player().dist * M / 1000);
             WFS_LOG("parties : %s, %s : par système : %s", w.partie.c_str(), w.quand.c_str(), w.systemes.c_str());
+            {   // WFS-335 (RG-01) : relevé voiture par voiture (une image), distance réelle à la caméra ; triangles par famille
+                r.releverVoitures = true; g.update(1.0 / 60); g.render(t); t += 1.0 / 60; r.releverVoitures = false;
+                auto rv = r.releveVoitures();
+                std::sort(rv.begin(), rv.end(), [](const auto& a, const auto& b) { return a.distance < b.distance; });
+                uint32_t somme = 0;
+                for (const auto& v : rv) {
+                    somme += v.triangles;
+                    WFS_LOG("voitures : %s, %s : %s %6.1f m, %5.0f px, niveau %d, %6u triangles, %3u appels", w.partie.c_str(), w.quand.c_str(),
+                            v.joueur ? "joueur    " : "autre     ", v.distance, v.px, v.niveau, v.triangles, v.appels);
+                }
+                const Renderer::ComptesImage& ce = r.comptesImage();
+                WFS_LOG("voitures : %s, %s : %zu voitures, %u triangles en file (scène) ; toutes passes : voitures %u, décor %u, personnes %u triangles ; appels voitures %u",
+                        w.partie.c_str(), w.quand.c_str(), rv.size(), somme, ce.triangles[Renderer::FAM_VOITURES], ce.triangles[Renderer::FAM_DECOR],
+                        ce.triangles[Renderer::FAM_PERSONNES], ce.appels[Renderer::FAM_VOITURES]);
+            }
             res.push_back(w);
             if (f == 0) r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-" + carte + (nuit ? "-nuit" : "-jour") + ".png");
         }
     }
     g.shutdown();
     courseBenchRules(false);
+    modeCourse() = ModeCourse::Checkpoint;   // WFS-335
     choisirVue(vue0);
     WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) | carte graphique (Mo) |");
     for (const Fenetre& w : res)
@@ -223,6 +251,123 @@ static void benchMenu(Game& g, Renderer& r, const std::string& out, const std::s
     unsetenv("WFS_MOMENT");
 }
 
+// ---------------------------------------------------------------- WFS-348 (RG-01) : coût GPU par passe sur la scène de l'utilisateur
+// WFS_PERF_SCENE=1 : Ville de nuit sous la pluie, Checkpoint, vue Arrière, qualité Basse puis Haute (WFS_PERF_SCENE_QUALITE=basse
+// ou haute : une seule) ; lieux : départ, et « Rue des Mimosas » 60 m avant le virage serré à droite (bord de parc, mesure à
+// 16 img/s de l'utilisateur, qa/retours/2026-11-09-derniere-apk-scene-16-img-s.jpg). Pour chaque lieu : course partie du lieu
+// (WFS_DEPART), décompte, 60 images de chauffe, puis WFS_PERF_IMAGES images mesurées (60 par défaut) : coût GPU de chaque passe
+// (horodatages), appels, triangles ; capture « scene-<lieu>-<qualité>.png ». Tableau « scène (WFS-348) : | … | » au journal.
+static void benchScene(Game& g, Renderer& r, const std::string& out) {
+    Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+    const auto& secs = trace::sections(t);
+    const MapDef& md = mapById("ville");
+    struct Lieu { std::string nom; int64_t seg; };
+    std::vector<Lieu> lieux{{"depart", 0}};
+    for (size_t i = 0; i + 1 < secs.size(); i++) {
+        const std::string n = nav::nomRue("ville", md.seed, (int)i, secs[i].type, secs[i].autoroute);
+        if (n == "Rue des Mimosas" && secs[i + 1].cote > 0 && secs[i + 1].type != trace::Type::Ligne) {
+            lieux.push_back({"mimosas", std::max<int64_t>(0, secs[i].fin - (int64_t)(60 / SEG_M))});
+            WFS_LOG("scène (WFS-348) : Rue des Mimosas : section %zu (%s), segments %lld à %lld, suivie de %s à droite ; départ au segment %lld",
+                    i, trace::nomType(secs[i].type), (long long)secs[i].debut, (long long)secs[i].fin, trace::nomType(secs[i + 1].type), (long long)lieux.back().seg);
+            break;
+        }
+    }
+    if (lieux.size() < 2) WFS_LOG("scène (WFS-348) : Rue des Mimosas suivie d'un virage à droite introuvable : départ seulement");
+    const int MESURE = std::getenv("WFS_PERF_IMAGES") ? std::atoi(std::getenv("WFS_PERF_IMAGES")) : 60;
+    const char* qs = std::getenv("WFS_PERF_SCENE_QUALITE");
+    struct Q { int q; const char* nom; };
+    std::vector<Q> qualites;
+    if (!qs || std::string(qs) != "haute") qualites.push_back({qualite::BASSE, "basse"});
+    if (!qs || std::string(qs) != "basse") qualites.push_back({qualite::HAUTE, "haute"});
+    const VueCamera vue0 = vueCamera();
+    ecrans::Reglages& R = ecrans::reglages(); const int q0 = R.qualite;
+    struct Ligne { std::string lieu, qualite, couts; double gpu = 0, scene = 0, kpx = 0, ksom = 0, cpu = 0; uint32_t appels = 0, triangles = 0; };   // kpx : milliers de pixels calculés (WFS_STATS_PIPELINE=1)
+    std::vector<Ligne> lignes;
+    setenv("WFS_MOMENT", "nuit", 1);
+    courseBenchRules(true); modeCourse() = ModeCourse::Checkpoint;
+    double tt = 7000;
+    for (const Q& q : qualites) for (const Lieu& l : lieux) {
+        if (const char* sl = std::getenv("WFS_PERF_SCENE_LIEU"); sl && l.nom != sl) continue;   // essai local : un seul lieu
+        R.qualite = q.q; ecrans::appliquerQualiteNiveau(r);
+        setenv("WFS_DEPART", std::to_string(l.seg).c_str(), 1);
+        if (!g.init(r, "golf", "ville")) { WFS_ERR("scène (WFS-348) : chargement impossible"); break; }
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        choisirVue(VueCamera::Poursuite);   // « Arrière » des Réglages
+        // Basse : état du téléphone de la mesure (« Basse · 60 % », GPU ombre 0, reflet 0, capture 0) : scène à 60 % et palier 2
+        // de l'allègement (qualite_auto.h : reflets, captures et ombres coupés) ; WFS_PERF_SCENE_PLEIN=1 : sans allègement
+        const bool tel = q.q == qualite::BASSE && !std::getenv("WFS_PERF_SCENE_PLEIN");
+        r.echelleDynamique(tel ? 0.6f / r.vk().renderScale : 1.f);
+        r.forceNoShadows = tel; r.forceSansReflets = tel; eclairage::suspendreCaptures(tel);
+        for (int i = 0; i < 4 * 60; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(tt); tt += 1.0 / 60; }   // décompte
+        courseBenchSetTime(1e5);
+        for (int i = 0; i < 60; i++) { g.update(1.0 / 60); g.render(tt); tt += 1.0 / 60; }   // chauffe (sondes, cache des pipelines)
+        // mesures sur la voiture arrêtée dans le temps (images dessinées sans pas de simulation) : même image pour chaque variante
+        // WFS_PERF_SCENE_EFFETS=1 : variantes de la Basse, effets retirés un par un (Renderer::bancSansEffets), puis scène à 30 %
+        struct Var { const char* nom; uint32_t sans; float ech; int lpp = 0; };   // lpp : lumières par pixel en Basse (0 : valeur du jeu)   // autres : vraies lumières des autres voitures en Basse (−1 : valeur du jeu)   // leger : début du fondu léger en Basse (m), −1 : valeur du jeu
+        std::vector<Var> vars{{"", 0, 0}};
+        if (tel && std::getenv("WFS_PERF_SCENE_LEVIERS"))
+            // WFS-353 : ligne sans nom = la Basse du jeu (4 lumières par pixel, scène à 60 %) ; « 2 lumières approchées » =
+            // variante RG-01 (spotLights2 : 2 plus fortes au point, les autres approchées) ; « scène à 45 % » = plancher RG-03
+            for (const Var& v : {Var{"2 lumieres approchees", 0, 0, qualite::LUMIERES_PAR_PIXEL_BASSE_LEGERE}, Var{"scene a 45", 0, 0.45f},
+                                 Var{"2 lumieres approchees, scene a 45", 0, 0.45f, qualite::LUMIERES_PAR_PIXEL_BASSE_LEGERE}, Var{"scene a 50", 0, 0.5f},
+                                 Var{"sans lumieres de nuit", 1, 0}, Var{"2 lumieres approchees", 0, 0, qualite::LUMIERES_PAR_PIXEL_BASSE_LEGERE}, Var{"", 0, 0}}) vars.push_back(v);
+        if (tel && std::getenv("WFS_PERF_SCENE_EFFETS"))
+            for (const Var& v : {Var{"sans lumières de nuit", 1, 0}, Var{"sans chaussée mouillée", 2, 0}, Var{"sans sonde IBL", 4, 0},
+                                 Var{"sans les trois", 7, 0}, Var{"sans transparents", 8, 0}, Var{"sans découpe", 16, 0},
+                                 Var{"sans sol ni trottoirs", 32, 0}, Var{"sans voitures", 64, 0}, Var{"scène à 30 %", 0, 0.3f}}) vars.push_back(v);
+        const float ech0 = r.echelleDynamiqueActuelle();
+        for (const Var& v : vars) {
+            r.bancSansEffets = v.sans; r.echelleDynamique(v.ech > 0 ? v.ech / r.vk().renderScale : ech0); r.bancLumieresParPixel = v.lpp;
+            for (int i = 0; i < 3; i++) { g.render(tt); tt += 1.0 / 60; }
+            passes::remettreAZero();
+            Ligne w; w.lieu = l.nom + (v.nom[0] ? std::string(" (") + v.nom + ")" : std::string()); w.qualite = q.nom;
+            double appels = 0, tri = 0;
+            // temps processeur de tout le processus (fils de lavapipe compris) : moins sensible que l'horloge aux autres bancs
+            // qui tournent sur la même machine (lavapipe calcule les pixels sur le processeur)
+            auto cpuS = [] { rusage u{}; getrusage(RUSAGE_SELF, &u); return u.ru_utime.tv_sec + u.ru_utime.tv_usec * 1e-6 + u.ru_stime.tv_sec + u.ru_stime.tv_usec * 1e-6; };
+            const double c0 = cpuS();
+            for (int i = 0; i < MESURE; i++) {
+                g.render(tt); tt += 1.0 / 60;
+                appels += r.appelsDessin(); tri += r.chronoImage().triangles;
+                if (r.statsScene().valide) { w.kpx += r.statsScene().pixels / 1000.0 / MESURE; w.ksom += r.statsScene().sommets / 1000.0 / MESURE; }
+            }
+            w.cpu = (cpuS() - c0) * 1000 / MESURE;
+            w.appels = (uint32_t)(appels / MESURE); w.triangles = (uint32_t)(tri / MESURE);
+            for (const passes::Cout& c : passes::coutsCumules()) if (c.mesurable && c.images) { w.gpu += c.ms; if (c.renderer && c.nom.rfind("sc", 0) == 0) w.scene += c.ms; }
+            w.couts = passes::texteCouts(passes::coutsCumules());
+            if (!v.nom[0]) r.capturePng(out + "/scene-" + l.nom + "-" + q.nom + ".png");
+            else if (std::getenv("WFS_PERF_SCENE_CAPTURES")) {   // WFS-353 : capture de chaque variante (avant / après dans la même image)
+                std::string slug;
+                for (const char* c = v.nom; *c; c++) slug += std::isalnum((unsigned char)*c) ? *c : '-';
+                r.capturePng(out + "/scene-" + l.nom + "-" + q.nom + "-" + slug + ".png");
+            }
+            WFS_LOG("scène (WFS-348) : %s, %s : GPU %.2f ms (%s), %u appels, %u triangles, %.0f k pixels calculés, %.0f k sommets, %d projecteurs, %s, %.0f km/h", w.lieu.c_str(), w.qualite.c_str(), w.gpu, w.couts.c_str(),
+                    w.appels, w.triangles, w.kpx, w.ksom, r.projecteursImage(), qualite::ligneRendu().c_str(), g.player().kmh());
+            lignes.push_back(w);
+        }
+        r.bancSansEffets = 0; r.bancLumieresParPixel = 0;
+        // WFS-353 (RG-02) : WFS_PERF_SCENE_SUITE=1 : 3 captures successives en roulant (0,25 s d'écart) : aucune lumière qui
+        // « saute » ni lampadaire éteint d'un coup d'une image à l'autre
+        if (std::getenv("WFS_PERF_SCENE_SUITE")) {
+            r.echelleDynamique(ech0);
+            for (int k = 0; k < 3; k++) {
+                for (int i = 0; i < 15; i++) { g.update(1.0 / 60); g.render(tt); tt += 1.0 / 60; }
+                r.capturePng(out + "/scene-" + l.nom + "-" + q.nom + "-suite-" + std::to_string(k) + ".png");
+                WFS_LOG("scène (WFS-353) : %s, %s, suite %d : %.0f km/h, %d projecteurs", l.nom.c_str(), q.nom, k, g.player().kmh(), r.projecteursImage());
+            }
+        }
+        g.shutdown();
+        r.echelleDynamique(1.f); r.forceNoShadows = false; r.forceSansReflets = false; eclairage::suspendreCaptures(false);
+    }
+    unsetenv("WFS_DEPART"); unsetenv("WFS_MOMENT");
+    courseBenchRules(false);
+    choisirVue(vue0);
+    R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
+    WFS_LOG("scène (WFS-348) : | lieu | qualité | GPU total (ms) | scène (ms) | passes | appels | triangles | pixels calculés (k) | sommets (k) | processeur (ms) |");
+    for (const Ligne& w : lignes)
+        WFS_LOG("scène (WFS-348) : | %s | %s | %.2f | %.2f | %s | %u | %u | %.0f | %.0f | %.0f |", w.lieu.c_str(), w.qualite.c_str(), w.gpu, w.scene, w.couts.c_str(), w.appels, w.triangles, w.kpx, w.ksom, w.cpu);
+}
+
 void benchPerf(Game& g, Renderer& r, const std::string& out) {
     // registre enveloppé (rétabli à la fin du banc)
     std::vector<SystemEntry>& reg = systemRegistry();
@@ -231,6 +376,7 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
         auto make = e.make; const char* nom = e.name;
         e.make = [make, nom]() -> std::unique_ptr<System> { return std::make_unique<Chrono>(make(), nom); };
     }
+    if (std::getenv("WFS_PERF_SCENE")) { benchScene(g, r, out); reg = origine; return; }   // WFS-348
     if (const char* menu = std::getenv("WFS_PERF_MENU")) {   // WFS-329 : écrans hors course, qualité Basse
         ecrans::Reglages& R0 = ecrans::reglages(); const int q = R0.qualite;
         R0.qualite = qualite::BASSE; ecrans::appliquerQualiteNiveau(r);

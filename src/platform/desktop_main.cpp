@@ -20,6 +20,7 @@
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
 namespace wfs { int benchFluidite(Game& g, Renderer& r, const std::string& out); }   // WFS-221 (bench_fluidite.cpp)   // WFS-115 (modes_ecran.cpp)
 namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out); }   // WFS-139 (plage.cpp)
+namespace wfs { void benchFantome(Game& g, Renderer& r, const std::string& out); }   // WFS-318 (fantome_etiquette.cpp)
 namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }   // WFS-161 (accroche) : kit d'architecture (archi_banc.cpp)
 #include "../game/poursuite.h"   // WFS-111
 #include "../game/bench_changement_carte.h"
@@ -35,6 +36,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_squelette.h"
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
+namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
@@ -65,6 +67,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
 #include "../world/enseignes.h"
+#include "../world/meteo.h"   // WFS-354 (accroche) : banc « pluie »
 #include "../ui/text.h"
 #include "../game/cars.h"
 #include <cstring>
@@ -177,6 +180,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
     if (banc == "paquets") { const int e = ecrans::benchPaquets(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-306 (accroche) : installation des paquets (source factice)
     if (banc == "cuisson") { ui::chargerPolice(r); const int e = cartes_v2::benchCuisson(g, r, out, g_root, [](Game& g2, Renderer& r2, const std::string& o) { return benchParcours(g2, r2, o) + parcoursFinMenu(g2, r2, o); }); finir(); return e > 0 ? 3 : 0; }   // WFS-301 (accroche) : paquets de la Ville ; RG-08 : parcours complet
@@ -227,6 +231,8 @@ int main(int argc, char** argv) {
     if (banc == "records") { ui::chargerPolice(r); const int e = benchRecords(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-125 : records par mode, fantôme (aussi à la fin du groupe vitrines)
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
+    if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
+    if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
@@ -236,6 +242,7 @@ int main(int argc, char** argv) {
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
     }
+    if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
@@ -243,6 +250,7 @@ int main(int argc, char** argv) {
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
     if (banc == "archi") { benchArchi(g, r, out); return finir(); }           // WFS-161 (accroche) : kit d'architecture, 6 styles, niveaux de détail
+    if (banc == "pluie") { benchPluie(g, r, out); return finir(); }   // WFS-354 (accroche) : pluie en vue Cockpit (montant, balais, tunnel)
     if (banc == "ville") { benchVille(g, r, out); return finir(); }           // WFS-137 : lieux de la Ville seuls (essai local)
     if (banc == "corniche") { benchCorniche(g, r, out); return finir(); }   // WFS-139 : Corniche au tracé 2 seule (essai local)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
