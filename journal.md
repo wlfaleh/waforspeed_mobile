@@ -3291,3 +3291,6 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 - Point 3 (performance) : banc `perf`, 4 cartes × Haute / Basse : image −4,1 % à +0,2 % (2 mesures avant, 1 après ; la 2e mesure après coupée par la limite de temps) ; part hors passes ≤ 2,1 ms sur 420 à 650 ms (lavapipe). Tramage gardé.
 - Remarques : M-03 noté dans le Suivi de WFS-214 ; ANO-211 / WFS-377 créées par le PO ; branche synchronisée, 92 tests CPU verts. Réponses point par point dans la PR ; lead dev rappelé.
 
+### 2026-11-09 23:18:14 — WFS-214 : PR #314 approuvée et fusionnée (2e revue) ; #316 en attente de synchronisation (lead-dev auto)
+
+#314 reprise (prise de plus d'1 h) : points de la 1re revue corrigés (banc des moments : exposition à sa cible avant la capture, défaut du banc présent sur main ; captures de jour Campagne / circuit ajoutées, rien de blanchi : luminance 60→60, 61→90, 46→65 ; performance de la passe finale −4,1 à +0,2 %). Diff : banc seulement. Squash 44c57ce, 🟣. #316 (WFS-349) : approuvée par lead-dev, encore en conflit `journal.md` (main a reçu #318 et #314 depuis la synchronisation de 21:46) : rappel posté au développeur, fusion dès la synchronisation.
