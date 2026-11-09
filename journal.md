@@ -3217,3 +3217,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Décision : on n'attend pas WFS-361, car la X5 reste dans le jeu jusqu'à la vente (RG-01 / RG-03 de WFS-361) ; WFS-393 est annulé si WFS-361 part avant lui. P3 : passe après les tickets voitures de l'objectif ; après WFS-362 (même outil `tools/retoucher_formes.mjs`).
 - **WFS-362** (M4 + S3) passe ⏳ Prêt (WFS-358 🟣), suivant dans l'ordre des voitures de l'utilisateur (358 → 362 → 359…).
 - `track-agent.md` : ligne de Claude, agent dev3d (01UY1Vv41d) enlevée (session terminée).
+
+### 2026-11-09 21:32:21 — 11 vidéos de l'APK 969 : régression de la Campagne, symptôme donné à WFS-374 (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
+Vidéos regardées image par image (1 à 2 img/s). En Campagne, la voiture est bloquée au départ (0–3 km/h, GAZ inactif) sur 4 courses sur 5 ; la Corniche est OK. Le symptôme est envoyé à l'agent dev Z (WFS-374, session 01UY1Vv3EZ) et noté dans `regles-de-gestion/WFS-374.md`. Le QA (`qa-lead`) est appelé pour le rapport et l'ANO (à partir de ANO-232). Aucun nouveau ticket : lumière → WFS-375, décor → E15. Réponse dans `tache utilisateur.md`.
+
