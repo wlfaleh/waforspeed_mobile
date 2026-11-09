@@ -33,8 +33,8 @@ Agent : Claude, agent 1 (01UY1Vv2)
     Les « avant » de nuit et des gros plans sont pris avec le même binaire et les `.wfm` / `.lod` de `main`.
 - **Limites et risques connus** :
   - **Pilote** : une retouche (la calandre) par voiture. Feux, jantes et autres signatures (crocs lumineux et feux à 3 griffes de la 208) viendront au lot suivant, avec les 17 autres voitures.
-  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture. 
-  - Les licences recevront la phrase de modification WFS-193 au lot final .
+  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture.
+  - Les licences recevront la phrase de modification WFS-193 au lot final.
   - Paquets npm `meshoptimizer@0.22.0` (MIT) et `sharp@0.33.5` (Apache-2.0), utilisés pour régénérer le `.lod` : notés au journal.
 
 ## Captures pour le lead dev (avant = `main`)
