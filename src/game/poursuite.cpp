@@ -2,20 +2,24 @@
 #include "poursuite.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include "../core/math.h"
 
 namespace wfs {
 namespace poursuite {
 
-void perdre(Etat& e, int points) {
+void perdre(Etat& e, int points, const char* raison) {
     if (e.arrete || e.gagne) return;
+    const int avant = e.score;
     e.score = std::max(0, e.score - points);
+    if (e.score < avant) { e.pertes++; e.dernierePerte = avant - e.score; e.raison = raison ? raison : ""; }   // WFS-338 (RG-03)
     if (e.score == 0) e.arrete = true;   // RG-01 : défaite immédiate, écran « ARRÊTÉ »
 }
-void chocTrafic(Etat& e) { if (e.cdTrafic > 0) return; e.cdTrafic = DELAI_CHOC; e.chocsTrafic++; perdre(e, CHOC_TRAFIC); }
-void chocGlissiere(Etat& e) { if (e.cdGlissiere > 0) return; e.cdGlissiere = DELAI_CHOC; e.chocsGlissiere++; perdre(e, CHOC_GLISSIERE); }
-void chocPolice(Etat& e) { e.chocsPolice++; perdre(e, CHOC_POLICE); }
+void chocTrafic(Etat& e, const char* raison) { if (e.cdTrafic > 0) return; e.cdTrafic = DELAI_CHOC; e.chocsTrafic++; perdre(e, CHOC_TRAFIC, raison); }
+void chocGlissiere(Etat& e, const char* raison) { if (e.cdGlissiere > 0) return; e.cdGlissiere = DELAI_CHOC; e.chocsGlissiere++; perdre(e, CHOC_GLISSIERE, raison); }
+void chocPolice(Etat& e) { e.chocsPolice++; perdre(e, CHOC_POLICE, RAISON_POLICE); }
+std::string textePerte(int points, const char* raison) { return "-" + std::to_string(points) + " " + (raison ? raison : ""); }   // « - » (la police de l’interface n’a pas le signe U+2212)
 void quasiContact(Etat& e) { if (e.arrete || e.gagne) return; e.quasi++; e.score = std::min(SCORE_DEPART, e.score + 1); }
 
 void pas(Etat& e, double dt, double dPoliceM) {
@@ -23,12 +27,12 @@ void pas(Etat& e, double dt, double dPoliceM) {
     if (e.arrete || e.gagne) return;
     if (dPoliceM >= COLLE_M) { e.colle = 0; return; }
     e.colle += dt;
-    while (e.colle >= COLLE_S && !e.arrete) { e.colle -= COLLE_S; perdre(e, 1); }   // −1 par seconde collée
+    while (e.colle >= COLLE_S && !e.arrete) { e.colle -= COLLE_S; perdre(e, 1, RAISON_COLLE); }   // −1 par seconde collée
 }
 void arrivee(Etat& e, double distKm) { if (!e.arrete && !e.gagne && distKm >= KM_ARRIVEE && e.score >= 1) e.gagne = true; }
 int ralentisseur(Etat& e, double kmh) {
     if (e.arrete || e.gagne || kmh <= RALENTISSEUR_KMH) return 0;
-    e.ralentisseurs++; const int avant = e.score; perdre(e, CHOC_RALENTISSEUR); return avant - e.score;
+    e.ralentisseurs++; const int avant = e.score; perdre(e, CHOC_RALENTISSEUR, RAISON_RALENTISSEUR); return avant - e.score;
 }
 int policeVoulue(double distKm) { return std::min(POLICE_MAX, POLICE_DEPART + (int)std::floor(std::max(0.0, distKm) / RENFORT_KM)); }
 
@@ -45,14 +49,17 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         p.hitCd = std::max(0.0, p.hitCd - dt);
         if (p.fixe) { p.v = 0; continue; }
         double rel = (sJ - p.rd) * M;   // > 0 : le joueur est devant (m)
-        if (rel > 250) { p.rd = sJ - 120 / M; p.v = std::max(p.v, vJ); rel = 120; }   // la poursuite ne se perd pas
+        // la poursuite ne se perd pas ; WFS-338 (RG-05) : retour hors de la distance de dessin (avant : 250 → 120 m, en vue)
+        if (rel > PERDUE_M) { p.rd = sJ - APPARITION_M / M; p.v = std::max(p.v, vJ); rel = APPARITION_M; }
         // place visée : derrière à 15 m, à côté à 18 / 21 m (une file à gauche / à droite) ; en attaque : contre le joueur
         const bool att = attaque(p, (int)i, t);
-        const double viseM = att ? (p.role == 0 ? 2.0 : 0.0) : 15.0 + p.role * 3.0;
+        // WFS-338 (RG-05) : derrière, la poussée se fait pare-chocs contre pare-chocs (avant : à 2 m, la moitié dans le joueur)
+        const double viseM = att ? (p.role == 0 ? CONTACT_L_M - 0.2 : 0.0) : 15.0 + p.role * 3.0;
         const double ecart = rel - viseM;
-        double vCible = vJ + std::clamp(ecart * 1.6, -12.0, 45.0) / M;   // rattrape (≤ +45 m/s), recule s'il dépasse
+        // rattrape (WFS-338 : ≤ approcheMax, de 45 m/s au loin à 4 m/s au contact : elle se voit arriver), recule s'il dépasse
+        double vCible = vJ + std::clamp(ecart * 1.6, -12.0, approcheMax(rel)) / M;
         vCible = std::clamp(vCible, 0.0, vMax);
-        double cx = p.role == 0 ? xJ : xJ + (p.role == 1 ? -0.62 : 0.62);
+        double cx = p.role == 0 ? xJ : placeCote(xJ, p.role);   // WFS-338 : jamais par-dessus le joueur (bord de la chaussée)
         if (rel > 40 && !att) cx = p.cibleX;   // loin : reste dans sa file (moins de zigzags)
         // trafic devant dans sa trajectoire (25 m) : change de file vers la plus dégagée, ou ralentit
         const Obstacle* gene = nullptr; double geneD = 1e9;
@@ -80,13 +87,23 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         const double acc = (vCible > p.v ? MAX_SPEED * 0.45 : MAX_SPEED * 0.9) * dt;
         p.v = std::clamp(vCible, p.v - acc, p.v + acc);
         p.rd += p.v * dt;
+        // WFS-338 (RG-05, ANO-195) : jamais dans la voiture du joueur : à hauteur de lui, elle garde sa largeur d'écart sur
+        // son côté ; dans sa file, elle reste au contact du pare-chocs (0,2 m de recouvrement au plus, assez pour pousser)
+        const double relN = (sJ - p.rd) * M, dxM = (p.x - xJ) * RW;
+        if (std::abs(relN) < CONTACT_L_M) {
+            if (std::abs(dxM) < CONTACT_W_M && std::abs(dxM) > 0.6) p.x = xJ + (dxM > 0 ? 1 : -1) * CONTACT_W_M / RW;
+            else if (std::abs(dxM) <= 0.6 && std::abs(relN) < CONTACT_L_M - 0.2) p.rd = sJ - (relN >= 0 ? 1 : -1) * (CONTACT_L_M - 0.2) / M;
+        }
     }
     // deux voitures de police ne se chevauchent pas : celle de derrière reste 7 m derrière celle de devant
     for (size_t i = 0; i < ps.size(); i++)
         for (size_t j = 0; j < ps.size(); j++) {
             if (i == j || ps[i].fixe || ps[j].fixe) continue;
             const double d = (ps[j].rd - ps[i].rd) * M;
-            if (d >= 0 && d < 7 && std::abs(ps[j].x - ps[i].x) < 0.3 && (d > 0 || i > j)) { ps[i].rd = ps[j].rd - 7 / M; ps[i].v = std::min(ps[i].v, ps[j].v); }
+            if (d >= 0 && d < 7 && std::abs(ps[j].x - ps[i].x) < 0.3 && (d > 0 || i > j)) {
+                // WFS-338 (RG-05) : recule en douceur (0,3 m par pas au plus ; avant : d'un coup jusqu'à 7 m, saut visible)
+                ps[i].rd -= std::min(7 - d, 0.3) / M; ps[i].v = std::min(ps[i].v, ps[j].v);
+            }
         }
 }
 
@@ -95,10 +112,46 @@ Police renfort(int indice, double sJ, double vJ, uint32_t graine) {
     Police p;
     p.role = indice % 3;
     p.x = p.cibleX = FILES[(int)(R.next() * 3) % 3];
-    p.rd = sJ - (90 + indice * 9) / M;
+    p.rd = sJ - (APPARITION_M + indice * 9) / M;   // WFS-338 (RG-05) : hors de la vue (avant : 90 m, dans le rétroviseur)
     p.v = vJ;
-    p.peinture = indice % 2 ? 0x14224a : 0xf2f4f8;   // blanc / bleu marine
+    p.peinture = 0xe6e8ea;   // WFS-338 (RG-07) : police nationale : caisse blanche unie (albédo ≈ 0,8), avant : une sur deux bleu marine
     return p;
+}
+
+double approcheMax(double relM) { return std::clamp(APPROCHE_MIN + APPROCHE_PENTE * std::max(0.0, relM), APPROCHE_MIN, APPROCHE_MAX); }
+
+double placeCote(double xJ, int role, bool* cote) {
+    const double voulu = role == 1 ? -COTE_X : COTE_X;
+    if (cote) *cote = true;
+    if (std::abs(xJ + voulu) <= BORD_X) return xJ + voulu;
+    if (std::abs(xJ - voulu) <= BORD_X) return xJ - voulu;   // le côté voulu est hors de la chaussée : l'autre côté
+    if (cote) *cote = false;
+    return xJ;                                               // aucun côté libre : derrière le joueur
+}
+
+std::string texteDistancePolice(double m) {
+    if (!(m < 1e8)) return "\xE2\x80\x94";   // « — » : aucune voiture de police mobile
+    if (m < 1000) return std::to_string((int)std::lround(std::max(0.0, m))) + " M";
+    const long c = std::lround(m / 10);   // centièmes de km, virgule française
+    char b[32]; std::snprintf(b, sizeof b, "%ld,%02ld KM", c / 100, c % 100); return b;
+}
+
+bool sePlaceAvant(Surprise s) { return s != Surprise::Deboite; }
+
+std::vector<Cone> chantier(int file) {
+    // file fermée : bord extérieur (côté glissière) xe et limite avec la file voisine xi ; file du milieu : biseau de gauche
+    // à droite, puis cônes sur ses deux limites
+    std::vector<Cone> c;
+    const double fx = FILES[std::clamp(file, 0, 2)], demi = 1.0 / 3.0;
+    const double xe = file == 1 ? fx - demi + 0.04 : fx + (file == 0 ? -demi : demi) * 0.88;
+    const double xi = file == 1 ? fx + demi - 0.04 : fx + (file == 0 ? demi : -demi) * 0.92;
+    constexpr int BISEAU = 7; constexpr double LONG_BISEAU = 36;   // 7 cônes sur 36 m (écart latéral < largeur d'une voiture)
+    for (int i = 0; i < BISEAU; i++) c.push_back({i * LONG_BISEAU / (BISEAU - 1), xe + (xi - xe) * i / (BISEAU - 1)});
+    for (double d = LONG_BISEAU + 10; d <= 120; d += 10) {
+        c.push_back({d, xi});
+        if (file == 1) c.push_back({d, fx - demi + 0.04});
+    }
+    return c;
 }
 
 double plusProcheM(const std::vector<Police>& ps, double sJ, double xJ) {
@@ -156,6 +209,7 @@ Programme programme(uint32_t graine, bool banc) {
         p.surprises.insert(p.surprises.begin(), Evenement{BANC_CAMION_KM, Surprise::Camion, 2, false});
         p.surprises.insert(p.surprises.begin(), Evenement{BANC_RALENTISSEUR_KM, Surprise::Ralentisseur, 0, false});
     }
+    if (banc) p.surprises.insert(p.surprises.begin(), Evenement{BANC_TRAVAUX_KM, Surprise::Travaux, 0, false});   // WFS-338 : chantier
     if (banc) p.surprises.insert(p.surprises.begin(), Evenement{0.45, Surprise::Barrage, 0, false});   // captures : barrage à 0,45 km
     return p;
 }

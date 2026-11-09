@@ -59,6 +59,13 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
         if (const char* an = std::getenv("WFS_VITRINE_ANGLES")) {
             std::istringstream ia(an); float a; int k = 0; g.camMode = 2;
             while (ia >> a) { g.orbit = a; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-a" + std::to_string(k++) + ".png"); }
+            // WFS-193 (banc) : vue basse, au niveau du pare-chocs : WFS_VITRINE_BAS="<angle> <hauteur m> <recul m>" → vitrine-<id>-bas
+            if (const char* bas = std::getenv("WFS_VITRINE_BAS")) {
+                std::istringstream ib(bas); float h = 0.6f, d = 4.f; ib >> g.orbit >> h >> d;
+                const float h0 = g.orbitHauteur, d0 = g.orbitRecul;   // valeurs d'avant, remises après la capture
+                g.orbitHauteur = h; g.orbitRecul = d; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-bas.png");
+                g.orbitHauteur = h0; g.orbitRecul = d0;
+            }
         }
         double t = 1300;
         g.setAutopilot(true); g.camMode = 0;

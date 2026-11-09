@@ -140,7 +140,7 @@ struct Attribution {
 bool preparer(Renderer& r);      // charge homme / femme et la pose assise (Game::init)
 void liberer(Renderer& r);       // Game::shutdown
 // accroche : une voiture de la scène (monde = matrice de dessin du modèle) ; carId : intérieur de la vue cockpit (assise)
-void ajouter(const Model& m, const mat4& monde, const char* carId, uint32_t graine);
+void ajouter(const Model& m, const mat4& monde, const char* carId, uint32_t graine, bool policier = false);   // WFS-338 (accroche) : policier en uniforme, prioritaire
 void dessinerFile(Renderer& r, const vec3& camera);   // fin d'image ; vide la file
 int dessinesDerniereImage();
 void benchConducteurs(Game& g, Renderer& r, const std::string& out);   // banc « conducteurs » (captures conducteurs-*)

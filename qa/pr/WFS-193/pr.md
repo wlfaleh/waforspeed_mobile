@@ -1,60 +1,80 @@
 Agent : Claude, agent 1 (01UY1Vv2)
 
-**Ticket** : WFS-193 — règles : `regles-de-gestion/WFS-193.md` (et Suivi : méthode (A) accordée par le PO le 2026-11-09, en commençant par 3 pilotes)
+**Ticket** : WFS-193 — règles : `regles-de-gestion/WFS-193.md` (RG-05 à RG-07 du PO, 2026-11-09, après la 2e revue de #311 : dernier essai de la X5)
 
 ## Description
 
-- **Demande de l'utilisateur** (en une phrase) : voitures sans marque (objectif de l'utilisateur, file A) : petites retouches de forme pour qu'on ne reconnaisse plus les marques, sur les 20 voitures. Cette PR est la **PR pilote** demandée par le PO : **Compass et 208** (et l'outil), acceptées par le lead dev à la 3e revue. La X5 en est retirée sur décision du PO (2026-11-09, option (a)) : elle sera reprise dans une 2e PR du même ticket.
-- **Méthode** :
-  - Les sources glTF ne sont pas dans le dépôt : les `assets/cars/<id>.wfm` sont retouchés directement par un outil rejouable (comme WFS-192).
-  - Le simple déplacement de sommets a été écarté (`qa/pr/WFS-193/essais/x5-essai-echelle.png`).
-  - Méthode (A), accordée par le PO : la calandre de marque est retirée et remplacée par une grille générique faite par l'outil (rien téléchargé).
+- **Demande de l'utilisateur** (en une phrase) : voitures sans marque (file A) : petites retouches de forme pour qu'on ne reconnaisse plus les marques. Cette 2e PR traite la **X5**, retirée de la PR pilote #308 (Compass, 208 et l'outil, déjà fusionnés).
+- **Méthode tranchée par le PO après la 2e revue** :
+  - RG-05 : grille d'un seul tenant, cadre et barres au même galbe ;
+  - RG-06 : grille posée dans l'ouverture d'origine, 1 à 2 cm derrière le bord de la carrosserie, qui cache la jonction ;
+  - RG-07 : bord du pare-chocs rentré seulement s'il reste un vide visible.
 - **Ce qui change** :
-  - **`tools/retoucher_formes.mjs`** (nouveau) et **`tools/formes.json`** :
-    - repérage : `--lister`, `--zone` ;
-    - **retirer** : triangles vidés, nombre attendu contrôlé (`"triangles"`) ;
-    - **grille** : fond, **cadre en relief**, **barres fermées** (faces de bout), **galbe du nez** (recul aux bords), forme en **trapèze** possible. Un matériau est ajouté à la fin (rang des matériaux inchangé) ;
-    - déplacement / échelle avec fondu ;
-    - empreintes avant / après (sommets, indices, matériaux) : l'outil s'arrête sans rien écrire hors de ces deux états. Le `.lod` est régénéré, les tangentes et la boîte recalculées.
-  - **`tools/convertir_voitures.sh`** : lance `retoucher_formes.mjs` juste après `effacer_logos.mjs`. Une voiture absente de `formes.json` est passée sans erreur.
-  - **`tools/effacer_logos.mjs`** : accepte les matériaux ajoutés à la fin.
-  - **Voitures** :
-    - **Compass** : calandre à 7 fentes retirée (705 + 15 621 triangles). Grille à 3 barres, cadre, galbe 4,5 cm ;
-    - **208** : treillis en losanges retiré (251 triangles) et **socle du lion** retiré (relief au centre du fond sombre, 748 triangles). Grille **en trapèze** (forme de l'ouverture d'origine) à 5 barres, cadre, galbe 3,5 cm.
-  - **`src/render/feux_modele.cpp`** (banc) : `WFS_VITRINE_NUIT=1` (vitrines de nuit).
+  - **`tools/formes.json`**, entrée `x5` (4 retouches, empreintes avant `4fc2afea68dc4d96`, après `8a664fb46210b69c`) :
+    1. **calandre de marque retirée** (matériau 15 : les deux « haricots », leur cadre chromé, leurs barres et les arcs du bas, 2 640 triangles comptés) ;
+    2. **fond des haricots retiré** (matériau 10, 240 triangles comptés) ;
+    3. **capot entier, bord net** :
+       - aucun triangle de carrosserie n'est retiré ;
+       - la pointe de carrosserie entre les deux haricots est repliée dans le bord du capot, en hauteur et en profondeur (× 0,15, 47 sommets comptés) ;
+    4. **grille générique d'un seul tenant** :
+       - 6 barres, cadre de 1,5 cm, gris foncé métallisé ;
+       - **cadre et barres au même galbe (4,5 cm)** : plus de cadre séparé devant les barres, donc plus de « pare-buffle » ;
+       - bords 1 à 2 cm **derrière** le bord de l'ouverture : la carrosserie cache la jonction, comme sur une calandre de série ;
+       - bas un peu plus large (trapèze 1,05), à 0,63 m, derrière le haut du pare-chocs ;
+       - haut à 0,915 m (rien par la fente capot-phares).
+  - **RG-07** : un essai de retrait de la lèvre du pare-chocs (33 triangles) faisait des dents blanches aux coins bas, de face. Il n'est pas gardé : le bord du pare-chocs n'est pas touché.
+  - **`tools/retoucher_formes.mjs`** : **inchangé** par rapport à `main`. L'option `galbeCadre` de la version précédente est retirée, elle ne sert plus.
+  - **`assets/cars/x5.wfm`** et **`x5.lod`** régénérés par l'outil (tangentes, boîte et niveaux de détail recalculés).
+  - **Banc** (pour la vue basse) :
+    - accroche de 2 lignes dans le noyau : `Game::orbitHauteur` / `orbitRecul` (1,7 m et 6,5 m par défaut, la caméra de vitrine en jeu ne change pas) ;
+    - `WFS_VITRINE_BAS="<angle> <hauteur> <recul>"` dans `feux_modele.cpp`. Les valeurs d'avant sont gardées dans des variables puis remises (remarque de la 2e revue).
 - **Comment c'est vérifié** :
+  - `retoucher_formes.mjs --verifier` : « déjà retouchée » pour la Compass, la 208 et la X5 ;
   - `test_fidelite_voitures` OK (20 voitures, dimensions ±1 % ou écarts connus) ;
-  - **88 tests CPU verts** après synchronisation avec `main` ;
-  - `retoucher_formes.mjs --verifier` et `effacer_logos.mjs --verifier` : « déjà fait » partout ;
-  - captures :
-    - vitrines de jour : `captures_pr.sh`, avant = `main` ;
-    - **gros plans du nez** (rendus en 2560×1440 puis recadrés), jour et nuit, de face et de trois quarts ;
-    - feux de nuit.
-    Les « avant » de nuit et des gros plans sont pris avec le même binaire et les `.wfm` / `.lod` de `main`.
+  - **90 tests CPU verts**, branche synchronisée avec `main` ;
+  - captures rendues en 2560×1440 puis recadrées, de jour et de nuit :
+    - face ;
+    - trois quarts droit et gauche ;
+    - trois quarts haut ;
+    - vue basse ;
+    - **zooms × 4** : coin bas droit et gauche, centre du bord du capot, montant et bas de la grille en vue basse.
+
+    Plus les vitrines de jour et les feux de nuit. Les « avant » sont pris avec le même binaire et les `.wfm` / `.lod` de `main`.
 - **Limites et risques connus** :
-  - **Pilote** : une retouche (la calandre) par voiture. Feux, jantes et autres signatures (crocs lumineux et feux à 3 griffes de la 208) viendront au lot suivant, avec les 17 autres voitures.
-  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture.
-  - Les licences recevront la phrase de modification WFS-193 au lot final.
-  - Paquets npm `meshoptimizer@0.22.0` (MIT) et `sharp@0.33.5` (Apache-2.0), utilisés pour régénérer le `.lod` : notés au journal.
+  - Au coin bas droit (trois quarts droit), le bord du pare-chocs d'origine reste un peu dentelé au zoom × 4. Il était caché par le chrome des haricots. Le retirer faisait des dents aux coins de face : il est laissé tel quel (point 4 de la 2e revue, jugé non bloquant seul).
+  - La grille garde des angles droits, sans la double forme des haricots, qui est la signature de la marque.
+  - De nuit, la grille reste sombre : les phares éclairent devant la voiture, pas sa calandre.
+  - Les feux, les jantes et les autres signatures viendront au lot suivant ; la phrase de licence WFS-193 sera ajoutée au lot final.
 
 ## Captures pour le lead dev (avant = `main`)
 
 | Capture | Avant | Après |
 |---|---|---|
-| `nez-compass-face-jour` — Compass, gros plan de face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-face-jour.jpg?raw=true) |
-| `nez-compass-34-jour` — Compass, gros plan de trois quarts, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-34-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-34-jour.jpg?raw=true) |
-| `nez-compass-face-nuit` — Compass, gros plan de face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-face-nuit.jpg?raw=true) |
-| `nez-compass-34-nuit` — Compass, gros plan de trois quarts, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-34-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-34-nuit.jpg?raw=true) |
-| `vitrine-compass-a2` — Compass, de dos, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-compass-a2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-compass-a2.jpg?raw=true) |
-| `vitrine-compass-feux-nuit` — Compass, feux de nuit (frein) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-compass-feux-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-compass-feux-nuit.jpg?raw=true) |
-| `nez-p208-face-jour` — 208, gros plan de face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-p208-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-p208-face-jour.jpg?raw=true) |
-| `nez-p208-34-jour` — 208, gros plan de trois quarts, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-p208-34-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-p208-34-jour.jpg?raw=true) |
-| `nez-p208-face-nuit` — 208, gros plan de face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-p208-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-p208-face-nuit.jpg?raw=true) |
-| `nez-p208-34-nuit` — 208, gros plan de trois quarts, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-p208-34-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-p208-34-nuit.jpg?raw=true) |
-| `vitrine-p208-a2` — 208, de dos, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-p208-a2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-p208-a2.jpg?raw=true) |
-| `vitrine-p208-feux-nuit` — 208, feux de nuit (frein) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-p208-feux-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-p208-feux-nuit.jpg?raw=true) |
+| `nez-x5-face-nuit` — X5, De face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-face-nuit.jpg?raw=true) |
+| `nez-x5-face-jour` — X5, De face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-face-jour.jpg?raw=true) |
+| `nez-x5-bas-jour` — X5, Vue basse au niveau du pare-chocs, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-bas-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-bas-jour.jpg?raw=true) |
+| `nez-x5-bas-nuit` — X5, Vue basse, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-bas-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-bas-nuit.jpg?raw=true) |
+| `zoom-x5-bas-montant-jour` — X5, Zoom × 4, vue basse : montant et haut de la grille, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-bas-montant-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-bas-montant-jour.jpg?raw=true) |
+| `zoom-x5-bas-montant-nuit` — X5, Zoom × 4, vue basse : montant, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-bas-montant-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-bas-montant-nuit.jpg?raw=true) |
+| `zoom-x5-bas-grille-jour` — X5, Zoom × 4, vue basse : bas de la grille et haut du pare-chocs, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-bas-grille-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-bas-grille-jour.jpg?raw=true) |
+| `zoom-x5-bas-grille-nuit` — X5, Zoom × 4, vue basse : bas de la grille, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-bas-grille-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-bas-grille-nuit.jpg?raw=true) |
+| `nez-x5-34-jour` — X5, Trois quarts droit, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-34-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-34-jour.jpg?raw=true) |
+| `nez-x5-34-nuit` — X5, Trois quarts droit, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-34-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-34-nuit.jpg?raw=true) |
+| `zoom-x5-coin-droit-jour` — X5, Zoom × 4 : coin bas droit, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-coin-droit-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-coin-droit-jour.jpg?raw=true) |
+| `zoom-x5-coin-droit-nuit` — X5, Zoom × 4 : coin bas droit, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-coin-droit-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-coin-droit-nuit.jpg?raw=true) |
+| `nez-x5-34g-jour` — X5, Trois quarts gauche, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-34g-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-34g-jour.jpg?raw=true) |
+| `nez-x5-34g-nuit` — X5, Trois quarts gauche, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-34g-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-34g-nuit.jpg?raw=true) |
+| `zoom-x5-coin-gauche-jour` — X5, Zoom × 4 : coin bas gauche, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-coin-gauche-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-coin-gauche-jour.jpg?raw=true) |
+| `zoom-x5-coin-gauche-nuit` — X5, Zoom × 4 : coin bas gauche, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-coin-gauche-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-coin-gauche-nuit.jpg?raw=true) |
+| `nez-x5-capot-jour` — X5, Trois quarts haut, au-dessus du capot, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-capot-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-capot-jour.jpg?raw=true) |
+| `nez-x5-capot-nuit` — X5, Trois quarts haut, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-capot-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-capot-nuit.jpg?raw=true) |
+| `zoom-x5-centre-jour` — X5, Zoom × 4 : centre du bord du capot, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-centre-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-centre-jour.jpg?raw=true) |
+| `zoom-x5-centre-nuit` — X5, Zoom × 4 : centre du bord du capot, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-zoom-x5-centre-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-zoom-x5-centre-nuit.jpg?raw=true) |
+| `vitrine-x5-a1` — X5, Vitrine de trois quarts, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-x5-a1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-x5-a1.jpg?raw=true) |
+| `vitrine-x5-a2` — X5, De dos, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-x5-a2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-x5-a2.jpg?raw=true) |
+| `vitrine-x5-feux-nuit` — X5, Feux de nuit (frein) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-x5-feux-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-x5-feux-nuit.jpg?raw=true) |
 
-Les vitrines de jour de face et de trois quarts (`vitrine-*-a0`, `-a1`), les vues d'ensemble et les feux de jour sont dans `qa/pr/WFS-193/`.
+Les vitrines `vitrine-x5-0`, `-a0`, `-feux` sont aussi dans `qa/pr/WFS-193/`, avec les captures de la PR pilote (Compass et 208).
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 

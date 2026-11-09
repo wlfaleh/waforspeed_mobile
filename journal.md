@@ -2512,6 +2512,33 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Calandre de la police sans logo (déjà retiré par WFS-192, vérifié sur gros plans jour et nuit) ; caisse blanche unie au lieu de grise : peinture du modèle métallisée (0,45) → non métallisée pour la seule copie de la police, blanc #E6E8EA ; capot de jour 140 → 197 (sRGB). Tests CPU 87 OK, banc course5 0 écart, appels de dessin +39 ≤ 60. `suivi-pr.md` 🔁 (34c83618).
 
 ### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
+### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
+
+### 2026-11-08 23:04:06 — WFS-338 : plan et accroche annoncée (agent arwa (Claude, session trafic))
+- **Causes trouvées** : (1) police dessinée seulement jusqu’à 60 m derrière, renfort créé à 90 m et retour « trop loin » de 250 à 120 m : elle surgissait et « s’effaçait » ; rapprochement jusqu’à +45 m/s au contact ; voiture « à côté » poussée par-dessus le joueur quand il roule sur une file du bord (côté hors chaussée ramené au bord) ; poussée visée à 2 m du joueur (moitié dans sa voiture). (2) l’encart POLICE affichait la distance à l’arrivée. (3) le score baisse de 1 par seconde quand la police est à moins de 12 m (et des chocs) sans rien d’écrit. (4) « travaux » : 12 cubes orange lumineux en ligne, bandeau 260 m avant, avant qu’ils soient dessinés (250 m). (5) police sans conducteur (aucun appel à `conducteurs::ajouter`). (6) gyrophare : deux boîtes rouge / bleue sous le haut du modèle.
+- **Accroche hors zone (≤ 10 lignes, E2)** : `src/world/conducteurs.h/.cpp` : paramètre `policier` de `conducteurs::ajouter` (uniforme bleu marine ; file pleine : le policier prend la place d’un civil). Aucun fichier `vehicule_*`, `traffic*`, `game.cpp`, `camera_vue.*`, `hud.*` touché (encart POLICE dessiné dans `poursuite_system.cpp`).
+- **Limite signalée au PO** : le rétroviseur de la vue Cockpit n’est qu’un boîtier noir (aucune image rendue, `camera_vue.*` / rendu hors zone) : la police est maintenant dessinée jusqu’à 160 m derrière (toute vue qui regarde derrière la voit) ; la preuve est une caméra du banc placée devant la voiture et tournée vers l’arrière. Un vrai rétroviseur rendu serait un ticket à part (PO).
+
+### 2026-11-09 08:06:30 — WFS-338 : appels de dessin, branche et main (décision PO 0161316e) et revue du lead dev (agent arwa (Claude, session trafic))
+- **Mesure, même banc (`course5`, 1280x720, qualité Basse, lavapipe, même machine, `tools/qa/captures_pr.sh`)**, `main` à jour (le banc de `main` passe maintenant aux mêmes endroits que la branche) ; dernière colonne : même image de la branche, avec et sans les ajouts de WFS-338 (bandes, socle, policier, cônes, panneau).
+
+| Endroit (Basse) | main : poursuite / Checkpoint (écart) | branche : poursuite / Checkpoint (écart) | branche − main (poursuite) | même image : avec / sans WFS-338 |
+|---|---|---|---|---|
+| police au contact (0,18 km) | 187 / 155 (+32) | 187 / 178 (+9) | **0** | 184 / 184 (+0) |
+| embouteillage (0,45 km) | 345 / 312 (+33) | 341 / 304 (+37) | **−4** | 341 / 332 (+9) |
+| HUD (0,45 km) | 336 / 312 (+24) | 343 / 304 (+39) | **+7** | 342 / 333 (+9) |
+| ralentisseur (1,55 km) | 230 / 224 (+6) | 211 / 183 (+28) | **−19** | 195 / 195 (+0) |
+| camion en travers (1,95 km) | 371 / 325 (+46) | 328 / 333 (−5) | **−43** | 255 / 255 (+0) |
+| écart maximal (cible ≤ 60) | +46 : OK | +39 : OK | | |
+
+- **Verdict (règle du PO, cas a)** : WFS-338 ajoute **+9 appels au plus** dans la même image et la branche fait au plus **+7** de plus que `main` au même endroit (≤ +10) ; la cible ≤ 60 de WFS-119 est tenue sur la branche (+39) comme sur `main` (+46). Les « +128 » et « +93 » d'avant venaient de bancs de `main` bloqués au barrage (endroits différents). Moyens de RG-04 appliqués quand même : un seul dessin par cône (au lieu de 3), police au-delà de 80 m sans rampe, sans bandes ni policier (halos seuls), bandes et socle jusqu'à 40 m en Basse.
+- **Revue du lead dev (1re)** : (2) nouvelle suite d'arrivée : toute la police repart à 220 m (aucune à moins de 160 m), puis 10 images à 1 s d'écart, distance dans l'encart POLICE (encart POLICE et journal du banc), vue Arrière du jeu et vue arrière du banc ; (3) bandeau « TRAVAUX » à 80 m, tenu jusqu'au biseau, captures de jour et de nuit ; les cônes étaient trop loin sur les captures : captures refaites à 30 m du biseau (panneau AK5 tout près) et au biseau ; le dessin fusionné de tous les cônes, essayé, est remplacé par un dessin par cône (il ne change rien aux mesures) ; (4) gros plan de jour de la police, policier visible derrière le pare-brise ; (5) tableau ci-dessus.
+
+### 2026-11-09 11:48:25 — WFS-338 : RG-07, logo et caisse blanche de la police (agent arwa (Claude, session trafic))
+- **Logo** : déjà retiré de la 208 par WFS-192 (#266 : lion de la calandre, « 208 », lettres et lion du hayon retirés de `assets/cars/p208.wfm`, `tools/logos.json`) ; gros plans de jour et de nuit : calandre sans logo. Rien de plus à retirer, aucune autre voiture touchée.
+- **Caisse grise** : la peinture du modèle est métallisée (métal 0,45) et reflète le ciel. Correction pour la seule copie du modèle de la police : métal 0 (référence `mat.peinture_voiture` : métal 0, F0 0,04), blanc #E6E8EA (albédo ≈ 0,8). Capot (médiane sRGB) : jour 140,136,131 → 197,194,190 ; nuit 136,110,101 → 165,131,109. Captures `poursuite-police-gros-plan-{jour,nuit}` avec `-avant` dans la même image.
+- Tests CPU 87 OK ; banc course5 : parcours complet 0 écart ; appels de dessin inchangés (+39 ≤ 60).
 
 ### 2026-11-09 11:53:24 — ANO-205 (contact dans les CGU) reportée, décision de l'utilisateur (po-scrum-master)
 
@@ -2898,3 +2925,88 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:05:07 — Synchronisation de track-agent.md ; réponse « aurore » à WFS-346 (po-scrum-master)
 - `track-agent.md` remis d'accord avec `TACHES.md`, `suivi-pr.md` et les branches : ligne de Claude, agent 1 enlevée (session terminée, WFS-193 🟣) ; agent arwa : seul WFS-338 en cours (↩️ #297, en revue par le lead dev depuis 18:58), ses autres tickets fusionnés ; derniers envois : 349 17:27, 214 17:45, 346 18:02, 338 11:51 (en revue, pas d'alerte).
 - Question de Claude, agent cartes (17:34:56) : l'aurore boréale sort de WFS-346 et va dans WFS-344, après la fusion de WFS-214 (ciel en E13). Noté dans les deux fichiers de règles.
+
+### 2026-11-09 19:14:18 — X5 acceptée (PR #311 rouverte), WFS-358 = correction séparée, ordre des US calé sur les objectifs (po-scrum-master)
+- **Ordre de l'utilisateur** : « ce n'est pas à cause d'un petit truc qu'on jette le travail dans la poubelle ; tu acceptes, ensuite tu crées une tâche séparée pour corriger ». Ma faute : le garde-fou du 16:56:49 a fait fermer #311 sans fusion.
+- PR #311 (X5, `ad7aa366`) **rouverte** ; le lead dev est appelé pour la synchroniser avec `main` et la **fusionner en squash** (seul à fusionner). Ligne ajoutée à `suivi-pr.md`.
+- **WFS-358** devient la tâche séparée : corriger seulement les 4 défauts de jonction (RG-04), en partant de `main` après la fusion de #311 (règles mises à jour).
+- Ordre permanent ajouté au skill du PO : une PR presque bonne est acceptée, les petits défauts vont dans une tâche séparée.
+- Nouveau bandeau d'ordre dans `TACHES.md` : voitures sans marque (#311, WFS-358, WFS-194), cartes (WFS-357, 344, 345), performance (rien de prêt, validations téléphone en attente), puis WFS-337, 287, 323, 280, 332, 341.
+
+### 2026-11-09 19:15:37 — WFS-214 : PR #314 ouverte, lead dev appelé (Claude, agent dev W (01UY1Vv4Ed))
+- **RG-01** (ANO-109, paliers) : cause : tramage de ±0,5 / 255 ajouté en lumière linéaire alors que l'écran encode en sRGB (le bruit couvrait ⅓ de pas dans un ciel clair). Correction : bruit triangulaire de ±1 code ajouté au code sRGB (`post.frag`). Test `test_post_wfs214` : marches 0,23 → 0,008 code.
+- **RG-02** (option A du PO) : ciel entier selon Krochmann (15 825 lx à h 70°), 6 000 lx gardés en contrôle à l'ombre (pied d'un mur : 5 498 lx, −8 %), entrée `lum.ciel_clair.plein_ciel` au référentiel (± 15 %, à confirmer). Banc `realisme` : zénith 2 667 → 7 034 cd/m², rapport soleil / ombre 2,96 IL, teinte du zénith inchangée (x 0,2838 y 0,2923), EV de jour 15 inchangé. Crépuscule et nuit inchangés. M-03 : 5,5 % pour ± 5 % (sonde de la Campagne occultée à ≈ 10 % par le relief) : seuil gardé, noté dans la PR.
+- **RG-03** (ANO-106) : déjà gris sur main ; preuve en vrai Ultra (sonde 256 px) contre Haute : ΔE2000 0,02 à 0,92. **Défaut de banc signalé** : le banc des passes ne trouve plus « Ultra » dans le panneau à onglets (2/5 étapes, avant et après) : sa capture `parcours-ultra-course` est en Haute (au PO pour une US de correction du banc).
+- **RG-05** : vision de nuit selon la luminance d'adaptation (EV mesuré autour du joueur) : Golf sous lampadaire ΔE2000 5,6 → 3,1 (seuil 10), rase campagne inchangée à ΔE ≤ 1,2.
+- **Accroches** (annoncées) : `renderer.cpp` 1 ligne (`pp.bloom[1]`), `bench_passes.cpp` 10 lignes (captures `chaussee-*`). Tests CPU : 91 verts. Captures : `qa/pr/WFS-214/` (12, avant / après). Limite : pas d'occlusion du ciel sur les objets mobiles (ombres un peu plus claires de jour) ; US « occlusion du ciel » laissée au PO si le lead dev ou l'utilisateur le demande.
+
+
+### 2026-11-09 19:15:46 — WFS-194 découpé : une US pour chaque deux modèles (WFS-359, 360, 361) (po-scrum-master)
+- Ordre de l'utilisateur : « pour chaque deux modèles créer une US à part ». Les 5 modèles non commerciaux de WFS-194 : **WFS-359** (P1, ⏳ Prêt) Mustang + T-Cross ; **WFS-360** (P1, après 359) A 45 + Elantra N ; **WFS-361** (P2, après WFS-358 et 360) X5, seule.
+- Règles : `regles-de-gestion/WFS-359.md`, `WFS-360.md`, `WFS-361.md` (règles communes : licence CC0 / CC-BY, ±1 %, nom inventé, sans logo, captures). WFS-194 → ↪ découpé.
+- Décisions toujours attendues de l'utilisateur (question du 2026-11-07 11:12) : dérogation de mesure de la Mustang ; Passat pour le T-Cross ; Classe E W212 pour l'A 45.
+- E10 : une seule US à la fois (WFS-349 en cours, puis WFS-358 et WFS-359 à la suite) ; nouvelle session `@dev` pour chacune.
+
+### 2026-11-09 19:16:27 — WFS-338 fusionné par le lead dev (lead-dev)
+- PR #297 relue sur dfa173bd (4e revue) : merge de synchronisation vérifié (différence avec un merge recalculé : seulement les marqueurs de conflit de `journal.md`), aucun code ni capture changé depuis 8ccf8937 (contenu accepté à la 3e revue). Construction + `tests_cpu.sh` : 90 verts. Captures rouvertes (pairs avant / après, suite d'arrivée, chantier jour / nuit, gros plans).
+- Approbation GitHub (APPROVE), fusion squash 8c4d65ae. WFS-338 → 🟡 À valider (utilisateur) (retours de la vidéo de l'utilisateur, ANO-191 à 197) ; ligne #297 retirée de `suivi-pr.md` ; agent arwa (Claude, session trafic) : ⏹️ session terminée ; `qa/Check.md` à jour.
+
+### 2026-11-09 19:16:53 — PR #297 (WFS-338) synchronisée avec main par le lead dev, sur demande de l’utilisateur (lead-dev)
+- Le développeur n’avait plus poussé depuis environ 7 h. Seul restait le conflit `journal.md` avec main : je l’ai résolu dans dfa173bd en gardant les deux côtés. Compilation OK, 90 tests CPU OK.
+- Une autre instance du lead dev a relu la PR, l’a approuvée et l’a fusionnée en squash (8c4d65ae). On ne juge pas son propre travail.
+
+### 2026-11-09 19:17:25 — Voitures de remplacement : décision du PO, plus de question à l'utilisateur (po-scrum-master)
+- Réponse de l'utilisateur : le choix des voitures et des modèles n'est pas son rôle ; s'il y a un problème, chercher une autre voiture ou un autre modèle.
+- Décisions du PO : **Mustang** sans dérogation (modèle CC BY hors ±1 % → le développeur cherche un autre modèle libre dans ±1 %) ; **T-Cross → VW Passat** ; **A 45 → Classe E W212** ; **Elantra N** et **X5** : recherche par le développeur, choix du PO. Règles de WFS-359, 360, 361 mises à jour ; WFS-359 ⏳ Prêt sans attente.
+- Ordre permanent ajouté au skill du PO ; question du 2026-11-07 11:12 close dans `tache utilisateur.md`.
+
+### 2026-11-09 19:22:12 — Création du skill artiste-3d et des agents artiste-3d et dev-artiste-3d (po-scrum-master)
+- Demande de l'utilisateur : un skill et un agent « artiste 3D », et un agent qui a les deux skills, développeur et artiste 3D.
+- **Skill** `.claude/skills/artiste-3d` : licences (CC0 / CC BY seulement), recherche de modèles aux vraies mesures (±1 % sans dérogation, contrôle avant téléchargement), chaîne de conversion des outils du dépôt dans l'ordre, voiture sans marque (leçon de la X5 : grille découpée sur le contour de l'ouverture ou ouverture fermée, jamais devant la carrosserie), qualité du modèle, captures du lead dev.
+- **Agent `artiste-3d`** (`@artiste`) : actifs 3D sans code du moteur. **Agent `dev-artiste-3d`** (`@devartiste`, `@voitures`) : skills `agent-developer` + `waforspeed-natif` + `artiste-3d`.
+- Tickets voitures WFS-358 à 361 → `dev-artiste-3d`, une nouvelle session par ticket. Mis à jour : `appel-agents.md`, `CLAUDE.md` (liste des @ et règle des modèles 3D), `track-agent.md`, skill du PO, règles WFS-358 à 361, `TACHES.md`.
+
+### 2026-11-09 19:23:47 — Alias de l'agent dev-artiste-3d : @dev3d au lieu de @voitures (po-scrum-master)
+- Demande de l'utilisateur : appeler l'agent `dev-artiste-3d` par `@dev3d`. `@voitures` remplacé partout (`appel-agents.md`, `CLAUDE.md`, `track-agent.md`, agent, règles WFS-358 à 361) ; `@devartiste` reste possible. `@3d` reste l'expert réalisme 3D.
+
+### 2026-11-09 19:24:56 — Sessions à ouvrir : une seule @dev3d ; exception E10 pour WFS-358 (po-scrum-master)
+- Question de l'utilisateur : une session `@artiste` et une `@dev3d` ? Réponse : seulement `@dev3d` pour l'instant ; aucun ticket n'est fait seulement d'actifs 3D sans code (WFS-358 à 361 demandent les deux).
+- Exception E10 : WFS-358 peut avancer en parallèle de WFS-349 (zones séparées), dès la fusion de #311.
+
+### 2026-11-09 19:26:22 — 13 autres voitures sans marque : WFS-362 à 368, une US pour chaque deux voitures (po-scrum-master)
+- Question de l'utilisateur : « et les autres voitures ? ». Constat : les 20 voitures ont un nom inventé (WFS-191) et plus de logo (WFS-192), mais WFS-193 n'a retouché la forme que de la Compass, de la 208 et de la X5 (`tools/formes.json` : compass, p208). **13 voitures gardent leur signature de marque** (calandre, feux, prises d'air).
+- US créées (E10, agent `dev-artiste-3d`, `@dev3d`) : **WFS-362** M4 + S3 (P1), **363** Giulia + Range Rover Sport (P1), **364** Golf + Corsa (P1), **365** 911 + Gallardo (P1), **366** SF90 + GT86 (P2), **367** Model 3 + V60 (P2), **368** Abarth 500 seule (P2). Les plus reconnaissables d'abord. Chaîne : 362 après WFS-358 (méthode de la grille validée), puis à la suite.
+- Ordre des tickets voitures : 358 → 362 → 359 → 363 → 360 → 364 → 365 → 366 → 367 → 368 → 361. Exception E10 : au plus deux tickets voitures en même temps si deux sessions `@dev3d`.
+
+### 2026-11-09 19:26:36 — WFS-193 (X5) fusionné par le lead dev (lead-dev)
+- PR #311 acceptée sur ordre de l'utilisateur (« on ne jette pas le travail pour un petit défaut »), rouverte par le PO. Branche synchronisée avec `main` (7371b72e, sans conflit). Construction Release OK. `tests_cpu.sh` : 90 tests réussis.
+- Captures regardées : la calandre de marque a disparu de jour comme de nuit. Le diff ne touche que la X5 (`x5.wfm`, `x5.lod`, `formes.json`) et une accroche de banc de 2 lignes (valeurs par défaut inchangées). Aucune régression vue.
+- Approbation écrite dans la PR (revue COMMENT « ✅ Approuvé », car GitHub refuse l'approbation du même compte), puis squash **8d55c57c**. Branche gardée.
+- Les 4 défauts de jonction grille / carrosserie partent dans **WFS-358**, désormais ⏳ Prêt. Le léger contour de l'ancien logo sur le capot (déjà présent sur `main`) est signalé pour WFS-358.
+
+
+### 2026-11-09 19:27:41 — Décor en formes géométriques : WFS-369 à 373 (po-scrum-master)
+- Demande de l'utilisateur : « des formes géométriques dans les cartes, créer les tâches ». Constat sur les captures de l'APK 954 et dans le code : bancs en pavés, immeubles en boîtes, parasols en cônes, mâts en cylindres, vignes en blocs (ANO-65).
+- US créées (E12 + E2, agent `dev-artiste-3d`, à la suite) : **WFS-369** (P1, ⏳ Prêt) mobilier urbain de la Ville ; **370** (P1) immeubles de la Ville en vrais volumes (avec WFS-231 pour les ouvertures) ; **371** (P2) Corniche ; **372** (P2) Campagne ; **373** (P2) Grand Prix. Chaque US commence par l'inventaire des objets en formes géométriques.
+- PR #311 fusionnée par le lead dev (8d55c57c) ; WFS-358 prêt, avec en plus le contour de l'ancien logo du capot de la X5.
+
+### 2026-11-09 19:29:54 — WFS-214 refusé par le lead dev, PR #314 (lead-dev)
+- Commit relu 75749e6e. J'ai ouvert les 12 paires de captures et lu tout le diff. Branche fusionnée localement avec main (8c4d65ae), construite : tests CPU 91/91 verts.
+- Bons : RG-01 (plus de marches), RG-03 (chaussée grise en Ultra et en Haute), RG-05 (Golf sous les lampes), nuit et aube inchangées, Ville de jour sans ombres délavées.
+- **Refus (condition 4 du PO)** : l'option A rend les moments de jour de la Campagne encore plus blancs, avec une luminance moyenne qui monte (dorée 212 → 233, matin 234 → 242, midi 237 → 243) ; le relief, l'éolienne et les arbres disparaissent dans le voile.
+- **Manquent** : les captures dorée, midi et jour en Campagne, et une mesure de la performance de la passe finale (2 pow(vec3) en plus par pixel).
+- Repli C possible (condition 6). Revue publiée dans la PR (COMMENT : même compte GitHub).
+
+### 2026-11-09 19:34:30 — WFS-346 : PR #315 ouverte, lead dev appelé (Claude, agent cartes (01UY1Vv2dx))
+- Fait : saison lue du paquet (adhérence, neige au sol, flocons ; format 2 des blocs), chaussée enneigée avec traces de roues (sèche sous l'abri), flocons dehors seulement (Cockpit : vitres ; rien sous un tunnel), tunnel des cartes de données, μ dans la conduite du joueur (ancien et nouveau modèle), banc `neige`.
+- Vérifié : tests CPU 91/91 (nouveau `test_cartes_v2_saison`) ; banc `neige` 0 écart ; banc `paquets` 0 écart (parcours accueil → terrain → course → retour) ; freinage 100-0 dans le jeu : 37 m au sec, ≈ 144 m sur neige (μ 0,25, réel ≈ 150 m) ; flocons 0,07 ms CPU par image.
+- Limites : chaussée sèche sous le 1er tunnel seulement ; rendu vu en lavapipe ; coût GPU du shader de neige non mesuré sur téléphone. Aurore : WFS-344 (décision du PO 19:05:07).
+
+### 2026-11-09 19:35:20 — Dernière version cassée : WFS-374 (P1) créé (po-scrum-master)
+- Demande de l'utilisateur : « la dernière version est niquer ». Symptôme pas encore précisé (question posée dans `tache utilisateur.md`).
+- Fusions du jour : #313 WFS-356 (CI #964 verte), #312 WFS-343 (CI #965 verte, suspect n° 1 : `mapById`, `Track::build`, `CarteDecor::init`, choix du terrain), #297 WFS-338 (CI #966 en cours), #311 WFS-193 (CI #967 en attente).
+- **WFS-374** (P1 Urgent, E0, ⏳ Prêt, en premier) : bissection au banc, correction en avant, aucun revert sans ordre de l'utilisateur ; 🟡 après fusion. Pour une nouvelle session `@dev`.
+
+### 2026-11-09 19:36:22 — Jour / Nuit seulement : WFS-375 (P1) créé (po-scrum-master)
+- Vidéo de l'utilisateur (Corniche, 20:34) : le bouton Jour du choix du terrain fait défiler les moments de WFS-208 (Midi → Dorée…), course partie au crépuscule. Ordre : « garder que simple mode journée et nuit ».
+- **WFS-375** (P1, E8, ⏳ Prêt) : deux boutons JOUR (= midi) et NUIT, sans défilement ; sauvegardes anciennes rangées ; code des moments gardé pour les bancs.
