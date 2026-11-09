@@ -3,6 +3,7 @@
 // banc sont dans paquets.cpp.
 #include "paquets.h"
 #include <algorithm>
+#include <filesystem>
 #include <cstdio>
 #include "../../core/log.h"
 
@@ -121,6 +122,124 @@ bool EtapePaquets::ouvrirProposition(double t) {
     WFS_LOG("paquets (WFS-306) : proposition ouverte depuis le bandeau du menu (%s, %s)", texteMo(taille_).c_str(), reseau_ == 2 ? "données mobiles" : reseau_ == 1 ? "Wi-Fi" : "sans réseau");
     return true;
 }
+
+// ---------------------------------------------------------------- WFS-307 : paquets de chaque carte (choix du terrain)
+void CartesPaquets::lier(SourcePaquets* s, const std::vector<carte::FormatTexture>& f, int apk) { source_ = s; formats_ = f; apk_ = apk; }
+
+CartesPaquets::Suivi* CartesPaquets::suivi(const std::string& c) {
+    for (auto& [n, s] : cartes_) if (n == c) return &s;
+    return nullptr;
+}
+
+void CartesPaquets::chercher(const std::vector<std::pair<std::string, uint64_t>>& cartes) {
+    std::string e;
+    for (const auto& [c, emp] : cartes) {
+        if (!suivi(c)) cartes_.push_back({c, Suivi{}});
+        suivi(c)->empreinte = emp; suivi(c)->verifie = false;
+        e += std::string(e.empty() ? "" : ",") + c + ":" + hexa(emp);
+    }
+    if (!source_) return;
+    source_->chercherTout(texteFormats(formats_), e, apk_);
+    cherche_ = true;
+    WFS_LOG("paquets (WFS-307) : liste lue pour les cartes %s", e.c_str());
+}
+
+// paquet juste sur le téléphone (un des formats lus par la carte graphique) ; « ancien » : un fichier est là mais refusé (autre génération)
+void CartesPaquets::verifier(const std::string& c, Suivi& s) {
+    s.installee = s.ancien = false; s.surDisque = 0;
+    for (carte::FormatTexture f : formats_) {
+        const std::string chemin = carte::dossierPaquets() + "/" + carte::nomFichier(c, f);
+        std::error_code ec;
+        if (!std::filesystem::exists(chemin, ec)) continue;
+        if (carte::verifier_carte(chemin, {c, f, s.empreinte}) == carte::Verdict::Bon) { s.installee = true; s.surDisque = (long long)std::filesystem::file_size(chemin, ec); break; }
+        s.ancien = true;
+    }
+    s.verifie = true;
+}
+
+EtatCarte CartesPaquets::etat(const std::string& c) {
+    EtatCarte e; e.nom = c;
+    Suivi* s = suivi(c);
+    if (!s) return e;
+    if (!s->verifie) verifier(c, *s);
+    long long recus = 0, taille = 0;
+    const SourcePaquets::Phase ph = source_ ? source_->phaseCarte(c, recus, taille) : SourcePaquets::ABSENTE;
+    std::string nom, fmt;
+    if (source_ && source_->propositionCarte(c, nom, fmt) && !nom.empty()) e.nom = nom;
+    e.recus = recus; e.taille = taille; e.surDisque = s->surDisque;
+    switch (ph) {
+    case SourcePaquets::ATTENTE: e.etat = EtatCarte::Attente; return e;
+    case SourcePaquets::TELECHARGE: e.etat = EtatCarte::Telechargement; return e;
+    case SourcePaquets::COUPURE: e.etat = EtatCarte::Coupure; return e;
+    case SourcePaquets::SHA_FAUX: case SourcePaquets::ERREUR: case SourcePaquets::PLACE: if (!s->installee) { e.etat = EtatCarte::Echec; return e; } break;
+    default: break;
+    }
+    if (s->installee) { e.etat = EtatCarte::Installee; return e; }
+    if (ph == SourcePaquets::LISTE || ph == SourcePaquets::RIEN) { e.etat = cherche_ && ph == SourcePaquets::LISTE ? EtatCarte::Recherche : EtatCarte::SansPaquet; return e; }
+    if (ph == SourcePaquets::PRETE || ph == SourcePaquets::FINI) e.etat = s->ancien ? EtatCarte::MiseAJour : EtatCarte::Disponible;   // FINI puis fichier effacé
+    return e;
+}
+
+void CartesPaquets::avancer() {
+    if (!source_) return;
+    for (auto& [c, s] : cartes_) {
+        long long r = 0, t = 0;
+        const SourcePaquets::Phase ph = source_->phaseCarte(c, r, t);
+        if (ph == SourcePaquets::FINI && s.phase != SourcePaquets::FINI && s.phase != SourcePaquets::RIEN) {   // vient de finir pendant le jeu
+            s.verifie = false;
+            if (std::find(changees_.begin(), changees_.end(), c) == changees_.end()) changees_.push_back(c);
+            pretes_.push_back(c);
+            WFS_LOG("paquets (WFS-307) : %s prête (paquet téléchargé et vérifié), relue à la prochaine course", c.c_str());
+        }
+        s.phase = ph;
+    }
+}
+
+bool CartesPaquets::telecharger(const std::string& c, std::string& message) {
+    message.clear();
+    if (!source_ || !suivi(c)) { message = "Paquet indisponible"; return false; }
+    if (source_->reseau() == 0) { message = "Connexion nécessaire"; WFS_LOG("paquets (WFS-307) : %s : %s", c.c_str(), message.c_str()); return false; }   // RG-05
+    long long r = 0, t = 0;
+    source_->phaseCarte(c, r, t);
+    const long long libre = source_->placeLibre(), besoin = t + t / 10;   // RG-07 de WFS-306
+    if (t > 0 && libre >= 0 && libre < besoin) { message = "Place insuffisante : " + texteMo(besoin) + " nécessaires, " + texteMo(libre) + " libres"; WFS_LOG("paquets (WFS-307) : %s : %s", c.c_str(), message.c_str()); return false; }
+    if (!source_->installerCarte(c)) { message = "Paquet indisponible"; return false; }
+    suivi(c)->phase = SourcePaquets::ATTENTE;
+    WFS_LOG("paquets (WFS-307) : %s : « Télécharger » (%s)", c.c_str(), texteMo(t).c_str());
+    return true;
+}
+void CartesPaquets::annuler(const std::string& c) { if (source_) { source_->arreterCarte(c); WFS_LOG("paquets (WFS-307) : %s : téléchargement annulé (.part gardé)", c.c_str()); } }
+
+bool CartesPaquets::supprimer(const std::string& c, long long& liberes) {
+    liberes = 0;
+    Suivi* s = suivi(c);
+    if (!s) return false;
+    long long r = 0, t = 0;
+    const SourcePaquets::Phase ph = source_ ? source_->phaseCarte(c, r, t) : SourcePaquets::ABSENTE;
+    if (ph == SourcePaquets::TELECHARGE || ph == SourcePaquets::COUPURE || ph == SourcePaquets::ATTENTE) return false;
+    for (carte::FormatTexture f : carte::FORMATS)
+        for (const std::string& suffixe : {std::string(), std::string(".part")}) {
+            const std::string chemin = carte::dossierPaquets() + "/" + carte::nomFichier(c, f) + suffixe;
+            std::error_code ec;
+            const auto n = std::filesystem::file_size(chemin, ec);
+            if (!ec && std::filesystem::remove(chemin, ec)) liberes += (long long)n;
+        }
+    s->verifie = false;
+    if (std::find(changees_.begin(), changees_.end(), c) == changees_.end()) changees_.push_back(c);
+    if (source_) source_->supprimee(c);
+    WFS_LOG("paquets (WFS-307) : %s supprimée, %s libérés", c.c_str(), texteMo(liberes).c_str());
+    return true;
+}
+
+bool CartesPaquets::changee(const std::string& c) const { return std::find(changees_.begin(), changees_.end(), c) != changees_.end(); }
+void CartesPaquets::prise(const std::string& c) { changees_.erase(std::remove(changees_.begin(), changees_.end(), c), changees_.end()); }
+std::vector<std::string> CartesPaquets::pretes() { std::vector<std::string> v; v.swap(pretes_); return v; }
+void CartesPaquets::ralentir(bool oui) {
+    if (oui == ralenti_ || !source_) return;
+    ralenti_ = oui; source_->ralentir(oui);
+    WFS_LOG("paquets (WFS-307) : téléchargement %s", oui ? "ralenti (course sous 30 images par seconde)" : "à pleine vitesse");
+}
+CartesPaquets& cartesPaquets() { static CartesPaquets c; return c; }
 
 } // namespace ecrans
 } // namespace wfs
