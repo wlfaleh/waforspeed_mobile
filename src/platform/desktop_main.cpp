@@ -67,6 +67,7 @@ namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
 #include "../world/enseignes.h"
+#include "../world/meteo.h"   // WFS-354 (accroche) : banc « pluie »
 #include "../ui/text.h"
 #include "../game/cars.h"
 #include <cstring>
@@ -249,6 +250,7 @@ int main(int argc, char** argv) {
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
     if (banc == "archi") { benchArchi(g, r, out); return finir(); }           // WFS-161 (accroche) : kit d'architecture, 6 styles, niveaux de détail
+    if (banc == "pluie") { benchPluie(g, r, out); return finir(); }   // WFS-354 (accroche) : pluie en vue Cockpit (montant, balais, tunnel)
     if (banc == "ville") { benchVille(g, r, out); return finir(); }           // WFS-137 : lieux de la Ville seuls (essai local)
     if (banc == "corniche") { benchCorniche(g, r, out); return finir(); }   // WFS-139 : Corniche au tracé 2 seule (essai local)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
