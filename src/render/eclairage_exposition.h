@@ -52,6 +52,19 @@ inline double partRue(double eclairement) {
     const double u = std::clamp(std::log2(std::max(eclairement, 1e-9) / E_RASE_CAMPAGNE) / std::log2(E_RUE_ECLAIREE / E_RASE_CAMPAGNE), 0.0, 1.0);
     return u * u * (3 - 2 * u);
 }
+// WFS-356 (RG-01, ANO-202) : part « rue éclairée » selon la carte : la Ville est éclairée partout (vitrines, enseignes, fenêtres) alors
+// que le posemètre ne compte que les lampadaires (1,57 lx au départ de la Ville → EV 2,27, 1,8 IL au-dessus de la mesure du lieu) :
+// dans la Ville, toujours 1 (EV 3 à 5) ; ailleurs (Campagne, Corniche, Grand Prix), selon l'éclairement reçu (WFS-230)
+inline double partRueNuit(double eclairement, bool villeEclairee) { return villeEclairee ? 1.0 : partRue(eclairement); }
+// WFS-356 (RG-02) : adaptation locale aux pièces éclairées vues de la rue (shaders/eclairage.glsl, pieceAdaptee, MÊMES valeurs :
+// vérifié par test_fidelite_lumiere) : luminance exposée Y, rien sous le genou, épaule rationnelle (Reinhard) vers le plafond au-dessus
+constexpr double PIECE_GENOU = 0.2, PIECE_PLAFOND_EXPO = 0.6;
+inline double pieceAdaptee(double Y) {
+    if (!(Y > PIECE_GENOU)) return Y;
+    const double m = PIECE_PLAFOND_EXPO - PIECE_GENOU;
+    const double x = Y - PIECE_GENOU;
+    return PIECE_GENOU + m * x / (x + m);
+}
 // exposition de nuit visée : posemètre incident, de −3,5 (clair de lune, WFS-249) à 5 (rue très éclairée, borne haute de la nuit)
 inline double evIncidentNuit(double eclairement) {
     if (!std::isfinite(eclairement)) return EV_REF_NUIT;

@@ -1,0 +1,184 @@
+{
+ "compass": {
+  "materiaux": 15,
+  "empreinteAvant": "6cdf7b47fac95746",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 2,
+    "boite": [
+     -0.455,
+     0.795,
+     -2.18,
+     0.455,
+     0.995,
+     -2.03
+    ],
+    "note": "calandre de marque à 7 fentes : cadres chromés retirés",
+    "triangles": 705
+   },
+   {
+    "retirer": true,
+    "materiau": 7,
+    "boite": [
+     -0.455,
+     0.795,
+     -2.18,
+     0.455,
+     0.995,
+     -2.03
+    ],
+    "note": "calandre de marque à 7 fentes : fond noir retiré",
+    "triangles": 15621
+   },
+   {
+    "grille": [
+     -0.44,
+     0.805,
+     -2.14,
+     0.44,
+     0.98,
+     -2.08
+    ],
+    "barres": 3,
+    "galbe": 0.045,
+    "cadre": 0.015,
+    "couleur": "#1c1c1c",
+    "metal": 0.6,
+    "rugosite": 0.4,
+    "note": "grille générique : cadre, 3 barres horizontales, galbe du nez"
+   }
+  ],
+  "empreinteApres": "3479cb3aaa9d323f"
+ },
+ "p208": {
+  "materiaux": 17,
+  "empreinteAvant": "255a507ac4060374",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 0,
+    "boite": [
+     -0.43,
+     0.395,
+     -2.02,
+     0.43,
+     0.785,
+     -1.89
+    ],
+    "note": "calandre de marque (treillis en losanges) retirée, fond sombre gardé",
+    "triangles": 251
+   },
+   {
+    "retirer": true,
+    "materiau": 8,
+    "boite": [
+     -0.125,
+     0.55,
+     -2.03,
+     0.125,
+     0.75,
+     -1.955
+    ],
+    "note": "socle du lion (relief au centre du fond sombre) retiré devant la grille",
+    "triangles": 748
+   },
+   {
+    "grille": [
+     -0.415,
+     0.405,
+     -1.975,
+     0.415,
+     0.76,
+     -1.94
+    ],
+    "barres": 5,
+    "galbe": 0.035,
+    "trapeze": 0.68,
+    "cadre": 0.012,
+    "couleur": "#202020",
+    "metal": 0.6,
+    "rugosite": 0.4,
+    "note": "grille générique en trapèze (forme de l'ouverture d'origine) : cadre, 5 barres, galbe du nez"
+   }
+  ],
+  "empreinteApres": "2ff076abf2a391c1"
+ },
+ "x5": {
+  "materiaux": 29,
+  "empreinteAvant": "4fc2afea68dc4d96",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 15,
+    "boite": [
+     -0.47,
+     0.625,
+     -2.5,
+     0.47,
+     0.955,
+     -2.36
+    ],
+    "note": "calandre de marque (deux « haricots » : cadre, barres et arcs du bas) retirée",
+    "triangles": 2640
+   },
+   {
+    "retirer": true,
+    "materiau": 10,
+    "boite": [
+     -0.47,
+     0.625,
+     -2.5,
+     0.47,
+     1,
+     -2.3
+    ],
+    "note": "fond des haricots retiré",
+    "triangles": 240
+   },
+   {
+    "materiau": 4,
+    "boite": [
+     -0.115,
+     0.85,
+     -2.48,
+     0.115,
+     0.945,
+     -2.3
+    ],
+    "pivot": [
+     0,
+     0.945,
+     -2.43
+    ],
+    "echelle": [
+     1,
+     0.15,
+     0.15
+    ],
+    "fondu": 0.01,
+    "note": "pointe de carrosserie entre les deux haricots repliée dans le bord du capot (hauteur et profondeur ×0,15 vers le bord) : bord net, sans pli ni trou",
+    "sommets": 47
+   },
+   {
+    "grille": [
+     -0.48,
+     0.63,
+     -2.43,
+     0.48,
+     0.915,
+     -2.37
+    ],
+    "barres": 6,
+    "galbe": 0.045,
+    "cadre": 0.015,
+    "couleur": "#4a4a4a",
+    "metal": 0.8,
+    "rugosite": 0.3,
+    "note": "grille générique d'un seul tenant (RG-05 : cadre et barres au même galbe, 4,5 cm), posée dans l'ouverture d'origine, bords 1 à 2 cm derrière la carrosserie qui cache la jonction (RG-06) ; bas un peu plus large (trapèze 1,05) ; haut à 0,915 m (rien par la fente capot-phares)",
+    "trapeze": 1.05
+   }
+  ],
+  "empreinteApres": "8a664fb46210b69c"
+ }
+}

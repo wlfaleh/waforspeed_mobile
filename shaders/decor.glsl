@@ -54,7 +54,7 @@ vec3 interieurFenetre(vec3 N, vec3 V, vec3 skyAmb) {
     const float k = F.iblB.x > 0.0 ? F.iblB.x : (F.misc.y > 0.5 ? 1.0 / (1.2 * 16.0) : 1.0 / (1.2 * 32768.0));
     vec3 c = allumee ? pc.emissive.rgb * (rho / 0.5) * k : rho * skyAmb * JOUR_FACTEUR;
     // lampe au plafond : un peu plus de lumière vers le haut de la pièce, ombre douce vers le fond
-    if (allumee) c *= mix(0.75, 1.15, clamp((p.y + al) / (h + al + PIECE_PLAFOND), 0.0, 1.0)) * mix(1.0, 0.7, p.z / PIECE_PROF);
+    if (allumee) c = pieceAdaptee(c * mix(0.75, 1.15, clamp((p.y + al) / (h + al + PIECE_PLAFOND), 0.0, 1.0)) * mix(1.0, 0.7, p.z / PIECE_PROF));   // WFS-356 (accroche E13) : adaptation locale
     return c;
 }
 

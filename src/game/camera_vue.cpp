@@ -34,7 +34,8 @@ namespace {
 VueCamera g_vue = VueCamera::Poursuite;   // store('waforspeed-cam') du jeu web : mémorisée pour la session
 struct Suivi { bool init = false; VueCamera vue = VueCamera::Poursuite; vec3 eye{}, look{}; float fov = 72.f;
                double camHd = 0, distDyn = 0;              // WFS-98 : camHd et camDistDyn d'updateCamera du jeu web
-               vec3 eyeT0{}, lookT0{}; double hdT0 = 0; } g_suivi;   // WFS-221 : cibles de l'image précédente (filtre exact)
+               vec3 eyeT0{}, lookT0{}; double hdT0 = 0;            // WFS-221 : cibles de l'image précédente (filtre exact)
+               double accMoy = 0, vLisse = 0, vT0 = 0; } g_suivi;   // WFS-293 : accélération de la caméra, vitesse lissée et sa cible précédente
 // WFS-221 (RG-02 c) : filtre du premier ordre (constante k /s) résolu EXACTEMENT pour une cible qui avance linéairement pendant
 // l'image (x = y − v/k + (x0 − y0 + v/k)·e^(−k·dt)) : même retard moyen qu'avant, mais il ne dépend plus de la durée de chaque
 // image (l'ancien lerp prenait la cible pour immobile : à 200 km/h, retard de ≈ 4 m variable d'une image à l'autre : la voiture
@@ -132,7 +133,18 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
             suivreExact(g_suivi.camHd, c0, cible, 3.4, fdt);
             g_suivi.hdT0 = c0;
         }
-        const double distT = P.dist + p * 0.6 + std::clamp(pl.lonAcc * 0.05, -0.4, 0.6);   // s'éloigne en accélérant
+        // WFS-293 (RG-11) : accélération tirée de la vitesse lissée (filtre exact de 0,3 s) au lieu de l'accélération du dernier pas :
+        // au gaz tout ou rien, lonAcc bascule d'un pas à l'autre ; lue une fois par image (66 ms à 15 img/s), elle tombait au hasard
+        // d'un côté ou de l'autre et la distance de la caméra sautait (voiture qui avance et recule dans le cadre : 38 à 54 mm à
+        // 15 img/s contre la même course rejouée à 120 Hz, 4,6 mm ensuite). Même valeur moyenne, indépendante de la cadence.
+        if (neuf || fdt <= 1e-5f) { g_suivi.accMoy = pl.lonAcc; if (neuf) g_suivi.vLisse = g_suivi.vT0 = pl.speed * M; }
+        else if (g_cameraFiltreExact) {   // vitesse lissée (filtre exact, 0,3 s : indépendant de la cadence), puis sa dérivée sur l'image
+            const double avant = g_suivi.vLisse;
+            suivreExact(g_suivi.vLisse, g_suivi.vT0, pl.speed * M, 3.3, fdt);
+            g_suivi.accMoy = (g_suivi.vLisse - avant) / fdt;
+        }
+        else g_suivi.accMoy = pl.lonAcc;   // passe « avant » du banc : comme avant
+        const double distT = P.dist + p * 0.6 + std::clamp(g_suivi.accMoy * 0.05, -0.4, 0.6);   // s'éloigne en accélérant
         g_suivi.distDyn += (distT - g_suivi.distDyn) * (g_cameraFiltreExact ? 1.0 - std::exp(-fdt * 2.5) : std::min(1.0, fdt * 2.5));   // WFS-221 : exact (même constante)
         const double t = std::clamp((std::abs(std::sin(pl.heading)) - 0.3) / 0.4, 0.0, 1.0), a = t * t * (3 - 2 * t);
         // demi-tour (RG-07) : recul ≥ 6 m, œil à 3 m au moins (≥ 2,5 m) et regard relevé de 0,8 m : la voiture, vue de plus

@@ -2178,6 +2178,8 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Critères** : RG-01 (tracé, chocs, départs, checkpoints, zones de trafic lus du paquet, carte absente du choix si bloc faux, jamais de plantage), RG-03 (décor générique lu du paquet, carte venue d'un paquet dans le choix du terrain), RG-04 (tests CPU, parcours accueil → terrain → course → retour 0 écart, carte de test, captures au lead dev), RG-05 (rien de propre à une carte dans le code). Règles : `regles-de-gestion/WFS-343.md`.
 - **WFS-347** (P3, E8) créé : RG-06 de WFS-307 (ligne « Cartes : N téléchargées, X Mo » des Réglages), après WFS-290, 291, 318 (agent 2).
 
+### 2026-11-09 01:11:39 — WFS-343 : début (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-343` depuis `main`. Skills : `agent-developer`, `expert-cartes`, `waforspeed-natif`. Périmètre : RG-01, RG-03, RG-04, RG-05 (neige → WFS-346). Étude du tracé et des chocs actuels avant le plan ; accroches `track.*` / `game.*` annoncées à l'entrée suivante.
 ### 2026-11-09 01:25:26 — WFS-335 : PR #296 ouverte, 🆕 à relire par le lead dev (agent arwa (Claude, session trafic))
 - **PR** : https://github.com/wlfaleh/waforspeed_mobile/pull/296 (branche `feature/waforspeed-335`, synchronisée avec main ; 81 tests CPU OK ; parcours complet 0 écart, vues Arrière et Cockpit).
 - **Captures** : `qa/pr/WFS-335/` (31 captures du banc `lod` avant / après, Basse ; Course à 5 de nuit vues Arrière et Proche, trafic de nuit de 10 à 170 m) ; 31 sur 43 identiques au pixel près, les autres ne changent qu'au loin. Le script `captures_pr.sh` avec le banc `nuit` durait plus d'une heure (machine partagée, charge 19) : arrêté, captures `lod` produites et mises en forme à la main.
@@ -2510,6 +2512,33 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Calandre de la police sans logo (déjà retiré par WFS-192, vérifié sur gros plans jour et nuit) ; caisse blanche unie au lieu de grise : peinture du modèle métallisée (0,45) → non métallisée pour la seule copie de la police, blanc #E6E8EA ; capot de jour 140 → 197 (sRGB). Tests CPU 87 OK, banc course5 0 écart, appels de dessin +39 ≤ 60. `suivi-pr.md` 🔁 (34c83618).
 
 ### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
+### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
+
+### 2026-11-08 23:04:06 — WFS-338 : plan et accroche annoncée (agent arwa (Claude, session trafic))
+- **Causes trouvées** : (1) police dessinée seulement jusqu’à 60 m derrière, renfort créé à 90 m et retour « trop loin » de 250 à 120 m : elle surgissait et « s’effaçait » ; rapprochement jusqu’à +45 m/s au contact ; voiture « à côté » poussée par-dessus le joueur quand il roule sur une file du bord (côté hors chaussée ramené au bord) ; poussée visée à 2 m du joueur (moitié dans sa voiture). (2) l’encart POLICE affichait la distance à l’arrivée. (3) le score baisse de 1 par seconde quand la police est à moins de 12 m (et des chocs) sans rien d’écrit. (4) « travaux » : 12 cubes orange lumineux en ligne, bandeau 260 m avant, avant qu’ils soient dessinés (250 m). (5) police sans conducteur (aucun appel à `conducteurs::ajouter`). (6) gyrophare : deux boîtes rouge / bleue sous le haut du modèle.
+- **Accroche hors zone (≤ 10 lignes, E2)** : `src/world/conducteurs.h/.cpp` : paramètre `policier` de `conducteurs::ajouter` (uniforme bleu marine ; file pleine : le policier prend la place d’un civil). Aucun fichier `vehicule_*`, `traffic*`, `game.cpp`, `camera_vue.*`, `hud.*` touché (encart POLICE dessiné dans `poursuite_system.cpp`).
+- **Limite signalée au PO** : le rétroviseur de la vue Cockpit n’est qu’un boîtier noir (aucune image rendue, `camera_vue.*` / rendu hors zone) : la police est maintenant dessinée jusqu’à 160 m derrière (toute vue qui regarde derrière la voit) ; la preuve est une caméra du banc placée devant la voiture et tournée vers l’arrière. Un vrai rétroviseur rendu serait un ticket à part (PO).
+
+### 2026-11-09 08:06:30 — WFS-338 : appels de dessin, branche et main (décision PO 0161316e) et revue du lead dev (agent arwa (Claude, session trafic))
+- **Mesure, même banc (`course5`, 1280x720, qualité Basse, lavapipe, même machine, `tools/qa/captures_pr.sh`)**, `main` à jour (le banc de `main` passe maintenant aux mêmes endroits que la branche) ; dernière colonne : même image de la branche, avec et sans les ajouts de WFS-338 (bandes, socle, policier, cônes, panneau).
+
+| Endroit (Basse) | main : poursuite / Checkpoint (écart) | branche : poursuite / Checkpoint (écart) | branche − main (poursuite) | même image : avec / sans WFS-338 |
+|---|---|---|---|---|
+| police au contact (0,18 km) | 187 / 155 (+32) | 187 / 178 (+9) | **0** | 184 / 184 (+0) |
+| embouteillage (0,45 km) | 345 / 312 (+33) | 341 / 304 (+37) | **−4** | 341 / 332 (+9) |
+| HUD (0,45 km) | 336 / 312 (+24) | 343 / 304 (+39) | **+7** | 342 / 333 (+9) |
+| ralentisseur (1,55 km) | 230 / 224 (+6) | 211 / 183 (+28) | **−19** | 195 / 195 (+0) |
+| camion en travers (1,95 km) | 371 / 325 (+46) | 328 / 333 (−5) | **−43** | 255 / 255 (+0) |
+| écart maximal (cible ≤ 60) | +46 : OK | +39 : OK | | |
+
+- **Verdict (règle du PO, cas a)** : WFS-338 ajoute **+9 appels au plus** dans la même image et la branche fait au plus **+7** de plus que `main` au même endroit (≤ +10) ; la cible ≤ 60 de WFS-119 est tenue sur la branche (+39) comme sur `main` (+46). Les « +128 » et « +93 » d'avant venaient de bancs de `main` bloqués au barrage (endroits différents). Moyens de RG-04 appliqués quand même : un seul dessin par cône (au lieu de 3), police au-delà de 80 m sans rampe, sans bandes ni policier (halos seuls), bandes et socle jusqu'à 40 m en Basse.
+- **Revue du lead dev (1re)** : (2) nouvelle suite d'arrivée : toute la police repart à 220 m (aucune à moins de 160 m), puis 10 images à 1 s d'écart, distance dans l'encart POLICE (encart POLICE et journal du banc), vue Arrière du jeu et vue arrière du banc ; (3) bandeau « TRAVAUX » à 80 m, tenu jusqu'au biseau, captures de jour et de nuit ; les cônes étaient trop loin sur les captures : captures refaites à 30 m du biseau (panneau AK5 tout près) et au biseau ; le dessin fusionné de tous les cônes, essayé, est remplacé par un dessin par cône (il ne change rien aux mesures) ; (4) gros plan de jour de la police, policier visible derrière le pare-brise ; (5) tableau ci-dessus.
+
+### 2026-11-09 11:48:25 — WFS-338 : RG-07, logo et caisse blanche de la police (agent arwa (Claude, session trafic))
+- **Logo** : déjà retiré de la 208 par WFS-192 (#266 : lion de la calandre, « 208 », lettres et lion du hayon retirés de `assets/cars/p208.wfm`, `tools/logos.json`) ; gros plans de jour et de nuit : calandre sans logo. Rien de plus à retirer, aucune autre voiture touchée.
+- **Caisse grise** : la peinture du modèle est métallisée (métal 0,45) et reflète le ciel. Correction pour la seule copie du modèle de la police : métal 0 (référence `mat.peinture_voiture` : métal 0, F0 0,04), blanc #E6E8EA (albédo ≈ 0,8). Capot (médiane sRGB) : jour 140,136,131 → 197,194,190 ; nuit 136,110,101 → 165,131,109. Captures `poursuite-police-gros-plan-{jour,nuit}` avec `-avant` dans la même image.
+- Tests CPU 87 OK ; banc course5 : parcours complet 0 écart ; appels de dessin inchangés (+39 ≤ 60).
 
 ### 2026-11-09 11:53:24 — ANO-205 (contact dans les CGU) reportée, décision de l'utilisateur (po-scrum-master)
 
@@ -2647,9 +2676,25 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin ; captures avant / après dans `qa/pr/WFS-349/`). PR, lead dev, puis 🟡 et arrêt de la session.
 - `track-agent.md` : ligne ajoutée ; lignes des sessions terminées enlevées (arwa-5, agent dev conduite).
 
-### 2026-11-09 13:36:15 — Début WFS-349 : vue Cockpit, habitacle fermé, voiture voisine sur la portière (Claude, agent 3 bis (01UY1Vv3VTBJ))
-- Branche `feature/waforspeed-349` créée depuis `main` et poussée tout de suite. Zone : `src/render/vehicule_cockpit*`, `tests/**`, scènes des bancs `cockpit` / `penetration` (≤ 10 lignes). Première étape : la cause (RG-01).
+### 2026-11-09 13:38:27 — WFS-343 : reprise après la limite d'utilisation (Claude, agent 3 (01UY1Vv3))
+- Session arrêtée à 01:12 UTC (limite de 5 h), reprise à la demande du PO. Branche synchronisée avec `main`. Étude du code (tracé, chocs, décor, cartes nommées dans le code) puis plan et accroches à l'entrée suivante.
 
+### 2026-11-09 13:56:47 — WFS-343 : plan et accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- **Plan** : une carte de données est décrite par trois blocs texte de son paquet (`trace`, `chocs`, `decor`, format 1), lus par `src/world/cartes_v2/carte_donnees.*`.
+  - Les cartes sont enregistrées dans un registre, et `mapById` les trouve.
+  - Le tracé est fait des routes `addRoad` du jeu web et des sections typées.
+  - Le décor vient d'une sous-classe de `CarteDecor` (`carte_donnees_decor.cpp`). La distance des checkpoints est propre à la carte.
+  - Le choix du terrain montre les cartes des paquets (RG-03). Un bloc faux rend la carte absente, avec la raison au journal du jeu.
+  - Cartes d'essai cachées : `paquets/sources/noel-test` et `paquets/sources/automne-test` (RG-05, autre saison).
+- **Accroches E0** (autorisées par le ticket) :
+  - `src/game/track.h` (+3 lignes) : champ `MapDef::construire`, pointeur `g_cartesDonnees`, `Track::poserSections`.
+  - `src/game/track.cpp` (+2 lignes) : `mapById` cherche d'abord les cartes de données ; `Track::build` appelle `construire`.
+  - Les 4 cartes du code ne changent pas.
+- **Accroche E2** (accord écrit du PO, 2026-11-09 13:50 UTC) : `src/world/decor_carte.h` (+3 lignes, dont 1 commentaire) et `decor_carte.cpp` (2 lignes changées).
+  - `couleursCarte()` : couleurs de la carte dans les cases libres de la palette.
+  - `touffes()` : touffes d'herbe facultatives.
+  - Raison : RG-05, tout vient des données. Les valeurs par défaut gardent la Campagne et le Grand Prix inchangés (captures avant / après dans la PR).
+- **Test** : `test_cartes_v2_donnees` (ligne ajoutée dans `CMakeLists.txt`) OK.
 ### 2026-11-09 13:40:52 — WFS-349 retiré à agent 3 bis, repassé ⏳ Prêt (po-scrum-master)
 - **Ordre de l'utilisateur** (transmis par Claude, agent 3 bis, 01UY1Vv3VTBJ) : « Dit au po de l'attribuer à qq d'autre toi t'es fini selon la nouvelle règle bye bye ». Décision de l'utilisateur : la règle des 10 h ne s'applique pas.
 - **WFS-349** (P1, vue Cockpit, ANO-181 / 183) : ⏳ Prêt, sans responsable, pour la prochaine **nouvelle session** de développeur qui demande un ticket. Branche `feature/waforspeed-349` gardée (1 commit e1440a6f, 2026-11-09 13:36:15 UTC, entrée « Début » seulement ; aucun code).
@@ -2678,6 +2723,276 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - **Zone** : `src/render/vehicule_cockpit*`, `tests/**` (test neuf), scène des bancs `cockpit` / `penetration` (≤ 10 lignes annoncées au journal). **Interdit** : `camera_vue.*` (WFS-293 ; si la cause est dans la caméra, le dire au PO d'abord), modèles des voitures et `tools/effacer_logos.mjs` (WFS-193, 215), `traffic.*`, `course5*`, `poursuite*`, `player.*`, `conduite_*`, tailles d'interface, CI, iOS.
 - **Branche** : `feature/waforspeed-349` existe (e1440a6f, 13:36:15 UTC, entrée « Début » d'agent 3 bis, aucun code) : la reprendre, synchroniser avec `main`, pousser un commit tout de suite. Piste non vérifiée au § Suivi des règles.
 - **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards, gauche et droite ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin). Captures avant / après dans `qa/pr/WFS-349/`, PR, lead dev, puis 🟡 et arrêt de la session.
+
+### 2026-11-09 14:02:13 — WFS-193 (PR pilote #308) : 3e revue, refus, PO prévenu (lead-dev)
+- **Commit relu** : 47cf8a83 (corrections 6ba20ab7, synchronisation cc6a209c). Réponse « corrigé dans » présente sous la revue.
+- **Vérifié** : outil rejoué depuis les `.wfm` / `.lod` de `main` : 3 `.wfm` et 3 `.lod` identiques octet pour octet ; `--verifier x5 compass p208 golf` code 0 (golf passé sans erreur) ; vitrines `-0`, `-a2`, `-feux`, `-feux-nuit` identiques avant / après ; aucun conflit avec `main`. Les 12 gros plans de nez ouverts (et agrandis pour la X5).
+- **Accepté** : Compass ; 208 (socle du lion parti) ; correction de `convertir_voitures.sh` / `retoucher_formes.mjs`.
+- **Refusé, X5** : (1) `nez-x5-34-jour` : capot encore déchiré derrière le haut du cadre (dents de scie, trous sombres, pointe sombre), éclats clairs en bas à droite ; (2) `nez-x5-face-jour` / `-nuit` : triangles clairs (trous) dans les coins du cadre, montants qui descendent sous la grille ; (3) aplat noir de nuit non corrigé ; (4) plaque rapportée, pas une calandre de série. Piste proposée : rendre les 50 triangles de la pointe (matériau 4) et poser la grille dans l'ouverture des haricots.
+- **3e refus sur la même PR → PO prévenu** (`po-scrum-master`) : proposition de séparer la X5 (à reprendre) de la Compass et de la 208 (acceptées), au choix du PO. Statut WFS-193 → ↩️ Retour lead dev (PR #308).
+### 2026-11-09 14:02:32 — Renommage de la discussion au moment de l'attribution (po-scrum-master)
+- Précision de l'utilisateur : le développeur renomme le titre de sa discussion **au moment où il reçoit son ticket**.
+- Consigne ajoutée juste après « demande ton ticket au PO » dans `.claude/agents/dev.md`, `expert-cartes.md`, `expert-conduite.md` et `expert-ci-cd.md`, à l'étape « Cadrer » du skill `agent-developer` et à l'étape 5 de l'attribution du skill `po-scrum-master` : titre `WFS-XXX — <agent> (<sujet>)` avec `set_session_title`, puis `⏹️ Terminée — …` après la fusion.
+
+### 2026-11-09 14:02:58 — WFS-193 : X5 séparée de la PR #308 (po-scrum-master)
+- 3e refus du lead dev, à cause de la X5 seule. Décision : fusionner la Compass, la 208 et l'outil ; la X5 passe dans une 2e PR (agent 1, même ticket).
+
+### 2026-11-09 14:05:36 — Renommage : seulement par l’agent lui-même (po-scrum-master)
+- Précision de l’utilisateur : c’est l’agent qui change le nom de sa discussion, pas le PO. Le recours « le PO renomme » est retiré de `appel-agents.md`, des fichiers des agents développeurs et du skill `po-scrum-master`.
+
+### 2026-11-09 14:05:59 — Renommage sur place, dès le numéro du ticket (po-scrum-master)
+- Précision de l’utilisateur : l’agent récupère le numéro de son ticket et change le titre de sa discussion sur place, avant toute autre action. Texte précisé dans `appel-agents.md`, dans les 4 fichiers des agents développeurs et dans le skill `agent-developer`.
+
+### 2026-11-09 14:06:38 — WFS-193 (pilote) fusionné par le lead dev (lead-dev)
+- PR #308, 4e revue, commit relu a6b0052e, squash 78540de6. Option (a) du PO vérifiée : `x5.wfm` / `x5.lod` identiques à main, `formes.json` limité à compass et p208, seules les captures X5 et `pr.md` changées depuis 47cf8a83 (hors synchronisation avec main).
+- Relancés : `retoucher_formes.mjs --verifier` (déjà retouchées), `test_fidelite_voitures` OK. 18 paires de captures ouvertes : rien de dégradé.
+- Approbation écrite en commentaire (même compte GitHub). WFS-193 reste 🔧 (X5 en 2e PR). Ligne #308 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-09 14:23:53 — WFS-215 : PR #288, 2e revue : contenu accepté, conflit seulement (lead-dev auto)
+
+Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derrière le pare-brise). Seul blocage : conflit `journal.md` avec `main`. **Pour le PO** : c'est le 4e refus du jour pour un simple conflit de `journal.md` (#297 deux fois, #288 deux fois) : `main` reçoit des entrées toutes les quelques minutes et chaque branche qui écrit au journal entre en conflit avant sa revue. Piste à trancher par le PO : que les développeurs n'écrivent plus `journal.md` sur leur branche (seulement sur `main`), ou que le lead dev puisse fusionner quand le seul conflit est dans `journal.md` / `TACHES.md` / `track-agent.md` en gardant les deux côtés. #297 : toujours en attente de synchronisation.
+
+### 2026-11-09 14:25:16 — WFS-293 : à-coup en virage corrigé, banc durci, PR #310 (Claude, Agent 0 developer)
+- **Causes nommées (RG-04)** : (1) `Track::pointLisse` (Catmull-Rom) : courbure qui saute à chaque segment de 1,2 m → tout point écarté de l'axe change de vitesse d'un coup ; corrigé en B-spline cubique (position et cap) ; (2) `camera_vue.cpp` : distance de la caméra sur `lonAcc` du dernier pas (bascule au gaz tout ou rien, lue une fois par image) ; corrigé par l'accélération de la vitesse lissée (filtre exact 0,3 s).
+- **Banc** (RG-01 à RG-03, RG-07, RG-12 à RG-14) : à-coup compté partout, carrefour de la Ville, cadences régulières et irrégulières, référence 120 Hz par rejeu exact. Branche : **0 manque** (5 scénarios) ; même banc sur main : virage serré 20, épingle 8, carrefour 8 manques. RG-14 : saut de 5 mm injecté dans l'épingle à 30 img/s mesuré 4,92 / 4,84 mm.
+- **Tableau RG-05** (référence 120 Hz, main → branche, Poursuite irrégulière) : virage serré 15 img/s 35,2 → 4,7 mm, 30 img/s 54,1 → 2,5, 90 img/s 18,9 → 0,2 ; épingle 30 img/s 6,6 → 1,5, 90 img/s 12,4 → 0,6 ; carrefour 30 img/s 8,5 → 1,2, 90 img/s 12,3 → 0,3. Tableau complet dans `qa/pr/WFS-293/pr.md`. 89 tests CPU OK, `parcours` 0 écart. PR #310 ouverte, lead dev appelé.
+
+### 2026-11-09 14:36:03 — WFS-293 : PR #310 refusée par le lead dev (lead-dev)
+- Commit relu b0b860ff. Diff lu en entier ; construction refaite (`build-ld`) et **89 tests CPU OK** ; code jugé correct (B-spline, caméra, référence 120 Hz, juges RG-12 / RG-13).
+- **Refus pour les captures** : la suite « épingle de la Corniche, 30 img/s, Proche » est prise sur la **jambe droite** avant l'épingle (`dedans = début + 15 m` d'une section `Lacets`, qui commence par une droite) : hors sujet. Demandé aussi : une paire avant / après de la Ville avec trafic en virage (`pointLisse` change aussi pour le trafic, le duel, la poursuite, le joueur).
+- Remarques non bloquantes : `if (passe < 2)` toujours vrai, commentaire « 10-20 img/s » périmé, `vPrec` et `dth` inutilisés, 26 img/s sans juge à écrire.
+- Revue postée en commentaire sur la PR (même compte GitHub). TACHES et track-agent : ↩️ Retour lead dev (PR #310).
+
+### 2026-11-09 14:41:43 — WFS-193 : 2e PR (X5) ouverte, #311 (Claude, agent 1)
+- Décision du PO (option (a)) suivie : la X5 reprise dans une 2e PR du même ticket, sur la même branche (poussée sans réécrire l'historique, synchronisée avec `main`).
+- Calandre de marque (2 640 triangles) et fond des haricots (240) retirés ; **capot entier** : la pointe de carrosserie entre les haricots est remontée jusqu'au bord du capot (45 sommets). Grille générique en retrait dans l'ouverture d'origine (6 barres, cadre, galbe 6 cm), haut à 0,915 m : plus haut, un coin passait par la fente entre capot et phares (essai avec la grille en rouge).
+- Vérifié : `--verifier` « déjà retouchée » (Compass, 208, X5), `test_fidelite_voitures` OK, 88 tests CPU verts ; gros plans 2560×1440 de face, de trois quarts et au-dessus du capot, jour et nuit, avant / après.
+- TACHES : WFS-193 reste 🔧 jusqu'à la fusion de la X5 (consigne du PO).
+### 2026-11-08 22:51:35 — WFS-215 : plaque de la Model 3, vitres avant du RR Sport et de l'A 45, verre de l'A 45 (Claude, agent 5)
+- **RG-01 (ANO-107) plaque arrière de la Model 3** : cause : la plaque (matériau 24) était une surface courbe de 148 petits triangles (hauteur médiane 1,6 mm) ; `model_loader.cpp` (WFS-42) la prenait pour un fil très fin (« matériau 24 très fin (1.6 mm) → préfiltré, fils en couverture partielle ») et la dessinait en couverture partielle, la peinture grise au travers. Correction : plaque refaite en rectangle plat et vertical de 2 triangles (520 × 111 mm, z 2,319 m, devant la peinture à 2,306 m), coordonnées de texture reprises (droites des moindres carrés). Plus de ligne « très fin » pour le matériau 24 ; `vitrine-model3-feux` : EY-317-TL net, noir sur blanc, bandes bleues.
+- **RG-02 (ANO-110) vitres avant du RR Sport** et **RG-04 (A 45)** : le shader des voitures (`shaders/vehicule.glsl`, `vitre`, interdit : WFS-292) rend toute vitre F_GLASS à 0,55 + Fresnel d'opacité au moins (≤ 45 % transmis). Pare-brise et vitres latérales avant (triangles au-dessus de y 0,95 m, entre le bas du pare-brise et le montant central : RR Sport z −1,4 à 0,4 m, 434 triangles ; A 45 z −1,25 à 0,2 m, 412 triangles) passés dans un nouveau matériau transparent ordinaire (F_BLEND + double face, sans F_GLASS) : opacité 0,25 = **75 % transmis** (≥ 75 % pare-brise, ≥ 70 % vitres avant : règlement ONU n° 43, transmission régulière de la lumière), gris-vert 0,05 / 0,06 / 0,06, rugosité 0,05. A 45 : verre resté F_GLASS (vitres arrière, lunette, optiques) albédo 0,91 → 0,05 / 0,06 / 0,06 (plus de voile laiteux ; transmission des vitres arrière surteintées : **à confirmer**, pas de source). RR Sport : vitres arrière inchangées (sombres).
+- **Outil** (zone accordée par le PO, b7c5a99) : `tools/vitres_voitures.mjs` (nouveau matériau ajouté à la fin : rangs existants inchangés) + 1 ligne dans `tools/convertir_voitures.sh` après `plaques_voitures.mjs` ; `tools/logos.json` : « materiaux » 21 → 22 (rrsport), 25 → 26 (a45) ; `.lod` régénérés (`alleger_voiture.mjs`). Rejouable : 2e passe de l'outil : rien à écrire ; `alleger_voiture.mjs` relancé : mêmes `.lod` (SHA-256 identiques) ; `effacer_logos.mjs --verifier` : « rien à faire » sur les 3 voitures. Relance complète de `convertir_voitures.sh` impossible ici (sources du jeu web absentes) : chaîne vérifiée outil par outil. `sharp` 0.33.5 installé localement par npm (`tools/node_modules`, ignoré par git) pour les essais.
+- **Captures** (`qa/pr/WFS-215/`, 18) : `vitrine-model3-feux` (plaque nette), `conducteurs-rrsport-jour` (conducteur visible derrière la vitre avant), `vitrine-a45-feux` (lunette sombre, sièges visibles) ; `conducteurs-rrsport-nuit` : image éblouie par une lumière en face, sur `main` comme après : conducteur pas lisible sur cette capture (hors vitres). Aucune autre voiture changée.
+- Vérifications : 78 tests CPU OK ; banc `parcours` 0 écart (normal et Cockpit). PR ouverte pour le lead dev.
+
+### 2026-11-09 13:59:29 — WFS-215 : revue du lead dev (PR #288), conflit et nuit du RR Sport (Claude, agent 5)
+- Réponse « Bien reçu » sous la revue avant toute correction (commentaire 6741407484).
+- (1) Branche synchronisée avec `main` ; `TACHES.md` et `track-agent.md` repris de `main` (lignes en double évitées) ; 88 tests CPU OK.
+- (2) Nuit du RR Sport : `conducteurs-rrsport-nuit` est éblouie par la lumière du départ (banc `conducteurs`, hors zone, non modifié) ; même banc avec `WFS_DEPART=300` (même binaire, modèles de `main` puis de la branche) : de face, sous la pluie, le conducteur (tête, bras, volant) et les sièges se voient derrière le pare-brise après, à peine avant. Captures `avant-` / `apres-conducteurs-rrsport-nuit-depart300` (+ zoom) dans `qa/pr/WFS-215/`. Le banc `vitrines` ne suit pas `WFS_MOMENT=nuit` (essai : scène de jour).
+
+### 2026-11-09 14:45:29 — WFS-193 (X5), PR #311 refusée par le lead dev (lead-dev)
+- 24 captures X5 ouvertes (avant / après), gros plans agrandis ×4 ; diff lu en entier (données : entrée `x5` de `tools/formes.json`, `x5.wfm`, `x5.lod`) ; `retoucher_formes.mjs --verifier` : déjà retouchée (4f457585c333e28d).
+- Bon : haricots retirés (marque non reconnaissable), capot plus déchiré sur les côtés, vitrines propres, dos et feux inchangés.
+- Refus : (1) la pointe de carrosserie écrasée à 15 % (retouche 3) fait un pli froissé au centre du bord haut de la grille (`nez-x5-34-jour`, `-capot-jour/nuit`, `-face-nuit`) ; (2) coin bas de la grille côté 3/4 en bord droit, liseré clair et éclats du pare-chocs (`nez-x5-34-jour/nuit`). Demandé : gros plans des deux côtés, vue basse du pare-chocs, zooms ×4.
+- 4e refus de la X5 en tout (3 sur #308, 1 sur #311) : PO prévenu par le rapport du lead dev.
+
+### 2026-11-09 14:59:07 — WFS-215 fusionné par le lead dev (lead-dev)
+- PR #288, 3e revue, demandée par l'utilisateur (« regarde la pr 288 et merge ») ; captures avant / après ouvertes (plaque Model 3, conducteur RR Sport jour et nuit + zoom, verre A 45, vitrines) : demande satisfaite, aucune régression vue.
+- Diff relu (`tools/vitres_voitures.mjs`, `logos.json`, `convertir_voitures.sh`, 3 voitures) ; branche fusionnée avec `main` construite par le lead dev (`glslc` installé dans le conteneur) : 88 tests CPU verts.
+- 3e conflit de suite sur `journal.md` seul : synchronisation 4e4ad7e faite par le lead dev (deux côtés gardés, aucun code). Approbation écrite en commentaire (même compte GitHub), squash 8bf73d1.
+- Statut 🟡 À valider (utilisateur) (ANO-107, ANO-110) ; `qa/Check.md`, `suivi-pr.md`, `track-agent.md` à jour. Remarque : `lire` / `ecrire` du .wfm recopiés dans 2 outils, à mettre en commun plus tard (US technique au choix du PO).
+
+### 2026-11-09 15:00:44 — WFS-293 : retour lead dev corrigé, PR #310 à relire (Claude, Agent 0 developer)
+- Épingle : suite prise au segment de plus forte courbure, avant / après régénérés (f2221241, 22e8339a).
+- Ville en virage : 9 paires `carte-ville-virage-*` avant / après (0,00 % ; vues hautes 0,40–0,81 %, contours seulement) ; trafic en virage visible dans la suite du carrefour (012bdf18, 8ae83bc0).
+- Remarques non bloquantes corrigées (f2221241). Tests CPU 89 OK ; synchronisé avec main (dc4dc8bb). Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-09 15:11:27 — WFS-293 fusionné par le lead dev (lead-dev)
+- PR #310, 2e revue sur dc4dc8bb : les 2 points bloquants de la revue précédente sont corrigés (suite de l'épingle dans la courbe de 165° ; 9 paires Ville en virage sans régression, trafic sur sa voie dans la suite du carrefour). Toutes les captures ont été ouvertes.
+- Diff relu en entier ; branche synchronisée avec main et construite par le lead dev (Release) : 89 tests CPU verts.
+- Approbation écrite dans la PR (en commentaire : même compte GitHub), puis fusion en squash f1abb662. Statut 🟡 À valider (utilisateur). Remarque non bloquante : `dthInutile` (`track.cpp`), paramètre de sortie jamais lu.
+
+### 2026-11-09 15:12:02 — Session terminée : WFS-293 fusionné (Claude, Agent 0 developer)
+- PR #310 fusionnée par le lead dev (f1abb662) ; WFS-293 en 🟡 À valider (utilisateur) : la voiture ne doit plus sauter en virage sur le téléphone.
+- Un seul sujet par session (règle du 2026-11-09) : la session s'arrête, aucun nouveau ticket demandé.
+
+### 2026-11-09 15:12:36 — WFS-356 : PR #313 ouverte, lead dev appelé (Claude, agent dev Z (01UY1Vv5sWHo))
+- Branche `feature/waforspeed-356` synchronisée avec main (c93fb37d), construction complète, **88 tests CPU réussis**.
+- **Accroches annoncées** (une ligne chacune, hors zone) : `shaders/decor.glsl` (pièce éclairée → `pieceAdaptee`) ; `src/world/commerces.cpp` (vitrine de nuit 0,65 au lieu de 1,4 : rouge 1,4 au-dessus du blanc et du bloom, c'étaient les blocs blancs du rez-de-chaussée, cause 4 ajoutée au diagnostic).
+- Mesures (banc `depart`, 1280x720) : EV 4,00 dès le « 3 » dans la Ville (avant 2,27) ; 0,00 % de pixels saturés ; pixels très clairs au « 3 » de 4,7-6,8 % → ≈ 1 % (HUD compris) ; jour identique au pixel près. Le nouveau contrôle du banc (1re image vs EV à 0:04) échoue sur main pour les 5 départs de nuit en Ville (1,6 à 1,8 IL) et passe sur la branche.
+- Limites : ANO-184 non reproduit au banc (cause probable corrigée, à confirmer sur le téléphone) ; course longue de 4 min non relancée ; performance non mesurée sur vrai GPU.
+
+### 2026-11-09 15:17:45 — WFS-343 : PR #312 refusée par le lead dev (lead-dev)
+- 14 captures ouvertes : cartes de données de Noël et d'automne bonnes (jour, nuit, choix du terrain, retour Ville) ; Campagne et Grand Prix avant / après identiques à l'octet (condition du PO sur l'accroche E2 remplie).
+- Construction et `tests_cpu.sh` refaits sur la branche synchronisée : 89/89 OK.
+- 2 défauts bloquants (revue dans la PR) : (1) `lireDecor` contrôle « maison sur la chaussée » avec la profondeur au lieu de la largeur en travers (et sans l'angle) : une maison peut boucher la route ; (2) `CarteDonnees` garde `d_` et des indices sur une entrée du registre que `decouvrir()` remplace à chaque entrée dans le choix du terrain : lecture hors du tableau possible si le paquet change.
+- Remarques non bloquantes : relecture de tous les paquets à chaque entrée (à-coup futur), `carteDuCode()` pas sûr entre threads, `entier()` sans borne.
+- Statut : ↩️ Retour lead dev (PR #312).
+
+### 2026-11-09 15:30:22 — WFS-193 : PR #311 (X5) corrigée après la 1re revue (Claude, agent 1)
+- Bien reçu dans la PR, puis « corrigé dans 798b6d35 » point par point.
+  - Pointe de carrosserie repliée dans le bord du capot, en hauteur et en profondeur : plus de pli.
+  - Option `galbeCadre` de `tools/retoucher_formes.mjs` : un cadre presque plat couvre la jonction avec le pare-chocs. La Compass et la 208 restent identiques.
+  - Captures : trois quarts gauche, vue basse et zooms ×4, avant et après, jour et nuit.
+- **Accroche dans le noyau (2 lignes, annoncée ici)** : `src/game/game.h` / `game.cpp`, `Game::orbitHauteur` et `orbitRecul` (caméra de vitrine, 1,7 m et 6,5 m par défaut, inchangée en jeu). Elle sert au banc `WFS_VITRINE_BAS` (vue basse).
+- 89 tests CPU verts après synchronisation avec `main`.
+- Le lead dev demandait de prévenir le PO (4e refus de la X5). Le message est impossible : la session du PO (01UY1Vv1nhht…) est inactive. Ce point est noté ici pour le PO.
+
+### 2026-11-09 15:32:49 — WFS-193 (X5) : 2e revue de la PR #311, refusée (lead-dev)
+- Captures ouvertes : 17 paires, plus des zooms faits par moi sur le 3/4 gauche et sur la vue basse. Diff lu : `formes.json`, `retoucher_formes.mjs` (`galbeCadre`), `feux_modele.cpp`, accroche `game.h` / `game.cpp`. Rien de bloquant dans le code.
+- Le point 1 (pli au centre) est corrigé de 3/4 et en vue haute.
+- Défauts qui restent :
+  1. **Nouveau défaut** : le cadre est 4 cm devant les barres aux bords. Il se lit comme un pare-buffle : montants séparés de la grille, avec des coins de pare-chocs visibles entre eux. On le voit de face de nuit, sur la vue basse et de 3/4 gauche.
+  2. Le bas de la grille est en dents de scie.
+  3. Dans la vue basse, la pointe repliée forme un « V » sombre au centre.
+  4. Un éclat reste au coin bas, de nuit.
+- Revue publiée sur GitHub (commentaire de refus, même compte). Statut : ↩️ Retour lead dev (PR #311).
+- **Pour le PO** : 2e refus de #311 et 5e refus de la X5 depuis #308. Le lead dev conseille au PO de décider : soit une méthode plus simple (garder le cadre d'origine de l'ouverture et ne changer que l'intérieur), soit confier la X5 à l'agent expert-realisme-3d. La session du PO est inactive : ce message est noté ici et dans `TACHES.md`.
+
+### 2026-11-09 15:33:59 — WFS-356 fusionné par le lead dev (lead-dev)
+- PR #313, commit relu c93fb37d, squash **483b969a**. Revue « ✅ Approuvé » écrite dans la PR, en commentaire (même compte GitHub).
+- Les 16 paires de captures sont ouvertes une à une, le diff est lu en entier. La construction et les **88 tests CPU** sont refaits : tous verts. La fusion avec main (WFS-293) se fait sans conflit.
+- Course longue de 4 min relancée par le lead dev (RG-03, ANO-179) : EV mini 1,51 sur main, 3,00 sur la branche ; aucune image délavée, 0 % de pixels saturés.
+- Remarques non bloquantes : vitrines hors `pieceAdaptee` (rouge ≈ 1,3 à EV 3) ; « Ville éclairée » lu à travers `releverNuit` ; performance en Basse sur GPU réel à suivre ; ANO-184 à confirmer sur le téléphone.
+- Statut : **🟡 À valider (utilisateur)** ; ligne du suivi des PR supprimée ; ligne ajoutée à `qa/Check.md`.
+- Incident du lead dev : le commit 7d3d62c5 (prise de la PR) a emporté par erreur sur main le fichier de banc de la branche ; il a été annulé tout de suite par ad5705c8 (nouveau commit, sans réécrire l'historique).
+
+### 2026-11-09 15:34:43 — Fin de session : Claude, agent dev Z (01UY1Vv5sWHo) (Claude, agent dev Z (01UY1Vv5sWHo))
+- WFS-356 fusionné par le lead dev (PR #313, squash 483b969a), **🟡 à valider par l'utilisateur** sur le téléphone : de nuit dans la Ville, mode Checkpoint, au « 3 », au « 2 » et à 0:04, en Basse et en Haute ; aussi la voie rapide en Poursuite (ANO-184).
+- Réponse écrite sous la revue dans la PR. Points non bloquants du lead dev, laissés au PO pour une autre session : (1) vitrines des commerces hors `pieceAdaptee` (léger halo possible en Haute à EV 3) ; (2) booléen « Ville éclairée » lu à travers `releverNuit` (lisibilité) ; (3) performance en Basse non mesurée sur un vrai GPU ; (4) ANO-184 à confirmer.
+- Session terminée, règle « un seul sujet par session » : pas d'autre ticket demandé.
+
+### 2026-11-09 16:31:58 — WFS-343 fusionné par le lead dev (lead-dev)
+- PR #312, 2e relecture du commit 80f197a2 : les deux défauts bloquants de la 1re revue sont corrigés (cdbbbbfc) : maison contrôlée en travers avec `travers()` (largeur, angle), registre en `shared_ptr<const DonneesCarte>` avec copie tenue par le décor ; remarques non bloquantes traitées (paquet inchangé non relu, `carteDuCode()`, `donnees()`, `entier()`, `lumiere`).
+- Construction et `tests_cpu.sh` refaits par le lead dev : 90/90 OK. 10 captures ouvertes ; Campagne et Grand Prix jour / nuit identiques à l'octet près (`cmp`).
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), fusion en squash 529b89e8. WFS-343 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-09 16:33:00 — WFS-343 fusionné ; remarques du lead dev rangées dans WFS-344 (po-scrum-master)
+- Message de Claude, agent 3 : WFS-343 fusionné par le lead dev à la 2e relecture (PR #312, squash 529b89e8, 🟣) ; accroche `decor_carte.*` conforme (Campagne et Grand Prix identiques) ; session arrêtée (un seul sujet).
+- Les 2 remarques non bloquantes du lead dev (CRC de l’en-tête dans `decouvrir()`, carte au paquet supprimé retirée du registre) et la limite notée dans la PR (dernière carte de données relue au démarrage) sont ajoutées en RG-06 de `regles-de-gestion/WFS-344.md`.
+
+### 2026-11-09 16:56:49 — WFS-193 (X5) : méthode tranchée après le 5e refus (po-scrum-master)
+- Demande de Claude, agent 1 (01UY1Vv2), après le 2e refus de la PR #311 (5e refus de la X5).
+- **Décision : (iii)**, grille d'un seul tenant (cadre et barres au même galbe, plus de cadre séparé), posée dans l'ouverture d'origine, 1 à 2 cm en retrait derrière le bord de la carrosserie ; bord du pare-chocs rentré par l'outil seulement s'il reste un vide ; pas de cadre chromé en haricots. (ii) non retenue (`expert-realisme-3d` n'est pas développeur ; avis possible). Pas d'acceptation en anomalies mineures (défaut visible de face la nuit).
+- **Garde-fou** : dernier essai ; 3e refus de #311 → la X5 sort de WFS-193 (terminé avec Compass et 208), #311 fermée sans fusion, nouvelle US pour une nouvelle session, à voir avec WFS-194.
+- Qui fait quoi : agent 1 corrige #311, régénère les captures demandées (RG-05 à 07 de `regles-de-gestion/WFS-193.md`), répond dans la PR, remet 🔁 dans `suivi-pr.md` et rappelle le lead dev. Le lead dev relit. Le PO tranche après la revue.
+
+### 2026-11-09 16:59:49 — WFS-214 attribué à Claude, agent dev W (01UY1Vv4Ed) (po-scrum-master)
+- Demande de la nouvelle session `@dev` (session_01UY1Vv4EdEBdMyt3hmgrMoT), 1er et seul sujet ; développeur général (pas conduite, cartes, CI, iOS).
+- Choix : P1 prêts non attribuables (WFS-194 : E10 occupée par WFS-349 et WFS-193 ↩️) ; P2 prêts dans une épic libre : WFS-214 (E13) et WFS-337 (E4 / E13) ; à égalité, le plus petit numéro → **WFS-214** (WFS-280 et WFS-323 : E3 / E10 occupées ; WFS-287 : CI).
+- Zone : E13 (`shaders/eclairage*`, `sky*`, `post*`, `src/render/eclairage_*`, `ibl_*`, `atmosphere_*`, `post_*`) ; interdits : `vehicule_cockpit*` (WFS-349), `vehicule_lod*`, `effets_*`, `nuit.cpp`, `traffic.*`, `player.*`, `conduite_*`, `camera_vue.*`, CI.
+- Captures demandées ajoutées à `regles-de-gestion/WFS-214.md` (ciel ×2, Ultra / Haute, nuit RG-05). Branche `feature/waforspeed-214` à pousser tout de suite.
+
+
+### 2026-11-09 17:00:11 — WFS-346 attribué à Claude, agent cartes (01UY1Vv2dx) (po-scrum-master)
+- Demande de la nouvelle session `@cartes` (session_01UY1Vv2dxNQxhJG6xe4ofua), 1er et seul sujet ; expert cartes.
+- Choix : WFS-343 est 🟣 fusionné (#312) : E14 libre, l'agent 3 a fini (session terminée). Ticket cartes le plus prioritaire attribuable : **WFS-346** (P2, neige lue du paquet ; suite directe de WFS-343, avant WFS-344). WFS-357 (P3, E8) reste prêt.
+- Exception du PO : E3 est tenue par WFS-338 (↩️, `poursuite*`, `hud.*`) ; WFS-346 n'y touche que `roues.*` + accroches ≤ 10 lignes `player.*` / `aide_direction.*` (μ de la neige) : fichiers séparés. Zone complète et captures demandées dans `regles-de-gestion/WFS-346.md`.
+- Skills : `expert-cartes` + `expert-conduite`. Ticket de conduite : 🟡 après la fusion. Branche `feature/waforspeed-346` à pousser tout de suite.
+- `track-agent.md` : lignes des sessions terminées enlevées (agent 3, agent 5, arwa-4, Agent 0, agent dev Z), règle « agent fini = ligne enlevée ».
+
+### 2026-11-09 17:21:04 — WFS-193 : PR #311 (X5) corrigée après la 2e revue, selon RG-05 à RG-07 du PO (Claude, agent 1)
+- Grille d'un seul tenant : cadre et barres au même galbe de 4,5 cm. Ses bords sont 1 à 2 cm derrière le bord de l'ouverture : plus de « pare-buffle ».
+- Le bas de la grille est à 0,63 m, derrière le haut du pare-chocs. L'option `galbeCadre` est retirée : l'outil est identique à `main`.
+- RG-07 essayé : retirer la lèvre du pare-chocs (33 triangles) faisait des dents aux coins de face. L'essai n'est pas gardé ; un éclat reste au coin droit au zoom ×4, noté dans les limites.
+- 90 tests CPU verts. Les captures comprennent les zooms ×4 des deux coins et de la vue basse.
+- Commit ad7aa366. J'ai répondu point par point dans la PR et rappelé le lead dev.
+
+### 2026-11-09 17:24:09 — WFS-193 : PR #311 (X5) refusée une 3e fois, garde-fou du PO appliqué (lead-dev)
+- 3e revue du commit ad7aa366 : 26 paires avant / après ouvertes (face, 3/4 droit et gauche, capot, vue basse, zooms ×4 des deux coins, du centre et de la vue basse, de jour et de nuit, vitrines). Diff relu : `tools/formes.json` (entrée x5), `x5.wfm` / `.lod`, banc `WFS_VITRINE_BAS` (h0 / d0 remis), accroche de 2 lignes `orbitHauteur` / `orbitRecul` : rien de bloquant.
+- Acquis : pare-buffle supprimé (RG-05 tenue), montant gauche net, marque méconnaissable à distance de vitrine.
+- Défauts restants à la jonction (RG-06 non tenue) : bas de la grille en dents de scie (vue basse, zooms), bord droit en peigne et coin haut droit qui passe devant la carrosserie (vue basse de nuit), éclats blancs aux deux coins bas (nouveau à gauche).
+- Garde-fou du PO (suivi du 16:56:49) : X5 sortie de WFS-193 ; WFS-193 fini avec la Compass et la 208 (#308, déjà sur `main`) ; PR #311 fermée sans fusion, branche `feature/waforspeed-193` gardée ; X5 comme sur `main`. Le PO crée une nouvelle US pour la X5 (nouvelle session ou lead dev en renfort, à voir avec WFS-194). Piste notée dans la revue : découper la grille sur le contour exact de l'ouverture.
+- Session du développeur Claude, agent 1 (01UY1Vv2) terminée (un seul ticket par session). Ligne #311 retirée de `suivi-pr.md`.
+
+
+### 2026-11-09 17:25:43 — WFS-193 passé 🟣, X5 sortie vers WFS-358 (po-scrum-master)
+- Suite du 3e refus de la PR #311 (lead dev, 17:24:09) et du garde-fou du 16:56:49.
+- **WFS-193 → 🟣 Fusionné (PR #308, `78540de6`, Compass et 208)** ; le robot des statuts le passe en ✅ avec les bancs du matin.
+- **Nouvelle US WFS-358** (P1, E10, ⏳ Prêt) : calandre de la X5, jonction grille / carrosserie propre. Défauts à faire disparaître : bas en dents de scie (vue basse), bord droit en peigne et coin haut droit devant la carrosserie sous le phare, éclats blancs aux deux coins bas. Méthode au choix : grille découpée sur le contour exact de l'ouverture, ou ouverture fermée par une pièce de carrosserie avant la grille. Acquis repris de `feature/waforspeed-193` (`ad7aa366`) : haricots retirés, pointe repliée sans pli, banc `WFS_VITRINE_BAS`. Règles : `regles-de-gestion/WFS-358.md`.
+- Pour une **nouvelle session** de développeur (ou le lead dev en renfort) ; **pas Claude, agent 1**. Lien avec WFS-194 : si l'utilisateur remplace la X5 (question ouverte dans `tache utilisateur.md`), WFS-358 est annulé. Un seul des deux à la fois en E10 (WFS-349 tient E10 par exception).
+- Claude, agent 1 (01UY1Vv2) : session close, aucun autre ticket (`track-agent.md`).
+
+### 2026-11-09 17:26:11 — WFS-193 : session terminée (Claude, agent 1)
+- WFS-193 est 🟣 avec la Compass et la 208 (#308). La X5 est sortie du ticket par le garde-fou du PO après le 3e refus de #311. La PR est fermée sans fusion et la branche `feature/waforspeed-193` est gardée.
+- J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
+- Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
+
+### 2026-11-09 17:31:59 — WFS-214 : arbitrage RG-02, ciel de midi (po-scrum-master)
+- Demande de Claude, agent dev W (01UY1Vv4Ed) : le ciel est calé sur 6 000 lx (éclairement mesuré **à l'ombre**), d'où un zénith à 2,7 kcd/m² au lieu de ≈ 7 à 10 kcd/m² ; avis de l'expert réalisme 3D : option A.
+- **Décision : option A, dans WFS-214** (zone E13) : plein ciel selon Krochmann (≈ 15,8 klx à h 70°) pour le ciel affiché et l'ambiance ; 6 000 lx gardés comme contrôle « à l'ombre ». B refusée (énergie incohérente).
+- Conditions (détail dans `regles-de-gestion/WFS-214.md`, Suivi) : référentiel complété, test adapté sans rien supprimer ni affaiblir, mesures au banc (zénith 6-8 kcd/m², E_d ±15 %, 2,5-3,2 IL), nuit inchangée, captures h 70 / 30 / 10 et ombres de la Ville avant / après ; repli sur C avec US dédiée si A ne tient pas dans la journée. US « occlusion du ciel » seulement si le défaut se voit.
+
+### 2026-11-09 17:34:56 — WFS-346 : plan, accroches annoncées, question « aurore » (Claude, agent cartes (01UY1Vv2dx))
+- Branche `feature/waforspeed-346` poussée (1er commit : valeurs réelles `references/reel/cartes_v2/neige.md`, μ neige tassée 0,25, flocons 2 à 5 mm, 1 à 1,5 m/s).
+- Plan : saison lue du bloc `decor` du paquet (format 2 des blocs : `adherence`, `neige_chaussee`, `flocons`), valeurs par défaut = sec sans neige (cartes du code inchangées) ; chaussée enneigée et traces de roues dans `route.glsl` (neige transmise au matériau de route, sèche sous le toit du tunnel) ; flocons = particules du monde autour de la caméra dans `meteo.cpp` (rien dans l'habitacle, rien sous un tunnel) ; tunnel générique des cartes de données (piédroits et dalle) ; μ dans la conduite du joueur.
+- **Accroches annoncées** : `game.cpp` 2 lignes (include + `cartes_v2::preparerSaison(mapId)` avant `route::preparer`) ; `player.h` 1 ligne (`muSol_`, `kSol_`) ; `player.cpp` 8 lignes (include, μ du sol pour la voiture du joueur ; conduite du jeu (ancien modèle, `g_conduiteMonde` faux) : limite de lacet, freinage et élan × μ, vitesse permise de l'aide × μ ; nouveau modèle : `sol.mu`) ; ordinateurs (`Aide::Web`) et cartes du code : rien ne change (test). `desktop_main.cpp` 1 ligne (banc `neige`). `aide_direction.*`, `direction.*`, `roues.*` : non touchés.
+- **Question au PO (RG-03, « aurore »)** : le ciel est en E13 (`sky*`, interdit à ce ticket, WFS-214 en cours) ; je ne fais pas l'aurore ici. Proposition : la mettre dans WFS-344 (contenu de la carte Neige scandinave) ou une US E13 après WFS-214. Les lumières de Noël sont déjà lues du paquet (WFS-343).
+
+### 2026-11-09 19:05:07 — Synchronisation de track-agent.md ; réponse « aurore » à WFS-346 (po-scrum-master)
+- `track-agent.md` remis d'accord avec `TACHES.md`, `suivi-pr.md` et les branches : ligne de Claude, agent 1 enlevée (session terminée, WFS-193 🟣) ; agent arwa : seul WFS-338 en cours (↩️ #297, en revue par le lead dev depuis 18:58), ses autres tickets fusionnés ; derniers envois : 349 17:27, 214 17:45, 346 18:02, 338 11:51 (en revue, pas d'alerte).
+- Question de Claude, agent cartes (17:34:56) : l'aurore boréale sort de WFS-346 et va dans WFS-344, après la fusion de WFS-214 (ciel en E13). Noté dans les deux fichiers de règles.
+
+### 2026-11-09 19:14:18 — X5 acceptée (PR #311 rouverte), WFS-358 = correction séparée, ordre des US calé sur les objectifs (po-scrum-master)
+- **Ordre de l'utilisateur** : « ce n'est pas à cause d'un petit truc qu'on jette le travail dans la poubelle ; tu acceptes, ensuite tu crées une tâche séparée pour corriger ». Ma faute : le garde-fou du 16:56:49 a fait fermer #311 sans fusion.
+- PR #311 (X5, `ad7aa366`) **rouverte** ; le lead dev est appelé pour la synchroniser avec `main` et la **fusionner en squash** (seul à fusionner). Ligne ajoutée à `suivi-pr.md`.
+- **WFS-358** devient la tâche séparée : corriger seulement les 4 défauts de jonction (RG-04), en partant de `main` après la fusion de #311 (règles mises à jour).
+- Ordre permanent ajouté au skill du PO : une PR presque bonne est acceptée, les petits défauts vont dans une tâche séparée.
+- Nouveau bandeau d'ordre dans `TACHES.md` : voitures sans marque (#311, WFS-358, WFS-194), cartes (WFS-357, 344, 345), performance (rien de prêt, validations téléphone en attente), puis WFS-337, 287, 323, 280, 332, 341.
+
+### 2026-11-09 19:15:37 — WFS-214 : PR #314 ouverte, lead dev appelé (Claude, agent dev W (01UY1Vv4Ed))
+- **RG-01** (ANO-109, paliers) : cause : tramage de ±0,5 / 255 ajouté en lumière linéaire alors que l'écran encode en sRGB (le bruit couvrait ⅓ de pas dans un ciel clair). Correction : bruit triangulaire de ±1 code ajouté au code sRGB (`post.frag`). Test `test_post_wfs214` : marches 0,23 → 0,008 code.
+- **RG-02** (option A du PO) : ciel entier selon Krochmann (15 825 lx à h 70°), 6 000 lx gardés en contrôle à l'ombre (pied d'un mur : 5 498 lx, −8 %), entrée `lum.ciel_clair.plein_ciel` au référentiel (± 15 %, à confirmer). Banc `realisme` : zénith 2 667 → 7 034 cd/m², rapport soleil / ombre 2,96 IL, teinte du zénith inchangée (x 0,2838 y 0,2923), EV de jour 15 inchangé. Crépuscule et nuit inchangés. M-03 : 5,5 % pour ± 5 % (sonde de la Campagne occultée à ≈ 10 % par le relief) : seuil gardé, noté dans la PR.
+- **RG-03** (ANO-106) : déjà gris sur main ; preuve en vrai Ultra (sonde 256 px) contre Haute : ΔE2000 0,02 à 0,92. **Défaut de banc signalé** : le banc des passes ne trouve plus « Ultra » dans le panneau à onglets (2/5 étapes, avant et après) : sa capture `parcours-ultra-course` est en Haute (au PO pour une US de correction du banc).
+- **RG-05** : vision de nuit selon la luminance d'adaptation (EV mesuré autour du joueur) : Golf sous lampadaire ΔE2000 5,6 → 3,1 (seuil 10), rase campagne inchangée à ΔE ≤ 1,2.
+- **Accroches** (annoncées) : `renderer.cpp` 1 ligne (`pp.bloom[1]`), `bench_passes.cpp` 10 lignes (captures `chaussee-*`). Tests CPU : 91 verts. Captures : `qa/pr/WFS-214/` (12, avant / après). Limite : pas d'occlusion du ciel sur les objets mobiles (ombres un peu plus claires de jour) ; US « occlusion du ciel » laissée au PO si le lead dev ou l'utilisateur le demande.
+
+
+### 2026-11-09 19:15:46 — WFS-194 découpé : une US pour chaque deux modèles (WFS-359, 360, 361) (po-scrum-master)
+- Ordre de l'utilisateur : « pour chaque deux modèles créer une US à part ». Les 5 modèles non commerciaux de WFS-194 : **WFS-359** (P1, ⏳ Prêt) Mustang + T-Cross ; **WFS-360** (P1, après 359) A 45 + Elantra N ; **WFS-361** (P2, après WFS-358 et 360) X5, seule.
+- Règles : `regles-de-gestion/WFS-359.md`, `WFS-360.md`, `WFS-361.md` (règles communes : licence CC0 / CC-BY, ±1 %, nom inventé, sans logo, captures). WFS-194 → ↪ découpé.
+- Décisions toujours attendues de l'utilisateur (question du 2026-11-07 11:12) : dérogation de mesure de la Mustang ; Passat pour le T-Cross ; Classe E W212 pour l'A 45.
+- E10 : une seule US à la fois (WFS-349 en cours, puis WFS-358 et WFS-359 à la suite) ; nouvelle session `@dev` pour chacune.
+
+### 2026-11-09 19:16:27 — WFS-338 fusionné par le lead dev (lead-dev)
+- PR #297 relue sur dfa173bd (4e revue) : merge de synchronisation vérifié (différence avec un merge recalculé : seulement les marqueurs de conflit de `journal.md`), aucun code ni capture changé depuis 8ccf8937 (contenu accepté à la 3e revue). Construction + `tests_cpu.sh` : 90 verts. Captures rouvertes (pairs avant / après, suite d'arrivée, chantier jour / nuit, gros plans).
+- Approbation GitHub (APPROVE), fusion squash 8c4d65ae. WFS-338 → 🟡 À valider (utilisateur) (retours de la vidéo de l'utilisateur, ANO-191 à 197) ; ligne #297 retirée de `suivi-pr.md` ; agent arwa (Claude, session trafic) : ⏹️ session terminée ; `qa/Check.md` à jour.
+
+### 2026-11-09 19:16:53 — PR #297 (WFS-338) synchronisée avec main par le lead dev, sur demande de l’utilisateur (lead-dev)
+- Le développeur n’avait plus poussé depuis environ 7 h. Seul restait le conflit `journal.md` avec main : je l’ai résolu dans dfa173bd en gardant les deux côtés. Compilation OK, 90 tests CPU OK.
+- Une autre instance du lead dev a relu la PR, l’a approuvée et l’a fusionnée en squash (8c4d65ae). On ne juge pas son propre travail.
+
+### 2026-11-09 19:17:25 — Voitures de remplacement : décision du PO, plus de question à l'utilisateur (po-scrum-master)
+- Réponse de l'utilisateur : le choix des voitures et des modèles n'est pas son rôle ; s'il y a un problème, chercher une autre voiture ou un autre modèle.
+- Décisions du PO : **Mustang** sans dérogation (modèle CC BY hors ±1 % → le développeur cherche un autre modèle libre dans ±1 %) ; **T-Cross → VW Passat** ; **A 45 → Classe E W212** ; **Elantra N** et **X5** : recherche par le développeur, choix du PO. Règles de WFS-359, 360, 361 mises à jour ; WFS-359 ⏳ Prêt sans attente.
+- Ordre permanent ajouté au skill du PO ; question du 2026-11-07 11:12 close dans `tache utilisateur.md`.
+
+### 2026-11-09 19:22:12 — Création du skill artiste-3d et des agents artiste-3d et dev-artiste-3d (po-scrum-master)
+- Demande de l'utilisateur : un skill et un agent « artiste 3D », et un agent qui a les deux skills, développeur et artiste 3D.
+- **Skill** `.claude/skills/artiste-3d` : licences (CC0 / CC BY seulement), recherche de modèles aux vraies mesures (±1 % sans dérogation, contrôle avant téléchargement), chaîne de conversion des outils du dépôt dans l'ordre, voiture sans marque (leçon de la X5 : grille découpée sur le contour de l'ouverture ou ouverture fermée, jamais devant la carrosserie), qualité du modèle, captures du lead dev.
+- **Agent `artiste-3d`** (`@artiste`) : actifs 3D sans code du moteur. **Agent `dev-artiste-3d`** (`@devartiste`, `@voitures`) : skills `agent-developer` + `waforspeed-natif` + `artiste-3d`.
+- Tickets voitures WFS-358 à 361 → `dev-artiste-3d`, une nouvelle session par ticket. Mis à jour : `appel-agents.md`, `CLAUDE.md` (liste des @ et règle des modèles 3D), `track-agent.md`, skill du PO, règles WFS-358 à 361, `TACHES.md`.
+
+### 2026-11-09 19:23:47 — Alias de l'agent dev-artiste-3d : @dev3d au lieu de @voitures (po-scrum-master)
+- Demande de l'utilisateur : appeler l'agent `dev-artiste-3d` par `@dev3d`. `@voitures` remplacé partout (`appel-agents.md`, `CLAUDE.md`, `track-agent.md`, agent, règles WFS-358 à 361) ; `@devartiste` reste possible. `@3d` reste l'expert réalisme 3D.
+
+### 2026-11-09 19:24:56 — Sessions à ouvrir : une seule @dev3d ; exception E10 pour WFS-358 (po-scrum-master)
+- Question de l'utilisateur : une session `@artiste` et une `@dev3d` ? Réponse : seulement `@dev3d` pour l'instant ; aucun ticket n'est fait seulement d'actifs 3D sans code (WFS-358 à 361 demandent les deux).
+- Exception E10 : WFS-358 peut avancer en parallèle de WFS-349 (zones séparées), dès la fusion de #311.
+
+### 2026-11-09 19:26:22 — 13 autres voitures sans marque : WFS-362 à 368, une US pour chaque deux voitures (po-scrum-master)
+- Question de l'utilisateur : « et les autres voitures ? ». Constat : les 20 voitures ont un nom inventé (WFS-191) et plus de logo (WFS-192), mais WFS-193 n'a retouché la forme que de la Compass, de la 208 et de la X5 (`tools/formes.json` : compass, p208). **13 voitures gardent leur signature de marque** (calandre, feux, prises d'air).
+- US créées (E10, agent `dev-artiste-3d`, `@dev3d`) : **WFS-362** M4 + S3 (P1), **363** Giulia + Range Rover Sport (P1), **364** Golf + Corsa (P1), **365** 911 + Gallardo (P1), **366** SF90 + GT86 (P2), **367** Model 3 + V60 (P2), **368** Abarth 500 seule (P2). Les plus reconnaissables d'abord. Chaîne : 362 après WFS-358 (méthode de la grille validée), puis à la suite.
+- Ordre des tickets voitures : 358 → 362 → 359 → 363 → 360 → 364 → 365 → 366 → 367 → 368 → 361. Exception E10 : au plus deux tickets voitures en même temps si deux sessions `@dev3d`.
+
+### 2026-11-09 19:26:36 — WFS-193 (X5) fusionné par le lead dev (lead-dev)
+- PR #311 acceptée sur ordre de l'utilisateur (« on ne jette pas le travail pour un petit défaut »), rouverte par le PO. Branche synchronisée avec `main` (7371b72e, sans conflit). Construction Release OK. `tests_cpu.sh` : 90 tests réussis.
+- Captures regardées : la calandre de marque a disparu de jour comme de nuit. Le diff ne touche que la X5 (`x5.wfm`, `x5.lod`, `formes.json`) et une accroche de banc de 2 lignes (valeurs par défaut inchangées). Aucune régression vue.
+- Approbation écrite dans la PR (revue COMMENT « ✅ Approuvé », car GitHub refuse l'approbation du même compte), puis squash **8d55c57c**. Branche gardée.
+- Les 4 défauts de jonction grille / carrosserie partent dans **WFS-358**, désormais ⏳ Prêt. Le léger contour de l'ancien logo sur le capot (déjà présent sur `main`) est signalé pour WFS-358.
+
+
+### 2026-11-09 19:27:41 — Décor en formes géométriques : WFS-369 à 373 (po-scrum-master)
+- Demande de l'utilisateur : « des formes géométriques dans les cartes, créer les tâches ». Constat sur les captures de l'APK 954 et dans le code : bancs en pavés, immeubles en boîtes, parasols en cônes, mâts en cylindres, vignes en blocs (ANO-65).
+- US créées (E12 + E2, agent `dev-artiste-3d`, à la suite) : **WFS-369** (P1, ⏳ Prêt) mobilier urbain de la Ville ; **370** (P1) immeubles de la Ville en vrais volumes (avec WFS-231 pour les ouvertures) ; **371** (P2) Corniche ; **372** (P2) Campagne ; **373** (P2) Grand Prix. Chaque US commence par l'inventaire des objets en formes géométriques.
+- PR #311 fusionnée par le lead dev (8d55c57c) ; WFS-358 prêt, avec en plus le contour de l'ancien logo du capot de la X5.
+
+### 2026-11-09 19:29:54 — WFS-214 refusé par le lead dev, PR #314 (lead-dev)
+- Commit relu 75749e6e. J'ai ouvert les 12 paires de captures et lu tout le diff. Branche fusionnée localement avec main (8c4d65ae), construite : tests CPU 91/91 verts.
+- Bons : RG-01 (plus de marches), RG-03 (chaussée grise en Ultra et en Haute), RG-05 (Golf sous les lampes), nuit et aube inchangées, Ville de jour sans ombres délavées.
+- **Refus (condition 4 du PO)** : l'option A rend les moments de jour de la Campagne encore plus blancs, avec une luminance moyenne qui monte (dorée 212 → 233, matin 234 → 242, midi 237 → 243) ; le relief, l'éolienne et les arbres disparaissent dans le voile.
+- **Manquent** : les captures dorée, midi et jour en Campagne, et une mesure de la performance de la passe finale (2 pow(vec3) en plus par pixel).
+- Repli C possible (condition 6). Revue publiée dans la PR (COMMENT : même compte GitHub).
 
 ### 2026-11-09 14:00:55 — Reprise de WFS-349 : vue Cockpit, habitacle fermé (Claude, agent dev Y (01UY1Vv1Yvim))
 - Branche `feature/waforspeed-349` reprise (commit d'agent 3 bis, aucun code), synchronisée avec `main` et poussée tout de suite. Première étape : cause nommée au banc `penetration` (RG-01).

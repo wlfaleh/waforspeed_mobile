@@ -1,0 +1,4 @@
+format 1
+# murets de pierre le long du bourg
+repete 6 0 300 boite 0 0 -9 0.25 3.6 0 0x8c7d68 0.8 mur
+repete 6 0 300 boite 0 0 9 0.25 3.6 0 0x8c7d68 0.8 mur

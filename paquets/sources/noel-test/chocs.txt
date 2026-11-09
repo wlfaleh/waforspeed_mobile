@@ -1,0 +1,8 @@
+format 1
+# boite seg along lat demi_travers demi_long angle couleur hauteur genre ; cylindre seg along lat rayon couleur hauteur genre
+# bancs de la place, enneigés
+repete 50 25 1200 boite 0 0 -9.6 0.3 1.2 0 0x6b4a32 0.9 mobilier
+# bornes de la rue
+repete 80 40 1200 cylindre 0 0 9.4 0.25 0x3a5a3a 1.1 poteau
+# fontaine de la place du marché
+cylindre 60 0 -14 2 0xb8c0c8 1.2 mur

@@ -52,7 +52,7 @@ Modele g_h[NB_HUMAINS];   // WFS-211 : humains réalistes
 bool g_pret = false, g_humains = false;
 Attribution g_attr;
 
-struct Entree { const Model* m; mat4 monde; const char* car; uint32_t graine; float d2; };
+struct Entree { const Model* m; mat4 monde; const char* car; uint32_t graine; float d2; bool policier = false; };   // WFS-338 (accroche)
 Entree g_file[FILE_MAX]; int g_n = 0, g_dessines = 0;
 
 int osParNom(const Personnage& p, const char* nom) {
@@ -146,9 +146,11 @@ void liberer(Renderer& r) {
     g_pret = g_humains = false; g_n = 0; g_attr = Attribution{};
 }
 
-void ajouter(const Model& m, const mat4& monde, const char* carId, uint32_t graine) {
-    if (!g_pret || !m.ok || g_n >= FILE_MAX) return;
-    g_file[g_n++] = {&m, monde, carId, graine, 0.f};
+void ajouter(const Model& m, const mat4& monde, const char* carId, uint32_t graine, bool policier) {
+    if (!g_pret || !m.ok) return;
+    int i = g_n < FILE_MAX ? g_n++ : -1;   // WFS-338 (accroche) : file pleine (trafic dense) : le policier prend la place d'un civil
+    for (int k = FILE_MAX - 1; i < 0 && policier && k >= 0; k--) if (!g_file[k].policier) i = k;
+    if (i >= 0) g_file[i] = {&m, monde, carId, graine, 0.f, policier};
 }
 
 void dessinerFile(Renderer& r, const vec3& cam) {
@@ -182,6 +184,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
             app.peau = peauApparence(albedoPeau(h));
         }
         tenue::tenueLieu(tenue::carteCourante(), e.graine, sexe == 1, app);   // WFS-210 (RG-01) : tenue selon la carte (pietons.cpp)
+        if (e.policier) { app.haut = app.maillot = app.bas = hx(0x1b2440); app.vetement.x = 1.95f; }   // WFS-338 (accroche) : uniforme bleu marine, manches longues
         const Modele& M = *pm;
         app.corps = M.p.corps;
         // place : œil de la vue cockpit ; assise du modèle (WFS-201), sinon 0,42 m (berline) ; pavillon mesuré (RG-01)

@@ -8,11 +8,11 @@
 
 1. **`@<agent>` au début du 1er message de la session** : la session **devient** cet agent pour toute la session.
    Elle lit le fichier de l'agent (colonne « Fichier à lire ») et charge ses skills, puis fait ce que dit la suite du message.
-   - Agent **développeur** (`@dev`, `@conduite`, `@cartes`) : il suit la règle « un seul sujet par session » : il ajoute sa ligne dans
+   - Agent **développeur** (`@dev`, `@conduite`, `@cartes`, `@devartiste`, `@artiste`) : il suit la règle « un seul sujet par session » : il ajoute sa ligne dans
      `track-agent.md`, demande **un** ticket au PO (agent `po-scrum-master`), le mène jusqu'à la fusion par le lead dev, puis s'arrête.
      Le texte après l'alias est transmis au PO comme souhait (ex. `@conduite un sujet sur les freins`) ; le PO reste seul à attribuer.
 2. **`@<agent>` plus tard dans la conversation** : la session **appelle** cet agent avec l'outil Agent (`subagent_type` du tableau) et lui
-   passe le texte qui suit l'alias, puis rend compte de sa réponse. Exception : `@dev`, `@conduite` et `@cartes` en cours de session
+   passe le texte qui suit l'alias, puis rend compte de sa réponse. Exception : `@dev`, `@conduite`, `@cartes`, `@devartiste` et `@artiste` en cours de session
    ne lancent **pas** un 2e sujet (règle du 2026-11-09) : la session répond qu'il faut ouvrir une nouvelle session avec cet alias.
 3. **Plusieurs alias** (ex. `@po @leaddev`) : le 1er donne le rôle de la session, les suivants sont appelés comme au point 2.
 4. **Alias inconnu** : la session donne cette liste et demande lequel prendre (seul cas où elle pose une question).
@@ -23,10 +23,10 @@
    Si elle ne connaît pas son identifiant, elle appelle d'abord `get_session` sans argument.
    - **Agent hors développeur** (`@po`, `@leaddev`, `@qa`, `@cicd`, `@smartbrain`, `@3d`) : dès le 1er message, le nom est
      **`Agent <alias> (<id complet de la session>)`**, par exemple `Agent po (session_01UY1Vv5B99mCrTFBmEatAjE)`.
-   - **Développeur** (`@dev`, `@conduite`, `@cartes`) : dès que le PO lui a attribué son ticket, le nom est
+   - **Développeur** (`@dev`, `@conduite`, `@cartes`, `@devartiste`, `@artiste`) : sur place, dès qu'il reçoit le numéro de son ticket du PO et avant toute autre action (avant même la branche), le nom est
      **`WFS-XXX — <nom de l'agent dans track-agent.md> (<sujet en 3 à 5 mots>)`**, par exemple `WFS-343 — Claude, agent 3 (carte de Noël 1/3)`.
      Après la fusion, quand la session s'arrête : **`⏹️ Terminée — <nom de l'agent> (WFS-XXX fusionné)`**.
-   - Si l'outil n'est pas disponible dans la session, elle le signale au PO, qui la renomme lui-même au moment de l'attribution.
+   - **C'est l'agent lui-même qui renomme sa discussion, jamais le PO** (précision de l'utilisateur, 2026-11-09).
    - Aucune tâche planifiée pour ce renommage (décision de l'utilisateur, 2026-11-09).
 
 **Skills chargés automatiquement** : chaque fichier `.claude/agents/<nom>.md` liste ses skills dans le champ `skills:`. Quand l'agent est appelé (outil Agent), Claude Code charge ces skills tout seul au démarrage ; quand une session prend le rôle avec `@<agent>`, elle les charge elle-même avec l'outil Skill (règle de `CLAUDE.md`).
@@ -40,6 +40,8 @@ Remarque : dans Claude Code, « @ » ouvre aussi la suggestion de fichiers ; il 
 | `@dev`, `@developpeur` | Développeur | prend **un** ticket du PO (hors conduite, cartes, CI), code, captures, PR, appelle le lead dev, s'arrête après la fusion | `.claude/agents/dev.md` (skills `agent-developer`, `waforspeed-natif`) | `dev` |
 | `@conduite`, `@expertconduite` | Expert conduite | développeur de la physique de la voiture, des aides et de la conduite des adversaires | `.claude/agents/expert-conduite.md` (skill `expert-conduite`) | `expert-conduite` |
 | `@cartes`, `@expertcartes` | Expert cartes | développeur des cartes, des paquets `.wfcarte` et de leur téléchargement (E14) | `.claude/agents/expert-cartes.md` (skill `expert-cartes`) | `expert-cartes` |
+| `@devartiste`, `@dev3d`, `@devartiste3d` | Développeur artiste 3D | développeur **et** artiste 3D : modèles 3D à choisir, retoucher, juger **et** code (outils, moteur) ; voitures sans marque, WFS-358 à 361 | `.claude/agents/dev-artiste-3d.md` (skills `agent-developer`, `waforspeed-natif`, `artiste-3d`) | `dev-artiste-3d` |
+| `@artiste`, `@artiste3d`, `@artist3d` | Artiste 3D | choisit, retouche et intègre les modèles et actifs 3D avec les outils du dépôt, sans code du moteur | `.claude/agents/artiste-3d.md` (skills `artiste-3d`, `waforspeed-natif`) | `artiste-3d` |
 | `@po`, `@scrum`, `@scrummaster` | PO / Scrum Master | étudie les besoins, crée et priorise les tickets, attribue, tient `TACHES.md`, `track-agent.md`, le journal | `.claude/agents/po-scrum-master.md` (skill `po-scrum-master`) | `po-scrum-master` |
 | `@leaddev`, `@lead` | Lead dev | relit une PR (captures + diff), approuve et fusionne en squash, ou refuse avec la liste des défauts | `.claude/agents/lead-dev.md` (skill `lead-dev`) | `lead-dev` |
 | `@qa`, `@qalead` | QA lead | recette des tickets de `qa/Check.md`, verdicts, anomalies ; campagne VABF sur l'émulateur | `.claude/agents/qa-lead.md` (skill `qa-lead`) | `qa-lead` |
