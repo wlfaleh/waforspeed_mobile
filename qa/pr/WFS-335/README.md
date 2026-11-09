@@ -1,6 +1,6 @@
 # WFS-335 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-335` comparée à `origin/main` (b16cb392, avec le même bench_lod.cpp) ; banc : lod:1280x720 ; filtre : `lod-*basse`.
+Branche `feature/waforspeed-335` comparée à `origin/main` (6aaf41b5, avec le bench_lod.cpp de 2fcd39a7 : sans la suite lod-passage, qui demande le relevé de la branche) ; banc : lod:1280x720 ; filtre : `lod-*basse`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
@@ -29,6 +29,17 @@ Branche `feature/waforspeed-335` comparée à `origin/main` (b16cb392, avec le m
 | `lod-nuit-trafic-loin-170-basse` | ![avant](avant-lod-nuit-trafic-loin-170-basse.jpg) | ![après](apres-lod-nuit-trafic-loin-170-basse.jpg) |
 | `lod-nuit-trafic-loin-60-basse` | ![avant](avant-lod-nuit-trafic-loin-60-basse.jpg) | ![après](apres-lod-nuit-trafic-loin-60-basse.jpg) |
 | `lod-nuit-trafic-loin-80-basse` | ![avant](avant-lod-nuit-trafic-loin-80-basse.jpg) | ![après](apres-lod-nuit-trafic-loin-80-basse.jpg) |
+| `lod-passage-100px-basse` | — | ![après](apres-lod-passage-100px-basse.jpg) |
+| `lod-passage-110px-basse` | — | ![après](apres-lod-passage-110px-basse.jpg) |
+| `lod-passage-40px-basse` | — | ![après](apres-lod-passage-40px-basse.jpg) |
+| `lod-passage-45px-basse` | — | ![après](apres-lod-passage-45px-basse.jpg) |
+| `lod-passage-48px-basse` | — | ![après](apres-lod-passage-48px-basse.jpg) |
+| `lod-passage-50px-basse` | — | ![après](apres-lod-passage-50px-basse.jpg) |
+| `lod-passage-60px-basse` | — | ![après](apres-lod-passage-60px-basse.jpg) |
+| `lod-passage-70px-basse` | — | ![après](apres-lod-passage-70px-basse.jpg) |
+| `lod-passage-80px-basse` | — | ![après](apres-lod-passage-80px-basse.jpg) |
+| `lod-passage-90px-basse` | — | ![après](apres-lod-passage-90px-basse.jpg) |
+| `lod-passage-95px-basse` | — | ![après](apres-lod-passage-95px-basse.jpg) |
 | `lod-plage-150-basse` | ![avant](avant-lod-plage-150-basse.jpg) | ![après](apres-lod-plage-150-basse.jpg) |
 | `lod-plage-300-basse` | ![avant](avant-lod-plage-300-basse.jpg) | ![après](apres-lod-plage-300-basse.jpg) |
 | `lod-plage-50-basse` | ![avant](avant-lod-plage-50-basse.jpg) | ![après](apres-lod-plage-50-basse.jpg) |
