@@ -253,9 +253,13 @@ void main() {
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
-    vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
-    // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
-    if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
+    vec3 env = vec3(0.0);
+    // WFS-348 : reflet du ciel calculé seulement sans sonde (avec la sonde, iblRemplacer le remplace entièrement : même image)
+    if (F.iblA.x < 0.5) {
+        env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
+        // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
+        if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
+    }
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     if (wetRoad && F.nuitA.z > 0.5) {

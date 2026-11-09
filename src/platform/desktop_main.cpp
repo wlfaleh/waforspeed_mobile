@@ -35,6 +35,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_squelette.h"
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
+namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
@@ -177,6 +178,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
     if (banc == "paquets") { const int e = ecrans::benchPaquets(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-306 (accroche) : installation des paquets (source factice)
     if (banc == "cuisson") { ui::chargerPolice(r); const int e = cartes_v2::benchCuisson(g, r, out, g_root, [](Game& g2, Renderer& r2, const std::string& o) { return benchParcours(g2, r2, o) + parcoursFinMenu(g2, r2, o); }); finir(); return e > 0 ? 3 : 0; }   // WFS-301 (accroche) : paquets de la Ville ; RG-08 : parcours complet
@@ -237,6 +239,7 @@ int main(int argc, char** argv) {
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
     }
+    if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls

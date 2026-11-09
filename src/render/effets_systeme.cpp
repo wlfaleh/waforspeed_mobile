@@ -32,7 +32,8 @@ float effetsCapDernierChoc() { return g_capChoc; }
 namespace {
 
 constexpr int NIV = 6;               // WFS-224 : niveaux d'opacité de la fumée (un appel de dessin chacun)
-constexpr float ALPHA_FUMEE = 0.30f; // WFS-224 (RG-02) : opacité d'une volute au plus dense (0,45 du jeu web : disques trop pleins)
+constexpr float ALPHA_FUMEE = 0.53f; // WFS-292 (RG-01) : opacité d'une volute au plus dense : 0,44 à la naissance (voluteOpacite ≈ 0,82), 0,30 avant
+constexpr float ALBEDO_FUMEE = 0.75f; // WFS-292 (RG-01) : fumée de pneu blanche à gris clair (gouttelettes d'huile et caoutchouc : diffuse claire)
 constexpr float EXPO = 0.85f;        // exposition de la course (Game::render)
 
 // WFS-101 : voiture du trafic au contact du joueur juste après hitCar (qui l'a repoussée de 0,25 m) : la plus proche,
@@ -81,13 +82,16 @@ public:
         // WFS-224 (RG-02) : la volute s'efface par son opacité (niveau k : ALPHA_FUMEE × (k + 0,5) / NIV), plus par sa
         // couleur ; deux jeux de matériaux : jour (gris du jeu web) et nuit, où la fumée derrière la voiture n'est éclairée
         // que par les feux arrière : gris très sombre teinté de rouge (pas de gris clair dans le noir).
+        // WFS-292 (RG-01, RG-02, ANO-165) : la lumière émise fixe (gris du jeu web converti à l'exposition 0,85) ne suivait plus
+        // l'exposition physique (WFS-207 / WFS-230) : de jour, la fumée sortait plus sombre que l'asphalte, invisible. La volute
+        // est maintenant une matière diffuse éclairée par la scène (soleil, ciel, phares, lampadaires) : claire de jour, visible
+        // la nuit seulement là où une lumière l'éclaire, jamais un gris lumineux dans le noir. MAT_VTINT : Lambert sans reflet,
+        // même éclairage des deux faces (normale des sommets vers le haut, longueur 1 : nuage éclairé par-dessus).
+        // Même matière le jour et la nuit : c'est la lumière de la scène qui fait la différence.
         for (int k = 0; k < NIV; k++) {
-            for (int nuit = 0; nuit < 2; nuit++) {
-                Material m; m.color = {0, 0, 0, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 1;
-                m.emissive = nuit ? effets::versHdr(vec3{0.06f, 0.04f, 0.04f}, EXPO) : effets::fumeeHdr(1, EXPO);
-                mats_[nuit][k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
-                mats_[nuit][k].flags |= MAT_BLEND | MAT_DOUBLE;
-            }
+            Material m; m.color = {ALBEDO_FUMEE, ALBEDO_FUMEE, ALBEDO_FUMEE * 1.02f, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 0;
+            mats_[k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
+            mats_[k].flags |= MAT_BLEND | MAT_DOUBLE | MAT_VTINT;
             for (int b = 0; b < 2; b++) {   // réserve pleine (140 bouffées) : jamais réallouée pendant la partie
                 meshes_[b][k] = r.makeMesh(std::vector<Vertex>(140 * 4), std::vector<uint32_t>(140 * 6), true);
                 meshes_[b][k].indexCount = 0;
@@ -102,7 +106,7 @@ public:
     void shutdown(Renderer& r) override {
         for (auto& b : meshes_) for (auto& m : b) r.destroy(m);
         r.vk().destroy(tex_);
-        for (auto& j : mats_) for (Material& m : j) r.destroy(m);
+        for (Material& m : mats_) r.destroy(m);
         r.destroy(matEtincelles_);   // WFS-187 : jeux de descripteurs rendus
         if (g_parts == &parts_) g_parts = nullptr;
     }
@@ -155,15 +159,26 @@ public:
                                                monde ? std::max(pl.monde.glissementAv, pl.monde.glissementAr) : 0.0, pl.spinYaw) || (g_banc && g_bancDerapage);
         skid_ -= dt;
         if (skid && skid_ <= 0) {
-            skid_ = 0.05f;
+            skid_ = 0.035f;   // WFS-292 (RG-01) : une volute toutes les 35 ms par roue (50 ms avant) : nappe continue, ≤ 140 vivantes
             const double L = pl.car ? pl.car->d.L : 4.3, W = pl.car ? pl.car->d.W : 1.8;
             // WFS-224 (RG-02) : la volute part avec 40 % de la vitesse de la voiture (air entraîné par le sillage juste
             // derrière la caisse, ordre de grandeur des mesures de sillage de véhicule) : elle traîne derrière la voiture au
             // lieu de filer d'un coup vers la caméra
-            const vec3 sillage = monde ? vec3{(float)pl.monde.vx, 0.f, (float)pl.monde.vz} * 0.4f : vec3{};
+            // WFS-292 (RG-01, lead dev : « ronds détachés loin derrière ») : 65 % de la vitesse (sillage proche, juste derrière
+            // les roues : la nappe reste accrochée aux roues au lieu de filer vers la caméra) et 0,8 m/s vers le bas, qui retient
+            // la montée de 1,2 m/s de fumee() : 0,4 m/s net, la fumée de pneu monte peu et s'étale au ras de la chaussée
+            // Sans le modèle du monde (conduite du jeu web, banc), la vitesse vient de la piste : sinon la volute restait
+            // immobile et la voiture la laissait en ronds espacés de 1,2 m (mesuré au banc).
+            vec3 vVoit = monde ? vec3{(float)pl.monde.vx, 0.f, (float)pl.monde.vz} : vec3{};
+            if (!monde) {
+                const TrackPoint a = g.track->point(pl.dist, pl.playerX * RW), b = g.track->point(pl.dist + 1.0 / M, pl.playerX * RW);
+                vec3 f{(float)(b.x - a.x), 0.f, (float)(b.z - a.z)};
+                if (length(f) > 1e-4f) vVoit = normalize(f) * (float)vms;
+            }
+            const vec3 sillage = vVoit * 0.65f + vec3{0, -0.8f, 0};
             for (int sx : {-1, 1}) {
                 const TrackPoint q = g.track->point(pl.dist - L * 0.35 / M, pl.playerX * RW + sx * W * 0.4);
-                parts_.fumee({(float)q.x, (float)q.y + 0.25f, (float)q.z}, 1, (float)q.y, sillage);
+                parts_.fumee({(float)q.x, (float)q.y + 0.15f, (float)q.z}, 1, (float)q.y, sillage);
             }
         }
         // fumée du capot des voitures du trafic accidentées : 5 s, une bouffée toutes les 0,12 s
@@ -217,10 +232,13 @@ public:
         // horizontal sur les captures)
         // WFS-224 (RG-02) : chaque volute grandit (voluteEchelle) ; son opacité (apparition, effacement, proximité de la
         // caméra) choisit le niveau ; trop transparente, elle n'est pas dessinée
+        // WFS-292 (RG-01, revue du lead dev : « ronds détachés ») : volute 1,5 fois plus large que haute (× 1,6 en largeur,
+        // × 0,8 en hauteur) : les voisines se recouvrent en une nappe au ras de la chaussée au lieu de ronds posés en file
+        constexpr float LARGE = 1.6f, HAUTE = 0.8f;
         const float base = parts_.smoke().taille / p11;
         for (auto q : parts_.smoke().p) {
             if (!q.vivante()) continue;
-            const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * std::abs(up.y);
+            const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * HAUTE * std::abs(up.y);
             q.p.y = std::max(q.p.y, q.floor + hs);
             const float d = dot(g.camPos - q.p, nrm);
             const float a = effets::voluteOpacite(q.fondu()) * effets::voluteProche(d);
@@ -228,16 +246,18 @@ public:
             if (a * NIV < 0.5f) continue;
             auto& v = vtx_[k]; auto& ix = idx_[k];
             const uint32_t n = (uint32_t)v.size();
-            vec3 c4[4]; coins(q.p, taille * 0.5f, c4);
-            v.push_back({c4[0].x, c4[0].y, c4[0].z, nrm.x, nrm.y, nrm.z, 0, 1}); v.push_back({c4[1].x, c4[1].y, c4[1].z, nrm.x, nrm.y, nrm.z, 1, 1});
-            v.push_back({c4[2].x, c4[2].y, c4[2].z, nrm.x, nrm.y, nrm.z, 1, 0}); v.push_back({c4[3].x, c4[3].y, c4[3].z, nrm.x, nrm.y, nrm.z, 0, 0});
+            const vec3 dx = right * (taille * 0.5f * LARGE), dy = up * (taille * 0.5f * HAUTE);
+            const vec3 c4[4] = {q.p - dx - dy, q.p + dx - dy, q.p + dx + dy, q.p - dx + dy};
+            // WFS-292 : normale vers le haut (MAT_VTINT : sa longueur 1 garde l'albédo) : volute éclairée comme un nuage
+            v.push_back({c4[0].x, c4[0].y, c4[0].z, 0, 1, 0, 0, 1}); v.push_back({c4[1].x, c4[1].y, c4[1].z, 0, 1, 0, 1, 1});
+            v.push_back({c4[2].x, c4[2].y, c4[2].z, 0, 1, 0, 1, 0}); v.push_back({c4[3].x, c4[3].y, c4[3].z, 0, 1, 0, 0, 0});
             ix.insert(ix.end(), {n, n + 1, n + 2, n, n + 2, n + 3});
         }
         for (int k = 0; k < NIV; k++) {
             Mesh& m = meshes_[b][k];
             if (vtx_[k].empty()) { m.indexCount = 0; continue; }
             r.updateMesh(m, vtx_[k], idx_[k]);
-            r.draw(m, mats_[g.night ? 1 : 0][k], mat4::identity());
+            r.draw(m, mats_[k], mat4::identity());
         }
         if (nitro_ && !r.gpuLogiciel() && !reglagesRessenti().reduireMouvements && g.ecran == Ecran::Course)
             lignesNitro(r, g, right, up, nrm);
@@ -298,7 +318,7 @@ private:
     bool actif_ = true, nitro_ = false;
     effets::Particules parts_;
     Image tex_;
-    Material mats_[2][NIV], matEtincelles_;   // fumée : [jour, nuit][niveau d'opacité]
+    Material mats_[NIV], matEtincelles_;   // fumée : un matériau par niveau d'opacité (WFS-292 : le même jour et nuit)
     Mesh meshes_[2][NIV];
     std::vector<Vertex> vtx_[NIV], etincelles_, lignes_;
     std::vector<uint32_t> idx_[NIV];

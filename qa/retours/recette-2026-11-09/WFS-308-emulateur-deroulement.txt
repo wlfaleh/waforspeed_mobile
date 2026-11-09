@@ -1,0 +1,38 @@
+[QA] installation
+Performing Streamed Install
+Success
+[QA] écran : Physical size: 1080x2400 (taille d'origine, pas de wm size)
+[QA] lancement (scénario mvp, extra qa_simu)
+Starting: Intent { cmp=com.waforspeed.game/.JeuActivity (has extras) }
+[QA] ÉCHEC étape chargement (délai 120 s)
+[QA] capture 01-chargement
+[QA] écran en fin de scénario : Physical size: 1080x2400
+11-09 00:42:47.949  3660  3741 I WaForSpeed: mode GPU logiciel demandé (intent qa_simu=true)
+11-09 00:42:48.899  3660  3741 I WaForSpeed: GPU : SwiftShader Device (Subzero) (Vulkan 1.3)
+11-09 00:42:48.931  3660  3741 I WaForSpeed: GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %)
+11-09 00:42:48.931  3660  3741 I WaForSpeed: Profondeur 126, MSAA x1, mipmaps GPU oui
+11-09 00:42:49.043  3660  3741 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-09 00:42:49.140  3660  3741 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-09 00:42:50.753  3660  3741 I WaForSpeed: passes (WFS-150) : 4 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+[QA] ÉCHEC : le moteur ne s'est pas initialisé
+[QA] ÉCHEC : étape « chargement » non atteinte
+[QA] RÉSULTAT TECHNIQUE : ÉCHEC
+[QA] installation
+Performing Streamed Install
+Success
+[QA] écran : Physical size: 1080x2400 (taille d'origine, pas de wm size)
+[QA] lancement (scénario mvp, extra qa_simu)
+Starting: Intent { cmp=com.waforspeed.game/.JeuActivity (has extras) }
+[QA] ÉCHEC étape chargement (délai 120 s)
+[QA] capture 01-chargement
+[QA] écran en fin de scénario : Physical size: 1080x2400
+11-09 00:45:33.414  6144  6185 I WaForSpeed: mode GPU logiciel demandé (intent qa_simu=true)
+11-09 00:45:33.684  6144  6185 I WaForSpeed: GPU : SwiftShader Device (Subzero) (Vulkan 1.3)
+11-09 00:45:33.759  6144  6185 I WaForSpeed: GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %)
+11-09 00:45:33.768  6144  6185 I WaForSpeed: Profondeur 126, MSAA x1, mipmaps GPU oui
+11-09 00:45:33.953  6144  6185 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-09 00:45:34.064  6144  6185 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-09 00:45:35.578  6144  6185 I WaForSpeed: passes (WFS-150) : 4 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+[QA] ÉCHEC : le moteur ne s'est pas initialisé
+[QA] ÉCHEC : étape « chargement » non atteinte
+[QA] RÉSULTAT TECHNIQUE : ÉCHEC

@@ -15,6 +15,5 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #279 | WFS-292 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-04 non tenue, décision écrite du PO requise ; fumée de jour en taches rondes, pas en nappe ; « à remplir » dans la description ; capture Ville de nuit ; 11 commits de retard) | 62751ac | 2026-11-08 21:28 |
-| #282 | WFS-328 | agent arwa (Claude, session trafic) | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 56a70670 | 2026-11-09 00:00 |
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
+| #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : conflit journal.md ; police qui arrive de loin non montrée (14 M dès la 1re image) ; cônes du chantier invisibles avec le bandeau ; policier non montré ; +128 appels en Basse (WFS-119 RG-04) sans décision du PO) | 093cbefc | 2026-11-09 04:30 |

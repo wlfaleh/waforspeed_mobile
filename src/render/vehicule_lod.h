@@ -4,7 +4,8 @@
 // mêmes sommets et matériaux, seulement d'autres indices ; jamais de cube). Le niveau dépend de la longueur de la voiture à
 // l'écran, en pixels de la scène 3D (seuils ci-dessous) ; entre deux niveaux, fondu tramé écran complémentaire de WFS-134
 // (scene.frag) sur une bande de 1/9 du seuil (de 64 à 72 m pour l'ancien passage complète → allégée : même rapport).
-// Qualité Basse : complète, puis version en 4 pièces (partsBasse, moins d'appels de dessin) au 1er seuil, comme WFS-134.
+// Qualité Basse (WFS-335, décision du PO) : complète, niveau 1, niveau 2 dès 100 px (SEUILS_PX_BASSE), puis niveaux 2 et 3 en
+// 4 pièces (partsBasseNiveaux, moins d'appels de dessin).
 // Sans dépendance au moteur (gabarits) : testé seul par tests/test_vehicule_lod.cpp.
 #include <algorithm>
 #include <cmath>
@@ -24,6 +25,16 @@ constexpr int NIVEAUX = 4;
 // plus hauts (48 et 26 px, 77 et 140 m) pour garder le même écart entre niveaux. La voiture du joueur (poursuite, cockpit)
 // reste toujours au-dessus de 200 px : complète.
 constexpr float SEUILS_PX[NIVEAUX - 1] = {200.f, 48.f, 26.f};   // WFS-158 : {60, 36, 22}
+// WFS-335 (décision du PO du 2026-11-09 02:35 UTC, RG-03) : qualité Basse seulement, quand les niveaux 2 et 3 en 4 pièces existent :
+// le niveau 2 remplace le niveau 1 dès 100 px (≈ 37 m pour une Golf) au lieu de 48 px (≈ 77 m) : les adversaires de 48 à 100 px
+// passent au niveau 2 (fondu tramé de 100 à 89 px), avec tous ses matériaux (phares, calandre, jantes : même aspect que le
+// niveau 1, seule la forme s'allège) ; à 48 px, comme avant, la version en 4 pièces (même forme, matériaux regroupés), puis le
+// niveau 3 en 4 pièces à 26 px. Chaîne Basse : complète, niveau 1, niveau 2, niveau 2 en 4 pièces, niveau 3 en 4 pièces.
+// La voiture du joueur reste complète (dessinJoueur, RG-02).
+constexpr int LISTES_MAX = NIVEAUX + 1;   // listes dessinables pour une voiture (chaîne Basse ci-dessus)
+constexpr float SEUILS_PX_BASSE[LISTES_MAX - 1] = {200.f, 100.f, 48.f, 26.f};
+// police en lots (Basse) : version en 4 pièces de près, puis niveaux 2 et 3 en 4 pièces (même passage à 100 px)
+constexpr float SEUILS_PX_LOTS[NIVEAUX - 1] = {200.f, 100.f, 26.f};
 constexpr float BANDE = 1.f / 9;   // largeur du fondu, en part du seuil (de S à S × 8/9)
 
 // longueur à l'écran (px) d'un objet de longueur L (m) à la distance d (m) ; focalePx = |proj(1,1)| × hauteur de la scène / 2
@@ -33,41 +44,63 @@ inline float pixels(float longueur, float focalePx, float distance) { return lon
 struct Choix { int a = 0, b = 0; float t = 0; };
 
 // nNiveaux : nombre de niveaux disponibles (1 = complet seul). Plus la voiture est petite à l'écran, plus le niveau est haut.
-inline Choix choisir(float px, int nNiveaux) {
-    nNiveaux = std::clamp(nNiveaux, 1, NIVEAUX);
+// seuils : nNiveaux − 1 seuils décroissants au moins (SEUILS_PX par défaut, SEUILS_PX_BASSE, SEUILS_PX_LOTS) ; nMax : leur nombre + 1.
+inline Choix choisir(float px, int nNiveaux, const float* seuils = SEUILS_PX, int nMax = NIVEAUX) {
+    nNiveaux = std::clamp(nNiveaux, 1, nMax);
     for (int k = 0; k + 1 < nNiveaux; k++) {
-        const float S = SEUILS_PX[k];
+        const float S = seuils[k];
         if (px >= S) return {k, k, 0.f};
         if (px > S * (1.f - BANDE)) return {k, k + 1, std::clamp((S - px) / (S * BANDE), 0.f, 0.999f)};
     }
     return {nNiveaux - 1, nNiveaux - 1, 0.f};
 }
 
-// Listes de pièces à dessiner pour un modèle M (champs parts, partsLod, partsBasse, partsNiveaux, bmin, bmax) :
-// a, puis b en fondu si t > 0. fantome : complet seul (WFS-134, RG-07) ; lots (police en Basse) : partsBasse seule.
+// Listes de pièces à dessiner pour un modèle M (champs parts, partsLod, partsBasse, partsBasseNiveaux, partsNiveaux, bmin, bmax) :
+// a, puis b en fondu si t > 0. fantome : complet seul (WFS-134, RG-07) ; lots (police en Basse) : versions en 4 pièces seules.
 template <class M>
 struct Dessin { const decltype(M::parts)* a = nullptr; const decltype(M::parts)* b = nullptr; float t = 0; int niveau = 0; };
 
 template <class M>
 Dessin<M> dessin(const M& m, float distance, float focalePx, bool basse, bool lots, bool fantome) {
     using Liste = decltype(M::parts);
-    const Liste* l[NIVEAUX] = {&m.parts};
+    const Liste* l[LISTES_MAX] = {&m.parts};
     int n = 1;
+    const float* seuils = SEUILS_PX;   // WFS-335 : SEUILS_PX_BASSE ou SEUILS_PX_LOTS quand les niveaux 2 et 3 en 4 pièces existent
+    int nMax = NIVEAUX;
     const bool versBasse = basse && !m.partsBasse.empty();
-    if (!fantome && versBasse) {
+    // WFS-335 (RG-02) : en Basse, au loin, les niveaux 2 et 3 en 4 pièces (partsBasseNiveaux) : avant, la version en 4 pièces
+    // gardait la forme du niveau 1 (40 à 60 k triangles) jusqu'à 200 m et plus (relevé du banc : 52 k triangles pour 8 px)
+    auto loinBasse = [&] {
+        for (size_t k = 0; k < m.partsBasseNiveaux.size() && n < LISTES_MAX; k++)
+            if (!m.partsBasseNiveaux[k].empty()) l[n++] = &m.partsBasseNiveaux[k]; else break;
+    };
+    if (lots && versBasse && !fantome) {
+        // police en lots : version en 4 pièces même de près (moins d'appels), puis niveaux 2 et 3 en 4 pièces au loin, aux mêmes
+        // seuils que les autres (100 et 26 px en Basse, WFS-335) : le 1er passage (200 px) se fait entre deux listes identiques, donc sans fondu
+        l[0] = l[1] = &m.partsBasse; n = 2;
+        loinBasse();
+        if (n == 2) return {&m.partsBasse, &m.partsBasse, 0.f, 1};
+        seuils = SEUILS_PX_LOTS;
+    } else if (!fantome && versBasse) {
         // WFS-265 (retour du lead dev, PR #268) : en Basse, complète au-dessus de 200 px, puis niveau 1 (feux, vitres et lunette
-        // intacts) jusqu'à 48 px (≈ 77 m), puis la version en 4 pièces au loin (WFS-134 : avant, dès 64 m)
+        // intacts) jusqu'à 100 px (≈ 37 m, WFS-335 ; 48 px sans niveaux 2 et 3), puis les versions en 4 pièces au loin
         if (!m.partsLod.empty()) l[n++] = &m.partsLod;
-        l[n++] = &m.partsBasse;
+        const int n0 = n;
+        // WFS-335 : niveau 2 complet (tous ses matériaux) de 100 à 48 px, avant les versions en 4 pièces
+        if (n == 2 && !m.partsNiveaux.empty() && !m.partsNiveaux[0].empty() && !m.partsBasseNiveaux.empty() && !m.partsBasseNiveaux[0].empty()) {
+            l[n++] = &m.partsNiveaux[0]; seuils = SEUILS_PX_BASSE; nMax = LISTES_MAX;
+        }
+        if (n0 == 2) loinBasse();
+        if (n == n0) l[n++] = &m.partsBasse;   // sans niveaux 2 et 3 : version en 4 pièces du niveau 1 (ou de la complète)
     } else if (!fantome) {
         if (!m.partsLod.empty()) l[n++] = &m.partsLod;
         // niveaux 2 et 3 : qualité Moyenne et plus
         for (size_t k = 0; n == (int)k + 2 && k < m.partsNiveaux.size() && n < NIVEAUX; k++)
             if (!m.partsNiveaux[k].empty()) l[n++] = &m.partsNiveaux[k];
     }
-    if (lots && versBasse && !fantome) return {&m.partsBasse, &m.partsBasse, 0.f, 1};
     const float L = std::max({m.bmax.x - m.bmin.x, m.bmax.y - m.bmin.y, m.bmax.z - m.bmin.z});
-    const Choix c = choisir(pixels(L, focalePx, distance), n);
+    Choix c = choisir(pixels(L, focalePx, distance), n, seuils, nMax);
+    if (l[c.a] == l[c.b]) { c.b = c.a; c.t = 0.f; }   // fondu entre deux listes identiques : une seule suffit
     return {l[c.a], l[c.b], c.t, c.a};
 }
 
