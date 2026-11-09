@@ -4,7 +4,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
 
 ## Description
 
-- **Demande de l'utilisateur** (en une phrase) : voitures sans marque (objectif de l'utilisateur, file A) : petites retouches de forme pour qu'on ne reconnaisse plus les marques, sur les 20 voitures. Cette PR est la **PR pilote** demandée par le PO : X5, Compass, 208, pour avis du lead dev avant les 17 autres.
+- **Demande de l'utilisateur** (en une phrase) : voitures sans marque (objectif de l'utilisateur, file A) : petites retouches de forme pour qu'on ne reconnaisse plus les marques, sur les 20 voitures. Cette PR est la **PR pilote** demandée par le PO : **Compass et 208** (et l'outil), acceptées par le lead dev à la 3e revue. La X5 en est retirée sur décision du PO (2026-11-09, option (a)) : elle sera reprise dans une 2e PR du même ticket.
 - **Méthode** :
   - Les sources glTF ne sont pas dans le dépôt : les `assets/cars/<id>.wfm` sont retouchés directement par un outil rejouable (comme WFS-192).
   - Le simple déplacement de sommets a été écarté (`qa/pr/WFS-193/essais/x5-essai-echelle.png`).
@@ -19,7 +19,6 @@ Agent : Claude, agent 1 (01UY1Vv2)
   - **`tools/convertir_voitures.sh`** : lance `retoucher_formes.mjs` juste après `effacer_logos.mjs`. Une voiture absente de `formes.json` est passée sans erreur.
   - **`tools/effacer_logos.mjs`** : accepte les matériaux ajoutés à la fin.
   - **Voitures** :
-    - **X5** : haricots (cadre, barres, arcs du bas : 2 640 triangles), fond (240) et pointe de carrosserie entre les deux (50) retirés. Grille d'un seul tenant à 6 barres, galbe 6 cm, gris métallisé clair. Son **cadre passe 2 mm devant la coupe du capot et la recouvre de 1,7 cm** (haut à y 0,962 pour une coupe à 0,945), plus étroit en haut (±0,44 m) qu'en bas (±0,47 m) ;
     - **Compass** : calandre à 7 fentes retirée (705 + 15 621 triangles). Grille à 3 barres, cadre, galbe 4,5 cm ;
     - **208** : treillis en losanges retiré (251 triangles) et **socle du lion** retiré (relief au centre du fond sombre, 748 triangles). Grille **en trapèze** (forme de l'ouverture d'origine) à 5 barres, cadre, galbe 3,5 cm.
   - **`src/render/feux_modele.cpp`** (banc) : `WFS_VITRINE_NUIT=1` (vitrines de nuit).
@@ -34,20 +33,14 @@ Agent : Claude, agent 1 (01UY1Vv2)
     Les « avant » de nuit et des gros plans sont pris avec le même binaire et les `.wfm` / `.lod` de `main`.
 - **Limites et risques connus** :
   - **Pilote** : une retouche (la calandre) par voiture. Feux, jantes et autres signatures (crocs lumineux et feux à 3 griffes de la 208) viendront au lot suivant, avec les 17 autres voitures.
-  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture. Le petit creux au centre, au-dessus de la grille de la X5, est la forme d'origine du capot.
-  - Les licences recevront la phrase de modification WFS-193 au lot final (X5 en CC BY-NC-SA, voir WFS-194).
+  - De nuit, les grilles restent sombres : les phares éclairent devant la voiture, pas sa calandre, comme sur une vraie voiture. 
+  - Les licences recevront la phrase de modification WFS-193 au lot final .
   - Paquets npm `meshoptimizer@0.22.0` (MIT) et `sharp@0.33.5` (Apache-2.0), utilisés pour régénérer le `.lod` : notés au journal.
 
 ## Captures pour le lead dev (avant = `main`)
 
 | Capture | Avant | Après |
 |---|---|---|
-| `nez-x5-face-jour` — X5, gros plan de face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-face-jour.jpg?raw=true) |
-| `nez-x5-34-jour` — X5, gros plan de trois quarts, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-34-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-34-jour.jpg?raw=true) |
-| `nez-x5-face-nuit` — X5, gros plan de face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-face-nuit.jpg?raw=true) |
-| `nez-x5-34-nuit` — X5, gros plan de trois quarts, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-x5-34-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-x5-34-nuit.jpg?raw=true) |
-| `vitrine-x5-a2` — X5, de dos, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-x5-a2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-x5-a2.jpg?raw=true) |
-| `vitrine-x5-feux-nuit` — X5, feux de nuit (frein) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-vitrine-x5-feux-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-vitrine-x5-feux-nuit.jpg?raw=true) |
 | `nez-compass-face-jour` — Compass, gros plan de face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-face-jour.jpg?raw=true) |
 | `nez-compass-34-jour` — Compass, gros plan de trois quarts, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-34-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-34-jour.jpg?raw=true) |
 | `nez-compass-face-nuit` — Compass, gros plan de face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/avant-nez-compass-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-193/qa/pr/WFS-193/apres-nez-compass-face-nuit.jpg?raw=true) |
