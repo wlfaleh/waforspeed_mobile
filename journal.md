@@ -2688,3 +2688,14 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 14:02:58 — WFS-193 : X5 séparée de la PR #308 (po-scrum-master)
 - 3e refus du lead dev, à cause de la X5 seule. Décision : fusionner la Compass, la 208 et l'outil ; la X5 passe dans une 2e PR (agent 1, même ticket).
+
+### 2026-11-09 14:05:36 — Renommage : seulement par l’agent lui-même (po-scrum-master)
+- Précision de l’utilisateur : c’est l’agent qui change le nom de sa discussion, pas le PO. Le recours « le PO renomme » est retiré de `appel-agents.md`, des fichiers des agents développeurs et du skill `po-scrum-master`.
+
+### 2026-11-09 14:05:59 — Renommage sur place, dès le numéro du ticket (po-scrum-master)
+- Précision de l’utilisateur : l’agent récupère le numéro de son ticket et change le titre de sa discussion sur place, avant toute autre action. Texte précisé dans `appel-agents.md`, dans les 4 fichiers des agents développeurs et dans le skill `agent-developer`.
+
+### 2026-11-09 14:06:38 — WFS-193 (pilote) fusionné par le lead dev (lead-dev)
+- PR #308, 4e revue, commit relu a6b0052e, squash 78540de6. Option (a) du PO vérifiée : `x5.wfm` / `x5.lod` identiques à main, `formes.json` limité à compass et p208, seules les captures X5 et `pr.md` changées depuis 47cf8a83 (hors synchronisation avec main).
+- Relancés : `retoucher_formes.mjs --verifier` (déjà retouchées), `test_fidelite_voitures` OK. 18 paires de captures ouvertes : rien de dégradé.
+- Approbation écrite en commentaire (même compte GitHub). WFS-193 reste 🔧 (X5 en 2e PR). Ligne #308 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.

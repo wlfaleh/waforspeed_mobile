@@ -54,7 +54,7 @@ la direction artistique de l'interface dans `design-street-racing`, celle du mon
 
 ## 3. Méthode de travail d'un ticket
 
-1. **Cadrer** : ticket attribué par le PO, **titre de la discussion renommé tout de suite en `WFS-XXX — <ton nom> (<sujet>)`** (`set_session_title`, point 6 de `appel-agents.md`), `regles-de-gestion/WFS-XX.md` lu en entier, critères d'acceptation et
+1. **Cadrer** : ticket attribué par le PO, **titre de la discussion changé sur place, dès la réception du numéro et avant toute autre action, en `WFS-XXX — <ton nom> (<sujet>)`** (`set_session_title`, point 6 de `appel-agents.md`), `regles-de-gestion/WFS-XX.md` lu en entier, critères d'acceptation et
    zone de code notés ; anomalies liées lues dans `anno.md` et les rapports QA ; `tache utilisateur.md` relu.
 2. **Analyser** : lire le code et les actifs existants du dépôt ;
    **réutiliser** ce qui existe (code, modèles 3D, sons, systèmes, points d'extension) au lieu de recréer.
