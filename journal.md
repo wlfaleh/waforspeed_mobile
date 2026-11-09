@@ -3224,3 +3224,9 @@ Vidéos regardées image par image (1 à 2 img/s). En Campagne, la voiture est b
 ### 2026-11-09 21:33:03 — Correction : les vidéos de la Campagne étaient en JOUR, pas en nuit ; ajouté à WFS-375 (Agent po (session_01UY1Vv1Rvnxrn2dFjkD7q2z))
 L'utilisateur signale mon erreur : j'avais décrit des courses « de nuit » alors qu'il avait choisi JOUR (Réelle, Aube, Dorée). La cause est dans `terrain.cpp:68` : « Réelle » est rangée sous JOUR mais suit l'heure du téléphone. Critère ajouté à WFS-375 : JOUR = plein jour quelle que soit l'heure. QA prévenu.
 
+
+### 2026-11-09 21:34:11 — Recette manuelle des 11 vidéos de l'utilisateur (APK v0.1.969, 22:13 → 22:25) (qa-lead)
+- Rapport : `qa/rapports/recette-manuelle-video-2026-11-09-2213.md`. **Pas de catastrophe ni de régression de conduite démontrée** : aucun plantage, la Corniche roule (111 km/h) et la Campagne roule gaz tenu (vidéo 2, 32 km/h).
+- Campagne « bloquée » (vidéos 3 à 6) **non confirmée** : l'option Android « Afficher les appuis » ne montre **aucun doigt sur GAZ après GO** (seulement un appui bref pendant le « 3 ») ; le recul apparent est le recadrage de la caméra. Banc de départ Campagne gaz tenu demandé à WFS-374 pour lever le doute.
+- **ANO-232** (majeure → WFS-375) : moment JOUR (Réelle à 22 h, Aube, Dorée en Cockpit) → image de nuit ou presque noire. **ANO-233** (mineure → WFS-374) : appui sur la case SCORE → une image de nitro.
+- Décor en formes nues et chargement « ville 70 % » : hors périmètre, pas d'ANO (ordre de l'utilisateur, E15 / WFS-378).
