@@ -13,6 +13,7 @@
 #include "../../core/system.h"
 #include "../../game/course_system.h"
 #include "../../game/camera_vue.h"
+#include "../../game/fantome.h"   // WFS-318 : réglage « Fantôme du record »
 #include "../../game/game.h"
 #include "../../game/traffic_system.h"   // WFS-75 : choc du banc (vibration coupée)
 #include "../../game/sauvegarde.h"   // WFS-24 : réglages dans la sauvegarde commune
@@ -29,6 +30,7 @@
 #include "../text.h"
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "reglages_appui.h"   // WFS-290 : cible de 48 dp, anti-rebond
+#include "reglages_onglets.h"   // WFS-291, WFS-318 : lignes et onglets
 
 namespace wfs {
 namespace ecrans {
@@ -52,7 +54,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
-const Ligne LIGNES[13] = {
+const Ligne LIGNES[14] = {
     {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute", "Ultra"}},   // WFS-150 (RG-04) : « Ultra » seulement si la Haute tient (nChoix)
     {"Son", 2, {"Activé", "Coupé", nullptr}},
@@ -66,9 +68,10 @@ const Ligne LIGNES[13] = {
     {"Zone morte gyro", 3, {"Petite", "Moyenne", "Grande"}},    // WFS-108 RG-03 : 1,5°, 3°, 5°
     {"Aide à la direction", 2, {"Activée", "Désactivée", nullptr}},   // WFS-217 RG-02 : reglagesConduite (player.h)
     {"Regard cockpit", 3, {"Bas", "Normal", "Haut"}},   // WFS-235 RG-03 : regardCockpit (camera_vue.h), clé regard
+    {"Fantôme du record", 2, {"Affiché", "Caché", nullptr}},   // WFS-318 RG-01 : fantome::affiche (fantome.h), clé fantome
 };
-enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
-       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, N_LIGNES = 13 };
+// lignes et onglets : reglages_onglets.h (WFS-291, WFS-318, testé par tests/test_reglages_onglets.cpp)
+constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau comptée pour 13 lignes (« Fermer » ne bouge pas)
 
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
 float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
@@ -92,18 +95,6 @@ bool basculementPermis() { return appui::basculementPermis(maintenant(), g_derni
 // relâcher dans la cible ; un doigt qui glisse hors de la cible annule l'appui
 enum { P_AUCUN, P_BOUTON, P_FERMER };
 int g_presse = P_AUCUN, g_doigt = -1;
-// WFS-291 (RG-01, découpage validé par le PO le 2026-11-08 23:04:56 UTC) : 3 onglets ; chaque ligne dans un seul onglet, ordre fixe
-enum { O_AFFICHAGE = 0, O_CONDUITE = 1, O_SON = 2, N_ONGLETS = 3 };
-const char* const ONGLETS[N_ONGLETS] = {"Affichage", "Conduite", "Son"};
-constexpr int MAX_PAR_ONGLET = 7;   // Affichage : 5 lignes, 6 avec « Fantôme du record » (WFS-318, prévu en dernière ligne)
-const int LIGNES_ONGLET[N_ONGLETS][MAX_PAR_ONGLET] = {
-    {L_CAMERA, L_QUALITE, L_REGARD, L_MOUVEMENTS, L_BOUTONS, -1, -1},
-    {L_DIRECTION, L_COMMANDES, L_GYRO, L_GYROZONE, L_AIDE, L_VIBRATIONS, -1},
-    {L_SON, L_MUSIQUE, -1, -1, -1, -1, -1},
-};
-bool dansOnglet(int l, int o) { for (int i = 0; i < MAX_PAR_ONGLET && LIGNES_ONGLET[o][i] >= 0; i++) if (LIGNES_ONGLET[o][i] == l) return true; return false; }
-int ongletDe(int l) { for (int o = 0; o < N_ONGLETS; o++) if (dansOnglet(l, o)) return o; return O_AFFICHAGE; }
-int nLignesOnglet(int o) { int n = 0; while (n < MAX_PAR_ONGLET && LIGNES_ONGLET[o][n] >= 0) n++; return n; }
 int g_onglet = O_AFFICHAGE;   // RG-03 : dernier onglet ouvert, gardé (clé « onglet » du fichier des réglages)
 Zone g_onglets[N_ONGLETS];
 // dessine la barre des onglets dans (x, y, w, h) : onglet actif comme un choix actif (fond cyan léger, trait et texte cyan),
@@ -149,6 +140,7 @@ bool lire() {
         if (!std::strcmp(cle, "mouvements")) reglagesRessenti().reduireMouvements = v != 0;   // WFS-80 (RG-02)
         else if (!std::strcmp(cle, "ultra")) qualite::ultraChoisi = v != 0;   // WFS-150 : Ultra (absent de la sauvegarde commune)
         else if (!std::strcmp(cle, "regard")) choisirRegard((RegardCockpit)std::clamp(v, 0, 2));   // WFS-235 (RG-03), comme « mouvements »
+        else if (!std::strcmp(cle, "fantome")) fantome::affiche() = v != 0;   // WFS-318 (RG-01) : Affiché par défaut
         else if (!std::strcmp(cle, "onglet")) g_onglet = v >= 0 && v < N_ONGLETS ? v : O_AFFICHAGE;   // WFS-291 (RG-03) : inconnu → Affichage
         else if (commune) continue;   // WFS-24 : les autres réglages viennent de la sauvegarde commune
         else if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
@@ -182,7 +174,7 @@ void ecrire() {
     std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
                  (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
     std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\nultra=%d\nregard=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone, (int)qualite::ultraChoisi, (int)regardCockpit());   // WFS-108 ; WFS-150 ; WFS-235
-    std::fprintf(fp, "onglet=%d\n", g_onglet);   // WFS-291 (RG-03) : pas un réglage, la place où on en était
+    std::fprintf(fp, "onglet=%d\nfantome=%d\n", g_onglet, (int)fantome::affiche());   // WFS-318 : fantome   // WFS-291 (RG-03) : pas un réglage, la place où on en était
     std::fclose(fp);
 }
 
@@ -216,6 +208,7 @@ int valeur(int ligne) {
     case L_GYROZONE: return reglagesGyro().zone;
     case L_AIDE: return reglagesConduite().aideDirection ? 0 : 1;   // WFS-217
     case L_REGARD: return (int)regardCockpit();   // WFS-235
+    case L_FANTOME: return fantome::affiche() ? 0 : 1;   // WFS-318
     default: return R.vibrations ? 0 : 1;
     }
 }
@@ -288,6 +281,7 @@ public:
             else if (l == L_GYROZONE) reglagesGyro().zone = c;
             else if (l == L_AIDE) reglagesConduite().aideDirection = c == 0;   // WFS-217 : appliquée au pas suivant
             else if (l == L_REGARD) choisirRegard((RegardCockpit)c);   // WFS-235 (RG-03) : appliqué à l'image suivante
+            else if (l == L_FANTOME) fantome::affiche() = c == 0;   // WFS-318 (RG-01, RG-02) : appliqué à l'image suivante
             else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
@@ -333,7 +327,7 @@ private:
         // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut ;
         // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement) ;
         // WFS-108 : 11 lignes → lignes de 30 px séparées de 5 px
-        const float rowH = 30 * k, gap = 5 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
+        const float rowH = 30 * k, gap = 5 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)LIGNES_PLACE * (rowH + gap) + bh + 30 * k;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
@@ -373,7 +367,7 @@ private:
         // suite (avant : « Aide à la direction » et « Regard cockpit » sous le bouton, placé après la ligne 11) ; tailles inchangées
         const float tp = 20 * k;
         const std::string ft = ui::majuscules("Fermer");
-        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)N_LIGNES * (rowH + gap) + 10 * k;
+        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)LIGNES_PLACE * (rowH + gap) + 10 * k;
         g_fermer = {fx, fy, fw, bh};
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »
