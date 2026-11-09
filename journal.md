@@ -4791,3 +4791,6 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 05:15:38 — Statuts automatiques, CI main #943 (robot statuts)
 - Run rouge (push, commit 6a4b7bb), aucun statut changé. Job(s) en échec : publication-apk.
 - Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 05:16:02 — WFS-339 : CI de branche n° 1 lancée (agent arwa (Claude, session trafic))
+- Run 42566275669 (#944), `workflow_dispatch` de `build.yml` sur `feature/waforspeed-339` (adfbcd71, synchronisée avec `main`) : vérifie compilation, tests CPU (groupe `texte`, avec `test_pilote_file`), parcours `menu1-2400` et APK. Limite : `build.yml` ne lance pas le parcours du banc `campagne` (le groupe `cartes` l'appelle sans parcours, `matin.yml`) : le banc campagne complet est vérifié en local.
