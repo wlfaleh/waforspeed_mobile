@@ -26,3 +26,5 @@ section montee 120 260
 section virage 380 500 -1 70 -40
 section virage 640 750 1 55 50
 section virage 750 860 -1 55 -50
+# WFS-346 : tunnel (abri) : aucun flocon dessous
+section tunnel 880 990

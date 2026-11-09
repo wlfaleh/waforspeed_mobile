@@ -21,6 +21,7 @@
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9) : revêtements de route réels
 #include "../render/qualite_auto.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche) : conducteurs dans les voitures
+#include "../world/cartes_v2/carte_donnees.h"   // WFS-346 (accroche) : saison de la carte
 
 namespace wfs {
 
@@ -45,6 +46,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
     track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
+    cartes_v2::preparerSaison(mapId);   // WFS-346 (accroche) : saison de la carte (μ, neige au sol, flocons), avant la route
     route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite), mapId);   // WFS-205, WFS-206 (accroche) : revêtement de la carte
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::chaussee(), m);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
