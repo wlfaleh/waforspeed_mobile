@@ -144,6 +144,11 @@ void CartesPaquets::chercher(const std::vector<std::pair<std::string, uint64_t>>
     WFS_LOG("paquets (WFS-307) : liste lue pour les cartes %s", e.c_str());
 }
 
+void CartesPaquets::suivre(const std::string& c, uint64_t emp) {
+    if (!suivi(c)) cartes_.push_back({c, Suivi{}});
+    suivi(c)->empreinte = emp; suivi(c)->verifie = false;
+}
+
 // paquet juste sur le téléphone (un des formats lus par la carte graphique) ; « ancien » : un fichier est là mais refusé (autre génération)
 void CartesPaquets::verifier(const std::string& c, Suivi& s) {
     s.installee = s.ancien = false; s.surDisque = 0;

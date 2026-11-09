@@ -57,6 +57,7 @@ public:
     // source et formats (posés par l'étape du chargement) ; cartes connues et empreinte attendue de chacune ; lit la liste (une fois)
     void lier(SourcePaquets* s, const std::vector<carte::FormatTexture>& formats, int versionApk);
     void chercher(const std::vector<std::pair<std::string, uint64_t>>& cartes);
+    void suivre(const std::string& carte, uint64_t empreinte);   // carte suivie sans relire la liste (carte de l'étape du chargement, WFS-306)
     bool cherche() const { return cherche_; }
     // état (fichier vérifié sur le téléphone, puis phase de la source) ; met à jour les annonces « prête » et les changements (RG-08)
     EtatCarte etat(const std::string& carte);
@@ -86,6 +87,12 @@ private:
     Suivi* suivi(const std::string& carte);
 };
 CartesPaquets& cartesPaquets();
+// choix du terrain (terrain.cpp) : vignette de la carte (x, y, w, h ; k = pixels par dp)
+void assombrirCarte(Renderer& r, const std::string& carte, float x, float y, float w, float h);   // RG-01 : paquet publié pas encore là
+void dessinerPaquetCarte(Renderer& r, const std::string& carte, float x, float y, float w, float h, float k, double maintenant);
+bool toucherPaquetCarte(const std::string& carte, int id, float x, float y, bool down, double maintenant);   // vrai : toucher pris
+// banc : centre de la zone d'action posée à la dernière image (0 bouton principal, 1 Supprimer / Annuler, 2 confirmer, 3 refuser)
+bool centrePaquetCarte(int quelle, float& x, float& y);
 
 // formats de texture que la carte graphique sait lire, dans l'ordre de préférence (ASTC, ETC2, RGBA8 toujours)
 std::vector<carte::FormatTexture> formatsAcceptes(const VkCtx& vk);

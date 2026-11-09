@@ -4549,3 +4549,9 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 
 ### 2026-11-09 00:15:12 — WFS-307 : début (Claude, agent 3 (01UY1Vv3))
 - Branche `feature/waforspeed-307` depuis `main` (778dbf48). Skills : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`. Plan et accroches à l’entrée suivante.
+
+### 2026-11-09 00:39:35 — WFS-307 : choix du terrain, file des cartes, relecture au changement de carte ; accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- **Java** : `FilePaquets` (règle pure, file d'attente une carte à la fois, phase `ATTENTE`), `Paquets` par carte (`chercherTout`, `etatCarte`, `installerCarte`, `arreterCarte`, `supprimee`, `ralentir`), `Telechargeur.pauseMs` (débit réduit, RG-03) ; 22 tests JUnit OK.
+- **C++** : `CartesPaquets` (paquets_etape.cpp, sans rendu) ; vignette du choix du terrain : assombrie, « Télécharger — X Mo » / « Mise à jour — X Mo », file, barre + astuce, coupure, « Annuler », données mobiles confirmées, « Connexion nécessaire », « Supprimer — libère X Mo » avec confirmation ; au menu « Corniche prête pour la prochaine course » ; débit réduit en course sous 30 img/s. Pont JNI : `paquets_android.cpp` (caches 0,1 s par carte).
+- **Accroches annoncées** (accord du PO, 2026-11-09 00:16:07, `regles-de-gestion/WFS-307.md`) : `src/game/game.h` (+1 champ `Demandes::recharger`), `src/game/game.cpp` (2 lignes de `changerCarte` : carte reconstruite même si déjà chargée quand `recharger`). Seul `terrain.cpp` met `recharger = true`, quand le paquet de cette carte a changé (RG-08). Sur Android, `debutChargement` appelle déjà `preparerCarte` à chaque reconstruction.
+- **Tests** : `test_paquets` étendu (CartesPaquets : RG-01, 02, 04, 05, mise à jour, débit) OK ; banc `paquets` étendu au parcours RG-07 (faux paquet de la Corniche cuit en local).

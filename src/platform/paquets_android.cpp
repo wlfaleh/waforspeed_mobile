@@ -6,6 +6,8 @@
 #if defined(__ANDROID__)
 #include <jni.h>
 #include <string>
+#include <utility>
+#include <vector>
 #include "../core/configgame.h"
 #include "../core/carte_cuite.h"
 #include "../core/log.h"
@@ -129,6 +131,94 @@ struct SourceAndroid : ecrans::SourcePaquets {
     void arreter() override {
         avecPaquets([&](JNIEnv* env, jclass k) { jmethodID m = env->GetStaticMethodID(k, "arreter", "()V"); if (m) env->CallStaticVoidMethod(k, m); });
         tPhase_ = -1;
+    }
+
+    // ---- WFS-307 : toutes les cartes (choix du terrain) ; phase de chaque carte gardée 0,1 s, proposition jusqu'à la prochaine recherche
+    struct Cache { double t = -1; Phase phase = ABSENTE; long long recus = 0, taille = 0; bool aProp = false, prop = false; std::string nom, format; };
+    std::vector<std::pair<std::string, Cache>> caches_;
+    Cache& cache(const std::string& c) {
+        for (auto& [n, k] : caches_) if (n == c) return k;
+        caches_.push_back({c, Cache{}});
+        return caches_.back().second;
+    }
+    void oublier() { for (auto& [n, k] : caches_) { k.t = -1; k.aProp = false; } tPhase_ = -1; aProposition_ = false; }
+    void chercherTout(const std::string& formats, const std::string& empreintes, int versionApk) override {
+        avecPaquets([&](JNIEnv* env, jclass k) {
+            jmethodID m = env->GetStaticMethodID(k, "chercherTout", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
+            if (!m) return;
+            jstring a = env->NewStringUTF(config().paquets.adresseListe), co = env->NewStringUTF((dossier() + "/cartes.json").c_str()),
+                    fo = env->NewStringUTF(formats.c_str()), em = env->NewStringUTF(empreintes.c_str());
+            env->CallStaticVoidMethod(k, m, a, co, fo, em, (jint)versionApk);
+            for (jstring s : {a, co, fo, em}) if (s) env->DeleteLocalRef(s);
+        });
+        oublier();
+    }
+    Phase phaseCarte(const std::string& c, long long& recus, long long& taille) override {
+        Cache& kc = cache(c);
+        const double t = nowSeconds();
+        if (kc.t >= 0 && t - kc.t < 0.1) { recus = kc.recus; taille = kc.taille; return kc.phase; }
+        Phase p = ABSENTE; recus = taille = 0;
+        avecPaquets([&](JNIEnv* env, jclass k) {
+            jmethodID m = env->GetStaticMethodID(k, "etatCarte", "(Ljava/lang/String;)[J");
+            jstring ca = env->NewStringUTF(c.c_str());
+            jlongArray v = (m && ca) ? (jlongArray)env->CallStaticObjectMethod(k, m, ca) : nullptr;
+            if (ca) env->DeleteLocalRef(ca);
+            if (!v || env->GetArrayLength(v) < 3) return;
+            jlong x[3]; env->GetLongArrayRegion(v, 0, 3, x);
+            p = (Phase)x[0]; recus = x[1]; taille = x[2];
+            env->DeleteLocalRef(v);
+        });
+        kc.t = t; kc.phase = p; kc.recus = recus; kc.taille = taille;
+        return p;
+    }
+    bool propositionCarte(const std::string& c, std::string& nom, std::string& format) override {
+        Cache& kc = cache(c);
+        if (kc.aProp) { nom = kc.nom; format = kc.format; return kc.prop; }
+        bool ok = false;
+        avecPaquets([&](JNIEnv* env, jclass k) {
+            jmethodID m = env->GetStaticMethodID(k, "propositionCarte", "(Ljava/lang/String;)[Ljava/lang/String;");
+            jstring ca = env->NewStringUTF(c.c_str());
+            jobjectArray v = (m && ca) ? (jobjectArray)env->CallStaticObjectMethod(k, m, ca) : nullptr;
+            if (ca) env->DeleteLocalRef(ca);
+            if (!v || env->GetArrayLength(v) < 2) return;
+            for (int i = 0; i < 2; i++) {
+                jstring s = (jstring)env->GetObjectArrayElement(v, i);
+                const char* u = s ? env->GetStringUTFChars(s, nullptr) : nullptr;
+                (i ? format : nom) = u ? u : "";
+                if (u) env->ReleaseStringUTFChars(s, u);
+                if (s) env->DeleteLocalRef(s);
+            }
+            env->DeleteLocalRef(v);
+            ok = true;
+        });
+        // pendant la lecture de la liste, ne rien garder (la proposition arrive avec PRETE)
+        if (kc.phase != LISTE && kc.phase != RIEN) { kc.aProp = true; kc.prop = ok; kc.nom = nom; kc.format = format; }
+        return ok;
+    }
+    bool installerCarte(const std::string& c) override {
+        bool ok = false;
+        avecPaquets([&](JNIEnv* env, jclass k) {
+            jmethodID m = env->GetStaticMethodID(k, "installerCarte", "(Ljava/lang/String;Ljava/lang/String;)Z");
+            jstring d = env->NewStringUTF(dossier().c_str()), ca = env->NewStringUTF(c.c_str());
+            if (m && d && ca) ok = env->CallStaticBooleanMethod(k, m, d, ca);
+            for (jstring s : {d, ca}) if (s) env->DeleteLocalRef(s);
+        });
+        cache(c).t = -1; tPhase_ = -1;
+        return ok;
+    }
+    void appelCarte(const char* methode, const std::string& c) {
+        avecPaquets([&](JNIEnv* env, jclass k) {
+            jmethodID m = env->GetStaticMethodID(k, methode, "(Ljava/lang/String;)V");
+            jstring ca = env->NewStringUTF(c.c_str());
+            if (m && ca) env->CallStaticVoidMethod(k, m, ca);
+            if (ca) env->DeleteLocalRef(ca);
+        });
+        cache(c).t = -1; tPhase_ = -1;
+    }
+    void arreterCarte(const std::string& c) override { appelCarte("arreterCarte", c); }
+    void supprimee(const std::string& c) override { appelCarte("supprimee", c); }
+    void ralentir(bool oui) override {
+        avecPaquets([&](JNIEnv* env, jclass k) { jmethodID m = env->GetStaticMethodID(k, "ralentir", "(Z)V"); if (m) env->CallStaticVoidMethod(k, m, (jboolean)oui); });
     }
 };
 } // namespace
