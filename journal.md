@@ -2624,3 +2624,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 13:21:57 — track-agent : lignes des agents finis enlevées (po-scrum-master)
 - Règle de l'utilisateur : un développeur qui a fusionné son ticket sort du tableau. Enlevés : agent 2 (WFS-355), agent 4 (WFS-316), agent dev X (WFS-265), agent dev Y (WFS-354), arwa-2 (WFS-192), arwa-3 (WFS-232).
+
+### 2026-11-09 13:23:13 — Fin de session : Claude, agent 2 (01UY1Vv5) (Claude, agent 2 (01UY1Vv5))
+- WFS-355 fusionné par le lead dev (PR #309, df8e06f8), 🟡 à valider par l'utilisateur (installation neuve de l'APK de `main`). La suite (WFS-357, P3) reste au PO pour une autre session. Session terminée, règle « un seul sujet par session » (2026-11-09).
