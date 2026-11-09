@@ -2853,3 +2853,52 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Exception du PO : E3 est tenue par WFS-338 (↩️, `poursuite*`, `hud.*`) ; WFS-346 n'y touche que `roues.*` + accroches ≤ 10 lignes `player.*` / `aide_direction.*` (μ de la neige) : fichiers séparés. Zone complète et captures demandées dans `regles-de-gestion/WFS-346.md`.
 - Skills : `expert-cartes` + `expert-conduite`. Ticket de conduite : 🟡 après la fusion. Branche `feature/waforspeed-346` à pousser tout de suite.
 - `track-agent.md` : lignes des sessions terminées enlevées (agent 3, agent 5, arwa-4, Agent 0, agent dev Z), règle « agent fini = ligne enlevée ».
+
+### 2026-11-09 17:21:04 — WFS-193 : PR #311 (X5) corrigée après la 2e revue, selon RG-05 à RG-07 du PO (Claude, agent 1)
+- Grille d'un seul tenant : cadre et barres au même galbe de 4,5 cm. Ses bords sont 1 à 2 cm derrière le bord de l'ouverture : plus de « pare-buffle ».
+- Le bas de la grille est à 0,63 m, derrière le haut du pare-chocs. L'option `galbeCadre` est retirée : l'outil est identique à `main`.
+- RG-07 essayé : retirer la lèvre du pare-chocs (33 triangles) faisait des dents aux coins de face. L'essai n'est pas gardé ; un éclat reste au coin droit au zoom ×4, noté dans les limites.
+- 90 tests CPU verts. Les captures comprennent les zooms ×4 des deux coins et de la vue basse.
+- Commit ad7aa366. J'ai répondu point par point dans la PR et rappelé le lead dev.
+
+### 2026-11-09 17:24:09 — WFS-193 : PR #311 (X5) refusée une 3e fois, garde-fou du PO appliqué (lead-dev)
+- 3e revue du commit ad7aa366 : 26 paires avant / après ouvertes (face, 3/4 droit et gauche, capot, vue basse, zooms ×4 des deux coins, du centre et de la vue basse, de jour et de nuit, vitrines). Diff relu : `tools/formes.json` (entrée x5), `x5.wfm` / `.lod`, banc `WFS_VITRINE_BAS` (h0 / d0 remis), accroche de 2 lignes `orbitHauteur` / `orbitRecul` : rien de bloquant.
+- Acquis : pare-buffle supprimé (RG-05 tenue), montant gauche net, marque méconnaissable à distance de vitrine.
+- Défauts restants à la jonction (RG-06 non tenue) : bas de la grille en dents de scie (vue basse, zooms), bord droit en peigne et coin haut droit qui passe devant la carrosserie (vue basse de nuit), éclats blancs aux deux coins bas (nouveau à gauche).
+- Garde-fou du PO (suivi du 16:56:49) : X5 sortie de WFS-193 ; WFS-193 fini avec la Compass et la 208 (#308, déjà sur `main`) ; PR #311 fermée sans fusion, branche `feature/waforspeed-193` gardée ; X5 comme sur `main`. Le PO crée une nouvelle US pour la X5 (nouvelle session ou lead dev en renfort, à voir avec WFS-194). Piste notée dans la revue : découper la grille sur le contour exact de l'ouverture.
+- Session du développeur Claude, agent 1 (01UY1Vv2) terminée (un seul ticket par session). Ligne #311 retirée de `suivi-pr.md`.
+
+
+### 2026-11-09 17:25:43 — WFS-193 passé 🟣, X5 sortie vers WFS-358 (po-scrum-master)
+- Suite du 3e refus de la PR #311 (lead dev, 17:24:09) et du garde-fou du 16:56:49.
+- **WFS-193 → 🟣 Fusionné (PR #308, `78540de6`, Compass et 208)** ; le robot des statuts le passe en ✅ avec les bancs du matin.
+- **Nouvelle US WFS-358** (P1, E10, ⏳ Prêt) : calandre de la X5, jonction grille / carrosserie propre. Défauts à faire disparaître : bas en dents de scie (vue basse), bord droit en peigne et coin haut droit devant la carrosserie sous le phare, éclats blancs aux deux coins bas. Méthode au choix : grille découpée sur le contour exact de l'ouverture, ou ouverture fermée par une pièce de carrosserie avant la grille. Acquis repris de `feature/waforspeed-193` (`ad7aa366`) : haricots retirés, pointe repliée sans pli, banc `WFS_VITRINE_BAS`. Règles : `regles-de-gestion/WFS-358.md`.
+- Pour une **nouvelle session** de développeur (ou le lead dev en renfort) ; **pas Claude, agent 1**. Lien avec WFS-194 : si l'utilisateur remplace la X5 (question ouverte dans `tache utilisateur.md`), WFS-358 est annulé. Un seul des deux à la fois en E10 (WFS-349 tient E10 par exception).
+- Claude, agent 1 (01UY1Vv2) : session close, aucun autre ticket (`track-agent.md`).
+
+### 2026-11-09 17:26:11 — WFS-193 : session terminée (Claude, agent 1)
+- WFS-193 est 🟣 avec la Compass et la 208 (#308). La X5 est sortie du ticket par le garde-fou du PO après le 3e refus de #311. La PR est fermée sans fusion et la branche `feature/waforspeed-193` est gardée.
+- J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
+- Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
+
+### 2026-11-09 17:31:59 — WFS-214 : arbitrage RG-02, ciel de midi (po-scrum-master)
+- Demande de Claude, agent dev W (01UY1Vv4Ed) : le ciel est calé sur 6 000 lx (éclairement mesuré **à l'ombre**), d'où un zénith à 2,7 kcd/m² au lieu de ≈ 7 à 10 kcd/m² ; avis de l'expert réalisme 3D : option A.
+- **Décision : option A, dans WFS-214** (zone E13) : plein ciel selon Krochmann (≈ 15,8 klx à h 70°) pour le ciel affiché et l'ambiance ; 6 000 lx gardés comme contrôle « à l'ombre ». B refusée (énergie incohérente).
+- Conditions (détail dans `regles-de-gestion/WFS-214.md`, Suivi) : référentiel complété, test adapté sans rien supprimer ni affaiblir, mesures au banc (zénith 6-8 kcd/m², E_d ±15 %, 2,5-3,2 IL), nuit inchangée, captures h 70 / 30 / 10 et ombres de la Ville avant / après ; repli sur C avec US dédiée si A ne tient pas dans la journée. US « occlusion du ciel » seulement si le défaut se voit.
+
+### 2026-11-09 17:34:56 — WFS-346 : plan, accroches annoncées, question « aurore » (Claude, agent cartes (01UY1Vv2dx))
+- Branche `feature/waforspeed-346` poussée (1er commit : valeurs réelles `references/reel/cartes_v2/neige.md`, μ neige tassée 0,25, flocons 2 à 5 mm, 1 à 1,5 m/s).
+- Plan : saison lue du bloc `decor` du paquet (format 2 des blocs : `adherence`, `neige_chaussee`, `flocons`), valeurs par défaut = sec sans neige (cartes du code inchangées) ; chaussée enneigée et traces de roues dans `route.glsl` (neige transmise au matériau de route, sèche sous le toit du tunnel) ; flocons = particules du monde autour de la caméra dans `meteo.cpp` (rien dans l'habitacle, rien sous un tunnel) ; tunnel générique des cartes de données (piédroits et dalle) ; μ dans la conduite du joueur.
+- **Accroches annoncées** : `game.cpp` 2 lignes (include + `cartes_v2::preparerSaison(mapId)` avant `route::preparer`) ; `player.h` 1 ligne (`muSol_`, `kSol_`) ; `player.cpp` 8 lignes (include, μ du sol pour la voiture du joueur ; conduite du jeu (ancien modèle, `g_conduiteMonde` faux) : limite de lacet, freinage et élan × μ, vitesse permise de l'aide × μ ; nouveau modèle : `sol.mu`) ; ordinateurs (`Aide::Web`) et cartes du code : rien ne change (test). `desktop_main.cpp` 1 ligne (banc `neige`). `aide_direction.*`, `direction.*`, `roues.*` : non touchés.
+- **Question au PO (RG-03, « aurore »)** : le ciel est en E13 (`sky*`, interdit à ce ticket, WFS-214 en cours) ; je ne fais pas l'aurore ici. Proposition : la mettre dans WFS-344 (contenu de la carte Neige scandinave) ou une US E13 après WFS-214. Les lumières de Noël sont déjà lues du paquet (WFS-343).
+
+### 2026-11-09 19:05:07 — Synchronisation de track-agent.md ; réponse « aurore » à WFS-346 (po-scrum-master)
+- `track-agent.md` remis d'accord avec `TACHES.md`, `suivi-pr.md` et les branches : ligne de Claude, agent 1 enlevée (session terminée, WFS-193 🟣) ; agent arwa : seul WFS-338 en cours (↩️ #297, en revue par le lead dev depuis 18:58), ses autres tickets fusionnés ; derniers envois : 349 17:27, 214 17:45, 346 18:02, 338 11:51 (en revue, pas d'alerte).
+- Question de Claude, agent cartes (17:34:56) : l'aurore boréale sort de WFS-346 et va dans WFS-344, après la fusion de WFS-214 (ciel en E13). Noté dans les deux fichiers de règles.
+
+### 2026-11-09 19:14:18 — X5 acceptée (PR #311 rouverte), WFS-358 = correction séparée, ordre des US calé sur les objectifs (po-scrum-master)
+- **Ordre de l'utilisateur** : « ce n'est pas à cause d'un petit truc qu'on jette le travail dans la poubelle ; tu acceptes, ensuite tu crées une tâche séparée pour corriger ». Ma faute : le garde-fou du 16:56:49 a fait fermer #311 sans fusion.
+- PR #311 (X5, `ad7aa366`) **rouverte** ; le lead dev est appelé pour la synchroniser avec `main` et la **fusionner en squash** (seul à fusionner). Ligne ajoutée à `suivi-pr.md`.
+- **WFS-358** devient la tâche séparée : corriger seulement les 4 défauts de jonction (RG-04), en partant de `main` après la fusion de #311 (règles mises à jour).
+- Ordre permanent ajouté au skill du PO : une PR presque bonne est acceptée, les petits défauts vont dans une tâche séparée.
+- Nouveau bandeau d'ordre dans `TACHES.md` : voitures sans marque (#311, WFS-358, WFS-194), cartes (WFS-357, 344, 345), performance (rien de prêt, validations téléphone en attente), puis WFS-337, 287, 323, 280, 332, 341.
