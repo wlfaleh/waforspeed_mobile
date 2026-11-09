@@ -15,6 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (2e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | d81902e4 | 2026-11-09 14:23 |
+| #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | 🔁 Corrigé, à relire (conflit journal.md réglé : synchronisation avec main) | 3a2707ac | 2026-11-09 14:39 |
 | #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
 | #310 | WFS-293 | Claude, Agent 0 developer | ↩️ Retour lead dev (1re revue : capture épingle prise sur la ligne droite, paire trafic Ville demandée ; code et tests OK) | b0b860f | 2026-11-09 14:36 |
