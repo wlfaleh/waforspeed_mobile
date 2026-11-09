@@ -261,7 +261,7 @@ private:
             if (!projeter(g, k.p, x1, y1) || x1 < -4 || y1 < -4 || x1 > w_ + 4 || y1 > h_ + 4) continue;
             if (cockpit && !dehors(quad, x1, y1)) continue;
             if (!projeter(g, k.p + dcam, x0, y0)) { x0 = x1; y0 = y1; }
-            const float px = std::max(1.0f, k.r * focale / z);
+            const float px = std::max(1.6f * k_, k.r * focale / z);   // au moins ≈ 1,5 px « CSS » : flou de mise au point et de bougé d'un flocon proche
             const float horiz = std::sqrt(rel.x * rel.x + rel.z * rel.z);
             float a = 0.9f * (1 - std::clamp((horiz - 0.7f * meteo::FLOCONS_DEMI) / (0.3f * meteo::FLOCONS_DEMI), 0.f, 1.f)) * std::min(1.f, z);
             float lum = 0.95f;
@@ -275,7 +275,7 @@ private:
             float dx = x1 - x0, dy = y1 - y0, l = std::sqrt(dx * dx + dy * dy);
             if (l < px) { dx = 0; dy = 1; l = 1; x0 = x1; y0 = y1 - px; }   // presque immobile : petit carré du diamètre du flocon
             const float nx = -dy / l * px * 0.5f, ny = dx / l * px * 0.5f;
-            const float at = l > px * 3 ? a * std::max(0.25f, px * 3 / l) : a;   // traînée longue : plus pâle (même lumière étalée)
+            const float at = l > px * 3 ? a * std::max(0.5f, px * 3 / l) : a;   // traînée longue : plus pâle (même lumière étalée)
             const UiVertex q[4] = {{x0 + nx, y0 + ny, -1, -1, cr, cg, cb, at * 0.3f}, {x1 + nx, y1 + ny, -1, -1, cr, cg, cb, at},
                                    {x1 - nx, y1 - ny, -1, -1, cr, cg, cb, at}, {x0 - nx, y0 - ny, -1, -1, cr, cg, cb, at * 0.3f}};
             r.uiQuad(q);

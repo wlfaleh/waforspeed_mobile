@@ -25,8 +25,12 @@ repete 20 8 1220 sapin 0 -48 14
 # lampadaires de la rue
 repete 30 0 1220 lampe 0 1
 # guirlandes (seg_debut seg_fin lat hauteur pas couleur) et fenêtres éclairées (lumiere seg lat hauteur rayon couleur)
-guirlande 0 1219 -10 4.5 3 0xff3b30
-guirlande 1 1219 -10.1 4.6 3 0x30ff70
-guirlande 2 1219 -10.2 4.5 3 0xffcf7a
+# WFS-346 : guirlandes interrompues sous l'abri (tunnel de 880 à 990)
+guirlande 0 875 -10 4.5 3 0xff3b30
+guirlande 1 875 -10.1 4.6 3 0x30ff70
+guirlande 2 875 -10.2 4.5 3 0xffcf7a
+guirlande 996 1219 -10 4.5 3 0xff3b30
+guirlande 997 1219 -10.1 4.6 3 0x30ff70
+guirlande 998 1219 -10.2 4.5 3 0xffcf7a
 repete 45 10 1200 lumiere 0 -13.9 2.6 0.35 0xffcf7a
 repete 60 30 1200 lumiere 0 14.4 2.8 0.35 0xffcf7a

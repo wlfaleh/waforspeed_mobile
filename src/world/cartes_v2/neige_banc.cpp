@@ -70,7 +70,7 @@ struct Banc {
         for (int i = 0; i < 60 * 30 && p.kmh() > 0.5; i++) {
             DriveInput in; in.brake = true; in.steer = (float)std::clamp(-p.playerX * 3.0 - p.heading * 4.0, -1.0, 1.0);
             const double fait = (p.dist * M - d0);
-            if (nom && pris < 5 && (dernier < 0 || fait - dernier >= std::max(8.0, v0 * v0 / 3000))) { capture(std::string(nom) + "-" + std::to_string(pris++)); dernier = fait; }
+            if (nom && pris < 5 && (dernier < 0 || fait - dernier >= std::max(4.0, (v0 / 3.6) * (v0 / 3.6) / (2 * saisonPartie().muChaussee * 9.81) / 5))) { capture(std::string(nom) + "-" + std::to_string(pris++)); dernier = fait; }
             g.manette = in; g.update(1.0 / 60); t += 1.0 / 60; if (i % 6 == 0) g.render(t);
             if (p.kmh() < 1 && in.brake) break;   // arrêt (le frein enchaînerait sur la marche arrière)
         }
@@ -150,14 +150,14 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     if (b.partir("noel-test", false, VueCamera::Poursuite, 30)) {
         Player& p = b.joueur();
         for (int i = 0; i < 60 * 30 && p.kmh() < 55; i++) b.pas(1, 60);
-        double cap0 = p.monde.cap, latMax = 0;
+        const double x0 = p.playerX * RW; double latMax = 0;
         for (int k = 0; k < 5; k++) {
             b.capture("neige-virage-" + std::to_string(k));
-            for (int i = 0; i < 24; i++) { b.pas(1, 60, 1.f, 6); latMax = std::max(latMax, std::abs(p.monde.u() * p.monde.r)); }
+            for (int i = 0; i < 24; i++) { b.pas(1, 60, 1.f, 6); latMax = std::max(latMax, std::abs(p.latAcc)); }
         }
-        WFS_LOG("banc neige (WFS-346) : virage volant à fond vers 55 km/h : accélération latérale maxi %.2f g (μ sol %.2f), cap gagné %.2f rad en 2 s",
-                latMax / 9.81, saisonPartie().muChaussee, std::abs(p.monde.cap - cap0));
-        b.verifier(latMax / 9.81 < saisonPartie().muChaussee * 1.3 + 0.05, "virage sur la neige : accélération latérale limitée par μ (la voiture glisse)");
+        WFS_LOG("banc neige (WFS-346) : virage volant à fond vers %.0f km/h : accélération latérale maxi %.2f g (μ sol %.2f), écart latéral gagné %.1f m en 2 s",
+                p.kmh(), latMax / 9.81, saisonPartie().muChaussee, p.playerX * RW - x0);
+        b.verifier(latMax / 9.81 > 0.05 && latMax / 9.81 < saisonPartie().muChaussee * 1.3 + 0.05, "virage sur la neige : accélération latérale limitée par μ (la voiture glisse)");
         b.fin();
     }
     // retour sur une carte du code : sec, sans neige
