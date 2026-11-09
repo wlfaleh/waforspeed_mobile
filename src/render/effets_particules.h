@@ -68,12 +68,13 @@ inline float voluteAlpha(float x, float y) {
     const float profil = (std::exp(-4.f * r2) - e1) / (1 - e1);
     return profil * (0.55f + 0.45f * bruitVolute(x, y));
 }
-// WFS-224 (RG-02) : vie d'une volute (age = 1 − fondu, 0 → 1) : elle apparaît en 0,15 de sa vie (pas de disque qui surgit),
-// puis s'efface en douceur (fondu^1,5) ; sa taille grandit de 0,5 à 2 fois la taille de base (la fumée se dilate)
+// WFS-224 (RG-02) : vie d'une volute (age = 1 − fondu, 0 → 1) : elle apparaît en 0,05 de sa vie (WFS-292 ; 0,15 avant, pas de disque qui surgit),
+// puis s'efface en douceur (fondu^1,2 ; WFS-292 RG-01 : fondu^1,5 avant, la nappe disparaissait dès 0,5 s, invisible de
+// jour) ; sa taille grandit de 0,5 à 2 fois la taille de base (la fumée se dilate)
 inline float voluteOpacite(float fondu) {
     fondu = std::clamp(fondu, 0.f, 1.f);
     const float age = 1 - fondu;
-    return std::min(1.f, age / 0.15f) * std::pow(fondu, 1.5f);
+    return std::min(1.f, age / 0.05f) * std::pow(fondu, 1.2f);   // WFS-292 : apparition en 0,05 de sa vie (0,15 avant) : la nappe part des roues
 }
 inline float voluteEchelle(float fondu) { return 0.5f + 1.5f * (1 - std::clamp(fondu, 0.f, 1.f)); }
 // WFS-224 (RG-02, ANO-120) : une volute qui passe près de la caméra (la voiture la laisse derrière elle) remplissait
