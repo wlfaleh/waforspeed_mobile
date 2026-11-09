@@ -1,5 +1,6 @@
 #include "player.h"
 #include <algorithm>
+#include "../world/cartes_v2/carte_donnees.h"   // WFS-346 (accroche) : μ des surfaces de la carte
 
 namespace wfs {
 
@@ -105,6 +106,7 @@ void Player::reset(const CarDef& c) {
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
+    if (aide != Aide::Web) { const auto& sz = cartes_v2::saisonPartie(); const bool bc = std::abs(playerX) > 1; muSol_ = bc ? sz.muBasCote : sz.muChaussee; kSol_ = muSol_ / (bc ? physique::MU_HERBE : 1.0); }   // WFS-346 (accroche) : voiture du joueur
     if (modeleMonde()) { updateMonde(dt, in, track, playing); return; }   // WFS-241 : voiture du joueur, conduite réaliste
     // WFS-256 : voiture du joueur en conduite d'avant (g_conduiteMonde faux) : pose de départ pour les chocs avec le décor
     const bool chocsDecorActifs = aide != Aide::Web && chocs::registre().taille() > 0;
@@ -131,7 +133,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     // angle des roues plus petit à haute vitesse
     const double wheelAngle = steer * Phys::maxSteer / (1 + std::abs(v) / Phys::steerV) * (aide == Aide::Web ? 1.0 : reductionBraquageHauteVitesse(std::abs(v), perf.wb));
     double yawRate = v / perf.wb * std::tan(wheelAngle) * perf.handling;
-    const double yawLim = Phys::grip * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence
+    const double yawLim = Phys::grip * kSol_ * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence (WFS-346 : × μ du sol)
     yawRate = clampd(yawRate, -yawLim, yawLim);
     double courbe = seg.curve;   // courbure de la force centrifuge (unités de Segment::curve)
     facRoute_ = 1;   // ordinateur (jeu web) : la route porte la voiture, avance inchangée
@@ -198,7 +200,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     bool freinAideAvant = freinAide;
     freinAide = false;
     if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258 && !joueurConduit) {
-        double vp = vitesseVirageAide(track, dist, Phys::grip / 9.81, Phys::brake / 9.81);
+        double vp = vitesseVirageAide(track, dist, Phys::grip * kSol_ / 9.81, Phys::brake * kSol_ / 9.81);   // WFS-346 : aide qui tient compte de μ
         if (g_vitesseVirageCourse5) vp = std::min(vp, g_vitesseVirageCourse5(track, dist) * M * 0.9);
         if (v > vp) {
             cmd.gas = false; cmd.nitro = false;
@@ -220,11 +222,11 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     if (!playing) speed = std::max(0.0, speed - resist * dt);
     else if (locked) speed = speed > 0 ? std::max(0.0, speed - Phys::brake * 0.5 / M * dt) : std::min(0.0, speed + Phys::brake * 0.5 / M * dt);
     else if (reversing) speed = std::max(REV_MAX, speed - REV_ACC * dt);
-    else if (braking) speed = std::max(0.0, speed - (Phys::brake * perf.freinage / M + resist) * dt);   // WFS-188 (RG-04) : selon la voiture
+    else if (braking) speed = std::max(0.0, speed - (Phys::brake * perf.freinage / M + resist) * kSol_ * dt);   // WFS-188 (RG-04) : selon la voiture ; WFS-346 : ABS, tout le freinage × μ du sol
     else if (accelerating && speed < 0) speed = std::min(0.0, speed + Phys::brake / M * dt);
     else if (accelerating) {
         const double push = perf.a0 / M * (nitroOn ? config().nitro.poussee : 1) * std::max(0.0, 1 - std::pow(std::max(0.0, speed) / top, 2.2));
-        speed += (push - resist * 0.35 - off) * dt;
+        speed += ((kSol_ < 1 ? std::min(push, kSol_ * 0.55 * 9.81 / M) : push) - resist * 0.35 - off) * dt;   // WFS-346 : antipatinage, ≤ μ g × part motrice (≈ 55 %)
     } else speed = speed < 0 ? std::min(0.0, speed + resist * dt) : std::max(0.0, speed - (resist + off) * dt);
     if (speed > top) speed = std::max(top, speed - MAX_SPEED * 0.4 * dt);
     lonAcc = (speed - prevSpeed) * M / std::max(dt, 1e-3);
@@ -427,7 +429,7 @@ void Player::updateMonde(double dt, const DriveInput& in, Track& track, bool pla
     c.nitro = nitroOn ? config().nitro.poussee : 1;
     c.abs = g_aidesVoiture.abs; c.antipatinage = g_aidesVoiture.antipatinage; c.esp = g_aidesVoiture.esp;   // WFS-253
     physique::Sol sol;
-    if (std::abs(playerX) > 1) { sol.mu = physique::MU_HERBE; sol.crr = physique::CRR_HERBE; }   // bas-côté
+    sol.mu = muSol_; if (std::abs(playerX) > 1) sol.crr = physique::CRR_HERBE;   // bas-côté ; WFS-346 (accroche) : μ de la carte (défaut : route 1, bas-côté MU_HERBE)
     sol.pente = track.pointLisse(dist, playerX * RW).slope * std::cos(heading);
     const double x0 = monde.x, z0 = monde.z, cap0 = monde.cap;
     physique::pas(P, monde, c, sol, dt);

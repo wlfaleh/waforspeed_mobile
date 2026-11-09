@@ -3047,6 +3047,73 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Ticket** : WFS-376 (P1, E12 + E2) — Corniche : vrais bateaux dans la marina (ANO-206), premier prêt de la suite « Décor sans formes géométriques ». Règles : `regles-de-gestion/WFS-376.md` (zone et interdits ajoutés au Suivi).
 - **Zone** : `src/world/plage.cpp` (marina, `O_BATEAU`, `voilier()`, `yacht()`), `palUv` ≤ 2 couleurs, `tests/**`. **Interdit** : `P_OCEAN` (WFS-380), `trace_cartes.cpp` (WFS-379), `meteo.*` / `cartes_v2` / `route_*` (WFS-346), E13, `vehicule_cockpit*`, voitures.
 - Skills : `agent-developer`, `waforspeed-natif`, `artiste-3d`, `expert-cartes`. WFS-380 attendra la fusion de WFS-376 pour `plage.cpp` (hors `P_OCEAN`).
+### 2026-11-09 19:52:57 — Début WFS-379 : attribué à Claude, agent cartes 2 (01UY1Vv4VT) (po-scrum-master)
+- Nouvelle session `@cartes` (session_01UY1Vv4VTT6nCcCeczFGXuV), 1er et seul ticket ; demande sans sujet précis → ticket prêt le plus prioritaire de son domaine : **WFS-379** (P1, Corniche : lacets supprimés, plus aucun terrain en l'air, ANO-212). WFS-357 (P3) reste ⏳ Prêt.
+- Zone : E2 + E12 avec exception PO (fichiers listés dans `regles-de-gestion/WFS-379.md`, « Suivi ») ; aucun fichier commun avec WFS-346 (PR #315, agent cartes 01UY1Vv2dx), WFS-338, 349, 214 (diffs vérifiés). RG-05 sans objet (pas de Corniche dans les paquets).
+- Plan : montée simple de +60 m (rayon ≥ 150 m, pente ≤ 7 %), boucle fermée, décor des lacets retiré, bancs et guidage mis à jour, captures avant / après jour et nuit + parcours complet.
+- WFS-380 (vraie mer) passe « après WFS-379 » : même fichier `plage.cpp`.
+
+### 2026-11-09 19:53:46 — WFS-379 et WFS-376 en même temps dans `plage.cpp` : zones séparées (po-scrum-master)
+- WFS-376 (marina) attribué en parallèle par une autre instance du PO (19:53:14). Partage : WFS-379 = tracé `corniche()` et décor des lacets / de la montée ; WFS-376 = marina, `O_BATEAU`, `voilier()`, `yacht()`. Interdits croisés écrits dans les deux règles. WFS-380 attend WFS-379 et WFS-376.
+
+### 2026-11-09 19:57:22 — WFS-376 : réponses du PO au développeur sur la marina (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv3u9). Décisions notées dans `regles-de-gestion/WFS-376.md` (Suivi) : RG-02 = axe perpendiculaire à la ligne d'amarrage (quai ou ponton) ±3°, rangée cul au quai + pontons perpendiculaires des deux côtés, chenal ≥ 1,5 × longueur ; un seul seuil de détail à 200 m (`LOD_FAR_M`), mât lointain en 2 quads croisés, budget 9 000 triangles ; quai : baisser seulement la bande d'amarrage si l'écart dépasse 1,5 m, mer et tracé inchangés.
+
+### 2026-11-09 20:01:51 — Avis décor de l'expert 3D : WFS-381 à 384 créés, ANO-215 à 226, points rattachés (po-scrum-master)
+- Source : agent 3d (session_01UY1Vv4DeCjYyC5BsYidg6X), avis recopié de la branche `ccr-45bbe50e-1j246c` dans `qa/retours/avis-expert-3d-2026-11-09-corniche.md` ; images : Release `apercu-fusion`, run build.yml #965 (529b89e).
+- **Créés** : WFS-381 (P1, E13) brume au loin (R1) ; WFS-382 (P1, E4 + bloom E13 ≤ 10 lignes) phares de nuit (N1) ; WFS-383 (P2, E12 + E2, après WFS-379) sols selon la pente + pins d'Alep (R2 / C3) ; WFS-384 (P1, E7, [TECHNIQUE]) bancs du matin #6 à #11 tous sautés (vérifié : `gh run list -w matin.yml`, réveils de GitHub en retard de 5 à 14 h, runs de 6 à 11 s ; seul banc complet du jour : lancement à la main de 00:34 UTC). Exception au gel : correction de la pipeline.
+- **Rattachés** (règles ajoutées) : D1 + R7 → WFS-379 (RG-06 / 07, sans retarder le ticket : autre cause → ticket séparé) ; D2 parasols → **WFS-369** (mobilier, pas WFS-370 ni 378) ; D3 + N2 fenêtres → WFS-370 ; D4 + R4 + R5 → WFS-371 ; R6 rivage → WFS-380 (RG-09) ; D5 → WFS-372 ; D6 → WFS-373 ; C1 + C2 → WFS-344 (pas WFS-346, déjà en PR) ; R3, halos N2, V3 garage → WFS-378.
+- **Garage (V3)** : pas de question à l'utilisateur : la règle du 2026-11-09 19:41 range déjà « garage et menus en 3D » dans le monde 3D → anneau néon à remplacer (WFS-378).
+- **Non retenus ici** : V2 (calandres R4 Competizione / Folg 8) et N3 (rampe de police) : hors décor, pas demandés dans ce retour ; restent notés dans l'avis.
+- Aucune attribution (règle « attribuer seulement à la demande »).
+
+### 2026-11-09 20:04:02 — WFS-349 : PR #316 refusée par le lead dev (lead-dev)
+- Relu au commit 19a067f6 : 47 captures ouvertes, tout le diff lu ; branche construite et 91 tests CPU réussis (`test_cockpit_ferme` compris) ; banc `penetration` relancé en 2340 × 1080 sur la branche synchronisée : recouvrement 0,000 m, portière fermée, éclairage de nuit identique à `main`. Le code est bon (0 appel de dessin en plus, ressources détruites, banc inactif en course).
+- **Refus sur les preuves** : (1) les captures « après » (54a6cad0, 19:24 UTC) ont été faites avant la synchronisation et sans WFS-356 (vitrines et halos de nuit) : toutes les paires de nuit `penetration` et `cockpit` paraissent brûlées, une fausse régression ; à refaire depuis la branche synchronisée. (2) Huit lignes du tableau de la description ont des liens d'images abîmés.
+- Remarques non bloquantes : bord non compté de 5 px (preuve `-ecarts.png` si possible), teinte magenta du banc sur le X5 à droite (cause à nommer), gabarit construit aussi en course, regard Bas 42,4 % (seuil visé : Normal), temps GPU non mesuré sur téléphone.
+- `TACHES.md` → ↩️ Retour lead dev (PR #316) ; `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-09 20:08:29 — Épic E15 « Décors » créée, 5 US « décor complet », WFS-369 à 373 rattachés (po-scrum-master)
+- Demande de l'utilisateur (`@po`, 2026-11-09 ≈ 20:05 UTC) : épic de l'amélioration graphique des décors ; un décor = 200 Mo minimum, 700 Mo maximum ; 99 % de réalisme ; un agent 3D valide les captures de chaque PR par un commentaire avant la fusion par le lead dev ; commencer au plus tôt, une US par décor.
+- **E15** créée (`regles-de-gestion/E15-decors.md`, RG-E15-01 à 09) : taille mesurée sur la partie décor des données de la carte (paquet `.wfcarte`) ; agent 3D = `expert-realisme-3d` (`@3d`), commentaire « Avis agent 3D : VALIDÉ / À REPRENDRE » ; un ticket actif **par décor** pour avancer en parallèle.
+- **Nouvelles US** : WFS-385 Ville, WFS-386 Corniche, WFS-387 Campagne, WFS-388 Grand Prix (P1), WFS-389 Neige scandinave (P2) — décor complet 200 à 700 Mo.
+- **WFS-369 à 373 rattachés à E15**, passés P1, chaîne entre cartes coupée : **prêts maintenant WFS-369 (Ville), WFS-372 (Campagne), WFS-373 (Grand Prix)** ; WFS-371 attend WFS-379 et 376 (`plage.cpp`).
+- Règle de validation ajoutée (ordre de l'utilisateur) dans `CLAUDE.md`, le skill `lead-dev` et l'agent `expert-realisme-3d`. Agent des tickets : `dev-artiste-3d` (+ skill `expert-cartes`), nouvelles sessions.
+
+### 2026-11-09 20:12:30 — E15 : conflits enlevés, anomalies de décor abandonnées (po-scrum-master)
+- Ordre de l'utilisateur : « voir tous les sujets pour ne pas créer de conflits ; les anomalies des décors, il faut les abandonner ».
+- Revue de tous les tickets non terminés, des PR ouvertes (#314, 315, 316 : aucune sur le décor) et des 143 anomalies ouvertes.
+- **17 anomalies de décor 🚫 abandonnées** : ANO-65, 82, 83, 121, 137, 171, 175, 206, 214 à 220, 223, 224 (gardées comme liste de contrôle des US E15).
+- **Repris par E15** : WFS-231, 162, 163 (↪). **Rattachés à E15, file Corniche** : WFS-380, 383 (379 / 376 → 380 → 383 → 371 → 386). **WFS-378** limité au hors décor.
+- Gardés : WFS-379 et 376 en cours (règle des 10 h), lumière / brume / phares / lampadaires (WFS-337, 381, 382), perf WFS-321 / 331 (pas en même temps qu'un E15 de la même carte).
+
+
+### 2026-11-09 20:13:07 — WFS-346 fusionné par le lead dev (lead-dev)
+- PR #315 relue sur d8f88a9a : 25 captures ouvertes, tout le diff lu (55 fichiers). Branche fusionnée localement avec `main` sans conflit, construite, `tests_cpu.sh` 91/91. Banc `neige` relancé : 0 écart ; freinage à fond 63 → 0 km/h en 56,6 m sur neige (≈ 144 m depuis 100), Ville sèche 100 → 0 en 36,6 m (rapport 3,93) ; virage : limite latérale 2,11 g au sec, 0,70 g sur neige ; 1 200 flocons à 0,076-0,078 ms CPU par image.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire : même compte GitHub), puis fusion en squash 62ccc175. Ticket de conduite : **🟡 À valider (utilisateur)**.
+- Remarques non bloquantes, à transmettre en tâches séparées (ordre de l'utilisateur du 19:14) : (1) vue Cockpit de nuit sur la neige : planche de bord, écran et volant délavés en blanc (luminance de l'écran 177 contre 15 sur la Ville de `main`). À corriger en zone cockpit (E10), avant WFS-344. (2) Tache des phares saturée sur la neige de nuit. (3) `player.cpp` : le freinage × μ réduit aussi la résistance de l'air ; le bas-côté enneigé accroche plus que la chaussée dans l'ancien modèle. (4) Chaussée sèche sous le 1er tunnel seulement.
+
+### 2026-11-09 20:15:59 — WFS-346 : fin, session terminée (Claude, agent cartes (01UY1Vv2dx))
+- PR #315 fusionnée par le lead dev (squash 62ccc175) ; 🟡 à valider par l'utilisateur sur son téléphone (ticket de conduite).
+- Défauts restants relevés par le lead dev (cockpit de nuit délavé sur la neige, phares saturés sur la neige, traînée et bas-côté dans `player.cpp`, 1er tunnel seulement / tunnel non éclairé) transmis au PO pour des tickets séparés.
+- Un seul sujet par session : cette session s'arrête et ne demande pas d'autre ticket.
+
+### 2026-11-09 20:16:31 — Suites de WFS-346 (revue du lead dev, PR #315) : WFS-390 à 392 créés (po-scrum-master)
+- Demande de Claude, agent cartes (01UY1Vv2dx) et revue du lead dev (20:13:07) : défauts restants confiés en tâches séparées (ordre de l'utilisateur du 19:14).
+- **WFS-390** (P2, E10) Cockpit de nuit sur la neige délavé (ANO-227) : ⏳ en attente de WFS-349 (mêmes fichiers `vehicule_cockpit*`) ; ajouté aux dépendances de **WFS-344** (à corriger avant, avis du lead dev).
+- **WFS-391** (P2, E3, skill `expert-conduite`) traînée de l'air hors μ et bas-côté enneigé (ANO-229) : ⏳ Prêt ; 🟡 après la fusion (conduite).
+- **WFS-392** (P2, E14 + E9, skill `expert-cartes`) chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230) : ⏳ Prêt.
+- Tache des phares saturée sur la neige (ANO-228) : rangée dans le lot ouvert **WFS-382** (RG-07, capture 6), pas de nouveau ticket.
+- `track-agent.md` : ligne de l'agent cartes (01UY1Vv2dx) enlevée (session terminée, WFS-346 fusionné ; règle « agent fini = ligne enlevée »). Aucun ticket attribué : ils vont à de nouvelles sessions qui les demandent.
+
+### 2026-11-09 20:37:37 — WFS-376 : arbitrage du budget de la marina, option A (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv3u9) : 95 bateaux et 27 000 triangles dans la fenêtre détaillée la plus chargée, contre 40 / 9 000 dans RG-10.
+- Décision : densité réelle gardée, modèle moyen (≈ 100 triangles) aux pontons, rangée 1 à ≈ 85 %, bittes et pontons allégés ; nouveau budget ≤ 18 000 triangles, appels de dessin inchangés. Détail dans `regles-de-gestion/WFS-376.md` (Suivi).
+
+### 2026-11-09 20:40:56 — WFS-374 : 1er passage de diagnostic, défaut non reproduit au banc PC (Claude, agent dev Z (01UY1Vv3EZ))
+- APK de l'utilisateur à 19:35 UTC : celui du run **#966** (WFS-338 poursuite police, 8c4d65a), publié dans `apercu` à 19:23:49 UTC.
+- Bancs `menu1`, `parcours`, `paquets` sur main : 0 écart. ASan + UBSan sur le banc `carte` (4 cartes, jour / nuit) : aucune erreur mémoire. Course à 5 + poursuite sous ASan : en cours.
+- Bloquant : symptôme inconnu (RG-01). Question posée à l'utilisateur sous sa demande dans `tache utilisateur.md`. Notes : `qa/pr/WFS-374/notes.md` (branche `feature/waforspeed-374`).
 
 ### 2026-11-09 19:54:26 — WFS-376 : branche créée, analyse de la marina (Claude, agent dev3d (01UY1Vv3u9))
 - Branche `feature/waforspeed-376` créée depuis main ; skills agent-developer, waforspeed-natif, artiste-3d, expert-cartes chargés.

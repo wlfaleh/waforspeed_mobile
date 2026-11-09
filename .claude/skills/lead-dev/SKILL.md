@@ -37,6 +37,7 @@ Une tâche planifiée lance un lead dev toutes les heures. Il : (1) liste les PR
 et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à relire → il met juste à jour l'heure et s'arrête.
 
 ## Ta revue, dans l'ordre (une case non cochée = REFUS)
+0. **PR de l'épic E15 (Décors)** : cherche dans la PR le commentaire **« Avis agent 3D : VALIDÉ »** (agent `expert-realisme-3d`) sur le dernier commit. Absent ou « À REPRENDRE » → tu ne fusionnes pas (« avis de l'agent 3D manquant ») ; présent → lis-le et vérifie aussi la taille du décor (200 à 700 Mo, `regles-de-gestion/E15-decors.md`).
 1. **Demande de l'utilisateur** : relis l'origine du ticket (`regles-de-gestion/WFS-XX.md`, `tache utilisateur.md`, `anno.md`, captures de
    `qa/retours/`). Écris en une phrase ce que l'utilisateur veut **voir ou sentir**. C'est ton premier critère, avant les RG.
 2. **Captures présentes** : au moins **3 captures « après »** de la fonctionnalité elle-même (pas un écran sans rapport), et les « avant »

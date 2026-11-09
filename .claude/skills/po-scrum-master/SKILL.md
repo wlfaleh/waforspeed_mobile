@@ -87,6 +87,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 6. **Avant chaque action**, tu relis `tache utilisateur.md` et la liste « Ordres permanents » : si ton action contredit un ordre, tu ne la fais pas.
 
 ## Ordres permanents de l'utilisateur (à compléter à chaque nouvel ordre, avec la date)
+- **2026-11-09 — Épic E15 « Décors » (ordre de l'utilisateur)** : chaque décor **200 à 700 Mo**, **99 % de réalisme**, une US par décor ; **avis « VALIDÉ » de l'agent 3D (`expert-realisme-3d`) en commentaire de PR avant la fusion par le lead dev** (`regles-de-gestion/E15-decors.md`). Pour E15, ce seuil en Mo remplace la consigne « pas de seuil en Mo ».
 - **2026-11-06 — Taille des boutons : retour en arrière, puis on n'y touche plus** (remplace l'ordre du matin « garder WFS-147 tel quel »).
   Ticket urgent WFS-168 : **seule la taille des boutons** revient à celle d'avant WFS-147 ; le reste de WFS-147 est gardé (pas de revert entier).
   Ensuite **aucun ticket ne touche à la taille des boutons** tant que le QA n'a pas refait un test avec des émulateurs, plus tard.
