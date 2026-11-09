@@ -23,10 +23,10 @@
    Si elle ne connaît pas son identifiant, elle appelle d'abord `get_session` sans argument.
    - **Agent hors développeur** (`@po`, `@leaddev`, `@qa`, `@cicd`, `@smartbrain`, `@3d`) : dès le 1er message, le nom est
      **`Agent <alias> (<id complet de la session>)`**, par exemple `Agent po (session_01UY1Vv5B99mCrTFBmEatAjE)`.
-   - **Développeur** (`@dev`, `@conduite`, `@cartes`) : dès que le PO lui a attribué son ticket, le nom est
+   - **Développeur** (`@dev`, `@conduite`, `@cartes`) : sur place, dès qu'il reçoit le numéro de son ticket du PO et avant toute autre action (avant même la branche), le nom est
      **`WFS-XXX — <nom de l'agent dans track-agent.md> (<sujet en 3 à 5 mots>)`**, par exemple `WFS-343 — Claude, agent 3 (carte de Noël 1/3)`.
      Après la fusion, quand la session s'arrête : **`⏹️ Terminée — <nom de l'agent> (WFS-XXX fusionné)`**.
-   - Si l'outil n'est pas disponible dans la session, elle le signale au PO, qui la renomme lui-même au moment de l'attribution.
+   - **C'est l'agent lui-même qui renomme sa discussion, jamais le PO** (précision de l'utilisateur, 2026-11-09).
    - Aucune tâche planifiée pour ce renommage (décision de l'utilisateur, 2026-11-09).
 
 **Skills chargés automatiquement** : chaque fichier `.claude/agents/<nom>.md` liste ses skills dans le champ `skills:`. Quand l'agent est appelé (outil Agent), Claude Code charge ces skills tout seul au démarrage ; quand une session prend le rôle avec `@<agent>`, elle les charge elle-même avec l'outil Skill (règle de `CLAUDE.md`).

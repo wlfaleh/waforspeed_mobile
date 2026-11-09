@@ -1,0 +1,107 @@
+{
+ "compass": {
+  "materiaux": 15,
+  "empreinteAvant": "6cdf7b47fac95746",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 2,
+    "boite": [
+     -0.455,
+     0.795,
+     -2.18,
+     0.455,
+     0.995,
+     -2.03
+    ],
+    "note": "calandre de marque à 7 fentes : cadres chromés retirés",
+    "triangles": 705
+   },
+   {
+    "retirer": true,
+    "materiau": 7,
+    "boite": [
+     -0.455,
+     0.795,
+     -2.18,
+     0.455,
+     0.995,
+     -2.03
+    ],
+    "note": "calandre de marque à 7 fentes : fond noir retiré",
+    "triangles": 15621
+   },
+   {
+    "grille": [
+     -0.44,
+     0.805,
+     -2.14,
+     0.44,
+     0.98,
+     -2.08
+    ],
+    "barres": 3,
+    "galbe": 0.045,
+    "cadre": 0.015,
+    "couleur": "#1c1c1c",
+    "metal": 0.6,
+    "rugosite": 0.4,
+    "note": "grille générique : cadre, 3 barres horizontales, galbe du nez"
+   }
+  ],
+  "empreinteApres": "3479cb3aaa9d323f"
+ },
+ "p208": {
+  "materiaux": 17,
+  "empreinteAvant": "255a507ac4060374",
+  "retouches": [
+   {
+    "retirer": true,
+    "materiau": 0,
+    "boite": [
+     -0.43,
+     0.395,
+     -2.02,
+     0.43,
+     0.785,
+     -1.89
+    ],
+    "note": "calandre de marque (treillis en losanges) retirée, fond sombre gardé",
+    "triangles": 251
+   },
+   {
+    "retirer": true,
+    "materiau": 8,
+    "boite": [
+     -0.125,
+     0.55,
+     -2.03,
+     0.125,
+     0.75,
+     -1.955
+    ],
+    "note": "socle du lion (relief au centre du fond sombre) retiré devant la grille",
+    "triangles": 748
+   },
+   {
+    "grille": [
+     -0.415,
+     0.405,
+     -1.975,
+     0.415,
+     0.76,
+     -1.94
+    ],
+    "barres": 5,
+    "galbe": 0.035,
+    "trapeze": 0.68,
+    "cadre": 0.012,
+    "couleur": "#202020",
+    "metal": 0.6,
+    "rugosite": 0.4,
+    "note": "grille générique en trapèze (forme de l'ouverture d'origine) : cadre, 5 barres, galbe du nez"
+   }
+  ],
+  "empreinteApres": "2ff076abf2a391c1"
+ }
+}
