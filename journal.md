@@ -2553,3 +2553,6 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 ### 2026-11-09 12:24:00 — WFS-338 : PR #297, 3e revue : contenu accepté, conflit seulement (lead-dev auto)
 
 RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour / nuit avant / après). Seul blocage : nouveau conflit `journal.md` avec `main` (commits arrivés après la synchronisation de 11:52). À la prochaine revue sans conflit : approbation et fusion. #305 : 2e retour de lead-dev, pas de « corrigé dans » ; #288 inchangée.
+
+### 2026-11-09 12:24:47 — Skills chargés automatiquement par chaque agent (po-scrum-master)
+- Question de l'utilisateur : les skills se chargent-ils tout seuls ? Champ `skills:` ajouté aux 9 fichiers `.claude/agents/*.md` (Claude Code les charge au démarrage de l'agent, doc : code.claude.com/docs/en/sub-agents). `CLAUDE.md` et `appel-agents.md` : une session qui prend un rôle avec `@` charge ces skills avec l'outil Skill.

@@ -18,6 +18,8 @@
 4. **Alias inconnu** : la session donne cette liste et demande lequel prendre (seul cas où elle pose une question).
 5. Les règles de `CLAUDE.md` restent valables pour tous les rôles (gel iOS, lead dev seul à fusionner, réseau, nom de l'agent dans les commits…).
 
+**Skills chargés automatiquement** : chaque fichier `.claude/agents/<nom>.md` liste ses skills dans le champ `skills:`. Quand l'agent est appelé (outil Agent), Claude Code charge ces skills tout seul au démarrage ; quand une session prend le rôle avec `@<agent>`, elle les charge elle-même avec l'outil Skill (règle de `CLAUDE.md`).
+
 Remarque : dans Claude Code, « @ » ouvre aussi la suggestion de fichiers ; il suffit de continuer à taper l'alias puis un espace.
 
 ## Nos agents (ceux de `.claude/agents/`, seulement)
