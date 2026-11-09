@@ -63,6 +63,13 @@ int main() {
       VERIFIER(!lireChocs("format 1\ncylindre 900 0 9 0.3 0x808080 1 poteau\n", d, e));   // hors du tour (300 segments)
       VERIFIER(!lireChocs("format 1\ncylindre 10 0 9 0.3 0x808080 1 dragon\n", d, e));   // genre inconnu
       VERIFIER(!lireDecor("format 1\nmaison 10 -5 0 8 8 6 0xffffff 0x000000\n", d, e));   // sur la chaussée
+      // revue #312 : la largeur est en travers de la route (dessin, chocs) ; l'angle compte
+      VERIFIER(!lireDecor("format 1\nmaison 10 -12 0 20 2 6 0xffffff 0x000000\n", d, e) && e.find("chaussée") != std::string::npos);   // mur de −2 à −22 m
+      VERIFIER(lireDecor("format 1\nmaison 10 -12 90 20 2 6 0xffffff 0x000000\n", d, e));    // tournée de 90° : 1 m en travers
+      VERIFIER(!lireDecor("format 1\nmaison 10 -14 90 2 20 6 0xffffff 0x000000\n", d, e));   // tournée de 90° : 10 m en travers
+      VERIFIER(!lireChocs("format 1\nboite 10 0 -11 0.3 4 90 0x808080 1 mur\n", d, e) && lireChocs("format 1\nboite 10 0 -11 0.3 4 0 0x808080 1 mur\n", d, e));   // tournée de 90° : 4 m en travers (refusée) ; à 0° : 0,3 m
+      VERIFIER(!lireDecor("format 1\nlumiere 10 -7 3 0.2 0xff0000\n", d, e) && e.find("chaussée") != std::string::npos);
+      VERIFIER(!lireDecor("format 1\nsapin 1e30 -20 8\n", d, e));   // entier hors limites, refusé avant la conversion
       VERIFIER(!lireDecor("format 1\nbande 20 10 0 0 0xffffff\n", d, e));
       VERIFIER(!lireDecor("format 1\nrepete 0 0 10 sapin 0 -20 8\n", d, e));     // pas nul
       VERIFIER(lireDecor("format 1\nrepete 100 0 300 sapin 0 -20 8\n", d, e) && d.objets.size() == 3 && d.objets[2].seg == 200); }
@@ -80,6 +87,14 @@ int main() {
       Track v; v.build(mapById("ville"), 1);
       VERIFIER(v.segmentCount() != 1220 && v.sections().empty()); }   // cartes du code inchangées
     VERIFIER(cartesDonnees(false).empty() && cartesDonnees(true).size() == 1);   // carte d'essai cachée aux joueurs
+    {   // revue #312 : ré-enregistrer une carte (moins d'objets) ne touche pas une copie déjà prise (décor de la carte en cours)
+        const auto prise = donnees("noel-test");
+        const size_t nObj = prise->objets.size(), nObs = prise->obstacles.size();
+        DonneesCarte moins = n; moins.objets.resize(3); moins.obstacles.clear();
+        VERIFIER(enregistrer(moins, e));
+        VERIFIER(prise->objets.size() == nObj && prise->obstacles.size() == nObs && nObj > 3);
+        VERIFIER(donnees("noel-test")->objets.size() == 3 && donnees("noel-test")->obstacles.empty());
+        VERIFIER(enregistrer(n, e)); }
 
     // ---- cuisson puis découverte dans le dossier des paquets
     oublier();
@@ -97,7 +112,13 @@ int main() {
     VERIFIER(decouvrir() == 1);
     VERIFIER(donnees("noel-test") && !donnees("automne-test") && !donnees("autre-test") && !donnees("feuille-test"));
     ecrireFichier(carte::nomFichier("automne-test", carte::FormatTexture::RGBA8), carte::ecrire(pa));
+    const auto avant = donnees("noel-test");
     VERIFIER(decouvrir() == 2 && donnees("automne-test") && donnees("automne-test")->segments() == 900);
+    VERIFIER(donnees("noel-test") == avant);   // revue #312 : paquet inchangé → pas relu ni ré-enregistré
+    {   // paquet changé (taille différente) → relu
+        carte::Paquet p2 = pn; p2.blocs.back().donnees.push_back('\n');   // bloc decor : une ligne vide de plus
+        ecrireFichier(carte::nomFichier("noel-test", carte::FormatTexture::RGBA8), carte::ecrire(p2));
+        VERIFIER(decouvrir() == 2 && donnees("noel-test") != avant && avant->objets.size() == donnees("noel-test")->objets.size()); }
     VERIFIER(empreinteDonnees("noel-test") != empreinteDonnees("automne-test"));
     std::filesystem::remove_all(dir);
     oublier();

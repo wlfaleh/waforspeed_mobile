@@ -6,6 +6,7 @@
 #include <deque>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include "../../core/log.h"
@@ -44,7 +45,7 @@ bool nombre(const std::string& s, double& v) {
     v = std::strtod(s.c_str(), &f);
     return f && *f == 0 && !s.empty() && std::isfinite(v);
 }
-bool entier(const std::string& s, int64_t& v) { double d; if (!nombre(s, d) || d != std::floor(d)) return false; v = (int64_t)d; return true; }
+bool entier(const std::string& s, int64_t& v) { double d; if (!nombre(s, d) || d != std::floor(d) || std::fabs(d) > 9.0e15) return false; v = (int64_t)d; return true; }   // borné avant la conversion (revue #312)
 bool couleur(const std::string& s, uint32_t& c) {
     std::string h = s;
     if (h.rfind("0x", 0) == 0 || h.rfind("0X", 0) == 0) h = h.substr(2); else if (!h.empty() && h[0] == '#') h = h.substr(1);
@@ -62,6 +63,12 @@ std::string reste(const std::string& brute, const std::string& cle) {
     std::string r = brute.substr(p);
     while (!r.empty() && (r.back() == ' ' || r.back() == '\t')) r.pop_back();
     return r;
+}
+// demi-étendue en travers de la route d'un objet rectangulaire (largeur en travers à 0°, profondeur le long), tourné de angle (degrés) :
+// même calcul pour une maison et une boîte du bloc chocs (revue #312 : la largeur est en travers, comme au dessin et aux chocs)
+double travers(double largeur, double profondeur, double angleDeg) {
+    const double an = angleDeg * 3.14159265358979 / 180;
+    return std::fabs(largeur / 2 * std::cos(an)) + std::fabs(profondeur / 2 * std::sin(an));
 }
 std::string ligneErr(int n, const std::string& quoi) { return "ligne " + std::to_string(n) + " : " + quoi; }
 
@@ -187,9 +194,7 @@ bool lireChocs(const std::string& texte, DonneesCarte& d, std::string& e) {
         const float t = boite ? std::min(o.largeur, o.profondeur) : o.rayon;
         if (seg < 0 || seg >= S || std::fabs(o.lat) > LAT_MAX || std::fabs(o.along) > 50 || t <= 0 || std::max({o.largeur, o.profondeur, o.rayon, o.hauteur}) > TAILLE_MAX || o.hauteur <= 0) {
             e = "bloc chocs : " + ligneErr(n, "obstacle hors du tour ou de taille impossible"); return false; }
-        const double an = o.angle * 3.14159265358979 / 180;   // demi-étendue en travers de la route (boîte tournée de son angle)
-        const double travers = boite ? std::fabs(o.largeur / 2 * std::cos(an)) + std::fabs(o.profondeur / 2 * std::sin(an)) : o.rayon;
-        if (std::fabs(o.lat) - travers < RW) { e = "bloc chocs : " + ligneErr(n, "obstacle sur la chaussée (|lat| − taille < 7,5 m)"); return false; }
+        if (std::fabs(o.lat) - (boite ? travers(o.largeur, o.profondeur, o.angle) : o.rayon) < RW) { e = "bloc chocs : " + ligneErr(n, "obstacle sur la chaussée (|lat| − taille < 7,5 m)"); return false; }
         d.obstacles.push_back(o);
         if (d.obstacles.size() > OBJETS_MAX) { e = "bloc chocs : trop d'obstacles"; return false; }
     }
@@ -236,7 +241,7 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
             if (k == "maison") {   // maison seg lat angle largeur profondeur hauteur couleur_murs couleur_toit
                 if (!lire(9, {7, 8})) return err(n, "« maison seg lat angle largeur profondeur hauteur couleur_murs couleur_toit » attendu");
                 o.type = Objet::Maison; o.lat = (float)x[2]; o.angle = (float)x[3]; o.largeur = (float)x[4]; o.profondeur = (float)x[5]; o.hauteur = (float)x[6];
-                if (std::fabs(o.lat) - o.profondeur / 2 < RW + 1) return err(n, "maison sur la chaussée ou le trottoir");
+                if (std::fabs(o.lat) - travers(o.largeur, o.profondeur, o.angle) < RW + 1) return err(n, "maison sur la chaussée ou le trottoir");
             } else if (k == "sapin" || k == "feuillu" || k == "cypres") {   // sapin seg lat hauteur
                 if (!lire(4, {})) return err(n, "« " + k + " seg lat hauteur » attendu");
                 o.type = k == "sapin" ? Objet::Sapin : k == "feuillu" ? Objet::Feuillu : Objet::Cypres; o.lat = (float)x[2]; o.hauteur = (float)x[3];
@@ -248,6 +253,7 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
                 if (!lire(6, {5})) return err(n, "« lumiere seg lat hauteur rayon couleur » attendu");
                 o.type = Objet::Lumiere; o.lat = (float)x[2]; o.hauteur = (float)x[3]; o.rayon = (float)x[4];
                 if (o.rayon <= 0 || o.rayon > 2 || o.hauteur < 0) return err(n, "lumière de rayon 0 à 2 m");
+                if (std::fabs(o.lat) - o.rayon < RW + 0.5) return err(n, "lumière sur la chaussée");
             } else if (k == "guirlande") {   // guirlande seg_debut seg_fin lat hauteur pas_seg couleur : une lumière tous les pas segments
                 int64_t fin = 0;
                 if (w.size() != 7 || !entier(w[1], seg) || !entier(w[2], fin) || !nombre(w[3], x[3]) || !nombre(w[4], x[4]) || !nombre(w[5], x[5]) || !couleur(w[6], o.couleur) || x[5] < 1 || fin <= seg || fin > S)
@@ -273,15 +279,17 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
 
 // ---------------------------------------------------------------- registre
 namespace {
-struct Entree { DonneesCarte d; MapDef def{}; };
+// données d'une carte : partagées en lecture seule ; un nouvel enregistrement les REMPLACE (jamais modifiées sur place) : qui en tient une
+// copie (décor de la carte en cours) la garde intacte (revue #312). id et nom de MapDef : chaînes propres à l'entrée.
+struct Entree { std::shared_ptr<const DonneesCarte> d; std::string id, nom, fichier; uintmax_t taille = 0; std::filesystem::file_time_type date{}; MapDef def{}; };
 std::mutex g_m;
 std::deque<Entree>& registre() { static std::deque<Entree> r; return r; }
-Entree* trouver(const std::string& id) { for (Entree& e : registre()) if (e.d.id == id) return &e; return nullptr; }
+Entree* trouver(const std::string& id) { for (Entree& e : registre()) if (e.id == id) return &e; return nullptr; }
 
 // Track::build d'une carte de données : routes du jeu web (addRoad) puis sections typées
 void construire(Track& t, const MapDef& m) {
     std::vector<Route> routes; std::vector<trace::Section> sections;
-    { std::lock_guard<std::mutex> v(g_m); if (const Entree* e = trouver(m.id)) { routes = e->d.routes; sections = e->d.sections; } }
+    { std::lock_guard<std::mutex> v(g_m); if (const Entree* e = trouver(m.id)) { routes = e->d->routes; sections = e->d->sections; } }
     for (const Route& r : routes) t.ajouterRoute(r.entree, r.tenue, r.sortie, r.courbe, r.montee);
     t.poserSections(std::move(sections));
 }
@@ -291,13 +299,8 @@ const MapDef* chercher(const char* id) {
     const Entree* e = trouver(id);
     return e ? &e->def : nullptr;
 }
-bool carteDuCode(const std::string& id) {
-    const MapDef* (*f)(const char*) = g_cartesDonnees;
-    g_cartesDonnees = nullptr;   // MAPS seules
-    const bool code = id == mapById(id.c_str()).id;
-    g_cartesDonnees = f;
-    return code;
-}
+// carte du code : mapById la trouve sans « construire » (le registre n'a jamais de carte du code ; inconnue → MAPS[0], autre identifiant)
+bool carteDuCode(const std::string& id) { const MapDef& m = mapById(id.c_str()); return m.construire == nullptr && id == m.id; }
 } // namespace
 
 bool enregistrer(DonneesCarte d, std::string& e) {
@@ -306,22 +309,23 @@ bool enregistrer(DonneesCarte d, std::string& e) {
     std::lock_guard<std::mutex> v(g_m);
     Entree* x = trouver(d.id);
     if (!x) { registre().push_back({}); x = &registre().back(); }
-    x->d = std::move(d);
+    auto p = std::make_shared<const DonneesCarte>(std::move(d));
+    x->d = p; x->id = p->id; x->nom = p->nom; x->fichier.clear(); x->taille = 0;
     MapDef& m = x->def;
-    m.id = x->d.id.c_str(); m.name = x->d.nom.c_str();
-    m.seed = x->d.graine; m.curves = {1}; m.hills = 0; m.sections = 0; m.edge = x->d.bord;
-    m.trafficN = x->d.traficN; m.trafficMin = x->d.traficMin; m.trafficMax = x->d.traficMax;
+    m.id = x->id.c_str(); m.name = x->nom.c_str();
+    m.seed = p->graine; m.curves = {1}; m.hills = 0; m.sections = 0; m.edge = p->bord;
+    m.trafficN = p->traficN; m.trafficMin = p->traficMin; m.trafficMax = p->traficMax;
     m.construire = &construire;
     g_cartesDonnees = &chercher;
     WFS_LOG("cartes de données (WFS-343) : %s « %s » enregistrée (%lld segments, %zu sections, %zu obstacles, %zu objets)%s", m.id, m.name,
-            (long long)x->d.segments(), x->d.sections.size(), x->d.obstacles.size(), x->d.objets.size(), x->d.cache ? ", carte de test cachée" : "");
+            (long long)p->segments(), p->sections.size(), p->obstacles.size(), p->objets.size(), p->cache ? ", carte de test cachée" : "");
     return true;
 }
-const DonneesCarte* donnees(const std::string& id) { std::lock_guard<std::mutex> v(g_m); const Entree* e = trouver(id); return e ? &e->d : nullptr; }
+std::shared_ptr<const DonneesCarte> donnees(const std::string& id) { std::lock_guard<std::mutex> v(g_m); const Entree* e = trouver(id); return e ? e->d : nullptr; }
 std::vector<std::string> cartesDonnees(bool cachees) {
     std::lock_guard<std::mutex> v(g_m);
     std::vector<std::string> r;
-    for (const Entree& e : registre()) if (cachees || !e.d.cache) r.push_back(e.d.id);
+    for (const Entree& e : registre()) if (cachees || !e.d->cache) r.push_back(e.id);
     return r;
 }
 void oublier() { std::lock_guard<std::mutex> v(g_m); registre().clear(); g_cartesDonnees = nullptr; }
@@ -356,6 +360,14 @@ int decouvrir() {
         bool ok = false;
         for (carte::FormatTexture f : carte::FORMATS) {   // format préféré d'abord (les blocs de données sont les mêmes)
             const std::string chemin = carte::dossierPaquets() + "/" + carte::nomFichier(id, f);
+            std::error_code e1, e2;
+            const uintmax_t taille = fs::file_size(chemin, e1);
+            const fs::file_time_type date = fs::last_write_time(chemin, e2);
+            if (e1 || e2) continue;   // absent
+            {   // revue #312 : paquet inchangé (même fichier, taille et date) → carte gardée telle quelle, rien n'est relu
+                std::lock_guard<std::mutex> v(g_m);
+                if (const Entree* x = trouver(id); x && x->fichier == chemin && x->taille == taille && x->date == date) { ok = true; break; }
+            }
             carte::Paquet p;
             const carte::Verdict v = carte::verifier_carte(chemin, {id, f, empreinteDonnees(id)}, &p);
             if (v == carte::Verdict::Absent) continue;
@@ -363,6 +375,7 @@ int decouvrir() {
             DonneesCarte d;
             if (!lireBlocs(id, texteBloc(p, "trace"), texteBloc(p, "chocs"), texteBloc(p, "decor"), d, raison)) { raison = carte::nomFichier(id, f) + " : " + raison; continue; }
             ok = enregistrer(std::move(d), raison);
+            if (ok) { std::lock_guard<std::mutex> v(g_m); if (Entree* x = trouver(id)) { x->fichier = chemin; x->taille = taille; x->date = date; } }
             break;
         }
         if (ok) nb++;

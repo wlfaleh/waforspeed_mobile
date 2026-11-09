@@ -52,7 +52,7 @@ void listeCartes() {
     g_liste.clear();
     for (int i = 0; i < 4; i++) g_liste.push_back({CARTES[i].id, CARTES[i].desc, CARTES[i].solNuit, CARTES[i].solJour, CARTES[i].accent, i});
     for (const std::string& id : cartes_v2::cartesDonnees(std::getenv("WFS_CARTES_TEST") != nullptr))
-        if (const cartes_v2::DonneesCarte* d = cartes_v2::donnees(id)) g_liste.push_back({id, d->description, d->vignetteNuit, d->vignetteJour, d->accent, 4});
+        if (const auto d = cartes_v2::donnees(id)) g_liste.push_back({id, d->description, d->vignetteNuit, d->vignetteJour, d->accent, 4});
 }
 int nbCartes() { if (g_liste.empty()) listeCartes(); return (int)g_liste.size(); }
 
@@ -239,7 +239,7 @@ void vignette(Renderer& r, float X, float Y, float W, float H, const CarteVue& c
 
 // zoneNames du web : noms distincts des quartiers de la carte, dans l'ordre (un tour de ZONES[ground])
 std::vector<std::string> quartiers(const MapDef& m) {
-    if (const cartes_v2::DonneesCarte* d = cartes_v2::donnees(m.id)) return d->quartiers;   // WFS-343 : quartiers lus du paquet
+    if (const auto d = cartes_v2::donnees(m.id)) return d->quartiers;   // WFS-343 : quartiers lus du paquet
     std::vector<std::string> v;
     for (int64_t i = 0; i < 12; i++) {
         const std::string n = zoneName(m, i * ZONE_LEN, (int64_t)1 << 40);
@@ -461,7 +461,7 @@ bool centreRouler(float& x, float& y) {
 }
 
 double longueurKm(const MapDef& m) {   // mapLengthKm (screens.js)
-    if (const cartes_v2::DonneesCarte* d = cartes_v2::donnees(m.id)) return d->segments() * SEG * M / 1000;   // WFS-343 : routes du paquet
+    if (const auto d = cartes_v2::donnees(m.id)) return d->segments() * SEG * M / 1000;   // WFS-343 : routes du paquet
     Mulberry32 R(m.seed);
     int n = 120;
     for (int i = 0; i < m.sections; i++) {

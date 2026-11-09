@@ -20,7 +20,7 @@ class CarteDonnees : public CarteDecor {
 public:
     const char* name() const override { return "carte de données"; }
     void init(Renderer& r, const GameView& g) override {
-        d_ = g.map ? cartes_v2::donnees(g.map->id) : nullptr;
+        d_ = g.map ? cartes_v2::donnees(g.map->id) : nullptr;   // revue #312 : copie gardée par le décor (intacte si la carte est ré-enregistrée)
         id_ = d_ ? d_->id : std::string();
         cases_.clear();
         if (d_) {   // couleurs de la carte → cases libres de la palette (couleursCarte, appelée par CarteDecor::init)
@@ -132,7 +132,7 @@ private:
         }
         return best;
     }
-    const cartes_v2::DonneesCarte* d_ = nullptr;
+    std::shared_ptr<const cartes_v2::DonneesCarte> d_;
     std::string id_;
     std::map<uint32_t, int> cases_;
 };
@@ -142,7 +142,7 @@ class ReglagesCarte : public System {
 public:
     const char* name() const override { return "réglages de la carte"; }
     void init(Renderer&, const GameView& g) override {
-        const cartes_v2::DonneesCarte* d = g.map ? cartes_v2::donnees(g.map->id) : nullptr;
+        const auto d = g.map ? cartes_v2::donnees(g.map->id) : nullptr;
         const double m = d && d->checkpointM > 0 ? d->checkpointM : config().checkpoint.distanceM;
         config().checkpoint.distanceU = m / M;
         if (d) WFS_LOG("cartes de données (WFS-343) : %s : checkpoints tous les %.0f m", d->id.c_str(), m);

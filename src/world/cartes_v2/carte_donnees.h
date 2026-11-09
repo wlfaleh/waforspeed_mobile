@@ -12,6 +12,7 @@
 // Sources des cartes de test : paquets/sources/<carte>/{trace,chocs,decor}.txt, cuites par cartes_v2::cuire (banc).
 #pragma once
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 #include "../../core/carte_cuite.h"
@@ -61,11 +62,14 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& erreur);
 // ---- registre des cartes lues dans les paquets
 // enregistre une carte (blocs lus) ; remplace une carte de même identifiant ; les 4 cartes du code ne sont jamais remplacées
 bool enregistrer(DonneesCarte d, std::string& erreur);
-const DonneesCarte* donnees(const std::string& id);   // nullptr : carte du code ou inconnue
+// données d'une carte (lecture seule) ; nullptr : carte du code ou inconnue. Un nouvel enregistrement remplace les données sans toucher
+// à une copie déjà prise (le décor de la carte en cours garde la sienne)
+std::shared_ptr<const DonneesCarte> donnees(const std::string& id);
 std::vector<std::string> cartesDonnees(bool avecCachees);   // ordre d'enregistrement
 void oublier();                                         // banc, tests
 // paquets du dossier des paquets (<carte>_<format>.wfcarte) d'une carte qui n'est pas dans le code : vérifiés (CRC, empreinte des
-// données), blocs lus, cartes enregistrées ; renvoie le nombre de cartes enregistrées ; une ligne au journal par paquet refusé
+// données), blocs lus, cartes enregistrées ; un paquet inchangé (fichier, taille, date) n'est pas relu ; renvoie le nombre de cartes
+// de paquets disponibles ; une ligne au journal par paquet refusé
 int decouvrir();
 // empreinte attendue d'une carte de données : identifiant, format des blocs, VERSION_GENERATION_CARTE (pas de graine du code)
 uint64_t empreinteDonnees(const std::string& id);
