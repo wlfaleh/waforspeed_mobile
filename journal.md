@@ -4637,3 +4637,14 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - Branche `feature/waforspeed-291` ; zone : `src/ui/ecrans/reglages.*`, `menu.*` ; règles : `regles-de-gestion/WFS-291.md` (découpage validé le 2026-11-08 23:04:56 UTC).
 - Inclus (même fichier, demande du lead dev sur #287) : `onEcran` remet aussi `g_doigt` à zéro, pas seulement `g_presse`.
 - Captures avant / après obligatoires, PR relue et fusionnée par le lead dev ; après fusion → 🟡 À valider (utilisateur) si le ticket vient d'un essai de l'utilisateur.
+
+### 2026-11-09 00:55:04 — WFS-334 : PR #293 ouverte, pluie hors de l'habitacle et des tunnels (Claude, agent dev Y)
+- **Cause (RG-01)** : la pluie est un voile de traits 2D dessiné par-dessus toute l'image (`meteo.cpp`, `drawUi`). Elle ne tient compte ni de la vue (planche, volant, toit), ni des tunnels, ni de la vitesse : ses traits restaient verticaux.
+- **Correction** (`meteo.*`, et `vehicule_cockpit.*` en E10) :
+  - pluie coupée sous les tunnels du tracé, avec un fondu de 8 m ;
+  - en vue Cockpit, traits seulement à travers le pare-brise (projeté à l'écran) et les vitres latérales au-dessus de la planche ;
+  - 140 gouttes posées sur la vitre, effacées par les balais (`pareBriseVu()` pour la géométrie, même modèle de balais que la caméra) ;
+  - traits inclinés depuis le point de fuite à vitesse (ANO-194).
+- **Zone** : `camera_vue.cpp` est seulement lu (`etatCockpit()`, sans accroche). `cartes_banc.cpp` reçoit 3 vues de tunnel pour les captures (RG-05).
+- **Vérifié en local** : `test_pluie` vert, 81 tests CPU verts, parcours complet 0 écart, 182 gouttes effacées par les balais au banc. Coût de la pluie : 0,029 ms par image en cockpit, 0,006 à 0,013 ms en vue Arrière.
+- **Captures** dans `qa/pr/WFS-334/` (12 paires). L'« avant » = la branche avec `meteo.*` et `vehicule_cockpit.*` de `main`. Le premier essai « avant » a été rejeté : le banc n'avait pas été reconstruit, comme le montrait la ligne de journal présente dans le banc « avant ».
