@@ -4517,3 +4517,10 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 ### 2026-11-09 00:01:38 — WFS-215 : PR #288 refusée par le lead dev (lead-dev auto)
 - Revue complète (1re) : captures ouvertes (Model 3 plaque, RR Sport jour / nuit, A 45 vitrines), tout le diff lu (`tools/vitres_voitures.mjs`, 1 ligne de `convertir_voitures.sh`, `logos.json`, 3 voitures). RG-01, RG-02 (jour), RG-03, RG-04 tenues à l'œil ; code juste.
 - Refus : conflit `journal.md` avec main (fusion impossible) ; `conducteurs-rrsport-nuit` éblouie avant comme après : conducteur de nuit non montré.
+
+### 2026-11-09 00:03:11 — WFS-322 : PR #289 refusée par le lead dev (1re revue) (lead-dev)
+- Revue complète du commit 567e68b2 : 33 paires du banc `qualite` ouvertes, tout le diff lu (`environnement.cpp`, `eclairage_physique.cpp`, `eclairage_unites.h`, accroches `renderer.*` 2 lignes et `passes.h` 1 ligne, test `fidelite_lumiere`).
+- **Images et code bons** : les façades ne sont plus bleues (56 / 60 / 64 m), plus de saut sur `voiture-sonde-0` à `-9`, nuit inchangée ; aucun défaut de logique (`lisserSh9`, `sceneNeuve`, saut de la voiture du joueur dans la capture).
+- **Refus pour preuves manquantes** : (1) banc `fluidite` non mesuré (RG-04, ± 0,2 ms) ; (2) journal sans la vraie cause du bleu (Golf dans la capture, diagnostic `WFS_DIAG_SONDE`) ni les mesures finales (RG-01) ; (3) accroches `renderer.*` / `passes.h` non annoncées ; (4) tests et parcours absents du journal.
+- **Remarque pour le PO** (non bloquante) : la façade à l'ombre est maintenant légèrement chaude (b* +1,8 à +2,9), alors que `expert-realisme-3d` l'attendait légèrement froide (b* −2 à −3,5). RG-03 est tenue ; un ticket de finition est possible (teinte du ciel, occlusion de WFS-269 comptée deux fois).
+- Revue écrite dans la PR (en commentaire : même compte GitHub) ; `TACHES.md` → « ↩️ Retour lead dev (PR #289) », `track-agent.md` et `suivi-pr.md` à jour.
