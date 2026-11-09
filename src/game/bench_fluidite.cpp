@@ -101,7 +101,13 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
             Track tq; tq.build(mapById(q.carte), trace::versionCarte(q.carte));
             int64_t sq = -1, dedans = 0;
             for (const trace::Section& x : trace::sections(tq))
-                if (x.type == q.type && x.exRondPoint == q.carrefour) { sq = std::max<int64_t>(0, x.debut - (int64_t)(120 / SEG_M)); dedans = x.debut + (int64_t)(15 / SEG_M); break; }
+                if (x.type == q.type && x.exRondPoint == q.carrefour) {
+                    // revue du lead dev (PR #310) : capture au segment de plus forte courbure de la section (les lacets de la Corniche
+                    // commencent par une partie droite : 15 m après le début, la voiture n'était pas encore dans l'épingle)
+                    int64_t pic = x.debut; for (int64_t a = x.debut; a < x.fin; a++) if (std::abs(tq.segAt(a).curve) > std::abs(tq.segAt(pic).curve)) pic = a;
+                    dedans = std::max(x.debut + (int64_t)(15 / SEG_M), pic - (int64_t)(6 / SEG_M));
+                    sq = std::max<int64_t>(0, std::min(x.debut, dedans - (int64_t)(60 / SEG_M)) - (int64_t)(120 / SEG_M)); break;
+                }
             if (sq < 0) { WFS_ERR("fluidite : %s : section introuvable", q.nom); manques++; continue; }
             Game::interpolation = true; Game::cameraTempsSimule = true; Track::penteLissee = true; g_cameraFiltreExact = true;
             setenv("WFS_DEPART", std::to_string(sq).c_str(), 1);
@@ -209,10 +215,10 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                         ech.push_back({t, pc, std::atan2(fc.x, -fc.z), std::asin(std::clamp(fc.y, -1.f, 1.f)), (double)dot(v.carPos - v.eye, h), g.player().kmh(), g.player().controlLock > 0 || g.player().playerSpin != 0, v.carPos, v.eye, g.player().playerX, g.player().heading});
                     }
                     g.shutdown();
-                    // WFS-293 (RG-07) : à 10-20 img/s, la même course rejouée à 120 Hz (mêmes commandes à chaque pas, caméra calculée
+                    // WFS-293 (RG-07, RG-12) : à toutes les cadences, la même course rejouée à 120 Hz (mêmes commandes à chaque pas, caméra calculée
                     // à chaque pas) : écart de chaque image rendue à cette référence au même instant simulé
                     double ecartRef = -1;
-                    if (passe < 2) {   // WFS-293 (RG-12) : référence à toutes les cadences
+                    {   // WFS-293 (RG-12) : référence à toutes les cadences
                         setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                         courseBenchRules(true);
                         const bool ok2 = g.init(r, "golf", carte);
@@ -280,7 +286,8 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                         // WFS-293 (RG-12, RG-13, décision du PO du 2026-11-08 23:53 UTC) : la référence 120 Hz juge tous les scénarios à
                         // toutes les cadences (< 5 mm à ≥ 30 img/s, ≤ 10 mm à 10-20) ; l'indicateur de WFS-247 juge EN PLUS à ≥ 30 img/s en
                         // ligne droite, en montée et en virage serré (sans plancher là : il voit une irrégularité de la simulation elle-même) ;
-                        // dans l'épingle et au carrefour, il a un plancher mesuré (baisse en h² à h³ avec la cadence) : pour information
+                        // dans l'épingle et au carrefour, il a un plancher mesuré (baisse en h² à h³ avec la cadence) : pour information ;
+                        // 26 img/s (téléphone, entre 20 et 30) : aucun seuil, pour information (RG-03 : seuils à 10-20 et ≥ 30 img/s)
                         const bool droite = sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee;
                         const bool sansPlancher = droite || (sc.type == trace::Type::Virage && !sc.carrefour);
                         if (fps >= 30 && sansPlancher) pireApres[0] = std::max(pireApres[0], res.acoupMm);

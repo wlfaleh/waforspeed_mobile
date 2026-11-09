@@ -114,14 +114,14 @@ TrackPoint Track::pointLisse(double s, double lat) {
         d = (-p0 + p2) * 0.5 + (p0 - 2 * p1 + p2) * f + (-p0 + 3 * p1 - 3 * p2 + p3) * 0.5 * f2;
         return ((p0 + 4 * p1 + p2) + (-3 * p0 + 3 * p2) * f + (3 * p0 - 6 * p1 + 3 * p2) * f2 + (-p0 + 3 * p1 - 3 * p2 + p3) * f3) / 6.0;
     };
-    double dx, dy, dz, dth;
+    double dx, dy, dz, dthInutile;   // dérivée du cap : non lue (le cap seul sert)
     const double x = bs(q0.x, q1.x, q2.x, q3.x, dx), y = cr(q0.y, q1.y, q2.y, q3.y, dy), z = bs(q0.z, q1.z, q2.z, q3.z, dz);
     TrackPoint o;
     // sens de th : x += sin(th), z −= cos(th) le long du tracé (Track::pose) ; caps déroulés autour de q1 (continuité du tour : th de
     // point() ± π gardée)
     const double t0 = q1.th + std::remainder(q0.th - q1.th, 2 * PI), t2 = q1.th + std::remainder(q2.th - q1.th, 2 * PI),
                  t3 = t2 + std::remainder(q3.th - q2.th, 2 * PI), thP = q1.th + (q2.th - q1.th) * f;
-    o.th = thP + std::remainder(bs(t0, q1.th, t2, t3, dth) - thP, 2 * PI);
+    o.th = thP + std::remainder(bs(t0, q1.th, t2, t3, dthInutile) - thP, 2 * PI);
     o.x = x + std::cos(o.th) * lat; o.z = z + std::sin(o.th) * lat; o.y = y;
     o.slope = std::atan2(dy, std::hypot(dx, dz));
     return o;
