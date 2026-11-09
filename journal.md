@@ -4563,3 +4563,28 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 ### 2026-11-09 00:24:48 — WFS-302 : Release `paquets` publiée, run 1 de paquets.yml vert (agent expert ci cd)
 - Run 42539619005 (feu vert de l'utilisateur), 4 min, vert : deux cuissons identiques, Release `paquets` créée, `cartes.json` (commit c11c831a) : ville ASTC 21,7 Mo, ETC2 5,3 Mo, RGBA8 26,3 Mo, empreinte c30f0f40c276b6c1.
 - Vérifié de l'extérieur : liste lue à l'adresse de `configgame.json` ; redirection GitHub vers release-assets.githubusercontent.com suivie ; `Range` répond 206 (reprise possible) ; fichier ASTC complet téléchargé, SHA-256 identique à la liste. Reste RG-06 : essai sur le téléphone de l'utilisateur (🟡).
+
+### 2026-11-09 00:29:24 — WFS-322 : cause complète, mesures finales, accroches, tests (réponse à la 1re revue de #289) (Claude, agent 1)
+- **Cause du bleu (RG-01)**, prouvée au banc par le diagnostic `WFS_DIAG_SONDE` (`eclairage_physique.cpp`, actif seulement au banc) : la sonde d'environnement est posée 1,5 m au-dessus de la voiture du joueur, et la capture dessinait cette voiture.
+  - La peinture de la Golf bleue remplissait la moitié basse du cube : sous l'horizon, x 0,234 / y 0,213 (violet, ≈ 4 400 lx), au lieu de la chaussée au soleil.
+  - Ce reflet coloré éclairait toutes les façades de la rue (éclairement d'une façade x 0,25 / y 0,24).
+  - Sans la voiture : sol x 0,33 / y 0,34 (≈ 8 500 lx), façade x 0,32 / y 0,33.
+  - Causes du saut : sonde A remplacée sans fondu ; exposition recalée d'un coup après un saut de plus de 80 m dans la même scène.
+- **Correction** :
+  - capture sans la voiture du joueur (opaques et vitres) ;
+  - diffus lissé sur 0,6 s (`lisserSh9`) ;
+  - recalage d'un coup réservé à la 1re capture d'une nouvelle scène.
+- **Accroches hors zone (annoncées ici)** :
+  - `src/render/renderer.h` : champ `joueur` de `Pending`, 1 ligne ;
+  - `src/render/renderer.cpp` : `p.joueur = dessinJoueur`, 1 ligne (réutilise `dessinJoueur` de WFS-265) ;
+  - `src/render/passes.h` : `AccesRendu::joueur`, 1 ligne.
+- **Mesures finales (banc `qualite`, Ville de jour, Haute)** :
+  - saut à l'arrivée d'une sonde : 5,87 → **0,41** ΔE2000 (RG-02 : ≤ 2) ;
+  - façades `voiture-lod-passage-56` et `-60` : b* −6,3 / −6,2 → **+2,9 / +1,8**, L* 19,4 / 19,3 (RG-03 : b* ≥ −4, même couleur).
+- **RG-04, coût** (même machine, l'un après l'autre, `main` puis branche) :
+  - banc `fluidite` : rapport identique ligne pour ligne (0 ligne différente) ;
+  - banc `perf`, Ville, processeur par image : Haute 2,1 → 2,2 ms, Basse 1,3 → 1,2 ms (± 0,2 ms) ;
+  - capture d'environnement au GPU : 47,8 → 39,9 ms (voiture du joueur sautée) ;
+  - passe de scène au GPU en rendu logiciel : 455 → 461 ms en Haute, 238 → 221 ms en Basse, dans le bruit du rendu logiciel.
+- **Tests** : 80 tests CPU verts, dont `test_fidelite_lumiere` (lissage) ; parcours complet 0 écart (vue Arrière et Cockpit), branche synchronisée avec `main`.
+- **Écart avec l'avis de l'expert** : façade à l'ombre légèrement chaude (b* +1,8 à +2,9) au lieu de légèrement froide (−2 à −3,5). C'est dans RG-03 ; un ticket de finition possible pour le PO (teinte du ciel, occlusion de WFS-269 comptée deux fois sur les captures).
