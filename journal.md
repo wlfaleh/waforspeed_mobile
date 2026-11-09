@@ -2875,3 +2875,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Nouvelle US WFS-358** (P1, E10, ⏳ Prêt) : calandre de la X5, jonction grille / carrosserie propre. Défauts à faire disparaître : bas en dents de scie (vue basse), bord droit en peigne et coin haut droit devant la carrosserie sous le phare, éclats blancs aux deux coins bas. Méthode au choix : grille découpée sur le contour exact de l'ouverture, ou ouverture fermée par une pièce de carrosserie avant la grille. Acquis repris de `feature/waforspeed-193` (`ad7aa366`) : haricots retirés, pointe repliée sans pli, banc `WFS_VITRINE_BAS`. Règles : `regles-de-gestion/WFS-358.md`.
 - Pour une **nouvelle session** de développeur (ou le lead dev en renfort) ; **pas Claude, agent 1**. Lien avec WFS-194 : si l'utilisateur remplace la X5 (question ouverte dans `tache utilisateur.md`), WFS-358 est annulé. Un seul des deux à la fois en E10 (WFS-349 tient E10 par exception).
 - Claude, agent 1 (01UY1Vv2) : session close, aucun autre ticket (`track-agent.md`).
+
+### 2026-11-09 17:26:11 — WFS-193 : session terminée (Claude, agent 1)
+- WFS-193 est 🟣 avec la Compass et la 208 (#308). La X5 est sortie du ticket par le garde-fou du PO après le 3e refus de #311. La PR est fermée sans fusion et la branche `feature/waforspeed-193` est gardée.
+- J'ai répondu « Bien reçu » dans la PR et noté les pistes pour la suite, WFS-358 (nouvelle session).
+- Ma session s'arrête : un sujet par session. Aucun ticket n'est demandé.
