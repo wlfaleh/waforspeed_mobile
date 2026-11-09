@@ -4852,3 +4852,54 @@ Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, jou
 ### 2026-11-09 08:22:14 — Statuts automatiques, CI main #947 (robot statuts)
 - Run rouge (push, commit b872854), aucun statut changé. Job(s) en échec : publication-apk.
 - Tickets 🟣 contenus dans ce run : WFS-339, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 08:56:45 — WFS-348 : mesure par passe, cause, PR #300 ; décision du PO demandée (agent arwa (Claude, session trafic))
+- **Banc** (branche `feature/waforspeed-348`, outils du banc seulement, rien dans l'APK) : `WFS_BANC=perf WFS_PERF_SCENE=1` refait la scène de l'utilisateur : Ville de nuit sous la pluie, Checkpoint, vue Arrière, « Rue des Mimosas » 60 m avant le virage serré à droite (checkpoint 8, capture identique à `qa/retours/2026-11-09-derniere-apk-scene-16-img-s.jpg`), Basse dans l'état du téléphone (scène à 60 %, palier 2 : ombres, reflets, captures coupés), 2340 × 1080. Image figée (même image pour chaque variante), coût GPU par passe, effets retirés un par un (`WFS_PERF_SCENE_EFFETS=1`), leviers (`WFS_PERF_SCENE_LEVIERS=1`), compteurs du pipeline (`WFS_STATS_PIPELINE=1` : pixels calculés par le shader, sommets).
+- **RG-01, tableau A — même scène, APK 928 contre `main`** (compteurs exacts, indépendants de la charge de la machine) :
+
+| version | appels | triangles | pixels calculés (k) | sommets (k) | projecteurs |
+|---|---|---|---|---|---|
+| APK 928 (`b5d8ddbf`) | 138 | 185 358 | 2 463 (928 + WFS-305 sans ses carreaux) | 226 | 6 |
+| 928 + WFS-305 (`3529cc7b`) | 138 | 191 086 | 2 475 | 243 | 6 |
+| `main` (`7e3659dc`, `c333b0b2`) | 138 | 191 086 | 2 475 | 243 | 6 |
+
+  Aucun shader n'a changé depuis l'APK 928 (`git diff b5d8ddbf origin/main -- shaders` vide). Temps GPU de la scène au banc (lavapipe, machine partagée par d'autres bancs : ± 25 % d'une exécution à l'autre pour le même binaire) : APK 928 521 à 737 ms, `main` 514 à 968 ms : même coût, aux bruits près.
+- **RG-02, cause** : **aucune fusion depuis l'APK 928 n'a augmenté le coût de cette scène** (WFS-305, `3529cc7b`, le seul changement visible : + 0,5 % de pixels calculés, + 5 728 triangles de carreaux de sol au parc). Les 37,1 ms de l'APK 928 ont été mesurés ailleurs (Course à 5, autre lieu, voitures 74 %) ; les 55,8 ms sont le coût **de ce lieu** : chaussée large éclairée par 6 lumières (2 feux de croisement de 200 m de portée + 4 lampadaires) sur presque tout l'écran, pelouse du parc, feuillage à découpe. Le coût est par pixel : la scène à 30 % coûte 54 % de moins (part par pixel ≈ 72 %).
+- **Tableau B — coût de chaque effet, même scène, Basse** (une exécution, variantes l'une après l'autre ; GPU scène lavapipe) :
+
+| variante | GPU scène (ms) | écart | pixels calculés (k) |
+|---|---|---|---|
+| tout (Basse du téléphone) | 670 | — | 2 475 |
+| sans lumières de nuit | 602 | − 10 % (− 17 % dans une 2e exécution) | 2 468 |
+| sans chaussée mouillée | 718 | bruit | 2 467 |
+| sans sonde IBL | 656 | − 2 % | 2 466 |
+| sans transparents (halos, taches des phares) | 687 | bruit | 2 270 (− 8 %) |
+| sans feuillage à découpe | 613 | − 9 % | 2 400 (− 3 %) |
+| sans sol ni trottoirs | 457 | − 32 % | 2 496 (le ciel les remplace) |
+| sans voitures | 589 | − 12 % | 2 451 |
+| scène à 30 % | 307 | − 54 % | 673 |
+
+  Ombres 0, reflets 0, captures 0 (palier 2, comme le téléphone) ; post-traitement : passe finale, hors scène.
+- **Correction livrée (sans changement d'image)** : `scene.frag` et `scene_skin.frag` calculaient le reflet du ciel (1 ou 2 lectures du cube de la sonde par pixel) puis le jetaient quand la sonde est active (`iblRemplacer` le remplace) : il n'est plus calculé. Captures avant / après, Basse et Haute, départ et Rue des Mimosas : **0 pixel différent** (PNG 2340 × 1080, `qa/pr/WFS-348/`). Gain trop petit pour sortir du bruit du banc (≈ 2 %).
+- **RG-04 non atteint** : aucun levier de ma zone ne retire 41 % (55,8 → 33 ms) sans changer l'image. **Tableau C — leviers mesurés** (temps processeur du banc, plus stable) : 2 lumières par pixel au lieu de 4 : − 8 % ; 3 : − 8 % ; scène à 50 % : − 25 % (pixels − 29 %) ; scène à 45 % : − 33 % (pixels − 42 %) ; sans lumières de nuit : − 17 %. Estimation téléphone (part par pixel ≈ 75 %) : 45 % → ≈ 37 ms, 40 % → ≈ 32 ms.
+- Vérifications : 85 tests CPU réussis (`tools/qa/tests_cpu.sh`), parcours complet : voir l'entrée suivante.
+- Parcours complet (`WFS_BANC=parcours`, build de la branche) : **0 écart**, vue Cockpit 0 écart.
+- CI de la branche (US technique) : **run 948** (`workflow_dispatch` de `build.yml`, branche synchronisée avec `main` df7165ed, commit 3a6c1e1c) : vérifie la construction des shaders, le banc et l'APK.
+- PR #300 ouverte (pas de fusion par le développeur) ; `suivi-pr.md` 🆕, `qa/Check.md`, `TACHES.md` 🔀, `track-agent.md`.
+
+### 2026-11-09 08:56:45 — WFS-348 : décision du PO demandée (leviers de la Basse) (agent arwa (Claude, session trafic))
+- Constat : la scène coûte 55,8 ms par son contenu (lumières de nuit sur une grande surface, sol, feuillage) ; aucun levier de ma zone ne retire les 41 % nécessaires sans changer l'image de la Basse.
+- Conséquence : RG-04 (≥ 30 img/s, GPU scène ≤ 33 ms) non atteint par la PR #300 seule.
+- Proposition (recommandée) : **plancher de la résolution de la Basse à 45 %** (au lieu de 60 %), seulement quand la scène est déjà à 60 % et allégée (palier 2) et toujours sous 30 img/s : au banc − 33 % sur la scène, estimation téléphone ≈ 37 ms (40 % : ≈ 32 ms) ; Moyenne et Haute inchangées. Elle touche la règle de WFS-134 (RG-02 : « jamais la netteté de la voiture ») : **décision du PO, ou de l'utilisateur**. Autre option, à ajouter : **accord E13** pour alléger le calcul des feux de croisement et des lampadaires par pixel en Basse (`shaders/eclairage.glsl`, `spotLights`) : au banc 2 lumières par pixel au lieu de 4 : − 8 %, toutes les lumières retirées : − 17 %.
+- Ticket suivant proposé (RG-04) : « [TECHNIQUE] Basse : résolution plancher et lumières par pixel allégées, Ville de nuit ≥ 30 img/s », zone `src/render/qualite_auto.h` et `shaders/eclairage.glsl`, mesure avec `WFS_PERF_SCENE_LEVIERS=1`.
+- Décision attendue de : PO.
+
+### 2026-11-09 09:12:58 — WFS-348 : décision du PO (leviers de la Basse), WFS-353 attribué (po-scrum-master)
+- Demande : agent arwa (Claude, session trafic), entrée du 08:56:45 (tableaux A, B, C).
+- (1) **Résolution plancher 60 % → 45 %** : touche WFS-134 (« jamais la netteté de la voiture », né de la plainte de l'utilisateur sur la qualité des voitures) : **hors du pouvoir du PO**. Question posée par le PO à l'utilisateur dans `tache utilisateur.md`. Sans accord écrit : pas faite (RG-03 de WFS-353).
+- (2) **Accord E13** donné : `shaders/eclairage.glsl`, **2 lumières par pixel en Basse** (les plus fortes au point éclairé, les autres en approximation), Moyenne / Haute identiques au pixel près, flaques de lumière gardées.
+- (3) **WFS-348 fermé sur son diagnostic** (RG-04 le prévoit) : PR #300 à fusionner selon les règles (lead dev, squash), puis 🟣. Ticket suivant **WFS-353** (P1, [TECHNIQUE], E4 + E13) créé (`regles-de-gestion/WFS-353.md`) et **attribué à agent arwa** (à sa demande).
+- **Début WFS-353** : zone `shaders/eclairage.glsl` (Basse), `src/render/qualite_auto.*` (RG-03 seulement après accord de l'utilisateur), `src/render/bench_perf*` ; branche `feature/waforspeed-353` partie de `main` **après la fusion de #300** (même zone, même développeur : exception du PO à « un ticket actif par épic », aucun autre agent dans E4 / E13). Critères : 2 lumières en Basse, gain au banc avant / après, ≥ 30 img/s sur le téléphone (validation de l'utilisateur), captures `qa/pr/WFS-353/`, parcours complet 0 écart. Plan : plafond de la Basse à 2, mesure `WFS_PERF_SCENE_LEVIERS=1`, captures, fusion selon les règles. Rappel : skill `agent-developer`, synchronisation avec `main`, CI de branche permise (US technique, une à la fois). WFS-338 (retour du lead dev) reste à corriger par le même agent.
+
+### 2026-11-09 09:14:26 — WFS-353 : l'utilisateur accepte la résolution 45 % en Basse (agent arwa (Claude, session trafic))
+- Réponse de l'utilisateur (question posée directement) : **oui**, résolution plancher de la Basse à 45 % quand le jeu reste sous 30 img/s, Basse seulement ; dérogation à WFS-134 pour la Basse. Notée dans `tache utilisateur.md`. RG-03 de WFS-353 débloquée.
