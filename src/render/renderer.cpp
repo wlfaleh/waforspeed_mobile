@@ -344,10 +344,21 @@ void Renderer::createShadows() {
         q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 5 * FRAMES;   // ombre, reflet (WFS-16), scène ; WFS-246 (RG-06) : fin de la passe finale (bloom, post, interface)
         VK_OK(vkCreateQueryPool(d, &q, nullptr, &tsPool_));
     }
+    if (vk.statsPipeline) {   // WFS-348 (RG-01) : banc seulement : sommets, triangles après découpe, pixels calculés (fragment shader)
+        VkQueryPoolCreateInfo q{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
+        q.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS; q.queryCount = FRAMES;
+        q.pipelineStatistics = VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT | VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
+                               VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT;
+        VK_OK(vkCreateQueryPool(d, &q, nullptr, &statsPool_));
+    }
     WFS_LOG("Ombres du soleil : carte %ux%u, filtre %s", shadowSize_, shadowSize_, linear ? "bilinéaire" : "au plus proche");
 }
 
 void Renderer::readShadowTiming() {
+    if (statsPool_ && statsEcrit_[cur_]) {   // WFS-348 (RG-01) : ordre des compteurs = ordre des bits (sommets, découpe, fragments)
+        uint64_t v[3];
+        if (vkGetQueryPoolResults(vk_->device, statsPool_, (uint32_t)cur_, 1, sizeof v, v, sizeof v, VK_QUERY_RESULT_64_BIT) == VK_SUCCESS) stats_ = {v[0], v[1], v[2], true};
+    }
     if (!tsPool_ || !tsWritten_[cur_]) return;
     uint64_t t[5];
     if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 5, 5, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
@@ -1162,6 +1173,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     if (qualiteBasse && ombresBasse) { shadowsOn_ = fp.shadows && !fp.night; night_ = fp.night; }
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
     comptesPrec_ = comptes_; comptes_ = ComptesImage{};   // WFS-317 (I9)
+    releve_.clear();   // WFS-335 (RG-01)
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
     if (bloom_) bloom_->force = gpuLogiciel() ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);
@@ -1199,8 +1211,11 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
         const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
+        projecteurs_ = n;   // WFS-348 : relevé du banc
         // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
-        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, 0};
+        // WFS-348 : banc seulement : bancLumieresParPixel > 0 remplace les lumières par pixel de la Basse (comparaison des leviers)
+        // WFS-353 (RG-01) : valeur de la Basse dans qualite_auto.h (4 ; 2 = variante du banc, décision du PO attendue)
+        u.spotN = {(float)n, qualiteBasse ? (float)(bancLumieresParPixel > 0 ? bancLumieresParPixel : qualite::LUMIERES_PAR_PIXEL_BASSE) : 12.f, qualiteBasse ? 4.f : 12.f, 0};
         // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
         // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
         int ordre[FrameParams::SPOTS_MAX];
@@ -1229,6 +1244,10 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     const bool sansReflet = eR && !std::strcmp(eR, "0");
     u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, sansReflet ? -1.f : config().qualite.refletRouteMouillee};
     eclairage::avantImage(vk, u, r.frameSet, refletSet_[cur_]);   // WFS-151 (accroche E13) : IBL, exposition, ciel
+    // WFS-348 (RG-01) : banc seulement (0 dans le jeu) : effets retirés un par un pour mesurer leur coût GPU par pixel
+    if (bancSansEffets & 1u) u.spotN.x = 0;                       // lumières de nuit (phares, lampadaires)
+    if (bancSansEffets & 2u) { u.nuitA.x = 0; u.nuitA.y = 0; }    // chaussée mouillée et flaques
+    if (bancSansEffets & 4u) u.iblA.x = 0;                         // sonde d'éclairage (IBL)
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     if (refletsOn_) {
         FrameUBO m = u;
@@ -1355,6 +1374,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        p.joueur = dessinJoueur;   // WFS-322 (accroche) : la sonde posée au-dessus de la voiture ne la capture pas
         p.famille = FAM_VOITURES;   // WFS-317 (I9)
         // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
         // WFS-60) dessinées en un seul appel
@@ -1393,8 +1413,16 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         else opaqueQ_.push_back(p);
     }
     };
+    const size_t o0 = opaqueQ_.size(), t0 = transparent_.size();
     emettre(*lod.a, lod.t > 0.f ? -(3.f + lod.t) : 0.f);   // niveau a : pixels où le seuil ≥ t
     if (lod.t > 0.f) emettre(*lod.b, -(1.f + lod.t));    // niveau b : pixels où le seuil < t
+    if (releverVoitures) {   // WFS-335 (RG-01) : banc seulement
+        ReleveVoiture rv; rv.distance = depth; rv.niveau = lod.niveau; rv.joueur = dessinJoueur;
+        rv.px = vehicule_lod::pixels(std::max({m.bmax.x - m.bmin.x, m.bmax.y - m.bmin.y, m.bmax.z - m.bmin.z}), focalePx_, depth);
+        for (size_t i = o0; i < opaqueQ_.size(); i++) { rv.triangles += opaqueQ_[i].count / 3; rv.appels++; }
+        for (size_t i = t0; i < transparent_.size(); i++) { rv.triangles += transparent_[i].count / 3; rv.appels++; }
+        releve_.push_back(rv);
+    }
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
@@ -1627,6 +1655,7 @@ void Renderer::endFrame() {
     VkRenderPassBeginInfo sbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     sbi.renderPass = scenePass_; sbi.framebuffer = sceneFb_; sbi.renderArea = {{0, 0}, {sw_, sh_}};
     sbi.clearValueCount = 2; sbi.pClearValues = clears;
+    if (statsPool_) { vkCmdResetQueryPool(r.cb, statsPool_, (uint32_t)cur_, 1); vkCmdBeginQuery(r.cb, statsPool_, (uint32_t)cur_, 0); }   // WFS-348 : banc
     vkCmdBeginRenderPass(r.cb, &sbi, VK_SUBPASS_CONTENTS_INLINE);
     {
         VkViewport vpt{0, 0, (float)sw_, (float)sh_, 0, 1};
@@ -1647,6 +1676,8 @@ void Renderer::endFrame() {
     for (uint32_t i : ordreOpaques_) {
         const Pending& p = opaqueQ_[i];
         const bool d = rendu221 || aDecoupe(p);   // WFS-222 : shader sans discard si l'objet n'a pas de découpe
+        if (bancSansEffets && ((((bancSansEffets & 16u) && d) || ((bancSansEffets & 32u) && p.mat && (p.mat->flags & (MAT_GROUND | MAT_WALK)))) ||
+                               ((bancSansEffets & 64u) && p.famille == FAM_VOITURES))) continue;   // WFS-348 (RG-01) : banc seulement
         // WFS-246 (levier 1) : sans découpe et sans MAT_DOUBLE : faces arrière retirées
         // route, trottoirs et sol (bandes de game.cpp, tournées dans l'autre sens, toujours vus de dessus) : rien à retirer
         // RG-02.1 : objet posé en miroir (échelle négative : déterminant < 0, ordre des sommets inversé) : deux faces gardées
@@ -1669,7 +1700,7 @@ void Renderer::endFrame() {
     if (!transparent_.empty()) {
         VkPipeline lieT = VK_NULL_HANDLE;
         for (const Pending& p : transparent_) {
-            if (!(p.vis & VIS_CAM)) continue;   // WFS-82
+            if (!(p.vis & VIS_CAM) || (bancSansEffets & 8u)) continue;   // WFS-82 ; WFS-348 (RG-01) : banc seulement
             // WFS-09 : tache des phares (multiplicative), halos (additifs), sinon mélange alpha
             const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : blend_;
             if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }
@@ -1678,6 +1709,7 @@ void Renderer::endFrame() {
     }
     passes::dansScene(*this, r.cb, EtapeRendu::Transparents);   // WFS-150
     vkCmdEndRenderPass(r.cb);
+    if (statsPool_) { vkCmdEndQuery(r.cb, statsPool_, (uint32_t)cur_); statsEcrit_[cur_] = true; }   // WFS-348 : banc
     if (bloom_) bloom_->dessiner(*this, r.cb);   // WFS-100 : chaîne du bloom, comptée avec la passe de scène
     // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène (+ bloom, WFS-100)
     if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 3);
@@ -1780,6 +1812,7 @@ void Renderer::shutdown() {
     if (shadowPass_) vkDestroyRenderPass(d, shadowPass_, nullptr);
     if (shadowSampler_) vkDestroySampler(d, shadowSampler_, nullptr);
     if (tsPool_) vkDestroyQueryPool(d, tsPool_, nullptr);
+    if (statsPool_) { vkDestroyQueryPool(d, statsPool_, nullptr); statsPool_ = VK_NULL_HANDLE; }   // WFS-348
     vk_->destroy(shadowMap_);
     for (auto m : modules_) vkDestroyShaderModule(d, m, nullptr);
     vkDestroyPipelineLayout(d, sceneLayout_, nullptr); vkDestroyPipelineLayout(d, postPLayout_, nullptr);

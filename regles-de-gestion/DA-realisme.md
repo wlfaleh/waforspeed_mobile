@@ -56,6 +56,8 @@ bordure de trottoir 12-15 cm de haut.
 **Voitures** : dimensions constructeur à ±2 % (longueur, largeur, hauteur, empattement, diamètre de roue).
 **Humains** : 1,55 à 1,95 m, proportions réelles (tête ≈ 1/7,5 de la taille), aucun personnage identique côte à côte.
 
+**Fumée de pneus (ajout du PO, 2026-11-09 02:35 UTC, recette de WFS-292)** : fumée de dérapage blanche à gris clair, en nappe basse qui laisse voir la route ; de jour, luminance fumée / chaussée **≥ 1,3 mesurée en moyenne sur le panache et sur le corps de la nappe**, la queue qui s'efface (1 à 2 s) étant exclue de la mesure (mesures de WFS-292 : moyenne 1,30-1,36, corps 1,31-1,48, queue 1,11-1,18).
+
 ## 4. Ce que veut dire « 99 % de fidélité » (mesurable, jamais à l'œil seul)
 Chaque US définit une **liste de mesures** comparées à une **donnée réelle sourcée** du référentiel `references/reel/` (WFS-148).
 **Indice de fidélité de l'US = part des mesures dans leur tolérance ; l'US n'est validée qu'à ≥ 99 %** (sur 100 mesures, au plus

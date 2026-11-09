@@ -134,6 +134,25 @@ struct HitEvents {
     void push(char kind, double impact) { if (count < 16) seq[count++] = {kind, impact}; }
 };
 
+// WFS-333 (ANO-180, 181, 183) : emprise réelle d'une voiture, telle qu'elle est dessinée : rectangle orienté dans le repère
+// de la route, en mètres (x : écart latéral, + à droite ; z : le long de la route, + devant), cap en radians (même sens que
+// Player::heading et TrafficCar::laneYaw : + vers la droite), demi-longueur et demi-largeur. Les emprises de Traffic::collide et
+// de duel::contacter sont des rectangles alignés sur la route : elles oubliaient le tête-à-queue du joueur (spinYaw) et la
+// rotation d'une voiture du trafic accidentée (crashYaw), d'où des voitures dessinées jusqu'à 2,2 m dans celle du joueur.
+struct Emprise { double x = 0, z = 0, cap = 0, demiL = 0, demiW = 0; };
+// recouvrement (m) de deux emprises par les axes séparateurs (≤ 0 : séparées) ; *nx, *nz : direction unitaire pour écarter b de a
+double recouvrement(const Emprise& a, const Emprise& b, double* nx = nullptr, double* nz = nullptr);
+// emprise dessinée de la voiture du joueur (cap + tête-à-queue), centrée en z = 0
+Emprise empriseJoueur(const Player& pl);
+// emprise dessinée d'une voiture du trafic à dz (unités, relZ) du joueur
+Emprise empriseTrafic(const TrafficCar& c, double dz);
+// RG-03 : écarte du joueur une voiture pilotée par le jeu (adversaire de la course à 5 ; utilisable pour la police) d'emprise alignée sur la route :
+// rd (unités, comme Player::dist), x (demi-largeurs) ; vrai si elle a été déplacée. Jeu laissé à JEU_CONTACT_M (contact visible).
+constexpr double JEU_CONTACT_M = 0.02;
+// banc seulement (WFS_AVANT_333=1, banc « penetration ») : chocs d'avant WFS-333, pour les captures « avant » ; faux dans le jeu
+extern bool g_avantWfs333;
+bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, double largeurM);
+
 class Traffic {
 public:
     // resetRace() du jeu web : nouvelle graine, n voitures devant le joueur
@@ -154,8 +173,25 @@ public:
     HitEvents collide(Player& pl, double dt);
     // pendant le compte à rebours (pas de chocs) : suit seulement la position relative des voitures (car.prevDz)
     void watch(const Player& pl);
+    void separer(const Player& pl, TrafficCar& car);   // WFS-333 (RG-03) : voiture écartée de celle du joueur
 
     std::vector<TrafficCar> cars;
+    // WFS-281 (ANO-151, RG-02 ; décision du PO du 2026-11-08 02:18) : total de voitures fixé au chargement. Vrai (module du jeu) :
+    // reset() pose les voitures du départ et prépare en réserve celles de la montée de difficulté (+6 par checkpoint du jeu web),
+    // plafonnée à MONTEE_MAX des voitures du départ ; addCars active alors des voitures de la réserve (aucune n'est créée en
+    // course) et `plafond` borne les voitures actives. Avant WFS-281, les checkpoints menaient à 110 voitures en ≈ 2 min.
+    // Faux (tests de référence du jeu web) : addCars crée les voitures sans limite, comme le jeu web.
+    static constexpr int SANS_PLAFOND = 1 << 30;   // aucune limite (comportement du jeu web)
+    // densité, hors de la vue, des zones REGUL_ZONES (m, relatives au joueur) : au plus REGUL_MAX × la densité moyenne du tracé
+    // (0,8 : mesuré sur 10 graines, 4 cartes, Haute et Basse, règle du PO du 2026-11-08 20:17 : 0 fenêtre hors RG-02 sur 1600 ;
+    // 1 : 6 sur 1600 ; sans régulation : les pelotons montent à 8 véhicules dessinés pour 2 au départ)
+    static constexpr double REGUL_MAX = 0.8, REGUL_ZONES[2][2] = {{300, 700}, {-400, -40}}, REGUL_LOIN_M = 800;
+    static constexpr double MONTEE_MAX = 0.15;     // montée de difficulté : +15 % de voitures au plus (RG-02 : ≤ 1,3 × le départ)
+    bool totalFixe = false;
+    int plafond = SANS_PLAFOND;
+    // poursuite (trafic dense, WFS-111) : `n` voitures actives au plus, celles qui manquent après la réserve sont créées
+    void fixerTotal(int n) { totalFixe = true; plafond = n; }
+    int reserve() const { return (int)reserve_.size(); }   // voitures préparées, pas encore actives
     uint32_t seed = 1;
     double clock = 0, sim = 0;
     bool parallel = true;
@@ -166,6 +202,10 @@ private:
 public:
     double facteurVoie(double z) const;             // WFS-243 : 1 hors des anneaux, FACTEUR_ANNEAU dedans (rampes entre les deux)
 private:
+    double tirerZ(Mulberry32& R, int lane, double len, double playerPos) const;   // place libre devant le joueur (addCars)
+    void regulerDensite(double playerPos);   // WFS-281 (RG-02, RG-03) : pas de peloton qui se forme hors de la vue du joueur
+    double regulT_ = 0;
+    std::vector<TrafficCar> reserve_;   // WFS-281 : voitures de la montée de difficulté, préparées au chargement
     std::vector<std::pair<int64_t, int64_t>> anneaux_;   // WFS-243 : segments [entrée, sortie] de l'anneau de chaque rond-point
     Track* track_ = nullptr;
     std::vector<double> gap_, lead_;        // voiture de devant de chaque voiture (calculées avant le pas)

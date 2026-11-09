@@ -63,12 +63,16 @@ struct Etat_ {
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
     const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
     double ev = 15; bool evInit = false, recaler = true; double dtImage = 0; int generation = 0;
+    double tScene = 0;   // WFS-328 : temps de la dernière nouvelle scène (retard de capture du banc)
+    double zPrec = 0;    // WFS-328 : abscisse du joueur à l'image précédente (« Recommencer »)
+    bool nuitEstimee = false;   // WFS-328 : image précédente exposée sur l'estimation de nuit (sans sonde locale)
     double hCache = -1000, kCache = 0;
     // ciel (pour la sonde du ciel calculée sur le CPU)
     struct Ciel { bool nuit = false; double K = 0, Lnuit = 0; vec3 haut{}, horizon{}, sol{}, brume{}, soleil{}; } ciel;
     float signatureCiel[16]{}; bool cielAFaire = true;
     // sondes
     Sonde A, B, sondeCiel; double w = 1;
+    Sh9 shAffiche; bool shInit = true, sceneNeuve = true;   // WFS-322 : diffus affiché, lissé dans le temps (lisserSh9) ; shInit : prendre la cible telle quelle
     vec3 dernierPoint{}; bool aucuneDemande = true; int typePrec = -1; bool forcerCapture = false;
     bool eclaireLoin = false; int iterations = 0;   // RG-03 : rebonds par recaptures au même point (voir physique())
     // relecture
@@ -161,6 +165,41 @@ Resultat sondeDuCiel(const Etat_::Ciel& c) {
         float* o = &cube.face(0, f)[((size_t)y * COTE_CIEL + x) * 3]; o[0] = v.x; o[1] = v.y; o[2] = v.z;
     }
     return traiter(cube, {}, false, false);
+}
+
+// WFS-322 (RG-01, avis de expert-realisme-3d) : diagnostic d'une sonde capturée (banc, WFS_DIAG_SONDE) : texels « ciel » (même valeur que
+// le ciel calculé à 2 % près) et « surfaces » ; pour 4 normales horizontales, éclairement de chaque part, part des surfaces et teinte (x, y)
+void diagnostiquerSonde(const CubeF& src, const vec3& pos) {
+    const int N = src.cotes[0];
+    const vec3 normales[4] = {{1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
+    for (const vec3& n : normales) {
+        double Ec[3] = {}, Es[3] = {}, Esol[3] = {};
+        for (int f = 0; f < 6; f++) for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) {
+            double d[3]; directionTexel(f, (x + 0.5) / N, (y + 0.5) / N, d);
+            const double c = d[0] * n.x + d[1] * n.y + d[2] * n.z;
+            if (c <= 0) continue;
+            const float* p = &src.face(0, f)[((size_t)y * N + x) * 3];
+            const vec3 ciel = cielCpu(g.ciel, {(float)d[0], (float)d[1], (float)d[2]});
+            const double cc[3] = {ciel.x, ciel.y, ciel.z}, pp[3] = {p[0], p[1], p[2]};
+            const double lc = std::max(luminanceRgb(cc), 1e-9), lp = luminanceRgb(pp);
+            const bool estCiel = d[1] > 0 && std::fabs(lp - lc) / lc < 0.02;
+            const double w = angleSolideTexel(x, y, N) * c;
+            double* E = estCiel ? Ec : Es;
+            for (int q = 0; q < 3; q++) E[q] += p[q] * w;
+            if (d[1] < 0) for (int q = 0; q < 3; q++) Esol[q] += p[q] * w;   // surfaces sous l'horizon (sol, chaussée)
+        }
+        auto xy = [](const double* e, double& X, double& Y) {   // sRGB linéaire → XYZ → xy
+            const double Xx = 0.4124 * e[0] + 0.3576 * e[1] + 0.1805 * e[2], Yy = 0.2126 * e[0] + 0.7152 * e[1] + 0.0722 * e[2], Zz = 0.0193 * e[0] + 0.1192 * e[1] + 0.9505 * e[2];
+            const double s = std::max(Xx + Yy + Zz, 1e-12); X = Xx / s; Y = Yy / s;
+        };
+        double xc, yc, xs, ys, xt, yt; const double Et[3] = {Ec[0] + Es[0], Ec[1] + Es[1], Ec[2] + Es[2]};
+        xy(Ec, xc, yc); xy(Es, xs, ys); xy(Et, xt, yt);
+        double Eh[3] = {Es[0] - Esol[0], Es[1] - Esol[1], Es[2] - Esol[2]}, xso, yso, xh, yh; xy(Esol, xso, yso); xy(Eh, xh, yh);
+        WFS_LOG("sonde (WFS-322 diagnostic) : sous l'horizon %.0f lx (x %.3f y %.3f), surfaces au-dessus %.0f lx (x %.3f y %.3f)", luminanceRgb(Esol), xso, yso, luminanceRgb(Eh), xh, yh);
+        const double lC = luminanceRgb(Ec), lS = luminanceRgb(Es);
+        WFS_LOG("sonde (WFS-322 diagnostic) en (%.1f %.1f %.1f), normale (%g %g) : ciel %.0f lx (x %.3f y %.3f), surfaces %.0f lx (x %.3f y %.3f), part des surfaces %.0f %%, total x %.3f y %.3f",
+                pos.x, pos.y, pos.z, n.x, n.z, lC, xc, yc, lS, xs, ys, 100 * lS / std::max(lC + lS, 1e-9), xt, yt);
+    }
 }
 
 // ---------------------------------------------------------------- ressources GPU
@@ -302,7 +341,10 @@ public:
             WFS_LOG("éclairage (WFS-151) : sonde %d (%d px, %.1f ms CPU) en (%.1f %.1f %.1f), rebond %d, EV100 %.2f", g.etat.sondesCapturees, g.res.cote, g.res.ms,
                     g.res.pos.x, g.res.pos.y, g.res.pos.z, g.iterations, g.ev);
             installer(std::move(s), premiere);
-            if (premiere) g.recaler = true;
+            // WFS-322 (ANO-174) : exposition et diffus recalés d'un coup à la 1re capture d'une nouvelle scène seulement (carte, moment,
+            // voiture : sous le chargement et le décompte) ; après un saut dans la même scène (plus de 80 m), ils suivent en douceur
+            if (premiere && g.sceneNeuve) { g.recaler = true; g.shInit = true; }
+            if (premiere) g.sceneNeuve = false;
             g.res = Resultat{};
         }
     }
@@ -344,6 +386,7 @@ private:
         vk.destroy(g.tampon);
         g.enCours = true; g.fini = false;
         const vec3 pos = g.posRelue; const int gen = g.generationRelue; const bool loin = g.loinRelu;
+        if (synchrone() && std::getenv("WFS_DIAG_SONDE")) diagnostiquerSonde(*cube, pos);   // WFS-322 (RG-01) : part ciel / surfaces
         if (synchrone()) { g.res = traiter(*cube, pos, true, true); g.res.generation = gen; g.res.eclaireLoin = loin; g.fini = true; }
         else jobs().run([cube, pos, gen, loin] { g.res = traiter(*cube, pos, true, false); g.res.generation = gen; g.res.eclaireLoin = loin; g.fini = true; });
     }
@@ -380,11 +423,13 @@ void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
 void suspendreCaptures(bool oui) { g.capturesSuspendues = oui; }   // WFS-222
 bool sondeCapturePrete() { return g.B.capture && !g.forcerCapture && !g.enCours && !g.relecture && !environnement::enCours(); }
 void remettreAZero() {
-    g.recaler = true; g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
+    g.recaler = g.sceneNeuve || !g.evInit;   // WFS-322 : saut dans la même scène : l'exposition s'adapte (pas de recalage d'un coup)
+    g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
     if (g.A.gpu.img && g.A.gpu.img != g.B.gpu.img) retirer(g.A.gpu, Buffer{});
     if (g.B.gpu.img) retirer(g.B.gpu, Buffer{});
     g.A = Sonde{}; g.B = Sonde{};
     g.cielAFaire = true; g.w = 1;
+    g.shInit = true;   // WFS-322 : remise à zéro (saut de plus de 80 m) : lumière reprise sans fondu
 }
 
 void irradiance(const vec3& n, double E[3]) {
@@ -402,7 +447,11 @@ void irradiance(const vec3& n, double E[3]) {
 double eclairementLampes(const GameView& gv, vec3 p) {
     if (!gv.track || lampadaires().empty()) return 0;
     Track& t = *gv.track;
-    const double L = t.length(), z = gv.player ? gv.player->position : 0;
+    // WFS-328 (RG-05, ANO-179) : distance parcourue (dist), pas l'abscisse ramenée au tour (position) : le point regardé p est sur
+    // la route du tour en cours (camera_vue.cpp : track.point(dist)), et la route de chaque tour est tournée par rapport au
+    // précédent (WFS-268) ; avec position, les lampes étaient cherchées sur le 1er tour, loin de la voiture dès le 2e tour : 0,1 lx
+    // reçus (lune seule), exposition de rase campagne (EV −3,5) en pleine ville, image blanche / rose jusqu'à la fin de la course
+    const double L = t.length(), z = gv.player ? gv.player->dist : 0;
     if (!(L > 0)) return 0;
     double E = 0;
     for (const Lampadaire& l : lampadaires()) {
@@ -431,9 +480,17 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-213 (RG-01) : nouvelle scène aussi quand la piste, la carte ou la voiture change (init, changement de carte ou de voiture) :
     // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
     const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
-    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
-        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; }
-        remettreAZero(); g.init = true; dt = 0;
+    // WFS-328 (RG-02) : « Recommencer » tôt dans la course ramène la voiture de moins de 80 m : un recul de plus de 20 m sur la piste
+    // en une image (impossible en roulant, même en marche arrière) est aussi une nouvelle scène
+    const double zPiste = gv.player ? gv.player->dist : 0;   // distance parcourue (position revient à 0 à chaque tour)
+    const bool recul = g.init && gv.track == g.pistePrec && (g.zPrec - zPiste) * M > 20;
+    g.zPrec = zPiste;
+    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene || recul) {
+        if (!g.init || autreScene || fp.night != g.nuitPrec) g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR;
+        // WFS-328 (RG-02) : nouvelle scène et « Recommencer » recalés dès leur 1re image ; WFS-322 : un saut en avant dans la même
+        // scène (plus de 80 m) garde l'adaptation douce
+        if (!g.init || autreScene || fp.night != g.nuitPrec || recul) { g.evInit = false; g.sceneNeuve = true; }
+        remettreAZero(); g.init = true; dt = 0; g.tScene = t;
     }
     g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
     dt = std::clamp(dt, 0.0, 0.25);
@@ -487,9 +544,15 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
     // ---- RG-02 : exposition (mesure sur les sondes, bornée par moment, adaptation de l'œil)
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
-    double Lmes = mesurerLuminance(g.avant);
+    // WFS-328 (ANO-177, RG-01) : avant la première sonde locale d'une scène, la mesure lisait la sonde du ciel : celle de la scène
+    // d'avant à la première image (jour du menu : 3 458 cd/m²), puis le seul ciel de nuit sans lampadaires (0,025 cd/m²) :
+    // exposition 1,3 IL plus claire d'un coup pendant le décompte au banc (image blanche / rose sur le téléphone) jusqu'à la capture (≈ 3 s).
+    // La nuit, la mesure réfléchie attend donc la sonde locale (la valeur du moment, EV_REF_NUIT, la remplace, mêlée au
+    // posemètre incident des lampadaires, connu dès la 1re image) ; de jour, elle attend que la sonde du ciel soit à jour.
+    const bool mesureSure = g.B.capture || (!nuit && !g.cielAFaire);
+    double Lmes = mesureSure ? mesurerLuminance(g.avant) : 0;
     if (!luminanceValide(Lmes)) Lmes = 0;   // WFS-213 (RG-02) : mesure invalide : la dernière exposition juste est gardée
-    double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
+    double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.B.capture ? g.ev : nuit ? EV_REF_NUIT : EV_REF_JOUR;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
     // WFS-230 (RG-01) : nuit au clair de lune : l'exposition dépend de l'éclairement reçu par le conducteur (lune, ciel et lampadaires
@@ -508,8 +571,12 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
-    if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
-    else g.ev = adapter(g.ev, cible, dt);
+    // WFS-328 (RG-02, RG-03) : la nuit, l'image tourne déjà sur l'estimation (valeur du moment) quand la première sonde arrive :
+    // passage doux vers la mesure (adaptation de l'œil, pas de saut visible) ; à temps arrêté (banc) ou de jour, recalage direct
+    const bool doux = g.nuitEstimee && dt > 0;
+    if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0 && !doux)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
+    else { g.ev = adapter(g.ev, cible, dt); if (doux && g.B.capture) g.recaler = false; }
+    g.nuitEstimee = nuit && !mesureSure;
     if (!std::isfinite(g.ev)) g.ev = std::clamp(nuit ? EV_REF_NUIT : EV_REF_JOUR, evMin, evMax);   // WFS-213 (RG-02) : jamais de valeur non finie
     g.dtImage = dt;
     const double k = exposition(g.ev);
@@ -573,7 +640,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-264 (RG-01) : en Basse, une capture par zone seulement : la première (départ, sous le chargement et le décompte) et
     // à chaque changement de zone (entrée et sortie de tunnel ou de pont : forcerCapture) ; plus de capture tous les « esp » m
     const bool parZone = niveau == qualite::BASSE;
-    if (!environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
+    const bool retardee = g.forc.actif && t - g.tScene < g.forc.retardCapture;   // WFS-328 : banc, sonde lente comme sur le téléphone
+    if (!retardee && !environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
         if (g.aucuneDemande || g.forcerCapture || (!parZone && length(point - g.dernierPoint) > esp)) {
             // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
@@ -623,9 +691,15 @@ void avantImage(VkCtx& vk, FrameUBO& u, VkDescriptorSet image, VkDescriptorSet r
     u.iblA = {actif ? 1.f : 0.f, (float)w, (float)std::max(0, A.niveaux - 1), (float)std::max(0, B.niveaux - 1)};
     u.iblB = {(float)g.k, (float)(g.k / std::max(A.echelle, 1e-12f)), (float)(g.k / std::max(B.echelle, 1e-12f)), actif ? (float)g.facteur : 1.f};
     u.cielP = actif ? g.cielP : vec4{};
+    {   // WFS-322 (ANO-174) : mélange A / B lissé dans le temps (une nouvelle sonde ne change plus le diffus en une image)
+        Sh9 cible;
+        for (int i = 0; i < 9; i++) for (int q = 0; q < 3; q++) cible.c[i][q] = A.sh.c[i][q] * (1 - w) + B.sh.c[i][q] * w;
+        lisserSh9(g.shAffiche, cible, g.dtImage, SH_TAU_S, g.shInit || !actif);
+        g.shInit = false;
+    }
     for (int i = 0; i < 9; i++) {
         double c[3];
-        for (int q = 0; q < 3; q++) c[q] = (A.sh.c[i][q] * (1 - w) + B.sh.c[i][q] * w) * SH_A[i] / PI_L * g.k;
+        for (int q = 0; q < 3; q++) c[q] = g.shAffiche.c[i][q] * SH_A[i] / PI_L * g.k;
         u.iblSH[i] = actif ? vec4{(float)c[0], (float)c[1], (float)c[2], 0} : vec4{};
     }
     // liaisons 3 à 5 des jeux de cette image (leur image précédente est terminée : barrière attendue)

@@ -73,6 +73,7 @@ struct Model {
     std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
     std::vector<ModelPart> partsBasse; // WFS-134 (RG-11) : 4 pièces au plus (peinture, feux, vitres, reste), qualité Basse au loin
     std::vector<std::vector<ModelPart>> partsNiveaux;   // WFS-158 (RG-04) : niveaux de détail 2 et 3 (<id>.lod), après partsLod
+    std::vector<std::vector<ModelPart>> partsBasseNiveaux;   // WFS-335 (RG-02) : niveaux 2 et 3 en 4 pièces (comme partsBasse), Basse au loin
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;
@@ -181,8 +182,11 @@ public:
     int niveauCascades() const { return qualiteBasse ? 0 : std::clamp(niveauOmbres, 1, 3); }   // WFS-264 (RG-03) : Basse = 1 cascade de 40 m
     bool dessinJoueur = false;     // WFS-265 : vrai pendant le dessin de la voiture du joueur (game.cpp) : modèle complet
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    uint32_t bancSansEffets = 0;   // WFS-348 (RG-01) : banc perf seulement : 1 lumières de nuit, 2 chaussée mouillée, 4 sonde IBL retirées ;
+                                   // 8 transparents, 16 opaques à découpe (feuillage), 32 sol et trottoirs, 64 voitures non dessinés
     bool forceSansReflets = false; // WFS-222 (RG-03) : baisse automatique : pas de passe de reflet (route mouillée)
     bool rendu221 = false;         // WFS-222 : banc seulement (WFS_AVANT_222=1) : rendu d'avant WFS-222, pour comparer images et coûts
+    int bancLumieresParPixel = 0;   // WFS-348 : banc perf seulement (> 0 : lumières par pixel en Basse, pour comparer ; 0 : 4)
     bool qualiteBasse = false;     // WFS-82 : petits objets coupés plus tôt (150 m) en qualité Basse
     int niveauOmbres = 2;          // WFS-227 : niveau affiché (1 Moyenne : 2 cascades, 2 Haute : 3, 3 Ultra : 4 ; Basse : ombres coupées)
     uint32_t objetsMasques() const { return masquesPrec_; }   // WFS-82 : objets non dessinés à la dernière image (journal)
@@ -196,6 +200,11 @@ public:
     enum Famille : uint8_t { FAM_DECOR = 0, FAM_VOITURES = 1, FAM_PERSONNES = 2, FAM_N = 3 };
     struct ComptesImage { uint32_t appels[FAM_N] = {}, triangles[FAM_N] = {}; };
     const ComptesImage& comptesImage() const { return comptesPrec_; }
+    // WFS-335 (RG-01) : relevé voiture par voiture de la dernière image (banc seulement, releverVoitures = vrai) : distance réelle
+    // à la caméra, longueur à l'écran, niveau de détail, triangles et appels mis en file pour la scène (une passe)
+    struct ReleveVoiture { float distance = 0, px = 0; int niveau = 0; uint32_t triangles = 0, appels = 0; bool joueur = false; };
+    bool releverVoitures = false;
+    const std::vector<ReleveVoiture>& releveVoitures() const { return releve_; }   // image terminée (vidé au début de la suivante)
     // WFS-329 (ANO-178) : fond figé des écrans hors course (menu, choix du terrain). Demandé par Game ; tant qu'il l'est et que
     // la scène de l'image précédente est encore valable (cibles non recréées), endFrame ne refait que la passe finale (relecture
     // de la scène HDR et du bloom gardés) et l'interface : même image, sans ombres, reflet, captures, scène ni bloom
@@ -206,6 +215,10 @@ public:
     double gpuImageMs() const { return gpuImageMs_; }
     // WFS-246 (RG-06) : temps GPU de chaque passe (ms, lissé) ; mesuree = faux sans horodatages
     static constexpr uint32_t HORODATAGES = 5;   // WFS-246 (RG-06) : horodatages par image (ombre, reflet, scène, fin de scène, fin de la passe finale)
+    // WFS-348 (RG-01) : banc seulement (WFS_STATS_PIPELINE=1) : compteurs de la passe de scène de l'image lue en dernier ; valide = mesurée
+    struct StatsScene { uint64_t sommets = 0, triangles = 0, pixels = 0; bool valide = false; };
+    const StatsScene& statsScene() const { return stats_; }
+    int projecteursImage() const { return projecteurs_; }   // WFS-348 : projecteurs envoyés aux shaders à cette image (banc)
     struct GpuPasses { double ombre = 0, reflet = 0, scene = 0, post = 0; bool mesuree = false; };
     const GpuPasses& gpuPasses() const { return gpuPasses_; }
     // WFS-246 (RG-07) : résolution dynamique (0,1 à 1 de la capacité) sans recréer les cibles ; appliquée à l'image suivante
@@ -230,7 +243,7 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; };   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; bool joueur = false; };   // WFS-322 : joueur = voiture du joueur (hors captures d'environnement)   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
@@ -328,9 +341,12 @@ private:
     struct Bloom; Bloom* bloom_ = nullptr;   // WFS-100 : chaîne du bloom « dual filter » (renderer.cpp)
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
     ComptesImage comptes_, comptesPrec_;   // WFS-317 (I9)
+    std::vector<ReleveVoiture> releve_;   // WFS-335 (RG-01)
     bool figer_ = false, sceneValide_ = false;   // WFS-329 : fond figé demandé ; image de scène HDR gardée valable
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
+    int projecteurs_ = 0;   // WFS-348
+    VkQueryPool statsPool_ = VK_NULL_HANDLE; bool statsEcrit_[2] = {false, false}; StatsScene stats_;   // WFS-348 (RG-01) : banc seulement
     bool tsWritten_[2] = {false, false};
     double gpuImageMs_ = -1;   // WFS-246
     GpuPasses gpuPasses_;      // WFS-246 (RG-06)

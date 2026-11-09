@@ -121,6 +121,27 @@ struct EtatInterieur {
 // banc « cockpit » (WFS-235, RG-05) : vrai = l'intérieur est dessiné d'une couleur clé (mesure de la part de rue visible)
 extern bool g_interieurCle;
 
+// WFS-334 (ANO-182, ANO-186) : pare-brise et balais de la dernière image où l'intérieur a été dessiné, lus par la pluie
+// (src/world/meteo.cpp) pour ne dessiner les gouttes que derrière la vitre et sur la vitre, chassées par les balais
+struct PareBriseVu {
+    bool vu = false;                 // vrai : écrit par Interieur::dessiner depuis la dernière lecture (la pluie le remet à faux)
+    mat4 repere = mat4::identity();  // repère de l'intérieur (repère de l'œil → monde)
+    vec3 coins[4]{};                 // axes des montants : bas gauche, bas droit, haut droit, haut gauche (repère de l'œil, m ; WFS-354)
+    int balais = 0;                  // nombre de balais dessinés
+    vec3 pivot[2]{}; float sens[2] = {1, 1}, longueur[2] = {0, 0};
+    vec3 ex{1, 0, 0}, eu{0, 1, 0};   // plan du pare-brise : axe x et axe « haut » le long des montants
+    float angle = 0;                 // angle des balais (rad)
+};
+PareBriseVu& pareBriseVu();
+// WFS-354 (RG-01) : axes des montants dessinés (repère de l'œil) : pieds à ±montant, haut rentré de RETRAIT_MONTANT_HAUT ;
+// barres de LARGEUR_MONTANT × EPAISSEUR_MONTANT (mêmes cotes que barre(mont…) d'Interieur::construire). PareBriseVu::coins les
+// porte ; la vitre visible de l'œil (sans ce que la barre cache) est calculée par la pluie (meteo::vitreVue)
+constexpr float LARGEUR_MONTANT = 0.075f, EPAISSEUR_MONTANT = 0.05f, RETRAIT_MONTANT_HAUT = 0.10f;
+inline void coinsVitre(float cx, float montant, float yb, float zb, float yh, float zh, vec3 c[4]) {
+    const float xh = montant - RETRAIT_MONTANT_HAUT;
+    c[0] = {cx - montant, yb, zb}; c[1] = {cx + montant, yb, zb}; c[2] = {cx + xh, yh, zh}; c[3] = {cx - xh, yh, zh};
+}
+
 class Interieur {
 public:
     bool construire(Renderer& r, const InterieurDef& d);

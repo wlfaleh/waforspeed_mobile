@@ -30,6 +30,9 @@ la direction artistique de l'interface dans `design-street-racing`, celle du mon
 - **Autonomie (règle de l'utilisateur)** : tu ne demandes pas de confirmation à l'utilisateur pour suivre le processus.
   Tu ne le sollicites que pour un **vrai blocage** (décision produit que ni les RG ni le PO ne tranchent, accès manquant,
   action irréversible hors processus), avec **une seule question précise et ta recommandation**.
+- **Un seul sujet par session (règle de l'utilisateur, 2026-11-09)** : ta session prend **un seul ticket** et le mène **jusqu'à la fusion**
+  par le lead dev (tu corriges chaque refus). Après la fusion, tu mets ta ligne de `track-agent.md` en « ⏹️ session terminée », tu écris au
+  journal et **tu t'arrêtes** : tu ne demandes **pas** d'autre ticket au PO. Un ticket déjà en cours le 2026-11-09 12:05 UTC se termine, puis arrêt.
 
 ## 2. Comportement attendu
 

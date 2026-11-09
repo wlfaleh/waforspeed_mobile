@@ -16,6 +16,7 @@
 #include "../../render/vk.h"   // rotation de l'écran avant le chargement (Cgu::image)
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "cgu_appui.h"
 #include "reglages.h"
 
 namespace wfs {
@@ -25,6 +26,7 @@ namespace {
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SURFACE2 = 0x1E2130,
                DANGER = 0xFF1F4B;
+const unsigned ACCENT_PRESSE = 0xFF9A4D;   // WFS-355 : « Accepter » sous le doigt (même teinte que les Réglages, WFS-290)
 const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.98f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 const char* MESSAGE_REFUS = "Le jeu ne peut pas démarrer sans votre accord";
 
@@ -117,6 +119,7 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     if (!ouvert() || !ui::fontReady()) return;
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
+    dp_ = ui::pixelsParDp(W);
     r.uiRect(0, 0, W, H, hex(BG));
     const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
     const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
@@ -142,7 +145,9 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
         zFermer_ = {};
         bouton(r, zRefuser_, 14 * kb, GLASS, tr, tp, hex(TEXTE), true);
         // RG-03 : « Accepter » actif seulement après la case (inactif : gris, texte atténué)
-        bouton(r, zAccepter_, 14 * kb, coche_ ? hex(ACCENT) : hex(SURFACE2), ta, tp, coche_ ? hex(BG) : hex(MUTED, 0.8f), false);
+        // WFS-355 : teinte plus claire tant que le doigt est posé sur « Accepter » (l'appui se voit)
+        const bool presse = coche_ && doigt_ >= 0 && cible_ == cgu_appui::ACCEPTER;
+        bouton(r, zAccepter_, 14 * kb, coche_ ? hex(presse ? ACCENT_PRESSE : ACCENT) : hex(SURFACE2), ta, tp, coche_ ? hex(BG) : hex(MUTED, 0.8f), false);
         const float cs = 28 * k, cy = by + (bh - cs) / 2, tl = (cp ? 16 : 18) * k;
         const std::string lib = "J'ai lu et j'accepte";
         r.uiRect(x0, cy, cs, cs, coche_ ? hex(ACCENT2) : hex(TEXTE, 0.85f));
@@ -202,29 +207,41 @@ void Cgu::dessinerImage(double maintenant) {
     r_->endFrame();
 }
 
-bool Cgu::toucher(int id, float x, float y, bool down) {
+bool Cgu::toucher(int id, float x, float y, bool down, bool premierDoigt) {
     if (!ouvert()) return false;
     if (etat_ == Etat::Refuse) return true;   // message du refus : plus rien n'est touchable
+    namespace ca = cgu_appui;
+    auto rect = [](const Zone& z) { return ca::Rect{z.x, z.y, z.w, z.h}; };
+    const int sous = ca::cibleSous(rect(zCase_), rect(zAccepter_), rect(zRefuser_), rect(zFermer_), rect(zTexte_), dp_, x, y);
+    static const char* NOMS[] = {"rien", "texte", "case", "Accepter", "Refuser", "Fermer"};
     if (down) {
+        if (premierDoigt && doigt_ >= 0) {   // WFS-355 : le lever de l'appui précédent n'est jamais arrivé ; nouvel appui
+            WFS_LOG("CGU (WFS-355) : lever du doigt %d jamais reçu (cible %s), oublié", doigt_, NOMS[cible_]);
+            doigt_ = -1; cible_ = 0;
+        }
         if (doigt_ < 0) {
-            doigt_ = id; yDoigt_ = y;
-            cible_ = zCase_.contient(x, y) ? 2 : zAccepter_.contient(x, y) ? 3 : zRefuser_.contient(x, y) ? 4 : zFermer_.contient(x, y) ? 5
-                   : zTexte_.contient(x, y) ? 1 : 0;
-        } else if (id == doigt_ && cible_ == 1) {   // glisser : le texte suit le doigt
+            doigt_ = id; yDoigt_ = y; cible_ = sous;
+            WFS_LOG("CGU (WFS-355) : doigt posé (%.0f, %.0f) sur %s", x, y, NOMS[sous]);
+        } else if (id == doigt_ && cible_ == ca::TEXTE) {   // glisser : le texte suit le doigt
             defil_ = std::clamp(defil_ - (y - yDoigt_), 0.f, defilMax_);
             yDoigt_ = y;
         }
         return true;
     }
-    if (id != doigt_) return true;
-    const int c = cible_;
+    const bool poseConnue = doigt_ >= 0;
+    if (poseConnue && id != doigt_) return true;   // autre doigt (le premier posé décide)
+    // pose perdue : seulement au premier lancement (appuis du veilleur) ; en lecture des Réglages, le lever du doigt qui a ouvert
+    // l'écran arrive sans pose et ne doit rien toucher (« Fermer » est dessiné à cet endroit sur téléphone)
+    if (!poseConnue && mode_ != Mode::Premier) return true;
+    const int c = ca::cibleAuLever(poseConnue, cible_, sous);
+    WFS_LOG("CGU (WFS-355) : doigt levé (%.0f, %.0f) sur %s%s → %s", x, y, NOMS[sous], poseConnue ? "" : " (pose jamais reçue)", NOMS[c]);
     doigt_ = -1; cible_ = 0;
-    if (c == 2 && zCase_.contient(x, y)) { coche_ = !coche_; WFS_LOG("CGU (WFS-308) : case « J'ai lu et j'accepte » %s", coche_ ? "cochée" : "décochée"); }
-    else if (c == 3 && zAccepter_.contient(x, y)) {
+    if (c == ca::CASE) { coche_ = !coche_; WFS_LOG("CGU (WFS-308) : case « J'ai lu et j'accepte » %s", coche_ ? "cochée" : "décochée"); }
+    else if (c == ca::ACCEPTER) {
         if (!coche_) WFS_LOG("CGU (WFS-308) : « Accepter » inactif (case décochée)");
         else { etat_ = Etat::Accepte; WFS_LOG("CGU (WFS-308) : « Accepter » (version %d)", VERSION_CGU); }
-    } else if (c == 4 && zRefuser_.contient(x, y)) { etat_ = Etat::Refuse; tRefus_ = maintenant_; WFS_LOG("CGU (WFS-308) : « Refuser » — %s", MESSAGE_REFUS); }
-    else if (c == 5 && zFermer_.contient(x, y)) { etat_ = Etat::Ferme; WFS_LOG("CGU (WFS-308) : lecture fermée"); }
+    } else if (c == ca::REFUSER) { etat_ = Etat::Refuse; tRefus_ = maintenant_; WFS_LOG("CGU (WFS-308) : « Refuser » — %s", MESSAGE_REFUS); }
+    else if (c == ca::FERMER) { etat_ = Etat::Ferme; WFS_LOG("CGU (WFS-308) : lecture fermée"); }
     return true;
 }
 
@@ -260,6 +277,9 @@ Cgu::Etat Cgu::image(VkCtx& vk, uint32_t lf, uint32_t hf, double maintenant) {
     if (vk.surfaceChanged() || (tourne && essaisRotation_++ < 8)) { vk.waitIdle(); if (vk.createSwapchain()) r_->resize(); }
     r_->setViewSize(lf, hf);
     dessinerImage(maintenant);
+    // WFS-355 : une image de plus d'1 s laisse le veilleur lire les appuis (WFS-284) ; noté pour le diagnostic sur téléphone
+    const double duree = nowSeconds() - maintenant;
+    if (duree > 0.5 && imagesLentes_ < 5) { imagesLentes_++; WFS_LOG("CGU (WFS-355) : image lente, %d ms", (int)std::lround(duree * 1000)); }
     return etat_;
 }
 
@@ -316,10 +336,26 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
         capture("cgu-reprise", "après la perte de la fenêtre : texte lisible, case décochée");
     }
     verifier(!c.caseCochee(), "case décochée à la réouverture");
-    appui(5, c.zoneCase()); appui(6, c.zoneAccepter());
-    verifier(c.etat() == Cgu::Etat::Accepte, "case puis « Accepter » → accepté");
+    {   // WFS-355 (RG-04) : appuis injectés comme sur le téléphone, débuts ou fins d'appui perdus, bords de la cible de 48 dp
+        const Cgu::Zone& zc = c.zoneCase(); const Cgu::Zone& za = c.zoneAccepter(); const Cgu::Zone& zr = c.zoneRefuser();
+        const float dp = ui::pixelsParDp((float)r.width()), ax = za.x + za.w / 2, ay = za.y + za.h / 2;
+        WFS_LOG("CGU (WFS-355) banc : « Accepter » %.0f × %.0f px (%.0f × %.0f dp), cible %.0f dp de haut", za.w, za.h, za.w / dp, za.h / dp, std::max(za.h / dp, 48.f));
+        c.toucher(5, zc.x + zc.w / 2, zc.y + zc.h / 2, false); image();   // lever seul (pose lue par le veilleur et perdue avant WFS-355)
+        verifier(c.caseCochee(), "WFS-355 : case, pose jamais reçue → cochée");
+        c.toucher(6, ax, ay, true, true); image();
+        capture("cgu-accepter-appuye", "WFS-355 : doigt posé sur « Accepter » : teinte plus claire");
+        c.toucher(6, zc.x + zc.w / 2, zc.y + zc.h / 2, false); image();
+        verifier(c.etat() == Cgu::Etat::Ouvert, "WFS-355 : doigt glissé hors d'« Accepter » → annulé");
+        c.toucher(0, zr.x + zr.w / 2, zr.y + zr.h / 2, true, true); image();   // posé sur « Refuser », lever jamais reçu
+        c.toucher(0, ax, ay + 24 * dp - 2, true, true); image();               // nouvel appui (ACTION_DOWN), bas de la cible de 48 dp
+        c.toucher(0, ax, ay + 24 * dp - 2, false); image();
+        verifier(c.etat() == Cgu::Etat::Accepte, "WFS-355 : lever perdu sur « Refuser » puis « Accepter » au bord bas de la cible de 48 dp → accepté");
+    }
     {   // fenêtre perdue dans le même lot qu'« Accepter » (avant Cgu::image) : chemin de termGraphics d'android_main.cpp
         verifier(c.tientLaFenetre() && !c.premierLancement(), "« Accepter » pas encore traité : la fenêtre reste tenue par les CGU");
+        // WFS-355 (cause) : la boucle d'android_main.cpp doit encore tourner sans attente pour que Cgu::image traite « Accepter »
+        verifier(cgu_appui::boucleSansAttente(false, c.tientLaFenetre(), false), "WFS-355 : « Accepter » touché → boucle Android sans attente (image() suivante)");
+        verifier(!cgu_appui::boucleSansAttente(false, c.premierLancement(), false), "WFS-355 : ancienne condition (premierLancement) : boucle bloquée, écran figé — cause du défaut");
         VkCtx& vk = r.vk();
         c.perdreFenetre(r); r.shutdown(); r.init(vk); ui::chargerPolice(r);
         verifier(!c.tientLaFenetre() && sauvegarde().cgu == VERSION_CGU, "fenêtre perdue après « Accepter » : acceptation gardée, renderer refermé");
