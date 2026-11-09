@@ -308,6 +308,16 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         const int captures = environnement::capturesFaites() - c0;
         if (enCourse && captures == 1 && environnement::taille() == 256) etapes++;
         WFS_LOG("parcours (WFS-150) : course en Ultra : %s, %.0f m, %d capture(s) d'environnement de %d px", enCourse ? "oui" : "NON", g.player().dist * M, captures, environnement::taille());
+        {   // WFS-214 (accroche, RG-03, ANO-106) : chaussée en Ultra puis en Haute, même instant, même vue (niveaux posés directement : le banc ne
+            // trouve plus « Ultra » dans le panneau à onglets) ; capture d'environnement refaite à chaque niveau ; niveau d'avant rendu ensuite
+            const int qAv = R.qualite; const bool uAv = qualite::ultraChoisi;
+            for (const int n : {(int)qualite::ULTRA, (int)qualite::HAUTE}) {
+                niveau(n); environnement::demander(pointVille); for (int i = 0; i < 8; i++) g.render(tt);
+                capture(n == qualite::ULTRA ? "chaussee-ultra-course" : "chaussee-haute-course");
+                WFS_LOG("chaussée (WFS-214) : %s, capture d'environnement de %d px", NOMS[n], environnement::taille());
+            }
+            R.qualite = qAv; qualite::ultraChoisi = uAv; ecrans::appliquerQualiteNiveau(r);
+        }
         // 4) retour à l'accueil, Ultra gardé
         g.allerA(Ecran::Menu);
         for (int i = 0; i < 60; i++) image();

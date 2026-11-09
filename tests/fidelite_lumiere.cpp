@@ -80,7 +80,24 @@ int main(int argc, char** argv) {
         const double z[3] = {0, 1, 0};
         VERIFIE(proche(K * cieRelative(z, s), cieLuminanceZenith(h), 1e-6), "ciel h %.0f° : luminance du zénith", h);
     }
-    VERIFIE(eclairementCielDiffus(H_MIDI_DEG) == E_CIEL_CLAIR_MIDI, "ciel de midi : 6 000 lx (référentiel)");
+    // WFS-214 (RG-02, option A) : le ciel entier suit Krochmann (15 825 lx à 70°) ; les 6 000 lx du référentiel sont l'éclairement À L'OMBRE :
+    // contrôle « point à l'ombre » : pied d'un mur infini qui cache la moitié du ciel côté soleil, même ciel CIE type 12 → 6 000 lx ± 15 %
+    VERIFIE(proche(eclairementCielDiffus(H_MIDI_DEG), E_CIEL_PLEIN_MIDI, 0.001), "ciel de midi entier : %.0f lx (Krochmann, 15 825 lx)", eclairementCielDiffus(H_MIDI_DEG));
+    {
+        const double h = H_MIDI_DEG, K = cieFacteur(h), hs = h * PI_L / 180, s[3] = {std::cos(hs), std::sin(hs), 0};
+        double eMur = 0; const int NZ = 192, NA = 384;
+        for (int i = 0; i < NZ; i++) for (int j = 0; j < NA; j++) {
+            const double cz = (i + 0.5) / NZ, sz = std::sqrt(1 - cz * cz), A = (j + 0.5) / NA * 2 * PI_L;
+            const double d[3] = {sz * std::cos(A), cz, sz * std::sin(A)};
+            if (d[0] < 0) eMur += K * cieRelative(d, s) * cz * (1.0 / NZ) * (2 * PI_L / NA);   // moitié du ciel opposée au soleil
+        }
+        VERIFIE(proche(eMur, E_CIEL_CLAIR_MIDI, 0.15), "contrôle à l'ombre (pied d'un mur, h 70°) : %.0f lx contre 6 000 lx du référentiel (± 15 %%)", eMur);
+        const double lz = cieLuminanceZenith(h);
+        VERIFIE(lz >= 6000 && lz <= 8000, "zénith à h 70° : %.0f cd/m² (6 à 8 kcd/m², ciel clair mesuré ; avant WFS-214 : 2 669)", lz);
+        const double il = std::log2((eclairementSoleilNormal(h) * std::sin(hs) + eclairementCielDiffus(h)) / eclairementCielDiffus(h));
+        VERIFIE(il >= 2.5 && il <= 3.2, "rapport soleil / ombre à h 70° : %.2f IL (2,5 à 3,2 IL)", il);
+        std::printf("WFS-214 : ciel entier %.0f lx, pied d'un mur %.0f lx (référentiel à l'ombre 6 000), zénith %.0f cd/m², soleil / ombre %.2f IL\n", eclairementCielDiffus(h), eMur, lz, il);
+    }
     VERIFIE(std::fabs(cieF(PI_L / 2) - 1) < 1e-12, "CIE : f(π/2) = 1");
     VERIFIE(std::fabs(ciePhi(0) - (1 - std::exp(-0.32))) < 1e-12 && ciePhi(PI_L / 2) == 1, "CIE : φ(0) = 1 − e^−0,32, φ(π/2) = 1");
     // ---- couleur des lumières
@@ -130,6 +147,7 @@ int main(int argc, char** argv) {
     if (!wfs::reel::lireJson(racine + "/references/reel/photometrie.json", j, e)) { std::printf("ÉCHEC : %s\n", e.c_str()); return 1; }
     auto val = [&](const char* id, const char* cle) { if (const wfs::reel::Json* ms = j.get("mesures")) for (const auto& m : ms->a) if (m.texte("id") == id) return m.nombre(cle, -1); return -1.0; };
     VERIFIE(val("lum.ciel_clair.intensite", "valeur") == E_CIEL_CLAIR_MIDI, "ciel clair : 6 000 lx du référentiel");
+    VERIFIE(val("lum.ciel_clair.plein_ciel", "valeur") == E_CIEL_PLEIN_MIDI, "ciel clair entier : 15 825 lx du référentiel (WFS-214)");
     VERIFIE(val("lum.pleine_lune.intensite", "valeur") == E_PLEINE_LUNE, "pleine lune : 0,32 lx du référentiel");
     VERIFIE(val("lum.nuit_sans_lune.intensite", "valeur") == E_NUIT_SANS_LUNE, "nuit sans lune : 0,002 lx du référentiel");
     VERIFIE(val("lum.pleine_lune.temperature", "valeur") == T_PLEINE_LUNE && val("lum.soleil_midi.temperature", "valeur") == T_SOLEIL_MIDI, "températures du référentiel");

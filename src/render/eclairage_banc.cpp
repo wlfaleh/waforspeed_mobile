@@ -192,9 +192,13 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         g_l.albedos.push_back({(float)v->a[0].n, (float)v->a[1].n, (float)v->a[2].n});
     }
     const reel::Json* jSoleil = R.mesure("lum.soleil_midi.intensite"); const reel::Json* jCiel = R.mesure("lum.ciel_clair.intensite");
-    const double eMidi = jSoleil ? jSoleil->nombre("typique", 100000) : 100000, eOmbre = jCiel ? jCiel->nombre("valeur", 6000) : 6000;
+    const double eMidi = jSoleil ? jSoleil->nombre("typique", 100000) : 100000, eOmbreMesure = jCiel ? jCiel->nombre("valeur", 6000) : 6000;
     const double hMidi = hauteurMidi(eMidi);
-    if (g_l.albedos.size() == 25) {
+    // WFS-214 (RG-02, option A) : la charte à l'ombre reçoit le ciel ENTIER (Krochmann, lum.ciel_clair.plein_ciel) : le moteur n'occulte pas
+    // la lumière du ciel par la plaque (pas d'occlusion du ciel sur les objets mobiles) ; les 6 000 lx « à l'ombre » sont notés pour mémoire
+    const double eOmbre = eclairementCielDiffus(hMidi);
+    const bool SEULM = std::getenv("WFS_MOMENTS_SEUL") != nullptr;   // WFS-214 : essai local des seuls moments de WFS-208 (avec WFS_LUMIERE_SEUL)
+    if (g_l.albedos.size() == 25 && !SEULM) {
         preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
         g_l.mode = ETALON; g_l.monde = false; g_l.oeilR = {CHARTE_A + 0.35f, 0, 3.2f}; g_l.cibleR = {CHARTE_A + 0.35f, 0, 0}; g_l.fov = 50;
         // WFS-207 : l'étalon garde l'azimut de WFS-151 (318°, ancien soleil du jeu (−0,45 ; −0,5)) : mêmes conditions de mesure
@@ -275,8 +279,8 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                 if (okO && Y(Do) > 0) {
                     const double rapport = Y(D[24].data()) / Y(Do), attendu = (eMidi + eOmbre) / eOmbre, e3 = rapport / attendu - 1;
                     rap.ajouter(ligne("lum.m03.soleil_ombre", "M-03 : rapport soleil / ombre de la charte grise (part diffuse, HDR)", fmt(rapport, 3),
-                                      fmt(attendu, 3) + " ((" + fmt(eMidi, 0) + " + " + fmt(eOmbre, 0) + ") / " + fmt(eOmbre, 0) + " lx, photometrie.json)", "± 5 %", std::fabs(e3) <= 0.05, "derive",
-                                      "écart " + fmt(e3 * 100, 2) + " % ; à l'ombre : " + fmt(Y(Do) * PI_L / 0.18, 0) + " lx équivalents"));
+                                      fmt(attendu, 3) + " ((" + fmt(eMidi, 0) + " + " + fmt(eOmbre, 0) + ") / " + fmt(eOmbre, 0) + " lx : soleil de photometrie.json, ciel entier de Krochmann ; " + fmt(std::log2(attendu), 2) + " IL)", "± 5 %", std::fabs(e3) <= 0.05, "derive",
+                                      "écart " + fmt(e3 * 100, 2) + " % ; à l'ombre : " + fmt(Y(Do) * PI_L / 0.18, 0) + " lx équivalents (mesure réelle à l'ombre d'un obstacle : " + fmt(eOmbreMesure, 0) + " lx, sans occlusion du ciel dans le moteur)"));
                 } else rap.nonMesurable("lumiere", "lum.m03.soleil_ombre", "rapport soleil / ombre", "charte à l'ombre hors de l'image");
                 // photométrie de l'étalon (informations et mesures)
                 rap.ajouter(ligne("lum.soleil_midi.intensite", "éclairement du soleil seul au sol horizontal, étalon (modèle : masse d'air de Kasten et Young, trouble 2)",
@@ -292,6 +296,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
     }
     // ---------------- M-04 : ciel au zénith et 12° au-dessus de l'horizon (azimut du soleil + 90°), 3 hauteurs du soleil
     for (double hs : {20.0, 45.0, 70.0}) {
+        if (SEULM) break;
         preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
         eclairage::Forcage f; f.actif = true; f.hauteurSoleil = hs; f.ev = 15; eclairage::forcer(f);
         g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = 20;
@@ -327,7 +332,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
     // ---------------- WFS-207 : M-01 soleil à l'écran contre la NOAA (hauteur, azimut), M-02 diamètre apparent du soleil et
     // de la lune, M-03 chromaticité du ciel au zénith et à l'horizon contre le modèle d'atmosphère (Hillaire 2020) ;
     // 3 heures (midi solaire, soleil à 10° et à 2°) × 2 cartes, caméra à 300 m au-dessus de la route, champ de 1,5°
-    {
+    if (!SEULM) {
         const atmosphere::Lieu& Lx = atmosphere::lieu();
         auto noaa = [&](double hu) { return reel::soleil(Lx.lat, Lx.lon, Lx.annee, Lx.mois, Lx.jour, hu); };
         double hMidi = 9; for (double hu = 9; hu <= 15; hu += 0.005) if (noaa(hu).hauteurApparente > noaa(hMidi).hauteurApparente) hMidi = hu;
@@ -455,8 +460,15 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         const vec3 az = normalize(vec3{e0.astre.x, 0, e0.astre.z});
         g_l.oeil = pointRoute(*g_l.piste, g_l.dist, 0, 0, 3.f); g_l.cible = g_l.oeil + normalize(az + vec3{0, 0.25f, 0}) * 10.f; g_l.haut = {0, 1, 0};
         attendreSondes(g, t);
+        // WFS-214 (retour du lead dev, PR #314) : le temps du banc est figé et la scène n'est pas « neuve » (même carte que le moment
+        // précédent) : l'exposition restait celle de l'aube (EV 8,2 à midi, image blanche, 7 IL trop claire). Comme dans le jeu, elle
+        // s'adapte maintenant à sa cible (temps qui avance, 0,1 s par image, 20 s au plus) avant la capture
+        double tm = t;
+        for (int i = 0; i < 200 && std::fabs(eclairage::etat().ev - eclairage::etat().evCible) > 0.05; i++) { tm += 0.1; g.render(tm); }
+        for (int i = 0; i < 2; i++) { tm += 0.1; g.render(tm); }
         const eclairage::Etat e = eclairage::etat();
         r.capturePng(out + "/realisme-ciel-" + atmosphere::nomMoment(mo) + "-" + carte + ".png");
+        WFS_LOG("lumière (WFS-208) : %s, %s : EV %.2f (visé %.2f)", carte, atmosphere::nomMoment(mo), e.ev, e.evCible);
         infos << "WFS-208 : " << carte << ", " << atmosphere::nomMoment(mo) << " : " << fmt(e.heureUtc, 2) << " h UTC, astre h " << fmt(e.astreHauteur, 2) << "°, E sol "
               << fmt(e.eSol, 3) << " lx, EV100 " << fmt(e.ev, 2) << ", lumières de nuit " << (nuitM ? "allumées" : "éteintes") << ".\n";
         if (carte[0] == 'c' && carte[1] == 'a') {
@@ -474,6 +486,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         g.shutdown();
         g_l.mode = AUCUN;
     }
+    if (SEULM) return erreurs;
     {   // passage continu : heure dorée, 3 min de course, une image toutes les 0,5 s ; d'abord temps × 1 (référence : petits
         // recalages de l'exposition aux nouvelles sondes de la voiture qui roule, WFS-151), puis temps × 20 (1 h de soleil)
         double sautRef = 0, sautMax = 0, hSaut = 0, hDebut = 0, hFin = 0, dLogE = 0;

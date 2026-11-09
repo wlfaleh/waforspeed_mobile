@@ -15,11 +15,13 @@
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
 #include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
+#include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
 namespace wfs { int benchFluidite(Game& g, Renderer& r, const std::string& out); }   // WFS-221 (bench_fluidite.cpp)   // WFS-115 (modes_ecran.cpp)
 namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out); }   // WFS-139 (plage.cpp)
+namespace wfs { void benchMarina(Game& g, Renderer& r, const std::string& out); }   // WFS-376 (plage.cpp)
 namespace wfs { void benchFantome(Game& g, Renderer& r, const std::string& out); }   // WFS-318 (fantome_etiquette.cpp)
 namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }   // WFS-161 (accroche) : kit d'architecture (archi_banc.cpp)
 #include "../game/poursuite.h"   // WFS-111
@@ -243,6 +245,10 @@ int main(int argc, char** argv) {
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
     }
+    if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        const int e = benchCockpitVoisine(g, r, out, v, {"golf", "x5", "abarth"}); finir(); return e > 0 ? 3 : 0;
+    }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
@@ -254,6 +260,7 @@ int main(int argc, char** argv) {
     if (banc == "pluie") { benchPluie(g, r, out); return finir(); }   // WFS-354 (accroche) : pluie en vue Cockpit (montant, balais, tunnel)
     if (banc == "ville") { benchVille(g, r, out); return finir(); }           // WFS-137 : lieux de la Ville seuls (essai local)
     if (banc == "corniche") { benchCorniche(g, r, out); return finir(); }   // WFS-139 : Corniche au tracé 2 seule (essai local)
+    if (banc == "marina") { benchMarina(g, r, out); return finir(); }   // WFS-376 : bateaux de la marina (essai local et PR)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
