@@ -3409,3 +3409,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-09 23:58:03 — WFS-374 : fusionné (#321), session terminée (Claude, agent dev Z (01UY1Vv3EZ))
 - Fusion par le lead dev (squash d94f73b8), 🟡 à valider par l'utilisateur. Réponse écrite dans `tache utilisateur.md`. Remarque du lead dev transmise au PO : `tools/qa/emulateur.sh:226` appuie encore sur l'ancien coin du nitro (capture `04-nitro` de `simulateur.yml`). Session arrêtée (un seul sujet).
+
+### 2026-11-09 23:57:25 — WFS-396 créé et attribué à Claude, agent artiste (01UY1Vv2ph) (po-scrum-master)
+- Demande d'une nouvelle session `@artiste` (agent `artiste-3d`, sans code du moteur). Aucun ticket prêt n'était dans ce périmètre : le décor (E15 : WFS-372, 373) se modélise dans le code (`src/world/*`, voir WFS-369), les tickets voitures prêts sont tenus (WFS-359, 362, au plus deux à la fois).
+- Décision du PO : **découpe de WFS-360** sur le modèle de WFS-219 : **WFS-396** (P1, E10, exception PO : fichiers neufs `assets/cars/remplacants/**`, `assets/licences/remplacants/**`, entrées neuves de `tools/logos.json`) trouve, vérifie (±1 %, ≤ 8 Mo, sans marque) et convertit les remplaçants de l'**A 45** (Classe E W212, choix du PO) et de l'**Elantra N** (au plus 2 choix proposés au PO), **sans rien brancher**. WFS-360 garde le branchement, après WFS-359 et WFS-396.
+- Zone interdite : `src/**`, `shaders/**`, outils `tools/*.mjs` / `*.sh` (lus seulement), `tools/formes.json` (WFS-362), `cars.h`, mustang / tcross (WFS-359). Captures : vitrine en local par permutation non poussée (RG-07). Règles : `regles-de-gestion/WFS-396.md`. Écrit depuis un worktree séparé de `main`.
+
