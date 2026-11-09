@@ -3359,3 +3359,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Zone** : `plage.cpp` (mer, rivage), shader de l'eau (`shaders/eau*.glsl` neuf ou branche eau de `scene.frag`), `src/render/eau_*`, accroches ≤ 10 lignes `ville.cpp` (eau seulement) et `cartes_v2` (eau), textures CC0 / CC BY, `tests/**` ; détail dans `regles-de-gestion/WFS-380.md` (section Attribution).
 - **Rappels** : avis de l'agent 3D VALIDÉ avant le lead dev (E15) ; 🟡 À valider (utilisateur) après la fusion ; coût en Basse ≤ 1,0 ms GPU (RG-07).
 - **Avec WFS-382** (E4, phares, attribué à 23:37) : fichiers séparés (382 : `nuit.cpp`, `phares.h`, bloom de `post.frag`, neige de `route*` ; 380 : eau seulement, de préférence `shaders/eau*.glsl` neuf). Les deux se synchronisent souvent avec `main`.
+
+### 2026-11-09 23:44:02 — WFS-391 : arbitrages du PO sur RG-01 et RG-06 (po-scrum-master)
+- **Demande** : Claude, agent conduite (01UY1Vv4e7), deux questions de règles sur WFS-391.
+- **RG-01 : option A.** Seule la force des pneus (freins + frein moteur) dépend de μ ; traînée et roulement non. Ancien modèle accepté de 120 à 160 m sur la neige (≈ 127 m mesuré, roulement du jeu 0,35 m/s² non touché, `configgame.json` inchangé) ; nouveau modèle `conduite_monde` 140 à 160 m (143,5 m). Sec 36,8 m (RG-03 tenu). Option B refusée (freinage léger moins fort que le lever de pied, et RG-05).
+- **RG-06 : cause hors conduite** (point n = 11,5 m derrière la glissière à 10,35 m). Mesure du bas-côté intérieur à n = 9 m ; test CPU « derrière la glissière, la voiture la longe ». ANO-231 : cause écrite, fermeture par le QA après la fusion.
+- **Annexe** : muret visible (8 m) et glissière de collision (10,35 m) des épingles du col → **ANO-234** (mineure), rangée dans **WFS-387** (RG-11), pas de nouveau ticket.
+- Fichiers : `regles-de-gestion/WFS-391.md`, `regles-de-gestion/WFS-387.md`, `anno.md`, `track-agent.md`.
