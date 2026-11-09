@@ -2471,3 +2471,28 @@ Points de la 1re revue corrigés et acceptés (police qui arrive de 220 à 6 m, 
 ### 2026-11-09 11:24:15 — WFS-353 : PR #307 approuvée et fusionnée (lead-dev auto)
 
 RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testée (`test_qualite` OK) ; captures Basse / Haute identiques à `main`, 45 % propre ; run 955 : compilation et APK verts. Squash 266e110, statut 🟡 (img/s à mesurer sur le téléphone, estimation ≈ 26). **Pour le PO** : RG-01 (2 lumières par pixel) n'est pas activée dans le jeu (variante du banc seulement : +4 à +5 % et reflet perdu) : décision à prendre (garder 4 ou retirer RG-01).
+
+### 2026-11-09 11:25:21 — WFS-353 : mesure avant / après, PR #307 (fusionnée par le lead dev) ; décision du PO demandée (agent arwa (Claude, session trafic))
+- Branche partie de `feature/waforspeed-348` (#300 non fusionnée au début), synchronisée avec `main` après la fusion de #300 (4d8ba694 ; conflits `renderer.cpp`, `bench_perf.cpp` : les deux côtés gardés). CI de branche (US technique) : **run 955** (`workflow_dispatch` de `build.yml`, 4d8ba694).
+- **RG-03 (fait)** : `qualite_auto.h/.cpp` : plancher 45 % en Basse seulement à 60 %, palier 2 et sous 30 img/s ; retour à 60 % d'un coup à la marge (règle de WFS-246, ou ≥ 50 img/s à 45 %) ; Moyenne, Haute, Basse par rétrogradation : 60 %.
+- **RG-01 (variante du banc, non activée)** : `eclairage.glsl` `spotLights2` (2 plus fortes au point en calcul complet, les autres approchées) ; le jeu garde 4 lumières (`LUMIERES_PAR_PIXEL_BASSE = 4`, accroche `renderer.cpp` 2 lignes).
+- **Tableau avant / après** (`WFS_BANC=perf WFS_PERF_SCENE=1 WFS_PERF_SCENE_LEVIERS=1 WFS_STATS_PIPELINE=1`, Basse 2340 × 1080, 20 images, temps processeur ms / image) :
+
+| variante | Rue des Mimosas | écart | Départ | écart |
+|---|---|---|---|---|
+| Basse du jeu (60 %, 4 lumières) | 1 208 | — | 1 738 | — |
+| scène à 45 % (RG-03) | 984 | − 19 % | 1 250 | − 28 % |
+| 2 lumières approchées (RG-01) | 1 262 | + 4 % | 1 825 | + 5 % |
+| 2 lumières approchées + 45 % | 963 | − 20 % | 1 355 | − 22 % |
+| scène à 50 % | 1 032 | − 15 % | 1 447 | − 17 % |
+| sans lumières de nuit (repère) | 1 076 | − 11 % | 1 515 | − 13 % |
+
+  GPU scène lavapipe (Mimosas) 310-316 → 224 ms à 45 % (− 28 %), pixels 2 470 k → 1 434 k (− 42 %). Trois versions de la variante 2 lumières essayées : toujours + 3 à + 8 % (le test « dans le faisceau » de chaque lumière coûte presque autant que le calcul complet ; le « − 8 % » de WFS-348 venait de la coupure des 2 autres, interdite par RG-01).
+- **RG-04 non atteint au calcul** : estimation téléphone (part par pixel ≈ 72 %) 55,8 → ≈ 39 ms à 45 %, **≈ 26 img/s** ; mesure de l'utilisateur attendue. **Ticket suivant proposé au PO** : « [TECHNIQUE] Basse : coût par pixel du sol et des trottoirs, Ville de nuit » (− 32 % au banc de WFS-348), zone E4 `scene.frag` (surfaces procédurales) derrière le réglage de qualité.
+- Vérifications : 87 tests CPU réussis (nouveaux : plancher 45 %, choix des 2 lumières, atan2 et coupure du feu approchés) ; Haute et Basse 60 % : 0 pixel différent de la base #300 (4 PNG) ; 3 captures successives en roulant : lampadaires et flaques présents ; parcours complet 0 écart, Cockpit 0 écart (avant et après la synchronisation). `test_audio_chocs` (mesure de temps) a échoué une fois pendant un banc, réussi ensuite.
+
+### 2026-11-09 11:25:21 — WFS-353 : décision du PO demandée (2 lumières par pixel) (agent arwa (Claude, session trafic))
+- Constat : la variante « 2 lumières par pixel, les autres approchées » coûte + 4 à + 5 % au banc ; dans le faisceau des phares, le lampadaire (3e lumière) perd son reflet sur la chaussée mouillée (`qa/pr/WFS-353/variante-2-lumieres-zoom-mimosas.jpg`).
+- Conséquence : l'activer rendrait la Basse plus lente et moins fidèle (RG-02).
+- Proposition (recommandée) : garder 4 lumières en Basse (état fusionné) et passer au sol et trottoirs ; autre option : retirer `spotLights2` du shader.
+- Décision attendue de : PO.
