@@ -64,6 +64,7 @@ public:
         // trafic de la carte (resetRace du jeu web) ; « Rejouer » (WFS-12) repart de la même graine.
         // Graine tirée au hasard à chaque course : avec le menu (WFS-11).
         trafficN_ = (int)std::lround((g.map ? g.map->trafficN : 42) * config().trafic.densite); track_ = g.track;   // WFS-128 : × trafic.densite (1)
+        traffic_.totalFixe = true;   // WFS-281 (ANO-151, RG-02) : le total de voitures ne grandit plus pendant la course
         traffic_.reset(*g.track, seed_, trafficN_, g.player ? g.player->position : 0);
         stats_ = {};
         active_ = this;
@@ -92,7 +93,10 @@ public:
         if (course) course->hold(pl);
         if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
         if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
-        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
+        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) {
+            traffic_.fixerTotal(n);   // WFS-281 : la poursuite fixe son propre total (trafic dense)
+            traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
+        }
         const bool playing = !course || course->playing();
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
@@ -149,6 +153,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
         if (g.fondFige) return;   // WFS-329 (accroche) : fond figé du menu : dessin seul (dessins ignorés), rien à calculer
+        uint32_t a0, t0; r.fileScene(a0, t0);   // WFS-281 : coût du trafic de cette image (médianes du banc perf)
         const Player& pl = *g.player; Track& t = *g.track;
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
         const TrafficCar* vis[TRAFIC_DESSINES_MAX];
@@ -180,9 +185,15 @@ public:
         }
         deux_roues::dessinerFile(r, g.camPos);   // WFS-232 : pilotes des deux-roues les plus proches
         dessineHalos(r, g);   // WFS-67
+        uint32_t a1, t1; r.fileScene(a1, t1);
+        histo_[histoN_++ % HISTO] = {(double)(a1 - a0), (double)(t1 - t0), (double)n};   // WFS-281
     }
 
     static TrafficSystem* active_;
+    // WFS-281 (RG-02) : appels, triangles et véhicules dessinés des HISTO dernières images, pour les médianes du banc perf
+    static constexpr int HISTO = 128;
+    struct CoutImage { double appels = 0, triangles = 0, dessines = 0; };
+    CoutImage histo_[HISTO]; uint32_t histoN_ = 0;
     int deuxRouesDessines_ = 0;   // WFS-232 : deux-roues dessinés à la dernière image (banc d'essai : autant de pilotes, RG-02)
     Traffic traffic_;
     TrafficStats stats_;
@@ -440,6 +451,21 @@ void trafficRestart(double playerPos) {
 }
 void trafficRestartSeed(uint32_t seed, double playerPos) {
     if (auto* s = TrafficSystem::active_) { s->seed_ = seed; trafficRestart(playerPos); }
+}
+bool trafficMedianes(int images, double& appels, double& triangles, double& dessines) {
+    const TrafficSystem* s = TrafficSystem::active_;
+    if (!s || images <= 0) return false;
+    const int n = std::min({images, TrafficSystem::HISTO, (int)s->histoN_});
+    if (n == 0) return false;
+    auto mediane = [&](double TrafficSystem::CoutImage::*champ) {
+        double v[TrafficSystem::HISTO];
+        for (int k = 0; k < n; k++) v[k] = s->histo_[(s->histoN_ - 1 - k) % TrafficSystem::HISTO].*champ;
+        std::nth_element(v, v + n / 2, v + n);
+        return v[n / 2];
+    };
+    appels = mediane(&TrafficSystem::CoutImage::appels); triangles = mediane(&TrafficSystem::CoutImage::triangles);
+    dessines = mediane(&TrafficSystem::CoutImage::dessines);
+    return true;
 }
 int trafficBenchCar() { return TrafficSystem::active_ ? TrafficSystem::active_->benchCar_ : -1; }
 static void trafficBenchPeloton(double metres) { if (auto* s = TrafficSystem::active_) { s->pelotonReq_ = true; s->pelotonM_ = metres; } }

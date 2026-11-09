@@ -26,6 +26,7 @@ public final class Telechargeur {
 
     public static int delaiMs = 15000;               // connexion et lecture
     public static int redirectionsMax = 5;
+    public static volatile int pauseMs = 0;     // WFS-307 (RG-03) : pause par bloc de 64 Ko pendant la course si le jeu passe sous 30 img/s
 
     private Telechargeur() {}
 
@@ -89,6 +90,8 @@ public final class Telechargeur {
                             out.write(b, 0, k);
                             deja += k;
                             recus.set(deja);
+                            final int pause = pauseMs;
+                            if (pause > 0) { try { Thread.sleep(pause); } catch (InterruptedException x) { return Resultat.ARRET; } }
                         }
                     }
                 }

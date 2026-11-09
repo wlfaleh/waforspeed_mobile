@@ -15,6 +15,7 @@ static Material deuxFaces(Material m) { m.flags |= MAT_DOUBLE; return m; }
 constexpr float AMBIANCE_NUIT = 0.25f;
 
 bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
+PareBriseVu& pareBriseVu() { static PareBriseVu p; return p; }   // WFS-334 : voir vehicule_cockpit.h
 const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
 
 // définitions par modèle (DEFS, interieurPour) : vehicule_cockpit_defs.cpp (sans rendu : testées par tests/test_cockpit.cpp)
@@ -669,6 +670,18 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
             B.at(0, 2) = en.x * sens; B.at(1, 2) = en.y * sens; B.at(2, 2) = en.z * sens;
             return translate(o) * B;
         };
+        {   // WFS-334 : pare-brise et balais de l'image, pour la pluie (gouttes derrière la vitre et sur la vitre)
+            PareBriseVu& pb = pareBriseVu();
+            const float yb = d.pareBriseY, zb = d.pareBriseZ, xh = montant_ * 0.88f;   // montants légèrement rentrés en haut
+            pb.vu = true; pb.repere = cam; pb.ex = ex; pb.eu = eu; pb.angle = e.essuie;
+            pb.coins[0] = {cx_ - montant_, yb, zb}; pb.coins[1] = {cx_ + montant_, yb, zb};
+            pb.coins[2] = {cx_ + xh, haut.y, haut.z}; pb.coins[3] = {cx_ - xh, haut.y, haut.z};
+            const float dx[2] = {d.essuie == Essuie::Unique ? -0.02f : -0.62f, d.essuie == Essuie::Opposition ? 0.62f : 0.08f};
+            const float sn[2] = {d.essuie == Essuie::Unique ? -1.f : 1.f, d.essuie == Essuie::Opposition ? -1.f : 1.f};
+            pb.balais = 0;
+            for (int k = 0; k < (d.essuie == Essuie::Unique ? 1 : 2); k++)
+                if (bras_[k].indexCount) { pb.pivot[pb.balais] = base + vec3{dx[k], 0, 0}; pb.sens[pb.balais] = sn[k]; pb.longueur[pb.balais] = k == 0 ? d.balaiG : d.balaiD; pb.balais++; }
+        }
         switch (d.essuie) {
         case Essuie::Paralleles:
             if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }

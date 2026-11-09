@@ -4547,6 +4547,14 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **Zone** (exception PO E8, WFS-290 d'agent 2 en retour lead dev dans d'autres fichiers) : `src/ui/ecrans/terrain.*`, `paquets*`, fichiers neufs ; Java `Paquets`, `ListePaquets`, `Telechargeur` (+ JUnit) ; `src/core/carte_cuite.*` + accroches ≤ 10 lignes annoncées au journal. **Pas** `reglages.*` / `menu.*` (RG-06 seulement après WFS-290 / 291 / 318, sinon ticket suivant), **pas** la CI ni `cartes.json` réel (WFS-302) : essai avec un faux paquet local.
 - **Critères et captures** : `regles-de-gestion/WFS-307.md` (RG-01 à RG-08, parcours RG-07, section « Captures demandées »). Branche `feature/waforspeed-307`, PR relue et fusionnée par le lead dev ; ✅ par les bancs du matin.
 
+### 2026-11-09 00:15:12 — WFS-307 : début (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-307` depuis `main` (778dbf48). Skills : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`. Plan et accroches à l’entrée suivante.
+
+### 2026-11-09 00:39:35 — WFS-307 : choix du terrain, file des cartes, relecture au changement de carte ; accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- **Java** : `FilePaquets` (règle pure, file d'attente une carte à la fois, phase `ATTENTE`), `Paquets` par carte (`chercherTout`, `etatCarte`, `installerCarte`, `arreterCarte`, `supprimee`, `ralentir`), `Telechargeur.pauseMs` (débit réduit, RG-03) ; 22 tests JUnit OK.
+- **C++** : `CartesPaquets` (paquets_etape.cpp, sans rendu) ; vignette du choix du terrain : assombrie, « Télécharger — X Mo » / « Mise à jour — X Mo », file, barre + astuce, coupure, « Annuler », données mobiles confirmées, « Connexion nécessaire », « Supprimer — libère X Mo » avec confirmation ; au menu « Corniche prête pour la prochaine course » ; débit réduit en course sous 30 img/s. Pont JNI : `paquets_android.cpp` (caches 0,1 s par carte).
+- **Accroches annoncées** (accord du PO, 2026-11-09 00:16:07, `regles-de-gestion/WFS-307.md`) : `src/game/game.h` (+1 champ `Demandes::recharger`), `src/game/game.cpp` (2 lignes de `changerCarte` : carte reconstruite même si déjà chargée quand `recharger`). Seul `terrain.cpp` met `recharger = true`, quand le paquet de cette carte a changé (RG-08). Sur Android, `debutChargement` appelle déjà `preparerCarte` à chaque reconstruction.
+- **Tests** : `test_paquets` étendu (CartesPaquets : RG-01, 02, 04, 05, mise à jour, débit) OK ; banc `paquets` étendu au parcours RG-07 (faux paquet de la Corniche cuit en local).
 ### 2026-11-09 00:16:07 — WFS-307 : accroche de 2 lignes dans `game.*` acceptée (po-scrum-master)
 - Demande de Claude, agent 3 : pour RG-08, `Game::changerCarte` ne reconstruit pas la partie quand la carte et le moment sont déjà chargés (RG-02 de WFS-41) ; un paquet de la Ville installé pendant une partie sur la Ville ne serait jamais relu.
 - **Oui** (accroche ≤ 10 lignes, `CLAUDE.md`) : champ `bool recharger = false;` dans `Game::Demandes` (`game.h`) ; condition `!d.recharger && …` et remise à `false` dans `game.cpp`. Mis à `true` seulement par `terrain.cpp` quand le paquet de la carte a changé. Détour par `WFS_MOMENT` refusé. Détail : section « Suivi » de `regles-de-gestion/WFS-307.md`.
@@ -4637,3 +4645,49 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - Branche `feature/waforspeed-291` ; zone : `src/ui/ecrans/reglages.*`, `menu.*` ; règles : `regles-de-gestion/WFS-291.md` (découpage validé le 2026-11-08 23:04:56 UTC).
 - Inclus (même fichier, demande du lead dev sur #287) : `onEcran` remet aussi `g_doigt` à zéro, pas seulement `g_presse`.
 - Captures avant / après obligatoires, PR relue et fusionnée par le lead dev ; après fusion → 🟡 À valider (utilisateur) si le ticket vient d'un essai de l'utilisateur.
+
+### 2026-11-09 00:55:04 — WFS-334 : PR #293 ouverte, pluie hors de l'habitacle et des tunnels (Claude, agent dev Y)
+- **Cause (RG-01)** : la pluie est un voile de traits 2D dessiné par-dessus toute l'image (`meteo.cpp`, `drawUi`). Elle ne tient compte ni de la vue (planche, volant, toit), ni des tunnels, ni de la vitesse : ses traits restaient verticaux.
+- **Correction** (`meteo.*`, et `vehicule_cockpit.*` en E10) :
+  - pluie coupée sous les tunnels du tracé, avec un fondu de 8 m ;
+  - en vue Cockpit, traits seulement à travers le pare-brise (projeté à l'écran) et les vitres latérales au-dessus de la planche ;
+  - 140 gouttes posées sur la vitre, effacées par les balais (`pareBriseVu()` pour la géométrie, même modèle de balais que la caméra) ;
+  - traits inclinés depuis le point de fuite à vitesse (ANO-194).
+- **Zone** : `camera_vue.cpp` est seulement lu (`etatCockpit()`, sans accroche). `cartes_banc.cpp` reçoit 3 vues de tunnel pour les captures (RG-05).
+- **Vérifié en local** : `test_pluie` vert, 81 tests CPU verts, parcours complet 0 écart, 182 gouttes effacées par les balais au banc. Coût de la pluie : 0,029 ms par image en cockpit, 0,006 à 0,013 ms en vue Arrière.
+- **Captures** dans `qa/pr/WFS-334/` (12 paires). L'« avant » = la branche avec `meteo.*` et `vehicule_cockpit.*` de `main`. Le premier essai « avant » a été rejeté : le banc n'avait pas été reconstruit, comme le montrait la ligne de journal présente dans le banc « avant ».
+
+### 2026-11-09 01:00:28 — WFS-193 : méthode A (petite géométrie neuve par l'outil), 3 voitures pilotes d'abord (po-scrum-master)
+
+### 2026-11-09 01:02:50 — Carte « Neige scandinave » de Noël : WFS-342 (vue d'ensemble), 343, 344, 345 créés (demande de l'utilisateur) (po-scrum-master)
+
+### 2026-11-09 01:05:02 — Principe « tout en dynamique » écrit (WFS-342, 343, skill expert-cartes) (po-scrum-master)
+
+### 2026-11-09 01:06:02 — WFS-336 : PR #295 ouverte (lead-dev)
+- Branche `feature/waforspeed-336` synchronisée avec `main` ; `test_trafic_duree` après synchronisation : **0 fenêtre hors règle sur 1600** (`--avant` : 771) ; tests CPU 80/80 avant la synchronisation, suite relancée après.
+- Banc perf, Ville, TrafficSystem (médiane de 90 images), Haute avant → après : départ 12 / 9 547 → 12 / 9 547 ; ≈ 2 min 50 : 76 / 86 119 → 25 / 11 331 ; 10 min jour : 201 / 170 554 → 94 / 58 020 (3 véhicules dessinés) ; 10 min nuit : 222 / 170 596 → 100 / 58 032. Basse 10 min : 56 / 138 966 → 30 / 32 680. Total de voitures constant (54).
+- Reproduction du ticket : 54 → 644 ne se reproduit plus tel quel sur le `main` actuel (76 à 2 min 50, 201 à 10 min) ; l'accumulation reste visible sur `main` et disparaît sur la branche.
+- Captures : 9 paires dans `qa/pr/WFS-336/` (Ville jour / nuit, Haute / Basse, 10 min, Golf sur la chaussée ; Poursuite identique à `main`). Limite : à 2 min 50, la Golf du pilote automatique du banc sort de la route sur `main` comme sur la branche.
+- Relecture et fusion : **session « ⚡ Lead dev automatique »**, prévenue directement. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-09 01:07:34 — WFS-334 fusionné par le lead dev (lead-dev)
+- PR #293 (Claude, agent dev Y) relue sur 19371276. Les 24 images ont été ouvertes et tout le diff a été lu (`meteo.*`, `vehicule_cockpit.*`, `cartes_banc.cpp`, `test_pluie`, `CMakeLists.txt`).
+- La branche avait 10 commits de retard (dont WFS-290, interface, sans fichier commun). Fusion locale vérifiée : aucun conflit, construction complète, 82 tests CPU verts.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire : GitHub refuse l'approbation par le même compte), puis squash 92c1a8ce.
+- Ticket en 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, agent dev Y libre.
+- Remarques non bloquantes, écrites dans la PR : gouttes sur le montant gauche ; double état des balais ; pluie encore 6 m dans la bouche en cockpit.
+### 2026-11-09 01:07:43 — WFS-307 fusionné par le lead dev (lead-dev)
+- PR #294 (Claude, agent 3 (01UY1Vv3)) relue sur 1021b6b6 : 18 captures ouvertes une par une (10 nouvelles du choix du terrain, du menu et de la course ; 4 paires de WFS-306 identiques), diff de 34 fichiers lu en entier (FilePaquets, Paquets, Telechargeur, pont JNI, CartesPaquets, terrain, banc, tests). RG-01 à RG-05, RG-07, RG-08 tenues ; RG-06 reportée (décision du PO) ; accroches `game.*` conformes à l'accord du PO de 00:16:07.
+- GitHub refuse « Approve » (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire, puis fusion en squash 90ee9b21. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` complété.
+
+### 2026-11-09 01:10:30 — WFS-336 fusionné par le lead dev (lead-dev auto)
+- PR #295 codée par le lead dev (session de l'utilisateur), relue et fusionnée par une autre instance (règle de WFS-336), à sa demande.
+- Revue complète : 9 paires de captures ouvertes, tout le diff lu (`traffic.*`, `traffic_system.*`, `test_trafic_duree`, accroches de banc). Tests relancés sur la branche fusionnée avec main : `test_trafic_duree` 0 sur 1600, `test_trafic_vivant`, `test_chocs_voitures`, `test_rien_sur_chaussee`, `test_lots_decor`, `test_navigation` OK.
+- Approbation en commentaire (même compte), squash c2fd0c5 (expectedHeadSha 52eaf6c). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
+
+### 2026-11-09 01:10:25 — WFS-343 attribué à Claude, agent 3 (01UY1Vv3) ; WFS-346 et WFS-347 créés (po-scrum-master)
+- **Choix** : files A / B sans ticket attribuable (WFS-193, 335 en cours ; WFS-194 attend E10 ; file B : WFS-333 attend E3 occupée par WFS-336 / 338, WFS-328 et 338 chez arwa). Premier ticket prêt du domaine cartes : **WFS-343** (P2, objectif « cartes téléchargées », dépendances WFS-301, 306, 307 🟣).
+- **Découpage** (un ticket = une journée au plus ; E3 occupée) : la neige (RG-02 et la partie neige / saison de RG-05) passe dans **WFS-346** (P2, E3 + E2 / E4, après WFS-343, skill expert-conduite). WFS-344 dépend de 343 et 346. Rien du contenu demandé n'est retiré.
+- **Zone de WFS-343** : `src/world/cartes_v2/**`, `src/core/carte_cuite.*`, `src/ui/ecrans/terrain.*`, `paquets*`, `tests/cartes_v2*`, fichiers neufs ; accroches ≤ 10 lignes annoncées dans `track.*` / `game.*`. Pas `traffic.*`, `traffic_system.*`, `poursuite*`, `hud.*`, `player.*`, `conduite_*`, `reglages.*`, `menu.*`, ni la CI.
+- **Critères** : RG-01 (tracé, chocs, départs, checkpoints, zones de trafic lus du paquet, carte absente du choix si bloc faux, jamais de plantage), RG-03 (décor générique lu du paquet, carte venue d'un paquet dans le choix du terrain), RG-04 (tests CPU, parcours accueil → terrain → course → retour 0 écart, carte de test, captures au lead dev), RG-05 (rien de propre à une carte dans le code). Règles : `regles-de-gestion/WFS-343.md`.
+- **WFS-347** (P3, E8) créé : RG-06 de WFS-307 (ligne « Cartes : N téléchargées, X Mo » des Réglages), après WFS-290, 291, 318 (agent 2).

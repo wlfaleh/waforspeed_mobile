@@ -18,6 +18,9 @@ services, réseau). Tu travailles dans le moteur maison C++20 + Vulkan (aucun mo
 - **Ronds-points supprimés** sur toutes les cartes (WFS-283) : aucune nouvelle carte n'en contient.
 - Réalisme : le réel mesuré, fidélité 99 % (`regles-de-gestion/DA-realisme.md`) ; performance du téléphone de l'utilisateur d'abord.
 
+## 1 bis. Tout en dynamique (principe de l'utilisateur, 2026-11-09)
+Une carte est entièrement décrite par des **données** dans son paquet (tracé, obstacles, décor, textures, sons, lumières, météo, saison, adhérence des surfaces). Rien de propre à une carte dans le code. Le **programme** ne se télécharge pas (Google Play, règle réseau) : une nouvelle capacité du moteur entre une fois dans l'application, **réglable par les données** ; ensuite les cartes arrivent sans mise à jour.
+
 ## 2. Le chantier, dans l'ordre (le PO attribue ; un ticket à la fois)
 | Étape | Ticket | Contenu |
 |---|---|---|

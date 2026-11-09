@@ -166,3 +166,6 @@ demande utilisateur :
 
 - Captures demandées : Réglages en course (Ville de nuit) et Course à 5 (2026-11-08 22:18 UTC)
 ( PO : merci — **24 img/s** au lieu de 10, personnes 3 % ; les voitures font maintenant 74 % du dessin → **WFS-335** (P1) pour viser ≥ 30 img/s ; Course à 5 disputée (4e, collé au 3e). )
+
+- Écrire une tâche : carte neige scandinave avec décor de Noël, téléchargée en priorité, automatiquement, jouable sans installer de mise à jour (2026-11-09 01:02 UTC)
+( PO : c'est écrit — **WFS-342** (vue d'ensemble) découpé en **WFS-343** (l'application apprend une fois à lire une carte entière depuis un paquet et à rendre la neige), **WFS-344** (la carte et le décor de Noël), **WFS-345** (publication en priorité, téléchargement automatique, jouable sans mise à jour). )
