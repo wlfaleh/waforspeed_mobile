@@ -4506,3 +4506,122 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - WFS-339 ([TECHNIQUE] banc `campagne`) reste prêt pour le prochain développeur libre.
 ### 2026-11-08 23:48:15 — WFS-306 fusionné par le lead dev (lead-dev)
 - PR #286, 2e revue : les 4 défauts du refus sont corrigés (proposition RG-02 depuis le bandeau du menu, « Plus tard » pendant une coupure → PRETE, `tests/test_paquets.cpp`, captures 2400×1080). 22 captures ouvertes, tout le diff relu depuis 6ec29c5c, 80 tests CPU et 19 JUnit relancés : OK. Approbation écrite dans la PR (COMMENT : même compte), squash **a101e9b**. Conflit du seul `journal.md` avec `main` réglé par le lead dev (34b1dca7, deux côtés gardés, aucun code). Statut 🟣 (pas un ticket 🟡). Remarques non bloquantes : description de la PR non remise à jour, `texteMo` sans espace des milliers. Suite : WFS-302 (essai réel).
+
+### 2026-11-08 23:53:56 — WFS-293 : risque signalé par Claude, Agent 0 developer (ece9723a) et décision du PO (po-scrum-master)
+- **Risque** : banc complet vert partout (référence 120 Hz ≤ 4,73 mm à 10-20 img/s, aller-retour ≤ 1,89 cm) sauf **épingle et carrefour à ≥ 30 img/s** jugés par l'indicateur de WFS-247
+  (16-20 mm à 30, 6,7-9,7 à 60, 4,1-5,7 à 90 img/s ; 18 manques) ; référence 120 Hz sur les mêmes cas : 1,2-1,5 / 0,4-0,7 / 0,4-0,6 mm : plancher de la cubique sur 4 images, pas un saut.
+- **Décision : option A** (RG-12 à RG-14 de `regles-de-gestion/WFS-293.md`) : référence 120 Hz juge partout (< 5 mm à ≥ 30, ≤ 10 mm à 10-20 img/s, valeurs inchangées) ;
+  l'indicateur de WFS-247 reste juge en plus en ligne droite, montée et virage serré à ≥ 30 img/s ; tableau à deux colonnes et test du saut de 5 mm refait dans l'épingle à 30 img/s.
+  Choix de mesure, décidé par le PO ; l'utilisateur peut le changer. Ticket toujours à Claude, Agent 0 developer ; 🟡 après fusion.
+
+### 2026-11-08 23:32:02 — WFS-301 (complément) : mode `WFS_BANC=cuire` pour la publication des paquets (WFS-302) (Claude, agent 3 (01UY1Vv3))
+- Demande de l'agent expert ci cd (WFS-302, option A choisie par l'utilisateur), décision du PO (complément de WFS-301, RG-C1 à C3, b52e3d6d).
+- `cartes_v2::cuireSeul` (`paquet_carte.*`, E14) : 3 formats cuits deux fois, comparés octet par octet, écrits (temporaire puis renommage), vérifiés (`verifier_carte`), **laissés** dans `WFS_PAQUETS` ; une ligne par fichier (nom, taille, SHA-256, empreinte) ; `sha256Hex` neuf (FIPS 180-4, vérifié contre `sha256sum`).
+- **Accroche** `desktop_main.cpp` : 1 ligne, **avant l'initialisation de Vulkan** (pas de GPU, ≈ 1,6 s). Code de sortie 0 si tout va bien, 3 en cas d'écart (essai : dossier impossible à écrire → 3). Deux lancements de suite → fichiers identiques (`cmp`). `WFS_BANC=cuisson` inchangé.
+- Sortie sur la branche (ville_astc 22 779 180 octets, ville_etc2 5 562 514, ville_rgba8 27 593 777 ; empreinte c30f0f40c276b6c1).
+### 2026-11-09 00:01:38 — WFS-215 : PR #288 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures ouvertes (Model 3 plaque, RR Sport jour / nuit, A 45 vitrines), tout le diff lu (`tools/vitres_voitures.mjs`, 1 ligne de `convertir_voitures.sh`, `logos.json`, 3 voitures). RG-01, RG-02 (jour), RG-03, RG-04 tenues à l'œil ; code juste.
+- Refus : conflit `journal.md` avec main (fusion impossible) ; `conducteurs-rrsport-nuit` éblouie avant comme après : conducteur de nuit non montré.
+
+### 2026-11-09 00:03:11 — WFS-322 : PR #289 refusée par le lead dev (1re revue) (lead-dev)
+- Revue complète du commit 567e68b2 : 33 paires du banc `qualite` ouvertes, tout le diff lu (`environnement.cpp`, `eclairage_physique.cpp`, `eclairage_unites.h`, accroches `renderer.*` 2 lignes et `passes.h` 1 ligne, test `fidelite_lumiere`).
+- **Images et code bons** : les façades ne sont plus bleues (56 / 60 / 64 m), plus de saut sur `voiture-sonde-0` à `-9`, nuit inchangée ; aucun défaut de logique (`lisserSh9`, `sceneNeuve`, saut de la voiture du joueur dans la capture).
+- **Refus pour preuves manquantes** : (1) banc `fluidite` non mesuré (RG-04, ± 0,2 ms) ; (2) journal sans la vraie cause du bleu (Golf dans la capture, diagnostic `WFS_DIAG_SONDE`) ni les mesures finales (RG-01) ; (3) accroches `renderer.*` / `passes.h` non annoncées ; (4) tests et parcours absents du journal.
+- **Remarque pour le PO** (non bloquante) : la façade à l'ombre est maintenant légèrement chaude (b* +1,8 à +2,9), alors que `expert-realisme-3d` l'attendait légèrement froide (b* −2 à −3,5). RG-03 est tenue ; un ticket de finition est possible (teinte du ciel, occlusion de WFS-269 comptée deux fois).
+- Revue écrite dans la PR (en commentaire : même compte GitHub) ; `TACHES.md` → « ↩️ Retour lead dev (PR #289) », `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-09 00:08:20 — Dernière APK : 16 img/s avec moins de triangles (GPU scène 55,8 ms contre 37,1) : régression du coût par pixel, notée dans WFS-335 (po-scrum-master)
+### 2026-11-09 00:10:28 — WFS-301 (complément, PR #290) : retour lead dev, conflit avec main (lead-dev)
+- 8 captures `cuisson-*` ouvertes : avant et après identiques (RG-C3). Tout le diff est relu : `cuireSeul`, `sha256Hex` (FIPS 180-4) et l'accroche de 1 ligne avant Vulkan sont conformes à RG-C1 à C3. Revue « Approuvé par le lead dev » écrite dans la PR.
+- Fusion en squash refusée par GitHub : conflit dans `journal.md` avec ab305b38 (PO, WFS-335). Agent 3 synchronise, garde les deux entrées et rappelle le lead dev. Aucune autre correction demandée.
+
+### 2026-11-09 00:13:05 — WFS-301 (complément, PR #290) fusionné par le lead dev (lead-dev)
+- Réponse du développeur sous le retour vérifiée (issuecomment-6729134108). `git diff c8623bf2 d3e56166 -- src tests android assets CMakeLists.txt` vide : seuls des fichiers de suivi ont changé, l'approbation du code et des captures sur c8623bf2 tient ; `git merge-tree` avec `main` sans conflit.
+- Revue « ✅ Approuvé » écrite dans la PR sur d3e56166 (en commentaire : même compte GitHub), puis fusion en squash avec `expectedHeadSha` : **612c03ef**. `TACHES.md` → WFS-301 « 🟣 Fusionné (#278, #284, #290) » ; ligne #290 retirée de `suivi-pr.md` ; Claude, agent 3 (01UY1Vv3) libre dans `track-agent.md` ; ligne ajoutée à `qa/Check.md`.
+- Agent expert ci cd prévenu : `WFS_BANC=cuire` est sur `main` (612c03ef), WFS-302 peut s'appuyer dessus.
+
+### 2026-11-09 00:14:20 — WFS-307 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
+- **Ticket** : WFS-307, paquets de cartes : télécharger et supprimer les autres cartes depuis le choix du terrain, jouer pendant le téléchargement. Demande de l'agent, libre (WFS-306 #286, WFS-301 #290 fusionnés). Dépendance WFS-306 🟣 remplie.
+- **Priorité** : P3 → **P1** (file A « cartes téléchargées », décision de l'utilisateur du 2026-11-08 22:23 UTC : WFS-306 → 302 → 307 ; WFS-302 reste à l'agent expert ci cd).
+- **RG-08 ajoutée** (demande de l'agent) : un paquet installé ou supprimé en cours de jeu sert dès la course suivante, sans relancer l'application (lève la limite de WFS-306) ; jamais pendant une course ; paquet invalide refusé par `verifier_carte`.
+- **Zone** (exception PO E8, WFS-290 d'agent 2 en retour lead dev dans d'autres fichiers) : `src/ui/ecrans/terrain.*`, `paquets*`, fichiers neufs ; Java `Paquets`, `ListePaquets`, `Telechargeur` (+ JUnit) ; `src/core/carte_cuite.*` + accroches ≤ 10 lignes annoncées au journal. **Pas** `reglages.*` / `menu.*` (RG-06 seulement après WFS-290 / 291 / 318, sinon ticket suivant), **pas** la CI ni `cartes.json` réel (WFS-302) : essai avec un faux paquet local.
+- **Critères et captures** : `regles-de-gestion/WFS-307.md` (RG-01 à RG-08, parcours RG-07, section « Captures demandées »). Branche `feature/waforspeed-307`, PR relue et fusionnée par le lead dev ; ✅ par les bancs du matin.
+
+### 2026-11-09 00:16:07 — WFS-307 : accroche de 2 lignes dans `game.*` acceptée (po-scrum-master)
+- Demande de Claude, agent 3 : pour RG-08, `Game::changerCarte` ne reconstruit pas la partie quand la carte et le moment sont déjà chargés (RG-02 de WFS-41) ; un paquet de la Ville installé pendant une partie sur la Ville ne serait jamais relu.
+- **Oui** (accroche ≤ 10 lignes, `CLAUDE.md`) : champ `bool recharger = false;` dans `Game::Demandes` (`game.h`) ; condition `!d.recharger && …` et remise à `false` dans `game.cpp`. Mis à `true` seulement par `terrain.cpp` quand le paquet de la carte a changé. Détour par `WFS_MOMENT` refusé. Détail : section « Suivi » de `regles-de-gestion/WFS-307.md`.
+
+### 2026-11-09 00:16:53 — WFS-302 : PR #291 ouverte (agent expert ci cd)
+- Mode `WFS_BANC=cuire` fusionné (#290, agent 3) ; branche synchronisée (a790c046) ; deux cuissons réelles identiques (ASTC 21,7 Mo, ETC2 5,3 Mo, RGBA8 26,3 Mo, empreinte c30f0f40c276b6c1), liste lue par `ListePaquets.choisir`. Lead dev appelé. Après la fusion : 1er lancement de `paquets.yml` sur main (feu vert de l'utilisateur), création de la Release `paquets`.
+
+### 2026-11-09 00:19:39 — WFS-302 fusionné par le lead dev (lead-dev)
+- PR #291 (agent expert ci cd), commit relu f0aa1b0f, squash 4b21934b. Tout le diff relu (7 fichiers) : `paquets.yml`, `publier_paquets.sh`, `cartes_json.py` et son test (relancé : vert), `qa/pr/WFS-302/`.
+- Captures : ticket de CI sans changement à l'écran, preuves par journaux acceptées. Revue « ✅ Approuvé » écrite en commentaire (GitHub refuse l'approbation : même compte).
+- Statut 🟡 À valider (utilisateur) : RG-06 (téléchargement réel sur le téléphone) après le 1er lancement de `paquets.yml` sur `main`.
+- Pour le PO : le texte de RG-03 (`cartes[]` imbriqué) ne correspond plus au format retenu (celui de `ListePaquets.java`, WFS-306) : à réécrire. Remarques non bloquantes dans la revue (retrait des anciens paquets si l'ancienne liste n'a pas pu être lue).
+
+### 2026-11-09 00:24:48 — WFS-302 : Release `paquets` publiée, run 1 de paquets.yml vert (agent expert ci cd)
+- Run 42539619005 (feu vert de l'utilisateur), 4 min, vert : deux cuissons identiques, Release `paquets` créée, `cartes.json` (commit c11c831a) : ville ASTC 21,7 Mo, ETC2 5,3 Mo, RGBA8 26,3 Mo, empreinte c30f0f40c276b6c1.
+- Vérifié de l'extérieur : liste lue à l'adresse de `configgame.json` ; redirection GitHub vers release-assets.githubusercontent.com suivie ; `Range` répond 206 (reprise possible) ; fichier ASTC complet téléchargé, SHA-256 identique à la liste. Reste RG-06 : essai sur le téléphone de l'utilisateur (🟡).
+
+### 2026-11-09 00:29:24 — WFS-322 : cause complète, mesures finales, accroches, tests (réponse à la 1re revue de #289) (Claude, agent 1)
+- **Cause du bleu (RG-01)**, prouvée au banc par le diagnostic `WFS_DIAG_SONDE` (`eclairage_physique.cpp`, actif seulement au banc) : la sonde d'environnement est posée 1,5 m au-dessus de la voiture du joueur, et la capture dessinait cette voiture.
+  - La peinture de la Golf bleue remplissait la moitié basse du cube : sous l'horizon, x 0,234 / y 0,213 (violet, ≈ 4 400 lx), au lieu de la chaussée au soleil.
+  - Ce reflet coloré éclairait toutes les façades de la rue (éclairement d'une façade x 0,25 / y 0,24).
+  - Sans la voiture : sol x 0,33 / y 0,34 (≈ 8 500 lx), façade x 0,32 / y 0,33.
+  - Causes du saut : sonde A remplacée sans fondu ; exposition recalée d'un coup après un saut de plus de 80 m dans la même scène.
+- **Correction** :
+  - capture sans la voiture du joueur (opaques et vitres) ;
+  - diffus lissé sur 0,6 s (`lisserSh9`) ;
+  - recalage d'un coup réservé à la 1re capture d'une nouvelle scène.
+- **Accroches hors zone (annoncées ici)** :
+  - `src/render/renderer.h` : champ `joueur` de `Pending`, 1 ligne ;
+  - `src/render/renderer.cpp` : `p.joueur = dessinJoueur`, 1 ligne (réutilise `dessinJoueur` de WFS-265) ;
+  - `src/render/passes.h` : `AccesRendu::joueur`, 1 ligne.
+- **Mesures finales (banc `qualite`, Ville de jour, Haute)** :
+  - saut à l'arrivée d'une sonde : 5,87 → **0,41** ΔE2000 (RG-02 : ≤ 2) ;
+  - façades `voiture-lod-passage-56` et `-60` : b* −6,3 / −6,2 → **+2,9 / +1,8**, L* 19,4 / 19,3 (RG-03 : b* ≥ −4, même couleur).
+- **RG-04, coût** (même machine, l'un après l'autre, `main` puis branche) :
+  - banc `fluidite` : rapport identique ligne pour ligne (0 ligne différente) ;
+  - banc `perf`, Ville, processeur par image : Haute 2,1 → 2,2 ms, Basse 1,3 → 1,2 ms (± 0,2 ms) ;
+  - capture d'environnement au GPU : 47,8 → 39,9 ms (voiture du joueur sautée) ;
+  - passe de scène au GPU en rendu logiciel : 455 → 461 ms en Haute, 238 → 221 ms en Basse, dans le bruit du rendu logiciel.
+- **Tests** : 80 tests CPU verts, dont `test_fidelite_lumiere` (lissage) ; parcours complet 0 écart (vue Arrière et Cockpit), branche synchronisée avec `main`.
+- **Écart avec l'avis de l'expert** : façade à l'ombre légèrement chaude (b* +1,8 à +2,9) au lieu de légèrement froide (−2 à −3,5). C'est dans RG-03 ; un ticket de finition possible pour le PO (teinte du ciel, occlusion de WFS-269 comptée deux fois sur les captures).
+
+### 2026-11-09 00:32:49 — WFS-335 : relevé voiture par voiture (RG-01), correction, chiffres avant / après ; RG-03 non tenable sans toucher la voiture du joueur (agent arwa (Claude, session trafic))
+- **Branche** `feature/waforspeed-335` (006086b, synchronisée cf8a74a). Banc : `WFS_BANC=perf WFS_PERF_PARTIES=ville:nuit:course5,ville:nuit WFS_PERF_MINUTE=600 WFS_PERF_IMAGES=20` (Basse, vue Proche ; 3e champ `course5` ajouté au banc des parties) ; nouvelles lignes « voitures : » = une ligne par voiture dessinée : distance réelle à la caméra, longueur à l'écran, niveau, triangles et appels de la passe de scène (en Basse de nuit : ni ombres ni reflet, donc « toutes passes » = scène).
+- **RG-01, relevé avant (main)**, Course à 5 de nuit, Basse, départ : joueur 7,2 m 276 px niveau 0 **109 884 tri.** 40 appels ; adversaires 16,2 m 104 px niv. 1 25 690 ; 28,8 m 77 px niv. 1 49 013 ; 58 m 39 px « 4 pièces » **45 607** ; 73 m 28 px « 4 pièces » 31 906 → voitures 262 100 tri. (70 % de 372 692). À 2 min : joueur 109 884 + adversaire à **250 m, 8 px : 52 457 tri.** Ville de nuit avec trafic : joueur 109 884 + voiture à 80,7 m 45 544.
+- **Ce qui pèse** : (1) la **voiture du joueur** complète (110 k, 40 appels : 42 à 100 % des triangles des voitures selon l'instant) ; (2) en **Basse, la version « 4 pièces » des voitures lointaines gardait la forme du niveau 1** (40 à 60 k tri.) à toute distance au-delà de 48 px, même à 8 px ; (3) adversaires proches au niveau 1 (25 à 49 k). Intérieur, roues, phares : pas de poste à part (les phares sont dans le niveau ; les roues tournent seulement à moins de 15 m) ; ombres et reflet : coupés en Basse de nuit.
+- **Intérieur et dessous de caisse (RG-02)** : rendu de visibilité hors dépôt (Golf, 48 vues autour à 6 m, 2,5 m de haut, tampon d'identifiants + test des sommets, vitres non occultantes) : **88 à 97 % des triangles sont visibles de l'extérieur** ; les retirer ne gagne presque rien et changerait l'intérieur vu par les vitres : **non fait**.
+- **Correction (RG-02)** : en Basse, les niveaux 2 et 3 existent maintenant en 4 pièces (`Model::partsBasseNiveaux`), chaîne Basse : complète ≥ 200 px → niveau 1 ≥ 48 px (inchangé) → niveau 2 en 4 pièces ≥ 26 px → niveau 3 en 4 pièces ; fondu tramé à chaque passage, seuils existants. Police en lots : 4 pièces de près (inchangé), niveaux 2 et 3 en 4 pièces au loin. Haute / Moyenne, fantôme, voiture du joueur : inchangés.
+- **Après** (même banc) : Course à 5 départ **262 100 → 218 839** (−16,5 %) ; 1 min 162 341 → 132 761 (−18 %) ; 2 min 162 341 → 123 921 (−24 %) ; Ville avec trafic, départ 155 428 → 138 575 (−11 %) ; scènes sans voiture lointaine : inchangées. Par voiture : 58 m 45 607 → 20 595 ; 73 m 31 906 → 13 657 ; 250 m **52 457 → 14 037** (−73 %). Appels des voitures : 107 → 107. Temps d'image du banc (lavapipe, rendu sur processeur) : sans valeur pour le téléphone.
+- **Accroches annoncées** : `src/render/model_loader.cpp` (12 lignes : même regroupement en 4 pièces pour les niveaux 2 et 3), `src/render/renderer.h/.cpp` (champ `partsBasseNiveaux`, relevé du banc `releverVoitures`, 16 lignes, chemin de dessin des voitures).
+- **Tests** : 79 tests CPU OK (`test_vehicule_lod` : nouveaux cas Basse / police / Haute) ; parcours complet 0 écart (vue Arrière et Cockpit).
+
+### 2026-11-09 00:32:49 — WFS-335 : risque signalé, RG-03 (triangles des voitures ÷ 2) impossible tant que la voiture du joueur reste complète (agent arwa (Claude, session trafic))
+- Constat : relevé ci-dessus ; la voiture du joueur seule = 109 884 triangles (Golf ; 112 à 159 k selon le modèle) ; ÷ 2 au départ de la Course à 5 demande ≤ 131 k pour toutes les voitures.
+- Conséquence : sans toucher la voiture du joueur ni les adversaires proches (RG-02 « intacte de près », « voitures proches identiques »), le gain s'arrête à −11 à −24 %.
+- Proposition (décision du PO) : en **Basse seulement**, voiture du joueur au **niveau 1** en vues Arrière / Proche (Golf 109 884 → 38 224, à 170-280 px de long sur la scène de la Basse) **et** adversaires de 48 à 100 px au niveau 2 : 262 k → ≈ 120 k (÷ 2,2) ; changement visible de près, captures à faire avant décision. Autre option : garder l'état de cette PR et mesurer les img/s sur le téléphone.
+- Décision attendue de : PO. La PR de WFS-335 livre le reste du ticket (RG-01, RG-02, RG-04) sans attendre.
+
+### 2026-11-09 00:34:24 — WFS-340 (RG-B) : 23 faux ✅ du run « bancs du matin #3 » remis en 🟣 (agent expert ci cd)
+- Validation de l'utilisateur (« Je valide A B D C »). Le run #3 de matin.yml (2026-11-08 08:06 UTC, réveil en retard de ~6 h) avait tout sauté mais était vert : le robot des statuts avait passé 23 tickets en « ✅ Terminé (bancs du matin #3) », déjà rangés dans l'archive par le PO. Ils reviennent dans le tableau de `TACHES.md`, chacun avec son statut d'avant le run (commit d9625b3f^), et sortent de `archive/taches-terminees.md` : WFS-161, 226, 227, 234, 239, 244, 250, 251, 252, 257, 261, 266, 267, 270, 272, 275, 277, 278, 279, 284, 286, 288, 298. Les vrais bancs du matin les repasseront en ✅ s'ils sont verts. WFS-257 et WFS-270 gardent leur mention 🟡 (validation de l'utilisateur).
+- `track-agent.md` : la ligne d'arwa-4 cite encore « WFS-298 ✅ (… bancs du matin #3) » : ligne d'un autre agent, laissée au PO.
+
+### 2026-11-09 00:36:23 — WFS-340 : PR #292 (RG-A robot des statuts, RG-C fenêtre 4 h - 11 h) ; RG-D bancs du matin lancés à la main (agent expert ci cd)
+- RG-D : `matin.yml` lancé à la main sur main vers 00:40 UTC (validation de l'utilisateur) ; il compte pour le 9 novembre.
+- PR #292 : statuts.yml (run du matin sauté = aucun statut changé), matin.yml (6 réveils, bancs au premier réveil entre 04:00 et 10:59 heure de Paris s'ils n'ont pas tourné ce jour-là). Lead dev appelé.
+
+### 2026-11-09 00:38:44 — WFS-340 fusionné par le lead dev (lead-dev)
+PR #292 relue (diff complet : statuts.yml RG-A, matin.yml RG-C, pr.md) ; revue « ✅ Approuvé » écrite dans la PR (COMMENT, même compte GitHub) sur 832a7823 ; squash 0708e60e. Pas de captures (ticket de CI) : preuves par le faux `gh`. Remarques non bloquantes : un run du jour annulé ou rouge bloque le relancement automatique ce jour-là ; liste des jobs illisible = pas de ✅ (choix prudent). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`, statut 🟣.
+
+### 2026-11-09 00:39:29 — WFS-322 fusionné par le lead dev (lead-dev)
+- PR #289, 2e revue : les 4 points de la 1re revue sont vérifiés.
+  - RG-04 : fichiers de mesure relus. `fluidite.txt` est identique entre `main` et la branche ; `perf` processeur Haute 2,1 → 2,2 ms, Basse 1,3 → 1,2 ms.
+  - Le journal contient la cause complète, les accroches, les tests et le parcours.
+- Le code est identique à celui de la 1re revue. Les captures n'ont pas changé ; les paires clés ont été rouvertes.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire, même compte), puis squash 52d42271. Statut 🟣 : ANO-174 vient d'une mesure de banc, pas d'un retour de l'utilisateur sur son téléphone.
+- Pour le PO, deux remarques :
+  - façade à l'ombre légèrement chaude (b* +1,8 à +2,9) au lieu de légèrement froide : finition possible ;
+  - RG-04 de WFS-322 cite le banc `fluidite` pour le coût par image, mais ce banc mesure la caméra : critère à écrire avec le banc `perf`.
