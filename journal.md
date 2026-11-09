@@ -4728,3 +4728,7 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 03:18:02 — WFS-328 fusionné par le lead dev (lead-dev auto)
 - PR #282, 2e revue après « corrigé dans » point par point. Captures ouvertes : course longue de nuit (avant image blanche / rose EV −3,5, après nuit normale EV 2,8), départs Ville / Corniche / Campagne / Cockpit / Recommencer, jour. Diff de `eclairage_physique.*` lu : cause de RG-05 (lampadaires cherchés avec `position` au lieu de `dist`) corrigée proprement.
 - Approuvée (APPROVE), squash 2e070cd (expectedHeadSha ddc3878). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ; ANO-184 à confirmer sur l'APK.
+
+### 2026-11-09 03:19:01 — WFS-292 fusionné par le lead dev (lead-dev auto)
+- PR #279, 2e revue après « corrigé dans » point par point et décisions du PO (22:51:10, 02:35:56). Captures ouvertes : fumée de jour en nappe continue derrière les roues (0 / 0,5 / 1 s), Golf bleue sous les lampadaires, Ville de nuit inchangée, choc au banc. Diff lu (`effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`).
+- Approuvée (APPROVE), squash 6a4b7bb (expectedHeadSha d73e796). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
