@@ -3041,3 +3041,7 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Zone autorisée** : `assets/cars/x5*`, entrée `x5` de `tools/formes.json`, outils de retouche de WFS-193 (`tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json` pour la X5 seulement), banc `WFS_VITRINE_BAS`, `tests/**` (fidélité X5), `qa/pr/WFS-358/`. **Interdit** : `vehicule_cockpit*` (WFS-349), `camera_vue.*`, `src/game/cars.h` (WFS-359 à 361), autres voitures, `src/render/**` hors accroche annoncée, E13 (WFS-214), `cartes_v2` / `meteo.*` / `route_*` (WFS-346).
 - Plan : méthode RG-03 (a) ou (b) notée au journal avant de coder ; branche `feature/waforspeed-358` poussée tout de suite ; captures avant / après (face, vue basse, zooms ×4 des coins, ¾, jour et nuit) ; PR ; appel du `lead-dev` ; arrêt de la session après la fusion.
 
+
+### 2026-11-09 19:52:48 — WFS-358 : début, branche feature/waforspeed-358 (Claude, agent dev3d (01UY1Vv41d))
+- Ticket reçu du PO (calandre de la X5, jonction grille / carrosserie, contour de l'ancien logo du capot). Skills agent-developer, waforspeed-natif, artiste-3d chargés.
+- Étape suivante : mesurer l'ouverture du pare-chocs (`retoucher_formes.mjs --zone x5`), choisir la méthode RG-03 et la noter ici avant de coder.
