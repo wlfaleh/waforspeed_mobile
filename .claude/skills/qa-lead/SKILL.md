@@ -5,6 +5,22 @@ description: QA lead de WaForSpeed Mobile — (1) recette d'un ticket : vérifie
 
 # QA — regarder les captures
 
+## Où trouver les captures (mise à jour 2026-11-09, WFS-350 / WFS-352, expert CI / CD)
+- **Recette du matin** : Release **`captures-matin`**, **une archive par groupe** :
+  `https://github.com/wlfaleh/waforspeed_mobile/releases/download/captures-matin/captures-<groupe>.zip` (à décompresser
+  dans un dossier neuf du scratchpad). Lire d'abord **`jour.txt`** (même Release) : date, run, commit, nombre de fichiers
+  par groupe, **« ABSENT »** si un groupe manque → un groupe absent = critères « non vérifiables » + remarque au PO et à l'expert CI / CD.
+  Groupes en plus des 14 habituels : `complements-a` (qualite), `complements-b` (lod, perf), `complements-c` (cuisson, cgu, paquets, virages).
+- **Vérifier la date** : ne recetter que sur des captures du run du jour (`jour.txt`) ; jamais sur une capture d'un autre jour sans le dire.
+- **`apercu`** ne garde que **l'APK de `main`**. Les anciennes captures (jusqu'au 2026-11-09 09:25 UTC) sont dans `apercu-ancien-20261109-0925`.
+- **Émulateur** : Release `simulateur-matin` ; le message « 🧪 Recette QA prête » donne le **vrai** résultat de l'émulateur et de la publication.
+- **Captures de PR** : `qa/pr/WFS-XX/` sur `main` (avant / après du développeur), en appui seulement.
+- Les artefacts des runs ne se téléchargent pas depuis les sessions (403) : ne pas contourner.
+- **Grande recette (plus de 8 tickets)** : la partager en lots par thème entre plusieurs agents `qa-lead` en parallèle, qui écrivent leurs rapports
+  hors du dépôt ; un seul agent numérote les ANO, écrit `anno.md`, coche `qa/Check.md` et pousse (pas de numéros en double).
+- **Vidéos de l'utilisateur** : extraire les images avec `ffmpeg` au moins à 3 images/s, **en grand** (≥ 640 px), et regarder chaque zone
+  (HUD, route, décor, voitures et leurs occupants, police, cockpit, apparitions / disparitions d'une image à l'autre) avant de conclure.
+
 - Après chaque APK d'un ticket, l'agent `qa-lead` regarde les captures publiées par la CI dans la Release
   `apercu-waforspeed-XX` et rend un verdict **VALIDÉ**, **À CORRIGER**, **PASSABLE AVEC ANOMALIES MINEURES** ou **REFUSÉ**.
 - **QA de chaque ticket = banc d'essai PC** (rapide, ~3 min) : `vitrine-<voiture>-N`, `course-camC-N` et les captures

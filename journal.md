@@ -4936,3 +4936,35 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 ### 2026-11-09 10:17:19 — Statuts automatiques, CI main #949 (robot statuts)
 - Run rouge (push, commit 48c423e), aucun statut changé. Job(s) en échec : publication-apk.
 - Tickets 🟣 contenus dans ce run : WFS-339, WFS-348, WFS-340, WFS-307, WFS-322.
+
+### 2026-11-09 10:28:00 — WFS-352 fusionné par le lead dev (lead-dev)
+PR #303 (agent expert ci cd) : diff complet relu (`matin.yml`, `publier_captures_matin.sh` neuf, `banc_groupe.sh`, `recette_prete.sh`, `qa/pr/WFS-352/pr.md`) ; noms d'artefacts et bancs (`desktop_main.cpp`) vérifiés. Ticket de CI sans écran : pas de captures. Approbation écrite dans la PR (en commentaire, même compte GitHub), squash ad54bde, statut 🟣. Aucun workflow lancé par le lead dev. Remarques : mesurer `complements-a` / `complements-b` au premier matin ; groupe rouge à captures partielles non signalé dans `jour.txt`.
+
+### 2026-11-09 10:36:12 — WFS-318 : PR #304 ouverte, accroches annoncées, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Réglage « Fantôme du record : Affiché / Caché » (onglet Affichage, clé `fantome`), étiquette « VOTRE RECORD · 1:12,4 » au-dessus du fantôme (`src/game/fantome_etiquette.cpp`, 12 à 16 dp, fondu au loin et derrière) ; caché : rien n'est dessiné, l'enregistrement continue.
+- **Accroches annoncées** : `src/game/course_system.cpp` / `.h` (10 lignes : fantôme non dessiné quand il est caché ; `fantomeCourant`, position du fantôme et durée du record pour l'étiquette) ; `src/platform/desktop_main.cpp` (2 lignes : banc `fantome`). `hud.*` non touché (WFS-338).
+- Tests `test_fantome_etiquette`, `test_reglages_onglets` (table des onglets, remarque du lead dev sur WFS-291) ; 87 tests verts ; parcours 0 écart ; capture de la grande mise en page (1920 × 1440).
+
+### 2026-11-09 10:38:55 — WFS-318 fusionné par le lead dev (lead-dev)
+PR #304 (Claude, agent 2 (01UY1Vv5)) : 13 captures ouvertes (zoom sur le fantôme : étiquette au-dessus du fantôme ; caché : plus rien) ; diff relu en entier (26 fichiers) ; tests `test_fantome_etiquette` et `test_reglages_onglets` relancés : OK. Accroches hors zone `course_system.*` (10 lignes) et `desktop_main.cpp` (2 lignes) annoncées. Approbation écrite dans la PR (COMMENT « ✅ Approuvé », GitHub refuse APPROVE sur le même compte), fusion squash e3246d9. Statut 🟡 À valider (utilisateur). Remarques : étiquette non interpolée (léger tremblement possible), visible à travers les bâtiments.
+
+### 2026-11-09 10:39:35 — WFS-354 : PR #305 ouverte, suite de la pluie en Cockpit (Claude, agent dev Y)
+- **RG-01** : `cockpit::coinsVitre` (`vehicule_cockpit.h`), appelée par `pareBriseVu()`. **Accroche E10 annoncée** : 8 lignes dans l'en-tête et 1 ligne remplacée dans `pareBriseVu()`. La vitre s'arrête au bord intérieur des montants dessinés, plus 1 cm de joint. Le dessin des montants n'est pas touché. Le test couvre les 20 intérieurs : 10 mm de jeu au plus près, contre 37,5 mm d'empiètement avant, en bas.
+- **RG-02** : la pluie n'a plus sa propre copie des balais. Elle balaie à chaque image avec l'angle des balais dessinés (`pareBriseVu().angle`).
+- **RG-03** : la coupure du tunnel suit la caméra (voiture + écart projeté sur la route). Le fondu de 8 m va de 7 m avant la bouche à 1 m sous la voûte.
+- **Accroche E7 annoncée** : 2 lignes dans `desktop_main.cpp` (inclusion et `WFS_BANC=pluie`). Le banc `benchPluie` est dans `meteo.cpp` : montant à 102 km/h, 5 images du balayage, entrée du tunnel en Cockpit, témoin en vue Arrière.
+- **Vérifié en local** : `test_pluie` vert, 85 tests CPU verts, parcours complet 0 écart. Coût de la pluie : 0,030 à 0,033 ms par image en Cockpit.
+- **Constat hors ticket** : `test_audio_chocs` a échoué une fois sur sa mesure de temps (RG-07), lancée pendant un banc. Il passe seul et à la relance. C'est un test sensible à la charge de la machine ; je le signale au PO.
+
+### 2026-11-09 10:41:27 — Skill et agent qa-lead : captures du matin dans `captures-matin` (agent qa lead)
+- Suite de WFS-350 / WFS-352 (expert CI / CD) : archives par groupe + `jour.txt`, `apercu` = APK seulement, anciennes captures dans `apercu-ancien-20261109-0925`. Ajouté aussi : grande recette en lots parallèles avec un seul agent qui numérote les ANO ; vidéos lues à 3 images/s en grand.
+
+### 2026-11-09 10:42:51 — WFS-351 fusionné par le lead dev (lead-dev)
+- PR #306 (agent expert ci cd), 1re revue : diff lu en entier (`tools/qa/emulateur.sh`), 3 preuves ouvertes, points d'appui recalculés sur `cgu.cpp` / `paquets.cpp` / `petit_ecran.h` (2400 × 1080, 420 dpi) : dans les zones. Revue « ✅ Approuvé » en commentaire (même compte GitHub), squash 788c286. Statut 🟣 ; essai réel aux bancs du matin (RG-02).
+
+### 2026-11-09 10:45:24 — WFS-354 refusé par le lead dev, PR #305 (lead-dev)
+- Revue complète : 13 paires de captures ouvertes, avec des agrandissements, et tout le diff lu ; fusion d'essai avec main sans conflit (`test_pluie` vert).
+- **Refus (RG-01)** : une goutte de vitre, avec sa traînée, est posée sur le **montant droit**, environ 20 px dans le montant, sur toutes les captures « après » en Cockpit. `coinsVitre` et le test ne regardent que la section du montant dans le plan de la vitre, pas la silhouette vue de l'œil (barre de 75 × 50 mm vue de biais).
+- À montrer : agrandissement des montants droit et gauche (Golf et un 2e intérieur), test sur la silhouette vue de l'œil, vue Arrière à la bouche du tunnel, branche synchronisée (WFS-318 fusionné entre-temps).
+- Signalé au PO (hors ticket) : les gouttes de vitre sont aussi dessinées par-dessus le rétroviseur intérieur (déjà sur main).
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/305

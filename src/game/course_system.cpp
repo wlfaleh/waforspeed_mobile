@@ -99,7 +99,7 @@ public:
     // WFS-125 (RG-06) : fantôme de ton record : vraie voiture du record rejouée sur sa trace, sans contact, visible de
     // 40 m derrière à 600 m devant ; dessin des adversaires du duel (duel_system.cpp render : point, rotateY, cap lissé 0,15)
     void render(Renderer& r, const GameView& g) override {
-        if (!fantActif_ || g.sceneDediee || !g.player || !g.track || g.ecran != Ecran::Course || course_.state == RaceState::Count || !fantModele_.ok) return;
+        if (!fantActif_ || g.sceneDediee || !g.player || !g.track || g.ecran != Ecran::Course || course_.state == RaceState::Count || !fantModele_.ok || !fantome::affiche()) return;   // WFS-318 (accroche) : réglage « Fantôme du record »
         fantome::Echantillon e;
         if (!fantome::interpoler(lecture_, tJeu_ - (1 - g.alpha) / 120.0, e)) return;   // trace finie : plus de fantôme ; WFS-221 (accroche) : temps interpolé
         const double rel = e.d - g.player->dist;
@@ -161,6 +161,11 @@ public:
         x = b.x + b.w / 2; y = b.y + b.h / 2; return true;
     }
     bool nouveauRecord() const { return nouveauRecord_; }
+    bool positionFantome(double& d, double& x, double& duree) const {   // WFS-318 (accroche) : étiquette « Votre record »
+        fantome::Echantillon e;
+        if (!fantActif_ || !fantModele_.ok || course_.state == RaceState::Count || !fantome::interpoler(lecture_, tJeu_, e)) return false;
+        d = e.d; x = e.x; duree = lecture_.duree(); return true;
+    }
     bool fantomeVu(const Player& pl, double& relM, double& latM) const {
         fantome::Echantillon e;
         if (!fantActif_ || !fantModele_.ok || course_.state == RaceState::Count || !fantome::interpoler(lecture_, tJeu_, e)) return false;
@@ -278,6 +283,7 @@ private:
     Bouton rejouer_, menu_;   // boutons de l'écran de fin, posés à chaque dessin (WFS-57)
 };
 CourseSystem* CourseSystem::active_ = nullptr;
+bool fantomeCourant(double& d, double& x, double& duree) { return CourseSystem::active_ && CourseSystem::active_->positionFantome(d, x, duree); }   // WFS-318 (accroche)
 
 // WFS-24 : badge « NOUVEAU RECORD » (.badge #newBest du jeu web, sous le score ; accent orange, texte sombre, biais
 // skewX(-10deg)) et ligne « RECORD » avec le meilleur score (.record du menu web), entre les stats et les boutons ;

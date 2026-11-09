@@ -33,5 +33,8 @@ void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, con
 // WFS-125 (RG-09) : banc des records et du fantôme (WFS_BANC=records, lancé aussi à la fin du groupe vitrines) :
 // captures records-fantome, records-poursuite, records-course5 ; rend le nombre d'écarts du parcours
 int benchRecords(Game& g, Renderer& r, const std::string& outDir);
+// WFS-318 (accroche) : fantôme du record de la course en cours : distance (unités), latéral (demi-largeurs), durée de la trace
+// du record (s) ; faux sans fantôme (pas de record, décompte, trace finie)
+bool fantomeCourant(double& d, double& x, double& duree);
 
 } // namespace wfs
