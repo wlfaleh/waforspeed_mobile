@@ -3058,3 +3058,11 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 
 ### 2026-11-09 19:57:22 — WFS-376 : réponses du PO au développeur sur la marina (po-scrum-master)
 - Question de Claude, agent dev3d (01UY1Vv3u9). Décisions notées dans `regles-de-gestion/WFS-376.md` (Suivi) : RG-02 = axe perpendiculaire à la ligne d'amarrage (quai ou ponton) ±3°, rangée cul au quai + pontons perpendiculaires des deux côtés, chenal ≥ 1,5 × longueur ; un seul seuil de détail à 200 m (`LOD_FAR_M`), mât lointain en 2 quads croisés, budget 9 000 triangles ; quai : baisser seulement la bande d'amarrage si l'écart dépasse 1,5 m, mer et tracé inchangés.
+
+### 2026-11-09 20:01:51 — Avis décor de l'expert 3D : WFS-381 à 384 créés, ANO-215 à 226, points rattachés (po-scrum-master)
+- Source : agent 3d (session_01UY1Vv4DeCjYyC5BsYidg6X), avis recopié de la branche `ccr-45bbe50e-1j246c` dans `qa/retours/avis-expert-3d-2026-11-09-corniche.md` ; images : Release `apercu-fusion`, run build.yml #965 (529b89e).
+- **Créés** : WFS-381 (P1, E13) brume au loin (R1) ; WFS-382 (P1, E4 + bloom E13 ≤ 10 lignes) phares de nuit (N1) ; WFS-383 (P2, E12 + E2, après WFS-379) sols selon la pente + pins d'Alep (R2 / C3) ; WFS-384 (P1, E7, [TECHNIQUE]) bancs du matin #6 à #11 tous sautés (vérifié : `gh run list -w matin.yml`, réveils de GitHub en retard de 5 à 14 h, runs de 6 à 11 s ; seul banc complet du jour : lancement à la main de 00:34 UTC). Exception au gel : correction de la pipeline.
+- **Rattachés** (règles ajoutées) : D1 + R7 → WFS-379 (RG-06 / 07, sans retarder le ticket : autre cause → ticket séparé) ; D2 parasols → **WFS-369** (mobilier, pas WFS-370 ni 378) ; D3 + N2 fenêtres → WFS-370 ; D4 + R4 + R5 → WFS-371 ; R6 rivage → WFS-380 (RG-09) ; D5 → WFS-372 ; D6 → WFS-373 ; C1 + C2 → WFS-344 (pas WFS-346, déjà en PR) ; R3, halos N2, V3 garage → WFS-378.
+- **Garage (V3)** : pas de question à l'utilisateur : la règle du 2026-11-09 19:41 range déjà « garage et menus en 3D » dans le monde 3D → anneau néon à remplacer (WFS-378).
+- **Non retenus ici** : V2 (calandres R4 Competizione / Folg 8) et N3 (rampe de police) : hors décor, pas demandés dans ce retour ; restent notés dans l'avis.
+- Aucune attribution (règle « attribuer seulement à la demande »).
