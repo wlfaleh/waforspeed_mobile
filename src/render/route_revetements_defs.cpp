@@ -1,5 +1,6 @@
 // WaForSpeed — WFS-205 : bibliothèque des revêtements de route : données et calculs sans GPU (tests/fidelite_routes.cpp).
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include "route_revetements.h"
 
@@ -41,9 +42,10 @@ Revetement chaussee(Carte c) {
     }
 }
 
-float codeMateriau(int qualite, Carte c) {
+float codeMateriau(int qualite, Carte c, float neige) {
     const float mode = qualite >= 2 ? 2.f : qualite == 1 ? 1.f : 0.f;
-    return mode + 4.f * (float)(int)c;
+    const float k = std::round(std::clamp(neige, 0.f, 1.f) * (float)NEIGE_PAS);   // entier : la valeur reste exacte en flottant
+    return mode + 4.f * (float)(int)c + 16.f * k;
 }
 
 int niveauxSautes(uint32_t cote, uint32_t maxi) {

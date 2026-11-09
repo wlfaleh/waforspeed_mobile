@@ -95,8 +95,27 @@ static void verifierCarte(const char* id) {
         double tun = 0; for (const auto& s : t.sections()) if (s.type == Type::Tunnel) tun += longueurM(s);
         VERIFIE(std::abs(tun - 300) < 5, "ville : tunnel de %.0f m", tun);
     } else if (m == "plage") {
-        const trace::Section* l = nullptr; for (const auto& s : t.sections()) if (s.type == Type::Lacets) l = &s;
-        VERIFIE(l && l->branches == 6 && std::abs(l->denivele - 60) < 1, "corniche : 6 lacets, +60 m");
+        // WFS-379 (RG-01, ANO-212) : plus de lacets ni d'épingle ; montée simple de +60 m avant le tunnel : courbes de 150 m de rayon
+        // ou plus, aucune de plus de 90°, pente ≤ 7 % sur toute la montée, cap de sortie = cap d'entrée
+        VERIFIE(compte(t, Type::Lacets) == 0 && compte(t, Type::Epingle) == 0, "corniche : lacets ou épingle restants");
+        int64_t m0 = -1, m1 = -1; double dh = 0, rMin = 1e9, aMax = 0, pMax = 0;
+        for (const auto& s : t.sections()) {
+            if (s.type == Type::Tunnel) break;
+            if (s.type != Type::Montee) continue;
+            if (m0 < 0) m0 = s.debut;
+            m1 = s.fin; dh += s.denivele;
+            if (s.rayon > 0) { rMin = std::min(rMin, s.rayon); aMax = std::max(aMax, std::abs(s.angle)); }
+        }
+        for (int64_t a = m0; a >= 0 && a < m1; a++) {
+            const Segment& g = t.segAt(a);
+            pMax = std::max(pMax, std::abs(g.y2 - g.y1) * M * ELEV / SEG_M);
+            if (std::abs(g.curve) > 1e-9) rMin = std::min(rMin, SEG_M / (std::abs(g.curve) * CURVE_K));
+        }
+        const double cap = m0 >= 0 ? capTourne(t, m0, m1) : 1e9;
+        std::printf("  WFS-379 : montée de la corniche %.0f m, %+.1f m, rayon %.0f m au moins, courbe de %.0f° au plus, pente %.1f %% au plus, cap net %+.2f°\n",
+                    (m1 - m0) * SEG_M, dh, rMin, aMax, pMax * 100, cap);
+        VERIFIE(m0 >= 0 && std::abs(dh - 60) < 1 && rMin >= 150 && aMax <= 90 && pMax <= 0.07 && std::abs(cap) < 1e-6,
+                "corniche : montée (%+.1f m, rayon %.0f m, %.0f°, pente %.1f %%, cap %+.2f°)", dh, rMin, aMax, pMax * 100, cap);
         VERIFIE(compte(t, Type::Tunnel) == 1 && compte(t, Type::Feux) == 1, "corniche : sections");
     } else if (m == "campagne") {
         const trace::Section* l = nullptr; for (const auto& s : t.sections()) if (s.type == Type::Lacets) l = &s;

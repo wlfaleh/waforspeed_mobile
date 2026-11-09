@@ -196,7 +196,7 @@ void ville(Plan& p) {   // grande ville côtière en damier
     p.ligne(250);
 }
 
-void corniche(Plan& p) {   // côte méditerranéenne : falaise, lacets, tunnel dans la roche
+void corniche(Plan& p) {   // côte méditerranéenne : falaise, montée en corniche, tunnel dans la roche
     p.ligne(200);
     p.virage(-30, 200);
     p.ligne(250 - p.avantCarrefour());   // WFS-283 : raccourcie pour le carrefour simple
@@ -206,7 +206,15 @@ void corniche(Plan& p) {   // côte méditerranéenne : falaise, lacets, tunnel 
     p.ligne(300);
     p.virage(45, 150);
     p.ligne(150);
-    p.lacets(6, 120, 60, 1);             // 6 lacets au-dessus de la mer, +60 m
+    // WFS-379 (RG-01, ANO-212) : les 6 lacets (épingles de 22 m) sont remplacés par une montée simple en S, à flanc de falaise :
+    // +60 m comme avant, deux grandes courbes de 400 m de rayon (35° chacune, cap de sortie = cap d'entrée), aucune épingle.
+    // addRoad fait varier l'altitude de chaque morceau en douceur (easeInOut) : la pente la plus forte d'un morceau vaut π/2 fois
+    // sa pente moyenne ; chaque morceau monte donc de 4,35 % en moyenne (6,9 % au plus, RG-01 : ≤ 7 %)
+    p.ligne(200, 8.7);
+    p.virage(-35, 400, 11.8, Type::Montee);
+    p.ligne(300, 13);
+    p.virage(35, 400, 11.8, Type::Montee);
+    p.ligne(340, 14.7);
     p.ligne(150);
     p.ligne(200, 0, Type::Tunnel);       // tunnel de 200 m dans la roche
     p.virage(60, 180, -11);              // descente de 60 m à pente moyenne constante (≈ 5,3 %)

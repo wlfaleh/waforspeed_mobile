@@ -4,7 +4,8 @@
 //   trace : nom, description, quartiers, graine, bord, trafic, distance des checkpoints, vignette du choix du terrain, routes
 //           (addRoad du jeu web : entrée, tenue, sortie, courbure, montée), sections typées (autoroute, tunnel, pont, virage…)
 //   chocs : obstacles solides (boîtes, cylindres) le long de la route, dessinés et pris par les chocs du joueur (chocs_decor.h)
-//   decor : ciel et brouillard, bandes du sol, herbe des bas-côtés, maisons, arbres, lampadaires, lumières (guirlandes), répétitions
+//   decor : ciel et brouillard, bandes du sol, herbe des bas-côtés, maisons, arbres, lampadaires, lumières (guirlandes), répétitions ;
+//           WFS-346 (format 2) : saison : adhérence des surfaces, neige sur la chaussée, flocons qui tombent (struct Saison)
 // Les arbres sont posés sur le sol des bandes ; les couleurs (sol, murs, toits, obstacles) vont dans les cases libres de la palette
 // commune des cartes (au plus PAL_W − C_NB couleurs différentes, au-delà : couleur la plus proche).
 // Un bloc faux → la carte n'est pas enregistrée (absente du choix du terrain), une ligne du journal dit pourquoi ; jamais de plantage.
@@ -22,7 +23,22 @@
 namespace wfs {
 namespace cartes_v2 {
 
-constexpr int FORMAT_DONNEES = 1;   // version des blocs texte ; un bloc plus récent est refusé (carte absente)
+constexpr int FORMAT_DONNEES = 2;   // version des blocs texte ; un bloc plus récent est refusé (carte absente). 2 : saison (WFS-346)
+
+// WFS-346 (RG-02, RG-03) : saison de la carte, lue du bloc decor ; valeurs par défaut = carte sèche sans neige (cartes du code, inchangées).
+// Valeurs réelles et sources : references/reel/cartes_v2/neige.md.
+//   adherence chaussee bas_cote      μ des surfaces (0,05 à 1,2) : sec 1,0 ; neige tassée ≈ 0,25 ; herbe sèche 0,6 (MU_HERBE du moteur)
+//   neige_chaussee couverture        part de la chaussée couverte de neige tassée (0 à 1) ; traces de roues plus sombres
+//   flocons intensite chute taille   chute de neige : intensité (0 à 1 : faible à forte), vitesse de chute (0,3 à 3 m/s), flocon (1 à 10 mm)
+struct Saison {
+    float muChaussee = 1.0f, muBasCote = 0.6f;
+    float neigeChaussee = 0;
+    float flocons = 0, chuteMs = 1.2f, floconMm = 3.5f;
+};
+// saison de la partie en cours (thread principal) : posée au début de Game::init par preparerSaison(carte), lue par la conduite (μ),
+// la route (neige au sol) et la météo (flocons). Carte du code ou inconnue : Saison{} (sec, sans neige).
+inline Saison& saisonPartie() { static Saison s; return s; }
+void preparerSaison(const char* carte);
 
 struct Route { int entree = 0, tenue = 0, sortie = 0; double courbe = 0, montee = 0; };
 // objet du décor ou obstacle ; seg : segment du tour, lat : m (+ à droite), couleurs en 0xRRGGBB
@@ -50,6 +66,7 @@ struct DonneesCarte {
     float lointainJour = 820, lointainNuit = 540;
     std::vector<Bande> sol;                 // bandes de chaque côté (m depuis l'axe), au plus 6
     bool herbe = true;                      // touffes d'herbe des bas-côtés (« herbe 0 » : sol enneigé, parking…)
+    Saison saison;                          // WFS-346 : adhérence, neige au sol, flocons
     std::vector<Objet> objets, obstacles;
     int64_t segments() const;               // longueur du tour (segments) d'après les routes
 };

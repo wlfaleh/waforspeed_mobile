@@ -5,7 +5,7 @@
 //  - RG-03 : volant tenu (« Glisser » à 6 et 12 % de la largeur, ou flèche), le rayon de la trajectoire dans le monde est le même
 //    dans l'anneau (R = 14 m) qu'en ligne droite (± 10 %) à 25 et 50 km/h : la route ne pousse plus la voiture ;
 //  - RG-04 : un joueur qui suit sa voie (Glisser ou flèches, aide désactivée puis activée) passe l'anneau de la Ville (50 → 25 km/h),
-//    l'épingle des lacets de la Corniche (30 km/h) et le virage à 90° de la Ville (40 km/h) sans sortir de la chaussée ;
+//    l'épingle des lacets de la Campagne (30 km/h ; WFS-379) et le virage à 90° de la Ville (40 km/h) sans sortir de la chaussée ;
 //  - RG-05 : volant lâché, rien ne change (la force forfaitaire et la borne restent).
 // usage : test_direction_anneau [--rapport]
 #include <cmath>
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     const bool rapport = argc > 1 && !std::strcmp(argv[1], "--rapport");
     static Track ville, plage;
     ville.build(mapById("ville"), trace::versionCarte("ville"));
-    plage.build(mapById("plage"), trace::versionCarte("plage"));
+    plage.build(mapById("campagne"), trace::versionCarte("campagne"));   // WFS-379 : épingle du col de la Campagne (plus de lacets à la Corniche)
     const trace::Section *rp = nullptr, *v90 = nullptr;
     for (const trace::Section& s : trace::sections(ville)) {
         if (s.type == trace::Type::RondPoint && !rp) rp = &s;
@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     struct Scene { const char* nom; Track* t; double debut, fin, v0, v1; };
     std::vector<Scene> scenes = {{"anneau de la Ville", &ville, rp->debut * SEG, rp->fin * SEG, 50, 25}};
     const std::vector<Epingle> ep = epingles(plage);
-    if (!ep.empty()) scenes.push_back({"épingle de la Corniche", &plage, ep[0].debut, ep[0].fin, 30, 30});
+    if (!ep.empty()) scenes.push_back({"épingle de la Campagne", &plage, ep[0].debut, ep[0].fin, 30, 30});
     if (v90) scenes.push_back({"virage à 90° de la Ville", &ville, v90->debut * SEG, v90->fin * SEG, 40, 40});
     VERIFIE(scenes.size() == 3, "scènes introuvables (%zu sur 3)", scenes.size());
     for (const Scene& sc : scenes) for (bool fleches : {false, true}) for (Aide aide : {Aide::Desactivee, Aide::Activee}) for (bool lentes : {true, false}) {

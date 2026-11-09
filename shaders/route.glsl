@@ -99,9 +99,43 @@ const float BORDURE_LARGEUR_M = 0.30;    // M-04 : bloc de granit de la bordure 
 const float DEMI_CHAUSSEE_M = 7.5;
 const float RACCORD_ALB_RECENT = 0.93;   // WFS-244 (RG-02) : enrobé repris récent / ancien, facteur d'albédo (voisin : 0,87 à 1,02)
 const float RACCORD_ALB_ANCIEN = 0.97;   //   écart ≤ 8 % avec la moyenne d'une voie (test_fidelite_routes)       // RW (src/game/track.h) : le trottoir commence là (uv.x = latéral en mètres)
-// pc.params.z = mode de lecture + 4 × carte (route::codeMateriau) ; carte : 0 Ville, 1 Campagne, 2 Corniche, 3 Grand Prix
+// pc.params.z = mode de lecture + 4 × carte + 16 × neige (route::codeMateriau) ; carte : 0 Ville, 1 Campagne, 2 Corniche, 3 Grand Prix ;
+// WFS-346 : neige au sol de la carte (saison du paquet), en huitièmes (route::NEIGE_PAS)
 float modeLecture() { return mod(pc.params.z, 4.0); }
-int carteRoute() { return int(floor(pc.params.z / 4.0 + 0.01)); }
+int carteRoute() { return int(mod(floor(pc.params.z / 4.0 + 0.01), 4.0)); }
+float neigeRoute() { return floor(pc.params.z / 16.0 + 0.01) / 8.0; }
+// WFS-346 : sous le toit d'un tunnel la chaussée est sèche : pc.color = (début, fin, longueur du tour) du tunnel en mètres le long de la
+// route (route::preparer ; couleur inutilisée par la chaussée et le trottoir) ; neige apportée par les roues sur les 8 premiers mètres
+float abriRoute(float y) {
+    if (pc.color.z <= 1.0) return 1.0;
+    float d = mod(y, pc.color.z);
+    float dedans = min(d - pc.color.x, pc.color.y - d);   // m sous le toit (négatif : dehors)
+    return 1.0 - smoothstep(-1.0, 8.0, dedans);
+}
+
+// ---------- WFS-346 (RG-01) : chaussée enneigée (neige tassée), lue de la saison de la carte ----------
+// Réel (references/reel/cartes_v2/neige.md, avis expert-realisme-3d) : neige tassée et salie par la circulation, gris-blanc (albédo
+// ≈ 0,4 à 0,6 : 0,45 retenu, phares de nuit compris ; jamais le blanc pur saturé de la neige fraîche, ≈ 0,85, réservé aux bas-côtés) ; traces des roues de chaque voie
+// plus sombres (neige compactée en glace grise, asphalte qui apparaît par endroits : albédo ≈ 0,2 à 0,3) et plus lisses (rugosité
+// 0,45 : glace polie ; neige tassée 0,75) ; bourrelets plus clairs entre les traces et en rive ; relief du scan d'asphalte effacé.
+// Couvre aussi les lignes peintes (sous la neige). n : couverture 0 à 1 ; halfW : demi-largeur de la chaussée (m).
+void neigeSurRoute(vec2 p, float halfW, float n, inout vec3 col, inout float rough, inout vec3 N) {
+    float voie = 2.0 * halfW / 3.0;
+    float k = clamp(floor((p.x + halfW) / voie), 0.0, 2.0);
+    float c = -halfW + (k + 0.5) * voie;
+    float derive = (rnoise(vec2(k * 7.1, p.y * 0.035)) - 0.5) * 0.3;               // trajectoires qui ondulent (± 15 cm)
+    float dx = abs(abs(p.x - c - derive) - ECARTEMENT_ROUES_M * 0.5);
+    float ornieres = 1.0 - smoothstep(0.16, 0.34, dx + (rnoise(p * vec2(2.3, 0.4)) - 0.5) * 0.12);   // traces de 0,35 à 0,6 m, bords irréguliers
+    float g = fbm(p * vec2(1.3, 0.35)), fin = noise(p * 11.0);
+    vec3 tassee = vec3(0.44, 0.46, 0.50) * (0.9 + 0.18 * g) * (0.96 + 0.08 * fin);   // neige tassée, légèrement bleutée
+    vec3 trace = mix(vec3(0.22, 0.23, 0.25), col, 0.35 * smoothstep(0.55, 0.8, g));    // glace grise, asphalte qui perce par endroits
+    float rive = 1.0 - smoothstep(0.0, 0.9, halfW - abs(p.x));                            // neige repoussée en rive : plus claire
+    vec3 neige = mix(tassee, vec3(0.70, 0.72, 0.76), rive * 0.6);
+    neige = mix(neige, trace, ornieres * 0.85);
+    col = mix(col, neige, n);
+    rough = mix(rough, mix(0.75, 0.45, ornieres), n);
+    N = normalize(mix(N, normalize(vNrm), n * 0.85));
+}
 // usure de la chaussée au point p (uv en mètres) : x = facteur d'albédo, y = écart de rugosité, z = facteur de relief (normales)
 //   - bandes de roulement (au pas des roues de chaque voie) : liant poli et gomme : plus sombres (− 13 %), plus lisses (− 0,05),
 //     relief émoussé (80 % de la macrotexture) ; entre les bandes et en rive : granulats à nu, un peu plus clairs (+ 2 %) et
@@ -222,6 +256,10 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
     base.rgb = mix(asphalt, vec3(0.78, 0.78, 0.74), paint);
     // WFS-142 (RG-02) : asphalte sec, jour et nuit : mat (rugosité 0,75 à 0,9), lignes peintes 0,55, jamais métallique
     rough = roughToksvig(mix(roughSec, 0.55, paint), mix(lonN, 1.0, paint)); metal = 0.0;
+    {   // WFS-346 : neige au sol (0 sur les cartes du code : rien ne change)
+        float n = neigeRoute() * abriRoute(p.y);
+        if (n > 0.0 && halfW > 1.0 && halfW < 50.0) neigeSurRoute(p, halfW, n, base.rgb, rough, N);
+    }
     if (F.nuitA.x > 0.5) {
         // WFS-142 (RG-03) : asphalte mouillé (pluie). Le roadShader du jeu web (rugosité 0,22, métal 0,4, flaques à 0,02 sur
         // ≈ 18 % de la chaussée) faisait un miroir : il n'est plus suivi. Ici : jamais métallique, rugosité 0,35 à 0,5, asphalte
@@ -258,6 +296,16 @@ void bordureGranit(vec2 p, inout vec4 base, inout float rough, inout vec3 N) {
     base.rgb = mix(g, vec3(0.1), joint * 0.7);
     rough = 0.7; N = normalize(vNrm);
 }
+// WFS-346 : trottoir enneigé : neige piétinée, plus claire que la chaussée (peu de circulation), tassée par endroits
+void neigeTrottoir(vec2 p, inout vec4 base, inout float rough, inout vec3 N) {
+    float n = neigeRoute() * abriRoute(p.y);
+    if (n <= 0.0) return;
+    float g = fbm(p * vec2(0.9, 0.6));
+    vec3 neige = mix(vec3(0.62, 0.64, 0.68), vec3(0.78, 0.80, 0.84), smoothstep(0.35, 0.7, g));
+    base.rgb = mix(base.rgb, neige, n);
+    rough = mix(rough, 0.8, n);
+    N = normalize(mix(N, normalize(vNrm), n * 0.85));
+}
 // trottoirs (F_WALK)
 void surfaceTrottoir(inout vec4 base, inout float rough, inout float metal, inout vec3 N) {
     vec2 p = vUv;
@@ -268,6 +316,7 @@ void surfaceTrottoir(inout vec4 base, inout float rough, inout float metal, inou
         rough = roughToksvig(clamp(rv.rough + mac.y, 0.0, 1.0), rv.lon); metal = 0.0;
         N = perturb(normalize(vNrm), vWorld, p, normalize(rv.n));
         bordureGranit(p, base, rough, N);
+        neigeTrottoir(p, base, rough, N);
         return;
     }
     vec2 tile = fract(p / 0.6);
@@ -276,4 +325,5 @@ void surfaceTrottoir(inout vec4 base, inout float rough, inout float metal, inou
     base.rgb = vec3(stone) * vec3(1.0, 0.98, 0.95) * (1.0 - joint * 0.45);
     rough = 0.85; metal = 0.0;
     bordureGranit(p, base, rough, N);
+    neigeTrottoir(p, base, rough, N);
 }
