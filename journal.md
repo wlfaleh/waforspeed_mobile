@@ -4835,3 +4835,7 @@ Cause nommée (pilote des bancs saturé pendant un changement de file en conduit
   - (3) tache blanche de `cockpit-4` : phares du joueur renvoyés par la voisine blanche, plus le bloom (absente sur `cockpit-4-sans-voisine`) ; aucun halo du trafic dans l'habitacle ;
   - (4) `pr.md` rempli.
 - Vérifié : tests CPU 84/84 ; `test_penetration_voitures`, `test_chocs_voitures` et `test_pilote_file` OK après la synchronisation ; banc `penetration` 0,000 m ; banc `parcours` 0 écart (et 0 en vue Cockpit). Défaut de dessin de l'habitacle → WFS-349 (hors ticket).
+
+### 2026-11-09 07:25:01 — Statuts automatiques, CI main #946 (robot statuts)
+- Run rouge (push, commit 39a3de7), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-339, WFS-340, WFS-307, WFS-322.
