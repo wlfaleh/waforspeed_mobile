@@ -60,9 +60,8 @@ Demande de l'utilisateur (2026-11-09, « tout en dynamique ») : une carte est e
 
 **Ticket** : WFS-343 — règles : `regles-de-gestion/WFS-343.md`
 
-## Captures pour le lead dev
+## Captures pour le lead dev (10 après)
 La Campagne et le Grand Prix, de jour et de nuit, sont **identiques au pixel près** avant et après (0 pixel différent sur 2400×1080, comparaison faite sur les originaux PNG). Les cartes de données n'existent pas sur `main`, d'où le « — » dans la colonne avant.
- (10 après)
 
 Dossier : [`qa/pr/WFS-343`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-343/qa/pr/WFS-343) — produit par `tools/qa/captures_pr.sh`.
 
