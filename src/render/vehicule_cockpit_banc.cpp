@@ -5,7 +5,7 @@
 // Pixels de la voisine = A ≠ B ; zone fermée = K ≠ B (habitacle, et tout rayon qui traverse une portière sous la ligne de
 // ceinture ou le pied du pare-brise sous la planche) ; écart = pixel de la voisine dans la zone fermée (0 visé) ; pixels de la
 // voisine hors zone fermée = vue par les vitres (RG-04 : elle doit rester visible par la vitre latérale).
-// WFS_GARDER=1 (essai local) : garde les images B, K et le témoin A2 de chaque mesure.
+// WFS_GARDER=1 (essai local) : garde les images B, K et le témoin A2 de chaque mesure ; WFS_BORD=<px> : bord non compté (5 par défaut).
 #include "vehicule_cockpit_banc.h"
 #include <algorithm>
 #include <cmath>
@@ -108,7 +108,7 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
                     // pixels dont tout le carré (2R + 1)² est dans la zone fermée, sans pixel de la voisine vue par une vitre
                     // (pointe fine d'une vitre entre montant et appui) : une fuite réelle (trou de l'habitacle) en a des milliers
                     // (avant la correction : plus de 10 000) ; les fentes plus fines sont vérifiées par le calcul (tests/test_cockpit_ferme.cpp)
-                    const int W = A.w, H = A.h, R = std::max(2, (int)std::lround(5.0 * H / 720));
+                    const int W = A.w, H = A.h, R = std::max(1, (int)std::lround((std::getenv("WFS_BORD") ? std::atof(std::getenv("WFS_BORD")) : 5.0) * H / 720));   // WFS_BORD : essai local
                     std::vector<unsigned char> ferme((size_t)W * H), parVitre((size_t)W * H);
                     for (long i = 0; i < (long)W * H; i++) {
                         ferme[(size_t)i] = differe(K.p + i * 3, B.p + i * 3);
