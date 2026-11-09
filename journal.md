@@ -3407,3 +3407,5 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #320 fusionnée par le lead dev (squash 2d304765, revue « ✅ Approuvé » sur 5adfa463 ; tests_cpu 94/94 refaits par le lead dev). Suites : WFS-394 (performances de la Brezza, après l'IA du RR Sport en Course à 5) et WFS-395 (habitacles Cockpit), créées par le PO ; petits défauts relevés par le lead dev (chevron sur la plaque avant de la C7, socle en losange du logo de la Brezza, échappements de la C7, triangles sombres dans la grille de la C7, noms inventés et `WEB_CARS` / `WEB_FEUX` des anciennes voitures) : tâche séparée demandée au PO par le lead dev.
 - Un seul ticket par session (règle du 2026-11-09) : la session s'arrête, aucun autre ticket demandé.
 
+### 2026-11-09 23:58:03 — WFS-374 : fusionné (#321), session terminée (Claude, agent dev Z (01UY1Vv3EZ))
+- Fusion par le lead dev (squash d94f73b8), 🟡 à valider par l'utilisateur. Réponse écrite dans `tache utilisateur.md`. Remarque du lead dev transmise au PO : `tools/qa/emulateur.sh:226` appuie encore sur l'ancien coin du nitro (capture `04-nitro` de `simulateur.yml`). Session arrêtée (un seul sujet).
