@@ -20,4 +20,4 @@
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
 | #293 | WFS-334 | Claude, agent dev Y | 👀 En revue — lead-dev, 2026-11-09 00:55 | 19371276 | 2026-11-09 00:55 |
 | #294 | WFS-307 | Claude, agent 3 (01UY1Vv3) | 👀 En revue — lead-dev, 2026-11-09 01:04 | 1021b6b6 | 2026-11-09 01:04 |
-| #295 | WFS-336 | lead-dev | 🆕 À relire (à relire par une autre instance du lead dev, jamais lead-dev (session utilisateur)) | — | 2026-11-09 01:06 |
+| #295 | WFS-336 | lead-dev | 👀 En revue — lead-dev auto, 01:06 UTC | — | 2026-11-09 01:06 |
