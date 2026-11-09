@@ -47,23 +47,24 @@
    },
    {
     "grille": [
-     -0.45,
+     -0.44,
      0.65,
      -2.462,
-     0.45,
-     0.94,
+     0.44,
+     0.93,
      -2.4
     ],
     "barres": 6,
     "galbe": 0.065,
     "cadre": 0.018,
-    "couleur": "#262626",
-    "metal": 0.7,
-    "rugosite": 0.35,
-    "note": "grille générique d'un seul tenant : cadre, 6 barres horizontales, galbe du nez"
+    "couleur": "#3a3a3a",
+    "metal": 0.85,
+    "rugosite": 0.3,
+    "note": "grille générique d'un seul tenant : cadre, 6 barres horizontales, galbe du nez, un peu plus étroite en haut",
+    "trapeze": 1.03
    }
   ],
-  "empreinteApres": "8cf74a0c44480abe"
+  "empreinteApres": "8021e1531a0b190f"
  },
  "compass": {
   "materiaux": 15,
