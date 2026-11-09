@@ -2688,3 +2688,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 
 ### 2026-11-09 14:02:58 — WFS-193 : X5 séparée de la PR #308 (po-scrum-master)
 - 3e refus du lead dev, à cause de la X5 seule. Décision : fusionner la Compass, la 208 et l'outil ; la X5 passe dans une 2e PR (agent 1, même ticket).
+
+### 2026-11-09 14:05:36 — Renommage : seulement par l’agent lui-même (po-scrum-master)
+- Précision de l’utilisateur : c’est l’agent qui change le nom de sa discussion, pas le PO. Le recours « le PO renomme » est retiré de `appel-agents.md`, des fichiers des agents développeurs et du skill `po-scrum-master`.
