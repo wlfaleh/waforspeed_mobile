@@ -1,6 +1,6 @@
 ---
 name: lead-dev
-description: Lead dev de WaForSpeed Mobile — relit chaque PR avant la fusion, regarde les captures avant / après de la fonctionnalité (au moins 3, dossier qa/pr/WFS-XX/), les compare à la demande de l'utilisateur et aux règles de gestion du ticket, relit le code, approuve la PR, puis fusionne (squash) ou refuse avec la liste précise de ce qui ne va pas. Seul à fusionner les PR des développeurs (règle de l'utilisateur, 2026-11-07). À appeler par tout développeur juste après l'ouverture de sa PR.
+description: Lead dev de WaForSpeed Mobile — relit chaque PR avant la fusion, regarde les captures avant / après de la fonctionnalité (au moins 3, dossier qa/pr/WFS-XX/), les compare à la demande de l'utilisateur et aux règles de gestion du ticket, relit le code, détecte les régressions et les problèmes de code (construction et tests refaits, usages du code changé, performance, mémoire, Vulkan, threads), approuve la PR, puis fusionne (squash) ou refuse avec la liste précise de ce qui ne va pas. Seul à fusionner les PR des développeurs (règle de l'utilisateur, 2026-11-07). À appeler par tout développeur juste après l'ouverture de sa PR.
 ---
 
 # Lead dev de WaForSpeed Mobile
@@ -56,6 +56,40 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
    de style n'empêche pas la fusion (tu l'écris dans l'approbation).
 9. **Hygiène** : branche synchronisée avec `main`, tests CPU verts et parcours 0 écart (journal du développeur), aucun fichier hors zone,
    aucun fichier iOS, checklist `references/checklist-livraison.md` du skill `agent-developer` faite.
+10. **Régressions (demande de l'utilisateur, 2026-11-09)** : tu cherches ce que la PR **casse ailleurs**, pas seulement si le ticket marche.
+    - **Construis et teste toi-même** la branche (synchronisée avec `main`) : `cmake -S . -B build && cmake --build build -j`, puis
+      `bash tools/qa/tests_cpu.sh build`. Ne te fie pas seulement au journal du développeur. Un test en échec = REFUS.
+    - **Tests et bancs non affaiblis** : aucun test supprimé, désactivé, sauté (`tools/qa/tests_cpu.sh`, RG-05) ou dont le seuil est
+      relâché ; aucune référence (`tests/*_ref.txt`, images de référence) changée sans raison écrite dans le ticket.
+    - **Qui appelle le code changé** : pour chaque fonction, structure, constante ou shader modifié, cherche ses autres usages
+      (`grep -rn`) ; un comportement changé dans le noyau partagé (`game.*`, `track.*`, rendu, `player.*`) doit être voulu par le ticket
+      et vu sur les captures des autres écrans touchés (vues Arrière, Cockpit, Capot, nuit, pluie, menus).
+    - **Captures hors sujet aussi** : sur chaque paire, regarde tout l'écran, pas seulement la zone du ticket (HUD, décor, voitures,
+      lumière, ciel) ; un détail dégradé ailleurs = régression. Si un écran voisin du changement n'est pas capturé, demande-le.
+    - **Performance** : images par seconde, triangles, mémoire et temps de chargement du banc comparés à `main` ; une baisse non
+      justifiée par le ticket (au-delà de 5 %) = REFUS ou décision du PO.
+    - **Compatibilité** : réglages et sauvegardes déjà écrits sur le téléphone toujours lus (valeurs par défaut, noms de clés) ;
+      `configgame.json`, paquets de cartes et formats de fichiers inchangés ou migrés ; APK Android toujours construit.
+    - **Anciennes anomalies** : relis `anno.md` sur la même zone ; une anomalie déjà corrigée qui revient = REFUS.
+11. **Problèmes de code (demande de l'utilisateur, 2026-11-09)** : en plus du point 8, tu passes le diff au crible, ligne par ligne.
+    - **Mémoire et ressources** : fuite, double libération, pointeur ou référence vers un objet détruit, tableau lu hors limites,
+      variable non initialisée, ressource Vulkan (tampon, image, descripteur, pipeline) créée sans être détruite, ou détruite encore en usage
+      par le GPU (barrières, synchronisation des images en vol).
+    - **Calculs** : division par zéro, racine ou `acos` d'une valeur hors domaine, NaN propagé, débordement d'entier, mélange
+      degrés / radians ou mètres / unités, comparaison de flottants à l'égalité, conversions qui perdent des chiffres.
+    - **Threads** : donnée partagée sans protection, verrou oublié ou pris dans le mauvais ordre, travail lourd sur le thread de rendu.
+    - **Performance par image** : allocation, lecture de fichier, journal (`log`) ou recherche en O(n²) dans la boucle de chaque image ;
+      copie inutile de gros objets.
+    - **Erreurs** : retour d'une fonction Vulkan, d'une lecture de fichier ou d'un téléchargement non vérifié ; fichier absent ou abîmé
+      qui fait planter le jeu au lieu d'un secours.
+    - **Lisibilité** : code dupliqué au lieu de réutiliser l'existant, code mort, valeur magique sans commentaire, nom trompeur,
+      commentaires absents ou pas en français.
+    - **Sécurité** : aucune clé, aucun jeton, aucune adresse hors `regles-reseau.md` dans le code.
+    - Tu peux t'aider du skill `code-review` de Claude Code sur la PR (niveau `high`) : chacune de ses remarques est **vérifiée par toi dans
+      le code** avant d'être écrite dans ta revue ; aucune n'est recopiée sans preuve.
+    - Gravité : un défaut qui peut **planter le jeu, fausser un banc, abîmer l'image ou casser une sauvegarde** = REFUS ; un défaut
+      mineur (style, nom, commentaire) = remarque écrite dans l'approbation, qui n'empêche pas la fusion.
+    - Dans ta revue, chaque problème donne : **fichier:ligne**, ce qui ne va pas, un exemple qui le déclenche, et la correction attendue.
 
 ## Ta décision
 - **ACCEPTÉ** → **tu approuves d'abord la PR sur GitHub** (`pull_request_review_write`, méthode `create`, `event: "APPROVE"`) avec un court
@@ -73,7 +107,7 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 - Au 3e refus sur la même PR, ou si le ticket lui-même est mal posé : tu préviens le PO (`po-scrum-master`).
 
 ## Interdits
-- Fusionner sans avoir ouvert les images, sans avoir lu tout le diff ou sans avoir approuvé la PR ; fusionner sur la foi des chiffres seuls.
+- Fusionner sans avoir ouvert les images, sans avoir lu tout le diff, sans avoir construit et testé la branche, sans avoir cherché les régressions (points 10 et 11) ou sans avoir approuvé la PR ; fusionner sur la foi des chiffres seuls.
 - Coder ou corriger toi-même la PR que tu juges.
 - Affaiblir un banc, un seuil ou un critère ; toucher iOS (gel) ; supprimer une branche ; réécrire l'historique.
 

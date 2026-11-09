@@ -25,7 +25,7 @@ struct Modele {
         }
     }
     void retour() {   // une pression : décision puis effet (ce que fait le jeu)
-        const ActionRetour a = actionRetour(e, finie, zoneRetour(), modes);
+        const ActionRetour a = actionRetourReglages(e, finie, zoneRetour(), modes, reglages);   // WFS-290
         const Ecran avant = e;
         switch (a) {
             case ActionRetour::Ignorer: break;
@@ -33,7 +33,7 @@ struct Modele {
             case ActionRetour::Reprise: e = Ecran::Course; break;
             case ActionRetour::FermerModes: modes = false; break;
             case ActionRetour::BoutonRetour:
-                if (e == Ecran::Menu) reglages = false;   // « Fermer » des réglages
+                if (e == Ecran::Menu || (e == Ecran::Pause && reglages)) reglages = false;   // « Fermer » des réglages (WFS-290 : aussi en pause)
                 else if (e == Ecran::Pause) e = Ecran::Course;   // « Reprendre »
                 else e = Ecran::Menu;   // garage, terrain, fin de course : « Retour » / « Menu »
                 break;
@@ -58,6 +58,11 @@ int main() {
     VERIFIE(actionRetour(Ecran::Garage, false, true, false) == ActionRetour::BoutonRetour, "garage : Retour");
     VERIFIE(actionRetour(Ecran::Terrain, false, true, false) == ActionRetour::BoutonRetour, "terrain : Retour");
     VERIFIE(actionRetour(Ecran::Salon, false, false, false) == ActionRetour::Menu, "salon (sans zone) : menu");
+    // WFS-290 (RG-04) : réglages ouverts en pause : « Fermer », pas « Reprendre » ; réglages fermés : reprise comme avant
+    VERIFIE(actionRetourReglages(Ecran::Pause, false, true, false, true) == ActionRetour::BoutonRetour, "pause, réglages ouverts : Fermer");
+    VERIFIE(actionRetourReglages(Ecran::Pause, false, true, false, false) == ActionRetour::Reprise, "pause, réglages fermés : reprise");
+    VERIFIE(actionRetourReglages(Ecran::Menu, false, true, false, true) == ActionRetour::BoutonRetour, "menu, réglages ouverts : Fermer");
+    VERIFIE(actionRetourReglages(Ecran::Course, false, false, false, false) == ActionRetour::Pause, "course : pause (inchangé)");
     std::printf("décisions par écran : %s\n", echecs ? "ÉCHEC" : "OK");
 
     // RG-06 : parcours complet
@@ -68,6 +73,9 @@ int main() {
     m.e = Ecran::Course; m.retour(); VERIFIE(m.e == Ecran::Pause, "course → pause");
     m.retour(); VERIFIE(m.e == Ecran::Course, "pause → course");
     m.retour(); VERIFIE(m.e == Ecran::Pause, "course → pause (2e fois)");
+    m.reglages = true; m.retour(); VERIFIE(m.e == Ecran::Pause && !m.reglages, "pause, réglages ouverts → réglages fermés, toujours en pause (WFS-290)");
+    m.retour(); VERIFIE(m.e == Ecran::Course, "pause → course (réglages fermés)");
+    m.retour(); VERIFIE(m.e == Ecran::Pause, "course → pause (3e fois)");
     m.e = Ecran::Menu;   // « Menu » de la pause
     m.reglages = true; m.retour(); VERIFIE(m.e == Ecran::Menu && !m.reglages && !m.dehors, "réglages → fermés");
     m.e = Ecran::Course; m.finie = true; m.retour(); VERIFIE(m.e == Ecran::Menu, "fin de course → menu"); m.finie = false;

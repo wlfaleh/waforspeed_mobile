@@ -7,10 +7,14 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <vector>
 #include "../core/log.h"
 #include "../core/math.h"
 #include "../core/system.h"
 #include "../game/game.h"
+#include "../game/camera_vue.h"     // WFS-335 : vues Arrière et Proche
+#include "../game/course5.h"        // WFS-335 : Course à 5 de nuit
+#include "../game/course_system.h"  // WFS-335 : règles de la course au banc
 #include "../game/traffic_system.h"
 #include "../ui/ecrans/reglages.h"
 #include "qualite_auto.h"
@@ -106,6 +110,67 @@ int benchLod(Game& g, Renderer& r, const std::string& out) {
         }
         g.shutdown();
     } else erreurs++;
+    // 4) WFS-335 (RG-04) : nuit, Basse : voiture du trafic à 60 à 170 m (caméra de poursuite : passages du niveau 1 aux niveaux
+    // 2 et 3 en 4 pièces, sans saut), puis Course à 5 après le « GO », vues Arrière et Proche (voitures proches inchangées)
+    if (g.init(r, "golf", "ville")) {
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 1;
+        rouler(240);
+        g.setAutopilot(false);
+        for (double d : {60.0, 80.0, 100.0, 130.0, 170.0}) {
+            if (Traffic* tr = activeTrafficMut()) {
+                const double pos = g.player().position;
+                for (size_t i = 0; i < tr->cars.size(); i++) { if (i == 0) poserDevant(tr->cars[i], pos, d, g.player().speed); else rangerLoin(tr->cars[i], pos, i, g.player().speed); }
+            }
+            capturer("lod-nuit-trafic-loin-" + std::to_string((int)d) + "-basse");
+        }
+        // WFS-335 (revue du lead dev, PR #296) : la même voiture de 110 à 40 px à l'écran (passages niveau 1 → 2 à 100 px,
+        // niveau 2 → 4 pièces à 48 px, fondus compris) ; distance ajustée par le relevé du renderer (longueur à l'écran réelle)
+        // la voiture posée se reconnaît dans le relevé : elle disparaît quand on la range au loin (voitures garées ou du décor :
+        // présentes dans les deux relevés, à la même distance)
+        auto poser = [&](double dist, bool visible) {
+            if (Traffic* tr = activeTrafficMut()) {
+                const double pos = g.player().position;
+                for (size_t i = 0; i < tr->cars.size(); i++) { if (i == 0 && visible) poserDevant(tr->cars[i], pos, dist, g.player().speed); else rangerLoin(tr->cars[i], pos, i, g.player().speed); }
+            }
+        };
+        auto relever = [&] { r.releverVoitures = true; g.render(t + 0.001); r.releverVoitures = false; return r.releveVoitures(); };
+        double d = 18;
+        for (int cible : {110, 100, 95, 90, 80, 70, 60, 50, 48, 45, 40}) {
+            Renderer::ReleveVoiture vu{};
+            for (int essai = 0; essai < 4; essai++) {
+                poser(d, false);
+                const std::vector<Renderer::ReleveVoiture> sans = relever();
+                poser(d, true);
+                vu = {};
+                for (const Renderer::ReleveVoiture& v : relever()) {
+                    bool deja = v.joueur;
+                    for (const Renderer::ReleveVoiture& w : sans) deja |= std::fabs(w.distance - v.distance) < 0.1f;
+                    if (!deja && v.px > vu.px) vu = v;
+                }
+                if (vu.px <= 0 || std::fabs(vu.px - cible) < 0.5f) break;
+                d *= vu.px / cible;
+            }
+            capturer("lod-passage-" + std::to_string(cible) + "px-basse");
+            WFS_LOG("lod-passage (WFS-335) : cible %d px, mesuré %.1f px à %.1f m, niveau %d, %u triangles", cible, vu.px, vu.distance, vu.niveau, vu.triangles);
+        }
+        g.shutdown();
+    } else erreurs++;
+    {
+        const VueCamera vue0 = vueCamera(); const bool regles0 = courseBenchRulesOn();
+        modeCourse() = ModeCourse::Course5; kmCourse5() = 2; courseBenchRules(true);
+        if (g.init(r, "golf", "ville")) {
+            g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+            choisirVue(VueCamera::Poursuite);
+            rouler(390);   // décompte, « GO » (5,5 s), puis 1 s de course : adversaires proches
+            capturer("lod-course5-nuit-arriere-basse");
+            choisirVue(VueCamera::Proche); rouler(30);
+            capturer("lod-course5-nuit-proche-basse");
+            rouler(600);   // 10 s plus loin : adversaires étalés devant (lointains)
+            capturer("lod-course5-nuit-proche-loin-basse");
+            g.shutdown();
+        } else erreurs++;
+        modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4; courseBenchRules(regles0); choisirVue(vue0);
+    }
     unsetenv("WFS_MOMENT");
     R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     WFS_LOG("lod (WFS-265) : %d erreur(s)", erreurs);

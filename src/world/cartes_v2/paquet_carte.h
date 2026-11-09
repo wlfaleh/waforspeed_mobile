@@ -23,6 +23,12 @@ bool preparerCarte(const std::string& carte);
 // cuisson (banc, PC) : fichiers de la carte pris dans le dossier des assets (racine) pour un format de texture
 carte::Paquet cuire(const std::string& racine, const std::string& carte, carte::FormatTexture f);
 
+// WFS_BANC=cuire (publication des paquets, WFS-302 ; complément de WFS-301, RG-C1 à C3) : cuit les 3 formats de la Ville deux fois, compare
+// octet par octet, vérifie (verifier_carte) et LAISSE les fichiers dans dossierPaquets() ; une ligne par fichier (nom, taille, SHA-256,
+// empreinte) ; sans Vulkan ni capture. Renvoie le nombre d'écarts (la plateforme sort avec le code 3 s'il y en a).
+int cuireSeul(const std::string& racine);
+std::string sha256Hex(const std::vector<uint8_t>& o);   // SHA-256 (FIPS 180-4) en hexadécimal minuscule
+
 // banc d'essai (WFS_BANC=cuisson) : écrit les paquets de la Ville (3 formats) dans dossierPaquets(), vérifie deux cuissons identiques,
 // puis paquet absent, corrompu, format futur, valide (captures cuisson-*), RG-07 (chargement de la Ville, médiane de 5, sans puis avec
 // paquet ; tailles ; mémoire) et RG-08 : parcours complet accueil → Ville → course → retour (fonction fournie par la plateforme) avec le

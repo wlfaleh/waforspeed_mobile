@@ -16,6 +16,7 @@ double longueurKm(const MapDef& m);
 
 // banc d'essai : centre du bouton « Rouler » posé à la dernière image (false si l'écran n'est pas affiché)
 bool centreRouler(float& x, float& y);
+void choisirCarte(const std::string& id, bool nuit);   // banc (WFS-307) : carte et moment affichés dans le choix du terrain
 // banc d'essai : terrain-0 (ville), terrain-1 (circuit), terrain-rouler (course lancée sur le circuit)
 void benchTerrain(Game& g, Renderer& r, const std::string& out);
 

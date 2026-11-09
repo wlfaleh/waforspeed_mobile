@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include "../src/render/qualite_auto.h"
+#include "../src/render/phares.h"   // WFS-353 : répartition du feu de croisement (approximation des lumières de la Basse)
 using namespace wfs::qualite;
 
 static int echecs = 0;
@@ -11,6 +12,13 @@ static int echecs = 0;
 // `secondes` de course à `fps` images/s ; renvoie les effets cumulés
 static int course(Auto& a, double fps, double secondes, bool enCourse = true) {
     int e = 0; for (int i = 0; i < (int)(fps * secondes + 0.5); i++) e |= a.image(1.0 / fps, enCourse); return e;
+}
+
+// WFS-353 : images à `fps` (temps GPU `gpuMs`) jusqu'à la mesure de 2 s suivante (une seule décision) ; renvoie ses effets
+static int uneMesure(Auto& a, double fps, double gpuMs = -1) {
+    const int m0 = a.mesures; int e = 0;
+    while (a.mesures == m0) e |= a.image(1.0 / fps, true, gpuMs);
+    return e;
 }
 
 int main() {
@@ -50,12 +58,13 @@ int main() {
     // WFS-246 (levier 3) : résolution adaptative à tous les niveaux, de 100 % (Basse 75 %) jusqu'à 60 %, jamais en dessous
     bool dansBornes = true;
     for (int q = BASSE; q <= HAUTE; q++) for (float d = 0.3f; d <= 1.0001f; d += 0.05f)
-        dansBornes = dansBornes && echelleRendu(q, d) >= ECHELLE_MIN - 1e-6f && echelleRendu(q, d) <= echelleNiveau(q) + 1e-6f;
-    VERIFIE(dansBornes, "échelle toujours entre 60 %% et celle du niveau");
+        dansBornes = dansBornes && echelleRendu(q, d) >= plancher(q) - 1e-6f && echelleRendu(q, d) <= echelleNiveau(q) + 1e-6f;
+    VERIFIE(dansBornes, "échelle toujours entre le plancher (60 %%, Basse 45 %%) et celle du niveau");
+    VERIFIE(plancher(HAUTE) == ECHELLE_MIN && plancher(MOYENNE) == ECHELLE_MIN && plancher(BASSE) == ECHELLE_MIN_BASSE, "planchers 60 / 60 / 45 %% (WFS-353)");
     VERIFIE(echelleRendu(HAUTE, 1) == 1.f && std::abs(echelleRendu(HAUTE, 0.6f) - 0.6f) < 1e-6f && std::abs(echelleRendu(MOYENNE, 0.8f) - 0.8f) < 1e-6f, "Haute / Moyenne : 100 → 60 %%");
-    VERIFIE(echelleRendu(BASSE, 1) == 0.75f && std::abs(echelleRendu(BASSE, 0.8f) - 0.6f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.6f) - 0.6f) < 1e-6f, "Basse : 75 → 60 %%");
+    VERIFIE(echelleRendu(BASSE, 1) == 0.75f && std::abs(echelleRendu(BASSE, 0.8f) - 0.6f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.6f) - 0.45f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.3f) - 0.45f) < 1e-6f, "Basse : 75 → 60 → 45 %% (WFS-353)");
     VERIFIE(budgetMs(BASSE) < 16.8f && budgetMs(HAUTE) == 22.f && budgetMs(MOYENNE) == 22.f, "budgets 16,7 / 22 ms");
-    std::printf("échelle réelle (WFS-246) : Haute et Moyenne 100 → 60 %%, Basse 75 → 60 %% : OK\n");
+    std::printf("échelle réelle (WFS-246) : Haute et Moyenne 100 → 60 %%, Basse 75 → 60 → 45 %% (WFS-353) : OK\n");
     // WFS-246 : Basse à 50 images/s (20 ms > 16,7) : la résolution descend à 60 % (facteur 0,8), puis les effets
     { Auto f; f.niveau = BASSE; course(f, 50, 2);
       VERIFIE(std::abs(f.echelle - 0.9f) < 1e-6f && f.palier == 0, "Basse 50 img/s : 1re baisse (%.2f)", f.echelle);
@@ -69,6 +78,63 @@ int main() {
       Auto h; h.echelle = 0.7f; for (int i = 0; i < 60 * 6; i++) h.image(1.0 / 60, true, 18.0);
       VERIFIE(std::abs(h.echelle - 0.7f) < 1e-6f, "Haute GPU 18 ms : échelle gardée (%.2f)", h.echelle);
       std::printf("Basse 50 img/s : 75 → 60 %% puis effets ; remontée au temps GPU, sans aller-retour : OK\n"); }
+    // WFS-353 (RG-03) : plancher 45 %% de la Basse : seulement à 60 %%, palier 2 et toujours sous 30 img/s
+    { Auto f; f.niveau = BASSE; course(f, 50, 20);   // 50 img/s : 60 %%, palier 2, jamais sous 60 %%
+      VERIFIE(std::abs(f.echelle - 0.8f) < 1e-6f && f.palier == 2, "Basse 50 img/s : reste à 60 %% (%.2f, palier %d)", f.echelle, f.palier);
+      VERIFIE(std::abs(echelleRendu(BASSE, f.echelle) - 0.6f) < 1e-6f, "Basse 50 img/s : scène à 60 %%");
+      Auto g; g.niveau = BASSE; course(g, 25, 2);   // sous 30 img/s : 75 → 60 %% (pas de 0,2), les effets d'abord
+      VERIFIE(std::abs(g.echelle - 0.8f) < 1e-6f && g.palier == 0, "Basse 25 img/s : 60 %% d'abord (%.2f)", g.echelle);
+      course(g, 25, 2); VERIFIE(g.palier == 1 && std::abs(g.echelle - 0.8f) < 1e-6f, "Basse 25 img/s : palier 1 avant 45 %%");
+      course(g, 25, 2); VERIFIE(g.palier == 2 && std::abs(g.echelle - 0.8f) < 1e-6f, "Basse 25 img/s : palier 2 avant 45 %%");
+      course(g, 25, 2); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f, "Basse 25 img/s : 45 %% après le palier 2 (%.3f)", echelleRendu(BASSE, g.echelle));
+      course(g, 25, 10); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f && g.niveau == BASSE, "Basse : jamais sous 45 %%");
+      // 35 et 45 img/s à 45 %% : ni descente ni remontée (60 %% retomberait sous 30) ; ≥ 50 img/s : retour à 60 %% d'un coup, effets ensuite
+      course(g, 35, 10); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f && g.palier == 2, "Basse 35 img/s à 45 %% : gardé");
+      uneMesure(g, 45); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.45f) < 1e-6f, "Basse 45 img/s à 45 %% : gardé");
+      uneMesure(g, 52); VERIFIE(std::abs(echelleRendu(BASSE, g.echelle) - 0.6f) < 1e-6f && g.palier == 2, "Basse 52 img/s à 45 %% : retour à 60 %% (%.3f)", echelleRendu(BASSE, g.echelle));
+      Auto m; m.niveau = BASSE; course(m, 25, 8); const int e = uneMesure(m, 60, 9.0);
+      VERIFIE(std::abs(echelleRendu(BASSE, m.echelle) - 0.6f) < 1e-6f && m.palier == 2 && (e & Auto::ECHELLE), "Basse GPU 9 ms à 45 %% : 60 %% d'abord, effets ensuite");
+      // Moyenne et Haute : jamais sous 60 %%, même à 20 img/s ; Basse par rétrogradation (netteté de la Moyenne) : 60 %%
+      Auto h; h.choixJoueur = true; course(h, 20, 30); VERIFIE(std::abs(echelleRendu(HAUTE, h.echelle) - 0.6f) < 1e-6f, "Haute 20 img/s : 60 %%");
+      Auto mo; mo.niveau = MOYENNE; mo.choixJoueur = true; course(mo, 20, 30); VERIFIE(std::abs(echelleRendu(MOYENNE, mo.echelle) - 0.6f) < 1e-6f, "Moyenne 20 img/s : 60 %%");
+      retenuAuto = MOYENNE; Auto rb; rb.niveau = BASSE; course(rb, 20, 30);
+      VERIFIE(std::abs(echelleScene(BASSE, rb.echelle) - 0.6f) < 1e-6f, "Basse par rétrogradation : 60 %% (%.3f)", echelleScene(BASSE, rb.echelle));
+      oublierRetenus();
+      // WFS-353 (RG-01) : 2 lumières par pixel en Basse : les 2 plus fortes au point, pas l'ordre de la liste
+      VERIFIE(LUMIERES_PAR_PIXEL_BASSE == 4 && LUMIERES_PAR_PIXEL_BASSE_LEGERE == 2, "Basse : 4 lumières par pixel (variante du banc : 2)");
+      { const float e[6] = {0.1f, 0.f, 3.f, 0.5f, 2.f, 0.2f}; int a0, a1; deuxPlusFortes(e, 6, a0, a1);
+        VERIFIE(a0 == 2 && a1 == 4, "les 2 plus fortes (%d, %d)", a0, a1);
+        // même ensemble dans tous les ordres de la liste (rotation et inversion)
+        bool memes = true;
+        for (int dec = 0; dec < 6; dec++) for (int sens = 0; sens < 2; sens++) {
+            float f[6]; int idx[6];
+            for (int i = 0; i < 6; i++) { idx[i] = sens ? (dec + 5 - i) % 6 : (dec + i) % 6; f[i] = e[idx[i]]; }
+            int b0, b1; deuxPlusFortes(f, 6, b0, b1);
+            memes = memes && b0 >= 0 && b1 >= 0 && idx[b0] == 2 && idx[b1] == 4;
+        }
+        VERIFIE(memes, "même choix quel que soit l'ordre de la liste");
+        const float u[3] = {0.f, 1.f, 0.f}; deuxPlusFortes(u, 3, a0, a1); VERIFIE(a0 == 1 && a1 == -1, "une seule lumière au point : une seule choisie");
+        const float z[2] = {0.f, 0.f}; deuxPlusFortes(z, 2, a0, a1); VERIFIE(a0 == -1 && a1 == -1, "aucune lumière au point : aucune");
+        const float eg[3] = {1.f, 1.f, 1.f}; deuxPlusFortes(eg, 3, a0, a1); VERIFIE(a0 == 0 && a1 == 1, "égalité : les premières de la liste"); }
+      { float pire = 0; for (int i = 0; i < 3600; i++) { const float t = i * 0.001745329f, y = std::sin(t) * 3.f, x = std::cos(t) * 3.f;
+          pire = std::fmax(pire, std::abs(std::remainder(atanRapide(y, x) - std::atan2(y, x), 6.2831853f))); }
+        VERIFIE(pire <= 0.0015f, "atan2 approché : écart %.5f rad", pire); }
+      // approximation du feu de croisement (feuCroisementRapide) : axe horizontal, élévation asin(t) ≈ t, azimut atanRapide ;
+      // écart à la répartition exacte (phares::intensiteRelative) sur le faisceau utile (el −15 à +5°, az −80 à +80°)
+      { float pire = 0; const float R2D = 57.2957795f;
+        for (float el = -15.f; el <= 5.f; el += 0.05f) for (float az = -80.f; az <= 80.f; az += 0.5f) {
+            // axe D = +z, R = cross(D, haut) = −x (comme feuCroisement) : w = R sin(az) cos(el) + haut sin(el) + D cos(az) cos(el)
+            const float ce = std::cos(el / R2D), w[3] = {-std::sin(az / R2D) * ce, std::sin(el / R2D), std::cos(az / R2D) * ce};
+            const float D[3] = {0.f, 0.f, 1.f};
+            // feuCroisementRapide : el = deg(w.y), az = deg(atanRapide(w.z D.x − w.x D.z, w · D))
+            const float exact = wfs::phares::intensiteRelative(el, az),
+                        approx = wfs::phares::intensiteRelative(R2D * w[1], R2D * atanRapide(w[2] * D[0] - w[0] * D[2], w[0] * D[0] + w[1] * D[1] + w[2] * D[2]));
+            pire = std::fmax(pire, std::abs(approx - exact));
+        }
+        VERIFIE(pire <= 0.01f, "approximation du feu de croisement : écart %.4f (intensité relative, crête 1)", pire);
+        std::printf("WFS-353 : approximation du feu de croisement : écart maximal %.4f de la crête : OK\n", pire); }
+      std::printf("WFS-353 : 2 lumières par pixel (les plus fortes au point, tout ordre de liste), atan2 approché ≤ 0,0015 rad : OK\n");
+      std::printf("WFS-353 : Basse 45 %% seulement à 60 %%, palier 2 et sous 30 img/s ; retour à 60 %% à la marge ; Moyenne / Haute 60 %% : OK\n"); }
     // WFS-134 (RG-02) : rétrogradation automatique et chauffe : la résolution reste celle du niveau quitté
     VERIFIE(niveauNettete(BASSE) == BASSE && echelleScene(BASSE, 1) == 0.75f, "sans baisse en cours : niveau du joueur");
     retenuChauffe = HAUTE;   // chauffe sévère : Haute → Moyenne puis → Basse à la course suivante
