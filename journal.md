@@ -4817,3 +4817,7 @@ Code et tests bons (`test_penetration_voitures` et `test_chocs_voitures` OK apr�
 ### 2026-11-09 06:23:04 — WFS-339 : PR #299 approuvée et fusionnée (lead-dev auto)
 
 Cause nommée (pilote des bancs saturé pendant un changement de file en conduite d'avant), correction dans `limiterPilote` seulement, `test_pilote_file` OK après fusion avec `main`, 23 captures sur 24 identiques. Squash 39a3de7, statut 🟣. #297 et #298 : « Bien reçu » posté, pas encore de « corrigé dans » : restent ↩️.
+
+### 2026-11-09 06:24:35 — Statuts automatiques, CI main #945 (robot statuts)
+- Run rouge (push, commit 88f3cde), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-340, WFS-307, WFS-322.
