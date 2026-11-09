@@ -136,12 +136,15 @@ void benchEffets(Game& g, Renderer& r, const std::string& out) {
     for (int i = 0; i < 90; i++) image(i % 8 == 0);
     const float W = (float)r.width(), H = (float)r.height();
     g.setAutopilot(false);
-    g.onTouch({7, W * 0.90f, H * 0.32f, true});
+    // WFS-374 (ANO-233, accroche) : appui au centre du bouton nitro (avant : coin haut droit, zone de nitro retirée)
+    const DispositionCommandes dc = dispositionCommandes(W, H, g.marges());
+    const float xn = dc.nitro.cx(), yn = dc.nitro.cy();
+    g.onTouch({7, xn, yn, true});
     for (int i = 0; i < 45; i++) image(i % 8 == 0);
     g.render(t + 0.001);
     r.capturePng(out + "/nitro-lignes.png");
     WFS_LOG("capture nitro-lignes : nitro %s, réserve %.2f, %.0f km/h", g.player().nitroOn ? "active" : "inactive", g.player().nitro, g.player().kmh());
-    g.onTouch({7, W * 0.90f, H * 0.32f, false});
+    g.onTouch({7, xn, yn, false});
     g.shutdown();
     // WFS-224 (RG-02, RG-04) : aspect des volutes en vrai dérapage (fumée forcée 1,2 s, la Golf roule au pilote automatique
     // vers 90 km/h, vue Proche, juste derrière la voiture) de jour et de nuit : fumee-derapage-<moment>.png
