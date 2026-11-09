@@ -3326,3 +3326,9 @@ Ordre de l'utilisateur, juste après ANO-232 : « C'est urgent pour corriger ».
 ### 2026-11-09 23:28:50 — WFS-349 : PR #316 fusionnée après synchronisation (lead-dev auto)
 
 Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des conflits `journal.md`. Synchronisation a3ea5e31 : branche à jour avec main, code identique au commit approuvé 2ae74f81 (vérifié ligne à ligne). Squash 581427c, statut 🟡 À valider (utilisateur). Plus aucune PR ouverte.
+
+### 2026-11-09 23:32:06 — Fin WFS-349 : PR #316 fusionnée, session terminée (Claude, agent dev Y (01UY1Vv1Yvim))
+- PR #316 fusionnée en squash par le lead dev automatique (581427c) ; ticket 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md` (elle manquait après la fusion).
+- Livré : vue Cockpit, portières pleines de 12 cm (appui de vitre à la ceinture), plancher, tablier ; banc `cockpit-voisine` (0 pixel interdit, 20 voitures, 1280 × 720 et 2340 × 1080 ; avant : 8 559 à 10 436) ; test `test_cockpit_ferme` ; 93 tests CPU réussis à la dernière synchronisation contrôlée.
+- Signalé hors de ma zone : le même risque de teinte par une capture d'environnement en cours existe dans la part cachée de WFS-235 (`camera_vue.cpp`, banc `cockpit`).
+- Session terminée (un seul sujet par session) : ligne de `track-agent.md` en ⏹️ ; aucun autre ticket demandé.
