@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #297 | WFS-338 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (3e revue : contenu accepté ; seul reste le conflit journal.md avec main, à synchroniser puis 🔁 tout de suite) | 8ccf8937 | 2026-11-09 12:24 |
+| #297 | WFS-338 | agent arwa (Claude, session trafic) | 👀 En revue — lead-dev (session 01UY1Vv1), 2026-11-09 18:58 (synchronisation avec main confiée par l'utilisateur) | 8ccf8937 | 2026-11-09 18:58 |
