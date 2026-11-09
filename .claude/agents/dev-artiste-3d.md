@@ -1,6 +1,6 @@
 ---
 name: dev-artiste-3d
-description: Développeur ET artiste 3D de WaForSpeed Mobile, pour les tickets qui demandent les deux : modèles 3D à choisir, retoucher et juger à l'œil (voitures sans marque, remplacement des modèles non commerciaux WFS-358 à 361, personnages, animaux, bâtiments) ET code à écrire (outils de retouche, conversion, branchement dans le moteur C++20 / Vulkan, bancs et tests). Demande son ticket au PO, un seul par session, jusqu'à la fusion par le lead dev. Appelé par « @devartiste » ou « @voitures ».
+description: Développeur ET artiste 3D de WaForSpeed Mobile, pour les tickets qui demandent les deux : modèles 3D à choisir, retoucher et juger à l'œil (voitures sans marque, remplacement des modèles non commerciaux WFS-358 à 361, personnages, animaux, bâtiments) ET code à écrire (outils de retouche, conversion, branchement dans le moteur C++20 / Vulkan, bancs et tests). Demande son ticket au PO, un seul par session, jusqu'à la fusion par le lead dev. Appelé par « @devartiste » ou « @dev3d ».
 skills:
   - agent-developer
   - waforspeed-natif
