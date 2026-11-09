@@ -24,6 +24,7 @@
 #include "../render/vk.h"
 #include "../world/cartes_v2/paquet_carte.h"   // WFS-301 : paquet de la carte ou secours, 2e source de readAsset
 #include "../ui/ecrans/cgu.h"   // WFS-308 : conditions d'utilisation au premier lancement
+#include "../ui/ecrans/cgu_appui.h"   // WFS-355 : destination des appuis rejoués
 #include "../ui/ecrans/chargement.h"
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "paquets_android.cpp"   // WFS-306 : pont JNI vers Paquets.java (liste cartes.json, téléchargement)
@@ -293,7 +294,7 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
     if ((ecrans::chargement().enErreur() || ((ecrans::cgu().premierLancement() || ecrans::paquets().tientLaFenetre()) && !app.ready)) && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-146 (RG-10) : bouton de l'écran d'erreur ; WFS-308 : CGU ; WFS-306 : paquets
         const int32_t k = AMotionEvent_getAction(e) & AMOTION_EVENT_ACTION_MASK;
         if (ecrans::paquets().tientLaFenetre() && !app.ready) return ecrans::paquets().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;   // WFS-306
-        if (ecrans::cgu().premierLancement() && !app.ready) return ecrans::cgu().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
+        if (ecrans::cgu().premierLancement() && !app.ready) return ecrans::cgu().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL, k == AMOTION_EVENT_ACTION_DOWN) ? 1 : 0;   // WFS-355 : 1er doigt
         return ecrans::chargement().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
     }
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
@@ -320,9 +321,14 @@ static void rejouerEntrees(App& app) {
     std::vector<veilleur::Evenement> evs;
     { std::lock_guard<std::mutex> l(veilleur::g_tamponVerrou); evs.swap(veilleur::g_tampon); }
     for (const auto& ev : evs) {
-        if (ev.retour) { if (app.ready) retourSysteme(app.game, ev.down, ev.repetition); }   // « laissé à Android » : sans effet
-        else if (ecrans::chargement().enErreur()) ecrans::chargement().toucher(ev.id, ev.x, ev.y, ev.down);
-        else if (app.ready) app.game.onTouch({ev.id, ev.x, ev.y, ev.down});
+        if (ev.retour) { if (app.ready) retourSysteme(app.game, ev.down, ev.repetition); continue; }   // « laissé à Android » : sans effet
+        switch (ecrans::cgu_appui::destination(ecrans::chargement().enErreur(), ecrans::paquets().tientLaFenetre(), ecrans::cgu().premierLancement(), app.ready)) {   // WFS-355 : même ordre qu'onInput (CGU et paquets compris)
+            case ecrans::cgu_appui::Destination::Paquets: ecrans::paquets().toucher(ev.id, ev.x, ev.y, ev.down); break;
+            case ecrans::cgu_appui::Destination::Cgu: ecrans::cgu().toucher(ev.id, ev.x, ev.y, ev.down); break;
+            case ecrans::cgu_appui::Destination::Erreur: ecrans::chargement().toucher(ev.id, ev.x, ev.y, ev.down); break;
+            case ecrans::cgu_appui::Destination::Jeu: app.game.onTouch({ev.id, ev.x, ev.y, ev.down}); break;
+            default: break;
+        }
     }
 }
 
@@ -353,9 +359,9 @@ void android_main(android_app* a) {
     while (!a->destroyRequested) {
         int events; android_poll_source* src;
         rejouerEntrees(app);   // WFS-284 : avant les événements suivants (ordre gardé)
-        // en pause : on attend les événements sans consommer de batterie
+        // en pause : on attend les événements sans consommer de batterie. WFS-355 : CGU acceptées ou paquets finis (« Plus tard », « Continuer ») pas encore traités = sans attente
         veilleur::g_enAttente = true;
-        while (ALooper_pollOnce((app.ready && app.focused && app.fenetre) || ecrans::cgu().premierLancement() || ecrans::paquets().tientLaFenetre() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
+        while (ALooper_pollOnce(ecrans::cgu_appui::boucleSansAttente(app.ready && app.focused && app.fenetre, ecrans::cgu().tientLaFenetre(), ecrans::paquets().tientLaFenetre() || (!app.ready && ecrans::paquets().etat() == ecrans::EtapePaquets::Etat::Fini)) ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
             veilleur::g_enAttente = false;
             if (src && src->id == LOOPER_ID_INPUT) { std::lock_guard<std::mutex> l(veilleur::g_file); src->process(a, src); veilleur::g_dernierLu = nowSeconds(); }
             else if (src) src->process(a, src);   // commandes (chargement compris : le veilleur lit la file pendant ce temps)
