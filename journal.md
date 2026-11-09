@@ -2618,3 +2618,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - Branche construite et testée par le lead dev : 87 tests CPU verts. Pluie : 0,007 à 0,035 ms par image.
 - Statut : 🟡 À valider (utilisateur). Ligne ajoutée dans qa/Check.md, ligne retirée de suivi-pr.md.
 - Pour le PO : gouttes de vitre dessinées par-dessus le rétroviseur intérieur (déjà sur main, hors ticket).
+
+### 2026-11-09 13:20:30 — Règle : un sujet par agent développeur (po-scrum-master)
+- Décision de l'utilisateur : chaque session de développeur mène un seul ticket jusqu'à la fusion, puis s'arrête. Le ticket suivant va à une nouvelle session. Écrit en tête de `CLAUDE.md` et dans `.claude/agents/po-scrum-master.md`.
