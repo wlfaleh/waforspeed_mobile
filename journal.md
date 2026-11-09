@@ -2576,3 +2576,20 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
   - « Accepter » change de teinte sous le doigt ;
   - chaque appui et chaque image lente (> 0,5 s) sont notés au journal.
 - Tests : `test_cgu_appui` (nouveau) et banc `cgu` (appuis injectés, installation neuve, 0 écart). Branche `feature/waforspeed-355`.
+
+### 2026-11-09 12:35:09 — WFS-193 : pilotes X5, Compass, 208 (calandres de marque remplacées), outil et paquets npm (Claude, agent 1)
+- **Méthode (A)**, accordée par le PO :
+  - nouvel outil `tools/retoucher_formes.mjs`, avec ses données `tools/formes.json` ;
+  - retouches directes des `.wfm`, rejouables et contrôlées par empreinte ;
+  - calandre de marque retirée (triangles vidés), puis grille générique ajoutée (matériau à la fin) ;
+  - `.lod` régénéré.
+  - 1er essai par simple mise à l'échelle des haricots de la X5 écarté : forme reconnaissable, barres déformées.
+- **Retouches** :
+  - X5 : haricots retirés (2 289 + 222 triangles), grille à 6 barres ;
+  - Compass : calandre à 7 fentes retirée (705 + 15 621), grille à 3 barres ;
+  - 208 : treillis en losanges retiré (251), grille à 5 barres.
+- **Contrôles** : `test_fidelite_voitures` OK (dimensions ±1 %) ; 87 tests CPU verts ; `effacer_logos.mjs` accepte les matériaux ajoutés à la fin (accroche E10).
+- **Téléchargements** (règle réseau, registre npm, pour régénérer le `.lod` avec `tools/alleger_voiture.mjs` ; versions exactes, `--no-save`, `tools/node_modules` non commité) :
+  - `meshoptimizer@0.22.0`, MIT, https://registry.npmjs.org/meshoptimizer, intégrité sha512-IebiK79sqIy+E4EgOr+CAw+Ke8hAspXKzBd0JdgEmPHiAwmvEj2S4h1rfvo+o/BnfEYd/jAOg5IeeIjzlzSnDg== ;
+  - `sharp@0.33.5`, Apache-2.0, https://registry.npmjs.org/sharp, intégrité sha512-haPVm1EkS9pgvHrQ/F3Xy+hgcuMV0Wm9vfIBSiwZ05k+xgb0PkBQpGsAA/oWdDobNaZTH5ppvHtzCFbnSEwHVw==.
+- **Banc** : `WFS_VITRINE_NUIT=1` (vitrines de nuit) ajouté à `feux_modele.cpp`.
