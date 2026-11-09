@@ -22,3 +22,11 @@ Branche `feature/waforspeed-215` comparée à `origin/main` ; bancs : vitrines c
 | `vitrine-model3-feux` | ![avant](avant-vitrine-model3-feux.jpg) | ![après](apres-vitrine-model3-feux.jpg) |
 | `vitrine-rrsport-0` | ![avant](avant-vitrine-rrsport-0.jpg) | ![après](apres-vitrine-rrsport-0.jpg) |
 | `vitrine-rrsport-feux` | ![avant](avant-vitrine-rrsport-feux.jpg) | ![après](apres-vitrine-rrsport-feux.jpg) |
+
+### Nuit du RR Sport, sans éblouissement (revue du lead dev, point 2)
+Même banc `conducteurs`, départ avancé de 300 segments (`WFS_DEPART=300 WFS_BANC=conducteurs`) : la voiture n'est plus face à la lumière du départ. Même binaire, modèles de `main` (avant) et de la branche (après).
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `conducteurs-rrsport-nuit` (départ 300) | ![avant](avant-conducteurs-rrsport-nuit-depart300.jpg) | ![après](apres-conducteurs-rrsport-nuit-depart300.jpg) |
+| zoom sur le pare-brise | ![avant](avant-conducteurs-rrsport-nuit-depart300-zoom.jpg) | ![après](apres-conducteurs-rrsport-nuit-depart300-zoom.jpg) |
