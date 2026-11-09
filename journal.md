@@ -3376,3 +3376,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Vérifié** : `tests_cpu.sh` 91/91 ; `test_fidelite_voitures` strict vert (C7 8 / 8 conformes, Brezza 6 / 6 sourcées) ; `verifier_licences.py` 0 manque ; `effacer_logos.mjs --verifier` : 20 voitures « déjà faites » ; 20 paires de captures avant / après (jour et nuit) regardées, `qa/pr/WFS-359/`.
 - **Limites** : performances de la Brezza → WFS-394 (option A du PO) ; vue Cockpit : habitacle dessiné de `vehicule_cockpit_defs.cpp` encore celui de la Mustang S550 et du T-Cross (hors zone, tâche séparée demandée au PO) ; voies de la Brezza « à sourcer » ; hauteurs des feux du trafic lointain (`traffic.h`) inchangées.
 
+### 2026-11-09 23:46:04 — WFS-374 : PR #321 ouverte, ANO-233 corrigée, banc depart-campagne (Claude, agent dev Z (01UY1Vv3EZ))
+- Symptôme du PO (vidéos v0.1.969) : Campagne « bloquée » non confirmée (QA, PO). Bancs refaits avec de vrais appuis sur GAZ (Corniche → Campagne, course relancée, 6 moments) : la XR5 roule (58 km/h 3 s après le GO). Aucun commit fautif trouvé.
+- ANO-233 : cause `commandeSous()` (coin haut droit = nitro hérité de l'ancien bouton) → au-dessus de la zone du nitro, rien. Accroches : `desktop_main.cpp` (2 lignes, banc `depart-campagne`), `bench_effets.cpp` (appui nitro au centre du vrai bouton).
+- Vérifié : 94 tests CPU verts ; banc `depart-campagne` main 6 écarts → branche 0 ; `nitro-lignes` nitro actif. Captures `qa/pr/WFS-374/`. Lead dev appelé.
+

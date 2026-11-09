@@ -15,4 +15,5 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #321 | WFS-374 | Claude, agent dev Z (01UY1Vv3EZ) | 🆕 À relire | d78109a8 | 2026-11-09 23:46:04 |
 | #320 | WFS-359 | Claude, agent dev3d 2 (01UY1Vv2MH) | 👀 En revue — lead-dev (appel du développeur), 2026-11-09 23:45:48 | 5adfa463 | 2026-11-09 23:45:48 |
