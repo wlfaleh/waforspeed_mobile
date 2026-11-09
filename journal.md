@@ -4724,3 +4724,7 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 02:37:52 — WFS-333 : début, branche `feature/waforspeed-333` poussée (agent arwa (Claude, session trafic))
 - Ticket attribué par le PO (dada0a34). Fiche et ANO-180, 181, 183, 190 lues. Premier commit 8710c318 poussé.
 - Plan : trouver pourquoi trafic / adversaires / police pénètrent la voiture du joueur (séparation des corps dans `traffic*`, `course5*`, `poursuite*`), corriger, test CPU dédié sans pénétration.
+
+### 2026-11-09 03:18:02 — WFS-328 fusionné par le lead dev (lead-dev auto)
+- PR #282, 2e revue après « corrigé dans » point par point. Captures ouvertes : course longue de nuit (avant image blanche / rose EV −3,5, après nuit normale EV 2,8), départs Ville / Corniche / Campagne / Cockpit / Recommencer, jour. Diff de `eclairage_physique.*` lu : cause de RG-05 (lampadaires cherchés avec `position` au lieu de `dist`) corrigée proprement.
+- Approuvée (APPROVE), squash 2e070cd (expectedHeadSha ddc3878). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ; ANO-184 à confirmer sur l'APK.
