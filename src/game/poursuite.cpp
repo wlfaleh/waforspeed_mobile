@@ -114,7 +114,7 @@ Police renfort(int indice, double sJ, double vJ, uint32_t graine) {
     p.x = p.cibleX = FILES[(int)(R.next() * 3) % 3];
     p.rd = sJ - (APPARITION_M + indice * 9) / M;   // WFS-338 (RG-05) : hors de la vue (avant : 90 m, dans le rétroviseur)
     p.v = vJ;
-    p.peinture = 0xf2f4f8;   // WFS-338 (RG-07) : sérigraphie de la police nationale : caisse blanche (avant : une sur deux bleu marine)
+    p.peinture = 0xe6e8ea;   // WFS-338 (RG-07) : police nationale : caisse blanche unie (albédo ≈ 0,8), avant : une sur deux bleu marine
     return p;
 }
 

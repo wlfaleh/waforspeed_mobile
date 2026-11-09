@@ -198,7 +198,13 @@ public:
     void update(double, const GameView& g) override {
         if (actif_ && policeCar_ != policeCar(g.player) && modele_.ok) { r_->vk().waitIdle(); r_->destroy(modele_); modele_ = Model{}; modeleEssaye_ = false; }
         if (actif_) policeCar_ = policeCar(g.player);
-        if (r_ && actif_ && !modele_.ok && !modeleEssaye_) { modeleEssaye_ = true; loadCarModel(*r_, std::string(carById(policeCar_).file), modele_); WFS_LOG("poursuite : police %s, %zu pièces", policeCar_, modele_.parts.size()); }
+        if (r_ && actif_ && !modele_.ok && !modeleEssaye_) { modeleEssaye_ = true; loadCarModel(*r_, std::string(carById(policeCar_).file), modele_); WFS_LOG("poursuite : police %s, %zu pièces", policeCar_, modele_.parts.size());
+            // WFS-338 (RG-07) : caisse de la police en peinture blanche unie, non métallisée (mat.peinture_voiture : métal 0,
+            // F0 0,04, vernis par-dessus) : le modèle a une peinture métallisée qui reflète le ciel et paraît grise. Seule la
+            // copie de la police change (modele_), pas le modèle du trafic ni celui du joueur
+            metalModele_.clear();
+            for (Material& mt : modele_.mats) { metalModele_.push_back(mt.metal); if (mt.flags & MAT_PAINT) { WFS_LOG("poursuite : peinture de la police : métal %.2f → 0, rugosité %.2f", mt.metal, mt.rough); mt.metal = 0; } }
+        }
         // WFS-119 : camion en travers (x5, rrsport si le joueur roule en x5)
         const char* cam = camionCar(g.player && g.player->car ? g.player->car->id : nullptr);
         if (actif_ && cam != camionCar_ && camionModele_.ok) { r_->vk().waitIdle(); r_->destroy(camionModele_); camionModele_ = Model{}; camionEssaye_ = false; }
@@ -339,7 +345,7 @@ public:
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
             if (!modele_.ok || i >= 16) continue;
-            peintures_[i] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[i]);
+            peintures_[i] = lin(blancOrigine_ ? 0xf2f4f8u : p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[i]);
             if (std::abs(rel) <= 80 && !g_bancSans338) conducteurs::ajouter(modele_, m, policeCar_, 0x50000000u + (uint32_t)i, true);   // WFS-338 (RG-06) : policier au volant
             // repère du modèle (m) : sol bmin.y, centre (cx, cz), avant vers −z ; pavillon mesuré au-dessus de la place du
             // conducteur (Model::siege, WFS-73), sinon le haut du modèle
@@ -477,6 +483,11 @@ public:
     void bancPoser(const Player& pl, double dzM, double x) {
         for (Police& p : police_) if (!p.fixe) { p.rd = p.rdPrec = pl.dist + dzM / M; p.x = p.xPrec = p.cibleX = x; p.v = 0; return; }
     }
+    // banc (WFS-338, RG-07) : peinture métallisée d'origine du modèle (true) ou peinture unie de la police (false), pour l'avant / après
+    void bancPeintureOrigine(bool origine) {
+        for (size_t k = 0; k < modele_.mats.size() && k < metalModele_.size(); k++) if (modele_.mats[k].flags & MAT_PAINT) modele_.mats[k].metal = origine ? metalModele_[k] : 0.f;
+        blancOrigine_ = origine;
+    }
     double bancProche(const Player& pl) const { return plusProcheM(police_, pl.dist, pl.playerX); }
     double bancDerniere(const Player& pl) const { for (size_t i = police_.size(); i-- > 0;) if (!police_[i].fixe) return (pl.dist - police_[i].rd) * M; return 1e9; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
     float orbitAvant_ = 0;
@@ -574,7 +585,7 @@ private:
             reserves_.clear();
             switch (e.type) {
                 case Surprise::Barrage:   // deux voitures de police en travers de deux files ; la file e.file reste libre
-                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; p.rd = s; p.x = p.cibleX = FILES[f]; p.peinture = 0xf2f4f8; police_.push_back(p); }
+                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; p.rd = s; p.x = p.cibleX = FILES[f]; p.peinture = 0xe6e8ea; police_.push_back(p); }
                     break;
                 case Surprise::Deboite: {   // une voiture d'une file voisine se rabat devant le joueur
                     if (!tr) break;
@@ -699,7 +710,7 @@ private:
     }
 
     Renderer* r_ = nullptr;
-    Model modele_; bool modeleEssaye_ = false; const char* policeCar_ = "p208";
+    Model modele_; std::vector<float> metalModele_; bool blancOrigine_ = false; bool modeleEssaye_ = false; const char* policeCar_ = "p208";
     Mesh cube_; Material matRouge_, matBleu_, matPlot_, matBlanc_, matBleuCaisse_, matVitre_, matJaune_, matNoir_;
     vec3 haloRouge_{}, haloBleu_{};   // WFS-141 : couleurs HDR des halos des gyrophares
     Model camionModele_; bool camionEssaye_ = false; const char* camionCar_ = "x5"; vec3 peintureCamion_{};   // WFS-119
@@ -963,26 +974,35 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
         }
         WFS_LOG("poursuite (RG-04) : écart maximal en qualité Basse : %+d appels de dessin (cible ≤ 60) : %s", pire, pire <= 60 ? "OK" : "ÉCHEC");
     }
-    // WFS-338 (revue du lead dev) : de jour : policier au volant (gros plan, RG-06), chantier et son bandeau (RG-01)
-    {
-        setenv("WFS_MOMENT", "jour", 1);
+    // WFS-338 (revue du lead dev) : de jour puis de nuit : policier au volant et caisse blanche (gros plan, RG-06, RG-07, avec
+    // l'avant du correctif de la peinture dans la même image), chantier et son bandeau (RG-01)
+    for (const char* moment : {"jour", "nuit"}) {
+        setenv("WFS_MOMENT", moment, 1);
         modeCourse() = ModeCourse::Poursuite;
+        const bool jour = !std::strcmp(moment, "jour");
         if (g.init(r, "golf", "ville")) {
             g.allerA(Ecran::Course); g.setAutopilot(false); images(60, 10);   // décompte : la police attend derrière
             if (PoursuiteSystem* s = PoursuiteSystem::actif) {
                 s->bancPoser(g.player(), -3.5, std::clamp(g.player().playerX - COTE_X, -BORD_X, BORD_X)); images(2, 1);
-                g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ - 0.45f;
-                capture("poursuite-policier-jour");
-                g.orbit = s->orbitAvant_ + 0.45f; g.render(t += 0.02);
-                capture("poursuite-policier-jour-2");
+                char nom[64];
+                g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.45f;
+                for (int avant = 1; avant >= 0; avant--) {   // même image : peinture métallisée d'origine, puis blanc uni
+                    s->bancPeintureOrigine(avant == 1);
+                    std::snprintf(nom, sizeof nom, "poursuite-police-gros-plan-%s%s", moment, avant ? "-avant" : "");
+                    capture(nom);
+                }
+                s->bancPeintureOrigine(false);
+                if (jour) { g.orbit = s->orbitAvant_ - 0.45f; g.render(t += 0.02); capture("poursuite-policier-jour"); }
             }
-            g.camMode = 0; g.setAutopilot(true);
-            for (int i = 0; i < 6 * 60; i++) { const Course* c = activeCourse(); if (c && c->state == RaceState::Play) break; g.update(1.0 / 60); }
-            g_bancSautKm = BANC_TRAVAUX_KM - 0.16; images(20, 4);
-            jusqua(BANC_TRAVAUX_KM - 0.03, 30 * 60);   // bandeau tenu, panneau AK5 tout près, cônes devant
-            capture("poursuite-travaux-jour");
-            jusqua(BANC_TRAVAUX_KM + 0.005, 30 * 60);   // au biseau : cônes de près
-            capture("poursuite-travaux-jour-proche");
+            if (jour) {
+                g.camMode = 0; g.setAutopilot(true);
+                for (int i = 0; i < 6 * 60; i++) { const Course* c = activeCourse(); if (c && c->state == RaceState::Play) break; g.update(1.0 / 60); }
+                g_bancSautKm = BANC_TRAVAUX_KM - 0.16; images(20, 4);
+                jusqua(BANC_TRAVAUX_KM - 0.03, 30 * 60);   // bandeau tenu, panneau AK5 tout près, cônes devant
+                capture("poursuite-travaux-jour");
+                jusqua(BANC_TRAVAUX_KM + 0.005, 30 * 60);   // au biseau : cônes de près
+                capture("poursuite-travaux-jour-proche");
+            }
             g.setAutopilot(false); g.allerA(Ecran::Menu); images(4, 2);
         }
         unsetenv("WFS_MOMENT");
