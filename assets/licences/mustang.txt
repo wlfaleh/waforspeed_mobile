@@ -1,14 +1,14 @@
 Model Information:
-* title:	2020 Ford Mustang Shelby GT500
-* source:	https://sketchfab.com/3d-models/2020-ford-mustang-shelby-gt500-5e864cfc33294b34b7a43c96646bc9f4
-* author:	Ddiaz Design (https://sketchfab.com/ddiaz-design)
+* title:	Chevrolet Corvette (C7)
+* source:	https://sketchfab.com/3d-models/chevrolet-corvette-c7-2b509d1bce104224b147c81757f6f43a
+* author:	Martin Trafas (https://sketchfab.com/Bexxie)
 
 Model License:
-* license type:	CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
-* requirements:	Author must be credited. No commercial use. Modified versions must have the same license.
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
 
 If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
-This work is based on "2020 Ford Mustang Shelby GT500" (https://sketchfab.com/3d-models/2020-ford-mustang-shelby-gt500-5e864cfc33294b34b7a43c96646bc9f4) by Ddiaz Design (https://sketchfab.com/ddiaz-design) licensed under CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
+This work is based on "Chevrolet Corvette (C7)" (https://sketchfab.com/3d-models/chevrolet-corvette-c7-2b509d1bce104224b147c81757f6f43a) by Martin Trafas (https://sketchfab.com/Bexxie) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 
-Modifications for WaForSpeed: geometry simplified where needed (meshoptimizer, at most about 120 000 triangles), textures converted to WebP 1024 px, glass transmission replaced by simple transparency, everything embedded in a single glTF JSON file. The body colour is changed in game. Modèle modifié pour WaForSpeed (WFS-192) : logos et noms de marque effacés ou retirés (tools/effacer_logos.mjs, tools/logos.json).
-This modified version is shared under the same license.
+Found in the public GitHub repository JoseJ55/car-showcase-v2, folder public/models/corvette_c7 (license.txt above copied from that folder ; scene.gltf SHA-256 5ca3bb70c9f6bd9be97f1f1ffa1268359c47641dc480ab1d7f0c27c8dc9a19b0, scene.bin SHA-256 a6bf80fb6f6da4bf50f78e234088bc2f1b6d68a2cd7f099aea7e2dd14436bec2).
+Modifications for WaForSpeed (WFS-359, 2026-11-09): geometry simplified (1,070,389 → about 98,000 triangles, tools/simplifier_voiture.mjs), converted to the game's .wfm format (tools/convert_car.mjs: textures resized to 1024 px, solid metallic paint), brand emblems removed (wheel centre caps and body), wheels resized to the real tyre sizes and rear track set to the real value (tools/corriger_voitures.cpp), European plate added (tools/plaques_voitures.mjs), levels of detail generated (tools/alleger_voiture.mjs). Shown in the game under an invented name, without any brand logo. The car uses the id « mustang » in the game files (its place in the garage).

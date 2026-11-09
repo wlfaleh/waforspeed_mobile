@@ -45,11 +45,11 @@
    "note": "le modèle du jeu est une « Abarth 500 » : données de l'Abarth 595 (même carrosserie, à confirmer) ; pneus selon version (205/40 R17 en Competizione) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
   },
   "FICHE-TCROSS": {
-   "titre": "Volkswagen T-Cross version chinoise à empattement long (SAIC-VW, 2019-2026), celle du modèle 3D (WFS-158, note du PO du 2026-11-07) : autocango.com (fiche 2023 1.4T), auto.ru (« T-Cross I (China Market) ») ; pneus : version européenne",
-   "lien": "https://www.autocango.com/carspecs-detail/Volkswagen-T-Cross-EL97A",
+   "titre": "Suzuki Vitara Brezza (Maruti Suzuki Brezza, 2022), voiture du modèle 3D depuis WFS-359 (id « tcross » gardé) : autocarindia.com, cardekho.com, cartrade.com",
+   "lien": "https://www.autocarindia.com/car-news/2022-maruti-suzuki-brezza-dimensions-variant-details-revealed-424939",
    "acces": "non_ouvert",
    "annee": "2026 (consultation)",
-   "note": "4218 × 1760 × 1599 mm, empattement 2651, voies 1533 / 1512 (autocango.com et https://auto.ru/catalog/cars/volkswagen/t_cross/specifications/ concordants) ; la version européenne (4108 × 1760 × 1584, empattement 2551) n'est pas celle du modèle (plaques « T-Cross » et « 途铠 » chinoises, empattement mesuré 2,58 m à l'échelle européenne) ; pages non ouvertes (réseau de la session) : valeurs lues dans le résumé du moteur de recherche, 2026-11-07"
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-09 ; 3995 × 1790 × 1685 mm (hauteur avec les barres de toit, gardées sur le modèle : décision du PO du 2026-11-09), empattement 2500 ; voies non publiées (aucune source trouvée) ; pneus 215/60 R16"
   },
   "FICHE-COMPASS": {
    "titre": "Jeep Compass II (MP, restylée 2021) : autotijd.be, vehiclesizes.com, auto-data.net",
@@ -129,11 +129,11 @@
    "note": "largeur rétroviseurs rabattus ; voie arrière et pneus (selon version) non trouvés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
   },
   "FICHE-MUSTANG": {
-   "titre": "Ford Mustang Shelby GT500 (2020) : encycarpedia.com, carsales.com.au ; pneus : tirewheelguide.com",
-   "lien": "https://www.encycarpedia.com/ford/20-mustang-shelby-gt500-coupe",
+   "titre": "Chevrolet Corvette Stingray coupé C7 (2014-2015, pack Z51), voiture du modèle 3D depuis WFS-359 (id « mustang » gardé) : corvsport.com, fiche des dimensions GM 2015 (corvetteactioncenter.com), cars-data.com ; pneus : iseecars.com, michelin.ca",
+   "lien": "https://www.corvetteactioncenter.com/specs/c7-corvette/2015-c7-corvette/2015-corvette-specifications-dimensions.pdf",
    "acces": "non_ouvert",
    "annee": "2026 (consultation)",
-   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-09 ; longueur 4493 (176,9 in) à 4495, largeur 1877 sans rétroviseurs, hauteur 1235 à 1240 (fiche GM 2015 : 1240), empattement 2710, voies 1600 / 1567 (GM 2015) ; pneus Z51 245/35 ZR19 et 285/30 ZR20 (sans Z51 : 245/40 ZR18 et 285/35 ZR19)"
   },
   "FICHE-SF90": {
    "titre": "Ferrari SF90 XX Stradale : ferrari.com (article du record de Fiorano)",
@@ -848,8 +848,8 @@
    }
   },
   {
-   "valeur": 4218,
    "id": "voiture.tcross.longueur",
+   "valeur": 3995,
    "domaine": "voitures",
    "grandeur": "longueur hors tout",
    "unite": "mm",
@@ -862,8 +862,8 @@
    }
   },
   {
-   "valeur": 1760,
    "id": "voiture.tcross.largeur",
+   "valeur": 1790,
    "domaine": "voitures",
    "grandeur": "largeur sans rétroviseurs",
    "unite": "mm",
@@ -876,8 +876,8 @@
    }
   },
   {
-   "valeur": 1599,
    "id": "voiture.tcross.hauteur",
+   "valeur": 1685,
    "domaine": "voitures",
    "grandeur": "hauteur",
    "unite": "mm",
@@ -890,8 +890,8 @@
    }
   },
   {
-   "valeur": 2651,
    "id": "voiture.tcross.empattement",
+   "valeur": 2500,
    "domaine": "voitures",
    "grandeur": "empattement",
    "unite": "mm",
@@ -904,13 +904,13 @@
    }
   },
   {
-   "valeur": 1533,
    "id": "voiture.tcross.voie_av",
+   "valeur": null,
    "domaine": "voitures",
    "grandeur": "voie avant",
    "unite": "mm",
    "source": "FICHE-TCROSS",
-   "statut": "a_confirmer",
+   "statut": "a_sourcer",
    "tolerance": {
     "type": "relative",
     "valeur": 0.01,
@@ -918,13 +918,13 @@
    }
   },
   {
-   "valeur": 1512,
    "id": "voiture.tcross.voie_ar",
+   "valeur": null,
    "domaine": "voitures",
    "grandeur": "voie arrière",
    "unite": "mm",
    "source": "FICHE-TCROSS",
-   "statut": "a_confirmer",
+   "statut": "a_sourcer",
    "tolerance": {
     "type": "relative",
     "valeur": 0.01,
@@ -934,10 +934,9 @@
   {
    "id": "voiture.tcross.roue_av",
    "domaine": "voitures",
-   "grandeur": "diamètre extérieur du pneu (avant), 205/60 R16",
+   "grandeur": "diamètre extérieur du pneu (avant), 215/60 R16",
    "unite": "mm",
-   "valeur": 652.4,
-   "pneu": "205/60 R16",
+   "pneu": "215/60 R16",
    "source": "FICHE-TCROSS",
    "statut": "a_confirmer",
    "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
@@ -945,15 +944,15 @@
     "type": "relative",
     "valeur": 0.01,
     "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
-   }
+   },
+   "valeur": 664.4
   },
   {
    "id": "voiture.tcross.roue_ar",
    "domaine": "voitures",
-   "grandeur": "diamètre extérieur du pneu (arrière), 205/60 R16",
+   "grandeur": "diamètre extérieur du pneu (arrière), 215/60 R16",
    "unite": "mm",
-   "valeur": 652.4,
-   "pneu": "205/60 R16",
+   "pneu": "215/60 R16",
    "source": "FICHE-TCROSS",
    "statut": "a_confirmer",
    "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
@@ -961,7 +960,8 @@
     "type": "relative",
     "valeur": 0.01,
     "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
-   }
+   },
+   "valeur": 664.4
   },
   {
    "min": 4394,
@@ -2257,9 +2257,9 @@
    }
   },
   {
-   "min": 4813,
-   "max": 4831,
    "id": "voiture.mustang.longueur",
+   "min": 4493,
+   "max": 4495,
    "domaine": "voitures",
    "grandeur": "longueur hors tout",
    "unite": "mm",
@@ -2272,8 +2272,8 @@
    }
   },
   {
-   "valeur": 1946,
    "id": "voiture.mustang.largeur",
+   "valeur": 1877,
    "domaine": "voitures",
    "grandeur": "largeur sans rétroviseurs",
    "unite": "mm",
@@ -2286,8 +2286,9 @@
    }
   },
   {
-   "valeur": 1379,
    "id": "voiture.mustang.hauteur",
+   "min": 1235,
+   "max": 1240,
    "domaine": "voitures",
    "grandeur": "hauteur",
    "unite": "mm",
@@ -2300,9 +2301,8 @@
    }
   },
   {
-   "min": 2718,
-   "max": 2720,
    "id": "voiture.mustang.empattement",
+   "valeur": 2710,
    "domaine": "voitures",
    "grandeur": "empattement",
    "unite": "mm",
@@ -2315,8 +2315,8 @@
    }
   },
   {
-   "valeur": 1618,
    "id": "voiture.mustang.voie_av",
+   "valeur": 1600,
    "domaine": "voitures",
    "grandeur": "voie avant",
    "unite": "mm",
@@ -2329,8 +2329,8 @@
    }
   },
   {
-   "valeur": 1633,
    "id": "voiture.mustang.voie_ar",
+   "valeur": 1567,
    "domaine": "voitures",
    "grandeur": "voie arrière",
    "unite": "mm",
@@ -2345,10 +2345,9 @@
   {
    "id": "voiture.mustang.roue_av",
    "domaine": "voitures",
-   "grandeur": "diamètre extérieur du pneu (avant), 305/30 R20",
+   "grandeur": "diamètre extérieur du pneu (avant), 245/35 ZR19",
    "unite": "mm",
-   "valeur": 691.0,
-   "pneu": "305/30 R20",
+   "pneu": "245/35 ZR19",
    "source": "FICHE-MUSTANG",
    "statut": "a_confirmer",
    "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
@@ -2356,15 +2355,15 @@
     "type": "relative",
     "valeur": 0.01,
     "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
-   }
+   },
+   "valeur": 654.1
   },
   {
    "id": "voiture.mustang.roue_ar",
    "domaine": "voitures",
-   "grandeur": "diamètre extérieur du pneu (arrière), 315/30 R20",
+   "grandeur": "diamètre extérieur du pneu (arrière), 285/30 ZR20",
    "unite": "mm",
-   "valeur": 697.0,
-   "pneu": "315/30 R20",
+   "pneu": "285/30 ZR20",
    "source": "FICHE-MUSTANG",
    "statut": "a_confirmer",
    "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
@@ -2372,7 +2371,8 @@
     "type": "relative",
     "valeur": 0.01,
     "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
-   }
+   },
+   "valeur": 679.0
   },
   {
    "valeur": 4850,

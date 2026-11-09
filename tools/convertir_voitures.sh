@@ -12,7 +12,7 @@ ICI="$(cd "$(dirname "$0")" && pwd)"; RACINE="$ICI/.."
 VOITURES=(
   "p208|peugeot-208|4.06|180|^Carro_Pintura$||"
   "abarth|abarth-500|3.66|180|^CAR_Livrea$||"
-  "tcross|vw-t-cross|4.218|180|^carpaint$||"   # WFS-158 : version chinoise à empattement long (celle du modèle)
+  "tcross|suzuki-brezza|3.995|auto|^primary$||^(left|right)_rear_light$"   # WFS-359 : Suzuki Vitara Brezza 2022 (id gardé), voir BREZZA
   "compass|jeep-compass|4.40|180|^00_-_BODY$||"
   "s3|audi-a3|4.47|180|^carpaint$||"
   "x5|bmw-x5|4.92|180|^CARPAINT$||"
@@ -24,7 +24,7 @@ VOITURES=(
   "elantra|hyundai-elantra-n|4.68|180|^HHyundai_ElantraNRewardRecycled_2022Paint_Material1$||"
   "v60|volvo-v60|4.63|0|^body_paint$||^lamp_backglass$"
   "rrsport|range-rover-sport|4.95|180|^2023_Land_Rover_Range_Rover_Sport_Firenze_Red$||"
-  "mustang|ford-mustang|4.82|180|^fFord_MustangShelbyGT500RewardRecycled_2019Paint_Material1$||"
+  "mustang|corvette-c7|4.493|auto|^Car_Paint(_2)?$||^Tail_Lights_Red_Cover(_2)?$"   # WFS-359 : Chevrolet Corvette C7 (id gardé), voir CORVETTE
   "sf90|ferrari-sf90|4.85|180|^PLASTIC_INT_10$||"
 )
 # WFS-158 (RG-A, ANO-79) : plaques neutres de tools/plaques_neutres.mjs à la place des plaques au nom de l'auteur du modèle
@@ -38,17 +38,29 @@ declare -A TEXTURES=( [v60]='plate_tex|couleur=plaques/v60.png|normale=plaques/n
 # modeles-3d-github.md). Il n'est pas dans le jeu web : MODELE3=<dossier>/scene.gltf (clone partiel, hors du dépôt) ; trop
 # lourd (684 000 triangles), il est d'abord allégé par tools/simplifier_voiture.mjs (erreur bornée, peinture 4 fois plus fine).
 # Sa licence (assets/licences/model3.txt) est écrite à la main (dépôt GitHub et modifications), pas recopiée.
-declare -A SOURCE=( [model3]="${MODELE3:-}" )
+declare -A SOURCE=( [model3]="${MODELE3:-}" [mustang]="${CORVETTE:-}" [tcross]="${BREZZA:-}" )
+# WFS-359 (modèles CC BY 4.0 à la place des modèles CC BY-NC-SA de Ddiaz Design, décision du PO du 2026-11-09) ; lus dans des dépôts
+# GitHub publics (clone partiel, hors du dépôt, rien exécuté), SHA-256 au journal du 2026-11-09 :
+#  - mustang : « Chevrolet Corvette (C7) » de Martin Trafas, dépôt JoseJ55/car-showcase-v2, public/models/corvette_c7 :
+#    CORVETTE=<dossier>/scene.gltf ; 1,07 M triangles allégés (erreur 0,002) ; emblèmes des jantes et de la caisse retirés (nœuds) ;
+#  - tcross : « 2022 Maruti Suzuki Vitara Brezza » de BHP3D, dépôt kriteesh/threejs-model, model-2 : BREZZA=<dossier>/scene.gltf ;
+#    478 000 triangles allégés (erreur 0,003), habitacle allégé (WFS_ALLEGER) ; feux arrière sortis du matériau partagé des phares
+#    (WFS_FEU, noms des nœuds) ; barres de toit gardées (la hauteur de la fiche, 1685 mm, les compte).
+declare -A ERREUR=( [mustang]=0.002 [tcross]=0.003 )
+declare -A EXCLURE_NOEUD=( [mustang]='CorvetteWingEmblem' )
+declare -A ALLEGER=( [mustang]='Reflectors=0.4' [tcross]='int_dark.0=0.3 ; wireless_cahrger_conso_le.2=0.3 ; cons_ac_alu.0=0.4 ; int_roof_pads.0=0.4 ; wireless_cahrger_conso_le.3=0.4 ; headsup_plas.0=0.5' )
+declare -A FEU=( [tcross]='^(reverse brake|brake rear main|boot brake light|boot brk lit)' )
 cd "$ICI"
 for v in "${VOITURES[@]}"; do
   IFS='|' read -r id dossier L rot peinture roues feux <<< "$v"
-  export WFS_ROUES="$roues" WFS_PLAQUE="${PLAQUE[$id]:-}" WFS_TEXTURES="${TEXTURES[$id]:-}"
+  export WFS_ROUES="$roues" WFS_PLAQUE="${PLAQUE[$id]:-}" WFS_TEXTURES="${TEXTURES[$id]:-}" WFS_EXCLURE_NOEUD="${EXCLURE_NOEUD[$id]:-}" \
+         WFS_ALLEGER="${ALLEGER[$id]:-}" WFS_FEU="${FEU[$id]:-}"
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   echo "== $id ($dossier)"
   src="$WEB/models/$dossier/$dossier.json"
   if [ -n "${SOURCE[$id]+x}" ]; then
-    [ -f "${SOURCE[$id]}" ] || { echo "⚠️  $id : source absente (MODELE3=<dossier>/scene.gltf, voir plus haut)" >&2; exit 1; }
-    src="$(mktemp -d)/$id.glb"; node simplifier_voiture.mjs "${SOURCE[$id]}" "$src" "$peinture"
+    [ -f "${SOURCE[$id]}" ] || { echo "⚠️  $id : source absente (MODELE3, CORVETTE ou BREZZA=<dossier>/scene.gltf, voir plus haut)" >&2; exit 1; }
+    src="$(mktemp -d)/$id.glb"; node simplifier_voiture.mjs "${SOURCE[$id]}" "$src" "$peinture" ${ERREUR[$id]:-}
   fi
   if [ -n "$feux" ]; then node convert_car.mjs "$src" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture" "$feux"
   else node convert_car.mjs "$src" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture"; fi

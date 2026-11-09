@@ -35,8 +35,10 @@ inline const CarDef CARS[] = {
      "« 2021 Peugeot 208 » par tonielpro520 (Sketchfab), CC BY 4.0"},
     {"abarth", "Abarth", "500", "cars/abarth.wfm", {135, 7.9f, 205, 1035}, 10, {3.66f, 1.63f, 1.49f, 0.3f, 2.3f}, 0xb3122b,
      "« Fiat Abarth 500 » par Luquita (Sketchfab), CC BY 4.0"},
-    {"tcross", "Volkswagen", "T-Cross", "cars/tcross.wfm", {150, 8.9f, 200, 1270}, 6, {4.11f, 1.76f, 1.58f, 0.35f, 2.6f}, 0xff6a00,
-     "« 2021 Volkswagen T-Cross 280 TSI » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0"},
+    // WFS-359 : id « tcross » gardé (place au garage, sauvegardes) ; modèle CC BY 4.0 d'une Suzuki Vitara Brezza 2022 (SUV compact) à la
+    // place du T-Cross CC BY-NC-SA ; fiche : 1.5 K15C 103 ch, 0-100 en 12,7 s (essai Autocar India), 159 km/h, 1130 kg
+    {"tcross", "Suzuki", "Vitara Brezza", "cars/tcross.wfm", {103, 12.7f, 159, 1130}, 6, {4.00f, 1.79f, 1.69f, 0.33f, 2.50f}, 0xff6a00,
+     "« 2022 Maruti Suzuki Vitara Brezza » par BHP3D (Sketchfab), CC BY 4.0"},
     {"compass", "Jeep", "Compass", "cars/compass.wfm", {150, 9.5f, 196, 1505}, 5, {4.4f, 1.82f, 1.64f, 0.36f, 2.64f}, 0x1f5a3c,
      "« JEEP COMPASS 2021 » par fazt.3ds (Sketchfab), CC BY 4.0"},
     {"s3", "Audi", "S3 berline", "cars/s3.wfm", {300, 4.9f, 250, 1450}, 8, {4.47f, 1.8f, 1.4f, 0.33f, 2.64f}, 0x7b808a,
@@ -59,8 +61,10 @@ inline const CarDef CARS[] = {
      "« Volvo V60 Polestar (2013) » par Myedsu (Sketchfab), CC BY 4.0"},
     {"rrsport", "Land Rover", "Range Rover Sport", "cars/rrsport.wfm", {400, 5.9f, 242, 2330}, 5, {4.95f, 2.05f, 1.82f, 0.38f, 3.0f}, 0x0f1014,
      "« Land Rover Range Rover Sport - 2023 » par Unn Interativa (Sketchfab), CC BY 4.0"},
-    {"mustang", "Ford", "Mustang Shelby GT500", "cars/mustang.wfm", {760, 3.6f, 290, 1916}, 6, {4.82f, 1.92f, 1.38f, 0.35f, 2.72f}, 0x1d3f8f,
-     "« 2020 Ford Mustang Shelby GT500 » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0"},
+    // WFS-359 : id « mustang » gardé ; modèle CC BY 4.0 d'une Chevrolet Corvette C7 Stingray (2014, pack Z51) à la place de la Mustang
+    // Shelby GT500 CC BY-NC-SA ; fiche : V8 6,2 l 466 ch, 0-100 en 4,2 s, 290 km/h, 1496 kg
+    {"mustang", "Chevrolet", "Corvette Stingray (C7)", "cars/mustang.wfm", {466, 4.2f, 290, 1496}, 8, {4.49f, 1.88f, 1.24f, 0.33f, 2.71f}, 0x1d3f8f,
+     "« Chevrolet Corvette (C7) » par Martin Trafas (Sketchfab), CC BY 4.0"},
     {"sf90", "Ferrari", "SF90 XX Stradale", "cars/sf90.wfm", {1030, 2.3f, 320, 1560}, 10, {4.85f, 1.97f, 1.19f, 0.35f, 2.65f}, 0xb3122b,
      "« Ferrari SF90 XX | www.vecarz.com » par vecarz (Sketchfab), CC BY 4.0"},
 };
