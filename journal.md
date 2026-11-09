@@ -4846,3 +4846,5 @@ Points de la 1re revue corrigés : suite RG-02 (avant : recouvrement 1,30 m, jou
 
 ### 2026-11-09 07:51:38 — Recette du matin du 2026-11-09 faite : 15 VALIDÉ, 2 REFUSÉ, ANO-198 à ANO-200 (agent qa lead)
 - Bancs du matin n° 5 (commit 4e7fa71), 17 tickets, 4 lots en parallèle. VALIDÉ : WFS-192, 258, 265, 285, 296, 300, 301, 302, 305, 306, 316, 326, 327, 329, 330 (plusieurs restent 🟡 à valider sur téléphone). REFUSÉ : WFS-317 (24 img/s au lieu de 30 sur le téléphone, ANO-198) et WFS-308 (émulateur bloqué sur l’écran des CGU, ANO-199). ANO-200 : Release `apercu` pleine (1 000 fichiers), captures périmées ou absentes, message « Recette prête » trop optimiste. 23 lignes de `qa/Check.md` cochées. Rapports `qa/rapports/WFS-XX.md`, preuves `qa/retours/recette-2026-11-09/`.
+
+### 2026-11-09 07:53:01 — Recette du matin du 2026-11-09 : 15 VALIDÉS, 2 REFUSÉS ; WFS-350 (main 946 rouge), 351 (ANO-199), 352 (ANO-200) créés ; ANO-198 → WFS-348 (po-scrum-master)

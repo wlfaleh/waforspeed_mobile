@@ -150,6 +150,9 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 
 | Priorité | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
+| P1 Urgent | WFS-350 | [TECHNIQUE] [URGENT] Correction pipeline CI : run 946 de main rouge | E7 | 🔧 En cours (diagnostic) | agent expert ci (session 01UY1Vv4), 2026-11-09 07:53 UTC | — | `feature/waforspeed-350` |  |  |
+| P1 Urgent | WFS-351 | [TECHNIQUE] [URGENT] Émulateur bloqué sur l'écran des CGU (ANO-199) | E7 | ⏳ Prêt (agent expert ci) |  | — | `feature/waforspeed-351` |  |  |
+| P1 Urgent | WFS-352 | [TECHNIQUE] [URGENT] Release apercu pleine, message « Recette QA prête » faux, bancs manquants (ANO-200) | E7 | ⏳ Prêt (agent expert ci) |  | — | `feature/waforspeed-352` |  |  |
 | P1 Urgent | WFS-319 | [URGENT] Version Play Store : AAB 1.0 signé, test interne aujourd'hui, production demain | E7 | 🔧 En cours | agent expert ci (session 01UY1Vv4), 2026-11-08 14:10 UTC | — | `feature/waforspeed-319` |  |  |
 | P1 Urgent | WFS-320 | [URGENT] Sortie publique : points bloquants (licences NC, marques, confidentialité publique, fiche, validations) | publication (`store/**`) | 🔧 En cours (sortie publique **reportée** : après les paquets de cartes testés et le gain de performance) | agent expert ci (session 01UY1Vv4), 2026-11-08 14:14 UTC | WFS-319 | — |  |  |
 | P1 Urgent | WFS-326 | [URGENT] Ville de nuit : fenêtres éclairées qui flottent hors des façades (ANO-175) | E12 | 🟡 À valider (utilisateur) — fusionné #275 | Claude, agent dev Y, 2026-11-08 17:03 UTC | — | `feature/waforspeed-326` | #275 |  |
