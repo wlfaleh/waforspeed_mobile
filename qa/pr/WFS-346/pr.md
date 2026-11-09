@@ -15,7 +15,7 @@ Agent : Claude, agent cartes (01UY1Vv2dx)
   - Banc `WFS_BANC=neige` (`neige_banc.cpp`, accroche d'1 ligne dans `desktop_main.cpp`).
 - **Comment c'est vérifié** :
   - `bash tools/qa/tests_cpu.sh build` : 91 tests verts, dont le nouveau `test_cartes_v2_saison` (lecture et refus des lignes de saison, valeurs par défaut = μ d'avant, cartes de Noël / automne, code du matériau de route, freinage 100-0 des 20 voitures sur neige ≈ v² / 2μg (écart maxi 6,5 %), virage ≤ μ g, conduite du jeu : 100-0 **36,8 m au sec → 145,2 m sur neige**, 0-50 km/h 3,0 s → 11,4 s, ordinateurs inchangés ; flocons : nombre, boîte qui suit la caméra, toits) et `test_cartes_v2_donnees` (format 2, 6 sections).
-  - Banc `neige` : freinage à fond dans le jeu : **≈ 144 m depuis 100 km/h sur neige contre 37 m sur la Ville sèche (rapport 3,9 ; réel ≈ 4)**.
+  - Banc `neige` : **0 écart** ; freinage à fond dans le jeu : **≈ 144 m depuis 100 km/h sur neige contre 37 m sur la Ville sèche (rapport 3,9 ; réel ≈ 4)** ; virage volant à fond vers 55 km/h, même carte : limite latérale du modèle 2,11 g au sec, 0,70 g sur neige (= limite × 0,25 : la voiture est à sa limite et tourne moins) ; flocons : 0,07 à 0,08 ms CPU par image (1 200 flocons).
   - Banc `paquets` (WFS-343) : parcours accueil → choix du terrain → course sur les cartes d'essai (jour, nuit, automne) → retour au menu → Ville.
 - **Limites et risques connus** :
   - **Aurore (RG-03)** : sortie de ce ticket par le PO (journal 19:05:07, `regles-de-gestion/WFS-346.md`) : elle va dans WFS-344, après WFS-214 (ciel en E13).
