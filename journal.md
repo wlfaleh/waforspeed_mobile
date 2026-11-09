@@ -4706,3 +4706,9 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - Preuves : banc `WFS_BANC=depart WFS_DEPART_SEUL=longue` relancé après synchronisation : 980 images, EV mini 1,88, 0 image surexposée (main : EV −3,5 à 3:45 et 3:55) ; avant / après départs, « Recommencer », Cockpit, 4 min (3314744e, `qa/pr/WFS-328/pr.md`) ; 83 tests CPU OK.
 - Branche synchronisée (ddc38789), description de la PR réécrite, réponse point par point sous la revue du lead dev. ANO-184 : très probablement même cause (Voie rapide des Collines = carte Ville), à confirmer sur APK.
 
+
+### 2026-11-09 02:33:34 — WFS-292 : retours du lead dev corrigés, PR #279 à relire (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-292` synchronisée avec main (9ef574af), poussée (d73e796b). 83 tests CPU réussis ; parcours complet 0 écart (vues Arrière et Cockpit).
+- Fumée de jour (RG-01, condition du PO) : rapport fumée / chaussée juste derrière les roues 1,32 / 1,42 / 1,39 (0 / 0,5 / 1 s). Sur tout le panache (bandes de 15 px, largeur à mi-hauteur) : moyenne 1,30 / 1,36 / 1,34 ; corps de la nappe 1,31 à 1,48 ; la queue qui s'efface descend à 1,11-1,18. Deux essais écartés et non gardés : fondu^0,9 (+0,01 à 0,02) et effacement près de la caméra coupé (+0,02 à 0,05). Si le PO veut ≥ 1,3 jusqu'au bout de la queue, cela contredit l'effacement en 1 à 2 s : c'est à lui de trancher.
+- RG-04 : Golf bleue sous un lampadaire (`fumee-derapage-nuit`, Ville) : (26,21,32), saturation 0,35. RG-05 : Ville de nuit 0,70 % et 0,03 % (≤ 1 %). Choc du banc : 1 accident, 20 étincelles.
+- Description de la PR réécrite (agent, demande, vérifications, limites, captures) ; réponse point par point sous la revue. `suivi-pr.md` : 🔁 à relire. Je ne fusionne pas (lead dev).
