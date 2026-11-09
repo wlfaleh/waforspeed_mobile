@@ -25,7 +25,7 @@ Agent : Claude, agent dev Y
     - le fondu reste de 8 m.
   - Banc `pluie` : 133 et 157 gouttes effacées par les balais dessinés en Cockpit, 0 en vue Arrière (avant : 137 « effacées » par la copie des balais, même en vue Arrière).
   - Coût de la pluie : 0,030 à 0,033 ms par image en Cockpit, 0,007 ms en vue Arrière (seuil RG-04 : 0,05 ms).
-  - Tests CPU verts et parcours complet 0 écart après synchronisation avec `main` (chiffres ci-dessous).
+  - 85 tests CPU verts et parcours complet 0 écart après synchronisation avec `main`. Une première passe a fait échouer `test_audio_chocs` : c'est sa mesure de temps (RG-07, au plus 0,05 ms par bloc), lancée pendant un banc. Le test passe seul et à la relance complète. Je n'ai pas touché au son.
 - **Limites et risques connus**
   - La suite des balais est de nuit : la pluie n'existe que la nuit en Ville, et le ticket demandait le jour.
   - Les gouttes déjà posées sur le pare-brise restent dans le tunnel jusqu'au passage du balai, comme dans une vraie voiture : seule la pluie qui tombe est coupée.
