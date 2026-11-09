@@ -2646,3 +2646,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - **Zone** : `src/render/vehicule_cockpit*`, `tests/**` (test neuf), bancs `cockpit` / `penetration` (scène, ≤ 10 lignes annoncées). **Interdit** : `src/game/camera_vue.*` (WFS-293 ; si la cause est le plan proche, le dire au PO avant), modèles des voitures et `tools/effacer_logos.mjs` (WFS-193), `traffic.*`, `course5*`, `poursuite*`, `player.*`, `conduite_*`, tailles d'interface, CI.
 - **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin ; captures avant / après dans `qa/pr/WFS-349/`). PR, lead dev, puis 🟡 et arrêt de la session.
 - `track-agent.md` : ligne ajoutée ; lignes des sessions terminées enlevées (arwa-5, agent dev conduite).
+
+### 2026-11-09 13:36:15 — Début WFS-349 : vue Cockpit, habitacle fermé, voiture voisine sur la portière (Claude, agent 3 bis (01UY1Vv3VTBJ))
+- Branche `feature/waforspeed-349` créée depuis `main` et poussée tout de suite. Zone : `src/render/vehicule_cockpit*`, `tests/**`, scènes des bancs `cockpit` / `penetration` (≤ 10 lignes). Première étape : la cause (RG-01).
