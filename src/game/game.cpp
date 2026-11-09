@@ -298,7 +298,7 @@ Game::Vue Game::calculerVue(double time) {
     vec3& eye = v.eye; vec3& look = v.look;
     if (camMode == 2) {   // vitrine : on tourne autour de la voiture
         float a = orbit;
-        eye = v.carPos + vec3{std::sin(a) * 6.5f, 1.7f, std::cos(a) * 6.5f};
+        eye = v.carPos + vec3{std::sin(a) * orbitRecul, orbitHauteur, std::cos(a) * orbitRecul};
         look = v.carPos + vec3{0, 0.55f, 0};
         camInit_ = false;
     } else {

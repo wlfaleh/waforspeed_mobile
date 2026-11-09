@@ -144,26 +144,26 @@
      -2.48,
      0.115,
      0.945,
-     -2.36
+     -2.3
     ],
     "pivot": [
      0,
      0.945,
-     -2.42
+     -2.43
     ],
     "echelle": [
      1,
      0.15,
-     1
+     0.15
     ],
     "fondu": 0.01,
-    "note": "pointe de carrosserie entre les deux haricots remontée jusqu'au bord du capot (carrosserie continue, sans trou)",
-    "sommets": 45
+    "note": "pointe de carrosserie entre les deux haricots repliée dans le bord du capot (hauteur et profondeur ×0,15 vers le bord) : bord net, sans pli ni trou",
+    "sommets": 47
    },
    {
     "grille": [
      -0.48,
-     0.63,
+     0.62,
      -2.43,
      0.48,
      0.915,
@@ -171,13 +171,15 @@
     ],
     "barres": 6,
     "galbe": 0.06,
-    "cadre": 0.015,
+    "cadre": 0.02,
     "couleur": "#4a4a4a",
     "metal": 0.8,
     "rugosite": 0.3,
-    "note": "grille générique en retrait, derrière la carrosserie, dans l'ouverture d'origine (haut à 0,915 m : rien ne passe par la fente entre capot et phares)"
+    "note": "grille générique dans l'ouverture d'origine : barres et fond en retrait (galbe 6 cm), cadre presque plat (galbe 2 cm, 2 cm de large) qui couvre la jonction avec le pare-chocs, bas un peu plus large (trapèze 1,05) ; haut à 0,915 m (rien par la fente capot-phares)",
+    "galbeCadre": 0.02,
+    "trapeze": 1.05
    }
   ],
-  "empreinteApres": "4f457585c333e28d"
+  "empreinteApres": "21eccb31aae32e3c"
  }
 }

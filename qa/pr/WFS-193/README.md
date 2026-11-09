@@ -6,10 +6,18 @@
 |---|---|---|
 | `nez-x5-34-jour` | ![avant](avant-nez-x5-34-jour.jpg) | ![après](apres-nez-x5-34-jour.jpg) |
 | `nez-x5-34-nuit` | ![avant](avant-nez-x5-34-nuit.jpg) | ![après](apres-nez-x5-34-nuit.jpg) |
+| `nez-x5-34g-jour` | ![avant](avant-nez-x5-34g-jour.jpg) | ![après](apres-nez-x5-34g-jour.jpg) |
+| `nez-x5-34g-nuit` | ![avant](avant-nez-x5-34g-nuit.jpg) | ![après](apres-nez-x5-34g-nuit.jpg) |
 | `nez-x5-capot-jour` | ![avant](avant-nez-x5-capot-jour.jpg) | ![après](apres-nez-x5-capot-jour.jpg) |
 | `nez-x5-capot-nuit` | ![avant](avant-nez-x5-capot-nuit.jpg) | ![après](apres-nez-x5-capot-nuit.jpg) |
+| `nez-x5-bas-jour` | ![avant](avant-nez-x5-bas-jour.jpg) | ![après](apres-nez-x5-bas-jour.jpg) |
+| `nez-x5-bas-nuit` | ![avant](avant-nez-x5-bas-nuit.jpg) | ![après](apres-nez-x5-bas-nuit.jpg) |
 | `nez-x5-face-jour` | ![avant](avant-nez-x5-face-jour.jpg) | ![après](apres-nez-x5-face-jour.jpg) |
 | `nez-x5-face-nuit` | ![avant](avant-nez-x5-face-nuit.jpg) | ![après](apres-nez-x5-face-nuit.jpg) |
+| `zoom-x5-centre-jour` | ![avant](avant-zoom-x5-centre-jour.jpg) | ![après](apres-zoom-x5-centre-jour.jpg) |
+| `zoom-x5-centre-nuit` | ![avant](avant-zoom-x5-centre-nuit.jpg) | ![après](apres-zoom-x5-centre-nuit.jpg) |
+| `zoom-x5-coin-jour` | ![avant](avant-zoom-x5-coin-jour.jpg) | ![après](apres-zoom-x5-coin-jour.jpg) |
+| `zoom-x5-coin-nuit` | ![avant](avant-zoom-x5-coin-nuit.jpg) | ![après](apres-zoom-x5-coin-nuit.jpg) |
 | `vitrine-x5-0` | ![avant](avant-vitrine-x5-0.jpg) | ![après](apres-vitrine-x5-0.jpg) |
 | `vitrine-x5-a0` | ![avant](avant-vitrine-x5-a0.jpg) | ![après](apres-vitrine-x5-a0.jpg) |
 | `vitrine-x5-a1` | ![avant](avant-vitrine-x5-a1.jpg) | ![après](apres-vitrine-x5-a1.jpg) |

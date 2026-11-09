@@ -45,6 +45,7 @@ public:
     DriveInput manette; bool modeManette = false;
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
+    float orbitHauteur = 1.7f, orbitRecul = 6.5f;   // WFS-193 (accroche, banc) : caméra de vitrine réglable (vue basse)
     // WFS-41 : demande de l'écran Terrain, appliquée au début de la mise à jour suivante : carte non vide = course neuve sur
     // cette carte (moment : WFS_MOMENT) ; même carte et même moment : pas de reconstruction (WFS-74, RG-02).
     // WFS-74 : écran de chargement branché par la plateforme (Game ne dépend pas de src/ui/ecrans) : debutChargement avant la
