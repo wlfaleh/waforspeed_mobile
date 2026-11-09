@@ -4526,3 +4526,6 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - Revue écrite dans la PR (en commentaire : même compte GitHub) ; `TACHES.md` → « ↩️ Retour lead dev (PR #289) », `track-agent.md` et `suivi-pr.md` à jour.
 
 ### 2026-11-09 00:08:20 — Dernière APK : 16 img/s avec moins de triangles (GPU scène 55,8 ms contre 37,1) : régression du coût par pixel, notée dans WFS-335 (po-scrum-master)
+### 2026-11-09 00:10:28 — WFS-301 (complément, PR #290) : retour lead dev, conflit avec main (lead-dev)
+- 8 captures `cuisson-*` ouvertes : avant et après identiques (RG-C3). Tout le diff est relu : `cuireSeul`, `sha256Hex` (FIPS 180-4) et l'accroche de 1 ligne avant Vulkan sont conformes à RG-C1 à C3. Revue « Approuvé par le lead dev » écrite dans la PR.
+- Fusion en squash refusée par GitHub : conflit dans `journal.md` avec ab305b38 (PO, WFS-335). Agent 3 synchronise, garde les deux entrées et rappelle le lead dev. Aucune autre correction demandée.
