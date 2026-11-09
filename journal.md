@@ -2618,3 +2618,31 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 - Branche construite et testée par le lead dev : 87 tests CPU verts. Pluie : 0,007 à 0,035 ms par image.
 - Statut : 🟡 À valider (utilisateur). Ligne ajoutée dans qa/Check.md, ligne retirée de suivi-pr.md.
 - Pour le PO : gouttes de vitre dessinées par-dessus le rétroviseur intérieur (déjà sur main, hors ticket).
+
+### 2026-11-09 13:20:30 — Règle : un sujet par agent développeur (po-scrum-master)
+- Décision de l'utilisateur : chaque session de développeur mène un seul ticket jusqu'à la fusion, puis s'arrête. Le ticket suivant va à une nouvelle session. Écrit en tête de `CLAUDE.md` et dans `.claude/agents/po-scrum-master.md`.
+
+### 2026-11-09 13:21:57 — track-agent : lignes des agents finis enlevées (po-scrum-master)
+- Règle de l'utilisateur : un développeur qui a fusionné son ticket sort du tableau. Enlevés : agent 2 (WFS-355), agent 4 (WFS-316), agent dev X (WFS-265), agent dev Y (WFS-354), arwa-2 (WFS-192), arwa-3 (WFS-232).
+
+### 2026-11-09 13:23:13 — Fin de session : Claude, agent 2 (01UY1Vv5) (Claude, agent 2 (01UY1Vv5))
+- WFS-355 fusionné par le lead dev (PR #309, df8e06f8), 🟡 à valider par l'utilisateur (installation neuve de l'APK de `main`). La suite (WFS-357, P3) reste au PO pour une autre session. Session terminée, règle « un seul sujet par session » (2026-11-09).
+### 2026-11-09 13:22:51 — Début WFS-356 : attribué à Claude, agent dev Z (01UY1Vv5sWHo) (po-scrum-master)
+- Demande d'une **nouvelle session** `@dev` (créée 13:18 UTC, aucun ticket avant ; distincte de « Claude, agent 2 (01UY1Vv5) ») : 1er et seul ticket de la session (règle du 12:05 UTC).
+- Choix : 1er P1 prêt attribuable. File A sans ticket permis (cartes → expert-cartes, CI → expert ci, WFS-194 attend E10 tenue par WFS-193 / 215) ; file B : **WFS-356** (E13 et E4 libres, pas agent arwa). WFS-349 (P1, E10) attend aussi E10.
+- Zone (exception PO, E13 + E4) : `src/render/eclairage_*`, `nuit.cpp`, `post_*`, `shaders/post*`, `shaders/eclairage*.glsl`, `tests/fidelite_lumiere*` + test CPU neuf ; **interdit** `player.*`, `conduite_*`, `game.cpp`, `track.*`, `camera_vue.*` (WFS-293), `vehicule_cockpit*`, la CI.
+- Règles complétées : RG-04 (reproduire Basse 60 %, Checkpoint, « 3 », d'abord), RG-05 (≤ 1 % de pixels saturés, halos ≤ 3× la lampe, pas de rose), RG-06 (jour et performance inchangés), captures demandées, critères (`regles-de-gestion/WFS-356.md`). Après fusion : 🟡 À valider (utilisateur).
+- Plan court : reproduire au banc `depart` en Basse 60 %, nommer la cause, corriger l'exposition / les halos, captures avant / après, PR, appel du lead dev, arrêt.
+
+### 2026-11-09 13:29:12 — WFS-193 : PR pilote #308 refusée en 2e revue (lead-dev)
+- Commit relu ce74d358 ; réponse du développeur sous la 1re revue présente. Outil rejoué depuis `main` : 3 `.wfm` et 3 `.lod` identiques octet pour octet ; `--verifier` des deux outils : code 0.
+- 24 gros plans et 36 vitrines ouverts : Compass acceptée ; 208 bonne (trapèze) sauf la silhouette du socle du lion visible entre les barres ; vues `-0`, `-a2`, `-feux`, `-feux-nuit` inchangées (0 pixel).
+- Refus : X5 carrosserie « déchirée » autour de la grille (bord haut en dents de scie après le retrait de la pointe, éclats blancs à droite de trois quarts) ; X5 aplat noir de nuit (non bloquant) ; `convertir_voitures.sh` plante (`set -e`) pour une voiture absente de `formes.json` (non bloquant).
+- TACHES : WFS-193 « ↩️ Retour lead dev (PR #308) » ; track-agent et suivi-pr à jour.
+
+### 2026-11-09 13:35:43 — WFS-349 attribué à Claude, agent 3 bis (01UY1Vv3VTBJ) (po-scrum-master)
+- **Demande** : session 01UY1Vv3VTBJE3PJF9LgtCkt, à la demande de l'utilisateur (« Pk tu bosse plus ? »). Nouveau nom « agent 3 bis » : à ne pas confondre avec « Claude, agent 3 (01UY1Vv3) » du domaine cartes (WFS-343), qui est la session **01UY1Vv3SPPVz8** (trailers des commits de `feature/waforspeed-343` et `-307`). Historique de cette session : WFS-233 ✅ (#203) ; WFS-239 repris le 2026-11-08 01:16 (règle des 10 h). **Aucun ticket tenu à 12:05 UTC ni attribué depuis** : la règle « un seul sujet par session » permet ce ticket, le seul de la session.
+- **Choix** : file A sans ticket attribuable (WFS-193 en cours chez agent 1 ; WFS-194 sur les mêmes modèles, E10 ; WFS-302 / 307 / 335 déjà fusionnés). File B : WFS-356 pris par agent dev Z ; premier P1 prêt : **WFS-349** (ANO-183 bloquante, part Cockpit), exception PO en parallèle de WFS-193 (fichiers séparés). Aucun ticket actif ne tient `vehicule_cockpit*` (WFS-334 et 354 fusionnés).
+- **Zone** : `src/render/vehicule_cockpit*`, `tests/**` (test neuf), bancs `cockpit` / `penetration` (scène, ≤ 10 lignes annoncées). **Interdit** : `src/game/camera_vue.*` (WFS-293 ; si la cause est le plan proche, le dire au PO avant), modèles des voitures et `tools/effacer_logos.mjs` (WFS-193), `traffic.*`, `course5*`, `poursuite*`, `player.*`, `conduite_*`, tailles d'interface, CI.
+- **Critères** : `regles-de-gestion/WFS-349.md` (RG-01 cause au journal ; RG-03 0 pixel de la voisine sous la ligne de ceinture, 20 voitures × 3 regards ; RG-04 seuils de WFS-315 ; RG-05 parcours complet ; RG-06 ≤ +4 appels de dessin ; captures avant / après dans `qa/pr/WFS-349/`). PR, lead dev, puis 🟡 et arrêt de la session.
+- `track-agent.md` : ligne ajoutée ; lignes des sessions terminées enlevées (arwa-5, agent dev conduite).
