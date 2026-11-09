@@ -4547,6 +4547,14 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **Zone** (exception PO E8, WFS-290 d'agent 2 en retour lead dev dans d'autres fichiers) : `src/ui/ecrans/terrain.*`, `paquets*`, fichiers neufs ; Java `Paquets`, `ListePaquets`, `Telechargeur` (+ JUnit) ; `src/core/carte_cuite.*` + accroches ≤ 10 lignes annoncées au journal. **Pas** `reglages.*` / `menu.*` (RG-06 seulement après WFS-290 / 291 / 318, sinon ticket suivant), **pas** la CI ni `cartes.json` réel (WFS-302) : essai avec un faux paquet local.
 - **Critères et captures** : `regles-de-gestion/WFS-307.md` (RG-01 à RG-08, parcours RG-07, section « Captures demandées »). Branche `feature/waforspeed-307`, PR relue et fusionnée par le lead dev ; ✅ par les bancs du matin.
 
+### 2026-11-09 00:15:12 — WFS-307 : début (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-307` depuis `main` (778dbf48). Skills : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`. Plan et accroches à l’entrée suivante.
+
+### 2026-11-09 00:39:35 — WFS-307 : choix du terrain, file des cartes, relecture au changement de carte ; accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- **Java** : `FilePaquets` (règle pure, file d'attente une carte à la fois, phase `ATTENTE`), `Paquets` par carte (`chercherTout`, `etatCarte`, `installerCarte`, `arreterCarte`, `supprimee`, `ralentir`), `Telechargeur.pauseMs` (débit réduit, RG-03) ; 22 tests JUnit OK.
+- **C++** : `CartesPaquets` (paquets_etape.cpp, sans rendu) ; vignette du choix du terrain : assombrie, « Télécharger — X Mo » / « Mise à jour — X Mo », file, barre + astuce, coupure, « Annuler », données mobiles confirmées, « Connexion nécessaire », « Supprimer — libère X Mo » avec confirmation ; au menu « Corniche prête pour la prochaine course » ; débit réduit en course sous 30 img/s. Pont JNI : `paquets_android.cpp` (caches 0,1 s par carte).
+- **Accroches annoncées** (accord du PO, 2026-11-09 00:16:07, `regles-de-gestion/WFS-307.md`) : `src/game/game.h` (+1 champ `Demandes::recharger`), `src/game/game.cpp` (2 lignes de `changerCarte` : carte reconstruite même si déjà chargée quand `recharger`). Seul `terrain.cpp` met `recharger = true`, quand le paquet de cette carte a changé (RG-08). Sur Android, `debutChargement` appelle déjà `preparerCarte` à chaque reconstruction.
+- **Tests** : `test_paquets` étendu (CartesPaquets : RG-01, 02, 04, 05, mise à jour, débit) OK ; banc `paquets` étendu au parcours RG-07 (faux paquet de la Corniche cuit en local).
 ### 2026-11-09 00:16:07 — WFS-307 : accroche de 2 lignes dans `game.*` acceptée (po-scrum-master)
 - Demande de Claude, agent 3 : pour RG-08, `Game::changerCarte` ne reconstruit pas la partie quand la carte et le moment sont déjà chargés (RG-02 de WFS-41) ; un paquet de la Ville installé pendant une partie sur la Ville ne serait jamais relu.
 - **Oui** (accroche ≤ 10 lignes, `CLAUDE.md`) : champ `bool recharger = false;` dans `Game::Demandes` (`game.h`) ; condition `!d.recharger && …` et remise à `false` dans `game.cpp`. Mis à `true` seulement par `terrain.cpp` quand le paquet de la carte a changé. Détour par `WFS_MOMENT` refusé. Détail : section « Suivi » de `regles-de-gestion/WFS-307.md`.
@@ -4652,3 +4660,63 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 01:00:28 — WFS-193 : méthode A (petite géométrie neuve par l'outil), 3 voitures pilotes d'abord (po-scrum-master)
 
 ### 2026-11-09 01:02:50 — Carte « Neige scandinave » de Noël : WFS-342 (vue d'ensemble), 343, 344, 345 créés (demande de l'utilisateur) (po-scrum-master)
+
+### 2026-11-09 01:05:02 — Principe « tout en dynamique » écrit (WFS-342, 343, skill expert-cartes) (po-scrum-master)
+
+### 2026-11-09 01:06:02 — WFS-336 : PR #295 ouverte (lead-dev)
+- Branche `feature/waforspeed-336` synchronisée avec `main` ; `test_trafic_duree` après synchronisation : **0 fenêtre hors règle sur 1600** (`--avant` : 771) ; tests CPU 80/80 avant la synchronisation, suite relancée après.
+- Banc perf, Ville, TrafficSystem (médiane de 90 images), Haute avant → après : départ 12 / 9 547 → 12 / 9 547 ; ≈ 2 min 50 : 76 / 86 119 → 25 / 11 331 ; 10 min jour : 201 / 170 554 → 94 / 58 020 (3 véhicules dessinés) ; 10 min nuit : 222 / 170 596 → 100 / 58 032. Basse 10 min : 56 / 138 966 → 30 / 32 680. Total de voitures constant (54).
+- Reproduction du ticket : 54 → 644 ne se reproduit plus tel quel sur le `main` actuel (76 à 2 min 50, 201 à 10 min) ; l'accumulation reste visible sur `main` et disparaît sur la branche.
+- Captures : 9 paires dans `qa/pr/WFS-336/` (Ville jour / nuit, Haute / Basse, 10 min, Golf sur la chaussée ; Poursuite identique à `main`). Limite : à 2 min 50, la Golf du pilote automatique du banc sort de la route sur `main` comme sur la branche.
+- Relecture et fusion : **session « ⚡ Lead dev automatique »**, prévenue directement. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-09 01:07:34 — WFS-334 fusionné par le lead dev (lead-dev)
+- PR #293 (Claude, agent dev Y) relue sur 19371276. Les 24 images ont été ouvertes et tout le diff a été lu (`meteo.*`, `vehicule_cockpit.*`, `cartes_banc.cpp`, `test_pluie`, `CMakeLists.txt`).
+- La branche avait 10 commits de retard (dont WFS-290, interface, sans fichier commun). Fusion locale vérifiée : aucun conflit, construction complète, 82 tests CPU verts.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire : GitHub refuse l'approbation par le même compte), puis squash 92c1a8ce.
+- Ticket en 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, agent dev Y libre.
+- Remarques non bloquantes, écrites dans la PR : gouttes sur le montant gauche ; double état des balais ; pluie encore 6 m dans la bouche en cockpit.
+### 2026-11-09 01:07:43 — WFS-307 fusionné par le lead dev (lead-dev)
+- PR #294 (Claude, agent 3 (01UY1Vv3)) relue sur 1021b6b6 : 18 captures ouvertes une par une (10 nouvelles du choix du terrain, du menu et de la course ; 4 paires de WFS-306 identiques), diff de 34 fichiers lu en entier (FilePaquets, Paquets, Telechargeur, pont JNI, CartesPaquets, terrain, banc, tests). RG-01 à RG-05, RG-07, RG-08 tenues ; RG-06 reportée (décision du PO) ; accroches `game.*` conformes à l'accord du PO de 00:16:07.
+- GitHub refuse « Approve » (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire, puis fusion en squash 90ee9b21. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` complété.
+
+### 2026-11-09 01:10:30 — WFS-336 fusionné par le lead dev (lead-dev auto)
+- PR #295 codée par le lead dev (session de l'utilisateur), relue et fusionnée par une autre instance (règle de WFS-336), à sa demande.
+- Revue complète : 9 paires de captures ouvertes, tout le diff lu (`traffic.*`, `traffic_system.*`, `test_trafic_duree`, accroches de banc). Tests relancés sur la branche fusionnée avec main : `test_trafic_duree` 0 sur 1600, `test_trafic_vivant`, `test_chocs_voitures`, `test_rien_sur_chaussee`, `test_lots_decor`, `test_navigation` OK.
+- Approbation en commentaire (même compte), squash c2fd0c5 (expectedHeadSha 52eaf6c). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
+
+### 2026-11-09 01:10:25 — WFS-343 attribué à Claude, agent 3 (01UY1Vv3) ; WFS-346 et WFS-347 créés (po-scrum-master)
+- **Choix** : files A / B sans ticket attribuable (WFS-193, 335 en cours ; WFS-194 attend E10 ; file B : WFS-333 attend E3 occupée par WFS-336 / 338, WFS-328 et 338 chez arwa). Premier ticket prêt du domaine cartes : **WFS-343** (P2, objectif « cartes téléchargées », dépendances WFS-301, 306, 307 🟣).
+- **Découpage** (un ticket = une journée au plus ; E3 occupée) : la neige (RG-02 et la partie neige / saison de RG-05) passe dans **WFS-346** (P2, E3 + E2 / E4, après WFS-343, skill expert-conduite). WFS-344 dépend de 343 et 346. Rien du contenu demandé n'est retiré.
+- **Zone de WFS-343** : `src/world/cartes_v2/**`, `src/core/carte_cuite.*`, `src/ui/ecrans/terrain.*`, `paquets*`, `tests/cartes_v2*`, fichiers neufs ; accroches ≤ 10 lignes annoncées dans `track.*` / `game.*`. Pas `traffic.*`, `traffic_system.*`, `poursuite*`, `hud.*`, `player.*`, `conduite_*`, `reglages.*`, `menu.*`, ni la CI.
+- **Critères** : RG-01 (tracé, chocs, départs, checkpoints, zones de trafic lus du paquet, carte absente du choix si bloc faux, jamais de plantage), RG-03 (décor générique lu du paquet, carte venue d'un paquet dans le choix du terrain), RG-04 (tests CPU, parcours accueil → terrain → course → retour 0 écart, carte de test, captures au lead dev), RG-05 (rien de propre à une carte dans le code). Règles : `regles-de-gestion/WFS-343.md`.
+- **WFS-347** (P3, E8) créé : RG-06 de WFS-307 (ligne « Cartes : N téléchargées, X Mo » des Réglages), après WFS-290, 291, 318 (agent 2).
+
+### 2026-11-09 01:25:26 — WFS-335 : PR #296 ouverte, 🆕 à relire par le lead dev (agent arwa (Claude, session trafic))
+- **PR** : https://github.com/wlfaleh/waforspeed_mobile/pull/296 (branche `feature/waforspeed-335`, synchronisée avec main ; 81 tests CPU OK ; parcours complet 0 écart, vues Arrière et Cockpit).
+- **Captures** : `qa/pr/WFS-335/` (31 captures du banc `lod` avant / après, Basse ; Course à 5 de nuit vues Arrière et Proche, trafic de nuit de 10 à 170 m) ; 31 sur 43 identiques au pixel près, les autres ne changent qu'au loin. Le script `captures_pr.sh` avec le banc `nuit` durait plus d'une heure (machine partagée, charge 19) : arrêté, captures `lod` produites et mises en forme à la main.
+- **Chiffres** : triangles des voitures −16,5 à −24 % en Course à 5 de nuit, −11 % en Ville avec trafic, −73 % par voiture lointaine ; voiture du joueur inchangée (109 884). RG-03 (÷ 2) non tenue : décision du PO demandée (entrée précédente).
+- **Lead dev** : non appelé par moi (agent lancé par la session, sans outil d'appel) ; ligne 🆕 dans `suivi-pr.md` pour le passage automatique.
+
+### 2026-11-09 01:53:15 — Statuts automatiques, bancs du matin #5 (robot statuts)
+- Run vert (workflow_dispatch, commit 4e7fa71) : WFS-192 ✅ (PR #266, 2c1e9ab), WFS-285 ✅ (PR #283, f8b5200), WFS-300 ✅ (PR #272, d88e426), WFS-330 ✅ (PR #280, 760feee), WFS-301 ✅ (PR #278, c153be1), WFS-305 ✅ (PR #285, ca047f6), WFS-306 ✅ (PR #286, 67f2521), WFS-308 ✅ (PR #269, 5f2725e), WFS-161 ✅ (PR #207, 4fe82c8), WFS-226 ✅ (PR #214, ea9aa64), WFS-227 ✅ (PR #210, ca20e9e), WFS-234 ✅ (PR #209, 777c1b4), WFS-239 ✅ (PR #255, 0f0eee4), WFS-257 ✅ (PR #220, e1fad76), WFS-244 ✅ (PR #218, 4a0fbb9), WFS-250 ✅ (PR #215, a91cc8d), WFS-251 ✅ (PR #224, e0ddfa0), WFS-252 ✅ (PR #230, fcbe69b), WFS-277 ✅ (PR #233, 3e3b217), WFS-279 ✅ (PR #241, 08e611b), WFS-261 ✅ (PR #219, 3b07e48), WFS-266 ✅ (PR #252, 8c8bdc7), WFS-267 ✅ (PR #232, 466a4c8), WFS-270 ✅ (PR #231, ceb4b18), WFS-272 ✅ (PR #227, e134cac), WFS-275 ✅ (PR #237, ce592cb), WFS-278 ✅ (PR #240, 84e1c4d), WFS-284 ✅ (PR #250, 94f6f41), WFS-286 ✅ (PR #253, def95c4), WFS-288 ✅ (PR #254, 0a76fe8), WFS-298 ✅ (PR #260, 7d269b9).
+
+### 2026-11-09 02:02:03 — WFS-328 : RG-05 (image délavée en pleine course, ANO-179) corrigée, PR #282 à relire (agent arwa (Claude, session trafic))
+- Cause : éclairement des lampadaires cherché avec `player->position` (abscisse ramenée au tour) au lieu de `dist` ; la route de chaque tour est tournée (WFS-268) : dès le 2e tour, lampes cherchées sur le 1er tour, 0,1 lx, EV −3,5 en pleine ville, image blanche / rose jusqu'à la fin. Correction d'une ligne dans `eclairage_physique.cpp` (33b61e5f).
+- Preuves : banc `WFS_BANC=depart WFS_DEPART_SEUL=longue` relancé après synchronisation : 980 images, EV mini 1,88, 0 image surexposée (main : EV −3,5 à 3:45 et 3:55) ; avant / après départs, « Recommencer », Cockpit, 4 min (3314744e, `qa/pr/WFS-328/pr.md`) ; 83 tests CPU OK.
+- Branche synchronisée (ddc38789), description de la PR réécrite, réponse point par point sous la revue du lead dev. ANO-184 : très probablement même cause (Voie rapide des Collines = carte Ville), à confirmer sur APK.
+
+
+### 2026-11-09 02:33:34 — WFS-292 : retours du lead dev corrigés, PR #279 à relire (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-292` synchronisée avec main (9ef574af), poussée (d73e796b). 83 tests CPU réussis ; parcours complet 0 écart (vues Arrière et Cockpit).
+- Fumée de jour (RG-01, condition du PO) : rapport fumée / chaussée juste derrière les roues 1,32 / 1,42 / 1,39 (0 / 0,5 / 1 s). Sur tout le panache (bandes de 15 px, largeur à mi-hauteur) : moyenne 1,30 / 1,36 / 1,34 ; corps de la nappe 1,31 à 1,48 ; la queue qui s'efface descend à 1,11-1,18. Deux essais écartés et non gardés : fondu^0,9 (+0,01 à 0,02) et effacement près de la caméra coupé (+0,02 à 0,05). Si le PO veut ≥ 1,3 jusqu'au bout de la queue, cela contredit l'effacement en 1 à 2 s : c'est à lui de trancher.
+- RG-04 : Golf bleue sous un lampadaire (`fumee-derapage-nuit`, Ville) : (26,21,32), saturation 0,35. RG-05 : Ville de nuit 0,70 % et 0,03 % (≤ 1 %). Choc du banc : 1 accident, 20 étincelles.
+- Description de la PR réécrite (agent, demande, vérifications, limites, captures) ; réponse point par point sous la revue. `suivi-pr.md` : 🔁 à relire. Je ne fusionne pas (lead dev).
+
+### 2026-11-09 02:35:56 — Décisions WFS-292 (RG-01 fumée) et WFS-335 (RG-03 triangles) ; WFS-348 créé ; début WFS-333 : attribué à agent arwa (po-scrum-master)
+- **WFS-292 / RG-01** : accepté « luminance fumée / chaussée ≥ 1,3 en moyenne sur le panache et sur le corps de la nappe, queue qui s'efface exclue » (mesures 1,30 / 1,36 / 1,34 ; corps 1,31-1,48 ; queue 1,11-1,18). RG-01 tenue. Mesure ajoutée à `DA-realisme.md` § 3.
+- **WFS-292 / Golf dans les phares des adversaires** (Course à 5 de nuit, gris argent bleuté) : condition du 22:51 tenue par la capture sous lampadaire ; phares = `nuit.cpp`, hors zone. **Pas de ticket séparé** (pas de finition non demandée) ; limite connue ; anomalie si l'utilisateur ou le QA la signale.
+- **WFS-335 / RG-03** : (1) accepté en **Basse seulement** : adversaires de 48 à 100 px en LOD2, dans la PR #296, sans saut de forme ; (2) **refusé** : voiture du joueur en LOD1 (RG-02 « voiture du joueur intacte de près », charte réalisme) ; (3) critère « triangles ÷ 2 » retiré : le coût est passé par pixel (mesure de l'utilisateur 00:08 : 207 k triangles, GPU scène 55,8 ms, 16 img/s). WFS-335 se ferme sur le gain mesuré.
+- **WFS-348** [TECHNIQUE] P1 créé (E4 + E13, ⏳ Prêt) : temps GPU par passe, Ville de nuit sous la pluie, cause et correction en Basse, objectif ≥ 30 img/s (`regles-de-gestion/WFS-348.md`).
+- **WFS-333** (P1, file B, E3) **attribué à agent arwa (Claude, session trafic)**, à sa demande. Tickets en parallèle chez lui (demande de l'utilisateur, « avancer vite ») : WFS-338 en cours, WFS-292 / 328 / 335 en PR. File A sans ticket libre (WFS-194 attend E10, tenue par WFS-193) ; WFS-333 est le premier P1 prêt de la file B, et WFS-336 (`traffic.*`) est fusionné. Zone (exception PO, E3) : `traffic.*`, `traffic_system.*`, chocs dans `course5*` / `poursuite*` (déjà à lui avec WFS-338), `tests/**` ; **interdit** : `player.*`, `conduite_*`, `game.cpp`, `track.*`, `camera_vue.*` (WFS-293), tailles d'interface. Critères : `regles-de-gestion/WFS-333.md` (RG-01 à RG-04, ANO-180, 181, 183, 190) ; test de parcours complet ; branche `feature/waforspeed-333` à pousser dès sa création ; skill `agent-developer` ; fusion par confiance > 50 % sinon une CI de branche.
+- WFS-339 ([TECHNIQUE] banc `campagne`) et WFS-348 restent prêts pour les prochains développeurs libres (Claude, agent dev Y est libre).

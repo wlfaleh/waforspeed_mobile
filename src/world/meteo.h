@@ -9,6 +9,7 @@
 // Partie pure ci-dessous (en-tête seul) : règles RG-01 à RG-03, vérifiables sans GPU.
 #pragma once
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <vector>
@@ -55,5 +56,60 @@ inline void avancer(std::vector<Goutte>& g, float dt, float w, float h, float p,
         if (d.x < 0) d.x += w; else if (d.x > w) d.x -= w;
     }
 }
+
+// ---------- WFS-334 (ANO-182, ANO-186, ANO-194) : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse ----------
+
+// RG-03 : part de la pluie visible (0..1) pour la caméra à `d` m sur la route, sous un toit de `debut` à `fin` m (tunnel) :
+// 1 dehors, 0 à plus de TOIT_FONDU − TOIT_MARGE m sous le toit ; fondu court à l'entrée et à la sortie (la caméra de
+// poursuite est derrière la voiture : la pluie s'arrête TOIT_MARGE m après la bouche, quand elle passe sous la voûte)
+constexpr float TOIT_FONDU = 8.f, TOIT_MARGE = 2.f;
+inline float pluieSousToit(double d, double debut, double fin) {
+    const double dedans = std::min(d - debut, fin - d);   // m sous le toit (négatif : dehors)
+    return std::clamp((float)(1.0 - (dedans + TOIT_MARGE) / TOIT_FONDU), 0.f, 1.f);
+}
+
+// RG-02 (ANO-194) : direction d'une goutte à l'écran (unitaire). À l'arrêt : verticale, penchée par `slant` (braquage, jeu
+// web). En roulant, les gouttes viennent vers la caméra : elles partent du point de fuite (fx, fy) et s'en écartent, d'autant
+// plus que la vitesse relative p est grande (part radiale au plus 0,85 à pleine vitesse).
+inline void sensGoutte(float x, float y, float fx, float fy, float p, float slant, float& dx, float& dy) {
+    float vx = slant * 0.3f, vy = 1.f;
+    const float rl = std::sqrt(vx * vx + vy * vy); vx /= rl; vy /= rl;
+    float rx = x - fx, ry = y - fy;
+    const float rr = std::sqrt(rx * rx + ry * ry);
+    if (rr > 1e-3f) { rx /= rr; ry /= rr; } else { rx = 0; ry = 1; }
+    const float a = std::clamp(p * 1.2f, 0.f, 0.85f);
+    dx = vx * (1 - a) + rx * a; dy = vy * (1 - a) + ry * a;
+    const float l = std::sqrt(dx * dx + dy * dy);
+    if (l > 1e-4f) { dx /= l; dy /= l; } else { dx = 0; dy = 1; }
+}
+
+// avancer (WFS-334) : chute le long de sensGoutte, à s × (0,7 + 0,6 p) plus un élan radial s × 1,6 p ; une goutte sortie de
+// l'écran repart d'un point tiré au hasard (à vitesse, plutôt près du point de fuite, d'où partent les gouttes)
+inline void avancerVers(std::vector<Goutte>& g, float dt, float w, float h, float p, float slant, float fx, float fy, Hasard& rnd) {
+    for (Goutte& d : g) {
+        float dx, dy; sensGoutte(d.x, d.y, fx, fy, p, slant, dx, dy);
+        const float v = d.s * dt * (0.7f + p * 0.6f + p * 1.6f);
+        d.x += dx * v; d.y += dy * v;
+        if (d.y > h || d.y < -d.l * 3 || d.x < -d.l || d.x > w + d.l) {
+            const float r = 1 - std::clamp(p, 0.f, 1.f) * 0.6f;   // à vitesse : départ resserré autour du point de fuite
+            d.x = std::clamp(fx + (rnd() - 0.5f) * w * r * 1.6f, 0.f, w);
+            d.y = p > 0.15f ? std::clamp(fy + (rnd() - 0.5f) * h * r, 0.f, h) : -d.l;
+        }
+    }
+}
+
+// RG-02 : point (x, y) à l'intérieur du quadrilatère convexe q (4 sommets x, y dans l'ordre, sens quelconque)
+inline bool dansQuad(const float q[8], float x, float y) {
+    int pos = 0, neg = 0;
+    for (int i = 0; i < 4; i++) {
+        const float ax = q[2 * i], ay = q[2 * i + 1], bx = q[(2 * i + 2) % 8], by = q[(2 * i + 3) % 8];
+        const float c = (bx - ax) * (y - ay) - (by - ay) * (x - ax);
+        if (c > 0) pos++; else if (c < 0) neg++;
+    }
+    return pos == 0 || neg == 0;
+}
+
+// RG-02 : le balai d'angle a0 → a1 (rad, autour de son pivot) est passé sur l'angle phi pendant l'image
+inline bool balaye(float phi, float a0, float a1) { return std::min(a0, a1) <= phi && phi <= std::max(a0, a1) && a0 != a1; }
 
 } // namespace wfs::meteo

@@ -1,6 +1,7 @@
 // WFS-306 : machine d'états de « Mise à jour et installation des paquets » (src/ui/ecrans/paquets_etape.cpp), sans GPU, avec une source
 // factice : paquet présent → rien ; absent : Recherche → secours (pas de liste), Proposition, Place, Téléchargement (coupure, fin), Échec,
 // « Plus tard » (aussi pendant une coupure) ; proposition ouverte depuis le bandeau du menu ; versionApk, texteMo, texteFormats.
+// WFS-307 : CartesPaquets (paquet de chaque carte au choix du terrain : télécharger, file, annuler, fin, suppression, mise à jour, débit).
 // usage : test_paquets [dossier temporaire]
 #include <cstdio>
 #include <filesystem>
@@ -109,6 +110,73 @@ int main(int argc, char** argv) {
       VERIFIER(!e.demarrerAvec(s, "ville", formats, emp, 950, t) && s.chercheS == 0 && !e.ouvert());
       VERIFIER(e.demarrerAvec(s, "ville", formats, emp ^ 1, 950, t) && s.chercheS == 1);   // autre génération attendue : liste lue
       std::filesystem::remove(dir + "/" + carte::nomFichier("ville", carte::FormatTexture::RGBA8)); }
+
+    // ---- WFS-307 : paquets de chaque carte (choix du terrain), file d'attente, suppression, relecture au changement de carte (RG-08)
+    { struct Multi : Factice {
+          Phase phC = RIEN; long long recusC = 0; int installeC = 0, arretC = 0, supprimeeC = 0, ralentiC = 0; bool ralenti = false; std::string empreintes;
+          void chercherTout(const std::string&, const std::string& e, int) override { empreintes = e; phC = PRETE; }
+          Phase phaseCarte(const std::string& c, long long& r, long long& t) override { if (c != "plage") { r = t = 0; return ABSENTE; } r = recusC; t = taille; return phC; }
+          bool propositionCarte(const std::string& c, std::string& n, std::string& f) override { if (c != "plage") return false; n = "Corniche"; f = "astc"; return true; }
+          bool installerCarte(const std::string&) override { installeC++; phC = ATTENTE; return true; }
+          void arreterCarte(const std::string&) override { arretC++; phC = PRETE; }
+          void supprimee(const std::string&) override { supprimeeC++; phC = PRETE; }
+          void ralentir(bool o) override { ralenti = o; ralentiC++; }
+      } s;
+      const uint64_t eCo = carte::empreinte("plage", 1, 2, {});
+      for (carte::FormatTexture f : carte::FORMATS) std::filesystem::remove(dir + "/" + carte::nomFichier("plage", f));
+      CartesPaquets cp;
+      cp.lier(&s, formats, 950);
+      cp.chercher({{"ville", emp}, {"plage", eCo}});
+      VERIFIER(cp.cherche() && s.empreintes.find("ville:") == 0 && s.empreintes.find(",plage:") != std::string::npos);
+      VERIFIER(cp.etat("ville").etat == EtatCarte::SansPaquet);              // RG-01 : sans paquet publié, jouable comme avant
+      EtatCarte ec = cp.etat("plage");
+      VERIFIER(ec.etat == EtatCarte::Disponible && ec.nom == "Corniche" && ec.taille == (20 << 20));
+      std::string m;
+      s.reseauF = 0;                                                         // RG-05
+      VERIFIER(!cp.telecharger("plage", m) && m == "Connexion nécessaire" && s.installeC == 0);
+      s.reseauF = 1; s.place = 10 << 20;                                     // place insuffisante (RG-07 de WFS-306)
+      VERIFIER(!cp.telecharger("plage", m) && m.find("Place insuffisante") == 0 && s.installeC == 0);
+      s.place = 1LL << 40;
+      VERIFIER(cp.telecharger("plage", m) && s.installeC == 1 && cp.etat("plage").etat == EtatCarte::Attente);
+      long long lib = 0;
+      VERIFIER(!cp.supprimer("plage", lib));                                 // jamais pendant le téléchargement
+      cp.annuler("plage");
+      VERIFIER(s.arretC == 1 && cp.etat("plage").etat == EtatCarte::Disponible);
+      cp.telecharger("plage", m); cp.avancer();
+      s.phC = SourcePaquets::TELECHARGE; s.recusC = 5 << 20; cp.avancer();
+      ec = cp.etat("plage");
+      VERIFIER(ec.etat == EtatCarte::Telechargement && ec.recus == (5 << 20));
+      VERIFIER(!cp.changee("plage") && cp.pretes().empty());
+      // fin : fichier vérifié sur le téléphone → installée, « prête », relue à la course suivante (RG-08)
+      { carte::Paquet p; p.carte = "plage"; p.format = carte::FormatTexture::ASTC; p.empreinte = eCo; p.blocs = {{"textures", {}}};
+        const std::vector<uint8_t> o = carte::ecrire(p);
+        std::ofstream(dir + "/" + carte::nomFichier("plage", carte::FormatTexture::ASTC), std::ios::binary).write((const char*)o.data(), (std::streamsize)o.size()); }
+      s.phC = SourcePaquets::FINI; cp.avancer();
+      VERIFIER(cp.changee("plage"));
+      const std::vector<std::string> pr = cp.pretes();
+      VERIFIER(pr.size() == 1 && pr[0] == "plage" && cp.pretes().empty());
+      ec = cp.etat("plage");
+      VERIFIER(ec.etat == EtatCarte::Installee && ec.surDisque > 0);
+      cp.prise("plage");
+      VERIFIER(!cp.changee("plage"));
+      cp.avancer();
+      VERIFIER(!cp.changee("plage"));                                        // pas de nouvelle marque tant que rien ne change
+      // RG-04 : suppression : fichier effacé, place rendue, carte de nouveau « Télécharger », marquée changée
+      VERIFIER(cp.supprimer("plage", lib) && lib > 0 && s.supprimeeC == 1);
+      VERIFIER(!std::filesystem::exists(dir + "/" + carte::nomFichier("plage", carte::FormatTexture::ASTC)));
+      VERIFIER(cp.etat("plage").etat == EtatCarte::Disponible && cp.changee("plage"));
+      // paquet d'une autre génération (empreinte attendue différente) → « Mise à jour »
+      { carte::Paquet p; p.carte = "plage"; p.format = carte::FormatTexture::ASTC; p.empreinte = eCo ^ 1; p.blocs = {{"textures", {}}};
+        const std::vector<uint8_t> o = carte::ecrire(p);
+        std::ofstream(dir + "/" + carte::nomFichier("plage", carte::FormatTexture::ASTC), std::ios::binary).write((const char*)o.data(), (std::streamsize)o.size()); }
+      cp.chercher({{"ville", emp}, {"plage", eCo}});
+      VERIFIER(cp.etat("plage").etat == EtatCarte::MiseAJour);
+      std::filesystem::remove(dir + "/" + carte::nomFichier("plage", carte::FormatTexture::ASTC));
+      // RG-03 : débit réduit, une seule demande par changement
+      cp.ralentir(true); cp.ralentir(true);
+      VERIFIER(s.ralenti && s.ralentiC == 1);
+      cp.ralentir(false);
+      VERIFIER(!s.ralenti && s.ralentiC == 2); }
 
     if (g_echecs) { std::printf("test_paquets : %d échec(s)\n", g_echecs); return 1; }
     std::printf("test_paquets : OK\n");

@@ -237,7 +237,12 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         if ((s.type == T::RondPoint || s.exRondPoint) && !rp) { rp = true; lieux.push_back({"carte-ville-rond-point", s.debut, 45, true}); }   // WFS-283 : carrefour simple, même nom
         else if (s.type == T::Feux && !fx) { fx = true; lieux.push_back({"carte-ville-feux", s.ligneArret, 30, true}); }
         else if (s.type == T::Autoroute && !au) { au = true; lieux.push_back({"carte-ville-autoroute", s.debut + 2 * m40, 0, true}); }
-        else if (s.type == T::Tunnel && !tu) { tu = true; lieux.push_back({"carte-ville-tunnel", s.debut, 40, true}); }
+        else if (s.type == T::Tunnel && !tu) {
+            tu = true; lieux.push_back({"carte-ville-tunnel", s.debut, 40, true});
+            // WFS-334 (RG-05) : suite sous la pluie : 6 m dans la bouche, milieu, 12 m avant la sortie (la rue mouillée au bout)
+            lieux.push_back({"carte-ville-tunnel-bouche", s.debut, -6, true}); lieux.push_back({"carte-ville-tunnel-milieu", (s.debut + s.fin) / 2, 0, true});
+            lieux.push_back({"carte-ville-tunnel-sortie", s.fin, 12, true});
+        }
         else if (s.type == T::Pont && !po) { po = true; lieux.push_back({"carte-ville-pont", s.debut, 40, true}); }
         else if (s.type == T::Virage && s.rayon < 60 && virages < 3) {
             lieux.push_back({"carte-ville-virage-" + std::to_string(++virages), s.debut, 35, true});   // WFS-326 : aussi de nuit (vitrines)

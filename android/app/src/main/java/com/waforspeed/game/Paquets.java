@@ -1,4 +1,4 @@
-// WaForSpeed — paquets de cartes côté Android (WFS-306) : liste cartes.json et téléchargement sur un fil de fond (jamais sur le fil
+// WaForSpeed — paquets de cartes côté Android (WFS-306, plusieurs cartes : WFS-307) : liste cartes.json et téléchargement sur un fil de fond (jamais sur le fil
 // du jeu ni sur celui de l'interface), lus par le jeu via JNI (src/platform/paquets_android.cpp) à chaque image de l'écran de chargement.
 // États (phase) : RIEN → LISTE (lecture de cartes.json) → PRETE (paquet proposé) ou ABSENTE (pas de liste, rien pour ce téléphone :
 // secours silencieux) ; INSTALLER → TELECHARGE → FINI, ou COUPURE (« Connexion perdue, reprise automatique » : nouvel essai toutes
@@ -15,62 +15,56 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 public final class Paquets {
     private Paquets() {}
 
-    private static final int RIEN = Installation.RIEN, LISTE = Installation.LISTE, PRETE = Installation.PRETE, ABSENTE = Installation.ABSENTE,
-        TELECHARGE = Installation.TELECHARGE, COUPURE = Installation.COUPURE;
-    private static volatile int phase = RIEN;
-    private static volatile ListePaquets.Entree entree = null;
-    private static final AtomicLong recus = new AtomicLong(0);
-    private static final AtomicBoolean arret = new AtomicBoolean(false);
+    // WFS-307 : état de chaque carte et file d'attente (FilePaquets, règle pure testée) ; l'interface « une carte » de WFS-306 (chercher,
+    // etat, proposition, installer, arreter) porte sur la carte de la dernière recherche (carte du chargement de l'application)
+    private static final FilePaquets FILE = new FilePaquets(3000, new FilePaquets.Journal() {
+        @Override public void ecrire(String t) { Log.i("WaForSpeed", "PAQUETS " + t); }
+    });
+    private static volatile String carteCourante = "";
+    private static volatile String dossierPaquets = "";
 
-    // RG-01 : lit cartes.json (copie gardée sur le téléphone si le réseau manque) et choisit le paquet de la carte pour ce téléphone
-    public static synchronized void chercher(final String adresse, final String copie, final String carte, final String formats,
-                                             final String empreinte, final int versionApk) {
-        if (phase == TELECHARGE || phase == COUPURE) return;   // téléchargement déjà en cours (retour dans le jeu)
-        phase = LISTE; entree = null;
+    // RG-01 de WFS-306 : lit cartes.json (copie gardée sur le téléphone si le réseau manque), paquet de « carte » pour ce téléphone
+    public static void chercher(String adresse, String copie, String carte, String formats, String empreinte, int versionApk) {
+        carteCourante = carte;
+        chercherTout(adresse, copie, formats, carte + ":" + empreinte, versionApk);
+    }
+    // WFS-307 : même lecture pour plusieurs cartes à la fois (« ville:c30f…,plage:… » : carte et empreinte attendue)
+    public static void chercherTout(final String adresse, final String copie, final String formats, final String empreintes, final int versionApk) {
+        final java.util.Map<String, String> emp = new java.util.LinkedHashMap<>();
+        for (String p : empreintes.split(",")) { final int k = p.indexOf(':'); if (k > 0) emp.put(p.substring(0, k), p.substring(k + 1)); }
+        FILE.recherche(emp.keySet());
         lancer(new Runnable() {
             @Override
             public void run() {
                 String json = Telechargeur.lireTexte(adresse, 1 << 20);
                 if (json != null) ecrire(new File(copie), json);
                 else { json = lire(new File(copie)); Log.i("WaForSpeed", "PAQUETS liste injoignable : " + (json != null ? "copie du téléphone" : "aucune copie")); }
-                final ListePaquets.Entree e = json == null ? null : ListePaquets.choisir(json, carte, formats.split(","), empreinte, versionApk);
-                entree = e;
-                phase = e != null ? PRETE : ABSENTE;
-                Log.i("WaForSpeed", e != null ? "PAQUETS proposé : " + e.nom + " (" + e.format + ", " + e.taille + " octets)" : "PAQUETS rien à proposer (secours : carte du jeu)");
+                if (json == null) FILE.listeAbsente(emp.keySet());
+                else FILE.liste(json, formats.split(","), emp, versionApk);
+                Log.i("WaForSpeed", "PAQUETS liste lue pour " + emp.keySet());
             }
         }, "wfs-paquets-liste");
     }
 
-    // RG-03 / RG-05 : téléchargement du paquet proposé dans dossier/<carte>_<format>.wfcarte ; reprise automatique après une coupure
-    public static synchronized void installer(final String dossier) {
-        final ListePaquets.Entree e = entree;
-        if (e == null || phase == TELECHARGE || phase == COUPURE) return;
-        arret.set(false);
-        phase = TELECHARGE;
-        lancer(new Runnable() {
-            @Override
-            public void run() {   // boucle dans Installation (règle pure, testée) : « Plus tard » rend toujours PRETE
-                Installation.executer(e.adresse, new File(dossier, e.carte + "_" + e.format + ".wfcarte"), e.taille, e.sha256, recus, arret, 3000,
-                    new Installation.Suivi() {
-                        @Override public void phase(int p) { Paquets.phase = p; }
-                        @Override public void journal(String t) { Log.i("WaForSpeed", "PAQUETS " + t); }
-                    });
-            }
-        }, "wfs-paquets-telechargement");
-    }
-
-    public static void arreter() { arret.set(true); }
+    // RG-03 de WFS-306 / RG-02 de WFS-307 : téléchargement (file d'attente, une carte à la fois)
+    public static void installer(String dossier) { installerCarte(dossier, carteCourante); }
+    public static boolean installerCarte(String dossier, String carte) { dossierPaquets = dossier; return FILE.installer(dossier, carte); }
+    public static void arreter() { FILE.arreter(carteCourante); }
+    public static void arreterCarte(String carte) { FILE.arreter(carte); }
+    public static void supprimee(String carte) { FILE.supprimee(carte); }
+    // RG-03 de WFS-307 : débit réduit pendant la course quand la cadence du jeu passe sous 30 images par seconde
+    public static void ralentir(boolean oui) { Telechargeur.pauseMs = oui ? 20 : 0; }
 
     // { phase, octets reçus, taille annoncée }
-    public static long[] etat() { final ListePaquets.Entree e = entree; return new long[] {phase, recus.get(), e != null ? e.taille : 0}; }
+    public static long[] etat() { return FILE.etat(carteCourante); }
+    public static long[] etatCarte(String carte) { return FILE.etat(carte); }
     // { nom affiché, format de texture } du paquet proposé ; null sans proposition
-    public static String[] proposition() { final ListePaquets.Entree e = entree; return e == null ? null : new String[] {e.nom, e.format}; }
+    public static String[] proposition() { return FILE.proposition(carteCourante); }
+    public static String[] propositionCarte(String carte) { return FILE.proposition(carte); }
 
     // RG-02 : 0 sans réseau, 1 Wi-Fi (ou réseau non facturé : Ethernet), 2 données mobiles
     public static int reseau(Context ctx) {

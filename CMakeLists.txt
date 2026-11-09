@@ -94,6 +94,8 @@ else()
   add_executable(test_effets tests/test_effets.cpp src/render/effets_particules.cpp)   # WFS-65
   add_executable(test_roues tests/test_roues.cpp src/game/roues.cpp)   # WFS-60
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
+  add_executable(test_trafic_duree tests/test_trafic_duree.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-281 : trafic stable sur 10 min
+  target_link_libraries(test_trafic_duree Threads::Threads)
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_cache_pipelines tests/test_cache_pipelines.cpp src/render/cache_pipelines.cpp)   # WFS-262 (RG-01)
@@ -156,6 +158,7 @@ else()
   target_compile_definitions(test_fidelite_lumiere PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere_ombres tests/fidelite_lumiere_ombres.cpp)   # WFS-227 : cascades d'ombre, M-01, M-02
   target_compile_definitions(test_fidelite_lumiere_ombres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_pluie tests/test_pluie.cpp)   # WFS-334 : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse
   add_executable(test_ville_lieux tests/test_ville_lieux.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-137 : lieux de la Ville au tracé 2
   add_executable(test_ville_sol tests/test_ville_sol.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-305 : sol fermé côté intérieur des courbes serrées (ANO-171)
   add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
