@@ -4732,3 +4732,7 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 ### 2026-11-09 03:19:01 — WFS-292 fusionné par le lead dev (lead-dev auto)
 - PR #279, 2e revue après « corrigé dans » point par point et décisions du PO (22:51:10, 02:35:56). Captures ouvertes : fumée de jour en nappe continue derrière les roues (0 / 0,5 / 1 s), Golf bleue sous les lampadaires, Ville de nuit inchangée, choc au banc. Diff lu (`effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`).
 - Approuvée (APPROVE), squash 6a4b7bb (expectedHeadSha d73e796). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
+
+### 2026-11-09 03:19:54 — WFS-335 : PR #296 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures Course à 5 de nuit (Arrière, Proche) et trafic lointain identiques à l'œil ; diff lu (`vehicule_lod.h`, `model_loader.cpp`, `renderer.*`) : niveaux 2 et 3 en 4 pièces en Basse, correct.
+- Refus : conflit `src/render/bench_perf.cpp` avec main (27 commits de retard) ; décision du PO du 02:35:56 (adversaires de 48 à 100 px en LOD2 en Basse, dans cette PR) non appliquée ; description à mettre à jour (critère « ÷ 2 » retiré, objectif 30 img/s dans WFS-348).
