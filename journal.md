@@ -4553,3 +4553,9 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 
 ### 2026-11-09 00:16:53 — WFS-302 : PR #291 ouverte (agent expert ci cd)
 - Mode `WFS_BANC=cuire` fusionné (#290, agent 3) ; branche synchronisée (a790c046) ; deux cuissons réelles identiques (ASTC 21,7 Mo, ETC2 5,3 Mo, RGBA8 26,3 Mo, empreinte c30f0f40c276b6c1), liste lue par `ListePaquets.choisir`. Lead dev appelé. Après la fusion : 1er lancement de `paquets.yml` sur main (feu vert de l'utilisateur), création de la Release `paquets`.
+
+### 2026-11-09 00:19:39 — WFS-302 fusionné par le lead dev (lead-dev)
+- PR #291 (agent expert ci cd), commit relu f0aa1b0f, squash 4b21934b. Tout le diff relu (7 fichiers) : `paquets.yml`, `publier_paquets.sh`, `cartes_json.py` et son test (relancé : vert), `qa/pr/WFS-302/`.
+- Captures : ticket de CI sans changement à l'écran, preuves par journaux acceptées. Revue « ✅ Approuvé » écrite en commentaire (GitHub refuse l'approbation : même compte).
+- Statut 🟡 À valider (utilisateur) : RG-06 (téléchargement réel sur le téléphone) après le 1er lancement de `paquets.yml` sur `main`.
+- Pour le PO : le texte de RG-03 (`cartes[]` imbriqué) ne correspond plus au format retenu (celui de `ListePaquets.java`, WFS-306) : à réécrire. Remarques non bloquantes dans la revue (retrait des anciens paquets si l'ancienne liste n'a pas pu être lue).
