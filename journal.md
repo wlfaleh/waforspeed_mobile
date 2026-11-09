@@ -3125,4 +3125,4 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Vérifié : 90 tests CPU verts ; captures avant (main + seul banc de la montée) / après dans `qa/pr/WFS-379/` (Proche et Capot, jour et nuit, suite de 6 images, mini-carte, parcours complet tous les 200 m, vue de dessus), regardées : plus aucun terrain ni plaque en l'air. Banc `perf` Corniche : triangles du décor −3,3 % (Haute) / −3,1 % (Basse).
 - Limites : carte +215 m (pente ≤ 7 %) ; RG-06 (D1, vide gris des vues de dessus) = autre cause (sol posé sur une bande de ~220 m autour de la route, mer en plan limité, aussi Ville et Grand Prix) → signalé au PO ; RG-07 (plateaux en escalier) = terrasses des lacets, disparues.
 - Signalé au PO (préexistant sur main, hors ticket) : bas-côté intérieur des épingles de la Campagne, volant à fond à 10 km/h : rayon 11,64 m au lieu de 4,17 m.
-- Journal du ticket : 2 lignes d'accroche hors `plage.cpp` aucune ; `CMakeLists.txt` non modifié.
+- Aucune accroche hors de la zone donnée par le PO ; `CMakeLists.txt` non modifié.
