@@ -2791,3 +2791,36 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - 2 défauts bloquants (revue dans la PR) : (1) `lireDecor` contrôle « maison sur la chaussée » avec la profondeur au lieu de la largeur en travers (et sans l'angle) : une maison peut boucher la route ; (2) `CarteDonnees` garde `d_` et des indices sur une entrée du registre que `decouvrir()` remplace à chaque entrée dans le choix du terrain : lecture hors du tableau possible si le paquet change.
 - Remarques non bloquantes : relecture de tous les paquets à chaque entrée (à-coup futur), `carteDuCode()` pas sûr entre threads, `entier()` sans borne.
 - Statut : ↩️ Retour lead dev (PR #312).
+
+### 2026-11-09 15:30:22 — WFS-193 : PR #311 (X5) corrigée après la 1re revue (Claude, agent 1)
+- Bien reçu dans la PR, puis « corrigé dans 798b6d35 » point par point.
+  - Pointe de carrosserie repliée dans le bord du capot, en hauteur et en profondeur : plus de pli.
+  - Option `galbeCadre` de `tools/retoucher_formes.mjs` : un cadre presque plat couvre la jonction avec le pare-chocs. La Compass et la 208 restent identiques.
+  - Captures : trois quarts gauche, vue basse et zooms ×4, avant et après, jour et nuit.
+- **Accroche dans le noyau (2 lignes, annoncée ici)** : `src/game/game.h` / `game.cpp`, `Game::orbitHauteur` et `orbitRecul` (caméra de vitrine, 1,7 m et 6,5 m par défaut, inchangée en jeu). Elle sert au banc `WFS_VITRINE_BAS` (vue basse).
+- 89 tests CPU verts après synchronisation avec `main`.
+- Le lead dev demandait de prévenir le PO (4e refus de la X5). Le message est impossible : la session du PO (01UY1Vv1nhht…) est inactive. Ce point est noté ici pour le PO.
+
+### 2026-11-09 15:32:49 — WFS-193 (X5) : 2e revue de la PR #311, refusée (lead-dev)
+- Captures ouvertes : 17 paires, plus des zooms faits par moi sur le 3/4 gauche et sur la vue basse. Diff lu : `formes.json`, `retoucher_formes.mjs` (`galbeCadre`), `feux_modele.cpp`, accroche `game.h` / `game.cpp`. Rien de bloquant dans le code.
+- Le point 1 (pli au centre) est corrigé de 3/4 et en vue haute.
+- Défauts qui restent :
+  1. **Nouveau défaut** : le cadre est 4 cm devant les barres aux bords. Il se lit comme un pare-buffle : montants séparés de la grille, avec des coins de pare-chocs visibles entre eux. On le voit de face de nuit, sur la vue basse et de 3/4 gauche.
+  2. Le bas de la grille est en dents de scie.
+  3. Dans la vue basse, la pointe repliée forme un « V » sombre au centre.
+  4. Un éclat reste au coin bas, de nuit.
+- Revue publiée sur GitHub (commentaire de refus, même compte). Statut : ↩️ Retour lead dev (PR #311).
+- **Pour le PO** : 2e refus de #311 et 5e refus de la X5 depuis #308. Le lead dev conseille au PO de décider : soit une méthode plus simple (garder le cadre d'origine de l'ouverture et ne changer que l'intérieur), soit confier la X5 à l'agent expert-realisme-3d. La session du PO est inactive : ce message est noté ici et dans `TACHES.md`.
+
+### 2026-11-09 15:33:59 — WFS-356 fusionné par le lead dev (lead-dev)
+- PR #313, commit relu c93fb37d, squash **483b969a**. Revue « ✅ Approuvé » écrite dans la PR, en commentaire (même compte GitHub).
+- Les 16 paires de captures sont ouvertes une à une, le diff est lu en entier. La construction et les **88 tests CPU** sont refaits : tous verts. La fusion avec main (WFS-293) se fait sans conflit.
+- Course longue de 4 min relancée par le lead dev (RG-03, ANO-179) : EV mini 1,51 sur main, 3,00 sur la branche ; aucune image délavée, 0 % de pixels saturés.
+- Remarques non bloquantes : vitrines hors `pieceAdaptee` (rouge ≈ 1,3 à EV 3) ; « Ville éclairée » lu à travers `releverNuit` ; performance en Basse sur GPU réel à suivre ; ANO-184 à confirmer sur le téléphone.
+- Statut : **🟡 À valider (utilisateur)** ; ligne du suivi des PR supprimée ; ligne ajoutée à `qa/Check.md`.
+- Incident du lead dev : le commit 7d3d62c5 (prise de la PR) a emporté par erreur sur main le fichier de banc de la branche ; il a été annulé tout de suite par ad5705c8 (nouveau commit, sans réécrire l'historique).
+
+### 2026-11-09 15:34:43 — Fin de session : Claude, agent dev Z (01UY1Vv5sWHo) (Claude, agent dev Z (01UY1Vv5sWHo))
+- WFS-356 fusionné par le lead dev (PR #313, squash 483b969a), **🟡 à valider par l'utilisateur** sur le téléphone : de nuit dans la Ville, mode Checkpoint, au « 3 », au « 2 » et à 0:04, en Basse et en Haute ; aussi la voie rapide en Poursuite (ANO-184).
+- Réponse écrite sous la revue dans la PR. Points non bloquants du lead dev, laissés au PO pour une autre session : (1) vitrines des commerces hors `pieceAdaptee` (léger halo possible en Haute à EV 3) ; (2) booléen « Ville éclairée » lu à travers `releverNuit` (lisibilité) ; (3) performance en Basse non mesurée sur un vrai GPU ; (4) ANO-184 à confirmer.
+- Session terminée, règle « un seul sujet par session » : pas d'autre ticket demandé.

@@ -38,6 +38,7 @@ vec3 lin(vec3 c) { return {std::pow(c.x, 2.2f), std::pow(c.y, 2.2f), std::pow(c.
 
 // BEAM (js/cars/models.js) et rangées de la grille (js/cars/player.js)
 constexpr float BEAM_LEN = 110.f, BEAM_WID = 26.f;
+constexpr float HALO_TETE_M = 0.6f;   // WFS-356 (RG-05) : rayon du halo des têtes de lampe de la Ville (m), ≤ 3 fois la tête (0,36 m de profondeur)
 constexpr float BEAM_ROWS[] = {0, 1, 2.5f, 4.5f, 7, 10, 14, 19, 25, 32, 40, 50, 61, 73, 86, 100, 110};
 constexpr int NR = 17, NC = 11;
 constexpr int LAMPES_MAX = 4;   // RG-05 : 4 lumières ponctuelles au plus
@@ -261,7 +262,9 @@ public:
             // halo de la tête : seulement pour les lampadaires du décor (la corniche et le circuit n'ont pas encore de mât natif)
             if (l.style != StyleLampadaire::Ville) continue;
             const TrackPoint hq = t.point(s, l.lat);
-            r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, 1.1f, tete * 1.6f);
+            // WFS-356 (RG-05, ANO-202) : rayon 0,6 m (avant 1,1 m : disque de 2,2 m, une « lune » au-dessus de chaque lampe) ; la tête
+            // de lampe de la Ville mesure 0,90 × 0,36 m (ville.cpp, LAMPE) : halo ≤ 3 fois la tête
+            r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, HALO_TETE_M, tete * 1.6f);
         }
         lumiereSolAutres(r, g);   // WFS-226 : après le trafic, les adversaires et la police (systèmes d'ordre < 950)
         feuxJoueur(r, g);
