@@ -9,6 +9,8 @@
 #include "../game/game.h"
 #include "../game/track.h"
 #include "../game/ressenti.h"
+#include "../game/camera_vue.h"     // WFS-382 : vue Proche, vue Capot
+#include "../game/trace_cartes.h"   // WFS-382 : autoroute de la Campagne (hors lampadaires)
 #include "../ui/ecrans/reglages.h"
 #include "renderer.h"
 
@@ -142,6 +144,68 @@ void benchRoute(Game& g, Renderer& r, const std::string& out) {
     ecrans::reglages().qualite = ecrans::QUALITE_HAUTE;
     reglagesRessenti().reduireMouvements = reduit;
     unsetenv("WFS_METEO"); unsetenv("WFS_MOMENT");
+}
+
+// ---------- WFS-382 : banc court des phares de nuit (avant / après du ticket, quelques minutes au lieu du banc nuit entier) ----------
+// Mêmes scènes que les captures demandées par les règles du ticket ; la mesure des pixels saturés se fait sur les PNG.
+void benchPhares(Game& g, Renderer& r, const std::string& out) {
+    setenv("WFS_MOMENT", "nuit", 1);
+    const VueCamera vue0 = vueCamera();
+    const int qualite0 = ecrans::reglages().qualite;
+    const bool reduit = reglagesRessenti().reduireMouvements;
+    reglagesRessenti().reduireMouvements = true;   // pas de gouttes sur l'écran : seule la lumière change d'une capture à l'autre
+    double t = 800;
+    auto image = [&](bool rendu) { g.update(1.0 / 60); t += 1.0 / 60; if (rendu) g.render(t); };
+    auto capture = [&](const std::string& nom) {
+        g.render(t + 0.001); g.render(t + 0.002); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : %.0f km/h, %.0f m", nom.c_str(), g.player().kmh(), g.player().dist * M);
+    };
+    auto face = [&]() { const Game::Vue v = g.calculerVue(t); g.camMode = 2; g.orbit = std::atan2(v.fwd.x, v.fwd.z); };
+    // 1. Poursuite de nuit en Ville : vue Proche (jeu), puis vue de face (la police derrière le joueur, phares vers la caméra)
+    for (int q : {ecrans::QUALITE_HAUTE, ecrans::QUALITE_BASSE}) {
+        ecrans::reglages().qualite = q;
+        const bool basse = q == ecrans::QUALITE_BASSE;
+        modeCourse() = ModeCourse::Poursuite; kmCourse5() = 2; courseBenchRules(true);
+        if (!g.init(r, "golf", "ville")) { WFS_ERR("phares : chargement ville impossible"); continue; }
+        choisirVue(VueCamera::Proche);
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 600; i++) image(i % 8 == 0);
+        capture(basse ? "phares-poursuite-basse" : "phares-poursuite-proche");
+        face();
+        capture(basse ? "phares-poursuite-basse-face" : "phares-poursuite-face");
+        g.shutdown();
+    }
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4; courseBenchRules(false);
+    ecrans::reglages().qualite = ecrans::QUALITE_HAUTE;
+    // 2. Voiture vue de face en Ville (ce que voit le conducteur d'en face), chaussée sèche puis sous la pluie
+    for (const char* meteo : {"sec", "pluie"}) {
+        setenv("WFS_METEO", meteo, 1);
+        if (!g.init(r, "golf", "ville")) { WFS_ERR("phares : chargement ville impossible"); continue; }
+        choisirVue(VueCamera::Poursuite);
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 300; i++) image(i % 8 == 0);
+        face();
+        capture(std::string("phares-ville-face") + (std::string(meteo) == "pluie" ? "-pluie" : ""));
+        g.shutdown();
+    }
+    // 3 et 4. Vue Capot en Campagne, sur l'autoroute (aucun lampadaire) : tache au sol et coupure ; puis sous la pluie
+    Track tr; tr.build(mapById("campagne"), trace::versionCarte("campagne"));
+    int64_t au = -1;
+    for (const trace::Section& s : tr.sections()) if (s.autoroute && au < 0) au = s.debut;
+    if (au >= 0) setenv("WFS_DEPART", std::to_string(au + (int64_t)(300 / SEG_M)).c_str(), 1);
+    for (const char* meteo : {"sec", "pluie"}) {
+        setenv("WFS_METEO", meteo, 1);
+        if (!g.init(r, "golf", "campagne")) { WFS_ERR("phares : chargement campagne impossible"); continue; }
+        choisirVue(VueCamera::Capot);
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 360; i++) image(i % 8 == 0);
+        capture(std::string("phares-campagne-capot") + (std::string(meteo) == "pluie" ? "-pluie" : ""));
+        g.shutdown();
+    }
+    unsetenv("WFS_DEPART"); unsetenv("WFS_METEO"); unsetenv("WFS_MOMENT");
+    choisirVue(vue0);
+    ecrans::reglages().qualite = qualite0;
+    reglagesRessenti().reduireMouvements = reduit;
 }
 
 } // namespace wfs
