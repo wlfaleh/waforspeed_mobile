@@ -6,8 +6,8 @@
 
 - **Demande de l'utilisateur** (en une phrase) : en Poursuite, la police ne doit plus surgir de nulle part ni rouler vide ; l'encart, le score et le bandeau « TRAVAUX » doivent dire vrai (ANO-191 à 193, 195 à 197).
 - **Ce qui change** : voir « Causes et corrections » ci-dessous.
-- **Comment c'est vérifié** : tests CPU (tous OK), `test_poursuite` (nouveaux contrôles RG-01/02/03/05), banc `course5` (parcours complet 0 écart), captures avant / après, appels de dessin branche / `main` au même endroit.
-- **Limites et risques connus** : rétroviseur du cockpit = WFS-324 (décision du PO) ; la voiture qui déboîte reste créée 45 m devant (hors RG-05, qui vise la police) ; le gros plan du policier est un agrandissement de la capture `poursuite-policier-jour-2`.
+- **Comment c'est vérifié** : tests CPU (87 OK), `test_poursuite` (nouveaux contrôles RG-01/02/03/05), banc `course5` (parcours complet 0 écart), captures avant / après, appels de dessin branche / `main` au même endroit.
+- **Limites et risques connus** : rétroviseur du cockpit = WFS-324 (décision du PO) ; la voiture qui déboîte reste créée 45 m devant (hors RG-05, qui vise la police) ; les gros plans sont des agrandissements des captures du banc `poursuite-police-gros-plan-*`.
 
 ## Causes et corrections (WFS-338, ANO-191 à 193, 195 à 197)
 
@@ -24,11 +24,16 @@
 **Accroche hors zone (annoncée au journal, ≤ 10 lignes)** : `src/world/conducteurs.h/.cpp` (paramètre `policier`). Aucun fichier `traffic*`, `game.cpp`, `track.*`, `camera_vue.*`, `player.*`, `conduite_*`, `vehicule_*`, `hud.*`.
 **Rétroviseur** : WFS-324 (décision du PO) ; la police se prouve en vue Arrière du jeu (`poursuite-arrivee-NN`) et en vue arrière du banc (`poursuite-arrivee-NN-arriere`).
 
-**Tests CPU** : `bash tools/qa/tests_cpu.sh build` : 85 tests OK ; `test_course5` (poursuite) : nouveaux contrôles RG-05 (0 saut > 1 m par pas dans la zone dessinée, 0 rapprochement trop rapide, 0 pas dans la voiture du joueur, 4 positions du joueur), RG-02, RG-03 (7 raisons), RG-01 (biseau qui ferme la file, 3 files).
+**Tests CPU** : `bash tools/qa/tests_cpu.sh build` : 87 tests OK ; `test_course5` (poursuite) : nouveaux contrôles RG-05 (0 saut > 1 m par pas dans la zone dessinée, 0 rapprochement trop rapide, 0 pas dans la voiture du joueur, 4 positions du joueur), RG-02, RG-03 (7 raisons), RG-01 (biseau qui ferme la file, 3 files).
 **Parcours complet** (banc course5) : « accueil → Course solo → Poursuite → Continuer → garage → Choisir → terrain → Rouler → poursuite → fin → Menu → accueil » et redémarrage : **0 écart**.
 **Suite d'images de la police qui arrive (revue 1, point 2)** : toute la police repart à 220 m (aucune à moins de 160 m, rayon de dessin), puis `poursuite-arrivee-01` à `-10`, une par seconde : **220, 197, 152, 110, 78, 54, 36, 23, 13, 6 m** (chiffre de l'encart POLICE sur chaque image) ; vue Arrière du jeu et vue arrière du banc (`-arriere`).
 **Chantier (point 3)** : bandeau à 80 m, tenu jusqu'au biseau ; `poursuite-travaux(-proche)` de nuit et `poursuite-travaux-jour(-proche)` de jour : panneau AK5, biseau de cônes et bandeau sur la même image.
-**Policier (point 4)** : `poursuite-policier-jour`, `-jour-2` et l'agrandissement ![policier](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-policier-jour-gros-plan.jpg?raw=true)
+**Policier (point 4) et caisse sans marque, blanche (RG-07)** : `poursuite-police-gros-plan-jour` / `-nuit` (avec, dans la même image, `-avant` : peinture d'origine). Agrandissement (en haut : jour, en bas : nuit ; à gauche avant, à droite après) :
+
+![gros plan](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police-gros-plan-agrandi.jpg?raw=true)
+
+- **Logo** : la calandre, le capot et le hayon de la 208 n'ont plus de logo depuis WFS-192 (#266, pièces du lion et des lettres retirées de `assets/cars/p208.wfm`, liste dans `tools/logos.json`) ; le gros plan le confirme (grille unie). Rien à retirer de plus, aucune autre voiture touchée.
+- **Caisse grise** : cause : la peinture du modèle est **métallisée (métal 0,45)**, elle reflète le ciel au lieu de diffuser sa couleur. Correction pour la police seule (sa propre copie du modèle) : peinture **unie, non métallisée** (`mat.peinture_voiture` : métal 0, F0 0,04, vernis par-dessus), blanc d'albédo ≈ 0,8 (#E6E8EA). Mesure sur le capot (médiane sRGB) : **de jour 140,136,131 → 197,194,190** (luminance 0,25 → 0,54 ; route à côté : 114,108,100) ; de nuit 136,110,101 → 165,131,109.
 
 **Appels de dessin en Basse (point 5, décision du PO 0161316e)**, même banc, même machine, mêmes endroits :
 
@@ -43,7 +48,7 @@
 
 WFS-338 ajoute au plus +9 appels dans la même image (≤ +10, cas a du PO). Les « +128 » d'avant venaient d'un banc de `main` bloqué au barrage, à d'autres endroits.
 
-## Captures pour le lead dev (36 après)
+## Captures pour le lead dev (39 après)
 
 Dossier : [`qa/pr/WFS-338`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338) — produit par `tools/qa/captures_pr.sh`.
 
@@ -74,8 +79,11 @@ Dossier : [`qa/pr/WFS-338`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `poursuite-camion` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/avant-poursuite-camion.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-camion.jpg?raw=true) |
 | `poursuite-hud` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/avant-poursuite-hud.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-hud.jpg?raw=true) |
 | `poursuite-police-basse` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/avant-poursuite-police-basse.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police-basse.jpg?raw=true) |
+| `poursuite-police-gros-plan-jour-avant` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police-gros-plan-jour-avant.jpg?raw=true) |
+| `poursuite-police-gros-plan-jour` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police-gros-plan-jour.jpg?raw=true) |
+| `poursuite-police-gros-plan-nuit-avant` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police-gros-plan-nuit-avant.jpg?raw=true) |
+| `poursuite-police-gros-plan-nuit` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police-gros-plan-nuit.jpg?raw=true) |
 | `poursuite-police` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/avant-poursuite-police.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-police.jpg?raw=true) |
-| `poursuite-policier-jour-2` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-policier-jour-2.jpg?raw=true) |
 | `poursuite-policier-jour` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-policier-jour.jpg?raw=true) |
 | `poursuite-ralentisseur` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/avant-poursuite-ralentisseur.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-ralentisseur.jpg?raw=true) |
 | `poursuite-redemarrage` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/avant-poursuite-redemarrage.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-338/qa/pr/WFS-338/apres-poursuite-redemarrage.jpg?raw=true) |

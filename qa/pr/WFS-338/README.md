@@ -29,8 +29,11 @@ Branche `feature/waforspeed-338` comparée à `origin/main` ; bancs : course5:12
 | `poursuite-camion` | ![avant](avant-poursuite-camion.jpg) | ![après](apres-poursuite-camion.jpg) |
 | `poursuite-hud` | ![avant](avant-poursuite-hud.jpg) | ![après](apres-poursuite-hud.jpg) |
 | `poursuite-police-basse` | ![avant](avant-poursuite-police-basse.jpg) | ![après](apres-poursuite-police-basse.jpg) |
+| `poursuite-police-gros-plan-jour-avant` | — | ![après](apres-poursuite-police-gros-plan-jour-avant.jpg) |
+| `poursuite-police-gros-plan-jour` | — | ![après](apres-poursuite-police-gros-plan-jour.jpg) |
+| `poursuite-police-gros-plan-nuit-avant` | — | ![après](apres-poursuite-police-gros-plan-nuit-avant.jpg) |
+| `poursuite-police-gros-plan-nuit` | — | ![après](apres-poursuite-police-gros-plan-nuit.jpg) |
 | `poursuite-police` | ![avant](avant-poursuite-police.jpg) | ![après](apres-poursuite-police.jpg) |
-| `poursuite-policier-jour-2` | — | ![après](apres-poursuite-policier-jour-2.jpg) |
 | `poursuite-policier-jour` | — | ![après](apres-poursuite-policier-jour.jpg) |
 | `poursuite-ralentisseur` | ![avant](avant-poursuite-ralentisseur.jpg) | ![après](apres-poursuite-ralentisseur.jpg) |
 | `poursuite-redemarrage` | ![avant](avant-poursuite-redemarrage.jpg) | ![après](apres-poursuite-redemarrage.jpg) |
