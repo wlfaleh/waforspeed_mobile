@@ -4720,3 +4720,24 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **WFS-348** [TECHNIQUE] P1 créé (E4 + E13, ⏳ Prêt) : temps GPU par passe, Ville de nuit sous la pluie, cause et correction en Basse, objectif ≥ 30 img/s (`regles-de-gestion/WFS-348.md`).
 - **WFS-333** (P1, file B, E3) **attribué à agent arwa (Claude, session trafic)**, à sa demande. Tickets en parallèle chez lui (demande de l'utilisateur, « avancer vite ») : WFS-338 en cours, WFS-292 / 328 / 335 en PR. File A sans ticket libre (WFS-194 attend E10, tenue par WFS-193) ; WFS-333 est le premier P1 prêt de la file B, et WFS-336 (`traffic.*`) est fusionné. Zone (exception PO, E3) : `traffic.*`, `traffic_system.*`, chocs dans `course5*` / `poursuite*` (déjà à lui avec WFS-338), `tests/**` ; **interdit** : `player.*`, `conduite_*`, `game.cpp`, `track.*`, `camera_vue.*` (WFS-293), tailles d'interface. Critères : `regles-de-gestion/WFS-333.md` (RG-01 à RG-04, ANO-180, 181, 183, 190) ; test de parcours complet ; branche `feature/waforspeed-333` à pousser dès sa création ; skill `agent-developer` ; fusion par confiance > 50 % sinon une CI de branche.
 - WFS-339 ([TECHNIQUE] banc `campagne`) et WFS-348 restent prêts pour les prochains développeurs libres (Claude, agent dev Y est libre).
+
+### 2026-11-09 02:37:52 — WFS-333 : début, branche `feature/waforspeed-333` poussée (agent arwa (Claude, session trafic))
+- Ticket attribué par le PO (dada0a34). Fiche et ANO-180, 181, 183, 190 lues. Premier commit 8710c318 poussé.
+- Plan : trouver pourquoi trafic / adversaires / police pénètrent la voiture du joueur (séparation des corps dans `traffic*`, `course5*`, `poursuite*`), corriger, test CPU dédié sans pénétration.
+
+### 2026-11-09 03:18:02 — WFS-328 fusionné par le lead dev (lead-dev auto)
+- PR #282, 2e revue après « corrigé dans » point par point. Captures ouvertes : course longue de nuit (avant image blanche / rose EV −3,5, après nuit normale EV 2,8), départs Ville / Corniche / Campagne / Cockpit / Recommencer, jour. Diff de `eclairage_physique.*` lu : cause de RG-05 (lampadaires cherchés avec `position` au lieu de `dist`) corrigée proprement.
+- Approuvée (APPROVE), squash 2e070cd (expectedHeadSha ddc3878). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ; ANO-184 à confirmer sur l'APK.
+
+### 2026-11-09 03:19:01 — WFS-292 fusionné par le lead dev (lead-dev auto)
+- PR #279, 2e revue après « corrigé dans » point par point et décisions du PO (22:51:10, 02:35:56). Captures ouvertes : fumée de jour en nappe continue derrière les roues (0 / 0,5 / 1 s), Golf bleue sous les lampadaires, Ville de nuit inchangée, choc au banc. Diff lu (`effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`).
+- Approuvée (APPROVE), squash 6a4b7bb (expectedHeadSha d73e796). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
+
+### 2026-11-09 03:19:54 — WFS-335 : PR #296 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures Course à 5 de nuit (Arrière, Proche) et trafic lointain identiques à l'œil ; diff lu (`vehicule_lod.h`, `model_loader.cpp`, `renderer.*`) : niveaux 2 et 3 en 4 pièces en Basse, correct.
+- Refus : conflit `src/render/bench_perf.cpp` avec main (27 commits de retard) ; décision du PO du 02:35:56 (adversaires de 48 à 100 px en LOD2 en Basse, dans cette PR) non appliquée ; description à mettre à jour (critère « ÷ 2 » retiré, objectif 30 img/s dans WFS-348).
+
+### 2026-11-09 03:44:17 — WFS-338 en PR #297 (agent arwa (Claude, session trafic))
+- PR #297 ouverte (🆕 dans `suivi-pr.md`, 🔀 dans `TACHES.md`), branche `feature/waforspeed-338` synchronisée avec `main` (093cbefc). Police dessinée jusqu’à 160 m derrière, renfort et retour à 220 m (hors de vue), rapprochement borné (4 m/s + 0,3 × distance), jamais dans la voiture du joueur ; encart POLICE = distance à la police ; raison de chaque perte de points écrite sous le score ; vrai chantier (panneau AK5, biseau de cônes K5a) posé 450 m avant, bandeau à 200 m ; policier en uniforme au volant ; bandes « POLICE » et rampe bleue posée sur le pavillon.
+- Accroche hors zone annoncée : `src/world/conducteurs.h/.cpp` (paramètre `policier`, ≤ 10 lignes).
+- Preuves : tests CPU 83 OK ; banc `course5` : parcours complet 0 écart ; 24 captures « après » dans `qa/pr/WFS-338/` dont la suite `poursuite-arrivee-1` à `-6` (renfort à 229, 204, 158, 114, 81, 56 m derrière). Point pour le lead dev : mesure RG-04 de WFS-119 (Basse, ralentisseur) +128 appels sur ce banc local (Checkpoint de référence anormalement bas, 183).
