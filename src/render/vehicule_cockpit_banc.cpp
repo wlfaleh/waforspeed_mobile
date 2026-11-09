@@ -23,6 +23,7 @@
 #include "../../third_party/stb/stb_image.h"
 #include "../../third_party/stb/stb_image_write.h"
 #include "eclairage_physique.h"
+#include "environnement.h"
 #include "renderer.h"
 #include "vehicule_cockpit.h"
 
@@ -78,6 +79,10 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
                 const std::string base = out + "/cockpit-voisine-" + car + (nuit ? "-nuit" : "") + "-" + (cote < 0 ? "gauche" : "droite") + "-" +
                                          (ecartLat < 1.85 ? "1m8" : "1m9") + "-" + (devant > 0 ? "devant" : "cote") + "-" + nomRegard(rg);
                 // lumière figée pendant les trois images (comme WFS-235) ; halo coupé (il déborderait de la voisine)
+                // une capture d'environnement en cours (cube de lumière, une face par image, WFS-150) rendrait une face pendant
+                // l'image en couleur clé : le cube deviendrait magenta et teinterait toute la lumière ambiante ensuite (vu au banc :
+                // X5, voisine à droite) ; on la laisse finir avant de suspendre les captures
+                for (int i = 0; i < 12 && environnement::enCours(); i++) g.render(t);
                 eclairage::suspendreCaptures(true);
                 const float bloom = r.bloomForce; r.bloomForce = 0;
                 // image témoin A2 refaite à la fin : si elle diffère de A (> 0,2 % des pixels), la lumière bougeait : on recommence
