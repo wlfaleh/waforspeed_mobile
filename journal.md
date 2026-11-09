@@ -3141,6 +3141,35 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - 145 captures ouvertes (montée jour / nuit, Proche / Capot, suite de 6, vue de dessus, parcours complet) : plus de lacets, plus aucun pan de terrain ni plaque dans le ciel sur la montée. Diff entier lu ; branche construite, `tests_cpu.sh` 91/91 verts ; triangles du décor −3 %.
 - Revue « ✅ Approuvé par le lead dev » postée (COMMENT : même compte GitHub). Squash refusé par GitHub : conflit dans `journal.md` (entrée du PO de 20:49:16). Le développeur synchronise avec `main` et rappelle le lead dev ; fusion ensuite.
 - À surveiller (non bloquant) : bande de falaise derrière le village sous la descente (`apres-parcours-*-4200`), décor inchangé ; `benchMontee` ne remet pas `modeCourse()`.
+
+### 2026-11-09 21:03:05 — WFS-379 fusionné par le lead dev (lead-dev)
+- PR #317 fusionnée en squash (ed494ea) après la synchronisation du développeur (dc295047 : `main` seul, vérifié). Revue « ✅ Approuvé » postée sur dc295047 (COMMENT : même compte GitHub).
+- `TACHES.md` : WFS-379 en 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne #317 retirée de `suivi-pr.md`.
+
+### 2026-11-09 21:03:43 — WFS-379 : fusionné, session terminée (Claude, agent cartes 2 (01UY1Vv4VT))
+- PR #317 fusionnée en squash par le lead dev (ed494ea9) ; ticket 🟡 À valider (utilisateur) ; `qa/Check.md` tenu par le lead dev.
+- Incident : la 1re synchronisation (dc295047) était restée en HEAD détachée dans mon dossier de travail (laissée ainsi par la 1re revue du lead dev) ; rattachée à la branche et poussée en avance rapide, puis fusion.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (vidéo des lacets). Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-09 21:10:28 — WFS-359 attribué à Claude, agent dev3d 2 (01UY1Vv2MH) (po-scrum-master)
+- Demande de la session `@dev3d` session_01UY1Vv2MHmNkDc96qUCVUja (agent `dev-artiste-3d`), nouvelle session, aucun ticket avant : 1er et seul ticket de la session.
+- Choix : objectif « voitures sans marque » avant le décor (ordre de l'utilisateur du 19:14). WFS-362 attend WFS-358 ; **WFS-359** (P1, ⏳ Prêt) est le ticket voitures suivant. **Exception E10** (même ordre : au plus deux tickets voitures en même temps si deux sessions `@dev3d`) : en parallèle de WFS-358 (X5) et de WFS-349 (cockpit), zones séparées.
+- Zone : `assets/cars/<mustang, tcross, passat>*`, `assets/cars/remplacants/**`, lignes de ces voitures dans `src/game/cars.h`, `assets/licences/**`, crédits, entrées du ticket dans `tools/formes.json` / `tools/logos.json`, `tests/**` ; **pas** `x5*` (WFS-358), `vehicule_cockpit*` (WFS-349), autres voitures. Règles : `regles-de-gestion/WFS-359.md` (RG-01 Mustang ±1 % sans dérogation, sinon autre modèle libre proposé au PO ; RG-02 T-Cross → VW Passat CC BY). Pas E15 : pas d'avis agent 3D obligatoire.
+- `track-agent.md` : ligne de Claude, agent cartes 2 (01UY1Vv4VT) enlevée (WFS-379 fusionné #317, session terminée) ; derniers envois 374, 349 mis à jour.
+
+### 2026-11-09 21:12:07 — WFS-376 : PR #318 refusée par le lead dev (lead-dev)
+- Revue du commit 4ee2758d : 18 paires de captures ouvertes, diff lu en entier, branche construite et testée (92 tests CPU réussis, `test_marina_bateaux` réussi).
+- Les bateaux sont réussis (coques à flot cul au quai, gréement, aucune voile hissée, pontons, bittes, quai abaissé), sans appel de dessin en plus, et rien n'est dégradé ailleurs.
+- Refus pour preuves manquantes : (1) la suite `marina-suite-1` à `-4` ne montre aucun bateau (la marina est hors de l'image), alors que le PO l'a rendue obligatoire contre le clignotement entre les niveaux de détail ; (2) aucune capture de nuit. Le code n'est pas à reprendre.
+- Remarques non bloquantes : Basse à +11,1 % (chiffre noté, admis par le PO) ; RG-09 vient du lampadaire de 6,4 m (hors zone, tâche séparée à voir avec le PO) ; captures « doree » identiques à « midi » (E13, ANO-208).
+- `TACHES.md` → « ↩️ Retour lead dev (PR #318) » ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-09 21:12:22 — WFS-369 attribué à Claude, agent dev3d 3 (01UY1Vv5WS) (po-scrum-master)
+- Demande de la session `@dev3d` session_01UY1Vv5WS2KPjVrJGzH9iLM (agent `dev-artiste-3d`), nouvelle session, aucun ticket avant : 1er et seul ticket de la session.
+- Choix : les voitures ne sont pas libres (E10 : WFS-358 et WFS-359 déjà en parallèle, maximum atteint ; WFS-360 attend WFS-359, WFS-362 attend WFS-358). Ticket suivant pour `dev-artiste-3d` : **WFS-369** (P1, ⏳ Prêt, plus petit numéro des décors prêts 369 / 372 / 373) ; file Ville de E15 libre.
+- Zone : `src/world/ville*.cpp`, `ville_quartiers.*`, `commerces.cpp` (mobilier et parasols de terrasse seulement), nouveaux fichiers `src/world/mobilier_*` / `decor_ville_*`, `assets/world/modeles/ville/**`, `assets/textures/decor/ville/**`, `assets/licences/**`, `tests/**` ; communs (`archi_kit.*`, `vegetation.*`, `decor_carte.*`, shaders `decor*`) : ajouts ≤ 10 lignes annoncés au journal. **Pas** `plage.cpp` (WFS-376), immeubles (WFS-370), `lots_decor.*` / `pietons.*` (performance), routes, voitures, lumière.
+- Règles : `regles-de-gestion/WFS-369.md` (RG-01 inventaire au journal d'abord ; RG-02 modèles CC0 / CC BY ±1 %, choix proposé au PO ; parasols ANO-216) et `regles-de-gestion/E15-decors.md` (RG-E15-06 : « Avis agent 3D : VALIDÉ » dans la PR avant le lead dev ; taille ajoutée notée dans la PR, le 200-700 Mo se mesure sur WFS-385).
 ### 2026-11-09 21:02:53 — WFS-358 : calandre de la X5, jonction propre et logo du capot recousu (Claude, agent dev3d (01UY1Vv41d))
 - **Méthode RG-03 (a)**, choisie après mesure de l'ouverture (vue de face projetée du modèle) : grille découpée sur le contour exact, toujours derrière la carrosserie. Pas de cadre en haricots, pas de « pare-buffle ».
 - **Causes des 4 défauts de RG-04** :
