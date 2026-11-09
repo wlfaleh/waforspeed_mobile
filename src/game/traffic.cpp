@@ -398,13 +398,56 @@ void Traffic::crash(TrafficCar& car, double impact, int side) {
     if (car.deuxRoues) { car.crashSpin *= 0.25; car.chute = 1.5 + impact * 2; }
 }
 
-// chocs avec le joueur (hitCar) et quasi-contacts, comme la fin de update() du jeu web
+// WFS-333 : recouvrement de deux rectangles orientés par les 4 axes séparateurs (axes propres de chaque rectangle)
+double recouvrement(const Emprise& a, const Emprise& b, double* nx, double* nz) {
+    const double ax[4][2] = {{std::sin(a.cap), std::cos(a.cap)}, {std::cos(a.cap), -std::sin(a.cap)},
+                             {std::sin(b.cap), std::cos(b.cap)}, {std::cos(b.cap), -std::sin(b.cap)}};
+    auto demi = [](const Emprise& e, double ux, double uz) {
+        return e.demiL * std::abs(std::sin(e.cap) * ux + std::cos(e.cap) * uz) + e.demiW * std::abs(std::cos(e.cap) * ux - std::sin(e.cap) * uz);
+    };
+    double mini = 1e18, bx = 1, bz = 0;
+    for (const auto& u : ax) {
+        const double d = (b.x - a.x) * u[0] + (b.z - a.z) * u[1];
+        const double o = demi(a, u[0], u[1]) + demi(b, u[0], u[1]) - std::abs(d);
+        if (o < mini) { mini = o; const double sg = d >= 0 ? 1 : -1; bx = u[0] * sg; bz = u[1] * sg; }
+    }
+    if (nx) *nx = bx;
+    if (nz) *nz = bz;
+    return mini;
+}
+
+Emprise empriseJoueur(const Player& pl) {
+    return {pl.playerX * RW, 0, pl.heading + pl.spinYaw, pl.car->d.L / 2, pl.car->d.W / 2};
+}
+
+Emprise empriseTrafic(const TrafficCar& c, double dz) {
+    // WFS-136 : une voiture qui traverse est déjà de profil par son cap (laneYaw = π/2)
+    return {c.offset * RW, dz * M, c.laneYaw + (c.crashed ? c.crashYaw : 0), c.len * M / 2, c.w * RW};
+}
+
+bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, double largeurM) {
+    if (!pl.car) return false;
+    const Emprise j = empriseJoueur(pl), v{x * RW, (rd - pl.dist) * M, 0, longueurM / 2, largeurM / 2};
+    double nx = 0, nz = 0;
+    const double o = recouvrement(j, v, &nx, &nz);
+    if (o <= -JEU_CONTACT_M) return false;
+    rd += nz * (o + JEU_CONTACT_M) / M; x += nx * (o + JEU_CONTACT_M) / RW;
+    return true;
+}
+
+// chocs avec le joueur (hitCar) et quasi-contacts, comme la fin de update() du jeu web.
+// WFS-333 (RG-02, RG-03) : emprises tournées comme le dessin (tête-à-queue du joueur, rotation d'une voiture accidentée), et
+// à la fin, aucune voiture dessinée dans celle du joueur : la voiture du trafic encore en recouvrement est écartée.
+// Voiture du joueur seulement (Aide::Activee / Desactivee, posée à chaque pas par aide_direction.cpp) : l'ordinateur et les
+// références du jeu web (Aide::Web, test_course) gardent exactement les chocs du jeu web.
 HitEvents Traffic::collide(Player& pl, double dt) {
     HitEvents ev;
+    const bool dessine = pl.aide != Aide::Web;   // WFS-333 : emprises dessinées
     scrapeCd_ -= dt;
     const CarDef& me = *pl.car;
-    // emprise réelle de la voiture tournée de « heading » (rectangle orienté)
-    const double ch = std::cos(pl.heading), sh = std::abs(std::sin(pl.heading));
+    // emprise réelle de la voiture tournée de « heading » (rectangle orienté) ; WFS-333 : + tête-à-queue (spinYaw), tel que dessiné
+    const double spin = dessine ? pl.spinYaw : 0.0, capJ = pl.heading + spin;
+    const double ch = spin == 0 ? std::cos(pl.heading) : std::abs(std::cos(capJ)), sh = std::abs(std::sin(capJ));
     const double pz = pl.position + PLAYER_Z;
     const double myLen = (me.d.L * ch + me.d.W * sh) / M, myW = (me.d.W * ch + me.d.L * sh) / (2 * RW);
     for (auto& car : cars) {
@@ -413,9 +456,18 @@ HitEvents Traffic::collide(Player& pl, double dt) {
         const double lat = std::abs(pl.playerX - car.offset);
         // WFS-136 : une voiture qui traverse est de profil (longueur en travers de la route)
         const bool travers = car.traverse >= 0 && !car.crashed;
-        const double cLen = travers ? car.w * 2 * RW / M : car.len, cW = travers ? car.len * M / (2 * RW) : car.w;
+        double cLen = travers ? car.w * 2 * RW / M : car.len, cW = travers ? car.len * M / (2 * RW) : car.w;
+        if (dessine && car.crashed) {   // WFS-333 : voiture accidentée, tournée sur elle-même : emprise de son rectangle tourné
+            const double a = car.laneYaw + car.crashYaw, cc = std::abs(std::cos(a)), ss = std::abs(std::sin(a));
+            cLen = (car.len * M * cc + car.w * 2 * RW * ss) / M; cW = (car.w * 2 * RW * cc + car.len * M * ss) / (2 * RW);
+        }
         const double touchLat = myW + cW, touchZ = (myLen + cLen) / 2;
-        if (lat < touchLat && std::abs(dz) < touchZ) {
+        // WFS-333 : rectangle englobant atteint ; voitures tournées (tête-à-queue, accident) : contact seulement si les
+        // rectangles orientés se touchent (sinon choc à distance, sans contact visible)
+        const bool tourne = dessine && (spin != 0 || car.crashed);
+        const bool contact = lat < touchLat && std::abs(dz) < touchZ &&
+                             (!tourne || recouvrement(empriseJoueur(pl), empriseTrafic(car, dz)) > 0);
+        if (contact) {
             // ---------- hitCar ----------
             const int side = signi(pl.playerX - car.offset) ? signi(pl.playerX - car.offset) : 1;
             const double overlapZ = touchZ - std::abs(dz), overlapX = touchLat - lat;
@@ -441,9 +493,14 @@ HitEvents Traffic::collide(Player& pl, double dt) {
                 // une voiture nous rentre dedans par l'arrière (on a pilé devant elle)
                 const double rel = std::max(0.0, car.speed - pl.speed), impact = rel / MAX_SPEED;
                 car.z = track_->wrap(pl.position + PLAYER_Z - touchZ - 0.25 / M);
-                pl.speed += rel * 0.5; car.speed = pl.speed - rel * 0.1;
+                pl.speed += rel * 0.5;
+                // WFS-333 (RG-02, ANO-180) : une voiture accidentée (en glissade, de travers) ne prend pas la vitesse du joueur :
+                // elle n'est plus conduite, elle garde la sienne (bornée à celle du joueur) et reste derrière ; avant, chaque
+                // contact la recalait juste derrière lui à sa vitesse : elle le suivait de travers, collée, jusqu'au trottoir
+                car.speed = dessine && car.crashed ? std::min(car.speed, pl.speed * 0.9) : pl.speed - rel * 0.1;
                 ev.bumps++; ev.shake = std::max(ev.shake, (float)(0.25 + impact * 1.5)); ev.push('b', impact);
             }
+            if (dessine) separer(pl, car);
             car.prevDz = track_->relZ(car.z - (pl.position + PLAYER_Z));
             continue;
         }
@@ -454,7 +511,25 @@ HitEvents Traffic::collide(Player& pl, double dt) {
         }
         car.prevDz = dz;
     }
+    // WFS-333 (RG-03) : dernière vérification, sur les emprises dessinées : une voiture repoussée contre une autre ou entrée
+    // pendant le pas (glissade, tête-à-queue) ne reste jamais dans celle du joueur
+    if (dessine)
+        for (auto& car : cars)
+            if (!car.cache && std::abs(track_->relZ(car.z - pz)) * M < 12) separer(pl, car);
     return ev;
+}
+
+// WFS-333 (RG-03) : écarte la voiture du trafic de celle du joueur si leurs emprises dessinées se recouvrent (direction de
+// moindre recouvrement, JEU_CONTACT_M de jeu) ; le joueur n'est pas déplacé (sa conduite garde la main)
+void Traffic::separer(const Player& pl, TrafficCar& car) {
+    const double dz = track_->relZ(car.z - (pl.position + PLAYER_Z));
+    if (std::abs(dz) * M > 12) return;
+    double nx = 0, nz = 0;
+    const double o = recouvrement(empriseJoueur(pl), empriseTrafic(car, dz), &nx, &nz);
+    if (o <= -JEU_CONTACT_M) return;
+    car.offset += nx * (o + JEU_CONTACT_M) / RW;
+    car.z = track_->wrap(car.z + nz * (o + JEU_CONTACT_M) / M);
+    car.prevDz = track_->relZ(car.z - (pl.position + PLAYER_Z));
 }
 
 void Traffic::watch(const Player& pl) {

@@ -3,6 +3,7 @@
 //    recouvrement des emprises (Traffic::collide) ;
 //  - adversaire (règle du duel, aussi course à 5 et police : duel::contacter) : contact côte à côte, le joueur braque vers lui
 //    pendant 3 s : aucun recouvrement (avant WFS-256 : 0,59 m, la vitesse latérale ramenait la voiture dans l'autre).
+//  WFS-333 : voitures accidentées et tête-à-queue mesurés sur les emprises dessinées (rectangles orientés).
 // usage : test_chocs_voitures
 #include <algorithm>
 #include <cmath>
@@ -33,7 +34,11 @@ int main() {
                     if (c.cache) continue;
                     const double dz = std::abs(t.relZ(c.z - p.position)) * M, dx = std::abs(c.offset - p.playerX) * RW;
                     const double oz = (p.car->d.L + c.len * M) / 2 - dz, ox = p.car->d.W / 2 + c.w * RW - dx;
-                    if (oz > 0 && ox > 0) pire = std::max(pire, std::min(oz, ox));
+                    // WFS-333 : rectangles alignés sur la route pour deux voitures droites ; une voiture accidentée (tournée sur
+                    // elle-même) ou un joueur en tête-à-queue se mesurent sur leurs emprises dessinées (rectangles orientés) : le
+                    // rectangle aligné d'une voiture de travers déborde de sa carrosserie et compterait un recouvrement qui ne se voit pas
+                    if (!c.crashed && p.spinYaw == 0) { if (oz > 0 && ox > 0) pire = std::max(pire, std::min(oz, ox)); }
+                    else pire = std::max(pire, recouvrement(empriseJoueur(p), empriseTrafic(c, t.relZ(c.z - p.position))));
                 }
             }
             std::printf("trafic à %3.0f km/h, file %+.2f : %d choc(s), recouvrement max %.3f m\n", kmh, x, chocs, pire);

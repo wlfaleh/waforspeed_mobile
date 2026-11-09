@@ -31,5 +31,8 @@ void benchTrafficScenes(Game& g, Renderer& r, const std::string& outDir);
 void benchTraficVivant(Game& g, Renderer& r, const std::string& outDir);
 // WFS-232 : deux-roues du trafic seuls (trafic-motos-*, Ville et Corniche, jour et nuit ; aussi à la fin de benchTraficVivant)
 void benchDeuxRoues(Game& g, Renderer& r, const std::string& outDir);
+// WFS-333 (RG-04) : banc « penetration » : choc latéral provoqué (vues Poursuite et Cockpit, Ville de nuit), puis accident
+// et voiture accidentée laissée derrière ; captures penetration-*.png ; rend le nombre d'écarts (voiture dans celle du joueur)
+int benchPenetration(Game& g, Renderer& r, const std::string& outDir);
 
 } // namespace wfs
