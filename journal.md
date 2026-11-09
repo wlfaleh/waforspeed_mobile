@@ -2969,3 +2969,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:24:56 — Sessions à ouvrir : une seule @dev3d ; exception E10 pour WFS-358 (po-scrum-master)
 - Question de l'utilisateur : une session `@artiste` et une `@dev3d` ? Réponse : seulement `@dev3d` pour l'instant ; aucun ticket n'est fait seulement d'actifs 3D sans code (WFS-358 à 361 demandent les deux).
 - Exception E10 : WFS-358 peut avancer en parallèle de WFS-349 (zones séparées), dès la fusion de #311.
+
+### 2026-11-09 19:26:22 — 13 autres voitures sans marque : WFS-362 à 368, une US pour chaque deux voitures (po-scrum-master)
+- Question de l'utilisateur : « et les autres voitures ? ». Constat : les 20 voitures ont un nom inventé (WFS-191) et plus de logo (WFS-192), mais WFS-193 n'a retouché la forme que de la Compass, de la 208 et de la X5 (`tools/formes.json` : compass, p208). **13 voitures gardent leur signature de marque** (calandre, feux, prises d'air).
+- US créées (E10, agent `dev-artiste-3d`, `@dev3d`) : **WFS-362** M4 + S3 (P1), **363** Giulia + Range Rover Sport (P1), **364** Golf + Corsa (P1), **365** 911 + Gallardo (P1), **366** SF90 + GT86 (P2), **367** Model 3 + V60 (P2), **368** Abarth 500 seule (P2). Les plus reconnaissables d'abord. Chaîne : 362 après WFS-358 (méthode de la grille validée), puis à la suite.
+- Ordre des tickets voitures : 358 → 362 → 359 → 363 → 360 → 364 → 365 → 366 → 367 → 368 → 361. Exception E10 : au plus deux tickets voitures en même temps si deux sessions `@dev3d`.
