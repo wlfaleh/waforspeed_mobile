@@ -109,32 +109,96 @@
   "empreinteAvant": "4fc2afea68dc4d96",
   "retouches": [
    {
-    "retirer": true,
+    "decouper": true,
     "materiau": 15,
-    "boite": [
-     -0.47,
-     0.625,
+    "contour": {
+     "rectangle": [
+      -0.47,
+      0.625,
+      0.47,
+      0.96
+     ],
+     "rayons": [
+      0.035,
+      0
+     ],
+     "pas": 6
+    },
+    "z": [
      -2.5,
-     0.47,
-     0.955,
-     -2.36
+     -2.25
     ],
-    "note": "calandre de marque (deux « haricots » : cadre, barres et arcs du bas) retirée",
-    "triangles": 2640
+    "note": "calandre de marque (deux « haricots » : cadre, barres et arcs du bas) retirée par découpe exacte sur un contour à coins arrondis (bord net : plus de dents de scie ni de trous, WFS-358)",
+    "triangles": 2668
    },
    {
-    "retirer": true,
+    "decouper": true,
     "materiau": 10,
-    "boite": [
-     -0.47,
-     0.625,
+    "contour": {
+     "rectangle": [
+      -0.47,
+      0.625,
+      0.47,
+      1.0
+     ],
+     "rayons": [
+      0.035,
+      0
+     ],
+     "pas": 6
+    },
+    "z": [
      -2.5,
-     0.47,
-     1,
      -2.3
     ],
-    "note": "fond des haricots retiré",
+    "note": "fond des haricots et ancien logo du capot retirés (découpe exacte, WFS-358)",
     "triangles": 240
+   },
+   {
+    "decouper": true,
+    "materiau": 21,
+    "contour": {
+     "rectangle": [
+      -0.47,
+      0.625,
+      0.47,
+      0.96
+     ],
+     "rayons": [
+      0.035,
+      0
+     ],
+     "pas": 6
+    },
+    "z": [
+     -2.5,
+     -2.25
+    ],
+    "note": "panneau intérieur derrière l'ancienne calandre retiré dans l'ouverture (il passait devant le haut de la grille, WFS-358)",
+    "triangles": 533
+   },
+   {
+    "decouper": true,
+    "materiau": 9,
+    "contour": {
+     "rectangle": [
+      -0.47,
+      0.625,
+      0.47,
+      0.96
+     ],
+     "rayons": [
+      0.035,
+      0
+     ],
+     "pas": 6
+    },
+    "z": [
+     -2.5,
+     -2.25
+    ],
+    "note": "traverse intérieure retirée dans l'ouverture (WFS-358)",
+    "triangles": 117
    },
    {
     "materiau": 4,
@@ -161,24 +225,86 @@
     "sommets": 47
    },
    {
-    "grille": [
-     -0.48,
-     0.63,
-     -2.43,
-     0.48,
-     0.915,
-     -2.37
+    "boucher": true,
+    "materiau": 4,
+    "centre": [
+     0,
+     0.983
     ],
-    "barres": 6,
-    "galbe": 0.045,
-    "cadre": 0.015,
-    "couleur": "#4a4a4a",
-    "metal": 0.8,
-    "rugosite": 0.3,
-    "note": "grille générique d'un seul tenant (RG-05 : cadre et barres au même galbe, 4,5 cm), posée dans l'ouverture d'origine, bords 1 à 2 cm derrière la carrosserie qui cache la jonction (RG-06) ; bas un peu plus large (trapèze 1,05) ; haut à 0,915 m (rien par la fente capot-phares)",
-    "trapeze": 1.05
+    "rayons": [
+     0.038,
+     0.027
+    ],
+    "z": [
+     -2.45,
+     -2.3
+    ],
+    "note": "ancien logo rond du capot : biseau et trou retirés, peau du capot recousue, même peinture (WFS-358, revue du lead dev)",
+    "seuil": 1.2,
+    "triangles": 66
+   },
+   {
+    "grilleAjustee": {
+     "contour": [
+      [
+       -0.5,
+       0.605
+      ],
+      [
+       0.5,
+       0.605
+      ],
+      [
+       0.52,
+       0.7
+      ],
+      [
+       0.5,
+       0.93
+      ],
+      [
+       0.42,
+       0.97
+      ],
+      [
+       -0.42,
+       0.97
+      ],
+      [
+       -0.5,
+       0.93
+      ],
+      [
+       -0.52,
+       0.7
+      ]
+     ],
+     "z": [
+      -2.52,
+      -2.3
+     ],
+     "ignorer": [
+      9,
+      21,
+      22
+     ],
+     "recul": 0.015,
+     "fond": 0.05,
+     "lames": 9,
+     "lame": {
+      "hauteur": 0.014,
+      "profondeur": 0.03,
+      "chanfrein": 0.003,
+      "pente": 0.006
+     },
+     "couleur": "#26282b",
+     "metal": 0.6,
+     "rugosite": 0.3,
+     "couleurFond": "#0a0a0a"
+    },
+    "note": "grille générique d'un seul tenant ajustée à l'ouverture : profondeur qui suit la carrosserie (toujours 1,5 cm derrière, jamais devant), 9 lames chanfreinées inclinées, fond noir mat 5 cm plus loin (WFS-358, RG-03 / RG-05)"
    }
   ],
-  "empreinteApres": "8a664fb46210b69c"
+  "empreinteApres": "87570eb9ad0fa1c8"
  }
 }

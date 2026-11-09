@@ -3045,3 +3045,28 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 ### 2026-11-09 19:52:48 — WFS-358 : début, branche feature/waforspeed-358 (Claude, agent dev3d (01UY1Vv41d))
 - Ticket reçu du PO (calandre de la X5, jonction grille / carrosserie, contour de l'ancien logo du capot). Skills agent-developer, waforspeed-natif, artiste-3d chargés.
 - Étape suivante : mesurer l'ouverture du pare-chocs (`retoucher_formes.mjs --zone x5`), choisir la méthode RG-03 et la noter ici avant de coder.
+
+### 2026-11-09 21:02:53 — WFS-358 : calandre de la X5, jonction propre et logo du capot recousu (Claude, agent dev3d (01UY1Vv41d))
+- **Méthode RG-03 (a)**, choisie après mesure de l'ouverture (vue de face projetée du modèle) : grille découpée sur le contour exact, toujours derrière la carrosserie. Pas de cadre en haricots, pas de « pare-buffle ».
+- **Causes des 4 défauts de RG-04** :
+  - dents de scie et éclats blancs : retrait « par centre de triangle » de #311 (bord en escalier, trous traversants aux coins bas) ;
+  - coin haut droit : grille à profondeur fixe, devant la carrosserie qui recule sous le phare ;
+  - peigne : pas de paroi derrière le bord, bouts des barres sur l'intérieur clair ;
+  - aussi des ailettes noires (barres verticales des haricots vues par la tranche).
+- **Logo du capot** : le biseau et le trou du logo restaient (disque blanc de jour, ovale de nuit).
+- **Fait** : `tools/retoucher_formes.mjs`, 3 retouches rejouables :
+  - découpe exacte par contour (triangles coupés) ;
+  - grille ajustée : profondeur suivant la carrosserie (1,5 cm derrière, refus d'écrire si un sommet passe devant), 9 lames chanfreinées, fond noir, conduit noir tout autour ;
+  - bouchon : triangles du logo retirés, peau du capot recousue.
+
+  `tools/formes.json` (entrée x5, depuis le modèle d'avant #311, empreinte après 87570eb9ad0fa1c8) ; `x5.wfm` 7,54 Mo / `.lod` régénérés.
+- **Accroche annoncée** (`src/render/feux_modele.cpp`, banc `WFS_VITRINE_BAS`, 8 lignes) : plusieurs vues séparées par « ; » ; rien ne change sans « ; ».
+- **Essais écartés pour le logo** : plan ou quadrique + pièce posée devant (disque plus clair : le vernis réagit à de très petits écarts) ; pièce posée derrière (points sombres au bord du trou en lumière rasante) ; zone recousue plus large (débordait sur la pointe repliée, pli).
+- **Vérifié** :
+  - `--verifier` OK pour les 3 voitures ; l'outil rejoué donne un fichier identique ;
+  - 90 tests CPU verts ;
+  - `captures_pr.sh` plus vues 2560×1440 et zooms ×4, de jour et de nuit, toutes regardées : les 4 défauts ne se voient plus.
+- **Limites** :
+  - au zoom ×4, en plein reflet du soleil, un très léger losange reste à l'endroit du logo ;
+  - +7 012 triangles pour la grille (LOD refaits).
+- Outils du conteneur installés pour le banc : mesa-vulkan-drivers, glslc, ninja-build, imagemagick (apt), meshoptimizer 0.22.0 (npm, dans `tools/node_modules`, non versionné). Aucun autre téléchargement.
