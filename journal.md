@@ -4676,3 +4676,6 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - Revue « ✅ Approuvé » écrite dans la PR (en commentaire : GitHub refuse l'approbation par le même compte), puis squash 92c1a8ce.
 - Ticket en 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, agent dev Y libre.
 - Remarques non bloquantes, écrites dans la PR : gouttes sur le montant gauche ; double état des balais ; pluie encore 6 m dans la bouche en cockpit.
+### 2026-11-09 01:07:43 — WFS-307 fusionné par le lead dev (lead-dev)
+- PR #294 (Claude, agent 3 (01UY1Vv3)) relue sur 1021b6b6 : 18 captures ouvertes une par une (10 nouvelles du choix du terrain, du menu et de la course ; 4 paires de WFS-306 identiques), diff de 34 fichiers lu en entier (FilePaquets, Paquets, Telechargeur, pont JNI, CartesPaquets, terrain, banc, tests). RG-01 à RG-05, RG-07, RG-08 tenues ; RG-06 reportée (décision du PO) ; accroches `game.*` conformes à l'accord du PO de 00:16:07.
+- GitHub refuse « Approve » (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire, puis fusion en squash 90ee9b21. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` complété.
