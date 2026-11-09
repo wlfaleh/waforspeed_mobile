@@ -4697,6 +4697,45 @@ PR #287, 2e revue sur 349c03c4 : les 3 points du refus sont corrigés (RG-04 cou
 - **Captures** : `qa/pr/WFS-335/` (31 captures du banc `lod` avant / après, Basse ; Course à 5 de nuit vues Arrière et Proche, trafic de nuit de 10 à 170 m) ; 31 sur 43 identiques au pixel près, les autres ne changent qu'au loin. Le script `captures_pr.sh` avec le banc `nuit` durait plus d'une heure (machine partagée, charge 19) : arrêté, captures `lod` produites et mises en forme à la main.
 - **Chiffres** : triangles des voitures −16,5 à −24 % en Course à 5 de nuit, −11 % en Ville avec trafic, −73 % par voiture lointaine ; voiture du joueur inchangée (109 884). RG-03 (÷ 2) non tenue : décision du PO demandée (entrée précédente).
 - **Lead dev** : non appelé par moi (agent lancé par la session, sans outil d'appel) ; ligne 🆕 dans `suivi-pr.md` pour le passage automatique.
+
+### 2026-11-09 01:53:15 — Statuts automatiques, bancs du matin #5 (robot statuts)
+- Run vert (workflow_dispatch, commit 4e7fa71) : WFS-192 ✅ (PR #266, 2c1e9ab), WFS-285 ✅ (PR #283, f8b5200), WFS-300 ✅ (PR #272, d88e426), WFS-330 ✅ (PR #280, 760feee), WFS-301 ✅ (PR #278, c153be1), WFS-305 ✅ (PR #285, ca047f6), WFS-306 ✅ (PR #286, 67f2521), WFS-308 ✅ (PR #269, 5f2725e), WFS-161 ✅ (PR #207, 4fe82c8), WFS-226 ✅ (PR #214, ea9aa64), WFS-227 ✅ (PR #210, ca20e9e), WFS-234 ✅ (PR #209, 777c1b4), WFS-239 ✅ (PR #255, 0f0eee4), WFS-257 ✅ (PR #220, e1fad76), WFS-244 ✅ (PR #218, 4a0fbb9), WFS-250 ✅ (PR #215, a91cc8d), WFS-251 ✅ (PR #224, e0ddfa0), WFS-252 ✅ (PR #230, fcbe69b), WFS-277 ✅ (PR #233, 3e3b217), WFS-279 ✅ (PR #241, 08e611b), WFS-261 ✅ (PR #219, 3b07e48), WFS-266 ✅ (PR #252, 8c8bdc7), WFS-267 ✅ (PR #232, 466a4c8), WFS-270 ✅ (PR #231, ceb4b18), WFS-272 ✅ (PR #227, e134cac), WFS-275 ✅ (PR #237, ce592cb), WFS-278 ✅ (PR #240, 84e1c4d), WFS-284 ✅ (PR #250, 94f6f41), WFS-286 ✅ (PR #253, def95c4), WFS-288 ✅ (PR #254, 0a76fe8), WFS-298 ✅ (PR #260, 7d269b9).
+
+### 2026-11-09 02:02:03 — WFS-328 : RG-05 (image délavée en pleine course, ANO-179) corrigée, PR #282 à relire (agent arwa (Claude, session trafic))
+- Cause : éclairement des lampadaires cherché avec `player->position` (abscisse ramenée au tour) au lieu de `dist` ; la route de chaque tour est tournée (WFS-268) : dès le 2e tour, lampes cherchées sur le 1er tour, 0,1 lx, EV −3,5 en pleine ville, image blanche / rose jusqu'à la fin. Correction d'une ligne dans `eclairage_physique.cpp` (33b61e5f).
+- Preuves : banc `WFS_BANC=depart WFS_DEPART_SEUL=longue` relancé après synchronisation : 980 images, EV mini 1,88, 0 image surexposée (main : EV −3,5 à 3:45 et 3:55) ; avant / après départs, « Recommencer », Cockpit, 4 min (3314744e, `qa/pr/WFS-328/pr.md`) ; 83 tests CPU OK.
+- Branche synchronisée (ddc38789), description de la PR réécrite, réponse point par point sous la revue du lead dev. ANO-184 : très probablement même cause (Voie rapide des Collines = carte Ville), à confirmer sur APK.
+
+
+### 2026-11-09 02:33:34 — WFS-292 : retours du lead dev corrigés, PR #279 à relire (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-292` synchronisée avec main (9ef574af), poussée (d73e796b). 83 tests CPU réussis ; parcours complet 0 écart (vues Arrière et Cockpit).
+- Fumée de jour (RG-01, condition du PO) : rapport fumée / chaussée juste derrière les roues 1,32 / 1,42 / 1,39 (0 / 0,5 / 1 s). Sur tout le panache (bandes de 15 px, largeur à mi-hauteur) : moyenne 1,30 / 1,36 / 1,34 ; corps de la nappe 1,31 à 1,48 ; la queue qui s'efface descend à 1,11-1,18. Deux essais écartés et non gardés : fondu^0,9 (+0,01 à 0,02) et effacement près de la caméra coupé (+0,02 à 0,05). Si le PO veut ≥ 1,3 jusqu'au bout de la queue, cela contredit l'effacement en 1 à 2 s : c'est à lui de trancher.
+- RG-04 : Golf bleue sous un lampadaire (`fumee-derapage-nuit`, Ville) : (26,21,32), saturation 0,35. RG-05 : Ville de nuit 0,70 % et 0,03 % (≤ 1 %). Choc du banc : 1 accident, 20 étincelles.
+- Description de la PR réécrite (agent, demande, vérifications, limites, captures) ; réponse point par point sous la revue. `suivi-pr.md` : 🔁 à relire. Je ne fusionne pas (lead dev).
+
+### 2026-11-09 02:35:56 — Décisions WFS-292 (RG-01 fumée) et WFS-335 (RG-03 triangles) ; WFS-348 créé ; début WFS-333 : attribué à agent arwa (po-scrum-master)
+- **WFS-292 / RG-01** : accepté « luminance fumée / chaussée ≥ 1,3 en moyenne sur le panache et sur le corps de la nappe, queue qui s'efface exclue » (mesures 1,30 / 1,36 / 1,34 ; corps 1,31-1,48 ; queue 1,11-1,18). RG-01 tenue. Mesure ajoutée à `DA-realisme.md` § 3.
+- **WFS-292 / Golf dans les phares des adversaires** (Course à 5 de nuit, gris argent bleuté) : condition du 22:51 tenue par la capture sous lampadaire ; phares = `nuit.cpp`, hors zone. **Pas de ticket séparé** (pas de finition non demandée) ; limite connue ; anomalie si l'utilisateur ou le QA la signale.
+- **WFS-335 / RG-03** : (1) accepté en **Basse seulement** : adversaires de 48 à 100 px en LOD2, dans la PR #296, sans saut de forme ; (2) **refusé** : voiture du joueur en LOD1 (RG-02 « voiture du joueur intacte de près », charte réalisme) ; (3) critère « triangles ÷ 2 » retiré : le coût est passé par pixel (mesure de l'utilisateur 00:08 : 207 k triangles, GPU scène 55,8 ms, 16 img/s). WFS-335 se ferme sur le gain mesuré.
+- **WFS-348** [TECHNIQUE] P1 créé (E4 + E13, ⏳ Prêt) : temps GPU par passe, Ville de nuit sous la pluie, cause et correction en Basse, objectif ≥ 30 img/s (`regles-de-gestion/WFS-348.md`).
+- **WFS-333** (P1, file B, E3) **attribué à agent arwa (Claude, session trafic)**, à sa demande. Tickets en parallèle chez lui (demande de l'utilisateur, « avancer vite ») : WFS-338 en cours, WFS-292 / 328 / 335 en PR. File A sans ticket libre (WFS-194 attend E10, tenue par WFS-193) ; WFS-333 est le premier P1 prêt de la file B, et WFS-336 (`traffic.*`) est fusionné. Zone (exception PO, E3) : `traffic.*`, `traffic_system.*`, chocs dans `course5*` / `poursuite*` (déjà à lui avec WFS-338), `tests/**` ; **interdit** : `player.*`, `conduite_*`, `game.cpp`, `track.*`, `camera_vue.*` (WFS-293), tailles d'interface. Critères : `regles-de-gestion/WFS-333.md` (RG-01 à RG-04, ANO-180, 181, 183, 190) ; test de parcours complet ; branche `feature/waforspeed-333` à pousser dès sa création ; skill `agent-developer` ; fusion par confiance > 50 % sinon une CI de branche.
+- WFS-339 ([TECHNIQUE] banc `campagne`) et WFS-348 restent prêts pour les prochains développeurs libres (Claude, agent dev Y est libre).
+
+### 2026-11-09 02:37:52 — WFS-333 : début, branche `feature/waforspeed-333` poussée (agent arwa (Claude, session trafic))
+- Ticket attribué par le PO (dada0a34). Fiche et ANO-180, 181, 183, 190 lues. Premier commit 8710c318 poussé.
+- Plan : trouver pourquoi trafic / adversaires / police pénètrent la voiture du joueur (séparation des corps dans `traffic*`, `course5*`, `poursuite*`), corriger, test CPU dédié sans pénétration.
+
+### 2026-11-09 03:18:02 — WFS-328 fusionné par le lead dev (lead-dev auto)
+- PR #282, 2e revue après « corrigé dans » point par point. Captures ouvertes : course longue de nuit (avant image blanche / rose EV −3,5, après nuit normale EV 2,8), départs Ville / Corniche / Campagne / Cockpit / Recommencer, jour. Diff de `eclairage_physique.*` lu : cause de RG-05 (lampadaires cherchés avec `position` au lieu de `dist`) corrigée proprement.
+- Approuvée (APPROVE), squash 2e070cd (expectedHeadSha ddc3878). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ; ANO-184 à confirmer sur l'APK.
+
+### 2026-11-09 03:19:01 — WFS-292 fusionné par le lead dev (lead-dev auto)
+- PR #279, 2e revue après « corrigé dans » point par point et décisions du PO (22:51:10, 02:35:56). Captures ouvertes : fumée de jour en nappe continue derrière les roues (0 / 0,5 / 1 s), Golf bleue sous les lampadaires, Ville de nuit inchangée, choc au banc. Diff lu (`effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`).
+- Approuvée (APPROVE), squash 6a4b7bb (expectedHeadSha d73e796). Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md`.
+
+### 2026-11-09 03:19:54 — WFS-335 : PR #296 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures Course à 5 de nuit (Arrière, Proche) et trafic lointain identiques à l'œil ; diff lu (`vehicule_lod.h`, `model_loader.cpp`, `renderer.*`) : niveaux 2 et 3 en 4 pièces en Basse, correct.
+- Refus : conflit `src/render/bench_perf.cpp` avec main (27 commits de retard) ; décision du PO du 02:35:56 (adversaires de 48 à 100 px en LOD2 en Basse, dans cette PR) non appliquée ; description à mettre à jour (critère « ÷ 2 » retiré, objectif 30 img/s dans WFS-348).
 ### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
 - Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
 
