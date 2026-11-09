@@ -4625,3 +4625,5 @@ PR #292 relue (diff complet : statuts.yml RG-A, matin.yml RG-C, pr.md) ; revue �
 - Pour le PO, deux remarques :
   - façade à l'ombre légèrement chaude (b* +1,8 à +2,9) au lieu de légèrement froide : finition possible ;
   - RG-04 de WFS-322 cite le banc `fluidite` pour le coût par image, mais ce banc mesure la caméra : critère à écrire avec le banc `perf`.
+
+### 2026-11-09 00:40:23 — WFS-322 fusionné (#289) ; WFS-341 créé (remarques du lead dev) ; WFS-193 (objectif, file A) à Claude, agent 1 (po-scrum-master)
