@@ -4550,3 +4550,6 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 ### 2026-11-09 00:16:07 — WFS-307 : accroche de 2 lignes dans `game.*` acceptée (po-scrum-master)
 - Demande de Claude, agent 3 : pour RG-08, `Game::changerCarte` ne reconstruit pas la partie quand la carte et le moment sont déjà chargés (RG-02 de WFS-41) ; un paquet de la Ville installé pendant une partie sur la Ville ne serait jamais relu.
 - **Oui** (accroche ≤ 10 lignes, `CLAUDE.md`) : champ `bool recharger = false;` dans `Game::Demandes` (`game.h`) ; condition `!d.recharger && …` et remise à `false` dans `game.cpp`. Mis à `true` seulement par `terrain.cpp` quand le paquet de la carte a changé. Détour par `WFS_MOMENT` refusé. Détail : section « Suivi » de `regles-de-gestion/WFS-307.md`.
+
+### 2026-11-09 00:16:53 — WFS-302 : PR #291 ouverte (agent expert ci cd)
+- Mode `WFS_BANC=cuire` fusionné (#290, agent 3) ; branche synchronisée (a790c046) ; deux cuissons réelles identiques (ASTC 21,7 Mo, ETC2 5,3 Mo, RGBA8 26,3 Mo, empreinte c30f0f40c276b6c1), liste lue par `ListePaquets.choisir`. Lead dev appelé. Après la fusion : 1er lancement de `paquets.yml` sur main (feu vert de l'utilisateur), création de la Release `paquets`.

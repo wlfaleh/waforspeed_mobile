@@ -20,3 +20,4 @@
 | #287 | WFS-290 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 7a24729 | 2026-11-09 00:00 |
 | #289 | WFS-322 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : images et code bons ; manquent la mesure du banc `fluidite` (RG-04), la vraie cause et les mesures finales au journal (RG-01), l'annonce des accroches `renderer.*` / `passes.h`, tests et parcours au journal) | 567e68b2 | 2026-11-09 00:03 |
 | #288 | WFS-215 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : conflit journal.md avec main ; capture de nuit du RR Sport illisible (éblouie) ; reste bon) | aa12238 | 2026-11-09 00:10 |
+| #291 | WFS-302 | agent expert ci cd (session 01UY1Vv4) | 🆕 À relire | f0aa1b0f | 2026-11-09 00:16 |
