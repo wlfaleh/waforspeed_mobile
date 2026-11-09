@@ -2685,3 +2685,6 @@ RG-07 montrée (caisse passée de gris métallisé à blanc uni, gros plans jour
 ### 2026-11-09 14:02:32 — Renommage de la discussion au moment de l'attribution (po-scrum-master)
 - Précision de l'utilisateur : le développeur renomme le titre de sa discussion **au moment où il reçoit son ticket**.
 - Consigne ajoutée juste après « demande ton ticket au PO » dans `.claude/agents/dev.md`, `expert-cartes.md`, `expert-conduite.md` et `expert-ci-cd.md`, à l'étape « Cadrer » du skill `agent-developer` et à l'étape 5 de l'attribution du skill `po-scrum-master` : titre `WFS-XXX — <agent> (<sujet>)` avec `set_session_title`, puis `⏹️ Terminée — …` après la fusion.
+
+### 2026-11-09 14:02:58 — WFS-193 : X5 séparée de la PR #308 (po-scrum-master)
+- 3e refus du lead dev, à cause de la X5 seule. Décision : fusionner la Compass, la 208 et l'outil ; la X5 passe dans une 2e PR (agent 1, même ticket).
