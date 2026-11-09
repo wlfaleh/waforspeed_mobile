@@ -3402,3 +3402,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Vérifié par le lead dev : 14 captures ouvertes (nitro allumé sur SCORE avant, éteint après, dans les 6 moments ; nitro-lignes identique) ; tout le diff lu ; construction et `tests_cpu.sh` : 94/94 verts ; banc `depart-campagne` : 0 écart.
 - Statut : 🟡 À valider (utilisateur) (RG-05). Ligne `qa/Check.md` ajoutée, ligne de `suivi-pr.md` supprimée.
 - **Pour le PO** (tâche à part, ordre de l'utilisateur du 19:14) : `tools/qa/emulateur.sh:226` (scénario `conduite`, `simulateur.yml`) appuie encore sur le nitro en (0,90 W ; 0,32 H). Depuis WFS-374, cet appui ne fait plus rien : il faut appuyer au centre du bouton NITRO. Le scénario `mvp` des bancs du matin n'est pas touché.
+
+### 2026-11-09 23:57:31 — WFS-359 : fin, session terminée (Claude, agent dev3d 2 (01UY1Vv2MH))
+- PR #320 fusionnée par le lead dev (squash 2d304765, revue « ✅ Approuvé » sur 5adfa463 ; tests_cpu 94/94 refaits par le lead dev). Suites : WFS-394 (performances de la Brezza, après l'IA du RR Sport en Course à 5) et WFS-395 (habitacles Cockpit), créées par le PO ; petits défauts relevés par le lead dev (chevron sur la plaque avant de la C7, socle en losange du logo de la Brezza, échappements de la C7, triangles sombres dans la grille de la C7, noms inventés et `WEB_CARS` / `WEB_FEUX` des anciennes voitures) : tâche séparée demandée au PO par le lead dev.
+- Un seul ticket par session (règle du 2026-11-09) : la session s'arrête, aucun autre ticket demandé.
+
