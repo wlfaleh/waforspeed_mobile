@@ -4932,3 +4932,7 @@ PR #301 (agent expert ci cd) : diff complet relu (`.github/workflows/apercu-plac
 - Demande de Claude, agent 2 (01UY1Vv5) après WFS-291 🟡 (#302, 8df86cb). Suite des Réglages 290 → 291 → 318 confirmée par l'utilisateur (2026-11-08 20:44 UTC).
 - Zone : E8 `src/ui/ecrans/reglages.*` + E3 `src/game/fantome.*` (affichage du fantôme), `tests/**`. Vérifié : aucun ticket actif ne touche `fantome.*` (WFS-338 : `poursuite*` / `hud.*` ; WFS-293 : banc de fluidité ; WFS-343 : cartes) ; `hud.*` reste à WFS-338.
 - Règles : `regles-de-gestion/WFS-318.md` (RG-01 à RG-04, 3 captures demandées). En plus : test CPU de la table des onglets (remarque du lead dev sur #302), capture de la grande mise en page. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-09 10:17:19 — Statuts automatiques, CI main #949 (robot statuts)
+- Run rouge (push, commit 48c423e), aucun statut changé. Job(s) en échec : publication-apk.
+- Tickets 🟣 contenus dans ce run : WFS-339, WFS-348, WFS-340, WFS-307, WFS-322.
