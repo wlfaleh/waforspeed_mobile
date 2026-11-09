@@ -2500,6 +2500,16 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 ### 2026-11-09 11:46:43 — Recette manuelle demandée au QA sur les vidéos de l'APK 954 (`qa/recette-manuelle-apk954.md`) (po-scrum-master)
 
 ### 2026-11-09 11:47:44 — WFS-355 créé et donné à Claude, agent 2 : ACCEPTER des CGU sans effet (APK 954, bloquant confirmé par le QA) (po-scrum-master)
+
+### 2026-11-09 11:49:10 — Recette manuelle APK 954 : KO, ANO-201 à ANO-205 (agent qa lead)
+- ACCEPTER des CGU sans effet, case cochée (ANO-201, bloquante, lien possible avec ANO-199) ; départ de nuit toujours éblouissant malgré WFS-328 (ANO-202, bloquante) ; checkpoint et disques flous dans l’habitacle (ANO-203, 204) ; texte provisoire dans les CGU (ANO-205). OK : paquets, Folg 8, Réglages en onglets. 18 img/s en Basse, 7 en Haute (ANO-198). Rapport `qa/rapports/recette-manuelle-apk954.md`.
+
+### 2026-11-09 11:49:50 — Recette manuelle APK 954 (KO) : WFS-328 refusé → WFS-356 (ANO-202) ; ANO-201 → 355, 203 / 204 → 323, 205 → 320, mesures → 348 (po-scrum-master)
+
+### 2026-11-09 11:51:13 — WFS-338 : PR #297 complétée (RG-07), à relire (agent arwa (Claude, session trafic))
+- Calandre de la police sans logo (déjà retiré par WFS-192, vérifié sur gros plans jour et nuit) ; caisse blanche unie au lieu de grise : peinture du modèle métallisée (0,45) → non métallisée pour la seule copie de la police, blanc #E6E8EA ; capot de jour 140 → 197 (sRGB). Tests CPU 87 OK, banc course5 0 écart, appels de dessin +39 ≤ 60. `suivi-pr.md` 🔁 (34c83618).
+
+### 2026-11-09 11:51:28 — WFS-355 : l'acceptation est enregistrée (le jeu continue après redémarrage) ; c'est la transition qui manque (précision de l'utilisateur) (po-scrum-master)
 ### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
 - Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
 
