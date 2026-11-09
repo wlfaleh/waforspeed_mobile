@@ -122,6 +122,25 @@ int benchLod(Game& g, Renderer& r, const std::string& out) {
             }
             capturer("lod-nuit-trafic-loin-" + std::to_string((int)d) + "-basse");
         }
+        // WFS-335 (revue du lead dev, PR #296) : la même voiture de 110 à 40 px à l'écran (passages niveau 1 → 2 à 100 px,
+        // niveau 2 → 4 pièces à 48 px, fondus compris) ; distance ajustée par le relevé du renderer (longueur à l'écran réelle)
+        double d = 18;
+        for (int cible : {110, 100, 95, 90, 80, 70, 60, 50, 48, 45, 40}) {
+            Renderer::ReleveVoiture vu{};
+            for (int essai = 0; essai < 4; essai++) {
+                if (Traffic* tr = activeTrafficMut()) {
+                    const double pos = g.player().position;
+                    for (size_t i = 0; i < tr->cars.size(); i++) { if (i == 0) poserDevant(tr->cars[i], pos, d, g.player().speed); else rangerLoin(tr->cars[i], pos, i, g.player().speed); }
+                }
+                r.releverVoitures = true; g.render(t + 0.001); r.releverVoitures = false;
+                vu = {};
+                for (const Renderer::ReleveVoiture& v : r.releveVoitures()) if (!v.joueur && v.px > vu.px) vu = v;
+                if (vu.px <= 0 || std::fabs(vu.px - cible) < 0.5f) break;
+                d *= vu.px / cible;
+            }
+            capturer("lod-passage-" + std::to_string(cible) + "px-basse");
+            WFS_LOG("lod-passage (WFS-335) : cible %d px, mesuré %.1f px à %.1f m, niveau %d, %u triangles", cible, vu.px, vu.distance, vu.niveau, vu.triangles);
+        }
         g.shutdown();
     } else erreurs++;
     {
