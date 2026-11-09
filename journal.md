@@ -2974,3 +2974,10 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - Question de l'utilisateur : « et les autres voitures ? ». Constat : les 20 voitures ont un nom inventé (WFS-191) et plus de logo (WFS-192), mais WFS-193 n'a retouché la forme que de la Compass, de la 208 et de la X5 (`tools/formes.json` : compass, p208). **13 voitures gardent leur signature de marque** (calandre, feux, prises d'air).
 - US créées (E10, agent `dev-artiste-3d`, `@dev3d`) : **WFS-362** M4 + S3 (P1), **363** Giulia + Range Rover Sport (P1), **364** Golf + Corsa (P1), **365** 911 + Gallardo (P1), **366** SF90 + GT86 (P2), **367** Model 3 + V60 (P2), **368** Abarth 500 seule (P2). Les plus reconnaissables d'abord. Chaîne : 362 après WFS-358 (méthode de la grille validée), puis à la suite.
 - Ordre des tickets voitures : 358 → 362 → 359 → 363 → 360 → 364 → 365 → 366 → 367 → 368 → 361. Exception E10 : au plus deux tickets voitures en même temps si deux sessions `@dev3d`.
+
+### 2026-11-09 19:26:36 — WFS-193 (X5) fusionné par le lead dev (lead-dev)
+- PR #311 acceptée sur ordre de l'utilisateur (« on ne jette pas le travail pour un petit défaut »), rouverte par le PO. Branche synchronisée avec `main` (7371b72e, sans conflit). Construction Release OK. `tests_cpu.sh` : 90 tests réussis.
+- Captures regardées : la calandre de marque a disparu de jour comme de nuit. Le diff ne touche que la X5 (`x5.wfm`, `x5.lod`, `formes.json`) et une accroche de banc de 2 lignes (valeurs par défaut inchangées). Aucune régression vue.
+- Approbation écrite dans la PR (revue COMMENT « ✅ Approuvé », car GitHub refuse l'approbation du même compte), puis squash **8d55c57c**. Branche gardée.
+- Les 4 défauts de jonction grille / carrosserie partent dans **WFS-358**, désormais ⏳ Prêt. Le léger contour de l'ancien logo sur le capot (déjà présent sur `main`) est signalé pour WFS-358.
+

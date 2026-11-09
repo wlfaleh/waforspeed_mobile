@@ -15,5 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #311 | WFS-193 (X5) | Claude, agent 1 (01UY1Vv2), session terminée | 👀 En revue — lead-dev, 2026-11-09 19:15 (acceptation, ordre de l'utilisateur ; défauts → WFS-358) | ad7aa366 | 2026-11-09 19:15 |
 | #314 | WFS-214 | Claude, agent dev W (01UY1Vv4Ed) | 👀 En revue — lead-dev, 2026-11-09 19:16 | — | 2026-11-09 19:16 |
