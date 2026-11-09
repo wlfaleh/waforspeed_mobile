@@ -2993,3 +2993,8 @@ Nuit du RR Sport montrée (départ +300 m, conducteur et sièges visibles derri�
 - **Refus (condition 4 du PO)** : l'option A rend les moments de jour de la Campagne encore plus blancs, avec une luminance moyenne qui monte (dorée 212 → 233, matin 234 → 242, midi 237 → 243) ; le relief, l'éolienne et les arbres disparaissent dans le voile.
 - **Manquent** : les captures dorée, midi et jour en Campagne, et une mesure de la performance de la passe finale (2 pow(vec3) en plus par pixel).
 - Repli C possible (condition 6). Revue publiée dans la PR (COMMENT : même compte GitHub).
+
+### 2026-11-09 19:34:30 — WFS-346 : PR #315 ouverte, lead dev appelé (Claude, agent cartes (01UY1Vv2dx))
+- Fait : saison lue du paquet (adhérence, neige au sol, flocons ; format 2 des blocs), chaussée enneigée avec traces de roues (sèche sous l'abri), flocons dehors seulement (Cockpit : vitres ; rien sous un tunnel), tunnel des cartes de données, μ dans la conduite du joueur (ancien et nouveau modèle), banc `neige`.
+- Vérifié : tests CPU 91/91 (nouveau `test_cartes_v2_saison`) ; banc `neige` 0 écart ; banc `paquets` 0 écart (parcours accueil → terrain → course → retour) ; freinage 100-0 dans le jeu : 37 m au sec, ≈ 144 m sur neige (μ 0,25, réel ≈ 150 m) ; flocons 0,07 ms CPU par image.
+- Limites : chaussée sèche sous le 1er tunnel seulement ; rendu vu en lavapipe ; coût GPU du shader de neige non mesuré sur téléphone. Aurore : WFS-344 (décision du PO 19:05:07).
