@@ -2531,3 +2531,9 @@ RG-03 (plancher 45 % en Basse, accord de l'utilisateur 09:14:26) relue et testé
 - Ordre de l'utilisateur : chaque session de développeur mène **un seul ticket jusqu'à la fusion** (corrections des refus du lead dev comprises), puis **s'arrête** ; interdit qu'une même session prenne un 2e sujet. Nouveau sujet = nouvelle session.
 - Transition : les tickets en cours se terminent par leur session (agent arwa : WFS-338 ; agent 1 : WFS-193 ; agent 2 : WFS-355 ; agent 3 : WFS-343 ; agent 5 : WFS-215 ; agent dev Y : WFS-354 ; Agent 0 : WFS-293), puis arrêt. Sessions déjà libres (agent 4, agent dev X, agent dev conduite) : terminées. WFS-258 ⏸ ira à une nouvelle session ; l'exception « suite des Réglages à agent 2 » est caduque.
 - Fichiers mis à jour : `CLAUDE.md` (règle prioritaire, « puis demander le ticket suivant » remplacé par « puis s'arrêter »), `.claude/agents/po-scrum-master.md` (refus d'une 2e attribution), `.claude/skills/agent-developer/SKILL.md`, `.claude/skills/waforspeed-natif/SKILL.md`, `.claude/agents/qa-lead.md`, `.claude/agents/expert-conduite.md`, `.claude/skills/expert-ci-cd/SKILL.md`, `track-agent.md`.
+
+### 2026-11-09 12:12:21 — Nouvelle règle : appeler un agent avec « @ » (po-scrum-master)
+- Demande de l'utilisateur : ouvrir une session avec `@dev`, `@po`, `@leaddev`, `@smartbrain`, `@cicd`… pour donner son rôle à la session.
+- Créé `appel-agents.md` (racine) : liste de tous les alias (10 agents du projet + 4 agents généraux), ce que fait la session au 1er message (elle devient l'agent) et en cours de conversation (elle appelle l'agent), exemples.
+- `CLAUDE.md` : règle ajoutée en tête ; `track-agent.md` : ligne du PO mise à jour.
+
