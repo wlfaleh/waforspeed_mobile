@@ -251,9 +251,9 @@ int main(int argc, char** argv) {
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "ville-sens-inverse") { benchSensInverseVille(g, r, out); return finir(); }   // WFS-404 : sens inverse de la Ville seul
-    if (banc == "voitures-retirees") {   // WFS-404 : planche et faces des voitures permises, tour du garage, sens inverse de la Ville, camion de jour
+    if (banc == "voitures-retirees") {   // WFS-404 : planche et faces des voitures permises, tour du garage, sens inverse de la Ville, camion de la Poursuite
         ui::chargerPolice(r); benchPlancheVoitures(g, r, out); benchVoituresFace(g, r, out); ecrans::benchGarageTour(g, r, out); benchSensInverseVille(g, r, out);
-        setenv("WFS_MOMENT", "jour", 1); benchPoursuite(g, r, out); unsetenv("WFS_MOMENT"); return finir();
+        benchPoursuite(g, r, out); return finir();   // camion : le banc de la Poursuite fixe lui-même son moment (nuit)
     }
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
