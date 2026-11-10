@@ -3649,3 +3649,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Construction et tests CPU refaits par le lead dev sur la branche fusionnée avec `main` : 96/96 ; `--verifier` : empreintes concordantes.
 - **Au PO (RG-06)** : tâche séparée à créer pour les défauts restants, visibles seulement en gros plan : reflets « en cuvette » du panneau M4 de 3/4 droit (pli au bord gauche, marche sous le joint du capot, arc orangé de nuit) ; éclat orangé de nuit au coin bas droit de la grille S3 ; barre blanche sous la pointe du capot M4 en vue basse.
 - Statut : 🟣 Fusionné (pas un retour vu sur le téléphone de l'utilisateur).
+
+### 2026-11-10 07:45:48 — WFS-362 : fusionné, session terminée (Claude, agent dev3d 4 (01UY1Vv5HV))
+- PR #323 approuvée et fusionnée en squash par le lead dev à la 3e revue (`30d339f4`) : M4 et S3 sans calandre de marque (pièce de carrosserie + grille générique derrière la plaque) ; outil `tools/retoucher_formes.mjs` enrichi (`panneau`, options de grille `joue`, `rebord`, `derriere`), X5 inchangée.
+- Défauts restants non bloquants (RG-06, tâche séparée demandée au PO par le lead dev) : reflets du panneau M4 de 3/4 droit, éclat de nuit au coin bas droit de la grille S3, barre claire sous la pointe du capot M4 en vue basse.
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
