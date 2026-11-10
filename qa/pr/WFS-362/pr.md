@@ -1,4 +1,4 @@
-## Agent : Claude, agent dev3d 4 (01UY1Vv5HV)
+Agent : Claude, agent dev3d 4 (01UY1Vv5HV)
 
 **Ticket** : WFS-362 — règles : `regles-de-gestion/WFS-362.md`
 
