@@ -1,6 +1,6 @@
 // WaForSpeed — WFS-372 : banc d'essai des gros plans des objets agricoles modélisés de la Campagne (WFS_BANC=campagne-objets).
 // Une vue libre (carte::g_vueCarte, comme la vue haute du col de WFS-216) par sorte d'objet, à hauteur d'homme, de jour, et la
-// nuit pour la vigne et la ferme : campagne-objets-vigne, -cloture, -bottes, -ferme, -poteau (+ -nuit). Les objets sont les
+// nuit pour la vigne et la ferme : campagne-objets-vigne, -cloture, -bottes, -ferme, -hangar, -poteau (+ -nuit). Les objets sont les
 // premiers de leur sorte posés sur le tour (campagne::objetBanc, rempli au chargement de la carte).
 #include <cstdlib>
 #include <cstring>
@@ -28,8 +28,9 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
     const Vue vues[] = {
         {"vigne", campagne::OB_VIGNE, -3.2f, -2.f, 1.6f, 1.2f, 7.f, 0.9f, 55, true},
         {"cloture", campagne::OB_CLOTURE, -1.9f, -1.5f, 1.3f, 0.f, 5.f, 0.6f, 50, false},
-        {"bottes", campagne::OB_BOTTES, -6.f, -4.f, 1.8f, 0.f, 3.f, 0.7f, 50, false},
-        {"ferme", campagne::OB_FERME, -24.f, -10.f, 3.5f, 0.f, 8.f, 3.5f, 55, true},
+        {"bottes", campagne::OB_BOTTES, -5.f, 11.f, 1.8f, 0.f, 3.f, 0.7f, 50, false},   // de l'avant : côté au soleil
+        {"ferme", campagne::OB_FERME, -24.f, -10.f, 3.5f, 0.f, 8.f, 3.5f, 55, true},   // façade et porte (côté route)
+        {"hangar", campagne::OB_FERME, -12.f, 32.f, 4.f, 0.f, 6.f, 3.f, 60, false},   // de l'avant : pignon du hangar au soleil   // de l'avant : pignon et façade au soleil
         {"poteau", campagne::OB_POTEAU, -R - 2.6f, -14.f, 1.6f, 0.f, 0.f, 6.5f, 50, false},
     };
     for (const char* mo : {"jour", "nuit"}) for (const Vue& v : vues) {

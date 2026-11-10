@@ -69,7 +69,7 @@ constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
     0x5b4636,   // écorce de cep
     0xa3a7a9,   // fil de palissage galvanisé
     0xcfb56f,   // paille de la botte (flanc)
-    0xbba060,   // bout de la botte (foin enroulé, à peine plus sombre)
+    0xc4a965,   // bout de la botte (foin enroulé, à peine plus sombre)
     0xcbbb9b,   // enduit à la chaux ocre clair
     0xa65a3c,   // tuile canal de terre cuite
     0x7d8f84,   // volets peints vert-gris
