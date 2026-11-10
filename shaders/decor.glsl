@@ -30,7 +30,10 @@ const float PIECE_PROF = 4.0, PIECE_PLAFOND = 0.3, JOUR_FACTEUR = 0.02;
 float hashFenetre(vec3 p) { return fract(sin(dot(floor(p * 4.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
 
 vec3 interieurFenetre(vec3 N, vec3 V, vec3 skyAmb) {
-    const float l = floor(vUv.x / 100.0) * 0.1, al = mod(floor(vUv.x), 100.0) * 0.1, h = floor(vUv.y) * 0.1;
+    const float l = floor(vUv.x / 100.0) * 0.1, al = mod(floor(vUv.x), 100.0) * 0.1, h = mod(floor(vUv.y), 100.0) * 0.1;
+    // WFS-370 : graine de la baie (1..100, 0 = absente) codée dans les centaines de v : tirages faits une fois par fenêtre (la position
+    // du monde, imprécise à quelques km de l'origine, faisait basculer allumée / éteinte d'un pixel à l'autre dans la même fenêtre)
+    const float graine = floor(vUv.y / 100.0);
     if (l <= 0.0 || h <= 0.0) return vec3(0.0);
     const vec2 f = fract(vUv);
     const vec3 U = vec3(0.0, 1.0, 0.0), T = normalize(cross(U, N));
@@ -48,11 +51,16 @@ vec3 interieurFenetre(vec3 N, vec3 V, vec3 skyAmb) {
     if (t == ty) rho = d.y > 0.0 ? 0.8 : 0.25;          // plafond / sol
     else if (t == tz) rho = 0.55 + 0.1 * step(0.6, fract(p.x * 0.7));   // fond : un meuble ou un cadre de temps en temps
     // un meuble bas devant le mur du fond (canapé, buffet), au hasard
-    if (t == tz && p.y < 0.85 - al && hashFenetre(origine + 0.5) > 0.4) rho *= 0.45;
-    const bool allumee = hashFenetre(origine) < pc.params.z;
+    const vec4 tir = graine > 0.0 ? fract(sin(graine * vec4(12.9898, 78.233, 37.719, 4.581)) * 43758.5453)
+                                  : vec4(hashFenetre(origine + 0.5), hashFenetre(origine), hashFenetre(origine + 2.3), hashFenetre(origine + 4.1));
+    if (t == tz && p.y < 0.85 - al && tir.x > 0.4) rho *= 0.45;
+    const bool allumee = tir.y < pc.params.z;
     // exposition physique (WFS-151) ; sans éclairage physique : exposition de référence de la nuit (EV100 4) ou du jour (15)
     const float k = F.iblB.x > 0.0 ? F.iblB.x : (F.misc.y > 0.5 ? 1.0 / (1.2 * 16.0) : 1.0 / (1.2 * 32768.0));
-    vec3 c = allumee ? pc.emissive.rgb * (rho / 0.5) * k : rho * skyAmb * JOUR_FACTEUR;
+    // WFS-370 (accroche, RG N2 / D7) : chaque pièce allumée a sa lampe, de 2 700 à 4 000 K (plus souvent chaude), de 0,55 à 1,3 fois la luminance de référence (rideaux, lampes plus ou moins fortes) ; rapports à
+    // la lampe de référence 2 850 K (lumiere::couleurTemperature, luminance 1 ; moyenne 0,93 × M-04)
+    const vec3 teinte = mix(vec3(1.0468, 0.9739, 0.8294), vec3(0.7675, 1.1175, 2.2923), tir.z * tir.z) * mix(0.55, 1.3, tir.w);
+    vec3 c = allumee ? pc.emissive.rgb * teinte * (rho / 0.5) * k : rho * skyAmb * JOUR_FACTEUR;
     // lampe au plafond : un peu plus de lumière vers le haut de la pièce, ombre douce vers le fond
     if (allumee) c = pieceAdaptee(c * mix(0.75, 1.15, clamp((p.y + al) / (h + al + PIECE_PLAFOND), 0.0, 1.0)) * mix(1.0, 0.7, p.z / PIECE_PROF));   // WFS-356 (accroche E13) : adaptation locale
     return c;

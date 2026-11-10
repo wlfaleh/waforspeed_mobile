@@ -48,6 +48,7 @@
 #include "../render/eau_parametres.h"   // WFS-380 (accroche) : eau de la rivière
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : fontaines déclarées au son des lieux
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
+#include "decor_ville_port.h"   // WFS-370 : conteneurs, portiques et clôture du port modélisés
 
 namespace wfs {
 namespace {
@@ -247,6 +248,12 @@ public:
             const vec3 x = pm.f * -s, c = pm.o + pm.r * (s * ((float)RW + SET_BACK));   // façade face à la rue, x dans son sens
             archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, o.balcons || o.h < 20 ? archi::Style::Classique : archi::Style::Moderne, (uint32_t)(a * 2 + (o.side > 0)));
         }
+        // WFS-370 : entrepôts du port = bâtiments du kit, style industriel (brique, baies d'atelier, portes de garage), façade à o.lat
+        for (int64_t a = 0, L = (int64_t)plan_->objets.size(); a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::ENTREPOT) {
+            const carte::Pose pm = poseS(*g.track, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
+            const vec3 x = pm.f * -s, c = carte::lateral(pm, s * o.lat, -0.2f);
+            archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, archi::Style::Industriel, (uint32_t)(a * 2 + (o.side > 0)) ^ 0x5eedu);
+        }
         {   // WFS-137 : optiques des feux (éteinte : verre sombre ; LED allumées, comme la Corniche) et jet de la fontaine
             Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
             lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
@@ -439,6 +446,7 @@ public:
             break;
         }
         case ville::ENTREPOT: {   // corps, toit en losange, deux portes côté route ; pose au milieu (Math.round)
+            if (archi::carte::actif()) break;   // WFS-370 : bâtiment industriel du kit à la place (repli WFS_ARCHI=0 : ancienne boîte)
             const carte::Pose pm = carte::poseAt(t, a + (int64_t)std::floor(o.len / SEG_M / 2 + 0.5));
             const vec3 c = carte::lateral(pm, s * (o.lat + o.d / 2), -0.2f);
             carte::box(U, c, pm.r, pm.f, o.d, o.h, o.len, uvc(U_ENTREPOT0 + o.k));
@@ -450,21 +458,20 @@ public:
         case ville::CONTENEURS: {   // k colonnes de 1 à 3 conteneurs (12 m), hauteur et couleur tirées de la graine
             const vec3 b = carte::lateral(p, s * o.lat, ville::solY(z, o.lat));
             Mulberry32 Rc(o.graine);
-            for (int i = 0; i < o.k; i++) for (int hh = 0; hh < 1 + (int)(Rc.next() * 3); hh++)
-                carte::box(U, b + p.r * (i * 2.6f) + up * (hh * 2.6f), p.r, p.f, 2.45f, 2.55f, 12, uvc(U_CONT0 + (int)(Rc.next() * 6)));
+            for (int i = 0; i < o.k; i++) for (int hh = 0; hh < 1 + (int)(Rc.next() * 3); hh++)   // WFS-370 : conteneurs ISO de 40 pieds modélisés
+                port::conteneur(U, mobilier::repere(b + p.r * (i * 2.6f) + up * (hh * port::CONT_H), p.r, p.f), uvc(U_CONT0 + (int)(Rc.next() * 6)), uvc(U_NOIR), lod);
             break;
         }
-        case ville::GRILLAGE:   // grillage du port : poteau et lisse de 3 segments
-            if (lod) break;
-            carte::box(U, carte::lateral(p, s * o.lat, 0), p.r, p.f, 0.08f, 2.2f, 0.08f, uvc(U_METAL));
-            carte::box(U, carte::lateral(p, s * o.lat, 2.1f), p.r, p.f, 0.04f, 0.06f, 3 * (float)SEG_M, uvc(U_METAL));
+        case ville::GRILLAGE: {   // WFS-370 : clôture du port en panneaux rigides à double fil, 2 panneaux de 1,8 m par élément (3 segments)
+            const vec3 a0 = carte::lateral(p, s * o.lat, 0), a3 = carte::lateral(carte::poseAt(t, a + 3), s * o.lat, 0);
+            const vec3 mi = (carte::lateral(carte::poseAt(t, a + 1), s * o.lat, 0) + carte::lateral(carte::poseAt(t, a + 2), s * o.lat, 0)) * 0.5f;
+            port::cloture(U, a0, mi, p.r * -s, uvc(U_FONTE), lod);
+            port::cloture(U, mi, a3, p.r * -s, uvc(U_FONTE), lod);
             break;
-        case ville::GRUE: {   // 4 pieds, tête, flèche de 40 m au-dessus des quais, cabine
-            const vec3 b = carte::lateral(p, s * o.lat, ville::solY(z, o.lat));
-            for (float dx : {-3.f, 3.f}) for (float dz : {-3.f, 3.f}) carte::box(U, b + p.r * dx + p.f * dz, p.r, p.f, 0.7f, o.h, 0.7f, uvc(U_GRUE));
-            carte::box(U, b + up * o.h, p.r, p.f, 7.5f, 2.2f, 7.5f, uvc(U_GRUE));
-            carte::box(U, b - p.r * (s * 14) + up * (o.h + 1.5f), p.r, p.f, 40, 1.4f, 2, uvc(U_GRUE));
-            carte::box(U, b + p.r * (s * 3) + up * (o.h + 2.2f), p.r, p.f, 4, 3, 4, uvc(U_CABINE));
+        }
+        case ville::GRUE: {   // WFS-370 : portique de quai modélisé ; rail côté terre 6 m derrière l'ancienne emprise (hors des piles de conteneurs)
+            const float lr = o.lat + 6.f;
+            port::grue(U, out[P_VERRE], mobilier::repere(carte::lateral(p, s * lr, ville::solY(z, lr)), p.r * s, p.f), o.h, uvc(U_GRUE), uvc(U_CABINE), uvc(U_NOIR), lod);
             break;
         }
         }

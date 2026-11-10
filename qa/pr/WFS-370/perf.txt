@@ -1,0 +1,7 @@
+# WFS-370 — banc perf, Ville de nuit (lavapipe, 1280x720, 180 images de chauffe, 300 mesurées), lancés seuls l'un après l'autre
+## main
+perf ville Haute : image 543.9 ms (pire 707.5, 300 > 33 ms) ; processeur 2.2 ms (pire 74.5, 2 > 33 ms) : update 0.48, render 543.44 dont attente GPU 541.74, endFrame 1.03 ; 484 appels de dessin, 777763 triangles ; GPU ms omb 1,8 refl 63,4 scène 436,1 capture 36,6 sondes 0,1
+perf ville Basse : image 335.3 ms (pire 417.4, 300 > 33 ms) ; processeur 1.5 ms (pire 7.8, 0 > 33 ms) : update 0.46, render 334.80 dont attente GPU 333.78, endFrame 0.37 ; 237 appels de dessin, 374677 triangles ; GPU ms omb 2,0 refl 0,4 scène 291,1 sondes 0,3
+## branche
+perf ville Haute : image 601.8 ms (pire 896.8, 300 > 33 ms) ; processeur 2.3 ms (pire 75.9, 2 > 33 ms) : update 0.50, render 601.28 dont attente GPU 599.52, endFrame 1.08 ; 496 appels de dessin, 820180 triangles ; GPU ms omb 1,8 refl 68,3 scène 487,5 capture 39,6 sondes 0,1
+perf ville Basse : image 345.2 ms (pire 464.4, 300 > 33 ms) ; processeur 1.5 ms (pire 7.8, 0 > 33 ms) : update 0.47, render 344.75 dont attente GPU 343.70, endFrame 0.38 ; 242 appels de dessin, 395282 triangles ; GPU ms omb 2,0 refl 0,4 scène 301,8 sondes 0,3
