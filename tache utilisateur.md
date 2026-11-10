@@ -233,3 +233,4 @@ demande utilisateur :
 ( Utilisateur, 2026-11-10 18:03 UTC : « Cinquina aussi. » PO : c'est ajouté — compris comme la **Abarth 500** (la Cinquecento) : **WFS-414 corrige les volants de la Mustang, de la Golf 8 et de l'Abarth 500**, rien d'autre. )
 ( Utilisateur, 2026-11-10 18:04 UTC : « Trek-x aussi. » PO : c'est ajouté — compris comme le **T-Cross** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500 et du T-Cross**, rien d'autre. )
 ( Utilisateur, 2026-11-10 18:04 UTC : « R3 berline aussi. » PO : c'est ajouté — compris comme la **S3 berline** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500, du T-Cross et de la S3 berline**, rien d'autre. )
+( Utilisateur, 2026-11-10 18:05 UTC : « Guiliva aussi. » PO : c'est ajouté — la **Giulia** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500, du T-Cross, de la S3 berline et de la Giulia**, rien d'autre. )
