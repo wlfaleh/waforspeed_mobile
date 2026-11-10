@@ -3835,3 +3835,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Petits défauts restants relevés par le lead dev (RG-06, à confier au PO en tâche séparée) : Range Rover (reste de nid d'abeille sous les lames, pointe en haut du montant du cadre, silhouette encore reconnaissable de 3/4 : prises d'air basses, pavés LED), Giulia (léger creux sous la pointe du capot en vue très basse), `delaunay()` sans cas des points alignés.
 - Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
 
+
+### 2026-11-10 10:47:37 — WFS-370 fusionné par le lead dev (lead-dev)
+- PR #332 relue sur 05a6a342 (branche à jour avec main) : « Avis agent 3D : VALIDÉ avec réserves » (R1 à R6) présent ; 40 captures ouvertes (immeubles classique et moderne, rue des terrasses, port : rue, entrepôts, conteneurs, portique, clôture ; jour et nuit) ; tout le diff relu ; construction et `tests_cpu.sh` refaits : 98 tests réussis ; bancs `archi` et `corniche` lancés pour vérifier le kit commun (aucune régression vue).
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : **181aa552**. Statut 🟡 À valider (utilisateur) ; ligne de `suivi-pr.md` supprimée ; ligne ajoutée dans `qa/Check.md`.
+- Remarques non bloquantes, pour le PO : réserves R1 à R6 de l'agent 3D à mettre en tâches séparées (RG-E15-09) ; `archi_details.cpp` (`mansart`) : calcul `* 0.f` mort ; `etendue(GRUE)` passe à lat + 83 m, donc compter les portiques restants dans WFS-385 ; perf Haute +11 % à suivre aux bancs du matin.
