@@ -1917,3 +1917,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Vérification : 99 tests CPU verts après synchronisation (`c65303b4`) ; nouveau contrôle `test_cockpit` (vitesse dans la bande vue) ; agrandissements des 20 combinés dans `qa/pr/WFS-323/`.
 - Pour le PO : gouttes de pluie dessinées devant le rétroviseur intérieur la nuit (pluie en 2D, déjà sur `main`, hors de ma zone) ; cible « intérieur 30-35 % de l'image » de WFS-282 à revoir (52-59 % avec le toit et le champ de la référence).
 
+
+### 2026-11-10 12:51:45 — Plus aucun travail sur les 3 modèles NC d'origine (po-scrum-master)
+- Erreur du PO reconnue devant l'utilisateur : des US ont visé le X5 (WFS-193 part X5, WFS-358, WFS-393) alors que sa licence NC le condamnait. Ordre permanent ajouté : aucun ticket ne vise plus l'A 45, l'Elantra N ni le X5 d'origine ; les lots du cockpit (WFS-325) et les bancs les sautent (WFS-404).
