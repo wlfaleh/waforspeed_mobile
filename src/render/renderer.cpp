@@ -1043,7 +1043,19 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 }
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
-uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
+uint16_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
+    // WFS-324 (accroche) : rétroviseur de l'image (même distance maximale que la caméra). retroSeul : seulement la glace (voiture du
+    // joueur en vue Cockpit) ; horsRetro : jamais la glace (pièces de l'habitacle)
+    const bool loin = s.r >= 0 && !sansDistance && length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_);
+    const bool retro = retroOn_ && !horsRetro && !loin && (s.r < 0 || masquage::visible(fRetro_, s));
+    if (retroSeul) return retro ? (uint16_t)VIS_RETRO : (uint16_t)0;
+    const uint16_t v = classerSansRetro(s, sansDistance);
+    if (!retro) return v;
+    if (!v) masques_--;   // compté comme masqué par classerSansRetro : la glace le dessine
+    return (uint16_t)(v | VIS_RETRO);
+}
+
+uint16_t Renderer::classerSansRetro(const masquage::Sphere& s, bool sansDistance) {
     constexpr uint8_t CASC = 0xF0;   // WFS-227 : toutes les cascades d'ombre
     if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;
     // WFS-150 : image d'une capture d'environnement : tout objet reste en file pour la capture (6 directions) ;
@@ -1263,6 +1275,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
         fReflet_ = masquage::depuis(fp.proj * fp.view * R);
         fOmbre_ = masquage::depuis(u.shadowMat);
+        retroOn_ = fp.retro; if (retroOn_) fRetro_ = masquage::depuis(fp.retroVueProj);   // WFS-324 (accroche) : rétroviseur de l'image
         for (int k = 0; k < cascades_.n; k++) { fCasc_[k] = masquage::depuis(cascades_.m[k]); texelCasc_[k] = k ? 2 * cascades_.demi[k] / (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_) : 0.f; }   // WFS-227
         finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
         masquesPrec_ = masques_; masques_ = 0;
@@ -1355,7 +1368,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
-    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
+    const uint16_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
@@ -1370,7 +1383,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // écran complémentaire entre deux niveaux (scene.frag) ; jamais de cubes ; Basse, fantôme, police en lots : vehicule_lod.h
     // WFS-265 (2e retour du lead dev, PR #268) : la voiture du joueur est toujours complète, sans fondu (WFS-134), quelle que soit
     // sa taille à l'écran (vue haute, résolution dynamique) ; les autres suivent les niveaux de détail
-    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{&m.parts, &m.parts, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
+    // WFS-324 (accroche) : voiture du joueur vue seulement dans les rétroviseurs (petite image) : version allégée (Basse : 4 pièces)
+    const std::vector<ModelPart>* retroListe = !retroSeul ? &m.parts : qualiteBasse && !m.partsBasse.empty() ? &m.partsBasse : !m.partsLod.empty() ? &m.partsLod : &m.parts;
+    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{retroListe, retroListe, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1430,7 +1445,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || sceneFigee() || !m.indexCount) return;   // WFS-329 : fond figé : dessins 3D ignorés
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
-    const uint8_t vis = classer(sp);   // WFS-82
+    const uint16_t vis = classer(sp);   // WFS-82
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.vis = vis;
@@ -1463,7 +1478,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     const float part = lod_distance::partVisible(length(sp.c - camPos_), lod_distance::personnesMax(qualiteBasse));
     if (part <= 0.f) { masques_++; return; }   // compté comme objet masqué (journal du banc, remarque du lead dev, PR #268)
     fondu = lod_distance::combinerFondu(fondu, part);
-    const uint8_t vis = classer(sp);   // WFS-82 : avant de prendre une place
+    const uint16_t vis = classer(sp);   // WFS-82 : avant de prendre une place
     if (!vis) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);
@@ -1499,6 +1514,8 @@ void Renderer::drawQuads(const Vertex* v, int nQuads, const Material& mat) {
     p.pc.model = mat4::identity(); p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {0, 0, 0, 0};
+    // WFS-324 (accroche) : halos et lumières aussi dans le rétroviseur (phares des voitures derrière, la nuit : RG-04)
+    if (retroSeul) p.vis = VIS_RETRO; else if (retroOn_ && !horsRetro) p.vis |= VIS_RETRO;
     quadsUsed_ += nQuads;
     transparent_.push_back(p);
 }

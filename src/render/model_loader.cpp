@@ -9,7 +9,8 @@
 #include "../core/jobs.h"
 #include "../core/platform.h"
 #include "correctifs_voitures.h"   // WFS-170 : correctifs des modèles au chargement (ANO-71 à 77)
-#include "feux_modele.h"   // WFS-109 : découpe des feux arrière (RG-13)
+#include "feux_modele.h"
+#include "retroviseurs.h"   // WFS-324 (accroche) : rétroviseurs du modèle   // WFS-109 : découpe des feux arrière (RG-13)
 #include "mesh.h"          // WFS-149 : sommets versionnés, tangentes
 #include "vehicule_lod.h"  // WFS-158 (RG-04) : niveaux de détail des voitures
 
@@ -373,6 +374,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     if (!(tMax.y > tMin.y)) feux_modele::boiteFeuxMarques(idx, out.parts, posV, tMin, tMax);   // WFS-171 : feux marqués par WFS-170
     // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
     conducteurs::mesurerSiege(out, &verts[0].px, sizeof(Vertex) / sizeof(float), verts.size());   // WFS-73 (accroche, RG-01) : pavillon au-dessus du conducteur
+    retro::mesurerRetroviseurs(out, &verts[0].px, sizeof(Vertex) / sizeof(float), verts.size());   // WFS-324 (accroche) : place des rétroviseurs du modèle
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
     out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
     out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;
