@@ -20,7 +20,7 @@ void benchFeuxFrein(Game& g, Renderer& r, const std::string& out);
 // WFS-170 (RG-04, RG-08) : vitrine-<id>-feux des 20 voitures : vue arrière de trois quarts, frein tenu (feux stop allumés),
 // de jour. WFS_VOITURES="id id …" (essai local) : ces voitures seulement, avec aussi leur vitrine-<id>-0.
 void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out);
-// WFS-413 : optiques avant de nuit : phares-planche (voitures de face), phares-gros-plan-<id>, phares-joueur-face, phares-trafic, phares-jour-golf
+// WFS-413 : optiques avant de nuit : phares-planche (voitures de face), phares-gros-plan-<id>, phares-joueur-face, phares-trafic-face, phares-jour-golf
 void benchPharesOptiques(Game& g, Renderer& r, const std::string& out);
 }
 

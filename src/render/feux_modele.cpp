@@ -151,26 +151,29 @@ void benchPharesOptiques(Game& g, Renderer& r, const std::string& out) {
     std::remove(tmp.c_str());
     stbi_write_png((out + "/phares-planche.png").c_str(), COL * CW, LIG * CH, 3, planche.data(), COL * CW * 3);
     WFS_LOG("capture phares-planche : %zu voitures de face, de nuit, de gauche à droite et de haut en bas : %s (WFS-413)", voitures.size(), ordre.c_str());
-    // (5) gros plans : optique avant gauche à 1,5 m (Golf, M4, 911), de trois quarts
+    // (5) gros plans : optique avant gauche à moins de 2 m (Golf, M4, 911), de trois quarts (l'orbite part du centre de la voiture)
     for (const char* id : {"golf", "m4", "p911"}) {
         if (!g.init(r, id, "ville")) continue;
         g.setAutopilot(false);
         for (int i = 0; i < 4; i++) image(i == 3);
-        face(-0.42f, 0.72f, 1.5f);
+        face(-0.30f, 0.75f, 3.7f);
         capture(std::string("phares-gros-plan-") + id);
         g.shutdown();
     }
     g.orbitHauteur = h0; g.orbitRecul = r0;
-    // (1) voiture du joueur de face sur la chaussée (Golf), puis (3) vue Poursuite du conducteur dans le trafic de la Ville
+    // (1) voiture du joueur de face sur la chaussée (Golf), puis (3) trafic de la Ville vu de face : le trafic roule dans le même
+    // sens que le joueur, la caméra est donc 14 m devant lui et regarde vers l'arrière (le joueur et les voitures qui le suivent)
     if (g.init(r, "golf", "ville")) {
         choisirVue(VueCamera::Poursuite);
         g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
         for (int i = 0; i < 300; i++) image(i % 8 == 0);
         face(0.f, 1.1f, 6.5f);
         capture("phares-joueur-face");
-        g.camMode = 0; g.orbitHauteur = h0; g.orbitRecul = r0;
+        g.camMode = 0;
         for (int i = 0; i < 1200; i++) image(i % 8 == 0);
-        capture("phares-trafic");
+        face(0.f, 1.5f, 14.f);
+        capture("phares-trafic-face");
+        g.orbitHauteur = h0; g.orbitRecul = r0;
         g.shutdown();
     }
     // témoin de jour : la même vue de face, optiques éteintes
