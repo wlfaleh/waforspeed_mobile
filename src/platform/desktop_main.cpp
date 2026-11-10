@@ -40,8 +40,8 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 namespace wfs { int benchCampagneObjets(Game& g, Renderer& r, const std::string& out); }   // WFS-372 (accroche) : src/world/decor_campagne_banc.cpp
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
-namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }
-namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp   // WFS-328 (accroche) : eclairage_depart_banc.cpp
+namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
+namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp
 namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
