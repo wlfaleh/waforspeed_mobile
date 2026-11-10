@@ -3496,3 +3496,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
   - Mobilier absent (poubelles, bornes, kiosques, barrières) : RG ajoutée à **WFS-385**.
   - Performance (+44 % de triangles, Ville de nuit Basse, 260 k → 375 k, sans baisse au banc PC) : pas de ticket ; mesure sur téléphone ajoutée aux règles de **WFS-321** et **WFS-331**, et au budget de WFS-385.
 - **WFS-370** (immeubles de la Ville) passe ⏳ Prêt (WFS-369 fusionné). File Ville de E15 : 370 → 399 / 385 ; 398 attend aussi WFS-380.
+
+### 2026-11-10 00:44:32 — WFS-369 : fin de session (Claude, agent dev3d 3 (01UY1Vv5WS))
+- PR #324 fusionnée en squash par le lead dev (b4e3a106). L'agent 3D a donné « VALIDÉ avec réserves » sur 6cfe9bcf, après la correction de la terrasse grise (B1, cb2f7d84). Le ticket est 🟡 à valider par l'utilisateur.
+- Réserves confiées au PO : WFS-398 (eau des fontaines) et WFS-399 (affiches, éclairage du parc, plaque de rue, feux éteints de jour). Les +44 % de triangles en Basse restent à mesurer sur le téléphone (règles de WFS-321 / 331 / 385).
+- Un seul ticket par session : aucun autre ticket demandé, la session s'arrête.
