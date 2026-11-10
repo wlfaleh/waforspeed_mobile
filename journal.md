@@ -3584,3 +3584,19 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - RG-02 appliquée selon la décision du PO (option A, 01:37:40) : Corniche β0 2,55·10⁻⁴ m⁻¹ (V 15,3 km), Ville 18 km, Grand Prix 20 km, Campagne 22 km ; test `test_brume` vert, 96 tests CPU verts.
 - 7 captures avant / après + écart ×8 dans `qa/pr/WFS-381/` ; nuit identique au pixel près ; coût de la passe de scène dans le bruit de mesure (lavapipe).
 - Limite : effet surtout visible dans les vues larges (les cartes s'arrêtent vers 2 km).
+
+### 2026-11-10 02:03:29 — WFS-391 fusionné par le lead dev (lead-dev)
+- PR #329 (Claude, agent conduite (01UY1Vv4e7)), commit relu 3aef4fca ; squash 6ea09965 sur main ; revue « ✅ Approuvé » écrite dans la PR en commentaire (même compte GitHub).
+- Contrôles : les 60 captures ouvertes ; tout le diff lu (`player.cpp`, `player.h`, `sol_banc.cpp`, accroche de 2 lignes dans `desktop_main.cpp`, 2 tests) ; branche fusionnée en local avec main : construction OK, 95 tests CPU réussis ; bancs `sol`, `neige` et `parcours` relancés : 0 écart.
+- Statut : 🟡 À valider (utilisateur), car c'est un ticket de conduite. Ligne retirée de `suivi-pr.md`. Ligne ajoutée à `qa/Check.md`.
+- Pour le PO : RG-01 demande un test « pneus = μ × g ± 2 % dans les deux modèles ». Le test de la PR prouve la proportionnalité à μ. La valeur absolue n'est pas testée : Golf, ancien modèle, 1,024 μ g, soit +2,4 %, fixée par le réglage de freinage de WFS-188. Critère à préciser pour WFS-258.
+### 2026-11-10 02:03:41 — WFS-381 refusé par le lead dev, PR #330 (lead-dev)
+- Commit relu 11d3f1de ; 21 images ouvertes ; tout le diff lu ; construction et `tests_cpu.sh` refaits : 97 tests verts, `test_brume` vert ; nuit identique (RG-03 tenue) ; code sans défaut bloquant.
+- Refus : sur les captures 1 à 3 et les vues hautes, l'écart avant / après est de 0,6 à 1,5 niveau sur 255 en moyenne : on ne distingue pas les images, les lointains ne sont pas « nettement plus pâles et bleutés » (critère du ticket, demande de l'utilisateur ANO-221). `brume-mesures-avant.txt` montre des valeurs que main n'utilise pas.
+- Demandé : captures où l'effet se voit (avec une mesure du contraste à l'écran à 1 et 2 km), ou une nouvelle décision du PO si la RG-02 ne le permet pas avec des cartes de moins de 2 km ; PO prévenu (critère et RG-02 incompatibles avec ce qui est à l'écran).
+- `TACHES.md` : ↩️ Retour lead dev (PR #330) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-10 02:03:59 — Fin WFS-391 : session terminée (Claude, agent conduite (01UY1Vv4e7))
+- PR #329 fusionnée en squash par le lead dev (6ea09965) ; WFS-391 en 🟡 À valider (utilisateur) : freinage sur la neige plus court (≈ 127 m depuis 100 km/h au lieu de 145 m), bas-côté enneigé moins accrocheur, sec inchangé.
+- Remarques non bloquantes du lead dev notées : critère « pneus = μ × g ± 2 % » à préciser pour WFS-258 (Golf 1,024 μ g dans l'ancien modèle) ; banc `sol` : la voiture posée saute des checkpoints (banc seulement).
+- Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
