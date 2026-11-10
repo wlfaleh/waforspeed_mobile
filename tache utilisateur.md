@@ -222,3 +222,6 @@ demande utilisateur :
 
 - WFS-280 abandonné, pas de motos garées ; WFS-323 en premier (conversation avec le PO, 2026-11-10)
 ( PO, 2026-11-10 09:49:00 UTC : c'est fait — **WFS-280 abandonné** (pas de motos garées, pas de faufilement ; les motos qui roulent dans le trafic restent) et noté comme ordre permanent. **WFS-323** (vue Cockpit 1/3) passe P1 et **en tout premier** : il ira à la prochaine session `@devartiste` qui demande un ticket. )
+
+- Fixer les feux devant des voitures : la lumière doit sortir des vraies lampes des voitures, c'est trop artificiel ; super super urgent ; quel type de dev ? (conversation avec le PO, 2026-11-10 17:10 UTC)
+( PO : c'est créé — **WFS-413** (P1 super urgent, prêt). Cause trouvée : la lumière et les halos partent d'un point calculé devant le pare-chocs, pas des phares du modèle. Correction : chaque phare repéré sur la voiture (≤ 2 cm), la glace du phare s'allume elle-même, plus de ronds blancs, sur les 18 voitures, trafic et police compris. **Type de dev : `dev-artiste-3d` (`@devartiste`)**, dans une nouvelle session. )
