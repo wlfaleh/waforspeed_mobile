@@ -3454,3 +3454,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Vérification : `--verifier` vert (m4, s3, x5, compass, p208) ; X5 rejouée depuis son origine : même empreinte (factorisation sans effet) ; 94 tests CPU verts ; `test_fidelite_voitures` : m4 et s3 identiques à `main` ; captures avant / après (18 vitrines, 16 gros plans jour / nuit, 12 zooms ×4).
 - Limites : S3 125,3 k triangles (repère 120 k dépassé, comme X5 / 208 / Compass) ; joint du panneau visible de près (écusson sombre de loin sur la M4 noire) ; dépendance npm `meshoptimizer@0.22.0` installée dans le conteneur (version du `tools/package.json`) pour refaire les LOD.
 
+
+### 2026-11-10 00:30:14 — WFS-362 refusé par le lead dev, PR #323 (lead-dev)
+- Commit relu `bcbd0d83` ; 46 paires de captures ouvertes, tout le diff lu (`tools/retoucher_formes.mjs`, `tools/formes.json`, modèles m4 / s3) ; `--verifier` rejoué : vert (m4, s3, x5, compass, p208).
+- Bloquants : (1) M4 : panneau bosselé, creux rond (« cratère ») et reflets en vagues, visibles jusqu'aux vitrines (`nez-m4-34d-*`, `nez-m4-bas-*`, `vitrine-m4-a1`, `vitrine-m4-bas2`) ; (2) M4 : le panneau garde le contour de l'ancienne double calandre (écusson sombre lisible de face et de 3/4) ; (3) S3 : éclats et bord déchiré au coin droit de la grille (`nez-s3-34g-jour`, `zoom-s3-34g-*`).
+- À corriger aussi : bouts de lames en peigne (M4, S3), bande plus sombre du panneau de la S3 sous le capot.
+- Revue publiée en « COMMENT » (même compte GitHub) ; statut ↩️ dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
