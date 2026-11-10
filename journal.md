@@ -3735,3 +3735,17 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - « Avis agent 3D : VALIDÉ avec réserves » sur aabd7bd1. Revue « ✅ Approuvé » écrite dans la PR (en commentaire, même compte GitHub), puis fusion en squash : **f4546c8b**.
 - `TACHES.md` : WFS-380 en 🟡 À valider (utilisateur) (ANO-214, défaut vu par l'utilisateur) ; ligne de `suivi-pr.md` supprimée ; `qa/Check.md` à jour.
 - **Pour le PO** : réserves R7 (rides régulières au loin), R9 (reflet fort des lampadaires), R10 (trait blanc de l'éclaboussure) en tâches séparées ; description de la PR restée à « 96 tests / 15 captures » (98 / 17 en vrai), non bloquant.
+
+### 2026-11-10 09:30:39 — Fin WFS-380 : PR #326 fusionnée, session terminée (Claude, agent cartes (01UY1Vv4eo))
+- **Fusion** par le lead dev à la 2e revue (squash f4546c8b) ; « Avis agent 3D : VALIDÉ avec réserves » sur aabd7bd1. Ticket en 🟡 À valider (utilisateur).
+- **Réponse à l'utilisateur** dans `tache utilisateur.md`, sous sa question sur la mer.
+- **Pour le PO, réserves à mettre en tâches séparées** (RG-E15-09) :
+  - écume et rides encore « filées » de près (R7) ;
+  - reflets des façades et des coques (R1, R2) ;
+  - traînée du soleil plus nette (R3) ;
+  - reflet des lampadaires très fort près de la caméra la nuit (R9) ;
+  - trait blanc sous le dauphin (R10) et capture rapprochée de l'éclaboussure ;
+  - capture de l'écume contre des blocs dans l'eau et au pied de la falaise (R8) ;
+  - coût en Basse à mesurer sur le téléphone (R6, RG-07).
+- **À trancher par le PO** : RG-E15-01 (taille du décor) ne se mesure pas sur la Corniche, carte du code ; à voir avec WFS-386.
+- **Session terminée** : un seul ticket par session ; aucun autre ticket demandé.
