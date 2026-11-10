@@ -2240,3 +2240,27 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 19:21:51 — Statuts automatiques, CI main #992 (robot statuts)
 - Run rouge (push, commit ac765f1), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 19:23:39 — WFS-324 : rétroviseurs à vrai reflet, PR #341 ouverte (Claude, agent dev3d (01UY1Vv5YT))
+- Fait : passe enfichable « rétroviseurs » (`src/render/retroviseurs.{h,cpp}`, `retroviseurs_geo.cpp`). C'est un miroir plan exact : projection décentrée par la glace, depuis l'œil, sur le monde réfléchi. Une glace est redessinée par image (une image sur deux en Basse). Images de 352 × 88 et 192 × 112 texels. Seuls les objets vus par la glace sont redessinés (bit `VIS_RETRO`). Sans ombres ; personnes jusqu'à 25 m.
+- Voiture du joueur : vue seulement dans les glaces, en version allégée, sans ses vitres. Dans la glace intérieure, son habitacle est assombri (× 0,25).
+- Glaces extérieures : dessinées dans l'habitacle du cockpit. Le reflet est calculé depuis le rétroviseur du modèle 3D, dont la place est mesurée au chargement (saillie de la largeur, avec un secours). Trouvé sur 18 voitures sur 20 ; la M4 et la Corvette gardent une place estimée, avec un plan proche à 80 cm.
+- Pièces : coques extérieures modelées (surface balayée, lèvre, logement, nez), bras, aile, glaces à coins arrondis. Aucune forme nue.
+- Accroches annoncées (≤ 10 lignes chacune, hors zone) :
+  - `renderer.{h,cpp}` : `vis` sur 16 bits et `VIS_RETRO`, `FrameParams::retro`, `retroSeul` / `horsRetro`, halos dans la glace, version allégée de la voiture du joueur dans la glace ;
+  - `game.cpp` : 7 lignes, la voiture du joueur pour les glaces ;
+  - `model_loader.cpp` : 1 ligne (`mesurerRetroviseurs`), dans la zone de WFS-413 (feux), à garder lors d'une fusion ;
+  - `passes.h` : 2 accesseurs ;
+  - `scene.frag` : glace à reflet ;
+  - `desktop_main.cpp` : banc `retroviseurs`.
+- Vérification :
+  - `tests_cpu.sh` : 100 tests verts, dont le nouveau `test_retroviseurs` (21 cas) ;
+  - banc `retroviseurs` (Golf, 2400 × 1080, jour et nuit) : 0 écart ; la voiture derrière se voit dans les glaces ;
+  - banc `cockpit-voisine` (WFS-349, Golf) : 0 écart. Les glaces sont figées pendant ce banc : leur mise à jour à tour de rôle donnait une « lumière instable » de 0,6 % ;
+  - zooms pour la 911, la M4 et le Range Rover Sport.
+- Coût mesuré (RG-03), sur le banc PC lavapipe, avec et sans rétroviseurs, en alternance : moins de 2 % du temps de l'image en Basse et en Haute, soit 0,5 à 0,7 img/s perdue à 21 img/s (estimé). Chiffres dans `qa/pr/WFS-324/retroviseurs-mesures.txt`.
+- Limites :
+  - coût non mesuré sur le téléphone : 🟡 validation par l'utilisateur après la fusion ;
+  - glace extérieure en retard de 3 images au plus (7 en Basse) ;
+  - place et taille des glaces extérieures estimées (E) ;
+  - le modèle 3D de la Golf a son rétroviseur 50 cm plus en arrière que l'habitacle dessiné (l'œil du cockpit est trop en avant dans le modèle) : à signaler au PO, hors de ce ticket.

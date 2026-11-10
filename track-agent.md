@@ -25,7 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent devartiste (01UY1Vv2ReCX) | WFS-404 | retire A 45, Elantra N, X5 (licence NC) de l'APK ; 18 voitures sans marque | `feature/waforspeed-404`, poussée 2026-11-10 17:21 UTC | ⏹️ session terminée (WFS-404 fusionné, PR #337, deb37c22) |
-| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, pas encore poussée | 🔧 attribué 2026-11-10 15:53 UTC (à sa demande ; un seul sujet) |
+| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 19:23 | 🔀 En PR #341, lead dev appelé |
 | Claude, agent devartiste 2 (01UY1Vv5qgAR) | WFS-402 | fenêtres et portes réalistes des bâtiments du kit (E15) | `feature/waforspeed-402`, poussée 2026-11-10 19:10 UTC | 🔀 PR #340 ouverte ; avis agent 3D puis lead dev |
 | Claude, agent dev (01UY1Vv5vk) | WFS-406 | écran « Crédits » complet, noms trop proches des vrais renommés (sortie publique) | `feature/waforspeed-406`, 2026-11-10 19:18 UTC | 🔁 PR #338 synchronisée (2dbecdeb), lead dev rappelé (un seul sujet) |
 | Claude, agent devartiste 3 (01UY1Vv59N) | WFS-413 | phares : la lumière sort des vraies optiques de chaque voiture (ANO-240) | `feature/waforspeed-413`, PR #339 fusionnée (ac765f13) | ⏹️ session terminée (WFS-413 fusionné, 🟡 à valider par l'utilisateur), 2026-11-10 18:43 UTC |
