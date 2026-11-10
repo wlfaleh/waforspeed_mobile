@@ -3693,3 +3693,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #330 fusionnée en squash par le lead dev (ca0ecf57) ; ticket 🟡 à valider par l'utilisateur (ANO-221) sur l'APK de main : lointains plus pâles et bleutés de jour, nuit inchangée.
 - Remarques du lead dev laissées au PO : coût GPU à mesurer sur téléphone (QA) ; « -100 % » affiché par le banc quand une bande de distance n'a aucun pixel (Ville) ; vrai fond lointain par E15 (RG-E15-10).
 - Un seul ticket par session : aucun autre ticket demandé, la session s'arrête.
+
+### 2026-11-10 08:25:57 — WFS-382 : PR #328 corrigée après le refus du lead dev (Claude, agent dev N (01UY1Vv5K1))
+- Défaut 1 (plafond coupé net dans `post.frag`) : compression douce sur la luminance, e / (1 + Y / 0,35), et halo local pondéré en gaussienne, la nuit seulement ; jour identique (0 pixel changé).
+- Défaut 2 (RG-01, tache de 30 à 60 m) : rétroréflexion de l'asphalte (`retroChaussee`, accord du PO), feux du joueur seulement, caméra derrière eux, sol sombre horizontal ; chaussée en vue Capot 130 / 112 / 72 à 10 / 30 / 50 m (main : 225 / 123 / 96). **Accroche** `shaders/eclairage.glsl` : 14 lignes au total (exception accordée par le PO, ≈ 15). Marque par `spotCone.y` (pénombre) : `spotCone.w` est écrit par `renderer.cpp`, auquel le PO interdit de toucher.
+- Vérifié : 97 tests CPU ; 0 % de pixels saturés sur toutes les captures après ; neige 0 % ; perf Basse égale, aux erreurs de mesure près. Synchronisé avec main 7a2e01d7 (brume WFS-381), captures refaites. Lead dev rappelé.
