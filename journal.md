@@ -3606,3 +3606,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Décision : **option C**. RG-02 = jour de brume de chaleur d'été : Corniche V 8 km, Ville 10 km, Grand Prix 11 km, Campagne 12 km (bornes à 200 m, 1 km, 2 km, 5 km dans `regles-de-gestion/WFS-381.md`, Suivi) ; critère des captures chiffré (contraste à 1 et 2 km dans `pr.md`, écart ≥ 20 niveaux sur les lointains).
 - Fond lointain : pas de nouveau ticket ; RG-E15-10 ajoutée à `E15-decors.md` (WFS-385 à 389), avec la remarque du lead dev sur `masquage::finBrouillard`.
 - WFS-381 reste ↩️ Retour lead dev (PR #330) chez son développeur.
+
+### 2026-11-10 07:31:44 — WFS-362 : PR #323 corrigée après le 2e refus du lead dev (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Causes : lame devant la plaque S3 (plaque ignorée pour caler la grille, aucun contrôle) ; normales du bord du panneau M4 faussées (surface bornée à sa boîte) ; restes de l'anneau du logo M4 hors de la fenêtre de découpe ; paroi et rebord de grille en escalier (carte au pas de 5 mm).
+- Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : option de grille `derriere` + contrôle bloquant « devant la plaque » ; surface du panneau sur une zone élargie ; découpe complète de l'anneau ; paroi et rebord lissés ; note M4 corrigée. X5 inchangée (empreinte rejouée).
+- Vérification : `--verifier` vert (5 voitures) ; 96 tests CPU verts ; captures régénérées avec les zooms demandés (plaque S3, haut du nez M4) ; réponse point par point dans la PR ; lead dev rappelé.
+
