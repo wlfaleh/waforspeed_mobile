@@ -2015,3 +2015,9 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 ### 2026-11-10 16:36:10 — WFS-402 : périmètre arbitré, WFS-410 et WFS-411 créées (po-scrum-master)
 - Question de Claude, agent devartiste 2 (01UY1Vv5qgAR) : WFS-402 livre le kit `archi_*` (immeubles, maisons, villas de la Ville, de la Corniche, de la Campagne) et ajoute une fonction publique d'ouverture réutilisable.
 - Suite de la même demande de l'utilisateur : **WFS-410** (P1, E15 : lieux hors kit de la Corniche et de la Ville, église de la Campagne) et **WFS-411** (P2, E15 Neige : chalets au kit, skill expert-cartes), ⏳ en attente de la fusion de WFS-402, nouvelles sessions. Décision dans `regles-de-gestion/WFS-402.md` (Suivi).
+
+### 2026-11-10 16:48:18 — WFS-404 : PR #337 refusée par le lead dev (lead-dev)
+- Commit relu : d84d23ba. Branche construite et synchronisée avec `main` ; 100 tests lancés un par un : 99 verts, 1 rouge, le seul accepté par RG-11 (`test_course5_ordinateurs`, circuit 3/8). `verifier_licences.py` : 0 manque ; `effacer_logos.mjs --verifier` : vert.
+- Bloquant : volant de la M4. Sans les coutures, le dessin perd les boutons M1 / M2 des branches et ajoute l'agrafe rouge de la Golf GTI en bas (`vehicule_cockpit.cpp:712-722`), ce qui est contraire à RG-06 et RG-07. Le test `test_cockpit` (« boutons rouges ») ne l'attrape pas.
+- Captures à compléter : garage aux places des 3 voitures retirées, planche de face, sens inverse de la Ville visible.
+- Pour le PO : `tests_cpu.sh` s'arrête au premier échec ; avec le rouge connu sur `main`, la CI ne lancera plus les tests rangés après `test_course5_ordinateurs`, ni `verifier_licences.py`, jusqu'à WFS-394.
