@@ -33,6 +33,7 @@ vec3 appliquerBrume(vec3 col, vec3 p) {
 
 // WFS-100 (RG-02) : plafond du spéculaire (valeur HDR) avant le bloom, pour toutes les surfaces
 const float SPEC_MAX = 4.0;
+const float SPEC_MAX_CROISEMENT = 0.8;   // WFS-382 (RG-03) : reflet d'un feu de croisement sur la chaussée, borné (éclat brillant, jamais blanc brûlé)
 float D_GGX(float NoH, float a) { float a2 = a * a; float d = NoH * NoH * (a2 - 1.0) + 1.0; return a2 / (PI * d * d); }
 float V_Smith(float NoV, float NoL, float a) {
     float k = a * 0.5; return 0.25 / max((NoV * (1.0 - k) + k) * (NoL * (1.0 - k) + k), 1e-4);
@@ -134,8 +135,8 @@ float sunShadow(vec3 p, vec3 n) {
 float feuCroisement(vec3 w, vec3 D, float d, float range) {
     vec3 R = normalize(cross(D, vec3(0.0, 1.0, 0.0))), U = cross(R, D);
     float el = degrees(asin(clamp(dot(w, U), -1.0, 1.0))), az = degrees(atan(dot(w, R), dot(w, D)));
-    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.2) / 2.5, ah = az / 18.0;   // WFS-226 : étalement en (az / 18)⁴
-    float v = (el > -1.2 ? 1.0 : 1.0 / (1.0 + t * t)) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
+    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.5) / 0.85, ah = az / 18.0;   // WFS-382 : plateau à −1,5°   // WFS-226 : étalement en (az / 18)⁴
+    float v = (el > -1.5 ? 1.0 : 1.0 / (1.0 + pow(t, 1.6))) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
     return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
 }
 // WFS-353 (RG-01, accord E13 du PO du 2026-11-09 09:12:58) : variante « 2 lumières par pixel » (spotN.y = 2), lancée par le
@@ -157,10 +158,14 @@ float atanRapide(float y, float x) {
 // élévation asin(t) ≈ t (écart < 1,2 % sous 15°), azimut par atanRapide
 float feuCroisementRapide(vec3 w, vec3 D, float d, float range) {
     float el = 57.2957795 * w.y, az = 57.2957795 * atanRapide(w.z * D.x - w.x * D.z, dot(w, D));
-    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.2) / 2.5, ah = az / 18.0;
-    float v = (el > -1.2 ? 1.0 : 1.0 / (1.0 + t * t)) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
+    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.5) / 0.85, ah = az / 18.0;   // WFS-382 : plateau à −1,5°
+    float v = (el > -1.5 ? 1.0 : 1.0 / (1.0 + pow(t, 1.6))) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
     return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
 }
+// WFS-382 (RG-01, accord du PO du 2026-11-10) : rétroréflexion de l'asphalte vers un conducteur placé derrière ses phares (EN 1436, R_L ;
+// avis expert-realisme-3d : k = 0,12 / sin α, de 1 à 7) ; feux du joueur seulement (spotCone.y = 1 : pénombre 1 posée par nuit.cpp), sol
+// horizontal sombre (s'efface sur la neige et les surfaces claires, qui diffusent comme Lambert : RG-07)
+float retroChaussee(int i, vec3 L, vec3 N, vec3 albedo) { return F.spotCone[i].z > 0.5 && F.spotCone[i].y > 0.99 && N.y > 0.9 ? mix(clamp(0.12 / max(L.y, 1e-3), 1.0, 7.0), 1.0, smoothstep(0.2, 0.4, dot(albedo, vec3(0.2126, 0.7152, 0.0722)))) : 1.0; }
 vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     float e0 = 0.0, e1 = 0.0, e2 = 0.0, k0 = 0.0, k1 = 0.0;   // 2 plus fortes : éclairement reçu (classement) et k approché déjà compté ; e2 : 3e
@@ -177,7 +182,7 @@ vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float meta
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
         if (range > 0.0 && d >= range) continue;
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
-        float k = (croisement ? feuCroisementRapide(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
+        float k = (croisement ? feuCroisementRapide(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL * retroChaussee(i, L, N, albedo);   // WFS-382
         sum += F.spotCol[i].rgb * k;   // approximation : diffus seul (multiplié par l'albédo à la fin)
         float e = dot(F.spotCol[i].rgb, vec3(0.2126, 0.7152, 0.0722)) * k;   // éclairement reçu (luminance)
         if (e > e0) { e2 = e1; e1 = e0; i1 = i0; k1 = k0; e0 = e; i0 = i; k0 = k; }
@@ -197,12 +202,12 @@ vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float meta
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);
         float NoL = max(dot(N, L), 0.0), kA = j == 0 ? k0 : k1, k = kA;
-        if (F.spotCone[i].z > 0.5) k = feuCroisement(-L, F.spotDir[i].xyz, d, F.spotPos[i].w) * NoL;   // coupure exacte
+        if (F.spotCone[i].z > 0.5) k = feuCroisement(-L, F.spotDir[i].xyz, d, F.spotPos[i].w) * NoL * retroChaussee(i, L, N, albedo);   // coupure exacte ; WFS-382
         vec3 H = normalize(V + L);
         float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
         vec3 Fs = F_Schlick(f0, VoH);
         vec3 spec = noSpec ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;
-        tot += (((1.0 - Fs) * k - (1.0 - f0) * kA) * diffus * F.spotCol[i].rgb + min(spec * F.spotCol[i].rgb * k, vec3(SPEC_MAX))) * (j == 0 ? 1.0 : w1);   // WFS-100 RG-02
+        tot += (((1.0 - Fs) * k - (1.0 - f0) * kA) * diffus * F.spotCol[i].rgb + min(spec * F.spotCol[i].rgb * k, vec3(F.spotCone[i].z > 0.5 ? SPEC_MAX_CROISEMENT : SPEC_MAX))) * (j == 0 ? 1.0 : w1);   // WFS-100 RG-02
     }
     return max(tot, vec3(0.0));
 }
@@ -225,12 +230,12 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         if (range > 0.0 && d >= range) continue;   // WFS-263 : hors de portée, n'éclaire pas ce pixel (et ne compte pas)
         vus++;   // WFS-263 : lumière qui éclaire vraiment ce pixel (dans le faisceau et à portée)
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
-        float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
+        float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL * retroChaussee(i, L, N, albedo);   // WFS-382
         vec3 H = normalize(V + L);
         float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
         vec3 Fs = F_Schlick(f0, VoH);
         vec3 spec = noSpec ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;
-        sum += (1.0 - Fs) * (1.0 - metal) * albedo / PI * F.spotCol[i].rgb * k + min(spec * F.spotCol[i].rgb * k, vec3(SPEC_MAX));   // WFS-100 RG-02
+        sum += (1.0 - Fs) * (1.0 - metal) * albedo / PI * F.spotCol[i].rgb * k + min(spec * F.spotCol[i].rgb * k, vec3(croisement ? SPEC_MAX_CROISEMENT : SPEC_MAX));   // WFS-100 RG-02 ; WFS-382
     }
     return sum;
 }
