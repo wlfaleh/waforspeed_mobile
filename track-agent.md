@@ -25,6 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent devartiste (01UY1Vv2ReCX) | WFS-404 | retire A 45, Elantra N, X5 (licence NC) de l'APK ; 18 voitures sans marque | `feature/waforspeed-404`, pas encore poussée | 🔧 attribué 2026-11-10 14:31 UTC (à sa demande ; un seul sujet) |
+| Claude, agent dev (01UY1Vv5vk) | — | session @dev ouverte, demande un ticket au PO | — | 🙋 attend son ticket (un seul sujet) |
 
 ## Agents de pilotage
 
