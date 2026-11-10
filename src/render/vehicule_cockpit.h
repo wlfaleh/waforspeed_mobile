@@ -180,6 +180,13 @@ PareBriseVu& pareBriseVu();
 // barres de LARGEUR_MONTANT × EPAISSEUR_MONTANT (mêmes cotes que barre(mont…) d'Interieur::construire). PareBriseVu::coins les
 // porte ; la vitre visible de l'œil (sans ce que la barre cache) est calculée par la pluie (meteo::vitreVue)
 constexpr float LARGEUR_MONTANT = 0.075f, EPAISSEUR_MONTANT = 0.05f, RETRAIT_MONTANT_HAUT = 0.10f;
+// WFS-323 (RG-ANO-207) : haut du pare-brise (traverse avant du pavillon), repère de l'œil (m). Avant : 0,40 m au-dessus de l'œil et
+// 0,42 m devant (43° au-dessus du regard : hors de l'image, on voyait le ciel au-dessus du pare-brise, ANO-207). Vision vers le
+// haut d'une berline (angle SAE J1050 « upward vision », 14 à 20° : estimé) : traverse à 0,21 m au-dessus de l'œil et 0,52 m devant
+// (22° ; 18° de l'œil de la caméra, 4 cm plus haut) ; avec le pied du pare-brise (0,22 m sous l'œil, 1,10 m devant), le pare-brise
+// est incliné de ≈ 36° sur l'horizontale (berlines 25 à 40°). Le ciel de toit commence à cette traverse et passe au-dessus de la tête
+// (garde au toit ≈ 0,10 m, E)
+constexpr float HAUT_PARE_BRISE_Y = 0.21f, HAUT_PARE_BRISE_Z = -0.52f, CIEL_DE_TOIT_Y = 0.27f;
 inline void coinsVitre(float cx, float montant, float yb, float zb, float yh, float zh, vec3 c[4]) {
     const float xh = montant - RETRAIT_MONTANT_HAUT;
     c[0] = {cx - montant, yb, zb}; c[1] = {cx + montant, yb, zb}; c[2] = {cx + xh, yh, zh}; c[3] = {cx - xh, yh, zh};

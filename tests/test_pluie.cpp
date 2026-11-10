@@ -98,7 +98,7 @@ int main() {
         const cockpit::InterieurDef& d = cockpit::interieur(i);
         const cockpit::Largeur l = cockpit::largeurPour(d);
         vec3 axe[4], v[4];
-        cockpit::coinsVitre(l.oeil, l.montants * 0.5f, d.pareBriseY, d.pareBriseZ, 0.40f, -0.42f, axe);
+        cockpit::coinsVitre(l.oeil, l.montants * 0.5f, d.pareBriseY, d.pareBriseZ, cockpit::HAUT_PARE_BRISE_Y, cockpit::HAUT_PARE_BRISE_Z, axe);   // WFS-323 : haut du pare-brise du dessin
         meteo::vitreVue(axe, cockpit::LARGEUR_MONTANT, cockpit::EPAISSEUR_MONTANT, 0.016f, v);
         int caches = 0;
         for (int a = 0; a <= 40; a++) {

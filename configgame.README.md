@@ -60,7 +60,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `camera.proche.regard_hauteur` | vue Proche : hauteur du point visé | m | -20.0 | 10.0 | -2.1 |
 | `camera.proche.zoom` | vue Proche : champ de vision | degrés | 30.0 | 110.0 | 60.0 |
 | `camera.capot.zoom` | vue Capot : champ de vision | degrés | 30.0 | 110.0 | 72.0 |
-| `camera.cockpit.zoom` | vue Cockpit : champ de vision | degrés | 30.0 | 110.0 | 72.0 |
+| `camera.cockpit.zoom` | vue Cockpit : champ de vision (WFS-323 : 62°, cadrage de la référence de l'utilisateur) | degrés | 30.0 | 110.0 | 62.0 |
 | `camera.zoom_vitesse` | champ de vision ajouté à pleine vitesse | degrés | 0.0 | 30.0 | 7.0 |
 | `camera.zoom_nitro` | champ de vision ajouté pendant la nitro | degrés | 0.0 | 30.0 | 6.0 |
 | `camera.suivi_oeil` | vitesse à laquelle la caméra suit la voiture (plus grand = plus raide) | /s | 1.0 | 60.0 | 14.0 |

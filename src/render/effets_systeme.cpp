@@ -7,6 +7,7 @@
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../game/camera_vue.h"   // WFS-323 (accroche, ANO-204) : vue Cockpit
 #include "../game/course_system.h"
 #include "../game/ressenti.h"   // WFS-70 : « réduire les mouvements »
 #include "../game/player.h"
@@ -214,8 +215,13 @@ public:
         // couleur × fondu (k du jeu web) convertie en HDR pour ressortir à l'écran comme au jeu web
         const float p11 = std::max(1e-3f, std::abs(g.proj.at(1, 1)));
         etincelles_.clear();
+        // WFS-323 (accroche, ANO-204) : en vue Cockpit, l'œil est dans la voiture : une étincelle ou une volute née à moins de 2,5 m
+        // de lui est dans l'habitacle (le choc a lieu contre la carrosserie, dehors) ; elle n'est pas dessinée (avant : grands disques
+        // flous sur le volant et la planche)
+        const bool cockpit = etatCockpit().actif;
+        auto dansHabitacle = [&](const vec3& p) { return cockpit && length(p - g.camPos) < 2.5f; };
         for (const auto& q : parts_.sparks().p) {
-            if (!q.vivante()) continue;
+            if (!q.vivante() || dansHabitacle(q.p)) continue;
             const float d = std::max(0.f, dot(g.camPos - q.p, nrm));   // profondeur dans l'axe de la caméra
             const float taille = std::max(parts_.sparks().taille, d * 3.f / 360.f) / p11;
             const vec3 col = effets::versHdr(q.c * q.fondu(), EXPO);
@@ -237,7 +243,7 @@ public:
         constexpr float LARGE = 1.6f, HAUTE = 0.8f;
         const float base = parts_.smoke().taille / p11;
         for (auto q : parts_.smoke().p) {
-            if (!q.vivante()) continue;
+            if (!q.vivante() || dansHabitacle(q.p)) continue;
             const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * HAUTE * std::abs(up.y);
             q.p.y = std::max(q.p.y, q.floor + hs);
             const float d = dot(g.camPos - q.p, nrm);

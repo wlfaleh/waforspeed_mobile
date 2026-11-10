@@ -61,7 +61,7 @@ struct ConfigJeu {
     } poursuite;
     struct Camera {
         CamPoursuite loin{9.f, 6.3f, 10.f, -4.5f}, proche{6.f, 2.67f, 7.f, -2.1f};   // m : recul, hauteur, regard devant, regard en hauteur
-        float fov[4] = {64.f, 72.f, 72.f, 60.f};          // degrés (zoom) : poursuite, capot, cockpit, proche (ordre de VueCamera)
+        float fov[4] = {64.f, 72.f, 62.f, 60.f};          // degrés (zoom) : poursuite, capot, cockpit, proche (ordre de VueCamera)
         float elargVitesse = 7.f, elargNitro = 6.f;       // degrés ajoutés à pleine vitesse, en nitro
         float suiviOeil = 14.f, suiviRegard = 16.f;       // lissage du suivi (/s)
     } camera;
