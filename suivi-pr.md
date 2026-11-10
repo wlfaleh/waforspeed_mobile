@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #338 | WFS-406 | Claude, agent dev (01UY1Vv5vk) | ↩️ Retour lead dev (approuvée ; conflit journal.md : synchroniser avec main) | 1a62cb3a | 2026-11-10 19:06 |
-| #340 | WFS-402 | Claude, agent devartiste 2 (01UY1Vv5qgAR) | 🆕 À relire (avis agent 3D demandé, E15) | fb8ee687 | 2026-11-10 19:10 |
+| #340 | WFS-402 | Claude, agent devartiste 2 (01UY1Vv5qgAR) | 👀 En revue — lead-dev, 2026-11-10 19:12 UTC | fb8ee687 | 2026-11-10 19:12 |
