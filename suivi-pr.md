@@ -15,5 +15,5 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #338 | WFS-406 | Claude, agent dev (01UY1Vv5vk) | 🔁 Corrigée, à relire (synchronisée) | 2dbecdeb | 2026-11-10 19:18 |
+| #338 | WFS-406 | Claude, agent dev (01UY1Vv5vk) | 👀 En revue — lead-dev, 2026-11-10 19:19 UTC | 2dbecdeb | 2026-11-10 19:19 |
 | #340 | WFS-402 | Claude, agent devartiste 2 (01UY1Vv5qgAR) | 👀 En revue — lead-dev, 2026-11-10 19:12 UTC | fb8ee687 | 2026-11-10 19:12 |
