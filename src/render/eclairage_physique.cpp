@@ -611,6 +611,13 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         if (fp.fogFar <= 0) {
             const wfs::brume::Reglage b = wfs::brume::reglageCarte(gv.map ? gv.map->id : nullptr);
             fp.fogDensity = (float)std::max(b.beta0, A.extY); fp.fogHauteurInv = (float)(1.0 / b.hauteur); fp.fogRef = (float)b.yRef;
+            switch (g.forc.brume) {   // banc de la brume seulement (Forcage::brume)
+            case 1: fp.fogDensity = 0; break;
+            case 2: fp.fogDensity = 1; break;
+            case 3: fp.fogDensity = 1e-3f; fp.fogHauteurInv = 0; break;
+            case 4: fp.fogDensity = (float)A.extY; fp.fogHauteurInv = 0; break;
+            default: break;
+            }
         }
     } else brume = fp.fogColor * (float)(facteur / k);   // nuit : lumière des villes diffusée (intensité artistique, RG-06)
     // sonde du ciel (CPU) quand le ciel change
@@ -620,6 +627,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // ---- fp pré-exposé (RG-01, RG-04, RG-06)
     fp.sunDir = s; fp.sunIntensity = (float)(E * k); fp.sunColor = couleur;
     fp.ground = sol * (float)k; fp.fogColor = brume * (float)k;
+    g.etat.brumeDensite = fp.fogFar > 0 ? 0 : fp.fogDensity; g.etat.brumeHauteurInv = fp.fogHauteurInv; g.etat.brumeCouleur = fp.fogColor;   // WFS-381
     fp.exposure = 1; fp.ambient = 1;
     if (!nuit) { fp.skyTop = haut0; fp.skyHorizon = horizon0; }   // WFS-207 (RG-02) : teintes du ciel de l'atmosphère (sky.frag)
     g.etat.eLampadaireSol = -1;

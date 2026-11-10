@@ -14,23 +14,28 @@ static void verifier(bool ok, const char* quoi, double v) {
 }
 
 int main() {
-    // RG-02 (corrigée par le PO le 2026-11-10, option A) : visibilité d'été par carte (± 10 %), œil et objet à 2 m ;
-    // bornes de la Corniche, les autres cartes en proportion de leur visibilité (moins de brume : bornes hautes seules)
-    struct Cas { const char* carte; double V; };
-    for (const Cas& k : {Cas{"plage", 15000}, Cas{"ville", 18000}, Cas{"circuit", 20000}, Cas{"campagne", 22000}}) {
+    // RG-02 (2e décision du PO, 2026-11-10 07:30:48, option C : « jour de brume de chaleur ») : bornes de perte de contraste
+    // à l'horizontale, œil et objet à 2 m (chaque borne = V ± 10 %) ; premier plan (< 100 m) : 5 % au plus sur toutes les cartes
+    struct Borne { double min, max; };
+    struct Cas { const char* carte; double V; Borne b02, b1, b2; double min5, max5; };
+    const Cas CAS[] = {
+        {"plage", 8000, {0.085, 0.105}, {0.35, 0.42}, {0.58, 0.67}, 0.89, 1.00},
+        {"ville", 10000, {0.065, 0.085}, {0.29, 0.36}, {0.50, 0.59}, 0.83, 0.89},
+        {"circuit", 11000, {0.060, 0.080}, {0.27, 0.33}, {0.47, 0.55}, 0.80, 0.87},
+        {"campagne", 12000, {0.055, 0.075}, {0.25, 0.31}, {0.44, 0.52}, 0.77, 0.84},
+        {"neige", 10000, {0.065, 0.085}, {0.29, 0.36}, {0.50, 0.59}, 0.83, 0.89},   // carte non citée : V 10 km
+    };
+    for (const Cas& k : CAS) {
         const char* c = k.carte;
         const brume::Reglage b = brume::reglageCarte(c);
         std::printf("-- carte %s : β0 = %.3g m⁻¹, H = %.0f m, visibilité %.1f km\n", c, b.beta0, b.hauteur, brume::visibilite(b) / 1000);
-        verifier(std::fabs(brume::visibilite(b) / k.V - 1) <= 0.10, "visibilité de la carte à ± 10 %", brume::visibilite(b));
-        const double p02 = 1 - brume::contraste(b, 200, 2, 2), p1 = 1 - brume::contraste(b, 1000, 2, 2);
-        const double p2 = 1 - brume::contraste(b, 2000, 2, 2), p5 = 1 - brume::contraste(b, 5000, 2, 2);
-        verifier(p02 <= 0.05, "au plus 5 % de contraste perdu à 200 m", p02);
-        verifier(p1 <= 0.25, "au plus 25 % de contraste perdu à 1 km", p1);
-        verifier(p2 <= 0.45 && p5 <= 0.75, "au plus 45 % à 2 km et 75 % à 5 km", p5);
-        if (!std::strcmp(c, "plage")) {
-            verifier(p2 >= 0.35, "Corniche : 35 à 45 % de contraste perdu à 2 km", p2);
-            verifier(p5 >= 0.60, "Corniche : 60 à 75 % de contraste perdu à 5 km", p5);
-        }
+        auto perte = [&](double d) { return 1 - brume::contraste(b, d, 2, 2); };
+        verifier(std::fabs(brume::visibilite(b) / k.V - 1) <= 0.02, "visibilité de la carte (RG-02)", brume::visibilite(b));
+        verifier(perte(100) <= 0.05, "premier plan : au plus 5 % perdu à 100 m", perte(100));
+        verifier(perte(200) >= k.b02.min && perte(200) <= k.b02.max, "perte à 200 m dans les bornes", perte(200));
+        verifier(perte(1000) >= k.b1.min && perte(1000) <= k.b1.max, "perte à 1 km dans les bornes", perte(1000));
+        verifier(perte(2000) >= k.b2.min && perte(2000) <= k.b2.max, "perte à 2 km dans les bornes", perte(2000));
+        verifier(perte(5000) >= k.min5 && perte(5000) <= k.max5, "perte à 5 km dans les bornes", perte(5000));
         // hauteur : un sommet à 400 m au-dessus de la route reçoit moins de brume qu'un objet au même niveau
         verifier(brume::part(b, 3000, 2, 400) < brume::part(b, 3000, 2, 2), "sommet moins voilé que la plaine à 3 km", brume::part(b, 3000, 2, 400));
         // œil en hauteur (vue de 40 m) : moins de brume qu'au sol, jamais plus

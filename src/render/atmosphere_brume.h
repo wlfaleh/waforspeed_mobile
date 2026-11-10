@@ -11,16 +11,15 @@
 // Le même calcul est fait dans shaders/eclairage.glsl (fogAt) : ce fichier en est la référence testée (tests/test_brume.cpp).
 // β0 inclut la diffusion des molécules (Rayleigh, ≈ 1,2·10⁻⁵ m⁻¹ pondéré en luminance) et celle des aérosols.
 //
-// Sources des mesures (RG-02, corrigée par le PO le 2026-11-10, option A : brume d'été de chaleur et de sel) :
+// Sources des mesures (RG-02, 2e décision du PO du 2026-11-10 07:30:48, option C : « jour de brume de chaleur » d'été) :
 //   - visibilité météorologique V = 3,912 / β (formule de Koschmieder, seuil de contraste 2 %, OMM n° 8, 2018, § 9.1.2) ;
-//   - Côte d'Azur en été, l'après-midi : brume de chaleur et de sel, visibilité de 10 à 20 km fréquente (relevés METAR de
-//     Nice-Côte d'Azur LFMN, été : visibilités de 10 à 20 km les après-midi de brume sèche) ; RG-02 : Corniche ≈ 15 km,
-//     Ville ≈ 18 km, Grand Prix ≈ 20 km, Campagne ≈ 22 km (± 10 %) ;
+//   - Côte d'Azur en été, l'après-midi : brume sèche de chaleur et de sel, visibilité de 5 à 10 km fréquente (relevés METAR de
+//     Nice-Côte d'Azur LFMN, été) ; RG-02 : Corniche 8 km, Ville 10 km, Grand Prix 11 km, Campagne 12 km, autres cartes 10 km ;
 //   - hauteur d'échelle des aérosols : ≈ 1 à 1,5 km sur terre (Seinfeld et Pandis, « Atmospheric Chemistry and Physics »,
 //     3e éd., 2016, § 2.4 ; même H_MIE = 1 200 m que atmosphere_physique.h), plus basse au-dessus de la mer (couche limite
 //     marine de 500 à 1 000 m, brume de sel) ; air sec de l'intérieur moins chargé.
-// Tenue de RG-02 à la Corniche (perte de contraste, objet et œil au même niveau) : 4,97 % à 200 m (≤ 5 %), 22,5 % à 1 km
-// (≤ 25 %), 40,0 % à 2 km (35 à 45 %), 72,1 % à 5 km (60 à 75 %).
+// Tenue de RG-02 à la Corniche (perte de contraste à l'horizontale, œil à 2 m) : 4,8 % à 100 m (≤ 5 %), 9,3 % à 200 m,
+// 38,7 % à 1 km, 62,4 % à 2 km, 91,3 % à 5 km.
 #pragma once
 #include <algorithm>
 #include <cmath>
@@ -35,17 +34,18 @@ struct Reglage {
 };
 
 // RG-04 : un réglage par carte (paramètres, pas de shader séparé)
-//   plage (Corniche) : brume de mer, V ≈ 15,3 km (β0 2,55·10⁻⁴ : 2,6·10⁻⁴ donnerait 5,07 % à 200 m, au-dessus de la borne),
-//   couche marine basse (800 m) ;
-//   ville : voile urbain, V ≈ 18 km ;
-//   circuit (Grand Prix) et autres : V ≈ 20 km ;
-//   campagne : air plus sec de l'arrière-pays, V ≈ 22 km, couche plus haute (1 200 m).
+//   plage (Corniche) : brume de mer, V 8 km, couche marine basse (800 m) ;
+//   ville : voile urbain, V 10 km ;
+//   circuit (Grand Prix) : V 11 km ;
+//   campagne : air plus sec de l'arrière-pays, V 12 km, couche plus haute (1 200 m) ;
+//   autres cartes (Neige, Désert…) : V 10 km.
 inline Reglage reglageCarte(const char* id) {
     if (!id) id = "";
-    if (!std::strcmp(id, "plage")) return {2.55e-4, 800, 0};
-    if (!std::strcmp(id, "ville")) return {2.17e-4, 1000, 0};
-    if (!std::strcmp(id, "campagne")) return {1.78e-4, 1200, 0};
-    return {1.96e-4, 1200, 0};
+    if (!std::strcmp(id, "plage")) return {4.89e-4, 800, 0};
+    if (!std::strcmp(id, "ville")) return {3.91e-4, 1000, 0};
+    if (!std::strcmp(id, "circuit")) return {3.56e-4, 1200, 0};
+    if (!std::strcmp(id, "campagne")) return {3.26e-4, 1200, 0};
+    return {3.91e-4, 1000, 0};
 }
 
 // visibilité météorologique (m) d'un réglage (Koschmieder)

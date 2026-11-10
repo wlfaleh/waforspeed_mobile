@@ -23,6 +23,11 @@
 #include "../world/zones.h"
 #include "atmosphere_brume.h"
 #include "eclairage_banc.h"   // attendreSondes (WFS-151)
+#include "eclairage_physique.h"   // Forcage::brume, etat() : brume envoyée au shader
+#include "passes.h"   // lireHdr : cible HDR avant tonemapping
+#include "../../third_party/stb/stb_image.h"   // relecture des captures PNG (implémentation : model_loader.cpp)
+#include <cmath>
+#include <vector>
 #include "renderer.h"
 
 namespace wfs {
@@ -100,6 +105,69 @@ bool coutGpu(double& ombre, double& scene, double& reflets) {
 }
 std::string fmt(double v, int n) { char b[32]; std::snprintf(b, sizeof b, "%.*f", n, v); return b; }
 
+// ---- mesure du contraste à l'écran (2e décision du PO, 07:30:48) ----
+// Cinq rendus de la même image figée, exposition fixée : N (brume de la carte), M (brume de main avant WFS-381), S (sans brume),
+// T (brume totale : sa couleur seule, lobe du soleil compris) et P (sonde : brume homogène β = 10⁻³ m⁻¹, sans hauteur ni lobe).
+// Dans la cible HDR (avant tonemapping), un pixel brumé vaut (1 − f) S + f B : f = (N − S) / (T − S) est la perte de contraste du
+// pixel ; la sonde donne sa distance d = −ln(1 − fP) / 10⁻³. Pixels gardés : géométrie (pas le ciel), objet assez différent
+// de la brume (|B − S| ≥ 15 % de B). Moyennes par bandes de distance (0,8-1,2 km et 1,6-2,4 km).
+struct Hdr { std::vector<float> px; uint32_t w = 0, h = 0; };
+double lum(const float* c) { return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+struct Bande { double somme = 0; long n = 0; double moyenne() const { return n ? somme / n : -1; } };
+struct Mesure { Bande carte1, carte2, main1, main2; double ecartPng = -1; long pixelsLoin = 0; bool ok = false; };
+
+void rendreMode(Game& g, int mode, double ev, double t) {
+    eclairage::Forcage f; f.actif = true; f.ev = ev; f.brume = mode; eclairage::forcer(f);
+    for (int i = 0; i < 2; i++) g.render(t);
+}
+Mesure mesurerContraste(Game& g, Renderer& r, double t, const std::string& pngCarte, const std::string& pngMain) {
+    Mesure m;
+    const double ev = eclairage::etat().ev;
+    Hdr N, M, S, T, P;
+    rendreMode(g, 0, ev, t); if (!passes::lireHdr(r, N.px, N.w, N.h)) return m;
+    r.capturePng(pngCarte);
+    rendreMode(g, 4, ev, t); if (!passes::lireHdr(r, M.px, M.w, M.h)) return m;
+    r.capturePng(pngMain);
+    rendreMode(g, 1, ev, t); if (!passes::lireHdr(r, S.px, S.w, S.h)) return m;
+    rendreMode(g, 2, ev, t); if (!passes::lireHdr(r, T.px, T.w, T.h)) return m;
+    rendreMode(g, 3, ev, t); const vec3 bp = eclairage::etat().brumeCouleur; if (!passes::lireHdr(r, P.px, P.w, P.h)) return m;
+    eclairage::forcer({});
+    const size_t n = (size_t)N.w * N.h;
+    if (M.px.size() != N.px.size() || S.px.size() != N.px.size() || T.px.size() != N.px.size() || P.px.size() != N.px.size()) return m;
+    const float bpc[3] = {bp.x, bp.y, bp.z};
+    const double yBp = lum(bpc);
+    std::vector<float> dist(n, -1);
+    for (size_t i = 0; i < n; i++) {
+        const double yS = lum(&S.px[i * 4]), yT = lum(&T.px[i * 4]), yP = lum(&P.px[i * 4]), yN = lum(&N.px[i * 4]), yM = lum(&M.px[i * 4]);
+        if (std::fabs(yBp - yS) < 0.15 * yBp || std::fabs(yT - yS) < 0.15 * yT) continue;   // ciel, ou objet de la couleur de la brume
+        const double fp = (yP - yS) / (yBp - yS);
+        if (!(fp > 0.001 && fp < 0.995)) continue;
+        const double d = -std::log(1 - fp) / 1e-3;
+        dist[i] = (float)d;
+        const double fN = (yN - yS) / (yT - yS), fM = (yM - yS) / (yBp - yS);
+        if (d >= 800 && d <= 1200) { m.carte1.somme += fN; m.carte1.n++; m.main1.somme += fM; m.main1.n++; }
+        if (d >= 1600 && d <= 2400) { m.carte2.somme += fN; m.carte2.n++; m.main2.somme += fM; m.main2.n++; }
+    }
+    // critère 2 : écart moyen à l'écran (PNG, 0-255, moyenne des 3 canaux) entre main et la branche, zone des lointains (≥ 1 km)
+    int w1, h1, c1, w2, h2, c2;
+    unsigned char* a = stbi_load(pngCarte.c_str(), &w1, &h1, &c1, 3);
+    unsigned char* b = stbi_load(pngMain.c_str(), &w2, &h2, &c2, 3);
+    if (a && b && w1 == w2 && h1 == h2 && w1 > 0 && h1 > 0) {
+        double s = 0; long k = 0;
+        for (int y = 0; y < h1; y++) for (int x = 0; x < w1; x++) {
+            const size_t i = (size_t)((long)y * N.h / h1) * N.w + (size_t)((long)x * N.w / w1);   // même point de la cible HDR
+            if (dist[i] < 1000) continue;
+            const size_t q = ((size_t)y * w1 + x) * 3;
+            s += (std::abs(a[q] - b[q]) + std::abs(a[q + 1] - b[q + 1]) + std::abs(a[q + 2] - b[q + 2])) / 3.0; k++;
+        }
+        if (k) { m.ecartPng = s / k; m.pixelsLoin = k; }
+    }
+    if (a) stbi_image_free(a);
+    if (b) stbi_image_free(b);
+    m.ok = true;
+    return m;
+}
+
 bool preparer(Game& g, Renderer& r, const Vue& v, int64_t depart, const char* moment, int qualite, double t) {
     setenv("WFS_MOMENT", moment, 1); setenv("WFS_DEPART", std::to_string(depart).c_str(), 1);
     ecrans::reglages().qualite = qualite; ecrans::appliquerQualiteNiveau(r);
@@ -130,6 +198,9 @@ int benchBrume(Game& g, Renderer& r, const std::string& out) {
     const double t = 2000;
     auto& reglages = ecrans::reglages();
     const int qualiteAvant = reglages.qualite;
+    std::ostringstream mc;
+    mc << "\n== contraste mesuré à l'écran (cible HDR, Haute), perte de contraste moyenne : main → branche (pixels ; calcul à l'horizontale) ==\n"
+          "  vue | 0,8-1,2 km | 1,6-2,4 km | écart moyen main / branche à l'écran, lointains ≥ 1 km (niveaux sur 255)\n";
     // ---- captures (Haute) ; nuit : la Corniche, même cadrage que le jour (RG-03 : la nuit reste sombre)
     const char* seule = std::getenv("WFS_BRUME_VUE");   // essai local : une seule vue, sans la mesure du coût
     for (const Vue& v : VUES) {
@@ -141,11 +212,20 @@ int benchBrume(Game& g, Renderer& r, const std::string& out) {
             const std::string nom = std::string("brume-") + v.nom + "-" + moment;
             if (!preparer(g, r, v, depart, moment, ecrans::QUALITE_HAUTE, t)) { WFS_ERR("brume : %s : chargement de %s impossible", nom.c_str(), v.carte); erreurs++; continue; }
             for (int i = 0; i < 3; i++) g.render(t);
-            r.capturePng(out + "/" + nom + ".png");
+            if (!std::strcmp(moment, "jour")) {   // capture de la branche + capture « main » (même image, brume d'avant) et mesures
+                const Mesure x = mesurerContraste(g, r, t, out + "/" + nom + ".png", out + "/main-" + nom + ".png");
+                if (!x.ok) { WFS_ERR("brume : %s : cible HDR illisible", nom.c_str()); erreurs++; }
+                const brume::Reglage b = brume::reglageCarte(v.carte);
+                mc << "  " << v.nom << " | " << fmt(100 * x.main1.moyenne(), 1) << " % → " << fmt(100 * x.carte1.moyenne(), 1) << " % (" << x.carte1.n
+                   << " px ; calcul " << fmt(100 * brume::part(b, 1000, 2, 2), 1) << " %) | " << fmt(100 * x.main2.moyenne(), 1) << " % → "
+                   << fmt(100 * x.carte2.moyenne(), 1) << " % (" << x.carte2.n << " px ; calcul " << fmt(100 * brume::part(b, 2000, 2, 2), 1)
+                   << " %) | " << fmt(x.ecartPng, 1) << " (" << x.pixelsLoin << " px)\n";
+            } else r.capturePng(out + "/" + nom + ".png");
             WFS_LOG("capture %s : %s (%s), départ %lld segments", nom.c_str(), v.carte, v.note, (long long)depart);
             g.shutdown();
         }
     }
+    m << mc.str();
     // ---- RG-05 : coût GPU en Basse, de jour, vue de poursuite de chaque carte, 250 images de la scène figée
     m << "\n== coût GPU en Basse (jour, scène figée, moyenne des 120 dernières images, horodatages Vulkan) ==\n"
          "  vue | ms GPU passe de scène | ms GPU ombre | ms par image (mur)\n";

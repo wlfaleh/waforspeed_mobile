@@ -1,6 +1,6 @@
 # WFS-381 — captures avant / après (banc WFS_BANC=brume, 1280x720, lavapipe)
 
-Avant = `origin/main` + le seul banc `brume` (le banc n'existe pas sur main) ; après = branche `feature/waforspeed-381`. Écart = |après − avant| × 8.
+Avant = brume de `main` reproduite dans la même construction (forçage 4 du banc : extinction du ciel, sans hauteur, même calcul du shader que main ; écart avec la vraie capture de main : RMSE 0,15 %) ; nuit : capture de `origin/main`. Après = branche `feature/waforspeed-381`. Écart = |après − avant| × 8. Mesures : `brume-mesures.txt`.
 
 | Capture | Avant (main) | Après (branche) | Écart ×8 |
 |---|---|---|---|

@@ -1,0 +1,23 @@
+WFS-381 — brume au loin (perspective atmosphérique)
+
+== réglage par carte (RG-04) et contraste restant calculé, œil et objet au même niveau (RG-02) ==
+  carte | β0 (m⁻¹) | H (m) | visibilité (km) | contraste restant 200 m | 1 km | 2 km | 5 km
+  plage | 4.89e-4 | 800 | 8.0 | 90.7 % | 61.4 % | 37.7 % | 8.7 %
+  ville | 3.91e-4 | 1000 | 10.0 | 92.5 % | 67.7 % | 45.8 % | 14.2 %
+  campagne | 3.26e-4 | 1200 | 12.0 | 93.7 % | 72.2 % | 52.2 % | 19.6 %
+  circuit | 3.56e-4 | 1200 | 11.0 | 93.1 % | 70.1 % | 49.1 % | 16.9 %
+
+== contraste mesuré à l'écran (cible HDR, Haute), perte de contraste moyenne : main → branche (pixels ; calcul à l'horizontale) ==
+  vue | 0,8-1,2 km | 1,6-2,4 km | écart moyen main / branche à l'écran, lointains ≥ 1 km (niveaux sur 255)
+  corniche | 8.3 % → 38.1 % (345 px ; calcul 38.6 %) | 15.7 % → 60.1 % (84 px ; calcul 62.3 %) | 8.4 (504 px)
+  campagne | 8.9 % → 29.0 % (520 px ; calcul 27.8 %) | 16.1 % → 47.4 % (1167 px ; calcul 47.8 %) | 14.4 (2689 px)
+  ville | -100.0 % → -100.0 % (0 px ; calcul 32.3 %) | -100.0 % → -100.0 % (0 px ; calcul 54.2 %) | -1.0 (0 px)
+  corniche-haut | 8.2 % → 37.0 % (4262 px ; calcul 38.6 %) | 14.8 % → 57.6 % (1526 px ; calcul 62.3 %) | 13.3 (5408 px)
+  campagne-haut | 8.2 % → 26.6 % (19314 px ; calcul 27.8 %) | 15.4 % → 45.2 % (8816 px ; calcul 47.8 %) | 13.9 (27842 px)
+  ville-haut | 7.1 % → 26.6 % (2 px ; calcul 32.3 %) | -100.0 % → -100.0 % (0 px ; calcul 54.2 %) | -1.0 (0 px)
+
+== coût GPU en Basse (jour, scène figée, moyenne des 120 dernières images, horodatages Vulkan) ==
+  vue | ms GPU passe de scène | ms GPU ombre | ms par image (mur)
+  corniche | 145.11 | 2.02 | 169.5
+  campagne | 184.34 | 1.99 | 208.5
+  ville | 233.30 | 2.19 | 258.2
