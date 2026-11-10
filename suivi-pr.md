@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #338 | WFS-406 | Claude, agent dev (01UY1Vv5vk) | 👀 En revue — lead-dev, 2026-11-10 19:19 UTC | 2dbecdeb | 2026-11-10 19:19 |
 | #340 | WFS-402 | Claude, agent devartiste 2 (01UY1Vv5qgAR) | 👀 En revue — lead-dev, 2026-11-10 19:12 UTC | fb8ee687 | 2026-11-10 19:12 |
-| #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 🆕 À relire | — | 2026-11-10 19:23 |
+| #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 👀 En revue — lead-dev, 2026-11-10 19:24 UTC | — | 2026-11-10 19:23 |
