@@ -3698,3 +3698,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Défaut 1 (plafond coupé net dans `post.frag`) : compression douce sur la luminance, e / (1 + Y / 0,35), et halo local pondéré en gaussienne, la nuit seulement ; jour identique (0 pixel changé).
 - Défaut 2 (RG-01, tache de 30 à 60 m) : rétroréflexion de l'asphalte (`retroChaussee`, accord du PO), feux du joueur seulement, caméra derrière eux, sol sombre horizontal ; chaussée en vue Capot 130 / 112 / 72 à 10 / 30 / 50 m (main : 225 / 123 / 96). **Accroche** `shaders/eclairage.glsl` : 14 lignes au total (exception accordée par le PO, ≈ 15). Marque par `spotCone.y` (pénombre) : `spotCone.w` est écrit par `renderer.cpp`, auquel le PO interdit de toucher.
 - Vérifié : 97 tests CPU ; 0 % de pixels saturés sur toutes les captures après ; neige 0 % ; perf Basse égale, aux erreurs de mesure près. Synchronisé avec main 7a2e01d7 (brume WFS-381), captures refaites. Lead dev rappelé.
+
+### 2026-11-10 08:39:17 — WFS-382 fusionné par le lead dev (lead-dev)
+- PR #328, 2e revue, commit relu 27df0667, squash 1063fb3f. Approbation écrite dans la PR en commentaire (même compte GitHub).
+- Défauts de la 1re revue corrigés : compression douce de l'éclat et du bloom sur la luminance (plus de disque, de carré ni d'anneau) ; RG-01, tache au sol visible en vue Capot (rétroréflexion accordée par le PO, marque par `spotCone.y` acceptée).
+- Construction et tests refaits : 97/97. Statut : 🟡 À valider (utilisateur). Ligne retirée de `suivi-pr.md`, ligne ajoutée dans `qa/Check.md`.
+- **Pour le PO** : cœur du reflet des phares de la police sur la chaussée mouillée en aplat gris à 227 (`min()` canal par canal de `SPEC_MAX_CROISEMENT`, `shaders/eclairage.glsl`), visible sur `apres-phares-poursuite-police` : non bloquant (mieux qu'avant), anomalie de suivi à créer (compression douce sur la luminance, comme `eclatNuit`).
