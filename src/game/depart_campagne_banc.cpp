@@ -28,7 +28,7 @@ int benchDepartCampagne(Game& g, Renderer& r, const std::string& out) {
     const Moment moments[] = {Moment::Reel, Moment::Aube, Moment::Matin, Moment::Midi, Moment::Doree, Moment::Nuit};
     const bool regles = courseBenchRulesOn();
     courseBenchRules(true);   // règles de course du jeu (décompte, chrono) : le banc PC les coupe par défaut (desktop_main.cpp)
-    if (!g.init(r, "x5", "campagne")) { courseBenchRules(regles); WFS_ERR("depart-campagne (WFS-374) : Campagne impossible à charger"); return 1; }
+    if (!g.init(r, "rrsport", "campagne")) { courseBenchRules(regles); WFS_ERR("depart-campagne (WFS-374) : Campagne impossible à charger"); return 1; }
     for (const Moment m : moments) {
         const char* nom = atmosphere::nomMoment(m);
         // parcours du joueur : accueil, choix du terrain (Campagne, moment), « Rouler » → course neuve avec décompte

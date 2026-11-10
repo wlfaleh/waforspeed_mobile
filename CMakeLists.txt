@@ -109,6 +109,8 @@ else()
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
   add_executable(test_course5_ordinateurs tests/test_course5_ordinateurs.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-327 : adversaires sur une vitesse de virage possible, course disputée
   target_link_libraries(test_course5_ordinateurs Threads::Threads)
+  add_executable(test_voitures_retirees tests/test_voitures_retirees.cpp src/game/course5.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-404 : voitures retirées (licence NC)
+  target_link_libraries(test_voitures_retirees Threads::Threads)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_reglages_appui tests/test_reglages_appui.cpp)   # WFS-290 : cible de 48 dp, anti-rebond des réglages
   add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
@@ -125,6 +127,8 @@ else()
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
   add_executable(test_phares tests/test_phares.cpp)   # WFS-218 : feux de croisement du joueur (flux, coupure, portée)
+  add_executable(test_phares_optiques tests/test_phares_optiques.cpp)   # WFS-413 : optiques avant mesurées (≤ 2 cm), 17 voitures
+  target_compile_definitions(test_phares_optiques PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90
   add_executable(test_commandes tests/test_commandes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-108 : commandes tactiles
   target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)

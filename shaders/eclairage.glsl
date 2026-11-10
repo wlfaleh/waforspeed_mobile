@@ -137,7 +137,8 @@ float feuCroisement(vec3 w, vec3 D, float d, float range) {
     float el = degrees(asin(clamp(dot(w, U), -1.0, 1.0))), az = degrees(atan(dot(w, R), dot(w, D)));
     float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.5) / 0.85, ah = az / 18.0;   // WFS-382 : plateau à −1,5°   // WFS-226 : étalement en (az / 18)⁴
     float v = (el > -1.5 ? 1.0 : 1.0 / (1.0 + pow(t, 1.6))) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
-    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
+    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25)
+         * smoothstep(0.40, 0.70, d * dot(w, D));   // WFS-413 : boîtier et bouclier cachent la lampe à moins de 40 cm devant la glace
 }
 // WFS-353 (RG-01, accord E13 du PO du 2026-11-09 09:12:58) : variante « 2 lumières par pixel » (spotN.y = 2), lancée par le
 // banc seulement tant que le PO n'a pas tranché (qualite_auto.h, LUMIERES_PAR_PIXEL_BASSE : le jeu garde 4). Toutes les lumières
@@ -160,7 +161,8 @@ float feuCroisementRapide(vec3 w, vec3 D, float d, float range) {
     float el = 57.2957795 * w.y, az = 57.2957795 * atanRapide(w.z * D.x - w.x * D.z, dot(w, D));
     float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.5) / 0.85, ah = az / 18.0;   // WFS-382 : plateau à −1,5°
     float v = (el > -1.5 ? 1.0 : 1.0 / (1.0 + pow(t, 1.6))) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
-    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
+    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25)
+         * smoothstep(0.40, 0.70, d * dot(w, D));   // WFS-413 : boîtier et bouclier cachent la lampe à moins de 40 cm devant la glace
 }
 // WFS-382 (RG-01, accord du PO du 2026-11-10) : rétroréflexion de l'asphalte vers un conducteur placé derrière ses phares (EN 1436, R_L ;
 // avis expert-realisme-3d : k = 0,12 / sin α, de 1 à 7) ; feux du joueur seulement (spotCone.y = 1 : pénombre 1 posée par nuit.cpp), sol

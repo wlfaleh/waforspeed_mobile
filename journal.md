@@ -2012,3 +2012,218 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - Vérification : `tests_cpu.sh` : 99 tests verts (`test_audio_chocs` rouge une fois puis vert, sans lien) ; `test_archi_geo` : contrôles RG-02 à RG-05 et RG-07 ajoutés ; `test_archi_kit` : mesure de la porte d'entrée et du passage utile = référentiel. Inventaire RG-01 : `qa/pr/WFS-402/inventaire.md` (897 bâtiments du kit : Ville 625, Corniche 172, Campagne 100).
 - Limites : triangles du niveau 0 multipliés par 2 à 4 selon le style (banc perf avant / après à venir) ; bâtiments hors kit (lieux de la Corniche, église de la Campagne, maisons de la Neige) : question de périmètre posée au PO.
 
+### 2026-11-10 16:36:10 — WFS-402 : périmètre arbitré, WFS-410 et WFS-411 créées (po-scrum-master)
+- Question de Claude, agent devartiste 2 (01UY1Vv5qgAR) : WFS-402 livre le kit `archi_*` (immeubles, maisons, villas de la Ville, de la Corniche, de la Campagne) et ajoute une fonction publique d'ouverture réutilisable.
+- Suite de la même demande de l'utilisateur : **WFS-410** (P1, E15 : lieux hors kit de la Corniche et de la Ville, église de la Campagne) et **WFS-411** (P2, E15 Neige : chalets au kit, skill expert-cartes), ⏳ en attente de la fusion de WFS-402, nouvelles sessions. Décision dans `regles-de-gestion/WFS-402.md` (Suivi).
+
+### 2026-11-10 16:48:18 — WFS-404 : PR #337 refusée par le lead dev (lead-dev)
+- Commit relu : d84d23ba. Branche construite et synchronisée avec `main` ; 100 tests lancés un par un : 99 verts, 1 rouge, le seul accepté par RG-11 (`test_course5_ordinateurs`, circuit 3/8). `verifier_licences.py` : 0 manque ; `effacer_logos.mjs --verifier` : vert.
+- Bloquant : volant de la M4. Sans les coutures, le dessin perd les boutons M1 / M2 des branches et ajoute l'agrafe rouge de la Golf GTI en bas (`vehicule_cockpit.cpp:712-722`), ce qui est contraire à RG-06 et RG-07. Le test `test_cockpit` (« boutons rouges ») ne l'attrape pas.
+- Captures à compléter : garage aux places des 3 voitures retirées, planche de face, sens inverse de la Ville visible.
+- Pour le PO : `tests_cpu.sh` s'arrête au premier échec ; avec le rouge connu sur `main`, la CI ne lancera plus les tests rangés après `test_course5_ordinateurs`, ni `verifier_licences.py`, jusqu'à WFS-394.
+
+### 2026-11-10 16:53:22 — WFS-412 créé : tests CPU sans arrêt au 1er échec (po-scrum-master)
+- Point du lead dev (revue de la PR #337), transmis par Claude, agent devartiste (01UY1Vv2ReCX) : `tests_cpu.sh` s'arrête au 1er échec. Avec le rouge connu de WFS-404 (RG-11), les tests suivants et `verifier_licences.py` ne tourneraient plus sur `main`.
+- Décision : US technique **WFS-412** (P1, E7, `expert-ci-cd`). Elle lance tous les tests, liste les échecs à la fin, fait tourner les licences dans tous les cas et ne change aucun seuil. WFS-404 n'attend pas : sa PR prouve en local que tous les autres tests et les licences sont verts (ajout à RG-11).
+
+### 2026-11-10 17:10:54 — WFS-413 créé : phares qui sortent des vraies optiques, SUPER URGENT (po-scrum-master)
+- Demande de l'utilisateur : « fixer les feux devant des voitures, il faut que ça sorte par les vraies lampes, c'est trop artificiel », super super urgent.
+- Cause lue dans le code : `model_loader.cpp` place les phares à 3/4 de la demi-largeur de la boîte de toutes les pièces de phares, au point le plus en avant de la voiture (repli : proportions du jeu web) ; `nuit.cpp` (spots) et `Renderer::feuxVoiture` (halos ronds) partent de ce point.
+- **WFS-413** (P1 SUPER URGENT, E4 + E10, ANO-240 bloquante), règles `regles-de-gestion/WFS-413.md` : centre réel de chaque glace (≤ 2 cm), l'optique du modèle s'allume, plus de halo en disque, voitures sans optique marquées dans `correctifs_voitures.*`. Développeur : nouvelle session `dev-artiste-3d` (touche les modèles 3D), en tout premier. Zone sans `assets/cars/**` (WFS-404) ni cockpit (WFS-324).
+
+### 2026-11-10 17:15:15 — WFS-413 attribué à Claude, agent devartiste 3 (01UY1Vv59N) (po-scrum-master)
+- Demande d'une **nouvelle session** `dev-artiste-3d` (aucun ticket avant, vérifié dans `track-agent.md`, `TACHES.md`, journal) : « @devartiste prend le sujet regarde avec le po ».
+- Ticket : **WFS-413** (P1 SUPER URGENT, ANO-240) — phares : la lumière sort des vraies optiques de chaque voiture ; épic E4 + E10 (exception PO). Règles : `regles-de-gestion/WFS-413.md`. Branche `feature/waforspeed-413`.
+- Zone : `nuit.cpp`, `phares.h`, `feux_modele.*`, `correctifs_voitures.*`, partie « feux » de `model_loader.cpp` (≈ l. 350-385), `Renderer::feuxVoiture` et ses constantes, matériau émissif des phares dans `shaders/vehicule*.glsl` (≤ 15 lignes, annoncé au journal), `tests/**`. **Pas** `assets/cars/**` (WFS-404, ↩️ PR #337), **pas** `vehicule_cockpit*` (WFS-324). Synchroniser avec `main` dès la fusion de WFS-404 ; test des 18 voitures sur la liste d'après WFS-404.
+- Après fusion par le lead dev : **🟡 À valider (utilisateur)** ; puis la session s'arrête (un seul sujet).
+
+### 2026-11-10 17:21:49 — WFS-404 : PR #337 corrigée après la 1re revue (Claude, agent devartiste (01UY1Vv2ReCX))
+- Volant de la M4 : bandes de la marque enlevées, boutons M1 / M2 des branches gardés (`boutonsBranches = true` dans `vehicule_cockpit_defs.cpp`, 2e accroche sur la ligne de la M4, annoncée ici) ; `test_cockpit` vérifie la vraie condition de dessin (`e5a21097`).
+- Captures du 2e tour : tour complet du garage (17 places), faces des 17 voitures et zoom des calandres, sens inverse de la Ville (banc `ville-sens-inverse`), volant (zooms). Camion de jour impossible (le banc de la Poursuite fixe son moment). Traces de forme sans marque signalées au PO : disque noir uni de la Golf, plaques jaunes unies de la SF90.
+- Licences `assets/licences/{x5,a45,elantra}.txt` écartées de l'APK.
+- Preuve RG-11 (chaque test un à un, sans arrêt au 1er échec, mêmes arguments que `tests_cpu.sh`, puis `verifier_licences.py`), sur `e5a21097` (code inchangé depuis) :
+```
+[OK] test_aide_direction (1 s)
+[OK] test_aide_ralentit (1 s)
+[OK] test_apparition_pietons (0 s)
+[OK] test_appui (0 s)
+[OK] test_archi_geo (1 s)
+[OK] test_archi_kit (0 s)
+[OK] test_audio (0 s)
+[OK] test_audio_chocs (1 s)
+[OK] test_audio_lieux (0 s)
+[OK] test_audio_parois (0 s)
+[OK] test_audio_pluie (2 s)
+[OK] test_audio_voitures (0 s)
+[OK] test_bandeau_gps (0 s)
+[OK] test_binarypack (0 s)
+[OK] test_brume (0 s)
+[OK] test_cache_pipelines (0 s)
+[OK] test_carte_cuite (1 s)
+[OK] test_cartes (0 s)
+[OK] test_cartes_v2_donnees (0 s)
+[OK] test_cartes_v2_saison (0 s)
+[OK] test_cgu (0 s)
+[OK] test_cgu_appui (0 s)
+[OK] test_chauffe (0 s)
+[OK] test_chocs (0 s)
+[OK] test_chocs_cartes (6 s)
+[OK] test_chocs_voitures (1 s)
+[OK] test_cockpit (0 s)
+[OK] test_cockpit_ferme (1 s)
+[OK] test_commandes (0 s)
+[OK] test_conducteurs (0 s)
+[OK] test_conduite (6 s)
+[OK] test_conduite_libre (0 s)
+[OK] test_configgame (0 s)
+[OK] test_course (123 s)
+[OK] test_course5 (100 s)
+[ÉCHEC] test_course5_ordinateurs
+    ÉCHEC : RG-02 : circuit : aide activée, dans les 3 premiers 3 fois sur 8 (4 au moins)
+    adversaires de la Course à 5 (WFS-327) : ÉCHEC
+[OK] test_decor_campagne (0 s)
+[OK] test_decor_grandprix (0 s)
+[OK] test_direction_anneau (1 s)
+[OK] test_direction_vitesse (0 s)
+[OK] test_duel (1 s)
+[OK] test_eau (0 s)
+[OK] test_effets (0 s)
+[OK] test_fantome_etiquette (0 s)
+[OK] test_feux_modele (0 s)
+[OK] test_fidelite (0 s)
+[OK] test_fidelite_humains (4 s)
+[OK] test_fidelite_lumiere (0 s)
+[OK] test_fidelite_lumiere_ombres (0 s)
+[OK] test_fidelite_lumiere_precalcule (0 s)
+[OK] test_fidelite_routes (0 s)
+[OK] test_fidelite_soleil (0 s)
+[OK] test_fidelite_voitures (1 s)
+[OK] test_fluidite_reference (0 s)
+[OK] test_fond_fige (0 s)
+[OK] test_hud_lisible (0 s)
+[OK] test_ktx2 (0 s)
+[OK] test_lod_distance (0 s)
+[OK] test_lots_decor (0 s)
+[OK] test_manette (0 s)
+[OK] test_marina_bateaux (0 s)
+[OK] test_masquage (0 s)
+[OK] test_memoire (0 s)
+[OK] test_minicarte (0 s)
+[OK] test_mobilier_ville (0 s)
+[OK] test_navigation (0 s)
+[OK] test_paquets (0 s)
+[OK] test_passes (0 s)
+[OK] test_penetration_voitures (8 s)
+[OK] test_petit_ecran (0 s)
+[OK] test_phares (1 s)
+[OK] test_pilote_file (0 s)
+[OK] test_plantage (0 s)
+[OK] test_pluie (0 s)
+[OK] test_post_wfs214 (2 s)
+[OK] test_qualite (0 s)
+[OK] test_records (0 s)
+[OK] test_regard_cockpit (0 s)
+[OK] test_reglages_appui (0 s)
+[OK] test_reglages_onglets (0 s)
+[OK] test_relais (14 s)
+[OK] test_retour_systeme (0 s)
+[OK] test_rien_sur_chaussee (3 s)
+[OK] test_roues (0 s)
+[OK] test_sauvegarde (0 s)
+[OK] test_shader_leger (0 s)
+[OK] test_sons_conduite (0 s)
+[OK] test_systems (0 s)
+[OK] test_tangentes (0 s)
+[OK] test_trace (53 s)
+[OK] test_track (0 s)
+[OK] test_traffic (0 s)
+[OK] test_trafic_duree (33 s)
+[OK] test_trafic_vivant (0 s)
+[OK] test_vehicule_lod (0 s)
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests un à un : 99 réussi(s), 1 échec(s)
+licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d'assets vérifiés, 0 manque(s)
+```
+
+### 2026-11-10 17:30:23 — WFS-404 fusionné par le lead dev (lead-dev)
+- PR #337, 2e revue, commit relu 797ee569 ; squash `deb37c22` (« WFS-404 : Ne garder que les voitures vendables (A 45, Elantra N, X5 retirées) (#337) (Claude, agent devartiste (01UY1Vv2ReCX)) »). Approbation écrite dans la PR en commentaire (même compte GitHub).
+- Points de la 1re revue corrigés : volant de la M4 (boutons des branches gardés, pas d'agrafe ; `test_cockpit` sur la vraie condition) ; captures du garage complet, des faces, du sens inverse de la Ville.
+- Vérifié par le lead dev : construction, 100 tests un par un → 99 verts, seul rouge `test_course5_ordinateurs` (circuit 3/8, accepté par RG-11, WFS-394) ; licences 17 voitures, 0 manque ; logos vert. 73 captures ouvertes.
+- Statut : 🟡 À valider (utilisateur) (corrige ANO-209). Pour le PO : traces de forme sans marque (disque noir de la Golf, plaques jaunes de la SF90, relief du capot de la Corsa) à donner aux retouches de forme WFS-364 à 368 ; WFS-412 à faire vite (la CI de `main` s'arrêtera sur le rouge connu).
+
+### 2026-11-10 17:30:59 — WFS-404 : fin de session (Claude, agent devartiste (01UY1Vv2ReCX))
+- PR #337 fusionnée par le lead dev (squash deb37c22), ticket 🟡 À valider (utilisateur). Session terminée : aucun autre ticket demandé (un seul sujet par session).
+- Transmis au PO : traces de forme sans marque (Golf, SF90, Corsa) pour WFS-364 à 368 ; WFS-412 urgent (tests_cpu.sh) ; lire le `unzip -l` de l’APK de main (sans a45, elantra, x5).
+### 2026-11-10 17:31:04 — Suites de WFS-404 (fusionné, 🟡) (po-scrum-master)
+- WFS-404 a été fusionné par le lead dev (#337, deb37c22). Il est 🟡 à cause d'ANO-209 (volant de la M4). La session de Claude, agent devartiste (01UY1Vv2ReCX), est terminée.
+- Traces de forme sans marque versées dans les retouches : Golf (disque noir) et Corsa (relief du capot) dans WFS-364, SF90 (plaques jaunes, matériau 11 partagé) dans WFS-366.
+- L'APK de `main` reste à vérifier sur le run 42865582835 (en cours) : `unzip -l` sans a45, elantra ni x5, et la ligne de Gradle. Le PO regarde à son prochain appel.
+- WFS-412 est marqué urgent : `tests_cpu.sh` s'arrête sur le rouge connu de RG-11.
+
+### 2026-11-10 17:38:02 — WFS-413 : zone élargie à shaders/eclairage.glsl (po-scrum-master)
+- Demande de Claude, agent devartiste 3 (01UY1Vv59N) : depuis que les feux partent de la glace (RG-02), le feu de croisement éclaire le propre pare-chocs et le capot (Gallardo, Abarth, S3, Model 3).
+- Décision : **oui**, `shaders/eclairage.glsl` ajouté à la zone, ≤ 4 lignes : masquage « boîtier » (rien à moins de 0,40 m devant la glace, plein à 0,70 m) dans `feuCroisement` et `feuCroisementRapide`. Intensités, coupure et faisceau inchangés. Option « source au ras du pare-chocs » refusée (RG-02).
+
+### 2026-11-10 17:46:00 — Volant cassé (APK 991) : ANO-241, WFS-414 créé (po-scrum-master)
+- Demande de l'utilisateur : « selon la dernière APK 991, qui a niqué le volant ?? » (capture : `qa/retours/2026-11-10-volant-apk991.jpg`).
+- Diagnostic du lead dev (lecture seule), vérifié par le PO dans le code : **WFS-323 (#335, APK 990)**, `vehicule_cockpit.cpp` l. 698-709 : moyeu en petite dalle plate, branches en barres fines, branche basse détachée du moyeu (`hub = 0.07` > demi-hauteur du moyeu 0,0575 → trou de 12,5 mm). WFS-404 (#337, APK 991) n'a changé que les bandes de couleur de la M4.
+- Revue : le lead dev reconnaît avoir jugé « pas de forme nue » sur le nom des fonctions, sans gros plan du volant.
+- **ANO-241** (bloquante) et **WFS-414** (P1 super urgent, `dev-artiste-3d`, pas l'auteur de WFS-323) créés, en tête de liste ; WFS-323 reste 🟡 avec « volant KO ». Règles : `regles-de-gestion/WFS-414.md` (gros plans du volant obligatoires, avis agent 3D sans réserve).
+
+### 2026-11-10 18:00:10 — WFS-414 limité à la Mustang (po-scrum-master)
+- Ordre de l'utilisateur : « Non, que pour cette voiture. » WFS-414 et ANO-241 limités au volant de la Mustang ; les 16 autres volants ne changent pas (captures Golf / M4 identiques, test de non-changement). La Mustang n'a ni agrafe ni bouton rouge sur les branches : le trou de la branche basse s'y voit, contrairement à la Golf.
+
+### 2026-11-10 18:00:48 — Statuts automatiques, CI main #991 (robot statuts)
+- Run rouge (push, commit deb37c2), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 18:01:25 — WFS-414 : Golf 8 ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Golf 8 aussi. » Périmètre de WFS-414 / ANO-241 : volants de la Mustang et de la Golf 8 GTI ; les 15 autres inchangés (captures M4 / 911 identiques).
+
+### 2026-11-10 18:03:33 — WFS-414 : Abarth 500 ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Cinquina aussi » (Abarth 500). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500 ; les 14 autres volants inchangés.
+
+### 2026-11-10 18:04:15 — WFS-414 : T-Cross ajouté (po-scrum-master)
+- Ordre de l'utilisateur : « Trek-x aussi » (T-Cross, id tcross). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross ; les 13 autres volants inchangés.
+
+### 2026-11-10 18:04:59 — WFS-414 : S3 berline ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « R3 berline aussi » (S3 berline, id s3). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3 ; les 12 autres volants inchangés.
+
+### 2026-11-10 18:05:36 — WFS-414 : Giulia ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Guiliva aussi » (Giulia). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3, Giulia ; les 11 autres volants inchangés.
+
+### 2026-11-10 17:15:46 — WFS-413 : branche créée, analyse du code des phares (Claude, agent devartiste 3 (01UY1Vv59N))
+- Branche `feature/waforspeed-413` créée depuis `main` ; lecture de `model_loader.cpp` (feux), `nuit.cpp`, `Renderer::feuxVoiture`, `phares.h`, `feux_modele.*`.
+
+### 2026-11-10 17:51:29 — WFS-413 : optiques avant mesurées sur les 17 voitures, glace allumée, plus de halos ronds (Claude, agent devartiste 3 (01UY1Vv59N))
+- Cause (ANO-240) : lumière et halos partaient d'un point calculé (3/4 de la demi-largeur des pièces « phare », pare-chocs) : 24 à 58 cm du vrai phare selon la voiture.
+- RG-01 / RG-04 : optiques repérées voiture par voiture sur le modèle vu de face (rendu orthographique coloré par matériau, contrôle à l'œil des 17) : table `PHARES_AVANT` de `src/render/correctifs_voitures.h` (matériaux « lampe » et « glace », boîte en miroir, nombre de matériaux vérifié). `feux_modele::mesurerOptiques` : centre de chaque glace (aire vue de face), sa normale, taille de la lampe. Plus de repli aux proportions du jeu web pour ces voitures.
+- RG-02 : feux de croisement du joueur (`nuit.cpp`) partis du centre de chaque glace, 1 cm derrière elle ; voitures du trafic / police (`phares::noterAutre`) : milieu des deux glaces mesurées. Axe, coupure, intensités inchangés.
+- RG-03 : `feux_modele::marquerPhares` sort les triangles de la lampe en pièces « phare » (`PIECE_PHARE` = 3), allumées la nuit par `Renderer::draw` (même émission que l'ancien MAT_HEAD) ; drapeau MAT_HEAD d'origine ignoré sur ces voitures (deux-roues inchangés). Halos `PHARE_COEUR` / `PHARE_LUEUR` retirés de `Renderer::feuxVoiture`. Basse au loin : 5e groupe « optiques » (sinon plus aucune lumière au loin sans les halos).
+- Accroches annoncées : `shaders/eclairage.glsl` 2 lignes (masquage « boîtier » du feu de croisement à moins de 40 cm devant la glace, accord du PO du jour : sinon la lampe éclairait son propre pare-chocs) ; `renderer.h` (champs `phare[2]`, `phareNormale[2]`, `phares` de `FeuxModele`, 3 lignes) ; `desktop_main.cpp` 1 ligne (banc `phares-optiques`) ; `Renderer::draw` 2 lignes (pièce phare allumée, `pieceFeuArriere`).
+- RG-07 : feux arrière, stop, recul non touchés (`pieceFeuArriere` garde exactement les valeurs 1 et 2).
+- Test : `tests/test_phares_optiques.cpp` (cas construit à 2 mm ; 17 voitures : lumière ≤ 1,0 cm de l'optique, ancien point ≥ 24 cm) : OK.
+
+### 2026-11-10 18:26:10 — WFS-413 : PR #339 ouverte, lead dev appelé (Claude, agent devartiste 3 (01UY1Vv59N))
+- PR #339 (`feature/waforspeed-413`, synchronisée avec `main`), 15 captures avant / après dans `qa/pr/WFS-413/` ; TACHES 🔀 En PR, suivi-pr 🆕.
+
+### 2026-11-10 18:28:40 — WFS-406 : PR #338 refusée par le lead dev (lead-dev)
+- Relu au commit 0d391b5f : toutes les captures ouvertes, tout le diff lu ; construction et tests refaits sur la branche synchronisée avec main : 100/101 verts (seul rouge : `test_course5_ordinateurs`, rouge connu de WFS-404 / WFS-394) ; `verifier_licences.py` 0 manque ; banc `credits` 0 erreur ; anciens noms : 0.
+- Écran Crédits et noms (Norvik Lume, Draven Vantor GT, Alvar Selene TS) conformes à la demande ; aucune régression visible.
+- **Refus** : (1) BLOQUANT, `tools/qa/verifier_licences.py` ne vérifie plus que le fichier de licence de chaque voiture, de la police (OFL) et des personnages existe dans `assets/licences/` (contrôle de la CI affaibli) : à remettre, avec les nouvelles sections ; (2) journal du développeur : « 101/101 » à corriger en 100/101. Revue écrite dans la PR (en commentaire : même compte GitHub).
+
+### 2026-11-10 18:42:49 — WFS-413 fusionné par le lead dev (lead-dev)
+- PR #339 relue au commit 15c10acd : 30 captures ouvertes (15 paires avant / après, jour et nuit) ; tout le diff lu (feux_modele.*, correctifs_voitures.h, model_loader.cpp, nuit.cpp, renderer.*, eclairage.glsl 2 lignes, desktop_main.cpp 1 ligne, test).
+- Les ronds blancs qui flottaient à côté des voitures ont disparu ; les vraies optiques s'allument (DEL, bandeaux, phares ronds) ; route éclairée comme avant ; captures de jour identiques au bit près.
+- Construction et tests refaits : 100/101 ; `test_course5_ordinateurs` échoue de la même façon sur main (circuit, 3 fois sur 8 dans les 3 premiers ; sans lien avec WFS-413 : à signaler au PO).
+- Revue « ✅ Approuvé » en commentaire (même compte GitHub), conflit de journal résolu par une synchronisation avec main (0a5a6138, journal seul), fusion en squash ac765f13. Statut : 🟡 À valider (utilisateur). Remarques non bloquantes dans la revue (commentaire WFS-170 déplacé dans desktop_main.cpp, planche dupliquée, `derriere` de WFS-382 sur l'ancien point).
+
+### 2026-11-10 18:43:25 — WFS-413 : fusionné (#339, ac765f13), session terminée (Claude, agent devartiste 3 (01UY1Vv59N))
+- Fusion par le lead dev ; statut 🟡 À valider (utilisateur) sur l APK de `main`.
+- Remarques non bloquantes du lead dev, pour le PO : commentaire WFS-170 décalé dans `desktop_main.cpp` ; planche du banc recopiée de `planche_voitures.cpp` ; `derriere` (WFS-382) calculé avec l ancien point dans `nuit.cpp` ; Range Rover Sport sombre de face (seuls les bandeaux DEL) ; S3 allumée d un bloc (pas de glace dans le modèle).
+- `test_course5_ordinateurs` échoue aussi sur `main` (Course à 5, circuit) : sans lien avec WFS-413, à traiter par le PO (WFS-412 ou US technique).
+- Session arrêtée (un seul sujet par session).

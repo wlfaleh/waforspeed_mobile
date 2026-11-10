@@ -26,12 +26,12 @@ static const InterieurDef DEFS[] = {
     // M4 Competition G82 (avant restylage) : volant M rond, épais, coutures M en bas (bleu clair, bleu foncé, rouge),
     // boutons M1 / M2 rouges, palettes ; Live Cockpit Professional 12,3 po (292 × 110 mm), écran central 10,25 po posé sur
     // la planche (244 × 91 mm), carbone et alu ; balais 600 / 475 mm
-    {"m4", 0.370f, 0.038f, 3, 0.f, true, false, false, 0x3d3d3f, {0x0066b1, 0x1c2c5c, 0xe7222e}, 0x2b2c30, 0xe7222e,
+    {"m4", 0.370f, 0.038f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0xe7222e,   // WFS-404 (ANO-209) : bandes de couleur de la marque retirées
      {0.f, -0.30f, -0.76f}, -0.35f,
      Combine::BmwLive, 0.292f, 0.110f, {0.f, -0.24f, -0.88f}, 0xe9eef4, 0x0d0f12, 0xe7222e,
      0.244f, 0.091f, {0.38f, -0.20f, -0.80f}, -0.15f,
      -0.18f, -0.80f, -0.22f, -1.15f, 0x141415, 0x1b1c1e, 0x101113, 0.f, 0.15f, true,
-     Essuie::Paralleles, 0.600f, 0.475f, 1.66f, 0.335f},
+     Essuie::Paralleles, 0.600f, 0.475f, 1.66f, 0.335f, 0, false, false, false, true},   // WFS-404 : boutons rouges des branches gardés sans les bandes
     // 911 Carrera 4S (992.1) : volant rond 3 branches fines (375 mm), 5 cadrans sous une visière (compte-tours analogique
     // au centre), écran PCM 10,9 po encastré à mi-hauteur (245 × 130 mm), planche plate et basse, alu brossé ; balai 525 mm
     {"p911", 0.375f, 0.036f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x6e7177, 0,

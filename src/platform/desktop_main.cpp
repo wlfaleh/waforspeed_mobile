@@ -35,6 +35,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../ui/planche_voitures.h"
+#include "../game/voitures_retirees_banc.h"   // WFS-404
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 namespace wfs { int benchCampagneObjets(Game& g, Renderer& r, const std::string& out); }   // WFS-372 (accroche) : src/world/decor_campagne_banc.cpp
@@ -211,6 +212,7 @@ int main(int argc, char** argv) {
         ui::chargerPolice(r);
         for (int i = TRAFIC_MODELES; i < CAR_COUNT; i++) {
             const char* id = CARS[i].id;
+            if (voitureRetiree(id)) continue;   // WFS-404 : voitures retirées
             if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); continue; }
             g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png");
             const bool garage = !std::strcmp(id, "p208") || !std::strcmp(id, "sf90"), course = !std::strcmp(id, "sf90");
@@ -223,7 +225,8 @@ int main(int argc, char** argv) {
         benchPlancheVoitures(g, r, out); if (benchRecords(g, r, out) > 0) { finir(); return 3; }   // WFS-77 : les 20 voitures en Turquoise, roues et peinture au journal ; WFS-125 : records (job vitrines de la CI)
         return finir();
     }
-    if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
+    if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }
+    if (banc == "phares-optiques") { benchPharesOptiques(g, r, out); return finir(); }   // WFS-413 (accroche) : optiques avant de nuit   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
     if (banc == "phares") { ui::chargerPolice(r); benchPhares(g, r, out); return finir(); }   // WFS-382 (accroche) : banc court des phares de nuit
     if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); benchRoute(g, r, out); benchCockpit(g, r, out, COCKPIT_LOT2A); conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs-*   // WFS-201 (accroche) : cockpit lot 2, 1re moitié   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
@@ -248,6 +251,11 @@ int main(int argc, char** argv) {
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
+    if (banc == "ville-sens-inverse") { benchSensInverseVille(g, r, out); return finir(); }   // WFS-404 : sens inverse de la Ville seul
+    if (banc == "voitures-retirees") {   // WFS-404 : planche et faces des voitures permises, tour du garage, sens inverse de la Ville, camion de la Poursuite
+        ui::chargerPolice(r); benchPlancheVoitures(g, r, out); benchVoituresFace(g, r, out); ecrans::benchGarageTour(g, r, out); benchSensInverseVille(g, r, out);
+        benchPoursuite(g, r, out); return finir();   // camion : le banc de la Poursuite fixe lui-même son moment (nuit)
+    }
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)
@@ -259,7 +267,7 @@ int main(int argc, char** argv) {
     if (banc == "cockpit-reference") { benchCockpitReference(g, r, out); return finir(); }   // WFS-323 (accroche) : scènes de la référence de l'utilisateur
     if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)
         std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
-        const int e = benchCockpitVoisine(g, r, out, v, {"golf", "x5", "abarth"}); finir(); return e > 0 ? 3 : 0;
+        const int e = benchCockpitVoisine(g, r, out, v, {"golf", "rrsport", "abarth"}); finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)

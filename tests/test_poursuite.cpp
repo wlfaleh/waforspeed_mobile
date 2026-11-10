@@ -94,8 +94,8 @@ int testPoursuite() {
         VERIFIE(r && c, "banc : ralentisseur %d, camion %d", r, c);
     }
     std::printf("6 surprises (barrage, déboîte, travaux, accident, camion, ralentisseur) sur 10 000 graines : OK\n");
-    // camion en travers : x5 (rrsport si le joueur roule en x5), à cheval sur 2 files, la file libre n'est pas touchée
-    VERIFIE(std::string(camionCar("golf")) == "x5" && std::string(camionCar("x5")) == "rrsport", "modèle du camion");
+    // camion en travers : rrsport (compass si le joueur roule en rrsport ; X5 retiré, WFS-404), à cheval sur 2 files, la file libre n'est pas touchée
+    VERIFIE(std::string(camionCar("golf")) == "rrsport" && std::string(camionCar("rrsport")) == "compass", "modèle du camion");
     VERIFIE(fileLibreCamion(1) == 0 && fileLibreCamion(0) == 0 && fileLibreCamion(2) == 2, "file libre du camion");
     for (int libre : {0, 2}) {
         const Travers tv = camionTravers(libre, 4.92, 2.0);
