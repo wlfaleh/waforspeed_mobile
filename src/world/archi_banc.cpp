@@ -80,8 +80,9 @@ public:
             }
             mats_[s][archi::MENUISERIE] = mat({0.18f, 0.12f, 0.07f}, 0.6f, 0);
             mats_[s][archi::TOIT] = plans_[s].toit == archi::Toit::Tuiles ? mat(tuile, 0.8f, 0)
-                                  : plans_[s].toit == archi::Toit::Zinc ? mat(inox * 0.6f, 0.45f, 1) : mat(beton * 0.6f, 0.95f, 0);
+                                  : plans_[s].toit == archi::Toit::Zinc ? mat(inox * 0.6f, 0.62f, 1) : mat(beton * 0.6f, 0.95f, 0);
             mats_[s][archi::METAL] = mat(alu * 0.3f, 0.4f, 1);
+            { Material m; m.color = {alu.x * 0.3f, alu.y * 0.3f, alu.z * 0.3f, 1}; m.rough = 0.4f; m.metal = 1; m.flags = MAT_DOUBLE | MAT_BLEND; mats_[s][archi::FIN] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // WFS-370 : barreaux
             mats_[s][archi::VOLET] = mat({0.09f, 0.2f, 0.13f}, 0.6f, 0);   // volets peints (vert) : couleur de conception, provisoire (ST-4)
             // repère : façade face à la route, côté droit ; x local = sens inverse de la route, z local = vers la chaussée
             const int64_t a = SEGMENT + (int64_t)((along + LARGEUR[s]) / SEG_M);
@@ -139,7 +140,7 @@ public:
         const int l = std::clamp(g_archi.lod, 0, 2);
         for (int s = 0; s < NB; s++)
             for (int k = 0; k < archi::NB_PARTS; k++)
-                if (meshes_[s][l][k].indexCount) r.draw(meshes_[s][l][k], mats_[s][k], monde_[s]);
+                if (meshes_[s][l][k].indexCount) r.draw(meshes_[s][l][k], mats_[s][k], monde_[s], k == archi::FIN ? 0.016f : 0.f);   // WFS-370
     }
 
     void shutdown(Renderer& r) override {

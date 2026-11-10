@@ -1,5 +1,6 @@
 // WaForSpeed — WFS-161 (ST-1) : géométrie du kit d'architecture (voir archi_geo.h).
 #include "archi_geo.h"
+#include "archi_details.h"   // WFS-370 (accroche) : vrais volumes (comble, corniche, garde-corps, soubassement)
 #include <algorithm>
 #include <cmath>
 
@@ -9,9 +10,8 @@ namespace {
 constexpr float SOCLE = 1.f;          // murs prolongés sous le sol (pente du terrain, trottoir) : aucun jour en pied de mur
 constexpr float APPUI_SAILLIE = 0.05f, APPUI_EP = 0.05f, APPUI_DEBORD = 0.05f;   // appui de fenêtre (m)
 constexpr float BALCON_PROF = 0.9f, BALCON_EP = 0.15f, BALCON_DEBORD = 0.3f;      // dalle de balcon (m)
-constexpr float GARDE_CORPS = 1.0f, GC_EP = 0.04f;    // garde-corps : 1,00 m (NF P01-012, archi.garde_corps.hauteur)
+constexpr float GC_EP = 0.04f;    // épaisseur d'un garde-corps (hauteur 1,00 m : archi_details.cpp, NF P01-012)
 constexpr float LOGGIA = 1.0f;        // profondeur d'une loggia (m)
-constexpr float ACROTERE = 0.5f, ACROTERE_EP = 0.2f;  // muret en rive de toiture-terrasse (m)
 constexpr float PENTE_ZINC = 35.f, PENTE_TUILES = 17.f, DEBORD_TUILES = 0.3f;   // degrés ; débord de toit (m)
 // ST-2 : traits des styles (RG-02)
 constexpr float CADRE = 0.1f, CADRE_SAILLIE = 0.03f;          // encadrement de baie (classique, méditerranéen)
@@ -64,13 +64,15 @@ float profondeurTableau(const Plan& p, const Baie& b) {
 }
 
 // ST-3 : uv d'une vitre = données de sa baie pour la pièce simulée derrière (decor.glsl, interieurFenetre) :
-// u = largeur (dm) × 100 + allège (dm) + x relatif, v = hauteur (dm) + y relatif (x, y relatifs de 0 à 0,999)
+// u = largeur (dm) × 100 + allège (dm) + x relatif, v = graine × 100 + hauteur (dm) + y relatif (x, y relatifs de 0 à 0,999 ;
+// WFS-370 : graine de 1 à 100 propre à la baie, pour que les tirages de la nuit soient faits une fois par fenêtre)
 void uvVitre(const Plan& p, const Baie& b, Maillage& m, uint32_t k) {
     const float l = std::round(std::min(b.l, 9.9f) * 10), h = std::round(std::min(b.h, 9.9f) * 10);
     const float al = std::round(std::clamp(b.y - p.niveauY(b.niveau), 0.f, 9.9f) * 10);
+    const float g = 100.f * (float)(1 + graineBaie(p, b.niveau, b.travee));
     for (uint32_t j = k; j < m.v.size(); j++) {
         const float u = std::clamp((m.v[j].p.x - (b.x - b.l / 2)) / b.l, 0.f, 1.f) * 0.999f, v = std::clamp((m.v[j].p.y - b.y) / b.h, 0.f, 1.f) * 0.999f;
-        m.v[j].uv = {l * 100 + al + u, h + v};
+        m.v[j].uv = {l * 100 + al + u, g + h + v};
     }
 }
 
@@ -135,12 +137,9 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     if (b.balcon && !balconFilant(p, b.niveau)) {
         const float bx0 = x0 - BALCON_DEBORD, bx1 = x1 + BALCON_DEBORD, yb = p.niveauY(b.niveau);
         pave(tab, bx0, bx1, yb - BALCON_EP, yb, 0, BALCON_PROF);
-        Maillage& gc = out.part[METAL];
-        pave(gc, bx0, bx1, yb, yb + GARDE_CORPS, BALCON_PROF - GC_EP, BALCON_PROF, false);
-        pave(gc, bx0, bx0 + GC_EP, yb, yb + GARDE_CORPS, 0, BALCON_PROF, false);
-        pave(gc, bx1 - GC_EP, bx1, yb, yb + GARDE_CORPS, 0, BALCON_PROF, false);
+        details::gardeCorps(out.part[METAL], out.part[FIN], bx0, bx1, yb, 0, BALCON_PROF);   // WFS-370 (accroche) : barreaux, plus de plaque pleine
     } else if (b.type == Ouverture::PorteFenetre && b.niveau > 0) {   // porte-fenêtre sans balcon : garde-corps dans le tableau
-        pave(out.part[METAL], x0, x1, y0, y0 + GARDE_CORPS, -0.1f, -0.1f + GC_EP, false);
+        details::gardeCorps(out.part[METAL], out.part[FIN], x0, x1, y0, -0.1f - GC_EP, -0.1f + GC_EP);   // WFS-370 (accroche)
     }
     traits(p, b, d, out);
 }
@@ -176,11 +175,10 @@ void facade(const Plan& p, int lod, Batiment& out) {
         if (balconFilant(p, n)) {   // classique : balcon filant d'une rive à l'autre, garde-corps de 1,00 m
             const float a = 0.1f, b = p.largeur - 0.1f;
             pave(out.part[ENCADREMENT], a, b, yb - BALCON_EP, yb, 0, FILANT_PROF);
-            pave(out.part[METAL], a, b, yb, yb + GARDE_CORPS, FILANT_PROF - GC_EP, FILANT_PROF, false);
-            pave(out.part[METAL], a, a + GC_EP, yb, yb + GARDE_CORPS, 0, FILANT_PROF, false);
-            pave(out.part[METAL], b - GC_EP, b, yb, yb + GARDE_CORPS, 0, FILANT_PROF, false);
+            details::gardeCorps(out.part[METAL], out.part[FIN], a, b, yb, 0, FILANT_PROF);   // WFS-370 (accroche)
         }
     }
+    details::facade(p, out);   // WFS-370 (accroche) : soubassement, cordon, dormant des vitrines
 }
 
 void toiture(const Plan& p, float D, int lod, Batiment& out) {
@@ -191,20 +189,8 @@ void toiture(const Plan& p, float D, int lod, Batiment& out) {
         pave(out.part[ENCADREMENT], -VILLA_DEBORD, L + VILLA_DEBORD, H, H + VILLA_DALLE, -D - VILLA_DEBORD, VILLA_DEBORD);
         return;
     }
-    if (p.toit == Toit::Terrasse) {
-        rectY(toit, 0, L, 0, -D, H, 1);
-        // acrotère sur les 4 côtés (dessus seulement visible de loin)
-        pave(mur, 0, L, H, H + ACROTERE, -ACROTERE_EP, 0, false);
-        pave(mur, 0, L, H, H + ACROTERE, -D, -D + ACROTERE_EP, false);
-        pave(mur, 0, ACROTERE_EP, H, H + ACROTERE, -D, 0, false);
-        pave(mur, L - ACROTERE_EP, L, H, H + ACROTERE, -D, 0, false);
-        if (p.edicules && lod == 0 && L > 6 && D > 6) {   // cage d'escalier et machinerie d'ascenseur
-            const float cx = L * 0.5f, cz = -D * 0.6f;
-            pave(mur, cx - 1.6f, cx + 1.6f, H, H + 2.6f, cz - 1.4f, cz + 1.4f, false);
-            rectY(toit, cx - 1.6f, cx + 1.6f, cz - 1.4f, cz + 1.4f, H + 2.6f, 1);
-        }
-        return;
-    }
+    if (p.toit == Toit::Terrasse) { details::terrasse(p, D, lod, out); return; }   // WFS-370 (accroche) : couvertines, édicule
+    if (p.toit == Toit::Zinc && p.style == Style::Classique) { details::mansart(p, D, lod, out); return; }   // WFS-370 (accroche)
     // toit à deux pentes, faîtage parallèle à la façade (zinc 35°, tuiles 17° avec débord)
     const float pente = (p.toit == Toit::Zinc ? PENTE_ZINC : PENTE_TUILES) * PI / 180.f;
     const float deb = p.toit == Toit::Tuiles ? DEBORD_TUILES : 0.f;
@@ -249,7 +235,7 @@ void construire(const Plan& p, float D, int lod, Batiment& out) {
     rectZ(mur, 0, L, -SOCLE, H, -D, -1);
     if (p.corniche > 0 && p.toit != Toit::Tuiles) {   // corniche (sous les tuiles, c'est la génoise de la toiture qui en tient lieu)
         const float s = regles(p.style).saillieCorniche;
-        pave(out.part[ENCADREMENT], -s, L + s, H - p.corniche, H, -D, s);
+        details::corniche(out.part[ENCADREMENT], L, D, H, p.corniche, s);   // WFS-370 (accroche) : moulurée
     }
     toiture(p, D, std::clamp(lod, 0, 2), out);
 }
