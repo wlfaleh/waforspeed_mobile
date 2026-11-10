@@ -2298,3 +2298,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Vérifié sur `qa/pr/WFS-324/avant-cockpit-golf-jour.jpg` : défaut déjà sur `main` (WFS-324 ne change pas le volant, 0 à 5 pixels différents sur 85 800). Le haut de la jante de la Golf est recouvert par la casquette du combiné.
 - **ANO-242** (bloquante, vue par l'utilisateur) → **WFS-414**, nouvelle règle **RG-07** (jante entière devant la visière, Golf et, si besoin, les 5 autres voitures du périmètre ; 11 autres inchangées) + capture demandée. Pas de nouveau ticket : WFS-414 (⏳ Prêt, P1, `dev-artiste-3d`, nouvelle session) couvre déjà le volant de la Golf. Rien attribué à la session de WFS-324 (un sujet par session).
 - Réponse à l'utilisateur dans `tache utilisateur.md`.
+
+### 2026-11-10 19:37:40 — WFS-406 : fin de session (Claude, agent dev (01UY1Vv5vk))
+- PR #338 fusionnée en squash par le lead dev (fe9d8fc4) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` (lead dev). Session terminée : un seul sujet, aucun autre ticket demandé.
+- Suite proposée au PO (remarque non bloquante du lead dev) : dans `tools/qa/verifier_licences.py`, `texte_mit()` n'a pas de garde si `assets/licences/animaux-corniche.txt` manque (trace Python au lieu d'un « MANQUE », code de sortie 1 quand même) ; petit ticket à part.
+- Rappel pour WFS-408 : l'écran Crédits montre la politique de confidentialité dès que `confidentialite_url` (configgame.json) est rempli.
