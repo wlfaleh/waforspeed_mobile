@@ -223,7 +223,8 @@ int main(int argc, char** argv) {
         benchPlancheVoitures(g, r, out); if (benchRecords(g, r, out) > 0) { finir(); return 3; }   // WFS-77 : les 20 voitures en Turquoise, roues et peinture au journal ; WFS-125 : records (job vitrines de la CI)
         return finir();
     }
-    if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
+    if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }
+    if (banc == "phares-optiques") { benchPharesOptiques(g, r, out); return finir(); }   // WFS-413 (accroche) : optiques avant de nuit   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
     if (banc == "phares") { ui::chargerPolice(r); benchPhares(g, r, out); return finir(); }   // WFS-382 (accroche) : banc court des phares de nuit
     if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); benchRoute(g, r, out); benchCockpit(g, r, out, COCKPIT_LOT2A); conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs-*   // WFS-201 (accroche) : cockpit lot 2, 1re moitié   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)

@@ -20,6 +20,8 @@ void benchFeuxFrein(Game& g, Renderer& r, const std::string& out);
 // WFS-170 (RG-04, RG-08) : vitrine-<id>-feux des 20 voitures : vue arrière de trois quarts, frein tenu (feux stop allumés),
 // de jour. WFS_VOITURES="id id …" (essai local) : ces voitures seulement, avec aussi leur vitrine-<id>-0.
 void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out);
+// WFS-413 : optiques avant de nuit : phares-planche (voitures de face), phares-gros-plan-<id>, phares-joueur-face, phares-trafic, phares-jour-golf
+void benchPharesOptiques(Game& g, Renderer& r, const std::string& out);
 }
 
 namespace wfs::feux_modele {
@@ -31,7 +33,112 @@ constexpr float TRANSITION_S = 0.08f;    // RG-02 : 80 ms entre feu de position 
 constexpr float TROISIEME_LARGEUR = 0.6f, TROISIEME_CENTRE = 0.1f;   // RG-03 : 3e feu stop = pièce étroite et centrée
 
 constexpr uint32_t DRAPEAU_TAIL = 4, DRAPEAU_HEAD = 8;   // MAT_TAIL / MAT_HEAD (renderer.h, format .wfm)
-enum : int8_t { PIECE_NORMALE = 0, PIECE_FEU_ARRIERE = 1, PIECE_TROISIEME_FEU = 2 };
+enum : int8_t { PIECE_NORMALE = 0, PIECE_FEU_ARRIERE = 1, PIECE_TROISIEME_FEU = 2, PIECE_PHARE = 3 };   // WFS-413 : 3 = optique avant
+inline bool pieceFeuArriere(int8_t p) { return p == PIECE_FEU_ARRIERE || p == PIECE_TROISIEME_FEU; }
+
+// ---------- WFS-413 : optiques avant mesurées sur le modèle (ANO-240) ----------
+// Une optique = les pièces de la lampe (réflecteur, projecteur, DEL, bandeau) et sa glace, rangées dans une boîte par côté
+// (|x| entre xMin et xMax : la même boîte en miroir à gauche et à droite). Zones données voiture par voiture
+// (correctifs_voitures.h, RG-04), repérées sur le modèle vu de face : on ne devine plus le phare à partir de la boîte de la caisse.
+struct ZoneOptique { uint32_t materiau; bool glace; float xMin, xMax, yMin, yMax, zMax; };
+// centre : centre de la glace (moyenne de la surface vue de face, pondérée par l'aire projetée, sur la glace ; sur la lampe si
+// le modèle n'a pas de glace), au ras de sa surface extérieure (rayon venu de l'avant) ; normale : normale moyenne de la glace,
+// tournée vers l'extérieur ; largeur, hauteur : boîte de la lampe. Repère du modèle : avant vers −z, x à droite.
+struct Optique { vec3 centre{}, normale{0, 0, -1}; float largeur = 0, hauteur = 0; uint32_t triangles = 0; bool trouvee = false; };
+constexpr float DERRIERE_GLACE = 0.01f;   // RG-02 : la lumière part 1 cm derrière la glace (dans l'optique)
+
+// le triangle de centre c est-il dans la zone, du côté cote (−1 gauche, +1 droite) ?
+inline bool dansZone(const ZoneOptique& z, const vec3& c, int cote) {
+    const float x = c.x * (float)cote;
+    return x >= z.xMin && x <= z.xMax && c.y >= z.yMin && c.y <= z.yMax && c.z <= z.zMax;
+}
+
+// RG-01 : les deux optiques avant (0 : gauche, x < 0 ; 1 : droite). Part : material, firstIndex, indexCount, vertexOffset ;
+// pos(v) : position du sommet v. Toutes les pièces d'un matériau sont lues (découpées ou non).
+template <class Part, class Pos>
+void mesurerOptiques(const std::vector<uint32_t>& idx, const std::vector<Part>& parts, Pos pos, const std::vector<ZoneOptique>& zones,
+                     Optique out[2]) {
+    for (int s = 0; s < 2; s++) {
+        const int cote = s ? 1 : -1;
+        Optique o;
+        std::vector<vec3> lampe, glace;   // triangles (3 sommets à la suite)
+        for (const Part& p : parts)
+            for (const ZoneOptique& z : zones) {
+                if (p.material != z.materiau) continue;
+                for (uint32_t t = 0; t + 2 < p.indexCount; t += 3) {
+                    const vec3 a = pos((size_t)p.vertexOffset + idx[p.firstIndex + t]), b = pos((size_t)p.vertexOffset + idx[p.firstIndex + t + 1]),
+                               c = pos((size_t)p.vertexOffset + idx[p.firstIndex + t + 2]);
+                    if (!dansZone(z, (a + b + c) * (1.f / 3), cote)) continue;
+                    std::vector<vec3>& v = z.glace ? glace : lampe;
+                    v.push_back(a); v.push_back(b); v.push_back(c);
+                }
+            }
+        if (lampe.empty()) { out[s] = o; continue; }
+        vec3 mn{1e9f, 1e9f, 1e9f}, mx{-1e9f, -1e9f, -1e9f};
+        for (const vec3& q : lampe) { mn = {std::min(mn.x, q.x), std::min(mn.y, q.y), std::min(mn.z, q.z)}; mx = {std::max(mx.x, q.x), std::max(mx.y, q.y), std::max(mx.z, q.z)}; }
+        const std::vector<vec3>& face = glace.empty() ? lampe : glace;
+        double A = 0, X = 0, Y = 0; vec3 N{};
+        for (size_t k = 0; k + 2 < face.size(); k += 3) {
+            vec3 n = cross(face[k + 1] - face[k], face[k + 2] - face[k]) * 0.5f;
+            const double a = std::fabs(n.z);   // aire vue de face
+            A += a; X += a * (face[k].x + face[k + 1].x + face[k + 2].x) / 3; Y += a * (face[k].y + face[k + 1].y + face[k + 2].y) / 3;
+            if (n.z > 0) n = n * -1.f;          // maillages doubles faces : normale vers l'avant (−z)
+            N = N + n;
+        }
+        if (A <= 0) { out[s] = o; continue; }
+        const float x = (float)(X / A), y = (float)(Y / A);
+        // z de la glace en (x, y) : 1re surface touchée par un rayon venu de l'avant (glace, sinon lampe, sinon avant de la lampe)
+        auto rayon = [&](const std::vector<vec3>& T) {
+            float zb = 1e9f;
+            for (size_t k = 0; k + 2 < T.size(); k += 3) {
+                const vec3 &a = T[k], &b = T[k + 1], &c = T[k + 2];
+                const float d = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+                if (std::fabs(d) < 1e-12f) continue;
+                const float w0 = ((b.x - x) * (c.y - y) - (b.y - y) * (c.x - x)) / d, w1 = ((c.x - x) * (a.y - y) - (c.y - y) * (a.x - x)) / d, w2 = 1 - w0 - w1;
+                if (w0 < 0 || w1 < 0 || w2 < 0) continue;
+                zb = std::min(zb, w0 * a.z + w1 * b.z + w2 * c.z);
+            }
+            return zb;
+        };
+        float z = rayon(face);
+        if (z > 1e8f) z = rayon(lampe);
+        if (z > 1e8f) z = mn.z;
+        const float nl = length(N);
+        o.centre = {x, y, z}; o.normale = nl > 0 ? N * (1.f / nl) : vec3{0, 0, -1};
+        o.largeur = mx.x - mn.x; o.hauteur = mx.y - mn.y; o.triangles = (uint32_t)(lampe.size() / 3); o.trouvee = true;
+        out[s] = o;
+    }
+}
+
+// RG-03 : triangles de la lampe (zones non « glace ») sortis dans des pièces « phare » (PIECE_PHARE), allumées la nuit par le
+// moteur ; même découpe que correctifs::marquerFeux (indices de la pièce réordonnés, une pièce de plus). Rend les triangles marqués.
+template <class Part, class Pos>
+uint32_t marquerPhares(std::vector<uint32_t>& idx, std::vector<Part>& parts, Pos pos, const std::vector<ZoneOptique>& zones) {
+    uint32_t n = 0;
+    const size_t nParts = parts.size();
+    for (size_t k = 0; k < nParts; k++) {
+        if (parts[k].feuArriere) continue;
+        std::vector<uint32_t> garde, phare;
+        for (uint32_t t = 0; t + 2 < parts[k].indexCount; t += 3) {
+            const uint32_t* T = &idx[parts[k].firstIndex + t];
+            const vec3 c = (pos((size_t)parts[k].vertexOffset + T[0]) + pos((size_t)parts[k].vertexOffset + T[1]) + pos((size_t)parts[k].vertexOffset + T[2])) * (1.f / 3);
+            bool dedans = false;
+            for (const ZoneOptique& z : zones)
+                if (!z.glace && parts[k].material == z.materiau && (dansZone(z, c, -1) || dansZone(z, c, 1))) { dedans = true; break; }
+            for (int j = 0; j < 3; j++) (dedans ? phare : garde).push_back(T[j]);
+        }
+        if (phare.empty()) continue;
+        n += (uint32_t)phare.size() / 3;
+        if (garde.empty()) { parts[k].feuArriere = PIECE_PHARE; continue; }   // pièce entière dans l'optique
+        std::copy(garde.begin(), garde.end(), idx.begin() + parts[k].firstIndex);
+        std::copy(phare.begin(), phare.end(), idx.begin() + parts[k].firstIndex + garde.size());
+        Part q = parts[k];
+        q.firstIndex = parts[k].firstIndex + (uint32_t)garde.size(); q.indexCount = (uint32_t)phare.size(); q.feuArriere = PIECE_PHARE;
+        parts[k].indexCount = (uint32_t)garde.size();
+        parts.push_back(q);
+    }
+    return n;
+}
 
 // un matériau du .wfm : drapeaux d'origine, émission, boîte de toutes ses pièces (repère du modèle)
 struct Materiau { uint32_t flags = 0; vec3 emissif{}; vec3 bmin{1e9f, 1e9f, 1e9f}, bmax{-1e9f, -1e9f, -1e9f}; };

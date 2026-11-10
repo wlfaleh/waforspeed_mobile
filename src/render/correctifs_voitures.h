@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include "../core/math.h"
+#include "feux_modele.h"
 #include "renderer.h"
 
 namespace wfs::correctifs {
@@ -93,6 +94,96 @@ uint32_t marquerFeux(const std::string& id, std::vector<uint32_t>& idx, std::vec
         }
     }
     return n;
+}
+
+// WFS-413 (RG-01, RG-04, ANO-240) : optiques avant de chaque voiture, repérées sur le modèle vu de face (matériau, rôle,
+// boîte en miroir |x| xMin-xMax, y, z ≤ zMax ; avant vers −z). « lampe » : pièces qui s'allument la nuit (réflecteur,
+// projecteur, DEL, bandeau) ; « glace » : verre de l'optique (son centre est le point de départ de la lumière). Le nombre de
+// matériaux du .wfm est vérifié : un modèle changé n'est pas pris par erreur (journal « optiques non reconnues »).
+struct PhareVoiture { const char* voiture; uint32_t materiaux; feux_modele::ZoneOptique zone; };
+inline const PhareVoiture PHARES_AVANT[] = {
+    // Abarth : grand phare rond (les petits ronds et les antibrouillards restent hors zone) ; glace
+    {"abarth", 57, {11, false, 0.40f, 0.80f, 0.52f, 0.85f, -1.20f}},
+    {"abarth", 57, {14, true, 0.40f, 0.80f, 0.52f, 0.85f, -1.20f}},
+    // Compass : projecteur et module DEL (antibrouillards hors zone) ; glace fumée (pare-brise hors zone)
+    {"compass", 16, {2, false, 0.55f, 0.88f, 0.80f, 1.00f, -1.80f}},
+    {"compass", 16, {9, false, 0.55f, 0.88f, 0.80f, 1.00f, -1.80f}},
+    {"compass", 16, {11, true, 0.55f, 0.88f, 0.80f, 1.00f, -1.80f}},
+    // Corsa : intérieur sombre, projecteur, bandeau ; glace (calandre hors zone)
+    {"corsa", 17, {3, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 17, {7, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 17, {8, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 17, {9, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 17, {12, true, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    // Gallardo : réflecteurs texturés ; glace fumée (prises d’air hors zone)
+    {"gallardo", 18, {3, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
+    {"gallardo", 18, {4, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
+    {"gallardo", 18, {6, true, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
+    // Giulia : projecteur, réflecteurs, cerclages ; 2 glaces claires
+    {"giulia", 68, {48, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    {"giulia", 68, {50, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    {"giulia", 68, {51, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    {"giulia", 68, {52, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    {"giulia", 68, {53, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    {"giulia", 68, {1, true, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    {"giulia", 68, {8, true, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
+    // Golf : lampe LED texturée (matériau partagé avec la grille, pris dans la boîte), bandeau de jour ; glace claire
+    {"golf", 21, {10, false, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
+    {"golf", 21, {13, false, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
+    {"golf", 21, {5, true, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
+    // GT86 : projecteur et bandeau (antibrouillards hors zone) ; glace
+    {"gt86", 15, {6, false, 0.40f, 0.85f, 0.58f, 0.82f, -1.60f}},
+    {"gt86", 15, {0, true, 0.40f, 0.85f, 0.58f, 0.82f, -1.60f}},
+    // M4 : 2 modules DEL et leur contour, feu de jour ; glace fumée
+    {"m4", 53, {5, false, 0.40f, 0.90f, 0.58f, 0.78f, -1.80f}},
+    {"m4", 53, {6, false, 0.40f, 0.90f, 0.58f, 0.78f, -1.80f}},
+    {"m4", 53, {10, false, 0.40f, 0.90f, 0.58f, 0.78f, -1.80f}},
+    {"m4", 53, {11, false, 0.40f, 0.90f, 0.58f, 0.78f, -1.80f}},
+    {"m4", 53, {12, false, 0.40f, 0.90f, 0.58f, 0.78f, -1.80f}},
+    {"m4", 53, {26, true, 0.40f, 0.90f, 0.58f, 0.78f, -1.80f}},
+    // Model 3 : réflecteurs et projecteur (ancien drapeau « feu arrière ») ; glace
+    {"model3", 37, {11, false, 0.45f, 0.92f, 0.55f, 0.85f, -1.70f}},
+    {"model3", 37, {12, false, 0.45f, 0.92f, 0.55f, 0.85f, -1.70f}},
+    {"model3", 37, {13, false, 0.45f, 0.92f, 0.55f, 0.85f, -1.70f}},
+    {"model3", 37, {14, true, 0.45f, 0.92f, 0.55f, 0.85f, -1.70f}},
+    // Mustang (Corvette C7) : bandeau et projecteur ; glaces
+    {"mustang", 32, {10, false, 0.55f, 0.90f, 0.56f, 0.78f, -1.50f}},
+    {"mustang", 32, {14, false, 0.55f, 0.90f, 0.56f, 0.78f, -1.50f}},
+    {"mustang", 32, {24, true, 0.55f, 0.90f, 0.56f, 0.78f, -1.50f}},
+    {"mustang", 32, {20, true, 0.55f, 0.90f, 0.56f, 0.78f, -1.50f}},
+    // 208 : projecteur et 3 griffes (crocs de jour hors zone) ; glace fumée
+    {"p208", 18, {10, false, 0.45f, 0.80f, 0.66f, 0.86f, -1.50f}},
+    {"p208", 18, {12, true, 0.45f, 0.80f, 0.66f, 0.86f, -1.50f}},
+    // 911 : phare rond (feux de jour du bouclier hors zone) ; glace fumée
+    {"p911", 13, {4, false, 0.48f, 0.90f, 0.60f, 0.86f, -1.50f}},
+    {"p911", 13, {9, false, 0.48f, 0.90f, 0.60f, 0.86f, -1.50f}},
+    {"p911", 13, {8, true, 0.48f, 0.90f, 0.60f, 0.86f, -1.50f}},
+    // Range Rover Sport : bandeau DEL et modules ; glace fumée
+    {"rrsport", 24, {2, false, 0.45f, 0.92f, 0.85f, 1.06f, -1.90f}},
+    {"rrsport", 24, {18, false, 0.45f, 0.92f, 0.85f, 1.06f, -1.90f}},
+    {"rrsport", 24, {12, true, 0.45f, 0.92f, 0.85f, 1.06f, -1.90f}},
+    // S3 : face noire opaque de l’optique et ses DEL (aucune glace transparente)
+    {"s3", 31, {27, false, 0.40f, 0.88f, 0.55f, 0.76f, -1.70f}},
+    {"s3", 31, {16, false, 0.40f, 0.88f, 0.55f, 0.76f, -1.70f}},
+    {"s3", 31, {10, true, 0.40f, 0.88f, 0.55f, 0.76f, -1.70f}},
+    // SF90 : fines barres DEL ; glaces
+    {"sf90", 54, {43, false, 0.55f, 0.95f, 0.52f, 0.70f, -1.40f}},
+    {"sf90", 54, {49, false, 0.55f, 0.95f, 0.52f, 0.70f, -1.40f}},
+    {"sf90", 54, {13, true, 0.55f, 0.95f, 0.52f, 0.70f, -1.40f}},
+    {"sf90", 54, {12, true, 0.55f, 0.95f, 0.52f, 0.70f, -1.40f}},
+    // T-Cross (Brezza) : 2 projecteurs DEL et bandeau (bas de caisse exclu) ; glace
+    {"tcross", 39, {27, false, 0.45f, 0.90f, 0.85f, 1.05f, -1.50f}},
+    {"tcross", 39, {22, true, 0.45f, 0.90f, 0.85f, 1.05f, -1.50f}},
+    // V60 : réflecteur et projecteur ; glace claire et sa partie fumée
+    {"v60", 23, {12, false, 0.40f, 0.90f, 0.52f, 0.82f, -1.60f}},
+    {"v60", 23, {4, true, 0.40f, 0.90f, 0.52f, 0.82f, -1.60f}},
+    {"v60", 23, {3, true, 0.40f, 0.90f, 0.52f, 0.82f, -1.60f}},
+};
+// zones de la voiture (vide : voiture inconnue ou modèle changé)
+inline std::vector<feux_modele::ZoneOptique> zonesPhares(const std::string& id, uint32_t nMat) {
+    std::vector<feux_modele::ZoneOptique> z;
+    for (const PhareVoiture& p : PHARES_AVANT) if (id == p.voiture && nMat == p.materiaux) z.push_back(p.zone);
+    return z;
 }
 
 } // namespace wfs::correctifs
