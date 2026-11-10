@@ -309,7 +309,7 @@ Maille botte(const Couleurs& c, bool loin) {
     for (const int s : {-1, 1}) {
         const float x0 = s * X;
         std::vector<vec3> prec = an[s < 0 ? 0 : an.size() - 1];
-        const int na = loin ? 2 : 5;
+        const int na = loin ? 2 : 7;
         for (int k = 1; k <= na; k++) {
             const float rr = (R - rb) * (1 - (float)k / na), x = x0 - s * 0.03f * ((float)k / na);
             std::vector<vec3> a = cercle(o + ax * x, {0, 0, 1}, HAUT, std::max(rr, 1e-3f), std::max(rr, 1e-3f), n);

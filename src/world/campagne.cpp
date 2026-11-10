@@ -65,11 +65,11 @@ enum ColCampagne { C_PIQUET = C_NB, C_CEP, C_FIL, C_FOIN, C_FOIN_BOUT, C_CREPI, 
                    C_BARDAGE, C_BARDAGE2, C_TOLE, C_ACIER, C_BETON, C_ZINC, C_POTEAU, C_FERRURE, C_ISOL, C_CABLE, C_FIN_CAMPAGNE };
 static_assert(C_FIN_CAMPAGNE <= PAL_W, "palette trop petite");
 constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
-    0x8a7f6e,   // piquet de vigne et poteau de clôture : châtaignier / acacia grisé
+    0x806a52,   // piquet de vigne et poteau de clôture : châtaignier vieilli
     0x5b4636,   // écorce de cep
     0xa3a7a9,   // fil de palissage galvanisé
-    0xc9b26e,   // paille de la botte (flanc)
-    0xa58c55,   // bout de la botte (foin enroulé, plus sombre)
+    0xcfb56f,   // paille de la botte (flanc)
+    0xbba060,   // bout de la botte (foin enroulé, à peine plus sombre)
     0xcbbb9b,   // enduit à la chaux ocre clair
     0xa65a3c,   // tuile canal de terre cuite
     0x7d8f84,   // volets peints vert-gris

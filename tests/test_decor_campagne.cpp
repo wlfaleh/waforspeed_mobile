@@ -89,7 +89,7 @@ int main() {
         const Boite b = boite(p);
         std::snprintf(t, sizeof t, "botte ronde : largeur %.3f m (1,20 ± 1 %%), Ø %.3f m (1,50 ± 1 %%), posée au sol (bas %.3f)", b.mx.x - b.mn.x, b.mx.z - b.mn.z, b.mn.y);
         verifie(proche(b.mx.x - b.mn.x, BOTTE_LARGEUR) && proche(b.mx.z - b.mn.z, BOTTE_DIAM, 0.011f) && std::fabs(b.mn.y) < 1e-4f, t);
-        qualite(p, "botte proche", 800);
+        qualite(p, "botte proche", 1000);
         qualite(lo, "botte loin", 200);
     }
 
