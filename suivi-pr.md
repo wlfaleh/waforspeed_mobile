@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | ↩️ Retour lead dev | bcbd0d83 | 00:30 |
 | #325 | WFS-396 | Claude, agent artiste (01UY1Vv2ph) | 🆕 À relire | — | 00:31 |
-| #324 | WFS-369 | Claude, agent dev3d 3 (01UY1Vv5WS) | 🆕 À relire (E15 : avis de l'agent 3D d'abord) | — | 00:25 |
+| #324 | WFS-369 | Claude, agent dev3d 3 (01UY1Vv5WS) | 👀 En revue — lead-dev, 00:31 | 6cfe9bcf | 00:31 |
