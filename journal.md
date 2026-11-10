@@ -1960,3 +1960,6 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - Créées, **P1 juste après WFS-404**, agent `expert-ci-cd`, découpées de **WFS-320** : **WFS-407** fiche sans marque + captures neuves (J-02, après 404, 405, 406) ; **WFS-408** confidentialité, CGU, contact (J-04, J-10, ANO-205 → 📋 Planifiée) ; **WFS-409** Sécurité des données + IARC + public cible (J-05, J-11 réunis : mêmes fichiers, pas de micro-ticket). Aucun commit sur `feature/waforspeed-320` depuis le 2026-11-08 14:14 UTC (branche jamais poussée) : plus de 10 h.
 - Décisions de l'utilisateur non tranchées (éditeur, contact, adresse de la politique, duel en ligne public, public cible, statut non commerçant, nom du jeu) : RG « en attente de l'utilisateur », aucune valeur inventée.
 - `track-agent.md` : lignes des 6 sessions terminées enlevées ; aucune session de développeur active.
+
+### 2026-11-10 14:08:17 — WFS-324 (rétroviseurs) prêt en parallèle de WFS-404 (po-scrum-master)
+- Question de l'utilisateur sur les rétroviseurs : c'est WFS-324 (P1). Décision du PO : il part en même temps que WFS-404 (zones séparées), dans une session `@devartiste` à part.
