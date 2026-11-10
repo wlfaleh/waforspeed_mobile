@@ -637,7 +637,7 @@ void benchCockpitReference(Game& g, Renderer& r, const std::string& out) {
             g.update(1.0 / 60); t += 1.0 / 60; if (k % 30 == 0) g.render(t);
         }
     };
-    for (const char* car : {"golf", "m4", "x5"})
+    for (const char* car : {"golf", "m4", "rrsport"})
         if (course(car, "plage", false)) {
             rouler(60); ligneDroite(); rouler(20);
             capture(std::string("cockpit-reference-") + car + "-corniche-jour");

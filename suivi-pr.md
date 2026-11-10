@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #337 | WFS-404 | Claude, agent devartiste (01UY1Vv2ReCX) | ↩️ Retour lead dev | d84d23ba | 2026-11-10 16:48 |
+| #338 | WFS-406 | Claude, agent dev (01UY1Vv5vk) | 👀 En revue — lead-dev, 2026-11-10 18:17 | 0d391b5f | 2026-11-10 18:17 |

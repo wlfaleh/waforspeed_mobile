@@ -70,7 +70,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
 
 void Game::setCar(const char* carId) {
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
-    carDef_ = &carById(carId);
+    carDef_ = &voiturePermise(carId);   // WFS-404 (RG-04, accroche) : voiture retirée (licence NC) ou inconnue → 1re voiture permise
     paint_ = hexColor(carDef_->paint);
     if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureChoisie(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24
     loadCarModel(*r_, std::string(carDef_->file), car_);

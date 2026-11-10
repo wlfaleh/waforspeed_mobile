@@ -713,7 +713,7 @@ private:
     Model modele_; std::vector<float> metalModele_; bool blancOrigine_ = false; bool modeleEssaye_ = false; const char* policeCar_ = "p208";
     Mesh cube_; Material matRouge_, matBleu_, matPlot_, matBlanc_, matBleuCaisse_, matVitre_, matJaune_, matNoir_;
     vec3 haloRouge_{}, haloBleu_{};   // WFS-141 : couleurs HDR des halos des gyrophares
-    Model camionModele_; bool camionEssaye_ = false; const char* camionCar_ = "x5"; vec3 peintureCamion_{};   // WFS-119
+    Model camionModele_; bool camionEssaye_ = false; const char* camionCar_ = "rrsport"; vec3 peintureCamion_{};   // WFS-119
     std::vector<Camion> camions_;
     std::vector<Bande> bandes_;
     double distAvant_ = 0;
