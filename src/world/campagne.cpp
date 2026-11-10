@@ -16,6 +16,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"   // WFS-186 : readAsset (animaux .wfa)
 #include "decor_carte.h"
+#include "decor_campagne_modeles.h"   // WFS-372 : vignes, clôtures, bottes, fermes, hangars, poteaux de ligne modélisés
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2 (lacets du col, pont)
 #include "enseignes.h"   // WFS-178 : textes des enseignes du village (atlas)
 #include "../game/traffic.h"        // WFS-179 : couleurs du trafic (voitures en sens inverse)
@@ -29,6 +30,7 @@ namespace wfs {
 namespace carte {
 namespace {
 
+campagne::ObjetBanc g_objets[campagne::NB_OBJETS_BANC];   // WFS-372 : premier objet de chaque sorte, pour le banc des gros plans
 int64_t g_troupeau[3] = {-1, -1, -1};   // WFS-186 : premier segment de chaque troupeau (vache, cheval, mouton), pour le banc
 vec3 g_sommet{}; bool g_aSommet = false;   // WFS-216 : cime du plus haut sommet du fond du col, pour le banc
 // WFS-216 (RG-01) : roche du col par plaques : gris de 0x8a8884 (albédo 0,25) et deux pierres calcaires (0,39 à 0,49)
@@ -56,13 +58,66 @@ void ligneTexte(Geo& g, vec3 c, vec3 x, float w, float h, const vie::Texte& T) {
     g.i.insert(g.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
 }
 
+// WFS-372 : cases de la palette propres à la Campagne (après C_NB, WFS-343), couleurs sRGB des matériaux réels
+// (albédos linéaires dans les plages de la charte DA-realisme.md § 3 : bois grisé 0,2-0,3, paille 0,35-0,45, enduit 0,45-0,55,
+// terre cuite 0,15-0,25, béton 0,25-0,40, acier galvanisé 0,25-0,35)
+enum ColCampagne { C_PIQUET = C_NB, C_CEP, C_FIL, C_FOIN, C_FOIN_BOUT, C_CREPI, C_TUILE, C_VOLET, C_MENUIS, C_PORTE, C_EMBRAS,
+                   C_BARDAGE, C_BARDAGE2, C_TOLE, C_ACIER, C_BETON, C_ZINC, C_POTEAU, C_FERRURE, C_ISOL, C_CABLE, C_FIN_CAMPAGNE };
+static_assert(C_FIN_CAMPAGNE <= PAL_W, "palette trop petite");
+constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
+    0x806a52,   // piquet de vigne et poteau de clôture : châtaignier vieilli
+    0x5b4636,   // écorce de cep
+    0xa3a7a9,   // fil de palissage galvanisé
+    0xcfb56f,   // paille de la botte (flanc)
+    0xc4a965,   // bout de la botte (foin enroulé, à peine plus sombre)
+    0xcbbb9b,   // enduit à la chaux ocre clair
+    0xa65a3c,   // tuile canal de terre cuite
+    0x7d8f84,   // volets peints vert-gris
+    0xdcd6c8,   // menuiseries peintes blanc cassé
+    0x6b4a32,   // porte de bois
+    0xbfb08f,   // embrasures (enduit à l'ombre, plus sombre)
+    0x7b6650,   // bardage de bois brut
+    0x6c5946,   // bardage, planches plus sombres
+    0x9c9d98,   // plaques ondulées de fibres-ciment
+    0x5a6066,   // ossature d'acier peint
+    0xa8a59c,   // béton
+    0x8f9599,   // zinc (gouttières, rives)
+    0x56463a,   // poteau de bois traité
+    0x8c9094,   // ferrures galvanisées
+    0xc9cfc8,   // isolateurs de porcelaine
+    0x7d8184,   // câbles d'aluminium
+};
+campagne::Couleurs couleursModeles() {
+    campagne::Couleurs c;
+    c.piquet = C_PIQUET; c.cep = C_CEP; c.fil = C_FIL; c.foin = C_FOIN; c.foinBout = C_FOIN_BOUT; c.crepi = C_CREPI; c.pierre = C_PIERRE0 + 1;
+    c.tuile = C_TUILE; c.volet = C_VOLET; c.menuiserie = C_MENUIS; c.vitre = C_GLASS; c.porte = C_PORTE; c.embrasure = C_EMBRAS;
+    c.bardage = C_BARDAGE; c.bardage2 = C_BARDAGE2; c.tole = C_TOLE; c.acier = C_ACIER; c.beton = C_BETON; c.zinc = C_ZINC;
+    c.poteau = C_POTEAU; c.ferrure = C_FERRURE; c.isolateur = C_ISOL; c.cable = C_CABLE;
+    return c;
+}
+// WFS-372 : pose d'un modèle (repère local x, y, z → X, haut, Z), couleurs de la palette de la carte
+void poserModele(Geo& g, const campagne::Maille& m, vec3 o, vec3 X, vec3 Z) {
+    const vec3 Y{0, 1, 0};
+    const uint32_t k0 = (uint32_t)g.v.size();
+    g.v.reserve(g.v.size() + m.v.size());
+    for (const marina::Sommet& v : m.v) {
+        const vec3 p = o + X * v.p.x + Y * v.p.y + Z * v.p.z, n = X * v.n.x + Y * v.n.y + Z * v.n.z;
+        const vec2 u{(v.couleur + 0.5f) / PAL_W, 0.5f};
+        g.v.push_back({p.x, p.y, p.z, n.x, n.y, n.z, u.x, u.y});
+    }
+    for (uint32_t i : m.i) g.i.push_back(k0 + i);
+}
+inline uint32_t hacher(int64_t a, int b) { uint32_t h = (uint32_t)(a * 2654435761u) ^ (uint32_t)(b * 40503u + 0x9e37u); h ^= h >> 15; h *= 0x2c1b3c6du; h ^= h >> 12; return h; }
+inline vec3 tourner(vec3 x, vec3 z, float a, vec3& z2) { const float c = std::cos(a), s = std::sin(a); z2 = z * c - x * s; return x * c + z * s; }
+
 class Campagne : public CarteDecor {
 public:
     const char* name() const override { return "campagne"; }
     // WFS-178 : atlas des enseignes (lettres blanches, néon doux la nuit) et feux tricolores (lampes allumées / éteintes)
     void init(Renderer& r, const GameView& g) override {
-        betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1;   // WFS-186 : placés de nouveau par CarteDecor::init
+        betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1; for (auto& o : g_objets) o = {};   // WFS-186 : placés de nouveau par CarteDecor::init
         fermesSon_.clear(); fontaineSon_.clear(); parois::effacer("campagne");   // WFS-261, WFS-275 (accroches)
+        construireModeles();   // WFS-372 : une fois, avant la préparation du décor
         CarteDecor::init(r, g);
         if (active_) { lieux::poser("campagne", lieux::FERME, fermesSon_); lieux::poser("campagne", lieux::FONTAINE, fontaineSon_); }   // WFS-261
         for (auto& T : txt_) T = {};
@@ -95,6 +150,8 @@ public:
 protected:
     const char* carteId() const override { return "campagne"; }
     Env env() const override { return {0xd3e0d0, 820, 0x1b2236, 0x0d1218, 540}; }
+    // WFS-372 : couleurs des objets agricoles modélisés
+    void couleursCarte(std::array<uint32_t, PAL_W>& p) const override { for (int k = C_NB; k < C_FIN_CAMPAGNE; k++) p[(size_t)k] = COULEURS_CAMPAGNE[k - (int)C_NB]; }
 
     // GROUND.country : distances depuis le bord de la chaussée
     int profil(const char* z, int64_t a, int s, Band out[6]) const override {
@@ -152,6 +209,11 @@ protected:
                 parois::declarer("campagne", len(), n, it.side, it.t == T_CHURCH ? it.lat - 5 : it.t == T_FARM ? it.lat - 4 : it.lat,
                                  it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 18.f : it.t == T_FARM ? 11.f : it.w,
                                  it.t == T_CHURCH ? 10.f : it.t == T_FARM ? 8.f : std::max(it.d, 6.f), it.t == T_CHURCH ? parois::ALPHA_PIERRE : parois::ALPHA_DUR);   // WFS-278 : obstacle, matériau
+            {   // WFS-372 : premier objet de chaque sorte (banc des gros plans) ; ferme avec hangar, rang de vigne le plus proche
+                const int o = it.t == T_VINES && it.lat < (float)RW + 7 ? campagne::OB_VIGNE : it.t == T_FENCE ? campagne::OB_CLOTURE : it.t == T_BALES && it.k >= 3 ? campagne::OB_BOTTES
+                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : -1;
+                if (o >= 0 && g_objets[o].seg < 0 && n > 200) g_objets[o] = {n, it.side, it.lat};
+            }
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };
@@ -259,10 +321,19 @@ protected:
         const float s = (float)it.side;
         auto gy = [&](float lat) { return solY(z, a, it.side, lat); };
         switch (it.t) {
-        case T_FENCE:
-            box(S, lateral(p, s * it.lat), p.r, p.f, 0.12f, 1.2f, 0.12f, uv(C_WOOD));
-            for (float y : {0.45f, 0.95f}) box(S, lateral(p, s * it.lat, y), p.r, p.f, 0.06f, 0.1f, 3 * (float)SEG_M, uv(C_WOOD));
+        case T_FENCE: {   // WFS-372 : poteau rond à pointe taillée, deux lisses en demi-rondin jusqu'au poteau suivant (3 segments)
+            const vec3 b = lateral(p, s * it.lat, gy(it.lat));
+            const campagne::Maille& po = mod_.poteau[hacher(a, it.side) % 3];
+            poserModele(S, po, b, p.r, p.f);
+            if (!clotureSuit(a + 3, it.side)) break;
+            const Pose p1 = poseAt(t, a + 3);
+            const vec3 b1 = lateral(p1, s * it.lat, solY(zone(a + 3), a + 3, it.side, it.lat));
+            const vec3 vr0 = p.r * (-s * 0.085f), vr1 = p1.r * (-s * 0.085f);   // lisses côté route, contre les poteaux
+            campagne::Maille L;
+            for (const float y : campagne::LISSES_Y) campagne::lisse(L, b + vr0 + vec3{0, y, 0}, b1 + vr1 + vec3{0, y, 0}, p.r * s, C_PIQUET, lod);
+            poserModele(S, L, {0, 0, 0}, {1, 0, 0}, {0, 0, 1});
             break;
+        }
         case T_HEDGE: {   // haie champêtre (life.js) : masse sombre + cartes de feuilles sur les faces visibles
             const Pose pm = poseAt(t, a + (int64_t)std::lround(it.l / SEG_M / 2));
             const vec3 c = lateral(pm, s * it.lat, -0.2f);
@@ -271,20 +342,18 @@ protected:
             veg::cartesHaie(out[P_FEUILLU], c, pm.r, pm.f, it.side, it.l, R, 1, false);
             break;
         }
-        case T_FARM: {
-            const vec3 b = lateral(p, s * it.lat, gy(it.lat) - 0.2f);
-            box(S, b, p.r, p.f, 8, 4.5f, 11, uv(C_WALL2));
-            toit(S, b + vec3{0, 4.5f + 1.1f, 0}, p.r, p.f, 8.6f, 2.2f, 11.6f, uv(C_ROOF0));
-            if (it.k) {
-                const vec3 bb = b + p.f * 16;
-                box(S, bb, p.r, p.f, 10, 6, 14, uv(C_BARN));
-                toit(S, bb + vec3{0, 6 + 1.4f, 0}, p.r, p.f, 10.6f, 2.8f, 14.6f, uv(C_ROOF2));
-            }
+        case T_FARM: {   // WFS-372 (ANO-219) : corps de ferme (façade et porte vers la route) et hangar agricole ouvert vers la route
+            const vec3 b = lateral(p, s * it.lat, gy(it.lat) - 0.05f), X = p.r * -s;
+            poserModele(S, lod ? mod_.fermeL : mod_.fermeP, b, X, p.f);
+            if (it.k) poserModele(S, lod ? mod_.hangarL : mod_.hangarP, b + p.f * 16, X, p.f);
             break;
         }
-        case T_BALES: {   // bottes couchées, axe selon −r
+        case T_BALES: {   // WFS-372 : bottes rondes couchées (1,20 × Ø 1,50 m), axe en travers, un peu tournées chacune
             const vec3 b = lateral(p, s * it.lat, gy(it.lat));
-            for (int i = 0; i < it.k; i++) cylAxe(S, b + p.f * (i * 3.2f) + p.r * ((i % 2) * 2.f) + vec3{0, 0.75f, 0}, p.r * -1.f, 0.75f, 1.4f, 12, uv(C_HAY));
+            for (int i = 0; i < it.k; i++) {
+                vec3 Z; const vec3 X = tourner(p.r, p.f, ((hacher(a, i) % 1000) / 1000.f - 0.5f) * 0.35f, Z);
+                poserModele(S, lod ? mod_.botteL : mod_.botteP, b + p.f * (i * 3.2f) + p.r * ((i % 2) * 2.f), X, Z);
+            }
             break;
         }
         case T_TURBINE: {   // mât et nacelle ; pales : animes()
@@ -293,10 +362,20 @@ protected:
             box(S, hub - vec3{0, 1, 0}, p.r, p.f, 2, 2, 4, uv(C_TURB));
             break;
         }
-        case T_POLE: {
-            const vec3 b = lateral(p, s * it.lat, -0.2f);
-            cyl(S, b, 0.14f, 8.5f, 8, uv(C_WOOD));
-            box(S, b + vec3{0, 7.8f, 0}, p.r, p.f, 1.6f, 0.12f, 0.12f, uv(C_WOOD));
+        case T_POLE: {   // WFS-372 (ANO-219) : poteau de ligne en bois, traverse, isolateurs ; conducteurs jusqu'au poteau suivant (50 segments)
+            const vec3 b = lateral(p, s * it.lat, gy(it.lat));
+            poserModele(S, lod ? mod_.poteauL : mod_.poteauP, b, p.r, p.f);
+            if (lod || std::strcmp(zone(a + 50), "champs") != 0) break;
+            const Pose p1 = poseAt(t, a + 50);
+            const int s1 = ((a + 50) / 50) % 2 ? 1 : -1;
+            const vec3 b1 = lateral(p1, s1 * it.lat, solY(zone(a + 50), a + 50, s1, it.lat));
+            vec3 acc[3]; campagne::accrochesLigne(acc);
+            campagne::Maille L;
+            for (const vec3& q : acc) {
+                const vec3 A = b + p.r * q.x + vec3{0, q.y, 0} + p.f * q.z, B = b1 + p1.r * q.x + vec3{0, q.y, 0} + p1.f * q.z;
+                campagne::cable(L, A, B, 0.015f * length(B - A), 0.012f, 10, C_CABLE);   // flèche de 1,5 % de la portée
+            }
+            poserModele(S, L, {0, 0, 0}, {1, 0, 0}, {0, 0, 1});
             break;
         }
         case T_J6: {   // balise J6 (NF P 98-584) : 1,00 m hors sol, fût blanc de 0,12 m, bande noire de 0,25 m en tête ;
@@ -346,34 +425,46 @@ protected:
             }
             break;
         }
-        case T_VINES: {   // WFS-138 (RG-05, ANO-65) : rang de vigne palissé = bande continue de 0,5 m de large (0,4 m au sommet) et
-            // 1,2 m de haut, posée sur le sol à chaque tronçon (1,2 m, ≤ 2 m) des deux côtés du rang : elle suit la pente et les
-            // virages ; les blocs voisins partagent leurs bouts (même abscisse, même hauteur) : ni trou ni marche
+        case T_VINES: {   // WFS-372 (ANO-65) : rang de vigne palissé : piquets de bois tous les 4,8 m, trois fils, ceps tous les 1,0 m,
+            // feuillage palissé de 0,60 à ≈ 1,65 m (veg::vigne) ; le rang suit la pente et les virages (sol lu à chaque tronçon de
+            // 1,2 m) ; les blocs voisins partagent leurs bouts (même abscisse, même hauteur du feuillage) : ni trou ni marche.
+            // Détail selon la distance à la route : rangs 0-2 complets, 3-6 sans fils (ceps allégés), au-delà et loin (> 200 m) :
+            // masse du feuillage seule
             const double sA = (double)a, sB = sA + it.l / (float)SEG_M;
             const int n = (int)std::lround(sB - sA) + 1;
-            const float wb = 0.25f, wt = 0.2f, x0 = s * it.lat, H = 1.2f;
+            const int rang = (int)std::lround((it.lat - (float)RW - 6) / 2);
+            const int niveau = lod || rang >= 7 ? 2 : rang >= 3 ? 1 : 0;
+            const float x0 = s * it.lat;
             auto P = [&](double sg, float x, float y) { const TrackPoint q = t.point(sg * SEG, x); return vec3{(float)q.x, (float)q.y + y, (float)q.z}; };
-            const vec2 c = uv(C_VINE);
-            vec3 B0[2], T0[2];
+            // sol sous le rang au segment de l'échantillon (profil de CE segment) : le bout commun de deux blocs a la même hauteur
+            auto sol = [&](double sg) { const int64_t ag = (int64_t)std::floor(sg); return P(sg, x0, solY(zone(ag), ag, it.side, it.lat) - 0.02f); };
+            // haut du feuillage : 1,65 m ± 8 cm selon le tronçon (rognage irrégulier), même valeur au bout commun de deux blocs
+            auto hautF = [&](double sg) { return campagne::VIGNE_FEUILLE_HAUT + ((hacher((int64_t)std::lround(sg) * 31 + rang, it.side) % 1000) / 1000.f - 0.5f) * 0.16f; };
+            Mulberry32 R(hacher(a, rang * 2 + (it.side > 0)));
+            campagne::Maille M;   // fils (repère du monde)
+            vec3 g0 = sol(sA);
             for (int i = 0; i < n; i++) {
                 const double sg = sA + i;
-                // sol lu au segment de l'échantillon (profil de CE segment) : le bout commun de deux blocs a la même hauteur
-                const int64_t ag = (int64_t)sg;
-                auto gyS = [&](float lat) { return solY(zone(ag), ag, it.side, lat); };
-                const float yg = gyS(it.lat);
-                vec3 B1[2], T1[2];
-                for (int k = 0; k < 2; k++) {
-                    const float sx = k ? 1.f : -1.f;
-                    B1[k] = P(sg, x0 + sx * wb, gyS(it.lat + s * sx * wb) - 0.05f);
-                    T1[k] = P(sg, x0 + sx * wt, yg + H);
+                const vec3 g1 = sol(sg);
+                if (i > 0) {
+                    veg::vigne(out[P_FEUILLU], g0, g1, campagne::VIGNE_FEUILLE_BAS, hautF(sg - 1), hautF(sg), campagne::VIGNE_EPAISSEUR, R, niveau);
+                    if (niveau == 0) for (const float y : campagne::FILS_Y) marina::ligne(M, g0 + vec3{0, y, 0}, g1 + vec3{0, y, 0}, 0.003f, C_FIL);
                 }
-                if (i > 0) {   // ordre des sommets de box : normales vers l'extérieur
-                    quad(S, T0[0], T0[1], T1[1], T1[0], c);
-                    quad(S, B0[1], B1[1], T1[1], T0[1], c);
-                    quad(S, B1[0], B0[0], T0[0], T1[0], c);
-                }
-                for (int k = 0; k < 2; k++) { B0[k] = B1[k]; T0[k] = T1[k]; }
+                if (niveau < 2 && i % 4 == 0 && i + 1 < n)   // piquet intermédiaire tous les 4 tronçons (4,8 m), pas au bout commun (posé par le bloc suivant)
+                    poserModele(S, mod_.piquet[hacher(a + i, rang) % 4], g1, p.r, p.f);
+                g0 = g1;
             }
+            if (niveau < 2) {   // ceps tous les 1,0 m, à mi-pas du bout du bloc (pas de cep en double au raccord)
+                const float lg = it.l;
+                for (float d = 0.5f; d < lg; d += campagne::CEP_ECART) {
+                    const double sg = sA + d / (float)SEG_M;
+                    const vec3 g = sol(sg);
+                    const uint32_t h = hacher(a * 64 + (int64_t)(d * 4), rang);
+                    vec3 Z; const vec3 X = tourner(p.r, p.f, ((h >> 4) % 100) / 100.f * 0.5f - 0.25f, Z);
+                    poserModele(S, niveau == 0 ? mod_.cepP[h % 4] : mod_.cepL[h % 4], g, X, Z);
+                }
+            }
+            if (!M.v.empty()) poserModele(S, M, {0, 0, 0}, {1, 0, 0}, {0, 0, 1});
             break;
         }
         case T_FONTAINE: {   // îlot du rond-point (rayon 14 m) : fontaine de pierre Ø 6 m, vasque, colonne, massifs de fleurs
@@ -579,12 +670,15 @@ protected:
                 const vec3 A = coins[k], B = coins[(k + 1) % 4], d = B - A;
                 const float L = length(d); const vec3 u = d * (1.f / L), lat = cross(vec3{0, 1, 0}, u);
                 const int np = std::max(1, (int)std::ceil(L / 2.5f));
+                // WFS-372 : poteaux ronds à pointe taillée, lisses en demi-rondin d'un poteau au suivant (côté extérieur)
+                campagne::Maille Ls;
                 for (int q = 0; q < np; q++) {
-                    const vec3 P = A + u * (L * q / np);
-                    box(S, P + vec3{0, gy(it.lat + dot(P - c, ex)) - 0.05f, 0}, lat, u, 0.12f, 1.35f, 0.12f, uv(C_WOOD));
+                    const vec3 P = A + u * (L * q / np), Q = A + u * (L * (q + 1) / np);
+                    const vec3 Pg = P + vec3{0, gy(it.lat + dot(P - c, ex)), 0}, Qg = Q + vec3{0, gy(it.lat + dot(Q - c, ex)), 0};
+                    poserModele(S, mod_.poteau[(q + k) % 3], Pg, lat, u);
+                    for (float y : {0.6f, 1.1f}) campagne::lisse(Ls, Pg + lat * -0.085f + vec3{0, y, 0}, Qg + lat * -0.085f + vec3{0, y, 0}, lat, C_PIQUET, lod);
                 }
-                const vec3 m = (A + B) * 0.5f;
-                for (float y : {0.6f, 1.1f}) box(S, m + vec3{0, gy(it.lat + dot(m - c, ex)) + y, 0}, lat, u, 0.06f, 0.1f, L, uv(C_WOOD));
+                poserModele(S, Ls, {0, 0, 0}, {1, 0, 0}, {0, 0, 1});
             }
             break;
         }
@@ -710,6 +804,27 @@ protected:
     }
 
 private:
+    // WFS-372 : modèles des objets agricoles (construits une fois, recopiés à chaque pose : un maillage par sorte d'objet)
+    struct Modeles {
+        campagne::Maille piquet[4], cepP[4], cepL[4], poteau[3], botteP, botteL, fermeP, fermeL, hangarP, hangarL, poteauP, poteauL;
+        bool prets = false;
+    } mod_;
+    void construireModeles() {
+        if (mod_.prets) return;
+        const campagne::Couleurs c = couleursModeles();
+        for (int v = 0; v < 4; v++) { mod_.piquet[v] = campagne::piquetVigne(c, v); mod_.cepP[v] = campagne::cep(c, v, false); mod_.cepL[v] = campagne::cep(c, v, true); }
+        for (int v = 0; v < 3; v++) mod_.poteau[v] = campagne::poteauCloture(c, v);
+        mod_.botteP = campagne::botte(c, false); mod_.botteL = campagne::botte(c, true);
+        mod_.fermeP = campagne::ferme(c, false); mod_.fermeL = campagne::ferme(c, true);
+        mod_.hangarP = campagne::hangar(c, mod_.botteL, false); mod_.hangarL = campagne::hangar(c, mod_.botteL, true);
+        mod_.poteauP = campagne::poteauLigne(c, false); mod_.poteauL = campagne::poteauLigne(c, true);
+        mod_.prets = true;
+    }
+    // WFS-372 : la clôture des champs continue-t-elle au segment n, côté side (mêmes règles que place() : champs, par tronçons de 90 segments) ?
+    bool clotureSuit(int64_t n, int side) const {
+        if (std::strcmp(zone(n), "champs") != 0) return false;
+        return (int64_t)std::floor((n + (side > 0 ? 40 : 0)) / 90.f) % 2 == 0;
+    }
     // WFS-138 (RG-C1) : espace libre de chaque côté de chaque segment : m = mi-distance (m depuis l'axe) jusqu'à la route
     // voisine la plus proche dans un cône de 45° autour du côté, h = mi-écart de hauteur (m, + : la voisine est plus haute)
     struct Libre { float m = std::numeric_limits<float>::infinity(), h = 0; };
@@ -1161,7 +1276,8 @@ private:
 
 WFS_SYSTEM(carte::Campagne, 107)
 
-namespace campagne { int64_t troupeau(int espece) { return espece >= 0 && espece < 3 ? carte::g_troupeau[espece] : -1; }
+namespace campagne { ObjetBanc objetBanc(int sorte) { return sorte >= 0 && sorte < NB_OBJETS_BANC ? carte::g_objets[sorte] : ObjetBanc{}; }   // WFS-372 : banc
+                    int64_t troupeau(int espece) { return espece >= 0 && espece < 3 ? carte::g_troupeau[espece] : -1; }
                     bool sommet(vec3& s) { s = carte::g_sommet; return carte::g_aSommet; } }   // WFS-216 : banc   // WFS-186 : banc   // décor (100-199) : après la plage (105) et les piétons (106)
 
 } // namespace wfs

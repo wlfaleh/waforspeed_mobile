@@ -45,6 +45,8 @@ void cypres(const Out& o, vec3 b, float h, Mulberry32& R, float tk, Ecorce e, bo
 void sousBois(Geo& leaf, vec3 b, Mulberry32& R, float tk, bool fougere);                                               // vegUnder
 void touffe(Geo& leaf, vec3 b, float hgt, float yaw, float k);                                                          // vegTuft
 void cartesHaie(Geo& leaf, vec3 c, vec3 r, vec3 f, int side, float l, Mulberry32& R, float tk, bool lod);              // DECOR.hedge
+// WFS-372 : feuillage palissé d'un rang de vigne sur le tronçon [a, b] (pieds au sol) : yBas → hA / hB, épaisseur ep ; niveau 0 proche, 1 moyen, 2 loin
+void vigne(Geo& leaf, vec3 a, vec3 b, float yBas, float hA, float hB, float ep, Mulberry32& R, int niveau);
 
 // couleurs du jeu web (sRGB 0..1, utilisées telles quelles par le jeu web)
 vec3 hex(uint32_t rgb);

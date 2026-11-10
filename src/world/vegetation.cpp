@@ -345,6 +345,58 @@ void touffe(Geo& L, vec3 b, float hgt, float yaw, float k) {
     }
 }
 
+// WFS-372 (ANO-65) : feuillage palissé d'un rang de vigne sur le tronçon [a, b] (pieds du rang au sol, repère du monde).
+// Masse feuillue : la texture de feuilles découpée de l'atlas (comme le cœur des houppiers, vegCore), projetée sur ses faces,
+// de section arrondie (plus étroite en bas, sur le fil porteur, et en haut, où les rameaux sont rognés) ; ses bords sont
+// irréguliers par les hauteurs hA / hB données par l'appelant (mêmes valeurs au bout commun de deux tronçons : pas de marche).
+// niveau 0 (rang proche) : masse + 2 cartes de feuilles par face + 1 carte en haut ; 1 : masse + 1 carte par face ; 2 (loin) :
+// masse seule. Mesures : feuillage de yBas à hA / hB, épaisseur ep (guides de palissage : 0,35 à 0,50 m).
+void vigne(Geo& L, vec3 a, vec3 b, float yBas, float hA, float hB, float ep, Mulberry32& R, int niveau) {
+    const vec3 up{0, 1, 0};
+    vec3 f = b - a; f.y = 0;
+    const float lg = length(f);
+    if (lg < 1e-3f) return;
+    f = f * (1.f / lg);
+    const vec3 r = cross(f, up);   // en travers du rang
+    // section de la masse : 5 points du bas d'un côté, par le haut, au bas de l'autre (demi-largeur relative, hauteur relative)
+    static const float SX[7] = {-0.55f, -1.0f, -0.92f, 0.f, 0.92f, 1.0f, 0.55f}, SY[7] = {0.f, 0.32f, 0.82f, 1.f, 0.82f, 0.32f, 0.f};
+    const int ns = 7;
+    const float k = niveau == 2 ? 0.62f : 0.55f;   // intérieur du feuillage, assombri (comme le cœur des houppiers)
+    const uint32_t k0 = (uint32_t)L.v.size();
+    for (int e = 0; e < 2; e++) {
+        const vec3 o = e ? b : a;
+        const float h = (e ? hB : hA) - yBas;
+        for (int i = 0; i < ns; i++) {
+            const vec3 p = o + r * (SX[i] * ep * 0.5f) + up * (yBas + SY[i] * h);
+            const vec3 n = normalize(r * SX[i] + up * (SY[i] * 0.9f + 0.25f));
+            // texture : u le long du rang (en mètres, 1,6 m par case), v autour de la section, dans le centre dense de la case 0
+            const float u = 0.06f + std::fmod(std::fabs(dot(o, f)) / 1.6f, 1.f) * 0.38f, v = 0.08f + (float)i / (ns - 1) * 0.34f;
+            vert(L, p, lit(n, k), u, v);
+        }
+    }
+    for (int i = 0; i + 1 < ns; i++) {
+        const uint32_t p0 = k0 + i, p1 = k0 + i + 1, q0 = k0 + ns + i, q1 = k0 + ns + i + 1;
+        L.i.insert(L.i.end(), {p0, q0, q1, p0, q1, p1});
+    }
+    if (niveau == 2) return;
+    // cartes de feuilles posées sur les faces (débordent de 5 à 10 cm : bord découpé du rang), 1 ou 2 par face, 1 sur le dessus
+    const int parFace = niveau == 0 ? 2 : 1;
+    for (const int face : {-1, 1}) for (int c = 0; c < parFace; c++) {
+        const float t = (c + 0.25f + rnd(R) * 0.5f) / parFace, h = hA + (hB - hA) * t - yBas;
+        const vec3 base = a + (b - a) * t + r * (face * ep * (0.42f + rnd(R) * 0.12f)) + up * (yBas + h * (0.15f + rnd(R) * 0.25f));
+        const vec3 nn = normalize(r * (float)face + up * 0.35f);
+        vec3 U, V; basis(normalize(nn + randUnit(R) * 0.25f), (rnd(R) - 0.5f) * 0.8f, U, V);
+        const float s = 0.55f + rnd(R) * 0.2f, kc = colK(0.92f, R);
+        card(L, base, U * (s * 0.6f), V * (h * (0.65f + rnd(R) * 0.2f)), nn, kc * 0.75f, kc, 0);
+    }
+    {
+        const vec3 c = (a + b) * 0.5f + up * ((hA + hB) * 0.5f - 0.18f);
+        vec3 U, V; basis(normalize(up + randUnit(R) * 0.3f), rnd(R) * 3.f, U, V);
+        const float kc = colK(1.0f, R);
+        card(L, c - V * 0.35f, U * (ep * 0.75f), V * 0.75f, up, kc * 0.85f, kc, 0);
+    }
+}
+
 // DECOR.hedge (life.js) : cartes de feuilles sur les faces visibles de la haie (c = centre au sol, l = longueur)
 void cartesHaie(Geo& L, vec3 c, vec3 r, vec3 f, int side, float l, Mulberry32& R, float tk, bool lo) {
     const float step = lo ? 2.2f : 0.8f;
