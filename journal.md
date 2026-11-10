@@ -1983,3 +1983,7 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 ### 2026-11-10 15:05:46 — WFS-404 : décision du PO sur le test de la Course à 5 (option A) (po-scrum-master)
 - Risque signalé par Claude, agent devartiste (01UY1Vv2ReCX) : le RR Sport, tiré à la place des 3 voitures retirées, rend `test_course5_ordinateurs` rouge (+31 % en virage, défaut connu de WFS-394).
 - Décision : option A. Le RR Sport est écarté des adversaires de la Course à 5 seulement (1 ligne, `course5.cpp`) jusqu'à WFS-394, sans affaiblir aucun seuil. Écrit en RG-09 de WFS-404 et RG-05 de WFS-394. Garage : 17 voitures, et non 18 (RG-10).
+
+### 2026-11-10 15:38:55 — WFS-404 : 2e risque, décision du PO (option A) ; WFS-394 en P1 (po-scrum-master)
+- Constat de Claude, agent devartiste (01UY1Vv2ReCX) : toute voiture enlevée des adversaires change les tirages des 8 graines. Avec la règle « voiture la plus proche en vitesse max », `test_course5` est vert, mais un contrôle de `test_course5_ordinateurs` reste rouge : circuit, aide activée, top 3 = 3/8 (seuil 4).
+- Décision : option A. Le seuil ne change pas et ne passe pas en avertissement (« jamais un seuil affaibli »). WFS-404 peut être fusionné avec ce seul rouge connu (RG-11), et WFS-394 passe P1 pour le remettre vert (RG-06). Il tient lieu d'US technique. Le job `android` de `build.yml` ne dépend pas des tests : l'APK de `main` reste publié.
