@@ -7,6 +7,7 @@
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../game/camera_vue.h"   // WFS-323 (accroche, ANO-204) : vue Cockpit
 #include "../game/course_system.h"
 #include "../game/ressenti.h"   // WFS-70 : « réduire les mouvements »
 #include "../game/player.h"
@@ -214,8 +215,18 @@ public:
         // couleur × fondu (k du jeu web) convertie en HDR pour ressortir à l'écran comme au jeu web
         const float p11 = std::max(1e-3f, std::abs(g.proj.at(1, 1)));
         etincelles_.clear();
+        // WFS-323 (accroche, ANO-204) : en vue Cockpit, une étincelle ou une volute DANS l'habitacle (boîte de l'habitacle dans le repère
+        // de l'intérieur : œil du conducteur à l'origine, x à droite, −z devant) n'est pas dessinée ; dehors (choc sur le côté, vu par
+        // la vitre) elle reste. Avant : grands disques flous sur le volant et la planche
+        const bool cockpit = etatCockpit().actif;
+        const mat4 versHab = cockpit ? inverseAffine(etatCockpit().repere) : mat4::identity();
+        auto dansHabitacle = [&](const vec3& p) {
+            if (!cockpit) return false;
+            const vec3 q = versHab.transformPoint(p);
+            return q.x > -0.45f && q.x < 1.20f && q.y > -1.0f && q.y < 0.35f && q.z > -1.3f && q.z < 1.2f;
+        };
         for (const auto& q : parts_.sparks().p) {
-            if (!q.vivante()) continue;
+            if (!q.vivante() || dansHabitacle(q.p)) continue;
             const float d = std::max(0.f, dot(g.camPos - q.p, nrm));   // profondeur dans l'axe de la caméra
             const float taille = std::max(parts_.sparks().taille, d * 3.f / 360.f) / p11;
             const vec3 col = effets::versHdr(q.c * q.fondu(), EXPO);
@@ -237,7 +248,7 @@ public:
         constexpr float LARGE = 1.6f, HAUTE = 0.8f;
         const float base = parts_.smoke().taille / p11;
         for (auto q : parts_.smoke().p) {
-            if (!q.vivante()) continue;
+            if (!q.vivante() || dansHabitacle(q.p)) continue;
             const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * HAUTE * std::abs(up.y);
             q.p.y = std::max(q.p.y, q.floor + hs);
             const float d = dot(g.camPos - q.p, nrm);

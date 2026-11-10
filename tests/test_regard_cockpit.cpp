@@ -15,13 +15,16 @@ static int echecs = 0;
 constexpr float DEG = 3.14159265f / 180.f;
 
 int main() {
-    {   // WFS-282 (RG-00) : champ de la vue Cockpit = celui de configgame.json (72° en hauteur), comme avant WFS-235
-        VERIFIE(std::fabs(fovVue(VueCamera::Cockpit, 0, false) - 72.f) < 0.5f, "cockpit : champ vertical %.1f° (72° attendus)", fovVue(VueCamera::Cockpit, 0, false));
+    {   // WFS-323 (RG-01) : champ de la vue Cockpit = celui de configgame.json (62° en hauteur : cadrage de la référence ; 72° avant)
+        VERIFIE(std::fabs(fovVue(VueCamera::Cockpit, 0, false) - 62.f) < 0.5f, "cockpit : champ vertical %.1f° (62° attendus)", fovVue(VueCamera::Cockpit, 0, false));
+        // RG-01 : horizon entre 40 et 45 % de la hauteur depuis le haut avec le regard Normal (voiture à plat)
+        const float tv = std::tan(fovVue(VueCamera::Cockpit, 0, false) * DEG / 2), hz = 0.5f + std::tan(inclinaisonRegard(RegardCockpit::Normal)) / (2 * tv);
+        VERIFIE(hz >= 0.40f && hz <= 0.45f, "horizon à %.1f %% depuis le haut (40 à 45 %% visés)", hz * 100);
     }
     {   // RG-02, RG-03 : regard sous l'horizon, Bas < Normal < Haut, jamais au-dessus de l'horizon
         const float b = inclinaisonRegard(RegardCockpit::Bas), n = inclinaisonRegard(RegardCockpit::Normal), h = inclinaisonRegard(RegardCockpit::Haut);
         VERIFIE(b < n && n < h && h <= 0.f, "inclinaisons : bas %.1f°, normal %.1f°, haut %.1f°", b / DEG, n / DEG, h / DEG);
-        VERIFIE(n < -2 * DEG && n > -6 * DEG, "regard normal légèrement plongeant (%.1f°)", n / DEG);
+        VERIFIE(n < -2 * DEG && n > -6 * DEG, "regard normal légèrement plongeant (%.1f°)", n / DEG);   // WFS-323 : −5°
         // l'horizon reste dans l'image (au-dessus du bas) pour les 3 réglages, sur un écran 2400 × 1080
         const float demi = fovVue(VueCamera::Cockpit, 0, false) * DEG / 2;
         for (float a : {b, n, h}) VERIFIE(-a < demi * 0.8f, "horizon visible : regard à %.1f°, demi-champ %.1f°", a / DEG, demi / DEG);

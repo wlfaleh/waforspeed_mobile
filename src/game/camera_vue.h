@@ -85,9 +85,11 @@ enum class RegardCockpit { Bas = 0, Normal = 1, Haut = 2 };
 RegardCockpit regardCockpit();
 void choisirRegard(RegardCockpit r);
 // inclinaison du regard sous l'horizontale (rad, négatif = vers le bas) : un conducteur regarde la route à 20-40 m, quelques
-// degrés sous l'horizon (RG-02 « légèrement plongeant ») ; Bas −7°, Normal −3° (WFS-282 : −3,5° avant ; horizon à 45-47 %, intérieur ≤ 40 %, arbitrage du PO), Haut 0°
+// degrés sous l'horizon (RG-02 « légèrement plongeant ») ; WFS-323 (RG-01, RG-03) : Normal = cadrage de la référence de l'utilisateur :
+// −5° avec le champ de 62° (horizon à ≈ 42 % depuis le haut, RG-01 : 40 à 45 %) ; Bas −9°, Haut −1° (même écart de ±4° qu'avant).
+// Avant : Bas −7°, Normal −3°, Haut 0° avec 72° (WFS-282 : horizon à 45-47 %)
 inline float inclinaisonRegard(RegardCockpit r) {
-    return r == RegardCockpit::Bas ? -7.f * 3.14159265f / 180.f : r == RegardCockpit::Haut ? 0.f : -3.f * 3.14159265f / 180.f;
+    return r == RegardCockpit::Bas ? -9.f * 3.14159265f / 180.f : r == RegardCockpit::Haut ? -1.f * 3.14159265f / 180.f : -5.f * 3.14159265f / 180.f;
 }
 // WFS-282 (RG-02) : regard plus doux : la tête vise le point de la route à ≈ 1,5 s (20 à 40 m), en suit 40 % de l'angle,
 // ±7° au plus ; à l'arrêt et sous 20 km/h, regard droit devant (rien à suivre : une petite erreur de file au départ faisait
@@ -127,6 +129,8 @@ const EtatCockpit& etatCockpit();
 class Game; class Renderer;
 // WFS-201 : `voitures` : liste des voitures (lot 1 au job partie2c, lot 2 réparti entre les jobs nuit et partie1a, lot 3 entre partie1b et partie2b ; cockpit : toutes)
 void benchCockpit(Game& g, Renderer& r, const std::string& outDir, const std::vector<std::string>& voitures);
+// WFS-323 : banc « cockpit-reference » (scènes de la référence de l'utilisateur : Corniche de jour, Ville de nuit, pavillon, volant)
+void benchCockpitReference(Game& g, Renderer& r, const std::string& outDir);
 // voitures des scènes du banc : lot 1 et la Corsa (cockpit commun), puis le lot 2 en deux moitiés
 inline const std::vector<std::string> COCKPIT_LOT1{"golf", "m4", "p911", "sf90", "corsa"}, COCKPIT_LOT2A{"a45", "s3", "giulia", "p208"},
                                       COCKPIT_LOT2B{"gallardo", "mustang", "model3", "x5"},

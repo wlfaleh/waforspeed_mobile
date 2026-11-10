@@ -182,6 +182,24 @@ int main() {
         const Largeur x5 = largeurPour(*interieurPour("x5")), ab = largeurPour(*interieurPour("abarth"));
         cas("X5 plus large que la 500 d'au moins 0,20 m", x5.coudes - ab.coudes >= 0.20f);
     }
+    {   // WFS-323 (ANO-188) : la vitesse du combiné tient dans la partie vue par l'ouverture haute du volant (tous les styles derrière le
+        // volant), chiffres d'au moins 20 % de la hauteur du combiné ; la bande de la X5 commence sous le haut du combiné (jante devant)
+        bool ok = true, bmw = true;
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            if (d.combine == Combine::Aucun || d.combine == Combine::PeugeotICockpit) continue;   // écran central ; lu au-dessus du volant
+            const BandeCombine b = bandeLisibleCombine(d);
+            float y0 = d.combine == Combine::BmwLive ? -d.combineH * 0.14f : d.combine == Combine::VwDigital ? -d.combineH * 0.08f : -d.combineH * 0.40f;
+            float h = d.combineH * (d.combine == Combine::BmwLive ? 0.42f : d.combine == Combine::VwDigital ? 0.40f : 0.22f);
+            placerDansBande(b, d.combineH, y0, h);
+            const bool dedans = y0 >= b.bas - 1e-4f && y0 + h <= b.haut + 1e-4f && h >= d.combineH * 0.20f - 1e-4f;
+            if (!dedans) std::printf("  %s : bande %.3f..%.3f m, chiffres %.3f..%.3f m\n", d.car, b.bas, b.haut, y0, y0 + h);
+            ok = ok && dedans;
+            if (!std::strcmp(d.car, "x5")) bmw = b.haut < d.combineH * 0.5f - 0.01f;
+        }
+        cas("combiné : vitesse dans la partie vue par le volant, chiffres ≥ 20 % (WFS-323, ANO-188)", ok);
+        cas("combiné de la X5 : le haut de la jante cache le haut du combiné (bande calculée)", bmw);
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
     return 0;

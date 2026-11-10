@@ -40,7 +40,7 @@ int main() {
                        vueApres(VueCamera::Capot) == VueCamera::Cockpit && vueApres(VueCamera::Cockpit) == VueCamera::Poursuite;
     // WFS-105 : Poursuite 9 m × 6,3 m (regard devant 10 m et zoom 64° : valeurs de l'utilisateur, e23fa51), Proche 6 m × 2,67 m (60°), points visés sous la route ; capot et cockpit inchangés
     const auto& fovs = config().camera.fov;   // zoom de chaque vue : configgame (VUES[].fov supprimé, doublon jamais lu)
-    const bool vues = proche(fovs[0], 64) && proche(fovs[3], 60) && proche(fovs[2], 72) && proche(fovs[1], 72) && VUES[2].cockpit && VUES[1].capot &&
+    const bool vues = proche(fovs[0], 64) && proche(fovs[3], 60) && proche(fovs[2], 62) && proche(fovs[1], 72) && VUES[2].cockpit && VUES[1].capot &&
                       !VUES[0].capot && !VUES[3].capot && proche(POURSUITE_LOIN.dist, 9) && proche(POURSUITE_LOIN.h, 6.3) &&
                       proche(POURSUITE_PROCHE.dist, 6) && proche(POURSUITE_PROCHE.h, 2.67) && POURSUITE_LOIN.lookH < 0 &&
                       POURSUITE_PROCHE.lookH < 0 && proche(POURSUITE_LOIN.ahead, 10) && proche(POURSUITE_PROCHE.ahead, 7);
@@ -53,8 +53,9 @@ int main() {
     float vol = 0; for (int i = 0; i < 120; i++) vol = lisser(vol, volantCible(0.5), 1.f / 60, 14.f);   // 2 s de braquage à 0,5
     const bool volant = proche(volantCible(1), -2.3) && proche(lisser(0, 1, 1.f / 60, 14.f), 14.0 / 60) && proche(vol, -1.15) &&
                         proche(lisser(0, 1, 0.5f, 14.f), 1);
-    const bool fov = proche(fovVue(VueCamera::Cockpit, 0, false), 72) && proche(fovVue(VueCamera::Cockpit, 1, false), 79) &&
-                     proche(fovVue(VueCamera::Cockpit, 2, true), 72 + 1.3 * 7 + 6) && proche(fovVue(VueCamera::Capot, 0.5, false), 75.5);
+    // WFS-323 : cockpit à 62° (cadrage de la référence de l'utilisateur ; 72° avant), mêmes élargissements (vitesse, nitro)
+    const bool fov = proche(fovVue(VueCamera::Cockpit, 0, false), 62) && proche(fovVue(VueCamera::Cockpit, 1, false), 69) &&
+                     proche(fovVue(VueCamera::Cockpit, 2, true), 62 + 1.3 * 7 + 6) && proche(fovVue(VueCamera::Capot, 0.5, false), 75.5);
     std::printf("caméras : cycle %s, vues %s, élévation %.1f° / %.1f° %s, aiguille %s, volant %s, champ de vision %s\n", cycle ? "OK" : "ÉCHEC",
                 vues ? "OK" : "ÉCHEC", eLoin, eProche, angles ? "OK" : "ÉCHEC", aiguille ? "OK" : "ÉCHEC", volant ? "OK" : "ÉCHEC",
                 fov ? "OK" : "ÉCHEC");
