@@ -42,6 +42,7 @@ namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
+namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const std::string& racine); }   // WFS-391 (accroche) : WFS_BANC=sol (src/game/sol_banc.cpp)
 #include "../world/pietons.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "../world/decor_carte.h"
@@ -191,6 +192,7 @@ int main(int argc, char** argv) {
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
+    if (banc == "sol") { const int e = benchSol(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-391 (accroche) : conduite au bas-côté et sur la neige, captures sol-*
     if (banc == "virages") { const int e = benchVirages(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-295 (accroche) : direction dans les virages, captures virages-*
     if (banc == "conduite") { const int e = benchConduite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-241 (accroche) : banc de conduite, captures conduite-*
     if (banc == "ombres") { benchOmbres(g, r, out); return finir(); }   // WFS-227 (accroche) : ombres du soleil, travelling
