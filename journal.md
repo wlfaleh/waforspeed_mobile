@@ -1920,3 +1920,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 12:51:45 — Plus aucun travail sur les 3 modèles NC d'origine (po-scrum-master)
 - Erreur du PO reconnue devant l'utilisateur : des US ont visé le X5 (WFS-193 part X5, WFS-358, WFS-393) alors que sa licence NC le condamnait. Ordre permanent ajouté : aucun ticket ne vise plus l'A 45, l'Elantra N ni le X5 d'origine ; les lots du cockpit (WFS-325) et les bancs les sautent (WFS-404).
+
+### 2026-11-10 12:56:29 — X5 : l'auteur refuse l'usage commercial (po-scrum-master)
+- Réponse de l'utilisateur : l'auteur du X5 ne veut pas. Le X5 d'origine reste retiré (WFS-404). WFS-361 garde le remplacement et reprend tous les réglages du vrai X5 (RG-R1).
