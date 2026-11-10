@@ -20,7 +20,7 @@ struct Maillage {
 };
 
 // un maillage par matériau (un appel de dessin par matériau)
-enum Part : int { MUR, ENCADREMENT, VITRE, MENUISERIE, TOIT, METAL, VOLET, FIN, NB_PARTS };   // VOLET : ST-2, volets peints (méditerranéen) ; FIN : WFS-370, barreaux (fils de 16 mm, dessinés en couverture partielle)
+enum Part : int { MUR, ENCADREMENT, VITRE, MENUISERIE, TOIT, METAL, VOLET, FIN, CHASSIS, NB_PARTS };   // VOLET : ST-2, volets peints (méditerranéen) ; FIN : WFS-370, barreaux (fils de 16 mm, dessinés en couverture partielle)
 
 // niveaux de détail (RG-05) : 0 complet ; 1 tableaux et vitres gardés, sans appuis, balcons, garde-corps ni édicules ;
 // 2 volume seul (murs pleins, vitres peintes à plat sur la façade, toiture), pour le loin

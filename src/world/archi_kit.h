@@ -54,6 +54,7 @@ struct Baie { Ouverture type; int niveau; int travee; float x, y, l, h; bool bal
 // plan d'une façade assemblée
 struct Plan {
     Style style = Style::Classique;
+    uint32_t graine = 0;        // WFS-402 : graine du bâtiment (choix des modèles de fenêtre et de porte, RG-05)
     float largeur = 0;          // largeur de la façade, m
     int travees = 0;            // nombre de travées
     float travee = 0;           // largeur d'une travée, m

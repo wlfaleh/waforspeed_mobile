@@ -1,6 +1,7 @@
 // WaForSpeed — WFS-161 (ST-1) : géométrie du kit d'architecture (voir archi_geo.h).
 #include "archi_geo.h"
 #include "archi_details.h"   // WFS-370 (accroche) : vrais volumes (comble, corniche, garde-corps, soubassement)
+#include "archi_ouvertures.h"   // WFS-402 : menuiseries, volets, portes, appuis et linteaux
 #include <algorithm>
 #include <cmath>
 
@@ -8,16 +9,13 @@ namespace wfs::archi {
 namespace {
 
 constexpr float SOCLE = 1.f;          // murs prolongés sous le sol (pente du terrain, trottoir) : aucun jour en pied de mur
-constexpr float APPUI_SAILLIE = 0.05f, APPUI_EP = 0.05f, APPUI_DEBORD = 0.05f;   // appui de fenêtre (m)
 constexpr float BALCON_PROF = 0.9f, BALCON_EP = 0.15f, BALCON_DEBORD = 0.3f;      // dalle de balcon (m)
 constexpr float GC_EP = 0.04f;    // épaisseur d'un garde-corps (hauteur 1,00 m : archi_details.cpp, NF P01-012)
 constexpr float LOGGIA = 1.0f;        // profondeur d'une loggia (m)
 constexpr float PENTE_ZINC = 35.f, PENTE_TUILES = 17.f, DEBORD_TUILES = 0.3f;   // degrés ; débord de toit (m)
 // ST-2 : traits des styles (RG-02)
 constexpr float CADRE = 0.1f, CADRE_SAILLIE = 0.03f;          // encadrement de baie (classique, méditerranéen)
-constexpr float VOLET_EP = 0.04f, VOLET_JEU = 0.02f;           // volets battants ouverts contre le mur (méditerranéen)
 constexpr float BANDEAU = 0.2f, BANDEAU_SAILLIE = 0.1f;        // nez de dalle à chaque étage (moderne)
-constexpr float MENEAU = 0.05f, PETITS_BOIS = 0.6f;            // meneau (moderne), pas de la grille des baies d'atelier (industriel)
 constexpr float GENOISE = 0.12f;                               // un rang de génoise (tuiles en débord sous l'égout)
 constexpr float FILANT_PROF = 0.6f;                            // balcon filant (classique)
 constexpr float VILLA_DEBORD = 0.8f, VILLA_DALLE = 0.3f;       // dalle de toit en débord (villa)
@@ -80,39 +78,21 @@ bool balconFilant(const Plan& p, int niveau) {   // classique : balcon filant au
     return p.style == Style::Classique && p.etages >= 4 && (niveau == 2 || niveau == p.etages);
 }
 
-// ST-2 : traits propres au style autour d'une baie (niveau de détail 0 seulement)
-void traits(const Plan& p, const Baie& b, float d, Batiment& out) {
+// ST-2 : traits propres au style autour d'une baie (niveau de détail 0 seulement) ; WFS-402 : volets, meneaux et petits bois
+// sont maintenant posés avec la menuiserie (archi_ouvertures.cpp)
+void traits(const Plan& p, const Baie& b, Batiment& out) {
     const float x0 = b.x - b.l / 2, x1 = b.x + b.l / 2, y0 = b.y, y1 = b.y + b.h;
     const bool fenetre = b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre;
     Maillage& tab = out.part[ENCADREMENT];
     if ((p.style == Style::Classique || p.style == Style::Mediterraneen) && fenetre && b.niveau > 0) {   // encadrement en saillie
-        pave(tab, x0 - CADRE, x0, y0, y1 + CADRE, 0, CADRE_SAILLIE);
-        pave(tab, x1, x1 + CADRE, y0, y1 + CADRE, 0, CADRE_SAILLIE);
-        pave(tab, x0, x1, y1, y1 + CADRE, 0, CADRE_SAILLIE);
-    }
-    if (p.style == Style::Mediterraneen && b.type == Ouverture::Fenetre) {   // volets battants ouverts, rabattus contre le mur
-        const float place = (p.travee - b.l) / 2 - CADRE - VOLET_JEU;   // mur libre de chaque côté (jusqu'au milieu du trumeau)
-        const float lv = std::min(b.l / 2, place);
-        if (lv > 0.2f) {
-            const float g0 = x0 - CADRE - VOLET_JEU, d0 = x1 + CADRE + VOLET_JEU;
-            pave(out.part[VOLET], g0 - lv, g0, y0, y1, CADRE_SAILLIE, CADRE_SAILLIE + VOLET_EP);
-            pave(out.part[VOLET], d0, d0 + lv, y0, y1, CADRE_SAILLIE, CADRE_SAILLIE + VOLET_EP);
-        }
-    }
-    if (b.type != Ouverture::Fenetre && b.type != Ouverture::PorteFenetre) return;
-    Maillage& met = out.part[METAL];
-    const float z = -d + 0.02f;   // devant la vitre
-    if (p.style == Style::Moderne && b.l > 1.2f) pave(met, b.x - MENEAU / 2, b.x + MENEAU / 2, y0, y1, z - 0.02f, z);   // meneau
-    if (p.style == Style::Industriel) {   // baie d'atelier : grille de petits bois
-        const int nx = std::max(2, (int)std::lround(b.l / PETITS_BOIS)), ny = std::max(2, (int)std::lround(b.h / PETITS_BOIS));
-        for (int i = 1; i < nx; i++) { const float x = x0 + b.l * i / nx; pave(met, x - 0.02f, x + 0.02f, y0, y1, z - 0.02f, z); }
-        for (int j = 1; j < ny; j++) { const float y = y0 + b.h * j / ny; pave(met, x0, x1, y - 0.02f, y + 0.02f, z - 0.02f, z); }
+        ouvertures::encadrement(tab, x0, y0, x1, y1, CADRE, CADRE_SAILLIE);   // WFS-402 : chambranle chanfreiné (plus de pavés)
     }
 }
 
 void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     const float x0 = b.x - b.l / 2, x1 = b.x + b.l / 2, y0 = b.y, y1 = b.y + b.h;
-    const bool vitre = b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre || b.type == Ouverture::Vitrine;
+    const bool vitre = b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre || b.type == Ouverture::Vitrine ||
+                       (b.type == Ouverture::Porte && lod < 2 && ouvertures::porteVitree(p));   // WFS-402 : vitrage de la porte (pièce de nuit derrière)
     Maillage& fond = vitre ? out.part[VITRE] : out.part[MENUISERIE];
     if (lod >= 2) {   // loin : la baie est peinte à plat, 1 cm devant le mur plein
         const uint32_t k = (uint32_t)fond.v.size();
@@ -129,10 +109,10 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     const uint32_t k = (uint32_t)fond.v.size();
     rectZ(fond, x0, x1, y0, y1, -d, 1);  // vitre ou porte au fond du tableau
     if (vitre) uvVitre(p, b, fond, k);
+    ouvertures::menuiserie(p, b, d, lod, out);   // WFS-402 : dormant, ouvrants, vantaux, quincaillerie (niveaux 0 et 1)
+    ouvertures::volets(p, b, d, lod, out);       // WFS-402 (RG-03) : persiennes, volets pleins ou roulants
     if (lod >= 1) return;
-    // appui en saillie sous les fenêtres (pas sous les portes ni les vitrines)
-    if (b.type == Ouverture::Fenetre)
-        pave(tab, x0 - APPUI_DEBORD, x1 + APPUI_DEBORD, y0 - APPUI_EP, y0, -0.02f, APPUI_SAILLIE);
+    ouvertures::appuiEtLinteau(p, b, out);       // WFS-402 : appui de pierre à glacis et larmier, linteau visible selon le style
     // balcon : dalle + garde-corps de 1,00 m (porte-fenêtre ou fenêtre d'étage d'un plan à balcons)
     if (b.balcon && !balconFilant(p, b.niveau)) {
         const float bx0 = x0 - BALCON_DEBORD, bx1 = x1 + BALCON_DEBORD, yb = p.niveauY(b.niveau);
@@ -141,7 +121,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     } else if (b.type == Ouverture::PorteFenetre && b.niveau > 0) {   // porte-fenêtre sans balcon : garde-corps dans le tableau
         details::gardeCorps(out.part[METAL], out.part[FIN], x0, x1, y0, -0.1f - GC_EP, -0.1f + GC_EP);   // WFS-370 (accroche)
     }
-    traits(p, b, d, out);
+    traits(p, b, out);
 }
 
 // façade avant percée : par niveau, bandes de mur entre les ouvertures, au-dessus et au-dessous de chacune

@@ -30,7 +30,7 @@ constexpr int64_t SEGMENT = 40;                                      // début d
 struct EtatArchi {
     bool actif = false;
     int lod = 0;
-    int vue = 0;   // 0 : de près, depuis la chaussée ; 1 : de loin ; 2 : de dessus ; 3 : face au style « style »
+    int vue = 0;   // 0 : de près, depuis la chaussée ; 1 : de loin ; 2 : de dessus ; 3 : face au style « style » ; 4, 5 : gros plan porte, fenêtre (WFS-402)
     int style = 0;
 } g_archi;
 
@@ -84,6 +84,7 @@ public:
             mats_[s][archi::METAL] = mat(alu * 0.3f, 0.4f, 1);
             { Material m; m.color = {alu.x * 0.3f, alu.y * 0.3f, alu.z * 0.3f, 1}; m.rough = 0.4f; m.metal = 1; m.flags = MAT_DOUBLE | MAT_BLEND; mats_[s][archi::FIN] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // WFS-370 : barreaux
             mats_[s][archi::VOLET] = mat({0.09f, 0.2f, 0.13f}, 0.6f, 0);   // volets peints (vert) : couleur de conception, provisoire (ST-4)
+            mats_[s][archi::CHASSIS] = mat({0.70f, 0.68f, 0.62f}, 0.45f, 0);   // WFS-402 : menuiseries de bois peint (comme archi_carte.cpp)
             // repère : façade face à la route, côté droit ; x local = sens inverse de la route, z local = vers la chaussée
             const int64_t a = SEGMENT + (int64_t)((along + LARGEUR[s]) / SEG_M);
             const carte::Pose p = carte::poseAt(t, a);
@@ -123,6 +124,25 @@ public:
         if (g_archi.vue == 0) { oeil = carte::lateral(carte::poseAt(t, milieu - (int64_t)(30 / SEG_M)), -(float)RW + 1.f, 1.7f); cible = carte::lateral(pm, (float)RW + RECUL, 8.f); }
         else if (g_archi.vue == 1) oeil = carte::lateral(carte::poseAt(t, milieu - (int64_t)(70 / SEG_M)), -4.f, 6.f);
         else if (g_archi.vue == 2) oeil = carte::lateral(pm, -30.f, 55.f);
+        else if (g_archi.vue >= 4) {   // WFS-402 : gros plan de la porte d'entrée (4) ou d'une fenêtre d'étage (5) du style, de 3/4
+            const int s = std::clamp(g_archi.style, 0, NB - 1);
+            const mat4& w = monde_[s];
+            const vec3 X{w.at(0, 0), w.at(1, 0), w.at(2, 0)}, Z{w.at(0, 2), w.at(1, 2), w.at(2, 2)}, O{w.at(0, 3), w.at(1, 3), w.at(2, 3)};
+            const archi::Plan& p = plans_[s];
+            const int niv = std::min(1, p.etages);
+            archi::Baie b = p.baies.front();
+            float meilleur = 1e9f;
+            for (const archi::Baie& x : p.baies) {   // la porte, ou la fenêtre du 1er étage la plus proche du milieu
+                const bool ok = g_archi.vue == 4 ? x.type == archi::Ouverture::Porte
+                                                 : x.niveau == niv && (x.type == archi::Ouverture::Fenetre || x.type == archi::Ouverture::PorteFenetre);
+                const float e = std::fabs(x.x - p.largeur / 2);
+                if (ok && e < meilleur) { meilleur = e; b = x; }
+            }
+            const vec3 P = O + X * b.x + vec3{0, b.y + b.h * 0.5f, 0};
+            cible = P;
+            oeil = g_archi.vue == 4 ? P + Z * 2.4f - X * 1.2f + vec3{0, 2.5f - (b.y + b.h * 0.5f), 0}
+                                    : P + Z * 3.0f - X * 1.4f + vec3{0, -0.6f, 0};
+        }
         else {   // face au style : depuis le bord opposé de la chaussée, à hauteur d'yeux, cadré sur toute la façade
             const int s = std::clamp(g_archi.style, 0, NB - 1);
             const vec3 n = vec3{monde_[s].at(0, 2), 0, monde_[s].at(2, 2)};   // normale de la façade (vers la route)
@@ -131,7 +151,7 @@ public:
             oeil = centre_[s] + n * std::max(16.f, h * 1.15f) + vec3{0, 1.7f, 0};
         }
         fp.view = lookAt(oeil, cible, {0, 1, 0});
-        fp.proj = perspectiveVk((g_archi.vue == 0 ? 60.f : 55.f) * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.1f);
+        fp.proj = perspectiveVk((g_archi.vue == 0 ? 60.f : g_archi.vue >= 4 ? 50.f : 55.f) * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.1f);
         fp.camPos = oeil;
     }
 
@@ -176,9 +196,13 @@ void benchArchi(Game& g, Renderer& r, const std::string& out) {
     for (int s = 0; s < NB; s++) { noms[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom; caps.push_back({noms[s].c_str(), "jour", 3, 0}); }
     static std::string nuits[NB];
     for (int s = 0; s < NB; s++) { nuits[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({nuits[s].c_str(), "nuit", 3, 0}); }
+    static std::string portes[NB], fenetres[NB], portesNuit[NB];   // WFS-402 : gros plans des ouvertures de chaque style
+    for (int s = 0; s < NB; s++) { portes[s] = std::string("archi-porte-") + archi::regles((archi::Style)s).nom; caps.push_back({portes[s].c_str(), "jour", 4, 0}); }
+    for (int s = 0; s < NB; s++) { fenetres[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom; caps.push_back({fenetres[s].c_str(), "jour", 5, 0}); }
+    for (int s = 0; s < NB; s++) { portesNuit[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({portesNuit[s].c_str(), "nuit", 5, 0}); }
     int k = 0;
     for (const Cap& c : caps) {
-        if (c.vue == 3) g_archi.style = (k++) % NB;
+        if (c.vue >= 3) g_archi.style = (k++) % NB;
         setenv("WFS_MOMENT", c.moment, 1);
         setenv("WFS_DEPART", "0", 1);
         g_archi.vue = c.vue; g_archi.lod = c.lod;

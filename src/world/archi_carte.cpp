@@ -25,7 +25,7 @@ std::vector<Bat> g_bats;
 
 // emplacements de maillage d'un morceau : un par matériau (murs par style, toits par type, puis parties communes)
 constexpr int NS = (int)Style::Nombre, NT = 3;
-enum Slot : int { S_MUR = 0, S_TOIT = NS, S_ENCADREMENT = NS + NT, S_VITRE, S_MENUISERIE, S_METAL, S_VOLET, S_FIN, NB_SLOTS };
+enum Slot : int { S_MUR = 0, S_TOIT = NS, S_ENCADREMENT = NS + NT, S_VITRE, S_MENUISERIE, S_METAL, S_VOLET, S_FIN, S_CHASSIS, NB_SLOTS };
 int slot(int part, const Plan& p) {
     switch (part) {
     case MUR: return S_MUR + (int)p.style;
@@ -35,6 +35,7 @@ int slot(int part, const Plan& p) {
     case MENUISERIE: return S_MENUISERIE;
     case METAL: return S_METAL;
     case FIN: return S_FIN;
+    case CHASSIS: return S_CHASSIS;   // WFS-402
     default: return S_VOLET;
     }
 }
@@ -86,6 +87,7 @@ public:
         mats_[S_METAL] = mat(ALB_ALUMINIUM, 0.3f, 0.4f, 1);
         mats_[S_FIN] = mat(ALB_ALUMINIUM, 0.3f, 0.4f, 1, MAT_DOUBLE | MAT_BLEND);   // WFS-370 : barreaux, couverture partielle (scene.frag, detailK)
         mats_[S_VOLET] = mat({"volet", 0.09f, 0.2f, 0.13f}, 1, 0.6f, 0);           // volets peints (conception, provisoire)
+        mats_[S_CHASSIS] = mat({"peinture blanc cassé", 0.70f, 0.68f, 0.62f}, 1, 0.45f, 0);   // WFS-402 : menuiseries de bois peint (RAL 9001, albédo ≈ 0,7 ; conception)
         {   // vitres + pièces de nuit (ST-3) : lampe 2850 K, murs 31,8 cd/m² (E = 200 lx, ρ = 0,5 : conception), 35 % allumées la nuit
             double c[3]; lumiere::couleurTemperature(2850, c);
             const float L = (float)(0.5 * 200.0 / lumiere::PI_L);

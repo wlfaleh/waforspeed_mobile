@@ -25,6 +25,13 @@ inline void mesuresArchitecture(const reel::Referentiel& R, reel::Rapport& rap) 
         break;
     }
     rap.comparer(R, D, "archi.garde_corps.hauteur", 1.0, 1, "m", "garde-corps des balcons (archi_geo.cpp, GARDE_CORPS)");
+    // WFS-402 (RG-04) : porte d'entrée d'une maison (village) et son passage utile (huisserie de 35 mm, archi_ouvertures.cpp)
+    const Plan v = assembler(Style::Village, 9.f, 7.f, 1);
+    for (const Baie& b : v.baies) if (b.type == Ouverture::Porte) {
+        rap.comparer(R, D, "archi.porte_entree.largeur", b.l, 1, "m", "WFS-402 : porte d'entrée d'une maison (village)");
+        rap.comparer(R, D, "archi.porte_entree.passage_utile", b.l - 2 * 0.035, 1, "m", "WFS-402 : passage utile (bloc-porte moins l'huisserie)");
+        break;
+    }
     // M-03 : albédo moyen des façades = référentiel (béton, brique) ; pierre, crépi, zinc absents du référentiel
     for (const Albedo& a : {ALB_BETON, ALB_BRIQUE}) {
         const reel::Json* m = R.mesure(a.id); const reel::Json* v = m ? m->get("valeur") : nullptr;
