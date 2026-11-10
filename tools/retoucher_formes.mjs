@@ -227,6 +227,31 @@ function contourDe(r) {
   coin(x0 + rb, y0 + rb, rb, Math.PI); coin(x1 - rb, y0 + rb, rb, -Math.PI / 2); coin(x1 - rh, y1 - rh, rh, 0); coin(x0 + rh, y1 - rh, rh, Math.PI / 2);
   return contourDirect(P);
 }
+// résolution de A·x = b (Gauss avec pivot partiel), petits systèmes
+function resoudre(A, b) {
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    if (Math.abs(M[c][c]) < 1e-18) throw new Error('système singulier');
+    for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c] / M[c][c]; for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+// décalage d'un contour convexe (sens trigonométrique) : chaque côté poussé de d (d > 0 : vers l'extérieur), sommets à l'onglet
+function decaler(P, d) {
+  const n = P.length, N = [];
+  for (let i = 0; i < n; i++) { const a = P[i], b = P[(i + 1) % n], l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; N.push([(b[1] - a[1]) / l, -(b[0] - a[0]) / l]); }
+  return P.map((p, i) => {
+    const n1 = N[(i + n - 1) % n], n2 = N[i], c = 1 + n1[0] * n2[0] + n1[1] * n2[1];
+    return c < 1e-6 ? [p[0] + d * n2[0], p[1] + d * n2[1]] : [p[0] + d * (n1[0] + n2[0]) / c, p[1] + d * (n1[1] + n2[1]) / c];
+  });
+}
+// triangle ajouté dans le sens qui rend sa normale géométrique égale à la normale n de ses sommets (comme la carrosserie d'origine)
+function triOriente(V, I, a, b, c, n) {
+  const p = (i) => [V[i * 8], V[i * 8 + 1], V[i * 8 + 2]], g = vect(sous(p(b), p(a)), sous(p(c), p(a)));
+  if (g[0] * n[0] + g[1] * n[1] + g[2] * n[2] >= 0) I.push(a, b, c); else I.push(a, c, b);
+}
 const dedansContour = (P, x, y) => { for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; if ((b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]) < 0) return false; } return true; };
 
 // découpe EXACTE (WFS-358, cause des dents de scie et des trous de WFS-193 : le retrait « par centre de triangle » laissait un bord
@@ -393,7 +418,10 @@ function boucher(w, r) {
 // surface d'une ouverture (WFS-358, factorisée par WFS-362) : contour P, carrosserie vue de face dans [z0, z1] (matériaux « ignorer »
 // laissés de côté) ; sur les nœuds de 1 cm où il y a de la carrosserie autour (± 1 cm), surface = carrosserie la plus profonde
 // + « recul » ; ailleurs, interpolée (équation de Laplace) : galbe naturel du nez. Rend la boîte, la carte, surf(x, y) et pente(x, y).
-function surfaceOuverture(w, P, z0, z1, ignorer, recul) {
+// mode « profond » (grille) : carrosserie la plus profonde à ± 1 cm ; mode « proche » (panneau, WFS-362) : carrosserie de la cellule
+// même (sinon la plus profonde à ± 1 cm) : le panneau suit la vraie peau au raccord au lieu de plonger dans les creux voisins.
+// base (WFS-362, option) : surface lisse f(x, y) ; seul l'écart à f est interpolé : la pente et le galbe de f passent dans l'ouverture.
+function surfaceOuverture(w, P, z0, z1, ignorer, recul, mode = 'profond', base = null) {
   const bx = [Math.min(...P.map((p) => p[0])), Math.max(...P.map((p) => p[0])), Math.min(...P.map((p) => p[1])), Math.max(...P.map((p) => p[1]))];
   const pas = 0.005, carte = profondeurFace(w, bx, pas, z0, z1, ignorer || []);
   // surface S sur une grille de nœuds de 1 cm : connue (carrosserie + recul) ou interpolée
@@ -404,10 +432,11 @@ function surfaceOuverture(w, P, z0, z1, ignorer, recul) {
     const x = bx[0] + i * h, y = bx[2] + j * h;
     let z = -Infinity;   // carrosserie la plus PROFONDE autour du nœud (± 1 cm) : la grille reste derrière chacune des surfaces qu'elle croise
     for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) { const zc = carte.at(x + di * pas, y + dj * pas); if (Number.isFinite(zc)) z = Math.max(z, zc); }
-    if (Number.isFinite(z)) { S[j * NX + i] = z + recul; connu[j * NX + i] = 1; somme += z; nb++; }
+    if (mode === 'proche' && Number.isFinite(carte.at(x, y))) z = carte.at(x, y);
+    if (Number.isFinite(z)) { S[j * NX + i] = z + recul - (base ? base(x, y) : 0); connu[j * NX + i] = 1; somme += S[j * NX + i]; nb++; }
   }
   if (!nb) throw new Error('ouverture : aucune carrosserie autour du contour');
-  for (let k = 0; k < S.length; k++) if (!connu[k]) S[k] = somme / nb + recul;
+  for (let k = 0; k < S.length; k++) if (!connu[k]) S[k] = somme / nb;   // départ des itérations : moyenne des nœuds connus
   for (let it = 0; it < 4000; it++) for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
     const k = j * NX + i; if (connu[k]) continue;
     let s = 0, c = 0;
@@ -417,7 +446,7 @@ function surfaceOuverture(w, P, z0, z1, ignorer, recul) {
   const surf = (x, y) => {   // interpolation bilinéaire de S
     const fx = Math.min(NX - 1.0001, Math.max(0, (x - bx[0]) / h)), fy = Math.min(NY - 1.0001, Math.max(0, (y - bx[2]) / h));
     const i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j, k = j * NX + i;
-    return (1 - u) * (1 - v) * S[k] + u * (1 - v) * S[k + 1] + (1 - u) * v * S[k + NX] + u * v * S[k + NX + 1];
+    return (base ? base(x, y) : 0) + (1 - u) * (1 - v) * S[k] + u * (1 - v) * S[k + 1] + (1 - u) * v * S[k + NX] + u * v * S[k + NX + 1];
   };
   const pente = (x, y) => [(surf(x + 0.005, y) - surf(x - 0.005, y)) / 0.01, (surf(x, y + 0.005) - surf(x, y - 0.005)) / 0.01];
   return { bx, carte, surf, pente };
@@ -425,7 +454,7 @@ function surfaceOuverture(w, P, z0, z1, ignorer, recul) {
 
 function grilleAjustee(w, r) {
   const g = r.grilleAjustee, P = contourDe(g.contour), [z0, z1] = g.z;
-  const { bx, carte, surf, pente } = surfaceOuverture(w, P, z0, z1, g.ignorer, g.recul);
+  const { bx, carte, surf, pente } = surfaceOuverture(w, P, z0, z1, g.ignorer, g.recul);   // mode « profond » : comme la X5
   const ajouter = (V, I, couleur, metal, rugosite) => {
     const col = (couleur || '#1a1a1a').match(/[0-9a-f]{2}/gi).map((x) => Math.pow(parseInt(x, 16) / 255, 2.2));
     const mat = Buffer.alloc(56);
@@ -470,7 +499,10 @@ function grilleAjustee(w, r) {
     for (let k = 0; k < nseg; k++) {
       const t0 = k / nseg, t1 = (k + 1) / nseg, x0 = a[0] + t0 * (b[0] - a[0]), y0 = a[1] + t0 * (b[1] - a[1]), x1 = a[0] + t1 * (b[0] - a[0]), y1 = a[1] + t1 * (b[1] - a[1]);
       const q = Vf.length / 8;
-      Vf.push(x0, y0, surf(x0, y0), ...n, 0, 0, x1, y1, surf(x1, y1), ...n, 0, 0, x1, y1, surf(x1, y1) + g.fond + 0.005, ...n, 0, 0, x0, y0, surf(x0, y0) + g.fond + 0.005, ...n, 0, 0);
+      // « joue » (WFS-362) : la paroi part du bord de la carrosserie (2 mm derrière elle) et non 1,5 cm plus loin : plus de jour entre
+      // le bord découpé et la paroi, par lequel on voyait de 3/4 l'intérieur clair (éclats). Sans l'option : comme la X5.
+      const avant = (x, y) => { if (!g.joue) return surf(x, y); const zc = carte.at(x, y); return Number.isFinite(zc) ? Math.min(surf(x, y), zc + 0.002) : surf(x, y); };
+      Vf.push(x0, y0, avant(x0, y0), ...n, 0, 0, x1, y1, avant(x1, y1), ...n, 0, 0, x1, y1, surf(x1, y1) + g.fond + 0.005, ...n, 0, 0, x0, y0, surf(x0, y0) + g.fond + 0.005, ...n, 0, 0);
       If.push(q, q + 1, q + 2, q, q + 2, q + 3);
     }
   }
@@ -502,6 +534,28 @@ function grilleAjustee(w, r) {
       for (let q = 1; q + 1 < profil.length; q++) Il.push(base, base + q, base + q + 1);
     }
   }
+  // ---- rebord (WFS-362, option) : bande de « largeur » m tout autour, « avance » m devant les lames (toujours derrière la carrosserie),
+  // puis paroi intérieure jusqu'au dos des lames : les bouts des lames finissent contre un rebord, plus « en peigne » ----
+  if (g.rebord) {
+    const lr = g.rebord.largeur ?? 0.012, av = g.rebord.avance ?? 0.004, Pin = decaler(P, -lr);
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length], ai = Pin[i], bi = Pin[(i + 1) % P.length];
+      const nseg = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.01));
+      let nin = unite([-(b[1] - a[1]), b[0] - a[0], 0]);
+      if (nin[0] * (gx - a[0]) + nin[1] * (gy - a[1]) < 0) nin = nin.map((c) => -c);
+      for (let k = 0; k < nseg; k++) {
+        const t0 = k / nseg, t1 = (k + 1) / nseg, L = (u, v, t) => [u[0] + t * (v[0] - u[0]), u[1] + t * (v[1] - u[1])];
+        const o0 = L(a, b, t0), o1 = L(a, b, t1), i0 = L(ai, bi, t0), i1 = L(ai, bi, t1);
+        const face = (q) => { const [dx, dy] = pente(q[0], q[1]); return unite([dx, dy, -1]); };
+        const base = Vl.length / 8;
+        for (const q of [o0, o1, i1, i0]) Vl.push(q[0], q[1], surf(q[0], q[1]) - av, ...face(q), 0, 0);
+        triOriente(Vl, Il, base, base + 1, base + 2, face(o0)); triOriente(Vl, Il, base, base + 2, base + 3, face(o0));
+        const b2 = Vl.length / 8;   // paroi intérieure du rebord, tournée vers l'ouverture
+        for (const [q, dz] of [[i0, -av], [i1, -av], [i1, pr + 0.004], [i0, pr + 0.004]]) Vl.push(q[0], q[1], surf(q[0], q[1]) + dz, ...nin, 0, 0);
+        triOriente(Vl, Il, b2, b2 + 1, b2 + 2, nin); triOriente(Vl, Il, b2, b2 + 2, b2 + 3, nin);
+      }
+    }
+  }
   const kl = ajouter(Vl, Il, g.couleur, g.metal ?? 0.7, g.rugosite ?? 0.3);
   const kf = ajouter(Vf, If, g.couleurFond || '#0b0b0b', 0, 0.75);
   // contrôle RG-05 : aucun point de la grille devant la carrosserie (carte faite avant l'ajout)
@@ -514,101 +568,59 @@ function grilleAjustee(w, r) {
 }
 
 // panneau (WFS-362, skill artiste-3d § 5 : « fermer l'ouverture par une pièce de carrosserie ») : une ancienne ouverture de marque
-// (déjà découpée) est refermée par une peau AJOUTÉE AU MAILLAGE de la carrosserie (même matériau : même peinture, même vernis), qui
-// suit le galbe du nez (surface interpolée entre les bords, comme la grille ajustée). Le panneau déborde de « debord » m sous la
-// carrosserie voisine, toujours « recul » m derrière elle (aucun jour ni éclat au raccord, jamais devant : contrôlé) ; le pli du
-// raccord se lit comme un joint de panneau. Grille de 1 cm, découpée sur le contour élargi du débord.
-// { "panneau": { "materiau": m, "contour": …, "z": [z0, z1], "ignorer": [mats], "recul": m, "debord": m, "bombe": m }, "note", "triangles": n }
-// normales de la carrosserie vue de face (WFS-362) : pour chaque cellule de « pas » m, normale (interpolée entre les sommets) de la
-// surface la plus en avant dans [z0, z1] ; matériaux de « ignorer » laissés de côté. Sert à raccorder l'ombrage d'un panneau.
-function normalesFace(w, bx, pas, z0, z1, ignorer) {
-  const W = Math.ceil((bx[1] - bx[0]) / pas) + 1, H = Math.ceil((bx[3] - bx[2]) / pas) + 1;
-  const Z = new Float64Array(W * H).fill(Infinity), N = new Float64Array(W * H * 3);
-  for (const m of w.maillages) {
-    if (ignorer.includes(m.mat)) continue;
-    for (let t = 0; t + 2 < m.ix.length; t += 3) {
-      const c = [m.ix[t], m.ix[t + 1], m.ix[t + 2]]; if (c[0] === c[1] && c[1] === c[2]) continue;
-      const p = c.map((i) => [(m.v[i * 8] - bx[0]) / pas, (m.v[i * 8 + 1] - bx[2]) / pas, m.v[i * 8 + 2]]);
-      if (Math.max(p[0][2], p[1][2], p[2][2]) < z0 || Math.min(p[0][2], p[1][2], p[2][2]) > z1) continue;
-      const d = (p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]);
-      if (Math.abs(d) < 1e-12) continue;
-      const i0 = Math.max(0, Math.ceil(Math.min(p[0][0], p[1][0], p[2][0]))), i1 = Math.min(W - 1, Math.floor(Math.max(p[0][0], p[1][0], p[2][0])));
-      const j0 = Math.max(0, Math.ceil(Math.min(p[0][1], p[1][1], p[2][1]))), j1 = Math.min(H - 1, Math.floor(Math.max(p[0][1], p[1][1], p[2][1])));
-      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
-        const l1 = ((p[1][0] - i) * (p[2][1] - j) - (p[2][0] - i) * (p[1][1] - j)) / d;
-        const l2 = ((p[2][0] - i) * (p[0][1] - j) - (p[0][0] - i) * (p[2][1] - j)) / d, l3 = 1 - l1 - l2;
-        if (l1 < -1e-9 || l2 < -1e-9 || l3 < -1e-9) continue;
-        const z = l1 * p[0][2] + l2 * p[1][2] + l3 * p[2][2], k = j * W + i;
-        if (z < z0 || z > z1 || z >= Z[k]) continue;
-        Z[k] = z;
-        for (let q = 0; q < 3; q++) N[k * 3 + q] = l1 * m.v[c[0] * 8 + 3 + q] + l2 * m.v[c[1] * 8 + 3 + q] + l3 * m.v[c[2] * 8 + 3 + q];
-      }
-    }
-  }
-  return { at: (x, y) => { const i = Math.round((x - bx[0]) / pas), j = Math.round((y - bx[2]) / pas); if (i < 0 || j < 0 || i >= W || j >= H) return null; const k = j * W + i; return Number.isFinite(Z[k]) ? [N[k * 3], N[k * 3 + 1], N[k * 3 + 2]] : null; } };
-}
-
+// (déjà découpée) est refermée par une peau AJOUTÉE AU MAILLAGE de la carrosserie (même matériau : même peinture, même vernis).
+// - Surface : base de degré 2 ajustée sur la peinture voisine, plus l'écart interpolé (Laplace) jusqu'à la peau du bord (mode « proche ») ;
+//   « recul » m derrière elle, jamais devant (contrôlé). Le contour doit suivre des lignes du nez (joint du capot, bords des phares),
+//   au-delà du rebord de l'ancienne ouverture : sinon ce rebord redessine la calandre (revue du lead dev, #323).
+// - Débord : le contour est décalé de « debord » m vers l'extérieur (vrai décalage des côtés, sommets à l'onglet) : le panneau passe
+//   sous la carrosserie voisine, aucun jour au raccord.
+// - Bombé (m) : φ = bosse douce (∇²φ = −1, nulle sur le contour d'origine, normalisée, élevée au carré : pente nulle au bord) ;
+//   la surface avance de « bombe » × φ.
+// - Normales : celles de la surface finale (différences finies), lisses ; ne plus prendre celles de la carrosserie voisine (parois
+//   du rebord tournées de côté : cratère et vagues dans les reflets, revue #323).
+// { "panneau": { "materiau": m, "contour": …, "z": [z0, z1], "ignorer": [mats], "recul": m, "debord": m, "bombe": m, "bande": m }, "note", "triangles": n }
 function panneau(w, r) {
   const p = r.panneau;
   const ks = w.maillages.map((m, k) => (m.mat === p.materiau ? k : -1)).filter((k) => k >= 0);
   if (ks.length !== 1) throw new Error(`matériau ${p.materiau} : un maillage attendu`);
-  const P0 = contourDe(p.contour), [z0, z1] = p.z, d = p.debord ?? 0.006;
-  // contour élargi de « debord » (polygone convexe : chaque côté poussé vers l'extérieur, coins recalculés)
-  const gx = P0.reduce((a, q) => a + q[0], 0) / P0.length, gy = P0.reduce((a, q) => a + q[1], 0) / P0.length;
-  const P = P0.map((q) => { const dx = q[0] - gx, dy = q[1] - gy, l = Math.hypot(dx, dy) || 1; return [q[0] + d * dx / l, q[1] + d * dy / l]; });
-  const { bx, carte, surf } = surfaceOuverture(w, P, z0, z1, p.ignorer, p.recul ?? 0.002);
-  // normales : celles de la carrosserie voisine (moyenne ± 1 cm) sur les nœuds de 1 cm qui en ont, interpolées (Laplace) ailleurs :
-  // ombrage continu au raccord (sans cela, le panneau se lisait comme une forme plus sombre, normales tirées de la seule pente)
-  const nf = normalesFace(w, bx, 0.005, z0, z1, p.ignorer || []);
-  const hn = 0.01, NX = Math.ceil((bx[1] - bx[0]) / hn) + 1, NYn = Math.ceil((bx[3] - bx[2]) / hn) + 1;
-  const Nn = new Float64Array(NX * NYn * 3), connu = new Uint8Array(NX * NYn);
-  for (let j = 0; j < NYn; j++) for (let i = 0; i < NX; i++) {
-    const s3 = [0, 0, 0]; let c = 0;
-    for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) { const n = nf.at(bx[0] + i * hn + di * 0.005, bx[2] + j * hn + dj * 0.005); if (n) { s3[0] += n[0]; s3[1] += n[1]; s3[2] += n[2]; c++; } }
-    const k = j * NX + i;
-    if (c) { const u = unite(s3); Nn[k * 3] = u[0]; Nn[k * 3 + 1] = u[1]; Nn[k * 3 + 2] = u[2]; connu[k] = 1; } else Nn[k * 3 + 2] = -1;
+  const P0 = contourDe(p.contour), [z0, z1] = p.z, P = decaler(P0, p.debord ?? 0.006);
+  // base : surface de degré 2 ajustée (moindres carrés) sur la PEINTURE seule, dans une bande de « bande » m autour du contour : elle
+  // donne au panneau l'inclinaison et le galbe du nez voisin (sans elle, la surface interpolée restait presque verticale : panneau
+  // plus sombre que la carrosserie, revue #323) ; l'écart à cette base est ensuite interpolé jusqu'aux bords exacts.
+  const bande = p.bande ?? 0.03, Pb = decaler(P0, bande);
+  const bb = [Math.min(...Pb.map((q) => q[0])), Math.max(...Pb.map((q) => q[0])), Math.min(...Pb.map((q) => q[1])), Math.max(...Pb.map((q) => q[1]))];
+  const autres = [...new Set(w.maillages.map((m) => m.mat))].filter((m) => m !== p.materiau);
+  const peau = profondeurFace(w, bb, 0.005, z0, z1, autres);
+  const A = Array.from({ length: 6 }, () => new Float64Array(6)), Bv = new Float64Array(6);
+  let nbase = 0;
+  for (let y = bb[2]; y <= bb[3]; y += 0.005) for (let x = bb[0]; x <= bb[1]; x += 0.005) {
+    if (dedansContour(P0, x, y) || !dedansContour(Pb, x, y)) continue;
+    const z = peau.at(x, y); if (!Number.isFinite(z)) continue;
+    const f = [1, x, y, x * x, x * y, y * y];
+    for (let a = 0; a < 6; a++) { Bv[a] += f[a] * z; for (let b = 0; b < 6; b++) A[a][b] += f[a] * f[b]; }
+    nbase++;
   }
-  for (let it = 0; it < 4000; it++) for (let j = 0; j < NYn; j++) for (let i = 0; i < NX; i++) {
-    const k = j * NX + i; if (connu[k]) continue;
-    for (let q = 0; q < 3; q++) {
-      let s = 0, c = 0;
-      if (i > 0) { s += Nn[(k - 1) * 3 + q]; c++; } if (i < NX - 1) { s += Nn[(k + 1) * 3 + q]; c++; }
-      if (j > 0) { s += Nn[(k - NX) * 3 + q]; c++; } if (j < NYn - 1) { s += Nn[(k + NX) * 3 + q]; c++; }
-      Nn[k * 3 + q] = s / c;
-    }
-  }
-  // bombé (m) : le nez d'origine avançait devant ses bords (haricots 3 à 4 cm devant la carrosserie) ; sans bombé, le panneau
-  // interpolé entre les bords se lit plat et en creux. φ : bosse douce, 0 sur le contour d'origine et dehors, 1 au plus haut
-  // (solution de ∇²φ = −1, normalisée, puis élevée au carré) ; la surface avance de « bombe » × φ, l'ombrage suit (pente de la bosse ajoutée).
-  const bombe = p.bombe ?? 0;
-  const Ph = new Float64Array(NX * NYn), dedansP0 = new Uint8Array(NX * NYn);
-  for (let j = 0; j < NYn; j++) for (let i = 0; i < NX; i++) if (dedansContour(P0, bx[0] + i * hn, bx[2] + j * hn)) dedansP0[j * NX + i] = 1;
+  if (nbase < 50) throw new Error(`panneau : ${nbase} points de peinture autour du contour, trop peu pour la base`);
+  const c = resoudre(A, Bv), base = (x, y) => c[0] + c[1] * x + c[2] * y + c[3] * x * x + c[4] * x * y + c[5] * y * y;
+  const { bx, carte, surf } = surfaceOuverture(w, P, z0, z1, p.ignorer, p.recul ?? 0.002, 'proche', base);
+  // bosse φ sur une grille de 1 cm
+  const bombe = p.bombe ?? 0, hn = 0.01, NX = Math.ceil((bx[1] - bx[0]) / hn) + 1, NY = Math.ceil((bx[3] - bx[2]) / hn) + 1;
+  const Ph = new Float64Array(NX * NY), dedans = new Uint8Array(NX * NY);
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) if (dedansContour(P0, bx[0] + i * hn, bx[2] + j * hn)) dedans[j * NX + i] = 1;
   if (bombe > 0) {
-    for (let it = 0; it < 4000; it++) for (let j = 1; j < NYn - 1; j++) for (let i = 1; i < NX - 1; i++) {
-      const k = j * NX + i; if (!dedansP0[k]) continue;
-      Ph[k] = (Ph[k - 1] + Ph[k + 1] + Ph[k - NX] + Ph[k + NX] + hn * hn) / 4;
+    for (let it = 0; it < 4000; it++) for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) {
+      const k = j * NX + i; if (dedans[k]) Ph[k] = (Ph[k - 1] + Ph[k + 1] + Ph[k - NX] + Ph[k + NX] + hn * hn) / 4;
     }
     let mx = 0; for (const v of Ph) mx = Math.max(mx, v);
-    // φ² : pente nulle sur le bord (raccord tangent à la carrosserie ; avec φ seul, pli et éclats le long du raccord)
     if (mx > 0) for (let k = 0; k < Ph.length; k++) Ph[k] = (Ph[k] / mx) ** 2;
   }
   const phi = (x, y) => {
-    const fx = Math.min(NX - 1.0001, Math.max(0, (x - bx[0]) / hn)), fy = Math.min(NYn - 1.0001, Math.max(0, (y - bx[2]) / hn));
+    const fx = Math.min(NX - 1.0001, Math.max(0, (x - bx[0]) / hn)), fy = Math.min(NY - 1.0001, Math.max(0, (y - bx[2]) / hn));
     const i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j, k = j * NX + i;
     return (1 - u) * (1 - v) * Ph[k] + u * (1 - v) * Ph[k + 1] + (1 - u) * v * Ph[k + NX] + u * v * Ph[k + NX + 1];
   };
   const hauteur = (x, y) => surf(x, y) - bombe * phi(x, y);
-  const normaleCarrosserie = (x, y) => {   // interpolation bilinéaire, renormée
-    const fx = Math.min(NX - 1.0001, Math.max(0, (x - bx[0]) / hn)), fy = Math.min(NYn - 1.0001, Math.max(0, (y - bx[2]) / hn));
-    const i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j, k = j * NX + i, r3 = [0, 0, 0];
-    for (let q = 0; q < 3; q++) r3[q] = (1 - u) * (1 - v) * Nn[k * 3 + q] + u * (1 - v) * Nn[(k + 1) * 3 + q] + (1 - u) * v * Nn[(k + NX) * 3 + q] + u * v * Nn[(k + NX + 1) * 3 + q];
-    return unite(r3);
-  };
-  const normale = (x, y) => {   // normale de la carrosserie (pentes zx, zy) + pente de la bosse
-    const n0 = normaleCarrosserie(x, y); if (!(bombe > 0) || n0[2] > -0.05) return n0;
-    const e = 0.004, gx = (phi(x + e, y) - phi(x - e, y)) / (2 * e), gy = (phi(x, y + e) - phi(x, y - e)) / (2 * e);
-    return unite([-n0[0] / n0[2] - bombe * gx, -n0[1] / n0[2] - bombe * gy, -1]);
-  };
+  const e = 0.006, normale = (x, y) => unite([(hauteur(x + e, y) - hauteur(x - e, y)) / (2 * e), (hauteur(x, y + e) - hauteur(x, y - e)) / (2 * e), -1]);
   const largeur = (y) => {
     let xa = Infinity, xb = -Infinity;
     for (let i = 0; i < P.length; i++) {
@@ -618,27 +630,25 @@ function panneau(w, r) {
     }
     return [xa, xb];
   };
-  const m = w.maillages[ks[0]], V = Array.from(m.v), I = Array.from(m.ix), base = m.nv;
-  const h = 0.01, NY = Math.max(1, Math.ceil((bx[3] - bx[2]) / h)), lignes = [];
-  let colonnes = 0;
-  for (let j = 0; j <= NY; j++) {
+  const m = w.maillages[ks[0]], V = Array.from(m.v), I = Array.from(m.ix), premier = m.nv;
+  const h = 0.01, NYp = Math.max(1, Math.ceil((bx[3] - bx[2]) / h)), C = Math.max(2, Math.ceil((bx[1] - bx[0]) / h)), lignes = [];
+  for (let j = 0; j <= NYp; j++) {
     const y = Math.min(bx[3], bx[2] + j * h), [a0, a1] = largeur(y);
     if (!Number.isFinite(a0)) { lignes.push(null); continue; }
-    const C = Math.max(2, Math.ceil((bx[1] - bx[0]) / h)); colonnes = C;
     lignes.push(Array.from({ length: C + 1 }, (_, k) => {
       const x = a0 + (k / C) * (a1 - a0), n = normale(x, y);
       V.push(x, y, hauteur(x, y), n[0], n[1], n[2], 0, 0); return V.length / 8 - 1;
     }));
   }
   let n = 0;
-  for (let j = 0; j < NY; j++) {
+  for (let j = 0; j < NYp; j++) {
     const A = lignes[j], B = lignes[j + 1]; if (!A || !B) continue;
     // sens des sommets : normale géométrique = normale enregistrée (vers l'avant, −z), comme la carrosserie d'origine
-    for (let k = 0; k < colonnes; k++) { I.push(A[k], B[k + 1], A[k + 1], A[k], B[k], B[k + 1]); n += 2; }
+    for (let k = 0; k < C; k++) { I.push(A[k], B[k + 1], A[k + 1], A[k], B[k], B[k + 1]); n += 2; }
   }
   // contrôle : aucun sommet du panneau devant la carrosserie (carte faite avant l'ajout)
   let devant = 0;
-  for (let i = base; i < V.length / 8; i++) { const zc = carte.at(V[i * 8], V[i * 8 + 1]); if (Number.isFinite(zc) && V[i * 8 + 2] < zc - 0.0005) devant++; }
+  for (let i = premier; i < V.length / 8; i++) { const zc = carte.at(V[i * 8], V[i * 8 + 1]); if (Number.isFinite(zc) && V[i * 8 + 2] < zc - 0.0005) devant++; }
   m.v = new Float32Array(V); m.nv = V.length / 8; m.ix = new Uint32Array(I);
   if (w.tan) w.tan[ks[0]] = Buffer.alloc(m.nv * 4);
   return { k: ks[0], n, devant };
