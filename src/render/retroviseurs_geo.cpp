@@ -61,6 +61,9 @@ bool parLArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
 // décalage de l'œil du cockpit dans le modèle 3D quand ses rétroviseurs ne sont pas trouvés (moyenne des 18 voitures mesurées, ≈ 0,6 m)
 constexpr float DECALAGE_HABITACLE_M = 0.60f;
 constexpr float VISEE_HAUTEUR_M = 0.9f, VISEE_DISTANCE_M = 12.f;   // glace intérieure : milieu d'une voiture qui suit
+// glaces extérieures : la carrosserie occupe 1,5° au bord intérieur de la glace (réglage conseillé : on la devine à peine, le reste montre la
+// voie d'à côté) ; avec 20 % de la glace (1re version), la 911 (glace de 175 mm) ne voyait pas une voiture 9 m derrière dans la voie de gauche
+constexpr float FLANC_VU_RAD = 1.5f * PI / 180.f;
 } // namespace
 
 CotesExterieur cotesExterieur(const char* car) {
@@ -148,7 +151,7 @@ std::array<Miroir, NB_GLACES> miroirs(const cockpit::InterieurDef& d, float cx, 
     // ---- extérieurs : sur l'aile de la portière, à l'angle avant de la vitre latérale (E) : centre de la glace 2,5 cm hors de la
     // carrosserie (la coque dépasse de ≈ 14 cm : largeur avec rétroviseurs ≈ largeur + 0,28 m, Golf 8 : 2,07 m pour 1,79 m),
     // 10 cm au-dessus de la ligne de ceinture, 22 cm derrière le pied du pare-brise (aile de fixation 8 cm derrière lui). Réglage du
-    // conducteur : la carrosserie occupe le cinquième intérieur de la glace, l'horizon un peu au-dessus du milieu (regard 1,5° vers le bas)
+    // conducteur : la carrosserie occupe 1,5° au bord intérieur de la glace, l'horizon un peu au-dessus du milieu (regard 1,5° vers le bas)
     const CotesExterieur ce = cotesExterieur(d.car);
     const float W = largeurHorsTout > 0.5f ? largeurHorsTout : 2.f * (demi + 0.17f);
     // œil du siège dans le repère du modèle (camera_vue.cpp : conducteur à gauche, à −cx de l'axe, 2 % de la longueur devant le milieu)
@@ -171,7 +174,7 @@ std::array<Miroir, NB_GLACES> miroirs(const cockpit::InterieurDef& d, float cx, 
         const float D = length(c - oeil), demiAngle = std::atan(ce.w * 0.5f / D);
         // flanc de la voiture vu de la glace : du centre de la glace vers l'arrière de la carrosserie (≈ 2,2 m derrière l'œil)
         const float flanc = std::atan2(std::fabs(c.x - (cx + sx * W * 0.5f)), 2.2f - c.z);
-        const float dehors = 0.6f * demiAngle - flanc, bas = 1.5f * PI / 180.f;
+        const float dehors = demiAngle - FLANC_VU_RAD - flanc, bas = 1.5f * PI / 180.f;
         const vec3 vise{sx * std::sin(dehors) * std::cos(bas), -std::sin(bas), std::cos(dehors) * std::cos(bas)};
         m[(size_t)k].repere = repereGlace(c, normaleReglee(c, oeil, vise));
         m[(size_t)k].w = ce.w; m[(size_t)k].h = ce.h;
