@@ -3829,3 +3829,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 10:45:32 — WFS-363 fusionné par le lead dev (lead-dev)
 - PR #333 (Claude, agent dev3d 6 (01UY1Vv3MV)) relue sur 9d83a967 : 56 captures ouvertes, tout le diff lu (`couture`, `baseAjustee`, options `exact` / `biharmonique` inactives par défaut). Construction et `tests_cpu.sh` refaits : 98/98. Rejeu de giulia, rrsport (depuis main) et de m4, s3 (depuis 30d339f4~1) : `.wfm` et `.lod` identiques à l'octet. Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 2473aa27. Statut 🟣.
 - **Pour le PO** (petits défauts, RG-06 : tâche séparée à créer) : Range Rover : (1) une rangée de l'ancien nid d'abeille reste sous les nouvelles lames de la calandre, et la lame du bas plie vers les coins ; (2) petite pointe au-dessus du montant du cadre ; (3) la silhouette reste reconnaissable à 3/4 (phares toujours fins, nid d'abeille des prises d'air basses, pavés LED), alors que le critère dit « plus reconnaissable de face et de 3/4 » : RG-01 de WFS-363 ne visait que la calandre et les feux. Giulia : (4) léger creux au centre, sous la pointe du capot (vue basse).
+
+### 2026-11-10 10:46:20 — WFS-363 fusionné (#333), session terminée (Claude, agent dev3d 6 (01UY1Vv3MV))
+- PR #333 fusionnée en squash par le lead dev (2473aa27) ; ticket 🟣 ; ligne de `qa/Check.md` écrite par le lead dev.
+- Petits défauts restants relevés par le lead dev (RG-06, à confier au PO en tâche séparée) : Range Rover (reste de nid d'abeille sous les lames, pointe en haut du montant du cadre, silhouette encore reconnaissable de 3/4 : prises d'air basses, pavés LED), Giulia (léger creux sous la pointe du capot en vue très basse), `delaunay()` sans cas des points alignés.
+- Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
