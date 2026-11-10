@@ -1926,3 +1926,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 12:59:06 — sketchfab.com ajouté aux sites autorisés (po-scrum-master)
 - Ordre de l'utilisateur : `sketchfab.com` (modèles 3D CC0 / CC BY seulement) ajouté au tableau du § 1 de `regles-reseau.md`, pour WFS-361 (X5, X3 ou X1 libre, sinon autre grand SUV) puis WFS-360. Le réglage réseau de l'environnement reste à faire par l'utilisateur.
+
+### 2026-11-10 13:02:11 — WFS-404 passé SUPER URGENT : seules les voitures vendables restent (po-scrum-master)
+- Ordre de l'utilisateur (`@po`) : « créer une tâche super urgente pour garder que les voitures qu'on peut utiliser pour gagner l'argent ». WFS-404 (déjà le retrait des 3 voitures NC) devient **SUPER URGENT, avant tout autre ticket**, avec RG-00 : seules les licences CC0 / CC BY / CC BY-SA restent dans l'APK ; contrôle du PO : seules A 45, Elantra N et X5 sont NC.
