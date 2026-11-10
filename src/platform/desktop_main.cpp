@@ -250,6 +250,7 @@ int main(int argc, char** argv) {
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
+    if (banc == "ville-sens-inverse") { benchSensInverseVille(g, r, out); return finir(); }   // WFS-404 : sens inverse de la Ville seul
     if (banc == "voitures-retirees") {   // WFS-404 : planche et faces des voitures permises, tour du garage, sens inverse de la Ville, camion de jour
         ui::chargerPolice(r); benchPlancheVoitures(g, r, out); benchVoituresFace(g, r, out); ecrans::benchGarageTour(g, r, out); benchSensInverseVille(g, r, out);
         setenv("WFS_MOMENT", "jour", 1); benchPoursuite(g, r, out); unsetenv("WFS_MOMENT"); return finir();

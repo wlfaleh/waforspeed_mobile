@@ -60,14 +60,14 @@ void benchSensInverseVille(Game& g, Renderer& r, const std::string& out) {
         if (!g.init(r, "golf", "ville")) { WFS_ERR("sens inverse : chargement impossible"); continue; }
         g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course);
         for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(600 + i / 60.0); }
-        // œil au-dessus du terre-plein central (3,5 m), visée 45 m plus loin sur la voie opposée du milieu (sensInverse, ville.cpp)
+        // œil au-dessus du terre-plein central (3 m), téléobjectif (28°), visée 70 m plus loin sur la voie opposée du milieu (sensInverse, ville.cpp)
         const double s = g.player().dist;
-        const TrackPoint o = t.point(s, -(RW + 4.0)), v = t.point(s + 45 / M, -(RW + 11.5));
-        g_vue = {true, {(float)o.x, (float)o.y + 3.5f, (float)o.z}, {(float)v.x, (float)v.y + 0.8f, (float)v.z}, 40};
-        for (int n = 0; n < 4; n++) {   // 4 instants espacés de 1,5 s : les voitures passent à horaire fixe
-            for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 45 == 0) g.render(610 + n * 2 + i / 60.0); }
+        const TrackPoint o = t.point(s, -(RW + 4.0)), v = t.point(s + 70 / M, -(RW + 11.5));
+        g_vue = {true, {(float)o.x, (float)o.y + 3.0f, (float)o.z}, {(float)v.x, (float)v.y + 0.8f, (float)v.z}, 28};
+        for (int n = 0; n < 12; n++) {   // 12 instants espacés de 0,75 s : les voitures passent à horaire fixe (30 m/s environ)
+            for (int i = 0; i < 45; i++) { g.update(1.0 / 60); if (i % 45 == 0) g.render(610 + n * 2 + i / 60.0); }
             g.render(620 + n); g.render(620.02 + n);
-            const std::string nom = std::string("ville-sens-inverse-") + moment + "-" + std::to_string(n + 1);
+            const std::string nom = std::string("ville-sens-inverse-") + moment + "-" + (n < 9 ? "0" : "") + std::to_string(n + 1);
             r.capturePng(out + "/" + nom + ".png");
             WFS_LOG("capture %s", nom.c_str());
         }
