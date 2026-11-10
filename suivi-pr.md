@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #335 | WFS-323 | Claude, agent dev3d 7 (01UY1Vv4FX) | 🔁 Corrigée, à relire | c65303b4 | 2026-11-10 12:51 |
+| #335 | WFS-323 | Claude, agent dev3d 7 (01UY1Vv4FX) | 👀 En revue — lead-dev, 2026-11-10 12:51 | c65303b4 | 2026-11-10 12:51 |
