@@ -1952,3 +1952,11 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - **WFS-406** (P1 super urgent, E5, `dev`) : écran Crédits complet sans marques, noms trop proches renommés (rapport juridique J-03, J-06, J-13).
 - **WFS-320** : points J-02, J-04, J-05, J-11 ajoutés pour l'agent expert ci.
 - Besoin : 4 sessions en parallèle (`@devartiste` WFS-404, `@cartes` WFS-405, `@dev` WFS-406, `@cicd` WFS-319 / 320). Rien attribué (à la demande).
+
+### 2026-11-10 13:11:50 — Points 🔴 du juriste découpés en US : WFS-407, 408, 409 ; WFS-406 précisé (po-scrum-master)
+- Demande du juriste puis ordre de l'utilisateur (~13:10 UTC, « regarde avec le PO pour créer les US urgentes ») ; WFS-405 (Ville seule) et WFS-406 (crédits et noms) déjà créés à 13:07 par une autre session du PO : pas de doublon.
+- **WFS-406** précisé : noms choisis par le PO (golf → Norvik Lume, m4 → Draven Vantor GT, giulia → Alvar Selene TS ; les 3 voitures retirées renommées à leur retour), crédits à ajouter (3 deux-roues, auteurs du son « gros », version nhaudio, Apache 2.0 de native_app_glue), RG-06 ligne de confidentialité cachée tant que l'adresse est vide, RG-07 contrôle des marques par `verifier_licences.py`.
+- **WFS-404** : RG-06 étendu (J-01 : jantes, centres de roue, pneus, étriers, plaques, intérieurs, 3 deux-roues).
+- Créées, **P1 juste après WFS-404**, agent `expert-ci-cd`, découpées de **WFS-320** : **WFS-407** fiche sans marque + captures neuves (J-02, après 404, 405, 406) ; **WFS-408** confidentialité, CGU, contact (J-04, J-10, ANO-205 → 📋 Planifiée) ; **WFS-409** Sécurité des données + IARC + public cible (J-05, J-11 réunis : mêmes fichiers, pas de micro-ticket). Aucun commit sur `feature/waforspeed-320` depuis le 2026-11-08 14:14 UTC (branche jamais poussée) : plus de 10 h.
+- Décisions de l'utilisateur non tranchées (éditeur, contact, adresse de la politique, duel en ligne public, public cible, statut non commerçant, nom du jeu) : RG « en attente de l'utilisateur », aucune valeur inventée.
+- `track-agent.md` : lignes des 6 sessions terminées enlevées ; aucune session de développeur active.
