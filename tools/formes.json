@@ -2505,8 +2505,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -2601,8 +2605,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -2697,8 +2705,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -2793,8 +2805,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -2870,7 +2886,7 @@
      -2
     ],
     "note": "plans du fond des prises d'air retirés (découpe exacte, WFS-363)",
-    "triangles": 27
+    "triangles": 31
    },
    {
     "decouper": true,
@@ -2889,8 +2905,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -2985,8 +3005,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -3062,7 +3086,7 @@
      -2
     ],
     "note": "pièce basse de la pointe du V retirée (découpe exacte, WFS-363)",
-    "triangles": 189
+    "triangles": 266
    },
    {
     "decouper": true,
@@ -3081,8 +3105,12 @@
       0.19
      ],
      [
-      -0.6678,
-      0.188
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
      ],
      [
       0.68,
@@ -3158,7 +3186,7 @@
      -2
     ],
     "note": "pointe du V, pont central et bords des deux prises d'air (dessin en trèfle) retirés : une seule ouverture basse (découpe exacte, WFS-363)",
-    "triangles": 627
+    "triangles": 669
    },
    {
     "couture": {
@@ -3247,8 +3275,12 @@
        0.19
       ],
       [
-       -0.6678,
-       0.188
+       -0.33,
+       0.173
+      ],
+      [
+       0.33,
+       0.173
       ],
       [
        0.68,
@@ -3325,7 +3357,10 @@
      ],
      "ignorer": [
       64,
-      65
+      65,
+      51,
+      61,
+      62
      ],
      "recul": 0.015,
      "fond": 0.05,
@@ -3353,7 +3388,7 @@
     "note": "grille générique basse et large, d'un seul tenant, à la place des deux prises d'air et de la pointe du V : 1,5 cm derrière la carrosserie, 8 lames chanfreinées, rebord, paroi depuis le bord, toujours derrière la plaque, fond noir mat (WFS-363)"
    }
   ],
-  "empreinteApres": "9b2bf3590602d21c"
+  "empreinteApres": "639a0b8d26dcf0bf"
  },
  "rrsport": {
   "materiaux": 22,
