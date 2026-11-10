@@ -43,6 +43,7 @@ float tramageTriangulaire(vec2 p) {
     float b = fract(sin(dot(p, vec2(39.3468, 11.1353))) * 24634.6345);
     return a + b - 1.0;
 }
+vec3 eclatNuit(vec3 e) { return e / (1.0 + dot(e, vec3(0.2126, 0.7152, 0.0722)) / 0.35); }   // WFS-382 : voir main()
 vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
 
 // WFS-276 (RG-01 à RG-03) : la nuit, adaptation de chaque pixel à sa propre luminance dans les basses lumières. Près d'une lampe,
@@ -113,15 +114,21 @@ void main() {
     // chaque pixel très brillant en une grille de points blancs). Chaque lecture est plafonnée pour qu'un seul pixel
     // extrême ne fasse pas une tache.
     vec2 px = 1.0 / vec2(textureSize(hdr, 0));
-    vec3 glow = vec3(0.0);
+    vec3 glow = vec3(0.0); float poids = 0.0;
     for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) {
-        vec3 s = texture(hdr, uvS + (vec2(i, j) * 2.0 - 3.5) * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels
-        glow += max(min(s, vec3(24.0)) - 2.5, 0.0);
+        vec2 o = vec2(i, j) * 2.0 - 3.5;   // WFS-382 : la nuit, prises pondérées par la distance (gaussienne) : halo rond, pas de carré
+        float w = pc.params.w != 0.0 ? exp(-dot(o, o) / 6.0) : 1.0; poids += w;
+        vec3 s = texture(hdr, uvS + o * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels
+        glow += max(min(s, vec3(24.0)) - 2.5, 0.0) * w;
     }
-    c += glow / 16.0 * 0.35;
+    glow *= 16.0 / poids;   // même énergie que 16 prises égales (le jour : poids = 16, rien ne change)
+    // WFS-382 (RG-03, ANO-222) : la nuit (params.w ≠ 0), halo et bloom compressés en douceur sur leur luminance Y : e / (1 + Y / 0,35),
+    // presque rien sous 0,05, jamais plus de 0,35 ajouté ; continu, sans palier ni changement de teinte (2e revue du lead dev : un
+    // min() par canal faisait un disque gris, un carré et un anneau irisé autour des sources vives) ; le jour, rien ne change
+    c += pc.params.w != 0.0 ? eclatNuit(glow / 16.0 * 0.35) : glow / 16.0 * 0.35;
     // bloom (WFS-15, WFS-100 : UnrealBloomPass du jeu web) : chaîne « dual filter » de 5 niveaux calculée avant cette passe
     // (Renderer::passesBloom) ; force 0 (qualité basse, GPU logiciel) : rien n'est lu, image identique
-    if (pc.params.z > 0.0) c += texture(bloomTex, vUv).rgb * pc.params.z;
+    if (pc.params.z > 0.0) { vec3 b = texture(bloomTex, vUv).rgb * pc.params.z; c += pc.params.w != 0.0 ? eclatNuit(b) : b; }   // WFS-382
     c = aces(c);
     vec2 q = vUv - 0.5;
     c *= 1.0 - dot(q, q) * 0.35;

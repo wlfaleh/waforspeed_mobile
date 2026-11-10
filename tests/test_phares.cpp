@@ -73,6 +73,18 @@ int main() {
     }
     // WFS-226 : flanc d'une voiture voisine, à 45° de l'axe : moins de 3 % de la crête
     VERIFIE(intensiteRelative(-0.1f, 45.f) < 0.03f, "étalement à 45°");
+    // WFS-382 (RG-01, ANO-222) : intensité limitée vers le bas (premier plan) : part de la crête à −3°, −5°, −10°, −15° dans les
+    // fourchettes des feux LED de série (avis expert-realisme-3d du 2026-11-10 : 8 000-12 000, 3 000-5 000, 1 000-2 000, 500-1 000 cd
+    // sur ≈ 40 000), et rapport premier plan (5 m) / tache à 30 m de 6 à 15 (réel ≈ 12 ; avant : ≈ 30, sol brûlé devant la voiture)
+    {
+        const struct { float el, bas, haut; } bornes[] = {{-3, 0.18f, 0.32f}, {-5, 0.07f, 0.13f}, {-10, 0.02f, 0.05f}, {-15, 0.009f, 0.025f}};
+        for (const auto& b : bornes) { const float k = intensiteRelative(b.el, 0); VERIFIE(k >= b.bas && k <= b.haut, "intensité à %.0f° : %.3f de la crête", b.el, k); }
+        auto paire = [&](double z) { return lux(true, -0.65, 0, z, h, 0, 1, 0) + lux(true, 0.65, 0, z, h, 0, 1, 0); };
+        const double e5 = paire(5), e30 = paire(30), e50 = paire(50);
+        std::printf("WFS-382 route (paire LED) : 5 m %.1f lx, 30 m %.2f lx, 50 m %.2f lx, rapport 5 m / 30 m %.1f ; crête %.0f cd\n", e5, e30, e50, e5 / e30, creteCd(true));
+        VERIFIE(e5 / e30 >= 6 && e5 / e30 <= 15, "rapport premier plan / 30 m : %.1f", e5 / e30);
+        VERIFIE(creteCd(true) >= 28000 && creteCd(true) <= 45000, "crête LED %.0f cd (30 000 à 45 000 cd)", creteCd(true));
+    }
     // teintes de luminance 1
     for (const vec3& c : {TEINTE_HALOGENE, TEINTE_LED}) VERIFIE(std::abs(0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z - 1) < 0.01f, "luminance de la teinte");
     VERIFIE(!led("abarth") && led("golf") && !led(nullptr), "LED selon la voiture");
