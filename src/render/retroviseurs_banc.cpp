@@ -191,14 +191,18 @@ int benchRetroviseurs(Game& g, Renderer& r, const std::string& out, std::vector<
             for (int k = 0; k < 2; k++) { std::sort(serie[k].begin(), serie[k].end()); ms[k] = (serie[k][1] + serie[k][2]) * 0.5; }
             retro::desactiver(false);
             if (n == qualite::BASSE) {   // capture 3 du ticket : affichage « Rendu / Images » des Réglages, vue Cockpit, Basse, sans puis avec
+                // pause appliquée (images rendues) avant d'ouvrir le panneau, qui reste ouvert pour les deux images (1re version : le panneau
+                // s'ouvrait avant la pause et l'image « sans » montrait l'écran Pause, refus du lead dev, PR #341)
                 g.allerA(Ecran::Pause);
+                for (int i = 0; i < 10; i++) g.render(t);
+                ecrans::ouvrirReglagesBanc(true);
                 for (int sans = 1; sans >= 0; sans--) {
                     retro::desactiver(sans == 1);
-                    ecrans::ouvrirReglagesBanc(true);
                     for (int i = 0; i < 30; i++) g.render(t);
                     r.capturePng(out + "/retro-reglages-rendu-basse-" + (sans ? "sans" : "avec") + ".png");
-                    ecrans::ouvrirReglagesBanc(false);
+                    WFS_LOG("capture retro-reglages-rendu-basse-%s : écran %s, %s", sans ? "sans" : "avec", nomEcran(g.ecran()), qualite::ligneRendu().c_str());
                 }
+                ecrans::ouvrirReglagesBanc(false);
                 retro::desactiver(false);
                 g.allerA(Ecran::Course);
             }

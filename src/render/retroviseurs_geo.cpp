@@ -58,6 +58,8 @@ bool parLArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
     if (vus >= 20 && t.z > 0.05f && t.z < 0.45f && t.y > 0.05f && t.y < 0.40f) { m.retroMin[c] = a; m.retroMax[c] = b; m.retroMesure[c] = true; return true; }
     return false;
 }
+// décalage de l'œil du cockpit dans le modèle 3D quand ses rétroviseurs ne sont pas trouvés (moyenne des 18 voitures mesurées, ≈ 0,6 m)
+constexpr float DECALAGE_HABITACLE_M = 0.60f;
 } // namespace
 
 CotesExterieur cotesExterieur(const char* car) {
@@ -133,7 +135,7 @@ std::array<Miroir, NB_GLACES> miroirs(const cockpit::InterieurDef& d, float cx, 
         const vec3 eu = normalize(vec3{0, yh - Yb, zh - Zb}), en = normalize(cross(vec3{1, 0, 0}, eu));
         const vec3 pied = vec3{cx, Yb, Zb} + eu * (length(vec3{0, yh - Yb, zh - Zb}) - 0.05f) + en * 0.004f;
         const vec3 c{cx - 0.01f, pied.y - 0.062f, pied.z + 0.06f};   // centre de la coque
-        const vec3 n = normaleReglee(c, oeil, {0, -std::sin(2.5f * PI / 180.f), std::cos(2.5f * PI / 180.f)});   // lunette arrière : 2,5° sous l'horizontale
+        const vec3 n = normaleReglee(c, oeil, {0, -std::sin(1.f * PI / 180.f), std::cos(1.f * PI / 180.f)});   // lunette arrière : 1° sous l'horizontale (reflet vu depuis la place du modèle)
         m[INTERIEUR].repere = repereGlace(c + n * 0.0205f, n);
         m[INTERIEUR].w = 0.236f; m[INTERIEUR].h = 0.056f;
         m[INTERIEUR].reflexion = 0.80f;   // glace argentée, position jour (ONU R46 : ≥ 40 %)
@@ -175,6 +177,15 @@ std::array<Miroir, NB_GLACES> miroirs(const cockpit::InterieurDef& d, float cx, 
         m[(size_t)k].recul = recul;
         m[(size_t)k].mesure = mesure; m[(size_t)k].decalageVue = decal;
         m[(size_t)k].rayonExterieur = ce.h * 0.45f;
+    }
+    // glace intérieure : reflet vu depuis le même décalage (en long seulement) que les glaces extérieures. L'œil du cockpit est placé 50 à
+    // 75 cm trop en avant dans le modèle (mesuré sur les rétroviseurs) : sans décalage, les sièges avant du modèle passaient devant la
+    // glace intérieure et cachaient la voiture qui suit (refus du lead dev, PR #341). Rétroviseurs du modèle non trouvés : 60 cm (moyenne)
+    {
+        float dz = 0; int n = 0;
+        for (int k : {GAUCHE, DROITE}) if (m[(size_t)k].mesure) { dz += m[(size_t)k].decalageVue.z; n++; }
+        m[INTERIEUR].decalageVue = {0, 0, n ? dz / (float)n : DECALAGE_HABITACLE_M};
+        m[INTERIEUR].mesure = n > 0;
     }
     return m;
 }

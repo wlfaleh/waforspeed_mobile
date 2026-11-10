@@ -1371,6 +1371,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
+    voitureRetroSeule_ = (vis & ~VIS_RETRO) == 0;   // WFS-324
     if (fx.nuit || stopK > 0 || fx.recul) feuxVoiture(m, world, fx);
     // WFS-134 (RG-11) : Basse, au-delà de 15 m : roues fixes (invisibles à cette distance), pièces regroupées ci-dessous
     const bool basseLoin = qualiteBasse && length(world.transformPoint((m.bmin + m.bmax) * 0.5f) - camPos_) > 15.f;
@@ -1548,7 +1549,9 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
     // WFS-226 ; WFS-413 (RG-02) : milieu des deux glaces mesurées (FeuxModele::avantX / avantY / avant, model_loader.cpp)
-    if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
+    // WFS-324 (accroche) : une voiture vue seulement dans les rétroviseurs n'éclaire rien (comme avant : hors de la vue, ses phares ne
+    // sont pas notés) ; notée, la voiture qui suit éclairait en blanc le bas de l'habitacle du cockpit (projecteurs sans ombre)
+    if (f.nuit && !f.joueur && !voitureRetroSeule_) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
                                                  (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
     auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
