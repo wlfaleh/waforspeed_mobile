@@ -1908,3 +1908,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Licences NC (A 45, Elantra N, X5)** : effacer les logos ne règle pas la licence ; tolérées (🟠) en version gratuite sans pub ni achat, **bloquantes pour toute vente, pub ou achat** (remplacement WFS-360, 361, 397).
 - 🟠 principaux : formes reconnaissables des vraies voitures (avis d'avocat avant une vente), nom « WaForSpeed » à vérifier, CGU (éditeur, droit applicable, duel), public cible et IARC, notice Apache 2.0 de native_app_glue.
 - Transmis au PO pour les tickets ; 7 questions pour l'utilisateur à la fin du rapport. Rien codé, aucun ticket créé.
+
+### 2026-11-10 12:50:46 — Lead dev automatique (chaque heure) mis en pause (po-scrum-master)
+- Ordre de l'utilisateur (budget) : la tâche planifiée « Lead dev automatique (chaque heure) » est désactivée (gardée, réactivable). Les PR sont relues seulement quand un développeur appelle lui-même le lead dev après sa PR.
