@@ -14,7 +14,7 @@ Agent : Claude, agent dev3d 4 (01UY1Vv5HV)
   - **`assets/cars/m4.*`, `assets/cars/s3.*`** : modèles retouchés, LOD régénérés (`alleger_voiture.mjs`).
 - **Comment c'est vérifié** :
   - `node tools/retoucher_formes.mjs --verifier` : vert pour **m4, s3, x5, compass, p208** ; M4, S3 **et X5 rejouées depuis leur état d'origine** donnent exactement les empreintes attendues (X5 : `87570eb9ad0fa1c8`, inchangée) ; le journal de l'outil dit pour M4 et S3 « aucun devant la carrosserie ni devant la plaque ».
-  - Construction complète et `bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` : **95 tests réussis** ; `test_fidelite_voitures` OK, lignes m4 et s3 identiques à `main` (écart connu de la M4, +8,6 %, déjà sur `main`).
+  - Construction complète et `bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` : **96 tests réussis** ; `test_fidelite_voitures` OK, lignes m4 et s3 identiques à `main` (écart connu de la M4, +8,6 %, déjà sur `main`).
   - Captures avant / après régénérées et regardées : 18 paires du script (vitrines de jour, feux en course), 16 gros plans jour / nuit, 24 zooms ×4 dont **plaque S3 de face et de 3/4 (jour, nuit)**, **haut du nez M4 de face et en vue basse (jour, nuit)**, panneau M4 de 3/4 droit, coin droit de la grille S3.
 - **Limites et risques connus** :
   - Triangles : M4 112,6 k → 115,7 k ; **S3 117,1 k → 126,4 k** (au-dessus du repère de 120 k du skill, comme la X5 142 k, la 208 129 k, la Compass 126 k ; aucun test ne le borne ; LOD refaits). Poids : M4 6,8 Mo, S3 6,8 Mo (≤ 8 Mo).
