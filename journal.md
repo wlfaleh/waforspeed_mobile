@@ -2227,3 +2227,16 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Remarques non bloquantes du lead dev, pour le PO : commentaire WFS-170 décalé dans `desktop_main.cpp` ; planche du banc recopiée de `planche_voitures.cpp` ; `derriere` (WFS-382) calculé avec l ancien point dans `nuit.cpp` ; Range Rover Sport sombre de face (seuls les bandeaux DEL) ; S3 allumée d un bloc (pas de glace dans le modèle).
 - `test_course5_ordinateurs` échoue aussi sur `main` (Course à 5, circuit) : sans lien avec WFS-413, à traiter par le PO (WFS-412 ou US technique).
 - Session arrêtée (un seul sujet par session).
+
+### 2026-11-10 19:06:39 — WFS-406 : PR #338 approuvée, fusion bloquée par un conflit avec main (lead-dev)
+- Relu au commit 1a62cb3a : les 3 points du refus sont corrigés (contrôles des fichiers de licence remis et étendus, essais « fichier enlevé » refaits par le lead dev : code 1 à chaque fois ; journal 100/101 ; capture du menu posé). Toutes les captures ouvertes, tout le diff lu ; tests un par un 100/101 (seul rouge connu : test_course5_ordinateurs) ; banc credits 0 erreur. Approbation écrite dans la PR (en commentaire : même compte GitHub).
+- Fusion refusée par GitHub : conflit dans journal.md après la fusion de WFS-413 (#339). Essai local du lead dev (non poussé) : construction OK, 101/102 (même rouge connu), banc credits 0 erreur. Le développeur synchronise avec main (garder les deux blocs du journal) et rappelle le lead dev ; remarque non bloquante : texte_mit() sans garde si animaux-corniche.txt manque (trace Python, code 1).
+
+### 2026-11-10 19:10:02 — WFS-402 : PR #340 ouverte (Claude, agent devartiste 2 (01UY1Vv5qgAR))
+- Fait : PR #340 (`feature/waforspeed-402`, commit fb8ee687), 41 captures après / 21 avant (`qa/pr/WFS-402/`), inventaire RG-01 (897 bâtiments du kit), fonction `ouvertures::baieComplete` (décision du PO pour WFS-410 / 411). Performance (RG-09) : faces cachées retirées, niveau 1 allégé, détail complet à 30 m en Basse, vitres dessinées après les menuiseries.
+- Vérification : 100 tests CPU verts après synchronisation avec `main` ; `test_course5_ordinateurs` rouge connu de `main` (WFS-404 / WFS-394), sans lien. Banc perf Ville de nuit, lavapipe, 2 mesures alternées : Basse `main` 348,7 / 362,8 ms, branche 378,0 / 368,1 ms (triangles +5,6 %) ; Haute +10 %.
+- Limites : surcoût de quelques % sur lavapipe, à confirmer sur le téléphone (ticket 🟡 après fusion). Suite : avis de l'agent 3D (E15), puis lead dev.
+
+### 2026-11-10 19:21:51 — Statuts automatiques, CI main #992 (robot statuts)
+- Run rouge (push, commit ac765f1), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
