@@ -231,3 +231,4 @@ demande utilisateur :
 ( Utilisateur, 2026-11-10 18:00 UTC : « Non, que pour cette voiture. » PO : c'est corrigé — **WFS-414 ne touche que le volant de la Mustang** ; les 16 autres volants ne bougent pas, et les captures avant / après de la Golf et de la M4 doivent le prouver. )
 ( Utilisateur, 2026-11-10 18:01 UTC : « Golf 8 aussi. » PO : c'est ajouté — **WFS-414 corrige le volant de la Mustang et de la Golf 8**, rien d'autre ; la Golf garde son méplat, ses coutures et son agrafe rouges. )
 ( Utilisateur, 2026-11-10 18:03 UTC : « Cinquina aussi. » PO : c'est ajouté — compris comme la **Abarth 500** (la Cinquecento) : **WFS-414 corrige les volants de la Mustang, de la Golf 8 et de l'Abarth 500**, rien d'autre. )
+( Utilisateur, 2026-11-10 18:04 UTC : « Trek-x aussi. » PO : c'est ajouté — compris comme le **T-Cross** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500 et du T-Cross**, rien d'autre. )
