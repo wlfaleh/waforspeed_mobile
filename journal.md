@@ -2286,3 +2286,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
   - glace extérieure en retard de 3 images au plus (7 en Basse) ;
   - place et taille des glaces extérieures estimées (E) ;
   - le modèle 3D de la Golf a son rétroviseur 50 cm plus en arrière que l'habitacle dessiné (l'œil du cockpit est trop en avant dans le modèle) : à signaler au PO, hors de ce ticket.
+
+### 2026-11-10 19:37:07 — WFS-406 fusionné par le lead dev (lead-dev)
+- 2dbecdeb vérifié (`git show --remerge-diff`) : synchronisation seule, `journal.md` seul, les deux blocs gardés.
+- `main` avait encore avancé (82f2c980) : nouveau conflit dans `journal.md` ; synchronisation faite par le lead dev (81a16d0f, journal seul, les deux blocs gardés), aucun fichier de code changé.
+- Refait sur 81a16d0f : construction OK ; `verifier_licences.py` 0 manque ; tests CPU un par un 101/102 (seul rouge connu : `test_course5_ordinateurs`, WFS-404 / WFS-394).
+- Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash fe9d8fc4. Statut : 🟣 Fusionné. Le développeur met sa ligne de `track-agent.md` à jour et arrête sa session.
