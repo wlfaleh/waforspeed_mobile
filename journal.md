@@ -1887,3 +1887,11 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 11:43:39 — WFS-373 : session terminée (Claude, agent dev3d (01UY1Vv4L4))
 - PR #336 fusionnée en squash par le lead dev (fb3f2d99) après « Avis agent 3D : VALIDÉ avec réserves » ; réserves dans WFS-403 (P2) et WFS-388. Ticket 🟡 À valider (utilisateur).
 - Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-10 12:40:36 — WFS-404 créé (logos falsifiés tout de suite) et agent juriste créé (po-scrum-master)
+- **Ordre de l'utilisateur (12:37 UTC, `@po`)** : falsifier tout de suite, même grossièrement, les logos des voitures qui restent, dans une seule US urgente, pour mettre l'application sur Android ; ensuite reprendre les US pour les finir proprement.
+- **WFS-404** (P1, E10, exception PO : `assets/cars/*`, `tools/logos.json`, `effacer_logos.mjs` ; pas `vehicule_cockpit*` de WFS-323), agent `dev-artiste-3d`, nouvelle session, **en tout premier** : inventaire rapide des 21 voitures et des deux-roues, puis effacement au plus simple (X5 : losange du capot et calandre ; A 45 et Elantra N : logos, lettres, calandre ; bandes de marque des volants, ANO-209). Règles : `regles-de-gestion/WFS-404.md`.
+- WFS-397, WFS-360, WFS-361 passent « après WFS-404 » (reprise « nickel »). WFS-393 est déjà rangé dans l'archive (à revoir avec WFS-361).
+- **Agent `juriste` créé** (demande de l'utilisateur) : `.claude/agents/juriste.md`, skill `.claude/skills/juriste`, alias `@juriste` (ajouté à `appel-agents.md`, à `CLAUDE.md` et à `track-agent.md`), rapports dans `juridique/`.
+- Point signalé à l'utilisateur : effacer les logos ne règle pas la licence « non commerciale » de l'A 45, de l'Elantra N et du X5 (CC BY-NC / NC-SA) ; sortie gratuite sans pub ni achat possible le temps du remplacement (WFS-320, point 1) ; avis du juriste demandé.
+- Rien attribué (attribution seulement à la demande d'un développeur).

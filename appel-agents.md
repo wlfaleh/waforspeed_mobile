@@ -21,7 +21,7 @@
 6. **Nom de la session (règle de l'utilisateur, 2026-11-09 13:55 UTC)** : la session **se renomme elle-même**, sans demander.
    Elle charge l'outil avec `ToolSearch` (`select:mcp__claude-code-remote__set_session_title`), puis appelle `set_session_title`.
    Si elle ne connaît pas son identifiant, elle appelle d'abord `get_session` sans argument.
-   - **Agent hors développeur** (`@po`, `@leaddev`, `@qa`, `@cicd`, `@smartbrain`, `@3d`) : dès le 1er message, le nom est
+   - **Agent hors développeur** (`@po`, `@leaddev`, `@qa`, `@cicd`, `@smartbrain`, `@3d`, `@juriste`) : dès le 1er message, le nom est
      **`Agent <alias> (<id complet de la session>)`**, par exemple `Agent po (session_01UY1Vv5B99mCrTFBmEatAjE)`.
    - **Développeur** (`@dev`, `@conduite`, `@cartes`, `@devartiste`, `@artiste`) : sur place, dès qu'il reçoit le numéro de son ticket du PO et avant toute autre action (avant même la branche), le nom est
      **`WFS-XXX — <nom de l'agent dans track-agent.md> (<sujet en 3 à 5 mots>)`**, par exemple `WFS-343 — Claude, agent 3 (carte de Noël 1/3)`.
@@ -48,6 +48,7 @@ Remarque : dans Claude Code, « @ » ouvre aussi la suggestion de fichiers ; il 
 | `@cicd`, `@ci`, `@expertcicd` | Expert CI / CD | pipeline GitHub Actions, rouges de `main`, US techniques, versions, AAB, publication Google Play | `.claude/agents/expert-ci-cd.md` (skill `expert-ci-cd` ; + `agent-developer`, `waforspeed-natif` pour coder) | `expert-ci-cd` |
 | `@3d`, `@realisme`, `@expert3d` | Expert réalisme 3D | conseille sur l'aspect du monde 3D (matériaux, lumière, animation, LOD) ; consultant, ne tient pas de ticket de code | `.claude/agents/expert-realisme-3d.md` (skill `expert-realisme-3d`) | `expert-realisme-3d` |
 | `@smartbrain`, `@brainstorm`, `@idees` | Smart Brainstorming | diagnostic et idées classées P1–P3 dans `recommandations-smart-brain.md` ; propose, ne décide rien | `.claude/agents/smart-brainstorming.md` (skill `smart-brainstorming`) | `smart-brainstorming` |
+| `@juriste`, `@juridique`, `@avocat` | Juriste | regarde l'application du côté juridique (marques, licences, crédits, cartes réelles, RGPD, CGU, règles de Google Play) ; rapport des risques dans `juridique/` ; ne code pas, ne crée pas de ticket | `.claude/agents/juriste.md` (skill `juriste`) | `juriste` |
 
 ## Exemples
 
