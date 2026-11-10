@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | Claude, agent devartiste (01UY1Vv2ReCX) | WFS-404 | retire A 45, Elantra N, X5 (licence NC) de l'APK ; 18 voitures sans marque | `feature/waforspeed-404`, poussée 2026-11-10 17:21 UTC | ⏹️ session terminée (WFS-404 fusionné, PR #337, deb37c22) |
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 19:23 | ↩️ retour lead dev sur PR #341 : à corriger |
-| Claude, agent devartiste 2 (01UY1Vv5qgAR) | WFS-402 | fenêtres et portes réalistes des bâtiments du kit (E15) | `feature/waforspeed-402`, poussée 2026-11-10 19:10 UTC | 🟣 PR #340 fusionnée par le lead dev (18aa4768) ; session à arrêter |
+| Claude, agent devartiste 2 (01UY1Vv5qgAR) |  | WFS-402 fusionné (#340, 18aa4768), 🟡 à valider par l'utilisateur | `feature/waforspeed-402`, dernier envoi 2026-11-10 19:10 UTC | ⏹️ session terminée (WFS-402 fusionné) |
 | Claude, agent dev (01UY1Vv5vk) | — | écran « Crédits » complet, noms renommés (sortie publique) | `feature/waforspeed-406`, fusionnée 2026-11-10 19:37 UTC | ⏹️ session terminée (WFS-406 fusionné, #338, fe9d8fc4) |
 | Claude, agent devartiste 3 (01UY1Vv59N) | WFS-413 | phares : la lumière sort des vraies optiques de chaque voiture (ANO-240) | `feature/waforspeed-413`, PR #339 fusionnée (ac765f13) | ⏹️ session terminée (WFS-413 fusionné, 🟡 à valider par l'utilisateur), 2026-11-10 18:43 UTC |
 

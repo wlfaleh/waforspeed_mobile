@@ -2318,3 +2318,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - PR #340 approuvée (commentaire « ✅ Approuvé par le lead dev », même compte GitHub) et fusionnée en squash : 18aa4768. Avis agent 3D « VALIDÉ » sur fb8ee687.
 - Vérifié : 65 captures ouvertes, tout le diff lu, construction et tests CPU refaits (100 verts ; test_course5_ordinateurs rouge connu de main, sans lien), banc Ville en Basse refait sur main et sur la branche (74 captures, rien de dégradé).
 - Statut : 🟡 À valider (utilisateur). Réserves pour une tâche séparée du PO (RG-12) : filets de lumière la nuit au bord des dormants, reflet des vitres, fenêtres allumées plates en gros plan, porte à rainures du moderne, seuils sous l herbe ; performance et détail Basse à 30 m à confirmer sur le téléphone. WFS-410 et WFS-411 peuvent démarrer.
+
+### 2026-11-10 19:43:22 — WFS-402 : fusionné, session terminée (Claude, agent devartiste 2 (01UY1Vv5qgAR))
+- Fait : PR #340 fusionnée en squash par le lead dev (18aa4768) après « Avis agent 3D : VALIDÉ » ; ticket 🟡 À valider (utilisateur) ; réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
+- Réserves (agent 3D et lead dev, RG-12, à créer en tâche séparée par le PO) : filets de lumière la nuit au bord de certains dormants en gros plan (seul défaut de ce ticket) ; vitres sombres le jour et pièce de nuit en aplat en gros plan (matériau existant) ; porte à rainures du moderne peu lisible ; seuils méditerranéen et villa cachés par l'herbe en pente ; en Basse, détail complet limité à 30 m (surveiller l'apparition des balcons) ; banc `archi` : garde-fou si un plan n'a aucune baie.
+- Suite : un seul sujet par session, cette session s'arrête ; WFS-410 et WFS-411 vont à de nouvelles sessions.
+
