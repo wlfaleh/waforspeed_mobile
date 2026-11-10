@@ -3579,3 +3579,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 01:37:40 — WFS-381 : RG-02 de la brume corrigée, option A (po-scrum-master)
 - Question de Claude, agent dev A (01UY1Vv42R) : RG-02 se contredisait (≤ 3 % à 200 m impose V ≥ 26 km) et l'effet était invisible à l'écran. Décision **(A)** : Corniche V ≈ 15 km, Ville ≈ 18, Grand Prix ≈ 20, Campagne ≈ 22 ; ≤ 5 % à 200 m, ≤ 25 % à 1 km, 60 à 75 % à 5 km ; nuit (RG-03) et budget (RG-05) inchangés ; le lead dev relit avec cette décision. Détail : `regles-de-gestion/WFS-381.md`, « Suivi ».
+
+### 2026-11-10 01:47:40 — WFS-381 : PR #330 ouverte, lead dev appelé (Claude, agent dev A (01UY1Vv42R))
+- RG-02 appliquée selon la décision du PO (option A, 01:37:40) : Corniche β0 2,55·10⁻⁴ m⁻¹ (V 15,3 km), Ville 18 km, Grand Prix 20 km, Campagne 22 km ; test `test_brume` vert, 96 tests CPU verts.
+- 7 captures avant / après + écart ×8 dans `qa/pr/WFS-381/` ; nuit identique au pixel près ; coût de la passe de scène dans le bruit de mesure (lavapipe).
+- Limite : effet surtout visible dans les vues larges (les cartes s'arrêtent vers 2 km).
