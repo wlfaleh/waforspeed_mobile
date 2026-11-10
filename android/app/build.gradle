@@ -1,5 +1,16 @@
 plugins { id 'com.android.application' }
 
+// WFS-404 (RG-01, RG-02) : voitures retirées de l'application (licence non commerciale) : liste unique VOITURES_RETIREES de
+// src/game/cars.h, relue ici ; leurs modèles (.wfm, .lod) restent dans assets/cars/ du dépôt mais ne sont pas copiés dans l'APK
+def voituresRetirees = {
+    def ligne = file('../../src/game/cars.h').readLines().find { it.contains('VOITURES_RETIREES[] =') }
+    if (ligne == null) throw new GradleException('WFS-404 : VOITURES_RETIREES introuvable dans src/game/cars.h')
+    (ligne.substring(ligne.indexOf('{')) =~ /"([\w-]+)"/).collect { it[1] }
+}()
+// motifs d'aapt : ceux d'Android par défaut, puis les fichiers des voitures retirées : modèles et licences (le « ! » les écarte sans avertissement)
+def motifsIgnores = (['!.svn', '!.git', '!.ds_store', '!*.scc', '.*', '<dir>_*', '!CVS', '!thumbs.db', '!picasa.ini', '!*~'] +
+                     voituresRetirees.collectMany { ["!${it}.wfm", "!${it}.lod", "!${it}.txt"] }).join(':')
+
 android {
     namespace 'com.waforspeed.game'
     compileSdk 35   // WFS-129 (RG-01) : Android 15, exigé par Google Play pour les nouvelles applications et les mises à jour
@@ -37,7 +48,7 @@ android {
         debug { debuggable true; jniDebuggable false }
         release { minifyEnabled false; signingConfig signingConfigs.test }
     }
-    androidResources { noCompress 'wfm', 'wav' }
+    androidResources { noCompress 'wfm', 'wav'; ignoreAssetsPattern motifsIgnores }   // WFS-404 : sans les voitures retirées
     // WFS-129 (RG-04) : bibliothèques natives non compressées, alignées sur 16 Ko dans l'APK (vérifié par la CI : zipalign -P 16)
     packagingOptions { jniLibs { useLegacyPackaging false } }
 }
@@ -48,6 +59,15 @@ tasks.register('copierConfiggame', Copy) {
     from('../../store') { include 'cgu.md', 'confidentialite.md'; into 'cgu' }   // WFS-308 (RG-03) : textes des CGU dans l'APK (assets cgu/)
 }
 preBuild.dependsOn 'copierConfiggame'
+
+// WFS-404 (RG-01) : contrôle à la construction : aucun modèle d'une voiture retirée dans les actifs fusionnés de l'APK
+tasks.configureEach { t ->
+    if (t.name ==~ /merge(Debug|Release)Assets/) t.doLast {
+        def restes = fileTree(t.outputDir.get().asFile).matching { voituresRetirees.each { v -> include "**/${v}.wfm", "**/${v}.lod" } }.files
+        if (!restes.isEmpty()) throw new GradleException("WFS-404 : voitures retirées encore dans l'APK : ${restes*.name}")
+        logger.lifecycle("WFS-404 : voitures retirées hors de l'APK : ${voituresRetirees}")
+    }
+}
 
 // WFS-132 (RG-08) : test JUnit de la règle de mise à jour (MiseAJourTest, lancé par la CI : testReleaseUnitTest)
 dependencies { testImplementation 'junit:junit:4.13.2' }

@@ -2037,5 +2037,136 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - Zone : `nuit.cpp`, `phares.h`, `feux_modele.*`, `correctifs_voitures.*`, partie « feux » de `model_loader.cpp` (≈ l. 350-385), `Renderer::feuxVoiture` et ses constantes, matériau émissif des phares dans `shaders/vehicule*.glsl` (≤ 15 lignes, annoncé au journal), `tests/**`. **Pas** `assets/cars/**` (WFS-404, ↩️ PR #337), **pas** `vehicule_cockpit*` (WFS-324). Synchroniser avec `main` dès la fusion de WFS-404 ; test des 18 voitures sur la liste d'après WFS-404.
 - Après fusion par le lead dev : **🟡 À valider (utilisateur)** ; puis la session s'arrête (un seul sujet).
 
+### 2026-11-10 17:21:49 — WFS-404 : PR #337 corrigée après la 1re revue (Claude, agent devartiste (01UY1Vv2ReCX))
+- Volant de la M4 : bandes de la marque enlevées, boutons M1 / M2 des branches gardés (`boutonsBranches = true` dans `vehicule_cockpit_defs.cpp`, 2e accroche sur la ligne de la M4, annoncée ici) ; `test_cockpit` vérifie la vraie condition de dessin (`e5a21097`).
+- Captures du 2e tour : tour complet du garage (17 places), faces des 17 voitures et zoom des calandres, sens inverse de la Ville (banc `ville-sens-inverse`), volant (zooms). Camion de jour impossible (le banc de la Poursuite fixe son moment). Traces de forme sans marque signalées au PO : disque noir uni de la Golf, plaques jaunes unies de la SF90.
+- Licences `assets/licences/{x5,a45,elantra}.txt` écartées de l'APK.
+- Preuve RG-11 (chaque test un à un, sans arrêt au 1er échec, mêmes arguments que `tests_cpu.sh`, puis `verifier_licences.py`), sur `e5a21097` (code inchangé depuis) :
+```
+[OK] test_aide_direction (1 s)
+[OK] test_aide_ralentit (1 s)
+[OK] test_apparition_pietons (0 s)
+[OK] test_appui (0 s)
+[OK] test_archi_geo (1 s)
+[OK] test_archi_kit (0 s)
+[OK] test_audio (0 s)
+[OK] test_audio_chocs (1 s)
+[OK] test_audio_lieux (0 s)
+[OK] test_audio_parois (0 s)
+[OK] test_audio_pluie (2 s)
+[OK] test_audio_voitures (0 s)
+[OK] test_bandeau_gps (0 s)
+[OK] test_binarypack (0 s)
+[OK] test_brume (0 s)
+[OK] test_cache_pipelines (0 s)
+[OK] test_carte_cuite (1 s)
+[OK] test_cartes (0 s)
+[OK] test_cartes_v2_donnees (0 s)
+[OK] test_cartes_v2_saison (0 s)
+[OK] test_cgu (0 s)
+[OK] test_cgu_appui (0 s)
+[OK] test_chauffe (0 s)
+[OK] test_chocs (0 s)
+[OK] test_chocs_cartes (6 s)
+[OK] test_chocs_voitures (1 s)
+[OK] test_cockpit (0 s)
+[OK] test_cockpit_ferme (1 s)
+[OK] test_commandes (0 s)
+[OK] test_conducteurs (0 s)
+[OK] test_conduite (6 s)
+[OK] test_conduite_libre (0 s)
+[OK] test_configgame (0 s)
+[OK] test_course (123 s)
+[OK] test_course5 (100 s)
+[ÉCHEC] test_course5_ordinateurs
+    ÉCHEC : RG-02 : circuit : aide activée, dans les 3 premiers 3 fois sur 8 (4 au moins)
+    adversaires de la Course à 5 (WFS-327) : ÉCHEC
+[OK] test_decor_campagne (0 s)
+[OK] test_decor_grandprix (0 s)
+[OK] test_direction_anneau (1 s)
+[OK] test_direction_vitesse (0 s)
+[OK] test_duel (1 s)
+[OK] test_eau (0 s)
+[OK] test_effets (0 s)
+[OK] test_fantome_etiquette (0 s)
+[OK] test_feux_modele (0 s)
+[OK] test_fidelite (0 s)
+[OK] test_fidelite_humains (4 s)
+[OK] test_fidelite_lumiere (0 s)
+[OK] test_fidelite_lumiere_ombres (0 s)
+[OK] test_fidelite_lumiere_precalcule (0 s)
+[OK] test_fidelite_routes (0 s)
+[OK] test_fidelite_soleil (0 s)
+[OK] test_fidelite_voitures (1 s)
+[OK] test_fluidite_reference (0 s)
+[OK] test_fond_fige (0 s)
+[OK] test_hud_lisible (0 s)
+[OK] test_ktx2 (0 s)
+[OK] test_lod_distance (0 s)
+[OK] test_lots_decor (0 s)
+[OK] test_manette (0 s)
+[OK] test_marina_bateaux (0 s)
+[OK] test_masquage (0 s)
+[OK] test_memoire (0 s)
+[OK] test_minicarte (0 s)
+[OK] test_mobilier_ville (0 s)
+[OK] test_navigation (0 s)
+[OK] test_paquets (0 s)
+[OK] test_passes (0 s)
+[OK] test_penetration_voitures (8 s)
+[OK] test_petit_ecran (0 s)
+[OK] test_phares (1 s)
+[OK] test_pilote_file (0 s)
+[OK] test_plantage (0 s)
+[OK] test_pluie (0 s)
+[OK] test_post_wfs214 (2 s)
+[OK] test_qualite (0 s)
+[OK] test_records (0 s)
+[OK] test_regard_cockpit (0 s)
+[OK] test_reglages_appui (0 s)
+[OK] test_reglages_onglets (0 s)
+[OK] test_relais (14 s)
+[OK] test_retour_systeme (0 s)
+[OK] test_rien_sur_chaussee (3 s)
+[OK] test_roues (0 s)
+[OK] test_sauvegarde (0 s)
+[OK] test_shader_leger (0 s)
+[OK] test_sons_conduite (0 s)
+[OK] test_systems (0 s)
+[OK] test_tangentes (0 s)
+[OK] test_trace (53 s)
+[OK] test_track (0 s)
+[OK] test_traffic (0 s)
+[OK] test_trafic_duree (33 s)
+[OK] test_trafic_vivant (0 s)
+[OK] test_vehicule_lod (0 s)
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests un à un : 99 réussi(s), 1 échec(s)
+licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d'assets vérifiés, 0 manque(s)
+```
+
+### 2026-11-10 17:30:23 — WFS-404 fusionné par le lead dev (lead-dev)
+- PR #337, 2e revue, commit relu 797ee569 ; squash `deb37c22` (« WFS-404 : Ne garder que les voitures vendables (A 45, Elantra N, X5 retirées) (#337) (Claude, agent devartiste (01UY1Vv2ReCX)) »). Approbation écrite dans la PR en commentaire (même compte GitHub).
+- Points de la 1re revue corrigés : volant de la M4 (boutons des branches gardés, pas d'agrafe ; `test_cockpit` sur la vraie condition) ; captures du garage complet, des faces, du sens inverse de la Ville.
+- Vérifié par le lead dev : construction, 100 tests un par un → 99 verts, seul rouge `test_course5_ordinateurs` (circuit 3/8, accepté par RG-11, WFS-394) ; licences 17 voitures, 0 manque ; logos vert. 73 captures ouvertes.
+- Statut : 🟡 À valider (utilisateur) (corrige ANO-209). Pour le PO : traces de forme sans marque (disque noir de la Golf, plaques jaunes de la SF90, relief du capot de la Corsa) à donner aux retouches de forme WFS-364 à 368 ; WFS-412 à faire vite (la CI de `main` s'arrêtera sur le rouge connu).
+
+### 2026-11-10 17:30:59 — WFS-404 : fin de session (Claude, agent devartiste (01UY1Vv2ReCX))
+- PR #337 fusionnée par le lead dev (squash deb37c22), ticket 🟡 À valider (utilisateur). Session terminée : aucun autre ticket demandé (un seul sujet par session).
+- Transmis au PO : traces de forme sans marque (Golf, SF90, Corsa) pour WFS-364 à 368 ; WFS-412 urgent (tests_cpu.sh) ; lire le `unzip -l` de l’APK de main (sans a45, elantra, x5).
+### 2026-11-10 17:31:04 — Suites de WFS-404 (fusionné, 🟡) (po-scrum-master)
+- WFS-404 a été fusionné par le lead dev (#337, deb37c22). Il est 🟡 à cause d'ANO-209 (volant de la M4). La session de Claude, agent devartiste (01UY1Vv2ReCX), est terminée.
+- Traces de forme sans marque versées dans les retouches : Golf (disque noir) et Corsa (relief du capot) dans WFS-364, SF90 (plaques jaunes, matériau 11 partagé) dans WFS-366.
+- L'APK de `main` reste à vérifier sur le run 42865582835 (en cours) : `unzip -l` sans a45, elantra ni x5, et la ligne de Gradle. Le PO regarde à son prochain appel.
+- WFS-412 est marqué urgent : `tests_cpu.sh` s'arrête sur le rouge connu de RG-11.
+
+### 2026-11-10 17:38:02 — WFS-413 : zone élargie à shaders/eclairage.glsl (po-scrum-master)
+- Demande de Claude, agent devartiste 3 (01UY1Vv59N) : depuis que les feux partent de la glace (RG-02), le feu de croisement éclaire le propre pare-chocs et le capot (Gallardo, Abarth, S3, Model 3).
+- Décision : **oui**, `shaders/eclairage.glsl` ajouté à la zone, ≤ 4 lignes : masquage « boîtier » (rien à moins de 0,40 m devant la glace, plein à 0,70 m) dans `feuCroisement` et `feuCroisementRapide`. Intensités, coupure et faisceau inchangés. Option « source au ras du pare-chocs » refusée (RG-02).
+
 ### 2026-11-10 17:15:46 — WFS-413 : branche créée, analyse du code des phares (Claude, agent devartiste 3 (01UY1Vv59N))
 - Branche `feature/waforspeed-413` créée depuis `main` ; lecture de `model_loader.cpp` (feux), `nuit.cpp`, `Renderer::feuxVoiture`, `phares.h`, `feux_modele.*`.

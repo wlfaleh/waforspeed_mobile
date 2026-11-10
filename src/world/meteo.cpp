@@ -390,7 +390,7 @@ void benchPluie(Game& g, Renderer& r, const std::string& out) {
     if (partir(0, VueCamera::Poursuite)) { jusqua100(); capture("pluie-arriere-vitesse"); g.shutdown(); }
     // 4. (retour du lead dev, PR #305) 2e intérieur à vitesse (X5 : montants plus écartés) ; témoin vue Arrière à la bouche du
     // tunnel : la voiture à la bouche (caméra encore dehors : fondu), la voiture 6 m dedans (caméra de poursuite à la bouche), 6 m plus loin
-    if (partir(0, VueCamera::Cockpit, "x5")) { jusqua100(); capture("pluie-cockpit-105-x5"); g.shutdown(); }
+    if (partir(0, VueCamera::Cockpit, "rrsport")) { jusqua100(); capture("pluie-cockpit-105-rrsport"); g.shutdown(); }
     if (tun >= 0 && partir(tun - (int64_t)(70 / SEG_M), VueCamera::Poursuite)) {
         const double bouche = tun * SEG_M;
         const std::pair<double, const char*> etapes[] = {{bouche, "pluie-tunnel-arriere-voiture-bouche"}, {bouche + 6, "pluie-tunnel-arriere-bouche"},
