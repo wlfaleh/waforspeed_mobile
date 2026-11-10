@@ -23,10 +23,12 @@ Branche `feature/waforspeed-362` comparée à `origin/main` ; bancs : vitrines-f
 | `vitrine-s3-bas3` | ![avant](avant-vitrine-s3-bas3.jpg) | ![après](apres-vitrine-s3-bas3.jpg) |
 | `vitrine-s3-feux` | ![avant](avant-vitrine-s3-feux.jpg) | ![après](apres-vitrine-s3-feux.jpg) |
 
-### Zooms ×4 (raccord du panneau, coin de la grille, 3/4 gauche), jour et nuit
+### Zooms ×4 (raccord du panneau, panneau M4 de 3/4 droit, coin de la grille, coin droit S3, 3/4 gauche), jour et nuit
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
+| `zoom-m4-34d-panneau-jour` | ![avant](avant-zoom-m4-34d-panneau-jour.jpg) | ![après](apres-zoom-m4-34d-panneau-jour.jpg) |
+| `zoom-m4-34d-panneau-nuit` | ![avant](avant-zoom-m4-34d-panneau-nuit.jpg) | ![après](apres-zoom-m4-34d-panneau-nuit.jpg) |
 | `zoom-m4-34g-jour` | ![avant](avant-zoom-m4-34g-jour.jpg) | ![après](apres-zoom-m4-34g-jour.jpg) |
 | `zoom-m4-34g-nuit` | ![avant](avant-zoom-m4-34g-nuit.jpg) | ![après](apres-zoom-m4-34g-nuit.jpg) |
 | `zoom-m4-coin-grille-jour` | ![avant](avant-zoom-m4-coin-grille-jour.jpg) | ![après](apres-zoom-m4-coin-grille-jour.jpg) |
@@ -35,6 +37,8 @@ Branche `feature/waforspeed-362` comparée à `origin/main` ; bancs : vitrines-f
 | `zoom-m4-raccord-haut-nuit` | ![avant](avant-zoom-m4-raccord-haut-nuit.jpg) | ![après](apres-zoom-m4-raccord-haut-nuit.jpg) |
 | `zoom-s3-34g-jour` | ![avant](avant-zoom-s3-34g-jour.jpg) | ![après](apres-zoom-s3-34g-jour.jpg) |
 | `zoom-s3-34g-nuit` | ![avant](avant-zoom-s3-34g-nuit.jpg) | ![après](apres-zoom-s3-34g-nuit.jpg) |
+| `zoom-s3-coin-droit-jour` | ![avant](avant-zoom-s3-coin-droit-jour.jpg) | ![après](apres-zoom-s3-coin-droit-jour.jpg) |
+| `zoom-s3-coin-droit-nuit` | ![avant](avant-zoom-s3-coin-droit-nuit.jpg) | ![après](apres-zoom-s3-coin-droit-nuit.jpg) |
 | `zoom-s3-coin-grille-jour` | ![avant](avant-zoom-s3-coin-grille-jour.jpg) | ![après](apres-zoom-s3-coin-grille-jour.jpg) |
 | `zoom-s3-coin-grille-nuit` | ![avant](avant-zoom-s3-coin-grille-nuit.jpg) | ![après](apres-zoom-s3-coin-grille-nuit.jpg) |
 | `zoom-s3-raccord-haut-jour` | ![avant](avant-zoom-s3-raccord-haut-jour.jpg) | ![après](apres-zoom-s3-raccord-haut-jour.jpg) |
