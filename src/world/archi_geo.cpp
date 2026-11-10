@@ -204,6 +204,8 @@ void toiture(const Plan& p, float D, int lod, Batiment& out) {
 
 } // namespace
 
+void baie(const Plan& p, const Baie& b, int lod, Batiment& out) { ouverture(p, b, std::clamp(lod, 0, 2), out); }   // WFS-402
+
 void construire(const Plan& p, float D, int lod, Batiment& out) {
     for (Maillage& m : out.part) { m.v.clear(); m.i.clear(); }
     D = std::max(D, 2.f);

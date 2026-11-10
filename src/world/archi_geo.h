@@ -36,6 +36,9 @@ inline int graineBaie(const Plan& p, int niveau, int travee) {
 // construit le bâtiment d'un plan, de profondeur donnée, au niveau de détail lod (0, 1 ou 2)
 void construire(const Plan& p, float profondeur, int lod, Batiment& out);
 
+// WFS-402 : une seule baie du plan (tableau, vitre ou fond, menuiserie, volets, appui, traits du style), sans les murs
+void baie(const Plan& p, const Baie& b, int lod, Batiment& out);
+
 // aire des murs de la façade avant (z = 0, normale +z) entre le sol et yMax (sans le socle ni l'acrotère), pour les
 // contrôles : façade − ouvertures
 double aireFacade(const Maillage& mur, float yMax);

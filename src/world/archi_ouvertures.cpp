@@ -547,4 +547,19 @@ void appuiEtLinteau(const Plan& p, const Baie& b, Batiment& out) {
     }
 }
 
+void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y, float l, float h, float plancher,
+                  float murLibre, int lod, Batiment& out) {
+    // plan d'une façade fictive d'un seul niveau dont le plancher est à y = 0 ; la baie est ensuite remontée de « plancher »
+    Plan p;
+    p.style = style; p.graine = graine;
+    p.largeur = x + l / 2 + murLibre + 1.f; p.travees = 1; p.travee = l + 2 * murLibre; p.rive = 0;
+    p.hRdc = std::max(h + (y - plancher) + 0.2f, 2.5f); p.hEtage = p.hRdc; p.etages = 0; p.corniche = 0;
+    const Baie b{type, 0, 0, x, y - plancher, l, h, false};
+    size_t debut[NB_PARTS];
+    for (int k = 0; k < NB_PARTS; k++) debut[k] = out.part[k].v.size();
+    baie(p, b, lod, out);
+    for (int k = 0; k < NB_PARTS; k++)
+        for (size_t i = debut[k]; i < out.part[k].v.size(); i++) out.part[k].v[i].p.y += plancher;
+}
+
 }  // namespace wfs::archi::ouvertures

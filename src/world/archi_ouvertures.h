@@ -66,4 +66,13 @@ void encadrement(Maillage& m, float x0, float y0, float x1, float y1, float larg
 // appui de fenêtre en pierre (glacis, nez, larmier) et linteau visible selon le style (niveau 0)
 void appuiEtLinteau(const Plan& p, const Baie& b, Batiment& out);
 
+// WFS-402 (décision du PO, pour WFS-410 et WFS-411) : pose une baie complète dans n'importe quelle façade, hors du plan
+// d'un bâtiment du kit. Repère de la façade (archi_geo.h) : x le long de la façade, y depuis le sol, z sortant ; la façade
+// est le plan z = 0 et l'appelant y a déjà percé le trou [x − l/2, x + l/2] × [y, y + h]. Rend le tableau (retrait du
+// style), la vitre (pièce de nuit) ou le fond plein, la menuiserie, les volets, l'appui et l'encadrement du style.
+//   plancher : hauteur du plancher de la pièce (poignées à 1,00-1,10 m au-dessus) ; murLibre : mur plein de chaque côté
+//   de la baie (les volets battants ne se posent que s'ils peuvent s'y rabattre) ; graine : choix des modèles (RG-05).
+void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y, float l, float h, float plancher,
+                  float murLibre, int lod, Batiment& out);
+
 }  // namespace wfs::archi::ouvertures

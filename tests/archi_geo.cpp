@@ -68,7 +68,45 @@ static void verifierWFS402(Style s) {
     }
 }
 
+// WFS-402 : baie complète posée hors du plan d'un bâtiment (fonction publique pour WFS-410 et WFS-411)
+static void verifierBaieComplete() {
+    namespace o = ouvertures;
+    const Ouverture types[] = {Ouverture::Fenetre, Ouverture::PorteFenetre, Ouverture::Porte, Ouverture::Vitrine, Ouverture::PorteGarage};
+    for (int s = 0; s < (int)Style::Nombre; s++) for (Ouverture t : types) for (uint32_t g = 0; g < 8; g++) {
+        const float plancher = 3.4f, x = 5.f, l = t == Ouverture::Vitrine ? 3.f : t == Ouverture::PorteGarage ? 2.4f : 1.1f;
+        const float h = t == Ouverture::Fenetre ? 1.4f : 2.2f, y = plancher + (t == Ouverture::Fenetre ? 0.9f : 0.f);
+        Batiment b;
+        o::baieComplete((Style)s, g, t, x, y, l, h, plancher, 0.8f, 0, b);
+        size_t tris = 0;
+        for (int k = 0; k < NB_PARTS; k++) {
+            const Maillage& m = b.part[k];
+            tris += m.triangles();
+            for (size_t i = 0; i + 2 < m.i.size(); i += 3) {
+                const Sommet &A = m.v[m.i[i]], &B = m.v[m.i[i + 1]], &C = m.v[m.i[i + 2]];
+                const vec3 c = cross(B.p - A.p, C.p - A.p);
+                const float aire = length(c);
+                verifierQue(aire > 1e-8f && dot(c * (1.f / aire), A.n) > 0.99f, "baie complète : normale dans le sens de l'enroulement");
+            }
+            for (const Sommet& v : m.v) {
+                verifierQue(v.p.y > y - 0.2f && v.p.y < y + h + 0.3f, "baie complète : posée à la hauteur demandée");
+                verifierQue(v.p.x > x - l / 2 - 0.85f && v.p.x < x + l / 2 + 0.85f, "baie complète : dans la baie et son mur libre");
+            }
+        }
+        const int part = t == Ouverture::Porte ? (o::modelePorte(Plan{(Style)s, g}).bois ? MENUISERIE : METAL)
+                       : t == Ouverture::Vitrine ? METAL : t == Ouverture::PorteGarage ? o::partChassis((Style)s) : o::partChassis((Style)s);
+        verifierQue(b.part[part].triangles() >= 12, "baie complète : menuiserie modélisée");
+        verifierQue(tris >= 40, "baie complète : tableau, fond et menuiserie");
+        // poignée de fenêtre ou béquille de porte entre 0,9 et 1,3 m au-dessus du plancher
+        if (t == Ouverture::Fenetre || (t == Ouverture::Porte && o::modelePorte(Plan{(Style)s, g}).vantail == o::Vantail::Panneaux)) {
+            bool poignee = false;
+            for (int k : {CHASSIS, METAL}) for (const Sommet& v : b.part[k].v) poignee |= v.p.z > 0.0f - 0.3f && v.p.y > plancher + 0.85f && v.p.y < plancher + 1.3f;
+            verifierQue(poignee, "baie complète : poignée à hauteur d'homme au-dessus du plancher");
+        }
+    }
+}
+
 int main() {
+    verifierBaieComplete();
     wfs::reel::Referentiel R;
     verifierQue(R.charger(std::string(WFS_SOURCE_DIR) + "/references/reel"), "référentiel lisible");
     const wfs::reel::Json* gc = R.mesure("archi.garde_corps.hauteur");
