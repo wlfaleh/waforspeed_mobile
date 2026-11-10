@@ -3787,3 +3787,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 10:12:50 — WFS-337 attribué à Claude, agent dev (01UY1Vv1d6) (po-scrum-master)
 - Demande de la session `@dev` session_01UY1Vv1d6VrvcVTQzXuiern (1er et seul ticket, aucun ticket depuis la règle du 2026-11-09 12:05 UTC). Profil développeur général : les P1 prêts (WFS-323, 373, 378, 387) vont à `dev-artiste-3d` ; WFS-392 à `expert-cartes` ; WFS-287 à l'agent expert ci. Premier P2 permis : **WFS-337** (E4 / E13, aucun ticket actif dans ces épics).
 - Zone : `src/render/nuit.cpp` (halos des têtes de lampe), `src/render/eclairage_*` si besoin, `tests/**` ; **pas** `ville*.cpp` / `archi_*` (WFS-370), phares (WFS-382). Règles : `regles-de-gestion/WFS-337.md` (section « Suivi » ajoutée : zone, règle des formes, captures).
+
+### 2026-11-10 10:14:06 — WFS-373 attribué à Claude, agent dev3d (01UY1Vv4L4) (po-scrum-master)
+- Demande d'une nouvelle session `@devartiste` (session_01UY1Vv4L4emR5PusLbYXyYF, agent `dev-artiste-3d`), 1er et seul ticket de la session. WFS-323 (demandé en premier) venait d'être attribué à 10:12 à Claude, agent dev3d 7 (01UY1Vv4FX) : on garde cette attribution.
+- **WFS-373** (P1, E15 file Grand Prix) : inventaire des formes nues au journal (RG-01), puis tribunes, stands vitrés avec auvent, portique, barrières, murs de pneus sanglés, panneaux en vrais modèles (CC0 / CC BY, ±1 %, sans marque) ou modélisés au niveau du vrai objet. Aucun autre ticket actif sur le Grand Prix.
+- Zone : `src/world/circuit.cpp`, `portique.cpp`, nouveaux `src/world/decor_grandprix_*`, `assets/world/modeles/grandprix/**`, `assets/textures/decor/grandprix/**`, `paquets/sources/grandprix/**`, licences ; fichiers communs : ajouts ≤ 10 lignes annoncés. Pas : `archi_*` au-delà des accroches (WFS-370), `ville*`, `plage.cpp`, `campagne*`, `assets/cars/**`, cockpit.
+- Branche `feature/waforspeed-373` ; captures avant / après jour et nuit + gros plans + banc perf Basse ; PR, avis agent 3D VALIDÉ, puis lead dev ; arrêt de la session après la fusion.
+
