@@ -2,7 +2,7 @@
 //
 // Captures (Haute) : brume-corniche-jour, brume-campagne-jour, brume-ville-jour, brume-corniche-nuit (même cadrage que le
 // jour), et une vue haute de chaque carte de jour (brume-<carte>-haut : lointains à plusieurs kilomètres).
-// brume-mesures.txt : réglage de chaque carte (β0, H, visibilité), contraste restant calculé à 200 m, 1 km et 5 km (RG-02),
+// brume-mesures.txt : réglage de chaque carte (β0, H, visibilité), contraste restant calculé à 200 m, 1, 2 et 5 km (RG-02),
 // et coût GPU de la passe de scène en Basse, de jour, scène figée (RG-05 : comparer la valeur de main et celle de la branche).
 //
 // Le système « BrumeBanc » est inactif hors de ce banc : il ne dessine rien ; pendant le banc, il place la caméra dans le
@@ -119,12 +119,12 @@ int benchBrume(Game& g, Renderer& r, const std::string& out) {
     m << "WFS-381 — brume au loin (perspective atmosphérique)\n";
     if (const char* sha = std::getenv("GITHUB_SHA")) m << "Commit " << sha << "\n";
     m << "\n== réglage par carte (RG-04) et contraste restant calculé, œil et objet au même niveau (RG-02) ==\n"
-         "  carte | β0 (m⁻¹) | H (m) | visibilité (km) | contraste 200 m | 1 km | 5 km\n";
+         "  carte | β0 (m⁻¹) | H (m) | visibilité (km) | contraste restant 200 m | 1 km | 2 km | 5 km\n";
     for (const char* c : {"plage", "ville", "campagne", "circuit"}) {
         const brume::Reglage b = brume::reglageCarte(c);
         m << "  " << c << " | " << fmt(b.beta0 * 1e4, 2) << "e-4 | " << fmt(b.hauteur, 0) << " | " << fmt(brume::visibilite(b) / 1000, 1)
           << " | " << fmt(100 * brume::contraste(b, 200, 2, 2), 1) << " % | " << fmt(100 * brume::contraste(b, 1000, 2, 2), 1)
-          << " % | " << fmt(100 * brume::contraste(b, 5000, 2, 2), 1) << " %\n";
+          << " % | " << fmt(100 * brume::contraste(b, 2000, 2, 2), 1) << " % | " << fmt(100 * brume::contraste(b, 5000, 2, 2), 1) << " %\n";
     }
     g_b = EtatBanc{}; g_b.actif = true;
     const double t = 2000;

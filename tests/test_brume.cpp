@@ -3,6 +3,7 @@
 // brumeux), la hauteur (moins de brume vers les sommets, intégrale exacte) et la continuité de la formule.
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include "../src/render/atmosphere_brume.h"
 
 using namespace wfs;
@@ -13,15 +14,23 @@ static void verifier(bool ok, const char* quoi, double v) {
 }
 
 int main() {
-    // RG-02 : Côte d'Azur par beau temps, œil et objet au niveau de la route (2 m)
-    for (const char* c : {"plage", "ville", "campagne", "circuit"}) {
+    // RG-02 (corrigée par le PO le 2026-11-10, option A) : visibilité d'été par carte (± 10 %), œil et objet à 2 m ;
+    // bornes de la Corniche, les autres cartes en proportion de leur visibilité (moins de brume : bornes hautes seules)
+    struct Cas { const char* carte; double V; };
+    for (const Cas& k : {Cas{"plage", 15000}, Cas{"ville", 18000}, Cas{"circuit", 20000}, Cas{"campagne", 22000}}) {
+        const char* c = k.carte;
         const brume::Reglage b = brume::reglageCarte(c);
         std::printf("-- carte %s : β0 = %.3g m⁻¹, H = %.0f m, visibilité %.1f km\n", c, b.beta0, b.hauteur, brume::visibilite(b) / 1000);
-        verifier(1 - brume::contraste(b, 200, 2, 2) <= 0.03, "moins de 3 % de contraste perdu à 200 m", 1 - brume::contraste(b, 200, 2, 2));
-        const double p1 = 1 - brume::contraste(b, 1000, 2, 2), p5 = 1 - brume::contraste(b, 5000, 2, 2);
-        verifier(p1 >= 0.10 && p1 <= 0.20, "10 à 20 % de contraste perdu à 1 km", p1);
-        verifier(p5 >= 0.40 && p5 <= 0.60, "40 à 60 % de contraste perdu à 5 km", p5);
-        verifier(brume::visibilite(b) >= 15000 && brume::visibilite(b) <= 35000, "visibilité de 15 à 35 km", brume::visibilite(b));
+        verifier(std::fabs(brume::visibilite(b) / k.V - 1) <= 0.10, "visibilité de la carte à ± 10 %", brume::visibilite(b));
+        const double p02 = 1 - brume::contraste(b, 200, 2, 2), p1 = 1 - brume::contraste(b, 1000, 2, 2);
+        const double p2 = 1 - brume::contraste(b, 2000, 2, 2), p5 = 1 - brume::contraste(b, 5000, 2, 2);
+        verifier(p02 <= 0.05, "au plus 5 % de contraste perdu à 200 m", p02);
+        verifier(p1 <= 0.25, "au plus 25 % de contraste perdu à 1 km", p1);
+        verifier(p2 <= 0.45 && p5 <= 0.75, "au plus 45 % à 2 km et 75 % à 5 km", p5);
+        if (!std::strcmp(c, "plage")) {
+            verifier(p2 >= 0.35, "Corniche : 35 à 45 % de contraste perdu à 2 km", p2);
+            verifier(p5 >= 0.60, "Corniche : 60 à 75 % de contraste perdu à 5 km", p5);
+        }
         // hauteur : un sommet à 400 m au-dessus de la route reçoit moins de brume qu'un objet au même niveau
         verifier(brume::part(b, 3000, 2, 400) < brume::part(b, 3000, 2, 2), "sommet moins voilé que la plaine à 3 km", brume::part(b, 3000, 2, 400));
         // œil en hauteur (vue de 40 m) : moins de brume qu'au sol, jamais plus

@@ -1,0 +1,14 @@
+WFS-381 — brume au loin (perspective atmosphérique)
+
+== réglage par carte (RG-04) et contraste restant calculé, œil et objet au même niveau (RG-02) ==
+  carte | β0 (m⁻¹) | H (m) | visibilité (km) | contraste restant 200 m | 1 km | 2 km | 5 km
+  plage | 2.55e-4 | 800 | 15.3 | 95.0 % | 77.5 % | 60.1 % | 28.0 %
+  ville | 2.17e-4 | 1000 | 18.0 | 95.8 % | 80.5 % | 64.8 % | 33.9 %
+  campagne | 1.78e-4 | 1200 | 22.0 | 96.5 % | 83.7 % | 70.1 % | 41.1 %
+  circuit | 1.96e-4 | 1200 | 20.0 | 96.2 % | 82.2 % | 67.6 % | 37.6 %
+
+== coût GPU en Basse (jour, scène figée, moyenne des 120 dernières images, horodatages Vulkan) ==
+  vue | ms GPU passe de scène | ms GPU ombre | ms par image (mur)
+  corniche | 188.78 | 1.70 | 223.3
+  campagne | 228.73 | 1.68 | 259.9
+  ville | 292.10 | 1.68 | 316.2
