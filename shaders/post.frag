@@ -118,10 +118,13 @@ void main() {
         vec3 s = texture(hdr, uvS + (vec2(i, j) * 2.0 - 3.5) * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels
         glow += max(min(s, vec3(24.0)) - 2.5, 0.0);
     }
-    c += glow / 16.0 * 0.35;
+    // WFS-382 (RG-03, ANO-222) : la nuit (params.w ≠ 0), halo et bloom plafonnés : l'éclat d'un phare vu de face reste autour de
+    // ses optiques (≤ 0,35 ajouté, loin du blanc après ACES) au lieu d'une tache blanche qui mange l'image ; le jour, rien ne change
+    const vec3 PLAFOND_ECLAT_NUIT = vec3(0.35);
+    c += pc.params.w != 0.0 ? min(glow / 16.0 * 0.35, PLAFOND_ECLAT_NUIT) : glow / 16.0 * 0.35;
     // bloom (WFS-15, WFS-100 : UnrealBloomPass du jeu web) : chaîne « dual filter » de 5 niveaux calculée avant cette passe
     // (Renderer::passesBloom) ; force 0 (qualité basse, GPU logiciel) : rien n'est lu, image identique
-    if (pc.params.z > 0.0) c += texture(bloomTex, vUv).rgb * pc.params.z;
+    if (pc.params.z > 0.0) { vec3 b = texture(bloomTex, vUv).rgb * pc.params.z; c += pc.params.w != 0.0 ? min(b, PLAFOND_ECLAT_NUIT) : b; }   // WFS-382
     c = aces(c);
     vec2 q = vUv - 0.5;
     c *= 1.0 - dot(q, q) * 0.35;

@@ -3,7 +3,7 @@
 //   - ambiance (js/world/maps.js, envFor nuit) : ciel, hémisphère #46327a / #08080e, lune #8a96ff, brouillard linéaire 40-540 m ;
 //   - phares du joueur : deux feux de croisement réels (WFS-218, phares.h ; avant : projecteur unique du web, 0xfff1dd,
 //     portée 170 m, angle 0,7) ; feu de recul (PointLight 0xe8eeff, 2,2 la nuit, 14 m) ;
-//   - tache des phares (buildBeam / updateBeam) : grille 17 × 11 qui épouse la route, deuxième passage sans éclairage public ;
+//   - tache des phares du jeu web (buildBeam / updateBeam) : retirée par WFS-382 (doublait la lumière des deux feux) ;
 //   - lampadaires (js/world/scene.js, « éclairage des lampadaires proches ») : 4 lumières au plus sur les plus proches,
 //     halo de la tête et flaque de lumière au sol (poolQuad de js/world/decor.js) ;
 //   - route mouillée (WFS-16) : nuit en ville et sur la corniche ; flaques et reflets temps réel en qualité haute.
@@ -36,11 +36,7 @@ vec3 linHex(uint32_t h) {
 }
 vec3 lin(vec3 c) { return {std::pow(c.x, 2.2f), std::pow(c.y, 2.2f), std::pow(c.z, 2.2f)}; }
 
-// BEAM (js/cars/models.js) et rangées de la grille (js/cars/player.js)
-constexpr float BEAM_LEN = 110.f, BEAM_WID = 26.f;
 constexpr float HALO_TETE_M = 0.6f;   // WFS-356 (RG-05) : rayon du halo des têtes de lampe de la Ville (m), ≤ 3 fois la tête (0,36 m de profondeur)
-constexpr float BEAM_ROWS[] = {0, 1, 2.5f, 4.5f, 7, 10, 14, 19, 25, 32, 40, 50, 61, 73, 86, 100, 110};
-constexpr int NR = 17, NC = 11;
 constexpr int LAMPES_MAX = 4;   // RG-05 : 4 lumières ponctuelles au plus
 
 class Nuit : public System {
@@ -225,22 +221,9 @@ public:
         if (!actif(g)) { if (!g.sceneDediee && g.ecran != Ecran::Garage) feuxJoueur(r, g); return; }   // WFS-109 : feux du joueur le jour
         Track& t = *g.track;
         const Player& p = *g.player;
-        // ---------- RG-03 : tache des phares sur la route ----------
-        const double yaw = p.heading + p.spinYaw, cy = std::cos(yaw), sy = std::sin(yaw);
-        const double latM = p.playerX * RW, front = g.car->d.L / 2 - 0.3;
-        vec3 pt[NR][NC];
-        for (int i = 0; i < NR; i++) for (int c = 0; c < NC; c++) {
-            const double dd = front + BEAM_ROWS[i], x = ((double)c / (NC - 1) - 0.5) * BEAM_WID;
-            const TrackPoint q = t.point(p.dist + (dd * cy - x * sy) / M, latM + x * cy + dd * sy);
-            pt[i][c] = {(float)q.x, (float)q.y + 0.07f, (float)q.z};
-        }
-        Vertex v[(NR - 1) * (NC - 1) * 4];
-        int n = 0;
-        auto sommet = [&](int i, int c) { const vec3& q = pt[i][c]; v[n++] = {q.x, q.y, q.z, 0, 1, 0, (float)c / (NC - 1), BEAM_ROWS[i] / BEAM_LEN}; };
-        for (int i = 1; i < NR; i++) for (int c = 1; c < NC; c++) { sommet(i - 1, c - 1); sommet(i - 1, c); sommet(i, c); sommet(i, c - 1); }
-        const int nq = n / 4;
-        r.drawQuads(v, nq, r.poolMat);
-        if (lampadaires().empty() || campagne_) r.drawQuads(v, nq, r.poolMat);   // sans éclairage public, et routes de campagne (WFS-225) : deuxième passage (≈ 4× au cœur)
+        // WFS-382 (RG-01, RG-04, ANO-222) : plus de « tache des phares » du jeu web (grille de 110 × 26 m en mélange multiplicatif,
+        // dessinée deux fois en Campagne et sans éclairage public) : elle s'ajoutait aux deux vrais feux de croisement (WFS-218) et
+        // faisait le cône blanc brûlé devant la voiture. La chaussée n'est plus éclairée que par les deux feux (phares.h).
         // ---------- RG-05 : têtes de lampe et flaques de lumière (poolQuad, MAT.pool) ----------
         const auto& L = lampadaires();
         const int64_t len = (int64_t)t.segmentCount(), aP = (int64_t)std::floor(p.dist / SEG);
@@ -275,7 +258,8 @@ public:
     void feuxJoueur(Renderer& r, const GameView& g) {
         const Player& p = *g.player;
         stopK_ = feux_modele::transition(stopK_, p.braking, tFeux_ < 0 ? -1.f : (float)(g.time - tFeux_)); tFeux_ = g.time;
-        FeuxVoiture fx; fx.nuit = actif(g); fx.joueur = true;   // WFS-226 : ses phares sont les deux projecteurs ci-dessus fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;
+        FeuxVoiture fx; fx.nuit = actif(g); fx.joueur = true;   // WFS-226 : ses phares sont les deux projecteurs ci-dessus
+        fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;   // WFS-382 : ligne recollée au commentaire (feux stop et recul du joueur)
         r.feuxProchaineVoiture(fx);
     }
     float stopK_ = 0; double tFeux_ = -1;

@@ -26,9 +26,13 @@ constexpr float RELEVE_PENTE = 0.26795f;     // RG-01 : tan 15°, remontée côt
 constexpr float EPAULE_DEG = 1.0f;           // RG-01 : haut de la remontée côté droit (à confirmer)
 constexpr float TRANSITION_DEG = 0.3f;       // RG-02 : bord doux de la coupure (±0,3°)
 constexpr float RESIDU = 0.015f;             // RG-01 : lumière parasite au-dessus de la coupure (B50L)
-constexpr float NOYAU_DEG = 1.2f, CHUTE_DEG = 2.5f;   // cœur sous la coupure, puis chute vers le premier plan
+// WFS-382 (RG-01, ANO-222) : plateau jusqu'à −1,5°, puis chute en 1 / (1 + t^1,6), t = (−el − 1,5) / 0,85 : ≈ 0,29 à −3°, 0,09 à −5°,
+// 0,025 à −10°, 0,012 à −15° de la crête (R112 / R149 : 50V ≥ 5 100 cd, 25L / 25R ≥ 1 700 cd, zone I ≤ 2 × 50R ; mesures de
+// feux LED de série, avis expert-realisme-3d du 2026-11-10). Avant : 1 / (1 + t²) avec 1,2° et 2,5° : premier plan trop clair
+// (≈ 30 fois la chaussée à 30 m, sol brûlé devant la voiture) et crête trop basse (21 000 cd au lieu de 30 000 à 45 000)
+constexpr float NOYAU_DEG = 1.5f, CHUTE_DEG = 0.85f, CHUTE_EXPOSANT = 1.6f;
 constexpr float LARGEUR_DEG = 18.f, BORD_DEBUT_DEG = 60.f, BORD_FIN_DEG = 80.f;   // étalement en azimut
-constexpr float INTEGRALE_SR = 0.07185f;     // ∫ intensiteRelative cos(el) dΩ (sr), vérifiée par tests/test_phares.cpp
+constexpr float INTEGRALE_SR = 0.05005f;     // ∫ intensiteRelative cos(el) dΩ (sr), vérifiée par tests/test_phares.cpp (WFS-382 : 0,07185 avant)
 constexpr float FLUX_HALOGENE_LM = 1500.f, FLUX_LED_LM = 3000.f;   // lum.phare_halogene / lum.phare_led.intensite (typique)
 constexpr float PORTEE_M = 200.f;            // fenêtre de calcul (au-delà : < 0,3 lx, effacé par le brouillard)
 // teintes (rgb linéaire, luminance 1) : corps noir 3500 K (halogène, 3400-4000 K) et 5700 K (LED, 5000-6000 K),
@@ -41,7 +45,7 @@ inline float lisse(float a, float b, float x) { const float t = std::clamp((x - 
 inline float intensiteRelative(float el, float az) {
     const float lim = COUPURE_DEG + std::min(std::max(az, 0.f) * RELEVE_PENTE, EPAULE_DEG - COUPURE_DEG);
     const float coupure = 1.f - (1.f - RESIDU) * lisse(lim - TRANSITION_DEG, lim + TRANSITION_DEG, el);
-    const float t = (-el - NOYAU_DEG) / CHUTE_DEG, vertical = el > -NOYAU_DEG ? 1.f : 1.f / (1.f + t * t);
+    const float t = (-el - NOYAU_DEG) / CHUTE_DEG, vertical = el > -NOYAU_DEG ? 1.f : 1.f / (1.f + std::pow(t, CHUTE_EXPOSANT));
     const float a = az / LARGEUR_DEG, horizontal = (1.f - lisse(BORD_DEBUT_DEG, BORD_FIN_DEG, std::abs(az))) / (1.f + a * a * a * a);
     return vertical * horizontal * coupure;
 }

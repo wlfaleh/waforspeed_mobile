@@ -1320,7 +1320,9 @@ constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du je
 constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
 constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
 constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
-constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.30f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.35f;
+// WFS-382 (RG-03, ANO-222) : lueur des phares ramenée de 0,30 m (disque de 60 cm) à 0,12 m (≈ 2 fois la glace) et à 5 % du cœur :
+// vu au-dessus de la coupure, un feu de croisement n'envoie que 350 à 625 cd (R112 : B50L, zone III), pas l'éclat du faisceau
+constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.12f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.12f;
 constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
 constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
