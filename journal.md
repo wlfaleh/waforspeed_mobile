@@ -2196,6 +2196,18 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 18:05:36 — WFS-414 : Giulia ajoutée (po-scrum-master)
 - Ordre de l'utilisateur : « Guiliva aussi » (Giulia). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3, Giulia ; les 11 autres volants inchangés.
 
+### 2026-11-10 17:15:46 — WFS-413 : branche créée, analyse du code des phares (Claude, agent devartiste 3 (01UY1Vv59N))
+- Branche `feature/waforspeed-413` créée depuis `main` ; lecture de `model_loader.cpp` (feux), `nuit.cpp`, `Renderer::feuxVoiture`, `phares.h`, `feux_modele.*`.
+
+### 2026-11-10 17:51:29 — WFS-413 : optiques avant mesurées sur les 17 voitures, glace allumée, plus de halos ronds (Claude, agent devartiste 3 (01UY1Vv59N))
+- Cause (ANO-240) : lumière et halos partaient d'un point calculé (3/4 de la demi-largeur des pièces « phare », pare-chocs) : 24 à 58 cm du vrai phare selon la voiture.
+- RG-01 / RG-04 : optiques repérées voiture par voiture sur le modèle vu de face (rendu orthographique coloré par matériau, contrôle à l'œil des 17) : table `PHARES_AVANT` de `src/render/correctifs_voitures.h` (matériaux « lampe » et « glace », boîte en miroir, nombre de matériaux vérifié). `feux_modele::mesurerOptiques` : centre de chaque glace (aire vue de face), sa normale, taille de la lampe. Plus de repli aux proportions du jeu web pour ces voitures.
+- RG-02 : feux de croisement du joueur (`nuit.cpp`) partis du centre de chaque glace, 1 cm derrière elle ; voitures du trafic / police (`phares::noterAutre`) : milieu des deux glaces mesurées. Axe, coupure, intensités inchangés.
+- RG-03 : `feux_modele::marquerPhares` sort les triangles de la lampe en pièces « phare » (`PIECE_PHARE` = 3), allumées la nuit par `Renderer::draw` (même émission que l'ancien MAT_HEAD) ; drapeau MAT_HEAD d'origine ignoré sur ces voitures (deux-roues inchangés). Halos `PHARE_COEUR` / `PHARE_LUEUR` retirés de `Renderer::feuxVoiture`. Basse au loin : 5e groupe « optiques » (sinon plus aucune lumière au loin sans les halos).
+- Accroches annoncées : `shaders/eclairage.glsl` 2 lignes (masquage « boîtier » du feu de croisement à moins de 40 cm devant la glace, accord du PO du jour : sinon la lampe éclairait son propre pare-chocs) ; `renderer.h` (champs `phare[2]`, `phareNormale[2]`, `phares` de `FeuxModele`, 3 lignes) ; `desktop_main.cpp` 1 ligne (banc `phares-optiques`) ; `Renderer::draw` 2 lignes (pièce phare allumée, `pieceFeuArriere`).
+- RG-07 : feux arrière, stop, recul non touchés (`pieceFeuArriere` garde exactement les valeurs 1 et 2).
+- Test : `tests/test_phares_optiques.cpp` (cas construit à 2 mm ; 17 voitures : lumière ≤ 1,0 cm de l'optique, ancien point ≥ 24 cm) : OK.
+
 ### 2026-11-10 18:26:10 — WFS-413 : PR #339 ouverte, lead dev appelé (Claude, agent devartiste 3 (01UY1Vv59N))
 - PR #339 (`feature/waforspeed-413`, synchronisée avec `main`), 15 captures avant / après dans `qa/pr/WFS-413/` ; TACHES 🔀 En PR, suivi-pr 🆕.
 

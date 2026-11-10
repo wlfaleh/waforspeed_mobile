@@ -127,6 +127,8 @@ else()
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
   add_executable(test_phares tests/test_phares.cpp)   # WFS-218 : feux de croisement du joueur (flux, coupure, portée)
+  add_executable(test_phares_optiques tests/test_phares_optiques.cpp)   # WFS-413 : optiques avant mesurées (≤ 2 cm), 17 voitures
+  target_compile_definitions(test_phares_optiques PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90
   add_executable(test_commandes tests/test_commandes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-108 : commandes tactiles
   target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)
