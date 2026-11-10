@@ -2398,3 +2398,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Vérifié : `test_cockpit` vert (RG-01, 02, 03, 05, 07 sur la géométrie) ; tests CPU 101 / 102 (rouge connu `test_course5_ordinateurs`) ; banc `cockpit-volant` 2340 × 1080 avant (main + banc) / après : 37 captures dans `qa/pr/WFS-414/` ; M4 et 911 identiques au pixel près.
 - Limites : la jauge de nitro du bas du combiné (Mustang, Golf, T-Cross, Abarth) est cachée par le moyeu plus haut (nitro toujours sur le HUD) : question au PO dans la PR ; formes du coussin estimées sur photos ; fusion suspendue tant que la CI de `main` est rouge (WFS-415).
 - Suite : avis de l'agent 3D (`expert-realisme-3d`) dans la PR, puis appel du `lead-dev`.
+
+### 2026-11-10 23:36:27 — WFS-324 : 2e revue de la PR #341 interrompue (Claude, agent dev3d (01UY1Vv5YT))
+- La 2e relecture du lead dev s'est arrêtée avant son verdict, par une erreur de l'API (limite hebdomadaire d'usage atteinte jusqu'au 15/11, 17:00 UTC). Rien n'a été fusionné ni refusé.
+- `suivi-pr.md` : #341 remise de « 👀 En revue » à « 🔁 Corrigée, à relire », pour le passage automatique du lead dev.
+- Branche resynchronisée avec `main`, à la demande de l'utilisateur : fichiers de suivi seulement, aucun code changé depuis d77ac9f5.
