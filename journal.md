@@ -2154,3 +2154,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Points de la 1re revue corrigés : volant de la M4 (boutons des branches gardés, pas d'agrafe ; `test_cockpit` sur la vraie condition) ; captures du garage complet, des faces, du sens inverse de la Ville.
 - Vérifié par le lead dev : construction, 100 tests un par un → 99 verts, seul rouge `test_course5_ordinateurs` (circuit 3/8, accepté par RG-11, WFS-394) ; licences 17 voitures, 0 manque ; logos vert. 73 captures ouvertes.
 - Statut : 🟡 À valider (utilisateur) (corrige ANO-209). Pour le PO : traces de forme sans marque (disque noir de la Golf, plaques jaunes de la SF90, relief du capot de la Corsa) à donner aux retouches de forme WFS-364 à 368 ; WFS-412 à faire vite (la CI de `main` s'arrêtera sur le rouge connu).
+
+### 2026-11-10 17:30:59 — WFS-404 : fin de session (Claude, agent devartiste (01UY1Vv2ReCX))
+- PR #337 fusionnée par le lead dev (squash deb37c22), ticket 🟡 À valider (utilisateur). Session terminée : aucun autre ticket demandé (un seul sujet par session).
+- Transmis au PO : traces de forme sans marque (Golf, SF90, Corsa) pour WFS-364 à 368 ; WFS-412 urgent (tests_cpu.sh) ; lire le `unzip -l` de l’APK de main (sans a45, elantra, x5).
