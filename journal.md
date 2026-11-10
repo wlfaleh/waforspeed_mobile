@@ -2195,6 +2195,14 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-10 18:05:36 — WFS-414 : Giulia ajoutée (po-scrum-master)
 - Ordre de l'utilisateur : « Guiliva aussi » (Giulia). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3, Giulia ; les 11 autres volants inchangés.
+
+### 2026-11-10 18:26:10 — WFS-413 : PR #339 ouverte, lead dev appelé (Claude, agent devartiste 3 (01UY1Vv59N))
+- PR #339 (`feature/waforspeed-413`, synchronisée avec `main`), 15 captures avant / après dans `qa/pr/WFS-413/` ; TACHES 🔀 En PR, suivi-pr 🆕.
+
+### 2026-11-10 18:28:40 — WFS-406 : PR #338 refusée par le lead dev (lead-dev)
+- Relu au commit 0d391b5f : toutes les captures ouvertes, tout le diff lu ; construction et tests refaits sur la branche synchronisée avec main : 100/101 verts (seul rouge : `test_course5_ordinateurs`, rouge connu de WFS-404 / WFS-394) ; `verifier_licences.py` 0 manque ; banc `credits` 0 erreur ; anciens noms : 0.
+- Écran Crédits et noms (Norvik Lume, Draven Vantor GT, Alvar Selene TS) conformes à la demande ; aucune régression visible.
+- **Refus** : (1) BLOQUANT, `tools/qa/verifier_licences.py` ne vérifie plus que le fichier de licence de chaque voiture, de la police (OFL) et des personnages existe dans `assets/licences/` (contrôle de la CI affaibli) : à remettre, avec les nouvelles sections ; (2) journal du développeur : « 101/101 » à corriger en 100/101. Revue écrite dans la PR (en commentaire : même compte GitHub).
 ### 2026-11-10 16:17:42 — WFS-406 : écran Crédits, crédits complets, 3 voitures renommées (Claude, agent dev (01UY1Vv5vk))
 - **Fait** : écran « Crédits » (`src/ui/credits.*`, `credits_texte.cpp`) ouvert par un bouton « CRÉDITS » en bas à droite du menu (même style que « Réglages », aucun bouton existant changé), texte défilant au doigt, « Retour » au menu ; contenu lu dans `licences/CREDITS.txt` de l'APK (une seule source). RG-06 : « Politique de confidentialité : <adresse> » seulement si `confidentialite_url` (neuf, vide par défaut) est rempli.
 - **Crédits (RG-02, RG-03, RG-07)** : `tools/qa/verifier_licences.py` fabrique `CREDITS.txt` et `store/credits.md` sans aucun titre d'origine ni marque (noms inventés de `configgame.json`, auteur, licence et lien) : voitures, 3 deux-roues (neshallads, DevanirGrau, valvetin), personnes, animaux (MIT du goéland avec son texte), routes (Poly Haven), sons (« gros » : titre et auteurs Mike Koenig, Stephan, SpeedJunkie), police, stb, **android_native_app_glue (Apache 2.0, texte complet)**. Le script vérifie aussi que chaque actif livré est crédité et qu'aucune marque de `cars.h` ou des deux-roues n'y est (essai : « Volkswagen Golf, Kawasaki Ninja, GT86 » ajoutés à la main → 5 manques). Il lit `VOITURES_RETIREES` de WFS-404 quand elle existe.
