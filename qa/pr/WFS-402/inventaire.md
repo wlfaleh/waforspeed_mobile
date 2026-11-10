@@ -17,14 +17,18 @@ fenêtre d'habitation 0,80-1,40 × 1,15-2,15 m, porte-fenêtre ≥ 2,15 m ; port
 (référentiel `archi.porte_entree.*`) ; porte d'immeuble 1,0-1,4 × 2,2-3,0 m, cochère ≤ 2,5 m ; 4 modèles de fenêtre et 4 de porte par
 style tirés ; deux bâtiments voisins jamais identiques ; volets fermés ou entrouverts : 21,5 à 22,2 % selon le style (RG-03 : 10 à 30 %).
 
-## 2. Bâtiments hors du kit : état constaté (décision du PO demandée)
+## 2. Bâtiments hors du kit : renvoyés à WFS-410 et WFS-411 (décision du PO, 2026-11-10)
 
-| Carte | Bâtiments | État des ouvertures | Proposition |
+Le critère « 0 bâtiment sans porte ni fenêtres réelles » de WFS-402 vaut pour les bâtiments du kit (décision du PO). Les bâtiments
+ci-dessous sont traités par **WFS-410** (lieux hors kit de la Corniche et de la Ville, église de la Campagne) et **WFS-411** (maisons
+de la Neige au kit, style « chalet »), qui réutiliseront `ouvertures::baieComplete` (fonction publique livrée et testée ici).
+
+| Carte | Bâtiments | État des ouvertures | Suite |
 |---|---|---|---|
-| Corniche | lieux de `plage.cpp` : casino, café, galerie, bars de plage, fête | fenêtres en rectangles sombres peints à plat | US séparée « ouvertures hors kit », réutilise `archi_ouvertures` |
-| Ville | lieux propres (casino, centre commercial, garage) | à vérifier un par un | même US |
-| Campagne | église (`T_CHURCH`) : boîte et cône | **aucune** porte ni fenêtre | même US (vraie église modélisée) |
+| Corniche | lieux de `plage.cpp` : casino, café, galerie, bars de plage, fête | fenêtres en rectangles sombres peints à plat | WFS-410 |
+| Ville | lieux propres (casino, centre commercial, garage) | à vérifier un par un | WFS-410 |
+| Campagne | église (`T_CHURCH`) : boîte et cône | **aucune** porte ni fenêtre | WFS-410 (vraie église modélisée) |
 | Campagne | fermes et hangars (WFS-372), commerces du village | fermes : fenêtres avec dormant et volets (WFS-372) ; commerces : vitrines | rien |
 | Grand Prix | stands, bar d'accueil, tour, stands de l'espace fans | modélisés par WFS-373 (vitrages, rideaux métalliques) | rien |
-| Neige (paquet `noel-test`) | ≈ 60 « maison » de `decor.txt` (27 + 20 + 13) | boîtes de couleur et toit, **aucune** ouverture | US séparée (style « chalet » du kit, zone E14) |
-| Campagne, Corniche | pignons et arrières des maisons du kit | murs aveugles (le kit les traite en mitoyens) | même US (fenêtres des pignons isolés) |
+| Neige (paquet `noel-test`) | ≈ 60 « maison » de `decor.txt` (27 + 20 + 13) | boîtes de couleur et toit, **aucune** ouverture | WFS-411 (style « chalet » du kit) |
+| Campagne, Corniche | pignons et arrières des maisons du kit | murs aveugles (le kit les traite en mitoyens) | à signaler au PO pour WFS-410 (fenêtres des pignons isolés) |
