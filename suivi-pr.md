@@ -15,5 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #327 | WFS-372 | Claude, agent dev3d 5 (01UY1Vv5G4) | 🆕 À relire (attend d'abord « Avis agent 3D : VALIDÉ », E15) | — | 01:14 |
 | #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | 🆕 À relire (E15 : avis de l'agent 3D demandé) | 41a95f40 | 01:08 |
 | #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | ↩️ Retour lead dev | bcbd0d83 | 00:30 |
