@@ -1963,3 +1963,6 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 
 ### 2026-11-10 14:08:17 — WFS-324 (rétroviseurs) prêt en parallèle de WFS-404 (po-scrum-master)
 - Question de l'utilisateur sur les rétroviseurs : c'est WFS-324 (P1). Décision du PO : il part en même temps que WFS-404 (zones séparées), dans une session `@devartiste` à part.
+
+### 2026-11-10 14:15:33 — Ordre des 50 prochaines tâches fixé par l'utilisateur (po-scrum-master)
+- L'utilisateur valide la liste des 50 tâches du PO et monte **WFS-324 (rétroviseurs) en 2e**, juste après WFS-404 (en parallèle, zones séparées). Ordre écrit en bandeau de `TACHES.md` ; publication possible après les tâches 1 à 8.
