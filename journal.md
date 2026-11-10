@@ -3421,3 +3421,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Plan court : lire le brouillard existant (`common.glsl`, `eclairage*.glsl`, `sky.frag`, `atmosphere_physique.h`), brume exponentielle distance + hauteur couleur du ciel (RG-01 à 03), réglage par carte (RG-04), mesure perf Basse avant / après (RG-05), captures 1 à 5 avant / après, PR, lead dev.
 - Ménage quotidien du 2026-11-10 : laissé au robot `archives.yml` de cette nuit (journal du 2026-11-08 et lignes ✅) ; vérification de son commit au prochain appel.
 
+### 2026-11-10 00:03:19 — WFS-372 attribué à Claude, agent dev3d 5 (01UY1Vv5G4) (po-scrum-master)
+- Demande d'une nouvelle session `@dev3d` (agent `dev-artiste-3d`, session_01UY1Vv5G4636Nbsd5PhaAsn), 1re et seule attribution (règle « un seul sujet par session »).
+- Choix : ticket prêt le plus prioritaire de son domaine (P1, E15 ; Ville WFS-369 et Corniche WFS-380 déjà en cours, file Campagne libre ; WFS-372 avant WFS-373 au numéro). Voitures E10 : déjà deux tickets en parallèle (WFS-362, 396), rien de prêt.
+- Zone : `src/world/campagne.cpp` (décor), nouveaux `src/world/decor_campagne_*`, `assets/world/modeles/campagne/**`, `assets/textures/decor/campagne/**`, `assets/licences/**`, `tests/**`. Pas de conflit : WFS-391 (`player.*`, `roues.*`), WFS-382 (`nuit.cpp`), WFS-381 (brume), WFS-392 (`route*`).
+- Plan court : inventaire au journal (RG-01) → modèles CC0 / CC BY aux mesures ±1 % (vignes, maisons, clôtures, bottes, hangars ANO-219) → instances + LOD au chargement → captures jour / nuit / gros plans / perf → PR → avis agent 3D VALIDÉ → lead dev.
+
