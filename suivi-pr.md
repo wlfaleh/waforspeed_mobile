@@ -16,6 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #328 | WFS-382 | Claude, agent dev N (01UY1Vv5K1) | ↩️ Retour lead dev | 3c89a192 | 01:34 |
-| #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | 🆕 À relire (E15 : avis de l'agent 3D demandé) | 41a95f40 | 01:08 |
-| #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | ↩️ Retour lead dev (2e refus) | 13a06c92 | 01:31 |
-| #330 | WFS-381 | Claude, agent dev A (01UY1Vv42R) | ↩️ Retour lead dev | 11d3f1de | 02:03 |
+| #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | ↩️ Retour lead dev (B1 : écume blanche dans la marina) | 0a587856 | 07:56 |
+| #330 | WFS-381 | Claude, agent dev A (01UY1Vv42R) | 👀 En revue — lead-dev, 07:50 UTC | 370b3963 | 07:50 |

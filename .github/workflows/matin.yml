@@ -7,26 +7,27 @@
 #  6-7. APK et AAB, publication dans la Release « apercu » et notification « APK du matin » ;
 #  21. émulateur Android sur cet APK (parcours mvp) : à titre d'information la première semaine (un nouvel essai s'il échoue,
 #      jamais rouge), photos et journal dans la Release « simulateur-matin » ;
-#  22. publication de toutes les captures dans la Release « apercu » (une seule publication : publier_apercu.sh retire les captures
-#      absentes du run) ;
+#  22. publication des captures dans la Release « captures-matin », une archive par groupe (WFS-352) ;
 #  23. statuts : robot statuts.yml (tickets 🟣 du run en ✅ si le run est vert) ;
-#  24. message « Recette prête » pour la QA (issue « 🧪 Recette QA du matin », mention de l'utilisateur).
+#  24. message « Recette prête » pour la QA (issue « 🧪 Recette QA du matin », mention de l'utilisateur) ; sans les captures
+#      du jour, le message dit « captures du jour manquantes » et où lire (WFS-384, RG-06).
 # Un écart (code 3), un test rouge ou une partie absente rend le run rouge. Artefacts gardés 30 jours.
-# GitHub ne connaît que l'heure UTC et ses réveils peuvent arriver des heures en retard : WFS-340 (RG-C, validé par l'utilisateur,
-# 2026-11-09) : six réveils (02:00 à 07:00 UTC) ; le job « heure » lance les bancs au premier réveil entre 04:00 et 10:59 heure de
-# Paris s'ils n'ont pas déjà tourné ce jour-là (date de Paris, lancement à la main compris : jamais deux fois le même jour) ; les
-# autres réveils ne font rien (robot des statuts : run sauté = aucun statut changé). Lancement à la main : toujours.
+# GitHub ne connaît que l'heure UTC et ses réveils peuvent arriver des heures en retard, ou pas du tout : WFS-340 (RG-C) puis
+# WFS-384 (RG-01 à RG-03) : réveils à 04:00 heure de Paris, puis un réveil de secours chaque heure jusqu'au soir ; le job
+# « heure » (tools/qa/heure_matin.sh) lance les bancs au premier réveil à partir de 04:00 heure de Paris, QUELLE QUE SOIT L'HEURE,
+# s'ils n'ont pas déjà tourné ce jour-là (date de Paris, lancement à la main compris : jamais deux fois le même jour) ; les autres
+# réveils ne font rien (robot des statuts : run sauté = aucun statut changé). Bancs partis après 07:00 : la QA est prévenue
+# tout de suite dans l'issue (job « retard », RG-06). Lancement à la main : toujours.
 name: Bancs du matin (captures, réalisme, QA)
 
 on:
   schedule:
     - cron: '0 2 * * *'   # 04:00 à Paris en heure d'été (UTC+2)
     - cron: '0 3 * * *'   # 04:00 à Paris en heure d'hiver (UTC+1)
-    # WFS-340 (RG-C) : réveils de secours ; GitHub a déjà lancé les réveils avec ~6 h de retard (2026-11-08 : 08:06 et 09:43 UTC)
-    - cron: '0 4 * * *'
-    - cron: '0 5 * * *'
-    - cron: '0 6 * * *'
-    - cron: '0 7 * * *'
+    # WFS-340 / WFS-384 : réveils de secours, chaque heure de 03:23 à 20:23 UTC (04:23 à 21:23 ou 22:23 à Paris) : GitHub a lancé
+    # les réveils de 02:00-07:00 avec 6 à 14 h de retard (2026-11-08, 2026-11-09) et n'en a lancé aucun avant 07:40 UTC le
+    # 2026-11-10 ; minute 23 et non 00, l'heure pleine étant la plus chargée chez GitHub. Un réveil sans banc dure ~10 s.
+    - cron: '23 3-20 * * *'
   workflow_dispatch:
 
 permissions:
@@ -42,29 +43,20 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       lancer: ${{ steps.h.outputs.lancer }}
+      retard: ${{ steps.h.outputs.retard }}
       numero: ${{ steps.n.outputs.numero }}
     steps:
+      - uses: actions/checkout@v4
+      - name: Test du choix de l'heure et des messages à la QA (WFS-384)
+        run: python3 tools/qa/test_matin.py
       - id: h
-        name: Bancs du matin à lancer ? (entre 4 h et 11 h à Paris, une fois par jour)
+        name: Bancs du matin à lancer ? (à partir de 4 h à Paris, une fois par jour)
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          h=$(TZ=Europe/Paris date +%H); jour=$(TZ=Europe/Paris date +%F)
-          if [ "${{ github.event_name }}" != schedule ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Lancement à la main ($h h à Paris)"; exit 0; fi
-          if [ "$h" -lt 4 ] || [ "$h" -gt 10 ]; then echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : hors de la fenêtre 04:00-10:59, rien à faire"; exit 0; fi
-          # WFS-340 (RG-C) : un run du même jour (date de Paris) dont la compilation a tourné ou tourne encore = bancs déjà lancés
-          runs=$(gh api "repos/${{ github.repository }}/actions/workflows/matin.yml/runs?branch=main&per_page=30" \
-                 --jq '.workflow_runs[] | [.id, .created_at] | @tsv') || { echo "::error::liste des runs du matin illisible"; exit 1; }
-          deja=""
-          while IFS=$'\t' read -r id cree; do
-            [ -n "$id" ] && [ "$id" != "${{ github.run_id }}" ] || continue
-            [ "$(TZ=Europe/Paris date -d "$cree" +%F)" = "$jour" ] || continue
-            c=$(gh api "repos/${{ github.repository }}/actions/runs/$id/jobs?per_page=100" \
-                --jq '[.jobs[] | select(.name == "compilation") | (.conclusion // .status)] | first // ""') || { echo "::error::jobs du run $id illisibles"; exit 1; }
-            case "$c" in ''|skipped) ;; *) deja="$id ($c)"; break ;; esac
-          done <<< "$runs"
-          if [ -n "$deja" ]; then echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Bancs du matin déjà lancés aujourd'hui ($jour) : run $deja, rien à faire"
-          else echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris, premier réveil du $jour)"; fi
+          GH_REPO: ${{ github.repository }}
+          EVENEMENT: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: bash tools/qa/heure_matin.sh
       # numéro de construction de l'APK du matin = celui du dernier run de build.yml : le versionCode Android (build.gradle :
       # GITHUB_RUN_NUMBER) ne recule jamais, l'APK s'installe par-dessus celui de la veille et le suivant par-dessus lui
       - id: n
@@ -75,6 +67,24 @@ jobs:
           n=$(gh api "repos/${{ github.repository }}/actions/workflows/build.yml/runs?per_page=1" --jq '.workflow_runs[0].run_number' 2>/dev/null || true)
           case "$n" in ''|*[!0-9]*) echo "::error::numéro du dernier run de build.yml illisible ($n)"; exit 1;; esac
           echo "numero=$n" >> "$GITHUB_OUTPUT"; echo "APK du matin : construction $n (dernier run de build.yml)"
+
+  # WFS-384 (RG-06) : bancs partis après 07:00 (réveil de GitHub en retard) : la QA est prévenue tout de suite dans l'issue
+  retard:
+    name: message « bancs en retard » pour la QA
+    needs: heure
+    if: ${{ needs.heure.outputs.retard == 'oui' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: { contents: read, issues: write }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Message dans l'issue « 🧪 Recette QA du matin »
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: bash tools/qa/retard_matin.sh
 
   compilation:
     needs: heure
