@@ -21,8 +21,8 @@ Agent : Claude, agent dev N (01UY1Vv5K1)
   - banc `WFS_BANC=phares` (`bench_nuit.*`, accroche d'1 ligne dans `desktop_main.cpp`) : captures 1 à 4, police visible derrière le joueur, vue haute de la coupure, position à l'écran de la chaussée à 10, 30 et 50 m, deux témoins de jour ;
   - `tests/test_phares.cpp` : intensité à −3°, −5°, −10°, −15°, rapport sol à 5 m / 30 m (6 à 15), crête LED.
 - **Comment c'est vérifié** :
-  - `bash tools/qa/tests_cpu.sh build` : **96 tests réussis** ; `test_phares` : paire LED 5 m 12,6 lx, 30 m 1,44 lx, 50 m 0,29 lx, portée 65 m, œil d'en face à 50 m 0,18 lx (≤ 0,4 lx B50L) ;
-  - pixels saturés (≥ 250 sur les 3 canaux), image entière, avant → après : poursuite police 0,82 → **0 %**, police Basse 0,99 → **0 %**, poursuite face 0,35 → 0 %, Basse face 0,60 → 0 %, Ville face sous la pluie 0,80 → 0 % (RG-03 : ≤ 10 %) ; **toutes les captures « après » à 0 %** ;
+  - `bash tools/qa/tests_cpu.sh build` : **97 tests réussis** ; `test_phares` : paire LED 5 m 12,6 lx, 30 m 1,44 lx, 50 m 0,29 lx, portée 65 m, œil d'en face à 50 m 0,18 lx (≤ 0,4 lx B50L) ;
+  - pixels saturés (≥ 250 sur les 3 canaux), image entière, avant → après : poursuite police 0,83 → **0 %**, police Basse 1,02 → **0 %**, poursuite face 0,37 → 0 %, Basse face 0,65 → 0 %, Ville face sous la pluie 0,80 → 0 % (RG-03 : ≤ 10 %) ; **toutes les captures « après » à 0 %** ;
   - **RG-01, vue Capot en Campagne** (clarté moyenne 0-255 de la chaussée au milieu de la voie, points projetés par le banc) : main 10 m **225** (blanc de l'ancienne tache) / 30 m 123 / 50 m 96 → branche 10 m **130** / 30 m **112** / 50 m **72** : premier plan non brûlé, tache texturée jusqu'à 40-50 m, puis la coupure (≈ 65 m, h / tan 0,57°) ; vue haute au même endroit ;
   - neige de nuit, tache des phares : 7,56 → **0 %** saturés (RG-07 : ≤ 2 %) ; grain et traces de roues visibles ;
   - témoins de jour : **0 pixel changé** ;
@@ -34,7 +34,7 @@ Agent : Claude, agent dev N (01UY1Vv5K1)
   - la mesure de perf a été faite avant la pondération gaussienne du halo (16 poids constants par pixel dans la passe finale, la nuit), dont le coût est négligeable ;
   - sur les zooms des lampadaires, le petit rectangle clair qui reste est la **glace lumineuse du modèle de la tête de lampe** (`ville.cpp`, 0,90 × 0,36 m), jusqu'ici noyée sous l'éblouissement ; ce n'est pas un halo. Le modèle relève de l'épic E15 (Ville) / WFS-378 ;
   - vue de face, sous la pluie, le reflet allongé des phares sur la chaussée mouillée reste visible : c'est le reflet réel d'une route mouillée, borné et non saturé ;
-  - « avant » = `origin/main` (8fda3f17) + le seul banc `phares` (il n'existe pas sur `main`), compilé à part ; captures `neige-*` « avant » : `main` du 2026-11-09 23:40 UTC, sans aucun changement de ce ticket ;
+  - « avant » = `origin/main` (7a2e01d7, brume WFS-381 comprise) + le seul banc `phares` (il n'existe pas sur `main`), compilé à part ; captures `neige-*` « avant » : `main` du 2026-11-09 23:40 UTC, sans aucun changement de ce ticket ;
   - non fait : cœur du phare en vraie glace modélisée (le cœur reste un point de 9 cm) ;
   - après la fusion : **🟡 À valider (utilisateur)**.
 

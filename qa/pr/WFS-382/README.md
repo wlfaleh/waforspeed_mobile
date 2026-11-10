@@ -1,6 +1,6 @@
 # WFS-382 — captures avant / après (2e version, après la revue du lead dev)
 
-Bancs `phares` et `neige`, 1280×720, lavapipe. « Avant » = `origin/main` (8fda3f17) + le seul banc `phares` ; « après » = la branche.
+Bancs `phares` et `neige`, 1280×720, lavapipe. « Avant » = `origin/main` (7a2e01d7, brume WFS-381 comprise) + le seul banc `phares` ; « après » = la branche.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
