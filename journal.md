@@ -1945,3 +1945,10 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - Réserves à reprendre (pour le PO : `anno.md` ou WFS-324 / 325) : en regard Haut, la visière rogne le haut des chiffres (« 87 » lu « 81 ») ; l'arc, l'aiguille ou le rapport touchent les chiffres sur Corsa, V60, GT86, Gallardo, 911, Abarth, SF90 ; poignée chromée trop claire la nuit ; intérieur sombre de jour ; ANO-185 seulement atténuée ; gouttes de pluie devant le rétroviseur intérieur (pluie, hors zone) ; part de l'image de WFS-282 (30-35 %) à revoir (52-59 %).
 - Réponse à l'utilisateur écrite dans `tache utilisateur.md`. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé.
 
+
+### 2026-11-10 13:07:00 — Sortie grand public : Ville seule ; WFS-405 et WFS-406 créés (po-scrum-master)
+- Ordre de l'utilisateur : une seule carte, la Ville, pour le grand public ; les autres cartes continuent en développement.
+- **WFS-405** (P1 super urgent, E8 + E14, `expert-cartes`) : liste unique des cartes publiques ; AAB = Ville seule, APK d'aperçu = toutes les cartes ; tous les modes sur la Ville ; sauvegarde reprise.
+- **WFS-406** (P1 super urgent, E5, `dev`) : écran Crédits complet sans marques, noms trop proches renommés (rapport juridique J-03, J-06, J-13).
+- **WFS-320** : points J-02, J-04, J-05, J-11 ajoutés pour l'agent expert ci.
+- Besoin : 4 sessions en parallèle (`@devartiste` WFS-404, `@cartes` WFS-405, `@dev` WFS-406, `@cicd` WFS-319 / 320). Rien attribué (à la demande).
