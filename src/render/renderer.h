@@ -29,6 +29,7 @@ enum MatFlags : uint32_t {
     MAT_FACADE = 2097152,      // WFS-161 (accroche) : mur du kit d'architecture, appareil procédural (decor.glsl, surfaceFacade)
     MAT_AO = 4194304,          // WFS-269 (accroche) : occlusion précalculée dans la longueur de la normale (ambiance et reflet du ciel)
     MAT_EAU = 8388608,         // WFS-380 (accroche) : eau (shaders/eau.glsl) ; paramètres du lieu dans les sommets (src/render/eau_parametres.h)
+    // attention : les drapeaux passent en flottant (pc.params.w) : 2²⁴ et au-delà ne seraient plus exacts (changer le passage avant)
 };
 
 // WFS-149 (RG-04) : + tangente (xyz + signe de la bitangente), 4 octets signés normalisés (/127) ; nulle = sans tangente

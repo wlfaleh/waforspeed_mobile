@@ -1139,7 +1139,8 @@ public:
                 // eau de la rivière (niveau absolu), de la corniche jusqu'au bout des bas-côtés de Game
                 if (eau) for (float sd : {1.f, -1.f}) {
                     auto Wa = [&](double s, float lat) { vec3 q = Wp(t, s, lat, 0); q.y = riv_.yw; return q; };
-                    // WFS-380 (RG-05) : rivière calme entre deux quais : distance au quai le plus proche (le long de la route)
+                    // WFS-380 (RG-05) : rivière calme entre deux quais : distance au quai le plus proche (comptée le long de la route) ;
+                    // les quais longent la rivière en travers de la route : l'abscisse le long du bord est la distance à l'axe
                     auto dq = [&](int64_t k) { return (float)((double)std::min(k - riv_.d0 - 1, riv_.d1 - 1 - k) * SEG_M); };
                     const float q0 = dq(seg), q1 = dq(seg + 1);
                     eau::quad(out[P_EAU], {Wa(s0, sd * (R + PONT_CORN)), Wa(s0, sd * (R + 264.f)), Wa(s1, sd * (R + 264.f)), Wa(s1, sd * (R + PONT_CORN))}, {q0, q0, q1, q1},

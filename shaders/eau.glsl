@@ -99,7 +99,9 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     int mode = int(pc.params.z + 0.5);
     vec2 p = vWorld.xz;
     metal = 0.0; alpha = 1.0;
-    bool basse = F.spotN.z < 6.0;   // RG-07 : qualité Basse (4 lectures du reflet de la route au lieu de 12)
+    // RG-07 : qualité Basse. Le moteur ne passe pas la qualité aux shaders : F.spotN.z vaut 4 en Basse et 12 sinon (lectures du
+    // reflet de la route, renderer.cpp, WFS-263) ; si cette valeur change, revoir ce seuil
+    bool basse = F.spotN.z < 6.0;
     if (mode == 3) {   // D5 (avis 3D) : nappe du ressac sur le sable : l'eau monte, redescend, laisse le sable mouillé ; bord irrégulier
         float r = vUv.x, le = vUv.y;
         float ph = t * 0.785 + le * 0.021 + 2.0 * eauBruit(vec2(le * 0.03, 0.5));   // même cycle que l'écume dans l'eau
@@ -188,7 +190,8 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         float rocheE = (1.0 - smoothstep(monte * 0.5, monte, x)) * smoothstep(0.22, 0.5, eauDentelle(p * 1.5, t) * 0.8 + 0.25)
                      + (1.0 - smoothstep(0.0, 0.9, x)) * 0.8   // liseré blanc permanent au pied de la roche
                      + (1.0 - smoothstep(3.0, 10.0, x)) * smoothstep(0.58, 0.78, eauBruit(vec2(le * 0.4, x * 1.1 - 0.4 * t)));
-        ecume = mix(max(sable, ressac), clamp(rocheE, 0.0, 1.0), roche) * 0.85;
+        // B1 (lead dev) : l'écume du bord vient des vagues : aucune dans l'eau calme (port 0,3, rivière 0,15), entière en pleine mer
+        ecume = mix(max(sable, ressac), clamp(rocheE, 0.0, 1.0), roche) * 0.85 * smoothstep(0.5, 0.9, agit);
     }
     base.rgb = mix(base.rgb, vec3(0.80, 0.82, 0.84), ecume);
     rough = mix(rough, 0.8, ecume);

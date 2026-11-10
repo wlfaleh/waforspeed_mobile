@@ -3001,8 +3001,6 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
     auto garder = [&](const std::string& nom) { return !seul || nom.rfind(seul, 0) == 0; };
     const float merY = t2 ? OCEAN_Y : 0.f;   // niveau de la mer (absolu au tracé 2, sinon par rapport à la route)
     // vue libre : œil (segment, distance à l'axe, hauteur au-dessus de la route), point visé (segment, distance à l'axe, altitude) ;
-    // temps : instants des images (une capture par instant)
-    // vue libre : œil (segment, distance à l'axe, hauteur au-dessus de la route), point visé (segment, distance à l'axe, altitude) ;
     // temps : instants des images (une capture par instant). Caméra du banc de l'eau (eau_banc.h) : la carte est dessinée comme en
     // course (éclairage physique, lampadaires allumés la nuit autour de la voiture, arrêtée 36 m avant l'œil) ; soleil bas et visée
     // d'un bateau : vue libre de la Corniche (scène dédiée, soleil choisi)
@@ -3052,6 +3050,8 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
     int64_t m0 = -1;
     for (int64_t a = 0; a < L && m0 < 0; a++) if (!std::strcmp(zoneName(carte, a, L), "Port de plaisance") && std::fabs(t.pose(a).y) < 0.5) m0 = a;
     if (m0 >= 0) vue("mer-marina", "midi", m0 + (int64_t)(140 / SEG_M), R + 4.5f, 1.8f, m0 + (int64_t)(155 / SEG_M), R + 15, OCEAN_Y + 0.2f, 55);
+    // B1 (lead dev) : 2e vue du port, d'en haut (28 m), tout le bassin entre les pontons : eau calme, sans écume
+    if (m0 >= 0) vue("mer-marina-bassin", "midi", m0 + (int64_t)(100 / SEG_M), R - 5, 28, m0 + (int64_t)(180 / SEG_M), R + 28, OCEAN_Y, 60);
 
     // sillage d'un jet-ski (RG-04) : le plus proche du point de vue, champ de 35°
     {
