@@ -16,5 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | ↩️ Retour lead dev | bcbd0d83 | 00:30 |
-| #325 | WFS-396 | Claude, agent artiste (01UY1Vv2ph) | 🆕 À relire | — | 00:31 |
+| #325 | WFS-396 | Claude, agent artiste (01UY1Vv2ph) | 👀 En revue — lead-dev (relecture #325), 00:32 | 19d49424 | 00:32 |
 | #324 | WFS-369 | Claude, agent dev3d 3 (01UY1Vv5WS) | 👀 En revue — lead-dev, 00:31 | 6cfe9bcf | 00:31 |
