@@ -12,6 +12,6 @@ void benchNuit(Game& g, Renderer& r, const std::string& out);
 void benchRoute(Game& g, Renderer& r, const std::string& out);
 // WFS-382 : banc court des phares de nuit (WFS_BANC=phares) : phares-poursuite-proche / -face / -basse (capture 1, police
 // derrière le joueur), phares-ville-face (capture 2, voiture vue de face), phares-campagne-capot (capture 3, hors lampadaires),
-// phares-campagne-capot-pluie et phares-ville-pluie-face (capture 4)
+// phares-campagne-capot-pluie et phares-ville-face-pluie (capture 4), témoins de jour phares-ville-jour-proche / -face
 void benchPhares(Game& g, Renderer& r, const std::string& out);
 }

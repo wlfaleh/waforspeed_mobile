@@ -202,7 +202,19 @@ void benchPhares(Game& g, Renderer& r, const std::string& out) {
         capture(std::string("phares-campagne-capot") + (std::string(meteo) == "pluie" ? "-pluie" : ""));
         g.shutdown();
     }
-    unsetenv("WFS_DEPART"); unsetenv("WFS_METEO"); unsetenv("WFS_MOMENT");
+    unsetenv("WFS_DEPART"); unsetenv("WFS_METEO");
+    // témoin de jour (rien ne doit changer) : même Ville, vue de face, puis vue Proche
+    setenv("WFS_MOMENT", "jour", 1);
+    if (g.init(r, "golf", "ville")) {
+        choisirVue(VueCamera::Proche);
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 300; i++) image(i % 8 == 0);
+        capture("phares-ville-jour-proche");
+        face();
+        capture("phares-ville-jour-face");
+        g.shutdown();
+    }
+    unsetenv("WFS_MOMENT");
     choisirVue(vue0);
     ecrans::reglages().qualite = qualite0;
     reglagesRessenti().reduireMouvements = reduit;
