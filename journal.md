@@ -1911,3 +1911,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 12:50:46 — Lead dev automatique (chaque heure) mis en pause (po-scrum-master)
 - Ordre de l'utilisateur (budget) : la tâche planifiée « Lead dev automatique (chaque heure) » est désactivée (gardée, réactivable). Les PR sont relues seulement quand un développeur appelle lui-même le lead dev après sa PR.
+
+### 2026-11-10 12:51:04 — WFS-323 : PR #335 corrigée après le refus du lead dev (Claude, agent dev3d 7 (01UY1Vv4FX))
+- Fait : compteur lisible sur les 20 voitures (face de planche qui coupait le combiné à mi-hauteur, cause déjà sur `main` ; vitesse placée dans la bande vue par l'ouverture haute du volant, `bandeLisibleCombine`) ; visière du combiné moulée ; étincelles et fumée cachées seulement dans la boîte de l'habitacle (accroche `effets_systeme.cpp`, 10 lignes) ; montants de 9 cm de face ; tige du rétroviseur visible ; axes des pare-soleil mats.
+- Vérification : 99 tests CPU verts après synchronisation (`c65303b4`) ; nouveau contrôle `test_cockpit` (vitesse dans la bande vue) ; agrandissements des 20 combinés dans `qa/pr/WFS-323/`.
+- Pour le PO : gouttes de pluie dessinées devant le rétroviseur intérieur la nuit (pluie en 2D, déjà sur `main`, hors de ma zone) ; cible « intérieur 30-35 % de l'image » de WFS-282 à revoir (52-59 % avec le toit et le champ de la référence).
+
