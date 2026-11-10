@@ -3434,3 +3434,29 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 00:15:58 — Fin WFS-375 : PR #322 fusionnée par le lead dev, session terminée (Claude, agent dev M (01UY1Vv4mu))
 - Squash 14ec9d2 ; ticket 🟡 À valider (utilisateur) : choisir JOUR sur le téléphone le soir, la course doit être en plein jour ; NUIT, en vraie nuit.
 - Session arrêtée (un seul sujet par session) ; aucun autre ticket demandé.
+
+### 2026-11-10 00:17:14 — WFS-372 : branche poussée, inventaire des formes nues de la Campagne, plan (Claude, agent dev3d 5 (01UY1Vv5G4))
+- Branche `feature/waforspeed-372` poussée (79fda8a6). Inventaire complet (RG-01) : `qa/pr/WFS-372/inventaire.md` + captures `qa/pr/WFS-372/inventaire/` (banc `campagne`, main d75a3d7b).
+- Objets du ticket : vignes `T_VINES` 1 755 blocs (bandes pleines, ANO-65) ; clôtures `T_FENCE` 485 travées + 2 enclos (`box`) ; bottes `T_BALES` 41 groupes (`cylAxe` nu) ; fermes `T_FARM` 20 (boîte grise 8 × 11 m + grange 10 × 14 m, ANO-219) ; poteaux électriques `T_POLE` 27 (cylindre + traverse, le « portique sur poteaux » d'ANO-219).
+- Hors ticket, listés pour WFS-387 : église, commerces, fontaine, éoliennes, signalisation, haies, ouvrages de l'autoroute ; les 100 maisons du village sont déjà celles du kit d'architecture (WFS-161), pas des boîtes.
+- Plan : modèles calculés sur le processeur dans un nouveau fichier `src/world/decor_campagne_modeles.{h,cpp}` (même méthode que les bateaux de WFS-376 : lofts lissés, chanfreins, 2 niveaux de détail), posés dans le décor par `campagne.cpp` (accroche par cas de `dessine`), test `tests/test_decor_campagne.cpp` (mesures). Réseau : seulement GitHub et paquets ; aucun modèle libre aux bonnes mesures attendu pour ces objets agricoles → RG-03 (modélisés au niveau du vrai objet), noté au journal à la fin.
+- Mesures retenues (sources dans le code) : rang palissé Guyot, piquets 1,8 m tous les 5 m, fils à 0,6 / 1,0 / 1,4 m, ceps tous les 1,0 m ; botte ronde 1,20 m de large, Ø 1,50 m ; clôture rustique poteaux Ø 0,12 m de 1,2 m, deux lisses ; ferme à murs crépis, toit de tuiles canal à 2 pans (pente ≈ 30 %), grange-hangar à bardage bois et toit ondulé ; poteau bois de ligne basse tension 8,5 m.
+
+### 2026-11-10 00:18:16 — WFS-396 : décision du PO sur les remplaçants de l'A 45 et de l'Elantra N (po-scrum-master)
+- Rapport de Claude, agent artiste (01UY1Vv2ph) : aucun modèle libre dans ±1 % tel quel (W212 hauteur −2,3 % ; W211 voie avant −2,2 % ; Virtus GT hauteur −2,6 % ; Corolla E180 largeur +2,1 %).
+- **Décision (option a)** : refus motivé pour les deux places ; WFS-396 se livre avec le rapport et les fiches réelles (`references/reel/voitures/`), rien de converti ; la session s'arrête après la fusion.
+- **Suite** : WFS-397 créé (P1, E10 exception `remplacants/`, agent `dev-artiste-3d`, nouvelle session, après WFS-396) : retoucher la **W212 de Peter_D** (hauteur ; repli W211 de BadKarma, voie avant +17 mm par roue) et la **Virtus GT de BHP3D** (hauteur, allègement < 8 Mo) à ±1 %. WFS-360 dépend maintenant de WFS-397.
+- A 45 de Lexyc16 interdite (licence contradictoire CC BY / CC BY-NC).
+
+### 2026-11-10 00:24:40 — WFS-362 : PR #323 ouverte, M4 et S3 sans calandre de marque (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Fait : calandres découpées sur leur contour exact (`decouper`) ; haut de l'ouverture refermé par une pièce de carrosserie (nouvelle retouche `panneau` de `tools/retoucher_formes.mjs` : même peinture, normales raccordées, bombé à pente nulle au bord, jamais devant) ; bas : grille ajustée (outil de la X5). M4 : anneau chromé de l'ancien logo du capot retiré.
+- Fichiers : `tools/retoucher_formes.mjs`, `tools/formes.json` (entrées m4, s3), `assets/cars/m4.*`, `assets/cars/s3.*`, `qa/pr/WFS-362/`.
+- Vérification : `--verifier` vert (m4, s3, x5, compass, p208) ; X5 rejouée depuis son origine : même empreinte (factorisation sans effet) ; 94 tests CPU verts ; `test_fidelite_voitures` : m4 et s3 identiques à `main` ; captures avant / après (18 vitrines, 16 gros plans jour / nuit, 12 zooms ×4).
+- Limites : S3 125,3 k triangles (repère 120 k dépassé, comme X5 / 208 / Compass) ; joint du panneau visible de près (écusson sombre de loin sur la M4 noire) ; dépendance npm `meshoptimizer@0.22.0` installée dans le conteneur (version du `tools/package.json`) pour refaire les LOD.
+
+
+### 2026-11-10 00:30:14 — WFS-362 refusé par le lead dev, PR #323 (lead-dev)
+- Commit relu `bcbd0d83` ; 46 paires de captures ouvertes, tout le diff lu (`tools/retoucher_formes.mjs`, `tools/formes.json`, modèles m4 / s3) ; `--verifier` rejoué : vert (m4, s3, x5, compass, p208).
+- Bloquants : (1) M4 : panneau bosselé, creux rond (« cratère ») et reflets en vagues, visibles jusqu'aux vitrines (`nez-m4-34d-*`, `nez-m4-bas-*`, `vitrine-m4-a1`, `vitrine-m4-bas2`) ; (2) M4 : le panneau garde le contour de l'ancienne double calandre (écusson sombre lisible de face et de 3/4) ; (3) S3 : éclats et bord déchiré au coin droit de la grille (`nez-s3-34g-jour`, `zoom-s3-34g-*`).
+- À corriger aussi : bouts de lames en peigne (M4, S3), bande plus sombre du panneau de la S3 sous le capot.
+- Revue publiée en « COMMENT » (même compte GitHub) ; statut ↩️ dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
