@@ -119,7 +119,6 @@ public:
         }
         if (choixModeOuvert()) return;   // WFS-141 (RG-04, ANO-54) : panneau des modes ouvert : ni textes ni aide du menu dessous
         if (credits::ouvert()) return;   // WFS-406 : écran Crédits par-dessus (système Credits, 470) : rien du menu dessous
-        credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);   // WFS-406 (RG-02) : en bas à droite, style du bouton « Réglages »
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
         // WFS-168 (RG-01) : taille des choix d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; textes en dp gardés
         const float kb = H / 720.f;
@@ -183,6 +182,9 @@ public:
                                      : (gyro ? "Glisse à gauche ou incline le téléphone pour tourner." : "Glisse à gauche pour tourner.");
         ui::text(r, m.x + dx, y, aideP, volant, hex(INTRO, a), ui::GAUCHE, 0, false);
         ui::text(r, m.x + dx, y + aideL, aideP, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
+        // WFS-406 (RG-02) : en bas à droite, style du bouton « Réglages ». WFS-415 (RG-05, accroche) : dessiné APRÈS les choix,
+        // pour que « Course solo » reste la 1re zone de la manette (manette::focus) et du parcours d'endurance (CI #993, #994)
+        credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
     }
 private:
     double t0_ = -1;

@@ -43,7 +43,7 @@ int slot(int part, const Plan& p) {
 // RG-05 : niveau de détail selon la distance au joueur (m)
 // WFS-402 (RG-09) : en qualité Basse, détail complet (menuiseries, volets, balcons) jusqu'à 30 m seulement : les fenêtres réelles
 // ne coûtent aucune image par seconde au téléphone de l'utilisateur (banc perf, Ville de nuit, avant / après)
-constexpr double LOD0_BASSE_M = 30;
+constexpr double LOD0_BASSE_M = 30;   // WFS-415 (RG-03) : seulement avec les ouvertures réelles (archi::ouverturesReelles)
 constexpr double LOD0_M = 120, LOD1_M = 300, VUE_AVANT_M = 650, VUE_ARRIERE_M = 60;
 constexpr int64_t MORCEAU = 48;   // segments par morceau (≈ 58 m)
 
@@ -111,10 +111,13 @@ public:
         frame_++;
         const int64_t L = std::max<int64_t>(1, (int64_t)g.track->segmentCount());
         const int64_t aP = ((int64_t)std::floor(g.player->dist / SEG) % L + L) % L;   // tours suivants : même plan (limite : le raccord du tour)
+        // WFS-415 (RG-03) : la limite de 30 m en Basse ne vaut qu'avec les ouvertures réelles de WFS-402 ; interrupteur à 0
+        // (jeu) : 120 m comme avant WFS-402, les morceaux ne sont plus reconstruits sans arrêt en roulant
+        const bool lod0Basse = archi::ouverturesReelles();
         auto lodVoulu = [&](int64_t c) {   // distance du joueur au morceau (m), au plus près
             const double d0 = (double)(c * MORCEAU - aP) * SEG_M, d1 = d0 + MORCEAU * SEG_M;
             const double d = d0 > 0 ? d0 : (d1 < 0 ? -d1 : 0);
-            return d < (r.qualiteBasse ? LOD0_BASSE_M : LOD0_M) ? 0 : d < LOD1_M ? 1 : 2;
+            return d < (r.qualiteBasse && lod0Basse ? LOD0_BASSE_M : LOD0_M) ? 0 : d < LOD1_M ? 1 : 2;
         };
         const int64_t c0 = (aP - (int64_t)(VUE_ARRIERE_M / SEG_M)) / MORCEAU, c1 = (aP + (int64_t)(VUE_AVANT_M / SEG_M)) / MORCEAU;
         for (auto it = morceaux_.begin(); it != morceaux_.end();) {   // hors de vue ou mauvais niveau : rendu au cimetière (3 images)

@@ -73,7 +73,64 @@ Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char
 }
 } // namespace
 
+// WFS-415 (RG-05) : tirage d'avant WFS-404 (aucune voiture écartée), recopié de course5::tirer d'avant deb37c2 : même suite
+// Mulberry32 (3 tirages par ordinateur : place, peinture, variation), mêmes candidats
+static std::vector<int> tirageAvant404(uint32_t graine, const char* joueur) {
+    Mulberry32 R(graine);
+    std::vector<int> libres = course5::candidats(joueur), os;
+    for (int k = 0; k < course5::ORDINATEURS; k++) {
+        if (libres.empty()) for (int i = 0; i < CAR_COUNT; i++) libres.push_back(i);
+        const size_t j = (size_t)(R.next() * libres.size()) % libres.size();
+        os.push_back(libres[j]); libres.erase(libres.begin() + (long)j);
+        R.next(); R.next();
+    }
+    return os;
+}
+
+// WFS-415 (RG-05) : graine par graine, chaque ordinateur est celui d'avant WFS-404, sauf une voiture écartée (retirée ou
+// Range Rover Sport) ou déjà en course, remplacée par une voiture de la classe du joueur PAS PLUS RAPIDE (vitesse max ≤ et
+// 0-100 ≥) dès qu'il en existe une ; sinon (classe de la SF90 pour l'A 45) la moins rapide en trop
+static void testRemplacantes() {
+    int remplacees = 0, plusLentes = 0, sansPlusLente = 0, fautes = 0;
+    for (int jj = 0; jj < voituresPermises().n; jj++) {
+        const CarDef& J = CARS[voituresPermises().idx[jj]];
+        const std::vector<int> classe = course5::candidats(J.id);
+        for (uint32_t g = 1; g <= 400; g++) {
+            const std::vector<int> avant = tirageAvant404(g * 7919u, J.id);
+            const auto apres = course5::tirer(g * 7919u, J.id);
+            std::set<std::string> vus;
+            for (size_t k = 0; k < apres.size() && k < avant.size(); k++) {
+                const CarDef& A = CARS[avant[k]];
+                const CarDef& N = carById(apres[k].car.c_str());
+                vus.insert(N.id);
+                const bool ecartee = voitureRetiree(A.id) || !std::strcmp(A.id, "rrsport");
+                bool deja = false; for (size_t q = 0; q < k; q++) deja = deja || apres[q].car == A.id;
+                if (!ecartee && !deja) { fautes += apres[k].car != A.id; continue; }
+                remplacees++;
+                const bool lente = N.spec.vmax <= A.spec.vmax && N.spec.s100 >= A.spec.s100;
+                plusLentes += lente;
+                bool existait = false;   // une voiture pas plus rapide était-elle libre dans la classe ?
+                for (int c : classe) {
+                    const CarDef& C = CARS[c];
+                    bool prise = voitureRetiree(C.id) || !std::strcmp(C.id, "rrsport") || !std::strcmp(C.id, J.id);
+                    for (size_t q = 0; q < k; q++) prise = prise || apres[q].car == C.id;
+                    existait = existait || (!prise && C.spec.vmax <= A.spec.vmax && C.spec.s100 >= A.spec.s100);
+                }
+                sansPlusLente += !existait;
+                fautes += !lente && existait;
+                fautes += std::find(classe.begin(), classe.end(), (int)(&N - CARS)) == classe.end() || voitureRetiree(N.id) || !std::strcmp(N.id, "rrsport");
+            }
+            fautes += vus.size() != apres.size();
+        }
+    }
+    std::printf("WFS-415 RG-05 : %d voitures × 400 graines : %d ordinateur(s) remplacé(s), %d égal(aux) ou plus lent(s), %d sans voiture plus lente "
+                "libre dans la classe ; tirages d'avant WFS-404 gardés ailleurs : %s\n", voituresPermises().n, remplacees, plusLentes, sansPlusLente,
+                fautes ? "ÉCHEC" : "OK");
+    VERIFIE(fautes == 0, "WFS-415 RG-05 : %d remplaçante(s) plus rapide(s), hors classe, en double ou tirage changé", fautes);
+}
+
 int main() {
+    testRemplacantes();   // WFS-415
     // RG-02 : même graine = même tirage ; 4 modèles différents entre eux et du joueur
     const auto a = course5::tirer(1234, "golf"), b = course5::tirer(1234, "golf"), c = course5::tirer(99, "golf");
     std::set<std::string> modeles; bool memes = a.size() == b.size(), differents = false;
