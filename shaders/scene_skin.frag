@@ -300,11 +300,8 @@ void main() {
     if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 
     // brouillard (perspective atmosphérique)
-    float d = length(F.camPos.xyz - vWorld);
-    float fogK = 1.0 - exp(-d * F.fog.a);
-    // WFS-45 : brouillard linéaire de three r128 (fog_fragment : smoothstep(near, far, profondeur de vue))
-    if (F.fogLin.y > 0.0) fogK = smoothstep(F.fogLin.x, F.fogLin.y, dot(vWorld - F.camPos.xyz, F.camFwd.xyz));
-    col = mix(col, F.fog.rgb, fogK);
+    // WFS-45 : brouillard linéaire de three r128 ; WFS-381 : brume selon la distance et la hauteur (appliquerBrume, eclairage.glsl)
+    col = appliquerBrume(col, vWorld);
     // pas de pixel aberrant (WFS-32) : un reflet du soleil sur un minuscule triangle du vernis peut donner une valeur
     // énorme, voire NaN (normale nulle) ; on plafonne à 64 et on remplace NaN / infini par 0
     col = clamp(col, vec3(0.0), vec3(64.0));
