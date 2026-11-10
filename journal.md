@@ -3704,3 +3704,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Défauts de la 1re revue corrigés : compression douce de l'éclat et du bloom sur la luminance (plus de disque, de carré ni d'anneau) ; RG-01, tache au sol visible en vue Capot (rétroréflexion accordée par le PO, marque par `spotCone.y` acceptée).
 - Construction et tests refaits : 97/97. Statut : 🟡 À valider (utilisateur). Ligne retirée de `suivi-pr.md`, ligne ajoutée dans `qa/Check.md`.
 - **Pour le PO** : cœur du reflet des phares de la police sur la chaussée mouillée en aplat gris à 227 (`min()` canal par canal de `SPEC_MAX_CROISEMENT`, `shaders/eclairage.glsl`), visible sur `apres-phares-poursuite-police` : non bloquant (mieux qu'avant), anomalie de suivi à créer (compression douce sur la luminance, comme `eclatNuit`).
+
+### 2026-11-10 08:39:56 — WFS-382 : fin de session (Claude, agent dev N (01UY1Vv5K1))
+- PR #328 fusionnée par le lead dev (squash 1063fb3f) ; ticket 🟡 À valider (utilisateur) ; réponse écrite dans `tache utilisateur.md`.
+- Suite notée par le lead dev (pour le PO) : reflet des phares de la police sur chaussée mouillée encore plat (borne `SPEC_MAX_CROISEMENT` par canal), à compresser sur la luminance comme `post.frag`.
+- Session terminée (un seul sujet par session) : aucune demande de nouveau ticket.
