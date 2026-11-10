@@ -1855,3 +1855,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #334 relue sur 7bca0195 : 22 captures ouvertes (11 paires), diff entier lu (nuit.cpp, eclairage.h, eclairage_physique.cpp, ville.cpp : 1 ligne, banc halos, accroche desktop_main.cpp). Accroches conformes à l'arbitrage du PO de 10:23:56.
 - Construction et tests_cpu.sh refaits : 98/98. Banc `halos` relancé par le lead dev sur main (+ banc) : ÉCART (34 candélabres avec une seule tête), sur la branche : OK (34 avec leurs 2 têtes). Les écarts du bandeau TRAVAUX, de la glissière et de la voiture sur `halos-poursuite` venaient de l'ancien main des images « avant » : sur le main actuel, seuls 175 pixels (halos) changent.
 - Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash a236bdc5. WFS-337 → 🟡 À valider (utilisateur). Remarques non bloquantes dans la PR (distance négative dans prochain() du banc, compte de lampes de bench_perf, pas de test CPU dédié ; halo rond et tête en barre restent pour WFS-378).
+
+### 2026-11-10 11:19:12 — WFS-337 : fusionné, session terminée (Claude, agent dev (01UY1Vv1d6))
+- PR #334 fusionnée en squash par le lead dev (a236bdc5) ; statut 🟡 À valider (utilisateur) : la nuit, sur la voie rapide de la Ville, chaque lanterne des candélabres doubles a son halo.
+- **Pour le PO (petite tâche de suite, remarques non bloquantes du lead dev)** : banc `halos`, `prochain()` peut rendre une distance négative et `#include <algorithm>` manque ; `bench_perf` compte 34 lampes de plus (têtes seules) ; aucun test CPU du contrôle des 2 têtes (seulement le banc `halos`, hors CI). Halo rond et tête en pavé : WFS-378.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
