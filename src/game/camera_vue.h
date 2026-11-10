@@ -132,9 +132,9 @@ void benchCockpit(Game& g, Renderer& r, const std::string& outDir, const std::ve
 // WFS-323 : banc « cockpit-reference » (scènes de la référence de l'utilisateur : Corniche de jour, Ville de nuit, pavillon, volant)
 void benchCockpitReference(Game& g, Renderer& r, const std::string& outDir);
 // voitures des scènes du banc : lot 1 et la Corsa (cockpit commun), puis le lot 2 en deux moitiés
-inline const std::vector<std::string> COCKPIT_LOT1{"golf", "m4", "p911", "sf90", "corsa"}, COCKPIT_LOT2A{"a45", "s3", "giulia", "p208"},
-                                      COCKPIT_LOT2B{"gallardo", "mustang", "model3", "x5"},
-                                      COCKPIT_LOT3A{"abarth", "compass", "elantra", "gt86"}, COCKPIT_LOT3B{"rrsport", "tcross", "v60"};   // WFS-202 (Corsa : lot 1)
+inline const std::vector<std::string> COCKPIT_LOT1{"golf", "m4", "p911", "sf90", "corsa"}, COCKPIT_LOT2A{"s3", "giulia", "p208"},
+                                      COCKPIT_LOT2B{"gallardo", "mustang", "model3"},   // WFS-404 : sans A 45, X5, Elantra N (retirées)
+                                      COCKPIT_LOT3A{"abarth", "compass", "gt86"}, COCKPIT_LOT3B{"rrsport", "tcross", "v60"};   // WFS-202 (Corsa : lot 1)
 // centre du bouton de vue posé à la dernière image (banc d'essai : appui simulé) ; false s'il n'est pas affiché
 bool boutonVue(float& cx, float& cy);
 

@@ -74,6 +74,7 @@ void benchPlancheVoitures(Game& g, Renderer& r, const std::string& out) {
     int place = 0;
     for (int i = 0; i < CAR_COUNT && place < COL * LIG; i++, place++) {
         const CarDef& c = CARS[i];
+        if (voitureRetiree(c.id)) { place--; continue; }   // WFS-404 : voitures retirées hors planche
         if (!g.init(r, c.id, "ville")) { WFS_ERR("planche : %s impossible à charger", c.id); continue; }
         g.setAutopilot(false); g.camMode = 2; g.orbit = 0.7f;
         g_actif = true; g_repeindre = true; g_nom = std::string(marque(c)) + " " + modele(c);   // WFS-191

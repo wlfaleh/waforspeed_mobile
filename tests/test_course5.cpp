@@ -194,6 +194,7 @@ int main() {
         int horsClasse = 0, completes = 0;
         for (int i = 0; i < CAR_COUNT; i++) {
             const CarDef& J = CARS[i];
+            if (voitureRetiree(J.id)) continue;   // WFS-404 : voitures retirées (licence NC), jamais au volant ni adversaires
             const std::vector<int> cand = course5::candidats(J.id);
             int dans = 0; for (int c : cand) dans += std::abs(CARS[c].spec.vmax - J.spec.vmax) <= course5::CLASSE_VMAX * J.spec.vmax;
             if (dans < 4) completes++;
@@ -275,7 +276,7 @@ int main() {
     {
         // protocole (B) retenu par le PO (21:06) : pilote automatique à fond, sans nitro, qui freine avant les virages serrés
         // à la vitesse permise aux ordinateurs ; SF90 et Compass : bouts du catalogue (exceptions du PO)
-        const char* voitures[] = {"sf90", "m4", "mustang", "golf", "x5", "p208", "compass"};
+        const char* voitures[] = {"sf90", "m4", "mustang", "golf", "tcross", "p208", "compass"};   // WFS-404 : X5 retiré → SUV permis (T-Cross)
         const uint32_t graines[] = {1u, 1234u, 20261105u, 99u, 7u};
         std::printf("RG-02 : | voiture | Facile | Normale | Difficile | temps moyen (Normale) | nitro sur 4 km (s, min-max) |\n");
         std::printf("RG-02 : |---|---|---|---|---|---|\n");

@@ -211,6 +211,7 @@ int main(int argc, char** argv) {
         ui::chargerPolice(r);
         for (int i = TRAFIC_MODELES; i < CAR_COUNT; i++) {
             const char* id = CARS[i].id;
+            if (voitureRetiree(id)) continue;   // WFS-404 : voitures retirées
             if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); continue; }
             g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png");
             const bool garage = !std::strcmp(id, "p208") || !std::strcmp(id, "sf90"), course = !std::strcmp(id, "sf90");
@@ -259,7 +260,7 @@ int main(int argc, char** argv) {
     if (banc == "cockpit-reference") { benchCockpitReference(g, r, out); return finir(); }   // WFS-323 (accroche) : scènes de la référence de l'utilisateur
     if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)
         std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
-        const int e = benchCockpitVoisine(g, r, out, v, {"golf", "x5", "abarth"}); finir(); return e > 0 ? 3 : 0;
+        const int e = benchCockpitVoisine(g, r, out, v, {"golf", "rrsport", "abarth"}); finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)

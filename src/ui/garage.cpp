@@ -86,7 +86,10 @@ Stats carStats(const CarDef& c) {
     auto rnd = [](float x) { return (int)std::floor(x + 0.5f); };
     return {rnd(clampN((s.vmax - 170) / 14.f, 1, 10)), rnd(clampN(13 - s.s100 * 1.05f, 1, 10)), c.grip, rnd(clampN(s.ch / 55.f, 1, 10))};
 }
-int indexDe(const CarDef* c) { for (int i = 0; i < CAR_COUNT; i++) if (c && &CARS[i] == c) return i; return 0; }
+int indexDe(const CarDef* c) { for (int i = 0; i < CAR_COUNT; i++) if (c && &CARS[i] == c && !voitureRetiree(c->id)) return i; return voituresPermises().idx[0]; }
+// WFS-404 (RG-01, RG-02) : le garage ne propose que les voitures permises (voituresPermises(), cars.h) ; index_ reste un indice
+// de CARS[], la place affichée (« 05 / 17 ») et les points comptent seulement les voitures permises
+int placeDe(int i) { const VoituresPermises& v = voituresPermises(); for (int p = 0; p < v.n; p++) if (v.idx[p] == i) return p; return 0; }
 std::string deuxChiffres(int n) { return (n < 10 ? "0" : "") + std::to_string(n); }
 std::string virgule(float v) { std::string s = ui::decimal(v, 1); return s; }
 
@@ -202,8 +205,8 @@ public:
             bouton_ = 0; doigtBouton_ = -1;   // WFS-115
             index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
             charger(index_);
-            WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(),
-                    CAR_COUNT, PAINTS[peinture_[index_]].nom);
+            WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(placeDe(index_) + 1).c_str(),
+                    voituresPermises().n, PAINTS[peinture_[index_]].nom);
         }
         if (ancien == Ecran::Garage) {
             g_z = Zones{};
@@ -296,7 +299,7 @@ public:
             // boutons : action à l'appui (comme les boutons de la pause)
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
-            for (int i = 0; i < CAR_COUNT; i++) if (g_z.points[i].contient(t.x, t.y)) { appui_.prendre(t.id); if (i != index_) aller(i, i > index_ ? 1 : -1); return true; }
+            for (int p = 0; p < voituresPermises().n; p++) if (g_z.points[p].contient(t.x, t.y)) { appui_.prendre(t.id); if (const int i = voituresPermises().idx[p]; i != index_) aller(p, i > index_ ? 1 : -1); return true; }
             for (int i = 0; i < NB_PEINTURES; i++)
                 if (g_z.peintures[i].contient(t.x, t.y)) { appui_.prendre(t.id); peinture_[index_] = i; WFS_LOG("garage : peinture %s", PAINTS[i].nom); return true; }
             if (g_z.choisir.contient(t.x, t.y)) { bouton_ = 1; doigtBouton_ = t.id; return true; }   // WFS-115 : action au relâcher
@@ -331,7 +334,7 @@ public:
         {
             const float x = gl + std::clamp(W * 0.04f, 0.f, 64 * k);
             float y = gt + 8 * k;
-            const std::string eb = ui::majuscules(marque(car)) + " · " + deuxChiffres(index_ + 1) + " / " + deuxChiffres(CAR_COUNT);
+            const std::string eb = ui::majuscules(marque(car)) + " · " + deuxChiffres(placeDe(index_) + 1) + " / " + deuxChiffres(voituresPermises().n);
             ui::text(r, x, y, 12 * k, eb, hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
             y += 22 * k;
             float np = std::min(84 * k, std::max(40 * k, W * 0.07f * 0.8f));
@@ -350,9 +353,10 @@ public:
             ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, fi.tag, hex(TAG, op), ui::GAUCHE, 0, true);
             y += 20 * k + 14 * k;
             float px = x;
-            for (int i = 0; i < CAR_COUNT; i++) {   // .car-dots : 30 × 8, active 54 px cyan
-                const bool on = i == index_;
-                const float w = (CAR_COUNT > 10 ? (on ? 34 : 16) : (on ? 54 : 30)) * k;   // WFS-13 : 20 voitures sur une ligne
+            const int nb = voituresPermises().n;   // WFS-404 : un point par voiture permise
+            for (int i = 0; i < nb; i++) {   // .car-dots : 30 × 8, active 54 px cyan
+                const bool on = voituresPermises().idx[i] == index_;
+                const float w = (nb > 10 ? (on ? 34 : 16) : (on ? 54 : 30)) * k;   // WFS-13 : 20 voitures sur une ligne
                 if (on) biseau(r, px - 2 * k, y - 2 * k, w + 4 * k, 12 * k, 4 * k, hex(ACCENT2, 0.25f * op));
                 biseau(r, px, y, w, 8 * k, 3 * k, on ? hex(ACCENT2, op) : hex(SURFACE2, op));
                 g_z.points[i] = {px, y - 10 * k, w, 28 * k};
@@ -483,12 +487,14 @@ private:
         if (!r_ || !voiture_.ok) return;
         r_->vk().waitIdle(); r_->destroy(voiture_); voiture_ = Model{}; charge_ = -1;
     }
-    void aller(int i, int dir) {   // cycleCar / selectCar : nouvelle voiture, arrivée en glissant (gSlide = dir)
-        index_ = (i + CAR_COUNT) % CAR_COUNT; slide_ = (float)dir; sfxInterface(SfxId::Garage);   // WFS-96 : selectCar
+    void aller(int place, int dir) {   // cycleCar / selectCar : nouvelle voiture, arrivée en glissant (gSlide = dir)
+        const VoituresPermises& v = voituresPermises();   // WFS-404 : place parmi les voitures permises
+        const int p = (place % v.n + v.n) % v.n;
+        index_ = v.idx[p]; slide_ = (float)dir; sfxInterface(SfxId::Garage);   // WFS-96 : selectCar
         charger(index_);
-        WFS_LOG("garage : %s %s (%s / %d)", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(), CAR_COUNT);
+        WFS_LOG("garage : %s %s (%s / %d)", CARS[index_].brand, CARS[index_].model, deuxChiffres(p + 1).c_str(), v.n);
     }
-    void cycle(int dir) { aller(index_ + dir, dir); }
+    void cycle(int dir) { aller(placeDe(index_) + dir, dir); }
     // « Choisir » : voiture et peinture retenues ; parcours de course → terrain (via onEcran), Showroom → menu (WFS-96)
     void choisir(const GameView& g) {
         if (!voiture_.ok) return;   // « Chargement… » : bouton inactif

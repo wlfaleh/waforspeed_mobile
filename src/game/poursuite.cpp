@@ -215,7 +215,8 @@ Programme programme(uint32_t graine, bool banc) {
 }
 
 // ---------------------------------------------------------------- camion en travers (WFS-119)
-const char* camionCar(const char* carJoueur) { return carJoueur && !std::strcmp(carJoueur, "x5") ? "rrsport" : "x5"; }
+// WFS-404 (RG-03) : X5 retiré (licence NC) → Range Rover Sport ; joueur en Range Rover Sport → Jeep Compass (autre grand modèle libre)
+const char* camionCar(const char* carJoueur) { return carJoueur && !std::strcmp(carJoueur, "rrsport") ? "compass" : "rrsport"; }
 int fileLibreCamion(int file) { return file == 1 ? 0 : file; }
 Travers camionTravers(int fileLibre, double longueurM, double largeurM) {
     // à cheval sur la limite des 2 files couvertes (±RW/3) : la file libre (0 : gauche, 2 : droite) n'est pas touchée
