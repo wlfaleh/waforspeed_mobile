@@ -6,48 +6,47 @@
 
 - **Demande de l'utilisateur** (en une phrase) : en vue Cockpit, des rétroviseurs visibles (intérieur, gauche, droit) qui montrent vraiment la route et les voitures derrière (WFS-324, ANO-207).
 - **Ce qui change** :
-  - **Vrai reflet, miroir plan exact** (`src/render/retroviseurs.{h,cpp}`, `retroviseurs_geo.cpp`) : la glace est la fenêtre d'une projection décentrée vue depuis l'œil, sur le monde réfléchi par le plan de la glace. Chaque point de la glace montre le bon texel, même quand la tête bouge. Nouvelle passe enfichable « rétroviseurs » (étape Écran, avant la scène), avec les pipelines de la passe de reflet.
-  - **Coût (RG-03)** : une glace redessinée par image (intérieur, gauche, intérieur, droite ; en Basse, une image sur deux). Images de 352 × 88 et 192 × 112 texels. Seuls les objets vus par la glace de l'image sont redessinés (nouveau bit `VIS_RETRO` du `Renderer`). Sans ombres. Personnes jusqu'à 25 m. Rien hors de la vue Cockpit (RG-04).
-  - **Voiture du joueur** : vue **seulement dans les glaces** (`Renderer::retroSeul`), en version allégée (4 pièces en Basse), sans ses vitres (elles voilaient la glace de bleu). Dans la glace intérieure, son habitacle est assombri (albédo × 0,25, occlusion d'un habitacle fermé) : on y voit la lunette arrière, les appuie-têtes et la voiture qui suit. L'habitacle du cockpit n'est jamais dans les glaces (`horsRetro`).
-  - **Glaces extérieures** : dessinées dans l'habitacle du cockpit, à l'angle avant de la vitre, hors de la carrosserie (largeur de la fiche). La place du rétroviseur du modèle 3D est **mesurée au chargement** (`mesurerRetroviseurs`, une ligne dans `model_loader.cpp` ; trouvée sur 18 voitures sur 20). Le reflet est calculé depuis cette place : le flanc de la voiture est au bon endroit, et la coque du modèle est coupée par le plan proche. Avant la mesure, elle remplissait 70 % de la glace. Réglage du conducteur : la carrosserie occupe le cinquième intérieur de la glace.
-  - **Pièces modelées, aucune forme nue** (`vehicule_cockpit.cpp`) :
-    - coque extérieure galbée (surface balayée : lèvre arrondie, logement de la glace en retrait, nez qui se resserre vers la portière) ;
-    - bras profilé et aile moulée à l'angle de la vitre ;
-    - glace à coins arrondis (en « goutte » côté extérieur), chant de 2 mm.
-  - **Rétroviseur intérieur** : coque de WFS-323 (≈ 25 × 7 cm, collé en haut du pare-brise, ANO-207), en plastique satiné. En noir verni, un trait blanc crénelé apparaissait au-dessus de la glace.
-  - **Shader** (`scene.frag`) : une glace à reflet (`F_EMTEX` + `params.z = −2`) affiche l'image du reflet × la réflexion (intérieur 80 %, extérieurs 50 % ; ONU R46 : ≥ 40 %), sans diffus ni reflet du ciel.
+  - **Vrai reflet, miroir plan exact** (`src/render/retroviseurs.{h,cpp}`, `retroviseurs_geo.cpp`) : la glace sert de fenêtre à une projection décentrée vue depuis l'œil, sur le monde réfléchi par le plan de la glace. Passe enfichable « rétroviseurs » (étape Écran), une glace par image (une image sur deux en Basse). Images de 352 × 88 et 192 × 112 texels. Seuls les objets vus par la glace sont redessinés (bit `VIS_RETRO`). Sans ombres. Personnes jusqu'à 25 m. Rien hors de la vue Cockpit.
+  - **Reflet vu depuis la place réelle du modèle 3D** : l'œil du cockpit est placé 50 à 75 cm trop en avant dans le modèle de la voiture.
+    - Glaces extérieures : le rétroviseur du modèle est mesuré au chargement (18 voitures sur 20).
+    - Glace intérieure : même décalage en long (60 cm si rien n'est mesuré).
+    - Sans ce décalage, les sièges avant du modèle cachaient la voiture qui suit (1er refus).
+  - **Réglage du conducteur** :
+    - glace intérieure : vise le milieu d'une voiture 12 m derrière, selon la hauteur de l'œil (0,7° vers le bas pour la M4, 2,9° pour le Range Rover Sport) ;
+    - glaces extérieures : la carrosserie occupe 1,5° au bord intérieur, le reste montre la voie d'à côté.
+  - **Voiture du joueur** : dessinée seulement pour les glaces, en version allégée, sans ses vitres, habitacle assombri dans la glace intérieure. Une voiture vue seulement dans les glaces n'éclaire rien, comme avant (sinon, ses phares éclairaient en blanc le bas de l'habitacle).
+  - **Nuit** (`nuit.cpp`, accroche) : en vue Cockpit avec rétroviseurs, les 2 lampadaires les plus proches derrière la voiture (5 à 60 m) sont aussi de vraies lumières. Avant, rien n'était éclairé derrière la voiture et les glaces restaient noires.
+  - **Pièces modelées, aucune forme nue** : coque extérieure galbée (surface balayée, lèvre, logement, nez), bras, aile, glaces à coins arrondis. La coque intérieure de WFS-323 (ANO-207) est en plastique satiné.
+  - **Shader** : une glace à reflet affiche l'image × la réflexion (intérieur 80 %, extérieurs 50 %, ONU R46).
   - **Accroches annoncées au journal** :
-    - `renderer.{h,cpp}` : `vis` sur 16 bits et `VIS_RETRO`, `FrameParams::retro`, `retroSeul` / `horsRetro`, halos dans la glace, voiture du joueur allégée dans la glace ;
-    - `game.cpp` (7 lignes), `model_loader.cpp` (1 ligne), `camera_vue.cpp` (`ambiance()` choisit la glace de l'image), `passes.h` (2 accesseurs), `desktop_main.cpp` (banc `retroviseurs`) ;
-    - `vehicule_cockpit_banc.cpp` : glaces figées pendant le banc WFS-349.
+    - `renderer.{h,cpp}` : `VIS_RETRO`, `retroSeul` / `horsRetro`, voiture du joueur allégée, phares des voitures vues seulement dans les glaces ;
+    - `game.cpp` (7 lignes), `model_loader.cpp` (1 ligne), `nuit.cpp` (lampadaires derrière), `camera_vue.cpp`, `passes.h`, `desktop_main.cpp` ;
+    - `vehicule_cockpit_banc.cpp` (glaces figées pendant le banc WFS-349).
 - **Comment c'est vérifié** :
-  - `tests_cpu.sh` : 100 tests verts. Nouveau `test_retroviseurs` (21 cas) :
-    - réflexion ;
-    - coins de la glace aux coins de l'image ;
-    - point vu par la loi de la réflexion au bon texel ;
-    - côté non réfléchissant coupé ;
-    - 20 intérieurs : place, réglage vers l'arrière, tailles ONU R46 ;
-    - mesure des rétroviseurs sur un modèle.
-  - Nouveau banc `WFS_BANC=retroviseurs` (Golf, Ville, 2400 × 1080, jour et nuit) : **0 écart**. Voiture 10 m derrière dans la même voie, puis 9 m derrière et 3,3 m à gauche. Pixels de la voiture vus dans chaque glace (image avec / sans la voiture, `retroviseurs-mesures.txt`) :
-    - même voie : glace intérieure 16 063 px, gauche 4 832 px, droite 5 880 px ;
-    - voie de gauche : glace gauche 540 px ; glace intérieure 0 px (hors de son champ, comme en vrai) ;
-    - de nuit : on voit les phares de la voiture derrière.
-  - Zooms sur trois autres voitures : 911, M4, Range Rover Sport.
-  - **Coût mesuré en Basse et en Haute** (sur le banc PC lavapipe : 4 × 40 images avec et sans rétroviseurs, en alternance, médianes) :
-    - Basse : écart de 2,9 %, soit **0,60 img/s perdue à 21 img/s** (estimé, ≤ 2 visé) ;
-    - Haute : écart de 2,7 %, soit **0,56 img/s perdue à 21 img/s** (estimé, ≤ 2 visé) ;
-    - quand la passe tourne : ≈ 105 appels de dessin et 300 k triangles.
-  - Capture 3 du ticket : Réglages en vue Cockpit, Basse, sans puis avec rétroviseurs (`retro-reglages-rendu-basse-*`) : ligne « Rendu », appels et triangles.
-  - Banc `cockpit-voisine` (WFS-349, Golf) : 0 écart.
-  - Banc `cockpit` (Golf), avant / après : le reste du cockpit est inchangé.
+  - **Tests** : 102 tests verts sur 103, dont `test_retroviseurs` (21 cas). Le seul rouge, `test_course5_ordinateurs`, est aussi rouge sur `main` (constaté par le lead dev) : `tests_cpu.sh` s'arrête sur lui, donc les autres tests ont été lancés un par un.
+  - **Banc `retroviseurs`** (Golf, 2400 × 1080, jour et nuit) : 0 écart. Pixels de la voiture dans chaque glace (image avec et sans la voiture) :
+
+    | Scène | Glace intérieure | Glace gauche | Glace droite |
+    |---|---|---|---|
+    | Même voie, jour | 32 874 | 4 175 | 6 022 |
+    | Même voie, nuit | 13 713 | 2 416 | 3 798 |
+    | Voie de gauche, jour | 0 (hors champ, comme en vrai) | 1 393 | — |
+    | Voie de gauche, nuit | — | 789 | — |
+
+  - **Banc `retroviseurs`** (Range Rover Sport, M4, 911, jour et nuit) : 0 écart.
+  - **Coût mesuré** (banc PC lavapipe, avec et sans rétroviseurs en alternance, médianes) : Basse 2,0 %, soit **0,41 img/s perdue à 21 img/s** ; Haute 3,2 %, soit **0,64 img/s** (estimé, 2 au plus visé).
+  - **Banc `cockpit-voisine`** (WFS-349) : 0 écart.
+  - **Banc `cockpit`** (Golf) : comparé avant / après.
+  - **Capture 3** : Réglages ouverts en pause, ligne « Rendu » sans puis avec rétroviseurs (155 → 198 appels en Basse).
 - **Limites et risques connus** :
-  - Coût mesuré sur le banc PC, pas sur le téléphone : la perte en img/s est une estimation (même part du temps de l'image). Le ticket passe 🟡 À valider : c'est l'utilisateur qui confirme sur l'APK.
-  - Les glaces sont redessinées à tour de rôle : une glace extérieure a jusqu'à 3 images de retard (7 en Basse).
-  - Pas d'ombres dans les glaces (RG-03).
-  - Selon la voiture, la glace droite est au bord de l'écran, en partie derrière le montant droit, comme dans une vraie voiture.
-  - Place et taille des glaces extérieures : estimées (E). M4 et Corvette : rétroviseur du modèle non trouvé (place estimée, plan proche à 80 cm).
-  - Le modèle 3D a son rétroviseur 50 à 75 cm plus en arrière que l'habitacle dessiné : l'œil du cockpit est placé trop en avant dans le modèle. À signaler au PO, hors de ce ticket.
-  - Capture des Réglages : la ligne « Caméra » montre le choix enregistré (Arrière), pas la vue Cockpit forcée par le banc.
+  - Coût mesuré sur le banc PC, pas sur le téléphone : ticket 🟡 À valider par l'utilisateur sur l'APK.
+  - **Glaces extérieures** :
+    - redessinées à tour de rôle, avec jusqu'à 3 images de retard (7 en Basse) ;
+    - glace droite au bord de l'écran, en partie derrière le montant ;
+    - 911, petite glace de 175 mm : une voiture 9 m derrière dans la voie de gauche n'apparaît qu'au bord.
+  - **Nuit, banc cockpit** (voir la réponse au point 4) : la glace gauche reste sombre. La scène n'a que 12 vraies lumières, choisies pour la vue avant : la terrasse éclairée à côté de la voiture l'est par des lumières qui ne sont pas reprises derrière elle, et la glace ne renvoie que 50 % de la lumière.
+  - Les phares de la voiture qui suit sont dessinés comme en vue directe (optiques allumées de WFS-413), mais n'éclairent pas la route vers nous (comportement d'avant).
+  - Places et tailles des glaces extérieures : estimées. M4 et Corvette : décalage moyen, faute de mesure.
 
 ## Captures pour le lead dev (26 après)
 
@@ -81,19 +80,3 @@ Dossier : [`qa/pr/WFS-324`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `retro-golf-gauche` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-golf-gauche.jpg?raw=true) |
 | `retro-reglages-rendu-basse-avec` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-reglages-rendu-basse-avec.jpg?raw=true) |
 | `retro-reglages-rendu-basse-sans` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-reglages-rendu-basse-sans.jpg?raw=true) |
-
-### Autres voitures (après seulement, banc `retroviseurs` rapide)
-
-| Capture | Après |
-|---|---|
-| `retro-m4-derriere-zoom-droite` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-m4-derriere-zoom-droite.jpg?raw=true) |
-| `retro-m4-derriere-zoom-gauche` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-m4-derriere-zoom-gauche.jpg?raw=true) |
-| `retro-m4-derriere-zoom-interieur` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-m4-derriere-zoom-interieur.jpg?raw=true) |
-| `retro-m4-derriere` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-m4-derriere.jpg?raw=true) |
-| `retro-p911-derriere-zoom-gauche` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-p911-derriere-zoom-gauche.jpg?raw=true) |
-| `retro-p911-derriere-zoom-interieur` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-p911-derriere-zoom-interieur.jpg?raw=true) |
-| `retro-p911-derriere` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-p911-derriere.jpg?raw=true) |
-| `retro-rrsport-derriere-zoom-droite` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-rrsport-derriere-zoom-droite.jpg?raw=true) |
-| `retro-rrsport-derriere-zoom-gauche` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-rrsport-derriere-zoom-gauche.jpg?raw=true) |
-| `retro-rrsport-derriere-zoom-interieur` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-rrsport-derriere-zoom-interieur.jpg?raw=true) |
-| `retro-rrsport-derriere` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-324/qa/pr/WFS-324/apres-retro-rrsport-derriere.jpg?raw=true) |
