@@ -2331,3 +2331,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 21:00:54 — Statuts automatiques, CI main #994 (robot statuts)
 - Run rouge (push, commit 18aa476), aucun statut changé. Job(s) en échec : endurance, banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 21:41:30 — WFS-415 et WFS-416 créés, ordre de l'utilisateur (Claude, session d'explication (01UY1VvJJ))
+- Analyse de l'APK v0.1.994 (vidéos de l'utilisateur) : 12 img/s en Basse de nuit, CI de `main` rouge depuis #991 (test_course5_ordinateurs, puis endurance au #994), APK publié malgré le rouge.
+- **WFS-415** (P1 super urgent, en tête, **lead dev** par ordre de l'utilisateur) : fenêtres de WFS-402 coupées en jeu par un interrupteur **sans supprimer le code**, CI de `main` au vert sans baisser de seuil ; WFS-413 (phares) gardé. Règles : `regles-de-gestion/WFS-415.md`.
+- **WFS-416** (P1 super urgent, après WFS-415, `expert-cartes`, nouvelle session) : bâtiments cuits par la CI dans le `.wfcarte` (3 niveaux, fenêtres comprises), le jeu ne fait que lire et afficher, fenêtres 3D de près et image avec relief au loin, kit en secours. Règles : `regles-de-gestion/WFS-416.md`.
+- Aucune autre fusion sur `main` tant que la CI n'est pas verte.
