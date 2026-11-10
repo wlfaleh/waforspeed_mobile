@@ -3359,3 +3359,145 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Zone** : `plage.cpp` (mer, rivage), shader de l'eau (`shaders/eau*.glsl` neuf ou branche eau de `scene.frag`), `src/render/eau_*`, accroches ≤ 10 lignes `ville.cpp` (eau seulement) et `cartes_v2` (eau), textures CC0 / CC BY, `tests/**` ; détail dans `regles-de-gestion/WFS-380.md` (section Attribution).
 - **Rappels** : avis de l'agent 3D VALIDÉ avant le lead dev (E15) ; 🟡 À valider (utilisateur) après la fusion ; coût en Basse ≤ 1,0 ms GPU (RG-07).
 - **Avec WFS-382** (E4, phares, attribué à 23:37) : fichiers séparés (382 : `nuit.cpp`, `phares.h`, bloom de `post.frag`, neige de `route*` ; 380 : eau seulement, de préférence `shaders/eau*.glsl` neuf). Les deux se synchronisent souvent avec `main`.
+
+### 2026-11-09 23:44:02 — WFS-391 : arbitrages du PO sur RG-01 et RG-06 (po-scrum-master)
+- **Demande** : Claude, agent conduite (01UY1Vv4e7), deux questions de règles sur WFS-391.
+- **RG-01 : option A.** Seule la force des pneus (freins + frein moteur) dépend de μ ; traînée et roulement non. Ancien modèle accepté de 120 à 160 m sur la neige (≈ 127 m mesuré, roulement du jeu 0,35 m/s² non touché, `configgame.json` inchangé) ; nouveau modèle `conduite_monde` 140 à 160 m (143,5 m). Sec 36,8 m (RG-03 tenu). Option B refusée (freinage léger moins fort que le lever de pied, et RG-05).
+- **RG-06 : cause hors conduite** (point n = 11,5 m derrière la glissière à 10,35 m). Mesure du bas-côté intérieur à n = 9 m ; test CPU « derrière la glissière, la voiture la longe ». ANO-231 : cause écrite, fermeture par le QA après la fusion.
+- **Annexe** : muret visible (8 m) et glissière de collision (10,35 m) des épingles du col → **ANO-234** (mineure), rangée dans **WFS-387** (RG-11), pas de nouveau ticket.
+- Fichiers : `regles-de-gestion/WFS-391.md`, `regles-de-gestion/WFS-387.md`, `anno.md`, `track-agent.md`.
+
+### 2026-11-09 23:45:07 — WFS-359 : PR #320 ouverte, Corvette C7 (« mustang ») et Suzuki Brezza (« tcross ») à la place des modèles CC BY-NC-SA (Claude, agent dev3d 2 (01UY1Vv2MH))
+- **Téléchargements** (`regles-reseau.md` § 2.4 : clones partiels en lecture seule de dépôts GitHub publics, dans le bac à sable de la session, rien exécuté ; `license.txt` lus) :
+  - « Chevrolet Corvette (C7) », Martin Trafas, Sketchfab, **CC BY 4.0** — dépôt `JoseJ55/car-showcase-v2`, `public/models/corvette_c7/` : scene.gltf SHA-256 5ca3bb70c9f6bd9be97f1f1ffa1268359c47641dc480ab1d7f0c27c8dc9a19b0 (122 068 o), scene.bin a6bf80fb6f6da4bf50f78e234088bc2f1b6d68a2cd7f099aea7e2dd14436bec2 (37,6 Mo), textures PNG/JPEG du dossier ; **retenu** (choix du PO).
+  - « 2022 Maruti Suzuki Vitara Brezza », BHP3D, **CC BY 4.0** — dépôt `kriteesh/threejs-model`, `model-2/` : scene.gltf 55b43df1e0c6b58958e15c347e4fa990d8721700bcf222d249356b05e4a12852 (718 867 o), scene.bin db74ff08bce9ad0140c2b1a9b3234af1144790a9647a76d87ea24963790ca02b (17,3 Mo), textures du dossier ; **retenu** (choix du PO).
+  - Essayés puis **refusés** (rien dans le dépôt) : « Volkswagen Passat » I3D (CC BY, `krisAndreev/MyMiniCar`, gltf 890d3c1a…dec5, bin 69bab18c…c8ce : Passat B5.5, largeur +2,3 %) ; « Ford Mustang 2015 EDITION » WarEntertainment (CC BY, `shimada-wisteria/webar`, gltf 039dd6ea…1c20, bin 25ef37fc…8ac6 : hauteur −5 %, version rabaissée) ; « 2022 Volkswagen Virtus GT » BHP3D (CC BY, `PrathamSatpute/VehiclePredictiveMaintenance`, gltf 1bfe8554…b8e7 : hauteur −2,6 %) ; « 2023 Toyota RAV4 GR-S » Nazh Design (CC BY, `lordkiki/threejs`, gltf e7a0020b…193c : un seul matériau) ; « 2015 Honda CR-V » ImperialBlue (CC BY, `Kavelin/kavelin.github.io`, gltf 9b162f58…38c8 : 4 478 triangles) ; « Hellcat » et « Corvette C8 » lus (licence seulement), non convertis. Modèles de Ddiaz Design écartés (matériaux « …RewardRecycled… » : tirés d'un jeu existant).
+- **Fait** (zone du ticket) : conversion par `tools/convertir_voitures.sh` (sources `CORVETTE=` / `BREZZA=`), fiches du référentiel (`references/reel/voitures.json`, `SOURCES.md`), `cars.h`, licences et crédits, logos effacés (`tools/logos.json`), correctifs de feux des anciens modèles retirés (`correctifs_voitures.h`), « tcross » hors halogène (`phares.h`), texte du garage pour « mustang » ; `assets/cars/remplacants/mustang.wfm` (inutilisé) retiré. Accroches hors `cars.h` annoncées ici : `src/ui/garage.cpp` (1 ligne), `src/render/phares.h` (1 ligne), `src/render/correctifs_voitures.h` (3 lignes retirées).
+- **Vérifié** : `tests_cpu.sh` 91/91 ; `test_fidelite_voitures` strict vert (C7 8 / 8 conformes, Brezza 6 / 6 sourcées) ; `verifier_licences.py` 0 manque ; `effacer_logos.mjs --verifier` : 20 voitures « déjà faites » ; 20 paires de captures avant / après (jour et nuit) regardées, `qa/pr/WFS-359/`.
+- **Limites** : performances de la Brezza → WFS-394 (option A du PO) ; vue Cockpit : habitacle dessiné de `vehicule_cockpit_defs.cpp` encore celui de la Mustang S550 et du T-Cross (hors zone, tâche séparée demandée au PO) ; voies de la Brezza « à sourcer » ; hauteurs des feux du trafic lointain (`traffic.h`) inchangées.
+
+### 2026-11-09 23:46:04 — WFS-374 : PR #321 ouverte, ANO-233 corrigée, banc depart-campagne (Claude, agent dev Z (01UY1Vv3EZ))
+- Symptôme du PO (vidéos v0.1.969) : Campagne « bloquée » non confirmée (QA, PO). Bancs refaits avec de vrais appuis sur GAZ (Corniche → Campagne, course relancée, 6 moments) : la XR5 roule (58 km/h 3 s après le GO). Aucun commit fautif trouvé.
+- ANO-233 : cause `commandeSous()` (coin haut droit = nitro hérité de l'ancien bouton) → au-dessus de la zone du nitro, rien. Accroches : `desktop_main.cpp` (2 lignes, banc `depart-campagne`), `bench_effets.cpp` (appui nitro au centre du vrai bouton).
+- Vérifié : 94 tests CPU verts ; banc `depart-campagne` main 6 écarts → branche 0 ; `nitro-lignes` nitro actif. Captures `qa/pr/WFS-374/`. Lead dev appelé.
+
+
+### 2026-11-09 23:48:00 — WFS-395 créé : habitacles Cockpit de la Corvette et de la Brezza (po-scrum-master)
+- Demande de Claude, agent dev3d 2 (01UY1Vv2MH), PR #320 (WFS-359) : la vue Cockpit de « mustang » et « tcross » dessine encore l'ancienne Mustang S550 et l'ancien T-Cross (`vehicule_cockpit_defs.cpp`).
+- **WFS-395** (P2, E10 `vehicule_cockpit*`, agent dev-artiste-3d, nouvelle session ; ⏳ En attente après WFS-359, 349, 390 : mêmes fichiers) : habitacles de la C7 et de la Brezza à leur vraie largeur intérieure (WFS-315), sans forme nue, captures `cockpit`.
+- Les feux du trafic lointain (`traffic.h`, `WEB_FEUX`) restent une limite notée dans la PR, sans ticket pour l'instant. Écrit depuis un worktree séparé de `main`.
+
+### 2026-11-09 23:52:05 — WFS-375 : PR #322 ouverte (Claude, agent dev M (01UY1Vv4mu))
+- Fait : JOUR = midi, NUIT = nuit, sans défilement (`terrain.cpp`) ; ancien moment de la sauvegarde rangé en midi / nuit à la lecture (`sauvegarde.cpp`) ; test `test_sauvegarde` (bloc WFS-375) ; scénario du banc `benchTerrain`.
+- Vérifié : `tests_cpu.sh` 94/94 ; banc `menu1` 1280x720 horloge à 22:15 (faketime) : main → doree / bleue, branche → midi / nuit ; Campagne en plein jour, Corniche de nuit ; 8 captures avant / après dans `qa/pr/WFS-375/`.
+- Limites : haut du ciel de Campagne encore un peu sombre (E13, hors ticket) ; pas de construction Android locale.
+
+### 2026-11-09 23:56:57 — WFS-359 fusionné par le lead dev (lead-dev)
+- PR #320 relue (commit 5adfa463) : les 20 paires de captures ouvertes une à une, plus des zooms ; tout le diff lu ; construction et `tests_cpu.sh` refaits dans un worktree à part : 94/94. Les outils `convert_car.mjs` et `simplifier_voiture.mjs` savent déjà lire les nouvelles options de `convertir_voitures.sh`. `logos.json` ne change que pour `mustang` et `tcross`.
+- Revue « ✅ Approuvé » écrite en commentaire (GitHub refuse l'approbation du même compte), puis fusion en squash 2d304765. WFS-359 passe en 🟣, `qa/Check.md` est à jour, la ligne #320 est retirée de `suivi-pr.md`.
+- **Au PO** : il faut une tâche séparée (E10, `dev-artiste-3d`) pour les petits défauts vus aux zooms : chevron bleu qui traverse la plaque avant de la Corvette ; socle en losange du logo resté sur la calandre de la Brezza (il ressemble à un écusson, RG-C3) ; échappements de la Corvette sans diffuseur ; petits triangles dans le grillage de la Corvette. Hors zone : noms inventés de `configgame.json` (« Stallion GT5 », « Vollmer Trek-X ») à revoir pour une Corvette et une Brezza ; habitacle Cockpit (WFS-349) ; `WEB_CARS` / `WEB_FEUX` de `traffic.h`.
+
+### 2026-11-09 23:57:27 — WFS-374 fusionné par le lead dev (lead-dev)
+- PR #321 (Claude, agent dev Z (01UY1Vv3EZ)) fusionnée en squash (d94f73b8) à la 1re revue. Revue « ✅ Approuvé » écrite dans la PR sur d78109a8, en commentaire, car GitHub refuse l'approbation du même compte.
+- Vérifié par le lead dev : 14 captures ouvertes (nitro allumé sur SCORE avant, éteint après, dans les 6 moments ; nitro-lignes identique) ; tout le diff lu ; construction et `tests_cpu.sh` : 94/94 verts ; banc `depart-campagne` : 0 écart.
+- Statut : 🟡 À valider (utilisateur) (RG-05). Ligne `qa/Check.md` ajoutée, ligne de `suivi-pr.md` supprimée.
+- **Pour le PO** (tâche à part, ordre de l'utilisateur du 19:14) : `tools/qa/emulateur.sh:226` (scénario `conduite`, `simulateur.yml`) appuie encore sur le nitro en (0,90 W ; 0,32 H). Depuis WFS-374, cet appui ne fait plus rien : il faut appuyer au centre du bouton NITRO. Le scénario `mvp` des bancs du matin n'est pas touché.
+
+### 2026-11-09 23:57:31 — WFS-359 : fin, session terminée (Claude, agent dev3d 2 (01UY1Vv2MH))
+- PR #320 fusionnée par le lead dev (squash 2d304765, revue « ✅ Approuvé » sur 5adfa463 ; tests_cpu 94/94 refaits par le lead dev). Suites : WFS-394 (performances de la Brezza, après l'IA du RR Sport en Course à 5) et WFS-395 (habitacles Cockpit), créées par le PO ; petits défauts relevés par le lead dev (chevron sur la plaque avant de la C7, socle en losange du logo de la Brezza, échappements de la C7, triangles sombres dans la grille de la C7, noms inventés et `WEB_CARS` / `WEB_FEUX` des anciennes voitures) : tâche séparée demandée au PO par le lead dev.
+- Un seul ticket par session (règle du 2026-11-09) : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-09 23:58:03 — WFS-374 : fusionné (#321), session terminée (Claude, agent dev Z (01UY1Vv3EZ))
+- Fusion par le lead dev (squash d94f73b8), 🟡 à valider par l'utilisateur. Réponse écrite dans `tache utilisateur.md`. Remarque du lead dev transmise au PO : `tools/qa/emulateur.sh:226` appuie encore sur l'ancien coin du nitro (capture `04-nitro` de `simulateur.yml`). Session arrêtée (un seul sujet).
+
+### 2026-11-09 23:57:25 — WFS-396 créé et attribué à Claude, agent artiste (01UY1Vv2ph) (po-scrum-master)
+- Demande d'une nouvelle session `@artiste` (agent `artiste-3d`, sans code du moteur). Aucun ticket prêt n'était dans ce périmètre : le décor (E15 : WFS-372, 373) se modélise dans le code (`src/world/*`, voir WFS-369), les tickets voitures prêts sont tenus (WFS-359, 362, au plus deux à la fois).
+- Décision du PO : **découpe de WFS-360** sur le modèle de WFS-219 : **WFS-396** (P1, E10, exception PO : fichiers neufs `assets/cars/remplacants/**`, `assets/licences/remplacants/**`, entrées neuves de `tools/logos.json`) trouve, vérifie (±1 %, ≤ 8 Mo, sans marque) et convertit les remplaçants de l'**A 45** (Classe E W212, choix du PO) et de l'**Elantra N** (au plus 2 choix proposés au PO), **sans rien brancher**. WFS-360 garde le branchement, après WFS-359 et WFS-396.
+- Zone interdite : `src/**`, `shaders/**`, outils `tools/*.mjs` / `*.sh` (lus seulement), `tools/formes.json` (WFS-362), `cars.h`, mustang / tcross (WFS-359). Captures : vitrine en local par permutation non poussée (RG-07). Règles : `regles-de-gestion/WFS-396.md`. Écrit depuis un worktree séparé de `main`.
+
+### 2026-11-10 00:01:53 — WFS-381 attribué à Claude, agent dev A (01UY1Vv42R) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01UY1Vv42RWwaV9T1tMxWRgB, développeur général, 1er et seul ticket). Choix : ticket ⏳ Prêt le plus prioritaire d'une épic libre hors conduite, cartes, CI, voitures, iOS : **WFS-381** (P1, E13, brume au loin, ANO-221), en tête de l'ordre décor du 2026-11-09 20:01 avec WFS-382 (en cours). E13 libre (WFS-214 🟣). WFS-372 / 373 (E15) restent au profil `dev-artiste-3d` ; WFS-378 vient après dans l'ordre ; WFS-384 / 287 à l'agent expert ci.
+- Zone : voir `regles-de-gestion/WFS-381.md` (section « Suivi ») ; sans chevauchement avec WFS-382 (bloom de `post.frag`, `nuit.cpp`), WFS-380 (eau), WFS-375, WFS-369.
+- Plan court : lire le brouillard existant (`common.glsl`, `eclairage*.glsl`, `sky.frag`, `atmosphere_physique.h`), brume exponentielle distance + hauteur couleur du ciel (RG-01 à 03), réglage par carte (RG-04), mesure perf Basse avant / après (RG-05), captures 1 à 5 avant / après, PR, lead dev.
+- Ménage quotidien du 2026-11-10 : laissé au robot `archives.yml` de cette nuit (journal du 2026-11-08 et lignes ✅) ; vérification de son commit au prochain appel.
+
+### 2026-11-10 00:03:19 — WFS-372 attribué à Claude, agent dev3d 5 (01UY1Vv5G4) (po-scrum-master)
+- Demande d'une nouvelle session `@dev3d` (agent `dev-artiste-3d`, session_01UY1Vv5G4636Nbsd5PhaAsn), 1re et seule attribution (règle « un seul sujet par session »).
+- Choix : ticket prêt le plus prioritaire de son domaine (P1, E15 ; Ville WFS-369 et Corniche WFS-380 déjà en cours, file Campagne libre ; WFS-372 avant WFS-373 au numéro). Voitures E10 : déjà deux tickets en parallèle (WFS-362, 396), rien de prêt.
+- Zone : `src/world/campagne.cpp` (décor), nouveaux `src/world/decor_campagne_*`, `assets/world/modeles/campagne/**`, `assets/textures/decor/campagne/**`, `assets/licences/**`, `tests/**`. Pas de conflit : WFS-391 (`player.*`, `roues.*`), WFS-382 (`nuit.cpp`), WFS-381 (brume), WFS-392 (`route*`).
+- Plan court : inventaire au journal (RG-01) → modèles CC0 / CC BY aux mesures ±1 % (vignes, maisons, clôtures, bottes, hangars ANO-219) → instances + LOD au chargement → captures jour / nuit / gros plans / perf → PR → avis agent 3D VALIDÉ → lead dev.
+
+### 2026-11-10 00:15:26 — WFS-375 fusionné par le lead dev (lead-dev)
+- PR #322 relue sur 82bdda3 : 16 captures ouvertes (JOUR / NUIT sans défilement, Campagne en plein jour à 22:15, Corniche de nuit), diff lu (`terrain.cpp`, `sauvegarde.cpp/.h`, `test_sauvegarde.cpp`), construction propre et `tests_cpu.sh` refaits : 94/94.
+- Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion squash 14ec9d2. WFS-375 → 🟡 À valider (utilisateur) (RG-06) ; ligne `qa/Check.md` ajoutée ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-10 00:15:58 — Fin WFS-375 : PR #322 fusionnée par le lead dev, session terminée (Claude, agent dev M (01UY1Vv4mu))
+- Squash 14ec9d2 ; ticket 🟡 À valider (utilisateur) : choisir JOUR sur le téléphone le soir, la course doit être en plein jour ; NUIT, en vraie nuit.
+- Session arrêtée (un seul sujet par session) ; aucun autre ticket demandé.
+
+### 2026-11-10 00:17:14 — WFS-372 : branche poussée, inventaire des formes nues de la Campagne, plan (Claude, agent dev3d 5 (01UY1Vv5G4))
+- Branche `feature/waforspeed-372` poussée (79fda8a6). Inventaire complet (RG-01) : `qa/pr/WFS-372/inventaire.md` + captures `qa/pr/WFS-372/inventaire/` (banc `campagne`, main d75a3d7b).
+- Objets du ticket : vignes `T_VINES` 1 755 blocs (bandes pleines, ANO-65) ; clôtures `T_FENCE` 485 travées + 2 enclos (`box`) ; bottes `T_BALES` 41 groupes (`cylAxe` nu) ; fermes `T_FARM` 20 (boîte grise 8 × 11 m + grange 10 × 14 m, ANO-219) ; poteaux électriques `T_POLE` 27 (cylindre + traverse, le « portique sur poteaux » d'ANO-219).
+- Hors ticket, listés pour WFS-387 : église, commerces, fontaine, éoliennes, signalisation, haies, ouvrages de l'autoroute ; les 100 maisons du village sont déjà celles du kit d'architecture (WFS-161), pas des boîtes.
+- Plan : modèles calculés sur le processeur dans un nouveau fichier `src/world/decor_campagne_modeles.{h,cpp}` (même méthode que les bateaux de WFS-376 : lofts lissés, chanfreins, 2 niveaux de détail), posés dans le décor par `campagne.cpp` (accroche par cas de `dessine`), test `tests/test_decor_campagne.cpp` (mesures). Réseau : seulement GitHub et paquets ; aucun modèle libre aux bonnes mesures attendu pour ces objets agricoles → RG-03 (modélisés au niveau du vrai objet), noté au journal à la fin.
+- Mesures retenues (sources dans le code) : rang palissé Guyot, piquets 1,8 m tous les 5 m, fils à 0,6 / 1,0 / 1,4 m, ceps tous les 1,0 m ; botte ronde 1,20 m de large, Ø 1,50 m ; clôture rustique poteaux Ø 0,12 m de 1,2 m, deux lisses ; ferme à murs crépis, toit de tuiles canal à 2 pans (pente ≈ 30 %), grange-hangar à bardage bois et toit ondulé ; poteau bois de ligne basse tension 8,5 m.
+
+### 2026-11-10 00:18:16 — WFS-396 : décision du PO sur les remplaçants de l'A 45 et de l'Elantra N (po-scrum-master)
+- Rapport de Claude, agent artiste (01UY1Vv2ph) : aucun modèle libre dans ±1 % tel quel (W212 hauteur −2,3 % ; W211 voie avant −2,2 % ; Virtus GT hauteur −2,6 % ; Corolla E180 largeur +2,1 %).
+- **Décision (option a)** : refus motivé pour les deux places ; WFS-396 se livre avec le rapport et les fiches réelles (`references/reel/voitures/`), rien de converti ; la session s'arrête après la fusion.
+- **Suite** : WFS-397 créé (P1, E10 exception `remplacants/`, agent `dev-artiste-3d`, nouvelle session, après WFS-396) : retoucher la **W212 de Peter_D** (hauteur ; repli W211 de BadKarma, voie avant +17 mm par roue) et la **Virtus GT de BHP3D** (hauteur, allègement < 8 Mo) à ±1 %. WFS-360 dépend maintenant de WFS-397.
+- A 45 de Lexyc16 interdite (licence contradictoire CC BY / CC BY-NC).
+
+### 2026-11-10 00:24:40 — WFS-362 : PR #323 ouverte, M4 et S3 sans calandre de marque (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Fait : calandres découpées sur leur contour exact (`decouper`) ; haut de l'ouverture refermé par une pièce de carrosserie (nouvelle retouche `panneau` de `tools/retoucher_formes.mjs` : même peinture, normales raccordées, bombé à pente nulle au bord, jamais devant) ; bas : grille ajustée (outil de la X5). M4 : anneau chromé de l'ancien logo du capot retiré.
+- Fichiers : `tools/retoucher_formes.mjs`, `tools/formes.json` (entrées m4, s3), `assets/cars/m4.*`, `assets/cars/s3.*`, `qa/pr/WFS-362/`.
+- Vérification : `--verifier` vert (m4, s3, x5, compass, p208) ; X5 rejouée depuis son origine : même empreinte (factorisation sans effet) ; 94 tests CPU verts ; `test_fidelite_voitures` : m4 et s3 identiques à `main` ; captures avant / après (18 vitrines, 16 gros plans jour / nuit, 12 zooms ×4).
+- Limites : S3 125,3 k triangles (repère 120 k dépassé, comme X5 / 208 / Compass) ; joint du panneau visible de près (écusson sombre de loin sur la M4 noire) ; dépendance npm `meshoptimizer@0.22.0` installée dans le conteneur (version du `tools/package.json`) pour refaire les LOD.
+
+
+### 2026-11-10 00:30:14 — WFS-362 refusé par le lead dev, PR #323 (lead-dev)
+- Commit relu `bcbd0d83` ; 46 paires de captures ouvertes, tout le diff lu (`tools/retoucher_formes.mjs`, `tools/formes.json`, modèles m4 / s3) ; `--verifier` rejoué : vert (m4, s3, x5, compass, p208).
+- Bloquants : (1) M4 : panneau bosselé, creux rond (« cratère ») et reflets en vagues, visibles jusqu'aux vitrines (`nez-m4-34d-*`, `nez-m4-bas-*`, `vitrine-m4-a1`, `vitrine-m4-bas2`) ; (2) M4 : le panneau garde le contour de l'ancienne double calandre (écusson sombre lisible de face et de 3/4) ; (3) S3 : éclats et bord déchiré au coin droit de la grille (`nez-s3-34g-jour`, `zoom-s3-34g-*`).
+- À corriger aussi : bouts de lames en peigne (M4, S3), bande plus sombre du panneau de la S3 sous le capot.
+- Revue publiée en « COMMENT » (même compte GitHub) ; statut ↩️ dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
+
+### 2026-11-10 00:31:40 — WFS-396 : PR #325 ouverte, remplaçants A 45 / Elantra N étudiés, refus motivé (Claude, agent artiste (01UY1Vv2ph))
+- **Fait** : recherche de code GitHub (~1 000 `license.txt` lus), 9 modèles téléchargés dans le bac à sable (clone partiel, rien exécuté), 6 convertis et mesurés par `corriger_voitures --essai` (permutation locale de `a45.wfm` / fiche, restaurée). Aucun dans ±1 % : refus motivé (décision du PO 00:18, option a), rien de converti dans `remplacants/`. Rapport : `qa/pr/WFS-396/pr.md` ; fiches réelles : `references/reel/voitures/remplacants-wfs396.json`.
+- **Téléchargements (SHA-256 complets)** :
+  - W212, Peter_D, CC BY 4.0, https://sketchfab.com/3d-models/mercedes-e-class-w212-119c5e10733142b197aa53b86f6aeb04, dépôt `bujue600-arch/carVison` `car-vision-frontend/public/models/mercedes-e-class/` : scene.gltf a1e14552aababef903a2fcd2dfeb6dd0d97de3062d316c8d5d6d489d5a106822 (238 832 o), scene.bin cfed9ca335f5de90062e4fd893c53c7d4897f6ed67c42733d989c89529fed44a (20 244 980 o) ; hauteur −2,7 %.
+  - W211, BadKarma, CC BY 4.0, dépôt `gibranalfarabi/portofolio-ar` `assets/3D-model/mercedes_benz_e-class_w211/` : scene.gltf 909a0f9ea1e06ba4d555f5efc9c5df4cf45ecf188f3e72262157d9f8508e79a8 (91 150 o), scene.bin 76bad9a65a904644771ba1cc9ad6f48fc6e1ede428d1eee630492ed872811126 (15 148 680 o) ; voie AV −2,2 %.
+  - Virtus GT 2022, BHP3D, CC BY 4.0, https://sketchfab.com/3d-models/2022-volkswagen-virtus-gt-3955e5c050f843398b49b2b21ab2f232, dépôt `PrathamSatpute/VehiclePredictiveMaintenance` `models/` : scene.gltf 1bfe8554c6728fea14cf9e7ffe0f02a287904a58ca3e293faa89602347e5b8d7 (617 095 o), scene.bin 70fbe3cbdf30c628463c665c9d5d0d7aa05f7c5f7752a33b72663afd6e7f5eac (22 504 008 o) ; hauteur −2,6 %.
+  - Corolla E180 EU, Armored Wave, CC BY 4.0, dépôt `oddalan/three-dee` `assets/models/corolla/` : scene.gltf 57ff461ec2dba40ae0a865d96c09c2ddd1d81dca0865b6bf4f4fe8ba5fdacf0b (135 104 o), scene.bin f377f589d4ab8a79d203f1bd5703b0cc4a6e0a198ebc206700cfbc943f266f3f (4 395 288 o) ; largeur +2,1 %.
+  - Mesurés puis écartés (bac à sable) : Corolla 2020 ItsDiyor (`gabrielivanov959-bot/toyota-webapp`), Octavia barking_dogo (`Jkotoun/Opengl_model_viewer_PGR`), Civic FD2 claries, C63 LuizZed36, WRX STi « Galaxy Car Showroom », Lancer Evo X BadKarma, S65 W222 Black Snow (pièces BeamNG), « Accord 2017 » L95XP (mod `mtn_caprice`), Seat Leon Cupra, A4 2000.
+- **Licence contradictoire** : « A45 AMG 2018 » de Lexyc16 en CC BY 4.0 (`tensornull/CarVision`) et CC BY-NC 4.0 (`vladyslavhurzhyi/car-rent`) : interdit.
+- **Vérification** : `tests_cpu.sh build` 94 réussis ; captures `vitrines-feux` 1280×720 (lavapipe) dans `qa/pr/WFS-396/`. Le jeu est identique à `main`.
+- **Suite** : lead dev appelé pour la PR #325 ; WFS-397 (PO) reprend W212 / W211 et Virtus GT.
+
+### 2026-11-10 00:40:00 — WFS-369 fusionné par le lead dev (lead-dev)
+- PR #324 relue sur 6cfe9bcf : « Avis agent 3D : VALIDÉ avec réserves » présent (RG-E15-06) ; 40 captures ouvertes ; tout le diff lu (`mobilier_ville.*`, `ville.cpp`, `commerces.cpp`, accroche `cartes_banc.cpp`, test) ; construction et `tests_cpu.sh` relancés : 95/95.
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : b4e3a106. Statut 🟡 À valider (utilisateur) : le ticket vient de la capture d'APK de l'utilisateur (bancs en pavés) et d'ANO-216.
+- Tâches séparées demandées au PO (RG-07 / RG-E15-09) : R1 eau de la fontaine (ANO-214) ; R2 affiche d'abribus vide et non éclairée la nuit ; R4 éclairage du parc la nuit (E13) ; plaque de rue bleue unie des feux (WFS-385) ; mesure sur téléphone des +44 % de triangles en Basse (WFS-321 / 331).
+
+### 2026-11-10 00:43:03 — WFS-396 fusionné par le lead dev (lead-dev)
+- PR #325 relue (commit 19d49424) : 30 captures ouvertes, diff complet lu (fiches réelles `remplacants-wfs396.json`, rapport RG-08, une ligne de suivi), rien dans `src/`, `tools/`, `assets/`. Construction et 94 tests CPU verts sur la branche ; `test_fidelite` 0 défaut.
+- Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », même compte GitHub), fusion en squash fdcb7254. Statut 🟣 ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Remarques pour WFS-397 (PO) : hauteur de la W212 à −2,7 % (le suivi du PO dit −2,3 %) ; captures de nuit obligatoires ; logos des candidats à effacer.
+
+### 2026-11-10 00:43:38 — WFS-396 fusionné (#325, squash fdcb7254, lead dev) : fin de la session (Claude, agent artiste (01UY1Vv2ph))
+- Le lead dev a relu les 30 captures et le diff, et a fusionné. Refus motivé pour les deux places (±1 %), rien de branché ; la suite est dans WFS-397 (PO).
+- Remarques du lead dev pour WFS-397 : la hauteur de la W212 est à −2,7 % après l'échelle de `corriger_voitures` (−2,3 % avant l'échelle) ; les captures de nuit (`WFS_VITRINE_NUIT`) seront obligatoires ; tous les logos et noms des candidats sont à effacer avant le branchement.
+- Session terminée (un seul ticket) : aucun autre ticket demandé.
+
+### 2026-11-10 00:43:29 — WFS-369 : réserves de la PR #324 en tâches séparées, WFS-398 et WFS-399 créés (po-scrum-master)
+- Demande de Claude, agent dev3d 3 (01UY1Vv5WS), à la fin de WFS-369 (fusionné, #324, b4e3a106, 🟡 à valider). Session close : **aucun autre ticket** pour elle (un sujet par session) ; ligne de `track-agent.md` en « ⏹️ Terminé (session close) ».
+- Décisions (RG-07 de WFS-369, RG-E15-09, ordre du 2026-11-09 « on ne jette pas un travail pour un petit défaut ») :
+  - R1 eau des fontaines plate cyan, vasque sans eau qui coule, jet de l'îlot inchangé → **ANO-235**, **WFS-398** (P2, E15 Ville + réglage de l'eau de WFS-380 ; après WFS-380 et 370).
+  - R2 affiche d'abribus vide et panneau non éclairé la nuit → **ANO-236** ; R4 parc presque invisible la nuit → **ANO-237** ; plaque bleue de nom de rue unie (lambda `mat` de `ville.cpp`) → **ANO-238** ; optiques des feux éteintes de jour → **ANO-239** : un seul lot **WFS-399** (P2, E15 Ville ; après WFS-370). La plaque de rue, proposée pour WFS-385, va dans WFS-399 (même mobilier, même lot, pas de micro-ticket).
+  - Mobilier absent (poubelles, bornes, kiosques, barrières) : RG ajoutée à **WFS-385**.
+  - Performance (+44 % de triangles, Ville de nuit Basse, 260 k → 375 k, sans baisse au banc PC) : pas de ticket ; mesure sur téléphone ajoutée aux règles de **WFS-321** et **WFS-331**, et au budget de WFS-385.
+- **WFS-370** (immeubles de la Ville) passe ⏳ Prêt (WFS-369 fusionné). File Ville de E15 : 370 → 399 / 385 ; 398 attend aussi WFS-380.
+
+### 2026-11-10 00:44:32 — WFS-369 : fin de session (Claude, agent dev3d 3 (01UY1Vv5WS))
+- PR #324 fusionnée en squash par le lead dev (b4e3a106). L'agent 3D a donné « VALIDÉ avec réserves » sur 6cfe9bcf, après la correction de la terrasse grise (B1, cb2f7d84). Le ticket est 🟡 à valider par l'utilisateur.
+- Réserves confiées au PO : WFS-398 (eau des fontaines) et WFS-399 (affiches, éclairage du parc, plaque de rue, feux éteints de jour). Les +44 % de triangles en Basse restent à mesurer sur le téléphone (règles de WFS-321 / 331 / 385).
+- Un seul ticket par session : aucun autre ticket demandé, la session s'arrête.

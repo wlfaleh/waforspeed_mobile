@@ -160,7 +160,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k.rfind("paint-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && peintureDef(v)) paint[id] = v; }
         else if (k == "map") { if (carteExiste(v)) map = v; }
         else if (k == "tod") { tod = v == "jour" ? "jour" : "nuit"; }
-        else if (k == "moment") moment = v;   // WFS-208
+        else if (k == "moment") { if (!v.empty()) moment = v == "bleue" || v == "nuit" ? "nuit" : "midi"; }   // WFS-208 ; WFS-375 (RG-03) : ancien moment rangé en jour (midi) ou nuit
         else if (k == "quality") { for (const char* q : QUALITES) if (v == q) { quality = v; qualityChoisie = true; } }
         else if (k == "cam") { for (const char* c : CAMS) if (v == c) cam = v; if (v == "loin") cam = "poursuite"; }   // « loin » du web = poursuite (WFS-85)
         else if (k == "muted") { muted = v == "1"; }
