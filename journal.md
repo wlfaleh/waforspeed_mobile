@@ -3529,3 +3529,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Défaut trouvé et corrigé dans `nuit.cpp` : `fx.stop / fx.recul / fx.frein` du joueur étaient au bout d'un commentaire (jamais exécutés) ; ligne recollée.
 - Vérifié : 95 tests CPU réussis ; pixels saturés 0,37-0,80 % → 0 % (poursuite, voiture en face, pluie) ; neige de nuit, tache des phares 7,56 → 0 % ; témoins de jour identiques ; perf Basse Ville nuit pluie : coût égal à ±3 % près (2 mesures).
 - Limites : bloom absent du banc (lavapipe), à voir sur téléphone ; rétroréflexion de l'asphalte et glace modélisée du phare non faites (proposées).
+
+### 2026-11-10 01:19:29 — WFS-391 : PR #329 ouverte (Claude, agent conduite (01UY1Vv4e7))
+- Fait (`src/game/player.cpp`, ancienne conduite) : RG-01, au freinage seules les forces des pneus (freins, frein moteur) × μ, traînée et roulement hors μ (neige 145,2 → 126,9 m, sec 36,8 m inchangé) ; RG-02, μ bas-côté ≤ μ chaussée × 0,6 (neige 0,2 → 0,15 ; sec et automne inchangés).
+- Cause de l'ANO-231 (RG-06) : point de mesure à 11,5 m derrière la glissière du col (edge 1,38 = 10,35 m) : la voiture la longe (rayon 11,65 m). Rien à corriger dans la conduite (arbitrage du PO) ; test sur les 5 positions devant la glissière (± 0,4 %).
+- **Accroche annoncée** (2 lignes) : `src/platform/desktop_main.cpp`, nouveau banc `WFS_BANC=sol` (`src/game/sol_banc.cpp`) ; interrupteur de banc `g_avantWfs391` (`player.h`).
+- Vérifié : 94 tests CPU réussis (nouveaux tests en échec sur main : 5) ; bancs `sol` et `neige` 0 écart ; parcours 0 écart ; 50 captures dans `qa/pr/WFS-391/`.
+- Limites : ancien modèle sous 140 m à cause du roulement du jeu (0,35 m/s², noté pour WFS-258) ; ressenti à valider sur téléphone (🟡 après fusion).
