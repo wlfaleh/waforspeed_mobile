@@ -788,6 +788,7 @@ public:
         for (int64_t a = 0; a < L; a++) {
             const uint8_t v = plan_->voie[(size_t)a];
             if (v == ville::AUTOROUTE && a % LAMPE_AR == 0 && !presPortique(a)) lampadaires().push_back({a, -((float)RW + AR_DBA - 2.5f), 11.8f, StyleLampadaire::Ville});
+            if (v == ville::AUTOROUTE && a % LAMPE_AR == 0 && !presPortique(a)) lampadaires().push_back({a, -((float)RW + AR_DBA + 2.5f), 11.8f, StyleLampadaire::Tete});   // WFS-337 (accroche) : 2e lanterne du candélabre (crosse vers le sens inverse), halo seul
             if (v == ville::PONT && a % LAMPE_PONT == 0) {
                 const float sd = ((a / LAMPE_PONT) % 2 == 0) ? 1.f : -1.f;
                 lampadaires().push_back({a, sd * ((float)RW + 4.25f - 1.3f), 7.4f, StyleLampadaire::Ville});
