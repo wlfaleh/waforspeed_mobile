@@ -600,8 +600,9 @@ void benchCockpitReference(Game& g, Renderer& r, const std::string& out) {
         const float tanV = std::tan(ck.fov * PI / 360.f), tanH = tanV * (float)r.width() / (float)r.height();
         const float horizon = 0.5f + std::tan(std::asin(std::clamp(f.y, -1.f, 1.f))) / (2 * tanV);
         WFS_LOG("capture %s (WFS-323) : voiture %s ; horizon à %.1f %% depuis le haut (40 à 45 %% visé) ; champ vertical %.1f°, "
-                "horizontal %.1f° ; volant %+.2f rad ; braquage %+.2f ; %.0f km/h", nom.c_str(), g.player().car->id, horizon * 100, ck.fov,
-                2 * std::atan(tanH) * 180.f / PI, g_ckInt.volant, g.player().steer, g.player().kmh());
+                "horizontal %.1f° ; volant %+.2f rad ; braquage %+.2f ; %.0f km/h ; intérieur : %d appels de dessin, %.2f Mo (RG-04 : coût)",
+                nom.c_str(), g.player().car->id, horizon * 100, ck.fov, 2 * std::atan(tanH) * 180.f / PI, g_ckInt.volant, g.player().steer,
+                g.player().kmh(), g_ckAppels, g_ckOctets / 1048576.0);
     };
     auto course = [&](const char* car, const char* carte, bool nuit) {
         setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
