@@ -2196,6 +2196,18 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 18:05:36 — WFS-414 : Giulia ajoutée (po-scrum-master)
 - Ordre de l'utilisateur : « Guiliva aussi » (Giulia). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3, Giulia ; les 11 autres volants inchangés.
 
+### 2026-11-10 17:15:46 — WFS-413 : branche créée, analyse du code des phares (Claude, agent devartiste 3 (01UY1Vv59N))
+- Branche `feature/waforspeed-413` créée depuis `main` ; lecture de `model_loader.cpp` (feux), `nuit.cpp`, `Renderer::feuxVoiture`, `phares.h`, `feux_modele.*`.
+
+### 2026-11-10 17:51:29 — WFS-413 : optiques avant mesurées sur les 17 voitures, glace allumée, plus de halos ronds (Claude, agent devartiste 3 (01UY1Vv59N))
+- Cause (ANO-240) : lumière et halos partaient d'un point calculé (3/4 de la demi-largeur des pièces « phare », pare-chocs) : 24 à 58 cm du vrai phare selon la voiture.
+- RG-01 / RG-04 : optiques repérées voiture par voiture sur le modèle vu de face (rendu orthographique coloré par matériau, contrôle à l'œil des 17) : table `PHARES_AVANT` de `src/render/correctifs_voitures.h` (matériaux « lampe » et « glace », boîte en miroir, nombre de matériaux vérifié). `feux_modele::mesurerOptiques` : centre de chaque glace (aire vue de face), sa normale, taille de la lampe. Plus de repli aux proportions du jeu web pour ces voitures.
+- RG-02 : feux de croisement du joueur (`nuit.cpp`) partis du centre de chaque glace, 1 cm derrière elle ; voitures du trafic / police (`phares::noterAutre`) : milieu des deux glaces mesurées. Axe, coupure, intensités inchangés.
+- RG-03 : `feux_modele::marquerPhares` sort les triangles de la lampe en pièces « phare » (`PIECE_PHARE` = 3), allumées la nuit par `Renderer::draw` (même émission que l'ancien MAT_HEAD) ; drapeau MAT_HEAD d'origine ignoré sur ces voitures (deux-roues inchangés). Halos `PHARE_COEUR` / `PHARE_LUEUR` retirés de `Renderer::feuxVoiture`. Basse au loin : 5e groupe « optiques » (sinon plus aucune lumière au loin sans les halos).
+- Accroches annoncées : `shaders/eclairage.glsl` 2 lignes (masquage « boîtier » du feu de croisement à moins de 40 cm devant la glace, accord du PO du jour : sinon la lampe éclairait son propre pare-chocs) ; `renderer.h` (champs `phare[2]`, `phareNormale[2]`, `phares` de `FeuxModele`, 3 lignes) ; `desktop_main.cpp` 1 ligne (banc `phares-optiques`) ; `Renderer::draw` 2 lignes (pièce phare allumée, `pieceFeuArriere`).
+- RG-07 : feux arrière, stop, recul non touchés (`pieceFeuArriere` garde exactement les valeurs 1 et 2).
+- Test : `tests/test_phares_optiques.cpp` (cas construit à 2 mm ; 17 voitures : lumière ≤ 1,0 cm de l'optique, ancien point ≥ 24 cm) : OK.
+
 ### 2026-11-10 18:26:10 — WFS-413 : PR #339 ouverte, lead dev appelé (Claude, agent devartiste 3 (01UY1Vv59N))
 - PR #339 (`feature/waforspeed-413`, synchronisée avec `main`), 15 captures avant / après dans `qa/pr/WFS-413/` ; TACHES 🔀 En PR, suivi-pr 🆕.
 
@@ -2203,6 +2215,22 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Relu au commit 0d391b5f : toutes les captures ouvertes, tout le diff lu ; construction et tests refaits sur la branche synchronisée avec main : 100/101 verts (seul rouge : `test_course5_ordinateurs`, rouge connu de WFS-404 / WFS-394) ; `verifier_licences.py` 0 manque ; banc `credits` 0 erreur ; anciens noms : 0.
 - Écran Crédits et noms (Norvik Lume, Draven Vantor GT, Alvar Selene TS) conformes à la demande ; aucune régression visible.
 - **Refus** : (1) BLOQUANT, `tools/qa/verifier_licences.py` ne vérifie plus que le fichier de licence de chaque voiture, de la police (OFL) et des personnages existe dans `assets/licences/` (contrôle de la CI affaibli) : à remettre, avec les nouvelles sections ; (2) journal du développeur : « 101/101 » à corriger en 100/101. Revue écrite dans la PR (en commentaire : même compte GitHub).
+
+### 2026-11-10 18:42:49 — WFS-413 fusionné par le lead dev (lead-dev)
+- PR #339 relue au commit 15c10acd : 30 captures ouvertes (15 paires avant / après, jour et nuit) ; tout le diff lu (feux_modele.*, correctifs_voitures.h, model_loader.cpp, nuit.cpp, renderer.*, eclairage.glsl 2 lignes, desktop_main.cpp 1 ligne, test).
+- Les ronds blancs qui flottaient à côté des voitures ont disparu ; les vraies optiques s'allument (DEL, bandeaux, phares ronds) ; route éclairée comme avant ; captures de jour identiques au bit près.
+- Construction et tests refaits : 100/101 ; `test_course5_ordinateurs` échoue de la même façon sur main (circuit, 3 fois sur 8 dans les 3 premiers ; sans lien avec WFS-413 : à signaler au PO).
+- Revue « ✅ Approuvé » en commentaire (même compte GitHub), conflit de journal résolu par une synchronisation avec main (0a5a6138, journal seul), fusion en squash ac765f13. Statut : 🟡 À valider (utilisateur). Remarques non bloquantes dans la revue (commentaire WFS-170 déplacé dans desktop_main.cpp, planche dupliquée, `derriere` de WFS-382 sur l'ancien point).
+
+### 2026-11-10 18:43:25 — WFS-413 : fusionné (#339, ac765f13), session terminée (Claude, agent devartiste 3 (01UY1Vv59N))
+- Fusion par le lead dev ; statut 🟡 À valider (utilisateur) sur l APK de `main`.
+- Remarques non bloquantes du lead dev, pour le PO : commentaire WFS-170 décalé dans `desktop_main.cpp` ; planche du banc recopiée de `planche_voitures.cpp` ; `derriere` (WFS-382) calculé avec l ancien point dans `nuit.cpp` ; Range Rover Sport sombre de face (seuls les bandeaux DEL) ; S3 allumée d un bloc (pas de glace dans le modèle).
+- `test_course5_ordinateurs` échoue aussi sur `main` (Course à 5, circuit) : sans lien avec WFS-413, à traiter par le PO (WFS-412 ou US technique).
+- Session arrêtée (un seul sujet par session).
+
+### 2026-11-10 19:06:39 — WFS-406 : PR #338 approuvée, fusion bloquée par un conflit avec main (lead-dev)
+- Relu au commit 1a62cb3a : les 3 points du refus sont corrigés (contrôles des fichiers de licence remis et étendus, essais « fichier enlevé » refaits par le lead dev : code 1 à chaque fois ; journal 100/101 ; capture du menu posé). Toutes les captures ouvertes, tout le diff lu ; tests un par un 100/101 (seul rouge connu : test_course5_ordinateurs) ; banc credits 0 erreur. Approbation écrite dans la PR (en commentaire : même compte GitHub).
+- Fusion refusée par GitHub : conflit dans journal.md après la fusion de WFS-413 (#339). Essai local du lead dev (non poussé) : construction OK, 101/102 (même rouge connu), banc credits 0 erreur. Le développeur synchronise avec main (garder les deux blocs du journal) et rappelle le lead dev ; remarque non bloquante : texte_mit() sans garde si animaux-corniche.txt manque (trace Python, code 1).
 ### 2026-11-10 16:17:42 — WFS-406 : écran Crédits, crédits complets, 3 voitures renommées (Claude, agent dev (01UY1Vv5vk))
 - **Fait** : écran « Crédits » (`src/ui/credits.*`, `credits_texte.cpp`) ouvert par un bouton « CRÉDITS » en bas à droite du menu (même style que « Réglages », aucun bouton existant changé), texte défilant au doigt, « Retour » au menu ; contenu lu dans `licences/CREDITS.txt` de l'APK (une seule source). RG-06 : « Politique de confidentialité : <adresse> » seulement si `confidentialite_url` (neuf, vide par défaut) est rempli.
 - **Crédits (RG-02, RG-03, RG-07)** : `tools/qa/verifier_licences.py` fabrique `CREDITS.txt` et `store/credits.md` sans aucun titre d'origine ni marque (noms inventés de `configgame.json`, auteur, licence et lien) : voitures, 3 deux-roues (neshallads, DevanirGrau, valvetin), personnes, animaux (MIT du goéland avec son texte), routes (Poly Haven), sons (« gros » : titre et auteurs Mike Koenig, Stephan, SpeedJunkie), police, stb, **android_native_app_glue (Apache 2.0, texte complet)**. Le script vérifie aussi que chaque actif livré est crédité et qu'aucune marque de `cars.h` ou des deux-roues n'y est (essai : « Volkswagen Golf, Kawasaki Ninja, GT86 » ajoutés à la main → 5 manques). Il lit `VOITURES_RETIREES` de WFS-404 quand elle existe.

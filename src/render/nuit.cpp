@@ -123,20 +123,27 @@ public:
         // ---------- lumières : phares, recul, 4 lampadaires les plus proches ----------
         fp.spotCount = 0;
         const CarDims& d = g.car->d;
-        // WFS-218 (RG-00 à RG-02) : deux feux de croisement réels, un à chaque optique avant lue sur le modèle (mêmes centres
-        // que les halos des phares, Renderer::feuxVoiture ; sans modèle : proportions du jeu web), 3 cm devant la glace ;
+        // WFS-218 (RG-00 à RG-02) : deux feux de croisement réels, un à chaque optique avant lue sur le modèle (WFS-413 : centre
+        // de chaque glace ; sans modèle : proportions du jeu web) ;
         // axe = avant de la voiture, à l'horizontale ; coupure, intensité (cd, flux sourcé) et teinte : phares.h. Remplace
         // le projecteur unique au centre (cône de 40°, portée 170 m, sans coupure : murs éclairés jusqu'au toit).
         const bool estLed = phares::led(g.car->id);
         const FeuxModele* fm = g.modele && g.modele->ok ? &g.modele->feux : nullptr;
         const float ox = fm ? fm->avantX : d.W / 2 - 0.3f, oy = fm ? fm->avantY : std::max(0.6f, d.H * 0.41f), oz = fm ? fm->avant - 0.03f : -d.L / 2 - 0.03f;
+        // WFS-413 (RG-02, ANO-240) : chaque feu part du centre de SA glace mesurée sur le modèle, 1 cm derrière elle (dans l'optique),
+        // et plus d'un point calculé devant le pare-chocs ; axe, coupure et intensité inchangés (WFS-218, WFS-382)
+        auto source = [&](int cote) {
+            if (fm && fm->phares) { const int s = cote > 0 ? 1 : 0; return fm->phare[s] - fm->phareNormale[s] * feux_modele::DERRIERE_GLACE; }
+            return vec3{cote * ox, oy, oz};
+        };
         // WFS-382 (RG-01) : caméra derrière les optiques (vues Poursuite, Proche, Capot, Cockpit ; pas la vue de face) : pénombre 1 =
         // marque lue par eclairage.glsl (retroChaussee : rétroréflexion de l'asphalte vers le conducteur) ; ignorée par le feu de croisement
         const vec3 avantJ = normalize(W.transformDir({0, 0, -1}));
         const bool derriere = dot(g.camPos - W.transformPoint({0, oy, oz}), avantJ) < 0.5f && length(g.camPos - W.transformPoint({0, 0, 0})) < 15.f;
         for (int cote : {-1, 1}) {
             FrameParams::Spot& h = fp.spots[fp.spotCount++];
-            h.pos = W.transformPoint({cote * ox, oy, oz}); h.target = W.transformPoint({cote * ox, oy, oz - 10.f});
+            const vec3 src = source(cote);
+            h.pos = W.transformPoint(src); h.target = W.transformPoint(src + vec3{0, 0, -10.f});
             h.color = estLed ? phares::TEINTE_LED : phares::TEINTE_HALOGENE; h.intensity = phares::creteCd(estLed) / feux_modele::LUX_PAR_UNITE;
             h.distance = phares::PORTEE_M; h.angle = 1.45f; h.penumbra = derriere ? 1.f : 0.f; h.decay = 0; h.croisement = true;
         }
@@ -190,7 +197,8 @@ public:
             vec3 depl{}; float dMin = 3.f;
             for (const phares::PhareAutre& b : prec2_) { const float dd = length(b.centre - a.centre); if (dd < dMin) { dMin = dd; depl = a.centre - b.centre; } }
             FrameParams::Spot& h = fp.spots[fp.spotCount++];
-            h.pos = a.centre + depl + a.avant * 0.1f; h.target = h.pos + a.avant * 10.f;
+            // WFS-413 (RG-02) : milieu des deux glaces mesurées, 1 cm derrière elles (il était 10 cm devant un point du pare-chocs)
+            h.pos = a.centre + depl - a.avant * feux_modele::DERRIERE_GLACE; h.target = h.pos + a.avant * 10.f;
             h.color = phares::TEINTE_LED; h.intensity = 2 * phares::creteCd(true) / feux_modele::LUX_PAR_UNITE;
             h.distance = 90; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
             eclairants_.push_back(a.centre + depl);

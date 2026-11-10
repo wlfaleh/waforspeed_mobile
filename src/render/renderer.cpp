@@ -1320,9 +1320,8 @@ constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du je
 constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
 constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
 constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
-// WFS-382 (RG-03, ANO-222) : lueur des phares ramenée de 0,30 m (disque de 60 cm) à 0,12 m (≈ 2 fois la glace) et à 5 % du cœur :
-// vu au-dessus de la coupure, un feu de croisement n'envoie que 350 à 625 cd (R112 : B50L, zone III), pas l'éclat du faisceau
-constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.12f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.12f;
+// WFS-413 (RG-03, ANO-240) : plus de cœur ni de lueur ronde devant les phares (PHARE_COEUR, PHARE_LUEUR de WFS-382 retirés) :
+// la glace du modèle s'allume elle-même (draw, pièces « phare ») et seul le bloom de l'image l'entoure
 constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
 constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
@@ -1403,11 +1402,13 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         // WFS-109 : feu arrière découpé (RG-13) traité comme un MAT_TAIL : verre rouge, sans l'émissif blanc d'origine ;
         // 3e feu stop (RG-03) : éteint hors freinage ; stop : rouge vif de jour comme de nuit, transition de 80 ms (RG-02)
         if (part.feuArriere == 1) { p.pc.emissive = {0, 0, 0, p.pc.emissive.w}; p.pc.color = {p.pc.color.x * feux::VERRE.x, p.pc.color.y * feux::VERRE.y, p.pc.color.z * feux::VERRE.z, p.pc.color.w}; }
-        if ((mat.flags & MAT_TAIL) || part.feuArriere) {
+        if ((mat.flags & MAT_TAIL) || feux_modele::pieceFeuArriere(part.feuArriere)) {   // WFS-413 : pas les pièces « phare »
             const float k = feux::emissionArriere(fx.nuit && part.feuArriere != 2, stopK);
             p.pc.emissive.x += k; p.pc.emissive.y += k * 0.02f; p.pc.emissive.z += k * 0.04f;
         }
-        if (fx.nuit && (mat.flags & MAT_HEAD)) { p.pc.emissive.x += 2.4f; p.pc.emissive.y += 2.2f; p.pc.emissive.z += 1.9f; }
+        // WFS-413 (RG-03) : la nuit, c'est l'optique du modèle qui s'allume (pièces « phare » repérées voiture par voiture ;
+        // MAT_HEAD pour les modèles sans repérage : deux-roues) ; plus aucune tache ronde plaquée devant (feuxVoiture)
+        if (fx.nuit && ((mat.flags & MAT_HEAD) || part.feuArriere == feux_modele::PIECE_PHARE)) { p.pc.emissive.x += 2.4f; p.pc.emissive.y += 2.2f; p.pc.emissive.z += 1.9f; }
         if (mat.filament) {   // WFS-42 : fils plus fins qu'un pixel → mélangés selon leur couverture, avant les vitres
             p.pc.params.w = (float)(mat.flags | MAT_BLEND); p.depth += 0.05f;
             transparent_.push_back(p);
@@ -1529,6 +1530,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
+    // WFS-226 ; WFS-413 (RG-02) : milieu des deux glaces mesurées (FeuxModele::avantX / avantY / avant, model_loader.cpp)
     if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
                                                  (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
@@ -1541,7 +1543,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         const float kl = 1.f - std::clamp((d - LUEUR_DEBUT) / (LUEUR_FIN - LUEUR_DEBUT), 0.f, 1.f);
         if (kl > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));
     };
-    const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
+    const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f);
     // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
     const float s = f.frein >= 0 ? std::clamp(f.frein, 0.f, 1.f) : (f.stop ? 1.f : 0.f);
     // RG-01 : le jour, aucun halo plaqué : seul le feu du modèle s'allume. WFS-182 (RG-02) : sans pièce de feu reconnue,
@@ -1558,7 +1560,6 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         const vec3 pr = F.reculTrouve ? vec3{side * F.recul.x, F.recul.y, F.recul.z + 0.01f}
                                       : vec3{side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f};
         if (f.recul) feu(w.transformPoint(pr), arriere, RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
-        if (f.nuit) feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
     }
     if (!f.nuit) return;   // RG-04 : le jour, pas de reflet sur la route
     // WFS-171 (RG-02) : route mouillée avec reflets : seule la traînée floue du reflet de WFS-142, pas de lueur en plus

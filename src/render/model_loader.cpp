@@ -253,6 +253,21 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         if (const uint32_t n = correctifs::marquerFeux(idVoiture, idx, out.parts, pos, gris)) WFS_LOG("%s : %u triangles de feux arrière marqués (WFS-170)", path.c_str(), n);
         if (!lodParts.empty()) correctifs::marquerFeux(idVoiture, lodIdx, lodParts, pos, gris);
     }
+    // WFS-413 (RG-01, RG-03, RG-04, ANO-240) : optiques avant repérées voiture par voiture (correctifs_voitures.h) : centre de
+    // chaque glace mesuré, pièces de la lampe sorties en pièces « phare » (allumées la nuit) ; le drapeau MAT_HEAD d'origine
+    // (souvent faux : bandeaux, antibrouillards, aucune pièce) n'allume plus rien sur ces voitures
+    if (const std::vector<feux_modele::ZoneOptique> zph = correctifs::zonesPhares(idVoiture, nMat); !zph.empty()) {
+        auto pos = [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; };
+        feux_modele::Optique op[2];
+        feux_modele::mesurerOptiques(idx, out.parts, pos, zph, op);
+        const uint32_t n = feux_modele::marquerPhares(idx, out.parts, pos, zph);
+        if (!lodParts.empty()) feux_modele::marquerPhares(lodIdx, lodParts, pos, zph);
+        for (RawMat& m : raw) m.flags &= ~(uint32_t)MAT_HEAD;
+        out.feux.phares = op[0].trouvee && op[1].trouvee;
+        for (int s = 0; s < 2; s++) { out.feux.phare[s] = op[s].centre; out.feux.phareNormale[s] = op[s].normale; }
+        WFS_LOG("%s : optiques avant %s : gauche (%.3f, %.3f, %.3f), droite (%.3f, %.3f, %.3f), %u triangles allumés (WFS-413)", path.c_str(),
+                out.feux.phares ? "mesurées" : "INCOMPLÈTES", op[0].centre.x, op[0].centre.y, op[0].centre.z, op[1].centre.x, op[1].centre.y, op[1].centre.z, n);
+    } else if (path.find("deux_roues/") == std::string::npos) WFS_LOG("%s : optiques avant non reconnues (WFS-413 : voiture absente de PHARES_AVANT ou modèle changé)", path.c_str());
     // WFS-134 (RG-06, ANO-67) : tranches des portes (faces de carrosserie tournées vers l'avant ou l'arrière, sur les flancs,
     // à mi-hauteur, hors pare-chocs) : dans une vraie voiture, c'est un jour sombre ; ici elles reflétaient le sol en beige
     // (« trace beige verticale » de la Model 3). Elles passent dans une pièce à part, gris très sombre mat.
@@ -311,12 +326,13 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     for (size_t niv = 0; niv <= out.partsNiveaux.size(); niv++) {
         const std::vector<ModelPart>& src = niv ? out.partsNiveaux[niv - 1] : lodParts.empty() ? out.parts : out.partsLod;
         std::vector<ModelPart>& dst = niv ? out.partsBasseNiveaux[niv - 1] : out.partsBasse;
-        int32_t matPeinture = -1, matVitre = -1, matFeu = -1;
-        std::vector<uint32_t> cat[4];   // 0 peinture, 1 feux arrière, 2 vitres, 3 reste opaque
+        int32_t matPeinture = -1, matVitre = -1, matFeu = -1, matPhare = -1;
+        std::vector<uint32_t> cat[5];   // 0 peinture, 1 feux arrière, 2 vitres, 3 reste opaque, 4 optiques avant (WFS-413 : allumées au loin)
         for (const ModelPart& p : src) {
             if (p.material >= raw.size()) continue;
             const uint32_t f = raw[p.material].flags;
-            const int c = (f & MAT_PAINT) ? 0 : ((f & MAT_TAIL) || p.feuArriere == 1) ? 1 : (f & (MAT_GLASS | MAT_BLEND)) ? 2 : 3;
+            const int c = p.feuArriere == feux_modele::PIECE_PHARE ? 4 : (f & MAT_PAINT) ? 0 : ((f & MAT_TAIL) || p.feuArriere == 1) ? 1 : (f & (MAT_GLASS | MAT_BLEND)) ? 2 : 3;
+            if (c == 4 && matPhare < 0) matPhare = (int32_t)p.material;
             if (c == 0 && matPeinture < 0) matPeinture = (int32_t)p.material;
             if (c == 1 && matFeu < 0) matFeu = (int32_t)p.material;
             if (c == 2 && matVitre < 0 && (f & MAT_GLASS)) matVitre = (int32_t)p.material;
@@ -330,10 +346,11 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
                 d.tC = d.tN = d.tMR = -1; d.flags = MAT_DOUBLE;
                 raw.push_back(d); partDetail.push_back(0); partFil.push_back(0);
             }
-            const int32_t mats[4] = {matPeinture, matFeu >= 0 ? matFeu : sombre, matVitre >= 0 ? matVitre : sombre, sombre};
-            for (int c : {0, 3, 1, 2}) {
+            const int32_t mats[5] = {matPeinture, matFeu >= 0 ? matFeu : sombre, matVitre >= 0 ? matVitre : sombre, sombre, matPhare >= 0 ? matPhare : sombre};
+            for (int c : {0, 3, 4, 1, 2}) {
                 if (cat[c].empty()) continue;
-                dst.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0)});
+                const int8_t tag = c == 4 ? (int8_t)feux_modele::PIECE_PHARE : (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0);
+                dst.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, tag});
                 idx.insert(idx.end(), cat[c].begin(), cat[c].end());
             }
         }
@@ -382,6 +399,10 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     const float hw = out.feux.largeur * 0.5f;
     out.feux.arriereX = tMax.x > tMin.x ? std::clamp(std::max(tMax.x, -tMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.18f;
     out.feux.avantX = hMax.x > hMin.x ? std::clamp(std::max(hMax.x, -hMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.3f;
+    if (out.feux.phares) {   // WFS-413 (RG-01) : milieu des deux glaces mesurées (lu par les autres voitures, phares::noterAutre)
+        const vec3 g = out.feux.phare[0], d = out.feux.phare[1];
+        out.feux.avantX = (d.x - g.x) * 0.5f; out.feux.avantY = (g.y + d.y) * 0.5f; out.feux.avant = (g.z + d.z) * 0.5f;
+    }
     if (!out.feux.pieceArriere) WFS_LOG("feu non trouvé : %s (WFS-182 : aucun halo de frein)", idVoiture.c_str());
     for (size_t mi = 0; mi < raw.size(); mi++) {
         const RawMat& m = raw[mi];
