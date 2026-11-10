@@ -464,7 +464,8 @@
      -2.45,
      -2.2
     ],
-    "note": "calandre de marque en deux « haricots » (cadres chromés et barres) retirée par découpe exacte sur leur contour (WFS-362)"
+    "note": "calandre de marque en deux « haricots » (cadres chromés et barres) retirée par découpe exacte sur leur contour (WFS-362)",
+    "triangles": 6438
    },
    {
     "decouper": true,
@@ -619,7 +620,8 @@
      -2.45,
      -2.2
     ],
-    "note": "fond noir des haricots retiré (découpe exacte, WFS-362)"
+    "note": "fond noir des haricots retiré (découpe exacte, WFS-362)",
+    "triangles": 438
    },
    {
     "decouper": true,
@@ -774,472 +776,8 @@
      -2.45,
      -2.25
     ],
-    "note": "pont de carrosserie entre les haricots et rebord des ouvertures retirés (découpe exacte, WFS-362)"
-   },
-   {
-    "decouper": true,
-    "materiau": 31,
-    "contour": [
-     [
-      -0.374,
-      0.4901
-     ],
-     [
-      -0.37,
-      0.4587
-     ],
-     [
-      -0.3639,
-      0.4284
-     ],
-     [
-      -0.3549,
-      0.398
-     ],
-     [
-      -0.3215,
-      0.3191
-     ],
-     [
-      -0.3154,
-      0.305
-     ],
-     [
-      -0.3053,
-      0.2847
-     ],
-     [
-      -0.2529,
-      0.2573
-     ],
-     [
-      -0.2418,
-      0.2522
-     ],
-     [
-      -0.0862,
-      0.2502
-     ],
-     [
-      0.0592,
-      0.2502
-     ],
-     [
-      0.2158,
-      0.2521
-     ],
-     [
-      0.2269,
-      0.2572
-     ],
-     [
-      0.2783,
-      0.2847
-     ],
-     [
-      0.2844,
-      0.2948
-     ],
-     [
-      0.3279,
-      0.398
-     ],
-     [
-      0.3379,
-      0.4284
-     ],
-     [
-      0.343,
-      0.4587
-     ],
-     [
-      0.347,
-      0.4901
-     ],
-     [
-      0.346,
-      0.5335
-     ],
-     [
-      0.345,
-      0.5416
-     ],
-     [
-      0.3369,
-      0.576
-     ],
-     [
-      0.3156,
-      0.6407
-     ],
-     [
-      0.2944,
-      0.6771
-     ],
-     [
-      0.2894,
-      0.6812
-     ],
-     [
-      0.2843,
-      0.6842
-     ],
-     [
-      0.2682,
-      0.6883
-     ],
-     [
-      0.1978,
-      0.6928
-     ],
-     [
-      -0.2239,
-      0.6928
-     ],
-     [
-      -0.2952,
-      0.6883
-     ],
-     [
-      -0.3103,
-      0.6842
-     ],
-     [
-      -0.3164,
-      0.6812
-     ],
-     [
-      -0.3204,
-      0.6771
-     ],
-     [
-      -0.3426,
-      0.6407
-     ],
-     [
-      -0.3639,
-      0.576
-     ],
-     [
-      -0.372,
-      0.5416
-     ]
-    ],
-    "z": [
-     -2.45,
-     -2.2
-    ],
-    "note": "badge tricolore de la marque sur le haricot gauche retiré (1/3, WFS-362)"
-   },
-   {
-    "decouper": true,
-    "materiau": 33,
-    "contour": [
-     [
-      -0.374,
-      0.4901
-     ],
-     [
-      -0.37,
-      0.4587
-     ],
-     [
-      -0.3639,
-      0.4284
-     ],
-     [
-      -0.3549,
-      0.398
-     ],
-     [
-      -0.3215,
-      0.3191
-     ],
-     [
-      -0.3154,
-      0.305
-     ],
-     [
-      -0.3053,
-      0.2847
-     ],
-     [
-      -0.2529,
-      0.2573
-     ],
-     [
-      -0.2418,
-      0.2522
-     ],
-     [
-      -0.0862,
-      0.2502
-     ],
-     [
-      0.0592,
-      0.2502
-     ],
-     [
-      0.2158,
-      0.2521
-     ],
-     [
-      0.2269,
-      0.2572
-     ],
-     [
-      0.2783,
-      0.2847
-     ],
-     [
-      0.2844,
-      0.2948
-     ],
-     [
-      0.3279,
-      0.398
-     ],
-     [
-      0.3379,
-      0.4284
-     ],
-     [
-      0.343,
-      0.4587
-     ],
-     [
-      0.347,
-      0.4901
-     ],
-     [
-      0.346,
-      0.5335
-     ],
-     [
-      0.345,
-      0.5416
-     ],
-     [
-      0.3369,
-      0.576
-     ],
-     [
-      0.3156,
-      0.6407
-     ],
-     [
-      0.2944,
-      0.6771
-     ],
-     [
-      0.2894,
-      0.6812
-     ],
-     [
-      0.2843,
-      0.6842
-     ],
-     [
-      0.2682,
-      0.6883
-     ],
-     [
-      0.1978,
-      0.6928
-     ],
-     [
-      -0.2239,
-      0.6928
-     ],
-     [
-      -0.2952,
-      0.6883
-     ],
-     [
-      -0.3103,
-      0.6842
-     ],
-     [
-      -0.3164,
-      0.6812
-     ],
-     [
-      -0.3204,
-      0.6771
-     ],
-     [
-      -0.3426,
-      0.6407
-     ],
-     [
-      -0.3639,
-      0.576
-     ],
-     [
-      -0.372,
-      0.5416
-     ]
-    ],
-    "z": [
-     -2.45,
-     -2.2
-    ],
-    "note": "badge tricolore retiré (2/3, WFS-362)"
-   },
-   {
-    "decouper": true,
-    "materiau": 34,
-    "contour": [
-     [
-      -0.374,
-      0.4901
-     ],
-     [
-      -0.37,
-      0.4587
-     ],
-     [
-      -0.3639,
-      0.4284
-     ],
-     [
-      -0.3549,
-      0.398
-     ],
-     [
-      -0.3215,
-      0.3191
-     ],
-     [
-      -0.3154,
-      0.305
-     ],
-     [
-      -0.3053,
-      0.2847
-     ],
-     [
-      -0.2529,
-      0.2573
-     ],
-     [
-      -0.2418,
-      0.2522
-     ],
-     [
-      -0.0862,
-      0.2502
-     ],
-     [
-      0.0592,
-      0.2502
-     ],
-     [
-      0.2158,
-      0.2521
-     ],
-     [
-      0.2269,
-      0.2572
-     ],
-     [
-      0.2783,
-      0.2847
-     ],
-     [
-      0.2844,
-      0.2948
-     ],
-     [
-      0.3279,
-      0.398
-     ],
-     [
-      0.3379,
-      0.4284
-     ],
-     [
-      0.343,
-      0.4587
-     ],
-     [
-      0.347,
-      0.4901
-     ],
-     [
-      0.346,
-      0.5335
-     ],
-     [
-      0.345,
-      0.5416
-     ],
-     [
-      0.3369,
-      0.576
-     ],
-     [
-      0.3156,
-      0.6407
-     ],
-     [
-      0.2944,
-      0.6771
-     ],
-     [
-      0.2894,
-      0.6812
-     ],
-     [
-      0.2843,
-      0.6842
-     ],
-     [
-      0.2682,
-      0.6883
-     ],
-     [
-      0.1978,
-      0.6928
-     ],
-     [
-      -0.2239,
-      0.6928
-     ],
-     [
-      -0.2952,
-      0.6883
-     ],
-     [
-      -0.3103,
-      0.6842
-     ],
-     [
-      -0.3164,
-      0.6812
-     ],
-     [
-      -0.3204,
-      0.6771
-     ],
-     [
-      -0.3426,
-      0.6407
-     ],
-     [
-      -0.3639,
-      0.576
-     ],
-     [
-      -0.372,
-      0.5416
-     ]
-    ],
-    "z": [
-     -2.45,
-     -2.2
-    ],
-    "note": "badge tricolore retiré (3/3, WFS-362)"
+    "note": "pont de carrosserie entre les haricots et rebord des ouvertures retirés (découpe exacte, WFS-362)",
+    "triangles": 362
    },
    {
     "decouper": true,
@@ -1261,7 +799,8 @@
      -2.4,
      -2.3
     ],
-    "note": "anneau chromé de l'ancien logo rond du capot retiré (WFS-362)"
+    "note": "anneau chromé de l'ancien logo rond du capot retiré (WFS-362)",
+    "triangles": 188
    },
    {
     "panneau": {
@@ -1363,7 +902,8 @@
      "debord": 0.006,
      "bombe": 0.03
     },
-    "note": "haut des anciens haricots refermé par une pièce de carrosserie (même peinture, galbe du nez) : nez lisse entre les phares (WFS-362, skill artiste-3d § 5)"
+    "note": "haut des anciens haricots refermé par une pièce de carrosserie (même peinture, galbe du nez) : nez lisse entre les phares (WFS-362, skill artiste-3d § 5)",
+    "triangles": 3404
    },
    {
     "grilleAjustee": {
@@ -1468,7 +1008,8 @@
     },
     "note": "grille générique basse et large, d'un seul tenant, ajustée à l'ouverture : 1,5 cm derrière la carrosserie, 7 lames chanfreinées, fond noir mat (WFS-362)"
    }
-  ]
+  ],
+  "empreinteApres": "cea09c310ff81d00"
  },
  "s3": {
   "materiaux": 29,
@@ -1715,7 +1256,8 @@
      -2.3,
      -2.1
     ],
-    "note": "cadre chromé de la grande calandre à 6 pans retiré par découpe exacte sur son contour (WFS-362)"
+    "note": "cadre chromé de la grande calandre à 6 pans retiré par découpe exacte sur son contour (WFS-362)",
+    "triangles": 470
    },
    {
     "decouper": true,
@@ -1958,7 +1500,8 @@
      -2.3,
      -2.05
     ],
-    "note": "grille quadrillée de la calandre de marque retirée (découpe exacte, WFS-362)"
+    "note": "grille quadrillée de la calandre de marque retirée (découpe exacte, WFS-362)",
+    "triangles": 1618
    },
    {
     "decouper": true,
@@ -2201,7 +1744,8 @@
      -2.3,
      -2.15
     ],
-    "note": "rebord de carrosserie de l'ancienne ouverture retiré (découpe exacte, WFS-362)"
+    "note": "rebord de carrosserie de l'ancienne ouverture retiré (découpe exacte, WFS-362)",
+    "triangles": 217
    },
    {
     "decouper": true,
@@ -2444,7 +1988,8 @@
      -2.3,
      -2.1
     ],
-    "note": "petite pièce (capteur) de l'ancienne calandre retirée (WFS-362)"
+    "note": "petite pièce (capteur) de l'ancienne calandre retirée (WFS-362)",
+    "triangles": 4
    },
    {
     "panneau": {
@@ -2582,7 +2127,8 @@
      "debord": 0.006,
      "bombe": 0.008
     },
-    "note": "haut de l'ancienne calandre à 6 pans refermé par une pièce de carrosserie (même peinture, galbe du nez) : nez lisse entre les phares (WFS-362, skill artiste-3d § 5)"
+    "note": "haut de l'ancienne calandre à 6 pans refermé par une pièce de carrosserie (même peinture, galbe du nez) : nez lisse entre les phares (WFS-362, skill artiste-3d § 5)",
+    "triangles": 2520
    },
    {
     "grilleAjustee": {
@@ -2739,6 +2285,7 @@
     },
     "note": "grille générique basse et large, d'un seul tenant, ajustée à l'ouverture : 1,5 cm derrière la carrosserie, 9 lames chanfreinées, fond noir mat (WFS-362)"
    }
-  ]
+  ],
+  "empreinteApres": "12651c04697a24ae"
  }
 }
