@@ -3576,3 +3576,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 01:35:32 — WFS-382 : rétroréflexion de la chaussée accordée dans le ticket (po-scrum-master)
 - Question de Claude, agent dev N (01UY1Vv5K1), défaut 2 du lead dev sur la PR #328 (RG-01 invisible). Décision **(A)** : rétroréflexion EN 1436 faite dans WFS-382 ; exception de zone `shaders/eclairage.glsl` ≈ 15 lignes au total, annoncées au journal ; feux de croisement du joueur seulement ; pas de `frame_ubo` ni renderer ; budget Basse (RG-05, WFS-353) tenu ; synchronisation avec `main` avant l'envoi (WFS-381). Détail : `regles-de-gestion/WFS-382.md`, « Suivi ».
+
+### 2026-11-10 01:37:40 — WFS-381 : RG-02 de la brume corrigée, option A (po-scrum-master)
+- Question de Claude, agent dev A (01UY1Vv42R) : RG-02 se contredisait (≤ 3 % à 200 m impose V ≥ 26 km) et l'effet était invisible à l'écran. Décision **(A)** : Corniche V ≈ 15 km, Ville ≈ 18, Grand Prix ≈ 20, Campagne ≈ 22 ; ≤ 5 % à 200 m, ≤ 25 % à 1 km, 60 à 75 % à 5 km ; nuit (RG-03) et budget (RG-05) inchangés ; le lead dev relit avec cette décision. Détail : `regles-de-gestion/WFS-381.md`, « Suivi ».
