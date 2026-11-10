@@ -581,4 +581,72 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
     choisirVue(avant);
 }
 
+// ---------- WFS-323 : banc « cockpit-reference » : les scènes de la référence de l'utilisateur ----------
+// (qa/retours/2026-11-08-cockpit-reference-utilisateur.jpg) : Golf, M4 et X5 sur la Corniche de jour en ligne droite, Golf en
+// Ville de nuit, pavillon (regard Haut), et une suite de 4 images d'un braquage (le volant tourne avec la direction, ANO-187).
+// Chaque capture écrit au journal l'horizon (part de la hauteur depuis le haut, RG-01 : 40 à 45 %) et le champ horizontal.
+void benchCockpitReference(Game& g, Renderer& r, const std::string& out) {
+    const VueCamera avant = vueCamera();
+    const RegardCockpit avantR = regardCockpit();
+    const bool regles = courseBenchRulesOn();
+    courseBenchRules(true);
+    double t = 900;
+    auto rouler = [&](int images) { for (int i = 0; i < images; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 6 == 0) g.render(t); } };
+    auto capture = [&](const std::string& nom) {
+        g.render(t); g.render(t + 1.0 / 60); t += 1.0 / 60;
+        r.capturePng(out + "/" + nom + ".png");
+        const EtatCockpit& ck = etatCockpit();
+        const vec3 f = normalize(vueRegard());
+        const float tanV = std::tan(ck.fov * PI / 360.f), tanH = tanV * (float)r.width() / (float)r.height();
+        const float horizon = 0.5f + std::tan(std::asin(std::clamp(f.y, -1.f, 1.f))) / (2 * tanV);
+        WFS_LOG("capture %s (WFS-323) : voiture %s ; horizon à %.1f %% depuis le haut (40 à 45 %% visé) ; champ vertical %.1f°, "
+                "horizontal %.1f° ; volant %+.2f rad ; braquage %+.2f ; %.0f km/h", nom.c_str(), g.player().car->id, horizon * 100, ck.fov,
+                2 * std::atan(tanH) * 180.f / PI, g_ckInt.volant, g.player().steer, g.player().kmh());
+    };
+    auto course = [&](const char* car, const char* carte, bool nuit) {
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        if (!g.init(r, car, carte)) { WFS_ERR("cockpit-reference : chargement impossible (%s, %s)", car, carte); return false; }
+        choisirVue(VueCamera::Cockpit); choisirRegard(RegardCockpit::Normal); g.camMode = 0; g.setAutopilot(true);
+        rouler(60 * 3 + 30);   // décompte puis départ
+        return true;
+    };
+    // ligne droite : la course roule jusqu'à ce que la route reste droite (moins de 3° de virage) sur les 120 m qui viennent
+    auto ligneDroite = [&]() {
+        for (int k = 0; k < 60 * 40; k++) {
+            const Player& pl = g.player();
+            if (g_pisteRegard && pl.kmh() > 50) {
+                const double th0 = g_pisteRegard->pointLisse(pl.dist, 0).th, th1 = g_pisteRegard->pointLisse(pl.dist + 120.0 / M, 0).th;
+                if (std::abs(std::atan2(std::sin(th1 - th0), std::cos(th1 - th0))) < 0.05) return;
+            }
+            g.update(1.0 / 60); t += 1.0 / 60; if (k % 30 == 0) g.render(t);
+        }
+    };
+    for (const char* car : {"golf", "m4", "x5"})
+        if (course(car, "plage", false)) {
+            rouler(60); ligneDroite(); rouler(20);
+            capture(std::string("cockpit-reference-") + car + "-corniche-jour");
+            if (!std::strcmp(car, "golf")) {
+                choisirRegard(RegardCockpit::Haut); rouler(120); capture("cockpit-reference-golf-pavillon");
+                choisirRegard(RegardCockpit::Bas); rouler(120); capture("cockpit-reference-golf-regard-bas");
+                choisirRegard(RegardCockpit::Normal); rouler(120);
+                // ANO-187 : suite de 4 images d'un braquage à gauche (doigt glissé dans la zone de braquage, comme benchCockpit)
+                const float W = (float)r.width(), H = (float)r.height();
+                g.setAutopilot(false);
+                g.onTouch({32, W * 0.20f, H * 0.70f, true});
+                for (int k = 1; k <= 4; k++) {
+                    g.onTouch({32, W * (0.20f - 0.02f * k), H * 0.70f, true});
+                    rouler(8); capture("cockpit-reference-golf-volant-" + std::to_string(k));
+                }
+                g.onTouch({32, W * 0.12f, H * 0.70f, false});
+                g.setAutopilot(true);
+            }
+        }
+    if (course("golf", "ville", true)) { rouler(60); ligneDroite(); rouler(20); capture("cockpit-reference-golf-ville-nuit"); }
+    g.shutdown();
+    unsetenv("WFS_MOMENT");
+    courseBenchRules(regles);
+    choisirRegard(avantR);
+    choisirVue(avant);
+}
+
 } // namespace wfs

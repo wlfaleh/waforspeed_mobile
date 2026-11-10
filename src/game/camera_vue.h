@@ -127,6 +127,8 @@ const EtatCockpit& etatCockpit();
 class Game; class Renderer;
 // WFS-201 : `voitures` : liste des voitures (lot 1 au job partie2c, lot 2 réparti entre les jobs nuit et partie1a, lot 3 entre partie1b et partie2b ; cockpit : toutes)
 void benchCockpit(Game& g, Renderer& r, const std::string& outDir, const std::vector<std::string>& voitures);
+// WFS-323 : banc « cockpit-reference » (scènes de la référence de l'utilisateur : Corniche de jour, Ville de nuit, pavillon, volant)
+void benchCockpitReference(Game& g, Renderer& r, const std::string& outDir);
 // voitures des scènes du banc : lot 1 et la Corsa (cockpit commun), puis le lot 2 en deux moitiés
 inline const std::vector<std::string> COCKPIT_LOT1{"golf", "m4", "p911", "sf90", "corsa"}, COCKPIT_LOT2A{"a45", "s3", "giulia", "p208"},
                                       COCKPIT_LOT2B{"gallardo", "mustang", "model3", "x5"},
