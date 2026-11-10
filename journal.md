@@ -3766,3 +3766,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **WFS-402** (P1 Urgent, épic E15, nouvelle file « Ouvertures communes ») : inventaire par carte, fenêtres en retrait de 15 à 25 cm (cadre, petits bois, appui, linteau, vitre qui reflète), volets et garde-corps selon le lieu, porte d'entrée côté rue sur chaque bâtiment, vitrines, variété par bâtiment, nuit avec pièces éclairées (30 à 50 %, 2700 à 4000 K), formes géométriques interdites, téléphone tenu. Règles : `regles-de-gestion/WFS-402.md`.
 - **⏳ En attente après WFS-370** (🔧, agent dev3d 01UY1Vv2Ph) : mêmes fichiers du kit `src/world/archi_*`. Agent `dev-artiste-3d`, nouvelle session ; avis « Avis agent 3D : VALIDÉ » avant le lead dev (RG-E15-06). Les US « décor complet » WFS-385 à 389 le reprennent.
 - `E15-decors.md` : file « Ouvertures communes » ajoutée ; `TACHES.md` (ligne + bandeau), `track-agent.md`, `tache utilisateur.md` à jour.
+
+### 2026-11-10 09:49:00 — WFS-323 en tout premier, WFS-280 abandonné (po-scrum-master)
+- Ordre de l'utilisateur (`@po`) : « 280 abandonné, je ne veux pas de motos garées… tu mets 323 en premier ».
+- **WFS-280** (deux-roues garés et faufilement) : 🚫 Abandonné ; rien n'est retiré du code (WFS-232, deux-roues dans le trafic, reste). Ordre permanent ajouté dans le skill du PO : pas de motos garées.
+- **WFS-323** (vue Cockpit 1/3) : P2 → **P1 Urgent**, **en tout premier** dans l'ordre des tickets prêts ; agent `dev-artiste-3d` (`@devartiste`), nouvelle session.
