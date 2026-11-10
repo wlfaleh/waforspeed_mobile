@@ -2173,3 +2173,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Diagnostic du lead dev (lecture seule), vérifié par le PO dans le code : **WFS-323 (#335, APK 990)**, `vehicule_cockpit.cpp` l. 698-709 : moyeu en petite dalle plate, branches en barres fines, branche basse détachée du moyeu (`hub = 0.07` > demi-hauteur du moyeu 0,0575 → trou de 12,5 mm). WFS-404 (#337, APK 991) n'a changé que les bandes de couleur de la M4.
 - Revue : le lead dev reconnaît avoir jugé « pas de forme nue » sur le nom des fonctions, sans gros plan du volant.
 - **ANO-241** (bloquante) et **WFS-414** (P1 super urgent, `dev-artiste-3d`, pas l'auteur de WFS-323) créés, en tête de liste ; WFS-323 reste 🟡 avec « volant KO ». Règles : `regles-de-gestion/WFS-414.md` (gros plans du volant obligatoires, avis agent 3D sans réserve).
+
+### 2026-11-10 18:00:10 — WFS-414 limité à la Mustang (po-scrum-master)
+- Ordre de l'utilisateur : « Non, que pour cette voiture. » WFS-414 et ANO-241 limités au volant de la Mustang ; les 16 autres volants ne changent pas (captures Golf / M4 identiques, test de non-changement). La Mustang n'a ni agrafe ni bouton rouge sur les branches : le trou de la branche basse s'y voit, contrairement à la Golf.
