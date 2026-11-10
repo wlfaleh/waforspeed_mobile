@@ -3427,3 +3427,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Zone : `src/world/campagne.cpp` (décor), nouveaux `src/world/decor_campagne_*`, `assets/world/modeles/campagne/**`, `assets/textures/decor/campagne/**`, `assets/licences/**`, `tests/**`. Pas de conflit : WFS-391 (`player.*`, `roues.*`), WFS-382 (`nuit.cpp`), WFS-381 (brume), WFS-392 (`route*`).
 - Plan court : inventaire au journal (RG-01) → modèles CC0 / CC BY aux mesures ±1 % (vignes, maisons, clôtures, bottes, hangars ANO-219) → instances + LOD au chargement → captures jour / nuit / gros plans / perf → PR → avis agent 3D VALIDÉ → lead dev.
 
+### 2026-11-10 00:15:26 — WFS-375 fusionné par le lead dev (lead-dev)
+- PR #322 relue sur 82bdda3 : 16 captures ouvertes (JOUR / NUIT sans défilement, Campagne en plein jour à 22:15, Corniche de nuit), diff lu (`terrain.cpp`, `sauvegarde.cpp/.h`, `test_sauvegarde.cpp`), construction propre et `tests_cpu.sh` refaits : 94/94.
+- Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion squash 14ec9d2. WFS-375 → 🟡 À valider (utilisateur) (RG-06) ; ligne `qa/Check.md` ajoutée ; ligne retirée de `suivi-pr.md`.
