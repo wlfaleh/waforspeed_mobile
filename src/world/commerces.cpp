@@ -42,6 +42,10 @@ const Shop SHOPS[] = {
 constexpr int NB_SHOPS = 10;
 // couleurs des serviettes (C2.flagC du jeu web : drapeaux vifs)
 const unsigned SERVIETTES[6] = {0xe2262b, 0x1d6fb8, 0xffd23a, 0x2f8f4f, 0xff6a00, 0xf4f4f0};
+// WFS-369 : mobilier de terrasse : aluminium, plateau, cannage, bois du mât, fonte du pied, terre cuite, terreau, deux verts de buis
+enum : unsigned { C_ALU = 0x8e9297, C_PLATEAU = 0xe9e4da, C_CANNAGE = 0x9c7444, C_BOIS = 0x8a6a48, C_FONTE = 0x2e3034, C_POT = 0xa65a3c,
+                  C_TERRE = 0x3b2a1e, C_BUIS0 = 0x34502a, C_BUIS1 = 0x456b33 };
+const unsigned MOBILIER[9] = {C_ALU, C_PLATEAU, C_CANNAGE, C_BOIS, C_FONTE, C_POT, C_TERRE, C_BUIS0, C_BUIS1};
 
 using Commerce = ville::Commerce;
 struct Terrasse { Geo pal, jour, soir; };   // WFS-369 : mobilier de terrasse d'un morceau (tables et chaises, parasols ouverts, fermés)
@@ -143,6 +147,7 @@ public:
         for (const Shop& s : SHOPS) { atlas_.ajouter(s.nom); for (unsigned c : {s.bg, s.aw0, s.aw1}) palette_.uv(c); }
         for (unsigned c : {0x2a2d33u, 0x3b4a58u, 0x2a2c30u, 0xe9e4dau, 0x3a3d44u, 0xd8d8d8u, 0x5a4a3au, 0x3f6f2au}) palette_.uv(c);
         for (unsigned c : SERVIETTES) palette_.uv(c);
+        for (unsigned c : MOBILIER) palette_.uv(c);   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
         if (ville_ && !atlas_.construire(r)) return;
         palette_.construire(r);
         vitreNuit_ = neon(r, 0xffcf8a, 0.65f); bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 (accroche E13, ANO-202) : vitrine 0,65 (avant 1,4 : rouge 1,4 au-dessus du blanc et du bloom, blocs blancs) ; Y exposée ≈ 0,44, comme les pièces adaptées (pieceAdaptee)
@@ -225,8 +230,8 @@ private:
         // WFS-369 : mobilier de terrasse modélisé (mobilier_ville.*) : table de bistrot Ø 0,70 m, deux chaises de bistrot face à
         // face, parasol Ø 2,7 m à 8 baleines (toile aux couleurs du store, pans alternés) ouvert le jour, fermé et sanglé la nuit,
         // photophore allumé la nuit ; jardinières en terre cuite et buis taillé aux deux bouts. Même place qu'avant.
-        const vec2 alu = palette_.uv(0x8e9297), plateau = palette_.uv(0xe9e4da), cannage = palette_.uv(0x9c7444), bois = palette_.uv(0x8a6a48),
-                   fonte = palette_.uv(0x2e3034);
+        const vec2 alu = palette_.uv(C_ALU), plateau = palette_.uv(C_PLATEAU), cannage = palette_.uv(C_CANNAGE), bois = palette_.uv(C_BOIS),
+                   fonte = palette_.uv(C_FONTE);
         for (float d : tables(L)) {
             if (sousAbribus(*map_, len_, debut + d / SEG_M, c.side)) continue;   // abribus à cette place
             const Repere pa = repere(t, (debut + d / SEG_M) * SEG);
@@ -247,8 +252,8 @@ private:
             if (sousAbribus(*map_, len_, debut + d / SEG_M, c.side)) continue;
             const Repere pa = repere(t, (debut + d / SEG_M) * SEG);
             for (int l = 0; l < 2; l++)
-                mobilier::jardiniere(terr[l].pal, mobilier::repere(lateral(pa, tLat, 0.15f), pa.r, pa.f), palette_.uv(0xa65a3c), palette_.uv(0x3b2a1e),
-                                     palette_.uv(0x34502a), palette_.uv(0x456b33), graine, l);
+                mobilier::jardiniere(terr[l].pal, mobilier::repere(lateral(pa, tLat, 0.15f), pa.r, pa.f), palette_.uv(C_POT), palette_.uv(C_TERRE),
+                                     palette_.uv(C_BUIS0), palette_.uv(C_BUIS1), graine, l);
             graine++;
         }
     }
