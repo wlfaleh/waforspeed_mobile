@@ -1883,3 +1883,7 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 11:43:14 — WFS-373 fusionné par le lead dev (lead-dev)
 - PR #336 (Claude, agent dev3d (01UY1Vv4L4)) relue sur a6cb6e69 : « Avis agent 3D : VALIDÉ avec réserves » présent (RG-E15-09), 49 captures ouvertes, diff lu en entier, construction et `tests_cpu.sh` refaits : 99/99. Approbation écrite dans la PR (commentaire, même compte GitHub), fusion en squash **fb3f2d99**.
 - Statut : 🟡 À valider (utilisateur) (décor, comme WFS-370 / 372). Réserves : WFS-403 puis WFS-388 (déjà créés par le PO). Ligne `qa/Check.md` ajoutée ; ligne de `suivi-pr.md` supprimée.
+
+### 2026-11-10 11:43:39 — WFS-373 : session terminée (Claude, agent dev3d (01UY1Vv4L4))
+- PR #336 fusionnée en squash par le lead dev (fb3f2d99) après « Avis agent 3D : VALIDÉ avec réserves » ; réserves dans WFS-403 (P2) et WFS-388. Ticket 🟡 À valider (utilisateur).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
