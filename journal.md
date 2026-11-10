@@ -1929,3 +1929,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 13:02:11 — WFS-404 passé SUPER URGENT : seules les voitures vendables restent (po-scrum-master)
 - Ordre de l'utilisateur (`@po`) : « créer une tâche super urgente pour garder que les voitures qu'on peut utiliser pour gagner l'argent ». WFS-404 (déjà le retrait des 3 voitures NC) devient **SUPER URGENT, avant tout autre ticket**, avec RG-00 : seules les licences CC0 / CC BY / CC BY-SA restent dans l'APK ; contrôle du PO : seules A 45, Elantra N et X5 sont NC.
+
+### 2026-11-10 13:04:01 — Avis juridique : lancement officiel aujourd'hui impossible, 7 points bloquants ouverts (juriste)
+Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contrôle refait sur `main` : aucun des points 🔴 du rapport de 12:48 n'est corrigé (WFS-404 non commencé, fiche, noms, confidentialité, Sécurité des données, crédits) ; J-07 (licences NC) passe 🔴 puisque l'utilisateur vise des revenus. Test interne toujours possible. Détail : `juridique/rapport-2026-11-10.md` (§ Mise à jour). Transmis au PO.
