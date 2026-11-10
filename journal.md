@@ -3728,3 +3728,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Synchronisation avec `main`** : brume (WFS-381) et phares de nuit (WFS-382), sans conflit.
 - **Vérification** : 98 tests CPU réussis ; 17 paires de captures refaites sur aabd7bd1.
 - **Suite** : 3e avis de l'agent 3D, puis lead dev.
+
+### 2026-11-10 09:29:53 — WFS-380 fusionné par le lead dev (lead-dev)
+- **PR #326**, 2e relecture sur aabd7bd1 : B1 (écume blanche dans le port) corrigé dans 590aa2e7 (écume du bord × `smoothstep(0,5 ; 0,9 ; agitation)`) ; pixel (1150, 700) de `mer-marina` : (205, 204, 202) → (18, 68, 77).
+- 34 captures ouvertes ; diff depuis 0a587856 lu (10 lignes + synchronisations avec main, résolution propre) ; construction et `tests_cpu.sh` refaits : 98/98.
+- « Avis agent 3D : VALIDÉ avec réserves » sur aabd7bd1. Revue « ✅ Approuvé » écrite dans la PR (en commentaire, même compte GitHub), puis fusion en squash : **f4546c8b**.
+- `TACHES.md` : WFS-380 en 🟡 À valider (utilisateur) (ANO-214, défaut vu par l'utilisateur) ; ligne de `suivi-pr.md` supprimée ; `qa/Check.md` à jour.
+- **Pour le PO** : réserves R7 (rides régulières au loin), R9 (reflet fort des lampadaires), R10 (trait blanc de l'éclaboussure) en tâches séparées ; description de la PR restée à « 96 tests / 15 captures » (98 / 17 en vrai), non bloquant.
