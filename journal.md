@@ -2313,3 +2313,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
   4. Glace gauche presque noire sur les bancs cockpit de nuit et de pluie : à expliquer.
 - Le code est propre, rien de bloquant.
 - Ticket en « ↩️ Retour lead dev (PR #341) ».
+
+### 2026-11-10 19:42:43 — WFS-402 fusionné par le lead dev (lead-dev)
+- PR #340 approuvée (commentaire « ✅ Approuvé par le lead dev », même compte GitHub) et fusionnée en squash : 18aa4768. Avis agent 3D « VALIDÉ » sur fb8ee687.
+- Vérifié : 65 captures ouvertes, tout le diff lu, construction et tests CPU refaits (100 verts ; test_course5_ordinateurs rouge connu de main, sans lien), banc Ville en Basse refait sur main et sur la branche (74 captures, rien de dégradé).
+- Statut : 🟡 À valider (utilisateur). Réserves pour une tâche séparée du PO (RG-12) : filets de lumière la nuit au bord des dormants, reflet des vitres, fenêtres allumées plates en gros plan, porte à rainures du moderne, seuils sous l herbe ; performance et détail Basse à 30 m à confirmer sur le téléphone. WFS-410 et WFS-411 peuvent démarrer.
