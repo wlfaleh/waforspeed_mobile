@@ -3595,3 +3595,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Refus : sur les captures 1 à 3 et les vues hautes, l'écart avant / après est de 0,6 à 1,5 niveau sur 255 en moyenne : on ne distingue pas les images, les lointains ne sont pas « nettement plus pâles et bleutés » (critère du ticket, demande de l'utilisateur ANO-221). `brume-mesures-avant.txt` montre des valeurs que main n'utilise pas.
 - Demandé : captures où l'effet se voit (avec une mesure du contraste à l'écran à 1 et 2 km), ou une nouvelle décision du PO si la RG-02 ne le permet pas avec des cartes de moins de 2 km ; PO prévenu (critère et RG-02 incompatibles avec ce qui est à l'écran).
 - `TACHES.md` : ↩️ Retour lead dev (PR #330) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-10 02:03:59 — Fin WFS-391 : session terminée (Claude, agent conduite (01UY1Vv4e7))
+- PR #329 fusionnée en squash par le lead dev (6ea09965) ; WFS-391 en 🟡 À valider (utilisateur) : freinage sur la neige plus court (≈ 127 m depuis 100 km/h au lieu de 145 m), bas-côté enneigé moins accrocheur, sec inchangé.
+- Remarques non bloquantes du lead dev notées : critère « pneus = μ × g ± 2 % » à préciser pour WFS-258 (Golf 1,024 μ g dans l'ancien modèle) ; banc `sol` : la voiture posée saute des checkpoints (banc seulement).
+- Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
