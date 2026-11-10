@@ -13,7 +13,7 @@
 - **Comment c'est vérifié** :
   - `node tools/retoucher_formes.mjs --verifier` : vert pour **m4, s3, x5, compass, p208** ; M4, S3 **et X5 rejouées depuis leur état d'origine** donnent exactement les empreintes attendues (X5 : `87570eb9ad0fa1c8`, inchangée).
   - Aucun sommet du panneau ni de la grille devant la carrosserie (contrôle de l'outil) ; sens des triangles du panneau = normales enregistrées (contrôlé : la 1re version, à l'envers, donnait un panneau clair).
-  - Construction complète et `bash tools/qa/tests_cpu.sh build` (dont `test_fidelite_voitures`, dimensions ±1 %) : RESULTAT_TESTS.
+  - Construction complète et `bash tools/qa/tests_cpu.sh build` (dont `test_fidelite_voitures`, dimensions ±1 %) : **94 tests réussis** ; `test_fidelite_voitures` OK, lignes m4 et s3 identiques à `main` (écart connu de la M4, +8,6 %, déjà présent sur `main`).
   - Captures avant / après regardées une à une : 18 paires du script (vitrines de jour, feux en course) + gros plans jour et nuit + zooms ×4.
 - **Limites et risques connus** :
   - Triangles : M4 112,6 k → 114,2 k ; **S3 117,1 k → 125,3 k** (au-dessus du repère de 120 k du skill, comme la X5 142 k, la 208 129 k, la Compass 126 k ; aucun test ne le borne ; les LOD sont refaits). Poids : M4 6,4 → 6,8 Mo, S3 6,2 → 6,7 Mo (≤ 8 Mo).
