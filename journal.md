@@ -2167,6 +2167,34 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 17:38:02 — WFS-413 : zone élargie à shaders/eclairage.glsl (po-scrum-master)
 - Demande de Claude, agent devartiste 3 (01UY1Vv59N) : depuis que les feux partent de la glace (RG-02), le feu de croisement éclaire le propre pare-chocs et le capot (Gallardo, Abarth, S3, Model 3).
 - Décision : **oui**, `shaders/eclairage.glsl` ajouté à la zone, ≤ 4 lignes : masquage « boîtier » (rien à moins de 0,40 m devant la glace, plein à 0,70 m) dans `feuCroisement` et `feuCroisementRapide`. Intensités, coupure et faisceau inchangés. Option « source au ras du pare-chocs » refusée (RG-02).
+
+### 2026-11-10 17:46:00 — Volant cassé (APK 991) : ANO-241, WFS-414 créé (po-scrum-master)
+- Demande de l'utilisateur : « selon la dernière APK 991, qui a niqué le volant ?? » (capture : `qa/retours/2026-11-10-volant-apk991.jpg`).
+- Diagnostic du lead dev (lecture seule), vérifié par le PO dans le code : **WFS-323 (#335, APK 990)**, `vehicule_cockpit.cpp` l. 698-709 : moyeu en petite dalle plate, branches en barres fines, branche basse détachée du moyeu (`hub = 0.07` > demi-hauteur du moyeu 0,0575 → trou de 12,5 mm). WFS-404 (#337, APK 991) n'a changé que les bandes de couleur de la M4.
+- Revue : le lead dev reconnaît avoir jugé « pas de forme nue » sur le nom des fonctions, sans gros plan du volant.
+- **ANO-241** (bloquante) et **WFS-414** (P1 super urgent, `dev-artiste-3d`, pas l'auteur de WFS-323) créés, en tête de liste ; WFS-323 reste 🟡 avec « volant KO ». Règles : `regles-de-gestion/WFS-414.md` (gros plans du volant obligatoires, avis agent 3D sans réserve).
+
+### 2026-11-10 18:00:10 — WFS-414 limité à la Mustang (po-scrum-master)
+- Ordre de l'utilisateur : « Non, que pour cette voiture. » WFS-414 et ANO-241 limités au volant de la Mustang ; les 16 autres volants ne changent pas (captures Golf / M4 identiques, test de non-changement). La Mustang n'a ni agrafe ni bouton rouge sur les branches : le trou de la branche basse s'y voit, contrairement à la Golf.
+
+### 2026-11-10 18:00:48 — Statuts automatiques, CI main #991 (robot statuts)
+- Run rouge (push, commit deb37c2), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 18:01:25 — WFS-414 : Golf 8 ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Golf 8 aussi. » Périmètre de WFS-414 / ANO-241 : volants de la Mustang et de la Golf 8 GTI ; les 15 autres inchangés (captures M4 / 911 identiques).
+
+### 2026-11-10 18:03:33 — WFS-414 : Abarth 500 ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Cinquina aussi » (Abarth 500). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500 ; les 14 autres volants inchangés.
+
+### 2026-11-10 18:04:15 — WFS-414 : T-Cross ajouté (po-scrum-master)
+- Ordre de l'utilisateur : « Trek-x aussi » (T-Cross, id tcross). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross ; les 13 autres volants inchangés.
+
+### 2026-11-10 18:04:59 — WFS-414 : S3 berline ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « R3 berline aussi » (S3 berline, id s3). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3 ; les 12 autres volants inchangés.
+
+### 2026-11-10 18:05:36 — WFS-414 : Giulia ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Guiliva aussi » (Giulia). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500, T-Cross, S3, Giulia ; les 11 autres volants inchangés.
 ### 2026-11-10 16:17:42 — WFS-406 : écran Crédits, crédits complets, 3 voitures renommées (Claude, agent dev (01UY1Vv5vk))
 - **Fait** : écran « Crédits » (`src/ui/credits.*`, `credits_texte.cpp`) ouvert par un bouton « CRÉDITS » en bas à droite du menu (même style que « Réglages », aucun bouton existant changé), texte défilant au doigt, « Retour » au menu ; contenu lu dans `licences/CREDITS.txt` de l'APK (une seule source). RG-06 : « Politique de confidentialité : <adresse> » seulement si `confidentialite_url` (neuf, vide par défaut) est rempli.
 - **Crédits (RG-02, RG-03, RG-07)** : `tools/qa/verifier_licences.py` fabrique `CREDITS.txt` et `store/credits.md` sans aucun titre d'origine ni marque (noms inventés de `configgame.json`, auteur, licence et lien) : voitures, 3 deux-roues (neshallads, DevanirGrau, valvetin), personnes, animaux (MIT du goéland avec son texte), routes (Poly Haven), sons (« gros » : titre et auteurs Mike Koenig, Stephan, SpeedJunkie), police, stb, **android_native_app_glue (Apache 2.0, texte complet)**. Le script vérifie aussi que chaque actif livré est crédité et qu'aucune marque de `cars.h` ou des deux-roues n'y est (essai : « Volkswagen Golf, Kawasaki Ninja, GT86 » ajoutés à la main → 5 manques). Il lit `VOITURES_RETIREES` de WFS-404 quand elle existe.
