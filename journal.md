@@ -3478,3 +3478,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : b4e3a106. Statut 🟡 À valider (utilisateur) : le ticket vient de la capture d'APK de l'utilisateur (bancs en pavés) et d'ANO-216.
 - Tâches séparées demandées au PO (RG-07 / RG-E15-09) : R1 eau de la fontaine (ANO-214) ; R2 affiche d'abribus vide et non éclairée la nuit ; R4 éclairage du parc la nuit (E13) ; plaque de rue bleue unie des feux (WFS-385) ; mesure sur téléphone des +44 % de triangles en Basse (WFS-321 / 331).
 
+
+### 2026-11-10 00:43:03 — WFS-396 fusionné par le lead dev (lead-dev)
+- PR #325 relue (commit 19d49424) : 30 captures ouvertes, diff complet lu (fiches réelles `remplacants-wfs396.json`, rapport RG-08, une ligne de suivi), rien dans `src/`, `tools/`, `assets/`. Construction et 94 tests CPU verts sur la branche ; `test_fidelite` 0 défaut.
+- Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », même compte GitHub), fusion en squash fdcb7254. Statut 🟣 ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Remarques pour WFS-397 (PO) : hauteur de la W212 à −2,7 % (le suivi du PO dit −2,3 %) ; captures de nuit obligatoires ; logos des candidats à effacer.
