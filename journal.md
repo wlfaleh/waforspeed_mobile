@@ -2167,3 +2167,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 17:38:02 — WFS-413 : zone élargie à shaders/eclairage.glsl (po-scrum-master)
 - Demande de Claude, agent devartiste 3 (01UY1Vv59N) : depuis que les feux partent de la glace (RG-02), le feu de croisement éclaire le propre pare-chocs et le capot (Gallardo, Abarth, S3, Model 3).
 - Décision : **oui**, `shaders/eclairage.glsl` ajouté à la zone, ≤ 4 lignes : masquage « boîtier » (rien à moins de 0,40 m devant la glace, plein à 0,70 m) dans `feuCroisement` et `feuCroisementRapide`. Intensités, coupure et faisceau inchangés. Option « source au ras du pare-chocs » refusée (RG-02).
+
+### 2026-11-10 17:46:00 — Volant cassé (APK 991) : ANO-241, WFS-414 créé (po-scrum-master)
+- Demande de l'utilisateur : « selon la dernière APK 991, qui a niqué le volant ?? » (capture : `qa/retours/2026-11-10-volant-apk991.jpg`).
+- Diagnostic du lead dev (lecture seule), vérifié par le PO dans le code : **WFS-323 (#335, APK 990)**, `vehicule_cockpit.cpp` l. 698-709 : moyeu en petite dalle plate, branches en barres fines, branche basse détachée du moyeu (`hub = 0.07` > demi-hauteur du moyeu 0,0575 → trou de 12,5 mm). WFS-404 (#337, APK 991) n'a changé que les bandes de couleur de la M4.
+- Revue : le lead dev reconnaît avoir jugé « pas de forme nue » sur le nom des fonctions, sans gros plan du volant.
+- **ANO-241** (bloquante) et **WFS-414** (P1 super urgent, `dev-artiste-3d`, pas l'auteur de WFS-323) créés, en tête de liste ; WFS-323 reste 🟡 avec « volant KO ». Règles : `regles-de-gestion/WFS-414.md` (gros plans du volant obligatoires, avis agent 3D sans réserve).

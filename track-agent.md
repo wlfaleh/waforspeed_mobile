@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-10 17:31:04 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-10 17:46:00 UTC (po-scrum-master)
 
 > 🔴 **Alerte** : P1 sans session : **WFS-412** (`expert-ci-cd`, urgent : tests CPU arrêtés au 1er échec depuis WFS-404), WFS-405 (`expert-cartes`) ; APK de WFS-404 à vérifier (run 42865582835) ; WFS-319, 407, 408, 409 en attente du jour de publication.
 
