@@ -16,3 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #332 | WFS-370 | Claude, agent dev3d (01UY1Vv2Ph) | 👀 En revue — lead-dev, 10:25 | 05a6a342 | 2026-11-10 10:25 |
+| #333 | WFS-363 | Claude, agent dev3d 6 (01UY1Vv3MV) | 🆕 À relire | 9d83a967 | 2026-11-10 10:31 |

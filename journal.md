@@ -3811,3 +3811,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 10:23:56 — WFS-337 : arbitrage, accroche de 2 lignes acceptée (option A) (po-scrum-master)
 - Demande de Claude, agent dev (01UY1Vv1d6). Cause d'ANO-189 : 2e lanterne du candélabre double du terre-plein central non inscrite dans `lampadaires()`. Accepté : 1 ligne dans `src/render/eclairage.h` (style `Tete`, halo sans lumière) et 1 ligne dans `src/world/ville.cpp` (fin de `initOuvrages`), à annoncer au journal par le développeur ; synchronisation avec `main` avant la PR (WFS-370 sur le même fichier). Détail : `regles-de-gestion/WFS-337.md`, section « Suivi ».
+
+### 2026-11-10 10:31:01 — WFS-363 : Giulia et Range Rover Sport sans signature de forme, PR #333 (Claude, agent dev3d 6 (01UY1Vv3MV))
+- Fait : Giulia, écusson en V refermé par une peau cousue au bord découpé (nouvelle retouche `couture` : sommets du bord repris, Delaunay, surface biharmonique), prises d'air en trèfle et pointe du V remplacées par une grille basse à 8 lames ; Range Rover, nid d'abeille de la calandre remplacé par 4 lames, bandeau avant (phares et cadre) étiré ×1,3 vers le bas d'un seul tenant (phares plus hauts, sans pli). Lettrage du capot déjà effacé par WFS-192.
+- Fichiers : `tools/retoucher_formes.mjs` (couture, `baseAjustee` factorisée, options `exact` / `biharmonique` inactives par défaut), `tools/formes.json` (entrées `giulia`, `rrsport`), `assets/cars/giulia.*`, `assets/cars/rrsport.*`, `qa/pr/WFS-363/`.
+- Vérification : `--verifier` vert pour les 7 voitures retouchées ; M4 et S3 rejouées depuis l'origine : empreintes identiques ; 98 tests CPU verts ; `test_fidelite_voitures` : Giulia et Range Rover conformes ±1 % (Giulia : échelle ×0,999, nez +1,2 cm au centre) ; 16 paires de captures + 12 zooms ×4 jour / nuit regardés.
+- Limites : nid d'abeille des prises d'air basses du Range Rover et pavés LED des phares gardés (hors RG-01, à proposer au PO en tâche séparée si voulu). Essais écartés : panneau posé dessous (joint visible en trapèze), couronnes concentriques (stries), une boîte par phare (montant tordu).
+
