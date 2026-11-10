@@ -3678,3 +3678,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 07:55:36 — WFS-384 fusionné par le lead dev (lead-dev)
 - PR #331 relue (diff complet : `matin.yml`, `heure_matin.sh`, `retard_matin.sh`, `etat_captures_matin.sh`, `recette_prete.sh`, `publier_apercu.sh`, `test_matin.py`) ; `test_matin.py` relancé : 17/17 ; RG-02 (garde de `statuts.yml`) inchangée ; aucun banc affaibli. Revue « ✅ Approuvé » en commentaire (même compte GitHub), squash `071f10af`.
 - À suivre : le prochain réveil (minute 23 UTC) doit lancer le banc du 2026-11-10 (1er critère d’acceptation, numéro du run à noter).
+
+### 2026-11-10 07:56:59 — WFS-380 refusé par le lead dev, PR #326 (lead-dev)
+- Commit relu 0a587856 : 32 captures ouvertes, diff complet lu, construction et `tests_cpu.sh` refaits (97/97, dont `test_eau`) ; avis agent 3D « VALIDÉ avec réserves » présent.
+- **B1 (bloquant)** : `apres-mer-marina` : l'eau calme du port devient une nappe blanche le long du quai, avec des barres blanches dans le bassin (pixel 1150,700 : bleu (24,138,174) → blanc (205,204,202)). Cause : zone marina = agitation 0,3 et pente 1 (quai) → toute l'écume de côte rocheuse (`shaders/eau.glsl` l. 171-190, seuil `agit > 0.2`, termes non multipliés par l'agitation). Correction : écume liée à l'agitation, aucun blanc dans le port ; captures marina, bord et rochers refaites, puis nouvel avis agent 3D.
+- 3 remarques non bloquantes (abscisse de la rivière dans `ville.cpp`, détection de la Basse, commentaire en double). TACHES, track-agent et suivi-pr passés en ↩️.
