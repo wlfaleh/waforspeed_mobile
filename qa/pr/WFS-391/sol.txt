@@ -1,0 +1,18 @@
+# WFS-391 : conduite au bas-côté et sur la neige (ancienne conduite, Golf)
+## Freinage 100 → 0 km/h (frein à fond, ABS)
+- neige (μ 0,25) : avant 145.2 m, après 126.9 m
+- Ville au sec : avant 36.8 m, après 36.8 m
+- ok : RG-01 : neige, 120 à 160 m (arbitrage du PO), plus court qu'avant (la traînée ne dépend plus de μ)
+- ok : RG-03 : Ville au sec, 36,6 m ± 3 %, inchangé
+## Bas-côté enneigé (8,6 m), 50 km/h, volant à fond
+- cap gagné en 0,6 s : avant 0.331 rad, après 0.251 rad
+- ok : RG-02 : sur le bas-côté enneigé, la voiture tourne moins qu'avant (accroche ≤ chaussée)
+## Épingle à gauche du col de la Campagne (1990 m), 10 km/h, volant à fond vers l'intérieur (glissière à 10.35 m)
+- centre : 4.12 m
+- bord à 7.5 m : 4.13 m (+0.2 %)
+- bord à -7.5 m : 4.10 m (-0.6 %)
+- bas-côté à 9.0 m : 4.12 m (-0.2 %)
+- bas-côté à -9.0 m : 4.09 m (-0.7 %)
+- posée derrière la glissière (−11,5 m) : rayon 11.60 m = celui de la glissière intérieure (11.65 m)
+- ok : RG-06 : rayon aux bords et aux bas-côtés à ± 3 % du centre
+- ok : RG-06 : derrière la glissière, la voiture y est ramenée et la longe (cause de l'ANO-231)

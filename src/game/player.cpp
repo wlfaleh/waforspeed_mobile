@@ -106,7 +106,14 @@ void Player::reset(const CarDef& c) {
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
-    if (aide != Aide::Web) { const auto& sz = cartes_v2::saisonPartie(); const bool bc = std::abs(playerX) > 1; muSol_ = bc ? sz.muBasCote : sz.muChaussee; kSol_ = muSol_ / (bc ? physique::MU_HERBE : 1.0); }   // WFS-346 (accroche) : voiture du joueur
+    if (aide != Aide::Web) {   // WFS-346 (accroche) : voiture du joueur, μ du sol lu de la saison de la carte
+        const auto& sz = cartes_v2::saisonPartie(); const bool bc = std::abs(playerX) > 1;
+        // WFS-391 (RG-02, ANO-229) : le bas-côté n'accroche jamais relativement plus que la chaussée qu'au sec (rapport μ ≤ MU_HERBE,
+        // 0,6) : neige 0,25 / 0,2 → bas-côté 0,15 ; sec (1 / 0,6) et automne (0,9 / 0,45) inchangés. Sans cela, l'ancien modèle
+        // (accroche du bas-côté = celle de la route au sec) donnait au bas-côté enneigé kSol 0,33 contre 0,25 sur la chaussée
+        const double muBc = g_avantWfs391 ? (double)sz.muBasCote : std::min((double)sz.muBasCote, sz.muChaussee * physique::MU_HERBE);
+        muSol_ = bc ? muBc : sz.muChaussee; kSol_ = muSol_ / (bc ? physique::MU_HERBE : 1.0);
+    }
     if (modeleMonde()) { updateMonde(dt, in, track, playing); return; }   // WFS-241 : voiture du joueur, conduite réaliste
     // WFS-256 : voiture du joueur en conduite d'avant (g_conduiteMonde faux) : pose de départ pour les chocs avec le décor
     const bool chocsDecorActifs = aide != Aide::Web && chocs::registre().taille() > 0;
@@ -222,7 +229,11 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     if (!playing) speed = std::max(0.0, speed - resist * dt);
     else if (locked) speed = speed > 0 ? std::max(0.0, speed - Phys::brake * 0.5 / M * dt) : std::min(0.0, speed + Phys::brake * 0.5 / M * dt);
     else if (reversing) speed = std::max(REV_MAX, speed - REV_ACC * dt);
-    else if (braking) speed = std::max(0.0, speed - (Phys::brake * perf.freinage / M + resist) * kSol_ * dt);   // WFS-188 (RG-04) : selon la voiture ; WFS-346 : ABS, tout le freinage × μ du sol
+    // WFS-188 (RG-04) : freinage selon la voiture ; WFS-346 : ABS, force des pneus × μ du sol. WFS-391 (RG-01, ANO-229) : seules les
+    // forces qui passent par les pneus (freins et frein moteur) sont × μ ; la traînée de l'air (½ ρ S Cx v²) et le roulement ne
+    // dépendent pas de l'adhérence du sol (avant : toute la résistance × μ, ≈ −10 % de freinage à 100 km/h sur la neige)
+    else if (braking && g_avantWfs391) speed = std::max(0.0, speed - (Phys::brake * perf.freinage / M + resist) * kSol_ * dt);   // banc « avant »
+    else if (braking) speed = std::max(0.0, speed - ((Phys::brake * perf.freinage + Phys::engineBrake) * kSol_ + Phys::roll + Phys::drag * av * av) / M * dt);
     else if (accelerating && speed < 0) speed = std::min(0.0, speed + Phys::brake / M * dt);
     else if (accelerating) {
         const double push = perf.a0 / M * (nitroOn ? config().nitro.poussee : 1) * std::max(0.0, 1 - std::pow(std::max(0.0, speed) / top, 2.2));
