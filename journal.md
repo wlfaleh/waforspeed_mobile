@@ -3415,3 +3415,35 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Décision du PO : **découpe de WFS-360** sur le modèle de WFS-219 : **WFS-396** (P1, E10, exception PO : fichiers neufs `assets/cars/remplacants/**`, `assets/licences/remplacants/**`, entrées neuves de `tools/logos.json`) trouve, vérifie (±1 %, ≤ 8 Mo, sans marque) et convertit les remplaçants de l'**A 45** (Classe E W212, choix du PO) et de l'**Elantra N** (au plus 2 choix proposés au PO), **sans rien brancher**. WFS-360 garde le branchement, après WFS-359 et WFS-396.
 - Zone interdite : `src/**`, `shaders/**`, outils `tools/*.mjs` / `*.sh` (lus seulement), `tools/formes.json` (WFS-362), `cars.h`, mustang / tcross (WFS-359). Captures : vitrine en local par permutation non poussée (RG-07). Règles : `regles-de-gestion/WFS-396.md`. Écrit depuis un worktree séparé de `main`.
 
+### 2026-11-10 00:01:53 — WFS-381 attribué à Claude, agent dev A (01UY1Vv42R) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01UY1Vv42RWwaV9T1tMxWRgB, développeur général, 1er et seul ticket). Choix : ticket ⏳ Prêt le plus prioritaire d'une épic libre hors conduite, cartes, CI, voitures, iOS : **WFS-381** (P1, E13, brume au loin, ANO-221), en tête de l'ordre décor du 2026-11-09 20:01 avec WFS-382 (en cours). E13 libre (WFS-214 🟣). WFS-372 / 373 (E15) restent au profil `dev-artiste-3d` ; WFS-378 vient après dans l'ordre ; WFS-384 / 287 à l'agent expert ci.
+- Zone : voir `regles-de-gestion/WFS-381.md` (section « Suivi ») ; sans chevauchement avec WFS-382 (bloom de `post.frag`, `nuit.cpp`), WFS-380 (eau), WFS-375, WFS-369.
+- Plan court : lire le brouillard existant (`common.glsl`, `eclairage*.glsl`, `sky.frag`, `atmosphere_physique.h`), brume exponentielle distance + hauteur couleur du ciel (RG-01 à 03), réglage par carte (RG-04), mesure perf Basse avant / après (RG-05), captures 1 à 5 avant / après, PR, lead dev.
+- Ménage quotidien du 2026-11-10 : laissé au robot `archives.yml` de cette nuit (journal du 2026-11-08 et lignes ✅) ; vérification de son commit au prochain appel.
+
+### 2026-11-10 00:03:19 — WFS-372 attribué à Claude, agent dev3d 5 (01UY1Vv5G4) (po-scrum-master)
+- Demande d'une nouvelle session `@dev3d` (agent `dev-artiste-3d`, session_01UY1Vv5G4636Nbsd5PhaAsn), 1re et seule attribution (règle « un seul sujet par session »).
+- Choix : ticket prêt le plus prioritaire de son domaine (P1, E15 ; Ville WFS-369 et Corniche WFS-380 déjà en cours, file Campagne libre ; WFS-372 avant WFS-373 au numéro). Voitures E10 : déjà deux tickets en parallèle (WFS-362, 396), rien de prêt.
+- Zone : `src/world/campagne.cpp` (décor), nouveaux `src/world/decor_campagne_*`, `assets/world/modeles/campagne/**`, `assets/textures/decor/campagne/**`, `assets/licences/**`, `tests/**`. Pas de conflit : WFS-391 (`player.*`, `roues.*`), WFS-382 (`nuit.cpp`), WFS-381 (brume), WFS-392 (`route*`).
+- Plan court : inventaire au journal (RG-01) → modèles CC0 / CC BY aux mesures ±1 % (vignes, maisons, clôtures, bottes, hangars ANO-219) → instances + LOD au chargement → captures jour / nuit / gros plans / perf → PR → avis agent 3D VALIDÉ → lead dev.
+
+### 2026-11-10 00:15:26 — WFS-375 fusionné par le lead dev (lead-dev)
+- PR #322 relue sur 82bdda3 : 16 captures ouvertes (JOUR / NUIT sans défilement, Campagne en plein jour à 22:15, Corniche de nuit), diff lu (`terrain.cpp`, `sauvegarde.cpp/.h`, `test_sauvegarde.cpp`), construction propre et `tests_cpu.sh` refaits : 94/94.
+- Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion squash 14ec9d2. WFS-375 → 🟡 À valider (utilisateur) (RG-06) ; ligne `qa/Check.md` ajoutée ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-10 00:15:58 — Fin WFS-375 : PR #322 fusionnée par le lead dev, session terminée (Claude, agent dev M (01UY1Vv4mu))
+- Squash 14ec9d2 ; ticket 🟡 À valider (utilisateur) : choisir JOUR sur le téléphone le soir, la course doit être en plein jour ; NUIT, en vraie nuit.
+- Session arrêtée (un seul sujet par session) ; aucun autre ticket demandé.
+
+### 2026-11-10 00:17:14 — WFS-372 : branche poussée, inventaire des formes nues de la Campagne, plan (Claude, agent dev3d 5 (01UY1Vv5G4))
+- Branche `feature/waforspeed-372` poussée (79fda8a6). Inventaire complet (RG-01) : `qa/pr/WFS-372/inventaire.md` + captures `qa/pr/WFS-372/inventaire/` (banc `campagne`, main d75a3d7b).
+- Objets du ticket : vignes `T_VINES` 1 755 blocs (bandes pleines, ANO-65) ; clôtures `T_FENCE` 485 travées + 2 enclos (`box`) ; bottes `T_BALES` 41 groupes (`cylAxe` nu) ; fermes `T_FARM` 20 (boîte grise 8 × 11 m + grange 10 × 14 m, ANO-219) ; poteaux électriques `T_POLE` 27 (cylindre + traverse, le « portique sur poteaux » d'ANO-219).
+- Hors ticket, listés pour WFS-387 : église, commerces, fontaine, éoliennes, signalisation, haies, ouvrages de l'autoroute ; les 100 maisons du village sont déjà celles du kit d'architecture (WFS-161), pas des boîtes.
+- Plan : modèles calculés sur le processeur dans un nouveau fichier `src/world/decor_campagne_modeles.{h,cpp}` (même méthode que les bateaux de WFS-376 : lofts lissés, chanfreins, 2 niveaux de détail), posés dans le décor par `campagne.cpp` (accroche par cas de `dessine`), test `tests/test_decor_campagne.cpp` (mesures). Réseau : seulement GitHub et paquets ; aucun modèle libre aux bonnes mesures attendu pour ces objets agricoles → RG-03 (modélisés au niveau du vrai objet), noté au journal à la fin.
+- Mesures retenues (sources dans le code) : rang palissé Guyot, piquets 1,8 m tous les 5 m, fils à 0,6 / 1,0 / 1,4 m, ceps tous les 1,0 m ; botte ronde 1,20 m de large, Ø 1,50 m ; clôture rustique poteaux Ø 0,12 m de 1,2 m, deux lisses ; ferme à murs crépis, toit de tuiles canal à 2 pans (pente ≈ 30 %), grange-hangar à bardage bois et toit ondulé ; poteau bois de ligne basse tension 8,5 m.
+
+### 2026-11-10 00:18:16 — WFS-396 : décision du PO sur les remplaçants de l'A 45 et de l'Elantra N (po-scrum-master)
+- Rapport de Claude, agent artiste (01UY1Vv2ph) : aucun modèle libre dans ±1 % tel quel (W212 hauteur −2,3 % ; W211 voie avant −2,2 % ; Virtus GT hauteur −2,6 % ; Corolla E180 largeur +2,1 %).
+- **Décision (option a)** : refus motivé pour les deux places ; WFS-396 se livre avec le rapport et les fiches réelles (`references/reel/voitures/`), rien de converti ; la session s'arrête après la fusion.
+- **Suite** : WFS-397 créé (P1, E10 exception `remplacants/`, agent `dev-artiste-3d`, nouvelle session, après WFS-396) : retoucher la **W212 de Peter_D** (hauteur ; repli W211 de BadKarma, voie avant +17 mm par roue) et la **Virtus GT de BHP3D** (hauteur, allègement < 8 Mo) à ±1 %. WFS-360 dépend maintenant de WFS-397.
+- A 45 de Lexyc16 interdite (licence contradictoire CC BY / CC BY-NC).
