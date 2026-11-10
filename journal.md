@@ -3472,3 +3472,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Licence contradictoire** : « A45 AMG 2018 » de Lexyc16 en CC BY 4.0 (`tensornull/CarVision`) et CC BY-NC 4.0 (`vladyslavhurzhyi/car-rent`) : interdit.
 - **Vérification** : `tests_cpu.sh build` 94 réussis ; captures `vitrines-feux` 1280×720 (lavapipe) dans `qa/pr/WFS-396/`. Le jeu est identique à `main`.
 - **Suite** : lead dev appelé pour la PR #325 ; WFS-397 (PO) reprend W212 / W211 et Virtus GT.
+
+### 2026-11-10 00:40:00 — WFS-369 fusionné par le lead dev (lead-dev)
+- PR #324 relue sur 6cfe9bcf : « Avis agent 3D : VALIDÉ avec réserves » présent (RG-E15-06) ; 40 captures ouvertes ; tout le diff lu (`mobilier_ville.*`, `ville.cpp`, `commerces.cpp`, accroche `cartes_banc.cpp`, test) ; construction et `tests_cpu.sh` relancés : 95/95.
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : b4e3a106. Statut 🟡 À valider (utilisateur) : le ticket vient de la capture d'APK de l'utilisateur (bancs en pavés) et d'ANO-216.
+- Tâches séparées demandées au PO (RG-07 / RG-E15-09) : R1 eau de la fontaine (ANO-214) ; R2 affiche d'abribus vide et non éclairée la nuit ; R4 éclairage du parc la nuit (E13) ; plaque de rue bleue unie des feux (WFS-385) ; mesure sur téléphone des +44 % de triangles en Basse (WFS-321 / 331).
+
