@@ -155,7 +155,8 @@ public:
         const auto& L = lampadaires();
         const int64_t len = (int64_t)g.track->segmentCount(), aP = (int64_t)std::floor(g.player->dist / SEG);
         proches_.clear();
-        for (size_t i = 0; i < L.size(); i++) { const int64_t e = ecart(L[i], aP, len); if (e >= -4 && e < 160) proches_.push_back({e, i}); }
+        // WFS-337 : une tête seule (2e lanterne d'un candélabre double) ne prend pas l'une des 4 lumières : même coût de rendu
+        for (size_t i = 0; i < L.size(); i++) { if (L[i].style == StyleLampadaire::Tete) continue; const int64_t e = ecart(L[i], aP, len); if (e >= -4 && e < 160) proches_.push_back({e, i}); }
         std::sort(proches_.begin(), proches_.end());
         for (size_t j = 0; j < proches_.size() && j < (size_t)LAMPES_MAX; j++) {
             const Lampadaire& l = L[proches_[j].second];
@@ -235,8 +236,13 @@ public:
             const int64_t e = ecart(l, aP, len);
             if (e < -20 || e > 420) continue;   // ≈ 500 m : au-delà, le brouillard les efface
             const double s = (double)(aP + e) * SEG;
+            const vec3 tete = linHex(0xffd9a8);
+            // WFS-337 (RG-01, ANO-189) : le candélabre double de la voie rapide (ville.cpp, terre-plein central) porte 2 lanternes
+            // à 5 m l'une de l'autre ; seule celle de notre côté était inscrite : la lanterne du sens inverse restait une barre
+            // jaune sans lumière et le halo se voyait 5 m à côté. La 2e lanterne est inscrite en « tête seule » : son halo, rien d'autre
+            if (l.style == StyleLampadaire::Tete) { haloTete(r, t, s, l, tete); continue; }
             const float sg = l.lat > 0 ? 1.f : -1.f;
-            float poolLat = sg * ((float)RW - 2.4f), R2 = 8; vec3 col = lin({0.5f, 0.32f, 0.16f}), tete = linHex(0xffd9a8);
+            float poolLat = sg * ((float)RW - 2.4f), R2 = 8; vec3 col = lin({0.5f, 0.32f, 0.16f});
             if (l.style == StyleLampadaire::Plage) { poolLat = sg * ((float)RW - 0.5f); R2 = 7; }
             if (l.style == StyleLampadaire::Stade) { poolLat = sg * ((float)RW - 3.f); R2 = 14; col = lin({0.35f, 0.38f, 0.45f}); }
             const TrackPoint a = t.point(s, poolLat), b = t.point(s + 1.0 / M, poolLat);
@@ -247,14 +253,20 @@ public:
             // cœur ressort ainsi comme au web dès que la chaussée reçoit la lumière (≈ × 1 ne laisse qu'un voile)
             r.haloSol(c, rr, f, R2, R2, col * 2.2f);
             // halo de la tête : seulement pour les lampadaires du décor (la corniche et le circuit n'ont pas encore de mât natif)
-            if (l.style != StyleLampadaire::Ville) continue;
-            const TrackPoint hq = t.point(s, l.lat);
-            // WFS-356 (RG-05, ANO-202) : rayon 0,6 m (avant 1,1 m : disque de 2,2 m, une « lune » au-dessus de chaque lampe) ; la tête
-            // de lampe de la Ville mesure 0,90 × 0,36 m (ville.cpp, LAMPE) : halo ≤ 3 fois la tête
-            r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, HALO_TETE_M, tete * 1.6f);
+            if (l.style == StyleLampadaire::Ville) haloTete(r, t, s, l, tete);
         }
         lumiereSolAutres(r, g);   // WFS-226 : après le trafic, les adversaires et la police (systèmes d'ordre < 950)
         feuxJoueur(r, g);
+    }
+
+    // halo d'une tête de lampe, centré sur sa lanterne (même point que la lumière ponctuelle de ambiance)
+    // WFS-356 (RG-05, ANO-202) : rayon 0,6 m (avant 1,1 m : disque de 2,2 m, une « lune » au-dessus de chaque lampe) ; la tête
+    // de lampe de la Ville mesure 0,90 × 0,36 m (ville.cpp, LAMPE) : halo ≤ 3 fois la tête
+    // WFS-337 (RG-02) : + 0,25 m sur la hauteur inscrite : vasque de la rue à + 0,34 m, lanternes de la voie rapide à + 0,03 à
+    // + 0,15 m, du pont à + 0,45 m (géométrie de ville.cpp et mobilier) : écart ≤ 0,2 m, 3 fois moins que le rayon du halo
+    static void haloTete(Renderer& r, Track& t, double s, const Lampadaire& l, const vec3& tete) {
+        const TrackPoint hq = t.point(s, l.lat);
+        r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, HALO_TETE_M, tete * 1.6f);
     }
 
     // ---------- RG-04 : feux du joueur (dessiné juste après les systèmes par Game) ----------

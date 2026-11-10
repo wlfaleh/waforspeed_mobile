@@ -1,7 +1,7 @@
 // WaForSpeed — WFS-337 (épics E4 / E13, ANO-189) : banc des halos des têtes de lampe de nuit (WFS_BANC=halos).
 // Ville de nuit, voie rapide (autoroute du tracé 2) : candélabres de 12 m du terre-plein central (ville.cpp, LAMPE_AR).
-// Captures : halos-pres (lampadaire de près), halos-50m (lampadaire à ≈ 50 m), halos-160-0 à -5 (suite d'images à 160 km/h,
-// une image tous les 1/10 s), halos-rue (rue de la Ville, lampadaire de trottoir) et halos-poursuite (Poursuite police, ANO-189).
+// Captures : halos-160-0 à -5 (suite d'images à 160 km/h, une image tous les 1/10 s), halos-50m (lampadaire à ≈ 50 m),
+// halos-pres (lampadaire de près), halos-rue (rue de la Ville, lampadaire de trottoir) et halos-poursuite (Poursuite police, ANO-189).
 // Au journal : pour chaque capture, la distance du lampadaire le plus proche devant la voiture.
 #include <cmath>
 #include <cstdlib>
@@ -61,11 +61,21 @@ int benchHalos(Game& g, Renderer& r, const std::string& out) {
     };
     if (au >= 0 && partir(au + 20, VueCamera::Poursuite)) {
         for (int i = 0; i < 60 * 4; i++) image(i % 8 == 0);   // décompte et départ
-        if (jusquA(50)) capture("halos-50m");
-        if (jusquA(14)) capture("halos-pres");
-        // suite d'images à ≈ 160 km/h : la voiture est poussée au-delà de la vitesse du pilote automatique par le gaz tenu
+        // RG-01 : chaque candélabre double du terre-plein (2 lanternes à 5 m, ville.cpp) a ses 2 têtes inscrites
+        int doubles = 0, seules = 0;
+        for (const Lampadaire& l : lampadaires()) {
+            if (l.style != StyleLampadaire::Ville || l.y < 11.f) continue;
+            bool deux = false;
+            for (const Lampadaire& m : lampadaires()) deux = deux || (m.style == StyleLampadaire::Tete && m.seg == l.seg && std::fabs(std::fabs(m.lat - l.lat) - 5.f) < 0.01f);
+            (deux ? doubles : seules)++;
+        }
+        if (seules || !doubles) erreurs++;
+        WFS_LOG("halos : candélabres doubles de la voie rapide : %d avec leurs 2 têtes, %d avec une seule %s", doubles, seules, seules || !doubles ? "ÉCART" : "OK");
+        // suite d'images à 160 km/h (en accélérant, le pilote automatique monte ensuite à ≈ 210 km/h) : une image tous les 1/10 s
         for (int i = 0; i < 60 * 30 && g.player().kmh() < 158; i++) image(i % 8 == 0);
         for (int k = 0; k < 6; k++) { capture("halos-160-" + std::to_string(k)); for (int i = 0; i < 6; i++) image(false); }
+        if (jusquA(50)) capture("halos-50m");
+        if (jusquA(14)) capture("halos-pres");
     }
     // rue de la Ville : lampadaire de trottoir (ville.cpp, objet LAMPE), au départ
     if (partir(0, VueCamera::Poursuite)) {
