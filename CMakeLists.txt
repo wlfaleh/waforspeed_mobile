@@ -158,6 +158,7 @@ else()
   target_compile_definitions(test_fidelite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_archi_kit tests/archi_kit.cpp src/world/archi_kit.cpp)   # WFS-161 (ST-1) : kit d'architecture, M-01 et règles des ouvertures
   target_compile_definitions(test_archi_kit PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_decor_campagne tests/test_decor_campagne.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp)   # WFS-372 : objets agricoles de la Campagne (mesures ±1 %, budget, qualité)
   add_executable(test_marina_bateaux tests/test_marina_bateaux.cpp src/world/marina_bateaux.cpp)   # WFS-376 : bateaux de la marina (mesures RG-04 / RG-05, budget RG-10, aucune voile hissée)
   add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD)
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
