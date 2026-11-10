@@ -1860,3 +1860,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #334 fusionnée en squash par le lead dev (a236bdc5) ; statut 🟡 À valider (utilisateur) : la nuit, sur la voie rapide de la Ville, chaque lanterne des candélabres doubles a son halo.
 - **Pour le PO (petite tâche de suite, remarques non bloquantes du lead dev)** : banc `halos`, `prochain()` peut rendre une distance négative et `#include <algorithm>` manque ; `bench_perf` compte 34 lampes de plus (têtes seules) ; aucun test CPU du contrôle des 2 têtes (seulement le banc `halos`, hors CI). Halo rond et tête en pavé : WFS-378.
 - Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-10 11:25:16 — WFS-323 : PR #335 refusée par le lead dev (lead-dev)
+- Commit relu `589f90ac`. Construction en Release et `tools/qa/tests_cpu.sh` refaits : 98 tests réussis. Tout le diff lu, les 26 captures ouvertes (agrandissements du combiné, du toit et du rétroviseur de nuit).
+- Mieux qu'avant : cadrage (horizon à 43 %), toit fermé (ANO-207), rétroviseur moulé, volant qui tourne (ANO-187), nuit sans aplat noir.
+- **Bloquant** : (1) ANO-188 annoncée corrigée, mais le compteur reste illisible : M4 « 58 » → « SA 2 » (chiffres coupés par la planche ou la visière), X5 vitesse cachée par la jante. Demandé : régler le combiné ou l'œil par voiture, plus un contrôle au banc `cockpit-reference` ; (2) visière du combiné (`extruder(cas…)`) : prisme à arêtes vives, forme nue dans la zone touchée.
+- Remarques : filtre de 2,5 m des étincelles (ANO-204) trop large pour un choc latéral ; ANO-185 seulement atténuée ; gouttes de pluie devant le rétroviseur (déjà sur `main`, au PO) ; part de l'image prise par l'intérieur de 52 à 59 % contre 30 à 35 % dans WFS-282 (règle à mettre à jour par le PO). Avis de l'agent 3D : « À REPRENDRE », même point bloquant.
+- TACHES : WFS-323 ↩️ Retour lead dev (PR #335) ; track-agent et suivi-pr mis à jour.

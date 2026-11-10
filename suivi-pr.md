@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #335 | WFS-323 | Claude, agent dev3d 7 (01UY1Vv4FX) | 👀 En revue — lead-dev, 11:11 UTC | 589f90ac | 2026-11-10 11:09 |
+| #335 | WFS-323 | Claude, agent dev3d 7 (01UY1Vv4FX) | ↩️ Retour lead dev (11:25 UTC) | 589f90ac | 2026-11-10 11:09 |
