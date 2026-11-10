@@ -184,8 +184,8 @@ bool maison(Style s) { return s == Style::Village || s == Style::Villa; }
 
 // poignée de fenêtre (crémone) sur le montant d'un ouvrant : tringle, plaque et olive
 void cremone(Maillage& m, float x, float y0, float y1, float yp, float z) {
-    bloc(m, x - 0.006f, x + 0.006f, y0 + 0.08f, y1 - 0.08f, z, z + 0.008f);         // tringle
-    bloc(m, x - 0.016f, x + 0.016f, yp - 0.06f, yp + 0.06f, z, z + 0.01f);          // boîtier
+    bloc(m, x - 0.006f, x + 0.006f, y0 + 0.08f, y1 - 0.08f, z, z + 0.008f, AV | GA | DR);   // tringle
+    bloc(m, x - 0.016f, x + 0.016f, yp - 0.06f, yp + 0.06f, z, z + 0.01f, AV | GA | DR);    // boîtier
     bloc(m, x - 0.009f, x + 0.009f, yp - 0.1f, yp + 0.01f, z + 0.01f, z + 0.028f);  // olive tournée vers le bas
 }
 // béquille de porte sur plaque, avec serrure (x : axe de la plaque, côté : +1 béquille vers +x, −1 vers −x)
@@ -204,15 +204,11 @@ void fenetre(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
     const float zf = -d;
     const Rect R{b.x - b.l / 2, b.y, b.x + b.l / 2, b.y + b.h};
     if (lod == 0) cadre(m, R.retreci(-SCELLEMENT), DORMANT + SCELLEMENT, zf, zf + DORMANT_EP, CHANFREIN);   // dormant scellé au fond du tableau (1 cm dans le mur : aucun jour au bord)
-    else {   // de loin (120 à 300 m) : face et tranche du dormant, sans chanfrein (le chanfrein de 1 cm fait moins d'un pixel)
-        const Rect E = R.retreci(-SCELLEMENT), I = R.retreci(DORMANT);
-        anneau(m, E, zf + DORMANT_EP, I, zf + DORMANT_EP);
-        anneau(m, I, zf + DORMANT_EP, I, zf);
-    }
+    else anneau(m, R.retreci(-SCELLEMENT), zf + DORMANT_EP, R.retreci(DORMANT), zf + DORMANT_EP);   // de loin : face du dormant (le chanfrein et la tranche font moins d'un pixel)
     Rect O = R.retreci(DORMANT);
     if (M.imposte && O.h() > 1.2f) {   // imposte fixe : traverse et vitrage au-dessus des ouvrants
         const float hI = std::clamp(0.22f * O.h(), 0.3f, 0.5f), yt = O.y1 - hI;
-        bloc(m, O.x0, O.x1, yt - TRAVERSE_IMPOSTE, yt, zf, zf + DORMANT_EP, AV | HA | BA);
+        bloc(m, O.x0, O.x1, yt - TRAVERSE_IMPOSTE, yt, zf, zf + DORMANT_EP, lod == 0 ? AV | HA | BA : AV);
         if (lod == 0 && M.vantaux >= 2) {   // petit bois vertical de l'imposte, dans l'axe des ouvrants
             for (int k = 1; k < M.vantaux; k++) { const float x = O.x0 + O.l() * k / M.vantaux; bloc(m, x - PETIT_BOIS / 2, x + PETIT_BOIS / 2, yt, O.y1, zf, zf + 0.035f); }
         }
@@ -222,8 +218,8 @@ void fenetre(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
         const float pas = M.colonnes * 0.1f;
         const int nx = std::max(2, (int)std::lround(O.l() / pas)), ny = std::max(2, (int)std::lround(O.h() / pas));
         if (lod == 0) {
-            for (int i = 1; i < nx; i++) { const float x = O.x0 + O.l() * i / nx; bloc(m, x - 0.018f, x + 0.018f, O.y0, O.y1, zf, zf + 0.04f); }
-            for (int j = 1; j < ny; j++) { const float y = O.y0 + O.h() * j / ny; bloc(m, O.x0, O.x1, y - 0.018f, y + 0.018f, zf, zf + 0.04f); }
+            for (int i = 1; i < nx; i++) { const float x = O.x0 + O.l() * i / nx; bloc(m, x - 0.018f, x + 0.018f, O.y0, O.y1, zf, zf + 0.04f, AV | GA | DR); }
+            for (int j = 1; j < ny; j++) { const float y = O.y0 + O.h() * j / ny; bloc(m, O.x0, O.x1, y - 0.018f, y + 0.018f, zf, zf + 0.04f, AV | HA | BA); }
         }
         return;
     }
@@ -232,14 +228,14 @@ void fenetre(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
     for (int k = 0; k < n; k++) {
         const Rect V{O.x0 + k * w + JEU, O.y0 + JEU, O.x0 + (k + 1) * w - JEU, O.y1 - JEU};
         if (lod >= 1) {   // de loin : seulement les montants qui se voient (rencontre des ouvrants)
-            if (k > 0) bloc(m, V.x0 - JEU - OUVRANT, V.x0 - JEU + OUVRANT, V.y0, V.y1, zf, zf + OUVRANT_EP);
+            if (k > 0) bloc(m, V.x0 - JEU - OUVRANT, V.x0 - JEU + OUVRANT, V.y0, V.y1, zf, zf + OUVRANT_EP, AV);
             continue;
         }
-        cadre(m, V, OUVRANT, zf, zf + OUVRANT_EP, 0.008f, true);
+        cadre(m, V, OUVRANT, zf, zf + OUVRANT_EP, 0.008f, false);   // (la tranche extérieure, 3 mm de jeu, ne se voit pas)
         const Rect G = V.retreci(OUVRANT);
         bloc(m, G.x0, G.x1, G.y0, G.y0 + JET_D_EAU, zf + 0.035f, zf + OUVRANT_EP + 0.02f, AV | HA | GA | DR);   // jet d'eau
-        for (int c = 1; c < M.colonnes; c++) { const float x = G.x0 + G.l() * c / M.colonnes; bloc(m, x - PETIT_BOIS / 2, x + PETIT_BOIS / 2, G.y0, G.y1, zf, zf + 0.035f); }
-        for (int r = 1; r < M.rangs; r++) { const float y = G.y0 + G.h() * r / M.rangs; bloc(m, G.x0, G.x1, y - PETIT_BOIS / 2, y + PETIT_BOIS / 2, zf, zf + 0.035f); }
+        for (int c = 1; c < M.colonnes; c++) { const float x = G.x0 + G.l() * c / M.colonnes; bloc(m, x - PETIT_BOIS / 2, x + PETIT_BOIS / 2, G.y0, G.y1, zf, zf + 0.035f, AV | GA | DR); }
+        for (int r = 1; r < M.rangs; r++) { const float y = G.y0 + G.h() * r / M.rangs; bloc(m, G.x0, G.x1, y - PETIT_BOIS / 2, y + PETIT_BOIS / 2, zf, zf + 0.035f, AV | HA | BA); }
     }
     if (lod == 0) {   // crémone sur le montant de l'ouvrant de service (à droite de la rencontre, ou côté libre d'un seul vantail)
         const float yp = std::clamp(p.niveauY(b.niveau) + 1.1f, O.y0 + 0.25f, O.y1 - 0.15f);
@@ -335,6 +331,13 @@ void porte(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
     // seuil de pierre (2 cm au-dessus du trottoir, saillie de 4 cm)
     const float ys = 0.02f;
     bloc(out.part[ENCADREMENT], x0 - 0.03f, x1 + 0.03f, -0.05f, ys, zf, 0.04f, AV | HA | GA | DR);
+    if (lod >= 1) {   // de loin : face de l'huisserie et vantail plein (sa teinte), sans panneaux ni quincaillerie
+        const Rect E{x0 - SCELLEMENT, ys, x1 + SCELLEMENT, y1 + SCELLEMENT}, I{x0 + hui, ys, x1 - hui, y1 - hui};
+        anneau(hm, E, zf + VANTAIL_EP + 0.02f, I, zf + VANTAIL_EP + 0.02f, false);
+        const float yv = M.vantail == Vantail::Vitre ? I.y0 + 0.12f : M.vantail == Vantail::VitreHaut ? I.y0 + 1.0f : I.y1;   // hauteur du plein
+        face(out.part[M.bois ? MENUISERIE : METAL], {I.x0, I.y0, zf + VANTAIL_EP}, {I.x1, I.y0, zf + VANTAIL_EP}, {I.x1, yv, zf + VANTAIL_EP}, {I.x0, yv, zf + VANTAIL_EP}, {0, 0, 1});
+        return;
+    }
     cadre(hm, {x0 - SCELLEMENT, ys, x1 + SCELLEMENT, y1 + SCELLEMENT}, hui + SCELLEMENT, zf - 0.01f, zf + VANTAIL_EP + 0.02f, CHANFREIN, false, false);   // huisserie (3 côtés)
     Rect L{x0 + hui, ys, x1 - hui, y1 - hui};
     if (M.imposte && L.h() > 2.25f) {   // imposte vitrée : traverse et petits bois
@@ -362,8 +365,13 @@ void garage(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
     Maillage& m = out.part[partChassis(p.style)];
     const float zf = -d, x0 = b.x - b.l / 2, x1 = b.x + b.l / 2, y1 = b.y + b.h;
     bloc(out.part[ENCADREMENT], x0 - 0.02f, x1 + 0.02f, -0.05f, 0.01f, zf, 0.02f, AV | HA | GA | DR);   // seuil
-    cadre(m, {x0 - SCELLEMENT, 0.01f, x1 + SCELLEMENT, y1 + SCELLEMENT}, 0.06f + SCELLEMENT, zf - 0.01f, zf + 0.07f, CHANFREIN, false, false);   // encadrement (3 côtés)
     const Rect L{x0 + 0.06f, 0.01f, x1 - 0.06f, y1 - 0.06f};
+    if (lod >= 1) {   // de loin : encadrement et tablier plats ; les joints des sections (1 cm) font moins d'un pixel
+        anneau(m, {x0 - SCELLEMENT, 0.01f, x1 + SCELLEMENT, y1 + SCELLEMENT}, zf + 0.07f, L, zf + 0.07f, false);
+        face(m, {L.x0, L.y0, zf + 0.045f}, {L.x1, L.y0, zf + 0.045f}, {L.x1, L.y1, zf + 0.045f}, {L.x0, L.y1, zf + 0.045f}, {0, 0, 1});
+        return;
+    }
+    cadre(m, {x0 - SCELLEMENT, 0.01f, x1 + SCELLEMENT, y1 + SCELLEMENT}, 0.06f + SCELLEMENT, zf - 0.01f, zf + 0.07f, CHANFREIN, false, false);   // encadrement (3 côtés)
     const int ns = std::max(3, (int)std::lround(L.h() / SECTION_GARAGE));
     const float z = zf + 0.045f;
     for (int k = 0; k < ns; k++) {   // sections : face plate, arêtes chanfreinées (joint en V entre deux sections)
@@ -380,6 +388,7 @@ void garage(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
 
 // ---------------------------------------------------------------- vitrine : porte vitrée, barre de tirage, soubassements
 void vitrine(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
+    if (lod >= 1) return;   // de loin : le dormant et les meneaux de la vitrine (archi_details.cpp) suffisent
     Maillage& met = out.part[METAL];
     const float z0 = -d, x0 = b.x - b.l / 2, x1 = b.x + b.l / 2;
     const int n = std::max(1, (int)std::ceil(b.l / 2.f));   // mêmes sections que le dormant (archi_details.cpp)
@@ -410,7 +419,7 @@ void vitrine(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
 // dos à z = −VOLET_EP
 void vantailVolet(Volet t, float lv, float y0, float y1, int lod, Maillage& m) {
     const Rect R{0, y0, lv, y1};
-    if (lod >= 1) { bloc(m, 0, lv, y0, y1, -VOLET_EP, 0, AV | AR | GA | DR); return; }   // de loin : épaisseur du vantail, sans lames
+    if (lod >= 1) { bloc(m, 0, lv, y0, y1, -VOLET_EP, 0, AV | AR); return; }   // de loin : épaisseur du vantail, sans lames
     if (t == Volet::Persiennes) {
         cadre(m, R, PERSIENNE_CADRE, -VOLET_EP, 0, 0.006f, true);
         anneau(m, R.retreci(PERSIENNE_CADRE), -VOLET_EP, R, -VOLET_EP);   // dos du cadre
@@ -499,7 +508,7 @@ void volets(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
                 face(m, {xa, y - LAME_ROULANT, zm}, {xb, y - LAME_ROULANT, zm}, {xb, y - LAME_ROULANT / 2, zm + 0.006f}, {xa, y - LAME_ROULANT / 2, zm + 0.006f}, {0, -0.3f, 1});
             }
         } else if (frac > 0) face(m, {xa, yb, zm}, {xb, yb, zm}, {xb, y1, zm}, {xa, y1, zm}, {0, 0, 1});
-        bloc(m, xa, xb, yb - 0.03f, yb, za + 0.005f, zb - 0.002f, AV | BA | HA);   // lame finale
+        bloc(m, xa, xb, yb - 0.03f, yb, za + 0.005f, zb - 0.002f, lod == 0 ? AV | BA | HA : AV);   // lame finale
         return;
     }
     if (!voletsBattants(p, b)) return;
