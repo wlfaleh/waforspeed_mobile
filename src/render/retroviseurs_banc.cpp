@@ -161,7 +161,7 @@ int benchRetroviseurs(Game& g, Renderer& r, const std::string& out, std::vector<
         g.shutdown();
     }
     // ---- RG-03 : coût en Basse et en Haute (Golf, Ville, jour, même instant figé) : 120 images avec, puis sans rétroviseurs
-    if (!rapide) {
+    if (!rapide && !std::getenv("WFS_RETRO_SANS_COUT")) {   // WFS_RETRO_SANS_COUT : essai local, images seulement
         setenv("WFS_MOMENT", "jour", 1);
         ecrans::Reglages& R = ecrans::reglages();
         const int qualiteAvant = R.qualite;

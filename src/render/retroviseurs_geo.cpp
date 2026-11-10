@@ -60,6 +60,7 @@ bool parLArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
 }
 // décalage de l'œil du cockpit dans le modèle 3D quand ses rétroviseurs ne sont pas trouvés (moyenne des 18 voitures mesurées, ≈ 0,6 m)
 constexpr float DECALAGE_HABITACLE_M = 0.60f;
+constexpr float VISEE_HAUTEUR_M = 0.9f, VISEE_DISTANCE_M = 12.f;   // glace intérieure : milieu d'une voiture qui suit
 } // namespace
 
 CotesExterieur cotesExterieur(const char* car) {
@@ -135,7 +136,10 @@ std::array<Miroir, NB_GLACES> miroirs(const cockpit::InterieurDef& d, float cx, 
         const vec3 eu = normalize(vec3{0, yh - Yb, zh - Zb}), en = normalize(cross(vec3{1, 0, 0}, eu));
         const vec3 pied = vec3{cx, Yb, Zb} + eu * (length(vec3{0, yh - Yb, zh - Zb}) - 0.05f) + en * 0.004f;
         const vec3 c{cx - 0.01f, pied.y - 0.062f, pied.z + 0.06f};   // centre de la coque
-        const vec3 n = normaleReglee(c, oeil, {0, -std::sin(1.f * PI / 180.f), std::cos(1.f * PI / 180.f)});   // lunette arrière : 1° sous l'horizontale (reflet vu depuis la place du modèle)
+        // réglage du conducteur : le milieu de la glace vise le milieu d'une voiture 12 m derrière (0,9 m du sol) : 0,7° vers le bas (M4)
+        // à 2,9° (Range Rover Sport, œil à 1,5 m) ; avec une visée fixe (1°), la voiture qui suit sortait par le bas de la glace des SUV
+        const float bas = std::atan2(std::max(0.f, hauteurOeil(d) - VISEE_HAUTEUR_M), VISEE_DISTANCE_M);
+        const vec3 n = normaleReglee(c, oeil, {0, -std::sin(bas), std::cos(bas)});
         m[INTERIEUR].repere = repereGlace(c + n * 0.0205f, n);
         m[INTERIEUR].w = 0.236f; m[INTERIEUR].h = 0.056f;
         m[INTERIEUR].reflexion = 0.80f;   // glace argentée, position jour (ONU R46 : ≥ 40 %)
