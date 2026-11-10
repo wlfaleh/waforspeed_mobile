@@ -1901,3 +1901,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **WFS-404** réécrit (P1, `dev-artiste-3d`, nouvelle session) : liste unique des voitures retirées, plus rien dans le jeu ni dans l'APK, fichiers gardés dans le dépôt ; camion de la Poursuite et sens inverse de la Ville sur des modèles libres ; sauvegarde du joueur reprise ; crédits régénérés ; contrôle rapide des marques des 18 autres (volant de la M4 : bandes de marque dans `vehicule_cockpit_defs.cpp:29`).
 - **Erreur du PO reconnue** : le X5 était connu sous licence NC depuis le 2026-11-07 ; il n'aurait pas dû être retouché (part X5 de WFS-193, PR #311 ; WFS-358, PR #319). Plus aucune retouche du X5 d'origine (WFS-393 abandonné).
 - Rien attribué (attribution à la demande d'un développeur).
+
+### 2026-11-10 12:50:24 — Premier rapport juridique : publication Android / Google Play (juriste)
+- `juridique/rapport-2026-11-10.md` (J-01 à J-17), demande de l'utilisateur du 2026-11-10 12:37 UTC.
+- **(a) test interne** : publiable maintenant. **(b) sortie publique gratuite** : après 6 points 🔴 : logos restants (WFS-404), fiche du store (« 20 vraies voitures », marques dans les crédits collés), 7 noms de voitures trop proches des vrais (Bnv, Folg 8…), politique de confidentialité publique et contact, formulaire « Sécurité des données » (duel en ligne = données collectées, éphémères), crédits CC BY manquants (3 deux-roues, auteurs du son « gros ») et écran Crédits.
+- **Licences NC (A 45, Elantra N, X5)** : effacer les logos ne règle pas la licence ; tolérées (🟠) en version gratuite sans pub ni achat, **bloquantes pour toute vente, pub ou achat** (remplacement WFS-360, 361, 397).
+- 🟠 principaux : formes reconnaissables des vraies voitures (avis d'avocat avant une vente), nom « WaForSpeed » à vérifier, CGU (éditeur, droit applicable, duel), public cible et IARC, notice Apache 2.0 de native_app_glue.
+- Transmis au PO pour les tickets ; 7 questions pour l'utilisateur à la fin du rapport. Rien codé, aucun ticket créé.
