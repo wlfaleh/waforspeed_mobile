@@ -101,6 +101,7 @@ struct FrameParams {
     Spot spots[SPOTS_MAX]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
     vec3 hemiSky{}, hemiGround{}; float hemiIntensity = 0;   // HemisphereLight ; 0 = ambiance du ciel actuelle
     float fogNear = 0, fogFar = 0;                           // fogFar > 0 : brouillard linéaire (Fog) au lieu de l'exponentiel
+    float fogHauteurInv = 0, fogRef = 0;   // WFS-381 (accroche E13) : brume exponentielle selon la hauteur : 1 / H (m⁻¹, 0 = sans), niveau de fogDensity (m)
     // WFS-09 : feux des voitures allumés (nuit) ; WFS-16 : chaussée mouillée, flaques, reflets temps réel de la scène
     // (passe miroir autour du plan horizontal y = refletY, demi-résolution). Tout à faux le jour : rendu inchangé.
     bool feux = false, mouille = false, flaques = false, reflets = false; float refletY = 0;
