@@ -203,7 +203,12 @@ void fenetre(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
     const ModeleFenetre& M = modeleFenetre(p);
     const float zf = -d;
     const Rect R{b.x - b.l / 2, b.y, b.x + b.l / 2, b.y + b.h};
-    cadre(m, R.retreci(-SCELLEMENT), DORMANT + SCELLEMENT, zf, zf + DORMANT_EP, CHANFREIN);   // dormant scellé au fond du tableau (1 cm dans le mur : aucun jour au bord)
+    if (lod == 0) cadre(m, R.retreci(-SCELLEMENT), DORMANT + SCELLEMENT, zf, zf + DORMANT_EP, CHANFREIN);   // dormant scellé au fond du tableau (1 cm dans le mur : aucun jour au bord)
+    else {   // de loin (120 à 300 m) : face et tranche du dormant, sans chanfrein (le chanfrein de 1 cm fait moins d'un pixel)
+        const Rect E = R.retreci(-SCELLEMENT), I = R.retreci(DORMANT);
+        anneau(m, E, zf + DORMANT_EP, I, zf + DORMANT_EP);
+        anneau(m, I, zf + DORMANT_EP, I, zf);
+    }
     Rect O = R.retreci(DORMANT);
     if (M.imposte && O.h() > 1.2f) {   // imposte fixe : traverse et vitrage au-dessus des ouvrants
         const float hI = std::clamp(0.22f * O.h(), 0.3f, 0.5f), yt = O.y1 - hI;
@@ -405,7 +410,7 @@ void vitrine(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
 // dos à z = −VOLET_EP
 void vantailVolet(Volet t, float lv, float y0, float y1, int lod, Maillage& m) {
     const Rect R{0, y0, lv, y1};
-    if (lod >= 1) { bloc(m, 0, lv, y0, y1, -VOLET_EP, 0, TOUT); return; }   // de loin : épaisseur du vantail, sans lames
+    if (lod >= 1) { bloc(m, 0, lv, y0, y1, -VOLET_EP, 0, AV | AR | GA | DR); return; }   // de loin : épaisseur du vantail, sans lames
     if (t == Volet::Persiennes) {
         cadre(m, R, PERSIENNE_CADRE, -VOLET_EP, 0, 0.006f, true);
         anneau(m, R.retreci(PERSIENNE_CADRE), -VOLET_EP, R, -VOLET_EP);   // dos du cadre
@@ -481,8 +486,10 @@ void volets(const Plan& p, const Baie& b, float d, int lod, Batiment& out) {
         Maillage& m = out.part[METAL];
         const float za = -0.075f, zb = -0.045f;
         if (d < 0.1f) return;
-        bloc(m, x0, x0 + COULISSE, y0, y1, za, zb, AV | DR);
-        bloc(m, x1 - COULISSE, x1, y0, y1, za, zb, AV | GA);
+        if (lod == 0) {   // coulisses (de loin, moins d'un pixel)
+            bloc(m, x0, x0 + COULISSE, y0, y1, za, zb, AV | DR);
+            bloc(m, x1 - COULISSE, x1, y0, y1, za, zb, AV | GA);
+        }
         const float frac = e == EtatVolet::Ferme ? 1.f : e == EtatVolet::Entrouvert ? 0.55f : 0.f;
         const float yb = y1 - std::max(0.05f, frac * b.h);
         const float xa = x0 + COULISSE * 0.5f, xb = x1 - COULISSE * 0.5f, zm = (za + zb) / 2;
