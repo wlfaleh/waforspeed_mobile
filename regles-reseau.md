@@ -17,7 +17,7 @@ Liste en vigueur, à recopier ici à chaque changement :
 
 | Site autorisé | Pour quoi | Ajouté le, par |
 |---|---|---|
-| — | aucun site en plus des bibliothèques de code et de GitHub | — |
+| `sketchfab.com` (et ses téléchargements `media.sketchfab.com`) | chercher et télécharger des modèles 3D de voitures sous licence **CC0 ou CC BY seulement** (jamais NC, ND ni « Editorial »), d'abord pour le remplaçant du X5 (WFS-361 : X5, X3 ou X1 libre, sinon un autre grand SUV) puis les autres remplaçants (WFS-360) ; licence et SHA-256 notés au journal | 2026-11-10, ordre de l'utilisateur (po-scrum-master) |
 
 ## 2. Ce qu'un agent a le droit de faire
 

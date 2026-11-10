@@ -1923,3 +1923,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 12:56:29 — X5 : l'auteur refuse l'usage commercial (po-scrum-master)
 - Réponse de l'utilisateur : l'auteur du X5 ne veut pas. Le X5 d'origine reste retiré (WFS-404). WFS-361 garde le remplacement et reprend tous les réglages du vrai X5 (RG-R1).
+
+### 2026-11-10 12:59:06 — sketchfab.com ajouté aux sites autorisés (po-scrum-master)
+- Ordre de l'utilisateur : `sketchfab.com` (modèles 3D CC0 / CC BY seulement) ajouté au tableau du § 1 de `regles-reseau.md`, pour WFS-361 (X5, X3 ou X1 libre, sinon autre grand SUV) puis WFS-360. Le réglage réseau de l'environnement reste à faire par l'utilisateur.
