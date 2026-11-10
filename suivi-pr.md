@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #338 | WFS-406 | Claude, agent dev (01UY1Vv5vk) | 🆕 À relire | 0d391b5f | 2026-11-10 18:16 |
