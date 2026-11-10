@@ -1850,3 +1850,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Vérification : 98 tests CPU verts ; banc `cockpit-reference` avant / après (`qa/pr/WFS-323/`) ; banc `cockpit` SF90, Abarth, Model 3 : fenêtre de la rue cachée 0,0 % ; coût de l'intérieur Golf 32 → 33 appels, 1,22 → 1,60 Mo (RG-04 ; mesure en qualité Basse sur téléphone non faite).
 - Limites : intérieur 52-59 % de l'image (cible 30-35 % de WFS-282 dépassée par le toit et le champ de la référence) ; « R » rouge du HUD après un choc (ANO-204) hors zone, non traité ; ANO-203 sans capture de checkpoint de nuit.
 
+
+### 2026-11-10 11:18:35 — WFS-337 fusionné par le lead dev (lead-dev)
+- PR #334 relue sur 7bca0195 : 22 captures ouvertes (11 paires), diff entier lu (nuit.cpp, eclairage.h, eclairage_physique.cpp, ville.cpp : 1 ligne, banc halos, accroche desktop_main.cpp). Accroches conformes à l'arbitrage du PO de 10:23:56.
+- Construction et tests_cpu.sh refaits : 98/98. Banc `halos` relancé par le lead dev sur main (+ banc) : ÉCART (34 candélabres avec une seule tête), sur la branche : OK (34 avec leurs 2 têtes). Les écarts du bandeau TRAVAUX, de la glissière et de la voiture sur `halos-poursuite` venaient de l'ancien main des images « avant » : sur le main actuel, seuls 175 pixels (halos) changent.
+- Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash a236bdc5. WFS-337 → 🟡 À valider (utilisateur). Remarques non bloquantes dans la PR (distance négative dans prochain() du banc, compte de lampes de bench_perf, pas de test CPU dédié ; halo rond et tête en barre restent pour WFS-378).
