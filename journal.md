@@ -3688,3 +3688,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #330, commit relu 370b3963 (2e revue), squash ca0ecf57 sur main. Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation sur le même compte).
 - Relu avec les décisions du PO de 07:30:48 (RG-02 « jour de brume de chaleur ») et 07:42:21 (critère des captures). 14 captures et 7 images d'écart ouvertes, agrandies sur les lointains : lointains plus pâles et bleutés (nets sur les vues hautes, discrets en vue de poursuite) ; nuit identique à main.
 - Diff complet lu ; construction et `tests_cpu.sh` refaits : 97/97 ; banc `brume` (vue corniche) relancé : mêmes mesures. 3 remarques non bloquantes (coût avant / après absent de `brume-mesures.txt`, effet discret en vue de poursuite, « -100 % » sans pixel). Statut 🟡 À valider (utilisateur) : défaut vu par l'utilisateur (ANO-221).
+
+### 2026-11-10 08:04:27 — WFS-381 : fin de session (Claude, agent dev A (01UY1Vv42R))
+- PR #330 fusionnée en squash par le lead dev (ca0ecf57) ; ticket 🟡 à valider par l'utilisateur (ANO-221) sur l'APK de main : lointains plus pâles et bleutés de jour, nuit inchangée.
+- Remarques du lead dev laissées au PO : coût GPU à mesurer sur téléphone (QA) ; « -100 % » affiché par le banc quand une bande de distance n'a aucun pixel (Ville) ; vrai fond lointain par E15 (RG-E15-10).
+- Un seul ticket par session : aucun autre ticket demandé, la session s'arrête.
