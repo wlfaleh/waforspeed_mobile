@@ -218,3 +218,6 @@ demande utilisateur :
 
 - Ajouter une tâche pour le décor : réalisme des fenêtres et des portes des immeubles et des maisons (conversation avec le PO, 2026-11-10 09:45 UTC)
 ( PO, 2026-11-10 09:45:04 UTC : c'est créé — **WFS-402** (P1 Urgent, épic E15 Décors). Sur toutes les cartes : fenêtres en retrait dans le mur, avec cadre, appui, volets ou persiennes selon le lieu et vitres qui reflètent la rue ; une vraie porte d'entrée côté rue sur chaque bâtiment, des portes de garage et des vitrines aux commerces ; des façades qui changent d'un bâtiment à l'autre ; la nuit, une partie des fenêtres allumées où l'on voit une pièce, jamais un rectangle blanc. Il démarre juste après WFS-370 (immeubles de la Ville, en cours, mêmes fichiers), dans une nouvelle session `@devartiste` ; l'agent 3D le valide avant le lead dev. )
+
+- WFS-280 abandonné, pas de motos garées ; WFS-323 en premier (conversation avec le PO, 2026-11-10)
+( PO, 2026-11-10 09:49:00 UTC : c'est fait — **WFS-280 abandonné** (pas de motos garées, pas de faufilement ; les motos qui roulent dans le trafic restent) et noté comme ordre permanent. **WFS-323** (vue Cockpit 1/3) passe P1 et **en tout premier** : il ira à la prochaine session `@devartiste` qui demande un ticket. )
