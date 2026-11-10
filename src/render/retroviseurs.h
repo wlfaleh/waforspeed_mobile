@@ -45,9 +45,9 @@ struct Miroir {
 struct CotesExterieur { float w, h; };   // glace extérieure (m)
 CotesExterieur cotesExterieur(const char* car);
 
-// mesure au chargement d'un .wfm (model_loader) : rétroviseurs extérieurs du modèle = saillie de la largeur dans la moitié avant, entre
-// 45 et 90 % de la hauteur (la tranche du rétroviseur dépasse de 4 cm celles de l'aile et de la portière, 36 cm devant et derrière) ;
-// boîte de chaque côté dans Model::retroMin / retroMax (repère du modèle)
+// mesure au chargement d'un .wfm (model_loader) : rétroviseurs extérieurs du modèle = sommets du haut de la moitié avant qui dépassent
+// la largeur de l'arrière ; sinon, saillie de la largeur le long de la voiture (la tranche du rétroviseur dépasse de 4 cm celles de
+// l'aile et de la portière) ; boîte de chaque côté dans Model::retroMin / retroMax (repère du modèle)
 void mesurerRetroviseurs(Model& m, const float* xyz, size_t pas, size_t n);
 
 // la voiture dont l'intérieur porte les glaces : largeur et longueur de sa fiche (m), modèle 3D (rétroviseurs mesurés, ou nul)

@@ -33,10 +33,10 @@ mat4 repereGlace(vec3 c, vec3 n) {
 }
 // normale d'une glace plane qui renvoie vers `vise` (direction regardée dans la glace) le regard venu de l'œil : bissectrice
 vec3 normaleReglee(vec3 centre, vec3 oeil, vec3 vise) { return normalize(normalize(oeil - centre) + normalize(vise)); }
-// secours (côté c, 0 gauche) : sommets du haut de la carrosserie (40 à 90 % de la hauteur), dans la moitié avant, qui dépassent de plus
-// de 2 cm la largeur de l'arrière de la voiture à la même hauteur (première méthode : trouve les coques sans saillie nette le long de
-// la voiture, M4, S3, V60…, mais pas celles des voitures aux ailes arrière larges, 911)
-void secoursArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
+// 1re méthode (côté c, 0 gauche) : sommets du haut de la carrosserie (40 à 90 % de la hauteur), dans la moitié avant, qui dépassent de
+// plus de 2 cm la largeur de l'arrière de la voiture à la même hauteur : boîte serrée sur la coque ; ne trouve pas celles des voitures
+// aux ailes arrière larges (911) : saillie le long de la voiture en secours (mesurerRetroviseurs)
+bool parLArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
     const float H = m.bmax.y - m.bmin.y, L = m.bmax.z - m.bmin.z, cx = (m.bmin.x + m.bmax.x) * 0.5f, cz = (m.bmin.z + m.bmax.z) * 0.5f;
     const float y0 = m.bmin.y + 0.40f * H, y1 = m.bmin.y + 0.90f * H;
     float arriere = 0;
@@ -45,7 +45,7 @@ void secoursArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
         if (p[1] < y0 || p[1] > y1 || p[2] < cz || (p[0] < cx) != (c == 0)) continue;
         arriere = std::max(arriere, std::fabs(p[0] - cx));
     }
-    if (arriere <= 0.3f) return;
+    if (arriere <= 0.3f) return false;
     vec3 a{1e9f, 1e9f, 1e9f}, b{-1e9f, -1e9f, -1e9f}; size_t vus = 0;
     for (size_t i = 0; i < n; i++) {
         const float* p = xyz + i * pas;
@@ -55,7 +55,8 @@ void secoursArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
         vus++;
     }
     const vec3 t = b - a;
-    if (vus >= 20 && t.z > 0.05f && t.z < 0.45f && t.y > 0.05f && t.y < 0.40f) { m.retroMin[c] = a; m.retroMax[c] = b; m.retroMesure[c] = true; }
+    if (vus >= 20 && t.z > 0.05f && t.z < 0.45f && t.y > 0.05f && t.y < 0.40f) { m.retroMin[c] = a; m.retroMax[c] = b; m.retroMesure[c] = true; return true; }
+    return false;
 }
 } // namespace
 
@@ -68,10 +69,9 @@ void mesurerRetroviseurs(Model& m, const float* xyz, size_t pas, size_t n) {
     m.retroMesure[0] = m.retroMesure[1] = false;
     const float H = m.bmax.y - m.bmin.y, L = m.bmax.z - m.bmin.z, cx = (m.bmin.x + m.bmax.x) * 0.5f, cz = (m.bmin.z + m.bmax.z) * 0.5f;
     if (H <= 0.1f || L <= 0.5f || n == 0) return;
-    // profil de la largeur (|x| maximal de chaque côté) le long de la voiture, par tranches de 4 cm, entre 45 et 90 % de la hauteur, de
-    // 10 % de la longueur jusqu'au milieu (là où sont les rétroviseurs) ; un rétroviseur est une saillie : sa tranche dépasse d'au moins
-    // 4 cm les tranches à 36 cm devant et derrière (aile, portière). Avant (largeur de l'arrière) : la 911, aux ailes arrière très larges,
-    // n'était pas trouvée
+    // secours : profil de la largeur (|x| maximal de chaque côté) le long de la voiture, par tranches de 4 cm, entre 45 et 90 % de la
+    // hauteur, de 10 % de la longueur jusqu'au milieu ; un rétroviseur est une saillie : sa tranche dépasse d'au moins 4 cm les tranches à
+    // 36 cm devant et derrière (aile, portière) ; trouve la 911 (ailes arrière très larges)
     constexpr float PAS = 0.04f, ECART = 0.36f, SAILLIE = 0.04f;
     const float y0 = m.bmin.y + 0.45f * H, y1 = m.bmin.y + 0.90f * H, z0 = m.bmin.z + 0.10f * L;
     const int NZ = std::max(1, (int)((cz - z0) / PAS));
@@ -96,6 +96,7 @@ void mesurerRetroviseurs(Model& m, const float* xyz, size_t pas, size_t n) {
             largeur[c][(size_t)t] = g > 0 && dr > 0 ? std::min(g, dr) : std::max(g, dr);
         }
     }
+    for (int c = 0; c < 2; c++) parLArriere(m, xyz, pas, n, c);   // 1re méthode d'abord (boîte serrée sur la coque)
     const int d = (int)std::lround(ECART / PAS);
     for (int c = 0; c < 2; c++) {
         int meilleure = -1; float pic = SAILLIE, base = 0;
@@ -104,7 +105,7 @@ void mesurerRetroviseurs(Model& m, const float* xyz, size_t pas, size_t n) {
             const float b = std::max(avant, apres);
             if (largeur[c][(size_t)t] - b > pic) { pic = largeur[c][(size_t)t] - b; meilleure = t; base = b; }
         }
-        if (meilleure < 0) { secoursArriere(m, xyz, pas, n, c); continue; }
+        if (m.retroMesure[c] || meilleure < 0) continue;
         const float zc = z0 + (meilleure + 0.5f) * PAS;
         vec3 a{1e9f, 1e9f, 1e9f}, bb{-1e9f, -1e9f, -1e9f}; size_t vus = 0;
         for (size_t i = 0; i < n; i++) {
@@ -117,7 +118,6 @@ void mesurerRetroviseurs(Model& m, const float* xyz, size_t pas, size_t n) {
         // une vraie coque : au moins 20 sommets, 5 à 45 cm de long, 5 à 40 cm de haut (sinon : pli de la carrosserie, poignée : place estimée)
         const vec3 t = bb - a;
         if (vus >= 20 && t.z > 0.05f && t.z < 0.45f && t.y > 0.05f && t.y < 0.40f) { m.retroMin[c] = a; m.retroMax[c] = bb; m.retroMesure[c] = true; }
-        else secoursArriere(m, xyz, pas, n, c);
     }
 }
 
