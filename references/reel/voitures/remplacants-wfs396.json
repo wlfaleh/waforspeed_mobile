@@ -1,0 +1,372 @@
+{
+ "fichier": "references/reel/voitures/remplacants-wfs396.json",
+ "description": "WFS-396 : fiches réelles des modèles étudiés pour remplacer l'A 45 et l'Elantra N (aucun retenu : refus motivés, décision du PO du 2026-11-10 00:18 UTC). Mêmes champs que references/reel/voitures.json ; à y verser par WFS-397 / WFS-360 pour la voiture retenue.",
+ "sources": {
+  "FICHE-W212": {
+   "titre": "Mercedes-Benz Classe E W212 berline (2009-2016) : Wikipédia (W212), carexpert.com.au (E-Class Elegance 2012)",
+   "lien": "https://en.wikipedia.org/wiki/Mercedes-Benz_E-Class_(W212)",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte (réseau de la session) : valeurs lues dans le résumé du moteur de recherche, 2026-11-10 ; hauteur 1470 (Wikipédia) ou 1471 (carexpert) ; voies 1585 / 1604 (carexpert) ou 1583 / 1599 (carsales, E350 CDI)"
+  },
+  "FICHE-W211": {
+   "titre": "Mercedes-Benz Classe E W211 berline (2003-2006) : Wikipédia (W211), fiches de concession",
+   "lien": "https://en.wikipedia.org/wiki/Mercedes-Benz_E-Class_(W211)",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte : résumé du moteur de recherche, 2026-11-10 ; longueur 4818 (fiche) ou 4834 (Wikipédia 2003-06), 4851 (2007-09) ; hauteur 1448 (2003-06) ou 1483 (2007-09) ; voies AV 1559-1577, AR 1552-1570 selon la version"
+  },
+  "FICHE-VIRTUS": {
+   "titre": "Volkswagen Virtus GT (2022) : brochure Volkswagen Inde, autocarindia.com",
+   "lien": "https://www.volkswagen.co.in/idhub/content/dam/onehub_pkw/importers/in/models/virtus/virtus-sport-brochure.pdf",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte : résumé du moteur de recherche, 2026-11-10 ; pneus GT 205/55 R16"
+  },
+  "FICHE-COROLLA-E180": {
+   "titre": "Toyota Corolla E180 berline Europe (2013-2016) : autotijd.be, fastcarcheck.uk",
+   "lien": "https://autotijd.be/en/dimensions/toyota/corolla-sedan",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte : résumé du moteur de recherche, 2026-11-10 ; voies AV 1525-1535, AR 1520-1535 selon la version ; auto-data donne 4651 × 1455"
+  }
+ },
+ "mesures": [
+  {
+   "valeur": 4868,
+   "id": "voiture.w212.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-W212",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1854,
+   "id": "voiture.w212.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-W212",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1470,
+   "id": "voiture.w212.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-W212",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2874,
+   "id": "voiture.w212.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-W212",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1585,
+   "id": "voiture.w212.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-W212",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1604,
+   "id": "voiture.w212.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-W212",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4818,
+   "id": "voiture.w211.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-W211",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1822,
+   "id": "voiture.w211.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-W211",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1448,
+   "id": "voiture.w211.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-W211",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2854,
+   "id": "voiture.w211.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-W211",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1559,
+   "id": "voiture.w211.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-W211",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1552,
+   "id": "voiture.w211.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-W211",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4561,
+   "id": "voiture.virtus.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-VIRTUS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1752,
+   "id": "voiture.virtus.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-VIRTUS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1507,
+   "id": "voiture.virtus.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-VIRTUS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2651,
+   "id": "voiture.virtus.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-VIRTUS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1511,
+   "id": "voiture.virtus.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-VIRTUS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1496,
+   "id": "voiture.virtus.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-VIRTUS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4620,
+   "id": "voiture.corolla_e180.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-COROLLA-E180",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1775,
+   "id": "voiture.corolla_e180.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-COROLLA-E180",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1465,
+   "id": "voiture.corolla_e180.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-COROLLA-E180",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2700,
+   "id": "voiture.corolla_e180.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-COROLLA-E180",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1530,
+   "id": "voiture.corolla_e180.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-COROLLA-E180",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1528,
+   "id": "voiture.corolla_e180.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-COROLLA-E180",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  }
+ ]
+}
