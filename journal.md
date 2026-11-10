@@ -3794,3 +3794,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Zone : `src/world/circuit.cpp`, `portique.cpp`, nouveaux `src/world/decor_grandprix_*`, `assets/world/modeles/grandprix/**`, `assets/textures/decor/grandprix/**`, `paquets/sources/grandprix/**`, licences ; fichiers communs : ajouts ≤ 10 lignes annoncés. Pas : `archi_*` au-delà des accroches (WFS-370), `ville*`, `plage.cpp`, `campagne*`, `assets/cars/**`, cockpit.
 - Branche `feature/waforspeed-373` ; captures avant / après jour et nuit + gros plans + banc perf Basse ; PR, avis agent 3D VALIDÉ, puis lead dev ; arrêt de la session après la fusion.
 
+### 2026-11-10 10:20:35 — Statuts automatiques, bancs du matin #12 (robot statuts)
+- Run rouge (schedule, commit 9c4f58a), aucun statut changé. Job(s) en échec : banc (realisme-2).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
