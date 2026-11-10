@@ -1,0 +1,19 @@
+ok    à la main : lancé
+ok    réveil à 03:30 Paris : rien
+ok    RG-01 : premier réveil à 15:23 Paris, banc de la veille : lancé en retard
+ok    RG-01 : run de la veille ignoré sans lire ses jobs
+ok    réveil à 05:23 Paris : lancé, pas en retard
+ok    réveil sauté de 10 s : jobs non lus (quota)
+ok    RG-03 : banc déjà passé aujourd'hui : rien
+ok    RG-03 : banc du jour en cours : rien
+ok    banc du jour rouge : pas de 2e banc
+ok    liste illisible : rouge
+ok    état : Release absente → code 2, ancienne Release donnée
+ok    état : captures de la veille → code 1
+ok    état : captures du jour → code 0
+ok    recette : sans captures du jour, pas « Recette QA prête »
+ok    recette : captures du jour → « Recette QA prête »
+ok    retard : message posté sans « Recette QA prête »
+ok    retard : pas de doublon
+
+tout est vert
