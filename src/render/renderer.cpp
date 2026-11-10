@@ -393,7 +393,7 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         VkRect2D sc{{0, 0}, {shadowSize_, shadowSize_}};
         vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &fr_[cur_].frameSet, 0, nullptr);
-        constexpr uint32_t NO_CAST = MAT_SHADOWBLOB | MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_BLEND;
+        constexpr uint32_t NO_CAST = MAT_SHADOWBLOB | MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_BLEND | MAT_EAU;   // WFS-380 : l'eau ne porte pas d'ombre
         VkPipeline bound = VK_NULL_HANDLE;
         // WFS-227 (accroche E13) : une tuile de l'atlas par cascade (2 × 2 ; une cascade : image entière), cascade dans pc.emissive.x
         const uint32_t tu = cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_;
