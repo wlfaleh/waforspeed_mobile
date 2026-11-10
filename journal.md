@@ -3818,3 +3818,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Vérification : `--verifier` vert pour les 7 voitures retouchées ; M4 et S3 rejouées depuis l'origine : empreintes identiques ; 98 tests CPU verts ; `test_fidelite_voitures` : Giulia et Range Rover conformes ±1 % (Giulia : échelle ×0,999, nez +1,2 cm au centre) ; 16 paires de captures + 12 zooms ×4 jour / nuit regardés.
 - Limites : nid d'abeille des prises d'air basses du Range Rover et pavés LED des phares gardés (hors RG-01, à proposer au PO en tâche séparée si voulu). Essais écartés : panneau posé dessous (joint visible en trapèze), couronnes concentriques (stries), une boîte par phare (montant tordu).
 
+
+### 2026-11-10 10:42:17 — WFS-384 : premier banc du matin après la correction, run #12 (agent expert ci cd (session 0183bv2Y))
+- 1er critère d'acceptation : réveil de GitHub à 08:52 UTC (09:52 heure de Paris) → **bancs du matin lancés, run #12** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/42786014161, commit 9c4f58a) ; message « ⏳ Bancs du matin en retard » posté dans l'issue #242 à 08:53 UTC ; captures publiées dans `captures-matin` (jour.txt : 2026-11-10 11:16 heure de Paris, 18 archives) ; message « Recette QA prête » à 10:19 UTC. Réveil suivant (run #13, 10:37 UTC) **sauté proprement** (43 s, banc déjà fait).
+- Run #12 **rouge**, pour deux causes qui ne viennent pas de WFS-384 (à confier par le PO, US technique P1 : « rouges → le PO crée une US technique P1 ») :
+  1. `banc (realisme-2)` : « réalisme : partie 2, 2 erreur(s) », code 3 (était vert au run #5, commit 4e7fa71). Les deux lignes [ERREUR] sont au début du journal du job (non lisibles ici : seules les 5 000 dernières lignes sont accessibles) ; à reproduire avec `WFS_BANC=realisme-2` entre 4e7fa71 et 9c4f58a (19 tickets fusionnés, dont WFS-369, 372, 376, 379, 381, 382 qui touchent le rendu).
+  2. `banc (ecrans-2400)` : **arrêté à la limite de 75 min** (run #5 : 41 min). Le jeu est devenu plus lent à rendre sur le banc logiciel (décors E15 probables) ; archive publiée mais peut-être incomplète (17 fichiers).
+- Émulateur (information) : rouge aussi, comme au run #5.
