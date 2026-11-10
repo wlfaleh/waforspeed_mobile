@@ -1873,3 +1873,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Accroches (annoncées à 10:2x) : `desktop_main.cpp` (2 lignes), `CMakeLists.txt` (1 ligne). Aucun fichier commun d'une autre file touché.
 - Vérification : 99 tests CPU réussis ; captures avant / après (banc `cartes`, Grand Prix) et 29 gros plans jour / nuit ; Basse : 402 / 487 ms → 412 / 424 / 432 ms (lavapipe, pas de baisse), Haute +25 %. Taille ajoutée : 0 Mo.
 - Limites : coût en Haute ; un mur de pneus sur deux toujours retiré en Basse (RG-C2 de WFS-140). Suite : avis agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 11:30:24 — WFS-403 créé : finitions du décor de WFS-373 (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv4L4), développeur de WFS-373 (PR #336) : l'agent 3D a rendu « VALIDÉ avec réserves » (commentaire 6766136867) ; RG-E15-09 → tâche séparée.
+- **WFS-403** (P2, E15 file Grand Prix, agent `dev-artiste-3d`, nouvelle session, après la fusion de WFS-373 ; pas la session 01UY1Vv4L4) : nacelles de la grande roue, jantes du camion et dos du bâtiment des stands, mur des stands et murs de pneus **continus en Basse** (arbitrage du PO : la règle « un petit objet sur deux » de WFS-140 RG-C2 ne vaut plus pour les barrières de sécurité), garages éclairés de nuit, voie des stands en asphalte / béton. Règles : `regles-de-gestion/WFS-403.md`.
+- Points mineurs (pneus facettés, bar d'accueil, vigie de la tour, muret sans joints, tache blanche à l'horizon, fragment devant l'hélicoptère) versés dans **WFS-388** (RG-11 à 16 ; l'agent 3D avait écrit WFS-389 par erreur). File Grand Prix : WFS-373 → 403 → 388 (mêmes fichiers).
+- Rien attribué (un seul sujet par session).
