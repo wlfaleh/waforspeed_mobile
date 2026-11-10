@@ -3661,3 +3661,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Exception à « un ticket actif par épic » sur ordre de l'utilisateur : WFS-319 (E7, publication) reste 🔧 chez l'agent expert ci (session 01UY1Vv4).
 - Constat du 2026-11-10 07:40 UTC (aucun run ce matin, runs #6 à #11 sautés, Release `captures-matin` absente, issue #242 muette depuis 2026-11-09 01:52 UTC) et nouvelle **RG-06** (dire clairement à la QA quand `captures-matin` manque ou n'est pas du jour) ajoutés à `regles-de-gestion/WFS-384.md`.
 - `track-agent.md` : ligne de la session ajoutée ; lignes des sessions terminées enlevées (dev3d 5, dev M, dev Z, dev3d 2, dev3d 3, dev3d 4, artiste, conduite).
+
+### 2026-11-10 07:48:47 — CLAUDE.md : la QA lit les captures du matin dans `captures-matin` (agent expert ci cd (session 0183bv2Y))
+- Sur l'ordre direct de l'utilisateur (« Prend 2 et 3 », point 3) : deux passages de `CLAUDE.md` disaient encore « captures dans `apercu` » ; depuis WFS-352, `apercu` ne garde que l'APK et les captures du matin vont dans la Release `captures-matin` (anciennes : `apercu-ancien-20261109-0925`). Rien d'autre changé.
