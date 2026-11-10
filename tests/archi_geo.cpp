@@ -105,7 +105,34 @@ static void verifierBaieComplete() {
     }
 }
 
+// WFS-415 (RG-02, RG-03) : interrupteur des ouvertures à 0 (jeu) : baie d'avant WFS-402, trou en retrait et vitre ou porte au
+// fond, sans menuiserie, volet ni appui ; moins de triangles qu'avec l'interrupteur à 1, et rien de changé à 1
+static void verifierInterrupteurWFS415() {
+    for (int s = 0; s < (int)Style::Nombre; s++) for (uint32_t g = 0; g < 12; g++) {
+        const Plan p = assembler((Style)s, 8.f + g, 9.f + g % 5, g);
+        size_t vitrees = 0;
+        for (const Baie& x : p.baies) vitrees += x.type == Ouverture::Fenetre || x.type == Ouverture::PorteFenetre || x.type == Ouverture::Vitrine;
+        for (int lod = 0; lod < 2; lod++) {
+            Batiment reel, avant, reel2;
+            choisirOuverturesReelles(true);  construire(p, 10.f, lod, reel);
+            choisirOuverturesReelles(false); construire(p, 10.f, lod, avant);
+            choisirOuverturesReelles(true);  construire(p, 10.f, lod, reel2);
+            size_t tR = 0, tA = 0;
+            for (int k = 0; k < NB_PARTS; k++) {
+                tR += reel.part[k].triangles(); tA += avant.part[k].triangles();
+                verifierQue(reel.part[k].v.size() == reel2.part[k].v.size() && reel.part[k].i == reel2.part[k].i, "WFS-415 : interrupteur à 1 : maillage de WFS-402 identique");
+            }
+            verifierQue(avant.part[CHASSIS].triangles() == 0 && avant.part[VOLET].triangles() == 0, "WFS-415 : interrupteur à 0 : ni châssis ni volet");
+            verifierQue(avant.part[VITRE].triangles() >= 2 * vitrees, "WFS-415 : interrupteur à 0 : une vitre au fond de chaque baie vitrée (et des lucarnes)");
+            verifierQue(tA < tR, "WFS-415 : interrupteur à 0 : moins de triangles qu'avec les ouvertures de WFS-402");
+        }
+    }
+    choisirOuverturesReelles(true);
+}
+
 int main() {
+    choisirOuverturesReelles(true);   // WFS-415 (RG-02) : contrôles de WFS-402 avec l'interrupteur à 1
+    verifierInterrupteurWFS415();
     verifierBaieComplete();
     wfs::reel::Referentiel R;
     verifierQue(R.charger(std::string(WFS_SOURCE_DIR) + "/references/reel"), "référentiel lisible");
