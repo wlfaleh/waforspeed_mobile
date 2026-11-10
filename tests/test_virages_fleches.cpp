@@ -6,6 +6,7 @@
 //  - RG-02 : les épingles des lacets (R = 22 m ; WFS-379 : les 4 du col de la Campagne) passées à 20, 25 et 30 km/h aux flèches (−1, 0, +1), sur la
 //    file extérieure, aide désactivée puis activée, et en « Glisser » (volant proportionnel) : aucune image sur l'herbe ;
 //  - RG-03 : après un accident, la voiture répond à la flèche en 0,5 s au plus, braquage gardé.
+//  - WFS-391 (RG-06, ANO-231) : rayon aux 5 positions des épingles du col (centre, bords, bas-côtés devant la glissière) ± 3 %.
 // usage : test_virages_fleches [--rapport]
 #include <cmath>
 #include <cstdio>
@@ -71,6 +72,37 @@ int main(int argc, char** argv) {
             const char* ou = n == 0 ? "centre" : std::abs(n) < 8 ? (n * e.sens < 0 ? "bord extérieur" : "bord intérieur") : (n * e.sens < 0 ? "bas-côté extérieur" : "bas-côté intérieur");
             std::printf("  - %s (n = %+.1f m) : rayon %.2f m (%+.1f %% de la ligne droite)\n", ou, n, r, 100 * ecart);
             VERIFIE(std::abs(ecart) <= 0.05, "rayon faux au %s : %.2f m au lieu de %.2f m (%+.1f %%)", ou, r, droit, 100 * ecart);
+        }
+    }
+
+    // ---------- WFS-391 (RG-06, ANO-231) : rayon aux 5 positions dans les épingles du col de la Campagne ----------
+    // Cause de l'ANO-231 : la Campagne a sa glissière à edge = 1,38 demi-largeur (10,35 m de l'axe ; Corniche 12 m). Le point
+    // « bas-côté » à 11,5 m est DERRIÈRE la glissière : dès le 1er pas la voiture y est ramenée et la longe, d'où un rayon de
+    // 22 − 10,35 = 11,65 m (mesuré 11,64 m). Ce n'est pas un défaut de la conduite : le bas-côté se mesure là où l'on peut rouler,
+    // à n = 9 m (1,2 demi-largeur, arbitrage du PO du 2026-11-09 : sans toucher la glissière pendant la mesure), et doit donner le
+    // rayon du centre ± 3 %
+    if (!ep.empty() && col.map()) {
+        const double edge = col.map()->edge, nBc = 1.2 * RW;
+        std::printf("## WFS-391 (RG-06) : épingles du col de la Campagne, Golf, volant tourné vers l'intérieur, 10 km/h (glissière à %.2f m)\n", edge * RW);
+        for (const Epingle& e : ep) {
+            const double s = (e.debut + e.fin) / 2, centre = rayon("golf", col, s, 0, 10, (float)e.sens);
+            std::printf("- épingle à %.0f m (virage %s) : centre %.2f m", s * M, e.sens > 0 ? "à droite" : "à gauche", centre);
+            for (double n : {7.5, -7.5, nBc, -nBc}) {
+                const double r = rayon("golf", col, s, n, 10, (float)e.sens), ecart = r / centre - 1;
+                const bool interieur = n * e.sens > 0;   // n > 0 à droite ; virage à droite : intérieur à droite
+                const char* ou = std::abs(n) < 8 ? (interieur ? "bord intérieur" : "bord extérieur") : (interieur ? "bas-côté intérieur" : "bas-côté extérieur");
+                std::printf(" ; %s (%+.1f m) %.2f m (%+.1f %%)", ou, n, r, 100 * ecart);
+                VERIFIE(std::abs(ecart) <= 0.03, "épingle à %.0f m : rayon faux au %s : %.2f m au lieu de %.2f m (%+.1f %%)", s * M, ou, r, centre, 100 * ecart);
+            }
+            std::printf("\n");
+            // derrière la glissière (n = 11,5 m, point de l'ANO-231) : la voiture est ramenée sur la glissière dès le 1er pas, jamais au-delà
+            Player p = voiture("golf", Aide::Desactivee, col, s, e.sens * 11.5, 10);
+            p.update(DT, tenir(p, 10, (float)e.sens), col, true);
+            VERIFIE(std::abs(p.playerX) <= edge + 1e-9, "épingle à %.0f m : voiture laissée derrière la glissière (%.2f m)", s * M, p.playerX * RW);
+            // … puis elle la longe : rayon de la glissière intérieure (R de l'épingle − 10,35 m), pas un virage court à travers elle
+            const double rG = 1 / std::abs(courbure(col, s)) - edge * RW, r115 = rayon("golf", col, s, e.sens * 11.5, 10, (float)e.sens);
+            std::printf("  posée derrière la glissière (11,5 m) : ramenée à %.2f m, rayon %.2f m (glissière intérieure %.2f m)\n", std::abs(p.playerX) * RW, r115, rG);
+            VERIFIE(std::abs(r115 / rG - 1) <= 0.03, "épingle à %.0f m : la voiture ne longe pas la glissière (rayon %.2f m, glissière %.2f m)", s * M, r115, rG);
         }
     }
 

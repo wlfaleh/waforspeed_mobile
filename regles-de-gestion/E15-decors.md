@@ -17,6 +17,7 @@ Créée par le PO le 2026-11-09 (demande de l'utilisateur, `@po`) : « créer un
 - **RG-E15-07 — Agent** : `dev-artiste-3d` (`@devartiste`, `@dev3d`), qui charge aussi `expert-cartes` (décor d'une carte) ; un ticket par session, jusqu'à la fusion.
 - **RG-E15-08 — Parallélisme** : **un ticket actif par décor** (une carte = une file), pour avancer sur plusieurs décors en même temps. Fichiers propres à chaque carte (`ville*.cpp`, `plage.cpp`, `campagne.cpp`, `circuit.cpp`, `paquets/sources/<carte>/**`, nouveaux fichiers `src/world/decor_<carte>_*`, `assets/world/modeles/<carte>/**`, `assets/textures/decor/<carte>/**`) ; fichiers communs (`archi_kit.*`, `vegetation.*`, `mobilier_*` communs, shaders `decor*`) : seulement des ajouts ≤ 10 lignes annoncés au journal, ou de nouveaux fichiers.
 - **RG-E15-09 — Petit défaut** : un travail presque bon n'est pas jeté (ordre du 2026-11-09) ; l'agent 3D peut écrire « VALIDÉ avec réserves » : fusion, et le PO crée une tâche séparée.
+- **RG-E15-10 — Fond lointain** (PO, 2026-11-10, décision WFS-381) : chaque US « décor complet » (WFS-385 à 389) montre un vrai fond lointain (reliefs, côte, collines) **visible de 5 à 20 km**, pour que la brume de WFS-381 se lise ; avec la brume, `masquage::finBrouillard` coupe vers 15 km les objets de 3 à 10 m de rayon : à revoir dans l'US si des lointains au-delà de 10 km arrivent.
 
 ## US de l'épic (une file par décor)
 | Décor | US, dans l'ordre |

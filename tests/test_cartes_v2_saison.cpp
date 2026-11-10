@@ -136,8 +136,60 @@ int main() {
         cartes_v2::saisonPartie() = {};
         std::printf("  conduite du jeu, %s : 100-0 sec %.1f m, neige %.1f m ; 0-50 sec %.1f s, neige %.1f s\n", CARS[0].id, sec, neige, t50sec, t50neige);
         VERIFIER(neige > 3.0 * sec && neige < 4.5 * sec);   // ≈ 1 / μ (résistances comprises)
+        VERIFIER(neige >= 120 && neige <= 160);             // WFS-391 (RG-01, arbitrage du PO) : ancien modèle, 120 à 160 m
+        VERIFIER(sec >= 36.6 * 0.97 && sec <= 36.6 * 1.03); // WFS-391 (RG-03) : au sec, 36,6 m ± 3 %
         VERIFIER(neigeWeb == secWeb);                       // ordinateurs : inchangés
         VERIFIER(t50neige > 1.5 * t50sec);                  // antipatinage : l'élan est limité par μ
+
+        // WFS-391 (RG-01, RG-04, ANO-229) : au freinage, seules les forces des pneus (freins, frein moteur) sont × μ ; la traînée de
+        // l'air et le roulement ne dépendent pas du sol. Ralentissement d'un pas d = a + b μ : la part sans μ (a) est la même pour
+        // chaque μ et vaut (roulement + traînée) à cette vitesse (avant : tout × μ, a = 0)
+        auto ralentit = [&](double mu, double kmh) {   // ralentissement (m/s²) du 1er pas de freinage
+            cartes_v2::saisonPartie().muChaussee = (float)mu;
+            Player p; p.aide = Aide::Desactivee; p.reset(CARS[0]); p.dist = p.position = 100 / M; p.speed = (kmh / 3.6) / M;
+            DriveInput in; in.brake = true;
+            const double v0 = p.speed; p.update(1.0 / 120, in, t, true);
+            return (v0 - p.speed) * M * 120;
+        };
+        for (double kmh : {100.0, 50.0}) {
+            const double d1 = ralentit(1, kmh), d5 = ralentit(0.5, kmh), d25 = ralentit(0.25, kmh), v = kmh / 3.6;
+            const double air1 = d25 - 0.25 * (d1 - d25) / 0.75, air2 = d5 - 0.5 * (d1 - d5) / 0.5, attendu = Phys::roll + Phys::drag * v * v;
+            std::printf("  WFS-391 : freinage à %.0f km/h, part sans μ (air + roulement) %.3f m/s² (μ 0,25) / %.3f m/s² (μ 0,5), attendu %.3f\n", kmh, air1, air2, attendu);
+            VERIFIER(std::fabs(air1 - attendu) < 1e-6 && std::fabs(air2 - attendu) < 1e-6);
+        }
+        cartes_v2::saisonPartie() = {};
+
+        // WFS-391 (RG-02, ANO-229) : le bas-côté enneigé n'accroche pas plus que la chaussée enneigée (ancien modèle : vitesse de lacet
+        // tenue volant à fond, limitée par l'adhérence) ; au sec, rien ne change ; nouveau modèle : accélération latérale
+        auto lacet = [&](double ecart, bool neigeSol) {   // rad/s, 1er pas volant à fond à 50 km/h, à `ecart` m de l'axe
+            if (neigeSol) { cartes_v2::saisonPartie().muChaussee = n.saison.muChaussee; cartes_v2::saisonPartie().muBasCote = n.saison.muBasCote; }
+            else cartes_v2::saisonPartie() = {};
+            Player p; p.aide = Aide::Desactivee; p.reset(CARS[0]); p.dist = p.position = 300 / M; p.playerX = ecart / RW; p.speed = (50 / 3.6) / M; p.steer = 1;
+            DriveInput in; in.steer = 1; in.gas = true;
+            const double h0 = p.heading; p.update(1.0 / 120, in, t, true);
+            return (p.heading - h0) * 120;
+        };
+        const double lRouteN = lacet(0, true), lBcN = lacet(9, true), lRouteS = lacet(0, false), lBcS = lacet(9, false);
+        std::printf("  WFS-391 : lacet volant à fond à 50 km/h (ancien modèle) : sec route %.3f, bas-côté %.3f ; neige route %.3f, bas-côté %.3f rad/s\n", lRouteS, lBcS, lRouteN, lBcN);
+        VERIFIER(std::fabs(lBcS - lRouteS) < 1e-6);         // RG-03 : au sec, inchangé (même accroche qu'avant WFS-391)
+        VERIFIER(lBcN <= lRouteN + 1e-9);                    // RG-02 : neige, bas-côté ≤ chaussée (avant : 0,33 / 0,25 = +33 %)
+        VERIFIER(lBcN / lBcS <= lRouteN / lRouteS + 1e-9);   // RG-02 : le bas-côté perd au moins autant que la chaussée
+        {
+            const bool mondeAvant = g_conduiteMonde; g_conduiteMonde = true;
+            auto lat = [&](double ecart) {   // accélération latérale (g) après 1 s volant à fond à 40 km/h, neige de la carte de Noël
+                cartes_v2::saisonPartie().muChaussee = n.saison.muChaussee; cartes_v2::saisonPartie().muBasCote = n.saison.muBasCote;
+                Player p; p.aide = Aide::Desactivee; p.reset(CARS[0]); p.dist = p.position = 300 / M; p.playerX = ecart / RW; p.speed = (40 / 3.6) / M;
+                DriveInput in; in.steer = 1.f;
+                double m = 0;
+                for (int i = 0; i < 120; i++) { in.gas = p.kmh() < 40; p.update(1.0 / 120, in, t, true); m = std::max(m, std::fabs(p.latAcc) / 9.81); }
+                return m;
+            };
+            const double aRoute = lat(0.01), aBc = lat(9);
+            std::printf("  WFS-391 : conduite réelle, neige : accélération latérale max chaussée %.3f g, bas-côté %.3f g\n", aRoute, aBc);
+            VERIFIER(aBc < aRoute);
+            g_conduiteMonde = mondeAvant;
+        }
+        cartes_v2::saisonPartie() = {};
         oublier();
     }
 

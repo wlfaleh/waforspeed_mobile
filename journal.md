@@ -3579,3 +3579,36 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 01:37:40 — WFS-381 : RG-02 de la brume corrigée, option A (po-scrum-master)
 - Question de Claude, agent dev A (01UY1Vv42R) : RG-02 se contredisait (≤ 3 % à 200 m impose V ≥ 26 km) et l'effet était invisible à l'écran. Décision **(A)** : Corniche V ≈ 15 km, Ville ≈ 18, Grand Prix ≈ 20, Campagne ≈ 22 ; ≤ 5 % à 200 m, ≤ 25 % à 1 km, 60 à 75 % à 5 km ; nuit (RG-03) et budget (RG-05) inchangés ; le lead dev relit avec cette décision. Détail : `regles-de-gestion/WFS-381.md`, « Suivi ».
+
+### 2026-11-10 01:47:40 — WFS-381 : PR #330 ouverte, lead dev appelé (Claude, agent dev A (01UY1Vv42R))
+- RG-02 appliquée selon la décision du PO (option A, 01:37:40) : Corniche β0 2,55·10⁻⁴ m⁻¹ (V 15,3 km), Ville 18 km, Grand Prix 20 km, Campagne 22 km ; test `test_brume` vert, 96 tests CPU verts.
+- 7 captures avant / après + écart ×8 dans `qa/pr/WFS-381/` ; nuit identique au pixel près ; coût de la passe de scène dans le bruit de mesure (lavapipe).
+- Limite : effet surtout visible dans les vues larges (les cartes s'arrêtent vers 2 km).
+
+### 2026-11-10 02:03:29 — WFS-391 fusionné par le lead dev (lead-dev)
+- PR #329 (Claude, agent conduite (01UY1Vv4e7)), commit relu 3aef4fca ; squash 6ea09965 sur main ; revue « ✅ Approuvé » écrite dans la PR en commentaire (même compte GitHub).
+- Contrôles : les 60 captures ouvertes ; tout le diff lu (`player.cpp`, `player.h`, `sol_banc.cpp`, accroche de 2 lignes dans `desktop_main.cpp`, 2 tests) ; branche fusionnée en local avec main : construction OK, 95 tests CPU réussis ; bancs `sol`, `neige` et `parcours` relancés : 0 écart.
+- Statut : 🟡 À valider (utilisateur), car c'est un ticket de conduite. Ligne retirée de `suivi-pr.md`. Ligne ajoutée à `qa/Check.md`.
+- Pour le PO : RG-01 demande un test « pneus = μ × g ± 2 % dans les deux modèles ». Le test de la PR prouve la proportionnalité à μ. La valeur absolue n'est pas testée : Golf, ancien modèle, 1,024 μ g, soit +2,4 %, fixée par le réglage de freinage de WFS-188. Critère à préciser pour WFS-258.
+### 2026-11-10 02:03:41 — WFS-381 refusé par le lead dev, PR #330 (lead-dev)
+- Commit relu 11d3f1de ; 21 images ouvertes ; tout le diff lu ; construction et `tests_cpu.sh` refaits : 97 tests verts, `test_brume` vert ; nuit identique (RG-03 tenue) ; code sans défaut bloquant.
+- Refus : sur les captures 1 à 3 et les vues hautes, l'écart avant / après est de 0,6 à 1,5 niveau sur 255 en moyenne : on ne distingue pas les images, les lointains ne sont pas « nettement plus pâles et bleutés » (critère du ticket, demande de l'utilisateur ANO-221). `brume-mesures-avant.txt` montre des valeurs que main n'utilise pas.
+- Demandé : captures où l'effet se voit (avec une mesure du contraste à l'écran à 1 et 2 km), ou une nouvelle décision du PO si la RG-02 ne le permet pas avec des cartes de moins de 2 km ; PO prévenu (critère et RG-02 incompatibles avec ce qui est à l'écran).
+- `TACHES.md` : ↩️ Retour lead dev (PR #330) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-10 02:03:59 — Fin WFS-391 : session terminée (Claude, agent conduite (01UY1Vv4e7))
+- PR #329 fusionnée en squash par le lead dev (6ea09965) ; WFS-391 en 🟡 À valider (utilisateur) : freinage sur la neige plus court (≈ 127 m depuis 100 km/h au lieu de 145 m), bas-côté enneigé moins accrocheur, sec inchangé.
+- Remarques non bloquantes du lead dev notées : critère « pneus = μ × g ± 2 % » à préciser pour WFS-258 (Golf 1,024 μ g dans l'ancien modèle) ; banc `sol` : la voiture posée saute des checkpoints (banc seulement).
+- Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-10 07:31:05 — WFS-381 : décision sur RG-02 après le refus de la PR #330 (po-scrum-master)
+- Question de Claude, agent dev A (01UY1Vv42R), transmise par le lead dev : l'option A (V 15 à 22 km) ne se voit pas sur des cartes de moins de 2 km (écart 0,6 à 1,5 niveau sur 255).
+- Décision : **option C**. RG-02 = jour de brume de chaleur d'été : Corniche V 8 km, Ville 10 km, Grand Prix 11 km, Campagne 12 km (bornes à 200 m, 1 km, 2 km, 5 km dans `regles-de-gestion/WFS-381.md`, Suivi) ; critère des captures chiffré (contraste à 1 et 2 km dans `pr.md`, écart ≥ 20 niveaux sur les lointains).
+- Fond lointain : pas de nouveau ticket ; RG-E15-10 ajoutée à `E15-decors.md` (WFS-385 à 389), avec la remarque du lead dev sur `masquage::finBrouillard`.
+- WFS-381 reste ↩️ Retour lead dev (PR #330) chez son développeur.
+
+### 2026-11-10 07:31:44 — WFS-362 : PR #323 corrigée après le 2e refus du lead dev (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Causes : lame devant la plaque S3 (plaque ignorée pour caler la grille, aucun contrôle) ; normales du bord du panneau M4 faussées (surface bornée à sa boîte) ; restes de l'anneau du logo M4 hors de la fenêtre de découpe ; paroi et rebord de grille en escalier (carte au pas de 5 mm).
+- Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : option de grille `derriere` + contrôle bloquant « devant la plaque » ; surface du panneau sur une zone élargie ; découpe complète de l'anneau ; paroi et rebord lissés ; note M4 corrigée. X5 inchangée (empreinte rejouée).
+- Vérification : `--verifier` vert (5 voitures) ; 96 tests CPU verts ; captures régénérées avec les zooms demandés (plaque S3, haut du nez M4) ; réponse point par point dans la PR ; lead dev rappelé.
+

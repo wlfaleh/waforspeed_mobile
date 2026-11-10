@@ -46,6 +46,9 @@ inline bool g_avantWfs295 = false;
 // WFS-316 : banc seulement : rejoue le comportement d'avant la correction (force centrifuge forfaitaire et cap borné appliqués
 // même volant tenu) pour les mesures « avant » ; toujours faux dans le jeu
 inline bool g_avantWfs316 = false;
+// WFS-391 : banc seulement (WFS_BANC=sol) : rejoue le sol d'avant la correction (toute la résistance × μ au freinage, bas-côté
+// enneigé au μ du paquet sans borne) pour les captures « avant » ; toujours faux dans le jeu
+inline bool g_avantWfs391 = false;
 // WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages et ne tient pas la file
 // (comportement de main) ; faux dans le jeu
 inline bool g_avantWfs258 = false;
