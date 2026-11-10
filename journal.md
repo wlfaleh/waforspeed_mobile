@@ -3760,3 +3760,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **WFS-383** (sols, pins d'Alep) passe ⏳ Prêt : WFS-379 et 380 fusionnés (🟡). WFS-401 et 383 peuvent avancer en même temps (fichiers séparés ; 401 ≤ 10 lignes dans `plage.cpp`).
 - `track-agent.md` : ligne de Claude, agent cartes (01UY1Vv4eo) enlevée (session terminée).
 - Pas de session libre : WFS-401 et WFS-383 attendent une **nouvelle session** de développeur qui les demande.
+
+### 2026-11-10 09:45:04 — WFS-402 créé : fenêtres et portes réalistes des immeubles et des maisons (po-scrum-master)
+- Demande de l'utilisateur (`@po`, 2026-11-10) : « ajoute une tâche pour le décor concernant le réalisme des fenêtres et des portes des immeubles, maisons… ».
+- **WFS-402** (P1 Urgent, épic E15, nouvelle file « Ouvertures communes ») : inventaire par carte, fenêtres en retrait de 15 à 25 cm (cadre, petits bois, appui, linteau, vitre qui reflète), volets et garde-corps selon le lieu, porte d'entrée côté rue sur chaque bâtiment, vitrines, variété par bâtiment, nuit avec pièces éclairées (30 à 50 %, 2700 à 4000 K), formes géométriques interdites, téléphone tenu. Règles : `regles-de-gestion/WFS-402.md`.
+- **⏳ En attente après WFS-370** (🔧, agent dev3d 01UY1Vv2Ph) : mêmes fichiers du kit `src/world/archi_*`. Agent `dev-artiste-3d`, nouvelle session ; avis « Avis agent 3D : VALIDÉ » avant le lead dev (RG-E15-06). Les US « décor complet » WFS-385 à 389 le reprennent.
+- `E15-decors.md` : file « Ouvertures communes » ajoutée ; `TACHES.md` (ligne + bandeau), `track-agent.md`, `tache utilisateur.md` à jour.
