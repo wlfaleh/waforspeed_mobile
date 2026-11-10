@@ -36,6 +36,10 @@ std::string sha256Hex(const std::vector<uint8_t>& o);   // SHA-256 (FIPS 180-4) 
 int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string& racine,
                  int (*parcours)(Game&, Renderer&, const std::string&) = nullptr);
 
+// WFS-416 : banc « batiments » (WFS_BANC=batiments, batiments_banc.cpp) : bâtiments cuits dans le paquet de la Ville, kit de secours et
+// paquet joués tour à tour (captures batiments-*), aucune construction en course avec le paquet ; renvoie le nombre d'écarts
+int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::string& racine);
+
 // WFS-346 : banc « neige » (WFS_BANC=neige, neige_banc.cpp) : saison lue du paquet sur les cartes d'essai (neige au sol, flocons dehors
 // seulement, adhérence), captures neige-* ; renvoie le nombre d'écarts
 int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& racine);

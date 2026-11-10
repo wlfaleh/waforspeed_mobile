@@ -1,5 +1,6 @@
 // WaForSpeed — paquets de cartes « .wfcarte » (WFS-301) : voir carte_cuite.h.
 #include "carte_cuite.h"
+#include <memory>
 #include <algorithm>
 #include <atomic>
 #include <cstring>
@@ -43,6 +44,7 @@ struct Actif {
     std::string carte;
     std::vector<Fichier> fichiers;               // fichiers des archives maillages / textures
     std::map<std::string, size_t> index;         // chemin → fichiers[i]
+    std::vector<std::pair<std::string, std::shared_ptr<const std::vector<uint8_t>>>> blocs;   // WFS-416 : autres blocs non vides (ex. « batiments »)
     std::atomic<long long> lus{0};
 };
 Actif& actif_() { static Actif a; return a; }
@@ -217,7 +219,9 @@ std::string& dossierPaquets() { static std::string d; return d; }
 void activer(Paquet&& p) {
     Actif& A = actif_();
     std::lock_guard<std::mutex> v(A.m);
-    A.carte = p.carte; A.fichiers.clear(); A.index.clear(); A.lus = 0;
+    A.carte = p.carte; A.fichiers.clear(); A.index.clear(); A.blocs.clear(); A.lus = 0;
+    for (Bloc& b : p.blocs) if (b.nom != "maillages" && b.nom != "textures" && !b.donnees.empty())   // WFS-416
+        A.blocs.emplace_back(b.nom, std::make_shared<const std::vector<uint8_t>>(std::move(b.donnees)));
     for (const char* nom : {"maillages", "textures"}) {
         const Bloc* b = p.bloc(nom);
         std::vector<Fichier> f;
@@ -228,7 +232,14 @@ void activer(Paquet&& p) {
 void desactiver() {
     Actif& A = actif_();
     std::lock_guard<std::mutex> v(A.m);
-    A.carte.clear(); A.fichiers.clear(); A.index.clear(); A.lus = 0;
+    A.carte.clear(); A.fichiers.clear(); A.index.clear(); A.blocs.clear(); A.lus = 0;
+}
+std::shared_ptr<const std::vector<uint8_t>> blocDuPaquet(const std::string& carte, const std::string& nom) {
+    Actif& A = actif_();
+    std::lock_guard<std::mutex> v(A.m);
+    if (A.carte != carte) return nullptr;
+    for (const auto& b : A.blocs) if (b.first == nom) return b.second;
+    return nullptr;
 }
 bool actif() { Actif& A = actif_(); std::lock_guard<std::mutex> v(A.m); return !A.carte.empty(); }
 std::string carteActive() { Actif& A = actif_(); std::lock_guard<std::mutex> v(A.m); return A.carte; }

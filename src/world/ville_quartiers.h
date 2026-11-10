@@ -73,6 +73,8 @@ const Plan& plan(const MapDef& map, int64_t segCount);
 // dans les 60 m qui le précèdent, et le décor de rue de l'autoroute, du tunnel et du pont. À appeler par la Ville (ordre 100)
 // avant les commerces (109) et les enseignes (107), qui lisent le même plan.
 const Plan& adapter(const MapDef& map, const Track& t);
+// WFS-416 (accroche) : pose les immeubles et les entrepôts de la Ville dans le kit d'architecture (archi::carte::vider puis poser)
+void poserImmeublesKit(const MapDef& map, Track& t);
 // WFS-137 (RG-02) : piétons des passages zébrés (4 par carrefour à feux, ligne d'arrêt + 1,4 à 2,8 m) : s (segment), latéral de
 // départ (m), vitesse (m/s), dir : côté du trottoir visé (±1), feu du carrefour ; traverser() les fait passer d'un trottoir à
 // l'autre au rouge des voitures (ou finir de traverser), attendre au vert ; orientation (yaw relatif à la route) et hauteur du sol

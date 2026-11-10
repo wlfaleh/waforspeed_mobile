@@ -15,6 +15,8 @@
 #include "../../render/environnement.h"   // banc : capture d'environnement remise à zéro avant chaque scène
 #include "../../render/renderer.h"
 #include "../../ui/text.h"
+#include "../archi_carte.h"        // WFS-416 : bâtiments du kit cuits dans le paquet
+#include "../ville_quartiers.h"
 #include "../../../third_party/stb/stb_image.h"   // implémentation : model_loader.cpp
 
 namespace wfs {
@@ -92,6 +94,30 @@ bool ecrireFichier(const std::string& chemin, const std::vector<uint8_t>& o) {  
 }
 } // namespace
 
+// WFS-416 (RG-02) : tous les bâtiments du kit de la carte, 3 niveaux, fenêtres comprises, prêts pour la carte graphique. Le bloc
+// est le même pour les 3 formats de texture.
+std::vector<uint8_t> batimentsCuits(const std::string& c) {
+    const double t0 = nowSeconds();
+    Track t;
+    t.build(mapById(c.c_str()), trace::versionCarte(c.c_str()));
+    ville::poserImmeublesKit(mapById(c.c_str()), t);
+    const archi::cuit::Decor d = archi::cuit::cuire(archi::carte::poses());
+    const size_t n = archi::carte::poses().size();
+    archi::carte::vider();
+    std::vector<uint8_t> bloc = archi::cuit::ecrire(d);
+    size_t tri[3] = {}, inst = 0, triMod = 0;
+    for (const archi::cuit::Morceau& m : d.morceaux) {
+        for (int k = 0; k < 3; k++) for (const archi::cuit::Lot& l : m.lot[k]) tri[k] += l.i.size() / 3;
+        inst += m.instances.size();
+        for (const archi::cuit::Instance& in : m.instances) for (const archi::cuit::Lot& l : d.modeles[in.modele].lot) tri[0] += l.i.size() / 3;
+    }
+    for (const archi::cuit::Modele& m : d.modeles) for (const archi::cuit::Lot& l : m.lot) triMod += l.i.size() / 3;
+    WFS_LOG("cuire (WFS-416) : %zu bâtiments de la carte %s cuits en %d ms : %zu morceaux, triangles par niveau %zu / %zu / %zu ; niveau 0 : %zu baies recopiées de %zu modèles (%zu triangles cuits) ; %zu images de menuiserie (atlas %ux%u) ; bloc de %.1f Mo",
+            n, c.c_str(), (int)std::lround((nowSeconds() - t0) * 1000), d.morceaux.size(), tri[0], tri[1], tri[2], inst, d.modeles.size(), triMod,
+            d.atlas.tuiles.size(), d.atlas.l, d.atlas.h, bloc.size() / 1048576.0);
+    return bloc;
+}
+
 carte::Paquet cuire(const std::string& racine, const std::string& c, carte::FormatTexture f) {
     carte::Paquet p;
     p.carte = c; p.versionCarte = (uint32_t)trace::versionCarte(c.c_str()); p.format = f; p.empreinte = empreinteAttendue(c);
@@ -105,6 +131,7 @@ carte::Paquet cuire(const std::string& racine, const std::string& c, carte::Form
     p.blocs.push_back({"textures", carte::archive(std::move(textures))});
     p.blocs.push_back({"trace", {}});   // réservé : tracé d'une future carte au tracé différent
     p.blocs.push_back({"chocs", {}});   // réservé : chocs du décor d'une future carte
+    if (c == "ville") p.blocs.push_back({archi::cuit::NOM_BLOC, batimentsCuits(c)});   // WFS-416 (RG-02, RG-09 : la Ville d'abord)
     return p;
 }
 
