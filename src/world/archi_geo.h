@@ -20,11 +20,18 @@ struct Maillage {
 };
 
 // un maillage par matériau (un appel de dessin par matériau)
-enum Part : int { MUR, ENCADREMENT, VITRE, MENUISERIE, TOIT, METAL, VOLET, NB_PARTS };   // VOLET : ST-2, volets peints (méditerranéen)
+enum Part : int { MUR, ENCADREMENT, VITRE, MENUISERIE, TOIT, METAL, VOLET, FIN, NB_PARTS };   // VOLET : ST-2, volets peints (méditerranéen) ; FIN : WFS-370, barreaux (fils de 16 mm, dessinés en couverture partielle)
 
 // niveaux de détail (RG-05) : 0 complet ; 1 tableaux et vitres gardés, sans appuis, balcons, garde-corps ni édicules ;
 // 2 volume seul (murs pleins, vitres peintes à plat sur la façade, toiture), pour le loin
 struct Batiment { Maillage part[NB_PARTS]; };
+
+// WFS-370 : graine (0..99) d'une baie, codée dans ses uv : fixe pour une même baie, différente d'une fenêtre et d'un bâtiment à l'autre
+inline int graineBaie(const Plan& p, int niveau, int travee) {
+    uint32_t x = (uint32_t)(p.hRdc * 1e4f) * 2654435761u ^ (uint32_t)(p.hEtage * 1e4f) * 40503u ^ (uint32_t)(niveau * 131 + travee * 7919 + (int)p.style * 31);
+    x ^= x >> 15; x *= 2246822519u; x ^= x >> 13;
+    return (int)(x % 100u);
+}
 
 // construit le bâtiment d'un plan, de profondeur donnée, au niveau de détail lod (0, 1 ou 2)
 void construire(const Plan& p, float profondeur, int lod, Batiment& out);
