@@ -3501,3 +3501,81 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #324 fusionnée en squash par le lead dev (b4e3a106). L'agent 3D a donné « VALIDÉ avec réserves » sur 6cfe9bcf, après la correction de la terrasse grise (B1, cb2f7d84). Le ticket est 🟡 à valider par l'utilisateur.
 - Réserves confiées au PO : WFS-398 (eau des fontaines) et WFS-399 (affiches, éclairage du parc, plaque de rue, feux éteints de jour). Les +44 % de triangles en Basse restent à mesurer sur le téléphone (règles de WFS-321 / 331 / 385).
 - Un seul ticket par session : aucun autre ticket demandé, la session s'arrête.
+
+### 2026-11-10 01:08:22 — WFS-380 : PR #326 ouverte, vraie mer (Claude, agent cartes (01UY1Vv4eo))
+- **Fait** : une seule eau pour tout le jeu (`MAT_EAU`, `shaders/eau.glsl`) : 8 vagues calculées (houle 28 m / 4,2 s, Hs 0,47 m), Fresnel 0,02, traînées du soleil, de la lune et des lampadaires, couleur lue à travers l'eau selon la profondeur (distance au vrai trait de côte, pente du fond), écume de ressac et de déferlement en dentelle, sillage en V (Kelvin) et éclaboussures en dentelle à la place du trapèze et du disque blancs ; mer de la Corniche, bassin de la marina et rivière de la Ville (paramètres dans les sommets) ; blocs de calcaire et galets au bord de la côte rocheuse et au pied de la falaise (RG-09). Banc `WFS_BANC=mer` (15 vues).
+- **Accroches annoncées** (≤ 10 lignes chacune) : `shaders/scene.frag` (branche de l'eau, 7 lignes), `src/render/renderer.h` (`MAT_EAU`), `src/render/renderer.cpp` (l'eau ne porte pas d'ombre), `src/world/ville.cpp` (eau de la rivière, 5 lignes), `src/platform/desktop_main.cpp` (banc `mer`).
+- **Vérification** : construction complète, `tests_cpu.sh` 96/96 (dont `test_eau`) après synchronisation avec `main` ; 15 paires de captures avant / après dans `qa/pr/WFS-380/` ; banc perf Corniche (lavapipe) : Basse, passe de scène 132,5 → 135,2 ms (+2,0 %), Haute, image 355,0 → 351,7 ms.
+- **Aucun téléchargement** : eau et pierres calculées, aucune texture ni licence.
+- **Pour le PO** : RG-E15-01 (200 à 700 Mo de décor) ne se mesure pas sur la Corniche, carte du code sans paquet ; ce ticket n'ajoute aucun octet d'actif. Le seuil relève de WFS-386. Limite : les reflets des lampadaires ne viennent que des 4 lampadaires allumés près de la voiture (`nuit.cpp`, WFS-382).
+- **Suite** : avis de l'agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 01:08:26 — WFS-381 : brume au loin, accroches annoncées et avancement (Claude, agent dev A (01UY1Vv42R))
+- Fait sur `feature/waforspeed-381` : brume exponentielle selon la distance **et** la hauteur (`shaders/eclairage.glsl` : `brumeTau`, `fogAt`, `appliquerBrume`), couleur de l'horizon du moment, plus chaude côté soleil, inchangée la nuit ; réglage par carte (`src/render/atmosphere_brume.h` : Corniche β0 1,5·10⁻⁴ m⁻¹ / H 800 m, Ville 1,4·10⁻⁴ / 1 000 m, Campagne 1,2·10⁻⁴ / 1 200 m, Grand Prix 1,3·10⁻⁴ / 1 200 m) ; banc `WFS_BANC=brume` ; test `test_brume` (RG-02 : ≤ 3 % à 200 m, 10-20 % à 1 km, 40-60 % à 5 km).
+- **Accroches ≤ 10 lignes hors zone (annonce)** : `shaders/scene.frag` et `shaders/scene_skin.frag` (fin du `main` : 5 lignes de brouillard remplacées par 1 appel) ; `src/render/renderer.h` (+1 ligne : `fogHauteurInv`, `fogRef` dans `FrameParams`) et `renderer.cpp` (1 ligne : `u.fogLin.zw`) ; `src/platform/desktop_main.cpp` (+2 lignes : banc brume) ; `CMakeLists.txt` (+1 ligne : `test_brume`). Aucun changement de `post.frag`, `nuit.cpp`, `phares.h` (WFS-382) ni de l'eau (WFS-380).
+- Vérification : 96 tests CPU en local ; coût GPU de la passe de scène en Basse sur lavapipe, 2 mesures avant / 2 après : écart dans le bruit (≈ ±1 %) ; nuit identique au pixel près (RMSE 0).
+- Limite constatée : les cartes ne montrent rien au-delà de ≈ 2 km ; avec les valeurs réelles de RG-02, la brume enlève ≈ 14 % de contraste à 1 km et ≈ 25 % à 2 km (avant : 8 % et 16 %) : l'effet est réel mais discret ; les vrais lointains à 5-20 km (reliefs, côte) relèvent des tickets de décor (E15).
+
+### 2026-11-10 01:14:15 — WFS-372 : PR #327 ouverte (Claude, agent dev3d 5 (01UY1Vv5G4))
+- Fait : vignes palissées (piquets, 3 fils, ceps, feuillage `veg::vigne`), clôtures et enclos (poteaux à pointe, lisses en demi-rondin), bottes rondes, corps de ferme (fenêtres en retrait, volets, tuiles canal, génoise, cheminée), hangar agricole (portiques en I, bardage, plaques ondulées), poteaux de ligne avec isolateurs et câbles. Fichiers : `src/world/decor_campagne_modeles.*` (nouveau), `decor_campagne_banc.cpp` (banc `campagne-objets`), `campagne.cpp`, `vegetation.*`, `tests/test_decor_campagne.cpp`.
+- Accroche annoncée (≤ 10 lignes, hors zone) : `src/platform/desktop_main.cpp`, 2 lignes (`WFS_BANC=campagne-objets`) ; `CMakeLists.txt` : 1 ligne (test).
+- Vérifié : `test_decor_campagne` 49/49 ; `tests_cpu.sh` 96/96 ; bancs `campagne` et `campagne-objets` 0 écart ; perf Campagne Basse 180,2 → 184,4 ms (+2,3 %, lavapipe), appels de dessin inchangés (161).
+- Réseau : aucun téléchargement (seuls GitHub et les paquets sont permis) → RG-03, objets modélisés au niveau du vrai objet.
+- Limites : éoliennes, église, commerces, fontaine, signalisation, haies, autoroute restent pour WFS-387 (inventaire `qa/pr/WFS-372/inventaire.md`). Suite : avis de l'agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 01:15:03 — WFS-382 : PR #328 ouverte, accroches annoncées (Claude, agent dev N (01UY1Vv5K1))
+- Fait : phares de nuit réels. Tache des phares du jeu web retirée (`nuit.cpp`, elle doublait les deux feux de croisement : cône blanc en Campagne et sur la neige) ; répartition verticale du feu de croisement revue (`phares.h`, plateau jusqu'à −1,5°, chute rapide vers le premier plan, flux sourcé gardé, crête LED 30 000 cd ; avis expert-realisme-3d, R112 / R149) ; lueur des phares 0,30 → 0,12 m ; reflet des feux de croisement borné ; halo et bloom plafonnés la nuit ; banc court `WFS_BANC=phares`.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `shaders/eclairage.glsl` (7 lignes : même répartition que `phares.h`, plafond du reflet des feux de croisement), `shaders/post.frag` (E13, 5 lignes : plafond de nuit), `src/render/renderer.cpp` (2 lignes : lueur des phares), `src/platform/desktop_main.cpp` (1 ligne : banc `phares`).
+- Défaut trouvé et corrigé dans `nuit.cpp` : `fx.stop / fx.recul / fx.frein` du joueur étaient au bout d'un commentaire (jamais exécutés) ; ligne recollée.
+- Vérifié : 95 tests CPU réussis ; pixels saturés 0,37-0,80 % → 0 % (poursuite, voiture en face, pluie) ; neige de nuit, tache des phares 7,56 → 0 % ; témoins de jour identiques ; perf Basse Ville nuit pluie : coût égal à ±3 % près (2 mesures).
+- Limites : bloom absent du banc (lavapipe), à voir sur téléphone ; rétroréflexion de l'asphalte et glace modélisée du phare non faites (proposées).
+
+### 2026-11-10 01:19:29 — WFS-391 : PR #329 ouverte (Claude, agent conduite (01UY1Vv4e7))
+- Fait (`src/game/player.cpp`, ancienne conduite) : RG-01, au freinage seules les forces des pneus (freins, frein moteur) × μ, traînée et roulement hors μ (neige 145,2 → 126,9 m, sec 36,8 m inchangé) ; RG-02, μ bas-côté ≤ μ chaussée × 0,6 (neige 0,2 → 0,15 ; sec et automne inchangés).
+- Cause de l'ANO-231 (RG-06) : point de mesure à 11,5 m derrière la glissière du col (edge 1,38 = 10,35 m) : la voiture la longe (rayon 11,65 m). Rien à corriger dans la conduite (arbitrage du PO) ; test sur les 5 positions devant la glissière (± 0,4 %).
+- **Accroche annoncée** (2 lignes) : `src/platform/desktop_main.cpp`, nouveau banc `WFS_BANC=sol` (`src/game/sol_banc.cpp`) ; interrupteur de banc `g_avantWfs391` (`player.h`).
+- Vérifié : 94 tests CPU réussis (nouveaux tests en échec sur main : 5) ; bancs `sol` et `neige` 0 écart ; parcours 0 écart ; 50 captures dans `qa/pr/WFS-391/`.
+- Limites : ancien modèle sous 140 m à cause du roulement du jeu (0,35 m/s², noté pour WFS-258) ; ressenti à valider sur téléphone (🟡 après fusion).
+
+### 2026-11-10 01:27:12 — WFS-362 : PR #323 corrigée après la revue du lead dev (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Causes : (1) cratère de la M4 : le bourrelet autour de l'ancienne calandre donnait au panneau profondeur et normales ; (2) écusson : ce même bourrelet ; (3) éclats du coin S3 : jour de 1,5 cm entre bord découpé et paroi du conduit ; (4) lames en peigne : pas de rebord ; (5) bande sombre S3 : surface presque verticale.
+- Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : contour M4 jusqu'au joint du capot et aux pointes des phares ; panneau = base de degré 2 ajustée sur la peinture voisine + écart interpolé, normales de la surface finale lissées, vrai décalage du débord ; options de grille `joue` et `rebord` ; X5 inchangée (empreinte rejouée).
+- Vérification : `--verifier` vert (5 voitures) ; 95 tests CPU verts ; captures régénérées (18 vitrines, 16 gros plans, 16 zooms) ; réponse point par point dans la PR ; lead dev rappelé.
+
+
+### 2026-11-10 01:30:46 — WFS-372 fusionné par le lead dev (lead-dev)
+- PR #327 fusionnée en squash (0654a4af) à la 1re revue, après « Avis agent 3D : VALIDÉ avec réserves » sur 6b3b4bb9 (RG-E15-06 et 09). Revue « ✅ Approuvé » écrite dans la PR en commentaire (GitHub refuse l'approbation du même compte).
+- Vérifié : 58 captures ouvertes (paires avant / après jour et nuit, gros plans, perf, inventaire) ; diff complet relu ; construction et `tests_cpu.sh` refaits : 96/96 ; perf Basse +2,3 % (lavapipe, sous le seuil de 5 %) ; `vegetation.*` : ajout seul de `veg::vigne`, permis par la zone du ticket (vignes).
+- Statut 🟣 Fusionné ; ligne de `suivi-pr.md` supprimée ; ligne ajoutée à `qa/Check.md`.
+- **Pour le PO** : créer une tâche séparée (RG-E15-09) avec les réserves 1 à 6 de l'agent 3D (bottes, crépi, teintes du bois, tôle du hangar, perf sur le téléphone) et mes remarques : câbles des poteaux et lisses des clôtures aux limites de deux zones « champs », commentaire en double dans `decor_campagne_banc.cpp:29`, comparaison de flottants dans `fenetre`.
+
+### 2026-11-10 01:31:23 — WFS-372 : fin de session (Claude, agent dev3d 5 (01UY1Vv5G4))
+- PR #327 fusionnée par le lead dev (squash 0654a4af) après « Avis agent 3D : VALIDÉ avec réserves » sur 6b3b4bb9. Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+- À reprendre dans une tâche séparée (RG-E15-09), transmis au PO : bottes sans grain ni filet ; crépi de la ferme trop froid (gris-bleu) ; poteaux de clôture plus sombres que les lisses ; poteau électrique trop sombre ; ondes de la tôle du hangar invisibles de loin ; performance à mesurer sur le téléphone (triangles +35 % au départ) ; `campagne.cpp` : câble ou lisse qui peut finir sans poteau quand deux zones « champs » se suivent (`T_POLE`, `clotureSuit`) ; commentaire en double `decor_campagne_banc.cpp:29` ; comparaison de flottants par `==` dans `fenetre` (`decor_campagne_modeles.cpp`).
+
+### 2026-11-10 01:31:36 — WFS-362 : PR #323 refusée par le lead dev, 2e revue (lead-dev)
+- Commit relu 13a06c92 ; 50 paires de captures ouvertes, diff lu (`tools/retoucher_formes.mjs`, `tools/formes.json`). Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/323 (2e revue « COMMENT » valant refus).
+- Bloquants : (1) S3, une lame ou le rebord de la grille passe devant la plaque (numéro barré, régression de ce passage ; aucun contrôle de la plaque, `ignorer: [18]`) ; (2) M4, panneau encore déformé au zoom ×4 de 3/4 droit (pli en rouleau au bord gauche, marche sous le capot, contour en écusson dans les reflets) ; (3) M4, reste chromé de l'emblème au centre du nez ; (4) S3, coin droit de la grille encore en dents, avec un éclat de nuit. À corriger aussi : rebord M4 en dents de scie, teinte du panneau S3, note « bombée » de la M4 alors que bombe = 0.
+- Progrès notés : silhouette des haricots disparue de face, vrai décalage `decaler()`, lames S3 contre un rebord.
+- TACHES : WFS-362 ↩️ Retour lead dev (PR #323) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-10 01:32:27 — WFS-372 en 🟡, réserves versées dans WFS-387 (po-scrum-master)
+- Fin de ticket annoncée par Claude, agent dev3d 5 (01UY1Vv5G4) : WFS-372 fusionné (#327, 0654a4af), « Avis agent 3D : VALIDÉ avec réserves ». Session close, aucun nouveau ticket pour elle.
+- WFS-372 corrige des défauts vus par l'utilisateur (ANO-65, ANO-219) → **🟡 À valider (utilisateur)** (le robot ne le passe pas en ✅).
+- RG-E15-09 : pas de nouveau ticket ; les 6 réserves de l'agent 3D et les 3 remarques du lead dev vont dans **WFS-387, RG-12** (même carte, mêmes fichiers, travail suivant de la file Campagne ; évite un micro-ticket et deux PR sur les mêmes fichiers).
+- WFS-387 passe **⏳ Prêt** (E15 Campagne, agent dev-artiste-3d), pour une nouvelle session.
+
+
+### 2026-11-10 01:34:04 — WFS-382 : PR #328 refusée par le lead dev (lead-dev)
+- Revue reprise après le redémarrage du conteneur (rien n'avait été posté). Commit relu : 3c89a192. Les 22 captures ont été ouvertes et zoomées, le diff lu en entier, la branche construite ; tests CPU : 95 réussis.
+- Gros progrès sur le sujet : plus de disques autour des phares, sol plus brûlé en Ville, Campagne et neige (RG-07 tenu) ; témoins de jour identiques.
+- **Refus** (revue postée en COMMENT sur la PR, car GitHub refuse « changements demandés » quand la PR vient du même compte) :
+  1. `shaders/post.frag:124/127` : le plafond du halo et du bloom coupe net chaque canal. Résultat, la nuit : un disque plat, un carré et un anneau irisé autour des têtes de lampadaire et de l'écran du Cockpit (forme interdite, régression sur toutes les cartes de nuit). Correction attendue : un plafond progressif, calculé sur la luminance.
+  2. RG-01 : la tache de 30 à 60 m et la coupure ne se voient pas sur la capture 3 (Campagne, vue Capot).
+- TACHES : WFS-382 passe en ↩️ Retour lead dev (PR #328) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-10 01:35:32 — WFS-382 : rétroréflexion de la chaussée accordée dans le ticket (po-scrum-master)
+- Question de Claude, agent dev N (01UY1Vv5K1), défaut 2 du lead dev sur la PR #328 (RG-01 invisible). Décision **(A)** : rétroréflexion EN 1436 faite dans WFS-382 ; exception de zone `shaders/eclairage.glsl` ≈ 15 lignes au total, annoncées au journal ; feux de croisement du joueur seulement ; pas de `frame_ubo` ni renderer ; budget Basse (RG-05, WFS-353) tenu ; synchronisation avec `main` avant l'envoi (WFS-381). Détail : `regles-de-gestion/WFS-382.md`, « Suivi ».
+
+### 2026-11-10 01:37:40 — WFS-381 : RG-02 de la brume corrigée, option A (po-scrum-master)
+- Question de Claude, agent dev A (01UY1Vv42R) : RG-02 se contredisait (≤ 3 % à 200 m impose V ≥ 26 km) et l'effet était invisible à l'écran. Décision **(A)** : Corniche V ≈ 15 km, Ville ≈ 18, Grand Prix ≈ 20, Campagne ≈ 22 ; ≤ 5 % à 200 m, ≤ 25 % à 1 km, 60 à 75 % à 5 km ; nuit (RG-03) et budget (RG-05) inchangés ; le lead dev relit avec cette décision. Détail : `regles-de-gestion/WFS-381.md`, « Suivi ».
