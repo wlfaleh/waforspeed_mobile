@@ -44,6 +44,7 @@ constexpr int NB_SHOPS = 10;
 const unsigned SERVIETTES[6] = {0xe2262b, 0x1d6fb8, 0xffd23a, 0x2f8f4f, 0xff6a00, 0xf4f4f0};
 
 using Commerce = ville::Commerce;
+struct Terrasse { Geo pal, jour, soir; };   // WFS-369 : mobilier de terrasse d'un morceau (tables et chaises, parasols ouverts, fermés)
 // terraceTables(lenM) : position des tables le long de la terrasse
 std::vector<float> tables(float len) { std::vector<float> out; for (float d = 1.4f; d < len - 1; d += 2.6f) out.push_back(d); return out; }
 
@@ -171,7 +172,11 @@ public:
             if (m.pal.indexCount) r.draw(m.pal, palette_.materiau, I);
             if (m.vitre.indexCount) r.draw(m.vitre, g.night ? vitreNuit_ : vitreJour_, I);
             if (g.night ? m.nuit.indexCount : m.jour.indexCount) r.draw(g.night ? m.nuit : m.jour, g.night ? bougie_ : palette_.materiau, I);
-            if (g.night && m.soir.indexCount) r.draw(m.soir, palette_.materiau, I);   // WFS-369 : parasols fermés la nuit
+            // WFS-369 : mobilier de terrasse, version allégée au-delà de 150 m ; parasols ouverts le jour, fermés la nuit
+            const MeshTerrasse& mt = m.t[(double)(k * GROUPE - aP) * SEG_M > 150 ? 1 : 0];
+            if (mt.pal.indexCount) r.draw(mt.pal, palette_.materiau, I);
+            const Mesh& par = g.night ? mt.soir : mt.jour;
+            if (par.indexCount) r.draw(par, palette_.materiau, I);
             for (auto& [coul, me] : m.textes) if (me.indexCount) r.draw(me, atlas_.materiau(r, coul, g.night ? 1.4f : 0.6f), I);
         }
     }
@@ -187,13 +192,15 @@ public:
         actif_ = false;
     }
 private:
-    struct Morceau { Mesh pal, vitre, jour, nuit, soir; std::map<unsigned, Mesh> textes; };
+    struct MeshTerrasse { Mesh pal, jour, soir; };   // WFS-369 : tables et chaises, parasols ouverts (jour), fermés (nuit)
+    struct Morceau { Mesh pal, vitre, jour, nuit; MeshTerrasse t[2]; std::map<unsigned, Mesh> textes; };
     void cimetiere(Morceau& m) {
-        for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit, &m.soir}) if (x->indexCount) graveyard_.push_back({frame_, *x});
+        for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit, &m.t[0].pal, &m.t[0].jour, &m.t[0].soir, &m.t[1].pal, &m.t[1].jour, &m.t[1].soir})
+            if (x->indexCount) graveyard_.push_back({frame_, *x});
         for (auto& [c, x] : m.textes) if (x.indexCount) graveyard_.push_back({frame_, x});
     }
     // DECOR.shop (life.js) : vitrine, lumière de vitrine, store à rayures, lambrequin, enseigne, terrasse
-    void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& jour, Geo& nuit, Geo& soir, std::map<unsigned, Geo>& textes) {
+    void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& nuit, Terrasse terr[2], std::map<unsigned, Geo>& textes) {
         const Shop& sh = SHOPS[c.kind];
         const float s = (float)c.side, face = (float)RW + 6.45f, L = c.len;
         const double debut = abs + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
@@ -225,31 +232,36 @@ private:
             const Repere pa = repere(t, (debut + d / SEG_M) * SEG);
             const vec3 b = lateral(pa, tLat, 0.15f);
             const mobilier::Repere M = mobilier::repere(b, pa.r * s, pa.f);
-            mobilier::tableBistrot(pal, M, plateau, alu);
-            for (int sd : {-1, 1})   // chaises de part et d'autre, tournées vers la table
-                mobilier::chaiseBistrot(pal, mobilier::repere(b + pa.f * (sd * 0.62f), pa.r * (s * (float)sd), pa.f * -(float)sd), cannage, alu);
             const bool pan = std::fmod(d, 5.f) < 2.5f;
-            mobilier::parasolOuvert(jour, M, pan ? aw0 : aw1, pan ? aw1 : aw0, bois, fonte);   // jour
-            mobilier::parasolFerme(soir, M, aw0, bois, fonte);                                 // nuit
+            for (int l = 0; l < 2; l++) {   // l = 1 : version allégée, dessinée au-delà de 150 m (même silhouette)
+                mobilier::tableBistrot(terr[l].pal, M, plateau, alu, l);
+                for (int sd : {-1, 1})   // chaises de part et d'autre, tournées vers la table
+                    mobilier::chaiseBistrot(terr[l].pal, mobilier::repere(b + pa.f * (sd * 0.62f), pa.r * (s * (float)sd), pa.f * -(float)sd), cannage, alu, l);
+                mobilier::parasolOuvert(terr[l].jour, M, pan ? aw0 : aw1, pan ? aw1 : aw0, bois, fonte, l);   // jour
+                mobilier::parasolFerme(terr[l].soir, M, aw0, bois, fonte, l);                                 // nuit
+            }
             mobilier::photophore(nuit, mobilier::repere(b + pa.f * 0.18f + vec3{0, 0.75f, 0}, pa.r, pa.f));
         }
         uint32_t graine = (uint32_t)(c.seg * 2 + (c.side > 0));
         for (float d : {0.3f, L - 0.3f}) {   // jardinières aux deux bouts
             if (sousAbribus(*map_, len_, debut + d / SEG_M, c.side)) continue;
             const Repere pa = repere(t, (debut + d / SEG_M) * SEG);
-            mobilier::jardiniere(pal, mobilier::repere(lateral(pa, tLat, 0.15f), pa.r, pa.f), palette_.uv(0xa65a3c), palette_.uv(0x3b2a1e),
-                                 palette_.uv(0x34502a), palette_.uv(0x456b33), graine++);
+            for (int l = 0; l < 2; l++)
+                mobilier::jardiniere(terr[l].pal, mobilier::repere(lateral(pa, tLat, 0.15f), pa.r, pa.f), palette_.uv(0xa65a3c), palette_.uv(0x3b2a1e),
+                                     palette_.uv(0x34502a), palette_.uv(0x456b33), graine, l);
+            graine++;
         }
     }
     void construire(Renderer& r, Track& t, int64_t c) {
-        Geo pal, vitre, jour, nuit, soir; std::map<unsigned, Geo> textes;   // WFS-369 : soir = parasols fermés (nuit, palette)
+        Geo pal, vitre, jour, nuit; std::map<unsigned, Geo> textes;
+        Terrasse T[2];   // WFS-369 : mobilier de terrasse, version proche et version allégée
         const int64_t a0 = c * GROUPE, a1 = a0 + GROUPE;
         const int64_t lap = (int64_t)std::floor((double)a0 / len_) * len_;
         auto dans = [&](int64_t seg, int64_t& abs) {
             for (int64_t L : {lap, lap + len_}) { const int64_t a = seg + L; if (a >= a0 && a < a1) { abs = a; return true; } }
             return false;
         };
-        if (ville_) for (const Commerce& co : commerces(*map_, len_)) { int64_t a; if (dans(co.seg, a)) commerce(t, co, a, pal, vitre, jour, nuit, soir, textes); }
+        if (ville_) for (const Commerce& co : commerces(*map_, len_)) { int64_t a; if (dans(co.seg, a)) commerce(t, co, a, pal, vitre, nuit, T, textes); }
         if (plage_) for (const Serviette& sv : serviettes(*map_, len_)) {   // DECOR.towel : 0,9 × 1,9 m, tournée de rot
             int64_t a; if (!dans((int64_t)sv.s, a)) continue;
             const Repere p = repere(t, a * SEG);
@@ -259,7 +271,8 @@ private:
         }
         Morceau& m = morceaux_[c];
         auto mk = [&](Geo& gg, Mesh& me) { if (!gg.i.empty()) me = r.makeMesh(gg.v, gg.i); };
-        mk(pal, m.pal); mk(vitre, m.vitre); mk(jour, m.jour); mk(nuit, m.nuit); mk(soir, m.soir);
+        mk(pal, m.pal); mk(vitre, m.vitre); mk(jour, m.jour); mk(nuit, m.nuit);
+        for (int l = 0; l < 2; l++) { mk(T[l].pal, m.t[l].pal); mk(T[l].jour, m.t[l].jour); mk(T[l].soir, m.t[l].soir); }
         for (auto& [coul, gg] : textes) mk(gg, m.textes[coul]);
     }
 

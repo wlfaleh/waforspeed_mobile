@@ -60,17 +60,17 @@ void panneauRond(Sortie mat, Sortie s, const Repere& R, float h, vec2 fond, vec2
 void feuTricolore(Sortie mat, Sortie s, const Repere& R, vec2 noir);
 // optique bombée Ø 200 mm du feu k (0 rouge en haut, 1 orange, 2 vert) du même repère (dessinée allumée ou éteinte à part)
 void optique(Sortie s, const Repere& R, int k);
-// terrasse de café : table de bistrot ronde à 4 pieds (Ø 0,70 m, 0,75 m) percée pour le parasol
-void tableBistrot(Sortie s, const Repere& R, vec2 plateau, vec2 alu);
+// terrasse de café (loin : niveau de détail allégé au-delà de 150 m, même silhouette) : table de bistrot ronde à 4 pieds (Ø 0,70 m, 0,75 m) percée pour le parasol
+void tableBistrot(Sortie s, const Repere& R, vec2 plateau, vec2 alu, bool loin = false);
 // chaise de bistrot (assise 0,45 m, dossier 0,86 m) : R.z vers la table
-void chaiseBistrot(Sortie s, const Repere& R, vec2 cannage, vec2 alu);
+void chaiseBistrot(Sortie s, const Repere& R, vec2 cannage, vec2 alu, bool loin = false);
 // parasol de terrasse (Ø 2,7 m, 8 baleines, mât bois, pied lesté) ouvert ; toile à pans alternés t0 / t1
-void parasolOuvert(Sortie s, const Repere& R, vec2 t0, vec2 t1, vec2 bois, vec2 metal);
+void parasolOuvert(Sortie s, const Repere& R, vec2 t0, vec2 t1, vec2 bois, vec2 metal, bool loin = false);
 // le même, fermé (la nuit) : toile roulée et sanglée
-void parasolFerme(Sortie s, const Repere& R, vec2 toile, vec2 bois, vec2 metal);
+void parasolFerme(Sortie s, const Repere& R, vec2 toile, vec2 bois, vec2 metal, bool loin = false);
 // photophore (bougie dans un verre) posé sur la table
 void photophore(Sortie s, const Repere& R);
 // jardinière en terre cuite et buis taillé (graine : forme du buis)
-void jardiniere(Sortie s, const Repere& R, vec2 pot, vec2 terre, vec2 buis0, vec2 buis1, uint32_t graine);
+void jardiniere(Sortie s, const Repere& R, vec2 pot, vec2 terre, vec2 buis0, vec2 buis1, uint32_t graine, bool loin = false);
 
 }  // namespace wfs::mobilier

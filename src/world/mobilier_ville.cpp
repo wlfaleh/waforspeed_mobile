@@ -185,7 +185,9 @@ void tube(Sortie s, const Repere& R, const std::vector<vec3>& pts, float r, int 
     std::vector<uint32_t> anneaux((size_t)m);
     for (int k = 0; k < m; k++) {
         const vec3 t = T[(size_t)k];
-        u = normalize(u - t * dot(u, t));
+        u = u - t * dot(u, t);
+        if (dot(u, u) < 1e-6f) u = cross(t, std::fabs(t.y) < 0.9f ? HAUT : vec3{1, 0, 0});   // coude à angle droit : nouveau repère
+        u = normalize(u);
         const vec3 w = cross(t, u);
         anneaux[(size_t)k] = (uint32_t)s.v.size();
         for (int i = 0; i <= n; i++) {
@@ -294,12 +296,12 @@ void fontaine(Sortie s, const Repere& R, float rb, float k, vec2 pierre, vec2 ea
 }
 
 void lampadaire(Sortie m, Sortie l, const Repere& R, float portee, bool lod) {
-    const int n = lod ? 6 : 12;
+    const int n = lod ? 6 : 8;
     const vec2 u{0, 0};
     tour(m, R, {0, 0, 0}, {{0.16f, 0}, {0.16f, 0.025f}, {0.13f, 0.04f}, {0.115f, 0.06f}, {0.11f, 0.55f}, {0.095f, 0.62f}, {0.09f, 0.66f},
                            {0.06f, 7.32f}, {0.064f, 7.34f}, {0.064f, 7.38f}, {0, 7.40f}}, n, u);   // mât conique, collerette, chapeau
     const float L = portee;
-    tube(m, R, {{0.0f, 7.05f, 0}, {0.05f, 7.30f, 0}, {0.22f, 7.43f, 0}, {0.55f, 7.48f, 0}, {L * 0.6f, 7.47f, 0}, {L - 0.45f, 7.41f, 0}}, 0.032f, lod ? 4 : 8, u);   // crosse
+    tube(m, R, {{0.0f, 7.05f, 0}, {0.05f, 7.30f, 0}, {0.22f, 7.43f, 0}, {0.55f, 7.48f, 0}, {L * 0.6f, 7.47f, 0}, {L - 0.45f, 7.41f, 0}}, 0.032f, lod ? 4 : 6, u);   // crosse
     pave(m, R, {L - 0.08f, 7.35f, 0}, {0.42f, 0.055f, 0.17f}, 0.045f, u);   // corps du luminaire, arêtes arrondies
     pave(m, R, {L - 0.13f, 7.405f, 0}, {0.28f, 0.03f, 0.12f}, 0.028f, u);    // capot
     pave(l, R, {L - 0.04f, 7.29f, 0}, {0.30f, 0.012f, 0.12f}, 0.008f, u);    // vasque (verre éclairant)
@@ -338,52 +340,51 @@ void feuTricolore(Sortie mat, Sortie s, const Repere& R, vec2 noir) {
     }
 }
 
-void tableBistrot(Sortie s, const Repere& R, vec2 plateau, vec2 alu) {
+void tableBistrot(Sortie s, const Repere& R, vec2 plateau, vec2 alu, bool loin) {
     tour(s, R, {0, 0, 0}, {{0.022f, 0.715f}, {0.33f, 0.715f}, {0.35f, 0.725f}, {0.35f, 0.742f}, {0.338f, 0.75f}, {0.022f, 0.75f}, {0.022f, 0.715f}},
-         24, plateau);   // plateau Ø 0,70, chant arrondi, trou du parasol
+         loin ? 8 : 16, plateau);   // plateau Ø 0,70, chant arrondi, trou du parasol
     for (float sx : {-1.f, 1.f}) for (float sz : {-1.f, 1.f})
-        tube(s, R, {{sx * 0.21f, 0, sz * 0.21f}, {sx * 0.165f, 0.70f, sz * 0.165f}}, 0.0135f, 6, alu);   // pieds évasés Ø 27
-    for (int k = 0; k < 4; k++) {   // ceinture sous le plateau
-        const float a0 = PI * 0.5f * (float)k + PI * 0.25f, a1 = a0 + PI * 0.5f, r = 0.233f;
-        const vec3 p0{std::cos(a0) * r, 0.695f, std::sin(a0) * r}, p1{std::cos(a1) * r, 0.695f, std::sin(a1) * r};
-        barre(s, R, p0, p1, {std::cos((a0 + a1) / 2), 0, std::sin((a0 + a1) / 2)}, 0.03f, 0.012f, 0.003f, alu);
-    }
+        tube(s, R, {{sx * 0.21f, 0, sz * 0.21f}, {sx * 0.165f, 0.70f, sz * 0.165f}}, 0.0135f, loin ? 3 : 5, alu, !loin);   // pieds évasés Ø 27
+    if (!loin) tube(s, R, {{0.165f, 0.69f, 0.165f}, {-0.165f, 0.69f, 0.165f}, {-0.165f, 0.69f, -0.165f}, {0.165f, 0.69f, -0.165f}, {0.165f, 0.69f, 0.165f}},
+         0.01f, 4, alu, false);   // ceinture sous le plateau
 }
 
-void chaiseBistrot(Sortie s, const Repere& R, vec2 cannage, vec2 alu) {
+void chaiseBistrot(Sortie s, const Repere& R, vec2 cannage, vec2 alu, bool loin) {
     const float r = 0.011f;
+    const int n = loin ? 3 : 4;
     for (float sx : {-1.f, 1.f}) {
-        tube(s, R, {{sx * 0.20f, 0, 0.20f}, {sx * 0.19f, 0.44f, 0.185f}}, r, 6, alu);                                              // pied avant
-        tube(s, R, {{sx * 0.20f, 0, -0.21f}, {sx * 0.19f, 0.44f, -0.19f}, {sx * 0.186f, 0.62f, -0.215f}, {sx * 0.17f, 0.86f, -0.245f}}, r, 6, alu);   // pied arrière et montant
-        tube(s, R, {{sx * 0.197f, 0.15f, 0.195f}, {sx * 0.197f, 0.15f, -0.205f}}, 0.008f, 5, alu);                                // barreau
+        tube(s, R, {{sx * 0.20f, 0, 0.20f}, {sx * 0.19f, 0.44f, 0.185f}}, r, n, alu, !loin);                                              // pied avant
+        tube(s, R, {{sx * 0.20f, 0, -0.21f}, {sx * 0.19f, 0.44f, -0.19f}, {sx * 0.186f, 0.62f, -0.215f}, {sx * 0.17f, 0.86f, -0.245f}}, r, n, alu, !loin);   // pied arrière et montant
+        if (!loin) tube(s, R, {{sx * 0.197f, 0.15f, 0.195f}, {sx * 0.197f, 0.15f, -0.205f}}, 0.008f, 4, alu);                                // barreau
     }
-    tube(s, R, {{-0.19f, 0.425f, 0.185f}, {0.19f, 0.425f, 0.185f}, {0.19f, 0.425f, -0.19f}, {-0.19f, 0.425f, -0.19f}, {-0.19f, 0.425f, 0.185f}}, 0.01f, 6, alu, false);   // cadre d'assise
-    pave(s, R, {0, 0.436f, -0.003f}, {0.2f, 0.014f, 0.2f}, 0.012f, cannage);   // assise tressée (dessus à 0,45 m)
+    if (!loin) tube(s, R, {{-0.19f, 0.425f, 0.185f}, {0.19f, 0.425f, 0.185f}, {0.19f, 0.425f, -0.19f}, {-0.19f, 0.425f, -0.19f}, {-0.19f, 0.425f, 0.185f}}, 0.01f, 4, alu, false);   // cadre d'assise
+    pave(s, R, {0, 0.436f, -0.003f}, {0.2f, 0.014f, 0.2f}, loin ? 0.f : 0.012f, cannage);   // assise tressée (dessus à 0,45 m)
     for (float y : {0.66f, 0.81f}) {   // dossier : deux bandes tressées cintrées
         const float zb = -0.215f - (y - 0.62f) * 0.125f;
         const vec3 p[3] = {{-0.18f, y, zb}, {0, y, zb - 0.035f}, {0.18f, y, zb}};
         for (int k = 0; k < 2; k++) {
             const vec3 d = p[k + 1] - p[k];
-            barre(s, R, p[k], p[k + 1], {-d.z, 0, d.x}, 0.06f, 0.012f, 0.004f, cannage);
+            barre(s, R, p[k], p[k + 1], {-d.z, 0, d.x}, 0.06f, 0.012f, 0.f, cannage);
         }
     }
 }
 
 namespace {
 // mât, pied lesté et embout d'un parasol (communs à l'ouvert et au fermé)
-void mat_parasol(Sortie& s, const Repere& R, vec2 bois, vec2 metal, float coulisse) {
-    tour(s, R, {0, 0, 0}, {{0.25f, 0}, {0.25f, 0.035f}, {0.23f, 0.06f}, {0.08f, 0.085f}, {0.05f, 0.10f}, {0.045f, 0.22f}, {0.03f, 0.24f}, {0.019f, 0.24f}}, 24, metal);   // pied lesté
-    tour(s, R, {0, 0, 0}, {{0.019f, 0.23f}, {0.019f, 2.38f}, {0.024f, 2.40f}, {0.012f, 2.42f}}, 10, bois);                          // mât Ø 38
-    tour(s, R, {0, 0, 0}, {{0.03f, 2.42f}, {0.03f, 2.47f}, {0.015f, 2.50f}, {0.021f, 2.53f}, {0, 2.565f}}, 10, bois);               // embout
-    tour(s, R, {0, 0, 0}, {{0.03f, coulisse - 0.04f}, {0.03f, coulisse + 0.04f}, {0.019f, coulisse + 0.05f}}, 10, metal);           // coulisse
+void mat_parasol(Sortie& s, const Repere& R, vec2 bois, vec2 metal, float coulisse, bool loin) {
+    tour(s, R, {0, 0, 0}, {{0.25f, 0}, {0.25f, 0.035f}, {0.23f, 0.06f}, {0.08f, 0.085f}, {0.05f, 0.10f}, {0.045f, 0.22f}, {0.03f, 0.24f}, {0.019f, 0.24f}}, loin ? 6 : 12, metal);   // pied lesté
+    tour(s, R, {0, 0, 0}, {{0.019f, 0.23f}, {0.019f, 2.38f}, {0.024f, 2.40f}, {0.012f, 2.42f}}, loin ? 4 : 6, bois);                          // mât Ø 38
+    tour(s, R, {0, 0, 0}, {{0.03f, 2.42f}, {0.03f, 2.47f}, {0.015f, 2.50f}, {0.021f, 2.53f}, {0, 2.565f}}, loin ? 4 : 6, bois);               // embout
+    if (!loin) tour(s, R, {0, 0, 0}, {{0.03f, coulisse - 0.04f}, {0.03f, coulisse + 0.04f}, {0.019f, coulisse + 0.05f}}, 6, metal);           // coulisse
 }
 float hautToile(float r) { return 2.42f - 0.42f * std::pow(r / 1.35f, 1.3f); }
 }  // namespace
 
-void parasolOuvert(Sortie s, const Repere& R, vec2 t0, vec2 t1, vec2 bois, vec2 metal) {
-    constexpr int NB = 8, NR = 5, NU = 4;
+void parasolOuvert(Sortie s, const Repere& R, vec2 t0, vec2 t1, vec2 bois, vec2 metal, bool loin) {
+    constexpr int NB = 8;
+    const int NR = loin ? 1 : 3, NU = loin ? 2 : 3;
     constexpr float RAY = 1.35f;
-    mat_parasol(s, R, bois, metal, 1.86f);
+    mat_parasol(s, R, bois, metal, 1.86f, loin);
     auto pt = [&](int k, float r, float u) {   // toile : corde droite entre deux baleines, creux de 3,5 cm au milieu
         const float a0 = 2 * PI * (float)k / NB, a1 = 2 * PI * (float)(k + 1) / NB;
         const float x = std::cos(a0) * (1 - u) + std::cos(a1) * u, z = std::sin(a0) * (1 - u) + std::sin(a1) * u;
@@ -409,35 +410,36 @@ void parasolOuvert(Sortie s, const Repere& R, vec2 t0, vec2 t1, vec2 bois, vec2 
         const vec3 A = pt(k, RAY, 0), B = pt(k, RAY, 1), bas{0, -0.15f, 0};
         const vec3 q[4] = {R.p(A), R.p(B), R.p(B + bas), R.p(A + bas)};
         poly(s, q, 4, R.p({0, 2.0f, 0}), uv);
+        if (loin) continue;   // au loin : baleines et jambes de force invisibles
         // baleine (sous la toile) et sa jambe de force depuis la coulisse
         const float an = 2 * PI * (float)k / NB, ca = std::cos(an), sa = std::sin(an);
         std::vector<vec3> bal;
-        for (float r : {0.03f, 0.45f, 0.9f, RAY}) bal.push_back({ca * r, hautToile(r) - 0.012f, sa * r});
-        tube(s, R, bal, 0.0065f, 4, metal);
-        tube(s, R, {{ca * 0.03f, 1.88f, sa * 0.03f}, {ca * 0.70f, hautToile(0.70f) - 0.018f, sa * 0.70f}}, 0.0055f, 4, metal);
+        for (float r : {0.03f, 0.6f, RAY}) bal.push_back({ca * r, hautToile(r) - 0.012f, sa * r});
+        tube(s, R, bal, 0.0065f, 3, metal);
+        tube(s, R, {{ca * 0.03f, 1.88f, sa * 0.03f}, {ca * 0.70f, hautToile(0.70f) - 0.018f, sa * 0.70f}}, 0.0055f, 3, metal);
     }
 }
 
-void parasolFerme(Sortie s, const Repere& R, vec2 toile, vec2 bois, vec2 metal) {
-    mat_parasol(s, R, bois, metal, 1.20f);
+void parasolFerme(Sortie s, const Repere& R, vec2 toile, vec2 bois, vec2 metal, bool loin) {
+    mat_parasol(s, R, bois, metal, 1.20f, loin);
     tour(s, R, {0, 0, 0}, {{0.02f, 1.25f}, {0.05f, 1.40f}, {0.072f, 1.70f}, {0.078f, 1.95f}, {0.064f, 2.20f}, {0.036f, 2.36f}, {0.022f, 2.42f}},
-         16, toile, 8, 0.28f);   // toile roulée sur ses 8 baleines
-    tour(s, R, {0, 0, 0}, {{0.088f, 1.87f}, {0.09f, 1.875f}, {0.09f, 1.925f}, {0.088f, 1.93f}}, 16, metal);   // sangle
+         loin ? 8 : 16, toile, loin ? 0 : 8, 0.28f);   // toile roulée sur ses 8 baleines
+    if (!loin) tour(s, R, {0, 0, 0}, {{0.088f, 1.87f}, {0.09f, 1.875f}, {0.09f, 1.925f}, {0.088f, 1.93f}}, 8, metal);   // sangle
 }
 
 void photophore(Sortie s, const Repere& R) {
     tour(s, R, {0, 0, 0}, {{0.034f, 0}, {0.04f, 0.008f}, {0.04f, 0.082f}, {0.035f, 0.09f}, {0, 0.09f}}, 12, {0, 0});
 }
 
-void jardiniere(Sortie s, const Repere& R, vec2 pot, vec2 terre, vec2 buis0, vec2 buis1, uint32_t graine) {
+void jardiniere(Sortie s, const Repere& R, vec2 pot, vec2 terre, vec2 buis0, vec2 buis1, uint32_t graine, bool loin) {
     tour(s, R, {0, 0, 0}, {{0.17f, 0}, {0.17f, 0.02f}, {0.19f, 0.04f}, {0.25f, 0.44f}, {0.275f, 0.455f}, {0.28f, 0.50f}, {0.272f, 0.52f},
-                           {0.24f, 0.52f}, {0.235f, 0.48f}}, 20, pot);   // pot à bord roulé
-    tour(s, R, {0, 0, 0}, {{0.235f, 0.48f}, {0, 0.49f}}, 20, terre);
+                           {0.24f, 0.52f}, {0.235f, 0.48f}}, loin ? 6 : 12, pot);   // pot à bord roulé
+    tour(s, R, {0, 0, 0}, {{0.235f, 0.48f}, {0, 0.49f}}, loin ? 6 : 12, terre);
     // buis taillé : 7 touffes bosselées qui se chevauchent (feuillage dense, pas une sphère lisse)
     const vec3 centres[7] = {{0, 0.80f, 0}, {0.13f, 0.74f, 0.05f}, {-0.12f, 0.76f, 0.07f}, {0.03f, 0.75f, -0.14f}, {-0.05f, 0.93f, -0.03f}, {0.08f, 0.90f, 0.08f}, {-0.02f, 0.66f, 0.12f}};
     const float rayons[7] = {0.25f, 0.17f, 0.18f, 0.17f, 0.15f, 0.14f, 0.15f};
-    constexpr int NA = 10, NL = 7;
-    for (int b = 0; b < 7; b++) {
+    const int NA = loin ? 6 : 8, NL = loin ? 4 : 5;
+    for (int b = 0; b < (loin ? 3 : 7); b++) {
         const vec2 uv = b % 2 ? buis1 : buis0;
         uint32_t prec = 0;
         for (int i = 0; i <= NL; i++) {
