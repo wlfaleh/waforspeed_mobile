@@ -9,7 +9,7 @@
 namespace wfs {
 
 // style du jeu web (decor.js, lamp) : ville (0xffb46b, 26 m), plage, projecteur de stade (0xeaf2ff, 60 m)
-enum class StyleLampadaire { Ville, Plage, Stade };
+enum class StyleLampadaire { Ville, Plage, Stade, Tete };   // WFS-337 (accroche) : Tete = 2e lanterne d'un candélabre double, halo seul (ni lumière ni flaque au sol)
 
 // seg : segment de la piste (sur un tour) ; lat : écart latéral de la tête (m, comme Track::point) ; y : hauteur de la tête
 struct Lampadaire { int64_t seg; float lat, y; StyleLampadaire style; };
