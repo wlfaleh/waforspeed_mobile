@@ -3565,3 +3565,11 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - RG-E15-09 : pas de nouveau ticket ; les 6 réserves de l'agent 3D et les 3 remarques du lead dev vont dans **WFS-387, RG-12** (même carte, mêmes fichiers, travail suivant de la file Campagne ; évite un micro-ticket et deux PR sur les mêmes fichiers).
 - WFS-387 passe **⏳ Prêt** (E15 Campagne, agent dev-artiste-3d), pour une nouvelle session.
 
+
+### 2026-11-10 01:34:04 — WFS-382 : PR #328 refusée par le lead dev (lead-dev)
+- Revue reprise après le redémarrage du conteneur (rien n'avait été posté). Commit relu : 3c89a192. Les 22 captures ont été ouvertes et zoomées, le diff lu en entier, la branche construite ; tests CPU : 95 réussis.
+- Gros progrès sur le sujet : plus de disques autour des phares, sol plus brûlé en Ville, Campagne et neige (RG-07 tenu) ; témoins de jour identiques.
+- **Refus** (revue postée en COMMENT sur la PR, car GitHub refuse « changements demandés » quand la PR vient du même compte) :
+  1. `shaders/post.frag:124/127` : le plafond du halo et du bloom coupe net chaque canal. Résultat, la nuit : un disque plat, un carré et un anneau irisé autour des têtes de lampadaire et de l'écran du Cockpit (forme interdite, régression sur toutes les cartes de nuit). Correction attendue : un plafond progressif, calculé sur la luminance.
+  2. RG-01 : la tache de 30 à 60 m et la coupure ne se voient pas sur la capture 3 (Campagne, vue Capot).
+- TACHES : WFS-382 passe en ↩️ Retour lead dev (PR #328) ; track-agent et suivi-pr mis à jour.
