@@ -1895,3 +1895,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Agent `juriste` créé** (demande de l'utilisateur) : `.claude/agents/juriste.md`, skill `.claude/skills/juriste`, alias `@juriste` (ajouté à `appel-agents.md`, à `CLAUDE.md` et à `track-agent.md`), rapports dans `juridique/`.
 - Point signalé à l'utilisateur : effacer les logos ne règle pas la licence « non commerciale » de l'A 45, de l'Elantra N et du X5 (CC BY-NC / NC-SA) ; sortie gratuite sans pub ni achat possible le temps du remplacement (WFS-320, point 1) ; avis du juriste demandé.
 - Rien attribué (attribution seulement à la demande d'un développeur).
+
+### 2026-11-10 12:49:39 — WFS-404 réécrit : les 3 voitures NC retirées de l'application (po-scrum-master)
+- **Ordre de l'utilisateur (« Oui »)** à la proposition du PO : retirer de l'application l'A 45, l'Elantra N et le X5 (licences CC BY-NC / NC-SA) et garder les 18 autres, pour sortir sur Android tout de suite.
+- **WFS-404** réécrit (P1, `dev-artiste-3d`, nouvelle session) : liste unique des voitures retirées, plus rien dans le jeu ni dans l'APK, fichiers gardés dans le dépôt ; camion de la Poursuite et sens inverse de la Ville sur des modèles libres ; sauvegarde du joueur reprise ; crédits régénérés ; contrôle rapide des marques des 18 autres (volant de la M4 : bandes de marque dans `vehicule_cockpit_defs.cpp:29`).
+- **Erreur du PO reconnue** : le X5 était connu sous licence NC depuis le 2026-11-07 ; il n'aurait pas dû être retouché (part X5 de WFS-193, PR #311 ; WFS-358, PR #319). Plus aucune retouche du X5 d'origine (WFS-393 abandonné).
+- Rien attribué (attribution à la demande d'un développeur).
