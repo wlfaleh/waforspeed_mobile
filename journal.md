@@ -1843,3 +1843,47 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 11:00:29 — Archives automatiques (robot archives)
 - Journal : 321 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-08).
 - TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-162, WFS-163, WFS-194, WFS-393, WFS-231, WFS-280).
+
+### 2026-11-10 11:09:55 — WFS-323 : PR #335 ouverte, accroches annoncées (Claude, agent dev3d 7 (01UY1Vv4FX))
+- Fait : vue Cockpit au cadrage de la référence (champ 72° → 62°, regard Normal −5°, horizon 46,5 % → 42,9 %) ; pavillon (traverse, ciel de toit, rails, pare-soleil), haut du pare-brise à sa vraie place (`HAUT_PARE_BRISE_*`, partagé avec la pluie) ; rétroviseur accroché au pare-brise ; pièces de l'intérieur modelées (`dalle`, `profile`, `cadreArrondi`) au lieu de boîtes et cylindres ; occlusion de l'habitacle (MAT_AO, ANO-185) ; chiffres du compteur plus grands (ANO-188) ; volant vérifié (ANO-187).
+- Accroches hors zone (annoncées ici) : `configgame.json` et `src/core/configgame.h` (1 ligne chacun : `camera.cockpit.zoom` 62), `configgame.README.md` (1 ligne), `src/render/effets_systeme.cpp` (6 lignes, ANO-204 : étincelles et fumée à moins de 2,5 m de l'œil non dessinées en vue Cockpit), `src/platform/desktop_main.cpp` (1 ligne : banc `cockpit-reference`).
+- Vérification : 98 tests CPU verts ; banc `cockpit-reference` avant / après (`qa/pr/WFS-323/`) ; banc `cockpit` SF90, Abarth, Model 3 : fenêtre de la rue cachée 0,0 % ; coût de l'intérieur Golf 32 → 33 appels, 1,22 → 1,60 Mo (RG-04 ; mesure en qualité Basse sur téléphone non faite).
+- Limites : intérieur 52-59 % de l'image (cible 30-35 % de WFS-282 dépassée par le toit et le champ de la référence) ; « R » rouge du HUD après un choc (ANO-204) hors zone, non traité ; ANO-203 sans capture de checkpoint de nuit.
+
+
+### 2026-11-10 11:18:35 — WFS-337 fusionné par le lead dev (lead-dev)
+- PR #334 relue sur 7bca0195 : 22 captures ouvertes (11 paires), diff entier lu (nuit.cpp, eclairage.h, eclairage_physique.cpp, ville.cpp : 1 ligne, banc halos, accroche desktop_main.cpp). Accroches conformes à l'arbitrage du PO de 10:23:56.
+- Construction et tests_cpu.sh refaits : 98/98. Banc `halos` relancé par le lead dev sur main (+ banc) : ÉCART (34 candélabres avec une seule tête), sur la branche : OK (34 avec leurs 2 têtes). Les écarts du bandeau TRAVAUX, de la glissière et de la voiture sur `halos-poursuite` venaient de l'ancien main des images « avant » : sur le main actuel, seuls 175 pixels (halos) changent.
+- Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash a236bdc5. WFS-337 → 🟡 À valider (utilisateur). Remarques non bloquantes dans la PR (distance négative dans prochain() du banc, compte de lampes de bench_perf, pas de test CPU dédié ; halo rond et tête en barre restent pour WFS-378).
+
+### 2026-11-10 11:19:12 — WFS-337 : fusionné, session terminée (Claude, agent dev (01UY1Vv1d6))
+- PR #334 fusionnée en squash par le lead dev (a236bdc5) ; statut 🟡 À valider (utilisateur) : la nuit, sur la voie rapide de la Ville, chaque lanterne des candélabres doubles a son halo.
+- **Pour le PO (petite tâche de suite, remarques non bloquantes du lead dev)** : banc `halos`, `prochain()` peut rendre une distance négative et `#include <algorithm>` manque ; `bench_perf` compte 34 lampes de plus (têtes seules) ; aucun test CPU du contrôle des 2 têtes (seulement le banc `halos`, hors CI). Halo rond et tête en pavé : WFS-378.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-10 11:25:16 — WFS-323 : PR #335 refusée par le lead dev (lead-dev)
+- Commit relu `589f90ac`. Construction en Release et `tools/qa/tests_cpu.sh` refaits : 98 tests réussis. Tout le diff lu, les 26 captures ouvertes (agrandissements du combiné, du toit et du rétroviseur de nuit).
+- Mieux qu'avant : cadrage (horizon à 43 %), toit fermé (ANO-207), rétroviseur moulé, volant qui tourne (ANO-187), nuit sans aplat noir.
+- **Bloquant** : (1) ANO-188 annoncée corrigée, mais le compteur reste illisible : M4 « 58 » → « SA 2 » (chiffres coupés par la planche ou la visière), X5 vitesse cachée par la jante. Demandé : régler le combiné ou l'œil par voiture, plus un contrôle au banc `cockpit-reference` ; (2) visière du combiné (`extruder(cas…)`) : prisme à arêtes vives, forme nue dans la zone touchée.
+- Remarques : filtre de 2,5 m des étincelles (ANO-204) trop large pour un choc latéral ; ANO-185 seulement atténuée ; gouttes de pluie devant le rétroviseur (déjà sur `main`, au PO) ; part de l'image prise par l'intérieur de 52 à 59 % contre 30 à 35 % dans WFS-282 (règle à mettre à jour par le PO). Avis de l'agent 3D : « À REPRENDRE », même point bloquant.
+- TACHES : WFS-323 ↩️ Retour lead dev (PR #335) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-10 11:26:16 — WFS-373 : PR #336 ouverte (Claude, agent dev3d (01UY1Vv4L4))
+- Fait : 21 objets du Grand Prix modélisés au niveau du vrai objet (RG-03), construits une fois au chargement (`src/world/decor_grandprix_modeles.*`), posés par `circuit.cpp` ; herbe tondue en bandes, touffes semées au hasard ; projecteurs propres au Grand Prix ; banc `grandprix-objets` ; test `test_decor_grandprix`.
+- Accroches (annoncées à 10:2x) : `desktop_main.cpp` (2 lignes), `CMakeLists.txt` (1 ligne). Aucun fichier commun d'une autre file touché.
+- Vérification : 99 tests CPU réussis ; captures avant / après (banc `cartes`, Grand Prix) et 29 gros plans jour / nuit ; Basse : 402 / 487 ms → 412 / 424 / 432 ms (lavapipe, pas de baisse), Haute +25 %. Taille ajoutée : 0 Mo.
+- Limites : coût en Haute ; un mur de pneus sur deux toujours retiré en Basse (RG-C2 de WFS-140). Suite : avis agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 11:30:24 — WFS-403 créé : finitions du décor de WFS-373 (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv4L4), développeur de WFS-373 (PR #336) : l'agent 3D a rendu « VALIDÉ avec réserves » (commentaire 6766136867) ; RG-E15-09 → tâche séparée.
+- **WFS-403** (P2, E15 file Grand Prix, agent `dev-artiste-3d`, nouvelle session, après la fusion de WFS-373 ; pas la session 01UY1Vv4L4) : nacelles de la grande roue, jantes du camion et dos du bâtiment des stands, mur des stands et murs de pneus **continus en Basse** (arbitrage du PO : la règle « un petit objet sur deux » de WFS-140 RG-C2 ne vaut plus pour les barrières de sécurité), garages éclairés de nuit, voie des stands en asphalte / béton. Règles : `regles-de-gestion/WFS-403.md`.
+- Points mineurs (pneus facettés, bar d'accueil, vigie de la tour, muret sans joints, tache blanche à l'horizon, fragment devant l'hélicoptère) versés dans **WFS-388** (RG-11 à 16 ; l'agent 3D avait écrit WFS-389 par erreur). File Grand Prix : WFS-373 → 403 → 388 (mêmes fichiers).
+- Rien attribué (un seul sujet par session).
+
+### 2026-11-10 11:43:14 — WFS-373 fusionné par le lead dev (lead-dev)
+- PR #336 (Claude, agent dev3d (01UY1Vv4L4)) relue sur a6cb6e69 : « Avis agent 3D : VALIDÉ avec réserves » présent (RG-E15-09), 49 captures ouvertes, diff lu en entier, construction et `tests_cpu.sh` refaits : 99/99. Approbation écrite dans la PR (commentaire, même compte GitHub), fusion en squash **fb3f2d99**.
+- Statut : 🟡 À valider (utilisateur) (décor, comme WFS-370 / 372). Réserves : WFS-403 puis WFS-388 (déjà créés par le PO). Ligne `qa/Check.md` ajoutée ; ligne de `suivi-pr.md` supprimée.
+
+### 2026-11-10 11:43:39 — WFS-373 : session terminée (Claude, agent dev3d (01UY1Vv4L4))
+- PR #336 fusionnée en squash par le lead dev (fb3f2d99) après « Avis agent 3D : VALIDÉ avec réserves » ; réserves dans WFS-403 (P2) et WFS-388. Ticket 🟡 À valider (utilisateur).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.

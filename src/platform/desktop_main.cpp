@@ -38,9 +38,11 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 namespace wfs { int benchCampagneObjets(Game& g, Renderer& r, const std::string& out); }   // WFS-372 (accroche) : src/world/decor_campagne_banc.cpp
+namespace wfs { int benchGrandPrixObjets(Game& g, Renderer& r, const std::string& out); }   // WFS-373 (accroche) : src/world/decor_grandprix_banc.cpp
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
+namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp
 namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
@@ -188,6 +190,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "depart-campagne") { ui::chargerPolice(r); const int e = benchDepartCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-374 (accroche) : départ de la Campagne, gaz tenu dès le décompte ; ANO-233
+    if (banc == "halos") { ui::chargerPolice(r); const int e = benchHalos(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-337 (accroche) : halos des têtes de lampe, voie rapide de nuit
     if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
     if (banc == "paquets") { const int e = ecrans::benchPaquets(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-306 (accroche) : installation des paquets (source factice)
@@ -263,6 +266,7 @@ int main(int argc, char** argv) {
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "rondspoints") { const int e = benchRondsPoints(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-223
+    if (banc == "grandprix-objets") { const int e = benchGrandPrixObjets(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-373 (accroche) : gros plans des objets du Grand Prix
     if (banc == "campagne-objets") { const int e = benchCampagneObjets(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-372 (accroche) : gros plans des objets agricoles
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules

@@ -18,14 +18,19 @@
 //   - RG-C1 : chaque objet (décor des zones compris) est refusé s'il retombe à moins de RW + 1 m d'une chaussée (grille
 //     des centres de la route : l'autre branche de l'épingle est à ≈ 40 m) ; les bandes de sol s'arrêtent avant ; rien de
 //     haut du côté intérieur des virages serrés dans les 60 m qui les précèdent.
+// WFS-373 (épic E15, ANO-220) : plus aucune forme nue : chaque objet est un modèle construit une fois au chargement
+//   (decor_grandprix_modeles.*, version proche et allégée) et recopié à chaque pose ; projecteurs de piste propres au Grand
+//   Prix (T_PROJ) ; herbe tondue en bandes et touffes semées au hasard loin de la piste (plus de rangées de touffes au bord).
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include <unordered_map>
 #include "../game/course_system.h"   // WFS-140 : décompte (feux de départ allumés un par un)
 #include "../game/trace_cartes.h"    // WFS-140 : sections du tracé 2, état des feux de départ
 #include "../render/eclairage.h"
 #include "decor_carte.h"
+#include "decor_grandprix_modeles.h"   // WFS-373 : objets modélisés
 #include "enseignes.h"   // AtlasTextes (WFS-71) : texte des panneaux publicitaires (WFS-93)
 #include "pietons.h"     // WFS-199 : spectateurs (personnages du jeu allégés, foule::silhouette)
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : tribunes déclarées au son des lieux
@@ -38,7 +43,9 @@ namespace {
 enum { T_TIRES = CarteDecor::T_CARTE, T_ADBOARD, T_STAND, T_PITWALL, T_GARAGE, T_FLAG, T_MARSHAL,
        // WFS-140
        T_FREIN, T_PORTIQUE, T_GRILLE, T_PASSERELLE, T_CAMION, T_ACCUEIL, T_TOUR, T_HELICO, T_STANDFAN, T_ROUE, T_TENTE,
-       T_GRILLAGE };
+       T_GRILLAGE,
+       T_PROJ, T_HERBE,   // WFS-373 : projecteur de piste modélisé, touffes d'herbe semées au hasard
+       NB_SORTES };
 // WFS-140 : textes de l'atlas en plus d'AD_TEXTS (panneaux de freinage, enseignes)
 const char* const TEXTES[8] = {"150", "100", "50", "VIP", "BAR", "ESPACE FANS", "CAMPING", "PADDOCK"};
 enum { TX_150, TX_100, TX_50, TX_VIP, TX_BAR, TX_FANS, TX_CAMPING, TX_PADDOCK };
@@ -57,6 +64,61 @@ const int PEAUX[4] = {C_WALLS0 + 1, C_CHURCH + 10, C_WOOD, C_OAK + 3};
 const int CHEVEUX[5] = {C_OAK, C_OAK + 2, C_CHURCH + 9, C_WOOD + 9, C_TIRE + 3};
 const int BAS_[7] = {C_WOOD + 8, C_TIRE, C_WOOD + 6, C_WOOD + 7, C_VINE_A + 7, C_CHURCH + 5, C_VINE_A + 6};
 const int SOULIERS[3] = {C_TIRE, C_WOOD + 2, C_CHURCH + 5};
+
+// WFS-373 : cases de la palette propres au Grand Prix (après C_NB), couleurs sRGB des matériaux réels (albédos linéaires
+// dans les plages de la charte DA-realisme.md § 3 : caoutchouc 0,01-0,02, béton 0,25-0,40, aluminium 0,40-0,50, enduit 0,5-0,6)
+enum ColGrandPrix { C_SANGLE = C_NB, C_ALU, C_ALU_SOMBRE, C_BETON, C_BETON_NEZ, C_TOLE, C_BARDAGE, C_MENUIS, C_RIDEAU,
+                    C_INTERIEUR, C_DALLE, C_ENDUIT, C_CABINE, C_CHASSIS, C_JANTE, C_PHARE, C_FEU_AR, C_BOIS, C_FUSELAGE, C_PALE, C_PLUME,
+                    C_TONTE, C_FIN_GP };
+static_assert(C_FIN_GP <= PAL_W, "palette trop petite");
+constexpr uint32_t COULEURS_GP[(int)C_FIN_GP - (int)C_NB] = {
+    0xc9a22a,   // sangles de polyester jaunes
+    0xb3b7bb,   // aluminium brut
+    0x2a2c30,   // aluminium laqué noir (caissons, cadres)
+    0xa3a097,   // béton
+    0xd8d4c8,   // nez de marche peints
+    0xb9bcbf,   // bac acier de couverture
+    0x5c6166,   // bardage gris anthracite
+    0x34373b,   // menuiseries d'aluminium
+    0xbfc2c4,   // rideau métallique galvanisé
+    0x26272a,   // intérieur des garages (pénombre)
+    0xd9d7d0,   // dalles et nez de dalle peints
+    0xcfcbc2,   // enduit
+    0xe9e9e7,   // caisse de la remorque
+    0x1e1f22,   // châssis
+    0xa7abb0,   // jantes d'aluminium
+    0xf2f4f6,   // glaces des phares
+    0xb3191c,   // feux arrière
+    0x8b6a4c,   // platelage de bois
+    0x2b3a55,   // peinture de l'hélicoptère
+    0x3a3c40,   // pales et rotor
+    0x2d2a28,   // plumage (oiseaux au loin)
+    0x5a8a38,   // herbe tondue (bande claire)
+};
+grandprix::Couleurs couleursModeles() {
+    grandprix::Couleurs c;
+    c.pneu = C_TIRE; c.pneuRouge = C_TIRE_R; c.pneuBlanc = C_TIRE_W; c.sangle = C_SANGLE;
+    c.alu = C_ALU; c.aluSombre = C_ALU_SOMBRE; c.beton = C_BETON; c.betonNez = C_BETON_NEZ; c.acier = C_STEEL; c.tole = C_TOLE; c.bardage = C_BARDAGE;
+    c.verre = C_GLASS; c.menuiserie = C_MENUIS; c.rideau = C_RIDEAU; c.interieur = C_INTERIEUR; c.dalle = C_DALLE; c.enduit = C_ENDUIT;
+    c.commissaire = C_MARSHAL; c.abri = C_MARSHAL_TOP; c.panneau = C_SIGNW; c.mat = C_FLAGPOLE;
+    c.cabine = C_CABINE; c.chassis = C_CHASSIS; c.jante = C_JANTE; c.phare = C_PHARE; c.feuArriere = C_FEU_AR;
+    c.toile = C_SIGNW; c.bois = C_BOIS; c.fuselage = C_FUSELAGE; c.pale = C_PALE; c.plume = C_PLUME; c.plumeSombre = C_PLUME;
+    return c;
+}
+// WFS-373 : pose d'un modèle (repère local x, y, z → X, haut, Z), couleurs de la palette ; COUL_VAR → var
+void poserModele(Geo& g, const grandprix::Maille& m, vec3 o, vec3 X, vec3 Z, int var = 0) {
+    const vec3 Y{0, 1, 0};
+    g.v.reserve(g.v.size() + m.v.size());
+    const uint32_t k0 = (uint32_t)g.v.size();
+    for (const marina::Sommet& v : m.v) {
+        const vec3 q = o + X * v.p.x + Y * v.p.y + Z * v.p.z, n = X * v.n.x + Y * v.n.y + Z * v.n.z;
+        const int c = v.couleur == grandprix::COUL_VAR ? var : v.couleur;
+        g.v.push_back({q.x, q.y, q.z, n.x, n.y, n.z, (c + 0.5f) / PAL_W, 0.5f});
+    }
+    for (uint32_t i : m.i) g.i.push_back(k0 + i);
+}
+Mesh maillage(Renderer& r, const grandprix::Maille& m, int var = 0) { Geo g; poserModele(g, m, {0, 0, 0}, {1, 0, 0}, {0, 0, 1}, var); return r.makeMesh(g.v, g.i); }
+inline uint32_t hacher(int64_t a, int b) { uint32_t h = (uint32_t)(a * 2654435761u) ^ (uint32_t)(b * 40503u + 0x9e37u); h ^= h >> 15; h *= 0x2c1b3c6du; h ^= h >> 12; return h; }
 
 // AD_TEXTS de js/world/decor.js : textes ; fond dans la palette (C_AD0 + 2 · n) ; lettres : une part (un matériau de
 // l'atlas) par couleur, mêmes valeurs que C_AD0 + 2 · n + 1
@@ -84,10 +146,14 @@ public:
     void init(Renderer& r, const GameView& g) override {
         basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = tribunes_ = spectateurs_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
         parois::effacer("circuit");   // WFS-275 (accroche)
+        for (int& v : poses_) v = 0;   // WFS-373
+        grandprix::oublierObjets(); construireModeles();   // WFS-373 : une fois, avant la préparation du décor
         CarteDecor::init(r, g);
+        if (active_) semerHerbe();   // WFS-373 (ANO-220) : touffes semées au hasard, loin de la piste
         for (auto& T : ad_) T = {};
         if (!active_) return;
         WFS_LOG("Circuit (WFS-140) : décor des zones : %d objet(s) refusé(s) (sur une autre chaussée ou cachant un virage)", refuses_ - refusesSec_);
+        journalSortes();   // WFS-373 (RG-01)
         creerAnimes(r);   // WFS-140 : feux de départ, grande roue, drapeaux, oiseaux
         for (const char* t : AD_TEXTS) atlas_.ajouter(t);
         for (const char* t : TEXTES) atlas_.ajouter(t);
@@ -105,10 +171,14 @@ protected:
         atlas_.detruire(r); for (auto& T : ad_) T = {}; for (auto& T : tx_) T = {};
         for (Mesh* m : {&feuMesh_, &roueMesh_, &roueNeon_, &oiseaux_}) if (m->vb.buf) { r.destroy(*m); *m = Mesh{}; }
         for (Mesh& m : drapeauMesh_) if (m.vb.buf) { r.destroy(m); m = Mesh{}; }
+        for (Mesh& m : nacelles_) if (m.vb.buf) { r.destroy(m); m = Mesh{}; }   // WFS-373
         drapeaux_.clear(); roues_.clear(); portique_ = -1; pret_ = false;
         r.destroy(feuAllume_); r.destroy(feuEteint_);   // WFS-187 (accroche) : jeux de descripteurs rendus
     }
     const char* carteId() const override { return "circuit"; }
+    // WFS-373 : couleurs propres au Grand Prix ; pas de rangées de touffes au bord de la piste (herbe tondue, semis : semerHerbe)
+    void couleursCarte(std::array<uint32_t, PAL_W>& pal) const override { for (int k = C_NB; k < C_FIN_GP; k++) pal[(size_t)k] = COULEURS_GP[k - C_NB]; }
+    bool touffes() const override { return false; }
     Env env() const override { return {0xc4d8e8, 820, 0x1f2440, 0x0e1020, 640}; }
     bool routePropre() const override { return true; }
 
@@ -122,9 +192,11 @@ protected:
         const int64_t m = ((a % 2) + 2) % 2;
         const float kerb = large ? R + 2.2f : R + 1.3f;
         out[0] = {R, kerb, 0.04f, 0.04f, m ? C_RED : C_WHITE};   // vibreurs
-        out[1] = gravier ? Band{kerb, R + 15, 0.02f, 0, C_GRAVEL} : Band{kerb, R + 14, 0.02f, 0, C_GRASS};
+        // WFS-373 (ANO-220) : herbe tondue en bandes de 6 m (passages de la tondeuse, en travers)
+        const bool tonte = ((n / 5) % 2) != 0;
+        out[1] = gravier ? Band{kerb, R + 15, 0.02f, 0, C_GRAVEL} : Band{kerb, R + 14, 0.02f, 0, tonte ? (int)C_TONTE : (int)C_GRASS};
         // le jeu web fait commencer cette bande à 14 m même après le gravier (15 m) : elle part ici du bord du gravier
-        out[2] = {gravier ? R + 15 : R + 14, R + 100, 0, 0.5f, !std::strcmp(z, "paddock") ? C_PITLANE : C_GRASS2};
+        out[2] = {gravier ? R + 15 : R + 14, R + 100, 0, 0.5f, !std::strcmp(z, "paddock") ? C_PITLANE : tonte ? (int)C_TONTE : (int)C_GRASS2};
         // WFS-140 (RG-C1) : le sol s'arrête avant une autre chaussée (intérieur de l'épingle, branche voisine)
         const float lim = libre(n, side) - 0.5f;
         int k = 0;
@@ -144,7 +216,7 @@ protected:
         const float R = (float)RW, SM = (float)SEG_M;
         auto tires = [&](int64_t n, int side, float lat) { Item it; it.t = T_TIRES; it.side = side; it.lat = lat; it.petit = true; poser(n, it); };
         auto lamp = [&](int64_t n, int side) {
-            Item it; it.t = T_LAMP; it.side = side; it.k = 1;
+            Item it; it.t = T_PROJ; it.side = side; it.k = 1; it.lat = R + 7;   // WFS-373 : projecteur modélisé (mât à RW + 7 m)
             // WFS-81 : éclairage de nuit sous le mât (scene.js : flood à RW + 4, 16 m, côté du mât) ; WFS-140 : seulement
             // si le mât est posé (pas sur une autre chaussée)
             if (poser(n, it)) lampadaires().push_back({((n % len()) + len()) % len(), side * (R + 4.f), 16.f, StyleLampadaire::Stade});
@@ -228,7 +300,7 @@ protected:
     static float etendue(const Item& it) {
         switch (it.t) {
         case T_TREE: return std::max(2.f, it.h * 0.35f);
-        case T_LAMP: return 1.f;
+        case T_LAMP: case T_PROJ: return 1.f;
         case T_STAND: return it.k * RANG + 2.f;
         case T_GARAGE: return 13.f;
         case T_ACCUEIL: return it.w + 1.f;
@@ -252,7 +324,8 @@ protected:
     bool poser(int64_t n, const Item& it, bool section = false) {
         const int64_t m = mod(n);
         const uint8_t bit = it.side < 0 ? 1 : 2;
-        if (!section && !reserve_.empty() && (reserve_[(size_t)m] & bit)) return false;
+        if (!section && !reserve_.empty())   // WFS-373 : réservation vérifiée sur toute la longueur de l'objet
+            for (int64_t k = n; k <= n + (int64_t)std::ceil(longueur(it) / SEG_M); k++) if (reserve_[(size_t)mod(k)] & bit) return false;
         refuses_++;   // compté comme refusé jusqu'à la pose
         if (section) refusesSec_++;
         const float lat = it.t == T_LAMP ? (float)RW + 7 : it.lat, ext = etendue(it), l = longueur(it);
@@ -263,13 +336,34 @@ protected:
         // rien de haut du côté intérieur d'un virage serré dans les 60 m qui le précèdent
         if (!it.petit && lat < 60 && !cache_.empty() && (cache_[(size_t)m] & bit)) return false;
         if (basse_ && it.petit && section && (impair_++ & 1)) return false;
-        item(n, it);
+        item(n, it); compte(it.t); noter(n, it);
+        // WFS-373 : la place d'un objet des sections est réservée sur toute sa longueur (le décor des zones ne s'y pose plus :
+        // plus de garage du paddock autour d'un poste de commissaire)
+        if (section && !reserve_.empty()) for (int64_t k = n - 1; k <= n + (int64_t)std::ceil(l / SEG_M) + 1; k++) reserve_[(size_t)mod(k)] |= bit;
         refuses_--; if (section) { refusesSec_--; posesSec_++; }
         if (it.t == T_PITWALL || it.t == T_GARAGE || it.t == T_STAND)   // WFS-275 (accroche) : murs qui renvoient le son (mur des stands vitré 2,7 m)
             parois::declarer("circuit", len(), it.t == T_PITWALL ? n : n + (int64_t)std::lround(it.l / SEG_M / 2), it.side, it.lat,
                              it.t == T_PITWALL ? 2.7f : it.t == T_GARAGE ? 7.f : hauteurRang(it.k - 1) + 2.f, it.t == T_PITWALL ? 3 * (float)SEG_M : it.l,
                              it.t == T_PITWALL ? 0.4f : it.t == T_GARAGE ? 12.f : it.k * RANG, it.t == T_GARAGE ? parois::ALPHA_DUR : parois::ALPHA_BETON);   // WFS-278 : obstacle, matériau
         return true;
+    }
+
+    // WFS-373 (RG-01) : objets posés par sorte (inventaire écrit au journal du banc)
+    void compte(int t) { if (t >= 0 && t < NB_SORTES) poses_[t]++; }
+    // banc des gros plans (WFS_BANC=grandprix-objets) : premier objet de chaque sorte posé sur le tour
+    void noter(int64_t n, const Item& it) const {
+        using namespace grandprix;
+        static const int SORTE[NB_SORTES] = {-1, -1, -1, OB_PNEUS, OB_PUB, OB_TRIBUNE, OB_MUR_STANDS, OB_STAND, OB_DRAPEAU, OB_COMMISSAIRE, OB_FREIN,
+                                             OB_PORTIQUE, -1, OB_PASSERELLE, OB_CAMION, OB_ACCUEIL, OB_TOUR, OB_HELICO, OB_FANS, OB_ROUE, OB_TENTE, OB_GRILLAGE, OB_PROJ, -1};
+        if (it.t >= 0 && it.t < NB_SORTES && SORTE[it.t] >= 0) noterObjet(SORTE[it.t], mod(n), it.side, it.lat);
+    }
+    void journalSortes() const {
+        static const char* const NOMS[NB_SORTES] = {"arbre", "touffe", "projecteur", "mur de pneus", "panneau publicitaire", "tribune", "mur des stands",
+            "garage des stands", "drapeau", "poste de commissaire", "panneau de freinage", "portique de départ", "grille de départ", "passerelle",
+            "camion", "bar d'accueil", "tour de contrôle", "hélicoptère", "stand de l'espace fans", "grande roue", "tente", "grillage", "projecteur", "touffes"};
+        std::string t;
+        for (int k = 0; k < NB_SORTES; k++) if (poses_[k]) t += std::string(t.empty() ? "" : ", ") + NOMS[k] + " " + std::to_string(poses_[k]);
+        WFS_LOG("Circuit (WFS-373) : objets posés par sorte : %s", t.c_str());
     }
 
     void preparer() {
@@ -333,7 +427,7 @@ protected:
         auto reserver = [&](int64_t n0, int64_t n1, uint8_t bits) { for (int64_t n = n0; n < n1; n++) reserve_[(size_t)mod(n)] |= bits; };
         auto objet = [&](int t, int side, float lat, bool petit = false) { Item it; it.t = t; it.side = side; it.lat = lat; it.petit = petit; return it; };
         auto lampe = [&](int64_t n, int side) {
-            Item it = objet(T_LAMP, side, 0); it.k = 1;
+            Item it = objet(T_PROJ, side, R + 7); it.k = 1;   // WFS-373
             if (poser(n, it, true)) lampadaires().push_back({mod(n), side * (R + 4.f), 16.f, StyleLampadaire::Stade});
         };
         auto pneus = [&](int64_t n0, int64_t n1, int side, float lat) { for (int64_t n = n0; n < n1; n += 4) poser(n, objet(T_TIRES, side, lat, true), true); };
@@ -365,9 +459,9 @@ protected:
         if (feux) {
             const int64_t d = feux->debut, fin = std::min<int64_t>(d + 620, feux->fin + 600);
             reserver(d - 8, fin, 3);
-            for (int k = 0; k < 10; k++) { Item it = objet(T_GRILLE, k % 2 ? 1 : -1, R * 0.5f); item(d + 4 + k * 7, it); }
+            for (int k = 0; k < 10; k++) { Item it = objet(T_GRILLE, k % 2 ? 1 : -1, R * 0.5f); item(d + 4 + k * 7, it); compte(T_GRILLE); }
             portique_ = mod(d + 30);
-            { Item it = objet(T_PORTIQUE, 1, 0); item(d + 30, it); }   // 36 m devant la ligne : visible depuis la grille
+            { Item it = objet(T_PORTIQUE, 1, 0); item(d + 30, it); compte(T_PORTIQUE); noter(d + 30, it); }   // 36 m devant la ligne : visible depuis la grille
             const int pad = -1;   // paddock à gauche, tribunes à droite
             for (int64_t n = d; n < fin; n += 3) poser(n, objet(T_PITWALL, pad, R + 1.4f, true), true);
             { Item it = objet(T_TOUR, pad, R + 12); poser(d + 2, it, true); }
@@ -417,7 +511,7 @@ protected:
             // WFS-199 (RG-01) : plus de tribune dans la pente : panneaux publicitaires à la place
             for (int64_t n = montee->debut + 20; n < montee->fin - 10; n += 20) { Item a = objet(T_ADBOARD, ext, R + 5); a.col = (int)((n / 20) % 4); poser(n, a, true); }
             pneus(montee->debut, montee->fin, ext, R + 5.6f);
-            Item p = objet(T_PASSERELLE, 1, 0); p.col = 0; item(montee->fin, p);
+            Item p = objet(T_PASSERELLE, 1, 0); p.col = 0; item(montee->fin, p); compte(T_PASSERELLE); noter(montee->fin, p);
             for (int64_t n = montee->debut + 10; n < montee->fin; n += 40) lampe(n, -ext);
         }
         // ---------- RG-05 : espace fans (grande roue, stands) après la 1re chicane ; camping après le virage suivant
@@ -446,43 +540,14 @@ protected:
 
     // ---------------------------------------------------------------- WFS-140 : objets animés (animes)
     void creerAnimes(Renderer& r) {
-        auto boite = [&](Geo& g, vec3 c, float w, float h, float l, int col) { box(g, c, {1, 0, 0}, {0, 0, -1}, w, h, l, uv(col)); };
-        { Geo g; boite(g, {0, -0.32f, 0}, 0.62f, 0.64f, 0.14f, C_CHECK_B); feuMesh_ = r.makeMesh(g.v, g.i); }   // disque du feu (face avant)
-        {   // grande roue : jante, rayons et 12 nacelles (plan (y, z), axe x), rayon 12 m
-            Geo g, ng;
-            const int N = 48;
-            for (int i = 0; i < N; i++) {
-                const float a0 = 2 * PI * i / N, a1 = 2 * PI * (i + 1) / N;
-                for (float x : {-1.2f, 1.2f}) {
-                    const vec3 p0{x, 12 * std::cos(a0), 12 * std::sin(a0)}, p1{x, 12 * std::cos(a1), 12 * std::sin(a1)};
-                    const vec3 q0{x, 11.6f * std::cos(a0), 11.6f * std::sin(a0)}, q1{x, 11.6f * std::cos(a1), 11.6f * std::sin(a1)};
-                    quad(g, q0, q1, p1, p0, uv(C_STEEL));
-                    if (i % 2 == 0) quad(ng, p0 + vec3{0.05f * x, 0, 0}, p1 + vec3{0.05f * x, 0, 0}, p1 * 1.01f, p0 * 1.01f, uv(C_LAMP_C));
-                }
-            }
-            for (int i = 0; i < 12; i++) {
-                const float a = 2 * PI * i / 12;
-                const vec3 e{0, 12 * std::cos(a), 12 * std::sin(a)};
-                for (float x : {-1.2f, 1.2f}) quad(g, {x, -0.1f, 0}, {x, 0.1f, 0}, e + vec3{x, 0.1f, 0}, e + vec3{x, -0.1f, 0}, uv(C_STEEL));
-                box(g, e - vec3{0, 1.6f, 0}, {1, 0, 0}, {0, 0, -1}, 1.8f, 1.5f, 1.6f, uv(C_FLAG0 + i % 6));
-            }
-            roueMesh_ = r.makeMesh(g.v, g.i); roueNeon_ = r.makeMesh(ng.v, ng.i);
-        }
-        for (int c = 0; c < 6; c++) {   // drapeau tenu par un spectateur : hampe et toile 1,2 × 0,8 m (vers −z)
-            Geo g;
-            box(g, {0, 0, 0}, {1, 0, 0}, {0, 0, -1}, 0.04f, 1.9f, 0.04f, uv(C_FLAGPOLE));
-            quad(g, {0, 1.1f, 0}, {0, 1.1f, -1.2f}, {0, 1.9f, -1.25f}, {0, 1.9f, 0}, uv(C_FLAG0 + c));
-            drapeauMesh_[c] = r.makeMesh(g.v, g.i);
-        }
-        {   // vol de 7 oiseaux en V (ailes de 0,5 m)
-            Geo g;
-            for (int i = 0; i < 7; i++) {
-                const vec3 o{(i % 2 ? 1.f : -1.f) * (i + 1) / 2 * 3.f, (float)(i % 3) * 0.6f, (float)((i + 1) / 2) * 2.5f};
-                tri(g, o, o + vec3{-0.5f, 0.15f, 0.2f}, o + vec3{0, 0, 0.25f}, uv(C_CHECK_B));
-                tri(g, o, o + vec3{0, 0, 0.25f}, o + vec3{0.5f, 0.15f, 0.2f}, uv(C_CHECK_B));
-            }
-            oiseaux_ = r.makeMesh(g.v, g.i);
-        }
+        // WFS-373 : feux (lentilles bombées), grande roue en treillis (nacelles à part, toujours d'aplomb), drapeaux tenus à la
+        // main (hampe et toile ondulée), vol d'oiseaux modélisés
+        const grandprix::Couleurs c = couleursModeles();
+        feuMesh_ = maillage(r, grandprix::lentilleFeu(), C_CHECK_B);
+        { grandprix::Maille neon; const grandprix::Maille m = grandprix::roue(c, neon); roueMesh_ = maillage(r, m); roueNeon_ = maillage(r, neon); }
+        for (int k = 0; k < 6; k++) nacelles_[k] = maillage(r, grandprix::nacelle(c, C_FLAG0 + k));
+        for (int k = 0; k < 6; k++) drapeauMesh_[k] = maillage(r, mod_.drapeauMain, C_FLAG0 + k);
+        oiseaux_ = maillage(r, grandprix::vol(7, C_PLUME));
         Material on; on.rough = 0.3f; on.flags = MAT_DOUBLE; on.emissive = linHex(0xff1a1a) * 4.f;
         feuAllume_ = r.makeMaterial(on, nullptr, nullptr, nullptr);
         Material off; off.color = {0.05f, 0.02f, 0.02f, 1}; off.rough = 0.4f; off.flags = MAT_DOUBLE;
@@ -508,16 +573,21 @@ protected:
             const Pose p = poseAt(t, a);
             const int on = feuxAllumes();
             for (int k = 0; k < 5; k++) {
-                const vec3 c = lateral(p, (k - 2) * 1.0f, 7.25f) - p.f * 0.15f;   // face au pilote (devant le boîtier)
-                r.draw(feuMesh_, k < on ? feuAllume_ : feuEteint_, translate(c) * rotateY(-p.th));
+                const vec3 c = lateral(p, (k - 2) * 1.0f, 7.25f) - p.f * 0.075f;   // face au pilote (lentille posée sur le caisson)
+                r.draw(feuMesh_, k < on ? feuAllume_ : feuEteint_, translate(c) * rotateY(PI - p.th));   // −z local → −f (vers la grille)
                 n++;
             }
         }
         for (const Roue& w : roues_) {
             if (!dansMorceau(w.seg, c0 * CH, (c1 + 1) * CH, a)) continue;
             const Pose p = poseAt(t, a + 11);
-            const mat4 M = translate(lateral(p, w.side * w.lat, 14.5f)) * rotateY(-p.th) * rotateX(0.12f * (float)g.time);
+            const mat4 B = translate(lateral(p, w.side * w.lat, 14.5f)) * rotateY(-p.th), Rx = rotateX(0.12f * (float)g.time), M = B * Rx;
             r.draw(roueMesh_, mats_[P_UNI], M); r.draw(roueNeon_, mats_[P_NEON], M); n += 2;
+            for (int k = 0; k < 12; k++) {   // WFS-373 : nacelles pendues à la jante, toujours d'aplomb
+                const float a = 2 * PI * k / 12;
+                const vec3 e = Rx.transformPoint({0, 12.f * std::cos(a), 12.f * std::sin(a)});
+                r.draw(nacelles_[k % 6], mats_[P_UNI], B * translate(e)); n++;
+            }
         }
         // drapeaux les plus proches du joueur : balancement de ±35° autour de la hampe
         const int64_t pj = (int64_t)std::floor(g.player->dist / SEG);
@@ -557,6 +627,7 @@ protected:
         case T_PORTIQUE: for (float sd : {-1.f, 1.f}) bt(sd * (R + 1.6f), 0.25f, 0.25f, G::Poteau); break;
         case T_PASSERELLE: for (float sd : {-1.f, 1.f}) bt(sd * (R + 2.5f), 0.5f, 0.5f, G::Poteau); break;
         case T_FLAG: cy(s * it.lat, 0.08f, G::Poteau); break;
+        case T_PROJ: cy(s * (R + 7.f), 0.25f, G::Poteau); break;   // WFS-373 : mât du projecteur (comme le projecteur commun)
         case T_GRILLAGE: bt(s * it.lat, 0.03f, 1.8f, G::Mur, 1.8f); break;
         default: break;   // tribunes, garages, stands, camions : au-delà du bord de la carte ; grille de départ : peinte au sol
         }
@@ -566,23 +637,15 @@ protected:
     void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         Geo& S = out[P_UNI];
         const float s = (float)it.side;
+        const vec3 X = p.r * s;   // WFS-373 : x des modèles = vers l'extérieur (dos à la route)
+        const int l = lod ? 1 : 0;
         switch (it.t) {
-        case T_TIRES: {   // mur de pneus : 4 piles de 3, rangée du haut rouge / blanc
-            const vec3 b = lateral(p, s * it.lat);
-            for (int i = 0; i < 4; i++) for (int k = 0; k < 3; k++) {
-                const int col = k == 2 ? ((i + it.side) % 2 ? C_TIRE_R : C_TIRE_W) : C_TIRE;
-                cyl(S, b + p.f * (i * 1.2f) + vec3{0, k * 0.3f, 0}, 0.6f, 0.3f, 12, uv(col));
-            }
+        case T_TIRES:   // WFS-373 : mur de pneus sanglé (7 piles de 4 pneus, pneu du haut peint), allégé en Basse
+            poserModele(S, mod_.pneus[(int)((a + it.side + 2) & 1)][lod || basse_ ? 1 : 0], lateral(p, s * it.lat), X, p.f);
             break;
-        }
-        case T_ADBOARD: {   // panneau publicitaire : cadre sombre, fond et texte aux couleurs d'AD_TEXTS (TEXS.ads)
+        case T_ADBOARD: {   // WFS-373 : bâche aux couleurs d'AD_TEXTS sur cadre d'aluminium, texte des deux côtés
             const Pose pm = poseAt(t, a + 5);
-            box(S, lateral(pm, s * (it.lat + 0.15f)), p.r, p.f, 0.1f, 1.3f, 11.5f, uv(C_POLE));
-            const vec3 up{0, 1, 0}, L = pm.f * 5.5f, H = up * 0.6f;
-            for (float d : {0.f, 0.22f}) {   // fond 11 × 1,2 m : face à la route et au dos du cadre (lisible des deux côtés)
-                const vec3 c = lateral(pm, s * (it.lat + d), 0.75f);
-                quad(S, c - L - H, c + L - H, c + L + H, c - L + H, uv(C_AD0 + it.col * 2));
-            }
+            poserModele(S, mod_.pub[l], lateral(pm, s * it.lat), pm.r * s, pm.f, C_AD0 + it.col * 2);
             const vie::Texte& T = ad_[it.col];
             if (!T.ok) break;
             // canevas du jeu web (1024 × 112, police de 80 px) : texte écrit deux fois, centré à ±2,75 m, un peu sous
@@ -590,32 +653,21 @@ protected:
             float h = 1.14f, w = h * T.aspect;
             if (w > 5.2f) { h *= 5.2f / w; w = 5.2f; }
             for (int face : {1, -1}) {   // 1 : vers la route ; −1 : au dos, lu dans l'autre sens
-                const vec3 x = pm.f * (-s * (float)face), c = lateral(pm, s * (face > 0 ? it.lat - 0.03f : it.lat + 0.25f), 0.71f);
+                const vec3 x = pm.f * (-s * (float)face), c = lateral(pm, s * (face > 0 ? it.lat - 0.03f : it.lat + 0.09f), 0.71f);
                 for (float k : {-2.75f, 2.75f}) ligne(out[PART_LETTRES[it.col]], c + pm.f * k, x, w, h, T);
             }
             break;
         }
-        case T_STAND: {   // WFS-199 : tribune réelle (gradins, sièges, escaliers, garde-corps, toit sur poteaux) et vrais spectateurs
+        case T_STAND: {   // WFS-199 : tribune réelle et vrais spectateurs ; WFS-373 : gradins, sièges coques et charpente modélisés
             const Pose pm = poseAt(t, a + (int64_t)std::lround(it.l / SEG_M / 2));
             const vec3 base = lateral(pm, s * it.lat), out_ = pm.r * s, up{0, 1, 0};
-            const float back = (it.k - 0.5f) * RANG, haut = hauteurRang(it.k - 1);
-            for (int k = 0; k < it.k; k++)   // gradins pleins (béton), du sol au dessus du rang
-                box(S, base + out_ * (k * RANG), pm.r, pm.f, RANG, hauteurRang(k), it.l, uv(C_STAND));
-            // allées d'escalier : une marche intermédiaire par rang (2 marches de 0,21 m par rang)
-            std::vector<float> allees;
-            for (float d = -it.l / 2 + ENTRE_ALLEES; d < it.l / 2 - 3; d += ENTRE_ALLEES) allees.push_back(d);
-            for (float d : allees)
-                for (int k = 0; k + 1 < it.k; k++)
-                    box(S, base + out_ * (k * RANG + RANG * 0.25f) + pm.f * d, pm.r, pm.f, RANG * 0.5f, hauteurRang(k) + MARCHE * 0.5f, ALLEE, uv(C_STAND_BACK));
-            // garde-corps : poteaux tous les 2 m sur le muret, main courante à 1 m
-            const vec3 avant = base - out_ * (RANG * 0.5f - 0.05f);
-            for (float d = -it.l / 2 + 0.2f; d <= it.l / 2; d += 2.f) box(S, avant + pm.f * d, pm.r, pm.f, 0.05f, 1.0f, 0.05f, uv(C_STEEL), MURET);
-            box(S, avant, pm.r, pm.f, 0.07f, 0.06f, it.l, uv(C_STEEL), MURET + 1.0f);
-            if (lod) {   // de loin : bande des sièges par rang (les spectateurs restent des personnages, version allégée)
-                for (int k = 0; k < it.k; k++)
-                    box(S, base + out_ * (k * RANG + 0.18f), pm.r, pm.f, 0.4f, 0.45f, it.l * 0.98f, uv(C_SEAT0 + (it.col * 2 + k) % 4), hauteurRang(k));
+            const grandprix::Couleurs cm = couleursModeles();
+            poserModele(S, grandprix::tribune(cm, it.l, it.k, RANG, MARCHE, MURET, ENTRE_ALLEES, ALLEE, lod), base, out_, pm.f);
+            if (lod) {   // de loin : rangée de sièges allégée par rang (les spectateurs restent des personnages, version allégée)
+                const grandprix::Maille rg = grandprix::rangeeSieges(cm, it.l * 0.98f);
+                for (int k = 0; k < it.k; k++) poserModele(S, rg, base + out_ * (k * RANG + 0.12f) + up * hauteurRang(k), out_, pm.f, C_SEAT0 + (it.col * 2 + k) % 4);
             }
-            // sièges (assise + dossier, couleur de la tribune) et spectateurs assis ou debout (RG-02)
+            // sièges (coques) et spectateurs assis ou debout (RG-02)
             const Pose& P = pm;
             int kPrec = -1; float dPrec = -1e9f; bool adultePrec = false;   // WFS-240 (RG-02) : place précédente du rang
             sieges(it, [&](int k, float d, bool occupe, uint32_t h) {
@@ -629,10 +681,7 @@ protected:
                                                     (foule::Pose)(debout ? foule::DEBOUT_REPOS + (h >> 3) % 2 : foule::ASSIS_REPOS + (h >> 3) % 2),
                                                     (int)(h >> 4) % foule::VARIANTES, !lod);
                 const float assise = sil && !debout ? sil->assise : 0.45f;
-                if (!lod) {
-                    box(S, q, P.r, P.f, 0.42f, 0.06f, 0.44f, uv(C_SEAT0 + (it.col * 2 + k) % 4), y + assise - 0.06f);
-                    box(S, q + out_ * 0.2f, P.r, P.f, 0.05f, 0.42f, 0.44f, uv(C_SEAT0 + (it.col * 2 + k) % 4), y + assise);
-                }
+                if (!lod) poserModele(S, mod_.siege, q + up * (y + assise - grandprix::SIEGE_ASSISE), out_, P.f, C_SEAT0 + (it.col * 2 + k) % 4);
                 if (!sil) return;
                 // repère du spectateur : face à la route (+z local → −out_), petit écart d'orientation, taille 0,95 à 1,05
                 const float yaw = ((float)((h >> 6) % 21) - 10.f) * 0.025f, ech = 0.95f + (float)((h >> 11) % 11) * 0.01f;
@@ -647,40 +696,22 @@ protected:
                 }
                 for (uint32_t i : sil->i) S.i.push_back(k0 + i);
             });
-            // mur du fond, toit en porte-à-faux sur des poteaux avant (tous les 8 m, devant le garde-corps)
-            box(S, base + out_ * back, pm.r, pm.f, 0.3f, haut + 3.4f, it.l, uv(C_STAND_BACK));
-            box(S, base + out_ * ((back - RANG) * 0.5f), pm.r, pm.f, back + RANG + 0.6f, 0.25f, it.l + 1, uv(C_STAND_ROOF), haut + 3.2f);
-            for (float d = -it.l / 2 + 0.5f; d <= it.l / 2; d += 8.f) box(S, base - out_ * (RANG * 0.5f + 0.3f) + pm.f * d, pm.r, pm.f, 0.2f, haut + 3.2f, 0.2f, uv(C_STEEL));
             break;
         }
-        case T_PITWALL:
-            box(S, lateral(p, s * it.lat), p.r, p.f, 0.4f, 1.1f, 3 * (float)SEG_M, uv(C_PITWALL));
-            box(S, lateral(p, s * (it.lat + 0.1f), 1.1f), p.r, p.f, 0.05f, 1.6f, 3 * (float)SEG_M, uv(C_PITGLASS));
+        case T_PITWALL:   // WFS-373 : muret de béton préfabriqué et grillage de protection (élément centré sur le segment)
+            poserModele(S, mod_.murStands[lod || basse_ ? 1 : 0], lateral(p, s * it.lat) - p.f * (1.5f * (float)SEG_M), X, p.f);
             break;
-        case T_GARAGE: {   // garage d'écurie : bâtiment, porte sombre, bandeau aux couleurs de l'équipe
+        case T_GARAGE: {   // WFS-373 (ANO-220) : stand vitré à rideaux métalliques et auvent, bandeau aux couleurs de l'équipe
             const Pose pm = poseAt(t, a + (int64_t)std::lround(it.l / SEG_M / 2));
-            box(S, lateral(pm, s * (it.lat + 6)), pm.r, pm.f, 12, 7, it.l, uv(C_GARAGE));
-            box(S, lateral(pm, s * (it.lat - 0.02f)), pm.r, pm.f, 0.1f, 4.5f, it.l * 0.8f, uv(C_GARAGE_DOOR));
-            box(S, lateral(pm, s * (it.lat - 0.06f), 5.2f), pm.r, pm.f, 0.06f, 1.1f, it.l * 0.85f, uv(C_GARAGE0 + it.col));
+            poserModele(S, mod_.stand[l], lateral(pm, s * it.lat), pm.r * s, pm.f, C_GARAGE0 + it.col);
+            poserModele(out[P_NEON], mod_.standNeon[l], lateral(pm, s * it.lat), pm.r * s, pm.f);
             break;
         }
-        case T_FLAG: {
-            const vec3 b = lateral(p, s * it.lat);
-            cyl(S, b, 0.08f, 9, 8, uv(C_FLAGPOLE));
-            box(S, b + p.f * 1.2f + vec3{0, 6.8f, 0}, p.r, p.f, 0.04f, 1.8f, 2.4f, uv(C_FLAG0 + it.col));
-            break;
-        }
-        case T_MARSHAL: {
-            const vec3 b = lateral(p, s * it.lat);
-            box(S, b, p.r, p.f, 1.6f, 2.4f, 1.6f, uv(C_MARSHAL));
-            box(S, b + vec3{0, 2.4f, 0}, p.r, p.f, 2, 0.15f, 2, uv(C_MARSHAL_TOP));
-            break;
-        }
+        case T_FLAG: poserModele(S, mod_.drapeau[l], lateral(p, s * it.lat), X, p.f, C_FLAG0 + it.col); break;
+        case T_MARSHAL: poserModele(S, mod_.poste[l], lateral(p, s * it.lat), X, p.f); break;
         // ---------------------------------------------------------------- WFS-140
-        case T_FREIN: {   // panneau de freinage : 2 pieds, panneau blanc 1,6 × 1,2 m, chiffres noirs face à la route
-            const vec3 b = lateral(p, s * it.lat);
-            for (float d : {-0.6f, 0.6f}) box(S, b + p.f * d, p.r, p.f, 0.08f, 1.0f, 0.08f, uv(C_POLE));
-            box(S, b + vec3{0, 1.0f, 0}, p.r, p.f, 0.08f, 1.2f, 1.6f, uv(C_SIGNW));
+        case T_FREIN: {   // panneau de freinage : 2 poteaux, panneau blanc 1,6 × 1,2 m encadré, chiffres noirs face à la route
+            poserModele(S, mod_.frein, lateral(p, s * it.lat), X, p.f);
             const vie::Texte& T = tx_[it.col];
             if (T.ok) {
                 const float h = 0.85f, w = std::min(1.4f, h * T.aspect);
@@ -690,24 +721,16 @@ protected:
         }
         case T_GRILLE: {   // emplacement de la grille : équerre blanche peinte (barre de 2,4 m et retour de 1,2 m)
             const vec3 c = lateral(p, s * it.lat, 0.022f);
-            const vec3 X = p.r * 1.2f, Fw = p.f * 0.15f;
-            quadSol(S, c - X - Fw, c + X - Fw, c + X + Fw, c - X + Fw, uv(C_SIGNW));
+            const vec3 Xg = p.r * 1.2f, Fw = p.f * 0.15f;
+            quadSol(S, c - Xg - Fw, c + Xg - Fw, c + Xg + Fw, c - Xg + Fw, uv(C_SIGNW));
             const vec3 bord = c + p.r * (-s * 1.2f);
             quadSol(S, bord - p.r * 0.15f, bord + p.r * 0.15f, bord + p.r * 0.15f - p.f * 1.2f, bord - p.r * 0.15f - p.f * 1.2f, uv(C_SIGNW));
             break;
         }
-        case T_PORTIQUE: {   // portique des feux : 2 poteaux hors de la chaussée, poutre à 8 m, boîtier des 5 feux
+        case T_PORTIQUE: poserModele(S, mod_.portique, lateral(p, 0), p.r, p.f); break;   // WFS-373 : treillis et caisson des feux (feux : animes())
+        case T_PASSERELLE: {   // passerelle publicitaire au sommet du raidillon (WFS-373 : piles, tablier, garde-corps modélisés), panneaux des deux côtés
             const float R = (float)RW;
-            for (int sd : {-1, 1}) box(S, lateral(p, sd * (R + 1.6f)), p.r, p.f, 0.5f, 8.6f, 0.5f, uv(C_POLE));
-            box(S, lateral(p, 0, 8.0f), p.r, p.f, 2 * R + 4, 0.6f, 0.6f, uv(C_POLE));
-            box(S, lateral(p, 0, 6.8f) + p.f * 0.1f, p.r, p.f, 5.6f, 1.2f, 0.35f, uv(C_CHECK_B));   // boîtier ; feux : animes()
-            break;
-        }
-        case T_PASSERELLE: {   // passerelle publicitaire au sommet du raidillon : piles, tablier à 6 m, panneaux des deux côtés
-            const float R = (float)RW;
-            for (int sd : {-1, 1}) box(S, lateral(p, sd * (R + 2.5f)), p.r, p.f, 1.0f, 6.2f, 1.0f, uv(C_STAND_BACK));
-            box(S, lateral(p, 0, 6.2f), p.r, p.f, 2 * R + 7, 0.5f, 2.4f, uv(C_STAND));
-            for (int sd : {-1, 1}) box(S, lateral(p, sd * (R + 3.4f), 6.7f), p.r, p.f, 0.08f, 1.1f, 2.4f, uv(C_POLE));   // garde-corps
+            poserModele(S, mod_.passerelle, lateral(p, 0), p.r, p.f);
             const vie::Texte& T = ad_[0];
             for (int face : {1, -1}) {   // face à la montée (vers −f) et au dos
                 const vec3 c = lateral(p, 0, 5.4f) + p.f * (face * -1.25f);
@@ -716,94 +739,63 @@ protected:
             }
             break;
         }
-        case T_CAMION: {   // camion d'équipe : tracteur et remorque aux couleurs de l'équipe, garé le long de la route
-            const vec3 b = lateral(p, s * it.lat);
-            box(S, b, p.r, p.f, 2.5f, 3.9f, 13.5f, uv(C_WALL), 0.4f);
-            box(S, b + vec3{0, 1.6f, 0}, p.r, p.f, 2.52f, 0.9f, 13.4f, uv(C_GARAGE0 + it.col), 0.4f);   // bande de l'équipe
-            box(S, b + p.f * 8.4f, p.r, p.f, 2.5f, 3.2f, 3.0f, uv(C_GARAGE0 + it.col), 0.4f);   // tracteur
-            box(S, b + p.f * 9.85f + vec3{0, 2.0f, 0}, p.r, p.f, 2.3f, 1.0f, 0.1f, uv(C_GLASS));
-            for (float d : {-5.f, -3.6f, 7.6f, 9.0f}) for (int sd : {-1, 1}) cylAxe(S, b + p.f * d + p.r * (sd * 1.05f) + vec3{0, 0.5f, 0}, p.r * (float)sd, 0.5f, 0.3f, 10, uv(C_TIRE));
-            break;
-        }
-        case T_ACCUEIL: {   // bar d'accueil : 2 étages vitrés, terrasse VIP sur le toit (garde-corps, parasols), enseigne
+        case T_CAMION: poserModele(S, mod_.camion[l], lateral(p, s * it.lat), p.r, p.f, C_GARAGE0 + it.col); break;   // WFS-373 : semi-remorque modélisé
+        case T_ACCUEIL: {   // bar d'accueil : 2 étages vitrés, terrasse VIP sur le toit (garde-corps vitré, parasols), enseigne
             const Pose pm = poseAt(t, a + (int64_t)std::lround(it.l / SEG_M / 2));
-            const vec3 b = lateral(pm, s * (it.lat + it.w / 2));
-            box(S, b, pm.r, pm.f, it.w, 7.5f, it.l, uv(C_WALL));
-            for (float y : {1.0f, 4.5f}) box(S, b + vec3{0, y, 0}, pm.r, pm.f, it.w + 0.1f, 2.2f, it.l - 1, uv(C_GLASS));
-            for (float y : {3.3f, 6.8f}) box(out[P_NEON], b + vec3{0, y, 0}, pm.r, pm.f, it.w + 0.14f, 0.12f, it.l - 1, uv(it.col ? C_LAMP_W : C_LAMP_C));
-            for (int sd : {-1, 1}) box(S, b + pm.r * (sd * (it.w / 2 - 0.1f)) + vec3{0, 7.5f, 0}, pm.r, pm.f, 0.08f, 1.1f, it.l, uv(C_PITGLASS));   // garde-corps
-            for (int k = 0; k < 4; k++) {   // parasols de la terrasse
-                const vec3 q = b + pm.f * (-it.l / 2 + 4 + k * (it.l - 8) / 3) + vec3{0, 7.5f, 0};
-                cyl(S, q, 0.05f, 2.4f, 6, uv(C_STEEL));
-                cone(S, q + vec3{0, 2.0f, 0}, 1.6f, 0.6f, 8, uv(C_FLAG0 + (k + it.col) % 6));
-            }
-            box(S, lateral(pm, s * (it.lat - 0.05f), 8.8f), pm.r, pm.f, 0.1f, 1.2f, 7.f, uv(C_POLE));   // enseigne vers la route
+            const int v = it.col ? 1 : 0;
+            poserModele(S, mod_.accueil[v][l], lateral(pm, s * it.lat), pm.r * s, pm.f);
+            poserModele(out[P_NEON], mod_.accueilNeon[v][l], lateral(pm, s * it.lat), pm.r * s, pm.f);
             const vie::Texte& T = tx_[it.col ? TX_BAR : TX_VIP];
             if (T.ok) ligne(out[P_TEXTE0 + 1], lateral(pm, s * (it.lat - 0.12f), 9.4f), pm.f * -s, std::min(6.f, 0.9f * T.aspect), std::min(6.f, 0.9f * T.aspect) / T.aspect, T);
             break;
         }
-        case T_TOUR: {   // tour de contrôle : fût, cabine vitrée (fenêtres éclairées la nuit), toit et antenne
+        case T_TOUR: {   // tour de contrôle : fût, vigie vitrée évasée (sous-face éclairée la nuit), toit et mât d'antennes
             const vec3 b = lateral(p, s * (it.lat + 3));
-            box(S, b, p.r, p.f, 3.5f, 16, 3.5f, uv(C_WALL));
-            box(S, b + vec3{0, 16, 0}, p.r, p.f, 6.5f, 0.4f, 6.5f, uv(C_STAND_BACK));
-            box(out[P_NEON], b + vec3{0, 16.4f, 0}, p.r, p.f, 6.2f, 2.6f, 6.2f, uv(C_LAMP_W));
-            box(S, b + vec3{0, 19.0f, 0}, p.r, p.f, 7.0f, 0.5f, 7.0f, uv(C_STAND_ROOF));
-            cyl(S, b + vec3{0, 19.5f, 0}, 0.08f, 4, 6, uv(C_STEEL));
+            poserModele(S, mod_.tour, b, X, p.f); poserModele(out[P_NEON], mod_.tourNeon, b, X, p.f);
             const vie::Texte& T = tx_[TX_PADDOCK];
             if (T.ok) ligne(out[P_TEXTE0], b + p.r * (-s * 1.78f) + vec3{0, 13.5f, 0}, p.f * -s, std::min(3.2f, 0.6f * T.aspect), std::min(3.2f, 0.6f * T.aspect) / T.aspect, T);
             break;
         }
-        case T_HELICO: {   // hélicoptère posé sur son aire (H peint) : cabine, poutre de queue, patins, rotor
+        case T_HELICO: {   // hélicoptère posé sur son aire (H peint) ; WFS-373 : hélicoptère modélisé
             const vec3 c = lateral(p, s * (it.lat + 7), 0.03f);
             quadSol(S, c - p.r * 7 - p.f * 7, c + p.r * 7 - p.f * 7, c + p.r * 7 + p.f * 7, c - p.r * 7 + p.f * 7, uv(C_ROOF2));
             for (float x : {-2.f, 2.f}) quadSol(S, c + p.r * (x - 0.4f) - p.f * 3 + vec3{0, 0.01f, 0}, c + p.r * (x + 0.4f) - p.f * 3 + vec3{0, 0.01f, 0}, c + p.r * (x + 0.4f) + p.f * 3 + vec3{0, 0.01f, 0}, c + p.r * (x - 0.4f) + p.f * 3 + vec3{0, 0.01f, 0}, uv(C_SIGNW));
             quadSol(S, c - p.r * 1.6f - p.f * 0.4f + vec3{0, 0.02f, 0}, c + p.r * 1.6f - p.f * 0.4f + vec3{0, 0.02f, 0}, c + p.r * 1.6f + p.f * 0.4f + vec3{0, 0.02f, 0}, c - p.r * 1.6f + p.f * 0.4f + vec3{0, 0.02f, 0}, uv(C_SIGNW));
-            box(S, c + vec3{0, 0.5f, 0}, p.r, p.f, 2.0f, 2.0f, 4.2f, uv(C_SIGNR));
-            box(S, c + vec3{0, 1.4f, 0} + p.f * 1.9f, p.r, p.f, 1.8f, 0.9f, 0.6f, uv(C_GLASS));
-            box(S, c + vec3{0, 1.3f, 0} - p.f * 4.6f, p.r, p.f, 0.4f, 0.5f, 5.2f, uv(C_SIGNR));
-            box(S, c + vec3{0, 1.3f, 0} - p.f * 7.0f, p.r, p.f, 0.1f, 1.4f, 0.7f, uv(C_SIGNR));
-            for (int sd : {-1, 1}) box(S, c + p.r * (sd * 1.1f), p.r, p.f, 0.1f, 0.12f, 4.6f, uv(C_METAL));
-            cyl(S, c + vec3{0, 2.5f, 0}, 0.1f, 0.5f, 6, uv(C_METAL));
-            box(S, c + vec3{0, 3.0f, 0}, p.r, p.f, 0.3f, 0.06f, 11.f, uv(C_METAL));
-            box(S, c + vec3{0, 3.0f, 0}, p.r, p.f, 11.f, 0.06f, 0.3f, uv(C_METAL));
+            poserModele(S, mod_.helico[l], c + vec3{0, 0.03f, 0} + p.f * 1.5f, p.r, p.f);
             break;
         }
-        case T_STANDFAN: {   // stand de l'espace fans (comptoir, toit de couleur, néon) ; col < 0 : portail avec enseigne
+        case T_STANDFAN: {   // stand de l'espace fans (comptoir, toit de toile, réglette) ; col < 0 : portail avec enseigne
             const vec3 b = lateral(p, s * (it.lat + 2));
             if (it.col < 0) {
-                for (float d : {-3.f, 3.f}) box(S, b + p.f * d, p.r, p.f, 0.4f, 4.6f, 0.4f, uv(C_STEEL));
-                box(S, b + vec3{0, 4.2f, 0}, p.r, p.f, 0.3f, 1.2f, 6.8f, uv(C_POLE));
-                box(out[P_NEON], b + vec3{0, 4.05f, 0} + p.r * (-s * 0.2f), p.r, p.f, 0.05f, 0.1f, 6.6f, uv(C_LAMP_C));
+                poserModele(S, mod_.portail, b, X, p.f); poserModele(out[P_NEON], mod_.portailNeon, b, X, p.f);
                 const vie::Texte& T = tx_[it.col == -1 ? TX_FANS : TX_CAMPING];
                 if (T.ok) ligne(out[P_TEXTE0 + 1], b + p.r * (-s * 0.18f) + vec3{0, 4.8f, 0}, p.f * -s, std::min(6.2f, 0.8f * T.aspect), std::min(6.2f, 0.8f * T.aspect) / T.aspect, T);
                 break;
             }
-            box(S, b, p.r, p.f, 3.0f, 1.1f, 4.0f, uv(C_WALL2));
-            for (int sd : {-1, 1}) box(S, b + p.r * (sd * 1.4f) + p.f * 1.8f, p.r, p.f, 0.1f, 2.6f, 0.1f, uv(C_STEEL));
-            box(S, b + vec3{0, 2.6f, 0}, p.r, p.f, 3.4f, 0.3f, 4.4f, uv(C_FLAG0 + it.col));
-            box(out[P_NEON], b + vec3{0, 2.45f, 0} + p.r * (-s * 1.6f), p.r, p.f, 0.05f, 0.1f, 4.2f, uv(C_LAMP_W));
+            poserModele(S, mod_.fans, b, X, p.f, C_FLAG0 + it.col); poserModele(out[P_NEON], mod_.fansNeon, b, X, p.f);
             break;
         }
-        case T_ROUE: {   // grande roue : 2 pieds en A et socle (la roue tourne : animes)
+        case T_ROUE: {   // grande roue : pieds en A en tubes, paliers, socle et escalier (la roue tourne : animes)
             const Pose pm = poseAt(t, a + 11);
-            const vec3 b = lateral(pm, s * it.lat);
-            for (float x : {-1.6f, 1.6f}) for (float d : {-7.f, 7.f}) {
-                const vec3 bas = b + pm.r * x + pm.f * d, haut = b + pm.r * x + vec3{0, 14.5f, 0};
-                const vec3 e = pm.r * 0.25f;
-                quad(S, bas - e, bas + e, haut + e, haut - e, uv(C_STEEL));
-            }
-            box(S, b, pm.r, pm.f, 6, 0.6f, 18, uv(C_STAND_BACK));
+            poserModele(S, mod_.pieds, lateral(pm, s * it.lat), pm.r, pm.f);
             break;
         }
-        case T_TENTE: {   // tente de camping (prisme) de 2,2 × 2,6 m, 1,3 m de haut
-            const vec3 c = lateral(p, s * it.lat) + p.f * it.along;
-            toit(S, c + vec3{0, 0.65f, 0}, p.f, p.r, 2.6f, 1.3f, 2.2f, uv(C_FLAG0 + it.col));
-            break;
-        }
-        case T_GRILLAGE: {   // grillage : poteau tous les 3,6 m, 3 fils
+        case T_TENTE: poserModele(S, mod_.tente[(it.col + (int)a) % 3], lateral(p, s * it.lat) + p.f * it.along, X, p.f, C_FLAG0 + it.col); break;   // tente dôme
+        case T_GRILLAGE: poserModele(S, mod_.grillage[lod || basse_ ? 1 : 0], lateral(p, s * it.lat), X, p.f); break;   // poteau tous les 3,6 m, maille losangée
+        case T_PROJ: {   // WFS-373 : projecteur de piste (mât conique, rampe de 6 projecteurs dont le verre s'éclaire la nuit)
             const vec3 b = lateral(p, s * it.lat);
-            box(S, b, p.r, p.f, 0.06f, 1.9f, 0.06f, uv(C_STEEL));
-            for (float y : {0.3f, 1.0f, 1.8f}) box(S, b + vec3{0, y, 0} + p.f * 1.8f, p.r, p.f, 0.02f, 0.03f, 3.6f, uv(C_STEEL));
+            poserModele(S, mod_.proj[l], b, X, p.f); poserModele(out[P_NEON], mod_.projNeon[l], b, X, p.f);
+            break;
+        }
+        case T_HERBE: {   // WFS-373 (ANO-220) : touffe semée au hasard (3 à 5 brins de hauteur et d'orientation variées)
+            const uint32_t h = hacher(a, it.k);
+            const vec3 c0 = lateral(p, s * it.lat, solY(zone(a), a, it.side, it.lat) - 0.04f) + p.f * it.along;
+            const int n = 3 + (int)(h % 3);
+            for (int k = 0; k < n; k++) {
+                const uint32_t g = hacher(a * 7 + k, it.k + k);
+                const vec3 d{((float)(g % 100) / 100.f - 0.5f) * 0.9f, 0, ((float)((g >> 8) % 100) / 100.f - 0.5f) * 0.9f};
+                veg::touffe(out[P_FEUILLU], c0 + d, 0.22f + (float)((g >> 16) % 100) / 100.f * 0.3f, (float)((g >> 4) % 628) / 100.f, 0.86f + (float)((g >> 20) % 16) / 100.f);
+            }
             break;
         }
         default: break;
@@ -818,6 +810,7 @@ private:
     bool pret_ = false, basse_ = false;
     int refuses_ = 0, refusesSec_ = 0, posesSec_ = 0, tribunes_ = 0, spectateurs_ = 0;   // WFS-199 : tribunes et spectateurs posés   // journal : objets refusés (décor des zones et des sections)
     unsigned impair_ = 0;
+    int poses_[NB_SORTES] = {};   // WFS-373 : objets posés par sorte
     std::vector<float> libre_;                 // place libre de chaque côté de chaque segment (2 par segment)
     std::vector<uint8_t> reserve_, cache_, coin_;
     int64_t portique_ = -1;                    // segment du portique des feux de départ
@@ -825,7 +818,50 @@ private:
     struct Roue { int64_t seg; int side; float lat; };
     std::vector<Drapeau> drapeaux_;
     std::vector<Roue> roues_;
-    Mesh feuMesh_{}, roueMesh_{}, roueNeon_{}, oiseaux_{}, drapeauMesh_[6]{};
+    Mesh feuMesh_{}, roueMesh_{}, roueNeon_{}, oiseaux_{}, drapeauMesh_[6]{}, nacelles_[6]{};
+    // WFS-373 : modèles du Grand Prix, construits une fois (version proche [0] et allégée [1])
+    struct Modeles {
+        grandprix::Maille pneus[2][2], pub[2], siege, murStands[2], stand[2], drapeau[2], drapeauMain, poste[2], frein, portique, passerelle,
+                          camion[2], standNeon[2], accueil[2][2], accueilNeon[2][2], tour, tourNeon, helico[2], fans, fansNeon, portail, portailNeon, pieds, tente[3],
+                          grillage[2], proj[2], projNeon[2];
+        bool prets = false;
+    } mod_;
+    void construireModeles() {
+        if (mod_.prets) return;
+        using namespace grandprix;
+        const Couleurs c = couleursModeles();
+        const float R = (float)RW;
+        for (int d = 0; d < 2; d++) for (int l = 0; l < 2; l++) mod_.pneus[d][l] = murPneus(c, l, d);
+        for (int l = 0; l < 2; l++) {
+            mod_.pub[l] = panneauPub(c, l); mod_.murStands[l] = murStands(c, 3 * (float)SEG_M, l); mod_.stand[l] = stand(c, 14 * (float)SEG_M - 0.5f, mod_.standNeon[l], l);
+            mod_.drapeau[l] = drapeau(c, l); mod_.poste[l] = posteCommissaire(c, l); mod_.camion[l] = camion(c, l); mod_.helico[l] = helico(c, l);
+            mod_.grillage[l] = grillage(c, l); mod_.proj[l] = projecteur(c, mod_.projNeon[l], l);
+            for (int v = 0; v < 2; v++) mod_.accueil[v][l] = accueil(c, 14, 30, C_FLAG0, v, mod_.accueilNeon[v][l], l);
+        }
+        mod_.siege = siege(c); mod_.drapeauMain = drapeauMain(c); mod_.frein = panneauFrein(c);
+        mod_.portique = portique(c, R + 1.6f); mod_.passerelle = passerelle(c, R + 2.5f); mod_.tour = tour(c, mod_.tourNeon, false);
+        mod_.fans = standFans(c, mod_.fansNeon); mod_.portail = portail(c, mod_.portailNeon); mod_.pieds = piedsRoue(c);
+        for (int v = 0; v < 3; v++) mod_.tente[v] = tente(c, v);
+        mod_.prets = true;
+    }
+    // WFS-373 (ANO-220) : touffes d'herbe semées au hasard (graine du segment, aucun tirage du décor) : une touffe sur trois
+    // segments environ, de 6 à 45 m du bord, jamais sur une autre chaussée, ni dans le gravier, le paddock ou une place réservée
+    void semerHerbe() {
+        const float R = (float)RW;
+        for (int64_t a = 0; a < len(); a++) {
+            const char* z = zone(a);
+            if (!std::strcmp(z, "paddock")) continue;
+            for (int side : {-1, 1}) {
+                const uint32_t h = hacher(a, side + 11);
+                if (h % 100 >= 18) continue;
+                const float lat = R + 6 + (float)((h >> 8) % 1000) / 1000.f * 39.f;
+                if ((coin_.size() && (coin_[(size_t)mod(a)] & (side < 0 ? 2 : 4)) && lat < R + 16) || lat + 1.5f > libre(a, side)) continue;
+                if (!reserve_.empty() && (reserve_[(size_t)mod(a)] & (side < 0 ? 1 : 2)) && lat < R + 60) continue;
+                Item it; it.t = T_HERBE; it.side = side; it.lat = lat; it.along = (float)((h >> 18) % 100) / 100.f * (float)SEG_M; it.k = (int)(h >> 26); it.petit = true;
+                item(a, it); compte(T_HERBE);
+            }
+        }
+    }
     Material feuAllume_{}, feuEteint_{};
 };
 

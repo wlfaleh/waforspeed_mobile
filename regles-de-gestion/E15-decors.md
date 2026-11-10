@@ -26,7 +26,7 @@ Créée par le PO le 2026-11-09 (demande de l'utilisateur, `@po`) : « créer un
 | Ville | WFS-369 mobilier → WFS-370 immeubles → **WFS-385** décor complet 200 à 700 Mo |
 | Corniche | (WFS-379, 376, 380 en cours / prêts, hors E15) → WFS-371 plage et abords → **WFS-386** décor complet |
 | Campagne | WFS-372 vignes, village, clôtures → **WFS-387** décor complet |
-| Grand Prix | WFS-373 tribunes, stands, barrières → **WFS-388** décor complet |
+| Grand Prix | WFS-373 tribunes, stands, barrières → WFS-403 finitions (réserves de l'agent 3D, PR #336) → **WFS-388** décor complet |
 | Eau commune (toutes les cartes) | WFS-380 mer (🟡) → **WFS-401** surface, écume, soleil bas, dauphin → **WFS-400** reflets de la scène ; fichiers `shaders/eau.glsl`, `src/render/eau_*` : jamais deux tickets en même temps sur ces fichiers (WFS-398, fontaines : réglages par lieu seulement, sans changer le shader, RG-01 de WFS-398) |
 | Ouvertures communes (toutes les cartes) | (WFS-370 immeubles de la Ville) → **WFS-402** fenêtres et portes réalistes des immeubles et des maisons ; fichiers `src/world/archi_*`, `archi_ouvertures_*` ; dans les fichiers d'une carte, appel ≤ 10 lignes, jamais en même temps qu'un autre ticket E15 de cette carte (RG-10 de WFS-402) |
 | Neige scandinave (Noël) | (WFS-344 contenu, E14) → **WFS-389** décor complet |

@@ -457,6 +457,7 @@ double eclairementLampes(const GameView& gv, vec3 p) {
     if (!(L > 0)) return 0;
     double E = 0;
     for (const Lampadaire& l : lampadaires()) {
+        if (l.style == StyleLampadaire::Tete) continue;   // WFS-337 : tête seule (halo), pas de lumière : exposition inchangée
         double s = (double)l.seg * SEG;
         s += std::round((z - s) / L) * L;
         if (std::fabs(s - z) * M > 160) continue;
