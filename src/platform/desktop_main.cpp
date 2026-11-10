@@ -22,6 +22,7 @@ namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out);
 namespace wfs { int benchFluidite(Game& g, Renderer& r, const std::string& out); }   // WFS-221 (bench_fluidite.cpp)   // WFS-115 (modes_ecran.cpp)
 namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out); }   // WFS-139 (plage.cpp)
 namespace wfs { void benchMarina(Game& g, Renderer& r, const std::string& out); }   // WFS-376 (plage.cpp)
+namespace wfs { void benchMer(Game& g, Renderer& r, const std::string& out); }   // WFS-380 (plage.cpp)
 namespace wfs { void benchFantome(Game& g, Renderer& r, const std::string& out); }   // WFS-318 (fantome_etiquette.cpp)
 namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }   // WFS-161 (accroche) : kit d'architecture (archi_banc.cpp)
 #include "../game/poursuite.h"   // WFS-111
@@ -269,6 +270,7 @@ int main(int argc, char** argv) {
     if (banc == "ville") { benchVille(g, r, out); return finir(); }           // WFS-137 : lieux de la Ville seuls (essai local)
     if (banc == "corniche") { benchCorniche(g, r, out); return finir(); }   // WFS-139 : Corniche au tracé 2 seule (essai local)
     if (banc == "marina") { benchMarina(g, r, out); return finir(); }   // WFS-376 : bateaux de la marina (essai local et PR)
+    if (banc == "mer") { benchMer(g, r, out); return finir(); }   // WFS-380 : vraie mer (essai local et PR)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();

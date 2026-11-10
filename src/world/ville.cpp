@@ -45,6 +45,7 @@
 #include "zones.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
 #include "giratoire.h"  // WFS-248 : giratoire reconstruit (anneau, îlot, raccord des branches)
+#include "../render/eau_parametres.h"   // WFS-380 (accroche) : eau de la rivière
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : fontaines déclarées au son des lieux
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 #include "decor_ville_port.h"   // WFS-370 : conteneurs, portiques et clôture du port modélisés
@@ -765,8 +766,7 @@ public:
         { Material m; m.color = {0.2f, 0.2f, 0.2f, 1}; m.rough = 0.5f; m.flags = MAT_DOUBLE; m.emissive = vec3{1.f, 0.42f, 0.09f} * (nuit_ ? 3.f : 5.f);
           mats_[P_SODIUM] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
         { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, m); }   // asphalte de Game (WFS-205, accroche)
-        // eau de rivière : sombre (albédo ≈ 0,04), lisse (rugosité 0,08), F0 diélectrique 0,02 : le ciel s'y reflète
-        { Material m; m.color = {0.035f, 0.05f, 0.055f, 1}; m.rough = 0.08f; m.metal = 0; mats_[P_EAU] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
+        mats_[P_EAU] = r.makeMaterial(eau::materiau(eau::MODE_SURFACE, false), nullptr, nullptr, nullptr);   // WFS-380 (RG-05) : même eau que la mer
         { Material m; m.flags = MAT_GROUND; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game
         // portiques : 3 au plus sur l'autoroute, à 150 m du début puis tous les 420 m (pas dans les 60 m avant le tunnel)
         static const char* const DIR[3][2] = {{"Centre", "Port"}, {"Port", "Aéroport"}, {"Aéroport", "Centre"}};
@@ -1146,7 +1146,12 @@ public:
                 // eau de la rivière (niveau absolu), de la corniche jusqu'au bout des bas-côtés de Game
                 if (eau) for (float sd : {1.f, -1.f}) {
                     auto Wa = [&](double s, float lat) { vec3 q = Wp(t, s, lat, 0); q.y = riv_.yw; return q; };
-                    carte::quadSol(out[P_EAU], Wa(s0, sd * (R + PONT_CORN)), Wa(s0, sd * (R + 264.f)), Wa(s1, sd * (R + 264.f)), Wa(s1, sd * (R + PONT_CORN)), {0, 0});
+                    // WFS-380 (RG-05) : rivière calme entre deux quais : distance au quai le plus proche (comptée le long de la route) ;
+                    // les quais longent la rivière en travers de la route : l'abscisse le long du bord est la distance à l'axe
+                    auto dq = [&](int64_t k) { return (float)((double)std::min(k - riv_.d0 - 1, riv_.d1 - 1 - k) * SEG_M); };
+                    const float q0 = dq(seg), q1 = dq(seg + 1);
+                    eau::quad(out[P_EAU], {Wa(s0, sd * (R + PONT_CORN)), Wa(s0, sd * (R + 264.f)), Wa(s1, sd * (R + 264.f)), Wa(s1, sd * (R + PONT_CORN))}, {q0, q0, q1, q1},
+                              {R + PONT_CORN, R + 264.f, R + 264.f, R + PONT_CORN}, eau::PENTE_RIVIERE, eau::AGIT_RIVIERE, true);
                 }
                 // quais : murs de béton face à l'eau, du fond jusqu'au profil des bas-côtés (Game : 0,13 / 0 / −0,8 / −6 m)
                 // (mur dans le plan du premier et du dernier segment noyés ; haut : bas-côtés du segment voisin, hors de l'eau, + 0,3 m)

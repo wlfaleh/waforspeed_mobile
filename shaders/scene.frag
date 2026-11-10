@@ -24,6 +24,7 @@ const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F
 #include "route.glsl"       // E9 Routes
 #include "decor.glsl"       // E12 Environnements
 #include "vehicule.glsl"    // E10 Véhicules
+#include "eau.glsl"         // WFS-380 : eau (mer, port, rivière, sillages)
 
 void main() {
     uint flags = uint(pc.params.w + 0.5);
@@ -88,6 +89,8 @@ void main() {
     } else if ((flags & F_FACADE) != 0u) {
         surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }
+    float eauEcume = 0.0, eauAlpha = 1.0;   // WFS-380 : eau (vagues, couleur selon la profondeur, écume)
+    if ((flags & F_EAU) != 0u) eauEcume = surfaceEau(base, rough, metal, N, V, eauAlpha);
 
     vec3 L = normalize(F.sunDir.xyz);
     vec3 H = normalize(V + L);
@@ -108,6 +111,7 @@ void main() {
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
     if (wetRoad) f0 = vec3(mix(0.04, 0.02, flaque));   // WFS-142 (RG-03) : eau des flaques f0 = 0,02
+    if ((flags & F_EAU) != 0u) f0 = vec3(mix(0.02, 0.04, eauEcume));   // WFS-380 (RG-02) : eau f0 = 0,02 (écume 0,04)
     vec3 Fs = F_Schlick(f0, VoH);
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
@@ -115,6 +119,7 @@ void main() {
     float ombre = sunShadow(vWorld, N);
     vec3 col = diff * sun * NoL * ombre + min(spec * sun * NoL * ombre, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
     col += spotLights(vWorld, N, V, albedo, f0, metal, a, vtint);   // WFS-45 (aucun si spotN = 0)
+    if ((flags & F_EAU) != 0u && int(pc.params.z + 0.5) == 0) col += eauRefletsLampes(vWorld, N, V, a) * (1.0 - eauEcume);   // WFS-380 (RG-02)
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement
     vec3 R = reflect(-V, N);
@@ -130,6 +135,7 @@ void main() {
     // pièces fines (WFS-42) : le ciel reflété, et surtout le disque du soleil (60 x l'intensité), suivent la rugosité
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
+    if ((flags & F_EAU) != 0u) roughEnv = min(roughEnv, 0.12);   // WFS-380 (D1) : le ciel reflété au loin reste clair (pas de bande sombre)
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
     // WFS-263 (RG-01) : version légère de l'ambiance et du reflet (au-delà de 60 m), mélangée sur le fondu
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
@@ -147,6 +153,7 @@ void main() {
         iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     }
     if (kL > 0.0) { skyAmb = mix(skyAmb, skyAmbL, kL); env = mix(env, envL, kL); Fe = mix(Fe, FeL, kL); specOcc = mix(specOcc, specOccL, kL); }
+    if ((flags & F_EAU) != 0u) { Fe = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0); specOcc = 1.0; }   // WFS-380 (D1) : Fresnel de l'eau entier
     // WFS-269 (accroche) : occlusion du décor fixe précalculée au chargement (eclairage_precalcule.h), rangée dans la longueur de
     // la normale : ambiance et reflet du ciel seulement (le soleil, les lampes et les phares restent directs)
     if ((flags & F_AO) != 0u && !vtint) { float aoPre = clamp(length(vNrm), 0.0, 1.0); skyAmb *= aoPre; env *= aoPre; }
@@ -182,6 +189,7 @@ void main() {
         vernisPeinture(col, R, sun, NoV, NoH, NoL, aaKernel, specK);
     }
     float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
+    if ((flags & F_EAU) != 0u) alpha = eauAlpha;   // WFS-380 (RG-04) : sillage et éclaboussure en dentelle
     if ((flags & F_GLASS) != 0u) {
         vitre(col, alpha, albedo, skyAmb, R, sun, NoV, NoH, NoL);
     }

@@ -3719,3 +3719,44 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 08:55:14 — WFS-370 attribué à Claude, agent dev3d (01UY1Vv2Ph) (po-scrum-master)
 - Demande d'une nouvelle session `@dev3d` (session_01UY1Vv2PhsfqmJW55jpNKHd, aucun ticket avant : 1er sujet). WFS-363 venait d'être donné à une autre session (agent dev3d 6, 08:53) ; ticket suivant pour ce profil : **WFS-370** (P1, E15 file Ville, prêt ; plus petit numéro P1 prêt après 363).
 - Ticket : Ville, immeubles « boîtes » remplacés par de vrais volumes (toits, corniches, balcons, rez-de-chaussée, fenêtres en retrait, 30 à 50 % allumées la nuit). Zone : `src/world/archi_*`, `src/world/ville*.cpp`, `assets/world/modeles/**`, `assets/licences/` ; pas `plage.cpp` (WFS-380). Règles : `regles-de-gestion/WFS-370.md` + `regles-de-gestion/E15-decors.md`. **E15 : avis agent 3D « VALIDÉ » obligatoire avant la fusion.** Branche `feature/waforspeed-370`, inventaire au journal d'abord (partir de `qa/pr/WFS-369/inventaire.md`), captures avant / après jour et nuit, PR, appel de `@3d` puis du lead dev, arrêt de la session après la fusion.
+
+### 2026-11-10 09:11:58 — WFS-380 : B1 du lead dev corrigé, PR #326 en 🔁 (Claude, agent cartes (01UY1Vv4eo))
+- **Fait** (590aa2e7) :
+  - B1 : l'écume du bord suit l'agitation du lieu, il n'y a plus de blanc dans le port ni dans la rivière ;
+  - les 4 remarques non bloquantes sont traitées (commentaires, doublon retiré) ;
+  - 2e vue de la marina au banc (`mer-marina-bassin`).
+- **Synchronisation avec `main`** : brume (WFS-381) et phares de nuit (WFS-382), sans conflit.
+- **Vérification** : 98 tests CPU réussis ; 17 paires de captures refaites sur aabd7bd1.
+- **Suite** : 3e avis de l'agent 3D, puis lead dev.
+
+### 2026-11-10 09:29:53 — WFS-380 fusionné par le lead dev (lead-dev)
+- **PR #326**, 2e relecture sur aabd7bd1 : B1 (écume blanche dans le port) corrigé dans 590aa2e7 (écume du bord × `smoothstep(0,5 ; 0,9 ; agitation)`) ; pixel (1150, 700) de `mer-marina` : (205, 204, 202) → (18, 68, 77).
+- 34 captures ouvertes ; diff depuis 0a587856 lu (10 lignes + synchronisations avec main, résolution propre) ; construction et `tests_cpu.sh` refaits : 98/98.
+- « Avis agent 3D : VALIDÉ avec réserves » sur aabd7bd1. Revue « ✅ Approuvé » écrite dans la PR (en commentaire, même compte GitHub), puis fusion en squash : **f4546c8b**.
+- `TACHES.md` : WFS-380 en 🟡 À valider (utilisateur) (ANO-214, défaut vu par l'utilisateur) ; ligne de `suivi-pr.md` supprimée ; `qa/Check.md` à jour.
+- **Pour le PO** : réserves R7 (rides régulières au loin), R9 (reflet fort des lampadaires), R10 (trait blanc de l'éclaboussure) en tâches séparées ; description de la PR restée à « 96 tests / 15 captures » (98 / 17 en vrai), non bloquant.
+
+### 2026-11-10 09:30:39 — Fin WFS-380 : PR #326 fusionnée, session terminée (Claude, agent cartes (01UY1Vv4eo))
+- **Fusion** par le lead dev à la 2e revue (squash f4546c8b) ; « Avis agent 3D : VALIDÉ avec réserves » sur aabd7bd1. Ticket en 🟡 À valider (utilisateur).
+- **Réponse à l'utilisateur** dans `tache utilisateur.md`, sous sa question sur la mer.
+- **Pour le PO, réserves à mettre en tâches séparées** (RG-E15-09) :
+  - écume et rides encore « filées » de près (R7) ;
+  - reflets des façades et des coques (R1, R2) ;
+  - traînée du soleil plus nette (R3) ;
+  - reflet des lampadaires très fort près de la caméra la nuit (R9) ;
+  - trait blanc sous le dauphin (R10) et capture rapprochée de l'éclaboussure ;
+  - capture de l'écume contre des blocs dans l'eau et au pied de la falaise (R8) ;
+  - coût en Basse à mesurer sur le téléphone (R6, RG-07).
+- **À trancher par le PO** : RG-E15-01 (taille du décor) ne se mesure pas sur la Corniche, carte du code ; à voir avec WFS-386.
+- **Session terminée** : un seul ticket par session ; aucun autre ticket demandé.
+
+### 2026-11-10 09:36:47 — Suites de WFS-380 : WFS-400 et WFS-401 créés, décision sur la taille du décor (po-scrum-master)
+- Demande de la session terminée « Claude, agent cartes (01UY1Vv4eo) » (WFS-380 fusionné, #326, f4546c8b, 🟡), sur ordre de l'utilisateur (« Demande au PO »). Aucun nouveau ticket pour cette session (un seul sujet par session).
+- **Réserves en tâches séparées** (RG-E15-09), nouvelle file **« Eau commune »** de E15 (`shaders/eau.glsl`, `src/render/eau_*`), en parallèle de la file Corniche :
+  - **WFS-401** (P2, ⏳ Prêt) : R7 écume et rides « filées » de près, rides régulières au loin (`mer-sillage`) ; R3 traînée du soleil bas ; R10 trait blanc sous le dauphin + capture rapprochée de l'éclaboussure ; R8 capture de l'écume contre des blocs et au pied de la falaise. Règles : `regles-de-gestion/WFS-401.md`.
+  - **WFS-400** (P2, ⏳ En attente de WFS-401, mêmes fichiers) : R1 façades allumées (casino) ; R9 maillage du reflet du casino et reflet trop fort des lampadaires près de la caméra ; R2 coques de la marina ; R4 rivière de la Ville la nuit ; fin de la limite des 4 lampadaires de `nuit.cpp` pour les reflets. Règles : `regles-de-gestion/WFS-400.md`.
+  - **R6** (coût en Basse sur le téléphone) : pas de ticket, vérifié pendant la validation 🟡 de WFS-380 (suivi dans `regles-de-gestion/WFS-380.md`) ; baisse → anomalie et ticket E4.
+- **Décision RG-E15-01** (`regles-de-gestion/E15-decors.md`, `WFS-386.md` RG-11) : la taille 200 à 700 Mo ne se mesure **que dans les US « décor complet »** (WFS-385 à 389) ; les US intermédiaires notent seulement les Mo ajoutés. Carte du code sans `.wfcarte` : somme sur disque des actifs de décor utilisés par la carte (commande et dossiers dans la PR) ; paquet publié : partie décor du paquet.
+- **WFS-383** (sols, pins d'Alep) passe ⏳ Prêt : WFS-379 et 380 fusionnés (🟡). WFS-401 et 383 peuvent avancer en même temps (fichiers séparés ; 401 ≤ 10 lignes dans `plage.cpp`).
+- `track-agent.md` : ligne de Claude, agent cartes (01UY1Vv4eo) enlevée (session terminée).
+- Pas de session libre : WFS-401 et WFS-383 attendent une **nouvelle session** de développeur qui les demande.
