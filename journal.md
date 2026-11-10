@@ -2183,3 +2183,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-10 18:01:25 — WFS-414 : Golf 8 ajoutée (po-scrum-master)
 - Ordre de l'utilisateur : « Golf 8 aussi. » Périmètre de WFS-414 / ANO-241 : volants de la Mustang et de la Golf 8 GTI ; les 15 autres inchangés (captures M4 / 911 identiques).
+
+### 2026-11-10 18:03:33 — WFS-414 : Abarth 500 ajoutée (po-scrum-master)
+- Ordre de l'utilisateur : « Cinquina aussi » (Abarth 500). Périmètre de WFS-414 / ANO-241 : Mustang, Golf 8, Abarth 500 ; les 14 autres volants inchangés.
