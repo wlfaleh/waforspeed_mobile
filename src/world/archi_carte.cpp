@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <new>
 #include <vector>
 #include "../core/jobs.h"
 #include "../core/log.h"
@@ -132,7 +133,15 @@ public:
             mats_[S_VITRE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         }
         pret_ = true;
-        if (chargerCuit()) { initCuit(r, g); return; }
+        if (chargerCuit()) {
+            // RG-07 (condition du PO) : jamais de plantage par manque de mémoire : une réservation qui échoue rend tout et le kit reprend
+            bool ok = false;
+            try { ok = initCuit(r, g); } catch (const std::bad_alloc&) { ok = false; }
+            if (ok) return;
+            WFS_LOG("bâtiments (WFS-416) : mémoire insuffisante pour les bâtiments cuits : kit de secours (bâtiments construits par le code)");
+            rendreCuit(r);
+            g_cuit.pret = false; g_cuit.d = cuit::Lu{};
+        }
         precalcul::occlusionKit(g_bats.size(), [](size_t k, int lod, std::vector<Vertex>& v) {   // WFS-269 : murs, au chargement
             Cpu c; cuit::ajouter(g_bats[k], lod, Baies::Interrupteur, c.lot); v = sommets(c.lot[cuit::slot(MUR, g_bats[k].plan)]); });
         size_t tri = 0;
@@ -208,13 +217,10 @@ public:
     void shutdown(Renderer& r) override {
         for (auto& [c, m] : morceaux_) for (Mesh& x : m.m) if (x.indexCount) r.destroy(x);
         for (auto& x : cimetiere_) r.destroy(x.second);
-        for (MorceauCuit& m : cuits_) for (auto& lot : m.m) for (Mesh& x : lot) if (x.indexCount) r.destroy(x);
-        for (Reserve& x : reserves_) for (Mesh& y : x.m) if (y.vb.buf) r.destroy(y);
+        rendreCuit(r);
         if (pret_) for (Material& m : mats_) r.destroy(m);
-        for (Image* im : {&atlasCouleur_, &atlasRelief_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
-        morceaux_.clear(); cimetiere_.clear(); cuits_.clear(); murs0_.clear();
-        for (Reserve& x : reserves_) x = Reserve{};
-        pret_ = cuit_ = false;
+        morceaux_.clear(); cimetiere_.clear();
+        pret_ = false;
         vider();   // la carte suivante pose ses propres bâtiments (ou aucun : anciennes boîtes)
     }
 
@@ -222,7 +228,7 @@ private:
     // WFS-416 (RG-03) : au chargement, les niveaux 1 et 2 de tous les morceaux vont dans la carte graphique (maillages fixes) et les
     // tampons du niveau 0 sont réservés ; l'occlusion précalculée des murs (WFS-269) est appliquée ici, comme le faisait le kit.
     // Ensuite plus rien n'est construit ni créé : le niveau 0 des morceaux proches est recopié du paquet dans les tampons réservés.
-    void initCuit(Renderer& r, const GameView& g) {
+    bool initCuit(Renderer& r, const GameView& g) {
         const cuit::Lu& d = g_cuit.d;
         atlasCouleur_ = r.vk().uploadTexture(d.octets->data() + d.posCouleur, d.atlasL, d.atlasH, true);
         atlasRelief_ = r.vk().uploadTexture(d.octets->data() + d.posRelief, d.atlasL, d.atlasH, false);
@@ -244,6 +250,7 @@ private:
                 lotCuit(l, v, &i);
                 if (s < NS && n == 1) precalcul::appliquerKit(k * (size_t)NS + (size_t)s, 1, v, 0);
                 cuits_[k].m[(size_t)n - 1][(size_t)s] = r.makeMesh(v, i, false);
+                if (!cuits_[k].m[(size_t)n - 1][(size_t)s].vb.buf) return false;
                 fixes += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
             }
             for (int s = 0; s < NS; s++) {   // murs du niveau 0, occlusion appliquée, gardés en mémoire vive (recopiés tels quels en course)
@@ -256,6 +263,7 @@ private:
             v.assign(d.nvMax[s], Vertex{}); i.assign(d.niMax[s], 0);
             x.m[(size_t)s] = r.makeMesh(v, i, true);
             x.m[(size_t)s].indexCount = 0;
+            if (!x.m[(size_t)s].vb.mapped || !x.m[(size_t)s].ib.mapped) return false;
             reserves += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
         }
         cuit_ = true;
@@ -265,6 +273,16 @@ private:
         }
         WFS_LOG("bâtiments (WFS-416) : %zu morceaux prêts dans la carte graphique : niveaux 1 et 2 fixes %.1f Mo, %d tampons du niveau 0 %.1f Mo, atlas %ux%u ; aucune construction en course",
                 cuits_.size(), fixes / 1048576.0, RESERVES, reserves / 1048576.0, d.atlasL, d.atlasH);
+        return true;
+    }
+    // rend tout ce que le paquet cuit a réservé (fin de partie, ou repli sur le kit si la mémoire manque)
+    void rendreCuit(Renderer& r) {
+        for (MorceauCuit& m : cuits_) for (auto& lot : m.m) for (Mesh& x : lot) if (x.vb.buf) r.destroy(x);
+        for (Reserve& x : reserves_) { for (Mesh& y : x.m) if (y.vb.buf) r.destroy(y); x = Reserve{}; }
+        if (mats_[S_IMAGE].set) { r.destroy(mats_[S_IMAGE]); mats_[S_IMAGE] = Material{}; }
+        for (Image* im : {&atlasCouleur_, &atlasRelief_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
+        cuits_.clear(); murs0_.clear();
+        cuit_ = false;
     }
 
     // ---- niveau 0 du paquet cuit : tampons réservés, remplis par recopie (aucune allocation, aucune construction)
