@@ -3478,7 +3478,6 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : b4e3a106. Statut 🟡 À valider (utilisateur) : le ticket vient de la capture d'APK de l'utilisateur (bancs en pavés) et d'ANO-216.
 - Tâches séparées demandées au PO (RG-07 / RG-E15-09) : R1 eau de la fontaine (ANO-214) ; R2 affiche d'abribus vide et non éclairée la nuit ; R4 éclairage du parc la nuit (E13) ; plaque de rue bleue unie des feux (WFS-385) ; mesure sur téléphone des +44 % de triangles en Basse (WFS-321 / 331).
 
-
 ### 2026-11-10 00:43:03 — WFS-396 fusionné par le lead dev (lead-dev)
 - PR #325 relue (commit 19d49424) : 30 captures ouvertes, diff complet lu (fiches réelles `remplacants-wfs396.json`, rapport RG-08, une ligne de suivi), rien dans `src/`, `tools/`, `assets/`. Construction et 94 tests CPU verts sur la branche ; `test_fidelite` 0 défaut.
 - Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », même compte GitHub), fusion en squash fdcb7254. Statut 🟣 ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
@@ -3488,3 +3487,12 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Le lead dev a relu les 30 captures et le diff, et a fusionné. Refus motivé pour les deux places (±1 %), rien de branché ; la suite est dans WFS-397 (PO).
 - Remarques du lead dev pour WFS-397 : la hauteur de la W212 est à −2,7 % après l'échelle de `corriger_voitures` (−2,3 % avant l'échelle) ; les captures de nuit (`WFS_VITRINE_NUIT`) seront obligatoires ; tous les logos et noms des candidats sont à effacer avant le branchement.
 - Session terminée (un seul ticket) : aucun autre ticket demandé.
+
+### 2026-11-10 00:43:29 — WFS-369 : réserves de la PR #324 en tâches séparées, WFS-398 et WFS-399 créés (po-scrum-master)
+- Demande de Claude, agent dev3d 3 (01UY1Vv5WS), à la fin de WFS-369 (fusionné, #324, b4e3a106, 🟡 à valider). Session close : **aucun autre ticket** pour elle (un sujet par session) ; ligne de `track-agent.md` en « ⏹️ Terminé (session close) ».
+- Décisions (RG-07 de WFS-369, RG-E15-09, ordre du 2026-11-09 « on ne jette pas un travail pour un petit défaut ») :
+  - R1 eau des fontaines plate cyan, vasque sans eau qui coule, jet de l'îlot inchangé → **ANO-235**, **WFS-398** (P2, E15 Ville + réglage de l'eau de WFS-380 ; après WFS-380 et 370).
+  - R2 affiche d'abribus vide et panneau non éclairé la nuit → **ANO-236** ; R4 parc presque invisible la nuit → **ANO-237** ; plaque bleue de nom de rue unie (lambda `mat` de `ville.cpp`) → **ANO-238** ; optiques des feux éteintes de jour → **ANO-239** : un seul lot **WFS-399** (P2, E15 Ville ; après WFS-370). La plaque de rue, proposée pour WFS-385, va dans WFS-399 (même mobilier, même lot, pas de micro-ticket).
+  - Mobilier absent (poubelles, bornes, kiosques, barrières) : RG ajoutée à **WFS-385**.
+  - Performance (+44 % de triangles, Ville de nuit Basse, 260 k → 375 k, sans baisse au banc PC) : pas de ticket ; mesure sur téléphone ajoutée aux règles de **WFS-321** et **WFS-331**, et au budget de WFS-385.
+- **WFS-370** (immeubles de la Ville) passe ⏳ Prêt (WFS-369 fusionné). File Ville de E15 : 370 → 399 / 385 ; 398 attend aussi WFS-380.
