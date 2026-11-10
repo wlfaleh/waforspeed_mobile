@@ -1142,7 +1142,8 @@ public:
                     // WFS-380 (RG-05) : rivière calme entre deux quais : distance au quai le plus proche (le long de la route)
                     auto dq = [&](int64_t k) { return (float)((double)std::min(k - riv_.d0 - 1, riv_.d1 - 1 - k) * SEG_M); };
                     const float q0 = dq(seg), q1 = dq(seg + 1);
-                    eau::quad(out[P_EAU], {Wa(s0, sd * (R + PONT_CORN)), Wa(s0, sd * (R + 264.f)), Wa(s1, sd * (R + 264.f)), Wa(s1, sd * (R + PONT_CORN))}, {q0, q0, q1, q1}, eau::PENTE_QUAI, eau::AGIT_RIVIERE);
+                    eau::quad(out[P_EAU], {Wa(s0, sd * (R + PONT_CORN)), Wa(s0, sd * (R + 264.f)), Wa(s1, sd * (R + 264.f)), Wa(s1, sd * (R + PONT_CORN))}, {q0, q0, q1, q1},
+                              {R + PONT_CORN, R + 264.f, R + 264.f, R + PONT_CORN}, eau::PENTE_RIVIERE, eau::AGIT_RIVIERE, true);
                 }
                 // quais : murs de béton face à l'eau, du fond jusqu'au profil des bas-côtés (Game : 0,13 / 0 / −0,8 / −6 m)
                 // (mur dans le plan du premier et du dernier segment noyés ; haut : bas-côtés du segment voisin, hors de l'eau, + 0,3 m)

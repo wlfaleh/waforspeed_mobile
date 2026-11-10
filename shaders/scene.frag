@@ -135,6 +135,7 @@ void main() {
     // pièces fines (WFS-42) : le ciel reflété, et surtout le disque du soleil (60 x l'intensité), suivent la rugosité
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
+    if ((flags & F_EAU) != 0u) roughEnv = min(roughEnv, 0.12);   // WFS-380 (D1) : le ciel reflété au loin reste clair (pas de bande sombre)
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
     // WFS-263 (RG-01) : version légère de l'ambiance et du reflet (au-delà de 60 m), mélangée sur le fondu
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
@@ -152,6 +153,7 @@ void main() {
         iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     }
     if (kL > 0.0) { skyAmb = mix(skyAmb, skyAmbL, kL); env = mix(env, envL, kL); Fe = mix(Fe, FeL, kL); specOcc = mix(specOcc, specOccL, kL); }
+    if ((flags & F_EAU) != 0u) { Fe = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0); specOcc = 1.0; }   // WFS-380 (D1) : Fresnel de l'eau entier
     // WFS-269 (accroche) : occlusion du décor fixe précalculée au chargement (eclairage_precalcule.h), rangée dans la longueur de
     // la normale : ambiance et reflet du ciel seulement (le soleil, les lampes et les phares restent directs)
     if ((flags & F_AO) != 0u && !vtint) { float aoPre = clamp(length(vNrm), 0.0, 1.0); skyAmb *= aoPre; env *= aoPre; }

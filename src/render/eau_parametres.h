@@ -1,9 +1,9 @@
 // WaForSpeed — WFS-380 : paramètres de l'eau du jeu (une seule eau, shaders/eau.glsl) et sommets qui les portent.
-// RG-05 : mer de la Corniche, bassin de la marina, rivière et port de la Ville, sillages : même matériau MAT_EAU ; chaque lieu
-// donne ses réglages dans les sommets de sa surface, sans shader à part :
-//   uv.x = distance au bord de l'eau (m, négative sous le sable), uv.y = pente du fond (m de profondeur par m de large),
-//   longueur de la normale (vers le haut) = agitation (1 pleine mer). Le shader en tire la profondeur (RG-03), l'écume du bord (RG-04)
-//   et la hauteur des vagues (RG-01).
+// RG-05 : mer de la Corniche, bassin de la marina, rivière de la Ville, sillages : même matériau MAT_EAU ; chaque lieu donne ses
+// réglages dans les sommets de sa surface, sans shader à part :
+//   uv.x = distance au bord de l'eau (m, négative sous le sable), uv.y = abscisse le long du bord (m : lignes d'écume parallèles au bord) ;
+//   normale = (pente du fond, ±agitation, 0) : |xz| = pente (m de profondeur par m de large), |y| = agitation (1 pleine mer),
+//   y < 0 = eau douce trouble (rivière). Le shader en tire la profondeur (RG-03), l'écume du bord (RG-04) et les vagues (RG-01).
 #pragma once
 #include <cmath>
 #include <cstdint>
@@ -15,18 +15,27 @@ namespace wfs::eau {
 
 // lieux (agitation) et fonds (pente)
 constexpr float AGIT_MER = 1.f, AGIT_PORT = 0.3f, AGIT_RIVIERE = 0.15f;
+constexpr float PENTE_RIVIERE = 0.25f;   // berges de la rivière (vase), 4 m de fond au plus (shader)
 // sable (plage méditerranéenne : 1 à 3 % ; 3 % → 1,5 m de fond à 50 m du bord), roche (éboulis, pied de falaise), quai (mur vertical)
 constexpr float PENTE_SABLE = 0.03f, PENTE_ROCHE = 0.3f, PENTE_QUAI = 1.f;
 
-// sommet de surface d'eau : normale vers le haut de longueur = agitation
-inline Vertex sommet(vec3 p, float distBord, float pente, float agitation) {
-    return {p.x, p.y, p.z, 0, agitation, 0, distBord, pente};
+// sommet de surface d'eau (voir l'en-tête) ; trouble : eau douce chargée (rivière)
+inline Vertex sommet(vec3 p, float distBord, float abscisse, float pente, float agitation, bool trouble = false) {
+    return {p.x, p.y, p.z, pente, trouble ? -agitation : agitation, 0, distBord, abscisse};
 }
-// quad d'eau (a, b, c, d dans l'ordre du quad, distances au bord à chaque coin) ; G : maillage avec v (Vertex) et i (indices)
+// quad d'eau (a, b, c, d dans l'ordre du quad ; distance au bord et abscisse le long du bord à chaque coin) ; Geo : v (Vertex) et i
 template <class Geo>
-void quad(Geo& g, const vec3 (&p)[4], const float (&dist)[4], float pente, float agitation) {
+void quad(Geo& g, const vec3 (&p)[4], const float (&dist)[4], const float (&abscisse)[4], float pente, float agitation, bool trouble = false) {
     const uint32_t k = (uint32_t)g.v.size();
-    for (int j = 0; j < 4; j++) g.v.push_back(sommet(p[j], dist[j], pente, agitation));
+    for (int j = 0; j < 4; j++) g.v.push_back(sommet(p[j], dist[j], abscisse[j], pente, agitation, trouble));
+    g.i.insert(g.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
+}
+// D5 (avis de l'agent 3D) : nappe du ressac posée sur le sable (mode 3), un quad par morceau de plage : uv.x = remontée sur la
+// plage depuis le bord (m), uv.y = abscisse le long du bord ; normale vers le haut (non lue)
+template <class Geo>
+void nappe(Geo& g, const vec3 (&p)[4], const float (&remontee)[4], const float (&abscisse)[4]) {
+    const uint32_t k = (uint32_t)g.v.size();
+    for (int j = 0; j < 4; j++) g.v.push_back({p[j].x, p[j].y, p[j].z, 0, 1, 0, remontee[j], abscisse[j]});
     g.i.insert(g.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
 }
 
@@ -58,7 +67,7 @@ void eclaboussure(Geo& g, int n = 14) {
 }
 
 // modes du matériau (cutoff) : surface, sillage, éclaboussure (shaders/eau.glsl)
-constexpr float MODE_SURFACE = 0, MODE_SILLAGE = 1, MODE_ECLABOUSSURE = 2;
+constexpr float MODE_SURFACE = 0, MODE_SILLAGE = 1, MODE_ECLABOUSSURE = 2, MODE_NAPPE = 3;
 inline Material materiau(float mode, bool transparent) {
     Material m; m.color = {1, 1, 1, 1}; m.rough = 0.1f; m.metal = 0; m.cutoff = mode;
     m.flags = MAT_EAU | MAT_DOUBLE | (transparent ? MAT_BLEND : 0u);

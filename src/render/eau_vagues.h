@@ -7,9 +7,14 @@ namespace wfs::eau {
 // RG-01 : vagues (mêmes valeurs que EAU_VAGUES de shaders/eau.glsl ; test_eau vérifie qu'elles sont identiques)
 struct Vague { float dx, dz, longueur, amplitude; };
 constexpr Vague VAGUES[8] = {
-    {0.9659f, 0.2588f, 28.0f, 0.110f}, {0.8090f, 0.5878f, 19.0f, 0.085f}, {0.9945f, -0.1045f, 14.5f, 0.070f},
-    {0.5592f, 0.8290f, 9.3f, 0.040f},  {0.8746f, -0.4848f, 6.1f, 0.034f}, {0.3420f, 0.9397f, 3.7f, 0.026f},
-    {0.6947f, -0.7193f, 2.3f, 0.019f}, {0.4226f, 0.9063f, 1.4f, 0.012f}};
+    {0.9781f, 0.2079f, 28.0f, 0.110f},
+    {0.6157f, 0.7880f, 19.0f, 0.085f},
+    {0.8290f, -0.5592f, 14.5f, 0.070f},
+    {0.1045f, 0.9945f, 9.3f, 0.040f},
+    {0.4540f, -0.8910f, 6.1f, 0.034f},
+    {0.8910f, 0.4540f, 3.7f, 0.026f},
+    {-0.3907f, 0.9205f, 2.3f, 0.019f},
+    {-0.1392f, -0.9903f, 1.4f, 0.012f}};
 constexpr float G = 9.81f;
 constexpr int VAGUES_BASSE = 4;   // RG-07 : en Basse, les 4 plus longues ; les autres passent dans la rugosité
 

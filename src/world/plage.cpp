@@ -183,6 +183,7 @@ enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P
            P_PAILLE, P_BOIS, P_VITRINE, P_VITRINE_F, P_NEONR, P_TXT_CHAUD, P_TXT_ROSE, P_TXT_FROID,
            P_TROTTOIR, P_GIR,   // WFS-248 : trottoirs de Game redessinés ici (coupés au giratoire), asphalte de l'anneau
            P_RIVAGE,            // WFS-380 (RG-09) : blocs et galets du rivage (calcaire gris patiné)
+           P_NAPPE,             // WFS-380 (D5) : nappe du ressac et sable mouillé sur la plage (transparente)
            P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
@@ -530,6 +531,7 @@ public:
         mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
         // WFS-380 : vraie eau (shaders/eau.glsl) : la couleur vient de la profondeur et du ciel, plus d'aplat #1e7fa8
         mats_[P_OCEAN] = r.makeMaterial(eau::materiau(eau::MODE_SURFACE, false), nullptr, nullptr, nullptr);
+        mats_[P_NAPPE] = r.makeMaterial(eau::materiau(eau::MODE_NAPPE, true), nullptr, nullptr, nullptr);   // D5 : ressac sur le sable
         // WFS-81 : boules des lampadaires, part propre (neonK du jeu web : allumées la nuit, 0,5 de jour, comme CarteDecor)
         Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE; mn.emissive = linHex(0xffd9a8) * (night_ ? 2.f : 0.5f);
         mats_[P_NEON] = r.makeMaterial(mn, &palTex_, nullptr, nullptr);
@@ -2323,7 +2325,24 @@ public:
                 const float e0 = bordEau(b0, n, m0, t2 ? OCEAN_Y - (float)t.pose(a).y : OCEAN_Y);
                 const float e1 = bordEau(b1, n1, m1, t2 ? OCEAN_Y - (float)t.pose(a + 1).y : OCEAN_Y);
                 const float pente = penteFond(map, a), agit = agitation(map, a);
-                eau::quad(out[P_OCEAN], {Q(s0, m0), Q(s0, f0), Q(s1, f1), Q(s1, m1)}, {m0 - e0, f0 - e0, f1 - e1, m1 - e1}, pente, agit);
+                const float l0 = (float)((double)a * SEG_M), l1 = (float)((double)(a + 1) * SEG_M);   // abscisse le long du bord (m)
+                eau::quad(out[P_OCEAN], {Q(s0, m0), Q(s0, f0), Q(s1, f1), Q(s1, m1)}, {m0 - e0, f0 - e0, f1 - e1, m1 - e1}, {l0, l0, l1, l1}, pente, agit);
+                // D5 (avis de l'agent 3D) : plage de sable : nappe du ressac posée sur le sable, de 0,5 m dans l'eau à 4 m sur la plage
+                // (bord irrégulier, sable mouillé qui sèche) : le trait de côte n'est plus une droite
+                if (!lod && pente < 0.08f && agit > 0.6f && e0 < m0 + 30 && e1 < m1 + 30) {
+                    const float mer0 = t2 ? OCEAN_Y - (float)t.pose(a).y : OCEAN_Y, mer1 = t2 ? OCEAN_Y - (float)t.pose(a + 1).y : OCEAN_Y;
+                    auto H = [&](const Band* b, int nb, float lat, float mer) {   // hauteur du sable (ou de l'eau) + 3 cm
+                        float y = mer;
+                        for (int k = 0; k < nb; k++) if (lat >= b[k].a && lat <= b[k].b && b[k].b > b[k].a) y = b[k].ya + (b[k].yb - b[k].ya) * (lat - b[k].a) / (b[k].b - b[k].a);
+                        return std::max(y, mer) + 0.03f;
+                    };
+                    const float rr[3] = {-0.5f, 0.f, 4.f};
+                    for (int k = 0; k < 2; k++) {
+                        const float la0 = e0 - rr[k], la1 = e0 - rr[k + 1], lb0 = e1 - rr[k], lb1 = e1 - rr[k + 1];
+                        eau::nappe(out[P_NAPPE], {P(s0, la0, H(b0, n, la0, mer0)), P(s0, la1, H(b0, n, la1, mer0)), P(s1, lb1, H(b1, n1, lb1, mer1)), P(s1, lb0, H(b1, n1, lb0, mer1))},
+                                   {rr[k], rr[k + 1], rr[k + 1], rr[k]}, {l0, l0, l1, l1});
+                    }
+                }
                 // WFS-380 (RG-09, ANO-218) : côte rocheuse et pied de falaise (hors port) : blocs d'enrochement tous les 3,6 m et galets
                 // tous les 2,4 m, à moitié dans l'eau autour du trait de côte (morceaux détaillés seulement)
                 if (!lod && pente >= 0.15f && agit > 0.6f && !rochersRivage_.empty()) {
@@ -3039,6 +3058,15 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
         g.init(r, "golf", "plage"); g.render(404); g.shutdown();
     }
     vue("mer-sillage", "midi", dos, R + 3, 8.f, dos, R + 75, merY, 14, {404.0}, &g_bateaux.jetPos);
+    // éclaboussure d'un dauphin qui sort de l'eau (RG-04) : 0,15 s après la sortie, depuis la promenade (champ de 14°)
+    {
+        setenv("WFS_MOMENT", "jour", 1); unsetenv("WFS_DEPART");
+        g.init(r, "golf", "plage"); const OuAnimaux ou = g_animaux; g.shutdown();
+        if (ou.dauphinSeg >= 0)
+            vue("mer-eclaboussure", "midi", ou.dauphinSeg - (int64_t)(30 / SEG_M), R + 3, 1.85f, ou.dauphinSeg, ou.dauphinLat, OCEAN_Y + 0.3f, 14,
+                {37.0 * plage::DAUPHIN_P + 0.15});
+        else WFS_ERR("banc mer : aucun dauphin pour mer-eclaboussure");
+    }
     // côte rocheuse (RG-09) : blocs d'enrochement et galets au bord de l'eau, écume contre la roche, vue depuis l'eau (2,5 m)
     int64_t roc = -1;
     for (int64_t a = 200; a + 200 < L && roc < 0; a += 5) if (!std::strcmp(zoneId(carte, a, L), "rochers") && !std::strcmp(zoneId(carte, a + 60, L), "rochers")) roc = a + 30;
@@ -3046,7 +3074,7 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
         vue("mer-rochers", "midi", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
         vue("mer-rochers-nuit", "nuit", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
     } else WFS_ERR("banc mer : aucune côte rocheuse");
-    // RG-05 : la même eau dans la Ville : rivière sous le pont, vue penchée au-dessus du garde-corps, regard vers l'aval, jour et nuit
+    // RG-05 : la même eau dans la Ville : rivière sous le pont, vue depuis l'eau vers le pont et ses quais, jour et nuit
     if (trace::carteActive("ville")) {
         Track tv; tv.build(mapById("ville"), trace::versionCarte("ville"));
         int64_t pont = -1, pontFin = -1;
@@ -3059,9 +3087,10 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
             setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, mil - 30)).c_str(), 1);
             g.init(r, "golf", "ville"); g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course); g.modeManette = true;
             for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
-            // œil penché au-dessus du garde-corps, hors des arcs du pont (R + 7 m, 2 m au-dessus du tablier)
-            const TrackPoint o = tv.point((double)mil * SEG, R + 7.f), c = tv.point((double)(mil + (int64_t)(30 / SEG_M)) * SEG, R + 90);
-            eau::vueBanc(true, {(float)o.x, (float)o.y + 2.f, (float)o.z}, {(float)c.x, (float)tv.point((double)mil * SEG, 0).y - 5.5f, (float)c.z}, 60);
+            // depuis la rivière (60 m en aval, 2,5 m au-dessus de l'eau), regard vers le pont : le tablier, les deux quais, l'eau trouble
+            const float yEau = (float)tv.point((double)mil * SEG, 0).y - 5.5f;
+            const TrackPoint o = tv.point((double)mil * SEG, R + 60), c = tv.point((double)mil * SEG, 0);
+            eau::vueBanc(true, {(float)o.x, yEau + 2.5f, (float)o.z}, {(float)c.x, yEau + 2.f, (float)c.z}, 70);
             for (int i = 0; i < 90; i++) g.render(402.4 + i / 60.0);
             g.render(403.98); g.render(404); r.capturePng(out + "/" + nom + ".png");
             WFS_LOG("capture %s : rivière de la Ville sous le pont", nom.c_str());
