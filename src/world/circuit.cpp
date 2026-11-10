@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include <unordered_map>
 #include "../game/course_system.h"   // WFS-140 : décompte (feux de départ allumés un par un)
 #include "../game/trace_cartes.h"    // WFS-140 : sections du tracé 2, état des feux de départ
@@ -38,7 +39,7 @@ namespace {
 enum { T_TIRES = CarteDecor::T_CARTE, T_ADBOARD, T_STAND, T_PITWALL, T_GARAGE, T_FLAG, T_MARSHAL,
        // WFS-140
        T_FREIN, T_PORTIQUE, T_GRILLE, T_PASSERELLE, T_CAMION, T_ACCUEIL, T_TOUR, T_HELICO, T_STANDFAN, T_ROUE, T_TENTE,
-       T_GRILLAGE };
+       T_GRILLAGE, NB_SORTES };
 // WFS-140 : textes de l'atlas en plus d'AD_TEXTS (panneaux de freinage, enseignes)
 const char* const TEXTES[8] = {"150", "100", "50", "VIP", "BAR", "ESPACE FANS", "CAMPING", "PADDOCK"};
 enum { TX_150, TX_100, TX_50, TX_VIP, TX_BAR, TX_FANS, TX_CAMPING, TX_PADDOCK };
@@ -84,10 +85,12 @@ public:
     void init(Renderer& r, const GameView& g) override {
         basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = tribunes_ = spectateurs_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
         parois::effacer("circuit");   // WFS-275 (accroche)
+        for (int& v : poses_) v = 0;   // WFS-373
         CarteDecor::init(r, g);
         for (auto& T : ad_) T = {};
         if (!active_) return;
         WFS_LOG("Circuit (WFS-140) : décor des zones : %d objet(s) refusé(s) (sur une autre chaussée ou cachant un virage)", refuses_ - refusesSec_);
+        journalSortes();   // WFS-373 (RG-01)
         creerAnimes(r);   // WFS-140 : feux de départ, grande roue, drapeaux, oiseaux
         for (const char* t : AD_TEXTS) atlas_.ajouter(t);
         for (const char* t : TEXTES) atlas_.ajouter(t);
@@ -263,13 +266,24 @@ protected:
         // rien de haut du côté intérieur d'un virage serré dans les 60 m qui le précèdent
         if (!it.petit && lat < 60 && !cache_.empty() && (cache_[(size_t)m] & bit)) return false;
         if (basse_ && it.petit && section && (impair_++ & 1)) return false;
-        item(n, it);
+        item(n, it); compte(it.t);
         refuses_--; if (section) { refusesSec_--; posesSec_++; }
         if (it.t == T_PITWALL || it.t == T_GARAGE || it.t == T_STAND)   // WFS-275 (accroche) : murs qui renvoient le son (mur des stands vitré 2,7 m)
             parois::declarer("circuit", len(), it.t == T_PITWALL ? n : n + (int64_t)std::lround(it.l / SEG_M / 2), it.side, it.lat,
                              it.t == T_PITWALL ? 2.7f : it.t == T_GARAGE ? 7.f : hauteurRang(it.k - 1) + 2.f, it.t == T_PITWALL ? 3 * (float)SEG_M : it.l,
                              it.t == T_PITWALL ? 0.4f : it.t == T_GARAGE ? 12.f : it.k * RANG, it.t == T_GARAGE ? parois::ALPHA_DUR : parois::ALPHA_BETON);   // WFS-278 : obstacle, matériau
         return true;
+    }
+
+    // WFS-373 (RG-01) : objets posés par sorte (inventaire écrit au journal du banc)
+    void compte(int t) { if (t >= 0 && t < NB_SORTES) poses_[t]++; }
+    void journalSortes() const {
+        static const char* const NOMS[NB_SORTES] = {"arbre", "touffe", "projecteur", "mur de pneus", "panneau publicitaire", "tribune", "mur des stands",
+            "garage des stands", "drapeau", "poste de commissaire", "panneau de freinage", "portique de départ", "grille de départ", "passerelle",
+            "camion", "bar d'accueil", "tour de contrôle", "hélicoptère", "stand de l'espace fans", "grande roue", "tente", "grillage"};
+        std::string t;
+        for (int k = 0; k < NB_SORTES; k++) if (poses_[k]) t += std::string(t.empty() ? "" : ", ") + NOMS[k] + " " + std::to_string(poses_[k]);
+        WFS_LOG("Circuit (WFS-373) : objets posés par sorte : %s", t.c_str());
     }
 
     void preparer() {
@@ -365,9 +379,9 @@ protected:
         if (feux) {
             const int64_t d = feux->debut, fin = std::min<int64_t>(d + 620, feux->fin + 600);
             reserver(d - 8, fin, 3);
-            for (int k = 0; k < 10; k++) { Item it = objet(T_GRILLE, k % 2 ? 1 : -1, R * 0.5f); item(d + 4 + k * 7, it); }
+            for (int k = 0; k < 10; k++) { Item it = objet(T_GRILLE, k % 2 ? 1 : -1, R * 0.5f); item(d + 4 + k * 7, it); compte(T_GRILLE); }
             portique_ = mod(d + 30);
-            { Item it = objet(T_PORTIQUE, 1, 0); item(d + 30, it); }   // 36 m devant la ligne : visible depuis la grille
+            { Item it = objet(T_PORTIQUE, 1, 0); item(d + 30, it); compte(T_PORTIQUE); }   // 36 m devant la ligne : visible depuis la grille
             const int pad = -1;   // paddock à gauche, tribunes à droite
             for (int64_t n = d; n < fin; n += 3) poser(n, objet(T_PITWALL, pad, R + 1.4f, true), true);
             { Item it = objet(T_TOUR, pad, R + 12); poser(d + 2, it, true); }
@@ -417,7 +431,7 @@ protected:
             // WFS-199 (RG-01) : plus de tribune dans la pente : panneaux publicitaires à la place
             for (int64_t n = montee->debut + 20; n < montee->fin - 10; n += 20) { Item a = objet(T_ADBOARD, ext, R + 5); a.col = (int)((n / 20) % 4); poser(n, a, true); }
             pneus(montee->debut, montee->fin, ext, R + 5.6f);
-            Item p = objet(T_PASSERELLE, 1, 0); p.col = 0; item(montee->fin, p);
+            Item p = objet(T_PASSERELLE, 1, 0); p.col = 0; item(montee->fin, p); compte(T_PASSERELLE);
             for (int64_t n = montee->debut + 10; n < montee->fin; n += 40) lampe(n, -ext);
         }
         // ---------- RG-05 : espace fans (grande roue, stands) après la 1re chicane ; camping après le virage suivant
@@ -818,6 +832,7 @@ private:
     bool pret_ = false, basse_ = false;
     int refuses_ = 0, refusesSec_ = 0, posesSec_ = 0, tribunes_ = 0, spectateurs_ = 0;   // WFS-199 : tribunes et spectateurs posés   // journal : objets refusés (décor des zones et des sections)
     unsigned impair_ = 0;
+    int poses_[NB_SORTES] = {};   // WFS-373 : objets posés par sorte
     std::vector<float> libre_;                 // place libre de chaque côté de chaque segment (2 par segment)
     std::vector<uint8_t> reserve_, cache_, coin_;
     int64_t portique_ = -1;                    // segment du portique des feux de départ
