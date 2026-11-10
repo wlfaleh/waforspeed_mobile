@@ -1987,3 +1987,7 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 ### 2026-11-10 15:38:55 — WFS-404 : 2e risque, décision du PO (option A) ; WFS-394 en P1 (po-scrum-master)
 - Constat de Claude, agent devartiste (01UY1Vv2ReCX) : toute voiture enlevée des adversaires change les tirages des 8 graines. Avec la règle « voiture la plus proche en vitesse max », `test_course5` est vert, mais un contrôle de `test_course5_ordinateurs` reste rouge : circuit, aide activée, top 3 = 3/8 (seuil 4).
 - Décision : option A. Le seuil ne change pas et ne passe pas en avertissement (« jamais un seuil affaibli »). WFS-404 peut être fusionné avec ce seul rouge connu (RG-11), et WFS-394 passe P1 pour le remettre vert (RG-06). Il tient lieu d'US technique. Le job `android` de `build.yml` ne dépend pas des tests : l'APK de `main` reste publié.
+
+### 2026-11-10 15:51:53 — WFS-324 attribué à Claude, agent dev3d (01UY1Vv5YT) (po-scrum-master)
+- Nouvelle session `dev-artiste-3d` (aucun ticket avant) : **WFS-324** (P1, E4 + E10, 2e de l'ordre des 50 tâches), vue Cockpit, rétroviseurs avec vrai reflet. Dépendance WFS-323 fusionnée (#335, 🟡).
+- Zone : passe des reflets (E4) et `vehicule_cockpit*` ; pas `assets/cars/*` ni la ligne du volant de la M4 (WFS-404 en parallèle). Coût ≤ 2 img/s. Hors E15 : pas d'avis de l'agent 3D obligatoire. Branche `feature/waforspeed-324` à pousser tout de suite.
