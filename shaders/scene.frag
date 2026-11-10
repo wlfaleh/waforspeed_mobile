@@ -24,6 +24,7 @@ const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F
 #include "route.glsl"       // E9 Routes
 #include "decor.glsl"       // E12 Environnements
 #include "vehicule.glsl"    // E10 Véhicules
+#include "eau.glsl"         // WFS-380 : eau (mer, port, rivière, sillages)
 
 void main() {
     uint flags = uint(pc.params.w + 0.5);
@@ -88,6 +89,8 @@ void main() {
     } else if ((flags & F_FACADE) != 0u) {
         surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }
+    float eauEcume = 0.0, eauAlpha = 1.0;   // WFS-380 : eau (vagues, couleur selon la profondeur, écume)
+    if ((flags & F_EAU) != 0u) eauEcume = surfaceEau(base, rough, metal, N, V, eauAlpha);
 
     vec3 L = normalize(F.sunDir.xyz);
     vec3 H = normalize(V + L);
@@ -108,6 +111,7 @@ void main() {
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
     if (wetRoad) f0 = vec3(mix(0.04, 0.02, flaque));   // WFS-142 (RG-03) : eau des flaques f0 = 0,02
+    if ((flags & F_EAU) != 0u) f0 = vec3(mix(0.02, 0.04, eauEcume));   // WFS-380 (RG-02) : eau f0 = 0,02 (écume 0,04)
     vec3 Fs = F_Schlick(f0, VoH);
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
@@ -115,6 +119,7 @@ void main() {
     float ombre = sunShadow(vWorld, N);
     vec3 col = diff * sun * NoL * ombre + min(spec * sun * NoL * ombre, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
     col += spotLights(vWorld, N, V, albedo, f0, metal, a, vtint);   // WFS-45 (aucun si spotN = 0)
+    if ((flags & F_EAU) != 0u && int(pc.params.z + 0.5) == 0) col += eauRefletsLampes(vWorld, N, V, a) * (1.0 - eauEcume);   // WFS-380 (RG-02)
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement
     vec3 R = reflect(-V, N);
@@ -182,6 +187,7 @@ void main() {
         vernisPeinture(col, R, sun, NoV, NoH, NoL, aaKernel, specK);
     }
     float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
+    if ((flags & F_EAU) != 0u) alpha = eauAlpha;   // WFS-380 (RG-04) : sillage et éclaboussure en dentelle
     if ((flags & F_GLASS) != 0u) {
         vitre(col, alpha, albedo, skyAmb, R, sun, NoV, NoH, NoL);
     }
