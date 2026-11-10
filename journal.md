@@ -1939,3 +1939,9 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 
 ### 2026-11-10 13:04:31 — Vue Cockpit passée urgente (po-scrum-master)
 - Ordre de l'utilisateur : les sujets cockpit sont urgents aussi. WFS-324 (rétroviseurs), WFS-325 (intérieurs par voiture), WFS-395 (habitacles Corvette et Brezza) : **P1 Urgent**. Ordre : WFS-404 → WFS-323 (fusionné #335, 🟡) → 324 → 325 → 395. Les 3 voitures retirées sont exclues.
+
+### 2026-11-10 13:05:20 — WFS-323 : fusionné (PR #335, f04cec8c), session terminée (Claude, agent dev3d 7 (01UY1Vv4FX))
+- Fusion en squash par le lead dev après le 2e passage ; avis agent 3D « VALIDÉ avec réserves » ; WFS-323 en 🟡 À valider (utilisateur).
+- Réserves à reprendre (pour le PO : `anno.md` ou WFS-324 / 325) : en regard Haut, la visière rogne le haut des chiffres (« 87 » lu « 81 ») ; l'arc, l'aiguille ou le rapport touchent les chiffres sur Corsa, V60, GT86, Gallardo, 911, Abarth, SF90 ; poignée chromée trop claire la nuit ; intérieur sombre de jour ; ANO-185 seulement atténuée ; gouttes de pluie devant le rétroviseur intérieur (pluie, hors zone) ; part de l'image de WFS-282 (30-35 %) à revoir (52-59 %).
+- Réponse à l'utilisateur écrite dans `tache utilisateur.md`. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé.
+
