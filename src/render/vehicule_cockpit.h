@@ -67,6 +67,24 @@ inline float hauteurOeil(const InterieurDef& d) { return d.assise + OEIL_ASSIS_M
 struct Largeur { float coudes = 1.56f, oeil = 0.36f, montants = 1.44f; };   // montants : écart entre les pieds des deux montants du pare-brise (m)
 Largeur largeurPour(const InterieurDef& d);
 
+// WFS-414 : volant « de série » (coussin de sac gonflable bombé, coque du moyeu où naissent les branches, branches attachées au
+// moyeu et à la jante, plaques de commandes) : 6 voitures seulement (ordre de l'utilisateur, 2026-11-10 : Mustang, Golf 8,
+// Abarth 500, T-Cross, S3 berline, Giulia) ; toutes les autres gardent exactement leur volant d'avant (vehicule_cockpit_volant.cpp)
+struct VolantSerie {
+    float moyeuW, moyeuH;   // coussin (m) : RG-01, 200 à 220 × 140 à 160 mm
+    float forme;            // exposant du contour (super-ellipse) : 3 = coins très arrondis, 5 = presque un rectangle à coins ronds
+    float trapeze;          // part de la largeur que perd le bas du coussin (0 = rectangle ; 0,1 = bas 10 % plus étroit)
+    float visiereAvance;    // RG-07 : avancée de la lèvre de la visière devant l'écran du combiné (m) ; 0,068 pour les autres voitures
+};
+const VolantSerie* volantSeriePour(const InterieurDef& d);   // nullptr : volant commun (inchangé) ; table : vehicule_cockpit_defs.cpp
+// cotes du moyeu de série, repère du volant (z vers le conducteur, 0 = plan médian de la jante) ; estimées (volants de série
+// de 2015 à 2020 : coussin bombé enchâssé dans une coque, joint sombre visible) : journal de WFS-414
+constexpr float COUSSIN_E = 0.065f;          // RG-01 : épaisseur du coussin (60 à 70 mm)
+constexpr float COUSSIN_GALBE = 0.016f;      // RG-01 : galbe de la face (≥ 15 mm), du bord au milieu
+constexpr float COUSSIN_Z_BORD = 0.006f;     // face du coussin au bord (avant l'arrondi) ; milieu : + galbe ; arrière : milieu − épaisseur
+constexpr float JOINT_L = 0.004f;            // joint périphérique sombre entre le coussin et la coque (largeur vue)
+constexpr float COQUE_BORD = 0.008f, COQUE_Z_AVANT = -0.008f, COQUE_Z_ARRIERE = -0.040f;   // la coque dépasse le coussin de 8 mm
+
 // RG-01 : intérieur du modèle, nullptr pour une voiture qui garde le cockpit commun
 const InterieurDef* interieurPour(const char* carId);
 int nombreInterieurs();
@@ -117,7 +135,13 @@ inline BandeCombine bandeLisibleCombine(const InterieurDef& d) {
         return p.y < -1e-3f ? OEIL_CAMERA_PLUS_M + dy * (d.combinePos.z / p.y) - d.combinePos.y : 1e3f;
     };
     const float haut = std::min(d.combineH * 0.5f, surCombine(point(R - d.janteEp * 0.5f, 0)));
-    const float bas = std::max(-d.combineH * 0.5f, surCombine(point(COUSSIN_VOLANT_H * 0.5f, 0.013f)));
+    float bas = std::max(-d.combineH * 0.5f, surCombine(point(COUSSIN_VOLANT_H * 0.5f, 0.013f)));
+    if (const VolantSerie* vs = volantSeriePour(d)) {   // WFS-414 : moyeu de série, plus haut et bombé : haut de la coque et du coussin
+        const float h = vs->moyeuH * 0.5f;
+        bas = -d.combineH * 0.5f;
+        for (const vec2 p : {vec2{h + COQUE_BORD, COQUE_Z_AVANT}, vec2{h, COUSSIN_Z_BORD}, vec2{h * 0.8f, COUSSIN_Z_BORD + COUSSIN_GALBE * 0.36f}})
+            bas = std::max(bas, surCombine(point(p.x, p.y)));
+    }
     return {bas, std::max(bas, haut)};
 }
 // chiffres de hauteur h (au plus hMax) posés à y0 (bas), ramenés dans la bande lisible avec une marge de 8 % de la hauteur du combiné

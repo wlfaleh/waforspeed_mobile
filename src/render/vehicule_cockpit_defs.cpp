@@ -227,6 +227,19 @@ Largeur largeurPour(const InterieurDef& d) {
     return {};
 }
 
+// WFS-414 : volant de série (vehicule_cockpit.h) : 6 voitures seulement (ordre de l'utilisateur, 2026-11-10) ; formes estimées
+// sur photos des volants de série (journal de WFS-414) ; toutes les autres voitures : nullptr (volant commun, inchangé)
+namespace {
+struct SerieDef { const char* car; VolantSerie s; };
+const SerieDef SERIE[] = {
+    {"aucune", {0.200f, 0.145f, 4.f, 0.f, 0.068f}},   // étape 1 du ticket : aucune voiture (chemin commun pour toutes)
+};
+}
+const VolantSerie* volantSeriePour(const InterieurDef& d) {
+    for (const SerieDef& s : SERIE) if (std::strcmp(s.car, d.car) == 0) return &s.s;
+    return nullptr;
+}
+
 int nombreInterieurs() { return (int)(sizeof(DEFS) / sizeof(DEFS[0])); }
 const InterieurDef& interieur(int i) { return DEFS[std::clamp(i, 0, nombreInterieurs() - 1)]; }
 

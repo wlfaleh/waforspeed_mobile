@@ -1,13 +1,17 @@
 // Intérieurs par modèle de la vue cockpit (WFS-197) : choix de l'intérieur (RG-01), volants (RG-03), combiné (RG-04),
 // carte (RG-05), essuie-glaces (RG-06), œil (RG-07), matières dans la charte du réel (DA-realisme.md).
 // usage : test_cockpit
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <set>
 #include <string>
+#include <vector>
 #include "../src/game/cars.h"
 #include "../src/render/vehicule_cockpit.h"
+#include "../src/render/vehicule_cockpit_volant.h"
+#include "test_cockpit_volants_main.h"   // WFS-414 (RG-05) : empreintes des volants de main (test_cockpit --empreintes)
 using namespace wfs;
 using namespace wfs::cockpit;
 
@@ -19,7 +23,41 @@ static float lumLin(unsigned h) {
     return 0.2126f * l(((h >> 16) & 255) / 255.f) + 0.7152f * l(((h >> 8) & 255) / 255.f) + 0.0722f * l((h & 255) / 255.f);
 }
 
-int main() {
+// WFS-414 (RG-05) : empreinte d'une pièce du volant : nombres de sommets et d'indices, somme pondérée des indices (topologie, exacte),
+// boîte englobante et centre des sommets (m, comparés à 0,05 mm près : même géométrie, aux arrondis de la bibliothèque près)
+static Empreinte empreinte(const char* car, int piece, const Geo& g) {
+    Empreinte e{car, piece, (int)g.v.size(), (int)g.i.size(), 0u, {1e9f, 1e9f, 1e9f}, {-1e9f, -1e9f, -1e9f}, {0, 0, 0}};
+    for (size_t k = 0; k < g.i.size(); k++) e.topo += g.i[k] * (uint32_t)(k % 97 + 1);
+    for (const Vertex& v : g.v) {
+        const float p[3] = {v.px, v.py, v.pz};
+        for (int a = 0; a < 3; a++) { e.mn[a] = std::min(e.mn[a], p[a]); e.mx[a] = std::max(e.mx[a], p[a]); e.c[a] += p[a] / (float)g.v.size(); }
+    }
+    return e;
+}
+static std::vector<const Geo*> piecesDe(const PiecesVolant& p) {
+    return {&p.jante, &p.moyeu, &p.branches, &p.coutures[0], &p.coutures[1], &p.coutures[2], &p.repere, &p.palettes, &p.manettino,
+            &p.molettes, &p.coque, &p.joint, &p.plaques, &p.touches};
+}
+
+int main(int argc, char** argv) {
+    if (argc > 1 && !std::strcmp(argv[1], "--empreintes")) {   // WFS-414 : écrit tests/test_cockpit_volants_main.h (à lancer sur le code de main)
+        std::printf("// WFS-414 (RG-05) : empreintes des volants des voitures sans volant de série, relevées sur le code de main\n");
+        std::printf("// (test_cockpit --empreintes, avant l'ajout du volant de série) : ces volants ne doivent pas changer\n#pragma once\n#include <cstdint>\n");
+        std::printf("struct Empreinte { const char* car; int piece, nv, ni; uint32_t topo; float mn[3], mx[3], c[3]; };\n");
+        std::printf("static const Empreinte VOLANTS_MAIN[] = {\n");
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            PiecesVolant p; construireVolant(interieur(i), p);
+            const auto ps = piecesDe(p);
+            for (int k = 0; k < (int)ps.size(); k++) {
+                const Empreinte e = empreinte(interieur(i).car, k, *ps[k]);
+                if (!e.nv) continue;
+                std::printf("    {\"%s\", %d, %d, %d, %uu, {%.6ff, %.6ff, %.6ff}, {%.6ff, %.6ff, %.6ff}, {%.6ff, %.6ff, %.6ff}},\n", e.car, k, e.nv, e.ni, e.topo,
+                            e.mn[0], e.mn[1], e.mn[2], e.mx[0], e.mx[1], e.mx[2], e.c[0], e.c[1], e.c[2]);
+            }
+        }
+        std::printf("};\n");
+        return 0;
+    }
     // RG-01 : 4 intérieurs (lot 1), toutes les autres voitures gardent le cockpit commun
     std::set<std::string> avec;
     for (int i = 0; i < CAR_COUNT; i++) if (interieurPour(CARS[i].id)) avec.insert(CARS[i].id);
@@ -202,6 +240,33 @@ int main() {
         }
         cas("combiné : vitesse dans la partie vue par le volant, chiffres ≥ 20 % (WFS-323, ANO-188)", ok);
         cas("combiné de la X5 : le haut de la jante cache le haut du combiné (bande calculée)", bmw);
+    }
+    {   // WFS-414 (RG-05) : le volant de toutes les voitures sans volant de série est celui de main (empreinte de chaque pièce : nombres,
+        // topologie exacte, boîte et centre à 0,05 mm près) ; aucune pièce en plus ni en moins
+        int autres = 0; bool identiques = true;
+        auto proche = [](const float* a, const float* b) { for (int k = 0; k < 3; k++) if (std::fabs(a[k] - b[k]) > 5e-5f) return false; return true; };
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            if (volantSeriePour(d)) continue;
+            autres++;
+            PiecesVolant p; construireVolant(d, p);
+            const auto ps = piecesDe(p);
+            int attendues = 0, trouvees = 0;
+            for (const Empreinte& r : VOLANTS_MAIN) if (!std::strcmp(r.car, d.car)) attendues++;
+            for (int k = 0; k < (int)ps.size(); k++) {
+                const Empreinte e = empreinte(d.car, k, *ps[k]);
+                if (!e.nv) continue;
+                trouvees++;
+                const Empreinte* r = nullptr;
+                for (const Empreinte& x : VOLANTS_MAIN) if (!std::strcmp(x.car, d.car) && x.piece == k) r = &x;
+                const bool ok = r && r->nv == e.nv && r->ni == e.ni && r->topo == e.topo && proche(r->mn, e.mn) && proche(r->mx, e.mx) && proche(r->c, e.c);
+                if (!ok) std::printf("  %s : pièce %d du volant différente de main\n", d.car, k);
+                identiques = identiques && ok;
+            }
+            if (trouvees != attendues) { std::printf("  %s : %d pièces au lieu de %d\n", d.car, trouvees, attendues); identiques = false; }
+        }
+        std::printf("cockpit : %d voitures gardent le volant de main\n", autres);
+        cas("volants des voitures sans volant de série identiques à main (WFS-414, RG-05)", identiques && autres >= 1);
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
