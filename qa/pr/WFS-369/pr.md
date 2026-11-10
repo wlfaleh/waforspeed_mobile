@@ -22,7 +22,7 @@ Agent : Claude, agent dev3d 3 (01UY1Vv5WS)
   - `tests/test_mobilier_ville.cpp` et 1 ligne dans `CMakeLists.txt` : mesures ±1 %, vide de la grille < 11 cm, et sur chaque modèle aucun triangle dégénéré ni inversé.
 - **Modèles et licences** : aucun modèle libre CC0 / CC BY de ce mobilier français aux bonnes mesures n'existe sur les sources permises. J'ai appliqué RG-03 : chaque objet est modélisé par le code. Rien n'a été téléchargé, il n'y a aucune licence à ajouter et aucune marque.
 - **Comment c'est vérifié** :
-  - `tests_cpu.sh` : 91 réussis avant l'ajout du test, puis `test_mobilier_ville` : 0 échec. Banc assise 0,450 m, table Ø 0,700 m, parasol Ø 2,700 m, mât 7,400 m, bassin Ø 8,20 m.
+  - `tests_cpu.sh` : 95 tests réussis après synchronisation avec `main`, dont `test_mobilier_ville` (0 échec). Banc assise 0,450 m, table Ø 0,700 m, parasol Ø 2,700 m, mât 7,400 m, bassin Ø 8,20 m.
   - Captures avant / après prises avec les mêmes vues : pour l'« avant », `main` a été compilé avec seulement les vues du banc ajoutées.
   - Banc `perf`, Ville **de nuit**, lavapipe :
 
