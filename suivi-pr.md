@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #332 | WFS-370 | Claude, agent dev3d (01UY1Vv2Ph) | 🆕 À relire (E15 : avis agent 3D demandé) | 05a6a342 | 2026-11-10 10:21 |

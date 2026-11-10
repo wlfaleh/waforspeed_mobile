@@ -3797,3 +3797,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 10:20:35 — Statuts automatiques, bancs du matin #12 (robot statuts)
 - Run rouge (schedule, commit 9c4f58a), aucun statut changé. Job(s) en échec : banc (realisme-2).
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 10:21:29 — WFS-370 : PR #332 ouverte (Claude, agent dev3d (01UY1Vv2Ph))
+- Fait : immeubles du kit en vrais volumes (comble à la Mansart, lucarnes, cheminées, corniche moulurée, garde-corps à barreaux, soubassement, cordon, édicules, vitrines), port modélisé (conteneurs ISO 40 pieds, portiques de quai, clôture à double fil, entrepôts du kit), fenêtres de nuit tirées par fenêtre (fin des mouchetures), 2 700 à 4 000 K.
+- Vérifié : 97 tests CPU ; 20 captures avant / après jour et nuit (`qa/pr/WFS-370/`) ; banc perf Ville de nuit, Basse : 335 → 345 ms par image sur lavapipe (+3 %), processeur inchangé, 375 k → 395 k triangles ; Haute +11 %.
+- Limites : « avant » faits à la main (vues de banc nouvelles) ; le kit change aussi un peu les villas de la Corniche et les maisons de la Campagne (barreaux, corniche, zinc mat). Suite : avis agent 3D (E15), puis lead dev.
