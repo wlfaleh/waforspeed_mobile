@@ -130,11 +130,15 @@ public:
         const bool estLed = phares::led(g.car->id);
         const FeuxModele* fm = g.modele && g.modele->ok ? &g.modele->feux : nullptr;
         const float ox = fm ? fm->avantX : d.W / 2 - 0.3f, oy = fm ? fm->avantY : std::max(0.6f, d.H * 0.41f), oz = fm ? fm->avant - 0.03f : -d.L / 2 - 0.03f;
+        // WFS-382 (RG-01) : caméra derrière les optiques (vues Poursuite, Proche, Capot, Cockpit ; pas la vue de face) : pénombre 1 =
+        // marque lue par eclairage.glsl (retroChaussee : rétroréflexion de l'asphalte vers le conducteur) ; ignorée par le feu de croisement
+        const vec3 avantJ = normalize(W.transformDir({0, 0, -1}));
+        const bool derriere = dot(g.camPos - W.transformPoint({0, oy, oz}), avantJ) < 0.5f && length(g.camPos - W.transformPoint({0, 0, 0})) < 15.f;
         for (int cote : {-1, 1}) {
             FrameParams::Spot& h = fp.spots[fp.spotCount++];
             h.pos = W.transformPoint({cote * ox, oy, oz}); h.target = W.transformPoint({cote * ox, oy, oz - 10.f});
             h.color = estLed ? phares::TEINTE_LED : phares::TEINTE_HALOGENE; h.intensity = phares::creteCd(estLed) / feux_modele::LUX_PAR_UNITE;
-            h.distance = phares::PORTEE_M; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
+            h.distance = phares::PORTEE_M; h.angle = 1.45f; h.penumbra = derriere ? 1.f : 0.f; h.decay = 0; h.croisement = true;
         }
         if (g.player->reversing || g.player->speed < -1) {   // feu de recul (revLight)
             // WFS-171 (RG-01, ANO-70) : lumière posée sur les feux (hauteur ≈ 0,6 H, ras du pare-chocs ; elle était 0,8 m

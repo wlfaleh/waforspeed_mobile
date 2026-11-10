@@ -11,7 +11,7 @@ void benchNuit(Game& g, Renderer& r, const std::string& out);
 // chacune aussi en « -sansreflet » (même image, reflet de la chaussée coupé : WFS_REFLETS=0) pour la mesure de RG-08
 void benchRoute(Game& g, Renderer& r, const std::string& out);
 // WFS-382 : banc court des phares de nuit (WFS_BANC=phares) : phares-poursuite-proche / -face / -basse (capture 1, police
-// derrière le joueur), phares-ville-face (capture 2, voiture vue de face), phares-campagne-capot (capture 3, hors lampadaires),
+// derrière le joueur ; -police : vue de biais, police visible), phares-ville-face (capture 2, voiture vue de face), phares-campagne-capot (capture 3, hors lampadaires ; -haut : même endroit, vue haute),
 // phares-campagne-capot-pluie et phares-ville-face-pluie (capture 4), témoins de jour phares-ville-jour-proche / -face
 void benchPhares(Game& g, Renderer& r, const std::string& out);
 }

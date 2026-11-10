@@ -160,7 +160,7 @@ void benchPhares(Game& g, Renderer& r, const std::string& out) {
         g.render(t + 0.001); g.render(t + 0.002); r.capturePng(out + "/" + nom + ".png");
         WFS_LOG("capture %s : %.0f km/h, %.0f m", nom.c_str(), g.player().kmh(), g.player().dist * M);
     };
-    auto face = [&]() { const Game::Vue v = g.calculerVue(t); g.camMode = 2; g.orbit = std::atan2(v.fwd.x, v.fwd.z); };
+    auto face = [&](float decale = 0.f) { const Game::Vue v = g.calculerVue(t); g.camMode = 2; g.orbit = std::atan2(v.fwd.x, v.fwd.z) + decale; };
     // 1. Poursuite de nuit en Ville : vue Proche (jeu), puis vue de face (la police derrière le joueur, phares vers la caméra)
     for (int q : {ecrans::QUALITE_HAUTE, ecrans::QUALITE_BASSE}) {
         ecrans::reglages().qualite = q;
@@ -173,6 +173,9 @@ void benchPhares(Game& g, Renderer& r, const std::string& out) {
         capture(basse ? "phares-poursuite-basse" : "phares-poursuite-proche");
         face();
         capture(basse ? "phares-poursuite-basse-face" : "phares-poursuite-face");
+        // police derrière le joueur, vue de biais (comme les captures « arrivée-arrière » de WFS-338) : ses phares vers la caméra
+        g.camMode = 0; g.render(t += 0.02); face(0.35f);
+        capture(basse ? "phares-poursuite-basse-police" : "phares-poursuite-police");
         g.shutdown();
     }
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4; courseBenchRules(false);
@@ -199,7 +202,22 @@ void benchPhares(Game& g, Renderer& r, const std::string& out) {
         choisirVue(VueCamera::Capot);
         g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
         for (int i = 0; i < 360; i++) image(i % 8 == 0);
-        capture(std::string("phares-campagne-capot") + (std::string(meteo) == "pluie" ? "-pluie" : ""));
+        const std::string nomCapot = std::string("phares-campagne-capot") + (std::string(meteo) == "pluie" ? "-pluie" : "");
+        capture(nomCapot);
+        // RG-01 (2e revue du lead dev) : position à l'écran de la chaussée à 10, 30 et 50 m devant la voiture (milieu de la voie),
+        // pour mesurer sa clarté sur le PNG (projection perspective de la vue : œil, cible, champ vertical, image 16:9)
+        const Game::Vue v = g.calculerVue(t + 0.003);
+        const vec3 f = normalize(v.look - v.eye), dr = normalize(cross(f, vec3{0, 1, 0})), up = cross(dr, f);
+        const float th = std::tan(v.fov * 0.5f * 3.14159265f / 180.f), W = (float)r.width(), H = (float)r.height();
+        for (float m : {10.f, 30.f, 50.f}) {
+            const vec3 q = v.carPos + v.fwd * m - v.eye;
+            const float z = dot(q, f), x = dot(q, dr) / (z * th * W / H), y = dot(q, up) / (z * th);
+            WFS_LOG("WFS-382 mesure %s : chaussée à %.0f m → pixel (%.0f, %.0f)", nomCapot.c_str(), m, (x + 1) * 0.5f * W, (1 - y) * 0.5f * H);
+        }
+        // même endroit, vue haute derrière la voiture (banc) : forme de la tache au sol et bord net de la coupure
+        choisirVue(VueCamera::Poursuite); g.camMode = 1;
+        for (int i = 0; i < 30; i++) image(i % 8 == 0);
+        capture(nomCapot + "-haut");
         g.shutdown();
     }
     unsetenv("WFS_DEPART"); unsetenv("WFS_METEO");
