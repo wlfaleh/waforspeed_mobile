@@ -99,14 +99,15 @@
   "paquets": {
     "adresse_liste": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json"
   },
+  "confidentialite_url": "",
   "voitures": {
     "golf": {
-      "marque": "Folg",
-      "modele": "Folg 8"
+      "marque": "Norvik",
+      "modele": "Lume"
     },
     "m4": {
-      "marque": "Bnv",
-      "modele": "R4 Competizione"
+      "marque": "Draven",
+      "modele": "Vantor GT"
     },
     "p911": {
       "marque": "Pfeiler",
@@ -142,7 +143,7 @@
     },
     "giulia": {
       "marque": "Alvar",
-      "modele": "Giuliva Trefoil"
+      "modele": "Selene TS"
     },
     "a45": {
       "marque": "Merkur",

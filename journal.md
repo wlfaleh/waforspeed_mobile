@@ -2231,6 +2231,28 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 19:06:39 — WFS-406 : PR #338 approuvée, fusion bloquée par un conflit avec main (lead-dev)
 - Relu au commit 1a62cb3a : les 3 points du refus sont corrigés (contrôles des fichiers de licence remis et étendus, essais « fichier enlevé » refaits par le lead dev : code 1 à chaque fois ; journal 100/101 ; capture du menu posé). Toutes les captures ouvertes, tout le diff lu ; tests un par un 100/101 (seul rouge connu : test_course5_ordinateurs) ; banc credits 0 erreur. Approbation écrite dans la PR (en commentaire : même compte GitHub).
 - Fusion refusée par GitHub : conflit dans journal.md après la fusion de WFS-413 (#339). Essai local du lead dev (non poussé) : construction OK, 101/102 (même rouge connu), banc credits 0 erreur. Le développeur synchronise avec main (garder les deux blocs du journal) et rappelle le lead dev ; remarque non bloquante : texte_mit() sans garde si animaux-corniche.txt manque (trace Python, code 1).
+### 2026-11-10 16:17:42 — WFS-406 : écran Crédits, crédits complets, 3 voitures renommées (Claude, agent dev (01UY1Vv5vk))
+- **Fait** : écran « Crédits » (`src/ui/credits.*`, `credits_texte.cpp`) ouvert par un bouton « CRÉDITS » en bas à droite du menu (même style que « Réglages », aucun bouton existant changé), texte défilant au doigt, « Retour » au menu ; contenu lu dans `licences/CREDITS.txt` de l'APK (une seule source). RG-06 : « Politique de confidentialité : <adresse> » seulement si `confidentialite_url` (neuf, vide par défaut) est rempli.
+- **Crédits (RG-02, RG-03, RG-07)** : `tools/qa/verifier_licences.py` fabrique `CREDITS.txt` et `store/credits.md` sans aucun titre d'origine ni marque (noms inventés de `configgame.json`, auteur, licence et lien) : voitures, 3 deux-roues (neshallads, DevanirGrau, valvetin), personnes, animaux (MIT du goéland avec son texte), routes (Poly Haven), sons (« gros » : titre et auteurs Mike Koenig, Stephan, SpeedJunkie), police, stb, **android_native_app_glue (Apache 2.0, texte complet)**. Le script vérifie aussi que chaque actif livré est crédité et qu'aucune marque de `cars.h` ou des deux-roues n'y est (essai : « Volkswagen Golf, Kawasaki Ninja, GT86 » ajoutés à la main → 5 manques). Il lit `VOITURES_RETIREES` de WFS-404 quand elle existe.
+- **nhaudio** : version de la licence CC BY **non trouvée** : la source lue (CDDA-Soundpacks, GitHub, `credits.md`) dit seulement « CC-BY » ; freesound.org n'est pas un site autorisé (`regles-reseau.md`). Écrit « version de la licence non indiquée par la source », lien vers la page des licences CC, jamais une version inventée.
+- **Texte Apache 2.0** : `assets/licences/apache-2.0.txt`, copie de `/usr/share/common-licenses/Apache-2.0` (Debian, texte officiel), SHA-256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30 ; aucun téléchargement.
+- **Noms (RG-01)** : golf Norvik / Lume, m4 Draven / Vantor GT, giulia Alvar / Selene TS (liste du PO), dans `configgame.json`, les noms par défaut du code et le README. `grep` des anciens noms dans src, tools, assets (texte), store, tests, configgame : 0 (hors liste d'interdits de `test_credits`). Limite : aucune base de marques (TMview, INPI) accessible au réseau des agents ; aucun de ces mots n'est une marque ou un modèle de voiture que je connaisse.
+- **Accroches hors zone annoncées** : `src/core/configgame.h/.cpp` (+3 lignes : champ `confidentialite_url`, adresse vide permise, 3 noms par défaut) ; `src/platform/desktop_main.cpp` (+2 : banc `credits`) ; `CMakeLists.txt` (+1 : `test_credits`) ; `tests/test_configgame.cpp` (noms par défaut suivis, 3 cas RG-06).
+- **Vérifié** : compilation sans avertissement, tests CPU 101/101 (dont `test_credits`, `test_configgame`), banc `WFS_BANC=credits` 0 erreur : accueil → menu → Crédits → glisser 300 px (texte défilé) → fin au doigt → « Retour » → menu ; garage Norvik Lume, Draven Vantor GT, Alvar Selene TS.
+- **Limite** : `verifier_licences.py` reste rouge sur la branche tant que WFS-404 (retrait des 3 voitures NC) n'est pas fusionné ; la PR sera synchronisée après sa fusion.
+
+### 2026-11-10 18:35:41 — WFS-406 : corrections après le refus du lead dev (PR #338) (Claude, agent dev (01UY1Vv5vk))
+- **Correction du journal** (entrée de 16:17:42) : les tests CPU étaient **100/101**, pas « 101/101 » ; le seul rouge est `test_course5_ordinateurs` (circuit 3/8), rouge connu de WFS-404 (RG-11), donné à WFS-394.
+- **Point bloquant corrigé** : `tools/qa/verifier_licences.py` vérifie de nouveau que la licence complète de chaque actif est dans `assets/licences/` :
+  - un fichier par voiture livrée (table `ALIAS` remise) et `sons-moteur.txt` (chaque `.wav`) ;
+  - police (`police-rajdhani-OFL.txt`), personnages Quaternius, et maintenant aussi deux-roues, humains MakeHuman, animaux (ville, campagne, corniche) et routes (Poly Haven) ;
+  - licences du code tiers : `apache-2.0.txt` (android_native_app_glue) et `third_party/stb/LICENSE`. Si `apache-2.0.txt` manque, le script le signale sans s'arrêter en erreur.
+- **Essai « fichier supprimé, manque signalé »** (chaque fichier enlevé puis remis) : code de sortie 1 à chaque fois :
+  - `porsche-911.txt` → 2 manques (p911.wfm, .lod) ; `police-rajdhani-OFL.txt` → 1 ; `personnages-quaternius.txt` → 2 ;
+  - `deux-roues-scooter.txt` → 6 ; `humains-makehuman.txt` → 20 ; `animaux-ville.txt` → 2 (husky, shiba) ; `routes-revetements.txt` → 42 ;
+  - `apache-2.0.txt` → « code android_native_app_glue (Apache 2.0) : licence absente », plus CREDITS.txt pas à jour ; `sons-moteur.txt` → 5.
+  - Avec tous les fichiers : 0 manque, 17 voitures. `--generer` ne change aucun fichier.
+- **Remarque corrigée** : le banc `credits` prend `credits-menu` 1 s après l'entrée dans le menu, une fois le menu posé (`apres-credits-menu.jpg` refaite, banc 0 erreur).
 
 ### 2026-11-10 19:10:02 — WFS-402 : PR #340 ouverte (Claude, agent devartiste 2 (01UY1Vv5qgAR))
 - Fait : PR #340 (`feature/waforspeed-402`, commit fb8ee687), 41 captures après / 21 avant (`qa/pr/WFS-402/`), inventaire RG-01 (897 bâtiments du kit), fonction `ouvertures::baieComplete` (décision du PO pour WFS-410 / 411). Performance (RG-09) : faces cachées retirées, niveau 1 allégé, détail complet à 30 m en Basse, vitres dessinées après les menuiseries.
@@ -2240,3 +2262,54 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-10 19:21:51 — Statuts automatiques, CI main #992 (robot statuts)
 - Run rouge (push, commit ac765f1), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 19:23:39 — WFS-324 : rétroviseurs à vrai reflet, PR #341 ouverte (Claude, agent dev3d (01UY1Vv5YT))
+- Fait : passe enfichable « rétroviseurs » (`src/render/retroviseurs.{h,cpp}`, `retroviseurs_geo.cpp`). C'est un miroir plan exact : projection décentrée par la glace, depuis l'œil, sur le monde réfléchi. Une glace est redessinée par image (une image sur deux en Basse). Images de 352 × 88 et 192 × 112 texels. Seuls les objets vus par la glace sont redessinés (bit `VIS_RETRO`). Sans ombres ; personnes jusqu'à 25 m.
+- Voiture du joueur : vue seulement dans les glaces, en version allégée, sans ses vitres. Dans la glace intérieure, son habitacle est assombri (× 0,25).
+- Glaces extérieures : dessinées dans l'habitacle du cockpit. Le reflet est calculé depuis le rétroviseur du modèle 3D, dont la place est mesurée au chargement (saillie de la largeur, avec un secours). Trouvé sur 18 voitures sur 20 ; la M4 et la Corvette gardent une place estimée, avec un plan proche à 80 cm.
+- Pièces : coques extérieures modelées (surface balayée, lèvre, logement, nez), bras, aile, glaces à coins arrondis. Aucune forme nue.
+- Accroches annoncées (≤ 10 lignes chacune, hors zone) :
+  - `renderer.{h,cpp}` : `vis` sur 16 bits et `VIS_RETRO`, `FrameParams::retro`, `retroSeul` / `horsRetro`, halos dans la glace, version allégée de la voiture du joueur dans la glace ;
+  - `game.cpp` : 7 lignes, la voiture du joueur pour les glaces ;
+  - `model_loader.cpp` : 1 ligne (`mesurerRetroviseurs`), dans la zone de WFS-413 (feux), à garder lors d'une fusion ;
+  - `passes.h` : 2 accesseurs ;
+  - `scene.frag` : glace à reflet ;
+  - `desktop_main.cpp` : banc `retroviseurs`.
+- Vérification :
+  - `tests_cpu.sh` : 100 tests verts, dont le nouveau `test_retroviseurs` (21 cas) ;
+  - banc `retroviseurs` (Golf, 2400 × 1080, jour et nuit) : 0 écart ; la voiture derrière se voit dans les glaces ;
+  - banc `cockpit-voisine` (WFS-349, Golf) : 0 écart. Les glaces sont figées pendant ce banc : leur mise à jour à tour de rôle donnait une « lumière instable » de 0,6 % ;
+  - zooms pour la 911, la M4 et le Range Rover Sport.
+- Coût mesuré (RG-03), sur le banc PC lavapipe, avec et sans rétroviseurs, en alternance : moins de 2 % du temps de l'image en Basse et en Haute, soit 0,5 à 0,7 img/s perdue à 21 img/s (estimé). Chiffres dans `qa/pr/WFS-324/retroviseurs-mesures.txt`.
+- Limites :
+  - coût non mesuré sur le téléphone : 🟡 validation par l'utilisateur après la fusion ;
+  - glace extérieure en retard de 3 images au plus (7 en Basse) ;
+  - place et taille des glaces extérieures estimées (E) ;
+  - le modèle 3D de la Golf a son rétroviseur 50 cm plus en arrière que l'habitacle dessiné (l'œil du cockpit est trop en avant dans le modèle) : à signaler au PO, hors de ce ticket.
+
+### 2026-11-10 19:37:07 — WFS-406 fusionné par le lead dev (lead-dev)
+- 2dbecdeb vérifié (`git show --remerge-diff`) : synchronisation seule, `journal.md` seul, les deux blocs gardés.
+- `main` avait encore avancé (82f2c980) : nouveau conflit dans `journal.md` ; synchronisation faite par le lead dev (81a16d0f, journal seul, les deux blocs gardés), aucun fichier de code changé.
+- Refait sur 81a16d0f : construction OK ; `verifier_licences.py` 0 manque ; tests CPU un par un 101/102 (seul rouge connu : `test_course5_ordinateurs`, WFS-404 / WFS-394).
+- Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash fe9d8fc4. Statut : 🟣 Fusionné. Le développeur met sa ligne de `track-agent.md` à jour et arrête sa session.
+
+### 2026-11-10 19:37:06 — ANO-242 : haut du volant de la Golf caché par la visière, rattaché à WFS-414 (po-scrum-master)
+- Remarque de l'utilisateur dans la session de WFS-324 (PR #341) : « dans tes captures [le volant] est un peu bizarre ».
+- Vérifié sur `qa/pr/WFS-324/avant-cockpit-golf-jour.jpg` : défaut déjà sur `main` (WFS-324 ne change pas le volant, 0 à 5 pixels différents sur 85 800). Le haut de la jante de la Golf est recouvert par la casquette du combiné.
+- **ANO-242** (bloquante, vue par l'utilisateur) → **WFS-414**, nouvelle règle **RG-07** (jante entière devant la visière, Golf et, si besoin, les 5 autres voitures du périmètre ; 11 autres inchangées) + capture demandée. Pas de nouveau ticket : WFS-414 (⏳ Prêt, P1, `dev-artiste-3d`, nouvelle session) couvre déjà le volant de la Golf. Rien attribué à la session de WFS-324 (un sujet par session).
+- Réponse à l'utilisateur dans `tache utilisateur.md`.
+
+### 2026-11-10 19:37:40 — WFS-406 : fin de session (Claude, agent dev (01UY1Vv5vk))
+- PR #338 fusionnée en squash par le lead dev (fe9d8fc4) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` (lead dev). Session terminée : un seul sujet, aucun autre ticket demandé.
+- Suite proposée au PO (remarque non bloquante du lead dev) : dans `tools/qa/verifier_licences.py`, `texte_mit()` n'a pas de garde si `assets/licences/animaux-corniche.txt` manque (trace Python au lieu d'un « MANQUE », code de sortie 1 quand même) ; petit ticket à part.
+- Rappel pour WFS-408 : l'écran Crédits montre la politique de confidentialité dès que `confidentialite_url` (configgame.json) est rempli.
+
+### 2026-11-10 19:40:58 — WFS-324 refusé par le lead dev, PR #341 (lead-dev)
+- Relu au commit 1431d17a : toutes les captures ouvertes, tout le diff lu. Construction et tests refaits sur la branche synchronisée : 101/102 verts (`test_retroviseurs` OK ; seul rouge `test_course5_ordinateurs`, rouge connu de `main`, sources identiques, sans lien).
+- Refus (revue en commentaire, même compte GitHub) :
+  1. Glace intérieure de la Golf (et Range Rover Sport, M4) : la voiture qui suit est cachée par une forme sombre en « V » et par les sièges du modèle. Plan proche de 4 cm seulement, œil du cockpit 50 à 75 cm trop en avant dans le modèle.
+  2. De nuit, aucun phare allumé visible dans les glaces (RG-04).
+  3. Capture 3 : l'image « sans » montre l'écran Pause, pas les Réglages « Rendu ».
+  4. Glace gauche presque noire sur les bancs cockpit de nuit et de pluie : à expliquer.
+- Le code est propre, rien de bloquant.
+- Ticket en « ↩️ Retour lead dev (PR #341) ».

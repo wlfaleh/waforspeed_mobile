@@ -234,3 +234,6 @@ demande utilisateur :
 ( Utilisateur, 2026-11-10 18:04 UTC : « Trek-x aussi. » PO : c'est ajouté — compris comme le **T-Cross** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500 et du T-Cross**, rien d'autre. )
 ( Utilisateur, 2026-11-10 18:04 UTC : « R3 berline aussi. » PO : c'est ajouté — compris comme la **S3 berline** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500, du T-Cross et de la S3 berline**, rien d'autre. )
 ( Utilisateur, 2026-11-10 18:05 UTC : « Guiliva aussi. » PO : c'est ajouté — la **Giulia** : **WFS-414 corrige les volants de la Mustang, de la Golf 8, de l'Abarth 500, du T-Cross, de la S3 berline et de la Giulia**, rien d'autre. )
+
+- « J'espère que tu vas pas casser le volant.. dans tes captures il est un peu bizarre » (remarque dans la session de WFS-324, 2026-11-10)
+( PO, 2026-11-10 19:37:06 UTC : vu, tu as raison. WFS-324 ne touche pas au volant (zone du volant identique avant / après sur ses captures) : le défaut est **déjà sur `main`** — sur la Golf 8, le haut du volant est caché par la visière du combiné et paraît aplati. Créé : **ANO-242** (bloquante), ajouté à **WFS-414** (le ticket urgent des volants, Golf comprise, règle RG-07) : jante entière visible en haut, les autres voitures ne bougent pas. )

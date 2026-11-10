@@ -83,10 +83,11 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `qualite.plancher_moyenne` | résolution la plus basse en qualité Moyenne | × résolution | 0.5 | 1.0 | 0.9 |
 | `qualite.reflet_route_mouillee` | force du reflet de la rue sur la route mouillée (pluie) | × | 0.0 | 1.5 | 1.0 |
 | `paquets.adresse_liste` | adresse https de la liste des paquets de cartes (cartes.json) | caractères | 12 | 200 | "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json" |
-| `voitures.golf.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Vollmer" |
-| `voitures.golf.modele` | modèle affiché | caractères | 1 | 24 | "Gala 8 GTS" |
-| `voitures.m4.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Bavaro" |
-| `voitures.m4.modele` | modèle affiché | caractères | 1 | 24 | "R4 Competizione" |
+| `confidentialite_url` | adresse https de la politique de confidentialité (écran Crédits) ; vide : ligne cachée | caractères | 0 | 200 | "" |
+| `voitures.golf.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Norvik" |
+| `voitures.golf.modele` | modèle affiché | caractères | 1 | 24 | "Lume" |
+| `voitures.m4.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Draven" |
+| `voitures.m4.modele` | modèle affiché | caractères | 1 | 24 | "Vantor GT" |
 | `voitures.p911.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Pfeiler" |
 | `voitures.p911.modele` | modèle affiché | caractères | 1 | 24 | "9F S" |
 | `voitures.gallardo.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Toro" |
@@ -104,7 +105,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `voitures.x5.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Bavaro" |
 | `voitures.x5.modele` | modèle affiché | caractères | 1 | 24 | "XR5" |
 | `voitures.giulia.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Alvar" |
-| `voitures.giulia.modele` | modèle affiché | caractères | 1 | 24 | "Giuliva Trefoil" |
+| `voitures.giulia.modele` | modèle affiché | caractères | 1 | 24 | "Selene TS" |
 | `voitures.a45.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Merkur" |
 | `voitures.a45.modele` | modèle affiché | caractères | 1 | 24 | "A-Sport 45" |
 | `voitures.model3.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Volta" |
