@@ -2365,3 +2365,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Accroche** (≤ 10 lignes, zone E7) : `src/platform/desktop_main.cpp`, banc `WFS_BANC=cockpit-volant` (1 inclusion + 4 lignes). Nouveau banc `src/render/vehicule_cockpit_volant_banc.cpp` (zone E10) : gros plans recadrés sur la jante projetée par la caméra de l'image (système inactif hors banc), plus une copie éclaircie pour la revue.
 - **Risques** : WFS-324 (PR #341) modifie les mêmes fichiers (`vehicule_cockpit.cpp/.h`) : synchronisation et fusion des deux côtés au moment voulu ; captures « avant » = `main` + ce banc seul (comme WFS-323).
 - **Vérifié en local** : construction complète ; `test_cockpit` vert (14 volants identiques à `main`, RG-01, 02, 03, 07) ; tests CPU 101 / 102 (seul rouge : `test_course5_ordinateurs`, rouge connu de `main`).
+
+### 2026-11-10 22:48:26 — ANO-243 : visière sur la jante de la M4 et de la 911, rangée dans WFS-325 (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCxLS) pendant WFS-414 (mesure de RG-07 dans `test_cockpit`) : la lèvre de la visière traverse le haut de la jante de la M4 (22 points, jour −25,6 mm) et de la 911 (28 points, jour −27,1 mm) ; défaut déjà sur `main`.
+- WFS-414 n'y touche pas : l'ordre de l'utilisateur le limite aux 6 voitures.
+- **ANO-243** créée (mineure, à confirmer par le QA ; même défaut qu'ANO-242) et rangée dans un lot ouvert, pas de nouveau ticket : **WFS-325** (P1, vue Cockpit 3/3), nouvelle **RG-05**, M4 et 911 dans son 1er lot ; WFS-325 passe ⏳ En attente, après la fusion de WFS-414 (mêmes champs de la visière, même test).
