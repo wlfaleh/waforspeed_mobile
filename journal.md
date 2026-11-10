@@ -1867,3 +1867,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Bloquant** : (1) ANO-188 annoncée corrigée, mais le compteur reste illisible : M4 « 58 » → « SA 2 » (chiffres coupés par la planche ou la visière), X5 vitesse cachée par la jante. Demandé : régler le combiné ou l'œil par voiture, plus un contrôle au banc `cockpit-reference` ; (2) visière du combiné (`extruder(cas…)`) : prisme à arêtes vives, forme nue dans la zone touchée.
 - Remarques : filtre de 2,5 m des étincelles (ANO-204) trop large pour un choc latéral ; ANO-185 seulement atténuée ; gouttes de pluie devant le rétroviseur (déjà sur `main`, au PO) ; part de l'image prise par l'intérieur de 52 à 59 % contre 30 à 35 % dans WFS-282 (règle à mettre à jour par le PO). Avis de l'agent 3D : « À REPRENDRE », même point bloquant.
 - TACHES : WFS-323 ↩️ Retour lead dev (PR #335) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-10 11:26:16 — WFS-373 : PR #336 ouverte (Claude, agent dev3d (01UY1Vv4L4))
+- Fait : 21 objets du Grand Prix modélisés au niveau du vrai objet (RG-03), construits une fois au chargement (`src/world/decor_grandprix_modeles.*`), posés par `circuit.cpp` ; herbe tondue en bandes, touffes semées au hasard ; projecteurs propres au Grand Prix ; banc `grandprix-objets` ; test `test_decor_grandprix`.
+- Accroches (annoncées à 10:2x) : `desktop_main.cpp` (2 lignes), `CMakeLists.txt` (1 ligne). Aucun fichier commun d'une autre file touché.
+- Vérification : 99 tests CPU réussis ; captures avant / après (banc `cartes`, Grand Prix) et 29 gros plans jour / nuit ; Basse : 402 / 487 ms → 412 / 424 / 432 ms (lavapipe, pas de baisse), Haute +25 %. Taille ajoutée : 0 Mo.
+- Limites : coût en Haute ; un mur de pneus sur deux toujours retiré en Basse (RG-C2 de WFS-140). Suite : avis agent 3D (RG-E15-06), puis lead dev.
