@@ -3669,3 +3669,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Décisions du PO appliquées (Suivi de WFS-381, 07:30:48 et 07:42:21) : brume de chaleur d'été (Corniche 8 km, Ville 10, Grand Prix 11, Campagne 12, autres 10) ; `test_brume` sur les nouvelles bornes ; 97 tests CPU verts.
 - Banc `brume` : contraste mesuré à l'écran (cible HDR, 5 rendus figés) : Corniche 8,3 → 38,1 % à 1 km, 15,7 → 60,1 % à 2 km ; Campagne 8,9 → 29,0 % / 16,1 → 47,4 % ; écart à l'écran 8 à 14 niveaux (sans seuil).
 - Réponse point par point sous la revue ; suivi-pr en 🔁 ; lead dev rappelé (commit relu attendu : 370b3963).
+
+### 2026-11-10 07:53:28 — WFS-384 : PR #331 ouverte, lead dev appelé (agent expert ci cd (session 0183bv2Y))
+- Cause : réveils de GitHub en retard (2026-11-09 : 09:44 à 18:10 heure de Paris, tous sautés ; 2026-11-10 : aucun avant 08:40) : aucun banc complet depuis le run #5, donc pas de Release `captures-matin`, la QA n'a rien trouvé.
+- Correction (E7) : réveil de secours chaque heure de 03:23 à 20:23 UTC ; bancs lancés au premier réveil à partir de 04:00 heure de Paris quelle que soit l'heure, jamais deux fois le même jour (`tools/qa/heure_matin.sh`) ; message « ⏳ Bancs du matin en retard » à la QA après 07:00 ; « Recette QA prête » remplacé par « captures du jour manquantes » quand `captures-matin` n'a pas les captures du jour ; notes de `apercu` à jour.
+- Vérification : `tools/qa/test_matin.py`, 17 cas verts (faux gh) ; aucune CI de branche lancée (sans intérêt pour un réveil programmé).
