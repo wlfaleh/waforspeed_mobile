@@ -31,17 +31,16 @@ const VOITURES = {
   // plaques arrière américaines ou de concession (« ELANTRA N », « FORD PERFORMANCE », Texas) et italienne de la SF90
   // + plaque avant ajoutée (le modèle n'en a pas ; hauteur du centre choisie sur la surface la plus plate du bouclier)
   elantra: { plaque: 10, cadre: -1, numero: 'GN-623-YB', dep: '35', ajouts: [{ cote: -1, y0: 0.44 }] },
-  mustang: { plaque: 18, cadre: -1, numero: 'FM-509-GT', dep: '33', ajouts: [{ cote: -1, y0: 0.44 }] },
   m4: { plaque: 35, cadre: -1, numero: 'EB-944-KM', dep: '92', ajouts: [{ cote: -1, y0: 0.37 }] },
   sf90: { plaque: 9, cadre: -1, numero: 'GF-190-XS', dep: '06', ajouts: [{ cote: -1, y0: 0.43 }] },
+  // WFS-359 : Corvette C7 (id « mustang ») : plaque et cadre à part ; Suzuki Brezza (id « tcross ») : plaques avant et arrière à part
+  mustang: { plaque: 30, cadre: 29, numero: 'FM-509-GT', dep: '33', ajouts: [{ cote: -1, y0: 0.30 }] },   // plaque avant ajoutée sur la traverse de la calandre
+  tcross: { plaque: 29, cadre: -1, numero: 'FT-148-CX', dep: '57' },
   model3: { plaque: 24, cadre: -1, numero: 'EY-317-TL', dep: '92', ajouts: [{ cote: -1, y0: 0.44 }] },   // WFS-158 (RG-D) : nouveau modèle
   // aucune plaque à part : plaques ajoutées sur les porte-plaques noirs (Golf), sur les plaques de concession « T-Cross » et
   // « 途铠 » (masquées : atlas du modèle, matériau 10), dans le logement du hayon (X5), sur le porte-plaque gris (GT86)
   golf: { plaque: -1, cadre: -1, numero: 'BJ-276-WC', dep: '38', ajouts: [{ cote: -1, y0: 0.471 }, { cote: 1, y0: 0.50 }] },
   gallardo: { plaque: -1, cadre: -1, numero: 'DL-865-ZP', dep: '83', ajouts: [{ cote: -1, y0: 0.36 }, { cote: 1, y0: 0.37 }] },
-  // T-Cross : version chinoise à empattement long (4,218 m, WFS-158) ; positions mesurées à cette taille
-  tcross: { plaque: -1, cadre: -1, numero: 'FT-148-CX', dep: '57', ajouts: [{ cote: -1, y0: 0.485 }, { cote: 1, y0: 0.823 }],
-            masquer: { maillage: 10, boites: [[-0.246, 0.246, 0.40, 0.57, -2.135, -2.073], [-0.257, 0.257, 0.739, 0.908, 1.970, 2.032]] } },
   x5: { plaque: -1, cadre: -1, numero: 'HB-530-RV', dep: '78', ajouts: [{ cote: -1, y0: 0.56 }, { cote: 1, y0: 0.70 }] },
   gt86: { plaque: -1, cadre: -1, numero: 'CG-861-PZ', dep: '69', ajouts: [{ cote: -1, y0: 0.54 }, { cote: 1, y0: 0.548 }] },
 };

@@ -41,6 +41,13 @@ int testCommandes() {
                     commandeSous(d.nitro.cx(), d.nitro.y - 6 * dp, e.W, e.H, m, false) == Commande::Nitro &&
                     commandeSous(d.frein.cx(), d.frein.y + d.frein.h + 2, e.W, e.H, m, false) == Commande::Frein,
                     "%s : zone de toucher pas plus grande que le dessin", e.nom);
+            // WFS-374 (ANO-233) : HUD en haut à droite (case SCORE, chrono, carte) : aucun appui n'y pilote la voiture, ni nitro ni gaz
+            bool hud = true;
+            for (float fx : {0.60f, 0.70f, 0.80f, 0.90f, 0.97f})
+                for (float fy : {0.03f, 0.10f, 0.20f, 0.30f})   // HUD jusqu'à 0,30 H (le nitro « Grand » monte à 0,45 H)
+                    hud = hud && commandeSous(fx * e.W - m.droite, fy * e.H, e.W, e.H, m, false) == Commande::Aucune &&
+                          commandeSous(fx * e.W - m.droite, fy * e.H, e.W, e.H, m, true) == Commande::Aucune;
+            VERIFIE(hud, "%s : un appui sur le HUD en haut à droite (case SCORE) pilote la voiture (ANO-233)", e.nom);
         }
     densiteCommandes() = 0; grandsBoutons() = false;
     std::printf("commandes : boutons ≥ 48 dp (gaz et frein ≥ 64), sans chevauchement, zone de toucher élargie : %s\n", echecs ? "ÉCHEC" : "OK");

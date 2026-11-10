@@ -53,7 +53,7 @@ inline float intensiteRelative(float el, float az) {
 // RG-00 / graphisme réaliste : LED ou halogène selon la génération du modèle (équipement de série, à confirmer par voiture ;
 // la Gallardo a des phares au xénon, absents de la base sourcée : halogène, la teinte sourcée la plus proche du bas)
 inline bool led(const char* id) {
-    static const char* const HALOGENE[] = {"abarth", "tcross", "compass", "gt86", "gallardo"};
+    static const char* const HALOGENE[] = {"abarth", "compass", "gt86", "gallardo"};   // WFS-359 : « tcross » = Brezza 2022, projecteurs à DEL
     if (!id) return false;
     for (const char* h : HALOGENE) if (!std::strcmp(id, h)) return false;
     return true;

@@ -55,8 +55,9 @@ inline DispositionCommandes dispositionCommandes(float W, float H, const Marges&
 // commande sous un doigt posé en (x, y) (x déjà passé par ecrans::miroirX). Chaque dessin est dans sa zone, et la zone
 // déborde du dessin pour le confort du pouce (WFS-108 RG-01) : nitro = disque + 8 dp ; colonne du gaz (à droite du milieu
 // de l'écart frein-gaz) = gaz ; à gauche : sous le haut du frein (− 5 dp) = frein, au-dessus = gaz (le point (0,89 W ; 0,74 H)
-// des bancs reste au gaz) ; coin haut droit (au-dessus de 0,45 H, 0,53 H pour un gaucher) = nitro hérité de l'ancien bouton
-// (appui du banc nitro-lignes). Moitié gauche de l'écran : rien (direction).
+// des bancs reste au gaz) ; WFS-374 (ANO-233) : au-dessus de la zone du nitro (HUD : score, chrono, carte), rien : avant, le
+// coin haut droit (au-dessus de 0,45 H) donnait le nitro, hérité de l'ancien bouton, et un appui sur la case SCORE lançait le
+// nitro. Moitié gauche de l'écran : rien (direction). Le paramètre gaucher est gardé (appelants inchangés).
 inline Commande commandeSous(float x, float y, float W, float H, const Marges& m, bool gaucher) {
     if (x <= W * 0.55f - m.droite) return Commande::Aucune;
     const DispositionCommandes d = dispositionCommandes(W, H, m);
@@ -64,7 +65,8 @@ inline Commande commandeSous(float x, float y, float W, float H, const Marges& m
     if (dx * dx + dy * dy <= rn * rn) return Commande::Nitro;
     if (d.frein.contient(x, y)) return Commande::Frein;
     if (d.gaz.contient(x, y)) return Commande::Gaz;
-    if (x > W * 0.80f - m.droite && y < H * (gaucher ? 0.53f : 0.45f)) return Commande::Nitro;
+    (void)gaucher;
+    if (y < d.nitro.y - 8 * k) return Commande::Aucune;   // WFS-374 (ANO-233) : au-dessus du nitro (haut de sa zone de toucher), le HUD
     if (x >= (d.frein.x + d.frein.w + d.gaz.x) / 2) return Commande::Gaz;
     return y >= d.frein.y - 5 * k ? Commande::Frein : Commande::Gaz;
 }
