@@ -9,6 +9,7 @@
 #include <vector>
 #include "../core/jobs.h"
 #include "../core/log.h"
+#include "../core/platform.h"   // nowSeconds
 #include "../core/system.h"
 #include "../game/player.h"
 #include "../game/track.h"
@@ -28,11 +29,11 @@ using cuit::S_MUR; using cuit::S_TOIT; using cuit::S_ENCADREMENT; using cuit::S_
 using cuit::S_VOLET; using cuit::S_FIN; using cuit::S_CHASSIS; using cuit::S_IMAGE;
 static_assert(sizeof(cuit::Sommet) == sizeof(Vertex) && offsetof(cuit::Sommet, tx) == offsetof(Vertex, tx), "WFS-416 : sommet cuit = Vertex");
 std::vector<Bati> g_bats;
+Chrono g_chrono;
 // même disposition en mémoire (vérifiée ci-dessus) : copie en bloc des sommets d'un lot vers des Vertex
-std::vector<Vertex> sommets(const Lot& l, size_t debut = 0, size_t n = SIZE_MAX) {
-    n = std::min(n, l.v.size() - std::min(debut, l.v.size()));
-    std::vector<Vertex> v(n);
-    if (n) std::memcpy((void*)v.data(), l.v.data() + debut, n * sizeof(Vertex));
+std::vector<Vertex> sommets(const Lot& l) {
+    std::vector<Vertex> v(l.v.size());
+    if (!v.empty()) std::memcpy((void*)v.data(), l.v.data(), v.size() * sizeof(Vertex));
     return v;
 }
 
@@ -42,11 +43,13 @@ Cuit g_cuit;
 bool chargerCuit() {
     if (g_cuit.essaye) return g_cuit.pret;
     g_cuit.essaye = true;
-    const char* e = std::getenv("WFS_BATIMENTS_CUITS");
+    const char* e = std::getenv("WFS_BATIMENTS_CUITS");   // essai : 0 = kit de secours même avec le paquet
+    const bool coupe = e && e[0] == '0';
     const std::string c = wfs::carte::carteActive();
-    std::shared_ptr<const std::vector<uint8_t>> o = (e && e[0] == '0') || c.empty() ? nullptr : wfs::carte::blocDuPaquet(c, cuit::NOM_BLOC);
-    if (!o) {
-        WFS_LOG("bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)");
+    std::shared_ptr<const std::vector<uint8_t>> o = coupe || c.empty() ? nullptr : wfs::carte::blocDuPaquet(c, cuit::NOM_BLOC);
+    if (!o) {   // RG-06
+        WFS_LOG("bâtiments (WFS-416) : %s : kit de secours (bâtiments construits par le code)",
+                coupe ? "bâtiments cuits coupés (WFS_BATIMENTS_CUITS=0)" : c.empty() ? "paquet absent" : "paquet sans bâtiments cuits");
         return false;
     }
     const size_t taille = o->size();
@@ -72,9 +75,10 @@ void lotCuit(const cuit::Vue& l, std::vector<Vertex>& v, std::vector<uint32_t>* 
 constexpr double LOD0_BASSE_M = 30;   // WFS-415 (RG-03) : seulement avec les ouvertures réelles (archi::ouverturesReelles)
 constexpr double LOD0_M = 120, LOD1_M = 300, VUE_AVANT_M = 650, VUE_ARRIERE_M = 60;
 constexpr double LOD0_CUIT_M = 20;    // WFS-416 (RG-04) : paquet cuit : menuiseries 3D jusqu'à 20 m, image avec relief au-delà
-// WFS-416 : niveau 0 du paquet cuit : RESERVES tampons réservés au chargement (morceau du joueur, le suivant, le précédent, un de
-// rechange pendant que la carte graphique finit ses images) ; au plus BUDGET_SOMMETS sommets tout prêts recopiés par image
-constexpr int RESERVES = 4;
+// WFS-416 : niveau 0 du paquet cuit : RESERVES tampons réservés au chargement (morceau du joueur, le suivant, le précédent) ; au
+// plus BUDGET_SOMMETS sommets tout prêts recopiés par image. Un tampon n'est réécrit que 3 images après son dernier dessin : le
+// morceau qui sort de la liste est à plus de 58 m (dessiné au niveau 0 jusqu'à 20 m seulement), donc 3 tampons suffisent.
+constexpr int RESERVES = 3;
 constexpr uint32_t BUDGET_SOMMETS = 24000;
 
 // tampons d'un morceau du kit de secours ; murs : (bâtiment, emplacement, premier sommet, nombre) pour l'occlusion gardée
@@ -138,6 +142,10 @@ public:
 
     void render(Renderer& r, const GameView& g) override {
         if (!pret_ || g.sceneDediee || !g.player || !g.track) return;
+        struct Mesure {   // WFS-416 (RG-07) : temps de ce rendu, cumulé pour le banc
+            double t0 = nowSeconds();
+            ~Mesure() { const double ms = (nowSeconds() - t0) * 1000; g_chrono.cumulMs += ms; g_chrono.pireMs = std::max(g_chrono.pireMs, ms); g_chrono.images++; }
+        } mesure;
         frame_++;
         const int64_t L = std::max<int64_t>(1, (int64_t)g.track->segmentCount());
         const int64_t aP = ((int64_t)std::floor(g.player->dist / SEG) % L + L) % L;   // tours suivants : même plan (limite : le raccord du tour)
@@ -280,6 +288,7 @@ private:
         auto vb = [&](int s) { return (uint8_t*)x.m[(size_t)s].vb.mapped + (size_t)x.nv[s] * sizeof(Vertex); };
         auto ib = [&](int s) { return (uint32_t*)x.m[(size_t)s].ib.mapped + x.ni[s]; };
         uint32_t fait = 0;
+        struct Compte { uint32_t& f; ~Compte() { g_chrono.sommetsRecopies += f; } } compte{fait};
         if (x.etape == 0) {
             for (; x.suivant < (size_t)NB_SLOTS; x.suivant++) {
                 if (fait >= budget) return false;
@@ -350,6 +359,7 @@ void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profo
 }
 
 const std::vector<cuit::Bati>& poses() { return g_bats; }
+Chrono& chrono() { return g_chrono; }
 
 void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i) {   // WFS-269 (accroche) : voir archi_carte.h
     auto verser = [&](const Lot& l) {

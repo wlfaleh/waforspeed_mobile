@@ -22,6 +22,10 @@ void vider();
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine);
 // WFS-416 : les bâtiments posés (lus par la cuisson du paquet, cartes_v2::cuire)
 const std::vector<cuit::Bati>& poses();
+// WFS-416 (RG-07) : temps passé par le système des bâtiments dans son rendu (choix des morceaux, construction du kit de secours ou
+// recopie du paquet, mise en file des dessins), depuis la dernière remise à zéro : preuve chiffrée au banc « batiments »
+struct Chrono { double cumulMs = 0, pireMs = 0; uint64_t images = 0, sommetsRecopies = 0; };
+Chrono& chrono();
 // vrai si le kit remplace les boîtes de la carte (bâtiments posés et kit non désactivé)
 bool actif();
 // WFS-269 (accroche) : tous les bâtiments posés au niveau lod, dans le monde (ils cachent le ciel : DecorFixe::occultants)
