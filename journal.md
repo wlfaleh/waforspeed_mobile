@@ -3542,3 +3542,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : contour M4 jusqu'au joint du capot et aux pointes des phares ; panneau = base de degré 2 ajustée sur la peinture voisine + écart interpolé, normales de la surface finale lissées, vrai décalage du débord ; options de grille `joue` et `rebord` ; X5 inchangée (empreinte rejouée).
 - Vérification : `--verifier` vert (5 voitures) ; 95 tests CPU verts ; captures régénérées (18 vitrines, 16 gros plans, 16 zooms) ; réponse point par point dans la PR ; lead dev rappelé.
 
+
+### 2026-11-10 01:30:46 — WFS-372 fusionné par le lead dev (lead-dev)
+- PR #327 fusionnée en squash (0654a4af) à la 1re revue, après « Avis agent 3D : VALIDÉ avec réserves » sur 6b3b4bb9 (RG-E15-06 et 09). Revue « ✅ Approuvé » écrite dans la PR en commentaire (GitHub refuse l'approbation du même compte).
+- Vérifié : 58 captures ouvertes (paires avant / après jour et nuit, gros plans, perf, inventaire) ; diff complet relu ; construction et `tests_cpu.sh` refaits : 96/96 ; perf Basse +2,3 % (lavapipe, sous le seuil de 5 %) ; `vegetation.*` : ajout seul de `veg::vigne`, permis par la zone du ticket (vignes).
+- Statut 🟣 Fusionné ; ligne de `suivi-pr.md` supprimée ; ligne ajoutée à `qa/Check.md`.
+- **Pour le PO** : créer une tâche séparée (RG-E15-09) avec les réserves 1 à 6 de l'agent 3D (bottes, crépi, teintes du bois, tôle du hangar, perf sur le téléphone) et mes remarques : câbles des poteaux et lisses des clôtures aux limites de deux zones « champs », commentaire en double dans `decor_campagne_banc.cpp:29`, comparaison de flottants dans `fenetre`.
