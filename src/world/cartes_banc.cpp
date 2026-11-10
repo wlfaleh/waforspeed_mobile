@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <string_view>
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"   // WFS-212 : caméra haute du banc
@@ -322,11 +323,18 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-ao-" + std::to_string(n + 1) + (c ? "-d" : "-g"), (h & ~1ll) | c, 0, n == 0, 3});
         }
     }
-    const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : un seul lieu (préfixe du nom)
+    const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : lieux dont le nom commence par un des préfixes (séparés par des virgules)
     if (std::getenv("WFS_QUALITE_BASSE")) { ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true; }   // WFS-326 : qualité du téléphone de l'utilisateur
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {
         const std::string nom = l.nom + (n ? "-nuit" : "") + (l.cam == 3 && std::getenv("WFS_SANS_AO") ? "-sans" : "");
-        if (seul && nom.rfind(seul, 0) != 0) continue;
+        if (seul) {   // WFS-370 : plusieurs préfixes séparés par des virgules (captures avant / après d'une PR)
+            bool garde = false;
+            for (std::string_view r = seul; !garde && !r.empty();) {
+                const size_t v = r.find(','); const std::string_view p = r.substr(0, v);
+                garde = !p.empty() && nom.rfind(p, 0) == 0; r = v == std::string_view::npos ? std::string_view{} : r.substr(v + 1);
+            }
+            if (!garde) continue;
+        }
         const int64_t segL = l.cam >= 3 ? l.seg / 2 : l.seg;   // cam 3 et 4 : seg = segment · 2 + côté
         setenv("WFS_MOMENT", n ? "nuit" : "jour", 1);
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, segL - (int64_t)(l.avant / SEG_M))).c_str(), 1);
