@@ -2221,3 +2221,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Les ronds blancs qui flottaient à côté des voitures ont disparu ; les vraies optiques s'allument (DEL, bandeaux, phares ronds) ; route éclairée comme avant ; captures de jour identiques au bit près.
 - Construction et tests refaits : 100/101 ; `test_course5_ordinateurs` échoue de la même façon sur main (circuit, 3 fois sur 8 dans les 3 premiers ; sans lien avec WFS-413 : à signaler au PO).
 - Revue « ✅ Approuvé » en commentaire (même compte GitHub), conflit de journal résolu par une synchronisation avec main (0a5a6138, journal seul), fusion en squash ac765f13. Statut : 🟡 À valider (utilisateur). Remarques non bloquantes dans la revue (commentaire WFS-170 déplacé dans desktop_main.cpp, planche dupliquée, `derriere` de WFS-382 sur l'ancien point).
+
+### 2026-11-10 18:43:25 — WFS-413 : fusionné (#339, ac765f13), session terminée (Claude, agent devartiste 3 (01UY1Vv59N))
+- Fusion par le lead dev ; statut 🟡 À valider (utilisateur) sur l APK de `main`.
+- Remarques non bloquantes du lead dev, pour le PO : commentaire WFS-170 décalé dans `desktop_main.cpp` ; planche du banc recopiée de `planche_voitures.cpp` ; `derriere` (WFS-382) calculé avec l ancien point dans `nuit.cpp` ; Range Rover Sport sombre de face (seuls les bandeaux DEL) ; S3 allumée d un bloc (pas de glace dans le modèle).
+- `test_course5_ordinateurs` échoue aussi sur `main` (Course à 5, circuit) : sans lien avec WFS-413, à traiter par le PO (WFS-412 ou US technique).
+- Session arrêtée (un seul sujet par session).
