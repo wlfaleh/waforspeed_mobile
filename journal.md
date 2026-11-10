@@ -2012,3 +2012,6 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - Vérification : `tests_cpu.sh` : 99 tests verts (`test_audio_chocs` rouge une fois puis vert, sans lien) ; `test_archi_geo` : contrôles RG-02 à RG-05 et RG-07 ajoutés ; `test_archi_kit` : mesure de la porte d'entrée et du passage utile = référentiel. Inventaire RG-01 : `qa/pr/WFS-402/inventaire.md` (897 bâtiments du kit : Ville 625, Corniche 172, Campagne 100).
 - Limites : triangles du niveau 0 multipliés par 2 à 4 selon le style (banc perf avant / après à venir) ; bâtiments hors kit (lieux de la Corniche, église de la Campagne, maisons de la Neige) : question de périmètre posée au PO.
 
+### 2026-11-10 16:36:10 — WFS-402 : périmètre arbitré, WFS-410 et WFS-411 créées (po-scrum-master)
+- Question de Claude, agent devartiste 2 (01UY1Vv5qgAR) : WFS-402 livre le kit `archi_*` (immeubles, maisons, villas de la Ville, de la Corniche, de la Campagne) et ajoute une fonction publique d'ouverture réutilisable.
+- Suite de la même demande de l'utilisateur : **WFS-410** (P1, E15 : lieux hors kit de la Corniche et de la Ville, église de la Campagne) et **WFS-411** (P2, E15 Neige : chalets au kit, skill expert-cartes), ⏳ en attente de la fusion de WFS-402, nouvelles sessions. Décision dans `regles-de-gestion/WFS-402.md` (Suivi).
