@@ -38,6 +38,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 namespace wfs { int benchCampagneObjets(Game& g, Renderer& r, const std::string& out); }   // WFS-372 (accroche) : src/world/decor_campagne_banc.cpp
+namespace wfs { int benchGrandPrixObjets(Game& g, Renderer& r, const std::string& out); }   // WFS-373 (accroche) : src/world/decor_grandprix_banc.cpp
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
@@ -264,6 +265,7 @@ int main(int argc, char** argv) {
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "rondspoints") { const int e = benchRondsPoints(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-223
+    if (banc == "grandprix-objets") { const int e = benchGrandPrixObjets(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-373 (accroche) : gros plans des objets du Grand Prix
     if (banc == "campagne-objets") { const int e = benchCampagneObjets(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-372 (accroche) : gros plans des objets agricoles
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
