@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | 🆕 À relire | — | 00:24 |
