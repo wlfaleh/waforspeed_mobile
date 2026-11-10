@@ -2237,3 +2237,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Vérification : 100 tests CPU verts après synchronisation avec `main` ; `test_course5_ordinateurs` rouge connu de `main` (WFS-404 / WFS-394), sans lien. Banc perf Ville de nuit, lavapipe, 2 mesures alternées : Basse `main` 348,7 / 362,8 ms, branche 378,0 / 368,1 ms (triangles +5,6 %) ; Haute +10 %.
 - Limites : surcoût de quelques % sur lavapipe, à confirmer sur le téléphone (ticket 🟡 après fusion). Suite : avis de l'agent 3D (E15), puis lead dev.
 
+### 2026-11-10 19:21:51 — Statuts automatiques, CI main #992 (robot statuts)
+- Run rouge (push, commit ac765f1), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
