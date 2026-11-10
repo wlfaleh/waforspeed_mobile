@@ -114,6 +114,14 @@ int main(int argc, char** argv) {
         VERIFIER(c.adversaires.size() == 3 && c.adversaires[0] == "Sam" && c.adversaires[2] == "Lou");
         Sauvegarde r; VERIFIER(r.lire(c.texte())); VERIFIER(r.adversaires == c.adversaires);   // ordre relu tel quel
     }
+    // WFS-375 (RG-02, RG-03) : seuls JOUR (midi) et NUIT restent ; un ancien moment se range dans l'un des deux au chargement
+    {
+        const char* jour[] = {"aube", "matin", "midi", "doree", "reel", "inconnu"};
+        for (const char* m : jour) { Sauvegarde s; VERIFIER(s.lire(std::string("version=1\ntrace=2\nmoment=") + m + "\n")); VERIFIER(s.moment == "midi"); }
+        for (const char* m : {"bleue", "nuit"}) { Sauvegarde s; VERIFIER(s.lire(std::string("version=1\ntrace=2\nmoment=") + m + "\n")); VERIFIER(s.moment == "nuit"); }
+        Sauvegarde v; VERIFIER(v.lire("version=1\ntrace=2\ntod=jour\n")); VERIFIER(v.moment.empty() && v.tod == "jour");   // sans moment : tod décide
+        Sauvegarde r; v.moment = "nuit"; VERIFIER(r.lire(v.texte())); VERIFIER(r.moment == "nuit");   // choix gardé d'une partie à l'autre
+    }
     std::printf(g_echecs ? "ÉCHEC (%d)\n" : "OK\n", g_echecs);
     return g_echecs ? 1 : 0;
 }

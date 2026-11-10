@@ -15,6 +15,7 @@
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
 #include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
+#include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
@@ -38,6 +39,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
+namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
@@ -181,6 +183,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "depart-campagne") { ui::chargerPolice(r); const int e = benchDepartCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-374 (accroche) : départ de la Campagne, gaz tenu dès le décompte ; ANO-233
     if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
     if (banc == "paquets") { const int e = ecrans::benchPaquets(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-306 (accroche) : installation des paquets (source factice)
@@ -243,6 +246,10 @@ int main(int argc, char** argv) {
         v.insert(v.end(), COCKPIT_LOT3A.begin(), COCKPIT_LOT3A.end()); v.insert(v.end(), COCKPIT_LOT3B.begin(), COCKPIT_LOT3B.end());   // WFS-202
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
+    }
+    if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        const int e = benchCockpitVoisine(g, r, out, v, {"golf", "x5", "abarth"}); finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
