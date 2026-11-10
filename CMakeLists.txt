@@ -161,7 +161,7 @@ else()
   add_executable(test_decor_campagne tests/test_decor_campagne.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp)   # WFS-372 : objets agricoles de la Campagne (mesures ±1 %, budget, qualité)
   add_executable(test_marina_bateaux tests/test_marina_bateaux.cpp src/world/marina_bateaux.cpp)   # WFS-376 : bateaux de la marina (mesures RG-04 / RG-05, budget RG-10, aucune voile hissée)
   add_executable(test_mobilier_ville tests/test_mobilier_ville.cpp src/world/mobilier_ville.cpp)   # WFS-369 : mobilier urbain de la Ville (mesures, vide des grilles, aucune forme nue, faces)
-  add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD)
+  add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD)
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fluidite_reference tests/test_fluidite_reference.cpp)   # WFS-293 (RG-10) : l'indicateur à 10-20 img/s voit les sauts
   add_executable(test_fidelite_lumiere_precalcule tests/fidelite_lumiere_precalcule.cpp src/render/eclairage_precalcule.cpp src/core/jobs.cpp)   # WFS-269 : occlusion du décor fixe précalculée
