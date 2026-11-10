@@ -74,9 +74,9 @@ struct ConfigJeu {
     } conduite;
     struct Voitures {   // WFS-191 : noms inventés par défaut (aucune marque ni aucun modèle réel affiché)
         NomVoiture nom[VOITURES_NB] = {
-            {"Vollmer", "Gala 8 GTS"}, {"Bavaro", "R4 Competizione"}, {"Pfeiler", "9F S"}, {"Toro", "Ventura V10 Spyder"},
+            {"Norvik", "Lume"}, {"Draven", "Vantor GT"}, {"Pfeiler", "9F S"}, {"Toro", "Ventura V10 Spyder"},
             {"Lionne", "L2"}, {"Scorpio", "Cinquina"}, {"Vollmer", "Trek-X"}, {"Ranger", "Bussola"}, {"Aurel", "R3 berline"},
-            {"Bavaro", "XR5"}, {"Alvar", "Giuliva Trefoil"}, {"Merkur", "A-Sport 45"}, {"Volta", "E3"}, {"Orion", "Corsaire"},
+            {"Bavaro", "XR5"}, {"Alvar", "Selene TS"}, {"Merkur", "A-Sport 45"}, {"Volta", "E3"}, {"Orion", "Corsaire"},
             {"Tamura", "Hachi"}, {"Hanseo", "Elanta R"}, {"Valka", "V6 Nordstern"}, {"Highland", "Sport"}, {"Stallion", "GT5"},
             {"Cavallo", "SF-X"}};
     } voitures;
@@ -87,6 +87,8 @@ struct ConfigJeu {
     struct Paquets {   // WFS-306 : liste des paquets de cartes (cartes.json de la Release « paquets », WFS-302) ; adresse https seulement
         char adresseListe[ADRESSE_MAX * 4 + 1] = "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json";
     } paquets;
+    // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
+    char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
 };
 
 // valeurs en cours (une seule instance, lue une fois par chargement ; jamais de fichier lu ici)

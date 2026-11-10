@@ -98,6 +98,7 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"qualite.plancher_moyenne", T::Flottant, &c.qualite.plancherMoyenne, 0.5, 1, "× résolution", "résolution la plus basse en qualité Moyenne"},
         {"qualite.reflet_route_mouillee", T::Flottant, &c.qualite.refletRouteMouillee, 0, 1.5, "×", "force du reflet de la rue sur la route mouillée (pluie)"},
         {"paquets.adresse_liste", T::Adresse, c.paquets.adresseListe, 12, ADRESSE_MAX, "caractères", "adresse https de la liste des paquets de cartes (cartes.json)"},   // WFS-306
+        {"confidentialite_url", T::Adresse, c.confidentialiteUrl, 0, ADRESSE_MAX, "caractères", "adresse https de la politique de confidentialité (écran Crédits) ; vide : ligne cachée"},   // WFS-406 (RG-06)
     };
 }
 // WFS-191 : section « voitures » : marque et modèle affichés de chaque voiture (clés « voitures.<id>.marque / .modele »)
@@ -281,7 +282,8 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
         if (estTexte(f.type)) {   // WFS-191 (RG-08) : marque ou modèle d'une voiture ; WFS-306 : adresse https
             std::string raison;
             if (v.genre != Valeur::Texte) raison = "texte attendu";
-            else if (f.type == Type::Adresse) { if (v.texte.rfind("https://", 0) != 0 || v.texte.size() > (size_t)f.max || v.texte.find_first_of(" \"\\<>") != std::string::npos ||
+            else if (f.type == Type::Adresse) { if (v.texte.empty() && f.min == 0) {}   // WFS-406 : adresse facultative, vide permis
+                                                else if (v.texte.rfind("https://", 0) != 0 || v.texte.size() > (size_t)f.max || v.texte.find_first_of(" \"\\<>") != std::string::npos ||
                                                      std::any_of(v.texte.begin(), v.texte.end(), [](char ch) { return (unsigned char)ch < 0x21 || (unsigned char)ch > 0x7E; })) raison = "adresse https attendue"; }
             else texteValide(v.texte, (int)f.min, (int)f.max, raison);
             if (!raison.empty()) {

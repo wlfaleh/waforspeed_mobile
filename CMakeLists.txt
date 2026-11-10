@@ -113,6 +113,7 @@ else()
   target_link_libraries(test_voitures_retirees Threads::Threads)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_reglages_appui tests/test_reglages_appui.cpp)   # WFS-290 : cible de 48 dp, anti-rebond des réglages
+  add_executable(test_credits tests/test_credits.cpp src/ui/credits_texte.cpp)   # WFS-406 : écran Crédits (lecture de CREDITS.txt, noms, RG-06)
   add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
   add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
   add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
