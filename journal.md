@@ -1975,3 +1975,7 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 
 ### 2026-11-10 14:23:45 — Épic « Publication app » en attente du jour de publication (po-scrum-master)
 - Ordre de l'utilisateur : WFS-319, 408, 409, 407 (et le suivi WFS-320) vont dans l'épic **Publication app** et attendent le jour de publication ; l'utilisateur préviendra le PO. Statut ⏸ ; WFS-319 reste à l'agent expert ci (session 01UY1Vv4), suspendu. Ordre permanent ajouté au skill du PO.
+
+### 2026-11-10 14:31:39 — WFS-404 attribué à Claude, agent devartiste (01UY1Vv2ReCX) (po-scrum-master)
+- Nouvelle session `dev-artiste-3d` (aucun ticket avant) : **WFS-404** (P1 super urgent, E10, 1re de l'ordre des 50 tâches). WFS-323 déjà fusionné (#335, 🟡) : la note « WFS-323 à la prochaine session @devartiste » est dépassée.
+- Zone : celle de `regles-de-gestion/WFS-404.md` (exception PO) ; pas `assets/cars/remplacants/`, pas le reste du cockpit. Hors E15 : pas d'avis de l'agent 3D obligatoire. Branche `feature/waforspeed-404` à pousser tout de suite.
