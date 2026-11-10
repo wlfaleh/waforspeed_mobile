@@ -101,6 +101,32 @@ constexpr uint8_t SEG_N = 0x37, SEG_R = 0x50;
 struct Valeurs { int kmh = 0; float regime = 0; int rapport = 0; float nitro = 0; bool nuit = false; };
 inline int vitesseAffichee(double kmh) { return (int)std::clamp(std::lround(std::fabs(kmh)), 0L, 999L); }
 
+// ---------- WFS-323 (ANO-188) : partie du combiné vue par l'ouverture haute du volant ----------
+// L'œil de la caméra est OEIL_CAMERA_PLUS_M au-dessus de l'œil du siège (= COCKPIT_OEIL_PLUS_M de camera_vue.h, vérifié par
+// static_assert dans camera_vue.cpp). Rayon de l'œil vers le bord intérieur du haut de la jante, puis vers le haut du coussin du
+// volant : prolongés jusqu'au plan du combiné, ils bornent la bande vue (y du repère du combiné, m, 0 = centre ; bornée à la hauteur
+// du combiné). Sur un SUV (œil haut : X5), le haut de la jante passe devant le haut du combiné : la vitesse y était cachée
+constexpr float OEIL_CAMERA_PLUS_M = 0.04f, COUSSIN_VOLANT_H = 0.115f;
+struct BandeCombine { float bas, haut; };
+inline BandeCombine bandeLisibleCombine(const InterieurDef& d) {
+    const float R = d.volantD * 0.5f - d.janteEp * 0.5f, c = std::cos(d.volantIncl), s = std::sin(d.volantIncl);
+    // point du volant (repère du volant : y en haut, z vers le conducteur) → repère de l'œil du siège (rotateX(volantIncl), puis volantPos)
+    auto point = [&](float yv, float zv) { return vec2{d.volantPos.y + yv * c - zv * s, d.volantPos.z + yv * s + zv * c}; };
+    auto surCombine = [&](vec2 p) {   // rayon de l'œil de la caméra par p, prolongé jusqu'au plan du combiné (z constant)
+        const float dy = p.x - OEIL_CAMERA_PLUS_M;
+        return p.y < -1e-3f ? OEIL_CAMERA_PLUS_M + dy * (d.combinePos.z / p.y) - d.combinePos.y : 1e3f;
+    };
+    const float haut = std::min(d.combineH * 0.5f, surCombine(point(R - d.janteEp * 0.5f, 0)));
+    const float bas = std::max(-d.combineH * 0.5f, surCombine(point(COUSSIN_VOLANT_H * 0.5f, 0.013f)));
+    return {bas, std::max(bas, haut)};
+}
+// chiffres de hauteur h (au plus hMax) posés à y0 (bas), ramenés dans la bande lisible avec une marge de 8 % de la hauteur du combiné
+inline void placerDansBande(const BandeCombine& b, float H, float& y0, float& h) {
+    const float m = H * 0.08f;
+    h = std::min(h, std::max(H * 0.2f, b.haut - b.bas - 2 * m));
+    y0 = std::clamp(y0, b.bas + m, std::max(b.bas + m, b.haut - m - h));
+}
+
 // ---------- écran central : carte (RG-05) ----------
 // point du monde (x, z) dans le repère de la voiture : u à droite, v devant (m) ; cap = direction de la voiture
 // (th de la route + cap du joueur), même convention que la caméra (avant = (sin cap, −cos cap))
@@ -179,7 +205,9 @@ PareBriseVu& pareBriseVu();
 // WFS-354 (RG-01) : axes des montants dessinés (repère de l'œil) : pieds à ±montant, haut rentré de RETRAIT_MONTANT_HAUT ;
 // barres de LARGEUR_MONTANT × EPAISSEUR_MONTANT (mêmes cotes que barre(mont…) d'Interieur::construire). PareBriseVu::coins les
 // porte ; la vitre visible de l'œil (sans ce que la barre cache) est calculée par la pluie (meteo::vitreVue)
-constexpr float LARGEUR_MONTANT = 0.075f, EPAISSEUR_MONTANT = 0.05f, RETRAIT_MONTANT_HAUT = 0.10f;
+// WFS-323 (avis agent 3D) : garniture du montant de 9 cm de face (EPAISSEUR, en travers ; 5 cm avant : « arceau de sécurité ») ;
+// montants de berline 8 à 12 cm de face vus de l'œil (E)
+constexpr float LARGEUR_MONTANT = 0.075f, EPAISSEUR_MONTANT = 0.09f, RETRAIT_MONTANT_HAUT = 0.10f;
 // WFS-323 (RG-ANO-207) : haut du pare-brise (traverse avant du pavillon), repère de l'œil (m). Avant : 0,40 m au-dessus de l'œil et
 // 0,42 m devant (43° au-dessus du regard : hors de l'image, on voyait le ciel au-dessus du pare-brise, ANO-207). Vision vers le
 // haut d'une berline (angle SAE J1050 « upward vision », 14 à 20° : estimé) : traverse à 0,21 m au-dessus de l'œil et 0,52 m devant

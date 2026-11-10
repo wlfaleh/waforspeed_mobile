@@ -181,6 +181,44 @@ void profile(Geo& g, const mat4& M, vec3 a, vec3 b, float w, float t, float r, f
         for (size_t k = 0; k < n; k++) triOriente(g, c0, debut[s] + (uint32_t)k, debut[s] + (uint32_t)((k + 1) % n));
     }
 }
+// pièce moulée balayée le long d'une ligne brisée (visière du combiné) : à chaque station, section arrondie de largeur w (en
+// travers, axe x) et d'épaisseur e (verticale), rayon r ; normales lissées entre stations ; bouts fermés par une calotte chanfreinée
+void lisse(Geo& g, const mat4& M, const std::vector<vec3>& pts, float w, float e, float r) {
+    if (pts.size() < 2) return;
+    const Contour c = contourArrondi(w, e, r, 4);
+    const size_t n = c.p.size(), m = pts.size();
+    std::vector<uint32_t> debut;
+    std::vector<vec3> ts(m), us(m), ss(m);
+    for (size_t i = 0; i < m; i++) {
+        const vec3 t = normalize(pts[std::min(i + 1, m - 1)] - pts[i > 0 ? i - 1 : 0]);
+        const vec3 u = normalize(vec3{0, 1, 0} - t * dot(vec3{0, 1, 0}, t));
+        ts[i] = t; us[i] = u; ss[i] = cross(t, u);
+    }
+    auto anneau = [&](size_t i, float k, vec3 decal, float nt) {
+        debut.push_back((uint32_t)g.v.size());
+        for (size_t j = 0; j < n; j++) {
+            const vec3 q = pts[i] + decal + ss[i] * (c.p[j].x * k) + us[i] * (c.p[j].y * k);
+            const vec3 nn = normalize((ss[i] * c.n[j].x + us[i] * c.n[j].y) * (1 - std::fabs(nt)) + ts[i] * nt);
+            ajouterUV(g, M, q, nn, q.x * GRAIN, (q.y + q.z) * GRAIN);
+        }
+    };
+    const float ch = std::min(r, e * 0.4f);
+    anneau(0, 0.8f, ts[0] * -ch, -0.6f);
+    for (size_t i = 0; i < m; i++) anneau(i, 1.f, {}, 0.f);
+    anneau(m - 1, 0.8f, ts[m - 1] * ch, 0.6f);
+    for (size_t a = 0; a + 1 < debut.size(); a++) for (size_t j = 0; j < n; j++) {
+        const uint32_t i0 = debut[a] + (uint32_t)j, i1 = debut[a] + (uint32_t)((j + 1) % n);
+        quadOriente(g, i0, i1, i1 + (uint32_t)n, i0 + (uint32_t)n);
+    }
+    for (size_t bout : {(size_t)0, debut.size() - 1}) {
+        const size_t i = bout == 0 ? 0 : m - 1;
+        const vec3 centre = pts[i] + ts[i] * (bout == 0 ? -ch : ch);
+        const uint32_t c0 = (uint32_t)g.v.size();
+        ajouterUV(g, M, centre, ts[i] * (bout == 0 ? -1.f : 1.f), 0, 0);
+        for (size_t j = 0; j < n; j++) triOriente(g, c0, debut[bout] + (uint32_t)j, debut[bout] + (uint32_t)((j + 1) % n));
+    }
+}
+
 // cadre arrondi (lunette d'aérateur, entourage d'écran) : contour extérieur w × h, bande de largeur ep, profondeur pr, face
 // tournée vers +z du repère, bords intérieur et extérieur arrondis (un pas de biseau)
 void cadreArrondi(Geo& g, const mat4& M, float w, float h, float r, float ep, float pr) {
@@ -486,13 +524,21 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const std::vector<vec2> pCreux{{Yb, Zb}, {Yc, d.combinePos.z - 0.03f}, {Yc, Z - 0.02f}, {Yc - 0.03f, Z}};
         if (combine) { extruder(haut, I, pHaut, x0, xa); extruder(haut, I, pHaut, xb, x1); extruder(creux, I, pCreux, xa, xb); }
         else extruder(haut, I, pHaut, x0, x1);
-        extruder(face, I, {{Y - 0.035f, Z}, {Y - 0.09f, zFace}, {Y - 0.42f, zFace}, {Y - 0.58f, zFace + 0.20f}}, x0, x1);
+        // WFS-323 (ANO-188) : devant le combiné, la face part du bas du creux (Yc − 0,03), plus de la lèvre (Y − 0,035) : le haut de la
+        // face, 8 cm devant l'écran, passait à mi-hauteur du combiné vu de l'œil et cachait le bas des chiffres (« 58 » lu « SA »)
+        const std::vector<vec2> pFace{{Y - 0.035f, Z}, {Y - 0.09f, zFace}, {Y - 0.42f, zFace}, {Y - 0.58f, zFace + 0.20f}};
+        const std::vector<vec2> pFaceCreux{{Yc - 0.03f, Z}, {std::min(Y - 0.09f, Yc - 0.05f), zFace}, {Y - 0.42f, zFace}, {Y - 0.58f, zFace + 0.20f}};
+        if (combine) { extruder(face, I, pFace, x0, xa); extruder(face, I, pFace, xb, x1); extruder(face, I, pFaceCreux, xa, xb); }
+        else extruder(face, I, pFace, x0, x1);
         prend(haut, M_PLANCHE_HAUT); prend(creux, M_PLANCHE_HAUT); prend(face, M_PLANCHE_BAS);
         // casquette (visière) du combiné : avance de la lèvre vers le conducteur au-dessus de l'écran
         Geo cas;
         const float cw = d.combineW * 0.5f + 0.03f, top = d.combinePos.y + d.combineH * 0.5f + 0.02f;
-        extruder(cas, I, {{Yb, d.combinePos.z - 0.10f}, {top + 0.015f, d.combinePos.z - 0.03f}, {top + 0.012f, d.combinePos.z + 0.07f},
-                          {top - 0.012f, d.combinePos.z + 0.075f}}, d.combinePos.x - cw, d.combinePos.x + cw);
+        // WFS-323 (revue du lead dev) : visière moulée (épaisseur 2,4 cm, arêtes arrondies de 1,1 cm, lèvre fermée par une calotte), le
+        // long de la même ligne qu'avant (du pied du pare-brise jusqu'à 7,5 cm devant l'écran) ; avant : profil extrudé à arêtes vives (bloc)
+        const float ev = 0.024f, cz = d.combinePos.z, cxv = d.combinePos.x;
+        lisse(cas, I, {{cxv, Yb - ev * 0.5f, cz - 0.10f}, {cxv, top + 0.015f - ev * 0.5f, cz - 0.03f}, {cxv, top + 0.012f - ev * 0.5f, cz + 0.04f},
+                       {cxv, top + 0.004f - ev * 0.5f, cz + 0.068f}}, 2 * cw, ev, 0.011f);
         if (combine) prend(cas, M_PLANCHE_HAUT); else cas = Geo{};
         // jonc décoratif sur toute la largeur, sous la lèvre (alu brossé, carbone, ou liseré rouge de la Golf)
         Geo jonc;
@@ -542,12 +588,12 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // (garniture moulée) qui montent jusqu'à la traverse. Avant : montants jusqu'à 0,40 m au-dessus de l'œil et pavillon à
     // 0,43 m, hors de l'image : on voyait le ciel au-dessus du pare-brise (cabriolet, ANO-207)
     {
-        Geo mont, pav, ret, porte, glace, chrome;
+        Geo mont, pav, ret, porte, glace, chrome, axes;
         const float xh = montant_ - RETRAIT_MONTANT_HAUT, yh = HAUT_PARE_BRISE_Y, zh = HAUT_PARE_BRISE_Z;
         const vec3 bas[2] = {{cx_ - montant_, Yb, Zb}, {cx_ + montant_, Yb, Zb}};   // WFS-315 : pieds des montants à leur écart réel
         const vec3 haut[2] = {{cx_ - xh, yh, zh}, {cx_ + xh, yh, zh}};
         // WFS-354 : section dans les cotes de la vitre de la pluie (LARGEUR × EPAISSEUR), arêtes arrondies (rayon 2 cm, garniture)
-        for (int k = 0; k < 2; k++) profile(mont, I, bas[k], haut[k], LARGEUR_MONTANT, EPAISSEUR_MONTANT, 0.02f, EPAISSEUR_MONTANT * 1.15f);
+        for (int k = 0; k < 2; k++) profile(mont, I, bas[k], haut[k], LARGEUR_MONTANT, EPAISSEUR_MONTANT, 0.025f);
         // ciel de toit : de la traverse (yh) il monte vers CIEL_DE_TOIT_Y à 0,25 m devant l'œil, puis reste plat jusqu'à 0,5 m
         // derrière ; bombé en travers (les bords descendent de 3 cm vers les rails, sauf contre la traverse) ; normale vers le bas
         auto hautToit = [&](float z) { const float t = std::clamp((z - zh) / (-0.25f - zh), 0.f, 1.f); return yh + (CIEL_DE_TOIT_Y - yh) * t * t * (3 - 2 * t); };
@@ -584,7 +630,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             for (float s : {-1.f, 1.f}) {
                 const float xs = cx_ + s * (xh * 0.55f);
                 dalle(pav, translate({xs, ys, zs}) * rotateX(pente), ws, 0.17f, 0.028f, 0.03f, 0.009f, 0.97f);
-                profile(chrome, I, {xs - s * (ws * 0.5f + 0.005f), ys + 0.004f, zs - 0.07f}, {xs - s * (ws * 0.5f + 0.005f), ys + 0.012f, zs + 0.03f}, 0.011f, 0.011f, 0.0055f);
+                // axe du pare-soleil : plastique mat (en chrome, son reflet faisait un point blanc en haut de l'image : avis agent 3D)
+                profile(axes, I, {xs - s * (ws * 0.5f + 0.005f), ys + 0.004f, zs - 0.07f}, {xs - s * (ws * 0.5f + 0.005f), ys + 0.012f, zs + 0.03f}, 0.011f, 0.011f, 0.0055f);
             }
         }
         // rétroviseur intérieur (≈ 250 × 70 mm, coque moulée à dépouille, glace à coins arrondis) accroché au pare-brise sous la
@@ -593,7 +640,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         {
             const vec3 eu = normalize(vec3{0, yh - Yb, zh - Zb}), en = normalize(cross(vec3{1, 0, 0}, eu));   // plan du pare-brise (normale vers l'habitacle)
             const vec3 pied = vec3{cx_, Yb, Zb} + eu * (length(vec3{0, yh - Yb, zh - Zb}) - 0.05f) + en * 0.004f;
-            const vec3 c{cx_ - 0.01f, pied.y - 0.045f, pied.z + 0.06f};    // centre de la coque (tige de ≈ 7 cm)
+            const vec3 c{cx_ - 0.01f, pied.y - 0.062f, pied.z + 0.06f};    // centre de la coque (tige de ≈ 8 cm, visible au-dessus de la coque)
             const float lacet = std::atan2(-c.x, -c.z) * 0.5f;              // la glace vise l'œil (réglage du conducteur : moitié de l'angle)
             const mat4 R = translate(c) * rotateY(lacet) * rotateX(std::atan2(c.y, -c.z) * 0.5f);
             dalleFace(ret, R, 0.25f, 0.07f, 0.04f, 0.028f, 0.010f, 0.82f);
@@ -605,7 +652,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
                 B.at(0, 2) = ez.x; B.at(1, 2) = ez.y; B.at(2, 2) = ez.z;
                 dalle(ret, translate(pied) * B, 0.05f, 0.035f, 0.008f, 0.012f, 0.003f);
             }
-            profile(ret, I, pied + en * 0.004f, c + vec3{0, 0.02f, -0.012f}, 0.018f, 0.014f, 0.007f, 0.012f, 0.013f);
+            profile(ret, I, pied + en * 0.004f, c + vec3{0, 0.02f, -0.012f}, 0.024f, 0.020f, 0.009f, 0.016f, 0.017f);
         }
         // contre-portes : panneau intérieur sous la vitre, accoudoir (place du conducteur et du passager)
         // WFS-349 (RG-02) : habitacle fermé (boitesFermeture, vehicule_cockpit.h) : chaque portière est un bloc plein de 12 cm, de
@@ -625,7 +672,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             dalle(porte, translate({cx_ + sx * (demi_ - 0.02f), Y - 0.24f, -0.20f}), 0.06f, 0.45f, 0.05f, 0.025f, 0.015f, 0.9f);   // accoudoir
             dalle(chrome, translate({xi - sx * 0.004f, Y - 0.12f, -0.50f}) * rotateZ(sx * PI / 2), 0.03f, 0.11f, 0.012f, 0.012f, 0.004f);   // poignée
         }
-        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PORTE); prend(chrome, M_CHROME);
+        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PORTE); prend(chrome, M_CHROME); prend(axes, M_PLANCHE_BAS);
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -758,6 +805,15 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     const bool surEcran = d.combine == Combine::Aucun;   // WFS-201 : Model 3 : bande de gauche (34 %) de l'écran central
     const float W = surEcran ? d.ecranW * 0.34f : d.combineW, H = surEcran ? d.ecranH * 0.90f : d.combineH, kmh = (float)val.kmh;
     const float vit = std::clamp(kmh / 320.f, 0.f, 1.f), reg = std::clamp(val.regime, 0.f, 1.f), nit = std::clamp(val.nitro, 0.f, 1.f);
+    // WFS-323 (ANO-188) : vitesse en chiffres d'au moins 22 % de la hauteur, ramenée dans la partie du combiné vue par l'ouverture
+    // haute du volant (bandeLisibleCombine) ; i-Cockpit (vu au-dessus du volant) et Model 3 (écran central) : position du style
+    // renvoie le haut des chiffres (le rapport peut se poser juste au-dessus)
+    auto vitesse = [&](float xd, float y0, float h) {
+        h = std::max(h, H * 0.22f);
+        if (!surEcran && d.combine != Combine::PeugeotICockpit) placerDansBande(bandeLisibleCombine(d), H, y0, h);
+        nombre(A, xd, y0, h, (int)kmh, 3);
+        return y0 + h;
+    };
     auto barreNitro = [&](float x0, float y0, float x1, float y1) {   // jauge de nitro horizontale
         F.rect(x0, y0, x1, y1); A.rect(x0, y0, x0 + (x1 - x0) * nit, y1);
     };
@@ -766,21 +822,27 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         const float rc = H * 0.44f;
         arcBarres(A, F, R, {-W * 0.30f, 0}, rc * 0.78f, rc, PI * 1.25f, -PI * 0.25f, 40, vit, 2.f, 0.0028f);
         arcBarres(A, F, R, {W * 0.30f, 0}, rc * 0.78f, rc, PI * 1.25f, -PI * 0.25f, 40, reg, 0.85f, 0.0028f);
-        nombre(A, 0.022f, -H * 0.08f, H * 0.40f, (int)kmh, 3);   // WFS-323 (ANO-188) : chiffres de 40 % de la hauteur (30 % avant)
+        float y0 = -H * 0.08f, h = H * 0.40f;   // WFS-323 (ANO-188) : chiffres de 40 % de la hauteur (30 % avant), dans la bande vue
+        if (!surEcran) placerDansBande(bandeLisibleCombine(d), H, y0, h);
+        nombre(A, 0.022f, y0, h, (int)kmh, 3);
         rapport(A, W * 0.30f - H * 0.08f, -H * 0.12f, H * 0.26f, val.rapport);
         barreNitro(-W * 0.10f, -H * 0.38f, W * 0.10f, -H * 0.33f);
         break;
     }
-    case Combine::BmwLive: {   // vitesse en chiffres à gauche, régime en barres qui montent vers la droite, rapport au centre
-        nombre(A, -W * 0.16f, -H * 0.14f, H * 0.42f, (int)kmh, 3);   // WFS-323 (ANO-188) : chiffres de 42 % de la hauteur (34 % avant)
+    case Combine::BmwLive: {   // vitesse en chiffres à gauche du centre, rapport au centre, régime en barres qui montent vers la droite
+        // WFS-323 (ANO-188) : chiffres de 42 % de la hauteur (34 % avant), rapprochés du centre (fin à −3 % au lieu de −16 % de la largeur) :
+        // vus par l'ouverture haute du volant ; à gauche, la jante qui descend les cachait (M4, X5)
+        float y0 = -H * 0.14f, h = H * 0.42f;
+        placerDansBande(bandeLisibleCombine(d), H, y0, h);   // X5 : sous le haut de la jante
+        nombre(A, -W * 0.03f, y0, h, (int)kmh, 3);
         const int n = 34;
         for (int k = 0; k < n; k++) {
-            const float f = (k + 0.5f) / n, x = W * (0.02f + 0.44f * f), h = H * (0.12f + 0.55f * f * f);
+            const float f = (k + 0.5f) / n, x = W * (0.10f + 0.36f * f), h = H * (0.12f + 0.55f * f * f);
             Plan2D& c = f <= reg ? (f >= 0.82f ? R : A) : F;
-            c.rect(x, -H * 0.30f, x + W * 0.44f / n * 0.6f, -H * 0.30f + h);
+            c.rect(x, -H * 0.30f, x + W * 0.36f / n * 0.6f, -H * 0.30f + h);
         }
-        rapport(A, -W * 0.07f, -H * 0.12f, H * 0.30f, val.rapport);
-        barreNitro(-W * 0.44f, -H * 0.38f, -W * 0.22f, -H * 0.33f);
+        rapport(A, W * 0.005f, y0, h * 0.72f, val.rapport);
+        barreNitro(W * 0.10f, -H * 0.42f, W * 0.46f, -H * 0.37f);   // sous les barres du régime (la vitesse descend sur la X5)
         break;
     }
     case Combine::Porsche5: {   // 5 cadrans : compte-tours analogique au centre (vitesse numérique dedans), 4 autour
@@ -790,7 +852,7 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         arcBarres(R, R, R, {0, 0}, rc * 0.86f, rc, PI * 1.25f - PI * 1.5f * 0.84f, -PI * 0.25f, 3, 1.f, 2.f, 0.0022f);   // zone rouge
         const float aig = PI * 1.25f - PI * 1.5f * reg;
         A.trait({0, 0}, aig, -rc * 0.12f, rc * 0.92f, 0.0026f);
-        nombre(A, H * 0.17f, -rc * 0.60f, H * 0.17f, (int)kmh, 3);
+        vitesse(H * 0.20f, -rc * 0.60f, H * 0.22f);
         rapport(A, -H * 0.04f, rc * 0.18f, H * 0.16f, val.rapport);
         for (int k : {-2, -1, 1, 2}) {   // cadrans latéraux : vitesse (à gauche du centre), nitro (à droite), deux écrans
             const vec2 c{k * W * 0.205f, -H * 0.04f};
@@ -803,8 +865,10 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     case Combine::FerrariIncurve: {   // écran large : compte-tours circulaire au centre (rouge en haut), vitesse et rapport dedans
         const float rc = H * 0.46f;
         arcBarres(A, F, R, {0, 0}, rc * 0.80f, rc, PI * 1.30f, -PI * 0.30f, 52, reg, 0.80f, 0.0026f);
-        rapport(A, -H * 0.10f, -H * 0.05f, H * 0.34f, val.rapport);
-        nombre(A, H * 0.22f, -rc * 0.80f, H * 0.14f, (int)kmh, 3);
+        // WFS-323 (ANO-188) : vitesse de 30 % de la hauteur dans la bande vue, rapport (24 %) posé juste au-dessus (SF90, Abarth : la
+        // bande remontait la vitesse sur le rapport)
+        const float hautV = vitesse(H * 0.17f, -rc * 0.80f, H * 0.30f);
+        rapport(A, -H * 0.07f, hautV + H * 0.03f, H * 0.24f, val.rapport);
         barreNitro(-W * 0.44f, -H * 0.30f, -W * 0.24f, -H * 0.24f);   // panneau gauche (véhicule) ; la carte est à droite
         break;
     }
@@ -813,7 +877,7 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
         cadran(F, A, R, {W * 0.29f, 0}, rc, reg, 0.85f, 26, 0.0022f);
         rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
-        nombre(A, H * 0.30f, -H * 0.36f, H * 0.16f, (int)kmh, 3);
+        vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
         barreNitro(-W * 0.10f, -H * 0.44f, W * 0.10f, -H * 0.40f);
         break;
     }
@@ -823,7 +887,7 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         cadran(F, A, R, {W * 0.30f, 0}, rc, reg, 0.82f, 24, 0.0024f);
         F.rect(-W * 0.12f, -H * 0.40f, W * 0.12f, H * 0.40f);   // écran central du combiné
         rapport(A, -H * 0.08f, -H * 0.02f, H * 0.28f, val.rapport);
-        nombre(A, W * 0.10f, -H * 0.34f, H * 0.14f, (int)kmh, 3);
+        vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
         break;
     }
     case Combine::PeugeotICockpit: {   // i-Cockpit 3D (208), vu au-dessus du volant : régime en barre en haut, vitesse et rapport au centre
@@ -841,16 +905,16 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     case Combine::LamboCompteTours: {   // Gallardo : grand compte-tours au centre (rapport numérique dedans), vitesse à droite, jauges à gauche
         const float rc = H * 0.48f, rs = H * 0.30f;
         cadran(F, A, R, {0, 0}, rc, reg, 0.86f, 30, 0.0026f);
-        rapport(A, -H * 0.06f, -rc * 0.62f, H * 0.20f, val.rapport);
+        rapport(A, -H * 0.06f, -H * 0.02f, H * 0.18f, val.rapport);
         cadran(F, A, R, {W * 0.33f, -H * 0.06f}, rs, vit, 2.f, 18, 0.0018f);
-        nombre(A, W * 0.33f + H * 0.14f, -H * 0.42f, H * 0.11f, (int)kmh, 3);
+        vitesse(H * 0.21f, -H * 0.42f, H * 0.22f);   // WFS-323 : au centre, sous le rapport (à droite, la jante la cachait)
         cadran(F, A, R, {-W * 0.33f, -H * 0.06f}, rs, nit, 2.f, 18, 0.0018f);   // jauge : réserve de nitro
         break;
     }
     case Combine::FordDigital: {   // Shelby GT500 : compte-tours en arc sur toute la largeur, vitesse au centre, rapport à droite
         const vec2 c{0, -H * 0.62f};
         arcBarres(A, F, R, c, H * 0.90f, H * 1.05f, PI * 0.88f, PI * 0.12f, 46, reg, 0.86f, 0.0030f);
-        nombre(A, H * 0.32f, -H * 0.30f, H * 0.40f, (int)kmh, 3);
+        vitesse(H * 0.32f, -H * 0.30f, H * 0.40f);
         rapport(A, W * 0.30f, -H * 0.24f, H * 0.30f, val.rapport);
         barreNitro(-W * 0.44f, -H * 0.40f, -W * 0.24f, -H * 0.34f);
         break;

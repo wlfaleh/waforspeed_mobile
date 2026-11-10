@@ -72,6 +72,8 @@ VueCamera vueSuivante() { choisirVue(vueApres(g_vue)); return g_vue; }
 const EtatCockpit& etatCockpit() { return g_ck; }
 bool boutonVue(float& cx, float& cy) { cx = g_bouton.x + g_bouton.w / 2; cy = g_bouton.y + g_bouton.h / 2; return g_bouton.w > 0; }
 
+static_assert(COCKPIT_OEIL_PLUS_M == cockpit::OEIL_CAMERA_PLUS_M, "WFS-323 : bande lisible du combiné calculée pour l'œil de la caméra");
+
 // ---------- WFS-235 : regard du conducteur en vue Cockpit (RG-02 à RG-04) ----------
 namespace {
 RegardCockpit g_regardChoisi = RegardCockpit::Normal;
@@ -643,6 +645,17 @@ void benchCockpitReference(Game& g, Renderer& r, const std::string& out) {
             }
         }
     if (course("golf", "ville", true)) { rouler(60); ligneDroite(); rouler(20); capture("cockpit-reference-golf-ville-nuit"); }
+    // WFS-323 (ANO-188, revue du lead dev) : combiné de chaque voiture, de jour, en ligne droite (agrandissement fait à partir de
+    // l'image entière) ; bande vue par l'ouverture haute du volant au journal
+    for (int i = 0; i < cockpit::nombreInterieurs(); i++) {
+        const cockpit::InterieurDef& d = cockpit::interieur(i);
+        const cockpit::BandeCombine b = cockpit::bandeLisibleCombine(d);
+        if (d.combine == cockpit::Combine::Aucun || d.combine == cockpit::Combine::PeugeotICockpit)
+            WFS_LOG("combiné %s (WFS-323) : %s", d.car, d.combine == cockpit::Combine::Aucun ? "vitesse sur l'écran central" : "i-Cockpit, lu au-dessus du volant");
+        else WFS_LOG("combiné %s (WFS-323) : hauteur %.0f mm, bande vue par le volant %+.0f..%+.0f mm du centre (%.0f %% de la hauteur)", d.car,
+                d.combineH * 1000, b.bas * 1000, b.haut * 1000, d.combineH > 0 ? 100 * (b.haut - b.bas) / d.combineH : 0.f);
+        if (course(d.car, "plage", false)) { rouler(60); ligneDroite(); rouler(20); capture(std::string("cockpit-reference-combine-") + d.car); }
+    }
     g.shutdown();
     unsetenv("WFS_MOMENT");
     courseBenchRules(regles);

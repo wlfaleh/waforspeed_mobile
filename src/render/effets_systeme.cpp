@@ -215,11 +215,16 @@ public:
         // couleur × fondu (k du jeu web) convertie en HDR pour ressortir à l'écran comme au jeu web
         const float p11 = std::max(1e-3f, std::abs(g.proj.at(1, 1)));
         etincelles_.clear();
-        // WFS-323 (accroche, ANO-204) : en vue Cockpit, l'œil est dans la voiture : une étincelle ou une volute née à moins de 2,5 m
-        // de lui est dans l'habitacle (le choc a lieu contre la carrosserie, dehors) ; elle n'est pas dessinée (avant : grands disques
-        // flous sur le volant et la planche)
+        // WFS-323 (accroche, ANO-204) : en vue Cockpit, une étincelle ou une volute DANS l'habitacle (boîte de l'habitacle dans le repère
+        // de l'intérieur : œil du conducteur à l'origine, x à droite, −z devant) n'est pas dessinée ; dehors (choc sur le côté, vu par
+        // la vitre) elle reste. Avant : grands disques flous sur le volant et la planche
         const bool cockpit = etatCockpit().actif;
-        auto dansHabitacle = [&](const vec3& p) { return cockpit && length(p - g.camPos) < 2.5f; };
+        const mat4 versHab = cockpit ? inverseAffine(etatCockpit().repere) : mat4::identity();
+        auto dansHabitacle = [&](const vec3& p) {
+            if (!cockpit) return false;
+            const vec3 q = versHab.transformPoint(p);
+            return q.x > -0.45f && q.x < 1.20f && q.y > -1.0f && q.y < 0.35f && q.z > -1.3f && q.z < 1.2f;
+        };
         for (const auto& q : parts_.sparks().p) {
             if (!q.vivante() || dansHabitacle(q.p)) continue;
             const float d = std::max(0.f, dot(g.camPos - q.p, nrm));   // profondeur dans l'axe de la caméra
