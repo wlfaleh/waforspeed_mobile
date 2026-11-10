@@ -2447,6 +2447,7 @@ public:
         const int64_t pc = (int64_t)std::floor(g.player->dist / SEG) / CH;
         int draws = 0;
         auto dessinPart = [&](int p, const Mesh& m, const mat4& M) {
+            if (p == P_NAPPE && r.qualiteBasse) return;   // WFS-380 (RG-07) : en Basse, pas de nappe du ressac (eau simplifiée)
             if (p == P_ROUTE) r.draw(m, mats_[p], M, 4.5f);   // rue transversale : 9 m
             else if (p == P_GIR) r.draw(m, mats_[p], M, 100.f);   // WFS-248 : anneau (aucun marquage de la chaussée)
             else r.draw(m, mats_[p], M);
