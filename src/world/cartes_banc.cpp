@@ -228,7 +228,7 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
 void benchVille(Game& g, Renderer& r, const std::string& out) {
     if (!trace::carteActive("ville")) return;
     Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
-    struct Lieu { std::string nom; int64_t seg; double avant; bool nuit; int cam = 0; VueCamera vue = VueCamera::Poursuite; };   // cam 1 : caméra haute (contrôle du côté intérieur) ; vue : WFS-326
+    struct Lieu { std::string nom; int64_t seg; double avant; bool nuit; int cam = 0; VueCamera vue = VueCamera::Poursuite; float lat = 0, hc = 0.7f, recul = 6; };   // WFS-369 : cam 4, gros plan d'un objet (lat, hauteur visée, recul)   // cam 1 : caméra haute (contrôle du côté intérieur) ; vue : WFS-326
     std::vector<Lieu> lieux;
     int virages = 0; bool fx = false, rp = false, au = false, tu = false, po = false;
     const int64_t m40 = (int64_t)(40 / SEG_M);
@@ -271,6 +271,23 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         if (!P.carrefours.empty()) lieux.push_back({"carte-ville-pigeons", P.carrefours[0].croise - (int64_t)(15 / SEG_M), -20, false});
         // WFS-269 : gros plans de l'occlusion précalculée : pied de façade d'un immeuble de plus de 15 m, vu du trottoir à hauteur
         // d'homme (cam 3) ; 3 immeubles répartis sur le tour, le premier aussi de nuit (WFS_SANS_AO : même vue sans)
+        {   // WFS-369 (accroche) : gros plans du mobilier modélisé (cam 4 : œil au bord du trottoir, objet visé), jour et nuit
+            auto premier = [&](ville::Type ty, const char* nom, float hc, float recul) {
+                for (int64_t a = 0; a < (int64_t)P.objets.size(); a++) for (const ville::Objet& o : P.objets[(size_t)a])
+                    if (o.t == ty && (a >= (int64_t)P.voie.size() || P.voie[(size_t)a] == 0)) {
+                        lieux.push_back({nom, a * 2 + (o.side > 0), 0, true, 4, VueCamera::Poursuite, o.t == ville::LAMPE ? (float)RW + 0.8f : o.t == ville::ABRIBUS ? (float)RW + 3.8f : o.lat, hc, recul}); return; }
+            };
+            premier(ville::BANC, "carte-ville-mobilier-banc", 0.5f, 4.5f); premier(ville::ABRIBUS, "carte-ville-mobilier-abribus", 1.2f, -6);
+            premier(ville::GRILLE, "carte-ville-mobilier-grille", 0.8f, 5); premier(ville::FONTAINE, "carte-ville-mobilier-fontaine", 1.0f, 7);
+            premier(ville::LAMPE, "carte-ville-mobilier-lampadaire", 6.2f, 7);
+            for (const ville::Commerce& c : P.commerces) if (c.kind != 4 && c.kind != 8 && c.len >= 8) {   // terrasse (ni boulangerie ni pharmacie)
+                const int64_t m = c.seg + (int64_t)((c.decal + c.len / 2) / SEG_M);
+                lieux.push_back({"carte-ville-mobilier-terrasse", m * 2 + (c.side > 0), 0, true, 4, VueCamera::Poursuite, (float)RW + 4.25f, 1.1f, 7});
+                lieux.push_back({"carte-ville-mobilier-rue", m, 30, true});   // la rue en caméra de course, terrasse devant
+                break;
+            }
+            if (!P.carrefours.empty()) lieux.push_back({"carte-ville-mobilier-feux", (P.carrefours[0].ligne) * 2 + 1, 0, true, 4, VueCamera::Poursuite, (float)RW + 0.8f, 3.0f, 5});
+        }
         std::vector<int64_t> hauts;
         for (int64_t a = 0; a < (int64_t)P.objets.size(); a++)
             if (a >= (int64_t)P.voie.size() || P.voie[(size_t)a] == 0)
@@ -285,7 +302,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {
         const std::string nom = l.nom + (n ? "-nuit" : "") + (l.cam == 3 && std::getenv("WFS_SANS_AO") ? "-sans" : "");
         if (seul && nom.rfind(seul, 0) != 0) continue;
-        const int64_t segL = l.cam == 3 ? l.seg / 2 : l.seg;   // cam 3 : seg = segment · 2 + côté
+        const int64_t segL = l.cam >= 3 ? l.seg / 2 : l.seg;   // cam 3 et 4 : seg = segment · 2 + côté
         setenv("WFS_MOMENT", n ? "nuit" : "jour", 1);
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, segL - (int64_t)(l.avant / SEG_M))).c_str(), 1);
         courseBenchRules(true);
@@ -305,6 +322,14 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             const TrackPoint o = t.point((double)(segL - (int64_t)(6 / SEG_M)) * SEG, s * (RW + 2)), c = t.point((double)(segL + (int64_t)(8 / SEG_M)) * SEG, s * (RW + 6.5));
             g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.6f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + 3.f, (float)c.z};
             g_vueHaute.fov = 55; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;
+        }
+        if (l.cam == 4) {   // WFS-369 : gros plan d'un objet du mobilier, après le décompte : œil à 1,6 m, à 6 m au plus de côté, recul le long de la rue
+            for (int i = 0; i < 200; i++) { g.update(1.0 / 60); if (i % 50 == 0) g.render(503 + i / 60.0); }
+            const double s = (l.seg & 1) ? 1 : -1;
+            const TrackPoint o = t.point((double)(segL - (int64_t)(l.recul / SEG_M)) * SEG, s * std::max(RW - 1.5, (double)l.lat - 6)),
+                             c = t.point((double)segL * SEG, s * l.lat);
+            g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.6f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + l.hc, (float)c.z};
+            g_vueHaute.fov = 50; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;
         }
         g.render(502); g.render(502.02); r.capturePng(out + "/" + nom + ".png");
         g_vueHaute.actif = false; g_vueHaute.fov = 50; g_vueHaute.haut = {0, 0, -1}; choisirVue(VueCamera::Poursuite);
