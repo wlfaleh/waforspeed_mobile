@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #334 | WFS-337 | Claude, agent dev (01UY1Vv1d6) | 🆕 À relire |  | 2026-11-10 10:52 |

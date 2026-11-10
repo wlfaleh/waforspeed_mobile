@@ -3783,3 +3783,72 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Ticket : **P1 WFS-323** vue Cockpit (1/3) : cadrage proche de la référence (`qa/retours/2026-11-08-cockpit-reference-utilisateur.jpg`), habitacle sur toute la largeur, pavillon fermé (ANO-207), réglage « Regard cockpit » gardé ; anomalies rattachées ANO-185, 187, 188, 152 (partie lisibilité), 203, 204. Règles : `regles-de-gestion/WFS-323.md`.
 - Zone autorisée : `src/game/camera_vue.*` (partie cockpit), `src/render/vehicule_cockpit*`, tests du cockpit, `qa/pr/WFS-323/` ; accroches ≤ 10 lignes annoncées au journal (ex. `src/ui/ecrans/reglages.*` seulement si RG-03 l'exige). Interdit : `assets/cars/**` et `tools/formes.json` (WFS-363 en cours, E10), `archi_*` et fichiers du décor (WFS-370, E15), CI. Deux tickets E10 en même temps : exception PO (fichiers séparés). On part de l'existant (WFS-282, 315, 349, 390 🟡) : rien retiré.
 - Pas un ticket E15 : avis agent 3D non obligatoire (conseillé). Après la fusion : 🟡 À valider (utilisateur), puis la session s'arrête. WFS-324 et 325 (suites) iront à de nouvelles sessions.
+
+### 2026-11-10 10:12:50 — WFS-337 attribué à Claude, agent dev (01UY1Vv1d6) (po-scrum-master)
+- Demande de la session `@dev` session_01UY1Vv1d6VrvcVTQzXuiern (1er et seul ticket, aucun ticket depuis la règle du 2026-11-09 12:05 UTC). Profil développeur général : les P1 prêts (WFS-323, 373, 378, 387) vont à `dev-artiste-3d` ; WFS-392 à `expert-cartes` ; WFS-287 à l'agent expert ci. Premier P2 permis : **WFS-337** (E4 / E13, aucun ticket actif dans ces épics).
+- Zone : `src/render/nuit.cpp` (halos des têtes de lampe), `src/render/eclairage_*` si besoin, `tests/**` ; **pas** `ville*.cpp` / `archi_*` (WFS-370), phares (WFS-382). Règles : `regles-de-gestion/WFS-337.md` (section « Suivi » ajoutée : zone, règle des formes, captures).
+
+### 2026-11-10 10:14:06 — WFS-373 attribué à Claude, agent dev3d (01UY1Vv4L4) (po-scrum-master)
+- Demande d'une nouvelle session `@devartiste` (session_01UY1Vv4L4emR5PusLbYXyYF, agent `dev-artiste-3d`), 1er et seul ticket de la session. WFS-323 (demandé en premier) venait d'être attribué à 10:12 à Claude, agent dev3d 7 (01UY1Vv4FX) : on garde cette attribution.
+- **WFS-373** (P1, E15 file Grand Prix) : inventaire des formes nues au journal (RG-01), puis tribunes, stands vitrés avec auvent, portique, barrières, murs de pneus sanglés, panneaux en vrais modèles (CC0 / CC BY, ±1 %, sans marque) ou modélisés au niveau du vrai objet. Aucun autre ticket actif sur le Grand Prix.
+- Zone : `src/world/circuit.cpp`, `portique.cpp`, nouveaux `src/world/decor_grandprix_*`, `assets/world/modeles/grandprix/**`, `assets/textures/decor/grandprix/**`, `paquets/sources/grandprix/**`, licences ; fichiers communs : ajouts ≤ 10 lignes annoncés. Pas : `archi_*` au-delà des accroches (WFS-370), `ville*`, `plage.cpp`, `campagne*`, `assets/cars/**`, cockpit.
+- Branche `feature/waforspeed-373` ; captures avant / après jour et nuit + gros plans + banc perf Basse ; PR, avis agent 3D VALIDÉ, puis lead dev ; arrêt de la session après la fusion.
+
+### 2026-11-10 10:20:35 — Statuts automatiques, bancs du matin #12 (robot statuts)
+- Run rouge (schedule, commit 9c4f58a), aucun statut changé. Job(s) en échec : banc (realisme-2).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 10:21:29 — WFS-370 : PR #332 ouverte (Claude, agent dev3d (01UY1Vv2Ph))
+- Fait : immeubles du kit en vrais volumes (comble à la Mansart, lucarnes, cheminées, corniche moulurée, garde-corps à barreaux, soubassement, cordon, édicules, vitrines), port modélisé (conteneurs ISO 40 pieds, portiques de quai, clôture à double fil, entrepôts du kit), fenêtres de nuit tirées par fenêtre (fin des mouchetures), 2 700 à 4 000 K.
+- Vérifié : 97 tests CPU ; 20 captures avant / après jour et nuit (`qa/pr/WFS-370/`) ; banc perf Ville de nuit, Basse : 335 → 345 ms par image sur lavapipe (+3 %), processeur inchangé, 375 k → 395 k triangles ; Haute +11 %.
+- Limites : « avant » faits à la main (vues de banc nouvelles) ; le kit change aussi un peu les villas de la Corniche et les maisons de la Campagne (barreaux, corniche, zinc mat). Suite : avis agent 3D (E15), puis lead dev.
+
+### 2026-11-10 10:22:10 — WFS-373 : inventaire des formes nues du Grand Prix (RG-01), plan (Claude, agent dev3d (01UY1Vv4L4))
+- Inventaire complet : `qa/pr/WFS-373/inventaire.md` (branche `feature/waforspeed-373`). Objets posés (journal du banc, comptage ajouté) : mur de pneus 2 068, mur des stands 517, tentes 112, garages 107, panneaux publicitaires 103, grillage 155, drapeaux 51, postes de commissaire 34, stands fans 24, camions 21, bars d'accueil 8, panneaux de freinage 3, tribunes 2, portique, passerelle, tour, hélicoptère, grande roue 1 chacun, oiseaux (3 vols) ; tous en boîtes, cylindres, cônes ou triangles. Projecteurs (117) : dessin commun `decor_carte.cpp` → type propre au Grand Prix dans `circuit.cpp`.
+- Plan (RG-03, comme WFS-372) : nouveau fichier `src/world/decor_grandprix_modeles.*` (modèles construits une fois au chargement, version proche et allégée ; Basse = allégée pour les murs de pneus), branchés dans `circuit.cpp` ; test `tests/test_decor_grandprix.cpp` (mesures, triangles, normales) ; banc de gros plans `WFS_BANC=grandprix-objets`.
+- **Accroches annoncées (≤ 10 lignes)** : `src/platform/desktop_main.cpp` (banc `grandprix-objets`), `CMakeLists.txt` (test). Réutilisés sans les changer : `marina_bateaux.h` (loft, eventail, ligne), `decor_campagne_modeles.h` (poutre chanfreinée, profilé I).
+- Réseau : recherche de code GitHub seulement (modèles stylisés, exclus par RG-02), aucun téléchargement.
+
+### 2026-11-10 10:23:56 — WFS-337 : arbitrage, accroche de 2 lignes acceptée (option A) (po-scrum-master)
+- Demande de Claude, agent dev (01UY1Vv1d6). Cause d'ANO-189 : 2e lanterne du candélabre double du terre-plein central non inscrite dans `lampadaires()`. Accepté : 1 ligne dans `src/render/eclairage.h` (style `Tete`, halo sans lumière) et 1 ligne dans `src/world/ville.cpp` (fin de `initOuvrages`), à annoncer au journal par le développeur ; synchronisation avec `main` avant la PR (WFS-370 sur le même fichier). Détail : `regles-de-gestion/WFS-337.md`, section « Suivi ».
+
+### 2026-11-10 10:31:01 — WFS-363 : Giulia et Range Rover Sport sans signature de forme, PR #333 (Claude, agent dev3d 6 (01UY1Vv3MV))
+- Fait : Giulia, écusson en V refermé par une peau cousue au bord découpé (nouvelle retouche `couture` : sommets du bord repris, Delaunay, surface biharmonique), prises d'air en trèfle et pointe du V remplacées par une grille basse à 8 lames ; Range Rover, nid d'abeille de la calandre remplacé par 4 lames, bandeau avant (phares et cadre) étiré ×1,3 vers le bas d'un seul tenant (phares plus hauts, sans pli). Lettrage du capot déjà effacé par WFS-192.
+- Fichiers : `tools/retoucher_formes.mjs` (couture, `baseAjustee` factorisée, options `exact` / `biharmonique` inactives par défaut), `tools/formes.json` (entrées `giulia`, `rrsport`), `assets/cars/giulia.*`, `assets/cars/rrsport.*`, `qa/pr/WFS-363/`.
+- Vérification : `--verifier` vert pour les 7 voitures retouchées ; M4 et S3 rejouées depuis l'origine : empreintes identiques ; 98 tests CPU verts ; `test_fidelite_voitures` : Giulia et Range Rover conformes ±1 % (Giulia : échelle ×0,999, nez +1,2 cm au centre) ; 16 paires de captures + 12 zooms ×4 jour / nuit regardés.
+- Limites : nid d'abeille des prises d'air basses du Range Rover et pavés LED des phares gardés (hors RG-01, à proposer au PO en tâche séparée si voulu). Essais écartés : panneau posé dessous (joint visible en trapèze), couronnes concentriques (stries), une boîte par phare (montant tordu).
+
+
+### 2026-11-10 10:42:17 — WFS-384 : premier banc du matin après la correction, run #12 (agent expert ci cd (session 0183bv2Y))
+- 1er critère d'acceptation : réveil de GitHub à 08:52 UTC (09:52 heure de Paris) → **bancs du matin lancés, run #12** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/42786014161, commit 9c4f58a) ; message « ⏳ Bancs du matin en retard » posté dans l'issue #242 à 08:53 UTC ; captures publiées dans `captures-matin` (jour.txt : 2026-11-10 11:16 heure de Paris, 18 archives) ; message « Recette QA prête » à 10:19 UTC. Réveil suivant (run #13, 10:37 UTC) **sauté proprement** (43 s, banc déjà fait).
+- Run #12 **rouge**, pour deux causes qui ne viennent pas de WFS-384 (à confier par le PO, US technique P1 : « rouges → le PO crée une US technique P1 ») :
+  1. `banc (realisme-2)` : « réalisme : partie 2, 2 erreur(s) », code 3 (était vert au run #5, commit 4e7fa71). Les deux lignes [ERREUR] sont au début du journal du job (non lisibles ici : seules les 5 000 dernières lignes sont accessibles) ; à reproduire avec `WFS_BANC=realisme-2` entre 4e7fa71 et 9c4f58a (19 tickets fusionnés, dont WFS-369, 372, 376, 379, 381, 382 qui touchent le rendu).
+  2. `banc (ecrans-2400)` : **arrêté à la limite de 75 min** (run #5 : 41 min). Le jeu est devenu plus lent à rendre sur le banc logiciel (décors E15 probables) ; archive publiée mais peut-être incomplète (17 fichiers).
+- Émulateur (information) : rouge aussi, comme au run #5.
+
+### 2026-11-10 10:45:32 — WFS-363 fusionné par le lead dev (lead-dev)
+- PR #333 (Claude, agent dev3d 6 (01UY1Vv3MV)) relue sur 9d83a967 : 56 captures ouvertes, tout le diff lu (`couture`, `baseAjustee`, options `exact` / `biharmonique` inactives par défaut). Construction et `tests_cpu.sh` refaits : 98/98. Rejeu de giulia, rrsport (depuis main) et de m4, s3 (depuis 30d339f4~1) : `.wfm` et `.lod` identiques à l'octet. Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 2473aa27. Statut 🟣.
+- **Pour le PO** (petits défauts, RG-06 : tâche séparée à créer) : Range Rover : (1) une rangée de l'ancien nid d'abeille reste sous les nouvelles lames de la calandre, et la lame du bas plie vers les coins ; (2) petite pointe au-dessus du montant du cadre ; (3) la silhouette reste reconnaissable à 3/4 (phares toujours fins, nid d'abeille des prises d'air basses, pavés LED), alors que le critère dit « plus reconnaissable de face et de 3/4 » : RG-01 de WFS-363 ne visait que la calandre et les feux. Giulia : (4) léger creux au centre, sous la pointe du capot (vue basse).
+
+### 2026-11-10 10:46:20 — WFS-363 fusionné (#333), session terminée (Claude, agent dev3d 6 (01UY1Vv3MV))
+- PR #333 fusionnée en squash par le lead dev (2473aa27) ; ticket 🟣 ; ligne de `qa/Check.md` écrite par le lead dev.
+- Petits défauts restants relevés par le lead dev (RG-06, à confier au PO en tâche séparée) : Range Rover (reste de nid d'abeille sous les lames, pointe en haut du montant du cadre, silhouette encore reconnaissable de 3/4 : prises d'air basses, pavés LED), Giulia (léger creux sous la pointe du capot en vue très basse), `delaunay()` sans cas des points alignés.
+- Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-10 10:47:37 — WFS-370 fusionné par le lead dev (lead-dev)
+- PR #332 relue sur 05a6a342 (branche à jour avec main) : « Avis agent 3D : VALIDÉ avec réserves » (R1 à R6) présent ; 40 captures ouvertes (immeubles classique et moderne, rue des terrasses, port : rue, entrepôts, conteneurs, portique, clôture ; jour et nuit) ; tout le diff relu ; construction et `tests_cpu.sh` refaits : 98 tests réussis ; bancs `archi` et `corniche` lancés pour vérifier le kit commun (aucune régression vue).
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : **181aa552**. Statut 🟡 À valider (utilisateur) ; ligne de `suivi-pr.md` supprimée ; ligne ajoutée dans `qa/Check.md`.
+- Remarques non bloquantes, pour le PO : réserves R1 à R6 de l'agent 3D à mettre en tâches séparées (RG-E15-09) ; `archi_details.cpp` (`mansart`) : calcul `* 0.f` mort ; `etendue(GRUE)` passe à lat + 83 m, donc compter les portiques restants dans WFS-385 ; perf Haute +11 % à suivre aux bancs du matin.
+
+### 2026-11-10 10:48:28 — WFS-370 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv2Ph))
+- PR #332 fusionnée en squash par le lead dev (181aa552) après « Avis agent 3D : VALIDÉ avec réserves » ; statut 🟡 À valider (utilisateur).
+- **Pour le PO (tâches séparées, RG-E15-09)** : réserves de l'agent 3D R1 zinc encore clair au soleil (albédo visé 0,25 à 0,35) ; R2 vitrines de nuit des cafés en aplat (WFS-402) ; R3 entrepôts trop « logements » (nef, portes de chargement, moins de fenêtres) ; R4 ondulation des conteneurs faible au loin ; R5 gros plan du portique entier au banc ; R6 perf Basse +3 % sur lavapipe à confirmer aux bancs du matin. Remarques du lead dev : code mort `* 0.f` dans `mansart` (à nettoyer dans WFS-402), graine `^ 0x5eedu` des entrepôts à commenter, portiques peut-être retirés par la nouvelle étendue (lat + 83 m) : à compter dans WFS-385.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-10 10:52:34 — WFS-337 : cause trouvée, accroches, PR #334 ouverte (Claude, agent dev (01UY1Vv1d6))
+- Cause (RG-01, ANO-189) : le candélabre double de 12 m du terre-plein central de la voie rapide (Ville) porte 2 lanternes à 5,0 m ; `ville.cpp` n'inscrivait pour la nuit que celle de notre côté. La lanterne du sens inverse restait une barre jaune sans lumière, et le halo se voyait 5 m à côté. Rue, pont, tunnel : halo déjà à ≤ 0,2 m de la vasque.
+- **Accroches annoncées (acceptées par le PO, 10:23)** : `src/render/eclairage.h` 1 ligne (style `StyleLampadaire::Tete`, halo seul) ; `src/world/ville.cpp` 1 ligne en fin de `initOuvrages` (2e lanterne inscrite en `Tete`) ; `src/platform/desktop_main.cpp` 2 lignes (banc `WFS_BANC=halos`).
+- Fait : `nuit.cpp` dessine le halo de chaque tête ; une `Tete` ne prend aucune des 4 lumières et n'a pas de flaque (coût inchangé) ; `eclairage_physique.cpp` : exposition inchangée. Nouveau banc `src/render/eclairage_halos_banc.cpp`.
+- Vérifié : 98 tests CPU ; banc `halos` : `main` 34 candélabres avec une seule tête (ÉCART), branche 34 avec leurs 2 têtes (OK) ; 11 captures avant / après de nuit (`qa/pr/WFS-337/`, 160 km/h, 50 m, de près, rue, Poursuite).
+- Limites : têtes des candélabres encore en pavé (WFS-378) ; hauteurs inscrites hétérogènes dans `ville.cpp`, non changées (écart ≤ 0,2 m).

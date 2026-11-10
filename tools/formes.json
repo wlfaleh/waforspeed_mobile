@@ -2099,5 +2099,1595 @@
    }
   ],
   "empreinteApres": "826c25570405adee"
+ },
+ "giulia": {
+  "materiaux": 66,
+  "empreinteAvant": "d2b5c15bdecba0a3",
+  "retouches": [
+   {
+    "decouper": true,
+    "materiau": 5,
+    "contour": [
+     [
+      -0.202,
+      0.549
+     ],
+     [
+      -0.175,
+      0.39
+     ],
+     [
+      0.175,
+      0.39
+     ],
+     [
+      0.206,
+      0.557
+     ],
+     [
+      0.1965,
+      0.6007
+     ],
+     [
+      0.1881,
+      0.6131
+     ],
+     [
+      0.1697,
+      0.6295
+     ],
+     [
+      0.136,
+      0.639
+     ],
+     [
+      0.012,
+      0.657
+     ],
+     [
+      -0.01,
+      0.657
+     ],
+     [
+      -0.1637,
+      0.6315
+     ],
+     [
+      -0.1881,
+      0.6091
+     ],
+     [
+      -0.198,
+      0.585
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "maille en losanges de l'écusson central en V (« scudetto ») retirée par découpe exacte (WFS-363)",
+    "triangles": 1190
+   },
+   {
+    "decouper": true,
+    "materiau": 4,
+    "contour": [
+     [
+      -0.202,
+      0.549
+     ],
+     [
+      -0.175,
+      0.39
+     ],
+     [
+      0.175,
+      0.39
+     ],
+     [
+      0.206,
+      0.557
+     ],
+     [
+      0.1965,
+      0.6007
+     ],
+     [
+      0.1881,
+      0.6131
+     ],
+     [
+      0.1697,
+      0.6295
+     ],
+     [
+      0.136,
+      0.639
+     ],
+     [
+      0.012,
+      0.657
+     ],
+     [
+      -0.01,
+      0.657
+     ],
+     [
+      -0.1637,
+      0.6315
+     ],
+     [
+      -0.1881,
+      0.6091
+     ],
+     [
+      -0.198,
+      0.585
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "jonc chromé en V de l'écusson central retiré (découpe exacte, WFS-363)",
+    "triangles": 348
+   },
+   {
+    "decouper": true,
+    "materiau": 51,
+    "contour": [
+     [
+      -0.202,
+      0.549
+     ],
+     [
+      -0.175,
+      0.39
+     ],
+     [
+      0.175,
+      0.39
+     ],
+     [
+      0.206,
+      0.557
+     ],
+     [
+      0.1965,
+      0.6007
+     ],
+     [
+      0.1881,
+      0.6131
+     ],
+     [
+      0.1697,
+      0.6295
+     ],
+     [
+      0.136,
+      0.639
+     ],
+     [
+      0.012,
+      0.657
+     ],
+     [
+      -0.01,
+      0.657
+     ],
+     [
+      -0.1637,
+      0.6315
+     ],
+     [
+      -0.1881,
+      0.6091
+     ],
+     [
+      -0.198,
+      0.585
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "fond noir de l'écusson central retiré (découpe exacte, WFS-363)",
+    "triangles": 82
+   },
+   {
+    "decouper": true,
+    "materiau": 45,
+    "contour": [
+     [
+      -0.202,
+      0.549
+     ],
+     [
+      -0.175,
+      0.39
+     ],
+     [
+      0.175,
+      0.39
+     ],
+     [
+      0.206,
+      0.557
+     ],
+     [
+      0.1965,
+      0.6007
+     ],
+     [
+      0.1881,
+      0.6131
+     ],
+     [
+      0.1697,
+      0.6295
+     ],
+     [
+      0.136,
+      0.639
+     ],
+     [
+      0.012,
+      0.657
+     ],
+     [
+      -0.01,
+      0.657
+     ],
+     [
+      -0.1637,
+      0.6315
+     ],
+     [
+      -0.1881,
+      0.6091
+     ],
+     [
+      -0.198,
+      0.585
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "socle rond de l'ancien logo, en haut de l'écusson, retiré (découpe exacte, WFS-363)",
+    "triangles": 78
+   },
+   {
+    "decouper": true,
+    "materiau": 61,
+    "contour": [
+     [
+      -0.202,
+      0.549
+     ],
+     [
+      -0.175,
+      0.39
+     ],
+     [
+      0.175,
+      0.39
+     ],
+     [
+      0.206,
+      0.557
+     ],
+     [
+      0.1965,
+      0.6007
+     ],
+     [
+      0.1881,
+      0.6131
+     ],
+     [
+      0.1697,
+      0.6295
+     ],
+     [
+      0.136,
+      0.639
+     ],
+     [
+      0.012,
+      0.657
+     ],
+     [
+      -0.01,
+      0.657
+     ],
+     [
+      -0.1637,
+      0.6315
+     ],
+     [
+      -0.1881,
+      0.6091
+     ],
+     [
+      -0.198,
+      0.585
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "plan du fond de l'écusson retiré (découpe exacte, WFS-363)",
+    "triangles": 14
+   },
+   {
+    "decouper": true,
+    "materiau": 7,
+    "contour": [
+     [
+      -0.202,
+      0.549
+     ],
+     [
+      -0.175,
+      0.39
+     ],
+     [
+      0.175,
+      0.39
+     ],
+     [
+      0.206,
+      0.557
+     ],
+     [
+      0.1965,
+      0.6007
+     ],
+     [
+      0.1881,
+      0.6131
+     ],
+     [
+      0.1697,
+      0.6295
+     ],
+     [
+      0.136,
+      0.639
+     ],
+     [
+      0.012,
+      0.657
+     ],
+     [
+      -0.01,
+      0.657
+     ],
+     [
+      -0.1637,
+      0.6315
+     ],
+     [
+      -0.1881,
+      0.6091
+     ],
+     [
+      -0.198,
+      0.585
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2.05
+    ],
+    "note": "rebord de peinture qui dessinait le V de l'écusson retiré, 2 cm autour de l'ouverture (découpe exacte, WFS-363)",
+    "triangles": 344
+   },
+   {
+    "decouper": true,
+    "materiau": 5,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "mailles en losanges et cadres des prises d'air latérales retirés (découpe exacte, WFS-363)",
+    "triangles": 3168
+   },
+   {
+    "decouper": true,
+    "materiau": 4,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "bas du jonc chromé en V retiré (découpe exacte, WFS-363)",
+    "triangles": 137
+   },
+   {
+    "decouper": true,
+    "materiau": 51,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "fonds noirs des prises d'air retirés (découpe exacte, WFS-363)",
+    "triangles": 318
+   },
+   {
+    "decouper": true,
+    "materiau": 61,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "plans du fond des prises d'air retirés (découpe exacte, WFS-363)",
+    "triangles": 31
+   },
+   {
+    "decouper": true,
+    "materiau": 62,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "plans clairs du fond des prises d'air retirés (découpe exacte, WFS-363)",
+    "triangles": 8
+   },
+   {
+    "decouper": true,
+    "materiau": 46,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "pièce basse de la pointe du V retirée (découpe exacte, WFS-363)",
+    "triangles": 266
+   },
+   {
+    "decouper": true,
+    "materiau": 7,
+    "contour": [
+     [
+      -0.7531,
+      0.2129
+     ],
+     [
+      -0.7278,
+      0.1988
+     ],
+     [
+      -0.69,
+      0.19
+     ],
+     [
+      -0.33,
+      0.173
+     ],
+     [
+      0.33,
+      0.173
+     ],
+     [
+      0.68,
+      0.188
+     ],
+     [
+      0.7491,
+      0.2069
+     ],
+     [
+      0.7572,
+      0.2162
+     ],
+     [
+      0.7592,
+      0.2398
+     ],
+     [
+      0.7492,
+      0.2698
+     ],
+     [
+      0.7231,
+      0.3151
+     ],
+     [
+      0.6718,
+      0.3612
+     ],
+     [
+      0.622,
+      0.378
+     ],
+     [
+      0.59,
+      0.382
+     ],
+     [
+      0.142,
+      0.39
+     ],
+     [
+      -0.14,
+      0.39
+     ],
+     [
+      -0.588,
+      0.382
+     ],
+     [
+      -0.6398,
+      0.3732
+     ],
+     [
+      -0.6811,
+      0.3531
+     ],
+     [
+      -0.7312,
+      0.2998
+     ],
+     [
+      -0.7492,
+      0.2638
+     ],
+     [
+      -0.758,
+      0.234
+     ]
+    ],
+    "z": [
+     -2.34,
+     -2
+    ],
+    "note": "pointe du V, pont central et bords des deux prises d'air (dessin en trèfle) retirés : une seule ouverture basse (découpe exacte, WFS-363)",
+    "triangles": 669
+   },
+   {
+    "couture": {
+     "materiau": 7,
+     "contour": [
+      [
+       -0.202,
+       0.549
+      ],
+      [
+       -0.175,
+       0.39
+      ],
+      [
+       0.175,
+       0.39
+      ],
+      [
+       0.206,
+       0.557
+      ],
+      [
+       0.1965,
+       0.6007
+      ],
+      [
+       0.1881,
+       0.6131
+      ],
+      [
+       0.1697,
+       0.6295
+      ],
+      [
+       0.136,
+       0.639
+      ],
+      [
+       0.012,
+       0.657
+      ],
+      [
+       -0.01,
+       0.657
+      ],
+      [
+       -0.1637,
+       0.6315
+      ],
+      [
+       -0.1881,
+       0.6091
+      ],
+      [
+       -0.198,
+       0.585
+      ]
+     ],
+     "z": [
+      -2.34,
+      -2.15
+     ],
+     "ignorer": [
+      64,
+      65
+     ],
+     "bande": 0.03,
+     "baseFace": 0.45
+    },
+    "note": "ancien écusson en V refermé par une peau de carrosserie cousue au bord découpé (même peinture, mêmes sommets au raccord : aucun joint ; surface ajustée sur la face du bouclier) (WFS-363, skill artiste-3d § 5)",
+    "triangles": 1967
+   },
+   {
+    "grilleAjustee": {
+     "contour": [
+      [
+       -0.7531,
+       0.2129
+      ],
+      [
+       -0.7278,
+       0.1988
+      ],
+      [
+       -0.69,
+       0.19
+      ],
+      [
+       -0.33,
+       0.173
+      ],
+      [
+       0.33,
+       0.173
+      ],
+      [
+       0.68,
+       0.188
+      ],
+      [
+       0.7491,
+       0.2069
+      ],
+      [
+       0.7572,
+       0.2162
+      ],
+      [
+       0.7592,
+       0.2398
+      ],
+      [
+       0.7492,
+       0.2698
+      ],
+      [
+       0.7231,
+       0.3151
+      ],
+      [
+       0.6718,
+       0.3612
+      ],
+      [
+       0.622,
+       0.378
+      ],
+      [
+       0.59,
+       0.382
+      ],
+      [
+       0.142,
+       0.39
+      ],
+      [
+       -0.14,
+       0.39
+      ],
+      [
+       -0.588,
+       0.382
+      ],
+      [
+       -0.6398,
+       0.3732
+      ],
+      [
+       -0.6811,
+       0.3531
+      ],
+      [
+       -0.7312,
+       0.2998
+      ],
+      [
+       -0.7492,
+       0.2638
+      ],
+      [
+       -0.758,
+       0.234
+      ]
+     ],
+     "z": [
+      -2.34,
+      -2.13
+     ],
+     "ignorer": [
+      64,
+      65,
+      51,
+      61,
+      62
+     ],
+     "recul": 0.015,
+     "fond": 0.05,
+     "lames": 8,
+     "lame": {
+      "hauteur": 0.014,
+      "profondeur": 0.03,
+      "chanfrein": 0.003,
+      "pente": 0.006
+     },
+     "couleur": "#1b1c1e",
+     "metal": 0.25,
+     "rugosite": 0.45,
+     "couleurFond": "#0a0a0a",
+     "joue": true,
+     "rebord": {
+      "largeur": 0.012,
+      "avance": 0.004
+     },
+     "derriere": [
+      64,
+      65
+     ]
+    },
+    "note": "grille générique basse et large, d'un seul tenant, à la place des deux prises d'air et de la pointe du V : 1,5 cm derrière la carrosserie, 8 lames chanfreinées, rebord, paroi depuis le bord, toujours derrière la plaque, fond noir mat (WFS-363)"
+   }
+  ],
+  "empreinteApres": "639a0b8d26dcf0bf"
+ },
+ "rrsport": {
+  "materiaux": 22,
+  "empreinteAvant": "730a64f889a8a08b",
+  "retouches": [
+   {
+    "materiau": 3,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 3), jonctions gardées (WFS-363)",
+    "sommets": 294
+   },
+   {
+    "materiau": 8,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 8), jonctions gardées (WFS-363)",
+    "sommets": 2552
+   },
+   {
+    "materiau": 12,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 12), jonctions gardées (WFS-363)",
+    "sommets": 362
+   },
+   {
+    "materiau": 2,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 2), jonctions gardées (WFS-363)",
+    "sommets": 592
+   },
+   {
+    "materiau": 6,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 6), jonctions gardées (WFS-363)",
+    "sommets": 1444
+   },
+   {
+    "materiau": 17,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 17), jonctions gardées (WFS-363)",
+    "sommets": 1792
+   },
+   {
+    "materiau": 18,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 18), jonctions gardées (WFS-363)",
+    "sommets": 314
+   },
+   {
+    "materiau": 20,
+    "boite": [
+     -0.905,
+     0.905,
+     -2.45,
+     0.905,
+     1.06,
+     -1.78
+    ],
+    "pivot": [
+     0,
+     1.045,
+     0
+    ],
+    "echelle": [
+     1,
+     1.3,
+     1
+    ],
+    "fondu": 0.12,
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 20), jonctions gardées (WFS-363)",
+    "sommets": 984
+   },
+   {
+    "decouper": true,
+    "materiau": 8,
+    "contour": [
+     [
+      -0.43,
+      0.882
+     ],
+     [
+      0.43,
+      0.882
+     ],
+     [
+      0.49,
+      1.035
+     ],
+     [
+      -0.49,
+      1.035
+     ]
+    ],
+    "z": [
+     -2.45,
+     -2.15
+    ],
+    "note": "barres en nid d'abeille allongé de la calandre de marque retirées par découpe exacte, à l'intérieur du cadre (WFS-363)",
+    "triangles": 400
+   },
+   {
+    "decouper": true,
+    "materiau": 17,
+    "contour": [
+     [
+      -0.43,
+      0.882
+     ],
+     [
+      0.43,
+      0.882
+     ],
+     [
+      0.49,
+      1.035
+     ],
+     [
+      -0.49,
+      1.035
+     ]
+    ],
+    "z": [
+     -2.45,
+     -2.15
+    ],
+    "note": "fond de la calandre de marque retiré (découpe exacte, WFS-363)",
+    "triangles": 150
+   },
+   {
+    "grilleAjustee": {
+     "contour": [
+      [
+       -0.43,
+       0.882
+      ],
+      [
+       0.43,
+       0.882
+      ],
+      [
+       0.49,
+       1.035
+      ],
+      [
+       -0.49,
+       1.035
+      ]
+     ],
+     "z": [
+      -2.45,
+      -2.3
+     ],
+     "recul": 0.012,
+     "fond": 0.05,
+     "lames": 4,
+     "lame": {
+      "hauteur": 0.018,
+      "profondeur": 0.035,
+      "chanfrein": 0.004,
+      "pente": 0.006
+     },
+     "couleur": "#1b1c1e",
+     "metal": 0.2,
+     "rugosite": 0.5,
+     "couleurFond": "#0a0a0a",
+     "joue": true,
+     "rebord": {
+      "largeur": 0.01,
+      "avance": 0.004
+     }
+    },
+    "note": "grille générique à 4 lames horizontales épaisses à la place du nid d'abeille, dans le cadre gardé : 1,2 cm derrière la carrosserie, lames chanfreinées, rebord, paroi depuis le bord, fond noir mat (WFS-363)"
+   }
+  ],
+  "empreinteApres": "24ceef980391052b"
  }
 }

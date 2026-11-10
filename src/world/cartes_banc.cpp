@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <string_view>
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"   // WFS-212 : caméra haute du banc
@@ -286,6 +287,31 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
                 lieux.push_back({"carte-ville-mobilier-rue", m, 30, true});   // la rue en caméra de course, terrasse devant
                 break;
             }
+            {   // WFS-370 (accroche) : gros plans des immeubles (comble, corniche, balcons) et du port (cam 5 : œil au bord de la chaussée)
+                auto objet = [&](const char* nom, int cam, float recul, auto&& choix, int saut = 0) {   // saut : prendre le (saut + 1)-ième
+                    for (int64_t a = 0; a < (int64_t)P.objets.size(); a++) for (const ville::Objet& o : P.objets[(size_t)a])
+                        if ((a >= (int64_t)P.voie.size() || P.voie[(size_t)a] == 0) && choix(o, a) && saut-- <= 0) {
+                            float lat = 0, hc = 0; choix(o, a, &lat, &hc);
+                            lieux.push_back({nom, (a + (int64_t)(o.len / SEG_M / 2)) * 2 + (o.side > 0), 0, true, cam, VueCamera::Poursuite, lat, hc, recul}); return; }
+                };
+                auto immeuble = [](bool balcons, float hmin) { return [=](const ville::Objet& o, int64_t, float* lat = nullptr, float* hc = nullptr) {
+                    if (lat) { *lat = (float)RW + 6.5f; *hc = o.h * 0.8f; }
+                    return o.t == ville::IMMEUBLE && o.balcons == balcons && o.h >= hmin && o.len >= 8; }; };
+                objet("carte-ville-immeuble-classique", 6, 16, immeuble(true, 16), 2);
+                objet("carte-ville-immeuble-moderne", 6, 24, immeuble(false, 24), 3);
+                objet("carte-ville-port-entrepot", 5, 24, [](const ville::Objet& o, int64_t, float* lat = nullptr, float* hc = nullptr) {
+                    if (lat) { *lat = o.lat + 1; *hc = o.h * 0.6f; } return o.t == ville::ENTREPOT; });
+                objet("carte-ville-port-conteneurs", 4, 14, [](const ville::Objet& o, int64_t, float* lat = nullptr, float* hc = nullptr) {
+                    if (lat) { *lat = o.lat + 2; *hc = 2.5f; } return o.t == ville::CONTENEURS && o.k >= 3; });
+                objet("carte-ville-port-grue", 5, 75, [](const ville::Objet& o, int64_t, float* lat = nullptr, float* hc = nullptr) {
+                    if (lat) { *lat = o.lat + 21; *hc = o.h * 0.75f; } return o.t == ville::GRUE; });
+                objet("carte-ville-port-cloture", 4, 5, [](const ville::Objet& o, int64_t, float* lat = nullptr, float* hc = nullptr) {
+                    if (lat) { *lat = o.lat; *hc = 1.1f; } return o.t == ville::GRILLAGE; });
+                for (int64_t a = 0; a < (int64_t)P.objets.size(); a++) {   // la rue du port en caméra de course, entrepôts et conteneurs de côté
+                    bool e = false; for (const ville::Objet& o : P.objets[(size_t)a]) e |= o.t == ville::ENTREPOT;
+                    if (e && (a >= (int64_t)P.voie.size() || P.voie[(size_t)a] == 0)) { lieux.push_back({"carte-ville-port-rue", a + 20, 35, true}); break; }
+                }
+            }
             if (!P.carrefours.empty()) lieux.push_back({"carte-ville-mobilier-feux", (P.carrefours[0].ligne) * 2 + 1, 0, true, 4, VueCamera::Poursuite, (float)RW + 0.8f, 3.0f, 5});
         }
         std::vector<int64_t> hauts;
@@ -297,11 +323,18 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-ao-" + std::to_string(n + 1) + (c ? "-d" : "-g"), (h & ~1ll) | c, 0, n == 0, 3});
         }
     }
-    const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : un seul lieu (préfixe du nom)
+    const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : lieux dont le nom commence par un des préfixes (séparés par des virgules)
     if (std::getenv("WFS_QUALITE_BASSE")) { ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true; }   // WFS-326 : qualité du téléphone de l'utilisateur
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {
         const std::string nom = l.nom + (n ? "-nuit" : "") + (l.cam == 3 && std::getenv("WFS_SANS_AO") ? "-sans" : "");
-        if (seul && nom.rfind(seul, 0) != 0) continue;
+        if (seul) {   // WFS-370 : plusieurs préfixes séparés par des virgules (captures avant / après d'une PR)
+            bool garde = false;
+            for (std::string_view r = seul; !garde && !r.empty();) {
+                const size_t v = r.find(','); const std::string_view p = r.substr(0, v);
+                garde = !p.empty() && nom.rfind(p, 0) == 0; r = v == std::string_view::npos ? std::string_view{} : r.substr(v + 1);
+            }
+            if (!garde) continue;
+        }
         const int64_t segL = l.cam >= 3 ? l.seg / 2 : l.seg;   // cam 3 et 4 : seg = segment · 2 + côté
         setenv("WFS_MOMENT", n ? "nuit" : "jour", 1);
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, segL - (int64_t)(l.avant / SEG_M))).c_str(), 1);
@@ -323,10 +356,10 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.6f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + 3.f, (float)c.z};
             g_vueHaute.fov = 55; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;
         }
-        if (l.cam == 4) {   // WFS-369 : gros plan d'un objet du mobilier, après le décompte : œil à 1,6 m, à 6 m au plus de côté, recul le long de la rue
+        if (l.cam >= 4) {   // WFS-369 : gros plan d'un objet du mobilier, après le décompte : œil à 1,6 m, à 6 m au plus de côté (WFS-370 : cam 5 au bord de la chaussée, cam 6 sur le trottoir d'en face), recul le long de la rue
             for (int i = 0; i < 200; i++) { g.update(1.0 / 60); if (i % 50 == 0) g.render(503 + i / 60.0); }
             const double s = (l.seg & 1) ? 1 : -1;
-            const TrackPoint o = t.point((double)(segL - (int64_t)(l.recul / SEG_M)) * SEG, s * std::max(RW - 1.5, (double)l.lat - 6)),
+            const TrackPoint o = t.point((double)(segL - (int64_t)(l.recul / SEG_M)) * SEG, l.cam == 6 ? -s * (RW + 2.5) : s * (l.cam == 5 ? RW - 1.5 : std::max(RW - 1.5, (double)l.lat - 6))),
                              c = t.point((double)segL * SEG, s * l.lat);
             g_vueHaute.oeil = {(float)o.x, (float)o.y + 1.6f, (float)o.z}; g_vueHaute.cible = {(float)c.x, (float)c.y + l.hc, (float)c.z};
             g_vueHaute.fov = 50; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;

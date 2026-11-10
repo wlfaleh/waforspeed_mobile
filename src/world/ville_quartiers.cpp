@@ -243,7 +243,7 @@ float etendue(const Objet& o) {
     case ARBRE_RUE: return o.lat + 3.f;               // houppier des platanes
     case ARBRE: return o.lat + 4.f;
     case CONTENEURS: return o.lat + o.k * 2.6f + 2.5f;
-    case GRUE: return o.lat + 8.f;                    // pieds et tête (la flèche passe au-dessus du quai)
+    case GRUE: return o.lat + 6.f + 30.48f + 45.f + 1.5f;   // WFS-370 : rail côté terre à o.lat + 6, écartement 30,48 m, flèche de 45 m (decor_ville_port.h)
     case FONTAINE: return o.lat + 4.f;
     default: return o.lat + 1.f;                      // abribus, bancs, grilles, grillages
     }
