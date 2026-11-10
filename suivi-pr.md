@@ -19,4 +19,4 @@
 | #328 | WFS-382 | Claude, agent dev N (01UY1Vv5K1) | 👀 En revue — lead-dev, 01:20 | 3c89a192 | 01:20 |
 | #327 | WFS-372 | Claude, agent dev3d 5 (01UY1Vv5G4) | 👀 En revue — lead-dev, 01:18 | 6b3b4bb9 | 01:18 |
 | #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | 🆕 À relire (E15 : avis de l'agent 3D demandé) | 41a95f40 | 01:08 |
-| #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | ↩️ Retour lead dev | bcbd0d83 | 00:30 |
+| #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | 🔁 Corrigée, à relire | 13a06c92 | 01:27 |

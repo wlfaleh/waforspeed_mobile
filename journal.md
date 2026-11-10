@@ -3536,3 +3536,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Accroche annoncée** (2 lignes) : `src/platform/desktop_main.cpp`, nouveau banc `WFS_BANC=sol` (`src/game/sol_banc.cpp`) ; interrupteur de banc `g_avantWfs391` (`player.h`).
 - Vérifié : 94 tests CPU réussis (nouveaux tests en échec sur main : 5) ; bancs `sol` et `neige` 0 écart ; parcours 0 écart ; 50 captures dans `qa/pr/WFS-391/`.
 - Limites : ancien modèle sous 140 m à cause du roulement du jeu (0,35 m/s², noté pour WFS-258) ; ressenti à valider sur téléphone (🟡 après fusion).
+
+### 2026-11-10 01:27:12 — WFS-362 : PR #323 corrigée après la revue du lead dev (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Causes : (1) cratère de la M4 : le bourrelet autour de l'ancienne calandre donnait au panneau profondeur et normales ; (2) écusson : ce même bourrelet ; (3) éclats du coin S3 : jour de 1,5 cm entre bord découpé et paroi du conduit ; (4) lames en peigne : pas de rebord ; (5) bande sombre S3 : surface presque verticale.
+- Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : contour M4 jusqu'au joint du capot et aux pointes des phares ; panneau = base de degré 2 ajustée sur la peinture voisine + écart interpolé, normales de la surface finale lissées, vrai décalage du débord ; options de grille `joue` et `rebord` ; X5 inchangée (empreinte rejouée).
+- Vérification : `--verifier` vert (5 voitures) ; 95 tests CPU verts ; captures régénérées (18 vitrines, 16 gros plans, 16 zooms) ; réponse point par point dans la PR ; lead dev rappelé.
+
