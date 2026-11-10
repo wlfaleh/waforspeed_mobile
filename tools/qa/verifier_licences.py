@@ -71,18 +71,29 @@ def texte_mit():
     return "\n".join(l[2:] if l.startswith("  ") else l for l in t[debut:fin].split("\n"))
 
 def texte_apache():
-    return (LIC / "apache-2.0.txt").read_text(encoding="utf-8").strip("\n")
+    f = LIC / "apache-2.0.txt"   # absent : signalé par main() (LICENCES_CODE), jamais un plantage du script
+    return f.read_text(encoding="utf-8").strip("\n") if f.is_file() else ""
 
-# actifs livrés (dossier assets/, copié dans l'APK) → texte qui doit figurer dans CREDITS.txt (None : créé par le projet)
+# actifs livrés (dossier assets/, copié dans l'APK) → (texte qui doit figurer dans CREDITS.txt, fichier de licence complet qui doit
+# exister dans assets/licences/) ; (None, None) : créé par le projet (WFS-25 RG-04 : licence de chaque actif tiers, revue WFS-406)
 COUVERTURE = [
-    (r"cars/deux_roues/scooter.*", "neshallads"), (r"cars/deux_roues/routiere.*", "DevanirGrau"), (r"cars/deux_roues/sportive.*", "valvetin"),
-    (r"people/(homme|femme)\.wfp", "Quaternius"), (r"people/humains/.*\.wfp", "MakeHuman"),
-    (r"world/animaux/(vache|cheval|mouton|shiba|husky|dauphin)\.wfa", "Quaternius"), (r"world/animaux/mouette\.wfa", "svartmc"),
-    (r"world/animaux/.*\.py", None),        # scripts de conversion du projet
-    (r"world/feuillage\.png", None),        # atlas dessiné par le code du jeu (tools/atlas_feuillage.cjs)
-    (r"textures/route/.*", "Poly Haven"), (r"textures/essai/.*", None),
-    (r"fonts/Rajdhani-.*\.ttf", "Rajdhani"), (r"textes/.*", None),
+    (r"cars/deux_roues/scooter.*", "neshallads", "deux-roues-scooter.txt"), (r"cars/deux_roues/routiere.*", "DevanirGrau", "deux-roues-routiere.txt"),
+    (r"cars/deux_roues/sportive.*", "valvetin", "deux-roues-sportive.txt"),
+    (r"people/(homme|femme)\.wfp", "Quaternius", "personnages-quaternius.txt"), (r"people/humains/.*\.wfp", "MakeHuman", "humains-makehuman.txt"),
+    (r"world/animaux/(vache|cheval|mouton)\.wfa", "Quaternius", "animaux-campagne.txt"), (r"world/animaux/(shiba|husky)\.wfa", "Quaternius", "animaux-ville.txt"),
+    (r"world/animaux/dauphin\.wfa", "Quaternius", "animaux-corniche.txt"), (r"world/animaux/mouette\.wfa", "svartmc", "animaux-corniche.txt"),
+    (r"world/animaux/.*\.py", None, None),        # scripts de conversion du projet
+    (r"world/feuillage\.png", None, None),        # atlas dessiné par le code du jeu (tools/atlas_feuillage.cjs)
+    (r"textures/route/.*", "Poly Haven", "routes-revetements.txt"), (r"textures/essai/.*", None, None),
+    (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"textes/.*", None, None),
 ]
+# identifiant de la voiture → fichier de licence (dossier du modèle dans le jeu web), quand le nom diffère
+ALIAS = {"golf": "golf-8", "m4": "bmw-m4", "p911": "porsche-911", "gallardo": "lambo-gallardo"}
+# code tiers compilé dans le jeu → fichier de sa licence complète
+LICENCES_CODE = {"android_native_app_glue (Apache 2.0)": LIC / "apache-2.0.txt", "stb (MIT ou domaine public)": RACINE / "third_party" / "stb" / "LICENSE"}
+
+def licence_presente(f):
+    return f.is_file() and f.stat().st_size >= 50
 # marques des deux-roues d'origine (titres des modèles, assets/licences/deux-roues-*.txt) : jamais dans les crédits
 MARQUES_DEUX_ROUES = ["Honda", "CB500X", "OLA", "Kawasaki", "Ninja", "ZX-6R"]
 # mots génériques des modèles de cars.h, sans risque de marque (non cherchés)
@@ -173,6 +184,7 @@ def main():
         if v["id"] not in noms: manques.append(f"{v['id']} : pas de nom inventé dans configgame.json")
     ids = {v["fichier"]: v for v in vs}
     credits = (LIC / "CREDITS.txt").read_text(encoding="utf-8") if (LIC / "CREDITS.txt").is_file() else ""
+    sons = (LIC / "sons-moteur.txt").read_text(encoding="utf-8") if licence_presente(LIC / "sons-moteur.txt") else ""
     nb = 0
     for f in sorted((RACINE / "assets").rglob("*")):
         rel = f.relative_to(RACINE / "assets").as_posix()
@@ -183,13 +195,20 @@ def main():
             v = ids.get(f"cars/{f.stem.removesuffix('-lod')}.wfm")   # WFS-134 : .lod et version allégée = crédit de sa voiture
             if not v: manques.append(f"{rel} : absent de CARS[] (pas de crédit)"); continue
             if auteur_licence(v["credit"])[0] not in credits: manques.append(f"{rel} : auteur absent de CREDITS.txt")
+            lic = LIC / f"{ALIAS.get(v['id'], v['id'])}.txt"
+            if not licence_presente(lic): manques.append(f"{rel} : licence {lic.name} absente de assets/licences/")
             continue
         if rel.startswith("audio/"):
             if f.name not in credits: manques.append(f"{rel} : absent de CREDITS.txt")
+            if f.name not in sons: manques.append(f"{rel} : absent de assets/licences/sons-moteur.txt (licence)")
             continue
-        regle = next((t for motif, t in COUVERTURE if re.fullmatch(motif, rel)), "?")
-        if regle == "?": manques.append(f"{rel} : actif livré sans crédit connu (ajouter sa ligne dans AUTRES et COUVERTURE)")
-        elif regle and regle not in credits: manques.append(f"{rel} : « {regle} » absent de CREDITS.txt")
+        regle = next(((t, l) for motif, t, l in COUVERTURE if re.fullmatch(motif, rel)), None)
+        if regle is None: manques.append(f"{rel} : actif livré sans crédit connu (ajouter sa ligne dans AUTRES et COUVERTURE)"); continue
+        texte, lic = regle
+        if texte and texte not in credits: manques.append(f"{rel} : « {texte} » absent de CREDITS.txt")
+        if lic and not licence_presente(LIC / lic): manques.append(f"{rel} : licence {lic} absente de assets/licences/")
+    for nom, f in LICENCES_CODE.items():
+        if not licence_presente(f): manques.append(f"code {nom} : licence {f.relative_to(RACINE).as_posix()} absente")
     for nom, attendu in (("store/credits.md", credits_md(vs)), ("assets/licences/CREDITS.txt", credits_txt(vs))):
         p = RACINE / nom
         texte = p.read_text(encoding="utf-8") if p.is_file() else ""

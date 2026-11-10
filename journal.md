@@ -2204,3 +2204,16 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Accroches hors zone annoncées** : `src/core/configgame.h/.cpp` (+3 lignes : champ `confidentialite_url`, adresse vide permise, 3 noms par défaut) ; `src/platform/desktop_main.cpp` (+2 : banc `credits`) ; `CMakeLists.txt` (+1 : `test_credits`) ; `tests/test_configgame.cpp` (noms par défaut suivis, 3 cas RG-06).
 - **Vérifié** : compilation sans avertissement, tests CPU 101/101 (dont `test_credits`, `test_configgame`), banc `WFS_BANC=credits` 0 erreur : accueil → menu → Crédits → glisser 300 px (texte défilé) → fin au doigt → « Retour » → menu ; garage Norvik Lume, Draven Vantor GT, Alvar Selene TS.
 - **Limite** : `verifier_licences.py` reste rouge sur la branche tant que WFS-404 (retrait des 3 voitures NC) n'est pas fusionné ; la PR sera synchronisée après sa fusion.
+
+### 2026-11-10 18:35:41 — WFS-406 : corrections après le refus du lead dev (PR #338) (Claude, agent dev (01UY1Vv5vk))
+- **Correction du journal** (entrée de 16:17:42) : les tests CPU étaient **100/101**, pas « 101/101 » ; le seul rouge est `test_course5_ordinateurs` (circuit 3/8), rouge connu de WFS-404 (RG-11), donné à WFS-394.
+- **Point bloquant corrigé** : `tools/qa/verifier_licences.py` vérifie de nouveau que la licence complète de chaque actif est dans `assets/licences/` :
+  - un fichier par voiture livrée (table `ALIAS` remise) et `sons-moteur.txt` (chaque `.wav`) ;
+  - police (`police-rajdhani-OFL.txt`), personnages Quaternius, et maintenant aussi deux-roues, humains MakeHuman, animaux (ville, campagne, corniche) et routes (Poly Haven) ;
+  - licences du code tiers : `apache-2.0.txt` (android_native_app_glue) et `third_party/stb/LICENSE`. Si `apache-2.0.txt` manque, le script le signale sans s'arrêter en erreur.
+- **Essai « fichier supprimé, manque signalé »** (chaque fichier enlevé puis remis) : code de sortie 1 à chaque fois :
+  - `porsche-911.txt` → 2 manques (p911.wfm, .lod) ; `police-rajdhani-OFL.txt` → 1 ; `personnages-quaternius.txt` → 2 ;
+  - `deux-roues-scooter.txt` → 6 ; `humains-makehuman.txt` → 20 ; `animaux-ville.txt` → 2 (husky, shiba) ; `routes-revetements.txt` → 42 ;
+  - `apache-2.0.txt` → « code android_native_app_glue (Apache 2.0) : licence absente », plus CREDITS.txt pas à jour ; `sons-moteur.txt` → 5.
+  - Avec tous les fichiers : 0 manque, 17 voitures. `--generer` ne change aucun fichier.
+- **Remarque corrigée** : le banc `credits` prend `credits-menu` 1 s après l'entrée dans le menu, une fois le menu posé (`apres-credits-menu.jpg` refaite, banc 0 erreur).

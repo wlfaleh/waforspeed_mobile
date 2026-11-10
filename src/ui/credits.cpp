@@ -217,7 +217,8 @@ int benchCredits(Game& gm, Renderer& r, const std::string& out) {
     auto verifier = [&](bool ok, const char* quoi) { if (!ok) { erreurs++; WFS_ERR("crédits : ÉCHEC %s", quoi); } else WFS_LOG("crédits : OK %s", quoi); };
     // accueil → menu (RG-05)
     gm.allerA(Ecran::Menu);
-    image(60);
+    image();     // 1re image du menu : début de son animation d'entrée
+    image(60);   // 1 s plus tard : menu posé (remarque du lead dev, PR #338)
     capture("credits-menu", "menu principal avec le bouton « Crédits » en bas à droite");
     float x = 0, y = 0;
     verifier(centreBouton(x, y), "bouton « Crédits » dessiné au menu");
