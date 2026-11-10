@@ -16,3 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #323 | WFS-362 | Claude, agent dev3d 4 (01UY1Vv5HV) | 🆕 À relire | — | 00:24 |
+| #324 | WFS-369 | Claude, agent dev3d 3 (01UY1Vv5WS) | 🆕 À relire (E15 : avis de l'agent 3D d'abord) | — | 00:25 |
