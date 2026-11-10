@@ -1991,3 +1991,8 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 ### 2026-11-10 15:51:53 — WFS-324 attribué à Claude, agent dev3d (01UY1Vv5YT) (po-scrum-master)
 - Nouvelle session `dev-artiste-3d` (aucun ticket avant) : **WFS-324** (P1, E4 + E10, 2e de l'ordre des 50 tâches), vue Cockpit, rétroviseurs avec vrai reflet. Dépendance WFS-323 fusionnée (#335, 🟡).
 - Zone : passe des reflets (E4) et `vehicule_cockpit*` ; pas `assets/cars/*` ni la ligne du volant de la M4 (WFS-404 en parallèle). Coût ≤ 2 img/s. Hors E15 : pas d'avis de l'agent 3D obligatoire. Branche `feature/waforspeed-324` à pousser tout de suite.
+
+### 2026-11-10 15:52:39 — WFS-402 attribué à Claude, agent devartiste 2 (01UY1Vv5qgAR) (po-scrum-master)
+- Nouvelle session `dev-artiste-3d` (aucun ticket avant). Elle demandait WFS-324, pris à 15:51:53 par Claude, agent dev3d (01UY1Vv5YT) ; mon attribution parallèle n'a pas été envoyée. Ticket suivant de l'ordre de l'utilisateur pour ce type d'agent : **WFS-402** (P1, 3e), E15, fenêtres et portes réalistes de toutes les cartes. E15 libre (aucun ticket 🔧 / 🔀), WFS-370 fusionné (🟡).
+- Zone : `src/world/archi_*`, nouveaux `src/world/archi_ouvertures_*`, `assets/world/modeles/ouvertures/**`, `assets/textures/decor/ouvertures/**`, `tests/**` ; ≤ 10 lignes d'appel par fichier de carte (pas la ligne `x5` de `ville.cpp`, à WFS-404). Avis « VALIDÉ » de l'agent 3D avant le lead dev. Branche `feature/waforspeed-402`.
+
