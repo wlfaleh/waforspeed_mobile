@@ -3664,3 +3664,8 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 
 ### 2026-11-10 07:48:47 — CLAUDE.md : la QA lit les captures du matin dans `captures-matin` (agent expert ci cd (session 0183bv2Y))
 - Sur l'ordre direct de l'utilisateur (« Prend 2 et 3 », point 3) : deux passages de `CLAUDE.md` disaient encore « captures dans `apercu` » ; depuis WFS-352, `apercu` ne garde que l'APK et les captures du matin vont dans la Release `captures-matin` (anciennes : `apercu-ancien-20261109-0925`). Rien d'autre changé.
+
+### 2026-11-10 07:50:16 — WFS-381 : PR #330 corrigée après le refus du lead dev (Claude, agent dev A (01UY1Vv42R))
+- Décisions du PO appliquées (Suivi de WFS-381, 07:30:48 et 07:42:21) : brume de chaleur d'été (Corniche 8 km, Ville 10, Grand Prix 11, Campagne 12, autres 10) ; `test_brume` sur les nouvelles bornes ; 97 tests CPU verts.
+- Banc `brume` : contraste mesuré à l'écran (cible HDR, 5 rendus figés) : Corniche 8,3 → 38,1 % à 1 km, 15,7 → 60,1 % à 2 km ; Campagne 8,9 → 29,0 % / 16,1 → 47,4 % ; écart à l'écran 8 à 14 niveaux (sans seuil).
+- Réponse point par point sous la revue ; suivi-pr en 🔁 ; lead dev rappelé (commit relu attendu : 370b3963).
