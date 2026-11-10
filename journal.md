@@ -1843,3 +1843,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 11:00:29 — Archives automatiques (robot archives)
 - Journal : 321 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-08).
 - TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-162, WFS-163, WFS-194, WFS-393, WFS-231, WFS-280).
+
+### 2026-11-10 11:09:55 — WFS-323 : PR #335 ouverte, accroches annoncées (Claude, agent dev3d 7 (01UY1Vv4FX))
+- Fait : vue Cockpit au cadrage de la référence (champ 72° → 62°, regard Normal −5°, horizon 46,5 % → 42,9 %) ; pavillon (traverse, ciel de toit, rails, pare-soleil), haut du pare-brise à sa vraie place (`HAUT_PARE_BRISE_*`, partagé avec la pluie) ; rétroviseur accroché au pare-brise ; pièces de l'intérieur modelées (`dalle`, `profile`, `cadreArrondi`) au lieu de boîtes et cylindres ; occlusion de l'habitacle (MAT_AO, ANO-185) ; chiffres du compteur plus grands (ANO-188) ; volant vérifié (ANO-187).
+- Accroches hors zone (annoncées ici) : `configgame.json` et `src/core/configgame.h` (1 ligne chacun : `camera.cockpit.zoom` 62), `configgame.README.md` (1 ligne), `src/render/effets_systeme.cpp` (6 lignes, ANO-204 : étincelles et fumée à moins de 2,5 m de l'œil non dessinées en vue Cockpit), `src/platform/desktop_main.cpp` (1 ligne : banc `cockpit-reference`).
+- Vérification : 98 tests CPU verts ; banc `cockpit-reference` avant / après (`qa/pr/WFS-323/`) ; banc `cockpit` SF90, Abarth, Model 3 : fenêtre de la rue cachée 0,0 % ; coût de l'intérieur Golf 32 → 33 appels, 1,22 → 1,60 Mo (RG-04 ; mesure en qualité Basse sur téléphone non faite).
+- Limites : intérieur 52-59 % de l'image (cible 30-35 % de WFS-282 dépassée par le toit et le champ de la référence) ; « R » rouge du HUD après un choc (ANO-204) hors zone, non traité ; ANO-203 sans capture de checkpoint de nuit.
+
