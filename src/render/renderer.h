@@ -69,7 +69,10 @@ struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32
 // modèle en a (lampY / headY de js/cars/models.js), sinon proportions des voitures du jeu web (d.tail − 0,25, d.nose − 0,12)
 // arriereX / avantX : écart latéral du centre de chaque feu (pièces des feux, sinon largeur / 2 − 0,18 / 0,3 du jeu web)
 struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0, arriereX = 0, avantX = 0; bool pieceArriere = false; float arriereZ = 0;
-                   vec3 recul{}; bool reculTrouve = false; };   // WFS-109 : feu arrière du modèle trouvé, arrière de sa pièce ; WFS-171 : feu de recul mesuré (côté +x)
+                   vec3 recul{}; bool reculTrouve = false;
+                   // WFS-413 (RG-01) : centre de la glace de chaque optique avant (0 gauche, 1 droite), normale vers l'extérieur ;
+                   // phares = les deux mesurées (sinon avantX / avantY / avant : boîte des pièces de phares, deux-roues)
+                   vec3 phare[2]{}, phareNormale[2]{}; bool phares = false; };   // WFS-109 : feu arrière du modèle trouvé, arrière de sa pièce ; WFS-171 : feu de recul mesuré (côté +x)
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
