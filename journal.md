@@ -1966,3 +1966,6 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 
 ### 2026-11-10 14:15:33 — Ordre des 50 prochaines tâches fixé par l'utilisateur (po-scrum-master)
 - L'utilisateur valide la liste des 50 tâches du PO et monte **WFS-324 (rétroviseurs) en 2e**, juste après WFS-404 (en parallèle, zones séparées). Ordre écrit en bandeau de `TACHES.md` ; publication possible après les tâches 1 à 8.
+
+### 2026-11-10 14:16:35 — WFS-402 (fenêtres et portes) monté en 3e (po-scrum-master)
+- Ordre de l'utilisateur : la tâche 13 (WFS-402) devient la 3e. Passée ⏳ Prêt (WFS-370 fusionné) ; E15, avis de l'agent 3D obligatoire avant la fusion ; en parallèle de WFS-404 et 324 (zones séparées : `archi_*`).
