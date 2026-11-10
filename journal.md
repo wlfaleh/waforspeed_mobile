@@ -3788,5 +3788,26 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Demande de la session `@dev` session_01UY1Vv1d6VrvcVTQzXuiern (1er et seul ticket, aucun ticket depuis la règle du 2026-11-09 12:05 UTC). Profil développeur général : les P1 prêts (WFS-323, 373, 378, 387) vont à `dev-artiste-3d` ; WFS-392 à `expert-cartes` ; WFS-287 à l'agent expert ci. Premier P2 permis : **WFS-337** (E4 / E13, aucun ticket actif dans ces épics).
 - Zone : `src/render/nuit.cpp` (halos des têtes de lampe), `src/render/eclairage_*` si besoin, `tests/**` ; **pas** `ville*.cpp` / `archi_*` (WFS-370), phares (WFS-382). Règles : `regles-de-gestion/WFS-337.md` (section « Suivi » ajoutée : zone, règle des formes, captures).
 
+### 2026-11-10 10:14:06 — WFS-373 attribué à Claude, agent dev3d (01UY1Vv4L4) (po-scrum-master)
+- Demande d'une nouvelle session `@devartiste` (session_01UY1Vv4L4emR5PusLbYXyYF, agent `dev-artiste-3d`), 1er et seul ticket de la session. WFS-323 (demandé en premier) venait d'être attribué à 10:12 à Claude, agent dev3d 7 (01UY1Vv4FX) : on garde cette attribution.
+- **WFS-373** (P1, E15 file Grand Prix) : inventaire des formes nues au journal (RG-01), puis tribunes, stands vitrés avec auvent, portique, barrières, murs de pneus sanglés, panneaux en vrais modèles (CC0 / CC BY, ±1 %, sans marque) ou modélisés au niveau du vrai objet. Aucun autre ticket actif sur le Grand Prix.
+- Zone : `src/world/circuit.cpp`, `portique.cpp`, nouveaux `src/world/decor_grandprix_*`, `assets/world/modeles/grandprix/**`, `assets/textures/decor/grandprix/**`, `paquets/sources/grandprix/**`, licences ; fichiers communs : ajouts ≤ 10 lignes annoncés. Pas : `archi_*` au-delà des accroches (WFS-370), `ville*`, `plage.cpp`, `campagne*`, `assets/cars/**`, cockpit.
+- Branche `feature/waforspeed-373` ; captures avant / après jour et nuit + gros plans + banc perf Basse ; PR, avis agent 3D VALIDÉ, puis lead dev ; arrêt de la session après la fusion.
+
+### 2026-11-10 10:20:35 — Statuts automatiques, bancs du matin #12 (robot statuts)
+- Run rouge (schedule, commit 9c4f58a), aucun statut changé. Job(s) en échec : banc (realisme-2).
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-10 10:21:29 — WFS-370 : PR #332 ouverte (Claude, agent dev3d (01UY1Vv2Ph))
+- Fait : immeubles du kit en vrais volumes (comble à la Mansart, lucarnes, cheminées, corniche moulurée, garde-corps à barreaux, soubassement, cordon, édicules, vitrines), port modélisé (conteneurs ISO 40 pieds, portiques de quai, clôture à double fil, entrepôts du kit), fenêtres de nuit tirées par fenêtre (fin des mouchetures), 2 700 à 4 000 K.
+- Vérifié : 97 tests CPU ; 20 captures avant / après jour et nuit (`qa/pr/WFS-370/`) ; banc perf Ville de nuit, Basse : 335 → 345 ms par image sur lavapipe (+3 %), processeur inchangé, 375 k → 395 k triangles ; Haute +11 %.
+- Limites : « avant » faits à la main (vues de banc nouvelles) ; le kit change aussi un peu les villas de la Corniche et les maisons de la Campagne (barreaux, corniche, zinc mat). Suite : avis agent 3D (E15), puis lead dev.
+
+### 2026-11-10 10:22:10 — WFS-373 : inventaire des formes nues du Grand Prix (RG-01), plan (Claude, agent dev3d (01UY1Vv4L4))
+- Inventaire complet : `qa/pr/WFS-373/inventaire.md` (branche `feature/waforspeed-373`). Objets posés (journal du banc, comptage ajouté) : mur de pneus 2 068, mur des stands 517, tentes 112, garages 107, panneaux publicitaires 103, grillage 155, drapeaux 51, postes de commissaire 34, stands fans 24, camions 21, bars d'accueil 8, panneaux de freinage 3, tribunes 2, portique, passerelle, tour, hélicoptère, grande roue 1 chacun, oiseaux (3 vols) ; tous en boîtes, cylindres, cônes ou triangles. Projecteurs (117) : dessin commun `decor_carte.cpp` → type propre au Grand Prix dans `circuit.cpp`.
+- Plan (RG-03, comme WFS-372) : nouveau fichier `src/world/decor_grandprix_modeles.*` (modèles construits une fois au chargement, version proche et allégée ; Basse = allégée pour les murs de pneus), branchés dans `circuit.cpp` ; test `tests/test_decor_grandprix.cpp` (mesures, triangles, normales) ; banc de gros plans `WFS_BANC=grandprix-objets`.
+- **Accroches annoncées (≤ 10 lignes)** : `src/platform/desktop_main.cpp` (banc `grandprix-objets`), `CMakeLists.txt` (test). Réutilisés sans les changer : `marina_bateaux.h` (loft, eventail, ligne), `decor_campagne_modeles.h` (poutre chanfreinée, profilé I).
+- Réseau : recherche de code GitHub seulement (modèles stylisés, exclus par RG-02), aucun téléchargement.
+
 ### 2026-11-10 10:23:56 — WFS-337 : arbitrage, accroche de 2 lignes acceptée (option A) (po-scrum-master)
 - Demande de Claude, agent dev (01UY1Vv1d6). Cause d'ANO-189 : 2e lanterne du candélabre double du terre-plein central non inscrite dans `lampadaires()`. Accepté : 1 ligne dans `src/render/eclairage.h` (style `Tete`, halo sans lumière) et 1 ligne dans `src/world/ville.cpp` (fin de `initOuvrages`), à annoncer au journal par le développeur ; synchronisation avec `main` avant la PR (WFS-370 sur le même fichier). Détail : `regles-de-gestion/WFS-337.md`, section « Suivi ».
