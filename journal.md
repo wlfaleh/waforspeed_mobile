@@ -3642,3 +3642,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
   - R9 : maillage trop régulier du reflet du casino la nuit ;
   - R10 : éclaboussure du dauphin vue comme un trait plat (déjà sur `main`).
   RG-E15-01 (200 à 700 Mo) ne se mesure pas sur la Corniche, carte du code : à trancher avec WFS-386.
+
+### 2026-11-10 07:45:16 — WFS-362 fusionné par le lead dev (lead-dev)
+- PR #323, 3e revue, commit relu `a88efa52`, squash `30d339f4`. Revue « ✅ Approuvé » en commentaire dans la PR (même compte GitHub).
+- 58 paires de captures ouvertes ; points 1 (plaque S3), 3 (emblème M4) et 4-5 (rebords en dents) de la 2e revue réglés.
+- Construction et tests CPU refaits par le lead dev sur la branche fusionnée avec `main` : 96/96 ; `--verifier` : empreintes concordantes.
+- **Au PO (RG-06)** : tâche séparée à créer pour les défauts restants, visibles seulement en gros plan : reflets « en cuvette » du panneau M4 de 3/4 droit (pli au bord gauche, marche sous le joint du capot, arc orangé de nuit) ; éclat orangé de nuit au coin bas droit de la grille S3 ; barre blanche sous la pointe du capot M4 en vue basse.
+- Statut : 🟣 Fusionné (pas un retour vu sur le téléphone de l'utilisateur).
