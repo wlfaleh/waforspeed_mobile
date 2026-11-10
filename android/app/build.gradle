@@ -7,9 +7,9 @@ def voituresRetirees = {
     if (ligne == null) throw new GradleException('WFS-404 : VOITURES_RETIREES introuvable dans src/game/cars.h')
     (ligne.substring(ligne.indexOf('{')) =~ /"([\w-]+)"/).collect { it[1] }
 }()
-// motifs d'aapt : ceux d'Android par défaut, puis les fichiers des voitures retirées (le « ! » les écarte sans avertissement)
+// motifs d'aapt : ceux d'Android par défaut, puis les fichiers des voitures retirées : modèles et licences (le « ! » les écarte sans avertissement)
 def motifsIgnores = (['!.svn', '!.git', '!.ds_store', '!*.scc', '.*', '<dir>_*', '!CVS', '!thumbs.db', '!picasa.ini', '!*~'] +
-                     voituresRetirees.collectMany { ["!${it}.wfm", "!${it}.lod"] }).join(':')
+                     voituresRetirees.collectMany { ["!${it}.wfm", "!${it}.lod", "!${it}.txt"] }).join(':')
 
 android {
     namespace 'com.waforspeed.game'

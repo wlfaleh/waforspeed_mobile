@@ -40,7 +40,10 @@ int main() {
     cas("épaisseur des jantes de 33 à 40 mm", janteOk);
     cas("méplat : Golf et SF90 oui, M4 (avant restylage) et 911 non (volant rond)", golf.meplat > 0 && sf90.meplat > 0 && m4.meplat == 0 && p911.meplat == 0);
     cas("branches : 3 (Golf, M4, 911), 2 larges (SF90)", golf.branches == 3 && m4.branches == 3 && p911.branches == 3 && sf90.branches == 2);
-    cas("M4 : volant sans les bandes de couleur de la marque (WFS-404, ANO-209), boutons rouges", !m4.couture[0] && !m4.couture[1] && !m4.couture[2] && m4.repereCol);
+    // WFS-404 (ANO-209) : bandes de la marque retirées ; les boutons M1 / M2 rouges des branches restent dessinés (vehicule_cockpit.cpp :
+    // boutons si coutures ou boutonsBranches, sinon agrafe de la Golf sur la branche basse : jamais sur la M4)
+    cas("M4 : volant sans les bandes de la marque, boutons rouges sur les branches (pas d'agrafe)",
+        !m4.couture[0] && !m4.couture[1] && !m4.couture[2] && m4.repereCol && (m4.boutonsBranches || m4.couture[0] || m4.couture[1] || m4.couture[2]));
     cas("SF90 : manettino et démarreur ; palettes sur les 4", sf90.manettino && sf90.demarreur && golf.palettes && m4.palettes && p911.palettes && sf90.palettes);
     bool incl = true; for (int i = 0; i < nombreInterieurs(); i++) incl = incl && interieur(i).volantIncl <= -0.29f && interieur(i).volantIncl >= -0.46f;
     cas("inclinaison de la colonne de 17 à 26° (SAE J1100, angle A18 ; 208 et X5 : colonne plus droite)", incl);

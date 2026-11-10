@@ -31,7 +31,7 @@ static const InterieurDef DEFS[] = {
      Combine::BmwLive, 0.292f, 0.110f, {0.f, -0.24f, -0.88f}, 0xe9eef4, 0x0d0f12, 0xe7222e,
      0.244f, 0.091f, {0.38f, -0.20f, -0.80f}, -0.15f,
      -0.18f, -0.80f, -0.22f, -1.15f, 0x141415, 0x1b1c1e, 0x101113, 0.f, 0.15f, true,
-     Essuie::Paralleles, 0.600f, 0.475f, 1.66f, 0.335f},
+     Essuie::Paralleles, 0.600f, 0.475f, 1.66f, 0.335f, 0, false, false, false, true},   // WFS-404 : boutons rouges des branches gardés sans les bandes
     // 911 Carrera 4S (992.1) : volant rond 3 branches fines (375 mm), 5 cadrans sous une visière (compte-tours analogique
     // au centre), écran PCM 10,9 po encastré à mi-hauteur (245 × 130 mm), planche plate et basse, alu brossé ; balai 525 mm
     {"p911", 0.375f, 0.036f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x6e7177, 0,

@@ -537,6 +537,31 @@ bool garageBouton(const char* nom, float& x, float& y) {
     return true;
 }
 
+// WFS-404 (revue de la PR #337) : tour complet du garage, une capture par place (« NN / 17 »), flèche « suivante » : on passe aux
+// places où étaient l'A 45, l'Elantra N et le X5 (retirées) sans les voir : garage-tour-NN-<id>
+void benchGarageTour(Game& g, Renderer& r, const std::string& out) {
+    ui::chargerPolice(r);
+    if (!g.init(r, "golf", "ville")) { WFS_ERR("garage (tour) : chargement impossible"); return; }
+    g.setAutopilot(false); g.camMode = 0;
+    double t = 950;
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; g.render(t); };
+    for (int i = 0; i < 30; i++) g.update(1.0 / 60);
+    g.allerA(Ecran::Garage);
+    for (int i = 0; i < 40; i++) image();
+    if (!g_garage) { WFS_ERR("garage (tour) : système absent"); g.shutdown(); return; }
+    for (int k = 0; k < voituresPermises().n; k++) {
+        for (int i = 0; i < 45; i++) image();   // fin du glissement latéral
+        const char* id = CARS[g_garage->index()].id;
+        const std::string nom = "garage-tour-" + deuxChiffres(k + 1) + "-" + id;
+        g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : place %d / %d%s", nom.c_str(), placeDe(g_garage->index()) + 1, voituresPermises().n, voitureRetiree(id) ? " — VOITURE RETIRÉE" : "");
+        float x, y;
+        if (!garageBouton("suivant", x, y)) { WFS_ERR("garage (tour) : flèche « suivante » absente"); break; }
+        g.onTouch({40 + k, x, y, true}); image(); g.onTouch({40 + k, x, y, false}); image();
+    }
+    g.shutdown();
+}
+
 void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string& suf) {
     ui::chargerPolice(r);   // déjà chargée après l'écran de chargement ; nécessaire en WFS_BANC=garage
     if (!g.init(r, "golf", "ville")) { WFS_ERR("garage : chargement impossible"); return; }
