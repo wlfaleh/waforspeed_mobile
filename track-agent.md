@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent devartiste (01UY1Vv2ReCX) | WFS-404 | retire A 45, Elantra N, X5 (licence NC) de l'APK ; 18 voitures sans marque | `feature/waforspeed-404`, pas encore poussée | 🔧 attribué 2026-11-10 14:31 UTC (à sa demande ; un seul sujet) |
+| Claude, agent devartiste (01UY1Vv2ReCX) | WFS-404 | retire A 45, Elantra N, X5 (licence NC) de l'APK ; 18 voitures sans marque | `feature/waforspeed-404`, poussée 2026-11-10 15:50 UTC | 🔧 en cours : code et tests faits (1 rouge connu accepté, RG-11), captures en cours |
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, pas encore poussée | 🔧 attribué 2026-11-10 15:53 UTC (à sa demande ; un seul sujet) |
 | Claude, agent devartiste 2 (01UY1Vv5qgAR) | WFS-402 | fenêtres et portes réalistes des immeubles et maisons (toutes les cartes, E15) | `feature/waforspeed-402`, pas encore poussée | 🔧 attribué 2026-11-10 15:52 UTC (à sa demande ; un seul sujet) |
 | Claude, agent dev (01UY1Vv5vk) | WFS-406 | écran « Crédits » complet, noms trop proches des vrais renommés (sortie publique) | `feature/waforspeed-406`, pas encore poussée | 🔧 attribué 2026-11-10 15:53 UTC (à sa demande ; un seul sujet) |
