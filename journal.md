@@ -3612,3 +3612,52 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : option de grille `derriere` + contrôle bloquant « devant la plaque » ; surface du panneau sur une zone élargie ; découpe complète de l'anneau ; paroi et rebord lissés ; note M4 corrigée. X5 inchangée (empreinte rejouée).
 - Vérification : `--verifier` vert (5 voitures) ; 96 tests CPU verts ; captures régénérées avec les zooms demandés (plaque S3, haut du nez M4) ; réponse point par point dans la PR ; lead dev rappelé.
 
+
+### 2026-11-10 07:42:21 — WFS-381 : seuil de 20 niveaux retiré du critère des captures (po-scrum-master)
+- Mesures du développeur : contraste à 1 et 2 km dans les bornes RG-02 (Corniche 38,1 / 60,1 %, Campagne 29,0 / 47,4 %) ; écart à l'écran 8 à 14 niveaux, plafonné par la couleur de l'horizon de WFS-214.
+- Décision : seuil de 20 niveaux retiré (mon erreur de calcul) ; restent la mesure du contraste et le jugement à l'œil du lead dev ; Ville jugée à l'œil seulement. Détail dans `regles-de-gestion/WFS-381.md` (Suivi).
+
+### 2026-11-10 07:42:55 — WFS-380 : avis de l'agent 3D corrigé, VALIDÉ avec réserves, lead dev appelé (Claude, agent cartes (01UY1Vv4eo))
+- **1er avis (41a95f40) : À REPRENDRE**, D1 à D6. Corrigé dans 8a88af3c :
+  - D1 : horizon clair (Fresnel de l'eau entier, rugosité plafonnée) ;
+  - D2 : directions des vagues écartées, plus une petite mer du vent sans période ;
+  - D3 : écume contre la roche ;
+  - D4 : rivière d'eau douce trouble, vert-brun, 4 m de fond au plus ;
+  - D5 : nappe du ressac et sable mouillé sur la plage ;
+  - D6 : écume en lignes parallèles au bord, qui avancent.
+  Capture `mer-eclaboussure` ajoutée.
+- **2e avis (0a587856) : VALIDÉ avec réserves** (commentaire 6761864467 de la PR #326).
+- **Vérification** : 97 tests CPU réussis ; captures refaites après la synchronisation avec `main`.
+- **Banc perf de la Corniche** (`main` et branche mesurés sur la même machine) :
+  - Basse : scène 150,3 → 146,1 ms, 226 appels de dessin des deux côtés, dans le bruit de mesure. En Basse, la nappe et la petite mer du vent sont coupées.
+  - Haute : scène 303,7 → 302,9 ms.
+- **Pour le PO, réserves à mettre en tâches séparées** (RG-E15-09) :
+  - R1 : reflets des façades allumées de nuit ;
+  - R2 : reflets des coques dans le bassin de la marina ;
+  - R3 : traînée du soleil bas plus nette ;
+  - R4 : reflets des lampadaires de la rivière ;
+  - R6 : coût de l'eau en Basse à mesurer sur le téléphone (RG-07, 1,0 ms au plus) ;
+  - R7 : aspect « filé » de la mer à angle rasant ;
+  - R8 : capture de l'écume contre des blocs dans l'eau et au pied de la falaise ;
+  - R9 : maillage trop régulier du reflet du casino la nuit ;
+  - R10 : éclaboussure du dauphin vue comme un trait plat (déjà sur `main`).
+  RG-E15-01 (200 à 700 Mo) ne se mesure pas sur la Corniche, carte du code : à trancher avec WFS-386.
+
+### 2026-11-10 07:45:16 — WFS-362 fusionné par le lead dev (lead-dev)
+- PR #323, 3e revue, commit relu `a88efa52`, squash `30d339f4`. Revue « ✅ Approuvé » en commentaire dans la PR (même compte GitHub).
+- 58 paires de captures ouvertes ; points 1 (plaque S3), 3 (emblème M4) et 4-5 (rebords en dents) de la 2e revue réglés.
+- Construction et tests CPU refaits par le lead dev sur la branche fusionnée avec `main` : 96/96 ; `--verifier` : empreintes concordantes.
+- **Au PO (RG-06)** : tâche séparée à créer pour les défauts restants, visibles seulement en gros plan : reflets « en cuvette » du panneau M4 de 3/4 droit (pli au bord gauche, marche sous le joint du capot, arc orangé de nuit) ; éclat orangé de nuit au coin bas droit de la grille S3 ; barre blanche sous la pointe du capot M4 en vue basse.
+- Statut : 🟣 Fusionné (pas un retour vu sur le téléphone de l'utilisateur).
+
+### 2026-11-10 07:45:48 — WFS-362 : fusionné, session terminée (Claude, agent dev3d 4 (01UY1Vv5HV))
+- PR #323 approuvée et fusionnée en squash par le lead dev à la 3e revue (`30d339f4`) : M4 et S3 sans calandre de marque (pièce de carrosserie + grille générique derrière la plaque) ; outil `tools/retoucher_formes.mjs` enrichi (`panneau`, options de grille `joue`, `rebord`, `derriere`), X5 inchangée.
+- Défauts restants non bloquants (RG-06, tâche séparée demandée au PO par le lead dev) : reflets du panneau M4 de 3/4 droit, éclat de nuit au coin bas droit de la grille S3, barre claire sous la pointe du capot M4 en vue basse.
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-10 07:48:00 — WFS-384 attribué à agent expert ci cd (session 0183bv2Y) (po-scrum-master)
+- Ordre de l'utilisateur (« Prend 2 et 3 », 2026-11-10 ≈ 07:45 UTC, transmis par l'agent expert ci) : **WFS-384** ([TECHNIQUE] bancs du matin sautés, P1, E7, ANO-226) attribué à la session 0183bv2Y, son premier et seul ticket. Branche `feature/waforspeed-384`, zone `.github/workflows/matin.yml`, `tools/qa/**`, skill `expert-ci-cd`. US technique : CI de branche autorisée, une à la fois, notée au journal.
+- Exception à « un ticket actif par épic » sur ordre de l'utilisateur : WFS-319 (E7, publication) reste 🔧 chez l'agent expert ci (session 01UY1Vv4).
+- Constat du 2026-11-10 07:40 UTC (aucun run ce matin, runs #6 à #11 sautés, Release `captures-matin` absente, issue #242 muette depuis 2026-11-09 01:52 UTC) et nouvelle **RG-06** (dire clairement à la QA quand `captures-matin` manque ou n'est pas du jour) ajoutés à `regles-de-gestion/WFS-384.md`.
+- `track-agent.md` : ligne de la session ajoutée ; lignes des sessions terminées enlevées (dev3d 5, dev M, dev Z, dev3d 2, dev3d 3, dev3d 4, artiste, conduite).
