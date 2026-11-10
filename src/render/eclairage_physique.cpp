@@ -14,6 +14,7 @@
 #include "../game/player.h"
 #include "../game/sauvegarde.h"   // WFS-208 : moment de la dernière course (après un redémarrage)
 #include "../game/trace_cartes.h"
+#include "atmosphere_brume.h"   // WFS-381
 #include "../game/track.h"
 #include "../ui/ecrans/reglages.h"
 #include "eclairage.h"   // lampadaires (hauteur de la tête)
@@ -603,9 +604,21 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         double L5 = 0; const double z = 85 * PI_L / 180; const vec3 sc = atmosphere::directionMonde(hj, astre.azimut);
         for (int j = 0; j < 16; j++) { const double a = 2 * PI_L * (j + 0.5) / 16, d[3] = {std::sin(z) * std::cos(a), std::cos(z), std::sin(z) * std::sin(a)}, ss[3] = {sc.x, sc.y, sc.z}; L5 += K * cieRelative(d, ss) / 16; }
         brume = horizon0 * (float)(L5 + Lnuit);   // WFS-207 (RG-03) : perspective aérienne au loin = couleur de l'horizon de la même atmosphère
-        // brouillard de distance physique : le brouillard exponentiel des cartes prend l'extinction au sol de la même atmosphère
-        // (Rayleigh + Mie + ozone, pondérée en luminance) ; un brouillard linéaire (pluie de meteo.cpp) reste tel quel
-        if (fp.fogFar <= 0) fp.fogDensity = (float)A.extY;
+        // brouillard de distance physique ; un brouillard linéaire (pluie de meteo.cpp) reste tel quel
+        // WFS-381 (RG-01, RG-02, RG-04, ANO-221) : l'extinction au sol du modèle de ciel (A.extY ≈ 8,7·10⁻⁵ m⁻¹ : 8 % à 1 km) ne
+        // donnait presque aucune perspective atmosphérique ; brume mesurée de la carte (couche limite chargée d'aérosols), qui
+        // décroît avec la hauteur (atmosphere_brume.h) ; jamais moins que l'extinction du ciel lui-même
+        if (fp.fogFar <= 0) {
+            const wfs::brume::Reglage b = wfs::brume::reglageCarte(gv.map ? gv.map->id : nullptr);
+            fp.fogDensity = (float)std::max(b.beta0, A.extY); fp.fogHauteurInv = (float)(1.0 / b.hauteur); fp.fogRef = (float)b.yRef;
+            switch (g.forc.brume) {   // banc de la brume seulement (Forcage::brume)
+            case 1: fp.fogDensity = 0; break;
+            case 2: fp.fogDensity = 1; break;
+            case 3: fp.fogDensity = 1e-3f; fp.fogHauteurInv = 0; break;
+            case 4: fp.fogDensity = (float)A.extY; fp.fogHauteurInv = 0; break;
+            default: break;
+            }
+        }
     } else brume = fp.fogColor * (float)(facteur / k);   // nuit : lumière des villes diffusée (intensité artistique, RG-06)
     // sonde du ciel (CPU) quand le ciel change
     Etat_::Ciel c{nuit, K, Lnuit, haut0, horizon0, sol, brume, s};
@@ -614,6 +627,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // ---- fp pré-exposé (RG-01, RG-04, RG-06)
     fp.sunDir = s; fp.sunIntensity = (float)(E * k); fp.sunColor = couleur;
     fp.ground = sol * (float)k; fp.fogColor = brume * (float)k;
+    g.etat.brumeDensite = fp.fogFar > 0 ? 0 : fp.fogDensity; g.etat.brumeHauteurInv = fp.fogHauteurInv; g.etat.brumeCouleur = fp.fogColor;   // WFS-381
     fp.exposure = 1; fp.ambient = 1;
     if (!nuit) { fp.skyTop = haut0; fp.skyHorizon = horizon0; }   // WFS-207 (RG-02) : teintes du ciel de l'atmosphère (sky.frag)
     g.etat.eLampadaireSol = -1;
