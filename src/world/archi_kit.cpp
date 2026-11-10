@@ -14,32 +14,34 @@ constexpr float LINTEAU = 0.2f;    // maçonnerie au-dessus d'une ouverture, sou
 constexpr float TRUMEAU = 0.3f;    // mur plein minimal entre deux fenêtres d'une même travée voisine (m)
 constexpr float RIVE = 0.15f;      // mur plein minimal au bord de la façade (m)
 
+// WFS-402 (RG-02, RG-04) : retrait des tableaux de 15 à 25 cm ; fenêtre d'habitation 0,80-1,40 × 1,15-2,15 m, porte-fenêtre
+// ≥ 2,15 m ; porte d'immeuble 1,0-1,4 × 2,2-3,0 m (cochère ≤ 2,5 m) ; porte de maison 0,90 × 2,15 m (village, villa).
 // RG-02 : 6 styles. Ouvertures : plages courantes (à confirmer au référentiel, M-02) ; chaque plage est cohérente avec
 // RG-01 : allège max + hauteur max ≤ étage min − linteau (2,7 − 0,2 = 2,5 m), fenêtre max ≤ travée min − trumeau.
 const ReglesStyle STYLES[(int)Style::Nombre] = {
     // immeuble classique en pierre : portes-fenêtres à garde-corps, corniche moulurée, zinc
-    {"classique", {2.6f, 3.2f}, {1.1f, 1.3f}, {2.1f, 2.3f}, {0.f, 0.f}, {1.1f, 1.4f}, {2.4f, 2.6f}, {2.6f, 3.0f},
+    {"classique", {2.6f, 3.2f}, {1.1f, 1.3f}, {2.15f, 2.3f}, {0.f, 0.f}, {1.1f, 1.4f}, {2.4f, 2.6f}, {2.6f, 3.0f},
      0.25f, 0.6f, 0.35f, 4, 6, (uint8_t)(bit(Rdc::Commerce) | bit(Rdc::Porche)), (uint8_t)(bit(Etage::Fenetres) | bit(Etage::Balcons)),
      (uint8_t)bit(Toit::Zinc)},
     // immeuble moderne verre et métal : bandeaux vitrés, allège basse, toiture-terrasse
-    {"moderne", {1.6f, 1.9f}, {1.2f, 1.5f}, {1.8f, 2.0f}, {0.3f, 0.5f}, {1.0f, 1.2f}, {2.2f, 2.4f}, {2.6f, 3.0f},
-     0.08f, 0.3f, 0.05f, 3, 8, (uint8_t)(bit(Rdc::Commerce) | bit(Rdc::Logement)), (uint8_t)(bit(Etage::Fenetres) | bit(Etage::Loggias)),
+    {"moderne", {1.6f, 1.9f}, {1.2f, 1.4f}, {1.8f, 2.0f}, {0.3f, 0.5f}, {1.0f, 1.2f}, {2.2f, 2.4f}, {2.6f, 3.0f},
+     0.15f, 0.3f, 0.05f, 3, 8, (uint8_t)(bit(Rdc::Commerce) | bit(Rdc::Logement)), (uint8_t)(bit(Etage::Fenetres) | bit(Etage::Loggias)),
      (uint8_t)bit(Toit::Terrasse)},
     // méditerranéen crépi à volets : fenêtres plus hautes que larges, génoise, tuiles ou terrasse
-    {"mediterraneen", {2.4f, 3.0f}, {0.9f, 1.1f}, {1.35f, 1.5f}, {0.9f, 1.0f}, {0.9f, 1.1f}, {2.1f, 2.3f}, {2.4f, 2.8f},
+    {"mediterraneen", {2.4f, 3.0f}, {0.9f, 1.1f}, {1.35f, 1.5f}, {0.9f, 1.0f}, {1.0f, 1.1f}, {2.2f, 2.3f}, {2.4f, 2.8f},
      0.2f, 0.35f, 0.25f, 2, 5, (uint8_t)(bit(Rdc::Commerce) | bit(Rdc::Logement) | bit(Rdc::Porche)),
      (uint8_t)(bit(Etage::Fenetres) | bit(Etage::Balcons)), (uint8_t)(bit(Toit::Tuiles) | bit(Toit::Terrasse))},
     // maison de village en pierre : murs épais (tableaux profonds), petites fenêtres, tuiles
-    {"village", {2.6f, 3.6f}, {0.8f, 1.0f}, {1.1f, 1.4f}, {0.9f, 1.0f}, {0.9f, 1.0f}, {2.0f, 2.2f}, {2.2f, 2.6f},
-     0.3f, 0.2f, 0.2f, 1, 2, (uint8_t)(bit(Rdc::Logement) | bit(Rdc::Garage)), (uint8_t)bit(Etage::Fenetres),
+    {"village", {2.6f, 3.6f}, {0.8f, 1.0f}, {1.15f, 1.4f}, {0.9f, 1.0f}, {0.9f, 0.9f}, {2.15f, 2.17f}, {2.2f, 2.6f},
+     0.25f, 0.2f, 0.2f, 1, 2, (uint8_t)(bit(Rdc::Logement) | bit(Rdc::Garage)), (uint8_t)bit(Etage::Fenetres),
      (uint8_t)bit(Toit::Tuiles)},
     // bâtiment industriel en brique : grandes baies, portes de garage, zinc ou terrasse
     {"industriel", {3.5f, 4.5f}, {1.8f, 2.6f}, {1.3f, 1.5f}, {0.8f, 1.0f}, {1.0f, 1.2f}, {2.2f, 2.5f}, {2.6f, 3.0f},
      0.25f, 0.25f, 0.1f, 1, 3, (uint8_t)(bit(Rdc::Garage) | bit(Rdc::Porche)), (uint8_t)bit(Etage::Fenetres),
      (uint8_t)(bit(Toit::Zinc) | bit(Toit::Terrasse))},
     // villa contemporaine : grandes baies toute hauteur, toiture-terrasse
-    {"villa", {3.0f, 4.5f}, {1.8f, 3.0f}, {2.1f, 2.3f}, {0.f, 0.f}, {1.0f, 1.2f}, {2.2f, 2.4f}, {2.4f, 2.8f},
-     0.1f, 0.15f, 0.3f, 0, 1, (uint8_t)bit(Rdc::Logement), (uint8_t)(bit(Etage::Fenetres) | bit(Etage::Loggias)),
+    {"villa", {3.0f, 4.5f}, {1.8f, 3.0f}, {2.15f, 2.3f}, {0.f, 0.f}, {0.9f, 0.9f}, {2.15f, 2.17f}, {2.4f, 2.8f},
+     0.15f, 0.15f, 0.3f, 0, 1, (uint8_t)bit(Rdc::Logement), (uint8_t)(bit(Etage::Fenetres) | bit(Etage::Loggias)),
      (uint8_t)bit(Toit::Terrasse)},
 };
 
@@ -71,6 +73,7 @@ Plan assembler(Style s, float largeur, float hauteurVoulue, uint32_t graine) {
     Mulberry32 R(graine * 2654435761u + (uint32_t)s * 97u + 1u);
     Plan p;
     p.style = s; p.largeur = std::max(largeur, 1.f);
+    p.graine = graine;   // WFS-402 : modèles de fenêtre et de porte (archi_ouvertures.cpp), sans toucher aux tirages ci-dessous
     decouper(p, S.travee, S.travee.tirer(R));
     p.hRdc = H_RDC.tirer(R);
     p.hEtage = H_ETAGE.tirer(R);
@@ -95,7 +98,7 @@ Plan assembler(Style s, float largeur, float hauteurVoulue, uint32_t graine) {
         const float x = p.axe(t);
         if (t == entree) {
             const bool porche = p.rdc == Rdc::Porche;
-            const float l = std::min(porche ? std::min(2.6f, p.travee - TRUMEAU) : porteL, p.travee - TRUMEAU);
+            const float l = std::min(porche ? std::min(2.5f, p.travee - TRUMEAU) : porteL, p.travee - TRUMEAU);   // WFS-402 : porte cochère ≤ 2,5 m (RG-04)
             p.baies.push_back({Ouverture::Porte, 0, t, x, 0, l, porteH, false});
             continue;
         }

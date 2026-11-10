@@ -25,7 +25,7 @@ std::vector<Bat> g_bats;
 
 // emplacements de maillage d'un morceau : un par matériau (murs par style, toits par type, puis parties communes)
 constexpr int NS = (int)Style::Nombre, NT = 3;
-enum Slot : int { S_MUR = 0, S_TOIT = NS, S_ENCADREMENT = NS + NT, S_VITRE, S_MENUISERIE, S_METAL, S_VOLET, S_FIN, NB_SLOTS };
+enum Slot : int { S_MUR = 0, S_TOIT = NS, S_ENCADREMENT = NS + NT, S_VITRE, S_MENUISERIE, S_METAL, S_VOLET, S_FIN, S_CHASSIS, NB_SLOTS };
 int slot(int part, const Plan& p) {
     switch (part) {
     case MUR: return S_MUR + (int)p.style;
@@ -35,11 +35,15 @@ int slot(int part, const Plan& p) {
     case MENUISERIE: return S_MENUISERIE;
     case METAL: return S_METAL;
     case FIN: return S_FIN;
+    case CHASSIS: return S_CHASSIS;   // WFS-402
     default: return S_VOLET;
     }
 }
 
 // RG-05 : niveau de détail selon la distance au joueur (m)
+// WFS-402 (RG-09) : en qualité Basse, détail complet (menuiseries, volets, balcons) jusqu'à 30 m seulement : les fenêtres réelles
+// ne coûtent aucune image par seconde au téléphone de l'utilisateur (banc perf, Ville de nuit, avant / après)
+constexpr double LOD0_BASSE_M = 30;
 constexpr double LOD0_M = 120, LOD1_M = 300, VUE_AVANT_M = 650, VUE_ARRIERE_M = 60;
 constexpr int64_t MORCEAU = 48;   // segments par morceau (≈ 58 m)
 
@@ -86,6 +90,7 @@ public:
         mats_[S_METAL] = mat(ALB_ALUMINIUM, 0.3f, 0.4f, 1);
         mats_[S_FIN] = mat(ALB_ALUMINIUM, 0.3f, 0.4f, 1, MAT_DOUBLE | MAT_BLEND);   // WFS-370 : barreaux, couverture partielle (scene.frag, detailK)
         mats_[S_VOLET] = mat({"volet", 0.09f, 0.2f, 0.13f}, 1, 0.6f, 0);           // volets peints (conception, provisoire)
+        mats_[S_CHASSIS] = mat({"peinture blanc cassé", 0.70f, 0.68f, 0.62f}, 1, 0.45f, 0);   // WFS-402 : menuiseries de bois peint (RAL 9001, albédo ≈ 0,7 ; conception)
         {   // vitres + pièces de nuit (ST-3) : lampe 2850 K, murs 31,8 cd/m² (E = 200 lx, ρ = 0,5 : conception), 35 % allumées la nuit
             double c[3]; lumiere::couleurTemperature(2850, c);
             const float L = (float)(0.5 * 200.0 / lumiere::PI_L);
@@ -109,7 +114,7 @@ public:
         auto lodVoulu = [&](int64_t c) {   // distance du joueur au morceau (m), au plus près
             const double d0 = (double)(c * MORCEAU - aP) * SEG_M, d1 = d0 + MORCEAU * SEG_M;
             const double d = d0 > 0 ? d0 : (d1 < 0 ? -d1 : 0);
-            return d < LOD0_M ? 0 : d < LOD1_M ? 1 : 2;
+            return d < (r.qualiteBasse ? LOD0_BASSE_M : LOD0_M) ? 0 : d < LOD1_M ? 1 : 2;
         };
         const int64_t c0 = (aP - (int64_t)(VUE_ARRIERE_M / SEG_M)) / MORCEAU, c1 = (aP + (int64_t)(VUE_AVANT_M / SEG_M)) / MORCEAU;
         for (auto it = morceaux_.begin(); it != morceaux_.end();) {   // hors de vue ou mauvais niveau : rendu au cimetière (3 images)
@@ -135,7 +140,11 @@ public:
             if (frame_ > it->first + 3) { r.destroy(it->second); it = cimetiere_.erase(it); } else ++it;
         }
         const mat4 I = mat4::identity();
-        for (auto& [c, m] : morceaux_) for (int s = 0; s < NB_SLOTS; s++) if (m.m[s].indexCount) r.draw(m.m[s], mats_[s], I, s == S_FIN ? 0.016f : 0.f);   // WFS-370 : épaisseur des barreaux
+        // WFS-402 (RG-09) : vitres envoyées en dernier (même profondeur de tri pour tous les morceaux : l'ordre d'envoi est gardé) :
+        // les menuiseries et les volets fermés posés devant cachent la pièce de nuit, dont les pixels ne sont alors plus calculés
+        for (int passe = 0; passe < 2; passe++)
+            for (auto& [c, m] : morceaux_) for (int s = 0; s < NB_SLOTS; s++)
+                if ((s == S_VITRE) == (passe == 1) && m.m[s].indexCount) r.draw(m.m[s], mats_[s], I, s == S_FIN ? 0.016f : 0.f);   // WFS-370 : épaisseur des barreaux
     }
 
     void shutdown(Renderer& r) override {
