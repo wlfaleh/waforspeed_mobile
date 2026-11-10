@@ -2377,3 +2377,17 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **test_course5_ordinateurs (#991 à #994)** : `remplacant()` de WFS-404 prenait « la plus proche en vitesse max » (S3, V60 : 0-100 de 4,9 s) à la place de l'Elantra N (5,3 s), du X5 (5,4 s), du Range Rover Sport (5,9 s), et la retirait des candidats, ce qui décalait les tirages suivants. Correction (`src/game/course5.cpp`) : remplaçante de la classe du joueur **pas plus rapide** (vitesse max ≤, 0-100 ≥), allure la plus voisine, et plus retirée des candidats (tirages d'avant WFS-404 gardés). Graine par graine (8 graines × 4 cartes, Golf) : chaque place du joueur égale ou meilleure qu'avant WFS-404 (f04cec8c) ; circuit 6/8 avant WFS-404, 3/8 à main, **7/8** après ; Ville 8/8, Campagne 8/8, Plage 7/8. Nouveau contrôle dans `tests/test_course5.cpp` (17 voitures × 400 graines : tirage d'avant WFS-404 recopié, remplaçantes pas plus rapides dès qu'il en existe une dans la classe). Limite : dans la classe de la SF90, aucune voiture n'est plus lente que l'A 45 : la moins rapide en trop est prise (Corvette, sinon M4).
 - **Fenêtres de WFS-402** : interrupteur `archi::ouverturesReelles()` (archi_geo.*), 0 par défaut (jeu, APK), `WFS_OUVERTURES=1` ou `choisirOuverturesReelles(true)` pour le rendu de WFS-402 ; aucun fichier supprimé. Le banc `archi` (accroche d'une ligne dans `archi_banc.cpp`) et `test_archi_geo` tournent à 1 ; nouveau contrôle : à 0, ni châssis ni volet, moins de triangles ; à 1, maillage identique. LOD0 en Basse : 30 m seulement avec l'interrupteur à 1, sinon 120 m comme avant WFS-402.
 - Tests CPU : **102 réussis** (`tools/qa/tests_cpu.sh build`). Mesures du banc perf (Ville de nuit, Basse) en cours : r990 / avant WFS-402 / main / après.
+
+### 2026-11-10 23:10:39 — WFS-324 : corrections du refus de la PR #341 (Claude, agent dev3d (01UY1Vv5YT))
+- Point 1, glace intérieure : la voiture qui suit était cachée par les sièges avant du modèle. Correction : même décalage en long que les glaces extérieures (l'œil du cockpit est 50 à 75 cm trop en avant dans le modèle), et visée selon la hauteur de l'œil. Commits 02f414bf et 36d0a985.
+- Point 2, nuit : 2 lampadaires derrière la voiture sont aussi de vraies lumières quand les rétroviseurs sont actifs. C'est une accroche dans `nuit.cpp` (≤ 20 lignes), annoncée ici.
+  - Une voiture vue seulement dans les glaces n'éclaire rien : le contraire éclairait en blanc le bas de l'habitacle.
+  - Les glaces extérieures sont réglées vers la voie d'à côté : la carrosserie occupe 1,5° au bord intérieur (79c12aa9).
+- Point 3 : capture des Réglages refaite, ligne « Rendu » sans et avec rétroviseurs.
+- Point 4 : la glace gauche reste sombre la nuit, expliqué dans la PR. La scène n'a que 12 vraies lumières, choisies pour la vue avant, et une glace extérieure ne renvoie que 50 % de la lumière.
+- Vérification :
+  - banc `retroviseurs` : 0 écart (Golf, Range Rover Sport, M4, 911) ;
+  - banc `cockpit-voisine` : 0 écart ;
+  - 102 tests verts ; `test_course5_ordinateurs` rouge, comme sur `main` ;
+  - coût : 0,41 img/s en Basse et 0,64 en Haute (estimé).
+- Commit relu à demander : d77ac9f5. Le lead dev est rappelé.

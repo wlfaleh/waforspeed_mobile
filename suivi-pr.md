@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | ↩️ Retour lead dev | 1431d17a | 2026-11-10 19:23 |
+| #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 🔁 Corrigée, à relire | d77ac9f5 | 2026-11-10 23:10 |
