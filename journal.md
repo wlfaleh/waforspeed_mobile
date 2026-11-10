@@ -3447,3 +3447,16 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Décision (option a)** : refus motivé pour les deux places ; WFS-396 se livre avec le rapport et les fiches réelles (`references/reel/voitures/`), rien de converti ; la session s'arrête après la fusion.
 - **Suite** : WFS-397 créé (P1, E10 exception `remplacants/`, agent `dev-artiste-3d`, nouvelle session, après WFS-396) : retoucher la **W212 de Peter_D** (hauteur ; repli W211 de BadKarma, voie avant +17 mm par roue) et la **Virtus GT de BHP3D** (hauteur, allègement < 8 Mo) à ±1 %. WFS-360 dépend maintenant de WFS-397.
 - A 45 de Lexyc16 interdite (licence contradictoire CC BY / CC BY-NC).
+
+### 2026-11-10 00:24:40 — WFS-362 : PR #323 ouverte, M4 et S3 sans calandre de marque (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Fait : calandres découpées sur leur contour exact (`decouper`) ; haut de l'ouverture refermé par une pièce de carrosserie (nouvelle retouche `panneau` de `tools/retoucher_formes.mjs` : même peinture, normales raccordées, bombé à pente nulle au bord, jamais devant) ; bas : grille ajustée (outil de la X5). M4 : anneau chromé de l'ancien logo du capot retiré.
+- Fichiers : `tools/retoucher_formes.mjs`, `tools/formes.json` (entrées m4, s3), `assets/cars/m4.*`, `assets/cars/s3.*`, `qa/pr/WFS-362/`.
+- Vérification : `--verifier` vert (m4, s3, x5, compass, p208) ; X5 rejouée depuis son origine : même empreinte (factorisation sans effet) ; 94 tests CPU verts ; `test_fidelite_voitures` : m4 et s3 identiques à `main` ; captures avant / après (18 vitrines, 16 gros plans jour / nuit, 12 zooms ×4).
+- Limites : S3 125,3 k triangles (repère 120 k dépassé, comme X5 / 208 / Compass) ; joint du panneau visible de près (écusson sombre de loin sur la M4 noire) ; dépendance npm `meshoptimizer@0.22.0` installée dans le conteneur (version du `tools/package.json`) pour refaire les LOD.
+
+
+### 2026-11-10 00:30:14 — WFS-362 refusé par le lead dev, PR #323 (lead-dev)
+- Commit relu `bcbd0d83` ; 46 paires de captures ouvertes, tout le diff lu (`tools/retoucher_formes.mjs`, `tools/formes.json`, modèles m4 / s3) ; `--verifier` rejoué : vert (m4, s3, x5, compass, p208).
+- Bloquants : (1) M4 : panneau bosselé, creux rond (« cratère ») et reflets en vagues, visibles jusqu'aux vitrines (`nez-m4-34d-*`, `nez-m4-bas-*`, `vitrine-m4-a1`, `vitrine-m4-bas2`) ; (2) M4 : le panneau garde le contour de l'ancienne double calandre (écusson sombre lisible de face et de 3/4) ; (3) S3 : éclats et bord déchiré au coin droit de la grille (`nez-s3-34g-jour`, `zoom-s3-34g-*`).
+- À corriger aussi : bouts de lames en peigne (M4, S3), bande plus sombre du panneau de la S3 sous le capot.
+- Revue publiée en « COMMENT » (même compte GitHub) ; statut ↩️ dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
