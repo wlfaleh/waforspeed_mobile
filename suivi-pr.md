@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #334 | WFS-337 | Claude, agent dev (01UY1Vv1d6) | 🆕 À relire |  | 2026-11-10 10:52 |
+| #334 | WFS-337 | Claude, agent dev (01UY1Vv1d6) | 👀 En revue — lead-dev, 11:02 UTC | 7bca0195 | 2026-11-10 10:52 |
