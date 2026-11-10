@@ -1987,3 +1987,16 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 ### 2026-11-10 15:38:55 — WFS-404 : 2e risque, décision du PO (option A) ; WFS-394 en P1 (po-scrum-master)
 - Constat de Claude, agent devartiste (01UY1Vv2ReCX) : toute voiture enlevée des adversaires change les tirages des 8 graines. Avec la règle « voiture la plus proche en vitesse max », `test_course5` est vert, mais un contrôle de `test_course5_ordinateurs` reste rouge : circuit, aide activée, top 3 = 3/8 (seuil 4).
 - Décision : option A. Le seuil ne change pas et ne passe pas en avertissement (« jamais un seuil affaibli »). WFS-404 peut être fusionné avec ce seul rouge connu (RG-11), et WFS-394 passe P1 pour le remettre vert (RG-06). Il tient lieu d'US technique. Le job `android` de `build.yml` ne dépend pas des tests : l'APK de `main` reste publié.
+
+### 2026-11-10 15:51:53 — WFS-324 attribué à Claude, agent dev3d (01UY1Vv5YT) (po-scrum-master)
+- Nouvelle session `dev-artiste-3d` (aucun ticket avant) : **WFS-324** (P1, E4 + E10, 2e de l'ordre des 50 tâches), vue Cockpit, rétroviseurs avec vrai reflet. Dépendance WFS-323 fusionnée (#335, 🟡).
+- Zone : passe des reflets (E4) et `vehicule_cockpit*` ; pas `assets/cars/*` ni la ligne du volant de la M4 (WFS-404 en parallèle). Coût ≤ 2 img/s. Hors E15 : pas d'avis de l'agent 3D obligatoire. Branche `feature/waforspeed-324` à pousser tout de suite.
+
+### 2026-11-10 15:52:39 — WFS-402 attribué à Claude, agent devartiste 2 (01UY1Vv5qgAR) (po-scrum-master)
+- Nouvelle session `dev-artiste-3d` (aucun ticket avant). Elle demandait WFS-324, pris à 15:51:53 par Claude, agent dev3d (01UY1Vv5YT) ; mon attribution parallèle n'a pas été envoyée. Ticket suivant de l'ordre de l'utilisateur pour ce type d'agent : **WFS-402** (P1, 3e), E15, fenêtres et portes réalistes de toutes les cartes. E15 libre (aucun ticket 🔧 / 🔀), WFS-370 fusionné (🟡).
+- Zone : `src/world/archi_*`, nouveaux `src/world/archi_ouvertures_*`, `assets/world/modeles/ouvertures/**`, `assets/textures/decor/ouvertures/**`, `tests/**` ; ≤ 10 lignes d'appel par fichier de carte (pas la ligne `x5` de `ville.cpp`, à WFS-404). Avis « VALIDÉ » de l'agent 3D avant le lead dev. Branche `feature/waforspeed-402`.
+
+
+### 2026-11-10 15:53:13 — WFS-406 attribué à Claude, agent dev (01UY1Vv5vk) (po-scrum-master)
+- Nouvelle session `dev` (aucun ticket avant, ligne ajoutée en 0291321) : **WFS-406** (P1, E5 + accroche E8 menu, 5e de l'ordre des 50 tâches ; 3e et 4e, WFS-402 et 405, réservés aux skills `dev-artiste-3d` et `expert-cartes`). Écran « Crédits » complet et noms trop proches des vrais renommés (J-03, J-06, J-13). E5 libre.
+- Zone : `src/ui/**` (hors `ecrans/`), accroche `src/ui/ecrans/menu.*` (bouton Crédits), noms et champ `confidentialite_url` de `configgame.json`, `assets/licences/CREDITS.txt`, `store/credits.md`, `tools/qa/verifier_licences.py` ; pas `src/game/cars.h` ni `assets/cars/*` (WFS-404 en cours). Crédits des voitures alignés sur la liste de WFS-404 : synchroniser avec `main` après sa fusion avant la PR finale. Branche `feature/waforspeed-406` à pousser tout de suite.
