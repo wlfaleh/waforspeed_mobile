@@ -17,7 +17,8 @@
 //   - bouchon (WFS-358) : retire un ancien logo en creux et recoud la peau (étanche) ;
 //   - grille : AJOUTE un matériau (à la fin) et un maillage ;
 //   - grille ajustée (WFS-358) : AJOUTE deux matériaux (lames, fond) ; profondeur qui suit la carrosserie, jamais devant elle ;
-//   - panneau (WFS-362) : referme une ancienne ouverture par une peau ajoutée au maillage de la carrosserie (même peinture).
+//   - panneau (WFS-362) : referme une ancienne ouverture par une peau ajoutée au maillage de la carrosserie (même peinture) ;
+//   - couture (WFS-363) : referme une ouverture par une peau COUSUE au bord découpé de la carrosserie (mêmes positions : aucun joint).
 //   Après un retrait, une découpe, un bouchon ou une grille, le .lod est régénéré (tools/alleger_voiture.mjs). Dans tous les cas :
 //   tangentes (TAN1) des maillages touchés recalculées (tools/tangentes.mjs), boîte d'en-tête recalculée.
 //
@@ -35,6 +36,7 @@
 //   bouchon      { "boucher": true, "materiau": m, "centre": [x,y], "rayons": [rx,ry], "seuil": s, "z": [z0,z1], "triangles": n }
 //   grille ajustée { "grilleAjustee": { "contour", "z", "ignorer", "recul", "fond", "lames", "lame": {…}, couleurs }, … } (voir plus bas)
 //   panneau      { "panneau": { "materiau", "contour", "z", "ignorer", "recul", "debord", "bombe" }, "triangles": n } (voir plus bas)
+//   couture      { "couture": { "materiau", "contour", "z", "ignorer", "bande", "baseFace" }, "triangles": n } (WFS-363, voir plus bas)
 // Chaque retouche porte une « note ».
 // « sommets » : nombre de sommets dans la boîte (contrôle à la 1re application). Repère du .wfm : avant vers −Z, x à droite, y en haut.
 import fs from 'fs';
@@ -413,10 +415,15 @@ function boucher(w, r) {
 // laissés de côté) ; sur les nœuds de 1 cm où il y a de la carrosserie autour (± 1 cm), surface = carrosserie la plus profonde
 // + « recul » ; ailleurs, interpolée (équation de Laplace) : galbe naturel du nez. Rend la boîte, la carte, surf(x, y) et pente(x, y).
 // mode « profond » (grille) : carrosserie la plus profonde à ± 1 cm ; mode « proche » (panneau, WFS-362) : carrosserie de la cellule
-// même (sinon la plus profonde à ± 1 cm) : le panneau suit la vraie peau au raccord au lieu de plonger dans les creux voisins.
+// même (sinon la plus profonde à ± 1 cm) : le panneau suit la vraie peau au raccord au lieu de plonger dans les creux voisins ;
+// mode « exact » (WFS-363, couture) : carrosserie de la cellule seulement (la plus profonde à ± 1 cm tirait le haut de la peau de
+// la Giulia vers l'arrondi du capot : creux sous la couture).
 // base (WFS-362, option) : surface lisse f(x, y) ; seul l'écart à f est interpolé : la pente et le galbe de f passent dans l'ouverture.
 // plancher (WFS-362, option) : z minimal permis en (x, y) (−Infinity : aucun) ; la surface reste derrière (ex. derrière la plaque).
-function surfaceOuverture(w, P, z0, z1, ignorer, recul, mode = 'profond', base = null, plancher = null) {
+// biharmonique (WFS-363, option, couture) : après Laplace, l'écart est lissé par l'équation biharmonique (∇⁴ = 0, stencil à 13 points) :
+// la bande de carrosserie connue autour du contour impose aussi la PENTE au raccord (Laplace ne raccorde que la hauteur : pli au
+// bord, ex. haut de l'écusson de la Giulia, dans l'arrondi vers le capot) ; nœud sans ses 12 voisins (bord de la grille) : Laplace.
+function surfaceOuverture(w, P, z0, z1, ignorer, recul, mode = 'profond', base = null, plancher = null, biharmonique = false) {
   const bx = [Math.min(...P.map((p) => p[0])), Math.max(...P.map((p) => p[0])), Math.min(...P.map((p) => p[1])), Math.max(...P.map((p) => p[1]))];
   const pas = 0.005, carte = profondeurFace(w, bx, pas, z0, z1, ignorer || []);
   // surface S sur une grille de nœuds de 1 cm : connue (carrosserie + recul) ou interpolée
@@ -428,6 +435,7 @@ function surfaceOuverture(w, P, z0, z1, ignorer, recul, mode = 'profond', base =
     let z = -Infinity;   // carrosserie la plus PROFONDE autour du nœud (± 1 cm) : la grille reste derrière chacune des surfaces qu'elle croise
     for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) { const zc = carte.at(x + di * pas, y + dj * pas); if (Number.isFinite(zc)) z = Math.max(z, zc); }
     if (mode === 'proche' && Number.isFinite(carte.at(x, y))) z = carte.at(x, y);
+    if (mode === 'exact') z = carte.at(x, y);   // WFS-363 (couture) : sans voisinage, sinon le nœud prend la peau la plus en arrière
     if (Number.isFinite(z)) { S[j * NX + i] = z + recul - (base ? base(x, y) : 0); connu[j * NX + i] = 1; somme += S[j * NX + i]; nb++; }
   }
   const Cmin = new Float64Array(NX * NY).fill(-Infinity);
@@ -439,6 +447,18 @@ function surfaceOuverture(w, P, z0, z1, ignorer, recul, mode = 'profond', base =
     let s = 0, c = 0;
     if (i > 0) { s += S[k - 1]; c++; } if (i < NX - 1) { s += S[k + 1]; c++; } if (j > 0) { s += S[k - NX]; c++; } if (j < NY - 1) { s += S[k + NX]; c++; }
     S[k] = plancher ? Math.max(s / c, Cmin[k]) : s / c;
+  }
+  if (biharmonique) for (let it = 0; it < 6000; it++) for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const k = j * NX + i; if (connu[k]) continue;
+    if (i >= 2 && i < NX - 2 && j >= 2 && j < NY - 2) {
+      const a4 = S[k - 1] + S[k + 1] + S[k - NX] + S[k + NX], ad = S[k - NX - 1] + S[k - NX + 1] + S[k + NX - 1] + S[k + NX + 1];
+      const a2 = S[k - 2] + S[k + 2] + S[k - 2 * NX] + S[k + 2 * NX];
+      S[k] = (8 * a4 - 2 * ad - a2) / 20;
+    } else {
+      let s = 0, c = 0;
+      if (i > 0) { s += S[k - 1]; c++; } if (i < NX - 1) { s += S[k + 1]; c++; } if (j > 0) { s += S[k - NX]; c++; } if (j < NY - 1) { s += S[k + NX]; c++; }
+      S[k] = s / c;
+    }
   }
   const surf = (x, y) => {   // interpolation bilinéaire de S
     const fx = Math.min(NX - 1.0001, Math.max(0, (x - bx[0]) / h)), fy = Math.min(NY - 1.0001, Math.max(0, (y - bx[2]) / h));
@@ -595,6 +615,35 @@ function grilleAjustee(w, r) {
   return { ks: [kl, kf], n: (Il.length + If.length) / 3, devant, devantPiece };
 }
 
+// base d'une peau (WFS-362, factorisée par WFS-363) : surface de degré 2 ajustée (moindres carrés) sur la PEINTURE seule (matériau
+// « mat »), dans une bande de « bande » m autour du contour P0 : elle donne à la peau l'inclinaison et le galbe du nez voisin (sans
+// elle, la surface interpolée restait presque verticale : panneau plus sombre que la carrosserie, revue #323) ; l'écart à cette base
+// est ensuite interpolé jusqu'aux bords exacts. « baseFace » (WFS-363, facultatif) : seuls les points dont la pente vue de face
+// (|∇z| lue sur ± 1 cm) reste sous cette valeur comptent : ni le rebord de l'ancienne ouverture ni l'arrondi vers le capot (Giulia :
+// sans cela, la base bombait la peau, bas tourné vers le sol, zone sombre).
+function baseAjustee(w, mat, P0, bande, z0, z1, baseFace) {
+  const Pb = decaler(P0, bande);
+  const bb = [Math.min(...Pb.map((q) => q[0])), Math.max(...Pb.map((q) => q[0])), Math.min(...Pb.map((q) => q[1])), Math.max(...Pb.map((q) => q[1]))];
+  const autres = [...new Set(w.maillages.map((m) => m.mat))].filter((m) => m !== mat);
+  const peau = profondeurFace(w, bb, 0.005, z0, z1, autres);
+  const A = Array.from({ length: 6 }, () => new Float64Array(6)), Bv = new Float64Array(6);
+  let nbase = 0;
+  for (let y = bb[2]; y <= bb[3]; y += 0.005) for (let x = bb[0]; x <= bb[1]; x += 0.005) {
+    if (dedansContour(P0, x, y) || !dedansContour(Pb, x, y)) continue;
+    const z = peau.at(x, y); if (!Number.isFinite(z)) continue;
+    if (baseFace !== undefined) {
+      const zx0 = peau.at(x - 0.01, y), zx1 = peau.at(x + 0.01, y), zy0 = peau.at(x, y - 0.01), zy1 = peau.at(x, y + 0.01);
+      if (![zx0, zx1, zy0, zy1].every(Number.isFinite) || Math.hypot((zx1 - zx0) / 0.02, (zy1 - zy0) / 0.02) > baseFace) continue;
+    }
+    const f = [1, x, y, x * x, x * y, y * y];
+    for (let a = 0; a < 6; a++) { Bv[a] += f[a] * z; for (let b = 0; b < 6; b++) A[a][b] += f[a] * f[b]; }
+    nbase++;
+  }
+  if (nbase < 50) throw new Error(`base : ${nbase} points de peinture autour du contour, trop peu`);
+  const c = resoudre(A, Bv);
+  return (x, y) => c[0] + c[1] * x + c[2] * y + c[3] * x * x + c[4] * x * y + c[5] * y * y;
+}
+
 // panneau (WFS-362, skill artiste-3d § 5 : « fermer l'ouverture par une pièce de carrosserie ») : une ancienne ouverture de marque
 // (déjà découpée) est refermée par une peau AJOUTÉE AU MAILLAGE de la carrosserie (même matériau : même peinture, même vernis).
 // - Surface : base de degré 2 ajustée sur la peinture voisine, plus l'écart interpolé (Laplace) jusqu'à la peau du bord (mode « proche ») ;
@@ -612,24 +661,7 @@ function panneau(w, r) {
   const ks = w.maillages.map((m, k) => (m.mat === p.materiau ? k : -1)).filter((k) => k >= 0);
   if (ks.length !== 1) throw new Error(`matériau ${p.materiau} : un maillage attendu`);
   const P0 = contourDe(p.contour), [z0, z1] = p.z, P = decaler(P0, p.debord ?? 0.006);
-  // base : surface de degré 2 ajustée (moindres carrés) sur la PEINTURE seule, dans une bande de « bande » m autour du contour : elle
-  // donne au panneau l'inclinaison et le galbe du nez voisin (sans elle, la surface interpolée restait presque verticale : panneau
-  // plus sombre que la carrosserie, revue #323) ; l'écart à cette base est ensuite interpolé jusqu'aux bords exacts.
-  const bande = p.bande ?? 0.03, Pb = decaler(P0, bande);
-  const bb = [Math.min(...Pb.map((q) => q[0])), Math.max(...Pb.map((q) => q[0])), Math.min(...Pb.map((q) => q[1])), Math.max(...Pb.map((q) => q[1]))];
-  const autres = [...new Set(w.maillages.map((m) => m.mat))].filter((m) => m !== p.materiau);
-  const peau = profondeurFace(w, bb, 0.005, z0, z1, autres);
-  const A = Array.from({ length: 6 }, () => new Float64Array(6)), Bv = new Float64Array(6);
-  let nbase = 0;
-  for (let y = bb[2]; y <= bb[3]; y += 0.005) for (let x = bb[0]; x <= bb[1]; x += 0.005) {
-    if (dedansContour(P0, x, y) || !dedansContour(Pb, x, y)) continue;
-    const z = peau.at(x, y); if (!Number.isFinite(z)) continue;
-    const f = [1, x, y, x * x, x * y, y * y];
-    for (let a = 0; a < 6; a++) { Bv[a] += f[a] * z; for (let b = 0; b < 6; b++) A[a][b] += f[a] * f[b]; }
-    nbase++;
-  }
-  if (nbase < 50) throw new Error(`panneau : ${nbase} points de peinture autour du contour, trop peu pour la base`);
-  const c = resoudre(A, Bv), base = (x, y) => c[0] + c[1] * x + c[2] * y + c[3] * x * x + c[4] * x * y + c[5] * y * y;
+  const base = baseAjustee(w, p.materiau, P0, p.bande ?? 0.03, z0, z1);
   // surface calculée sur le contour élargi de 2,5 cm de plus : la pente lue à ± 1,5 cm au bord du panneau reste dans la grille
   // (revue #323 : bornée à la boîte, elle faussait les normales du bord : pli contre le phare)
   const { carte, surf } = surfaceOuverture(w, decaler(P0, (p.debord ?? 0.006) + 0.025), z0, z1, p.ignorer, p.recul ?? 0.002, 'proche', base);
@@ -686,6 +718,128 @@ function panneau(w, r) {
   return { k: ks[0], n, devant };
 }
 
+// triangulation de Delaunay (Bowyer-Watson) de points 2D [[x, y], …] : rend des triangles [a, b, c] (indices des points)
+function delaunay(P) {
+  const xs = P.map((p) => p[0]), ys = P.map((p) => p[1]);
+  const mx = Math.min(...xs), Mx = Math.max(...xs), my = Math.min(...ys), My = Math.max(...ys), d = Math.max(Mx - mx, My - my) * 20;
+  const Q = P.concat([[mx - d, my - d], [Mx + d, my - d], [(mx + Mx) / 2, My + d]]), n = P.length;
+  const cercle = (a, b, c) => {
+    const [ax, ay] = Q[a], [bx, by] = Q[b], [cx, cy] = Q[c], D = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+    const ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / D;
+    const uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / D;
+    return [ux, uy, (ax - ux) ** 2 + (ay - uy) ** 2];
+  };
+  let T = [[n, n + 1, n + 2, cercle(n, n + 1, n + 2)]];
+  for (let i = 0; i < n; i++) {
+    const [x, y] = Q[i], mauvais = [], gardes = [];
+    for (const t of T) ((x - t[3][0]) ** 2 + (y - t[3][1]) ** 2 < t[3][2] * (1 - 1e-12) ? mauvais : gardes).push(t);
+    const aretes = new Map();
+    for (const t of mauvais) for (const [a, b] of [[t[0], t[1]], [t[1], t[2]], [t[2], t[0]]]) { const k = a < b ? a + ',' + b : b + ',' + a; aretes.set(k, aretes.has(k) ? null : [a, b]); }
+    for (const e of aretes.values()) if (e) gardes.push([e[0], e[1], i, cercle(e[0], e[1], i)]);
+    T = gardes;
+  }
+  return T.filter((t) => t[0] < n && t[1] < n && t[2] < n).map((t) => [t[0], t[1], t[2]]);
+}
+
+// couture (WFS-363, skill artiste-3d § 5 : « fermer l'ouverture par une pièce de carrosserie », sans joint) : une ouverture déjà
+// découpée sur le contour C (convexe) est refermée par une peau ajoutée au maillage de la carrosserie, COUSUE à son bord :
+// - Bord : les sommets du bord découpé de la carrosserie qui sont sur C (à 1,5 mm près) sont repris tels quels (même position, même
+//   normale) : le moteur les soude au chargement (positions au 1/10 de mm, correctifs_voitures.cpp) ; aucun joint ni saut
+//   d'éclairage ne dessine plus l'ancienne ouverture (Giulia, revue de M4 #323 (2)). Là où C ne longe aucune carrosserie (ex. le
+//   bas, au-dessus d'une grille), des points sont ajoutés sur C tous les 1 cm : bord libre, caché par la paroi de la grille.
+// - Surface : base de degré 2 ajustée sur la face voisine (baseAjustee, « baseFace » conseillé), plus l'écart interpolé (Laplace puis
+//   biharmonique : hauteur ET pente raccordées à la bande de carrosserie autour, mode « exact ») ; l'écart entre cette surface et le bord réel (moyenne pondérée par 1 / d²) est fondu sur 3 cm vers l'intérieur.
+// - Maillage : triangulation de Delaunay des points du bord et d'une grille de 1 cm à l'intérieur (triangles bien formés : des
+//   couronnes concentriques donnaient des triangles très allongés, stries en étoile une fois les normales recalculées).
+// - Normales : surface (différences finies sur ± 1,5 cm) ; bord : celles de la carrosserie.
+// { "couture": { "materiau": m, "contour": …, "z": [z0, z1], "ignorer": [mats], "bande": m, "baseFace": p }, "note", "triangles": n }
+function couture(w, r) {
+  const p = r.couture;
+  const ks = w.maillages.map((m, k) => (m.mat === p.materiau ? k : -1)).filter((k) => k >= 0);
+  if (ks.length !== 1) throw new Error(`matériau ${p.materiau} : un maillage attendu`);
+  const m = w.maillages[ks[0]], C = contourDe(p.contour), [z0, z1] = p.z;
+  // position le long de C (abscisse curviligne depuis le sommet 0) et distance à C
+  const lg = C.map((a, i) => Math.hypot(C[(i + 1) % C.length][0] - a[0], C[(i + 1) % C.length][1] - a[1]));
+  const perim = lg.reduce((s, x) => s + x, 0);
+  const surC = (x, y) => {
+    let best = Infinity, sb = 0, acc = 0;
+    for (let i = 0; i < C.length; i++) {
+      const a = C[i], b = C[(i + 1) % C.length], dx = b[0] - a[0], dy = b[1] - a[1];
+      const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy)));
+      const d = Math.hypot(a[0] + t * dx - x, a[1] + t * dy - y);
+      if (d < best) { best = d; sb = acc + t * lg[i]; }
+      acc += lg[i];
+    }
+    return { d: best, s: sb };
+  };
+  const pointC = (s) => {   // point de C à l'abscisse s
+    s = ((s % perim) + perim) % perim;
+    for (let i = 0; i < C.length; i++) { if (s <= lg[i] || i === C.length - 1) { const a = C[i], b = C[(i + 1) % C.length], t = lg[i] ? Math.min(1, s / lg[i]) : 0; return [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]; } s -= lg[i]; }
+  };
+  // 1) bord découpé : arêtes portées par un seul triangle, deux bouts sur C, dans [z0, z1]
+  const cle = (a, b) => (a < b ? a + ',' + b : b + ',' + a), nb = new Map();
+  for (let t = 0; t + 2 < m.ix.length; t += 3) {
+    const c = [m.ix[t], m.ix[t + 1], m.ix[t + 2]]; if (c[0] === c[1] && c[1] === c[2]) continue;
+    for (let q = 0; q < 3; q++) { const k = cle(c[q], c[(q + 1) % 3]); nb.set(k, (nb.get(k) || 0) + 1); }
+  }
+  const pos = (i) => [m.v[i * 8], m.v[i * 8 + 1], m.v[i * 8 + 2]];
+  const prend = (i) => { const q = pos(i); return q[2] >= z0 && q[2] <= z1 && surC(q[0], q[1]).d < 0.0015; };
+  const bord = new Map(), liens = new Set();   // sommets du bord (par position au 1/10 de mm), arêtes du bord entre eux
+  const id = (i) => { const q = pos(i); return q.map((x) => Math.round(x * 1e4)).join(','); };
+  for (const [k, n] of nb) {
+    if (n !== 1) continue;
+    const [a, b] = k.split(',').map(Number);
+    if (!prend(a) || !prend(b)) continue;
+    for (const i of [a, b]) if (!bord.has(id(i))) { const q = pos(i); bord.set(id(i), { i, x: q[0], y: q[1], z: q[2], s: surC(q[0], q[1]).s }); }
+    liens.add(cle(id(a), id(b)) );
+  }
+  const pts = [...bord.values()].sort((a, b) => a.s - b.s);
+  if (pts.length < 8) throw new Error(`couture : ${pts.length} sommets de bord sur le contour, trop peu`);
+  // 2) surface : base + écart interpolé (comme le panneau, sans recul ni débord)
+  const base = baseAjustee(w, p.materiau, C, p.bande ?? 0.03, z0, z1, p.baseFace);
+  const { carte, surf } = surfaceOuverture(w, decaler(C, 0.025), z0, z1, p.ignorer, 0, 'exact', base, null, true);
+  // 3) boucle du bord : sommets cousus, et points libres sur C dans les trous de plus de 1 cm sans arête de carrosserie
+  const boucle = [];
+  for (let k = 0; k < pts.length; k++) {
+    const a = pts[k], b = pts[(k + 1) % pts.length];
+    boucle.push({ x: a.x, y: a.y, z: a.z, n: [m.v[a.i * 8 + 3], m.v[a.i * 8 + 4], m.v[a.i * 8 + 5]], cousu: true });
+    let ds = b.s - a.s; if (k === pts.length - 1) ds += perim;
+    if (liens.has(cle(id(a.i), id(b.i))) || ds <= 0.01) continue;
+    const n = Math.ceil(ds / 0.01);
+    // point libre : sur la peau de la carrosserie s'il y en a là (trou de couture), sinon sur la surface
+    for (let q = 1; q < n; q++) { const [x, y] = pointC(a.s + (ds * q) / n), zc = carte.at(x, y); boucle.push({ x, y, z: Number.isFinite(zc) ? zc : surf(x, y), cousu: false }); }
+  }
+  // 4) points intérieurs : grille de 1 cm à plus de 7 mm du contour ; écart au bord réel fondu sur 3 cm (le plus proche du bord)
+  const e = 0.015, normaleSurf = (x, y) => unite([(surf(x + e, y) - surf(x - e, y)) / (2 * e), (surf(x, y + e) - surf(x, y - e)) / (2 * e), -1]);
+  const ecart = boucle.map((b) => b.z - surf(b.x, b.y));
+  const P2 = boucle.map((b) => [b.x, b.y]);
+  const bxC = [Math.min(...C.map((q) => q[0])), Math.max(...C.map((q) => q[0])), Math.min(...C.map((q) => q[1])), Math.max(...C.map((q) => q[1]))];
+  for (let y = Math.ceil(bxC[2] / 0.01) * 0.01; y < bxC[3]; y += 0.01) for (let x = Math.ceil(bxC[0] / 0.01) * 0.01; x < bxC[1]; x += 0.01)
+    if (dedansContour(C, x, y) && surC(x, y).d > 0.007) P2.push([x, y]);
+  // 5) triangulation de Delaunay (Bowyer-Watson) des points du bord et de l'intérieur ; triangles hors de C retirés
+  const tris = delaunay(P2).filter(([a, b, c]) => dedansContour(decaler(C, 0.0005), (P2[a][0] + P2[b][0] + P2[c][0]) / 3, (P2[a][1] + P2[b][1] + P2[c][1]) / 3));
+  const V = Array.from(m.v), I = Array.from(m.ix), premier = m.nv, N = boucle.length, idx = [];
+  for (let k = 0; k < P2.length; k++) {
+    const [x, y] = P2[k];
+    if (k < N) { const b = boucle[k], n = b.cousu ? b.n : normaleSurf(x, y); V.push(x, y, b.z, n[0], n[1], n[2], 0, 0); idx.push(V.length / 8 - 1); continue; }
+    // écart moyen du bord, pondéré par 1 / d² (continu : le point le plus proche seul donnait des marches, bord en dents de scie)
+    let dmin = Infinity, se = 0, sp = 0;
+    for (let q = 0; q < N; q++) { const d2 = (P2[q][0] - x) ** 2 + (P2[q][1] - y) ** 2; dmin = Math.min(dmin, Math.sqrt(d2)); se += ecart[q] / d2; sp += 1 / d2; }
+    const ec = se / sp, f = Math.max(0, 1 - dmin / 0.03), n = normaleSurf(x, y);
+    V.push(x, y, surf(x, y) + f * f * ec, n[0], n[1], n[2], 0, 0); idx.push(V.length / 8 - 1);
+  }
+  const avant = [0, 0, -1];
+  for (const [a, b, c] of tris) triOriente(V, I, idx[a], idx[b], idx[c], avant);
+  const n = tris.length;
+  // contrôle : aucun sommet de la peau devant la carrosserie (carte faite avant l'ajout), sauf le bord cousu, qui EST la carrosserie
+  let devant = 0;
+  const coususIdx = new Set(idx.slice(0, N).filter((_, i) => boucle[i].cousu));
+  for (let i = premier; i < V.length / 8; i++) { if (coususIdx.has(i)) continue; const zc = carte.at(V[i * 8], V[i * 8 + 1]); if (Number.isFinite(zc) && V[i * 8 + 2] < zc - 0.0005) devant++; }
+  m.v = new Float32Array(V); m.nv = V.length / 8; m.ix = new Uint32Array(I);
+  if (w.tan) w.tan[ks[0]] = Buffer.alloc(m.nv * 4);
+  return { k: ks[0], n, devant, cousus: pts.length, libres: N - pts.length };
+}
+
 function traiter(id, verifier) {
   const cfg = FORMES[id];
   if (!cfg) { console.log(`${id} : aucune retouche de forme (absente de formes.json)`); return true; }   // chaîne convertir_voitures.sh
@@ -711,6 +865,12 @@ function traiter(id, verifier) {
       if (devant) { console.error(`${id} : « ${r.note} » : ${devant} sommets du panneau devant la carrosserie : rien écrit`); return false; }
       if (r.triangles !== undefined && n !== r.triangles) { console.error(`${id} : « ${r.note} » : ${n} triangles, ${r.triangles} attendus : rien écrit`); return false; }
       touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles ajoutés à la carrosserie, aucun devant)`); continue;
+    }
+    if (r.couture) {
+      const { k, n, devant, cousus, libres } = couture(w, r);
+      if (devant) { console.error(`${id} : « ${r.note} » : ${devant} sommets de la peau devant la carrosserie : rien écrit`); return false; }
+      if (r.triangles !== undefined && n !== r.triangles) { console.error(`${id} : « ${r.note} » : ${n} triangles, ${r.triangles} attendus : rien écrit`); return false; }
+      touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles ajoutés à la carrosserie, ${cousus} sommets cousus au bord, ${libres} points de bord libre, aucun devant)`); continue;
     }
     if (r.decouper) {
       const { k, n } = decouper(w, r);
