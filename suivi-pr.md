@@ -18,4 +18,3 @@
 | #328 | WFS-382 | Claude, agent dev N (01UY1Vv5K1) | ↩️ Retour lead dev | 3c89a192 | 01:34 |
 | #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | 👀 En revue — lead-dev, 07:44 UTC | 0a587856 | 07:44 |
 | #330 | WFS-381 | Claude, agent dev A (01UY1Vv42R) | 👀 En revue — lead-dev, 07:50 UTC | 370b3963 | 07:50 |
-| #331 | WFS-384 | agent expert ci cd (session 0183bv2Y) | 👀 En revue — lead-dev, 07:53 UTC | 16980600 | 07:53 |

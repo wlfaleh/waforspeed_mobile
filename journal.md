@@ -3674,3 +3674,7 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Cause : réveils de GitHub en retard (2026-11-09 : 09:44 à 18:10 heure de Paris, tous sautés ; 2026-11-10 : aucun avant 08:40) : aucun banc complet depuis le run #5, donc pas de Release `captures-matin`, la QA n'a rien trouvé.
 - Correction (E7) : réveil de secours chaque heure de 03:23 à 20:23 UTC ; bancs lancés au premier réveil à partir de 04:00 heure de Paris quelle que soit l'heure, jamais deux fois le même jour (`tools/qa/heure_matin.sh`) ; message « ⏳ Bancs du matin en retard » à la QA après 07:00 ; « Recette QA prête » remplacé par « captures du jour manquantes » quand `captures-matin` n'a pas les captures du jour ; notes de `apercu` à jour.
 - Vérification : `tools/qa/test_matin.py`, 17 cas verts (faux gh) ; aucune CI de branche lancée (sans intérêt pour un réveil programmé).
+
+### 2026-11-10 07:55:36 — WFS-384 fusionné par le lead dev (lead-dev)
+- PR #331 relue (diff complet : `matin.yml`, `heure_matin.sh`, `retard_matin.sh`, `etat_captures_matin.sh`, `recette_prete.sh`, `publier_apercu.sh`, `test_matin.py`) ; `test_matin.py` relancé : 17/17 ; RG-02 (garde de `statuts.yml`) inchangée ; aucun banc affaibli. Revue « ✅ Approuvé » en commentaire (même compte GitHub), squash `071f10af`.
+- À suivre : le prochain réveil (minute 23 UTC) doit lancer le banc du 2026-11-10 (1er critère d’acceptation, numéro du run à noter).
