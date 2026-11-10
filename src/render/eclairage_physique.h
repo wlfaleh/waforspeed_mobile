@@ -59,6 +59,8 @@ struct Etat {
     int moment = 2; double heureUtc = 0, eSol = 0;   // WFS-208 : moment appliqué, heure UTC, éclairement horizontal au sol (lx)
     double luminanceMesuree = 0;     // cd/m², bande 80-98,3 % de l'histogramme (exposition automatique)
     double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
+    double brumeDensite = 0, brumeHauteurInv = 0;   // WFS-381 : brume envoyée au shader (m⁻¹, 1 / H en m⁻¹ ; 0 = sans hauteur)
+    vec3 brumeCouleur{};             // WFS-381 : couleur de la brume (pré-exposée, sans le lobe du soleil)
 };
 const Etat& etat();
 float kVisionNuit();   // WFS-230 (RG-04) : exposition pour la vision de nuit (post.frag) ; 0 de jour ; WFS-276 : négative = sans relèvement des basses lumières (Ville)
@@ -83,6 +85,9 @@ struct Forcage {
     bool abscisseForcee = false; double abscisse = 0;   // abscisse (unités de la piste) des sondes (tunnels, ponts)
     bool pointForce = false; vec3 point{};             // point des sondes (sinon la voiture)
     double retardCapture = 0;        // WFS-328 : banc, secondes sans capture de sonde après une nouvelle scène (lenteur du téléphone : ≈ 3 s)
+    // WFS-381 : banc de la brume (jour) : 0 réglage de la carte ; 1 sans brume ; 2 brume totale (couleur seule) ; 3 sonde de distance
+    // (β 10⁻³ m⁻¹, sans hauteur ni lobe du soleil) ; 4 brume de main avant WFS-381 (extinction du ciel, sans hauteur)
+    int brume = 0;
 };
 void forcer(const Forcage& f);
 // WFS-208 : moment de la journée (atmosphere::Moment : aube, matin, midi, heure dorée, heure bleue, nuit, heure réelle), choisi à

@@ -1,0 +1,1 @@
+la Release captures-matin n'existe pas encore ou n'a pas de jour.txt : aucune capture du matin publiée ; les dernières captures sont dans https://github.com/wlfaleh/waforspeed_mobile/releases/tag/apercu-ancien-20261109-0925 (jusqu'au 09/11/2026 02:52)

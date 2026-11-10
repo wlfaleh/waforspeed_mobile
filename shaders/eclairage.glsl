@@ -3,9 +3,32 @@
 // Domaine : E13 Lumière et image. GGX, Fresnel, ombre du soleil, projecteurs, brouillard, halos des lumières.
 
 // part du brouillard au point p (même calcul que la fin de main)
+// WFS-381 (RG-01) : brume exponentielle selon la distance ET la hauteur (référence testée : src/render/atmosphere_brume.h) :
+// fog.a = β0 (m⁻¹) au niveau fogLin.w, fogLin.z = 1 / H (0 : sans hauteur, calcul d'avant à l'identique)
+float brumeTau(float d, float yPoint) {   // épaisseur optique entre l'œil et un point à la distance d, à la hauteur yPoint
+    float tau = d * F.fog.a;
+    if (F.fogLin.z > 0.0) {
+        float yo = max(F.camPos.y, F.fogLin.w), x = (max(yPoint, F.fogLin.w) - yo) * F.fogLin.z;
+        tau *= exp(-(yo - F.fogLin.w) * F.fogLin.z) * (abs(x) < 1e-4 ? 1.0 - 0.5 * x : (1.0 - exp(-x)) / x);
+    }
+    return tau;
+}
 float fogAt(vec3 p) {
     if (F.fogLin.y > 0.0) return smoothstep(F.fogLin.x, F.fogLin.y, dot(p - F.camPos.xyz, F.camFwd.xyz));
-    return 1.0 - exp(-length(F.camPos.xyz - p) * F.fog.a);
+    return 1.0 - exp(-brumeTau(length(F.camPos.xyz - p), p.y));
+}
+// WFS-381 : brume appliquée à la couleur d'un pixel au point p. RG-03 : couleur de l'horizon du moment (fog.rgb), plus claire et
+// plus chaude du côté du soleil (diffusion vers l'avant des aérosols, lobe de Mie en cos⁸) ; la nuit et sous la pluie : fog.rgb
+vec3 appliquerBrume(vec3 col, vec3 p) {
+    if (F.fogLin.y > 0.0) return mix(col, F.fog.rgb, smoothstep(F.fogLin.x, F.fogLin.y, dot(p - F.camPos.xyz, F.camFwd.xyz)));
+    vec3 v = p - F.camPos.xyz;
+    float d2 = dot(v, v), inv = inversesqrt(max(d2, 1e-8));
+    vec3 brume = F.fog.rgb;
+    if (F.fogLin.z > 0.0 && F.misc.y < 0.5) {   // F.sunDir : normalisé sur le CPU (Renderer::beginFrame)
+        float c = max(dot(v, F.sunDir.xyz) * inv, 0.0); c *= c; c *= c; c *= c;
+        brume *= mix(vec3(1.0), F.sunColor.rgb * (1.6 / max(dot(F.sunColor.rgb, vec3(0.2126, 0.7152, 0.0722)), 1e-4)), 0.35 * c);
+    }
+    return mix(col, brume, 1.0 - exp(-brumeTau(d2 * inv, p.y)));
 }
 
 // WFS-100 (RG-02) : plafond du spéculaire (valeur HDR) avant le bloom, pour toutes les surfaces

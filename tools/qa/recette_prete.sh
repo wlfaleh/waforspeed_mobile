@@ -2,6 +2,7 @@
 # WFS-277 : message « recette prête » à la fin des bancs du matin (matin.yml), dans l'issue fixe « 🧪 Recette QA du matin »
 # (créée et épinglée la première fois). Il mentionne @wlfaleh (notification sur le téléphone) et dit à la QA ce qu'elle recette :
 # commit photographié, résultat de chaque job, tickets fusionnés depuis la recette précédente, liens des captures et de l'émulateur.
+# WFS-384 (RG-06) : sans les captures du jour dans « captures-matin », le titre devient « captures du jour manquantes ».
 # Ne fait jamais échouer le run : chaque erreur donne un ::warning:: et le script finit à 0.
 # Entrées : GH_REPO, RUN_ID, RUN_NUMBER, GITHUB_SHA, GITHUB_SERVER_URL, RESULTATS (lignes « job : résultat »).
 set -u
@@ -36,14 +37,23 @@ fi
 if gh api "repos/$GH_REPO/issues/$num/comments?per_page=100&sort=created&direction=desc" --jq '.[].body' 2>/dev/null | grep -qF "$MARQUE"; then
     echo "Recette du matin déjà annoncée (run $RUN_NUMBER)"; exit 0
 fi
-message="@wlfaleh 🧪 **Recette QA prête** — $(TZ=Europe/Paris date '+%d/%m/%Y %H:%M') (heure de Paris), commit \`$COURT\`
+# WFS-384 (RG-06) : jamais « Recette QA prête » sans les captures du jour dans captures-matin (jour.txt daté d'aujourd'hui) :
+# le message dit alors ce qui manque, la date des dernières captures et où lire à la place
+captures=$(bash "$(dirname "$0")/etat_captures_matin.sh"); code_captures=$?
+if [ "$code_captures" = 0 ]; then
+    entete="🧪 **Recette QA prête**"
+else
+    entete="⚠️ **Recette QA : captures du jour manquantes** (ne pas recetter sur ces captures)"
+    verdict="$verdict ; captures : $captures"
+fi
+message="@wlfaleh $entete — $(TZ=Europe/Paris date '+%d/%m/%Y %H:%M') (heure de Paris), commit \`$COURT\`
 - Verdict des bancs : $verdict
 $(echo "$RESULTATS" | sed 's/^/  - /')
 - Tickets fusionnés depuis la recette précédente : $tickets
-- Captures du banc d'essai PC : une archive par groupe dans $SERVEUR/$GH_REPO/releases/tag/captures-matin (captures-<groupe>.zip ; jour.txt : date, run, commit) — WFS-352
+- Captures du banc d'essai PC : $captures — WFS-352, WFS-384
 - APK : $SERVEUR/$GH_REPO/releases/download/apercu/WaForSpeed.apk
 - Émulateur Android (parcours mvp) : $SERVEUR/$GH_REPO/releases/tag/simulateur-matin
 - Run : $SERVEUR/$GH_REPO/actions/runs/$RUN_ID
 $MARQUE"
 gh api -X POST "repos/$GH_REPO/issues/$num/comments" -f body="$message" --silent 2>/dev/null || avert "commentaire impossible dans l'issue #$num"
-echo "Recette du matin annoncée : issue #$num, commit $COURT"
+echo "Recette du matin annoncée : issue #$num, commit $COURT (captures : $captures)"

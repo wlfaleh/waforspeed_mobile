@@ -1205,7 +1205,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     {   // WFS-45 : projecteurs, lumière hémisphère, brouillard linéaire (three.js r128, physicallyCorrectLights non activé)
         const vec3 fwd = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
         u.camFwd = {fwd.x, fwd.y, fwd.z, 0};
-        u.fogLin = {fp.fogNear, fp.fogFar, 0, 0};
+        u.fogLin = {fp.fogNear, fp.fogFar, fp.fogHauteurInv, fp.fogRef};   // WFS-381 (accroche) : z, w = brume selon la hauteur
         if (fp.hemiIntensity > 0) {
             const vec3 a = fp.hemiSky * fp.hemiIntensity, b = fp.hemiGround * fp.hemiIntensity;
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};

@@ -198,9 +198,15 @@ publier_apk() {
         [[ "$nom" == *"-${GITHUB_SHA::7}."* ]] && continue
         essayer "retrait du fichier provisoire $nom" supprimer "${ID[$nom]}" || echo "::warning::$nom non retiré"
     done
-    # 4) tag déplacé sur le commit, titre et commit de la Release (garde RG-02) ; les notes restent au job des captures
+    # 4) tag déplacé sur le commit, titre et commit de la Release (garde RG-02) ; les notes restent au job des captures (sauf « apercu »)
     essayer "déplacement du tag $tag" deplacer_tag || echo "::warning::tag $tag non déplacé sur ${GITHUB_SHA::7}"
     essayer "titre de la Release $tag" maj_titre || echo "::warning::titre de la Release $tag non mis à jour"
+    # WFS-384 (RG-04) : « apercu » ne garde que l'APK depuis WFS-352 ; ses notes disaient « captures en cours de publication »
+    # sans fin : elles disent où sont les captures (1 appel)
+    if [ "$tag" = apercu ]; then
+        essayer "notes de la Release $tag" maj_notes "plus dans cette Release (WFS-352) : captures des bancs du matin dans $SERVEUR/$GH_REPO/releases/tag/captures-matin (une archive par groupe, jour.txt), photos de chaque fusion dans $SERVEUR/$GH_REPO/releases/tag/apercu-fusion" \
+            || echo "::warning::notes de la Release $tag non mises à jour"
+    fi
     local reste=""; quota_fiable && reste=" ; quota restant : $QUOTA_RESTANT sur ${QUOTA_LIMITE:-?}"
     echo "APK en ligne : $SERVEUR/$GH_REPO/releases/download/$tag/WaForSpeed.apk (« $titre », $(appels) appels à l'API$reste)"
 }
