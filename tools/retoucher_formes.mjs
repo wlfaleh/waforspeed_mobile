@@ -620,7 +620,8 @@ function panneau(w, r) {
     return (1 - u) * (1 - v) * Ph[k] + u * (1 - v) * Ph[k + 1] + (1 - u) * v * Ph[k + NX] + u * v * Ph[k + NX + 1];
   };
   const hauteur = (x, y) => surf(x, y) - bombe * phi(x, y);
-  const e = 0.006, normale = (x, y) => unite([(hauteur(x + e, y) - hauteur(x - e, y)) / (2 * e), (hauteur(x, y + e) - hauteur(x, y - e)) / (2 * e), -1]);
+  // pente lue sur ± 1,5 cm (plus que la maille de 1 cm de la surface bilinéaire : sinon des ondulations se lisent dans les reflets)
+  const e = 0.015, normale = (x, y) => unite([(hauteur(x + e, y) - hauteur(x - e, y)) / (2 * e), (hauteur(x, y + e) - hauteur(x, y - e)) / (2 * e), -1]);
   const largeur = (y) => {
     let xa = Infinity, xb = -Infinity;
     for (let i = 0; i < P.length; i++) {

@@ -717,7 +717,7 @@
      ],
      "recul": 0.002,
      "debord": 0.006,
-     "bombe": 0.008
+     "bombe": 0
     },
     "note": "nez refermé par une pièce de carrosserie du joint du capot jusqu'à la grille, entre les pointes des phares (même peinture, surface lisse et bombée) (WFS-362)",
     "triangles": 4536
@@ -787,7 +787,7 @@
     "note": "grille générique basse et large, d'un seul tenant, ajustée à l'ouverture : 1,5 cm derrière la carrosserie, 7 lames chanfreinées, rebord, paroi depuis le bord de la carrosserie, fond noir mat (WFS-362)"
    }
   ],
-  "empreinteApres": "ca2430d01a006286"
+  "empreinteApres": "65e081bc8fefdd68"
  },
  "s3": {
   "materiaux": 29,
@@ -2069,6 +2069,6 @@
     "note": "grille générique basse et large, d'un seul tenant, ajustée à l'ouverture : 1,5 cm derrière la carrosserie, 9 lames chanfreinées, rebord, paroi depuis le bord de la carrosserie, fond noir mat (WFS-362)"
    }
   ],
-  "empreinteApres": "26cab5249825f3c6"
+  "empreinteApres": "449fa5ddd55c625d"
  }
 }
