@@ -3397,12 +3397,12 @@
    {
     "materiau": 3,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3411,22 +3411,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 3), jonctions gardées (WFS-363)",
-    "sommets": 74
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 3), jonctions gardées (WFS-363)",
+    "sommets": 294
    },
    {
     "materiau": 8,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3435,22 +3435,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 8), jonctions gardées (WFS-363)",
-    "sommets": 162
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 8), jonctions gardées (WFS-363)",
+    "sommets": 2552
    },
    {
     "materiau": 12,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3459,22 +3459,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 12), jonctions gardées (WFS-363)",
-    "sommets": 106
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 12), jonctions gardées (WFS-363)",
+    "sommets": 362
    },
    {
     "materiau": 2,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3483,22 +3483,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 2), jonctions gardées (WFS-363)",
-    "sommets": 222
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 2), jonctions gardées (WFS-363)",
+    "sommets": 592
    },
    {
     "materiau": 6,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3507,22 +3507,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 6), jonctions gardées (WFS-363)",
-    "sommets": 682
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 6), jonctions gardées (WFS-363)",
+    "sommets": 1444
    },
    {
     "materiau": 17,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3531,22 +3531,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 17), jonctions gardées (WFS-363)",
-    "sommets": 638
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 17), jonctions gardées (WFS-363)",
+    "sommets": 1792
    },
    {
     "materiau": 18,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3555,22 +3555,22 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 18), jonctions gardées (WFS-363)",
-    "sommets": 124
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 18), jonctions gardées (WFS-363)",
+    "sommets": 314
    },
    {
     "materiau": 20,
     "boite": [
-     0.56,
+     -0.905,
      0.905,
      -2.45,
-     0.92,
-     1.045,
-     -2
+     0.905,
+     1.06,
+     -1.78
     ],
     "pivot": [
      0,
@@ -3579,204 +3579,12 @@
     ],
     "echelle": [
      1,
-     1.4,
+     1.3,
      1
     ],
     "fondu": 0.12,
-    "note": "phare droit plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 20), jonctions gardées (WFS-363)",
-    "sommets": 234
-   },
-   {
-    "materiau": 3,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 3), jonctions gardées (WFS-363)",
-    "sommets": 68
-   },
-   {
-    "materiau": 8,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 8), jonctions gardées (WFS-363)",
-    "sommets": 164
-   },
-   {
-    "materiau": 12,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 12), jonctions gardées (WFS-363)",
-    "sommets": 78
-   },
-   {
-    "materiau": 2,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 2), jonctions gardées (WFS-363)",
-    "sommets": 222
-   },
-   {
-    "materiau": 6,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 6), jonctions gardées (WFS-363)",
-    "sommets": 686
-   },
-   {
-    "materiau": 17,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 17), jonctions gardées (WFS-363)",
-    "sommets": 734
-   },
-   {
-    "materiau": 18,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 18), jonctions gardées (WFS-363)",
-    "sommets": 128
-   },
-   {
-    "materiau": 20,
-    "boite": [
-     -0.92,
-     0.905,
-     -2.45,
-     -0.56,
-     1.045,
-     -2
-    ],
-    "pivot": [
-     0,
-     1.045,
-     0
-    ],
-    "echelle": [
-     1,
-     1.4,
-     1
-    ],
-    "fondu": 0.12,
-    "note": "phare gauche plus haut (×1,4 vers le bas, pivot en haut du phare, fondu de 12 cm) : fin de la fente très fine de la marque ; même déformation pour toutes les pièces de la zone (matériau 20), jonctions gardées (WFS-363)",
-    "sommets": 260
+    "note": "bandeau avant (phares et cadre de calandre) plus haut, ×1,3 vers le bas, pivot en haut des phares : fin de la fente très fine des phares de la marque ; déformation exactement linéaire dans la boîte (tout le bloc optique dedans, aucun pli), fondu de 12 cm dans la peinture autour ; même déformation pour toutes les pièces de la zone (matériau 20), jonctions gardées (WFS-363)",
+    "sommets": 984
    },
    {
     "decouper": true,
@@ -3784,11 +3592,11 @@
     "contour": [
      [
       -0.43,
-      0.918
+      0.882
      ],
      [
       0.43,
-      0.918
+      0.882
      ],
      [
       0.49,
@@ -3804,7 +3612,7 @@
      -2.15
     ],
     "note": "barres en nid d'abeille allongé de la calandre de marque retirées par découpe exacte, à l'intérieur du cadre (WFS-363)",
-    "triangles": 414
+    "triangles": 400
    },
    {
     "decouper": true,
@@ -3812,11 +3620,11 @@
     "contour": [
      [
       -0.43,
-      0.918
+      0.882
      ],
      [
       0.43,
-      0.918
+      0.882
      ],
      [
       0.49,
@@ -3832,18 +3640,18 @@
      -2.15
     ],
     "note": "fond de la calandre de marque retiré (découpe exacte, WFS-363)",
-    "triangles": 146
+    "triangles": 150
    },
    {
     "grilleAjustee": {
      "contour": [
       [
        -0.43,
-       0.918
+       0.882
       ],
       [
        0.43,
-       0.918
+       0.882
       ],
       [
        0.49,
@@ -3880,6 +3688,6 @@
     "note": "grille générique à 4 lames horizontales épaisses à la place du nid d'abeille, dans le cadre gardé : 1,2 cm derrière la carrosserie, lames chanfreinées, rebord, paroi depuis le bord, fond noir mat (WFS-363)"
    }
   ],
-  "empreinteApres": "8129e6a3015984f8"
+  "empreinteApres": "24ceef980391052b"
  }
 }
