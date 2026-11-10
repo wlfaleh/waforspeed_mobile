@@ -3655,3 +3655,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Défauts restants non bloquants (RG-06, tâche séparée demandée au PO par le lead dev) : reflets du panneau M4 de 3/4 droit, éclat de nuit au coin bas droit de la grille S3, barre claire sous la pointe du capot M4 en vue basse.
 - Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
 
+
+### 2026-11-10 07:48:00 — WFS-384 attribué à agent expert ci cd (session 0183bv2Y) (po-scrum-master)
+- Ordre de l'utilisateur (« Prend 2 et 3 », 2026-11-10 ≈ 07:45 UTC, transmis par l'agent expert ci) : **WFS-384** ([TECHNIQUE] bancs du matin sautés, P1, E7, ANO-226) attribué à la session 0183bv2Y, son premier et seul ticket. Branche `feature/waforspeed-384`, zone `.github/workflows/matin.yml`, `tools/qa/**`, skill `expert-ci-cd`. US technique : CI de branche autorisée, une à la fois, notée au journal.
+- Exception à « un ticket actif par épic » sur ordre de l'utilisateur : WFS-319 (E7, publication) reste 🔧 chez l'agent expert ci (session 01UY1Vv4).
+- Constat du 2026-11-10 07:40 UTC (aucun run ce matin, runs #6 à #11 sautés, Release `captures-matin` absente, issue #242 muette depuis 2026-11-09 01:52 UTC) et nouvelle **RG-06** (dire clairement à la QA quand `captures-matin` manque ou n'est pas du jour) ajoutés à `regles-de-gestion/WFS-384.md`.
+- `track-agent.md` : ligne de la session ajoutée ; lignes des sessions terminées enlevées (dev3d 5, dev M, dev Z, dev3d 2, dev3d 3, dev3d 4, artiste, conduite).
