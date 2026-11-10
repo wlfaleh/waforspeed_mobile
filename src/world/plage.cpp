@@ -52,6 +52,7 @@
 #include "../ui/text.h"           // WFS-379 : banc de la montée (police du HUD)
 #include "../render/eau_parametres.h"   // WFS-380 : vraie eau (vagues, profondeur, écume, sillages)
 #include "../render/eau_rivage.h"   // WFS-380 (RG-09) : rochers et galets du rivage
+#include "../render/eau_banc.h"   // WFS-380 : caméra du banc de l'eau
 #include "../render/atmosphere_physique.h"   // WFS-380 : banc de la mer (couleur du soleil bas)
 
 namespace wfs {
@@ -2981,27 +2982,37 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
     const float merY = t2 ? OCEAN_Y : 0.f;   // niveau de la mer (absolu au tracé 2, sinon par rapport à la route)
     // vue libre : œil (segment, distance à l'axe, hauteur au-dessus de la route), point visé (segment, distance à l'axe, altitude) ;
     // temps : instants des images (une capture par instant)
+    // vue libre : œil (segment, distance à l'axe, hauteur au-dessus de la route), point visé (segment, distance à l'axe, altitude) ;
+    // temps : instants des images (une capture par instant). Caméra du banc de l'eau (eau_banc.h) : la carte est dessinée comme en
+    // course (éclairage physique, lampadaires allumés la nuit autour de la voiture, arrêtée 36 m avant l'œil) ; soleil bas et visée
+    // d'un bateau : vue libre de la Corniche (scène dédiée, soleil choisi)
     auto vue = [&](const std::string& nom, const char* moment, int64_t sO, float latO, float hO, int64_t sC, float latC, float yC, float fov,
                    std::vector<double> temps = {404.0}, const vec3* vise = nullptr) {
         if (!garder(nom)) return;
+        const bool dediee = vise || !std::strcmp(moment, "soleil-bas");
         setenv("WFS_MOMENT", !std::strcmp(moment, "nuit") ? "nuit" : "midi", 1);
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, sO - 30)).c_str(), 1);
         g.init(r, "golf", "plage"); g.setAutopilot(false); g.camMode = 0;
+        if (!dediee) g.allerA(Ecran::Course);
+        g.modeManette = !dediee;   // commandes tactiles masquées (comme à la manette) : rien devant l'eau
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
         const TrackPoint o = t.point((double)sO * SEG, latO), c = t.point((double)sC * SEG, latC);
-        g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + hO, (float)o.z};
-        g_vueDessus.cible = {(float)c.x, yC, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = fov;
-        if (vise) { g_vueDessus.actif = false; g.render(temps[0]); g_vueDessus.actif = true; g_vueDessus.cible = *vise; }
+        const vec3 oeil{(float)o.x, (float)o.y + hO, (float)o.z};
+        vec3 cible{(float)c.x, yC, (float)c.z};
+        if (vise) { g.render(temps[0]); cible = *vise; }
+        if (dediee) { g_vueDessus.actif = true; g_vueDessus.oeil = oeil; g_vueDessus.cible = cible; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = fov; }
+        else eau::vueBanc(true, oeil, cible, fov);
         if (!std::strcmp(moment, "soleil-bas")) {   // soleil 5° au-dessus du large, droit devant : traînée de reflets (RG-02)
             const TrackPoint m = t.point((double)sC * SEG, 0); const vec3 rr{(float)std::cos(m.th), 0, (float)std::sin(m.th)};
             g_vueDessus.soleil = normalize(rr * std::cos(0.087f) + vec3{0, std::sin(0.087f), 0});
         }
+        for (int i = 0; i < 90 && !dediee; i++) g.render(temps[0] - 1.6 + i / 60.0);   // exposition de l'œil adaptée à la nouvelle vue
         for (size_t k = 0; k < temps.size(); k++) {
             const std::string n = temps.size() > 1 ? nom + "-" + std::to_string(k + 1) : nom;
             g.render(temps[k] - 0.02); g.render(temps[k]); r.capturePng(out + "/" + n + ".png");
             WFS_LOG("capture %s (t = %.2f s)", n.c_str(), temps[k]);
         }
-        g_vueDessus.actif = false; g_vueDessus.soleil = {};
+        g_vueDessus.actif = false; g_vueDessus.soleil = {}; eau::vueBanc(false); g.modeManette = false;
         g.shutdown();
     };
     const int64_t s30 = (int64_t)(30 / SEG_M), s8 = (int64_t)(8 / SEG_M);
@@ -3035,6 +3046,29 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
         vue("mer-rochers", "midi", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
         vue("mer-rochers-nuit", "nuit", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
     } else WFS_ERR("banc mer : aucune côte rocheuse");
+    // RG-05 : la même eau dans la Ville : rivière sous le pont, vue penchée au-dessus du garde-corps, regard vers l'aval, jour et nuit
+    if (trace::carteActive("ville")) {
+        Track tv; tv.build(mapById("ville"), trace::versionCarte("ville"));
+        int64_t pont = -1, pontFin = -1;
+        for (const trace::Section& sc : trace::sections(tv)) if (sc.type == trace::Type::Pont) { pont = sc.debut; pontFin = sc.fin; break; }
+        if (pont >= 0) for (const char* mo : {"midi", "nuit"}) {
+            const std::string nom = std::string("mer-ville-riviere") + (std::strcmp(mo, "nuit") ? "" : "-nuit");
+            if (!garder(nom)) continue;
+            const int64_t mil = (pont + pontFin) / 2;
+            setenv("WFS_MOMENT", mo, 1);
+            setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, mil - 30)).c_str(), 1);
+            g.init(r, "golf", "ville"); g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course); g.modeManette = true;
+            for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
+            // œil penché au-dessus du garde-corps, hors des arcs du pont (R + 7 m, 2 m au-dessus du tablier)
+            const TrackPoint o = tv.point((double)mil * SEG, R + 7.f), c = tv.point((double)(mil + (int64_t)(30 / SEG_M)) * SEG, R + 90);
+            eau::vueBanc(true, {(float)o.x, (float)o.y + 2.f, (float)o.z}, {(float)c.x, (float)tv.point((double)mil * SEG, 0).y - 5.5f, (float)c.z}, 60);
+            for (int i = 0; i < 90; i++) g.render(402.4 + i / 60.0);
+            g.render(403.98); g.render(404); r.capturePng(out + "/" + nom + ".png");
+            WFS_LOG("capture %s : rivière de la Ville sous le pont", nom.c_str());
+            eau::vueBanc(false); g.modeManette = false;
+            g.shutdown();
+        } else WFS_ERR("banc mer : pont de la Ville introuvable");
+    }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 } // namespace wfs

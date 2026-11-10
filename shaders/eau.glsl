@@ -81,7 +81,7 @@ vec3 eauRefletsLampes(vec3 p, vec3 N, vec3 V, float a) {
         vec3 H = normalize(V + L);
         float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
         float spec = D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * F_Schlick(vec3(0.02), VoH).x;
-        s += min(F.spotCol[i].rgb * (spec * NoL * 6.0 / d2), vec3(SPEC_MAX));
+        s += min(F.spotCol[i].rgb * (spec * NoL * 2.5 / d2), vec3(SPEC_MAX));
     }
     return s;
 }
