@@ -3447,3 +3447,39 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **Décision (option a)** : refus motivé pour les deux places ; WFS-396 se livre avec le rapport et les fiches réelles (`references/reel/voitures/`), rien de converti ; la session s'arrête après la fusion.
 - **Suite** : WFS-397 créé (P1, E10 exception `remplacants/`, agent `dev-artiste-3d`, nouvelle session, après WFS-396) : retoucher la **W212 de Peter_D** (hauteur ; repli W211 de BadKarma, voie avant +17 mm par roue) et la **Virtus GT de BHP3D** (hauteur, allègement < 8 Mo) à ±1 %. WFS-360 dépend maintenant de WFS-397.
 - A 45 de Lexyc16 interdite (licence contradictoire CC BY / CC BY-NC).
+
+### 2026-11-10 00:24:40 — WFS-362 : PR #323 ouverte, M4 et S3 sans calandre de marque (Claude, agent dev3d 4 (01UY1Vv5HV))
+- Fait : calandres découpées sur leur contour exact (`decouper`) ; haut de l'ouverture refermé par une pièce de carrosserie (nouvelle retouche `panneau` de `tools/retoucher_formes.mjs` : même peinture, normales raccordées, bombé à pente nulle au bord, jamais devant) ; bas : grille ajustée (outil de la X5). M4 : anneau chromé de l'ancien logo du capot retiré.
+- Fichiers : `tools/retoucher_formes.mjs`, `tools/formes.json` (entrées m4, s3), `assets/cars/m4.*`, `assets/cars/s3.*`, `qa/pr/WFS-362/`.
+- Vérification : `--verifier` vert (m4, s3, x5, compass, p208) ; X5 rejouée depuis son origine : même empreinte (factorisation sans effet) ; 94 tests CPU verts ; `test_fidelite_voitures` : m4 et s3 identiques à `main` ; captures avant / après (18 vitrines, 16 gros plans jour / nuit, 12 zooms ×4).
+- Limites : S3 125,3 k triangles (repère 120 k dépassé, comme X5 / 208 / Compass) ; joint du panneau visible de près (écusson sombre de loin sur la M4 noire) ; dépendance npm `meshoptimizer@0.22.0` installée dans le conteneur (version du `tools/package.json`) pour refaire les LOD.
+
+
+### 2026-11-10 00:30:14 — WFS-362 refusé par le lead dev, PR #323 (lead-dev)
+- Commit relu `bcbd0d83` ; 46 paires de captures ouvertes, tout le diff lu (`tools/retoucher_formes.mjs`, `tools/formes.json`, modèles m4 / s3) ; `--verifier` rejoué : vert (m4, s3, x5, compass, p208).
+- Bloquants : (1) M4 : panneau bosselé, creux rond (« cratère ») et reflets en vagues, visibles jusqu'aux vitrines (`nez-m4-34d-*`, `nez-m4-bas-*`, `vitrine-m4-a1`, `vitrine-m4-bas2`) ; (2) M4 : le panneau garde le contour de l'ancienne double calandre (écusson sombre lisible de face et de 3/4) ; (3) S3 : éclats et bord déchiré au coin droit de la grille (`nez-s3-34g-jour`, `zoom-s3-34g-*`).
+- À corriger aussi : bouts de lames en peigne (M4, S3), bande plus sombre du panneau de la S3 sous le capot.
+- Revue publiée en « COMMENT » (même compte GitHub) ; statut ↩️ dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
+
+### 2026-11-10 00:31:40 — WFS-396 : PR #325 ouverte, remplaçants A 45 / Elantra N étudiés, refus motivé (Claude, agent artiste (01UY1Vv2ph))
+- **Fait** : recherche de code GitHub (~1 000 `license.txt` lus), 9 modèles téléchargés dans le bac à sable (clone partiel, rien exécuté), 6 convertis et mesurés par `corriger_voitures --essai` (permutation locale de `a45.wfm` / fiche, restaurée). Aucun dans ±1 % : refus motivé (décision du PO 00:18, option a), rien de converti dans `remplacants/`. Rapport : `qa/pr/WFS-396/pr.md` ; fiches réelles : `references/reel/voitures/remplacants-wfs396.json`.
+- **Téléchargements (SHA-256 complets)** :
+  - W212, Peter_D, CC BY 4.0, https://sketchfab.com/3d-models/mercedes-e-class-w212-119c5e10733142b197aa53b86f6aeb04, dépôt `bujue600-arch/carVison` `car-vision-frontend/public/models/mercedes-e-class/` : scene.gltf a1e14552aababef903a2fcd2dfeb6dd0d97de3062d316c8d5d6d489d5a106822 (238 832 o), scene.bin cfed9ca335f5de90062e4fd893c53c7d4897f6ed67c42733d989c89529fed44a (20 244 980 o) ; hauteur −2,7 %.
+  - W211, BadKarma, CC BY 4.0, dépôt `gibranalfarabi/portofolio-ar` `assets/3D-model/mercedes_benz_e-class_w211/` : scene.gltf 909a0f9ea1e06ba4d555f5efc9c5df4cf45ecf188f3e72262157d9f8508e79a8 (91 150 o), scene.bin 76bad9a65a904644771ba1cc9ad6f48fc6e1ede428d1eee630492ed872811126 (15 148 680 o) ; voie AV −2,2 %.
+  - Virtus GT 2022, BHP3D, CC BY 4.0, https://sketchfab.com/3d-models/2022-volkswagen-virtus-gt-3955e5c050f843398b49b2b21ab2f232, dépôt `PrathamSatpute/VehiclePredictiveMaintenance` `models/` : scene.gltf 1bfe8554c6728fea14cf9e7ffe0f02a287904a58ca3e293faa89602347e5b8d7 (617 095 o), scene.bin 70fbe3cbdf30c628463c665c9d5d0d7aa05f7c5f7752a33b72663afd6e7f5eac (22 504 008 o) ; hauteur −2,6 %.
+  - Corolla E180 EU, Armored Wave, CC BY 4.0, dépôt `oddalan/three-dee` `assets/models/corolla/` : scene.gltf 57ff461ec2dba40ae0a865d96c09c2ddd1d81dca0865b6bf4f4fe8ba5fdacf0b (135 104 o), scene.bin f377f589d4ab8a79d203f1bd5703b0cc4a6e0a198ebc206700cfbc943f266f3f (4 395 288 o) ; largeur +2,1 %.
+  - Mesurés puis écartés (bac à sable) : Corolla 2020 ItsDiyor (`gabrielivanov959-bot/toyota-webapp`), Octavia barking_dogo (`Jkotoun/Opengl_model_viewer_PGR`), Civic FD2 claries, C63 LuizZed36, WRX STi « Galaxy Car Showroom », Lancer Evo X BadKarma, S65 W222 Black Snow (pièces BeamNG), « Accord 2017 » L95XP (mod `mtn_caprice`), Seat Leon Cupra, A4 2000.
+- **Licence contradictoire** : « A45 AMG 2018 » de Lexyc16 en CC BY 4.0 (`tensornull/CarVision`) et CC BY-NC 4.0 (`vladyslavhurzhyi/car-rent`) : interdit.
+- **Vérification** : `tests_cpu.sh build` 94 réussis ; captures `vitrines-feux` 1280×720 (lavapipe) dans `qa/pr/WFS-396/`. Le jeu est identique à `main`.
+- **Suite** : lead dev appelé pour la PR #325 ; WFS-397 (PO) reprend W212 / W211 et Virtus GT.
+
+### 2026-11-10 00:40:00 — WFS-369 fusionné par le lead dev (lead-dev)
+- PR #324 relue sur 6cfe9bcf : « Avis agent 3D : VALIDÉ avec réserves » présent (RG-E15-06) ; 40 captures ouvertes ; tout le diff lu (`mobilier_ville.*`, `ville.cpp`, `commerces.cpp`, accroche `cartes_banc.cpp`, test) ; construction et `tests_cpu.sh` relancés : 95/95.
+- Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : b4e3a106. Statut 🟡 À valider (utilisateur) : le ticket vient de la capture d'APK de l'utilisateur (bancs en pavés) et d'ANO-216.
+- Tâches séparées demandées au PO (RG-07 / RG-E15-09) : R1 eau de la fontaine (ANO-214) ; R2 affiche d'abribus vide et non éclairée la nuit ; R4 éclairage du parc la nuit (E13) ; plaque de rue bleue unie des feux (WFS-385) ; mesure sur téléphone des +44 % de triangles en Basse (WFS-321 / 331).
+
+
+### 2026-11-10 00:43:03 — WFS-396 fusionné par le lead dev (lead-dev)
+- PR #325 relue (commit 19d49424) : 30 captures ouvertes, diff complet lu (fiches réelles `remplacants-wfs396.json`, rapport RG-08, une ligne de suivi), rien dans `src/`, `tools/`, `assets/`. Construction et 94 tests CPU verts sur la branche ; `test_fidelite` 0 défaut.
+- Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », même compte GitHub), fusion en squash fdcb7254. Statut 🟣 ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Remarques pour WFS-397 (PO) : hauteur de la W212 à −2,7 % (le suivi du PO dit −2,3 %) ; captures de nuit obligatoires ; logos des candidats à effacer.

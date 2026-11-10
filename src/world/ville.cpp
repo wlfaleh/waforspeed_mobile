@@ -37,6 +37,7 @@
 #include "../../third_party/stb/stb_image.h"
 #include "../core/platform.h"
 #include "decor_carte.h"
+#include "mobilier_ville.h"   // WFS-369 : mobilier urbain modélisé (bancs, abribus, grilles, fontaines, lampadaires, feux)
 #include "enseignes.h"   // WFS-175 : atlas de textes (portiques)
 #include "vegetation.h"
 #include "ville_quartiers.h"
@@ -52,7 +53,8 @@ namespace {
 
 enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE,
            P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL,
-           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_COUNT };   // WFS-176 : dorures, vitrages, néons du casino (A) et des autres enseignes (B)   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
+           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_GLACE, P_COUNT };   // WFS-369 : P_GLACE, verre clair des abribus (sans lumière intérieure)
+             // WFS-176 : dorures, vitrages, néons du casino (A) et des autres enseignes (B)   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
 enum Couleur {
@@ -63,7 +65,8 @@ enum Couleur {
     // WFS-176 : pierre claire du casino, marches, tapis, enduit et sol des garages, pont élévateur, noir, pigeon (4 teintes),
     // shiba et husky (6 teintes chacun, matériaux du modèle), laisse, enrobé du parking, aluminium des menuiseries
     U_CREME, U_MARCHE, U_TAPIS, U_ENDUIT, U_SOL_GARAGE, U_PONT, U_NOIR, U_PIG0, U_SHI0 = U_PIG0 + 4, U_HUS0 = U_SHI0 + 6,
-    U_LAISSE = U_HUS0 + 6, U_PARKING, U_ALU, U_NB
+    U_LAISSE = U_HUS0 + 6, U_PARKING, U_ALU,
+    U_FONTE, U_AFFICHE, U_NB   // WFS-369 : fonte peinte, affiche
 };
 constexpr uint32_t PALETTE[U_NB] = {
     0x3a3d44, 0x6b4a2e, 0xbfe8ff, 0xc9c4b8, 0x4aa3c7,
@@ -86,7 +89,9 @@ constexpr uint32_t PALETTE[U_NB] = {
     0x9aa0ac, 0x6e7480, 0x3a3d44, 0x2f2f33,
     0x99703d, 0x2e2e2e, 0xe8dcc4, 0x0e0e0e, 0xeeeeee, 0x2a1d10,
     0x47494a, 0x2e2e2e, 0xd9d9d4, 0x0e0e0e, 0xf0f0f0, 0x2a2a2a,
-    0xb02a2a, 0x45474b, 0xc8ccd0};
+    0xb02a2a, 0x45474b, 0xc8ccd0,
+    // WFS-369 : fonte peinte vert foncé des bancs et grilles (RAL 6009, albédo ≈ 0,04), affiche claire sous verre
+    0x27352d, 0xd6cdbd};
 vec2 uvc(int c) { return {(c + 0.5f) / (float)U_NB, 0.5f}; }
 
 // teintes du feuillage (VEG_TINT de life.js) : tilleuls sur le matériau des platanes, pins sur leur propre matériau
@@ -128,16 +133,6 @@ void box(Geo& g, vec3 c, vec3 r, vec3 f, float hx, float hz, float y0, float h, 
         quad(g, P(s.x0, y0, s.z0), P(s.x1, y0, s.z1), P(s.x1, y1, s.z1), P(s.x0, y1, s.z0), s.n, {0, vb}, {u1, vb}, {u1, vh}, {0, vh});
     }
     quad(g, P(-hx, y1, -hz), P(hx, y1, -hz), P(hx, y1, hz), P(-hx, y1, hz), up, {0.01f, 0.01f}, {0.02f, 0.01f}, {0.02f, 0.02f}, {0.01f, 0.02f});
-}
-
-// cylindre vertical (8 côtés) : troncs, mâts
-void cylinder(Geo& g, vec3 base, float rad, float h, int n = 8) {
-    for (int k = 0; k < n; k++) {
-        float a0 = 2 * PI * k / n, a1 = 2 * PI * (k + 1) / n;
-        vec3 d0{std::cos(a0), 0, std::sin(a0)}, d1{std::cos(a1), 0, std::sin(a1)};
-        quad(g, base + d0 * rad, base + d1 * rad, base + d1 * rad + vec3{0, h, 0}, base + d0 * rad + vec3{0, h, 0},
-             normalize(d0 + d1), {0, 0}, {1, 0}, {1, 1}, {0, 1});
-    }
 }
 
 // façade d'immeuble : béton teinté, grille de fenêtres (2 par tuile), quelques vitres plus claires
@@ -210,6 +205,10 @@ public:
             mats_[p] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
         plain(P_METAL, {0.08f, 0.09f, 0.11f}, 0.45f, 0.8f);
+        {   // WFS-369 : verre trempé clair des abribus (diélectrique lisse, F0 0,04 ; reflète le ciel, laisse voir le fond sombre)
+            Material m; m.color = {0.05f, 0.06f, 0.065f, 1}; m.rough = 0.05f; m.flags = MAT_DOUBLE;
+            mats_[P_GLACE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        }
         {   // WFS-94 (RG-A3, RG-A4) : fenêtres allumées (petits quads émissifs), couleurs du jeu web converties par versHdr
             const uint32_t cols[3] = {0x694b2d, 0x3e5569, 0x007f8c};   // chaud rgb(95-115, 68-82, 40-50), froid, sarcelle
             for (int k = 0; k < 3; k++) {
@@ -378,11 +377,9 @@ public:
             }
             break;
         }
-        case ville::LAMPE: {   // mât au bord du trottoir, bras vers la chaussée, tête lumineuse
+        case ville::LAMPE: {   // WFS-369 : mât conique au bord du trottoir, crosse de 2,4 m vers la chaussée, luminaire (même place)
             const vec3 y15{0, 0.15f, 0};
-            cylinder(out[P_METAL], p.o + p.r * (s * (R + 0.8f)) + y15, 0.09f, 7.4f, 6);
-            box(out[P_METAL], p.o + p.r * (s * (R - 0.55f)) + y15, p.r, p.f, 1.4f, 0.06f, 7.3f, 0.12f, 1.f);
-            box(out[P_LAMP], p.o + p.r * (s * (R - 1.6f)) + y15, p.r, p.f, 0.45f, 0.18f, 7.18f, 0.12f, 1.f);
+            mobilier::lampadaire(out[P_METAL], out[P_LAMP], mobilier::repere(p.o + p.r * (s * (R + 0.8f)) + y15, p.r * -s, p.f), 2.4f, lod);
             break;
         }
         case ville::ARBRE_RUE: {   // DECOR.streettree : grille d'arbre 1,3 × 1,3 m et platane, graine mulberry32(a · 13 + côté)
@@ -401,20 +398,18 @@ public:
             }
             break;
         }
-        case ville::ABRIBUS: {   // paroi du fond, toit, vitre, banc
+        case ville::ABRIBUS: {   // WFS-369 : poteaux, toit, vitrages encadrés, panneau d'affichage, banc (même emprise)
             if (lod) break;
-            const vec3 b = carte::lateral(p, s * (R + 3.8f), 0.15f), rs = p.r * s;
-            carte::box(U, b + rs * 0.8f, p.r, p.f, 0.1f, 2.5f, 4, uvc(U_METAL));
-            carte::box(U, b + up * 2.5f, p.r, p.f, 1.8f, 0.1f, 4.2f, uvc(U_METAL));
-            carte::box(U, b + rs * 0.75f + up * 0.6f, p.r, p.f, 0.04f, 1.6f, 1.2f, uvc(U_VITRE));
-            carte::box(U, b + rs * 0.4f, p.r, p.f, 0.4f, 0.5f, 2.4f, uvc(U_BANC));
+            const vec3 b = carte::lateral(p, s * (R + 3.8f), 0.15f);
+            mobilier::abribus(U, out[P_GLACE], mobilier::repere(b, p.r * s, p.f), uvc(U_ALU), uvc(U_AFFICHE), uvc(U_BANC));
             break;
         }
-        case ville::GRILLE:   // grille du parc : poteau et lisse de 4 segments
+        case ville::GRILLE: {   // WFS-369 : grille du parc, de ce poteau au suivant (4 segments plus loin) : barreaux à pointes
             if (lod) break;
-            carte::box(U, carte::lateral(p, s * o.lat, 0.15f), p.r, p.f, 0.06f, 1.1f, 0.06f, uvc(U_METAL));
-            carte::box(U, carte::lateral(p, s * o.lat, 1.15f), p.r, p.f, 0.05f, 0.05f, 4 * (float)SEG_M, uvc(U_METAL));
+            const carte::Pose p4 = carte::poseAt(t, a + 4);
+            mobilier::grille(U, carte::lateral(p, s * o.lat, 0.15f), carte::lateral(p4, s * o.lat, 0.15f), p.r * s, uvc(U_FONTE));
             break;
+        }
         case ville::ARBRE: {   // DECOR.tree de la ville : pin (vegPine sans parasol) ou tilleul (vegBroadleaf)
             const bool allege = lod || o.lat > R + 28;   // fond du parc : version allégée même de près
             const vec3 b = carte::lateral(p, s * o.lat, ville::solY(z, o.lat) - 0.1f) + p.f * o.along;
@@ -432,18 +427,14 @@ public:
             }
             break;
         }
-        case ville::BANC: {   // assise et dossier
+        case ville::BANC: {   // WFS-369 : banc public à lattes, flancs en fonte, dossier vers l'arrière (même place)
             if (lod) break;
-            const vec3 b = carte::lateral(p, s * o.lat, 0.15f);
-            carte::box(U, b, p.r, p.f, 0.5f, 0.45f, 1.8f, uvc(U_BANC));
-            carte::box(U, b + p.r * (s * 0.25f), p.r, p.f, 0.08f, 0.95f, 1.8f, uvc(U_BANC));
+            mobilier::banc(U, mobilier::repere(carte::lateral(p, s * o.lat, 0.15f), p.r * s, p.f), uvc(U_BANC), uvc(U_FONTE));
             break;
         }
-        case ville::FONTAINE: {   // bassin, eau, colonne
+        case ville::FONTAINE: {   // WFS-369 : bassin mouluré de 4 m de rayon, piédestal, vasque (même place)
             const vec3 b = carte::lateral(p, s * o.lat, ville::solY(z, o.lat));
-            carte::cyl(U, b, 4, 0.6f, 12, uvc(U_PIERRE));
-            carte::cyl(U, b + up * 0.05f, 3.7f, 0.6f, 12, uvc(U_EAU));
-            carte::cyl(U, b, 0.5f, 2.2f, 12, uvc(U_PIERRE));
+            mobilier::fontaine(U, mobilier::repere(b, p.r * s, p.f), 4.f, 1.f, uvc(U_PIERRE), uvc(U_EAU));
             break;
         }
         case ville::ENTREPOT: {   // corps, toit en losange, deux portes côté route ; pose au milieu (Math.round)
@@ -592,15 +583,12 @@ public:
             if (seg == mod(rp.debut - (int64_t)(6 / SEG_M))) {   // panneaux « sens giratoire » des deux côtés, 6 m avant l'anneau
                 for (float sd : {-1.f, 1.f}) {
                     const vec3 b = carte::lateral(p, sd * (R + 1.2f), 0.15f);
-                    carte::cyl(out[P_METAL], b, 0.04f, 2.3f, 6, {0, 0});
-                    const vec3 c = b + vec3{0, 2.3f, 0} - p.f * 0.06f;
-                    for (int k = 0; k < 16; k++) {   // disque bleu de 70 cm, face aux conducteurs qui arrivent
-                        const float a0 = 2 * PI * k / 16, a1 = 2 * PI * (k + 1) / 16;
-                        carte::tri(U, c, c + (p.r * std::cos(a0) + up * std::sin(a0)) * 0.35f, c + (p.r * std::cos(a1) + up * std::sin(a1)) * 0.35f, uvc(U_BLEU));
-                    }
-                    for (int k = 0; k < 3; k++) {   // trois flèches blanches qui tournent (sens giratoire)
+                    // WFS-369 : panneau B21c1 de 700 mm, bord roulé, dos galvanisé, colliers sur un mât de 68 mm (face aux conducteurs)
+                    mobilier::panneauRond(out[P_METAL], U, mobilier::repere(b, p.f * -1.f, p.r), 2.3f, uvc(U_BLEU), uvc(U_ZEBRA), uvc(U_ACIER_LOIN));
+                    const vec3 c = b + vec3{0, 2.3f, 0} - p.f * 0.05f;
+                    for (int k = 0; k < 3; k++) {   // trois flèches blanches qui tournent (sens giratoire), peintes sur le fond
                         const float an = 2 * PI * k / 3 + 0.4f, ap = an + 0.7f;
-                        const vec3 q = c - p.f * 0.01f, d0 = p.r * std::cos(an) + up * std::sin(an), d1 = p.r * std::cos(ap) + up * std::sin(ap);
+                        const vec3 q = c - p.f * 0.013f, d0 = p.r * std::cos(an) + up * std::sin(an), d1 = p.r * std::cos(ap) + up * std::sin(ap);
                         carte::tri(U, q + d0 * 0.16f, q + d0 * 0.28f, q + d1 * 0.22f, uvc(U_ZEBRA));
                     }
                 }
@@ -660,11 +648,7 @@ public:
                 disque(b + vec3{0, 0.225f, 0}, ri - 0.25f, 28, uvc(U_PELOUSE));   // gazon (la bordure de 25 cm reste visible)
             }
             const vec3 g = gr ? ctr + vec3{0, giratoire::H_BORDURE, 0} : b + vec3{0, 0.22f, 0};   // WFS-248 : sur le gazon de l'îlot
-            carte::cyl(U, g, 2.4f, 0.55f, 20, uvc(U_PIERRE));            // bassin (4,8 m)
-            disque(g + vec3{0, 0.57f, 0}, 2.15f, 20, uvc(U_EAU));       // eau du bassin
-            carte::cyl(U, g, 0.3f, 1.75f, 10, uvc(U_PIERRE));            // colonne
-            carte::cyl(U, g + vec3{0, 1.75f, 0}, 1.0f, 0.18f, 16, uvc(U_PIERRE));   // vasque
-            disque(g + vec3{0, 1.95f, 0}, 0.85f, 16, uvc(U_EAU));
+            mobilier::fontaine(U, mobilier::repere(g, p.r, p.f), 2.4f, 1.f, uvc(U_PIERRE), uvc(U_EAU));   // WFS-369 : bassin de 4,8 m mouluré, vasque
             Mulberry32 Rt((uint32_t)(rp.centre * 31 + 7));
             Geo* leaf[2] = {&out[P_LEAF0], &out[P_LEAF1]};
             for (int k = 0; k < 3; k++) {   // trois platanes autour du bassin, entre la fontaine et la bordure
@@ -683,8 +667,8 @@ public:
             };
             auto mat = [&](const carte::Pose& q, float sd, float face) {   // mât du feu, caisson, plaque de rue (sur les mâts d'avant)
                 const vec3 b = carte::lateral(q, sd * (R + 0.8f), 0.15f);
-                carte::cyl(out[P_METAL], b, 0.07f, 3.6f, 8, {0, 0});
-                carte::box(out[P_METAL], b + q.f * (face * 0.12f), q.r, q.f, 0.32f, 0.95f, 0.22f, {0, 0}, 2.65f);
+                // WFS-369 : feu R11 (caisson, 3 optiques Ø 200 éteintes, visières, écran de contraste) tourné vers face · f
+                mobilier::feuTricolore(out[P_METAL], U, mobilier::repere(b, q.f * face, q.r), uvc(U_NOIR));
                 if (face < 0) carte::box(U, b + q.r * (sd * 0.5f), q.f, q.r, 0.04f, 0.25f, 0.9f, uvc(U_BLEU), 2.3f);   // plaque, le long de la rue
             };
             if (seg == mod(cf.ligne)) {
@@ -1690,8 +1674,8 @@ public:
                     Geo gk;
                     for (const auto& [q, face] : {std::pair{qa, -1.f}, std::pair{qf, 1.f}})
                         for (float sd : {-1.f, 1.f}) {
-                            const vec3 c = carte::lateral(q, sd * (R + 0.8f), 0.15f + 3.35f - 0.23f * k) + q.f * (face * 0.23f);
-                            carte::cylAxe(gk, c, q.f * face, 0.09f, 0.03f, 10, {0, 0});
+                            // WFS-369 : optique bombée à sa place dans le caisson modélisé (mobilier::feuTricolore)
+                            mobilier::optique(gk, mobilier::repere(carte::lateral(q, sd * (R + 0.8f), 0.15f), q.f * face, q.r), k);
                         }
                     op.m[k] = r.makeMesh(gk.v, gk.i, false);
                 }
