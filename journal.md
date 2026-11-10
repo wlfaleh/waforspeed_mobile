@@ -3760,3 +3760,37 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **WFS-383** (sols, pins d'Alep) passe ⏳ Prêt : WFS-379 et 380 fusionnés (🟡). WFS-401 et 383 peuvent avancer en même temps (fichiers séparés ; 401 ≤ 10 lignes dans `plage.cpp`).
 - `track-agent.md` : ligne de Claude, agent cartes (01UY1Vv4eo) enlevée (session terminée).
 - Pas de session libre : WFS-401 et WFS-383 attendent une **nouvelle session** de développeur qui les demande.
+
+### 2026-11-10 09:45:04 — WFS-402 créé : fenêtres et portes réalistes des immeubles et des maisons (po-scrum-master)
+- Demande de l'utilisateur (`@po`, 2026-11-10) : « ajoute une tâche pour le décor concernant le réalisme des fenêtres et des portes des immeubles, maisons… ».
+- **WFS-402** (P1 Urgent, épic E15, nouvelle file « Ouvertures communes ») : inventaire par carte, fenêtres en retrait de 15 à 25 cm (cadre, petits bois, appui, linteau, vitre qui reflète), volets et garde-corps selon le lieu, porte d'entrée côté rue sur chaque bâtiment, vitrines, variété par bâtiment, nuit avec pièces éclairées (30 à 50 %, 2700 à 4000 K), formes géométriques interdites, téléphone tenu. Règles : `regles-de-gestion/WFS-402.md`.
+- **⏳ En attente après WFS-370** (🔧, agent dev3d 01UY1Vv2Ph) : mêmes fichiers du kit `src/world/archi_*`. Agent `dev-artiste-3d`, nouvelle session ; avis « Avis agent 3D : VALIDÉ » avant le lead dev (RG-E15-06). Les US « décor complet » WFS-385 à 389 le reprennent.
+- `E15-decors.md` : file « Ouvertures communes » ajoutée ; `TACHES.md` (ligne + bandeau), `track-agent.md`, `tache utilisateur.md` à jour.
+
+### 2026-11-10 09:49:00 — WFS-323 en tout premier, WFS-280 abandonné (po-scrum-master)
+- Ordre de l'utilisateur (`@po`) : « 280 abandonné, je ne veux pas de motos garées… tu mets 323 en premier ».
+- **WFS-280** (deux-roues garés et faufilement) : 🚫 Abandonné ; rien n'est retiré du code (WFS-232, deux-roues dans le trafic, reste). Ordre permanent ajouté dans le skill du PO : pas de motos garées.
+- **WFS-323** (vue Cockpit 1/3) : P2 → **P1 Urgent**, **en tout premier** dans l'ordre des tickets prêts ; agent `dev-artiste-3d` (`@devartiste`), nouvelle session.
+
+### 2026-11-10 09:49:40 — WFS-370 : inventaire (RG-01), plan, accroches annoncées (Claude, agent dev3d (01UY1Vv2Ph))
+- Inventaire complet : `qa/pr/WFS-370/inventaire.md` (branche `feature/waforspeed-370`). Immeubles : 592 bâtiments du kit (WFS-161) ; volumes encore nus : toit de zinc à 2 pans plats, corniche en un pavé, garde-corps en plaque pleine, édicule en cube, pied de façade lisse, vitrines nues ; fenêtres de nuit d'une seule teinte, tirées **par pixel** (mouchetures, cause : position du monde imprécise loin de l'origine). Port : entrepôts, conteneurs, grues et grillage en boîtes. Hors ticket (WFS-385) : casino, centre commercial, garages, ouvrages de la route, teintes des façades (pierre et crépi absents de `materiaux.json`).
+- Plan : comble à la Mansart (brisis 70°, terrasson 20°, lucarnes, souches et mitrons), corniche moulurée, garde-corps à barreaux (NF P01-012), soubassement et cordon, couvertines et édicule, dormant des vitrines (nouveau fichier `src/world/archi_details.*`) ; port modélisé (nouveau fichier `src/world/decor_ville_port.*` : conteneur ISO 40 pieds, portique de quai, clôture à double fil) ; entrepôts = kit, style industriel.
+- **Accroches annoncées (fichiers communs, RG-E15-08, ≤ 10 lignes chacune)** : `archi_geo.cpp` (appels des détails à la place des pavés, graine de baie dans les uv des vitres), `archi_geo.h` (pièce `FIN` pour les barreaux, `graineBaie`), `archi_carte.cpp` / `archi_banc.cpp` (matériau des barreaux en couverture partielle, zinc plus mat), `shaders/decor.glsl` (`interieurFenetre` : tirages par fenêtre, 2 700 à 4 000 K), `cartes_banc.cpp` (gros plans des immeubles et du port), `CMakeLists.txt` (test_archi_geo). Les garde-corps à barreaux et la corniche moulurée s'appliquent aussi aux villas de la Corniche et aux maisons de la Campagne (même kit) : rien dans `plage.cpp` ni `campagne.cpp`.
+- Réseau : aucun téléchargement (aucun modèle libre aux bonnes mesures accessible par GitHub seul) : RG-03, modélisation par le code.
+
+### 2026-11-10 10:12:55 — Début WFS-323 : attribué à Claude, agent dev3d 7 (01UY1Vv4FX) (po-scrum-master)
+- Demande de ticket d'une **nouvelle session** `dev-artiste-3d` (session_01UY1Vv4FX4CXXFEkuhUsAzG, 1er ticket de la session). Ordre de l'utilisateur du 2026-11-10 09:49 UTC : **WFS-323 en tout premier** au premier `dev-artiste-3d` qui demande → attribué.
+- Ticket : **P1 WFS-323** vue Cockpit (1/3) : cadrage proche de la référence (`qa/retours/2026-11-08-cockpit-reference-utilisateur.jpg`), habitacle sur toute la largeur, pavillon fermé (ANO-207), réglage « Regard cockpit » gardé ; anomalies rattachées ANO-185, 187, 188, 152 (partie lisibilité), 203, 204. Règles : `regles-de-gestion/WFS-323.md`.
+- Zone autorisée : `src/game/camera_vue.*` (partie cockpit), `src/render/vehicule_cockpit*`, tests du cockpit, `qa/pr/WFS-323/` ; accroches ≤ 10 lignes annoncées au journal (ex. `src/ui/ecrans/reglages.*` seulement si RG-03 l'exige). Interdit : `assets/cars/**` et `tools/formes.json` (WFS-363 en cours, E10), `archi_*` et fichiers du décor (WFS-370, E15), CI. Deux tickets E10 en même temps : exception PO (fichiers séparés). On part de l'existant (WFS-282, 315, 349, 390 🟡) : rien retiré.
+- Pas un ticket E15 : avis agent 3D non obligatoire (conseillé). Après la fusion : 🟡 À valider (utilisateur), puis la session s'arrête. WFS-324 et 325 (suites) iront à de nouvelles sessions.
+
+### 2026-11-10 10:12:50 — WFS-337 attribué à Claude, agent dev (01UY1Vv1d6) (po-scrum-master)
+- Demande de la session `@dev` session_01UY1Vv1d6VrvcVTQzXuiern (1er et seul ticket, aucun ticket depuis la règle du 2026-11-09 12:05 UTC). Profil développeur général : les P1 prêts (WFS-323, 373, 378, 387) vont à `dev-artiste-3d` ; WFS-392 à `expert-cartes` ; WFS-287 à l'agent expert ci. Premier P2 permis : **WFS-337** (E4 / E13, aucun ticket actif dans ces épics).
+- Zone : `src/render/nuit.cpp` (halos des têtes de lampe), `src/render/eclairage_*` si besoin, `tests/**` ; **pas** `ville*.cpp` / `archi_*` (WFS-370), phares (WFS-382). Règles : `regles-de-gestion/WFS-337.md` (section « Suivi » ajoutée : zone, règle des formes, captures).
+
+### 2026-11-10 10:14:06 — WFS-373 attribué à Claude, agent dev3d (01UY1Vv4L4) (po-scrum-master)
+- Demande d'une nouvelle session `@devartiste` (session_01UY1Vv4L4emR5PusLbYXyYF, agent `dev-artiste-3d`), 1er et seul ticket de la session. WFS-323 (demandé en premier) venait d'être attribué à 10:12 à Claude, agent dev3d 7 (01UY1Vv4FX) : on garde cette attribution.
+- **WFS-373** (P1, E15 file Grand Prix) : inventaire des formes nues au journal (RG-01), puis tribunes, stands vitrés avec auvent, portique, barrières, murs de pneus sanglés, panneaux en vrais modèles (CC0 / CC BY, ±1 %, sans marque) ou modélisés au niveau du vrai objet. Aucun autre ticket actif sur le Grand Prix.
+- Zone : `src/world/circuit.cpp`, `portique.cpp`, nouveaux `src/world/decor_grandprix_*`, `assets/world/modeles/grandprix/**`, `assets/textures/decor/grandprix/**`, `paquets/sources/grandprix/**`, licences ; fichiers communs : ajouts ≤ 10 lignes annoncés. Pas : `archi_*` au-delà des accroches (WFS-370), `ville*`, `plage.cpp`, `campagne*`, `assets/cars/**`, cockpit.
+- Branche `feature/waforspeed-373` ; captures avant / après jour et nuit + gros plans + banc perf Basse ; PR, avis agent 3D VALIDÉ, puis lead dev ; arrêt de la session après la fusion.
+
