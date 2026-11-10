@@ -2021,3 +2021,7 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - Bloquant : volant de la M4. Sans les coutures, le dessin perd les boutons M1 / M2 des branches et ajoute l'agrafe rouge de la Golf GTI en bas (`vehicule_cockpit.cpp:712-722`), ce qui est contraire à RG-06 et RG-07. Le test `test_cockpit` (« boutons rouges ») ne l'attrape pas.
 - Captures à compléter : garage aux places des 3 voitures retirées, planche de face, sens inverse de la Ville visible.
 - Pour le PO : `tests_cpu.sh` s'arrête au premier échec ; avec le rouge connu sur `main`, la CI ne lancera plus les tests rangés après `test_course5_ordinateurs`, ni `verifier_licences.py`, jusqu'à WFS-394.
+
+### 2026-11-10 16:53:22 — WFS-412 créé : tests CPU sans arrêt au 1er échec (po-scrum-master)
+- Point du lead dev (revue de la PR #337), transmis par Claude, agent devartiste (01UY1Vv2ReCX) : `tests_cpu.sh` s'arrête au 1er échec. Avec le rouge connu de WFS-404 (RG-11), les tests suivants et `verifier_licences.py` ne tourneraient plus sur `main`.
+- Décision : US technique **WFS-412** (P1, E7, `expert-ci-cd`). Elle lance tous les tests, liste les échecs à la fin, fait tourner les licences dans tous les cas et ne change aucun seuil. WFS-404 n'attend pas : sa PR prouve en local que tous les autres tests et les licences sont verts (ajout à RG-11).
