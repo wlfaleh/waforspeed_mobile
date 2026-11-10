@@ -2303,3 +2303,13 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - PR #338 fusionnée en squash par le lead dev (fe9d8fc4) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` (lead dev). Session terminée : un seul sujet, aucun autre ticket demandé.
 - Suite proposée au PO (remarque non bloquante du lead dev) : dans `tools/qa/verifier_licences.py`, `texte_mit()` n'a pas de garde si `assets/licences/animaux-corniche.txt` manque (trace Python au lieu d'un « MANQUE », code de sortie 1 quand même) ; petit ticket à part.
 - Rappel pour WFS-408 : l'écran Crédits montre la politique de confidentialité dès que `confidentialite_url` (configgame.json) est rempli.
+
+### 2026-11-10 19:40:58 — WFS-324 refusé par le lead dev, PR #341 (lead-dev)
+- Relu au commit 1431d17a : toutes les captures ouvertes, tout le diff lu. Construction et tests refaits sur la branche synchronisée : 101/102 verts (`test_retroviseurs` OK ; seul rouge `test_course5_ordinateurs`, rouge connu de `main`, sources identiques, sans lien).
+- Refus (revue en commentaire, même compte GitHub) :
+  1. Glace intérieure de la Golf (et Range Rover Sport, M4) : la voiture qui suit est cachée par une forme sombre en « V » et par les sièges du modèle. Plan proche de 4 cm seulement, œil du cockpit 50 à 75 cm trop en avant dans le modèle.
+  2. De nuit, aucun phare allumé visible dans les glaces (RG-04).
+  3. Capture 3 : l'image « sans » montre l'écran Pause, pas les Réglages « Rendu ».
+  4. Glace gauche presque noire sur les bancs cockpit de nuit et de pluie : à expliquer.
+- Le code est propre, rien de bloquant.
+- Ticket en « ↩️ Retour lead dev (PR #341) ».
