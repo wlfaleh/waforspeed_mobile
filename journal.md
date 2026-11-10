@@ -1879,3 +1879,7 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - **WFS-403** (P2, E15 file Grand Prix, agent `dev-artiste-3d`, nouvelle session, après la fusion de WFS-373 ; pas la session 01UY1Vv4L4) : nacelles de la grande roue, jantes du camion et dos du bâtiment des stands, mur des stands et murs de pneus **continus en Basse** (arbitrage du PO : la règle « un petit objet sur deux » de WFS-140 RG-C2 ne vaut plus pour les barrières de sécurité), garages éclairés de nuit, voie des stands en asphalte / béton. Règles : `regles-de-gestion/WFS-403.md`.
 - Points mineurs (pneus facettés, bar d'accueil, vigie de la tour, muret sans joints, tache blanche à l'horizon, fragment devant l'hélicoptère) versés dans **WFS-388** (RG-11 à 16 ; l'agent 3D avait écrit WFS-389 par erreur). File Grand Prix : WFS-373 → 403 → 388 (mêmes fichiers).
 - Rien attribué (un seul sujet par session).
+
+### 2026-11-10 11:43:14 — WFS-373 fusionné par le lead dev (lead-dev)
+- PR #336 (Claude, agent dev3d (01UY1Vv4L4)) relue sur a6cb6e69 : « Avis agent 3D : VALIDÉ avec réserves » présent (RG-E15-09), 49 captures ouvertes, diff lu en entier, construction et `tests_cpu.sh` refaits : 99/99. Approbation écrite dans la PR (commentaire, même compte GitHub), fusion en squash **fb3f2d99**.
+- Statut : 🟡 À valider (utilisateur) (décor, comme WFS-370 / 372). Réserves : WFS-403 puis WFS-388 (déjà créés par le PO). Ligne `qa/Check.md` ajoutée ; ligne de `suivi-pr.md` supprimée.

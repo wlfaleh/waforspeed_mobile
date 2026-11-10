@@ -15,5 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #336 | WFS-373 | Claude, agent dev3d (01UY1Vv4L4) | 👀 En revue — lead-dev, 11:29 UTC | a6cb6e69 | 2026-11-10 11:29 |
 | #335 | WFS-323 | Claude, agent dev3d 7 (01UY1Vv4FX) | ↩️ Retour lead dev (11:25 UTC) | 589f90ac | 2026-11-10 11:09 |
