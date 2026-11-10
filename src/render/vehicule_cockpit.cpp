@@ -558,13 +558,20 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     // WFS-323 (ANO-188) : vitesse en chiffres d'au moins 22 % de la hauteur, ramenée dans la partie du combiné vue par l'ouverture
     // haute du volant (bandeLisibleCombine) ; i-Cockpit (vu au-dessus du volant) et Model 3 (écran central) : position du style
     // renvoie le haut des chiffres (le rapport peut se poser juste au-dessus)
-    float basV = 0;   // WFS-414 : bas des chiffres de la vitesse (rapport posé à côté, Abarth)
+    float basV = 0, hV = 0;   // WFS-414 : bas et hauteur des chiffres de la vitesse (rapport placé par rapport à eux)
     auto vitesse = [&](float xd, float y0, float h) {
         h = std::max(h, H * 0.22f);
         if (!surEcran && d.combine != Combine::PeugeotICockpit) placerDansBande(bandeLisibleCombine(d), H, y0, h);
         nombre(A, xd, y0, h, (int)kmh, 3);
-        basV = y0;
+        basV = y0; hV = h;
         return y0 + h;
+    };
+    // WFS-414 (avis de l'agent 3D sur la PR #343) : volant de série : rapport centré au-dessus des deux chiffres de la vitesse (xd : bord
+    // droit de la vitesse, comme nombre()), un jour de 5 % de la hauteur du combiné entre les deux, sans dépasser la partie vue par le volant
+    auto rapportAuDessus = [&](float xd, float hMax) {
+        const float y = basV + hV + H * 0.05f, h = std::min(hMax, bandeLisibleCombine(d).haut - H * 0.005f - y);
+        const float centre = xd - hV * 0.73f;   // milieu de deux chiffres : de xd − 1,32 h à xd − 0,14 h
+        rapport(A, centre - h * 0.26f, y, h, val.rapport);
     };
     auto barreNitro = [&](float x0, float y0, float x1, float y1) {   // jauge de nitro horizontale
         F.rect(x0, y0, x1, y1); A.rect(x0, y0, x0 + (x1 - x0) * nit, y1);
@@ -619,11 +626,21 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         arcBarres(A, F, R, {0, 0}, rc * 0.80f, rc, PI * 1.30f, -PI * 0.30f, 52, reg, 0.80f, 0.0026f);
         // WFS-323 (ANO-188) : vitesse de 30 % de la hauteur dans la bande vue, rapport (24 %) posé juste au-dessus (SF90, Abarth : la
         // bande remontait la vitesse sur le rapport)
-        const float hautV = vitesse(H * 0.17f, -rc * 0.80f, H * 0.30f);
-        // WFS-414 : volant de série (Abarth) : le moyeu plus haut ne laisse plus la place du rapport au-dessus de la vitesse (il passait
-        // derrière le haut de la jante) : rapport à droite de la vitesse, au même niveau, dans la partie vue par le volant
-        if (volantSeriePour(d) && hautV + H * 0.27f > bandeLisibleCombine(d).haut) rapport(A, H * 0.22f, basV, H * 0.20f, val.rapport);
-        else rapport(A, -H * 0.07f, hautV + H * 0.03f, H * 0.24f, val.rapport);
+        // WFS-414 (avis de l'agent 3D sur la PR #343) : volant de série (Abarth) : le moyeu plus haut ne laisse plus la place du rapport
+        // au-dessus de la vitesse (il passait derrière le haut de la jante) et la carte occupe le tiers droit du cadran : vitesse de 22 %
+        // posée au bas de la partie vue (3 % au-dessus du moyeu), rapport centré au-dessus avec un jour de 3,5 %
+        const BandeCombine bc = bandeLisibleCombine(d);
+        float y0 = -rc * 0.80f, h = H * 0.30f;
+        placerDansBande(bc, H, y0, h);
+        if (volantSeriePour(d) && y0 + h + H * 0.27f > bc.haut) {
+            basV = bc.bas + H * 0.03f; hV = H * 0.22f;
+            nombre(A, H * 0.17f, basV, hV, (int)kmh, 3);
+            const float yr = basV + hV + H * 0.035f, hr = std::min(H * 0.18f, bc.haut - H * 0.005f - yr);
+            rapport(A, H * 0.17f - hV * 0.73f - hr * 0.26f, yr, hr, val.rapport);
+        } else {
+            const float hautV = vitesse(H * 0.17f, -rc * 0.80f, H * 0.30f);
+            rapport(A, -H * 0.07f, hautV + H * 0.03f, H * 0.24f, val.rapport);
+        }
         barreNitro(-W * 0.44f, -H * 0.30f, -W * 0.24f, -H * 0.24f);   // panneau gauche (véhicule) ; la carte est à droite
         break;
     }
@@ -631,9 +648,9 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         const float rc = H * 0.46f;
         cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
         cadran(F, A, R, {W * 0.29f, 0}, rc, reg, 0.85f, 26, 0.0022f);
-        if (volantSeriePour(d)) {   // WFS-414 : volant de série (S3) : le moyeu plus haut remonte la vitesse ; rapport posé juste au-dessus
-            const float hautV = vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
-            rapport(A, -H * 0.07f, std::max(H * 0.02f, hautV + H * 0.02f), H * 0.26f, val.rapport);
+        if (volantSeriePour(d)) {   // WFS-414 : volant de série (S3) : le moyeu plus haut remonte la vitesse ; rapport centré au-dessus
+            vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
+            rapportAuDessus(H * 0.30f, H * 0.26f);
         } else {
             rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
             vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
@@ -646,9 +663,9 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         cadran(F, A, R, {-W * 0.30f, 0}, rc, vit, 2.f, 24, 0.0024f);
         cadran(F, A, R, {W * 0.30f, 0}, rc, reg, 0.82f, 24, 0.0024f);
         F.rect(-W * 0.12f, -H * 0.40f, W * 0.12f, H * 0.40f);   // écran central du combiné
-        if (volantSeriePour(d)) {   // WFS-414 : volant de série (Giulia) : rapport juste au-dessus de la vitesse remontée par le moyeu
-            const float hautV = vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
-            rapport(A, -H * 0.08f, std::max(-H * 0.02f, hautV + H * 0.02f), H * 0.28f, val.rapport);
+        if (volantSeriePour(d)) {   // WFS-414 : volant de série (Giulia) : rapport centré au-dessus de la vitesse remontée par le moyeu
+            vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
+            rapportAuDessus(W * 0.11f, H * 0.28f);
         } else {
             rapport(A, -H * 0.08f, -H * 0.02f, H * 0.28f, val.rapport);
             vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
