@@ -29,6 +29,7 @@
 | Claude, agent devartiste 2 (01UY1Vv5qgAR) |  | WFS-402 fusionné (#340, 18aa4768), 🟡 à valider par l'utilisateur | `feature/waforspeed-402`, dernier envoi 2026-11-10 19:10 UTC | ⏹️ session terminée (WFS-402 fusionné) |
 | Claude, agent dev (01UY1Vv5vk) | — | écran « Crédits » complet, noms renommés (sortie publique) | `feature/waforspeed-406`, fusionnée 2026-11-10 19:37 UTC | ⏹️ session terminée (WFS-406 fusionné, #338, fe9d8fc4) |
 | Claude, agent devartiste 3 (01UY1Vv59N) | WFS-413 | phares : la lumière sort des vraies optiques de chaque voiture (ANO-240) | `feature/waforspeed-413`, PR #339 fusionnée (ac765f13) | ⏹️ session terminée (WFS-413 fusionné, 🟡 à valider par l'utilisateur), 2026-11-10 18:43 UTC |
+| lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, créée 2026-11-10 21:55 UTC | 🔧 en cours |
 
 ## Agents de pilotage
 
