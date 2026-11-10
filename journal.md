@@ -1972,3 +1972,6 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 
 ### 2026-11-10 14:20:51 — Retouches de forme WFS-364 à 368 montées après la 5e tâche (po-scrum-master)
 - Ordre de l'utilisateur : les tâches 16 à 20 (WFS-364, 365, 366, 367, 368) passent juste après la 5e (WFS-406) : 6e à 10e. Elles se suivent (même zone E10, après WFS-404) ; WFS-364 prêt après WFS-404.
+
+### 2026-11-10 14:23:45 — Épic « Publication app » en attente du jour de publication (po-scrum-master)
+- Ordre de l'utilisateur : WFS-319, 408, 409, 407 (et le suivi WFS-320) vont dans l'épic **Publication app** et attendent le jour de publication ; l'utilisateur préviendra le PO. Statut ⏸ ; WFS-319 reste à l'agent expert ci (session 01UY1Vv4), suspendu. Ordre permanent ajouté au skill du PO.
