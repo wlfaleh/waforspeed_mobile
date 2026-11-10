@@ -2324,3 +2324,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Réserves (agent 3D et lead dev, RG-12, à créer en tâche séparée par le PO) : filets de lumière la nuit au bord de certains dormants en gros plan (seul défaut de ce ticket) ; vitres sombres le jour et pièce de nuit en aplat en gros plan (matériau existant) ; porte à rainures du moderne peu lisible ; seuils méditerranéen et villa cachés par l'herbe en pente ; en Basse, détail complet limité à 30 m (surveiller l'apparition des balcons) ; banc `archi` : garde-fou si un plan n'a aucune baie.
 - Suite : un seul sujet par session, cette session s'arrête ; WFS-410 et WFS-411 vont à de nouvelles sessions.
 
+### 2026-11-10 20:28:30 — Statuts automatiques, CI main #993 (robot statuts)
+- Run rouge (push, commit fe9d8fc), aucun statut changé. Job(s) en échec : banc-essai (texte), endurance.
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-396, WFS-362, WFS-363, WFS-384, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
