@@ -17,7 +17,7 @@
 - **Comment c'est vérifié** :
   - les 94 tests CPU passent (`tools/qa/tests_cpu.sh build`) ; les nouveaux tests **échouent sur le code de main** (5 échecs), donc ils détectent bien le défaut ;
   - banc `sol` : 0 écart ; banc `neige` : 0 écart ;
-  - parcours complet (`WFS_BANC=parcours`) ;
+  - parcours complet (`WFS_BANC=parcours`) : 0 écart ; la carte de Noël est lancée puis quittée par le banc `neige` (retour sur la Ville au sec vérifié) ;
   - chiffres ci-dessous et dans [`sol.txt`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-391/qa/pr/WFS-391/sol.txt).
 
 | Mesure (Golf, ancienne conduite) | Avant (main) | Après | Règle |
