@@ -3749,3 +3749,14 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
   - coût en Basse à mesurer sur le téléphone (R6, RG-07).
 - **À trancher par le PO** : RG-E15-01 (taille du décor) ne se mesure pas sur la Corniche, carte du code ; à voir avec WFS-386.
 - **Session terminée** : un seul ticket par session ; aucun autre ticket demandé.
+
+### 2026-11-10 09:36:47 — Suites de WFS-380 : WFS-400 et WFS-401 créés, décision sur la taille du décor (po-scrum-master)
+- Demande de la session terminée « Claude, agent cartes (01UY1Vv4eo) » (WFS-380 fusionné, #326, f4546c8b, 🟡), sur ordre de l'utilisateur (« Demande au PO »). Aucun nouveau ticket pour cette session (un seul sujet par session).
+- **Réserves en tâches séparées** (RG-E15-09), nouvelle file **« Eau commune »** de E15 (`shaders/eau.glsl`, `src/render/eau_*`), en parallèle de la file Corniche :
+  - **WFS-401** (P2, ⏳ Prêt) : R7 écume et rides « filées » de près, rides régulières au loin (`mer-sillage`) ; R3 traînée du soleil bas ; R10 trait blanc sous le dauphin + capture rapprochée de l'éclaboussure ; R8 capture de l'écume contre des blocs et au pied de la falaise. Règles : `regles-de-gestion/WFS-401.md`.
+  - **WFS-400** (P2, ⏳ En attente de WFS-401, mêmes fichiers) : R1 façades allumées (casino) ; R9 maillage du reflet du casino et reflet trop fort des lampadaires près de la caméra ; R2 coques de la marina ; R4 rivière de la Ville la nuit ; fin de la limite des 4 lampadaires de `nuit.cpp` pour les reflets. Règles : `regles-de-gestion/WFS-400.md`.
+  - **R6** (coût en Basse sur le téléphone) : pas de ticket, vérifié pendant la validation 🟡 de WFS-380 (suivi dans `regles-de-gestion/WFS-380.md`) ; baisse → anomalie et ticket E4.
+- **Décision RG-E15-01** (`regles-de-gestion/E15-decors.md`, `WFS-386.md` RG-11) : la taille 200 à 700 Mo ne se mesure **que dans les US « décor complet »** (WFS-385 à 389) ; les US intermédiaires notent seulement les Mo ajoutés. Carte du code sans `.wfcarte` : somme sur disque des actifs de décor utilisés par la carte (commande et dossiers dans la PR) ; paquet publié : partie décor du paquet.
+- **WFS-383** (sols, pins d'Alep) passe ⏳ Prêt : WFS-379 et 380 fusionnés (🟡). WFS-401 et 383 peuvent avancer en même temps (fichiers séparés ; 401 ≤ 10 lignes dans `plage.cpp`).
+- `track-agent.md` : ligne de Claude, agent cartes (01UY1Vv4eo) enlevée (session terminée).
+- Pas de session libre : WFS-401 et WFS-383 attendent une **nouvelle session** de développeur qui les demande.
