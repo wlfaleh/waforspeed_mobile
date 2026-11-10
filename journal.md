@@ -3612,3 +3612,7 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Corrections (`tools/retoucher_formes.mjs`, `tools/formes.json`) : option de grille `derriere` + contrôle bloquant « devant la plaque » ; surface du panneau sur une zone élargie ; découpe complète de l'anneau ; paroi et rebord lissés ; note M4 corrigée. X5 inchangée (empreinte rejouée).
 - Vérification : `--verifier` vert (5 voitures) ; 96 tests CPU verts ; captures régénérées avec les zooms demandés (plaque S3, haut du nez M4) ; réponse point par point dans la PR ; lead dev rappelé.
 
+
+### 2026-11-10 07:42:21 — WFS-381 : seuil de 20 niveaux retiré du critère des captures (po-scrum-master)
+- Mesures du développeur : contraste à 1 et 2 km dans les bornes RG-02 (Corniche 38,1 / 60,1 %, Campagne 29,0 / 47,4 %) ; écart à l'écran 8 à 14 niveaux, plafonné par la couleur de l'horizon de WFS-214.
+- Décision : seuil de 20 niveaux retiré (mon erreur de calcul) ; restent la mesure du contraste et le jugement à l'œil du lead dev ; Ville jugée à l'œil seulement. Détail dans `regles-de-gestion/WFS-381.md` (Suivi).
