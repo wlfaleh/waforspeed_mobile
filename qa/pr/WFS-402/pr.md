@@ -2,12 +2,27 @@
 
 **Ticket** : WFS-402 — règles : `regles-de-gestion/WFS-402.md`
 
-## Description (à remplir par le développeur avant d'ouvrir la PR)
+## Description
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
-- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
-- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
-- **Limites et risques connus** : À REMPLIR
+- **Demande de l'utilisateur** : « ajoute une tâche pour le décor concernant le réalisme des fenêtres et des portes des immeubles, maisons… » (2026-11-10 09:45 UTC) ; périmètre fixé par le PO : les bâtiments du kit d'architecture (WFS-410 et WFS-411 pour le reste).
+- **Ce qui change** :
+  - nouveau module `src/world/archi_ouvertures.{h,cpp}` (zone RG-10), branché dans `archi_geo.cpp` : chaque baie des **897 bâtiments du kit** (Ville 625, Corniche 172, Campagne 100) reçoit sa menuiserie au niveau du vrai objet : dormant de 6 cm chanfreiné et scellé, ouvrants de 5,5 cm avec jet d'eau, petits bois, imposte, crémone ; appui de pierre à glacis et larmier (saillie 5 cm) ; linteau visible (village, industriel) ; chambranle chanfreiné (classique, méditerranéen) ;
+  - volets selon le lieu (RG-03) : persiennes à lames à 45° (méditerranéen), volets pleins à barres et écharpe (village), volets roulants à coulisses et lames bombées (moderne, villa) ; **22 % fermés ou entrouverts** (graine de la baie, jamais tous pareils) ;
+  - portes (RG-04) : à panneaux à plate-bande, à planches avec pentures, vitrées en partie haute (grille de fer forgé ou petits bois), vitrées aluminium à barre de tirage, à rainures ; huisserie, seuil de pierre, béquille sur plaque et serrure à 1,00 m ; portes de garage sectionnelles ; porte vitrée, barre de tirage et soubassement des vitrines ;
+  - variété (RG-05) : 4 modèles de fenêtre et 4 de porte par style (`Plan::graine`) ; mesures du kit mises aux RG (retraits 15-25 cm, porte de maison 0,90 × 2,15 m, cochère ≤ 2,5 m, porte-fenêtre ≥ 2,15 m) ;
+  - nouvelle pièce `CHASSIS` (bois peint, albédo ≈ 0,7) dans `archi_carte.cpp` et `archi_banc.cpp` ; fonction publique `ouvertures::baieComplete` (décision du PO, pour WFS-410 / 411, non appelée par les cartes) ;
+  - banc `archi` : gros plans de la porte et d'une fenêtre de chaque style (jour, nuit) ; nuit : la pièce allumée de WFS-161 / 370 est réutilisée derrière les cadres ;
+  - accroche annoncée : `CMakeLists.txt`, 1 ligne (`test_archi_geo` lie `archi_ouvertures.cpp`). Aucun fichier de carte modifié.
+- **Comment c'est vérifié** :
+  - `tests_cpu.sh` : **99 tests verts** ; `test_archi_geo` : sens des triangles de toutes les nouvelles pièces, RG-02 (retraits, mesures), RG-03 (21,5 à 22,2 % de volets fermés ou entrouverts selon le style), RG-04 (porte côté rue, mesures, passage utile 0,83 m = référentiel), RG-05 (4 modèles tirés, voisins jamais identiques), RG-07 (menuiserie dans chaque baie), `baieComplete` ; `test_archi_kit` : porte d'entrée et passage utile conformes au référentiel ;
+  - inventaire RG-01 : [`qa/pr/WFS-402/inventaire.md`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-402/qa/pr/WFS-402/inventaire.md) (897 / 897 bâtiments du kit avec fenêtres et porte modélisées ; hors kit renvoyé à WFS-410 / 411) ;
+  - **banc perf (RG-09), Ville de nuit, 1280 × 720, lavapipe, 2 mesures alternées** : Basse : `main` 348,7 et 362,8 ms (pire 409 et 445), branche 378,0 et 368,1 ms (pire 444 et 430) ; triangles 439 849 → 464 381 (+5,6 %) ; Haute : `main` 644 et 654 ms, branche 705 et 734 ms. Allègements faits pour cela : faces cachées retirées, niveau 1 réduit à la face des dormants, détail complet jusqu'à 30 m en Basse (120 m en Haute), vitres dessinées après les menuiseries (pièce de nuit cachée non calculée).
+- **Limites et risques connus** :
+  - **performance** : en Basse, + 2 à 8 % de temps d'image sur lavapipe (dans le bruit pour la pire image), + 10 % en Haute ; lavapipe est un rendu logiciel : à confirmer sur le téléphone de l'utilisateur (ticket 🟡) ;
+  - le kit construit encore ses morceaux pendant la course (sur les fils de travail, existant depuis WFS-161) : RG-09 « rien créé en course » n'est pas changé par ce ticket ;
+  - pignons et arrières des maisons isolées du kit toujours aveugles ; lucarnes du comble (WFS-370) sans dormant ; une seule teinte de volet et de bois peint par carte ;
+  - gros plans « porte » et « fenêtre » : nouvelle vue du banc, sans image « avant » ; captures du banc `archi` refaites sur le dernier commit, les autres (cartes) datent d'avant les allègements de performance (seul le niveau lointain change).
+  - Actifs ajoutés : 0 Mo (tout est modélisé par le code ; aucun téléchargement).
 
 ## Captures pour le lead dev (41 après)
 
