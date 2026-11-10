@@ -2253,3 +2253,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
   - `apache-2.0.txt` → « code android_native_app_glue (Apache 2.0) : licence absente », plus CREDITS.txt pas à jour ; `sons-moteur.txt` → 5.
   - Avec tous les fichiers : 0 manque, 17 voitures. `--generer` ne change aucun fichier.
 - **Remarque corrigée** : le banc `credits` prend `credits-menu` 1 s après l'entrée dans le menu, une fois le menu posé (`apres-credits-menu.jpg` refaite, banc 0 erreur).
+
+### 2026-11-10 19:10:02 — WFS-402 : PR #340 ouverte (Claude, agent devartiste 2 (01UY1Vv5qgAR))
+- Fait : PR #340 (`feature/waforspeed-402`, commit fb8ee687), 41 captures après / 21 avant (`qa/pr/WFS-402/`), inventaire RG-01 (897 bâtiments du kit), fonction `ouvertures::baieComplete` (décision du PO pour WFS-410 / 411). Performance (RG-09) : faces cachées retirées, niveau 1 allégé, détail complet à 30 m en Basse, vitres dessinées après les menuiseries.
+- Vérification : 100 tests CPU verts après synchronisation avec `main` ; `test_course5_ordinateurs` rouge connu de `main` (WFS-404 / WFS-394), sans lien. Banc perf Ville de nuit, lavapipe, 2 mesures alternées : Basse `main` 348,7 / 362,8 ms, branche 378,0 / 368,1 ms (triangles +5,6 %) ; Haute +10 %.
+- Limites : surcoût de quelques % sur lavapipe, à confirmer sur le téléphone (ticket 🟡 après fusion). Suite : avis de l'agent 3D (E15), puis lead dev.
+
