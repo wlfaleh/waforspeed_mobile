@@ -40,6 +40,15 @@ static double vitessePointe(const CarDef& c) { return MAX_SPEED * 0.995 * c.spec
 static const unsigned PEINTURES[16] = {0xc9ccd2, 0x0f1014, 0x7b808a, 0xb3122b, 0x1d3f8f, 0xff6a00, 0xc8940a, 0x1f5a3c,
                                        0xe6e2d6, 0x141c3a, 0x0f3324, 0x5a0f1e, 0xb39a72, 0x4b2380, 0x0f8f8c, 0xe8b400};
 
+// WFS-404 (RG-09) : adversaires écartés de la Course à 5 seulement, jusqu'à WFS-394 (IA du Range Rover Sport trop rapide en
+// virage, + 31 %) ; WFS-394 (RG-05) enlève cette liste. Voitures retirées (licence NC) : jamais adversaires (VOITURES_RETIREES) ;
+// les deux sont remplacées au tirage (remplacant, ci-dessous).
+constexpr const char* ADVERSAIRES_ECARTES[] = {"rrsport"};
+static bool adversairePossible(const char* id) {
+    for (const char* e : ADVERSAIRES_ECARTES) if (!std::strcmp(e, id)) return false;
+    return !voitureRetiree(id);
+}
+
 std::vector<int> candidats(const char* carJoueur) {
     // WFS-189 (RG-01, ANO-101) : voitures dont la vitesse max de fiche est à ± CLASSE_VMAX de celle du joueur ; moins de
     // ORDINATEURS candidats : on complète avec les plus proches en vitesse max (écart croissant, puis ordre du catalogue)
@@ -56,6 +65,24 @@ std::vector<int> candidats(const char* carJoueur) {
     return dans;
 }
 
+// WFS-404 (RG-01, RG-09) : voiture retirée ou écartée tirée → la voiture possible la plus proche en vitesse max, d'abord parmi
+// les candidats restants (retirée d'eux), sinon dans le catalogue (pas le joueur ni un adversaire déjà là). Les candidats et le
+// tirage (graine) ne changent pas : les courses sans voiture retirée ni écartée restent identiques à celles d'avant WFS-404
+// (l'équilibre mesuré par test_course5 et test_course5_ordinateurs est gardé).
+static int remplacant(int ecarte, std::vector<int>& libres, const std::vector<Ordinateur>& os, const char* carJoueur) {
+    const int v = CARS[ecarte].spec.vmax;
+    auto proche = [&](int a, int b) { return b < 0 || std::abs(CARS[a].spec.vmax - v) < std::abs(CARS[b].spec.vmax - v); };
+    int best = -1; size_t pos = 0;
+    for (size_t k = 0; k < libres.size(); k++) if (adversairePossible(CARS[libres[k]].id) && proche(libres[k], best)) { best = libres[k]; pos = k; }
+    if (best >= 0) { libres.erase(libres.begin() + (long)pos); return best; }
+    for (int i = 0; i < CAR_COUNT; i++) {
+        bool pris = !std::strcmp(CARS[i].id, carJoueur) || !adversairePossible(CARS[i].id);
+        for (const Ordinateur& o : os) pris = pris || o.car == CARS[i].id;
+        if (!pris && proche(i, best)) best = i;
+    }
+    return best >= 0 ? best : voituresPermises().idx[0];
+}
+
 std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d) {
     Mulberry32 R(graine);
     std::vector<int> libres = candidats(carJoueur);   // WFS-189 (RG-01) : adversaires de la classe du joueur
@@ -64,8 +91,10 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
     for (int k = 0; k < ORDINATEURS; k++) {
         if (libres.empty()) for (int i = 0; i < CAR_COUNT; i++) libres.push_back(i);   // moins de 5 voitures : on répète
         const size_t j = (size_t)(R.next() * libres.size()) % libres.size();
-        const CarDef& c = CARS[libres[j]];
+        int choisi = libres[j];
         libres.erase(libres.begin() + (long)j);
+        if (!adversairePossible(CARS[choisi].id)) choisi = remplacant(choisi, libres, os, carJoueur);   // WFS-404 (RG-01, RG-09)
+        const CarDef& c = CARS[choisi];
         Ordinateur o;
         o.car = c.id; o.nom = modele(c);   // WFS-191 : nom de configgame.json
         o.peinture = PEINTURES[(int)(R.next() * 16) % 16];

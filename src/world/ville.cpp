@@ -782,7 +782,7 @@ public:
             for (int i = 0; i < 3; i++) for (const char* x : DIR[i]) atlas_.ajouter(x);
             if (atlas_.construire(r)) texteMat_ = &atlas_.materiau(r, 0xf4f4f0, nuit_ ? 0.45f : 0.12f, 0.45f);
             // voitures en sens inverse : deux modèles qui ne sont pas ceux du trafic (variété), version allégée au loin
-            for (int i = 0; i < 2; i++) if (!loadCarModel(r, i ? "cars/x5.wfm" : "cars/p208.wfm", autos_[i])) WFS_ERR("Ville : modèle du sens inverse introuvable");
+            for (int i = 0; i < 2; i++) if (!loadCarModel(r, i ? "cars/compass.wfm" : "cars/p208.wfm", autos_[i])) WFS_ERR("Ville : modèle du sens inverse introuvable");
         }
         // éclairage de nuit (nuit.cpp, les 4 plus proches) : candélabres de l'autoroute, du pont, points du tunnel tous les 14,4 m
         for (int64_t a = 0; a < L; a++) {

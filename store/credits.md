@@ -16,13 +16,10 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` depuis `
 | Suzuki Vitara Brezza | « 2022 Maruti Suzuki Vitara Brezza » par BHP3D (Sketchfab), CC BY 4.0 | `assets/licences/tcross.txt` |
 | Jeep Compass | « JEEP COMPASS 2021 » par fazt.3ds (Sketchfab), CC BY 4.0 | `assets/licences/compass.txt` |
 | Audi S3 berline | « 2014 Audi S3 Limousine » par tonielpro520 (Sketchfab), CC BY 4.0 | `assets/licences/s3.txt` |
-| BMW X5 | « 2024 BMW X5 xDrive40i » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0 | `assets/licences/x5.txt` |
 | Alfa Romeo Giulia Quadrifoglio | « Alfa Romeo Giulia Quadrifoglio » par ijiklvn (Sketchfab), CC BY 4.0 | `assets/licences/giulia.txt` |
-| Mercedes-AMG A 45 | « Mercedes-Benz A45 AMG 2018 » par Lexyc16 (Sketchfab), CC BY-NC 4.0 | `assets/licences/a45.txt` |
 | Tesla Model 3 | « Tesla 2018 Model 3 » par Ameer Studio (Sketchfab), CC BY 4.0 | `assets/licences/model3.txt` |
 | Opel Corsa | « Opel Corsa 2020 » par Nieve5677 (Sketchfab), CC BY 4.0 | `assets/licences/corsa.txt` |
 | Toyota GT86 | « Toyota GT86 3D Model (Free) » par Mpgs.studio3DModels (Sketchfab), CC BY 4.0 | `assets/licences/gt86.txt` |
-| Hyundai Elantra N | « 2024 Hyundai Elantra N » par Ddiaz Design (Sketchfab), CC BY-NC 4.0 | `assets/licences/elantra.txt` |
 | Volvo V60 Polestar | « Volvo V60 Polestar (2013) » par Myedsu (Sketchfab), CC BY 4.0 | `assets/licences/v60.txt` |
 | Land Rover Range Rover Sport | « Land Rover Range Rover Sport - 2023 » par Unn Interativa (Sketchfab), CC BY 4.0 | `assets/licences/rrsport.txt` |
 | Chevrolet Corvette Stingray (C7) | « Chevrolet Corvette (C7) » par Martin Trafas (Sketchfab), CC BY 4.0 | `assets/licences/mustang.txt` |
@@ -37,6 +34,6 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` depuis `
 
 ## Conséquences des licences
 
-- CC BY-NC et CC BY-NC-SA (X5, A 45, Elantra N) : usage non commercial → **le jeu reste gratuit**, sans achat intégré ni publicité.
-- CC BY-SA et CC BY-NC-SA (Porsche 911, X5 ; sons « sport » et « gros ») : les versions modifiées (modèles allégés `.wfm`, sons bouclés) sont partagées sous la même licence.
+- Toutes les licences de l'application (CC0, CC BY, CC BY-SA, SIL OFL) permettent la vente, la publicité et les achats ; aucun modèle sous licence non commerciale n'est livré (WFS-404).
+- CC BY-SA (Porsche 911 ; sons « sport » et « gros ») : les versions modifiées (modèles allégés `.wfm`, sons bouclés) sont partagées sous la même licence.
 - Les noms et logos des constructeurs restent la propriété de leurs titulaires ; le jeu n'est affilié à aucun d'eux.
