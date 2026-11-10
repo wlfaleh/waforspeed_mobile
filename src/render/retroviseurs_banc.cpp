@@ -9,6 +9,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../game/camera_vue.h"
+#include "../game/cars.h"
 #include "../game/game.h"
 #include "../game/player.h"
 #include "../game/ressenti.h"
@@ -19,6 +20,7 @@
 #include "../../third_party/stb/stb_image_write.h"
 #include "eclairage_physique.h"
 #include "environnement.h"
+#include "model_loader.h"
 #include "passes.h"
 #include "qualite_auto.h"
 #include "renderer.h"
@@ -78,6 +80,21 @@ int benchRetroviseurs(Game& g, Renderer& r, const std::string& out, std::vector<
     auto rouler = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
     const float W = (float)r.width(), H = (float)r.height();
     const bool rapide = std::getenv("WFS_RETRO_RAPIDE") != nullptr;   // essai local : jour, voiture derrière, sans mesure du coût
+    // rétroviseurs mesurés sur les modèles 3D de toutes les voitures (mesurerRetroviseurs, au chargement)
+    mes << "== rétroviseurs des modèles 3D (repère du modèle, m) ==\n";
+    for (const CarDef& c : CARS) {
+        Model mo;
+        if (!loadCarModel(r, c.file, mo)) { mes << "  " << c.id << " : modèle illisible\n"; continue; }
+        mes << "  " << c.id;
+        for (int k = 0; k < 2; k++) {
+            if (!mo.retroMesure[k]) { mes << (k ? " ; droit : non trouvé (place estimée)" : " : gauche : non trouvé (place estimée)"); continue; }
+            const vec3 a = mo.retroMin[k], b = mo.retroMax[k];
+            char t[160]; std::snprintf(t, sizeof t, "%s : x %.2f à %.2f, y %.2f à %.2f, z %.2f à %.2f", k ? " ; droit" : " : gauche", a.x, b.x, a.y, b.y, a.z, b.z);
+            mes << t;
+        }
+        mes << "\n";
+        r.destroy(mo);
+    }
     for (const std::string& car : voitures) for (const bool nuit : {false, true}) {
         if (rapide && nuit) continue;
         setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);

@@ -26,6 +26,7 @@
 #include "environnement.h"
 #include "renderer.h"
 #include "vehicule_cockpit.h"
+#include "retroviseurs.h"   // WFS-324 : glaces figées pendant le banc
 
 namespace wfs {
 
@@ -51,6 +52,10 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
     // bougerait la caméra entre les images de la mesure : coupée pendant le banc (« Réduire les mouvements » ; tête immobile aussi)
     const bool reduireAvant = reglagesRessenti().reduireMouvements;
     cockpit::g_bancCockpitVoisine = true;   // gabarit et clé douce construits avec l'intérieur (rien en course)
+    // WFS-324 : glaces des rétroviseurs figées pendant le banc : elles sont redessinées à tour de rôle (une par image) ; entre les images
+    // A, B (voisine cachée), K et A2, la glace gauche montrait la voisine ou non selon l'image où elle avait été redessinée : « lumière
+    // instable » (0,6 % des pixels, la glace gauche, voisine à côté). Le banc mesure l'habitacle fermé, pas les reflets (banc retroviseurs)
+    retro::desactiver(true);
     reglagesRessenti().reduireMouvements = true;
     int ecarts = 0; long pireEcart = 0; double t = 1200;
     auto rouler = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
@@ -170,6 +175,7 @@ int benchCockpitVoisine(Game& g, Renderer& r, const std::string& out, std::vecto
     choisirVue(vueAvant); choisirRegard(regardAvant);
     reglagesRessenti().reduireMouvements = reduireAvant;
     cockpit::g_bancCockpitVoisine = false;
+    retro::desactiver(false);   // WFS-324
     WFS_LOG("cockpit-voisine (WFS-349 RG-03) : %zu voiture(s), pire %ld pixel(s) interdit(s), %d écart(s)%s", voitures.size(), pireEcart, ecarts,
             ecarts ? " ÉCHEC" : " OK");
     return ecarts;

@@ -1046,8 +1046,8 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 uint16_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     // WFS-324 (accroche) : rétroviseur de l'image (même distance maximale que la caméra). retroSeul : seulement la glace (voiture du
     // joueur en vue Cockpit) ; horsRetro : jamais la glace (pièces de l'habitacle)
-    const bool loin = s.r >= 0 && !sansDistance && length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_);
-    const bool retro = retroOn_ && !horsRetro && !loin && (s.r < 0 || masquage::visible(fRetro_, s));
+    const bool retro = retroOn_ && !horsRetro &&
+                       (s.r < 0 || ((sansDistance || length(s.c - camPos_) - s.r <= masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) && masquage::visible(fRetro_, s)));
     if (retroSeul) return retro ? (uint16_t)VIS_RETRO : (uint16_t)0;
     const uint16_t v = classerSansRetro(s, sansDistance);
     if (!retro) return v;

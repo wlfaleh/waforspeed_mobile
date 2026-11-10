@@ -117,18 +117,19 @@ int main() {
     {
         Model mo; mo.bmin = {-1.02f, 0, -2.2f}; mo.bmax = {1.02f, 1.4f, 2.2f};
         std::vector<float> v;
-        auto boite = [&](vec3 a, vec3 b, int n) {
-            for (int i = 0; i <= n; i++) for (int j = 0; j <= n; j++) for (int k = 0; k <= n; k++)
-                v.insert(v.end(), {a.x + (b.x - a.x) * i / n, a.y + (b.y - a.y) * j / n, a.z + (b.z - a.z) * k / n});
+        auto boite = [&](vec3 a, vec3 b, int n, int nz) {
+            for (int i = 0; i <= n; i++) for (int j = 0; j <= n; j++) for (int k = 0; k <= nz; k++)
+                v.insert(v.end(), {a.x + (b.x - a.x) * i / n, a.y + (b.y - a.y) * j / n, a.z + (b.z - a.z) * k / nz});
         };
-        boite({-0.9f, 0.f, -2.2f}, {0.9f, 1.4f, 2.2f}, 8);
-        boite({-1.02f, 0.95f, -0.75f}, {-0.86f, 1.07f, -0.65f}, 4);
-        boite({0.86f, 0.95f, -0.75f}, {1.02f, 1.07f, -0.65f}, 4);
+        boite({-0.9f, 0.f, -2.2f}, {0.9f, 1.4f, 2.2f}, 8, 8);   // caisse : sommets tous les 55 cm en long (tranches vides comblées)
+        const size_t caisse = v.size();
+        boite({-1.02f, 0.95f, -0.75f}, {-0.86f, 1.07f, -0.65f}, 4, 4);
+        boite({0.86f, 0.95f, -0.75f}, {1.02f, 1.07f, -0.65f}, 4, 4);
         retro::mesurerRetroviseurs(mo, v.data(), 3, v.size() / 3);
         cas("modèle : rétroviseurs gauche et droit trouvés", mo.retroMesure[0] && mo.retroMesure[1]);
         cas("modèle : boîte du gauche à sa place (± 1 cm)", proche(mo.retroMin[0].x, -1.02f, 0.01f) && proche(mo.retroMax[0].z, -0.65f, 0.01f) && proche(mo.retroMin[0].y, 0.95f, 0.01f));
         Model sans; sans.bmin = {-0.9f, 0, -2.2f}; sans.bmax = {0.9f, 1.4f, 2.2f};
-        std::vector<float> w(v.begin(), v.begin() + 9 * 9 * 9 * 3);
+        std::vector<float> w(v.begin(), v.begin() + (long)caisse);
         retro::mesurerRetroviseurs(sans, w.data(), 3, w.size() / 3);
         cas("modèle sans rétroviseur : rien trouvé (place estimée)", !sans.retroMesure[0] && !sans.retroMesure[1]);
         // glaces posées avec le modèle : reflet vu depuis la glace du modèle (décalage), plan proche derrière toute la coque

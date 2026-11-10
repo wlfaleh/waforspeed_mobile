@@ -12,8 +12,8 @@
 #include "../render/model_loader.h"
 #include "../render/eclairage_physique.h"   // WFS-151 (accroche E13)
 #include "course_system.h"   // WFS-12 : ralenti après un accident
-#include "camera_vue.h"
-#include "../render/retroviseurs.h"   // WFS-324 (accroche) : voiture du joueur dans les rétroviseurs      // WFS-66 : vues poursuite, capot, cockpit
+#include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
+#include "../render/retroviseurs.h"   // WFS-324 (accroche) : voiture du joueur dans les rétroviseurs
 #include "commandes_tactiles.h"   // WFS-98 : pédales et nitro du jeu web
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée

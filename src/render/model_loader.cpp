@@ -9,8 +9,8 @@
 #include "../core/jobs.h"
 #include "../core/platform.h"
 #include "correctifs_voitures.h"   // WFS-170 : correctifs des modèles au chargement (ANO-71 à 77)
-#include "feux_modele.h"
-#include "retroviseurs.h"   // WFS-324 (accroche) : rétroviseurs du modèle   // WFS-109 : découpe des feux arrière (RG-13)
+#include "feux_modele.h"   // WFS-109 : découpe des feux arrière (RG-13)
+#include "retroviseurs.h"   // WFS-324 (accroche) : rétroviseurs du modèle
 #include "mesh.h"          // WFS-149 : sommets versionnés, tangentes
 #include "vehicule_lod.h"  // WFS-158 (RG-04) : niveaux de détail des voitures
 
