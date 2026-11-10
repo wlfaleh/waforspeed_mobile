@@ -3,6 +3,7 @@
 // vrais trous dans la façade (aire du mur = façade − ouvertures), M-01 sur la géométrie (écart entre vitres de deux
 // niveaux = hauteur d'étage à ± 1 %), garde-corps à la hauteur du référentiel, niveaux de détail de moins en moins chers.
 #include "../src/world/archi_geo.h"
+#include "../src/world/archi_ouvertures.h"   // WFS-402
 #include "../src/render/bench_realisme.h"
 #include <cmath>
 #include <cstdio>
@@ -14,7 +15,98 @@ using wfs::vec3;
 static int echecs = 0, controles = 0;
 static void verifierQue(bool ok, const char* quoi) { controles++; if (!ok) { if (echecs < 15) std::printf("[ÉCHEC] %s\n", quoi); echecs++; } }
 
+// ---------------------------------------------------------------- WFS-402 : fenêtres et portes réalistes
+static void verifierWFS402(Style s) {
+    namespace o = ouvertures;
+    bool fen[4] = {}, por[4] = {};
+    int volets = 0, fermes = 0;
+    for (uint32_t g = 0; g < 400; g++) {
+        const float largeur = 6.f + (float)((g * 37) % 300) / 10.f, hauteur = 6.f + (float)((g * 53) % 220) / 10.f;
+        const Plan p = assembler(s, largeur, hauteur, g), q = assembler(s, largeur, hauteur, g + 1);
+        fen[o::indiceModeleFenetre(p)] = por[o::indiceModelePorte(p)] = true;
+        // RG-05 : deux bâtiments voisins (graines qui se suivent) n'ont jamais la même façade
+        bool pareil = o::indiceModeleFenetre(p) == o::indiceModeleFenetre(q) && o::indiceModelePorte(p) == o::indiceModelePorte(q) && p.baies.size() == q.baies.size();
+        for (size_t i = 0; pareil && i < p.baies.size(); i++) pareil = std::fabs(p.baies[i].l - q.baies[i].l) < 1e-4f && std::fabs(p.baies[i].h - q.baies[i].h) < 1e-4f;
+        verifierQue(!pareil, "RG-05 : deux bâtiments voisins avec la même façade");
+        // RG-02 : retrait du tableau de 15 à 25 cm (hors loggias)
+        verifierQue(regles(s).retrait >= 0.15f - 1e-4f && regles(s).retrait <= 0.25f + 1e-4f, "RG-02 : retrait de la fenêtre de 15 à 25 cm");
+        int portes = 0;
+        for (const Baie& b : p.baies) {
+            if (b.type == Ouverture::Porte) {   // RG-04 : porte d'entrée côté rue, aux bonnes mesures
+                portes++;
+                if (s == Style::Village || s == Style::Villa) {
+                    verifierQue(std::fabs(b.l - 0.9f) <= 0.01f * 0.9f && std::fabs(b.h - 2.15f) <= 0.01f * 2.15f, "RG-04 : porte de maison 0,90 × 2,15 m (± 1 %)");
+                    verifierQue(std::fabs((b.l - 2 * 0.035f) - 0.83f) <= 0.01f * 0.83f, "RG-04 : passage utile de 0,83 m (référentiel)");
+                } else if (p.rdc == Rdc::Porche) verifierQue(b.l <= 2.5f + 1e-4f && b.h <= 4.f, "RG-04 : porte cochère au plus 2,5 × 4,0 m");
+                else verifierQue(b.l >= 1.f - 1e-4f && b.l <= 1.4f + 1e-4f && b.h >= 2.2f - 1e-4f && b.h <= 3.f, "RG-04 : porte d'immeuble 1,0-1,4 × 2,2-3,0 m");
+            }
+            if ((b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre) && b.niveau > 0) {   // RG-02 : mesures courantes
+                if (b.type == Ouverture::PorteFenetre) verifierQue(b.h >= 2.15f - 1e-4f, "RG-02 : porte-fenêtre d'au moins 2,15 m");
+                else if (s != Style::Industriel) verifierQue(b.l >= 0.8f - 1e-4f && b.l <= 1.4f + 1e-4f && b.h >= 1.15f - 1e-4f && b.h <= 2.15f + 1e-4f, "RG-02 : fenêtre d'habitation 0,80-1,40 × 1,15-2,15 m");
+            }
+            if (o::voletDuStyle(s) != o::Volet::Aucun && (b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre)) {
+                volets++; fermes += o::etatVolet(p, b) != o::EtatVolet::Ouvert;
+            }
+        }
+        verifierQue(portes >= 1, "RG-04 : au moins une porte d'entrée par bâtiment");
+        if (g < 40) {   // RG-02, RG-04, RG-07 : chaque baie a sa menuiserie au niveau 0 (cadres, vantaux, béquille)
+            Batiment b; construire(p, 10.f, 0, b);
+            for (const Baie& x : p.baies) {
+                const int part = x.type == Ouverture::Porte ? (o::modelePorte(p).bois ? MENUISERIE : METAL)
+                               : x.type == Ouverture::Vitrine ? METAL : o::partChassis(s);
+                int n = 0;
+                for (const Sommet& v : b.part[part].v) n += v.p.x > x.x - x.l / 2 - 1e-3f && v.p.x < x.x + x.l / 2 + 1e-3f && v.p.y > x.y - 0.01f && v.p.y < x.y + x.h + 0.01f && v.p.z < 0.01f;
+                verifierQue(n >= 24, "RG-07 : menuiserie modélisée dans chaque baie (dormant, ouvrants ou vantail)");
+            }
+        }
+    }
+    for (int k = 0; k < 4; k++) verifierQue(fen[k] && por[k], "RG-05 : les 4 modèles de fenêtre et de porte du style sont tirés");
+    if (volets) {
+        const double f = 100.0 * fermes / volets;
+        std::printf("[%s] %-14s : volets fermés ou entrouverts %.1f %% (RG-03 : 10 à 30 %%)\n", f >= 10 && f <= 30 ? "OK" : "ÉCHEC", regles(s).nom, f);
+        verifierQue(f >= 10 && f <= 30, "RG-03 : 10 à 30 % de volets fermés ou entrouverts");
+    }
+}
+
+// WFS-402 : baie complète posée hors du plan d'un bâtiment (fonction publique pour WFS-410 et WFS-411)
+static void verifierBaieComplete() {
+    namespace o = ouvertures;
+    const Ouverture types[] = {Ouverture::Fenetre, Ouverture::PorteFenetre, Ouverture::Porte, Ouverture::Vitrine, Ouverture::PorteGarage};
+    for (int s = 0; s < (int)Style::Nombre; s++) for (Ouverture t : types) for (uint32_t g = 0; g < 8; g++) {
+        const float plancher = 3.4f, x = 5.f, l = t == Ouverture::Vitrine ? 3.f : t == Ouverture::PorteGarage ? 2.4f : 1.1f;
+        const float h = t == Ouverture::Fenetre ? 1.4f : 2.2f, y = plancher + (t == Ouverture::Fenetre ? 0.9f : 0.f);
+        Batiment b;
+        o::baieComplete((Style)s, g, t, x, y, l, h, plancher, 0.8f, 0, b);
+        size_t tris = 0;
+        for (int k = 0; k < NB_PARTS; k++) {
+            const Maillage& m = b.part[k];
+            tris += m.triangles();
+            for (size_t i = 0; i + 2 < m.i.size(); i += 3) {
+                const Sommet &A = m.v[m.i[i]], &B = m.v[m.i[i + 1]], &C = m.v[m.i[i + 2]];
+                const vec3 c = cross(B.p - A.p, C.p - A.p);
+                const float aire = length(c);
+                verifierQue(aire > 1e-8f && dot(c * (1.f / aire), A.n) > 0.99f, "baie complète : normale dans le sens de l'enroulement");
+            }
+            for (const Sommet& v : m.v) {
+                verifierQue(v.p.y > y - 0.2f && v.p.y < y + h + 0.3f, "baie complète : posée à la hauteur demandée");
+                verifierQue(v.p.x > x - l / 2 - 0.85f && v.p.x < x + l / 2 + 0.85f, "baie complète : dans la baie et son mur libre");
+            }
+        }
+        const int part = t == Ouverture::Porte ? (o::modelePorte(Plan{(Style)s, g}).bois ? MENUISERIE : METAL)
+                       : t == Ouverture::Vitrine ? METAL : t == Ouverture::PorteGarage ? o::partChassis((Style)s) : o::partChassis((Style)s);
+        verifierQue(b.part[part].triangles() >= 12, "baie complète : menuiserie modélisée");
+        verifierQue(tris >= 40, "baie complète : tableau, fond et menuiserie");
+        // poignée de fenêtre ou béquille de porte entre 0,9 et 1,3 m au-dessus du plancher
+        if (t == Ouverture::Fenetre || (t == Ouverture::Porte && o::modelePorte(Plan{(Style)s, g}).vantail == o::Vantail::Panneaux)) {
+            bool poignee = false;
+            for (int k : {CHASSIS, METAL}) for (const Sommet& v : b.part[k].v) poignee |= v.p.z > 0.0f - 0.3f && v.p.y > plancher + 0.85f && v.p.y < plancher + 1.3f;
+            verifierQue(poignee, "baie complète : poignée à hauteur d'homme au-dessus du plancher");
+        }
+    }
+}
+
 int main() {
+    verifierBaieComplete();
     wfs::reel::Referentiel R;
     verifierQue(R.charger(std::string(WFS_SOURCE_DIR) + "/references/reel"), "référentiel lisible");
     const wfs::reel::Json* gc = R.mesure("archi.garde_corps.hauteur");
@@ -73,8 +165,9 @@ int main() {
                     for (size_t i = 0; i + 2 < vo.i.size(); i += 3) {
                         const vec3 c = (vo.v[vo.i[i]].p + vo.v[vo.i[i + 1]].p + vo.v[vo.i[i + 2]].p) * (1.f / 3);
                         verifierQue(c.x > 0 && c.x < p.largeur, "volet dans la façade");
-                        for (const Baie& x : p.baies)
-                            verifierQue(!(c.x > x.x - x.l / 2 && c.x < x.x + x.l / 2 && c.y > x.y && c.y < x.y + x.h), "volet devant une ouverture");
+                        for (const Baie& x : p.baies)   // WFS-402 (RG-03) : seuls les volets fermés ou entrouverts passent devant leur fenêtre
+                            if (c.x > x.x - x.l / 2 + 0.005f && c.x < x.x + x.l / 2 - 0.005f && c.y > x.y && c.y < x.y + x.h)   // (tranche du vantail ouvert sur le gond : au bord, pas devant)
+                                verifierQue(ouvertures::voletsBattants(p, x) && ouvertures::etatVolet(p, x) != ouvertures::EtatVolet::Ouvert, "volet ouvert devant une ouverture");
                     }
                     if (p.style == Style::Mediterraneen) {
                         bool fen = false; for (const Baie& x : p.baies) fen |= x.type == Ouverture::Fenetre;
@@ -104,6 +197,7 @@ int main() {
             }
         }
         verifierQue(tris[0] > tris[1] && tris[1] > tris[2], "chaque niveau de détail est moins cher que le précédent");
+        verifierWFS402((Style)s);
         std::printf("[%s] %-14s : triangles moyens par bâtiment lod0 %zu, lod1 %zu, lod2 %zu\n", tris[0] > tris[1] && tris[1] > tris[2] ? "OK" : "ÉCHEC",
                     regles((Style)s).nom, tris[0] / 60, tris[1] / 60, tris[2] / 60);
         for (int l = 0; l < 3; l++) trisMax[l] = std::max(trisMax[l], tris[l] / 60);
