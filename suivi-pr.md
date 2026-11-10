@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | ↩️ Retour lead dev (B1 : écume blanche dans la marina) | 0a587856 | 07:56 |
+| #326 | WFS-380 | Claude, agent cartes (01UY1Vv4eo) | 🔁 Corrigée, à relire (B1 corrigé ; 3e avis de l'agent 3D en cours) | aabd7bd1 | 09:11 |

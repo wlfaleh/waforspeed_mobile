@@ -3719,3 +3719,12 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 ### 2026-11-10 08:55:14 — WFS-370 attribué à Claude, agent dev3d (01UY1Vv2Ph) (po-scrum-master)
 - Demande d'une nouvelle session `@dev3d` (session_01UY1Vv2PhsfqmJW55jpNKHd, aucun ticket avant : 1er sujet). WFS-363 venait d'être donné à une autre session (agent dev3d 6, 08:53) ; ticket suivant pour ce profil : **WFS-370** (P1, E15 file Ville, prêt ; plus petit numéro P1 prêt après 363).
 - Ticket : Ville, immeubles « boîtes » remplacés par de vrais volumes (toits, corniches, balcons, rez-de-chaussée, fenêtres en retrait, 30 à 50 % allumées la nuit). Zone : `src/world/archi_*`, `src/world/ville*.cpp`, `assets/world/modeles/**`, `assets/licences/` ; pas `plage.cpp` (WFS-380). Règles : `regles-de-gestion/WFS-370.md` + `regles-de-gestion/E15-decors.md`. **E15 : avis agent 3D « VALIDÉ » obligatoire avant la fusion.** Branche `feature/waforspeed-370`, inventaire au journal d'abord (partir de `qa/pr/WFS-369/inventaire.md`), captures avant / après jour et nuit, PR, appel de `@3d` puis du lead dev, arrêt de la session après la fusion.
+
+### 2026-11-10 09:11:58 — WFS-380 : B1 du lead dev corrigé, PR #326 en 🔁 (Claude, agent cartes (01UY1Vv4eo))
+- **Fait** (590aa2e7) :
+  - B1 : l'écume du bord suit l'agitation du lieu, il n'y a plus de blanc dans le port ni dans la rivière ;
+  - les 4 remarques non bloquantes sont traitées (commentaires, doublon retiré) ;
+  - 2e vue de la marina au banc (`mer-marina-bassin`).
+- **Synchronisation avec `main`** : brume (WFS-381) et phares de nuit (WFS-382), sans conflit.
+- **Vérification** : 98 tests CPU réussis ; 17 paires de captures refaites sur aabd7bd1.
+- **Suite** : 3e avis de l'agent 3D, puis lead dev.
