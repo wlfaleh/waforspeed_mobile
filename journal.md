@@ -3478,8 +3478,61 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Revue « ✅ Approuvé » écrite dans la PR (commentaire, même compte GitHub), puis fusion en squash : b4e3a106. Statut 🟡 À valider (utilisateur) : le ticket vient de la capture d'APK de l'utilisateur (bancs en pavés) et d'ANO-216.
 - Tâches séparées demandées au PO (RG-07 / RG-E15-09) : R1 eau de la fontaine (ANO-214) ; R2 affiche d'abribus vide et non éclairée la nuit ; R4 éclairage du parc la nuit (E13) ; plaque de rue bleue unie des feux (WFS-385) ; mesure sur téléphone des +44 % de triangles en Basse (WFS-321 / 331).
 
-
 ### 2026-11-10 00:43:03 — WFS-396 fusionné par le lead dev (lead-dev)
 - PR #325 relue (commit 19d49424) : 30 captures ouvertes, diff complet lu (fiches réelles `remplacants-wfs396.json`, rapport RG-08, une ligne de suivi), rien dans `src/`, `tools/`, `assets/`. Construction et 94 tests CPU verts sur la branche ; `test_fidelite` 0 défaut.
 - Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », même compte GitHub), fusion en squash fdcb7254. Statut 🟣 ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
 - Remarques pour WFS-397 (PO) : hauteur de la W212 à −2,7 % (le suivi du PO dit −2,3 %) ; captures de nuit obligatoires ; logos des candidats à effacer.
+
+### 2026-11-10 00:43:38 — WFS-396 fusionné (#325, squash fdcb7254, lead dev) : fin de la session (Claude, agent artiste (01UY1Vv2ph))
+- Le lead dev a relu les 30 captures et le diff, et a fusionné. Refus motivé pour les deux places (±1 %), rien de branché ; la suite est dans WFS-397 (PO).
+- Remarques du lead dev pour WFS-397 : la hauteur de la W212 est à −2,7 % après l'échelle de `corriger_voitures` (−2,3 % avant l'échelle) ; les captures de nuit (`WFS_VITRINE_NUIT`) seront obligatoires ; tous les logos et noms des candidats sont à effacer avant le branchement.
+- Session terminée (un seul ticket) : aucun autre ticket demandé.
+
+### 2026-11-10 00:43:29 — WFS-369 : réserves de la PR #324 en tâches séparées, WFS-398 et WFS-399 créés (po-scrum-master)
+- Demande de Claude, agent dev3d 3 (01UY1Vv5WS), à la fin de WFS-369 (fusionné, #324, b4e3a106, 🟡 à valider). Session close : **aucun autre ticket** pour elle (un sujet par session) ; ligne de `track-agent.md` en « ⏹️ Terminé (session close) ».
+- Décisions (RG-07 de WFS-369, RG-E15-09, ordre du 2026-11-09 « on ne jette pas un travail pour un petit défaut ») :
+  - R1 eau des fontaines plate cyan, vasque sans eau qui coule, jet de l'îlot inchangé → **ANO-235**, **WFS-398** (P2, E15 Ville + réglage de l'eau de WFS-380 ; après WFS-380 et 370).
+  - R2 affiche d'abribus vide et panneau non éclairé la nuit → **ANO-236** ; R4 parc presque invisible la nuit → **ANO-237** ; plaque bleue de nom de rue unie (lambda `mat` de `ville.cpp`) → **ANO-238** ; optiques des feux éteintes de jour → **ANO-239** : un seul lot **WFS-399** (P2, E15 Ville ; après WFS-370). La plaque de rue, proposée pour WFS-385, va dans WFS-399 (même mobilier, même lot, pas de micro-ticket).
+  - Mobilier absent (poubelles, bornes, kiosques, barrières) : RG ajoutée à **WFS-385**.
+  - Performance (+44 % de triangles, Ville de nuit Basse, 260 k → 375 k, sans baisse au banc PC) : pas de ticket ; mesure sur téléphone ajoutée aux règles de **WFS-321** et **WFS-331**, et au budget de WFS-385.
+- **WFS-370** (immeubles de la Ville) passe ⏳ Prêt (WFS-369 fusionné). File Ville de E15 : 370 → 399 / 385 ; 398 attend aussi WFS-380.
+
+### 2026-11-10 00:44:32 — WFS-369 : fin de session (Claude, agent dev3d 3 (01UY1Vv5WS))
+- PR #324 fusionnée en squash par le lead dev (b4e3a106). L'agent 3D a donné « VALIDÉ avec réserves » sur 6cfe9bcf, après la correction de la terrasse grise (B1, cb2f7d84). Le ticket est 🟡 à valider par l'utilisateur.
+- Réserves confiées au PO : WFS-398 (eau des fontaines) et WFS-399 (affiches, éclairage du parc, plaque de rue, feux éteints de jour). Les +44 % de triangles en Basse restent à mesurer sur le téléphone (règles de WFS-321 / 331 / 385).
+- Un seul ticket par session : aucun autre ticket demandé, la session s'arrête.
+
+### 2026-11-10 01:08:22 — WFS-380 : PR #326 ouverte, vraie mer (Claude, agent cartes (01UY1Vv4eo))
+- **Fait** : une seule eau pour tout le jeu (`MAT_EAU`, `shaders/eau.glsl`) : 8 vagues calculées (houle 28 m / 4,2 s, Hs 0,47 m), Fresnel 0,02, traînées du soleil, de la lune et des lampadaires, couleur lue à travers l'eau selon la profondeur (distance au vrai trait de côte, pente du fond), écume de ressac et de déferlement en dentelle, sillage en V (Kelvin) et éclaboussures en dentelle à la place du trapèze et du disque blancs ; mer de la Corniche, bassin de la marina et rivière de la Ville (paramètres dans les sommets) ; blocs de calcaire et galets au bord de la côte rocheuse et au pied de la falaise (RG-09). Banc `WFS_BANC=mer` (15 vues).
+- **Accroches annoncées** (≤ 10 lignes chacune) : `shaders/scene.frag` (branche de l'eau, 7 lignes), `src/render/renderer.h` (`MAT_EAU`), `src/render/renderer.cpp` (l'eau ne porte pas d'ombre), `src/world/ville.cpp` (eau de la rivière, 5 lignes), `src/platform/desktop_main.cpp` (banc `mer`).
+- **Vérification** : construction complète, `tests_cpu.sh` 96/96 (dont `test_eau`) après synchronisation avec `main` ; 15 paires de captures avant / après dans `qa/pr/WFS-380/` ; banc perf Corniche (lavapipe) : Basse, passe de scène 132,5 → 135,2 ms (+2,0 %), Haute, image 355,0 → 351,7 ms.
+- **Aucun téléchargement** : eau et pierres calculées, aucune texture ni licence.
+- **Pour le PO** : RG-E15-01 (200 à 700 Mo de décor) ne se mesure pas sur la Corniche, carte du code sans paquet ; ce ticket n'ajoute aucun octet d'actif. Le seuil relève de WFS-386. Limite : les reflets des lampadaires ne viennent que des 4 lampadaires allumés près de la voiture (`nuit.cpp`, WFS-382).
+- **Suite** : avis de l'agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 01:08:26 — WFS-381 : brume au loin, accroches annoncées et avancement (Claude, agent dev A (01UY1Vv42R))
+- Fait sur `feature/waforspeed-381` : brume exponentielle selon la distance **et** la hauteur (`shaders/eclairage.glsl` : `brumeTau`, `fogAt`, `appliquerBrume`), couleur de l'horizon du moment, plus chaude côté soleil, inchangée la nuit ; réglage par carte (`src/render/atmosphere_brume.h` : Corniche β0 1,5·10⁻⁴ m⁻¹ / H 800 m, Ville 1,4·10⁻⁴ / 1 000 m, Campagne 1,2·10⁻⁴ / 1 200 m, Grand Prix 1,3·10⁻⁴ / 1 200 m) ; banc `WFS_BANC=brume` ; test `test_brume` (RG-02 : ≤ 3 % à 200 m, 10-20 % à 1 km, 40-60 % à 5 km).
+- **Accroches ≤ 10 lignes hors zone (annonce)** : `shaders/scene.frag` et `shaders/scene_skin.frag` (fin du `main` : 5 lignes de brouillard remplacées par 1 appel) ; `src/render/renderer.h` (+1 ligne : `fogHauteurInv`, `fogRef` dans `FrameParams`) et `renderer.cpp` (1 ligne : `u.fogLin.zw`) ; `src/platform/desktop_main.cpp` (+2 lignes : banc brume) ; `CMakeLists.txt` (+1 ligne : `test_brume`). Aucun changement de `post.frag`, `nuit.cpp`, `phares.h` (WFS-382) ni de l'eau (WFS-380).
+- Vérification : 96 tests CPU en local ; coût GPU de la passe de scène en Basse sur lavapipe, 2 mesures avant / 2 après : écart dans le bruit (≈ ±1 %) ; nuit identique au pixel près (RMSE 0).
+- Limite constatée : les cartes ne montrent rien au-delà de ≈ 2 km ; avec les valeurs réelles de RG-02, la brume enlève ≈ 14 % de contraste à 1 km et ≈ 25 % à 2 km (avant : 8 % et 16 %) : l'effet est réel mais discret ; les vrais lointains à 5-20 km (reliefs, côte) relèvent des tickets de décor (E15).
+
+### 2026-11-10 01:14:15 — WFS-372 : PR #327 ouverte (Claude, agent dev3d 5 (01UY1Vv5G4))
+- Fait : vignes palissées (piquets, 3 fils, ceps, feuillage `veg::vigne`), clôtures et enclos (poteaux à pointe, lisses en demi-rondin), bottes rondes, corps de ferme (fenêtres en retrait, volets, tuiles canal, génoise, cheminée), hangar agricole (portiques en I, bardage, plaques ondulées), poteaux de ligne avec isolateurs et câbles. Fichiers : `src/world/decor_campagne_modeles.*` (nouveau), `decor_campagne_banc.cpp` (banc `campagne-objets`), `campagne.cpp`, `vegetation.*`, `tests/test_decor_campagne.cpp`.
+- Accroche annoncée (≤ 10 lignes, hors zone) : `src/platform/desktop_main.cpp`, 2 lignes (`WFS_BANC=campagne-objets`) ; `CMakeLists.txt` : 1 ligne (test).
+- Vérifié : `test_decor_campagne` 49/49 ; `tests_cpu.sh` 96/96 ; bancs `campagne` et `campagne-objets` 0 écart ; perf Campagne Basse 180,2 → 184,4 ms (+2,3 %, lavapipe), appels de dessin inchangés (161).
+- Réseau : aucun téléchargement (seuls GitHub et les paquets sont permis) → RG-03, objets modélisés au niveau du vrai objet.
+- Limites : éoliennes, église, commerces, fontaine, signalisation, haies, autoroute restent pour WFS-387 (inventaire `qa/pr/WFS-372/inventaire.md`). Suite : avis de l'agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 01:15:03 — WFS-382 : PR #328 ouverte, accroches annoncées (Claude, agent dev N (01UY1Vv5K1))
+- Fait : phares de nuit réels. Tache des phares du jeu web retirée (`nuit.cpp`, elle doublait les deux feux de croisement : cône blanc en Campagne et sur la neige) ; répartition verticale du feu de croisement revue (`phares.h`, plateau jusqu'à −1,5°, chute rapide vers le premier plan, flux sourcé gardé, crête LED 30 000 cd ; avis expert-realisme-3d, R112 / R149) ; lueur des phares 0,30 → 0,12 m ; reflet des feux de croisement borné ; halo et bloom plafonnés la nuit ; banc court `WFS_BANC=phares`.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `shaders/eclairage.glsl` (7 lignes : même répartition que `phares.h`, plafond du reflet des feux de croisement), `shaders/post.frag` (E13, 5 lignes : plafond de nuit), `src/render/renderer.cpp` (2 lignes : lueur des phares), `src/platform/desktop_main.cpp` (1 ligne : banc `phares`).
+- Défaut trouvé et corrigé dans `nuit.cpp` : `fx.stop / fx.recul / fx.frein` du joueur étaient au bout d'un commentaire (jamais exécutés) ; ligne recollée.
+- Vérifié : 95 tests CPU réussis ; pixels saturés 0,37-0,80 % → 0 % (poursuite, voiture en face, pluie) ; neige de nuit, tache des phares 7,56 → 0 % ; témoins de jour identiques ; perf Basse Ville nuit pluie : coût égal à ±3 % près (2 mesures).
+- Limites : bloom absent du banc (lavapipe), à voir sur téléphone ; rétroréflexion de l'asphalte et glace modélisée du phare non faites (proposées).
+
+### 2026-11-10 01:19:29 — WFS-391 : PR #329 ouverte (Claude, agent conduite (01UY1Vv4e7))
+- Fait (`src/game/player.cpp`, ancienne conduite) : RG-01, au freinage seules les forces des pneus (freins, frein moteur) × μ, traînée et roulement hors μ (neige 145,2 → 126,9 m, sec 36,8 m inchangé) ; RG-02, μ bas-côté ≤ μ chaussée × 0,6 (neige 0,2 → 0,15 ; sec et automne inchangés).
+- Cause de l'ANO-231 (RG-06) : point de mesure à 11,5 m derrière la glissière du col (edge 1,38 = 10,35 m) : la voiture la longe (rayon 11,65 m). Rien à corriger dans la conduite (arbitrage du PO) ; test sur les 5 positions devant la glissière (± 0,4 %).
+- **Accroche annoncée** (2 lignes) : `src/platform/desktop_main.cpp`, nouveau banc `WFS_BANC=sol` (`src/game/sol_banc.cpp`) ; interrupteur de banc `g_avantWfs391` (`player.h`).
+- Vérifié : 94 tests CPU réussis (nouveaux tests en échec sur main : 5) ; bancs `sol` et `neige` 0 écart ; parcours 0 écart ; 50 captures dans `qa/pr/WFS-391/`.
+- Limites : ancien modèle sous 140 m à cause du roulement du jeu (0,35 m/s², noté pour WFS-258) ; ressenti à valider sur téléphone (🟡 après fusion).
