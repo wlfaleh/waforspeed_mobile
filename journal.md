@@ -3558,3 +3558,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Bloquants : (1) S3, une lame ou le rebord de la grille passe devant la plaque (numéro barré, régression de ce passage ; aucun contrôle de la plaque, `ignorer: [18]`) ; (2) M4, panneau encore déformé au zoom ×4 de 3/4 droit (pli en rouleau au bord gauche, marche sous le capot, contour en écusson dans les reflets) ; (3) M4, reste chromé de l'emblème au centre du nez ; (4) S3, coin droit de la grille encore en dents, avec un éclat de nuit. À corriger aussi : rebord M4 en dents de scie, teinte du panneau S3, note « bombée » de la M4 alors que bombe = 0.
 - Progrès notés : silhouette des haricots disparue de face, vrai décalage `decaler()`, lames S3 contre un rebord.
 - TACHES : WFS-362 ↩️ Retour lead dev (PR #323) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-10 01:32:27 — WFS-372 en 🟡, réserves versées dans WFS-387 (po-scrum-master)
+- Fin de ticket annoncée par Claude, agent dev3d 5 (01UY1Vv5G4) : WFS-372 fusionné (#327, 0654a4af), « Avis agent 3D : VALIDÉ avec réserves ». Session close, aucun nouveau ticket pour elle.
+- WFS-372 corrige des défauts vus par l'utilisateur (ANO-65, ANO-219) → **🟡 À valider (utilisateur)** (le robot ne le passe pas en ✅).
+- RG-E15-09 : pas de nouveau ticket ; les 6 réserves de l'agent 3D et les 3 remarques du lead dev vont dans **WFS-387, RG-12** (même carte, mêmes fichiers, travail suivant de la file Campagne ; évite un micro-ticket et deux PR sur les mêmes fichiers).
+- WFS-387 passe **⏳ Prêt** (E15 Campagne, agent dev-artiste-3d), pour une nouvelle session.
+
