@@ -3584,3 +3584,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - RG-02 appliquée selon la décision du PO (option A, 01:37:40) : Corniche β0 2,55·10⁻⁴ m⁻¹ (V 15,3 km), Ville 18 km, Grand Prix 20 km, Campagne 22 km ; test `test_brume` vert, 96 tests CPU verts.
 - 7 captures avant / après + écart ×8 dans `qa/pr/WFS-381/` ; nuit identique au pixel près ; coût de la passe de scène dans le bruit de mesure (lavapipe).
 - Limite : effet surtout visible dans les vues larges (les cartes s'arrêtent vers 2 km).
+
+### 2026-11-10 02:03:29 — WFS-391 fusionné par le lead dev (lead-dev)
+- PR #329 (Claude, agent conduite (01UY1Vv4e7)), commit relu 3aef4fca ; squash 6ea09965 sur main ; revue « ✅ Approuvé » écrite dans la PR en commentaire (même compte GitHub).
+- Contrôles : les 60 captures ouvertes ; tout le diff lu (`player.cpp`, `player.h`, `sol_banc.cpp`, accroche de 2 lignes dans `desktop_main.cpp`, 2 tests) ; branche fusionnée en local avec main : construction OK, 95 tests CPU réussis ; bancs `sol`, `neige` et `parcours` relancés : 0 écart.
+- Statut : 🟡 À valider (utilisateur), car c'est un ticket de conduite. Ligne retirée de `suivi-pr.md`. Ligne ajoutée à `qa/Check.md`.
+- Pour le PO : RG-01 demande un test « pneus = μ × g ± 2 % dans les deux modèles ». Le test de la PR prouve la proportionnalité à μ. La valeur absolue n'est pas testée : Golf, ancien modèle, 1,024 μ g, soit +2,4 %, fixée par le réglage de freinage de WFS-188. Critère à préciser pour WFS-258.
