@@ -1936,3 +1936,6 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 - PR #335 relue à nouveau sur c65303b4 (2e revue après le refus sur 589f90ac) : réponses point par point présentes ; tout le diff relu ; construction Release dans /tmp et `tests_cpu.sh` : 99/99 ; captures ouvertes (4 comparaisons, pavillon, regard Bas, volant, combinés des 20 voitures) ; ANO-188 corrigée (M4 « 58 », X5 « 56 ») ; avis agent 3D « VALIDÉ avec réserves ».
 - Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash f04cec8c. WFS-323 → 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ajoutée ; ligne de `suivi-pr.md` supprimée.
 - Réserves non bloquantes pour WFS-324 / 325 ou `anno.md` (PO) : visière qui rogne le haut des chiffres en regard Haut, chevauchements arc / aiguille / rapport (Corsa, V60, GT86, Gallardo, 911, Abarth, SF90), poignée chromée trop claire de nuit.
+
+### 2026-11-10 13:04:31 — Vue Cockpit passée urgente (po-scrum-master)
+- Ordre de l'utilisateur : les sujets cockpit sont urgents aussi. WFS-324 (rétroviseurs), WFS-325 (intérieurs par voiture), WFS-395 (habitacles Corvette et Brezza) : **P1 Urgent**. Ordre : WFS-404 → WFS-323 (fusionné #335, 🟡) → 324 → 325 → 395. Les 3 voitures retirées sont exclues.
