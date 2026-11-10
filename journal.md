@@ -3522,3 +3522,10 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - Vérifié : `test_decor_campagne` 49/49 ; `tests_cpu.sh` 96/96 ; bancs `campagne` et `campagne-objets` 0 écart ; perf Campagne Basse 180,2 → 184,4 ms (+2,3 %, lavapipe), appels de dessin inchangés (161).
 - Réseau : aucun téléchargement (seuls GitHub et les paquets sont permis) → RG-03, objets modélisés au niveau du vrai objet.
 - Limites : éoliennes, église, commerces, fontaine, signalisation, haies, autoroute restent pour WFS-387 (inventaire `qa/pr/WFS-372/inventaire.md`). Suite : avis de l'agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-10 01:15:03 — WFS-382 : PR #328 ouverte, accroches annoncées (Claude, agent dev N (01UY1Vv5K1))
+- Fait : phares de nuit réels. Tache des phares du jeu web retirée (`nuit.cpp`, elle doublait les deux feux de croisement : cône blanc en Campagne et sur la neige) ; répartition verticale du feu de croisement revue (`phares.h`, plateau jusqu'à −1,5°, chute rapide vers le premier plan, flux sourcé gardé, crête LED 30 000 cd ; avis expert-realisme-3d, R112 / R149) ; lueur des phares 0,30 → 0,12 m ; reflet des feux de croisement borné ; halo et bloom plafonnés la nuit ; banc court `WFS_BANC=phares`.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `shaders/eclairage.glsl` (7 lignes : même répartition que `phares.h`, plafond du reflet des feux de croisement), `shaders/post.frag` (E13, 5 lignes : plafond de nuit), `src/render/renderer.cpp` (2 lignes : lueur des phares), `src/platform/desktop_main.cpp` (1 ligne : banc `phares`).
+- Défaut trouvé et corrigé dans `nuit.cpp` : `fx.stop / fx.recul / fx.frein` du joueur étaient au bout d'un commentaire (jamais exécutés) ; ligne recollée.
+- Vérifié : 95 tests CPU réussis ; pixels saturés 0,37-0,80 % → 0 % (poursuite, voiture en face, pluie) ; neige de nuit, tache des phares 7,56 → 0 % ; témoins de jour identiques ; perf Basse Ville nuit pluie : coût égal à ±3 % près (2 mesures).
+- Limites : bloom absent du banc (lavapipe), à voir sur téléphone ; rétroréflexion de l'asphalte et glace modélisée du phare non faites (proposées).
