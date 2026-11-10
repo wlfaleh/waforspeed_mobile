@@ -2292,3 +2292,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - `main` avait encore avancé (82f2c980) : nouveau conflit dans `journal.md` ; synchronisation faite par le lead dev (81a16d0f, journal seul, les deux blocs gardés), aucun fichier de code changé.
 - Refait sur 81a16d0f : construction OK ; `verifier_licences.py` 0 manque ; tests CPU un par un 101/102 (seul rouge connu : `test_course5_ordinateurs`, WFS-404 / WFS-394).
 - Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash fe9d8fc4. Statut : 🟣 Fusionné. Le développeur met sa ligne de `track-agent.md` à jour et arrête sa session.
+
+### 2026-11-10 19:37:06 — ANO-242 : haut du volant de la Golf caché par la visière, rattaché à WFS-414 (po-scrum-master)
+- Remarque de l'utilisateur dans la session de WFS-324 (PR #341) : « dans tes captures [le volant] est un peu bizarre ».
+- Vérifié sur `qa/pr/WFS-324/avant-cockpit-golf-jour.jpg` : défaut déjà sur `main` (WFS-324 ne change pas le volant, 0 à 5 pixels différents sur 85 800). Le haut de la jante de la Golf est recouvert par la casquette du combiné.
+- **ANO-242** (bloquante, vue par l'utilisateur) → **WFS-414**, nouvelle règle **RG-07** (jante entière devant la visière, Golf et, si besoin, les 5 autres voitures du périmètre ; 11 autres inchangées) + capture demandée. Pas de nouveau ticket : WFS-414 (⏳ Prêt, P1, `dev-artiste-3d`, nouvelle session) couvre déjà le volant de la Golf. Rien attribué à la session de WFS-324 (un sujet par session).
+- Réponse à l'utilisateur dans `tache utilisateur.md`.
