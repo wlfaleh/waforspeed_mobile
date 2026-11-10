@@ -23,7 +23,7 @@ Branche `feature/waforspeed-362` comparée à `origin/main` ; bancs : vitrines-f
 | `vitrine-s3-bas3` | ![avant](avant-vitrine-s3-bas3.jpg) | ![après](apres-vitrine-s3-bas3.jpg) |
 | `vitrine-s3-feux` | ![avant](avant-vitrine-s3-feux.jpg) | ![après](apres-vitrine-s3-feux.jpg) |
 
-### Zooms ×4 (raccord du panneau, panneau M4 de 3/4 droit, coin de la grille, coin droit S3, 3/4 gauche), jour et nuit
+### Zooms ×4 (plaque S3, haut du nez M4, panneau M4 de 3/4 droit, raccords, coins de grille), jour et nuit
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
@@ -33,6 +33,10 @@ Branche `feature/waforspeed-362` comparée à `origin/main` ; bancs : vitrines-f
 | `zoom-m4-34g-nuit` | ![avant](avant-zoom-m4-34g-nuit.jpg) | ![après](apres-zoom-m4-34g-nuit.jpg) |
 | `zoom-m4-coin-grille-jour` | ![avant](avant-zoom-m4-coin-grille-jour.jpg) | ![après](apres-zoom-m4-coin-grille-jour.jpg) |
 | `zoom-m4-coin-grille-nuit` | ![avant](avant-zoom-m4-coin-grille-nuit.jpg) | ![après](apres-zoom-m4-coin-grille-nuit.jpg) |
+| `zoom-m4-haut-nez-bas-jour` | ![avant](avant-zoom-m4-haut-nez-bas-jour.jpg) | ![après](apres-zoom-m4-haut-nez-bas-jour.jpg) |
+| `zoom-m4-haut-nez-bas-nuit` | ![avant](avant-zoom-m4-haut-nez-bas-nuit.jpg) | ![après](apres-zoom-m4-haut-nez-bas-nuit.jpg) |
+| `zoom-m4-haut-nez-face-jour` | ![avant](avant-zoom-m4-haut-nez-face-jour.jpg) | ![après](apres-zoom-m4-haut-nez-face-jour.jpg) |
+| `zoom-m4-haut-nez-face-nuit` | ![avant](avant-zoom-m4-haut-nez-face-nuit.jpg) | ![après](apres-zoom-m4-haut-nez-face-nuit.jpg) |
 | `zoom-m4-raccord-haut-jour` | ![avant](avant-zoom-m4-raccord-haut-jour.jpg) | ![après](apres-zoom-m4-raccord-haut-jour.jpg) |
 | `zoom-m4-raccord-haut-nuit` | ![avant](avant-zoom-m4-raccord-haut-nuit.jpg) | ![après](apres-zoom-m4-raccord-haut-nuit.jpg) |
 | `zoom-s3-34g-jour` | ![avant](avant-zoom-s3-34g-jour.jpg) | ![après](apres-zoom-s3-34g-jour.jpg) |
@@ -41,6 +45,10 @@ Branche `feature/waforspeed-362` comparée à `origin/main` ; bancs : vitrines-f
 | `zoom-s3-coin-droit-nuit` | ![avant](avant-zoom-s3-coin-droit-nuit.jpg) | ![après](apres-zoom-s3-coin-droit-nuit.jpg) |
 | `zoom-s3-coin-grille-jour` | ![avant](avant-zoom-s3-coin-grille-jour.jpg) | ![après](apres-zoom-s3-coin-grille-jour.jpg) |
 | `zoom-s3-coin-grille-nuit` | ![avant](avant-zoom-s3-coin-grille-nuit.jpg) | ![après](apres-zoom-s3-coin-grille-nuit.jpg) |
+| `zoom-s3-plaque-34g-jour` | ![avant](avant-zoom-s3-plaque-34g-jour.jpg) | ![après](apres-zoom-s3-plaque-34g-jour.jpg) |
+| `zoom-s3-plaque-34g-nuit` | ![avant](avant-zoom-s3-plaque-34g-nuit.jpg) | ![après](apres-zoom-s3-plaque-34g-nuit.jpg) |
+| `zoom-s3-plaque-face-jour` | ![avant](avant-zoom-s3-plaque-face-jour.jpg) | ![après](apres-zoom-s3-plaque-face-jour.jpg) |
+| `zoom-s3-plaque-face-nuit` | ![avant](avant-zoom-s3-plaque-face-nuit.jpg) | ![après](apres-zoom-s3-plaque-face-nuit.jpg) |
 | `zoom-s3-raccord-haut-jour` | ![avant](avant-zoom-s3-raccord-haut-jour.jpg) | ![après](apres-zoom-s3-raccord-haut-jour.jpg) |
 | `zoom-s3-raccord-haut-nuit` | ![avant](avant-zoom-s3-raccord-haut-nuit.jpg) | ![après](apres-zoom-s3-raccord-haut-nuit.jpg) |
 
