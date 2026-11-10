@@ -1,11 +1,14 @@
 Model Information:
-* title:	2021 Volkswagen T-Cross 280 TSI
-* source:	https://sketchfab.com/3d-models/2021-volkswagen-t-cross-280-tsi-e7a833769e774e62a6500c294cb1aea6
-* author:	Ddiaz Design (https://sketchfab.com/ddiaz-design)
+* title:	2022 Maruti Suzuki Vitara Brezza
+* source:	https://sketchfab.com/3d-models/2022-maruti-suzuki-vitara-brezza-1a5cbddc8acb457e9d896d7345fd07d8
+* author:	BHP3D (https://sketchfab.com/BHP3D)
 
 Model License:
-* license type:	CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
-* requirements:	Author must be credited. No commercial use. Modified versions must have the same license.
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
 
-This work is based on "2021 Volkswagen T-Cross 280 TSI" (https://sketchfab.com/3d-models/2021-volkswagen-t-cross-280-tsi-e7a833769e774e62a6500c294cb1aea6) by Ddiaz Design (https://sketchfab.com/ddiaz-design) licensed under CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
-Modifications for WaForSpeed: geometry simplified, textures resized to 1024 px (WebP), files embedded into a single glTF JSON. This modified version is shared under the same license (CC BY-NC-SA 4.0). Modèle modifié pour WaForSpeed (WFS-192) : logos et noms de marque effacés ou retirés (tools/effacer_logos.mjs, tools/logos.json).
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "2022 Maruti Suzuki Vitara Brezza" (https://sketchfab.com/3d-models/2022-maruti-suzuki-vitara-brezza-1a5cbddc8acb457e9d896d7345fd07d8) by BHP3D (https://sketchfab.com/BHP3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Found in the public GitHub repository kriteesh/threejs-model, folder model-2 (license.txt above copied from that folder ; scene.gltf SHA-256 55b43df1e0c6b58958e15c347e4fa990d8721700bcf222d249356b05e4a12852, scene.bin SHA-256 db74ff08bce9ad0140c2b1a9b3234af1144790a9647a76d87ea24963790ca02b).
+Modifications for WaForSpeed (WFS-359, 2026-11-09): geometry simplified (478,577 → about 110,000 triangles, tools/simplifier_voiture.mjs, interior parts reduced further), converted to the game's .wfm format (tools/convert_car.mjs: textures resized to 1024 px, solid metallic paint, rear lights separated), scaled ×1.008 and wheels resized to the real tyre size (tools/corriger_voitures.cpp), neutral European plates (tools/plaques_voitures.mjs), brand names and logos erased (tools/effacer_logos.mjs, tools/logos.json), levels of detail generated (tools/alleger_voiture.mjs). Shown in the game under an invented name, without any brand logo. The car uses the id « tcross » in the game files (its place in the garage).

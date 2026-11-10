@@ -7,7 +7,7 @@ Voitures (modèles 3D, Sketchfab) :
   Lamborghini Gallardo LP560-4 Spyder : « 2009 Lamborghini Gallardo LP560-4 Spyder » par Ddiaz Design (Sketchfab), CC BY 4.0
   Peugeot 208 : « 2021 Peugeot 208 » par tonielpro520 (Sketchfab), CC BY 4.0
   Abarth 500 : « Fiat Abarth 500 » par Luquita (Sketchfab), CC BY 4.0
-  Volkswagen T-Cross : « 2021 Volkswagen T-Cross 280 TSI » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0
+  Suzuki Vitara Brezza : « 2022 Maruti Suzuki Vitara Brezza » par BHP3D (Sketchfab), CC BY 4.0
   Jeep Compass : « JEEP COMPASS 2021 » par fazt.3ds (Sketchfab), CC BY 4.0
   Audi S3 berline : « 2014 Audi S3 Limousine » par tonielpro520 (Sketchfab), CC BY 4.0
   BMW X5 : « 2024 BMW X5 xDrive40i » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0
@@ -19,7 +19,7 @@ Voitures (modèles 3D, Sketchfab) :
   Hyundai Elantra N : « 2024 Hyundai Elantra N » par Ddiaz Design (Sketchfab), CC BY-NC 4.0
   Volvo V60 Polestar : « Volvo V60 Polestar (2013) » par Myedsu (Sketchfab), CC BY 4.0
   Land Rover Range Rover Sport : « Land Rover Range Rover Sport - 2023 » par Unn Interativa (Sketchfab), CC BY 4.0
-  Ford Mustang Shelby GT500 : « 2020 Ford Mustang Shelby GT500 » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0
+  Chevrolet Corvette Stingray (C7) : « Chevrolet Corvette (C7) » par Martin Trafas (Sketchfab), CC BY 4.0
   Ferrari SF90 XX Stradale : « Ferrari SF90 XX | www.vecarz.com » par vecarz (Sketchfab), CC BY 4.0
 
 Personnages : « Universal Base Characters » par Quaternius, CC0 1.0

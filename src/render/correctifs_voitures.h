@@ -55,13 +55,11 @@ inline const ZoneFeu ZONES_FEUX[] = {
     // entier (lunette, catadioptres du bouclier) : verre ou fond du bloc optique, dans la boîte du feu vue de l'arrière
     {"gallardo", 6, 0.00f, 0.30f, 0.60f, 0.90f, 1.80f},  // verre fumé des feux (x 0,40-0,75, y 0,71-0,82)
     {"p208", 12, 0.00f, 0.45f, 0.80f, 1.00f, 1.60f},     // verre des feux « griffes » (la lunette est au-dessus)
-    {"tcross", 10, 1.00f, 0.30f, 0.80f, 1.05f, 1.50f},   // intérieur des feux (matériau partagé avec les phares)
-    {"tcross", 1, 0.00f, 0.30f, 0.80f, 1.05f, 1.50f},    // verre des feux (la lunette est au-dessus)
     {"compass", 11, 0.00f, 0.45f, 0.90f, 1.20f, 1.60f},  // verre des feux (lunette au-dessus, catadioptres en bas)
     {"s3", 27, 0.00f, 0.30f, 0.70f, 1.00f, 1.60f},       // fond des feux (catadioptres du bouclier en bas)
     {"x5", 12, 0.00f, 0.30f, 0.90f, 1.40f, 1.60f},       // verre rouge des feux en L
     {"elantra", 17, 0.50f, 0.20f, 0.75f, 1.00f, 1.60f},  // verre du bandeau de feux (catadioptres en bas)
-    {"mustang", 23, 0.50f, 0.30f, 0.60f, 1.00f, 1.60f},  // verre des feux à trois barres
+    // WFS-359 : « tcross » (Brezza) et « mustang » (Corvette C7) ont leurs feux arrière à part dans le .wfm (drapeau MAT_TAIL)
     {"sf90", 14, 1.00f, 0.00f, 0.30f, 1.00f, 1.60f},     // fines barres rouges des feux (haut et bas de la poupe)
     {"rrsport", 11, 0.00f, 0.30f, 1.00f, 1.30f, 1.60f},  // verre du bandeau (MAT_TAIL refusé : catadioptres plus bas)
 };

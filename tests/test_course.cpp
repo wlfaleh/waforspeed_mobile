@@ -241,12 +241,12 @@ int main(int argc, char** argv) {
                 // appui du gaz des bancs : (0,89 W ; 0,74 H), et (0,11 W ; 0,74 H) en gaucher, passé par ecrans::miroirX
                 const float xGaz = gaucher ? W - 0.11f * W : 0.89f * W;
                 gaz = gaz && commandeSous(xGaz, 0.74f * H, W, H, m, gaucher) == Commande::Gaz;
-                // autres appuis des bancs : demi-tour (0,9 W ; 0,8 H) au gaz, frein à 0,66 W, coin haut droit = nitro (nitro-lignes),
-                // moitié gauche = direction
+                // autres appuis des bancs : demi-tour (0,9 W ; 0,8 H) au gaz, frein à 0,66 W, moitié gauche = direction ;
+                // WFS-374 (ANO-233) : coin haut droit (case SCORE, 0,9 W ; 0,32 H) = rien (avant : nitro)
                 if (e.banc)
                     appuis = appuis && commandeSous(0.9f * W, 0.8f * H, W, H, m, gaucher) == Commande::Gaz &&
                              commandeSous(0.66f * W, 0.8f * H, W, H, m, gaucher) == Commande::Frein &&
-                             commandeSous(0.9f * W, 0.32f * H, W, H, m, gaucher) == Commande::Nitro &&
+                             commandeSous(0.9f * W, 0.32f * H, W, H, m, gaucher) == Commande::Aucune &&
                              commandeSous(0.5f * W, 0.8f * H, W, H, m, gaucher) == Commande::Aucune;
             }
         const DispositionCommandes d = dispositionCommandes(1280, 720, Marges{});

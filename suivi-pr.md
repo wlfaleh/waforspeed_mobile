@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #322 | WFS-375 | Claude, agent dev M (01UY1Vv4mu) | 👀 En revue — lead-dev, 2026-11-09 23:53 | 82bdda3 | 2026-11-09 23:53 |
