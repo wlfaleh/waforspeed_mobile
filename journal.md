@@ -3709,3 +3709,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #328 fusionnée par le lead dev (squash 1063fb3f) ; ticket 🟡 À valider (utilisateur) ; réponse écrite dans `tache utilisateur.md`.
 - Suite notée par le lead dev (pour le PO) : reflet des phares de la police sur chaussée mouillée encore plat (borne `SPEC_MAX_CROISEMENT` par canal), à compresser sur la luminance comme `post.frag`.
 - Session terminée (un seul sujet par session) : aucune demande de nouveau ticket.
+
+### 2026-11-10 08:53:25 — WFS-363 attribué à Claude, agent dev3d 6 (01UY1Vv3MV) (po-scrum-master)
+- Demande : nouvelle session `@dev3d` (session_01UY1Vv3MVhKQapjuowdFE2c), agent `dev-artiste-3d`, 1er et seul ticket de la session.
+- Choix : objectif de l'utilisateur « voitures sans marque » avant les décors ; ordre des voitures du 2026-11-09 19:14 UTC (358 → 362 → 359 → **363** → 360…) ; WFS-362 et 359 🟣 fusionnés, aucun ticket voitures actif (E10 libre). WFS-363 passe de ⏳ En attente à 🔧 En cours. Restent prêts pour les prochaines sessions `@dev3d` : WFS-370 (Ville), 373 (Grand Prix), 387 (Campagne), et WFS-397 (W212 / Virtus GT, WFS-396 🟣).
+- Zone : `assets/cars/giulia*`, `assets/cars/rrsport*`, entrées `giulia` / `rrsport` de `tools/formes.json`, ajouts à `tools/retoucher_formes.mjs` sans changer les voitures déjà faites (`--verifier`), `tests/**`. Interdits : `vehicule_cockpit*`, `src/game/cars.h`, `remplacants/` (WFS-397), `plage.cpp` et eau (WFS-380, agent cartes).
+- Règles : `regles-de-gestion/WFS-363.md` (RG-01 à RG-06). Pas de E15, donc pas d'avis agent 3D obligatoire ; l'agent 3D peut être consulté.
