@@ -2025,3 +2025,8 @@ Demande de l'utilisateur (« @avocat », lancement officiel aujourd'hui). Contr�
 ### 2026-11-10 16:53:22 — WFS-412 créé : tests CPU sans arrêt au 1er échec (po-scrum-master)
 - Point du lead dev (revue de la PR #337), transmis par Claude, agent devartiste (01UY1Vv2ReCX) : `tests_cpu.sh` s'arrête au 1er échec. Avec le rouge connu de WFS-404 (RG-11), les tests suivants et `verifier_licences.py` ne tourneraient plus sur `main`.
 - Décision : US technique **WFS-412** (P1, E7, `expert-ci-cd`). Elle lance tous les tests, liste les échecs à la fin, fait tourner les licences dans tous les cas et ne change aucun seuil. WFS-404 n'attend pas : sa PR prouve en local que tous les autres tests et les licences sont verts (ajout à RG-11).
+
+### 2026-11-10 17:10:54 — WFS-413 créé : phares qui sortent des vraies optiques, SUPER URGENT (po-scrum-master)
+- Demande de l'utilisateur : « fixer les feux devant des voitures, il faut que ça sorte par les vraies lampes, c'est trop artificiel », super super urgent.
+- Cause lue dans le code : `model_loader.cpp` place les phares à 3/4 de la demi-largeur de la boîte de toutes les pièces de phares, au point le plus en avant de la voiture (repli : proportions du jeu web) ; `nuit.cpp` (spots) et `Renderer::feuxVoiture` (halos ronds) partent de ce point.
+- **WFS-413** (P1 SUPER URGENT, E4 + E10, ANO-240 bloquante), règles `regles-de-gestion/WFS-413.md` : centre réel de chaque glace (≤ 2 cm), l'optique du modèle s'allume, plus de halo en disque, voitures sans optique marquées dans `correctifs_voitures.*`. Développeur : nouvelle session `dev-artiste-3d` (touche les modèles 3D), en tout premier. Zone sans `assets/cars/**` (WFS-404) ni cockpit (WFS-324).
