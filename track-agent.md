@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-10 09:36:47 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-10 10:12:55 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -26,6 +26,7 @@
 | agent expert ci cd (session 0183bv2Y) |  | expert CI / CD (skill `expert-ci-cd`), session_0183bv2Yu99pLpQ9BGqEf9MK : **P1 WFS-384** [TECHNIQUE] bancs du matin sautés, un vrai banc chaque matin + `captures-matin` (ANO-226) ; zone E7 : `.github/workflows/matin.yml`, `tools/qa/**` ; attribué 07:47 UTC par le PO (ordre de l'utilisateur) | `feature/waforspeed-384`, PR #331 fusionnée (071f10af) | 🟣 WFS-384 fusionné 07:55 UTC (en attente des bancs du matin) |
 | Claude, agent dev3d (01UY1Vv2Ph) | WFS-370 | `@dev3d` (session_01UY1Vv2PhsfqmJW55jpNKHd), agent `dev-artiste-3d` : **P1 WFS-370** E15 Ville, immeubles « boîtes » remplacés par de vrais volumes (toits, corniches, balcons, rez-de-chaussée, fenêtres en retrait, fenêtres allumées la nuit) ; skills `agent-developer`, `waforspeed-natif`, `artiste-3d` (+ `expert-cartes` pour le décor de carte, avis `@3d` obligatoire) ; zone : `src/world/archi_*`, `src/world/ville*.cpp`, `assets/world/modeles/**`, `assets/licences/` ; attribué 08:55 UTC par le PO | `feature/waforspeed-370` à créer | 🔧 attribué, branche à pousser |
 | Claude, agent dev (01UY1Vv1d6) |  | `@dev` (session_01UY1Vv1d6VrvcVTQzXuiern), agent `dev` : skills `agent-developer`, `waforspeed-natif` chargés ; demande son ticket au PO (un seul sujet pour la session) | — | ⏳ en attente du ticket du PO |
+| Claude, agent dev3d 7 (01UY1Vv4FX) | WFS-323 | `@dev3d` (session_01UY1Vv4FX4CXXFEkuhUsAzG), agent `dev-artiste-3d` : **P1 WFS-323** vue Cockpit (1/3), cadrage de la caméra proche de la référence de l'utilisateur, habitacle large et lisible, pavillon fermé (ANO-207) ; skills `agent-developer`, `waforspeed-natif`, `artiste-3d` (avis `expert-conduite` pour la vue) ; zone : `src/game/camera_vue.*` (partie cockpit), `src/render/vehicule_cockpit*`, `tests/**` du cockpit, `qa/pr/WFS-323/` ; **pas** `assets/cars/**` (WFS-363), ni `archi_*` / décor (WFS-370), ni la CI ; attribué 10:12 UTC par le PO | `feature/waforspeed-323` à créer et pousser | 🔧 En cours |
 
 ## Agents de pilotage
 
