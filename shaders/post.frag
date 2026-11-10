@@ -114,11 +114,14 @@ void main() {
     // chaque pixel très brillant en une grille de points blancs). Chaque lecture est plafonnée pour qu'un seul pixel
     // extrême ne fasse pas une tache.
     vec2 px = 1.0 / vec2(textureSize(hdr, 0));
-    vec3 glow = vec3(0.0);
+    vec3 glow = vec3(0.0); float poids = 0.0;
     for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) {
-        vec3 s = texture(hdr, uvS + (vec2(i, j) * 2.0 - 3.5) * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels
-        glow += max(min(s, vec3(24.0)) - 2.5, 0.0);
+        vec2 o = vec2(i, j) * 2.0 - 3.5;   // WFS-382 : la nuit, prises pondérées par la distance (gaussienne) : halo rond, pas de carré
+        float w = pc.params.w != 0.0 ? exp(-dot(o, o) / 6.0) : 1.0; poids += w;
+        vec3 s = texture(hdr, uvS + o * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels
+        glow += max(min(s, vec3(24.0)) - 2.5, 0.0) * w;
     }
+    glow *= 16.0 / poids;   // même énergie que 16 prises égales (le jour : poids = 16, rien ne change)
     // WFS-382 (RG-03, ANO-222) : la nuit (params.w ≠ 0), halo et bloom compressés en douceur sur leur luminance Y : e / (1 + Y / 0,35),
     // presque rien sous 0,05, jamais plus de 0,35 ajouté ; continu, sans palier ni changement de teinte (2e revue du lead dev : un
     // min() par canal faisait un disque gris, un carré et un anneau irisé autour des sources vives) ; le jour, rien ne change
