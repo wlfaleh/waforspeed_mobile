@@ -10,7 +10,7 @@
 namespace wfs::cockpit {
 
 // volant de série (VolantSerie, volantSeriePour, cotes du moyeu) : vehicule_cockpit.h ; autres cotes (RG-02, RG-03) : ici
-constexpr float BRANCHE_W0 = 0.055f, BRANCHE_W1 = 0.035f, BRANCHE_T = 0.020f;   // RG-02 : 55 mm au départ, 35 mm à la jante ; épaisseur
+constexpr float BRANCHE_W0 = 0.055f, BRANCHE_W1 = 0.035f, BRANCHE_T = 0.020f;   // RG-02 : 55 mm à la sortie de la coque, 35 mm à la jante ; épaisseur
 constexpr float BRANCHE_DANS = 0.012f;   // RG-02 : la branche naît 12 mm à l'intérieur du bord du coussin (≥ 10 mm)
 constexpr float BRANCHE_Z0 = -0.022f, BRANCHE_Z1 = -0.004f;   // milieu de la branche (z) au départ (dans la coque) et à la jante
 

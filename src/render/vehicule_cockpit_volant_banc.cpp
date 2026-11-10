@@ -1,6 +1,8 @@
 // WaForSpeed — WFS-414 : banc « cockpit-volant » (voir vehicule_cockpit_volant_banc.h).
 // Le gros plan est pris dans l'image entière (aucun autre rendu) : la jante est projetée avec la caméra de l'image (vue et
-// projection relevées par un système inactif hors de ce banc), puis la zone est agrandie 2 fois (filtre bilinéaire).
+// projection relevées par un système inactif hors de ce banc), puis la zone est agrandie 2 fois (filtre bilinéaire) ; une copie
+// éclaircie (…-gros-plan-eclairci) montre les formes dans l'ombre du toit (aide à la revue : ce n'est pas l'image du jeu).
+// Le banc n'utilise que ce qui existe aussi sur main (captures « avant » : main + ce banc seul).
 #include "vehicule_cockpit_volant_banc.h"
 #include <algorithm>
 #include <cmath>
@@ -82,6 +84,11 @@ bool grosPlan(const cockpit::InterieurDef& d, float angleVolant, const std::stri
         }
     }
     stbi_image_free(img);
+    // copie éclaircie pour la revue (l'habitacle est sombre sous le toit) : niveaux 0..56 étirés sur 0..255, comme « -level 0%,22% »
+    std::vector<unsigned char> clair(out.size());
+    for (size_t k = 0; k < out.size(); k++) clair[k] = (unsigned char)std::min(255, out[k] * 255 / 56);
+    const std::string nomClair = sortie.substr(0, sortie.size() - 4) + "-eclairci.png";
+    stbi_write_png(nomClair.c_str(), OW, OH, 3, clair.data(), OW * 3);
     WFS_LOG("gros plan %s (WFS-414) : jante de %.0f × %.0f px dans l'image %d × %d, zone %.0f × %.0f px à (%.0f, %.0f), agrandie 2 fois",
             sortie.c_str(), x1 - x0, y1 - y0, W, H, w, h, ox, oy);
     return stbi_write_png(sortie.c_str(), OW, OH, 3, out.data(), OW * 3) != 0;
@@ -111,8 +118,7 @@ void benchCockpitVolant(Game& g, Renderer& r, const std::string& out, std::vecto
         const float angle = etatCockpit().volant;
         if (!cameraImage().vue || !grosPlan(d, angle, png, out + "/" + nom + "-gros-plan.png"))
             WFS_ERR("cockpit-volant : gros plan impossible (%s)", nom.c_str());
-        WFS_LOG("capture %s (WFS-414) : voiture %s, volant %+.2f rad, %.0f km/h, %s", nom.c_str(), d.car, angle, g.player().kmh(),
-                cockpit::volantSeriePour(d) ? "volant de série" : "volant commun");
+        WFS_LOG("capture %s (WFS-414) : voiture %s, volant %+.2f rad, %.0f km/h", nom.c_str(), d.car, angle, g.player().kmh());
     };
     // suite de 4 images d'un braquage à gauche (doigt glissé dans la zone de braquage, comme le banc « cockpit-reference »)
     auto braquage = [&](const cockpit::InterieurDef& d, const std::string& base) {
