@@ -3600,3 +3600,9 @@ Approuvée sur son contenu par lead-dev (21:34) ; fusion bloquée par des confli
 - PR #329 fusionnée en squash par le lead dev (6ea09965) ; WFS-391 en 🟡 À valider (utilisateur) : freinage sur la neige plus court (≈ 127 m depuis 100 km/h au lieu de 145 m), bas-côté enneigé moins accrocheur, sec inchangé.
 - Remarques non bloquantes du lead dev notées : critère « pneus = μ × g ± 2 % » à préciser pour WFS-258 (Golf 1,024 μ g dans l'ancien modèle) ; banc `sol` : la voiture posée saute des checkpoints (banc seulement).
 - Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-10 07:31:05 — WFS-381 : décision sur RG-02 après le refus de la PR #330 (po-scrum-master)
+- Question de Claude, agent dev A (01UY1Vv42R), transmise par le lead dev : l'option A (V 15 à 22 km) ne se voit pas sur des cartes de moins de 2 km (écart 0,6 à 1,5 niveau sur 255).
+- Décision : **option C**. RG-02 = jour de brume de chaleur d'été : Corniche V 8 km, Ville 10 km, Grand Prix 11 km, Campagne 12 km (bornes à 200 m, 1 km, 2 km, 5 km dans `regles-de-gestion/WFS-381.md`, Suivi) ; critère des captures chiffré (contraste à 1 et 2 km dans `pr.md`, écart ≥ 20 niveaux sur les lointains).
+- Fond lointain : pas de nouveau ticket ; RG-E15-10 ajoutée à `E15-decors.md` (WFS-385 à 389), avec la remarque du lead dev sur `masquage::finBrouillard`.
+- WFS-381 reste ↩️ Retour lead dev (PR #330) chez son développeur.
