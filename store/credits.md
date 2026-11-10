@@ -13,7 +13,7 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` depuis `
 | Lamborghini Gallardo LP560-4 Spyder | « 2009 Lamborghini Gallardo LP560-4 Spyder » par Ddiaz Design (Sketchfab), CC BY 4.0 | `assets/licences/lambo-gallardo.txt` |
 | Peugeot 208 | « 2021 Peugeot 208 » par tonielpro520 (Sketchfab), CC BY 4.0 | `assets/licences/p208.txt` |
 | Abarth 500 | « Fiat Abarth 500 » par Luquita (Sketchfab), CC BY 4.0 | `assets/licences/abarth.txt` |
-| Volkswagen T-Cross | « 2021 Volkswagen T-Cross 280 TSI » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0 | `assets/licences/tcross.txt` |
+| Suzuki Vitara Brezza | « 2022 Maruti Suzuki Vitara Brezza » par BHP3D (Sketchfab), CC BY 4.0 | `assets/licences/tcross.txt` |
 | Jeep Compass | « JEEP COMPASS 2021 » par fazt.3ds (Sketchfab), CC BY 4.0 | `assets/licences/compass.txt` |
 | Audi S3 berline | « 2014 Audi S3 Limousine » par tonielpro520 (Sketchfab), CC BY 4.0 | `assets/licences/s3.txt` |
 | BMW X5 | « 2024 BMW X5 xDrive40i » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0 | `assets/licences/x5.txt` |
@@ -25,7 +25,7 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` depuis `
 | Hyundai Elantra N | « 2024 Hyundai Elantra N » par Ddiaz Design (Sketchfab), CC BY-NC 4.0 | `assets/licences/elantra.txt` |
 | Volvo V60 Polestar | « Volvo V60 Polestar (2013) » par Myedsu (Sketchfab), CC BY 4.0 | `assets/licences/v60.txt` |
 | Land Rover Range Rover Sport | « Land Rover Range Rover Sport - 2023 » par Unn Interativa (Sketchfab), CC BY 4.0 | `assets/licences/rrsport.txt` |
-| Ford Mustang Shelby GT500 | « 2020 Ford Mustang Shelby GT500 » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0 | `assets/licences/mustang.txt` |
+| Chevrolet Corvette Stingray (C7) | « Chevrolet Corvette (C7) » par Martin Trafas (Sketchfab), CC BY 4.0 | `assets/licences/mustang.txt` |
 | Ferrari SF90 XX Stradale | « Ferrari SF90 XX | www.vecarz.com » par vecarz (Sketchfab), CC BY 4.0 | `assets/licences/sf90.txt` |
 
 ## Autres contenus
@@ -37,6 +37,6 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` depuis `
 
 ## Conséquences des licences
 
-- CC BY-NC et CC BY-NC-SA (T-Cross, X5, A 45, Elantra N, Mustang) : usage non commercial → **le jeu reste gratuit**, sans achat intégré ni publicité.
-- CC BY-SA et CC BY-NC-SA (Porsche 911, Mustang, T-Cross, X5 ; sons « sport » et « gros ») : les versions modifiées (modèles allégés `.wfm`, sons bouclés) sont partagées sous la même licence.
+- CC BY-NC et CC BY-NC-SA (X5, A 45, Elantra N) : usage non commercial → **le jeu reste gratuit**, sans achat intégré ni publicité.
+- CC BY-SA et CC BY-NC-SA (Porsche 911, X5 ; sons « sport » et « gros ») : les versions modifiées (modèles allégés `.wfm`, sons bouclés) sont partagées sous la même licence.
 - Les noms et logos des constructeurs restent la propriété de leurs titulaires ; le jeu n'est affilié à aucun d'eux.

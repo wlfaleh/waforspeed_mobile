@@ -29,8 +29,8 @@ def credits_md(vs):
           "- Police Rajdhani : Indian Type Foundry, SIL Open Font License 1.1 — `assets/licences/police-rajdhani-OFL.txt`",
           "- Feuillage, route, ville, ciel, sons d'effets : générés par le code du jeu (aucune licence tierce)", "",
           "## Conséquences des licences", "",
-          "- CC BY-NC et CC BY-NC-SA (T-Cross, X5, A 45, Elantra N, Mustang) : usage non commercial → **le jeu reste gratuit**, sans achat intégré ni publicité.",
-          "- CC BY-SA et CC BY-NC-SA (Porsche 911, Mustang, T-Cross, X5 ; sons « sport » et « gros ») : les versions modifiées (modèles allégés `.wfm`, sons bouclés) sont partagées sous la même licence.",
+          "- CC BY-NC et CC BY-NC-SA (X5, A 45, Elantra N) : usage non commercial → **le jeu reste gratuit**, sans achat intégré ni publicité.",
+          "- CC BY-SA et CC BY-NC-SA (Porsche 911, X5 ; sons « sport » et « gros ») : les versions modifiées (modèles allégés `.wfm`, sons bouclés) sont partagées sous la même licence.",
           "- Les noms et logos des constructeurs restent la propriété de leurs titulaires ; le jeu n'est affilié à aucun d'eux.", ""]
     return "\n".join(l)
 

@@ -29,7 +29,8 @@ static const std::vector<std::string> VOITURES = {"golf", "m4", "p911", "gallard
                                                   "model3", "corsa", "gt86", "elantra", "v60", "rrsport", "mustang", "sf90"};   // CARS (src/game/cars.h)
 
 // ST-5 : écarts connus au 2026-11-07 (après ST-2 à ST-4), hors tolérance de ± 1 % ; écart relatif hors de la bande de
-// tolérance (comme le rapport), en %. Un modèle remplacé (WFS-194) ou corrigé met sa ligne à jour.
+// tolérance (comme le rapport), en %. Un modèle remplacé (WFS-194) ou corrigé met sa ligne à jour. WFS-359 : « mustang » (Corvette C7) et
+// « tcross » (Suzuki Brezza) remplacés, sans écart connu.
 struct EcartConnu { const char* voiture; const char* mesure; double pct; const char* raison; };
 static const EcartConnu ECARTS_CONNUS[] = {
     {"m4", "largeur", 8.6, "RG-05 : caisse du modèle trop large"},
@@ -39,9 +40,6 @@ static const EcartConnu ECARTS_CONNUS[] = {
     {"p208", "largeur", -2.8, "RG-05 : caisse du modèle trop étroite"},
     {"p208", "voie_av", -6.1, "RG-05 : roues du modèle rentrées dans la caisse"},
     {"p208", "voie_ar", -6.1, "RG-05 : roues du modèle rentrées dans la caisse"},
-    {"tcross", "hauteur", -1.8, "RG-05 : pavillon du modèle"},
-    {"tcross", "voie_av", -2.4, "roues du modèle (élargir déborderait de la caisse)"},
-    {"tcross", "voie_ar", -1.1, "roues du modèle (élargir déborderait de la caisse)"},
     {"compass", "voie_av", -8.7, "roues du modèle (élargir déborderait de la caisse)"},
     {"compass", "voie_ar", -7.3, "roues du modèle (élargir déborderait de la caisse)"},
     {"s3", "largeur", 0.4, "résidu d'échelle"},
@@ -57,7 +55,6 @@ static const EcartConnu ECARTS_CONNUS[] = {
     {"elantra", "voie_av", -0.8, "roues du modèle (élargir déborderait de la caisse)"},
     {"elantra", "voie_ar", -1.4, "roues du modèle (élargir déborderait de la caisse)"},
     {"v60", "largeur", -0.7, "résidu d'échelle"},
-    {"mustang", "voie_ar", -1.5, "roues du modèle (élargir déborderait de la caisse)"},
     {"sf90", "hauteur", -2.7, "RG-05 : pavillon du modèle"},
 };
 constexpr double MARGE_PCT = 0.3;
