@@ -35,6 +35,16 @@ const verifier = args.includes('--verifier');
 const choix = args.filter((a) => !a.startsWith('--'));
 const LOGOS = JSON.parse(fs.readFileSync(path.join(ICI, 'logos.json'), 'utf8'));
 const empreinte = (b) => crypto.createHash('sha256').update(b).digest('hex').slice(0, 16);
+// WFS-404 (RG-06) : retouches de forme faites APRÈS les logos (tools/retoucher_formes.mjs, formes.json) : elles changent le nombre de
+// triangles de certains matériaux (S3 : grille découpée, WFS-362 ; RR Sport, WFS-363). Si la géométrie est exactement l'état final
+// des formes (même empreinte que retoucher_formes.mjs : matériaux + sommets + indices), les pièces de logo sont déjà retirées.
+const FORMES = JSON.parse(fs.readFileSync(path.join(ICI, 'formes.json'), 'utf8'));
+const empreinteFormes = (w) => { const h = crypto.createHash('sha256'); h.update(Buffer.from(w.materiaux)); for (const m of w.maillages) { h.update(Buffer.from(m.v)); h.update(Buffer.from(m.ix.buffer)); } return h.digest('hex').slice(0, 16); };
+// WFS-404 (RG-02) : voitures retirées de l'application (liste unique VOITURES_RETIREES de src/game/cars.h) : hors contrôle
+const RETIREES = (() => {
+  const l = fs.readFileSync(path.join(RACINE, 'src/game/cars.h'), 'utf8').split('\n').find((x) => x.includes('VOITURES_RETIREES[] ='));
+  return new Set(l ? [...l.slice(l.indexOf('{')).matchAll(/"([\w-]+)"/g)].map((m) => m[1]) : []);
+})();
 
 // ---------- lecture / écriture d'un .wfm (format : src/render/model_loader.cpp, mesh.h) ----------
 function lire(b) {
@@ -264,6 +274,7 @@ async function traiter(id) {
     parMateriau.get(p.materiau).push(p);
   }
   const mailAFaire = [];
+  const formesFinies = FORMES[id]?.empreinteApres && empreinteFormes(w) === FORMES[id].empreinteApres;
   for (const [k, ps] of parMateriau) {
     const lesquels = w.maillages.map((m, i) => (m.mat === k ? i : -1)).filter((i) => i >= 0);
     if (lesquels.length > 1) throw new Error(`matériau ${k} : ${lesquels.length} maillages (un seul attendu)`);
@@ -275,6 +286,7 @@ async function traiter(id) {
     }
     const mi = lesquels[0], m = w.maillages[mi], tri = m.ix.length / 3;
     if (tri === ps[0].trianglesAvant - retires) { journal.push(`matériau ${k} : déjà fait`); continue; }
+    if (tri !== ps[0].trianglesAvant && formesFinies) { journal.push(`matériau ${k} : déjà fait, puis retouché par les formes (état final ${FORMES[id].empreinteApres})`); continue; }
     if (tri !== ps[0].trianglesAvant) throw new Error(`matériau ${k} : ${tri} triangles, ${ps[0].trianglesAvant} attendus`);
     for (const p of ps) {
       const b = boiteTriangles(m, p.triangles[0], p.triangles[1]);
@@ -337,6 +349,7 @@ async function traiter(id) {
 
 let erreurs = 0;
 for (const id of choix.length ? choix : Object.keys(LOGOS)) {
+  if (RETIREES.has(id)) { console.log(`${id} : voiture retirée de l'application (WFS-404), non contrôlée`); continue; }
   try { const r = await traiter(id); console.log(`${id} : ${r.journal.join(' ; ')}`); }
   catch (e) { erreurs++; console.error(`${id} : ARRÊT, rien n'est écrit : ${e.message}`); }
 }

@@ -614,7 +614,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     rap.nonMesurable("anthropometrie", "humain.*", "tailles et proportions des piétons", "mesurées par WFS-164 (humains réalistes) sur les nouveaux modèles");
 
     // ---------------- mesures géométriques (voitures, routes) et soleil calculé : les mêmes que test_fidelite
-    std::vector<std::string> cars; for (int i = 0; i < CAR_COUNT; i++) cars.push_back(CARS[i].id);
+    std::vector<std::string> cars; for (int i = 0; i < CAR_COUNT; i++) if (!voitureRetiree(CARS[i].id)) cars.push_back(CARS[i].id);   // WFS-404
     reel::mesuresDonnees(R, rap, ".", cars);
     archi::mesuresArchitecture(R, rap);   // WFS-161 (accroche, ST-6) : domaine « architecture »
     }

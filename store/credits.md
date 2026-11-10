@@ -16,13 +16,10 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` (WFS-406
 | Vollmer Trek-X | modèle 3D par BHP3D (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Ranger Bussola | modèle 3D par fazt.3ds (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Aurel R3 berline | modèle 3D par tonielpro520 (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
-| Bavaro XR5 | modèle 3D par Ddiaz Design (Sketchfab) | [CC BY-NC-SA 4.0]() |
 | Alvar Selene TS | modèle 3D par ijiklvn (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
-| Merkur A-Sport 45 | modèle 3D par Lexyc16 (Sketchfab) | [CC BY-NC 4.0]() |
 | Volta E3 | modèle 3D par Ameer Studio (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Orion Corsaire | modèle 3D par Nieve5677 (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Tamura Hachi | modèle 3D par Mpgs.studio3DModels (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
-| Hanseo Elanta R | modèle 3D par Ddiaz Design (Sketchfab) | [CC BY-NC 4.0]() |
 | Valka V6 Nordstern | modèle 3D par Myedsu (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Highland Sport | modèle 3D par Unn Interativa (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Stallion GT5 | modèle 3D par Martin Trafas (Sketchfab) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |

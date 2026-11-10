@@ -119,7 +119,7 @@ std::string str(const Fields& f, const char* k) { const auto it = f.find(k); ret
 std::string peerName(const Fields& f) { const std::string n = cleanName(str(f, "n")); return n.empty() ? "Pilote" : n; }
 const char* peerCar(const Fields& f) {
     const std::string c = str(f, "car");
-    for (const CarDef& d : CARS) if (c == d.id) return d.id;
+    for (const CarDef& d : CARS) if (c == d.id && !voitureRetiree(d.id)) return d.id;   // WFS-404 : voiture retirée → golf
     return "golf";
 }
 

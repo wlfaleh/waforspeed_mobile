@@ -95,6 +95,31 @@ inline const CarDef& carById(const char* id) {
     return CARS[0];
 }
 
+// WFS-404 (RG-00 à RG-02) : voitures retirées de l'application, leur licence (CC BY-NC, CC BY-NC-SA) interdisant la vente, la
+// publicité et les achats. Liste UNIQUE, lue partout : garage, adversaires, duel, sauvegarde, bancs, tests, crédits
+// (tools/qa/verifier_licences.py) et copie des actifs de l'APK (android/app/build.gradle lit cette ligne). Elles restent dans
+// CARS[] et leurs fichiers dans assets/cars/ du dépôt ; pour en faire revenir une (modèle libre, WFS-397 → WFS-360, WFS-361),
+// enlever son id de cette liste.
+inline constexpr const char* VOITURES_RETIREES[] = {"x5", "a45", "elantra"};
+inline bool voitureRetiree(const char* id) {
+    if (!id) return false;
+    for (const char* r : VOITURES_RETIREES) if (std::strcmp(r, id) == 0) return true;
+    return false;
+}
+// indices de CARS[] proposés au joueur (ordre du catalogue, voitures retirées sautées)
+struct VoituresPermises { int idx[CAR_COUNT] = {}; int n = 0; };
+inline const VoituresPermises& voituresPermises() {
+    static const VoituresPermises v = [] { VoituresPermises p; for (int i = 0; i < CAR_COUNT; i++) if (!voitureRetiree(CARS[i].id)) p.idx[p.n++] = i; return p; }();
+    return v;
+}
+// voiture jouable : celle demandée si elle est permise, sinon la 1re permise du catalogue (sauvegarde avec une voiture
+// retirée ou id inconnu, RG-04 : le joueur démarre sur une voiture permise, ses records restent)
+inline const CarDef& voiturePermise(const char* id) {
+    const CarDef& c = carById(id ? id : "");
+    if (id && !voitureRetiree(c.id) && std::strcmp(c.id, id) == 0) return c;
+    return CARS[voituresPermises().idx[0]];
+}
+
 // performances. WFS-188 (RG-01 à RG-04) : recalées sur la fiche (CarSpec, inchangée) : la poussée a0 et le plafond top
 // sont calculés pour que le 0-100 mesuré en jeu (plein gaz, sans nitro, pas de 1/60 s) vaille spec.s100 et que la vitesse
 // atteinte sans nitro vaille 99,5 % de spec.vmax ; freinage = facteur de Phys::brake pour un 100 → 0 de 33 à 40 m selon

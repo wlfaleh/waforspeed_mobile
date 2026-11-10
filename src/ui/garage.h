@@ -23,5 +23,6 @@ const char* garageVoitureAffichee();   // WFS-127 : identifiant de la voiture af
 // banc d'essai : captures garage-0/1/2 (3 angles), garage-m4 (voiture suivante), garage-peinture-0/1, garage-peintures
 // (planche des 16 peintures), garage-course (course avec la voiture et la peinture choisies), puis g.shutdown()
 void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::string& suffixe = "");
+void benchGarageTour(Game& g, Renderer& r, const std::string& outDir);   // WFS-404 : une capture par place du garage
 } // namespace ecrans
 } // namespace wfs
