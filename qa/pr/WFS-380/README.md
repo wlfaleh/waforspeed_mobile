@@ -13,7 +13,8 @@ Branche `feature/waforspeed-380` (synchronisée avec `main`) comparée à `origi
 | `mer-suite-2` | (5) t = 404,25 s | ![avant](avant-mer-suite-2.jpg) | ![après](apres-mer-suite-2.jpg) |
 | `mer-suite-3` | (5) t = 404,50 s | ![avant](avant-mer-suite-3.jpg) | ![après](apres-mer-suite-3.jpg) |
 | `mer-suite-4` | (5) t = 404,75 s | ![avant](avant-mer-suite-4.jpg) | ![après](apres-mer-suite-4.jpg) |
-| `mer-marina` | (RG-05) bassin de la marina : port calme, même eau | ![avant](avant-mer-marina.jpg) | ![après](apres-mer-marina.jpg) |
+| `mer-marina` | (RG-05, B1) bassin de la marina depuis la promenade : port calme, aucune écume blanche | ![avant](avant-mer-marina.jpg) | ![après](apres-mer-marina.jpg) |
+| `mer-marina-bassin` | (RG-05, B1) port vu d'en haut (28 m) : eau calme entre les pontons, aucune écume | ![avant](avant-mer-marina-bassin.jpg) | ![après](apres-mer-marina-bassin.jpg) |
 | `mer-sillage` | (RG-04, D2) sillage en V du jet-ski ; vagues sans rayures qui se répètent | ![avant](avant-mer-sillage.jpg) | ![après](apres-mer-sillage.jpg) |
 | `mer-eclaboussure` | (RG-04, R5) dauphin qui sort de l'eau : éclaboussure en dentelle | ![avant](avant-mer-eclaboussure.jpg) | ![après](apres-mer-eclaboussure.jpg) |
 | `mer-rochers` | (RG-09, D3) côte rocheuse vue depuis l'eau : blocs de calcaire, galets, écume contre la roche | ![avant](avant-mer-rochers.jpg) | ![après](apres-mer-rochers.jpg) |
