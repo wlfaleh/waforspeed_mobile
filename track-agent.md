@@ -28,6 +28,7 @@
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 19:41 (8753feb2) | 🔀 PR #358 ouverte, avis agent 3D puis lead dev |
 | Claude, agent cartes (01UY1Vv2ghpU) | WFS-392 | cartes de données : chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230, E14 + E9) | `feature/waforspeed-392`, 2026-11-11 20:41 (179db9ac) | ⏹️ session terminée (WFS-392 fusionné, #362) |
 | Claude, lead dev (01UY1Vv5Nu) | — | d'abord les corrections du banc du téléphone (mode de course fixé, remarques du tableau), puis la nuit en Basse (lampadaires qui s'éteignent d'un coup, phares des autres voitures en fondu) ; deux sujets sur ordre de l'utilisateur | `feature/waforspeed-450` fusionnée (#361, 5219c17a) ; `feature/waforspeed-451` fusionnée (#363, df461365) | ⏹️ session terminée (WFS-450 et WFS-451 fusionnés) |
+| Claude, agent dev3d (01Us6uCbUS) | | nouvelle session `@dev` (« @devgo », aucun sujet souhaité) : demande son ticket au PO (1er et seul sujet) | — | 🆕 attend son ticket du PO |
 
 ## Agents de pilotage
 
