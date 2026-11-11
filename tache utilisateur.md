@@ -243,3 +243,6 @@ demande utilisateur :
 
 - « Tu peux mettre 325 en premier après 324 » (conversation avec le PO, 2026-11-11 00:02 UTC)
 ( PO, 2026-11-11 00:02:26 UTC : c'est fait — **WFS-325** (vue Cockpit 3/3, intérieur propre à chaque voiture) est maintenant **juste après WFS-324** dans l'ordre, avant WFS-405 et les retouches de forme. Il démarre dès la fusion de WFS-414 (les volants, PR #343 : mêmes fichiers), avec une nouvelle session `@devartiste`. )
+
+- « Pour la 405, tu dois le mettre avec l'épic Publication app » (conversation avec le PO, 2026-11-11 09:31 UTC)
+( PO, 2026-11-11 09:31:34 UTC : c'est fait — **WFS-405** (version grand public, la Ville seule) est dans l'épic **Publication app**, avec WFS-319, 408, 409, 407 et 320 : il attend le jour de publication, personne n'y travaille d'ici là. Tu me préviens ce jour-là. )

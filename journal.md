@@ -2528,3 +2528,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Vérifié au journal du job publication : deux cuissons identiques octet par octet (3 fichiers) ; empreinte `e209d649cd6600e2` pour les 3 formats ; `ville_astc` 196,56 Mo (sha256 bdaf43d1a774…), `ville_etc2` 180,14 Mo (81192c6f6832…), `ville_rgba8` 201,15 Mo (eaa2d8d1b046…) ; « Paquets puis cartes.json envoyés ».
 - Release `paquets` : `cartes.json` remplacé à 09:13:40 UTC, 3 nouveaux fichiers présents ; les 3 paquets du run n° 1 (5 à 28 Mo) sont toujours là, rien supprimé.
 - Non vérifié : le téléchargement sur un téléphone. À l'utilisateur, avec l'APK de `main` (run 997 ou plus récent) : la mise à jour du paquet de la Ville (≈ 197 Mo) doit être proposée ; puis les points à regarder de WFS-416 (« 107 morceaux lus dans le paquet », images par seconde contre l'APK 995, points blancs le long des cadres au loin).
+
+### 2026-11-11 09:31:34 — Ordre de l'utilisateur : WFS-405 dans l'épic « Publication app » (po-scrum-master)
+- Ordre : « pour la 405, tu dois le mettre avec l'épic Publication app ».
+- Fait : case Épic et case Statut de WFS-405 dans `TACHES.md` (⏸ En attente du jour de publication), bandeau, ordre permanent du skill du PO complété, section Suivi de `regles-de-gestion/WFS-405.md`. WFS-405 n'est plus « avant tout autre ticket » ; il n'était attribué à personne.
+- Épic « Publication app » : WFS-319, 408, 409, 407, 405 et le suivi 320. Zone de code de WFS-405 inchangée.
