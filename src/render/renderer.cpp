@@ -589,10 +589,10 @@ void Renderer::createTargets() {
 
     // ---------- passe de scène : couleur HDR (MSAA ou ×1) + profondeur, temporaires, résolues ou copiées dans hdr_ (WFS-425) ----------
     if (!scenePass_) WFS_CHECK((scenePass_ = passe_scene::creer(d, HDR_FORMAT, vk.depthFormat, vk.msaa)) != VK_NULL_HANDLE, "Vulkan : passe de scène MSAA x%d impossible", (int)vk.msaa);
+    // ---------- passe finale : image de la swapchain ----------
     if (!finalPass_) {   // WFS-425 : créée une fois (avant : recréée sans destruction de l'ancienne à chaque changement de MSAA)
         VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
         rpci.subpassCount = 1;
-        // ---------- passe finale : image de la swapchain ----------
         VkAttachmentDescription fa{};
         fa.format = vk.swapFormat; fa.samples = VK_SAMPLE_COUNT_1_BIT;
         fa.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; fa.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
