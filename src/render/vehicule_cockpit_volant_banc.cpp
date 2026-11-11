@@ -137,7 +137,8 @@ void benchCockpitVolant(Game& g, Renderer& r, const std::string& out, std::vecto
         if (!d) { WFS_ERR("cockpit-volant : %s n'a pas d'intérieur", car.c_str()); continue; }
         if (course(car, false)) {
             capture(*d, "volant-" + car + "-jour");
-            if (car == "mustang" || car == "golf") braquage(*d, "volant-" + car);
+            // suite de braquage pour les 6 voitures du volant de série (revue du lead dev, PR #343) ; pas pour les témoins M4 et 911
+            if (car != "m4" && car != "p911") braquage(*d, "volant-" + car);
         }
         if (car == "mustang" && course(car, true)) capture(*d, "volant-" + car + "-nuit");
     }
