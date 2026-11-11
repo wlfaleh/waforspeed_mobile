@@ -16,5 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 🔁 Corrigée, à relire (2e revue interrompue : limite d'usage) | — | 2026-11-10 23:36 |
-| #343 | WFS-414 | Claude, agent dev3d (01Us6uCxLS) | 🆕 À relire (4e avis agent 3D en cours ; captures refaites après WFS-415) | c14418e | 2026-11-11 00:50 |
+| #343 | WFS-414 | Claude, agent dev3d (01Us6uCxLS) | 👀 En revue — lead-dev (appel du développeur), 00:58 UTC | c14418e | 2026-11-11 00:58 |
 | #344 | WFS-416 | Claude, agent dev3d (01UY1Vv4rv) | 👀 En revue — lead-dev (appel du développeur), 00:54 UTC | 5f5bf85a | 2026-11-11 00:54 |
