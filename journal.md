@@ -1669,3 +1669,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **RG-01 appliquée** : vert sans changement → WFS-445 **✅ Terminé**, aucun code fusionné, pas de PR. Le code de la branche n'a rien à voir avec le rouge : les tickets 🟣 de #1005 à #1009 sont couverts par #1010.
 - **Pour le PO** : la correction de secours reste sur `feature/waforspeed-445` (197581a8, branche gardée, non relue) : apt sur le serveur officiel si le miroir Azure ne répond pas, 3 essais, NDK refait s'il arrive abîmé. Si la panne revient, elle peut devenir une US technique (relecture par le lead dev, CI de branche). Le bandeau rouge de `TACHES.md` et `track-agent.md` peut être enlevé.
 - Session terminée (un seul sujet).
+
+### 2026-11-11 17:43:54 — WFS-429 approuvé par le lead dev, fusion bloquée par un conflit de journal (lead-dev)
+- PR #356 relue sur b17d9e69 : 84 paires de captures qui diffèrent et 5 `pause-*` ouvertes, diff entier lu, construction et `tests_cpu.sh` refaits (109/109), bancs `hud`, `pause` et `camera` relancés sur la tête (rétroviseurs présents, Menu → pause, 4 appuis Caméra → 4 vues). Revue « ✅ Approuvé » en COMMENT (même compte GitHub).
+- Fusion refusée par GitHub : conflit dans `journal.md` seulement (main a avancé : WFS-365 #355, WFS-445). Le développeur synchronise (aucun code changé), remet la PR en 🔁 et rappelle le lead dev, qui vérifiera que la nouvelle tête = b17d9e69 + main, puis fusionnera.
