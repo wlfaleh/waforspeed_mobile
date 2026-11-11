@@ -272,6 +272,7 @@ bool Renderer::init(VkCtx& vk) {
     dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
     VK_OK(vkAllocateDescriptorSets(d, &dai, &postSet_));
 
+    copieX1_.creer(d);   // WFS-425 : sous-passe de copie de la scène ×1 (jeu relié par createTargets)
     createTargets();
     ETAPE_RENDU("cibles de rendu");
     createPipelines();
@@ -581,45 +582,16 @@ void Renderer::createTargets() {
     const bool ms = vk.msaa != VK_SAMPLE_COUNT_1_BIT;
 
     hdr_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);   // WFS-150 : relue par le banc (HDR)
-    if (ms) msaaColor_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
+    // WFS-425 : couleur temporaire de la scène (mémoire de tuile) en ×2 / ×4 (MSAA, résolue dans hdr_) ET en ×1 (copiée dans hdr_
+    // par la 2e sous-passe) : les shaders de la scène n'écrivent jamais directement dans hdr_ (passe_scene.h)
+    msaaColor_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | (ms ? 0 : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT), vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
     depth_ = vk.createImage(cw_, ch_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
 
-    if (!scenePass_) {
-        // ---------- passe de scène : couleur HDR (MSAA) + profondeur, résolue dans hdr_ ----------
-        VkAttachmentDescription at[3]{};
-        VkAttachmentReference colRef{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, depRef{1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
-                              resRef{2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-        at[0].format = HDR_FORMAT; at[0].samples = vk.msaa;
-        at[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at[0].storeOp = ms ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
-        at[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        at[0].finalLayout = ms ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        at[1].format = vk.depthFormat; at[1].samples = vk.msaa;
-        at[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        at[2].format = HDR_FORMAT; at[2].samples = VK_SAMPLE_COUNT_1_BIT;
-        at[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        at[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        VkSubpassDescription sp{};
-        sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        sp.colorAttachmentCount = 1; sp.pColorAttachments = &colRef; sp.pDepthStencilAttachment = &depRef;
-        if (ms) sp.pResolveAttachments = &resRef;
-        VkSubpassDependency dep[2]{};
-        dep[0].srcSubpass = VK_SUBPASS_EXTERNAL; dep[0].dstSubpass = 0;
-        dep[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dep[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dep[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        dep[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dep[1].srcSubpass = 0; dep[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-        dep[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; dep[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dep[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; dep[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    // ---------- passe de scène : couleur HDR (MSAA ou ×1) + profondeur, temporaires, résolues ou copiées dans hdr_ (WFS-425) ----------
+    if (!scenePass_) WFS_CHECK((scenePass_ = passe_scene::creer(d, HDR_FORMAT, vk.depthFormat, vk.msaa)) != VK_NULL_HANDLE, "Vulkan : passe de scène MSAA x%d impossible", (int)vk.msaa);
+    if (!finalPass_) {   // WFS-425 : créée une fois (avant : recréée sans destruction de l'ancienne à chaque changement de MSAA)
         VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
-        rpci.attachmentCount = ms ? 3 : 2; rpci.pAttachments = at;
-        rpci.subpassCount = 1; rpci.pSubpasses = &sp; rpci.dependencyCount = 2; rpci.pDependencies = dep;
-        VK_OK(vkCreateRenderPass(d, &rpci, nullptr, &scenePass_));
-
+        rpci.subpassCount = 1;
         // ---------- passe finale : image de la swapchain ----------
         VkAttachmentDescription fa{};
         fa.format = vk.swapFormat; fa.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -638,11 +610,12 @@ void Renderer::createTargets() {
         VK_OK(vkCreateRenderPass(d, &rpci, nullptr, &finalPass_));
     }
 
-    VkImageView views[3] = {ms ? msaaColor_.view : hdr_.view, depth_.view, hdr_.view};
+    VkImageView views[passe_scene::ATTACHEMENTS] = {msaaColor_.view, depth_.view, hdr_.view};
     VkFramebufferCreateInfo fci{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
-    fci.renderPass = scenePass_; fci.attachmentCount = ms ? 3 : 2; fci.pAttachments = views;
+    fci.renderPass = scenePass_; fci.attachmentCount = passe_scene::ATTACHEMENTS; fci.pAttachments = views;
     fci.width = cw_; fci.height = ch_; fci.layers = 1;
     VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &sceneFb_));
+    if (!ms) copieX1_.lier(d, msaaColor_.view);   // WFS-425 : la copie lit la couleur temporaire de cette cible
     finalFbs_.resize(vk.swapViews.size());
     for (size_t i = 0; i < vk.swapViews.size(); i++) {
         fci.renderPass = finalPass_; fci.attachmentCount = 1; fci.pAttachments = &vk.swapViews[i];
@@ -937,6 +910,8 @@ void Renderer::createScenePipelines() {
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
     addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
+    // WFS-425 : ×1 : 2e sous-passe, copie de la couleur temporaire de la scène dans la cible HDR
+    if (passe_scene::avecCopie(s)) { copieX1_.pipeline = copieX1_.faire(vk_->device, scenePass_, cachePipelines_); pipelinesCrees_++; }
 }
 
 // WFS-262 (RG-02) : variantes MSAA (×1, ×2, ×4 que le GPU accepte, hors celle en service) des pipelines de scène créées une
@@ -948,24 +923,17 @@ void Renderer::prechaufferMsaa() {
     const VkSampleCountFlags sc = vk_->props.limits.framebufferColorSampleCounts & vk_->props.limits.framebufferDepthSampleCounts;
     const VkSampleCountFlagBits enService = vk_->msaa;
     const uint32_t avant = pipelinesCrees_;
-    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_, &opaqueLeger_, &opaqueLegerDouble_};
+    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_, &opaqueLeger_, &opaqueLegerDouble_,
+                             &copieX1_.pipeline};   // WFS-425
     VkPipeline garde[std::size(membres)];
     for (size_t i = 0; i < std::size(membres); i++) garde[i] = *membres[i];
     const VkRenderPass passeGardee = scenePass_;
     int variantes = 0;
     for (VkSampleCountFlagBits e : {VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_2_BIT, VK_SAMPLE_COUNT_4_BIT}) {
         if (e == enService || !(sc & e) || e > msaaMax_) continue;
-        const bool ms = e != VK_SAMPLE_COUNT_1_BIT;
-        VkAttachmentDescription at[3]{};
-        for (VkAttachmentDescription& a : at) { a.loadOp = a.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; a.storeOp = a.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; a.finalLayout = VK_IMAGE_LAYOUT_GENERAL; }
-        at[0].format = HDR_FORMAT; at[0].samples = e; at[1].format = vk_->depthFormat; at[1].samples = e; at[2].format = HDR_FORMAT; at[2].samples = VK_SAMPLE_COUNT_1_BIT;
-        VkAttachmentReference colRef{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, depRef{1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}, resRef{2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-        VkSubpassDescription sp{}; sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        sp.colorAttachmentCount = 1; sp.pColorAttachments = &colRef; sp.pDepthStencilAttachment = &depRef; if (ms) sp.pResolveAttachments = &resRef;
-        VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
-        rpci.attachmentCount = ms ? 3 : 2; rpci.pAttachments = at; rpci.subpassCount = 1; rpci.pSubpasses = &sp;
-        VkRenderPass p = VK_NULL_HANDLE;
-        if (vkCreateRenderPass(d, &rpci, nullptr, &p) != VK_SUCCESS) continue;
+        // WFS-425 : passe identique à celle de createTargets (2 sous-passes en ×1) : pipelines du cache compatibles
+        const VkRenderPass p = passe_scene::creer(d, HDR_FORMAT, vk_->depthFormat, e);
+        if (!p) continue;
         vk_->msaa = e; scenePass_ = p;
         createScenePipelines();
         for (VkPipeline* m : membres) { if (*m) vkDestroyPipeline(d, *m, nullptr); *m = VK_NULL_HANDLE; }
@@ -1004,7 +972,8 @@ bool Renderer::appliquerNettete() {
     const bool refaire = ms != vk_->msaa;
     if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
         VkDevice d = vk_->device;
-        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_, &opaqueLeger_, &opaqueLegerDouble_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_, &opaqueLeger_, &opaqueLegerDouble_,
+                              &copieX1_.pipeline}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }   // WFS-425 : copie ×1
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -1727,6 +1696,7 @@ void Renderer::endFrame() {
         }
     }
     passes::dansScene(*this, r.cb, EtapeRendu::Transparents);   // WFS-150
+    if (passe_scene::avecCopie(vk.msaa)) copieX1_.enregistrer(r.cb, sw_, sh_);   // WFS-425 : ×1 : scène copiée dans la cible HDR (même tuile)
     vkCmdEndRenderPass(r.cb);
     if (statsPool_) { vkCmdEndQuery(r.cb, statsPool_, (uint32_t)cur_); statsEcrit_[cur_] = true; }   // WFS-348 : banc
     if (bloom_) bloom_->dessiner(*this, r.cb);   // WFS-100 : chaîne du bloom, comptée avec la passe de scène
@@ -1823,6 +1793,7 @@ void Renderer::shutdown() {
     for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_, skyApres_,
                          poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_, opaqueCull_, skinOpaqueCull_, opaqueLeger_, opaqueLegerDouble_})
         if (p) vkDestroyPipeline(d, p, nullptr);
+    copieX1_.detruire(d);   // WFS-425 : pipeline, jeu, disposition et shaders de la copie ×1
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
     if (refletPass_) vkDestroyRenderPass(d, refletPass_, nullptr);
