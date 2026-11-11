@@ -61,9 +61,10 @@ std::string virgule(double v, int decimales) {
     return b;
 }
 
-static std::string signe(double v) {   // « +3 % », « −12 % »
+static std::string signe(double v) {   // « +3 % », « -12 % »
     const long n = std::lround(v);
-    return (n > 0 ? "+" : n < 0 ? "−" : "") + std::to_string(std::labs(n)) + " %";
+    return (n > 0 ? "+" : n < 0 ? "-" : "")   // trait d'union : la police du jeu n'a pas le signe moins « − »
+            + std::to_string(std::labs(n)) + " %";
 }
 
 std::string ligneTableau(const std::vector<Resultat>& res, size_t i) {
@@ -136,7 +137,7 @@ std::string texteFichier(const Entete& e, const std::vector<Resultat>& res) {
             t += "  GPU (ms par image, " + std::to_string(r.gpuImages) + " images) : ombre " + virgule(r.gpuOmbre, 2) + ", reflet " + virgule(r.gpuReflet, 2) +
                  ", scène " + virgule(r.gpuScene, 2) + ", post (bloom, image finale, interface) " + virgule(r.gpuPost, 2) + ", total " + virgule(r.gpuTotal, 2) +
                  " ; passes = " + virgule(p * 100, 0) + " % du total" + (p < PART_MIN ? " (MOINS DE 90 %)" : "") + "\n";
-            if (!r.passesEnfichables.empty()) t += "  passes du socle (comprises dans « scène ») : " + r.passesEnfichables + "\n";
+            if (!r.passesEnfichables.empty()) t += "  coût par passe (WFS-150 ; les passes du socle sont comprises dans « scène ») : " + r.passesEnfichables + "\n";
         } else t += "  GPU : horodatages non disponibles\n";
         t += "  processeur (ms par image) : logique " + virgule(r.cpuLogique, 2) + ", préparation " + virgule(r.cpuPreparation, 2) + ", envoi " +
              virgule(r.cpuEnvoi, 2) + ", attente du GPU " + virgule(r.cpuAttente, 2) + "\n";

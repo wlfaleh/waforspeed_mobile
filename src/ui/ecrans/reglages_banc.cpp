@@ -173,6 +173,7 @@ void finirBanc(Renderer* r, const GameView& g, const std::string& raison) {
     choisirVue(g_vueAvant);
     if (sauvegarde().actif() && !g_carteAvant.empty()) { sauvegarde().map = g_carteAvant; sauvegarde().tod = g_momentAvant; sauvegarde().enregistrer(); }
     g_entete.interrompu = interrompu; g_entete.raison = raison;
+    if (r) g_entete.appareil = diag::texteAppareil(r->vk());   // RG-03 de WFS-419 : modèle, GPU, pilote, Vulkan
     ecrireFichier();
     WFS_LOG("banc du téléphone (WFS-420) : %s, %zu essais mesurés sur %zu", interrompu ? ("interrompu (" + raison + ")").c_str() : "fini", g_res.size(), g_deroule.size());
     g_resultats = true;
@@ -232,7 +233,7 @@ public:
         const double t = nowSeconds();
         const double dt = g_tImage < 0 ? 0 : t - g_tImage;
         g_tImage = t;
-        if (dt <= 0 || dt > 1) return;
+        if (dt <= 0 || dt > 5) return;   // une image d'1 s est un vrai à-coup, comptée ; au-delà de 5 s : reprise après une coupure
         if (g_ms.size() < g_ms.capacity()) g_ms.push_back((float)(dt * 1000));
         g_cpuLogique += Game::msMiseAJour; g_cpuRendu += Game::msRendu;
         g_attente += r.chronoImage().attenteGpuMs; g_envoi += r.chronoImage().finImageMs;
@@ -393,7 +394,7 @@ int benchBancTelephone(Game& g, Renderer& r, const std::string& out) {
     int ecarts = 0;
     {   // durées courtes : « chauffe,mesure » en secondes réelles (le rendu logiciel est lent)
         const char* d = std::getenv("WFS_BANC_TEL_DUREES");
-        banc_tel::dureeChauffe = 0.6; banc_tel::dureeMesure = 1.2;
+        banc_tel::dureeChauffe = 1.5; banc_tel::dureeMesure = 4;
         if (d) std::sscanf(d, "%lf,%lf", &banc_tel::dureeChauffe, &banc_tel::dureeMesure);
     }
     dossierBanc = out;
@@ -427,7 +428,7 @@ int benchBancTelephone(Game& g, Renderer& r, const std::string& out) {
     if (Game::piloteBanc || banc_tel::actif) { WFS_ERR("banc du téléphone : pilote ou banc encore actif"); ecarts++; }
     {   // l'arrêt garde les essais finis (« Arrêter »)
         g_resultats = false; ouvrirReglagesBanc(false);
-        banc_tel::dureeChauffe = 0.3; banc_tel::dureeMesure = 0.6;
+        banc_tel::dureeChauffe = 1; banc_tel::dureeMesure = 2.5;
         commencer();
         for (int i = 0; i < 20000 && enCours() && g_res.size() < 2; i++) image();
         g_arreter = true; image(); image();

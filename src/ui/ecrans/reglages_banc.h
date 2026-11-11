@@ -26,7 +26,7 @@ bool toucherResultats(float x, float y);
 // dossier du fichier de résultats (banc PC) ; vide : qualite::dossierMesure (Android : externalDataPath)
 inline std::string dossierBanc;
 
-// banc PC (WFS_BANC=banc-telephone) : menu caché, protocole, banc court (WFS_BANC_TEL_DUREES, défaut 0,6 s + 1,2 s par essai),
+// banc PC (WFS_BANC=banc-telephone) : menu caché, protocole, banc court (WFS_BANC_TEL_DUREES, défaut 1,5 s + 4 s par essai),
 // nuit puis jour, résultats ; captures banc-tel-*.png ; rend le nombre d'écarts
 int benchBancTelephone(Game& g, Renderer& r, const std::string& out);
 

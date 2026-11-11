@@ -47,7 +47,7 @@ int main() {
     bool vu90 = false, vuChauffe = false, vuGpu = false;
     for (const std::string& l : rq) { vu90 |= contient(l, "80 %"); vuChauffe |= contient(l, "chauffé"); vuGpu |= contient(l, "horodatages"); }
     VERIFIE(vu90 && vuChauffe && vuGpu, "remarques : 90 %%, chauffe, horodatages");
-    VERIFIE(ligneTableau(res, 0).find("réf.") != std::string::npos && contient(ligneTableau(res, 1), "−25 %"), "ligne du tableau : %s / %s",
+    VERIFIE(ligneTableau(res, 0).find("réf.") != std::string::npos && contient(ligneTableau(res, 1), "-25 %"), "ligne du tableau : %s / %s",
             ligneTableau(res, 0).c_str(), ligneTableau(res, 1).c_str());
     // RG-04 : nom et contenu du fichier
     VERIFIE(nomFichier(2026, 11, 11, 9, 5) == "diagnostic-2026-11-11-0905.txt", "nom du fichier");
