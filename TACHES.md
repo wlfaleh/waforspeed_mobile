@@ -171,7 +171,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 
 | Priorité | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| P1 Urgent | WFS-415 | [TECHNIQUE] [URGENT] Retour à la fluidité d'hier (fenêtres WFS-402 coupées, code gardé) et CI de `main` au vert | E0 (exception de l'utilisateur) | 🔧 En cours (lead-dev, session 01UY1VvJJ) |  | — | `feature/waforspeed-415` |  |  |
+| P1 Urgent | WFS-415 | [TECHNIQUE] [URGENT] Retour à la fluidité d'hier (fenêtres WFS-402 coupées, code gardé) et CI de `main` au vert | E0 (exception de l'utilisateur) | 🟡 À valider (utilisateur) — fusionné par confiance #342 (af1285a4), ordre de l'utilisateur |  | — | `feature/waforspeed-415` | #342 |  |
 | P1 Urgent | WFS-416 | [URGENT] Bâtiments cuits dans le paquet de carte (3 niveaux, fenêtres comprises), plus aucune construction en course, kit en secours | E14 + E15 | 🔧 En cours (ordre de l'utilisateur ; PR après fusion de WFS-415) | Claude, agent dev3d (01UY1Vv4rv), 2026-11-10 22:40 UTC (ordre de l'utilisateur) | WFS-415 fusionné avant la PR | `feature/waforspeed-416` |  |  |
 | P1 Urgent | WFS-355 | [URGENT] Écran des CGU : « ACCEPTER » ne fait rien, impossible d'entrer dans le jeu (bloquant absolu) | E8 | 🟡 À valider (utilisateur) (PR #309 fusionnée) | Claude, agent 2 (01UY1Vv5), 2026-11-09 11:47 UTC | — | `feature/waforspeed-355` |  |  |
 | P1 Urgent | WFS-350 | [TECHNIQUE] [URGENT] Correction pipeline CI : run 946 de main rouge | E7 | 🟣 Fusionné (PR #301, lead dev) | agent expert ci (session 01UY1Vv4), 2026-11-09 07:53 UTC | — | `feature/waforspeed-350` | #301 |  |
