@@ -268,7 +268,7 @@ private:
     vec3 regardCasc_{0, 0, -1};  // WFS-227 : regard de la caméra (tranches des cascades)
     masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4], fRetro_; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
     bool retroOn_ = false;   // WFS-324 : rétroviseur redessiné à cette image (plans fRetro_)
-    bool voitureRetroSeule_ = false, phareRetro_ = false;   // WFS-324 : voiture en cours de dessin vue seulement dans les glaces ; vue par la glace de l'image (feuxVoiture)
+    bool voitureRetroSeule_ = false;   // WFS-324 : voiture en cours de dessin vue seulement dans les glaces (feuxVoiture)
     void createTargets();
     void destroyTargets();
     void createPipelines();
