@@ -16,9 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-11 12:24:11 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-11 12:26:00 UTC (po-scrum-master)
 
-> 🔴 **Alerte** : CI de `main` verte (#998, WFS-419) ; **WFS-324** (P1) en retour lead dev (PR #341) ; WFS-421 attribué à Claude, agent dev (01UY1Vv4ss) ; WFS-412 attribué à agent expert ci cd (session 01UY1Vv4jR6p) ; WFS-426 attribué à Claude, agent cartes (01UY1Vv2HrQF) ; WFS-425 attribué à Claude, agent dev (01Us6uCtwf) ; WFS-418 attribué à Claude, agent dev (01Us6uCt95) ; **WFS-423, 422** (P1, ⏳ Prêt) attendent la fusion de WFS-421 (ordre des 20 : `@dev` l'un après l'autre en E4), pour les prochaines sessions `@dev` ; WFS-424 attend 421 à 423 ; WFS-405, 319, 407, 408, 409 en attente du jour de publication.
+> 🔴 **Alerte** : CI de `main` verte (#998, WFS-419) ; **WFS-324** (P1) en retour lead dev (PR #341) ; WFS-421 attribué à Claude, agent dev (01UY1Vv4ss) ; WFS-412 attribué à agent expert ci cd (session 01UY1Vv4jR6p) ; WFS-426 attribué à Claude, agent cartes (01UY1Vv2HrQF) ; WFS-425 attribué à Claude, agent dev (01Us6uCtwf) ; WFS-383 attribué à Claude, agent dev3d (01UY1Vv1zt) ; WFS-418 attribué à Claude, agent dev (01Us6uCt95) ; **WFS-423, 422** (P1, ⏳ Prêt) attendent la fusion de WFS-421 (ordre des 20 : `@dev` l'un après l'autre en E4), pour les prochaines sessions `@dev` ; WFS-424 attend 421 à 423 ; WFS-405, 319, 407, 408, 409 en attente du jour de publication.
 
 ## Agents développeurs
 
@@ -30,6 +30,7 @@
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 | Claude, agent dev (01Us6uCtwf) | WFS-425 | défaut MSAA ×1 (scène 62 → 108 ms au lieu de baisser) : trouver la cause dans les passes et cibles de la scène et corriger | `feature/waforspeed-425`, 2026-11-11 12:22 | 🔧 en cours (branche poussée, analyse) |
 | Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, pas encore poussée | 🔧 en cours (attribué 12:22) |
+| Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, pas encore poussée | 🔧 en cours (attribué 12:25) |
 | Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, pas encore poussée | 🔧 en cours (attribué 12:24) |
 
 ## Agents de pilotage
@@ -42,7 +43,7 @@
 | dev-artiste-3d | développeur **et** artiste 3D (skills `agent-developer`, `waforspeed-natif`, `artiste-3d`) : voitures sans marque, modèles 3D + code ; demande son ticket au PO (`@devartiste`, `@dev3d`) | créé le 2026-11-09 19:22 UTC (demande de l'utilisateur) ; tickets voitures WFS-358 à 361 |
 | artiste-3d | artiste 3D (skill `artiste-3d`) : choisit, retouche, intègre les modèles et actifs 3D, sans code du moteur ; demande son ticket au PO (`@artiste`) | créé le 2026-11-09 19:22 UTC (demande de l'utilisateur) |
 | expert-cartes | développeur expert des cartes et de leur téléchargement (paquets de cartes, E14, WFS-301 à 314) ; skill `expert-cartes` ; demande son ticket au PO | créé le 2026-11-08 14:14 UTC (demande de l'utilisateur) |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 12:24 (11/11) : WFS-418 attribué à Claude, agent dev (01Us6uCt95) ; 12:22 (11/11) : WFS-426 attribué à Claude, agent cartes (01UY1Vv2HrQF) ; 12:17 (11/11) : WFS-412 attribué à agent expert ci cd (session 01UY1Vv4jR6p) ; 12:10 (11/11) : WFS-421 attribué à Claude, agent dev (01UY1Vv4ss) ; 12:09 (11/11) : « go Corniche » (WFS-405 réécrit, WFS-386 après la sortie), WFS-426 créé, ordre des 20 prochaines tâches |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 12:25 (11/11) : WFS-383 attribué à Claude, agent dev3d (01UY1Vv1zt) ; 12:24 (11/11) : WFS-418 attribué à Claude, agent dev (01Us6uCt95) ; 12:22 (11/11) : WFS-426 attribué à Claude, agent cartes (01UY1Vv2HrQF) ; 12:17 (11/11) : WFS-412 attribué à agent expert ci cd (session 01UY1Vv4jR6p) ; 12:10 (11/11) : WFS-421 attribué à Claude, agent dev (01UY1Vv4ss) ; 12:09 (11/11) : « go Corniche » (WFS-405 réécrit, WFS-386 après la sortie), WFS-426 créé, ordre des 20 prochaines tâches |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-08 nuit terminée (01:06) : 25 tickets ; ANO-160 à 167 créées, planifiées par le PO à 01:12 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-192 (méthode d'effacement des logos, ΔE2000 ≤ 2) |
 | juriste | juriste (skill `juriste`, `@juriste`) : regarde l'application du côté juridique (marques, licences NC, crédits, RGPD, CGU, Google Play) ; rapports dans `juridique/` ; ne code pas | créé le 2026-11-10 12:40 UTC (demande de l'utilisateur) ; 1er travail attendu : avis sur la sortie Android (WFS-320, WFS-404) |
