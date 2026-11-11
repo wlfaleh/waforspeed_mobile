@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <utility>
 #include <vector>
 #include "../src/render/banc_telephone.h"
 using namespace wfs::banc_tel;
@@ -45,8 +46,8 @@ int main() {
     VERIFIE(std::fabs(ecartReference(res, 1) + 25) < 1e-9 && std::fabs(ecartReference(res, 2) - 10) < 1e-9, "écarts −25 %% et +10 %%");
     const std::vector<std::string> rq = remarques(res);
     bool vu90 = false, vuChauffe = false, vuGpu = false;
-    for (const std::string& l : rq) { vu90 |= contient(l, "80 %"); vuChauffe |= contient(l, "chauffé"); vuGpu |= contient(l, "horodatages"); }
-    VERIFIE(vu90 && vuChauffe && vuGpu, "remarques : 90 %%, chauffe, horodatages");
+    for (const std::string& l : rq) { vu90 |= contient(l, "80 %"); vuChauffe |= contient(l, "chauffé"); vuGpu |= contient(l, "Temps GPU : pas de mesure pour 2 essais"); }   // WFS-451 (RG-03) : un essai sur trois a un temps GPU : les deux autres sont nommés
+    VERIFIE(vu90 && vuChauffe && vuGpu, "remarques : 90 %%, chauffe, essais sans temps GPU");
     VERIFIE(ligneTableau(res, 0).find("réf.") != std::string::npos && contient(ligneTableau(res, 1), "-25 %"), "ligne du tableau : %s / %s",
             ligneTableau(res, 0).c_str(), ligneTableau(res, 1).c_str());
     // RG-04 : nom et contenu du fichier
@@ -55,6 +56,36 @@ int main() {
     const std::string t = texteFichier(e, res);
     VERIFIE(contient(t, "WFS-420") && contient(t, "BANC INTERROMPU") && contient(t, "nuit | Sans ombres") && contient(t, "MOINS DE 90 %"), "texte du fichier");
     VERIFIE(virgule(16.75, 1) == "16,8" || virgule(16.75, 1) == "16,7", "virgule");
+    // ---------- WFS-451 ----------
+    // RG-01 : mode forcé (Checkpoint = 0) puis rétabli (Poursuite = 2) ; un 2e « forcer » (essai suivant) ne perd pas le mode du joueur
+    ModeForce mf;
+    VERIFIE(mf.retablir(2) == 2, "sans banc : le mode ne change pas");
+    VERIFIE(mf.forcer(2, 0) == 0 && mf.forcer(0, 0) == 0 && mf.force, "mode forcé à chaque essai");
+    VERIFIE(mf.retablir(0) == 2 && !mf.force && mf.retablir(1) == 1, "mode du joueur rétabli, une seule fois");
+    // RG-01 : mode écrit dans le fichier
+    Entete em; em.mode = "Checkpoint"; em.modeJoueur = "Poursuite";
+    VERIFIE(contient(texteFichier(em, res), "mode de course : Checkpoint (forcé par le banc) ; mode du joueur : Poursuite, rétabli à la fin"), "mode dans le fichier");
+    em.modeJoueur = "Checkpoint";
+    VERIFIE(contient(texteFichier(em, res), "mode de course : Checkpoint (forcé par le banc)\n"), "mode dans le fichier (joueur déjà en Checkpoint)");
+    // RG-03 : un seul essai sans temps GPU : il est nommé, pas de « horodatages non disponibles »
+    std::vector<Resultat> g3 = res;
+    g3[0].gpuMesure = true; g3[0].gpuTotal = 10; g3[0].gpuScene = 10; g3[1].gpuScene = 10;   // 100 % expliqués
+    g3[2].images.mediane = 20;   // contrôle égal à la référence
+    {
+        const std::vector<std::string> q = remarques(g3);
+        bool nomme = false, indispo = false, chauffe = false;
+        for (const std::string& l : q) { nomme |= contient(l, "1 essai (nuit, Contrôle (tout éteint))"); indispo |= contient(l, "non disponibles"); chauffe |= contient(l, "chauffé"); }
+        VERIFIE(nomme && !indispo && !chauffe, "un essai sans temps GPU : nommé, sans « non disponibles » ni chauffe (%zu remarques)", q.size());
+    }
+    // RG-03 : aucun essai avec temps GPU : « horodatages non disponibles »
+    for (Resultat& x : g3) x.gpuMesure = false;
+    { bool indispo = false; for (const std::string& l : remarques(g3)) indispo |= contient(l, "non disponibles"); VERIFIE(indispo, "aucun temps GPU : horodatages non disponibles"); }
+    // RG-03 : contrôle plus rapide (−11 %) : pas de chauffe ; plus lent (+10 %) : chauffe ; +4 % : sous le seuil
+    for (const auto& [mediane, attendu] : {std::pair<float, bool>{17.8f, false}, {22.f, true}, {20.8f, false}}) {
+        g3[2].images.mediane = mediane;
+        bool chauffe = false; for (const std::string& l : remarques(g3)) chauffe |= contient(l, "chauffé");
+        VERIFIE(chauffe == attendu, "contrôle à %g ms pour 20 : chauffe %d attendu %d", mediane, chauffe, attendu);
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("banc du téléphone : OK\n");
     return 0;
