@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-11 12:57:55 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-11 14:02:16 UTC (po-scrum-master)
 
 > 🔴 **Alerte** : WFS-364 attribué à Claude, agent dev3d (01UY1Vv2nQ) ; CI de `main` verte (#998, WFS-419) ; **WFS-324** (P1) en retour lead dev (PR #341) ; WFS-421 fusionné (#346), session close ; WFS-412 attribué à agent expert ci cd (session 01UY1Vv4jR6p) ; WFS-426 attribué à Claude, agent cartes (01UY1Vv2HrQF) ; WFS-425 attribué à Claude, agent dev (01Us6uCtwf) ; WFS-383 attribué à Claude, agent dev3d (01UY1Vv1zt) ; WFS-418 attribué à Claude, agent dev (01Us6uCt95) ; **WFS-423, 422** (P1, ⏳ Prêt ; WFS-421 est fusionné) (ordre des 20 : `@dev` l'un après l'autre en E4), pour les prochaines sessions `@dev` ; WFS-424 attend 421 à 423 ; WFS-405, 319, 407, 408, 409 en attente du jour de publication. **bancs du matin rouges 2 jours de suite (runs #12, #16)** : WFS-427 attribué à agent expert ci cd (session 01UY1Vv2Hq) ; **WFS-428 et WFS-377** (P1, ⏳ Prêt) attendent une nouvelle session `@dev` ;
 
@@ -24,15 +24,15 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 23:10 | ↩️ retour lead dev sur PR #341 : à corriger (phares de nuit dans les glaces) |
-| agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, 2026-11-11 12:49 (75a99915) | 🔧 en cours (run de branche #1000) |
-| agent expert ci cd (session 01UY1Vv2Hq) | WFS-427 | bancs du matin : groupe `ecrans-2400` scindé en deux (`fluidite` à part), sans rien affaiblir (US technique) | `feature/waforspeed-427`, pas encore poussée | 🔧 en cours (attribué 12:57) |
+| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-11 13:59 | ↩️ retour lead dev sur PR #341 (3e revue) : lueur des phares en disque dans les glaces |
+| agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, 2026-11-11 12:49 (75a99915) | 🔀 PR #349 ouverte 13:26 UTC, lead dev appelé |
+| agent expert ci cd (session 01UY1Vv2Hq) | WFS-427 | bancs du matin : groupe `ecrans-2400` scindé en deux (`fluidite` à part), sans rien affaiblir (US technique) | `feature/waforspeed-427`, poussée 12:59 (adf935fa) | 🔧 en cours : correction poussée, bancs du matin lancés sur la branche (run #19) pour mesurer les deux groupes |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
-| Claude, agent dev (01Us6uCtwf) | WFS-425 | défaut MSAA ×1 (scène 62 → 108 ms au lieu de baisser) : trouver la cause dans les passes et cibles de la scène et corriger | `feature/waforspeed-425`, 2026-11-11 12:22 (4970e806) | 🔧 en cours (branche poussée, analyse) |
-| Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 2026-11-11 12:54 (37749ba6) | 🔧 en cours (branche poussée) |
+| Claude, agent dev (01Us6uCtwf) |  | WFS-425 fusionné (#348, 01712be4), 🟡 à valider par l'utilisateur (mesure ×1 / ×2 sur le S21 FE) | `feature/waforspeed-425`, dernier envoi 2026-11-11 13:24 UTC | ⏹️ session terminée (WFS-425 fusionné) |
+| Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 13:47 (b1db4c34) | 🔀 PR #350 ouverte, lead dev appelé |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 12:25 (e59ea1e6) | 🔧 en cours (attribué 12:25) |
 | Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 12:41 (f76ca05c) | 🔧 en cours (branche poussée, analyse) |
-| Claude, agent dev3d (01UY1Vv2nQ) | WFS-364 | retouches de forme de la Golf et de la Corsa (voitures sans marque) : calandre, feux, disque noir de la Golf, relief du capot de la Corsa | `feature/waforspeed-364`, pas encore poussée | 🔧 en cours (attribué 12:55) |
+| Claude, agent dev3d (01UY1Vv2nQ) | WFS-364 | retouches de forme de la Golf et de la Corsa (voitures sans marque) : calandre, feux, disque noir de la Golf, relief du capot de la Corsa | `feature/waforspeed-364`, 2026-11-11 14:00 | 🔀 PR #351 ouverte, lead dev appelé |
 
 ## Agents de pilotage
 
