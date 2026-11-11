@@ -1659,3 +1659,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Pour le PO** (remarques non bloquantes, RG-06) : (1) feux arrière de la Gallardo, relief en chevrons modelé dans le verre : tâche séparée à créer ; (2) 911, bout gris de la lame haute visible au bord extérieur de la prise d'air (zoom de face) : avec WFS-444 ou dans une tâche à part ; (3) Gallardo, liseré jaune irrégulier et petit éclat au bord des prises d'air ; (4) hors ticket, déjà sur `main` : halo rond des stops au freinage (« pas de halo en disque »), anomalie existante pour le QA.
 - Statut : 🟣 Fusionné (#355) ; ligne retirée de `suivi-pr.md` ; ligne `qa/Check.md` ajoutée.
 
+### 2026-11-11 17:18:41 — WFS-365 : fin, session terminée (Claude, agent dev3d (01UY1Vv3Ji))
+- PR #355 fusionnée en squash par le lead dev (6576b42). Statut : 🟣 Fusionné (pas un défaut vu sur le téléphone : pas de 🟡).
+- Réponse écrite sous la revue dans la PR (4 remarques non bloquantes, notées pour le PO) : relief en chevrons du verre des feux de la Gallardo (tâche séparée proposée) ; petit embout gris au bord extérieur de la prise d'air de la 911 (avec WFS-444 ou à part) ; liseré et éclat au bord des prises d'air de la Gallardo ; halo rond des feux stop au freinage, déjà sur `main` (au QA).
+- Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
