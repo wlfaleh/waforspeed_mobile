@@ -1,13 +1,33 @@
-## Agent : Claude, agent dev3d (01UY1Vv2nQ)
+Agent : Claude, agent dev3d (01UY1Vv2nQ)
 
 **Ticket** : WFS-364 — règles : `regles-de-gestion/WFS-364.md`
 
-## Description (à remplir par le développeur avant d'ouvrir la PR)
+## Description
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
-- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
-- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
-- **Limites et risques connus** : À REMPLIR
+- **Demande de l'utilisateur** (en une phrase) : les voitures doivent être sans marque, y compris par leur forme (« et les autres voitures ? », 2026-11-09) ; ce ticket retire les signatures de forme de la Golf (bandeau lumineux, liseré rouge et emblème rond de la calandre, disque noir laissé par WFS-404) et de la Corsa (« éclair » chromé et calandre, petit relief au centre du capot).
+- **Ce qui change à l'écran** :
+  - **Golf** (3 retouches) : (1) l'**emblème rond** (disque noir uni depuis WFS-404, 4 cm devant le bouclier) est retiré par découpe exacte ; (2) dans la **fente entre les phares**, le bandeau lumineux, le liseré rouge, le jonc et la plaque imprimée sont retirés (découpe exacte sur le contour de la fente, glaces des phares gardées) et remplacés par une **grille générique à 2 lames horizontales noir brillant**, 1 cm derrière la carrosserie, avec rebord, paroi et fond noir mat ; (3) l'**encoche ronde** que l'emblème laissait dans la peinture, au-dessus de la fente, est **refermée par une peau de carrosserie cousue** au bord découpé (même peinture, mêmes sommets au raccord, aucun joint) : le bord haut de la fente est continu, sans disque.
+  - **Corsa** (2 retouches) : (1) le nid d'abeille, les **barres chromées en V** et le **porte-emblème central** de la calandre sont retirés (découpe exacte, contour élargi de 6 mm sous la peinture) et remplacés par une **grille générique à 4 lames horizontales chanfreinées**, 1,2 cm derrière la carrosserie ; (2) le **relief au centre du capot** (environ 1 cm de haut sur 47 cm de long) est lissé selon la vraie forme du capot.
+  - Rien d'autre ne change : arrière, phares (allumés de nuit comme avant), habitacle, jantes, plaques, autres voitures.
+- **Ce qui change dans les fichiers** :
+  - `tools/retoucher_formes.mjs` : nouvelle retouche **`lisser`** (≈ 60 lignes, aucune autre fonction modifiée). Les sommets d'un maillage dans une boîte prennent la hauteur de la peau voisine, ajustée **rangée par rangée** (y = c0 + c1·x + c2·x² + c3·Δz, moindres carrés) sur la peau d'origine échantillonnée tous les 5 mm de part et d'autre de la boîte. La courbure avant-arrière du capot est gardée, seule la bosse disparaît. La normale est celle de la surface ajustée. Aucun sommet ni triangle n'est ajouté : le LOD reste valable. L'outil s'arrête sans rien écrire s'il manque de l'appui.
+  - `tools/formes.json` : entrées `golf` (6 découpes, 1 couture, 1 grille ajustée) et `corsa` (1 lissage, 4 découpes, 1 grille ajustée), avec empreintes avant / après.
+  - `assets/cars/golf.*`, `assets/cars/corsa.*` : modèles retouchés, LOD régénérés.
+  - **Accroche hors zone, 10 lignes, annoncée au journal** : `src/render/correctifs_voitures.h`. Les optiques avant sont reconnues par le nombre de matériaux du modèle ; les grilles en ajoutent 2 à la fin (Golf 21 → 23, Corsa 17 → 19). Les rangs et les zones des optiques ne changent pas. Sans cette accroche, `test_phares_optiques` échouait et la lumière des phares n'était plus placée dans les optiques de ces deux voitures la nuit.
+- **Comment c'est vérifié** :
+  - `node tools/retoucher_formes.mjs --verifier` : vert pour les **9 voitures** (compass, p208, x5, m4, s3, giulia, rrsport, corsa, golf).
+  - Golf et Corsa rejouées depuis leur modèle d'origine : **octet pour octet** identiques (`.wfm` et `.lod`).
+  - **Giulia et Range Rover rejouées depuis leur modèle d'avant WFS-363 (historique git) avec l'outil modifié** : `.wfm` et `.lod` identiques à `main`.
+  - Contrôles de l'outil : « aucun devant la carrosserie » pour les deux grilles et pour la peau cousue.
+  - Branche synchronisée avec `main`, construction complète, `bash tools/qa/tests_cpu.sh build` : **104 tests réussis**.
+  - `test_fidelite_voitures` : Golf conforme partout (×1,001) ; Corsa, mêmes valeurs qu'avant la retouche (les voies +1,1 % sont d'origine, déjà connues du test). `test_phares_optiques` : les optiques des deux voitures sont trouvées, lumière à ≤ 1 cm de la glace.
+  - Captures : vitrine avant / après (face, 3/4, vues basses, feux) par `captures_pr.sh`. **Zooms ×4** (recadrage d'un quart de la largeur d'une image 2400 × 1080) **de jour et de nuit**, faits avec le même binaire : seuls les modèles changent entre avant et après. Toutes les images ont été regardées une par une.
+- **Limites et risques connus** :
+  - **Golf** : le liseré rouge continue, en fine ligne, **à l'intérieur des deux phares**. Il est imprimé dans la texture de la lampe (matériau 10, partagé avec les DEL des phares). Une découpe abîmerait les phares, et repeindre la texture relève de `tools/logos.json`, hors de ma zone. **Proposé au PO en tâche séparée** (RG-06). Le nid d'abeille du bouclier bas est gardé : il n'est pas dans RG-01.
+  - **Golf** : au raccord de l'ancienne encoche, le bas de la peau cousue est environ 1 mm plus bas que le bord de la peinture voisine. Cela fait 2 pixels au zoom ×8 en 2400 × 1080, et rien ne se voit au zoom ×4.
+  - **Corsa** : 117,5 k triangles (budget joueur ≤ 120 k) ; 5,1 Mo. Golf : 113,6 k triangles ; 5,5 Mo (≤ 8 Mo).
+  - Sur les captures de nuit, les fins traits clairs obliques sont les **gouttes de pluie** du banc de nuit (aussi dans le ciel), pas un défaut du modèle.
+  - Pas d'APK ni de CI de branche (règle) ; rendu vérifié au banc PC (lavapipe, même rendu que la CI).
 
 ## Captures pour le lead dev (16 après)
 
@@ -31,3 +51,18 @@ Dossier : [`qa/pr/WFS-364`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `vitrine-golf-bas1` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-vitrine-golf-bas1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-vitrine-golf-bas1.jpg?raw=true) |
 | `vitrine-golf-bas2` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-vitrine-golf-bas2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-vitrine-golf-bas2.jpg?raw=true) |
 | `vitrine-golf-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-vitrine-golf-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-vitrine-golf-feux.jpg?raw=true) |
+
+## Zooms ×4, jour et nuit (même binaire, seuls les modèles changent)
+
+| Zoom | Avant (main) | Après (branche) |
+|---|---|---|
+| Golf, fente et ancienne encoche, de face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-golf-calandre-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-golf-calandre-face-jour.jpg?raw=true) |
+| Golf, fente et ancienne encoche, de face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-golf-calandre-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-golf-calandre-face-nuit.jpg?raw=true) |
+| Golf, phare et fente, de 3/4, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-golf-34-fente-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-golf-34-fente-jour.jpg?raw=true) |
+| Golf, phare et fente, de 3/4, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-golf-34-fente-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-golf-34-fente-nuit.jpg?raw=true) |
+| Corsa, calandre de face, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-corsa-calandre-face-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-corsa-calandre-face-jour.jpg?raw=true) |
+| Corsa, calandre de face, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-corsa-calandre-face-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-corsa-calandre-face-nuit.jpg?raw=true) |
+| Corsa, calandre de 3/4, jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-corsa-34-calandre-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-corsa-34-calandre-jour.jpg?raw=true) |
+| Corsa, calandre de 3/4, nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-corsa-34-calandre-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-corsa-34-calandre-nuit.jpg?raw=true) |
+| Corsa, centre du capot (vue haute), jour | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-corsa-capot-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-corsa-capot-jour.jpg?raw=true) |
+| Corsa, centre du capot (vue haute), nuit | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/avant-zoom-corsa-capot-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-364/qa/pr/WFS-364/apres-zoom-corsa-capot-nuit.jpg?raw=true) |
