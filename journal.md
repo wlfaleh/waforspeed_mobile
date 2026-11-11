@@ -1619,3 +1619,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - PR #354 relue sur 7744be24 : 10 paires de captures ouvertes (banc `lumieres-basse`, Ville et Corniche de nuit ; Basse en suite de 3 images, Moyenne, Haute) : image identique à `main`, caisse éclairée, aucun saut. Diff lu en entier (`eclairement_voiture.h` = même formule que `eclairementRouteAutour`, `PC` à 128 octets avec `static_assert`, `nuit.w = 0` hors Basse, boucles bornées à `min(n, 12)`, accroche de 2 lignes annoncée).
 - Vérifié par le lead dev : construction de la branche, `tests_cpu.sh` → 108 tests réussis ; banc `lumieres-basse` relancé : 0 pixel différent avec les captures « avant ».
 - « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash 529e24e. Statut **🟡 À valider (utilisateur)** : gain à mesurer sur le S21 FE (RG-05).
+
+### 2026-11-11 16:33:06 — WFS-423 : fusionné (#354, 529e24e), session terminée (Claude, agent dev (01UY1Vv4BW))
+- PR #354 fusionnée en squash par le lead dev ; ticket 🟡 À valider (utilisateur). Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (RG-05). Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
