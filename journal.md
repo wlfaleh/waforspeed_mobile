@@ -1323,3 +1323,32 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Mesures qui fondent la correction** : sur la CI (run #16, job 130415389361), `fluidite` avance à 5,1 s par partie (parties 402 à 417 horodatées), soit ≈ 48 min pour ses 568 parties ; en local sur `main` : `chargement` 65 s, `hud` 2059 s, `fluidite` 2321 s, `camera` 233 s, tous en code 0. Version du run #5 (4e7fa716), même machine : `hud` 1860 s.
 - **CI de branche (US technique, RG-08)** : `matin.yml` lancé à la main sur la branche, **run #19** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43025086545). Il vérifie la durée d'`ecrans-2400` et de `fluidite` sur la vraie CI (moins de 75 min chacun) et que `camera` est rejoué. Hors de `main` : rien n'est publié (ni captures, ni APK, ni message à la QA) et le robot des statuts ne regarde que `main` : aucun ✅ donné. `realisme-2` y sera rouge (WFS-377, WFS-428 : code du jeu, hors de ce ticket).
 - Les deux groupes tournent aussi en local (journaux pour `qa/pr/WFS-427/pr.md`).
+
+### 2026-11-11 13:06:43 — WFS-429 créé : boutons Caméra et Menu à côté du score, +5 % (po-scrum-master)
+- **Demande de l'utilisateur** (session du PO) : « fonctionnalité simple, dans les 20 premières : déplacer les boutons caméra et menu, les mettre côte à côte avec le score et les agrandir de 5 % ».
+- **WFS-429** (P1, E5 + E8, + E3 exception PO : `camera_vue.cpp` `drawUi`) ⏳ Prêt, règles `regles-de-gestion/WFS-429.md` : rangée [MENU] [CAMÉRA] [SCORE] en haut à droite, toutes les dimensions ×1,05 (40 → 42 px), zones de toucher qui suivent, rien ne recouvre le GPS, le combo ni les notifications, vue Cockpit et Poursuite traitées.
+- **Ordre des 20** : WFS-429 en **8e**, pour une nouvelle session `@dev`, en parallèle de la file E4 (autres fichiers) ; WFS-397 passe au 21e rang.
+- **Exception à l'ordre permanent « taille des boutons » (2026-11-06)** : demandée par l'utilisateur, limitée à ces deux boutons ; notée dans les ordres permanents du PO.
+
+### 2026-11-11 13:08:39 — WFS-429 : pas de validation sur téléphone, captures suffisantes (po-scrum-master)
+- Remarque de l'utilisateur : un petit changement comme celui-là se valide sur une capture du jeu. Erreur du PO reconnue : la règle 🟡 (2026-11-07) ne vaut que pour un défaut vu sur le téléphone ou la conduite. WFS-429 suit le cycle normal : captures avant / après regardées par le lead dev → 🟣 → ✅ (bancs du matin). Règles mises à jour.
+
+### 2026-11-11 13:18:00 — WFS-364 : branche poussée, retouches de la Golf et de la Corsa faites (Claude, agent dev3d (01UY1Vv2nQ))
+- Fait : Golf, emblème rond (disque noir de WFS-404, 4 cm devant le bouclier), bandeau lumineux, liseré rouge et plaque GTI de la fente entre les phares retirés par découpe exacte ; encoche ronde de la peinture refermée par une peau cousue ; grille générique à 2 lames dans la fente. Corsa, nid d'abeille, barres chromées en V et porte-emblème de la calandre retirés ; grille générique à 4 lames ; relief du centre du capot lissé (nouvelle retouche `lisser` de `tools/retoucher_formes.mjs`, hauteur ajustée rangée par rangée sur la peau voisine).
+- Vérification en cours : `--verifier` vert pour les 9 voitures ; Golf et Corsa rejouées depuis l'origine (octet pour octet) ; Giulia et Range Rover rejouées depuis leur modèle d'avant WFS-363 : identiques à `main`. Tests CPU et captures avant / après en cours.
+- Outil : dépendances de `tools/package.json` installées en local (`npm install --no-save`, rien d'ajouté au dépôt) pour régénérer les LOD.
+
+### 2026-11-11 13:24:10 — WFS-425 : PR #348 ouverte, lead dev appelé (Claude, agent dev (01Us6uCtwf))
+- **Fait** : en MSAA ×1, la passe de scène suit le schéma du ×2. Sous-passe 0 : couleur et profondeur temporaires (mémoire de tuile). Sous-passe 1 : copie dans la cible HDR (attachement d'entrée, `BY_REGION`). Les shaders n'écrivent plus jamais directement dans la cible HDR. ×2 et ×4 : passe identique au bit près (test). MSAA par défaut de la Basse inchangé (×2). La passe finale n'est plus recréée à chaque changement de MSAA (avant : l'ancienne n'était jamais détruite).
+- **Fichiers** : `src/render/passe_scene.h` / `.cpp` (nouveaux), `src/render/renderer.cpp` / `.h`, `shaders/scene_copie.frag` (nouveau), `tests/test_passe_scene.cpp` (nouveau), `CMakeLists.txt` (2 lignes : shader et test).
+- **Vérifié** :
+  - 104 tests CPU verts.
+  - Couche de validation Vulkan (synchronisation comprise), ×4 puis ×1 en course : 0 message.
+  - 18 captures PNG avant / après identiques pixel par pixel : Ville, Corniche et Campagne de nuit, MSAA du niveau et ×1.
+  - Banc PC, ×1, avant → après : Ville Basse 190 → 185 ms, Corniche Basse 133 → 138 ms (bruit ≈ ±5 %).
+- **Outils installés** (registre de paquets Ubuntu, pour le banc local ; rien n'est ajouté au dépôt) : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev`, `vulkan-tools`, `vulkan-validationlayers`, `ccache`.
+- **Limite** : le gain n'est pas mesurable sur le PC (lavapipe n'a pas de tuiles). La cause n'est confirmée que si le ×1 devient plus rapide que le ×2 sur le S21 FE. La mesure à faire est décrite dans la PR. Statut après la fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-11 13:26:54 — WFS-412 : PR #349 ouverte (agent expert ci cd (session 01UY1Vv4jR6p))
+- Essai local sur les vrais tests compilés, `test_audio` rendu rouge exprès hors commit : 103 autres tests lancés, liste finale « test_audio », licences vérifiées (0 manque), code 1 (`qa/pr/WFS-412/extrait-2-essai-local-rouge.log`). Run de branche #1000 : étape des tests verte. Capture n° 3 sans objet (`test_course5_ordinateurs` vert sur `main` depuis WFS-415).
+- `TACHES.md` 🔀 En PR (#349), `suivi-pr.md` 🆕, lead dev appelé. À savoir pour WFS-427 (bancs du matin, autre session expert ci) : cette PR change les 3 lignes des tests CPU de `matin.yml` (≈ l. 132), rien d'autre.
