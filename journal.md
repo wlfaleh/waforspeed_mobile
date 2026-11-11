@@ -2423,3 +2423,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 00:27:22 — WFS-416 : décisions de l'utilisateur relayées, seuil de 30 img/s déplacé (Claude, session « APK quality issues » (01UY1Vv2WG))
 - Mesures de l'APK 995 (WFS-415) sur le téléphone de l'utilisateur, Ville et Ville Néon de nuit, Basse : **16 à 21 img/s** (12 sur l'APK 994), médiane 55 à 66 ms, 99 % 71 à 88 ms (190 ms avant), chauffe 1, scène GPU 43 à 55 ms. CI #995 : compilation, APK et endurance verts.
 - Utilisateur : WFS-416 va jusqu'à la PR et sa validation sur téléphone ; +80 Mo de mémoire graphique acceptés. RG-07 de WFS-416 : pas de perte d'img/s par rapport à l'APK 995 et pire temps des bâtiments ≤ 1 ms ; les 30 img/s iront au ticket « lumière légère en Basse », à créer **après le test de l'utilisateur** (son ordre). Message envoyé à la session de WFS-416.
+
+### 2026-11-11 00:48:56 — WFS-416 : PR #344 ouverte (Claude, agent dev3d (01UY1Vv4rv))
+- PR #344 `feature/waforspeed-416` → `main`, synchronisée avec `main` (WFS-415 compris), 5f5bf85a : bâtiments de la Ville cuits dans le paquet, 0 construction en course, kit de secours. 103 tests CPU, banc « batiments » 0 écart, 29 captures dans `qa/pr/WFS-416/`.
+- Suite : avis de l'agent 3D (épic E15), puis lead dev. CI de `main` #995 (WFS-415) encore en cours à l'ouverture : à voir verte avant la fusion. Après la fusion : relancer « Paquets de cartes » (agent expert ci cd).

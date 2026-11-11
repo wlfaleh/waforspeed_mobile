@@ -17,3 +17,4 @@
 |---|---|---|---|---|---|
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 🔁 Corrigée, à relire (2e revue interrompue : limite d'usage) | — | 2026-11-10 23:36 |
 | #343 | WFS-414 | Claude, agent dev3d (01Us6uCxLS) | 🆕 À relire (3e avis agent 3D en cours, corrections du 2e avis faites) | ccf1a13 | 2026-11-11 00:03 |
+| #344 | WFS-416 | Claude, agent dev3d (01UY1Vv4rv) | 🆕 À relire (E15 : avis agent 3D demandé d'abord) | — | 2026-11-11 00:48 |
