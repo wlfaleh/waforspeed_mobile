@@ -2558,3 +2558,11 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 10:28:55 — WFS-419 réduit aux interrupteurs, WFS-420 créé pour le banc automatique (Claude, session « APK quality issues » (01UY1Vv2WG))
 - Ordre de l'utilisateur : un ticket = un besoin, pas de lots dans un même ticket. **WFS-419** (P1) : interrupteurs du menu caché, appareil et temps par passe dans la ligne technique. **WFS-420** (P2, après WFS-419) : trajet rejoué jour et nuit, un interrupteur à la fois, fichier de résultats. Règles réécrites dans `regles-de-gestion/WFS-419.md` et créées dans `WFS-420.md`.
+
+### 2026-11-11 10:42:20 — WFS-419 codé et fusionné par le lead dev (#345, squash d63e2a46), ordre de l'utilisateur (lead-dev)
+- Ordre de l'utilisateur : le lead dev prend WFS-419, le code et fusionne directement sur `main`, sans relecture par un autre lead dev, sans tests locaux, sans endurance ni captures du banc PC (captures prises par l'utilisateur sur son S21 FE, APK de `main`). Statut : 🟡 À valider (utilisateur).
+- Livré : `src/render/diagnostic_perf.*`, 12 interrupteurs tous éteints par défaut (MSAA ×1, sans pré-passe, sans reflet de la route mouillée, sans ombres, sans pluie, sans halos additifs, sans bloom ni post, 0 lumière de nuit, résolution 30 %, shader couleur unie, décor coupé, distance ÷ 2). Menu caché : 5 touchers sur le titre « RÉGLAGES » en moins de 3 s. Section `diagnostic` dans `configgame.json`, 12 clés à 0 ; les valeurs de l'utilisateur déjà présentes sont gardées.
+- Ligne technique : interrupteurs allumés, puis, une fois le menu ouvert, appareil (modèle Android, GPU, pilote, Vulkan) et coût de chaque passe.
+- « GPU ombre 0,0 · reflet 0,0 » : en Basse, la passe d'ombre est vide (ombres du soleil coupées) et il n'y a pas de passe de reflet (coupée en Basse). Ce sont de vraies mesures : tout le temps est dans « scène » et « post ».
+- Accroches hors zone : `src/world/meteo.cpp` (2 lignes : interrupteur « sans pluie »), `src/render/passes.cpp` (2 lignes). Vérifié avant la fusion : shaders compilés (glslangValidator), syntaxe C++ (g++), `test_configgame` 124 clés et 3 nouveaux cas OK.
+- Téléchargement noté (outillage, pas d'actif) : paquets apt `libvulkan-dev` et `glslang-tools` (dépôt Ubuntu, registre de paquets autorisé), pour vérifier les fichiers en local ; rien n'est ajouté au dépôt.
