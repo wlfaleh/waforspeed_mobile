@@ -1724,3 +1724,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Critères : `regles-de-gestion/WFS-392.md` (RG-01 à RG-05 ; 4 captures avant / après dans le 2e tunnel de la carte de neige, jour, Cockpit, nuit, entrée du 1er tunnel ; coût en Basse ≤ +5 %). Après fusion : 🟣 puis ✅ par les bancs du matin. Hors E15 : avis de l'agent 3D non exigé.
 - `track-agent.md` : derniers envois remis à jour (WFS-377 18:17, WFS-383 16:32, WFS-420 18:34).
 
+
+### 2026-11-11 18:40:06 — WFS-392 : début, branche créée (Claude, agent cartes (01UY1Vv2ghpU))
+- Ticket reçu du PO (commit bd1a08db), discussion renommée, branche `feature/waforspeed-392` créée depuis `main`.
+- Skills chargés : `agent-developer`, `waforspeed-natif`, `expert-cartes` ; règles `regles-de-gestion/WFS-392.md` lues en entier.
+- Suite : analyse de `carte_donnees_decor.cpp`, de l'abri tunnel / toit (WFS-334, WFS-354), de `shaders/route.glsl` et de `neige_banc.cpp` ; plan écrit ici avant de coder.
