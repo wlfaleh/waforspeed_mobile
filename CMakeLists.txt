@@ -25,7 +25,7 @@ set(SHADER_OUT ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_OUT})
 set(SHADER_INCS)
 file(GLOB SHADER_GLSL CONFIGURE_DEPENDS ${SHADER_DIR}/*.glsl)   # WFS-149 (RG-05) : route, vehicule, decor, eclairage
-foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag prepasse.frag plein_ecran.vert passe_essai.frag)   # WFS-150 : pré-passe, passe d'essai
+foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag prepasse.frag plein_ecran.vert passe_essai.frag scene_copie.frag)   # WFS-150 : pré-passe, passe d'essai ; WFS-425 : copie de la scène ×1
   add_custom_command(
     OUTPUT ${SHADER_OUT}/${S}.inc
     COMMAND ${GLSLC} -O --target-env=vulkan1.0 -mfmt=num -I ${SHADER_DIR} -o ${SHADER_OUT}/${S}.inc ${SHADER_DIR}/${S}
@@ -123,9 +123,11 @@ else()
   add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
   add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp src/render/vehicule_cockpit_volant.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
   add_executable(test_cockpit_ferme tests/test_cockpit_ferme.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-349 : habitacle fermé sur les côtés
+  add_executable(test_retroviseurs tests/test_retroviseurs.cpp src/render/retroviseurs_geo.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-324 : rétroviseurs à reflet
   add_executable(test_regard_cockpit tests/test_regard_cockpit.cpp src/core/configgame.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-235 : regard du conducteur en vue Cockpit
   add_executable(test_tangentes tests/test_tangentes.cpp src/render/mesh.cpp)   # WFS-149 (RG-04, M-02) : tangentes, .wfm versionnés
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
+  add_executable(test_passe_scene tests/test_passe_scene.cpp)   # WFS-425 : passe de scène (×1 copiée dans la cible HDR, ×2 / ×4 inchangés)
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
   add_executable(test_phares tests/test_phares.cpp)   # WFS-218 : feux de croisement du joueur (flux, coupure, portée)
   add_executable(test_phares_optiques tests/test_phares_optiques.cpp)   # WFS-413 : optiques avant mesurées (≤ 2 cm), 17 voitures
@@ -215,6 +217,8 @@ else()
   add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
   add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)
   add_executable(test_memoire tests/test_memoire.cpp)   # WFS-297 : compteurs de mémoire et de chargement
+  add_executable(test_repli_memoire tests/test_repli_memoire.cpp)   # WFS-418 : voie de repli de la mémoire graphique (en-tête vk.h seul)
+  target_include_directories(test_repli_memoire PRIVATE ${Vulkan_INCLUDE_DIRS})
   add_executable(test_brume tests/test_brume.cpp)   # WFS-381 : brume au loin (contraste à 200 m, 1 km, 5 km ; hauteur ; réglage par carte)
   # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
   get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)

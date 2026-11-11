@@ -10,6 +10,7 @@
 #include "../game/roues.h"   // WFS-60 : RoueModele, RouesPose
 #include "masquage.h"   // WFS-82 : masquage hors champ et au loin
 #include "eclairage_ombres.h"   // WFS-227 : cascades d'ombre du soleil
+#include "passe_scene.h"   // WFS-425 : passe de scène, copie de la scène ×1
 #include "../core/gpu_logiciel.h"
 
 namespace wfs {
@@ -83,6 +84,7 @@ struct Model {
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;
     vec4 siege{};   // WFS-73 (RG-01) : y du pavillon au-dessus de la place du conducteur, x et z de la place, 1 si mesuré (conducteurs::mesurerSiege)
+    vec3 retroMin[2]{}, retroMax[2]{}; bool retroMesure[2] = {false, false};   // WFS-324 : boîte des rétroviseurs extérieurs du modèle (0 gauche, 1 droit ; retro::mesurerRetroviseurs)
 };
 
 // WFS-09 : état des feux d'une voiture (setLights du jeu web : nuit, frein, recul)
@@ -112,6 +114,9 @@ struct FrameParams {
     // WFS-134 (RG-05) : ombre de contact posée sous chaque voiture (draw(Model)) qui n'a pas déjà la sienne ; faux par
     // défaut (garage, scènes dédiées : inchangés), vrai en course (Game::render)
     bool ombresContact = false;
+    // WFS-324 (accroche) : vue Cockpit : rétroviseur redessiné à cette image (src/render/retroviseurs.h) : vue-projection de sa glace
+    // (miroir plan, monde réfléchi) ; les objets qu'elle voit gardent le bit VIS_RETRO. Faux partout ailleurs : rendu inchangé
+    bool retro = false; mat4 retroVueProj = mat4::identity();
 };
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
@@ -134,6 +139,9 @@ public:
     // ressources
     Material makeMaterial(const Material& m, const Image* color, const Image* normal, const Image* mr);
     Mesh makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic = false);
+    // WFS-418 (RG-01) : comme makeMesh, par la voie de repli de VkCtx (essayerBuffer) : si la mémoire graphique manque, rien n'est
+    // gardé et le maillage rendu est vide (vb.buf == VK_NULL_HANDLE) ; à l'appelant de prendre son secours
+    Mesh essayerMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic = false);
     // WFS-268 (accroche, RG-04) : créations de tampons de maillages (makeMesh) et de jeux de descripteurs (makeMaterial)
     // depuis le lancement : un écart nul pendant la course = rien n'est créé en course
     uint64_t creationsMaillages() const { return creationsMaillages_; }
@@ -187,6 +195,9 @@ public:
     Image white, flatNormal;
     int niveauCascades() const { return qualiteBasse ? 0 : std::clamp(niveauOmbres, 1, 3); }   // WFS-264 (RG-03) : Basse = 1 cascade de 40 m
     bool dessinJoueur = false;     // WFS-265 : vrai pendant le dessin de la voiture du joueur (game.cpp) : modèle complet
+    // WFS-324 (accroche) : rétroviseurs. retroSeul : les dessins suivants ne vont qu'au rétroviseur (voiture du joueur en vue Cockpit,
+    // vue dans les glaces, jamais dans la scène) ; horsRetro : les dessins suivants ne vont jamais au rétroviseur (pièces de l'habitacle)
+    bool retroSeul = false, horsRetro = false;
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
     uint32_t bancSansEffets = 0;   // WFS-348 (RG-01) : banc perf seulement : 1 lumières de nuit, 2 chaussée mouillée, 4 sonde IBL retirées ;
                                    // 8 transparents, 16 opaques à découpe (feuillage), 32 sol et trottoirs, 64 voitures non dessinés
@@ -249,16 +260,19 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; bool joueur = false; };   // WFS-322 : joueur = voiture du joueur (hors captures d'environnement)   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint16_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; bool joueur = false; };   // WFS-322 : joueur = voiture du joueur (hors captures d'environnement)   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
     // WFS-227 : bit VIS_CASCADE0 << k (16, 32, 64, 128) : objet dans la cascade d'ombre k
-    enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CAPTURE = 8, VIS_CASCADE0 = 16 };
-    uint8_t classer(const masquage::Sphere& s, bool sansDistance = false);   // WFS-243 : sansDistance pour les adversaires
+    enum : uint16_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CAPTURE = 8, VIS_CASCADE0 = 16, VIS_RETRO = 256 };   // WFS-324 : VIS_RETRO (rétroviseur de l'image)
+    uint16_t classer(const masquage::Sphere& s, bool sansDistance = false);   // WFS-324 : 16 bits (VIS_RETRO)   // WFS-243 : sansDistance pour les adversaires
+    uint16_t classerSansRetro(const masquage::Sphere& s, bool sansDistance);   // WFS-324 : classement d'avant (caméra, reflet, ombre, capture)
     float texelCasc_[4] = {};   // WFS-227 : taille d'un texel de chaque cascade (1re : 0, tout objet y porte ombre)
     vec3 regardCasc_{0, 0, -1};  // WFS-227 : regard de la caméra (tranches des cascades)
-    masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4]; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
+    masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4], fRetro_; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
+    bool retroOn_ = false;   // WFS-324 : rétroviseur redessiné à cette image (plans fRetro_)
+    bool voitureRetroSeule_ = false, phareRetro_ = false;   // WFS-324 : voiture en cours de dessin vue seulement dans les glaces ; vue par la glace de l'image (feuxVoiture)
     void createTargets();
     void destroyTargets();
     void createPipelines();
@@ -290,7 +304,8 @@ private:
     uint32_t cw_ = 0, ch_ = 0;   // WFS-246 (RG-07) : taille des cibles de la scène (logique × renderScale), fixe en course
     float echelleDyn_ = 1.f;     // WFS-246 : part de la capacité lue par la passe finale
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
-    Image msaaColor_, depth_, hdr_;
+    Image msaaColor_, depth_, hdr_;   // WFS-425 : msaaColor_ = couleur temporaire de la scène, aussi en ×1 (copiée dans hdr_)
+    passe_scene::Copie copieX1_;   // WFS-425 : sous-passe de copie de la scène ×1
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;
     std::vector<VkFramebuffer> finalFbs_;
     VkDescriptorSetLayout frameLayout_ = VK_NULL_HANDLE, matLayout_ = VK_NULL_HANDLE, postLayout_ = VK_NULL_HANDLE;
@@ -383,6 +398,8 @@ private:
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
     double tangentesMs_ = 0; size_t tangentesSommets_ = 0;   // WFS-149
+    // WFS-418 : début commun de makeMesh et essayerMesh (compteurs, sphère englobante, tangentes) : sommets à envoyer
+    const Vertex* preparerMaillage(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic);
     bool sansMasquage_ = false;   // WFS-150 (RG-03) : image d'une capture d'environnement : aucun objet masqué (6 directions)
 };
 

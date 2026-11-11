@@ -18,10 +18,12 @@
 #include <cstring>
 #include <iterator>
 #include <map>
+#include <memory>   // WFS-426 : instance de cuisson (plage::poserVillasKit)
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include "archi_carte.h"   // WFS-161 (accroche) : villas du kit d'architecture
+#include "plage_villas.h"   // WFS-426 : villas posées pour la cuisson du paquet
 #include "sols.h"           // WFS-383 : sols des cartes (pente, couleurs mesurées)
 #include "bouchons_sol.h"   // WFS-212 / WFS-283 : disques de sol au centre des virages serrés
 #include "../../third_party/stb/stb_image.h"
@@ -554,11 +556,7 @@ public:
         { const char* dep = std::getenv("WFS_DEPART"); depart_ = dep ? std::atoll(dep) : 0; }   // WFS-94 : banc d'essai
         objets_.clear();
         place(*g.track);
-        for (const Objet& o : objets_) if (o.t == O_VILLA) {   // WFS-161 (accroche, ST-5) : villas du kit, style méditerranéen ; repli WFS_ARCHI=0
-            const Frame fr = frameAt(*g.track, (double)o.seg * SEG); const float s = (float)o.side; const vec3 x = fr.f * -s;
-            const vec3 c = fr.o + fr.r * (s * o.lat) + vec3{0, solY(zoneId(*g.map, o.seg, len_), o.side, o.lat) - 0.2f, 0};
-            archi::carte::poser(o.seg, c - x * (o.w / 2), x, fr.r * -s, o.w, o.d, o.h, archi::Style::Mediterraneen, (uint32_t)(o.seg * 2 + (o.side > 0)));
-        }
+        poserVillas(*g.track);   // WFS-161 (accroche, ST-5) ; WFS-426 : même pose que la cuisson du paquet (plage::poserVillasKit)
         initPlage(r, *g.track, *g.map);
         initEtabs(r, *g.track);   // WFS-181
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
@@ -676,6 +674,25 @@ public:
     int64_t mod(int64_t n) const { return ((n % len_) + len_) % len_; }
     int ix(int64_t n, int side) const { return (int)(mod(n) * 2 + (side > 0 ? 1 : 0)); }
 
+    // WFS-161 (accroche, ST-5) : villas du kit, style méditerranéen ; repli WFS_ARCHI=0. WFS-426 : appelée par init et par la cuisson
+    void poserVillas(Track& t) const {
+        for (const Objet& o : objets_) if (o.t == O_VILLA) {
+            const Frame fr = frameAt(t, (double)o.seg * SEG); const float s = (float)o.side; const vec3 x = fr.f * -s;
+            const vec3 c = fr.o + fr.r * (s * o.lat) + vec3{0, solY(zoneId(*t.map(), o.seg, len_), o.side, o.lat) - 0.2f, 0};
+            archi::carte::poser(o.seg, c - x * (o.w / 2), x, fr.r * -s, o.w, o.d, o.h, archi::Style::Mediterraneen, (uint32_t)(o.seg * 2 + (o.side > 0)));
+        }
+    }
+    // WFS-426 : cuisson du paquet de la Corniche (sans carte graphique) : mêmes tirages que init (préparation du tracé, placement,
+    // filtres), puis pose des villas dans le kit. Aucun effet sur la partie en cours : ni lampadaire de nuit, ni objet de choc déclaré.
+    void poserPourCuisson(Track& t) {
+        cuisson_ = true; basse_ = false; len_ = (int64_t)t.segmentCount();
+        preparer(t);
+        objets_.clear();
+        place(t);
+        archi::carte::vider();
+        poserVillas(t);
+    }
+
     // WFS-139 (RG-C1) : analyse du tracé 2 sur un tour. Pour chaque segment et chaque côté, distance latérale à laquelle
     // on touche une AUTRE branche de la route (lacets, rond-point) et son altitude ; nature du sol (plage, falaise,
     // tunnel, place) ; zones à garder dégagées avant les virages serrés et le feu.
@@ -758,7 +775,7 @@ public:
         // éclairage de nuit du tunnel (nuit.cpp : les 4 plus proches) : un point toutes les 15 m, en quinconce, à plus de 25 m
         // des têtes (ces lumières ne sont pas masquées par la roche : près d'une tête, elles éclairaient sa face extérieure)
         if (tunDeb_ >= 0) for (int64_t n = tunDeb_ + 21, k = 0; n < tunFin_ - 21; n += 12, k++)
-            lampadaires().push_back({mod(n), (k % 2 ? 1.f : -1.f) * (TUNNEL_W - 1.5f), TUNNEL_H - 1.6f, StyleLampadaire::Ville});
+            if (!cuisson_) lampadaires().push_back({mod(n), (k % 2 ? 1.f : -1.f) * (TUNNEL_W - 1.5f), TUNNEL_H - 1.6f, StyleLampadaire::Ville});   // WFS-426 : pas en cuisson
         int voisins = 0; for (float v : touche_) voisins += v < 1e8f;
         WFS_LOG("Plage (WFS-139) : %zu sections, %d virages serrés, %d bas-côtés bornés par une autre branche, tunnel %lld-%lld, "
                 "rond-point au segment %lld, %zu feu(x)", S.size(), serres, voisins, (long long)tunDeb_, (long long)tunFin_,
@@ -855,8 +872,8 @@ public:
         placeMarina(t);   // WFS-376
         placerEtabs(t);   // WFS-181
         // éclairage de nuit (src/render/nuit.cpp) : lumière du jeu web (scene.js) à RW + 0,6, 5,6 m, côté du poteau
-        for (const Lampe& l : lamps_) lampadaires().push_back({l.seg, l.side * (R + 0.6f), 5.6f, StyleLampadaire::Plage});
-        declarerChocs(t);   // WFS-256 (accroche) : objets solides pour les chocs du joueur
+        if (!cuisson_) for (const Lampe& l : lamps_) lampadaires().push_back({l.seg, l.side * (R + 0.6f), 5.6f, StyleLampadaire::Plage});
+        if (!cuisson_) declarerChocs(t);   // WFS-426 : la cuisson du paquet ne touche pas la partie en cours   // WFS-256 (accroche) : objets solides pour les chocs du joueur
         WFS_LOG("Plage : %zu palmiers, %zu parasols, %zu lampadaires, %s", palms_.size(), umbrellas_.size(), lamps_.size(), night_ ? "nuit" : "jour");
     }
 
@@ -1581,6 +1598,7 @@ public:
             const int64_t m = mod(e.seg);
             if (e.type == plage::E_CASINO) for (float al : {-e.longueur / 2 - 3.f, e.longueur / 2 + 3.f})
                 palms_.push_back({mod(m + (int64_t)std::lround(al / SEG_M)), -(R + 5.4f), al < 0 ? 9.5f : 10.5f, al < 0 ? 0.08f : -0.06f, al < 0 ? 1.1f : 4.2f});
+            if (cuisson_) continue;   // WFS-426 : la cuisson du paquet ne déclare aucune lumière
             if (e.side > 0) lampadaires().push_back({m, plage::BAR_LAT - 2.f, 2.4f, StyleLampadaire::Ville});
             // casino : lumière du parvis au bord du trottoir (6 m de la façade) ; cafés, galerie et scooters : éclairés par
             // leurs vitrines et leur enseigne (une lumière de rue de plus surexposait leurs murs, comme ceux des villas)
@@ -2654,6 +2672,7 @@ private:
     std::vector<Mesh> mouette_, dauphin_; Mesh ecume_{};
     Material dauphinMat_;
     int64_t len_ = 1, depart_ = 0;
+    bool cuisson_ = false;   // WFS-426 : instance de cuisson (plage::poserVillasKit), jamais enregistrée comme système
     Material mats_[P_COUNT];
     Image palTex_{}, leafTex_{}, barkTex_{}, alepTex_{};   // WFS-383 : écorce du pin d'Alep
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
@@ -2668,6 +2687,13 @@ private:
 } // namespace
 
 WFS_SYSTEM(Plage, 105)
+
+// WFS-426 : villas de la Corniche posées dans le kit (archi::carte::vider puis poser), sans carte graphique : lues par la cuisson du
+// paquet (cartes_v2::cuire). Instance à part, jamais enregistrée : la partie en cours n'est pas touchée.
+void plage::poserVillasKit(Track& t) {
+    auto p = std::make_unique<Plage>();
+    p->poserPourCuisson(t);
+}
 
 // ---------------------------------------------------------------- banc d'essai (WFS-139, RG-C5)
 // Corniche au tracé 2 en caméra de course (pilote automatique), de jour et de nuit, devant chaque lieu des sections :

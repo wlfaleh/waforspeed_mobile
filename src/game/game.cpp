@@ -13,6 +13,7 @@
 #include "../render/eclairage_physique.h"   // WFS-151 (accroche E13)
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
+#include "../render/retroviseurs.h"   // WFS-324 (accroche) : voiture du joueur dans les rétroviseurs
 #include "commandes_tactiles.h"   // WFS-98 : pédales et nitro du jeu web
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
@@ -398,6 +399,13 @@ void Game::render(double time) {
         r_->draw(car_, carM, &paint_, &rouesJoueur);
         r_->dessinJoueur = false;
         if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
+    }
+    if (dessin3d && vueInterieure && !dediee && retro::actif()) {   // WFS-324 (accroche) : vue Cockpit : la voiture du joueur, dans les rétroviseurs seulement
+        RouesPose rj = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);
+        if (player_.modeleMonde()) rj.braquage = (float)player_.braquageRoues;
+        r_->retroSeul = r_->dessinJoueur = true;
+        r_->draw(car_, carM, &paint_, &rj);
+        r_->retroSeul = r_->dessinJoueur = false;
     }
     if (dessin3d) conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course

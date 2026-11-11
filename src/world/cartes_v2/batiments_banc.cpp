@@ -6,6 +6,7 @@
 // façade de près (menuiserie 3D) et à 50 m (image avec relief), suite d'images à 160 km/h avec le temps de chaque image.
 // Contrôles (écarts) : avec le paquet, aucune construction (archi::constructions) et aucune création de maillage
 // (Renderer::creationsMaillages) pendant la course ; sans paquet et avec un bloc refusé, le kit de secours joue sans plantage.
+// WFS-426 : WFS_CARTE=plage → même banc sur la Corniche (villas méditerranéennes, captures batiments-plage-*) ; sans : la Ville.
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -16,6 +17,7 @@
 #include "paquet_carte.h"
 #include "../archi_carte.h"
 #include "../ville_quartiers.h"
+#include "../plage_villas.h"   // WFS-426 : banc de la Corniche (WFS_CARTE=plage)
 #include "../../core/log.h"
 #include "../../core/memoire.h"
 #include "../../core/platform.h"
@@ -66,7 +68,11 @@ struct Mesure { double mediane = 0, p99 = 0, pire = 0, chargementMs = 0, gpuMo =
 int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::string& racine) {
     int ecarts = 0;
     auto verifier = [&](bool ok, const std::string& quoi) { WFS_LOG("batiments (WFS-416) banc : %s : %s", quoi.c_str(), ok ? "OK" : "ÉCART"); if (!ok) ecarts++; };
-    const std::string c = "ville", dossier = carte::dossierPaquets();
+    const char* ce = std::getenv("WFS_CARTE");   // WFS-426 : carte du banc (cartes cuites seulement), la Ville par défaut
+    const std::string c = ce && cuiteEnPaquet(ce) ? ce : "ville", dossier = carte::dossierPaquets();
+    const bool corniche = c == "plage";
+    const std::string nomCarte = mapById(c.c_str()).name, prefixe = corniche ? "batiments-plage" : "batiments";
+    const archi::Style styleFacade = corniche ? archi::Style::Mediterraneen : archi::Style::Classique;
     const carte::FormatTexture F = carte::FormatTexture::RGBA8;
     const std::string chemin = dossier + "/" + carte::nomFichier(c, F);
     std::error_code ec;
@@ -77,7 +83,7 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
     int64_t depart = 0;
     {
         Track t; t.build(mapById(c.c_str()), trace::versionCarte(c.c_str()));
-        ville::poserImmeublesKit(mapById(c.c_str()), t);
+        if (corniche) plage::poserVillasKit(t); else ville::poserImmeublesKit(mapById(c.c_str()), t);
         std::map<int64_t, int> n;
         for (const archi::cuit::Bati& b : archi::carte::poses()) n[b.seg / archi::cuit::MORCEAU]++;
         archi::carte::vider();
@@ -98,7 +104,7 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
     const double tc = nowSeconds() - tc0;
     verifier(carte::ecrire(cuire(racine, c, F)) == octets, "deux cuissons identiques à l'octet (bloc des bâtiments compris)");
     const carte::Bloc* bloc = cuit.bloc(archi::cuit::NOM_BLOC);
-    verifier(bloc && !bloc->donnees.empty(), "bloc « batiments » présent dans le paquet de la Ville");
+    verifier(bloc && !bloc->donnees.empty(), "bloc « batiments » présent dans le paquet de la carte (" + nomCarte + ")");
     WFS_LOG("batiments (WFS-416) mesure RG-08 : %s : %.1f Mo, dont bloc des bâtiments %.1f Mo ; cuit en %d ms",
             carte::nomFichier(c, F).c_str(), octets.size() / 1048576.0, bloc ? bloc->donnees.size() / 1048576.0 : 0.0, (int)std::lround(tc * 1000));
 
@@ -119,7 +125,7 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
         const bool ok = g.init(r, "golf", c.c_str());
         m.chargementMs = (nowSeconds() - t0) * 1000;
         unsetenv("WFS_DEPART");
-        if (!ok) { WFS_ERR("batiments (WFS-416) banc : chargement de la Ville impossible (%s)", etat); ecarts++; return m; }
+        if (!ok) { WFS_ERR("batiments (WFS-416) banc : chargement de %s impossible (%s)", nomCarte.c_str(), etat); ecarts++; return m; }
         g.allerA(Ecran::Course);
         g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{};
         choisirVue(VueCamera::Poursuite);
@@ -127,7 +133,7 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
         if (vue != 0) {   // façade d'essai : l'immeuble classique le plus large du morceau de la rue d'essai, côté droit d'abord
             const archi::cuit::Bati* f = nullptr;
             for (const archi::cuit::Bati& b : archi::carte::poses())
-                if (b.seg / archi::cuit::MORCEAU == depart / archi::cuit::MORCEAU && b.plan.style == archi::Style::Classique && (!f || b.plan.largeur > f->plan.largeur)) f = &b;
+                if (b.seg / archi::cuit::MORCEAU == depart / archi::cuit::MORCEAU && b.plan.style == styleFacade && (!f || b.plan.largeur > f->plan.largeur)) f = &b;
             if (f) {
                 g_camera = CameraBanc{};
                 g_camera.active = true;
@@ -165,7 +171,7 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
             ms.push_back((nowSeconds() - a) * 1000);
             if (vue == 0 && images >= 120 && (i == images / 4 || i == images / 2 || i == 3 * images / 4)) {   // suite d'images : temps de chaque image
                 char l[160]; std::snprintf(l, sizeof l, "image %d / %d : %.1f ms   %.0f km/h", i + 1, images, ms.back(), g.player().kmh());
-                g_ligne[0] = std::string("Ville, ") + moment + ", Basse, " + etat; g_ligne[1] = l;
+                g_ligne[0] = nomCarte + ", " + moment + ", Basse, " + etat; g_ligne[1] = l;
                 g.render(t); r.capturePng(out + "/" + nom + "-suite-" + std::to_string(i * 4 / images) + ".png");
                 g_ligne[0].clear(); g_ligne[1].clear();
             }
@@ -177,11 +183,11 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
         m.mediane = tri[tri.size() / 2]; m.p99 = tri[std::min(tri.size() - 1, (size_t)(tri.size() * 0.99))]; m.pire = tri.back();
         char l[200];
         std::snprintf(l, sizeof l, "%.1f img/s (médiane %.0f ms, pire %.0f ms)   bâtiments : %.2f ms par image, pire %.1f ms, %zu constructions", 1000 / m.mediane, m.mediane, m.pire, m.batMs, m.batPire, m.constructions);
-        g_ligne[0] = std::string("Ville, ") + moment + ", Basse, " + etat + (vue == 1 ? ", façade de près (6 à 12 m)" : vue == 2 ? ", façade à 50 m (vue resserrée)" : ""); g_ligne[1] = l;
+        g_ligne[0] = nomCarte + ", " + moment + ", Basse, " + etat + (vue == 1 ? ", façade de près (6 à 12 m)" : vue == 2 ? ", façade à 50 m (vue resserrée)" : ""); g_ligne[1] = l;
         g.render(t); g.render(t); r.capturePng(out + "/" + nom + ".png");
         g_ligne[0].clear(); g_ligne[1].clear();
-        WFS_LOG("batiments (WFS-416) mesure RG-07 : %s : Ville %s, Basse, %s : %s ; système des bâtiments seul : %.3f ms par image en moyenne, pire image %.2f ms, %llu sommets recopiés ; créations de maillages (tout le jeu) %llu ; %.0f km/h ; chargement %d ms ; mémoire graphique %.0f Mo (banc PC, rendu logiciel)",
-                nom.c_str(), moment, etat, l, m.batMs, m.batPire, (unsigned long long)m.recopies, (unsigned long long)m.creations, m.kmh, (int)std::lround(m.chargementMs), m.gpuMo);
+        WFS_LOG("batiments (WFS-416) mesure RG-07 : %s : %s %s, Basse, %s : %s ; système des bâtiments seul : %.3f ms par image en moyenne, pire image %.2f ms, %llu sommets recopiés ; créations de maillages (tout le jeu) %llu ; %.0f km/h ; chargement %d ms ; mémoire graphique %.0f Mo (banc PC, rendu logiciel)",
+                nom.c_str(), nomCarte.c_str(), moment, etat, l, m.batMs, m.batPire, (unsigned long long)m.recopies, (unsigned long long)m.creations, m.kmh, (int)std::lround(m.chargementMs), m.gpuMo);
         g.shutdown();
         g_camera.active = false;
         m.ok = true;
@@ -200,14 +206,14 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
     };
 
     // 2) sans paquet : kit de secours (RG-06) = état de main
-    verifier(!preparerCarte(c), "paquet absent → Ville du code");
-    Mesure sn, s160 = serie("kit de secours (sans paquet)", "batiments-secours", &sn);
+    verifier(!preparerCarte(c), "paquet absent → " + nomCarte + " du code");
+    Mesure sn, s160 = serie("kit de secours (sans paquet)", prefixe + "-secours", &sn);
     verifier(s160.ok && (rapide || s160.constructions > 0), "sans paquet : le kit de secours construit les bâtiments en roulant (comme avant)");
 
     // 3) avec le paquet : lu au chargement, aucune construction en course (RG-03)
     verifier(ecrireFichier(chemin, octets), "écriture de " + chemin);
     verifier(preparerCarte(c) && carte::carteActive() == c, "paquet valide → activé");
-    Mesure pn, p160 = serie("paquet cuit", "batiments-paquet", &pn);
+    Mesure pn, p160 = serie("paquet cuit", prefixe + "-paquet", &pn);
     verifier(pn.ok && pn.constructions == 0, "paquet : aucune construction de bâtiment en course (rue, 50 km/h)");
     verifier(p160.ok && p160.constructions == 0, "paquet : aucune construction de bâtiment en course (160 km/h)");
     verifier(p160.creations <= s160.creations, "paquet : pas plus de maillages créés en course que le kit (les autres systèmes en créent aussi)");
@@ -216,7 +222,7 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
     if (!rapide) {
         carte::desactiver();
         archi::choisirOuverturesReelles(true);
-        w160 = scene("kit + fenêtres WFS-402 construites en course", "nuit", 0, 160, "batiments-kit402-160kmh", 240);
+        w160 = scene("kit + fenêtres WFS-402 construites en course", "nuit", 0, 160, prefixe + "-kit402-160kmh", 240);
         archi::choisirOuverturesReelles(false);
         verifier(preparerCarte(c), "paquet réactivé");
     }
@@ -231,8 +237,18 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
         carte::Paquet faux = cuit;
         for (carte::Bloc& b : faux.blocs) if (b.nom == archi::cuit::NOM_BLOC && b.donnees.size() > 16) b.donnees[8] ^= 0x5A;   // signature
         verifier(ecrireFichier(chemin, carte::ecrire(faux)) && preparerCarte(c), "paquet au bloc de bâtiments faux : activé (le reste est bon)");
-        const Mesure f = scene("bloc refusé → kit de secours", "jour", 0, 50, "batiments-bloc-refuse", 60);
+        const Mesure f = scene("bloc refusé → kit de secours", "jour", 0, 50, prefixe + "-bloc-refuse", 60);
         verifier(f.ok, "bloc des bâtiments refusé → kit de secours, aucun plantage");
+    }
+    {   // 5) WFS-418 (accroche, RG-04) : mémoire graphique refusée au chargement des bâtiments cuits → kit de secours, sans arrêt du jeu
+        VkCtx& vk = r.vk(); verifier(ecrireFichier(chemin, octets) && preparerCarte(c), "paquet valide réactivé"); uint32_t a = vk.reservationsRepli; double m0 = memoire::gpuMo();
+        scene("paquet cuit (réservations comptées)", "jour", 1, 0, "batiments-gpu-compte", 6); const uint32_t n = vk.reservationsRepli - a; const double perte0 = memoire::gpuMo() - m0;
+        for (const uint32_t rang : {3u, n / 2 + 1, n}) {   // 3 : image du 2e atlas ; milieu : maillages fixes ; n : dernier tampon du niveau 0 (de nuit)
+            const uint32_t r0 = archi::carte::replisMemoireGraphique(); a = vk.reservationsRepli; m0 = memoire::gpuMo(); vk.echecReservation = a + rang;
+            const Mesure f = scene("mémoire graphique refusée → kit de secours", rang == n ? "nuit" : "jour", 0, 50, std::string("batiments-gpu-refus-") + (rang == 3 ? "atlas" : rang == n ? "dernier-nuit" : "milieu"), rapide ? 30 : 60);   // même trajet que « rue-jour » du kit
+            vk.echecReservation = 0; WFS_LOG("batiments (WFS-418) banc : %u réservations des bâtiments cuits, refus de la n° %u ; mémoire graphique après la partie %+.2f Mo (paquet sans refus %+.2f Mo)", n, rang, memoire::gpuMo() - m0, perte0);
+            verifier(n > 8 && f.ok && archi::carte::replisMemoireGraphique() == r0 + 1 && vk.reservationsRepli - a == rang && memoire::gpuMo() - m0 <= perte0 + 0.01, "mémoire graphique refusée (réservation n° " + std::to_string(rang) + ") → kit de secours, aucun arrêt du jeu, aucune mémoire graphique perdue");
+        }
     }
     carte::desactiver();
     fs::remove(chemin, ec);   // le banc ne laisse aucun paquet

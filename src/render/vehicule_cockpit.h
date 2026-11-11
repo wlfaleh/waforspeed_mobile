@@ -14,6 +14,7 @@
 #include <vector>
 #include "../core/math.h"
 #include "renderer.h"
+#include "retroviseurs.h"   // WFS-324 : glaces des rétroviseurs
 
 namespace wfs {
 class Track;
@@ -246,7 +247,9 @@ inline void coinsVitre(float cx, float montant, float yb, float zb, float yh, fl
 
 class Interieur {
 public:
-    bool construire(Renderer& r, const InterieurDef& d);
+    // WFS-324 : carrosserie de la voiture (largeur, longueur, modèle 3D) : place des rétroviseurs extérieurs
+    bool construire(Renderer& r, const InterieurDef& d, const retro::Carrosserie& carrosserie = {});
+    const std::array<retro::Miroir, retro::NB_GLACES>& miroirs() const { return miroirs_; }   // WFS-324
     void detruire(Renderer& r);
     bool pret() const { return def_ != nullptr; }
     const InterieurDef* def() const { return def_; }
@@ -277,6 +280,7 @@ private:
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
     std::vector<Vertex> dv_[5]; std::vector<uint32_t> di_[5];
     int appels_ = 0; size_t octets_ = 0;
+    std::array<retro::Miroir, retro::NB_GLACES> miroirs_{};   // WFS-324 : glaces des rétroviseurs (repère de l'œil)
     float cx_ = 0.36f, demi_ = 0.78f, montant_ = 0.72f;   // WFS-315 : centre de la voiture (repère de l'œil), demi-largeur aux coudes, demi-écart des montants (m)
 };
 

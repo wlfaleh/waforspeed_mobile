@@ -109,12 +109,12 @@ inline const PhareVoiture PHARES_AVANT[] = {
     {"compass", 16, {2, false, 0.55f, 0.88f, 0.80f, 1.00f, -1.80f}},
     {"compass", 16, {9, false, 0.55f, 0.88f, 0.80f, 1.00f, -1.80f}},
     {"compass", 16, {11, true, 0.55f, 0.88f, 0.80f, 1.00f, -1.80f}},
-    // Corsa : intérieur sombre, projecteur, bandeau ; glace (calandre hors zone)
-    {"corsa", 17, {3, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
-    {"corsa", 17, {7, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
-    {"corsa", 17, {8, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
-    {"corsa", 17, {9, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
-    {"corsa", 17, {12, true, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    // Corsa : intérieur sombre, projecteur, bandeau ; glace (calandre hors zone) ; 19 matériaux depuis la grille de WFS-364 (2 ajoutés à la fin)
+    {"corsa", 19, {3, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 19, {7, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 19, {8, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 19, {9, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
+    {"corsa", 19, {12, true, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
     // Gallardo : réflecteurs texturés ; glace fumée (prises d’air hors zone)
     {"gallardo", 18, {3, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
     {"gallardo", 18, {4, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
@@ -127,10 +127,10 @@ inline const PhareVoiture PHARES_AVANT[] = {
     {"giulia", 68, {53, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
     {"giulia", 68, {1, true, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
     {"giulia", 68, {8, true, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
-    // Golf : lampe LED texturée (matériau partagé avec la grille, pris dans la boîte), bandeau de jour ; glace claire
-    {"golf", 21, {10, false, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
-    {"golf", 21, {13, false, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
-    {"golf", 21, {5, true, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
+    // Golf : lampe LED texturée (matériau partagé avec la grille, pris dans la boîte), bandeau de jour ; glace claire ; 23 matériaux depuis WFS-364
+    {"golf", 23, {10, false, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
+    {"golf", 23, {13, false, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
+    {"golf", 23, {5, true, 0.48f, 0.88f, 0.56f, 0.82f, -1.50f}},
     // GT86 : projecteur et bandeau (antibrouillards hors zone) ; glace
     {"gt86", 15, {6, false, 0.40f, 0.85f, 0.58f, 0.82f, -1.60f}},
     {"gt86", 15, {0, true, 0.40f, 0.85f, 0.58f, 0.82f, -1.60f}},

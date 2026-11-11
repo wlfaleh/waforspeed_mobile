@@ -272,6 +272,7 @@ bool Renderer::init(VkCtx& vk) {
     dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
     VK_OK(vkAllocateDescriptorSets(d, &dai, &postSet_));
 
+    copieX1_.creer(d);   // WFS-425 : sous-passe de copie de la scène ×1 (jeu relié par createTargets)
     createTargets();
     ETAPE_RENDU("cibles de rendu");
     createPipelines();
@@ -581,46 +582,17 @@ void Renderer::createTargets() {
     const bool ms = vk.msaa != VK_SAMPLE_COUNT_1_BIT;
 
     hdr_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);   // WFS-150 : relue par le banc (HDR)
-    if (ms) msaaColor_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
+    // WFS-425 : couleur temporaire de la scène (mémoire de tuile) en ×2 / ×4 (MSAA, résolue dans hdr_) ET en ×1 (copiée dans hdr_
+    // par la 2e sous-passe) : les shaders de la scène n'écrivent jamais directement dans hdr_ (passe_scene.h)
+    msaaColor_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | (ms ? 0 : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT), vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
     depth_ = vk.createImage(cw_, ch_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
 
-    if (!scenePass_) {
-        // ---------- passe de scène : couleur HDR (MSAA) + profondeur, résolue dans hdr_ ----------
-        VkAttachmentDescription at[3]{};
-        VkAttachmentReference colRef{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, depRef{1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
-                              resRef{2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-        at[0].format = HDR_FORMAT; at[0].samples = vk.msaa;
-        at[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at[0].storeOp = ms ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
-        at[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        at[0].finalLayout = ms ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        at[1].format = vk.depthFormat; at[1].samples = vk.msaa;
-        at[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        at[2].format = HDR_FORMAT; at[2].samples = VK_SAMPLE_COUNT_1_BIT;
-        at[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        at[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        at[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        VkSubpassDescription sp{};
-        sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        sp.colorAttachmentCount = 1; sp.pColorAttachments = &colRef; sp.pDepthStencilAttachment = &depRef;
-        if (ms) sp.pResolveAttachments = &resRef;
-        VkSubpassDependency dep[2]{};
-        dep[0].srcSubpass = VK_SUBPASS_EXTERNAL; dep[0].dstSubpass = 0;
-        dep[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dep[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dep[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        dep[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dep[1].srcSubpass = 0; dep[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-        dep[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; dep[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dep[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; dep[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    // ---------- passe de scène : couleur HDR (MSAA ou ×1) + profondeur, temporaires, résolues ou copiées dans hdr_ (WFS-425) ----------
+    if (!scenePass_) WFS_CHECK((scenePass_ = passe_scene::creer(d, HDR_FORMAT, vk.depthFormat, vk.msaa)) != VK_NULL_HANDLE, "Vulkan : passe de scène MSAA x%d impossible", (int)vk.msaa);
+    // ---------- passe finale : image de la swapchain ----------
+    if (!finalPass_) {   // WFS-425 : créée une fois (avant : recréée sans destruction de l'ancienne à chaque changement de MSAA)
         VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
-        rpci.attachmentCount = ms ? 3 : 2; rpci.pAttachments = at;
-        rpci.subpassCount = 1; rpci.pSubpasses = &sp; rpci.dependencyCount = 2; rpci.pDependencies = dep;
-        VK_OK(vkCreateRenderPass(d, &rpci, nullptr, &scenePass_));
-
-        // ---------- passe finale : image de la swapchain ----------
+        rpci.subpassCount = 1;
         VkAttachmentDescription fa{};
         fa.format = vk.swapFormat; fa.samples = VK_SAMPLE_COUNT_1_BIT;
         fa.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; fa.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -638,11 +610,12 @@ void Renderer::createTargets() {
         VK_OK(vkCreateRenderPass(d, &rpci, nullptr, &finalPass_));
     }
 
-    VkImageView views[3] = {ms ? msaaColor_.view : hdr_.view, depth_.view, hdr_.view};
+    VkImageView views[passe_scene::ATTACHEMENTS] = {msaaColor_.view, depth_.view, hdr_.view};
     VkFramebufferCreateInfo fci{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
-    fci.renderPass = scenePass_; fci.attachmentCount = ms ? 3 : 2; fci.pAttachments = views;
+    fci.renderPass = scenePass_; fci.attachmentCount = passe_scene::ATTACHEMENTS; fci.pAttachments = views;
     fci.width = cw_; fci.height = ch_; fci.layers = 1;
     VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &sceneFb_));
+    if (!ms) copieX1_.lier(d, msaaColor_.view);   // WFS-425 : la copie lit la couleur temporaire de cette cible
     finalFbs_.resize(vk.swapViews.size());
     for (size_t i = 0; i < vk.swapViews.size(); i++) {
         fci.renderPass = finalPass_; fci.attachmentCount = 1; fci.pAttachments = &vk.swapViews[i];
@@ -937,6 +910,8 @@ void Renderer::createScenePipelines() {
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
     addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
+    // WFS-425 : ×1 : 2e sous-passe, copie de la couleur temporaire de la scène dans la cible HDR
+    if (passe_scene::avecCopie(s)) { copieX1_.pipeline = copieX1_.faire(vk_->device, scenePass_, cachePipelines_); pipelinesCrees_++; }
 }
 
 // WFS-262 (RG-02) : variantes MSAA (×1, ×2, ×4 que le GPU accepte, hors celle en service) des pipelines de scène créées une
@@ -948,24 +923,17 @@ void Renderer::prechaufferMsaa() {
     const VkSampleCountFlags sc = vk_->props.limits.framebufferColorSampleCounts & vk_->props.limits.framebufferDepthSampleCounts;
     const VkSampleCountFlagBits enService = vk_->msaa;
     const uint32_t avant = pipelinesCrees_;
-    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_, &opaqueLeger_, &opaqueLegerDouble_};
+    VkPipeline* membres[] = {&opaque_, &opaqueDecoupe_, &blend_, &sky_, &skyApres_, &skinOpaque_, &skinOpaqueDecoupe_, &opaqueCull_, &skinOpaqueCull_, &poolPipe_, &addPipe_, &opaqueLeger_, &opaqueLegerDouble_,
+                             &copieX1_.pipeline};   // WFS-425
     VkPipeline garde[std::size(membres)];
     for (size_t i = 0; i < std::size(membres); i++) garde[i] = *membres[i];
     const VkRenderPass passeGardee = scenePass_;
     int variantes = 0;
     for (VkSampleCountFlagBits e : {VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_2_BIT, VK_SAMPLE_COUNT_4_BIT}) {
         if (e == enService || !(sc & e) || e > msaaMax_) continue;
-        const bool ms = e != VK_SAMPLE_COUNT_1_BIT;
-        VkAttachmentDescription at[3]{};
-        for (VkAttachmentDescription& a : at) { a.loadOp = a.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; a.storeOp = a.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; a.finalLayout = VK_IMAGE_LAYOUT_GENERAL; }
-        at[0].format = HDR_FORMAT; at[0].samples = e; at[1].format = vk_->depthFormat; at[1].samples = e; at[2].format = HDR_FORMAT; at[2].samples = VK_SAMPLE_COUNT_1_BIT;
-        VkAttachmentReference colRef{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, depRef{1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}, resRef{2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-        VkSubpassDescription sp{}; sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        sp.colorAttachmentCount = 1; sp.pColorAttachments = &colRef; sp.pDepthStencilAttachment = &depRef; if (ms) sp.pResolveAttachments = &resRef;
-        VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
-        rpci.attachmentCount = ms ? 3 : 2; rpci.pAttachments = at; rpci.subpassCount = 1; rpci.pSubpasses = &sp;
-        VkRenderPass p = VK_NULL_HANDLE;
-        if (vkCreateRenderPass(d, &rpci, nullptr, &p) != VK_SUCCESS) continue;
+        // WFS-425 : passe identique à celle de createTargets (2 sous-passes en ×1) : pipelines du cache compatibles
+        const VkRenderPass p = passe_scene::creer(d, HDR_FORMAT, vk_->depthFormat, e);
+        if (!p) continue;
         vk_->msaa = e; scenePass_ = p;
         createScenePipelines();
         for (VkPipeline* m : membres) { if (*m) vkDestroyPipeline(d, *m, nullptr); *m = VK_NULL_HANDLE; }
@@ -1004,7 +972,8 @@ bool Renderer::appliquerNettete() {
     const bool refaire = ms != vk_->msaa;
     if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
         VkDevice d = vk_->device;
-        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_, &opaqueLeger_, &opaqueLegerDouble_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_, &opaqueLeger_, &opaqueLegerDouble_,
+                              &copieX1_.pipeline}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }   // WFS-425 : copie ×1
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -1046,7 +1015,19 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 }
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
-uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
+uint16_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
+    // WFS-324 (accroche) : rétroviseur de l'image (même distance maximale que la caméra). retroSeul : seulement la glace (voiture du
+    // joueur en vue Cockpit) ; horsRetro : jamais la glace (pièces de l'habitacle)
+    const bool retro = retroOn_ && !horsRetro &&
+                       (s.r < 0 || ((sansDistance || length(s.c - camPos_) - s.r <= masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) && masquage::visible(fRetro_, s)));
+    if (retroSeul) return retro ? (uint16_t)VIS_RETRO : (uint16_t)0;
+    const uint16_t v = classerSansRetro(s, sansDistance);
+    if (!retro) return v;
+    if (!v) masques_--;   // compté comme masqué par classerSansRetro : la glace le dessine
+    return (uint16_t)(v | VIS_RETRO);
+}
+
+uint16_t Renderer::classerSansRetro(const masquage::Sphere& s, bool sansDistance) {
     constexpr uint8_t CASC = 0xF0;   // WFS-227 : toutes les cascades d'ombre
     if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;
     // WFS-150 : image d'une capture d'environnement : tout objet reste en file pour la capture (6 directions) ;
@@ -1071,8 +1052,8 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     return v | tout | c;
 }
 
-Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
-    Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
+const Vertex* Renderer::preparerMaillage(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     creationsMaillages_++;   // WFS-268 (RG-04)
     memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
@@ -1087,6 +1068,34 @@ Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t
         src = avecTangentes.data();
         tangentesMs_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count(); tangentesSommets_ += v.size();
     }
+    return src;
+}
+
+// WFS-418 (RG-01) : voie de repli : mêmes tampons que makeMesh, par VkCtx::essayerBuffer / essayerUploadBuffer ; un tampon refusé
+// rend aussi l'autre et défait les compteurs (aucun maillage vivant de plus) ; maillage vide rendu
+Mesh Renderer::essayerMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    Mesh m;
+    const Vertex* src = preparerMaillage(m, v, idx, dynamic);
+    if (dynamic) {
+        m.vb = vk_->essayerBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
+        if (m.vb.buf) m.ib = vk_->essayerBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
+        if (m.ib.buf) {
+            if (!v.empty()) std::memcpy(m.vb.mapped, src, v.size() * sizeof(Vertex));
+            if (!idx.empty()) std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
+        }
+    } else {
+        m.vb = vk_->essayerUploadBuffer(src, v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        if (m.vb.buf) m.ib = vk_->essayerUploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    }
+    if (m.vb.buf && m.ib.buf) return m;
+    vk_->destroy(m.vb);   // sommets pris, indices refusés : sommets rendus (rien à rendre si les sommets étaient refusés)
+    creationsMaillages_--; memoire::compteurs().objets3d--;
+    return Mesh{};
+}
+
+Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    Mesh m;
+    const Vertex* src = preparerMaillage(m, v, idx, dynamic);
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
@@ -1274,6 +1283,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
         fReflet_ = masquage::depuis(fp.proj * fp.view * R);
         fOmbre_ = masquage::depuis(u.shadowMat);
+        retroOn_ = fp.retro; if (retroOn_) fRetro_ = masquage::depuis(fp.retroVueProj);   // WFS-324 (accroche) : rétroviseur de l'image
         for (int k = 0; k < cascades_.n; k++) { fCasc_[k] = masquage::depuis(cascades_.m[k]); texelCasc_[k] = k ? 2 * cascades_.demi[k] / (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_) : 0.f; }   // WFS-227
         finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
         masquesPrec_ = masques_; masques_ = 0;
@@ -1340,6 +1350,11 @@ constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
 // la glace du modèle s'allume elle-même (draw, pièces « phare ») et seul le bloom de l'image l'entoure
 constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
 constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
+// WFS-324 : phare d'une voiture vue dans un rétroviseur (point lumineux, glace seulement) : bien plus vif qu'un feu arrière (E : un feu de
+// croisement fait ≈ 20 000 cd vers l'avant contre ≈ 5 cd pour une lanterne arrière ; plafonné pour rester lisible dans la glace)
+// 3e revue du lead dev (PR #341) : plus de lueur (le quadrilatère de 25 cm se lisait comme un disque gris à bord net) ; un cœur seul, plus petit
+// que l'optique (7 cm de diamètre) et très vif : l'éblouissement de l'image (bloom de la passe finale, comme en vue directe) fait la lumière
+constexpr float PHARE_COEUR = 0.035f, PHARE_LUEUR = 0.f, I_PHARE_COEUR = 14.0f, I_PHARE_LUEUR = 0.f;
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
 constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
 // WFS-171 (RG-01, ANO-70) : lueur rouge au sol calculée (feux_modele::eclairementSol) sur une grille de SOL_NX × SOL_NZ
@@ -1370,10 +1385,11 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
-    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
+    const uint16_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
+    voitureRetroSeule_ = (vis & ~VIS_RETRO) == 0; phareRetro_ = (vis & VIS_RETRO) != 0;   // WFS-324
     if (fx.nuit || stopK > 0 || fx.recul) feuxVoiture(m, world, fx);
     // WFS-134 (RG-11) : Basse, au-delà de 15 m : roues fixes (invisibles à cette distance), pièces regroupées ci-dessous
     const bool basseLoin = qualiteBasse && length(world.transformPoint((m.bmin + m.bmax) * 0.5f) - camPos_) > 15.f;
@@ -1385,7 +1401,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // écran complémentaire entre deux niveaux (scene.frag) ; jamais de cubes ; Basse, fantôme, police en lots : vehicule_lod.h
     // WFS-265 (2e retour du lead dev, PR #268) : la voiture du joueur est toujours complète, sans fondu (WFS-134), quelle que soit
     // sa taille à l'écran (vue haute, résolution dynamique) ; les autres suivent les niveaux de détail
-    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{&m.parts, &m.parts, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
+    // WFS-324 (accroche) : voiture du joueur vue seulement dans les rétroviseurs (petite image) : version allégée (Basse : 4 pièces)
+    const std::vector<ModelPart>* retroListe = !retroSeul ? &m.parts : qualiteBasse && !m.partsBasse.empty() ? &m.partsBasse : !m.partsLod.empty() ? &m.partsLod : &m.parts;
+    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{retroListe, retroListe, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1447,7 +1465,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || sceneFigee() || !m.indexCount) return;   // WFS-329 : fond figé : dessins 3D ignorés
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
-    const uint8_t vis = classer(sp);   // WFS-82
+    const uint16_t vis = classer(sp);   // WFS-82
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.vis = vis;
@@ -1480,7 +1498,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     const float part = lod_distance::partVisible(length(sp.c - camPos_), lod_distance::personnesMax(qualiteBasse));
     if (part <= 0.f) { masques_++; return; }   // compté comme objet masqué (journal du banc, remarque du lead dev, PR #268)
     fondu = lod_distance::combinerFondu(fondu, part);
-    const uint8_t vis = classer(sp);   // WFS-82 : avant de prendre une place
+    const uint16_t vis = classer(sp);   // WFS-82 : avant de prendre une place
     if (!vis) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);
@@ -1516,6 +1534,8 @@ void Renderer::drawQuads(const Vertex* v, int nQuads, const Material& mat) {
     p.pc.model = mat4::identity(); p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {0, 0, 0, 0};
+    // WFS-324 (accroche) : halos et lumières aussi dans le rétroviseur (phares des voitures derrière, la nuit : RG-04)
+    if (retroSeul) p.vis = VIS_RETRO; else if (retroOn_ && !horsRetro) p.vis |= VIS_RETRO;
     quadsUsed_ += nQuads;
     transparent_.push_back(p);
 }
@@ -1547,7 +1567,9 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
     // WFS-226 ; WFS-413 (RG-02) : milieu des deux glaces mesurées (FeuxModele::avantX / avantY / avant, model_loader.cpp)
-    if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
+    // WFS-324 (accroche) : une voiture vue seulement dans les rétroviseurs n'éclaire rien (comme avant : hors de la vue, ses phares ne
+    // sont pas notés) ; notée, la voiture qui suit éclairait en blanc le bas de l'habitacle du cockpit (projecteurs sans ombre)
+    if (f.nuit && !f.joueur && !voitureRetroSeule_) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
                                                  (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
     auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
@@ -1557,7 +1579,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         if (face <= 0.f) return;
         halo(p, std::max(coeur * ech, d * POINT_MIN), col * (iCoeur * face));
         const float kl = 1.f - std::clamp((d - LUEUR_DEBUT) / (LUEUR_FIN - LUEUR_DEBUT), 0.f, 1.f);
-        if (kl > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));
+        if (kl > 0.f && lueur > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));   // WFS-324 : sans lueur (phares dans les glaces)
     };
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f);
     // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
@@ -1576,6 +1598,17 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         const vec3 pr = F.reculTrouve ? vec3{side * F.recul.x, F.recul.y, F.recul.z + 0.01f}
                                       : vec3{side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f};
         if (f.recul) feu(w.transformPoint(pr), arriere, RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
+    }
+    // WFS-324 (accroche, RG-04) : phares d'une voiture vue dans le rétroviseur de l'image, la nuit : point éblouissant sur chaque
+    // optique mesurée (WFS-413), seulement dans la glace. En vue directe, la pièce émissive du phare et le flou lumineux de l'image font le
+    // point lumineux ; dans la petite image d'une glace, il ne restait qu'un anneau pâle (refus du lead dev, PR #341, 2e revue)
+    if (f.nuit && !f.joueur && phareRetro_ && F.phares) {
+        const bool seul = retroSeul;
+        retroSeul = true;   // quadrilatères pour la glace seulement (drawQuads)
+        for (int k = 0; k < 2; k++)
+            feu(w.transformPoint(F.phare[k] + F.phareNormale[k] * 0.02f), normalize(w.transformDir(F.phareNormale[k])), PHARE_COEUR, PHARE_LUEUR, blanc,
+                I_PHARE_COEUR, I_PHARE_LUEUR);
+        retroSeul = seul;
     }
     if (!f.nuit) return;   // RG-04 : le jour, pas de reflet sur la route
     // WFS-171 (RG-02) : route mouillée avec reflets : seule la traînée floue du reflet de WFS-142, pas de lueur en plus
@@ -1727,6 +1760,7 @@ void Renderer::endFrame() {
         }
     }
     passes::dansScene(*this, r.cb, EtapeRendu::Transparents);   // WFS-150
+    if (passe_scene::avecCopie(vk.msaa)) copieX1_.enregistrer(r.cb, sw_, sh_);   // WFS-425 : ×1 : scène copiée dans la cible HDR (même tuile)
     vkCmdEndRenderPass(r.cb);
     if (statsPool_) { vkCmdEndQuery(r.cb, statsPool_, (uint32_t)cur_); statsEcrit_[cur_] = true; }   // WFS-348 : banc
     if (bloom_) bloom_->dessiner(*this, r.cb);   // WFS-100 : chaîne du bloom, comptée avec la passe de scène
@@ -1823,6 +1857,7 @@ void Renderer::shutdown() {
     for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_, skyApres_,
                          poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_, opaqueCull_, skinOpaqueCull_, opaqueLeger_, opaqueLegerDouble_})
         if (p) vkDestroyPipeline(d, p, nullptr);
+    copieX1_.detruire(d);   // WFS-425 : pipeline, jeu, disposition et shaders de la copie ×1
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
     if (refletPass_) vkDestroyRenderPass(d, refletPass_, nullptr);
