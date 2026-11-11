@@ -21,25 +21,25 @@
   sf90 : gauche : x -1.15 à -1.02, y 0.76 à 0.89, z -0.62 à -0.38 ; droit : x 1.02 à 1.15, y 0.76 à 0.89, z -0.60 à -0.38
 
 golf derriere jour : voiture -1638.83 (unités) derrière, 0,00 m en travers
-  glace interieur : à l'écran 508 × 123 px, pixels de la voiture dans le rectangle : 32874 ; reflet : 110 appels, 332 k triangles (voiture du joueur 35 k)
-  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 4175 ; reflet : 109 appels, 332 k triangles (voiture du joueur 35 k)
-  glace droite : à l'écran 302 × 122 px, pixels de la voiture dans le rectangle : 6022 ; reflet : 107 appels, 330 k triangles (voiture du joueur 35 k)
+  glace interieur : à l'écran 508 × 123 px, pixels de la voiture dans le rectangle : 32925 ; reflet : 108 appels, 296 k triangles (voiture du joueur 35 k)
+  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 4180 ; reflet : 107 appels, 296 k triangles (voiture du joueur 35 k)
+  glace droite : à l'écran 302 × 122 px, pixels de la voiture dans le rectangle : 6022 ; reflet : 105 appels, 294 k triangles (voiture du joueur 35 k)
 
-golf gauche jour : voiture -1450.19 (unités) derrière, -3,30 m en travers
-  glace interieur : à l'écran 509 × 123 px, pixels de la voiture dans le rectangle : 0 ; reflet : 109 appels, 322 k triangles (voiture du joueur 35 k)
-  glace gauche : à l'écran 217 × 118 px, pixels de la voiture dans le rectangle : 1393 ; reflet : 109 appels, 332 k triangles (voiture du joueur 35 k)
-  glace droite : à l'écran 303 × 122 px, pixels de la voiture dans le rectangle : 0 ; reflet : 76 appels, 227 k triangles (voiture du joueur 35 k)
+golf gauche jour : voiture -2283.52 (unités) derrière, -3,30 m en travers
+  glace interieur : à l'écran 510 × 123 px, pixels de la voiture dans le rectangle : 1717 ; reflet : 108 appels, 296 k triangles (voiture du joueur 35 k)
+  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 5548 ; reflet : 110 appels, 302 k triangles (voiture du joueur 35 k)
+  glace droite : à l'écran 303 × 122 px, pixels de la voiture dans le rectangle : 0 ; reflet : 80 appels, 209 k triangles (voiture du joueur 35 k)
 
 golf derriere nuit : voiture -1638.83 (unités) derrière, 0,00 m en travers
-  glace interieur : à l'écran 508 × 123 px, pixels de la voiture dans le rectangle : 13713 ; reflet : 156 appels, 332 k triangles (voiture du joueur 35 k)
-  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 2416 ; reflet : 155 appels, 332 k triangles (voiture du joueur 35 k)
-  glace droite : à l'écran 302 × 122 px, pixels de la voiture dans le rectangle : 3798 ; reflet : 153 appels, 330 k triangles (voiture du joueur 35 k)
+  glace interieur : à l'écran 508 × 123 px, pixels de la voiture dans le rectangle : 19195 ; reflet : 142 appels, 296 k triangles (voiture du joueur 35 k)
+  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 4561 ; reflet : 141 appels, 296 k triangles (voiture du joueur 35 k)
+  glace droite : à l'écran 302 × 122 px, pixels de la voiture dans le rectangle : 9507 ; reflet : 139 appels, 294 k triangles (voiture du joueur 35 k)
 
-golf gauche nuit : voiture -1450.19 (unités) derrière, -3,30 m en travers
-  glace interieur : à l'écran 509 × 123 px, pixels de la voiture dans le rectangle : 0 ; reflet : 155 appels, 322 k triangles (voiture du joueur 35 k)
-  glace gauche : à l'écran 217 × 118 px, pixels de la voiture dans le rectangle : 789 ; reflet : 155 appels, 332 k triangles (voiture du joueur 35 k)
-  glace droite : à l'écran 303 × 122 px, pixels de la voiture dans le rectangle : 0 ; reflet : 122 appels, 227 k triangles (voiture du joueur 35 k)
+golf gauche nuit : voiture -2283.52 (unités) derrière, -3,30 m en travers
+  glace interieur : à l'écran 510 × 123 px, pixels de la voiture dans le rectangle : 1118 ; reflet : 141 appels, 296 k triangles (voiture du joueur 35 k)
+  glace gauche : à l'écran 217 × 118 px, pixels de la voiture dans le rectangle : 4316 ; reflet : 143 appels, 302 k triangles (voiture du joueur 35 k)
+  glace droite : à l'écran 303 × 122 px, pixels de la voiture dans le rectangle : 0 ; reflet : 109 appels, 208 k triangles (voiture du joueur 35 k)
 
 == coût (RG-03), Golf, Ville, jour, vue Cockpit, image figée, 4 × 40 images avec et sans en alternance (médianes) : ms par image (mur, rendu logiciel lavapipe) ==
-  Basse : avec 492,4 ms (198 appels), sans 482,9 ms (155 appels), passe « rétroviseurs » 30,55 ms GPU ; écart 2,0 % → à 21 img/s : 0,41 img/s perdues (estimé, ≤ 2 visé)
-  Haute : avec 1300,5 ms (805 appels), sans 1260,8 ms (696 appels), passe « rétroviseurs » 33,39 ms GPU ; écart 3,2 % → à 21 img/s : 0,64 img/s perdues (estimé, ≤ 2 visé)
+  Basse : avec 384,0 ms (198 appels), sans 376,2 ms (155 appels), passe « rétroviseurs » 24,91 ms GPU ; écart 2,1 % → à 21 img/s : 0,43 img/s perdues (estimé, ≤ 2 visé)
+  Haute : avec 998,5 ms (795 appels), sans 976,7 ms (688 appels), passe « rétroviseurs » 28,81 ms GPU ; écart 2,2 % → à 21 img/s : 0,46 img/s perdues (estimé, ≤ 2 visé)

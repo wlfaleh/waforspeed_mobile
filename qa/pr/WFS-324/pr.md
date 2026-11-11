@@ -14,6 +14,7 @@
   - **Réglage du conducteur** :
     - glace intérieure : vise le milieu d'une voiture 12 m derrière, selon la hauteur de l'œil (0,7° vers le bas pour la M4, 2,9° pour le Range Rover Sport) ;
     - glaces extérieures : la carrosserie occupe 1,5° au bord intérieur, le reste montre la voie d'à côté.
+  - **Phares de la voiture qui suit, la nuit (RG-04, 2e refus)** : dans l'image d'une glace seulement, un cœur lumineux et une lueur (rayon 25 cm) sur chaque optique mesurée par WFS-413 (`feuxVoiture`, quadrilatères envoyés à la glace seulement). **En vue directe, les feux des voitures ne changent pas** (WFS-413 intact, aucune lueur ronde devant les phares).
   - **Voiture du joueur** : dessinée seulement pour les glaces, en version allégée, sans ses vitres, habitacle assombri dans la glace intérieure. Une voiture vue seulement dans les glaces n'éclaire rien, comme avant (sinon, ses phares éclairaient en blanc le bas de l'habitacle).
   - **Nuit** (`nuit.cpp`, accroche) : en vue Cockpit avec rétroviseurs, les 2 lampadaires les plus proches derrière la voiture (5 à 60 m) sont aussi de vraies lumières. Avant, rien n'était éclairé derrière la voiture et les glaces restaient noires.
   - **Pièces modelées, aucune forme nue** : coque extérieure galbée (surface balayée, lèvre, logement, nez), bras, aile, glaces à coins arrondis. La coque intérieure de WFS-323 (ANO-207) est en plastique satiné.
@@ -23,30 +24,32 @@
     - `game.cpp` (7 lignes), `model_loader.cpp` (1 ligne), `nuit.cpp` (lampadaires derrière), `camera_vue.cpp`, `passes.h`, `desktop_main.cpp` ;
     - `vehicule_cockpit_banc.cpp` (glaces figées pendant le banc WFS-349).
 - **Comment c'est vérifié** :
-  - **Tests** : 102 tests verts sur 103, dont `test_retroviseurs` (21 cas). Le seul rouge, `test_course5_ordinateurs`, est aussi rouge sur `main` (constaté par le lead dev) : `tests_cpu.sh` s'arrête sur lui, donc les autres tests ont été lancés un par un.
+  - **Tests** : tous verts, dont `test_retroviseurs` (21 cas).
   - **Banc `retroviseurs`** (Golf, 2400 × 1080, jour et nuit) : 0 écart. Pixels de la voiture dans chaque glace (image avec et sans la voiture) :
 
     | Scène | Glace intérieure | Glace gauche | Glace droite |
     |---|---|---|---|
-    | Même voie, jour | 32 874 | 4 175 | 6 022 |
-    | Même voie, nuit | 13 713 | 2 416 | 3 798 |
-    | Voie de gauche, jour | 0 (hors champ, comme en vrai) | 1 393 | — |
-    | Voie de gauche, nuit | — | 789 | — |
+    | Même voie, 10 m, jour | 32 925 | 4 180 | 6 022 |
+    | Même voie, 10 m, nuit (phares allumés) | 19 195 | 4 561 | 9 507 |
+    | Voie de gauche, 14 m, jour | — | ≈ 4 300 | — |
+    | Voie de gauche, 14 m, nuit (phares allumés) | 1 118 | 4 316 | — |
 
   - **Banc `retroviseurs`** (Range Rover Sport, M4, 911, jour et nuit) : 0 écart.
-  - **Coût mesuré** (banc PC lavapipe, avec et sans rétroviseurs en alternance, médianes) : Basse 2,0 %, soit **0,41 img/s perdue à 21 img/s** ; Haute 3,2 %, soit **0,64 img/s** (estimé, 2 au plus visé).
+  - **Banc `cockpit` de nuit** (`cockpit-golf-nuit`, avant / après) : aucune régression, seuls les rétroviseurs changent.
+  - **Coût mesuré** (banc PC lavapipe, avec et sans rétroviseurs en alternance, médianes) : Basse 2,1 %, soit **0,43 img/s perdue à 21 img/s** ; Haute 2,2 %, soit **0,46 img/s** (estimé, 2 au plus visé).
   - **Banc `cockpit-voisine`** (WFS-349) : 0 écart.
   - **Banc `cockpit`** (Golf) : comparé avant / après.
-  - **Capture 3** : Réglages ouverts en pause, ligne « Rendu » sans puis avec rétroviseurs (155 → 198 appels en Basse).
+  - **Capture 3** : Réglages ouverts en pause, ligne « Rendu » sans puis avec rétroviseurs (155 → 242 appels en Basse), réglage Caméra sur Cockpit.
 - **Limites et risques connus** :
   - Coût mesuré sur le banc PC, pas sur le téléphone : ticket 🟡 À valider par l'utilisateur sur l'APK.
   - **Glaces extérieures** :
     - redessinées à tour de rôle, avec jusqu'à 3 images de retard (7 en Basse) ;
     - glace droite au bord de l'écran, en partie derrière le montant ;
-    - 911, petite glace de 175 mm : une voiture 9 m derrière dans la voie de gauche n'apparaît qu'au bord.
+    - une voiture à 9 m ou moins dans la voie de gauche est dans l'angle mort (au bord de la glace), comme en vrai ; la scène du banc est à 14 m.
   - **Nuit, banc cockpit** (voir la réponse au point 4) : la glace gauche reste sombre. La scène n'a que 12 vraies lumières, choisies pour la vue avant : la terrasse éclairée à côté de la voiture l'est par des lumières qui ne sont pas reprises derrière elle, et la glace ne renvoie que 50 % de la lumière.
-  - Les phares de la voiture qui suit sont dessinés comme en vue directe (optiques allumées de WFS-413), mais n'éclairent pas la route vers nous (comportement d'avant).
+  - Les phares de la voiture qui suit se voient dans les glaces (cœur et lueur), mais n'éclairent pas la route vers nous (comportement d'avant pour une voiture hors de la vue directe).
   - Places et tailles des glaces extérieures : estimées. M4 et Corvette : décalage moyen, faute de mesure.
+
 
 ## Captures pour le lead dev (26 après)
 
