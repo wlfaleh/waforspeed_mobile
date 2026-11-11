@@ -177,8 +177,10 @@ bool occupe(const MapDef& map, int64_t len, int64_t n) {
 
 namespace {
 
-// WFS-383 (RG-03) : teinte des aiguilles du pin d'Alep (atlas de feuillage) : vert-jaune clair, plus pâle que le palmier
-const vec3 ALEP_AIGUILLES = {0.98f, 1.04f, 0.70f};
+// WFS-383 (avis agent 3D) : albédo linéaire des aiguilles du pin d'Alep, appliqué à la case 3 de l'atlas des feuilles (vert saturé, moyenne
+// sRGB 83 / 131 / 48) pour viser le gris-vert clair mesuré d'une couronne de pin d'Alep au soleil (#5E6A48 à #6F7A55, ≈ 0,13 / 0,17 / 0,08
+// linéaire) avec la teinte moyenne des sommets (≈ 0,75) : chaque canal ramené à part (le bleu remonte, le vert baisse)
+const vec3 ALEP_AIGUILLES = {4.5f, 2.2f, 7.7f};
 constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et part propre (émissive) du stipe, de jour
 // P_NEON : boules des lampadaires (WFS-81) ; WFS-139 : P_ROC roche (texture), P_ACIER glissières, P_SODIUM luminaires du
 // tunnel, P_ROUTE chaussée de la rue transversale du carrefour, P_VOUTE roche de la voûte (lumière du ciel masquée) ;
@@ -611,7 +613,11 @@ public:
         alepTex_ = r.vk().uploadTexture(alep, 2, 1, true);
         Material ma; ma.rough = 0.92f; ma.flags = MAT_VTINT;
         mats_[P_ALEP_TRONC] = r.makeMaterial(ma, &alepTex_, nullptr, nullptr);
-        mats_[P_ALEP_AIG] = leafMat(ALEP_AIGUILLES);
+        {   // couleur linéaire directe (leafMat passe en linéaire une teinte sRGB ≤ 1)
+            Material m; m.color = {ALEP_AIGUILLES.x, ALEP_AIGUILLES.y, ALEP_AIGUILLES.z, 1}; m.rough = 0.8f; m.cutoff = 0.5f;
+            m.flags = MAT_MASK | MAT_DOUBLE | MAT_VTINT;
+            mats_[P_ALEP_AIG] = r.makeMaterial(m, leafTex_.img ? &leafTex_ : nullptr, nullptr, nullptr);
+        }
     }
 
     // WFS-139 : matériaux de la falaise et du tunnel
@@ -2793,6 +2799,34 @@ static void benchMontee(Game& g, Renderer& r, const std::string& out) {
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 
+// WFS-383 (avis agent 3D, RG-01) : sols de la Corniche vus de près, côté terre (s = −1), de jour : pré / garrigue (< 25°), terre et
+// maquis (25 à 40°), roche calcaire (> 40°) et leurs fondus, pins d'Alep. Lieux : la montée (colline de 12° au-dessus de la falaise taillée, garrigue et pins, vue
+// depuis 30 m : carte-plage-talus) et la zone « rochers » (bandes rocheuses de 15,5°, lues à 40,5° : terre et maquis mêlés de roche calcaire :
+// carte-plage-rochers) ; pour chacun, vue depuis l'accotement vers le talus et vue plongeante à 60 m (-haut).
+// Les pentes de plus de 40° de la Corniche sont les falaises taillées (bande ROC, texture de roche de WFS-139, inchangée).
+// WFS_PLAGE_SOLS=1 : seulement ces vues.
+static void vuesSolsCorniche(Game& g, Renderer& r, const std::string& out, Track& t, const char* lieu, int64_t seg) {
+    if (seg < 0) { WFS_ERR("banc Corniche : lieu absent pour carte-plage-%s", lieu); return; }
+    for (int haut = 0; haut < 2; haut++) {
+        setenv("WFS_MOMENT", "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, seg - 30)).c_str(), 1);
+        if (!g.init(r, "golf", "plage")) continue;
+        g.setAutopilot(false); g.camMode = 0;
+        for (int i = 0; i < 60; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+        const float m = (float)SEG_M;
+        const TrackPoint o = t.point(((double)seg - (haut ? 40 : 15) / m) * SEG, -((float)RW + (haut ? 10.f : 3.f)));
+        const TrackPoint c = t.point(((double)seg + (haut ? 60 : 45) / m) * SEG, -((float)RW + (haut ? 90.f : 60.f)));
+        g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + (haut ? 60.f : std::strcmp(lieu, "talus") ? 2.5f : 30.f), (float)o.z};
+        g_vueDessus.cible = {(float)c.x, (float)c.y + (haut ? 0.f : std::strcmp(lieu, "talus") ? 12.f : 25.f), (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = 60;
+        g.render(404); g.render(404.02);
+        const std::string nom = std::string("carte-plage-") + lieu + (haut ? "-haut" : "");
+        r.capturePng(out + "/" + nom + ".png");
+        g_vueDessus.actif = false;
+        WFS_LOG("capture %s : sols côté terre (segment %lld)", nom.c_str(), (long long)seg);
+        g.shutdown();
+    }
+}
+
 void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     if (const char* e = std::getenv("WFS_CORNICHE"); e && !std::strcmp(e, "montee")) { benchMontee(g, r, out); return; }   // WFS-379
     Track t; t.build(mapById("plage"), trace::versionCarte("plage"));
@@ -2806,6 +2840,13 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         if ((s.type == trace::Type::RondPoint || s.exRondPoint) && !rp) rp = &s;   // WFS-283 : carrefour simple, même place
         if (s.type == trace::Type::Feux && !fx) fx = &s;
     }
+    auto vuesSols = [&] {   // WFS-383 : sols de la montée et de la zone « rochers »
+        int64_t roc = -1;
+        for (int64_t a = 200; a + 200 < L && roc < 0; a += 5) if (!std::strcmp(zoneId(mapById("plage"), a, L), "rochers") && !std::strcmp(zoneId(mapById("plage"), a + 80, L), "rochers")) roc = a + 30;
+        vuesSolsCorniche(g, r, out, t, "talus", la ? la->debut + 400 : -1);
+        vuesSolsCorniche(g, r, out, t, "rochers", roc);
+    };
+    if (std::getenv("WFS_PLAGE_SOLS")) { vuesSols(); unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART"); return; }
     int64_t village = -1;   // village au tracé 2 : sur la descente de la falaise, hors de la montée
     for (int64_t a = 0; a < L && village < 0; a++) {
         const trace::Section* s = trace::sectionA(t, a * SEG);
@@ -2855,6 +2896,7 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         if (courbe >= 0) dessus("carte-plage-montee-courbe-dessus", courbe - 60, courbe, 260);
     }
     if (rp) dessus("carte-plage-rond-point-dessus", rp->debut - 20, (rp->debut + rp->fin) / 2, 110);
+    vuesSols();   // WFS-383
     // WFS-180 : vues depuis la promenade (1,7 m au-dessus du trottoir, à RW + 3 m), tournées vers la fête, les jeux et la mer
     auto promenade = [&](const char* nom, int64_t seg, float recul, float latCible, float hCible, bool nuit, float fov = 55, const vec3* vise = nullptr) {
         if (seg < 0) { WFS_ERR("banc Corniche : lieu absent pour %s", nom); return; }

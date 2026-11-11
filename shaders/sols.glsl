@@ -5,9 +5,10 @@
 //   > 40°       : roche (calcaire de la Corniche, roche grise ailleurs), veines et fissures.
 // Les limites varient de ± 4° avec une tache de 25 m (jamais une ligne droite) ; fondu de 8° à chaque passage.
 // Matériau MAT_GROUND ; cutoff (pc.params.z) = code du sol (src/world/sols.h) : climat (1 méditerranéen, 2 tempéré, 3 automne)
-// + 4 × « teinte » (le pré prend la couleur du sommet : champs cultivés de la Campagne) + 8 × « rocheux » (pente lue + 20°).
+// + 4 × « teinte » (le pré prend la couleur du sommet : champs cultivés de la Campagne) + 8 × « rocheux » (pente lue + 25°).
 // Couleurs : albédo en sRGB linéaire (le shader travaille en linéaire), mesures et sources dans src/world/sols.h.
-// Coût (RG-05) : 2 bruits de 4 octaves (2 en lecture légère) + 3 lectures de bruit simples, sans texture.
+// Coût (RG-05) : 2 bruits de 4 octaves (2 en lecture légère) + 3 à 5 lectures de bruit simples, sans texture ; le bruit des fissures
+// (4 octaves) n'est calculé que sur la roche.
 
 float bruitSol(vec2 p, int oct) {   // bruit fractal normé (0 à 1)
     float s = 0.0, a = 0.5, t = 0.0;
@@ -27,7 +28,7 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     const float meso = bruitSol(w * 0.29 + 7.0, oct);      // taches de ≈ 3,5 m
     const float fin = mix(0.5, rnoise(w * 2.6), detail);   // grain de ≈ 40 cm
     // pente en degrés (normale lissée : plus de facettes), limites irrégulières
-    const float deg = degrees(acos(clamp(normalize(Ng).y, 0.0, 1.0))) + (rocheux ? 20.0 : 0.0) + (macro - 0.5) * 8.0;
+    const float deg = degrees(acos(clamp(normalize(Ng).y, 0.0, 1.0))) + (rocheux ? 25.0 : 0.0) + (macro - 0.5) * 8.0;
     const float tTerre = smoothstep(21.0, 29.0, deg), tRoche = smoothstep(36.0, 44.0, deg);
 
     vec3 pre, tache, terre, maquis, roche, roche2;
@@ -44,9 +45,14 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     // champ cultivé : sa couleur (blé, labour…) garde la parcelle lisible, ramenée à mi-chemin du pré mesuré (plus d'aplat saturé)
     if (teinte) pre = mix(base.rgb, pre, 0.45);
 
-    // pente faible : pré, taches d'une autre herbe (≈ 25 m) et de terre nue (≈ 3,5 m), grain de 40 cm
-    vec3 bas = mix(pre, tache, smoothstep(0.45, 0.75, macro) * (teinte ? 0.35 : 0.7));
-    bas = mix(bas, terre, smoothstep(0.66, 0.86, meso) * 0.45);
+    // pente faible : pré, grandes taches d'une autre herbe (≈ 25 m, contraste 0,4, fondu large : jamais un motif de camouflage),
+    // taches rondes de terre nue (≈ 3,5 m, fondu doux, couleur ramenée vers le pré), grain de 40 cm
+    vec3 bas = mix(pre, tache, smoothstep(0.3, 0.8, macro) * (teinte ? 0.25 : 0.4));
+    bas = mix(bas, mix(terre, pre, 0.35), smoothstep(0.62, 0.9, meso) * 0.35);
+    if (climat == 1) {   // garrigue : pointillé de touffes de maquis sombre (romarin, chêne kermès) de 30 à 80 cm, effacé au loin
+        const float touffe = smoothstep(0.62, 0.78, rnoise(w * 1.9 + 23.0) * 0.6 + rnoise(w * 4.1 + 5.0) * 0.4);
+        bas = mix(bas, maquis, touffe * 0.7 * detail + 0.12 * (1.0 - detail));
+    }
     if (climat == 3) {   // feuilles mortes variées (brun, roux, jaune, brun foncé) en taches irrégulières de 10 à 30 cm ; au loin : leur moyenne
         const float h = rnoise(w * 3.3 + 41.0), couvre = smoothstep(0.42, 0.6, rnoise(w * 5.7 + 13.0) * 0.65 + meso * 0.35);
         const vec3 f = mix(mix(vec3(0.112, 0.061, 0.030), vec3(0.195, 0.076, 0.023), smoothstep(0.25, 0.4, h)),
@@ -57,8 +63,9 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     bas *= 0.82 + 0.36 * fin;
     // talus : terre et maquis en touffes
     vec3 talus = mix(terre, maquis, smoothstep(0.38, 0.62, meso + (fin - 0.5) * 0.3)) * (0.85 + 0.3 * fin);
-    // roche : bancs clairs et foncés, fissures sombres (fines, effacées au loin)
-    const float fis = (1.0 - smoothstep(0.0, 0.035, abs(bruitSol(w * vec2(0.9, 0.35) + 3.0, oct) - 0.5))) * detail;
+    // roche : bancs clairs et foncés, fissures sombres (fines, effacées au loin) ; bruit des fissures calculé seulement sur la roche
+    float fis = 0.0;
+    if (tRoche > 0.001 && detail > 0.001) fis = (1.0 - smoothstep(0.0, 0.035, abs(bruitSol(w * vec2(0.9, 0.35) + 3.0, oct) - 0.5))) * detail;
     vec3 roc = mix(roche, roche2, smoothstep(0.3, 0.8, meso)) * (0.85 + 0.3 * fin) * (1.0 - 0.45 * fis);
 
     base.rgb = mix(mix(bas, talus, tTerre), roc, tRoche);
