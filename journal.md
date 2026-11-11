@@ -1352,3 +1352,52 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 13:26:54 — WFS-412 : PR #349 ouverte (agent expert ci cd (session 01UY1Vv4jR6p))
 - Essai local sur les vrais tests compilés, `test_audio` rendu rouge exprès hors commit : 103 autres tests lancés, liste finale « test_audio », licences vérifiées (0 manque), code 1 (`qa/pr/WFS-412/extrait-2-essai-local-rouge.log`). Run de branche #1000 : étape des tests verte. Capture n° 3 sans objet (`test_course5_ordinateurs` vert sur `main` depuis WFS-415).
 - `TACHES.md` 🔀 En PR (#349), `suivi-pr.md` 🆕, lead dev appelé. À savoir pour WFS-427 (bancs du matin, autre session expert ci) : cette PR change les 3 lignes des tests CPU de `matin.yml` (≈ l. 132), rien d'autre.
+
+### 2026-11-11 13:59:11 — WFS-324 : 2e refus de la PR #341 corrigé (Claude, agent dev3d (01UY1Vv5YT))
+- Point bloquant, les phares de la voiture qui suit, la nuit, dans les glaces : un cœur et une lueur sur chaque optique mesurée par WFS-413, dessinés dans l'image d'une glace seulement. En vue directe, rien ne change (WFS-413 intact).
+  - Accroche dans `Renderer::feuxVoiture`, annoncée ici.
+  - Un retrait par méprise (3946d1d9 : j'avais pris une question de l'utilisateur pour un ordre) a été annulé (8726d790) ; l'utilisateur confirme que c'est un ajout dans les glaces, pas une modification des voitures.
+- Capture des Réglages : réglage Caméra sur Cockpit. La scène « voie de gauche » du banc est à 14 m (à 9 m, la voiture est dans l'angle mort).
+- Vérification :
+  - tests : 105 / 105 ;
+  - banc `retroviseurs` : 0 écart (Golf, Range Rover Sport, M4, 911) ;
+  - banc `cockpit` de nuit : sans régression ;
+  - coût : 0,43 img/s en Basse, 0,46 en Haute (estimé).
+- Commit à relire : 72e5ce51 ; lead dev rappelé.
+
+### 2026-11-11 13:59:26 — WFS-425 fusionné par le lead dev (lead-dev (session 01Us6uCtwf))
+- PR #348 relue sur 51f14f8a (Claude, agent dev (01Us6uCtwf)), **fusionnée en squash : 01712be4**. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire dans la PR.
+- Lu : tout le diff (`passe_scene.h/.cpp`, `renderer.cpp/.h`, `scene_copie.frag`, `test_passe_scene.cpp`, `CMakeLists.txt`) ; 7 paires de captures ouvertes, identiques. RG-01 (cause écrite : passe ×1 qui écrivait directement dans la cible HDR, hypothèse du rendu hors tuiles de l'Adreno, par élimination), RG-03 (×2 / ×4 identiques au bit près, test), RG-04 (×2 par défaut en Basse) : OK. RG-02 : à mesurer par l'utilisateur sur le S21 FE.
+- Refait : construction, `tests_cpu.sh` 105 verts ; banc `perf` Ville de nuit en ×1 (couche de validation + synchronisation : 0 message ; PNG identiques à `main`) ; endurance en ×1 avec validation (code 0, 0 erreur, objets Vulkan stables).
+- Remarque non bloquante écrite dans la revue : `prechaufferMsaa` (renderer.cpp:937-939) détruirait la copie ×1 en service si la passe en service était en ×1 pendant une variante ×2 / ×4 (impossible aujourd'hui ; à reprendre si `diagnostic.msaa_x1` est appliqué dès le chargement, suite proposée au PO par le développeur).
+- `TACHES.md` : WFS-425 → 🟡 À valider (utilisateur) (PR #348) ; `suivi-pr.md` : ligne supprimée ; `qa/Check.md` : ligne ajoutée.
+
+### 2026-11-11 14:00:07 — WFS-364 : PR #351 ouverte, accroche de 10 lignes annoncée (Claude, agent dev3d (01UY1Vv2nQ))
+- Fait : Golf (emblème rond, bandeau lumineux, liseré rouge et plaque de la fente retirés ; encoche de la peinture refermée par une peau cousue ; grille à 2 lames) ; Corsa (calandre en nid d'abeille, barres en V et porte-emblème retirés ; grille à 4 lames ; relief du capot lissé par la nouvelle retouche `lisser`).
+- **Accroche hors zone (10 lignes)** : `src/render/correctifs_voitures.h`, nombre de matériaux des optiques avant de la Golf (21 → 23) et de la Corsa (17 → 19), car chaque grille ajoute 2 matériaux à la fin ; rangs et zones inchangés. Sans elle, `test_phares_optiques` échoue.
+- Vérification : 104 tests CPU réussis ; `--verifier` vert pour 9 voitures ; Golf et Corsa rejouées octet pour octet ; Giulia et Range Rover rejouées depuis leur origine : identiques à `main` ; 16 captures vitrine avant / après + 20 zooms ×4 jour et nuit regardés.
+- **Pour le PO (RG-06, tâche séparée proposée)** : le liseré rouge de la Golf continue en fine ligne dans les deux phares, imprimé dans la texture de la lampe (matériau 10, texture 8) ; à repeindre par `tools/effacer_logos.mjs` / `tools/logos.json`, hors de la zone de WFS-364.
+
+### 2026-11-11 14:00:33 — WFS-425 : fin de session après la fusion (#348) (Claude, agent dev (01Us6uCtwf))
+- PR #348 fusionnée en squash par le lead dev (01712be4). Statut : 🟡 À valider (utilisateur). J'ai répondu sous la revue, point par point (3 remarques non bloquantes).
+- **Pour le PO** :
+  - Remarque n° 1 du lead dev : `prechaufferMsaa` détruirait la copie ×1 en service si la passe en service était en ×1 pendant la préparation d'une variante ×2 / ×4. Ce cas n'existe pas aujourd'hui (la fonction n'est appelée qu'au chargement). À corriger dans la même US que le constat « `diagnostic.msaa_x1` lu dans `configgame.json` ne prend effet qu'au prochain changement de cibles » (entrée du journal de 13:00 environ), si cette US est créée : `copieX1_.pipeline = VK_NULL_HANDLE` avant `createScenePipelines()` dans la boucle.
+  - L'émulateur des bancs du matin (GPU logiciel, toujours en ×1) fait maintenant une copie plein écran en plus : à regarder.
+  - Si la mesure du téléphone ne montre pas un ×1 plus rapide que le ×2, la cause supposée (rendu hors tuiles du pilote Adreno) est fausse. La suite proposée est une pré-passe de profondeur pour le ×1.
+- Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (une seule).
+- Titre de la discussion non changé : l'outil `set_session_title` n'existe pas dans cette session (titre voulu : « ⏹️ Terminée — Claude, agent dev (01Us6uCtwf) (WFS-425 fusionné) »).
+- Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
+
+### 2026-11-11 14:01:09 — WFS-324 : 3e revue de la PR #341, refusée (lead-dev)
+- Commit relu 72e5ce51. Réglés : phares allumés visibles dans les 3 glaces à taille réelle, réglage Caméra sur Cockpit pour la capture des Réglages.
+- **Refus** : en gros plan, la lueur de 25 cm ajoutée sur chaque phare (`PHARE_LUEUR`, `feuxVoiture`) est un disque gris pâle au bord net (Golf), ou un demi-disque plat (Range Rover Sport) : halo en disque interdit (règle du 2026-11-09). Attendu : cœur net gardé, aucune forme ronde lisible.
+- Branche non reconstruite (refus sur les images).
+
+### 2026-11-11 14:01:43 — WFS-324 : 3e refus de la PR #341 noté (po-scrum-master)
+- Noté sur message du lead dev : PR #341 (dev3d, 01UY1Vv5YT) refusée 3 fois ; reste seulement le halo en disque des phares dans les glaces. Statut inchangé (↩️ Retour lead dev). Pas de réattribution (règle des 10 h). WFS-325 attend WFS-324.
+- WFS-421 complété par la PR #347 (disque au sol des lampadaires enlevé à toutes les qualités) : la réserve de l'agent 3D sur #346 est traitée, aucune anomalie créée.
+### 2026-11-11 14:02:16 — Épic E16 « Évolution des objets 3D » créée, WFS-430 à 443 bloqués par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur (2026-11-11) : créer les US dans une épic « évolution des objets 3D », en bloqué, pas prioritaire, en dernier ; il dira quand commencer.
+- Créés : `regles-de-gestion/E16-evolution-objets-3d.md` (but, zone `src/world/biblio_*`, `assets/world/biblio/**`, `tools/biblio/**`, `tests/biblio*`, accroche renderer ≤ 10 lignes ; porte utilisateur après le pin d'Alep ; 33 ms S21 FE ; avis agent 3D ; avis lead dev et smart brain ; lots 2 à 10 en prévision non créée : ≈ 105 objets, 54,5 sessions, grand total ≈ 70,5), `regles-de-gestion/E16-inventaire.md` (copie de l'inventaire), `regles-de-gestion/WFS-430.md` à `WFS-443.md`.
+- Numéros WFS-430 à 443 vérifiés libres. Statut de tous : ⛔ Bloqué par l'utilisateur, P4 Basse, en dernier du tableau, dans aucun ordre de priorité, aucun attribué.
+- WFS-383 et WFS-371 inchangés (au déblocage, WFS-371 serait réduit s'il n'est pas fait : noté dans l'épic).
