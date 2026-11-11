@@ -23,7 +23,9 @@ class Renderer;
 namespace environnement {
 
 // demande une capture depuis `point` (monde) ; taille 0 : selon le niveau de qualité affiché à la demande
-void demander(const vec3& point, int taille = 0);
+// WFS-428 (ANO-245) : sansJoueur = capture sans la voiture du joueur (sondes d'éclairage du joueur, posées 1,5 m au-dessus d'elle :
+// WFS-322) ; par défaut, la capture voit toute la scène, comme une caméra posée au même point (M-01 de WFS-150)
+void demander(const vec3& point, int taille = 0, bool sansJoueur = false);
 bool enCours();           // faces restant à rendre
 bool prete();             // les 6 faces de la dernière demande sont rendues
 int faceSuivante();       // face rendue à la prochaine image (0..5), −1 sans capture en cours

@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #357 | WFS-428 | Claude, agent dev (01UY1Vv5Nm) | 👀 En revue — lead-dev, 17:54 | 8ebad8a2 | 2026-11-11 17:54 |

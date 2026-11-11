@@ -1701,3 +1701,44 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Épic E0, zone : `src/render/bench_passes.cpp` seulement (bloc « RG-04 / P-05 », l. ≈ 261-320) ; accroche ≤ 10 lignes annoncée au journal si indispensable. Ne pas toucher au bloc M-01 du même fichier (WFS-428, session 01UY1Vv5Nm ; sa branche touche `environnement.*` et `eclairage_physique.cpp`, pas `bench_passes.cpp`).
 - Critères : banc `realisme` (`WFS_PASSES_SEUL=1`) 5 / 5 étapes, aucune ligne « introuvable », `parcours-ultra-course` en Ultra (256 px). US technique : CI de branche permise, une à la fois, notée au journal. Règles : `regles-de-gestion/WFS-377.md`.
 - Au passage : WFS-420 (après WFS-419, fusionné) et WFS-424 (après WFS-421 et 423, fusionnés ; 422 annulé) passent ⏳ Prêt, pour les prochaines sessions `@dev` (420 puis 424, file E4). `track-agent.md` : lignes des sessions closes enlevées (WFS-365, 429, 445, 423).
+
+### 2026-11-11 18:33:01 — Début WFS-420 : attribué à Claude, agent dev3d (01UY1Vv3k4) (po-scrum-master)
+- Demande d'une nouvelle session `@dev3d` (dev-artiste-3d, session session_01UY1Vv3k4ksChrFLKosm8CS), aucun ticket reçu avant : premier et seul sujet de cette session.
+- Choix : WFS-420 (P2, US technique, ⏳ Prêt), 6e de l'ordre des 20 de l'utilisateur (12:08 UTC), le prochain `@dev` de la file E4 ; WFS-424 (P1) vient après lui dans cette file. Aucun autre ticket E4 en cours (WFS-383 est en E15).
+- Zone : `src/render/**` (mesures), `src/game/**` (rejeu, accroche ≤ 30 lignes annoncée au journal), `src/ui/ecrans/reglages*`, `src/platform/android_main.cpp` (fichier et partage, ≤ 30 lignes), `tests/**`. Pas de changement de qualité, de décor, de voiture ni de CI.
+- Critères : `regles-de-gestion/WFS-420.md` (RG-01 à RG-06 : banc lancé du menu caché de WFS-419, Ville de nuit puis de jour, 30 s de chauffe + 60 s de mesure, un interrupteur à la fois, tableau à l'écran + `diagnostic-AAAA-MM-JJ-hhmm.txt` partageable, aucun coût hors banc). Après fusion : 🟡 À valider (utilisateur). US technique : CI de branche permise, une à la fois, notée au journal.
+
+### 2026-11-11 18:32:57 — WFS-424 permis en parallèle de WFS-420 (po-scrum-master (session 01UY1Vv4oe))
+- Décision de l'utilisateur : deux sessions `@dev` ouvertes pour WFS-420 et WFS-424. Exception E4 écrite dans `TACHES.md` et `regles-de-gestion/WFS-424.md` (fichiers séparés). Le PO donne **WFS-420 à la 1re session `@dev`, WFS-424 à la 2e** ; ne pas sauter WFS-424 pour un autre ticket.
+
+
+### 2026-11-11 18:34:55 — WFS-424 : pris sur ordre direct de l'utilisateur (Claude, agent dev3d (01UY1Vv3cC))
+- L'utilisateur a ouvert cette session `@dev` en demandant explicitement WFS-424 ; c'est la 2e session `@dev` prévue par l'exception PO de 18:32 (en parallèle de WFS-420).
+- Branche `feature/waforspeed-424`. Plan : cuire le `fbm` de `shaders/route.glsl` dans une texture répétable (outil de cuisson sur PC, même bruit), lue en Basse seulement.
+
+### 2026-11-11 18:39:28 — Début WFS-392 : attribué à Claude, agent cartes (01UY1Vv2ghpU) (po-scrum-master)
+- Demande d'une nouvelle session `@cartes` (expert-cartes, session session_01UY1Vv2ghpUrn9AR3Uxd8bo), aucun ticket reçu avant : premier et seul sujet de cette session. Souhait de l'utilisateur : « prend un sujet », sans ticket précis.
+- Choix : WFS-392 (P2, ⏳ Prêt), le premier ticket de l'ordre de l'utilisateur qui demande le skill `expert-cartes` : l'ordre des 20 n'a plus de ticket `@cartes` (WFS-426 est 🟡), WFS-405 attend le jour de publication, puis l'ordre des 50 donne WFS-392 (31e). WFS-357 (30e, P3) n'est pas donné à cette session : c'est une ligne de la boucle Android (`android_main.cpp`, fichier touché par WFS-420 en cours), sans skill cartes ; il reste ⏳ Prêt pour une session `@dev`. E14 libre (aucun 🔧 ni 🔀).
+- Épic E14 + E9 (exception PO), zone : `src/world/cartes_v2/**`, `paquets/sources/**`, `tests/cartes_v2*`, `shaders/route.glsl`, `src/render/route_*` ; `src/world/meteo.*` en accroche ≤ 10 lignes si besoin.
+- Point d'attention : `shaders/route.glsl` est partagé avec WFS-424 (en cours, session 01UY1Vv3cC) : changement minimal, valable en Basse aussi, synchronisations fréquentes (écrit dans la section « Suivi » de `regles-de-gestion/WFS-392.md`).
+- Critères : `regles-de-gestion/WFS-392.md` (RG-01 à RG-05 ; 4 captures avant / après dans le 2e tunnel de la carte de neige, jour, Cockpit, nuit, entrée du 1er tunnel ; coût en Basse ≤ +5 %). Après fusion : 🟣 puis ✅ par les bancs du matin. Hors E15 : avis de l'agent 3D non exigé.
+- `track-agent.md` : derniers envois remis à jour (WFS-377 18:17, WFS-383 16:32, WFS-420 18:34).
+
+
+### 2026-11-11 18:42:11 — WFS-428 fusionné par le lead dev (lead-dev)
+- PR #357, revue du commit 8ebad8a2, fusion en squash e4cbb9f1 (titre `WFS-428 : … (#357) (Claude, agent dev (01UY1Vv5Nm))`). « ✅ Approuvé par le lead dev » écrit dans la PR en commentaire (GitHub refuse l'approbation : même compte).
+- Vérifié : 22 paires de captures ouvertes (planche du cube : la Golf est maintenant dans la face +Z ; vues du jeu identiques à l'octet ; Basse : bruit de 57 pixels) ; diff lu en entier (3 fichiers : `environnement.h/.cpp`, `eclairage_physique.cpp`) ; seul appel du jeu en `sansJoueur = true` (WFS-322 gardé), garde `kFacesValides` et `bench_passes.cpp` inchangés, aucune tolérance touchée.
+- Refait en local : construction et `tests_cpu.sh` 108/108 ; essai de fusion avec `main` (WFS-429) 109/109 ; `banc_groupe.sh realisme-2` : M-01 nuit 6/6 (+Z −0,06 %), jour 6/6, aucune « capture abandonnée », « partie 2, 2 erreur(s) » = WFS-377 seulement.
+- Remarques non bloquantes : capture de la Campagne de jour non fournie (défaut sans effet visible, preuve par le journal du banc) ; pas de test CPU (passe Vulkan, contrôlée par `realisme-2`).
+- Statut : 🟣 Fusionné (#357) ; ligne retirée de `suivi-pr.md` ; ligne `qa/Check.md` ajoutée. `realisme-2` ne sera vert aux bancs du matin qu'avec WFS-377.
+
+### 2026-11-11 18:42:41 — WFS-428 : fusionné (#357, e4cbb9f1), session terminée (Claude, agent dev (01UY1Vv5Nm))
+- PR #357 fusionnée en squash par le lead dev ; ticket 🟣 (US technique). Remarques non bloquantes du lead dev notées : pas de capture Campagne de jour (défaut sans trace à l'image, preuve par le journal du banc), pas de test CPU nouveau (logique dans une passe Vulkan, contrôlée par `realisme-2`), choix explicite de `sansJoueur` pour toute future capture.
+- `realisme-2` reste rouge tant que **WFS-377** (choix « Ultra ») n'est pas fusionné ; ensuite, seules les règles M-01 et WFS-213 couvertes ici.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 18:59:44 — WFS-424 : risque signalé, gain impossible (Claude, agent dev3d (01UY1Vv3cC))
+- Constat : le `fbm` visé (route.glsl l. 129, 191, 193, 222) ne tourne pas sur la chaussée de la Ville ni de la Corniche (222 : repli sans textures ; 191-193 : rive de la Campagne ; 129 : neige). En Basse la chaussée lit déjà une seule texture précuite (scan CC0 256 px). Banc PC (WFS_PERF_SCENE, Mimosas, Basse, nuit, pluie) : tout le bruit retiré → aucun gain mesurable ; route plate → ≈ 8 % au mieux. Détail : `qa/pr/WFS-424/mesures.md` (branche `feature/waforspeed-424`).
+- Conséquence : RG-01 est déjà le cas ; l'objectif « Ville sous 30 ms » ne peut pas venir de la route.
+- Proposition : annuler WFS-424 (sans objet, comme WFS-422), aucun code changé ; chercher le coût ailleurs avec le banc du téléphone (WFS-420).
+- Décision attendue de : utilisateur (il a donné le ticket lui-même), puis PO.
