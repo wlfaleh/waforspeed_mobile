@@ -369,7 +369,7 @@ static void barrier(VkCommandBuffer cb, VkImage img, uint32_t mip, uint32_t coun
 }
 
 // WFS-134 (RG-04) : chaîne de mipmaps par moyenne 2×2 (couleur sRGB moyennée en linéaire), tous les niveaux copiés d'un coup
-void VkCtx::uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips) {
+bool VkCtx::uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips, bool repli) {
     std::vector<uint8_t> tout(rgba, rgba + (size_t)w * h * 4);
     std::vector<VkBufferImageCopy> copies;
     const bool srgb = img.format == VK_FORMAT_R8G8B8A8_SRGB;
@@ -395,7 +395,8 @@ void VkCtx::uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t 
         }
         mw = nw; mh = nh;
     }
-    Buffer staging = createBuffer(tout.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    Buffer staging = repli ? essayerBuffer(tout.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true) : createBuffer(tout.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    if (!staging.buf) return false;   // WFS-418 : voie de repli, plus de mémoire
     std::memcpy(staging.mapped, tout.data(), tout.size());
     VkCommandBuffer cb = beginOneShot();
     barrier(cb, img.img, 0, mips, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -407,6 +408,35 @@ void VkCtx::uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t 
     destroy(staging);
     static bool annonce = false;
     if (!annonce) { annonce = true; WFS_LOG("textures : mipmaps calculés sur le CPU (GPU sans blit filtré, WFS-134)"); }
+    return true;
+}
+
+// WFS-418 : niveau 0 copié du tampon de transfert, puis mipmaps par blit linéaire, pour essayerUploadTexture : même suite de commandes
+// qu'uploadTexture (copiée : décision du PO du 2026-11-11 12:42 UTC, uploadTexture ne change pas dans ce ticket)
+static void envoyerAvecBlit(VkCtx& vk, Image& img, const Buffer& staging, uint32_t w, uint32_t h) {
+    const uint32_t mips = img.mips;
+    VkCommandBuffer cb = vk.beginOneShot();
+    barrier(cb, img.img, 0, mips, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    VkBufferImageCopy r{};
+    r.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}; r.imageExtent = {w, h, 1};
+    vkCmdCopyBufferToImage(cb, staging.buf, img.img, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &r);
+    int32_t mw = (int32_t)w, mh = (int32_t)h;
+    for (uint32_t i = 1; i < mips; i++) {
+        barrier(cb, img.img, i - 1, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+        VkImageBlit bl{};
+        bl.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, i - 1, 0, 1}; bl.srcOffsets[1] = {mw, mh, 1};
+        int32_t nw = mw > 1 ? mw / 2 : 1, nh = mh > 1 ? mh / 2 : 1;
+        bl.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, i, 0, 1}; bl.dstOffsets[1] = {nw, nh, 1};
+        vkCmdBlitImage(cb, img.img, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, img.img, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bl, VK_FILTER_LINEAR);
+        barrier(cb, img.img, i - 1, 1, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+        mw = nw; mh = nh;
+    }
+    barrier(cb, img.img, mips - 1, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    vk.endOneShot(cb);
 }
 
 Image VkCtx::uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb) {
@@ -447,6 +477,61 @@ Image VkCtx::uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srg
     barrier(cb, img.img, mips - 1, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
     endOneShot(cb);
+    destroy(staging);
+    return img;
+}
+
+// WFS-418 (décision du PO) : comme createImage (image simple, mémoire de la carte graphique), par la voie de repli : « plus de mémoire »
+// rend une image vide (tout ce qui a été pris est rendu) ; toute autre erreur arrête le jeu avec le même message que VK_OK
+Image VkCtx::essayerImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, VkImageUsageFlags usage) {
+    const uint32_t numero = ++reservationsRepli;
+    auto reussi = [&](VkResult r, const char* quoi) {
+        if (r == VK_SUCCESS) return true;
+        WFS_CHECK(manqueMemoire(r), "Vulkan : %s a échoué (%d) %s:%d", quoi, (int)r, __FILE__, __LINE__);
+        WFS_WARN("mémoire graphique (WFS-418) : %s : plus de mémoire (%d) pour une image de %ux%u (réservation n° %u) : image refusée", quoi, (int)r, w, h, numero);
+        return false;
+    };
+    Image i; i.w = w; i.h = h; i.mips = mips; i.format = fmt;
+    VkImageCreateInfo ci{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    ci.imageType = VK_IMAGE_TYPE_2D; ci.format = fmt; ci.extent = {w, h, 1};
+    ci.mipLevels = mips; ci.arrayLayers = 1; ci.samples = VK_SAMPLE_COUNT_1_BIT; ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    ci.usage = usage; ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE; ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    if (!reussi(vkCreateImage(device, &ci, nullptr, &i.img), "vkCreateImage")) return Image{};
+    VkMemoryRequirements req; vkGetImageMemoryRequirements(device, i.img, &req);
+    VkMemoryAllocateInfo mai{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+    mai.allocationSize = req.size;
+    mai.memoryTypeIndex = memoryType(req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    const VkResult ra = refusSimule(numero, echecReservation) ? VK_ERROR_OUT_OF_DEVICE_MEMORY : vkAllocateMemory(device, &mai, nullptr, &i.mem);   // RG-04
+    if (!reussi(ra, "vkAllocateMemory")) { vkDestroyImage(device, i.img, nullptr); return Image{}; }
+    i.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size;   // WFS-297 (RG-06)
+    VkImageViewCreateInfo vci{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+    vci.viewType = VK_IMAGE_VIEW_TYPE_2D; vci.format = fmt; vci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, mips, 0, 1};
+    if (!reussi(vkBindImageMemory(device, i.img, i.mem, 0), "vkBindImageMemory")) { destroy(i); return Image{}; }
+    vci.image = i.img;
+    if (!reussi(vkCreateImageView(device, &vci, nullptr, &i.view), "vkCreateImageView")) { destroy(i); return Image{}; }
+    return i;
+}
+
+// WFS-418 (décision du PO) : comme uploadTexture, par la voie de repli : image vide si l'image ou son tampon de transfert est refusé
+Image VkCtx::essayerUploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb) {
+    VkFormat fmt = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+    VkFormatProperties fp; vkGetPhysicalDeviceFormatProperties(gpu, fmt, &fp);
+    const bool canBlit = (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) && (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT) &&
+                         (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+    uint32_t mips = 1;
+    { uint32_t m = std::max(w, h); while (m > 1) { m >>= 1; mips++; } }
+    Image img = essayerImage(w, h, mips, fmt, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    if (!img.img) return Image{};
+    img.octetsTexture = (size_t)w * h * 4 * 4 / 3; octetsTextures += img.octetsTexture;   // WFS-149 : niveaux compris (≈ 4/3)
+    if (!canBlit) {   // WFS-134 (RG-04) : mipmaps calculés sur le CPU
+        if (uploadMipsCpu(img, rgba, w, h, mips, true)) return img;
+        destroy(img); return Image{};
+    }
+    const VkDeviceSize size = (VkDeviceSize)w * h * 4;
+    Buffer staging = essayerBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    if (!staging.buf) { destroy(img); return Image{}; }
+    std::memcpy(staging.mapped, rgba, (size_t)size);
+    envoyerAvecBlit(*this, img, staging, w, h);
     destroy(staging);
     return img;
 }

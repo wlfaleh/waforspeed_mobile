@@ -60,6 +60,10 @@ public:
     // autre erreur arrête le jeu comme createBuffer. Pour les réservations du chargement qui ont un secours (bâtiments cuits).
     Buffer essayerBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hostVisible);
     Buffer essayerUploadBuffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage);
+    // WFS-418 (décision du PO, 2026-11-11 12:42 UTC) : même voie de repli pour les images (atlas des bâtiments cuits seulement) :
+    // image vide (img == VK_NULL_HANDLE) si « plus de mémoire » ; mêmes numéros de réservation et même refus simulé qu'essayerBuffer
+    Image essayerImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, VkImageUsageFlags usage);
+    Image essayerUploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb);
     uint32_t reservationsRepli = 0;   // WFS-418 : réservations faites par la voie de repli depuis le lancement (banc, journal)
     uint32_t echecReservation = 0;    // WFS-418 (RG-04) : banc PC seulement (WFS_MANQUE_MEMOIRE_GPU) : refusSimule ; 0 sur le téléphone
     void destroy(Buffer& b);
@@ -74,7 +78,8 @@ public:
     Buffer uploadBuffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage);
     // texture RGBA8 avec mipmaps générés sur le GPU
     Image uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb);
-    void uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips);   // WFS-134 : repli sans blit
+    // WFS-134 : repli sans blit ; WFS-418 : repli = vrai : tampon de transfert par essayerBuffer, faux rendu s'il est refusé (image non remplie)
+    bool uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips, bool repli = false);
     // WFS-149 (RG-01) : texture dont TOUS les niveaux sont fournis (KTX2 : ASTC, ETC2 ou RGBA8), copiés tels quels
     Image uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux);
     // WFS-149 : le GPU sait échantillonner ce format avec filtre linéaire (fonctions ASTC / ETC2 activées à la création)

@@ -235,14 +235,13 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
         verifier(f.ok, "bloc des bâtiments refusé → kit de secours, aucun plantage");
     }
     {   // 5) WFS-418 (accroche, RG-04) : mémoire graphique refusée au chargement des bâtiments cuits → kit de secours, sans arrêt du jeu
-        VkCtx& vk = r.vk(); verifier(ecrireFichier(chemin, octets) && preparerCarte(c), "paquet valide réactivé");
-        uint32_t a = vk.reservationsRepli; double m0 = memoire::gpuMo(); scene("paquet cuit (réservations comptées)", "jour", 1, 0, "batiments-gpu-compte", 6);
-        const uint32_t n = vk.reservationsRepli - a; const double perte0 = memoire::gpuMo() - m0;   // réservations des bâtiments cuits par chargement
-        for (int k = 0; k < 2; k++) {   // jour : refus au milieu des niveaux fixes ; nuit : refus de la dernière (tampons du niveau 0)
-            const uint32_t rang = k ? n : n / 2 + 1, r0 = archi::carte::replisMemoireGraphique(); a = vk.reservationsRepli; m0 = memoire::gpuMo(); vk.echecReservation = a + rang;
-            const Mesure f = scene("mémoire graphique refusée → kit de secours", k ? "nuit" : "jour", 0, 50, k ? "batiments-gpu-refus-nuit" : "batiments-gpu-refus-jour", 60);
+        VkCtx& vk = r.vk(); verifier(ecrireFichier(chemin, octets) && preparerCarte(c), "paquet valide réactivé"); uint32_t a = vk.reservationsRepli; double m0 = memoire::gpuMo();
+        scene("paquet cuit (réservations comptées)", "jour", 1, 0, "batiments-gpu-compte", 6); const uint32_t n = vk.reservationsRepli - a; const double perte0 = memoire::gpuMo() - m0;
+        for (const uint32_t rang : {3u, n / 2 + 1, n}) {   // 3 : image du 2e atlas ; milieu : maillages fixes ; n : dernier tampon du niveau 0 (de nuit)
+            const uint32_t r0 = archi::carte::replisMemoireGraphique(); a = vk.reservationsRepli; m0 = memoire::gpuMo(); vk.echecReservation = a + rang;
+            const Mesure f = scene("mémoire graphique refusée → kit de secours", rang == n ? "nuit" : "jour", 0, 50, std::string("batiments-gpu-refus-") + (rang == 3 ? "atlas" : rang == n ? "dernier-nuit" : "milieu"), 60);
             vk.echecReservation = 0; WFS_LOG("batiments (WFS-418) banc : %u réservations des bâtiments cuits, refus de la n° %u ; mémoire graphique après la partie %+.2f Mo (paquet sans refus %+.2f Mo)", n, rang, memoire::gpuMo() - m0, perte0);
-            verifier(n > 1 && f.ok && archi::carte::replisMemoireGraphique() == r0 + 1 && vk.reservationsRepli - a == rang && memoire::gpuMo() - m0 <= perte0 + 0.01, "mémoire graphique refusée → kit de secours, aucun arrêt du jeu, aucune mémoire graphique perdue");
+            verifier(n > 8 && f.ok && archi::carte::replisMemoireGraphique() == r0 + 1 && vk.reservationsRepli - a == rang && memoire::gpuMo() - m0 <= perte0 + 0.01, "mémoire graphique refusée (réservation n° " + std::to_string(rang) + ") → kit de secours, aucun arrêt du jeu, aucune mémoire graphique perdue");
         }
     }
     carte::desactiver();

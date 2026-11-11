@@ -254,8 +254,11 @@ private:
     // rendu, et la grille de l'occlusion, gardée jusqu'ici, sert au kit de secours (occlusion de ses murs comme d'habitude)
     bool initCuit(Renderer& r, const GameView& g) {
         const cuit::Lu& d = g_cuit.d;
-        atlasCouleur_ = r.vk().uploadTexture(d.octets->data() + d.posCouleur, d.atlasL, d.atlasH, true);
-        atlasRelief_ = r.vk().uploadTexture(d.octets->data() + d.posRelief, d.atlasL, d.atlasH, false);
+        auto refus = [&]() { rendreCuit(r); tamponV_ = {}; tamponI_ = {}; return false; };   // WFS-418 : rien n'est gardé
+        // WFS-418 (décision du PO) : les deux atlas passent aussi par la voie de repli ; refusés : rien n'est gardé, kit de secours
+        atlasCouleur_ = r.vk().essayerUploadTexture(d.octets->data() + d.posCouleur, d.atlasL, d.atlasH, true);
+        if (atlasCouleur_.img) atlasRelief_ = r.vk().essayerUploadTexture(d.octets->data() + d.posRelief, d.atlasL, d.atlasH, false);
+        if (!atlasRelief_.img) return refus();   // occlusion pas encore calculée : la grille n'a pas servi
         {   // RG-04 : menuiserie en image avec relief : couleur × atlas, vitrage découpé (alpha), relief par la carte de normales
             Material m; m.color = {1, 1, 1, 1}; m.rough = 0.5f; m.metal = 0; m.flags = MAT_DOUBLE | MAT_MASK; m.cutoff = 0.5f;
             mats_[S_IMAGE] = r.makeMaterial(m, &atlasCouleur_, &atlasRelief_, nullptr);
@@ -263,7 +266,6 @@ private:
         // occlusion des murs (niveaux 0 et 1) : un « bâtiment » de l'occlusion = les murs d'un style d'un morceau
         precalcul::occlusionKit(d.morceaux.size() * (size_t)NS, [&d](size_t k, int lod, std::vector<Vertex>& v) {
             lotCuit(d.morceaux[k / (size_t)NS].lot[lod][S_MUR + (int)(k % (size_t)NS)], v); }, true);   // WFS-418 : grille gardée
-        auto refus = [&]() { rendreCuit(r); tamponV_ = {}; tamponI_ = {}; return false; };   // WFS-418 : rien n'est gardé
         size_t fixes = 0, reserves = 0;
         std::vector<Vertex>& v = tamponV_; std::vector<uint32_t>& i = tamponI_;   // réservés par preparerCuit
         for (size_t k = 0; k < d.morceaux.size(); k++) {
