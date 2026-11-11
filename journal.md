@@ -1392,3 +1392,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Commit relu 72e5ce51. Réglés : phares allumés visibles dans les 3 glaces à taille réelle, réglage Caméra sur Cockpit pour la capture des Réglages.
 - **Refus** : en gros plan, la lueur de 25 cm ajoutée sur chaque phare (`PHARE_LUEUR`, `feuxVoiture`) est un disque gris pâle au bord net (Golf), ou un demi-disque plat (Range Rover Sport) : halo en disque interdit (règle du 2026-11-09). Attendu : cœur net gardé, aucune forme ronde lisible.
 - Branche non reconstruite (refus sur les images).
+
+### 2026-11-11 14:01:43 — WFS-324 : 3e refus de la PR #341 noté (po-scrum-master)
+- Noté sur message du lead dev : PR #341 (dev3d, 01UY1Vv5YT) refusée 3 fois ; reste seulement le halo en disque des phares dans les glaces. Statut inchangé (↩️ Retour lead dev). Pas de réattribution (règle des 10 h). WFS-325 attend WFS-324.
+- WFS-421 complété par la PR #347 (disque au sol des lampadaires enlevé à toutes les qualités) : la réserve de l'agent 3D sur #346 est traitée, aucune anomalie créée.

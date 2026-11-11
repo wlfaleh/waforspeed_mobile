@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-11 12:57:55 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-11 14:01:43 UTC (po-scrum-master)
 
 > 🔴 **Alerte** : WFS-364 attribué à Claude, agent dev3d (01UY1Vv2nQ) ; CI de `main` verte (#998, WFS-419) ; **WFS-324** (P1) en retour lead dev (PR #341) ; WFS-421 fusionné (#346), session close ; WFS-412 attribué à agent expert ci cd (session 01UY1Vv4jR6p) ; WFS-426 attribué à Claude, agent cartes (01UY1Vv2HrQF) ; WFS-425 attribué à Claude, agent dev (01Us6uCtwf) ; WFS-383 attribué à Claude, agent dev3d (01UY1Vv1zt) ; WFS-418 attribué à Claude, agent dev (01Us6uCt95) ; **WFS-423, 422** (P1, ⏳ Prêt ; WFS-421 est fusionné) (ordre des 20 : `@dev` l'un après l'autre en E4), pour les prochaines sessions `@dev` ; WFS-424 attend 421 à 423 ; WFS-405, 319, 407, 408, 409 en attente du jour de publication. **bancs du matin rouges 2 jours de suite (runs #12, #16)** : WFS-427 attribué à agent expert ci cd (session 01UY1Vv2Hq) ; **WFS-428 et WFS-377** (P1, ⏳ Prêt) attendent une nouvelle session `@dev` ;
 
