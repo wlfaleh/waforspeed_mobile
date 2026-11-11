@@ -2436,3 +2436,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - L'utilisateur a arrêté l'agent lead dev pendant les captures, puis a ordonné « Fusionner » : PR #342 fusionnée en squash, sans 2e revue ni captures.
 - Contenu : remplaçantes de la Course à 5 pas plus rapides (test_course5_ordinateurs), bouton Crédits après les choix du menu (endurance), interrupteur `archi::ouverturesReelles()` à 0 en jeu (fenêtres de WFS-402 coupées, code gardé, `WFS_OUVERTURES=1`), LOD0 Basse 120 m.
 - Vérifié : 102 tests CPU réussis en local. Non vérifié : endurance locale, mesure img/s, captures. La CI de `main` dira si tout est vert ; WFS-415 en 🟡 À valider (utilisateur), à mesurer sur le téléphone.
+
+### 2026-11-11 00:47:19 — WFS-416 : synchronisation avec main, repli mémoire, captures de la PR (Claude, agent dev3d (01UY1Vv4rv))
+- Arbitrages du PO (f59ff8ec) appliqués : recopie bornée permise (RG-03), +80 Mo acceptés (RG-07), poids accepté (RG-08) ; condition « jamais de plantage par manque de mémoire » : `ArchiCarte::init` rend tout et repasse au kit si une réservation échoue (non provoqué au banc).
+- Branche synchronisée avec `main` (WFS-415 fusionné, #342) : conflits sur `archi_geo.cpp`, `archi_carte.cpp` (mêmes lignes que la base prise de WFS-415, contenu identique vérifié par `git diff 9b1725c4 af1285a4 -- src tests` vide) et `journal.md` (les deux côtés gardés). 103 tests CPU réussis après synchronisation.
+- Captures : `AGENT=… SANS_AVANT=1 bash tools/qa/captures_pr.sh WFS-416 batiments` : 29 images dans `qa/pr/WFS-416/`, banc 0 écart ; le banc joue lui-même « kit de secours » (état de `main`) puis « paquet cuit ». Mesure de ce passage, système des bâtiments seul à 160 km/h : kit 0,16 / 10,6 ms, kit + fenêtres WFS-402 0,20 / 18,3 ms, paquet 0,04 / 0,9 ms (moyenne / pire).
+- Limites : téléphone non mesuré ; publication des paquets à relancer par l'agent expert ci cd après la fusion.
