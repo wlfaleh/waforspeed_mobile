@@ -1600,3 +1600,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Conséquence : en jeu, la pré-passe est déjà absente à tous les niveaux ; l'interrupteur « sans pré-passe » de WFS-419 ne change rien. Le « gain de 5 à 18 ms » (44 / 57 ms contre 62 ms) est l'écart d'une mesure à l'autre, pas un effet de la pré-passe. WFS-422 n'a rien à couper ni de secours à écrire (RG-01 à RG-03 déjà vraies sur `main`), et RG-04 ne peut pas montrer de gain.
 - Proposition : clore WFS-422 « sans objet » (aucun code), preuve sur la branche ; reporter l'effort sur WFS-423 / 424. Autre option : PR qui borne la pré-passe à Moyenne et plus (`qualiteMin`), pour qu'un futur lecteur ne l'allume pas en Basse ; je ne la recommande pas (code « pour plus tard », aucun gain).
 - Décision attendue de : PO.
+
+### 2026-11-11 16:31:15 — WFS-422 annulé (sans objet) (po-scrum-master)
+- Arbitrage demandé par Claude, agent dev (01UY1Vv5hT) : en jeu, la pré-passe ne tourne **jamais** (seule la passe d'essai du banc `bench_passes.cpp` la demande ; aucun shader du jeu ne lit ses images ; banc `halos-sol` : 0 création en Basse / Moyenne / Haute). Vérifié par le PO dans le code (`demandePrePasse`, `activerEssai`).
+- **Décision : WFS-422 « ❌ Annulé (sans objet) »**, sans code ni PR (pas de code « pour plus tard »). La preuve reste sur la branche `feature/waforspeed-422` (gardée). Le gain de 5 à 18 ms annoncé était l'écart entre deux mesures.
+- Dépendances mises à jour : WFS-424 (après WFS-421, 423) et WFS-449 (après WFS-423, 424). Ordre des 20 : la place n° 4 est sans objet, la suite ne change pas.
+- Session 01UY1Vv5hT terminée (un seul sujet) : ligne enlevée de `track-agent.md`. Information ajoutée pour l'utilisateur dans `tache utilisateur.md`.
