@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
     if (const char* b = std::getenv("WFS_BANC"); b && !std::strcmp(b, "cuire")) { carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets"; return cartes_v2::cuireSeul(g_root) > 0 ? 3 : 0; }   // WFS-301 (accroche, RG-C1 à C3) : paquets à publier (WFS-302), sans Vulkan
     if (!vk.init(nullptr, cw, chh)) return 1;
+    vk.echecReservation = rangRefusSimule(std::getenv("WFS_MANQUE_MEMOIRE_GPU"));   // WFS-418 (accroche, RG-04) : réservation refusée, PC seulement
     const double tVk = nowSeconds();
     Renderer r; r.init(vk);
     Game g;
