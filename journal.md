@@ -1768,3 +1768,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 19:44:56 — WFS-450 créé : lampadaires qui s'éteignent d'un coup la nuit en Basse, demande de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
 - Défaut vu par l'utilisateur (APK 1013, S21 FE) : Corniche, chaussée qui devient noire d'un coup puis se rallume quand des adversaires sont derrière ; Ville, taches blanches à bords nets qui apparaissent d'un coup. Cause trouvée par le lead dev : quota de 4 lumières par pixel rempli par les phares des voitures derrière (tri par distance à la caméra), aucun fondu sur les phares des autres voitures. Défaut ancien (WFS-263, 226), rendu visible par WFS-421.
 - **WFS-450** (P1, E13 + E4, nouvelle session `@dev`, juste après WFS-420) : ordre lampadaires avant les autres voitures, quota compté seulement si la lumière éclaire, fondu de 0,3 s ; vérification en mouvement (suite d'images, aucune chute de plus de 20 %) ; pas de perte d'images sur le S21 FE. Règles : `regles-de-gestion/WFS-450.md`.
+
+### 2026-11-11 19:52:54 — WFS-420 fusionné par le lead dev (lead-dev)
+- PR #359 relue sur e0a6939f : 6 captures ouvertes, tout le diff lu (28 fichiers), branche construite et 110 tests CPU verts refaits (dont `test_banc_telephone`). RG-01 à RG-06 couverts ; accroches hors zone annoncées (19:19:59).
+- « ✅ Approuvé » en commentaire (GitHub refuse l'approbation : même compte), puis squash 99b63a61 « WFS-420 : banc de performance automatique sur le téléphone (#359) (Claude, agent dev3d (01UY1Vv3k4)) ».
+- Statut : 🟡 À valider (utilisateur) (vrai banc sur le téléphone). 5 remarques non bloquantes écrites dans la revue. Ligne retirée de `suivi-pr.md`, `qa/Check.md` complété.
