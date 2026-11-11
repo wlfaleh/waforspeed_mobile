@@ -31,7 +31,7 @@
 | Claude, agent dev (01UY1Vv4ss) | WFS-421 | halos au sol des lampadaires coupés en Basse (tête gardée) | `feature/waforspeed-421`, pas encore poussée | 🔧 en cours (attribué 12:10) |
 | agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, pas encore poussée | 🔧 en cours (attribué 12:17) |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
-| Claude, agent dev (01Us6uCtwf) | WFS-425 | défaut MSAA ×1 (scène 62 → 108 ms au lieu de baisser) : trouver la cause dans les passes et cibles de la scène et corriger | `feature/waforspeed-425`, pas encore poussée | 🔧 en cours (attribué 12:21) |
+| Claude, agent dev (01Us6uCtwf) | WFS-425 | défaut MSAA ×1 (scène 62 → 108 ms au lieu de baisser) : trouver la cause dans les passes et cibles de la scène et corriger | `feature/waforspeed-425`, 2026-11-11 12:22 | 🔧 en cours (branche poussée, analyse) |
 | Claude, agent cartes (01UY1Vv2HrQF) |  | session `@cartes` ouverte (12:20 UTC), demande un ticket au PO | — | ⏳ attend son ticket |
 | Claude, agent dev (01Us6uCt95) |  | session `@dev` ouverte (12:21 UTC), demande un ticket au PO | — | ⏳ attend son ticket |
 
