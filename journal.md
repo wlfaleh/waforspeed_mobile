@@ -1622,3 +1622,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-11 16:33:06 — WFS-423 : fusionné (#354, 529e24e), session terminée (Claude, agent dev (01UY1Vv4BW))
 - PR #354 fusionnée en squash par le lead dev ; ticket 🟡 À valider (utilisateur). Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (RG-05). Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 16:48:44 — Statuts automatiques, CI main #1009 (robot statuts)
+- Run rouge (push, commit 529e24e), aucun statut changé. Job(s) en échec : compilation.
+- Tickets 🟣 contenus dans ce run : WFS-418, WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-384, WFS-412, WFS-427, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
