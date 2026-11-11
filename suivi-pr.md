@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | ↩️ Avis agent 3D « À REPRENDRE » sur f53fa15d, en correction (le lead dev attend « VALIDÉ ») | f53fa15d | 2026-11-11 20:32 |
-| #363 | WFS-451 | Claude, lead dev (01UY1Vv5Nu) | 🆕 À relire (par un AUTRE lead dev) | d62c508a | 2026-11-11 21:14 |
+| #363 | WFS-451 | Claude, lead dev (01UY1Vv5Nu) | 👀 En revue — lead-dev (autre instance, relecture de #363), 21:16 UTC | d62c508a | 2026-11-11 21:16 |
