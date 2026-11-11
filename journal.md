@@ -1463,3 +1463,17 @@ Nouvelle session `@dev` (session_01UY1Vv5NmAE439dke3iNvDi, aucun ticket avant : 
 
 ### 2026-11-11 15:00:26 — WFS-429 attribué à Claude, agent dev (01UY1Vv3Vj) (po-scrum-master)
 Début : **WFS-429** (P1, 8e de l'ordre des 20) « HUD : boutons Caméra et Menu à côté du score, +5 % », donné à la nouvelle session `@dev` (session 01UY1Vv3Vj, jamais eu de ticket) comme prévu dans `tache utilisateur.md`. Épic E5 + E8 (+ E3 exception : `camera_vue.cpp`, `drawUi` et zone de toucher seulement) ; aucun autre ticket actif sur ces épics. Zone : `src/ui/hud.cpp`, `src/ui/ecrans/pause.cpp`, `src/game/camera_vue.cpp` (partie bouton), accroches de bancs ≤ 10 lignes annoncées. Règles : `regles-de-gestion/WFS-429.md` (RG-01 à RG-10). Branche `feature/waforspeed-429`. Pas de 🟡 (validation par captures, lead dev).
+### 2026-11-11 12:23:45 — WFS-426 : branche créée (Claude, agent cartes (01UY1Vv2HrQF))
+- Branche `feature/waforspeed-426` créée depuis `main` (c96e1f08) et poussée ; étude de la cuisson de la Ville (WFS-301, 302, 416, 307) pour y ajouter la Corniche.
+
+### 2026-11-11 13:38:35 — WFS-426 : Corniche cuite en paquet, bancs et captures (Claude, agent cartes (01UY1Vv2HrQF))
+- Fait : villas de la Corniche posées sans carte graphique (`plage::poserVillasKit`, même pose que l'init) et cuites dans le bloc `batiments` ; `WFS_BANC=cuire` cuit Ville + Corniche ; `paquets.yml` (6 noms exacts, relu par l'agent expert ci cd : OK) et `publier_paquets.sh` (`--nom plage=Corniche`) ; banc « batiments » sur la Corniche (`WFS_CARTE=plage`).
+- Tailles : plage_astc 54,6 Mo, plage_etc2 38,2 Mo, plage_rgba8 59,2 Mo (bâtiments 32,9 Mo, 172 villas) ; deux cuissons identiques à l'octet.
+- Vérifié : tests CPU 103/103 ; banc batiments Corniche 0 écart, 0 construction en course avec le paquet (50 et 160 km/h), bloc refusé → secours sans plantage ; banc paquets 0 écart : parcours terrain → télécharger la Corniche → course sur la Ville pendant le téléchargement → course sur la Corniche avec son paquet → supprimer → course en secours.
+- Limites : fichiers nommés `plage_*` (identifiant du code) au lieu de `corniche_*` (signalé au PO) ; mesure S21 FE (≤ 28 ms) à faire sur le téléphone ; publication = lancer paquets.yml à la main après la fusion.
+
+### 2026-11-11 14:32:16 — WFS-426 : correction après le retour du lead dev (PR #350) (Claude, agent cartes (01UY1Vv2HrQF))
+- Cause racine : `batimentsCuits` vidait la liste globale du kit (`g_bats`, `g_cuit`) de la carte chargée ; le banc `paquets` cuit la Corniche pendant une partie sur la Ville → immeubles de la Ville effacés (capture `paquets-menu-prete`).
+- **Accroche annoncée (zone partagée, 6 lignes)** : `src/world/archi_carte.{h,cpp}` : `mettreDeCote()` / `remettre()` (échange des tampons, aucune copie), appelés autour de la cuisson dans `batimentsCuits`.
+- Contrôle ajouté au banc `paquets` : bâtiments de la Ville avant / après la cuisson de la Corniche 625 / 625, même signature : OK ; banc `paquets` 0 écart ; tests CPU 104/104 ; cuisson 0 écart, paquets identiques à l'octet.
+- Aussi : lumières des bars et du casino non déclarées en cuisson ; `<memory>` avec les en-têtes standard ; captures paquets-* refaites (+ `paquets-course-pendant`).
