@@ -2374,3 +2374,65 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Coût** : mémoire graphique +80 Mo (907 → 987 Mo au banc) ; paquet de la Ville 201 Mo en RGBA8 dont 174,8 Mo de bâtiments ; vérification du paquet au chargement 0,8 s (CRC de 201 Mo) ; chargement de la partie +0,4 s.
 - **Images regardées** : façade de près, paquet : dormant, ouvrants, petits bois, appui et garde-corps en volume (le kit de secours montre un trou sombre) ; à 50 m : image avec relief, cadres clairs lisibles ; de nuit : pièces allumées derrière les cadres.
 - Limites : aucune mesure sur téléphone (images par seconde réelles à valider par l'utilisateur) ; RG-07 « mémoire graphique pas plus haute » non tenue (+80 Mo) : à arbitrer par le PO ; Corniche et Campagne non cuites (RG-09 : la Ville d'abord).
+### 2026-11-10 22:47:25 — WFS-414 : plan, fichiers, accroche, risques (Claude, agent dev3d (01Us6uCxLS))
+- **Branche** `feature/waforspeed-414` poussée (465d6e0 à 22:09 UTC, puis étape 1 d270a0e). Le titre de la discussion n'a pas pu être changé : l'outil `set_session_title` n'existe pas dans cette session (ToolSearch : aucun résultat).
+- **Plan, en 2 étapes** : (1) déplacement pur, sans changer une valeur : fonctions de forme de `vehicule_cockpit.cpp` vers `vehicule_cockpit_formes.h`, bloc du volant vers `construireVolant` (`vehicule_cockpit_volant.cpp`, sans rendu, testable), ligne de la visière vers `ligneVisiere` ; empreintes des 20 volants de `main` relevées par `test_cockpit --empreintes` (`tests/test_cockpit_volants_main.h`) ; (2) volant de série pour les 6 voitures seulement (table `SERIE` de `vehicule_cockpit_defs.cpp`) : coussin bombé (super-ellipse, 200-205 × 145-148 × 65 mm, galbe 18 mm), joint sombre de 4 mm, coque du moyeu (+ 8 mm), branches de 55 → 35 mm qui naissent 12 mm dans le coussin et entrent dans le tube de la jante, plaque de 2 × 2 touches sur chaque branche horizontale (RG-03 adaptée), agrafe de la Golf et démarreur de la Giulia (avec sa bague) sur les branches, visière moins avancée (RG-07).
+- **RG-07, mesuré** (`test_cockpit`, rayons de l'œil de la caméra vers le haut de la jante) : avec l'avancée commune de 68 mm, la lèvre de la visière **traverse** la jante sur 5 des 6 voitures (jour de −28 à −31 mm) ; avancée retenue : Mustang 16, Golf 12, Abarth 60, T-Cross 28, S3 28, Giulia 28 mm (aucun point caché, jour ≥ 5 mm). **Constat hors périmètre** : la M4 et la 911 ont le même défaut (lèvre dans la jante) ; non touchées (ordre de l'utilisateur : 6 voitures seulement), signalé au PO.
+- **Combiné** : le nouveau moyeu, plus haut (145 mm au lieu de 115), cache une bande plus grande du bas du combiné : `bandeLisibleCombine` prend le haut de la coque et du coussin pour ces 6 voitures (chiffres replacés dans la partie vue, test WFS-323 vert) ; les autres voitures ne changent pas.
+- **Accroche** (≤ 10 lignes, zone E7) : `src/platform/desktop_main.cpp`, banc `WFS_BANC=cockpit-volant` (1 inclusion + 4 lignes). Nouveau banc `src/render/vehicule_cockpit_volant_banc.cpp` (zone E10) : gros plans recadrés sur la jante projetée par la caméra de l'image (système inactif hors banc), plus une copie éclaircie pour la revue.
+- **Risques** : WFS-324 (PR #341) modifie les mêmes fichiers (`vehicule_cockpit.cpp/.h`) : synchronisation et fusion des deux côtés au moment voulu ; captures « avant » = `main` + ce banc seul (comme WFS-323).
+- **Vérifié en local** : construction complète ; `test_cockpit` vert (14 volants identiques à `main`, RG-01, 02, 03, 07) ; tests CPU 101 / 102 (seul rouge : `test_course5_ordinateurs`, rouge connu de `main`).
+
+### 2026-11-10 22:48:26 — ANO-243 : visière sur la jante de la M4 et de la 911, rangée dans WFS-325 (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCxLS) pendant WFS-414 (mesure de RG-07 dans `test_cockpit`) : la lèvre de la visière traverse le haut de la jante de la M4 (22 points, jour −25,6 mm) et de la 911 (28 points, jour −27,1 mm) ; défaut déjà sur `main`.
+- WFS-414 n'y touche pas : l'ordre de l'utilisateur le limite aux 6 voitures.
+- **ANO-243** créée (mineure, à confirmer par le QA ; même défaut qu'ANO-242) et rangée dans un lot ouvert, pas de nouveau ticket : **WFS-325** (P1, vue Cockpit 3/3), nouvelle **RG-05**, M4 et 911 dans son 1er lot ; WFS-325 passe ⏳ En attente, après la fusion de WFS-414 (mêmes champs de la visière, même test).
+
+### 2026-11-10 22:50:26 — WFS-415 : causes trouvées, corrections en cours (lead-dev, session 01UY1VvJJ)
+- Branche `feature/waforspeed-415` (ordre de l'utilisateur : le lead dev code ce ticket ; une autre session lead dev relira et fusionnera).
+- **Endurance rouge (#993, #994)** : la cause n'est pas le garage ni WFS-402, c'est **WFS-406** (fe9d8fc4, #993 est le 1er rouge de l'endurance) : `credits::dessinerBouton` est appelé dans `menu.cpp` **avant** les 3 choix, donc le bouton « Crédits » devient la 1re zone de la manette (`manette::focus`) ; le parcours au doigt touche la 1re zone (« Course solo » attendu) et ouvre les Crédits : panneau des modes fermé, puis tout le reste en écart (23). Correction : le bouton est dessiné après les choix (accroche de 3 lignes dans `src/ui/ecrans/menu.cpp`, hors zone, annoncée ici ; la manette retrouve aussi « Course solo » en premier). Endurance locale : **0 écart**, code 0.
+- **test_course5_ordinateurs (#991 à #994)** : `remplacant()` de WFS-404 prenait « la plus proche en vitesse max » (S3, V60 : 0-100 de 4,9 s) à la place de l'Elantra N (5,3 s), du X5 (5,4 s), du Range Rover Sport (5,9 s), et la retirait des candidats, ce qui décalait les tirages suivants. Correction (`src/game/course5.cpp`) : remplaçante de la classe du joueur **pas plus rapide** (vitesse max ≤, 0-100 ≥), allure la plus voisine, et plus retirée des candidats (tirages d'avant WFS-404 gardés). Graine par graine (8 graines × 4 cartes, Golf) : chaque place du joueur égale ou meilleure qu'avant WFS-404 (f04cec8c) ; circuit 6/8 avant WFS-404, 3/8 à main, **7/8** après ; Ville 8/8, Campagne 8/8, Plage 7/8. Nouveau contrôle dans `tests/test_course5.cpp` (17 voitures × 400 graines : tirage d'avant WFS-404 recopié, remplaçantes pas plus rapides dès qu'il en existe une dans la classe). Limite : dans la classe de la SF90, aucune voiture n'est plus lente que l'A 45 : la moins rapide en trop est prise (Corvette, sinon M4).
+- **Fenêtres de WFS-402** : interrupteur `archi::ouverturesReelles()` (archi_geo.*), 0 par défaut (jeu, APK), `WFS_OUVERTURES=1` ou `choisirOuverturesReelles(true)` pour le rendu de WFS-402 ; aucun fichier supprimé. Le banc `archi` (accroche d'une ligne dans `archi_banc.cpp`) et `test_archi_geo` tournent à 1 ; nouveau contrôle : à 0, ni châssis ni volet, moins de triangles ; à 1, maillage identique. LOD0 en Basse : 30 m seulement avec l'interrupteur à 1, sinon 120 m comme avant WFS-402.
+- Tests CPU : **102 réussis** (`tools/qa/tests_cpu.sh build`). Mesures du banc perf (Ville de nuit, Basse) en cours : r990 / avant WFS-402 / main / après.
+
+### 2026-11-10 23:10:39 — WFS-324 : corrections du refus de la PR #341 (Claude, agent dev3d (01UY1Vv5YT))
+- Point 1, glace intérieure : la voiture qui suit était cachée par les sièges avant du modèle. Correction : même décalage en long que les glaces extérieures (l'œil du cockpit est 50 à 75 cm trop en avant dans le modèle), et visée selon la hauteur de l'œil. Commits 02f414bf et 36d0a985.
+- Point 2, nuit : 2 lampadaires derrière la voiture sont aussi de vraies lumières quand les rétroviseurs sont actifs. C'est une accroche dans `nuit.cpp` (≤ 20 lignes), annoncée ici.
+  - Une voiture vue seulement dans les glaces n'éclaire rien : le contraire éclairait en blanc le bas de l'habitacle.
+  - Les glaces extérieures sont réglées vers la voie d'à côté : la carrosserie occupe 1,5° au bord intérieur (79c12aa9).
+- Point 3 : capture des Réglages refaite, ligne « Rendu » sans et avec rétroviseurs.
+- Point 4 : la glace gauche reste sombre la nuit, expliqué dans la PR. La scène n'a que 12 vraies lumières, choisies pour la vue avant, et une glace extérieure ne renvoie que 50 % de la lumière.
+- Vérification :
+  - banc `retroviseurs` : 0 écart (Golf, Range Rover Sport, M4, 911) ;
+  - banc `cockpit-voisine` : 0 écart ;
+  - 102 tests verts ; `test_course5_ordinateurs` rouge, comme sur `main` ;
+  - coût : 0,41 img/s en Basse et 0,64 en Haute (estimé).
+- Commit relu à demander : d77ac9f5. Le lead dev est rappelé.
+
+### 2026-11-10 23:26:15 — WFS-414 : PR #343 ouverte (Claude, agent dev3d (01Us6uCxLS))
+- PR #343 (`feature/waforspeed-414`, commit 5ea4b467, synchronisée avec `main`), statut 🔀 En PR ; ligne 🆕 dans `suivi-pr.md`.
+- Fait : volant de série des 6 voitures (coussin bombé 200-205 × 145-148 × 65 mm, galbe 18 mm, joint 4 mm, coque en plastique noir grainé ; branches 55 → 35 mm nées dans le coussin et finies dans la jante ; plaques de 2 × 2 touches ; démarreur de la Giulia et agrafe de la Golf sur les branches) ; visière moins avancée (RG-07) ; combiné : vitesse remontée dans la partie vue, rapport au-dessus (S3, Giulia) ou à côté (Abarth). Les 14 autres volants : code déplacé tel quel.
+- Vérifié : `test_cockpit` vert (RG-01, 02, 03, 05, 07 sur la géométrie) ; tests CPU 101 / 102 (rouge connu `test_course5_ordinateurs`) ; banc `cockpit-volant` 2340 × 1080 avant (main + banc) / après : 37 captures dans `qa/pr/WFS-414/` ; M4 et 911 identiques au pixel près.
+- Limites : la jauge de nitro du bas du combiné (Mustang, Golf, T-Cross, Abarth) est cachée par le moyeu plus haut (nitro toujours sur le HUD) : question au PO dans la PR ; formes du coussin estimées sur photos ; fusion suspendue tant que la CI de `main` est rouge (WFS-415).
+- Suite : avis de l'agent 3D (`expert-realisme-3d`) dans la PR, puis appel du `lead-dev`.
+
+### 2026-11-10 23:36:27 — WFS-324 : 2e revue de la PR #341 interrompue (Claude, agent dev3d (01UY1Vv5YT))
+- La 2e relecture du lead dev s'est arrêtée avant son verdict, par une erreur de l'API (limite hebdomadaire d'usage atteinte jusqu'au 15/11, 17:00 UTC). Rien n'a été fusionné ni refusé.
+- `suivi-pr.md` : #341 remise de « 👀 En revue » à « 🔁 Corrigée, à relire », pour le passage automatique du lead dev.
+- Branche resynchronisée avec `main`, à la demande de l'utilisateur : fichiers de suivi seulement, aucun code changé depuis d77ac9f5.
+
+### 2026-11-10 23:50:05 — WFS-416 : 3 écarts aux règles arbitrés (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv4rv), branche `feature/waforspeed-416` à 3712668e (dernier envoi 2026-11-10 23:48 UTC).
+- **Acceptés tous les trois** (détail dans `regles-de-gestion/WFS-416.md`, section Suivi) : (1) niveau 0 recopié du paquet dans 3 tampons réservés au chargement (aucune construction, aucun tampon créé en course) ; (2) mémoire : la phrase « pas plus haute qu'avant » de la RG-07 est retirée (décision de l'utilisateur : aucune limite de mémoire pour le décor), repli sur le kit de secours si une réservation échoue ; (3) paquet de la Ville 189 à 206 Mo, dans le budget E15.
+- **Publication des paquets** : `paquets.yml` n'est pas automatique (lancement à la main sur `main`). Après la fusion et une CI de `main` verte, l'agent expert ci cd le lance ; la PR porte une section « Après la fusion ».
+- La PR attend toujours la fusion de WFS-415. Suites Corniche et Campagne : à créer après la fusion. `track-agent.md` à jour.
+
+### 2026-11-11 00:02:26 — Ordre de l'utilisateur : WFS-325 en premier après WFS-324 (po-scrum-master)
+- L'utilisateur a demandé la liste des 40 prochaines tâches (donnée dans la session du PO), puis : « tu peux mettre 325 en premier après 324 ».
+- Fait : bandeau dans `TACHES.md` et case Statut de WFS-325 ; WFS-325 passe de la 15e place de l'ordre du 2026-11-10 14:20 UTC à la place juste après WFS-324, avant WFS-405 et WFS-364 à 368. Rien d'autre ne change.
+- WFS-325 reste « En attente » jusqu'à la fusion de WFS-414 (PR #343, mêmes fichiers du cockpit) ; il ira au premier `dev-artiste-3d` (nouvelle session) qui demande. Aucune attribution faite.
+
+### 2026-11-11 00:04:51 — WFS-415 fusionné par confiance (#342, af1285a4), ordre de l'utilisateur (lead-dev, session 01UY1VvJJ)
+- L'utilisateur a arrêté l'agent lead dev pendant les captures, puis a ordonné « Fusionner » : PR #342 fusionnée en squash, sans 2e revue ni captures.
+- Contenu : remplaçantes de la Course à 5 pas plus rapides (test_course5_ordinateurs), bouton Crédits après les choix du menu (endurance), interrupteur `archi::ouverturesReelles()` à 0 en jeu (fenêtres de WFS-402 coupées, code gardé, `WFS_OUVERTURES=1`), LOD0 Basse 120 m.
+- Vérifié : 102 tests CPU réussis en local. Non vérifié : endurance locale, mesure img/s, captures. La CI de `main` dira si tout est vert ; WFS-415 en 🟡 À valider (utilisateur), à mesurer sur le téléphone.

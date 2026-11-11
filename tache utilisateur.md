@@ -238,3 +238,6 @@ demande utilisateur :
 
 - « J'espère que tu vas pas casser le volant.. dans tes captures il est un peu bizarre » (remarque dans la session de WFS-324, 2026-11-10)
 ( PO, 2026-11-10 19:37:06 UTC : vu, tu as raison. WFS-324 ne touche pas au volant (zone du volant identique avant / après sur ses captures) : le défaut est **déjà sur `main`** — sur la Golf 8, le haut du volant est caché par la visière du combiné et paraît aplati. Créé : **ANO-242** (bloquante), ajouté à **WFS-414** (le ticket urgent des volants, Golf comprise, règle RG-07) : jante entière visible en haut, les autres voitures ne bougent pas. )
+
+- « Tu peux mettre 325 en premier après 324 » (conversation avec le PO, 2026-11-11 00:02 UTC)
+( PO, 2026-11-11 00:02:26 UTC : c'est fait — **WFS-325** (vue Cockpit 3/3, intérieur propre à chaque voiture) est maintenant **juste après WFS-324** dans l'ordre, avant WFS-405 et les retouches de forme. Il démarre dès la fusion de WFS-414 (les volants, PR #343 : mêmes fichiers), avec une nouvelle session `@devartiste`. )
