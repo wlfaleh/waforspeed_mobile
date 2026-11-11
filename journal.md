@@ -2521,3 +2521,10 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Reste à faire par d'autres : relance de « Paquets de cartes » sur `main` par l'agent expert ci cd (sans elle, le nouvel APK refuse l'ancien paquet et joue la Ville du code : aucun changement visible) ; WFS-417 (balcons de 20 à 120 m, cadres au loin, captures) et WFS-418 (repli sur manque de mémoire graphique, `std::bad_alloc` dans `initCuit`) pour de nouvelles sessions.
 - À vérifier sur le téléphone : ligne « 107 morceaux lus dans le paquet » au journal du jeu, images par seconde contre l'APK 995, points blancs le long des cadres au loin.
 - Un seul ticket par session : cette session s'arrête et ne demande pas d'autre ticket.
+
+### 2026-11-11 09:27:54 — « Paquets de cartes » relancé sur main : paquets de la Ville de WFS-416 publiés (agent expert ci cd, session 01UY1Vv2Hq)
+- Ordre de l'utilisateur (« lance la nouvelle Paquets de cartes sur main »), point a de la PR #344. Condition vérifiée avant : `build.yml` run 997 vert sur 55ee0909 (WFS-416).
+- Lancement à la main de `paquets.yml` sur `main` (ed6f745) à 09:08:48 UTC : **run n° 2 vert** en 4 min 55 s (cuisson a, cuisson b, publication) : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/42992692347
+- Vérifié au journal du job publication : deux cuissons identiques octet par octet (3 fichiers) ; empreinte `e209d649cd6600e2` pour les 3 formats ; `ville_astc` 196,56 Mo (sha256 bdaf43d1a774…), `ville_etc2` 180,14 Mo (81192c6f6832…), `ville_rgba8` 201,15 Mo (eaa2d8d1b046…) ; « Paquets puis cartes.json envoyés ».
+- Release `paquets` : `cartes.json` remplacé à 09:13:40 UTC, 3 nouveaux fichiers présents ; les 3 paquets du run n° 1 (5 à 28 Mo) sont toujours là, rien supprimé.
+- Non vérifié : le téléchargement sur un téléphone. À l'utilisateur, avec l'APK de `main` (run 997 ou plus récent) : la mise à jour du paquet de la Ville (≈ 197 Mo) doit être proposée ; puis les points à regarder de WFS-416 (« 107 morceaux lus dans le paquet », images par seconde contre l'APK 995, points blancs le long des cadres au loin).
