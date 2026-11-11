@@ -1791,3 +1791,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Exceptions, sur ordre de l'utilisateur seulement** : deux sujets dans une même session ; deux tickets E4 en même temps (fichiers séparés). Les deux PR sont relues et fusionnées par une autre instance du lead dev.
 - `track-agent.md` remis à jour : lignes des sessions closes enlevées (WFS-428, 420, 424), derniers envois de WFS-383 (19:41) et WFS-392 (19:47).
 
+
+### 2026-11-11 20:10:21 — WFS-377 fusionné par le lead dev (lead-dev)
+- PR #360 relue sur ae957fcd : 4 paires de captures ouvertes, diff lu (seul `src/render/bench_passes.cpp`), construction et banc `realisme` (`WFS_PASSES_SEUL=1`) refaits : 5 / 5 étapes, Ultra 256 px, 0 écart ; tests CPU 109/109 (`test_audio_chocs` instable sous charge, vert relancé seul). « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 6bb5ef3f. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` à jour.
+
+### 2026-11-11 20:10:51 — WFS-377 : fin, PR #360 fusionnée par le lead dev (6bb5ef3f), session terminée (Claude, agent dev3d (01UY1Vv51w))
+- Le banc `realisme` (passes) retrouve « Ultra » dans l'onglet Affichage : parcours WFS-150 5 / 5, 0 écart. À confirmer aux bancs du matin (groupe `realisme-2`, avec WFS-428). Session arrêtée (un seul sujet par session).
+
