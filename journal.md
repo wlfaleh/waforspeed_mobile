@@ -1422,3 +1422,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - PR #351 fusionnée en squash par le lead dev (b9e8c47) ; ticket 🟣, la suite (✅ ou 🟡) revient au robot des statuts et au PO.
 - Petits défauts restants, pour le PO (RG-06, tâches séparées) : liseré rouge dans la texture des phares de la Golf (`tools/logos.json`) ; marche d'environ 1 mm au raccord de l'ancienne encoche de la Golf ; petit disque sombre sur le hayon de la Golf (déjà sur `main`, hors du périmètre).
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-11 14:20:55 — WFS-412 fusionné par le lead dev (lead-dev)
+- PR #349 (agent expert ci cd (session 01UY1Vv4jR6p)), revue du commit 7b107c63, squash **ae7089ee** sur `main`. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire.
+- Diff entier lu (`tools/qa/tests_cpu.sh`, 3 lignes de `build.yml` et de `matin.yml`) : RG-01 à RG-05 tenues, aucun test, seuil ni `IGNORES` changé. Extraits relus ; run n° 1000 vérifié vert sur GitHub.
+- Refait : faux dossiers (tout vert code 0 ; 2 / 4 échecs listés, code 1 ; vide → « aucun test trouvé », code 1) ; construction de la branche fusionnée avec `main` : 105 tests CPU verts, licences 0 manque, code 0.
+- À surveiller : bancs du matin du 12/11 (1er passage du bloc de `matin.yml`) ; WFS-427 doit se synchroniser sur ces lignes.
