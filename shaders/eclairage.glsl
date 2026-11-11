@@ -172,8 +172,7 @@ vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float meta
     vec3 sum = vec3(0.0);
     float e0 = 0.0, e1 = 0.0, e2 = 0.0, k0 = 0.0, k1 = 0.0;   // 2 plus fortes : éclairement reçu (classement) et k approché déjà compté ; e2 : 3e
     int i0 = -1, i1 = -1;
-    for (int i = 0; i < 12; i++) {
-        if (i >= n) break;
+    for (int i = 0; i < n; i++) {   // WFS-423 (RG-01) : bornée au vrai nombre de lumières (n ≤ 12, spotLights)
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);
@@ -215,12 +214,13 @@ vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float meta
 }
 vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
-    int n = int(F.spotN.x + 0.5);
+    int n = min(int(F.spotN.x + 0.5), 12);   // WFS-423 (RG-01) : vrai nombre de lumières de l'image (12 au plus : taille des tableaux)
     int parPixel = F.spotN.y > 0.5 ? int(F.spotN.y + 0.5) : 12, vus = 0;   // WFS-263 (RG-02) : 4 lumières par pixel au plus en Basse
     if (parPixel == 2) return spotLights2(n, p, N, V, albedo, f0, metal, a, noSpec);   // WFS-353 : Basse (Moyenne / Haute : 12)
     float NoV = max(dot(N, V), 1e-3);
-    for (int i = 0; i < 12; i++) {   // WFS-226 : 12 projecteurs au plus
-        if (i >= n || vus >= parPixel) break;
+    // WFS-226 : 12 projecteurs au plus ; WFS-423 (RG-01) : la boucle s'arrête au vrai nombre de lumières de l'image (n) ou dès que
+    // le plafond par pixel est atteint (4 en Basse) : plus aucun tour vide jusqu'à 12 (même résultat, mêmes lumières gardées)
+    for (int i = 0; i < n && vus < parPixel; i++) {
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);

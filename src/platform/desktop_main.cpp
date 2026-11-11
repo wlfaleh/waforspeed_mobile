@@ -15,6 +15,7 @@
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
 #include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
+#include "../render/retroviseurs_banc.h"   // WFS-324 (accroche) : WFS_BANC=retroviseurs
 #include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
 #include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
 #include "../game/game.h"
@@ -45,6 +46,7 @@ namespace wfs { int benchGrandPrixObjets(Game& g, Renderer& r, const std::string
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
 namespace wfs { int benchHalosSol(Game& g, Renderer& r, const std::string& out); }   // WFS-421 (accroche) : nuit_halo_sol_banc.cpp
+namespace wfs { int benchLumieresBasse(Game& g, Renderer& r, const std::string& out); }   // WFS-423 (accroche) : lumieres_basse_banc.cpp
 namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp
 namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
@@ -171,6 +173,7 @@ int main(int argc, char** argv) {
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
     if (const char* b = std::getenv("WFS_BANC"); b && !std::strcmp(b, "cuire")) { carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets"; return cartes_v2::cuireSeul(g_root) > 0 ? 3 : 0; }   // WFS-301 (accroche, RG-C1 à C3) : paquets à publier (WFS-302), sans Vulkan
     if (!vk.init(nullptr, cw, chh)) return 1;
+    vk.echecReservation = rangRefusSimule(std::getenv("WFS_MANQUE_MEMOIRE_GPU"));   // WFS-418 (accroche, RG-04) : réservation refusée, PC seulement
     const double tVk = nowSeconds();
     Renderer r; r.init(vk);
     Game g;
@@ -195,6 +198,7 @@ int main(int argc, char** argv) {
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "depart-campagne") { ui::chargerPolice(r); const int e = benchDepartCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-374 (accroche) : départ de la Campagne, gaz tenu dès le décompte ; ANO-233
     if (banc == "halos-sol") { const int e = benchHalosSol(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-421 (accroche) : halos au sol des lampadaires, Basse / Moyenne / Haute
+    if (banc == "lumieres-basse") { const int e = benchLumieresBasse(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-423 (accroche) : lumières de nuit en Basse, suite de 3 images
     if (banc == "halos") { ui::chargerPolice(r); const int e = benchHalos(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-337 (accroche) : halos des têtes de lampe, voie rapide de nuit
     if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
@@ -270,6 +274,10 @@ int main(int argc, char** argv) {
         v.insert(v.end(), COCKPIT_LOT3A.begin(), COCKPIT_LOT3A.end()); v.insert(v.end(), COCKPIT_LOT3B.begin(), COCKPIT_LOT3B.end());   // WFS-202
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
+    }
+    if (banc == "retroviseurs") {   // WFS-324 (accroche) : rétroviseurs à reflet (WFS_VOITURES : liste, golf par défaut)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        const int e = benchRetroviseurs(g, r, out, v); finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "cockpit-reference") { benchCockpitReference(g, r, out); return finir(); }   // WFS-323 (accroche) : scènes de la référence de l'utilisateur
     if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)

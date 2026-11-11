@@ -33,7 +33,7 @@ echo "Deux cuissons identiques octet par octet : $(echo "$la" | wc -l) fichier(s
 
 # RG-03 : liste
 python3 "$ICI/cartes_json.py" "$A" "$TMP/cartes.json" --adresse-base "$BASE" --version-min-apk "${VERSION_MIN_APK:?}" \
-    --commit "${GITHUB_SHA:-}" --nom ville=Ville --versionne --publies "$TMP/publies.txt"
+    --commit "${GITHUB_SHA:-}" --nom ville=Ville --nom plage=Corniche --versionne --publies "$TMP/publies.txt"
 cp "$TMP/cartes.json" "${SORTIE_LISTE:-cartes.json}"
 
 # liste publiée aujourd'hui (adresse publique, hors quota de l'API) ; absente → première publication

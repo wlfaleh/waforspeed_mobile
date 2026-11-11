@@ -13,6 +13,7 @@
 #include "../render/renderer.h"
 #include "../render/vehicule_cockpit_geo.h"   // WFS-197 : primitives du cockpit (déplacées depuis ce fichier)
 #include "../render/vehicule_cockpit.h"       // WFS-197 : intérieurs par modèle
+#include "../render/retroviseurs.h"          // WFS-324 : rétroviseurs à reflet
 #include "../audio/engine_synth.h"           // WFS-197 : EngineModel (régime et rapport du combiné, comme le son)
 #include "../ui/minicarte.h"                 // WFS-197 (RG-05) : découpe de la carte (minicarte::decouper, lecture)
 #include "../world/meteo.h"                  // WFS-197 (RG-06) : pluieActive (lecture)
@@ -267,6 +268,7 @@ public:
     const char* name() const override { return "camera"; }
 
     void init(Renderer& r, const GameView&) override {
+        r_ = &r;   // WFS-324 : qualité Basse lue avant l'image (rétroviseurs)
         // matériaux de buildCockpit (MeshStandardMaterial ; MeshBasicMaterial = sans lumière : noir + émission)
         // WFS-282 : double face (WFS-246 retire les faces arrière des opaques : pièces du cockpit vues de l'intérieur)
         Material m; m.flags = MAT_DOUBLE;
@@ -296,6 +298,16 @@ public:
             *mesh = r.makeMesh(geo->v, geo->i);
     }
 
+    // WFS-324 : avant chaque image (Renderer::beginFrame) : glace du rétroviseur redessinée à cette image (vue Cockpit avec un
+    // intérieur par modèle seulement : aucun coût dans les autres vues, RG-04)
+    void ambiance(FrameParams& fp, const GameView& g) override {
+        const EtatCockpit& ck = etatCockpit();
+        const cockpit::InterieurDef* idef = ck.actif && !g.sceneDediee && g.car ? cockpit::interieurPour(g.car->id) : nullptr;
+        if (!idef) { retro::preparer(fp, false, {}, ck.repere); return; }
+        const cockpit::Largeur l = cockpit::largeurPour(*idef);
+        retro::preparer(fp, true, retro::miroirs(*idef, l.oeil, l.coudes * 0.5f, {g.car->d.W, g.car->d.L, g.modele}), ck.repere, r_ && r_->qualiteBasse);
+    }
+
     // WFS-197 : modèle moteur (régime, rapport : mêmes entrées que le son, audio_system.cpp) et essuie-glaces, à chaque pas
     void update(double dt, const GameView& g) override {
         if (g.uiWidth > 0 && g.uiHeight > 0) g_aspect = g.uiWidth / g.uiHeight;   // WFS-235 : forme de l'écran (champ de vision)
@@ -320,7 +332,7 @@ public:
         const cockpit::InterieurDef* idef = g.car ? cockpit::interieurPour(g.car->id) : nullptr;
         if (idef != interieur_.def()) {
             if (interieur_.pret()) interieur_.detruire(r);
-            if (idef) interieur_.construire(r, *idef);   // WFS-282 (RG-00) : intérieur d'avant WFS-235
+            if (idef) interieur_.construire(r, *idef, {g.car->d.W, g.car->d.L, g.modele});   // WFS-282 (RG-00) : intérieur d'avant WFS-235 ; WFS-324 : carrosserie (rétroviseurs)
         }
         if (interieur_.pret() && g.player && g.track) { dessinerInterieur(r, g, cam, ck); return; }
         r.draw(statique_, sombre_, cam);
@@ -406,6 +418,7 @@ private:
     }
 
     cockpit::Interieur interieur_;
+    Renderer* r_ = nullptr;   // WFS-324
     cockpit::EtatEssuie essuie_;
     EngineModel moteur_; EngineTargets cibles_;
     std::vector<vec2> route_;

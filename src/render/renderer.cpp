@@ -1015,7 +1015,19 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 }
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
-uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
+uint16_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
+    // WFS-324 (accroche) : rétroviseur de l'image (même distance maximale que la caméra). retroSeul : seulement la glace (voiture du
+    // joueur en vue Cockpit) ; horsRetro : jamais la glace (pièces de l'habitacle)
+    const bool retro = retroOn_ && !horsRetro &&
+                       (s.r < 0 || ((sansDistance || length(s.c - camPos_) - s.r <= masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) && masquage::visible(fRetro_, s)));
+    if (retroSeul) return retro ? (uint16_t)VIS_RETRO : (uint16_t)0;
+    const uint16_t v = classerSansRetro(s, sansDistance);
+    if (!retro) return v;
+    if (!v) masques_--;   // compté comme masqué par classerSansRetro : la glace le dessine
+    return (uint16_t)(v | VIS_RETRO);
+}
+
+uint16_t Renderer::classerSansRetro(const masquage::Sphere& s, bool sansDistance) {
     constexpr uint8_t CASC = 0xF0;   // WFS-227 : toutes les cascades d'ombre
     if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;
     // WFS-150 : image d'une capture d'environnement : tout objet reste en file pour la capture (6 directions) ;
@@ -1040,8 +1052,8 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     return v | tout | c;
 }
 
-Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
-    Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
+const Vertex* Renderer::preparerMaillage(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     creationsMaillages_++;   // WFS-268 (RG-04)
     memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
@@ -1056,6 +1068,34 @@ Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t
         src = avecTangentes.data();
         tangentesMs_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count(); tangentesSommets_ += v.size();
     }
+    return src;
+}
+
+// WFS-418 (RG-01) : voie de repli : mêmes tampons que makeMesh, par VkCtx::essayerBuffer / essayerUploadBuffer ; un tampon refusé
+// rend aussi l'autre et défait les compteurs (aucun maillage vivant de plus) ; maillage vide rendu
+Mesh Renderer::essayerMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    Mesh m;
+    const Vertex* src = preparerMaillage(m, v, idx, dynamic);
+    if (dynamic) {
+        m.vb = vk_->essayerBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
+        if (m.vb.buf) m.ib = vk_->essayerBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
+        if (m.ib.buf) {
+            if (!v.empty()) std::memcpy(m.vb.mapped, src, v.size() * sizeof(Vertex));
+            if (!idx.empty()) std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
+        }
+    } else {
+        m.vb = vk_->essayerUploadBuffer(src, v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        if (m.vb.buf) m.ib = vk_->essayerUploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    }
+    if (m.vb.buf && m.ib.buf) return m;
+    vk_->destroy(m.vb);   // sommets pris, indices refusés : sommets rendus (rien à rendre si les sommets étaient refusés)
+    creationsMaillages_--; memoire::compteurs().objets3d--;
+    return Mesh{};
+}
+
+Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    Mesh m;
+    const Vertex* src = preparerMaillage(m, v, idx, dynamic);
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
@@ -1209,6 +1249,9 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), s.croisement ? 1.f : 0.f, 0};   // WFS-218
             if (s.angle >= PI - 1e-3f) u.spotCone[i] = {-2.f, -1.5f, 0, 0};   // WFS-09 : PointLight (toutes directions)
         }
+        // WFS-423 (RG-02) : copie des lumières telles que le shader les lit, pour l'éclairement autour des voitures (draw)
+        lumieresImage_.n = n;
+        for (int i = 0; i < n; i++) { lumieresImage_.pos[i] = u.spotPos[i]; lumieresImage_.dir[i] = u.spotDir[i]; lumieresImage_.col[i] = u.spotCol[i]; lumieresImage_.cone[i] = u.spotCone[i]; }
     }
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
     // WFS-264 (RG-02) : reflet temps réel en Haute seulement (nuit.cpp : fp.reflets = Haute, déjà avant ce ticket) ; coupé en Basse
@@ -1226,6 +1269,9 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     if (bancSansEffets & 4u) u.iblA.x = 0;                         // sonde d'éclairage (IBL)
     // WFS-419 : interrupteurs de diagnostic (éteints par défaut : rien ne change)
     if (diag::actif(diag::SANS_LUMIERES)) u.spotN.x = 0;           // 0 lumière de nuit
+    // WFS-423 (RG-02, RG-04) : Basse et nuit seulement (vernisPeinture ne le lit que la nuit) ; mêmes lumières que le shader
+    lumieresImage_.n = (int)(u.spotN.x + 0.5f);
+    eclairementCpu_ = qualiteBasse && u.misc.y > 0.5f;
     if (diag::actif(diag::SANS_PLUIE)) u.nuitA.y = 0;              // pas de flaques (les gouttes : src/world/meteo.cpp)
     u.spotN.w = diag::actif(diag::COULEUR_UNIE) ? 1.f : 0.f;      // shader « couleur unie » (scene.frag, scene_skin.frag)
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
@@ -1243,6 +1289,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
         fReflet_ = masquage::depuis(fp.proj * fp.view * R);
         fOmbre_ = masquage::depuis(u.shadowMat);
+        retroOn_ = fp.retro; if (retroOn_) fRetro_ = masquage::depuis(fp.retroVueProj);   // WFS-324 (accroche) : rétroviseur de l'image
         for (int k = 0; k < cascades_.n; k++) { fCasc_[k] = masquage::depuis(cascades_.m[k]); texelCasc_[k] = k ? 2 * cascades_.demi[k] / (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_) : 0.f; }   // WFS-227
         finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
         masquesPrec_ = masques_; masques_ = 0;
@@ -1309,6 +1356,11 @@ constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
 // la glace du modèle s'allume elle-même (draw, pièces « phare ») et seul le bloom de l'image l'entoure
 constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
 constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
+// WFS-324 : phare d'une voiture vue dans un rétroviseur (point lumineux, glace seulement) : bien plus vif qu'un feu arrière (E : un feu de
+// croisement fait ≈ 20 000 cd vers l'avant contre ≈ 5 cd pour une lanterne arrière ; plafonné pour rester lisible dans la glace)
+// 3e revue du lead dev (PR #341) : plus de lueur (le quadrilatère de 25 cm se lisait comme un disque gris à bord net) ; un cœur seul, plus petit
+// que l'optique (7 cm de diamètre) et très vif : l'éblouissement de l'image (bloom de la passe finale, comme en vue directe) fait la lumière
+constexpr float PHARE_COEUR = 0.035f, PHARE_LUEUR = 0.f, I_PHARE_COEUR = 14.0f, I_PHARE_LUEUR = 0.f;
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
 constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
 // WFS-171 (RG-01, ANO-70) : lueur rouge au sol calculée (feux_modele::eclairementSol) sur une grille de SOL_NX × SOL_NZ
@@ -1339,10 +1391,11 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
-    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
+    const uint16_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
+    voitureRetroSeule_ = (vis & ~VIS_RETRO) == 0; phareRetro_ = (vis & VIS_RETRO) != 0;   // WFS-324
     if (fx.nuit || stopK > 0 || fx.recul) feuxVoiture(m, world, fx);
     // WFS-134 (RG-11) : Basse, au-delà de 15 m : roues fixes (invisibles à cette distance), pièces regroupées ci-dessous
     const bool basseLoin = qualiteBasse && length(world.transformPoint((m.bmin + m.bmax) * 0.5f) - camPos_) > 15.f;
@@ -1354,7 +1407,10 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // écran complémentaire entre deux niveaux (scene.frag) ; jamais de cubes ; Basse, fantôme, police en lots : vehicule_lod.h
     // WFS-265 (2e retour du lead dev, PR #268) : la voiture du joueur est toujours complète, sans fondu (WFS-134), quelle que soit
     // sa taille à l'écran (vue haute, résolution dynamique) ; les autres suivent les niveaux de détail
-    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{&m.parts, &m.parts, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
+    // WFS-324 (accroche) : voiture du joueur vue seulement dans les rétroviseurs (petite image) : version allégée (Basse : 4 pièces)
+    const std::vector<ModelPart>* retroListe = !retroSeul ? &m.parts : qualiteBasse && !m.partsBasse.empty() ? &m.partsBasse : !m.partsLod.empty() ? &m.partsLod : &m.parts;
+    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{retroListe, retroListe, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
+    mat4 nuitModele{}; vec4 nuitE{}; bool nuitFaite = false;   // WFS-423 : dernier éclairement calculé (par matrice)
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1372,6 +1428,16 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
+        // WFS-423 (RG-02) : Basse, nuit : éclairement de la chaussée autour de la voiture calculé ici, une fois par matrice (la
+        // caisse et ses pièces peintes partagent celle de la voiture), au lieu de 3 × 12 lumières pour chaque pixel peint
+        if (eclairementCpu_ && (mat.flags & MAT_PAINT)) {
+            if (!nuitFaite || std::memcmp(nuitModele.m, p.pc.model.m, sizeof nuitModele.m) != 0) {
+                nuitModele = p.pc.model; nuitFaite = true;
+                const vec3 E = eclairement_voiture::routeAutour(lumieresImage_, nuitModele);
+                nuitE = {E.x, E.y, E.z, 1};
+            }
+            p.pc.nuit = nuitE;
+        }
         // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
         if (qualiteBasse && depth > 15.f && mat.detail > 0) continue;
         // WFS-134 (RG-11) : Basse, au-delà de 15 m : petites pièces (< 30 cm : logos, rétroviseurs, grilles, pièces de
@@ -1416,7 +1482,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || sceneFigee() || !m.indexCount) return;   // WFS-329 : fond figé : dessins 3D ignorés
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
-    const uint8_t vis = classer(sp);   // WFS-82
+    const uint16_t vis = classer(sp);   // WFS-82
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.vis = vis;
@@ -1449,7 +1515,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     const float part = lod_distance::partVisible(length(sp.c - camPos_), lod_distance::personnesMax(qualiteBasse));
     if (part <= 0.f) { masques_++; return; }   // compté comme objet masqué (journal du banc, remarque du lead dev, PR #268)
     fondu = lod_distance::combinerFondu(fondu, part);
-    const uint8_t vis = classer(sp);   // WFS-82 : avant de prendre une place
+    const uint16_t vis = classer(sp);   // WFS-82 : avant de prendre une place
     if (!vis) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);
@@ -1485,6 +1551,8 @@ void Renderer::drawQuads(const Vertex* v, int nQuads, const Material& mat) {
     p.pc.model = mat4::identity(); p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {0, 0, 0, 0};
+    // WFS-324 (accroche) : halos et lumières aussi dans le rétroviseur (phares des voitures derrière, la nuit : RG-04)
+    if (retroSeul) p.vis = VIS_RETRO; else if (retroOn_ && !horsRetro) p.vis |= VIS_RETRO;
     quadsUsed_ += nQuads;
     transparent_.push_back(p);
 }
@@ -1516,7 +1584,9 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
     // WFS-226 ; WFS-413 (RG-02) : milieu des deux glaces mesurées (FeuxModele::avantX / avantY / avant, model_loader.cpp)
-    if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
+    // WFS-324 (accroche) : une voiture vue seulement dans les rétroviseurs n'éclaire rien (comme avant : hors de la vue, ses phares ne
+    // sont pas notés) ; notée, la voiture qui suit éclairait en blanc le bas de l'habitacle du cockpit (projecteurs sans ombre)
+    if (f.nuit && !f.joueur && !voitureRetroSeule_) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
                                                  (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
     auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
@@ -1526,7 +1596,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         if (face <= 0.f) return;
         halo(p, std::max(coeur * ech, d * POINT_MIN), col * (iCoeur * face));
         const float kl = 1.f - std::clamp((d - LUEUR_DEBUT) / (LUEUR_FIN - LUEUR_DEBUT), 0.f, 1.f);
-        if (kl > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));
+        if (kl > 0.f && lueur > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));   // WFS-324 : sans lueur (phares dans les glaces)
     };
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f);
     // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
@@ -1545,6 +1615,17 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         const vec3 pr = F.reculTrouve ? vec3{side * F.recul.x, F.recul.y, F.recul.z + 0.01f}
                                       : vec3{side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f};
         if (f.recul) feu(w.transformPoint(pr), arriere, RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
+    }
+    // WFS-324 (accroche, RG-04) : phares d'une voiture vue dans le rétroviseur de l'image, la nuit : point éblouissant sur chaque
+    // optique mesurée (WFS-413), seulement dans la glace. En vue directe, la pièce émissive du phare et le flou lumineux de l'image font le
+    // point lumineux ; dans la petite image d'une glace, il ne restait qu'un anneau pâle (refus du lead dev, PR #341, 2e revue)
+    if (f.nuit && !f.joueur && phareRetro_ && F.phares) {
+        const bool seul = retroSeul;
+        retroSeul = true;   // quadrilatères pour la glace seulement (drawQuads)
+        for (int k = 0; k < 2; k++)
+            feu(w.transformPoint(F.phare[k] + F.phareNormale[k] * 0.02f), normalize(w.transformDir(F.phareNormale[k])), PHARE_COEUR, PHARE_LUEUR, blanc,
+                I_PHARE_COEUR, I_PHARE_LUEUR);
+        retroSeul = seul;
     }
     if (!f.nuit) return;   // RG-04 : le jour, pas de reflet sur la route
     // WFS-171 (RG-02) : route mouillée avec reflets : seule la traînée floue du reflet de WFS-142, pas de lueur en plus

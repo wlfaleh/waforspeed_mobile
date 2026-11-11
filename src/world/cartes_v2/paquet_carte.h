@@ -20,10 +20,14 @@ std::vector<std::string> valeursConfigConstruction(const std::string& carte);
 uint64_t empreinteAttendue(const std::string& carte);
 // RG-03, RG-06 : paquet vérifié → activé, vrai ; sinon carte du code (paquet désactivé), faux ; raison au journal du jeu
 bool preparerCarte(const std::string& carte);
+// WFS-426 : cartes du code cuites en paquet par la CI (WFS_BANC=cuire) et dont le paquet contient les bâtiments cuits (WFS-416) :
+// la Ville, puis la Corniche (identifiant « plage »)
+inline constexpr const char* CARTES_CUITES[] = {"ville", "plage"};
+bool cuiteEnPaquet(const std::string& carte);
 // cuisson (banc, PC) : fichiers de la carte pris dans le dossier des assets (racine) pour un format de texture
 carte::Paquet cuire(const std::string& racine, const std::string& carte, carte::FormatTexture f);
 
-// WFS_BANC=cuire (publication des paquets, WFS-302 ; complément de WFS-301, RG-C1 à C3) : cuit les 3 formats de la Ville deux fois, compare
+// WFS_BANC=cuire (publication des paquets, WFS-302 ; complément de WFS-301, RG-C1 à C3) : cuit les 3 formats de chaque carte de CARTES_CUITES (Ville, Corniche) deux fois, compare
 // octet par octet, vérifie (verifier_carte) et LAISSE les fichiers dans dossierPaquets() ; une ligne par fichier (nom, taille, SHA-256,
 // empreinte) ; sans Vulkan ni capture. Renvoie le nombre d'écarts (la plateforme sort avec le code 3 s'il y en a).
 int cuireSeul(const std::string& racine);
