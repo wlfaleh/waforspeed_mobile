@@ -74,10 +74,9 @@ vec3 eauCorps(float prof, float NoV, float pente, bool trouble) {
 // sans le cône du projecteur : on voit la lampe elle-même dans l'eau). Les phares des voitures (feux de croisement) n'y sont pas.
 vec3 eauRefletsLampes(vec3 p, vec3 N, vec3 V, float a) {
     vec3 s = vec3(0.0);
-    int n = int(F.spotN.x + 0.5);
+    int n = min(int(F.spotN.x + 0.5), 12);   // WFS-423 (RG-01) : vrai nombre de lumières de l'image (12 au plus : taille des tableaux)
     float NoV = max(dot(N, V), 1e-3);
-    for (int i = 0; i < 12; i++) {
-        if (i >= n) break;
+    for (int i = 0; i < n; i++) {   // WFS-423 (RG-01) : plus de tours vides jusqu'à 12
         if (F.spotCone[i].z > 0.5) continue;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d2 = max(dot(Lv, Lv), 1.0);
