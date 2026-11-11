@@ -137,6 +137,7 @@ public:
     }
 
     static CourseSystem* active_;
+    void rejouer() { restartReq_ = true; }   // WFS-420 (accroche) : banc du téléphone
     Course course_;
     // WFS-242 (RG-07, ANO-123) : avant le premier « 3 », le compte à rebours attend la fin du fondu du chargement (les commandes
     // tactiles y sont cachées : elles apparaissaient d'un coup ≈ 1 s après le « 3 », pendant l'image figée du chargement des
@@ -319,6 +320,7 @@ double courseScaleDt(double raw) { return CourseSystem::active_ && g_rules ? Cou
 void courseBenchRules(bool on) { g_rules = on; }
 bool courseBenchRulesOn() { return g_rules; }
 void courseBenchSetTime(double s) { if (auto* c = activeCourseMut()) c->timeLeft = s; }
+void courseRejouer() { if (CourseSystem::active_) CourseSystem::active_->rejouer(); }   // WFS-420
 
 // banc d'essai : 1) course de référence (mêmes valeurs que le jeu web), 2) décompte « 3 » puis « GO »,
 // 3) course en pilote automatique avec checkpoints, 4) écran de fin

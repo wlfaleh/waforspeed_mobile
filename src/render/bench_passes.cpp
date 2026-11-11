@@ -13,7 +13,9 @@
 #include "../game/track.h"
 #include "../platform/manette.h"
 #include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/reglages_onglets.h"   // WFS-377 : onglet qui contient « Graphismes »
 #include "../ui/text.h"
+#include "eclairage_physique.h"   // WFS-377 : captures des sondes (WFS-151) comptées à part
 #include "environnement.h"
 #include "passes.h"
 #include "qualite_auto.h"
@@ -278,17 +280,38 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         qualite::tenueUltra = {};
         std::vector<manette::Zone> z = zones();
         if (!z.empty()) { toucher(1, z.back()); etapes++; }
+        // WFS-377 (RG-01, ANO-211) : panneau à onglets (WFS-291). Le panneau déclare d'abord ses onglets, dans l'ordre de ONGLETS
+        // (reglages.cpp, drawUi) : le banc touche l'onglet qui contient « Graphismes » (ongletDe(L_QUALITE)), comme un joueur
+        const int ongletQualite = ecrans::ongletDe(ecrans::L_QUALITE);
         z = zones();
-        const size_t sansUltra = z.size();
+        bool barreOnglets = z.size() > (size_t)ecrans::N_ONGLETS;
+        for (int o = 1; barreOnglets && o < ecrans::N_ONGLETS; o++) barreOnglets = std::fabs(z[o].y - z[0].y) < 0.5f && std::fabs(z[o].h - z[0].h) < 0.5f && z[o].x > z[o - 1].x;
+        if (barreOnglets) toucher(4, z[ongletQualite]);
+        else { WFS_ERR("réglages (WFS-150) : onglet « %s » introuvable (%zu zones)", ecrans::ONGLETS[ongletQualite], z.size()); ecarts++; }
+        const std::vector<manette::Zone> zSans = zones();
+        const size_t sansUltra = zSans.size();
         // 2) la Haute tient (banc de chauffe simulé : 5 mesures de 2 s à 60 images/s, chauffe 0) → Ultra proposé
         for (int i = 0; i < qualite::MESURES_TENUE; i++) qualite::tenueUltra.mesure(60, qualite::HAUTE, 0);
         z = zones();
         const bool propose = z.size() == sansUltra + 1;
-        WFS_LOG("réglages (WFS-150) : %zu zones sans Ultra, %zu avec (Haute tenue : %s)", sansUltra, z.size(), qualite::tenueUltra.tenue ? "oui" : "non");
-        // zones : Caméra (4 choix), puis Graphismes (Basse, Moyenne, Haute, Ultra) → Ultra = 8e zone ; même rangée que Basse
-        if (propose && z.size() > 7 && std::fabs(z[7].y - z[4].y) < 0.5f && std::fabs(z[7].h - z[4].h) < 0.5f && std::fabs(z[7].w - z[4].w) < 0.5f) {
-            toucher(2, z[7]); etapes++;
-        } else { WFS_ERR("réglages (WFS-150) : choix « Ultra » introuvable (%zu zones)", z.size()); ecarts++; }
+        WFS_LOG("réglages (WFS-150) : onglet %s, %zu zones sans Ultra, %zu avec (Haute tenue : %s)", ecrans::ONGLETS[ongletQualite], sansUltra, z.size(), qualite::tenueUltra.tenue ? "oui" : "non");
+        // WFS-377 (RG-01) : « Ultra » retrouvé par son rôle, pas par un rang fixe : c'est le choix qui apparaît quand la Haute a tenu.
+        // Rangée = zones de même y et même h ; la seule rangée qui passe de 3 choix (Basse, Moyenne, Haute) à 4 est « Graphismes »,
+        // et Ultra en est le dernier choix (le plus à droite : les choix sont posés de gauche à droite, reglages.cpp)
+        auto rangee = [](const std::vector<manette::Zone>& zs, const manette::Zone& a) {
+            int n = 0; for (const manette::Zone& b : zs) if (!b.retour && std::fabs(b.y - a.y) < 0.5f && std::fabs(b.h - a.h) < 0.5f) n++; return n;
+        };
+        int iUltra = -1, rangeesTrouvees = 0;
+        if (propose) for (size_t i = 0; i < z.size(); i++) {
+            if (z[i].retour || rangee(z, z[i]) != 4 || rangee(zSans, z[i]) != 3) continue;
+            bool dernier = true;   // le plus à droite de sa rangée
+            for (const manette::Zone& b : z) if (!b.retour && std::fabs(b.y - z[i].y) < 0.5f && std::fabs(b.h - z[i].h) < 0.5f && b.x > z[i].x) dernier = false;
+            if (dernier) { iUltra = (int)i; rangeesTrouvees++; }
+        }
+        if (iUltra >= 0 && rangeesTrouvees == 1) {
+            WFS_LOG("réglages (WFS-150) : choix « Ultra » trouvé (zone %d sur %zu, rangée Graphismes de 4 choix)", iUltra + 1, z.size());
+            toucher(2, z[iUltra]); etapes++;
+        } else { WFS_ERR("réglages (WFS-150) : choix « Ultra » introuvable (%zu zones, %d rangée(s) de 3 à 4 choix)", z.size(), rangeesTrouvees); ecarts++; }
         const bool ultra = qualite::niveauAffiche(R.qualite) == qualite::ULTRA;
         capture("reglages-qualite-ultra");
         WFS_LOG("réglages (WFS-150) : %s ; %s", ultra ? "Ultra choisi (coûts de la Haute)" : "ULTRA NON CHOISI", qualite::ligneRendu().c_str());
@@ -300,16 +323,19 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         z = zones();
         if (!z.empty()) { toucher(3, z.back()); etapes++; }
         g.allerA(Ecran::Course);
-        const int c0 = environnement::capturesFaites();
+        const int c0 = environnement::capturesFaites(), s0 = eclairage::etat().sondesCapturees;
         environnement::demander(pointVille);   // point de départ de la Ville (6 m devant, 1,7 m de haut)
         for (int i = 0; i < 60 * 5; i++) image();
         capture("parcours-ultra-course");
         const bool enCourse = g.ecran() == Ecran::Course && g.player().dist > 1;
-        const int captures = environnement::capturesFaites() - c0;
+        // WFS-377 (RG-02) : les sondes d'éclairage (WFS-151, venues après WFS-150) font aussi leurs captures en course (départ, rebond) :
+        // la règle « une seule capture » vaut pour la capture demandée par le banc → captures du banc = toutes − celles des sondes
+        const int toutes = environnement::capturesFaites() - c0, sondes = eclairage::etat().sondesCapturees - s0, captures = toutes - sondes;
         if (enCourse && captures == 1 && environnement::taille() == 256) etapes++;
-        WFS_LOG("parcours (WFS-150) : course en Ultra : %s, %.0f m, %d capture(s) d'environnement de %d px", enCourse ? "oui" : "NON", g.player().dist * M, captures, environnement::taille());
-        {   // WFS-214 (accroche, RG-03, ANO-106) : chaussée en Ultra puis en Haute, même instant, même vue (niveaux posés directement : le banc ne
-            // trouve plus « Ultra » dans le panneau à onglets) ; capture d'environnement refaite à chaque niveau ; niveau d'avant rendu ensuite
+        WFS_LOG("parcours (WFS-150) : course en Ultra : %s, %.0f m, %d capture(s) d'environnement demandée(s) par le banc (%d en tout, dont %d des sondes WFS-151), %d px",
+                enCourse ? "oui" : "NON", g.player().dist * M, captures, toutes, sondes, environnement::taille());
+        {   // WFS-214 (accroche, RG-03, ANO-106) : chaussée en Ultra puis en Haute, même instant, même vue (niveaux posés directement, pour comparer
+            // les deux au même instant) ; capture d'environnement refaite à chaque niveau ; niveau d'avant rendu ensuite
             const int qAv = R.qualite; const bool uAv = qualite::ultraChoisi;
             for (const int n : {(int)qualite::ULTRA, (int)qualite::HAUTE}) {
                 niveau(n); environnement::demander(pointVille); for (int i = 0; i < 8; i++) g.render(tt);

@@ -3,6 +3,7 @@
 // (watchPerf du jeu web, logique dans qualite_auto.h) ; bandeau « Graphismes rapides — pour plus de fluidité ».
 // Inactif hors écran (banc d'essai : captures inchangées) et en mode GPU logiciel (WFS-59 gère déjà l'échelle).
 #include "diagnostic_perf.h"   // WFS-419
+#include "banc_telephone.h"   // WFS-420 : qualité automatique figée pendant le banc du téléphone
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -71,7 +72,7 @@ public:
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
         const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing();
-        effets_ |= g_auto.imageChauffe(dt, enCourse, chauffeNiveau(), r_->gpuImageMs());   // WFS-246 : marge du GPU
+        if (!banc_tel::actif) effets_ |= g_auto.imageChauffe(dt, enCourse, chauffeNiveau(), r_->gpuImageMs());   // WFS-246 : marge du GPU ; WFS-420 : figée pendant le banc
         mesurer(dt, enCourse);
         if (g_auto.mesures != mesuresVues_) {   // WFS-150 (RG-04) : la Haute tient-elle (Ultra proposé) ?
             mesuresVues_ = g_auto.mesures; const bool avant = qualite::tenueUltra.tenue;
