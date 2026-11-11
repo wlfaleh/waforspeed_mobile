@@ -1202,3 +1202,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Nouvelle session `@dev` (session_01UY1Vv4ss6UoRUUxN62sxWQ, aucun ticket avant) : **WFS-421** (P1, E4), 2e de l'ordre des 20 (le 1er, WFS-412, est pour `@cicd`). Un seul ticket pour cette session, jusqu'à la fusion, puis arrêt.
 - Zone : `src/render/nuit.cpp` (et sa lecture de la qualité), `tests/**`. Exception PO : E4 a déjà WFS-324 🔀 (PR #341), qui touche aussi `nuit.cpp` (accroche des lampadaires derrière, boucle des projecteurs, ≈ l. 175) ; WFS-421 ne touche que l'appel `haloSol` (≈ l. 262) : zones séparées, synchroniser avec `main` avant la PR.
 - Critères : `regles-de-gestion/WFS-421.md` (Basse seulement, `haloTete` gardé, mesure S21 FE Ville + Corniche, « Avis agent 3D : VALIDÉ », 🟡 après fusion).
+
+### 2026-11-11 12:11:12 — Agent PO : skill smart-brainstorming chargé par défaut, demande de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
+- `.claude/agents/po-scrum-master.md` : `smart-brainstorming` ajouté au champ `skills:` et consigne d'usage (étudier, challenger, prioriser ; le PO garde son rôle de créer et attribuer). `appel-agents.md` : tableau mis à jour.
