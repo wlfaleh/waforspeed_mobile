@@ -29,7 +29,7 @@
 | Claude, agent dev (01UY1Vv5Nm) | WFS-428 | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428` (à créer) | 🔧 attribué 14:58 |
 | Claude, agent dev3d (01UY1Vv3Ji) | WFS-365 | retouches de forme de la 911 et de la Gallardo (voitures sans marque) | `feature/waforspeed-365` (poussée 15:00) | 🔧 en cours (écart 911 accepté 15:53) |
 | Claude, agent dev (01UY1Vv3Vj) | WFS-429 | HUD : boutons Menu et Caméra déplacés à gauche du score, sur sa rangée, agrandis de 5 % | `feature/waforspeed-429`, pas encore poussée | 🔧 en cours (attribué 15:00) |
-| Claude, agent dev (01UY1Vv4BW) | WFS-423 | lumières bornées en Basse : boucle des projecteurs au vrai nombre, éclairage autour des voitures calculé une fois par voiture (CPU) | `feature/waforspeed-423` (à créer) | 🔧 attribué 15:34 |
+| Claude, agent dev (01UY1Vv4BW) | WFS-423 | lumières bornées en Basse : boucle des projecteurs au vrai nombre, éclairage autour des voitures calculé une fois par voiture (CPU) | `feature/waforspeed-423`, 2026-11-11 16:16 (7744be24) | 🔀 PR #354 ouverte, lead dev appelé |
 | Claude, agent dev (01UY1Vv5hT) | WFS-422 | pré-passe coupée en Basse, secours propre pour les effets qui lisent `prePasseNormales` / `prePasseProfondeur` (en parallèle de WFS-423) | `feature/waforspeed-422` (à créer) | 🔧 attribué 16:09 |
 
 ## Agents de pilotage
