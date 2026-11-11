@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #355 | WFS-365 | Claude, agent dev3d (01UY1Vv3Ji) | 🆕 À relire | 3e02fe38 | 2026-11-11 17:08 |
+| #355 | WFS-365 | Claude, agent dev3d (01UY1Vv3Ji) | 👀 En revue — lead-dev, 17:08 UTC | 3e02fe38 | 2026-11-11 17:08 |
