@@ -1,0 +1,64 @@
+[info] paquets (WFS-306) banc : paquet absent → étape ouverte : OK
+[info] paquets (WFS-306) banc : hors ligne : pas de liste → secours silencieux (Ville du code) : OK
+[info] paquets (WFS-306) banc : liste présente → étape ouverte : OK
+[info] paquets (WFS-306) banc : proposition (taille annoncée avant tout envoi) : OK
+[info] paquets (WFS-306) banc : rien ne part sans appui sur « Installer » : OK
+[info] paquets (WFS-306) banc : « Installer » → téléchargement : OK
+[info] paquets (WFS-306) banc : coupure vue par l'étape : OK
+[info] paquets (WFS-306) banc : touche Accueil : étape gardée, police libérée : OK
+[info] paquets (WFS-306) banc : retour dans le jeu : étape reprise, téléchargement continué : OK
+[info] paquets (WFS-306) banc : paquet téléchargé et vérifié → fin de l'étape : OK
+[info] paquets (WFS-306) banc : paquet installé → lu au chargement (WFS-301) : OK
+[info] paquets (WFS-306) banc : lancement suivant : paquet présent → pas de téléchargement : OK
+[info] paquets (WFS-306) banc : paquet d'avant WFS-416 installé : refusé au chargement (carte du code) : OK
+[info] paquets (WFS-306) banc : paquet d'avant WFS-416 installé → étape ouverte (mise à jour proposée) : OK
+[info] paquets (WFS-306) banc : mise à jour : proposition (taille annoncée) : OK
+[info] paquets (WFS-306) banc : mise à jour : nouveau paquet téléchargé et vérifié : OK
+[info] paquets (WFS-306) banc : mise à jour : bloc des bâtiments cuits présent dans le paquet installé : OK
+[info] paquets (WFS-306) banc : WFS-416 : paquet d'avant 21.7 Mo remplacé, bloc « batiments » 174.8 Mo
+[info] paquets (WFS-306) banc : place insuffisante → message : OK
+[info] paquets (WFS-306) banc : place insuffisante, « Continuer » → secours : OK
+[info] paquets (WFS-306) banc : paquet abîmé (2 essais) → échec : OK
+[info] paquets (WFS-306) banc : « Plus tard » → secours (Ville du code) : OK
+[info] paquets (WFS-306) banc : coupure pendant le téléchargement : OK
+[info] paquets (WFS-306) banc : « Plus tard » pendant une coupure → phase PRETE (installation de nouveau possible) : OK
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] paquets (WFS-306) banc : bandeau affiché au menu : OK
+[info] paquets (WFS-306) banc : bandeau → proposition par-dessus le menu, rien ne part : OK
+[info] paquets (WFS-306) banc : « Plus tard » → proposition refermée, menu inchangé : OK
+[info] paquets (WFS-306) banc : « Installer » sur la proposition du menu → téléchargement : OK
+[info] paquets (WFS-306) banc : connexion présente au menu → liste relue : OK
+[info] paquets (WFS-306) banc : choix du terrain : liste lue, Corniche « Télécharger » : OK
+[info] paquets (WFS-306) banc : Ville sans paquet publié : jouable comme avant : OK
+[info] paquets (WFS-306) banc : sans Internet : « Connexion nécessaire », rien ne part : OK
+[info] paquets (WFS-306) banc : données mobiles, « Plus tard » : rien ne part : OK
+[info] paquets (WFS-306) banc : Wi-Fi, « Télécharger » : Corniche dans la file : OK
+[info] paquets (WFS-306) banc : barre de progression sur la vignette : OK
+[info] paquets (WFS-306) banc : « Rouler » sur la Ville (déjà chargée, jour) pendant le téléchargement : pas de reconstruction : OK
+[info] paquets (WFS-306) banc : course sur la Ville : téléchargement continué : OK
+[info] paquets (WFS-306) banc : Corniche finie pendant la course, marquée « relue à la prochaine course » : OK
+[info] paquets (WFS-306) banc : annonce « Corniche prête » prise par le menu : OK
+[info] paquets (WFS-306) banc : Corniche installée au choix du terrain : OK
+[info] bâtiments (WFS-416) : paquet sans bâtiments cuits : kit de secours (bâtiments construits par le code)
+[info] paquets (WFS-306) banc : « Rouler » sur la Corniche : carte construite avec son paquet (RG-08) : OK
+[info] paquets (WFS-307) banc : fichiers servis par le paquet de la Corniche : 9 (avant : 0)
+[info] paquets (WFS-306) banc : fichiers de la Corniche lus dans le paquet : OK
+[info] paquets (WFS-306) banc : Corniche supprimée → de nouveau « Télécharger » : OK
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] paquets (WFS-306) banc : course suivante sur la Corniche : relue, construite par le code (secours) : OK
+[info] paquets (WFS-306) banc : même carte, paquet inchangé : pas de reconstruction : OK
+[info] paquets (WFS-306) banc : sources de la carte d'essai lisibles : OK
+[info] paquets (WFS-306) banc : sources de la carte d'essai lisibles : OK
+[info] paquets (WFS-306) banc : choix du terrain : 2 cartes d'essai lues des paquets : OK
+[info] paquets (WFS-306) banc : bouton « Rouler » affiché : OK
+[info] paquets (WFS-306) banc : carte de Noël chargée : checkpoints tous les 400 m (donnée de la carte) : OK
+[info] paquets (WFS-306) banc : obstacles et objets solides de la carte déclarés aux chocs : OK
+[info] paquets (WFS-306) banc : course sur la carte de Noël (jour) : OK
+[info] paquets (WFS-306) banc : bouton « Rouler » affiché : OK
+[info] paquets (WFS-306) banc : bouton « Rouler » affiché : OK
+[info] paquets (WFS-306) banc : autre saison : checkpoints tous les 700 m (RG-05) : OK
+[info] paquets (WFS-306) banc : retour au menu sans écart : OK
+[info] paquets (WFS-306) banc : bouton « Rouler » affiché : OK
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] paquets (WFS-306) banc : retour sur la Ville : checkpoints de configgame.json : OK
+[info] paquets (WFS-306) banc : 0 écart(s) OK
