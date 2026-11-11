@@ -48,11 +48,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
         # WFS-237 (RG-05) : 5 min au plus par essai, 2 essais (miroir Ubuntu parfois bloqué, WFS-126)
-        run: |
-          for essai in 1 2; do
-            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
-            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
-          done
+        run: bash tools/qa/installer_paquets.sh glslc libvulkan-dev mesa-vulkan-drivers ninja-build   # WFS-445 : 3 essais, serveur officiel si le miroir Azure ne répond pas, 15 min au plus
       - name: Compilation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Archive (wfs_bench, tests, liste des tests)
@@ -83,11 +79,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
         # WFS-237 (RG-05) : même boucle que le job endurance (WFS-126 : miroir Ubuntu parfois bloqué) : 5 min au plus par essai, 2 essais
-        run: |
-          for essai in 1 2; do
-            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
-            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
-          done
+        run: bash tools/qa/installer_paquets.sh glslc libvulkan-dev mesa-vulkan-drivers ninja-build   # WFS-445 : 3 essais, serveur officiel si le miroir Azure ne répond pas, 15 min au plus
       - uses: actions/download-artifact@v4   # WFS-250 : jeu compilé une seule fois, par le job compilation
         with: { name: compilation }
       - name: Jeu compilé (archive du job compilation, vérifiée)
@@ -118,11 +110,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)
         # WFS-126 : miroir Ubuntu parfois bloqué (run 42063069449 : apt-get update figé jusqu'à la fin du job) : 5 min au plus par essai, 2 essais
-        run: |
-          for essai in 1 2; do
-            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers ninja-build && break
-            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
-          done
+        run: bash tools/qa/installer_paquets.sh glslc libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers ninja-build   # WFS-445 : 3 essais, serveur officiel si le miroir Azure ne répond pas, 15 min au plus
       - uses: actions/download-artifact@v4   # WFS-250
         with: { name: compilation }
       - name: Jeu compilé (archive du job compilation, vérifiée)
@@ -149,7 +137,7 @@ jobs:
         with: { gradle-version: '8.7' }
       # WFS-129 (RG-01) : SDK 35 (Android 15) installé s'il manque ; build-tools 35 pour « zipalign -P 16 » (RG-05)
       - name: NDK, CMake et SDK 35 Android
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+        run: bash tools/qa/installer_sdk_android.sh "ndk;27.2.12479018" "cmake;3.22.1" "platforms;android-35" "build-tools;35.0.0"   # WFS-445 : 3 essais, téléchargement abîmé effacé puis refait
       - name: Construction de l'APK et de l'AAB
         working-directory: android
         run: gradle --no-daemon testReleaseUnitTest assembleRelease bundleRelease   # WFS-132 : + tests JUnit (MiseAJourTest)

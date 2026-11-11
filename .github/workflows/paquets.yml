@@ -36,11 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
-        run: |
-          for essai in 1 2; do
-            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
-            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
-          done
+        run: bash tools/qa/installer_paquets.sh glslc libvulkan-dev mesa-vulkan-drivers ninja-build   # WFS-445 : 3 essais, serveur officiel si le miroir Azure ne répond pas, 15 min au plus
       - name: Compilation (wfs_bench)
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
       - name: Cuisson de la Ville et de la Corniche (3 formats chacune)   # WFS-426 : Corniche ajoutée (carte « plage »)
