@@ -387,6 +387,9 @@ private:
 } // namespace
 
 void vider() { g_bats.clear(); g_cuit = Cuit{}; }
+namespace { std::vector<Bati> g_garde; Cuit g_gardeCuit; }   // WFS-426 (accroche) : voir archi_carte.h
+void mettreDeCote() { g_garde.swap(g_bats); std::swap(g_gardeCuit, g_cuit); vider(); }
+void remettre() { g_bats.swap(g_garde); std::swap(g_cuit, g_gardeCuit); g_garde.clear(); g_gardeCuit = Cuit{}; }
 
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine) {
     g_bats.push_back({seg, origine, x, z, profondeur, assembler(style, largeur, hauteur, graine)});

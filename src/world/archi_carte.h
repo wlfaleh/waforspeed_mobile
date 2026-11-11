@@ -17,6 +17,10 @@ namespace wfs::archi::carte {
 
 // oublie les bâtiments posés (appelé par la carte à son init, avant poser)
 void vider();
+// WFS-426 (accroche) : cuisson d'un paquet pendant une partie : les bâtiments de la carte chargée (et son bloc cuit lu) sont mis de
+// côté, la liste est vide pour la cuisson, puis tout est remis à l'identique (mêmes tampons) ; jamais imbriqué
+void mettreDeCote();
+void remettre();
 // pose un bâtiment : seg = segment de la route où il commence (choix du morceau), origine = coin bas gauche de la façade
 // (au sol), x = sens de la façade (unitaire, horizontal), z = normale de la façade vers la rue (unitaire, horizontale)
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine);
