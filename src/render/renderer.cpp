@@ -374,6 +374,12 @@ void Renderer::readShadowTiming() {
         double* m[4] = {&gpuPasses_.ombre, &gpuPasses_.reflet, &gpuPasses_.scene, &gpuPasses_.post};
         for (int i = 0; i < 4; i++) if (v[i] >= 0 && v[i] < 1000) *m[i] = gpuPasses_.mesuree ? *m[i] * 0.9 + v[i] * 0.1 : v[i];
         gpuPasses_.mesuree = true;
+        const double tot = (double)(t[4] - t[0]) * k;   // WFS-420 (RG-03) : cumul brut pour le banc du téléphone
+        if (tot > 0 && tot < 1000) {
+            double* c[4] = {&gpuCumul.ombre, &gpuCumul.reflet, &gpuCumul.scene, &gpuCumul.post};
+            for (int i = 0; i < 4; i++) if (v[i] >= 0 && v[i] < 1000) *c[i] += v[i];
+            gpuCumul.total += tot; gpuCumul.images++;
+        }
     }
     if (++shadowMsN_ == 120) {
         WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms ; reflets %.2f ms (WFS-16)", shadowMsSum_ / shadowMsN_, shadowSize_,
@@ -1705,6 +1711,13 @@ void Renderer::endFrame() {
     const double tFin = nowSeconds();   // WFS-222 (RG-01)
     VkCtx& vk = *vk_;
     FrameRes& r = fr_[cur_];
+    if (compterMateriaux) {   // WFS-420 (RG-03) : banc seulement (tampon gardé d'une image à l'autre : aucune allocation après la 1re)
+        materiauxTmp_.clear();
+        for (const Pending& p : opaqueQ_) materiauxTmp_.push_back(p.mat);
+        for (const Pending& p : transparent_) materiauxTmp_.push_back(p.mat);
+        std::sort(materiauxTmp_.begin(), materiauxTmp_.end());
+        materiauxPrec_ = (uint32_t)(std::unique(materiauxTmp_.begin(), materiauxTmp_.end()) - materiauxTmp_.begin());
+    }
     const bool figee = sceneFigee();   // WFS-329 : fond figé : de l'horodatage 0 à 3 directement, rien avant la passe finale
     if (figee) {
         if (tsPool_) {

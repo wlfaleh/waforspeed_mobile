@@ -239,6 +239,14 @@ public:
     int projecteursImage() const { return projecteurs_; }   // WFS-348 : projecteurs envoyés aux shaders à cette image (banc)
     struct GpuPasses { double ombre = 0, reflet = 0, scene = 0, post = 0; bool mesuree = false; };
     const GpuPasses& gpuPasses() const { return gpuPasses_; }
+    // WFS-420 (RG-03) : banc du téléphone : somme des temps GPU BRUTS (non lissés) de chaque passe et de l'image entière (horodatages
+    // 0 → 4), depuis la dernière remise à zéro par le banc ; une passe hors bornes (horodatage absurde) n'est pas comptée, le total si
+    // (d'où la règle « les passes expliquent au moins 90 % du total »)
+    struct GpuCumul { double ombre = 0, reflet = 0, scene = 0, post = 0, total = 0; uint32_t images = 0; };
+    GpuCumul gpuCumul;
+    // WFS-420 (RG-03) : matériaux distincts de l'image (toutes files), comptés seulement quand compterMateriaux est vrai (banc)
+    bool compterMateriaux = false;
+    uint32_t materiauxImage() const { return materiauxPrec_; }
     // WFS-246 (RG-07) : résolution dynamique (0,1 à 1 de la capacité) sans recréer les cibles ; appliquée à l'image suivante
     void echelleDynamique(float e);
     float echelleDynamiqueActuelle() const { return echelleDyn_; }
@@ -378,6 +386,7 @@ private:
     bool tsWritten_[2] = {false, false};
     double gpuImageMs_ = -1;   // WFS-246
     GpuPasses gpuPasses_;      // WFS-246 (RG-06)
+    uint32_t materiauxPrec_ = 0; std::vector<const Material*> materiauxTmp_;   // WFS-420
     uint32_t recreations_ = 0;  // WFS-246 (RG-07)
     VkPipelineCache cachePipelines_ = VK_NULL_HANDLE; uint32_t pipelinesCrees_ = 0;   // WFS-262
     std::chrono::steady_clock::time_point debutChargement_{};   // WFS-262 : durée du chargement (journal)

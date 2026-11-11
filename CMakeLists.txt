@@ -116,6 +116,7 @@ else()
   add_executable(test_credits tests/test_credits.cpp src/ui/credits_texte.cpp)   # WFS-406 : écran Crédits (lecture de CREDITS.txt, noms, RG-06)
   add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
   add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
+  add_executable(test_banc_telephone tests/test_banc_telephone.cpp src/render/banc_telephone.cpp)   # WFS-420 : banc de performance du téléphone
   add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes

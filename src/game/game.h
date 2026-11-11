@@ -30,7 +30,11 @@ public:
     Vue calculerVue(double time);
     double alphaRendu() const;
     static inline bool interpolation = true;   // banc « fluidite » seulement : false = rendu du dernier pas (mesure « avant »)
-    static inline bool cameraTempsSimule = true;   // WFS-247 : banc « fluidite » seulement : false = caméra au temps réel de l'image (« avant »)
+    static inline bool cameraTempsSimule = true;
+    // WFS-420 (accroche) : banc de performance du téléphone (src/ui/ecrans/reglages_banc.cpp) : pilote automatique demandé par le
+    // banc ; temps processeur de la dernière mise à jour et du dernier rendu (ms), mesurés seulement pendant le banc (RG-06)
+    static inline bool piloteBanc = false;
+    static inline double msMiseAJour = 0, msRendu = 0;   // WFS-247 : banc « fluidite » seulement : false = caméra au temps réel de l'image (« avant »)
     int pasDerniereImage() const { return pasImage_; }
     void setCar(const char* carId);
     // écrans (WFS-36, voir src/core/ecran.h) : demande appliquée entre deux images, systèmes prévenus par onEcran

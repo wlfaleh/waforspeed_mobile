@@ -40,7 +40,8 @@ void appliquerQualiteNiveau(Renderer& r);   // WFS-15 : applique reglages().qual
 
 // panneau ouvert : le menu et la pause ne prennent plus les touchers
 bool reglagesOuverts();
-void ouvrirReglagesBanc(bool oui);   // WFS-297 : banc seulement (captures du panneau en 1re, 2e, 3e partie)
+void ouvrirReglagesBanc(bool oui);   // WFS-297 : banc seulement (captures du panneau en 1re, 2e, 3e partie) ; WFS-420 : fin du banc du téléphone
+void ouvrirMenuCacheBanc(bool oui);  // WFS-420 : banc PC seulement : menu caché de WFS-419 ouvert
 // toucher pour les réglages (panneau ouvert, bouton « Réglages » visé, ou doigt posé sur lui : WFS-290) : le menu et la pause le
 // laissent passer
 bool toucheReglages(float x, float y, int doigt);
