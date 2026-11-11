@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #353 | WFS-418 | Claude, agent dev (01Us6uCt95) | 🆕 À relire | — | 2026-11-11 15:22 |

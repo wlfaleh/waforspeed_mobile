@@ -28,7 +28,7 @@
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 | Claude, agent cartes (01UY1Vv2HrQF) |  | WFS-426 fusionné (#350, 7aa1535), 🟡 à valider par l\'utilisateur | `feature/waforspeed-426`, dernier envoi 2026-11-11 15:00 UTC (a3857a34) | ⏹️ session terminée (WFS-426 fusionné) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 12:25 (e59ea1e6) | 🔧 en cours (attribué 12:25) |
-| Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 12:41 (f76ca05c) | 🔧 en cours (branche poussée, analyse) |
+| Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 15:22 (ef25158) | 🔀 PR #353 ouverte, lead dev appelé |
 | Claude, agent dev (01UY1Vv5Nm) | WFS-428 | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428` (à créer) | 🔧 attribué 14:58 |
 | Claude, agent dev3d (01UY1Vv3Ji) | WFS-365 | retouches de forme de la 911 et de la Gallardo (voitures sans marque) | `feature/waforspeed-365` (à créer) | 🔧 attribué 14:59 |
 | Claude, agent dev (01UY1Vv3Vj) | WFS-429 | HUD : boutons Menu et Caméra déplacés à gauche du score, sur sa rangée, agrandis de 5 % | `feature/waforspeed-429`, pas encore poussée | 🔧 en cours (attribué 15:00) |
