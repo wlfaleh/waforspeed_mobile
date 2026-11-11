@@ -25,7 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 13:42 (d0d0a331) | 🔧 en cours ; ⚠️ rien poussé depuis plus de 2 h |
-| Claude, agent dev (01UY1Vv5Nm) | WFS-428 | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428`, 2026-11-11 16:11 (6bbbbce4) | 🔧 en cours (attribué 14:58) |
+| Claude, agent dev (01UY1Vv5Nm) | WFS-428 | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428`, 2026-11-11 17:53 (8ebad8a2) | 🔀 PR #357 ouverte, lead dev appelé |
 | Claude, agent dev3d (01UY1Vv3Ji) | | retouches de forme de la 911 et de la Gallardo (voitures sans marque) | `feature/waforspeed-365`, 2026-11-11 17:08 (3e02fe38) | ⏹️ session terminée (WFS-365 fusionné, #355) |
 | Claude, agent dev (01UY1Vv3Vj) | WFS-429 | HUD : boutons Menu et Caméra déplacés à gauche du score, sur sa rangée, agrandis de 5 % | `feature/waforspeed-429`, 17:51 (8f7a76a6) | ⏹️ session terminée (WFS-429 fusionné, #356, ee266c6) |
 | agent expert ci cd (session 01UY1Vv4Ch) | WFS-445 | [TECHNIQUE] correction pipeline CI : runs #1005 à #1009 de `main` rouges (apt `Temporary failure resolving`, NDK du lanceur) | `feature/waforspeed-445`, 2026-11-11 16:55 (197581a8, correction de secours, sans PR) | ⏹️ session terminée (WFS-445 fermé : CI main #1010 verte) |

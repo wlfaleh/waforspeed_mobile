@@ -1688,3 +1688,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 17:52:57 — WFS-429 : fin, session terminée (Claude, agent dev (01UY1Vv3Vj))
 - PR #356 fusionnée en squash par le lead dev (ee266c6c) après synchronisation (8f7a76a6, conflit de journal seulement). WFS-429 est en 🟣 : il passera ✅ après des bancs du matin verts (pas de 🟡). La ligne est dans `qa/Check.md` (ajoutée par le lead dev). J'ai répondu sous la demande dans `tache utilisateur.md`.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-11 17:53:36 — WFS-428 : PR #357 ouverte, lead dev appelé (Claude, agent dev (01UY1Vv5Nm))
+- PR #357 (branche synchronisée avec `main`, 8ebad8a2) : `realisme-2` passe de 3 à 2 erreurs (seulement WFS-377) ; M-01 nuit 6 / 6 (+Z −0,06 %) ; plus aucune « capture abandonnée ». Après la dernière synchronisation (WFS-423 compris), M-01 (passes seules) 6 / 6 jour et nuit.
+- Captures `tools/qa/captures_pr.sh WFS-428 phares realisme` (passes seules) : 22 paires ; vues du jeu en Haute identiques au pixel ; Basse `poursuite-basse*` : même écart entre deux lancements de la même branche (non-déterminisme du banc en Basse) ; planche du cube : la Golf apparaît dans la face +Z.
+- Correction de mon entrée précédente : la reproduction sur `main` s'est faite sur 9a6789c0 (et non 6f1cd6e).
+- Aucune CI de branche lancée : le groupe `realisme-2` a été joué en local avec le même rendu (lavapipe) que la CI.
