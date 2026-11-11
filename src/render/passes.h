@@ -146,6 +146,8 @@ struct AccesRendu {
     static uint32_t drapeaux(const Renderer::Pending& p) { return p.mat->flags; }
     static bool visibleCamera(const Renderer::Pending& p) { return (p.vis & Renderer::VIS_CAM) != 0; }
     static bool joueur(const Renderer::Pending& p) { return p.joueur; }   // WFS-322 : voiture du joueur
+    static bool visibleRetro(const Renderer::Pending& p) { return (p.vis & Renderer::VIS_RETRO) != 0; }   // WFS-324 : vu par le rétroviseur de l'image
+    static uint32_t triangles(const Renderer::Pending& p) { return p.count / 3; }   // WFS-324 : comptes du banc
     static void sansMasquage(Renderer& r, bool v) { r.sansMasquage_ = v; }
     static VkQueryPool horodatages(const Renderer& r) { return r.tsPool_; }
     static bool horodatagesEcrits(const Renderer& r, int f) { return r.tsWritten_[f]; }

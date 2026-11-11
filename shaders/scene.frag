@@ -71,6 +71,11 @@ void main() {
     // WFS-100 (RG-03, ANO-28) : carrosserie = couleur de peinture choisie × 1, sans la texture de couleur du modèle
     // (js/cars/models.js : color.set(paint), carte de couleur retirée) ; vitres, feux, jantes et logos gardent leur texture
     if ((flags & F_PAINT) != 0u) base = pc.color;
+    // WFS-324 : glace de rétroviseur à reflet (F_EMTEX et params.z = −2, retroviseurs.h) : la texture est l'image du reflet (lumière
+    // HDR de la scène), renvoyée × la réflexion de la glace (emissive) ; ni lumière diffuse, ni reflet du ciel (fin du shader)
+    bool retro = (flags & F_EMTEX) != 0u && pc.params.z < -1.5;
+    vec3 refletRetro = vec3(0.0);
+    if (retro) { refletRetro = base.rgb * pc.emissive.rgb; base.rgb = vec3(0.0); }
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
@@ -200,6 +205,8 @@ void main() {
         vitre(col, alpha, albedo, skyAmb, R, sun, NoV, NoH, NoL);
     }
     if ((flags & F_INTERIEUR) != 0u) col += interieurFenetre(N, V, skyAmb) * (vec3(1.0) - Fe);   // WFS-161 (accroche) : pièce derrière la vitre
+    else if (retro) col = refletRetro;   // WFS-324 : reflet du rétroviseur, déjà en lumière de la scène (pas de facteur des lumières
+                                         // artistiques) ; la face avant du verre renvoie la même vue (pas le ciel de la sonde : il voilait la glace)
     else col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
     // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
     if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
