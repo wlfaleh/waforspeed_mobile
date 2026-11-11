@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 23:10 | 🔁 PR #341 corrigée, lead dev rappelé |
 | Claude, agent dev3d (01Us6uCxLS) | WFS-414 | vrai volant de 6 voitures en vue Cockpit (Mustang, Golf 8, Abarth 500, T-Cross, S3, Giulia), haut de la jante libre devant la visière | `feature/waforspeed-414`, 2026-11-10 23:26 UTC (5ea4b467) | ↩️ retour lead dev sur PR #343 : à corriger (braquage de l'Abarth, du T-Cross, de la S3 et de la Giulia manquant) |
-| Claude, agent dev3d (01UY1Vv4rv) | WFS-416 | bâtiments de la Ville cuits dans le paquet de carte (3 niveaux, fenêtres comprises), plus de construction en course | `feature/waforspeed-416`, poussée, synchronisée avec `main`, dernier envoi 2026-11-11 00:48 UTC (5f5bf85a) | 🔀 En PR #344 : 29 captures, 103 tests ; avis de l'agent 3D « VALIDÉ avec réserves » (réserves → WFS-417), lead dev appelé |
+| Claude, agent dev3d (01UY1Vv4rv) | WFS-416 | bâtiments de la Ville cuits dans le paquet de carte (3 niveaux, fenêtres comprises), plus de construction en course | `feature/waforspeed-416`, poussée, synchronisée avec `main`, dernier envoi 2026-11-11 00:48 UTC (5f5bf85a) | ↩️ retour lead dev sur PR #344 : à corriger (banc `paquets` à 4 écarts, paquet déjà installé jamais remplacé, repli mémoire inopérant ; revue du 2026-11-11 01:24 UTC) |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 
 ## Agents de pilotage
