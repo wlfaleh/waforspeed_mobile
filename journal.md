@@ -2552,3 +2552,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 10:19:02 — WFS-419 : lancement annulé, attend le go de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
 - La session avait lancé le lead dev sur le lot 1 sans « go » explicite de l'utilisateur ; l'utilisateur l'a arrêté. Aucun code produit (branche locale vide, rien poussé, pas de PR). WFS-419 remis en « ⏳ Prêt, attend le go de l'utilisateur ».
+
+### 2026-11-11 10:21:01 — WFS-419 : section « Découpage et exception » retirée des règles, à la demande de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
+- L'utilisateur avait posé une question (« un lead dev peut prendre rapidement et merger directement ? »), pas donné un ordre. Section retirée de `regles-de-gestion/WFS-419.md`, ligne de `TACHES.md` remise à « ⏳ Prêt (`@dev`, nouvelle session) ». Les règles sont celles de la création du ticket.
