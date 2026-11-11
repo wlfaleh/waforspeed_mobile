@@ -10,6 +10,7 @@
 #include <vector>
 #include "../core/jobs.h"
 #include "../core/log.h"
+#include "../core/memoire.h"   // WFS-418 : mémoire graphique au journal du repli
 #include "../core/platform.h"   // nowSeconds
 #include "../core/system.h"
 #include "../game/player.h"
@@ -31,6 +32,7 @@ using cuit::S_VOLET; using cuit::S_FIN; using cuit::S_CHASSIS; using cuit::S_IMA
 static_assert(sizeof(cuit::Sommet) == sizeof(Vertex) && offsetof(cuit::Sommet, tx) == offsetof(Vertex, tx), "WFS-416 : sommet cuit = Vertex");
 std::vector<Bati> g_bats;
 Chrono g_chrono;
+uint32_t g_replisGpu = 0;   // WFS-418 : replis faute de mémoire graphique (jamais remis à zéro)
 // même disposition en mémoire (vérifiée ci-dessus) : copie en bloc des sommets d'un lot vers des Vertex
 std::vector<Vertex> sommets(const Lot& l) {
     std::vector<Vertex> v(l.v.size());
@@ -138,10 +140,12 @@ public:
         pret_ = true;
         if (chargerCuit()) {
             // Manque de mémoire VIVE (std::bad_alloc) : repli sur le kit, décidé AVANT l'occlusion des murs (preparerCuit ne touche pas
-            // à la grille gardée : le kit calcule ensuite son occlusion comme d'habitude). Manque de mémoire GRAPHIQUE : VkCtx::createBuffer
-            // arrête le jeu, comme partout dans le moteur aujourd'hui (accepté par le PO pour ce ticket ; vrai repli : WFS-418).
-            if (preparerCuit()) { initCuit(r, g); return; }
-            WFS_LOG("bâtiments (WFS-416) : mémoire vive insuffisante pour les bâtiments cuits : kit de secours (bâtiments construits par le code)");
+            // à la grille gardée : le kit calcule ensuite son occlusion comme d'habitude). WFS-418 (RG-02) : manque de mémoire
+            // GRAPHIQUE (un tampon refusé par la voie de repli) : initCuit rend tout ce qu'il a pris et la grille gardée reste pour le kit.
+            const bool vive = preparerCuit();
+            if (vive && initCuit(r, g)) return;
+            if (!vive) WFS_LOG("bâtiments (WFS-416) : mémoire vive insuffisante pour les bâtiments cuits : kit de secours (bâtiments construits par le code)");
+            else { g_replisGpu++; WFS_LOG("bâtiments (WFS-418) : mémoire graphique insuffisante : kit de secours (bâtiments construits par le code), %.0f Mo de carte graphique utilisés", memoire::gpuMo()); }
             cuits_.clear(); murs0_.clear();
             g_cuit.pret = false; g_cuit.d = cuit::Lu{};
         }
@@ -246,17 +250,22 @@ private:
         } catch (const std::bad_alloc&) { return false; }
         return true;
     }
-    void initCuit(Renderer& r, const GameView& g) {
+    // WFS-418 (RG-02) : faux si la mémoire graphique manque pour un tampon (voie de repli : essayerMesh) : tout ce qui a été pris est
+    // rendu, et la grille de l'occlusion, gardée jusqu'ici, sert au kit de secours (occlusion de ses murs comme d'habitude)
+    bool initCuit(Renderer& r, const GameView& g) {
         const cuit::Lu& d = g_cuit.d;
-        atlasCouleur_ = r.vk().uploadTexture(d.octets->data() + d.posCouleur, d.atlasL, d.atlasH, true);
-        atlasRelief_ = r.vk().uploadTexture(d.octets->data() + d.posRelief, d.atlasL, d.atlasH, false);
+        auto refus = [&]() { rendreCuit(r); tamponV_ = {}; tamponI_ = {}; return false; };   // WFS-418 : rien n'est gardé
+        // WFS-418 (décision du PO) : les deux atlas passent aussi par la voie de repli ; refusés : rien n'est gardé, kit de secours
+        atlasCouleur_ = r.vk().essayerUploadTexture(d.octets->data() + d.posCouleur, d.atlasL, d.atlasH, true);
+        if (atlasCouleur_.img) atlasRelief_ = r.vk().essayerUploadTexture(d.octets->data() + d.posRelief, d.atlasL, d.atlasH, false);
+        if (!atlasRelief_.img) return refus();   // occlusion pas encore calculée : la grille n'a pas servi
         {   // RG-04 : menuiserie en image avec relief : couleur × atlas, vitrage découpé (alpha), relief par la carte de normales
             Material m; m.color = {1, 1, 1, 1}; m.rough = 0.5f; m.metal = 0; m.flags = MAT_DOUBLE | MAT_MASK; m.cutoff = 0.5f;
             mats_[S_IMAGE] = r.makeMaterial(m, &atlasCouleur_, &atlasRelief_, nullptr);
         }
         // occlusion des murs (niveaux 0 et 1) : un « bâtiment » de l'occlusion = les murs d'un style d'un morceau
         precalcul::occlusionKit(d.morceaux.size() * (size_t)NS, [&d](size_t k, int lod, std::vector<Vertex>& v) {
-            lotCuit(d.morceaux[k / (size_t)NS].lot[lod][S_MUR + (int)(k % (size_t)NS)], v); });
+            lotCuit(d.morceaux[k / (size_t)NS].lot[lod][S_MUR + (int)(k % (size_t)NS)], v); }, true);   // WFS-418 : grille gardée
         size_t fixes = 0, reserves = 0;
         std::vector<Vertex>& v = tamponV_; std::vector<uint32_t>& i = tamponI_;   // réservés par preparerCuit
         for (size_t k = 0; k < d.morceaux.size(); k++) {
@@ -266,7 +275,9 @@ private:
                 if (!l.ni) continue;
                 lotCuit(l, v, &i);
                 if (s < NS && n == 1) precalcul::appliquerKit(k * (size_t)NS + (size_t)s, 1, v, 0);
-                cuits_[k].m[(size_t)n - 1][(size_t)s] = r.makeMesh(v, i, false);
+                Mesh& x = cuits_[k].m[(size_t)n - 1][(size_t)s];
+                x = r.essayerMesh(v, i, false);
+                if (!x.vb.buf) return refus();
                 fixes += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
             }
             for (int s = 0; s < NS; s++) {   // murs du niveau 0, occlusion appliquée, gardés en mémoire vive (recopiés tels quels en course)
@@ -277,10 +288,12 @@ private:
         for (Reserve& x : reserves_) for (int s = 0; s < NB_SLOTS; s++) {
             if (!d.niMax[s]) continue;
             v.assign(d.nvMax[s], Vertex{}); i.assign(d.niMax[s], 0);
-            x.m[(size_t)s] = r.makeMesh(v, i, true);
+            x.m[(size_t)s] = r.essayerMesh(v, i, true);
+            if (!x.m[(size_t)s].vb.buf) return refus();
             x.m[(size_t)s].indexCount = 0;
             reserves += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
         }
+        precalcul::rendreGrille();   // WFS-418 : tout est réservé : le kit de secours ne servira pas
         cuit_ = true;
         if (g.player) {   // morceaux proches du départ : recopiés en entier ici, pendant le chargement
             const int64_t L = std::max<int64_t>(1, (int64_t)g.track->segmentCount());
@@ -289,6 +302,7 @@ private:
         WFS_LOG("bâtiments (WFS-416) : %zu morceaux prêts dans la carte graphique : niveaux 1 et 2 fixes %.1f Mo, %d tampons du niveau 0 %.1f Mo, atlas %ux%u ; aucune construction en course",
                 cuits_.size(), fixes / 1048576.0, RESERVES, reserves / 1048576.0, d.atlasL, d.atlasH);
         tamponV_ = {}; tamponI_ = {};
+        return true;
     }
     // rend tout ce que le paquet cuit a réservé (fin de partie)
     void rendreCuit(Renderer& r) {
@@ -387,6 +401,9 @@ private:
 } // namespace
 
 void vider() { g_bats.clear(); g_cuit = Cuit{}; }
+namespace { std::vector<Bati> g_garde; Cuit g_gardeCuit; }   // WFS-426 (accroche) : voir archi_carte.h
+void mettreDeCote() { g_garde.swap(g_bats); std::swap(g_gardeCuit, g_cuit); vider(); }
+void remettre() { g_bats.swap(g_garde); std::swap(g_cuit, g_gardeCuit); g_garde.clear(); g_gardeCuit = Cuit{}; }
 
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine) {
     g_bats.push_back({seg, origine, x, z, profondeur, assembler(style, largeur, hauteur, graine)});
@@ -394,6 +411,7 @@ void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profo
 
 const std::vector<cuit::Bati>& poses() { return g_bats; }
 Chrono& chrono() { return g_chrono; }
+uint32_t replisMemoireGraphique() { return g_replisGpu; }
 
 void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i) {   // WFS-269 (accroche) : voir archi_carte.h
     auto verser = [&](const Lot& l) {

@@ -17,6 +17,7 @@
 #include "../../ui/text.h"
 #include "../archi_carte.h"        // WFS-416 : bâtiments du kit cuits dans le paquet
 #include "../ville_quartiers.h"
+#include "../plage_villas.h"   // WFS-426 : villas de la Corniche cuites dans son paquet
 #include "../../../third_party/stb/stb_image.h"   // implémentation : model_loader.cpp
 
 namespace wfs {
@@ -95,15 +96,16 @@ bool ecrireFichier(const std::string& chemin, const std::vector<uint8_t>& o) {  
 } // namespace
 
 // WFS-416 (RG-02) : tous les bâtiments du kit de la carte, 3 niveaux, fenêtres comprises, prêts pour la carte graphique. Le bloc
-// est le même pour les 3 formats de texture.
+// est le même pour les 3 formats de texture. WFS-426 : Ville (immeubles et entrepôts) et Corniche (villas), posés comme au chargement.
 std::vector<uint8_t> batimentsCuits(const std::string& c) {
     const double t0 = nowSeconds();
+    archi::carte::mettreDeCote();   // WFS-426 : la carte chargée garde ses bâtiments (cuisson pendant une partie : banc, téléchargement)
     Track t;
     t.build(mapById(c.c_str()), trace::versionCarte(c.c_str()));
-    ville::poserImmeublesKit(mapById(c.c_str()), t);
+    if (c == "plage") plage::poserVillasKit(t); else ville::poserImmeublesKit(mapById(c.c_str()), t);
     const archi::cuit::Decor d = archi::cuit::cuire(archi::carte::poses());
     const size_t n = archi::carte::poses().size();
-    archi::carte::vider();
+    archi::carte::remettre();
     std::vector<uint8_t> bloc = archi::cuit::ecrire(d);
     size_t tri[3] = {}, inst = 0, triMod = 0;
     for (const archi::cuit::Morceau& m : d.morceaux) {
@@ -116,6 +118,11 @@ std::vector<uint8_t> batimentsCuits(const std::string& c) {
             n, c.c_str(), (int)std::lround((nowSeconds() - t0) * 1000), d.morceaux.size(), tri[0], tri[1], tri[2], inst, d.modeles.size(), triMod,
             d.atlas.tuiles.size(), d.atlas.l, d.atlas.h, bloc.size() / 1048576.0);
     return bloc;
+}
+
+bool cuiteEnPaquet(const std::string& c) {
+    for (const char* x : CARTES_CUITES) if (c == x) return true;
+    return false;
 }
 
 carte::Paquet cuire(const std::string& racine, const std::string& c, carte::FormatTexture f) {
@@ -131,7 +138,7 @@ carte::Paquet cuire(const std::string& racine, const std::string& c, carte::Form
     p.blocs.push_back({"textures", carte::archive(std::move(textures))});
     p.blocs.push_back({"trace", {}});   // réservé : tracé d'une future carte au tracé différent
     p.blocs.push_back({"chocs", {}});   // réservé : chocs du décor d'une future carte
-    if (c == "ville") p.blocs.push_back({archi::cuit::NOM_BLOC, batimentsCuits(c)});   // WFS-416 (RG-02, RG-09 : la Ville d'abord)
+    if (cuiteEnPaquet(c)) p.blocs.push_back({archi::cuit::NOM_BLOC, batimentsCuits(c)});   // WFS-416 (RG-02, RG-09 : la Ville d'abord) ; WFS-426 : Corniche
     return p;
 }
 
@@ -172,23 +179,26 @@ std::string sha256Hex(const std::vector<uint8_t>& o) {
 
 int cuireSeul(const std::string& racine) {
     int ecarts = 0;
-    const std::string c = "ville", dossier = carte::dossierPaquets();
+    const std::string dossier = carte::dossierPaquets();
     std::error_code ec;
     fs::create_directories(dossier, ec);
-    const uint64_t e = empreinteAttendue(c);
-    char emp[17]; std::snprintf(emp, sizeof emp, "%016llx", (unsigned long long)e);
-    for (carte::FormatTexture f : carte::FORMATS) {
-        const std::vector<uint8_t> a = carte::ecrire(cuire(racine, c, f)), b = carte::ecrire(cuire(racine, c, f));   // RG-C2 : deux cuissons
-        const std::string nom = carte::nomFichier(c, f), chemin = dossier + "/" + nom;
-        if (a != b) {
-            size_t i = 0; while (i < a.size() && i < b.size() && a[i] == b[i]) i++;
-            WFS_ERR("cuire (WFS-301) : %s : deux cuissons différentes (%zu / %zu octets, premier octet différent à %zu)", nom.c_str(), a.size(), b.size(), i);
-            ecarts++; continue;
+    for (const char* cc : CARTES_CUITES) {   // WFS-426 : Ville puis Corniche
+        const std::string c = cc;
+        const uint64_t e = empreinteAttendue(c);
+        char emp[17]; std::snprintf(emp, sizeof emp, "%016llx", (unsigned long long)e);
+        for (carte::FormatTexture f : carte::FORMATS) {
+            const std::vector<uint8_t> a = carte::ecrire(cuire(racine, c, f)), b = carte::ecrire(cuire(racine, c, f));   // RG-C2 : deux cuissons
+            const std::string nom = carte::nomFichier(c, f), chemin = dossier + "/" + nom;
+            if (a != b) {
+                size_t i = 0; while (i < a.size() && i < b.size() && a[i] == b[i]) i++;
+                WFS_ERR("cuire (WFS-301) : %s : deux cuissons différentes (%zu / %zu octets, premier octet différent à %zu)", nom.c_str(), a.size(), b.size(), i);
+                ecarts++; continue;
+            }
+            if (!ecrireFichier(chemin, a)) { WFS_ERR("cuire (WFS-301) : %s : écriture impossible", chemin.c_str()); ecarts++; continue; }
+            const carte::Verdict v = carte::verifier_carte(chemin, {c, f, e});
+            if (v != carte::Verdict::Bon) { WFS_ERR("cuire (WFS-301) : %s : %s", nom.c_str(), carte::texte(v)); ecarts++; continue; }
+            WFS_LOG("cuire (WFS-301) : %s : %zu octets, sha256 %s, empreinte %s", nom.c_str(), a.size(), sha256Hex(a).c_str(), emp);   // laissé (RG-C1)
         }
-        if (!ecrireFichier(chemin, a)) { WFS_ERR("cuire (WFS-301) : %s : écriture impossible", chemin.c_str()); ecarts++; continue; }
-        const carte::Verdict v = carte::verifier_carte(chemin, {c, f, e});
-        if (v != carte::Verdict::Bon) { WFS_ERR("cuire (WFS-301) : %s : %s", nom.c_str(), carte::texte(v)); ecarts++; continue; }
-        WFS_LOG("cuire (WFS-301) : %s : %zu octets, sha256 %s, empreinte %s", nom.c_str(), a.size(), sha256Hex(a).c_str(), emp);   // laissé (RG-C1)
     }
     WFS_LOG("cuire (WFS-301) : %d écart(s)%s, paquets dans %s", ecarts, ecarts ? " ÉCHEC" : " OK", dossier.c_str());
     return ecarts;

@@ -17,6 +17,7 @@
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "retroviseurs.h"   // WFS-324 (accroche) : lampadaires derrière, pour les rétroviseurs
 #include "../game/cars.h"
 #include "../game/player.h"
 #include "../game/track.h"
@@ -174,6 +175,25 @@ public:
             const bool stade = l.style == StyleLampadaire::Stade;
             s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
         }
+        // WFS-324 (accroche) : vue Cockpit avec rétroviseurs : les 2 lampadaires les plus proches derrière la voiture (5 à 60 m) éclairent aussi
+        // (sans eux, la rue derrière restait noire dans les glaces la nuit, refus du lead dev, PR #341) ; avant les phares des autres voitures
+        if (retro::actif()) {
+            derriere_.clear();
+            for (size_t i = 0; i < L.size(); i++) {
+                if (L[i].style == StyleLampadaire::Tete) continue;
+                const int64_t e = ecart(L[i], aP, len);
+                if (e < -4 && e >= -50) derriere_.push_back({-e, i});
+            }
+            std::sort(derriere_.begin(), derriere_.end());   // le plus proche derrière d'abord
+            for (size_t j = 0; j < derriere_.size() && j < 2 && fp.spotCount < FrameParams::SPOTS_MAX - 2; j++) {
+                const Lampadaire& l = L[derriere_[j].second];
+                const TrackPoint q = g.track->point((double)(aP - derriere_[j].first) * SEG, l.lat);
+                FrameParams::Spot& s = fp.spots[fp.spotCount++];
+                s.pos = {(float)q.x, (float)q.y + l.y, (float)q.z}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2;
+                const bool stade = l.style == StyleLampadaire::Stade;
+                s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
+            }
+        }
         pharesAutres(fp, W.transformPoint({0, 0, 0}));
     }
 
@@ -284,7 +304,7 @@ public:
 
 private:
     bool nuit_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
-    std::vector<std::pair<int64_t, size_t>> proches_;
+    std::vector<std::pair<int64_t, size_t>> proches_, derriere_;   // WFS-324 : derriere_ (lampadaires derrière, rétroviseurs)
     std::vector<phares::PhareAutre> prec_, prec2_;   // WFS-226 : voitures notées à l'image précédente et à l'avant-dernière
     std::vector<vec3> eclairants_;                   // WFS-226 : centres des voitures à vraie lumière cette image
     std::vector<std::pair<float, size_t>> tri_;
