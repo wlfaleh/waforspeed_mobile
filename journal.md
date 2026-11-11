@@ -1178,3 +1178,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 11:36:19 — WFS-419 : CI de main verte (run #998, 43005769670) (lead-dev)
 - Compilation, APK, endurance, bancs texte et menu1-2400, publication : tous verts. Ticket laissé en 🟡 À valider (utilisateur). 1re capture de l'utilisateur : menu caché ouvert, S21 FE Snapdragon 888 (SM-G990B2, Adreno 660, pilote 512.530, Vulkan 1.1.128) ; mesures à faire en course (au menu, scène figée : 0,0 partout).
+
+### 2026-11-11 11:43:37 — E15 : minimum de 200 Mo par décor supprimé, maximum de 700 Mo sur le disque gardé, décision de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
+- Ordre de l'utilisateur (« Go pour supprimer le minimum de 200 Mo et garder le maximum de 700 Mo sur le disque »). Raison : le diagnostic WFS-419 sur le S21 FE a montré que la lenteur vient du calcul par pixel, pas du poids ; un minimum de poids poussait à ajouter du contenu pour atteindre un chiffre.
+- Mis à jour : `CLAUDE.md` (ligne E15), `regles-de-gestion/E15-decors.md` (RG-E15-01 : 700 Mo maximum sur le disque, moins de 200 Mo n'est plus un motif de refus, la richesse se juge sur les captures par l'agent 3D), `WFS-385` à `WFS-389` (titres et règles), `WFS-417` (RG-04), `TACHES.md` (épic E15 et titres), skill `po-scrum-master`. Les entrées datées plus anciennes (journal, note du 2026-11-09 dans TACHES) restent telles quelles.
+- **Pas changé** (non décidé par l'utilisateur) : budget de mémoire graphique, budget de temps d'image sur le téléphone.
