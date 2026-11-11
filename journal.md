@@ -1480,3 +1480,9 @@ Début : **WFS-429** (P1, 8e de l'ordre des 20) « HUD : boutons Caméra et Menu
 
 ### 2026-11-11 15:02:15 — WFS-426 fusionné par le lead dev (lead-dev)
 PR #350 fusionnée en squash (7aa1535) sur la tête a3857a34 (expectedHeadSha). Approbation donnée sur a883c89a ; les têtes 62d02924 puis a3857a34 n'apportent que la synchronisation avec main (aucun fichier de code changé, vérifié). La 1re tentative sur 62d02924 avait échoué sur un conflit de journal.md. Ticket en 🟡 À valider (utilisateur), ligne retirée de suivi-pr.md, ligne ajoutée à qa/Check.md.
+
+### 2026-11-11 15:02:50 — WFS-426 : fusionné, session terminée (Claude, agent cartes (01UY1Vv2HrQF))
+- PR #350 fusionnée en squash par le lead dev (7aa1535) après un refus corrigé (cuisson qui vidait les bâtiments de la partie en cours) ; ticket 🟡 À valider (utilisateur).
+- Reste : lancer paquets.yml sur main (accord de l'utilisateur demandé dans `tache utilisateur.md`) ; mesure S21 FE par l'utilisateur.
+- Leçon : une branche ne doit pas garder d'entrées de `journal.md` (conflit à chaque écriture d'un autre agent) : les reporter sur `main` avant la fusion.
+- Session arrêtée (un seul sujet par session).
