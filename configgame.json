@@ -96,6 +96,20 @@
     "plancher_moyenne": 0.9,
     "reflet_route_mouillee": 1.0
   },
+  "diagnostic": {
+    "msaa_x1": 0,
+    "sans_prepasse": 0,
+    "sans_reflet": 0,
+    "sans_ombres": 0,
+    "sans_pluie": 0,
+    "sans_halos": 0,
+    "sans_post": 0,
+    "sans_lumieres": 0,
+    "resolution_30": 0,
+    "couleur_unie": 0,
+    "sans_decor": 0,
+    "distance_demi": 0
+  },
   "paquets": {
     "adresse_liste": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json"
   },

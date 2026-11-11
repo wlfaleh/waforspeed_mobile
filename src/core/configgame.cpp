@@ -97,6 +97,19 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"conduite.vitesse_recul", T::Reel, &ph.vRecul, 0, 20, "m/s", "marche arrière enchaînée sous cette vitesse"},
         {"qualite.plancher_moyenne", T::Flottant, &c.qualite.plancherMoyenne, 0.5, 1, "× résolution", "résolution la plus basse en qualité Moyenne"},
         {"qualite.reflet_route_mouillee", T::Flottant, &c.qualite.refletRouteMouillee, 0, 1.5, "×", "force du reflet de la rue sur la route mouillée (pluie)"},
+        // WFS-419 (RG-02) : interrupteurs de diagnostic de performance (même ordre que src/render/diagnostic_perf.h), 0 par défaut
+        {"diagnostic.msaa_x1", T::Entier, &c.diagnostic.coupe[0], 0, 1, "0 / 1", "diagnostic : MSAA ×1 (1 = coupé)"},
+        {"diagnostic.sans_prepasse", T::Entier, &c.diagnostic.coupe[1], 0, 1, "0 / 1", "diagnostic : sans pré-passe de profondeur"},
+        {"diagnostic.sans_reflet", T::Entier, &c.diagnostic.coupe[2], 0, 1, "0 / 1", "diagnostic : sans reflet de la route mouillée"},
+        {"diagnostic.sans_ombres", T::Entier, &c.diagnostic.coupe[3], 0, 1, "0 / 1", "diagnostic : sans ombres du soleil"},
+        {"diagnostic.sans_pluie", T::Entier, &c.diagnostic.coupe[4], 0, 1, "0 / 1", "diagnostic : sans pluie (gouttes et flaques)"},
+        {"diagnostic.sans_halos", T::Entier, &c.diagnostic.coupe[5], 0, 1, "0 / 1", "diagnostic : sans halos additifs"},
+        {"diagnostic.sans_post", T::Entier, &c.diagnostic.coupe[6], 0, 1, "0 / 1", "diagnostic : sans bloom ni post-traitement"},
+        {"diagnostic.sans_lumieres", T::Entier, &c.diagnostic.coupe[7], 0, 1, "0 / 1", "diagnostic : 0 lumière de nuit"},
+        {"diagnostic.resolution_30", T::Entier, &c.diagnostic.coupe[8], 0, 1, "0 / 1", "diagnostic : scène rendue à 30 %"},
+        {"diagnostic.couleur_unie", T::Entier, &c.diagnostic.coupe[9], 0, 1, "0 / 1", "diagnostic : shader couleur unie (coût des triangles seul)"},
+        {"diagnostic.sans_decor", T::Entier, &c.diagnostic.coupe[10], 0, 1, "0 / 1", "diagnostic : décor coupé (route, sol et voitures gardés)"},
+        {"diagnostic.distance_demi", T::Entier, &c.diagnostic.coupe[11], 0, 1, "0 / 1", "diagnostic : distance d'affichage divisée par 2"},
         {"paquets.adresse_liste", T::Adresse, c.paquets.adresseListe, 12, ADRESSE_MAX, "caractères", "adresse https de la liste des paquets de cartes (cartes.json)"},   // WFS-306
         {"confidentialite_url", T::Adresse, c.confidentialiteUrl, 0, ADRESSE_MAX, "caractères", "adresse https de la politique de confidentialité (écran Crédits) ; vide : ligne cachée"},   // WFS-406 (RG-06)
     };
