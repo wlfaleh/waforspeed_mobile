@@ -227,6 +227,32 @@ Largeur largeurPour(const InterieurDef& d) {
     return {};
 }
 
+// WFS-414 : volant de série (vehicule_cockpit.h) : 6 voitures seulement (ordre de l'utilisateur, 2026-11-10) ; formes estimées
+// sur photos des volants de série (journal de WFS-414) ; toutes les autres voitures : nullptr (volant commun, inchangé).
+// Visière (RG-07) : avancée la plus grande (par pas de 4 mm) qui ne cache aucun point du haut de la jante vu de l'œil de la caméra
+// et laisse un jour d'au moins 5 mm entre les deux (calcul de tests/test_cockpit.cpp) ; avant : 68 mm, la lèvre traversait la jante
+namespace {
+struct SerieDef { const char* car; VolantSerie s; };
+const SerieDef SERIE[] = {
+    // Mustang S550 : coussin large, presque rectangulaire, à peine rétréci en bas
+    {"mustang", {0.205f, 0.148f, 4.5f, 0.05f, 0.016f}},
+    // Golf 8 : coussin en trapèze arrondi (bas plus étroit)
+    {"golf", {0.200f, 0.145f, 4.f, 0.10f, 0.012f}},
+    // Abarth 500 (2008-2015) : coussin plus rond (petit volant épais)
+    {"abarth", {0.200f, 0.145f, 3.f, 0.04f, 0.060f}},
+    // T-Cross (volant de la famille Polo) : trapèze arrondi
+    {"tcross", {0.200f, 0.145f, 4.f, 0.08f, 0.028f}},
+    // S3 berline (8V) : coussin à pans presque droits, bas rétréci
+    {"s3", {0.200f, 0.145f, 5.f, 0.08f, 0.028f}},
+    // Giulia : coussin arrondi, bas rétréci (le démarreur rouge passe sur la plaque gauche)
+    {"giulia", {0.200f, 0.145f, 3.5f, 0.08f, 0.028f}},
+};
+}
+const VolantSerie* volantSeriePour(const InterieurDef& d) {
+    for (const SerieDef& s : SERIE) if (std::strcmp(s.car, d.car) == 0) return &s.s;
+    return nullptr;
+}
+
 int nombreInterieurs() { return (int)(sizeof(DEFS) / sizeof(DEFS[0])); }
 const InterieurDef& interieur(int i) { return DEFS[std::clamp(i, 0, nombreInterieurs() - 1)]; }
 
