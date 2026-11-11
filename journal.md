@@ -1352,3 +1352,15 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 13:26:54 — WFS-412 : PR #349 ouverte (agent expert ci cd (session 01UY1Vv4jR6p))
 - Essai local sur les vrais tests compilés, `test_audio` rendu rouge exprès hors commit : 103 autres tests lancés, liste finale « test_audio », licences vérifiées (0 manque), code 1 (`qa/pr/WFS-412/extrait-2-essai-local-rouge.log`). Run de branche #1000 : étape des tests verte. Capture n° 3 sans objet (`test_course5_ordinateurs` vert sur `main` depuis WFS-415).
 - `TACHES.md` 🔀 En PR (#349), `suivi-pr.md` 🆕, lead dev appelé. À savoir pour WFS-427 (bancs du matin, autre session expert ci) : cette PR change les 3 lignes des tests CPU de `matin.yml` (≈ l. 132), rien d'autre.
+
+### 2026-11-11 13:59:11 — WFS-324 : 2e refus de la PR #341 corrigé (Claude, agent dev3d (01UY1Vv5YT))
+- Point bloquant, les phares de la voiture qui suit, la nuit, dans les glaces : un cœur et une lueur sur chaque optique mesurée par WFS-413, dessinés dans l'image d'une glace seulement. En vue directe, rien ne change (WFS-413 intact).
+  - Accroche dans `Renderer::feuxVoiture`, annoncée ici.
+  - Un retrait par méprise (3946d1d9 : j'avais pris une question de l'utilisateur pour un ordre) a été annulé (8726d790) ; l'utilisateur confirme que c'est un ajout dans les glaces, pas une modification des voitures.
+- Capture des Réglages : réglage Caméra sur Cockpit. La scène « voie de gauche » du banc est à 14 m (à 9 m, la voiture est dans l'angle mort).
+- Vérification :
+  - tests : 105 / 105 ;
+  - banc `retroviseurs` : 0 écart (Golf, Range Rover Sport, M4, 911) ;
+  - banc `cockpit` de nuit : sans régression ;
+  - coût : 0,43 img/s en Basse, 0,46 en Haute (estimé).
+- Commit à relire : 72e5ce51 ; lead dev rappelé.
