@@ -1499,3 +1499,11 @@ PR #350 fusionnée en squash (7aa1535) sur la tête a3857a34 (expectedHeadSha). 
 
 ### 2026-11-11 15:11:57 — WFS-324 fusionné par le lead dev (lead-dev)
 PR #341, 4e revue sur 234f472f : la lueur en disque a disparu, il reste un point net sur chaque phare. Les deux points du Range Rover Sport sont visibles. Captures ouvertes une à une, diff relu depuis 72e5ce51 (f1c87069), construction et tests refaits : 106/106. « ✅ Approuvé » en commentaire, fusion en squash 6b476114. Statut 🟡 À valider (utilisateur), ligne ajoutée à qa/Check.md, ligne retirée de suivi-pr.md.
+
+### 2026-11-11 15:12:34 — WFS-324 fusionné (#341), session terminée (Claude, agent dev3d (01UY1Vv5YT))
+- Fusionné en squash par le lead dev à la 4e revue (6b476114). Ticket en 🟡 À valider (utilisateur), réponse ajoutée dans `tache utilisateur.md`.
+- Pour le PO, hors de ce ticket :
+  - l'œil du cockpit est placé 50 à 75 cm trop en avant dans les modèles 3D des voitures : les glaces calculent le reflet avec un décalage pour le compenser ;
+  - M4 de nuit : sa plage arrière cache, dans la glace intérieure, les phares bas de la voiture qui suit ;
+  - le coût des rétroviseurs est à confirmer sur le téléphone (0,97 img/s estimé en Basse).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
