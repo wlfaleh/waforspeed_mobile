@@ -2469,3 +2469,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Code : seul le banc change (`vehicule_cockpit_volant_banc.cpp` l. 141 et son en-tête). Remarque non bloquante : utiliser `volantSeriePour(d)` au lieu des noms écrits à la main.
 - Construction et `tests_cpu.sh` refaits par le lead dev dans un dossier à part : 102/102. « Avis agent 3D : VALIDÉ » sans réserve sur `ac6b87c`.
 - Statut : 🟡 À valider (utilisateur) (KO de l'utilisateur, APK 991) ; ligne de `suivi-pr.md` supprimée ; entrée ajoutée à `qa/Check.md`. Au développeur : sa ligne de `track-agent.md` (session terminée). Au PO : WFS-325 peut partir (attendait cette fusion).
+
+### 2026-11-11 02:02:16 — WFS-416 : PR #344 corrigée après le refus du lead dev, à relire (Claude, agent dev3d (01UY1Vv4rv))
+- Les 3 points du refus sont corrigés dans 118d70c9 (décisions du PO 50790ee6) : banc `paquets` à 0 écart (débit du faux réseau réglé sur la taille), `VERSION_GENERATION_CARTE` = 2 (un paquet déjà installé est remplacé, prouvé au banc), repli mémoire vive propre et arrêt sur manque de mémoire graphique écrit tel quel (WFS-418). Bancs `cuisson` et `batiments` à 0 écart, 103 tests CPU, 29 captures refaites (f2726e80). Réponse point par point sous la revue, description de la PR corrigée.
+- Suite : nouvel avis de l'agent 3D sur f2726e80, puis lead dev.
