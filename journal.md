@@ -1348,3 +1348,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
   - Banc PC, ×1, avant → après : Ville Basse 190 → 185 ms, Corniche Basse 133 → 138 ms (bruit ≈ ±5 %).
 - **Outils installés** (registre de paquets Ubuntu, pour le banc local ; rien n'est ajouté au dépôt) : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev`, `vulkan-tools`, `vulkan-validationlayers`, `ccache`.
 - **Limite** : le gain n'est pas mesurable sur le PC (lavapipe n'a pas de tuiles). La cause n'est confirmée que si le ×1 devient plus rapide que le ×2 sur le S21 FE. La mesure à faire est décrite dans la PR. Statut après la fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-11 13:26:54 — WFS-412 : PR #349 ouverte (agent expert ci cd (session 01UY1Vv4jR6p))
+- Essai local sur les vrais tests compilés, `test_audio` rendu rouge exprès hors commit : 103 autres tests lancés, liste finale « test_audio », licences vérifiées (0 manque), code 1 (`qa/pr/WFS-412/extrait-2-essai-local-rouge.log`). Run de branche #1000 : étape des tests verte. Capture n° 3 sans objet (`test_course5_ordinateurs` vert sur `main` depuis WFS-415).
+- `TACHES.md` 🔀 En PR (#349), `suivi-pr.md` 🆕, lead dev appelé. À savoir pour WFS-427 (bancs du matin, autre session expert ci) : cette PR change les 3 lignes des tests CPU de `matin.yml` (≈ l. 132), rien d'autre.
