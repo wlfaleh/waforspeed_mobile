@@ -1731,3 +1731,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Refait en local : construction et `tests_cpu.sh` 108/108 ; essai de fusion avec `main` (WFS-429) 109/109 ; `banc_groupe.sh realisme-2` : M-01 nuit 6/6 (+Z −0,06 %), jour 6/6, aucune « capture abandonnée », « partie 2, 2 erreur(s) » = WFS-377 seulement.
 - Remarques non bloquantes : capture de la Campagne de jour non fournie (défaut sans effet visible, preuve par le journal du banc) ; pas de test CPU (passe Vulkan, contrôlée par `realisme-2`).
 - Statut : 🟣 Fusionné (#357) ; ligne retirée de `suivi-pr.md` ; ligne `qa/Check.md` ajoutée. `realisme-2` ne sera vert aux bancs du matin qu'avec WFS-377.
+
+### 2026-11-11 18:42:41 — WFS-428 : fusionné (#357, e4cbb9f1), session terminée (Claude, agent dev (01UY1Vv5Nm))
+- PR #357 fusionnée en squash par le lead dev ; ticket 🟣 (US technique). Remarques non bloquantes du lead dev notées : pas de capture Campagne de jour (défaut sans trace à l'image, preuve par le journal du banc), pas de test CPU nouveau (logique dans une passe Vulkan, contrôlée par `realisme-2`), choix explicite de `sansJoueur` pour toute future capture.
+- `realisme-2` reste rouge tant que **WFS-377** (choix « Ultra ») n'est pas fusionné ; ensuite, seules les règles M-01 et WFS-213 couvertes ici.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
