@@ -10,6 +10,7 @@
 #include "../game/roues.h"   // WFS-60 : RoueModele, RouesPose
 #include "masquage.h"   // WFS-82 : masquage hors champ et au loin
 #include "eclairage_ombres.h"   // WFS-227 : cascades d'ombre du soleil
+#include "passe_scene.h"   // WFS-425 : passe de scène, copie de la scène ×1
 #include "../core/gpu_logiciel.h"
 
 namespace wfs {
@@ -293,7 +294,8 @@ private:
     uint32_t cw_ = 0, ch_ = 0;   // WFS-246 (RG-07) : taille des cibles de la scène (logique × renderScale), fixe en course
     float echelleDyn_ = 1.f;     // WFS-246 : part de la capacité lue par la passe finale
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
-    Image msaaColor_, depth_, hdr_;
+    Image msaaColor_, depth_, hdr_;   // WFS-425 : msaaColor_ = couleur temporaire de la scène, aussi en ×1 (copiée dans hdr_)
+    passe_scene::Copie copieX1_;   // WFS-425 : sous-passe de copie de la scène ×1
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;
     std::vector<VkFramebuffer> finalFbs_;
     VkDescriptorSetLayout frameLayout_ = VK_NULL_HANDLE, matLayout_ = VK_NULL_HANDLE, postLayout_ = VK_NULL_HANDLE;

@@ -25,7 +25,7 @@ set(SHADER_OUT ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_OUT})
 set(SHADER_INCS)
 file(GLOB SHADER_GLSL CONFIGURE_DEPENDS ${SHADER_DIR}/*.glsl)   # WFS-149 (RG-05) : route, vehicule, decor, eclairage
-foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag prepasse.frag plein_ecran.vert passe_essai.frag)   # WFS-150 : pré-passe, passe d'essai
+foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag prepasse.frag plein_ecran.vert passe_essai.frag scene_copie.frag)   # WFS-150 : pré-passe, passe d'essai ; WFS-425 : copie de la scène ×1
   add_custom_command(
     OUTPUT ${SHADER_OUT}/${S}.inc
     COMMAND ${GLSLC} -O --target-env=vulkan1.0 -mfmt=num -I ${SHADER_DIR} -o ${SHADER_OUT}/${S}.inc ${SHADER_DIR}/${S}
@@ -126,6 +126,7 @@ else()
   add_executable(test_regard_cockpit tests/test_regard_cockpit.cpp src/core/configgame.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-235 : regard du conducteur en vue Cockpit
   add_executable(test_tangentes tests/test_tangentes.cpp src/render/mesh.cpp)   # WFS-149 (RG-04, M-02) : tangentes, .wfm versionnés
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
+  add_executable(test_passe_scene tests/test_passe_scene.cpp)   # WFS-425 : passe de scène (×1 copiée dans la cible HDR, ×2 / ×4 inchangés)
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
   add_executable(test_phares tests/test_phares.cpp)   # WFS-218 : feux de croisement du joueur (flux, coupure, portée)
   add_executable(test_phares_optiques tests/test_phares_optiques.cpp)   # WFS-413 : optiques avant mesurées (≤ 2 cm), 17 voitures

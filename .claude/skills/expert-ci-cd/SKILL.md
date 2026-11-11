@@ -22,7 +22,7 @@ Tu obéis à `CLAUDE.md` (règles de l'utilisateur) : elles passent avant ce ski
 | Workflow | Déclencheur | Rôle |
 |---|---|---|
 | `build.yml` « Construction WaForSpeed » | chaque fusion sur `main` (pas les `.md`, `qa/**`, `regles-de-gestion/**`, `.claude/**`), à la main | compilation, tests CPU + licences, `texte` et `menu1-2400` (photos dans `apercu-fusion`), endurance, APK + notification ; un seul run à la fois (WFS-237) ; run vert = tickets laissés 🟣 |
-| `matin.yml` « Bancs du matin » | 04:00 heure de Paris (cron 02:00 / 03:00 UTC), à la main | tous les bancs (14 groupes dont réalisme en 2 parties), tests, endurance + chauffe, APK du matin, émulateur (information), captures dans `apercu`, message « 🧪 Recette QA prête » ; QA à 07:00 |
+| `matin.yml` « Bancs du matin » | 04:00 heure de Paris (cron 02:00 / 03:00 UTC), à la main | tous les bancs (18 groupes dont réalisme en 2 parties ; limite 75 min par groupe), tests, endurance + chauffe, APK du matin, émulateur (information), captures dans `apercu`, message « 🧪 Recette QA prête » ; QA à 07:00 |
 | `statuts.yml` | fin de chaque run de `build.yml` ou `matin.yml` sur `main` | robot : ✅ seulement par les bancs du matin verts (option A, WFS-277) ; rouge → journal |
 | `archives.yml` | chaque nuit 03:07 UTC + à la main | robot : journal > 2 jours et tickets ✅ vers les archives |
 | `simulateur.yml` | à la main | émulateur Android sur une épic (Release `simulateur-<épic>`) |

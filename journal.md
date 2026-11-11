@@ -1332,3 +1332,120 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 13:08:39 — WFS-429 : pas de validation sur téléphone, captures suffisantes (po-scrum-master)
 - Remarque de l'utilisateur : un petit changement comme celui-là se valide sur une capture du jeu. Erreur du PO reconnue : la règle 🟡 (2026-11-07) ne vaut que pour un défaut vu sur le téléphone ou la conduite. WFS-429 suit le cycle normal : captures avant / après regardées par le lead dev → 🟣 → ✅ (bancs du matin). Règles mises à jour.
+
+### 2026-11-11 13:18:00 — WFS-364 : branche poussée, retouches de la Golf et de la Corsa faites (Claude, agent dev3d (01UY1Vv2nQ))
+- Fait : Golf, emblème rond (disque noir de WFS-404, 4 cm devant le bouclier), bandeau lumineux, liseré rouge et plaque GTI de la fente entre les phares retirés par découpe exacte ; encoche ronde de la peinture refermée par une peau cousue ; grille générique à 2 lames dans la fente. Corsa, nid d'abeille, barres chromées en V et porte-emblème de la calandre retirés ; grille générique à 4 lames ; relief du centre du capot lissé (nouvelle retouche `lisser` de `tools/retoucher_formes.mjs`, hauteur ajustée rangée par rangée sur la peau voisine).
+- Vérification en cours : `--verifier` vert pour les 9 voitures ; Golf et Corsa rejouées depuis l'origine (octet pour octet) ; Giulia et Range Rover rejouées depuis leur modèle d'avant WFS-363 : identiques à `main`. Tests CPU et captures avant / après en cours.
+- Outil : dépendances de `tools/package.json` installées en local (`npm install --no-save`, rien d'ajouté au dépôt) pour régénérer les LOD.
+
+### 2026-11-11 13:24:10 — WFS-425 : PR #348 ouverte, lead dev appelé (Claude, agent dev (01Us6uCtwf))
+- **Fait** : en MSAA ×1, la passe de scène suit le schéma du ×2. Sous-passe 0 : couleur et profondeur temporaires (mémoire de tuile). Sous-passe 1 : copie dans la cible HDR (attachement d'entrée, `BY_REGION`). Les shaders n'écrivent plus jamais directement dans la cible HDR. ×2 et ×4 : passe identique au bit près (test). MSAA par défaut de la Basse inchangé (×2). La passe finale n'est plus recréée à chaque changement de MSAA (avant : l'ancienne n'était jamais détruite).
+- **Fichiers** : `src/render/passe_scene.h` / `.cpp` (nouveaux), `src/render/renderer.cpp` / `.h`, `shaders/scene_copie.frag` (nouveau), `tests/test_passe_scene.cpp` (nouveau), `CMakeLists.txt` (2 lignes : shader et test).
+- **Vérifié** :
+  - 104 tests CPU verts.
+  - Couche de validation Vulkan (synchronisation comprise), ×4 puis ×1 en course : 0 message.
+  - 18 captures PNG avant / après identiques pixel par pixel : Ville, Corniche et Campagne de nuit, MSAA du niveau et ×1.
+  - Banc PC, ×1, avant → après : Ville Basse 190 → 185 ms, Corniche Basse 133 → 138 ms (bruit ≈ ±5 %).
+- **Outils installés** (registre de paquets Ubuntu, pour le banc local ; rien n'est ajouté au dépôt) : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev`, `vulkan-tools`, `vulkan-validationlayers`, `ccache`.
+- **Limite** : le gain n'est pas mesurable sur le PC (lavapipe n'a pas de tuiles). La cause n'est confirmée que si le ×1 devient plus rapide que le ×2 sur le S21 FE. La mesure à faire est décrite dans la PR. Statut après la fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-11 13:26:54 — WFS-412 : PR #349 ouverte (agent expert ci cd (session 01UY1Vv4jR6p))
+- Essai local sur les vrais tests compilés, `test_audio` rendu rouge exprès hors commit : 103 autres tests lancés, liste finale « test_audio », licences vérifiées (0 manque), code 1 (`qa/pr/WFS-412/extrait-2-essai-local-rouge.log`). Run de branche #1000 : étape des tests verte. Capture n° 3 sans objet (`test_course5_ordinateurs` vert sur `main` depuis WFS-415).
+- `TACHES.md` 🔀 En PR (#349), `suivi-pr.md` 🆕, lead dev appelé. À savoir pour WFS-427 (bancs du matin, autre session expert ci) : cette PR change les 3 lignes des tests CPU de `matin.yml` (≈ l. 132), rien d'autre.
+
+### 2026-11-11 13:59:11 — WFS-324 : 2e refus de la PR #341 corrigé (Claude, agent dev3d (01UY1Vv5YT))
+- Point bloquant, les phares de la voiture qui suit, la nuit, dans les glaces : un cœur et une lueur sur chaque optique mesurée par WFS-413, dessinés dans l'image d'une glace seulement. En vue directe, rien ne change (WFS-413 intact).
+  - Accroche dans `Renderer::feuxVoiture`, annoncée ici.
+  - Un retrait par méprise (3946d1d9 : j'avais pris une question de l'utilisateur pour un ordre) a été annulé (8726d790) ; l'utilisateur confirme que c'est un ajout dans les glaces, pas une modification des voitures.
+- Capture des Réglages : réglage Caméra sur Cockpit. La scène « voie de gauche » du banc est à 14 m (à 9 m, la voiture est dans l'angle mort).
+- Vérification :
+  - tests : 105 / 105 ;
+  - banc `retroviseurs` : 0 écart (Golf, Range Rover Sport, M4, 911) ;
+  - banc `cockpit` de nuit : sans régression ;
+  - coût : 0,43 img/s en Basse, 0,46 en Haute (estimé).
+- Commit à relire : 72e5ce51 ; lead dev rappelé.
+
+### 2026-11-11 13:59:26 — WFS-425 fusionné par le lead dev (lead-dev (session 01Us6uCtwf))
+- PR #348 relue sur 51f14f8a (Claude, agent dev (01Us6uCtwf)), **fusionnée en squash : 01712be4**. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire dans la PR.
+- Lu : tout le diff (`passe_scene.h/.cpp`, `renderer.cpp/.h`, `scene_copie.frag`, `test_passe_scene.cpp`, `CMakeLists.txt`) ; 7 paires de captures ouvertes, identiques. RG-01 (cause écrite : passe ×1 qui écrivait directement dans la cible HDR, hypothèse du rendu hors tuiles de l'Adreno, par élimination), RG-03 (×2 / ×4 identiques au bit près, test), RG-04 (×2 par défaut en Basse) : OK. RG-02 : à mesurer par l'utilisateur sur le S21 FE.
+- Refait : construction, `tests_cpu.sh` 105 verts ; banc `perf` Ville de nuit en ×1 (couche de validation + synchronisation : 0 message ; PNG identiques à `main`) ; endurance en ×1 avec validation (code 0, 0 erreur, objets Vulkan stables).
+- Remarque non bloquante écrite dans la revue : `prechaufferMsaa` (renderer.cpp:937-939) détruirait la copie ×1 en service si la passe en service était en ×1 pendant une variante ×2 / ×4 (impossible aujourd'hui ; à reprendre si `diagnostic.msaa_x1` est appliqué dès le chargement, suite proposée au PO par le développeur).
+- `TACHES.md` : WFS-425 → 🟡 À valider (utilisateur) (PR #348) ; `suivi-pr.md` : ligne supprimée ; `qa/Check.md` : ligne ajoutée.
+
+### 2026-11-11 14:00:07 — WFS-364 : PR #351 ouverte, accroche de 10 lignes annoncée (Claude, agent dev3d (01UY1Vv2nQ))
+- Fait : Golf (emblème rond, bandeau lumineux, liseré rouge et plaque de la fente retirés ; encoche de la peinture refermée par une peau cousue ; grille à 2 lames) ; Corsa (calandre en nid d'abeille, barres en V et porte-emblème retirés ; grille à 4 lames ; relief du capot lissé par la nouvelle retouche `lisser`).
+- **Accroche hors zone (10 lignes)** : `src/render/correctifs_voitures.h`, nombre de matériaux des optiques avant de la Golf (21 → 23) et de la Corsa (17 → 19), car chaque grille ajoute 2 matériaux à la fin ; rangs et zones inchangés. Sans elle, `test_phares_optiques` échoue.
+- Vérification : 104 tests CPU réussis ; `--verifier` vert pour 9 voitures ; Golf et Corsa rejouées octet pour octet ; Giulia et Range Rover rejouées depuis leur origine : identiques à `main` ; 16 captures vitrine avant / après + 20 zooms ×4 jour et nuit regardés.
+- **Pour le PO (RG-06, tâche séparée proposée)** : le liseré rouge de la Golf continue en fine ligne dans les deux phares, imprimé dans la texture de la lampe (matériau 10, texture 8) ; à repeindre par `tools/effacer_logos.mjs` / `tools/logos.json`, hors de la zone de WFS-364.
+
+### 2026-11-11 14:00:33 — WFS-425 : fin de session après la fusion (#348) (Claude, agent dev (01Us6uCtwf))
+- PR #348 fusionnée en squash par le lead dev (01712be4). Statut : 🟡 À valider (utilisateur). J'ai répondu sous la revue, point par point (3 remarques non bloquantes).
+- **Pour le PO** :
+  - Remarque n° 1 du lead dev : `prechaufferMsaa` détruirait la copie ×1 en service si la passe en service était en ×1 pendant la préparation d'une variante ×2 / ×4. Ce cas n'existe pas aujourd'hui (la fonction n'est appelée qu'au chargement). À corriger dans la même US que le constat « `diagnostic.msaa_x1` lu dans `configgame.json` ne prend effet qu'au prochain changement de cibles » (entrée du journal de 13:00 environ), si cette US est créée : `copieX1_.pipeline = VK_NULL_HANDLE` avant `createScenePipelines()` dans la boucle.
+  - L'émulateur des bancs du matin (GPU logiciel, toujours en ×1) fait maintenant une copie plein écran en plus : à regarder.
+  - Si la mesure du téléphone ne montre pas un ×1 plus rapide que le ×2, la cause supposée (rendu hors tuiles du pilote Adreno) est fausse. La suite proposée est une pré-passe de profondeur pour le ×1.
+- Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (une seule).
+- Titre de la discussion non changé : l'outil `set_session_title` n'existe pas dans cette session (titre voulu : « ⏹️ Terminée — Claude, agent dev (01Us6uCtwf) (WFS-425 fusionné) »).
+- Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
+
+### 2026-11-11 14:01:09 — WFS-324 : 3e revue de la PR #341, refusée (lead-dev)
+- Commit relu 72e5ce51. Réglés : phares allumés visibles dans les 3 glaces à taille réelle, réglage Caméra sur Cockpit pour la capture des Réglages.
+- **Refus** : en gros plan, la lueur de 25 cm ajoutée sur chaque phare (`PHARE_LUEUR`, `feuxVoiture`) est un disque gris pâle au bord net (Golf), ou un demi-disque plat (Range Rover Sport) : halo en disque interdit (règle du 2026-11-09). Attendu : cœur net gardé, aucune forme ronde lisible.
+- Branche non reconstruite (refus sur les images).
+
+### 2026-11-11 14:01:43 — WFS-324 : 3e refus de la PR #341 noté (po-scrum-master)
+- Noté sur message du lead dev : PR #341 (dev3d, 01UY1Vv5YT) refusée 3 fois ; reste seulement le halo en disque des phares dans les glaces. Statut inchangé (↩️ Retour lead dev). Pas de réattribution (règle des 10 h). WFS-325 attend WFS-324.
+- WFS-421 complété par la PR #347 (disque au sol des lampadaires enlevé à toutes les qualités) : la réserve de l'agent 3D sur #346 est traitée, aucune anomalie créée.
+### 2026-11-11 14:02:16 — Épic E16 « Évolution des objets 3D » créée, WFS-430 à 443 bloqués par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur (2026-11-11) : créer les US dans une épic « évolution des objets 3D », en bloqué, pas prioritaire, en dernier ; il dira quand commencer.
+- Créés : `regles-de-gestion/E16-evolution-objets-3d.md` (but, zone `src/world/biblio_*`, `assets/world/biblio/**`, `tools/biblio/**`, `tests/biblio*`, accroche renderer ≤ 10 lignes ; porte utilisateur après le pin d'Alep ; 33 ms S21 FE ; avis agent 3D ; avis lead dev et smart brain ; lots 2 à 10 en prévision non créée : ≈ 105 objets, 54,5 sessions, grand total ≈ 70,5), `regles-de-gestion/E16-inventaire.md` (copie de l'inventaire), `regles-de-gestion/WFS-430.md` à `WFS-443.md`.
+- Numéros WFS-430 à 443 vérifiés libres. Statut de tous : ⛔ Bloqué par l'utilisateur, P4 Basse, en dernier du tableau, dans aucun ordre de priorité, aucun attribué.
+- WFS-383 et WFS-371 inchangés (au déblocage, WFS-371 serait réduit s'il n'est pas fait : noté dans l'épic).
+### 2026-11-11 14:13:36 — WFS-426 : PR #350 refusée par le lead dev (lead-dev)
+- Relu b1db4c34 : 22 captures ouvertes, diff complet lu, construction + tests CPU 104/104, bancs cuire / batiments (WFS_CARTE=plage) / paquets relancés (0 écart chacun).
+- Refus : la cuisson de la Corniche (`batimentsCuits` → `plage::poserVillasKit` → `archi::carte::vider()`) vide le kit global de la partie en cours ; capture `paquets-menu-prete` : la Ville n'a plus ses immeubles derrière le menu (main : présents). Banc et captures faussés (pas d'effet dans le jeu du téléphone, qui ne cuit pas).
+- Remarques : garde `cuisson_` à ajouter aux lampadaires de `placerEtabs` (plage.cpp:1586, 1589) ; `#include <memory>` mal placé ; noms `plage_*` au lieu de `corniche_*` (RG-02) à faire noter par le PO.
+
+### 2026-11-11 14:14:02 — WFS-427 : PR #352 ouverte, les deux groupes verts sur la CI de la branche (agent expert ci cd, session 01UY1Vv2Hq)
+- **Run #19 de la branche** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43025086545, commit adf935fa) : `banc (ecrans-2400)` **vert en 61,3 min** (`chargement`, `hud`, `camera` rejoué), `banc (fluidite)` **vert en 35,6 min** ; limite 75 min inchangée. Les autres groupes terminés sont verts, sauf `realisme-2` (rouge attendu : WFS-377, WFS-428, code du jeu). Rien publié, aucun ✅ (hors de `main`).
+- **En local** (`bash tools/qa/banc_groupe.sh`) : `ecrans-2400` code 0 en 2348 s, 25 fichiers ; `fluidite` code 0 en 2053 s, 568 parties, 49 fichiers, « objectifs manqués : 0 ». Mêmes 74 fichiers qu'avant, mêmes noms.
+- **PR #352** ouverte (f86da0ee, synchronisée avec `main`), `qa/pr/WFS-427/pr.md` (journaux + 3 captures du banc `camera`), ligne 🆕 dans `suivi-pr.md`, ticket 🔀 En PR ; lead dev appelé.
+- **Point à suivre pour le PO** : `ecrans-2400` reste à 61 min sur la CI (marge de 14 min) à cause du banc `hud` ; s'il s'allonge encore, il faudra le sortir à son tour.
+
+### 2026-11-11 14:14:31 — WFS-364 fusionné par le lead dev (lead-dev)
+- PR #351 relue sur c09d7ab8 : 52 captures ouvertes (26 paires avant / après : vitrines de face, de 3/4, vues basses, en course ; zooms ×4 de jour et de nuit) ; tout le diff lu (`tools/retoucher_formes.mjs`, retouche `lisser` ; `tools/formes.json` ; accroche de 10 lignes dans `src/render/correctifs_voitures.h`, annoncée au journal).
+- Vérifié : fusion locale avec `main` (WFS-425 compris, sans conflit), construction et `tools/qa/tests_cpu.sh build` : 105/105 ; `test_fidelite_voitures` (Golf ×1,001, Corsa inchangée) ; `test_phares_optiques` (optiques trouvées) ; `retoucher_formes.mjs --verifier` vert (9 voitures) ; Golf et Corsa rejouées depuis les modèles de `main` : `.wfm` et `.lod` identiques à l'octet.
+- Revue « ✅ Approuvé » écrite dans la PR en commentaire (GitHub refuse l'approbation au même compte), puis squash b9e8c47. Statut 🟣 Fusionné.
+- Pour le PO : (1) liseré rouge imprimé dans la texture des phares de la Golf → tâche séparée (`tools/logos.json`, RG-06) ; (2) marche d'environ 1 mm au raccord de l'encoche de la Golf ; (3) petit disque sombre sur le hayon de la Golf, déjà sur `main`, hors RG-01 (avant).
+
+### 2026-11-11 14:15:26 — WFS-364 fin, session terminée (Claude, agent dev3d (01UY1Vv2nQ))
+- PR #351 fusionnée en squash par le lead dev (b9e8c47) ; ticket 🟣, la suite (✅ ou 🟡) revient au robot des statuts et au PO.
+- Petits défauts restants, pour le PO (RG-06, tâches séparées) : liseré rouge dans la texture des phares de la Golf (`tools/logos.json`) ; marche d'environ 1 mm au raccord de l'ancienne encoche de la Golf ; petit disque sombre sur le hayon de la Golf (déjà sur `main`, hors du périmètre).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-11 14:20:55 — WFS-412 fusionné par le lead dev (lead-dev)
+- PR #349 (agent expert ci cd (session 01UY1Vv4jR6p)), revue du commit 7b107c63, squash **ae7089ee** sur `main`. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire.
+- Diff entier lu (`tools/qa/tests_cpu.sh`, 3 lignes de `build.yml` et de `matin.yml`) : RG-01 à RG-05 tenues, aucun test, seuil ni `IGNORES` changé. Extraits relus ; run n° 1000 vérifié vert sur GitHub.
+- Refait : faux dossiers (tout vert code 0 ; 2 / 4 échecs listés, code 1 ; vide → « aucun test trouvé », code 1) ; construction de la branche fusionnée avec `main` : 105 tests CPU verts, licences 0 manque, code 0.
+- À surveiller : bancs du matin du 12/11 (1er passage du bloc de `matin.yml`) ; WFS-427 doit se synchroniser sur ces lignes.
+
+### 2026-11-11 14:21:32 — WFS-412 fusionné (#349, ae7089ee), session terminée (agent expert ci cd (session 01UY1Vv4jR6p))
+- Lead dev : PR acceptée et fusionnée en squash. Sur `main` à la prochaine fusion (`build.yml`) et aux bancs du matin du 12/11 (`matin.yml`) : un test CPU en échec n'empêche plus les autres tests ni la vérification des licences ; liste des échecs en fin de journal ; job toujours rouge s'il y a un échec.
+- Pour WFS-427 (autre session expert ci, `matin.yml`) : se synchroniser avec `main` (3 lignes des tests CPU changées, ≈ l. 132).
+- Un seul ticket par session : cette session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 14:30:13 — WFS-427 fusionné par le lead dev (lead-dev)
+- PR #352 (agent expert ci cd (session 01UY1Vv2Hq)), revue du commit f86da0ee, squash **2ccc37c7** sur `main`. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire.
+- Diff entier lu (`tools/qa/banc_groupe.sh`, matrice / `GROUPES` / « 18 groupes » de `matin.yml`, doc du skill) : RG-01 à RG-09 tenues, limite de 75 min, seuils et tests inchangés. 3 captures du banc `camera` ouvertes : rien d'anormal. Run #19 de `matin.yml` vérifié sur GitHub : `ecrans-2400` vert en 61,3 min, `fluidite` vert en 35,6 min ; `realisme-2` rouge hors ticket (WFS-377, WFS-428).
+- Refait : branche fusionnée avec `main` en local, construction et 105 tests CPU verts ; `test_matin.py` vert. Après le squash (WFS-412 fusionné entre-temps) : `matin.yml` de `main` relu, les deux changements sont là, 18 groupes, limite 75.
+- **Pour le PO (défaut ancien, hors de cette PR)** : dans `tools/qa/banc_groupe.sh`, un banc placé au milieu d'une liste `mkdir … && ./build/wfs_bench … && cp …` qui échoue n'arrête pas le script malgré `set -e` (règle de bash) : le job peut finir vert, captures du banc absentes. Exemple : `bash -c 'set -e; true && (exit 3) && echo copie; echo suite'` affiche « suite », code 0. Lignes concernées : `chargement`, `hud`, `fluidite`, `camera`, `conduite`, etc. Je recommande une US technique P1 (sortir le code du banc de la liste `&&`, sans rien d'autre changer).
+- À surveiller : bancs du matin du 12/11 (les deux groupes verts en moins de 75 min, archive `captures-fluidite.zip`) ; marge d'`ecrans-2400` (61 min sur 75).
+
+### 2026-11-11 14:30:53 — WFS-427 fusionné : session terminée (agent expert ci cd, session 01UY1Vv2Hq)
+- PR #352 fusionnée en squash par le lead dev (2ccc37c). Ma ligne de `track-agent.md` passe en « ⏹️ session terminée » ; je ne demande aucun autre ticket (un seul sujet par session).
+- **Reste à constater** : `ecrans-2400` et `fluidite` verts aux bancs du matin de `main` du 2026-11-12 (moins de 75 min chacun), archive `captures-fluidite.zip` publiée.
+- **Les bancs du matin resteront rouges** tant que `realisme-2` n'est pas réparé : WFS-377 et WFS-428 (P1, ⏳ Prêt, code du jeu), à donner à deux sessions `@dev`.
+- **Pour le PO** (remarque du lead dev, défaut ancien) : dans `tools/qa/banc_groupe.sh`, un banc en échec au milieu d'une suite `… && … && cp …` n'arrête pas le script malgré `set -e` (seule la dernière commande d'un groupe rend le job rouge) : US technique à créer. Autre point : `ecrans-2400` à 61 min sur la CI, marge de 14 min (banc `hud` lent).
+
+### 2026-11-11 14:32:17 — WFS-426 : écart RG-02 noté (paquets `plage_*`) (po-scrum-master)
+À la demande du développeur (agent cartes, PR #350), écart accepté par le lead dev ajouté sous RG-02 de `regles-de-gestion/WFS-426.md` : paquets `plage_astc/etc2/rgba8.wfcarte` (identifiant « plage » du format WFS-301), nom affiché « Corniche ». Statut et ligne du développeur inchangés.
