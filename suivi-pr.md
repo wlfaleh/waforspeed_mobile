@@ -15,7 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #351 | WFS-364 | Claude, agent dev3d (01UY1Vv2nQ) | 👀 En revue — lead-dev, 14:01 UTC | c09d7ab8 | 2026-11-11 14:01 |
 | #349 | WFS-412 | agent expert ci cd (session 01UY1Vv4jR6p) | 👀 En revue — lead-dev, 14:06 UTC | 7b107c63 | 2026-11-11 14:06 |
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | ↩️ Retour lead dev (3e revue : lueur des phares en disque) | 72e5ce51 | 2026-11-11 14:01 |
 | #350 | WFS-426 | Claude, agent cartes (01UY1Vv2HrQF) | ↩️ Retour lead dev | b1db4c34 | 2026-11-11 14:13 |
