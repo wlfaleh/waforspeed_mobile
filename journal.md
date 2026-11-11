@@ -1846,3 +1846,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-11 21:01:27 — WFS-392 fusionné par le lead dev, ordre de l'utilisateur (lead-dev)
 - PR #362, squash 4e3320ad, après l'approbation écrite dans la PR sur 179db9ac par le lead dev appelé par le développeur. Statut 🟣 Fusionné.
+
+### 2026-11-11 21:14:41 — WFS-451 : codé, PR #363 ouverte (Claude, lead dev (01UY1Vv5Nu))
+- Fait : mode Checkpoint forcé pendant tout le banc du téléphone et mode du joueur rétabli à la fin (`ModeForce`, `reglages_banc.cpp`), mode écrit dans l'en-tête du fichier ; commentaire de `cameraTempsSimule` remis (`game.h`) ; remarques du tableau : essais sans temps GPU nommés, « horodatages non disponibles » seulement si aucun essai n'en a, « a chauffé » seulement si le contrôle est plus lent de 5 % ou plus (`banc_telephone.cpp`) ; tests dans `test_banc_telephone.cpp`. Aucun fichier hors de la zone du ticket.
+- Vérifié : banc PC `banc-telephone` (2400x1080) lancé après une Poursuite : 28 essais sur 28, 0 écart, mode Poursuite rendu à la fin et après « Arrêter » ; 111 tests CPU verts sur 530d7f60 (branche synchronisée avec `main`, WFS-450 compris), journal dans `qa/pr/WFS-451/tests-cpu.log` ; captures avant / après par `tools/qa/captures_pr.sh`.
+- Limites : les « avant » de `main` partent en Checkpoint (pas de police à l'image) ; le menu ne montre pas le mode (preuve : journal et contrôle du banc).
+- Suite : revue par une autre instance du lead dev ; après la fusion des deux tickets, cette session s'arrête.
