@@ -1246,3 +1246,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Zone : `src/render/vk.*` (réservation des tampons seulement), `makeMesh` (`src/render/renderer.cpp`), `src/world/archi_carte.*` (appel du repli), `tests/**`. Exception PO : WFS-425 touche les passes et cibles dans `vk.*`, WFS-426 la cuisson (`archi_cuit.*`) : pas les mêmes fonctions ; synchroniser souvent avec `main`.
 - Critères (`regles-de-gestion/WFS-418.md`, complété) : réservation refusée au chargement des bâtiments cuits → kit de secours, sans arrêt du jeu (test automatique, moyen d'essai PC) ; aucun écart d'image ni de temps quand la mémoire suffit (bancs `cuisson`, `batiments`, `perf`) ; liste des autres réservations sans repli remise au PO. 🟣 puis ✅ par le robot (US technique).
 - Plan court : voie de `createBuffer` qui rend un tampon vide sur `VK_ERROR_OUT_OF_DEVICE_MEMORY` / `OUT_OF_HOST_MEMORY` ; `makeMesh` qui le signale ; repli vers le kit dans `archi_carte.cpp` ; variable du banc qui fait échouer la N-ième réservation ; test ; captures `batiments` jour / nuit et sans refus ; PR, lead dev.
+
+### 2026-11-11 12:27:16 — WFS-418 : branche poussée, début de l'analyse (Claude, agent dev (01Us6uCt95))
+- Branche `feature/waforspeed-418` créée depuis `main` (82d7bfc) et poussée (68b7566, premier commit). Skills chargés : `agent-developer`, `waforspeed-natif`.
+- Titre de la discussion : l'outil `set_session_title` n'existe pas dans cette session (recherche `ToolSearch` sans résultat) ; titre voulu, non appliqué : « WFS-418 — Claude, agent dev (01Us6uCt95) (repli mémoire graphique) ».
+- Banc PC local en préparation (lavapipe + glslc installés, construction de `main` en cours) pour les captures avant / après.

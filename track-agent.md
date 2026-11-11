@@ -31,7 +31,7 @@
 | Claude, agent dev (01Us6uCtwf) | WFS-425 | défaut MSAA ×1 (scène 62 → 108 ms au lieu de baisser) : trouver la cause dans les passes et cibles de la scène et corriger | `feature/waforspeed-425`, 2026-11-11 12:22 | 🔧 en cours (branche poussée, analyse) |
 | Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, pas encore poussée | 🔧 en cours (attribué 12:22) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, pas encore poussée | 🔧 en cours (attribué 12:25) |
-| Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, pas encore poussée | 🔧 en cours (attribué 12:24) |
+| Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 12:27 (68b7566, premier commit) | 🔧 en cours (branche poussée, analyse) |
 
 ## Agents de pilotage
 
