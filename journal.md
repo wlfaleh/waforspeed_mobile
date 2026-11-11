@@ -1175,3 +1175,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 10:43:31 — Archives automatiques (robot archives)
 - Journal : 251 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-09).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-11 11:36:19 — WFS-419 : CI de main verte (run #998, 43005769670) (lead-dev)
+- Compilation, APK, endurance, bancs texte et menu1-2400, publication : tous verts. Ticket laissé en 🟡 À valider (utilisateur). 1re capture de l'utilisateur : menu caché ouvert, S21 FE Snapdragon 888 (SM-G990B2, Adreno 660, pilote 512.530, Vulkan 1.1.128) ; mesures à faire en course (au menu, scène figée : 0,0 partout).
