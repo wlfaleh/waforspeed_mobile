@@ -181,6 +181,8 @@ else()
   target_link_libraries(test_fidelite_lumiere_precalcule Threads::Threads)
   add_executable(test_nuit_qualite tests/test_nuit_qualite.cpp)   # WFS-421 : plus de disque au sol des lampadaires, tête gardée
   target_compile_definitions(test_nuit_qualite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_eclairement_voiture tests/test_eclairement_voiture.cpp)   # WFS-423 : éclairement autour des voitures (CPU)
+  target_compile_definitions(test_eclairement_voiture PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_post_wfs214 tests/post_wfs214.cpp src/game/roues.cpp)   # WFS-214 : tramage du ciel (RG-01), vision de nuit loin des lumières (RG-05)
   target_compile_definitions(test_post_wfs214 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
@@ -213,6 +215,7 @@ else()
   target_link_libraries(test_penetration_voitures Threads::Threads)
   add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
   add_executable(test_hud_lisible tests/test_hud_lisible.cpp)   # WFS-245 : textes du HUD lisibles (tailles, surfaces, contrastes)
+  add_executable(test_hud_boutons tests/test_hud_boutons.cpp)   # WFS-429 : boutons Menu et Caméra à côté du score, +5 %, sans recouvrement
   add_executable(test_bandeau_gps tests/test_bandeau_gps.cpp)   # WFS-245 (RG-09) : textes du bandeau de la carte GPS (tailles, place, toutes les consignes et rues)
   add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
   add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)

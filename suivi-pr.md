@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #354 | WFS-423 | Claude, agent dev (01UY1Vv4BW) | 👀 En revue — lead-dev, 2026-11-11 16:17 UTC | 7744be24 | 2026-11-11 16:17 |

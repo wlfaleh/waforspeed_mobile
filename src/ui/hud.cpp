@@ -150,7 +150,7 @@ public:
         }
         // ---------- haut droite : score + combo (.p-score) ----------
         if (modeCourse() != ModeCourse::Poursuite) {   // WFS-119 RG-02 : en poursuite, seul le score de poursuite est affiché
-            const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
+            const float w = hud::SCORE_L * k, h = (c->combo > 1 ? hud::SCORE_H_COMBO : hud::SCORE_H) * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
             r.uiRect(x, y, w, h, FOND_PANNEAU);   // WFS-135 (ANO-64) : fond opaque, l'enseigne derrière ne se lit plus
             const float xr = x + w - pad;
             label(r, xr, y + 8 * k, k, "Score", ui::DROITE);
@@ -168,14 +168,14 @@ public:
         const int on = (int)std::lround(std::clamp(pl.nitro, 0.0, 1.0) * 10);   // cases de nitro allumées
         // ---------- vue cockpit (WFS-98, RG-06, ANO-24) : vitesse sous le temps ----------
         // le cadran du tableau de bord 3D donne déjà la vitesse : pas de compteur en arc ; chiffres 28 px et cases de nitro
-        // dans un petit panneau sous le temps, sur la rangée du bouton « Menu » (à sa droite, bord droit sur celui du temps)
-        // WFS-245 : chiffres 40 (au lieu de 28) et étiquette 27, marges de 10 px, même hauteur de 40 px (rangée du bouton Menu)
+        // dans un petit panneau sous le temps (bord droit sur celui du temps) ; WFS-429 (RG-05) : le bouton « Menu » est parti
+        // à côté du score, le panneau ne se cale plus à sa droite
+        // WFS-245 : chiffres 40 (au lieu de 28) et étiquette 27, marges de 10 px, hauteur de 40 px
         if (etatCockpit().actif) {
             const std::string lib = arriere ? "R · km/h" : "km/h";
             const float tp = hud::VITESSE_COCKPIT_PX * k, mp = 10 * k, wd = ui::width(tp, "000", 0), h = 40 * k;
             const float w = mp + wd + 6 * k + largeurLabel(k, lib) + mp;
-            const float wMenu = pad + 18 * k + 6 * k + ui::width(14 * k, "MENU", 0.1f) + pad;   // .cam-btn#menuBtnHud (pause.cpp)
-            const float x = std::max(mg.gauche + gl + hud::TEMPS_L * k - w, mg.gauche + gl + wMenu + 8 * k), y = mg.haut + gt + 112 * k + 10 * k;
+            const float x = mg.gauche + gl + hud::TEMPS_L * k - w, y = mg.haut + gt + 112 * k + 10 * k;
             r.uiRect(x, y, w, h, FOND_PANNEAU);
             const float base = y + 17 * k + 0.5f * CAPITALES * tp, ty = base - BASE * tp;   // milieu des chiffres à 17 px du haut
             ui::text(r, x + mp + wd, ty, tp, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::DROITE, 0, false, true);
@@ -220,6 +220,14 @@ public:
 } // namespace
 
 WFS_SYSTEM(Hud, 420)   // interface (400-499) : après le texte (400), avant le fondu du chargement (490)
+
+// WFS-429 : une seule source pour la place et la taille des boutons « Menu » et « Caméra » (dessin et zones de toucher)
+void hud::rangeeBoutons(float W, float H, const Marges& m, const std::string& libelleCamera, BoutonHud& menu, BoutonHud& camera) {
+    const float k = H / 720.f, tp = BOUTON_TEXTE * k * BOUTON_ECHELLE;
+    menu = mesuresBouton(k, ui::width(tp, ui::majuscules("Menu"), 0.1f));
+    camera = mesuresBouton(k, ui::width(tp, libelleCamera, 0.1f));
+    placerBoutons(W, H, m, menu, camera);
+}
 
 // banc d'essai : course en pilote automatique, puis temps bas, nitro active (touchers gaz + nitro), combo ×2
 void benchHud(Game& g, Renderer& r, const std::string& out) {

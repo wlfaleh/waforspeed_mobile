@@ -4,9 +4,11 @@
 #include <cmath>
 #include "../../core/log.h"
 #include "../../core/system.h"
+#include "../../game/camera_vue.h"   // WFS-429 : nom de la vue (largeur du bouton Caméra, même rangée)
 #include "../../game/course_system.h"
 #include "../../game/game.h"
 #include "../../render/renderer.h"
+#include "../hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../text.h"
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "reglages.h"
@@ -78,21 +80,22 @@ public:
     }
 
 private:
-    // .cam-btn#menuBtnHud : vitré, bordure 1 px, biais 8 px, 40 px de haut, icône ‖ 18 px + « MENU » 14 px orange.
-    // RG-01 : en haut à gauche dans la zone sûre (marges de WFS-51), sous le panneau du temps (14 + 112 px de WFS-27) + 10 px
+    // .cam-btn#menuBtnHud : vitré, bordure 1 px, biais, icône ‖ + « MENU » orange.
+    // WFS-429 (RG-01, RG-02) : en haut à droite, à gauche du bouton Caméra et du score ([MENU] [CAMÉRA] [SCORE]), +5 %
+    // (place et mesures : hud::rangeeBoutons, la même que pour le bouton Caméra)
     void dessinerBouton(Renderer& r, const GameView& g, float k) {
-        const float h = 40 * k, ic = 18 * k, pad = 14 * k, gap = 6 * k, tp = 14 * k;
+        hud::BoutonHud b, cam;
+        hud::rangeeBoutons(g.uiWidth, g.uiHeight, g.marges, ui::majuscules(VUES[(int)vueCamera()].nom), b, cam);
         const std::string t = ui::majuscules("Menu");
-        const float w = pad + ic + gap + ui::width(tp, t, 0.1f) + pad;
-        const float x = g.marges.gauche + 16 * k, y = g.marges.haut + 14 * k + 112 * k + 10 * k;
+        const float x = b.x, y = b.y, w = b.w, h = b.h, ic = b.icone;
         g_menu = {x, y, w, h};
-        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, 8 * k, BORD);   // border 1px var(--border)
-        biseau(r, x, y, w, h, 8 * k, GLASS);
+        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, b.biais, BORD);   // border 1px var(--border)
+        biseau(r, x, y, w, h, b.biais, GLASS);
         const vec4 o = hex(ACCENT);
-        const float ix = x + pad, iy = y + (h - ic) / 2;   // icône pause : deux barres (path M6 4h4v16H6zM14 4h4v16h-4z)
+        const float ix = x + b.marge, iy = y + (h - ic) / 2;   // icône pause : deux barres (path M6 4h4v16H6zM14 4h4v16h-4z)
         r.uiRect(ix + ic * 6 / 24, iy + ic * 4 / 24, ic * 4 / 24, ic * 16 / 24, o);
         r.uiRect(ix + ic * 14 / 24, iy + ic * 4 / 24, ic * 4 / 24, ic * 16 / 24, o);
-        ui::text(r, std::round(ix + ic + gap), std::round(y + (h - tp) / 2), tp, t, o, ui::GAUCHE, 0.1f, false);
+        ui::text(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), b.texte, t, o, ui::GAUCHE, 0.1f, false);
     }
 
     // section #pause : voile, .eyebrow « Course en pause » (cyan), .big « Pause » (ANO-34), .actions : .btn + 2 × .btn--ghost

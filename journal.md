@@ -1531,6 +1531,14 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - `track-agent.md` : lignes des sessions terminées WFS-324 (01UY1Vv5YT) et WFS-426 (01UY1Vv2HrQF) enlevées (règle « agent fini = ligne enlevée »).
 
 
+### 2026-11-11 15:35:33 — WFS-423 : branche créée, lecture du code (Claude, agent dev (01UY1Vv4BW))
+- Branche `feature/waforspeed-423` créée depuis `main`, premier envoi. Lecture de `eclairage.glsl`, `eau.glsl`, `vehicule.glsl` et `src/render/nuit.cpp` avant de coder.
+
+### 2026-11-11 15:56:14 — WFS-423 : code fait, tests CPU verts, accroche du banc annoncée (Claude, agent dev (01UY1Vv4BW))
+- **RG-02** : `src/render/eclairement_voiture.h` (nouveau) calcule l'éclairement de la chaussée autour d'une voiture (même formule et mêmes 3 points que `eclairementRouteAutour`, répartition du feu de croisement par `phares::intensiteRelative`). En **Basse et de nuit**, `Renderer::draw` le calcule une fois par matrice de voiture (pièces peintes) et le passe au shader dans une nouvelle constante de poussée `PC::nuit` (128 octets : taille garantie par Vulkan). `vehicule.glsl` lit `pc.nuit` si `w = 1`, sinon garde son calcul (Moyenne, Haute, pièces hors voiture : même code qu'avant).
+- **RG-01** : boucles des projecteurs de `eclairage.glsl` (`spotLights`, `spotLights2`) et de `eau.glsl` bornées au vrai nombre de lumières `n` (et au plafond par pixel en Basse), plus de `for (i < 12) if (i >= n) break`. Limite dite franchement : avec `n` uniforme, l'ancienne boucle sortait déjà au `break` ; le gain de RG-01 dépend du compilateur de l'Adreno (déroulage en 12 copies) et ne peut être mesuré que sur le téléphone. Le gain attendu vient surtout de RG-02.
+- **Accroche annoncée (2 lignes, hors zone E4)** : `src/platform/desktop_main.cpp` lance le nouveau banc court `WFS_BANC=lumieres-basse` (`src/render/lumieres_basse_banc.cpp`, copie du banc `halos-sol` de WFS-421 : Ville et Corniche de nuit, Basse en suite de 3 images, Moyenne, Haute).
+- Vérifié : `tests/test_eclairement_voiture.cpp` (nouveau, 12 contrôles) ; `bash tools/qa/tests_cpu.sh build` → **107 tests réussis**. Non vérifié : gain sur le S21 FE (RG-05), à mesurer par l'utilisateur.
 ### 2026-11-11 15:36:07 — WFS-401 attribué à Claude, agent dev (01UY1Vv1da) (po-scrum-master)
 - Demande d'une nouvelle session `@dev` (session_01UY1Vv1da2SVjp6jJMr9z6e, « @dev go », aucun sujet souhaité) ; aucun ticket avant (1er et seul sujet).
 - Choix : WFS-423 venait d'être donné à 01UY1Vv4BW (15:34:16, E4 occupé, WFS-422 attend donc la fin de WFS-423). Dans l'ordre des 20 puis des 50, les autres tickets sont tenus, en attente, mis de côté, réservés à un skill spécial (`@devartiste` : 378, 387, 371, 325, 395, 364 à 368, 397 ; `@cartes` : 392 ; `@cicd` : 287 ; `@conduite` : 394, 259, 260) ou dans une épic occupée (377 : E0 tenu par WFS-418 ; 357 : E8 tenu par WFS-429 ; 332 : E4 ; 341 : E13 tenu par WFS-428). Premier ticket permis à un développeur général : **WFS-401** (P2, E15 file « Eau commune », n° 50 de l'ordre des 50, ⏳ Prêt, WFS-380 fusionné) ; file Eau commune libre (WFS-383 est la file Corniche, en parallèle).
@@ -1600,3 +1608,147 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Conséquence : en jeu, la pré-passe est déjà absente à tous les niveaux ; l'interrupteur « sans pré-passe » de WFS-419 ne change rien. Le « gain de 5 à 18 ms » (44 / 57 ms contre 62 ms) est l'écart d'une mesure à l'autre, pas un effet de la pré-passe. WFS-422 n'a rien à couper ni de secours à écrire (RG-01 à RG-03 déjà vraies sur `main`), et RG-04 ne peut pas montrer de gain.
 - Proposition : clore WFS-422 « sans objet » (aucun code), preuve sur la branche ; reporter l'effort sur WFS-423 / 424. Autre option : PR qui borne la pré-passe à Moyenne et plus (`qualiteMin`), pour qu'un futur lecteur ne l'allume pas en Basse ; je ne la recommande pas (code « pour plus tard », aucun gain).
 - Décision attendue de : PO.
+
+### 2026-11-11 16:31:15 — WFS-422 annulé (sans objet) (po-scrum-master)
+- Arbitrage demandé par Claude, agent dev (01UY1Vv5hT) : en jeu, la pré-passe ne tourne **jamais** (seule la passe d'essai du banc `bench_passes.cpp` la demande ; aucun shader du jeu ne lit ses images ; banc `halos-sol` : 0 création en Basse / Moyenne / Haute). Vérifié par le PO dans le code (`demandePrePasse`, `activerEssai`).
+- **Décision : WFS-422 « ❌ Annulé (sans objet) »**, sans code ni PR (pas de code « pour plus tard »). La preuve reste sur la branche `feature/waforspeed-422` (gardée). Le gain de 5 à 18 ms annoncé était l'écart entre deux mesures.
+- Dépendances mises à jour : WFS-424 (après WFS-421, 423) et WFS-449 (après WFS-423, 424). Ordre des 20 : la place n° 4 est sans objet, la suite ne change pas.
+- Session 01UY1Vv5hT terminée (un seul sujet) : ligne enlevée de `track-agent.md`. Information ajoutée pour l'utilisateur dans `tache utilisateur.md`.
+
+### 2026-11-11 16:32:40 — WFS-423 fusionné par le lead dev (lead-dev)
+- PR #354 relue sur 7744be24 : 10 paires de captures ouvertes (banc `lumieres-basse`, Ville et Corniche de nuit ; Basse en suite de 3 images, Moyenne, Haute) : image identique à `main`, caisse éclairée, aucun saut. Diff lu en entier (`eclairement_voiture.h` = même formule que `eclairementRouteAutour`, `PC` à 128 octets avec `static_assert`, `nuit.w = 0` hors Basse, boucles bornées à `min(n, 12)`, accroche de 2 lignes annoncée).
+- Vérifié par le lead dev : construction de la branche, `tests_cpu.sh` → 108 tests réussis ; banc `lumieres-basse` relancé : 0 pixel différent avec les captures « avant ».
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash 529e24e. Statut **🟡 À valider (utilisateur)** : gain à mesurer sur le S21 FE (RG-05).
+
+### 2026-11-11 16:33:06 — WFS-423 : fusionné (#354, 529e24e), session terminée (Claude, agent dev (01UY1Vv4BW))
+- PR #354 fusionnée en squash par le lead dev ; ticket 🟡 À valider (utilisateur). Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (RG-05). Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 16:48:44 — Statuts automatiques, CI main #1009 (robot statuts)
+- Run rouge (push, commit 529e24e), aucun statut changé. Job(s) en échec : compilation.
+- Tickets 🟣 contenus dans ce run : WFS-418, WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-384, WFS-412, WFS-427, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-11 16:53:06 — WFS-445 attribué à agent expert ci cd (session 01UY1Vv4Ch) (po-scrum-master)
+- Ordre de l'utilisateur dans la session `@cicd` 01UY1Vv4Ch : « Prend le 445 ». Nouvelle session, aucun ticket avant : attribution permise (un seul sujet par session).
+- **WFS-445** ([TECHNIQUE] correction pipeline CI, P1, E7) : 🔧 En cours, branche `feature/waforspeed-445`. E7 n'avait aucun autre ticket actif. Règles : `regles-de-gestion/WFS-445.md`. US technique : CI de branche permise, une à la fois, chaque run noté au journal.
+- Constat de l'agent sur GitHub : **#1008 (ad003aa)** et **#1009 (529e24e, WFS-423)** sont aussi rouges, même cause (job compilation, apt `Temporary failure resolving 'azure.archive.ubuntu.com'`). La CI de `main` est donc rouge de #1005 à #1009.
+- Rappel à l'agent : renommer lui-même sa session en `WFS-445 — agent expert ci cd (correction pipeline CI)`, skill `expert-ci-cd`, PR + captures si utiles, appel du `lead-dev` (seul à fusionner), arrêt de la session après la fusion.
+
+### 2026-11-11 16:54:55 — WFS-428 : reproduit, causes et commits fautifs, correction poussée (Claude, agent dev (01UY1Vv5Nm))
+- **RG-01 (reproduit sur `main` 6f1cd6e, lavapipe, `banc_groupe.sh realisme-2`, 32 min 42)** : « réalisme : partie 2, 3 erreur(s) » ; lignes [ERREUR] : `M-01 (nuit) : 5 / 6 faces conformes` (face **+Z** 0,0345 contre 0,0368, **−6,37 %**) ; `capture abandonnée (face sans exposition connue)` ×2 (Campagne, juste après le banc des passes) ; et les 2 lignes de WFS-377 (choix « Ultra » introuvable, parcours 2 / 5), hors ticket.
+- **(b) cause, commit fautif 52d42271 (WFS-322, #289, fusionné 7 min après le run #5 vert)** : toute capture d'environnement exclut la voiture du joueur. La caméra du banc M-01 est posée 6 m devant la Golf ; sa face +Z regarde la voiture : la scène la montre (phares allumés la nuit), la capture non (on voit l'ombre de la Golf sans la Golf sur la planche `realisme-cubemap-essai`). Correction à la source (`environnement.*`) : l'exclusion ne vaut que pour les captures demandées par les sondes d'éclairage (`demander(p, 0, true)`, seul appel du jeu) ; une capture depuis un autre point voit toute la scène. Image du jeu inchangée.
+- **(c) cause, commits 00bd5807 (WFS-151) et 941e4756 (WFS-213, qui rend l'abandon visible)** : la passe des sondes (`SondesIbl`) ne compte les captures finies que lorsqu'elle tourne. Les captures 5 à 11 du banc des passes sont faites éclairage désactivé : compteur en retard ; à la 1re image en Campagne, la capture 12, **encore en cours**, est prise pour une capture finie : relue trop tôt, faces sans k, abandonnée, puis la 12 aussi (une face non notée) : 2 abandons. **Pas une régression récente** : reproduit en local sur 9c4f58a (run #12) et 4e7fa716 (run #5, vert) ; ces lignes ne comptent pas dans le nombre d'erreurs du banc (WFS_ERR seul), d'où « entrée entre 9c4f58a et ed6f745 » dans le ticket. Le journal complet du run #12 n'a pas pu être relu ici (outil tronqué à 5 000 lignes, archive bloquée par le réseau). Correction (`eclairage_physique.cpp`, 1 ligne) : si une capture est en cours alors que le compteur est en retard, il est remis à jour et la capture en cours suivie face par face. Garde `kFacesValides` inchangée.
+- **Branche** (6bbbbce4, synchronisée avec `main`) : `realisme-2` → **2 erreurs, seulement WFS-377** ; M-01 nuit **6 / 6** (+Z −0,06 %), jour +Z −0,47 % (au lieu de −0,72 %) ; plus aucune « capture abandonnée » (sonde 3 prise sur la capture 12). Rapports `realisme-fidelite-2` / `mesures-2` identiques à `main` hors M-01 et durées ; étalonnage identique (sonde 14 244 lx). Images du jeu du banc : écart ≤ 1 niveau sur quelques pixels.
+- Tests CPU : 106 / 107 sous charge ; `test_audio_chocs` RG-07 (chronométrage 0,0504 ms contre ≤ 0,05) rouge seulement pendant un essai en parallèle, vert relancé seul (0,0424 ms) : sans lien.
+- Fichiers : `src/render/environnement.h`, `environnement.cpp`, `eclairage_physique.cpp` (zone du ticket). Aucun contrôle, tolérance ni valeur attendue changés ; `bench_passes.cpp` non touché. Suite : captures avant / après, PR, lead dev.
+
+### 2026-11-11 16:55:35 — WFS-445 : relancement de main (#1010), correction prête sur la branche (agent expert ci cd (session 01UY1Vv4Ch))
+- **RG-01** : `build.yml` relancé une fois à la main sur `main` (run **#1010**, 43062782782, commit 2e8690a1).
+- Cause précise (journal du job compilation de #1009) : `packages.microsoft.com` répond, mais tous les serveurs Ubuntu passent par la liste de miroirs de l'image (`mirror+file:/etc/apt/apt-mirrors.txt`), dont le 1er, `azure.archive.ubuntu.com`, ne se résout plus ; 20 s perdues par fichier, `apt-get update` ne sort qu'en avertissement, puis l'installation échoue (2 essais de 5 min). Panne du lanceur GitHub, pas le code.
+- Correction préparée (RG-02, RG-03) sur `feature/waforspeed-445` (197581a8), utilisée seulement si #1010 reste rouge : `tools/qa/installer_paquets.sh` (serveur officiel `archive.ubuntu.com` écrit directement si le miroir Azure ne se résout pas, 3 essais à attente croissante, serveur suivant à chaque essai, `update --error-on=any`, 15 min au plus, code 1 à la fin) et `tools/qa/installer_sdk_android.sh` (NDK : 3 essais, fichiers partiels effacés) ; branchés dans `build.yml` (4 jobs), `matin.yml` (6), `paquets.yml` (1). Aucun job, test, banc ni seuil changé.
+
+### 2026-11-11 17:08:14 — WFS-365 : PR #355 ouverte, accroche de 8 lignes annoncée (Claude, agent dev3d (01UY1Vv3Ji))
+- Fait : **911** : partie centrale du bandeau lumineux arrière retirée (découpe exacte ; rainure noire de 1,5 cm, éteinte de jour, de nuit et au freinage : écart accepté par le PO à 15:53) ; DEL de jour du bouclier retirées. Phares non touchés (WFS-444). **Gallardo** : écusson du nez retiré, trou recousu (peau cousue, 0 point libre) ; chevrons et « Y » des feux arrière effacés (nouvelle retouche `uvPlan` de `tools/retoucher_formes.mjs` : uv en projection plane sur le verre rouge strié de la même texture, sommets neufs) ; nid d'abeille des prises d'air remplacé par une grille à 4 lames (grille ajustée, aucun sommet devant la carrosserie).
+- **Accroche hors zone (8 lignes)** : `src/render/correctifs_voitures.h`, nombre de matériaux des optiques avant de la Gallardo 18 → 22 (2 grilles × 2 matériaux ajoutés à la fin) ; rangs et zones inchangés. Sans elle, `test_phares_optiques` échoue.
+- Vérification : `--verifier` vert (11 voitures) ; 911 et Gallardo rejouées à l'octet ; Golf et Corsa rejouées depuis leurs modèles d'avant WFS-364 avec l'outil modifié : identiques à `main` ; 108 tests CPU réussis ; fidélité inchangée ; 911 122 070 triangles (124 140 avant), Gallardo 105 725 ; 16 vitrines + 16 zooms ×4 jour / nuit, refaits sur `main` à jour (WFS-423 compris).
+- Essais écartés (pour WFS-444) : déformation lisse de l'espace autour des phares de la 911 (pli de l'aile et facettes du capot dès 5 cm) ; peau cousue dans la rainure arrière (lèvre arrondie, peinture double face : encoches au zoom ×4).
+- **Pour le PO (RG-06, tâche séparée proposée)** : feux arrière de la Gallardo, un faible relief en chevrons reste modelé dans le verre (visible de jour au zoom ×4, pas de nuit) : à aplanir par remodelage du verre.
+
+### 2026-11-11 17:13:13 — WFS-429 : boutons Menu et Caméra à côté du score, +5 %, PR ouverte (Claude, agent dev (01UY1Vv3Vj))
+- Fait : rangée [MENU] [CAMÉRA] [SCORE] en haut à droite, centrée sur la hauteur du panneau de score, écarts de 8 px, dans la zone sûre (RG-01) ; toutes les mesures des boutons × `hud::BOUTON_ECHELLE` = 1,05 (RG-02) ; zones de toucher = rectangles dessinés (RG-03) ; Cockpit : vitesse sous le temps (RG-05) ; Poursuite : même placement (RG-06) ; gaucher : score à droite, donc rangée inchangée (RG-07).
+- Fichiers : `src/ui/hud.h`, `src/ui/hud.cpp` (`hud::rangeeBoutons`), `src/ui/ecrans/pause.cpp`, `src/game/camera_vue.cpp` (`drawUi` du bouton seulement), `tests/test_hud_boutons.cpp` + 1 ligne `CMakeLists.txt`.
+- **Accroche annoncée** (1 ligne, `src/platform/desktop_main.cpp`) : `WFS_BANC=pause` lance seul le banc du bouton Menu et de la pause (`ecrans::benchPause`).
+- Vérification : `test_hud_boutons` OK (2400×1080, 1600×720, 2340×1080, encoche 90 px, gaucher, Poursuite) ; 109 tests CPU OK après synchronisation avec `main` ; captures `tools/qa/captures_pr.sh WFS-429 hud:1600x720 pause:1600x720 course5:1600x720` regardées (combo, notifications, GPS, Nitro sans chevauchement ; Cockpit jour / nuit ; Poursuite ; toucher Menu → pause → Reprendre / Recommencer / Quitter, RG-09 au banc).
+- Limites : pas de capture « avant » du banc `pause` (absent de `main`) ; ce banc lancé seul écrit « 2 pipeline(s) créé(s) pendant la course » (pas de course chauffée avant) ; pas d'essai sur téléphone.
+
+### 2026-11-11 17:17:53 — WFS-365 fusionné par le lead dev (lead-dev)
+- PR #355, revue du commit 3e02fe38, fusion en squash 6576b42 (titre `WFS-365 : … (#355) (Claude, agent dev3d (01UY1Vv3Ji))`). « ✅ Approuvé par le lead dev » écrit dans la PR en commentaire (GitHub refuse l'approbation : même compte).
+- Vérifié : 32 paires de captures ouvertes une par une ; les 3 conditions du PO (15:53) sont tenues : rainure noire éteinte de jour, de nuit et au freinage, bords nets au zoom ×4, capture de l'arrière de nuit. Diff lu en entier (`uvPlan`, `formes.json`, accroche de 8 lignes 18 → 22 matériaux) ; construction et `tests_cpu.sh` : 108/108 ; `--verifier` vert ; rejeu depuis les modèles de `main` identique à l'octet (`.wfm` et `.lod` des deux voitures).
+- **Pour le PO** (remarques non bloquantes, RG-06) : (1) feux arrière de la Gallardo, relief en chevrons modelé dans le verre : tâche séparée à créer ; (2) 911, bout gris de la lame haute visible au bord extérieur de la prise d'air (zoom de face) : avec WFS-444 ou dans une tâche à part ; (3) Gallardo, liseré jaune irrégulier et petit éclat au bord des prises d'air ; (4) hors ticket, déjà sur `main` : halo rond des stops au freinage (« pas de halo en disque »), anomalie existante pour le QA.
+- Statut : 🟣 Fusionné (#355) ; ligne retirée de `suivi-pr.md` ; ligne `qa/Check.md` ajoutée.
+
+### 2026-11-11 17:18:41 — WFS-365 : fin, session terminée (Claude, agent dev3d (01UY1Vv3Ji))
+- PR #355 fusionnée en squash par le lead dev (6576b42). Statut : 🟣 Fusionné (pas un défaut vu sur le téléphone : pas de 🟡).
+- Réponse écrite sous la revue dans la PR (4 remarques non bloquantes, notées pour le PO) : relief en chevrons du verre des feux de la Gallardo (tâche séparée proposée) ; petit embout gris au bord extérieur de la prise d'air de la 911 (avec WFS-444 ou à part) ; liseré et éclat au bord des prises d'air de la Gallardo ; halo rond des feux stop au freinage, déjà sur `main` (au QA).
+- Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
+
+### 2026-11-11 17:40:16 — WFS-445 : CI de `main` de nouveau verte (#1010), ticket fermé sans code (agent expert ci cd (session 01UY1Vv4Ch))
+- Run **#1010** (43062782782, relancé à la main, commit 2e8690a1) **vert** : 8 jobs sur 8 (compilation, android, publication-apk, endurance, banc-essai texte et menu1-2400, publication-captures, résumé). Installation apt en 52 s, NDK en 21 s : la panne du miroir `azure.archive.ubuntu.com` du lanceur GitHub est finie. Bancs et endurance de nouveau joués (sautés de #1005 à #1009).
+- **RG-01 appliquée** : vert sans changement → WFS-445 **✅ Terminé**, aucun code fusionné, pas de PR. Le code de la branche n'a rien à voir avec le rouge : les tickets 🟣 de #1005 à #1009 sont couverts par #1010.
+- **Pour le PO** : la correction de secours reste sur `feature/waforspeed-445` (197581a8, branche gardée, non relue) : apt sur le serveur officiel si le miroir Azure ne répond pas, 3 essais, NDK refait s'il arrive abîmé. Si la panne revient, elle peut devenir une US technique (relecture par le lead dev, CI de branche). Le bandeau rouge de `TACHES.md` et `track-agent.md` peut être enlevé.
+- Session terminée (un seul sujet).
+
+### 2026-11-11 17:43:54 — WFS-429 approuvé par le lead dev, fusion bloquée par un conflit de journal (lead-dev)
+- PR #356 relue sur b17d9e69 : 84 paires de captures qui diffèrent et 5 `pause-*` ouvertes, diff entier lu, construction et `tests_cpu.sh` refaits (109/109), bancs `hud`, `pause` et `camera` relancés sur la tête (rétroviseurs présents, Menu → pause, 4 appuis Caméra → 4 vues). Revue « ✅ Approuvé » en COMMENT (même compte GitHub).
+- Fusion refusée par GitHub : conflit dans `journal.md` seulement (main a avancé : WFS-365 #355, WFS-445). Le développeur synchronise (aucun code changé), remet la PR en 🔁 et rappelle le lead dev, qui vérifiera que la nouvelle tête = b17d9e69 + main, puis fusionnera.
+
+### 2026-11-11 17:52:26 — WFS-429 fusionné par le lead dev (lead-dev)
+- PR #356 : tête 8f7a76a6 vérifiée (merge de b17d9e69 et de main, diff du ticket identique, journal sans marqueur de conflit) ; « ✅ Approuvé » en COMMENT ; fusion en squash **ee266c6** (`WFS-429 : boutons Caméra et Menu à côté du score, +5 % (#356) (Claude, agent dev (01UY1Vv3Vj))`).
+- `suivi-pr.md` : ligne #356 supprimée ; `TACHES.md` : 🟣 Fusionné ; `qa/Check.md` : ligne ajoutée (points à regarder aux bancs du matin). Pas de 🟡 (précision de l'utilisateur dans WFS-429.md) : ✅ par le robot des statuts après les bancs du matin verts.
+
+### 2026-11-11 17:52:57 — WFS-429 : fin, session terminée (Claude, agent dev (01UY1Vv3Vj))
+- PR #356 fusionnée en squash par le lead dev (ee266c6c) après synchronisation (8f7a76a6, conflit de journal seulement). WFS-429 est en 🟣 : il passera ✅ après des bancs du matin verts (pas de 🟡). La ligne est dans `qa/Check.md` (ajoutée par le lead dev). J'ai répondu sous la demande dans `tache utilisateur.md`.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-11 17:53:36 — WFS-428 : PR #357 ouverte, lead dev appelé (Claude, agent dev (01UY1Vv5Nm))
+- PR #357 (branche synchronisée avec `main`, 8ebad8a2) : `realisme-2` passe de 3 à 2 erreurs (seulement WFS-377) ; M-01 nuit 6 / 6 (+Z −0,06 %) ; plus aucune « capture abandonnée ». Après la dernière synchronisation (WFS-423 compris), M-01 (passes seules) 6 / 6 jour et nuit.
+- Captures `tools/qa/captures_pr.sh WFS-428 phares realisme` (passes seules) : 22 paires ; vues du jeu en Haute identiques au pixel ; Basse `poursuite-basse*` : même écart entre deux lancements de la même branche (non-déterminisme du banc en Basse) ; planche du cube : la Golf apparaît dans la face +Z.
+- Correction de mon entrée précédente : la reproduction sur `main` s'est faite sur 9a6789c0 (et non 6f1cd6e).
+- Aucune CI de branche lancée : le groupe `realisme-2` a été joué en local avec le même rendu (lavapipe) que la CI.
+
+### 2026-11-11 17:55:17 — Début WFS-377 : attribué à Claude, agent dev3d (01UY1Vv51w) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (dev-artiste-3d, session session_01UY1Vv51wmeuvcJnDy1kkSB), aucun ticket reçu avant : premier et seul sujet de cette session.
+- Choix : WFS-377 (P1, US technique, ⏳ Prêt) : les bancs du matin sont rouges deux jours de suite et bloquent tout passage 🟣 → ✅ ; le bandeau du 12:57 le donne aux prochaines sessions `@dev`, en parallèle de la file E4. E0 libre (WFS-418 🟣). Ordre des 20 : les tickets E4 restants (WFS-420 P2, WFS-424) passent après ce P1.
+- Épic E0, zone : `src/render/bench_passes.cpp` seulement (bloc « RG-04 / P-05 », l. ≈ 261-320) ; accroche ≤ 10 lignes annoncée au journal si indispensable. Ne pas toucher au bloc M-01 du même fichier (WFS-428, session 01UY1Vv5Nm ; sa branche touche `environnement.*` et `eclairage_physique.cpp`, pas `bench_passes.cpp`).
+- Critères : banc `realisme` (`WFS_PASSES_SEUL=1`) 5 / 5 étapes, aucune ligne « introuvable », `parcours-ultra-course` en Ultra (256 px). US technique : CI de branche permise, une à la fois, notée au journal. Règles : `regles-de-gestion/WFS-377.md`.
+- Au passage : WFS-420 (après WFS-419, fusionné) et WFS-424 (après WFS-421 et 423, fusionnés ; 422 annulé) passent ⏳ Prêt, pour les prochaines sessions `@dev` (420 puis 424, file E4). `track-agent.md` : lignes des sessions closes enlevées (WFS-365, 429, 445, 423).
+
+### 2026-11-11 18:33:01 — Début WFS-420 : attribué à Claude, agent dev3d (01UY1Vv3k4) (po-scrum-master)
+- Demande d'une nouvelle session `@dev3d` (dev-artiste-3d, session session_01UY1Vv3k4ksChrFLKosm8CS), aucun ticket reçu avant : premier et seul sujet de cette session.
+- Choix : WFS-420 (P2, US technique, ⏳ Prêt), 6e de l'ordre des 20 de l'utilisateur (12:08 UTC), le prochain `@dev` de la file E4 ; WFS-424 (P1) vient après lui dans cette file. Aucun autre ticket E4 en cours (WFS-383 est en E15).
+- Zone : `src/render/**` (mesures), `src/game/**` (rejeu, accroche ≤ 30 lignes annoncée au journal), `src/ui/ecrans/reglages*`, `src/platform/android_main.cpp` (fichier et partage, ≤ 30 lignes), `tests/**`. Pas de changement de qualité, de décor, de voiture ni de CI.
+- Critères : `regles-de-gestion/WFS-420.md` (RG-01 à RG-06 : banc lancé du menu caché de WFS-419, Ville de nuit puis de jour, 30 s de chauffe + 60 s de mesure, un interrupteur à la fois, tableau à l'écran + `diagnostic-AAAA-MM-JJ-hhmm.txt` partageable, aucun coût hors banc). Après fusion : 🟡 À valider (utilisateur). US technique : CI de branche permise, une à la fois, notée au journal.
+
+### 2026-11-11 18:32:57 — WFS-424 permis en parallèle de WFS-420 (po-scrum-master (session 01UY1Vv4oe))
+- Décision de l'utilisateur : deux sessions `@dev` ouvertes pour WFS-420 et WFS-424. Exception E4 écrite dans `TACHES.md` et `regles-de-gestion/WFS-424.md` (fichiers séparés). Le PO donne **WFS-420 à la 1re session `@dev`, WFS-424 à la 2e** ; ne pas sauter WFS-424 pour un autre ticket.
+
+
+### 2026-11-11 18:34:55 — WFS-424 : pris sur ordre direct de l'utilisateur (Claude, agent dev3d (01UY1Vv3cC))
+- L'utilisateur a ouvert cette session `@dev` en demandant explicitement WFS-424 ; c'est la 2e session `@dev` prévue par l'exception PO de 18:32 (en parallèle de WFS-420).
+- Branche `feature/waforspeed-424`. Plan : cuire le `fbm` de `shaders/route.glsl` dans une texture répétable (outil de cuisson sur PC, même bruit), lue en Basse seulement.
+
+### 2026-11-11 18:39:28 — Début WFS-392 : attribué à Claude, agent cartes (01UY1Vv2ghpU) (po-scrum-master)
+- Demande d'une nouvelle session `@cartes` (expert-cartes, session session_01UY1Vv2ghpUrn9AR3Uxd8bo), aucun ticket reçu avant : premier et seul sujet de cette session. Souhait de l'utilisateur : « prend un sujet », sans ticket précis.
+- Choix : WFS-392 (P2, ⏳ Prêt), le premier ticket de l'ordre de l'utilisateur qui demande le skill `expert-cartes` : l'ordre des 20 n'a plus de ticket `@cartes` (WFS-426 est 🟡), WFS-405 attend le jour de publication, puis l'ordre des 50 donne WFS-392 (31e). WFS-357 (30e, P3) n'est pas donné à cette session : c'est une ligne de la boucle Android (`android_main.cpp`, fichier touché par WFS-420 en cours), sans skill cartes ; il reste ⏳ Prêt pour une session `@dev`. E14 libre (aucun 🔧 ni 🔀).
+- Épic E14 + E9 (exception PO), zone : `src/world/cartes_v2/**`, `paquets/sources/**`, `tests/cartes_v2*`, `shaders/route.glsl`, `src/render/route_*` ; `src/world/meteo.*` en accroche ≤ 10 lignes si besoin.
+- Point d'attention : `shaders/route.glsl` est partagé avec WFS-424 (en cours, session 01UY1Vv3cC) : changement minimal, valable en Basse aussi, synchronisations fréquentes (écrit dans la section « Suivi » de `regles-de-gestion/WFS-392.md`).
+- Critères : `regles-de-gestion/WFS-392.md` (RG-01 à RG-05 ; 4 captures avant / après dans le 2e tunnel de la carte de neige, jour, Cockpit, nuit, entrée du 1er tunnel ; coût en Basse ≤ +5 %). Après fusion : 🟣 puis ✅ par les bancs du matin. Hors E15 : avis de l'agent 3D non exigé.
+- `track-agent.md` : derniers envois remis à jour (WFS-377 18:17, WFS-383 16:32, WFS-420 18:34).
+
+
+### 2026-11-11 18:42:11 — WFS-428 fusionné par le lead dev (lead-dev)
+- PR #357, revue du commit 8ebad8a2, fusion en squash e4cbb9f1 (titre `WFS-428 : … (#357) (Claude, agent dev (01UY1Vv5Nm))`). « ✅ Approuvé par le lead dev » écrit dans la PR en commentaire (GitHub refuse l'approbation : même compte).
+- Vérifié : 22 paires de captures ouvertes (planche du cube : la Golf est maintenant dans la face +Z ; vues du jeu identiques à l'octet ; Basse : bruit de 57 pixels) ; diff lu en entier (3 fichiers : `environnement.h/.cpp`, `eclairage_physique.cpp`) ; seul appel du jeu en `sansJoueur = true` (WFS-322 gardé), garde `kFacesValides` et `bench_passes.cpp` inchangés, aucune tolérance touchée.
+- Refait en local : construction et `tests_cpu.sh` 108/108 ; essai de fusion avec `main` (WFS-429) 109/109 ; `banc_groupe.sh realisme-2` : M-01 nuit 6/6 (+Z −0,06 %), jour 6/6, aucune « capture abandonnée », « partie 2, 2 erreur(s) » = WFS-377 seulement.
+- Remarques non bloquantes : capture de la Campagne de jour non fournie (défaut sans effet visible, preuve par le journal du banc) ; pas de test CPU (passe Vulkan, contrôlée par `realisme-2`).
+- Statut : 🟣 Fusionné (#357) ; ligne retirée de `suivi-pr.md` ; ligne `qa/Check.md` ajoutée. `realisme-2` ne sera vert aux bancs du matin qu'avec WFS-377.
+
+### 2026-11-11 18:42:41 — WFS-428 : fusionné (#357, e4cbb9f1), session terminée (Claude, agent dev (01UY1Vv5Nm))
+- PR #357 fusionnée en squash par le lead dev ; ticket 🟣 (US technique). Remarques non bloquantes du lead dev notées : pas de capture Campagne de jour (défaut sans trace à l'image, preuve par le journal du banc), pas de test CPU nouveau (logique dans une passe Vulkan, contrôlée par `realisme-2`), choix explicite de `sansJoueur` pour toute future capture.
+- `realisme-2` reste rouge tant que **WFS-377** (choix « Ultra ») n'est pas fusionné ; ensuite, seules les règles M-01 et WFS-213 couvertes ici.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 18:59:44 — WFS-424 : risque signalé, gain impossible (Claude, agent dev3d (01UY1Vv3cC))
+- Constat : le `fbm` visé (route.glsl l. 129, 191, 193, 222) ne tourne pas sur la chaussée de la Ville ni de la Corniche (222 : repli sans textures ; 191-193 : rive de la Campagne ; 129 : neige). En Basse la chaussée lit déjà une seule texture précuite (scan CC0 256 px). Banc PC (WFS_PERF_SCENE, Mimosas, Basse, nuit, pluie) : tout le bruit retiré → aucun gain mesurable ; route plate → ≈ 8 % au mieux. Détail : `qa/pr/WFS-424/mesures.md` (branche `feature/waforspeed-424`).
+- Conséquence : RG-01 est déjà le cas ; l'objectif « Ville sous 30 ms » ne peut pas venir de la route.
+- Proposition : annuler WFS-424 (sans objet, comme WFS-422), aucun code changé ; chercher le coût ailleurs avec le banc du téléphone (WFS-420).
+- Décision attendue de : utilisateur (il a donné le ticket lui-même), puis PO.
+
+### 2026-11-11 19:19:59 — WFS-420 : banc de performance du téléphone codé, accroches annoncées (Claude, agent dev3d (01UY1Vv3k4))
+- Fait : menu caché de WFS-419 → bouton « Banc auto » → écran du protocole (RG-05, relevés batterie / charge / température quand le téléphone les donne) → banc seul : Ville de nuit (pluie) puis de jour, caméra Arrière, graine de trafic fixe, pilote automatique, 14 essais par moment (tout éteint, 12 interrupteurs un par un, contrôle tout éteint), 30 s de chauffe + 60 s de mesure → tableau à l'écran + fichier `diagnostic-AAAA-MM-JJ-hhmm.txt` (dossier de `rendu-mesure.txt`) + « Partager ». « Arrêter » ou quitter la course garde les essais finis.
+- Mesures par essai : médiane, 95 %, 99 %, img/s ; GPU brut par passe (ombre, reflet, scène, post) et total, règle des 90 % ; processeur (logique, préparation, envoi, attente du GPU) ; triangles, appels, matériaux distincts ; mémoire graphique par type (textures par format, maillages, cibles, autres) ; statut thermique et température de la batterie. Qualité automatique figée pendant le banc (essais à résolution égale).
+- Accroches annoncées : `src/game/game.{h,cpp}` (+8 lignes : `Game::piloteBanc`, temps processeur de update / render lus seulement pendant le banc), `src/game/course_system.{h,cpp}` (+4 : `courseRejouer()`), `src/platform/desktop_main.cpp` (+2 : banc PC `banc-telephone`). Rendu (zone E4) : `renderer.{h,cpp}` (cumul GPU brut, matériaux distincts sur demande), `vk.{h,cpp}` + nouveau `memoire_gpu.{h,cpp}` (mémoire par type), `qualite_systeme.cpp` (1 ligne). Aucun changement d'`android_main.cpp` (partage par `reseau::partager` existant).
+- Vérifié : compilation, tests CPU (nouveau `test_banc_telephone`), banc PC `banc-telephone` en 2400x1080 : 28 essais sur 28, fichier écrit, « Arrêter » OK, 0 écart. Limites : vraies durées (≈ 42 min) et horodatages GPU seulement vérifiables sur le téléphone ; cubemaps d'environnement hors du compte de mémoire (comme le total de WFS-297).
+
+### 2026-11-11 19:22:10 — WFS-424 annulé (sans objet), arbitrage demandé par l'utilisateur (po-scrum-master)
+- L'utilisateur a renvoyé la question de WFS-424 au PO (« Regarde avec po »). Faits vérifiés dans `shaders/route.glsl` : le `fbm` visé (l. 129, 191, 193, 222) ne tourne pas sur la chaussée de la Ville ni de la Corniche (222 = repli sans textures de l'enrobé, présentes ; 191-193 = Campagne ; 129 = neige) ; en Basse, la route lit déjà une texture précuite (RG-01 déjà vraie). Mesures du développeur (`qa/pr/WFS-424/mesures.md`, branche) : gain nul en retirant tout le bruit, ≈ 8 % au mieux avec une route plate.
+- Décision : **❌ Annulé (sans objet)**, comme WFS-422. Aucun code, aucune PR, branche gardée. Session Claude, agent dev3d (01UY1Vv3cC) terminée (un seul sujet). WFS-449 dépend maintenant de WFS-423 seul. Le vrai coût de la Ville se cherche avec WFS-420 (banc sur téléphone, en cours).
