@@ -3,7 +3,9 @@
 // proches éclairés, portée utile 60-80 m (RG-02), teintes 3500 K / 5700 K de luminance 1 ; WFS-226 : lumière au sol des
 // autres voitures (même photométrie), étalement en azimut borné.
 // usage : test_phares
+#include <algorithm>
 #include <cmath>
+#include <utility>
 #include <cstdio>
 #include "../src/render/feux_modele.h"
 #include "../src/render/phares.h"
@@ -151,6 +153,36 @@ int main() {
             for (int i = 0; i < 30; i++) f.pas(v, 1, joueur, AUTRES_ECLAIRANTS_BASSE, 1.f / 60);
             VERIFIE(f.places[0].occupee && FonduAutres::poids(f.places[0], joueur) < 0.05f, "à 69 m : lumière presque nulle (%.3f)", FonduAutres::poids(f.places[0], joueur));
         }
+    }
+    // ---------- WFS-450 : lampadaires éclairants en Basse (cause du noir d'un coup : lampadaire retiré 5 m derrière la voiture) ----------
+    {
+        // un lampadaire reste candidat 36 m derrière le joueur (portée 26 m + recul de la caméra) ; devant d'abord, à distance égale
+        VERIFIE(LAMPES_DERRIERE_SEG * 1.2f >= 26.f + 9.f, "candidat derrière jusqu'à la fin de sa lumière visible");
+        VERIFIE(cleLampe(10) < cleLampe(-10) && cleLampe(-5) < cleLampe(16) && cleLampe(-5) > cleLampe(14), "clé : derrière compte 3 fois");
+        // Corniche : un lampadaire tous les 30 segments ; le joueur avance de 0,35 segment par image (25 m/s à 60 img/s).
+        // Le lampadaire qui vient d'être dépassé reste plein tant qu'il est à moins de 26 m (21 segments) : plus de noir d'un coup.
+        FonduLampes f; float sautMax = 0, precPoids[64] = {}; bool pleinPres = true;
+        for (int im = 0; im < 2000; im++) {
+            const double pos = im * 0.35;   // segments
+            std::pair<float, int64_t> c[64]; int nc = 0;
+            for (int64_t id = 0; id < 40; id++) { const int64_t e = (int64_t)std::floor(15 + 30 * id - pos); if (e >= -LAMPES_DERRIERE_SEG && e < LAMPES_DEVANT_SEG) c[nc++] = {cleLampe(e), id}; }
+            std::sort(c, c + nc);
+            int64_t voulus[LAMPES_ECLAIRANTES]; int n = 0;
+            for (int j = 0; j < nc && n < LAMPES_ECLAIRANTES; j++) voulus[n++] = c[j].second;
+            f.pas(voulus, n, 1.f / 60);
+            float poidsDe[64] = {};
+            for (const FonduLampes::Place& p : f.places) if (p.id >= 0) poidsDe[p.id] = FonduLampes::poids(p);
+            for (int id = 0; id < 40; id++) {
+                const double e = 15 + 30 * id - pos;
+                if (im > 0) sautMax = std::max(sautMax, std::abs(poidsDe[id] - precPoids[id]));
+                if (e > -21 && e < 21 && im > 30) pleinPres = pleinPres && poidsDe[id] >= 0.999f;
+                precPoids[id] = poidsDe[id];
+            }
+        }
+        VERIFIE(pleinPres, "un lampadaire à moins de 26 m du joueur (devant ou derrière) éclaire toujours à plein");
+        VERIFIE(sautMax <= 0.2f, "lampadaires : saut de %.0f %% par image (20 %% au plus)", sautMax * 100);
+        FonduLampes g1; const int64_t v1[2] = {7, 9}; g1.pas(v1, 2, 0.f);
+        VERIFIE(FonduLampes::poids(g1.places[0]) == 1.f && FonduLampes::poids(g1.places[1]) == 1.f, "première image : lampadaires pleins tout de suite");
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("test_phares : OK\n");

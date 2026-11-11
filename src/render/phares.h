@@ -15,6 +15,7 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <vector>
 #include "../core/math.h"
@@ -147,6 +148,43 @@ struct FonduAutres {
         const float d = dt / FONDU_AUTRES_S;   // 4. niveaux
         for (Place& p : places) {
             if (!p.occupee) continue;
+            p.niveau = std::clamp(p.niveau + (p.voulue ? d : -d), 0.f, 1.f);
+            if (!p.voulue && p.niveau <= 0) p = Place{};
+        }
+    }
+};
+
+// WFS-450 (cause trouvée au banc « lumieres-mouvement ») : les 4 lampadaires éclairants étaient pris « de 4 segments derrière le
+// joueur à 160 devant » : un lampadaire sortait de la liste 5 m derrière la voiture alors qu'il éclaire 26 m autour de lui : toute
+// la chaussée autour de la voiture devenait noire d'un coup (−45 % d'une image à la suivante), puis se rallumait à l'approche du
+// suivant. En Basse : un lampadaire reste candidat derrière le joueur tant que sa lumière atteint la chaussée visible
+// (LAMPES_DERRIERE_SEG), les 4 retenus sont les plus proches (un lampadaire derrière compte LAMPES_POIDS_DERRIERE fois sa distance :
+// la route devant garde la priorité), et chaque entrée ou sortie de la liste se fait en fondu de FONDU_AUTRES_S.
+constexpr int LAMPES_ECLAIRANTES = 4;            // nuit.cpp, LAMPES_MAX
+constexpr int LAMPES_DERRIERE_SEG = 30;          // 36 m : portée d'un lampadaire (26 m) + recul de la caméra (≈ 10 m)
+constexpr int LAMPES_DEVANT_SEG = 160;
+constexpr float LAMPES_POIDS_DERRIERE = 3.f;
+inline float cleLampe(int64_t ecartSeg) { return ecartSeg >= 0 ? (float)ecartSeg : -(float)ecartSeg * LAMPES_POIDS_DERRIERE; }
+constexpr int FONDU_LAMPES_PLACES = LAMPES_ECLAIRANTES + 2;   // 4 éclairants et 2 qui s'éteignent
+struct FonduLampes {
+    struct Place { int64_t id = -1; float niveau = 0; bool voulue = false; };   // id : indice du lampadaire (−1 : place libre)
+    Place places[FONDU_LAMPES_PLACES];
+    void vider() { for (Place& p : places) p = Place{}; }
+    static float poids(const Place& p) { return lisse(0.f, 1.f, p.niveau); }
+    // un pas par image dessinée : voulus = lampadaires retenus cette image (n ≤ 4) ; premier pas (toutes places libres) : pleins tout de suite
+    void pas(const int64_t* voulus, int n, float dt) {
+        dt = std::clamp(dt, 0.f, FONDU_DT_MAX); n = std::clamp(n, 0, LAMPES_ECLAIRANTES);
+        bool vide = true; for (const Place& p : places) vide = vide && p.id < 0;
+        for (Place& p : places) p.voulue = false;
+        for (int i = 0; i < n; i++) {
+            Place* trouve = nullptr; Place* libre = nullptr;
+            for (Place& p : places) { if (p.id == voulus[i]) trouve = &p; else if (p.id < 0 && !libre) libre = &p; }
+            if (!trouve && libre) { *libre = Place{voulus[i], vide ? 1.f : 0.f, true}; trouve = libre; }
+            if (trouve) trouve->voulue = true;
+        }
+        const float d = dt / FONDU_AUTRES_S;
+        for (Place& p : places) {
+            if (p.id < 0) continue;
             p.niveau = std::clamp(p.niveau + (p.voulue ? d : -d), 0.f, 1.f);
             if (!p.voulue && p.niveau <= 0) p = Place{};
         }

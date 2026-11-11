@@ -164,7 +164,13 @@ public:
         }
         const auto& L = lampadaires();
         const int64_t len = (int64_t)g.track->segmentCount(), aP = (int64_t)std::floor(g.player->dist / SEG);
+        const bool basse450 = ecrans::reglages().qualite == ecrans::QUALITE_BASSE && !phares::avant450;
+        const float dtFondu = tFondu_ < 0 ? 0.f : (float)std::clamp(g.time - tFondu_, 0.0, 1.0);
+        tFondu_ = g.time;
+        if (basse450) lampadairesBasse(fp, g, aP, len, dtFondu);   // WFS-450 : gardés derrière tant qu'ils éclairent, entrée et sortie en fondu
+        else lampes_.vider();
         proches_.clear();
+        if (!basse450) {
         // WFS-337 : une tête seule (2e lanterne d'un candélabre double) ne prend pas l'une des 4 lumières : même coût de rendu
         for (size_t i = 0; i < L.size(); i++) { if (L[i].style == StyleLampadaire::Tete) continue; const int64_t e = ecart(L[i], aP, len); if (e >= -4 && e < 160) proches_.push_back({e, i}); }
         std::sort(proches_.begin(), proches_.end());
@@ -177,6 +183,7 @@ public:
             const bool stade = l.style == StyleLampadaire::Stade;
             s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
         }
+        }
         // WFS-324 (accroche) : vue Cockpit avec rétroviseurs : les 2 lampadaires les plus proches derrière la voiture (5 à 60 m) éclairent aussi
         // (sans eux, la rue derrière restait noire dans les glaces la nuit, refus du lead dev, PR #341) ; avant les phares des autres voitures
         if (retro::actif()) {
@@ -184,7 +191,9 @@ public:
             for (size_t i = 0; i < L.size(); i++) {
                 if (L[i].style == StyleLampadaire::Tete) continue;
                 const int64_t e = ecart(L[i], aP, len);
-                if (e < -4 && e >= -50) derriere_.push_back({-e, i});
+                bool dejaLa = false;   // WFS-450 : en Basse, un lampadaire derrière peut déjà être dans la liste (pas deux fois la même lumière)
+                for (const phares::FonduLampes::Place& p : lampes_.places) dejaLa = dejaLa || p.id == (int64_t)i;
+                if (e < -4 && e >= -50 && !dejaLa) derriere_.push_back({-e, i});
             }
             std::sort(derriere_.begin(), derriere_.end());   // le plus proche derrière d'abord
             for (size_t j = 0; j < derriere_.size() && j < 2 && fp.spotCount < FrameParams::SPOTS_MAX - 2; j++) {
@@ -196,7 +205,35 @@ public:
                 s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
             }
         }
-        pharesAutres(fp, W.transformPoint({0, 0, 0}), g.time);
+        pharesAutres(fp, W.transformPoint({0, 0, 0}), dtFondu);
+    }
+
+    // WFS-450 : lampadaires éclairants en Basse (phares.h, FonduLampes) : candidats de 36 m derrière le joueur à 160 segments devant,
+    // les 4 de plus petite clé (cleLampe) sont voulus ; chacun entre et sort de la liste en fondu (6 lumières au plus un court instant,
+    // le quota par pixel du shader reste à 4)
+    void lampadairesBasse(FrameParams& fp, const GameView& g, int64_t aP, int64_t len, float dt) {
+        const auto& L = lampadaires();
+        cles_.clear();
+        for (size_t i = 0; i < L.size(); i++) {
+            if (L[i].style == StyleLampadaire::Tete) continue;   // WFS-337
+            const int64_t e = ecart(L[i], aP, len);
+            if (e >= -phares::LAMPES_DERRIERE_SEG && e < phares::LAMPES_DEVANT_SEG) cles_.push_back({phares::cleLampe(e), i});
+        }
+        std::sort(cles_.begin(), cles_.end());
+        int64_t voulus[phares::LAMPES_ECLAIRANTES]; int n = 0;
+        for (size_t j = 0; j < cles_.size() && n < phares::LAMPES_ECLAIRANTES; j++) voulus[n++] = (int64_t)cles_[j].second;
+        lampes_.pas(voulus, n, dt);
+        for (const phares::FonduLampes::Place& p : lampes_.places) {
+            if (p.id < 0 || p.id >= (int64_t)L.size() || fp.spotCount >= FrameParams::SPOTS_MAX) continue;
+            const float poids = phares::FonduLampes::poids(p);
+            if (poids <= 0) continue;
+            const Lampadaire& l = L[(size_t)p.id];
+            const TrackPoint q = g.track->point((double)(aP + ecart(l, aP, len)) * SEG, l.lat);
+            FrameParams::Spot& s = fp.spots[fp.spotCount++];
+            s.pos = {(float)q.x, (float)q.y + l.y, (float)q.z}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2;
+            const bool stade = l.style == StyleLampadaire::Stade;
+            s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = (stade ? 1.8f : 1.1f) * poids; s.distance = stade ? 60.f : 26.f;
+        }
     }
 
     // ---------- WFS-226 (RG-01, RG-02) : vraies lumières des autres voitures les plus proches ----------
@@ -205,12 +242,10 @@ public:
     // LED en un projecteur au milieu des optiques, 10 cm devant, position prolongée d'une image). Les autres : lumière au sol calculée (lumiereSolAutres).
     // WFS-450 (RG-03) : en Basse, ces lumières apparaissent et disparaissent en fondu (phares::FonduAutres : 0,3 s au changement de
     // rang, 55 à 70 m avec la distance) ; Moyenne et Haute : comme avant.
-    void pharesAutres(FrameParams& fp, const vec3& joueur, double temps) {
+    void pharesAutres(FrameParams& fp, const vec3& joueur, float dt) {
         eclairants_.clear();
         const bool basse = ecrans::reglages().qualite == ecrans::QUALITE_BASSE;
         const int nMax = basse ? phares::AUTRES_ECLAIRANTS_BASSE : phares::AUTRES_ECLAIRANTS;
-        const float dt = tFondu_ < 0 ? 0.f : (float)std::clamp(temps - tFondu_, 0.0, 1.0);
-        tFondu_ = temps;
         if (basse && !phares::avant450) {
             fondu_.pas(prec_.data(), (int)prec_.size(), joueur, nMax, dt);
             for (const phares::FonduAutres::Place& p : fondu_.places) {
@@ -326,7 +361,7 @@ public:
     }
     float stopK_ = 0; double tFeux_ = -1;
 
-    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; prec_.clear(); prec2_.clear(); phares::autres().clear(); fondu_.vider(); tFondu_ = -1; }
+    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; prec_.clear(); prec2_.clear(); phares::autres().clear(); fondu_.vider(); lampes_.vider(); tFondu_ = -1; }
 
 private:
     bool nuit_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
@@ -334,6 +369,8 @@ private:
     std::vector<phares::PhareAutre> prec_, prec2_;   // WFS-226 : voitures notées à l'image précédente et à l'avant-dernière
     std::vector<std::pair<vec3, float>> eclairants_; // WFS-226 : centres des voitures à vraie lumière cette image ; WFS-450 : et leur poids (0..1)
     phares::FonduAutres fondu_; double tFondu_ = -1; // WFS-450 (RG-03) : fondu des phares des autres voitures (Basse)
+    phares::FonduLampes lampes_;                     // WFS-450 : lampadaires éclairants en Basse, entrée et sortie en fondu
+    std::vector<std::pair<float, size_t>> cles_;     // WFS-450 : clé de choix et indice des lampadaires candidats
     std::vector<std::pair<float, size_t>> tri_;
 };
 
