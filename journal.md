@@ -1477,3 +1477,6 @@ Début : **WFS-429** (P1, 8e de l'ordre des 20) « HUD : boutons Caméra et Menu
 - **Accroche annoncée (zone partagée, 6 lignes)** : `src/world/archi_carte.{h,cpp}` : `mettreDeCote()` / `remettre()` (échange des tampons, aucune copie), appelés autour de la cuisson dans `batimentsCuits`.
 - Contrôle ajouté au banc `paquets` : bâtiments de la Ville avant / après la cuisson de la Corniche 625 / 625, même signature : OK ; banc `paquets` 0 écart ; tests CPU 104/104 ; cuisson 0 écart, paquets identiques à l'octet.
 - Aussi : lumières des bars et du casino non déclarées en cuisson ; `<memory>` avec les en-têtes standard ; captures paquets-* refaites (+ `paquets-course-pendant`).
+
+### 2026-11-11 15:02:15 — WFS-426 fusionné par le lead dev (lead-dev)
+PR #350 fusionnée en squash (7aa1535) sur la tête a3857a34 (expectedHeadSha). Approbation donnée sur a883c89a ; les têtes 62d02924 puis a3857a34 n'apportent que la synchronisation avec main (aucun fichier de code changé, vérifié). La 1re tentative sur 62d02924 avait échoué sur un conflit de journal.md. Ticket en 🟡 À valider (utilisateur), ligne retirée de suivi-pr.md, ligne ajoutée à qa/Check.md.

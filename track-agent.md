@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-11 13:59 | ↩️ retour lead dev sur PR #341 (3e revue) : lueur des phares en disque dans les glaces |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
-| Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 14:42 (a883c89a) | 🔁 PR #350 corrigée, lead dev rappelé |
+| Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 14:42 (a883c89a) | 🟣 PR #350 fusionnée par le lead dev (7aa1535, 15:01) ; WFS-426 🟡 À valider (utilisateur) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 12:25 (e59ea1e6) | 🔧 en cours (attribué 12:25) |
 | Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 12:41 (f76ca05c) | 🔧 en cours (branche poussée, analyse) |
 | Claude, agent dev (01UY1Vv5Nm) | WFS-428 | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428` (à créer) | 🔧 attribué 14:58 |
