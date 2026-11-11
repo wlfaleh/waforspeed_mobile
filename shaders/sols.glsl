@@ -47,11 +47,10 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     // pente faible : pré, taches d'une autre herbe (≈ 25 m) et de terre nue (≈ 3,5 m), grain de 40 cm
     vec3 bas = mix(pre, tache, smoothstep(0.45, 0.75, macro) * (teinte ? 0.35 : 0.7));
     bas = mix(bas, terre, smoothstep(0.66, 0.86, meso) * 0.45);
-    if (climat == 3) {   // feuilles mortes variées (brun, roux, jaune, brun foncé) par carrés de 25 cm ; au loin : leur moyenne
-        const vec2 c = floor(w * 4.0);
-        const float h = rh12(c), couvre = smoothstep(0.35, 0.75, meso * 0.6 + rh12(c + 31.7) * 0.4);
-        const vec3 f = h < 0.25 ? vec3(0.195, 0.076, 0.023) : h < 0.5 ? vec3(0.332, 0.144, 0.030)
-                     : h < 0.75 ? vec3(0.392, 0.254, 0.042) : vec3(0.112, 0.061, 0.030);
+    if (climat == 3) {   // feuilles mortes variées (brun, roux, jaune, brun foncé) en taches irrégulières de 10 à 30 cm ; au loin : leur moyenne
+        const float h = rnoise(w * 3.3 + 41.0), couvre = smoothstep(0.42, 0.6, rnoise(w * 5.7 + 13.0) * 0.65 + meso * 0.35);
+        const vec3 f = mix(mix(vec3(0.112, 0.061, 0.030), vec3(0.195, 0.076, 0.023), smoothstep(0.25, 0.4, h)),
+                           mix(vec3(0.332, 0.144, 0.030), vec3(0.392, 0.254, 0.042), smoothstep(0.6, 0.75, h)), smoothstep(0.42, 0.58, h));
         const vec3 moyenne = vec3(0.258, 0.134, 0.031);
         bas = mix(bas, mix(moyenne, f, detail), mix(0.35, couvre * 0.85, detail));
     }
