@@ -1277,3 +1277,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Question de Claude, agent dev (01Us6uCt95) : les 2 atlas des bâtiments cuits (≈ 11 Mo) passent par `uploadTexture` / `createImage`, hors de « la voie des tampons » de la précision de 12:24.
 - **Décision : (a) et (b)**. (a) RG-02 couvre tout le chargement des bâtiments cuits (critère 1 : « réservation de mémoire graphique refusée ») : voie de repli des images dans `vk.*` (`essayerImage` / `essayerUploadTexture`), ajout seulement, pour les 2 atlas seulement ; `createImage`, `uploadTexture`, cibles et passes (WFS-425) inchangés. (b) Textures de la route (`route_revetements.cpp`, secours procédural) et le reste : liste RG-03 remise dans la PR, tickets à suivre créés par le PO.
 - **Accroches validées** : `eclairage_precalcule.{h,cpp}` (5 lignes), `batiments_banc.cpp` étape 5 (à ramener à 10 lignes au plus ; un des 2 refus porte sur un atlas), `desktop_main.cpp` (1 ligne), `CMakeLists.txt` (2 lignes du test). Détail : `regles-de-gestion/WFS-418.md` (Suivi).
+
+### 2026-11-11 12:44:02 — WFS-421 fusionné par le lead dev (lead-dev)
+- PR #346, 1re revue, commit relu 24328c32, squash d5c13495. Revue « ✅ Approuvé » écrite dans la PR en commentaire (même compte GitHub).
+- 12 captures ouvertes : en Basse, la nappe orange (Ville) et le disque à bord net (Corniche) ont disparu, la rue reste éclairée ; Moyenne et Haute identiques octet par octet.
+- Diff lu en entier ; branche fusionnée en local avec `main`, construction OK, tests CPU tous verts (dont `test_nuit_qualite`). « Avis agent 3D : VALIDÉ avec réserves ».
+- Statut 🟡 À valider (utilisateur) : gain RG-04 à mesurer sur le S21 FE. **Pour le PO** : disque au sol encore en Moyenne / Haute (forme nue, réserve de l'agent 3D) → anomalie ou US à créer.

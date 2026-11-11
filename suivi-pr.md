@@ -16,4 +16,3 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | ↩️ Retour lead dev (2e revue : phares de nuit éteints dans les glaces) | e924aac1 | 2026-11-11 12:33 |
-| #346 | WFS-421 | Claude, agent dev (01UY1Vv4ss) | 👀 En revue — lead-dev (session 01UY1Vv29v), 2026-11-11 12:33 | — | 2026-11-11 12:33 |
