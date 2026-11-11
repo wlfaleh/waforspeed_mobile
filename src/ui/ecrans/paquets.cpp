@@ -18,6 +18,7 @@
 #include "../../world/cartes_v2/paquet_carte.h"   // empreinte attendue, cuisson (banc)
 #include "../../world/cartes_v2/carte_donnees.h"   // WFS-343 : cartes de données (banc)
 #include "../../game/chocs_decor.h"   // WFS-343 : chocs déclarés (banc)
+#include "../../world/archi_carte.h"   // WFS-426 : bâtiments de la carte chargée gardés pendant une cuisson (banc)
 #include "../../core/configgame.h"
 #include "../petit_ecran.h"
 #include "../text.h"
@@ -741,9 +742,20 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         };
         auto appuiPaquet = [&](int quelle) { float x = 0, y = 0; const bool ok = centrePaquetCarte(quelle, x, y); if (ok) toucherJeu(51 + quelle, x, y); imageMulti(2); return ok; };
         const std::string nomCo = mapById(co.c_str()).name;
+        // WFS-426 (revue du lead dev, PR #350) : la Corniche est cuite (bâtiments compris) pendant que la Ville est chargée : la Ville garde
+        // ses bâtiments posés, à l'identique
+        const size_t batAvant = archi::carte::poses().size();
+        const uint64_t sigAvant = archi::cuit::signature(archi::carte::poses());
         g.allerA(Ecran::Terrain); imageMulti(2);
         choisirCarte(co, false); imageMulti(3);
         verifier(sm.appelsTout == 1 && cp.etat(co).etat == EtatCarte::Disponible, "choix du terrain : liste lue, Corniche « Télécharger »");
+        verifier(batAvant > 0 && archi::carte::poses().size() == batAvant && archi::cuit::signature(archi::carte::poses()) == sigAvant,
+                 "cuisson de la Corniche pendant la partie : bâtiments de la Ville chargée inchangés (WFS-426)");
+        WFS_LOG("paquets (WFS-426) banc : bâtiments de la Ville avant / après la cuisson de la Corniche : %zu / %zu", batAvant, archi::carte::poses().size());
+        // WFS-426 : la Corniche cuite porte ses villas (≈ 55 Mo) : débit réglé sur la taille du paquet, pas encore fini après ~280 images
+        // à plein débit (contrôle « pendant la course »), fini dans les ~1470 images même tout au débit ralenti (÷ 4)
+        sm.parImage = std::max<long long>(sm.parImage, sm.k(co).taille / 320);
+        WFS_LOG("paquets (WFS-307) banc : paquet de la Corniche %.1f Mo, %lld octets par image", sm.k(co).taille / 1048576.0, sm.parImage);
         verifier(cp.etat("ville").etat == EtatCarte::SansPaquet, "Ville sans paquet publié : jouable comme avant");
         captureJeu("paquets-terrain-telecharger", "Corniche assombrie, « Télécharger — X Mo » (jour)");
         // RG-05 : sans Internet, « Connexion nécessaire » ; RG-02 : données mobiles confirmées, « Plus tard » ne lance rien
