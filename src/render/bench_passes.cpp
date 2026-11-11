@@ -13,6 +13,7 @@
 #include "../game/track.h"
 #include "../platform/manette.h"
 #include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/reglages_onglets.h"   // WFS-377 : onglet qui contient « Graphismes »
 #include "../ui/text.h"
 #include "environnement.h"
 #include "passes.h"
@@ -278,17 +279,38 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         qualite::tenueUltra = {};
         std::vector<manette::Zone> z = zones();
         if (!z.empty()) { toucher(1, z.back()); etapes++; }
+        // WFS-377 (RG-01, ANO-211) : panneau à onglets (WFS-291). Le panneau déclare d'abord ses onglets, dans l'ordre de ONGLETS
+        // (reglages.cpp, drawUi) : le banc touche l'onglet qui contient « Graphismes » (ongletDe(L_QUALITE)), comme un joueur
+        const int ongletQualite = ecrans::ongletDe(ecrans::L_QUALITE);
         z = zones();
-        const size_t sansUltra = z.size();
+        bool barreOnglets = z.size() > (size_t)ecrans::N_ONGLETS;
+        for (int o = 1; barreOnglets && o < ecrans::N_ONGLETS; o++) barreOnglets = std::fabs(z[o].y - z[0].y) < 0.5f && std::fabs(z[o].h - z[0].h) < 0.5f && z[o].x > z[o - 1].x;
+        if (barreOnglets) toucher(4, z[ongletQualite]);
+        else WFS_ERR("réglages (WFS-150) : onglet « %s » introuvable (%zu zones)", ecrans::ONGLETS[ongletQualite], z.size());
+        const std::vector<manette::Zone> zSans = zones();
+        const size_t sansUltra = zSans.size();
         // 2) la Haute tient (banc de chauffe simulé : 5 mesures de 2 s à 60 images/s, chauffe 0) → Ultra proposé
         for (int i = 0; i < qualite::MESURES_TENUE; i++) qualite::tenueUltra.mesure(60, qualite::HAUTE, 0);
         z = zones();
         const bool propose = z.size() == sansUltra + 1;
-        WFS_LOG("réglages (WFS-150) : %zu zones sans Ultra, %zu avec (Haute tenue : %s)", sansUltra, z.size(), qualite::tenueUltra.tenue ? "oui" : "non");
-        // zones : Caméra (4 choix), puis Graphismes (Basse, Moyenne, Haute, Ultra) → Ultra = 8e zone ; même rangée que Basse
-        if (propose && z.size() > 7 && std::fabs(z[7].y - z[4].y) < 0.5f && std::fabs(z[7].h - z[4].h) < 0.5f && std::fabs(z[7].w - z[4].w) < 0.5f) {
-            toucher(2, z[7]); etapes++;
-        } else { WFS_ERR("réglages (WFS-150) : choix « Ultra » introuvable (%zu zones)", z.size()); ecarts++; }
+        WFS_LOG("réglages (WFS-150) : onglet %s, %zu zones sans Ultra, %zu avec (Haute tenue : %s)", ecrans::ONGLETS[ongletQualite], sansUltra, z.size(), qualite::tenueUltra.tenue ? "oui" : "non");
+        // WFS-377 (RG-01) : « Ultra » retrouvé par son rôle, pas par un rang fixe : c'est le choix qui apparaît quand la Haute a tenu.
+        // Rangée = zones de même y et même h ; la seule rangée qui passe de 3 choix (Basse, Moyenne, Haute) à 4 est « Graphismes »,
+        // et Ultra en est le dernier choix (le plus à droite : les choix sont posés de gauche à droite, reglages.cpp)
+        auto rangee = [](const std::vector<manette::Zone>& zs, const manette::Zone& a) {
+            int n = 0; for (const manette::Zone& b : zs) if (!b.retour && std::fabs(b.y - a.y) < 0.5f && std::fabs(b.h - a.h) < 0.5f) n++; return n;
+        };
+        int iUltra = -1, rangeesTrouvees = 0;
+        if (propose) for (size_t i = 0; i < z.size(); i++) {
+            if (z[i].retour || rangee(z, z[i]) != 4 || rangee(zSans, z[i]) != 3) continue;
+            bool dernier = true;   // le plus à droite de sa rangée
+            for (const manette::Zone& b : z) if (!b.retour && std::fabs(b.y - z[i].y) < 0.5f && std::fabs(b.h - z[i].h) < 0.5f && b.x > z[i].x) dernier = false;
+            if (dernier) { iUltra = (int)i; rangeesTrouvees++; }
+        }
+        if (iUltra >= 0 && rangeesTrouvees == 1) {
+            WFS_LOG("réglages (WFS-150) : choix « Ultra » trouvé (zone %d sur %zu, rangée Graphismes de 4 choix)", iUltra + 1, z.size());
+            toucher(2, z[iUltra]); etapes++;
+        } else { WFS_ERR("réglages (WFS-150) : choix « Ultra » introuvable (%zu zones, %d rangée(s) de 3 à 4 choix)", z.size(), rangeesTrouvees); ecarts++; }
         const bool ultra = qualite::niveauAffiche(R.qualite) == qualite::ULTRA;
         capture("reglages-qualite-ultra");
         WFS_LOG("réglages (WFS-150) : %s ; %s", ultra ? "Ultra choisi (coûts de la Haute)" : "ULTRA NON CHOISI", qualite::ligneRendu().c_str());
