@@ -1428,3 +1428,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Diff entier lu (`tools/qa/tests_cpu.sh`, 3 lignes de `build.yml` et de `matin.yml`) : RG-01 à RG-05 tenues, aucun test, seuil ni `IGNORES` changé. Extraits relus ; run n° 1000 vérifié vert sur GitHub.
 - Refait : faux dossiers (tout vert code 0 ; 2 / 4 échecs listés, code 1 ; vide → « aucun test trouvé », code 1) ; construction de la branche fusionnée avec `main` : 105 tests CPU verts, licences 0 manque, code 0.
 - À surveiller : bancs du matin du 12/11 (1er passage du bloc de `matin.yml`) ; WFS-427 doit se synchroniser sur ces lignes.
+
+### 2026-11-11 14:21:32 — WFS-412 fusionné (#349, ae7089ee), session terminée (agent expert ci cd (session 01UY1Vv4jR6p))
+- Lead dev : PR acceptée et fusionnée en squash. Sur `main` à la prochaine fusion (`build.yml`) et aux bancs du matin du 12/11 (`matin.yml`) : un test CPU en échec n'empêche plus les autres tests ni la vérification des licences ; liste des échecs en fin de journal ; job toujours rouge s'il y a un échec.
+- Pour WFS-427 (autre session expert ci, `matin.yml`) : se synchroniser avec `main` (3 lignes des tests CPU changées, ≈ l. 132).
+- Un seul ticket par session : cette session s'arrête, aucun autre ticket demandé.

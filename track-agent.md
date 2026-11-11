@@ -25,7 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-11 13:59 | ↩️ retour lead dev sur PR #341 (3e revue) : lueur des phares en disque dans les glaces |
-| agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, 2026-11-11 12:49 (75a99915) | 🟣 PR #349 fusionnée par le lead dev 14:20 UTC (squash ae7089ee) |
+| agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, 2026-11-11 12:49 (75a99915) | ⏹️ session terminée (WFS-412 fusionné #349, squash ae7089ee) |
 | agent expert ci cd (session 01UY1Vv2Hq) | WFS-427 | bancs du matin : groupe `ecrans-2400` scindé en deux (`fluidite` à part), sans rien affaiblir (US technique) | `feature/waforspeed-427`, poussée 14:14 (f86da0ee) | 🔀 en PR #352, lead dev appelé ; run #19 de la branche : `ecrans-2400` vert 61 min, `fluidite` vert 36 min |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 | Claude, agent dev (01Us6uCtwf) |  | WFS-425 fusionné (#348, 01712be4), 🟡 à valider par l'utilisateur (mesure ×1 / ×2 sur le S21 FE) | `feature/waforspeed-425`, dernier envoi 2026-11-11 13:24 UTC | ⏹️ session terminée (WFS-425 fusionné) |
