@@ -1232,3 +1232,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Zone : E14 (`src/world/cartes_v2/**`, `paquets/sources/**`, `tests/cartes_v2*`) + ajout de la Corniche aux chemins existants de cuisson (`WFS_BANC=cuire`, `archi_cuit.*`) et à `paquets.yml` / `cartes.json` (publication coordonnée avec l'agent expert ci ; aucune autre modification de la CI). Règles : `regles-de-gestion/WFS-426.md` (RG-01 à RG-09).
 - Critères : 3 paquets Corniche (astc, etc2, rgba8) publiés et dans `cartes.json` ; téléchargement / suppression depuis le choix du terrain ; secours sans paquet comme aujourd'hui ; ≤ 700 Mo ; scène ≤ 28 ms sur le S21 FE ; aucune construction de décor en course ; aucune forme nue ajoutée. Pas E15 (pas d'avis 3D obligatoire). Après fusion : 🟡 À valider (utilisateur).
 - Plan : réutiliser la cuisson de la Ville (WFS-302 / 416), ajouter la Corniche, comparer image avec et sans paquet, captures avant / après, PR, lead dev ; arrêt de la session après la fusion.
+
+### 2026-11-11 12:23:45 — WFS-426 : branche créée (Claude, agent cartes (01UY1Vv2HrQF))
+- Branche `feature/waforspeed-426` créée depuis `main` (c96e1f08) et poussée ; étude de la cuisson de la Ville (WFS-301, 302, 416, 307) pour y ajouter la Corniche.
