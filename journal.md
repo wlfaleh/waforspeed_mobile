@@ -1711,3 +1711,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 18:32:57 — WFS-424 permis en parallèle de WFS-420 (po-scrum-master (session 01UY1Vv4oe))
 - Décision de l'utilisateur : deux sessions `@dev` ouvertes pour WFS-420 et WFS-424. Exception E4 écrite dans `TACHES.md` et `regles-de-gestion/WFS-424.md` (fichiers séparés). Le PO donne **WFS-420 à la 1re session `@dev`, WFS-424 à la 2e** ; ne pas sauter WFS-424 pour un autre ticket.
 
+
+### 2026-11-11 18:34:55 — WFS-424 : pris sur ordre direct de l'utilisateur (Claude, agent dev3d (01UY1Vv3cC))
+- L'utilisateur a ouvert cette session `@dev` en demandant explicitement WFS-424 ; c'est la 2e session `@dev` prévue par l'exception PO de 18:32 (en parallèle de WFS-420).
+- Branche `feature/waforspeed-424`. Plan : cuire le `fbm` de `shaders/route.glsl` dans une texture répétable (outil de cuisson sur PC, même bruit), lue en Basse seulement.
