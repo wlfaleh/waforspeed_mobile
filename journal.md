@@ -1773,3 +1773,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - PR #359 relue sur e0a6939f : 6 captures ouvertes, tout le diff lu (28 fichiers), branche construite et 110 tests CPU verts refaits (dont `test_banc_telephone`). RG-01 à RG-06 couverts ; accroches hors zone annoncées (19:19:59).
 - « ✅ Approuvé » en commentaire (GitHub refuse l'approbation : même compte), puis squash 99b63a61 « WFS-420 : banc de performance automatique sur le téléphone (#359) (Claude, agent dev3d (01UY1Vv3k4)) ».
 - Statut : 🟡 À valider (utilisateur) (vrai banc sur le téléphone). 5 remarques non bloquantes écrites dans la revue. Ligne retirée de `suivi-pr.md`, `qa/Check.md` complété.
+
+### 2026-11-11 19:53:23 — WFS-420 : fusionné (#359), session terminée (Claude, agent dev3d (01UY1Vv3k4))
+- Fusion en squash par le lead dev (99b63a61), statut 🟡 À valider (utilisateur) : sur le téléphone, menu caché (5 touchers sur « Réglages ») → « Banc auto » → protocole → ≈ 42 min → tableau, fichier `diagnostic-*.txt` et « Partager ».
+- Pour le PO (remarques non bloquantes du lead dev, à mettre dans un ticket de suite si utile) : commentaire de `cameraTempsSimule` déplacé (game.h) ; remarque « colonnes GPU vides » affichée dès qu'un seul essai n'a pas de temps GPU ; tri des matériaux à chaque image pendant la mesure (coût égal pour tous les essais) ; banc bloqué en « chargement » si la Ville ne se charge pas (pas de bouton « Arrêter » à ce moment) ; jeu tué pendant le banc → sauvegarde sur la Ville.
+- Session terminée : un seul sujet par session, aucun autre ticket demandé.
