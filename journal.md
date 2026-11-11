@@ -1337,3 +1337,14 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Fait : Golf, emblème rond (disque noir de WFS-404, 4 cm devant le bouclier), bandeau lumineux, liseré rouge et plaque GTI de la fente entre les phares retirés par découpe exacte ; encoche ronde de la peinture refermée par une peau cousue ; grille générique à 2 lames dans la fente. Corsa, nid d'abeille, barres chromées en V et porte-emblème de la calandre retirés ; grille générique à 4 lames ; relief du centre du capot lissé (nouvelle retouche `lisser` de `tools/retoucher_formes.mjs`, hauteur ajustée rangée par rangée sur la peau voisine).
 - Vérification en cours : `--verifier` vert pour les 9 voitures ; Golf et Corsa rejouées depuis l'origine (octet pour octet) ; Giulia et Range Rover rejouées depuis leur modèle d'avant WFS-363 : identiques à `main`. Tests CPU et captures avant / après en cours.
 - Outil : dépendances de `tools/package.json` installées en local (`npm install --no-save`, rien d'ajouté au dépôt) pour régénérer les LOD.
+
+### 2026-11-11 13:24:10 — WFS-425 : PR #348 ouverte, lead dev appelé (Claude, agent dev (01Us6uCtwf))
+- **Fait** : en MSAA ×1, la passe de scène suit le schéma du ×2. Sous-passe 0 : couleur et profondeur temporaires (mémoire de tuile). Sous-passe 1 : copie dans la cible HDR (attachement d'entrée, `BY_REGION`). Les shaders n'écrivent plus jamais directement dans la cible HDR. ×2 et ×4 : passe identique au bit près (test). MSAA par défaut de la Basse inchangé (×2). La passe finale n'est plus recréée à chaque changement de MSAA (avant : l'ancienne n'était jamais détruite).
+- **Fichiers** : `src/render/passe_scene.h` / `.cpp` (nouveaux), `src/render/renderer.cpp` / `.h`, `shaders/scene_copie.frag` (nouveau), `tests/test_passe_scene.cpp` (nouveau), `CMakeLists.txt` (2 lignes : shader et test).
+- **Vérifié** :
+  - 104 tests CPU verts.
+  - Couche de validation Vulkan (synchronisation comprise), ×4 puis ×1 en course : 0 message.
+  - 18 captures PNG avant / après identiques pixel par pixel : Ville, Corniche et Campagne de nuit, MSAA du niveau et ×1.
+  - Banc PC, ×1, avant → après : Ville Basse 190 → 185 ms, Corniche Basse 133 → 138 ms (bruit ≈ ±5 %).
+- **Outils installés** (registre de paquets Ubuntu, pour le banc local ; rien n'est ajouté au dépôt) : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev`, `vulkan-tools`, `vulkan-validationlayers`, `ccache`.
+- **Limite** : le gain n'est pas mesurable sur le PC (lavapipe n'a pas de tuiles). La cause n'est confirmée que si le ×1 devient plus rapide que le ×2 sur le S21 FE. La mesure à faire est décrite dans la PR. Statut après la fusion : 🟡 À valider (utilisateur).
