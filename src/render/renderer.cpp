@@ -1071,8 +1071,8 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     return v | tout | c;
 }
 
-Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
-    Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
+const Vertex* Renderer::preparerMaillage(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     creationsMaillages_++;   // WFS-268 (RG-04)
     memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
@@ -1087,6 +1087,34 @@ Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t
         src = avecTangentes.data();
         tangentesMs_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count(); tangentesSommets_ += v.size();
     }
+    return src;
+}
+
+// WFS-418 (RG-01) : voie de repli : mêmes tampons que makeMesh, par VkCtx::essayerBuffer / essayerUploadBuffer ; un tampon refusé
+// rend aussi l'autre et défait les compteurs (aucun maillage vivant de plus) ; maillage vide rendu
+Mesh Renderer::essayerMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    Mesh m;
+    const Vertex* src = preparerMaillage(m, v, idx, dynamic);
+    if (dynamic) {
+        m.vb = vk_->essayerBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
+        if (m.vb.buf) m.ib = vk_->essayerBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
+        if (m.ib.buf) {
+            if (!v.empty()) std::memcpy(m.vb.mapped, src, v.size() * sizeof(Vertex));
+            if (!idx.empty()) std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
+        }
+    } else {
+        m.vb = vk_->essayerUploadBuffer(src, v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        if (m.vb.buf) m.ib = vk_->essayerUploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    }
+    if (m.vb.buf && m.ib.buf) return m;
+    vk_->destroy(m.vb);   // sommets pris, indices refusés : sommets rendus (rien à rendre si les sommets étaient refusés)
+    creationsMaillages_--; memoire::compteurs().objets3d--;
+    return Mesh{};
+}
+
+Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
+    Mesh m;
+    const Vertex* src = preparerMaillage(m, v, idx, dynamic);
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);

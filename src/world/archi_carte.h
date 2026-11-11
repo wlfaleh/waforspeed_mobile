@@ -28,6 +28,8 @@ struct Chrono { double cumulMs = 0, pireMs = 0; uint64_t images = 0, sommetsReco
 Chrono& chrono();
 // vrai si le kit remplace les boîtes de la carte (bâtiments posés et kit non désactivé)
 bool actif();
+// WFS-418 (RG-04) : replis sur le kit de secours faute de mémoire graphique (bâtiments cuits) depuis le lancement : preuve du banc
+uint32_t replisMemoireGraphique();
 // WFS-269 (accroche) : tous les bâtiments posés au niveau lod, dans le monde (ils cachent le ciel : DecorFixe::occultants)
 void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i);
 

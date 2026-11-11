@@ -16,6 +16,23 @@ namespace wfs {
 
 #define VK_OK(x) do { VkResult r_ = (x); WFS_CHECK(r_ == VK_SUCCESS, "Vulkan : %s a échoué (%d) %s:%d", #x, (int)r_, __FILE__, __LINE__); } while (0)
 
+// WFS-418 (RG-01) : réponses de Vulkan qui veulent dire « plus de mémoire » : la voie de repli (VkCtx::essayerBuffer) rend alors un
+// tampon vide ; toute autre erreur arrête le jeu, comme VK_OK
+constexpr bool manqueMemoire(VkResult r) { return r == VK_ERROR_OUT_OF_DEVICE_MEMORY || r == VK_ERROR_OUT_OF_HOST_MEMORY; }
+// WFS-418 (RG-04) : banc PC seulement : la réservation n° numero (voie de repli, comptée à partir de 1 depuis le lancement) est
+// refusée si echecA vaut 1 ou plus et numero >= echecA (la mémoire reste pleine après le premier refus) ; echecA = 0 : jamais
+constexpr bool refusSimule(uint32_t numero, uint32_t echecA) { return echecA != 0 && numero >= echecA; }
+// WFS-418 (RG-04) : valeur de WFS_MANQUE_MEMOIRE_GPU (banc PC) : entier de 1 à 10 000 000 ; absente, vide ou fausse : 0 (aucun refus)
+inline uint32_t rangRefusSimule(const char* e) {
+    if (!e || !*e) return 0;
+    uint32_t n = 0;
+    for (const char* c = e; *c; c++) {
+        if (*c < '0' || *c > '9' || n > 1000000u) return 0;
+        n = n * 10u + (uint32_t)(*c - '0');
+    }
+    return n <= 10000000u ? n : 0;
+}
+
 struct Buffer { VkBuffer buf = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkDeviceSize size = 0; void* mapped = nullptr; VkDeviceSize alloue = 0; };   // WFS-297 : alloue (octets réels)
 struct Image {
     VkImage img = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkImageView view = VK_NULL_HANDLE;
@@ -38,6 +55,13 @@ public:
     // utilitaires
     uint32_t memoryType(uint32_t bits, VkMemoryPropertyFlags props, bool* found = nullptr) const;
     Buffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hostVisible);
+    // WFS-418 (RG-01) : voie de repli de createBuffer / uploadBuffer : si la carte graphique répond « plus de mémoire »
+    // (manqueMemoire), rien n'est gardé et le tampon rendu est vide (buf == VK_NULL_HANDLE), au lieu d'arrêter le jeu ; toute
+    // autre erreur arrête le jeu comme createBuffer. Pour les réservations du chargement qui ont un secours (bâtiments cuits).
+    Buffer essayerBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hostVisible);
+    Buffer essayerUploadBuffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage);
+    uint32_t reservationsRepli = 0;   // WFS-418 : réservations faites par la voie de repli depuis le lancement (banc, journal)
+    uint32_t echecReservation = 0;    // WFS-418 (RG-04) : banc PC seulement (WFS_MANQUE_MEMOIRE_GPU) : refusSimule ; 0 sur le téléphone
     void destroy(Buffer& b);
     Image createImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, VkImageUsageFlags usage,
                       VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT, bool transient = false);

@@ -316,6 +316,49 @@ Buffer VkCtx::uploadBuffer(const void* data, VkDeviceSize size, VkBufferUsageFla
     return dst;
 }
 
+// WFS-418 (RG-01) : comme createBuffer, mais « plus de mémoire » rend un tampon vide (tout ce qui a été pris est rendu) ;
+// toute autre erreur arrête le jeu avec le même message que VK_OK
+Buffer VkCtx::essayerBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hostVisible) {
+    const uint32_t numero = ++reservationsRepli;
+    Buffer b; b.size = size;
+    auto reussi = [&](VkResult r, const char* quoi) {
+        if (r == VK_SUCCESS) return true;
+        WFS_CHECK(manqueMemoire(r), "Vulkan : %s a échoué (%d) %s:%d", quoi, (int)r, __FILE__, __LINE__);
+        WFS_WARN("mémoire graphique (WFS-418) : %s : plus de mémoire (%d) pour un tampon de %.2f Mo (réservation n° %u) : tampon refusé",
+                 quoi, (int)r, (double)size / 1048576.0, numero);
+        return false;
+    };
+    VkBufferCreateInfo bci{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    bci.size = size; bci.usage = usage; bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    if (!reussi(vkCreateBuffer(device, &bci, nullptr, &b.buf), "vkCreateBuffer")) return Buffer{};
+    VkMemoryRequirements req; vkGetBufferMemoryRequirements(device, b.buf, &req);
+    VkMemoryAllocateInfo mai{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+    mai.allocationSize = req.size;
+    mai.memoryTypeIndex = memoryType(req.memoryTypeBits, hostVisible ? (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    // RG-04 : refus simulé (banc PC) à la place de la vraie réservation, même suite que la vraie réponse de la carte graphique
+    const VkResult ra = refusSimule(numero, echecReservation) ? VK_ERROR_OUT_OF_DEVICE_MEMORY : vkAllocateMemory(device, &mai, nullptr, &b.mem);
+    if (!reussi(ra, "vkAllocateMemory")) { vkDestroyBuffer(device, b.buf, nullptr); return Buffer{}; }
+    b.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size;   // WFS-297 (RG-06)
+    if (!reussi(vkBindBufferMemory(device, b.buf, b.mem, 0), "vkBindBufferMemory") ||
+        (hostVisible && !reussi(vkMapMemory(device, b.mem, 0, VK_WHOLE_SIZE, 0, &b.mapped), "vkMapMemory"))) { destroy(b); return Buffer{}; }
+    return b;
+}
+
+// WFS-418 (RG-01) : comme uploadBuffer, par la voie de repli : tampon vide si le tampon de transfert ou le tampon final manque
+Buffer VkCtx::essayerUploadBuffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage) {
+    Buffer staging = essayerBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    if (!staging.buf) return Buffer{};
+    std::memcpy(staging.mapped, data, (size_t)size);
+    Buffer dst = essayerBuffer(size, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, false);
+    if (!dst.buf) { destroy(staging); return Buffer{}; }
+    VkCommandBuffer cb = beginOneShot();
+    VkBufferCopy cp{0, 0, size};
+    vkCmdCopyBuffer(cb, staging.buf, dst.buf, 1, &cp);
+    endOneShot(cb);
+    destroy(staging);
+    return dst;
+}
+
 static void barrier(VkCommandBuffer cb, VkImage img, uint32_t mip, uint32_t count, VkImageLayout from, VkImageLayout to,
                     VkAccessFlags srcA, VkAccessFlags dstA, VkPipelineStageFlags srcS, VkPipelineStageFlags dstS) {
     VkImageMemoryBarrier b{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
