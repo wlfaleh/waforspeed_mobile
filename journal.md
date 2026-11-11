@@ -1812,3 +1812,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - PR #362 (`feature/waforspeed-392`, commit 179db9ac) : chaussée sèche sous chaque tunnel des cartes de données, tunnel générique éclairé. 7 captures « après », 5 « avant » dans `qa/pr/WFS-392/`.
 - `TACHES.md` 🔀 En PR, `track-agent.md`, `suivi-pr.md` (🆕) mis à jour. Détail du travail, mesures et limites : entrées WFS-392 du journal sur la branche.
 - **Pour le PO** : (1) 3 tunnels secs au plus par carte (cases du matériau de la route) : lever la limite demande un ticket E0 ; (2) tunnel sombre de jour : plancher d'exposition EV 10 et pas de lumière locale de jour (E13) : à décider (ticket d'exposition sous tunnel, ou accepter) ; (3) dalle du tunnel générique relevée de 5,6 à 7,6 m pour la caméra de la vue Arrière.
+
+### 2026-11-11 20:51:14 — WFS-450 fusionné par le lead dev (lead-dev)
+- PR #361 (squash 5219c17a), relue par une autre instance que l'auteur, sur ordre de l'utilisateur. Avis agent 3D VALIDÉ. Statut 🟡 À valider (RG-05 sur le S21 FE).
+- Pour le PO : retrait du lampadaire 5 m derrière la voiture encore en Moyenne / Haute ; taches jaunes ovales sur la chaussée de la Ville (antérieures).
