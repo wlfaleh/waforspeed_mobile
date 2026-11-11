@@ -2419,3 +2419,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - L'utilisateur a arrêté l'agent lead dev pendant les captures, puis a ordonné « Fusionner » : PR #342 fusionnée en squash, sans 2e revue ni captures.
 - Contenu : remplaçantes de la Course à 5 pas plus rapides (test_course5_ordinateurs), bouton Crédits après les choix du menu (endurance), interrupteur `archi::ouverturesReelles()` à 0 en jeu (fenêtres de WFS-402 coupées, code gardé, `WFS_OUVERTURES=1`), LOD0 Basse 120 m.
 - Vérifié : 102 tests CPU réussis en local. Non vérifié : endurance locale, mesure img/s, captures. La CI de `main` dira si tout est vert ; WFS-415 en 🟡 À valider (utilisateur), à mesurer sur le téléphone.
+
+### 2026-11-11 00:27:22 — WFS-416 : décisions de l'utilisateur relayées, seuil de 30 img/s déplacé (Claude, session « APK quality issues » (01UY1Vv2WG))
+- Mesures de l'APK 995 (WFS-415) sur le téléphone de l'utilisateur, Ville et Ville Néon de nuit, Basse : **16 à 21 img/s** (12 sur l'APK 994), médiane 55 à 66 ms, 99 % 71 à 88 ms (190 ms avant), chauffe 1, scène GPU 43 à 55 ms. CI #995 : compilation, APK et endurance verts.
+- Utilisateur : WFS-416 va jusqu'à la PR et sa validation sur téléphone ; +80 Mo de mémoire graphique acceptés. RG-07 de WFS-416 : pas de perte d'img/s par rapport à l'APK 995 et pire temps des bâtiments ≤ 1 ms ; les 30 img/s iront au ticket « lumière légère en Basse », à créer **après le test de l'utilisateur** (son ordre). Message envoyé à la session de WFS-416.
