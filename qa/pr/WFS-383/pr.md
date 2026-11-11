@@ -14,16 +14,25 @@
   - **Accroches annoncées (≤ 10 lignes)** : `shaders/scene.frag` (2 lignes : include + choix du sol), `src/game/game.cpp` (2 lignes : sol de la carte), `decor_carte.h`, `circuit.cpp`. `nuit.cpp` (WFS-421) et les fichiers de WFS-425 non touchés.
   - **Test** `tests/test_sols.cpp` (dans `CMakeLists.txt`) : code du sol, matériau, lissage (pli en V : faîte vertical, flancs à 45°, 12 → 6 sommets ; deux bandes de couleur gardent leurs sommets avec une normale commune), climat des cartes, lecture de la ligne `sol`, Noël sans sol / automne = 3.
 - **Comment c'est vérifié** :
-  - Construction complète et **105 tests CPU verts** (`tools/qa/tests_cpu.sh build`, dont `test_sols`).
+  - Construction complète et **108 tests CPU verts** (branche synchronisée avec `main`) (`tools/qa/tests_cpu.sh build`, dont `test_sols`).
   - 28 captures avant / après (bancs `corniche`, `campagne`, `neige`, `perf`), jour et nuit, regardées une à une : vues de dessus de la Corniche (`carte-plage-montee-dessus`, `-montee-courbe-dessus`, `-rond-point-dessus`), pente au sol (`carte-plage-jeux`, `perf-plage-*`), falaise de nuit, Campagne (`col-haut`, `epingle`, `vaches`, `vignes-nuit`), automne (`neige-automne-jour`), Noël inchangé (`neige-jour-arriere`).
-  - **Banc perf (PC, lavapipe, même rendu que la CI)**, Corniche Basse : passe de scène 191,3 → 193,3 ms GPU (+1 %, bruit de mesure de lavapipe du même ordre), 234 683 → 231 379 triangles, 231 → 250 appels de dessin ; Corniche Haute : 841 k → 797 k triangles, scène 382,3 → 381,8 ms. Campagne Basse : scène 209,2 → 214,1 ms (+2 %) ; Circuit et Ville : égaux à 2 % près. Décor de la Corniche : 63,4 → 66,2 Mo GPU (+2,8 Mo), préparé en 2,4 s au chargement comme avant. **Aucun actif ajouté (0 Mo sur le disque).**
+  - **Banc perf (PC, lavapipe = rendu sur le processeur, même rendu que la CI)**, deux séries complètes avant / après :
+    | Carte, qualité | Passe de scène GPU, série 1 (avant → après) | Série 2, branche synchronisée (avant → après) | Triangles (série 2) |
+    |---|---|---|---|
+    | Corniche Basse | 191,3 → 193,3 ms (+1 %) | 188,4 → 211,2 ms (+12 %) | 234 683 → 235 130 |
+    | Corniche Haute | 382,3 → 381,8 ms (0 %) | 354,1 → 368,8 ms (+4 %) | 841 363 → 808 623 |
+    | Campagne Basse | 209,2 → 214,1 ms (+2 %) | 185,2 → 212,8 ms (+15 %) | 283 426 → 280 106 |
+    | Ville Basse | 285,3 → 283,7 ms | 263,9 → 259,5 ms | 371 825 → 371 481 |
+    | Grand Prix Basse | 227,6 → 224,8 ms | 212,8 → 222,5 ms (+5 %) | 453 247 → 426 324 |
+    
+    Lecture honnête : sur lavapipe, l'écart d'une série à l'autre (jusqu'à 10 %) est du même ordre que l'écart mesuré ; le coût réel du shader de sol est **du calcul de pixel sur le sol seulement** (Basse : ≈ 8 lectures de bruit par pixel de sol, aucune texture), estimé à ≈ 0,3 à 0,6 ms sur un GPU Mali de milieu de gamme, **mais non mesuré sur le S21 FE** (voir limites). Triangles : égaux ou en baisse (pins d'Alep en LOD au lieu des cônes, sommets soudés). Décor de la Corniche : 63,4 → 66,2 Mo GPU (+2,8 Mo), préparé au chargement (2,4 s, comme avant). **Aucun actif ajouté (0 Mo sur le disque).**
+  - **Corniche en paquet (WFS-426, fusionné pendant ce ticket)** : banc `batiments` avec `WFS_CARTE=plage` sur la branche synchronisée, **0 écart** ; le paquet ne contient que les villas, le sol et les pins restent construits par le code et sont visibles avec le paquet (captures `apres-paquet-plage-rue-jour.jpg`, `apres-paquet-plage-160kmh-nuit.jpg` ci-dessous).
 - **Limites et risques connus** :
   - **Performance du S21 FE non mesurée** (seul le banc PC lavapipe est disponible ici) : le critère « Corniche ≤ 33 ms sur S21 FE » est à confirmer par l'utilisateur sur l'APK de `main` ; le coût ajouté est uniquement du calcul de pixel sur le sol (aucune texture lue).
   - **Pin d'Alep procédural** (RG-03 demande « 1 modèle CC0 / CC BY ») : aucun modèle de pin d'Alep CC0 / CC BY n'est accessible depuis les sites autorisés de `regles-reseau.md` ; j'ai réutilisé le générateur d'arbres du dépôt (`veg::pin`, couronne en parasol, tronc écorce grise et rouge-brune, 2 LOD) — « modélisé au niveau de détail du vrai objet » selon la règle des formes interdites et RG-E15-05. Le remplacement par un modèle téléchargé reste possible plus tard sans toucher au placement.
   - Le sol ne porte plus d'ombre propre (`MAT_GROUND`, comme les autres sols) : les collines de la Corniche n'ombrent plus le sol derrière elles (effet faible, vu de près seulement).
   - Une version plus ancienne du jeu refuserait la ligne `sol` de la carte d'automne (carte de test seulement ; format des paquets inchangé).
   - Hors périmètre, vus sur les captures : montagnes en pyramides et éoliennes du fond de la Campagne (formes nues existantes, tickets WFS-369 à 373), pelouse du parc de la Ville (`ville.cpp`, WFS-385).
-  - WFS-426 (paquet de la Corniche) n'est pas fusionné : les sols et les pins sont vérifiés sur la Corniche du code ; à revérifier avec le paquet quand il arrivera.
 
 ## Captures pour le lead dev (28 après)
 
@@ -59,3 +68,10 @@ Dossier : [`qa/pr/WFS-383`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `perf-ville-Haute` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/avant-perf-ville-Haute.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/apres-perf-ville-Haute.jpg?raw=true) |
 | `perf-ville-basse` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/avant-perf-ville-basse.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/apres-perf-ville-basse.jpg?raw=true) |
 | `perf-ville-haute` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/avant-perf-ville-haute.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/apres-perf-ville-haute.jpg?raw=true) |
+
+### Corniche jouée avec son paquet (WFS-426), branche seulement
+
+| Capture | Après (branche, paquet cuit) |
+|---|---|
+| `apres-paquet-plage-rue-jour` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/apres-paquet-plage-rue-jour.jpg?raw=true) |
+| `apres-paquet-plage-160kmh-nuit` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383/apres-paquet-plage-160kmh-nuit.jpg?raw=true) |
