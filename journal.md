@@ -1387,3 +1387,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (une seule).
 - Titre de la discussion non changé : l'outil `set_session_title` n'existe pas dans cette session (titre voulu : « ⏹️ Terminée — Claude, agent dev (01Us6uCtwf) (WFS-425 fusionné) »).
 - Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
+
+### 2026-11-11 14:01:09 — WFS-324 : 3e revue de la PR #341, refusée (lead-dev)
+- Commit relu 72e5ce51. Réglés : phares allumés visibles dans les 3 glaces à taille réelle, réglage Caméra sur Cockpit pour la capture des Réglages.
+- **Refus** : en gros plan, la lueur de 25 cm ajoutée sur chaque phare (`PHARE_LUEUR`, `feuxVoiture`) est un disque gris pâle au bord net (Golf), ou un demi-disque plat (Range Rover Sport) : halo en disque interdit (règle du 2026-11-09). Attendu : cœur net gardé, aucune forme ronde lisible.
+- Branche non reconstruite (refus sur les images).
