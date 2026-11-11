@@ -1,5 +1,6 @@
 #include <cstdlib>   // WFS-348 : getenv
 #include "vk.h"
+#include "memoire_gpu.h"   // WFS-420 (RG-03)
 #include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
 #include <cmath>
@@ -225,6 +226,7 @@ Buffer VkCtx::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool hos
     mai.memoryTypeIndex = memoryType(req.memoryTypeBits, hostVisible ? (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VK_OK(vkAllocateMemory(device, &mai, nullptr, &b.mem));
     b.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size;   // WFS-297 (RG-06)
+    b.genre = memoire_gpu::genreTampon(usage); memoire_gpu::compter((memoire_gpu::Genre)b.genre, (int64_t)req.size, VK_FORMAT_UNDEFINED);   // WFS-420
     VK_OK(vkBindBufferMemory(device, b.buf, b.mem, 0));
     if (hostVisible) VK_OK(vkMapMemory(device, b.mem, 0, VK_WHOLE_SIZE, 0, &b.mapped));
     return b;
@@ -234,6 +236,7 @@ void VkCtx::destroy(Buffer& b) {
     if (b.buf) vkDestroyBuffer(device, b.buf, nullptr);
     if (b.mem) vkFreeMemory(device, b.mem, nullptr);
     memoire::compteurs().octetsGpu -= (int64_t)b.alloue;   // WFS-297
+    memoire_gpu::compter((memoire_gpu::Genre)b.genre, -(int64_t)b.alloue, VK_FORMAT_UNDEFINED);   // WFS-420
     b = Buffer{};
 }
 
@@ -255,6 +258,7 @@ Image VkCtx::createImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, Vk
     if (!lazy) mai.memoryTypeIndex = memoryType(req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     VK_OK(vkAllocateMemory(device, &mai, nullptr, &i.mem));
     if (!lazy) { i.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size; }   // WFS-297 (RG-06) : la mémoire paresseuse reste dans la tuile
+    i.genre = memoire_gpu::genreImage(usage); memoire_gpu::compter((memoire_gpu::Genre)i.genre, (int64_t)i.alloue, fmt);   // WFS-420
     VK_OK(vkBindImageMemory(device, i.img, i.mem, 0));
     VkImageViewCreateInfo vci{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     vci.image = i.img; vci.viewType = VK_IMAGE_VIEW_TYPE_2D; vci.format = fmt;
@@ -270,6 +274,7 @@ void VkCtx::destroy(Image& i) {
     if (i.img) vkDestroyImage(device, i.img, nullptr);
     if (i.mem) vkFreeMemory(device, i.mem, nullptr);
     memoire::compteurs().octetsGpu -= (int64_t)i.alloue;   // WFS-297
+    memoire_gpu::compter((memoire_gpu::Genre)i.genre, -(int64_t)i.alloue, i.format);   // WFS-420
     i = Image{};
 }
 
@@ -339,6 +344,7 @@ Buffer VkCtx::essayerBuffer(VkDeviceSize size, VkBufferUsageFlags usage, bool ho
     const VkResult ra = refusSimule(numero, echecReservation) ? VK_ERROR_OUT_OF_DEVICE_MEMORY : vkAllocateMemory(device, &mai, nullptr, &b.mem);
     if (!reussi(ra, "vkAllocateMemory")) { vkDestroyBuffer(device, b.buf, nullptr); return Buffer{}; }
     b.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size;   // WFS-297 (RG-06)
+    b.genre = memoire_gpu::genreTampon(usage); memoire_gpu::compter((memoire_gpu::Genre)b.genre, (int64_t)req.size, VK_FORMAT_UNDEFINED);   // WFS-420
     if (!reussi(vkBindBufferMemory(device, b.buf, b.mem, 0), "vkBindBufferMemory") ||
         (hostVisible && !reussi(vkMapMemory(device, b.mem, 0, VK_WHOLE_SIZE, 0, &b.mapped), "vkMapMemory"))) { destroy(b); return Buffer{}; }
     return b;
@@ -504,6 +510,7 @@ Image VkCtx::essayerImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, V
     const VkResult ra = refusSimule(numero, echecReservation) ? VK_ERROR_OUT_OF_DEVICE_MEMORY : vkAllocateMemory(device, &mai, nullptr, &i.mem);   // RG-04
     if (!reussi(ra, "vkAllocateMemory")) { vkDestroyImage(device, i.img, nullptr); return Image{}; }
     i.alloue = req.size; memoire::compteurs().octetsGpu += (int64_t)req.size;   // WFS-297 (RG-06)
+    i.genre = memoire_gpu::genreImage(usage); memoire_gpu::compter((memoire_gpu::Genre)i.genre, (int64_t)req.size, fmt);   // WFS-420
     VkImageViewCreateInfo vci{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     vci.viewType = VK_IMAGE_VIEW_TYPE_2D; vci.format = fmt; vci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, mips, 0, 1};
     if (!reussi(vkBindImageMemory(device, i.img, i.mem, 0), "vkBindImageMemory")) { destroy(i); return Image{}; }

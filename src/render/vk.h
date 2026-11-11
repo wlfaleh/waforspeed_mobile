@@ -33,12 +33,13 @@ inline uint32_t rangRefusSimule(const char* e) {
     return n <= 10000000u ? n : 0;
 }
 
-struct Buffer { VkBuffer buf = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkDeviceSize size = 0; void* mapped = nullptr; VkDeviceSize alloue = 0; };   // WFS-297 : alloue (octets réels)
+struct Buffer { VkBuffer buf = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkDeviceSize size = 0; void* mapped = nullptr; VkDeviceSize alloue = 0; uint8_t genre = 3; };   // WFS-297 : alloue (octets réels) ; WFS-420 : genre (memoire_gpu.h)
 struct Image {
     VkImage img = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkImageView view = VK_NULL_HANDLE;
     VkFormat format = VK_FORMAT_UNDEFINED; uint32_t w = 0, h = 0, mips = 1;
     size_t octetsTexture = 0;   // WFS-149 : octets comptés dans VkCtx::octetsTextures (textures envoyées seulement)
     VkDeviceSize alloue = 0;    // WFS-297 (RG-06) : octets alloués (mémoire de la carte graphique), 0 si mémoire paresseuse
+    uint8_t genre = 3;          // WFS-420 (RG-03) : textures, maillages, cibles ou autres (memoire_gpu.h)
 };
 
 class VkCtx {
