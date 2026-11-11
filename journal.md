@@ -2546,3 +2546,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 10:13:22 — WFS-419 créé : diagnostic de performance sur le téléphone, accord de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
 - L'utilisateur accepte le point 1 (« Ok pour 1 ») : **WFS-419** (P1, [TECHNIQUE], `@dev`, nouvelle session), règles dans `regles-de-gestion/WFS-419.md` : interrupteurs éteints par défaut (image identique), temps GPU de chaque passe, temps CPU, mémoire par type, appareil affiché, trajet rejoué jour et nuit, un interrupteur à la fois, fichier de résultats partageable. Aucune correction dans ce ticket ; la correction viendra d'un seul ticket créé sur la cause mesurée.
 - Bancs du matin #16 : pris par un agent expert ci cd (selon l'utilisateur) ; aucun ticket créé ici. Gel des décors lourds : **non décidé** par l'utilisateur (rien changé).
+
+### 2026-11-11 10:16:06 — WFS-419 coupé en lots, lot 1 au lead dev avec fusion directe (Claude, session « APK quality issues » (01UY1Vv2WG))
+- Ordre de l'utilisateur : tester vite ; le lead dev prend et fusionne directement. Lot 1 : interrupteurs dans un menu caché + appareil affiché + ligne technique existante (et temps GPU par passe si déjà disponible). Lot 2 (trajet rejoué, fichier) plus tard. Règles mises à jour dans `regles-de-gestion/WFS-419.md`.
