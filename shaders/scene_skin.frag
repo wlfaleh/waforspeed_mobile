@@ -80,6 +80,10 @@ void main() {
         outColor = ombreContact();
         return;
     }
+    if (F.spotN.w > 0.5) {   // WFS-419 : diagnostic « couleur unie » (même règle que scene.frag)
+        outColor = vec4(pc.color.rgb * (0.55 + 0.45 * abs(normalize(vNrm).y)), 1.0);
+        return;
+    }
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
     bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces

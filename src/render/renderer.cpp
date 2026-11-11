@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "diagnostic_perf.h"   // WFS-419 : interrupteurs de diagnostic de performance (éteints par défaut)
 #include "mesh.h"   // WFS-149 : tangentes
 #include <chrono>
 #include <algorithm>
@@ -574,7 +575,8 @@ void Renderer::createTargets() {
     // scène 3D éventuellement rendue en plus petit (GPU lents), agrandie par la passe finale
     // WFS-246 (RG-07) : cibles de la scène créées à la CAPACITÉ (échelle du niveau, renderScale) ; la résolution dynamique ne
     // change ensuite que la zone dessinée (sw_ × sh_, echelleDynamique) : aucune recréation ni attente du GPU en course
-    cw_ = std::max(1u, (uint32_t)(lw_ * vk.renderScale)); ch_ = std::max(1u, (uint32_t)(lh_ * vk.renderScale));
+    const float echelleCibles = diag::actif(diag::RESOLUTION_30) ? 0.30f : vk.renderScale;   // WFS-419 : diagnostic « résolution 30 % »
+    cw_ = std::max(1u, (uint32_t)(lw_ * echelleCibles)); ch_ = std::max(1u, (uint32_t)(lh_ * echelleCibles));
     echelleDynamique(echelleDyn_);
     const bool ms = vk.msaa != VK_SAMPLE_COUNT_1_BIT;
 
@@ -982,7 +984,8 @@ bool Renderer::appliquerNettete() {
     const int q = qualiteBasse ? qualite::BASSE : qualite::HAUTE;
     const bool basse = qualite::netteteBasse(q);
     const VkSampleCountFlags sc = vk_->props.limits.framebufferColorSampleCounts & vk_->props.limits.framebufferDepthSampleCounts;
-    const VkSampleCountFlagBits ms = (VkSampleCountFlagBits)qualite::msaaScene(q, (int)msaaMax_, (sc & VK_SAMPLE_COUNT_2_BIT) != 0);
+    const VkSampleCountFlagBits ms = diag::actif(diag::MSAA_X1) ? VK_SAMPLE_COUNT_1_BIT   // WFS-419 : diagnostic « MSAA ×1 »
+                                   : (VkSampleCountFlagBits)qualite::msaaScene(q, (int)msaaMax_, (sc & VK_SAMPLE_COUNT_2_BIT) != 0);
     const bool texBasse = samplerBasse_ && qualite::anisoScene(q, anisoMax_) < anisoMax_;
     const bool changeTex = texBasse != texBasse_;
     if (changeTex) {   // échantillonneur de toutes les textures des matériaux réécrit
@@ -1062,7 +1065,10 @@ uint16_t Renderer::classerSansRetro(const masquage::Sphere& s, bool sansDistance
     // WFS-222 : mais la passe de scène, l'ombre et le reflet de cette image gardent leur masquage (VIS_CAPTURE seul sinon)
     if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;   // banc : comparaison avec l'avant
     const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
-    if (!sansDistance && length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
+    float dMax = masquage::distanceMax(s.r, qualiteBasse, finBrouillard_);
+    // WFS-419 : diagnostic « distance ÷ 2 » (route comprise) : moitié de la fin du brouillard (sans brouillard : de 1 500 m)
+    if (diag::actif(diag::DISTANCE_DEMI)) dMax = std::min(dMax, std::min(finBrouillard_, 1500.f)) * 0.5f;
+    if (!sansDistance && length(s.c - camPos_) - s.r > dMax) { if (!tout) masques_++; return tout; }
     // WFS-264 (RG-03) : petit objet (rayon < 1,5 m : panneau, borne, piéton, mobilier) à plus de 40 m : pas d'ombre portée
     const bool ombrePetit = !(length(s.c - camPos_) > 40.f && s.r < 1.5f);
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
@@ -1183,12 +1189,13 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // soleil (décision du PO, regles-de-gestion/WFS-227.md) : WFS_OMBRES_BASSE=1 au banc seulement, pour le chiffre au journal
     static const bool ombresBasse = [] { const char* e = std::getenv("WFS_OMBRES_BASSE"); return e && e[0] == '1'; }();
     if (qualiteBasse && ombresBasse) { shadowsOn_ = fp.shadows && !fp.night; night_ = fp.night; }
+    if (diag::actif(diag::SANS_OMBRES)) shadowsOn_ = false;   // WFS-419 : diagnostic « sans ombres » (passe d'ombre vide)
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
     comptesPrec_ = comptes_; comptes_ = ComptesImage{};   // WFS-317 (I9)
     releve_.clear();   // WFS-335 (RG-01)
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
-    if (bloom_) bloom_->force = gpuLogiciel() ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);
+    if (bloom_) bloom_->force = gpuLogiciel() || diag::actif(diag::SANS_POST) ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);   // WFS-419 : « sans post »
     {
         const vec3 L = sd, up = std::fabs(L.y) > 0.99f ? vec3{1, 0, 0} : vec3{0, 1, 0};
         const mat4 V = lookAt(L, {0, 0, 0}, up);
@@ -1249,17 +1256,21 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
     // WFS-264 (RG-02) : reflet temps réel en Haute seulement (nuit.cpp : fp.reflets = Haute, déjà avant ce ticket) ; coupé en Basse
     // ici aussi, quoi que demande la scène (ciel et sonde seuls)
-    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets && !qualiteBasse;   // WFS-222 (RG-03)
+    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets && !qualiteBasse && !diag::actif(diag::SANS_REFLET);   // WFS-222 (RG-03) ; WFS-419
     u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
     // WFS-142 (RG-04, RG-08) : w = force du reflet sur la chaussée (configgame) ; WFS_REFLETS=0 : −1, aucun reflet (mesure du banc)
     const char* eR = std::getenv("WFS_REFLETS");
-    const bool sansReflet = eR && !std::strcmp(eR, "0");
+    const bool sansReflet = (eR && !std::strcmp(eR, "0")) || diag::actif(diag::SANS_REFLET);   // WFS-419 : chaussée sans reflet de la scène
     u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, sansReflet ? -1.f : config().qualite.refletRouteMouillee};
     eclairage::avantImage(vk, u, r.frameSet, refletSet_[cur_]);   // WFS-151 (accroche E13) : IBL, exposition, ciel
     // WFS-348 (RG-01) : banc seulement (0 dans le jeu) : effets retirés un par un pour mesurer leur coût GPU par pixel
     if (bancSansEffets & 1u) u.spotN.x = 0;                       // lumières de nuit (phares, lampadaires)
     if (bancSansEffets & 2u) { u.nuitA.x = 0; u.nuitA.y = 0; }    // chaussée mouillée et flaques
     if (bancSansEffets & 4u) u.iblA.x = 0;                         // sonde d'éclairage (IBL)
+    // WFS-419 : interrupteurs de diagnostic (éteints par défaut : rien ne change)
+    if (diag::actif(diag::SANS_LUMIERES)) u.spotN.x = 0;           // 0 lumière de nuit
+    if (diag::actif(diag::SANS_PLUIE)) u.nuitA.y = 0;              // pas de flaques (les gouttes : src/world/meteo.cpp)
+    u.spotN.w = diag::actif(diag::COULEUR_UNIE) ? 1.f : 0.f;      // shader « couleur unie » (scene.frag, scene_skin.frag)
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     if (refletsOn_) {
         FrameUBO m = u;
@@ -1299,6 +1310,11 @@ bool Renderer::beginFrame(const FrameParams& fp) {
 }
 
 void Renderer::flushDraw(const Pending& p) {
+    // WFS-419 : diagnostic « sans halos » (objets additifs) et « décor coupé » (bâtiments, végétation, mobilier, eau ; route, sol,
+    // trottoirs, effets, voitures et personnes gardés), dans toutes les passes ; éteints par défaut : rien n'est sauté
+    if (p.mat && ((diag::actif(diag::SANS_HALOS) && (p.mat->flags & MAT_ADD)) ||
+                  (diag::actif(diag::SANS_DECOR) && p.famille == FAM_DECOR &&
+                   !(p.mat->flags & (MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_ADD | MAT_POOL | MAT_SHADOWBLOB))))) return;
     appels_++;   // WFS-15
     chrono_.triangles += p.count / 3;   // WFS-222
     comptes_.appels[p.famille]++; comptes_.triangles[p.famille] += p.count / 3;   // WFS-317 (I9)
@@ -1755,6 +1771,7 @@ void Renderer::endFrame() {
     pp.params[3] = eclairage::kVisionNuit();   // WFS-230 (accroche E13) : vision de nuit (Purkinje) ; 0 de jour
     pp.bloom[1] = eclairage::lAdaptationNuit();   // WFS-214 (accroche E13, RG-05) : vision de nuit loin des lumières seulement
     pp.bloom[3] = echelleDyn_;   // WFS-246 (RG-07) : part de la cible de scène dessinée, agrandie à tout l'écran
+    pp.bloom[2] = diag::actif(diag::SANS_POST) ? 1.f : 0.f;   // WFS-419 : diagnostic « sans post » : halo des zones lumineuses (16 lectures) sauté
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, post_);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &postSet_, 0, nullptr);
     vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);

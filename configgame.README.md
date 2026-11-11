@@ -82,6 +82,18 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `conduite.vitesse_recul` | marche arrière enchaînée sous cette vitesse | m/s | 0.0 | 20.0 | 3.0 |
 | `qualite.plancher_moyenne` | résolution la plus basse en qualité Moyenne | × résolution | 0.5 | 1.0 | 0.9 |
 | `qualite.reflet_route_mouillee` | force du reflet de la rue sur la route mouillée (pluie) | × | 0.0 | 1.5 | 1.0 |
+| `diagnostic.msaa_x1` | diagnostic : MSAA ×1 (1 = coupé) | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_prepasse` | diagnostic : sans pré-passe de profondeur | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_reflet` | diagnostic : sans reflet de la route mouillée | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_ombres` | diagnostic : sans ombres du soleil | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_pluie` | diagnostic : sans pluie (gouttes et flaques) | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_halos` | diagnostic : sans halos additifs | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_post` | diagnostic : sans bloom ni post-traitement | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_lumieres` | diagnostic : 0 lumière de nuit | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.resolution_30` | diagnostic : scène rendue à 30 % | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.couleur_unie` | diagnostic : shader couleur unie (coût des triangles seul) | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.sans_decor` | diagnostic : décor coupé (route, sol et voitures gardés) | 0 / 1 | 0 | 1 | 0 |
+| `diagnostic.distance_demi` | diagnostic : distance d'affichage divisée par 2 | 0 / 1 | 0 | 1 | 0 |
 | `paquets.adresse_liste` | adresse https de la liste des paquets de cartes (cartes.json) | caractères | 12 | 200 | "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json" |
 | `confidentialite_url` | adresse https de la politique de confidentialité (écran Crédits) ; vide : ligne cachée | caractères | 0 | 200 | "" |
 | `voitures.golf.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Norvik" |

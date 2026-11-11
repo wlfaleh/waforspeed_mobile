@@ -49,6 +49,12 @@ void main() {
         outColor = ombreContact();
         return;
     }
+    // WFS-419 : diagnostic « couleur unie » (spotN.w = 1, éteint par défaut) : couleur de base de l'objet, sans texture ni
+    // lumière, pour séparer le coût des triangles de celui des pixels ; un léger relief (normale) garde la scène lisible
+    if (F.spotN.w > 0.5) {
+        outColor = vec4(pc.color.rgb * (0.55 + 0.45 * abs(normalize(vNrm).y)), 1.0);
+        return;
+    }
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
     // WFS-263 (RG-01) : part « légère » du pixel : 0 jusqu'à 60 m, 1 au-delà de 70 m (fondu sur 10 m, aucune ligne visible) ;

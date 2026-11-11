@@ -13,6 +13,7 @@
 #include "../game/camera_vue.h"            // WFS-334 : etatCockpit() (lecture seule : vue Cockpit active)
 #include "../game/trace_cartes.h"          // WFS-334 : sections couvertes du tracé (tunnel)
 #include "../render/vehicule_cockpit.h"    // WFS-334 : pare-brise et balais de l'image (pareBriseVu)
+#include "../render/diagnostic_perf.h"   // WFS-419 (accroche, 2 lignes) : interrupteur « sans pluie »
 #include "../game/game.h"                  // WFS-354 : banc « pluie »
 #include "cartes_v2/carte_donnees.h"        // WFS-346 : saison de la carte (flocons)
 #include <string>
@@ -63,7 +64,7 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         cockpit::PareBriseVu& pb = cockpit::pareBriseVu();
         const bool vitre = pb.vu && etatCockpit().actif; pb.vu = false;   // WFS-334 : intérieur dessiné à cette image
-        if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course) return;
+        if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course || diag::actif(diag::SANS_PLUIE)) return;   // WFS-419 : diagnostic « sans pluie »
         const auto t0 = std::chrono::steady_clock::now();
         preparer(g);
         if (gouttes_.empty() && !neige_) return;

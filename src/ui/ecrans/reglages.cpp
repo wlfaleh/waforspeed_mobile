@@ -31,6 +31,8 @@
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "reglages_appui.h"   // WFS-290 : cible de 48 dp, anti-rebond
 #include "reglages_onglets.h"   // WFS-291, WFS-318 : lignes et onglets
+#include "../../render/diagnostic_perf.h"   // WFS-419 : menu caché des interrupteurs de diagnostic
+#include "../../render/passes.h"   // WFS-419 : horodatages GPU disponibles
 
 namespace wfs {
 namespace ecrans {
@@ -73,6 +75,43 @@ const Ligne LIGNES[14] = {
 // lignes et onglets : reglages_onglets.h (WFS-291, WFS-318, testé par tests/test_reglages_onglets.cpp)
 constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau comptée pour 13 lignes (« Fermer » ne bouge pas)
 
+// ---------------------------------------------------------------- WFS-419 : menu caché de diagnostic de performance
+// 5 touchers sur le titre « Réglages » en moins de 3 s ouvrent, par-dessus le panneau, la liste des interrupteurs (un toucher :
+// allumé / éteint), l'appareil (RG-03), le temps GPU de chaque passe (RG-04) et l'explication des « 0,0 ». Rien n'est enregistré.
+Zone g_titre, g_diagLigne[diag::N_INTERRUPTEURS], g_diagFermer, g_diagTout;
+bool g_diagOuvert = false;
+int g_titreTouchers = 0; double g_titrePremier = -10;
+Renderer* g_diagR = nullptr;
+double horlogeDiag() { return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
+void toucherTitre() {
+    const double t = horlogeDiag();
+    if (t - g_titrePremier > 3.0) { g_titrePremier = t; g_titreTouchers = 0; }
+    if (++g_titreTouchers >= 5) {
+        g_titreTouchers = 0; g_titrePremier = -10; g_diagOuvert = true; diag::g_menuVu = true;
+        qualite::diagnosticForce = true;   // coût de chaque passe dans la ligne technique (WFS-150 RG-05)
+        WFS_LOG("réglages : menu caché de diagnostic ouvert (WFS-419)");
+    }
+}
+// un interrupteur qui change la taille ou le MSAA des cibles les recrée (GPU à l'arrêt dans resize, comme « Graphismes »)
+void appliquerDiag(diag::Interrupteur i) {
+    if (diag::INFOS[i].recreeCibles && g_diagR) g_diagR->resize();
+    WFS_LOG("diagnostic (WFS-419) : %s %s · %s", diag::INFOS[i].libelle, diag::actif(i) ? "COUPÉ" : "rétabli", diag::texteActifs().c_str());
+}
+bool toucherDiag(float x, float y) {
+    if (g_diagFermer.contient(x, y)) { g_diagOuvert = false; WFS_LOG("réglages : menu caché de diagnostic fermé"); return true; }
+    if (g_diagTout.contient(x, y)) {
+        bool recree = false;
+        for (int i = 0; i < diag::N_INTERRUPTEURS; i++) recree |= diag::menu((diag::Interrupteur)i) && diag::INFOS[i].recreeCibles;
+        diag::eteindreMenu();
+        if (recree && g_diagR) g_diagR->resize();
+        WFS_LOG("diagnostic (WFS-419) : menu caché, tout rétabli · %s", diag::texteActifs().c_str());
+        return true;
+    }
+    for (int i = 0; i < diag::N_INTERRUPTEURS; i++) if (g_diagLigne[i].contient(x, y)) {
+        diag::basculerMenu((diag::Interrupteur)i); appliquerDiag((diag::Interrupteur)i); return true;
+    }
+    return true;   // le menu garde tous les touchers
+}
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
 float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
     const float tp = 13 * k; const std::string t = ui::majuscules("Conditions d'utilisation"); const float w = ui::width(tp, t, 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
@@ -227,7 +266,7 @@ public:
     }
     // WFS-290 : la zone du bouton n'est plus effacée au changement d'écran (même place au menu et en pause) : un appui juste après
     // l'arrivée sur l'écran, avant la 1re image dessinée, comptait pour rien (banc : 0 sur 100) ; hors menu et pause, onTouch l'ignore
-    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_presse = P_AUCUN; g_doigt = -1; cgu().fermer(); }   // WFS-291 : g_doigt aussi (remarque du lead dev, PR #287)
+    void onEcran(Ecran, Ecran, const GameView&) override { g_diagOuvert = false; g_ouvert = false; g_presse = P_AUCUN; g_doigt = -1; cgu().fermer(); }   // WFS-291 : g_doigt aussi (remarque du lead dev, PR #287)
     void shutdown(Renderer&) override { if (cgu().mode() == Cgu::Mode::Lecture) cgu().fermer(); }   // WFS-308 : fenêtre perdue en jeu (termGraphics)
 
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -258,6 +297,8 @@ public:
         }
         if (t.id == g_doigt) { if (g_presse == P_FERMER && !dansCible(g_fermer, t.x, t.y)) g_presse = P_AUCUN; return true; }   // doigt encore posé (glissé hors : annulé)
         if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
+        if (g_diagOuvert) return toucherDiag(t.x, t.y);   // WFS-419 : menu caché par-dessus le panneau
+        if (g_titre.contient(t.x, t.y)) { toucherTitre(); return true; }   // WFS-419 : 5 touchers ouvrent le menu caché
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); g_doigt = t.id; return true; }   // WFS-308 (RG-05)
         if (dansCible(g_fermer, t.x, t.y)) { g_doigt = t.id; g_presse = P_FERMER; return true; }   // WFS-290 : fermé au relâcher
         if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { g_doigt = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
@@ -303,6 +344,8 @@ public:
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) if (dansOnglet(l, g_onglet)) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
         if (cgu().ouvert()) cgu().dessiner(r, W, H, g.marges, g.time);   // WFS-308 (RG-05) : par-dessus le panneau
+        g_diagR = &r;
+        if (g_diagOuvert) dessinerDiagnostic(r, W, H, cp ? k : ui::unitePetitEcran(W, H));   // WFS-419 : menu caché
     }
 
 private:
@@ -334,6 +377,7 @@ private:
         ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        g_titre = {x0, py + 52 * k, ui::width(56 * k, ui::majuscules("Réglages"), 0.02f), 56 * k};   // WFS-419 : 5 touchers → menu caché
         boutonCgu(r, px + pw - 36 * k, py + 30 * k, 36 * k, k);   // WFS-308 (RG-05)
         // WFS-291 : onglets sous le titre, puis les lignes de l'onglet ouvert (plus hautes : la place de 13 lignes est gardée,
         // « Fermer » ne bouge pas) ; les lignes des autres onglets n'ont plus de zone de toucher
@@ -403,6 +447,7 @@ private:
         ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
         ui::text(r, x0, py + 30 * k, 30 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        g_titre = {x0, py + 26 * k, ui::width(30 * k, ui::majuscules("Réglages"), 0.02f), 38 * k};   // WFS-419 : 5 touchers → menu caché
         {   // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau
             const float tp = 18 * k;
             const std::string ft = ui::majuscules("Fermer");
@@ -463,6 +508,53 @@ private:
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne sous le rendu (toucher : partager)
         if (!lm.empty()) { const float lw = g_cgu.x - 12 * k - x0, tm = std::min(10 * k, 10 * k * lw / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, lw, 28 * k};
                            ui::text(r, x0, py + ph - 11 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
+    }
+
+    // WFS-419 : menu caché (k = pixels par dp) : interrupteurs en deux colonnes (zones de 44 dp), appareil, temps par passe, explication
+    void dessinerDiagnostic(Renderer& r, float W, float H, float k) {
+        r.uiRect(0, 0, W, H, hex(BG, 0.92f));
+        const float m = 16 * k, x0 = m, lw = W - 2 * m;
+        float y = m;
+        ui::text(r, x0, y, 18 * k, ui::majuscules("Diagnostic performance (WFS-419)"), hex(ACCENT2), ui::GAUCHE, 0.08f, false);
+        {   // « Fermer » et « Tout rétablir » en haut à droite
+            const float bh = std::max(44.f * k, 30 * k), tp = 14 * k;
+            const std::string ft = ui::majuscules("Fermer"), tt = ui::majuscules("Tout rétablir");
+            const float fw = ui::width(tp, ft, 0.1f) + 32 * k, tw = ui::width(tp, tt, 0.1f) + 32 * k;
+            g_diagFermer = {W - m - fw, y - 6 * k, fw, bh};
+            g_diagTout = {W - m - fw - 8 * k - tw, y - 6 * k, tw, bh};
+            biseau(r, g_diagFermer.x, g_diagFermer.y, fw, bh, 10 * k, hex(ACCENT));
+            ui::text(r, g_diagFermer.x + fw / 2, g_diagFermer.y + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.1f, false);
+            biseau(r, g_diagTout.x, g_diagTout.y, tw, bh, 10 * k, hex(SURFACE2));
+            ui::text(r, g_diagTout.x + tw / 2, g_diagTout.y + (bh - tp) / 2, tp, tt, hex(TEXTE), ui::CENTRE, 0.1f, false);
+            y += bh + 2 * k;
+        }
+        constexpr int PAR_COL = (diag::N_INTERRUPTEURS + 1) / 2;
+        const float colGap = 12 * k, colW = (lw - colGap) / 2, rowH = 44 * k, gap = 2 * k;
+        for (int i = 0; i < diag::N_INTERRUPTEURS; i++) {
+            const int col = i / PAR_COL, rang = i % PAR_COL;
+            const float cx = x0 + col * (colW + colGap), cy = y + rang * (rowH + gap);
+            const bool on = diag::actif((diag::Interrupteur)i);
+            g_diagLigne[i] = {cx, cy, colW, rowH};
+            r.uiRect(cx, cy, colW, rowH, on ? hex(ACCENT, 0.22f) : hex(SURFACE2));
+            if (on) r.uiRect(cx, cy + rowH - 3 * k, colW, 3 * k, hex(ACCENT));
+            const std::string etat = !on ? "ACTIF" : diag::menu((diag::Interrupteur)i) ? "COUPÉ" : "COUPÉ (JSON)";
+            const float tp = 14 * k, ew = ui::width(tp, etat, 0.04f);
+            const std::string lib = diag::INFOS[i].libelle;
+            const float tl = std::min(tp, tp * (colW - ew - 30 * k) / std::max(ui::width(tp, lib, 0.02f), 1.f));
+            ui::text(r, cx + 10 * k, cy + (rowH - tl) / 2, tl, lib, hex(TEXTE), ui::GAUCHE, 0.02f, false);
+            ui::text(r, cx + colW - 10 * k - ew, cy + (rowH - tp) / 2, tp, etat, on ? hex(ACCENT) : hex(MUTED), ui::GAUCHE, 0.04f, false);
+        }
+        y += PAR_COL * (rowH + gap) + 6 * k;
+        // lignes d'information (réduites si elles ne tiennent pas dans la largeur)
+        auto ligne = [&](const std::string& t, const vec4& c) {
+            const float tp = std::min(12 * k, 12 * k * lw / std::max(ui::width(12 * k, t, 0.f), 1.f));
+            ui::text(r, x0, y, tp, t, c, ui::GAUCHE, 0.f, false); y += 15 * k;
+        };
+        ligne(diag::texteAppareil(r.vk()), hex(ACCENT2));
+        ligne(qualite::ligneRendu(), hex(TEXTE));
+        const std::string lm = qualite::ligneMesure();
+        ligne(lm.empty() ? "Mesure : roule quelques secondes en course (fenêtre de 20 s)." : lm, hex(TEXTE));
+        ligne(diag::explicationZero(r.qualiteBasse, passes::horodatagesDisponibles()), hex(MUTED));
     }
 
     Renderer* r_ = nullptr;
