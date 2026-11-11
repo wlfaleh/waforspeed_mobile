@@ -11,7 +11,7 @@
 
 namespace wfs::carte::tunnel {
 
-constexpr float VITRE_SOUS_DALLE_M = 0.35f;   // vitre à 5,25 m sous une dalle à 5,60 m : gabarit routier de 4,75 m libre
+constexpr float VITRE_SOUS_DALLE_M = 0.35f;   // vitre à 7,25 m sous la dalle à 7,60 m du tunnel générique : gabarit routier de 4,75 m libre
 constexpr float CHEMIN_L_M = 0.20f, CHEMIN_H_M = 0.06f, CHEMIN_SOUS_DALLE_M = 0.12f;
 
 struct Cotes { float L, l, h, vitreL, vitreL2, fuite; };   // corps (long, large, haut), vitre (long, large), dessus / dessous

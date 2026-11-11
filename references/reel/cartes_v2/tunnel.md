@@ -15,7 +15,7 @@
 | Grandeur | Valeur | Source |
 |---|---|---|
 | Files de luminaires | 2, sous la dalle, au milieu de chaque demi-chaussée (± 3,75 m de l'axe pour une chaussée de 15 m), vitre horizontale | éclairage symétrique d'un tunnel à dalle plate [à confirmer, CETU] |
-| Hauteur de la vitre | 5,25 m (0,35 m sous la dalle à 5,60 m) : gabarit routier de 4,75 m libre | gabarit [à confirmer, CETU] |
+| Hauteur de la vitre | 7,25 m (0,35 m sous la dalle à 7,60 m) : gabarit routier de 4,75 m libre | gabarit [à confirmer, CETU] ; dalle à 7,60 m : même hauteur que les tunnels de la Ville et de la Corniche du jeu, choisie pour que la caméra de la vue Arrière (6,3 m) reste sous la dalle (un tunnel réel à dalle plate est plus bas, vers 5,5 à 6 m) |
 | Pas en section courante | 12 m (défaut du paquet ; bornes 6 à 25 m) | plage 10 à 25 m (RG-02) [à confirmer, CETU] |
 | Pas dans la zone de seuil | 6 m (renforcement de jour à chaque bouche) | seuil plus dense que l'intérieur (CIE 88:2004) [à confirmer] |
 | Longueur du seuil | 60 m (défaut), jamais plus du tiers du tunnel | distance d'arrêt : v × 1 s + v² / (2 g × 0,30) = 47 m à 50 km/h, 84 m à 70 km/h (calcul) |
@@ -35,7 +35,7 @@ Papillotement (fréquence = vitesse / pas ; gêne entre 4 et 11 Hz si elle dure 
 
 ## Niveaux de lumière réels (pour mémoire) [CIE 88:2004, à confirmer]
 - Seuil de jour : 150 à 350 cd/m² (k = 0,05 à 0,07 × L20 de 3 000 à 5 000 cd/m²) ; intérieur de jour : 2 à 6 cd/m² ; nuit : 1 à 2 cd/m².
-- Dans le moteur, la nuit : une lampe du registre des lampadaires à 5,25 m donne ≈ 24,5 lux au sol (dans la charte : 10 à 30 lux),
-  soit ≈ 0,8 cd/m² sur l'enrobé.
+- Dans le moteur, la nuit : une lampe du registre des lampadaires à 7,25 m donne 1,1 × (1 − 7,25 / 26)² = 0,57 unité, soit ≈ 20 lux au sol
+  (dans la charte : 10 à 30 lux), soit ≈ 0,6 cd/m² sur l'enrobé.
 - De jour : l'exposition automatique du moteur ne descend pas sous EV100 10 (`src/render/eclairage_unites.h`, épic E13) : l'intérieur
   d'un tunnel réel (EV 5 à 7) y paraît plus sombre que dans la réalité. Ce réglage est hors de la zone de WFS-392 (signalé au PO).

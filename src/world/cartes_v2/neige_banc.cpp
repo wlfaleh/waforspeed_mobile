@@ -103,7 +103,7 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     double tunnel0 = -1, tunnel1 = -1;
     for (const trace::Section& s : noel->sections) if (s.type == trace::Type::Tunnel) { tunnel0 = s.debut * SEG_M; tunnel1 = s.fin * SEG_M; break; }
 
-    // WFS-392 : WFS_NEIGE=tunnels : seulement les captures des tunnels (parties 3 et 3 bis), pour les captures d'une PR
+    // WFS-392 : WFS_NEIGE=tunnels : seulement les captures de la partie 3 bis (2e tunnel, entrée du 1er), pour les captures d'une PR
     const char* seul = std::getenv("WFS_NEIGE");
     const bool tout = !seul || std::string(seul) != "tunnels";
     // 1. vue Arrière, jour puis nuit : place du marché (chalets, bancs), à 50 km/h
@@ -124,7 +124,7 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
         b.fin();
     }
     // 3. abri (tunnel) en vue Cockpit : 15 m avant la bouche, à la bouche, au milieu ; témoin vue Arrière au milieu
-    if (tunnel0 > 0) {
+    if (tunnel0 > 0 && tout) {
         if (b.partir("noel-test", false, VueCamera::Cockpit, tunnel0 - 60)) {
             const std::pair<double, const char*> etapes[] = {{tunnel0 - 15, "neige-tunnel-avant"}, {tunnel0 + 1, "neige-tunnel-bouche"}, {(tunnel0 + tunnel1) / 2, "neige-tunnel-dedans"}};
             size_t e = 0;
@@ -145,13 +145,14 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     b.verifier(deux0 > 0, "la carte de Noël a un 2e tunnel (WFS-392)");
     if (deux0 > 0) {
         for (const bool nuit : {false, true}) for (const VueCamera v : {VueCamera::Poursuite, VueCamera::Cockpit}) {
-            if (!b.partir("noel-test", nuit, v, deux0 - 50)) continue;
-            for (int k = 0; k < 60 * 60 && g.player().dist * M < (deux0 + deux1) / 2; k++) b.pas(1, 40, 2.f, 3);
+            // départ 70 m avant la bouche : la caméra de poursuite a fini sa descente du départ avant d'entrer ; 1 image sur 6
+            if (!b.partir("noel-test", nuit, v, deux0 - 70)) continue;
+            for (int k = 0; k < 60 * 60 && g.player().dist * M < (deux0 + deux1) / 2; k++) b.pas(1, 40, 2.f, k % 6 ? 0 : 1);
             b.capture(std::string("neige-tunnel2-") + (v == VueCamera::Cockpit ? "cockpit" : "arriere") + (nuit ? "-nuit" : "-jour"));
             b.fin();
         }
-        if (b.partir("noel-test", false, VueCamera::Poursuite, tunnel0 - 50)) {
-            for (int k = 0; k < 60 * 60 && g.player().dist * M < tunnel0 + 4; k++) b.pas(1, 40, 2.f, 3);
+        if (b.partir("noel-test", false, VueCamera::Poursuite, tunnel0 - 110)) {
+            for (int k = 0; k < 60 * 60 && g.player().dist * M < tunnel0 + 4; k++) b.pas(1, 40, 2.f, k % 6 ? 0 : 1);
             b.capture("neige-tunnel-entree-arriere");
             b.fin();
         }

@@ -177,10 +177,12 @@ private:
     // WFS-346 : béton des tunnels (piédroits : béton brut, albédo ≈ 0,3 ; dalle : plus sombre, suie) ; un tronçon tous les 5 segments (6 m)
     static constexpr uint32_t BETON_TUNNEL = 0x96938c, VOUTE_TUNNEL = 0x55534f;
     static constexpr int64_t PAS_TUNNEL = 5;
-    // WFS-392 : gabarit du tunnel générique (dalle à 5,6 m, piédroits à 5 m du bord de la chaussée) ; files de luminaires au milieu de
+    // WFS-392 : gabarit du tunnel générique : piédroits à 5 m du bord de la chaussée ; dalle à 7,6 m comme les tunnels de la Ville et
+    // de la Corniche (ville.cpp TUN_H, plage.cpp TUNNEL_H) : à 5,6 m (WFS-346), la caméra de la vue Arrière (6,3 m de haut,
+    // camera_vue.h) passait AU-DESSUS de la dalle et ne montrait plus que le dessus du tunnel ; files de luminaires au milieu de
     // chaque demi-chaussée (RW / 2) ; trottoir de service en béton sali (albédo ≈ 0,22) ; corps des luminaires en aluminium thermolaqué
     // gris (albédo ≈ 0,40) ; vitres : sodium haute pression ≈ 2000 K (couleur des lampadaires du moteur), LED 4000 K
-    static constexpr float HAUT_TUNNEL = 5.6f, LARGEUR_TUNNEL = 5.0f, FILE_LUMINAIRES = (float)RW / 2;
+    static constexpr float HAUT_TUNNEL = 7.6f, LARGEUR_TUNNEL = 5.0f, FILE_LUMINAIRES = (float)RW / 2;
     static constexpr uint32_t SOL_TUNNEL = 0x827f7a, ALU_LUMINAIRE = 0xaaaaaa, VITRE_SODIUM = 0xffb46b, VITRE_LED = 0xffd1a3;
     // segment (tour ou absolu) sous un tunnel de la carte
     bool sousTunnel(int64_t a) const {
