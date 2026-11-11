@@ -24,14 +24,14 @@
     - `game.cpp` (7 lignes), `model_loader.cpp` (1 ligne), `nuit.cpp` (lampadaires derrière), `camera_vue.cpp`, `passes.h`, `desktop_main.cpp` ;
     - `vehicule_cockpit_banc.cpp` (glaces figées pendant le banc WFS-349).
 - **Comment c'est vérifié** :
-  - **Tests** : tous verts, dont `test_retroviseurs` (21 cas).
+  - **Tests** : 105 / 105 verts (tous les `build/test_*`), dont `test_retroviseurs` (21 cas).
   - **Banc `retroviseurs`** (Golf, 2400 × 1080, jour et nuit) : 0 écart. Pixels de la voiture dans chaque glace (image avec et sans la voiture) :
 
     | Scène | Glace intérieure | Glace gauche | Glace droite |
     |---|---|---|---|
     | Même voie, 10 m, jour | 32 925 | 4 180 | 6 022 |
     | Même voie, 10 m, nuit (phares allumés) | 19 195 | 4 561 | 9 507 |
-    | Voie de gauche, 14 m, jour | — | ≈ 4 300 | — |
+    | Voie de gauche, 14 m, jour | — | 5 548 | — |
     | Voie de gauche, 14 m, nuit (phares allumés) | 1 118 | 4 316 | — |
 
   - **Banc `retroviseurs`** (Range Rover Sport, M4, 911, jour et nuit) : 0 écart.
