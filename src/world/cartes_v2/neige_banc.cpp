@@ -24,6 +24,8 @@
 #include "../../game/course_system.h"
 #include "../../game/game.h"
 #include "../../render/renderer.h"
+#include "../decor_carte.h"                 // WFS-392 : vue libre du banc (gros plan du luminaire)
+#include "../../ui/ecrans/reglages.h"   // WFS-392 : mesure en qualité Basse
 
 namespace wfs {
 namespace cartes_v2 {
@@ -105,7 +107,27 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
 
     // WFS-392 : WFS_NEIGE=tunnels : seulement les captures de la partie 3 bis (2e tunnel, entrée du 1er), pour les captures d'une PR
     const char* seul = std::getenv("WFS_NEIGE");
-    const bool tout = !seul || std::string(seul) != "tunnels";
+    const bool tout = !seul || (std::string(seul) != "tunnels" && std::string(seul) != "cout");
+    // WFS-392 (RG-04) : WFS_NEIGE=cout : coût de la traversée du 2e tunnel en qualité Basse, de jour puis de nuit (de 70 m avant la
+    // bouche à la sortie, vue Arrière, 1 image sur 3) : la ligne « passe de scène … ms » du journal à la fin de chaque partie se
+    // compare entre main et la branche (même banc, même machine)
+    if (seul && std::string(seul) == "cout") {
+        double c0 = -1, c1 = -1;
+        { int k = 0; for (const trace::Section& s : noel->sections) if (s.type == trace::Type::Tunnel && k++ == 1) { c0 = s.debut * SEG_M; c1 = s.fin * SEG_M; } }
+        const int qualite = ecrans::reglages().qualite; const bool basse = r.qualiteBasse;
+        ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true;
+        for (const bool nuit : {false, true}) {
+            if (c0 < 0 || !b.partir("noel-test", nuit, VueCamera::Poursuite, c0 - 70)) continue;
+            int images = 0;
+            for (int k = 0; k < 60 * 60 && g.player().dist * M < c1; k++) { b.pas(1, 40, 2.f, k % 3 ? 0 : 1); images += k % 3 ? 0 : 1; }
+            WFS_LOG("banc neige (WFS-392) : coût en Basse, %s : %d images du 2e tunnel (voir « passe de scène » ci-dessous)", nuit ? "nuit" : "jour", images);
+            b.fin();
+        }
+        ecrans::reglages().qualite = qualite; r.qualiteBasse = basse;
+        choisirVue(VueCamera::Poursuite);
+        unsetenv("WFS_MOMENT"); unsetenv("WFS_CARTES_TEST");
+        return b.ecarts;
+    }
     // 1. vue Arrière, jour puis nuit : place du marché (chalets, bancs), à 50 km/h
     for (const bool nuit : {false, true}) {
         if (!tout) break;
@@ -149,6 +171,21 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
             if (!b.partir("noel-test", nuit, v, deux0 - 70)) continue;
             for (int k = 0; k < 60 * 60 && g.player().dist * M < (deux0 + deux1) / 2; k++) b.pas(1, 40, 2.f, k % 6 ? 0 : 1);
             b.capture(std::string("neige-tunnel2-") + (v == VueCamera::Cockpit ? "cockpit" : "arriere") + (nuit ? "-nuit" : "-jour"));
+            b.fin();
+        }
+        // gros plan d'un luminaire du milieu du 2e tunnel et de son chemin de câbles (vue libre du banc, 2,4 m sous la vitre), jour et nuit
+        for (const bool nuit : {false, true}) {
+            int64_t d0 = 0, d1 = 0; { int n = 0; for (const trace::Section& s : noel->sections) if (s.type == trace::Type::Tunnel && n++ == 1) { d0 = s.debut; d1 = s.fin; } }
+            const std::vector<int64_t> lum = luminairesTunnel(noel->eclairageTunnel, d0, d1);
+            if (lum.empty() || !b.partir("noel-test", nuit, VueCamera::Poursuite, deux0 - 20)) continue;
+            const int64_t seg = lum[lum.size() / 2];
+            Track t; t.build(mapById("noel-test"), trace::versionCarte("noel-test"));   // même tracé que la partie (comme cartes_banc.cpp)
+            const TrackPoint c = t.point((double)seg * SEG, 3.75f), o = t.point((double)(seg - 2) * SEG, 2.3f);
+            carte::g_vueCarte.cible = {(float)c.x, (float)c.y + 7.3f, (float)c.z}; carte::g_vueCarte.oeil = {(float)o.x, (float)o.y + 5.6f, (float)o.z};
+            carte::g_vueCarte.fov = 30; carte::g_vueCarte.actif = true;
+            for (int k = 0; k < 20; k++) g.render(b.t += 1.0 / 60);
+            b.capture(nuit ? "neige-tunnel2-luminaire-nuit" : "neige-tunnel2-luminaire-jour");
+            carte::g_vueCarte.actif = false;
             b.fin();
         }
         if (b.partir("noel-test", false, VueCamera::Poursuite, tunnel0 - 110)) {
