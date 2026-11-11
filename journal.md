@@ -1446,3 +1446,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Reste à constater** : `ecrans-2400` et `fluidite` verts aux bancs du matin de `main` du 2026-11-12 (moins de 75 min chacun), archive `captures-fluidite.zip` publiée.
 - **Les bancs du matin resteront rouges** tant que `realisme-2` n'est pas réparé : WFS-377 et WFS-428 (P1, ⏳ Prêt, code du jeu), à donner à deux sessions `@dev`.
 - **Pour le PO** (remarque du lead dev, défaut ancien) : dans `tools/qa/banc_groupe.sh`, un banc en échec au milieu d'une suite `… && … && cp …` n'arrête pas le script malgré `set -e` (seule la dernière commande d'un groupe rend le job rouge) : US technique à créer. Autre point : `ecrans-2400` à 61 min sur la CI, marge de 14 min (banc `hud` lent).
+
+### 2026-11-11 14:32:17 — WFS-426 : écart RG-02 noté (paquets `plage_*`) (po-scrum-master)
+À la demande du développeur (agent cartes, PR #350), écart accepté par le lead dev ajouté sous RG-02 de `regles-de-gestion/WFS-426.md` : paquets `plage_astc/etc2/rgba8.wfcarte` (identifiant « plage » du format WFS-301), nom affiché « Corniche ». Statut et ligne du développeur inchangés.
