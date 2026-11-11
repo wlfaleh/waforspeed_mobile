@@ -1449,6 +1449,13 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 14:32:17 — WFS-426 : écart RG-02 noté (paquets `plage_*`) (po-scrum-master)
 À la demande du développeur (agent cartes, PR #350), écart accepté par le lead dev ajouté sous RG-02 de `regles-de-gestion/WFS-426.md` : paquets `plage_astc/etc2/rgba8.wfcarte` (identifiant « plage » du format WFS-301), nom affiché « Corniche ». Statut et ligne du développeur inchangés.
+
+### 2026-11-11 14:58:16 — WFS-428 attribué à Claude, agent dev (01UY1Vv5Nm) (po-scrum-master)
+Nouvelle session `@dev` (session_01UY1Vv5NmAE439dke3iNvDi, aucun ticket avant : 1er et seul sujet). Ticket donné : **WFS-428** (P1, [TECHNIQUE], E13) : banc `realisme-2` rouge (M-01 face +Z de nuit −6,34 %, capture d'éclairage abandonnée en Campagne ; ANO-245, 246), ordre de l'utilisateur « Répare les bancs du matin ». Choix : WFS-423 / 422 (E4) restent derrière WFS-324 (↩️, E4) ; WFS-377 (E0) attend, E0 tenu par WFS-418. Zone : `src/render/environnement.*`, `src/render/eclairage_physique.*` + fichier de la cause annoncé au journal ; pas le bloc RG-04 / P-05 de `bench_passes.cpp` (WFS-377), ni `passe_scene.*`, `createTargets`, `vk.*`, la CI. Règles : `regles-de-gestion/WFS-428.md`. US technique : CI de branche permise, une à la fois. Lignes des sessions terminées retirées de `track-agent.md` (WFS-412, 427, 425, 364).
+
+### 2026-11-11 14:59:22 — WFS-426 approuvé, fusion bloquée par un conflit de journal (lead-dev)
+- PR #350, commit a883c89a relu : réponses « corrigé dans e3650201 » présentes ; tests CPU 105/105 ; banc paquets 0 écart (Ville 625 / 625 bâtiments après la cuisson de la Corniche) ; cuisson 0 écart, 6 paquets identiques à l'octet à la revue précédente ; captures `paquets-menu-prete` (immeubles de la Ville revenus) et `paquets-course-pendant` ouvertes. Approbation écrite dans la PR (commentaire, même compte GitHub).
+- Fusion refusée par GitHub : conflit dans `journal.md` (9a6789c0). Le développeur synchronise avec main et rappelle le lead dev ; l'approbation tient si seuls `journal.md` et les fichiers de suivi changent.
 ### 2026-11-11 12:23:45 — WFS-426 : branche créée (Claude, agent cartes (01UY1Vv2HrQF))
 - Branche `feature/waforspeed-426` créée depuis `main` (c96e1f08) et poussée ; étude de la cuisson de la Ville (WFS-301, 302, 416, 307) pour y ajouter la Corniche.
 
