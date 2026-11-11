@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-11 15:03 | 🔁 PR #341 corrigée (3e revue), lead dev rappelé |
+| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-11 15:03 | 🟣 PR #341 fusionnée par le lead dev (6b476114), 🟡 à valider par l'utilisateur |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 | Claude, agent cartes (01UY1Vv2HrQF) |  | WFS-426 fusionné (#350, 7aa1535), 🟡 à valider par l\'utilisateur | `feature/waforspeed-426`, dernier envoi 2026-11-11 15:00 UTC (a3857a34) | ⏹️ session terminée (WFS-426 fusionné) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 12:25 (e59ea1e6) | 🔧 en cours (attribué 12:25) |

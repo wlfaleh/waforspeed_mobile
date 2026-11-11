@@ -1496,3 +1496,6 @@ PR #350 fusionnée en squash (7aa1535) sur la tête a3857a34 (expectedHeadSha). 
 ### 2026-11-11 15:05:29 — Statuts automatiques, CI main #1005 (robot statuts)
 - Run rouge (push, commit 2ccc37c), aucun statut changé. Job(s) en échec : compilation.
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-384, WFS-412, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-11 15:11:57 — WFS-324 fusionné par le lead dev (lead-dev)
+PR #341, 4e revue sur 234f472f : la lueur en disque a disparu, il reste un point net sur chaque phare. Les deux points du Range Rover Sport sont visibles. Captures ouvertes une à une, diff relu depuis 72e5ce51 (f1c87069), construction et tests refaits : 106/106. « ✅ Approuvé » en commentaire, fusion en squash 6b476114. Statut 🟡 À valider (utilisateur), ligne ajoutée à qa/Check.md, ligne retirée de suivi-pr.md.
