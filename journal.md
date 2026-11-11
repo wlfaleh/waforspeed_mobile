@@ -1329,3 +1329,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **WFS-429** (P1, E5 + E8, + E3 exception PO : `camera_vue.cpp` `drawUi`) ⏳ Prêt, règles `regles-de-gestion/WFS-429.md` : rangée [MENU] [CAMÉRA] [SCORE] en haut à droite, toutes les dimensions ×1,05 (40 → 42 px), zones de toucher qui suivent, rien ne recouvre le GPS, le combo ni les notifications, vue Cockpit et Poursuite traitées.
 - **Ordre des 20** : WFS-429 en **8e**, pour une nouvelle session `@dev`, en parallèle de la file E4 (autres fichiers) ; WFS-397 passe au 21e rang.
 - **Exception à l'ordre permanent « taille des boutons » (2026-11-06)** : demandée par l'utilisateur, limitée à ces deux boutons ; notée dans les ordres permanents du PO.
+
+### 2026-11-11 13:08:39 — WFS-429 : pas de validation sur téléphone, captures suffisantes (po-scrum-master)
+- Remarque de l'utilisateur : un petit changement comme celui-là se valide sur une capture du jeu. Erreur du PO reconnue : la règle 🟡 (2026-11-07) ne vaut que pour un défaut vu sur le téléphone ou la conduite. WFS-429 suit le cycle normal : captures avant / après regardées par le lead dev → 🟣 → ✅ (bancs du matin). Règles mises à jour.
