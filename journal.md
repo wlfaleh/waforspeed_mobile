@@ -2431,3 +2431,11 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 00:53:57 — WFS-416 : réserves de l'agent 3D en tâche séparée, WFS-417 créé (po-scrum-master)
 - PR #344 : « Avis agent 3D : VALIDÉ avec réserves ». Décision du PO (RG-E15-09, ordre de l'utilisateur du 2026-11-09) : **fusion sans attendre ces réserves**, elles ne sont pas un motif de refus pour le lead dev ; pas de correction de la réserve 1 dans la PR.
 - **WFS-417** créé (P2, E14 + E15, `regles-de-gestion/WFS-417.md`) : dalle de balcon et main courante au niveau 1 cuit (20 à 120 m), coût mesuré, cadres au loin sans scintillement, captures manquantes. Attend la fusion de WFS-416 ; nouvelle session `@dev3d`, pas celle de WFS-416. Statut de WFS-416 inchangé (🔀 En PR #344).
+
+### 2026-11-11 01:16:03 — WFS-414 : PR #343 refusée par le lead dev (lead-dev)
+- Revue du commit `c14418e` : https://github.com/wlfaleh/waforspeed_mobile/pull/343#pullrequestreview-5852174684 (commentaire : GitHub refuse « Request changes » avec le même compte).
+- **Bloquant (1 point)** : la règle du ticket (compléments 2 à 5 de l'utilisateur) demande « + braquage » pour l'Abarth, le T-Cross, la S3 et la Giulia ; le banc `cockpit-volant` ne le fait que pour la Mustang et la Golf. À montrer : les 4 suites de braquage avant / après (normales et éclaircies) et l'avis de l'agent 3D sur ces captures.
+- Non bloquant : 8 liens cassés dans la description GitHub (braquage éclairci de la Mustang ; `pr.md` est juste).
+- Validé et à ne pas refaire : les 37 paires ouvertes (gros plans et éclaircis) ; le volant des 6 voitures est juste (coussin bombé, branches attachées, plaques, jante entière devant la visière) ; M4 et 911 identiques (même SHA-256) ; tout le diff lu (étape 1 = déplacement pur, vérifié ligne à ligne) ; construction et tests refaits dans un dossier à part : 102 / 102, `test_cockpit` vert.
+- Pour le PO : jauge de nitro du combiné cachée par le moyeu (question ouverte dans la PR) ; rapport de l'Abarth petit (≈ 11 % du combiné), à confirmer par l'utilisateur.
+- Statut : ↩️ Retour lead dev (PR #343) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
