@@ -15,6 +15,7 @@
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/reglages_onglets.h"   // WFS-377 : onglet qui contient « Graphismes »
 #include "../ui/text.h"
+#include "eclairage_physique.h"   // WFS-377 : captures des sondes (WFS-151) comptées à part
 #include "environnement.h"
 #include "passes.h"
 #include "qualite_auto.h"
@@ -322,16 +323,19 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         z = zones();
         if (!z.empty()) { toucher(3, z.back()); etapes++; }
         g.allerA(Ecran::Course);
-        const int c0 = environnement::capturesFaites();
+        const int c0 = environnement::capturesFaites(), s0 = eclairage::etat().sondesCapturees;
         environnement::demander(pointVille);   // point de départ de la Ville (6 m devant, 1,7 m de haut)
         for (int i = 0; i < 60 * 5; i++) image();
         capture("parcours-ultra-course");
         const bool enCourse = g.ecran() == Ecran::Course && g.player().dist > 1;
-        const int captures = environnement::capturesFaites() - c0;
+        // WFS-377 (RG-02) : les sondes d'éclairage (WFS-151, venues après WFS-150) font aussi leurs captures en course (départ, rebond) :
+        // la règle « une seule capture » vaut pour la capture demandée par le banc → captures du banc = toutes − celles des sondes
+        const int toutes = environnement::capturesFaites() - c0, sondes = eclairage::etat().sondesCapturees - s0, captures = toutes - sondes;
         if (enCourse && captures == 1 && environnement::taille() == 256) etapes++;
-        WFS_LOG("parcours (WFS-150) : course en Ultra : %s, %.0f m, %d capture(s) d'environnement de %d px", enCourse ? "oui" : "NON", g.player().dist * M, captures, environnement::taille());
-        {   // WFS-214 (accroche, RG-03, ANO-106) : chaussée en Ultra puis en Haute, même instant, même vue (niveaux posés directement : le banc ne
-            // trouve plus « Ultra » dans le panneau à onglets) ; capture d'environnement refaite à chaque niveau ; niveau d'avant rendu ensuite
+        WFS_LOG("parcours (WFS-150) : course en Ultra : %s, %.0f m, %d capture(s) d'environnement demandée(s) par le banc (%d en tout, dont %d des sondes WFS-151), %d px",
+                enCourse ? "oui" : "NON", g.player().dist * M, captures, toutes, sondes, environnement::taille());
+        {   // WFS-214 (accroche, RG-03, ANO-106) : chaussée en Ultra puis en Haute, même instant, même vue (niveaux posés directement, pour comparer
+            // les deux au même instant) ; capture d'environnement refaite à chaque niveau ; niveau d'avant rendu ensuite
             const int qAv = R.qualite; const bool uAv = qualite::ultraChoisi;
             for (const int n : {(int)qualite::ULTRA, (int)qualite::HAUTE}) {
                 niveau(n); environnement::demander(pointVille); for (int i = 0; i < 8; i++) g.render(tt);
