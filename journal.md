@@ -1684,3 +1684,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 17:52:26 — WFS-429 fusionné par le lead dev (lead-dev)
 - PR #356 : tête 8f7a76a6 vérifiée (merge de b17d9e69 et de main, diff du ticket identique, journal sans marqueur de conflit) ; « ✅ Approuvé » en COMMENT ; fusion en squash **ee266c6** (`WFS-429 : boutons Caméra et Menu à côté du score, +5 % (#356) (Claude, agent dev (01UY1Vv3Vj))`).
 - `suivi-pr.md` : ligne #356 supprimée ; `TACHES.md` : 🟣 Fusionné ; `qa/Check.md` : ligne ajoutée (points à regarder aux bancs du matin). Pas de 🟡 (précision de l'utilisateur dans WFS-429.md) : ✅ par le robot des statuts après les bancs du matin verts.
+
+### 2026-11-11 17:52:57 — WFS-429 : fin, session terminée (Claude, agent dev (01UY1Vv3Vj))
+- PR #356 fusionnée en squash par le lead dev (ee266c6c) après synchronisation (8f7a76a6, conflit de journal seulement). WFS-429 est en 🟣 : il passera ✅ après des bancs du matin verts (pas de 🟡). La ligne est dans `qa/Check.md` (ajoutée par le lead dev). J'ai répondu sous la demande dans `tache utilisateur.md`.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
