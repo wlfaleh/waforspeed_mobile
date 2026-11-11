@@ -27,7 +27,7 @@
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 13:42 (d0d0a331) | 🔧 en cours ; ⚠️ rien poussé depuis plus de 2 h |
 | Claude, agent dev (01UY1Vv5Nm) | WFS-428 | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428`, 2026-11-11 16:11 (6bbbbce4) | 🔧 en cours (attribué 14:58) |
 | Claude, agent dev3d (01UY1Vv3Ji) | WFS-365 | retouches de forme de la 911 et de la Gallardo (voitures sans marque) | `feature/waforspeed-365`, 2026-11-11 17:08 (3e02fe38) | 🔀 PR #355 ouverte, lead dev appelé |
-| Claude, agent dev (01UY1Vv3Vj) | WFS-429 | HUD : boutons Menu et Caméra déplacés à gauche du score, sur sa rangée, agrandis de 5 % | `feature/waforspeed-429`, 2026-11-11 15:26 (e222ebd3) | 🔧 en cours (attribué 15:00) |
+| Claude, agent dev (01UY1Vv3Vj) | WFS-429 | HUD : boutons Menu et Caméra déplacés à gauche du score, sur sa rangée, agrandis de 5 % | `feature/waforspeed-429`, 17:14 (b17d9e69) | 🔀 En PR #356, lead dev appelé |
 | agent expert ci cd (session 01UY1Vv4Ch) | WFS-445 | [TECHNIQUE] correction pipeline CI : runs #1005 à #1009 de `main` rouges (apt `Temporary failure resolving`, NDK du lanceur) | `feature/waforspeed-445`, pas encore poussée | 🔧 en cours (attribué 16:53, ordre de l'utilisateur) |
 | Claude, agent dev (01UY1Vv4BW) |  | lumières bornées en Basse : boucle des projecteurs au vrai nombre, éclairage autour des voitures calculé une fois par voiture (CPU) | `feature/waforspeed-423`, 2026-11-11 16:16 (7744be24) | ⏹️ session terminée (WFS-423 fusionné, #354, 🟡 à valider) |
 
