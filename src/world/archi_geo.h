@@ -36,6 +36,13 @@ inline int graineBaie(const Plan& p, int niveau, int travee) {
 // construit le bâtiment d'un plan, de profondeur donnée, au niveau de détail lod (0, 1 ou 2)
 void construire(const Plan& p, float profondeur, int lod, Batiment& out);
 
+// WFS-415 (RG-02) : interrupteur des ouvertures réelles de WFS-402 (menuiseries, volets, appuis, porte vitrée). Faux par
+// défaut (jeu, APK Android) : chaque baie est un trou en retrait avec sa vitre ou sa porte au fond, comme avant WFS-402, pour
+// ne plus rien construire de plus pendant la course. Vrai : rendu de WFS-402 à l'identique (WFS_OUVERTURES=1 au banc,
+// tests de WFS-402). À choisir avant toute construction (lu sur les fils de travail, jamais changé pendant une course).
+bool ouverturesReelles();
+void choisirOuverturesReelles(bool actif);
+
 // WFS-402 : une seule baie du plan (tableau, vitre ou fond, menuiserie, volets, appui, traits du style), sans les murs
 void baie(const Plan& p, const Baie& b, int lod, Batiment& out);
 

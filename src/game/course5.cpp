@@ -69,17 +69,35 @@ std::vector<int> candidats(const char* carJoueur) {
 // les candidats restants (retirée d'eux), sinon dans le catalogue (pas le joueur ni un adversaire déjà là). Les candidats et le
 // tirage (graine) ne changent pas : les courses sans voiture retirée ni écartée restent identiques à celles d'avant WFS-404
 // (l'équilibre mesuré par test_course5 et test_course5_ordinateurs est gardé).
-static int remplacant(int ecarte, std::vector<int>& libres, const std::vector<Ordinateur>& os, const char* carJoueur) {
-    const int v = CARS[ecarte].spec.vmax;
-    auto proche = [&](int a, int b) { return b < 0 || std::abs(CARS[a].spec.vmax - v) < std::abs(CARS[b].spec.vmax - v); };
-    int best = -1; size_t pos = 0;
-    for (size_t k = 0; k < libres.size(); k++) if (adversairePossible(CARS[libres[k]].id) && proche(libres[k], best)) { best = libres[k]; pos = k; }
-    if (best >= 0) { libres.erase(libres.begin() + (long)pos); return best; }
-    for (int i = 0; i < CAR_COUNT; i++) {
-        bool pris = !std::strcmp(CARS[i].id, carJoueur) || !adversairePossible(CARS[i].id);
-        for (const Ordinateur& o : os) pris = pris || o.car == CARS[i].id;
-        if (!pris && proche(i, best)) best = i;
-    }
+// WFS-415 (RG-05) : la remplaçante est ÉGALE OU PLUS LENTE que la voiture écartée sur les deux chiffres de fiche qui font
+// l'allure d'un ordinateur : vitesse max (sa cible, vitessePointe) et 0-100 (poussée a0, ordre de la grille) ; elle reste dans
+// la classe du joueur (candidats, WFS-189 RG-01) et elle n'est PAS retirée des candidats restants : les tirages suivants de la
+// graine restent ceux d'avant WFS-404 (une voiture déjà en course tirée de nouveau est remplacée de la même façon). Avant, « la
+// plus proche en vitesse max », retirée des candidats, donnait l'S3 ou la V60 (0-100 de 4,9 s) à la place de l'Elantra N
+// (5,3 s), du X5 (5,4 s) ou du Range Rover Sport (5,9 s) et décalait les tirages suivants : des adversaires plus rapides
+// qu'avant WFS-404, le circuit à 3 courses sur 8 dans les 3 premiers (CI #991 à #994).
+static bool pasPlusRapide(const CarDef& c, const CarDef& e) { return c.spec.vmax <= e.spec.vmax && c.spec.s100 >= e.spec.s100; }
+static bool dejaEnCourse(int i, const std::vector<Ordinateur>& os) {
+    for (const Ordinateur& o : os) if (o.car == CARS[i].id) return true;
+    return false;
+}
+static int remplacant(int ecarte, const std::vector<Ordinateur>& os, const char* carJoueur) {
+    const CarDef& E = CARS[ecarte];
+    const int v = E.spec.vmax;
+    // allure la plus voisine : écarts relatifs de vitesse max et de 0-100 (les deux chiffres de fiche qui font l'allure)
+    auto ecart = [&](int i) { return std::abs(CARS[i].spec.vmax - v) / (double)v + std::fabs(CARS[i].spec.s100 - E.spec.s100) / E.spec.s100; };
+    auto proche = [&](int a, int b) { return b < 0 || ecart(a) < ecart(b); };
+    auto pris = [&](int i) { return !std::strcmp(CARS[i].id, carJoueur) || !adversairePossible(CARS[i].id) || dejaEnCourse(i, os); };
+    const std::vector<int> classe = candidats(carJoueur);
+    int best = -1;
+    for (const int i : classe) if (!pris(i) && pasPlusRapide(CARS[i], E) && proche(i, best)) best = i;
+    if (best >= 0) return best;
+    // aucune voiture pas plus rapide dans la classe (ex. : A 45 dans la classe de la SF90) : la moins rapide en trop
+    // (vitesse max et 0-100 en plus, relatifs), pour garder la classe du joueur (WFS-189 RG-01)
+    auto exces = [&](int i) { return std::max(0, CARS[i].spec.vmax - v) / (double)v + std::max(0.f, E.spec.s100 - CARS[i].spec.s100) / E.spec.s100; };
+    for (const int i : classe) if (!pris(i) && (best < 0 || exces(i) < exces(best))) best = i;
+    if (best >= 0) return best;   // classe épuisée : catalogue (comme WFS-404)
+    for (int i = 0; i < CAR_COUNT; i++) if (!pris(i) && proche(i, best)) best = i;
     return best >= 0 ? best : voituresPermises().idx[0];
 }
 
@@ -93,7 +111,7 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
         const size_t j = (size_t)(R.next() * libres.size()) % libres.size();
         int choisi = libres[j];
         libres.erase(libres.begin() + (long)j);
-        if (!adversairePossible(CARS[choisi].id)) choisi = remplacant(choisi, libres, os, carJoueur);   // WFS-404 (RG-01, RG-09)
+        if (!adversairePossible(CARS[choisi].id) || dejaEnCourse(choisi, os)) choisi = remplacant(choisi, os, carJoueur);   // WFS-404 (RG-01, RG-09) ; WFS-415 (RG-05)
         const CarDef& c = CARS[choisi];
         Ordinateur o;
         o.car = c.id; o.nom = modele(c);   // WFS-191 : nom de configgame.json
