@@ -1816,3 +1816,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 20:51:14 — WFS-450 fusionné par le lead dev (lead-dev)
 - PR #361 (squash 5219c17a), relue par une autre instance que l'auteur, sur ordre de l'utilisateur. Avis agent 3D VALIDÉ. Statut 🟡 À valider (RG-05 sur le S21 FE).
 - Pour le PO : retrait du lampadaire 5 m derrière la voiture encore en Moyenne / Haute ; taches jaunes ovales sur la chaussée de la Ville (antérieures).
+
+### 2026-11-11 20:52:57 — Règle de l'utilisateur : capture des tests CPU dans chaque PR (lead-dev)
+- Ajoutée à la checklist de livraison des développeurs (`agent-developer/references/checklist-livraison.md`, section Preuves) et au point 9 de la revue du lead dev : la fin du journal de `tests_cpu.sh` (ligne « N test(s) réussi(s) », commit testé) est collée dans la PR sous « Tests CPU », journal complet dans `qa/pr/WFS-XX/tests-cpu.log` ; sans elle, le lead dev refuse.

@@ -57,7 +57,7 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
    pas de code mort ni de valeur magique sans commentaire ; accroches hors zone ≤ 10 lignes et annoncées au journal ; un test CPU couvre la
    nouvelle logique et il est construit par `CMakeLists.txt`. Un défaut qui peut casser le jeu ou fausser un banc = REFUS ; une simple remarque
    de style n'empêche pas la fusion (tu l'écris dans l'approbation).
-9. **Hygiène** : branche synchronisée avec `main`, tests CPU verts et parcours 0 écart (journal du développeur), aucun fichier hors zone,
+9. **Hygiène** : branche synchronisée avec `main`, tests CPU verts et parcours 0 écart (journal du développeur), **capture des tests CPU dans la PR** (titre « Tests CPU » : fin du journal de `tests_cpu.sh` avec la ligne « N test(s) réussi(s) » et le commit testé, journal complet dans `qa/pr/WFS-XX/tests-cpu.log` ; absente = REFUS, règle de l'utilisateur du 2026-11-11), aucun fichier hors zone,
    aucun fichier iOS, checklist `references/checklist-livraison.md` du skill `agent-developer` faite.
 10. **Régressions (demande de l'utilisateur, 2026-11-09)** : tu cherches ce que la PR **casse ailleurs**, pas seulement si le ticket marche.
     - **Construis et teste toi-même** la branche (synchronisée avec `main`) : `cmake -S . -B build && cmake --build build -j`, puis
