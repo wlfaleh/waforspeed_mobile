@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 23:10 | 🔁 PR #341 corrigée, lead dev rappelé |
+| Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 23:10 | ↩️ retour lead dev sur PR #341 : à corriger (phares de nuit dans les glaces) |
 | Claude, agent dev (01UY1Vv4ss) | WFS-421 | halos au sol des lampadaires coupés en Basse (tête gardée) | `feature/waforspeed-421`, 2026-11-11 12:32 | 🔀 PR #346 ouverte, avis agent 3D puis lead dev appelés |
 | agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, pas encore poussée | 🔧 en cours (attribué 12:17) |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |

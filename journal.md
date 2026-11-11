@@ -1257,3 +1257,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Accroches hors zone annoncées** : 1 ligne `add_executable(test_nuit_qualite …)` dans `CMakeLists.txt` ; banc court `WFS_BANC=halos-sol` (`src/render/nuit_halo_sol_banc.cpp`, nouveau) + 2 lignes dans `src/platform/desktop_main.cpp` (aucun banc existant ne mettait la Corniche de nuit en Basse).
 - Vérifié : 104 tests CPU réussis ; banc `halos-sol` avant / après : Moyenne et Haute 0 pixel différent (Ville et Corniche) ; Basse : nappe orange disparue, appels de dessin Ville 234 → 213, Corniche 253 → 233.
 - Limite : RG-04 (gain sur le S21 FE) non mesurable ici, à mesurer par l'utilisateur avec l'APK de `main` (interrupteurs de WFS-419).
+
+### 2026-11-11 12:33:45 — WFS-324 : 2e revue de la PR #341, refusée (lead-dev)
+- Commit relu e924aac1. Branche fusionnée en local avec `main` sans conflit ; construction OK ; tests CPU 104 / 104 verts.
+- Réglés : glace intérieure (la voiture qui suit est entière sur la Golf, le Range Rover Sport, la M4 et la 911), capture des Réglages « Rendu », explication de la glace gauche sombre la nuit.
+- **Refus sur un seul point (RG-04, capture 2)** : de nuit, les phares de la voiture qui suit restent éteints dans les glaces (anneaux sans lumière ni halo, rien sur le Range Rover Sport, voiture de la voie de gauche illisible), alors qu'ils éblouissent en vue directe (WFS-413).
+- Statut : ↩️ Retour lead dev (PR #341) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
