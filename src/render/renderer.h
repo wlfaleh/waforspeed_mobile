@@ -139,6 +139,9 @@ public:
     // ressources
     Material makeMaterial(const Material& m, const Image* color, const Image* normal, const Image* mr);
     Mesh makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic = false);
+    // WFS-418 (RG-01) : comme makeMesh, par la voie de repli de VkCtx (essayerBuffer) : si la mémoire graphique manque, rien n'est
+    // gardé et le maillage rendu est vide (vb.buf == VK_NULL_HANDLE) ; à l'appelant de prendre son secours
+    Mesh essayerMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic = false);
     // WFS-268 (accroche, RG-04) : créations de tampons de maillages (makeMesh) et de jeux de descripteurs (makeMaterial)
     // depuis le lancement : un écart nul pendant la course = rien n'est créé en course
     uint64_t creationsMaillages() const { return creationsMaillages_; }
@@ -395,6 +398,8 @@ private:
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
     double tangentesMs_ = 0; size_t tangentesSommets_ = 0;   // WFS-149
+    // WFS-418 : début commun de makeMesh et essayerMesh (compteurs, sphère englobante, tangentes) : sommets à envoyer
+    const Vertex* preparerMaillage(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic);
     bool sansMasquage_ = false;   // WFS-150 (RG-03) : image d'une capture d'environnement : aucun objet masqué (6 directions)
 };
 

@@ -221,7 +221,7 @@ Bilan occlusionDecor(std::vector<Lot>& lots, bool garder) {
     return bil;
 }
 
-Bilan occlusionKit(size_t n, const SommetsKit& sommets) {
+Bilan occlusionKit(size_t n, const SommetsKit& sommets, bool garderGrille) {
     const auto t0 = std::chrono::steady_clock::now();
     Bilan bil;
     g_kit.clear();
@@ -249,7 +249,7 @@ Bilan occlusionKit(size_t n, const SommetsKit& sommets) {
         nb += c; somme += sm;
     });
     g_kit = std::move(kit);
-    g_grilleTour.reset();
+    if (!garderGrille) g_grilleTour.reset();   // WFS-418 (accroche)
     bil.sommets = nb;
     bil.moyenne = bil.sommets ? (double)somme / 1000.0 / (double)bil.sommets : 1.0;
     bil.ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
@@ -257,6 +257,8 @@ Bilan occlusionKit(size_t n, const SommetsKit& sommets) {
             bil.sommets, bil.moyenne, bil.ms);
     return bil;
 }
+
+void rendreGrille() { g_grilleTour.reset(); }   // WFS-418 (accroche)
 
 void appliquerKit(size_t k, int lod, std::vector<Vertex>& v, size_t debut) {
     if (k >= g_kit.size() || lod < 0 || lod > 1) return;

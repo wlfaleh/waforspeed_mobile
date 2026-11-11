@@ -1,0 +1,68 @@
+## Agent : Claude, agent dev (01Us6uCt95)
+
+**Ticket** : WFS-418 — règles : `regles-de-gestion/WFS-418.md` (US technique, P2, E0 + rendu `vk.*`, exceptions et arbitrage du PO du 2026-11-11 12:24 et 12:42 UTC)
+
+## Description
+
+- **Demande de l'utilisateur** (en une phrase) : jamais de plantage par manque de mémoire (décision du 2026-11-07) ; ici, si la carte graphique refuse une réservation pendant le chargement des bâtiments cuits de la Ville, le jeu reprend le kit de secours au lieu de s'arrêter.
+- **Ce qui change** :
+  - `src/render/vk.{h,cpp}` — **ajout seulement** : voie de repli `essayerBuffer` / `essayerUploadBuffer` (tampons) et `essayerImage` / `essayerUploadTexture` (images, pour les 2 atlas seulement, décision du PO de 12:42) : si Vulkan répond `VK_ERROR_OUT_OF_DEVICE_MEMORY` ou `VK_ERROR_OUT_OF_HOST_MEMORY`, tout ce qui a été pris est rendu et l'objet rendu est vide, avec une ligne « mémoire graphique (WFS-418) : … refusé » ; **toute autre erreur arrête le jeu comme `VK_OK`**. `createBuffer`, `uploadBuffer`, `createImage`, `uploadTexture`, `VK_OK` : **inchangés** (la suite de commandes du blit est copiée dans `envoyerAvecBlit` pour la voie de repli, puisque `uploadTexture` ne devait pas bouger). `uploadMipsCpu` : paramètre `repli` ajouté (faux par défaut : même comportement), rend `bool`. Fonctions pures `manqueMemoire`, `refusSimule`, `rangRefusSimule` (testées sur le CPU).
+  - `src/render/renderer.{h,cpp}` : `essayerMesh` (même travail que `makeMesh`, par la voie de repli ; un tampon refusé rend l'autre et défait les compteurs). `makeMesh` garde sa signature et son comportement ; son début commun (compteurs, sphère, tangentes) est passé dans `preparerMaillage`, partagé.
+  - `src/world/archi_carte.{h,cpp}` : `initCuit` rend `false` si un atlas ou un maillage (niveaux 1-2 fixes, tampons réservés du niveau 0) est refusé ; tout ce que le paquet a pris est rendu (`rendreCuit`) et `init` passe au kit de secours avec la ligne « bâtiments (WFS-418) : mémoire graphique insuffisante : kit de secours … ». **Occlusion des murs du kit gardée** : la grille de l'occlusion reste jusqu'à la fin de `initCuit` (rendue dès que tout est réservé), donc le kit calcule la sienne comme d'habitude. Compteur `replisMemoireGraphique()` pour la preuve du banc.
+  - **Accroches** (annoncées au journal, validées par le PO à 12:42) : `src/render/eclairage_precalcule.{h,cpp}` (5 lignes : `occlusionKit(…, garderGrille = false)` + `rendreGrille()`), `src/platform/desktop_main.cpp` (1 ligne : `WFS_MANQUE_MEMOIRE_GPU=N`, banc PC seulement : la N-ième réservation par la voie de repli et les suivantes répondent « plus de mémoire »), `src/world/cartes_v2/batiments_banc.cpp` (10 lignes : étape 5 du banc « batiments »), `CMakeLists.txt` (2 lignes : `test_repli_memoire`).
+  - **À l'écran** : rien quand la mémoire suffit. Si elle manque, la Ville s'affiche avec le kit de secours (comme sans paquet).
+- **Comment c'est vérifié** :
+  - `bash tools/qa/tests_cpu.sh build` : **106 tests verts** (après synchronisation avec `main` d0715fa), dont le nouveau `test_repli_memoire` (1079 vérifications : seules les 2 réponses « plus de mémoire » donnent un repli, refus simulé à partir du rang N, lecture bornée de la variable).
+  - **Test automatique** (RG-04) : étape 5 du banc `WFS_BANC=batiments` : compte les réservations des bâtiments cuits d'un chargement (5806 sur la Ville), puis refuse la n° 3 (image du 2e atlas), la n° 2904 (milieu des maillages fixes) et la n° 5806 (dernier tampon du niveau 0, de nuit) : chaque fois **kit de secours, aucun arrêt du jeu, mémoire graphique rendue (+0,00 Mo après la partie, comme sans refus)** ; banc : **0 écart** (sortie : `batiments (WFS-416) banc : 0 écart(s) OK`).
+  - Captures avant / après (banc `batiments`, mode rapide `WFS_BAT_RAPIDE=1`, PC lavapipe) ci-dessous : avec le paquet et sans refus, image identique à `main` ; avec refus, Ville de jour et de nuit avec le kit.
+- **Limites et risques connus** :
+  - Seuls les bâtiments cuits ont le repli (≈ 95 Mo sur la Ville, mesurés au banc). Les autres réservations du chargement arrêtent encore le jeu : **liste RG-03 ci-dessous, remise au PO** (tickets à suivre, décision du PO de 12:42).
+  - Refus vérifié par simulation (banc PC) : aucun vrai manque de mémoire provoqué sur le téléphone. Le pilote peut aussi refuser autre chose (pool de descripteurs, `vkAllocateCommandBuffers`) : non couvert (arrêt comme avant).
+  - GPU sans blit filtré (WFS-134) : la voie de repli des atlas passe par `uploadMipsCpu(…, repli = true)` ; ce chemin n'existe pas sur lavapipe ni sur le S21 FE, il n'a donc pas tourné au banc.
+
+## RG-03 — autres grosses réservations du chargement, sans repli aujourd'hui (liste pour le PO)
+
+Mesure : mémoire de la carte graphique prise par chaque étape du chargement de la Ville (banc PC, qualité Basse, sans paquet ; instrumentation locale retirée avant le commit).
+
+| Réservation (fichier) | Ville, PC | Aujourd'hui si la mémoire manque | Repli possible |
+|---|---|---|---|
+| Ville : décor (immeubles anciens, mobilier, végétation, autos garées, atlas du feuillage) — `src/world/ville.cpp`, `src/render/lots_decor.cpp`, `src/world/decor_carte.cpp` | **+373 Mo** | arrêt | lot du décor refusé = non dessiné, ou niveau de détail plus léger ; à arbitrer (perte visible) |
+| Trafic : modèles des voitures et des deux-roues — `src/game/traffic_system.cpp` → `loadCarModel` | **+316 Mo** | arrêt | **secours existant** : un modèle illisible est déjà sauté (`if (!models_[mi].ok) continue`) → modèle refusé = sauté (moins de variété) |
+| Bâtiments cuits (paquet) — `src/world/archi_carte.cpp` | +95 Mo | **repli (ce ticket)** | kit de secours |
+| Voiture du joueur — `src/render/model_loader.cpp` | +63 Mo | arrêt | aucun secours (indispensable) : niveau de détail plus léger ou textures réduites |
+| Piétons — `src/world/pietons.cpp`, `src/render/squelette.cpp` | +33 Mo | arrêt | **secours existant** : « Piétons indisponibles : aucun piéton affiché » ; enfants : modèle manquant → aucun enfant |
+| Conducteurs — `src/world/conducteurs.cpp` | +15 Mo | arrêt | **secours existant** : humains réalistes illisibles → homme / femme |
+| Portique, commerces, enseignes, police du texte — `portique.cpp`, `commerces.cpp`, `enseignes.cpp`, `src/ui/text.cpp` | +6, +5, +3, +5 Mo | arrêt | enseignes : « police absente : enseignes sans texte » (secours existant) ; le reste : objet non dessiné |
+| Textures de la route — `src/render/route_revetements.cpp` (`uploadNiveaux`) | +1,5 Mo | arrêt | **secours existant** : surface procédurale (RG-04 de WFS-205) |
+| Cibles de rendu, passes, capture d'environnement, éclairage physique — `passes.cpp`, `environnement.cpp`, `eclairage_physique.cpp` | au démarrage | arrêt | baisser la qualité (résolution, MSAA, cubemap) ; zone de WFS-425 |
+
+## Mesures (RG-05 : rien ne change quand la mémoire suffit)
+
+- **Images** (écart de pixels mesuré sur les PNG, bandeau du texte de mesure exclu) : les 11 captures communes à `main` (7e1475a) et à la branche sur la même base (f7f4128) (paquet, kit, bloc refusé ; jour et nuit) sont **identiques au pixel** (écart moyen 0, maximum 0). Les captures « après » ci-dessous viennent de la branche synchronisée avec `main` d0715fa (WFS-412, 425, 427, 364 fusionnés entre-temps) : écart avec la base précédente inférieur à 0,001 / 255 en moyenne sur les 15 images. Image du repli comparée au kit sans paquet, même trajet : écart moyen 0,09 / 255 (atlas refusé) et 0,04 / 255 (milieu refusé).
+- **Banc `batiments`** (médiane par image, PC lavapipe, main → branche) : paquet rue de jour 650 → 605 ms, façade de près de nuit 663 → 619 ms ; chargement de la Ville avec le paquet 6752 → 6489 ms (écarts dans le bruit du rendu logiciel, aucun dans le mauvais sens hors du bruit).
+- **Banc `perf`** réduit (`WFS_PERF_CARTE=ville`, 60 images de chauffe, 120 mesurées, sans paquet), main → branche : Haute **750 appels / 1 429 541 triangles des deux côtés**, image 1699 → 1765 ms, processeur 3,0 → 2,9 ms ; Basse **256 appels / 412 414 triangles des deux côtés**, image 694,5 → 705,0 ms, processeur 2,1 → 2,4 ms. Les temps d'image du rendu logiciel varient de ± 5 % d'un passage à l'autre (le banc `batiments` donne la branche plus rapide) ; aucune ligne de la boucle de course n'a changé (seulement le chargement).
+- **Banc `cuisson`** (parcours complet avec le paquet) : branche : **0 écart** (« parcours complet avec le paquet : 0 écart(s), 30 fichier(s) lus dans le paquet » ; « parcours complet sans paquet : 0 écart(s) » ; « cuisson (WFS-301) banc : 0 écart(s) OK »).
+
+## Captures pour le lead dev (15 après)
+
+Les 3 demandées en premier : **1.** `gpu-refus-atlas` : Ville de jour, image du 2e atlas refusée → kit de secours ; **2.** `gpu-refus-dernier-nuit` : même rue de nuit, dernier tampon refusé → kit ; **3.** `paquet-rue-jour` : même rue, paquet cuit sans refus, **identique à `main`**. Banc `batiments` en mode rapide (`WFS_BAT_RAPIDE=1`), PC lavapipe, 1280×720. Les captures `gpu-*` n'existent pas sur `main` (étape 5 nouvelle).
+
+Dossier : [`qa/pr/WFS-418`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418) — produit par `tools/qa/captures_pr.sh`.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `batiments-gpu-refus-atlas` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-gpu-refus-atlas.jpg?raw=true) |
+| `batiments-gpu-refus-dernier-nuit` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-gpu-refus-dernier-nuit.jpg?raw=true) |
+| `batiments-paquet-rue-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-paquet-rue-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-paquet-rue-jour.jpg?raw=true) |
+| `batiments-gpu-refus-milieu` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-gpu-refus-milieu.jpg?raw=true) |
+| `batiments-secours-rue-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-secours-rue-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-secours-rue-jour.jpg?raw=true) |
+| `batiments-paquet-facade-pres-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-paquet-facade-pres-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-paquet-facade-pres-nuit.jpg?raw=true) |
+| `batiments-bloc-refuse` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-bloc-refuse.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-bloc-refuse.jpg?raw=true) |
+| `batiments-gpu-compte` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-gpu-compte.jpg?raw=true) |
+| `batiments-paquet-facade-50m` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-paquet-facade-50m.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-paquet-facade-50m.jpg?raw=true) |
+| `batiments-paquet-facade-50m-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-paquet-facade-50m-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-paquet-facade-50m-nuit.jpg?raw=true) |
+| `batiments-paquet-facade-pres` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-paquet-facade-pres.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-paquet-facade-pres.jpg?raw=true) |
+| `batiments-secours-facade-50m` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-secours-facade-50m.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-secours-facade-50m.jpg?raw=true) |
+| `batiments-secours-facade-50m-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-secours-facade-50m-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-secours-facade-50m-nuit.jpg?raw=true) |
+| `batiments-secours-facade-pres` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-secours-facade-pres.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-secours-facade-pres.jpg?raw=true) |
+| `batiments-secours-facade-pres-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/avant-batiments-secours-facade-pres-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-418/qa/pr/WFS-418/apres-batiments-secours-facade-pres-nuit.jpg?raw=true) |
