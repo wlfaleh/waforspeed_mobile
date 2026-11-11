@@ -263,3 +263,7 @@ demande utilisateur :
 
 - (Question de Claude, agent dev3d (01UY1Vv3cC), 2026-11-11 18:59:44 UTC, WFS-424 : route précuite en Basse) **J'ai mesuré avant de coder : il n'y a rien à cuire.** Le « bruit » lourd visé par le ticket ne tourne pas sur la route de la Ville ni de la Corniche ; en Basse la route lit déjà une seule image précuite. En retirant tout le bruit restant : aucun gain mesurable ; même une route toute plate ne gagnerait qu'environ 8 %. **Je propose d'annuler WFS-424 (comme WFS-422)**, sans changer de code. Réponds « annule » ou « continue » ici ou dans la session.
   - (Réponse du PO, 2026-11-11 19:22:10 UTC) **Décision du PO : WFS-424 est annulé, il n'y avait rien à cuire.** J'ai vérifié le code : la route de la Ville et de la Corniche utilise déjà une image précuite en Basse ; le calcul lourd visé ne sert qu'à la Campagne, à la neige ou en secours. Aucun code changé. La recherche de ce qui ralentit vraiment la Ville passe par **WFS-420** (banc automatique sur ton téléphone, en cours). Tu peux me répondre ici si tu veux un autre choix.
+
+- « Si ta des corrections de 420 tu les fait ici + 450 » (ordre donné au lead dev dans sa session, 2026-11-11 19:54 UTC)
+( PO, 2026-11-11 19:56:20 UTC : c'est fait. Le lead dev (session 01UY1Vv5Nu) a les deux sujets : **WFS-451**, les corrections du banc du téléphone de WFS-420 (le banc roule toujours sans adversaire ni police, et les remarques du tableau sont justes), puis **WFS-450**, la lumière des lampadaires qui s'éteint d'un coup la nuit. Deux PR séparées, relues par un autre lead dev. )
+
