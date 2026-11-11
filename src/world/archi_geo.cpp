@@ -3,7 +3,9 @@
 #include "archi_details.h"   // WFS-370 (accroche) : vrais volumes (comble, corniche, garde-corps, soubassement)
 #include "archi_ouvertures.h"   // WFS-402 : menuiseries, volets, portes, appuis et linteaux
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <cstdlib>
 
 namespace wfs::archi {
 namespace {
@@ -12,6 +14,7 @@ constexpr float SOCLE = 1.f;          // murs prolongés sous le sol (pente du t
 constexpr float BALCON_PROF = 0.9f, BALCON_EP = 0.15f, BALCON_DEBORD = 0.3f;      // dalle de balcon (m)
 constexpr float GC_EP = 0.04f;    // épaisseur d'un garde-corps (hauteur 1,00 m : archi_details.cpp, NF P01-012)
 constexpr float LOGGIA = 1.0f;        // profondeur d'une loggia (m)
+constexpr float IMAGE_Z = 0.07f;      // WFS-416 : l'image de la menuiserie est à la face avant du dormant (70 mm devant la vitre, archi_ouvertures.cpp)
 constexpr float PENTE_ZINC = 35.f, PENTE_TUILES = 17.f, DEBORD_TUILES = 0.3f;   // degrés ; débord de toit (m)
 // ST-2 : traits des styles (RG-02)
 constexpr float CADRE = 0.1f, CADRE_SAILLIE = 0.03f;          // encadrement de baie (classique, méditerranéen)
@@ -56,10 +59,6 @@ void pave(Maillage& m, float x0, float x1, float y0, float y1, float z0, float z
     rectY(m, x0, x1, z0, z1, y1, 1); if (dessous) rectY(m, x0, x1, z0, z1, y0, -1);
 }
 
-float profondeurTableau(const Plan& p, const Baie& b) {
-    const ReglesStyle& S = regles(p.style);
-    return b.niveau > 0 && p.etage == Etage::Loggias ? LOGGIA : S.retrait;
-}
 
 // ST-3 : uv d'une vitre = données de sa baie pour la pièce simulée derrière (decor.glsl, interieurFenetre) :
 // u = largeur (dm) × 100 + allège (dm) + x relatif, v = graine × 100 + hauteur (dm) + y relatif (x, y relatifs de 0 à 0,999 ;
@@ -89,10 +88,18 @@ void traits(const Plan& p, const Baie& b, Batiment& out) {
     }
 }
 
-void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
+// WFS-415 (RG-02) : interrupteur des ouvertures de WFS-402 ; 0 (défaut, jeu et APK) : baie d'avant WFS-402
+std::atomic<bool>& ouverturesReelles_() {
+    static std::atomic<bool> actif{[] { const char* e = std::getenv("WFS_OUVERTURES"); return e && e[0] == '1'; }()};
+    return actif;
+}
+
+void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out, Baies mode) {
     const float x0 = b.x - b.l / 2, x1 = b.x + b.l / 2, y0 = b.y, y1 = b.y + b.h;
+    const bool reelles = mode == Baies::Reelles || (mode == Baies::Interrupteur && ouverturesReelles());   // WFS-415 (RG-02) : lu une fois par baie ; WFS-416 : choix de la cuisson
+    const bool image = mode == Baies::Image && lod == 1;
     const bool vitre = b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre || b.type == Ouverture::Vitrine ||
-                       (b.type == Ouverture::Porte && lod < 2 && ouvertures::porteVitree(p));   // WFS-402 : vitrage de la porte (pièce de nuit derrière)
+                       ((reelles || image) && b.type == Ouverture::Porte && lod < 2 && ouvertures::porteVitree(p));   // WFS-402 : vitrage de la porte (pièce de nuit derrière)
     Maillage& fond = vitre ? out.part[VITRE] : out.part[MENUISERIE];
     if (lod >= 2) {   // loin : la baie est peinte à plat, 1 cm devant le mur plein
         const uint32_t k = (uint32_t)fond.v.size();
@@ -109,10 +116,22 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     const uint32_t k = (uint32_t)fond.v.size();
     rectZ(fond, x0, x1, y0, y1, -d, 1);  // vitre ou porte au fond du tableau
     if (vitre) uvVitre(p, b, fond, k);
-    ouvertures::menuiserie(p, b, d, lod, out);   // WFS-402 : dormant, ouvrants, vantaux, quincaillerie (niveaux 0 et 1)
-    ouvertures::volets(p, b, d, lod, out);       // WFS-402 (RG-03) : persiennes, volets pleins ou roulants
+    // WFS-415 (RG-02) : interrupteur à 0 : la baie s'arrête au trou en retrait et à la vitre ou la porte du fond, comme avant
+    // WFS-402 (le code de WFS-402 reste compilé et testé, interrupteur à 1 ; il sera repris cuit dans le paquet, WFS-416)
+    if (image) {   // WFS-416 (RG-04) : menuiserie en image avec relief, au plan du dormant
+        Maillage& im = out.part[IMAGE];
+        const uint32_t ki = (uint32_t)im.v.size();
+        rectZ(im, x0, x1, y0, y1, -d + IMAGE_Z, 1);
+        const float t = (float)tuileImage(p, b);
+        for (uint32_t j = ki; j < im.v.size(); j++) im.v[j].uv = {t + (im.v[j].p.x > b.x ? 0.999f : 0.f), im.v[j].p.y > b.y + b.h / 2 ? 1.f : 0.f};
+        ouvertures::volets(p, b, d, lod, out);   // volets simplifiés du niveau 1 (persiennes, pleins, tablier roulant)
+    }
+    if (reelles) {
+        ouvertures::menuiserie(p, b, d, lod, out);   // WFS-402 : dormant, ouvrants, vantaux, quincaillerie (niveaux 0 et 1)
+        ouvertures::volets(p, b, d, lod, out);       // WFS-402 (RG-03) : persiennes, volets pleins ou roulants
+    }
     if (lod >= 1) return;
-    ouvertures::appuiEtLinteau(p, b, out);       // WFS-402 : appui de pierre à glacis et larmier, linteau visible selon le style
+    if (reelles) ouvertures::appuiEtLinteau(p, b, out);   // WFS-402 : appui de pierre à glacis et larmier, linteau visible selon le style
     // balcon : dalle + garde-corps de 1,00 m (porte-fenêtre ou fenêtre d'étage d'un plan à balcons)
     if (b.balcon && !balconFilant(p, b.niveau)) {
         const float bx0 = x0 - BALCON_DEBORD, bx1 = x1 + BALCON_DEBORD, yb = p.niveauY(b.niveau);
@@ -125,7 +144,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
 }
 
 // façade avant percée : par niveau, bandes de mur entre les ouvertures, au-dessus et au-dessous de chacune
-void facade(const Plan& p, int lod, Batiment& out) {
+void facade(const Plan& p, int lod, Batiment& out, Baies mode) {
     Maillage& mur = out.part[MUR];
     const float haut = p.hRdc + p.etages * p.hEtage;   // haut du dernier niveau (la corniche est au-dessus)
     rectZ(mur, 0, p.largeur, -SOCLE, 0, 0, 1);         // socle
@@ -146,7 +165,7 @@ void facade(const Plan& p, int lod, Batiment& out) {
         rectZ(mur, prev, p.largeur, yb, yt, 0, 1);
     }
     rectZ(mur, 0, p.largeur, haut, p.hauteur(), 0, 1);   // bande sous la corniche
-    for (const Baie& b : p.baies) ouverture(p, b, lod, out);
+    if (mode != Baies::Aucune) for (const Baie& b : p.baies) ouverture(p, b, lod, out, mode);
     if (lod >= 1) return;
     for (int n = 1; n <= p.etages; n++) {   // ST-2 : traits portés par les planchers
         const float yb = p.niveauY(n);
@@ -204,13 +223,37 @@ void toiture(const Plan& p, float D, int lod, Batiment& out) {
 
 } // namespace
 
-void baie(const Plan& p, const Baie& b, int lod, Batiment& out) { ouverture(p, b, std::clamp(lod, 0, 2), out); }   // WFS-402
+float profondeurTableau(const Plan& p, const Baie& b) {
+    const ReglesStyle& S = regles(p.style);
+    return b.niveau > 0 && p.etage == Etage::Loggias ? LOGGIA : S.retrait;
+}
 
-void construire(const Plan& p, float D, int lod, Batiment& out) {
+std::atomic<size_t> g_constructions{0};   // WFS-416 (RG-03)
+size_t constructions() { return g_constructions.load(std::memory_order_relaxed); }
+
+bool ouverturesReelles() { return ouverturesReelles_().load(std::memory_order_relaxed); }
+void choisirOuverturesReelles(bool actif) { ouverturesReelles_().store(actif, std::memory_order_relaxed); }
+
+void baie(const Plan& p, const Baie& b, int lod, Batiment& out, Baies mode) { ouverture(p, b, std::clamp(lod, 0, 2), out, mode); }   // WFS-402
+
+int tuileImage(const Plan& p, const Baie& b) {   // WFS-416 : 0 à 3 fenêtres, 4 à 7 portes-fenêtres, 8 à 11 portes, 12 vitrine, 13 garage
+    int k = 13;
+    switch (b.type) {
+    case Ouverture::Fenetre: k = ouvertures::indiceModeleFenetre(p); break;
+    case Ouverture::PorteFenetre: k = 4 + ouvertures::indiceModeleFenetre(p); break;
+    case Ouverture::Porte: k = 8 + ouvertures::indiceModelePorte(p); break;
+    case Ouverture::Vitrine: k = 12; break;
+    case Ouverture::PorteGarage: k = 13; break;
+    }
+    return (int)p.style * TUILES_PAR_STYLE + k;
+}
+
+void construire(const Plan& p, float D, int lod, Batiment& out, Baies mode) {
+    g_constructions.fetch_add(1, std::memory_order_relaxed);   // WFS-416 (RG-03) : compté, pour prouver « aucune construction en course »
     for (Maillage& m : out.part) { m.v.clear(); m.i.clear(); }
     D = std::max(D, 2.f);
     const float H = p.hauteur(), L = p.largeur;
-    facade(p, std::clamp(lod, 0, 2), out);
+    facade(p, std::clamp(lod, 0, 2), out, mode);
     Maillage& mur = out.part[MUR];
     rectX(mur, 0, 0, -D, -SOCLE, H, -1);   // côtés et arrière (murs aveugles : mitoyens ou cours)
     rectX(mur, L, 0, -D, -SOCLE, H, 1);

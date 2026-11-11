@@ -1,0 +1,32 @@
+[info] cuisson (WFS-301) banc : deux cuissons identiques (astc) : OK
+[info] cuisson (WFS-301) banc : écriture de /tmp/claude-0/-home-user-waforspeed-mobile/6ec9c436-39e0-5485-926d-bd063ea8e6ae/scratchpad/paqc/ville_astc.wfcarte : OK
+[info] cuisson (WFS-301) : ville_astc.wfcarte : 196.56 Mo, 22 textures, 7 maillages, cuit en 1202 ms, vérifié en 694 ms
+[info] cuisson (WFS-301) banc : verifier_carte bon (astc) : OK
+[info] cuisson (WFS-301) banc : deux cuissons identiques (etc2) : OK
+[info] cuisson (WFS-301) banc : écriture de /tmp/claude-0/-home-user-waforspeed-mobile/6ec9c436-39e0-5485-926d-bd063ea8e6ae/scratchpad/paqc/ville_etc2.wfcarte : OK
+[info] cuisson (WFS-301) : ville_etc2.wfcarte : 180.14 Mo, 1 textures, 7 maillages, cuit en 1036 ms, vérifié en 587 ms
+[info] cuisson (WFS-301) banc : verifier_carte bon (etc2) : OK
+[info] cuisson (WFS-301) banc : deux cuissons identiques (rgba8) : OK
+[info] cuisson (WFS-301) banc : écriture de /tmp/claude-0/-home-user-waforspeed-mobile/6ec9c436-39e0-5485-926d-bd063ea8e6ae/scratchpad/paqc/ville_rgba8.wfcarte : OK
+[info] cuisson (WFS-301) : ville_rgba8.wfcarte : 201.15 Mo, 22 textures, 7 maillages, cuit en 1205 ms, vérifié en 704 ms
+[info] cuisson (WFS-301) banc : verifier_carte bon (rgba8) : OK
+[info] cuisson (WFS-301) banc : paquet absent → Ville du code (secours) : OK
+[info] cuisson (WFS-301) banc : paquets corrompu, tronqué et d'un format futur → Ville du code (secours, raisons au journal) : OK
+[info] cuisson (WFS-301) banc : paquet d'une autre génération (empreinte) → Ville du code : OK
+[info] cuisson (WFS-301) banc : paquet valide → activé, lu avant l'APK : OK
+[info] cuisson (WFS-301) banc : des fichiers de la Ville ont été lus dans le paquet : OK
+[info] cuisson (WFS-301) banc : paquet valide (nuit) : OK
+[info] cuisson (WFS-301) banc : 29 / 29 fichiers du paquet identiques à l'APK
+[info] cuisson (WFS-301) banc : fichiers du paquet identiques à ceux de l'APK (même image) : OK
+[info] cuisson (WFS-301) banc : écart de pixels, pour information (reflets, WFS-150) : secours (2e passage) / secours (1er passage après un changement) 0.48 %, secours / paquet (2es passages) 2.78 %
+[info] cuisson (WFS-301) banc : fichier .part refusé : OK
+[info] cuisson (WFS-301) mesure RG-07 : chargement de la Ville construite par le code (sans paquet) : médiane 3556 ms (min 3411, max 3740, 5 chargements), mémoire du jeu ≤ 2808 Mo
+[info] cuisson (WFS-301) mesure RG-07 : chargement de la Ville avec le paquet partiel (ASTC) : médiane 3996 ms (min 3864, max 4092, 5 chargements), mémoire du jeu ≤ 3091 Mo
+[info] cuisson (WFS-301) mesure RG-07 : écart avec / sans paquet : +440 ms (vérification du paquet comprise dans preparerCarte, à part)
+[info] cuisson (WFS-301) banc : parcours : paquet présent et activé : OK
+[info] cuisson (WFS-301) banc : parcours complet avec le paquet : 0 écart(s), 30 fichier(s) lus dans le paquet
+[info] cuisson (WFS-301) banc : parcours complet accueil → Ville → course → retour, paquet présent : OK
+[info] cuisson (WFS-301) banc : parcours : paquet absent → Ville du code : OK
+[info] cuisson (WFS-301) banc : parcours complet sans paquet : 0 écart(s)
+[info] cuisson (WFS-301) banc : parcours complet accueil → Ville → course → retour, paquet absent (secours) : OK
+[info] cuisson (WFS-301) banc : 0 écart(s) OK

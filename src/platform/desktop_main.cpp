@@ -17,6 +17,7 @@
 #include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
 #include "../render/retroviseurs_banc.h"   // WFS-324 (accroche) : WFS_BANC=retroviseurs
 #include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
+#include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
@@ -198,6 +199,7 @@ int main(int argc, char** argv) {
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC
     if (banc == "paquets") { const int e = ecrans::benchPaquets(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-306 (accroche) : installation des paquets (source factice)
     if (banc == "cuisson") { ui::chargerPolice(r); const int e = cartes_v2::benchCuisson(g, r, out, g_root, [](Game& g2, Renderer& r2, const std::string& o) { return benchParcours(g2, r2, o) + parcoursFinMenu(g2, r2, o); }); finir(); return e > 0 ? 3 : 0; }   // WFS-301 (accroche) : paquets de la Ville ; RG-08 : parcours complet
+    if (banc == "batiments") { const int e = cartes_v2::benchBatiments(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-416 (accroche) : bâtiments cuits dans le paquet, captures batiments-*
     if (banc == "neige") { ui::chargerPolice(r); const int e = cartes_v2::benchNeige(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-346 (accroche) : neige lue du paquet, captures neige-*
     if (banc == "credits") { ui::chargerPolice(r); const int e = credits::benchCredits(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-406 (accroche) : menu → Crédits → retour, garage des voitures renommées
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
@@ -275,6 +277,10 @@ int main(int argc, char** argv) {
     if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)
         std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
         const int e = benchCockpitVoisine(g, r, out, v, {"golf", "rrsport", "abarth"}); finir(); return e > 0 ? 3 : 0;
+    }
+    if (banc == "cockpit-volant") {   // WFS-414 (accroche) : gros plans du volant (WFS_VOITURES : liste, sinon les 6 du volant de série + M4, 911)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        benchCockpitVolant(g, r, out, v); return finir();
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)

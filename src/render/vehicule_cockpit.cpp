@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cstring>
 #include "../core/log.h"
+#include "vehicule_cockpit_formes.h"   // WFS-414 : pièces modelées partagées avec le volant
 #include "vehicule_cockpit_geo.h"
 #include "retroviseurs.h"   // WFS-324 : glaces à reflet
+#include "vehicule_cockpit_volant.h"   // WFS-414 : volant et visière calculés sans rendu
 #include "vk.h"
 
 namespace wfs::cockpit {
@@ -30,16 +32,13 @@ const Material& Interieur::mat(const Material& m) const {
 
 // ---------------------------------------------------------------- géométrie
 namespace {
+using namespace formes;   // WFS-414 : pièces modelées (vehicule_cockpit_formes.h)
 
 // centre de la voiture dans le repère de l'œil : Interieur::cx_ (WFS-315 : écart œil-axe du modèle, 0,36 m avant)
-constexpr float GRAIN = 12.f;   // répétitions du grain par mètre (motif de 8 cm, cellules de 2,6 mm : grain réel du cuir et du plastique)
 
 vec3 lin(unsigned h) {
     auto l = [](float c) { return std::pow(c, 2.2f); };
     return {l(((h >> 16) & 255) / 255.f), l(((h >> 8) & 255) / 255.f), l((h & 255) / 255.f)};
-}
-void ajouterUV(Geo& g, const mat4& M, vec3 p, vec3 n, float u, float v) {
-    g.sommet(M, p, n); g.v.back().u = u; g.v.back().v = v;
 }
 
 // profil (y, z) extrudé le long de x, de x0 à x1 : une bande par segment du profil ; normale dans le plan (y, z)
@@ -69,223 +68,6 @@ void extruder(Geo& g, const mat4& M, const std::vector<vec2>& profil, float x0, 
     }
 }
 
-
-// ---------- WFS-323 : pièces modelées (règle de l'utilisateur du 2026-11-09 : aucune forme géométrique nue dans le monde 3D) ----------
-// Chaque pièce ajoutée ou reprise par WFS-323 a les arêtes arrondies et chanfreinées d'une pièce moulée ou gainée (rayons de 2 à
-// 40 mm, comme les vraies garnitures : moulage du plastique, couture du cuir) au lieu d'une boîte à arêtes vives.
-
-// triangle orienté : face avant (sens trigonométrique, comme boite()) du côté où pointent les normales des sommets ; les pièces
-// sont en double face (MAT_DOUBLE), et le shader retourne la normale d'une face vue de dos : un mauvais sens l'assombrirait
-void triOriente(Geo& g, uint32_t a, uint32_t b, uint32_t c) {
-    const Vertex &A = g.v[a], &B = g.v[b], &C = g.v[c];
-    const vec3 pa{A.px, A.py, A.pz}, pb{B.px, B.py, B.pz}, pc{C.px, C.py, C.pz};
-    const vec3 n{A.nx + B.nx + C.nx, A.ny + B.ny + C.ny, A.nz + B.nz + C.nz};
-    if (dot(cross(pb - pa, pc - pa), n) >= 0) g.i.insert(g.i.end(), {a, b, c}); else g.i.insert(g.i.end(), {a, c, b});
-}
-void quadOriente(Geo& g, uint32_t a, uint32_t b, uint32_t c, uint32_t d) { triOriente(g, a, b, c); triOriente(g, a, c, d); }
-
-// contour d'un rectangle à coins arrondis (w × d, rayon r) dans le plan (x, z) : points et normales vers l'extérieur ;
-// `n` pas par coin ; rayon égal à la demi-largeur : contour en stade (bouts ronds)
-struct Contour { std::vector<vec2> p, n; };
-Contour contourArrondi(float w, float d, float r, int n = 5) {
-    r = std::clamp(r, 0.f, std::min(w, d) * 0.5f - 1e-4f);
-    Contour c;
-    const vec2 centres[4] = {{w / 2 - r, d / 2 - r}, {-w / 2 + r, d / 2 - r}, {-w / 2 + r, -d / 2 + r}, {w / 2 - r, -d / 2 + r}};
-    for (int k = 0; k < 4; k++) for (int j = 0; j <= n; j++) {
-        const float a = (k + (float)j / n) * PI * 0.5f;
-        const vec2 dir{std::cos(a), std::sin(a)};
-        c.p.push_back({centres[k].x + dir.x * r, centres[k].y + dir.y * r}); c.n.push_back(dir);
-    }
-    return c;
-}
-
-// pièce moulée : contour arrondi w × d (plan x, z du repère M), épaisseur e le long de y, arêtes chanfreinées de b (dessus et
-// dessous), dessous réduit de `dos` (dépouille du moulage) ; uv en mètres pour le grain
-void dalle(Geo& g, const mat4& M, float w, float d, float e, float r, float b, float dos = 1.f) {
-    b = std::clamp(b, 0.f, std::min({e * 0.5f, w * 0.25f, d * 0.25f}));
-    const Contour c = contourArrondi(w, d, r);
-    const size_t n = c.p.size();
-    // anneaux : (retrait, hauteur, échelle, pente de la normale)
-    struct Anneau { float ins, y, k, ny; };
-    const Anneau A[4] = {{b, e / 2, 1, 0.7f}, {0, e / 2 - b, 1, 0}, {0, -e / 2 + b, dos, 0}, {b, -e / 2, dos, -0.7f}};
-    uint32_t debut[4];
-    for (int a = 0; a < 4; a++) {
-        debut[a] = (uint32_t)g.v.size();
-        for (size_t k = 0; k < n; k++) {
-            const vec2 p = c.p[k], m = c.n[k];
-            const vec3 q{(p.x - m.x * A[a].ins) * A[a].k, A[a].y, (p.y - m.y * A[a].ins) * A[a].k};
-            const vec3 nn = normalize(vec3{m.x * (1 - std::fabs(A[a].ny)), A[a].ny, m.y * (1 - std::fabs(A[a].ny))});
-            ajouterUV(g, M, q, nn, q.x * GRAIN, (q.z + q.y) * GRAIN);
-        }
-    }
-    for (int a = 0; a < 3; a++) for (size_t k = 0; k < n; k++) {
-        const uint32_t i0 = debut[a] + (uint32_t)k, i1 = debut[a] + (uint32_t)((k + 1) % n);
-        quadOriente(g, i0, i1, i1 + (uint32_t)n, i0 + (uint32_t)n);
-    }
-    for (int haut = 0; haut < 2; haut++) {   // faces du dessus et du dessous (normales plates)
-        const Anneau& an = A[haut ? 0 : 3];
-        const float s = haut ? 1.f : -1.f;
-        const uint32_t c0 = (uint32_t)g.v.size();
-        ajouterUV(g, M, {0, an.y, 0}, {0, s, 0}, 0, 0);
-        for (size_t k = 0; k < n; k++) {
-            const vec3 q{(c.p[k].x - c.n[k].x * an.ins) * an.k, an.y, (c.p[k].y - c.n[k].y * an.ins) * an.k};
-            ajouterUV(g, M, q, {0, s, 0}, q.x * GRAIN, q.z * GRAIN);
-        }
-        for (size_t k = 0; k < n; k++) triOriente(g, c0, c0 + 1 + (uint32_t)k, c0 + 1 + (uint32_t)((k + 1) % n));
-    }
-}
-// même pièce, face principale (dessus de la dalle) tournée vers +z du repère M (écrans, rétroviseur, airbag, boîte à gants)
-void dalleFace(Geo& g, const mat4& M, float w, float h, float e, float r, float b, float dos = 1.f) {
-    dalle(g, M * rotateX(PI / 2), w, h, e, r, b, dos);
-}
-
-// repère d'une pièce le long d'un segment (même convention que barre() : y le long du segment, x = y × réf, z = x × y)
-mat4 repereSegment(vec3 a, vec3 b) {
-    const vec3 y = normalize(b - a), ref = std::fabs(y.x) < 0.9f ? vec3{1, 0, 0} : vec3{0, 0, 1};
-    const vec3 x = normalize(cross(y, ref)), z = cross(x, y);
-    mat4 B = mat4::identity();
-    B.at(0, 0) = x.x; B.at(1, 0) = x.y; B.at(2, 0) = x.z;
-    B.at(0, 1) = y.x; B.at(1, 1) = y.y; B.at(2, 1) = y.z;
-    B.at(0, 2) = z.x; B.at(1, 2) = z.y; B.at(2, 2) = z.z;
-    return translate(a) * B;
-}
-// profilé : section arrondie w (axe x du repère) × t (axe z), rayon r, balayée de a à b, bouts fermés par une calotte
-// chanfreinée (montants, traverse, rails de toit, branches du volant, bras d'essuie-glace)
-void profile(Geo& g, const mat4& M, vec3 a, vec3 b, float w, float t, float r, float tB = -1, float wB = -1) {
-    const float l = length(b - a);
-    if (l < 1e-5f) return;
-    if (tB < 0) tB = t;
-    if (wB < 0) wB = w;
-    const mat4 R = M * repereSegment(a, b);
-    const Contour c = contourArrondi(w, t, r, 4);
-    const size_t n = c.p.size();
-    const float bout = std::min(r * 0.6f, l * 0.2f);   // calotte : la section se resserre aux deux bouts
-    const float ys[4] = {0, bout, l - bout, l}, ks[4] = {0.6f, 1, 1, 0.6f};
-    uint32_t debut[4];
-    for (int s = 0; s < 4; s++) {
-        debut[s] = (uint32_t)g.v.size();
-        const float f = ys[s] / l, kx = (w + (wB - w) * f) / w, kz = (t + (tB - t) * f) / t;
-        const float ny = s == 0 ? -0.6f : s == 3 ? 0.6f : 0.f;
-        for (size_t k = 0; k < n; k++) {
-            const vec3 q{c.p[k].x * kx * ks[s], ys[s], c.p[k].y * kz * ks[s]};
-            const vec3 nn = normalize(vec3{c.n[k].x * (1 - std::fabs(ny)), ny, c.n[k].y * (1 - std::fabs(ny))});
-            ajouterUV(g, R, q, nn, (c.p[k].x + c.p[k].y) * GRAIN, ys[s] * GRAIN);
-        }
-    }
-    for (int s = 0; s < 3; s++) for (size_t k = 0; k < n; k++) {
-        const uint32_t i0 = debut[s] + (uint32_t)k, i1 = debut[s] + (uint32_t)((k + 1) % n);
-        quadOriente(g, i0, i1, i1 + (uint32_t)n, i0 + (uint32_t)n);
-    }
-    for (int s : {0, 3}) {
-        const uint32_t c0 = (uint32_t)g.v.size();
-        ajouterUV(g, R, {0, ys[s], 0}, {0, s == 0 ? -1.f : 1.f, 0}, 0, 0);
-        for (size_t k = 0; k < n; k++) triOriente(g, c0, debut[s] + (uint32_t)k, debut[s] + (uint32_t)((k + 1) % n));
-    }
-}
-// pièce moulée balayée le long d'une ligne brisée (visière du combiné) : à chaque station, section arrondie de largeur w (en
-// travers, axe x) et d'épaisseur e (verticale), rayon r ; normales lissées entre stations ; bouts fermés par une calotte chanfreinée
-void lisse(Geo& g, const mat4& M, const std::vector<vec3>& pts, float w, float e, float r) {
-    if (pts.size() < 2) return;
-    const Contour c = contourArrondi(w, e, r, 4);
-    const size_t n = c.p.size(), m = pts.size();
-    std::vector<uint32_t> debut;
-    std::vector<vec3> ts(m), us(m), ss(m);
-    for (size_t i = 0; i < m; i++) {
-        const vec3 t = normalize(pts[std::min(i + 1, m - 1)] - pts[i > 0 ? i - 1 : 0]);
-        const vec3 u = normalize(vec3{0, 1, 0} - t * dot(vec3{0, 1, 0}, t));
-        ts[i] = t; us[i] = u; ss[i] = cross(t, u);
-    }
-    auto anneau = [&](size_t i, float k, vec3 decal, float nt) {
-        debut.push_back((uint32_t)g.v.size());
-        for (size_t j = 0; j < n; j++) {
-            const vec3 q = pts[i] + decal + ss[i] * (c.p[j].x * k) + us[i] * (c.p[j].y * k);
-            const vec3 nn = normalize((ss[i] * c.n[j].x + us[i] * c.n[j].y) * (1 - std::fabs(nt)) + ts[i] * nt);
-            ajouterUV(g, M, q, nn, q.x * GRAIN, (q.y + q.z) * GRAIN);
-        }
-    };
-    const float ch = std::min(r, e * 0.4f);
-    anneau(0, 0.8f, ts[0] * -ch, -0.6f);
-    for (size_t i = 0; i < m; i++) anneau(i, 1.f, {}, 0.f);
-    anneau(m - 1, 0.8f, ts[m - 1] * ch, 0.6f);
-    for (size_t a = 0; a + 1 < debut.size(); a++) for (size_t j = 0; j < n; j++) {
-        const uint32_t i0 = debut[a] + (uint32_t)j, i1 = debut[a] + (uint32_t)((j + 1) % n);
-        quadOriente(g, i0, i1, i1 + (uint32_t)n, i0 + (uint32_t)n);
-    }
-    for (size_t bout : {(size_t)0, debut.size() - 1}) {
-        const size_t i = bout == 0 ? 0 : m - 1;
-        const vec3 centre = pts[i] + ts[i] * (bout == 0 ? -ch : ch);
-        const uint32_t c0 = (uint32_t)g.v.size();
-        ajouterUV(g, M, centre, ts[i] * (bout == 0 ? -1.f : 1.f), 0, 0);
-        for (size_t j = 0; j < n; j++) triOriente(g, c0, debut[bout] + (uint32_t)j, debut[bout] + (uint32_t)((j + 1) % n));
-    }
-}
-
-// cadre arrondi (lunette d'aérateur, entourage d'écran) : contour extérieur w × h, bande de largeur ep, profondeur pr, face
-// tournée vers +z du repère, bords intérieur et extérieur arrondis (un pas de biseau)
-void cadreArrondi(Geo& g, const mat4& M, float w, float h, float r, float ep, float pr) {
-    const Contour ce = contourArrondi(w, h, r), ci = contourArrondi(w - 2 * ep, h - 2 * ep, std::max(0.f, r - ep));
-    const size_t n = ce.p.size();
-    const float b = std::min(ep * 0.35f, pr * 0.4f);
-    // anneaux : extérieur arrière, extérieur avant (biseau), intérieur avant (biseau), intérieur arrière
-    auto anneau = [&](const Contour& c, float ins, float z, float nz, float sens) {
-        const uint32_t d0 = (uint32_t)g.v.size();
-        for (size_t k = 0; k < n; k++) {
-            const vec3 q{c.p[k].x - c.n[k].x * ins * sens, c.p[k].y - c.n[k].y * ins * sens, z};
-            const vec3 nn = normalize(vec3{c.n[k].x * sens * (1 - std::fabs(nz)), c.n[k].y * sens * (1 - std::fabs(nz)), nz});
-            ajouterUV(g, M, q, nn, q.x * GRAIN, q.y * GRAIN);
-        }
-        return d0;
-    };
-    const uint32_t a0 = anneau(ce, 0, -pr, 0, 1), a1 = anneau(ce, 0, -b, 0, 1), a2 = anneau(ce, b, 0, 0.7f, 1),
-                   a3 = anneau(ci, b, 0, 0.7f, -1), a4 = anneau(ci, 0, -b, 0, -1), a5 = anneau(ci, 0, -pr, 0, -1);
-    for (auto [u, v] : {std::pair{a0, a1}, {a1, a2}, {a2, a3}, {a3, a4}, {a4, a5}})
-        for (size_t k = 0; k < n; k++) {
-            const uint32_t k1 = (uint32_t)((k + 1) % n);
-            quadOriente(g, u + (uint32_t)k, u + k1, v + k1, v + (uint32_t)k);
-        }
-}
-
-// jante du volant (plan xy, face +z vers le conducteur) : tube de rayon r autour d'un cercle de rayon R, aplati en bas
-// (méplat : la ligne médiane ne descend pas sous −R × (1 − meplat), raccord arrondi) ; uv pour le grain du cuir
-vec2 ligneJante(float a, float R, float meplat, float meplatHaut = 0) {
-    vec2 p{std::cos(a) * R, std::sin(a) * R};
-    if (meplatHaut > 0) {   // WFS-201 : même raccord en haut (208)
-        const float haut = R * (1 - meplatHaut), raccord = R * 0.08f;
-        if (p.y > haut - raccord) {
-            const float t = std::clamp((p.y - (haut - raccord)) / (2 * raccord), 0.f, 1.f);
-            p.y = p.y + (haut - p.y) * t * t * (3 - 2 * t) * (p.y > haut ? 1.f : 0.5f);
-            if (p.y > haut) p.y = haut;
-        }
-    }
-    if (meplat > 0) {
-        const float bas = -R * (1 - meplat), raccord = R * 0.08f;
-        if (p.y < bas + raccord) {   // fonction douce (min lissé) entre le cercle et la droite du méplat
-            const float t = std::clamp((bas + raccord - p.y) / (2 * raccord), 0.f, 1.f);
-            p.y = p.y + (bas - p.y) * t * t * (3 - 2 * t) * (p.y < bas ? 1.f : 0.5f);
-            if (p.y < bas) p.y = bas;
-        }
-    }
-    return p;
-}
-void jante(Geo& g, const mat4& M, float R, float r, float meplat, float a0, float a1, int n, int m, float meplatHaut = 0) {
-    const uint32_t b = (uint32_t)g.v.size();
-    for (int k = 0; k <= n; k++) {
-        const float a = a0 + (a1 - a0) * k / n;
-        const vec2 c = ligneJante(a, R, meplat, meplatHaut), c2 = ligneJante(a + 0.01f, R, meplat, meplatHaut);
-        const vec2 t{c2.x - c.x, c2.y - c.y};
-        const float tl = std::max(1e-6f, std::sqrt(t.x * t.x + t.y * t.y));
-        const vec3 nr{t.y / tl, -t.x / tl, 0};   // normale dans le plan, vers l'extérieur
-        for (int j = 0; j <= m; j++) {
-            const float w = 2 * PI * j / m;
-            const vec3 n3 = nr * std::cos(w) + vec3{0, 0, 1} * std::sin(w);
-            ajouterUV(g, M, vec3{c.x, c.y, 0} + n3 * r, n3, (a - a0) * R * GRAIN, (float)j / m * 2 * PI * r * GRAIN);
-        }
-    }
-    for (int k = 0; k < n; k++) for (int j = 0; j < m; j++) {
-        const uint32_t a = b + k * (m + 1) + j, c = a + m + 1;
-        g.quad(a, c, c + 1, a + 1);
-    }
-}
 
 // aérateur : cadre (accent) et lames sombres, face +z, centré en c, taille w × h
 // WFS-323 : lunette moulée à bords arrondis (cadreArrondi) et lames profilées (dalles fines à bords ronds), au lieu de boîtes
@@ -661,12 +443,11 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         prend(haut, M_PLANCHE_HAUT); prend(creux, M_PLANCHE_HAUT); prend(face, M_PLANCHE_BAS);
         // casquette (visière) du combiné : avance de la lèvre vers le conducteur au-dessus de l'écran
         Geo cas;
-        const float cw = d.combineW * 0.5f + 0.03f, top = d.combinePos.y + d.combineH * 0.5f + 0.02f;
         // WFS-323 (revue du lead dev) : visière moulée (épaisseur 2,4 cm, arêtes arrondies de 1,1 cm, lèvre fermée par une calotte), le
         // long de la même ligne qu'avant (du pied du pare-brise jusqu'à 7,5 cm devant l'écran) ; avant : profil extrudé à arêtes vives (bloc)
-        const float ev = 0.024f, cz = d.combinePos.z, cxv = d.combinePos.x;
-        lisse(cas, I, {{cxv, Yb - ev * 0.5f, cz - 0.10f}, {cxv, top + 0.015f - ev * 0.5f, cz - 0.03f}, {cxv, top + 0.012f - ev * 0.5f, cz + 0.04f},
-                       {cxv, top + 0.004f - ev * 0.5f, cz + 0.068f}}, 2 * cw, ev, 0.011f);
+        // WFS-414 (RG-07) : ligne calculée sans rendu (ligneVisiere, vehicule_cockpit_volant.cpp), vérifiée par tests/test_cockpit.cpp
+        const Visiere vis = ligneVisiere(d);
+        lisse(cas, I, {vis.pts.begin(), vis.pts.end()}, vis.largeur, vis.ev, 0.011f);
         if (combine) prend(cas, M_PLANCHE_HAUT); else cas = Geo{};
         // jonc décoratif sur toute la largeur, sous la lèvre (alu brossé, carbone, ou liseré rouge de la Golf)
         Geo jonc;
@@ -835,48 +616,17 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
             prend(fe, M_FOND_ECRAN);   // deux matériaux (jour, nuit) : même maillage dessiné avec l'un ou l'autre
         }
     }
-    // volant (repère du volant : plan xy, +z vers le conducteur)
+    // volant (repère du volant : plan xy, +z vers le conducteur) : géométrie sans rendu (WFS-414 : vehicule_cockpit_volant.cpp)
     {
-        const float R = d.volantD * 0.5f - d.janteEp * 0.5f, rt = d.janteEp * 0.5f;
-        Geo ja, br, co[3], rep, pal, man, mol;
-        jante(ja, I, R, rt, d.meplat, 0, 2 * PI, 96, 14, d.meplatHaut);
-        Geo mo;
-        dalleFace(mo, translate({0, 0, -0.012f}), 0.15f, 0.115f, 0.05f, 0.045f, 0.018f, 0.85f);   // moyeu : coussin du sac gonflable, galbé (WFS-323)
-        // branches : 3 (à 9 h, 3 h et 6 h) ou 2 (à 9 h et 3 h, SF90 : branches larges qui portent les commandes)
-        const float hub = 0.07f;
-        // WFS-202 : 4 branches (Range Rover Sport) : deux presque horizontales, deux en V vers le bas
-        std::vector<float> angles = d.branches == 2 ? std::vector<float>{0.f, PI}
-                                  : d.branches == 4 ? std::vector<float>{0.10f, PI - 0.10f, -PI / 2 + 0.45f, -PI / 2 - 0.45f}
-                                                    : std::vector<float>{0.f, PI, -PI / 2};
-        for (float a : angles) {
-            const vec2 bout = ligneJante(a, R, d.meplat, d.meplatHaut);
-            const float l = std::sqrt(bout.x * bout.x + bout.y * bout.y) - hub;
-            const float large = d.branches == 2 ? 0.060f : d.branches == 4 ? (a < 0 ? 0.026f : 0.036f) : (a == -PI / 2 ? 0.032f : 0.040f);
-            profile(br, rotateZ(a), {hub, 0, -0.008f}, {hub + l, 0, -0.008f}, large, 0.016f, 0.007f, -1, large * 0.75f);   // WFS-323 : branche profilée
-        }
-        // coutures colorées en bas de la jante (M4 : bleu clair, bleu foncé, rouge), de part et d'autre de la branche basse
-        const bool coutures = d.couture[0] || d.couture[1] || d.couture[2];
-        for (int k = 0; k < 3; k++) if (d.couture[k])
-            for (float cote : {-1.f, 1.f}) {
-                const float a = -PI / 2 + cote * (0.11f + 0.05f * k);
-                jante(co[k], translate({0, 0, 0.0005f}), R, rt * 1.03f, d.meplat, a - 0.024f, a + 0.024f, 3, 10);
-            }
-        // repère : M4 (boutons M1 / M2 rouges sur les branches), Golf (agrafe GTI rouge sur la branche basse), SF90 (rouge à midi)
-        if (d.repereCol) {
-            if (coutures || d.boutonsBranches) for (float sx : {-1.f, 1.f}) dalleFace(rep, translate({sx * 0.105f, 0.018f, 0.012f}), 0.022f, 0.014f, 0.008f, 0.005f, 0.002f);
-            else if (d.manettino || d.repereHaut) dalleFace(rep, translate({0, R + rt * 0.2f, 0.004f}), 0.012f, rt * 2.1f, rt * 2.1f, 0.005f, 0.003f);
-            else if (!d.demarreur) dalleFace(rep, translate({0, -R * 0.55f, 0.010f}), 0.045f, 0.012f, 0.004f, 0.005f, 0.0015f);   // Giulia : le rouge est le démarreur
-        }
-        if (d.palettes) for (float sx : {-1.f, 1.f}) dalleFace(pal, translate({sx * (R * 0.80f), 0.02f, -0.045f}) * rotateZ(sx * 0.15f), 0.055f, 0.13f, 0.006f, 0.02f, 0.002f, 0.95f);
-        // manettino en bas à droite, démarreur en bas à gauche (sur les branches) ; WFS-201 : démarreur seul (Giulia)
-        if (d.manettino) dalleFace(man, translate({0.085f, -0.055f, 0.012f}), 0.044f, 0.044f, 0.016f, 0.022f, 0.005f, 0.9f);   // WFS-323 : boutons chanfreinés
-        if (d.demarreur) dalleFace(man, translate({-0.085f, -0.055f, 0.010f}), 0.032f, 0.032f, 0.012f, 0.016f, 0.004f, 0.9f);
-        // WFS-201 : molettes (Model 3) : deux roulettes de commande sur les branches horizontales, caoutchouc sombre
-        if (d.molettes) for (float sx : {-1.f, 1.f}) dalle(mol, translate({sx * 0.105f, 0.f, 0.014f}) * rotateZ(PI / 2), 0.022f, 0.022f, 0.010f, 0.011f, 0.003f);
-        prend(ja, M_CUIR, true); prend(mo, M_MOYEU, true); prend(br, M_BRANCHES, true);
-        for (int k = 0; k < 3; k++) prend(co[k], M_COUTURE0 + k, true);
-        prend(rep, M_REPERE, true); prend(pal, d.carbone ? M_ACCENT : M_BRANCHES, d.palettesColonne ? 2 : 1); prend(man, M_REPERE, true);
-        prend(mol, M_LAMES, true);
+        PiecesVolant p;
+        construireVolant(d, p);
+        prend(p.jante, M_CUIR, true); prend(p.moyeu, M_MOYEU, true); prend(p.branches, M_BRANCHES, true);
+        for (int k = 0; k < 3; k++) prend(p.coutures[k], M_COUTURE0 + k, true);
+        prend(p.repere, M_REPERE, true); prend(p.palettes, d.carbone ? M_ACCENT : M_BRANCHES, d.palettesColonne ? 2 : 1); prend(p.manettino, M_REPERE, true);
+        prend(p.molettes, M_LAMES, true);
+        // WFS-414 : volant de série seulement (vides sinon : aucune pièce ajoutée)
+        // coque : plastique noir grainé (comme le bas de planche), même sur les volants à branches alu (S3) ; joint : noir mat
+        prend(p.coque, M_PLANCHE_BAS, true); prend(p.joint, M_LAMES, true); prend(p.plaques, M_LAQUE, true); prend(p.touches, M_MOYEU, true);
     }
     // essuie-glaces : bras + balai, dans le repère du balai (x le long du bras, y vers le haut du pare-brise)
     {
@@ -954,11 +704,24 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     // WFS-323 (ANO-188) : vitesse en chiffres d'au moins 22 % de la hauteur, ramenée dans la partie du combiné vue par l'ouverture
     // haute du volant (bandeLisibleCombine) ; i-Cockpit (vu au-dessus du volant) et Model 3 (écran central) : position du style
     // renvoie le haut des chiffres (le rapport peut se poser juste au-dessus)
+    float basV = 0, hV = 0;   // WFS-414 : bas et hauteur des chiffres de la vitesse (rapport placé par rapport à eux)
     auto vitesse = [&](float xd, float y0, float h) {
         h = std::max(h, H * 0.22f);
         if (!surEcran && d.combine != Combine::PeugeotICockpit) placerDansBande(bandeLisibleCombine(d), H, y0, h);
         nombre(A, xd, y0, h, (int)kmh, 3);
+        basV = y0; hV = h;
         return y0 + h;
+    };
+    // WFS-414 (avis de l'agent 3D sur la PR #343) : volant de série : rapport centré au-dessus des deux chiffres de la vitesse (xd : bord
+    // droit de la vitesse, comme nombre()), un jour de 5 % de la hauteur du combiné entre les deux, sans dépasser la partie vue par le volant
+    // marges sous le haut de la partie vue (bandeLisibleCombine prend le bord du tube de la jante dans son plan du milieu ; vu de
+    // l'œil, le tube rond cache un peu plus bas) : 3 % sur l'Abarth (jour net mesuré, 2e avis), 5 % sur la S3 et la Giulia (3e avis :
+    // le rapport touchait la jante, et la tête qui avance au freinage fait descendre la jante sur le combiné)
+    constexpr float MARGE_JANTE = 0.03f, MARGE_JANTE_RAPPORT = 0.05f;
+    auto rapportAuDessus = [&](float xd, float hMax) {
+        const float y = basV + hV + H * 0.05f, h = std::min(hMax, bandeLisibleCombine(d).haut - H * MARGE_JANTE_RAPPORT - y);
+        const float centre = xd - hV * 0.73f;   // milieu de deux chiffres : de xd − 1,32 h à xd − 0,14 h
+        rapport(A, centre - h * 0.26f, y, h, val.rapport);
     };
     auto barreNitro = [&](float x0, float y0, float x1, float y1) {   // jauge de nitro horizontale
         F.rect(x0, y0, x1, y1); A.rect(x0, y0, x0 + (x1 - x0) * nit, y1);
@@ -1013,8 +776,21 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         arcBarres(A, F, R, {0, 0}, rc * 0.80f, rc, PI * 1.30f, -PI * 0.30f, 52, reg, 0.80f, 0.0026f);
         // WFS-323 (ANO-188) : vitesse de 30 % de la hauteur dans la bande vue, rapport (24 %) posé juste au-dessus (SF90, Abarth : la
         // bande remontait la vitesse sur le rapport)
-        const float hautV = vitesse(H * 0.17f, -rc * 0.80f, H * 0.30f);
-        rapport(A, -H * 0.07f, hautV + H * 0.03f, H * 0.24f, val.rapport);
+        // WFS-414 (avis de l'agent 3D sur la PR #343) : volant de série (Abarth) : le moyeu plus haut ne laisse plus la place du rapport
+        // au-dessus de la vitesse (il passait derrière le haut de la jante) et la carte occupe le tiers droit du cadran : vitesse de 22 %
+        // posée au bas de la partie vue (3 % au-dessus du moyeu), rapport centré au-dessus avec un jour de 3,5 %
+        const BandeCombine bc = bandeLisibleCombine(d);
+        float y0 = -rc * 0.80f, h = H * 0.30f;
+        placerDansBande(bc, H, y0, h);
+        if (volantSeriePour(d) && y0 + h + H * 0.27f > bc.haut) {
+            basV = bc.bas + H * 0.03f; hV = H * 0.22f;
+            nombre(A, H * 0.17f, basV, hV, (int)kmh, 3);
+            const float yr = basV + hV + H * 0.035f, hr = std::min(H * 0.18f, bc.haut - H * MARGE_JANTE - yr);
+            rapport(A, H * 0.17f - hV * 0.73f - hr * 0.26f, yr, hr, val.rapport);
+        } else {
+            const float hautV = vitesse(H * 0.17f, -rc * 0.80f, H * 0.30f);
+            rapport(A, -H * 0.07f, hautV + H * 0.03f, H * 0.24f, val.rapport);
+        }
         barreNitro(-W * 0.44f, -H * 0.30f, -W * 0.24f, -H * 0.24f);   // panneau gauche (véhicule) ; la carte est à droite
         break;
     }
@@ -1022,8 +798,14 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         const float rc = H * 0.46f;
         cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
         cadran(F, A, R, {W * 0.29f, 0}, rc, reg, 0.85f, 26, 0.0022f);
-        rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
-        vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
+        if (volantSeriePour(d)) {   // WFS-414 : volant de série (S3) : le moyeu plus haut remonte la vitesse ; rapport centré au-dessus
+            // (0,235 : bloc de 3 chiffres centré entre les graduations des deux cadrans ; plus à droite, il les mordait : 2e et 3e avis)
+            vitesse(H * 0.235f, -H * 0.36f, H * 0.22f);
+            rapportAuDessus(H * 0.235f, H * 0.26f);
+        } else {
+            rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
+            vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
+        }
         barreNitro(-W * 0.10f, -H * 0.44f, W * 0.10f, -H * 0.40f);
         break;
     }
@@ -1032,8 +814,13 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         cadran(F, A, R, {-W * 0.30f, 0}, rc, vit, 2.f, 24, 0.0024f);
         cadran(F, A, R, {W * 0.30f, 0}, rc, reg, 0.82f, 24, 0.0024f);
         F.rect(-W * 0.12f, -H * 0.40f, W * 0.12f, H * 0.40f);   // écran central du combiné
-        rapport(A, -H * 0.08f, -H * 0.02f, H * 0.28f, val.rapport);
-        vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
+        if (volantSeriePour(d)) {   // WFS-414 : volant de série (Giulia) : rapport centré au-dessus de la vitesse remontée par le moyeu
+            vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
+            rapportAuDessus(W * 0.11f, H * 0.28f);
+        } else {
+            rapport(A, -H * 0.08f, -H * 0.02f, H * 0.28f, val.rapport);
+            vitesse(W * 0.11f, -H * 0.34f, H * 0.22f);
+        }
         break;
     }
     case Combine::PeugeotICockpit: {   // i-Cockpit 3D (208), vu au-dessus du volant : régime en barre en haut, vitesse et rapport au centre

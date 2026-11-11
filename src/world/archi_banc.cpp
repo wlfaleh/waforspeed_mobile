@@ -191,6 +191,7 @@ void benchArchi(Game& g, Renderer& r, const std::string& out) {
     static const Cap CAPS[] = {{"archi-pres-jour", "jour", 0, 0}, {"archi-pres-nuit", "nuit", 0, 0}, {"archi-loin-lod0", "jour", 1, 0},
                                {"archi-loin-lod1", "jour", 1, 1}, {"archi-loin-lod2", "jour", 1, 2}, {"archi-dessus", "jour", 2, 0}};
     g_archi.actif = true;
+    if (!std::getenv("WFS_OUVERTURES")) archi::choisirOuverturesReelles(true);   // WFS-415 (accroche) : banc de WFS-402 avec l'interrupteur à 1
     std::vector<Cap> caps(std::begin(CAPS), std::end(CAPS));
     static std::string noms[NB];
     for (int s = 0; s < NB; s++) { noms[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom; caps.push_back({noms[s].c_str(), "jour", 3, 0}); }

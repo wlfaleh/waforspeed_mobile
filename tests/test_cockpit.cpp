@@ -1,13 +1,18 @@
 // Intérieurs par modèle de la vue cockpit (WFS-197) : choix de l'intérieur (RG-01), volants (RG-03), combiné (RG-04),
 // carte (RG-05), essuie-glaces (RG-06), œil (RG-07), matières dans la charte du réel (DA-realisme.md).
 // usage : test_cockpit
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <set>
 #include <string>
+#include <vector>
 #include "../src/game/cars.h"
 #include "../src/render/vehicule_cockpit.h"
+#include "../src/render/vehicule_cockpit_formes.h"   // ligneJante
+#include "../src/render/vehicule_cockpit_volant.h"
+#include "test_cockpit_volants_main.h"   // WFS-414 (RG-05) : empreintes des volants de main (test_cockpit --empreintes)
 using namespace wfs;
 using namespace wfs::cockpit;
 
@@ -19,7 +24,41 @@ static float lumLin(unsigned h) {
     return 0.2126f * l(((h >> 16) & 255) / 255.f) + 0.7152f * l(((h >> 8) & 255) / 255.f) + 0.0722f * l((h & 255) / 255.f);
 }
 
-int main() {
+// WFS-414 (RG-05) : empreinte d'une pièce du volant : nombres de sommets et d'indices, somme pondérée des indices (topologie, exacte),
+// boîte englobante et centre des sommets (m, comparés à 0,05 mm près : même géométrie, aux arrondis de la bibliothèque près)
+static Empreinte empreinte(const char* car, int piece, const Geo& g) {
+    Empreinte e{car, piece, (int)g.v.size(), (int)g.i.size(), 0u, {1e9f, 1e9f, 1e9f}, {-1e9f, -1e9f, -1e9f}, {0, 0, 0}};
+    for (size_t k = 0; k < g.i.size(); k++) e.topo += g.i[k] * (uint32_t)(k % 97 + 1);
+    for (const Vertex& v : g.v) {
+        const float p[3] = {v.px, v.py, v.pz};
+        for (int a = 0; a < 3; a++) { e.mn[a] = std::min(e.mn[a], p[a]); e.mx[a] = std::max(e.mx[a], p[a]); e.c[a] += p[a] / (float)g.v.size(); }
+    }
+    return e;
+}
+static std::vector<const Geo*> piecesDe(const PiecesVolant& p) {
+    return {&p.jante, &p.moyeu, &p.branches, &p.coutures[0], &p.coutures[1], &p.coutures[2], &p.repere, &p.palettes, &p.manettino,
+            &p.molettes, &p.coque, &p.joint, &p.plaques, &p.touches};
+}
+
+int main(int argc, char** argv) {
+    if (argc > 1 && !std::strcmp(argv[1], "--empreintes")) {   // WFS-414 : écrit tests/test_cockpit_volants_main.h (à lancer sur le code de main)
+        std::printf("// WFS-414 (RG-05) : empreintes des volants des voitures sans volant de série, relevées sur le code de main\n");
+        std::printf("// (test_cockpit --empreintes, avant l'ajout du volant de série) : ces volants ne doivent pas changer\n#pragma once\n#include <cstdint>\n");
+        std::printf("struct Empreinte { const char* car; int piece, nv, ni; uint32_t topo; float mn[3], mx[3], c[3]; };\n");
+        std::printf("static const Empreinte VOLANTS_MAIN[] = {\n");
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            PiecesVolant p; construireVolant(interieur(i), p);
+            const auto ps = piecesDe(p);
+            for (int k = 0; k < (int)ps.size(); k++) {
+                const Empreinte e = empreinte(interieur(i).car, k, *ps[k]);
+                if (!e.nv) continue;
+                std::printf("    {\"%s\", %d, %d, %d, %uu, {%.6ff, %.6ff, %.6ff}, {%.6ff, %.6ff, %.6ff}, {%.6ff, %.6ff, %.6ff}},\n", e.car, k, e.nv, e.ni, e.topo,
+                            e.mn[0], e.mn[1], e.mn[2], e.mx[0], e.mx[1], e.mx[2], e.c[0], e.c[1], e.c[2]);
+            }
+        }
+        std::printf("};\n");
+        return 0;
+    }
     // RG-01 : 4 intérieurs (lot 1), toutes les autres voitures gardent le cockpit commun
     std::set<std::string> avec;
     for (int i = 0; i < CAR_COUNT; i++) if (interieurPour(CARS[i].id)) avec.insert(CARS[i].id);
@@ -202,6 +241,145 @@ int main() {
         }
         cas("combiné : vitesse dans la partie vue par le volant, chiffres ≥ 20 % (WFS-323, ANO-188)", ok);
         cas("combiné de la X5 : le haut de la jante cache le haut du combiné (bande calculée)", bmw);
+    }
+    {   // WFS-414 (RG-05) : le volant de toutes les voitures sans volant de série est celui de main (empreinte de chaque pièce : nombres,
+        // topologie exacte, boîte et centre à 0,05 mm près) ; aucune pièce en plus ni en moins
+        int autres = 0; bool identiques = true;
+        auto proche = [](const float* a, const float* b) { for (int k = 0; k < 3; k++) if (std::fabs(a[k] - b[k]) > 5e-5f) return false; return true; };
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            if (volantSeriePour(d)) continue;
+            autres++;
+            PiecesVolant p; construireVolant(d, p);
+            const auto ps = piecesDe(p);
+            int attendues = 0, trouvees = 0;
+            for (const Empreinte& r : VOLANTS_MAIN) if (!std::strcmp(r.car, d.car)) attendues++;
+            for (int k = 0; k < (int)ps.size(); k++) {
+                const Empreinte e = empreinte(d.car, k, *ps[k]);
+                if (!e.nv) continue;
+                trouvees++;
+                const Empreinte* r = nullptr;
+                for (const Empreinte& x : VOLANTS_MAIN) if (!std::strcmp(x.car, d.car) && x.piece == k) r = &x;
+                const bool ok = r && r->nv == e.nv && r->ni == e.ni && r->topo == e.topo && proche(r->mn, e.mn) && proche(r->mx, e.mx) && proche(r->c, e.c);
+                if (!ok) std::printf("  %s : pièce %d du volant différente de main\n", d.car, k);
+                identiques = identiques && ok;
+            }
+            if (trouvees != attendues) { std::printf("  %s : %d pièces au lieu de %d\n", d.car, trouvees, attendues); identiques = false; }
+        }
+        std::printf("cockpit : %d voitures gardent le volant de main\n", autres);
+        cas("volants des voitures sans volant de série identiques à main (WFS-414, RG-05)", identiques && autres >= 1);
+    }
+    {   // WFS-414 : volant de série des 6 voitures demandées (RG-01 moyeu, RG-02 branches attachées, RG-03 plaques, RG-07 visière),
+        // mesuré sur la géométrie construite (pas sur les constantes)
+        const char* six[] = {"mustang", "golf", "abarth", "tcross", "s3", "giulia"};
+        int nSerie = 0; for (int i = 0; i < nombreInterieurs(); i++) nSerie += volantSeriePour(interieur(i)) ? 1 : 0;
+        bool liste = nSerie == 6; for (const char* c : six) liste = liste && interieurPour(c) && volantSeriePour(*interieurPour(c));
+        cas("volant de série : exactement Mustang, Golf, Abarth, T-Cross, S3 et Giulia (ordre de l'utilisateur)", liste);
+        bool moyeu = true, depart = true, jante = true, largeurs = true, plaques = true, visiere = true, giulia = true, agrafe = true;
+        for (const char* car : six) {
+            const InterieurDef* dp = interieurPour(car); const VolantSerie* sp = dp ? volantSeriePour(*dp) : nullptr;
+            if (!sp) continue;
+            const InterieurDef& d = *dp; const VolantSerie& s = *sp;
+            PiecesVolant p; construireVolant(d, p);
+            const float R = d.volantD * 0.5f - d.janteEp * 0.5f, rt = d.janteEp * 0.5f;
+            // RG-01 : coussin : 200-220 × 140-160 mm, 60-70 mm d'épaisseur, galbe ≥ 15 mm (milieu − face à 4 % du bord)
+            const Empreinte m = empreinte(car, 1, p.moyeu);
+            const float W = m.mx[0] - m.mn[0], H = m.mx[1] - m.mn[1], E = m.mx[2] - m.mn[2];
+            float zBord = -1;
+            for (const Vertex& v : p.moyeu.v) if (std::fabs(v.px) >= 0.48f * W && std::fabs(v.py) < 0.02f) zBord = std::max(zBord, v.pz);
+            const float galbe = m.mx[2] - zBord;
+            const bool okM = W >= 0.200f - 1e-4f && W <= 0.220f && H >= 0.140f && H <= 0.160f && E >= 0.060f && E <= 0.070f && galbe >= 0.015f
+                             && !p.joint.v.empty() && !p.coque.v.empty();
+            std::printf("  %s : coussin %.0f × %.0f × %.0f mm, galbe %.1f mm\n", car, W * 1000, H * 1000, E * 1000, galbe * 1000);
+            moyeu = moyeu && okM;
+            // RG-02 : chaque branche naît ≥ 10 mm dans le coussin, dans l'épaisseur de la coque, et finit dans le tube de la jante
+            for (const float a : {0.f, PI, -PI / 2}) {
+                const vec2 lj = formes::ligneJante(a, R, d.meplat, d.meplatHaut);
+                const float Rl = std::sqrt(lj.x * lj.x + lj.y * lj.y), bord = a == -PI / 2 ? s.moyeuH * 0.5f : demiLargeurCoussin(s, 0);
+                // sections de la branche (profilé : une section par station, largeur linéaire entre les deux stations du milieu)
+                float xmin = 1, xmax = 0, zDep = 0; bool tube = true;
+                std::vector<std::pair<float, float>> sections;   // (position de la station le long de l'axe incliné de la branche, largeur)
+                const float pente = std::atan2(BRANCHE_Z1 - BRANCHE_Z0, Rl + 0.3f * rt - (bord - BRANCHE_DANS));
+                for (const Vertex& v : p.branches.v) {
+                    const float xl = v.px * std::cos(a) + v.py * std::sin(a), yl = -v.px * std::sin(a) + v.py * std::cos(a);
+                    if (xl < 0.02f || std::fabs(yl) > 0.035f) continue;
+                    if (xl < xmin) { xmin = xl; zDep = v.pz; }
+                    xmax = std::max(xmax, xl);
+                    if (xl > Rl - 0.5f * rt) tube = tube && std::hypot(xl - Rl, v.pz) <= rt + 5e-4f;
+                    const float sv = xl * std::cos(pente) + v.pz * std::sin(pente);
+                    bool vu = false;
+                    for (auto& sct : sections) if (std::fabs(sct.first - sv) < 0.0008f) { sct.second = std::max(sct.second, 2 * std::fabs(yl)); vu = true; }
+                    if (!vu) sections.push_back({sv, 2 * std::fabs(yl)});
+                }
+                const float r0 = bord - BRANCHE_DANS, s0 = r0 * std::cos(pente) + BRANCHE_Z0 * std::sin(pente);
+                for (auto& sct : sections) sct.first = r0 + (sct.first - s0) * std::cos(pente);   // ramené à la distance au centre (x)
+                std::sort(sections.begin(), sections.end());
+                auto largeurEn = [&](float x) {   // entre la 2e et l'avant-dernière station
+                    if (sections.size() < 4) return 0.f;
+                    const auto a0 = sections[1], a1 = sections[sections.size() - 2];
+                    return a0.second + (a1.second - a0.second) * std::clamp((x - a0.first) / (a1.first - a0.first), 0.f, 1.f);
+                };
+                const float w0 = largeurEn(bord + COQUE_BORD), w1 = largeurEn(Rl - rt);   // sortie de la coque, arrivée sur la jante
+                depart = depart && xmin <= bord - 0.010f && zDep >= COQUE_Z_ARRIERE && zDep <= COQUE_Z_AVANT;
+                jante = jante && xmax >= Rl && tube;
+                const bool okW = std::fabs(w0 - BRANCHE_W0) <= 0.002f && std::fabs(w1 - BRANCHE_W1) <= 0.002f;
+                largeurs = largeurs && okW;
+                if (!okW) std::printf("  %s : branche %.2f rad : %.1f mm au bord du coussin, %.1f mm à la jante\n", car, a, w0 * 1000, w1 * 1000);
+                if (!(xmin <= bord - 0.010f) || !tube || xmax < Rl)
+                    std::printf("  %s : branche %.2f rad : départ %.1f mm (bord %.1f), bout %.1f mm (jante %.1f), dans le tube %s\n", car, a, xmin * 1000,
+                                bord * 1000, xmax * 1000, Rl * 1000, tube ? "oui" : "non");
+            }
+            // RG-03 : une plaque de chaque côté, 34 à 42 mm le long de la branche, 30 à 41 mm en travers ; touches en relief dessus
+            for (const float sx : {-1.f, 1.f}) {
+                float x0 = 1, x1 = -1, y0 = 1, y1 = -1; int touches = 0;
+                for (const Vertex& v : p.plaques.v) if (v.px * sx > 0) { x0 = std::min(x0, v.px); x1 = std::max(x1, v.px); y0 = std::min(y0, v.py); y1 = std::max(y1, v.py); }
+                for (const Vertex& v : p.touches.v) touches += v.px * sx > 0 ? 1 : 0;
+                const bool ok = x1 - x0 >= 0.033f && x1 - x0 <= 0.0425f && y1 - y0 >= 0.030f && y1 - y0 <= 0.041f && touches > 0;
+                if (!ok) std::printf("  %s : plaque %s %.1f × %.1f mm\n", car, sx < 0 ? "gauche" : "droite", (x1 - x0) * 1000, (y1 - y0) * 1000);
+                plaques = plaques && ok;
+            }
+            if (d.demarreur) { bool g = !p.manettino.v.empty(); for (const Vertex& v : p.manettino.v) g = g && v.px < 0 && v.py < 0; giulia = giulia && g; }
+            if (!std::strcmp(car, "golf")) agrafe = !p.repere.v.empty();
+            // RG-07 : la visière ne cache aucun point du haut de la jante vu de l'œil de la caméra, et un jour d'au moins 5 mm les sépare
+            const Visiere vis = ligneVisiere(d);
+            auto distVisiere = [&](vec3 q) {   // distance (plan y, z) à la ligne de la visière, infinie hors de sa largeur
+                if (std::fabs(q.x - vis.pts[0].x) > vis.largeur * 0.5f) return 1e9f;
+                float best = 1e9f;
+                for (int k = 0; k + 1 < 4; k++) {
+                    const vec2 a{vis.pts[k].y, vis.pts[k].z}, b{vis.pts[k + 1].y, vis.pts[k + 1].z}, ab{b.x - a.x, b.y - a.y}, aq{q.y - a.x, q.z - a.y};
+                    const float t = std::clamp((aq.x * ab.x + aq.y * ab.y) / (ab.x * ab.x + ab.y * ab.y), 0.f, 1.f);
+                    best = std::min(best, std::hypot(aq.x - ab.x * t, aq.y - ab.y * t));
+                }
+                return best;
+            };
+            const mat4 C = translate(d.volantPos) * rotateX(d.volantIncl);
+            const vec3 oeil{0, OEIL_CAMERA_PLUS_M, 0};
+            int caches = 0; float jour = 1e9f;
+            for (int i = 0; i <= 60; i++) {
+                const float th = (40.f + 100.f * i / 60) * PI / 180.f;
+                const vec2 c = formes::ligneJante(th, R, d.meplat, d.meplatHaut);
+                jour = std::min(jour, distVisiere(C.transformPoint({c.x, c.y, 0})) - rt - vis.ev * 0.5f);
+                const vec3 nr = normalize(vec3{c.x, c.y, 0});
+                for (int j = 0; j < 24; j++) {
+                    const float w = 2 * PI * j / 24;
+                    const vec3 nl = nr * std::cos(w) + vec3{0, 0, 1} * std::sin(w);
+                    const vec3 q = C.transformPoint(vec3{c.x, c.y, 0} + nl * rt), n = C.transformDir(nl);
+                    if (dot(n, oeil - q) <= 0) continue;   // face de la jante tournée de l'autre côté
+                    bool cache = false;
+                    for (int k = 1; k < 200 && !cache; k++) cache = distVisiere(oeil + (q - oeil) * (k / 200.f)) < vis.ev * 0.5f;
+                    caches += cache;
+                }
+            }
+            std::printf("  %s : visière : %d points du haut de la jante cachés, jour de %.1f mm\n", car, caches, jour * 1000);
+            visiere = visiere && caches == 0 && jour >= 0.005f;
+        }
+        cas("RG-01 : coussin 200-220 × 140-160 mm, 60-70 mm d'épaisseur, galbe ≥ 15 mm, joint et coque", moyeu);
+        cas("RG-02 : chaque branche naît ≥ 10 mm dans le coussin, dans la coque", depart);
+        cas("RG-02 : chaque branche finit dans le tube de la jante (aucun jour)", jante);
+        cas("RG-02 : branches de 55 mm à la sortie de la coque, 35 mm à la jante (± 2 mm)", largeurs);
+        cas("RG-03 : une plaque de 34-42 × 30-41 mm avec ses touches sur chaque branche horizontale", plaques);
+        cas("Giulia : démarreur rouge sur la plaque gauche, en bas ; Golf : agrafe rouge sur la branche basse", giulia && agrafe);
+        cas("RG-07 : la visière ne cache pas le haut de la jante (jour ≥ 5 mm)", visiere);
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
