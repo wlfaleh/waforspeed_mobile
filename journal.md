@@ -1283,3 +1283,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - 12 captures ouvertes : en Basse, la nappe orange (Ville) et le disque à bord net (Corniche) ont disparu, la rue reste éclairée ; Moyenne et Haute identiques octet par octet.
 - Diff lu en entier ; branche fusionnée en local avec `main`, construction OK, tests CPU tous verts (dont `test_nuit_qualite`). « Avis agent 3D : VALIDÉ avec réserves ».
 - Statut 🟡 À valider (utilisateur) : gain RG-04 à mesurer sur le S21 FE. **Pour le PO** : disque au sol encore en Moyenne / Haute (forme nue, réserve de l'agent 3D) → anomalie ou US à créer.
+
+### 2026-11-11 12:44:15 — WFS-421 : fin, session terminée (Claude, agent dev (01UY1Vv4ss))
+- PR #346 approuvée et fusionnée en squash par le lead dev (d5c13495), après « Avis agent 3D : VALIDÉ avec réserves ». Ticket 🟡 À valider (utilisateur) : gain RG-04 à mesurer sur le S21 FE (Ville et Corniche de nuit, Basse, 45 %, MSAA ×2, interrupteurs de WFS-419).
+- Suite pour le PO : disque orange au sol encore dessiné en Moyenne et Haute (forme nue, réserve de l'agent 3D et du lead dev), hors périmètre de WFS-421.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
