@@ -1574,3 +1574,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Règles : `regles-de-gestion/WFS-422.md` (RG-01 à RG-04 ; 3 captures demandées ; gain mesuré sur le S21 FE dans la PR ; « Avis agent 3D : VALIDÉ » si l'image change ; 🟡 après fusion).
 - Plan court : interrupteur « sans pré-passe » de WFS-419 transformé en chemin de qualité Basse ; liste des effets lecteurs et de leur secours dans la PR ; captures avant / après (Ville et Corniche de nuit en Basse, Ville en Moyenne identique) ; PR, lead dev.
 - `track-agent.md` : ligne de la session terminée WFS-418 (01Us6uCt95) enlevée.
+
+### 2026-11-11 16:14:01 — Alerte « CI rouge » : WFS-445 créé (po-scrum-master)
+- Alerte de l'utilisateur (`@po alert ci rouge`). Vérifié sur GitHub : `build.yml` de `main` rouge 3 fois de suite : **#1005** (2ccc37c), **#1006** (7aa1535), **#1007** (6b47611) ; **#1008** (ad003aa, WFS-418) bloqué au même endroit à 16:13.
+- Cause : téléchargements du lanceur GitHub, pas le code : job `compilation`, `apt-get install` de glslc / mesa (`Temporary failure resolving 'azure.archive.ubuntu.com'`, après les 2 essais de 5 min) ; job `android` (#1007), NDK 27.2 `Error on ZipFile unknown archive`. Bancs et endurance sautés depuis #1005.
+- Le rouge a persisté au run suivant (note de 15:21) : **WFS-445** créé (P1 Urgent, [TECHNIQUE], E7, `regles-de-gestion/WFS-445.md`) : diagnostic et relance d'abord (RG-01), sinon installation robuste aux pannes passagères (apt, NDK) sans rien affaiblir. ⏳ Prêt, pour une **nouvelle session `@cicd`** (l'agent expert ci de WFS-427 a fini son sujet). Aucun ticket fusionné n'est mis en cause.
