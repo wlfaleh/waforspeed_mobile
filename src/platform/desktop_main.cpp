@@ -262,6 +262,7 @@ int main(int argc, char** argv) {
         ui::chargerPolice(r); benchPlancheVoitures(g, r, out); benchVoituresFace(g, r, out); ecrans::benchGarageTour(g, r, out); benchSensInverseVille(g, r, out);
         benchPoursuite(g, r, out); return finir();   // camion : le banc de la Poursuite fixe lui-même son moment (nuit)
     }
+    if (banc == "pause") { ui::chargerPolice(r); ecrans::benchPause(g, r, out); return finir(); }   // WFS-429 (accroche) : bouton Menu et pause seuls
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)
