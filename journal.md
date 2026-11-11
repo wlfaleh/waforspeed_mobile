@@ -1680,3 +1680,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 17:43:54 — WFS-429 approuvé par le lead dev, fusion bloquée par un conflit de journal (lead-dev)
 - PR #356 relue sur b17d9e69 : 84 paires de captures qui diffèrent et 5 `pause-*` ouvertes, diff entier lu, construction et `tests_cpu.sh` refaits (109/109), bancs `hud`, `pause` et `camera` relancés sur la tête (rétroviseurs présents, Menu → pause, 4 appuis Caméra → 4 vues). Revue « ✅ Approuvé » en COMMENT (même compte GitHub).
 - Fusion refusée par GitHub : conflit dans `journal.md` seulement (main a avancé : WFS-365 #355, WFS-445). Le développeur synchronise (aucun code changé), remet la PR en 🔁 et rappelle le lead dev, qui vérifiera que la nouvelle tête = b17d9e69 + main, puis fusionnera.
+
+### 2026-11-11 17:52:26 — WFS-429 fusionné par le lead dev (lead-dev)
+- PR #356 : tête 8f7a76a6 vérifiée (merge de b17d9e69 et de main, diff du ticket identique, journal sans marqueur de conflit) ; « ✅ Approuvé » en COMMENT ; fusion en squash **ee266c6** (`WFS-429 : boutons Caméra et Menu à côté du score, +5 % (#356) (Claude, agent dev (01UY1Vv3Vj))`).
+- `suivi-pr.md` : ligne #356 supprimée ; `TACHES.md` : 🟣 Fusionné ; `qa/Check.md` : ligne ajoutée (points à regarder aux bancs du matin). Pas de 🟡 (précision de l'utilisateur dans WFS-429.md) : ✅ par le robot des statuts après les bancs du matin verts.
