@@ -21,7 +21,7 @@ Agent : Claude, agent dev3d (01UY1Vv3Ji)
   - **Accroche hors zone, 8 lignes** (annoncée au journal), `src/render/correctifs_voitures.h` : les optiques avant de la Gallardo sont reconnues par le nombre de matériaux. Les deux grilles en ajoutent 4 à la fin (18 → 22). Rangs et zones inchangés, comme pour la Golf et la Corsa dans WFS-364.
 - **Comment c'est vérifié** :
   - `node tools/retoucher_formes.mjs --verifier` : vert pour les **11 voitures** retouchées. La 911 et la Gallardo se rejouent depuis leur modèle de `main` à l'octet près (`.wfm` et `.lod`). **La Golf et la Corsa, rejouées depuis leurs modèles d'avant WFS-364 avec l'outil modifié, sont identiques à `main`** (`.wfm` et `.lod`).
-  - Branche synchronisée avec `main`, construction complète, `bash tools/qa/tests_cpu.sh build` : **107 tests réussis**.
+  - Branche synchronisée avec `main`, construction complète, `bash tools/qa/tests_cpu.sh build` : **108 tests réussis**.
   - `test_fidelite_voitures` : 911 et Gallardo ont exactement les mêmes valeurs qu'avec les modèles de `main` (aucune dimension ne bouge). `test_phares_optiques` : OK, optiques de la Gallardo trouvées (≤ 1 cm de la glace).
   - Budget : 911 à 122 070 triangles (124 140 avant les découpes), 5,55 Mo ; Gallardo à 105 725 triangles (99 211 avant), 4,93 Mo. Limites tenues : ≤ 120 k pour la Gallardo, ≤ 8 Mo pour les deux. La 911 dépassait déjà 120 k sur `main` et descend un peu.
   - Captures : 16 vitrines avant / après de jour (face, 3/4 avant, 3/4 arrière, vues basses de face, de 3/4 et de l'arrière, vitrine « feux » au freinage) par `captures_pr.sh`. **16 zooms ×4** (recadrages 2400 × 1080), de jour et de nuit : « avant » rendu par le binaire de `main`, « après » par la branche. Toutes les images ont été regardées une par une.
