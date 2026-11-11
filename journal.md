@@ -1791,3 +1791,19 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Exceptions, sur ordre de l'utilisateur seulement** : deux sujets dans une même session ; deux tickets E4 en même temps (fichiers séparés). Les deux PR sont relues et fusionnées par une autre instance du lead dev.
 - `track-agent.md` remis à jour : lignes des sessions closes enlevées (WFS-428, 420, 424), derniers envois de WFS-383 (19:41) et WFS-392 (19:47).
 
+
+### 2026-11-11 20:10:21 — WFS-377 fusionné par le lead dev (lead-dev)
+- PR #360 relue sur ae957fcd : 4 paires de captures ouvertes, diff lu (seul `src/render/bench_passes.cpp`), construction et banc `realisme` (`WFS_PASSES_SEUL=1`) refaits : 5 / 5 étapes, Ultra 256 px, 0 écart ; tests CPU 109/109 (`test_audio_chocs` instable sous charge, vert relancé seul). « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 6bb5ef3f. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` à jour.
+
+### 2026-11-11 20:10:51 — WFS-377 : fin, PR #360 fusionnée par le lead dev (6bb5ef3f), session terminée (Claude, agent dev3d (01UY1Vv51w))
+- Le banc `realisme` (passes) retrouve « Ultra » dans l'onglet Affichage : parcours WFS-150 5 / 5, 0 écart. À confirmer aux bancs du matin (groupe `realisme-2`, avec WFS-428). Session arrêtée (un seul sujet par session).
+
+
+### 2026-11-11 20:24:59 — WFS-450 : codé, PR #361 ouverte ; accroches annoncées (Claude, lead dev (01UY1Vv5Nu))
+- Ordre de l'utilisateur en cours de session : « dev la 450 en urgence » : WFS-450 passe avant WFS-451 (dont le code est poussé sur `feature/waforspeed-451`, captures à faire ensuite).
+- Cause trouvée au nouveau banc en mouvement (`WFS_BANC=lumieres-mouvement`) : les 4 lampadaires éclairants étaient pris de 4 segments derrière le joueur à 160 devant ; un lampadaire sortait de la liste 5 m derrière la voiture alors qu'il éclaire 26 m autour de lui : chaussée noire d'un coup (Corniche −45 % d'une image à la suivante, Ville −85 %), cachée jusque-là par les disques au sol retirés par WFS-421. La cause du ticket (quota de 4 lumières pris par les voitures de derrière) est corrigée aussi.
+- Fait (Basse seulement) : lampadaires gardés jusqu'à 36 m derrière, entrée et sortie en fondu de 0,3 s ; ordre joueur, lampadaires, autres voitures (RG-01) ; quota de 4 juste et doux dans `eclairage.glsl` (RG-02, RG-04) ; phares des autres voitures en fondu 0,3 s et 55-70 m (RG-03) ; tests dans `tests/test_phares.cpp` (RG-07).
+- Accroches hors zone annoncées : `src/render/renderer.h` (+2 lignes : champ `rang` d'une lumière), `src/game/course5.h` et `course5_system.cpp` (+13 lignes : `course5BancSuiveurs`, adversaires tenus derrière le joueur, banc seulement), `src/platform/desktop_main.cpp` (+2 : banc `lumieres-mouvement`).
+- Vérifié : banc en mouvement, 2 scènes × 45 images à 10 img/s, avant / après sur le même trajet : Corniche 45 % → 9 %, Ville 85 % → 17 % (RG-06 : 20 % au plus), 0 écart ; 110 tests CPU verts, branche synchronisée avec `main`. Paquets installés pour construire : `glslc`, `mesa-vulkan-drivers`, `ninja-build`, `imagemagick`, `libvulkan-dev` (dépôts Ubuntu).
+- Limites : RG-05 (images par seconde sur le S21 FE) non mesuré (pas de téléphone) ; le même retrait du lampadaire existe en Moyenne et en Haute (code gardé, RG-01) : décision du PO ; captures montées à la main (le banc n'existe pas sur `main`, « avant » rejoué par `phares::avant450`).
+- Suite : avis de l'agent 3D (RG-08), puis revue par une autre instance du lead dev.
