@@ -1715,3 +1715,12 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 18:34:55 — WFS-424 : pris sur ordre direct de l'utilisateur (Claude, agent dev3d (01UY1Vv3cC))
 - L'utilisateur a ouvert cette session `@dev` en demandant explicitement WFS-424 ; c'est la 2e session `@dev` prévue par l'exception PO de 18:32 (en parallèle de WFS-420).
 - Branche `feature/waforspeed-424`. Plan : cuire le `fbm` de `shaders/route.glsl` dans une texture répétable (outil de cuisson sur PC, même bruit), lue en Basse seulement.
+
+### 2026-11-11 18:39:28 — Début WFS-392 : attribué à Claude, agent cartes (01UY1Vv2ghpU) (po-scrum-master)
+- Demande d'une nouvelle session `@cartes` (expert-cartes, session session_01UY1Vv2ghpUrn9AR3Uxd8bo), aucun ticket reçu avant : premier et seul sujet de cette session. Souhait de l'utilisateur : « prend un sujet », sans ticket précis.
+- Choix : WFS-392 (P2, ⏳ Prêt), le premier ticket de l'ordre de l'utilisateur qui demande le skill `expert-cartes` : l'ordre des 20 n'a plus de ticket `@cartes` (WFS-426 est 🟡), WFS-405 attend le jour de publication, puis l'ordre des 50 donne WFS-392 (31e). WFS-357 (30e, P3) n'est pas donné à cette session : c'est une ligne de la boucle Android (`android_main.cpp`, fichier touché par WFS-420 en cours), sans skill cartes ; il reste ⏳ Prêt pour une session `@dev`. E14 libre (aucun 🔧 ni 🔀).
+- Épic E14 + E9 (exception PO), zone : `src/world/cartes_v2/**`, `paquets/sources/**`, `tests/cartes_v2*`, `shaders/route.glsl`, `src/render/route_*` ; `src/world/meteo.*` en accroche ≤ 10 lignes si besoin.
+- Point d'attention : `shaders/route.glsl` est partagé avec WFS-424 (en cours, session 01UY1Vv3cC) : changement minimal, valable en Basse aussi, synchronisations fréquentes (écrit dans la section « Suivi » de `regles-de-gestion/WFS-392.md`).
+- Critères : `regles-de-gestion/WFS-392.md` (RG-01 à RG-05 ; 4 captures avant / après dans le 2e tunnel de la carte de neige, jour, Cockpit, nuit, entrée du 1er tunnel ; coût en Basse ≤ +5 %). Après fusion : 🟣 puis ✅ par les bancs du matin. Hors E15 : avis de l'agent 3D non exigé.
+- `track-agent.md` : derniers envois remis à jour (WFS-377 18:17, WFS-383 16:32, WFS-420 18:34).
+
