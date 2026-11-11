@@ -2410,3 +2410,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Publication des paquets** : `paquets.yml` n'est pas automatique (lancement à la main sur `main`). Après la fusion et une CI de `main` verte, l'agent expert ci cd le lance ; la PR porte une section « Après la fusion ».
 - La PR attend toujours la fusion de WFS-415. Suites Corniche et Campagne : à créer après la fusion. `track-agent.md` à jour.
 
+### 2026-11-11 00:02:26 — Ordre de l'utilisateur : WFS-325 en premier après WFS-324 (po-scrum-master)
+- L'utilisateur a demandé la liste des 40 prochaines tâches (donnée dans la session du PO), puis : « tu peux mettre 325 en premier après 324 ».
+- Fait : bandeau dans `TACHES.md` et case Statut de WFS-325 ; WFS-325 passe de la 15e place de l'ordre du 2026-11-10 14:20 UTC à la place juste après WFS-324, avant WFS-405 et WFS-364 à 368. Rien d'autre ne change.
+- WFS-325 reste « En attente » jusqu'à la fusion de WFS-414 (PR #343, mêmes fichiers du cockpit) ; il ira au premier `dev-artiste-3d` (nouvelle session) qui demande. Aucune attribution faite.
