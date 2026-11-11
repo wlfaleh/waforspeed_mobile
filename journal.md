@@ -1819,3 +1819,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-11 20:52:57 — Règle de l'utilisateur : capture des tests CPU dans chaque PR (lead-dev)
 - Ajoutée à la checklist de livraison des développeurs (`agent-developer/references/checklist-livraison.md`, section Preuves) et au point 9 de la revue du lead dev : la fin du journal de `tests_cpu.sh` (ligne « N test(s) réussi(s) », commit testé) est collée dans la PR sous « Tests CPU », journal complet dans `qa/pr/WFS-XX/tests-cpu.log` ; sans elle, le lead dev refuse.
+
+### 2026-11-11 20:53:37 — Capture des tests CPU : exception pour les PR en cours (lead-dev)
+- Sur demande de l'utilisateur, les PR déjà ouvertes le 2026-11-11 à 21:00 UTC (ex. #358) ne sont pas tenues de fournir la capture des tests CPU.
