@@ -1707,3 +1707,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Choix : WFS-420 (P2, US technique, ⏳ Prêt), 6e de l'ordre des 20 de l'utilisateur (12:08 UTC), le prochain `@dev` de la file E4 ; WFS-424 (P1) vient après lui dans cette file. Aucun autre ticket E4 en cours (WFS-383 est en E15).
 - Zone : `src/render/**` (mesures), `src/game/**` (rejeu, accroche ≤ 30 lignes annoncée au journal), `src/ui/ecrans/reglages*`, `src/platform/android_main.cpp` (fichier et partage, ≤ 30 lignes), `tests/**`. Pas de changement de qualité, de décor, de voiture ni de CI.
 - Critères : `regles-de-gestion/WFS-420.md` (RG-01 à RG-06 : banc lancé du menu caché de WFS-419, Ville de nuit puis de jour, 30 s de chauffe + 60 s de mesure, un interrupteur à la fois, tableau à l'écran + `diagnostic-AAAA-MM-JJ-hhmm.txt` partageable, aucun coût hors banc). Après fusion : 🟡 À valider (utilisateur). US technique : CI de branche permise, une à la fois, notée au journal.
+
+### 2026-11-11 18:32:57 — WFS-424 permis en parallèle de WFS-420 (po-scrum-master (session 01UY1Vv4oe))
+- Décision de l'utilisateur : deux sessions `@dev` ouvertes pour WFS-420 et WFS-424. Exception E4 écrite dans `TACHES.md` et `regles-de-gestion/WFS-424.md` (fichiers séparés). Le PO donne **WFS-420 à la 1re session `@dev`, WFS-424 à la 2e** ; ne pas sauter WFS-424 pour un autre ticket.
+
