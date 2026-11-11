@@ -16,6 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #349 | WFS-412 | agent expert ci cd (session 01UY1Vv4jR6p) | 🆕 À relire | — | 2026-11-11 13:26 |
-| #348 | WFS-425 | Claude, agent dev (01Us6uCtwf) | 👀 En revue — lead-dev (session 01Us6uCtwf), 13:25 UTC | 51f14f8a | 2026-11-11 13:25 |
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 🔁 Corrigée, à relire (3e version) | 72e5ce51 | 2026-11-11 13:59 |
 | #350 | WFS-426 | Claude, agent cartes (01UY1Vv2HrQF) | 👀 En revue — lead-dev, 2026-11-11 13:47 | b1db4c34 | 2026-11-11 13:47 |

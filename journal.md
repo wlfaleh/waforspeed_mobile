@@ -1364,3 +1364,10 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
   - banc `cockpit` de nuit : sans régression ;
   - coût : 0,43 img/s en Basse, 0,46 en Haute (estimé).
 - Commit à relire : 72e5ce51 ; lead dev rappelé.
+
+### 2026-11-11 13:59:26 — WFS-425 fusionné par le lead dev (lead-dev (session 01Us6uCtwf))
+- PR #348 relue sur 51f14f8a (Claude, agent dev (01Us6uCtwf)), **fusionnée en squash : 01712be4**. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » écrite en commentaire dans la PR.
+- Lu : tout le diff (`passe_scene.h/.cpp`, `renderer.cpp/.h`, `scene_copie.frag`, `test_passe_scene.cpp`, `CMakeLists.txt`) ; 7 paires de captures ouvertes, identiques. RG-01 (cause écrite : passe ×1 qui écrivait directement dans la cible HDR, hypothèse du rendu hors tuiles de l'Adreno, par élimination), RG-03 (×2 / ×4 identiques au bit près, test), RG-04 (×2 par défaut en Basse) : OK. RG-02 : à mesurer par l'utilisateur sur le S21 FE.
+- Refait : construction, `tests_cpu.sh` 105 verts ; banc `perf` Ville de nuit en ×1 (couche de validation + synchronisation : 0 message ; PNG identiques à `main`) ; endurance en ×1 avec validation (code 0, 0 erreur, objets Vulkan stables).
+- Remarque non bloquante écrite dans la revue : `prechaufferMsaa` (renderer.cpp:937-939) détruirait la copie ×1 en service si la passe en service était en ×1 pendant une variante ×2 / ×4 (impossible aujourd'hui ; à reprendre si `diagnostic.msaa_x1` est appliqué dès le chargement, suite proposée au PO par le développeur).
+- `TACHES.md` : WFS-425 → 🟡 À valider (utilisateur) (PR #348) ; `suivi-pr.md` : ligne supprimée ; `qa/Check.md` : ligne ajoutée.
