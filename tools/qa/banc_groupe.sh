@@ -28,8 +28,9 @@ case "$GROUPE" in
     for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
     mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
     for f in hud/minicarte-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-173 : minicarte-checkpoint-2400, minicarte-ligne-2400
-    mkdir -p fluidite && WFS_BANC=fluidite ./build/wfs_bench fluidite assets/ && cp fluidite/fluidite.txt fluidite/fluidite-*-0[0-5].png captures/   # WFS-221 (accroche) : à-coups avant / après (1280x720)
     mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
+  fluidite)   # WFS-427 : banc des à-coups sorti d'ecrans-2400 (groupe coupé à 75 min aux bancs du matin #12 et #16 ; fluidite seul ≈ 48 min sur la CI)
+    mkdir -p fluidite && WFS_BANC=fluidite ./build/wfs_bench fluidite assets/ && cp fluidite/fluidite.txt fluidite/fluidite-*-0[0-5].png captures/ ;;   # WFS-221 (accroche) : à-coups avant / après (1280x720)
   menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
     mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
     for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/parcours-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-11, WFS-41 ; WFS-135 (ANO-55) : parcours-mode / -terrain / -course

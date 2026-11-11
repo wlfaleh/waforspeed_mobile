@@ -140,7 +140,8 @@ jobs:
       fail-fast: false
       matrix:
         # WFS-352 (RG-03) : complements-a (qualite), complements-b (lod, perf), complements-c (cuisson, cgu, paquets, virages), absents jusque-là
-        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs, realisme-1, realisme-2, complements-a, complements-b, complements-c]
+        # WFS-427 : fluidite sorti d'ecrans-2400 (groupe coupé à 75 min aux runs #12 et #16)
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, fluidite, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs, realisme-1, realisme-2, complements-a, complements-b, complements-c]
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel)
@@ -346,7 +347,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          GROUPES: partie1a partie1b partie2a partie2b partie2c texte ecrans-2400 menu1-2400 menu2-2400 vitrines nuit conduite-chocs realisme-1 realisme-2 complements-a complements-b complements-c realisme
+          GROUPES: partie1a partie1b partie2a partie2b partie2c texte ecrans-2400 fluidite menu1-2400 menu2-2400 vitrines nuit conduite-chocs realisme-1 realisme-2 complements-a complements-b complements-c realisme
         run: bash tools/qa/publier_captures_matin.sh dl/captures
 
   recette:
@@ -367,7 +368,7 @@ jobs:
           RESULTATS: |-
             compilation : ${{ needs.compilation.result }}
             tests CPU et licences : ${{ needs.tests.result }}
-            bancs de captures (17 groupes) : ${{ needs.banc.result }}
+            bancs de captures (18 groupes) : ${{ needs.banc.result }}
             rapports du réalisme : ${{ needs.fusion.result }}
             endurance et chauffe : ${{ needs.endurance.result }}
             APK : ${{ needs.android.result }}
