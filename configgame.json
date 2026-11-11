@@ -50,23 +50,23 @@
   "camera": {
     "poursuite": {
       "recul": 9.0,
-      "hauteur": 6.3,
-      "regard_devant": 10.0,
-      "regard_hauteur": -4.5,
+      "hauteur": 4.7,
+      "regard_devant": 8.0,
+      "regard_hauteur": -4.0,
       "zoom": 64.0
     },
     "proche": {
       "recul": 6.0,
-      "hauteur": 2.67,
+      "hauteur": 2.1,
       "regard_devant": 7.0,
       "regard_hauteur": -2.1,
-      "zoom": 60.0
+      "zoom": 48.0
     },
     "capot": {
       "zoom": 72.0
     },
     "cockpit": {
-      "zoom": 62.0
+      "zoom": 55.0
     },
     "zoom_vitesse": 7.0,
     "zoom_nitro": 6.0,
