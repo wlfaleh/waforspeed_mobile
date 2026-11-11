@@ -1725,6 +1725,21 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - `track-agent.md` : derniers envois remis à jour (WFS-377 18:17, WFS-383 16:32, WFS-420 18:34).
 
 
+### 2026-11-11 18:40:06 — WFS-392 : début, branche créée (Claude, agent cartes (01UY1Vv2ghpU))
+- Ticket reçu du PO (commit bd1a08db), discussion renommée, branche `feature/waforspeed-392` créée depuis `main`.
+- Skills chargés : `agent-developer`, `waforspeed-natif`, `expert-cartes` ; règles `regles-de-gestion/WFS-392.md` lues en entier.
+- Suite : analyse de `carte_donnees_decor.cpp`, de l'abri tunnel / toit (WFS-334, WFS-354), de `shaders/route.glsl` et de `neige_banc.cpp` ; plan écrit ici avant de coder.
+
+### 2026-11-11 19:03:55 — WFS-392 : plan, premier envoi du code et risques signalés (Claude, agent cartes (01UY1Vv2ghpU))
+- Cause de RG-01 : `route::preparer` ne donnait au shader que le 1er tunnel (`g_abri`, 3 nombres dans la couleur du matériau). Fait : chaque tunnel est rangé dans une case (début × 1024 + longueur, en segments), la longueur du tour passe dans le code du matériau (`codeMateriau`, + 256 × tour) ; `abriRoute` de `route.glsl` relit les 3 cases. Changement de `route.glsl` limité à `neigeRoute` et `abriRoute` (aucun appel `fbm`, grain ni fissure touché : WFS-424).
+- RG-02 / RG-03 : nouvelle ligne du bloc decor `tunnel_eclairage type pas_m pas_seuil_m seuil_m` (format des blocs 3 ; défaut : sodium, 12 m, 6 m, 60 m) ; luminaires modélisés pièce par pièce (`tunnel_luminaire.*`), deux files sous la dalle, chemin de câbles ; lumière de nuit par le registre `lampadaires()` (style Plage : sans disque de halo), aucune lumière ajoutée au moteur.
+- Trouvé en regardant les captures de `main` : la bande de sol entre la chaussée et les piédroits restait enneigée, et les lampadaires de rue (mât de 7,6 m) traversaient la dalle à 5,6 m : corrigés dans le décor générique (sol de béton sec sous le tunnel, pas de lampadaire de rue sous un tunnel).
+- Carte d'essai `noel-test` : 2e tunnel (segments 1060 à 1150, en courbe), captures `neige-tunnel2-*` et `neige-tunnel-entree-arriere` ; `WFS_NEIGE=tunnels` ne lance que les scènes des tunnels.
+- Fichiers : `shaders/route.glsl`, `src/render/route_revetements*`, `src/world/cartes_v2/*`, `paquets/sources/noel-test/*`, `tests/test_cartes_v2_*`, `CMakeLists.txt` (une ligne : nouveau test), `references/reel/cartes_v2/tunnel.md`.
+- Vérifié : compilation du banc, `test_cartes_v2_abris` (nouveau), `test_cartes_v2_saison`, `test_cartes_v2_donnees` : OK. **Pas encore vérifié** : le rendu (banc en cours), le coût en Basse (RG-04), tous les tests CPU.
+- **Risque 1 (limite)** : le matériau de la route n'a que 3 nombres libres : **3 tunnels au plus par carte** restent secs (un tunnel de plus de 1,2 km en prend 2) ; au-delà, une ligne au journal du jeu et le tunnel reste enneigé dedans. Lever la limite demande une donnée par sommet de la route (noyau, ticket E0). Décision attendue de : PO.
+- **Risque 2 (avis de l'expert-realisme-3d)** : de jour, l'exposition automatique ne descend pas sous EV 10 (`eclairage_unites.h`, E13, hors zone) : l'intérieur du tunnel reste plus sombre qu'en vrai, luminaires allumés compris. À juger sur les captures ; pas de compensation en gonflant l'émissif. Décision attendue de : PO.
+- Sources de l'espacement : CIE 88:2004 et dossier pilote du CETU, **de mémoire** (réseau limité à GitHub) : valeurs marquées « à confirmer » dans `references/reel/cartes_v2/tunnel.md`.
 ### 2026-11-11 18:42:11 — WFS-428 fusionné par le lead dev (lead-dev)
 - PR #357, revue du commit 8ebad8a2, fusion en squash e4cbb9f1 (titre `WFS-428 : … (#357) (Claude, agent dev (01UY1Vv5Nm))`). « ✅ Approuvé par le lead dev » écrit dans la PR en commentaire (GitHub refuse l'approbation : même compte).
 - Vérifié : 22 paires de captures ouvertes (planche du cube : la Golf est maintenant dans la face +Z ; vues du jeu identiques à l'octet ; Basse : bruit de 57 pixels) ; diff lu en entier (3 fichiers : `environnement.h/.cpp`, `eclairage_physique.cpp`) ; seul appel du jeu en `sansJoueur = true` (WFS-322 gardé), garde `kFacesValides` et `bench_passes.cpp` inchangés, aucune tolérance touchée.
@@ -1799,6 +1814,12 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Le banc `realisme` (passes) retrouve « Ultra » dans l'onglet Affichage : parcours WFS-150 5 / 5, 0 écart. À confirmer aux bancs du matin (groupe `realisme-2`, avec WFS-428). Session arrêtée (un seul sujet par session).
 
 
+### 2026-11-11 20:40:40 — WFS-392 : code fini, captures et mesures, PR à ouvrir (Claude, agent cartes (01UY1Vv2ghpU))
+- Fait : chaussée et trottoir secs sous chaque tunnel (3 au plus), luminaires modélisés en deux files, lumière de nuit par le registre des lampadaires, sol sec jusqu'aux piédroits, plus de lampadaire de rue sous la dalle. **Dalle du tunnel générique relevée de 5,6 à 7,6 m** (comme la Ville et la Corniche) : à 5,6 m, la caméra de la vue Arrière (6,3 m) passait au-dessus de la dalle (défaut de WFS-346 vu sur les captures de `main`).
+- Vérifié : compilation complète ; `tests_cpu.sh` : 111 tests réussis ; banc `WFS_NEIGE=tunnels WFS_BANC=neige` : 0 écart, 7 captures regardées (`qa/pr/WFS-392/`) ; images « avant » faites sur `origin/main` + 2e tunnel d'essai + captures du banc, sans la correction.
+- RG-04 : `WFS_NEIGE=cout` (2e tunnel, qualité Basse, 413 images, 2 passages alternés) : passe de scène de jour 294,2 / 291,6 ms sur main, 271,1 / 273,2 ms sur la branche ; de nuit 265,9 / 261,4 ms sur main, 254,2 / 251,4 ms sur la branche : pas de surcoût (rendu logiciel lavapipe, pas un GPU de téléphone).
+- Synchronisé avec `main` (conflit du journal : les deux côtés gardés). WFS-424 annulé entre-temps : plus de partage de `route.glsl`.
+- Limites : 3 tunnels secs au plus par carte ; tunnel sombre de jour (exposition ≥ EV 10, E13) ; sources de l'espacement citées de mémoire ; parcours complet non rejoué à la main (carte d'essai cachée).
 ### 2026-11-11 20:24:59 — WFS-450 : codé, PR #361 ouverte ; accroches annoncées (Claude, lead dev (01UY1Vv5Nu))
 - Ordre de l'utilisateur en cours de session : « dev la 450 en urgence » : WFS-450 passe avant WFS-451 (dont le code est poussé sur `feature/waforspeed-451`, captures à faire ensuite).
 - Cause trouvée au nouveau banc en mouvement (`WFS_BANC=lumieres-mouvement`) : les 4 lampadaires éclairants étaient pris de 4 segments derrière le joueur à 160 devant ; un lampadaire sortait de la liste 5 m derrière la voiture alors qu'il éclaire 26 m autour de lui : chaussée noire d'un coup (Corniche −45 % d'une image à la suivante, Ville −85 %), cachée jusque-là par les disques au sol retirés par WFS-421. La cause du ticket (quota de 4 lumières pris par les voitures de derrière) est corrigée aussi.
@@ -1807,3 +1828,21 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Vérifié : banc en mouvement, 2 scènes × 45 images à 10 img/s, avant / après sur le même trajet : Corniche 45 % → 9 %, Ville 85 % → 17 % (RG-06 : 20 % au plus), 0 écart ; 110 tests CPU verts, branche synchronisée avec `main`. Paquets installés pour construire : `glslc`, `mesa-vulkan-drivers`, `ninja-build`, `imagemagick`, `libvulkan-dev` (dépôts Ubuntu).
 - Limites : RG-05 (images par seconde sur le S21 FE) non mesuré (pas de téléphone) ; le même retrait du lampadaire existe en Moyenne et en Haute (code gardé, RG-01) : décision du PO ; captures montées à la main (le banc n'existe pas sur `main`, « avant » rejoué par `phares::avant450`).
 - Suite : avis de l'agent 3D (RG-08), puis revue par une autre instance du lead dev.
+
+### 2026-11-11 20:41:50 — WFS-392 : PR #362 ouverte, lead dev appelé (Claude, agent cartes (01UY1Vv2ghpU))
+- PR #362 (`feature/waforspeed-392`, commit 179db9ac) : chaussée sèche sous chaque tunnel des cartes de données, tunnel générique éclairé. 7 captures « après », 5 « avant » dans `qa/pr/WFS-392/`.
+- `TACHES.md` 🔀 En PR, `track-agent.md`, `suivi-pr.md` (🆕) mis à jour. Détail du travail, mesures et limites : entrées WFS-392 du journal sur la branche.
+- **Pour le PO** : (1) 3 tunnels secs au plus par carte (cases du matériau de la route) : lever la limite demande un ticket E0 ; (2) tunnel sombre de jour : plancher d'exposition EV 10 et pas de lumière locale de jour (E13) : à décider (ticket d'exposition sous tunnel, ou accepter) ; (3) dalle du tunnel générique relevée de 5,6 à 7,6 m pour la caméra de la vue Arrière.
+
+### 2026-11-11 20:51:14 — WFS-450 fusionné par le lead dev (lead-dev)
+- PR #361 (squash 5219c17a), relue par une autre instance que l'auteur, sur ordre de l'utilisateur. Avis agent 3D VALIDÉ. Statut 🟡 À valider (RG-05 sur le S21 FE).
+- Pour le PO : retrait du lampadaire 5 m derrière la voiture encore en Moyenne / Haute ; taches jaunes ovales sur la chaussée de la Ville (antérieures).
+
+### 2026-11-11 20:52:57 — Règle de l'utilisateur : capture des tests CPU dans chaque PR (lead-dev)
+- Ajoutée à la checklist de livraison des développeurs (`agent-developer/references/checklist-livraison.md`, section Preuves) et au point 9 de la revue du lead dev : la fin du journal de `tests_cpu.sh` (ligne « N test(s) réussi(s) », commit testé) est collée dans la PR sous « Tests CPU », journal complet dans `qa/pr/WFS-XX/tests-cpu.log` ; sans elle, le lead dev refuse.
+
+### 2026-11-11 20:53:37 — Capture des tests CPU : exception pour les PR en cours (lead-dev)
+- Sur demande de l'utilisateur, les PR déjà ouvertes le 2026-11-11 à 21:00 UTC (ex. #358) ne sont pas tenues de fournir la capture des tests CPU.
+
+### 2026-11-11 21:01:27 — WFS-392 fusionné par le lead dev, ordre de l'utilisateur (lead-dev)
+- PR #362, squash 4e3320ad, après l'approbation écrite dans la PR sur 179db9ac par le lead dev appelé par le développeur. Statut 🟣 Fusionné.

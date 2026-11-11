@@ -99,18 +99,27 @@ const float BORDURE_LARGEUR_M = 0.30;    // M-04 : bloc de granit de la bordure 
 const float DEMI_CHAUSSEE_M = 7.5;
 const float RACCORD_ALB_RECENT = 0.93;   // WFS-244 (RG-02) : enrobé repris récent / ancien, facteur d'albédo (voisin : 0,87 à 1,02)
 const float RACCORD_ALB_ANCIEN = 0.97;   //   écart ≤ 8 % avec la moyenne d'une voie (test_fidelite_routes)       // RW (src/game/track.h) : le trottoir commence là (uv.x = latéral en mètres)
-// pc.params.z = mode de lecture + 4 × carte + 16 × neige (route::codeMateriau) ; carte : 0 Ville, 1 Campagne, 2 Corniche, 3 Grand Prix ;
+// pc.params.z = mode de lecture + 4 × carte + 16 × neige + 256 × tour (route::codeMateriau) ; carte : 0 Ville, 1 Campagne, 2 Corniche, 3 Grand Prix ;
 // WFS-346 : neige au sol de la carte (saison du paquet), en huitièmes (route::NEIGE_PAS)
 float modeLecture() { return mod(pc.params.z, 4.0); }
 int carteRoute() { return int(mod(floor(pc.params.z / 4.0 + 0.01), 4.0)); }
-float neigeRoute() { return floor(pc.params.z / 16.0 + 0.01) / 8.0; }
-// WFS-346 : sous le toit d'un tunnel la chaussée est sèche : pc.color = (début, fin, longueur du tour) du tunnel en mètres le long de la
-// route (route::preparer ; couleur inutilisée par la chaussée et le trottoir) ; neige apportée par les roues sur les 8 premiers mètres
+float neigeRoute() { return mod(floor(pc.params.z / 16.0 + 0.01), 16.0) / 8.0; }
+// WFS-346, WFS-392 (RG-01) : sous le toit de chaque tunnel la chaussée est sèche. pc.params.z porte aussi 256 × longueur du tour en
+// segments (0 : aucun abri) ; pc.color.xyz (couleur inutilisée par la chaussée et le trottoir) : un abri par case, entier
+// = début × 1024 + longueur, en segments le long de la route (route::coderAbris ; 0 : case vide) ; neige apportée par les roues
+// sur les 8 premiers mètres
+const float SEG_ROUTE_M = 1.2;           // SEG_M (src/game/track.h) ; même valeur dans route_revetements.h (test_cartes_v2_abris)
 float abriRoute(float y) {
-    if (pc.color.z <= 1.0) return 1.0;
-    float d = mod(y, pc.color.z);
-    float dedans = min(d - pc.color.x, pc.color.y - d);   // m sous le toit (négatif : dehors)
-    return 1.0 - smoothstep(-1.0, 8.0, dedans);
+    float tour = floor(pc.params.z / 256.0 + 0.001) * SEG_ROUTE_M;
+    if (tour <= 0.0) return 1.0;
+    float d = mod(y, tour), sec = 0.0;
+    for (int k = 0; k < 3; k++) {
+        float c = pc.color[k], lon = mod(c, 1024.0);
+        if (lon < 0.5) continue;
+        float debut = floor(c / 1024.0 + 0.001) * SEG_ROUTE_M;
+        sec = max(sec, smoothstep(-1.0, 8.0, min(d - debut, debut + lon * SEG_ROUTE_M - d)));   // m sous le toit (négatif : dehors)
+    }
+    return 1.0 - sec;
 }
 
 // ---------- WFS-346 (RG-01) : chaussée enneigée (neige tassée), lue de la saison de la carte ----------

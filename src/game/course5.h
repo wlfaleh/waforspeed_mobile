@@ -31,6 +31,9 @@ void choixModeBanc(bool force);
 // de l'écran de fin de la course à 5 (« rejouer », « menu ») et record battu à la dernière course à 5
 bool choixModeCentre(const std::string& zone, float& x, float& y);
 bool course5Bouton(const std::string& nom, float& x, float& y);
+// WFS-450 (accroche) : banc « lumieres-mouvement » : ordinateurs tenus à un écart fixe du joueur (m, < 0 : derrière) dans une file
+// (0 à 2), à sa vitesse, sans leur conduite ; liste vide : rien ne change
+void course5BancSuiveurs(const std::vector<std::pair<double, int>>& ecartsM);
 int course5Positions(double* rd, int max);   // WFS-173 (RG-08) : distance des ordinateurs (unités), lecture seule ; rend leur nombre
 bool course5NouveauRecord();
 class Game; class Renderer; struct Player;
