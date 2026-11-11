@@ -2403,3 +2403,10 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - La 2e relecture du lead dev s'est arrêtée avant son verdict, par une erreur de l'API (limite hebdomadaire d'usage atteinte jusqu'au 15/11, 17:00 UTC). Rien n'a été fusionné ni refusé.
 - `suivi-pr.md` : #341 remise de « 👀 En revue » à « 🔁 Corrigée, à relire », pour le passage automatique du lead dev.
 - Branche resynchronisée avec `main`, à la demande de l'utilisateur : fichiers de suivi seulement, aucun code changé depuis d77ac9f5.
+
+### 2026-11-10 23:50:05 — WFS-416 : 3 écarts aux règles arbitrés (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv4rv), branche `feature/waforspeed-416` à 3712668e (dernier envoi 2026-11-10 23:48 UTC).
+- **Acceptés tous les trois** (détail dans `regles-de-gestion/WFS-416.md`, section Suivi) : (1) niveau 0 recopié du paquet dans 3 tampons réservés au chargement (aucune construction, aucun tampon créé en course) ; (2) mémoire : la phrase « pas plus haute qu'avant » de la RG-07 est retirée (décision de l'utilisateur : aucune limite de mémoire pour le décor), repli sur le kit de secours si une réservation échoue ; (3) paquet de la Ville 189 à 206 Mo, dans le budget E15.
+- **Publication des paquets** : `paquets.yml` n'est pas automatique (lancement à la main sur `main`). Après la fusion et une CI de `main` verte, l'agent expert ci cd le lance ; la PR porte une section « Après la fusion ».
+- La PR attend toujours la fusion de WFS-415. Suites Corniche et Campagne : à créer après la fusion. `track-agent.md` à jour.
+
