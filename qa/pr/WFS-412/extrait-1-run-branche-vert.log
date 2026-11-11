@@ -1,0 +1,17 @@
+# Extrait 1 — run de branche n° 1000 (workflow_dispatch de build.yml sur feature/waforspeed-412, commit 75a99915, synchronisé avec main 889159b6)
+# Run : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43023690539
+# Job banc-essai (texte) : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43023690539/job/130535948142
+#
+# Limite : le journal complet (archive zip) est sur un hôte que le réseau de la session refuse, et l'API ne rend que les
+# 5 000 dernières lignes du job (toutes dans « Captures du rendu (texte) »). Les lignes « [OK] test_… » et le résumé
+# « tests CPU : N test(s) réussi(s) » se lisent donc sur la page du job, étape 6. Ci-dessous : l'état des étapes rendu
+# par l'API GitHub (get_workflow_job / list_workflow_jobs), 2026-11-11 ≈ 14:00 UTC.
+
+Job banc-essai (texte)
+  6. Test de la piste (identique au jeu web)   success   12:56:36 → 13:03:01 (6 min 25 s ; run de main #998 : 402 s pour les 103 tests)
+     = nouveau bloc : t=0; tests_cpu.sh || t=$? ; l=0; verifier_licences.py || l=$? ; exit max(t, l)
+     → code 0 : tous les tests CPU verts ET licences sans manque (sinon l'étape serait rouge)
+  7. Captures du rendu (texte)                  success   13:03:01 → ≈ 13:59
+
+Autres jobs du run : compilation success · android success (APK + AAB signés) · endurance success (endurance + chauffe)
+                     banc-essai (menu1-2400) success · publication-apk success (Release apercu-waforspeed-412, pas apercu)
