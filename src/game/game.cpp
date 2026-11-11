@@ -22,6 +22,7 @@
 #include "../render/qualite_auto.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche) : conducteurs dans les voitures
 #include "../world/cartes_v2/carte_donnees.h"   // WFS-346 (accroche) : saison de la carte
+#include "../world/sols.h"   // WFS-383 (accroche) : sol de la carte (sols.glsl)
 
 namespace wfs {
 
@@ -50,7 +51,8 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite), mapId);   // WFS-205, WFS-206 (accroche) : revêtement de la carte
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::chaussee(), m);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
-    m.flags = MAT_GROUND; m.rough = 0.95f; groundMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+    m.flags = MAT_GROUND; m.rough = 0.95f;
+    { sols::Climat c; groundMat_ = r.makeMaterial(sols::climatCarte(mapId, c) ? sols::materiau(c) : m, nullptr, nullptr, nullptr); }   // WFS-383 (accroche) : sol de la carte
     conducteurs::preparer(r);   // WFS-73 (accroche) : homme / femme en pose assise
     m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f}; shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     {

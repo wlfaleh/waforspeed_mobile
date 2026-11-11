@@ -30,7 +30,7 @@ namespace carte {
 
 using Geo = veg::Geo;
 // P_TEXTE0..2 : lettres des panneaux publicitaires du circuit (WFS-93), une part par couleur de lettres
-enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_TEXTE0, P_TEXTE1, P_TEXTE2, P_COUNT };
+enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_TEXTE0, P_TEXTE1, P_TEXTE2, P_TERRE, P_COUNT };   // WFS-383 : P_TERRE sol naturel (sols.glsl)
 constexpr int PAL_W = 128;                // cases de la palette
 constexpr int AHEAD = 22, BEHIND = 2;     // morceaux dessinés (comme la route de Game)
 // WFS-268 (décision du PO, 2026-11-07 18:33 UTC) : Campagne et Grand Prix gardent l'ancienne gestion en course (un tour préparé
@@ -92,6 +92,8 @@ protected:
     // WFS-343 (accroche) : couleurs propres à la carte dans les cases libres de la palette (C_NB à PAL_W − 1) ; touffes d'herbe des bas-côtés
     virtual void couleursCarte(std::array<uint32_t, PAL_W>&) const {}
     virtual bool touffes() const { return true; }
+    // WFS-383 : bande de sol naturel (herbe, champ, fossé, forêt, colline) dessinée avec le sol des cartes (sols.glsl, pente et taches)
+    virtual bool solNaturel(int col) const;
     // profil des bas-côtés (GROUND) de la zone, côté side (±1), au segment a (couleurs qui dépendent du segment)
     virtual int profil(const char* zone, int64_t a, int side, Band out[6]) const = 0;
     // objet du décor (deco.items du jeu web) : type propre à la carte (T_TREE, T_VERGE, T_LAMP : communs), paramètres
@@ -138,6 +140,7 @@ protected:
     bool active_ = false, night_ = false;
     Track* track_ = nullptr;
     Material mats_[P_COUNT];
+    bool solActif_ = false;   // WFS-383 : la carte a un climat de sol (cartes du code ; carte de données avec sa ligne « sol »)
     Image palTex_{}, leafTex_{}, routeTex_{};
     int lastDraws_ = 0;
     int64_t depart_ = 0;   // banc d'essai : départ du joueur avancé de depart_ segments (WFS_DEPART)

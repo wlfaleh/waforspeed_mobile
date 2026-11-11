@@ -10,6 +10,7 @@
 #include "../core/platform.h"
 #include "../game/player.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
+#include "sols.h"   // WFS-383 : sols des cartes
 #include "zones.h"
 
 namespace wfs {
@@ -123,6 +124,10 @@ void toit(Geo& g, vec3 c, vec3 r, vec3 f, float L, float H, float W, vec2 uv) {
 }
 
 // ---------------------------------------------------------------- système
+bool CarteDecor::solNaturel(int col) const {   // WFS-383
+    return col == C_VERGE || col == C_DITCH || col == C_FOREST || col == C_FARHILL || (col >= C_FIELD0 && col <= C_VINE_B) || col == C_GRASS || col == C_GRASS2;
+}
+
 void CarteDecor::init(Renderer& r, const GameView& g) {
     active_ = g.map && std::strcmp(g.map->id, carteId()) == 0;
     if (!active_) return;
@@ -144,6 +149,11 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     // couleurs unies : éclairage du feuillage (MAT_VTINT, sans reflet), comme le matériau « side » du jeu web
     Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE | MAT_VTINT;
     mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
+    {   // WFS-383 : sol naturel : couleur de la bande gardée (champs), sauf en automne (couleurs mesurées du climat)
+        sols::Climat c = sols::Climat::Tempere;
+        solActif_ = sols::climatCarte(g.map->id, c);
+        mats_[P_TERRE] = r.makeMaterial(sols::materiau(c, c != sols::Climat::Automne), &palTex_, nullptr, nullptr);
+    }
     // lampes : part propre (neonK du jeu web : 1 la nuit, 0,5 de jour)
     // WFS-225 (RG-01) : lampes allumées la nuit sur toutes les cartes (la campagne les avait éteintes : envFor lamps = false du web)
     Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE;
@@ -387,7 +397,7 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
             for (int i = 0; i < n; i++) {
                 if (!serre) {
                     const Band& q = n1 == n && b1[i].col == b[i].col ? b1[i] : b[i];   // bord au segment suivant
-                    quadSol(out[P_UNI], lateral(p0, s * b[i].a, b[i].ya), lateral(p1, s * q.a, q.ya), lateral(p1, s * q.b, q.yb), lateral(p0, s * b[i].b, b[i].yb), uv(b[i].col));
+                    quadSol(out[solActif_ && solNaturel(b[i].col) ? P_TERRE : P_UNI], lateral(p0, s * b[i].a, b[i].ya), lateral(p1, s * q.a, q.ya), lateral(p1, s * q.b, q.yb), lateral(p0, s * b[i].b, b[i].yb), uv(b[i].col));   // WFS-383
                     continue;
                 }
                 // WFS-212 (RG-02) : bande découpée en pas de 1 m (même surface) jusqu'à RW + 40 m ; un pas posé sur une autre branche
@@ -397,7 +407,7 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
                     auto y = [&](float x) { return b[i].ya + (b[i].yb - b[i].ya) * (x - b[i].a) / (b[i].b - b[i].a); };
                     const vec3 m = (lateral(p0, s * x0) + lateral(p1, s * x1)) * 0.5f;
                     if (!surAutreChaussee(m, a, 0.f) && !surGiratoire(m, 0.2f))   // WFS-248 : rien sur le giratoire reconstruit
-                        quadSol(out[P_UNI], lateral(p0, s * x0, y(x0)), lateral(p1, s * x0, y(x0)), lateral(p1, s * x1, y(x1)), lateral(p0, s * x1, y(x1)), uv(b[i].col));
+                        quadSol(out[solActif_ && solNaturel(b[i].col) ? P_TERRE : P_UNI], lateral(p0, s * x0, y(x0)), lateral(p1, s * x0, y(x0)), lateral(p1, s * x1, y(x1)), lateral(p0, s * x1, y(x1)), uv(b[i].col));   // WFS-383
                     x0 = x1;
                 }
             }
@@ -426,6 +436,7 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
             else dessine(t, it, a, p, lod, out);
         }
     }
+    sols::lisserNormales(out[P_TERRE].v, out[P_TERRE].i);   // WFS-383 (RG-01) : plus de facettes sur le terrain
 }
 
 VueBancCarte g_vueCarte;

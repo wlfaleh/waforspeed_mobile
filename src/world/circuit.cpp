@@ -143,6 +143,7 @@ void ligne(Geo& g, vec3 c, vec3 x, float w, float h, const vie::Texte& T) {
 class Circuit : public CarteDecor {
 public:
     const char* name() const override { return "circuit"; }
+    bool solNaturel(int col) const override { return col == C_TONTE || CarteDecor::solNaturel(col); }   // WFS-383 : herbe tondue en bandes
     void init(Renderer& r, const GameView& g) override {
         basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = tribunes_ = spectateurs_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
         parois::effacer("circuit");   // WFS-275 (accroche)

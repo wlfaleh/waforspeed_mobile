@@ -67,6 +67,7 @@ struct DonneesCarte {
     std::vector<Bande> sol;                 // bandes de chaque côté (m depuis l'axe), au plus 6
     bool herbe = true;                      // touffes d'herbe des bas-côtés (« herbe 0 » : sol enneigé, parking…)
     Saison saison;                          // WFS-346 : adhérence, neige au sol, flocons
+    int climatSol = 0;                      // WFS-383 : « sol mediterraneen|tempere|automne » (sols::Climat : 1, 2, 3) ; 0 : sans (bandes unies)
     std::vector<Objet> objets, obstacles;
     int64_t segments() const;               // longueur du tour (segments) d'après les routes
 };

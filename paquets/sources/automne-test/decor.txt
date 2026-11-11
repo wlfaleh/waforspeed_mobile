@@ -3,6 +3,8 @@ format 2
 adherence 0.9 0.45
 ciel 0xe2d2b8 700 0x1a1424 0x0d0a12 480
 herbe 1
+# WFS-383 : sol d'automne (pré fané, feuilles mortes variées, terre, roche selon la pente) au lieu des aplats orange
+sol automne
 bande 7.5 9 0 -0.05 0x7a6a3a
 bande 9 50 -0.05 0.3 0xa86a2a
 bande 50 160 0.3 4 0xb8823a
