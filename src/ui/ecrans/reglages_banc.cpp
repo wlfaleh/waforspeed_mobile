@@ -24,6 +24,7 @@
 #include "../../core/platform.h"
 #include "../../core/system.h"
 #include "../../game/camera_vue.h"
+#include "../../game/course5.h"   // WFS-451 (RG-01) : modeCourse()
 #include "../../game/course_system.h"
 #include "../../game/game.h"
 #include "../../game/reseau_relais.h"
@@ -79,6 +80,8 @@ int g_images = 0, g_chauffeDebut = -1; double g_tempDebut = -1000;
 // à rétablir à la fin
 VueCamera g_vueAvant = VueCamera::Poursuite; std::string g_carteAvant, g_momentAvant;
 bool g_arreter = false;
+banc_tel::ModeForce g_mode;   // WFS-451 (RG-01) : Checkpoint pendant le banc, mode du joueur rétabli à la fin
+void forcerMode() { modeCourse() = (ModeCourse)g_mode.forcer((int)modeCourse(), (int)ModeCourse::Checkpoint); }
 Zone g_commencer, g_annuler, g_partager, g_fermer, g_arret;
 
 bool nuitChargee() { const char* m = std::getenv("WFS_MOMENT"); return m && std::strcmp(m, "nuit") == 0; }
@@ -168,6 +171,7 @@ void finirBanc(Renderer* r, const GameView& g, const std::string& raison) {
     if (interrompu && r && g_etat == Etat::Mesure && g_index < g_deroule.size()) finirEssai(*r, true);
     g_etat = Etat::Inactif;
     Game::piloteBanc = false; banc_tel::actif = false;
+    modeCourse() = (ModeCourse)g_mode.retablir((int)modeCourse());   // WFS-451 (RG-01) : fini, arrêté ou quitté
     if (r) r->compterMateriaux = false;
     appliquerInterrupteur(r, -1);
     choisirVue(g_vueAvant);
@@ -185,6 +189,7 @@ void demarrerEssai(Renderer* r, const GameView& g) {
     const banc_tel::Essai& e = g_deroule[g_index];
     appliquerInterrupteur(r, e.interrupteur);
     choisirVue(VueCamera::Poursuite);   // RG-01 : caméra Arrière
+    forcerMode();   // WFS-451 (RG-01) : avant « Rejouer » : la course repart sans adversaires ni police
     trafficRestartSeed(banc_tel::GRAINE, g.player ? g.player->position : 0);
     courseRejouer();
     Game::piloteBanc = true;
@@ -293,6 +298,8 @@ void commencer() {
     g_entete.date = dateLocale(false); g_entete.protocole = PROTOCOLE; g_entete.interrupteursJson = interrupteursJson();
     g_entete.batterie = banc_tel::batteriePourcent(); g_entete.enCharge = banc_tel::batterieEnCharge();
     g_vueAvant = vueCamera();
+    g_entete.modeJoueur = nomMode(modeCourse());   // WFS-451 (RG-01)
+    forcerMode(); g_entete.mode = nomMode(modeCourse());
     g_carteAvant = sauvegarde().actif() ? sauvegarde().map : ""; g_momentAvant = sauvegarde().actif() ? sauvegarde().tod : "";
     banc_tel::actif = true;
     g_etat = Etat::Chargement;
@@ -409,11 +416,14 @@ int benchBancTelephone(Game& g, Renderer& r, const std::string& out) {
     capture("banc-tel-1-menu-cache");
     ouvrirMenuCacheBanc(false); ouvrirProtocole(); image();
     capture("banc-tel-2-protocole");
+    // WFS-451 (RG-01) : banc lancé après une Poursuite (dernier mode joué) : il doit rouler en Checkpoint, puis rendre la Poursuite
+    modeCourse() = ModeCourse::Poursuite;
     commencer();
     bool vuNuit = false, vuJour = false;
     for (int i = 0; i < 20000 && enCours(); i++) {
         image();
         const bool mesure = g_etat == Etat::Mesure;
+        if (mesure && modeCourse() != ModeCourse::Checkpoint) { WFS_ERR("banc du téléphone : mode %s pendant la mesure", nomMode(modeCourse())); ecarts++; break; }
         if (mesure && !vuNuit && g_index == 4) { capture("banc-tel-3-nuit-en-cours"); vuNuit = true; }
         if (mesure && !vuJour && g_index == 14 + 9) { capture("banc-tel-4-jour-en-cours"); vuJour = true; }
     }
@@ -425,6 +435,7 @@ int benchBancTelephone(Game& g, Renderer& r, const std::string& out) {
     for (const banc_tel::Resultat& rr : g_res) if (!rr.images.images) { WFS_ERR("banc du téléphone : essai sans image : %s", rr.nom.c_str()); ecarts++; }
     if (g_cheminFichier.empty()) { WFS_ERR("banc du téléphone : fichier non écrit"); ecarts++; }
     if (!diag::aucun()) { WFS_ERR("banc du téléphone : interrupteurs encore allumés après le banc"); ecarts++; }
+    if (modeCourse() != ModeCourse::Poursuite) { WFS_ERR("banc du téléphone : mode du joueur non rétabli (%s)", nomMode(modeCourse())); ecarts++; }   // WFS-451
     if (Game::piloteBanc || banc_tel::actif) { WFS_ERR("banc du téléphone : pilote ou banc encore actif"); ecarts++; }
     {   // l'arrêt garde les essais finis (« Arrêter »)
         g_resultats = false; ouvrirReglagesBanc(false);
@@ -435,6 +446,12 @@ int benchBancTelephone(Game& g, Renderer& r, const std::string& out) {
         capture("banc-tel-6-arrete");
         if (enCours() || !g_entete.interrompu || g_res.size() < 2) { WFS_ERR("banc du téléphone : « Arrêter » mal pris en compte"); ecarts++; }
         g_resultats = false; ouvrirReglagesBanc(false);
+        // WFS-451 (RG-01) : banc arrêté, retour au menu : le mode du joueur (Poursuite) est toujours choisi
+        g.allerA(Ecran::Menu); for (int i = 0; i < 3; i++) image();
+        capture("banc-tel-7-menu-apres-arret");
+        WFS_LOG("banc du téléphone (WFS-451) : après « Arrêter », mode du joueur = %s", nomMode(modeCourse()));
+        if (modeCourse() != ModeCourse::Poursuite) { WFS_ERR("banc du téléphone : mode du joueur non rétabli après « Arrêter » (%s)", nomMode(modeCourse())); ecarts++; }
+        modeCourse() = ModeCourse::Checkpoint;   // état de départ du banc PC
     }
     WFS_LOG("banc du téléphone (WFS-420) : %d écart(s)", ecarts);
     for (size_t p = 0; p < g_texte.size();) { const size_t f = g_texte.find('\n', p); WFS_LOG("fichier | %s", g_texte.substr(p, f - p).c_str()); if (f == std::string::npos) break; p = f + 1; }

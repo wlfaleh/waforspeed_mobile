@@ -79,23 +79,30 @@ std::string ligneTableau(const std::vector<Resultat>& res, size_t i) {
 
 std::vector<std::string> remarques(const std::vector<Resultat>& res) {
     std::vector<std::string> m;
-    bool sansGpu = false;
+    int avecGpu = 0, sansGpu = 0; std::string nomsSansGpu;   // WFS-451 (RG-03)
     for (size_t i = 0; i < res.size(); i++) {
         const Resultat& r = res[i];
         if (!r.images.images) continue;
-        if (!r.gpuMesure) sansGpu = true;
+        if (r.gpuMesure) avecGpu++;
+        else {
+            if (sansGpu < 4) nomsSansGpu += (sansGpu ? " ; " : "") + std::string(r.essai.nuit ? "nuit, " : "jour, ") + r.nom;   // 4 noms au plus : la ligne reste lisible
+            sansGpu++;
+        }
         const double p = partExpliquee(r);
         if (p >= 0 && p < PART_MIN)
             m.push_back(std::string(r.essai.nuit ? "Nuit" : "Jour") + ", " + r.nom + " : les passes n'expliquent que " + virgule(p * 100, 0) +
                         " % du temps GPU total (moins de 90 %).");
         if (r.essai.controle) {
             const double e = ecartReference(res, i);
-            if (std::fabs(e) >= 5)
+            if (e >= SEUIL_CHAUFFE)   // WFS-451 (RG-03) : plus lent seulement ; un contrôle plus rapide n'est pas une chauffe
                 m.push_back(std::string(r.essai.nuit ? "Nuit" : "Jour") + " : le contrôle final s'écarte de " + signe(e) +
                             " de la référence : le téléphone a chauffé, les écarts de ce moment sont à lire avec prudence.");
         }
     }
-    if (sansGpu) m.push_back("Temps GPU : horodatages non disponibles sur ce téléphone (colonnes GPU vides).");
+    if (sansGpu > 0 && avecGpu == 0) m.push_back("Temps GPU : horodatages non disponibles sur ce téléphone (colonnes GPU vides).");
+    else if (sansGpu > 0)
+        m.push_back("Temps GPU : pas de mesure pour " + std::to_string(sansGpu) + (sansGpu > 1 ? " essais (" : " essai (") + nomsSansGpu +
+                    (sansGpu > 4 ? " ; …" : "") + ") : colonne GPU vide sur " + (sansGpu > 1 ? "ces lignes." : "cette ligne."));
     return m;
 }
 
@@ -115,6 +122,8 @@ std::string texteFichier(const Entete& e, const std::vector<Resultat>& res) {
     t += "date : " + e.date + "\n";
     t += "appareil : " + e.appareil + "\n";
     t += "protocole : " + e.protocole + "\n";
+    if (!e.mode.empty())   // WFS-451 (RG-01)
+        t += "mode de course : " + e.mode + " (forcé par le banc)" + (e.modeJoueur.empty() || e.modeJoueur == e.mode ? "" : " ; mode du joueur : " + e.modeJoueur + ", rétabli à la fin") + "\n";
     t += "au départ : batterie " + (e.batterie >= 0 ? std::to_string(e.batterie) + " %" : std::string("non disponible")) + ", " +
          (e.enCharge == 1 ? "EN CHARGE (protocole non respecté)" : e.enCharge == 0 ? "pas en charge" : "charge non disponible") + "\n";
     if (!e.interrupteursJson.empty()) t += "ATTENTION : interrupteurs allumés dans configgame.json pendant tout le banc : " + e.interrupteursJson + "\n";

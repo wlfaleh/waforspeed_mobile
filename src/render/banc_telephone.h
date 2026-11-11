@@ -19,6 +19,7 @@ namespace wfs::banc_tel {
 constexpr double CHAUFFE_S = 30, MESURE_S = 60;   // RG-02
 constexpr uint32_t GRAINE = 0x5eed1u;              // RG-01 : graine du trafic (celle de la course solo)
 constexpr double PART_MIN = 0.90;                  // RG-03 : part du temps GPU total expliquée par les passes
+constexpr double SEUIL_CHAUFFE = 5;                 // % : contrôle final plus lent que la référence d'au moins cela = le téléphone a chauffé
 constexpr int N_INTERRUPTEURS = 12;                // diag::N_INTERRUPTEURS (vérifié par reglages_banc.cpp)
 
 inline bool actif = false;   // RG-06 : vrai seulement pendant le banc (qualité automatique figée, mesures)
@@ -60,8 +61,19 @@ double partExpliquee(const Resultat& r);
 // écart de la médiane d'un essai à la référence du même moment (%, + = plus lent) ; 0 sans référence
 double ecartReference(const std::vector<Resultat>& res, size_t i);
 
+// WFS-451 (RG-01) : mode de course forcé pendant le banc (Checkpoint : ni adversaires, ni police), mode du joueur rétabli à la fin.
+// Les modes sont les valeurs de ModeCourse (src/game/course5.h), en entiers : ce fichier reste du calcul seul.
+struct ModeForce {
+    int avant = 0; bool force = false;
+    // début du banc et de chaque essai : rend le mode à utiliser ; le mode du joueur n'est noté qu'une fois
+    int forcer(int actuel, int voulu) { if (!force) { avant = actuel; force = true; } return voulu; }
+    // fin du banc (fini, arrêté, quitté) : rend le mode du joueur ; sans banc en cours, le mode actuel
+    int retablir(int actuel) { if (!force) return actuel; force = false; return avant; }
+};
+
 struct Entete {
     std::string date, appareil, interrupteursJson, protocole;
+    std::string mode, modeJoueur;       // WFS-451 (RG-01) : mode du banc (« Checkpoint ») et mode du joueur, rétabli à la fin
     int batterie = -1, enCharge = -1;   // relevés au départ (−1 : non disponible)
     bool interrompu = false; std::string raison;
 };
@@ -72,6 +84,8 @@ std::string nomFichier(int annee, int mois, int jour, int heure, int minute);
 // ligne courte du tableau à l'écran : « 16,8 · 18,1 · 25,0 · 58,9 · 12,4 · −3 % »
 std::string ligneTableau(const std::vector<Resultat>& res, size_t i);
 // remarques pour l'écran (passes < 90 %, contrôle de la chauffe, sans horodatages) ; vide si rien à signaler
+// WFS-451 (RG-03) : « horodatages non disponibles » seulement si aucun essai n'a de temps GPU (sinon les essais sans temps GPU sont
+// nommés) ; « le téléphone a chauffé » seulement si le contrôle est plus LENT que la référence (SEUIL_CHAUFFE), jamais plus rapide
 std::vector<std::string> remarques(const std::vector<Resultat>& res);
 
 // RG-05 : relevés du téléphone pour le protocole (fichiers du système, lisibles sans permission sur la plupart des téléphones) ;
