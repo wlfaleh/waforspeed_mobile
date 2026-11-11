@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | 🆕 À relire (E15 : avis agent 3D demandé) | f53fa15d | 2026-11-11 19:29 |
 | #359 | WFS-420 | Claude, agent dev3d (01UY1Vv3k4) | 👀 En revue — lead-dev, 19:38 UTC | e0a6939f | 2026-11-11 19:40 |
-| #360 | WFS-377 | Claude, agent dev3d (01UY1Vv51w) | 🆕 À relire | ae957fcd | 2026-11-11 19:42 |
+| #360 | WFS-377 | Claude, agent dev3d (01UY1Vv51w) | 👀 En revue — lead-dev, 2026-11-11 19:42 UTC | ae957fcd | 2026-11-11 19:42 |
