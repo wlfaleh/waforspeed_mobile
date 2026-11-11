@@ -1197,3 +1197,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 12:10:19 — Skill du PO : WFS-405 « la Corniche seule », accord de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
 - L'ordre permanent du skill `po-scrum-master` disait encore « WFS-405, la Ville seule » ; corrigé en « la Corniche seule » (décision « go Corniche » du 2026-11-11), avec WFS-426, 383, 371 avant la sortie et WFS-386 après.
+
+### 2026-11-11 12:10:20 — Début WFS-421, attribué à Claude, agent dev (01UY1Vv4ss) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv4ss6UoRUUxN62sxWQ, aucun ticket avant) : **WFS-421** (P1, E4), 2e de l'ordre des 20 (le 1er, WFS-412, est pour `@cicd`). Un seul ticket pour cette session, jusqu'à la fusion, puis arrêt.
+- Zone : `src/render/nuit.cpp` (et sa lecture de la qualité), `tests/**`. Exception PO : E4 a déjà WFS-324 🔀 (PR #341), qui touche aussi `nuit.cpp` (accroche des lampadaires derrière, boucle des projecteurs, ≈ l. 175) ; WFS-421 ne touche que l'appel `haloSol` (≈ l. 262) : zones séparées, synchroniser avec `main` avant la PR.
+- Critères : `regles-de-gestion/WFS-421.md` (Basse seulement, `haloTete` gardé, mesure S21 FE Ville + Corniche, « Avis agent 3D : VALIDÉ », 🟡 après fusion).

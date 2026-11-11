@@ -175,7 +175,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 |---|---|---|---|---|---|---|---|---|---|
 | P1 Urgent | WFS-419 | [TECHNIQUE] [URGENT] Interrupteurs de diagnostic de performance sur le téléphone (S21 FE) : menu caché, un effet coupé à la fois, appareil et temps par passe affichés ; aucune correction | E4 + E0 (exception PO : `configgame.*`) | 🟡 À valider (utilisateur), fusionné #345 |  | — | `feature/waforspeed-419` |  |  |
 | P2 Haute | WFS-420 | [TECHNIQUE] Banc de performance automatique sur le téléphone : trajet rejoué jour et nuit, un interrupteur à la fois, fichier de résultats à partager | E4 | ⏳ En attente (après WFS-419) |  | WFS-419 | `feature/waforspeed-420` |  |  |
-| P1 Urgent | WFS-421 | [TECHNIQUE] Halos au sol des lampadaires coupés en Basse (petit halo de la tête gardé) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-421` |  |  |
+| P1 Urgent | WFS-421 | [TECHNIQUE] Halos au sol des lampadaires coupés en Basse (petit halo de la tête gardé) | E4 (exception PO : `nuit.cpp` seul, en parallèle de WFS-324) | 🔧 En cours | Claude, agent dev (01UY1Vv4ss), 2026-11-11 12:10 UTC (à sa demande) | — | `feature/waforspeed-421` |  |  |
 | P1 Urgent | WFS-422 | [TECHNIQUE] Pré-passe coupée en Basse, avec un secours propre pour les effets qui la lisent | E4 | ⏳ Prêt |  | — | `feature/waforspeed-422` |  |  |
 | P1 Urgent | WFS-423 | [TECHNIQUE] Lumières bornées en Basse : projecteurs au vrai nombre, éclairage des voitures une fois par voiture | E4 | ⏳ Prêt |  | — | `feature/waforspeed-423` |  |  |
 | P1 Urgent | WFS-424 | [RÉALISME] [TECHNIQUE] Route en texture précuite au lieu du bruit procédural (Basse), avis agent 3D | E4 | ⏳ En attente (après WFS-421, 422, 423) |  | WFS-421, 422, 423 | `feature/waforspeed-424` |  |  |
