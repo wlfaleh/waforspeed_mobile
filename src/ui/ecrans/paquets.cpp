@@ -744,6 +744,10 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         g.allerA(Ecran::Terrain); imageMulti(2);
         choisirCarte(co, false); imageMulti(3);
         verifier(sm.appelsTout == 1 && cp.etat(co).etat == EtatCarte::Disponible, "choix du terrain : liste lue, Corniche « Télécharger »");
+        // WFS-426 : la Corniche cuite porte ses villas (≈ 55 Mo) : débit réglé sur la taille du paquet, pas encore fini après ~280 images
+        // à plein débit (contrôle « pendant la course »), fini dans les ~1470 images même tout au débit ralenti (÷ 4)
+        sm.parImage = std::max<long long>(sm.parImage, sm.k(co).taille / 320);
+        WFS_LOG("paquets (WFS-307) banc : paquet de la Corniche %.1f Mo, %lld octets par image", sm.k(co).taille / 1048576.0, sm.parImage);
         verifier(cp.etat("ville").etat == EtatCarte::SansPaquet, "Ville sans paquet publié : jouable comme avant");
         captureJeu("paquets-terrain-telecharger", "Corniche assombrie, « Télécharger — X Mo » (jour)");
         // RG-05 : sans Internet, « Connexion nécessaire » ; RG-02 : données mobiles confirmées, « Plus tard » ne lance rien
