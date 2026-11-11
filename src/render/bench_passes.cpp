@@ -287,7 +287,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         bool barreOnglets = z.size() > (size_t)ecrans::N_ONGLETS;
         for (int o = 1; barreOnglets && o < ecrans::N_ONGLETS; o++) barreOnglets = std::fabs(z[o].y - z[0].y) < 0.5f && std::fabs(z[o].h - z[0].h) < 0.5f && z[o].x > z[o - 1].x;
         if (barreOnglets) toucher(4, z[ongletQualite]);
-        else WFS_ERR("réglages (WFS-150) : onglet « %s » introuvable (%zu zones)", ecrans::ONGLETS[ongletQualite], z.size());
+        else { WFS_ERR("réglages (WFS-150) : onglet « %s » introuvable (%zu zones)", ecrans::ONGLETS[ongletQualite], z.size()); ecarts++; }
         const std::vector<manette::Zone> zSans = zones();
         const size_t sansUltra = zSans.size();
         // 2) la Haute tient (banc de chauffe simulé : 5 mesures de 2 s à 60 images/s, chauffe 0) → Ultra proposé
