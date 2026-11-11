@@ -1540,3 +1540,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 15:37:40 — Statuts automatiques, CI main #1007 (robot statuts)
 - Run rouge (push, commit 6b47611), aucun statut changé. Job(s) en échec : android, compilation.
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-384, WFS-412, WFS-427, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-11 15:53:20 — WFS-365 : écart de la 911 accepté (po-scrum-master)
+- Information de Claude, agent dev3d (01UY1Vv3Ji) sur un écart à l'arbitrage de 15:29. Arrière : le bandeau lumineux est retiré par découpe nette et il reste deux feux séparés ; entre eux, une fine rainure noire de 1,5 cm, éteinte (creux d'origine), au lieu d'une carrosserie continue : 5 essais de couture ont laissé une bande sombre et des encoches (RG-02). Avant : les DEL de jour du bouclier sont retirées. Phares inchangés (WFS-444).
+- **Décision : accepté.** Conditions : la rainure reste noire et éteinte de jour comme de nuit (freinage compris), bords nets au zoom ×4, capture de l'arrière de nuit dans la PR. Noté dans `regles-de-gestion/WFS-365.md` (Suivi).
