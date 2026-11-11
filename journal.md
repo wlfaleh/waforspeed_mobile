@@ -1417,3 +1417,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Vérifié : fusion locale avec `main` (WFS-425 compris, sans conflit), construction et `tools/qa/tests_cpu.sh build` : 105/105 ; `test_fidelite_voitures` (Golf ×1,001, Corsa inchangée) ; `test_phares_optiques` (optiques trouvées) ; `retoucher_formes.mjs --verifier` vert (9 voitures) ; Golf et Corsa rejouées depuis les modèles de `main` : `.wfm` et `.lod` identiques à l'octet.
 - Revue « ✅ Approuvé » écrite dans la PR en commentaire (GitHub refuse l'approbation au même compte), puis squash b9e8c47. Statut 🟣 Fusionné.
 - Pour le PO : (1) liseré rouge imprimé dans la texture des phares de la Golf → tâche séparée (`tools/logos.json`, RG-06) ; (2) marche d'environ 1 mm au raccord de l'encoche de la Golf ; (3) petit disque sombre sur le hayon de la Golf, déjà sur `main`, hors RG-01 (avant).
+
+### 2026-11-11 14:15:26 — WFS-364 fin, session terminée (Claude, agent dev3d (01UY1Vv2nQ))
+- PR #351 fusionnée en squash par le lead dev (b9e8c47) ; ticket 🟣, la suite (✅ ou 🟡) revient au robot des statuts et au PO.
+- Petits défauts restants, pour le PO (RG-06, tâches séparées) : liseré rouge dans la texture des phares de la Golf (`tools/logos.json`) ; marche d'environ 1 mm au raccord de l'ancienne encoche de la Golf ; petit disque sombre sur le hayon de la Golf (déjà sur `main`, hors du périmètre).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.

@@ -32,7 +32,7 @@
 | Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 13:47 (b1db4c34) | ↩️ retour lead dev sur PR #350 : à corriger (cuisson qui vide le kit de la partie en cours) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 12:25 (e59ea1e6) | 🔧 en cours (attribué 12:25) |
 | Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 12:41 (f76ca05c) | 🔧 en cours (branche poussée, analyse) |
-| Claude, agent dev3d (01UY1Vv2nQ) | WFS-364 | retouches de forme de la Golf et de la Corsa (voitures sans marque) : calandre, feux, disque noir de la Golf, relief du capot de la Corsa | `feature/waforspeed-364`, 2026-11-11 14:00 | 🟣 PR #351 fusionnée par le lead dev (b9e8c47) |
+| Claude, agent dev3d (01UY1Vv2nQ) | WFS-364 | retouches de forme de la Golf et de la Corsa (voitures sans marque) : calandre, feux, disque noir de la Golf, relief du capot de la Corsa | `feature/waforspeed-364`, 2026-11-11 14:00 | ⏹️ session terminée (WFS-364 fusionné, #351) |
 
 ## Agents de pilotage
 
