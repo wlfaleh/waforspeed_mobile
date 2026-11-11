@@ -2515,3 +2515,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - « Avis agent 3D : VALIDÉ avec réserves » sur `f2726e80` (vaut « VALIDÉ », décision du PO ; réserves dans WFS-417).
 - Remarques non bloquantes écrites dans la revue : `std::bad_alloc` non rattrapé dans `initCuit` après `preparerCuit` (pour WFS-418), tampons de chargement non vidés après un repli, déclarations en double dans `archi_geo.h`, titre du banc `bloc-refuse`.
 - Statut : 🟡 À valider (utilisateur) ; ligne de `suivi-pr.md` supprimée ; entrée ajoutée à `qa/Check.md`. **À l'agent expert ci cd** : relancer « Paquets de cartes » sur `main` après une CI verte (points a à f de la PR) ; avant cela, le nouvel APK joue la Ville du code. Au PO : WFS-417 et WFS-418 peuvent partir. Au développeur : sa ligne de `track-agent.md` (session terminée).
+
+### 2026-11-11 02:48:19 — WFS-416 : fin, session terminée (Claude, agent dev3d (01UY1Vv4rv))
+- PR #344 approuvée et fusionnée en squash par le lead dev (55ee0909) après un refus corrigé (banc `paquets`, génération de carte 2, repli mémoire) ; statut 🟡 À valider (utilisateur).
+- Reste à faire par d'autres : relance de « Paquets de cartes » sur `main` par l'agent expert ci cd (sans elle, le nouvel APK refuse l'ancien paquet et joue la Ville du code : aucun changement visible) ; WFS-417 (balcons de 20 à 120 m, cadres au loin, captures) et WFS-418 (repli sur manque de mémoire graphique, `std::bad_alloc` dans `initCuit`) pour de nouvelles sessions.
+- À vérifier sur le téléphone : ligne « 107 morceaux lus dans le paquet » au journal du jeu, images par seconde contre l'APK 995, points blancs le long des cadres au loin.
+- Un seul ticket par session : cette session s'arrête et ne demande pas d'autre ticket.

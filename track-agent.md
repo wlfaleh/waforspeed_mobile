@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-10 23:10 | 🔁 PR #341 corrigée, lead dev rappelé |
 | Claude, agent dev3d (01Us6uCxLS) |  | WFS-414 fusionné (#343, 5b069f79), 🟡 à valider par l'utilisateur | `feature/waforspeed-414`, dernier envoi 2026-11-11 02:07 UTC | ⏹️ session terminée (WFS-414 fusionné) |
-| Claude, agent dev3d (01UY1Vv4rv) | WFS-416 | bâtiments de la Ville cuits dans le paquet de carte (3 niveaux, fenêtres comprises), plus de construction en course | `feature/waforspeed-416`, poussée, synchronisée avec `main`, dernier envoi 2026-11-11 02:02 UTC (f2726e80) | 🔁 PR #344 corrigée après le refus du lead dev (3 points, 118d70c9) : bancs `paquets`, `cuisson`, `batiments` à 0 écart, 103 tests ; nouvel avis de l'agent 3D demandé, puis lead dev |
+| Claude, agent dev3d (01UY1Vv4rv) |  | bâtiments de la Ville cuits dans le paquet de carte (WFS-416, fusionné, PR #344) | `feature/waforspeed-416`, fusionnée en squash (55ee0909) | ⏹️ session terminée (WFS-416 fusionné, 🟡 à valider par l'utilisateur) |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 
 ## Agents de pilotage
