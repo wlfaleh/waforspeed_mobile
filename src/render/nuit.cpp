@@ -35,7 +35,6 @@ vec3 linHex(uint32_t h) {
     auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
     return {c(16), c(8), c(0)};
 }
-vec3 lin(vec3 c) { return {std::pow(c.x, 2.2f), std::pow(c.y, 2.2f), std::pow(c.z, 2.2f)}; }
 
 constexpr float HALO_TETE_M = 0.6f;   // WFS-356 (RG-05) : rayon du halo des têtes de lampe de la Ville (m), ≤ 3 fois la tête (0,36 m de profondeur)
 constexpr int LAMPES_MAX = 4;   // RG-05 : 4 lumières ponctuelles au plus
@@ -238,35 +237,23 @@ public:
         // WFS-382 (RG-01, RG-04, ANO-222) : plus de « tache des phares » du jeu web (grille de 110 × 26 m en mélange multiplicatif,
         // dessinée deux fois en Campagne et sans éclairage public) : elle s'ajoutait aux deux vrais feux de croisement (WFS-218) et
         // faisait le cône blanc brûlé devant la voiture. La chaussée n'est plus éclairée que par les deux feux (phares.h).
-        // ---------- RG-05 : têtes de lampe et flaques de lumière (poolQuad, MAT.pool) ----------
+        // ---------- RG-05 : têtes de lampe (WFS-421 : plus de flaque de lumière au sol, poolQuad) ----------
         const auto& L = lampadaires();
         const int qualite = ecrans::reglages().qualite;   // WFS-421 : lue une fois par image
-        const bool haloSol = nuit_qualite::haloSolLampadaire(qualite), haloT = nuit_qualite::haloTeteLampadaire(qualite);
+        const bool haloT = nuit_qualite::haloTeteLampadaire(qualite);
         const int64_t len = (int64_t)t.segmentCount(), aP = (int64_t)std::floor(p.dist / SEG);
+        // WFS-421 (suite, ordre de l'utilisateur du 2026-11-11) : plus aucun disque additif au sol (« flaque » poolQuad du jeu web,
+        // r.haloSol) au pied des lampadaires, à AUCUNE qualité : c'était un grand cercle orange à bord net posé sur la chaussée
+        // (forme nue interdite, règle du 2026-11-09). La rue n'est plus éclairée que par la vraie lumière des lampadaires
+        // (projecteurs du shader, update) ; il ne reste ici que le petit halo de la tête de lampe (RG-02).
         for (const Lampadaire& l : L) {
             const int64_t e = ecart(l, aP, len);
             if (e < -20 || e > 420) continue;   // ≈ 500 m : au-delà, le brouillard les efface
-            const double s = (double)(aP + e) * SEG;
-            const vec3 tete = linHex(0xffd9a8);
+            // halo de la tête : lampadaires du décor de la Ville et « têtes seules » (la corniche et le circuit n'ont pas encore de mât natif)
             // WFS-337 (RG-01, ANO-189) : le candélabre double de la voie rapide (ville.cpp, terre-plein central) porte 2 lanternes
-            // à 5 m l'une de l'autre ; seule celle de notre côté était inscrite : la lanterne du sens inverse restait une barre
-            // jaune sans lumière et le halo se voyait 5 m à côté. La 2e lanterne est inscrite en « tête seule » : son halo, rien d'autre
-            if (l.style == StyleLampadaire::Tete) { if (haloT) haloTete(r, t, s, l, tete); continue; }
-            // WFS-421 (RG-01) : en Basse, pas de halo au sol ; la vraie lumière (projecteurs du shader) éclaire la rue seule
-            if (!haloSol) { if (haloT && l.style == StyleLampadaire::Ville) haloTete(r, t, s, l, tete); continue; }
-            const float sg = l.lat > 0 ? 1.f : -1.f;
-            float poolLat = sg * ((float)RW - 2.4f), R2 = 8; vec3 col = lin({0.5f, 0.32f, 0.16f});
-            if (l.style == StyleLampadaire::Plage) { poolLat = sg * ((float)RW - 0.5f); R2 = 7; }
-            if (l.style == StyleLampadaire::Stade) { poolLat = sg * ((float)RW - 3.f); R2 = 14; col = lin({0.35f, 0.38f, 0.45f}); }
-            const TrackPoint a = t.point(s, poolLat), b = t.point(s + 1.0 / M, poolLat);
-            const vec3 c{(float)a.x, (float)a.y + 0.04f, (float)a.z};
-            const vec3 f = normalize(vec3{(float)(b.x - a.x), (float)(b.y - a.y), (float)(b.z - a.z)});
-            const vec3 rr{(float)std::cos(a.th), 0, (float)std::sin(a.th)};
-            // × 2,2 : le jeu web ajoute la tache à l'asphalte éclairé avant sa courbe (pow 2,2) ; mesuré au banc (WFS-97), le
-            // cœur ressort ainsi comme au web dès que la chaussée reçoit la lumière (≈ × 1 ne laisse qu'un voile)
-            r.haloSol(c, rr, f, R2, R2, col * 2.2f);
-            // halo de la tête : seulement pour les lampadaires du décor (la corniche et le circuit n'ont pas encore de mât natif)
-            if (haloT && l.style == StyleLampadaire::Ville) haloTete(r, t, s, l, tete);
+            // à 5 m l'une de l'autre ; la 2e lanterne est inscrite en « tête seule » : son halo, rien d'autre
+            if (!haloT || (l.style != StyleLampadaire::Tete && l.style != StyleLampadaire::Ville)) continue;
+            haloTete(r, t, (double)(aP + e) * SEG, l, linHex(0xffd9a8));
         }
         lumiereSolAutres(r, g);   // WFS-226 : après le trafic, les adversaires et la police (systèmes d'ordre < 950)
         feuxJoueur(r, g);
