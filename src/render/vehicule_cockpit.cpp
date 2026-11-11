@@ -568,10 +568,12 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     };
     // WFS-414 (avis de l'agent 3D sur la PR #343) : volant de série : rapport centré au-dessus des deux chiffres de la vitesse (xd : bord
     // droit de la vitesse, comme nombre()), un jour de 5 % de la hauteur du combiné entre les deux, sans dépasser la partie vue par le volant
-    // (marge de 3 % sous le haut de la partie vue : le vrai bord de la jante est ≈ 1 % plus bas que la ligne de vue calculée ; 2e avis)
-    constexpr float MARGE_JANTE = 0.03f;
+    // marges sous le haut de la partie vue (bandeLisibleCombine prend le bord du tube de la jante dans son plan du milieu ; vu de
+    // l'œil, le tube rond cache un peu plus bas) : 3 % sur l'Abarth (jour net mesuré, 2e avis), 5 % sur la S3 et la Giulia (3e avis :
+    // le rapport touchait la jante, et la tête qui avance au freinage fait descendre la jante sur le combiné)
+    constexpr float MARGE_JANTE = 0.03f, MARGE_JANTE_RAPPORT = 0.05f;
     auto rapportAuDessus = [&](float xd, float hMax) {
-        const float y = basV + hV + H * 0.05f, h = std::min(hMax, bandeLisibleCombine(d).haut - H * MARGE_JANTE - y);
+        const float y = basV + hV + H * 0.05f, h = std::min(hMax, bandeLisibleCombine(d).haut - H * MARGE_JANTE_RAPPORT - y);
         const float centre = xd - hV * 0.73f;   // milieu de deux chiffres : de xd − 1,32 h à xd − 0,14 h
         rapport(A, centre - h * 0.26f, y, h, val.rapport);
     };
@@ -651,8 +653,9 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
         cadran(F, A, R, {W * 0.29f, 0}, rc, reg, 0.85f, 26, 0.0022f);
         if (volantSeriePour(d)) {   // WFS-414 : volant de série (S3) : le moyeu plus haut remonte la vitesse ; rapport centré au-dessus
-            vitesse(H * 0.27f, -H * 0.36f, H * 0.22f);   // (0,27 : la vitesse remontée touchait les graduations du cadran droit ; 2e avis)
-            rapportAuDessus(H * 0.27f, H * 0.26f);
+            // (0,235 : bloc de 3 chiffres centré entre les graduations des deux cadrans ; plus à droite, il les mordait : 2e et 3e avis)
+            vitesse(H * 0.235f, -H * 0.36f, H * 0.22f);
+            rapportAuDessus(H * 0.235f, H * 0.26f);
         } else {
             rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
             vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
