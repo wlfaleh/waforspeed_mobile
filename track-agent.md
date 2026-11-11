@@ -25,14 +25,14 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv5YT) | WFS-324 | rétroviseurs intérieur et extérieurs avec vrai reflet (vue Cockpit) | `feature/waforspeed-324`, 2026-11-11 13:59 | ↩️ retour lead dev sur PR #341 (3e revue) : lueur des phares en disque dans les glaces |
-| agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, 2026-11-11 12:49 (75a99915) | 🔀 PR #349 ouverte 13:26 UTC, lead dev appelé |
-| agent expert ci cd (session 01UY1Vv2Hq) | WFS-427 | bancs du matin : groupe `ecrans-2400` scindé en deux (`fluidite` à part), sans rien affaiblir (US technique) | `feature/waforspeed-427`, poussée 12:59 (adf935fa) | 🔧 en cours : correction poussée, bancs du matin lancés sur la branche (run #19) pour mesurer les deux groupes |
+| agent expert ci cd (session 01UY1Vv4jR6p) | WFS-412 | `tests_cpu.sh` lance tous les tests et liste les échecs à la fin ; licences vérifiées même en cas d'échec (US technique) | `feature/waforspeed-412`, 2026-11-11 12:49 (75a99915) | ⏹️ session terminée (WFS-412 fusionné #349, squash ae7089ee) |
+| agent expert ci cd (session 01UY1Vv2Hq) | WFS-427 | bancs du matin : groupe `ecrans-2400` scindé en deux (`fluidite` à part) | `feature/waforspeed-427` | ⏹️ session terminée (WFS-427 fusionné, PR #352, squash 2ccc37c) |
 | lead-dev (session 01UY1VvJJ) | WFS-415 | fluidité d'hier (fenêtres WFS-402 coupées par interrupteur) et CI de `main` au vert | `feature/waforspeed-415`, 2026-11-10 22:33 | 🔧 en cours |
 | Claude, agent dev (01Us6uCtwf) |  | WFS-425 fusionné (#348, 01712be4), 🟡 à valider par l'utilisateur (mesure ×1 / ×2 sur le S21 FE) | `feature/waforspeed-425`, dernier envoi 2026-11-11 13:24 UTC | ⏹️ session terminée (WFS-425 fusionné) |
-| Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 13:47 (b1db4c34) | 🔀 PR #350 ouverte, lead dev appelé |
+| Claude, agent cartes (01UY1Vv2HrQF) | WFS-426 | Corniche actuelle cuite en paquet `.wfcarte` et téléchargeable depuis le choix du terrain (comme la Ville) | `feature/waforspeed-426`, 13:47 (b1db4c34) | ↩️ retour lead dev sur PR #350 : à corriger (cuisson qui vide le kit de la partie en cours) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 12:25 (e59ea1e6) | 🔧 en cours (attribué 12:25) |
 | Claude, agent dev (01Us6uCt95) | WFS-418 | manque de mémoire graphique : repli (kit de secours des bâtiments) au lieu de l'arrêt du jeu | `feature/waforspeed-418`, 2026-11-11 12:41 (f76ca05c) | 🔧 en cours (branche poussée, analyse) |
-| Claude, agent dev3d (01UY1Vv2nQ) | WFS-364 | retouches de forme de la Golf et de la Corsa (voitures sans marque) : calandre, feux, disque noir de la Golf, relief du capot de la Corsa | `feature/waforspeed-364`, 2026-11-11 14:00 | 🔀 PR #351 ouverte, lead dev appelé |
+| Claude, agent dev3d (01UY1Vv2nQ) | WFS-364 | retouches de forme de la Golf et de la Corsa (voitures sans marque) : calandre, feux, disque noir de la Golf, relief du capot de la Corsa | `feature/waforspeed-364`, 2026-11-11 14:00 | ⏹️ session terminée (WFS-364 fusionné, #351) |
 
 ## Agents de pilotage
 

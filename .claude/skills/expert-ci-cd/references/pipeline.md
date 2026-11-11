@@ -29,7 +29,7 @@
   - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
 ## matin.yml « Bancs du matin (captures, réalisme, QA) » (WFS-252, WFS-277)
 Chaque matin à **04:00 heure de Paris** (cron 02:00 et 03:00 UTC, job `heure` qui ne garde que celui de 4 h) + à la main. QA à **07:00**.
-`compilation` (jeu + tests) → `tests` (tests CPU, licences) · `banc (<groupe>)` × 14 (12 groupes de captures + `realisme-1`, `realisme-2` ;
+`compilation` (jeu + tests) → `tests` (tests CPU, licences) · `banc (<groupe>)` × 18 (16 groupes de captures, dont `fluidite` sorti d'`ecrans-2400` par WFS-427, + `realisme-1`, `realisme-2` ;
 `tools/qa/banc_groupe.sh`) · `endurance` (+ chauffe ; remplace l'ancien banc de nuit de build.yml) · `android` (APK au numéro du dernier run de
 build.yml : le versionCode ne recule jamais) → `publication-apk` (+ notification « APK du matin », `ORIGINE=matin`) · `emulateur` (parcours mvp,
 un nouvel essai, **information seulement** la 1re semaine : `continue-on-error`, Release `simulateur-matin`) → `fusion` (rapports du réalisme)

@@ -1401,3 +1401,51 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Créés : `regles-de-gestion/E16-evolution-objets-3d.md` (but, zone `src/world/biblio_*`, `assets/world/biblio/**`, `tools/biblio/**`, `tests/biblio*`, accroche renderer ≤ 10 lignes ; porte utilisateur après le pin d'Alep ; 33 ms S21 FE ; avis agent 3D ; avis lead dev et smart brain ; lots 2 à 10 en prévision non créée : ≈ 105 objets, 54,5 sessions, grand total ≈ 70,5), `regles-de-gestion/E16-inventaire.md` (copie de l'inventaire), `regles-de-gestion/WFS-430.md` à `WFS-443.md`.
 - Numéros WFS-430 à 443 vérifiés libres. Statut de tous : ⛔ Bloqué par l'utilisateur, P4 Basse, en dernier du tableau, dans aucun ordre de priorité, aucun attribué.
 - WFS-383 et WFS-371 inchangés (au déblocage, WFS-371 serait réduit s'il n'est pas fait : noté dans l'épic).
+### 2026-11-11 14:13:36 — WFS-426 : PR #350 refusée par le lead dev (lead-dev)
+- Relu b1db4c34 : 22 captures ouvertes, diff complet lu, construction + tests CPU 104/104, bancs cuire / batiments (WFS_CARTE=plage) / paquets relancés (0 écart chacun).
+- Refus : la cuisson de la Corniche (`batimentsCuits` → `plage::poserVillasKit` → `archi::carte::vider()`) vide le kit global de la partie en cours ; capture `paquets-menu-prete` : la Ville n'a plus ses immeubles derrière le menu (main : présents). Banc et captures faussés (pas d'effet dans le jeu du téléphone, qui ne cuit pas).
+- Remarques : garde `cuisson_` à ajouter aux lampadaires de `placerEtabs` (plage.cpp:1586, 1589) ; `#include <memory>` mal placé ; noms `plage_*` au lieu de `corniche_*` (RG-02) à faire noter par le PO.
+
+### 2026-11-11 14:14:02 — WFS-427 : PR #352 ouverte, les deux groupes verts sur la CI de la branche (agent expert ci cd, session 01UY1Vv2Hq)
+- **Run #19 de la branche** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43025086545, commit adf935fa) : `banc (ecrans-2400)` **vert en 61,3 min** (`chargement`, `hud`, `camera` rejoué), `banc (fluidite)` **vert en 35,6 min** ; limite 75 min inchangée. Les autres groupes terminés sont verts, sauf `realisme-2` (rouge attendu : WFS-377, WFS-428, code du jeu). Rien publié, aucun ✅ (hors de `main`).
+- **En local** (`bash tools/qa/banc_groupe.sh`) : `ecrans-2400` code 0 en 2348 s, 25 fichiers ; `fluidite` code 0 en 2053 s, 568 parties, 49 fichiers, « objectifs manqués : 0 ». Mêmes 74 fichiers qu'avant, mêmes noms.
+- **PR #352** ouverte (f86da0ee, synchronisée avec `main`), `qa/pr/WFS-427/pr.md` (journaux + 3 captures du banc `camera`), ligne 🆕 dans `suivi-pr.md`, ticket 🔀 En PR ; lead dev appelé.
+- **Point à suivre pour le PO** : `ecrans-2400` reste à 61 min sur la CI (marge de 14 min) à cause du banc `hud` ; s'il s'allonge encore, il faudra le sortir à son tour.
+
+### 2026-11-11 14:14:31 — WFS-364 fusionné par le lead dev (lead-dev)
+- PR #351 relue sur c09d7ab8 : 52 captures ouvertes (26 paires avant / après : vitrines de face, de 3/4, vues basses, en course ; zooms ×4 de jour et de nuit) ; tout le diff lu (`tools/retoucher_formes.mjs`, retouche `lisser` ; `tools/formes.json` ; accroche de 10 lignes dans `src/render/correctifs_voitures.h`, annoncée au journal).
+- Vérifié : fusion locale avec `main` (WFS-425 compris, sans conflit), construction et `tools/qa/tests_cpu.sh build` : 105/105 ; `test_fidelite_voitures` (Golf ×1,001, Corsa inchangée) ; `test_phares_optiques` (optiques trouvées) ; `retoucher_formes.mjs --verifier` vert (9 voitures) ; Golf et Corsa rejouées depuis les modèles de `main` : `.wfm` et `.lod` identiques à l'octet.
+- Revue « ✅ Approuvé » écrite dans la PR en commentaire (GitHub refuse l'approbation au même compte), puis squash b9e8c47. Statut 🟣 Fusionné.
+- Pour le PO : (1) liseré rouge imprimé dans la texture des phares de la Golf → tâche séparée (`tools/logos.json`, RG-06) ; (2) marche d'environ 1 mm au raccord de l'encoche de la Golf ; (3) petit disque sombre sur le hayon de la Golf, déjà sur `main`, hors RG-01 (avant).
+
+### 2026-11-11 14:15:26 — WFS-364 fin, session terminée (Claude, agent dev3d (01UY1Vv2nQ))
+- PR #351 fusionnée en squash par le lead dev (b9e8c47) ; ticket 🟣, la suite (✅ ou 🟡) revient au robot des statuts et au PO.
+- Petits défauts restants, pour le PO (RG-06, tâches séparées) : liseré rouge dans la texture des phares de la Golf (`tools/logos.json`) ; marche d'environ 1 mm au raccord de l'ancienne encoche de la Golf ; petit disque sombre sur le hayon de la Golf (déjà sur `main`, hors du périmètre).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-11 14:20:55 — WFS-412 fusionné par le lead dev (lead-dev)
+- PR #349 (agent expert ci cd (session 01UY1Vv4jR6p)), revue du commit 7b107c63, squash **ae7089ee** sur `main`. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire.
+- Diff entier lu (`tools/qa/tests_cpu.sh`, 3 lignes de `build.yml` et de `matin.yml`) : RG-01 à RG-05 tenues, aucun test, seuil ni `IGNORES` changé. Extraits relus ; run n° 1000 vérifié vert sur GitHub.
+- Refait : faux dossiers (tout vert code 0 ; 2 / 4 échecs listés, code 1 ; vide → « aucun test trouvé », code 1) ; construction de la branche fusionnée avec `main` : 105 tests CPU verts, licences 0 manque, code 0.
+- À surveiller : bancs du matin du 12/11 (1er passage du bloc de `matin.yml`) ; WFS-427 doit se synchroniser sur ces lignes.
+
+### 2026-11-11 14:21:32 — WFS-412 fusionné (#349, ae7089ee), session terminée (agent expert ci cd (session 01UY1Vv4jR6p))
+- Lead dev : PR acceptée et fusionnée en squash. Sur `main` à la prochaine fusion (`build.yml`) et aux bancs du matin du 12/11 (`matin.yml`) : un test CPU en échec n'empêche plus les autres tests ni la vérification des licences ; liste des échecs en fin de journal ; job toujours rouge s'il y a un échec.
+- Pour WFS-427 (autre session expert ci, `matin.yml`) : se synchroniser avec `main` (3 lignes des tests CPU changées, ≈ l. 132).
+- Un seul ticket par session : cette session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 14:30:13 — WFS-427 fusionné par le lead dev (lead-dev)
+- PR #352 (agent expert ci cd (session 01UY1Vv2Hq)), revue du commit f86da0ee, squash **2ccc37c7** sur `main`. GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire.
+- Diff entier lu (`tools/qa/banc_groupe.sh`, matrice / `GROUPES` / « 18 groupes » de `matin.yml`, doc du skill) : RG-01 à RG-09 tenues, limite de 75 min, seuils et tests inchangés. 3 captures du banc `camera` ouvertes : rien d'anormal. Run #19 de `matin.yml` vérifié sur GitHub : `ecrans-2400` vert en 61,3 min, `fluidite` vert en 35,6 min ; `realisme-2` rouge hors ticket (WFS-377, WFS-428).
+- Refait : branche fusionnée avec `main` en local, construction et 105 tests CPU verts ; `test_matin.py` vert. Après le squash (WFS-412 fusionné entre-temps) : `matin.yml` de `main` relu, les deux changements sont là, 18 groupes, limite 75.
+- **Pour le PO (défaut ancien, hors de cette PR)** : dans `tools/qa/banc_groupe.sh`, un banc placé au milieu d'une liste `mkdir … && ./build/wfs_bench … && cp …` qui échoue n'arrête pas le script malgré `set -e` (règle de bash) : le job peut finir vert, captures du banc absentes. Exemple : `bash -c 'set -e; true && (exit 3) && echo copie; echo suite'` affiche « suite », code 0. Lignes concernées : `chargement`, `hud`, `fluidite`, `camera`, `conduite`, etc. Je recommande une US technique P1 (sortir le code du banc de la liste `&&`, sans rien d'autre changer).
+- À surveiller : bancs du matin du 12/11 (les deux groupes verts en moins de 75 min, archive `captures-fluidite.zip`) ; marge d'`ecrans-2400` (61 min sur 75).
+
+### 2026-11-11 14:30:53 — WFS-427 fusionné : session terminée (agent expert ci cd, session 01UY1Vv2Hq)
+- PR #352 fusionnée en squash par le lead dev (2ccc37c). Ma ligne de `track-agent.md` passe en « ⏹️ session terminée » ; je ne demande aucun autre ticket (un seul sujet par session).
+- **Reste à constater** : `ecrans-2400` et `fluidite` verts aux bancs du matin de `main` du 2026-11-12 (moins de 75 min chacun), archive `captures-fluidite.zip` publiée.
+- **Les bancs du matin resteront rouges** tant que `realisme-2` n'est pas réparé : WFS-377 et WFS-428 (P1, ⏳ Prêt, code du jeu), à donner à deux sessions `@dev`.
+- **Pour le PO** (remarque du lead dev, défaut ancien) : dans `tools/qa/banc_groupe.sh`, un banc en échec au milieu d'une suite `… && … && cp …` n'arrête pas le script malgré `set -e` (seule la dernière commande d'un groupe rend le job rouge) : US technique à créer. Autre point : `ecrans-2400` à 61 min sur la CI, marge de 14 min (banc `hud` lent).
+
+### 2026-11-11 14:32:17 — WFS-426 : écart RG-02 noté (paquets `plage_*`) (po-scrum-master)
+À la demande du développeur (agent cartes, PR #350), écart accepté par le lead dev ajouté sous RG-02 de `regles-de-gestion/WFS-426.md` : paquets `plage_astc/etc2/rgba8.wfcarte` (identifiant « plage » du format WFS-301), nom affiché « Corniche ». Statut et ligne du développeur inchangés.
