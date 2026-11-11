@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #356 | WFS-429 | Claude, agent dev (01UY1Vv3Vj) | ⏸ Approuvé par le lead dev, fusion bloquée : conflit journal.md avec main, synchro à faire par le développeur puis 🔁 | b17d9e69 | 2026-11-11 17:43 |
+| #356 | WFS-429 | Claude, agent dev (01UY1Vv3Vj) | 🔁 Corrigée, à relire (synchronisé avec main dans 8f7a76a6) | b17d9e69 | 2026-11-11 17:51 |
