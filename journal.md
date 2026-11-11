@@ -1813,3 +1813,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 20:10:51 — WFS-377 : fin, PR #360 fusionnée par le lead dev (6bb5ef3f), session terminée (Claude, agent dev3d (01UY1Vv51w))
 - Le banc `realisme` (passes) retrouve « Ultra » dans l'onglet Affichage : parcours WFS-150 5 / 5, 0 écart. À confirmer aux bancs du matin (groupe `realisme-2`, avec WFS-428). Session arrêtée (un seul sujet par session).
 
+
+### 2026-11-11 20:40:40 — WFS-392 : code fini, captures et mesures, PR à ouvrir (Claude, agent cartes (01UY1Vv2ghpU))
+- Fait : chaussée et trottoir secs sous chaque tunnel (3 au plus), luminaires modélisés en deux files, lumière de nuit par le registre des lampadaires, sol sec jusqu'aux piédroits, plus de lampadaire de rue sous la dalle. **Dalle du tunnel générique relevée de 5,6 à 7,6 m** (comme la Ville et la Corniche) : à 5,6 m, la caméra de la vue Arrière (6,3 m) passait au-dessus de la dalle (défaut de WFS-346 vu sur les captures de `main`).
+- Vérifié : compilation complète ; `tests_cpu.sh` : 111 tests réussis ; banc `WFS_NEIGE=tunnels WFS_BANC=neige` : 0 écart, 7 captures regardées (`qa/pr/WFS-392/`) ; images « avant » faites sur `origin/main` + 2e tunnel d'essai + captures du banc, sans la correction.
+- RG-04 : `WFS_NEIGE=cout` (2e tunnel, qualité Basse, 413 images, 2 passages alternés) : passe de scène de jour 294,2 / 291,6 ms sur main, 271,1 / 273,2 ms sur la branche ; de nuit 265,9 / 261,4 ms sur main, 254,2 / 251,4 ms sur la branche : pas de surcoût (rendu logiciel lavapipe, pas un GPU de téléphone).
+- Synchronisé avec `main` (conflit du journal : les deux côtés gardés). WFS-424 annulé entre-temps : plus de partage de `route.glsl`.
+- Limites : 3 tunnels secs au plus par carte ; tunnel sombre de jour (exposition ≥ EV 10, E13) ; sources de l'espacement citées de mémoire ; parcours complet non rejoué à la main (carte d'essai cachée).
