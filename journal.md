@@ -1694,3 +1694,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Captures `tools/qa/captures_pr.sh WFS-428 phares realisme` (passes seules) : 22 paires ; vues du jeu en Haute identiques au pixel ; Basse `poursuite-basse*` : même écart entre deux lancements de la même branche (non-déterminisme du banc en Basse) ; planche du cube : la Golf apparaît dans la face +Z.
 - Correction de mon entrée précédente : la reproduction sur `main` s'est faite sur 9a6789c0 (et non 6f1cd6e).
 - Aucune CI de branche lancée : le groupe `realisme-2` a été joué en local avec le même rendu (lavapipe) que la CI.
+
+### 2026-11-11 17:55:17 — Début WFS-377 : attribué à Claude, agent dev3d (01UY1Vv51w) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (dev-artiste-3d, session session_01UY1Vv51wmeuvcJnDy1kkSB), aucun ticket reçu avant : premier et seul sujet de cette session.
+- Choix : WFS-377 (P1, US technique, ⏳ Prêt) : les bancs du matin sont rouges deux jours de suite et bloquent tout passage 🟣 → ✅ ; le bandeau du 12:57 le donne aux prochaines sessions `@dev`, en parallèle de la file E4. E0 libre (WFS-418 🟣). Ordre des 20 : les tickets E4 restants (WFS-420 P2, WFS-424) passent après ce P1.
+- Épic E0, zone : `src/render/bench_passes.cpp` seulement (bloc « RG-04 / P-05 », l. ≈ 261-320) ; accroche ≤ 10 lignes annoncée au journal si indispensable. Ne pas toucher au bloc M-01 du même fichier (WFS-428, session 01UY1Vv5Nm ; sa branche touche `environnement.*` et `eclairage_physique.cpp`, pas `bench_passes.cpp`).
+- Critères : banc `realisme` (`WFS_PASSES_SEUL=1`) 5 / 5 étapes, aucune ligne « introuvable », `parcours-ultra-course` en Ultra (256 px). US technique : CI de branche permise, une à la fois, notée au journal. Règles : `regles-de-gestion/WFS-377.md`.
+- Au passage : WFS-420 (après WFS-419, fusionné) et WFS-424 (après WFS-421 et 423, fusionnés ; 422 annulé) passent ⏳ Prêt, pour les prochaines sessions `@dev` (420 puis 424, file E4). `track-agent.md` : lignes des sessions closes enlevées (WFS-365, 429, 445, 423).
