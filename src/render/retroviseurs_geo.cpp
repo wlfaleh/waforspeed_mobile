@@ -61,6 +61,9 @@ bool parLArriere(Model& m, const float* xyz, size_t pas, size_t n, int c) {
 // décalage de l'œil du cockpit dans le modèle 3D quand ses rétroviseurs ne sont pas trouvés (moyenne des 18 voitures mesurées, ≈ 0,6 m)
 constexpr float DECALAGE_HABITACLE_M = 0.60f;
 constexpr float VISEE_HAUTEUR_M = 0.9f, VISEE_DISTANCE_M = 12.f;   // glace intérieure : milieu d'une voiture qui suit
+// œil haut (SUV, au-dessus de 1,2 m) : visée encore plus basse, 0,11 rad par mètre d'œil en plus (mesuré au banc : sans elle, les phares de
+// la voiture qui suit sortaient par le bas de la glace du Range Rover Sport ; visée basse pour toutes, la plage arrière de la M4 les cachait)
+constexpr float VISEE_OEIL_HAUT_M = 1.2f, VISEE_OEIL_HAUT_RAD_PAR_M = 0.11f;
 // glaces extérieures : la carrosserie occupe 1,5° au bord intérieur de la glace (réglage conseillé : on la devine à peine, le reste montre la
 // voie d'à côté) ; avec 20 % de la glace (1re version), la 911 (glace de 175 mm) ne voyait pas une voiture 9 m derrière dans la voie de gauche
 constexpr float FLANC_VU_RAD = 1.5f * PI / 180.f;
@@ -139,9 +142,10 @@ std::array<Miroir, NB_GLACES> miroirs(const cockpit::InterieurDef& d, float cx, 
         const vec3 eu = normalize(vec3{0, yh - Yb, zh - Zb}), en = normalize(cross(vec3{1, 0, 0}, eu));
         const vec3 pied = vec3{cx, Yb, Zb} + eu * (length(vec3{0, yh - Yb, zh - Zb}) - 0.05f) + en * 0.004f;
         const vec3 c{cx - 0.01f, pied.y - 0.062f, pied.z + 0.06f};   // centre de la coque
-        // réglage du conducteur : le milieu de la glace vise le milieu d'une voiture 12 m derrière (0,9 m du sol) : 0,7° vers le bas (M4)
-        // à 2,9° (Range Rover Sport, œil à 1,5 m) ; avec une visée fixe (1°), la voiture qui suit sortait par le bas de la glace des SUV
-        const float bas = std::atan2(std::max(0.f, hauteurOeil(d) - VISEE_HAUTEUR_M), VISEE_DISTANCE_M);
+        // réglage du conducteur : le milieu de la glace vise le milieu d'une voiture 12 m derrière (0,9 m du sol) : 0,7° vers le bas (M4),
+        // 1,2° (Golf) ; œil haut : en plus 0,11 rad par mètre au-dessus de 1,2 m : 5,1° (Range Rover Sport, œil à 1,5 m)
+        const float bas = std::atan2(std::max(0.f, hauteurOeil(d) - VISEE_HAUTEUR_M), VISEE_DISTANCE_M) +
+                          VISEE_OEIL_HAUT_RAD_PAR_M * std::max(0.f, hauteurOeil(d) - VISEE_OEIL_HAUT_M);
         const vec3 n = normaleReglee(c, oeil, {0, -std::sin(bas), std::cos(bas)});
         m[INTERIEUR].repere = repereGlace(c + n * 0.0205f, n);
         m[INTERIEUR].w = 0.236f; m[INTERIEUR].h = 0.056f;
