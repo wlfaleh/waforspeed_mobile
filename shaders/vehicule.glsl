@@ -69,7 +69,9 @@ void vernisPeinture(inout vec3 col, vec3 R, vec3 sun, float NoV, float NoH, floa
         // départ en ville), la peinture ne sature pas en blanc ; elle garde sa teinte.
         const float RHO_ROUTE = 0.14, K_DIFFUS = 2.0, L_SAT = 0.5;
         vec3 Nc = normalize(R + normalize(F.camPos.xyz - vWorld));   // normale de la pièce (R = reflect(−V, N))
-        solNuit = RHO_ROUTE * eclairementRouteAutour() / PI;
+        // WFS-423 (RG-02) : en Basse, valeur calculée une fois par voiture sur le CPU (src/render/eclairement_voiture.h, même formule),
+        // posée dans pc.nuit (w = 1) ; sinon (Moyenne, Haute, pièces hors voiture) : calcul d'avant, ici
+        solNuit = RHO_ROUTE * (pc.nuit.w > 0.5 ? pc.nuit.rgb : eclairementRouteAutour()) / PI;
         solNuit /= 1.0 + dot(solNuit, vec3(0.2126, 0.7152, 0.0722)) / L_SAT;
         col += pc.color.rgb * solNuit * (0.5 * (1.0 - Nc.y) + K_DIFFUS) * specK;
     }

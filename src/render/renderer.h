@@ -11,6 +11,7 @@
 #include "masquage.h"   // WFS-82 : masquage hors champ et au loin
 #include "eclairage_ombres.h"   // WFS-227 : cascades d'ombre du soleil
 #include "passe_scene.h"   // WFS-425 : passe de scène, copie de la scène ×1
+#include "eclairement_voiture.h"   // WFS-423 : éclairement de la chaussée autour des voitures (CPU, Basse)
 #include "../core/gpu_logiciel.h"
 
 namespace wfs {
@@ -259,7 +260,13 @@ public:
     size_t tangentesSommets() const { return tangentesSommets_; }
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
-    struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
+    // WFS-423 (RG-02) : nuit = éclairement de la chaussée autour de la voiture (rgb, eclairement_voiture.h), w = 1 s'il est calculé
+    // sur le CPU (Basse, nuit, pièces peintes) ; 0 sinon : le shader le calcule lui-même (Moyenne, Haute : inchangé). 128 octets :
+    // taille garantie des constantes de poussée (maxPushConstantsSize ≥ 128, spécification Vulkan)
+    struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; vec4 nuit; };
+    static_assert(sizeof(PC) <= 128, "constantes de poussée : 128 octets au plus");
+    eclairement_voiture::Lumieres lumieresImage_;   // WFS-423 : lumières de l'image (copie de FrameUBO, beginFrame)
+    bool eclairementCpu_ = false;                   // WFS-423 : Basse et nuit : éclairement autour des voitures calculé ici
     struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint16_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; bool joueur = false; };   // WFS-322 : joueur = voiture du joueur (hors captures d'environnement)   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre

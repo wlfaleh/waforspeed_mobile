@@ -8,7 +8,7 @@ layout(location = 3) in vec4 vTan;   // WFS-149 (RG-04) : tangente du sommet (xy
 layout(set = 1, binding = 0) uniform sampler2D texColor;
 layout(set = 1, binding = 1) uniform sampler2D texNormal;
 layout(set = 1, binding = 2) uniform sampler2D texMR;
-layout(push_constant) uniform P { mat4 model; vec4 color; vec4 params; vec4 emissive; } pc;
+layout(push_constant) uniform P { mat4 model; vec4 color; vec4 params; vec4 emissive; vec4 nuit; } pc;   // WFS-423 : nuit (vehicule.glsl)
 layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265;

@@ -46,6 +46,7 @@ namespace wfs { int benchGrandPrixObjets(Game& g, Renderer& r, const std::string
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
 namespace wfs { int benchHalosSol(Game& g, Renderer& r, const std::string& out); }   // WFS-421 (accroche) : nuit_halo_sol_banc.cpp
+namespace wfs { int benchLumieresBasse(Game& g, Renderer& r, const std::string& out); }   // WFS-423 (accroche) : lumieres_basse_banc.cpp
 namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp
 namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
@@ -197,6 +198,7 @@ int main(int argc, char** argv) {
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "depart-campagne") { ui::chargerPolice(r); const int e = benchDepartCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-374 (accroche) : départ de la Campagne, gaz tenu dès le décompte ; ANO-233
     if (banc == "halos-sol") { const int e = benchHalosSol(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-421 (accroche) : halos au sol des lampadaires, Basse / Moyenne / Haute
+    if (banc == "lumieres-basse") { const int e = benchLumieresBasse(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-423 (accroche) : lumières de nuit en Basse, suite de 3 images
     if (banc == "halos") { ui::chargerPolice(r); const int e = benchHalos(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-337 (accroche) : halos des têtes de lampe, voie rapide de nuit
     if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
     carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets";   // WFS-301 (RG-01) : PC

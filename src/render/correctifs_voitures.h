@@ -115,10 +115,10 @@ inline const PhareVoiture PHARES_AVANT[] = {
     {"corsa", 19, {8, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
     {"corsa", 19, {9, false, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
     {"corsa", 19, {12, true, 0.55f, 0.88f, 0.68f, 0.86f, -1.40f}},
-    // Gallardo : réflecteurs texturés ; glace fumée (prises d’air hors zone)
-    {"gallardo", 18, {3, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
-    {"gallardo", 18, {4, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
-    {"gallardo", 18, {6, true, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
+    // Gallardo : réflecteurs texturés ; glace fumée (prises d’air hors zone) ; 22 matériaux depuis les grilles des prises d’air de WFS-365 (4 ajoutés à la fin)
+    {"gallardo", 22, {3, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
+    {"gallardo", 22, {4, false, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
+    {"gallardo", 22, {6, true, 0.50f, 0.88f, 0.48f, 0.80f, -1.50f}},
     // Giulia : projecteur, réflecteurs, cerclages ; 2 glaces claires
     {"giulia", 68, {48, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
     {"giulia", 68, {50, false, 0.45f, 0.90f, 0.52f, 0.75f, -1.70f}},
