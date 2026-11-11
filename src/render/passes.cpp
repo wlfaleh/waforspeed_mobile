@@ -7,6 +7,7 @@
 #include "../core/log.h"
 #include "../ui/ecrans/reglages.h"
 #include "qualite_auto.h"
+#include "diagnostic_perf.h"   // WFS-419 : interrupteur « sans pré-passe »
 
 namespace wfs {
 
@@ -304,6 +305,7 @@ void avantScene(Renderer& r, VkCommandBuffer cb) {
     // RG-02 : la pré-passe ne tourne que si une passe active de cette image la demande
     g.prePasseVoulue = false; g.prePasseFaite = false;
     for (PasseRendu* p : g.passes) if (p->demandePrePasse() && tourne(*p, ip)) g.prePasseVoulue = true;
+    if (diag::actif(diag::SANS_PREPASSE)) g.prePasseVoulue = false;   // WFS-419 : diagnostic « sans pré-passe » (les lecteurs voient prePasseFaite() faux)
     executerEtape(EtapeRendu::Ombres, ip);
     executerEtape(EtapeRendu::PrePasse, ip);
     executerEtape(EtapeRendu::Ecran, ip);

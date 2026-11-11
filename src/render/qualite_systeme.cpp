@@ -2,6 +2,7 @@
 // Mesure les images/s réelles en course, ajuste la résolution de la scène et rétrograde une fois si besoin
 // (watchPerf du jeu web, logique dans qualite_auto.h) ; bandeau « Graphismes rapides — pour plus de fluidité ».
 // Inactif hors écran (banc d'essai : captures inchangées) et en mode GPU logiciel (WFS-59 gère déjà l'échelle).
+#include "diagnostic_perf.h"   // WFS-419
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -191,6 +192,10 @@ std::string qualite::ligneRendu() {
     const std::string d = texteDessin(false);   // WFS-317 (I9) : appels et triangles de l'image, part de chaque famille
     std::string ld = d.empty() ? l : l + " · " + d;
     if (g_r->sceneFigee()) ld = l + " · 0 appel · 0 k triangles · fond figé";   // WFS-329 : menu, choix du terrain : scène dessinée une fois, relue ensuite
+    // WFS-419 : interrupteurs de diagnostic allumés (rien s'ils sont tous éteints) ; après le menu caché : appareil (RG-03)
+    const std::string da = diag::texteActifs();
+    if (!da.empty()) ld += " · " + da;
+    if (diag::g_menuVu) ld += " · " + diag::texteAppareil(g_r->vk());
     return modeDiagnostic() ? ld + " · " + passes::texteCouts(passes::coutsFenetre()) : ld;   // WFS-150 (RG-05) : coût de chaque passe
 }
 // WFS-317 (I9) : comptes du Renderer (flushDraw, toutes passes : ombres, reflet, capture, scène), par famille

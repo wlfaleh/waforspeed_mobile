@@ -84,6 +84,9 @@ struct ConfigJeu {
         float plancherMoyenne = 0.9f;   // échelle de rendu la plus basse en qualité Moyenne (WFS-104)
         float refletRouteMouillee = 1.f;   // WFS-142 (RG-04) : force du reflet de la scène sur la route mouillée (0 à 1,5)
     } qualite;
+    struct Diagnostic {   // WFS-419 (RG-02) : interrupteurs de diagnostic de performance (0 éteint, 1 coupe l'effet) ; ordre de src/render/diagnostic_perf.h
+        int coupe[12] = {};   // tous à 0 par défaut : jeu identique
+    } diagnostic;
     struct Paquets {   // WFS-306 : liste des paquets de cartes (cartes.json de la Release « paquets », WFS-302) ; adresse https seulement
         char adresseListe[ADRESSE_MAX * 4 + 1] = "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json";
     } paquets;

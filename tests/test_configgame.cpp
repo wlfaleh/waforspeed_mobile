@@ -68,6 +68,16 @@ int main(int argc, char** argv) {
             !std::strcmp(e.voitures.nom[0].marque, "Norvik") && !std::strcmp(e.voitures.nom[1].modele, "Vantor GT"));
         for (const std::string& m : b2.messages) std::printf("  %s\n", m.c_str());
     }
+    // WFS-419 (RG-01, RG-02) : interrupteurs de diagnostic tous éteints par défaut, un « 1 » lu, une valeur hors 0 / 1 refusée
+    {
+        ConfigJeu c; lireConfig(defauts, "défauts", c);
+        bool zeros = true; for (int v : c.diagnostic.coupe) zeros = zeros && v == 0;
+        cas("WFS-419 : 12 interrupteurs de diagnostic à 0 par défaut", zeros && defauts.find("\"sans_ombres\": 0") != std::string::npos);
+        ConfigJeu d; const BilanConfig b = lireConfig(remplacer(defauts, "\"sans_ombres\": 0", "\"sans_ombres\": 1"), "diag", d);
+        cas("WFS-419 : diagnostic.sans_ombres = 1 lu", b.erreurs == 0 && d.diagnostic.coupe[3] == 1);
+        ConfigJeu e; const BilanConfig b2 = lireConfig(remplacer(defauts, "\"sans_ombres\": 0", "\"sans_ombres\": 2"), "diag hors bornes", e);
+        cas("WFS-419 : diagnostic.sans_ombres = 2 refusé (reste 0)", b2.erreurs == 1 && e.diagnostic.coupe[3] == 0);
+    }
     // WFS-406 (RG-06) : adresse de la politique de confidentialité : vide par défaut (ligne cachée), https prise, autre refusée
     {
         ConfigJeu c; lireConfig(defauts, "défauts", c);
