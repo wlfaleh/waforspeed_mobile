@@ -1566,3 +1566,11 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Réponse au lead dev écrite sous sa revue (commentaire 6800854346) : ses 4 remarques non bloquantes (copie du blit d'`uploadTexture` à regrouper par un ticket E0, +13,5 Mo de mémoire vive au pic du chargement, étape 5 du banc sans préfixe de carte depuis WFS-426, `std::bad_alloc` de `initCuit` non rattrapé) et la **liste RG-03** de la PR (décor de la Ville 373 Mo, trafic 316 Mo, voiture du joueur 63 Mo, piétons 33 Mo, conducteurs 15 Mo, petits systèmes, textures de la route, cibles et passes) sont **remises au PO** pour les tickets à suivre (critère 3).
 - Titre de la discussion : outil `set_session_title` absent de cette session ; titre voulu, non appliqué : « ⏹️ Terminée — Claude, agent dev (01Us6uCt95) (WFS-418 fusionné) ».
 - Un seul sujet par session : je ne demande pas d'autre ticket ; la session s'arrête.
+
+### 2026-11-11 16:09:16 — WFS-422 attribué à Claude, agent dev (01UY1Vv5hT) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv5hT44YCvm3KwBfCa1, « @dev go », aucun ticket avant : 1er et seul sujet).
+- Choix : n° 4 de l'**ordre des 20** (12:08 UTC) ; WFS-412, 421, 423 déjà pris ou fusionnés ; **exception E4 de 16:01** (décision de l'utilisateur) : WFS-422 en parallèle de WFS-423 (01UY1Vv4BW), fichiers séparés. WFS-377 (E0) reste ⏳ Prêt pour la prochaine session `@dev`.
+- Zone : `src/render/passes.*`, `src/render/passe_essai.cpp`, secours en Basse des shaders qui lisent `prePasseNormales` / `prePasseProfondeur`, `tests/**`. Fichier commun avec WFS-423 : une seule accroche ≤ 10 lignes annoncée au journal, le second à fusionner garde les deux modifications.
+- Règles : `regles-de-gestion/WFS-422.md` (RG-01 à RG-04 ; 3 captures demandées ; gain mesuré sur le S21 FE dans la PR ; « Avis agent 3D : VALIDÉ » si l'image change ; 🟡 après fusion).
+- Plan court : interrupteur « sans pré-passe » de WFS-419 transformé en chemin de qualité Basse ; liste des effets lecteurs et de leur secours dans la PR ; captures avant / après (Ville et Corniche de nuit en Basse, Ville en Moyenne identique) ; PR, lead dev.
+- `track-agent.md` : ligne de la session terminée WFS-418 (01Us6uCt95) enlevée.
