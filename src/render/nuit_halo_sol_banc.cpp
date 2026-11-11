@@ -1,8 +1,8 @@
 // WaForSpeed — WFS-421 (épic E4) : banc court des halos au sol des lampadaires (WFS_BANC=halos-sol).
 // Ville (rue, lampadaire de trottoir) et Corniche (lampadaire de plage) de nuit, temps sec, vue Poursuite, voiture qui roule au
 // pilote automatique jusqu'à ≈ 20 m du lampadaire suivant ; même scène en qualité Basse, Moyenne et Haute.
-// Captures : halosol-<carte>-<basse|moyenne|haute>.png. En Basse, le disque additif au pied du lampadaire n'est plus dessiné
-// (RG-01) ; le halo de la tête reste (RG-02) ; Moyenne et Haute doivent être identiques à main (avant / après de la PR).
+// Captures : halosol-<carte>-<basse|moyenne|haute>.png. Le disque additif au pied du lampadaire n'est plus dessiné, à aucune
+// qualité (RG-01, suite du 2026-11-11 : en Basse d'abord, puis Moyenne et Haute) ; le halo de la tête reste (RG-02).
 #include <cmath>
 #include <cstdlib>
 #include <string>

@@ -176,7 +176,8 @@ else()
   add_executable(test_fluidite_reference tests/test_fluidite_reference.cpp)   # WFS-293 (RG-10) : l'indicateur à 10-20 img/s voit les sauts
   add_executable(test_fidelite_lumiere_precalcule tests/fidelite_lumiere_precalcule.cpp src/render/eclairage_precalcule.cpp src/core/jobs.cpp)   # WFS-269 : occlusion du décor fixe précalculée
   target_link_libraries(test_fidelite_lumiere_precalcule Threads::Threads)
-  add_executable(test_nuit_qualite tests/test_nuit_qualite.cpp)   # WFS-421 : halos au sol des lampadaires coupés en Basse, tête gardée
+  add_executable(test_nuit_qualite tests/test_nuit_qualite.cpp)   # WFS-421 : plus de disque au sol des lampadaires, tête gardée
+  target_compile_definitions(test_nuit_qualite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_post_wfs214 tests/post_wfs214.cpp src/game/roues.cpp)   # WFS-214 : tramage du ciel (RG-01), vision de nuit loin des lumières (RG-05)
   target_compile_definitions(test_post_wfs214 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
