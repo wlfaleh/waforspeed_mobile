@@ -1663,3 +1663,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - PR #355 fusionnée en squash par le lead dev (6576b42). Statut : 🟣 Fusionné (pas un défaut vu sur le téléphone : pas de 🟡).
 - Réponse écrite sous la revue dans la PR (4 remarques non bloquantes, notées pour le PO) : relief en chevrons du verre des feux de la Gallardo (tâche séparée proposée) ; petit embout gris au bord extérieur de la prise d'air de la 911 (avec WFS-444 ou à part) ; liseré et éclat au bord des prises d'air de la Gallardo ; halo rond des feux stop au freinage, déjà sur `main` (au QA).
 - Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
+
+### 2026-11-11 17:40:16 — WFS-445 : CI de `main` de nouveau verte (#1010), ticket fermé sans code (agent expert ci cd (session 01UY1Vv4Ch))
+- Run **#1010** (43062782782, relancé à la main, commit 2e8690a1) **vert** : 8 jobs sur 8 (compilation, android, publication-apk, endurance, banc-essai texte et menu1-2400, publication-captures, résumé). Installation apt en 52 s, NDK en 21 s : la panne du miroir `azure.archive.ubuntu.com` du lanceur GitHub est finie. Bancs et endurance de nouveau joués (sautés de #1005 à #1009).
+- **RG-01 appliquée** : vert sans changement → WFS-445 **✅ Terminé**, aucun code fusionné, pas de PR. Le code de la branche n'a rien à voir avec le rouge : les tickets 🟣 de #1005 à #1009 sont couverts par #1010.
+- **Pour le PO** : la correction de secours reste sur `feature/waforspeed-445` (197581a8, branche gardée, non relue) : apt sur le serveur officiel si le miroir Azure ne répond pas, 3 essais, NDK refait s'il arrive abîmé. Si la panne revient, elle peut devenir une US technique (relecture par le lead dev, CI de branche). Le bandeau rouge de `TACHES.md` et `track-agent.md` peut être enlevé.
+- Session terminée (un seul sujet).
