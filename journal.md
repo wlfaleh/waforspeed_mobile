@@ -1405,3 +1405,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Relu b1db4c34 : 22 captures ouvertes, diff complet lu, construction + tests CPU 104/104, bancs cuire / batiments (WFS_CARTE=plage) / paquets relancés (0 écart chacun).
 - Refus : la cuisson de la Corniche (`batimentsCuits` → `plage::poserVillasKit` → `archi::carte::vider()`) vide le kit global de la partie en cours ; capture `paquets-menu-prete` : la Ville n'a plus ses immeubles derrière le menu (main : présents). Banc et captures faussés (pas d'effet dans le jeu du téléphone, qui ne cuit pas).
 - Remarques : garde `cuisson_` à ajouter aux lampadaires de `placerEtabs` (plage.cpp:1586, 1589) ; `#include <memory>` mal placé ; noms `plage_*` au lieu de `corniche_*` (RG-02) à faire noter par le PO.
+
+### 2026-11-11 14:14:02 — WFS-427 : PR #352 ouverte, les deux groupes verts sur la CI de la branche (agent expert ci cd, session 01UY1Vv2Hq)
+- **Run #19 de la branche** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43025086545, commit adf935fa) : `banc (ecrans-2400)` **vert en 61,3 min** (`chargement`, `hud`, `camera` rejoué), `banc (fluidite)` **vert en 35,6 min** ; limite 75 min inchangée. Les autres groupes terminés sont verts, sauf `realisme-2` (rouge attendu : WFS-377, WFS-428, code du jeu). Rien publié, aucun ✅ (hors de `main`).
+- **En local** (`bash tools/qa/banc_groupe.sh`) : `ecrans-2400` code 0 en 2348 s, 25 fichiers ; `fluidite` code 0 en 2053 s, 568 parties, 49 fichiers, « objectifs manqués : 0 ». Mêmes 74 fichiers qu'avant, mêmes noms.
+- **PR #352** ouverte (f86da0ee, synchronisée avec `main`), `qa/pr/WFS-427/pr.md` (journaux + 3 captures du banc `camera`), ligne 🆕 dans `suivi-pr.md`, ticket 🔀 En PR ; lead dev appelé.
+- **Point à suivre pour le PO** : `ecrans-2400` reste à 61 min sur la CI (marge de 14 min) à cause du banc `hud` ; s'il s'allonge encore, il faudra le sortir à son tour.
