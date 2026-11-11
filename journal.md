@@ -1323,3 +1323,17 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Mesures qui fondent la correction** : sur la CI (run #16, job 130415389361), `fluidite` avance à 5,1 s par partie (parties 402 à 417 horodatées), soit ≈ 48 min pour ses 568 parties ; en local sur `main` : `chargement` 65 s, `hud` 2059 s, `fluidite` 2321 s, `camera` 233 s, tous en code 0. Version du run #5 (4e7fa716), même machine : `hud` 1860 s.
 - **CI de branche (US technique, RG-08)** : `matin.yml` lancé à la main sur la branche, **run #19** (https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43025086545). Il vérifie la durée d'`ecrans-2400` et de `fluidite` sur la vraie CI (moins de 75 min chacun) et que `camera` est rejoué. Hors de `main` : rien n'est publié (ni captures, ni APK, ni message à la QA) et le robot des statuts ne regarde que `main` : aucun ✅ donné. `realisme-2` y sera rouge (WFS-377, WFS-428 : code du jeu, hors de ce ticket).
 - Les deux groupes tournent aussi en local (journaux pour `qa/pr/WFS-427/pr.md`).
+
+### 2026-11-11 13:06:43 — WFS-429 créé : boutons Caméra et Menu à côté du score, +5 % (po-scrum-master)
+- **Demande de l'utilisateur** (session du PO) : « fonctionnalité simple, dans les 20 premières : déplacer les boutons caméra et menu, les mettre côte à côte avec le score et les agrandir de 5 % ».
+- **WFS-429** (P1, E5 + E8, + E3 exception PO : `camera_vue.cpp` `drawUi`) ⏳ Prêt, règles `regles-de-gestion/WFS-429.md` : rangée [MENU] [CAMÉRA] [SCORE] en haut à droite, toutes les dimensions ×1,05 (40 → 42 px), zones de toucher qui suivent, rien ne recouvre le GPS, le combo ni les notifications, vue Cockpit et Poursuite traitées.
+- **Ordre des 20** : WFS-429 en **8e**, pour une nouvelle session `@dev`, en parallèle de la file E4 (autres fichiers) ; WFS-397 passe au 21e rang.
+- **Exception à l'ordre permanent « taille des boutons » (2026-11-06)** : demandée par l'utilisateur, limitée à ces deux boutons ; notée dans les ordres permanents du PO.
+
+### 2026-11-11 13:08:39 — WFS-429 : pas de validation sur téléphone, captures suffisantes (po-scrum-master)
+- Remarque de l'utilisateur : un petit changement comme celui-là se valide sur une capture du jeu. Erreur du PO reconnue : la règle 🟡 (2026-11-07) ne vaut que pour un défaut vu sur le téléphone ou la conduite. WFS-429 suit le cycle normal : captures avant / après regardées par le lead dev → 🟣 → ✅ (bancs du matin). Règles mises à jour.
+
+### 2026-11-11 13:18:00 — WFS-364 : branche poussée, retouches de la Golf et de la Corsa faites (Claude, agent dev3d (01UY1Vv2nQ))
+- Fait : Golf, emblème rond (disque noir de WFS-404, 4 cm devant le bouclier), bandeau lumineux, liseré rouge et plaque GTI de la fente entre les phares retirés par découpe exacte ; encoche ronde de la peinture refermée par une peau cousue ; grille générique à 2 lames dans la fente. Corsa, nid d'abeille, barres chromées en V et porte-emblème de la calandre retirés ; grille générique à 4 lames ; relief du centre du capot lissé (nouvelle retouche `lisser` de `tools/retoucher_formes.mjs`, hauteur ajustée rangée par rangée sur la peau voisine).
+- Vérification en cours : `--verifier` vert pour les 9 voitures ; Golf et Corsa rejouées depuis l'origine (octet pour octet) ; Giulia et Range Rover rejouées depuis leur modèle d'avant WFS-363 : identiques à `main`. Tests CPU et captures avant / après en cours.
+- Outil : dépendances de `tools/package.json` installées en local (`npm install --no-save`, rien d'ajouté au dépôt) pour régénérer les LOD.
