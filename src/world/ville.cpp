@@ -114,6 +114,26 @@ carte::Pose poseS(Track& t, double s) {
     return {{(float)p.x, (float)p.y, (float)p.z}, {std::cos(th), 0, std::sin(th)}, {std::sin(th), 0, -std::cos(th)}, th};
 }
 
+} // namespace
+// WFS-416 (accroche) : immeubles et entrepôts de la Ville posés dans le kit d'architecture (code déplacé tel quel de Ville::init) ;
+// appelée par la Ville à son init et par la cuisson du paquet (cartes_v2::cuire), sans carte graphique
+void ville::poserImmeublesKit(const MapDef& map, Track& t) {
+    const ville::Plan& pl = ville::adapter(map, t);
+    archi::carte::vider();   // WFS-161 (accroche, ST-5) : immeubles posés dans le kit (6 styles) ; repli WFS_ARCHI=0 : anciennes boîtes
+    for (int64_t a = 0, L = (int64_t)pl.objets.size(); a < L; a++) for (const ville::Objet& o : pl.objets[(size_t)a]) if (o.t == ville::IMMEUBLE) {
+        const carte::Pose pm = poseS(t, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
+        const vec3 x = pm.f * -s, c = pm.o + pm.r * (s * ((float)RW + SET_BACK));   // façade face à la rue, x dans son sens
+        archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, o.balcons || o.h < 20 ? archi::Style::Classique : archi::Style::Moderne, (uint32_t)(a * 2 + (o.side > 0)));
+    }
+    // WFS-370 : entrepôts du port = bâtiments du kit, style industriel (brique, baies d'atelier, portes de garage), façade à o.lat
+    for (int64_t a = 0, L = (int64_t)pl.objets.size(); a < L; a++) for (const ville::Objet& o : pl.objets[(size_t)a]) if (o.t == ville::ENTREPOT) {
+        const carte::Pose pm = poseS(t, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
+        const vec3 x = pm.f * -s, c = carte::lateral(pm, s * o.lat, -0.2f);
+        archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, archi::Style::Industriel, (uint32_t)(a * 2 + (o.side > 0)) ^ 0x5eedu);
+    }
+}
+
+namespace {
 void quad(Geo& g, vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, vec2 ua, vec2 ub, vec2 uc, vec2 ud) {
     uint32_t k = (uint32_t)g.v.size();
     for (auto [p, u] : {std::pair{a, ua}, {b, ub}, {c, uc}, {d, ud}}) g.v.push_back({p.x, p.y, p.z, n.x, n.y, n.z, u.x, u.y});
@@ -242,18 +262,7 @@ public:
             for (int64_t a = 0; a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE)
                 for (int64_t k = 0; k <= (int64_t)std::ceil(o.len / SEG_M); k++) bati_[(size_t)((a + k) % L)] |= o.side > 0 ? 2 : 1;
         }
-        archi::carte::vider();   // WFS-161 (accroche, ST-5) : immeubles posés dans le kit (6 styles) ; repli WFS_ARCHI=0 : anciennes boîtes
-        for (int64_t a = 0, L = (int64_t)plan_->objets.size(); a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE) {
-            const carte::Pose pm = poseS(*g.track, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
-            const vec3 x = pm.f * -s, c = pm.o + pm.r * (s * ((float)RW + SET_BACK));   // façade face à la rue, x dans son sens
-            archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, o.balcons || o.h < 20 ? archi::Style::Classique : archi::Style::Moderne, (uint32_t)(a * 2 + (o.side > 0)));
-        }
-        // WFS-370 : entrepôts du port = bâtiments du kit, style industriel (brique, baies d'atelier, portes de garage), façade à o.lat
-        for (int64_t a = 0, L = (int64_t)plan_->objets.size(); a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::ENTREPOT) {
-            const carte::Pose pm = poseS(*g.track, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
-            const vec3 x = pm.f * -s, c = carte::lateral(pm, s * o.lat, -0.2f);
-            archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, archi::Style::Industriel, (uint32_t)(a * 2 + (o.side > 0)) ^ 0x5eedu);
-        }
+        ville::poserImmeublesKit(*g.map, *g.track);   // WFS-161, WFS-370 ; WFS-416 (accroche) : fonction libre, appelée aussi par la cuisson du paquet
         {   // WFS-137 : optiques des feux (éteinte : verre sombre ; LED allumées, comme la Corniche) et jet de la fontaine
             Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
             lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);

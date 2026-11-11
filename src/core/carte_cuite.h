@@ -11,7 +11,9 @@
 //       u32 CRC-32 de l'en-tête (octets 0 à juste avant ce champ)
 //   puis les données des blocs, dans l'ordre de la table.
 // Blocs nommés : « decor_regroupe » (décor préparé, partie B), « maillages » et « textures » (archives de fichiers lus par
-// readAsset, voir Archive), « trace » et « chocs » réservés (vides pour la Ville actuelle) ; un bloc inconnu est ignoré.
+// readAsset, voir Archive), « trace » et « chocs » réservés (vides pour la Ville actuelle), « batiments » (WFS-416 : bâtiments du kit
+// d'architecture cuits, format dans src/world/archi_cuit.h ; sa version est dans le bloc) ; un bloc inconnu est ignoré, donc un jeu plus
+// ancien lit le même paquet sans ce bloc et la version du format ne change pas.
 // Archive (blocs maillages / textures) : « WFSA », u32 nombre, puis par fichier (trié par chemin) : u16 + octets (chemin), u64 taille,
 // octets. Textures KTX2 sans supercompression (le lecteur KTX2 du jeu la refuse).
 //
@@ -20,6 +22,7 @@
 // Ce module ne dépend que de la bibliothèque standard (src/core).
 #pragma once
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,7 +32,7 @@ namespace carte {
 constexpr uint32_t VERSION_FORMAT = 1;
 // à augmenter à chaque changement de ce que produit la cuisson (code de construction de la carte, fichiers mis dans le paquet) :
 // change l'empreinte attendue, donc un paquet ancien est refusé et la carte du code est jouée (RG-02, RG-06)
-constexpr uint32_t VERSION_GENERATION_CARTE = 1;
+constexpr uint32_t VERSION_GENERATION_CARTE = 2;   // 2 : WFS-416, bloc « batiments » (un paquet d'avant est refusé, donc retéléchargé : décision du PO)
 
 enum class FormatTexture : uint8_t { ASTC = 0, ETC2 = 1, RGBA8 = 2 };
 constexpr FormatTexture FORMATS[3] = {FormatTexture::ASTC, FormatTexture::ETC2, FormatTexture::RGBA8};   // ordre de préférence
@@ -78,6 +81,10 @@ bool actif();
 std::string carteActive();   // copie prise sous le verrou
 // fichier du paquet actif (copie dans out) ; faux s'il n'y est pas (readAsset lit alors l'APK)
 bool lireDansPaquet(const std::string& chemin, std::vector<uint8_t>& out);
+// WFS-416 : bloc nommé du paquet actif, ex. « batiments », partagé sans copie (il reste valable après un changement de paquet
+// tant que l'appelant le garde) ; nul s'il n'y a pas de paquet actif pour cette carte, ou si le bloc est absent ou vide (paquet
+// d'avant ce bloc : le kit construit par le code reprend la main)
+std::shared_ptr<const std::vector<uint8_t>> blocDuPaquet(const std::string& carte, const std::string& nom);
 long long lusDansPaquet();   // nombre de fichiers servis par le paquet depuis l'activation (journal, banc)
 
 } // namespace carte

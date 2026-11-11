@@ -137,6 +137,7 @@ else()
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
   add_executable(test_paquets tests/test_paquets.cpp src/ui/ecrans/paquets_etape.cpp src/core/carte_cuite.cpp)   # WFS-306 : étape « Mise à jour et installation des paquets » (machine d'états)
   add_executable(test_carte_cuite tests/test_carte_cuite.cpp src/core/carte_cuite.cpp)   # WFS-301 : paquets de cartes (format, vérification, 2e source)
+  add_executable(test_batiments_cuits tests/test_batiments_cuits.cpp src/world/archi_cuit.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp src/world/archi_ouvertures.cpp src/core/carte_cuite.cpp)   # WFS-416 : bâtiments du kit cuits dans le paquet (3 niveaux, recopie, zéro construction, blocs refusés)
   add_executable(test_cartes_v2_donnees tests/test_cartes_v2_donnees.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp)   # WFS-343 : cartes 100 % dynamiques
   target_compile_definitions(test_cartes_v2_donnees PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cartes_v2_saison tests/test_cartes_v2_saison.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/game/player.cpp src/render/route_revetements_defs.cpp)   # WFS-346 : saison (neige, flocons, adhérence)
