@@ -1288,3 +1288,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - PR #346 approuvée et fusionnée en squash par le lead dev (d5c13495), après « Avis agent 3D : VALIDÉ avec réserves ». Ticket 🟡 À valider (utilisateur) : gain RG-04 à mesurer sur le S21 FE (Ville et Corniche de nuit, Basse, 45 %, MSAA ×2, interrupteurs de WFS-419).
 - Suite pour le PO : disque orange au sol encore dessiné en Moyenne et Haute (forme nue, réserve de l'agent 3D et du lead dev), hors périmètre de WFS-421.
 - Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 12:49:34 — WFS-412 : branche poussée (75a99915), run de branche #1000 lancé (agent expert ci cd (session 01UY1Vv4jR6p))
+- Validation de l'utilisateur (« si c'est ok tu passes la PR automatiquement »). `tools/qa/tests_cpu.sh` lance tous les tests même après un échec et finit par la liste des tests en échec (code 1 s'il y en a, 0 sinon, « aucun test trouvé » reste une erreur) ; `build.yml` (étape des tests, groupe `texte`) et `matin.yml` (job des tests) lancent `verifier_licences.py` même si un test échoue et gardent le pire des deux codes. Aucun seuil, test ni `IGNORES` changé.
+- US technique : run `workflow_dispatch` de `build.yml` sur `feature/waforspeed-412` n° 1000 (id 43023690539), branche synchronisée avec `main` (889159b6). Il vérifie : la nouvelle étape tourne verte avec le même résumé qu'avant (103 tests) et les licences sont vérifiées.
