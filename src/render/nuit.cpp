@@ -35,7 +35,6 @@ vec3 linHex(uint32_t h) {
     auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
     return {c(16), c(8), c(0)};
 }
-vec3 lin(vec3 c) { return {std::pow(c.x, 2.2f), std::pow(c.y, 2.2f), std::pow(c.z, 2.2f)}; }
 
 constexpr float HALO_TETE_M = 0.6f;   // WFS-356 (RG-05) : rayon du halo des têtes de lampe de la Ville (m), ≤ 3 fois la tête (0,36 m de profondeur)
 constexpr int LAMPES_MAX = 4;   // RG-05 : 4 lumières ponctuelles au plus
