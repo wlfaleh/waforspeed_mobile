@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstring>
 #include "vehicule_cockpit.h"
+#include "vehicule_cockpit_volant.h"   // WFS-325 : avanceVisierePropre
 
 namespace wfs::cockpit {
 
@@ -251,6 +252,20 @@ const SerieDef SERIE[] = {
 const VolantSerie* volantSeriePour(const InterieurDef& d) {
     for (const SerieDef& s : SERIE) if (std::strcmp(s.car, d.car) == 0) return &s.s;
     return nullptr;
+}
+
+// WFS-325 (RG-05, ANO-243 ; arbitrage du PO du 2026-11-11 : SF90 comprise) : visière de la M4, de la 911 et de la SF90 (volant
+// commun, inchangé). Même méthode que la RG-07 de WFS-414 : avancée la plus grande, par pas de 4 mm depuis 68 mm, qui ne cache
+// aucun point du haut de la jante vu de l'œil de la caméra et laisse un jour d'au moins 5 mm (tests/test_cockpit.cpp). Mesures :
+// M4 32 mm (jour 8,1 mm ; 36 mm : 4,4), 911 32 mm (7,1 ; 36 mm : 3,3), SF90 40 mm (7,5 ; 44 mm : 3,7) ; avant : 68 mm, la lèvre
+// traversait la jante (M4 : 22 points cachés, jour −25,6 mm ; 911 : 28, −27,1 mm ; SF90 : 0, −19,3 mm)
+namespace {
+struct VisiereDef { const char* car; float avance; };
+const VisiereDef VISIERES[] = {{"m4", 0.032f}, {"p911", 0.032f}, {"sf90", 0.040f}};
+}
+float avanceVisierePropre(const InterieurDef& d) {
+    for (const VisiereDef& v : VISIERES) if (std::strcmp(v.car, d.car) == 0) return v.avance;
+    return 0;
 }
 
 int nombreInterieurs() { return (int)(sizeof(DEFS) / sizeof(DEFS[0])); }

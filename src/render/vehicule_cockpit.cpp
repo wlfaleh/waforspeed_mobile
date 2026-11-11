@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include "../core/log.h"
+#include "vehicule_cockpit_details.h"   // WFS-325 : pièces propres au modèle (lot 1 : Golf, M4, 911, SF90)
 #include "vehicule_cockpit_formes.h"   // WFS-414 : pièces modelées partagées avec le volant
 #include "vehicule_cockpit_geo.h"
 #include "retroviseurs.h"   // WFS-324 : glaces à reflet
@@ -230,6 +231,8 @@ void coqueRetro(Geo& g, const mat4& G, float w, float h, float rIn, float rOut, 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
              M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_PORTE,
+             // WFS-325 : aluminium brossé, guide de lumière d'ambiance (jour : éteint ; nuit : allumé) des pièces propres du lot 1
+             M_ALU, M_AMBIANCE, M_AMBIANCE_NUIT,
              // WFS-324 : glaces à reflet (intérieur, gauche, droite), coques et bras des rétroviseurs extérieurs (dehors : sans occlusion
              // de l'habitacle ni lumière d'ambiance de nuit de l'habitacle)
              M_RETRO0, M_RETRO1, M_RETRO2, M_COQUE_EXT, M_BRAS_EXT, M_N };
@@ -380,7 +383,19 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
     }
     mat(M_MOYEU, 0x1c1c1e, 0.85f, 0);                       // coussin du sac gonflable : plastique moussé (pièce sans uv : pas de grain)
     // enjoliveurs des aérateurs : chrome satiné (mat.chrome, albédo 0,65-0,70) ; alu brossé sur la 911
-    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, 0.18f, 1.f);
+    // WFS-325 (RG-07) : lot 1 : chrome dans la plage de la charte (rugosité 0,05-0,15 : 0,12) ; les autres voitures gardent 0,18
+    const bool propres = detailsPropres(d);
+    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, propres ? 0.12f : 0.18f, 1.f);
+    // WFS-325 (RG-07) : aluminium brossé (grilles de haut-parleur, grille de la SF90) : métal, F0 linéaire ≈ 0,91 (aluminium pur,
+    // base « Physically Based » de Doug Wright, de mémoire : page non ouverte), rugosité 0,3-0,5 pour un brossé (guide PBR de
+    // Substance, de mémoire) : 0,38 ; teinte un peu sous l'aluminium pur (alliage anodisé incolore)
+    mat(M_ALU, 0xe2e5e8, 0.38f, 1.f);
+    {   // WFS-325 : guide de lumière d'ambiance : jour, plastique diffusant sombre et satiné (diélectrique, rugosité 0,45) ; nuit, la DEL
+        // l'allume (émission ≈ celle des chiffres du combiné de nuit, jamais éblouissante) ; couleur du modèle (couleurAmbiance)
+        mat(M_AMBIANCE, 0x2a2b2e, 0.45f, 0);
+        Material m; m.color = {0, 0, 0, 1}; m.rough = 0.45f; m.metal = 0; m.emissive = lin(couleurAmbiance(d) ? couleurAmbiance(d) : 0x2a2b2e) * (couleurAmbiance(d) ? 0.35f : 0.f);
+        mats_[M_AMBIANCE_NUIT] = r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr);
+    }
     ecran(M_FOND_COMBINE, d.combineFond, 1.0f);
     ecran(M_FOND_ECRAN, 0x1b2430, 1.0f);
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
@@ -423,7 +438,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
     // planche (profil y, z du pied du pare-brise vers le conducteur) : dessus, lèvre, face en retrait derrière le combiné et
     // l'écran central (z ≈ −0,86), puis la partie basse qui revient vers les genoux
     const bool combine = d.combine != Combine::Aucun && d.combineW > 0;   // WFS-201 : Model 3 : aucun combiné derrière le volant
-    const float zFace = std::min(combine ? d.combinePos.z : d.ecranPos.z, d.ecranW > 0 ? d.ecranPos.z : d.combinePos.z) - 0.05f;
+    const float zFace = zFacePlanche(d);   // WFS-325 : même calcul, sorti dans vehicule_cockpit.h
     {
         Geo haut, face, creux;
         // devant le conducteur, la planche descend sous le combiné (creux) : l'écran, posé au-dessus, se voit dans l'ouverture
@@ -456,8 +471,9 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
                 d.carbone ? 0.006f : 0.0028f);
         prend(jonc, M_ACCENT);
     }
-    // aérateurs : deux aux extrémités, deux au centre (sous l'écran central quand il est sur la planche)
-    {
+    // aérateurs : deux aux extrémités, deux au centre (sous l'écran central quand il est sur la planche) ; WFS-325 : lot 1 :
+    // aérateurs du modèle (construireDetails)
+    if (!propres) {
         Geo cadre, lames;
         const bool rond = d.combine == Combine::Porsche5 || d.combine == Combine::FerrariIncurve;
         const float ay = Y - 0.17f, az = zFace + 0.012f;
@@ -480,8 +496,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         dalle(sac, translate({gx, ym + 0.0005f, zc}), 0.30f, std::max(0.04f, (za - zm) * 0.8f), 0.002f, 0.03f, 0.0008f);   // WFS-323 : coins arrondis
         prend(bag, M_PLANCHE_BAS); prend(joint, M_PLANCHE_HAUT); prend(sac, M_PLANCHE_HAUT);   // joints mats (le noir laqué brillait la nuit)
     }
-    // console centrale et sélecteur
-    {
+    // console centrale et sélecteur ; WFS-325 : lot 1 : console du modèle (construireDetails)
+    if (!propres) {
         Geo con, sel;
         // WFS-323 : console moulée (coins de 5 cm, chanfrein de 2,5 cm, dépouille) ; sélecteur : soufflet, tige qui s'affine et
         // pommeau galbé (au lieu d'une boîte, d'un cylindre et d'une boîte)
@@ -505,7 +521,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         for (int k = 0; k < 2; k++) profile(mont, I, bas[k], haut[k], LARGEUR_MONTANT, EPAISSEUR_MONTANT, 0.025f);
         // ciel de toit : de la traverse (yh) il monte vers CIEL_DE_TOIT_Y à 0,25 m devant l'œil, puis reste plat jusqu'à 0,5 m
         // derrière ; bombé en travers (les bords descendent de 3 cm vers les rails, sauf contre la traverse) ; normale vers le bas
-        auto hautToit = [&](float z) { const float t = std::clamp((z - zh) / (-0.25f - zh), 0.f, 1.f); return yh + (CIEL_DE_TOIT_Y - yh) * t * t * (3 - 2 * t); };
+        auto hautToit = [&](float z) { return hauteurCielDeToit(z); };   // WFS-325 : même calcul, sorti dans vehicule_cockpit.h
         auto bord = [&](float z) { return xh + (demi_ - 0.02f - xh) * std::clamp((z - zh) / (0.40f - zh), 0.f, 1.f); };   // demi-largeur du ciel de toit
         auto bombe = [&](float z) { return 0.03f * std::clamp((z - zh) / 0.30f, 0.f, 1.f); };
         auto pointToit = [&](float u, float z) { return vec3{cx_ + u * bord(z), hautToit(z) - bombe(z) * u * u, z}; };
@@ -593,6 +609,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         for (float sx : {-1.f, 1.f}) {
             const float xi = cx_ + sx * (demi_ - 0.01f);   // face intérieure de la portière
             profile(porte, I, {xi + sx * EPAISSEUR_PORTE * 0.5f, yc + 0.004f, zAv + 0.02f}, {xi + sx * EPAISSEUR_PORTE * 0.5f, yc + 0.004f, zAr}, 0.03f, EPAISSEUR_PORTE + 0.02f, 0.013f);
+            if (propres) continue;   // WFS-325 : lot 1 : garnitures du modèle (construireDetails) ; appui de vitre et bloc inchangés
             // panneau gainé : repère de la face (rotateZ : y vers l'habitacle, x vertical)
             dalle(pav, translate({xi - sx * 0.002f, yc - 0.20f, (zAv + zAr) * 0.5f + 0.05f}) * rotateZ(sx * PI / 2), 0.30f, zAr - zAv - 0.30f, 0.008f, 0.06f, 0.004f);
             dalle(porte, translate({cx_ + sx * (demi_ - 0.02f), Y - 0.24f, -0.20f}), 0.06f, 0.45f, 0.05f, 0.025f, 0.015f, 0.9f);   // accoudoir
@@ -600,6 +617,15 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         }
         prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_COQUE_EXT); prend(glace, M_RETRO0); prend(porte, M_PORTE); prend(chrome, M_CHROME); prend(axes, M_PLANCHE_BAS);
         prend(glaceG, M_RETRO1); prend(glaceD, M_RETRO2); prend(coqueExt, M_COQUE_EXT); prend(brasExt, M_BRAS_EXT);   // WFS-324
+    }
+    // WFS-325 (RG-06) : lot 1 : aérateurs, commandes de la planche, console, garnitures des portières et plafonnier du modèle,
+    // construits sans rendu (vehicule_cockpit_details.cpp) ; un maillage par matière
+    if (propres) {
+        PiecesDetails pd;
+        construireDetails(d, pd);
+        constexpr int VERS[(int)MatDetail::N] = {M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_CHROME, M_LAMES, M_CUIR, M_PAVILLON,
+                                                 M_REPERE, M_ALU, M_GLACE, M_AMBIANCE};
+        for (int k = 0; k < (int)MatDetail::N; k++) prend(pd.g[(size_t)k], VERS[k]);
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -907,6 +933,7 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
+        if (m == M_AMBIANCE && e.v.nuit) m = M_AMBIANCE_NUIT;   // WFS-325 : lumière d'ambiance allumée la nuit
         const Material& mm = (e.v.nuit && m < (int)matsNuit_.size() ? matsNuit_ : mats_)[(size_t)m];
         // WFS-324 : banc « cockpit-voisine » (WFS-349) : une glace montre la voisine par reflet, comme une vitre : jamais en couleur clé
         const bool glaceVraie = g_interieurCle && g_gabaritCeinture && m >= M_RETRO0 && m <= M_RETRO2;
