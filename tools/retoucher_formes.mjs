@@ -18,7 +18,8 @@
 //   - grille : AJOUTE un matériau (à la fin) et un maillage ;
 //   - grille ajustée (WFS-358) : AJOUTE deux matériaux (lames, fond) ; profondeur qui suit la carrosserie, jamais devant elle ;
 //   - panneau (WFS-362) : referme une ancienne ouverture par une peau ajoutée au maillage de la carrosserie (même peinture) ;
-//   - couture (WFS-363) : referme une ouverture par une peau COUSUE au bord découpé de la carrosserie (mêmes positions : aucun joint).
+//   - couture (WFS-363) : referme une ouverture par une peau COUSUE au bord découpé de la carrosserie (mêmes positions : aucun joint) ;
+//   - lissage (WFS-364) : efface un petit relief d'une peau (hauteur y ajustée rangée par rangée sur la peau voisine), sans créer de sommet.
 //   Après un retrait, une découpe, un bouchon ou une grille, le .lod est régénéré (tools/alleger_voiture.mjs). Dans tous les cas :
 //   tangentes (TAN1) des maillages touchés recalculées (tools/tangentes.mjs), boîte d'en-tête recalculée.
 //
@@ -37,6 +38,7 @@
 //   grille ajustée { "grilleAjustee": { "contour", "z", "ignorer", "recul", "fond", "lames", "lame": {…}, couleurs }, … } (voir plus bas)
 //   panneau      { "panneau": { "materiau", "contour", "z", "ignorer", "recul", "debord", "bombe" }, "triangles": n } (voir plus bas)
 //   couture      { "couture": { "materiau", "contour", "z", "ignorer", "bande", "baseFace" }, "triangles": n } (WFS-363, voir plus bas)
+//   lissage      { "lisser": { "materiau", "boite", "appui", "pas", "fondu" }, "sommets": n } (WFS-364, voir plus bas)
 // Chaque retouche porte une « note ».
 // « sommets » : nombre de sommets dans la boîte (contrôle à la 1re application). Repère du .wfm : avant vers −Z, x à droite, y en haut.
 import fs from 'fs';
@@ -144,6 +146,71 @@ function retirer(w, r) {
     m.ix[t + 1] = m.ix[t + 2] = m.ix[t]; n++;
   }
   return { k: ks[0], n };
+}
+
+// lissage (WFS-364, RG-SUIVI-404 : petit relief au centre du capot de la Corsa) : les sommets d'UN maillage dont (x, z) tombent dans
+// la boîte prennent la hauteur (y) de la peau voisine, ajustée rangée par rangée : pour chaque sommet, y = c0 + c1·x + c2·x² + c3·Δz
+// est ajusté (moindres carrés) sur les sommets du même maillage situés de part et d'autre de la boîte en x (bande « appui » m), à
+// moins de « pas » m en z (Δz = z − z du sommet) ; la courbure d'avant en arrière du capot est donc gardée exactement, seule la
+// bosse disparaît. Normale = celle de la surface ajustée (−∂y/∂x, 1, −∂y/∂z), dans le sens de l'ancienne. « fondu » (m) : en z,
+// au-delà de la boîte, les sommets suivent en partie (poids linéaire). Aucun sommet ni triangle créé ou retiré : le .lod reste valable.
+// { "lisser": { "materiau": m, "boite": [x0, y0, z0, x1, y1, z1], "appui": a, "pas": p, "fondu": f }, "note", "sommets": n }
+function lisser(w, r) {
+  const L = r.lisser;
+  const ks = w.maillages.map((m, k) => (m.mat === L.materiau ? k : -1)).filter((k) => k >= 0);
+  if (ks.length !== 1) throw new Error(`matériau ${L.materiau} : un maillage attendu`);
+  const m = w.maillages[ks[0]], [x0, y0, z0, x1, y1, z1] = L.boite, ap = L.appui ?? 0.06, pas = L.pas ?? 0.008, fondu = L.fondu ?? 0;
+  const v0 = Float32Array.from(m.v);   // positions d'origine (l'appui est lu avant toute écriture)
+  // appui : la peau d'origine échantillonnée vue de dessus (cellules de 5 mm, y le plus haut dans [y0, y1]), dans les deux bandes
+  // de part et d'autre de la boîte : un capot maillé en grands triangles n'a pas assez de sommets dans la bande
+  const c5 = 0.005, gx0 = x0 - ap, gz0 = z0 - fondu - pas, NX = Math.ceil((x1 + ap - gx0) / c5) + 1, NZ = Math.ceil((z1 + fondu + pas - gz0) / c5) + 1;
+  const Y = new Float64Array(NX * NZ).fill(-Infinity);
+  for (let t = 0; t + 2 < m.ix.length; t += 3) {
+    const c = [m.ix[t], m.ix[t + 1], m.ix[t + 2]]; if (c[0] === c[1] && c[1] === c[2]) continue;
+    const P = c.map((i) => [(v0[i * 8] - gx0) / c5, (v0[i * 8 + 2] - gz0) / c5, v0[i * 8 + 1]]);
+    if (P.some((p) => p[2] < y0 || p[2] > y1)) continue;
+    const d = (P[1][0] - P[0][0]) * (P[2][1] - P[0][1]) - (P[2][0] - P[0][0]) * (P[1][1] - P[0][1]);
+    if (Math.abs(d) < 1e-12) continue;
+    const i0 = Math.max(0, Math.ceil(Math.min(P[0][0], P[1][0], P[2][0]))), i1 = Math.min(NX - 1, Math.floor(Math.max(P[0][0], P[1][0], P[2][0])));
+    const j0 = Math.max(0, Math.ceil(Math.min(P[0][1], P[1][1], P[2][1]))), j1 = Math.min(NZ - 1, Math.floor(Math.max(P[0][1], P[1][1], P[2][1])));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const l1 = ((P[1][0] - i) * (P[2][1] - j) - (P[2][0] - i) * (P[1][1] - j)) / d, l2 = ((P[2][0] - i) * (P[0][1] - j) - (P[0][0] - i) * (P[2][1] - j)) / d, l3 = 1 - l1 - l2;
+      if (l1 < -1e-9 || l2 < -1e-9 || l3 < -1e-9) continue;
+      const y = l1 * P[0][2] + l2 * P[1][2] + l3 * P[2][2]; if (y > Y[j * NX + i]) Y[j * NX + i] = y;
+    }
+  }
+  const appui = [];
+  for (let j = 0; j < NZ; j++) for (let i = 0; i < NX; i++) {
+    const x = gx0 + i * c5, z = gz0 + j * c5, y = Y[j * NX + i];
+    if (Number.isFinite(y) && (x < x0 || x > x1)) appui.push([x, y, z]);
+  }
+  // appui rangé par z croissant (boucle j extérieure) : recherche du premier point à z ≥ zmin par dichotomie
+  const premier = (z) => { let lo = 0, hi = appui.length; while (lo < hi) { const mi = (lo + hi) >> 1; if (appui[mi][2] < z) lo = mi + 1; else hi = mi; } return lo; };
+  let dedans = 0, manque = 0;
+  for (let i = 0; i < m.nv; i++) {
+    const o = i * 8, x = v0[o], y = v0[o + 1], z = v0[o + 2];
+    if (x < x0 || x > x1 || y < y0 || y > y1) continue;
+    const dz = Math.max(z0 - z, z - z1, 0);
+    if (dz > fondu || (dz > 0 && fondu <= 0)) continue;
+    const a = dz > 0 ? 1 - dz / fondu : 1;
+    // ajustement de la rangée : base (1, x, x², Δz), au moins 3 points de chaque côté
+    const A = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], B = [0, 0, 0, 0]; let ng = 0, nd = 0;
+    for (let j = premier(z - pas); j < appui.length && appui[j][2] <= z + pas; j++) {
+      const [px, py, pz] = appui[j], f = [1, px, px * px, pz - z];
+      if (px < x0) ng++; else nd++;
+      for (let p = 0; p < 4; p++) { B[p] += f[p] * py; for (let q = 0; q < 4; q++) A[p][q] += f[p] * f[q]; }
+    }
+    if (ng < 3 || nd < 3) { manque++; continue; }
+    const c = resoudre(A, B);
+    const yf = c[0] + c[1] * x + c[2] * x * x;
+    m.v[o + 1] = y + a * (yf - y);
+    let n = unite([-(c[1] + 2 * c[2] * x), 1, -c[3]]);
+    if (n[0] * v0[o + 3] + n[1] * v0[o + 4] + n[2] * v0[o + 5] < 0) n = n.map((q) => -q);
+    const nb = unite([0, 1, 2].map((q) => v0[o + 3 + q] + a * (n[q] - v0[o + 3 + q])));
+    for (let q = 0; q < 3; q++) m.v[o + 3 + q] = nb[q];
+    if (a === 1) dedans++;
+  }
+  return { k: ks[0], dedans, manque };
 }
 
 // grille générique (WFS-193, revue du lead dev sur #308) : fond, cadre en relief et barres horizontales fermées, qui suivent le galbe
@@ -882,6 +949,12 @@ function traiter(id, verifier) {
       if (r.triangles !== undefined && retires !== r.triangles) { console.error(`${id} : « ${r.note} » : ${retires} triangles du logo, ${r.triangles} attendus : rien écrit`); return false; }
       if (!n) { console.error(`${id} : « ${r.note} » : trou non refermé : rien écrit`); return false; }
       touches.add(k); structure = true; journal.push(`${r.note} (${retires} triangles du logo retirés, trou recousu par ${n} triangles)`); continue;
+    }
+    if (r.lisser) {
+      const { k, dedans, manque } = lisser(w, r);
+      if (manque) { console.error(`${id} : « ${r.note} » : ${manque} sommets sans appui des deux côtés : rien écrit`); return false; }
+      if (r.sommets !== undefined && dedans !== r.sommets) { console.error(`${id} : « ${r.note} » : ${dedans} sommets lissés, ${r.sommets} attendus : rien écrit`); return false; }
+      touches.add(k); journal.push(`${r.note} (${dedans} sommets lissés)`); continue;
     }
     if (r.retirer) {
       const { k, n } = retirer(w, r);

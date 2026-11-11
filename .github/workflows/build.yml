@@ -95,7 +95,11 @@ jobs:
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
         # WFS-117 : tous les build/test_* (déclarés dans CMakeLists.txt) sont lancés par le script, sans liste à tenir ici
-        run: bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py   # WFS-22 : licences
+        # WFS-412 : les licences sont vérifiées même si un test échoue ; l'étape reste rouge si l'un des deux échoue
+        run: |
+          t=0; bash tools/qa/tests_cpu.sh build || t=$?
+          l=0; python3 tools/qa/verifier_licences.py || l=$?   # WFS-22 : licences
+          exit $(( t > l ? t : l ))
       - name: Captures du rendu (${{ matrix.groupe }})
         run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}   # WFS-277 : même script que matin.yml
       - uses: actions/upload-artifact@v4
