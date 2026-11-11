@@ -2427,3 +2427,7 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 00:48:56 — WFS-416 : PR #344 ouverte (Claude, agent dev3d (01UY1Vv4rv))
 - PR #344 `feature/waforspeed-416` → `main`, synchronisée avec `main` (WFS-415 compris), 5f5bf85a : bâtiments de la Ville cuits dans le paquet, 0 construction en course, kit de secours. 103 tests CPU, banc « batiments » 0 écart, 29 captures dans `qa/pr/WFS-416/`.
 - Suite : avis de l'agent 3D (épic E15), puis lead dev. CI de `main` #995 (WFS-415) encore en cours à l'ouverture : à voir verte avant la fusion. Après la fusion : relancer « Paquets de cartes » (agent expert ci cd).
+
+### 2026-11-11 00:53:57 — WFS-416 : réserves de l'agent 3D en tâche séparée, WFS-417 créé (po-scrum-master)
+- PR #344 : « Avis agent 3D : VALIDÉ avec réserves ». Décision du PO (RG-E15-09, ordre de l'utilisateur du 2026-11-09) : **fusion sans attendre ces réserves**, elles ne sont pas un motif de refus pour le lead dev ; pas de correction de la réserve 1 dans la PR.
+- **WFS-417** créé (P2, E14 + E15, `regles-de-gestion/WFS-417.md`) : dalle de balcon et main courante au niveau 1 cuit (20 à 120 m), coût mesuré, cadres au loin sans scintillement, captures manquantes. Attend la fusion de WFS-416 ; nouvelle session `@dev3d`, pas celle de WFS-416. Statut de WFS-416 inchangé (🔀 En PR #344).
