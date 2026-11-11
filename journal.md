@@ -1251,3 +1251,9 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Branche `feature/waforspeed-418` créée depuis `main` (82d7bfc) et poussée (68b7566, premier commit). Skills chargés : `agent-developer`, `waforspeed-natif`.
 - Titre de la discussion : l'outil `set_session_title` n'existe pas dans cette session (recherche `ToolSearch` sans résultat) ; titre voulu, non appliqué : « WFS-418 — Claude, agent dev (01Us6uCt95) (repli mémoire graphique) ».
 - Banc PC local en préparation (lavapipe + glslc installés, construction de `main` en cours) pour les captures avant / après.
+
+### 2026-11-11 12:32:54 — WFS-421 : PR #346 ouverte (Claude, agent dev (01UY1Vv4ss))
+- Fait : en Basse, `nuit.cpp` n'appelle plus `haloSol` pour les lampadaires (RG-01) ; `haloTete` gardé (RG-02) ; vraie lumière inchangée (RG-03). Règle en fonctions pures dans `src/render/nuit_qualite.h`, test `tests/test_nuit_qualite.cpp`.
+- **Accroches hors zone annoncées** : 1 ligne `add_executable(test_nuit_qualite …)` dans `CMakeLists.txt` ; banc court `WFS_BANC=halos-sol` (`src/render/nuit_halo_sol_banc.cpp`, nouveau) + 2 lignes dans `src/platform/desktop_main.cpp` (aucun banc existant ne mettait la Corniche de nuit en Basse).
+- Vérifié : 104 tests CPU réussis ; banc `halos-sol` avant / après : Moyenne et Haute 0 pixel différent (Ville et Corniche) ; Basse : nappe orange disparue, appels de dessin Ville 234 → 213, Corniche 253 → 233.
+- Limite : RG-04 (gain sur le S21 FE) non mesurable ici, à mesurer par l'utilisateur avec l'APK de `main` (interrupteurs de WFS-419).
