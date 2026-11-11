@@ -310,6 +310,11 @@ public:
         // 1. pré-exposition de chaque face rendue (la capture dure 6 images : k peut changer d'une face à l'autre)
         const int face = environnement::faceSuivante(), captures = environnement::capturesFaites();
         const double k = img.ubo.iblB.x > 0 ? img.ubo.iblB.x : 1.0;
+        // WFS-428 (ANO-246) : une capture finie pendant que cette passe était arrêtée (éclairage désactivé, scène dédiée) n'a pas été suivie :
+        // le compteur restait en retard, et la 1re image de la capture suivante, encore en cours, était prise pour sa fin : relue trop tôt,
+        // faces sans exposition, abandonnée deux fois (Campagne, après le banc des passes). Une capture en cours n'est jamais celle qui vient
+        // de finir (la suivante n'est demandée qu'après la relecture) : le compteur est remis à jour et la capture en cours suivie face par face
+        if (captures > g.capturesVues && environnement::enCours()) { g.capturesVues = captures; g.faceVue = -1; for (double& x : g.kFace) x = -1; }
         if (captures > g.capturesVues) {
             g.kFace[5] = k; g.capturesVues = captures; g.faceVue = -1;
             // seulement une capture demandée ici (pas celle d'un autre banc), au point demandé
@@ -667,7 +672,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
             const vec3 p = g.forcerCapture && g.iterations > 0 ? g.dernierPoint : point;
             g.eclaireLoin = !g.B.capture || length(g.B.pos - p) > 2.5f * (float)esp;
-            environnement::demander(p); g.dernierPoint = p; g.aucuneDemande = false; g.forcerCapture = false; g.generationDemande = g.generation;
+            environnement::demander(p, 0, true); g.dernierPoint = p; g.aucuneDemande = false; g.forcerCapture = false; g.generationDemande = g.generation;
         }
     }
     g.imageActive = true;
