@@ -8,9 +8,11 @@
 #include <map>
 #include <string>
 #include "carte_donnees.h"
+#include "tunnel_luminaire.h"   // WFS-392
 #include "../decor_carte.h"
 #include "../../core/configgame.h"
 #include "../../core/log.h"
+#include "../../render/eclairage.h"   // WFS-392 : registre des lampadaires (lumières réelles de la nuit)
 
 namespace wfs {
 namespace carte {
@@ -30,7 +32,11 @@ public:
                 if (o.type == cartes_v2::Objet::Maison || o.type == cartes_v2::Objet::Boite || o.type == cartes_v2::Objet::Cylindre) { prendre(o.couleur); prendre(o.couleur2); }
                 if (o.type == cartes_v2::Objet::Lumiere) prendre(o.couleur);
             }
-            for (const trace::Section& s : d_->sections) if (s.type == trace::Type::Tunnel) { prendre(BETON_TUNNEL); prendre(VOUTE_TUNNEL); break; }
+            for (const trace::Section& s : d_->sections) if (s.type == trace::Type::Tunnel) {
+                prendre(BETON_TUNNEL); prendre(VOUTE_TUNNEL); prendre(SOL_TUNNEL);
+                if (d_->eclairageTunnel.type != cartes_v2::EclairageTunnel::Aucun) { prendre(ALU_LUMINAIRE); prendre(d_->eclairageTunnel.type == cartes_v2::EclairageTunnel::Led ? VITRE_LED : VITRE_SODIUM); }
+                break;
+            }
         }
         CarteDecor::init(r, g);
         if (!active_) { d_ = nullptr; return; }
@@ -49,11 +55,19 @@ protected:
     }
     void couleursCarte(std::array<uint32_t, PAL_W>& p) const override { for (const auto& [c, k] : cases_) p[(size_t)k] = c; }
     bool touffes() const override { return !d_ || d_->herbe; }
-    int profil(const char*, int64_t, int, Band out[6]) const override {
+    int profil(const char*, int64_t a, int, Band out[6]) const override {
         const float R = (float)RW;
         if (!d_ || d_->sol.empty()) { out[0] = {R, R + 400, 0, 0, C_VERGE}; return 1; }
         int n = 0;
-        for (const cartes_v2::Bande& b : d_->sol) out[n++] = {b.a, b.b, b.ya, b.yb, kase(b.couleur)};
+        // WFS-392 (RG-01) : sous un tunnel, le sol entre la chaussée et les piédroits est un trottoir de service en béton, sec et sans
+        // neige (les bandes de la carte, enneigées ou non, ne reprennent qu'au-delà des piédroits)
+        const float mur = sousTunnel(a) ? R + LARGEUR_TUNNEL : 0;
+        if (mur > 0) out[n++] = {R, mur, d_->sol.front().ya, d_->sol.front().ya, kase(SOL_TUNNEL)};
+        for (const cartes_v2::Bande& b : d_->sol) {
+            if (b.b <= mur || n >= 6) continue;
+            if (b.a >= mur) out[n++] = {b.a, b.b, b.ya, b.yb, kase(b.couleur)};
+            else out[n++] = {mur, b.b, b.ya + (b.yb - b.ya) * (mur - b.a) / (b.b - b.a), b.yb, kase(b.couleur)};
+        }
         return n;
     }
     void place(const char*, int64_t z0, int64_t z1, Mulberry32&) override {
@@ -65,7 +79,9 @@ protected:
             case cartes_v2::Objet::Sapin: it.t = T_TREE; it.k = K_PINE; break;
             case cartes_v2::Objet::Cypres: it.t = T_TREE; it.k = K_CYPRESS; break;
             case cartes_v2::Objet::Feuillu: it.t = T_TREE; it.k = K_ROUND; break;
-            case cartes_v2::Objet::Lampe: it.t = T_LAMP; it.k = 0; break;
+            case cartes_v2::Objet::Lampe:
+                if (sousTunnel(o.seg)) return;   // WFS-392 : pas de lampadaire de rue (mât de 7,6 m) sous une dalle à 5,6 m
+                it.t = T_LAMP; it.k = 0; break;
             case cartes_v2::Objet::Lumiere: it.t = T_LUMIERE; it.petit = true; break;
             case cartes_v2::Objet::Maison: it.t = T_MAISON; break;
             default: it.t = T_OBSTACLE; break;
@@ -74,9 +90,25 @@ protected:
         };
         // WFS-346 : tunnel (section « tunnel » du tracé) : piédroits et dalle de béton, un tronçon tous les PAS_TUNNEL segments ; la météo
         // (meteo.cpp, partDuCiel) ne fait tomber aucun flocon dessous
+        // WFS-392 (RG-02, RG-03) : luminaires du paquet (cartes_v2::luminairesTunnel : pas courant, pas du seuil à chaque bouche), deux
+        // files sous la dalle ; chaque tronçon note ses luminaires (it.k : un bit par segment). Lumière réelle de nuit : un luminaire
+        // inscrit au registre des lampadaires tous les « pas_m » au moins, files alternées (les 4 plus proches éclairent, nuit.cpp) ;
+        // style Plage : lumière sans disque de halo (la vitre émissive suffit) ; les autres luminaires : vitre émissive seule
         for (const trace::Section& s : d_->sections) {
             if (s.type != trace::Type::Tunnel) continue;
-            for (int64_t a = s.debut; a < s.fin; a += PAS_TUNNEL) if (a >= z0 && a < z1) { Item it; it.t = T_TUNNEL; it.l = (float)std::min<int64_t>(PAS_TUNNEL, s.fin - a); item(a, it); }
+            const std::vector<int64_t> lum = cartes_v2::luminairesTunnel(d_->eclairageTunnel, s.debut, s.fin);
+            const int64_t pas = std::max<int64_t>(1, std::llround(d_->eclairageTunnel.pasM / SEG_M));
+            int64_t inscrit = s.debut - pas; int cote = 1;
+            for (const int64_t l : lum) {
+                if (l < z0 || l >= z1 || l - inscrit < pas) continue;
+                lampadaires().push_back({l, (float)cote * FILE_LUMINAIRES, HAUT_TUNNEL - tunnel::VITRE_SOUS_DALLE_M, StyleLampadaire::Plage});
+                inscrit = l; cote = -cote;
+            }
+            for (int64_t a = s.debut; a < s.fin; a += PAS_TUNNEL) if (a >= z0 && a < z1) {
+                Item it; it.t = T_TUNNEL; it.l = (float)std::min<int64_t>(PAS_TUNNEL, s.fin - a);
+                for (const int64_t l : lum) if (l >= a && l < a + PAS_TUNNEL) it.k |= 1 << (int)(l - a);
+                item(a, it);
+            }
         }
         for (size_t i = 0; i < d_->objets.size(); i++) poser(d_->objets[i], (int)i);
         for (size_t i = 0; i < d_->obstacles.size(); i++) poser(d_->obstacles[i], (int)(d_->objets.size() + i));
@@ -94,10 +126,21 @@ protected:
     void dessine(Track&, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         if (!d_) return;
         if (it.t == T_TUNNEL) {   // WFS-346 : tronçon de tunnel (le long de la route : it.l segments ; + 0,3 m de recouvrement dans les courbes)
-            const float L = it.l * (float)SEG_M + 0.3f, H = 5.6f, X = (float)RW + 5.0f;
+            const float L = it.l * (float)SEG_M + 0.3f, H = HAUT_TUNNEL, X = (float)RW + LARGEUR_TUNNEL;
             const vec3 m = p.o + p.f * (L * 0.5f - 0.15f);
             for (int c = -1; c <= 1; c += 2) box(out[P_UNI], m + p.r * (c * (X + 0.4f)) - vec3{0, 0.2f, 0}, p.r, p.f, 0.8f, H + 0.2f, L, uv(kase(BETON_TUNNEL)));
             box(out[P_UNI], m + vec3{0, H, 0}, p.r, p.f, 2 * X + 1.6f, 0.6f, L, uv(kase(VOUTE_TUNNEL)));
+            // WFS-392 (RG-02) : deux files de luminaires sous la dalle, au milieu de chaque demi-chaussée, pendus à leur chemin de câbles
+            const cartes_v2::EclairageTunnel& e = d_->eclairageTunnel;
+            if (e.type == cartes_v2::EclairageTunnel::Aucun) return;
+            const bool led = e.type == cartes_v2::EclairageTunnel::Led;
+            const vec2 acier = uv(C_STEEL), corps = uv(kase(ALU_LUMINAIRE)), vitre = uv(kase(led ? VITRE_LED : VITRE_SODIUM));
+            for (int c = -1; c <= 1; c += 2) {
+                const vec3 file = p.r * ((float)c * FILE_LUMINAIRES) + vec3{0, H, 0};
+                tunnel::cheminCables(out[P_UNI], m + file, p.r, p.f, L, lod, acier);
+                for (int i = 0; i < (int)PAS_TUNNEL; i++) if (it.k & (1 << i))
+                    tunnel::luminaire(out[P_UNI], out[P_TEXTE1], p.o + p.f * ((float)i * (float)SEG_M) + file, p.r, p.f, led, lod, corps, acier, vitre);
+            }
             return;
         }
         const cartes_v2::Objet& o = objet(it);
@@ -134,6 +177,17 @@ private:
     // WFS-346 : béton des tunnels (piédroits : béton brut, albédo ≈ 0,3 ; dalle : plus sombre, suie) ; un tronçon tous les 5 segments (6 m)
     static constexpr uint32_t BETON_TUNNEL = 0x96938c, VOUTE_TUNNEL = 0x55534f;
     static constexpr int64_t PAS_TUNNEL = 5;
+    // WFS-392 : gabarit du tunnel générique (dalle à 5,6 m, piédroits à 5 m du bord de la chaussée) ; files de luminaires au milieu de
+    // chaque demi-chaussée (RW / 2) ; trottoir de service en béton sali (albédo ≈ 0,22) ; corps des luminaires en aluminium thermolaqué
+    // gris (albédo ≈ 0,40) ; vitres : sodium haute pression ≈ 2000 K (couleur des lampadaires du moteur), LED 4000 K
+    static constexpr float HAUT_TUNNEL = 5.6f, LARGEUR_TUNNEL = 5.0f, FILE_LUMINAIRES = (float)RW / 2;
+    static constexpr uint32_t SOL_TUNNEL = 0x827f7a, ALU_LUMINAIRE = 0xaaaaaa, VITRE_SODIUM = 0xffb46b, VITRE_LED = 0xffd1a3;
+    // segment (tour ou absolu) sous un tunnel de la carte
+    bool sousTunnel(int64_t a) const {
+        const int64_t L = std::max<int64_t>(1, d_->segments()), m = ((a % L) + L) % L;
+        for (const trace::Section& s : d_->sections) if (s.type == trace::Type::Tunnel && m >= s.debut && m < s.fin) return true;
+        return false;
+    }
     const cartes_v2::Objet& objet(const Item& it) const {
         const size_t i = (size_t)it.col, n = d_->objets.size();
         return i < n ? d_->objets[i] : d_->obstacles[i - n];

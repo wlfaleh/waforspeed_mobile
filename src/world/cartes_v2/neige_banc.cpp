@@ -5,6 +5,8 @@
 //   neige-cockpit-jour, neige-cockpit-nuit       : vue Cockpit sous la neige : flocons seulement à travers les vitres
 //   neige-tunnel-avant / -bouche / -dedans       : vue Cockpit à l'entrée de l'abri (tunnel) : aucun flocon dessous
 //   neige-tunnel-arriere-dedans                  : témoin en vue Arrière, voiture sous l'abri
+//   neige-tunnel2-arriere-jour / -cockpit-jour / -arriere-nuit / -cockpit-nuit, neige-tunnel-entree-arriere : WFS-392, 2e tunnel
+//                                                  (chaussée sèche, luminaires) et entrée du 1er tunnel
 //   neige-automne-jour                           : autre saison par les données seules (sans neige, sol et couleurs du paquet)
 //   neige-freinage-0..4, neige-virage-0..4       : suite d'images d'un freinage à fond (ABS) et d'un virage volant à fond sur la neige
 // Mesures au journal : distance de freinage 100 → 0 (ou de la vitesse atteinte) sur la neige et sur la Ville (sec), accélération
@@ -101,8 +103,12 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     double tunnel0 = -1, tunnel1 = -1;
     for (const trace::Section& s : noel->sections) if (s.type == trace::Type::Tunnel) { tunnel0 = s.debut * SEG_M; tunnel1 = s.fin * SEG_M; break; }
 
+    // WFS-392 : WFS_NEIGE=tunnels : seulement les captures des tunnels (parties 3 et 3 bis), pour les captures d'une PR
+    const char* seul = std::getenv("WFS_NEIGE");
+    const bool tout = !seul || std::string(seul) != "tunnels";
     // 1. vue Arrière, jour puis nuit : place du marché (chalets, bancs), à 50 km/h
     for (const bool nuit : {false, true}) {
+        if (!tout) break;
         if (!b.partir("noel-test", nuit, VueCamera::Poursuite, 30)) continue;
         b.verifier(saisonPartie().neigeChaussee > 0.9f && saisonPartie().flocons > 0 && saisonPartie().muChaussee < 0.3f, "saison de la carte de Noël lue du paquet");
         b.pas(60 * 9, 50);
@@ -111,6 +117,7 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
     }
     // 2. vue Cockpit sous la neige, jour et nuit : flocons à travers le pare-brise et les vitres seulement
     for (const bool nuit : {false, true}) {
+        if (!tout) break;
         if (!b.partir("noel-test", nuit, VueCamera::Cockpit, 30)) continue;
         b.pas(60 * 9, 50);
         b.capture(nuit ? "neige-cockpit-nuit" : "neige-cockpit-jour");
@@ -131,13 +138,32 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
             b.fin();
         }
     }
+    // 3 bis. WFS-392 : 2e tunnel de la carte (dans une courbe) : chaussée sèche et éclairage sous CHAQUE tunnel ; au milieu du tunnel,
+    // de jour et de nuit, vue Arrière et vue Cockpit ; entrée du 1er tunnel en vue Arrière (témoin : fondu de la neige sur 8 m)
+    double deux0 = -1, deux1 = -1;
+    { int n = 0; for (const trace::Section& s : noel->sections) if (s.type == trace::Type::Tunnel && n++ == 1) { deux0 = s.debut * SEG_M; deux1 = s.fin * SEG_M; } }
+    b.verifier(deux0 > 0, "la carte de Noël a un 2e tunnel (WFS-392)");
+    if (deux0 > 0) {
+        for (const bool nuit : {false, true}) for (const VueCamera v : {VueCamera::Poursuite, VueCamera::Cockpit}) {
+            if (!b.partir("noel-test", nuit, v, deux0 - 50)) continue;
+            for (int k = 0; k < 60 * 60 && g.player().dist * M < (deux0 + deux1) / 2; k++) b.pas(1, 40, 2.f, 3);
+            b.capture(std::string("neige-tunnel2-") + (v == VueCamera::Cockpit ? "cockpit" : "arriere") + (nuit ? "-nuit" : "-jour"));
+            b.fin();
+        }
+        if (b.partir("noel-test", false, VueCamera::Poursuite, tunnel0 - 50)) {
+            for (int k = 0; k < 60 * 60 && g.player().dist * M < tunnel0 + 4; k++) b.pas(1, 40, 2.f, 3);
+            b.capture("neige-tunnel-entree-arriere");
+            b.fin();
+        }
+    }
     // 4. autre saison par les données seules
-    if (b.partir("automne-test", false, VueCamera::Poursuite, 30)) {
+    if (tout && b.partir("automne-test", false, VueCamera::Poursuite, 30)) {
         b.verifier(saisonPartie().neigeChaussee == 0 && saisonPartie().flocons == 0, "automne : ni neige au sol ni flocons");
         b.pas(60 * 9, 50);
         b.capture("neige-automne-jour");
         b.fin();
     }
+    if (tout) {
     // 5. conduite sur la neige : freinage à fond (ABS) puis virage volant à fond ; comparaison avec la Ville (sec), même voiture
     double vNeige = 0, vSec = 0, dNeige = 0, dSec = 0;
     if (b.partir("noel-test", false, VueCamera::Poursuite, 0)) { dNeige = b.freiner("neige-freinage", vNeige, 125); b.fin(); }
@@ -169,8 +195,9 @@ int benchNeige(Game& g, Renderer& r, const std::string& out, const std::string& 
             lat[0] / 9.81, lat[1] / 9.81, lat[0] > 0 ? lat[1] / lat[0] : 0, noel->saison.muChaussee, ecart[0], ecart[1]);
     // au sec, la voiture n'atteint pas sa limite (braquage réduit à vitesse) ; sur la neige, si : rapport < 0,5 (pas exactement μ)
     b.verifier(lat[0] > 0 && lat[1] > 0 && lat[1] / lat[0] < 0.5 && ecart[1] < ecart[0], "virage sur la neige : bien moins d'adhérence latérale qu'au sec, la voiture tourne moins");
+    }
     // retour sur une carte du code : sec, sans neige
-    if (b.partir("ville", false, VueCamera::Poursuite, 0)) {
+    if (tout && b.partir("ville", false, VueCamera::Poursuite, 0)) {
         b.verifier(saisonPartie().muChaussee == 1.0f && saisonPartie().neigeChaussee == 0 && saisonPartie().flocons == 0, "retour sur la Ville : sec, sans neige");
         b.fin();
     }
