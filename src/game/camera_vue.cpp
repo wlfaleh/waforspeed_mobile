@@ -16,6 +16,7 @@
 #include "../audio/engine_synth.h"           // WFS-197 : EngineModel (régime et rapport du combiné, comme le son)
 #include "../ui/minicarte.h"                 // WFS-197 (RG-05) : découpe de la carte (minicarte::decouper, lecture)
 #include "../world/meteo.h"                  // WFS-197 (RG-06) : pluieActive (lecture)
+#include "../ui/hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../ui/text.h"
 #include "../../third_party/stb/stb_image.h"   // WFS-235 : banc (lecture des captures, part cachée par l'intérieur)
 #include "cars.h"
@@ -333,22 +334,24 @@ public:
         r.draw(repere_, orange_, vol);
     }
 
-    // #camBtn : sous le bouton « Menu » de la course (WFS-39), même style (.cam-btn), libellé = nom de la vue
+    // #camBtn : même style que le bouton « Menu » de la course (.cam-btn), libellé = nom de la vue ;
+    // WFS-429 (RG-01, RG-02) : entre le bouton Menu et le score, en haut à droite, +5 % (hud::rangeeBoutons)
     void drawUi(Renderer& r, const GameView& g) override {
         if (!boutonVisible(g) || !ui::fontReady()) { g_bouton = {}; return; }
-        const float k = g.uiHeight / 720.f, h = 40 * k, ic = 18 * k, pad = 14 * k, gap = 6 * k, tp = 14 * k;
+        const float k = g.uiHeight / 720.f;
         const std::string t = ui::majuscules(VUES[(int)vueCamera()].nom);
-        const float w = pad + ic + gap + ui::width(tp, t, 0.1f) + pad;
-        const float x = g.marges.gauche + 16 * k, y = g.marges.haut + 14 * k + 112 * k + 10 * k + h + 8 * k;   // .hud-btns gap 8 px
+        hud::BoutonHud menu, b;
+        hud::rangeeBoutons(g.uiWidth, g.uiHeight, g.marges, t, menu, b);
+        const float x = b.x, y = b.y, w = b.w, h = b.h, ic = b.icone;
         g_bouton = {x, y, w, h};
-        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, 8 * k, BORD);
-        biseau(r, x, y, w, h, 8 * k, GLASS);
+        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, b.biais, BORD);
+        biseau(r, x, y, w, h, b.biais, GLASS);
         const vec4 c = hex(TEXTE);
-        const float ix = x + pad, iy = y + (h - ic) / 2, u = ic / 24;   // icône appareil photo (path de #camBtn, 24 × 24)
+        const float ix = x + b.marge, iy = y + (h - ic) / 2, u = ic / 24;   // icône appareil photo (path de #camBtn, 24 × 24)
         r.uiRect(ix + 3 * u, iy + 7 * u, 18 * u, 12 * u, c);
         r.uiRect(ix + 8.6f * u, iy + 5 * u, 6.8f * u, 2 * u, c);
         r.uiCircle(ix + 12 * u, iy + 13.5f * u, 3.3f * u, hex(BG, 0.9f));
-        ui::text(r, std::round(ix + ic + gap), std::round(y + (h - tp) / 2), tp, t, c, ui::GAUCHE, 0.1f, false);
+        ui::text(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), b.texte, t, c, ui::GAUCHE, 0.1f, false);
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {
