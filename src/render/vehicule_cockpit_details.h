@@ -35,6 +35,11 @@ struct PiecesDetails {
     const Geo& operator[](MatDetail m) const { return g[(size_t)m]; }
 };
 
+// WFS-325 (RG-07) : rugosités des matières du lot 1, dans les plages de la charte (DA-realisme.md § 3) ou d'une référence citée :
+// noir laqué et carbone vernis = vernis (0,02-0,08 : charte) ; chrome 0,05-0,15 (charte) ; aluminium brossé 0,3-0,5 (guide PBR de
+// Substance, de mémoire : page non ouverte) ; les autres voitures gardent leurs valeurs de main (RG-08)
+constexpr float RUGO_LAQUE_LOT1 = 0.06f, RUGO_CARBONE_LOT1 = 0.06f, RUGO_CHROME_LOT1 = 0.12f, RUGO_ALU = 0.38f;
+
 // vrai pour les 4 voitures du lot 1 : leurs aérateurs, console, garnitures de portière et plafonnier sont ceux de
 // construireDetails, à la place des pièces communes ; faux pour toutes les autres (rien ne change pour elles)
 bool detailsPropres(const InterieurDef& d);

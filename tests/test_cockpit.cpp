@@ -444,9 +444,9 @@ int main(int argc, char** argv) {
                 indices = indices && g.i.size() % 3 == 0;
                 for (const Vertex& v : g.v) {
                     normales = normales && std::fabs(std::sqrt(v.nx * v.nx + v.ny * v.ny + v.nz * v.nz) - 1) < 1e-3f;
-                    // dans l'habitacle : entre les faces intérieures des portières (+ 3 cm de garniture), du plancher au ciel de toit,
-                    // du pied du pare-brise à 0,6 m derrière l'œil
-                    if (v.px < cx - demi - 0.005f || v.px > cx + demi + 0.005f || v.py < PLANCHER_Y - 0.01f || v.py > hauteurCielDeToit(v.pz) + 0.02f
+                    // dans l'habitacle : pas au-delà des vitres latérales (une garniture peut entrer dans le bloc de la portière, WFS-349),
+                    // du plancher au ciel de toit, du pied du pare-brise à 0,6 m derrière l'œil
+                    if (v.px < cx - faceVitre(demi) || v.px > cx + faceVitre(demi) || v.py < PLANCHER_Y - 0.01f || v.py > hauteurCielDeToit(v.pz) + 0.02f
                         || v.pz < zAv - 0.01f || v.pz > 0.61f) hors++;
                     // WFS-235 (RG-05) : rien dans la bande de la rue (de l'horizon à +8° au-dessus, de face : ±60° autour de l'axe)
                     if (v.pz < 0) {
@@ -462,6 +462,9 @@ int main(int argc, char** argv) {
         cas("pièces propres : indices valides, triangles complets, normales unitaires", indices && normales);
         cas("pièces propres dans l'habitacle (portières, plancher, ciel de toit, pied du pare-brise)", habitacle);
         cas("WFS-235 (RG-05) : aucune pièce propre devant la rue (horizon à +9°, ±60°)", rue);
+        cas("RG-07 : lot 1 : laqué et carbone vernis 0,02-0,08, chrome 0,05-0,15, alu brossé 0,3-0,5 (rugosités)",
+            RUGO_LAQUE_LOT1 >= 0.02f && RUGO_LAQUE_LOT1 <= 0.08f && RUGO_CARBONE_LOT1 >= 0.02f && RUGO_CARBONE_LOT1 <= 0.08f
+            && RUGO_CHROME_LOT1 >= 0.05f && RUGO_CHROME_LOT1 <= 0.15f && RUGO_ALU >= 0.3f && RUGO_ALU <= 0.5f);
         cas("lumière d'ambiance : Golf et M4 seulement (couleur du modèle)", ambiance && couleurAmbiance(*interieurPour("golf")) && couleurAmbiance(*interieurPour("m4"))
             && !couleurAmbiance(*interieurPour("p911")) && !couleurAmbiance(*interieurPour("sf90")));
     }

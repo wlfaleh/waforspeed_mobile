@@ -371,8 +371,10 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         Material m; const vec3 l = couleurPorte(d); m.color = {l.x, l.y, l.z, 1}; m.rough = 0.85f; m.metal = 0;
         mats_[M_PORTE] = r.makeMaterial(habitacle(m), nullptr, grain_.view ? &grain_ : nullptr, nullptr);
     }
-    mat(M_ACCENT, d.accent, d.accentRugo, d.accentMetal);   // alu brossé (métal 1), carbone verni (0,3), noir laqué
-    mat(M_LAQUE, 0x0a0a0b, 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
+    // WFS-325 (RG-07) : lot 1 : carbone vernis et noir laqué dans la plage du vernis (0,02-0,08) ; les autres voitures : valeurs de main
+    const bool lot1 = detailsPropres(d);
+    mat(M_ACCENT, d.accent, lot1 && d.carbone ? RUGO_CARBONE_LOT1 : d.accentRugo, d.accentMetal);   // alu brossé (métal 1), carbone verni (0,3), noir laqué
+    mat(M_LAQUE, 0x0a0a0b, lot1 ? RUGO_LAQUE_LOT1 : 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
     mat(M_BRANCHES, d.branchesCol, d.branchesCol > 0x505050 ? 0.35f : 0.3f, d.branchesCol > 0x505050 ? 1.f : 0.f);
     for (int k = 0; k < 3; k++) mat(M_COUTURE0 + k, d.couture[k] ? d.couture[k] : 0x202020, 0.7f, 0);
     // repères et commandes rouges (manettino, démarreur, boutons M, agrafe GTI) : plastique rouge satiné, teinte assombrie de
@@ -384,12 +386,12 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
     mat(M_MOYEU, 0x1c1c1e, 0.85f, 0);                       // coussin du sac gonflable : plastique moussé (pièce sans uv : pas de grain)
     // enjoliveurs des aérateurs : chrome satiné (mat.chrome, albédo 0,65-0,70) ; alu brossé sur la 911
     // WFS-325 (RG-07) : lot 1 : chrome dans la plage de la charte (rugosité 0,05-0,15 : 0,12) ; les autres voitures gardent 0,18
-    const bool propres = detailsPropres(d);
-    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, propres ? 0.12f : 0.18f, 1.f);
+    const bool propres = lot1;
+    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, propres ? RUGO_CHROME_LOT1 : 0.18f, 1.f);
     // WFS-325 (RG-07) : aluminium brossé (grilles de haut-parleur, grille de la SF90) : métal, F0 linéaire ≈ 0,91 (aluminium pur,
     // base « Physically Based » de Doug Wright, de mémoire : page non ouverte), rugosité 0,3-0,5 pour un brossé (guide PBR de
     // Substance, de mémoire) : 0,38 ; teinte un peu sous l'aluminium pur (alliage anodisé incolore)
-    mat(M_ALU, 0xe2e5e8, 0.38f, 1.f);
+    mat(M_ALU, 0xe2e5e8, RUGO_ALU, 1.f);
     {   // WFS-325 : guide de lumière d'ambiance : jour, plastique diffusant sombre et satiné (diélectrique, rugosité 0,45) ; nuit, la DEL
         // l'allume (émission ≈ celle des chiffres du combiné de nuit, jamais éblouissante) ; couleur du modèle (couleurAmbiance)
         mat(M_AMBIANCE, 0x2a2b2e, 0.45f, 0);

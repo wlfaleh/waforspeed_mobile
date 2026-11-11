@@ -160,7 +160,7 @@ void gobelets(PiecesDetails& p, const Console& c, float z, M cadre) {
 struct Porte {
     float accY, accZ0, accZ1, accW;   // accoudoir : dessus (sous la ligne de ceinture), avant, arrière, saillie
     float poigY, poigZ;               // niche de la poignée d'ouverture (centre)
-    float hpY, hpZ, hpW, hpH;         // haut-parleur (centre, taille)
+    float hpY, hpZ, hpW, hpH;         // haut-parleur (centre, taille) : derrière le bas de la planche, qui couvre l'avant de la portière
     bool tweeter, ambiance;
     M decor, insert, grille, poignee, accMat;
     int vitres;                       // lève-vitres sur l'accoudoir, côté conducteur
@@ -180,11 +180,14 @@ void portiere(PiecesDetails& p, const InterieurDef& d, float cx, float demi, flo
     dalleFace(p[M::Laque], repereFace(xi + dans * 0.006f, s.poigY, s.poigZ, sx), 0.14f, 0.048f, 0.006f, 0.02f, 0.003f);   // devant l'insert (pas de faces confondues)
     lisse(p[s.poignee], mat4::identity(), {{xi + dans * 0.010f, s.poigY, s.poigZ - 0.052f}, {xi + dans * 0.019f, s.poigY, s.poigZ - 0.022f},
                                            {xi + dans * 0.021f, s.poigY, s.poigZ + 0.018f}, {xi + dans * 0.013f, s.poigY, s.poigZ + 0.050f}}, 0.011f, 0.016f, 0.005f);
-    // accoudoir rembourré, qui remonte un peu vers l'arrière ; poignée de tirage creusée dans son dessus, à l'avant
+    // accoudoir rembourré venu de la garniture (moitié dans la portière : il en sort de accW, sans jour), qui remonte un peu vers
+    // l'arrière ; jupe qui le raccorde à la portière par dessous ; poignée de tirage creusée dans son dessus, à l'avant
     {
         const float xa = xi + dans * s.accW * 0.5f;
-        lisse(p[s.accMat], mat4::identity(), {{xa, s.accY - 0.025f, s.accZ0}, {xa, s.accY - 0.022f, s.accZ0 + 0.10f}, {xa, s.accY - 0.016f, (s.accZ0 + s.accZ1) * 0.5f},
-                                              {xa, s.accY - 0.010f, s.accZ1}}, s.accW, 0.05f, 0.02f);
+        lisse(p[s.accMat], mat4::identity(), {{xi, s.accY - 0.025f, s.accZ0}, {xi, s.accY - 0.022f, s.accZ0 + 0.10f}, {xi, s.accY - 0.016f, (s.accZ0 + s.accZ1) * 0.5f},
+                                              {xi, s.accY - 0.010f, s.accZ1}}, 2 * s.accW, 0.05f, 0.022f);
+        lisse(p[M::PlancheBas], mat4::identity(), {{xi, s.accY - 0.080f, s.accZ0 + 0.03f}, {xi, s.accY - 0.075f, (s.accZ0 + s.accZ1) * 0.5f},
+                                                   {xi, s.accY - 0.068f, s.accZ1 - 0.03f}}, s.accW * 1.2f, 0.07f, 0.03f);
         dalle(p[M::Lames], translate({xa, s.accY + 0.0005f, s.accZ0 + 0.20f}), s.accW * 0.45f, 0.13f, 0.004f, 0.012f, 0.0012f);
         if (conducteur && s.vitres > 0) {   // platine des lève-vitres (noir laqué), devant la poignée de tirage, touches en relief
             const mat4 V = translate({xa, s.accY + 0.002f, s.accZ0 + 0.075f}) * rotateX(-PI / 2) * rotateZ(sx < 0 ? -PI / 2 : PI / 2);
@@ -214,8 +217,10 @@ void portiere(PiecesDetails& p, const InterieurDef& d, float cx, float demi, flo
         dalleFace(p[M::Lames], T * translate({0, 0, -0.006f}), 0.048f, 0.033f, 0.002f, 0.013f, 0.0006f);
         for (int k = -1; k <= 1; k++) dalleFace(p[s.grille], T * translate({0, k * 0.0085f, -0.002f}), 0.040f, 0.0035f, 0.0025f, 0.0016f, 0.0007f);
     }
-    // vide-poche : lèvre moulée en bas de la portière
-    profile(p[M::PlancheBas], mat4::identity(), {xi + dans * 0.018f, -0.80f, zAv + 0.20f}, {xi + dans * 0.018f, -0.80f, zAv + 0.80f}, 0.035f, 0.032f, 0.012f);
+    // vide-poche : façade moulée en bas de la portière, derrière le haut-parleur, et sa lèvre arrondie
+    dalleFace(p[M::PlancheBas], repereFace(xi + dans * 0.016f, -0.83f, s.hpZ + s.hpW * 0.5f + 0.33f, sx), 0.60f, 0.11f, 0.012f, 0.03f, 0.005f);
+    profile(p[M::PlancheBas], mat4::identity(), {xi + dans * 0.020f, -0.775f, s.hpZ + s.hpW * 0.5f + 0.04f}, {xi + dans * 0.020f, -0.775f, s.hpZ + s.hpW * 0.5f + 0.62f},
+            0.030f, 0.030f, 0.012f);
 }
 
 // ---------- plafonnier (liseuses, touches), sous le ciel de toit derrière le pied du rétroviseur intérieur
@@ -270,7 +275,7 @@ void golf(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
     }
     gobelets(p, c, zc0 + 0.51f, M::Laque);
     accoudoir(p, c, zc0 + 0.67f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
-    const Porte porte{-0.415f, -0.62f, 0.20f, 0.085f, -0.300f, -0.62f, -0.70f, -0.90f, 0.17f, 0.17f, true, true, M::Laque, M::Tissu, M::PlancheBas,
+    const Porte porte{-0.415f, -0.62f, 0.20f, 0.085f, -0.300f, -0.62f, -0.64f, -0.58f, 0.17f, 0.17f, true, true, M::Laque, M::Tissu, M::PlancheBas,
                       M::Chrome, M::Cuir, 4};
     for (float sx : {-1.f, 1.f}) portiere(p, d, cx, demi, sx, porte, sx < 0);
     plafonnier(p, cx, HAUT_PARE_BRISE_Z + 0.13f, true);
@@ -315,7 +320,7 @@ void m4(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
         touches(p, C * translate({-0.072f, 0.006f, 0.020f}) * rotateX(-PI / 2) * rotateZ(PI / 2), 3, 0.020f, 0.016f, 0.026f, M::Lames);   // modes de conduite
     }
     accoudoir(p, c, zc0 + 0.62f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
-    const Porte porte{-0.420f, -0.64f, 0.20f, 0.090f, -0.310f, -0.66f, -0.70f, -0.90f, 0.18f, 0.15f, false, true, M::Accent, M::Cuir, M::Alu,
+    const Porte porte{-0.420f, -0.64f, 0.20f, 0.090f, -0.310f, -0.66f, -0.64f, -0.58f, 0.18f, 0.15f, false, true, M::Accent, M::Cuir, M::Alu,
                       M::Chrome, M::Cuir, 4};
     for (float sx : {-1.f, 1.f}) portiere(p, d, cx, demi, sx, porte, sx < 0);
     plafonnier(p, cx, HAUT_PARE_BRISE_Z + 0.13f, true);
@@ -334,7 +339,7 @@ void p911(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
     for (int k = 0; k < 5; k++) bascule(p, surFace(xe + (k - 2) * 0.034f, yb - 0.098f, zF - 0.008f, 0.20f), M::Chrome);
     dalleFace(p[M::Laque], surFace(xe, yb - 0.098f, zF - 0.012f, 0.20f), 0.20f, 0.040f, 0.006f, 0.010f, 0.002f);
     {   // démarrage : bague chromée et poignée tournante en forme de clé, à gauche du volant
-        const mat4 S = surFace(x0 + 0.13f, Y - 0.235f, zF - 0.012f);
+        const mat4 S = surFace(x0 + 0.085f, Y - 0.235f, zF - 0.012f);   // à gauche du volant, hors de la jante vue de l'œil
         boutonRond(p, S, 0.020f, 0.010f, M::Chrome, M::Lames);
         profile(p[M::Lames], S, {0, -0.014f, 0.012f}, {0, 0.014f, 0.012f}, 0.010f, 0.016f, 0.005f);
     }
@@ -351,7 +356,7 @@ void p911(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
         bac(p, c, zc0 + 0.03f, zc0 + 0.11f, 0.16f);
     }
     accoudoir(p, c, zc0 + 0.60f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
-    const Porte porte{-0.400f, -0.60f, 0.20f, 0.085f, -0.290f, -0.60f, -0.70f, -0.88f, 0.17f, 0.15f, false, false, M::Accent, M::Cuir, M::Alu,
+    const Porte porte{-0.400f, -0.60f, 0.20f, 0.085f, -0.290f, -0.60f, -0.64f, -0.56f, 0.17f, 0.15f, false, false, M::Accent, M::Cuir, M::Alu,
                       M::Alu, M::Cuir, 2};
     for (float sx : {-1.f, 1.f}) portiere(p, d, cx, demi, sx, porte, sx < 0);
     plafonnier(p, cx, HAUT_PARE_BRISE_Z + 0.12f, false);
@@ -382,7 +387,7 @@ void sf90(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
         }
     }
     accoudoir(p, c, zc0 + 0.60f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Tissu);
-    const Porte porte{-0.420f, -0.62f, 0.15f, 0.075f, -0.270f, -0.70f, -0.68f, -0.86f, 0.15f, 0.12f, false, false, M::Accent, M::Tissu, M::Alu,
+    const Porte porte{-0.420f, -0.62f, 0.15f, 0.075f, -0.270f, -0.70f, -0.64f, -0.56f, 0.15f, 0.12f, false, false, M::Accent, M::Tissu, M::Alu,
                       M::Alu, M::Tissu, 2};
     for (float sx : {-1.f, 1.f}) portiere(p, d, cx, demi, sx, porte, sx < 0);
     plafonnier(p, cx, HAUT_PARE_BRISE_Z + 0.12f, false);

@@ -18,6 +18,7 @@
 #include "../render/retroviseurs_banc.h"   // WFS-324 (accroche) : WFS_BANC=retroviseurs
 #include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
 #include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
+#include "../render/vehicule_cockpit_vitrine.h"   // WFS-325 (accroche) : WFS_BANC=cockpit-vitrine
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
@@ -291,6 +292,10 @@ int main(int argc, char** argv) {
     if (banc == "cockpit-volant") {   // WFS-414 (accroche) : gros plans du volant (WFS_VOITURES : liste, sinon les 6 du volant de série + M4, 911)
         std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
         benchCockpitVolant(g, r, out, v); return finir();
+    }
+    if (banc == "cockpit-vitrine") {   // WFS-325 (accroche) : intérieurs du lot 1 seuls, vus de 4 places (WFS_VOITURES : liste)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        benchCockpitVitrine(g, r, out, v); return finir();
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
