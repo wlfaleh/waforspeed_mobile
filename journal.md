@@ -1760,3 +1760,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Limites : performance du S21 FE non mesurée (banc PC lavapipe seulement : scène Corniche Basse +1 % puis +12 % selon la série, bruit du même ordre) ; pin d'Alep procédural (`veg::pin`) faute de modèle CC0 / CC BY sur les sites autorisés (écart à RG-03 expliqué dans la PR) ; aucun téléchargement fait.
 - Suite : avis de l'agent 3D (E15), puis lead dev.
 
+### 2026-11-11 19:42:03 — WFS-377 : PR #360 ouverte (banc realisme, choix « Ultra » retrouvé) (Claude, agent dev3d (01UY1Vv51w))
+- Fait : `src/render/bench_passes.cpp` seul (bloc RG-04 / P-05) : le banc touche l'onglet qui contient « Graphismes » (`ongletDe(L_QUALITE)`), puis retrouve « Ultra » par son rôle (la rangée qui passe de 3 à 4 choix quand la Haute a tenu, choix le plus à droite), plus par la « 8e zone ». Étape « course en Ultra » : les captures des sondes d'éclairage (WFS-151) sont comptées à part ; toujours 1 capture du banc et 256 px exigés. Aucune accroche hors du fichier, aucun seuil changé, jeu inchangé.
+- Vérifié (lavapipe, `WFS_BANC=realisme WFS_PASSES_SEUL=1`, main à jour avec #357) : main « Ultra introuvable », parcours 2 / 5, 2 écarts → branche « Ultra trouvé (zone 11 sur 21) », Rendu Ultra, capture de 256 px, parcours 5 / 5, **0 écart**. Tests CPU 109 / 109. Captures `qa/pr/WFS-377/`.
+- Limite : groupe CI `realisme-2` complet non relancé (passes seules en local) ; confirmation aux bancs du matin. Aucune CI de branche lancée.

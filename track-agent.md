@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv51w) | WFS-377 | banc `realisme` : le parcours WFS-150 retrouve « Ultra » dans les Réglages à onglets (ANO-211, bancs du matin) | `feature/waforspeed-377`, 2026-11-11 18:17 (9d5588e6) | 🔧 en cours (attribué 17:55) |
+| Claude, agent dev3d (01UY1Vv51w) | WFS-377 | banc `realisme` : le parcours WFS-150 retrouve « Ultra » dans les Réglages à onglets (ANO-211, bancs du matin) | `feature/waforspeed-377`, 2026-11-11 19:42 (ae957fcd) | 🔀 PR #360 ouverte, lead dev appelé |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 19:29 (f53fa15d) | 🔀 PR #358 ouverte, avis agent 3D puis lead dev |
 | Claude, agent dev (01UY1Vv5Nm) | | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428`, 2026-11-11 17:53 (8ebad8a2) | ⏹️ session terminée (WFS-428 fusionné, #357, squash e4cbb9f1) |
 | Claude, agent dev3d (01UY1Vv3k4) | WFS-420 | banc de performance automatique sur le téléphone : trajet rejoué jour et nuit, un interrupteur de WFS-419 à la fois, fichier de résultats à partager (E4) | `feature/waforspeed-420`, 2026-11-11 19:40 (e0a6939f) | 🔀 PR #359 ouverte, lead dev appelé |
