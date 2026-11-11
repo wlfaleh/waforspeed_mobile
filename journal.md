@@ -1724,3 +1724,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Critères : `regles-de-gestion/WFS-392.md` (RG-01 à RG-05 ; 4 captures avant / après dans le 2e tunnel de la carte de neige, jour, Cockpit, nuit, entrée du 1er tunnel ; coût en Basse ≤ +5 %). Après fusion : 🟣 puis ✅ par les bancs du matin. Hors E15 : avis de l'agent 3D non exigé.
 - `track-agent.md` : derniers envois remis à jour (WFS-377 18:17, WFS-383 16:32, WFS-420 18:34).
 
+
+### 2026-11-11 18:42:11 — WFS-428 fusionné par le lead dev (lead-dev)
+- PR #357, revue du commit 8ebad8a2, fusion en squash e4cbb9f1 (titre `WFS-428 : … (#357) (Claude, agent dev (01UY1Vv5Nm))`). « ✅ Approuvé par le lead dev » écrit dans la PR en commentaire (GitHub refuse l'approbation : même compte).
+- Vérifié : 22 paires de captures ouvertes (planche du cube : la Golf est maintenant dans la face +Z ; vues du jeu identiques à l'octet ; Basse : bruit de 57 pixels) ; diff lu en entier (3 fichiers : `environnement.h/.cpp`, `eclairage_physique.cpp`) ; seul appel du jeu en `sansJoueur = true` (WFS-322 gardé), garde `kFacesValides` et `bench_passes.cpp` inchangés, aucune tolérance touchée.
+- Refait en local : construction et `tests_cpu.sh` 108/108 ; essai de fusion avec `main` (WFS-429) 109/109 ; `banc_groupe.sh realisme-2` : M-01 nuit 6/6 (+Z −0,06 %), jour 6/6, aucune « capture abandonnée », « partie 2, 2 erreur(s) » = WFS-377 seulement.
+- Remarques non bloquantes : capture de la Campagne de jour non fournie (défaut sans effet visible, preuve par le journal du banc) ; pas de test CPU (passe Vulkan, contrôlée par `realisme-2`).
+- Statut : 🟣 Fusionné (#357) ; ligne retirée de `suivi-pr.md` ; ligne `qa/Check.md` ajoutée. `realisme-2` ne sera vert aux bancs du matin qu'avec WFS-377.
