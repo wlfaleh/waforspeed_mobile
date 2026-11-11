@@ -1590,3 +1590,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Notés sans ticket** : remarque 1 (copie de la suite de commandes d'`uploadTexture` dans `envoyerAvecBlit`) : la regrouper = réécrire du code fusionné, interdit sans ordre de l'utilisateur ; les 4 tickets interdisent toute nouvelle copie. Remarque 2 (+13,5 Mo de mémoire vive au pic du chargement) : pour information (aucune limite de mémoire, décision de l'utilisateur). Police de l'interface (5 Mo au démarrage), pool de descripteurs : hors périmètre.
 - Ordre : ces tickets se donnent **après** ceux de l'ordre des 20 permis à la session qui demande (bandeau de `TACHES.md`). `track-agent.md` remis à jour (ligne WFS-415 enlevée : fusionné ; derniers envois des branches ; ⚠️ WFS-383 sans envoi depuis 13:42).
 - Numéros : prévus 445 à 448, décalés à **446 à 449** parce que WFS-445 a été pris au même moment par l'autre session du PO (correction de la CI rouge, b67b3ff0).
+
+### 2026-11-11 16:19:11 — Statuts automatiques, CI main #1008 (robot statuts)
+- Run rouge (push, commit ad003aa), aucun statut changé. Job(s) en échec : compilation.
+- Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-384, WFS-412, WFS-427, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
