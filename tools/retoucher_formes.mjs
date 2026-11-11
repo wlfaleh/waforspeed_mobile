@@ -19,7 +19,9 @@
 //   - grille ajustée (WFS-358) : AJOUTE deux matériaux (lames, fond) ; profondeur qui suit la carrosserie, jamais devant elle ;
 //   - panneau (WFS-362) : referme une ancienne ouverture par une peau ajoutée au maillage de la carrosserie (même peinture) ;
 //   - couture (WFS-363) : referme une ouverture par une peau COUSUE au bord découpé de la carrosserie (mêmes positions : aucun joint) ;
-//   - lissage (WFS-364) : efface un petit relief d'une peau (hauteur y ajustée rangée par rangée sur la peau voisine), sans créer de sommet.
+//   - lissage (WFS-364) : efface un petit relief d'une peau (hauteur y ajustée rangée par rangée sur la peau voisine), sans créer de sommet ;
+//   - projection plane des uv (WFS-365) : des triangles qui lisent un motif de marque imprimé dans la texture lisent une autre zone de
+//     la même texture (sommets neufs, forme inchangée).
 //   Après un retrait, une découpe, un bouchon ou une grille, le .lod est régénéré (tools/alleger_voiture.mjs). Dans tous les cas :
 //   tangentes (TAN1) des maillages touchés recalculées (tools/tangentes.mjs), boîte d'en-tête recalculée.
 //
@@ -39,6 +41,7 @@
 //   panneau      { "panneau": { "materiau", "contour", "z", "ignorer", "recul", "debord", "bombe" }, "triangles": n } (voir plus bas)
 //   couture      { "couture": { "materiau", "contour", "z", "ignorer", "bande", "baseFace" }, "triangles": n } (WFS-363, voir plus bas)
 //   lissage      { "lisser": { "materiau", "boite", "appui", "pas", "fondu" }, "sommets": n } (WFS-364, voir plus bas)
+//   uv plane     { "uvPlan": { "materiau", "boite", "sources", "cible", "x", "y", "miroirX" }, "triangles": n } (WFS-365, voir plus bas)
 // Chaque retouche porte une « note ».
 // « sommets » : nombre de sommets dans la boîte (contrôle à la 1re application). Repère du .wfm : avant vers −Z, x à droite, y en haut.
 import fs from 'fs';
@@ -211,6 +214,39 @@ function lisser(w, r) {
     if (a === 1) dedans++;
   }
   return { k: ks[0], dedans, manque };
+}
+
+// projection plane des uv (WFS-365, feux arrière de la Gallardo : chevrons et « Y » de la marque imprimés dans la texture du feu,
+// sur un verre de forme générique) : les triangles d'UN maillage dont le centre est dans la boîte 3D ET dont le centre uv est dans
+// l'un des rectangles « sources » [u0, v0, u1, v1] lisent désormais un rectangle « cible » de la MÊME texture (ex. verre rouge
+// strié), par projection plane vue de face : u suit |x| (ou x) de « x » [xa, xb], v suit y de « y » [ya, yb] (ya → v0, yb → v1).
+// Chaque triangle repris reçoit 3 sommets neufs (copies, seules les uv changent) : les triangles voisins gardent leurs uv, rien
+// n'est étiré. Positions et normales inchangées : la forme et l'éclairage ne bougent pas, seul le motif imprimé disparaît.
+// { "uvPlan": { "materiau": m, "boite": [x0, y0, z0, x1, y1, z1], "sources": [[u0, v0, u1, v1], …], "cible": [u0, v0, u1, v1],
+//   "x": [xa, xb], "y": [ya, yb], "miroirX": true }, "note", "triangles": n }
+function uvPlan(w, r) {
+  const p = r.uvPlan, b = p.boite, [U0, V0, U1, V1] = p.cible, [xa, xb] = p.x, [ya, yb] = p.y;
+  const ks = w.maillages.map((m, k) => (m.mat === p.materiau ? k : -1)).filter((k) => k >= 0);
+  if (ks.length !== 1) throw new Error(`matériau ${p.materiau} : un maillage attendu`);
+  const m = w.maillages[ks[0]], V = Array.from(m.v), I = Array.from(m.ix);
+  const dans = (u, v) => p.sources.some(([a, c, d, e]) => u >= a && u <= d && v >= c && v <= e);
+  let n = 0;
+  for (let t = 0; t + 2 < I.length; t += 3) {
+    const c = [I[t], I[t + 1], I[t + 2]];
+    if (c[0] === c[1] && c[1] === c[2]) continue;
+    const g = [0, 1, 2, 6, 7].map((q) => (V[c[0] * 8 + q] + V[c[1] * 8 + q] + V[c[2] * 8 + q]) / 3);
+    if (g[0] < b[0] || g[0] > b[3] || g[1] < b[1] || g[1] > b[4] || g[2] < b[2] || g[2] > b[5] || !dans(g[3], g[4])) continue;
+    for (let q = 0; q < 3; q++) {
+      const s = V.slice(c[q] * 8, c[q] * 8 + 8), x = p.miroirX ? Math.abs(s[0]) : s[0];
+      s[6] = U0 + Math.min(1, Math.max(0, (x - xa) / (xb - xa))) * (U1 - U0);
+      s[7] = V0 + Math.min(1, Math.max(0, (s[1] - ya) / (yb - ya))) * (V1 - V0);
+      I[t + q] = V.length / 8; V.push(...s);
+    }
+    n++;
+  }
+  m.v = new Float32Array(V); m.nv = V.length / 8; m.ix = new Uint32Array(I);
+  if (w.tan) w.tan[ks[0]] = Buffer.alloc(m.nv * 4);
+  return { k: ks[0], n };
 }
 
 // grille générique (WFS-193, revue du lead dev sur #308) : fond, cadre en relief et barres horizontales fermées, qui suivent le galbe
@@ -955,6 +991,11 @@ function traiter(id, verifier) {
       if (manque) { console.error(`${id} : « ${r.note} » : ${manque} sommets sans appui des deux côtés : rien écrit`); return false; }
       if (r.sommets !== undefined && dedans !== r.sommets) { console.error(`${id} : « ${r.note} » : ${dedans} sommets lissés, ${r.sommets} attendus : rien écrit`); return false; }
       touches.add(k); journal.push(`${r.note} (${dedans} sommets lissés)`); continue;
+    }
+    if (r.uvPlan) {
+      const { k, n } = uvPlan(w, r);
+      if (r.triangles !== undefined && n !== r.triangles) { console.error(`${id} : « ${r.note} » : ${n} triangles repris, ${r.triangles} attendus : rien écrit`); return false; }
+      touches.add(k); structure = true; journal.push(`${r.note} (${n} triangles : uv en projection plane, sommets neufs)`); continue;
     }
     if (r.retirer) {
       const { k, n } = retirer(w, r);
