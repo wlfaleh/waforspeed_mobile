@@ -43,6 +43,7 @@ bool g_bancAvant = false;   // WFS-243 : banc : image « avant » (adversaires c
 bool g_figerBanc = false;   // WFS-243 : banc : ordinateurs arrêtés là où le banc les a posés
 // WFS-327 (RG-04) : banc : ordinateurs posés à g_bancVitesseKmh (km/h) ; vue de dessus au-dessus de l'épingle en g_bancEpingleM (m)
 double g_bancVitesseKmh = 0, g_bancEpingleM = 0;
+std::vector<std::pair<double, int>> g_bancSuiveurs;   // WFS-450 (accroche) : banc : écart au joueur (m) et file de chaque ordinateur tenu
 
 const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
@@ -108,6 +109,14 @@ public:
                 o.g.rd = o.g.rdPrec = pl.dist + g_bancAdversaires[k] / M; o.g.xPrec = o.g.x; o.g.v = g_bancVitesseKmh / 3.6 / M;
             }
             g_bancAdversaires.clear();
+        }
+        if (actif_ && !g_bancSuiveurs.empty()) {   // WFS-450 (accroche) : banc « lumieres-mouvement » : écart fixe au joueur, sans conduite
+            for (size_t k = 0; k < os_.size() && k < g_bancSuiveurs.size(); k++) {
+                course5::Ordinateur& o = os_[k];
+                o.file = g_bancSuiveurs[k].second; o.g.x = o.g.xPrec = o.cibleX = course5::FILES[o.file];
+                o.g.rdPrec = o.g.rd; o.g.rd = pl.dist + g_bancSuiveurs[k].first / M; o.g.v = pl.speed;
+            }
+            return;
         }
         if (!actif_ || c->state == RaceState::Count || g_figerBanc) return;   // décompte : tout le monde attend sur la grille ; banc : figés
         if (!depart_ && c->state == RaceState::Play) {   // WFS-130 (RG-06) : ordinateurs prêts à être dessinés au départ
@@ -347,6 +356,7 @@ Course5System* Course5System::actif5 = nullptr;
 
 // WFS-125 : banc d'essai (parcours RG-09) : boutons de l'écran de fin, record battu
 bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5System::actif5 && Course5System::actif5->bouton(nom, x, y); }
+void course5BancSuiveurs(const std::vector<std::pair<double, int>>& ecartsM) { g_bancSuiveurs = ecartsM; }   // WFS-450 (accroche)
 int course5Positions(double* rd, int max) { return Course5System::actif5 ? Course5System::actif5->positions(rd, max) : 0; }   // WFS-173
 const std::vector<course5::Ordinateur>* course5Ordinateurs() { return Course5System::actif5 ? Course5System::actif5->ordinateurs() : nullptr; }   // WFS-272 (accroche)
 bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
