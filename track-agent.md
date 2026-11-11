@@ -16,9 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-11 09:31:34 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-11 11:47:03 UTC (po-scrum-master)
 
-> 🔴 **Alerte** : CI de `main` rouge depuis #991 : **fusions suspendues** jusqu'au vert (WFS-415, lead dev, en cours) ; **WFS-324** (P1) en ↩️ retour lead dev, rien poussé depuis 19:22 UTC (plus de 2 h) ; P1 sans session : **WFS-412** (`expert-ci-cd`), WFS-405 (`expert-cartes`) ; WFS-319, 407, 408, 409 en attente du jour de publication.
+> 🔴 **Alerte** : CI de `main` verte (#998, WFS-419) ; **WFS-324** (P1) en retour lead dev (PR #341) ; P1 prêts sans session : **WFS-421, 422, 423** (performance de la Basse, `@dev`), WFS-412 (`expert-ci-cd`) ; WFS-424 attend 421 à 423 ; WFS-425 (P2) prêt ; WFS-405, 319, 407, 408, 409 en attente du jour de publication.
 
 ## Agents développeurs
 
