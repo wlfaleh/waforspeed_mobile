@@ -1238,11 +1238,16 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         // WFS-348 : banc seulement : bancLumieresParPixel > 0 remplace les lumières par pixel de la Basse (comparaison des leviers)
         // WFS-353 (RG-01) : valeur de la Basse dans qualite_auto.h (4 ; 2 = variante du banc, décision du PO attendue)
         u.spotN = {(float)n, qualiteBasse ? (float)(bancLumieresParPixel > 0 ? bancLumieresParPixel : qualite::LUMIERES_PAR_PIXEL_BASSE) : 12.f, qualiteBasse ? 4.f : 12.f, 0};
+        // WFS-450 (RG-02) : banc « lumieres-mouvement », images « avant » : + 0,25 = quota d'avant le ticket (eclairage.glsl, spotLights)
+        if (qualiteBasse && phares::avant450) u.spotN.y += 0.25f;
         // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
         // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
+        // WFS-450 (RG-01) : d'abord par rang (phares du joueur, éclairage fixe, phares des autres voitures : phares::avantEnBasse) :
+        // une voiture juste derrière la caméra ne passe plus avant les lampadaires
         int ordre[FrameParams::SPOTS_MAX];
         for (int i = 0; i < n; i++) ordre[i] = i;
-        if (qualiteBasse) std::stable_sort(ordre, ordre + n, [&](int a, int b) { return length(fp.spots[a].pos - fp.camPos) < length(fp.spots[b].pos - fp.camPos); });
+        if (qualiteBasse) std::stable_sort(ordre, ordre + n, [&](int a, int b) {
+            return phares::avantEnBasse(fp.spots[a].rang, length(fp.spots[a].pos - fp.camPos), fp.spots[b].rang, length(fp.spots[b].pos - fp.camPos)); });
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[ordre[i]];
             vec3 dir = normalize(s.target - s.pos);

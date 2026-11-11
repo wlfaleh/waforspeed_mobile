@@ -101,7 +101,8 @@ struct FrameParams {
     bool shadows = true, hasFocus = false; vec3 focus{};
     // WFS-45 : projecteurs (three SpotLight, r128 sans lumières physiques), hémisphère, brouillard linéaire. Couleurs linéaires.
     struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1;
-                  bool croisement = false; };   // WFS-218 : feu de croisement (phares.h) : intensité en cd / LUX_PAR_UNITE, 1/d², coupure
+                  bool croisement = false;      // WFS-218 : feu de croisement (phares.h) : intensité en cd / LUX_PAR_UNITE, 1/d², coupure
+                  uint8_t rang = 1; };          // WFS-450 (RG-01) : ordre en Basse (phares.h, RANG_*) : 0 phares du joueur, 1 éclairage fixe, 2 phares des autres voitures
     // WFS-09 : 8 au plus (phares, feu de recul, 4 lampadaires) ; angle ≥ PI = lumière ponctuelle (PointLight)
     static constexpr int SPOTS_MAX = 12;                     // WFS-226 : 8 → 12 (phares des autres voitures)
     Spot spots[SPOTS_MAX]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé

@@ -147,6 +147,7 @@ public:
             h.pos = W.transformPoint(src); h.target = W.transformPoint(src + vec3{0, 0, -10.f});
             h.color = estLed ? phares::TEINTE_LED : phares::TEINTE_HALOGENE; h.intensity = phares::creteCd(estLed) / feux_modele::LUX_PAR_UNITE;
             h.distance = phares::PORTEE_M; h.angle = 1.45f; h.penumbra = derriere ? 1.f : 0.f; h.decay = 0; h.croisement = true;
+            h.rang = phares::RANG_JOUEUR;   // WFS-450 (RG-01)
         }
         if (g.player->reversing || g.player->speed < -1) {   // feu de recul (revLight)
             // WFS-171 (RG-01, ANO-70) : lumière posée sur les feux (hauteur ≈ 0,6 H, ras du pare-chocs ; elle était 0,8 m
@@ -159,6 +160,7 @@ public:
             r.pos = W.transformPoint({0, std::max(0.5f, d.H * 0.6f), d.L / 2 - 0.05f});
             r.target = W.transformPoint({0, std::max(0.5f, d.H * 0.6f) - 0.6f, d.L / 2 + 0.95f});
             r.color = linHex(0xfff1dd); r.intensity = 1.85f; r.distance = 8; r.angle = 1.45f; r.penumbra = 1; r.decay = 2;
+            r.rang = phares::RANG_JOUEUR;   // WFS-450 (RG-01)
         }
         const auto& L = lampadaires();
         const int64_t len = (int64_t)g.track->segmentCount(), aP = (int64_t)std::floor(g.player->dist / SEG);
@@ -194,16 +196,39 @@ public:
                 s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
             }
         }
-        pharesAutres(fp, W.transformPoint({0, 0, 0}));
+        pharesAutres(fp, W.transformPoint({0, 0, 0}), g.time);
     }
 
     // ---------- WFS-226 (RG-01, RG-02) : vraies lumières des autres voitures les plus proches ----------
     // Voitures notées à l'image précédente par Renderer::feuxVoiture (trafic, adversaires, police, camion) : les 2 (Basse) ou
     // 4 plus proches du joueur, à moins de 70 m, reçoivent un feu de croisement réel (même photométrie que le joueur, paire
     // LED en un projecteur au milieu des optiques, 10 cm devant, position prolongée d'une image). Les autres : lumière au sol calculée (lumiereSolAutres).
-    void pharesAutres(FrameParams& fp, const vec3& joueur) {
+    // WFS-450 (RG-03) : en Basse, ces lumières apparaissent et disparaissent en fondu (phares::FonduAutres : 0,3 s au changement de
+    // rang, 55 à 70 m avec la distance) ; Moyenne et Haute : comme avant.
+    void pharesAutres(FrameParams& fp, const vec3& joueur, double temps) {
         eclairants_.clear();
-        const int nMax = ecrans::reglages().qualite == ecrans::QUALITE_BASSE ? phares::AUTRES_ECLAIRANTS_BASSE : phares::AUTRES_ECLAIRANTS;
+        const bool basse = ecrans::reglages().qualite == ecrans::QUALITE_BASSE;
+        const int nMax = basse ? phares::AUTRES_ECLAIRANTS_BASSE : phares::AUTRES_ECLAIRANTS;
+        const float dt = tFondu_ < 0 ? 0.f : (float)std::clamp(temps - tFondu_, 0.0, 1.0);
+        tFondu_ = temps;
+        if (basse && !phares::avant450) {
+            fondu_.pas(prec_.data(), (int)prec_.size(), joueur, nMax, dt);
+            for (const phares::FonduAutres::Place& p : fondu_.places) {
+                if (!p.occupee || fp.spotCount >= FrameParams::SPOTS_MAX) continue;
+                const float poids = phares::FonduAutres::poids(p, joueur);
+                if (poids <= 0) continue;
+                const phares::PhareAutre& a = p.voiture;
+                vec3 depl{}; float dMin = 3.f;   // déplacement depuis l'avant-dernière image (voir plus bas) ; voiture plus dessinée : sur place
+                if (p.indice >= 0) for (const phares::PhareAutre& b : prec2_) { const float dd = length(b.centre - a.centre); if (dd < dMin) { dMin = dd; depl = a.centre - b.centre; } }
+                FrameParams::Spot& h = fp.spots[fp.spotCount++];
+                h.pos = a.centre + depl - a.avant * feux_modele::DERRIERE_GLACE; h.target = h.pos + a.avant * 10.f;
+                h.color = phares::TEINTE_LED; h.intensity = 2 * phares::creteCd(true) / feux_modele::LUX_PAR_UNITE * poids;
+                h.distance = 90; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true; h.rang = phares::RANG_AUTRES;
+                eclairants_.push_back({a.centre + depl, poids});
+            }
+            return;
+        }
+        fondu_.vider();
         tri_.clear();
         for (size_t i = 0; i < prec_.size(); i++) {
             const float dist = length(prec_[i].centre - joueur);
@@ -220,8 +245,8 @@ public:
             // WFS-413 (RG-02) : milieu des deux glaces mesurées, 1 cm derrière elles (il était 10 cm devant un point du pare-chocs)
             h.pos = a.centre + depl - a.avant * feux_modele::DERRIERE_GLACE; h.target = h.pos + a.avant * 10.f;
             h.color = phares::TEINTE_LED; h.intensity = 2 * phares::creteCd(true) / feux_modele::LUX_PAR_UNITE;
-            h.distance = 90; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
-            eclairants_.push_back(a.centre + depl);
+            h.distance = 90; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true; h.rang = phares::RANG_AUTRES;
+            eclairants_.push_back({a.centre + depl, 1.f});
         }
     }
     // RG-02 : lumière des phares au sol pour les voitures sans vraie lumière (éclairement de phares::eclairementSol changé en
@@ -231,16 +256,17 @@ public:
         constexpr int NZ = 8, NX = 7; constexpr float DEMI = 7.f;
         auto& A = phares::autres();
         for (const phares::PhareAutre& a : A) {
-            bool eclaire = false;
-            for (const vec3& e : eclairants_) eclaire = eclaire || length(e - a.centre) < 2.5f;
-            if (eclaire || length(a.centre - g.camPos) > 160.f) continue;
+            // WFS-450 (RG-03) : la lumière au sol calculée rend la main à la vraie lumière à mesure que celle-ci monte (fondu croisé)
+            float reste = 1.f;
+            for (const auto& e : eclairants_) if (length(e.first - a.centre) < 2.5f) reste = std::min(reste, 1.f - e.second);
+            if (reste <= 0 || length(a.centre - g.camPos) > 160.f) continue;
             Vertex v[(NZ - 1) * (NX - 1) * 4]; vec3 p[NZ][NX], c[NZ][NX];
             const vec3 haut = normalize(cross(a.droite, a.avant));   // droite × avant = haut (avant vers −Z)
             for (int k = 0; k < NZ; k++) for (int i = 0; i < NX; i++) {
                 const float x = -DEMI + 2 * DEMI * i / (NX - 1), z = RANGS[k];
                 const float fen = (1 - phares::lisse(DEMI * 0.5f, DEMI, std::abs(x))) * (1 - phares::lisse(RANGS[NZ - 3], RANGS[NZ - 1], z));
                 p[k][i] = a.sol + a.droite * x + a.avant * z + haut * 0.04f;
-                c[k][i] = phares::TEINTE_LED * (feux_modele::ALBEDO_ASPHALTE * phares::eclairementSol(x, z, a.demiEcart, a.hauteur) / feux_modele::LUX_PAR_UNITE * fen);
+                c[k][i] = phares::TEINTE_LED * (feux_modele::ALBEDO_ASPHALTE * phares::eclairementSol(x, z, a.demiEcart, a.hauteur) / feux_modele::LUX_PAR_UNITE * fen * reste);
             }
             int n = 0;
             auto sommet = [&](int k, int i) { const vec3& q = p[k][i]; const vec3& cc = c[k][i]; v[n++] = {q.x, q.y, q.z, cc.x, cc.y, cc.z, 0.5f, 0.5f}; };
@@ -300,13 +326,14 @@ public:
     }
     float stopK_ = 0; double tFeux_ = -1;
 
-    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; prec_.clear(); prec2_.clear(); phares::autres().clear(); }
+    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; prec_.clear(); prec2_.clear(); phares::autres().clear(); fondu_.vider(); tFondu_ = -1; }
 
 private:
     bool nuit_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
     std::vector<std::pair<int64_t, size_t>> proches_, derriere_;   // WFS-324 : derriere_ (lampadaires derrière, rétroviseurs)
     std::vector<phares::PhareAutre> prec_, prec2_;   // WFS-226 : voitures notées à l'image précédente et à l'avant-dernière
-    std::vector<vec3> eclairants_;                   // WFS-226 : centres des voitures à vraie lumière cette image
+    std::vector<std::pair<vec3, float>> eclairants_; // WFS-226 : centres des voitures à vraie lumière cette image ; WFS-450 : et leur poids (0..1)
+    phares::FonduAutres fondu_; double tFondu_ = -1; // WFS-450 (RG-03) : fondu des phares des autres voitures (Basse)
     std::vector<std::pair<float, size_t>> tri_;
 };
 

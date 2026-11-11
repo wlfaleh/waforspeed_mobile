@@ -79,6 +79,80 @@ constexpr float AUTRES_PORTEE_SPOT = 70.f;   // voitures à vraie lumière : à 
 inline std::vector<PhareAutre>& autres() { static std::vector<PhareAutre> v; return v; }
 inline void noterAutre(const PhareAutre& p) { auto& v = autres(); if ((int)v.size() < AUTRES_MAX) v.push_back(p); }
 
+// ---------- WFS-450 : nuit en Basse, la lumière des lampadaires ne s'éteint plus d'un coup, phares des autres voitures en fondu ----------
+// Défaut vu sur le téléphone (S21 FE, Basse) : chaque pixel ne garde que 4 lumières, prises dans l'ordre de la liste, rangée de la
+// plus proche à la plus lointaine de la caméra. Deux voitures juste derrière la caméra passaient avant les lampadaires : 2 phares du
+// joueur + 2 voitures = 4, les lampadaires n'étaient plus calculés sur la chaussée (noir d'un coup, puis rallumé d'un coup).
+// RG-01 : en Basse, phares du joueur, PUIS lampadaires (éclairage fixe), puis phares des autres voitures ; à rang égal, la plus
+//         proche de la caméra d'abord (WFS-263). Moyenne et Haute : ordre de la liste, inchangé.
+constexpr uint8_t RANG_JOUEUR = 0, RANG_FIXE = 1, RANG_AUTRES = 2;
+// banc « lumieres-mouvement » seulement (images « avant » de RG-06, comme Game::interpolation pour le banc « fluidite ») :
+// vrai = ordre, quota et apparition des phares d'avant WFS-450
+inline bool avant450 = false;
+inline bool avantEnBasse(uint8_t rangA, float distCamA, uint8_t rangB, float distCamB) {
+    if (avant450 || rangA == rangB) return distCamA < distCamB;
+    return rangA < rangB;
+}
+// RG-03 : les phares d'une autre voiture apparaissent et disparaissent en fondu de FONDU_AUTRES_S (changement de rang), et avec
+// la distance au joueur : pleins jusqu'à AUTRES_PORTEE_PLEINE, nuls à AUTRES_PORTEE_SPOT. Une voiture éclairante garde sa place
+// tant qu'une autre n'est pas plus proche d'au moins FONDU_HYSTERESIS_M (pas de clignotement entre deux voitures à égale distance).
+constexpr float FONDU_AUTRES_S = 0.3f;
+constexpr float AUTRES_PORTEE_PLEINE = 55.f;
+constexpr float FONDU_HYSTERESIS_M = 6.f;
+constexpr float FONDU_SUIVI_M = 8.f;     // même voiture d'une image à la suivante : à moins de 8 m (250 km/h à 10 img/s ≈ 7 m)
+constexpr float FONDU_DT_MAX = 0.1f;     // image plus longue (chargement, pause) : le fondu n'avance que de 0,1 s
+constexpr int FONDU_PLACES = AUTRES_ECLAIRANTS + 2;   // 4 voitures éclairantes au plus et 2 qui s'éteignent
+inline float fonduDistance(float d) { return 1.f - lisse(AUTRES_PORTEE_PLEINE, AUTRES_PORTEE_SPOT, d); }
+struct FonduAutres {
+    struct Place {
+        PhareAutre voiture;      // dernière position connue
+        float niveau = 0;        // 0 éteint … 1 plein (linéaire dans le temps)
+        bool occupee = false, voulue = false;
+        int indice = -1;         // rang dans la liste de cette image (−1 : voiture plus dessinée, elle s'éteint sur place)
+    };
+    Place places[FONDU_PLACES];
+    void vider() { for (Place& p : places) p = Place{}; }
+    // intensité à appliquer (0..1) : montée et descente douces (pente nulle aux deux bouts) × fondu de distance
+    static float poids(const Place& p, const vec3& joueur) { return lisse(0.f, 1.f, p.niveau) * fonduDistance(length(p.voiture.centre - joueur)); }
+    // un pas par image dessinée : v = voitures notées (n ≤ AUTRES_MAX), nMax = voitures éclairantes voulues (2 en Basse), dt en s.
+    // Aucune allocation.
+    void pas(const PhareAutre* v, int n, const vec3& joueur, int nMax, float dt) {
+        n = std::clamp(n, 0, AUTRES_MAX); nMax = std::clamp(nMax, 0, AUTRES_ECLAIRANTS); dt = std::clamp(dt, 0.f, FONDU_DT_MAX);
+        int placeDe[AUTRES_MAX]; bool voulu[AUTRES_MAX];
+        for (int i = 0; i < n; i++) { placeDe[i] = -1; voulu[i] = false; }
+        for (int k = 0; k < FONDU_PLACES; k++) {   // 1. suivi : chaque place retrouve sa voiture (la plus proche de sa dernière position)
+            Place& p = places[k];
+            if (!p.occupee) continue;
+            p.indice = -1; float dMin = FONDU_SUIVI_M;
+            for (int i = 0; i < n; i++) if (placeDe[i] < 0) { const float d = length(v[i].centre - p.voiture.centre); if (d < dMin) { dMin = d; p.indice = i; } }
+            if (p.indice >= 0) { placeDe[p.indice] = k; p.voiture = v[p.indice]; }
+        }
+        for (int c = 0; c < nMax; c++) {   // 2. les nMax plus proches du joueur, à moins de 70 m ; une voiture déjà voulue garde un avantage
+            int choix = -1; float sMin = 1e9f;
+            for (int i = 0; i < n; i++) {
+                if (voulu[i]) continue;
+                const float d = length(v[i].centre - joueur);
+                if (d >= AUTRES_PORTEE_SPOT) continue;
+                const float s = d - (placeDe[i] >= 0 && places[placeDe[i]].voulue ? FONDU_HYSTERESIS_M : 0.f);
+                if (s < sMin) { sMin = s; choix = i; }
+            }
+            if (choix < 0) break;
+            voulu[choix] = true;
+        }
+        for (Place& p : places) p.voulue = p.occupee && p.indice >= 0 && voulu[p.indice];   // 3. cibles
+        for (int i = 0; i < n; i++) {
+            if (!voulu[i] || placeDe[i] >= 0) continue;
+            for (int k = 0; k < FONDU_PLACES; k++) if (!places[k].occupee) { places[k] = Place{v[i], 0.f, true, true, i}; placeDe[i] = k; break; }
+        }
+        const float d = dt / FONDU_AUTRES_S;   // 4. niveaux
+        for (Place& p : places) {
+            if (!p.occupee) continue;
+            p.niveau = std::clamp(p.niveau + (p.voulue ? d : -d), 0.f, 1.f);
+            if (!p.voulue && p.niveau <= 0) p = Place{};
+        }
+    }
+};
+
 // éclairement (lx) de la chaussée en (x à droite, z devant) dans le repère de la voiture, par ses deux phares
 // (paire LED, comme les voitures du trafic : RG-01 « même photométrie »)
 inline float eclairementSol(float x, float z, float demiEcart, float h) {
