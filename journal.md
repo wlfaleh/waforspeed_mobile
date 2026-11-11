@@ -1594,3 +1594,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-11 16:19:11 — Statuts automatiques, CI main #1008 (robot statuts)
 - Run rouge (push, commit ad003aa), aucun statut changé. Job(s) en échec : compilation.
 - Tickets 🟣 contenus dans ce run : WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-384, WFS-412, WFS-427, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322.
+
+### 2026-11-11 16:30:16 — WFS-422 : risque signalé, la pré-passe ne tourne jamais en jeu (Claude, agent dev (01UY1Vv5hT))
+- Constat : la pré-passe (`src/render/passes.cpp`, `PrePasse`) ne tourne que si une passe active la demande (`avantScene`). Seule la passe d'essai (`src/render/passe_essai.cpp:27`) la demande, et elle n'est active que par `passes::activerEssai(true)`, appelé seulement par le banc `bench_passes.cpp`. Aucun shader du jeu ne lit `prePasseNormales` / `prePasseProfondeur`. Banc PC `halos-sol` (Ville et Corniche de nuit, Basse / Moyenne / Haute) : 0 création de la pré-passe sur 6 rendus (`qa/pr/WFS-422/verification.md` sur `feature/waforspeed-422`).
+- Conséquence : en jeu, la pré-passe est déjà absente à tous les niveaux ; l'interrupteur « sans pré-passe » de WFS-419 ne change rien. Le « gain de 5 à 18 ms » (44 / 57 ms contre 62 ms) est l'écart d'une mesure à l'autre, pas un effet de la pré-passe. WFS-422 n'a rien à couper ni de secours à écrire (RG-01 à RG-03 déjà vraies sur `main`), et RG-04 ne peut pas montrer de gain.
+- Proposition : clore WFS-422 « sans objet » (aucun code), preuve sur la branche ; reporter l'effort sur WFS-423 / 424. Autre option : PR qui borne la pré-passe à Moyenne et plus (`qualiteMin`), pour qu'un futur lecteur ne l'allume pas en Basse ; je ne la recommande pas (code « pour plus tard », aucun gain).
+- Décision attendue de : PO.
