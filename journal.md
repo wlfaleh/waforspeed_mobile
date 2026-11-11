@@ -1396,3 +1396,8 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 ### 2026-11-11 14:01:43 — WFS-324 : 3e refus de la PR #341 noté (po-scrum-master)
 - Noté sur message du lead dev : PR #341 (dev3d, 01UY1Vv5YT) refusée 3 fois ; reste seulement le halo en disque des phares dans les glaces. Statut inchangé (↩️ Retour lead dev). Pas de réattribution (règle des 10 h). WFS-325 attend WFS-324.
 - WFS-421 complété par la PR #347 (disque au sol des lampadaires enlevé à toutes les qualités) : la réserve de l'agent 3D sur #346 est traitée, aucune anomalie créée.
+### 2026-11-11 14:02:16 — Épic E16 « Évolution des objets 3D » créée, WFS-430 à 443 bloqués par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur (2026-11-11) : créer les US dans une épic « évolution des objets 3D », en bloqué, pas prioritaire, en dernier ; il dira quand commencer.
+- Créés : `regles-de-gestion/E16-evolution-objets-3d.md` (but, zone `src/world/biblio_*`, `assets/world/biblio/**`, `tools/biblio/**`, `tests/biblio*`, accroche renderer ≤ 10 lignes ; porte utilisateur après le pin d'Alep ; 33 ms S21 FE ; avis agent 3D ; avis lead dev et smart brain ; lots 2 à 10 en prévision non créée : ≈ 105 objets, 54,5 sessions, grand total ≈ 70,5), `regles-de-gestion/E16-inventaire.md` (copie de l'inventaire), `regles-de-gestion/WFS-430.md` à `WFS-443.md`.
+- Numéros WFS-430 à 443 vérifiés libres. Statut de tous : ⛔ Bloqué par l'utilisateur, P4 Basse, en dernier du tableau, dans aucun ordre de priorité, aucun attribué.
+- WFS-383 et WFS-371 inchangés (au déblocage, WFS-371 serait réduit s'il n'est pas fait : noté dans l'épic).
