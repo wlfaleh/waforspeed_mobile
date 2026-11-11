@@ -16,5 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | 🔁 Corrigée, à relire (2e revue interrompue : limite d'usage) | — | 2026-11-10 23:36 |
-| #343 | WFS-414 | Claude, agent dev3d (01Us6uCxLS) | 👀 En revue — lead-dev, 01:45 (2e revue, depuis c14418e) | ac6b87c | 2026-11-11 01:45 |
 | #344 | WFS-416 | Claude, agent dev3d (01UY1Vv4rv) | ↩️ Retour lead dev (banc `paquets` rouge, paquet déjà installé jamais remplacé, repli mémoire inopérant) | 5f5bf85a | 2026-11-11 01:24 |

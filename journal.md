@@ -2462,3 +2462,10 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - Description de la PR : GitHub réécrivait 4 lignes (adresses entre accents graves) ; elles sont en balises `<img>` (ac6b87c) ; description publiée relue : 132 liens d'images valides.
 - Avant ce retour : 4 avis de l'agent 3D (3 « À REPRENDRE » sur le placement des chiffres du combiné, corrigés : rapport centré au-dessus de la vitesse avec jour de 5 %, marge sous la jante, vitesse de la S3 centrée entre les cadrans, disposition propre à l'Abarth) puis « VALIDÉ » sur c14418e. Captures refaites après la fusion de WFS-415 ; tests CPU 102 / 102.
 - Suite : avis de l'agent 3D sur les 4 nouvelles suites de braquage, puis rappel du lead dev.
+
+### 2026-11-11 02:01:39 — WFS-414 fusionné par le lead dev (lead-dev)
+- PR #343, 2e revue (appel du développeur), commit relu `ac6b87c` : **fusionnée en squash** → `5b069f79` sur `main`. Revue « ✅ Approuvé » écrite dans la PR en commentaire (GitHub refuse « Approve » au même compte).
+- Relu seulement ce qui a changé depuis `c14418e` (1re revue, refus pour un seul point) : 64 nouvelles images (braquage 1 à 4 de l'Abarth, du T-Cross, de la S3 et de la Giulia, avant et après, normales et éclaircies), toutes ouvertes ; agrandissements des palettes de la Giulia. Volant d'un bloc jusqu'à 90°, sans jour, visière qui ne coupe plus la jante, démarreur de la Giulia sur sa plaque.
+- Code : seul le banc change (`vehicule_cockpit_volant_banc.cpp` l. 141 et son en-tête). Remarque non bloquante : utiliser `volantSeriePour(d)` au lieu des noms écrits à la main.
+- Construction et `tests_cpu.sh` refaits par le lead dev dans un dossier à part : 102/102. « Avis agent 3D : VALIDÉ » sans réserve sur `ac6b87c`.
+- Statut : 🟡 À valider (utilisateur) (KO de l'utilisateur, APK 991) ; ligne de `suivi-pr.md` supprimée ; entrée ajoutée à `qa/Check.md`. Au développeur : sa ligne de `track-agent.md` (session terminée). Au PO : WFS-325 peut partir (attendait cette fusion).
