@@ -246,3 +246,6 @@ demande utilisateur :
 
 - « Pour la 405, tu dois le mettre avec l'épic Publication app » (conversation avec le PO, 2026-11-11 09:31 UTC)
 ( PO, 2026-11-11 09:31:34 UTC : c'est fait — **WFS-405** (version grand public, la Ville seule) est dans l'épic **Publication app**, avec WFS-319, 408, 409, 407 et 320 : il attend le jour de publication, personne n'y travaille d'ici là. Tu me préviens ce jour-là. )
+
+- Ajouter une fonctionnalité simple, dans les 20 premières : déplacer les boutons Caméra et Menu, les mettre côte à côte avec le score et les agrandir de 5 % (conversation avec le PO, 2026-11-11 13:06 UTC)
+( PO : c'est créé — **WFS-429** (P1, prêt), **8e** de l'ordre des 20. En course, en haut à droite : [MENU] [CAMÉRA] [SCORE] sur la même rangée ; les deux boutons grandissent de 5 % (40 → 42 px), le toucher suit ; rien d'autre ne change de taille. Il ira à la prochaine nouvelle session `@dev` qui demande un ticket ; il peut avancer en parallèle des autres tickets `@dev` (fichiers différents). Après la fusion : 🟡 à valider par toi sur l'APK de main. )
