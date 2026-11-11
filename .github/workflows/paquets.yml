@@ -43,14 +43,14 @@ jobs:
           done
       - name: Compilation (wfs_bench)
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
-      - name: Cuisson de la Ville (3 formats)
+      - name: Cuisson de la Ville et de la Corniche (3 formats chacune)   # WFS-426 : Corniche ajoutée (carte « plage »)
         # code 3 : deux cuissons différentes ou paquet faux (RG-C2 de WFS-301) → rouge, rien n'est publié
         run: |
           mkdir -p paquets sortie
           WFS_PAQUETS=paquets WFS_BANC=cuire timeout 1200 ./build/wfs_bench sortie assets/ 2>&1 | tee cuisson.log
           ls -l paquets
           n=$(find paquets -maxdepth 1 -name '*.wfcarte' | wc -l)
-          [ "$n" -ge 3 ] || { echo "::error::cuisson : $n paquet(s) écrit(s), 3 attendus (ASTC, ETC2, RGBA8)"; exit 1; }
+          [ "$n" -ge 6 ] || { echo "::error::cuisson : $n paquet(s) écrit(s), 6 attendus (Ville et Corniche : ASTC, ETC2, RGBA8)"; exit 1; }
       - uses: actions/upload-artifact@v4
         with: { name: "paquets-${{ matrix.essai }}", path: paquets/*.wfcarte, retention-days: 3, if-no-files-found: error }
 
