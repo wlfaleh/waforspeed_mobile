@@ -568,8 +568,10 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     };
     // WFS-414 (avis de l'agent 3D sur la PR #343) : volant de série : rapport centré au-dessus des deux chiffres de la vitesse (xd : bord
     // droit de la vitesse, comme nombre()), un jour de 5 % de la hauteur du combiné entre les deux, sans dépasser la partie vue par le volant
+    // (marge de 3 % sous le haut de la partie vue : le vrai bord de la jante est ≈ 1 % plus bas que la ligne de vue calculée ; 2e avis)
+    constexpr float MARGE_JANTE = 0.03f;
     auto rapportAuDessus = [&](float xd, float hMax) {
-        const float y = basV + hV + H * 0.05f, h = std::min(hMax, bandeLisibleCombine(d).haut - H * 0.005f - y);
+        const float y = basV + hV + H * 0.05f, h = std::min(hMax, bandeLisibleCombine(d).haut - H * MARGE_JANTE - y);
         const float centre = xd - hV * 0.73f;   // milieu de deux chiffres : de xd − 1,32 h à xd − 0,14 h
         rapport(A, centre - h * 0.26f, y, h, val.rapport);
     };
@@ -635,7 +637,7 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         if (volantSeriePour(d) && y0 + h + H * 0.27f > bc.haut) {
             basV = bc.bas + H * 0.03f; hV = H * 0.22f;
             nombre(A, H * 0.17f, basV, hV, (int)kmh, 3);
-            const float yr = basV + hV + H * 0.035f, hr = std::min(H * 0.18f, bc.haut - H * 0.005f - yr);
+            const float yr = basV + hV + H * 0.035f, hr = std::min(H * 0.18f, bc.haut - H * MARGE_JANTE - yr);
             rapport(A, H * 0.17f - hV * 0.73f - hr * 0.26f, yr, hr, val.rapport);
         } else {
             const float hautV = vitesse(H * 0.17f, -rc * 0.80f, H * 0.30f);
@@ -649,8 +651,8 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
         cadran(F, A, R, {W * 0.29f, 0}, rc, reg, 0.85f, 26, 0.0022f);
         if (volantSeriePour(d)) {   // WFS-414 : volant de série (S3) : le moyeu plus haut remonte la vitesse ; rapport centré au-dessus
-            vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
-            rapportAuDessus(H * 0.30f, H * 0.26f);
+            vitesse(H * 0.27f, -H * 0.36f, H * 0.22f);   // (0,27 : la vitesse remontée touchait les graduations du cadran droit ; 2e avis)
+            rapportAuDessus(H * 0.27f, H * 0.26f);
         } else {
             rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
             vitesse(H * 0.30f, -H * 0.36f, H * 0.22f);
