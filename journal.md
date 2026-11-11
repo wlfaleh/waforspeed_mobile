@@ -1205,3 +1205,12 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 12:11:12 — Agent PO : skill smart-brainstorming chargé par défaut, demande de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
 - `.claude/agents/po-scrum-master.md` : `smart-brainstorming` ajouté au champ `skills:` et consigne d'usage (étudier, challenger, prioriser ; le PO garde son rôle de créer et attribuer). `appel-agents.md` : tableau mis à jour.
+
+### 2026-11-11 12:14:45 — Agent PO : skill smart-brainstorming retiré, plus chargé par défaut, demande de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
+- Annulation du commit 1638ad6a : `.claude/agents/po-scrum-master.md` et `appel-agents.md` reviennent à l'état d'avant (skill `po-scrum-master` seul). L'utilisateur appelle `@smartbrain` quand il en a besoin.
+
+### 2026-11-11 12:17:38 — Début WFS-412 : attribué à agent expert ci cd (session 01UY1Vv4jR6p) (po-scrum-master)
+- Demande d'une nouvelle session `@cicd` (session_01UY1Vv4jR6pAfrr3rURiQVx, ouverte par l'utilisateur vers 12:14 UTC, aucun ticket avant : 1er et seul ticket). Choix : **n° 1 de l'ordre des 20** fixé par l'utilisateur à 12:08 UTC, réservé à `@cicd` : **WFS-412** (P1, E7, [TECHNIQUE]). Épic E7 libre (aucun ticket 🔧 / 🔀 ; WFS-319 et 407 à 409 en ⏸ jour de publication).
+- Zone : `tools/qa/tests_cpu.sh`, la ligne des tests de `build.yml` (≈ l. 98) et de `matin.yml` (≈ l. 132), un test du script si besoin ; rien d'autre de la CI (gel). Règles : `regles-de-gestion/WFS-412.md` (RG-01 à RG-06 ; aucun seuil, test ni `IGNORES` changé).
+- État vérifié sur `main` : CI #998 (run 43005769670, WFS-419) verte ; `test_course5_ordinateurs` **vert** depuis WFS-415 (103 tests réussis, licences : 17 voitures, 0 manque). Le rouge connu de WFS-404 n'existe plus : la capture n° 3 des règles (run de `main` avec seul ce test en échec) est sans objet ; le ticket garde son but (un échec ne cache plus les tests suivants ni les licences). Info : le parcours `duel` du groupe `texte` signale 2 écarts sur l'écran de fin (hors périmètre).
+- US technique : CI de branche permise, une seule à la fois, chaque run noté au journal. Plan : boucle sans `exit` au 1er échec, liste finale des échecs et code 1 ; `verifier_licences.py` lancé quel que soit le résultat des tests, étape rouge si l'un échoue ; essai local avec un test rendu rouge hors commit ; PR, lead dev.
