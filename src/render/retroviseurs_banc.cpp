@@ -102,9 +102,10 @@ int benchRetroviseurs(Game& g, Renderer& r, const std::string& out, std::vector<
         choisirVue(VueCamera::Cockpit); g.camMode = 0; g.setAutopilot(true); g.allerA(Ecran::Course);
         rouler(60 * 4);   // décompte et départ
         g.setAutopilot(false);
-        // scènes : voiture 10 m derrière dans la même voie (glace intérieure), puis 9 m derrière, 3,3 m à gauche (glace gauche)
+        // scènes : voiture 10 m derrière dans la même voie (glace intérieure), puis 14 m derrière, 3,3 m à gauche (glace gauche ; à 9 m, elle est dans
+        // l'angle mort, au bord de la glace, comme en vrai)
         struct Scene { const char* nom; double devant, gauche; };
-        for (const Scene sc : {Scene{"derriere", -10.0, 0.0}, Scene{"gauche", -9.0, 3.3}}) {
+        for (const Scene sc : {Scene{"derriere", -10.0, 0.0}, Scene{"gauche", -14.0, 3.3}}) {
             if (rapide && sc.gauche > 0) continue;
             trafficBenchPlace(sc.devant, sc.gauche / RW, 0, true);   // lat > 0 : voiture à gauche du joueur
             for (int i = 0; i < 4; i++) { g.update(1.0 / 60); t += 1.0 / 60; }
@@ -195,6 +196,8 @@ int benchRetroviseurs(Game& g, Renderer& r, const std::string& out, std::vector<
                 // s'ouvrait avant la pause et l'image « sans » montrait l'écran Pause, refus du lead dev, PR #341)
                 g.allerA(Ecran::Pause);
                 for (int i = 0; i < 10; i++) g.render(t);
+                const int cameraAvant = R.camera;
+                R.camera = ecrans::CAM_COCKPIT;   // le réglage Caméra montre la vue réellement utilisée (le banc la force par choisirVue)
                 ecrans::ouvrirReglagesBanc(true);
                 for (int sans = 1; sans >= 0; sans--) {
                     retro::desactiver(sans == 1);
@@ -203,6 +206,7 @@ int benchRetroviseurs(Game& g, Renderer& r, const std::string& out, std::vector<
                     WFS_LOG("capture retro-reglages-rendu-basse-%s : écran %s, %s", sans ? "sans" : "avec", nomEcran(g.ecran()), qualite::ligneRendu().c_str());
                 }
                 ecrans::ouvrirReglagesBanc(false);
+                R.camera = cameraAvant;
                 retro::desactiver(false);
                 g.allerA(Ecran::Course);
             }

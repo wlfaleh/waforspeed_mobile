@@ -1353,6 +1353,9 @@ constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
 // la glace du modèle s'allume elle-même (draw, pièces « phare ») et seul le bloom de l'image l'entoure
 constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
 constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
+// WFS-324 : phare d'une voiture vue dans un rétroviseur (cœur et lueur, glace seulement) : plus vif et plus large qu'un feu arrière (E : un
+// feu de croisement fait ≈ 20 000 cd vers l'avant contre ≈ 5 cd pour une lanterne arrière ; plafonné pour rester lisible dans la glace)
+constexpr float PHARE_COEUR = 0.06f, PHARE_LUEUR = 0.25f, I_PHARE_COEUR = 6.0f, I_PHARE_LUEUR = 0.6f;
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
 constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
 // WFS-171 (RG-01, ANO-70) : lueur rouge au sol calculée (feux_modele::eclairementSol) sur une grille de SOL_NX × SOL_NZ
@@ -1387,7 +1390,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
-    voitureRetroSeule_ = (vis & ~VIS_RETRO) == 0;   // WFS-324
+    voitureRetroSeule_ = (vis & ~VIS_RETRO) == 0; phareRetro_ = (vis & VIS_RETRO) != 0;   // WFS-324
     if (fx.nuit || stopK > 0 || fx.recul) feuxVoiture(m, world, fx);
     // WFS-134 (RG-11) : Basse, au-delà de 15 m : roues fixes (invisibles à cette distance), pièces regroupées ci-dessous
     const bool basseLoin = qualiteBasse && length(world.transformPoint((m.bmin + m.bmax) * 0.5f) - camPos_) > 15.f;
@@ -1596,6 +1599,17 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         const vec3 pr = F.reculTrouve ? vec3{side * F.recul.x, F.recul.y, F.recul.z + 0.01f}
                                       : vec3{side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f};
         if (f.recul) feu(w.transformPoint(pr), arriere, RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
+    }
+    // WFS-324 (accroche, RG-04) : phares d'une voiture vue dans le rétroviseur de l'image, la nuit : cœur éblouissant et lueur sur chaque
+    // optique mesurée (WFS-413), seulement dans la glace. En vue directe, la pièce émissive du phare et le flou lumineux de l'image font le
+    // point lumineux ; dans la petite image d'une glace, il ne restait qu'un anneau pâle (refus du lead dev, PR #341, 2e revue)
+    if (f.nuit && !f.joueur && phareRetro_ && F.phares) {
+        const bool seul = retroSeul;
+        retroSeul = true;   // quadrilatères pour la glace seulement (drawQuads)
+        for (int k = 0; k < 2; k++)
+            feu(w.transformPoint(F.phare[k] + F.phareNormale[k] * 0.02f), normalize(w.transformDir(F.phareNormale[k])), PHARE_COEUR, PHARE_LUEUR, blanc,
+                I_PHARE_COEUR, I_PHARE_LUEUR);
+        retroSeul = seul;
     }
     if (!f.nuit) return;   // RG-04 : le jour, pas de reflet sur la route
     // WFS-171 (RG-02) : route mouillée avec reflets : seule la traînée floue du reflet de WFS-142, pas de lueur en plus
