@@ -17,4 +17,3 @@
 |---|---|---|---|---|---|
 | #341 | WFS-324 | Claude, agent dev3d (01UY1Vv5YT) | ↩️ Retour lead dev (3e revue : lueur des phares en disque) | 72e5ce51 | 2026-11-11 14:01 |
 | #350 | WFS-426 | Claude, agent cartes (01UY1Vv2HrQF) | ↩️ Retour lead dev | b1db4c34 | 2026-11-11 14:13 |
-| #352 | WFS-427 | agent expert ci cd (session 01UY1Vv2Hq) | 👀 En revue — lead-dev (session 01UY1Vv2Hq, appel du développeur), 14:14 UTC | f86da0ee | 2026-11-11 14:14 |
