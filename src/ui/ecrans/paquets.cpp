@@ -479,6 +479,7 @@ struct SourceFactice : SourcePaquets {
     bool liste = true, shaFaux = false;
     int reseauFactice = 1;
     long long place = 1LL << 40, coupureA = -1, parImage = 1 << 20;
+    int imagesPourFinir = 0;   // WFS-416 (accroche, accord du PO) : > 0 = débit réglé sur la taille du paquet (fini en autant d'images, jamais sous parImage)
     Phase ph = RIEN;
     long long recus = 0, taille = 0;
     int appelsListe = 0;
@@ -488,6 +489,7 @@ struct SourceFactice : SourcePaquets {
         if (!liste) { ph = ABSENTE; return; }
         octets = carte::ecrire(cartes_v2::cuire(racine, c, carte::FormatTexture::ASTC));
         taille = (long long)octets.size(); recus = 0; ph = PRETE;
+        if (imagesPourFinir > 0) parImage = std::max(parImage, taille / imagesPourFinir);
     }
     Phase phase(long long& r, long long& t) override {
         if (ph == TELECHARGE) {
@@ -610,7 +612,7 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
     image(3);
     verifier(!e.ouvert() && e.secours_, "hors ligne : pas de liste → secours silencieux (Ville du code)");
     // 2) proposition sur données mobiles, puis sur Wi-Fi
-    s = SourceFactice(); s.racine = racine; s.reseauFactice = 2; s.parImage = 64 * 1024;
+    s = SourceFactice(); s.racine = racine; s.reseauFactice = 2; s.parImage = 64 * 1024; s.imagesPourFinir = 450;   // WFS-416 : paquet de 197 Mo (bâtiments cuits), même durée du faux téléchargement qu'avant
     verifier(e.demarrer(r, s, c, formats), "liste présente → étape ouverte");
     image(3);
     verifier(e.etat() == EtapePaquets::Etat::Proposition, "proposition (taille annoncée avant tout envoi)");
@@ -644,6 +646,27 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
     verifier(cartes_v2::preparerCarte(c), "paquet installé → lu au chargement (WFS-301)");
     carte::desactiver();
     verifier(!e.demarrer(r, s, c, formats), "lancement suivant : paquet présent → pas de téléchargement");
+    {   // WFS-416 (décision du PO, revue du lead dev #344) : un paquet d'avant les bâtiments cuits (autre génération, donc autre empreinte,
+        // et pas de bloc « batiments ») est déjà installé : l'étape s'ouvre de nouveau, le nouveau paquet le remplace, les bâtiments sont lus
+        carte::Paquet ancien = cartes_v2::cuire(racine, c, carte::FormatTexture::ASTC);
+        ancien.empreinte ^= 1;
+        std::erase_if(ancien.blocs, [](const carte::Bloc& b) { return b.nom == "batiments"; });
+        const std::vector<uint8_t> o = carte::ecrire(ancien);
+        std::ofstream(cheminPaquet(c, carte::FormatTexture::ASTC), std::ios::binary).write((const char*)o.data(), (std::streamsize)o.size());
+        verifier(!cartes_v2::preparerCarte(c), "paquet d'avant WFS-416 installé : refusé au chargement (carte du code)");
+        s = SourceFactice(); s.racine = racine; s.imagesPourFinir = 30;
+        verifier(e.demarrer(r, s, c, formats), "paquet d'avant WFS-416 installé → étape ouverte (mise à jour proposée)");
+        image(3);
+        verifier(e.etat() == EtapePaquets::Etat::Proposition, "mise à jour : proposition (taille annoncée)");
+        appui(e.zoneInstaller());
+        image(60);
+        verifier(!e.ouvert() && e.installe_ && !e.secours_, "mise à jour : nouveau paquet téléchargé et vérifié");
+        const bool lu = cartes_v2::preparerCarte(c);
+        const auto bloc = carte::blocDuPaquet(c, "batiments");
+        verifier(lu && bloc && !bloc->empty(), "mise à jour : bloc des bâtiments cuits présent dans le paquet installé");
+        WFS_LOG("paquets (WFS-306) banc : WFS-416 : paquet d'avant %.1f Mo remplacé, bloc « batiments » %.1f Mo", o.size() / 1048576.0, bloc ? bloc->size() / 1048576.0 : 0.0);
+        carte::desactiver();
+    }
     // 4) place insuffisante → message puis secours
     retirer();
     s = SourceFactice(); s.racine = racine; s.place = 1024 * 1024;
@@ -653,7 +676,7 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
     appui(e.zoneContinuer());
     verifier(!e.ouvert() && e.secours_, "place insuffisante, « Continuer » → secours");
     // 5) fichier faux → « Réessayer » / « Plus tard »
-    s = SourceFactice(); s.racine = racine; s.shaFaux = true; s.parImage = 8 << 20;
+    s = SourceFactice(); s.racine = racine; s.shaFaux = true; s.parImage = 8 << 20; s.imagesPourFinir = 4;   // WFS-416 : les 2 essais tiennent dans les 10 images
     e.demarrer(r, s, c, formats); image(3); appui(e.zoneInstaller()); image(10);
     verifier(e.etat() == EtapePaquets::Etat::Echec, "paquet abîmé (2 essais) → échec");
     capture("paquets-echec", "paquet abîmé : « Réessayer » / « Plus tard »");

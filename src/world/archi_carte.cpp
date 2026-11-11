@@ -55,7 +55,10 @@ bool chargerCuit() {
     }
     const size_t taille = o->size();
     const char* raison = "";
-    if (!cuit::lire(std::move(o), cuit::signature(g_bats), g_cuit.d, &raison)) {   // RG-06 : jamais de plantage, le kit reprend la main
+    bool lu = false;
+    try { lu = cuit::lire(std::move(o), cuit::signature(g_bats), g_cuit.d, &raison); }
+    catch (const std::bad_alloc&) { g_cuit.d = cuit::Lu{}; raison = "mémoire vive insuffisante pour lire les bâtiments cuits"; }
+    if (!lu) {   // RG-06 : jamais de plantage, le kit reprend la main
         WFS_LOG("bâtiments (WFS-416) : %s : kit de secours (bâtiments construits par le code)", raison);
         return false;
     }
@@ -134,12 +137,12 @@ public:
         }
         pret_ = true;
         if (chargerCuit()) {
-            // RG-07 (condition du PO) : jamais de plantage par manque de mémoire : une réservation qui échoue rend tout et le kit reprend
-            bool ok = false;
-            try { ok = initCuit(r, g); } catch (const std::bad_alloc&) { ok = false; }
-            if (ok) return;
-            WFS_LOG("bâtiments (WFS-416) : mémoire insuffisante pour les bâtiments cuits : kit de secours (bâtiments construits par le code)");
-            rendreCuit(r);
+            // Manque de mémoire VIVE (std::bad_alloc) : repli sur le kit, décidé AVANT l'occlusion des murs (preparerCuit ne touche pas
+            // à la grille gardée : le kit calcule ensuite son occlusion comme d'habitude). Manque de mémoire GRAPHIQUE : VkCtx::createBuffer
+            // arrête le jeu, comme partout dans le moteur aujourd'hui (accepté par le PO pour ce ticket ; vrai repli : WFS-418).
+            if (preparerCuit()) { initCuit(r, g); return; }
+            WFS_LOG("bâtiments (WFS-416) : mémoire vive insuffisante pour les bâtiments cuits : kit de secours (bâtiments construits par le code)");
+            cuits_.clear(); murs0_.clear();
             g_cuit.pret = false; g_cuit.d = cuit::Lu{};
         }
         precalcul::occlusionKit(g_bats.size(), [](size_t k, int lod, std::vector<Vertex>& v) {   // WFS-269 : murs, au chargement
@@ -228,7 +231,22 @@ private:
     // WFS-416 (RG-03) : au chargement, les niveaux 1 et 2 de tous les morceaux vont dans la carte graphique (maillages fixes) et les
     // tampons du niveau 0 sont réservés ; l'occlusion précalculée des murs (WFS-269) est appliquée ici, comme le faisait le kit.
     // Ensuite plus rien n'est construit ni créé : le niveau 0 des morceaux proches est recopié du paquet dans les tampons réservés.
-    bool initCuit(Renderer& r, const GameView& g) {
+    // réserve la mémoire vive du paquet cuit (tableaux des morceaux, murs du niveau 0, tampons de recopie du chargement) ; faux si elle manque
+    bool preparerCuit() {
+        const cuit::Lu& d = g_cuit.d;
+        try {
+            cuits_.resize(d.morceaux.size()); murs0_.resize(d.morceaux.size());
+            size_t nv = 0, ni = 0;
+            for (size_t k = 0; k < d.morceaux.size(); k++) for (int s = 0; s < NB_SLOTS; s++) {
+                if (s < NS) murs0_[k][(size_t)s].resize(d.morceaux[k].lot[0][S_MUR + s].nv);
+                for (int n = 1; n < cuit::NIVEAUX; n++) { nv = std::max<size_t>(nv, d.morceaux[k].lot[n][s].nv); ni = std::max<size_t>(ni, d.morceaux[k].lot[n][s].ni); }
+                nv = std::max<size_t>(nv, d.nvMax[s]); ni = std::max<size_t>(ni, d.niMax[s]);
+            }
+            tamponV_.reserve(nv); tamponI_.reserve(ni);
+        } catch (const std::bad_alloc&) { return false; }
+        return true;
+    }
+    void initCuit(Renderer& r, const GameView& g) {
         const cuit::Lu& d = g_cuit.d;
         atlasCouleur_ = r.vk().uploadTexture(d.octets->data() + d.posCouleur, d.atlasL, d.atlasH, true);
         atlasRelief_ = r.vk().uploadTexture(d.octets->data() + d.posRelief, d.atlasL, d.atlasH, false);
@@ -240,8 +258,7 @@ private:
         precalcul::occlusionKit(d.morceaux.size() * (size_t)NS, [&d](size_t k, int lod, std::vector<Vertex>& v) {
             lotCuit(d.morceaux[k / (size_t)NS].lot[lod][S_MUR + (int)(k % (size_t)NS)], v); });
         size_t fixes = 0, reserves = 0;
-        cuits_.resize(d.morceaux.size()); murs0_.resize(d.morceaux.size());
-        std::vector<Vertex> v; std::vector<uint32_t> i;
+        std::vector<Vertex>& v = tamponV_; std::vector<uint32_t>& i = tamponI_;   // réservés par preparerCuit
         for (size_t k = 0; k < d.morceaux.size(); k++) {
             cuits_[k].c = d.morceaux[k].c;
             for (int n = 1; n < cuit::NIVEAUX; n++) for (int s = 0; s < NB_SLOTS; s++) {
@@ -250,7 +267,6 @@ private:
                 lotCuit(l, v, &i);
                 if (s < NS && n == 1) precalcul::appliquerKit(k * (size_t)NS + (size_t)s, 1, v, 0);
                 cuits_[k].m[(size_t)n - 1][(size_t)s] = r.makeMesh(v, i, false);
-                if (!cuits_[k].m[(size_t)n - 1][(size_t)s].vb.buf) return false;
                 fixes += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
             }
             for (int s = 0; s < NS; s++) {   // murs du niveau 0, occlusion appliquée, gardés en mémoire vive (recopiés tels quels en course)
@@ -263,7 +279,6 @@ private:
             v.assign(d.nvMax[s], Vertex{}); i.assign(d.niMax[s], 0);
             x.m[(size_t)s] = r.makeMesh(v, i, true);
             x.m[(size_t)s].indexCount = 0;
-            if (!x.m[(size_t)s].vb.mapped || !x.m[(size_t)s].ib.mapped) return false;
             reserves += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
         }
         cuit_ = true;
@@ -273,9 +288,9 @@ private:
         }
         WFS_LOG("bâtiments (WFS-416) : %zu morceaux prêts dans la carte graphique : niveaux 1 et 2 fixes %.1f Mo, %d tampons du niveau 0 %.1f Mo, atlas %ux%u ; aucune construction en course",
                 cuits_.size(), fixes / 1048576.0, RESERVES, reserves / 1048576.0, d.atlasL, d.atlasH);
-        return true;
+        tamponV_ = {}; tamponI_ = {};
     }
-    // rend tout ce que le paquet cuit a réservé (fin de partie, ou repli sur le kit si la mémoire manque)
+    // rend tout ce que le paquet cuit a réservé (fin de partie)
     void rendreCuit(Renderer& r) {
         for (MorceauCuit& m : cuits_) for (auto& lot : m.m) for (Mesh& x : lot) if (x.vb.buf) r.destroy(x);
         for (Reserve& x : reserves_) { for (Mesh& y : x.m) if (y.vb.buf) r.destroy(y); x = Reserve{}; }
@@ -363,6 +378,7 @@ private:
     std::vector<std::pair<uint64_t, Mesh>> cimetiere_;
     std::vector<MorceauCuit> cuits_;
     std::vector<std::array<std::vector<Vertex>, NS>> murs0_;
+    std::vector<Vertex> tamponV_; std::vector<uint32_t> tamponI_;   // chargement seulement
     Reserve reserves_[RESERVES];
     Image atlasCouleur_{}, atlasRelief_{};
     Material mats_[NB_SLOTS]{};

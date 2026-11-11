@@ -32,7 +32,7 @@ namespace carte {
 constexpr uint32_t VERSION_FORMAT = 1;
 // à augmenter à chaque changement de ce que produit la cuisson (code de construction de la carte, fichiers mis dans le paquet) :
 // change l'empreinte attendue, donc un paquet ancien est refusé et la carte du code est jouée (RG-02, RG-06)
-constexpr uint32_t VERSION_GENERATION_CARTE = 1;
+constexpr uint32_t VERSION_GENERATION_CARTE = 2;   // 2 : WFS-416, bloc « batiments » (un paquet d'avant est refusé, donc retéléchargé : décision du PO)
 
 enum class FormatTexture : uint8_t { ASTC = 0, ETC2 = 1, RGBA8 = 2 };
 constexpr FormatTexture FORMATS[3] = {FormatTexture::ASTC, FormatTexture::ETC2, FormatTexture::RGBA8};   // ordre de préférence
