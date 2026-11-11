@@ -11,7 +11,7 @@
     - **RG-02** : branches à 3 h, 9 h et 6 h ; chacune naît 12 mm dans le coussin, dans l'épaisseur de la coque, et finit dans le tube de la jante ; 55 mm de large à la sortie de la coque, 35 mm sur la jante.
     - **RG-03**, adaptée par le PO le 2026-11-10 : une plaque de 34 à 42 mm × 34 à 40 mm en noir laqué sur chaque branche horizontale, avec 2 × 2 touches en relief, sans logo ; elle va de la coque jusqu'au cuir de la jante, jamais plus large que la branche. Giulia : le démarreur rouge, avec sa bague, sur la plaque gauche en bas. Golf : l'agrafe rouge sur la branche basse, sans logo. Palettes : celles d'avant.
     - **RG-07** : la lèvre de la visière du combiné **traversait** le haut de la jante (de 28 à 31 mm sur 5 des 6 voitures). Son avancée devant l'écran passe de 68 mm à Mustang 16, Golf 12, Abarth 60, T-Cross / S3 / Giulia 28 mm. Plus aucun point du haut de la jante n'est caché, et un jour d'au moins 5 mm les sépare.
-    - **Combiné de ces 6 voitures** : le moyeu, plus haut (145 au lieu de 115 mm), cache le bas du combiné. La bande lisible (`bandeLisibleCombine`) en tient compte, et les chiffres de la vitesse remontent dans la partie vue. Le rapport est posé juste au-dessus de la vitesse sur la S3 et la Giulia, et à côté sur l'Abarth, dont le petit cadran n'a plus la place au-dessus.
+    - **Combiné de ces 6 voitures** : le moyeu, plus haut (145 au lieu de 115 mm), cache le bas du combiné. La bande lisible (`bandeLisibleCombine`) en tient compte, et les chiffres de la vitesse remontent dans la partie vue. Sur la S3 et la Giulia, le rapport est centré au-dessus de la vitesse, avec un jour de 5 % et une marge de 5 % sous la jante ; la vitesse de la S3 est centrée entre ses deux cadrans. Sur l'Abarth, la vitesse fait 22 % de la hauteur, au bas de la partie vue, et le rapport est au-dessus (la carte occupe le tiers droit du cadran). Ces réglages suivent les 3 avis de l'agent 3D.
   - **Les 14 autres voitures** : chemin commun inchangé, code déplacé tel quel (étape 1, commit d270a0e : fonctions de forme vers `vehicule_cockpit_formes.h`, bloc du volant vers `construireVolant`, ligne de la visière vers `ligneVisiere`).
   - **Banc** `WFS_BANC=cockpit-volant`, nouveau : `src/render/vehicule_cockpit_volant_banc.cpp`, avec une accroche de 4 lignes et une inclusion dans `desktop_main.cpp`, annoncée au journal. Il fait les gros plans recadrés sur la jante projetée par la caméra de l'image, avec un système qui relève la vue, inactif hors du banc.
 - **Comment c'est vérifié** :
@@ -19,14 +19,14 @@
     - **RG-05** : les volants des 14 autres voitures sont identiques à `main`, pièce par pièce (nombres de sommets et d'indices, topologie exacte, boîte et centre à 0,05 mm près, empreintes relevées sur `main` : `tests/test_cockpit_volants_main.h`) ; exactement 6 voitures ont le volant de série.
     - **RG-01, RG-02, RG-03, RG-07** : mesurés sur la géométrie construite (cotes du coussin, départ de chaque branche dans le coussin et la coque, bout dans le tube, largeurs 55 et 35 mm ± 2, plaques et touches, démarreur et agrafe, rayons de l'œil de la caméra vers le haut de la jante).
     - Le test WFS-323 (vitesse dans la partie vue) reste vert.
-  - **Tests CPU** : 101 / 102. Le seul rouge, `test_course5_ordinateurs`, est un rouge connu de `main` (WFS-404 / WFS-415), sans lien avec ce ticket.
+  - **Tests CPU** : 102 / 102 (`tools/qa/tests_cpu.sh`, branche synchronisée avec `main` après WFS-415).
   - **Captures** : M4 et 911 **identiques au pixel près** avant et après (vue entière et gros plan : 0 pixel différent).
 - **Limites et risques connus** :
   - La petite jauge de nitro du bas du combiné (Mustang, Golf, T-Cross, Abarth) est maintenant cachée par le moyeu plus haut ; la nitro reste sur le bouton NITRO du HUD. Je ne l'ai pas déplacée, parce que c'est hors du volant : à trancher par le PO.
   - La M4 et la 911 ont le même défaut de visière (ANO-243, rangée dans WFS-325 par le PO) : hors périmètre, non touché.
   - Formes et cotes du coussin estimées sur photos (aucune fiche constructeur lisible par le réseau des agents) ; rendu non vu sur un vrai téléphone (statut 🟡 après la fusion).
   - WFS-324 (#341) modifie aussi `vehicule_cockpit.cpp` / `.h` : le premier fusionné gagne, l'autre se synchronise avec `main` en gardant les deux.
-  - Fusions de `main` suspendues jusqu'au retour au vert (WFS-415).
+  - WFS-415 (#342) est fusionné : la branche est synchronisée et toutes les captures ont été refaites sur ce nouveau `main`.
 
 ## Captures pour le lead dev (37 après)
 

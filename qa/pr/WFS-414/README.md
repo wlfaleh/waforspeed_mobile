@@ -1,6 +1,6 @@
 # WFS-414 — captures avant / après (volants de série : Mustang, Golf 8, Abarth 500, T-Cross, S3 berline, Giulia)
 
-Branche `feature/waforspeed-414` comparée à `origin/main`. Bancs : `WFS_BANC=cockpit-volant WFS_TAILLE=2340x1080` (rendu lavapipe, comme la CI). « Avant » = `origin/main` + le banc seul (fichiers `vehicule_cockpit_volant_banc.*` et accroche de `desktop_main.cpp`, sans aucun changement du cockpit), comme pour WFS-323 : le banc n'existe pas sur `main`. Gros plans : zone de 4:3 autour de la jante projetée par la caméra de l'image, agrandie 2 fois, sans autre rendu. Copies « éclaircies » : niveaux 0..56 étirés sur 0..255 (l'habitacle est sombre sous le toit), aide à la revue seulement ; même traitement avant et après.
+Branche `feature/waforspeed-414` comparée à `origin/main` (19be73b, après WFS-415). Bancs : `WFS_BANC=cockpit-volant WFS_TAILLE=2340x1080` (rendu lavapipe, comme la CI). « Avant » = `origin/main` + le banc seul (fichiers `vehicule_cockpit_volant_banc.*` et accroche de `desktop_main.cpp`, sans aucun changement du cockpit), comme pour WFS-323 : le banc n'existe pas sur `main`. Gros plans : zone de 4:3 autour de la jante projetée par la caméra de l'image, agrandie 2 fois, sans autre rendu. Copies « éclaircies » : niveaux 0..56 étirés sur 0..255 (l'habitacle est sombre sous le toit), aide à la revue seulement ; même traitement avant et après.
 
 ## Planches des 6 volants (gros plans éclaircis : Mustang, Golf, Abarth / T-Cross, S3, Giulia)
 
