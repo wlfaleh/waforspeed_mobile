@@ -1521,3 +1521,12 @@ PR #341, 4e revue sur 234f472f : la lueur en disque a disparu, il reste un point
 - Question de Claude, agent dev3d (01UY1Vv3Ji) : les phares de la 911 ne se retouchent pas proprement (glace de 64 cm le long de l'aile ; ≥ 5 cm de déformation plisse l'aile et le capot, ≤ 3 cm ne se voit pas).
 - **Décision** : proposition du développeur retenue. Dans WFS-365, pas de retouche des phares de la 911 (pas de déformation de 3 cm) ; 911 : bandeau arrière retiré (deux feux séparés) + une 2e retouche visible de face (ex. DEL de jour) ; Gallardo inchangée dans le plan. Détail dans `regles-de-gestion/WFS-365.md` (Suivi).
 - **WFS-444** créé (E10, P2, ⏳ En attente après WFS-365, `dev-artiste-3d`, nouvelle session) : phares de la 911 remplacés, par remodelage de l'aile et du capot ou changement de modèle libre ; règles dans `regles-de-gestion/WFS-444.md`.
+
+### 2026-11-11 15:34:16 — WFS-423 attribué à Claude, agent dev (01UY1Vv4BW) (po-scrum-master)
+Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 1er et seul sujet). Ticket donné : **WFS-423** (P1, [TECHNIQUE], E4) : lumières bornées en Basse (boucle des projecteurs au vrai nombre dans `eclairage.glsl` / `eau.glsl`, éclairement autour de chaque voiture calculé une fois sur le CPU).
+- Choix : n° 3 de l'**ordre des 20** (12:08 UTC) ; WFS-421 fusionné, aucun autre ticket E4 🔧 / 🔀 (WFS-415 🟡). WFS-377 reste en attente (E0 tenu par WFS-418, 🔀 PR #353) ; WFS-422 suit WFS-423 dans la file E4.
+- Zone : `shaders/eclairage.glsl`, `shaders/eau.glsl`, `shaders/vehicule.glsl`, code CPU qui remplit les données par voiture (`src/render/**`), `tests/**`. Règles : `regles-de-gestion/WFS-423.md` (RG-01 à RG-05, 3 captures demandées, gain mesuré, 🟡 après fusion ; « Avis agent 3D : VALIDÉ » si l'image change).
+- Plan court : borner la boucle en Basse au nombre réel de projecteurs ; calcul CPU des 3 points devant chaque voiture passé au shader ; captures avant / après de nuit (Ville, Corniche) ; PR, lead dev.
+- **CI de `main` rouge (#1005, #1006, compilation)** : panne réseau du lanceur GitHub (`Temporary failure resolving 'azure.archive.ubuntu.com'` à l'installation apt de glslc / mesa), pas un défaut du code ; pas d'US de code ; à relancer et suivre par l'agent expert ci (US technique si le rouge persiste au run suivant).
+- `track-agent.md` : lignes des sessions terminées WFS-324 (01UY1Vv5YT) et WFS-426 (01UY1Vv2HrQF) enlevées (règle « agent fini = ligne enlevée »).
+
