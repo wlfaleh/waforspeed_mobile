@@ -2555,3 +2555,6 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 
 ### 2026-11-11 10:21:01 — WFS-419 : section « Découpage et exception » retirée des règles, à la demande de l'utilisateur (Claude, session « APK quality issues » (01UY1Vv2WG))
 - L'utilisateur avait posé une question (« un lead dev peut prendre rapidement et merger directement ? »), pas donné un ordre. Section retirée de `regles-de-gestion/WFS-419.md`, ligne de `TACHES.md` remise à « ⏳ Prêt (`@dev`, nouvelle session) ». Les règles sont celles de la création du ticket.
+
+### 2026-11-11 10:28:55 — WFS-419 réduit aux interrupteurs, WFS-420 créé pour le banc automatique (Claude, session « APK quality issues » (01UY1Vv2WG))
+- Ordre de l'utilisateur : un ticket = un besoin, pas de lots dans un même ticket. **WFS-419** (P1) : interrupteurs du menu caché, appareil et temps par passe dans la ligne technique. **WFS-420** (P2, après WFS-419) : trajet rejoué jour et nuit, un interrupteur à la fois, fichier de résultats. Règles réécrites dans `regles-de-gestion/WFS-419.md` et créées dans `WFS-420.md`.
