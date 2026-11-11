@@ -15,6 +15,7 @@
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
 #include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
+#include "../render/retroviseurs_banc.h"   // WFS-324 (accroche) : WFS_BANC=retroviseurs
 #include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
 #include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
 #include "../game/game.h"
@@ -171,6 +172,7 @@ int main(int argc, char** argv) {
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
     if (const char* b = std::getenv("WFS_BANC"); b && !std::strcmp(b, "cuire")) { carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets"; return cartes_v2::cuireSeul(g_root) > 0 ? 3 : 0; }   // WFS-301 (accroche, RG-C1 à C3) : paquets à publier (WFS-302), sans Vulkan
     if (!vk.init(nullptr, cw, chh)) return 1;
+    vk.echecReservation = rangRefusSimule(std::getenv("WFS_MANQUE_MEMOIRE_GPU"));   // WFS-418 (accroche, RG-04) : réservation refusée, PC seulement
     const double tVk = nowSeconds();
     Renderer r; r.init(vk);
     Game g;
@@ -269,6 +271,10 @@ int main(int argc, char** argv) {
         v.insert(v.end(), COCKPIT_LOT3A.begin(), COCKPIT_LOT3A.end()); v.insert(v.end(), COCKPIT_LOT3B.begin(), COCKPIT_LOT3B.end());   // WFS-202
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
+    }
+    if (banc == "retroviseurs") {   // WFS-324 (accroche) : rétroviseurs à reflet (WFS_VOITURES : liste, golf par défaut)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        const int e = benchRetroviseurs(g, r, out, v); finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "cockpit-reference") { benchCockpitReference(g, r, out); return finir(); }   // WFS-323 (accroche) : scènes de la référence de l'utilisateur
     if (banc == "cockpit-voisine") {   // WFS-349 (accroche) : voisine toute proche en vue Cockpit (WFS_VOITURES : liste, sinon les 20)

@@ -1,0 +1,45 @@
+== rétroviseurs des modèles 3D (repère du modèle, m) ==
+  golf : gauche : x -1.06 à -0.92, y 0.94 à 1.08, z -0.65 à -0.46 ; droit : x 0.92 à 1.06, y 0.94 à 1.08, z -0.65 à -0.46
+  m4 : gauche : non trouvé (place estimée) ; droit : non trouvé (place estimée)
+  p911 : gauche : x -1.02 à -0.90, y 0.86 à 0.99, z -0.34 à -0.13 ; droit : x 0.90 à 1.02, y 0.86 à 0.99, z -0.35 à -0.13
+  gallardo : gauche : x -1.09 à -0.96, y 0.80 à 0.93, z -0.66 à -0.44 ; droit : x 0.96 à 1.09, y 0.80 à 0.93, z -0.66 à -0.44
+  p208 : gauche : x -0.94 à -0.87, y 0.96 à 1.09, z -0.58 à -0.43 ; droit : x 0.87 à 0.94, y 0.96 à 1.09, z -0.58 à -0.43
+  abarth : gauche : x -0.94 à -0.83, y 0.98 à 1.12, z -0.48 à -0.35 ; droit : x 0.83 à 0.94, y 0.98 à 1.12, z -0.48 à -0.35
+  tcross : gauche : x -1.02 à -0.92, y 1.13 à 1.28, z -0.61 à -0.45 ; droit : x 0.92 à 1.02, y 1.13 à 1.28, z -0.61 à -0.45
+  compass : gauche : x -1.01 à -0.93, y 1.14 à 1.28, z -0.63 à -0.49 ; droit : x 0.93 à 1.01, y 1.14 à 1.28, z -0.63 à -0.49
+  s3 : gauche : x -0.99 à -0.92, y 0.91 à 1.02, z -0.63 à -0.50 ; droit : x 0.92 à 0.99, y 0.91 à 1.03, z -0.63 à -0.50
+  x5 : gauche : x -1.13 à -1.02, y 1.15 à 1.31, z -0.70 à -0.56 ; droit : x 1.02 à 1.13, y 1.15 à 1.31, z -0.70 à -0.56
+  giulia : gauche : x -1.03 à -0.96, y 0.95 à 1.07, z -0.57 à -0.43 ; droit : x 0.96 à 1.03, y 0.95 à 1.07, z -0.58 à -0.43
+  a45 : gauche : x -1.01 à -0.91, y 0.94 à 1.05, z -0.59 à -0.42 ; droit : x 0.91 à 1.01, y 0.94 à 1.05, z -0.59 à -0.42
+  model3 : gauche : x -1.11 à -1.01, y 0.89 à 1.02, z -0.76 à -0.61 ; droit : x 1.01 à 1.11, y 0.89 à 1.02, z -0.76 à -0.61
+  corsa : gauche : x -1.00 à -0.95, y 0.94 à 1.05, z -0.52 à -0.40 ; droit : x 0.93 à 1.00, y 0.94 à 1.04, z -0.53 à -0.39
+  gt86 : gauche : x -0.96 à -0.91, y 0.88 à 1.01, z -0.31 à -0.23 ; droit : x 0.91 à 0.96, y 0.88 à 1.01, z -0.31 à -0.23
+  elantra : gauche : x -1.06 à -0.92, y 0.90 à 1.04, z -0.77 à -0.60 ; droit : x 0.93 à 1.06, y 0.90 à 1.03, z -0.77 à -0.60
+  v60 : gauche : x -1.04 à -0.95, y 0.96 à 1.10, z -0.67 à -0.51 ; droit : x 0.95 à 1.04, y 0.96 à 1.10, z -0.67 à -0.51
+  rrsport : gauche : x -1.11 à -1.04, y 1.24 à 1.41, z -0.53 à -0.37 ; droit : x 1.04 à 1.11, y 1.24 à 1.41, z -0.53 à -0.37
+  mustang : gauche : non trouvé (place estimée) ; droit : non trouvé (place estimée)
+  sf90 : gauche : x -1.15 à -1.02, y 0.76 à 0.89, z -0.62 à -0.38 ; droit : x 1.02 à 1.15, y 0.76 à 0.89, z -0.60 à -0.38
+
+golf derriere jour : voiture -1638.83 (unités) derrière, 0,00 m en travers
+  glace interieur : à l'écran 508 × 123 px, pixels de la voiture dans le rectangle : 33036 ; reflet : 110 appels, 297 k triangles (voiture du joueur 37 k)
+  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 4180 ; reflet : 109 appels, 297 k triangles (voiture du joueur 37 k)
+  glace droite : à l'écran 302 × 122 px, pixels de la voiture dans le rectangle : 6022 ; reflet : 107 appels, 296 k triangles (voiture du joueur 37 k)
+
+golf gauche jour : voiture -2283.52 (unités) derrière, -3,30 m en travers
+  glace interieur : à l'écran 510 × 123 px, pixels de la voiture dans le rectangle : 1717 ; reflet : 110 appels, 297 k triangles (voiture du joueur 37 k)
+  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 5548 ; reflet : 112 appels, 303 k triangles (voiture du joueur 37 k)
+  glace droite : à l'écran 303 × 122 px, pixels de la voiture dans le rectangle : 0 ; reflet : 82 appels, 210 k triangles (voiture du joueur 37 k)
+
+golf derriere nuit : voiture -1638.83 (unités) derrière, 0,00 m en travers
+  glace interieur : à l'écran 508 × 123 px, pixels de la voiture dans le rectangle : 16037 ; reflet : 142 appels, 297 k triangles (voiture du joueur 37 k)
+  glace gauche : à l'écran 217 × 117 px, pixels de la voiture dans le rectangle : 3838 ; reflet : 141 appels, 297 k triangles (voiture du joueur 37 k)
+  glace droite : à l'écran 302 × 122 px, pixels de la voiture dans le rectangle : 8035 ; reflet : 139 appels, 296 k triangles (voiture du joueur 37 k)
+
+golf gauche nuit : voiture -2283.52 (unités) derrière, -3,30 m en travers
+  glace interieur : à l'écran 510 × 123 px, pixels de la voiture dans le rectangle : 1110 ; reflet : 141 appels, 297 k triangles (voiture du joueur 37 k)
+  glace gauche : à l'écran 217 × 118 px, pixels de la voiture dans le rectangle : 3739 ; reflet : 143 appels, 303 k triangles (voiture du joueur 37 k)
+  glace droite : à l'écran 303 × 122 px, pixels de la voiture dans le rectangle : 0 ; reflet : 111 appels, 210 k triangles (voiture du joueur 37 k)
+
+== coût (RG-03), Golf, Ville, jour, vue Cockpit, image figée, 4 × 40 images avec et sans en alternance (médianes) : ms par image (mur, rendu logiciel lavapipe) ==
+  Basse : avec 382,1 ms (198 appels), sans 364,4 ms (155 appels), passe « rétroviseurs » 24,68 ms GPU ; écart 4,8 % → à 21 img/s : 0,97 img/s perdues (estimé, ≤ 2 visé)
+  Haute : avec 980,1 ms (807 appels), sans 951,0 ms (698 appels), passe « rétroviseurs » 26,65 ms GPU ; écart 3,1 % → à 21 img/s : 0,62 img/s perdues (estimé, ≤ 2 visé)

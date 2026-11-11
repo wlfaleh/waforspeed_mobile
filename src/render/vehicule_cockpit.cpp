@@ -5,6 +5,7 @@
 #include "../core/log.h"
 #include "vehicule_cockpit_formes.h"   // WFS-414 : pièces modelées partagées avec le volant
 #include "vehicule_cockpit_geo.h"
+#include "retroviseurs.h"   // WFS-324 : glaces à reflet
 #include "vehicule_cockpit_volant.h"   // WFS-414 : volant et visière calculés sans rendu
 #include "vk.h"
 
@@ -121,9 +122,117 @@ std::vector<uint8_t> grainCuir(int N) {
     return o;
 }
 
+// ---------- WFS-324 : rétroviseurs (repère de la glace G : x le long de la largeur, y en haut, +z = normale vers le conducteur)
+// contour d'une glace w × h dans le plan (x, y) : coins côté extérieur de la voiture (signe sOut de x) de rayon rOut, les autres de
+// rayon rIn (sOut = 0 : tous rIn) ; `n` pas par coin ; points dans le sens trigonométrique, normales vers l'extérieur
+Contour contourGlace(float w, float h, float rIn, float rOut, float sOut, int n = 6) {
+    Contour c;
+    const vec2 coin[4] = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};   // haut droit, haut gauche, bas gauche, bas droit
+    for (int k = 0; k < 4; k++) {
+        const float r = std::clamp(sOut != 0 && coin[k].x * sOut > 0 ? rOut : rIn, 0.001f, std::min(w, h) * 0.5f - 1e-4f);
+        const vec2 ctr{coin[k].x * (w * 0.5f - r), coin[k].y * (h * 0.5f - r)};
+        for (int j = 0; j <= n; j++) {
+            const float a = (k + (float)j / n) * PI * 0.5f;
+            const vec2 d{std::cos(a), std::sin(a)};
+            c.p.push_back({ctr.x + d.x * r, ctr.y + d.y * r}); c.n.push_back(d);
+        }
+    }
+    return c;
+}
+// glace : face plane à z = 0 (uv 0..1 sur le rectangle englobant, v vers le bas : texel du reflet, retroviseurs.h), chant de 2 mm
+void glaceRetro(Geo& g, const mat4& G, float w, float h, float rIn, float rOut, float sOut) {
+    const Contour c = contourGlace(w, h, rIn, rOut, sOut);
+    const size_t n = c.p.size();
+    // uv rentrés de 0,5 % : jamais lus au bord de l'image du reflet (l'échantillonneur répète la texture : un trait clair du bas de
+    // l'image, la route, apparaissait en haut de la glace, vu au banc)
+    constexpr float RENTRE = 0.99f;
+    auto uv = [&](vec2 p) { return vec2{0.5f + RENTRE * p.x / w, 0.5f - RENTRE * p.y / h}; };
+    const uint32_t c0 = (uint32_t)g.v.size();
+    ajouterUV(g, G, {0, 0, 0}, {0, 0, 1}, 0.5f, 0.5f);
+    for (size_t k = 0; k < n; k++) { const vec2 t = uv(c.p[k]); ajouterUV(g, G, {c.p[k].x, c.p[k].y, 0}, {0, 0, 1}, t.x, t.y); }
+    for (size_t k = 0; k < n; k++) triOriente(g, c0, c0 + 1 + (uint32_t)k, c0 + 1 + (uint32_t)((k + 1) % n));
+    const uint32_t a0 = (uint32_t)g.v.size();   // chant (verre de 2 mm), normales vers l'extérieur
+    for (int z = 0; z < 2; z++) for (size_t k = 0; k < n; k++) {
+        const vec2 t = uv(c.p[k]);
+        ajouterUV(g, G, {c.p[k].x, c.p[k].y, z ? -0.002f : 0.f}, {c.n[k].x, c.n[k].y, 0}, t.x, t.y);
+    }
+    for (size_t k = 0; k < n; k++) {
+        const uint32_t i0 = a0 + (uint32_t)k, i1 = a0 + (uint32_t)((k + 1) % n);
+        quadOriente(g, i0, i1, i1 + (uint32_t)n, i0 + (uint32_t)n);
+    }
+}
+// coque d'un rétroviseur extérieur : surface balayée de la lèvre (autour de la glace, 1 cm devant elle) au nez arrondi (11 cm devant),
+// section à coins arrondis qui grossit puis se resserre et glisse vers la portière (côté −sOut) ; logement de la glace en retrait de
+// 6 mm, fermé par un fond. Normales lissées (moyenne des faces voisines). Mesures : coques de série de 9 à 12 cm de profondeur (E)
+void coqueRetro(Geo& g, const mat4& G, float w, float h, float rIn, float rOut, float sOut) {
+    struct Station { float z, dw, dh, k, decal, nz; };   // dw, dh : marge autour de la glace (m) ; k : échelle ; decal : vers la portière (m)
+    const Station S[] = {   // coque de 1,5 cm plus large que la glace de chaque côté (Golf 8 : glace ≈ 200 × 118, coque ≈ 230 × 150 mm, E)
+        {0.003f, 0.003f, 0.003f, 1.f, 0, 0.9f},      // bord intérieur de la lèvre (3 mm autour de la glace)
+        {0.008f, 0.008f, 0.008f, 1.f, 0, 0.75f},     // haut de la lèvre (arrondi)
+        {0.004f, 0.013f, 0.013f, 1.f, 0, 0.f},       // dos de la lèvre
+        {-0.030f, 0.016f, 0.016f, 1.f, 0, 0.f},
+        {-0.060f, 0.015f, 0.014f, 0.93f, 0.010f, -0.15f},
+        {-0.085f, 0.012f, 0.010f, 0.74f, 0.026f, -0.45f},
+        {-0.100f, 0.008f, 0.006f, 0.46f, 0.040f, -0.75f},
+        {-0.107f, 0.005f, 0.004f, 0.16f, 0.050f, -0.97f},
+    };
+    constexpr int NS = (int)(sizeof(S) / sizeof(S[0]));
+    std::vector<std::vector<vec3>> P(NS);
+    size_t n = 0;
+    for (int s = 0; s < NS; s++) {
+        const float ww = (w + 2 * S[s].dw) * S[s].k, hh = (h + 2 * S[s].dh) * S[s].k;
+        const Contour c = contourGlace(ww, hh, (rIn + S[s].dw) * S[s].k, (rOut + S[s].dw) * S[s].k, sOut);
+        n = c.p.size();
+        for (size_t k = 0; k < n; k++) P[(size_t)s].push_back({c.p[k].x - sOut * S[s].decal, c.p[k].y, S[s].z});
+    }
+    // normales : produit vectoriel des tangentes (le long du contour, le long du balayage), orientées vers l'extérieur de la coque
+    std::vector<uint32_t> debut((size_t)NS);
+    for (int s = 0; s < NS; s++) {
+        debut[(size_t)s] = (uint32_t)g.v.size();
+        const vec3 axe{-sOut * S[s].decal, 0, S[s].z};
+        for (size_t k = 0; k < n; k++) {
+            const vec3 tk = P[(size_t)s][(k + 1) % n] - P[(size_t)s][(k + n - 1) % n];
+            const vec3 ts = P[(size_t)std::min(s + 1, NS - 1)][k] - P[(size_t)std::max(s - 1, 0)][k];
+            vec3 nn = normalize(cross(tk, ts));
+            const vec3 dehors = normalize(vec3{P[(size_t)s][k].x - axe.x, P[(size_t)s][k].y - axe.y, 0} * (1 - std::fabs(S[s].nz)) + vec3{0, 0, S[s].nz});
+            if (dot(nn, dehors) < 0) nn = nn * -1.f;
+            if (s == 0) nn = dehors;   // bord de la lèvre : arrondi vers la glace
+            const vec3 q = P[(size_t)s][k];
+            ajouterUV(g, G, q, nn, q.x * GRAIN, (q.y + q.z) * GRAIN);
+        }
+    }
+    for (int s = 0; s + 1 < NS; s++) for (size_t k = 0; k < n; k++) {
+        const uint32_t i0 = debut[(size_t)s] + (uint32_t)k, i1 = debut[(size_t)s] + (uint32_t)((k + 1) % n);
+        quadOriente(g, i0, i1, i1 + (uint32_t)n, i0 + (uint32_t)n);
+    }
+    {   // nez : calotte fermée
+        const Station& st = S[NS - 1];
+        const uint32_t c0 = (uint32_t)g.v.size();
+        ajouterUV(g, G, {-sOut * st.decal, 0, st.z - 0.002f}, {0, 0, -1}, 0, 0);
+        for (size_t k = 0; k < n; k++) triOriente(g, c0, debut[(size_t)NS - 1] + (uint32_t)k, debut[(size_t)NS - 1] + (uint32_t)((k + 1) % n));
+    }
+    {   // logement de la glace : paroi de la lèvre jusqu'à 6 mm derrière la glace, puis fond (normales vers l'intérieur du logement)
+        const Contour c = contourGlace(w + 0.006f, h + 0.006f, rIn + 0.003f, rOut + 0.003f, sOut);
+        const uint32_t a0 = (uint32_t)g.v.size();
+        for (int z = 0; z < 2; z++) for (size_t k = 0; k < c.p.size(); k++)
+            ajouterUV(g, G, {c.p[k].x, c.p[k].y, z ? -0.006f : 0.003f}, {-c.n[k].x, -c.n[k].y, 0}, c.p[k].x * GRAIN, c.p[k].y * GRAIN);
+        const size_t m = c.p.size();
+        for (size_t k = 0; k < m; k++) {
+            const uint32_t i0 = a0 + (uint32_t)k, i1 = a0 + (uint32_t)((k + 1) % m);
+            quadOriente(g, i0, i1, i1 + (uint32_t)m, i0 + (uint32_t)m);
+        }
+        const uint32_t c0 = (uint32_t)g.v.size();
+        ajouterUV(g, G, {0, 0, -0.006f}, {0, 0, 1}, 0, 0);
+        for (size_t k = 0; k < m; k++) triOriente(g, c0, a0 + (uint32_t)(m + k), a0 + (uint32_t)(m + (k + 1) % m));
+    }
+}
+
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_PORTE, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_PORTE,
+             // WFS-324 : glaces à reflet (intérieur, gauche, droite), coques et bras des rétroviseurs extérieurs (dehors : sans occlusion
+             // de l'habitacle ni lumière d'ambiance de nuit de l'habitacle)
+             M_RETRO0, M_RETRO1, M_RETRO2, M_COQUE_EXT, M_BRAS_EXT, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -205,7 +314,7 @@ static float occlusionHabitacle(vec3 n) {
 
 void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, int attache) {
     if (v.empty()) return;
-    if (mat != M_FOND_COMBINE && mat != M_FOND_ECRAN && mat != M_FOND_ECRAN_NUIT && mat != M_GLACE)
+    if (mat != M_FOND_COMBINE && mat != M_FOND_ECRAN && mat != M_FOND_ECRAN_NUIT && mat != M_GLACE && mat < M_RETRO0)
         for (Vertex& s : v) {
             const vec3 n = normalize(vec3{s.nx, s.ny, s.nz}) * occlusionHabitacle(normalize(vec3{s.nx, s.ny, s.nz}));
             s.nx = n.x; s.ny = n.y; s.nz = n.z;
@@ -215,12 +324,21 @@ void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_
     v.clear(); i.clear();
 }
 
-bool Interieur::construire(Renderer& r, const InterieurDef& d) {
+bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carrosserie& carrosserie) {
     detruire(r);
     def_ = &d; octets_ = 0;
     {   // WFS-315 (RG-01) : largeur de l'habitacle du modèle
         const Largeur l = largeurPour(d);
         cx_ = l.oeil; demi_ = l.coudes * 0.5f; montant_ = l.montants * 0.5f;
+    }
+    miroirs_ = retro::miroirs(d, cx_, demi_, carrosserie);   // WFS-324 : place des trois glaces
+    for (int k : {retro::GAUCHE, retro::DROITE}) {
+        const mat4& G = miroirs_[(size_t)k].repere;
+        const vec3 dv = miroirs_[(size_t)k].decalageVue;
+        WFS_LOG("rétroviseurs (WFS-324) : %s, glace %s %.0f × %.0f mm, centre (%.3f ; %.3f ; %.3f) m de l'œil ; %s (%+.2f ; %+.2f ; %+.2f m) ; plan proche %.2f m derrière",
+                d.car, k == retro::GAUCHE ? "gauche" : "droite", miroirs_[(size_t)k].w * 1000, miroirs_[(size_t)k].h * 1000, G.at(0, 3), G.at(1, 3), G.at(2, 3),
+                miroirs_[(size_t)k].mesure ? "reflet vu depuis le rétroviseur du modèle 3D" : "rétroviseur du modèle non trouvé, reflet vu depuis la glace", dv.x, dv.y, dv.z,
+                miroirs_[(size_t)k].recul);
     }
     // matériaux (valeurs physiques : charte du réel, DA-realisme.md ; cuir albédo 0,04-0,12, rugosité 0,55-0,75)
     {
@@ -273,6 +391,16 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // WFS-282 (RG-03) : glace du rétroviseur : surface claire et lisse, éclairée par le ciel (claire le jour) ; en métal, elle ne
     // reflétait presque rien dans l'habitacle (bloc presque noir, refus du lead dev sur la PR #251)
     mat(M_GLACE, 0xa4aab0, 0.12f, 0);
+    // WFS-324 (RG-02) : glaces à vrai reflet (image du reflet × réflexion de la glace) ; sans image (création impossible) : glace claire
+    for (int k = 0; k < retro::NB_GLACES; k++) {
+        if (retro::image(r, k)) mats_[(size_t)(M_RETRO0 + k)] = retro::materiau(r, k, miroirs_[(size_t)k].reflexion);
+        else mat(M_RETRO0 + k, 0xa4aab0, 0.12f, 0);
+    }
+    // WFS-324 : coques des rétroviseurs (intérieur et extérieurs) : plastique noir satiné (jamais noir pur : albédo linéaire 0,01 ; en
+    // vernis lisse, la lèvre renvoyait le ciel en un trait blanc crénelé au-dessus de la glace intérieure, et la rue éclairée la nuit
+    // comme un anneau de chrome autour des extérieures, vu au banc) ; bras et aile de portière : plastique noir grainé mat
+    mat(M_COQUE_EXT, 0x1c1c1e, 0.42f, 0);
+    mat(M_BRAS_EXT, 0x1e1e20, 0.75f, 0, true);
     // WFS-282 (RG-04) : la nuit, l'habitacle reçoit un peu de lumière (compteurs, écran, rue, ≈ 0,5 à 1 lux) : chaque matière
     // garde sa couleur, plus une petite émission proportionnelle à son albédo (métaux : un tiers) ; sans elle, planche,
     // volant et montants sortaient en aplats noirs
@@ -285,7 +413,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             m.color = {0.005f, 0.005f, 0.005f, m.color.w}; m.metal = 1.f; m.rough = 0.15f;   // métal, rugosité : constantes du dessin
             continue;
         }
-        if (lumineux) continue;
+        if (lumineux || k >= M_COQUE_EXT) continue;   // WFS-324 : coques et bras des rétroviseurs (dehors, ou glace : pas de lueur d'habitacle)
         m.emissive = vec3{m.color.x, m.color.y, m.color.z} * (AMBIANCE_NUIT * (m.metal > 0.5f ? 0.33f : 1.f));
     }
     std::vector<Vertex> v; std::vector<uint32_t> i;
@@ -369,7 +497,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // (garniture moulée) qui montent jusqu'à la traverse. Avant : montants jusqu'à 0,40 m au-dessus de l'œil et pavillon à
     // 0,43 m, hors de l'image : on voyait le ciel au-dessus du pare-brise (cabriolet, ANO-207)
     {
-        Geo mont, pav, ret, porte, glace, chrome, axes;
+        Geo mont, pav, ret, porte, glace, chrome, axes, glaceG, glaceD, coqueExt, brasExt;
         const float xh = montant_ - RETRAIT_MONTANT_HAUT, yh = HAUT_PARE_BRISE_Y, zh = HAUT_PARE_BRISE_Z;
         const vec3 bas[2] = {{cx_ - montant_, Yb, Zb}, {cx_ + montant_, Yb, Zb}};   // WFS-315 : pieds des montants à leur écart réel
         const vec3 haut[2] = {{cx_ - xh, yh, zh}, {cx_ + xh, yh, zh}};
@@ -416,16 +544,17 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             }
         }
         // rétroviseur intérieur (≈ 250 × 70 mm, coque moulée à dépouille, glace à coins arrondis) accroché au pare-brise sous la
-        // traverse, sur l'axe de la voiture, tourné vers le conducteur ; pied collé sur la vitre et tige qui s'affine (WFS-324 :
-        // vrai reflet). Avant : boîte grise posée en l'air à 0,20 m au-dessus de l'œil, tige noire qui montait dans le ciel (ANO-207)
+        // traverse, sur l'axe de la voiture, tourné vers le conducteur ; pied collé sur la vitre et tige qui s'affine. Avant : boîte grise
+        // posée en l'air à 0,20 m au-dessus de l'œil, tige noire qui montait dans le ciel (ANO-207). WFS-324 : place et réglage de la
+        // glace calculés par retro::miroirs (la même glace sert à la projection du reflet), glace à vrai reflet
         {
             const vec3 eu = normalize(vec3{0, yh - Yb, zh - Zb}), en = normalize(cross(vec3{1, 0, 0}, eu));   // plan du pare-brise (normale vers l'habitacle)
             const vec3 pied = vec3{cx_, Yb, Zb} + eu * (length(vec3{0, yh - Yb, zh - Zb}) - 0.05f) + en * 0.004f;
-            const vec3 c{cx_ - 0.01f, pied.y - 0.062f, pied.z + 0.06f};    // centre de la coque (tige de ≈ 8 cm, visible au-dessus de la coque)
-            const float lacet = std::atan2(-c.x, -c.z) * 0.5f;              // la glace vise l'œil (réglage du conducteur : moitié de l'angle)
-            const mat4 R = translate(c) * rotateY(lacet) * rotateX(std::atan2(c.y, -c.z) * 0.5f);
+            const retro::Miroir& mi = miroirs_[retro::INTERIEUR];
+            const mat4 R = mi.repere * translate({0, 0, -0.0205f});   // centre de la coque, 2 cm derrière la glace
+            const vec3 c = R.transformPoint({0, 0, 0});
             dalleFace(ret, R, 0.25f, 0.07f, 0.04f, 0.028f, 0.010f, 0.82f);
-            dalleFace(glace, R * translate({0, 0, 0.0205f}), 0.236f, 0.056f, 0.002f, 0.022f, 0.0006f);   // WFS-282 (RG-03) : glace claire, cadre de 7 mm
+            glaceRetro(glace, mi.repere, mi.w, mi.h, 0.022f, 0.022f, 0);   // cadre de 7 mm
             {   // pied collé sur la vitre : dalle dans le plan du pare-brise (y du repère = normale de la vitre)
                 const vec3 ex{1, 0, 0}, ez = cross(ex, en);
                 mat4 B = mat4::identity();
@@ -434,6 +563,22 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
                 dalle(ret, translate(pied) * B, 0.05f, 0.035f, 0.008f, 0.012f, 0.003f);
             }
             profile(ret, I, pied + en * 0.004f, c + vec3{0, 0.02f, -0.012f}, 0.024f, 0.020f, 0.009f, 0.016f, 0.017f);
+        }
+        // WFS-324 (RG-01) : rétroviseurs extérieurs, gauche et droit : coque galbée (glace en retrait dans sa lèvre, nez arrondi qui
+        // se resserre vers la portière), bras profilé et aile collée à l'angle avant de la vitre latérale
+        for (int k : {retro::GAUCHE, retro::DROITE}) {
+            const retro::Miroir& mi = miroirs_[(size_t)k];
+            const float sx = k == retro::GAUCHE ? -1.f : 1.f;
+            coqueRetro(coqueExt, mi.repere, mi.w, mi.h, 0.018f, mi.rayonExterieur, sx);
+            glaceRetro(k == retro::GAUCHE ? glaceG : glaceD, mi.repere, mi.w, mi.h, 0.018f, mi.rayonExterieur, sx);
+            // bras : de l'avant de la coque, côté portière (caché derrière elle, vu de l'œil), vers l'aile fixée sur la portière à l'angle
+            // avant de la vitre, 14 cm devant la glace (repère de l'œil : −z devant)
+            const vec3 a = mi.repere.transformPoint({-sx * (mi.w * 0.5f - 0.03f), -mi.h * 0.25f, -0.075f});
+            const float xPorte = cx_ + sx * (faceVitre(demi_) + 0.03f), yc = ligneCeinture(d), zAile = mi.repere.at(2, 3) - 0.14f;
+            const vec3 b{xPorte, yc + 0.035f, zAile};
+            profile(brasExt, I, a, b, 0.045f, 0.026f, 0.011f, 0.032f, 0.05f);
+            // aile : garniture moulée à l'angle avant de la vitre (repère : x vertical, y vers l'extérieur, z le long de la voiture)
+            dalle(brasExt, translate({xPorte + sx * 0.004f, yc + 0.04f, zAile + 0.01f}) * rotateZ(-sx * PI / 2), 0.075f, 0.12f, 0.016f, 0.025f, 0.005f, 0.9f);
         }
         // contre-portes : panneau intérieur sous la vitre, accoudoir (place du conducteur et du passager)
         // WFS-349 (RG-02) : habitacle fermé (boitesFermeture, vehicule_cockpit.h) : chaque portière est un bloc plein de 12 cm, de
@@ -453,7 +598,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             dalle(porte, translate({cx_ + sx * (demi_ - 0.02f), Y - 0.24f, -0.20f}), 0.06f, 0.45f, 0.05f, 0.025f, 0.015f, 0.9f);   // accoudoir
             dalle(chrome, translate({xi - sx * 0.004f, Y - 0.12f, -0.50f}) * rotateZ(sx * PI / 2), 0.03f, 0.11f, 0.012f, 0.012f, 0.004f);   // poignée
         }
-        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PORTE); prend(chrome, M_CHROME); prend(axes, M_PLANCHE_BAS);
+        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_COQUE_EXT); prend(glace, M_RETRO0); prend(porte, M_PORTE); prend(chrome, M_CHROME); prend(axes, M_PLANCHE_BAS);
+        prend(glaceG, M_RETRO1); prend(glaceD, M_RETRO2); prend(coqueExt, M_COQUE_EXT); prend(brasExt, M_BRAS_EXT);   // WFS-324
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -756,10 +902,15 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     const InterieurDef& d = *def_;
     appels_ = 0;
     const mat4 colonne = cam * translate(d.volantPos) * rotateX(d.volantIncl), vol = colonne * rotateZ(e.volant);
+    // WFS-324 : l'habitacle ne se voit pas dans les rétroviseurs (la voiture du joueur y est dessinée entière, game.cpp)
+    r.horsRetro = true;
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        r.draw(p.m, mat((e.v.nuit && m < (int)matsNuit_.size() ? matsNuit_ : mats_)[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
+        const Material& mm = (e.v.nuit && m < (int)matsNuit_.size() ? matsNuit_ : mats_)[(size_t)m];
+        // WFS-324 : banc « cockpit-voisine » (WFS-349) : une glace montre la voisine par reflet, comme une vitre : jamais en couleur clé
+        const bool glaceVraie = g_interieurCle && g_gabaritCeinture && m >= M_RETRO0 && m <= M_RETRO2;
+        r.draw(p.m, glaceVraie ? mm : mat(mm), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {
@@ -800,6 +951,7 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     dessinerCombine(r, cam, e.v);
     dessinerCarte(r, cam, route, joueur, cap, e.v.nuit);
     if (g_interieurCle && g_gabaritCeinture && gabarit_.indexCount) r.draw(gabarit_, cleDouce_, cam);   // WFS-349 : banc seulement (non compté)
+    r.horsRetro = false;
 }
 
 } // namespace wfs::cockpit

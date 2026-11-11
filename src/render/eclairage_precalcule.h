@@ -43,7 +43,10 @@ Bilan occlusionDecor(std::vector<Lot>& lots, bool garder = false);
 using SommetsKit = std::function<void(size_t k, int lod, std::vector<Vertex>& v)>;
 // au chargement : occlusion des murs de n bâtiments (niveaux 0 et 1) sur la grille gardée, valeurs gardées par bâtiment,
 // puis la grille est rendue ; sans grille gardée : les valeurs d'une carte précédente sont oubliées, rien n'est calculé
-Bilan occlusionKit(size_t n, const SommetsKit& sommets);
+Bilan occlusionKit(size_t n, const SommetsKit& sommets, bool garderGrille = false);
+// WFS-418 (accroche) : garderGrille = vrai : la grille reste pour un 2e appel (bâtiments cuits, puis kit de secours si la mémoire
+// graphique manque) ; à rendre ensuite par rendreGrille()
+void rendreGrille();
 // en course (construction d'un morceau) : normales de v[debut..] × occlusion gardée du bâtiment k (rien si absente ou si le
 // nombre de sommets diffère)
 void appliquerKit(size_t k, int lod, std::vector<Vertex>& v, size_t debut);
