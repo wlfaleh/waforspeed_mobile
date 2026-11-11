@@ -13,6 +13,8 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <utility>
+#include <vector>
 #include "renderer.h"
 
 namespace wfs::route {
@@ -44,8 +46,22 @@ Carte carteDe(const char* mapId);          // « ville », « campagne », « pl
 Revetement chaussee(Carte c);              // revêtement de la chaussée de la carte
 Revetement chaussee();                     // … de la carte de la partie (preparer)
 // valeur de Material::cutoff lue par route.glsl : mode + 4 × carte + 16 × neige (WFS-346 : neige au sol de la carte, 0 à 1, par huitièmes)
-float codeMateriau(int qualite, Carte c, float neige = 0);
+// WFS-392 : + 256 × longueur du tour en segments quand la carte a des abris (0 : aucun abri, valeur inchangée)
+float codeMateriau(int qualite, Carte c, float neige = 0, int tourSeg = 0);
 constexpr int NEIGE_PAS = 8;               // WFS-346 : couverture de neige transmise par huitièmes (route.glsl : neigeRoute)
+// WFS-392 (RG-01, RG-03) : abris de la carte (sections « tunnel » du tracé du paquet) sous lesquels la chaussée et le trottoir restent
+// secs. Le matériau de la route n'a que 3 nombres libres (sa couleur, que route.glsl ne lit pas) : un abri par nombre, entier exact en
+// flottant = début (segments) × 1024 + longueur (segments) ; 0 : case vide. Un abri de plus de ABRI_LONG_MAX segments (1,2 km) prend
+// plusieurs cases qui se recouvrent de ABRI_RECOUVRE segments (24 m : aucune bande de neige au raccord, le fondu d'entrée fait 8 m).
+// Abris qui se touchent : réunis. Au-delà de ABRIS_MAX cases ou de ABRI_DEBUT_MAX segments : abri non transmis (compté dans perdus).
+constexpr double SEG_ROUTE_M = 1.2;          // = SEG_M (src/game/track.h) et SEG_ROUTE_M de route.glsl (le test les compare)
+constexpr int ABRIS_MAX = 3, ABRI_LONG_MAX = 1023, ABRI_DEBUT_MAX = 16383, ABRI_RECOUVRE = 20, TOUR_SEG_MAX = 65535;
+struct Abris { float code[ABRIS_MAX] = {0, 0, 0}; int tourSeg = 0, tunnels = 0, perdus = 0; };
+// tunnels : paires [début, fin) en segments, triées, dans le tour ; tourSeg : longueur du tour (segments)
+Abris coderAbris(const std::vector<std::pair<int64_t, int64_t>>& tunnels, int64_t tourSeg);
+// part de neige gardée (1 dehors, 0 sous l'abri, fondu de 9 m à chaque bouche) à y mètres le long de la route : même calcul que
+// abriRoute de route.glsl (tests/test_cartes_v2_abris.cpp)
+float abriRoute(const Abris& a, double yM);
 
 // M-03 (RG-01) : bandes de roulement : largeur 0,8-1,0 m (± 5 % : voie des voitures) ; écartement des deux bandes d'une voie =
 // voie moyenne des voitures du jeu (references/reel/voitures.json : 23 voies relevées, 1 572 mm) ; mêmes valeurs dans route.glsl

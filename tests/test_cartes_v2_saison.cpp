@@ -58,7 +58,7 @@ int main() {
     VERIFIER(!decor("format 2\nneige_chaussee 1.5\n", d, e));
     VERIFIER(!decor("format 2\nflocons 0.5 9 3\n", d, e) && e.find("flocons") != std::string::npos);   // chute impossible
     VERIFIER(!decor("format 2\nflocons 0.5 1.2 40\n", d, e));                                            // flocon de 4 cm
-    VERIFIER(!decor("format 3\nherbe 1\n", d, e) && e.find("plus récent") != std::string::npos);
+    VERIFIER(!decor("format 4\nherbe 1\n", d, e) && e.find("plus récent") != std::string::npos);   // WFS-392 : le format 3 existe (éclairage des tunnels)
 
     // ---- les deux cartes d'essai : tout change par les données seules (RG-03)
     DonneesCarte n; n.id = "noel-test";
