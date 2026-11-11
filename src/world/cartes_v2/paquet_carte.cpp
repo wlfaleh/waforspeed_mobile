@@ -99,12 +99,13 @@ bool ecrireFichier(const std::string& chemin, const std::vector<uint8_t>& o) {  
 // est le même pour les 3 formats de texture. WFS-426 : Ville (immeubles et entrepôts) et Corniche (villas), posés comme au chargement.
 std::vector<uint8_t> batimentsCuits(const std::string& c) {
     const double t0 = nowSeconds();
+    archi::carte::mettreDeCote();   // WFS-426 : la carte chargée garde ses bâtiments (cuisson pendant une partie : banc, téléchargement)
     Track t;
     t.build(mapById(c.c_str()), trace::versionCarte(c.c_str()));
     if (c == "plage") plage::poserVillasKit(t); else ville::poserImmeublesKit(mapById(c.c_str()), t);
     const archi::cuit::Decor d = archi::cuit::cuire(archi::carte::poses());
     const size_t n = archi::carte::poses().size();
-    archi::carte::vider();
+    archi::carte::remettre();
     std::vector<uint8_t> bloc = archi::cuit::ecrire(d);
     size_t tri[3] = {}, inst = 0, triMod = 0;
     for (const archi::cuit::Morceau& m : d.morceaux) {

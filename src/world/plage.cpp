@@ -18,12 +18,12 @@
 #include <cstring>
 #include <iterator>
 #include <map>
+#include <memory>   // WFS-426 : instance de cuisson (plage::poserVillasKit)
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include "archi_carte.h"   // WFS-161 (accroche) : villas du kit d'architecture
 #include "plage_villas.h"   // WFS-426 : villas posées pour la cuisson du paquet
-#include <memory>
 #include "bouchons_sol.h"   // WFS-212 / WFS-283 : disques de sol au centre des virages serrés
 #include "../../third_party/stb/stb_image.h"
 #include "../core/jobs.h"
@@ -1583,6 +1583,7 @@ public:
             const int64_t m = mod(e.seg);
             if (e.type == plage::E_CASINO) for (float al : {-e.longueur / 2 - 3.f, e.longueur / 2 + 3.f})
                 palms_.push_back({mod(m + (int64_t)std::lround(al / SEG_M)), -(R + 5.4f), al < 0 ? 9.5f : 10.5f, al < 0 ? 0.08f : -0.06f, al < 0 ? 1.1f : 4.2f});
+            if (cuisson_) continue;   // WFS-426 : la cuisson du paquet ne déclare aucune lumière
             if (e.side > 0) lampadaires().push_back({m, plage::BAR_LAT - 2.f, 2.4f, StyleLampadaire::Ville});
             // casino : lumière du parvis au bord du trottoir (6 m de la façade) ; cafés, galerie et scooters : éclairés par
             // leurs vitrines et leur enseigne (une lumière de rue de plus surexposait leurs murs, comme ceux des villas)
