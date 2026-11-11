@@ -1,0 +1,2062 @@
+[info] PLANTAGE gestionnaire installé : /tmp/claude-0/-home-user-waforspeed-mobile/6a570127-a67c-5dcc-b82d-0dd9c3bbfa0e/scratchpad/halos/plantage.txt, version banc PC (wfs_bench), PC, banc d'essai
+[info] Système de tâches : 3 threads de travail
+[info] GPU : llvmpipe (LLVM 20.1.2, 256 bits) (Vulkan 1.4)
+[info] Profondeur 126, MSAA x4, mipmaps GPU oui
+[info] pipelines (WFS-262) : cache vide (0 octets lus)
+[info] Ombres du soleil : carte 2048x2048, filtre bilinéaire
+[info] Cibles de rendu : 1280x720 (logique), scène 1280x720, MSAA x4
+[info] pipelines (WFS-262 RG-02) : 1 variante(s) MSAA de la scène mises en cache au chargement (14 pipelines)
+[info] passes (WFS-150) : 5 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : rétroviseurs (1 glace) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+[info] pipelines (WFS-262) : Renderer::init en 13197 ms, 38 pipelines créés (2e lancement plus court si le cache est relu)
+[info] tracé 2 : ville, 32 sections, 5664 segments (6797 m), 2 carrefour(s) à feux
+[info] rendu (WFS-144) : netteté Basse : MSAA ×4, aniso ×4
+[info] Cibles de rendu : 1280x720 (logique), scène 960x540, MSAA x4
+[info] réglages : qualité Basse (scène à 75 %, ombres coupées)
+[info] configuration : configgame.json, 124 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+[info] tracé 2 : ville, 32 sections, 5664 segments (6797 m), 2 carrefour(s) à feux
+[info] route : textures/route/enrobe-use/route_enrobe-use-couleur.rgba8.ktx2 : RGBA8 sRGB, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-normale.rgba8.ktx2 : RGBA8 linéaire, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-orm.rgba8.ktx2 : RGBA8 linéaire, 128x128 (1 niveau(x) sauté(s)), 85.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-couleur.rgba8.ktx2 : RGBA8 sRGB, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-normale.rgba8.ktx2 : RGBA8 linéaire, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-orm.rgba8.ktx2 : RGBA8 linéaire, 128x128 (1 niveau(x) sauté(s)), 85.3 Ko (WFS-205)
+[info] people/humains/h01.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/h03.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/h04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+[info] people/humains/h05.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/h06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f01.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/f03.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+[info] people/humains/f04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f05.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/f06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+[info] conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 10.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×4, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] Système : carte::ReglagesCarte (ordre 1)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 12.5 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×4, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] cars/m4.wfm : version 1, tangentes calculées au chargement (135166 sommets, 9.9 ms, WFS-149)
+[info] cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+[info] cars/m4.wfm : optiques avant mesurées : gauche (-0.690, 0.670, -2.173), droite (0.670, 0.670, -2.170), 11640 triangles allumés (WFS-413)
+[info] cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/m4.wfm : 3 niveaux allégés, 81226 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/m4.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 31 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 34 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/m4.wfm : 53 matériaux, 18 textures, 280815 triangles
+[info] voiture : modèle complet, 280815 triangles, aniso ×4, mipmaps oui (cars/m4.wfm, WFS-134)
+[info] cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+[info] cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+[info] cars/p911.wfm : version 1, tangentes calculées au chargement (91851 sommets, 8.3 ms, WFS-149)
+[info] cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+[info] cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+[info] cars/p911.wfm : optiques avant mesurées : gauche (-0.704, 0.708, -1.790), droite (0.704, 0.708, -1.789), 2301 triangles allumés (WFS-413)
+[info] cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p911.wfm : 3 niveaux allégés, 80608 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : 13 matériaux, 8 textures, 255491 triangles
+[info] voiture : modèle complet, 255491 triangles, aniso ×4, mipmaps oui (cars/p911.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 14.5 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×4, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] cars/deux_roues/scooter.wfm : version 2, tangentes lues dans le fichier (42364 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/scooter.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter.wfm : feu arrière découpé dans le matériau 0, 1975 triangles (WFS-109)
+[info] cars/deux_roues/scooter.wfm : 3 niveaux allégés, 28544 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/scooter.wfm : matériau 0 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/scooter.wfm : 2 matériaux, 6 textures, 86768 triangles
+[info] voiture : modèle complet, 86768 triangles, aniso ×4, mipmaps oui (cars/deux_roues/scooter.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-avant.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 3 niveaux allégés, 3362 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 1 matériaux, 3 textures, 5528 triangles
+[info] voiture : modèle complet, 5528 triangles, aniso ×4, mipmaps oui (cars/deux_roues/scooter-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 3 niveaux allégés, 3328 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 1 matériaux, 3 textures, 5494 triangles
+[info] voiture : modèle complet, 5494 triangles, aniso ×4, mipmaps oui (cars/deux_roues/scooter-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/routiere.wfm : version 2, tangentes lues dans le fichier (38119 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/routiere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere.wfm : 3 niveaux allégés, 40292 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/routiere.wfm : matériau 3 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 4 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 5 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 9 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 11 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 12 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 14 très fin (1.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 22 très fin (3.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 24 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 25 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 26 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 30 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : 32 matériaux, 13 textures, 88897 triangles
+[info] voiture : modèle complet, 88897 triangles, aniso ×4, mipmaps oui (cars/deux_roues/routiere.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-avant.wfm : version 2, tangentes lues dans le fichier (3621 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 3 niveaux allégés, 13552 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 6 matériaux, 5 textures, 19982 triangles
+[info] voiture : modèle complet, 19982 triangles, aniso ×4, mipmaps oui (cars/deux_roues/routiere-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : version 2, tangentes lues dans le fichier (3680 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 3 niveaux allégés, 12391 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 2 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 4 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 6 matériaux, 5 textures, 18531 triangles
+[info] voiture : modèle complet, 18531 triangles, aniso ×4, mipmaps oui (cars/deux_roues/routiere-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/sportive.wfm : version 2, tangentes lues dans le fichier (45887 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/sportive.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive.wfm : 3 niveaux allégés, 50972 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/sportive.wfm : matériau 2 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/sportive.wfm : 6 matériaux, 11 textures, 100010 triangles
+[info] voiture : modèle complet, 100010 triangles, aniso ×4, mipmaps oui (cars/deux_roues/sportive.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-avant.wfm : version 2, tangentes lues dans le fichier (4773 sommets, 0.2 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 3 niveaux allégés, 6956 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 1 matériaux, 3 textures, 12800 triangles
+[info] voiture : modèle complet, 12800 triangles, aniso ×4, mipmaps oui (cars/deux_roues/sportive-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : version 2, tangentes lues dans le fichier (4473 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 3 niveaux allégés, 6689 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 1 matériaux, 3 textures, 12368 triangles
+[info] voiture : modèle complet, 12368 triangles, aniso ×4, mipmaps oui (cars/deux_roues/sportive-roue-arriere.wfm, WFS-134)
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] deux-roues : pilotes h02 et f02 (pose assise, mains au guidon, pieds posés), casque 26 × 30 × 33 cm (WFS-232)
+[info] Système : TrafficSystem (ordre 50)
+[info] Ville : plan des quartiers, 2719 objets, 335 commerces, 6 panneaux
+[info] Ville (WFS-176) : 4 lieu(x) (casino, centre commercial, garages), 13 terrasses ajoutées près des carrefours, 10 promeneurs avec chien
+[info] Ville (WFS-137) : plan adapté au tracé 2 (32 sections) : 588 / 2719 objets, 122 commerces et 4 panneaux retirés (courbes serrées, autoroute, tunnel, pont, rues des carrefours) ; 2 carrefour(s) à feux, 0 rond(s)-point(s)
+[info] chocs (WFS-256) : ville : 5015 obstacle(s) de la Ville, 0 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+[info] Système : wfs::ChocsDecor (ordre 99)
+[info] Ville : sol fermé dans les courbes serrées (WFS-305) : 5140 carreau(x) de 0.5 m (1285 m²)
+[info] vie : 3 textes d'enseignes dans l'atlas
+[info] cars/p208.wfm : matériau 7 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 6274 sommets changés de plus de 10° (WFS-170)
+[info] cars/p208.wfm : version 1, tangentes calculées au chargement (133152 sommets, 8.6 ms, WFS-149)
+[info] cars/p208.wfm : 4 roues séparées (rayon 0.310 m, essieux z -1.19 / 1.35), 46764 triangles tournent (WFS-60)
+[info] cars/p208.wfm : 2778 triangles de feux arrière marqués (WFS-170)
+[info] cars/p208.wfm : optiques avant mesurées : gauche (-0.630, 0.736, -1.758), droite (0.631, 0.735, -1.757), 4286 triangles allumés (WFS-413)
+[info] cars/p208.wfm : 2179 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p208.wfm : 3 niveaux allégés, 76832 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p208.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 3 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 6 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 7 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 10 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 11 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 13 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/p208.wfm : matériau 14 très fin (1.4 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : 18 matériaux, 4 textures, 277023 triangles
+[info] voiture : modèle complet, 277023 triangles, aniso ×4, mipmaps oui (cars/p208.wfm, WFS-134)
+[info] cars/compass.wfm : matériau 1 : jantes → métal gris (RG-06) (WFS-170)
+[info] cars/compass.wfm : matériau 9 : jantes → métal gris (RG-06) (WFS-170)
+[info] cars/compass.wfm : matériau 0 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 4809 sommets changés de plus de 10° (WFS-170)
+[info] cars/compass.wfm : version 1, tangentes calculées au chargement (206422 sommets, 9.4 ms, WFS-149)
+[info] cars/compass.wfm : 4 roues séparées (rayon 0.397 m, essieux z -1.23 / 1.35), 34057 triangles tournent (WFS-60)
+[info] cars/compass.wfm : 586 triangles de feux arrière marqués (WFS-170)
+[info] cars/compass.wfm : optiques avant mesurées : gauche (-0.670, 0.900, -1.945), droite (0.670, 0.900, -1.944), 334 triangles allumés (WFS-413)
+[info] cars/compass.wfm : 1662 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/compass.wfm : 3 niveaux allégés, 104457 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/compass.wfm : matériau 1 très fin (2.2 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 2 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 3 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 5 très fin (0.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/compass.wfm : matériau 7 très fin (2.5 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 8 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 9 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 10 très fin (0.4 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 11 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : 16 matériaux, 1 textures, 350961 triangles
+[info] voiture : modèle complet, 350961 triangles, aniso ×4, mipmaps oui (cars/compass.wfm, WFS-134)
+[info] Ville (WFS-175) : autoroute 1932-3233, tunnel 2438-2688, pont 1599-1807 (eau à -5.5 m), 3 portique(s)
+[info] vie : 6 textes d'enseignes dans l'atlas
+[info] cars/sf90.wfm : matériau 14 : barres des feux arrière → verre rouge opaque (WFS-182, RG-03) (WFS-170)
+[info] cars/sf90.wfm : version 1, tangentes calculées au chargement (117445 sommets, 16.9 ms, WFS-149)
+[info] cars/sf90.wfm : 4 roues séparées (rayon 0.343 m, essieux z -1.18 / 1.49), 19366 triangles tournent (WFS-60)
+[info] cars/sf90.wfm : 116 triangles de feux arrière marqués (WFS-170)
+[info] cars/sf90.wfm : optiques avant mesurées : gauche (-0.751, 0.575, -1.876), droite (0.752, 0.574, -1.877), 362 triangles allumés (WFS-413)
+[info] cars/sf90.wfm : 339 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/sf90.wfm : 3 niveaux allégés, 83325 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/sf90.wfm : matériau 0 très fin (2.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 8 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 9 très fin (1.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 14 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 16 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 19 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 20 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 21 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 24 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 29 très fin (1.7 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 30 très fin (1.8 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 33 très fin (3.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 34 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 35 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 41 très fin (3.1 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 44 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 45 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 48 très fin (1.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 52 très fin (2.5 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : 54 matériaux, 42 textures, 282027 triangles
+[info] voiture : modèle complet, 282027 triangles, aniso ×4, mipmaps oui (cars/sf90.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 11.0 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×4, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] Ville (WFS-176) : lieu 0 au segment 20, côté 1, 40 m
+[info] Ville (WFS-176) : lieu 1 au segment 1812, côté 1, 80 m
+[info] Ville (WFS-176) : lieu 2 au segment 468, côté 1, 14 m
+[info] Ville (WFS-176) : lieu 2 au segment 1364, côté 1, 14 m
+[info] Ville (WFS-176) : 4 lieu(x), 5 groupe(s) de pigeons, 10 chien(s)
+[info] Ville : 156 lampadaires
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] décor fixe (WFS-268) : ville : un tour = le précédent tourné de -7.93° (écart 0.0000 m)
+[info] décor fixe (WFS-269) : ville : occlusion précalculée, 222748 sommets, 7803846 voxels, moyenne 0.64, 1326 ms (grille 1194 ms, 13.5 Mo, rendus après le calcul)
+[info] décor fixe (WFS-268) : ville : sommets par matériau (détail/allégé) : 2:91k/67k 3:39k/7k 5:187k/78k 6:127k/44k 7:15k/15k 8:3010k/808k 9:12k/7k 10:84k/84k 14:54k/0k 15:32k/0k 16:104k/0k 17:2k/2k 18:5k/0k 19:1k/1k 20:0k/0k 21:46k/46k 22:0k/0k 23:0k/0k 24:0k/0k 25:0k/0k 26:2k/0k
+[info] décor fixe (WFS-268) : ville : 177 morceaux → 45 blocs de 154 m, 4984738 sommets, 201.4 Mo GPU, préparé en 2229 ms
+[info] Système : Ville (ordre 100)
+[info] Système : Plage (ordre 105)
+[info] people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+[info] people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+[info] people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+[info] people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+[info] people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+[info] people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+[info] people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+[info] people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+[info] Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+[info] Enfants (WFS-233) : 15 familles sur 245 piétons (10 % visés ; 4 ans 5, 7 ans 0, 10 ans 3, 14 ans 7) ; WFS-240 : 4 poussette(s)
+[info] Piétons : 245 personnes (ville)
+[info] Piétons (WFS-317, RG-03) : Ville : 1219 personnes omises (3 sur 10 gardées ; marcheurs répartis sur tout le tour)
+[info] Piétons (WFS-222) : 38 à pied (promeneurs 5, marcheurs 32, passants 1 ; 772 omis sur ordre de l'utilisateur), 207 assis ou baigneurs
+[info] Système : Pietons (ordre 106)
+[info] Système : carte::Campagne (ordre 107)
+[info] vie : 5 textes d'enseignes dans l'atlas
+[info] vie : 2 panneaux néon (ville)
+[info] Système : Enseignes (ordre 107)
+[info] Système : carte::Circuit (ordre 108)
+[info] vie : 11 textes d'enseignes dans l'atlas
+[info] Système : Portique (ordre 108)
+[info] vie : 10 textes d'enseignes dans l'atlas
+[info] vie : 213 commerces, 693 clients attablés, 0 serviettes (ville)
+[info] Système : Commerces (ordre 109)
+[info] décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, 535004 sommets (niveaux 0 et 1), moyenne 0.88, 275 ms
+[info] archi (WFS-161) : 625 bâtiments du kit posés, 1744402 triangles au niveau de détail 0 (tous), nuit oui
+[info] Système : ArchiCarteSysteme (ordre 110)
+[info] Système : carte::CarteDonnees (ordre 112)
+[info] Pluie : nuit en ville, pluie active
+[info] Système : wfs::Pluie (ordre 199)
+[info] Système : wfs::AideDirection (ordre 202)
+[info] Système : CourseSystem (ordre 210)
+[info] Système : TraceSysteme (ordre 215)
+[info] Système : DuelSystem (ordre 220)
+[info] Système : RessentiSystem (ordre 220)
+[info] Système : Course5System (ordre 222)
+[info] Système : PoursuiteSystem (ordre 224)
+[info] Système : Camera (ordre 260)
+[info] son des lieux (WFS-261) : sources calculées à 48000 Hz en 166 ms (8.6 Mo, une fois par lancement)
+[info] musique : boucle de 8.73 s calculée (418909 échantillons par variante, 3.4 Mo)
+[info] PAROIS ville : 2477 segments avec une paroi à gauche, 4134 à droite, 629 immeubles (masques)
+[info] PAROIS ville (WFS-278) : obstacles : profondeur 9.0 à 26.0 m (moyenne 14.6), hauteur 6.0 à 101.8 m
+[info] LIEUX ville : fontaine 0, vagues 0, tribune 0, ferme 0, terrasse 130
+[info] MUSIQUE course
+[info] AMBIANCE nuit (ville)
+[info] Système : AudioSystem (ordre 300)
+[info] Système : EffetsSystem (ordre 350)
+[info] Système : QualiteSystem (ordre 360)
+[info] Système : ChauffeSystem (ordre 361)
+[info] Système : VolantBancCamera (ordre 399)
+[info] Police : 192 caractères dans l'atlas
+[info] Système : ui::Texte (ordre 400)
+[info] Système : FantomeEtiquette (ordre 419)
+[info] Système : Hud (ordre 420)
+[info] Système : MiniCarte (ordre 422)
+[info] Système : Toasts (ordre 425)
+[info] Système : ecrans::GarageEnregistre (ordre 440)
+[info] Système : EnduranceGarage (ordre 445)
+[info] Système : ecrans::Menu (ordre 450)
+[info] Système : ecrans::Terrain (ordre 452)
+[info] Système : ecrans::Salon (ordre 453)
+[info] Système : ecrans::Pause (ordre 455)
+[info] Système : ChoixMode (ordre 458)
+[info] Système : ecrans::BandeauPaquets (ordre 458)
+[info] Système : ecrans::EcranReglages (ordre 460)
+[info] Système : credits::Credits (ordre 470)
+[info] Système : manette::FocusManette (ordre 489)
+[info] Système : ecrans::FonduChargement (ordre 490)
+[info] Système : PlancheVoitures (ordre 498)
+[info] Système : LigneBancBatiments (ordre 499)
+[info] Système : SceneEssai (ordre 900)
+[info] Système : SqueletteEssai (ordre 905)
+[info] Système : VehiculeNuitBanc (ordre 949)
+[info] Nuit : carte ville, 258 lampadaires, phares de croisement LED (29970 cd chacun)
+[info] Système : Nuit (ordre 950)
+[info] Système : wfs::CielCouvert (ordre 960)
+[info] Système : RealismeBanc (ordre 970)
+[info] Système : BrumeBanc (ordre 971)
+[info] Système : LodBanc (ordre 975)
+[info] Système : PassesBanc (ordre 975)
+[info] Système : LumiereBanc (ordre 985)
+[info] Système : ArchiBanc (ordre 985)
+[info] Système : VueHauteBanc (ordre 995)
+[info] Système : VueFixeBanc (ordre 996)
+[info] Système : EauVueBanc (ordre 996)
+[info] Pluie : 0 gouttes (écran 1280x720, animations réduites)
+[info] LIEU terrasse à portée : 14 m, -57° (gauche)
+[info] MASQUES 0 voix cachée(s), la plus masquée 0.0 dB
+[info] VOITURES 1 voix (6 voitures autour)
+[info] PAROIS gauche 14 m, droite 0 m
+[info] PLUIE vue extérieure
+[info] Rendu : Basse · 75 % · MSAA ×4 · -- img/s · chauffe 0 (netteté du niveau 0, -1 images/s)
+[info] environnement (WFS-150) : cubemap HDR 64x64 × 6 (0.19 Mo), rendue à 128x128 (suréchantillonnage 2 × 2, 0.19 Mo de plus)
+[info] éclairage (WFS-151) : table BRDF 32x32 et cube noir prêts
+[info] Ville : 193 appels de dessin (0 morceaux, 45 blocs préparés : 68 appels pour le décor fixe, avant masquage) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+[info] pipelines (WFS-262) : course affichée, 38 pipelines créés depuis le lancement
+[info] SFX route vent 0.00 roulement 0.00 bord 0.00 herbe 0.00 eau 0.00 (4 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 1 prête (64 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 1 (64 px, 18.5 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 4.00
+[info] SFX route vent 0.00 roulement 0.01 bord 0.00 herbe 0.00 eau 0.02 (21 km/h, x 0.00)
+[info] VOITURES 0 voix (6 voitures autour)
+[info] PAROIS gauche 14 m, droite 14 m
+[info] environnement (WFS-150) : capture 2 prête (64 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 2 (64 px, 24.0 ms CPU) en (0.0 1.5 0.0), rebond 0, EV100 3.77
+[info] SFX route vent 0.00 roulement 0.03 bord 0.00 herbe 0.00 eau 0.03 (38 km/h, x 0.00)
+[info] SFX turbo
+[info] PAROIS gauche 14 m, droite 0 m
+[info] SFX route vent 0.01 roulement 0.04 bord 0.00 herbe 0.00 eau 0.04 (54 km/h, x 0.00)
+[info] PAROIS gauche 14 m, droite 20 m
+[info] SFX route vent 0.01 roulement 0.05 bord 0.00 herbe 0.00 eau 0.05 (71 km/h, x 0.00)
+[info] capture halosol-ville-basse : 81 km/h, 55 m, lampadaire suivant à 16.8 m, 215 appels de dessin
+[info] Ville : 186 appels de dessin à la dernière image (WFS-175 : 4 pour les ouvrages, 0 voiture(s) en sens inverse, ≤ 0 pièces ; WFS-176 : 125 pour les voitures du casino, pigeons et chiens)
+[info] tracé 2 : ville, 32 sections, 5664 segments (6797 m), 2 carrefour(s) à feux
+[info] rendu (WFS-144) : netteté Moyenne / Haute : MSAA ×4, aniso ×8
+[info] Cibles de rendu : 1280x720 (logique), scène 1280x720, MSAA x4
+[info] réglages : qualité Moyenne (scène à 100 %, ombres actives)
+[info] configuration : configgame.json, 124 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+[info] tracé 2 : ville, 32 sections, 5664 segments (6797 m), 2 carrefour(s) à feux
+[info] route : textures/route/enrobe-use/route_enrobe-use-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] people/humains/h01.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/h03.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/h04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+[info] people/humains/h05.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/h06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f01.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/f03.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+[info] people/humains/f04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f05.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/f06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+[info] conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 11.3 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] Système : carte::ReglagesCarte (ordre 1)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.1 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] cars/m4.wfm : version 1, tangentes calculées au chargement (135166 sommets, 7.1 ms, WFS-149)
+[info] cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+[info] cars/m4.wfm : optiques avant mesurées : gauche (-0.690, 0.670, -2.173), droite (0.670, 0.670, -2.170), 11640 triangles allumés (WFS-413)
+[info] cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/m4.wfm : 3 niveaux allégés, 81226 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/m4.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 31 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 34 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/m4.wfm : 53 matériaux, 18 textures, 280815 triangles
+[info] voiture : modèle complet, 280815 triangles, aniso ×8, mipmaps oui (cars/m4.wfm, WFS-134)
+[info] cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+[info] cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+[info] cars/p911.wfm : version 1, tangentes calculées au chargement (91851 sommets, 8.6 ms, WFS-149)
+[info] cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+[info] cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+[info] cars/p911.wfm : optiques avant mesurées : gauche (-0.704, 0.708, -1.790), droite (0.704, 0.708, -1.789), 2301 triangles allumés (WFS-413)
+[info] cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p911.wfm : 3 niveaux allégés, 80608 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : 13 matériaux, 8 textures, 255491 triangles
+[info] voiture : modèle complet, 255491 triangles, aniso ×8, mipmaps oui (cars/p911.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 12.2 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] cars/deux_roues/scooter.wfm : version 2, tangentes lues dans le fichier (42364 sommets, 0.2 ms, WFS-149)
+[info] cars/deux_roues/scooter.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter.wfm : feu arrière découpé dans le matériau 0, 1975 triangles (WFS-109)
+[info] cars/deux_roues/scooter.wfm : 3 niveaux allégés, 28544 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/scooter.wfm : matériau 0 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/scooter.wfm : 2 matériaux, 6 textures, 86768 triangles
+[info] voiture : modèle complet, 86768 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-avant.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 3 niveaux allégés, 3362 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 1 matériaux, 3 textures, 5528 triangles
+[info] voiture : modèle complet, 5528 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 3 niveaux allégés, 3328 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 1 matériaux, 3 textures, 5494 triangles
+[info] voiture : modèle complet, 5494 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/routiere.wfm : version 2, tangentes lues dans le fichier (38119 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/routiere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere.wfm : 3 niveaux allégés, 40292 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/routiere.wfm : matériau 3 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 4 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 5 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 9 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 11 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 12 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 14 très fin (1.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 22 très fin (3.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 24 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 25 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 26 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 30 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : 32 matériaux, 13 textures, 88897 triangles
+[info] voiture : modèle complet, 88897 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-avant.wfm : version 2, tangentes lues dans le fichier (3621 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 3 niveaux allégés, 13552 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 6 matériaux, 5 textures, 19982 triangles
+[info] voiture : modèle complet, 19982 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : version 2, tangentes lues dans le fichier (3680 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 3 niveaux allégés, 12391 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 2 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 4 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 6 matériaux, 5 textures, 18531 triangles
+[info] voiture : modèle complet, 18531 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/sportive.wfm : version 2, tangentes lues dans le fichier (45887 sommets, 0.2 ms, WFS-149)
+[info] cars/deux_roues/sportive.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive.wfm : 3 niveaux allégés, 50972 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/sportive.wfm : matériau 2 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/sportive.wfm : 6 matériaux, 11 textures, 100010 triangles
+[info] voiture : modèle complet, 100010 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-avant.wfm : version 2, tangentes lues dans le fichier (4773 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 3 niveaux allégés, 6956 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 1 matériaux, 3 textures, 12800 triangles
+[info] voiture : modèle complet, 12800 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : version 2, tangentes lues dans le fichier (4473 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 3 niveaux allégés, 6689 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 1 matériaux, 3 textures, 12368 triangles
+[info] voiture : modèle complet, 12368 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-arriere.wfm, WFS-134)
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] deux-roues : pilotes h02 et f02 (pose assise, mains au guidon, pieds posés), casque 26 × 30 × 33 cm (WFS-232)
+[info] Système : TrafficSystem (ordre 50)
+[info] chocs (WFS-256) : ville : 5015 obstacle(s) de la Ville, 0 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+[info] Système : wfs::ChocsDecor (ordre 99)
+[info] vie : 3 textes d'enseignes dans l'atlas
+[info] cars/p208.wfm : matériau 7 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 6274 sommets changés de plus de 10° (WFS-170)
+[info] cars/p208.wfm : version 1, tangentes calculées au chargement (133152 sommets, 7.9 ms, WFS-149)
+[info] cars/p208.wfm : 4 roues séparées (rayon 0.310 m, essieux z -1.19 / 1.35), 46764 triangles tournent (WFS-60)
+[info] cars/p208.wfm : 2778 triangles de feux arrière marqués (WFS-170)
+[info] cars/p208.wfm : optiques avant mesurées : gauche (-0.630, 0.736, -1.758), droite (0.631, 0.735, -1.757), 4286 triangles allumés (WFS-413)
+[info] cars/p208.wfm : 2179 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p208.wfm : 3 niveaux allégés, 76832 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p208.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 3 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 6 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 7 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 10 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 11 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 13 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/p208.wfm : matériau 14 très fin (1.4 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : 18 matériaux, 4 textures, 277023 triangles
+[info] voiture : modèle complet, 277023 triangles, aniso ×8, mipmaps oui (cars/p208.wfm, WFS-134)
+[info] cars/compass.wfm : matériau 1 : jantes → métal gris (RG-06) (WFS-170)
+[info] cars/compass.wfm : matériau 9 : jantes → métal gris (RG-06) (WFS-170)
+[info] cars/compass.wfm : matériau 0 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 4809 sommets changés de plus de 10° (WFS-170)
+[info] cars/compass.wfm : version 1, tangentes calculées au chargement (206422 sommets, 9.6 ms, WFS-149)
+[info] cars/compass.wfm : 4 roues séparées (rayon 0.397 m, essieux z -1.23 / 1.35), 34057 triangles tournent (WFS-60)
+[info] cars/compass.wfm : 586 triangles de feux arrière marqués (WFS-170)
+[info] cars/compass.wfm : optiques avant mesurées : gauche (-0.670, 0.900, -1.945), droite (0.670, 0.900, -1.944), 334 triangles allumés (WFS-413)
+[info] cars/compass.wfm : 1662 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/compass.wfm : 3 niveaux allégés, 104457 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/compass.wfm : matériau 1 très fin (2.2 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 2 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 3 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 5 très fin (0.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/compass.wfm : matériau 7 très fin (2.5 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 8 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 9 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 10 très fin (0.4 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 11 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : 16 matériaux, 1 textures, 350961 triangles
+[info] voiture : modèle complet, 350961 triangles, aniso ×8, mipmaps oui (cars/compass.wfm, WFS-134)
+[info] Ville (WFS-175) : autoroute 1932-3233, tunnel 2438-2688, pont 1599-1807 (eau à -5.5 m), 3 portique(s)
+[info] vie : 6 textes d'enseignes dans l'atlas
+[info] cars/sf90.wfm : matériau 14 : barres des feux arrière → verre rouge opaque (WFS-182, RG-03) (WFS-170)
+[info] cars/sf90.wfm : version 1, tangentes calculées au chargement (117445 sommets, 16.6 ms, WFS-149)
+[info] cars/sf90.wfm : 4 roues séparées (rayon 0.343 m, essieux z -1.18 / 1.49), 19366 triangles tournent (WFS-60)
+[info] cars/sf90.wfm : 116 triangles de feux arrière marqués (WFS-170)
+[info] cars/sf90.wfm : optiques avant mesurées : gauche (-0.751, 0.575, -1.876), droite (0.752, 0.574, -1.877), 362 triangles allumés (WFS-413)
+[info] cars/sf90.wfm : 339 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/sf90.wfm : 3 niveaux allégés, 83325 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/sf90.wfm : matériau 0 très fin (2.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 8 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 9 très fin (1.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 14 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 16 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 19 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 20 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 21 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 24 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 29 très fin (1.7 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 30 très fin (1.8 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 33 très fin (3.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 34 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 35 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 41 très fin (3.1 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 44 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 45 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 48 très fin (1.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 52 très fin (2.5 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : 54 matériaux, 42 textures, 282027 triangles
+[info] voiture : modèle complet, 282027 triangles, aniso ×8, mipmaps oui (cars/sf90.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 12.1 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] Ville (WFS-176) : lieu 0 au segment 20, côté 1, 40 m
+[info] Ville (WFS-176) : lieu 1 au segment 1812, côté 1, 80 m
+[info] Ville (WFS-176) : lieu 2 au segment 468, côté 1, 14 m
+[info] Ville (WFS-176) : lieu 2 au segment 1364, côté 1, 14 m
+[info] Ville (WFS-176) : 4 lieu(x), 5 groupe(s) de pigeons, 10 chien(s)
+[info] Ville : 156 lampadaires
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] décor fixe (WFS-268) : ville : un tour = le précédent tourné de -7.93° (écart 0.0000 m)
+[info] décor fixe (WFS-269) : ville : occlusion précalculée, 222748 sommets, 7803846 voxels, moyenne 0.64, 1269 ms (grille 1124 ms, 13.5 Mo, rendus après le calcul)
+[info] décor fixe (WFS-268) : ville : sommets par matériau (détail/allégé) : 2:91k/67k 3:39k/7k 5:187k/78k 6:127k/44k 7:15k/15k 8:3010k/808k 9:12k/7k 10:84k/84k 14:54k/0k 15:32k/0k 16:104k/0k 17:2k/2k 18:5k/0k 19:1k/1k 20:0k/0k 21:46k/46k 22:0k/0k 23:0k/0k 24:0k/0k 25:0k/0k 26:2k/0k
+[info] décor fixe (WFS-268) : ville : 177 morceaux → 45 blocs de 154 m, 4984738 sommets, 201.4 Mo GPU, préparé en 2054 ms
+[info] Système : Ville (ordre 100)
+[info] Système : Plage (ordre 105)
+[info] people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+[info] people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+[info] people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+[info] people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+[info] people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+[info] people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+[info] people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+[info] people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+[info] Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+[info] Enfants (WFS-233) : 15 familles sur 245 piétons (10 % visés ; 4 ans 5, 7 ans 0, 10 ans 3, 14 ans 7) ; WFS-240 : 4 poussette(s)
+[info] Piétons : 245 personnes (ville)
+[info] Piétons (WFS-317, RG-03) : Ville : 1219 personnes omises (3 sur 10 gardées ; marcheurs répartis sur tout le tour)
+[info] Piétons (WFS-222) : 38 à pied (promeneurs 5, marcheurs 32, passants 1 ; 772 omis sur ordre de l'utilisateur), 207 assis ou baigneurs
+[info] Système : Pietons (ordre 106)
+[info] Système : carte::Campagne (ordre 107)
+[info] vie : 5 textes d'enseignes dans l'atlas
+[info] vie : 2 panneaux néon (ville)
+[info] Système : Enseignes (ordre 107)
+[info] Système : carte::Circuit (ordre 108)
+[info] vie : 11 textes d'enseignes dans l'atlas
+[info] Système : Portique (ordre 108)
+[info] vie : 10 textes d'enseignes dans l'atlas
+[info] vie : 213 commerces, 693 clients attablés, 0 serviettes (ville)
+[info] Système : Commerces (ordre 109)
+[info] décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, 535004 sommets (niveaux 0 et 1), moyenne 0.88, 299 ms
+[info] archi (WFS-161) : 625 bâtiments du kit posés, 1744402 triangles au niveau de détail 0 (tous), nuit oui
+[info] Système : ArchiCarteSysteme (ordre 110)
+[info] Système : carte::CarteDonnees (ordre 112)
+[info] Pluie : nuit en ville, pluie active
+[info] Système : wfs::Pluie (ordre 199)
+[info] Système : wfs::AideDirection (ordre 202)
+[info] Système : CourseSystem (ordre 210)
+[info] Système : TraceSysteme (ordre 215)
+[info] Système : DuelSystem (ordre 220)
+[info] Système : RessentiSystem (ordre 220)
+[info] Système : Course5System (ordre 222)
+[info] Système : PoursuiteSystem (ordre 224)
+[info] Système : Camera (ordre 260)
+[info] PAROIS ville : 2477 segments avec une paroi à gauche, 4134 à droite, 629 immeubles (masques)
+[info] PAROIS ville (WFS-278) : obstacles : profondeur 9.0 à 26.0 m (moyenne 14.6), hauteur 6.0 à 101.8 m
+[info] LIEUX ville : fontaine 0, vagues 0, tribune 0, ferme 0, terrasse 130
+[info] MUSIQUE course
+[info] AMBIANCE nuit (ville)
+[info] Système : AudioSystem (ordre 300)
+[info] Système : EffetsSystem (ordre 350)
+[info] Système : QualiteSystem (ordre 360)
+[info] Système : ChauffeSystem (ordre 361)
+[info] Système : VolantBancCamera (ordre 399)
+[info] Police : 192 caractères dans l'atlas
+[info] Système : ui::Texte (ordre 400)
+[info] Système : FantomeEtiquette (ordre 419)
+[info] Système : Hud (ordre 420)
+[info] Système : MiniCarte (ordre 422)
+[info] Système : Toasts (ordre 425)
+[info] Système : ecrans::GarageEnregistre (ordre 440)
+[info] Système : EnduranceGarage (ordre 445)
+[info] Système : ecrans::Menu (ordre 450)
+[info] Système : ecrans::Terrain (ordre 452)
+[info] Système : ecrans::Salon (ordre 453)
+[info] Système : ecrans::Pause (ordre 455)
+[info] Système : ChoixMode (ordre 458)
+[info] Système : ecrans::BandeauPaquets (ordre 458)
+[info] Système : ecrans::EcranReglages (ordre 460)
+[info] Système : credits::Credits (ordre 470)
+[info] Système : manette::FocusManette (ordre 489)
+[info] Système : ecrans::FonduChargement (ordre 490)
+[info] Système : PlancheVoitures (ordre 498)
+[info] Système : LigneBancBatiments (ordre 499)
+[info] Système : SceneEssai (ordre 900)
+[info] Système : SqueletteEssai (ordre 905)
+[info] Système : VehiculeNuitBanc (ordre 949)
+[info] Nuit : carte ville, 258 lampadaires, phares de croisement LED (29970 cd chacun)
+[info] Système : Nuit (ordre 950)
+[info] Système : wfs::CielCouvert (ordre 960)
+[info] Système : RealismeBanc (ordre 970)
+[info] Système : BrumeBanc (ordre 971)
+[info] Système : LodBanc (ordre 975)
+[info] Système : PassesBanc (ordre 975)
+[info] Système : LumiereBanc (ordre 985)
+[info] Système : ArchiBanc (ordre 985)
+[info] Système : VueHauteBanc (ordre 995)
+[info] Système : VueFixeBanc (ordre 996)
+[info] Système : EauVueBanc (ordre 996)
+[info] Pluie : 0 gouttes (écran 1280x720, animations réduites)
+[info] LIEU terrasse à portée : 14 m, -57° (gauche)
+[info] MASQUES 0 voix cachée(s), la plus masquée 0.0 dB
+[info] VOITURES 1 voix (6 voitures autour)
+[info] PAROIS gauche 14 m, droite 0 m
+[info] PLUIE vue extérieure
+[info] Rendu : Moyenne · 100 % · MSAA ×4 · -- img/s · chauffe 0 · 215 appels · 361 k triangles (décor 64 %, voitures 31 %, personnes 5 %) (netteté du niveau 1, -1 images/s)
+[info] environnement (WFS-150) : cubemap HDR 128x128 × 6 (0.75 Mo), rendue à 256x256 (suréchantillonnage 2 × 2, 0.75 Mo de plus)
+[info] Ville : 196 appels de dessin (0 morceaux, 45 blocs préparés : 68 appels pour le décor fixe, avant masquage) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+[info] pipelines (WFS-262) : course affichée, 40 pipelines créés depuis le lancement
+[info] SFX route vent 0.00 roulement 0.00 bord 0.00 herbe 0.00 eau 0.00 (4 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 3 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 3 (128 px, 73.2 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 4.00
+[info] SFX route vent 0.00 roulement 0.01 bord 0.00 herbe 0.00 eau 0.02 (21 km/h, x 0.00)
+[info] VOITURES 0 voix (6 voitures autour)
+[info] PAROIS gauche 14 m, droite 14 m
+[info] environnement (WFS-150) : capture 4 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 4 (128 px, 70.5 ms CPU) en (0.0 1.5 0.0), rebond 0, EV100 3.80
+[info] SFX route vent 0.00 roulement 0.03 bord 0.00 herbe 0.00 eau 0.03 (38 km/h, x 0.00)
+[info] SFX turbo
+[info] PAROIS gauche 14 m, droite 0 m
+[info] SFX route vent 0.01 roulement 0.04 bord 0.00 herbe 0.00 eau 0.04 (54 km/h, x 0.00)
+[info] PAROIS gauche 14 m, droite 20 m
+[info] SFX route vent 0.01 roulement 0.05 bord 0.00 herbe 0.00 eau 0.05 (71 km/h, x 0.00)
+[info] capture halosol-ville-moyenne : 81 km/h, 55 m, lampadaire suivant à 16.8 m, 239 appels de dessin
+[info] Ville : 189 appels de dessin à la dernière image (WFS-175 : 4 pour les ouvrages, 0 voiture(s) en sens inverse, ≤ 0 pièces ; WFS-176 : 128 pour les voitures du casino, pigeons et chiens)
+[info] tracé 2 : ville, 32 sections, 5664 segments (6797 m), 2 carrefour(s) à feux
+[info] Cibles de rendu : 1280x720 (logique), scène 1280x720, MSAA x4
+[info] réglages : qualité Haute (scène à 100 %, ombres actives)
+[info] configuration : configgame.json, 124 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+[info] tracé 2 : ville, 32 sections, 5664 segments (6797 m), 2 carrefour(s) à feux
+[info] route : textures/route/enrobe-use/route_enrobe-use-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] people/humains/h01.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/h03.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/h04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+[info] people/humains/h05.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/h06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f01.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/f03.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+[info] people/humains/f04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f05.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/f06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+[info] conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] Système : carte::ReglagesCarte (ordre 1)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.5 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] cars/m4.wfm : version 1, tangentes calculées au chargement (135166 sommets, 7.2 ms, WFS-149)
+[info] cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+[info] cars/m4.wfm : optiques avant mesurées : gauche (-0.690, 0.670, -2.173), droite (0.670, 0.670, -2.170), 11640 triangles allumés (WFS-413)
+[info] cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/m4.wfm : 3 niveaux allégés, 81226 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/m4.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 31 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 34 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/m4.wfm : 53 matériaux, 18 textures, 280815 triangles
+[info] voiture : modèle complet, 280815 triangles, aniso ×8, mipmaps oui (cars/m4.wfm, WFS-134)
+[info] cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+[info] cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+[info] cars/p911.wfm : version 1, tangentes calculées au chargement (91851 sommets, 8.2 ms, WFS-149)
+[info] cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+[info] cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+[info] cars/p911.wfm : optiques avant mesurées : gauche (-0.704, 0.708, -1.790), droite (0.704, 0.708, -1.789), 2301 triangles allumés (WFS-413)
+[info] cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p911.wfm : 3 niveaux allégés, 80608 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : 13 matériaux, 8 textures, 255491 triangles
+[info] voiture : modèle complet, 255491 triangles, aniso ×8, mipmaps oui (cars/p911.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 10.0 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] cars/deux_roues/scooter.wfm : version 2, tangentes lues dans le fichier (42364 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/scooter.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter.wfm : feu arrière découpé dans le matériau 0, 1975 triangles (WFS-109)
+[info] cars/deux_roues/scooter.wfm : 3 niveaux allégés, 28544 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/scooter.wfm : matériau 0 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/scooter.wfm : 2 matériaux, 6 textures, 86768 triangles
+[info] voiture : modèle complet, 86768 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-avant.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 3 niveaux allégés, 3362 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 1 matériaux, 3 textures, 5528 triangles
+[info] voiture : modèle complet, 5528 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 3 niveaux allégés, 3328 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 1 matériaux, 3 textures, 5494 triangles
+[info] voiture : modèle complet, 5494 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/routiere.wfm : version 2, tangentes lues dans le fichier (38119 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/routiere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere.wfm : 3 niveaux allégés, 40292 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/routiere.wfm : matériau 3 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 4 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 5 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 9 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 11 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 12 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 14 très fin (1.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 22 très fin (3.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 24 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 25 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 26 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 30 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : 32 matériaux, 13 textures, 88897 triangles
+[info] voiture : modèle complet, 88897 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-avant.wfm : version 2, tangentes lues dans le fichier (3621 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 3 niveaux allégés, 13552 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 6 matériaux, 5 textures, 19982 triangles
+[info] voiture : modèle complet, 19982 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : version 2, tangentes lues dans le fichier (3680 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 3 niveaux allégés, 12391 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 2 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 4 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 6 matériaux, 5 textures, 18531 triangles
+[info] voiture : modèle complet, 18531 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/sportive.wfm : version 2, tangentes lues dans le fichier (45887 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/sportive.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive.wfm : 3 niveaux allégés, 50972 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/sportive.wfm : matériau 2 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/sportive.wfm : 6 matériaux, 11 textures, 100010 triangles
+[info] voiture : modèle complet, 100010 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-avant.wfm : version 2, tangentes lues dans le fichier (4773 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 3 niveaux allégés, 6956 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 1 matériaux, 3 textures, 12800 triangles
+[info] voiture : modèle complet, 12800 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : version 2, tangentes lues dans le fichier (4473 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 3 niveaux allégés, 6689 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 1 matériaux, 3 textures, 12368 triangles
+[info] voiture : modèle complet, 12368 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-arriere.wfm, WFS-134)
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] deux-roues : pilotes h02 et f02 (pose assise, mains au guidon, pieds posés), casque 26 × 30 × 33 cm (WFS-232)
+[info] Système : TrafficSystem (ordre 50)
+[info] chocs (WFS-256) : ville : 5015 obstacle(s) de la Ville, 0 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+[info] Système : wfs::ChocsDecor (ordre 99)
+[info] vie : 3 textes d'enseignes dans l'atlas
+[info] cars/p208.wfm : matériau 7 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 6274 sommets changés de plus de 10° (WFS-170)
+[info] cars/p208.wfm : version 1, tangentes calculées au chargement (133152 sommets, 8.3 ms, WFS-149)
+[info] cars/p208.wfm : 4 roues séparées (rayon 0.310 m, essieux z -1.19 / 1.35), 46764 triangles tournent (WFS-60)
+[info] cars/p208.wfm : 2778 triangles de feux arrière marqués (WFS-170)
+[info] cars/p208.wfm : optiques avant mesurées : gauche (-0.630, 0.736, -1.758), droite (0.631, 0.735, -1.757), 4286 triangles allumés (WFS-413)
+[info] cars/p208.wfm : 2179 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p208.wfm : 3 niveaux allégés, 76832 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p208.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 3 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 6 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 7 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 10 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 11 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : matériau 13 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/p208.wfm : matériau 14 très fin (1.4 mm) → préfiltré (WFS-42)
+[info] cars/p208.wfm : 18 matériaux, 4 textures, 277023 triangles
+[info] voiture : modèle complet, 277023 triangles, aniso ×8, mipmaps oui (cars/p208.wfm, WFS-134)
+[info] cars/compass.wfm : matériau 1 : jantes → métal gris (RG-06) (WFS-170)
+[info] cars/compass.wfm : matériau 9 : jantes → métal gris (RG-06) (WFS-170)
+[info] cars/compass.wfm : matériau 0 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 4809 sommets changés de plus de 10° (WFS-170)
+[info] cars/compass.wfm : version 1, tangentes calculées au chargement (206422 sommets, 10.1 ms, WFS-149)
+[info] cars/compass.wfm : 4 roues séparées (rayon 0.397 m, essieux z -1.23 / 1.35), 34057 triangles tournent (WFS-60)
+[info] cars/compass.wfm : 586 triangles de feux arrière marqués (WFS-170)
+[info] cars/compass.wfm : optiques avant mesurées : gauche (-0.670, 0.900, -1.945), droite (0.670, 0.900, -1.944), 334 triangles allumés (WFS-413)
+[info] cars/compass.wfm : 1662 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/compass.wfm : 3 niveaux allégés, 104457 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/compass.wfm : matériau 1 très fin (2.2 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 2 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 3 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 5 très fin (0.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/compass.wfm : matériau 7 très fin (2.5 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 8 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 9 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 10 très fin (0.4 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : matériau 11 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/compass.wfm : 16 matériaux, 1 textures, 350961 triangles
+[info] voiture : modèle complet, 350961 triangles, aniso ×8, mipmaps oui (cars/compass.wfm, WFS-134)
+[info] Ville (WFS-175) : autoroute 1932-3233, tunnel 2438-2688, pont 1599-1807 (eau à -5.5 m), 3 portique(s)
+[info] vie : 6 textes d'enseignes dans l'atlas
+[info] cars/sf90.wfm : matériau 14 : barres des feux arrière → verre rouge opaque (WFS-182, RG-03) (WFS-170)
+[info] cars/sf90.wfm : version 1, tangentes calculées au chargement (117445 sommets, 15.1 ms, WFS-149)
+[info] cars/sf90.wfm : 4 roues séparées (rayon 0.343 m, essieux z -1.18 / 1.49), 19366 triangles tournent (WFS-60)
+[info] cars/sf90.wfm : 116 triangles de feux arrière marqués (WFS-170)
+[info] cars/sf90.wfm : optiques avant mesurées : gauche (-0.751, 0.575, -1.876), droite (0.752, 0.574, -1.877), 362 triangles allumés (WFS-413)
+[info] cars/sf90.wfm : 339 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/sf90.wfm : 3 niveaux allégés, 83325 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/sf90.wfm : matériau 0 très fin (2.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 8 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 9 très fin (1.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 14 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 16 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 19 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 20 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 21 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 24 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 29 très fin (1.7 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 30 très fin (1.8 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 33 très fin (3.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 34 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 35 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 41 très fin (3.1 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 44 très fin (3.5 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 45 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/sf90.wfm : matériau 48 très fin (1.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : matériau 52 très fin (2.5 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/sf90.wfm : 54 matériaux, 42 textures, 282027 triangles
+[info] voiture : modèle complet, 282027 triangles, aniso ×8, mipmaps oui (cars/sf90.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 9.5 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] Ville (WFS-176) : lieu 0 au segment 20, côté 1, 40 m
+[info] Ville (WFS-176) : lieu 1 au segment 1812, côté 1, 80 m
+[info] Ville (WFS-176) : lieu 2 au segment 468, côté 1, 14 m
+[info] Ville (WFS-176) : lieu 2 au segment 1364, côté 1, 14 m
+[info] Ville (WFS-176) : 4 lieu(x), 5 groupe(s) de pigeons, 10 chien(s)
+[info] Ville : 156 lampadaires
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] décor fixe (WFS-268) : ville : un tour = le précédent tourné de -7.93° (écart 0.0000 m)
+[info] décor fixe (WFS-269) : ville : occlusion précalculée, 222748 sommets, 7803846 voxels, moyenne 0.64, 1316 ms (grille 1183 ms, 13.5 Mo, rendus après le calcul)
+[info] décor fixe (WFS-268) : ville : sommets par matériau (détail/allégé) : 2:91k/67k 3:39k/7k 5:187k/78k 6:127k/44k 7:15k/15k 8:3010k/808k 9:12k/7k 10:84k/84k 14:54k/0k 15:32k/0k 16:104k/0k 17:2k/2k 18:5k/0k 19:1k/1k 20:0k/0k 21:46k/46k 22:0k/0k 23:0k/0k 24:0k/0k 25:0k/0k 26:2k/0k
+[info] décor fixe (WFS-268) : ville : 177 morceaux → 45 blocs de 154 m, 4984738 sommets, 201.4 Mo GPU, préparé en 2078 ms
+[info] Système : Ville (ordre 100)
+[info] Système : Plage (ordre 105)
+[info] people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+[info] people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+[info] people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+[info] people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+[info] people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+[info] people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+[info] people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+[info] people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+[info] Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+[info] Enfants (WFS-233) : 15 familles sur 245 piétons (10 % visés ; 4 ans 5, 7 ans 0, 10 ans 3, 14 ans 7) ; WFS-240 : 4 poussette(s)
+[info] Piétons : 245 personnes (ville)
+[info] Piétons (WFS-317, RG-03) : Ville : 1219 personnes omises (3 sur 10 gardées ; marcheurs répartis sur tout le tour)
+[info] Piétons (WFS-222) : 38 à pied (promeneurs 5, marcheurs 32, passants 1 ; 772 omis sur ordre de l'utilisateur), 207 assis ou baigneurs
+[info] Système : Pietons (ordre 106)
+[info] Système : carte::Campagne (ordre 107)
+[info] vie : 5 textes d'enseignes dans l'atlas
+[info] vie : 2 panneaux néon (ville)
+[info] Système : Enseignes (ordre 107)
+[info] Système : carte::Circuit (ordre 108)
+[info] vie : 11 textes d'enseignes dans l'atlas
+[info] Système : Portique (ordre 108)
+[info] vie : 10 textes d'enseignes dans l'atlas
+[info] vie : 213 commerces, 693 clients attablés, 0 serviettes (ville)
+[info] Système : Commerces (ordre 109)
+[info] décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, 535004 sommets (niveaux 0 et 1), moyenne 0.88, 293 ms
+[info] archi (WFS-161) : 625 bâtiments du kit posés, 1744402 triangles au niveau de détail 0 (tous), nuit oui
+[info] Système : ArchiCarteSysteme (ordre 110)
+[info] Système : carte::CarteDonnees (ordre 112)
+[info] Pluie : nuit en ville, pluie active
+[info] Système : wfs::Pluie (ordre 199)
+[info] Système : wfs::AideDirection (ordre 202)
+[info] Système : CourseSystem (ordre 210)
+[info] Système : TraceSysteme (ordre 215)
+[info] Système : DuelSystem (ordre 220)
+[info] Système : RessentiSystem (ordre 220)
+[info] Système : Course5System (ordre 222)
+[info] Système : PoursuiteSystem (ordre 224)
+[info] Système : Camera (ordre 260)
+[info] PAROIS ville : 2477 segments avec une paroi à gauche, 4134 à droite, 629 immeubles (masques)
+[info] PAROIS ville (WFS-278) : obstacles : profondeur 9.0 à 26.0 m (moyenne 14.6), hauteur 6.0 à 101.8 m
+[info] LIEUX ville : fontaine 0, vagues 0, tribune 0, ferme 0, terrasse 130
+[info] MUSIQUE course
+[info] AMBIANCE nuit (ville)
+[info] Système : AudioSystem (ordre 300)
+[info] Système : EffetsSystem (ordre 350)
+[info] Système : QualiteSystem (ordre 360)
+[info] Système : ChauffeSystem (ordre 361)
+[info] Système : VolantBancCamera (ordre 399)
+[info] Police : 192 caractères dans l'atlas
+[info] Système : ui::Texte (ordre 400)
+[info] Système : FantomeEtiquette (ordre 419)
+[info] Système : Hud (ordre 420)
+[info] Système : MiniCarte (ordre 422)
+[info] Système : Toasts (ordre 425)
+[info] Système : ecrans::GarageEnregistre (ordre 440)
+[info] Système : EnduranceGarage (ordre 445)
+[info] Système : ecrans::Menu (ordre 450)
+[info] Système : ecrans::Terrain (ordre 452)
+[info] Système : ecrans::Salon (ordre 453)
+[info] Système : ecrans::Pause (ordre 455)
+[info] Système : ChoixMode (ordre 458)
+[info] Système : ecrans::BandeauPaquets (ordre 458)
+[info] Système : ecrans::EcranReglages (ordre 460)
+[info] Système : credits::Credits (ordre 470)
+[info] Système : manette::FocusManette (ordre 489)
+[info] Système : ecrans::FonduChargement (ordre 490)
+[info] Système : PlancheVoitures (ordre 498)
+[info] Système : LigneBancBatiments (ordre 499)
+[info] Système : SceneEssai (ordre 900)
+[info] Système : SqueletteEssai (ordre 905)
+[info] Système : VehiculeNuitBanc (ordre 949)
+[info] Nuit : carte ville, 258 lampadaires, phares de croisement LED (29970 cd chacun)
+[info] Système : Nuit (ordre 950)
+[info] Système : wfs::CielCouvert (ordre 960)
+[info] Système : RealismeBanc (ordre 970)
+[info] Système : BrumeBanc (ordre 971)
+[info] Système : LodBanc (ordre 975)
+[info] Système : PassesBanc (ordre 975)
+[info] Système : LumiereBanc (ordre 985)
+[info] Système : ArchiBanc (ordre 985)
+[info] Système : VueHauteBanc (ordre 995)
+[info] Système : VueFixeBanc (ordre 996)
+[info] Système : EauVueBanc (ordre 996)
+[info] Pluie : 0 gouttes (écran 1280x720, animations réduites)
+[info] LIEU terrasse à portée : 14 m, -57° (gauche)
+[info] MASQUES 0 voix cachée(s), la plus masquée 0.0 dB
+[info] VOITURES 1 voix (6 voitures autour)
+[info] PAROIS gauche 14 m, droite 0 m
+[info] PLUIE vue extérieure
+[info] Rendu : Haute · 100 % · MSAA ×4 · -- img/s · chauffe 0 · 239 appels · 400 k triangles (décor 58 %, voitures 30 %, personnes 12 %) (netteté du niveau 2, -1 images/s)
+[info] Ville : 196 appels de dessin (0 morceaux, 45 blocs préparés : 68 appels pour le décor fixe, avant masquage) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+[info] pipelines (WFS-262) : course affichée, 40 pipelines créés depuis le lancement
+[info] SFX route vent 0.00 roulement 0.00 bord 0.00 herbe 0.00 eau 0.00 (4 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 5 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 5 (128 px, 70.2 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 4.00
+[info] SFX route vent 0.00 roulement 0.01 bord 0.00 herbe 0.00 eau 0.02 (21 km/h, x 0.00)
+[info] VOITURES 0 voix (6 voitures autour)
+[info] PAROIS gauche 14 m, droite 14 m
+[info] environnement (WFS-150) : capture 6 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 6 (128 px, 74.7 ms CPU) en (0.0 1.5 0.0), rebond 0, EV100 3.80
+[info] SFX route vent 0.00 roulement 0.03 bord 0.00 herbe 0.00 eau 0.03 (38 km/h, x 0.00)
+[info] SFX turbo
+[info] PAROIS gauche 14 m, droite 0 m
+[info] SFX route vent 0.01 roulement 0.04 bord 0.00 herbe 0.00 eau 0.04 (54 km/h, x 0.00)
+[info] PAROIS gauche 14 m, droite 20 m
+[info] SFX route vent 0.01 roulement 0.05 bord 0.00 herbe 0.00 eau 0.05 (71 km/h, x 0.00)
+[info] capture halosol-ville-haute : 81 km/h, 55 m, lampadaire suivant à 16.8 m, 239 appels de dessin
+[info] Ville : 189 appels de dessin à la dernière image (WFS-175 : 4 pour les ouvrages, 0 voiture(s) en sens inverse, ≤ 0 pièces ; WFS-176 : 128 pour les voitures du casino, pigeons et chiens)
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] rendu (WFS-144) : netteté Basse : MSAA ×4, aniso ×4
+[info] Cibles de rendu : 1280x720 (logique), scène 960x540, MSAA x4
+[info] réglages : qualité Basse (scène à 75 %, ombres coupées)
+[info] configuration : configgame.json, 124 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] route : textures/route/enrobe-use/route_enrobe-use-couleur.rgba8.ktx2 : RGBA8 sRGB, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-normale.rgba8.ktx2 : RGBA8 linéaire, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-orm.rgba8.ktx2 : RGBA8 linéaire, 128x128 (1 niveau(x) sauté(s)), 85.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-couleur.rgba8.ktx2 : RGBA8 sRGB, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-normale.rgba8.ktx2 : RGBA8 linéaire, 256x256 (1 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-orm.rgba8.ktx2 : RGBA8 linéaire, 128x128 (1 niveau(x) sauté(s)), 85.3 Ko (WFS-205)
+[info] people/humains/h01.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/h03.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/h04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+[info] people/humains/h05.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/h06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f01.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/f03.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+[info] people/humains/f04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f05.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/f06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+[info] conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×4, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] Système : carte::ReglagesCarte (ordre 1)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×4, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] cars/m4.wfm : version 1, tangentes calculées au chargement (135166 sommets, 9.4 ms, WFS-149)
+[info] cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+[info] cars/m4.wfm : optiques avant mesurées : gauche (-0.690, 0.670, -2.173), droite (0.670, 0.670, -2.170), 11640 triangles allumés (WFS-413)
+[info] cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/m4.wfm : 3 niveaux allégés, 81226 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/m4.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 31 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 34 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/m4.wfm : 53 matériaux, 18 textures, 280815 triangles
+[info] voiture : modèle complet, 280815 triangles, aniso ×4, mipmaps oui (cars/m4.wfm, WFS-134)
+[info] cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+[info] cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+[info] cars/p911.wfm : version 1, tangentes calculées au chargement (91851 sommets, 8.6 ms, WFS-149)
+[info] cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+[info] cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+[info] cars/p911.wfm : optiques avant mesurées : gauche (-0.704, 0.708, -1.790), droite (0.704, 0.708, -1.789), 2301 triangles allumés (WFS-413)
+[info] cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p911.wfm : 3 niveaux allégés, 80608 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : 13 matériaux, 8 textures, 255491 triangles
+[info] voiture : modèle complet, 255491 triangles, aniso ×4, mipmaps oui (cars/p911.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 9.8 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×4, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] cars/deux_roues/scooter.wfm : version 2, tangentes lues dans le fichier (42364 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/scooter.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter.wfm : feu arrière découpé dans le matériau 0, 1975 triangles (WFS-109)
+[info] cars/deux_roues/scooter.wfm : 3 niveaux allégés, 28544 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/scooter.wfm : matériau 0 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/scooter.wfm : 2 matériaux, 6 textures, 86768 triangles
+[info] voiture : modèle complet, 86768 triangles, aniso ×4, mipmaps oui (cars/deux_roues/scooter.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-avant.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 3 niveaux allégés, 3362 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 1 matériaux, 3 textures, 5528 triangles
+[info] voiture : modèle complet, 5528 triangles, aniso ×4, mipmaps oui (cars/deux_roues/scooter-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 3 niveaux allégés, 3328 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 1 matériaux, 3 textures, 5494 triangles
+[info] voiture : modèle complet, 5494 triangles, aniso ×4, mipmaps oui (cars/deux_roues/scooter-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/routiere.wfm : version 2, tangentes lues dans le fichier (38119 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/routiere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere.wfm : 3 niveaux allégés, 40292 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/routiere.wfm : matériau 3 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 4 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 5 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 9 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 11 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 12 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 14 très fin (1.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 22 très fin (3.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 24 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 25 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 26 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 30 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : 32 matériaux, 13 textures, 88897 triangles
+[info] voiture : modèle complet, 88897 triangles, aniso ×4, mipmaps oui (cars/deux_roues/routiere.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-avant.wfm : version 2, tangentes lues dans le fichier (3621 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 3 niveaux allégés, 13552 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 6 matériaux, 5 textures, 19982 triangles
+[info] voiture : modèle complet, 19982 triangles, aniso ×4, mipmaps oui (cars/deux_roues/routiere-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : version 2, tangentes lues dans le fichier (3680 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 3 niveaux allégés, 12391 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 2 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 4 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 6 matériaux, 5 textures, 18531 triangles
+[info] voiture : modèle complet, 18531 triangles, aniso ×4, mipmaps oui (cars/deux_roues/routiere-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/sportive.wfm : version 2, tangentes lues dans le fichier (45887 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/sportive.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive.wfm : 3 niveaux allégés, 50972 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/sportive.wfm : matériau 2 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/sportive.wfm : 6 matériaux, 11 textures, 100010 triangles
+[info] voiture : modèle complet, 100010 triangles, aniso ×4, mipmaps oui (cars/deux_roues/sportive.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-avant.wfm : version 2, tangentes lues dans le fichier (4773 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 3 niveaux allégés, 6956 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 1 matériaux, 3 textures, 12800 triangles
+[info] voiture : modèle complet, 12800 triangles, aniso ×4, mipmaps oui (cars/deux_roues/sportive-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : version 2, tangentes lues dans le fichier (4473 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 3 niveaux allégés, 6689 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 1 matériaux, 3 textures, 12368 triangles
+[info] voiture : modèle complet, 12368 triangles, aniso ×4, mipmaps oui (cars/deux_roues/sportive-roue-arriere.wfm, WFS-134)
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] deux-roues : pilotes h02 et f02 (pose assise, mains au guidon, pieds posés), casque 26 × 30 × 33 cm (WFS-232)
+[info] Système : TrafficSystem (ordre 50)
+[info] chocs (WFS-256) : plage : 0 obstacle(s) de la Ville, 0 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+[info] Système : wfs::ChocsDecor (ordre 99)
+[info] Système : Ville (ordre 100)
+[info] Plage (WFS-139) : 24 sections, 1 virages serrés, 0 bas-côtés bornés par une autre branche, tunnel 2538-2705, rond-point au segment -1, 1 feu(x)
+[info] Plage (WFS-212) : 29 disque(s) de sol au centre des épingles
+[info] Plage : 1522 objets des quartiers (villas, bateaux, rochers, bornes, glissières, pins) (WFS-94)
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] Plage (WFS-180) : 2 fête(s), 2 terrain(s) de jeux, 32 personnes
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] Plage (WFS-181) : 8 établissements du front de mer (bars, café, casino, galerie, scooters)
+[info] Plage (WFS-139) : retirés du tracé 2 : 259 palmiers, 205 parasols, 78 lampadaires, 713 objets ; 66 barques au village
+[info] Marina (WFS-376) : tronçon de quai [448, 459), 13 m
+[info] Marina (WFS-376) : tronçon de quai [523, 700), 212 m
+[info] Marina (WFS-376) : tronçon de quai [735, 896), 193 m
+[info] Marina (WFS-376) : tronçon de quai [4032, 4560), 634 m
+[info] Marina (WFS-376) : quai d'amarrage à 1.45 m au-dessus de l'eau (avant : 1.85 m), 24 pontons, 281 bateaux à quai (147 voiliers, 128 vedettes, 6 yachts : 52 % de voiliers), coques 248 blanc cassé, 21 marine, 7 grises, 5 crème ; 41 au mouillage, 112 anciens bateaux retirés, 38 places vides au quai
+[info] Marina (WFS-376) : fenêtre détaillée la plus chargée (315 m) : 17454 triangles dont 95 bateaux (passe de la scène, sans ombres)
+[info] Marina (WFS-376) : triangles par modèle, détaillé (amarrage compris) / moyen / loin : voilier 270 / 106 / 15, vedette 158 / 70 / 21, yacht 193 / 95 / 21 ; ponton 100 / 10, bitte 42
+[info] Plage (WFS-181) : 8 établissements posés ; 9 objets retirés de leur emprise ; 183 palmiers (avant : 190)
+[info] Plage : 183 palmiers, 29 parasols, 74 lampadaires, nuit
+[info] Plage (WFS-180) : 44 bateaux (voiliers, yachts, jet-skis, paquebot)
+[info] vie : 6 textes d'enseignes dans l'atlas
+[info] Plage (WFS-181) : 16 mouettes (5 posées), 2 dauphins
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] décor fixe (WFS-268) : plage : un tour = le précédent tourné de -76.00° (écart 0.0000 m)
+[info] décor fixe (WFS-269) : plage : occlusion précalculée, 1332 sommets, 7672509 voxels, moyenne 0.76, 2045 ms (grille 2044 ms, 18.2 Mo, rendus après le calcul)
+[info] décor fixe (WFS-268) : plage : sommets par matériau (détail/allégé) : 0:533k/274k 1:18k/18k 2:29k/8k 3:76k/20k 4:11k/0k 5:14k/14k 6:41k/41k 7:71k/51k 8:2k/2k 9:0k/0k 10:18k/18k 11:31k/31k 12:0k/0k 13:0k/0k 14:0k/0k 15:0k/0k 16:0k/0k 17:0k/0k 18:0k/0k 19:0k/0k 20:0k/0k 23:253k/0k 24:6k/0k
+[info] décor fixe (WFS-268) : plage : 143 morceaux → 48 blocs de 115 m, 1592621 sommets, 61.7 Mo GPU, préparé en 2305 ms
+[info] Système : Plage (ordre 105)
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+[info] people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+[info] people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+[info] people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+[info] people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+[info] people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+[info] people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+[info] people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+[info] Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+[info] Enfants (WFS-233) : 38 familles sur 252 piétons (15 % visés ; 4 ans 11, 7 ans 11, 10 ans 4, 14 ans 12) ; WFS-240 : 7 poussette(s)
+[info] Piétons : 252 personnes (plage)
+[info] Piétons (WFS-222) : 110 à pied (promeneurs 0, marcheurs 110, passants 0 ; 110 omis sur ordre de l'utilisateur), 142 assis ou baigneurs
+[info] Système : Pietons (ordre 106)
+[info] Système : carte::Campagne (ordre 107)
+[info] vie : 5 textes d'enseignes dans l'atlas
+[info] vie : 23 panneaux néon (plage)
+[info] Système : Enseignes (ordre 107)
+[info] Système : carte::Circuit (ordre 108)
+[info] vie : 11 textes d'enseignes dans l'atlas
+[info] Système : Portique (ordre 108)
+[info] vie : 0 commerces, 0 clients attablés, 67 serviettes (plage)
+[info] Système : Commerces (ordre 109)
+[info] décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, 60512 sommets (niveaux 0 et 1), moyenne 0.86, 29 ms
+[info] archi (WFS-161) : 172 bâtiments du kit posés, 180670 triangles au niveau de détail 0 (tous), nuit oui
+[info] Système : ArchiCarteSysteme (ordre 110)
+[info] Système : carte::CarteDonnees (ordre 112)
+[info] Système : wfs::Pluie (ordre 199)
+[info] Système : wfs::AideDirection (ordre 202)
+[info] Système : CourseSystem (ordre 210)
+[info] Système : TraceSysteme (ordre 215)
+[info] Système : DuelSystem (ordre 220)
+[info] Système : RessentiSystem (ordre 220)
+[info] Système : Course5System (ordre 222)
+[info] Système : PoursuiteSystem (ordre 224)
+[info] Système : Camera (ordre 260)
+[info] PAROIS plage : 3118 segments avec une paroi à gauche, 0 à droite, 352 immeubles (masques)
+[info] PAROIS plage (WFS-278) : obstacles : profondeur 7.0 à 85.4 m (moyenne 46.4), hauteur 4.0 à 18.5 m
+[info] LIEUX plage : fontaine 0, vagues 200, tribune 0, ferme 0, terrasse 0
+[info] MUSIQUE course
+[info] AMBIANCE nuit (plage)
+[info] Système : AudioSystem (ordre 300)
+[info] Système : EffetsSystem (ordre 350)
+[info] Système : QualiteSystem (ordre 360)
+[info] Système : ChauffeSystem (ordre 361)
+[info] Système : VolantBancCamera (ordre 399)
+[info] Police : 192 caractères dans l'atlas
+[info] Système : ui::Texte (ordre 400)
+[info] Système : FantomeEtiquette (ordre 419)
+[info] Système : Hud (ordre 420)
+[info] Système : MiniCarte (ordre 422)
+[info] Système : Toasts (ordre 425)
+[info] Système : ecrans::GarageEnregistre (ordre 440)
+[info] Système : EnduranceGarage (ordre 445)
+[info] Système : ecrans::Menu (ordre 450)
+[info] Système : ecrans::Terrain (ordre 452)
+[info] Système : ecrans::Salon (ordre 453)
+[info] Système : ecrans::Pause (ordre 455)
+[info] Système : ChoixMode (ordre 458)
+[info] Système : ecrans::BandeauPaquets (ordre 458)
+[info] Système : ecrans::EcranReglages (ordre 460)
+[info] Système : credits::Credits (ordre 470)
+[info] Système : manette::FocusManette (ordre 489)
+[info] Système : ecrans::FonduChargement (ordre 490)
+[info] Système : PlancheVoitures (ordre 498)
+[info] Système : LigneBancBatiments (ordre 499)
+[info] Système : SceneEssai (ordre 900)
+[info] Système : SqueletteEssai (ordre 905)
+[info] Système : VehiculeNuitBanc (ordre 949)
+[info] Nuit : carte plage, 93 lampadaires, phares de croisement LED (29970 cd chacun)
+[info] Système : Nuit (ordre 950)
+[info] Système : wfs::CielCouvert (ordre 960)
+[info] Système : RealismeBanc (ordre 970)
+[info] Système : BrumeBanc (ordre 971)
+[info] Système : LodBanc (ordre 975)
+[info] Système : PassesBanc (ordre 975)
+[info] Système : LumiereBanc (ordre 985)
+[info] Système : ArchiBanc (ordre 985)
+[info] Système : VueHauteBanc (ordre 995)
+[info] Système : VueFixeBanc (ordre 996)
+[info] Système : EauVueBanc (ordre 996)
+[info] LIEU vagues à portée : 28 m, 149° (droite)
+[info] MASQUES 0 voix cachée(s), la plus masquée 0.0 dB
+[info] VOITURES 1 voix (5 voitures autour)
+[info] PAROIS gauche 21 m, droite 0 m
+[info] PLUIE muette
+[info] Rendu : Basse · 75 % · MSAA ×4 · -- img/s · chauffe 0 · 239 appels · 400 k triangles (décor 58 %, voitures 30 %, personnes 12 %) (netteté du niveau 0, -1 images/s)
+[info] environnement (WFS-150) : cubemap HDR 64x64 × 6 (0.19 Mo), rendue à 128x128 (suréchantillonnage 2 × 2, 0.19 Mo de plus)
+[info] Plage : 106 appels de dessin (0 morceaux, 48 blocs préparés) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+[info] pipelines (WFS-262) : course affichée, 40 pipelines créés depuis le lancement
+[info] SFX route vent 0.00 roulement 0.01 bord 0.00 herbe 0.00 eau 0.00 (8 km/h, x 0.00)
+[info] Ombres : passe d'ombre 2.68 ms GPU en moyenne (carte 2048) ; passe de scène 724.82 ms ; reflets 0.62 ms (WFS-16)
+[info] environnement (WFS-150) : capture 7 prête (64 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 7 (64 px, 20.1 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 1.24
+[info] VOITURES 0 voix (4 voitures autour)
+[info] SFX route vent 0.00 roulement 0.02 bord 0.00 herbe 0.00 eau 0.00 (25 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 8 prête (64 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 8 (64 px, 19.2 ms CPU) en (0.0 1.5 0.0), rebond 0, EV100 1.20
+[info] PAROIS gauche 0 m, droite 0 m
+[info] SFX route vent 0.00 roulement 0.03 bord 0.00 herbe 0.00 eau 0.00 (42 km/h, x 0.00)
+[info] SFX turbo
+[info] VOITURES 1 voix (5 voitures autour)
+[info] SFX route vent 0.01 roulement 0.04 bord 0.00 herbe 0.00 eau 0.00 (58 km/h, x 0.00)
+[info] SFX route vent 0.02 roulement 0.05 bord 0.00 herbe 0.00 eau 0.00 (74 km/h, x 0.00)
+[info] VOITURES 0 voix (5 voitures autour)
+[info] capture halosol-plage-basse : 90 km/h, 69 m, lampadaire suivant à 20.6 m, 235 appels de dessin
+[info] Plage : 101 appels de dessin à la dernière image
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] rendu (WFS-144) : netteté Moyenne / Haute : MSAA ×4, aniso ×8
+[info] Cibles de rendu : 1280x720 (logique), scène 1280x720, MSAA x4
+[info] réglages : qualité Moyenne (scène à 100 %, ombres actives)
+[info] configuration : configgame.json, 124 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] route : textures/route/enrobe-use/route_enrobe-use-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] people/humains/h01.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/h03.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/h04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+[info] people/humains/h05.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/h06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f01.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/f03.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+[info] people/humains/f04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f05.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/f06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+[info] conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] Système : carte::ReglagesCarte (ordre 1)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 10.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] cars/m4.wfm : version 1, tangentes calculées au chargement (135166 sommets, 7.3 ms, WFS-149)
+[info] cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+[info] cars/m4.wfm : optiques avant mesurées : gauche (-0.690, 0.670, -2.173), droite (0.670, 0.670, -2.170), 11640 triangles allumés (WFS-413)
+[info] cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/m4.wfm : 3 niveaux allégés, 81226 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/m4.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 31 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 34 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/m4.wfm : 53 matériaux, 18 textures, 280815 triangles
+[info] voiture : modèle complet, 280815 triangles, aniso ×8, mipmaps oui (cars/m4.wfm, WFS-134)
+[info] cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+[info] cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+[info] cars/p911.wfm : version 1, tangentes calculées au chargement (91851 sommets, 8.1 ms, WFS-149)
+[info] cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+[info] cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+[info] cars/p911.wfm : optiques avant mesurées : gauche (-0.704, 0.708, -1.790), droite (0.704, 0.708, -1.789), 2301 triangles allumés (WFS-413)
+[info] cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p911.wfm : 3 niveaux allégés, 80608 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : 13 matériaux, 8 textures, 255491 triangles
+[info] voiture : modèle complet, 255491 triangles, aniso ×8, mipmaps oui (cars/p911.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 10.2 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] cars/deux_roues/scooter.wfm : version 2, tangentes lues dans le fichier (42364 sommets, 0.2 ms, WFS-149)
+[info] cars/deux_roues/scooter.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter.wfm : feu arrière découpé dans le matériau 0, 1975 triangles (WFS-109)
+[info] cars/deux_roues/scooter.wfm : 3 niveaux allégés, 28544 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/scooter.wfm : matériau 0 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/scooter.wfm : 2 matériaux, 6 textures, 86768 triangles
+[info] voiture : modèle complet, 86768 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-avant.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 3 niveaux allégés, 3362 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 1 matériaux, 3 textures, 5528 triangles
+[info] voiture : modèle complet, 5528 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 3 niveaux allégés, 3328 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 1 matériaux, 3 textures, 5494 triangles
+[info] voiture : modèle complet, 5494 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/routiere.wfm : version 2, tangentes lues dans le fichier (38119 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/routiere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere.wfm : 3 niveaux allégés, 40292 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/routiere.wfm : matériau 3 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 4 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 5 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 9 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 11 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 12 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 14 très fin (1.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 22 très fin (3.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 24 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 25 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 26 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 30 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : 32 matériaux, 13 textures, 88897 triangles
+[info] voiture : modèle complet, 88897 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-avant.wfm : version 2, tangentes lues dans le fichier (3621 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 3 niveaux allégés, 13552 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 6 matériaux, 5 textures, 19982 triangles
+[info] voiture : modèle complet, 19982 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : version 2, tangentes lues dans le fichier (3680 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 3 niveaux allégés, 12391 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 2 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 4 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 6 matériaux, 5 textures, 18531 triangles
+[info] voiture : modèle complet, 18531 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/sportive.wfm : version 2, tangentes lues dans le fichier (45887 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/sportive.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive.wfm : 3 niveaux allégés, 50972 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/sportive.wfm : matériau 2 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/sportive.wfm : 6 matériaux, 11 textures, 100010 triangles
+[info] voiture : modèle complet, 100010 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-avant.wfm : version 2, tangentes lues dans le fichier (4773 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 3 niveaux allégés, 6956 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 1 matériaux, 3 textures, 12800 triangles
+[info] voiture : modèle complet, 12800 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : version 2, tangentes lues dans le fichier (4473 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 3 niveaux allégés, 6689 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 1 matériaux, 3 textures, 12368 triangles
+[info] voiture : modèle complet, 12368 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-arriere.wfm, WFS-134)
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] deux-roues : pilotes h02 et f02 (pose assise, mains au guidon, pieds posés), casque 26 × 30 × 33 cm (WFS-232)
+[info] Système : TrafficSystem (ordre 50)
+[info] chocs (WFS-256) : plage : 0 obstacle(s) de la Ville, 0 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+[info] Système : wfs::ChocsDecor (ordre 99)
+[info] Système : Ville (ordre 100)
+[info] Plage (WFS-139) : 24 sections, 1 virages serrés, 0 bas-côtés bornés par une autre branche, tunnel 2538-2705, rond-point au segment -1, 1 feu(x)
+[info] Plage (WFS-212) : 29 disque(s) de sol au centre des épingles
+[info] Plage : 1522 objets des quartiers (villas, bateaux, rochers, bornes, glissières, pins) (WFS-94)
+[info] Plage (WFS-139) : retirés du tracé 2 : 259 palmiers, 177 parasols, 78 lampadaires, 713 objets ; 66 barques au village
+[info] Marina (WFS-376) : tronçon de quai [448, 459), 13 m
+[info] Marina (WFS-376) : tronçon de quai [523, 700), 212 m
+[info] Marina (WFS-376) : tronçon de quai [735, 896), 193 m
+[info] Marina (WFS-376) : tronçon de quai [4032, 4560), 634 m
+[info] Marina (WFS-376) : quai d'amarrage à 1.45 m au-dessus de l'eau (avant : 1.85 m), 24 pontons, 281 bateaux à quai (147 voiliers, 128 vedettes, 6 yachts : 52 % de voiliers), coques 248 blanc cassé, 21 marine, 7 grises, 5 crème ; 41 au mouillage, 112 anciens bateaux retirés, 38 places vides au quai
+[info] Marina (WFS-376) : fenêtre détaillée la plus chargée (315 m) : 17454 triangles dont 95 bateaux (passe de la scène, sans ombres)
+[info] Marina (WFS-376) : triangles par modèle, détaillé (amarrage compris) / moyen / loin : voilier 270 / 106 / 15, vedette 158 / 70 / 21, yacht 193 / 95 / 21 ; ponton 100 / 10, bitte 42
+[info] Plage (WFS-181) : 8 établissements posés ; 9 objets retirés de leur emprise ; 183 palmiers (avant : 190)
+[info] Plage : 183 palmiers, 57 parasols, 74 lampadaires, nuit
+[info] Plage (WFS-180) : 44 bateaux (voiliers, yachts, jet-skis, paquebot)
+[info] vie : 6 textes d'enseignes dans l'atlas
+[info] Plage (WFS-181) : 32 mouettes (12 posées), 2 dauphins
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] décor fixe (WFS-268) : plage : un tour = le précédent tourné de -76.00° (écart 0.0000 m)
+[info] décor fixe (WFS-269) : plage : occlusion précalculée, 1572 sommets, 7674700 voxels, moyenne 0.79, 2053 ms (grille 2052 ms, 18.2 Mo, rendus après le calcul)
+[info] décor fixe (WFS-268) : plage : sommets par matériau (détail/allégé) : 0:546k/274k 1:18k/18k 2:29k/8k 3:76k/20k 4:11k/0k 5:14k/14k 6:41k/41k 7:71k/51k 8:2k/2k 9:0k/0k 10:18k/18k 11:63k/31k 12:0k/0k 13:0k/0k 14:0k/0k 15:0k/0k 16:0k/0k 17:0k/0k 18:0k/0k 19:0k/0k 20:0k/0k 23:253k/0k 24:6k/0k
+[info] décor fixe (WFS-268) : plage : 143 morceaux → 48 blocs de 115 m, 1638467 sommets, 63.4 Mo GPU, préparé en 2362 ms
+[info] Système : Plage (ordre 105)
+[info] people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+[info] people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+[info] people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+[info] people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+[info] people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+[info] people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+[info] people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+[info] people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+[info] Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+[info] Enfants (WFS-233) : 38 familles sur 252 piétons (15 % visés ; 4 ans 11, 7 ans 11, 10 ans 4, 14 ans 12) ; WFS-240 : 7 poussette(s)
+[info] Piétons : 252 personnes (plage)
+[info] Piétons (WFS-222) : 110 à pied (promeneurs 0, marcheurs 110, passants 0 ; 110 omis sur ordre de l'utilisateur), 142 assis ou baigneurs
+[info] Système : Pietons (ordre 106)
+[info] Système : carte::Campagne (ordre 107)
+[info] vie : 5 textes d'enseignes dans l'atlas
+[info] vie : 23 panneaux néon (plage)
+[info] Système : Enseignes (ordre 107)
+[info] Système : carte::Circuit (ordre 108)
+[info] vie : 11 textes d'enseignes dans l'atlas
+[info] Système : Portique (ordre 108)
+[info] vie : 0 commerces, 0 clients attablés, 67 serviettes (plage)
+[info] Système : Commerces (ordre 109)
+[info] décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, 60512 sommets (niveaux 0 et 1), moyenne 0.86, 35 ms
+[info] archi (WFS-161) : 172 bâtiments du kit posés, 180670 triangles au niveau de détail 0 (tous), nuit oui
+[info] Système : ArchiCarteSysteme (ordre 110)
+[info] Système : carte::CarteDonnees (ordre 112)
+[info] Système : wfs::Pluie (ordre 199)
+[info] Système : wfs::AideDirection (ordre 202)
+[info] Système : CourseSystem (ordre 210)
+[info] Système : TraceSysteme (ordre 215)
+[info] Système : DuelSystem (ordre 220)
+[info] Système : RessentiSystem (ordre 220)
+[info] Système : Course5System (ordre 222)
+[info] Système : PoursuiteSystem (ordre 224)
+[info] Système : Camera (ordre 260)
+[info] PAROIS plage : 3118 segments avec une paroi à gauche, 0 à droite, 352 immeubles (masques)
+[info] PAROIS plage (WFS-278) : obstacles : profondeur 7.0 à 85.4 m (moyenne 46.4), hauteur 4.0 à 18.5 m
+[info] LIEUX plage : fontaine 0, vagues 200, tribune 0, ferme 0, terrasse 0
+[info] MUSIQUE course
+[info] AMBIANCE nuit (plage)
+[info] Système : AudioSystem (ordre 300)
+[info] Système : EffetsSystem (ordre 350)
+[info] Système : QualiteSystem (ordre 360)
+[info] Système : ChauffeSystem (ordre 361)
+[info] Système : VolantBancCamera (ordre 399)
+[info] Police : 192 caractères dans l'atlas
+[info] Système : ui::Texte (ordre 400)
+[info] Système : FantomeEtiquette (ordre 419)
+[info] Système : Hud (ordre 420)
+[info] Système : MiniCarte (ordre 422)
+[info] Système : Toasts (ordre 425)
+[info] Système : ecrans::GarageEnregistre (ordre 440)
+[info] Système : EnduranceGarage (ordre 445)
+[info] Système : ecrans::Menu (ordre 450)
+[info] Système : ecrans::Terrain (ordre 452)
+[info] Système : ecrans::Salon (ordre 453)
+[info] Système : ecrans::Pause (ordre 455)
+[info] Système : ChoixMode (ordre 458)
+[info] Système : ecrans::BandeauPaquets (ordre 458)
+[info] Système : ecrans::EcranReglages (ordre 460)
+[info] Système : credits::Credits (ordre 470)
+[info] Système : manette::FocusManette (ordre 489)
+[info] Système : ecrans::FonduChargement (ordre 490)
+[info] Système : PlancheVoitures (ordre 498)
+[info] Système : LigneBancBatiments (ordre 499)
+[info] Système : SceneEssai (ordre 900)
+[info] Système : SqueletteEssai (ordre 905)
+[info] Système : VehiculeNuitBanc (ordre 949)
+[info] Nuit : carte plage, 93 lampadaires, phares de croisement LED (29970 cd chacun)
+[info] Système : Nuit (ordre 950)
+[info] Système : wfs::CielCouvert (ordre 960)
+[info] Système : RealismeBanc (ordre 970)
+[info] Système : BrumeBanc (ordre 971)
+[info] Système : LodBanc (ordre 975)
+[info] Système : PassesBanc (ordre 975)
+[info] Système : LumiereBanc (ordre 985)
+[info] Système : ArchiBanc (ordre 985)
+[info] Système : VueHauteBanc (ordre 995)
+[info] Système : VueFixeBanc (ordre 996)
+[info] Système : EauVueBanc (ordre 996)
+[info] LIEU vagues à portée : 28 m, 149° (droite)
+[info] MASQUES 0 voix cachée(s), la plus masquée 0.0 dB
+[info] VOITURES 1 voix (5 voitures autour)
+[info] PAROIS gauche 21 m, droite 0 m
+[info] PLUIE muette
+[info] Rendu : Moyenne · 100 % · MSAA ×4 · -- img/s · chauffe 0 · 235 appels · 228 k triangles (décor 43 %, voitures 50 %, personnes 8 %) (netteté du niveau 1, -1 images/s)
+[info] environnement (WFS-150) : cubemap HDR 128x128 × 6 (0.75 Mo), rendue à 256x256 (suréchantillonnage 2 × 2, 0.75 Mo de plus)
+[info] Plage : 113 appels de dessin (0 morceaux, 48 blocs préparés) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+[info] pipelines (WFS-262) : course affichée, 40 pipelines créés depuis le lancement
+[info] SFX route vent 0.00 roulement 0.01 bord 0.00 herbe 0.00 eau 0.00 (8 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 9 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 9 (128 px, 78.5 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 1.24
+[info] VOITURES 0 voix (4 voitures autour)
+[info] SFX route vent 0.00 roulement 0.02 bord 0.00 herbe 0.00 eau 0.00 (25 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 10 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 10 (128 px, 78.2 ms CPU) en (0.0 1.5 0.0), rebond 0, EV100 1.20
+[info] PAROIS gauche 0 m, droite 0 m
+[info] SFX route vent 0.00 roulement 0.03 bord 0.00 herbe 0.00 eau 0.00 (42 km/h, x 0.00)
+[info] SFX turbo
+[info] VOITURES 1 voix (5 voitures autour)
+[info] SFX route vent 0.01 roulement 0.04 bord 0.00 herbe 0.00 eau 0.00 (58 km/h, x 0.00)
+[info] SFX route vent 0.02 roulement 0.05 bord 0.00 herbe 0.00 eau 0.00 (74 km/h, x 0.00)
+[info] VOITURES 0 voix (5 voitures autour)
+[info] capture halosol-plage-moyenne : 90 km/h, 69 m, lampadaire suivant à 20.6 m, 298 appels de dessin
+[info] Plage : 109 appels de dessin à la dernière image
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] Cibles de rendu : 1280x720 (logique), scène 1280x720, MSAA x4
+[info] réglages : qualité Haute (scène à 100 %, ombres actives)
+[info] configuration : configgame.json, 124 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+[info] tracé 2 : plage, 24 sections, 4560 segments (5472 m), 1 carrefour(s) à feux
+[info] route : textures/route/enrobe-use/route_enrobe-use-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/enrobe-use/route_enrobe-use-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-couleur.rgba8.ktx2 : RGBA8 sRGB, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-normale.rgba8.ktx2 : RGBA8 linéaire, 512x512 (0 niveau(x) sauté(s)), 1365.3 Ko (WFS-205)
+[info] route : textures/route/beton-trottoir/route_beton-trottoir-orm.rgba8.ktx2 : RGBA8 linéaire, 256x256 (0 niveau(x) sauté(s)), 341.3 Ko (WFS-205)
+[info] people/humains/h01.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/h03.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/h04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+[info] people/humains/h05.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/h06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f01.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] people/humains/f03.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+[info] people/humains/f04.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+[info] people/humains/f05.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+[info] people/humains/f06.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+[info] conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 9.2 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] Système : carte::ReglagesCarte (ordre 1)
+[info] cars/golf.wfm : version 1, tangentes calculées au chargement (100931 sommets, 10.5 ms, WFS-149)
+[info] cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+[info] cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+[info] cars/golf.wfm : optiques avant mesurées : gauche (-0.675, 0.671, -1.887), droite (0.674, 0.671, -1.887), 4021 triangles allumés (WFS-413)
+[info] cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/golf.wfm : 3 niveaux allégés, 68044 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/golf.wfm : matériau 18 très fin (1.2 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/golf.wfm : 23 matériaux, 13 textures, 240544 triangles
+[info] voiture : modèle complet, 240544 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+[info] cars/m4.wfm : version 1, tangentes calculées au chargement (135166 sommets, 7.0 ms, WFS-149)
+[info] cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+[info] cars/m4.wfm : optiques avant mesurées : gauche (-0.690, 0.670, -2.173), droite (0.670, 0.670, -2.170), 11640 triangles allumés (WFS-413)
+[info] cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/m4.wfm : 3 niveaux allégés, 81226 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/m4.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 31 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 34 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+[info] cars/m4.wfm : 53 matériaux, 18 textures, 280815 triangles
+[info] voiture : modèle complet, 280815 triangles, aniso ×8, mipmaps oui (cars/m4.wfm, WFS-134)
+[info] cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+[info] cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+[info] cars/p911.wfm : version 1, tangentes calculées au chargement (91851 sommets, 9.1 ms, WFS-149)
+[info] cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+[info] cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+[info] cars/p911.wfm : optiques avant mesurées : gauche (-0.704, 0.708, -1.790), droite (0.704, 0.708, -1.789), 2301 triangles allumés (WFS-413)
+[info] cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/p911.wfm : 3 niveaux allégés, 80608 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+[info] cars/p911.wfm : 13 matériaux, 8 textures, 255491 triangles
+[info] voiture : modèle complet, 255491 triangles, aniso ×8, mipmaps oui (cars/p911.wfm, WFS-134)
+[info] cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 9.8 ms, WFS-149)
+[info] cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+[info] cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+[info] cars/gallardo.wfm : optiques avant mesurées : gauche (-0.692, 0.585, -1.836), droite (0.692, 0.585, -1.836), 2618 triangles allumés (WFS-413)
+[info] cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+[info] cars/gallardo.wfm : 3 niveaux allégés, 54115 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/gallardo.wfm : 18 matériaux, 21 textures, 207441 triangles
+[info] voiture : modèle complet, 207441 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+[info] cars/deux_roues/scooter.wfm : version 2, tangentes lues dans le fichier (42364 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/scooter.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter.wfm : feu arrière découpé dans le matériau 0, 1975 triangles (WFS-109)
+[info] cars/deux_roues/scooter.wfm : 3 niveaux allégés, 28544 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/scooter.wfm : matériau 0 très fin (2.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/scooter.wfm : 2 matériaux, 6 textures, 86768 triangles
+[info] voiture : modèle complet, 86768 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-avant.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 3 niveaux allégés, 3362 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-avant.wfm : 1 matériaux, 3 textures, 5528 triangles
+[info] voiture : modèle complet, 5528 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : version 2, tangentes lues dans le fichier (2066 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 3 niveaux allégés, 3328 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : scooter-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/scooter-roue-arriere.wfm : 1 matériaux, 3 textures, 5494 triangles
+[info] voiture : modèle complet, 5494 triangles, aniso ×8, mipmaps oui (cars/deux_roues/scooter-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/routiere.wfm : version 2, tangentes lues dans le fichier (38119 sommets, 0.2 ms, WFS-149)
+[info] cars/deux_roues/routiere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere.wfm : 3 niveaux allégés, 40292 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/routiere.wfm : matériau 3 très fin (3.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 4 très fin (1.2 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 5 très fin (1.5 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 9 très fin (1.6 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 11 très fin (1.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 12 très fin (1.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 14 très fin (1.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 22 très fin (3.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 24 très fin (2.3 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 25 très fin (1.9 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 26 très fin (1.1 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : matériau 30 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere.wfm : 32 matériaux, 13 textures, 88897 triangles
+[info] voiture : modèle complet, 88897 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-avant.wfm : version 2, tangentes lues dans le fichier (3621 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 3 niveaux allégés, 13552 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-avant.wfm : 6 matériaux, 5 textures, 19982 triangles
+[info] voiture : modèle complet, 19982 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : version 2, tangentes lues dans le fichier (3680 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 3 niveaux allégés, 12391 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : routiere-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 2 très fin (3.0 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : matériau 4 très fin (3.8 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/routiere-roue-arriere.wfm : 6 matériaux, 5 textures, 18531 triangles
+[info] voiture : modèle complet, 18531 triangles, aniso ×8, mipmaps oui (cars/deux_roues/routiere-roue-arriere.wfm, WFS-134)
+[info] cars/deux_roues/sportive.wfm : version 2, tangentes lues dans le fichier (45887 sommets, 0.1 ms, WFS-149)
+[info] cars/deux_roues/sportive.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive.wfm : 3 niveaux allégés, 50972 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] cars/deux_roues/sportive.wfm : matériau 2 très fin (2.7 mm) → préfiltré (WFS-42)
+[info] cars/deux_roues/sportive.wfm : 6 matériaux, 11 textures, 100010 triangles
+[info] voiture : modèle complet, 100010 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-avant.wfm : version 2, tangentes lues dans le fichier (4773 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-avant.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 3 niveaux allégés, 6956 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-avant (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-avant.wfm : 1 matériaux, 3 textures, 12800 triangles
+[info] voiture : modèle complet, 12800 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-avant.wfm, WFS-134)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : version 2, tangentes lues dans le fichier (4473 sommets, 0.0 ms, WFS-149)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : roues non trouvées, modèle inchangé (WFS-60)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 3 niveaux allégés, 6689 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+[info] feu non trouvé : sportive-roue-arriere (WFS-182 : aucun halo de frein)
+[info] cars/deux_roues/sportive-roue-arriere.wfm : 1 matériaux, 3 textures, 12368 triangles
+[info] voiture : modèle complet, 12368 triangles, aniso ×8, mipmaps oui (cars/deux_roues/sportive-roue-arriere.wfm, WFS-134)
+[info] people/humains/h02.wfp : 14677 sommets, 122466 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+[info] people/humains/f02.wfp : 16546 sommets, 130221 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+[info] deux-roues : pilotes h02 et f02 (pose assise, mains au guidon, pieds posés), casque 26 × 30 × 33 cm (WFS-232)
+[info] Système : TrafficSystem (ordre 50)
+[info] chocs (WFS-256) : plage : 0 obstacle(s) de la Ville, 0 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+[info] Système : wfs::ChocsDecor (ordre 99)
+[info] Système : Ville (ordre 100)
+[info] Plage (WFS-139) : 24 sections, 1 virages serrés, 0 bas-côtés bornés par une autre branche, tunnel 2538-2705, rond-point au segment -1, 1 feu(x)
+[info] Plage (WFS-212) : 29 disque(s) de sol au centre des épingles
+[info] Plage : 1522 objets des quartiers (villas, bateaux, rochers, bornes, glissières, pins) (WFS-94)
+[info] Plage (WFS-139) : retirés du tracé 2 : 259 palmiers, 177 parasols, 78 lampadaires, 713 objets ; 66 barques au village
+[info] Marina (WFS-376) : tronçon de quai [448, 459), 13 m
+[info] Marina (WFS-376) : tronçon de quai [523, 700), 212 m
+[info] Marina (WFS-376) : tronçon de quai [735, 896), 193 m
+[info] Marina (WFS-376) : tronçon de quai [4032, 4560), 634 m
+[info] Marina (WFS-376) : quai d'amarrage à 1.45 m au-dessus de l'eau (avant : 1.85 m), 24 pontons, 281 bateaux à quai (147 voiliers, 128 vedettes, 6 yachts : 52 % de voiliers), coques 248 blanc cassé, 21 marine, 7 grises, 5 crème ; 41 au mouillage, 112 anciens bateaux retirés, 38 places vides au quai
+[info] Marina (WFS-376) : fenêtre détaillée la plus chargée (315 m) : 17454 triangles dont 95 bateaux (passe de la scène, sans ombres)
+[info] Marina (WFS-376) : triangles par modèle, détaillé (amarrage compris) / moyen / loin : voilier 270 / 106 / 15, vedette 158 / 70 / 21, yacht 193 / 95 / 21 ; ponton 100 / 10, bitte 42
+[info] Plage (WFS-181) : 8 établissements posés ; 9 objets retirés de leur emprise ; 183 palmiers (avant : 190)
+[info] Plage : 183 palmiers, 57 parasols, 74 lampadaires, nuit
+[info] Plage (WFS-180) : 44 bateaux (voiliers, yachts, jet-skis, paquebot)
+[info] vie : 6 textes d'enseignes dans l'atlas
+[info] Plage (WFS-181) : 32 mouettes (12 posées), 2 dauphins
+[info] bâtiments (WFS-416) : paquet absent : kit de secours (bâtiments construits par le code)
+[info] décor fixe (WFS-268) : plage : un tour = le précédent tourné de -76.00° (écart 0.0000 m)
+[info] décor fixe (WFS-269) : plage : occlusion précalculée, 1572 sommets, 7674700 voxels, moyenne 0.79, 2046 ms (grille 2045 ms, 18.2 Mo, rendus après le calcul)
+[info] décor fixe (WFS-268) : plage : sommets par matériau (détail/allégé) : 0:546k/274k 1:18k/18k 2:29k/8k 3:76k/20k 4:11k/0k 5:14k/14k 6:41k/41k 7:71k/51k 8:2k/2k 9:0k/0k 10:18k/18k 11:63k/31k 12:0k/0k 13:0k/0k 14:0k/0k 15:0k/0k 16:0k/0k 17:0k/0k 18:0k/0k 19:0k/0k 20:0k/0k 23:253k/0k 24:6k/0k
+[info] décor fixe (WFS-268) : plage : 143 morceaux → 48 blocs de 115 m, 1638467 sommets, 63.4 Mo GPU, préparé en 2296 ms
+[info] Système : Plage (ordre 105)
+[info] people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+[info] people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+[info] people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+[info] people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+[info] people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+[info] people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+[info] people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+[info] people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+[info] people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+[info] Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+[info] Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+[info] Enfants (WFS-233) : 38 familles sur 252 piétons (15 % visés ; 4 ans 11, 7 ans 11, 10 ans 4, 14 ans 12) ; WFS-240 : 7 poussette(s)
+[info] Piétons : 252 personnes (plage)
+[info] Piétons (WFS-222) : 110 à pied (promeneurs 0, marcheurs 110, passants 0 ; 110 omis sur ordre de l'utilisateur), 142 assis ou baigneurs
+[info] Système : Pietons (ordre 106)
+[info] Système : carte::Campagne (ordre 107)
+[info] vie : 5 textes d'enseignes dans l'atlas
+[info] vie : 23 panneaux néon (plage)
+[info] Système : Enseignes (ordre 107)
+[info] Système : carte::Circuit (ordre 108)
+[info] vie : 11 textes d'enseignes dans l'atlas
+[info] Système : Portique (ordre 108)
+[info] vie : 0 commerces, 0 clients attablés, 67 serviettes (plage)
+[info] Système : Commerces (ordre 109)
+[info] décor fixe (WFS-269) : murs des bâtiments du kit : occlusion précalculée, 60512 sommets (niveaux 0 et 1), moyenne 0.86, 34 ms
+[info] archi (WFS-161) : 172 bâtiments du kit posés, 180670 triangles au niveau de détail 0 (tous), nuit oui
+[info] Système : ArchiCarteSysteme (ordre 110)
+[info] Système : carte::CarteDonnees (ordre 112)
+[info] Système : wfs::Pluie (ordre 199)
+[info] Système : wfs::AideDirection (ordre 202)
+[info] Système : CourseSystem (ordre 210)
+[info] Système : TraceSysteme (ordre 215)
+[info] Système : DuelSystem (ordre 220)
+[info] Système : RessentiSystem (ordre 220)
+[info] Système : Course5System (ordre 222)
+[info] Système : PoursuiteSystem (ordre 224)
+[info] Système : Camera (ordre 260)
+[info] PAROIS plage : 3118 segments avec une paroi à gauche, 0 à droite, 352 immeubles (masques)
+[info] PAROIS plage (WFS-278) : obstacles : profondeur 7.0 à 85.4 m (moyenne 46.4), hauteur 4.0 à 18.5 m
+[info] LIEUX plage : fontaine 0, vagues 200, tribune 0, ferme 0, terrasse 0
+[info] MUSIQUE course
+[info] AMBIANCE nuit (plage)
+[info] Système : AudioSystem (ordre 300)
+[info] Système : EffetsSystem (ordre 350)
+[info] Système : QualiteSystem (ordre 360)
+[info] Système : ChauffeSystem (ordre 361)
+[info] Système : VolantBancCamera (ordre 399)
+[info] Police : 192 caractères dans l'atlas
+[info] Système : ui::Texte (ordre 400)
+[info] Système : FantomeEtiquette (ordre 419)
+[info] Système : Hud (ordre 420)
+[info] Système : MiniCarte (ordre 422)
+[info] Système : Toasts (ordre 425)
+[info] Système : ecrans::GarageEnregistre (ordre 440)
+[info] Système : EnduranceGarage (ordre 445)
+[info] Système : ecrans::Menu (ordre 450)
+[info] Système : ecrans::Terrain (ordre 452)
+[info] Système : ecrans::Salon (ordre 453)
+[info] Système : ecrans::Pause (ordre 455)
+[info] Système : ChoixMode (ordre 458)
+[info] Système : ecrans::BandeauPaquets (ordre 458)
+[info] Système : ecrans::EcranReglages (ordre 460)
+[info] Système : credits::Credits (ordre 470)
+[info] Système : manette::FocusManette (ordre 489)
+[info] Système : ecrans::FonduChargement (ordre 490)
+[info] Système : PlancheVoitures (ordre 498)
+[info] Système : LigneBancBatiments (ordre 499)
+[info] Système : SceneEssai (ordre 900)
+[info] Système : SqueletteEssai (ordre 905)
+[info] Système : VehiculeNuitBanc (ordre 949)
+[info] Nuit : carte plage, 93 lampadaires, phares de croisement LED (29970 cd chacun)
+[info] Système : Nuit (ordre 950)
+[info] Système : wfs::CielCouvert (ordre 960)
+[info] Système : RealismeBanc (ordre 970)
+[info] Système : BrumeBanc (ordre 971)
+[info] Système : LodBanc (ordre 975)
+[info] Système : PassesBanc (ordre 975)
+[info] Système : LumiereBanc (ordre 985)
+[info] Système : ArchiBanc (ordre 985)
+[info] Système : VueHauteBanc (ordre 995)
+[info] Système : VueFixeBanc (ordre 996)
+[info] Système : EauVueBanc (ordre 996)
+[info] LIEU vagues à portée : 28 m, 149° (droite)
+[info] MASQUES 0 voix cachée(s), la plus masquée 0.0 dB
+[info] VOITURES 1 voix (5 voitures autour)
+[info] PAROIS gauche 21 m, droite 0 m
+[info] PLUIE muette
+[info] Rendu : Haute · 100 % · MSAA ×4 · -- img/s · chauffe 0 · 298 appels · 289 k triangles (décor 36 %, voitures 42 %, personnes 21 %) (netteté du niveau 2, -1 images/s)
+[info] Plage : 113 appels de dessin (0 morceaux, 48 blocs préparés) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+[info] pipelines (WFS-262) : course affichée, 40 pipelines créés depuis le lancement
+[info] SFX route vent 0.00 roulement 0.01 bord 0.00 herbe 0.00 eau 0.00 (8 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 11 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 11 (128 px, 64.7 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 1.24
+[info] VOITURES 0 voix (4 voitures autour)
+[info] SFX route vent 0.00 roulement 0.02 bord 0.00 herbe 0.00 eau 0.00 (25 km/h, x 0.00)
+[info] environnement (WFS-150) : capture 12 prête (128 px, point 0.0 1.5 0.0)
+[info] éclairage (WFS-151) : sonde 12 (128 px, 68.4 ms CPU) en (0.0 1.5 0.0), rebond 0, EV100 1.20
+[info] PAROIS gauche 0 m, droite 0 m
+[info] SFX route vent 0.00 roulement 0.03 bord 0.00 herbe 0.00 eau 0.00 (42 km/h, x 0.00)
+[info] SFX turbo
+[info] VOITURES 1 voix (5 voitures autour)
+[info] SFX route vent 0.01 roulement 0.04 bord 0.00 herbe 0.00 eau 0.00 (58 km/h, x 0.00)
+[info] SFX route vent 0.02 roulement 0.05 bord 0.00 herbe 0.00 eau 0.00 (74 km/h, x 0.00)
+[info] Ombres : passe d'ombre 2.58 ms GPU en moyenne (carte 2048) ; passe de scène 328.71 ms ; reflets 0.63 ms (WFS-16)
+[info] VOITURES 0 voix (5 voitures autour)
+[info] capture halosol-plage-haute : 90 km/h, 69 m, lampadaire suivant à 20.6 m, 625 appels de dessin
+[info] Plage : 109 appels de dessin à la dernière image
+[info] Cibles de rendu : 1280x720 (logique), scène 1280x720, MSAA x4
+[info] réglages : qualité Haute (scène à 100 %, ombres actives)
