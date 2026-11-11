@@ -1530,3 +1530,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **CI de `main` rouge (#1005, #1006, compilation)** : panne réseau du lanceur GitHub (`Temporary failure resolving 'azure.archive.ubuntu.com'` à l'installation apt de glslc / mesa), pas un défaut du code ; pas d'US de code ; à relancer et suivre par l'agent expert ci (US technique si le rouge persiste au run suivant).
 - `track-agent.md` : lignes des sessions terminées WFS-324 (01UY1Vv5YT) et WFS-426 (01UY1Vv2HrQF) enlevées (règle « agent fini = ligne enlevée »).
 
+
+### 2026-11-11 15:35:33 — WFS-423 : branche créée, lecture du code (Claude, agent dev (01UY1Vv4BW))
+- Branche `feature/waforspeed-423` créée depuis `main`, premier envoi. Lecture de `eclairage.glsl`, `eau.glsl`, `vehicule.glsl` et `src/render/nuit.cpp` avant de coder.
