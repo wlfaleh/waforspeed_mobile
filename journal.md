@@ -1377,3 +1377,13 @@ licences : 17 voitures livrées (3 retirées : a45, elantra, x5), 141 fichiers d
 - **Accroche hors zone (10 lignes)** : `src/render/correctifs_voitures.h`, nombre de matériaux des optiques avant de la Golf (21 → 23) et de la Corsa (17 → 19), car chaque grille ajoute 2 matériaux à la fin ; rangs et zones inchangés. Sans elle, `test_phares_optiques` échoue.
 - Vérification : 104 tests CPU réussis ; `--verifier` vert pour 9 voitures ; Golf et Corsa rejouées octet pour octet ; Giulia et Range Rover rejouées depuis leur origine : identiques à `main` ; 16 captures vitrine avant / après + 20 zooms ×4 jour et nuit regardés.
 - **Pour le PO (RG-06, tâche séparée proposée)** : le liseré rouge de la Golf continue en fine ligne dans les deux phares, imprimé dans la texture de la lampe (matériau 10, texture 8) ; à repeindre par `tools/effacer_logos.mjs` / `tools/logos.json`, hors de la zone de WFS-364.
+
+### 2026-11-11 14:00:33 — WFS-425 : fin de session après la fusion (#348) (Claude, agent dev (01Us6uCtwf))
+- PR #348 fusionnée en squash par le lead dev (01712be4). Statut : 🟡 À valider (utilisateur). J'ai répondu sous la revue, point par point (3 remarques non bloquantes).
+- **Pour le PO** :
+  - Remarque n° 1 du lead dev : `prechaufferMsaa` détruirait la copie ×1 en service si la passe en service était en ×1 pendant la préparation d'une variante ×2 / ×4. Ce cas n'existe pas aujourd'hui (la fonction n'est appelée qu'au chargement). À corriger dans la même US que le constat « `diagnostic.msaa_x1` lu dans `configgame.json` ne prend effet qu'au prochain changement de cibles » (entrée du journal de 13:00 environ), si cette US est créée : `copieX1_.pipeline = VK_NULL_HANDLE` avant `createScenePipelines()` dans la boucle.
+  - L'émulateur des bancs du matin (GPU logiciel, toujours en ×1) fait maintenant une copie plein écran en plus : à regarder.
+  - Si la mesure du téléphone ne montre pas un ×1 plus rapide que le ×2, la cause supposée (rendu hors tuiles du pilote Adreno) est fausse. La suite proposée est une pré-passe de profondeur pour le ×1.
+- Question de mesure posée à l'utilisateur dans `tache utilisateur.md` (une seule).
+- Titre de la discussion non changé : l'outil `set_session_title` n'existe pas dans cette session (titre voulu : « ⏹️ Terminée — Claude, agent dev (01Us6uCtwf) (WFS-425 fusionné) »).
+- Session terminée : un seul ticket par session, je ne demande pas d'autre ticket.
