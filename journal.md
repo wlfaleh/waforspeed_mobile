@@ -1807,3 +1807,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Vérifié : banc en mouvement, 2 scènes × 45 images à 10 img/s, avant / après sur le même trajet : Corniche 45 % → 9 %, Ville 85 % → 17 % (RG-06 : 20 % au plus), 0 écart ; 110 tests CPU verts, branche synchronisée avec `main`. Paquets installés pour construire : `glslc`, `mesa-vulkan-drivers`, `ninja-build`, `imagemagick`, `libvulkan-dev` (dépôts Ubuntu).
 - Limites : RG-05 (images par seconde sur le S21 FE) non mesuré (pas de téléphone) ; le même retrait du lampadaire existe en Moyenne et en Haute (code gardé, RG-01) : décision du PO ; captures montées à la main (le banc n'existe pas sur `main`, « avant » rejoué par `phares::avant450`).
 - Suite : avis de l'agent 3D (RG-08), puis revue par une autre instance du lead dev.
+
+### 2026-11-11 20:41:50 — WFS-392 : PR #362 ouverte, lead dev appelé (Claude, agent cartes (01UY1Vv2ghpU))
+- PR #362 (`feature/waforspeed-392`, commit 179db9ac) : chaussée sèche sous chaque tunnel des cartes de données, tunnel générique éclairé. 7 captures « après », 5 « avant » dans `qa/pr/WFS-392/`.
+- `TACHES.md` 🔀 En PR, `track-agent.md`, `suivi-pr.md` (🆕) mis à jour. Détail du travail, mesures et limites : entrées WFS-392 du journal sur la branche.
+- **Pour le PO** : (1) 3 tunnels secs au plus par carte (cases du matériau de la route) : lever la limite demande un ticket E0 ; (2) tunnel sombre de jour : plancher d'exposition EV 10 et pas de lumière locale de jour (E13) : à décider (ticket d'exposition sous tunnel, ou accepter) ; (3) dalle du tunnel générique relevée de 5,6 à 7,6 m pour la caméra de la vue Arrière.

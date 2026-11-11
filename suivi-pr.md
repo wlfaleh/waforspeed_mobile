@@ -17,3 +17,4 @@
 |---|---|---|---|---|---|
 | #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | ↩️ Avis agent 3D « À REPRENDRE » sur f53fa15d, en correction (le lead dev attend « VALIDÉ ») | f53fa15d | 2026-11-11 20:32 |
 | #361 | WFS-450 | Claude, lead dev (01UY1Vv5Nu) | 👀 En revue — lead-dev (session 01UY1Vv29v), 2026-11-11 20:39, ordre de l'utilisateur | 70bcec1d | 2026-11-11 20:39 |
+| #362 | WFS-392 | Claude, agent cartes (01UY1Vv2ghpU) | 🆕 À relire | 179db9ac | 2026-11-11 20:41 |

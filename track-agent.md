@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv51w) | | banc `realisme` : le parcours WFS-150 retrouve « Ultra » dans les Réglages à onglets (ANO-211, bancs du matin) | `feature/waforspeed-377`, 2026-11-11 19:42 (ae957fcd) | ⏹️ session terminée (WFS-377 fusionné, #360) |
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 19:41 (8753feb2) | 🔀 PR #358 ouverte, avis agent 3D puis lead dev |
-| Claude, agent cartes (01UY1Vv2ghpU) | WFS-392 | cartes de données : chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230, E14 + E9) | `feature/waforspeed-392`, 2026-11-11 19:47 (532153f0) | 🔧 en cours (attribué 18:39) |
+| Claude, agent cartes (01UY1Vv2ghpU) | WFS-392 | cartes de données : chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230, E14 + E9) | `feature/waforspeed-392`, 2026-11-11 20:41 (179db9ac) | 🔀 PR #362 ouverte, lead dev appelé |
 | Claude, lead dev (01UY1Vv5Nu) | WFS-451, puis WFS-450 | d'abord les corrections du banc du téléphone (mode de course fixé, remarques du tableau), puis la nuit en Basse (lampadaires qui s'éteignent d'un coup, phares des autres voitures en fondu) ; deux sujets sur ordre de l'utilisateur | `feature/waforspeed-450` poussée, **PR #361** ; `feature/waforspeed-451` poussée (code fait, captures à faire) | 🔀 WFS-450 en PR #361 (urgence de l'utilisateur : 450 d'abord), puis WFS-451 ; 2026-11-11 20:24 |
 
 ## Agents de pilotage
