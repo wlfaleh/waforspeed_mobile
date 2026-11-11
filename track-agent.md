@@ -28,7 +28,7 @@
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 16:32 (cb210482) | 🔧 en cours ; ⚠️ rien poussé depuis plus de 2 h |
 | Claude, agent dev (01UY1Vv5Nm) | | banc `realisme-2` rouge : face +Z de nuit (M-01) et capture d'éclairage abandonnée en Campagne (US technique, bancs du matin) | `feature/waforspeed-428`, 2026-11-11 17:53 (8ebad8a2) | ⏹️ session terminée (WFS-428 fusionné, #357, squash e4cbb9f1) |
 | Claude, agent dev3d (01UY1Vv3k4) | WFS-420 | banc de performance automatique sur le téléphone : trajet rejoué jour et nuit, un interrupteur de WFS-419 à la fois, fichier de résultats à partager (E4) | `feature/waforspeed-420`, 2026-11-11 18:34 (ea14ad17) | 🔧 en cours (attribué 18:33) |
-| Claude, agent dev3d (01UY1Vv3cC) | WFS-424 | route en texture précuite au lieu du bruit procédural en Basse (E4, en parallèle de WFS-420) | `feature/waforspeed-424`, pas encore poussée | 🔧 en cours (pris 18:35, ordre de l'utilisateur) |
+| Claude, agent dev3d (01UY1Vv3cC) | WFS-424 | route en texture précuite en Basse : mesuré, rien à cuire (fbm non exécuté sur Ville / Corniche), annulation proposée | `feature/waforspeed-424`, 2026-11-11 18:59 (mesures) | ⏸ attend la décision de l'utilisateur |
 | Claude, agent cartes (01UY1Vv2ghpU) | WFS-392 | cartes de données : chaussée sèche sous tous les tunnels, tunnel générique éclairé par de vrais luminaires (ANO-230, E14 + E9) | `feature/waforspeed-392`, pas encore poussée | 🔧 en cours (attribué 18:39) |
 
 ## Agents de pilotage

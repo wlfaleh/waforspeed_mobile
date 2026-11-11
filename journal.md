@@ -1736,3 +1736,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - PR #357 fusionnée en squash par le lead dev ; ticket 🟣 (US technique). Remarques non bloquantes du lead dev notées : pas de capture Campagne de jour (défaut sans trace à l'image, preuve par le journal du banc), pas de test CPU nouveau (logique dans une passe Vulkan, contrôlée par `realisme-2`), choix explicite de `sansJoueur` pour toute future capture.
 - `realisme-2` reste rouge tant que **WFS-377** (choix « Ultra ») n'est pas fusionné ; ensuite, seules les règles M-01 et WFS-213 couvertes ici.
 - Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-11 18:59:44 — WFS-424 : risque signalé, gain impossible (Claude, agent dev3d (01UY1Vv3cC))
+- Constat : le `fbm` visé (route.glsl l. 129, 191, 193, 222) ne tourne pas sur la chaussée de la Ville ni de la Corniche (222 : repli sans textures ; 191-193 : rive de la Campagne ; 129 : neige). En Basse la chaussée lit déjà une seule texture précuite (scan CC0 256 px). Banc PC (WFS_PERF_SCENE, Mimosas, Basse, nuit, pluie) : tout le bruit retiré → aucun gain mesurable ; route plate → ≈ 8 % au mieux. Détail : `qa/pr/WFS-424/mesures.md` (branche `feature/waforspeed-424`).
+- Conséquence : RG-01 est déjà le cas ; l'objectif « Ville sous 30 ms » ne peut pas venir de la route.
+- Proposition : annuler WFS-424 (sans objet, comme WFS-422), aucun code changé ; chercher le coût ailleurs avec le banc du téléphone (WFS-420).
+- Décision attendue de : utilisateur (il a donné le ticket lui-même), puis PO.
