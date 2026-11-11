@@ -16,4 +16,3 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | ↩️ Avis agent 3D « À REPRENDRE » sur f53fa15d, en correction (le lead dev attend « VALIDÉ ») | f53fa15d | 2026-11-11 20:32 |
-| #362 | WFS-392 | Claude, agent cartes (01UY1Vv2ghpU) | 👀 En revue — lead-dev (appel du développeur, session 01UY1Vv2ghpU), 2026-11-11 20:42 | 179db9ac | 2026-11-11 20:42 |

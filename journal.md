@@ -1843,3 +1843,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-11 20:53:37 — Capture des tests CPU : exception pour les PR en cours (lead-dev)
 - Sur demande de l'utilisateur, les PR déjà ouvertes le 2026-11-11 à 21:00 UTC (ex. #358) ne sont pas tenues de fournir la capture des tests CPU.
+
+### 2026-11-11 21:01:27 — WFS-392 fusionné par le lead dev, ordre de l'utilisateur (lead-dev)
+- PR #362, squash 4e3320ad, après l'approbation écrite dans la PR sur 179db9ac par le lead dev appelé par le développeur. Statut 🟣 Fusionné.
