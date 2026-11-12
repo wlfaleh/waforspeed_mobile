@@ -1331,3 +1331,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 22:50:34 — Ordre des 30 prochaines tâches, avec le lead dev, d'après le code (po-scrum-master)
 - Demande de l'utilisateur : mélanger les tâches selon le code, avec le lead dev. Avis du lead dev (lecture de `origin/main`, aucune branche `feature/` avancée pour ces tickets ; code déjà présent pour 480, 485, 498 ; point chaud `sauvegarde.*`). Ordre des 30 dans le bandeau 🧮 de `TACHES.md`.
+
+### 2026-11-12 23:05:30 — Ordre des 30 : seulement E17 à E21, peinture avant le score (po-scrum-master)
+- Ordre de l'utilisateur. Bandeau 🏁 dans `TACHES.md` (remplace 🧮). WFS-487 ne dépend plus de WFS-498 (prix en ★ et cadenas d'abord, achat branché par 498) ; suivis ajoutés dans `regles-de-gestion/WFS-487.md` et `WFS-498.md`. File B en parallèle.

@@ -87,6 +87,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 6. **Avant chaque action**, tu relis `tache utilisateur.md` et la liste « Ordres permanents » : si ton action contredit un ordre, tu ne la fais pas.
 
 ## Ordres permanents de l'utilisateur (à compléter à chaque nouvel ordre, avec la date)
+- **2026-11-12 23:20 UTC — Les 30 prochaines tâches = seulement E17 à E21 ; peinture des voitures (E18) avant l'étape score (WFS-498) (ordre de l'utilisateur)** : bandeau 🏁 de `TACHES.md` ; la file B (454, 394, 460, 456, 395) reste en parallèle.
 - **2026-11-12 22:56 UTC — Ordre de développement en deux files en même temps (ordre de l'utilisateur)** : file A = épics dans l'ordre E17 → E18 → E19 → E20 → E21 ; file B = WFS-454 (`@cicd`), 460, 456, 395 (`@dev`), 394 (`@conduite`) ; les sessions `@dev` alternent A puis B (bandeau 🧭 de `TACHES.md`).
 - **2026-11-12 22:42 UTC — Épics E17 (ajoutée à 22:50 UTC, en parallèle), E18, E19, E20 et E21 en priorité absolue (ordre de l'utilisateur ; E22 retirée à 22:52 UTC : « oublie E22 »)** : tous leurs tickets en P1 Urgent, donnés avant tout autre ticket prêt (bandeau 🚨 de `TACHES.md`).
 - **2026-11-12 19:27 UTC — WFS-461 est le ticket le plus prioritaire (ordre de l'utilisateur)** : conduite au contact de la police et police plafonnée à sa fiche (ANO-261, 262) ; donné avant tout autre ticket prêt à la première session `@conduite`.
