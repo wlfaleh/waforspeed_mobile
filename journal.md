@@ -1167,3 +1167,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 19:36:08 — WFS-452 : ANO-265 seulement sur la M4, contrôle du modèle non fait (po-scrum-master)
 - Précision de l'utilisateur : les roues avant qui battent en ligne droite ne se voient que sur la M4. La PR #365 corrige le calcul du braquage pour tout le trafic mais ne prouve rien sur le modèle M4 (RG-09 : « vérifier aussi que les roues ne sont pas braquées dans le modèle converti »). Noté dans `regles-de-gestion/WFS-452.md` ; validation 🟡 à faire sur la M4 ; si KO → nouveau ticket M4 pour `@devartiste`.
+
+### 2026-11-12 19:38:23 — WFS-479 créé : jeu dans les roues de la M4 (ANO-265 mal comprise) (po-scrum-master)
+- L'utilisateur précise : la M4 du trafic roule normalement tout droit, mais il y a **du jeu dans les roues** ; ce n'est pas un braquage. ANO-265 avait été décrite comme un braquage par le QA, puis par le PO ; WFS-452 (#365) a donc lissé le braquage sans traiter ce défaut. Erreur du PO : ne pas l'avoir vérifié avec l'utilisateur.
+- **WFS-479** (P1, E10, `@devartiste`, pas la session de WFS-452) : centre / axe des roues du modèle M4 à corriger à la source, contrôle des 18 voitures, suites d'images jour et nuit. Placé juste après WFS-461. ANO-265 → WFS-479 ; WFS-452 garde sa validation 🟡 pour les roues des adversaires, du duel, de la police et du fantôme.
