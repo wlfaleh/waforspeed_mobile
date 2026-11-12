@@ -1353,12 +1353,8 @@ public:
         case O_GLISSIERE:   // WFS-371 (R5) : lisse à double onde en volume sur 3 segments, poteaux en C tous les 4 m
             glissiere(t, (double)a * SEG, (double)(a + 3) * SEG, (float)o.side, o.lat, lod, out);
             break;
-        case O_PIN: case O_ARBRE: {   // tree (decor.js) : pin à deux cônes, ou arbre rond
-            const vec3 b = fr.o + r * o.lat + f * o.along + vec3{0, solY(z, o.side, o.lat) - 0.1f, 0};
-            (void)b;
-            break;   // WFS-383 / WFS-371 : pin d'Alep (pinAlep, appelé par buildChunk) à la place des cônes et des boules
+        case O_PIN: case O_ARBRE:   // WFS-383 / WFS-371 : pin d'Alep (pinAlep, appelé par buildChunk) à la place des cônes et des boules
             break;
-        }
         }
     }
 
