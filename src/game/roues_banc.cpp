@@ -76,29 +76,31 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
     const ModeCourse mode0 = modeCourse();
     int ecarts = 0;
     constexpr double PAS = 1.0 / 60;   // une mise à jour = 2 pas de 1/120 s ; une image dessinée sur deux : 30 img/s
-    // WFS-479 : m4 = voiture du trafic changée en ce modèle (M4, 911), tenue dans sa file, tout droit, vue de 3/4 arrière, basse (une seule passe :
-    // l'« avant » est le même banc avec le modèle de main) ; terrain : Ville, ou Corniche de nuit (vidéo de l'utilisateur)
-    struct Scene { const char* nom; ModeCourse mode; bool nuit; int images; bool basse = false; const char* terrain = "ville"; const char* m4 = nullptr; };
+    // WFS-479 : m4 = voiture du trafic changée en ce modèle (M4, 911), tenue dans sa file, tout droit, vue de 3/4 avant, basse (une seule passe :
+    // l'« avant » est le même banc avec le modèle de main) ; Ville, de jour et de nuit (la Corniche plante ce banc, main compris)
+    struct Scene { const char* nom; ModeCourse mode; bool nuit; int images; bool basse = false; const char* terrain = "ville"; const char* m4 = nullptr; const char* joueur = "golf"; };
     const Scene scenes[] = {{"c5", ModeCourse::Course5, false, 12}, {"c5-nuit", ModeCourse::Course5, true, 12},
                             {"police", ModeCourse::Poursuite, false, 14}, {"police-basse", ModeCourse::Poursuite, false, 14, true},
                             {"fantome", ModeCourse::Checkpoint, false, 12}, {"trafic", ModeCourse::Checkpoint, false, 24},
-                            {"m4", ModeCourse::Checkpoint, false, 12, false, "ville", "m4"}, {"m4-nuit", ModeCourse::Checkpoint, true, 12, false, "corniche", "m4"},
-                            {"p911", ModeCourse::Checkpoint, false, 12, false, "ville", "p911"}};   // WFS-479 : 911 sur ordre de l'utilisateur
+                            {"m4", ModeCourse::Checkpoint, false, 12, false, "ville", "m4"}, {"m4-nuit", ModeCourse::Checkpoint, true, 12, false, "ville", "m4"},
+                            {"p911", ModeCourse::Checkpoint, false, 12, false, "ville", "p911"},
+                            {"compass", ModeCourse::Checkpoint, false, 12, false, "ville", nullptr, "compass"}};   // Bussola : voiture du joueur (absente du trafic)   // WFS-479 : 911 et Bussola sur ordre de l'utilisateur
     const int qualite0 = ecrans::reglages().qualite;
     const char* seule = std::getenv("WFS_ROUES_SCENE");   // banc : une seule scène (mise au point)
     if (!seule || std::string(seule) == "m4-vitrine") benchRoues(r, out, "m4");   // WFS-479 : roues de la M4 en gros plan
     if (!seule || std::string(seule) == "p911-vitrine") benchRoues(r, out, "p911");   // WFS-479 : et de la 911
-    if (seule && std::string(seule) == "compass-vitrine") benchRoues(r, out, "compass");   // WFS-479 : et de la Bussola
+    if (!seule || std::string(seule) == "compass-vitrine") benchRoues(r, out, "compass");   // WFS-479 : et de la Bussola
     for (const Scene& sc : scenes) {
         if (seule && std::string(seule) != sc.nom) continue;
         double msRendu[2] = {0, 0}; int nRendu[2] = {0, 0}; double appels[2] = {0, 0}, triangles[2] = {0, 0};
-        for (int passe = sc.m4 ? 1 : 0; passe < 2; passe++) {
+        const bool joueurAutre = std::string(sc.joueur) != "golf";
+        for (int passe = sc.m4 || joueurAutre ? 1 : 0; passe < 2; passe++) {
             roues::g_avant452 = passe == 0;
             setenv("WFS_DEPART", "0", 1); setenv("WFS_MOMENT", sc.nuit ? "nuit" : "jour", 1);
             modeCourse() = sc.mode;
             ecrans::reglages().qualite = sc.basse ? ecrans::QUALITE_BASSE : qualite0; ecrans::appliquerQualiteNiveau(r);
             if (sc.mode == ModeCourse::Course5) kmCourse5() = 10;
-            if (!g.init(r, "golf", sc.terrain)) { WFS_ERR("roues-suivies : chargement de %s impossible", sc.terrain); ecarts++; continue; }
+            if (!g.init(r, sc.joueur, sc.terrain)) { WFS_ERR("roues-suivies : chargement de %s impossible", sc.terrain); ecarts++; continue; }
             g.allerA(Ecran::Course); g.camMode = 2;
             double t = 1500;
             // caméra « vitrine » autour du joueur : point de vue à avantM devant et droiteM à droite de sa voiture, à hauteur m
@@ -155,11 +157,12 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
                     } else { WFS_ERR("roues-suivies : trafic : aucune voiture placée"); ecarts++; }
                 }
                 // point de vue : roue arrière de côté (c5, fantôme) ; 3/4 avant (police) ; de face, au-dessus (trafic)
-                if (sc.m4) {   // WFS-479 : 3/4 arrière, bas, côté droit : roues arrière et avant droites
+                if (joueurAutre) viser(0.4, 3.4, 0.7f);   // WFS-479 : voiture du joueur de côté, au ras des roues, avant et arrière dans l'image
+                else if (sc.m4) {   // WFS-479 : comme « trafic » : 3/4 avant, bas, roue avant gauche visible (la caméra vise le joueur, derrière)
                     const Traffic* tf = activeTraffic();
                     if (tf && voiture >= 0 && voiture < (int)tf->cars.size()) {
                         const TrafficCar& c = tf->cars[(size_t)voiture];
-                        viser((c.z - g.player().position) * M - 4.2, (c.offset - g.player().playerX) * RW + 2.4, 0.7f);
+                        viser((c.z - g.player().position) * M + 5.2, (c.offset - g.player().playerX) * RW - 2.8, 0.75f);
                     }
                 }
                 else if (sc.nom[0] == 't') {   // trafic : 3/4 avant, bas, du côté opposé au changement de file : roue avant visible
