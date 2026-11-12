@@ -55,6 +55,8 @@ protected:
     }
     void couleursCarte(std::array<uint32_t, PAL_W>& p) const override { for (const auto& [c, k] : cases_) p[(size_t)k] = c; }
     bool touffes() const override { return !d_ || d_->herbe; }
+    // WFS-383 : toutes les bandes de la carte (seulement si elle a sa ligne « sol ») ; pas le trottoir de service en béton des tunnels (WFS-392)
+    bool solNaturel(int col) const override { return col != kase(SOL_TUNNEL); }
     int profil(const char*, int64_t a, int, Band out[6]) const override {
         const float R = (float)RW;
         if (!d_ || d_->sol.empty()) { out[0] = {R, R + 400, 0, 0, C_VERGE}; return 1; }

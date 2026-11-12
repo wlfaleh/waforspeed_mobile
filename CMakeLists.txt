@@ -143,6 +143,8 @@ else()
   add_executable(test_batiments_cuits tests/test_batiments_cuits.cpp src/world/archi_cuit.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp src/world/archi_ouvertures.cpp src/core/carte_cuite.cpp)   # WFS-416 : bâtiments du kit cuits dans le paquet (3 niveaux, recopie, zéro construction, blocs refusés)
   add_executable(test_cartes_v2_donnees tests/test_cartes_v2_donnees.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp)   # WFS-343 : cartes 100 % dynamiques
   target_compile_definitions(test_cartes_v2_donnees PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_sols tests/test_sols.cpp src/world/sols.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp)   # WFS-383 : sols des cartes
+  target_compile_definitions(test_sols PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cartes_v2_saison tests/test_cartes_v2_saison.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/game/player.cpp src/render/route_revetements_defs.cpp)   # WFS-346 : saison (neige, flocons, adhérence)
   target_compile_definitions(test_cartes_v2_saison PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cartes_v2_abris tests/test_cartes_v2_abris.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/render/route_revetements_defs.cpp)   # WFS-392 : tunnels (chaussée sèche, luminaires)

@@ -25,6 +25,7 @@ const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F
 #include "decor.glsl"       // E12 Environnements
 #include "vehicule.glsl"    // E10 Véhicules
 #include "eau.glsl"         // WFS-380 : eau (mer, port, rivière, sillages)
+#include "sols.glsl"        // WFS-383 : sols des cartes (pré, terre, roche selon la pente)
 
 void main() {
     uint flags = uint(pc.params.w + 0.5);
@@ -96,7 +97,7 @@ void main() {
     } else if ((flags & F_WALK) != 0u) {
         surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
-        surfaceSol(base, rough, metal);
+        if (pc.params.z >= 1.0) surfaceTerrain(base, rough, metal, vNrm); else surfaceSol(base, rough, metal);   // WFS-383 (accroche)
     } else if ((flags & F_FACADE) != 0u) {
         surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }

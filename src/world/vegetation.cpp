@@ -416,5 +416,82 @@ void cartesHaie(Geo& L, vec3 c, vec3 r, vec3 f, int side, float l, Mulberry32& R
     }
 }
 
+// WFS-383 (RG-03, avis de l'agent 3D) : pin d'Alep (Pinus halepensis). Fût souvent penché et un peu tordu, écorce brun-rouge
+// crevassée au pied qui passe au gris argenté entre 1 et 2,5 m (u de uBas à uHaut sur une texture en dégradé), 4 à 6 charpentières
+// qui montent en s'écartant (35 à 60°), rameaux fins au bout, et au bout de chaque rameau une touffe d'aiguilles « en pinceau »
+// (3 cartes croisées de la case 3 de l'atlas, aiguilles fines en éventail, 0,9 à 1,8 m) : houppier clair et aéré, ciel visible
+// entre les touffes. lo : pas de rameau, touffes plus grandes au bout des charpentières.
+void pinAlep(Geo& ecorce, Geo& aig, vec3 b, float h, Mulberry32& R, float uBas, float uHaut, bool lo) {
+    const float rT = 0.1f + h * 0.012f, lean = 0.06f + rnd(R) * 0.12f, az = rnd(R) * TAU;
+    const vec3 dirL{std::cos(az), 0, std::sin(az)};
+    // fût : ligne brisée (pied, 1 m, 2,5 m, 0,32 h, 0,55 h), penché et un peu sinueux ; u suit la hauteur (dégradé de l'écorce)
+    const float hs[5] = {0.f, 1.f, 2.5f, h * 0.32f, h * 0.55f};
+    vec3 pts[5]; float us[5], rs[5];
+    const vec3 sin1 = randUnit(R) * (h * 0.025f);
+    for (int k = 0; k < 5; k++) {
+        const float y = std::max(hs[k], k ? hs[k - 1] + 0.3f : 0.f), f = y / (h * 0.55f);
+        pts[k] = b + vec3{0, y, 0} + dirL * (h * lean * f * f) + vec3{sin1.x, 0, sin1.z} * std::sin(f * 3.1416f);
+        const float g = std::clamp((y - 1.f) / 1.5f, 0.f, 1.f);
+        us[k] = uBas + (uHaut - uBas) * g * g * (3 - 2 * g);
+        rs[k] = rT * (1.25f - 0.6f * f);
+    }
+    // anneaux communs aux deux tronçons voisins (tangente moyenne, repère transporté d'un anneau à l'autre) : aucune couture visible
+    const int cotes = lo ? 5 : 7;
+    const uint32_t k0 = (uint32_t)ecorce.v.size();
+    vec3 e1{1, 0, 0};
+    for (int k = 0; k < 5; k++) {
+        const vec3 T = normalize(pts[std::min(k + 1, 4)] - pts[std::max(k - 1, 0)]);
+        e1 = normalize(e1 - T * dot(e1, T));
+        const vec3 e2 = cross(T, e1);
+        for (int i = 0; i <= cotes; i++) {
+            const float t = (float)(i % cotes) / cotes * TAU;
+            const vec3 n = e1 * std::cos(t) + e2 * std::sin(t);
+            vert(ecorce, pts[k] + n * rs[k], lit(n, 0.92f + 0.16f * (float)((i * 7 + k * 3) % 5) / 4.f), us[k], 0.5f);
+        }
+    }
+    for (int k = 0; k < 4; k++)
+        for (int i = 0; i < cotes; i++) {
+            const uint32_t a0 = k0 + (uint32_t)(k * (cotes + 1) + i), a1 = a0 + 1, b0 = a0 + (uint32_t)(cotes + 1), b1 = b0 + 1;
+            ecorce.i.insert(ecorce.i.end(), {a0, a1, b1, a0, b1, b0});
+        }
+    const vec3 sommet = pts[4], centre = sommet + vec3{0, h * 0.2f, 0};
+    // touffe d'aiguilles : 3 cartes croisées autour de l'axe dir, la base au bout du rameau (les aiguilles partent en pinceau)
+    auto touffe = [&](vec3 p, vec3 dir, float s) {
+        const vec3 V = normalize(dir + vec3{0, 0.7f, 0});
+        const vec3 e1 = normalize(cross(std::fabs(V.y) < 0.95f ? vec3{0, 1, 0} : vec3{1, 0, 0}, V)), e2 = cross(V, e1);
+        const vec3 ln = normalize(p - centre + vec3{0, h * 0.15f, 0});
+        const float k0 = colK(0.85f + 0.25f * std::max(0.f, ln.y), R), a0 = rnd(R) * 1.05f;
+        for (int j = 0; j < 3; j++) {
+            const float a = a0 + j * 1.047f;
+            const vec3 U = (e1 * std::cos(a) + e2 * std::sin(a)) * (s * 0.55f);
+            card(aig, p - V * (s * 0.15f), U, V * s, ln, k0 * 0.75f, k0 * 1.05f, 3);
+        }
+    };
+    const int nb = lo ? 3 : 4 + (int)(rnd(R) * 3);
+    for (int k = 0; k < nb; k++) {
+        const float a = az + 0.6f + k * TAU / nb + (rnd(R) - 0.5f) * 0.8f, el = 0.6f + rnd(R) * 0.45f;   // 35 à 60° au-dessus de l'horizontale
+        const vec3 dir = normalize(vec3{std::cos(a) * std::cos(el), std::sin(el), std::sin(a) * std::cos(el)});
+        const vec3 p0 = pts[3] + (sommet - pts[3]) * (0.35f + 0.65f * rnd(R));
+        const float L = h * (0.28f + rnd(R) * 0.14f);
+        const vec3 p1 = p0 + dir * L;
+        limb(ecorce, p0, p1, rT * 0.55f, rT * 0.18f, lo ? 4 : 5, R, 0.2f, uHaut, uHaut, false);
+        if (lo) {
+            for (int j = 0; j < 4; j++) touffe(p1 - dir * (L * 0.3f * (float)j) + randUnit(R) * (h * 0.05f), normalize(dir + randUnit(R) * 0.5f), h * (0.12f + rnd(R) * 0.04f));
+            continue;
+        }
+        const int nr = 4 + (int)(rnd(R) * 3);
+        for (int j = 0; j < nr; j++) {
+            const vec3 q0 = p0 + (p1 - p0) * (0.35f + 0.65f * (float)(j + 1) / nr);
+            vec3 dr = normalize(dir + randUnit(R) * 0.75f);
+            if (dr.y < 0.05f) dr = normalize(dr + vec3{0, 0.4f, 0});
+            const vec3 q1 = q0 + dr * (h * (0.07f + rnd(R) * 0.07f));
+            limb(ecorce, q0, q1, rT * 0.16f, rT * 0.06f, 4, R, 0.2f, uHaut, uHaut, false);
+            touffe(q1, dr, 1.1f + rnd(R) * 0.6f);
+            touffe(q0 + (q1 - q0) * 0.5f, normalize(dr + randUnit(R) * 0.6f), 0.9f + rnd(R) * 0.4f);
+        }
+        touffe(p1, dir, 1.3f + rnd(R) * 0.5f);
+    }
+}
+
 } // namespace veg
 } // namespace wfs

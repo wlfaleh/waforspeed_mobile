@@ -220,7 +220,7 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
     std::vector<std::pair<int, Mots>> L;
     if (!deplier({L0.begin() + 1, L0.end()}, L, e)) { e = "bloc decor : " + e; return false; }
     const int64_t S = d.segments();
-    d.objets.clear(); d.sol.clear(); d.herbe = true; d.saison = {}; d.eclairageTunnel = {};
+    d.objets.clear(); d.sol.clear(); d.herbe = true; d.saison = {}; d.climatSol = 0; d.eclairageTunnel = {};
     auto err = [&](int n, const std::string& q) { e = "bloc decor : " + ligneErr(n, q); return false; };
     for (const auto& [n, w] : L) {
         const std::string& k = w[0];
@@ -245,6 +245,9 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
             if (w.size() != 4 || !nombre(w[1], a) || !nombre(w[2], b) || !nombre(w[3], c) || a < 0 || a > 1 || b < 0.3 || b > 3 || c < 1 || c > 10)
                 return err(n, "« flocons intensite chute taille » attendu (intensité 0 à 1, chute 0,3 à 3 m/s, flocon 1 à 10 mm)");
             d.saison.flocons = (float)a; d.saison.chuteMs = (float)b; d.saison.floconMm = (float)c;
+        } else if (k == "sol") {   // WFS-383 : sol mediterraneen|tempere|automne (couleurs du terrain, shaders/sols.glsl)
+            if (w.size() != 2 || (w[1] != "mediterraneen" && w[1] != "tempere" && w[1] != "automne")) return err(n, "« sol mediterraneen|tempere|automne » attendu");
+            d.climatSol = w[1] == "mediterraneen" ? 1 : w[1] == "tempere" ? 2 : 3;
         } else if (k == "tunnel_eclairage") {   // WFS-392 : tunnel_eclairage type pas_m pas_seuil_m seuil_m
             double a = 0, b = 0, c = 0;
             EclairageTunnel& t = d.eclairageTunnel;

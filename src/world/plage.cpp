@@ -24,6 +24,7 @@
 #include <vector>
 #include "archi_carte.h"   // WFS-161 (accroche) : villas du kit d'architecture
 #include "plage_villas.h"   // WFS-426 : villas posées pour la cuisson du paquet
+#include "sols.h"           // WFS-383 : sols des cartes (pente, couleurs mesurées)
 #include "bouchons_sol.h"   // WFS-212 / WFS-283 : disques de sol au centre des virages serrés
 #include "../../third_party/stb/stb_image.h"
 #include "../core/jobs.h"
@@ -176,6 +177,10 @@ bool occupe(const MapDef& map, int64_t len, int64_t n) {
 
 namespace {
 
+// WFS-383 (avis agent 3D) : albédo linéaire des aiguilles du pin d'Alep, appliqué à la case 3 de l'atlas des feuilles (vert saturé, moyenne
+// sRGB 83 / 131 / 48) pour viser le gris-vert clair mesuré d'une couronne de pin d'Alep au soleil (#5E6A48 à #6F7A55, ≈ 0,13 / 0,17 / 0,08
+// linéaire) avec la teinte moyenne des sommets (≈ 0,75) : chaque canal ramené à part (le bleu remonte, le vert baisse)
+const vec3 ALEP_AIGUILLES = {4.6f, 2.25f, 6.4f};
 constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et part propre (émissive) du stipe, de jour
 // P_NEON : boules des lampadaires (WFS-81) ; WFS-139 : P_ROC roche (texture), P_ACIER glissières, P_SODIUM luminaires du
 // tunnel, P_ROUTE chaussée de la rue transversale du carrefour, P_VOUTE roche de la voûte (lumière du ciel masquée) ;
@@ -186,6 +191,8 @@ enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P
            P_TROTTOIR, P_GIR,   // WFS-248 : trottoirs de Game redessinés ici (coupés au giratoire), asphalte de l'anneau
            P_RIVAGE,            // WFS-380 (RG-09) : blocs et galets du rivage (calcaire gris patiné)
            P_NAPPE,             // WFS-380 (D5) : nappe du ressac et sable mouillé sur la plage (transparente)
+           P_TERRE,                    // WFS-383 : sol des collines, talus et rochers (sols.glsl ; part de roche de chaque sommet en uv.x)
+           P_ALEP_TRONC, P_ALEP_AIG,   // WFS-383 (RG-03) : pins d'Alep : tronc et branches, aiguilles
            P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
@@ -234,6 +241,9 @@ const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c
 constexpr int PAL_W = 128;   // cases de la palette (≥ C_NB) ; WFS-180 : 64 → 128
 static_assert(C_NB <= PAL_W, "palette trop petite");
 inline vec2 palUv(int c) { return {(c + 0.5f) / PAL_W, 0.5f}; }
+// WFS-383 : bande de sol naturel (collines, talus, garrigue, dune, herbe) : dessinée avec le sol des cartes (sols.glsl) ; rocher :
+// même sol, pente lue + 20° (plus de roche) ; promenade, sable, quai et roche texturée (ROC) gardent leur matériau
+inline int partSol(int col) { return (col == C_ROCHER || col == C_COLLINE || col == C_DUNE || col == C_HERBE || col == C_GARRIGUE) ? P_TERRE : -1; }
 
 using Geo = veg::Geo;
 
@@ -531,6 +541,8 @@ public:
         palTex_ = r.vk().uploadTexture(px, PAL_W, 1, true);
         Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE;   // petits objets vus de tous les côtés
         mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
+        // WFS-383 : un seul sol naturel ; la part de roche (zone « rochers ») est portée par chaque sommet (uv.x), sans limite de bande
+        mats_[P_TERRE] = r.makeMaterial(sols::materiau(sols::Climat::Mediterraneen, false, true), nullptr, nullptr, nullptr);
         // WFS-380 : vraie eau (shaders/eau.glsl) : la couleur vient de la profondeur et du ciel, plus d'aplat #1e7fa8
         mats_[P_OCEAN] = r.makeMaterial(eau::materiau(eau::MODE_SURFACE, false), nullptr, nullptr, nullptr);
         mats_[P_NAPPE] = r.makeMaterial(eau::materiau(eau::MODE_NAPPE, true), nullptr, nullptr, nullptr);   // D5 : ressac sur le sable
@@ -553,7 +565,7 @@ public:
             limiteTour_ = len_;
             {   // WFS-269 (accroche) : occlusion précalculée : chaume et bois (MAT_AO) la reçoivent ; ni les rochers, ni les trottoirs, ni le décor uni (terrain du surplomb, façades : dents de scie, traînées et taches, 2 revues du lead dev)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
-                lots_.occlusion(b({P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
+                lots_.occlusion(b({P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER, P_TERRE, P_ALEP_TRONC, P_ALEP_AIG}), 0);   // WFS-383 : terrain et pins
                 if (archi::carte::actif()) {   // villas du kit (WFS-161, niveau allégé) : elles cachent le ciel ; leurs murs reçoivent l'occlusion
                     std::vector<Vertex> v; std::vector<uint32_t> i;
                     archi::carte::geometrie(1, v, i);
@@ -595,6 +607,23 @@ public:
         // part propre brun BARK.palm : garde la teinte du jeu web à contre-jour (presque éteinte la nuit)
         mb.emissive = lin(veg::hex(veg::BARK_PALM)) * (night_ ? 0.05f : STIPE_E);
         mats_[P_STIPE] = r.makeMaterial(mb, &barkTex_, nullptr, nullptr);
+        // WFS-383 (RG-03) : pin d'Alep (Pinus halepensis) : écorce gris argenté sur les branches, brun-rouge crevassé au pied du
+        // tronc ; aiguilles fines vert-jaune clair (plus claires que le pin sylvestre). Avis de l'agent 3D (D) : 8 texels en dégradé, du
+        // brun-rouge du pied (u = 0) au gris argenté (u = 1) : le fût passe de l'un à l'autre entre 1 et 2,5 m, sans ligne nette
+        uint8_t alep[32];
+        for (int k = 0; k < 8; k++) {
+            const float f = k / 7.f;
+            const uint8_t c[3] = {(uint8_t)(0x6a + (0x8a - 0x6a) * f + 0.5f), (uint8_t)(0x4c + (0x84 - 0x4c) * f + 0.5f), (uint8_t)(0x38 + (0x7a - 0x38) * f + 0.5f)};
+            alep[k * 4] = c[0]; alep[k * 4 + 1] = c[1]; alep[k * 4 + 2] = c[2]; alep[k * 4 + 3] = 255;
+        }
+        alepTex_ = r.vk().uploadTexture(alep, 8, 1, true);
+        Material ma; ma.rough = 0.92f; ma.flags = MAT_VTINT;
+        mats_[P_ALEP_TRONC] = r.makeMaterial(ma, &alepTex_, nullptr, nullptr);
+        {   // couleur linéaire directe (leafMat passe en linéaire une teinte sRGB ≤ 1)
+            Material m; m.color = {ALEP_AIGUILLES.x, ALEP_AIGUILLES.y, ALEP_AIGUILLES.z, 1}; m.rough = 0.8f; m.cutoff = 0.5f;
+            m.flags = MAT_MASK | MAT_DOUBLE | MAT_VTINT;
+            mats_[P_ALEP_AIG] = r.makeMaterial(m, leafTex_.img ? &leafTex_ : nullptr, nullptr, nullptr);
+        }
     }
 
     // WFS-139 : matériaux de la falaise et du tunnel
@@ -1316,9 +1345,7 @@ public:
         case O_PIN: case O_ARBRE: {   // tree (decor.js) : pin à deux cônes, ou arbre rond
             const vec3 b = fr.o + r * o.lat + f * o.along + vec3{0, solY(z, o.side, o.lat) - 0.1f, 0};
             if (o.t == O_PIN) {
-                cylinder(g, b, 0.25f, o.h * 0.3f, 6, palUv(C_TRONC));
-                cone(g, b + vec3{0, o.h * 0.2f, 0}, o.h * 0.28f, o.h * 0.55f, 8, palUv(C_PIN));
-                cone(g, b + vec3{0, o.h * 0.48f, 0}, o.h * 0.21f, o.h * 0.5f, 8, palUv(C_PIN));
+                break;   // WFS-383 : pin d'Alep (pinAlep, appelé par buildChunk) à la place des deux cônes
             } else {
                 cylinder(g, b, 0.3f, o.h * 0.45f, 6, palUv(C_TRONC));
                 ball(g, b + vec3{0, o.h * 0.62f, 0}, vec3{0.36f, 0.32f, 0.36f} * o.h, palUv(C_FEUILLE));
@@ -2295,6 +2322,47 @@ public:
     float penteFond(const MapDef& map, int64_t a) const { return moyenneLieu(map, a, false); }
     float agitation(const MapDef& map, int64_t a) const { return moyenneLieu(map, a, true); }
 
+    // WFS-383 (RG-03) : pin d'Alep (Pinus halepensis, garrigue et pentes de la côte méditerranéenne) : 10 à 20 m, tronc penché,
+    // houppier irrégulier, clair et aéré, branches grises, pied brun-rouge crevassé. Générateur veg::pinAlep (avis de l'agent 3D, D :
+    // touffes d'aiguilles en pinceau au bout des rameaux, écorce en dégradé), 2 niveaux de détail (lod).
+    void pinAlep(vec3 b, float h, uint32_t graine, bool lod, Geo out[P_COUNT]) const {
+        Mulberry32 R(graine);
+        veg::pinAlep(out[P_ALEP_TRONC], out[P_ALEP_AIG], b, h, R, 0.06f, 0.94f, lod);
+    }
+    // WFS-383 (RG-03) : pins d'Alep semés au hasard sur les pentes (jamais en grille) : bosquets de 30 à 60 m (bruit le long de la
+    // route), position latérale et avancée tirées, seulement sur un sol naturel (sols.glsl) de pente < 40°, à 32 m de l'axe au moins
+    // (ni sur la route, ni sur les villas du bord). Même tirage à chaque construction (graine = segment du tour).
+    void pinsPentes(Track& t, int64_t a0, int64_t a1, bool lod, Geo out[P_COUNT]) {
+        const float R0 = (float)RW;
+        for (int64_t a = a0; a < a1; a++) {
+            const int64_t m = mod(a);
+            Mulberry32 D((uint32_t)(m * 2654435761u + 97));
+            // bosquets : densité lissée entre deux tirages tous les 40 segments (≈ 48 m)
+            auto dens = [&](int64_t k) { Mulberry32 G((uint32_t)(k * 40503u + 11)); return (float)G.next(); };
+            const int64_t k0 = m / 40; const float f = (float)(m % 40) / 40.f, ff = f * f * (3 - 2 * f);
+            const float bosquet = dens(k0) + (dens(k0 + 1) - dens(k0)) * ff;
+            if ((float)D.next() > 0.32f * std::max(0.f, bosquet * 1.8f - 0.5f)) continue;   // ≈ 1 pin pour 9 m dans un bosquet
+            for (int side : {-1, 1}) {
+                if ((float)D.next() < 0.5f) continue;
+                Band b[8] = {}; float mer = 1e9f;
+                const int n = bandes(t, a, a, side, b, mer);
+                const float lat = R0 + 32 + (float)D.next() * 110, avance = ((float)D.next() - 0.5f) * (float)SEG_M;
+                for (int i = 0; i < n; i++) {
+                    if (lat < b[i].a || lat > b[i].b || b[i].col == C_ROCHER || partSol(b[i].col) != P_TERRE || b[i].b - b[i].a < 0.5f) continue;
+                    if (lat >= mer) break;   // dans la mer
+                    const float pente = std::atan2(std::fabs(b[i].yb - b[i].ya), b[i].b - b[i].a) * 180.f / PI;
+                    if (pente > 40) break;
+                    const float y = b[i].ya + (b[i].yb - b[i].ya) * (lat - b[i].a) / (b[i].b - b[i].a);
+                    const TrackPoint p = t.point((double)a * SEG, side * lat);
+                    const Frame fr = frameAt(t, (double)a * SEG);
+                    const vec3 pied = vec3{(float)p.x, (float)p.y + y - 0.15f, (float)p.z} + fr.f * avance;
+                    pinAlep(pied, 10 + (float)D.next() * 8, (uint32_t)(m * 31 + (side > 0 ? 7 : 3)), lod || lat > R0 + 70, out);
+                    break;
+                }
+            }
+        }
+    }
+
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
         const MapDef& map = *t.map();
         const int64_t len = (int64_t)t.segmentCount();
@@ -2303,6 +2371,31 @@ public:
         // permis ; roche texturée, uv en mètres / ROC_TUILE)
         const bool t2 = !trace::sections(t).empty();
         if (gir_.ok) trottoirs(t, c, out[P_TROTTOIR]);   // WFS-248 : trottoirs de Game (remplaceTrottoir), coupés sur le giratoire
+        // WFS-383 (avis de l'agent 3D, B) : part de roche de chaque sommet du sol naturel (uv.x, 0 à 1) : 1 dans une bande de rochers,
+        // fondu sur 25 m en travers, moyennée sur ± 30 m le long de la route : plus de limite droite d'une bande ou d'une zone à l'autre
+        constexpr int64_t PAS_R = 5, NB_R = 5;   // 11 échantillons, tous les 6 m
+        const int64_t M0 = a0 - PAS_R * NB_R, NM = a1 + 1 + PAS_R * NB_R - M0 + 1;
+        std::vector<std::array<vec2, 3>> rocs((size_t)NM * 2); std::vector<int8_t> nrocs((size_t)NM * 2, -1);
+        auto partRoche = [&](int64_t a, int side, float lat) {
+            float s = 0;
+            for (int64_t j = -NB_R; j <= NB_R; j++) {
+                const int64_t k = a + j * PAS_R; const size_t q = (size_t)(k - M0) * 2 + (side > 0 ? 1 : 0);
+                if (nrocs[q] < 0) {
+                    Band bb[8] = {}; float mer = 1e9f; int8_t nr = 0;
+                    const int n = bandes(t, k, k, side, bb, mer);
+                    for (int i = 0; i < n && nr < 3; i++) if (bb[i].col == C_ROCHER && bb[i].b > bb[i].a) rocs[q][(size_t)nr++] = {bb[i].a, bb[i].b};
+                    nrocs[q] = nr;
+                }
+                float w = 0;
+                for (int i = 0; i < nrocs[q]; i++) {
+                    const vec2 r = rocs[q][(size_t)i];
+                    const float d = lat < r.x ? r.x - lat : lat > r.y ? lat - r.y : 0.f, x = std::clamp(d / 25.f, 0.f, 1.f);
+                    w = std::max(w, 1 - x * x * (3 - 2 * x));
+                }
+                s += w;
+            }
+            return s / (float)(2 * NB_R + 1);
+        };
         for (int64_t a = a0; a < a1; a++) {
             const double s0 = (double)a * SEG, s1 = (double)(a + 1) * SEG;
             const float v0 = (float)std::fmod((double)a * SEG_M, 400.0) / ROC_TUILE, v1 = v0 + (float)SEG_M / ROC_TUILE;
@@ -2317,6 +2410,8 @@ public:
                     const float l0 = std::hypot(x.b - x.a, x.yb - x.ya), l1 = std::hypot(y.b - y.a, y.yb - y.ya);
                     if (l0 < 0.01f && l1 < 0.01f) continue;   // bande rabotée à rien
                     vec3 A = P(s0, x.a, x.ya), B = P(s0, x.b, x.yb), C = P(s1, y.b, y.yb), Dd = P(s1, y.a, y.ya);
+                    const int sol = x.col == ROC ? -1 : partSol(x.col);   // WFS-383 : sol naturel (uv nuls : sommets soudés, normales lissées)
+                    const vec2 uvSol = sol >= 0 ? vec2{0, 0} : palUv(x.col == ROC ? 0 : x.col);
                     if (x.col == ROC) {
                         const vec2 ua{u0 / ROC_TUILE, v0}, ub{(u0 + l0) / ROC_TUILE, v0}, uc{(u1 + l1) / ROC_TUILE, v1}, ud{u1 / ROC_TUILE, v1};
                         if (side > 0) quadUv(out[P_ROC], A, B, C, Dd, ua, ub, uc, ud); else quadUv(out[P_ROC], A, Dd, C, B, ua, ud, uc, ub);
@@ -2329,9 +2424,12 @@ public:
                             const float f0 = (float)k / nc, f1 = (float)(k + 1) / nc;
                             const vec3 a2 = P(s0, L(x, f0), H(x, f0)), b2 = P(s0, L(x, f1), H(x, f1)), c2 = P(s1, L(y, f1), H(y, f1)), d2 = P(s1, L(y, f0), H(y, f0));
                             if (giratoire::dansOuvrage(gir_, (a2 + b2 + c2 + d2) * 0.25f, 0.2f)) continue;
-                            if (side > 0) quad(out[P_UNI], a2, b2, c2, d2, palUv(x.col)); else quad(out[P_UNI], a2, d2, c2, b2, palUv(x.col));
+                            if (side > 0) quad(out[sol >= 0 ? sol : P_UNI], a2, b2, c2, d2, uvSol); else quad(out[sol >= 0 ? sol : P_UNI], a2, d2, c2, b2, uvSol);
                         }
-                    } else if (side > 0) quad(out[P_UNI], A, B, C, Dd, palUv(x.col)); else quad(out[P_UNI], A, Dd, C, B, palUv(x.col));   // face vers le haut
+                    } else if (sol >= 0) {   // WFS-383 : sol naturel, part de roche de chaque sommet (uv.x)
+                        const vec2 ua{partRoche(a, side, x.a), 0}, ub{partRoche(a, side, x.b), 0}, uc{partRoche(a + 1, side, y.b), 0}, ud{partRoche(a + 1, side, y.a), 0};
+                        if (side > 0) quadUv(out[sol], A, B, C, Dd, ua, ub, uc, ud); else quadUv(out[sol], A, Dd, C, B, ua, ud, uc, ub);   // face vers le haut
+                    } else if (side > 0) quad(out[P_UNI], A, B, C, Dd, uvSol); else quad(out[P_UNI], A, Dd, C, B, uvSol);   // face vers le haut
                     u0 += l0; u1 += l1;
                 }
                 // mer : à altitude fixe au tracé 2 (la route monte jusqu'à 60 m au-dessus), jusqu'au bord permis
@@ -2396,7 +2494,8 @@ public:
                 for (int k = 0; k < N; k++) {
                     const float a0 = 2 * PI * k / N, a1 = 2 * PI * (k + 1) / N;
                     const vec3 p0 = bo.c + vec3{std::cos(a0), 0, std::sin(a0)} * bo.r, p1 = bo.c + vec3{std::cos(a1), 0, std::sin(a1)} * bo.r;
-                    tri(out[P_UNI], bo.c, p1, p0, palUv(bo.col)); tri(out[P_UNI], bo.c, p0, p1, palUv(bo.col));   // deux faces
+                    if (partSol(bo.col) >= 0) tri(out[partSol(bo.col)], bo.c, p1, p0, {0, 0});   // WFS-383 : même sol que les bandes (jamais retourné)
+                    else { tri(out[P_UNI], bo.c, p1, p0, palUv(bo.col)); tri(out[P_UNI], bo.c, p0, p1, palUv(bo.col)); }   // deux faces
                 }
             }
             decorLieux(t, a, lod, out);   // WFS-180
@@ -2432,7 +2531,15 @@ public:
             box(out[P_UNI], b + vec3{0, 0.1f, 0}, fr.r, fr.f, 0.09f, 0.09f, 5.8f, palUv(C_POTEAU));
             ball(out[P_NEON], b + vec3{0, 6.1f, 0}, {0.35f, 0.35f, 0.35f}, palUv(C_LAMPE));
         }
-        for (const Objet& o : objets_) { int64_t a; if (inChunk(o.seg, a)) dessineObjet(t, o, a, lod, out[P_UNI]); }   // WFS-94
+        for (const Objet& o : objets_) {   // WFS-94 ; WFS-383 : les pins sont des pins d'Alep (plus de cônes)
+            int64_t a; if (!inChunk(o.seg, a)) continue;
+            if (o.t == O_PIN) {
+                const Frame fr = frameAt(t, (double)a * SEG);
+                const vec3 b = fr.o + fr.r * ((float)o.side * o.lat) + fr.f * o.along + vec3{0, solY(zoneId(map, a, len_), o.side, o.lat) - 0.1f, 0};
+                pinAlep(b, o.h + 3, (uint32_t)(mod(a) * 13 + 5), lod, out);
+            } else dessineObjet(t, o, a, lod, out[P_UNI]);
+        }
+        pinsPentes(t, a0, a1, lod, out);   // WFS-383 (RG-03)
         if (!lod) for (const Umbrella& u : umbrellas_) {   // petits objets : pas au-delà de 200 m
             int64_t a; if (!inChunk(u.seg, a)) continue;
             const Frame fr = frameAt(t, (double)a * SEG);
@@ -2441,6 +2548,8 @@ public:
             cone(out[P_UNI], b + vec3{0, 1.9f, 0}, 1.5f, 0.55f, 10, palUv(C_PARASOL0 + u.col));
             box(out[P_UNI], b + fr.r * 1.2f, fr.r, fr.f, 0.35f, 0.95f, 0.3f, palUv(C_TRANSAT));
         }
+        // WFS-383 (RG-01) : normales du terrain lissées (plus de grandes facettes : la pente lue par sols.glsl varie en douceur)
+        sols::lisserNormales(out[P_TERRE].v, out[P_TERRE].i);
     }
 
     // banc d'essai (WFS-139) : vue de dessus de la Corniche avec son décor (route et voiture du joueur dessinées par Game)
@@ -2562,7 +2671,7 @@ public:
         for (std::vector<Mesh>* v : {&mouette_, &dauphin_}) { for (Mesh& m : *v) if (m.vb.buf) r.destroy(m); v->clear(); }   // WFS-181
         if (ecume_.vb.buf) { r.destroy(ecume_); ecume_ = Mesh{}; }
         atlas_.detruire(r);
-        for (Image* im : {&palTex_, &leafTex_, &barkTex_, &rocTex_, &rocNrm_, &rocMr_, &pailleTex_, &boisTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
+        for (Image* im : {&palTex_, &leafTex_, &barkTex_, &alepTex_, &rocTex_, &rocNrm_, &rocMr_, &pailleTex_, &boisTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
         active_ = false;
     }
 
@@ -2605,7 +2714,7 @@ private:
     int64_t len_ = 1, depart_ = 0;
     bool cuisson_ = false;   // WFS-426 : instance de cuisson (plage::poserVillasKit), jamais enregistrée comme système
     Material mats_[P_COUNT];
-    Image palTex_{}, leafTex_{}, barkTex_{};
+    Image palTex_{}, leafTex_{}, barkTex_{}, alepTex_{};   // WFS-383 : écorce du pin d'Alep
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
     std::map<int64_t, Chunk> chunks_;   // ancienne gestion (repli, lots::g_lotsDecor = false)
     lots::DecorFixe lots_;   // WFS-268 : décor du tour 0, préparé au chargement
@@ -2724,6 +2833,34 @@ static void benchMontee(Game& g, Renderer& r, const std::string& out) {
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 
+// WFS-383 (avis agent 3D, RG-01) : sols de la Corniche vus de près, côté terre (s = −1), de jour : pré / garrigue (< 25°), terre et
+// maquis (25 à 40°), roche calcaire (> 40°) et leurs fondus, pins d'Alep. Lieux : la montée (colline de 12° au-dessus de la falaise taillée, garrigue et pins, vue
+// depuis 30 m : carte-plage-talus) et la zone « rochers » (bandes rocheuses de 15,5°, lues à 40,5° : terre et maquis mêlés de roche calcaire :
+// carte-plage-rochers) ; pour chacun, vue depuis l'accotement vers le talus et vue plongeante à 60 m (-haut).
+// Les pentes de plus de 40° de la Corniche sont les falaises taillées (bande ROC, texture de roche de WFS-139, inchangée).
+// WFS_PLAGE_SOLS=1 : seulement ces vues.
+static void vuesSolsCorniche(Game& g, Renderer& r, const std::string& out, Track& t, const char* lieu, int64_t seg) {
+    if (seg < 0) { WFS_ERR("banc Corniche : lieu absent pour carte-plage-%s", lieu); return; }
+    for (int haut = 0; haut < 2; haut++) {
+        setenv("WFS_MOMENT", "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, seg - 30)).c_str(), 1);
+        if (!g.init(r, "golf", "plage")) continue;
+        g.setAutopilot(false); g.camMode = 0;
+        for (int i = 0; i < 60; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+        const float m = (float)SEG_M;
+        const TrackPoint o = t.point(((double)seg - (haut ? 40 : 15) / m) * SEG, -((float)RW + (haut ? 10.f : 3.f)));
+        const TrackPoint c = t.point(((double)seg + (haut ? 60 : 45) / m) * SEG, -((float)RW + (haut ? 90.f : 60.f)));
+        g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + (haut ? 60.f : std::strcmp(lieu, "talus") ? 2.5f : 30.f), (float)o.z};
+        g_vueDessus.cible = {(float)c.x, (float)c.y + (haut ? 0.f : std::strcmp(lieu, "talus") ? 12.f : 25.f), (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = 60;
+        g.render(404); g.render(404.02);
+        const std::string nom = std::string("carte-plage-") + lieu + (haut ? "-haut" : "");
+        r.capturePng(out + "/" + nom + ".png");
+        g_vueDessus.actif = false;
+        WFS_LOG("capture %s : sols côté terre (segment %lld)", nom.c_str(), (long long)seg);
+        g.shutdown();
+    }
+}
+
 void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     if (const char* e = std::getenv("WFS_CORNICHE"); e && !std::strcmp(e, "montee")) { benchMontee(g, r, out); return; }   // WFS-379
     Track t; t.build(mapById("plage"), trace::versionCarte("plage"));
@@ -2737,6 +2874,13 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         if ((s.type == trace::Type::RondPoint || s.exRondPoint) && !rp) rp = &s;   // WFS-283 : carrefour simple, même place
         if (s.type == trace::Type::Feux && !fx) fx = &s;
     }
+    auto vuesSols = [&] {   // WFS-383 : sols de la montée et de la zone « rochers »
+        int64_t roc = -1;
+        for (int64_t a = 200; a + 200 < L && roc < 0; a += 5) if (!std::strcmp(zoneId(mapById("plage"), a, L), "rochers") && !std::strcmp(zoneId(mapById("plage"), a + 80, L), "rochers")) roc = a + 30;
+        vuesSolsCorniche(g, r, out, t, "talus", la ? la->debut + 400 : -1);
+        vuesSolsCorniche(g, r, out, t, "rochers", roc);
+    };
+    if (std::getenv("WFS_PLAGE_SOLS")) { vuesSols(); unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART"); return; }
     int64_t village = -1;   // village au tracé 2 : sur la descente de la falaise, hors de la montée
     for (int64_t a = 0; a < L && village < 0; a++) {
         const trace::Section* s = trace::sectionA(t, a * SEG);
@@ -2786,6 +2930,7 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         if (courbe >= 0) dessus("carte-plage-montee-courbe-dessus", courbe - 60, courbe, 260);
     }
     if (rp) dessus("carte-plage-rond-point-dessus", rp->debut - 20, (rp->debut + rp->fin) / 2, 110);
+    vuesSols();   // WFS-383
     // WFS-180 : vues depuis la promenade (1,7 m au-dessus du trottoir, à RW + 3 m), tournées vers la fête, les jeux et la mer
     auto promenade = [&](const char* nom, int64_t seg, float recul, float latCible, float hCible, bool nuit, float fov = 55, const vec3* vise = nullptr) {
         if (seg < 0) { WFS_ERR("banc Corniche : lieu absent pour %s", nom); return; }

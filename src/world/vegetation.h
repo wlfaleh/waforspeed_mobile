@@ -41,6 +41,8 @@ vec3 palmier(Geo& bark, Geo& leaf, Geo& dead, vec3 b, float h, float yaw, float 
 // clear, w) sont tirées par l'appelant, dans l'ordre du jeu web. tk : voir Broadleaf.
 void sapin(const Out& o, vec3 b, float h, Mulberry32& R, float tk, float clear, float w, Ecorce e, bool lod);            // vegFir
 void pin(const Out& o, vec3 b, float h, Mulberry32& R, float tk, bool umbrella, Ecorce bas, Ecorce haut, bool lod);    // vegPine
+// WFS-383 : pin d'Alep (écorce en dégradé de uBas au pied à uHaut dès 2,5 m, touffes d'aiguilles en pinceau, case 3 de l'atlas)
+void pinAlep(Geo& ecorce, Geo& aiguilles, vec3 b, float h, Mulberry32& R, float uBas, float uHaut, bool lod);
 void cypres(const Out& o, vec3 b, float h, Mulberry32& R, float tk, Ecorce e, bool lod);                               // vegCypress
 void sousBois(Geo& leaf, vec3 b, Mulberry32& R, float tk, bool fougere);                                               // vegUnder
 void touffe(Geo& leaf, vec3 b, float hgt, float yaw, float k);                                                          // vegTuft
