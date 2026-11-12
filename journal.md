@@ -1286,3 +1286,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 22:19:45 — R16 : prix des voitures, peintures et skins (smart-brainstorming)
 - Décision déléguée par l'utilisateur : prix en étoiles seulement (médailles = packs du market). 14 voitures classées par 0-100 / Vmax, de 250 à 6 000 ★ ; peintures et skins = prix de base × coefficient de classe ; gratuits : 3 voitures, 8 couleurs, 1 skin par voiture. Rien envoyé au PO.
+
+### 2026-11-12 22:26:02 — Prix des voitures, peintures et skins : WFS-498 et WFS-499 créés, E18 alignée (po-scrum-master)
+Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites »). Étoiles seulement ; médailles = packs du market (100 / 300 / 600 ★), équivalent médailles et euros au garage.
+- **WFS-498** (E18, zone E3 + section `boutique` de `configgame.*`, exception PO comme WFS-419 ; P2, ⏳ Prêt) : portefeuille d'étoiles (aucun n'existait dans le code), prix des 14 voitures et coefficients de classe, 3 voitures gratuites, possession par voiture, essai gratuit, sauvegardes d'avant gardées, banc `equilibrage` (1re voiture 22-28 courses, tout 108-132 h).
+- **WFS-499** (E18, zone E5 ; après WFS-498) : garage, cadenas, prix ★ / médailles / €, « Acheter » avec confirmation, essai gratuit, français et anglais.
+- E18 : prix du PO remplacés par la grille de l'utilisateur (base × coefficient, achat pour une seule voiture, prix dans `configgame.json` au lieu de `assets/perso/catalogue.txt`) : `E18-personnalisation.md` (RC-E18-07, RC-E18-11), WFS-487 (dépend de WFS-498), 489, 491, 494.
+- Choix du PO : partie déjà commencée → voiture gardée ; partie neuve → 208 ; euros sur le pack de bronze (0,99 € / 100 ★, R13) ; gain 10 ★ / course en attendant l'étape « score ».
