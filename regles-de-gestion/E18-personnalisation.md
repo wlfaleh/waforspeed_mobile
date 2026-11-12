@@ -64,3 +64,6 @@ candy 250 ★ ; chromé, caméléon 400 ★ ; brillant gratuit (8 couleurs) ; sk
 | WFS-495 | Autocollants : pose qui épouse la carrosserie, 20 calques cuits en une texture | E10 | `@dev` (artiste 3D) | WFS-494 |
 | WFS-496 | Atelier d'autocollants : bibliothèque, placer, tourner, agrandir, colorer, calques | E8 (`src/ui/ecrans/**`) | `@dev` | WFS-495 |
 | WFS-497 | Atelier : texte libre filtré, packs en ★, « Mes créations » (5 par voiture) | E8 + E3 | `@dev` | WFS-496, WFS-480 |
+
+## Langue (épic E20, ajout du PO, 2026-11-12 22:30 UTC, demande de l'utilisateur)
+Tous les écrans de cette épic passent par le système de langue de **WFS-504** (`ui::tr`, tables `assets/textes/fr.txt` et `en.txt`) : ils **dépendent de WFS-504** et livrent leurs textes **en français et en anglais dans la même PR**, avec les captures dans les deux langues (`regles-de-gestion/E20-langue-anglaise.md`, RC-E20-01 à 07). Les tickets de données sans texte ne changent pas.

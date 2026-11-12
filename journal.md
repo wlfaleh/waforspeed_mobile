@@ -1300,3 +1300,10 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 - Tickets (P2, ≤ 1 jour, une session chacun) : **WFS-500** logique + test 100 000 tirages (E3 + section `cadeau` de configgame, après WFS-498) ; WFS-501 écran FR / EN (E8) ; WFS-502 voiture prêtée 3 h (après 499) ; WFS-503 gains réels (après 487, 494).
 - Choix du PO : pas de série de jours ; les cadeaux ne s'accumulent pas ; un seul prêt à la fois ; repli des catégories pleines par les poids des étoiles ; garantie = skin (4) ou voiture (3).
 - Aucune tâche `@cicd` compagne (rien n'est cuit dans un paquet de carte).
+
+### 2026-11-12 22:32:40 — Épic E20 « Le jeu en anglais » créée, WFS-504 à 509 (po-scrum-master)
+- Demande de l'utilisateur (`@po`) : `fr` → français, toute autre langue → anglais ; réglage « Langue » (Automatique / Français / English) sauvegardé ; tout le jeu traduit, futurs écrans bilingues, fiche Google Play en anglais ; avant la sortie publique, en parallèle de l'ordre identité → score → …
+- Constat du code : aucun système de langue ; textes français écrits en dur (≈ 130 dans `paquets.cpp`, 90 `salon.cpp`, 80 `reglages.cpp`, 75 `poursuite_system.cpp`…) ; `store/fiche-fr.md` seule ; boîte de plantage Android en français seulement.
+- Tickets (P2, ≤ 1 jour) : **WFS-504** (point d'extension : `ui::tr`, `assets/textes/fr.txt` / `en.txt`, langue Android par JNI, réglage, sauvegarde `langue=`, banc `textes` et `ui::textBoite`, Réglages traduits ; ⏳ Prêt) ; WFS-505 (menus), 506 (course), 507 (garage, paquets), 508 (CGU, avis `juriste`) en parallèle après 504 ; **WFS-509** (fiche EN, agent expert ci, épic Publication app, jour de publication).
+- Écrans de E17 / E18 / E19 (481, 482, 489, 491, 494, 496, 497, 499, 501) : dépendance WFS-504 ajoutée, règle dans chaque épic. WFS-320 dépend de E20.
+- Choix du PO : boutons de même taille (ordre permanent), police réduite ≤ 20 % ; noms propres, unités et formats des nombres inchangés (non demandé). Aucune tâche `@cicd` compagne (rien n'est cuit dans un paquet de carte).

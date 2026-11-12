@@ -34,3 +34,6 @@ Critères de l'utilisateur : captures du profil, de la plaque sur 3 voitures (jo
 - RC-E17-04 : jeu en français ; seuls les écrans de création du profil et de l'e-mail ont aussi l'anglais (critère de l'utilisateur).
   Traduire tout le jeu est **hors périmètre** (idée R14 du Smart Brain, à demander par l'utilisateur).
 - RC-E17-05 : parcours complet testé (chargement → CGU → création → menu → course → fin → Profil), noté au journal avant la PR.
+
+## Langue (épic E20, ajout du PO, 2026-11-12 22:30 UTC, demande de l'utilisateur)
+Tous les écrans de cette épic passent par le système de langue de **WFS-504** (`ui::tr`, tables `assets/textes/fr.txt` et `en.txt`) : ils **dépendent de WFS-504** et livrent leurs textes **en français et en anglais dans la même PR**, avec les captures dans les deux langues (`regles-de-gestion/E20-langue-anglaise.md`, RC-E20-01 à 07). Les tickets de données sans texte ne changent pas.

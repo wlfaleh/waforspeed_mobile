@@ -46,3 +46,6 @@ Créée le 2026-11-12 par le PO, sur demande de l'utilisateur (`@po`, 2026-11-12
 | WFS-501 | Écran du cadeau : bouton du menu, animation d'ouverture, gain, bouton « Chances », FR / EN | E8 (`src/ui/ecrans/**`) | `@dev` | WFS-500 |
 | WFS-502 | Voiture prêtée 3 h : « Activer » sous 24 h, compte à rebours au garage et au menu, tous les modes, fin « Garde-la pour toujours » | E3 + E5 (`src/ui/garage.*`) + E8 | `@dev` | WFS-501 ; WFS-498 (voitures possédées, prix), WFS-499 (garage) |
 | WFS-503 | Gains réels : étoiles au portefeuille, coloris et skins donnés pour de vrai | E3 | `@dev` | WFS-501 ; WFS-498 (portefeuille) ; WFS-487, WFS-494 |
+
+## Langue (épic E20, ajout du PO, 2026-11-12 22:30 UTC, demande de l'utilisateur)
+Tous les écrans de cette épic passent par le système de langue de **WFS-504** (`ui::tr`, tables `assets/textes/fr.txt` et `en.txt`) : ils **dépendent de WFS-504** et livrent leurs textes **en français et en anglais dans la même PR**, avec les captures dans les deux langues (`regles-de-gestion/E20-langue-anglaise.md`, RC-E20-01 à 07). Les tickets de données sans texte ne changent pas.
