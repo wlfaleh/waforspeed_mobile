@@ -959,3 +959,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 12:00:03 — ANO-265 : roues avant du trafic qui braquent en ligne droite (vidéo de l'utilisateur 00:11) (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
 - Précision de l'utilisateur sur la M4 rouge : ce sont les roues avant qui « jouent » alors que la voiture est droite ; confirmé à 6 img/s ; à rattacher par le PO (WFS-452).
+
+### 2026-11-12 12:00:32 — ANO-265 rattachée à WFS-452 (po-scrum-master)
+- **ANO-265** (roues avant du trafic qui braquent puis se redressent en ligne droite, M4 rouge) → **WFS-452** (P1, roues des autres voitures) : RG-09 (braquage du trafic lissé, 0 en ligne droite, piste `roues.h` l. 45), critère 4, zone élargie à `roues.h` et `traffic_system.cpp` pour ce point ; 🟡 À valider (utilisateur) après fusion. Anomalie en 📋 Planifiée.
