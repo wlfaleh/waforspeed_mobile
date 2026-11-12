@@ -41,7 +41,7 @@ Gagner de l'argent dès la première version publiée sur Google Play.
 - **Duel en ligne caché** en v1.0 : moins de risques de bugs et de RGPD.
 
 ## 5. Ordre de travail
-1. Gel des autres fonctionnalités, recette des corrections en attente, fluidité.
+1. Recette des corrections en attente et fluidité (les autres tickets du jeu continuent en parallèle : ils améliorent le gameplay).
 2. Sauvegarde automatique, retrait du Duel de la Course solo.
 3. Étoiles et médailles.
 4. Garage avec cadenas, peintures.

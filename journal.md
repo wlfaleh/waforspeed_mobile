@@ -1256,3 +1256,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:26:48 — R12 : pub volontaire et achats dès la v1.0 (smart-brainstorming)
 - Décision de l'utilisateur : gagner de l'argent dès la 1re version. R12 : W5 et W6 de R11 deviennent V9 (pub volontaire) et V10 (achats) en v1.0 ; prérequis 0.6 à 0.8 (avocat, CGU, compte marchand, Sécurité des données, IARC). Rien envoyé au PO.
+
+### 2026-11-12 21:42:01 — Proposition v1.0 : pas de gel des autres fonctionnalités (smart-brainstorming)
+- Décision de l'utilisateur : les autres tickets continuent (ils améliorent le gameplay). Gel retiré de `proposition-v1-argent.md` (remplace R04-A02 et l'étape 0.2 de R11).
