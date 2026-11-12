@@ -1002,3 +1002,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 13:04:15 — 15 tâches compagnes `@cicd` de publication des paquets (po-scrum-master)
 - Demande de l'utilisateur (« je vois pas les tâches cicd après les US de décor ») : WFS-463 à 477 créées, une par tâche de décor ouverte (371, 455, 387, 401, 400, 385, 398, 399, 410, 411, 403, 388, 389, 386, 417), P1, `@cicd`, ⏳ En attente jusqu'à la fusion de leur tâche de décor ; règles `regles-de-gestion/WFS-463.md` à `WFS-477.md` (modèle WFS-462).
+
+### 2026-11-12 13:05:59 — WFS-462 retiré, fusionné dans WFS-463 (po-scrum-master)
+- Ordre de l'utilisateur : « enlève la première tâche pour cicd, la tâche 3 suffit ». WFS-462 ↪ fusionné dans WFS-463 : un seul run de `paquets.yml` après la fusion de WFS-371 publie la Corniche cuite (WFS-426), WFS-383, 392 et 371. Prochaine tâche `@cicd` prête : WFS-454.
