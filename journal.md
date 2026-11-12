@@ -971,3 +971,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 12:02:49 — WFS-452 bloquant en entier (précision de l'utilisateur) (po-scrum-master)
 - Le cœur de **WFS-452** (roues de la Course à 5, du duel, de la police et du fantôme qui tournent et braquent) est **bloquant** : P1 et périmètre de départ gardés, plus RG-09 (ANO-265, bloquante). **ANO-263** coupée en deux : roues immobiles pendant la glisse → WFS-452 (bloquant, RG-08 et critère 3) ; aspect (pneu et jante, tôle, hauteur) → WFS-457 RG-07 (mineur). WFS-457 reste P3 (ANO-264 mineure). `anno.md`, `TACHES.md`, règles à jour.
+
+### 2026-11-12 12:04:24 — WFS-461 : les 300 km/h sont ceux de la police (précision de l'utilisateur) (po-scrum-master)
+- Titre et règles réécrits : RG-03 police plafonnée à la vitesse, à l'accélération et au freinage de sa fiche (208, 208 km/h ; fin de `MAX_SPEED × 1,45` et du « joueur + 45 m/s » dans `poursuite.cpp` / `poursuite.h`, replacement après perte compris) ; RG-04 jeu jouable (rattrapage par les virages, bouchons, renforts). Zone élargie à `src/game/poursuite.cpp` / `.h`. Critères : banc CPU de vitesse maxi de la police ≤ 208 km/h, suite d'images d'un rattrapage. RG-01 / RG-02 (ANO-261) gardées. P1, 🟡 après fusion, toujours `@conduite` ; ANO-262 à jour dans `anno.md`.
