@@ -1189,3 +1189,5 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Réseau** : paquets apt d'Ubuntu installés dans le conteneur pour construire le banc (libvulkan-dev, mesa-vulkan-drivers, glslc, ninja-build, imagemagick ; dépôts officiels, rien d'envoyé).
 - Lead dev appelé. Après la fusion : 🟡 À valider (utilisateur).
 
+### 2026-11-12 20:12:42 — WFS-479 : Bussola ajoutée (po-scrum-master)
+- Ordre de l'utilisateur dans la session du développeur (20:01 UTC, vérifié dans son fil) : « Pour bussola c'est une catastrophe arrière et avant ». RG-04 = M4, 911, Bussola. Cause sur la Bussola : triangles égarés dans les pneus et disques décentrés de 8 cm, corrigés à la source (54226944).
