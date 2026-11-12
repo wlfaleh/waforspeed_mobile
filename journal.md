@@ -1337,3 +1337,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 23:07:55 — WFS-395, 456, 387 et 465 après la 25e tâche (po-scrum-master)
 - Ordre de l'utilisateur. Bandeau 🏁 mis à jour : 26. 395, 27. 456, 28. 387, 29. 465 ; en parallèle restent 454, 394, 460.
+
+### 2026-11-12 23:11:20 — WFS-517 créé : « Duel entre amis » retiré de la Course solo (po-scrum-master)
+- Demande de l'utilisateur (« enlever le mode duel après la sélection de la Course solo », R06 du Smart Brain jamais transformé en ticket). Vérifié sur `main` : 4e carte de `src/game/modes_ecran.cpp:42`. **WFS-517** (P1, E3, `@dev`, ⏳ Prêt) : 3 cartes seulement, le duel reste au menu principal ; en parallèle des 30, avant WFS-505. Règles : `regles-de-gestion/WFS-517.md`.
