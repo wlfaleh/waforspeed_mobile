@@ -1348,3 +1348,8 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 - Nouvelle session `@dev` (session_01Us6uCuD6ctRKcQcNhHSZzc), 1re attribution (aucun ticket avant). Ticket choisi : **WFS-517** (P1, 1re tâche du bandeau 🏁, ordre de l'utilisateur), épic E3 libre, aucune dépendance.
 - Zone : `src/game/modes_ecran.cpp` (3 cartes au lieu de 4), banc `src/ui/ecrans/salon.cpp` (`benchDuelAmis` part du menu principal) ; règles : `regles-de-gestion/WFS-517.md` (RG-01 à RG-07, parcours complets).
 - Branche `feature/waforspeed-517` ; captures avant / après, PR, lead dev, puis arrêt de la session après la fusion.
+
+### 2026-11-12 23:16:46 — Début WFS-480 : attribué à Claude, agent dev3d (01Us6uCuDH) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCuDHn27dDViQXZ7Cpb), aucun ticket reçu avant. WFS-517 (1re tâche) déjà pris à 23:15 par 01Us6uCuD6 : 2e tâche du bandeau 🏁, **WFS-480**. Épic E17 libre (aucun ticket actif).
+- Zone de code : zone E3 (`src/game/**` hors `game.*`, `tests/**`) + `assets/profil/**` (créé) ; nouveau module `profil.*` ; dans `sauvegarde.*` seulement des clés ajoutées (≤ 10 lignes, garde-fou du lead dev). Pas d'écran (WFS-481, 482). Ne pas toucher `modes_ecran.cpp` (WFS-517 en cours).
+- Critères : `regles-de-gestion/WFS-480.md` et `regles-de-gestion/E17-identite-joueur.md`. Plan : branche poussée tout de suite, tests, captures avant / après (≥ 3), PR, appel du `lead-dev`, arrêt de la session après la fusion.
