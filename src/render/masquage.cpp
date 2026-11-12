@@ -43,4 +43,9 @@ float distanceMax(float rayon, bool basse, float finBrouillard) {
     return 1e9f;
 }
 
+float distanceMaxTrafic(float rayon, bool basse, float finBrouillard) {
+    const float d = distanceMax(rayon, basse, finBrouillard);
+    return basse ? std::max(d, TRAFIC_BASSE_M) : d;   // WFS-453 : jamais en deçà de la limite de dessin du trafic
+}
+
 } // namespace wfs::masquage

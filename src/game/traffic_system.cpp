@@ -173,6 +173,7 @@ public:
             const double yaw = c.yawPrec + (c.laneYaw - c.yawPrec) * al + (c.crashed ? c.crashYaw : 0);
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
             const float L = (float)WEB_CARS[c.type].L, W = (float)WEB_CARS[c.type].W, k0 = L / CARS[mi].d.L;
+            r.traficProchainDessin();   // WFS-453 (accroche) : coupe à distance du trafic (Basse : jusqu'à 120 m du joueur)
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const size_t ci = (size_t)(&c - traffic_.cars.data());
             // WFS-67 : silhouette légère au-delà de 50 m ; WFS-82 : dès 25 m en qualité Basse (moins d'appels de dessin)
@@ -185,6 +186,7 @@ public:
             if (!roues::g_avant452) rp.braquage = ci < suivi_.size() ? suivi_[ci].rendu(al) : 0.f;
             r.feuxProchaineVoiture(feuxDe(ci, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, g.time));   // WFS-81 ; WFS-109 : feu du modèle, jour et nuit
             if (roues::g_journal452 && (int)ci == benchCar_) WFS_LOG("roues (banc) : trafic : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
+            r.traficProchainDessin();   // WFS-453 (accroche)
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
             conducteurs::ajouter(models_[mi], m * scale({k0, k0, k0}), CARS[mi].id, (uint32_t)ci + 2);   // WFS-73 (accroche)
         }
@@ -233,9 +235,11 @@ private:
         const float leve = std::max({0.f, (G.poigneeX + 0.06f) * sa - G.poigneeY * ca, (G.piedX + 0.05f) * sa - G.piedY * ca, 0.07f * sa});
         const mat4 m = sol * translate({0, leve, 0}) * rotateZ(-incl);   // inclinaison + vers la droite (rotateZ positif penche vers la gauche)
         const DeuxRouesDims& d = DEUX_ROUES[k];
+        r.traficProchainDessin();   // WFS-453 (accroche) : deux-roues du trafic, même distance que les voitures
         r.draw(shadow_, shadowMat_, sol * scale({(float)d.W * 1.25f, 1.f, (float)d.L * 1.12f}));
         const size_t ci = (size_t)(&c - traffic_.cars.data());
         r.feuxProchaineVoiture(feuxDe(ci, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, g.time));
+        r.traficProchainDessin();   // WFS-453 (accroche)
         r.draw(b, m, nullptr, nullptr);
         // roues : roulage = −distance / rayon (roues::poseTrafic, comme les voitures), autour de leur axe, sans braquage. Chaque roue
         // est un modèle à part : sans feux (sinon le moteur lui prêterait les phares et les feux d'une voiture la nuit : halos
@@ -244,9 +248,9 @@ private:
         for (int w = 0; w < 2; w++) {
             const RoueModele& rm = roueDR_[k][w];
             const RouesPose rp{roues::poseTrafic(0, c.crashed, c.zPrec + dzc * al, rm.rayon).roulage, 0};
-            r.draw(shadow_, shadowMat_, sol * translate({0, 0, rm.centre.z}) * scale({0.22f, 1.f, rm.rayon * 1.1f}));
+            r.traficProchainDessin(); r.draw(shadow_, shadowMat_, sol * translate({0, 0, rm.centre.z}) * scale({0.22f, 1.f, rm.rayon * 1.1f}));   // WFS-453
             r.feuxProchaineVoiture(FeuxVoiture{});
-            r.draw(rouesDR_[k][w], m * roues::matrice(rm, rp), nullptr, nullptr);
+            r.traficProchainDessin(); r.draw(rouesDR_[k][w], m * roues::matrice(rm, rp), nullptr, nullptr);   // WFS-453
         }
         // RG-02 : un pilote sur chaque deux-roues dessiné ; RG-05 : éjecté et couché au sol après un accident
         // RG-05 : passé 45° de chute, le pilote est éjecté : couché en travers de la chaussée, 1,8 m derrière le deux-roues et 1 m du
