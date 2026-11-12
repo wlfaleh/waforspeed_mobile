@@ -1271,3 +1271,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 22:10:27 — R15 : évolution de la personnalisation (smart-brainstorming)
 - R15 : 4 niveaux (couleurs, finitions, skins, atelier créatif d'autocollants) + jantes, étriers, vitres, néons, fumée colorée, mode photo ; prix en étoiles ; ordre et risques. Rien envoyé au PO.
+### 2026-11-12 22:13:20 — Épic E17 « Identité et historique du joueur » créée, WFS-480 à 486 (po-scrum-master)
+- Demande de l'utilisateur (1re étape : identité → score → voitures et couleurs → cadeau → market) : profil (pseudo 3-16, plaque 1-8, mots interdits), plaque 3D avant / arrière, écran Profil, sauvegarde Android, e-mail facultatif.
+- Existant vérifié : `nick` (14 car., `sauvegarde.cpp`), clavier du salon (`salon.cpp`, WFS-89), records par mode, `allowBackup="false"` (`AndroidManifest.xml:18`), aucun anglais dans le jeu.
+- Tickets : **WFS-480** (données du profil, E3, ⏳ Prêt), **WFS-485** (sauvegarde Android, E7, ⏳ Prêt, 🟡 après fusion), **WFS-481** (création FR / EN, E8, après 480), **WFS-482** (écran Profil, E8, après 481), **WFS-483** (plaque 3D, E10, `@dev` artiste 3D, après 480), **WFS-484** (plaques au hasard, après 483), **WFS-486** (e-mail, P3, en attente : décision de l'utilisateur, étoiles, avis du juriste). Règles : `regles-de-gestion/E17-identite-joueur.md` et `WFS-480.md` à `WFS-486.md`.
+- Décisions du PO : style de plaque inventé (520 × 110 mm, bande anthracite à droite « WFS », pas de bande européenne) ; clavier du jeu AZERTY / QWERTY ; anglais seulement sur les écrans de création et d'e-mail (le reste du jeu reste en français). Question posée à l'utilisateur : garder l'e-mail ou non (recommandation : non en v1.0, pas de serveur pour le garder).
