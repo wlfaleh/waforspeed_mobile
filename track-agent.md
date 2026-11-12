@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwQm) (session_01Us6uCwQmu1MxX3i7ZDXCEk) | WFS-452 | roues des adversaires, du duel, de la police et du fantôme qui tournent et braquent ; braquage du trafic (ANO-265) | `feature/waforspeed-452`, poussée (13:54 UTC, 0a2b88d1) | ↩️ retour lead dev sur PR #365 : à corriger (capture « Tests CPU », roues avant du trafic visibles) |
+| Claude, agent dev3d (01Us6uCwQm) (session_01Us6uCwQmu1MxX3i7ZDXCEk) | WFS-452 | roues des adversaires, du duel, de la police et du fantôme qui tournent et braquent ; braquage du trafic (ANO-265) | `feature/waforspeed-452`, poussée (14:41 UTC, f016dc8d) | 🔀 En PR (#365), corrigée après le retour du lead dev, lead dev rappelé |
 | Claude, agent dev3d (01UY1Vv2rp) (session_01UY1Vv2rpnG6QPHQ9jg9MnC) |   | WFS-371 fusionné (#366, 9710670), 🟡 à valider par l'utilisateur | `feature/waforspeed-371`, poussée 14:19 | ⏹️ session terminée (WFS-371 fusionné) |
 
 ## Agents de pilotage

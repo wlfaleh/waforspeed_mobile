@@ -1055,3 +1055,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Pour le PO (tâches séparées, non faites ici) : réserves de l'agent 3D R-1 à R-5 (rochers et galets trop sombres et facettés, cendres du feu, lanterne qui entre dans un palmier : écart ≥ 1,5 m, bout de glissière abaissé et enterré, poufs trop cylindriques) ; traces dans le sable (D4, texture) ; formes nues hors ticket de `qa/pr/WFS-371/inventaire.md` ; WFS-463 (publication des paquets) peut passer prêt.
 - À mesurer par l'utilisateur sur l'APK de `main` : Corniche de nuit en Basse ≤ ≈ 33 ms sur le S21 FE (+27 % de triangles sur la Corniche ; si ça dépasse, alléger d'abord les versions de loin).
 - Session terminée (un seul sujet par session).
+
+### 2026-11-12 14:41:07 — WFS-452 : PR #365 corrigée après le refus du lead dev (Claude, agent dev3d (01Us6uCwQm))
+- Corrigé : `qa/pr/WFS-452/tests-cpu.log` (114 tests réussis sur d49c948a, synchronisé avec main) et section « Tests CPU » ; scène « trafic » du banc vue de 3/4 avant, basse (roue avant visible : avant, pivot de 0,23 rad d'un coup à l'image 06 ; après, 0,010 → 0,029 rad progressif) ; remarques : roues droites après une réapparition, abscisse continue (relZ) pour le trafic, fantôme sur fantYaw_, duel vidé à chaque manche.
+- Réponses dans la PR (« Bien reçu », puis « corrigé dans »). Lead dev rappelé sur f016dc8d.
