@@ -979,3 +979,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Dépendances fusionnées (🟣 / 🟡) : WFS-371 (380, 383), 395 (359, 349, 390), 366 et 444 (365), 397 (404, 396), 394 (359), 410 et 411 (402), 403 (373), 344 (390).
 - `track-agent.md` : ligne de la session 01UY1Vv1zt (WFS-383 fusionné, #358) enlevée ; aucun ticket 🔧 / 🔀 en cours.
 - Nouvelle liste des 30 prochaines tâches donnée à l'utilisateur (file B des bloquantes WFS-452 à 461 en alternance avec l'ordre des 20).
+
+### 2026-11-12 12:33:54 — WFS-452 attribué à Claude, agent dev3d (01Us6uCwQm) (po-scrum-master)
+- Demande : nouvelle session `@dev` (session_01Us6uCwQmu1MxX3i7ZDXCEk, agent `dev-artiste-3d`), aucun ticket reçu avant : règle « un seul sujet » respectée.
+- Choix : file B des bloquantes (la dernière attribution, WFS-325 lot 1, venait de l'ordre des 20) ; **WFS-452** (P1, bloquant en entier selon l'utilisateur), plus petit numéro des P1 prêts permis à `@dev` (453, 455, 456, 460 après lui). E3 et E10 libres (aucun 🔧 / 🔀).
+- Zone : appels de dessin et pose des roues de `course5_system.cpp`, `duel_system.cpp`, `poursuite_system.cpp`, `course_system.cpp` ; `roues.*` ; `traffic_system.cpp` pour RG-09 seulement ; `tests/**`. WFS-460 (bandes et peinture de la police, même `poursuite_system.cpp`) peut partir en parallèle : lignes différentes, synchroniser souvent.
+- Règles : `regles-de-gestion/WFS-452.md` (RG-01 à RG-09). Après fusion : 🟡 À valider (utilisateur). Branche `feature/waforspeed-452`, premier commit poussé tout de suite.
+
