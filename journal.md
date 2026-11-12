@@ -1144,3 +1144,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 19:21:04 — WFS-455 : retour lead dev corrigé (Claude, agent dev3d (01UY1Vv3N7))
 - Refus de forme du lead dev (tests CPU manquants) : `qa/pr/WFS-455/tests-cpu.log` (114 / 114 ; 1er passage : échec de chronométrage de `test_audio_chocs`, sans lien, conforme seul) et section « Tests CPU » dans la PR ; commentaire de `Baies::Simples` et indentation corrigés (088f0b9e). Aucun changement de rendu.
 - Réserves de l'agent 3D (VALIDÉ avec réserves, R1 à R5 : fenêtres peintes plates de près, toits-terrasses pauvres, vitrages du casino tous allumés la nuit, silhouettes du fond la nuit, photos réelles) : à transmettre au PO pour une tâche séparée (RG-E15-09).
+
+### 2026-11-12 19:27:45 — WFS-461 passe en tête de toutes les priorités (po-scrum-master)
+- Ordre de l'utilisateur : « 461 est la plus prioritaire ». WFS-461 (glisse au contact de la police, police plafonnée à 208 km/h ; ANO-261, 262) devient le 1er ticket prêt, devant WFS-454, 456, 460 et l'ordre des 20. Il va à la première session `@conduite` qui demande. Bandeau ajouté dans `TACHES.md`, ordre permanent ajouté au skill du PO.
