@@ -683,3 +683,41 @@ Monnaie : étoiles (R13). Règles : vrai rendu de vraie peinture et de vrais adh
 - **Mémoire** : textures de livrée compressées, une seule chargée à la fois en course.
 - **Texte libre** : liste de mots interdits (comme le pseudo et la plaque).
 - **Règle des marques** : aucun logo réel, aucun sponsor réel, aucune livrée copiée d'une vraie écurie.
+
+---
+
+## R16 — 2026-11-12 — Prix des voitures, peintures et skins (décision déléguée à smart-brain par l'utilisateur)
+
+L'utilisateur : « voiture, peinture, skin gratuits ; pour les autres, prix selon le modèle et l'ordre de classement ; médailles ou étoiles, je te laisse décider ».
+**Décision proposée** : **tous les prix en étoiles seulement** (une seule monnaie, R13). Les médailles restent les **packs vendus au market** (bronze 100 ★, argent 300 ★, or 600 ★) ; le garage peut afficher l'équivalent (« ≈ 2 médailles d'or ») et le prix en euros (règles UE, R13).
+Classement par performance réelle (`src/game/cars.h` : 0-100 km/h puis vitesse max), noms affichés de `configgame.json`. Gains : ≈ 10 ★ par course (R13 + règles de gain de l'utilisateur).
+
+| Classe | Voiture (id → nom affiché) | 0-100 / Vmax | Prix |
+|---|---|---|---|
+| Gratuites | p208 Lionne L2 · abarth Scorpio Cinquina · gt86 Tamura Hachi | 8,7 s / 7,9 s / 7,6 s | 0 ★ |
+| 1 | corsa Orion Corsaire | 8,7 s / 208 | 250 ★ |
+| 1 | tcross Vollmer Trek-X | 8,9 s / 200 | 300 ★ |
+| 1 | compass Ranger Bussola | 9,5 s / 196 | 300 ★ |
+| 2 | golf Norvik Lume | 6,2 s / 250 | 600 ★ |
+| 2 | rrsport Highland Sport | 5,9 s / 242 | 800 ★ |
+| 2 | s3 Aurel R3 berline | 4,9 s / 250 | 1 000 ★ |
+| 2 | v60 Valka V6 Nordstern | 4,9 s / 250 | 1 000 ★ |
+| 2 | model3 Volta E3 | 4,4 s / 233 | 1 200 ★ |
+| 3 | mustang Stallion GT5 | 4,2 s / 290 | 1 800 ★ |
+| 3 | m4 Draven Vantor GT | 3,9 s / 290 | 2 200 ★ |
+| 3 | giulia Alvar Selene TS | 3,9 s / 307 | 2 400 ★ |
+| 4 | gallardo Toro Ventura V10 Spyder | 4,0 s / 324 | 3 000 ★ |
+| 4 | p911 Pfeiler 9F S | 3,6 s / 306 | 3 500 ★ |
+| 5 | sf90 Cavallo SF-X | 2,3 s / 320 | 6 000 ★ |
+Total ≈ 24 350 ★ : environ 120 h de jeu sans payer (≈ 60 h avec la pub ×2) ; 1ʳᵉ voiture en ≈ 25 courses.
+
+**Peintures et skins : prix de base × coefficient de la classe de la voiture**
+| Classe | Gratuites | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| Coefficient | ×1 | ×1 | ×1,5 | ×2 | ×3 | ×4 |
+- **Gratuit sur toutes les voitures** : 8 couleurs en brillant + **1 skin offerte** à chaque voiture débloquée.
+- **Couleurs vives** et couleur secondaire : 50 ★ × coefficient.
+- **Finitions** : métallisé 100 ★, nacré / mat / satiné 150 ★, candy 250 ★, chromé / caméléon 400 ★ (× coefficient).
+- **Skins** : 300 ★ (communes) à 800 ★ (rares) × coefficient ; certaines seulement en cadeau du jour ou en succès.
+- **Dessins (autocollants)** : packs 150-300 ★, **valables sur toutes les voitures** (pas de coefficient).
+- Achat **par voiture** (une peinture achetée sur la Golf ne passe pas sur la M4) ; les dessins sont communs.
