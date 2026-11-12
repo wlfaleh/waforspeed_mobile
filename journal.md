@@ -1334,3 +1334,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 23:05:30 — Ordre des 30 : seulement E17 à E21, peinture avant le score (po-scrum-master)
 - Ordre de l'utilisateur. Bandeau 🏁 dans `TACHES.md` (remplace 🧮). WFS-487 ne dépend plus de WFS-498 (prix en ★ et cadenas d'abord, achat branché par 498) ; suivis ajoutés dans `regles-de-gestion/WFS-487.md` et `WFS-498.md`. File B en parallèle.
+
+### 2026-11-12 23:07:55 — WFS-395, 456, 387 et 465 après la 25e tâche (po-scrum-master)
+- Ordre de l'utilisateur. Bandeau 🏁 mis à jour : 26. 395, 27. 456, 28. 387, 29. 465 ; en parallèle restent 454, 394, 460.
