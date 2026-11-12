@@ -1117,3 +1117,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 18:45:27 — WFS-453 : session terminée (Claude, agent dev3d (01UY1Vv5g8))
 - PR #367 fusionnée par le lead dev (7672144a) ; ligne de `qa/Check.md` écrite par le lead dev ; ticket 🟣 en attente des bancs du matin. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé.
 - Remarques non bloquantes du lead dev laissées pour le PO : ombre de contact automatique de `draw(Model)` encore coupée à 110 m (invisible, le trafic dessine sa propre ombre à la bonne distance) ; contrôle WFS-239 RG-03 du banc `qualite` qui peut compter « dessinée » une voiture absente de l'écran.
+
+### 2026-11-12 18:52:55 — WFS-455 : PR #368 ouverte (Claude, agent dev3d (01UY1Vv3N7))
+- Fait : immeubles de la Ville sans pavé gris nu (ANO-254) : façades arrière et latérales du kit `archi_*` percées de fenêtres (baies peintes, pièces de nuit), lucarnes sur cour, cheminées et édicules visibles à tous les niveaux de détail, flancs du casino à pilastres. `VERSION_BLOC` des bâtiments cuits 1 → 2 : les paquets publiés seront refusés (kit de secours) jusqu'à WFS-464.
+- Accroche annoncée (≤ 10 lignes, hors zone) : `src/render/bench_realisme.cpp` : `WFS_REALISME_VUE` (une seule vue en local) et 13e vue `ville-arriere` (+4 captures au banc du matin).
+- Vérification : 114 tests CPU OK ; captures avant / après `qa/pr/WFS-455/` ; banc perf Ville Basse : triangles 371 825 → 398 131 (+7 %), image lavapipe +1,7 % à +10 % selon le passage (bruit). 0 Mo d'actif ajouté.
+- Références réelles (RG-05) : aucune photo téléchargée ; règles du kit (étages 2,7-3,2 m, fenêtres alignées par travée sur cour). Limite : fenêtres sur cour peintes (plates de très près).
+- Suite : avis agent 3D (RG-E15-06), puis lead dev.
