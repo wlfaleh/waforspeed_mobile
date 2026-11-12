@@ -92,7 +92,7 @@ public:
         // règles de course (WFS-12) : voiture immobile pendant le compte à rebours, chocs seulement en course
         Course* course = activeCourseMut();
         if (course) course->hold(pl);
-        if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
+        if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); suivi_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
         if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
         if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) {
             traffic_.fixerTotal(n);   // WFS-281 : la poursuite fixe son propre total (trafic dense)
@@ -106,6 +106,7 @@ public:
         traffic_.advance(dt, pv);
         if (stops_.size() != traffic_.cars.size()) stops_.resize(traffic_.cars.size());   // WFS-67 : feux stop
         for (size_t i = 0; i < traffic_.cars.size(); i++) stops_[i].maj(traffic_.cars[i].speed, dt);
+        majBraquages(dt, *g.track);   // WFS-452 (RG-09) : braquage lissé des roues avant, d'après le vrai mouvement
         if (!playing) { traffic_.watch(pl); return; }
         HitEvents e = traffic_.collide(pl, dt);
         if (course) course->applyHits(e);   // quasi-contacts, combos, accidents
@@ -179,8 +180,11 @@ public:
             // avec fondu, choisie par Renderer::draw) ; en Basse, le coût se règle par le nombre et la distance (ci-dessus)
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
-            const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
+            RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
+            // WFS-452 (RG-09, ANO-265) : braquage lissé (avant : cap de file × 1,6, en sauts, jusqu'à 2,5 rad à l'arrêt ou au carrefour)
+            if (!roues::g_avant452) rp.braquage = ci < suivi_.size() ? suivi_[ci].rendu(al) : 0.f;
             r.feuxProchaineVoiture(feuxDe(ci, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, g.time));   // WFS-81 ; WFS-109 : feu du modèle, jour et nuit
+            if (roues::g_journal452 && (int)ci == benchCar_) WFS_LOG("roues (banc) : trafic : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
             conducteurs::ajouter(models_[mi], m * scale({k0, k0, k0}), CARS[mi].id, (uint32_t)ci + 2);   // WFS-73 (accroche)
         }
@@ -296,7 +300,7 @@ private:
             haloMat_[c].flags |= MAT_BLEND | MAT_DOUBLE;
             for (int b = 0; b < 2; b++) { haloMesh_[b][c] = r.makeMesh(std::vector<Vertex>(64 * 4), std::vector<uint32_t>(64 * 6), true); haloMesh_[b][c].indexCount = 0; }
         }
-        stops_.clear(); halos_[0].clear(); halos_[1].clear(); niveaux_.clear();
+        stops_.clear(); suivi_.clear(); halos_[0].clear(); halos_[1].clear(); niveaux_.clear();
     }
     void shutdownVivant(Renderer& r) {
         r.destroy(cube_);
@@ -362,6 +366,19 @@ private:
     Image haloTex_; Material haloMat_[2]; Mesh haloMesh_[2][2]; int haloBuf_ = 0;
     std::vector<Halo> halos_[2];
     std::vector<FeuxStop> stops_;
+    std::vector<roues::SuiviRoues> suivi_;   // WFS-452 : braquage des roues avant, par voiture (même indice que cars)
+    // WFS-452 (RG-09) : à chaque pas, braquage d'après la courbe de la route et le changement de file (roues droites en
+    // ligne droite, lissé, ±35° au plus) ; roues droites après un accident et pour les voitures qui traversent le carrefour
+    void majBraquages(double dt, const Track& t) {
+        if (suivi_.size() != traffic_.cars.size()) suivi_.resize(traffic_.cars.size());
+        for (size_t i = 0; i < traffic_.cars.size(); i++) {
+            const TrafficCar& c = traffic_.cars[i];
+            if (c.deuxRoues) continue;   // WFS-232 : les deux-roues n'ont pas de braquage (inclinaison seulement)
+            roues::SuiviRoues& sv = suivi_[i];   // abscisse continue au tour de piste (relZ) ; une voiture recyclée saute de > 20 m
+            const double s = sv.init ? sv.sPrec + t.relZ(c.z - c.zPrec) * M : c.z * M;
+            sv.pas(s, c.offset * RW, c.laneYaw, roues::courbureRoute(t, c.z), CARS[nativeModelFor(c.type)].d.wb, dt, c.crashed || c.traverse >= 0);
+        }
+    }
     std::vector<std::pair<float, double>> niveaux_;   // WFS-109 : niveau du stop de chaque voiture et heure de la dernière image
     bool nuit_ = false;   // WFS-81
 public:

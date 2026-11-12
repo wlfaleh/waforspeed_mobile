@@ -96,6 +96,8 @@ else()
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
   add_executable(test_trafic_duree tests/test_trafic_duree.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-281 : trafic stable sur 10 min
   target_link_libraries(test_trafic_duree Threads::Threads)
+  add_executable(test_roues_suivies tests/test_roues_suivies.cpp src/game/roues.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-452 : roues qui tournent et braquent
+  target_link_libraries(test_roues_suivies Threads::Threads)
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_cache_pipelines tests/test_cache_pipelines.cpp src/render/cache_pipelines.cpp)   # WFS-262 (RG-01)

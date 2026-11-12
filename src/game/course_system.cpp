@@ -15,6 +15,7 @@
 #include "fantome.h"        // WFS-125 : fantôme de ton record (Checkpoint)
 #include "game.h"
 #include "player.h"
+#include "roues.h"          // WFS-452 : roues du fantôme qui tournent et braquent
 #include "sauvegarde.h"   // WFS-24 : record
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
@@ -84,6 +85,11 @@ public:
                 pleinVu_ = true; WFS_LOG("fantôme : %zu échantillons : trace pleine, enregistrement arrêté", enr_.trace.e.size());
             }
         } else if (course_.state == RaceState::Over) tJeu_ += dt;   // le fantôme finit sa trace
+        if (fantActif_ && g.track) {   // WFS-452 (RG-03) : braquage des roues avant du fantôme d'après sa trace
+            fantome::Echantillon e;
+            if (fantome::interpoler(lecture_, tJeu_, e))
+                fantSuivi_.pas(e.d * M, e.x * RW, fantYaw_, roues::courbureRoute(*g.track, e.d), carById(lecture_.car.c_str()).d.wb, dt);
+        }
         if (course_.level != cp)
             WFS_LOG("course : checkpoint %d à %.1f s de course, +%.1f s, reste %.2f s, score %lld", course_.level, course_.raceTime,
                     Course::checkpointBonus(course_.level), course_.timeLeft, course_.score(pl));
@@ -108,7 +114,10 @@ public:
         const TrackPoint p = g.track->point(e.d, e.x * RW);
         const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + fantYaw_)) * rotateX((float)p.slope);
         r.fantomeProchaineVoiture();   // WFS-134 (RG-07, ANO-60) : translucide, teinté cyan, sans ombre ni feux
-        r.draw(fantModele_, m, &fantPeinture_);
+        // WFS-452 (RG-02, RG-03) : roues qui tournent (distance interpolée, rayon de la roue du modèle) et qui braquent
+        const RouesPose rp = roues::poseSuivi(fantSuivi_, g.alpha, e.d, fantModele_.nRoues ? fantModele_.roues[0].rayon : roues::RW_DEFAUT);
+        if (roues::g_journal452) WFS_LOG("roues (banc) : fantôme : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
+        r.draw(fantModele_, m, &fantPeinture_, &rp);
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -167,6 +176,13 @@ public:
         if (!fantActif_ || !fantModele_.ok || course_.state == RaceState::Count || !fantome::interpoler(lecture_, tJeu_, e)) return false;
         d = e.d; x = e.x; duree = lecture_.duree(); return true;
     }
+    // WFS-452 (banc « roues-suivies ») : fantôme donné par le banc (trace écrite par le banc, sans sauvegarde), départ maintenant
+    void bancFantome(const fantome::Trace& t) {
+        lecture_ = t; fantActif_ = !t.e.empty(); tJeu_ = 0; fantSuivi_ = {};
+        fantYaw_ = t.e.empty() ? 0 : t.e[0].h;
+        auto lin = [](unsigned h, int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
+        fantPeinture_ = {lin(t.peinture, 16), lin(t.peinture, 8), lin(t.peinture, 0)};
+    }
     bool fantomeVu(const Player& pl, double& relM, double& latM) const {
         fantome::Echantillon e;
         if (!fantActif_ || !fantModele_.ok || course_.state == RaceState::Count || !fantome::interpoler(lecture_, tJeu_, e)) return false;
@@ -224,7 +240,7 @@ private:
         lecture_ = memo_;
         fantActif_ = !lecture_.e.empty();
         if (!fantActif_) { WFS_LOG("fantôme : aucun fantôme sur le terrain %s", terrain.c_str()); return; }
-        fantYaw_ = lecture_.e[0].h;
+        fantYaw_ = lecture_.e[0].h; fantSuivi_ = {};   // WFS-452
         auto lin = [](unsigned h, int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
         fantPeinture_ = {lin(lecture_.peinture, 16), lin(lecture_.peinture, 8), lin(lecture_.peinture, 0)};
         WFS_LOG("fantôme : terrain %s, record %lld, %s, %zu échantillons (%.1f s)", terrain.c_str(), lecture_.score, lecture_.car.c_str(),
@@ -275,6 +291,7 @@ private:
     Model fantModele_;
     vec3 fantPeinture_{};
     double tJeu_ = 0, fantYaw_ = 0;
+    roues::SuiviRoues fantSuivi_;   // WFS-452 : braquage des roues avant du fantôme
     bool fantActif_ = false, enregistre_ = false, pleinVu_ = false;
     long long score_ = 0; double km_ = 0;
     struct Bouton {
@@ -284,6 +301,7 @@ private:
     Bouton rejouer_, menu_;   // boutons de l'écran de fin, posés à chaque dessin (WFS-57)
 };
 CourseSystem* CourseSystem::active_ = nullptr;
+void courseBancFantome(const fantome::Trace& t) { if (CourseSystem::active_) CourseSystem::active_->bancFantome(t); }   // WFS-452 (banc)
 bool fantomeCourant(double& d, double& x, double& duree) { return CourseSystem::active_ && CourseSystem::active_->positionFantome(d, x, duree); }   // WFS-318 (accroche)
 
 // WFS-24 : badge « NOUVEAU RECORD » (.badge #newBest du jeu web, sous le score ; accent orange, texte sombre, biais

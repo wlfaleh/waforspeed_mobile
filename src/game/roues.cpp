@@ -171,4 +171,38 @@ RouesPose poseTrafic(double laneYaw, bool crashed, double zUnits, float rayon) {
     return {roulage(zUnits * 0.006, rayon), crashed ? 0.f : (float)(laneYaw * 1.6)};
 }
 
+void SuiviRoues::pas(double s, double lat, double capCaisse, double kappa, float empattement, double h, bool droites) {
+    braquagePrec = braquage;
+    const double ds = s - sPrec, dl = lat - latPrec, d = std::hypot(ds, dl);
+    if (!init || d > 20) {   // première image ou réapparition : rien à dériver, roues droites (rien d'hérité d'une autre place)
+        *this = SuiviRoues{};
+        sPrec = s; latPrec = lat; init = true;
+        return;
+    }
+    sPrec = s; latPrec = lat;
+    double courb = 0, ecart = 0;
+    if (!droites && d > 1e-4) {   // en mouvement : trajectoire réelle (à l'arrêt : cibles gardées, roues immobiles)
+        const double psi = std::atan2(dl, std::abs(ds));   // direction du mouvement par rapport à la route (+ à droite)
+        // courbure de la trajectoire (1/m) : changement de direction / distance PARCOURUE VERS L'AVANT (∫ courb ds = Δψ exactement,
+        // même si le latéral avance par à-coups : un saut de côté suivi d'un arrêt ne laisse aucun braquage)
+        courb = kappa + (psiConnu ? (psi - psiPrec) / std::max(std::abs(ds), 1e-3) : 0);
+        ecart = psi - capCaisse;
+        psiPrec = psi; psiConnu = true;
+    } else if (!droites) return;   // arrêt : roues immobiles, angle gardé (braquage = braquagePrec)
+    else psiConnu = false;
+    const double a = 1 - std::exp(-h / BRAQUAGE_TAU);
+    courbF1 += (courb - courbF1) * a; courbF2 += (courbF1 - courbF2) * a;
+    ecartF1 += (ecart - ecartF1) * a; ecartF2 += (ecartF1 - ecartF2) * a;
+    double cible = droites ? 0.0 : std::atan(empattement * courbF2) + ecartF2;
+    cible = std::clamp(cible, (double)-BRAQUAGE_MAX, (double)BRAQUAGE_MAX);
+    const double pasMax = BRAQUAGE_VITESSE * h;
+    braquage = (float)(braquagePrec + std::clamp(cible - braquagePrec, -pasMax, pasMax));
+    if (std::abs(braquage) < 1e-6f) braquage = 0;
+}
+
+RouesPose poseSuivi(const SuiviRoues& sv, double alpha, double distUnits, float rayon) {
+    if (g_avant452) return {};   // banc : roues figées, comme avant le ticket
+    return {roulage(distUnits * 0.006, rayon), sv.rendu(alpha)};
+}
+
 } // namespace wfs::roues
