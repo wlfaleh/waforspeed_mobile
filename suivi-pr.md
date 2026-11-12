@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | 👀 En revue — lead-dev, 2026-11-12 11:45 UTC | 163f2bb8 | 2026-11-12 11:45 |

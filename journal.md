@@ -940,3 +940,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 11:57:49 — ANO-264 : roues de la M4 (vidéo de l'utilisateur du 2026-11-12 00:11) (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
 - 40 images à 3 img/s : anneau gris clair dans les passages de roue de la M4 rouge, pneu sans flanc ; à rattacher par le PO (WFS-457 ou WFS-452).
+
+### 2026-11-12 11:58:24 — WFS-383 fusionné par le lead dev (lead-dev)
+- PR #358 relue sur 163f2bb8 (synchronisée avec `main`) : « Avis agent 3D : VALIDÉ avec réserves » présent ; 27 captures ouvertes une à une (avant / après, jour et nuit) ; tout le diff lu (`sols.glsl`, `sols.{h,cpp}`, `plage.cpp`, `decor_carte.*`, `circuit.cpp`, `carte_donnees*`, `vegetation.*`, `game.cpp`, `scene.frag`, `test_sols.cpp`, `CMakeLists.txt`) ; construction et **112 tests CPU verts** refaits par le lead dev.
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash **150b1997**. Statut **🟡 À valider (utilisateur)** : la règle « Corniche ≤ 33 ms sur le S21 FE » n'est pas mesurable sur le PC (lavapipe : +2,5 %, +5,7 k triangles en Basse) ; si la Corniche dépasse 33 ms sur le téléphone, le PO rouvre.
+- **Pour le PO (tickets séparés à créer)** : R1 dalles de calcaire trop régulières vues de haut ; R2 pins d'Alep (vraie carte d'aiguilles au lieu de la case 3 de l'atlas, houppier plus garni, dégradé d'écorce à hauteur variable ; RG-03 modèle CC0 / CC BY et instances toujours visés) ; R3 pré des champs de la Campagne encore vert vif uni (`carte-campagne-vaches`) ; R4 aplat du fond de l'épingle de la Campagne (maillage). Remarque : normales lissées par morceau (jointure possible entre deux morceaux, rien de visible).

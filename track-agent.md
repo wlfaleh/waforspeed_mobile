@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-12 08:26 (554619ce) | 🔀 PR #358 : correction après le 2e avis agent 3D « À REPRENDRE » (21:46, 11/11), nouvel envoi à 08:26 |
+| Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-12 08:26 (554619ce) | 🟣 fusionné par le lead dev (#358, 150b1997, 🟡 à valider) : session à arrêter |
 
 ## Agents de pilotage
 
