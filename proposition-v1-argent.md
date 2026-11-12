@@ -40,13 +40,13 @@ Gagner de l'argent dès la première version publiée sur Google Play.
 - **Google Play** (à faire par vous) : compte marchand ouvert, formulaires « Contient des annonces », « Achats intégrés », sécurité des données, classification d'âge.
 - **Duel en ligne caché** en v1.0 : moins de risques de bugs et de RGPD.
 
-## 5. Ordre de travail
-1. Recette des corrections en attente et fluidité (les autres tickets du jeu continuent en parallèle : ils améliorent le gameplay).
-2. Sauvegarde automatique, retrait du Duel de la Course solo.
-3. Étoiles et médailles.
-4. Garage avec cadenas, peintures.
-5. Pub volontaire et achats.
-6. Équilibrage des prix.
+## 5. Ordre de développement (choisi par l'utilisateur, 2026-11-12)
+Les autres tickets du jeu continuent en parallèle (gameplay).
+1. **Identité et historique du joueur** : pseudo, sauvegarde automatique Android (rien de perdu en changeant de téléphone), historique des courses et records ; retrait du Duel de la Course solo.
+2. **Score** : médailles bronze / argent / or et étoiles en fin de course, barre « prochaine voiture ».
+3. **Voitures et couleurs gratuites** : garage avec 3 voitures gratuites (208, 500, GT86) et des peintures gratuites ; les autres voitures et peintures bloquées avec leur prix en étoiles ; essai gratuit ; 911 prêtée à la 1re course ; nouvelles peintures (métallisé, nacré, mat, caméléon, couleurs vives).
+4. **Cadeau du jour** : calendrier de 7 jours joués, rien ne se perd, contenu affiché à l'avance (étoiles, peinture, puis une citadine au choix ou un gros paquet d'étoiles le 7e jour).
+5. **Market** : pub volontaire « ×2 étoiles », achats de voitures, pack complet, « sans pub » ; puis équilibrage des prix.
 
 ## 6. Pour la version suivante (v1.1)
-Objectifs du jour, cadeau du jour, dessins sur les voitures, Google Play Jeux (classements).
+Objectifs du jour, dessins sur les voitures, Google Play Jeux (classements).

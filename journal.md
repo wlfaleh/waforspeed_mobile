@@ -1259,3 +1259,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:42:01 — Proposition v1.0 : pas de gel des autres fonctionnalités (smart-brainstorming)
 - Décision de l'utilisateur : les autres tickets continuent (ils améliorent le gameplay). Gel retiré de `proposition-v1-argent.md` (remplace R04-A02 et l'étape 0.2 de R11).
+
+### 2026-11-12 21:44:37 — Proposition v1.0 : ordre de développement de l'utilisateur (smart-brainstorming)
+- Ordre choisi par l'utilisateur : identité et historique du joueur → score → voitures et couleurs gratuites → cadeau du jour → market. Cadeau du jour passé en v1.0. `proposition-v1-argent.md` mis à jour.
