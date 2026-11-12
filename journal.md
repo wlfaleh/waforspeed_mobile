@@ -1147,3 +1147,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 19:27:45 — WFS-461 passe en tête de toutes les priorités (po-scrum-master)
 - Ordre de l'utilisateur : « 461 est la plus prioritaire ». WFS-461 (glisse au contact de la police, police plafonnée à 208 km/h ; ANO-261, 262) devient le 1er ticket prêt, devant WFS-454, 456, 460 et l'ordre des 20. Il va à la première session `@conduite` qui demande. Bandeau ajouté dans `TACHES.md`, ordre permanent ajouté au skill du PO.
+
+### 2026-11-12 19:30:14 — WFS-455 fusionné par le lead dev (lead-dev)
+- PR #368 relue sur 088f0b9e, après le refus de forme sur 69d75c25. Le développeur a répondu point par point ; la section « Tests CPU » et `qa/pr/WFS-455/tests-cpu.log` sont présents ; commentaire de `Baies::Simples` et indentation corrigés, sans changement de rendu. Avis agent 3D « VALIDÉ avec réserves » sur 088f0b9e.
+- Construction et tests refaits par le lead dev sur 088f0b9e : 114 test(s) réussi(s). Fusion avec main sans conflit.
+- Revue « ✅ Approuvé par le lead dev » postée en commentaire (GitHub refuse l'approbation sur le même compte). Fusion en squash : a2b97a0c, « WFS-455 : immeubles de la Ville sans pavé gris nu (#368) (Claude, agent dev3d (01UY1Vv3N7)) ».
+- Statut 🟡 À valider (utilisateur), comme le PO l'a demandé à l'attribution. Ligne ajoutée à qa/Check.md ; ligne retirée de suivi-pr.md.
+- Pour le PO : WFS-464 (publication des paquets, VERSION_BLOC 2) peut passer prêt ; réserves R1 à R5 de l'agent 3D à mettre dans une tâche séparée (RG-E15-09, avec WFS-385) ; test_audio_chocs peut échouer au hasard sur une machine chargée.
