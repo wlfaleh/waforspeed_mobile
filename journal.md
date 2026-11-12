@@ -1005,3 +1005,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 13:05:59 — WFS-462 retiré, fusionné dans WFS-463 (po-scrum-master)
 - Ordre de l'utilisateur : « enlève la première tâche pour cicd, la tâche 3 suffit ». WFS-462 ↪ fusionné dans WFS-463 : un seul run de `paquets.yml` après la fusion de WFS-371 publie la Corniche cuite (WFS-426), WFS-383, 392 et 371. Prochaine tâche `@cicd` prête : WFS-454.
+
+### 2026-11-12 13:09:04 — WFS-371 attribué à Claude, agent dev3d (01UY1Vv2rp) (po-scrum-master)
+- Demande : nouvelle session `@devartiste` (session_01UY1Vv2rpnG6QPHQ9jg9MnC, agent `dev-artiste-3d`), aucun ticket reçu avant : règle « un seul sujet » respectée.
+- Choix : alternance des files ; la dernière attribution (WFS-452) venait de la file B des bloquantes, donc cette fois l'**ordre des 20** : **WFS-371** (11e, P1, `@devartiste` + avis `@3d`), premier encore prêt (WFS-383 fusionné). Sa fusion libère **WFS-463** (publication des paquets de la Corniche, demande de l'utilisateur). E15 libre (aucun 🔧 / 🔀). Les P1 de la file B (455, 456, 460) restent aux prochaines sessions.
+- Zone : `src/world/plage.cpp`, `portique.cpp`, `enseignes.*` et le décor Corniche (E15, + E12, E2 selon les règles), `assets/world/modeles/**`, `assets/licences/`, outils de cuisson du paquet pour ces modèles seulement, `tests/**`. PR de l'épic E15 : avis agent 3D obligatoire ; pas de fusion si la Corniche dépasse ≈ 33 ms sur le S21 FE.
+- Règles : `regles-de-gestion/WFS-371.md` (RG-01 à RG-07 + ajouts D4, R4, R5 ; section Suivi). Après fusion : 🟡 À valider (utilisateur). Branche `feature/waforspeed-371`, premier commit poussé tout de suite.
