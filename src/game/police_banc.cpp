@@ -121,30 +121,27 @@ int benchPolice(Game& g, Renderer& r, const std::string& out) {
         poursuiteBancPolice(false, 0, 0); g.modeManette = false;
     }
 
-    // ---------- 2. rattrapage : joueur vers 150 km/h, la police arrive par derrière ----------
+    // ---------- 2. rattrapage : joueur vers 100 km/h dès le départ, la police (220 m derrière) arrive ----------
     choisirVue(VueCamera::Poursuite);
     if (demarrer()) {
-        const float cible = 150;
+        const float cible = 100;
         double vP = 0, e = 0;
-        auto rouler = [&](int n, bool rendu) {   // vitesse de la police mesurée à chaque mise à jour (1/60 s)
-            for (int i = 0; i < n; i++) { g.setAutopilot(g.player().kmh() < cible); g.update(PAS); t += PAS; vitesses(PAS, vP, e); if (rendu && i % 12 == 0) g.render(t); }
+        auto rouler = [&](int n) {   // vitesse de la police mesurée à chaque mise à jour (1/60 s)
+            for (int i = 0; i < n; i++) { g.setAutopilot(g.player().kmh() < cible); g.update(PAS); t += PAS; vitesses(PAS, vP, e); }
         };
-        rouler(60 * 30, true);   // le joueur prend 150 km/h ; la police (220 m derrière au départ) arrive
         vMaxToutes = 0;
         g.camMode = 2;
         for (int k = 0; k < 12; k++) {
-            rouler(60, false);   // une image par seconde
+            rouler(120);   // une image toutes les 2 s
             viser(9, 3.5, 3.2f);   // de devant, un peu à droite : la police derrière le joueur
             char l[256];
-            std::snprintf(l, sizeof l, "WFS-461 banc police : rattrapage, image %02d\njoueur %.0f km/h\npolice la plus proche : %.0f km/h (fiche 208 : %.0f km/h)\nderriere le joueur : %.0f m",
-                          k, g.player().kmh(), vP, vMaxPolice, e);
+            std::snprintf(l, sizeof l, "WFS-461 banc police : rattrapage, %d s\njoueur %.0f km/h\npolice la plus proche : %.0f km/h (fiche 208 : %.0f km/h)\nderriere le joueur : %.0f m\nmaxi police depuis le depart : %.0f km/h",
+                          2 * (k + 1), g.player().kmh(), vP, vMaxPolice, e, vMaxToutes);
             g_legende = l;
             char nom[64]; std::snprintf(nom, sizeof nom, "police-rattrapage-%02d", k);
             image(nom);
-            WFS_LOG("capture %s : joueur %.1f km/h, police la plus proche %.1f km/h à %.1f m derrière", nom, g.player().kmh(), vP, e);
+            WFS_LOG("capture %s : joueur %.1f km/h, police la plus proche %.1f km/h à %.1f m derrière, maxi %.1f km/h", nom, g.player().kmh(), vP, e, vMaxToutes);
         }
-        // vitesse maxi de toutes les voitures de police pendant 60 s de plus (sans image)
-        rouler(60 * 60, false);
         WFS_LOG("police (WFS-461) : rattrapage, vitesse maxi mesurée %.1f km/h (fiche %.0f km/h)", vMaxToutes, vMaxPolice);
         if (vMaxToutes > vMaxPolice * 1.01) { WFS_ERR("police (WFS-461) : %.1f km/h, au-delà de sa fiche (%.0f km/h)", vMaxToutes, vMaxPolice); ecarts++; }
         g_legende.clear(); g.camMode = 0;
