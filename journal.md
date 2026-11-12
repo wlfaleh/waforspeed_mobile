@@ -1030,3 +1030,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Fichiers : `src/game/roues.*`, `course5_system.cpp`, `duel_system.cpp`, `poursuite_system.cpp`, `course_system.cpp`, `traffic_system.cpp`, banc `roues-suivies` (`roues_banc.*`), `tests/test_roues_suivies.cpp`. **Accroches annoncées** : 1 ligne dans `src/platform/desktop_main.cpp` (groupe de banc `roues-suivies`) et 2 lignes dans `CMakeLists.txt` (nouveau test).
 - Vérifié : 113 / 113 tests CPU ; banc `roues-suivies` 0 écart ; appels de dessin identiques sauf police-basse (116 → 153, accepté par le PO) ; 120 captures + 6 zooms dans `qa/pr/WFS-452/`.
 - Limites : non mesuré sur le téléphone ; duel sans scène au banc (même code que la Course à 5).
+
+### 2026-11-12 14:08:31 — WFS-452 : PR #365 refusée par le lead dev (lead-dev)
+- Relu sur 0a2b88d1 : 6 zooms et les suites avant / après ouverts ; tout le diff lu ; construction refaite et `bash tools/qa/tests_cpu.sh build` : **113 test(s) réussi(s)** (branche fusionnée localement avec `main`).
+- Bon : roues qui tournent (Course à 5 jour et nuit, police Haute et Basse, fantôme), braquage de la police pendant la glisse, décision A du PO appliquée, calcul `SuiviRoues` juste.
+- **Refus, 2 points** : (1) capture « Tests CPU » et `qa/pr/WFS-452/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-09 / ANO-265 non prouvée à l'image : la voiture du trafic est vue de face, roues avant cachées ; il faut une suite où les roues avant du trafic se voient (ligne droite puis changement de file, avant / après).
+- Remarques non bloquantes dans la revue (reprise du braquage après un saut, commentaire de `g_avant452`, cap du fantôme, `suivi_` du duel).
+- **Pour le PO** : halo du clignotant du trafic en disque orange flou (code existant WFS-67 / ANO-48), forme nue visible sur les captures du trafic : à rattacher à une US de correction.

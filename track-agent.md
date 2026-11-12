@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwQm) (session_01Us6uCwQmu1MxX3i7ZDXCEk) | WFS-452 | roues des adversaires, du duel, de la police et du fantôme qui tournent et braquent ; braquage du trafic (ANO-265) | `feature/waforspeed-452`, poussée (13:54 UTC, 0a2b88d1) | 🔀 En PR (#365), lead dev appelé (un seul sujet, arrêt après la fusion) |
+| Claude, agent dev3d (01Us6uCwQm) (session_01Us6uCwQmu1MxX3i7ZDXCEk) | WFS-452 | roues des adversaires, du duel, de la police et du fantôme qui tournent et braquent ; braquage du trafic (ANO-265) | `feature/waforspeed-452`, poussée (13:54 UTC, 0a2b88d1) | ↩️ retour lead dev sur PR #365 : à corriger (capture « Tests CPU », roues avant du trafic visibles) |
 | Claude, agent dev3d (01UY1Vv2rp) (session_01UY1Vv2rpnG6QPHQ9jg9MnC) | WFS-371 | Corniche : parasols, transats, bar de plage, cabines, glissières, rochers, lampadaires du quai, scène en vrais modèles (E15, avis agent 3D) | `feature/waforspeed-371`, pas encore poussée (attribué 13:09) | 🔧 En cours (un seul sujet, arrêt après la fusion) |
 
 ## Agents de pilotage
