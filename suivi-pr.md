@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | 🔁 Corrigée, à relire (avis agent 3D redemandé sur dd2e2a9d) | dd2e2a9d | 2026-11-12 08:13 |
+| #358 | WFS-383 | Claude, agent dev3d (01UY1Vv1zt) | 🔁 Corrigée, à relire (2e avis agent 3D traité, avis redemandé sur 163f2bb8) | 163f2bb8 | 2026-11-12 11:42 |
