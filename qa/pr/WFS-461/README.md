@@ -36,3 +36,13 @@ Branche `feature/waforspeed-461` comparée à `origin/main` (même fichier de ba
 | `police-rattrapage-09` | ![avant](avant-police-rattrapage-09.jpg) | ![après](apres-police-rattrapage-09.jpg) |
 | `police-rattrapage-10` | ![avant](avant-police-rattrapage-10.jpg) | ![après](apres-police-rattrapage-10.jpg) |
 | `police-rattrapage-11` | ![avant](avant-police-rattrapage-11.jpg) | ![après](apres-police-rattrapage-11.jpg) |
+| `police-vitesse-00` | ![avant](avant-police-vitesse-00.jpg) | ![après](apres-police-vitesse-00.jpg) |
+| `police-vitesse-01` | ![avant](avant-police-vitesse-01.jpg) | ![après](apres-police-vitesse-01.jpg) |
+| `police-vitesse-02` | ![avant](avant-police-vitesse-02.jpg) | ![après](apres-police-vitesse-02.jpg) |
+| `police-vitesse-03` | ![avant](avant-police-vitesse-03.jpg) | ![après](apres-police-vitesse-03.jpg) |
+| `police-vitesse-04` | ![avant](avant-police-vitesse-04.jpg) | ![après](apres-police-vitesse-04.jpg) |
+| `police-vitesse-05` | ![avant](avant-police-vitesse-05.jpg) | ![après](apres-police-vitesse-05.jpg) |
+| `police-vitesse-06` | ![avant](avant-police-vitesse-06.jpg) | ![après](apres-police-vitesse-06.jpg) |
+| `police-vitesse-07` | ![avant](avant-police-vitesse-07.jpg) | ![après](apres-police-vitesse-07.jpg) |
+| `police-vitesse-08` | ![avant](avant-police-vitesse-08.jpg) | ![après](apres-police-vitesse-08.jpg) |
+| `police-vitesse-09` | ![avant](avant-police-vitesse-09.jpg) | ![après](apres-police-vitesse-09.jpg) |

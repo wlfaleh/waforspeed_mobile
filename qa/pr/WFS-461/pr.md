@@ -46,7 +46,7 @@ Agent : Claude, agent conduite (01UY1Vv1A7)
 | 30 km/h, file tenue, Range Rover Sport : rotation due aux contacts | 0,43 rad | **0** (plus de contact permanent) |
 | marche arrière sans frein causée par un contact | non | non |
 
-  - Banc d'images (ci-dessous) : contact au flanc à 30 km/h, joueur qui braque vers la police : **avant**, la Golf tourne de 5° dans la police (carrosseries l'une dans l'autre, visible aussi en Cockpit) puis rebondit ; **après**, elle s'arrête contre le flanc, cap 0°, et longe la police. Rattrapage : avant, la police est collée à 15 m dès le départ (70 m/s²) ; après, elle part 27 m derrière, prend sa vitesse (137-141 km/h au plus) et rejoint le joueur à 100 km/h en 12 s.
+  - Banc d'images (ci-dessous) : contact au flanc à 30 km/h, joueur qui braque vers la police : **avant**, la Golf tourne de 5° dans la police (carrosseries l'une dans l'autre, visible aussi en Cockpit) puis rebondit ; **après**, elle s'arrête contre le flanc, cap 0°, et longe la police. Rattrapage : avant, la police est collée à 15 m dès le départ (70 m/s²) ; après, elle part 27 m derrière, prend sa vitesse (137-141 km/h au plus) et rejoint le joueur à 100 km/h en 12 s. Vitesse (joueur au plus vite, jusqu'à 193 km/h, le maximum du pilote automatique sur la Corniche) : avant, la police reste collée à 8-15 m à toutes les vitesses ; après, la 208 (169 km/h au plus) est distancée par la Golf GTI (jusqu'à 144 m), comme dans le réel (RG-04). À l'image 08, le pilote automatique du banc a un accident seul (feu grillé, rien à moins de 1 m), sans lien avec la police.
 - **Limites et risques connus** :
   - La conduite du joueur reste l'ancien modèle (`g_conduiteMonde` faux, WFS-258) : la glisse latérale n'a pas d'état de vitesse latérale ; le contact est traité comme une contrainte (pas de poussée sans effort).
   - Un joueur plus rapide que 208 km/h en ligne droite distance la police (voulu, RG-04) ; elle revient par les virages, les bouchons, les renforts et le replacement à 220 m (≤ sa fiche).
@@ -54,9 +54,20 @@ Agent : Claude, agent conduite (01UY1Vv1A7)
   - Le duel en ligne et la Course à 5 utilisent le même `contacter` : contacts plus doux (tests de non-pénétration verts).
   - À valider sur téléphone par l'utilisateur (🟡).
 
-## Captures pour le lead dev (32 après)
+## Tests CPU
 
-Dossier : [`qa/pr/WFS-461`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461). Suites : `police-flanc-00..09` (vue Poursuite), `police-flanc-cockpit-00..09` (vue Cockpit), `police-rattrapage-00..11` (une image toutes les 2 s, vitesse de la police écrite sur l'image).
+Commit testé : `0a14d368` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build` ; journal complet : [`qa/pr/WFS-461/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/tests-cpu.log).
+
+```
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 115 test(s) réussi(s) en 321 s
+```
+
+## Captures pour le lead dev (42 après, 42 avant)
+
+Dossier : [`qa/pr/WFS-461`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461). Suites : `police-flanc-00..09` (vue Poursuite), `police-flanc-cockpit-00..09` (vue Cockpit), `police-rattrapage-00..11` (joueur à 100 km/h, une image toutes les 2 s), `police-vitesse-00..09` (joueur au plus vite, une image toutes les 3 s) ; vitesse de la police écrite sur chaque image.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
@@ -92,6 +103,16 @@ Dossier : [`qa/pr/WFS-461`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `police-rattrapage-09` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-rattrapage-09.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-rattrapage-09.jpg?raw=true) |
 | `police-rattrapage-10` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-rattrapage-10.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-rattrapage-10.jpg?raw=true) |
 | `police-rattrapage-11` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-rattrapage-11.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-rattrapage-11.jpg?raw=true) |
+| `police-vitesse-00` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-00.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-00.jpg?raw=true) |
+| `police-vitesse-01` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-01.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-01.jpg?raw=true) |
+| `police-vitesse-02` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-02.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-02.jpg?raw=true) |
+| `police-vitesse-03` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-03.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-03.jpg?raw=true) |
+| `police-vitesse-04` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-04.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-04.jpg?raw=true) |
+| `police-vitesse-05` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-05.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-05.jpg?raw=true) |
+| `police-vitesse-06` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-06.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-06.jpg?raw=true) |
+| `police-vitesse-07` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-07.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-07.jpg?raw=true) |
+| `police-vitesse-08` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-08.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-08.jpg?raw=true) |
+| `police-vitesse-09` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/avant-police-vitesse-09.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-461/qa/pr/WFS-461/apres-police-vitesse-09.jpg?raw=true) |
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
