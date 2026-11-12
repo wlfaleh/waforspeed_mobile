@@ -974,3 +974,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 12:04:24 — WFS-461 : les 300 km/h sont ceux de la police (précision de l'utilisateur) (po-scrum-master)
 - Titre et règles réécrits : RG-03 police plafonnée à la vitesse, à l'accélération et au freinage de sa fiche (208, 208 km/h ; fin de `MAX_SPEED × 1,45` et du « joueur + 45 m/s » dans `poursuite.cpp` / `poursuite.h`, replacement après perte compris) ; RG-04 jeu jouable (rattrapage par les virages, bouchons, renforts). Zone élargie à `src/game/poursuite.cpp` / `.h`. Critères : banc CPU de vitesse maxi de la police ≤ 208 km/h, suite d'images d'un rattrapage. RG-01 / RG-02 (ANO-261) gardées. P1, 🟡 après fusion, toujours `@conduite` ; ANO-262 à jour dans `anno.md`.
+
+### 2026-11-12 12:05:35 — Synchronisation : 10 tickets passent ⏳ Prêt (po-scrum-master)
+- Dépendances fusionnées (🟣 / 🟡) : WFS-371 (380, 383), 395 (359, 349, 390), 366 et 444 (365), 397 (404, 396), 394 (359), 410 et 411 (402), 403 (373), 344 (390).
+- `track-agent.md` : ligne de la session 01UY1Vv1zt (WFS-383 fusionné, #358) enlevée ; aucun ticket 🔧 / 🔀 en cours.
+- Nouvelle liste des 30 prochaines tâches donnée à l'utilisateur (file B des bloquantes WFS-452 à 461 en alternance avec l'ordre des 20).
