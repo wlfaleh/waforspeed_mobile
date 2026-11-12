@@ -108,6 +108,19 @@ bool deplier(const std::vector<std::pair<int, Mots>>& L, std::vector<std::pair<i
 
 } // namespace
 
+// WFS-392 : pas arrondis au segment (1,2 m) ; zone de seuil bornée au tiers du tunnel
+std::vector<int64_t> luminairesTunnel(const EclairageTunnel& e, int64_t debut, int64_t fin) {
+    std::vector<int64_t> v;
+    if (e.type == EclairageTunnel::Aucun || fin <= debut) return v;
+    const int64_t pas = std::max<int64_t>(1, std::llround(e.pasM / SEG_M)), pasSeuil = std::clamp<int64_t>(std::llround(e.pasSeuilM / SEG_M), 1, pas);
+    const int64_t seuil = std::min<int64_t>(std::llround(e.seuilM / SEG_M), (fin - debut) / 3);
+    for (int64_t s = debut + pasSeuil / 2; s < fin; ) {
+        v.push_back(s);
+        s += (s - debut < seuil || fin - s <= seuil) ? pasSeuil : pas;
+    }
+    return v;
+}
+
 int64_t DonneesCarte::segments() const {
     int64_t n = 0;
     for (const Route& r : routes) n += r.entree + r.tenue + r.sortie;
@@ -207,7 +220,7 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
     std::vector<std::pair<int, Mots>> L;
     if (!deplier({L0.begin() + 1, L0.end()}, L, e)) { e = "bloc decor : " + e; return false; }
     const int64_t S = d.segments();
-    d.objets.clear(); d.sol.clear(); d.herbe = true; d.saison = {}; d.climatSol = 0;
+    d.objets.clear(); d.sol.clear(); d.herbe = true; d.saison = {}; d.climatSol = 0; d.eclairageTunnel = {};
     auto err = [&](int n, const std::string& q) { e = "bloc decor : " + ligneErr(n, q); return false; };
     for (const auto& [n, w] : L) {
         const std::string& k = w[0];
@@ -235,6 +248,14 @@ bool lireDecor(const std::string& texte, DonneesCarte& d, std::string& e) {
         } else if (k == "sol") {   // WFS-383 : sol mediterraneen|tempere|automne (couleurs du terrain, shaders/sols.glsl)
             if (w.size() != 2 || (w[1] != "mediterraneen" && w[1] != "tempere" && w[1] != "automne")) return err(n, "« sol mediterraneen|tempere|automne » attendu");
             d.climatSol = w[1] == "mediterraneen" ? 1 : w[1] == "tempere" ? 2 : 3;
+        } else if (k == "tunnel_eclairage") {   // WFS-392 : tunnel_eclairage type pas_m pas_seuil_m seuil_m
+            double a = 0, b = 0, c = 0;
+            EclairageTunnel& t = d.eclairageTunnel;
+            if (w.size() != 5 || (w[1] != "sodium" && w[1] != "led" && w[1] != "aucun") || !nombre(w[2], a) || !nombre(w[3], b) || !nombre(w[4], c)
+                || a < 6 || a > 25 || b < 3 || b > a || c < 0 || c > 200)
+                return err(n, "« tunnel_eclairage sodium|led|aucun pas_m pas_seuil_m seuil_m » attendu (pas 6 à 25 m, pas du seuil 3 m au pas, seuil 0 à 200 m)");
+            t.type = w[1] == "sodium" ? EclairageTunnel::Sodium : w[1] == "led" ? EclairageTunnel::Led : EclairageTunnel::Aucun;
+            t.pasM = (float)a; t.pasSeuilM = (float)b; t.seuilM = (float)c;
         } else if (k == "bande") {   // bande a b ya yb couleur : sol de chaque côté, m depuis l'axe
             Bande bd; double x[4] = {};
             if (w.size() != 6 || !couleur(w[5], bd.couleur)) return err(n, "« bande a b ya yb couleur » attendu");

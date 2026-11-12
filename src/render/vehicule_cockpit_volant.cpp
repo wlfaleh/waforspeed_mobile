@@ -213,7 +213,9 @@ Visiere ligneVisiere(const InterieurDef& d) {
     Visiere v;
     v.ev = ev; v.largeur = 2 * cw;
     const VolantSerie* vs = volantSeriePour(d);   // RG-07 : visière moins avancée, derrière le haut de la jante (volant de série)
-    const float avance = vs ? vs->visiereAvance : 0.068f, milieu = vs ? vs->visiereAvance - 0.028f : 0.04f;
+    const float propre = avanceVisierePropre(d);   // WFS-325 (RG-05) : M4, 911, SF90 ; 0 = visière d'avant (68 mm)
+    const float avance = vs ? vs->visiereAvance : propre > 0 ? propre : 0.068f;
+    const float milieu = vs ? vs->visiereAvance - 0.028f : propre > 0 ? propre - 0.028f : 0.04f;
     v.pts = {vec3{cxv, Yb - ev * 0.5f, cz - 0.10f}, vec3{cxv, top + 0.015f - ev * 0.5f, cz - 0.03f}, vec3{cxv, top + 0.012f - ev * 0.5f, cz + milieu},
              vec3{cxv, top + 0.004f - ev * 0.5f, cz + avance}};
     return v;

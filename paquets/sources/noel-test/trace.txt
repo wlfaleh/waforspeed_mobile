@@ -28,3 +28,5 @@ section virage 640 750 1 55 50
 section virage 750 860 -1 55 -50
 # WFS-346 : tunnel (abri) : aucun flocon dessous
 section tunnel 880 990
+# WFS-392 : 2e tunnel (dans une courbe) : chaussée sèche et éclairage sous CHAQUE tunnel de la carte
+section tunnel 1060 1150

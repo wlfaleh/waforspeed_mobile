@@ -6,6 +6,7 @@
 //   chocs : obstacles solides (boîtes, cylindres) le long de la route, dessinés et pris par les chocs du joueur (chocs_decor.h)
 //   decor : ciel et brouillard, bandes du sol, herbe des bas-côtés, maisons, arbres, lampadaires, lumières (guirlandes), répétitions ;
 //           WFS-346 (format 2) : saison : adhérence des surfaces, neige sur la chaussée, flocons qui tombent (struct Saison)
+//           WFS-392 (format 3) : éclairage des tunnels (struct EclairageTunnel)
 // Les arbres sont posés sur le sol des bandes ; les couleurs (sol, murs, toits, obstacles) vont dans les cases libres de la palette
 // commune des cartes (au plus PAL_W − C_NB couleurs différentes, au-delà : couleur la plus proche).
 // Un bloc faux → la carte n'est pas enregistrée (absente du choix du terrain), une ligne du journal dit pourquoi ; jamais de plantage.
@@ -23,7 +24,7 @@
 namespace wfs {
 namespace cartes_v2 {
 
-constexpr int FORMAT_DONNEES = 2;   // version des blocs texte ; un bloc plus récent est refusé (carte absente). 2 : saison (WFS-346)
+constexpr int FORMAT_DONNEES = 3;   // version des blocs texte ; un bloc plus récent est refusé (carte absente). 2 : saison (WFS-346) ; 3 : éclairage des tunnels (WFS-392)
 
 // WFS-346 (RG-02, RG-03) : saison de la carte, lue du bloc decor ; valeurs par défaut = carte sèche sans neige (cartes du code, inchangées).
 // Valeurs réelles et sources : references/reel/cartes_v2/neige.md.
@@ -39,6 +40,21 @@ struct Saison {
 // la route (neige au sol) et la météo (flocons). Carte du code ou inconnue : Saison{} (sec, sans neige).
 inline Saison& saisonPartie() { static Saison s; return s; }
 void preparerSaison(const char* carte);
+
+// WFS-392 (RG-02, RG-03) : éclairage des tunnels de la carte (sections « tunnel » du tracé), lu du bloc decor ; sans la ligne : valeurs
+// par défaut ci-dessous. Valeurs réelles et sources : references/reel/cartes_v2/tunnel.md.
+//   tunnel_eclairage type pas_m pas_seuil_m seuil_m
+//     type        : sodium (défaut : lampes au sodium haute pression, lumière orangée ≈ 2000 K), led (blanc neutre 4000 K), aucun
+//     pas_m       : écart entre deux luminaires d'une file en section courante (6 à 25 m ; défaut 12 m)
+//     pas_seuil_m : écart dans la zone de seuil, à chaque bouche (renforcement de jour ; 3 à 25 m, ≤ pas_m ; défaut 6 m)
+//     seuil_m     : longueur de la zone de seuil à chaque bouche (0 à 200 m ; défaut 60 m ; jamais plus du tiers du tunnel)
+struct EclairageTunnel {
+    enum Type { Aucun, Sodium, Led } type = Sodium;
+    float pasM = 12, pasSeuilM = 6, seuilM = 60;
+};
+// segments [debut, fin) du tunnel qui portent une paire de luminaires (une par file), du début vers la fin : pas du seuil près de
+// chaque bouche, pas courant au milieu, 1er luminaire à un demi-pas de la bouche ; vide si type Aucun (pure, testée)
+std::vector<int64_t> luminairesTunnel(const EclairageTunnel& e, int64_t debut, int64_t fin);
 
 struct Route { int entree = 0, tenue = 0, sortie = 0; double courbe = 0, montee = 0; };
 // objet du décor ou obstacle ; seg : segment du tour, lat : m (+ à droite), couleurs en 0xRRGGBB
@@ -68,6 +84,7 @@ struct DonneesCarte {
     bool herbe = true;                      // touffes d'herbe des bas-côtés (« herbe 0 » : sol enneigé, parking…)
     Saison saison;                          // WFS-346 : adhérence, neige au sol, flocons
     int climatSol = 0;                      // WFS-383 : « sol mediterraneen|tempere|automne » (sols::Climat : 1, 2, 3) ; 0 : sans (bandes unies)
+    EclairageTunnel eclairageTunnel;        // WFS-392 : luminaires des tunnels
     std::vector<Objet> objets, obstacles;
     int64_t segments() const;               // longueur du tour (segments) d'après les routes
 };

@@ -24,6 +24,7 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 - [ ] Branche synchronisée : `git fetch origin && git merge origin/main`, conflits résolus en gardant les deux côtés.
 - [ ] Compilation locale propre, sans nouvel avertissement.
 - [ ] `bash tools/qa/tests_cpu.sh build` vert ; nouveau test pour chaque règle calculable ; test de non-régression pour chaque bug corrigé.
+- [ ] **Capture des tests CPU dans la PR (règle de l'utilisateur, 2026-11-11)** : la fin du journal de `bash tools/qa/tests_cpu.sh build`, lancé sur la branche synchronisée avec `main` (dernières lignes `[OK] …`, la ligne `tests CPU : N test(s) réussi(s)`, la liste des échecs s'il y en a, le code de sortie), est collée dans la description de la PR, dans un bloc de code, sous un titre **« Tests CPU »**, avec le commit testé ; le journal complet est joint dans `qa/pr/WFS-XX/tests-cpu.log`. Sans cette capture, le lead dev refuse la PR. **Exception** : les PR déjà ouvertes le 2026-11-11 à 21:00 UTC (ex. #358) n'y sont pas tenues.
 - [ ] Serveur touché : `serveur/test` vert.
 - [ ] Captures du banc d'essai du ticket produites et **regardées** ; aucune autre capture dégradée.
 - [ ] Description de la PR : **« Agent : <mon nom dans track-agent.md> »** en tête, puis demande de l'utilisateur, ce qui change, vérification, limites (aucun « À REMPLIR »).

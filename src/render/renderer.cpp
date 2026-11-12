@@ -374,6 +374,12 @@ void Renderer::readShadowTiming() {
         double* m[4] = {&gpuPasses_.ombre, &gpuPasses_.reflet, &gpuPasses_.scene, &gpuPasses_.post};
         for (int i = 0; i < 4; i++) if (v[i] >= 0 && v[i] < 1000) *m[i] = gpuPasses_.mesuree ? *m[i] * 0.9 + v[i] * 0.1 : v[i];
         gpuPasses_.mesuree = true;
+        const double tot = (double)(t[4] - t[0]) * k;   // WFS-420 (RG-03) : cumul brut pour le banc du téléphone
+        if (tot > 0 && tot < 1000) {
+            double* c[4] = {&gpuCumul.ombre, &gpuCumul.reflet, &gpuCumul.scene, &gpuCumul.post};
+            for (int i = 0; i < 4; i++) if (v[i] >= 0 && v[i] < 1000) *c[i] += v[i];
+            gpuCumul.total += tot; gpuCumul.images++;
+        }
     }
     if (++shadowMsN_ == 120) {
         WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms ; reflets %.2f ms (WFS-16)", shadowMsSum_ / shadowMsN_, shadowSize_,
@@ -1232,11 +1238,16 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         // WFS-348 : banc seulement : bancLumieresParPixel > 0 remplace les lumières par pixel de la Basse (comparaison des leviers)
         // WFS-353 (RG-01) : valeur de la Basse dans qualite_auto.h (4 ; 2 = variante du banc, décision du PO attendue)
         u.spotN = {(float)n, qualiteBasse ? (float)(bancLumieresParPixel > 0 ? bancLumieresParPixel : qualite::LUMIERES_PAR_PIXEL_BASSE) : 12.f, qualiteBasse ? 4.f : 12.f, 0};
+        // WFS-450 (RG-02) : banc « lumieres-mouvement », images « avant » : + 0,25 = quota d'avant le ticket (eclairage.glsl, spotLights)
+        if (qualiteBasse && phares::avant450) u.spotN.y += 0.25f;
         // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
         // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
+        // WFS-450 (RG-01) : d'abord par rang (phares du joueur, éclairage fixe, phares des autres voitures : phares::avantEnBasse) :
+        // une voiture juste derrière la caméra ne passe plus avant les lampadaires
         int ordre[FrameParams::SPOTS_MAX];
         for (int i = 0; i < n; i++) ordre[i] = i;
-        if (qualiteBasse) std::stable_sort(ordre, ordre + n, [&](int a, int b) { return length(fp.spots[a].pos - fp.camPos) < length(fp.spots[b].pos - fp.camPos); });
+        if (qualiteBasse) std::stable_sort(ordre, ordre + n, [&](int a, int b) {
+            return phares::avantEnBasse(fp.spots[a].rang, length(fp.spots[a].pos - fp.camPos), fp.spots[b].rang, length(fp.spots[b].pos - fp.camPos)); });
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[ordre[i]];
             vec3 dir = normalize(s.target - s.pos);
@@ -1705,6 +1716,13 @@ void Renderer::endFrame() {
     const double tFin = nowSeconds();   // WFS-222 (RG-01)
     VkCtx& vk = *vk_;
     FrameRes& r = fr_[cur_];
+    if (compterMateriaux) {   // WFS-420 (RG-03) : banc seulement (tampon gardé d'une image à l'autre : aucune allocation après la 1re)
+        materiauxTmp_.clear();
+        for (const Pending& p : opaqueQ_) materiauxTmp_.push_back(p.mat);
+        for (const Pending& p : transparent_) materiauxTmp_.push_back(p.mat);
+        std::sort(materiauxTmp_.begin(), materiauxTmp_.end());
+        materiauxPrec_ = (uint32_t)(std::unique(materiauxTmp_.begin(), materiauxTmp_.end()) - materiauxTmp_.begin());
+    }
     const bool figee = sceneFigee();   // WFS-329 : fond figé : de l'horodatage 0 à 3 directement, rien avant la passe finale
     if (figee) {
         if (tsPool_) {

@@ -18,6 +18,7 @@
 #include "../render/retroviseurs_banc.h"   // WFS-324 (accroche) : WFS_BANC=retroviseurs
 #include "../render/vehicule_cockpit_banc.h"   // WFS-349 (accroche) : WFS_BANC=cockpit-voisine
 #include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
+#include "../render/vehicule_cockpit_vitrine.h"   // WFS-325 (accroche) : WFS_BANC=cockpit-vitrine
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
@@ -46,6 +47,7 @@ namespace wfs { int benchGrandPrixObjets(Game& g, Renderer& r, const std::string
 #include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 namespace wfs { int benchDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-328 (accroche) : eclairage_depart_banc.cpp
 namespace wfs { int benchHalosSol(Game& g, Renderer& r, const std::string& out); }   // WFS-421 (accroche) : nuit_halo_sol_banc.cpp
+namespace wfs { int benchLumieresMouvement(Game& g, Renderer& r, const std::string& out); }   // WFS-450 (accroche) : lumieres_mouvement_banc.cpp
 namespace wfs { int benchLumieresBasse(Game& g, Renderer& r, const std::string& out); }   // WFS-423 (accroche) : lumieres_basse_banc.cpp
 namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp
 namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
@@ -79,6 +81,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../ui/ecrans/pause.h"
 #include "../ui/ecrans/salon.h"
 #include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/reglages_banc.h"   // WFS-420
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
 #include "../world/enseignes.h"
@@ -198,6 +201,7 @@ int main(int argc, char** argv) {
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "depart-campagne") { ui::chargerPolice(r); const int e = benchDepartCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-374 (accroche) : départ de la Campagne, gaz tenu dès le décompte ; ANO-233
     if (banc == "halos-sol") { const int e = benchHalosSol(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-421 (accroche) : halos au sol des lampadaires, Basse / Moyenne / Haute
+    if (banc == "lumieres-mouvement") { ui::chargerPolice(r); const int e = benchLumieresMouvement(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-450 (accroche) : nuit en Basse, suites d'images en roulant
     if (banc == "lumieres-basse") { const int e = benchLumieresBasse(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-423 (accroche) : lumières de nuit en Basse, suite de 3 images
     if (banc == "halos") { ui::chargerPolice(r); const int e = benchHalos(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-337 (accroche) : halos des têtes de lampe, voie rapide de nuit
     if (banc == "depart") { ui::chargerPolice(r); const int e = benchDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-328 (accroche) : exposition au départ de nuit
@@ -259,6 +263,7 @@ int main(int argc, char** argv) {
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
+    if (banc == "banc-telephone") { ui::chargerPolice(r); const int e = ecrans::banc_telephone::benchBancTelephone(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-420 (accroche) : banc de performance du téléphone, captures banc-tel-*
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "ville-sens-inverse") { benchSensInverseVille(g, r, out); return finir(); }   // WFS-404 : sens inverse de la Ville seul
@@ -287,6 +292,10 @@ int main(int argc, char** argv) {
     if (banc == "cockpit-volant") {   // WFS-414 (accroche) : gros plans du volant (WFS_VOITURES : liste, sinon les 6 du volant de série + M4, 911)
         std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
         benchCockpitVolant(g, r, out, v); return finir();
+    }
+    if (banc == "cockpit-vitrine") {   // WFS-325 (accroche) : intérieurs du lot 1 seuls, vus de 4 places (WFS_VOITURES : liste)
+        std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
+        benchCockpitVitrine(g, r, out, v); return finir();
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)

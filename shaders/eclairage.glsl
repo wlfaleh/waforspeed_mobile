@@ -216,11 +216,20 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
     vec3 sum = vec3(0.0);
     int n = min(int(F.spotN.x + 0.5), 12);   // WFS-423 (RG-01) : vrai nombre de lumières de l'image (12 au plus : taille des tableaux)
     int parPixel = F.spotN.y > 0.5 ? int(F.spotN.y + 0.5) : 12, vus = 0;   // WFS-263 (RG-02) : 4 lumières par pixel au plus en Basse
+    // WFS-450 (RG-02, RG-04) : Basse seulement (toujours 4 lumières par pixel) : quota « juste et doux ». Une lumière ne prend une
+    // place que si elle éclaire vraiment le pixel : sa place vaut 0 sous QUOTA_BAS et 1 au-dessus de QUOTA_HAUT (éclairement reçu,
+    // luminance de la couleur × k ; repère : ≈ 1,7 sous un lampadaire de la Ville, donc 0,6 % et 3 % de ce niveau), et la dernière
+    // lumière admise est pesée par la place qui reste : plus de lumière qui s'allume ou s'éteint d'un coup au bord du quota (bord
+    // net des taches). Sous QUOTA_NUL (0,1 % d'un lampadaire, invisible), la lumière n'est pas calculée. Moyenne et Haute (12 par
+    // pixel) et le banc « avant » (spotN.y = 4,25) gardent le compte d'avant.
+    bool doux = parPixel < 12 && fract(F.spotN.y) < 0.1;
+    float charge = 0.0;
+    const float QUOTA_NUL = 0.002, QUOTA_BAS = 0.01, QUOTA_HAUT = 0.05;
     if (parPixel == 2) return spotLights2(n, p, N, V, albedo, f0, metal, a, noSpec);   // WFS-353 : Basse (Moyenne / Haute : 12)
     float NoV = max(dot(N, V), 1e-3);
     // WFS-226 : 12 projecteurs au plus ; WFS-423 (RG-01) : la boucle s'arrête au vrai nombre de lumières de l'image (n) ou dès que
     // le plafond par pixel est atteint (4 en Basse) : plus aucun tour vide jusqu'à 12 (même résultat, mêmes lumières gardées)
-    for (int i = 0; i < n && vus < parPixel; i++) {
+    for (int i = 0; i < n && vus < parPixel && charge < float(parPixel) - 0.01; i++) {
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);
@@ -230,9 +239,16 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;   // WFS-226 : hors faisceau
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
         if (range > 0.0 && d >= range) continue;   // WFS-263 : hors de portée, n'éclaire pas ce pixel (et ne compte pas)
-        vus++;   // WFS-263 : lumière qui éclaire vraiment ce pixel (dans le faisceau et à portée)
+        if (!doux) vus++;   // WFS-263 : lumière qui éclaire vraiment ce pixel (dans le faisceau et à portée)
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
         float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL * retroChaussee(i, L, N, albedo);   // WFS-382
+        if (doux) {   // WFS-450 (RG-02)
+            if (croisement) k *= smoothstep(0.17, 0.30, cosT);   // coupure franche à 80° de l'axe (cosT < 0,17) adoucie jusqu'à 72,5°
+            float e = dot(F.spotCol[i].rgb, vec3(0.2126, 0.7152, 0.0722)) * k;
+            if (e < QUOTA_NUL) continue;
+            k *= clamp(float(parPixel) - charge, 0.0, 1.0);
+            charge += smoothstep(QUOTA_BAS, QUOTA_HAUT, e);
+        }
         vec3 H = normalize(V + L);
         float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
         vec3 Fs = F_Schlick(f0, VoH);

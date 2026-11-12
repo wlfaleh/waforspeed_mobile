@@ -116,12 +116,13 @@ else()
   add_executable(test_credits tests/test_credits.cpp src/ui/credits_texte.cpp)   # WFS-406 : écran Crédits (lecture de CREDITS.txt, noms, RG-06)
   add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
   add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
+  add_executable(test_banc_telephone tests/test_banc_telephone.cpp src/render/banc_telephone.cpp)   # WFS-420 : banc de performance du téléphone
   add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
-  add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp src/render/vehicule_cockpit_volant.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
+  add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp src/render/vehicule_cockpit_volant.cpp src/render/vehicule_cockpit_details.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
   add_executable(test_cockpit_ferme tests/test_cockpit_ferme.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-349 : habitacle fermé sur les côtés
   add_executable(test_retroviseurs tests/test_retroviseurs.cpp src/render/retroviseurs_geo.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-324 : rétroviseurs à reflet
   add_executable(test_regard_cockpit tests/test_regard_cockpit.cpp src/core/configgame.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-235 : regard du conducteur en vue Cockpit
@@ -146,6 +147,8 @@ else()
   target_compile_definitions(test_sols PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cartes_v2_saison tests/test_cartes_v2_saison.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/game/player.cpp src/render/route_revetements_defs.cpp)   # WFS-346 : saison (neige, flocons, adhérence)
   target_compile_definitions(test_cartes_v2_saison PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_cartes_v2_abris tests/test_cartes_v2_abris.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/render/route_revetements_defs.cpp)   # WFS-392 : tunnels (chaussée sèche, luminaires)
+  target_compile_definitions(test_cartes_v2_abris PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cgu tests/test_cgu.cpp src/ui/ecrans/cgu_texte.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-308 : CGU (texte, version, clé cgu=)
   add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage

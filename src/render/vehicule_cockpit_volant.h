@@ -28,5 +28,8 @@ float demiLargeurCoussin(const VolantSerie& s, float y);
 // ev = épaisseur, largeur = largeur totale (m)
 struct Visiere { std::array<vec3, 4> pts; float ev, largeur; };
 Visiere ligneVisiere(const InterieurDef& d);
+// WFS-325 (RG-05, ANO-243, arbitrage du PO du 2026-11-11) : avancée propre de la visière (m) de la M4, de la 911 et de la SF90, sans
+// volant de série ; 0 pour toutes les autres voitures (visière inchangée) ; table et méthode : vehicule_cockpit_defs.cpp
+float avanceVisierePropre(const InterieurDef& d);
 
 } // namespace wfs::cockpit

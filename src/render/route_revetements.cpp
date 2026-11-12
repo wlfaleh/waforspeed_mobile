@@ -20,7 +20,7 @@ struct Charge {
 Charge g_charges[NB_REVETEMENTS];
 int g_qualite = 2;   // Haute
 Carte g_carte = Carte::Ville;   // WFS-206
-vec3 g_abri{1, 1, 1};           // WFS-346 : 1er tunnel de la carte de données (début, fin, longueur du tour, m) ; {1, 1, 1} : aucun
+Abris g_abris;                 // WFS-392 : abris (tunnels) de la carte de données enneigée ; tourSeg 0 : aucun
 
 // une carte : première variante que le GPU sait lire, envoyée sans ses « sauter » premiers niveaux (jamais sous 4×4)
 bool chargerCarte(VkCtx& vk, const std::string& base, uint32_t maxi, Image& out, size_t& octets, const char*& variante) {
@@ -50,13 +50,18 @@ bool chargerCarte(VkCtx& vk, const std::string& base, uint32_t maxi, Image& out,
 
 void preparer(int qualite, const char* mapId) {
     g_qualite = std::clamp(qualite, 0, 3); g_carte = carteDe(mapId);
-    // WFS-346 : neige au sol : la chaussée reste sèche sous le toit du 1er tunnel de la carte (route.glsl : abriRoute) ; données du paquet
-    g_abri = {1, 1, 1};
+    // WFS-346, WFS-392 (RG-01) : neige au sol : la chaussée reste sèche sous le toit de CHAQUE tunnel de la carte (route.glsl :
+    // abriRoute) ; tunnels lus des sections du tracé du paquet, rien de propre à une carte
+    g_abris = Abris{};
     const auto d = mapId ? cartes_v2::donnees(mapId) : nullptr;
     if (d && d->saison.neigeChaussee > 0) {
-        int n = 0;
-        for (const trace::Section& t : d->sections) if (t.type == trace::Type::Tunnel && n++ == 0) g_abri = {(float)(t.debut * SEG_M), (float)(t.fin * SEG_M), (float)(d->segments() * SEG_M)};
-        if (n > 1) WFS_LOG("route (WFS-346) : %s : %d tunnels, chaussée sèche sous le 1er seulement", mapId, n);
+        std::vector<std::pair<int64_t, int64_t>> t;
+        for (const trace::Section& s : d->sections) if (s.type == trace::Type::Tunnel) t.push_back({s.debut, s.fin});
+        if (!t.empty()) {
+            g_abris = coderAbris(t, d->segments());
+            WFS_LOG("route (WFS-392) : %s : %d tunnel(s), chaussée sèche sous %d%s", mapId, g_abris.tunnels, g_abris.tunnels - g_abris.perdus,
+                    g_abris.perdus ? " (les autres ne tiennent pas dans les cases du matériau : enneigés dedans)" : "");
+        }
     }
 }
 Revetement chaussee() { return chaussee(g_carte); }
@@ -78,8 +83,8 @@ Material creerMateriau(Renderer& r, Revetement rev, const Material& base) {
         c.ok = tout;
     }
     Material m = base;
-    m.cutoff = codeMateriau(g_qualite, g_carte, cartes_v2::saisonPartie().neigeChaussee);   // WFS-346 : + neige au sol
-    if (g_abri.z > 1) m.color = {g_abri.x, g_abri.y, g_abri.z, 1};   // WFS-346 : couleur inutilisée par la chaussée et le trottoir (route.glsl)   // mode de lecture et carte (route.glsl : pc.params.z) ; repli compris (WFS-206)
+    m.cutoff = codeMateriau(g_qualite, g_carte, cartes_v2::saisonPartie().neigeChaussee, g_abris.tourSeg);   // mode de lecture et carte (route.glsl : pc.params.z) ; repli compris (WFS-206) ; WFS-346 : + neige au sol ; WFS-392 : + tour
+    if (g_abris.tourSeg > 0) m.color = {g_abris.code[0], g_abris.code[1], g_abris.code[2], 1};   // WFS-346, WFS-392 : couleur inutilisée par la chaussée et le trottoir (route.glsl : abriRoute)
     if (!c.ok) return r.makeMaterial(m, nullptr, nullptr, nullptr);
     return r.makeMaterial(m, &c.cartes[0], &c.cartes[1], &c.cartes[2]);
 }

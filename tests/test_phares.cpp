@@ -3,7 +3,9 @@
 // proches éclairés, portée utile 60-80 m (RG-02), teintes 3500 K / 5700 K de luminance 1 ; WFS-226 : lumière au sol des
 // autres voitures (même photométrie), étalement en azimut borné.
 // usage : test_phares
+#include <algorithm>
 #include <cmath>
+#include <utility>
 #include <cstdio>
 #include "../src/render/feux_modele.h"
 #include "../src/render/phares.h"
@@ -88,6 +90,100 @@ int main() {
     // teintes de luminance 1
     for (const vec3& c : {TEINTE_HALOGENE, TEINTE_LED}) VERIFIE(std::abs(0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z - 1) < 0.01f, "luminance de la teinte");
     VERIFIE(!led("abarth") && led("golf") && !led(nullptr), "LED selon la voiture");
+    // ---------- WFS-450 (RG-07) : ordre des lumières en Basse et fondu des phares des autres voitures ----------
+    {
+        // RG-01 : phares du joueur, puis lampadaires, puis phares des autres voitures, même si l'autre voiture est plus près de la caméra
+        VERIFIE(avantEnBasse(RANG_FIXE, 30.f, RANG_AUTRES, 2.f), "un lampadaire à 30 m passe avant une voiture à 2 m de la caméra");
+        VERIFIE(avantEnBasse(RANG_JOUEUR, 9.f, RANG_FIXE, 3.f) && !avantEnBasse(RANG_AUTRES, 1.f, RANG_JOUEUR, 50.f), "phares du joueur en premier");
+        VERIFIE(avantEnBasse(RANG_FIXE, 5.f, RANG_FIXE, 9.f) && !avantEnBasse(RANG_FIXE, 9.f, RANG_FIXE, 5.f), "à rang égal : la plus proche de la caméra");
+        avant450 = true;   // banc : ordre d'avant le ticket (distance seule)
+        VERIFIE(!avantEnBasse(RANG_FIXE, 30.f, RANG_AUTRES, 2.f), "banc « avant » : la voiture proche passe devant");
+        avant450 = false;
+        // RG-03 : fondu avec la distance : plein à 55 m, nul à 70 m, sans saut
+        VERIFIE(fonduDistance(40.f) == 1.f && fonduDistance(55.f) == 1.f && fonduDistance(70.f) == 0.f && fonduDistance(62.5f) > 0.4f && fonduDistance(62.5f) < 0.6f, "fondu de 55 à 70 m");
+        // RG-03 : une voiture arrive à 20 m derrière le joueur : sa lumière monte en ≈ 0,3 s, sans saut de plus de 20 % par image (60 et 30 img/s)
+        const vec3 joueur{0, 0, 0};
+        auto voiture = [](float z, float x = 0) { PhareAutre p{}; p.centre = {x, 0.7f, z}; p.avant = {0, 0, -1}; p.droite = {1, 0, 0}; return p; };
+        for (float dt : {1.f / 60, 1.f / 30}) {
+            FonduAutres f; PhareAutre v[3] = {voiture(20)};
+            float prec = 0, sautMax = 0, duree = 0; int images = 0;
+            while (images < 200) {
+                f.pas(v, 1, joueur, AUTRES_ECLAIRANTS_BASSE, dt); images++;
+                const float w = FonduAutres::poids(f.places[0], joueur);
+                sautMax = std::max(sautMax, w - prec); prec = w;
+                if (w >= 1) { duree = images * dt; break; }
+                v[0].centre.z -= 25 * dt;   // elle roule (25 m/s) : la place suit la voiture
+            }
+            VERIFIE(duree > 0.25f && duree < 0.4f, "montée en %.2f s à %.0f img/s (≈ 0,3 s)", duree, 1 / dt);
+            VERIFIE(sautMax <= 0.2f, "saut de %.0f %% par image à %.0f img/s (20 %% au plus)", sautMax * 100, 1 / dt);
+            // elle n'est plus dessinée : la lumière descend sur place, sans saut, puis la place est rendue
+            sautMax = 0;
+            for (int i = 0; i < 60 && f.places[0].occupee; i++) { f.pas(v, 0, joueur, AUTRES_ECLAIRANTS_BASSE, dt); const float w = FonduAutres::poids(f.places[0], joueur); sautMax = std::max(sautMax, prec - w); prec = w; }
+            VERIFIE(!f.places[0].occupee && sautMax <= 0.2f, "descente : place rendue, saut de %.0f %% par image", sautMax * 100);
+        }
+        // changement de rang : 2 voitures éclairantes (10 m et 20 m), une 3e passe de 30 m à 8 m : elle monte pendant que celle de 20 m descend,
+        // jamais plus de 2 voulues, et pas d'aller-retour quand deux voitures sont à la même distance (écart de 6 m)
+        {
+            FonduAutres f; PhareAutre v[3] = {voiture(10, -3), voiture(20, 3), voiture(30, 0)};
+            const float dt = 1.f / 60; int changements = 0; bool voulue3 = false; float sautMax = 0, prec[FONDU_PLACES] = {};
+            for (int i = 0; i < 600; i++) {
+                v[2].centre.z = std::max(8.f, 30.f - 22.f * i / 300.f);
+                f.pas(v, 3, joueur, AUTRES_ECLAIRANTS_BASSE, dt);
+                int voulues = 0; bool v3 = false;
+                for (int k = 0; k < FONDU_PLACES; k++) {
+                    const FonduAutres::Place& p = f.places[k];
+                    voulues += p.occupee && p.voulue; v3 = v3 || (p.occupee && p.voulue && p.indice == 2);
+                    const float w = p.occupee ? FonduAutres::poids(p, joueur) : 0.f;
+                    sautMax = std::max(sautMax, std::abs(w - prec[k])); prec[k] = w;
+                }
+                VERIFIE(voulues <= AUTRES_ECLAIRANTS_BASSE, "plus de 2 voitures voulues en Basse");
+                if (v3 != voulue3) { changements++; voulue3 = v3; }
+            }
+            VERIFIE(changements == 1 && voulue3, "la 3e voiture prend la place une seule fois (%d changements)", changements);
+            VERIFIE(sautMax <= 0.2f, "changement de rang : saut de %.0f %% par image", sautMax * 100);
+            float somme = 0; for (const FonduAutres::Place& p : f.places) somme += p.occupee ? FonduAutres::poids(p, joueur) : 0.f;
+            VERIFIE(std::abs(somme - 2.f) < 1e-3f, "à la fin : 2 lumières pleines (%.2f)", somme);
+        }
+        // entrée dans le rayon : à 69 m, la lumière existe mais presque nulle ; au-delà de 70 m, aucune place
+        {
+            FonduAutres f; PhareAutre v[1] = {voiture(75)};
+            for (int i = 0; i < 30; i++) f.pas(v, 1, joueur, AUTRES_ECLAIRANTS_BASSE, 1.f / 60);
+            VERIFIE(!f.places[0].occupee, "à 75 m : pas de vraie lumière");
+            v[0] = voiture(69);
+            for (int i = 0; i < 30; i++) f.pas(v, 1, joueur, AUTRES_ECLAIRANTS_BASSE, 1.f / 60);
+            VERIFIE(f.places[0].occupee && FonduAutres::poids(f.places[0], joueur) < 0.05f, "à 69 m : lumière presque nulle (%.3f)", FonduAutres::poids(f.places[0], joueur));
+        }
+    }
+    // ---------- WFS-450 : lampadaires éclairants en Basse (cause du noir d'un coup : lampadaire retiré 5 m derrière la voiture) ----------
+    {
+        // un lampadaire reste candidat 36 m derrière le joueur (portée 26 m + recul de la caméra) ; devant d'abord, à distance égale
+        VERIFIE(LAMPES_DERRIERE_SEG * 1.2f >= 26.f + 9.f, "candidat derrière jusqu'à la fin de sa lumière visible");
+        VERIFIE(cleLampe(10) < cleLampe(-10) && cleLampe(-5) < cleLampe(16) && cleLampe(-5) > cleLampe(14), "clé : derrière compte 3 fois");
+        // Corniche : un lampadaire tous les 30 segments ; le joueur avance de 0,35 segment par image (25 m/s à 60 img/s).
+        // Le lampadaire qui vient d'être dépassé reste plein tant qu'il est à moins de 26 m (21 segments) : plus de noir d'un coup.
+        FonduLampes f; float sautMax = 0, precPoids[64] = {}; bool pleinPres = true;
+        for (int im = 0; im < 2000; im++) {
+            const double pos = im * 0.35;   // segments
+            std::pair<float, int64_t> c[64]; int nc = 0;
+            for (int64_t id = 0; id < 40; id++) { const int64_t e = (int64_t)std::floor(15 + 30 * id - pos); if (e >= -LAMPES_DERRIERE_SEG && e < LAMPES_DEVANT_SEG) c[nc++] = {cleLampe(e), id}; }
+            std::sort(c, c + nc);
+            int64_t voulus[LAMPES_ECLAIRANTES]; int n = 0;
+            for (int j = 0; j < nc && n < LAMPES_ECLAIRANTES; j++) voulus[n++] = c[j].second;
+            f.pas(voulus, n, 1.f / 60);
+            float poidsDe[64] = {};
+            for (const FonduLampes::Place& p : f.places) if (p.id >= 0) poidsDe[p.id] = FonduLampes::poids(p);
+            for (int id = 0; id < 40; id++) {
+                const double e = 15 + 30 * id - pos;
+                if (im > 0) sautMax = std::max(sautMax, std::abs(poidsDe[id] - precPoids[id]));
+                if (e > -21 && e < 21 && im > 30) pleinPres = pleinPres && poidsDe[id] >= 0.999f;
+                precPoids[id] = poidsDe[id];
+            }
+        }
+        VERIFIE(pleinPres, "un lampadaire à moins de 26 m du joueur (devant ou derrière) éclaire toujours à plein");
+        VERIFIE(sautMax <= 0.2f, "lampadaires : saut de %.0f %% par image (20 %% au plus)", sautMax * 100);
+        FonduLampes g1; const int64_t v1[2] = {7, 9}; g1.pas(v1, 2, 0.f);
+        VERIFIE(FonduLampes::poids(g1.places[0]) == 1.f && FonduLampes::poids(g1.places[1]) == 1.f, "première image : lampadaires pleins tout de suite");
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("test_phares : OK\n");
     return 0;

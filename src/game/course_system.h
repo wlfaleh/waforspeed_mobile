@@ -22,6 +22,8 @@ void courseBenchRules(bool on);
 bool courseBenchRulesOn();   // WFS-70 : état à remettre après une scène
 // banc d'essai : temps restant forcé (pour voir la fin de partie)
 void courseBenchSetTime(double seconds);
+// WFS-420 (accroche) : banc du téléphone : la course repart du départ, comme « Rejouer » (même graine de trafic)
+void courseRejouer();
 // scènes du banc d'essai de la course (captures course-decompte-*.png, course-fin.png), appelées par desktop_main.cpp
 void benchCourseScene(Game& g, Renderer& r, const std::string& outDir);
 // WFS-125 (RG-04) : badge « NOUVEAU RECORD » (haut yBadge, si nouveau) et ligne « RECORD » (bas `bas`) centrés sur cx,

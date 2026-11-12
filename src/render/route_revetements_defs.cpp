@@ -42,10 +42,48 @@ Revetement chaussee(Carte c) {
     }
 }
 
-float codeMateriau(int qualite, Carte c, float neige) {
+float codeMateriau(int qualite, Carte c, float neige, int tourSeg) {
     const float mode = qualite >= 2 ? 2.f : qualite == 1 ? 1.f : 0.f;
     const float k = std::round(std::clamp(neige, 0.f, 1.f) * (float)NEIGE_PAS);   // entier : la valeur reste exacte en flottant
-    return mode + 4.f * (float)(int)c + 16.f * k;
+    return mode + 4.f * (float)(int)c + 16.f * k + 256.f * (float)std::clamp(tourSeg, 0, TOUR_SEG_MAX);   // ≤ 2^24 − 1 : exact
+}
+
+// WFS-392 : abris (tunnels) de la carte rangés dans les cases du matériau (voir route_revetements.h)
+Abris coderAbris(const std::vector<std::pair<int64_t, int64_t>>& t, int64_t tourSeg) {
+    Abris a;
+    const int nombre = (int)t.size();
+    if (tourSeg <= 0 || tourSeg > TOUR_SEG_MAX) { a.tunnels = a.perdus = nombre; return a; }
+    int cases = 0;
+    for (int i = 0; i < nombre; i++) {
+        int64_t debut = t[(size_t)i].first, fin = t[(size_t)i].second;
+        while (i + 1 < nombre && t[(size_t)i + 1].first <= fin) fin = std::max(fin, t[(size_t)++i].second);   // abris qui se touchent : un seul
+        a.tunnels++;
+        bool entier = debut >= 0 && fin > debut && fin <= tourSeg;
+        // cases de l'abri : morceaux de ABRI_LONG_MAX segments au plus, chacun recouvrant le précédent
+        int besoin = 0;
+        for (int64_t d = debut; entier && d < fin; d = d + ABRI_LONG_MAX >= fin ? fin : d + ABRI_LONG_MAX - ABRI_RECOUVRE) besoin++;
+        entier = entier && cases + besoin <= ABRIS_MAX && fin <= ABRI_DEBUT_MAX;   // tout début de morceau < fin
+        if (!entier) { a.perdus++; continue; }
+        for (int64_t d = debut; d < fin; d = d + ABRI_LONG_MAX >= fin ? fin : d + ABRI_LONG_MAX - ABRI_RECOUVRE)
+            a.code[cases++] = (float)(d * 1024 + std::min<int64_t>(ABRI_LONG_MAX, fin - d));
+    }
+    if (cases > 0) a.tourSeg = (int)tourSeg;
+    return a;
+}
+
+float abriRoute(const Abris& a, double yM) {
+    const double tour = a.tourSeg * SEG_ROUTE_M;
+    if (tour <= 0) return 1.f;
+    const double d = yM - std::floor(yM / tour) * tour;
+    double sec = 0;
+    for (const float c : a.code) {
+        const double lon = std::fmod((double)c, 1024.0);
+        if (lon < 0.5) continue;
+        const double debut = std::floor((double)c / 1024.0) * SEG_ROUTE_M;
+        const double x = std::clamp((std::min(d - debut, debut + lon * SEG_ROUTE_M - d) + 1.0) / 9.0, 0.0, 1.0);   // smoothstep(−1, 8)
+        sec = std::max(sec, x * x * (3 - 2 * x));
+    }
+    return (float)(1.0 - sec);
 }
 
 int niveauxSautes(uint32_t cote, uint32_t maxi) {

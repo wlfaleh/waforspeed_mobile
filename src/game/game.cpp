@@ -230,7 +230,12 @@ void Game::drawControls() {
 // ---------------------------------------------------------------- mise à jour
 Game::Demandes& Game::demandes() { static Demandes d; return d; }
 
+namespace {   // WFS-420 (accroche) : durée d'un appel (ms), lue seulement pendant le banc du téléphone
+struct ChronoBanc { double& ms; double t0; explicit ChronoBanc(double& m) : ms(m), t0(Game::piloteBanc ? nowSeconds() : -1) {}
+                    ~ChronoBanc() { if (t0 >= 0) ms = (nowSeconds() - t0) * 1000; } };
+}
 void Game::update(double dt) {
+    ChronoBanc chronoBanc(msMiseAJour);   // WFS-420
     if (!demandes().carte.empty() && r_) changerCarte();   // WFS-41 / WFS-74 : entre deux images, jamais au milieu
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
@@ -243,7 +248,7 @@ void Game::update(double dt) {
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
     latchGas_ = latchBrake_ = latchNitro_ = false;
-    if (autopilot_ && course) {   // démonstration / tests : plein gaz, reste au milieu de sa voie
+    if ((autopilot_ || piloteBanc) && course) {   // WFS-420 : banc du téléphone ; démonstration / tests : plein gaz, reste au milieu de sa voie
         in.gas = true; in.brake = false;
         in.steer = (float)clampf((float)((0.0 - player_.playerX) * 3.0 - player_.heading * 4.0), -1.f, 1.f);
         for (auto& sy : systems_) sy->autopilot(dt, in, view_);   // ex. : éviter le trafic (WFS-08)
@@ -338,6 +343,7 @@ mat4 Game::carMatrix(double s, double lat, double yaw) {
 }
 
 void Game::render(double time) {
+    ChronoBanc chronoBanc(msRendu);   // WFS-420
     frameNo_++;
     appliquerEcran();
     streamChunks();

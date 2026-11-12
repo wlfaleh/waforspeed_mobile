@@ -33,6 +33,7 @@
 #include "reglages_onglets.h"   // WFS-291, WFS-318 : lignes et onglets
 #include "../../render/diagnostic_perf.h"   // WFS-419 : menu caché des interrupteurs de diagnostic
 #include "../../render/passes.h"   // WFS-419 : horodatages GPU disponibles
+#include "reglages_banc.h"   // WFS-420 : banc de performance automatique (protocole, résultats)
 
 namespace wfs {
 namespace ecrans {
@@ -78,7 +79,7 @@ constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau compté
 // ---------------------------------------------------------------- WFS-419 : menu caché de diagnostic de performance
 // 5 touchers sur le titre « Réglages » en moins de 3 s ouvrent, par-dessus le panneau, la liste des interrupteurs (un toucher :
 // allumé / éteint), l'appareil (RG-03), le temps GPU de chaque passe (RG-04) et l'explication des « 0,0 ». Rien n'est enregistré.
-Zone g_titre, g_diagLigne[diag::N_INTERRUPTEURS], g_diagFermer, g_diagTout;
+Zone g_titre, g_diagLigne[diag::N_INTERRUPTEURS], g_diagFermer, g_diagTout, g_diagBanc;   // WFS-420 : g_diagBanc, « Banc auto »
 bool g_diagOuvert = false;
 int g_titreTouchers = 0; double g_titrePremier = -10;
 Renderer* g_diagR = nullptr;
@@ -99,6 +100,7 @@ void appliquerDiag(diag::Interrupteur i) {
 }
 bool toucherDiag(float x, float y) {
     if (g_diagFermer.contient(x, y)) { g_diagOuvert = false; WFS_LOG("réglages : menu caché de diagnostic fermé"); return true; }
+    if (g_diagBanc.contient(x, y)) { g_diagOuvert = false; banc_telephone::ouvrirProtocole(); return true; }   // WFS-420 : protocole, puis le banc
     if (g_diagTout.contient(x, y)) {
         bool recree = false;
         for (int i = 0; i < diag::N_INTERRUPTEURS; i++) recree |= diag::menu((diag::Interrupteur)i) && diag::INFOS[i].recreeCibles;
@@ -297,6 +299,8 @@ public:
         }
         if (t.id == g_doigt) { if (g_presse == P_FERMER && !dansCible(g_fermer, t.x, t.y)) g_presse = P_AUCUN; return true; }   // doigt encore posé (glissé hors : annulé)
         if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
+        if (banc_telephone::protocoleOuvert()) return banc_telephone::toucherProtocole(t.x, t.y);   // WFS-420 : par-dessus le panneau
+        if (banc_telephone::resultatsOuverts()) return banc_telephone::toucherResultats(t.x, t.y);
         if (g_diagOuvert) return toucherDiag(t.x, t.y);   // WFS-419 : menu caché par-dessus le panneau
         if (g_titre.contient(t.x, t.y)) { toucherTitre(); return true; }   // WFS-419 : 5 touchers ouvrent le menu caché
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); g_doigt = t.id; return true; }   // WFS-308 (RG-05)
@@ -346,6 +350,8 @@ public:
         if (cgu().ouvert()) cgu().dessiner(r, W, H, g.marges, g.time);   // WFS-308 (RG-05) : par-dessus le panneau
         g_diagR = &r;
         if (g_diagOuvert) dessinerDiagnostic(r, W, H, cp ? k : ui::unitePetitEcran(W, H));   // WFS-419 : menu caché
+        if (banc_telephone::protocoleOuvert()) banc_telephone::dessinerProtocole(r, W, H, cp ? k : ui::unitePetitEcran(W, H));   // WFS-420
+        else if (banc_telephone::resultatsOuverts()) banc_telephone::dessinerResultats(r, W, H, cp ? k : ui::unitePetitEcran(W, H));
     }
 
 private:
@@ -518,10 +524,13 @@ private:
         ui::text(r, x0, y, 18 * k, ui::majuscules("Diagnostic performance (WFS-419)"), hex(ACCENT2), ui::GAUCHE, 0.08f, false);
         {   // « Fermer » et « Tout rétablir » en haut à droite
             const float bh = std::max(44.f * k, 30 * k), tp = 14 * k;
-            const std::string ft = ui::majuscules("Fermer"), tt = ui::majuscules("Tout rétablir");
-            const float fw = ui::width(tp, ft, 0.1f) + 32 * k, tw = ui::width(tp, tt, 0.1f) + 32 * k;
+            const std::string ft = ui::majuscules("Fermer"), tt = ui::majuscules("Tout rétablir"), bt = ui::majuscules("Banc auto");
+            const float fw = ui::width(tp, ft, 0.1f) + 32 * k, tw = ui::width(tp, tt, 0.1f) + 32 * k, bw = ui::width(tp, bt, 0.1f) + 32 * k;
             g_diagFermer = {W - m - fw, y - 6 * k, fw, bh};
             g_diagTout = {W - m - fw - 8 * k - tw, y - 6 * k, tw, bh};
+            g_diagBanc = {g_diagTout.x - 8 * k - bw, y - 6 * k, bw, bh};   // WFS-420 : banc de performance automatique
+            biseau(r, g_diagBanc.x, g_diagBanc.y, bw, bh, 10 * k, hex(ACCENT2));
+            ui::text(r, g_diagBanc.x + bw / 2, g_diagBanc.y + (bh - tp) / 2, tp, bt, hex(BG), ui::CENTRE, 0.1f, false);
             biseau(r, g_diagFermer.x, g_diagFermer.y, fw, bh, 10 * k, hex(ACCENT));
             ui::text(r, g_diagFermer.x + fw / 2, g_diagFermer.y + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.1f, false);
             biseau(r, g_diagTout.x, g_diagTout.y, tw, bh, 10 * k, hex(SURFACE2));
@@ -565,6 +574,7 @@ private:
 Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
+void ouvrirMenuCacheBanc(bool oui) { g_diagOuvert = oui; if (oui) diag::g_menuVu = true; }   // WFS-420 : banc PC (capture du menu caché)
 bool toucheReglages(float x, float y, int doigt) { return g_ouvert || dansCible(g_bouton, x, y) || (doigt >= 0 && doigt == g_doigt); }   // WFS-290 : même cible que onTouch, et le doigt posé sur « Réglages »
 bool boutonCguReglages(float& x, float& y) { x = g_cgu.x + g_cgu.w / 2; y = g_cgu.y + g_cgu.h / 2; return g_ouvert && g_cgu.w > 0; }   // WFS-308
 
