@@ -1180,3 +1180,12 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 20:00:11 — WFS-479 : 911 ajoutée, cause trouvée (po-scrum-master)
 - Ordre de l'utilisateur dans la session du développeur (19:56 UTC, vérifié dans son fil) : « Corrige le même problème sur la 9fs ». RG-04 = M4 et 911. Cause : roues avant modélisées braquées de 20° (911 : moyeux avant décalés de 7,6 cm en plus), redressées à la source. Pneus avant de la 911 à 0,670 m au lieu de 0,679 m : hors ticket.
+
+### 2026-11-12 20:08:43 — WFS-461 : PR #369 ouverte, contact police sans glisse et police plafonnée à sa fiche (Claude, agent conduite (01UY1Vv1A7))
+- **Causes** : ANO-261 : `duel::contacter` (jeu web) déplaçait la voiture du joueur de 2 × le recouvrement + 3 mm par pas et la tournait de 0,06 rad par pas de contact ; poussée par l'arrière, elle prenait 80 % de la vitesse de la police même frein serré, cap tiré au hasard à chaque pas. ANO-262 : `poursuite::avancer` : `MAX_SPEED × 1,45` (377 km/h), 70 m/s² d'accélération, 140 m/s² de freinage.
+- **Fait** : contact réaliste (contrainte sans poussée en plus, rotation vers l'autre voiture bloquée, frottement ≤ 0,4 μ g, choc mou e = 0,2, poussée tenue bornée par les roues motrices et le frein du joueur) ; `FichePolice` : vitesse maxi, accélération, freinage et adhérence de la fiche (208 : 208 km/h), vraies dimensions au contact.
+- **Mesures** (`test_police_461`, avant / après) : police 361-376 → 208 km/h (Golf de police 361 → 250) ; 0-100 en 8,7 s, 100-0 en 35,8 m ; frein serré, vitesse donnée par la police 46-59 → 0 km/h ; rotation due aux contacts 0,74-0,79 → 0,01-0,03 rad. Tests CPU verts (police_461, course5/poursuite, chocs_voitures, penetration_voitures, duel, course5_ordinateurs).
+- **Accroche annoncée** : 2 lignes dans `src/platform/desktop_main.cpp` (`WFS_BANC=police`, banc `src/game/police_banc.*`, nouveau) ; `CMakeLists.txt` : `test_police_461`. Captures avant / après : `qa/pr/WFS-461/` (32 paires).
+- **Réseau** : paquets apt d'Ubuntu installés dans le conteneur pour construire le banc (libvulkan-dev, mesa-vulkan-drivers, glslc, ninja-build, imagemagick ; dépôts officiels, rien d'envoyé).
+- Lead dev appelé. Après la fusion : 🟡 À valider (utilisateur).
+
