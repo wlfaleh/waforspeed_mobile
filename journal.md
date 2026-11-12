@@ -1379,3 +1379,15 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 - Fait : `android:allowBackup="true"` + `dataExtractionRules` (`res/xml/regles_sauvegarde.xml` : cloud-backup et device-transfer) + `fullBackupContent` (`res/xml/sauvegarde_ancienne.xml`) ; une seule règle `include domain="file" path="sauvegarde.txt"` (chemin vérifié : `android_main.cpp:351`, internalDataPath = getFilesDir) ; tout le reste exclu (paquets, .part, pipelines.cache, .tmp, plantage, caches).
 - Vérification : XML lus sans erreur ; captures `sauvegarde` ×2 et `menu1` 1280x720 avant / après identiques octet pour octet ; fichier de sauvegarde du banc = 323 octets (RG-03 < 64 Ko).
 - Limites : APK non construit en local (pas de SDK Android), **pas d'émulateur ici : essai désinstaller / réinstaller non fait par le développeur**, décrit pour l'utilisateur (PR et `tache utilisateur.md`). Fantômes non sauvegardés (RG-01). À déclarer dans « Sécurité des données » de Google Play (PO / juriste).
+
+### 2026-11-12 23:52:30 — WFS-504 : PR #372 ouverte, système de langue FR / EN (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Fait : `src/ui/langue.*` et `langue_regles.h` (`ui::tr`, langue du téléphone `fr` → français sinon anglais, choix Automatique / Français / English appliqué tout de suite), tables `assets/textes/fr.txt` / `en.txt` (71 textes), `ui::textBoite` (réduction de 20 % au plus), clé `langue=auto|fr|en` de la sauvegarde, `nativeLangue` (JNI, `JeuActivity.onCreate`), `values/strings.xml` anglais + `values-fr/` français, Réglages entièrement traduits, ligne « Langue » en dernière ligne d'Affichage ; banc `WFS_BANC=textes` et `WFS_LANGUE=fr|en`.
+- Vérification : 116 tests CPU au vert (dont `test_langue`, `test_reglages_onglets`) ; banc `textes` VERT en anglais (1280x720, 2400x1080) et en français : 0 phrase française, 0 texte qui dépasse ; parcours accueil → Réglages → English → retour → course → pause → Réglages en anglais → Automatique : OK ; captures dans `qa/pr/WFS-504/`.
+- Limites : APK non construit en local, pas d'essai sur téléphone ; le reste du jeu reste en français (WFS-505 à 508).
+
+### 2026-11-12 23:52:30 — WFS-504 : risque signalé (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Constat : la ligne technique de mesure du panneau Réglages (« Rendu : Haute · … · Mémoire : jeu … Mo · carte graphique … · aucune partie », `qualite::ligneRendu()` dans `src/render/qualite_systeme.cpp`, `texteMemoire()` dans `src/ui/ecrans/chargement.cpp`) reste en français avec un téléphone en anglais ; idem libellés du menu caché de diagnostic (`src/render/diagnostic_perf.*`).
+- Conséquence : une phrase française visible dans les Réglages en anglais (critère de l'épic E20) ; hors de la zone de WFS-504, donc non traduite ; le banc `textes` la note à part (« ligne technique non vérifiée »), sans échec.
+- Proposition : l'ajouter à WFS-505 (zone `chargement*`) avec une accroche ≤ 10 lignes dans `qualite_systeme.cpp`, ou un petit ticket à part ; autre option : ne montrer cette ligne qu'après le menu caché (WFS-419).
+- Décision attendue de : PO.
+
