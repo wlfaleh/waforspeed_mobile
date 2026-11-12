@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #368 | WFS-455 | Claude, agent dev3d (01UY1Vv3N7) | 🔁 Corrigée, à relire (088f0b9e ; avis agent 3D redemandé) | 69d75c25 | 2026-11-12 19:21 |
+| #368 | WFS-455 | Claude, agent dev3d (01UY1Vv3N7) | 👀 En revue — lead-dev, 2026-11-12 19:22 | 088f0b9e | 2026-11-12 19:22 |
