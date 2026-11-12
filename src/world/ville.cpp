@@ -1384,13 +1384,17 @@ public:
             // dorés, marquise dorée de 12 m au-dessus de 3 marches (17 / 30 cm : 2h + g = 64 cm, loi de Blondel) et d'un tapis
             const float f0 = R + 12.f;
             quad(U, P(R + 6.5f, -demi, 0.16f), P(R + 6.5f, demi, 0.16f), P(f0, demi, 0.16f), P(f0, -demi, 0.16f), up, uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE));
-            bloc(out[P_VERRE], f0 + 12.35f, 0, 0, 12.f, demi - 0.2f, 14.f, {0, 0});                     // vitrages (en retrait)
+            bloc(out[P_VERRE], f0 + 12.f, 0, 0, 11.65f, demi - 0.2f, 14.f, {0, 0});                     // vitrages (en retrait de 0,35 m devant et derrière, WFS-455)
             bloc(U, f0 + 12.f, 0, 0, 12.f, demi, 1.2f, uvc(U_CREME));                                    // soubassement
             for (float y : {5.f, 9.6f}) bloc(U, f0 + 12.f, 0, y, 12.f, demi, 0.6f, uvc(U_CREME));       // bandeaux d'étage
             bloc(U, f0 + 12.f, 0, 13.f, 12.f, demi, 1.f, uvc(U_CREME));                                  // attique
             bloc(out[P_OR], f0 + 11.85f, 0, 14.f, 12.15f, demi + 0.15f, 0.45f, {0, 0});                  // corniche dorée
             for (float al = -demi; al <= demi + 0.01f; al += 4.f) {
-                bloc(U, f0 + 12.f, al, 0, 12.f, 0.4f, 13.f, uvc(U_CREME));                               // pilastres
+                if (std::fabs(std::fabs(al) - demi) < 0.01f) {   // WFS-455 (ANO-254) : côtés rythmés comme la façade (plus de pan aveugle de 24 m)
+                    for (int k = 0; k <= 6; k++) bloc(U, f0 + (k < 6 ? 0.4f + 4.f * (float)k : 23.6f), al, 0, 0.4f, 0.4f, 13.f, uvc(U_CREME));
+                } else {
+                    bloc(U, f0 + 12.f, al, 0, 12.f, 0.4f, 13.f, uvc(U_CREME));                           // pilastres
+                }
                 if (!lod) bloc(out[P_OR], f0 - 0.08f, al, 12.4f, 0.12f, 0.5f, 0.6f, {0, 0});             // chapiteaux
             }
             for (int k = 0; k < 3; k++)                                                                   // marches

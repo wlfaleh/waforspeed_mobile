@@ -142,25 +142,10 @@ void corniche(Maillage& m, float L, float D, float H, float h, float s) {
     }
 }
 
-void mansart(const Plan& p, float D, int lod, Batiment& out) {
-    const float H = p.hauteur(), L = p.largeur;
-    const float tb = std::tan(BRISIS_DEG * PI / 180.f), tt = std::tan(TERRASSON_DEG * PI / 180.f);
-    float hb = p.hEtage, e = hb / tb;
-    if (2 * e > std::min(L, D) - 1.f) { e = std::max(0.2f, (std::min(L, D) - 1.f) / 2); hb = e * tb; }
-    const float y1 = H + hb, zr = -D / 2, hr = tt * (D / 2 - e), yr = y1 + hr;
-    float xa = e + (D / 2 - e), xb = L - e - (D / 2 - e);
-    if (xa > xb) xa = xb = L / 2;
+// WFS-455 : lucarnes à fronton du brisis avant de p (code de WFS-370 déplacé tel quel) ; y1 : haut du brisis
+void lucarnes(const Plan& p, int lod, float y1, Batiment& out) {
+    const float H = p.hauteur(), tb = std::tan(BRISIS_DEG * PI / 180.f);
     Maillage& t = out.part[TOIT];
-    // brisis (4 pans) puis terrasson (2 longs pans et 2 croupes)
-    face(t, {0, H, 0}, {L, H, 0}, {L - e, y1, -e}, {e, y1, -e}, {0, 1, 1});
-    face(t, {L, H, -D}, {0, H, -D}, {e, y1, -D + e}, {L - e, y1, -D + e}, {0, 1, -1});
-    face(t, {0, H, -D}, {0, H, 0}, {e, y1, -e}, {e, y1, -D + e}, {-1, 1, 0});
-    face(t, {L, H, 0}, {L, H, -D}, {L - e, y1, -D + e}, {L - e, y1, -e}, {1, 1, 0});
-    face(t, {e, y1, -e}, {L - e, y1, -e}, {xb, yr, zr}, {xa, yr, zr}, {0, 1, 1});
-    face(t, {L - e, y1, -D + e}, {e, y1, -D + e}, {xa, yr, zr}, {xb, yr, zr}, {0, 1, -1});
-    tri(t, {e, y1, -D + e}, {e, y1, -e}, {xa, yr, zr}, {-1, 1, 0});
-    tri(t, {L - e, y1, -e}, {L - e, y1, -D + e}, {xb, yr, zr}, {1, 1, 0});
-    if (lod >= 2) return;
     // lucarnes à fronton, une par travée, dans l'axe des fenêtres d'étage
     float fenL = 1.1f;
     for (const Baie& b : p.baies) if (b.niveau == 1) { fenL = b.l; break; }
@@ -206,6 +191,41 @@ void mansart(const Plan& p, float D, int lod, Batiment& out) {
             face(t, {cx, yf - 0.04f, zb}, {xe1, ye - 0.04f, zb}, {xe1, ye - 0.04f, ze}, {cx, yf - 0.04f, ze}, {-pente, -1, 0});
         }
     }
+}
+
+void mansart(const Plan& p, float D, int lod, Batiment& out) {
+    const float H = p.hauteur(), L = p.largeur;
+    const float tb = std::tan(BRISIS_DEG * PI / 180.f), tt = std::tan(TERRASSON_DEG * PI / 180.f);
+    float hb = p.hEtage, e = hb / tb;
+    if (2 * e > std::min(L, D) - 1.f) { e = std::max(0.2f, (std::min(L, D) - 1.f) / 2); hb = e * tb; }
+    const float y1 = H + hb, zr = -D / 2, hr = tt * (D / 2 - e), yr = y1 + hr;
+    float xa = e + (D / 2 - e), xb = L - e - (D / 2 - e);
+    if (xa > xb) xa = xb = L / 2;
+    Maillage& t = out.part[TOIT];
+    // brisis (4 pans) puis terrasson (2 longs pans et 2 croupes)
+    face(t, {0, H, 0}, {L, H, 0}, {L - e, y1, -e}, {e, y1, -e}, {0, 1, 1});
+    face(t, {L, H, -D}, {0, H, -D}, {e, y1, -D + e}, {L - e, y1, -D + e}, {0, 1, -1});
+    face(t, {0, H, -D}, {0, H, 0}, {e, y1, -e}, {e, y1, -D + e}, {-1, 1, 0});
+    face(t, {L, H, 0}, {L, H, -D}, {L - e, y1, -D + e}, {L - e, y1, -e}, {1, 1, 0});
+    face(t, {e, y1, -e}, {L - e, y1, -e}, {xb, yr, zr}, {xa, yr, zr}, {0, 1, 1});
+    face(t, {L - e, y1, -D + e}, {e, y1, -D + e}, {xa, yr, zr}, {xb, yr, zr}, {0, 1, -1});
+    tri(t, {e, y1, -D + e}, {e, y1, -e}, {xa, yr, zr}, {-1, 1, 0});
+    tri(t, {L - e, y1, -e}, {L - e, y1, -D + e}, {xb, yr, zr}, {1, 1, 0});
+    if (lod < 2) {
+        lucarnes(p, lod, y1, out);
+        // WFS-455 (ANO-254) : lucarnes aussi sur le brisis arrière, dans l'axe des fenêtres de la façade sur cour, tournées de 180°
+        // (niveau 0 seulement, RG-04 ; au loin le brisis arrière garde son zinc, comme vu depuis la cour à plus de 120 m)
+        if (lod == 0) {
+            Batiment r;
+            lucarnes(facadeSecondaire(p, L, 1), lod, y1, r);
+            for (int k = 0; k < NB_PARTS; k++) {
+                Maillage& dst = out.part[k];
+                const uint32_t base = (uint32_t)dst.v.size();
+                for (const Sommet& v : r.part[k].v) dst.v.push_back({{L - v.p.x, v.p.y, -D - v.p.z}, {-v.n.x, v.n.y, -v.n.z}, v.uv});
+                for (uint32_t i : r.part[k].i) dst.i.push_back(base + i);
+            }
+        }
+    }
     // souches de cheminée sur les deux murs pignons (maçonnerie, couronnement, mitrons)
     if (L < 5.f || D < 4.f) return;
     for (int c = 0; c < 2; c++) {
@@ -230,6 +250,15 @@ void terrasse(const Plan& p, float D, int lod, Batiment& out) {
     pave(mur, 0, L, H, H + ACRO, -D, -D + ACRO_EP, 63 & ~32);
     pave(mur, 0, ACRO_EP, H, H + ACRO, -D, 0, 63 & ~32);
     pave(mur, L - ACRO_EP, L, H, H + ACRO, -D, 0, 63 & ~32);
+    // WFS-455 (ANO-254) : l'édicule se voit aussi de loin (volume et dalle à tous les niveaux ; porte et ventilation de près)
+    const bool edicule = p.edicules && L > 6 && D > 6;
+    const float cx = L * 0.5f, cz = -D * 0.6f, x0 = cx - 1.6f, x1 = cx + 1.6f, z0 = cz - 1.4f, z1 = cz + 1.4f, yh = H + 2.6f;
+    if (edicule && lod >= 1) {
+        pave(mur, x0, x1, H, yh, z0, z1, 63 & ~(16 | 32));
+        pave(out.part[ENCADREMENT], x0 - 0.15f, x1 + 0.15f, yh, yh + 0.2f, z0 - 0.15f, z1 + 0.15f);
+        face(out.part[MENUISERIE], {cx - 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 2.15f, z1 + 0.005f},
+             {cx - 0.45f, H + 2.15f, z1 + 0.005f}, {0, 0, 1});
+    }
     if (lod >= 2) return;
     Maillage& met = out.part[METAL];   // couvertines (tôle pliée) sur les 4 côtés
     const float c = COUVERTINE, y = H + ACRO;
@@ -237,9 +266,8 @@ void terrasse(const Plan& p, float D, int lod, Batiment& out) {
     pave(met, -c, L + c, y, y + 0.02f, -D - c, -D + ACRO_EP + c);
     pave(met, -c, ACRO_EP + c, y, y + 0.02f, -D + ACRO_EP, -ACRO_EP);
     pave(met, L - ACRO_EP - c, L + c, y, y + 0.02f, -D + ACRO_EP, -ACRO_EP);
-    if (!(p.edicules && lod == 0 && L > 6 && D > 6)) return;
+    if (!(edicule && lod == 0)) return;
     // édicule (cage d'escalier et machinerie) : 3,2 × 2,8 m, 2,6 m ; dalle en débord, porte métallique, grille de ventilation
-    const float cx = L * 0.5f, cz = -D * 0.6f, x0 = cx - 1.6f, x1 = cx + 1.6f, z0 = cz - 1.4f, z1 = cz + 1.4f, yh = H + 2.6f;
     pave(mur, x0, x1, H, yh, z0, z1, 63 & ~(16 | 32));
     pave(out.part[ENCADREMENT], x0 - 0.15f, x1 + 0.15f, yh, yh + 0.2f, z0 - 0.15f, z1 + 0.15f);
     face(out.part[MENUISERIE], {cx - 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 2.15f, z1 + 0.005f},

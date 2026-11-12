@@ -5,6 +5,7 @@
 #include "../src/world/archi_geo.h"
 #include "../src/world/archi_ouvertures.h"   // WFS-402
 #include "../src/render/bench_realisme.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -130,7 +131,57 @@ static void verifierInterrupteurWFS415() {
     choisirOuverturesReelles(true);
 }
 
+// ---------------------------------------------------------------- WFS-455 (ANO-254) : plus de pavé gris nu vu de l'arrière
+static void verifierWFS455() {
+    const int avant = echecs;
+    for (int s = 0; s < (int)Style::Nombre; s++) for (uint32_t g = 0; g < 20; g++) {
+        const Plan p = assembler((Style)s, 12.f + (float)(g % 5) * 3.f, 22.f, g * 7919u + 3u);
+        const float D = 10.f + (float)(g % 4) * 3.f;
+        for (int f = 1; f <= 3; f++) {
+            const Plan q = facadeSecondaire(p, f == 1 ? p.largeur : D, f);
+            const char* e = nullptr;
+            verifierQue(verifier(q, &e) == 0, e ? e : "WFS-455 : façade secondaire dans les règles du kit");
+            verifierQue(q.hRdc == p.hRdc && q.hEtage == p.hEtage && q.etages == p.etages, "WFS-455 : mêmes niveaux que la rue");
+            int fen = 0; for (const Baie& b : q.baies) fen += b.type == Ouverture::Fenetre && !b.balcon;
+            verifierQue(fen >= q.travees * q.etages, "WFS-455 : une fenêtre par travée et par étage");
+        }
+        for (int lod = 0; lod < 3; lod++) {
+            Batiment b;
+            construire(p, D, lod, b);
+            // vitres de chaque face (normale −z : arrière ; ±x : côtés), au fond du tableau (≤ 0,5 m du nu) ou peintes sur le mur
+            int arriere = 0, gauche = 0, droite = 0;
+            const Maillage& vi = b.part[VITRE];
+            for (size_t i = 0; i + 2 < vi.i.size(); i += 3) {
+                const Sommet& A = vi.v[vi.i[i]];
+                if (A.p.y > p.hauteur()) continue;   // lucarnes
+                if (A.n.z < -0.99f && A.p.z < -D + 0.5f) arriere++;
+                if (A.n.x < -0.99f && A.p.x < 0.5f) gauche++;
+                if (A.n.x > 0.99f && A.p.x > p.largeur - 0.5f) droite++;
+            }
+            verifierQue(arriere >= 2 * p.etages, "WFS-455 : fenêtres sur la façade arrière, à chaque niveau de détail");
+            verifierQue(gauche >= 2 * p.etages && droite >= 2 * p.etages, "WFS-455 : fenêtres sur les deux côtés, à chaque niveau de détail");
+            // sens des triangles des murs tournés : normale dans le sens de l'enroulement (sinon l'éclairage s'inverse)
+            for (int k = 0; k < NB_PARTS; k++) {
+                const Maillage& m = b.part[k];
+                for (size_t i = 0; i + 2 < m.i.size(); i += 3) {
+                    const Sommet &A = m.v[m.i[i]], &B = m.v[m.i[i + 1]], &C = m.v[m.i[i + 2]];
+                    const vec3 c = cross(B.p - A.p, C.p - A.p);
+                    const float aire = length(c);
+                    if (aire > 1e-6f && std::fabs(A.n.x) + std::fabs(A.n.z) > 0.99f && std::fabs(A.n.y) < 1e-3f)
+                        verifierQue(dot(c * (1.f / aire), A.n) > 0.99f, "WFS-455 : murs et baies tournés gardent leur sens");
+                }
+            }
+            if (p.toit == Toit::Terrasse && p.edicules && p.largeur > 6 && D > 6) {
+                float haut = 0; for (const Sommet& v : b.part[MUR].v) haut = std::max(haut, v.p.y);
+                verifierQue(haut > p.hauteur() + 2.5f, "WFS-455 : édicule de la terrasse visible à chaque niveau de détail");
+            }
+        }
+    }
+    std::printf("[%s] WFS-455 : façades arrière et latérales percées contrôlées\n", echecs == avant ? "OK" : "ÉCHEC");
+}
+
 int main() {
+    verifierWFS455();
     choisirOuverturesReelles(true);   // WFS-415 (RG-02) : contrôles de WFS-402 avec l'interrupteur à 1
     verifierInterrupteurWFS415();
     verifierBaieComplete();
@@ -177,6 +228,7 @@ int main() {
                     // ST-3 : chaque vitre porte les dimensions de sa baie (± 5 cm, arrondi au décimètre)
                     const Maillage& vi = b.part[VITRE];
                     for (const Sommet& v : vi.v) {
+                        if (v.n.z < 0.99f) continue;   // WFS-455 : vitres de la façade sur rue seulement (arrière et côtés : verifierWFS455)
                         const float l = std::floor(v.uv.x / 100) * 0.1f, h = std::fmod(std::floor(v.uv.y), 100.f) * 0.1f;
                         bool trouve = false;
                         if (v.p.y > p.hauteur()) {   // WFS-370 : fenêtre de lucarne, dans le brisis, dans l'axe d'une travée

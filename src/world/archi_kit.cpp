@@ -119,6 +119,40 @@ Plan assembler(Style s, float largeur, float hauteurVoulue, uint32_t graine) {
     return p;
 }
 
+Plan facadeSecondaire(const Plan& p, float largeur, int face) {
+    const ReglesStyle& S = regles(p.style);
+    Mulberry32 R(p.graine * 2246822519u + (uint32_t)face * 3266489917u + (uint32_t)p.style * 97u + 11u);
+    Plan q;
+    q.style = p.style; q.graine = p.graine ^ (0x9e3779b9u * (uint32_t)face); q.secondaire = true;
+    q.largeur = std::max(largeur, 1.f);
+    q.hRdc = p.hRdc; q.hEtage = p.hEtage; q.etages = p.etages; q.corniche = p.corniche;
+    q.rdc = Rdc::Logement; q.etage = Etage::Fenetres; q.toit = p.toit; q.edicules = p.edicules;
+    decouper(q, S.travee, S.travee.tirer(R));
+    // fenêtres d'étage de la rue (première baie d'étage) ; porte-fenêtre sur rue → fenêtre à allège de 0,9 m sur cour
+    float fenL = S.fenL.min, fenH = S.fenH.min, allege = std::max(S.allege.min, 0.9f);
+    for (const Baie& b : p.baies) if (b.niveau == 1) {
+        fenL = b.l; fenH = b.h; const float al = b.y - p.niveauY(1);
+        if (al >= 0.05f) allege = al;
+        break;
+    }
+    fenL = std::min(fenL, q.travee - TRUMEAU);
+    fenH = std::min(fenH, q.hEtage - LINTEAU - allege);
+    if (fenL < 0.5f || fenH < 0.6f || q.largeur < fenL + 2 * RIVE) return q;   // mur trop étroit : aveugle
+    const int porte = face == 1 && q.travees >= 3 ? q.travees / 2 : -1;   // porte de service sur cour
+    const float porteL = std::min(S.porteL.min, q.travee - TRUMEAU), porteH = std::min(S.porteH.min, q.hRdc - LINTEAU);
+    for (int n = 0; n <= q.etages; n++)
+        for (int t = 0; t < q.travees; t++) {
+            // travée = indice propre à la face : la graine de chaque vitre (pièce de nuit, graineBaie) diffère de la rue
+            const int tr = t + 64 * face;
+            if (n == 0 && t == porte) { q.baies.push_back({Ouverture::Porte, 0, tr, q.axe(t), 0, porteL, porteH, false}); continue; }
+            const float al = n == 0 ? std::max(allege, 0.9f) : allege;
+            const float h = std::min(fenH, q.niveauH(n) - LINTEAU - al);
+            if (h < 0.6f) continue;
+            q.baies.push_back({Ouverture::Fenetre, n, tr, q.axe(t), q.niveauY(n) + al, fenL, h, false});
+        }
+    return q;
+}
+
 int verifier(const Plan& p, const char** erreur) {
     const ReglesStyle& S = regles(p.style);
     int e = 0;
