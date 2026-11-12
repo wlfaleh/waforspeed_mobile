@@ -986,3 +986,28 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Zone : appels de dessin et pose des roues de `course5_system.cpp`, `duel_system.cpp`, `poursuite_system.cpp`, `course_system.cpp` ; `roues.*` ; `traffic_system.cpp` pour RG-09 seulement ; `tests/**`. WFS-460 (bandes et peinture de la police, même `poursuite_system.cpp`) peut partir en parallèle : lignes différentes, synchroniser souvent.
 - Règles : `regles-de-gestion/WFS-452.md` (RG-01 à RG-09). Après fusion : 🟡 À valider (utilisateur). Branche `feature/waforspeed-452`, premier commit poussé tout de suite.
 
+
+### 2026-11-12 12:55:45 — WFS-462 créé : publier les paquets de la Corniche (po-scrum-master)
+- Capture de l'utilisateur (choix du terrain, Corniche sans « Télécharger ») : vérifié sur GitHub, dernier run de `paquets.yml` = #2 (2026-11-11 09:08 UTC, avant la fusion de WFS-426 / #350) ; Release `paquets` sans `plage_*.wfcarte`.
+- **WFS-462** (P1, [TECHNIQUE], E14, `@cicd`) créé à la demande de l'utilisateur ; règles : `regles-de-gestion/WFS-462.md` (la demande vaut accord pour lancer `paquets.yml` une fois sur `main`). Premier ticket pour la prochaine session `@cicd`, avant WFS-454. WFS-426 reste 🟡.
+
+### 2026-11-12 12:56:48 — Ordre permanent : une tâche `@cicd` de publication des paquets après chaque fonctionnalité de décor (po-scrum-master)
+- Ordre de l'utilisateur : « créer après chaque fonctionnalité qui touche le décor des cartes une tâche pour un cicd ». Inscrit dans les ordres permanents du PO (skill `po-scrum-master`) et en bandeau de `TACHES.md`.
+- À chaque fusion d'un ticket qui change le contenu d'une carte, le PO crée aussitôt `[TECHNIQUE] Publier les paquets après WFS-XX` (P1, `@cicd`, modèle `regles-de-gestion/WFS-462.md`).
+- WFS-462 couvre déjà les changements de décor fusionnés depuis le dernier run de `paquets.yml` (2026-11-11 09:08 UTC) : WFS-426, 383, 402, 370, 372, 373, 416, 380.
+
+### 2026-11-12 12:58:02 — Ordre permanent précisé par l'utilisateur : la tâche `@cicd` se rédige avec la tâche de décor (po-scrum-master)
+- Précision de l'utilisateur : la tâche de publication des paquets est rédigée **par le PO au moment où il rédige** la tâche qui touche le décor des cartes (tâche compagne, dépend du ticket de décor), pas après coup. Skill PO, bandeau de `TACHES.md` corrigés.
+- Correction du PO : la liste de WFS-462 citait à tort 402, 370, 372, 373, 416, 380 (fusionnés avant le dernier run de `paquets.yml`) ; corrigée en WFS-426, 383, 392.
+
+### 2026-11-12 13:04:15 — 15 tâches compagnes `@cicd` de publication des paquets (po-scrum-master)
+- Demande de l'utilisateur (« je vois pas les tâches cicd après les US de décor ») : WFS-463 à 477 créées, une par tâche de décor ouverte (371, 455, 387, 401, 400, 385, 398, 399, 410, 411, 403, 388, 389, 386, 417), P1, `@cicd`, ⏳ En attente jusqu'à la fusion de leur tâche de décor ; règles `regles-de-gestion/WFS-463.md` à `WFS-477.md` (modèle WFS-462).
+
+### 2026-11-12 13:05:59 — WFS-462 retiré, fusionné dans WFS-463 (po-scrum-master)
+- Ordre de l'utilisateur : « enlève la première tâche pour cicd, la tâche 3 suffit ». WFS-462 ↪ fusionné dans WFS-463 : un seul run de `paquets.yml` après la fusion de WFS-371 publie la Corniche cuite (WFS-426), WFS-383, 392 et 371. Prochaine tâche `@cicd` prête : WFS-454.
+
+### 2026-11-12 13:09:04 — WFS-371 attribué à Claude, agent dev3d (01UY1Vv2rp) (po-scrum-master)
+- Demande : nouvelle session `@devartiste` (session_01UY1Vv2rpnG6QPHQ9jg9MnC, agent `dev-artiste-3d`), aucun ticket reçu avant : règle « un seul sujet » respectée.
+- Choix : alternance des files ; la dernière attribution (WFS-452) venait de la file B des bloquantes, donc cette fois l'**ordre des 20** : **WFS-371** (11e, P1, `@devartiste` + avis `@3d`), premier encore prêt (WFS-383 fusionné). Sa fusion libère **WFS-463** (publication des paquets de la Corniche, demande de l'utilisateur). E15 libre (aucun 🔧 / 🔀). Les P1 de la file B (455, 456, 460) restent aux prochaines sessions.
+- Zone : `src/world/plage.cpp`, `portique.cpp`, `enseignes.*` et le décor Corniche (E15, + E12, E2 selon les règles), `assets/world/modeles/**`, `assets/licences/`, outils de cuisson du paquet pour ces modèles seulement, `tests/**`. PR de l'épic E15 : avis agent 3D obligatoire ; pas de fusion si la Corniche dépasse ≈ 33 ms sur le S21 FE.
+- Règles : `regles-de-gestion/WFS-371.md` (RG-01 à RG-07 + ajouts D4, R4, R5 ; section Suivi). Après fusion : 🟡 À valider (utilisateur). Branche `feature/waforspeed-371`, premier commit poussé tout de suite.
