@@ -173,3 +173,70 @@ section « Fusion par confiance », barrée). `expert-ci-cd` ne charge pas `agen
 **Top 3** : A01 (le plus de règles périmées), A02 (seul expert inutilisable par un dev), A03 (éviter un doublon).
 **Validation** : après A01, lancer `@po` sur une attribution test et vérifier qu'il cite les règles du 2026-11-09 (un seul sujet par session) et plus « QA avant fusion ».
 **Décision** : à l'utilisateur, via le PO.
+
+---
+
+## R04 — 2026-11-12 — Les derniers jours avant le lancement : critique franche et chemin vers les premiers revenus
+
+Mode Challenge + Priorisation, demandé par l'utilisateur (`@smartbrain`, 2026-11-12 20:42 UTC) : « comment on doit faire maintenant,
+quelques jours avant le lancement ; critique l'application ; le but : gagner un peu d'argent ». **Propositions seulement** : l'utilisateur choisit et demande au PO.
+
+### 1. Diagnostic (sources : `TACHES.md`, `tache utilisateur.md`, `juridique/rapport-2026-11-10.md`, `anno.md`, `src/ui/ecrans/menu.cpp`)
+**Ce qui marche** : moteur maison stable, 4 modes (Checkpoint, Course à 5, Poursuite, Duel), Corniche téléchargeable en paquet (WFS-463, 12/11),
+aide à la conduite validée par l'utilisateur (08/11), 18 voitures sans licence NC (WFS-404), processus outillé (CI, captures, lead dev).
+
+**Critique franche (observé)** :
+1. **Rien n'est fini du point de vue du joueur** : **81 tickets 🟡 attendent la validation de l'utilisateur** sur son téléphone, 11 ❌ refusés,
+   57 ⏳ en attente. Le goulot n'est plus le code, c'est la validation. On empile des corrections sans savoir lesquelles tiennent.
+2. **Le jeu n'a pas de boucle de jeu** : aucune progression, aucune monnaie, aucun déblocage (recherche dans `src/game`, `src/ui` : rien).
+   Le joueur fait une course… et n'a aucune raison de revenir. **Sans retour du joueur, aucun modèle économique ne rapporte** (ni pub, ni achat).
+   Idée déjà proposée en R01 (A03 « Saison street »), jamais lancée.
+3. **L'effort va au réalisme, pas à ce qui fait vendre** : 99 % de réalisme, décors jusqu'à 700 Mo, vue Cockpit en 3 passages, formes géométriques
+   chassées partout… pendant que la fluidité reste fragile (16 à 30 img/s en Basse sur le S21 FE selon les mesures du journal, 6 passages
+   « performance »). Sur mobile, un joueur pardonne un banc imparfait, **jamais une saccade ni un téléchargement de 700 Mo**.
+4. **Conduite pas stabilisée** : direction refusée 2 fois (WFS-295, 217/241), WFS-258 suspendu, freins/ESP en attente (WFS-259). C'est le cœur d'un jeu de course.
+5. **Juridique** : J-01 à J-07 du juriste en 🔴 au 10/11 ; les tickets existent (WFS-405, 407, 408, 409, 320) mais sont « ⏸ en attente du jour ».
+   Le **nom « WaForSpeed »** (J-09) rappelle une série très connue : le changer coûte 1 h avant la sortie, très cher après (fiche, avis, liens).
+6. **Calendrier Google sous-estimé** (*à vérifier dans la Console*) : un **compte développeur personnel récent** doit faire un **test fermé
+   avec au moins 12 testeurs pendant 14 jours** avant de pouvoir publier en production (J-15 du juriste). Si c'est votre cas, « quelques jours » = impossible ;
+   le lancement est au plus tôt **J+14 après l'ouverture du test fermé**. Il faut l'ouvrir **dès maintenant**.
+
+**Informations manquantes** : type de compte Play Console (personnel / organisation, date de création) ; budget pub/temps ; téléphone cible minimal.
+
+### 2. Tableau des axes
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Publication | *Observé* : J-15, test fermé 12 × 14 j possible | **Ouvrir aujourd'hui le test fermé** sur Play Console avec l'AAB de WFS-319 (amis, famille, forum) ; les 14 jours servent de bêta | Version publique déjà testée | Élevé | Faible | P1 | Vérifier le type de compte ; 12 testeurs **inscrits et actifs** les 14 jours |
+| A02 | Process | *Observé* : 81 tickets 🟡 | **Gel des fonctionnalités jusqu'au lancement** + **une séance de recette par lot** : 30 min sur l'APK de `main` (Corniche, jour/nuit, Basse), l'utilisateur répond « OK / KO » par lot, le PO passe tout le reste en ✅ ou ouvre 1 ticket | Moins de bugs à la sortie | Élevé | Faible | P1 | Ne pas tout re-tester ticket par ticket |
+| A03 | Juridique | *Observé* : J-01 à J-07 🔴 | Lancer **maintenant** (pas « le jour J ») WFS-405, 407, 408, 409, 320 ; décider le **nom du jeu** (J-09) avant la fiche | Pas de retrait du store | Élevé | Faible à Moyen | P1 | Avis d'avocat **avant** pub ou achat (J-17) |
+| A04 | Performance | *Observé* : 16-30 img/s en Basse | **Critère de sortie unique** : Corniche ≥ 30 img/s stables en Basse sur le S21 FE, qualité choisie automatiquement au 1er lancement ; sinon on baisse la qualité, pas l'ambition du décor | Jeu fluide = bonnes notes | Élevé | Moyen | P1 | Lié à WFS-419 (diagnostic sur téléphone) |
+| A05 | Game design | *Observé* : aucune progression | **Boucle minimale « Carrière »** : chaque course rapporte des crédits (temps, frôlements, checkpoints) ; voitures et peintures **à débloquer** avec ces crédits ; 3 étoiles par course | Raison de revenir chaque jour | Élevé | Moyen | P1 (v1.1, ou v1.0 si le test fermé laisse 14 j) | Équilibrage ; zone E3/E5 ; sauvegarde existante à réutiliser |
+| A06 | Monétisation | *Observé* : « gratuit, sans pub ni achat » | **Modèle simple et propre** : jeu gratuit ; **pub récompensée volontaire** (« ×2 crédits ») ; **un seul achat** « Pack Pilote » (sans pub + 3 voitures) à 2-3 € ; **jamais** de pub forcée en pleine course ni de loot box | Gratuit, rien d'imposé | Élevé | Moyen | P2 (v1.1, après A05) | Nécessite A05 ; consentement RGPD (UMP) ; formulaire Sécurité des données à refaire ; avis d'avocat (J-17) |
+| A07 | Taille | *Observé* : décors jusqu'à 700 Mo | **Version publique < 150 Mo à installer** (Corniche seule, WFS-405) ; autres cartes en téléchargement optionnel ; **plafond 300 Mo par carte** proposé (remet en cause la règle des 700 Mo) | Installation rapide, moins de désinstallations | Élevé | Faible | P1 | Décision utilisateur (contredit E15) |
+| A08 | Fiche store / ASO | *Supposé* : pas de captures ni vidéo prêtes (J-02) | 6 captures **en jeu**, vidéo 20 s (départ de nuit, Poursuite, vue Cockpit), titre + mot-clé (« course de voitures, police »), description sans marque | Comprendre le jeu en 3 s | Élevé | Faible | P1 | Captures du banc PC = aspect CI ; préférer le téléphone |
+| A09 | Mesure | *Observé* : aucune analytique | Au départ **Play Console seulement** (installations, désinstallations, plantages, ANR, notes) : aucun SDK, pas de nouveau formulaire RGPD | Bugs corrigés plus vite | Moyen | Faible | P1 | Regarder Android Vitals chaque jour la 1re semaine |
+| A10 | Conduite | *Observé* : 2 refus direction, WFS-258 suspendu | **Ne plus toucher à la conduite avant la sortie** sauf bloquant ; tutoriel 10 s au 1er lancement (gauche/droite, frein, aide à la conduite activée par défaut) | Prise en main immédiate | Moyen | Faible | P2 | Chaque retouche risque une régression |
+| A11 | Rétention | *Supposé* | **Défi du jour** (une course, un objectif, une récompense ; on ne perd rien si on le rate) + classement local de ses records | Revenir 2 min par jour | Moyen | Moyen | P2 | Pas de FOMO ni de punition de l'absence |
+| A12 | Duel en ligne | *Observé* : relais Cloudflare, pseudo libre (J-12) | **Masquer le duel en v1.0** (moins de RGPD, moins de serveur à surveiller) ; le remettre en v1.2 | Moins de bugs réseau | Moyen | Faible | P3 | Perte d'une fonction « wahou » ; à décider par l'utilisateur |
+
+**Quick wins** : A01, A02, A03, A07, A08, A09. **Structurantes** : A04, A05, A06. **Expérimentales** : A11, A12.
+
+### 3. Plan proposé (si le test fermé de 14 jours s'applique)
+- **J0 (aujourd'hui / demain)** : ouvrir le test fermé (A01) ; gel des fonctionnalités (A02) ; juridique en cours (A03) ; nom du jeu décidé.
+- **J1 à J3** : recette par lots des 81 🟡 ; seuls les bloquants sont corrigés ; critère 30 img/s Corniche (A04).
+- **J3 à J12** : boucle « Carrière » minimale (A05), fiche store et vidéo (A08), tutoriel (A10). Retours des testeurs = seule source de vérité.
+- **J14** : sortie publique gratuite **sans pub** (premières notes, premiers avis).
+- **v1.1 (≈ 2 semaines après)** : pub récompensée + « Pack Pilote » (A06), après l'avis d'avocat. Si le compte n'a pas l'obligation de test fermé : même ordre, en compressant J1-J12.
+
+### 4. Top 3
+1. **A01 test fermé ouvert aujourd'hui** : c'est le chemin critique ; chaque jour perdu repousse la sortie d'un jour.
+2. **A02 gel + recette par lots** : 81 corrections non validées = le vrai risque de la sortie.
+3. **A05 boucle « Carrière »** : sans elle, aucun revenu possible, quel que soit le modèle.
+
+**Hypothèse testable** : si nous ajoutons la boucle « crédits → déblocages » (A05), alors les testeurs du test fermé feront plus d'une course par jour,
+ce que nous vérifierons avec le nombre de sessions par testeur dans la Play Console et leurs retours écrits.
+
+**À dire franchement** : avec un seul jeu, sans budget marketing, les premiers revenus seront **modestes** (aucun chiffre inventé ici). Le levier n'est pas
+d'ajouter du réalisme, c'est **un jeu fluide, léger, avec une raison de revenir**, puis une monétisation qui ne gêne pas.
+
+**Décision** : à l'utilisateur, qui en parle au PO (`@po`) s'il le souhaite.
