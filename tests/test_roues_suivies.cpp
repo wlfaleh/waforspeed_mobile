@@ -5,6 +5,7 @@
 // RG-09 (ANO-265) : en ligne droite sans changement de file, braquage = 0 sur 300 images ; sans saut d'une image à l'autre,
 // ±35° au plus ; mesuré sur le vrai trafic de la Ville (tracé 2) : avant WFS-452, roues avant jusqu'à 2,5 rad et en sauts.
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <vector>
@@ -61,6 +62,18 @@ int main() {
         for (int i = 0; i < 60; i++) { s += 20 * H; lat += 3 * H; sv.pas(s, lat, 0, 0, EMP, H); }
         VERIFIE(sv.braquage > 0.05f, "glisse vers la droite : braquage %.4f (attendu > 0,05)", sv.braquage);
         std::printf("glisse de côté vers la droite : braquage %.3f rad : OK\n", sv.braquage);
+    }
+    // 4 bis. latéral qui avance par à-coups (une fois tous les 4 pas, comme une place donnée à chaque image) puis s'arrête :
+    //        les roues reviennent droites (avant correction : le braquage montait jusqu'à la butée)
+    {
+        roues::SuiviRoues sv; double s = 0, lat = 0; float maxi = 0;
+        for (int i = 0; i < 240; i++) {
+            s += 8.3 * H;
+            if (i < 40 && i % 4 == 0) lat -= 0.146;
+            sv.pas(s, lat, 0, 0, EMP, H); maxi = std::max(maxi, std::abs(sv.braquage));
+        }
+        VERIFIE(std::abs(sv.braquage) < 1e-3f && maxi < roues::BRAQUAGE_MAX, "glisse par à-coups : braquage final %.4f, maxi %.3f", sv.braquage, maxi);
+        std::printf("glisse par à-coups puis arrêt : braquage maxi %.3f rad, final %.5f : OK\n", maxi, sv.braquage);
     }
     // 5. arrêt : angle gardé ; accident ou voiture qui traverse : roues droites ; roulage qui change quand la voiture avance
     {
@@ -126,6 +139,16 @@ int main() {
         VERIFIE(droits > 10000 && droitMax < 2e-3f, "trafic en ligne droite : braquage %.4f rad (%ld mesures)", droitMax, droits);
         std::printf("trafic de la Ville, 2 min (%ld mesures) : braquage maxi %.3f rad, saut maxi %.4f rad par image, en ligne droite %.5f rad (%ld mesures) : OK\n",
                     mesures, maxi, sautMax, droitMax, droits);
+    }
+    // 8. RG-05 : coût du calcul (processeur) : un pas pour une voiture ; une image du téléphone = 4 pas × ≈ 50 voitures
+    {
+        roues::SuiviRoues sv; double s = 0, lat = 0; volatile float puits = 0;
+        const int N = 2000000;
+        const auto a = std::chrono::steady_clock::now();
+        for (int i = 0; i < N; i++) { s += 14 * H; lat += (i / 600 % 2 ? 1 : -1) * 0.01; sv.pas(s, lat, 0.01, 0.002, EMP, H); puits = sv.braquage; }
+        const double ns = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - a).count() / N;
+        std::printf("coût : %.0f ns par voiture et par pas, soit %.3f ms par image pour 50 voitures (4 pas) sur ce processeur\n", ns, ns * 50 * 4 / 1e6);
+        (void)puits;
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("roues suivies : tout est OK\n");

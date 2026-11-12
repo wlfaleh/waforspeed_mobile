@@ -265,7 +265,7 @@ public:
         for (const Camion& k : camions_) for (int f = 0; f < 3; f++) if (f != k.fileLibre) obs_.push_back({k.s, FILES[f], 0});   // WFS-119
         poursuite::avancer(police_, dt, c->raceTime, pl.dist, pl.playerX, pl.speed, obs_);
         if (bancPoliceActive_ && !police_.empty()) {   // WFS-452 (banc « roues-suivies ») : 1re voiture tenue à côté du joueur
-            Police& p0 = police_[0]; p0.rdPrec = p0.rd; p0.xPrec = p0.x;
+            Police& p0 = police_[0];   // rdPrec / xPrec : place du pas précédent (poursuite::avancer les a notées)
             p0.rd = pl.dist + bancPoliceEcart_ / M; p0.x = bancPoliceX_; p0.v = pl.speed;
             for (size_t i = 1; i < police_.size(); i++) police_[i].rd = police_[i].rdPrec = pl.dist - 400 / M;   // les autres loin derrière
         }
@@ -355,7 +355,9 @@ public:
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
             if (!modele_.ok || i >= 16) continue;
-            peintures_[i] = lin(blancOrigine_ ? 0xf2f4f8u : p.peinture); r.lotsProchaineVoiture();
+            peintures_[i] = lin(blancOrigine_ ? 0xf2f4f8u : p.peinture); // WFS-452 (RG-08) : lots (Basse) seulement au-delà de 15 m de la caméra : les pièces des lots (4 pièces) n'ont pas de roues
+            // séparées, la police glissait roues figées ; à moins de 15 m, Renderer::draw anime les roues (même en Basse)
+            if (roues::g_avant452 || length(vec3{(float)q.x, (float)q.y, (float)q.z} - g.camPos) > 15.f) r.lotsProchaineVoiture();
             // WFS-452 (RG-02, RG-03, RG-08) : roues qui tournent (distance interpolée, rayon de la roue du modèle) et qui braquent
             static const roues::SuiviRoues droites{};
             const RouesPose rp = roues::poseSuivi((size_t)i < suivi_.size() ? suivi_[(size_t)i] : droites, al, p.rdPrec + (p.rd - p.rdPrec) * al,

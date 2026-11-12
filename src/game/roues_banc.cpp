@@ -15,6 +15,7 @@
 #include "game.h"
 #include "traffic.h"
 #include "traffic_system.h"
+#include "../ui/ecrans/reglages.h"   // qualité Basse (scène police-basse)
 #include "roues.h"
 #include "track.h"
 
@@ -66,18 +67,20 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
     const ModeCourse mode0 = modeCourse();
     int ecarts = 0;
     constexpr double PAS = 1.0 / 60;   // une mise à jour = 2 pas de 1/120 s ; une image dessinée sur deux : 30 img/s
-    struct Scene { const char* nom; ModeCourse mode; bool nuit; int images; };
+    struct Scene { const char* nom; ModeCourse mode; bool nuit; int images; bool basse = false; };
     const Scene scenes[] = {{"c5", ModeCourse::Course5, false, 12}, {"c5-nuit", ModeCourse::Course5, true, 12},
-                            {"police", ModeCourse::Poursuite, false, 14}, {"fantome", ModeCourse::Checkpoint, false, 12},
-                            {"trafic", ModeCourse::Checkpoint, false, 24}};
+                            {"police", ModeCourse::Poursuite, false, 14}, {"police-basse", ModeCourse::Poursuite, false, 14, true},
+                            {"fantome", ModeCourse::Checkpoint, false, 12}, {"trafic", ModeCourse::Checkpoint, false, 24}};
+    const int qualite0 = ecrans::reglages().qualite;
     const char* seule = std::getenv("WFS_ROUES_SCENE");   // banc : une seule scène (mise au point)
     for (const Scene& sc : scenes) {
         if (seule && std::string(seule) != sc.nom) continue;
-        double msRendu[2] = {0, 0}; int nRendu[2] = {0, 0};
+        double msRendu[2] = {0, 0}; int nRendu[2] = {0, 0}; double appels[2] = {0, 0}, triangles[2] = {0, 0};
         for (int passe = 0; passe < 2; passe++) {
             roues::g_avant452 = passe == 0;
             setenv("WFS_DEPART", "0", 1); setenv("WFS_MOMENT", sc.nuit ? "nuit" : "jour", 1);
             modeCourse() = sc.mode;
+            ecrans::reglages().qualite = sc.basse ? ecrans::QUALITE_BASSE : qualite0; ecrans::appliquerQualiteNiveau(r);
             if (sc.mode == ModeCourse::Course5) kmCourse5() = 10;
             if (!g.init(r, "golf", "ville")) { WFS_ERR("roues-suivies : chargement de la Ville impossible"); ecarts++; continue; }
             g.allerA(Ecran::Course); g.camMode = 2;
@@ -122,7 +125,8 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
             for (int i = 0; i < 40; i++) pas(i % 2 == 1);   // mise en place (voitures tenues, filtres du braquage établis)
             for (int k = 0; k < sc.images; k++) {
                 const double u = (double)k / sc.images;
-                if (sc.mode == ModeCourse::Poursuite) poursuiteBancPolice(true, 1.6, px + cote * (0.62 - 0.17 * std::min(1.0, u * 1.6)));   // glisse de côté (4,6 → 3,4 m, sans contact)
+                // police : glisse de côté (4,6 → 3,4 m, sans contact), place donnée à chaque mise à jour (pas d'à-coups)
+                auto police = [&](double uu) { if (sc.mode == ModeCourse::Poursuite) poursuiteBancPolice(true, 1.6, px + cote * (0.62 - 0.17 * std::min(1.0, uu * 1.6))); };
                 if (sc.nom[0] == 't' && k == 6) {   // changement de file forcé, après 6 images en ligne droite
                     Traffic* tf = activeTrafficMut();
                     if (tf && voiture >= 0 && voiture < (int)tf->cars.size()) {
@@ -136,7 +140,8 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
                 else if (sc.mode == ModeCourse::Poursuite) viser(5.5, cote * (ecartLat + 4.5), 1.4);
                 else if (sc.nom[0] == 'f') viser(-0.4, cote * (ecartLat + 4.5), 2.3);   // fantôme : plus haut, le joueur passe derrière
                 else viser(-0.4, cote * (ecartLat + 4.5), 0.75);
-                pas(false); roues::g_journal452 = true; pas(true); roues::g_journal452 = false;
+                police(u); pas(false); police(u + 0.5 / sc.images); roues::g_journal452 = true; pas(true); roues::g_journal452 = false;
+                { uint32_t a = 0, tri = 0; r.fileScene(a, tri); appels[passe] += a; triangles[passe] += tri; }   // RG-05 : coût de l'image
                 char nom[96]; std::snprintf(nom, sizeof nom, "roues-%s-%s-%02d", sc.nom, passe == 0 ? "avant" : "apres", k);
                 r.capturePng(out + "/" + nom + ".png");
                 const Traffic* tf = activeTraffic();
@@ -152,9 +157,12 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
         }
         WFS_LOG("roues-suivies (WFS-452, RG-05) : %s : temps moyen du rendu d'une image (processeur, lavapipe) : avant %.2f ms (%d images), après %.2f ms (%d images)",
                 sc.nom, msRendu[0] / std::max(1, nRendu[0]), nRendu[0], msRendu[1] / std::max(1, nRendu[1]), nRendu[1]);
+        WFS_LOG("roues-suivies (WFS-452, RG-05) : %s : appels de dessin par image (moyenne des captures) : avant %.0f, après %.0f ; triangles : avant %.0f, après %.0f",
+                sc.nom, appels[0] / sc.images, appels[1] / sc.images, triangles[0] / sc.images, triangles[1] / sc.images);
     }
     roues::g_avant452 = false;
     modeCourse() = mode0;
+    ecrans::reglages().qualite = qualite0; ecrans::appliquerQualiteNiveau(r);
     unsetenv("WFS_DEPART"); unsetenv("WFS_MOMENT");
     WFS_LOG("roues-suivies (WFS-452) : %d écart(s)", ecarts);
     return ecarts;

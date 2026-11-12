@@ -183,7 +183,9 @@ void SuiviRoues::pas(double s, double lat, double capCaisse, double kappa, float
     double courb = 0, ecart = 0;
     if (!droites && d > 1e-4) {   // en mouvement : trajectoire réelle (à l'arrêt : cibles gardées, roues immobiles)
         const double psi = std::atan2(dl, std::abs(ds));   // direction du mouvement par rapport à la route (+ à droite)
-        courb = kappa + (psiConnu ? (psi - psiPrec) / d : 0);   // courbure de la trajectoire (1/m)
+        // courbure de la trajectoire (1/m) : changement de direction / distance PARCOURUE VERS L'AVANT (∫ courb ds = Δψ exactement,
+        // même si le latéral avance par à-coups : un saut de côté suivi d'un arrêt ne laisse aucun braquage)
+        courb = kappa + (psiConnu ? (psi - psiPrec) / std::max(std::abs(ds), 1e-3) : 0);
         ecart = psi - capCaisse;
         psiPrec = psi; psiConnu = true;
     } else if (!droites) return;   // arrêt : roues immobiles, angle gardé (braquage = braquagePrec)
