@@ -995,3 +995,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Ordre de l'utilisateur : « créer après chaque fonctionnalité qui touche le décor des cartes une tâche pour un cicd ». Inscrit dans les ordres permanents du PO (skill `po-scrum-master`) et en bandeau de `TACHES.md`.
 - À chaque fusion d'un ticket qui change le contenu d'une carte, le PO crée aussitôt `[TECHNIQUE] Publier les paquets après WFS-XX` (P1, `@cicd`, modèle `regles-de-gestion/WFS-462.md`).
 - WFS-462 couvre déjà les changements de décor fusionnés depuis le dernier run de `paquets.yml` (2026-11-11 09:08 UTC) : WFS-426, 383, 402, 370, 372, 373, 416, 380.
+
+### 2026-11-12 12:58:02 — Ordre permanent précisé par l'utilisateur : la tâche `@cicd` se rédige avec la tâche de décor (po-scrum-master)
+- Précision de l'utilisateur : la tâche de publication des paquets est rédigée **par le PO au moment où il rédige** la tâche qui touche le décor des cartes (tâche compagne, dépend du ticket de décor), pas après coup. Skill PO, bandeau de `TACHES.md` corrigés.
+- Correction du PO : la liste de WFS-462 citait à tort 402, 370, 372, 373, 416, 380 (fusionnés avant le dernier run de `paquets.yml`) ; corrigée en WFS-426, 383, 392.
