@@ -1253,3 +1253,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:24:53 — R11 : proposition finale pour le PO (smart-brainstorming)
 - R11 dans `recommandations-smart-brain.md` : étape 0 (test fermé, gel, recette par lots, juridique, 30 img/s), v1.0 V1 à V8 (duel retiré du solo, sauvegarde Android + pseudo, étoiles et médailles, garage, peintures, équilibrage, cartes à télécharger), v1.1 W1 à W6 (objectifs, cadeau du jour, vinyles, Play Jeux, pub volontaire, achats). L'utilisateur la présente au PO.
+
+### 2026-11-12 21:26:48 — R12 : pub volontaire et achats dès la v1.0 (smart-brainstorming)
+- Décision de l'utilisateur : gagner de l'argent dès la 1re version. R12 : W5 et W6 de R11 deviennent V9 (pub volontaire) et V10 (achats) en v1.0 ; prérequis 0.6 à 0.8 (avocat, CGU, compte marchand, Sécurité des données, IARC). Rien envoyé au PO.

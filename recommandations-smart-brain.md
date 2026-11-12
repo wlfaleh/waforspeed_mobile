@@ -564,3 +564,22 @@ Pendant le test fermé puis après la sortie : utilisateurs actifs par jour, dé
 
 ### Message à donner au PO
 > `@po` Lance la proposition finale R11 de `recommandations-smart-brain.md` : étape 0 tout de suite, puis les tickets V1 à V7 pour la v1.0 dans l'ordre indiqué, et W1 à W6 en attente pour la v1.1.
+
+---
+
+## R12 — 2026-11-12 — Correctif de R11 : gagner de l'argent dès la v1.0 (décision de l'utilisateur)
+
+**Décision de l'utilisateur** : « ne change rien, l'objectif est de gagner de l'argent à partir de la première version ». R11 reste valable **sauf** ce qui suit.
+
+1. **W5 (pub volontaire « ×2 étoiles ») et W6 (achats) passent dans la v1.0**, après V5 (garage), sous les noms **V9** et **V10** :
+   - **V9 — Pub volontaire** : en fin de course, « ×2 étoiles » contre une vidéo, 5 par jour au plus, jamais imposée, jamais en course ; écran de consentement RGPD au 1er lancement.
+   - **V10 — Achats Google Play** : voitures de 0,99 à 3,99 €, pack « toutes les voitures » ≈ 9,99 €, option « sans pub » (supprime la proposition de vidéo et donne directement ×2) ; achats restaurés automatiquement.
+2. **Prérequis ajoutés à l'étape 0** (sinon Google refuse la mise à jour, ou risque de retrait) :
+   - 0.6 avis d'avocat sur la vente et la pub (J-17), CGU et politique de confidentialité mises à jour (pub, achats, éditeur, contact) ;
+   - 0.7 compte marchand Google Play (paiements) ouvert par l'utilisateur, statut « commerçant » UE (J-15) ;
+   - 0.8 formulaire « Sécurité des données » (identifiant publicitaire), mention « Contient des annonces » et « Achats intégrés », questionnaire IARC refait.
+3. **Ordre v1.0** : V1, V2 → V3 → (V4, V5, V6) → **V9, V10** → V7 (équilibrage avec la pub et les achats).
+4. W1 à W4 (objectifs, cadeau du jour, dessins, Google Play Jeux) restent en v1.1.
+
+### Message à donner au PO
+> `@po` Lance la proposition finale R11 de `recommandations-smart-brain.md` avec le correctif R12 : étape 0 (0.1 à 0.8) tout de suite, puis V1 à V10 pour la v1.0 (pub volontaire et achats compris), et W1 à W4 en attente pour la v1.1.
