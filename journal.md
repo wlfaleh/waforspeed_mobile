@@ -1174,3 +1174,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 19:39:32 — WFS-479 limité à la M4 (po-scrum-master)
 - Ordre de l'utilisateur : « corrige que ce modèle ». Contrôle des 17 autres voitures retiré (RG-04), test CPU sur la M4 seulement.
+
+### 2026-11-12 19:40:15 — WFS-479 attribué à une nouvelle session `@devartiste` (po-scrum-master)
+- Ordre de l'utilisateur : « je veux qu'il soit corrigé dans deux minutes ». Session ouverte sur son compte (session_01UY1Vv26cyFG656pvqumWgW, « WFS-479 — dev-artiste-3d (roues de la M4) »), ticket WFS-479 donné (M4 seulement), zone : modèle M4 et chaîne de conversion (`tools/**`, `assets/cars/m4*`), test CPU. Fusion par le lead dev, puis 🟡.
