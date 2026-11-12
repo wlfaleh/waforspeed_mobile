@@ -95,13 +95,14 @@ static const InterieurDef DEFS[] = {
      Essuie::Paralleles, 0.650f, 0.650f, 1.50f, 0.235f, 0, false, true},
     // WFS-395 (RG-01) : Corvette C7 Stingray 2014 (id « mustang » gardé, WFS-359 ; nom inventé du garage) : petit volant rond de 14,1 po
     // (358 mm, AC : dossier de presse de 2013, de mémoire), 3 branches, palettes ; combiné : écran couleur de 8 po au centre (compte-tours
-    // rond, rapport dedans, thème « Tour ») et deux petits cadrans (essence, eau) de chaque côté, sous une visière (AC) ; écran de 8 po
+    // rond en barres, vitesse et rapport dedans, thème « Tour » : style FerrariIncurve, sans aiguille qui passerait sur les chiffres) et deux
+    // petits cadrans (essence, eau) de chaque côté, sous une visière (AC) ; écran de 8 po
     // (177 × 100 mm) en haut de la console centrale, sous la casquette de la planche, haute et tournée de 15° vers le conducteur (E, photos de presse) ; planche basse,
     // capot long : pied du pare-brise loin devant (E) ; alu satiné ; balais 560 / 530 (AC) ; assise : toit 1,24 − 0,05 − (garde au toit
     // 0,965 − 0,102) · cos 8° − 0,095 = 0,241 m (garde au toit de 38,0 po : AC, de mémoire ; méthode du lot 2)
     {"mustang", 0.358f, 0.036f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
      {0.f, -0.28f, -0.70f}, -0.32f,
-     Combine::LamboCompteTours, 0.300f, 0.120f, {0.f, -0.20f, -0.82f}, 0xf2f4f6, 0x08090b, 0xff2a1a,
+     Combine::FerrariIncurve, 0.300f, 0.120f, {0.f, -0.20f, -0.82f}, 0xf2f4f6, 0x08090b, 0xff2a1a,
      0.177f, 0.100f, {0.31f, -0.245f, -0.84f}, -0.26f,
      -0.15f, -0.72f, -0.22f, -1.28f, 0x18181a, 0x1c1c1e, 0x8f9398, 1.f, 0.35f, false,
      Essuie::Paralleles, 0.560f, 0.530f, 1.55f, 0.241f},

@@ -189,9 +189,9 @@ int main(int argc, char** argv) {
             && std::abs(model3.ecranW - 0.323f) < 0.0033f && std::abs(model3.ecranH - 0.202f) < 0.0021f);
         cas("Giulia : démarreur rouge sur le volant, palettes fixées sur la colonne (Gallardo aussi) ; A 45 : repère à midi",
             giulia.demarreur && !giulia.manettino && giulia.palettesColonne && gallardo.palettesColonne && !mustang.palettesColonne && a45.repereHaut);
-        cas("combinés : 2 cadrans (A 45, S3 : génération du .wfm), Alfa, i-Cockpit, Lamborghini (Gallardo, Corvette C7 : WFS-395), BMW (X5)",
+        cas("combinés : 2 cadrans (A 45, S3 : génération du .wfm), Alfa, i-Cockpit, Lamborghini (Gallardo), compte-tours rond en barres (Corvette C7 : WFS-395), BMW (X5)",
             a45.combine == Combine::AudiVirtual && s3.combine == Combine::AudiVirtual && giulia.combine == Combine::AlfaCadrans
-            && p208.combine == Combine::PeugeotICockpit && gallardo.combine == Combine::LamboCompteTours && mustang.combine == Combine::LamboCompteTours
+            && p208.combine == Combine::PeugeotICockpit && gallardo.combine == Combine::LamboCompteTours && mustang.combine == Combine::FerrariIncurve
             && x5.combine == Combine::BmwLive);
         // 208 : combiné lu AU-DESSUS du volant : la ligne œil → bas du combiné passe au-dessus du haut de la jante
         const float R = p208.volantD / 2, hautY = p208.volantPos.y + R * std::cos(p208.volantIncl), hautZ = p208.volantPos.z + R * std::sin(p208.volantIncl);
