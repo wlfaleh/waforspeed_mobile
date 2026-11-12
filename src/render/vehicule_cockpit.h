@@ -8,6 +8,7 @@
 // - Interieur : géométrie construite par code (vehicule_cockpit_geo.h), écrans dynamiques (combiné, carte), dessin.
 // Repère de la caméra : x à droite, y en haut, −z devant ; œil du conducteur à l'origine.
 #pragma once
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -181,6 +182,12 @@ extern bool g_bancCockpitVoisine;
 // WFS-349 (RG-02) : ligne de ceinture (bas des vitres latérales, haut des portières), repère de l'œil (m) : haut de la planche
 // moins 1 cm, la hauteur de WFS-315 (portières de WFS-197), inchangée
 inline float ligneCeinture(const InterieurDef& d) { return d.plancheY - 0.01f; }
+// WFS-325 : profondeur de la face de la planche (repère de l'œil, m) : 5 cm derrière le plus reculé du combiné et de l'écran
+// central (calcul d'Interieur::construire depuis WFS-197, sorti ici sans changement pour les pièces propres du lot 1)
+inline float zFacePlanche(const InterieurDef& d) {
+    const bool combine = d.combine != Combine::Aucun && d.combineW > 0;
+    return std::min(combine ? d.combinePos.z : d.ecranPos.z, d.ecranW > 0 ? d.ecranPos.z : d.combinePos.z) - 0.05f;
+}
 // WFS-349 (RG-02) : portière : face intérieure 1 cm en dedans de la largeur aux coudes (WFS-315, inchangée), vitre latérale
 // EPAISSEUR_PORTE plus loin (appui de vitre de 12 cm : portières réelles de 10 à 15 cm, DA-realisme) ; plancher sous l'œil
 // (talon → point H ≈ 0,27 m, cote SAE H30 d'une berline, plus 0,71 m du point H à l'œil : approximation, ±3 cm)
@@ -240,6 +247,12 @@ constexpr float LARGEUR_MONTANT = 0.075f, EPAISSEUR_MONTANT = 0.09f, RETRAIT_MON
 // est incliné de ≈ 36° sur l'horizontale (berlines 25 à 40°). Le ciel de toit commence à cette traverse et passe au-dessus de la tête
 // (garde au toit ≈ 0,10 m, E)
 constexpr float HAUT_PARE_BRISE_Y = 0.21f, HAUT_PARE_BRISE_Z = -0.52f, CIEL_DE_TOIT_Y = 0.27f;
+// WFS-325 : hauteur du milieu du ciel de toit à la profondeur z (repère de l'œil) : de la traverse, il monte vers CIEL_DE_TOIT_Y à
+// 0,25 m devant l'œil (raccord doux), puis reste plat (calcul d'Interieur::construire depuis WFS-323, sorti ici sans changement)
+inline float hauteurCielDeToit(float z) {
+    const float t = std::clamp((z - HAUT_PARE_BRISE_Z) / (-0.25f - HAUT_PARE_BRISE_Z), 0.f, 1.f);
+    return HAUT_PARE_BRISE_Y + (CIEL_DE_TOIT_Y - HAUT_PARE_BRISE_Y) * t * t * (3 - 2 * t);
+}
 inline void coinsVitre(float cx, float montant, float yb, float zb, float yh, float zh, vec3 c[4]) {
     const float xh = montant - RETRAIT_MONTANT_HAUT;
     c[0] = {cx - montant, yb, zb}; c[1] = {cx + montant, yb, zb}; c[2] = {cx + xh, yh, zh}; c[3] = {cx - xh, yh, zh};

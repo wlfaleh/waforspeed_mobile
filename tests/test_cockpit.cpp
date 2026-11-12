@@ -10,6 +10,7 @@
 #include <vector>
 #include "../src/game/cars.h"
 #include "../src/render/vehicule_cockpit.h"
+#include "../src/render/vehicule_cockpit_details.h"   // WFS-325 : pièces propres du lot 1
 #include "../src/render/vehicule_cockpit_formes.h"   // ligneJante
 #include "../src/render/vehicule_cockpit_volant.h"
 #include "test_cockpit_volants_main.h"   // WFS-414 (RG-05) : empreintes des volants de main (test_cockpit --empreintes)
@@ -38,6 +39,41 @@ static Empreinte empreinte(const char* car, int piece, const Geo& g) {
 static std::vector<const Geo*> piecesDe(const PiecesVolant& p) {
     return {&p.jante, &p.moyeu, &p.branches, &p.coutures[0], &p.coutures[1], &p.coutures[2], &p.repere, &p.palettes, &p.manettino,
             &p.molettes, &p.coque, &p.joint, &p.plaques, &p.touches};
+}
+
+// WFS-414 (RG-07), étendu par WFS-325 (RG-05) : points du haut de la jante (40° à 140°) cachés par la visière, vus de l'œil de la
+// caméra, et plus petit jour entre la jante et la visière (m) ; sorti du test des volants de série pour servir à la M4, la 911, la SF90
+static void mesureVisiere(const InterieurDef& d, int& caches, float& jour) {
+    const float R = d.volantD * 0.5f - d.janteEp * 0.5f, rt = d.janteEp * 0.5f;
+    const Visiere vis = ligneVisiere(d);
+    auto distVisiere = [&](vec3 q) {   // distance (plan y, z) à la ligne de la visière, infinie hors de sa largeur
+        if (std::fabs(q.x - vis.pts[0].x) > vis.largeur * 0.5f) return 1e9f;
+        float best = 1e9f;
+        for (int k = 0; k + 1 < 4; k++) {
+            const vec2 a{vis.pts[k].y, vis.pts[k].z}, b{vis.pts[k + 1].y, vis.pts[k + 1].z}, ab{b.x - a.x, b.y - a.y}, aq{q.y - a.x, q.z - a.y};
+            const float t = std::clamp((aq.x * ab.x + aq.y * ab.y) / (ab.x * ab.x + ab.y * ab.y), 0.f, 1.f);
+            best = std::min(best, std::hypot(aq.x - ab.x * t, aq.y - ab.y * t));
+        }
+        return best;
+    };
+    const mat4 C = translate(d.volantPos) * rotateX(d.volantIncl);
+    const vec3 oeil{0, OEIL_CAMERA_PLUS_M, 0};
+    caches = 0; jour = 1e9f;
+    for (int i = 0; i <= 60; i++) {
+        const float th = (40.f + 100.f * i / 60) * PI / 180.f;
+        const vec2 c = formes::ligneJante(th, R, d.meplat, d.meplatHaut);
+        jour = std::min(jour, distVisiere(C.transformPoint({c.x, c.y, 0})) - rt - vis.ev * 0.5f);
+        const vec3 nr = normalize(vec3{c.x, c.y, 0});
+        for (int j = 0; j < 24; j++) {
+            const float w = 2 * PI * j / 24;
+            const vec3 nl = nr * std::cos(w) + vec3{0, 0, 1} * std::sin(w);
+            const vec3 q = C.transformPoint(vec3{c.x, c.y, 0} + nl * rt), n = C.transformDir(nl);
+            if (dot(n, oeil - q) <= 0) continue;   // face de la jante tournée de l'autre côté
+            bool cache = false;
+            for (int k = 1; k < 200 && !cache; k++) cache = distVisiere(oeil + (q - oeil) * (k / 200.f)) < vis.ev * 0.5f;
+            caches += cache;
+        }
+    }
 }
 
 int main(int argc, char** argv) {
@@ -341,35 +377,8 @@ int main(int argc, char** argv) {
             if (d.demarreur) { bool g = !p.manettino.v.empty(); for (const Vertex& v : p.manettino.v) g = g && v.px < 0 && v.py < 0; giulia = giulia && g; }
             if (!std::strcmp(car, "golf")) agrafe = !p.repere.v.empty();
             // RG-07 : la visière ne cache aucun point du haut de la jante vu de l'œil de la caméra, et un jour d'au moins 5 mm les sépare
-            const Visiere vis = ligneVisiere(d);
-            auto distVisiere = [&](vec3 q) {   // distance (plan y, z) à la ligne de la visière, infinie hors de sa largeur
-                if (std::fabs(q.x - vis.pts[0].x) > vis.largeur * 0.5f) return 1e9f;
-                float best = 1e9f;
-                for (int k = 0; k + 1 < 4; k++) {
-                    const vec2 a{vis.pts[k].y, vis.pts[k].z}, b{vis.pts[k + 1].y, vis.pts[k + 1].z}, ab{b.x - a.x, b.y - a.y}, aq{q.y - a.x, q.z - a.y};
-                    const float t = std::clamp((aq.x * ab.x + aq.y * ab.y) / (ab.x * ab.x + ab.y * ab.y), 0.f, 1.f);
-                    best = std::min(best, std::hypot(aq.x - ab.x * t, aq.y - ab.y * t));
-                }
-                return best;
-            };
-            const mat4 C = translate(d.volantPos) * rotateX(d.volantIncl);
-            const vec3 oeil{0, OEIL_CAMERA_PLUS_M, 0};
-            int caches = 0; float jour = 1e9f;
-            for (int i = 0; i <= 60; i++) {
-                const float th = (40.f + 100.f * i / 60) * PI / 180.f;
-                const vec2 c = formes::ligneJante(th, R, d.meplat, d.meplatHaut);
-                jour = std::min(jour, distVisiere(C.transformPoint({c.x, c.y, 0})) - rt - vis.ev * 0.5f);
-                const vec3 nr = normalize(vec3{c.x, c.y, 0});
-                for (int j = 0; j < 24; j++) {
-                    const float w = 2 * PI * j / 24;
-                    const vec3 nl = nr * std::cos(w) + vec3{0, 0, 1} * std::sin(w);
-                    const vec3 q = C.transformPoint(vec3{c.x, c.y, 0} + nl * rt), n = C.transformDir(nl);
-                    if (dot(n, oeil - q) <= 0) continue;   // face de la jante tournée de l'autre côté
-                    bool cache = false;
-                    for (int k = 1; k < 200 && !cache; k++) cache = distVisiere(oeil + (q - oeil) * (k / 200.f)) < vis.ev * 0.5f;
-                    caches += cache;
-                }
-            }
+            int caches = 0; float jour = 0;
+            mesureVisiere(d, caches, jour);
             std::printf("  %s : visière : %d points du haut de la jante cachés, jour de %.1f mm\n", car, caches, jour * 1000);
             visiere = visiere && caches == 0 && jour >= 0.005f;
         }
@@ -380,6 +389,84 @@ int main(int argc, char** argv) {
         cas("RG-03 : une plaque de 34-42 × 30-41 mm avec ses touches sur chaque branche horizontale", plaques);
         cas("Giulia : démarreur rouge sur la plaque gauche, en bas ; Golf : agrafe rouge sur la branche basse", giulia && agrafe);
         cas("RG-07 : la visière ne cache pas le haut de la jante (jour ≥ 5 mm)", visiere);
+    }
+    {   // WFS-325 (RG-05, arbitrage du PO du 2026-11-11) : M4, 911 et SF90 : haut de la jante entier devant la visière, jour ≥ 5 mm ;
+        // la Golf (volant de série de WFS-414) et les voitures sans avancée propre gardent la visière d'avant
+        bool ok = true;
+        for (const char* car : {"m4", "p911", "sf90"}) {
+            const InterieurDef& d = *interieurPour(car);
+            int caches = 0; float jour = 0;
+            mesureVisiere(d, caches, jour);
+            std::printf("  %s : visière (avancée %.0f mm) : %d points du haut de la jante cachés, jour de %.1f mm\n", car,
+                        avanceVisierePropre(d) * 1000, caches, jour * 1000);
+            ok = ok && caches == 0 && jour >= 0.005f;
+        }
+        cas("RG-05 : M4, 911 et SF90 : la visière ne cache pas le haut de la jante (jour ≥ 5 mm)", ok);
+        int propres = 0; bool autres = true;
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            const bool lot = !std::strcmp(d.car, "m4") || !std::strcmp(d.car, "p911") || !std::strcmp(d.car, "sf90");
+            if (lot) propres++; else autres = autres && avanceVisierePropre(d) == 0;
+        }
+        cas("RG-05 / RG-08 : avancée propre pour ces 3 voitures seulement ; les autres visières inchangées", propres == 3 && autres);
+        const Visiere g = ligneVisiere(*interieurPour("golf"));
+        cas("RG-08 : visière de la Golf inchangée (avancée du volant de série)",
+            std::fabs(g.pts[3].z - (interieurPour("golf")->combinePos.z + volantSeriePour(*interieurPour("golf"))->visiereAvance)) < 1e-6f);
+    }
+    {   // WFS-325 (RG-06, RG-08) : pièces propres du lot 1 (vehicule_cockpit_details.cpp), mesurées sur la géométrie construite
+        const char* lot[] = {"golf", "m4", "p911", "sf90"};
+        bool liste = true, vides = true;
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            bool dans = false; for (const char* c : lot) dans = dans || !std::strcmp(c, d.car);
+            liste = liste && detailsPropres(d) == dans;
+            if (!dans) {   // RG-08 : rien de construit pour une voiture hors du lot (pièces communes de main)
+                PiecesDetails p; construireDetails(d, p);
+                for (const Geo& g : p.g) vides = vides && g.v.empty() && g.i.empty();
+            }
+        }
+        cas("RG-08 : pièces propres pour Golf, M4, 911 et SF90 seulement ; aucune pour les 16 autres", liste && vides);
+        bool pieces = true, indices = true, habitacle = true, rue = true, normales = true, ambiance = true;
+        for (const char* car : lot) {
+            const InterieurDef& d = *interieurPour(car);
+            PiecesDetails p; construireDetails(d, p);
+            const Largeur l = largeurPour(d);
+            const float cx = l.oeil, demi = l.coudes * 0.5f, zAv = d.pareBriseZ - 0.06f;
+            // pièces attendues : aérateurs (lames), lunettes (chrome ou alu), commandes laquées, console (bas de planche), garnitures
+            const int nLames = (int)p[MatDetail::Lames].i.size() / 3, nLaque = (int)p[MatDetail::Laque].i.size() / 3;
+            const int nCadres = (int)(p[MatDetail::Chrome].i.size() + p[MatDetail::Alu].i.size()) / 3, nCons = (int)p[MatDetail::PlancheBas].i.size() / 3;
+            std::printf("  %s : %d triangles de lames, %d de lunettes et poignées, %d laqués, %d de console et garnitures\n", car, nLames, nCadres, nLaque, nCons);
+            pieces = pieces && nLames > 2000 && nCadres > 500 && nLaque > 200 && nCons > 200;
+            ambiance = ambiance && (couleurAmbiance(d) != 0) == !p[MatDetail::Ambiance].v.empty();
+            long hors = 0, devantRue = 0;
+            for (const Geo& g : p.g) {
+                for (uint32_t k : g.i) indices = indices && k < g.v.size();
+                indices = indices && g.i.size() % 3 == 0;
+                for (const Vertex& v : g.v) {
+                    normales = normales && std::fabs(std::sqrt(v.nx * v.nx + v.ny * v.ny + v.nz * v.nz) - 1) < 1e-3f;
+                    // dans l'habitacle : pas au-delà des vitres latérales (une garniture peut entrer dans le bloc de la portière, WFS-349),
+                    // du plancher au ciel de toit, du pied du pare-brise à 0,6 m derrière l'œil
+                    if (v.px < cx - faceVitre(demi) || v.px > cx + faceVitre(demi) || v.py < PLANCHER_Y - 0.01f || v.py > hauteurCielDeToit(v.pz) + 0.02f
+                        || v.pz < zAv - 0.01f || v.pz > 0.61f) hors++;
+                    // WFS-235 (RG-05) : rien dans la bande de la rue (de l'horizon à +8° au-dessus, de face : ±60° autour de l'axe)
+                    if (v.pz < 0) {
+                        const float el = std::atan2(v.py, std::hypot(v.px, v.pz)), az = std::atan2(v.px, -v.pz);
+                        if (el >= -0.01f && el <= 9.f * PI / 180.f && std::fabs(az) <= PI / 3) devantRue++;
+                    }
+                }
+            }
+            if (hors || devantRue) std::printf("  %s : %ld sommets hors de l'habitacle, %ld dans la bande de la rue\n", car, hors, devantRue);
+            habitacle = habitacle && hors == 0; rue = rue && devantRue == 0;
+        }
+        cas("RG-06 : aérateurs, lunettes, commandes laquées, console et garnitures construits pour les 4 voitures", pieces);
+        cas("pièces propres : indices valides, triangles complets, normales unitaires", indices && normales);
+        cas("pièces propres dans l'habitacle (portières, plancher, ciel de toit, pied du pare-brise)", habitacle);
+        cas("WFS-235 (RG-05) : aucune pièce propre devant la rue (horizon à +9°, ±60°)", rue);
+        cas("RG-07 : lot 1 : laqué et carbone vernis 0,02-0,08, chrome 0,05-0,15, alu brossé 0,3-0,5 (rugosités)",
+            RUGO_LAQUE_LOT1 >= 0.02f && RUGO_LAQUE_LOT1 <= 0.08f && RUGO_CARBONE_LOT1 >= 0.02f && RUGO_CARBONE_LOT1 <= 0.08f
+            && RUGO_CHROME_LOT1 >= 0.05f && RUGO_CHROME_LOT1 <= 0.15f && RUGO_ALU >= 0.3f && RUGO_ALU <= 0.5f);
+        cas("lumière d'ambiance : Golf et M4 seulement (couleur du modèle)", ambiance && couleurAmbiance(*interieurPour("golf")) && couleurAmbiance(*interieurPour("m4"))
+            && !couleurAmbiance(*interieurPour("p911")) && !couleurAmbiance(*interieurPour("sf90")));
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
