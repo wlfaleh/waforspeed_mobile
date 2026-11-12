@@ -934,3 +934,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 11:55:25 — ANO-262 précisée : c'est la police qui roule vers 300 km/h (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
 - Précision de l'utilisateur : les « 300 km/h » sont ceux de la voiture de police. Code lu : `poursuite.cpp` `avancer()` plafonne la police à MAX_SPEED × 1,45 ≈ 377 km/h et lui permet la vitesse du joueur + 162 km/h ; la 208 de police est donnée à 208 km/h dans `cars.h`. Ligne ANO-262 réécrite ; à corriger dans WFS-461.
+
+### 2026-11-12 11:56:54 — ANO-263 : roues de la voiture de police vues par l'utilisateur (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
+- Vidéo 12:04 : pneu et jante en une masse noire, plis de tôle autour des passages de roue, roues qui ne tournent pas quand la police glisse ; rattachée à WFS-452 (roues de la police), à confirmer par le PO.
