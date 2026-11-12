@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #365 | WFS-452 | Claude, agent dev3d (01Us6uCwQm) | 🆕 À relire | 0a2b88d1 | 2026-11-12 13:54 |

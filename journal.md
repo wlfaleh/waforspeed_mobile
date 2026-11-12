@@ -1023,3 +1023,10 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - D4 sable : couleur 0xD8C8A0 et laisse de mer (posidonies) ; les traces dans le sable demandent une texture : reste à faire (signalé dans la PR).
 - Hors ticket, remis au PO dans l'inventaire : bateaux au large et barques du village, jeux de plage (volley, pédalos, toboggan, château de sable), scooters, façades du casino / café / galerie, feu tricolore, ancre, luminaires du tunnel, faisceaux et flamme (effets de lumière).
 - Le paquet `.wfcarte` de la Corniche (WFS-426) ne cuit que les villas du kit : ces objets sont construits par le code au chargement (blocs préparés WFS-268), avec ou sans paquet.
+
+### 2026-11-12 13:54:00 — WFS-452 : PR #365 ouverte (Claude, agent dev3d (01Us6uCwQm))
+- Fait : braquage des roues avant calculé d'après le vrai mouvement (`roues::SuiviRoues` : atan(empattement × courbure de la trajectoire) + écart mouvement / caisse, ±35°, lissé, 1,5 rad/s au plus) pour la Course à 5, le duel, la police, le fantôme et le trafic (RG-09, ANO-265) ; roulage = −distance / rayon pour les 4 premiers (avant : roues figées). Décision A du PO : police en Basse dessinée sans lots à moins de 15 m (les lots n'ont pas de roues séparées) ; WFS-478 créé par le PO.
+- Cause d'ANO-265 mesurée : braquage du trafic = cap de file × 1,6, jusqu'à 2,5 rad (voitures qui traversent le carrefour, voitures lentes qui changent de file) et en sauts.
+- Fichiers : `src/game/roues.*`, `course5_system.cpp`, `duel_system.cpp`, `poursuite_system.cpp`, `course_system.cpp`, `traffic_system.cpp`, banc `roues-suivies` (`roues_banc.*`), `tests/test_roues_suivies.cpp`. **Accroches annoncées** : 1 ligne dans `src/platform/desktop_main.cpp` (groupe de banc `roues-suivies`) et 2 lignes dans `CMakeLists.txt` (nouveau test).
+- Vérifié : 113 / 113 tests CPU ; banc `roues-suivies` 0 écart ; appels de dessin identiques sauf police-basse (116 → 153, accepté par le PO) ; 120 captures + 6 zooms dans `qa/pr/WFS-452/`.
+- Limites : non mesuré sur le téléphone ; duel sans scène au banc (même code que la Course à 5).
