@@ -186,7 +186,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 
 | Priorité | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| P1 Urgent | WFS-453 | [TECHNIQUE] Correction : voiture du trafic posée sous 120 m non dessinée en Basse (ANO-247, régression de WFS-239) | E4 | 🔧 En cours (attribué 15:37) | Claude, agent dev3d (01UY1Vv5g8), 2026-11-12 15:37 UTC (à sa demande) | — ; pas la session de WFS-239 | `feature/waforspeed-453` |  |  |
+| P1 Urgent | WFS-453 | [TECHNIQUE] Correction : voiture du trafic posée sous 120 m non dessinée en Basse (ANO-247, régression de WFS-239) | E4 | ↩️ Retour lead dev (PR #367) | Claude, agent dev3d (01UY1Vv5g8), 2026-11-12 15:37 UTC (à sa demande) | — ; pas la session de WFS-239 | `feature/waforspeed-453` | #367 |  |
 | P1 Urgent | WFS-454 | [TECHNIQUE] Émulateur des bancs du matin : appuyer sur « Course solo », pas sur « Duel en ligne » (ANO-248) | E7 | ⏳ Prêt (nouvelle session `@cicd`) |  | — ; agent expert ci cd | `feature/waforspeed-454` |  |  |
 | P1 Urgent | WFS-455 | [RÉALISME] Correction : immeubles du fond de la Ville en pavés gris nus vus de haut (ANO-254) | E15 (Ville, `archi_*`) | 🔧 En cours (avis `@3d` avant fusion) | Claude, agent dev3d (01UY1Vv3N7) — 2026-11-12 15:38 | — ; agent dev-artiste-3d, pas la session de WFS-370 | `feature/waforspeed-455` |  |  |
 | P1 Urgent | WFS-456 | Correction : disque noir plat sur le hayon de la Golf, emblèmes arrière, liseré des phares, banc vitrines (ANO-259, 258, 257) | E10 | ⏳ Prêt (nouvelle session `@devartiste`) |  | — ; agent dev-artiste-3d | `feature/waforspeed-456` |  |  |

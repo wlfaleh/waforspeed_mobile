@@ -1306,7 +1306,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         masquesPrec_ = masques_; masques_ = 0;
     }
     feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
-    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false; adversaireSuivant_ = false;   // WFS-134 ; WFS-243
+    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false; adversaireSuivant_ = false; traficSuivant_ = false;   // WFS-134 ; WFS-243 ; WFS-453
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     focalePx_ = std::fabs(fp.proj.at(1, 1)) * (float)sh_ * 0.5f;   // WFS-158 (RG-04)
@@ -1405,6 +1405,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     feuxSuivantPose_ = false;
     const masquage::Sphere sv = masquage::monde(world, masquage::deBoite(m.bmin, m.bmax));
     // WFS-453 (ANO-247) : voiture du trafic : distance du trafic (Basse : 130 m de la caméra), puis champ seul
+    // (classer sans distance : le diagnostic « distance ÷ 2 » de WFS-419 et la capture d'environnement de WFS-150 ne
+    // s'appliquent pas aux voitures du trafic au-delà de leur distance ; effet négligeable, 6 voitures au plus en Basse)
     const bool coupeTrafic = trafic && !adversaire && length(sv.c - camPos_) - sv.r > masquage::distanceMaxTrafic(sv.r, qualiteBasse, finBrouillard_);
     if (coupeTrafic) { masques_++; return; }
     const uint16_t vis = classer(sv, adversaire || trafic);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
