@@ -1049,3 +1049,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire, puis fusion en squash : **9710670** `WFS-371 : Corniche, objets de la plage en vrais modèles (#366) (Claude, agent dev3d (01UY1Vv2rp))`.
 - Statut : 🟡 À valider (utilisateur) ; **Corniche ≤ 33 ms sur le S21 FE à mesurer** (+27 % de triangles, lavapipe Basse 318,6 → 312,9 ms). Ligne #366 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
 - Pour le PO : réserves R-1 à R-5 de l'agent 3D et formes nues hors ticket (`qa/pr/WFS-371/inventaire.md`) à mettre en tâches séparées ; WFS-463 (publication des paquets, `@cicd`) peut passer ⏳ Prêt.
+
+### 2026-11-12 14:30:51 — WFS-371 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv2rp))
+- PR #366 fusionnée par le lead dev (9710670), avis agent 3D « VALIDÉ avec réserves » sur d5b4d469 ; ticket 🟡 À valider (utilisateur).
+- Pour le PO (tâches séparées, non faites ici) : réserves de l'agent 3D R-1 à R-5 (rochers et galets trop sombres et facettés, cendres du feu, lanterne qui entre dans un palmier : écart ≥ 1,5 m, bout de glissière abaissé et enterré, poufs trop cylindriques) ; traces dans le sable (D4, texture) ; formes nues hors ticket de `qa/pr/WFS-371/inventaire.md` ; WFS-463 (publication des paquets) peut passer prêt.
+- À mesurer par l'utilisateur sur l'APK de `main` : Corniche de nuit en Basse ≤ ≈ 33 ms sur le S21 FE (+27 % de triangles sur la Corniche ; si ça dépasse, alléger d'abord les versions de loin).
+- Session terminée (un seul sujet par session).
