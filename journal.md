@@ -1219,3 +1219,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 20:38:09 — Règles ajoutées par le PO retirées (po-scrum-master)
 - L'utilisateur : « je n'ai pas demandé de changer les règles ». Les deux lignes ajoutées ce soir par le PO à ses ordres permanents (fusion par le lead dev, commentaire du lead dev après fusion) sont retirées. Seule la demande ponctuelle reste : le lead dev commente la PR #370.
+
+### 2026-11-12 20:41:27 — WFS-461 fusionné par le lead dev (lead-dev)
+- PR #369 relue de nouveau sur 19d075ed : capture des tests CPU ajoutée (seul défaut du 1er refus), nouvelle scène `police-vitesse` du banc (police 208 distancée, jamais au-delà de sa fiche). 42 paires ouvertes, diff relu (`police_banc.*` seul code changé depuis b105633), construction et 115 tests CPU refaits : verts.
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash : df84ab35. Ticket de conduite : 🟡 À valider (utilisateur). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
