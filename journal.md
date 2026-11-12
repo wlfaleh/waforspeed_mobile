@@ -990,3 +990,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 12:55:45 — WFS-462 créé : publier les paquets de la Corniche (po-scrum-master)
 - Capture de l'utilisateur (choix du terrain, Corniche sans « Télécharger ») : vérifié sur GitHub, dernier run de `paquets.yml` = #2 (2026-11-11 09:08 UTC, avant la fusion de WFS-426 / #350) ; Release `paquets` sans `plage_*.wfcarte`.
 - **WFS-462** (P1, [TECHNIQUE], E14, `@cicd`) créé à la demande de l'utilisateur ; règles : `regles-de-gestion/WFS-462.md` (la demande vaut accord pour lancer `paquets.yml` une fois sur `main`). Premier ticket pour la prochaine session `@cicd`, avant WFS-454. WFS-426 reste 🟡.
+
+### 2026-11-12 12:56:48 — Ordre permanent : une tâche `@cicd` de publication des paquets après chaque fonctionnalité de décor (po-scrum-master)
+- Ordre de l'utilisateur : « créer après chaque fonctionnalité qui touche le décor des cartes une tâche pour un cicd ». Inscrit dans les ordres permanents du PO (skill `po-scrum-master`) et en bandeau de `TACHES.md`.
+- À chaque fusion d'un ticket qui change le contenu d'une carte, le PO crée aussitôt `[TECHNIQUE] Publier les paquets après WFS-XX` (P1, `@cicd`, modèle `regles-de-gestion/WFS-462.md`).
+- WFS-462 couvre déjà les changements de décor fusionnés depuis le dernier run de `paquets.yml` (2026-11-11 09:08 UTC) : WFS-426, 383, 402, 370, 372, 373, 416, 380.
