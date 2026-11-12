@@ -1343,3 +1343,8 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 23:11:50 — WFS-517 en 1re tâche (po-scrum-master)
 - Ordre de l'utilisateur : « mets-le en 1re tâche ». Bandeau 🏁 renuméroté : 1. WFS-517, puis 480, 504… ; en parallèle restent 454, 394, 460.
+
+### 2026-11-12 23:15:38 — WFS-517 attribué à Claude, agent dev3d (01Us6uCuD6) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCuD6ctRKcQcNhHSZzc), 1re attribution (aucun ticket avant). Ticket choisi : **WFS-517** (P1, 1re tâche du bandeau 🏁, ordre de l'utilisateur), épic E3 libre, aucune dépendance.
+- Zone : `src/game/modes_ecran.cpp` (3 cartes au lieu de 4), banc `src/ui/ecrans/salon.cpp` (`benchDuelAmis` part du menu principal) ; règles : `regles-de-gestion/WFS-517.md` (RG-01 à RG-07, parcours complets).
+- Branche `feature/waforspeed-517` ; captures avant / après, PR, lead dev, puis arrêt de la session après la fusion.
