@@ -18,29 +18,35 @@
     2. **RG-01 montrée** : 4 nouvelles vues du banc `corniche` (`carte-plage-talus`, `-talus-haut`, `-rochers`, `-rochers-haut`, côté colline). Pentes mesurées sur la Corniche : **19° au plus** sur les bandes de sol naturel (colline ≈ 11,6°, zone « rochers » 15,5°) ; les vraies pentes > 40° sont les falaises `ROC`, qui gardent leur texture (WFS-139). La zone « rochers » (`rocheux`) lit donc la pente **+ 25°** : `carte-plage-rochers-haut` montre **pré, terre / maquis et calcaire fissuré avec leurs fondus**. `carte-plage-talus` (colline ≈ 12°) reste en garrigue : c'est juste pour sa pente.
     3. **Motif « camouflage »** : grandes taches à contraste 0,4 (au lieu de 0,7) avec fondu plus large, pointillé de touffes de maquis (30 à 80 cm) sur le plat méditerranéen, taches de terre plus douces et ramenées vers le pré (`carte-plage-montee-dessus`, `-montee-courbe-dessus`).
     - Réserves : bruit des fissures calculé **seulement sur la roche** (`tRoche > 0.001`) ; captures perf en double (`-basse` / `-haute`) retirées.
+  - **Corrections après le 2e avis de l'agent 3D (À REPRENDRE sur dd2e2a9d)** :
+    - **A. Roche « neige » et fissures en courbes de niveau** : calcaire gris-beige chaud mesuré (linéaire 0,479 / 0,413 / 0,296 et 0,319 / 0,270 / 0,191, soit #B8AC94 / #998E79) en **grandes dalles de Voronoï** (3 × 5 m) aux joints nets, fissures **partielles** (seulement là où un bruit de fracture le dit), lapiaz léger, poches de terre et de maquis entre les dalles ; les anciennes fissures en isolignes sont supprimées. Voronoï calculé **seulement au-delà de 30°**.
+    - **B. Limite droite en diagonale** : la bande `P_TERRE_ROC` est supprimée ; tout le sol naturel de la Corniche est un seul maillage `P_TERRE`, et la **part de roche est portée par chaque sommet** (`uv.x`, 1 dans une bande `C_ROCHER`, fondue sur 25 m en travers et moyennée sur ±30 m le long de la route) : le passage pré → terre → roche est progressif, plus de ligne droite.
+    - **C. Talus « camouflage militaire »** : terre claire et caillouteuse mêlée de calcaire, touffes de maquis de 0,5 à 3 m sur trois échelles de bruit (plus de grandes taches à bord net).
+    - **D. Pins en palmiers / cycas, écorce coupée net** : nouveau générateur `veg::pinAlep` (`src/world/vegetation.{h,cpp}`) : tronc penché et sinueux (5 points, anneaux partagés : aucune couture), 4 à 6 branches principales montant à 35–60°, rameaux, **touffes d'aiguilles en pinceau** (3 cartes croisées de la case « aiguilles » de l'atlas, normales tournées vers l'extérieur du houppier), 2 niveaux de détail ; **écorce en dégradé** brun-rouge (#6A4C38) → gris (#8A847A) entre 1 et 2,5 m (RG-03).
+    - **E. Aplat vert vif et secteurs en éventail dans l'épingle de la Campagne** : **déjà présents sur `main`** (voir `avant-carte-campagne-epingle`) : ils viennent du maillage plat du fond de l'épingle et des facettes du talus extérieur, hors du sol de ce ticket. Avec ce ticket les secteurs sont adoucis par le lissage des normales et l'aplat est ramené vers l'herbe mesurée ; ce qui reste est proposé au PO comme anomalie séparée (forme du terrain de l'épingle).
   - **Synchronisation avec `main` (WFS-392, tunnels)** : conflits dans `carte_donnees.{h,cpp}` et `carte_donnees_decor.cpp` résolus en gardant les deux côtés ; le **trottoir de service en béton des tunnels** reste un sol uni (exclu du sol naturel). Construction et **112 tests CPU verts** après synchronisation.
 - **Comment c'est vérifié** :
   - Captures avant / après (bancs `corniche`, `campagne`, `neige`, `perf`), jour et nuit, regardées une à une ; Noël (`neige-jour-arriere`) inchangé, automne avec feuilles mortes.
-  - **Banc perf (PC, lavapipe = rendu sur le processeur)**, temps moyen par image, série 3 (commit 8753feb2) :
-    | Carte | Basse (avant → après) | Haute (avant → après) |
-    |---|---|---|
-    | Corniche | 217,0 → 231,7 ms (+7 %) | 453,3 → 477,7 ms (+5 %) |
-    | Campagne | 219,4 → 235,3 ms (+7 %) | 432,0 → 442,1 ms (+2 %) |
-    | Grand Prix | 243,5 → 264,6 ms (+9 %) | 599,1 → 613,1 ms (+2 %) |
-    | Ville (témoin, sol non touché) | 297,1 → 303,5 ms (+2 %) | 673,2 → 676,1 ms (0 %) |
+  - **Banc perf (PC, lavapipe = rendu sur le processeur)**, temps moyen par image, **série 4** (commit 554619ce, avec le nouveau pin) :
+    | Carte | Basse (avant → après) | Haute (avant → après) | Triangles Basse |
+    |---|---|---|---|
+    | Corniche | 235,4 → 241,2 ms (+2,5 %) | 478,9 → 491,9 ms (+2,7 %) | 234 683 → 240 362 |
+    | Campagne | 232,2 → 250,9 ms (+8 %) | 464,0 → 479,0 ms (+3 %) | 283 426 → 280 149 |
+    | Grand Prix | 274,7 → 290,0 ms (+5,6 %) | 691,3 → 639,7 ms (−7 %) | 453 247 → 426 366 |
+    | Ville (témoin, sol non touché) | 319,9 → 307,0 ms (−4 %) | 717,2 → 663,9 ms (−7 %) | égaux |
 
-    Séries précédentes (passe de scène) : Corniche Basse +1 % puis +12 %, Campagne Basse +2 % puis +15 %. Lecture honnête : sur lavapipe, le bruit d'une série à l'autre est du même ordre que l'écart ; le coût ajouté est du calcul de pixel sur le sol seulement (aucune texture lue). Triangles égaux ou en baisse.
+    Série 3 (commit 8753feb2) : Corniche Basse +7 %, Campagne +7 %, Grand Prix +9 %. Lecture honnête : sur lavapipe le témoin bouge de −7 à +2 % d'une série à l'autre, autant que l'écart mesuré ; le coût ajouté est du calcul de pixel sur le sol (aucune texture lue, Voronoï seulement sur la roche). Le nouveau pin ajoute ≈ 6 000 triangles en Basse sur la Corniche ; en Haute les triangles baissent (841 363 → 821 613).
   - **Corniche en paquet (WFS-426)** : banc `batiments` avec `WFS_CARTE=plage`, jour et nuit : le paquet ne contient que les villas, le sol et les pins sont construits par le code et visibles (`paquet-plage-*`).
 - **Limites et risques connus** :
   - **Performance du S21 FE non mesurée** (banc PC seulement) : le critère « Corniche ≤ 33 ms sur S21 FE » est à confirmer par l'utilisateur sur l'APK de `main`.
-  - **Pin d'Alep procédural** (RG-03 demande « 1 modèle CC0 / CC BY ») : aucun modèle CC0 / CC BY accessible depuis les sites autorisés ; générateur d'arbres du dépôt (`veg::pin`, couronne en parasol), 2 niveaux de détail, placement irrégulier.
+  - **Pin d'Alep procédural** (RG-03 demande « 1 modèle CC0 / CC BY ») : aucun modèle CC0 / CC BY accessible depuis les sites autorisés ; générateur dédié `veg::pinAlep` (branches, rameaux, touffes d'aiguilles), 2 niveaux de détail, placement irrégulier.
   - **Pins fusionnés dans la géométrie des morceaux de décor, pas en instances GPU** (RG-03) : même chemin que les autres arbres du dépôt ; les triangles baissent.
-  - **Épingle de la Campagne** : talus en terrasses de vignes, pentes douces : pas de roche visible ; la démonstration des 3 matériaux est faite sur la zone « rochers » de la Corniche.
-  - Captures prises sur 8753feb2 ; la synchronisation suivante avec `main` ne touche que les cartes de données (tunnels), pas la Corniche ni la Campagne.
+  - **Épingle de la Campagne** : talus en terrasses de vignes, pentes douces : pas de roche visible ; la démonstration des 3 matériaux est faite sur la zone « rochers » de la Corniche. Aplat et secteurs : point E ci-dessus (existant sur `main`).
+  - Captures prises sur 554619ce ; les commits suivants ne changent qu'un commentaire (`sols.h`) et des documents venus de `main`.
   - Le sol ne porte plus d'ombre propre (`MAT_GROUND`, comme les autres sols).
-  - Hors périmètre, vus sur les captures : montagnes en pyramides et éoliennes de la Campagne (WFS-369 à 373), pelouse de la Ville (WFS-385), gros feuillus en boules facettées de la Corniche (forme existante), crête droite de la colline de la Corniche.
+  - Hors périmètre, vus sur les captures : montagnes en pyramides et éoliennes de la Campagne (WFS-369 à 373), pelouse de la Ville (WFS-385), gros feuillus en boules facettées de la Corniche (forme existante, visible sur `carte-plage-rochers`), crête droite de la colline de la Corniche.
 
-## Captures pour le lead dev
+## Captures pour le lead dev (24 après)
 
 Dossier : [`qa/pr/WFS-383`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-383/qa/pr/WFS-383) — produit par `tools/qa/captures_pr.sh`.
 
