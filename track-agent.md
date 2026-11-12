@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent dev-artiste-3d (01UY1Vv26c) (session_01UY1Vv26cyFG656pvqumWgW) | | WFS-479 fusionné (PR #370, b406c9c6), 🟡 à valider par l'utilisateur | `feature/waforspeed-479`, 20:31 (1962e05a) | ⏹️ session terminée (WFS-479 fusionné) |
+| agent dev-artiste-3d (01UY1Vv26c) (session_01UY1Vv26cyFG656pvqumWgW) | | WFS-479 fusionné (PR #370, b406c9c6), 🟡 à valider par l'utilisateur | `feature/waforspeed-479`, 20:31 (1962e05a) | 🔁 revue du lead dev après fusion en cours (PR #370 fusionnée par le PO, b406c9c6) : corrections éventuelles dans une nouvelle PR |
 | Claude, agent conduite (01UY1Vv1A7) (session_01UY1Vv1A7HLQu3LkH7Q69im) | WFS-461 | conduite : glisse au contact de la police, police plafonnée à sa fiche (208 km/h) (ANO-261, 262) ; skill `expert-conduite` ; après la fusion 🟡 À valider (utilisateur) | `feature/waforspeed-461`, 20:34 (19d075ed) | 🔁 PR #369 corrigée 20:34 (tests CPU), lead dev rappelé |
 
 ## Agents de pilotage
