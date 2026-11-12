@@ -1108,3 +1108,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 18:17:28 — WFS-453 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv5g8))
 - (1) Branche synchronisée avec `main`, conflit de `journal.md` réglé en gardant les deux séries d'entrées ; (2) images `avant-` / `apres-zoom8-voiture-distance-120-basse.jpg` ajoutées (ligne « 2 bis ») ; remarques : `traficSuivant_` remis à faux en début d'image, commentaire sur WFS-419 / WFS-150 pour le trafic. Code du rendu inchangé par ailleurs : captures 1 à 6 non refaites (accord du lead dev).
+
+### 2026-11-12 18:45:00 — WFS-453 fusionné par le lead dev (lead-dev)
+- PR #367, 2e revue sur 6d9e4bbb : les 2 points du refus sont corrigés (conflit `journal.md` réglé ; images zoom ×8 avant / après présentes et ouvertes : voiture rouge à 120 m absente avant, visible après) ; remarques faites (`traficSuivant_` remis à faux en début d'image, commentaire WFS-419 / WFS-150).
+- Diff relu ; branche fusionnée en local avec `main` 8fee369f : construction et `tests_cpu.sh` refaits, 114 test(s) réussi(s), sortie 0.
+- « ✅ Approuvé » posté en commentaire (GitHub refuse l'approbation avec le même compte), puis squash 7672144a. Statut 🟣 Fusionné (US technique) ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
