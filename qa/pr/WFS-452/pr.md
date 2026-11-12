@@ -30,17 +30,16 @@ Agent : Claude, agent dev3d (01Us6uCwQm)
 
 ## Tests CPU
 
-Commit testé : **c59d8862** (branche synchronisée avec `main`), journal complet : [`qa/pr/WFS-452/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/tests-cpu.log). Fin du journal :
+Commit testé : **d49c948a** (branche synchronisée avec `main`, qui a apporté `test_decor_corniche`), journal complet : [`qa/pr/WFS-452/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/tests-cpu.log). Fin du journal :
 
 ```
 [OK] test_version_chargement (0 s)
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (3 s)
-[OK] test_virages_fleches (0 s)
+[OK] test_virages_fleches (1 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 113 test(s) réussi(s) en 400 s
+tests CPU : 114 test(s) réussi(s) en 421 s
 ```
-
 
 ## Zooms sur les roues (images successives à 30 img/s ; avant en haut, après en bas)
 
