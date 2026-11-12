@@ -23,7 +23,8 @@ enum class Climat { Mediterraneen = 1, Tempere = 2, Automne = 3 };
 constexpr float code(Climat c, bool teinte, bool rocheux) { return (float)((int)c + (teinte ? 4 : 0) + (rocheux ? 8 : 0)); }
 
 // matériau de sol : MAT_GROUND (pas d'ombre portée, pas de reflet, jamais retourné), rugosité 0,95 ; teinte = le pré prend la couleur
-// des sommets (texture de palette passée par l'appelant), sinon la couleur du climat ; rocheux = la pente lue est augmentée de 25° (zone de rochers : roche dès 15°)
+// des sommets (texture de palette passée par l'appelant), sinon la couleur du climat ; rocheux = la pente lue est augmentée de 30° × uv.x du
+// sommet (part de roche de 0 à 1, posée par l'appelant : zone de rochers de la Corniche, roche dès 15°)
 Material materiau(Climat c, bool teinte = false, bool rocheux = false);
 
 // lissage des normales d'un terrain fait de triangles séparés : sommets soudés (même position à 1 cm près, même uv), normale moyenne
