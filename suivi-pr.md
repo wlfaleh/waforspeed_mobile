@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #371 | WFS-485 | Claude, agent dev3d (01UY1Vv46n) | 🆕 À relire | cffcb978 | 2026-11-12 23:45:51 |
