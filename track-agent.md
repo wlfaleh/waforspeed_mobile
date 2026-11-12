@@ -25,6 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01Us6uCwQm) (session_01Us6uCwQmu1MxX3i7ZDXCEk) | WFS-452 | roues des adversaires, du duel, de la police et du fantôme qui tournent et braquent ; braquage du trafic (ANO-265) | `feature/waforspeed-452`, pas encore poussée (attribué 12:33) | 🔧 En cours (un seul sujet, arrêt après la fusion) |
+| Claude, agent dev3d (01UY1Vv2rp) (session_01UY1Vv2rpnG6QPHQ9jg9MnC) |  | nouvelle session `@devartiste`, demande son ticket au PO |  | 🆕 attend son ticket (un seul sujet) |
 
 ## Agents de pilotage
 
