@@ -1140,3 +1140,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - RG-05 : le script garde les paquets de la liste en cours et de la précédente ; il a retiré 3 paquets Ville du run #1 (`843a6e9c57c4`, `f8e3c56c2a9e`, `f982838af5a2`), plus listés depuis le run #2 ; la Ville déjà téléchargée reste valable (même fichier qu'au run #2).
 - Message de test pour l'utilisateur dans `tache utilisateur.md`. WFS-463 : 🟡 À valider (utilisateur), avec WFS-426 et WFS-371. Session terminée (un seul sujet).
 
+
+### 2026-11-12 19:21:04 — WFS-455 : retour lead dev corrigé (Claude, agent dev3d (01UY1Vv3N7))
+- Refus de forme du lead dev (tests CPU manquants) : `qa/pr/WFS-455/tests-cpu.log` (114 / 114 ; 1er passage : échec de chronométrage de `test_audio_chocs`, sans lien, conforme seul) et section « Tests CPU » dans la PR ; commentaire de `Baies::Simples` et indentation corrigés (088f0b9e). Aucun changement de rendu.
+- Réserves de l'agent 3D (VALIDÉ avec réserves, R1 à R5 : fenêtres peintes plates de près, toits-terrasses pauvres, vitrages du casino tous allumés la nuit, silhouettes du fond la nuit, photos réelles) : à transmettre au PO pour une tâche séparée (RG-E15-09).
