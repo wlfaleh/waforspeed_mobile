@@ -1,6 +1,6 @@
 # WFS-452 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suivies:1280x720 ; filtre : `roues-*-0[0-9]`.
+Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suivies:1280x720 ; filtre : `roues-*-[01][0-9]`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
@@ -14,6 +14,8 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-c5-apres-07` | — | ![après](apres-roues-c5-apres-07.jpg) |
 | `roues-c5-apres-08` | — | ![après](apres-roues-c5-apres-08.jpg) |
 | `roues-c5-apres-09` | — | ![après](apres-roues-c5-apres-09.jpg) |
+| `roues-c5-apres-10` | — | ![après](apres-roues-c5-apres-10.jpg) |
+| `roues-c5-apres-11` | — | ![après](apres-roues-c5-apres-11.jpg) |
 | `roues-c5-avant-00` | — | ![après](apres-roues-c5-avant-00.jpg) |
 | `roues-c5-avant-01` | — | ![après](apres-roues-c5-avant-01.jpg) |
 | `roues-c5-avant-02` | — | ![après](apres-roues-c5-avant-02.jpg) |
@@ -24,6 +26,8 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-c5-avant-07` | — | ![après](apres-roues-c5-avant-07.jpg) |
 | `roues-c5-avant-08` | — | ![après](apres-roues-c5-avant-08.jpg) |
 | `roues-c5-avant-09` | — | ![après](apres-roues-c5-avant-09.jpg) |
+| `roues-c5-avant-10` | — | ![après](apres-roues-c5-avant-10.jpg) |
+| `roues-c5-avant-11` | — | ![après](apres-roues-c5-avant-11.jpg) |
 | `roues-c5-nuit-apres-00` | — | ![après](apres-roues-c5-nuit-apres-00.jpg) |
 | `roues-c5-nuit-apres-01` | — | ![après](apres-roues-c5-nuit-apres-01.jpg) |
 | `roues-c5-nuit-apres-02` | — | ![après](apres-roues-c5-nuit-apres-02.jpg) |
@@ -34,6 +38,8 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-c5-nuit-apres-07` | — | ![après](apres-roues-c5-nuit-apres-07.jpg) |
 | `roues-c5-nuit-apres-08` | — | ![après](apres-roues-c5-nuit-apres-08.jpg) |
 | `roues-c5-nuit-apres-09` | — | ![après](apres-roues-c5-nuit-apres-09.jpg) |
+| `roues-c5-nuit-apres-10` | — | ![après](apres-roues-c5-nuit-apres-10.jpg) |
+| `roues-c5-nuit-apres-11` | — | ![après](apres-roues-c5-nuit-apres-11.jpg) |
 | `roues-c5-nuit-avant-00` | — | ![après](apres-roues-c5-nuit-avant-00.jpg) |
 | `roues-c5-nuit-avant-01` | — | ![après](apres-roues-c5-nuit-avant-01.jpg) |
 | `roues-c5-nuit-avant-02` | — | ![après](apres-roues-c5-nuit-avant-02.jpg) |
@@ -44,6 +50,8 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-c5-nuit-avant-07` | — | ![après](apres-roues-c5-nuit-avant-07.jpg) |
 | `roues-c5-nuit-avant-08` | — | ![après](apres-roues-c5-nuit-avant-08.jpg) |
 | `roues-c5-nuit-avant-09` | — | ![après](apres-roues-c5-nuit-avant-09.jpg) |
+| `roues-c5-nuit-avant-10` | — | ![après](apres-roues-c5-nuit-avant-10.jpg) |
+| `roues-c5-nuit-avant-11` | — | ![après](apres-roues-c5-nuit-avant-11.jpg) |
 | `roues-fantome-apres-00` | — | ![après](apres-roues-fantome-apres-00.jpg) |
 | `roues-fantome-apres-01` | — | ![après](apres-roues-fantome-apres-01.jpg) |
 | `roues-fantome-apres-02` | — | ![après](apres-roues-fantome-apres-02.jpg) |
@@ -54,6 +62,8 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-fantome-apres-07` | — | ![après](apres-roues-fantome-apres-07.jpg) |
 | `roues-fantome-apres-08` | — | ![après](apres-roues-fantome-apres-08.jpg) |
 | `roues-fantome-apres-09` | — | ![après](apres-roues-fantome-apres-09.jpg) |
+| `roues-fantome-apres-10` | — | ![après](apres-roues-fantome-apres-10.jpg) |
+| `roues-fantome-apres-11` | — | ![après](apres-roues-fantome-apres-11.jpg) |
 | `roues-fantome-avant-00` | — | ![après](apres-roues-fantome-avant-00.jpg) |
 | `roues-fantome-avant-01` | — | ![après](apres-roues-fantome-avant-01.jpg) |
 | `roues-fantome-avant-02` | — | ![après](apres-roues-fantome-avant-02.jpg) |
@@ -64,6 +74,8 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-fantome-avant-07` | — | ![après](apres-roues-fantome-avant-07.jpg) |
 | `roues-fantome-avant-08` | — | ![après](apres-roues-fantome-avant-08.jpg) |
 | `roues-fantome-avant-09` | — | ![après](apres-roues-fantome-avant-09.jpg) |
+| `roues-fantome-avant-10` | — | ![après](apres-roues-fantome-avant-10.jpg) |
+| `roues-fantome-avant-11` | — | ![après](apres-roues-fantome-avant-11.jpg) |
 | `roues-police-apres-00` | — | ![après](apres-roues-police-apres-00.jpg) |
 | `roues-police-apres-01` | — | ![après](apres-roues-police-apres-01.jpg) |
 | `roues-police-apres-02` | — | ![après](apres-roues-police-apres-02.jpg) |
@@ -74,6 +86,10 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-police-apres-07` | — | ![après](apres-roues-police-apres-07.jpg) |
 | `roues-police-apres-08` | — | ![après](apres-roues-police-apres-08.jpg) |
 | `roues-police-apres-09` | — | ![après](apres-roues-police-apres-09.jpg) |
+| `roues-police-apres-10` | — | ![après](apres-roues-police-apres-10.jpg) |
+| `roues-police-apres-11` | — | ![après](apres-roues-police-apres-11.jpg) |
+| `roues-police-apres-12` | — | ![après](apres-roues-police-apres-12.jpg) |
+| `roues-police-apres-13` | — | ![après](apres-roues-police-apres-13.jpg) |
 | `roues-police-avant-00` | — | ![après](apres-roues-police-avant-00.jpg) |
 | `roues-police-avant-01` | — | ![après](apres-roues-police-avant-01.jpg) |
 | `roues-police-avant-02` | — | ![après](apres-roues-police-avant-02.jpg) |
@@ -84,6 +100,10 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-police-avant-07` | — | ![après](apres-roues-police-avant-07.jpg) |
 | `roues-police-avant-08` | — | ![après](apres-roues-police-avant-08.jpg) |
 | `roues-police-avant-09` | — | ![après](apres-roues-police-avant-09.jpg) |
+| `roues-police-avant-10` | — | ![après](apres-roues-police-avant-10.jpg) |
+| `roues-police-avant-11` | — | ![après](apres-roues-police-avant-11.jpg) |
+| `roues-police-avant-12` | — | ![après](apres-roues-police-avant-12.jpg) |
+| `roues-police-avant-13` | — | ![après](apres-roues-police-avant-13.jpg) |
 | `roues-police-basse-apres-00` | — | ![après](apres-roues-police-basse-apres-00.jpg) |
 | `roues-police-basse-apres-01` | — | ![après](apres-roues-police-basse-apres-01.jpg) |
 | `roues-police-basse-apres-02` | — | ![après](apres-roues-police-basse-apres-02.jpg) |
@@ -94,6 +114,10 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-police-basse-apres-07` | — | ![après](apres-roues-police-basse-apres-07.jpg) |
 | `roues-police-basse-apres-08` | — | ![après](apres-roues-police-basse-apres-08.jpg) |
 | `roues-police-basse-apres-09` | — | ![après](apres-roues-police-basse-apres-09.jpg) |
+| `roues-police-basse-apres-10` | — | ![après](apres-roues-police-basse-apres-10.jpg) |
+| `roues-police-basse-apres-11` | — | ![après](apres-roues-police-basse-apres-11.jpg) |
+| `roues-police-basse-apres-12` | — | ![après](apres-roues-police-basse-apres-12.jpg) |
+| `roues-police-basse-apres-13` | — | ![après](apres-roues-police-basse-apres-13.jpg) |
 | `roues-police-basse-avant-00` | — | ![après](apres-roues-police-basse-avant-00.jpg) |
 | `roues-police-basse-avant-01` | — | ![après](apres-roues-police-basse-avant-01.jpg) |
 | `roues-police-basse-avant-02` | — | ![après](apres-roues-police-basse-avant-02.jpg) |
@@ -104,6 +128,10 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-police-basse-avant-07` | — | ![après](apres-roues-police-basse-avant-07.jpg) |
 | `roues-police-basse-avant-08` | — | ![après](apres-roues-police-basse-avant-08.jpg) |
 | `roues-police-basse-avant-09` | — | ![après](apres-roues-police-basse-avant-09.jpg) |
+| `roues-police-basse-avant-10` | — | ![après](apres-roues-police-basse-avant-10.jpg) |
+| `roues-police-basse-avant-11` | — | ![après](apres-roues-police-basse-avant-11.jpg) |
+| `roues-police-basse-avant-12` | — | ![après](apres-roues-police-basse-avant-12.jpg) |
+| `roues-police-basse-avant-13` | — | ![après](apres-roues-police-basse-avant-13.jpg) |
 | `roues-trafic-apres-00` | — | ![après](apres-roues-trafic-apres-00.jpg) |
 | `roues-trafic-apres-01` | — | ![après](apres-roues-trafic-apres-01.jpg) |
 | `roues-trafic-apres-02` | — | ![après](apres-roues-trafic-apres-02.jpg) |
@@ -114,6 +142,16 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-trafic-apres-07` | — | ![après](apres-roues-trafic-apres-07.jpg) |
 | `roues-trafic-apres-08` | — | ![après](apres-roues-trafic-apres-08.jpg) |
 | `roues-trafic-apres-09` | — | ![après](apres-roues-trafic-apres-09.jpg) |
+| `roues-trafic-apres-10` | — | ![après](apres-roues-trafic-apres-10.jpg) |
+| `roues-trafic-apres-11` | — | ![après](apres-roues-trafic-apres-11.jpg) |
+| `roues-trafic-apres-12` | — | ![après](apres-roues-trafic-apres-12.jpg) |
+| `roues-trafic-apres-13` | — | ![après](apres-roues-trafic-apres-13.jpg) |
+| `roues-trafic-apres-14` | — | ![après](apres-roues-trafic-apres-14.jpg) |
+| `roues-trafic-apres-15` | — | ![après](apres-roues-trafic-apres-15.jpg) |
+| `roues-trafic-apres-16` | — | ![après](apres-roues-trafic-apres-16.jpg) |
+| `roues-trafic-apres-17` | — | ![après](apres-roues-trafic-apres-17.jpg) |
+| `roues-trafic-apres-18` | — | ![après](apres-roues-trafic-apres-18.jpg) |
+| `roues-trafic-apres-19` | — | ![après](apres-roues-trafic-apres-19.jpg) |
 | `roues-trafic-avant-00` | — | ![après](apres-roues-trafic-avant-00.jpg) |
 | `roues-trafic-avant-01` | — | ![après](apres-roues-trafic-avant-01.jpg) |
 | `roues-trafic-avant-02` | — | ![après](apres-roues-trafic-avant-02.jpg) |
@@ -124,3 +162,13 @@ Branche `feature/waforspeed-452` comparée à `origin/main` ; bancs : roues-suiv
 | `roues-trafic-avant-07` | — | ![après](apres-roues-trafic-avant-07.jpg) |
 | `roues-trafic-avant-08` | — | ![après](apres-roues-trafic-avant-08.jpg) |
 | `roues-trafic-avant-09` | — | ![après](apres-roues-trafic-avant-09.jpg) |
+| `roues-trafic-avant-10` | — | ![après](apres-roues-trafic-avant-10.jpg) |
+| `roues-trafic-avant-11` | — | ![après](apres-roues-trafic-avant-11.jpg) |
+| `roues-trafic-avant-12` | — | ![après](apres-roues-trafic-avant-12.jpg) |
+| `roues-trafic-avant-13` | — | ![après](apres-roues-trafic-avant-13.jpg) |
+| `roues-trafic-avant-14` | — | ![après](apres-roues-trafic-avant-14.jpg) |
+| `roues-trafic-avant-15` | — | ![après](apres-roues-trafic-avant-15.jpg) |
+| `roues-trafic-avant-16` | — | ![après](apres-roues-trafic-avant-16.jpg) |
+| `roues-trafic-avant-17` | — | ![après](apres-roues-trafic-avant-17.jpg) |
+| `roues-trafic-avant-18` | — | ![après](apres-roues-trafic-avant-18.jpg) |
+| `roues-trafic-avant-19` | — | ![après](apres-roues-trafic-avant-19.jpg) |

@@ -13,17 +13,36 @@ Agent : Claude, agent dev3d (01Us6uCwQm)
   - Banc d'essai `roues-suivies` (`src/game/roues_banc.*`, accroche d'une ligne dans `desktop_main.cpp`) et deux accroches de banc (police tenue à côté du joueur, fantôme donné par le banc). Les captures « avant » sont rejouées sur la branche avec `roues::g_avant452` (roues figées et braquage du trafic d'avant, comme `main`), car le banc n'existe pas sur `main`.
   - `tests/test_roues_suivies.cpp` (+ 2 lignes dans `CMakeLists.txt`).
 - **Comment c'est vérifié** :
-  - Tests CPU : **113 / 113** réussis (`bash tools/qa/tests_cpu.sh build`). Nouveau test : ligne droite 300 images → braquage **0** ; virage de 20 m → atan(empattement / rayon) à 1 % près ; changement de file à 50 et 16 km/h → braquage visible (0,18 et 0,48 rad), saut ≤ 0,05 rad par image à 30 img/s, retour à 0 ; glisse de côté → contre-braquage ; latéral par à-coups → retour à 0 ; arrêt → angle et roulage gardés ; accident → 0 ; vrai trafic de la Ville pendant 2 min (604 800 mesures) : jamais plus de 35°, saut maxi 0,05 rad par image, 0,001 rad en ligne droite.
-  - Banc `roues-suivies` (journal, à chaque image) : Course à 5 : roulage avant **0** (figé), après −0,85 rad par image à 30 km/h ; police (glisse) : braquage −0,02 → −0,42 rad pendant la glisse, puis retour ; trafic : avant **0,25 rad** dès la 1re image du changement de file (saut), après 0,010 → 0,029 rad progressif ; 0 en ligne droite.
+  - Tests CPU : voir la section « Tests CPU » ci-dessous. Nouveau test : ligne droite 300 images → braquage **0** ; virage de 20 m → atan(empattement / rayon) à 1 % près ; changement de file à 50 et 16 km/h → braquage visible (0,18 et 0,48 rad), saut ≤ 0,05 rad par image à 30 img/s, retour à 0 ; glisse de côté → contre-braquage ; latéral par à-coups → retour à 0 ; arrêt → angle et roulage gardés ; accident → 0 ; vrai trafic de la Ville pendant 2 min (604 800 mesures) : jamais plus de 35°, saut maxi 0,05 rad par image, 0,001 rad en ligne droite.
+  - Banc `roues-suivies` (journal, à chaque image) : Course à 5 : roulage avant **0** (figé), après −0,85 rad par image à 30 km/h ; police (glisse) : braquage −0,02 → −0,42 rad pendant la glisse, puis retour ; trafic (vu de 3/4 avant, roue avant gauche visible) : avant **0,23 rad** dès la 1re image du changement de file (saut, la roue pivote d'un coup), après 0,010 → 0,029 rad progressif ; 0 en ligne droite.
   - RG-05, performance (banc, moyenne des images capturées) : appels de dessin et triangles **identiques** avant / après pour c5, c5-nuit, police (Haute), fantôme, trafic ; **police-basse** (une police à moins de 15 m, en Basse) : 116 → 153 appels, 343 k → 428 k triangles (coût accepté par le PO, décision A ; WFS-478). Calcul du braquage : 47 ns par voiture et par pas, soit 0,009 ms par image pour 50 voitures. Les temps du rendu logiciel (lavapipe) varient de ±30 % d'une passe à l'autre : non significatifs.
 - **Limites et risques connus** :
   - Non mesuré sur le téléphone (banc WFS-420 non lancé) : à valider par l'utilisateur sur l'APK de `main` (statut 🟡).
-  - Vue de face du trafic : les roues avant sont cachées par le bouclier, le braquage du trafic se prouve par les chiffres du journal et le test CPU.
   - À 30 km/h, la jante tourne de ≈ 50° par image : le sens apparent de rotation peut sembler s'inverser à certaines vitesses (effet stroboscopique d'une vraie vidéo).
   - Hors périmètre (RG-07) : gyrophares de la police ; aspect des roues de la police (WFS-457), en partie amélioré de près en Basse par la décision A.
   - Le duel en ligne n'a pas de scène au banc (pas de salon en local) : même code que la Course à 5 (`Ghost`), test CPU commun.
 
-## Zooms sur les roues (haut : avant / bas : après, images successives à 30 img/s)
+## Corrections après le refus du lead dev (revue sur 0a2b88d1)
+
+1. Section « Tests CPU » et `tests-cpu.log` ajoutés.
+2. Trafic : point de vue bas, de 3/4 avant, du côté opposé au changement de file : la roue avant se voit (20 images, avant / après, zoom `zoom-trafic-roue-avant.jpg`).
+3. Remarques : roues remises droites après une réapparition (saut > 20 m) et abscisse continue au tour de piste pour le trafic (`relZ`) ; un commentaire par ligne dans `roues.h` ; fantôme : écart roues / caisse sur `fantYaw_` (la caisse dessinée) ; duel : `suivi_` vidé à chaque manche.
+
+## Tests CPU
+
+Commit testé : **c59d8862** (branche synchronisée avec `main`), journal complet : [`qa/pr/WFS-452/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/tests-cpu.log). Fin du journal :
+
+```
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 113 test(s) réussi(s) en 400 s
+```
+
+
+## Zooms sur les roues (images successives à 30 img/s ; avant en haut, après en bas)
 
 **Course à 5, adversaire vers 30 km/h, roue arrière vue de côté (jour)**
 
@@ -45,11 +64,11 @@ Agent : Claude, agent dev3d (01Us6uCwQm)
 
 ![zoom fantome](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/zoom-fantome-roue-arriere.jpg?raw=true)
 
-**Trafic : ligne droite (00 à 05), puis changement de file forcé à l'image 06**
+**Trafic (RG-09, ANO-265) : roue avant vue de 3/4 avant ; ligne droite jusqu'à l'image 05, changement de file forcé à l'image 06**
 
-![zoom trafic](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/zoom-trafic-roues-avant.jpg?raw=true)
+![zoom trafic](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/zoom-trafic-roue-avant.jpg?raw=true)
 
-## Suites complètes (10 images par scène, avant / après)
+## Suites complètes (avant / après)
 
 | Image | Avant (main) | Après (branche) |
 |---|---|---|
@@ -113,6 +132,16 @@ Agent : Claude, agent dev3d (01Us6uCwQm)
 | `trafic-07` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-07.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-07.jpg?raw=true) |
 | `trafic-08` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-08.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-08.jpg?raw=true) |
 | `trafic-09` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-09.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-09.jpg?raw=true) |
+| `trafic-10` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-10.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-10.jpg?raw=true) |
+| `trafic-11` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-11.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-11.jpg?raw=true) |
+| `trafic-12` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-12.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-12.jpg?raw=true) |
+| `trafic-13` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-13.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-13.jpg?raw=true) |
+| `trafic-14` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-14.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-14.jpg?raw=true) |
+| `trafic-15` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-15.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-15.jpg?raw=true) |
+| `trafic-16` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-16.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-16.jpg?raw=true) |
+| `trafic-17` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-17.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-17.jpg?raw=true) |
+| `trafic-18` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-18.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-18.jpg?raw=true) |
+| `trafic-19` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-avant-19.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-452/qa/pr/WFS-452/apres-roues-trafic-apres-19.jpg?raw=true) |
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
