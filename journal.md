@@ -1328,3 +1328,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 22:45:05 — Ordre de développement : file A (E17 → E21) et file B (5 premières tâches) en même temps (po-scrum-master)
 - Ordre de l'utilisateur. File A : E17, E18, E19, E20, E21 dans cet ordre. File B : WFS-454 (@cicd), 460, 456, 395 (@dev), 394 (@conduite). Sessions @dev : une fois A, une fois B. Bandeau 🧭 dans `TACHES.md`, ordre permanent au skill du PO.
+
+### 2026-11-12 22:50:34 — Ordre des 30 prochaines tâches, avec le lead dev, d'après le code (po-scrum-master)
+- Demande de l'utilisateur : mélanger les tâches selon le code, avec le lead dev. Avis du lead dev (lecture de `origin/main`, aucune branche `feature/` avancée pour ces tickets ; code déjà présent pour 480, 485, 498 ; point chaud `sauvegarde.*`). Ordre des 30 dans le bandeau 🧮 de `TACHES.md`.
