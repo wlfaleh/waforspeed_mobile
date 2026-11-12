@@ -1322,3 +1322,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 22:43:21 — E17 aussi en priorité absolue, en parallèle (po-scrum-master)
 - Ordre de l'utilisateur : « et 17 aussi, en parallèle ». Tickets de E17 (WFS-480 à 486) passés P1 Urgent ; WFS-480 et WFS-485 prêts tout de suite, en parallèle de WFS-498 et WFS-504 ; WFS-486 attend toujours la décision de l'utilisateur.
+
+### 2026-11-12 22:43:36 — E22 retirée de la priorité absolue (po-scrum-master)
+- Ordre de l'utilisateur : « oublie E22 ». Priorité absolue : E17 à E21 seulement.
