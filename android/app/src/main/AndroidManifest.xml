@@ -15,11 +15,16 @@
         android:hasCode="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:allowBackup="false"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/regles_sauvegarde"
+        android:fullBackupContent="@xml/sauvegarde_ancienne"
         android:appCategory="game"
         android:isGame="true"
         android:enableOnBackInvokedCallback="false"
         android:theme="@style/Jeu">
+        <!-- WFS-485 (RG-01, RG-02) : sauvegarde automatique Android (compte Google, changement de téléphone) limitée au seul
+             fichier files/sauvegarde.txt (profil, records, réglages) : res/xml/regles_sauvegarde.xml (Android 12 et plus)
+             et res/xml/sauvegarde_ancienne.xml (Android 11 et moins). Rien n'est perdu à la réinstallation. -->
         <!-- WFS-129 (RG-03) : SDK 35 sans retour prédictif : la touche / le geste Retour garde le comportement de WFS-116
              (le jeu le prend d'abord, onBackPressed au menu principal : arrière-plan) -->
         <activity

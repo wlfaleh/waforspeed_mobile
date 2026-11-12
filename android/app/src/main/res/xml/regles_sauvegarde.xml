@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WFS-485 (RG-01, RG-02) : sauvegarde automatique Android 12 et plus (android:dataExtractionRules).
+     Seul le fichier de sauvegarde du jeu part dans la copie : files/sauvegarde.txt (getFilesDir, écrit par
+     src/game/sauvegarde.cpp, chemin donné par src/platform/android_main.cpp : internalDataPath + "/sauvegarde.txt").
+     Profil, records, voiture choisie et réglages y sont tous rangés (même fichier, RG-05).
+     Une règle « include » ferme la porte à tout le reste : paquets de cartes (files/paquets/*.wfcarte, fichiers .part),
+     caches, pipelines.cache (shaders compilés), fichier temporaire sauvegarde.txt.tmp, journaux de plantage, fantômes :
+     tout cela se retélécharge ou se recalcule. -->
+<data-extraction-rules>
+    <!-- copie vers le compte Google du téléphone (environ une fois par jour, téléphone en charge et en Wi-Fi) -->
+    <cloud-backup>
+        <include domain="file" path="sauvegarde.txt" />
+    </cloud-backup>
+    <!-- passage direct d'un ancien téléphone au nouveau (câble ou Wi-Fi, à la mise en service) -->
+    <device-transfer>
+        <include domain="file" path="sauvegarde.txt" />
+    </device-transfer>
+</data-extraction-rules>
