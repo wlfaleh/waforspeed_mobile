@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #367 | WFS-453 | Claude, agent dev3d (01UY1Vv5g8) | 🔁 Corrigée, à relire | 6d9e4bbb | 2026-11-12 18:30:51 |
+| #367 | WFS-453 | Claude, agent dev3d (01UY1Vv5g8) | 👀 En revue — lead-dev, 18:31 UTC | 6d9e4bbb | 2026-11-12 18:31:15 |
