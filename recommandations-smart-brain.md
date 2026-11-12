@@ -643,3 +643,43 @@ sons moteur par type de voiture, trafic, klaxon, sirène, chocs, pluie, musique 
 
 **Top 3** : A01 anglais (multiplie le nombre de joueurs possibles), A02 peintures (ce qui se vend le mieux), A05 préparation (donne une raison de dépenser des étoiles).
 **Ordre conseillé, à la suite de celui de l'utilisateur** : A06 tutoriel et A01 anglais avant la sortie ; A02 avec l'étape « couleurs gratuites » ; A03, A04, A05, A07 après le market ; A08, A09 en v1.1.
+
+---
+
+## R15 — 2026-11-12 — Évolution de la personnalisation : couleurs, skins, dessins, créativité (mode Créatif + Priorisation)
+
+Demande de l'utilisateur : « maintenant évolutions couleur, skin, dessin, créativité ». Base observée : 16 couleurs unies (`src/game/sauvegarde.h:34`), une peinture par voiture, aucun dessin, aucune plaque.
+Monnaie : étoiles (R13). Règles : vrai rendu de vraie peinture et de vrais adhésifs (DA-realisme.md), **aucun logo ni sponsor réel**, performance du téléphone.
+
+### Les 4 niveaux, du plus simple au plus créatif
+| Niveau | Contenu | Gratuit | Payant en étoiles | Complexité |
+|---|---|---|---|---|
+| 1. **Couleurs** | 16 actuelles + 12 vives (bleu électrique, vert acide, orange fluo, rose, jaune citron, violet néon…) + **couleur secondaire** (toit, rétros) | 8 couleurs | 50 ★ la couleur | Faible |
+| 2. **Finitions** | brillant, **métallisé**, **nacré**, **mat**, **satiné**, **chromé**, **caméléon** (change selon l'angle), **candy** | brillant | 100-400 ★ (caméléon et chromé les plus chères) | Moyen (shader véhicule, E10) |
+| 3. **Skins (livrées complètes)** | ensembles prêts à poser, dessinés pour chaque voiture : « Rallye », « Drift Tokyo », « Police rétro », « Néon nuit », « Camouflage urbain », « Damier », « Flammes », « Carbone » | 1 skin offerte par voiture débloquée | 300-800 ★ ; skins rares seulement dans le cadeau du jour ou les succès | Moyen à Élevé (une texture par voiture × skin) |
+| 4. **Atelier créatif** | **éditeur d'autocollants** : choisir un autocollant (bande, numéro, flamme, étoile, éclair, tribal, lettres), le placer, tourner, agrandir, colorer, sur plusieurs **calques** (20 au plus) ; + texte libre (filtré) | 10 autocollants | packs d'autocollants 150-300 ★ | Élevé |
+
+### Autour de la carrosserie
+- **Jantes** : 6 modèles réels (branches, multi-rayons, pleines…) × couleur ; **étriers de frein** colorés ; **vitres teintées** (3 niveaux) ; **plaque** (style, couleur, néon, R-identité).
+- **Néons sous la caisse** (la nuit) et **couleur des phares** (blanc, jaune) : forte envie, très « street ».
+- **Fumée des pneus colorée** au dérapage.
+
+### Créativité et partage
+- **Mode photo** dans le garage : angles, fond (Corniche jour / nuit), filtre ; **partage** de l'image (le joueur partage lui-même, rien n'est envoyé par le jeu).
+- **Mes créations** : 5 emplacements de sauvegarde de livrée par voiture.
+- Plus tard (v1.2+) : **partager une livrée par un code** à un ami ; **concours de la semaine** (vote) : demande modération et serveur → pas en v1.
+
+### Ordre conseillé
+1. Couleurs + couleur secondaire (avec l'étape « couleurs gratuites »).
+2. Finitions (métallisé, nacré, mat, caméléon).
+3. Jantes, étriers, vitres, néons.
+4. Skins : 4 skins d'abord, sur les 3 voitures gratuites + 3 voitures les plus vendues.
+5. Atelier créatif (autocollants, calques).
+6. Mode photo et partage.
+
+### Risques
+- **17 carrosseries différentes** : une skin = une texture par voiture → coût de production ; commencer par 6 voitures.
+- **Pose réaliste** des autocollants (projection sur les formes, pas de bande plate qui dépasse : ANO-250) : le plus dur techniquement.
+- **Mémoire** : textures de livrée compressées, une seule chargée à la fois en course.
+- **Texte libre** : liste de mots interdits (comme le pseudo et la plaque).
+- **Règle des marques** : aucun logo réel, aucun sponsor réel, aucune livrée copiée d'une vraie écurie.

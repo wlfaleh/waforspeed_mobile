@@ -1268,3 +1268,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:54:10 — R14 : ce qui manque au jeu hors étoiles / market (smart-brainstorming)
 - R14 : jeu en français seulement, 16 couleurs unies, pas de dessins, jantes, préparation, tutoriel, vraies musiques, classements, notification, vidéo du store. Top 3 : anglais, peintures, préparation. Rien envoyé au PO.
+
+### 2026-11-12 22:10:27 — R15 : évolution de la personnalisation (smart-brainstorming)
+- R15 : 4 niveaux (couleurs, finitions, skins, atelier créatif d'autocollants) + jantes, étriers, vitres, néons, fumée colorée, mode photo ; prix en étoiles ; ordre et risques. Rien envoyé au PO.
