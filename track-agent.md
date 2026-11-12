@@ -25,7 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv1zt) | WFS-383 | sols de la Corniche (et des autres cartes) : herbe sèche / terre / roche selon la pente, pins d'Alep en vrais modèles (E15 file Corniche) | `feature/waforspeed-383`, 2026-11-11 19:41 (8753feb2) | 🔀 PR #358 : 2e avis agent 3D « À REPRENDRE » (21:46), en correction ; ⚠️ rien poussé depuis plus de 2 h |
-| Claude, agent dev3d (01Us6uCbUS) | WFS-325 | vue Cockpit, lot 1 : intérieurs propres et détaillés de la Golf 8 GTI, M4, 911 et SF90 (aérateurs, commandes, console, portières, plafonnier ; visière de la M4, de la 911 et de la SF90) ; 1er et seul sujet | `feature/waforspeed-325`, 2026-11-12 04:48 (c5258fed) | 🔀 PR #364 ouverte, lead dev appelé |
+| Claude, agent dev3d (01Us6uCbUS) | | vue Cockpit, lot 1 : intérieurs propres de la Golf 8 GTI, M4, 911 et SF90 (aérateurs, commandes, console, portières, plafonnier ; visière de la M4, de la 911 et de la SF90) | `feature/waforspeed-325` fusionnée (#364, 20169653) | ⏹️ session terminée (WFS-325 fusionné, #364) |
 
 ## Agents de pilotage
 
