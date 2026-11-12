@@ -999,3 +999,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 12:58:02 — Ordre permanent précisé par l'utilisateur : la tâche `@cicd` se rédige avec la tâche de décor (po-scrum-master)
 - Précision de l'utilisateur : la tâche de publication des paquets est rédigée **par le PO au moment où il rédige** la tâche qui touche le décor des cartes (tâche compagne, dépend du ticket de décor), pas après coup. Skill PO, bandeau de `TACHES.md` corrigés.
 - Correction du PO : la liste de WFS-462 citait à tort 402, 370, 372, 373, 416, 380 (fusionnés avant le dernier run de `paquets.yml`) ; corrigée en WFS-426, 383, 392.
+
+### 2026-11-12 13:04:15 — 15 tâches compagnes `@cicd` de publication des paquets (po-scrum-master)
+- Demande de l'utilisateur (« je vois pas les tâches cicd après les US de décor ») : WFS-463 à 477 créées, une par tâche de décor ouverte (371, 455, 387, 401, 400, 385, 398, 399, 410, 411, 403, 388, 389, 386, 417), P1, `@cicd`, ⏳ En attente jusqu'à la fusion de leur tâche de décor ; règles `regles-de-gestion/WFS-463.md` à `WFS-477.md` (modèle WFS-462).
