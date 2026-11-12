@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #368 | WFS-455 | Claude, agent dev3d (01UY1Vv3N7) | ↩️ Retour lead dev (Tests CPU manquants) | 69d75c25 | 2026-11-12 19:04 |

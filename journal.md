@@ -1117,3 +1117,26 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 18:45:27 — WFS-453 : session terminée (Claude, agent dev3d (01UY1Vv5g8))
 - PR #367 fusionnée par le lead dev (7672144a) ; ligne de `qa/Check.md` écrite par le lead dev ; ticket 🟣 en attente des bancs du matin. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé.
 - Remarques non bloquantes du lead dev laissées pour le PO : ombre de contact automatique de `draw(Model)` encore coupée à 110 m (invisible, le trafic dessine sa propre ombre à la bonne distance) ; contrôle WFS-239 RG-03 du banc `qualite` qui peut compter « dessinée » une voiture absente de l'écran.
+
+### 2026-11-12 18:52:55 — WFS-455 : PR #368 ouverte (Claude, agent dev3d (01UY1Vv3N7))
+- Fait : immeubles de la Ville sans pavé gris nu (ANO-254) : façades arrière et latérales du kit `archi_*` percées de fenêtres (baies peintes, pièces de nuit), lucarnes sur cour, cheminées et édicules visibles à tous les niveaux de détail, flancs du casino à pilastres. `VERSION_BLOC` des bâtiments cuits 1 → 2 : les paquets publiés seront refusés (kit de secours) jusqu'à WFS-464.
+- Accroche annoncée (≤ 10 lignes, hors zone) : `src/render/bench_realisme.cpp` : `WFS_REALISME_VUE` (une seule vue en local) et 13e vue `ville-arriere` (+4 captures au banc du matin).
+- Vérification : 114 tests CPU OK ; captures avant / après `qa/pr/WFS-455/` ; banc perf Ville Basse : triangles 371 825 → 398 131 (+7 %), image lavapipe +1,7 % à +10 % selon le passage (bruit). 0 Mo d'actif ajouté.
+- Références réelles (RG-05) : aucune photo téléchargée ; règles du kit (étages 2,7-3,2 m, fenêtres alignées par travée sur cour). Limite : fenêtres sur cour peintes (plates de très près).
+- Suite : avis agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-12 19:04:17 — WFS-455 : PR #368 refusée par le lead dev (lead-dev)
+- Revue du commit 69d75c25 : 18 captures ouvertes ; elles sont bonnes (plus de pavé gris nu, jour et nuit, Haute et Basse, aucune régression). Tout le diff lu, sans défaut bloquant. Branche construite et testée par le lead dev : 114 test(s) réussi(s). Avis agent 3D « VALIDÉ avec réserves » (R1 à R5 pour le PO, RG-E15-09).
+- **Refus pour un seul point** : la section « Tests CPU » manque dans la description de la PR, et `qa/pr/WFS-455/tests-cpu.log` manque sur la branche (règle de l'utilisateur du 2026-11-11). Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/368 (posée en COMMENT, car GitHub refuse « Request changes » sur le même compte). Statut ↩️ Retour lead dev (PR #368).
+- Incident du lead dev : le commit eaed8628 (prise de la PR dans suivi-pr.md) a envoyé par erreur sur main la modification de `src/render/bench_realisme.cpp` de la PR, restée dans mon dossier de travail. Elle a été annulée tout de suite par le commit 27677856, sans réécrire l'historique. Effet net sur main : aucun.
+### 2026-11-12 19:03:54 — WFS-463 : lancement de « Paquets de cartes » sur main (agent expert ci cd (01UY1Vv3nf))
+- Accord explicite de l'utilisateur (« Je valide », 19:03 UTC) ; un seul lancement, aucun autre run de `paquets.yml` en cours.
+- Run #3 : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43286271592 (commit 27677856 de `main`) ; vérifie la cuisson Ville + Corniche (WFS-426, 371, 383, 392) et la publication dans la Release `paquets`.
+
+### 2026-11-12 19:11:01 — WFS-463 : paquets publiés, run #3 vert (agent expert ci cd (01UY1Vv3nf))
+- Run #3 de « Paquets de cartes » sur `main` (27677856) : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43286271592 ; vert (cuissons a et b identiques octet par octet, 6 fichiers ; publication 19:09 UTC). Aucune relance, aucune modification de la CI ni du décor.
+- Release `paquets` : `plage_astc-eaf7b31ba167` 54,59 Mo, `plage_etc2-7232d0612bcb` 38,17 Mo, `plage_rgba8-0912d20c75a8` 59,18 Mo (Corniche, nouveaux) ; `ville_astc-bdaf43d1a774` 196,56 Mo, `ville_etc2-81192c6f6832` 180,14 Mo, `ville_rgba8-eaa2d8d1b046` 201,15 Mo (Ville inchangée depuis le run #2) ; tout ≤ 700 Mo (RG-06).
+- `cartes.json` : 6 entrées (Corniche et Ville × 3 formats), version min. de l'APK 927 ≤ APK de `main` (run ≥ 1023) (RG-04) ; SHA-256 du paquet `plage_etc2` retéléchargé = celui de la liste (RG-03).
+- RG-05 : le script garde les paquets de la liste en cours et de la précédente ; il a retiré 3 paquets Ville du run #1 (`843a6e9c57c4`, `f8e3c56c2a9e`, `f982838af5a2`), plus listés depuis le run #2 ; la Ville déjà téléchargée reste valable (même fichier qu'au run #2).
+- Message de test pour l'utilisateur dans `tache utilisateur.md`. WFS-463 : 🟡 À valider (utilisateur), avec WFS-426 et WFS-371. Session terminée (un seul sujet).
+
