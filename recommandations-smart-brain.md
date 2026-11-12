@@ -329,3 +329,20 @@ une question simple posée aux testeurs : « Quelle voiture voulez-vous acheter 
 - **Équilibrage** : trop lent → abandon ; trop rapide → plus rien à viser. D'où C6 et les valeurs dans `configgame.json` (réglables sans recompiler le code).
 - **Temps** : ≈ 6-8 jours de développement en parallèle ; tient dans les 14 jours du test fermé seulement si le gel des autres fonctionnalités est respecté (R04-A02).
 - **Conduite** : les épreuves de la ligue 4 exigent une conduite stable (WFS-258/259) ; sinon garder la ligue 4 pour la v1.1.
+
+---
+
+## R06 — 2026-11-12 — « Duel entre amis » rangé dans la Course solo (mode UX/UI)
+
+Remarque de l'utilisateur (2026-11-12) : « c'est bizarre, dans le mode solo je trouve jouer avec des amis ».
+**Constat observé** dans le code : le duel est proposé **deux fois**, sous deux noms différents :
+- au menu principal : bouton « **Duel en ligne** » (`src/ui/ecrans/menu.cpp:55`) ;
+- **dans** « Course solo », 4ᵉ carte de l'écran des modes : « **Duel entre amis** » (`src/game/modes_ecran.cpp:42`, WFS-112), qui mène au même salon.
+Aucun ticket ni aucune anomalie ne le couvre (`TACHES.md`, `anno.md` vérifiés ; ANO-63 ne parlait que des textes).
+
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | UX/UI | *Observé* : duel en double, « solo » contredit « amis » | Retirer la carte « Duel entre amis » de l'écran des modes de la Course solo ; le duel reste **seulement** au menu, sous un seul nom (« Duel en ligne ») | Menu clair : solo = seul, duel = à deux | Moyen | Faible (1 ligne de tableau + banc `modes`) | P1 | Le banc `modes_ecran` teste « Duel → salon » (`modes_ecran.cpp:303`) : à mettre à jour ; disposition à 3 cartes au lieu de 4 |
+| A02 | UX/UI | *Observé* : R04-A12 propose de cacher le duel en v1.0 | Si le duel est caché pour la sortie publique, le retirer **des deux endroits** et le remettre au menu en v1.2 | Pas de bouton qui mène à une fonction pas prête | Moyen | Faible | P2 | Décision de l'utilisateur |
+
+**Recommandation** : A01 tout de suite (petit ticket E3, zone de `src/game/modes_ecran.cpp`) ; A02 selon votre choix sur le duel.

@@ -1235,3 +1235,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 20:56:35 — R05 : mode Carrière détaillé (smart-brainstorming)
 - Recommandation R05 dans `recommandations-smart-brain.md` : 4 ligues sur la Corniche, 28 épreuves dans `configgame.json`, étoiles, crédits, prix des 17 voitures, écrans, monétisation v1.1, découpage proposé C1 à C7, M1, M2. Aucune décision, rien envoyé au PO.
+
+### 2026-11-12 21:06:35 — R06 : duel en double dans la Course solo (smart-brainstorming)
+- Remarque de l'utilisateur confirmée dans le code : « Duel entre amis » dans l'écran des modes de la Course solo (`src/game/modes_ecran.cpp:42`) en plus du bouton « Duel en ligne » du menu. Proposition R06 : le retirer de la Course solo. Rien envoyé au PO.
