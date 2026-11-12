@@ -1037,3 +1037,21 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Refus, 2 points** : (1) capture « Tests CPU » et `qa/pr/WFS-452/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-09 / ANO-265 non prouvée à l'image : la voiture du trafic est vue de face, roues avant cachées ; il faut une suite où les roues avant du trafic se voient (ligne droite puis changement de file, avant / après).
 - Remarques non bloquantes dans la revue (reprise du braquage après un saut, commentaire de `g_avant452`, cap du fantôme, `suivi_` du duel).
 - **Pour le PO** : halo du clignotant du trafic en disque orange flou (code existant WFS-67 / ANO-48), forme nue visible sur les captures du trafic : à rattacher à une US de correction.
+
+### 2026-11-12 14:19:22 — WFS-371 : PR #366 ouverte (Claude, agent dev3d (01UY1Vv2rp))
+- Fait : 21 modèles au niveau du vrai objet (`src/world/decor_corniche_modeles.*`), branchés dans `plage.cpp` (inventaire RG-01 au journal précédent) ; D4 (scène, sable 0xD8C8A0, laisse de mer), R4 (candélabres à lanterne), R5 (glissière double onde en volume).
+- Vérifié : `test_decor_corniche` et 113 tests CPU verts ; bancs `corniche` avant / après et `corniche-objets` (14 gros plans) regardés ; perf Corniche nuit (lavapipe) : Basse 318,6 → 312,9 ms, Haute 508,7 → 481,0 ms, triangles +27 %, 0 création en course.
+- Limites : traces dans le sable non faites (texture) ; formes nues hors ticket listées pour le PO (`qa/pr/WFS-371/inventaire.md`) ; mesure du S21 FE à faire sur l'APK de `main`.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
+
+### 2026-11-12 14:30:05 — WFS-371 fusionné par le lead dev (lead-dev)
+- PR #366 relue sur d5b4d469 (prise dans `suivi-pr.md` à 14:21) : « Avis agent 3D : VALIDÉ avec réserves » présent sur ce commit (E15) ; 48 captures ouvertes, diff complet lu (`decor_corniche_modeles.{h,cpp}`, `plage.cpp`, test, `CMakeLists.txt`) ; construction et `tests_cpu.sh` refaits : 113 réussis, code 0.
+- GitHub refuse l'approbation (même compte) : revue « ✅ Approuvé par le lead dev » postée en commentaire, puis fusion en squash : **9710670** `WFS-371 : Corniche, objets de la plage en vrais modèles (#366) (Claude, agent dev3d (01UY1Vv2rp))`.
+- Statut : 🟡 À valider (utilisateur) ; **Corniche ≤ 33 ms sur le S21 FE à mesurer** (+27 % de triangles, lavapipe Basse 318,6 → 312,9 ms). Ligne #366 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+- Pour le PO : réserves R-1 à R-5 de l'agent 3D et formes nues hors ticket (`qa/pr/WFS-371/inventaire.md`) à mettre en tâches séparées ; WFS-463 (publication des paquets, `@cicd`) peut passer ⏳ Prêt.
+
+### 2026-11-12 14:30:51 — WFS-371 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv2rp))
+- PR #366 fusionnée par le lead dev (9710670), avis agent 3D « VALIDÉ avec réserves » sur d5b4d469 ; ticket 🟡 À valider (utilisateur).
+- Pour le PO (tâches séparées, non faites ici) : réserves de l'agent 3D R-1 à R-5 (rochers et galets trop sombres et facettés, cendres du feu, lanterne qui entre dans un palmier : écart ≥ 1,5 m, bout de glissière abaissé et enterré, poufs trop cylindriques) ; traces dans le sable (D4, texture) ; formes nues hors ticket de `qa/pr/WFS-371/inventaire.md` ; WFS-463 (publication des paquets) peut passer prêt.
+- À mesurer par l'utilisateur sur l'APK de `main` : Corniche de nuit en Basse ≤ ≈ 33 ms sur le S21 FE (+27 % de triangles sur la Corniche ; si ça dépasse, alléger d'abord les versions de loin).
+- Session terminée (un seul sujet par session).
