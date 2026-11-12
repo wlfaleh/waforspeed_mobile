@@ -116,7 +116,24 @@ constexpr double COTE_X = 0.62, BORD_X = 0.92;   // écart latéral à côté du
 // aucun des deux : derrière le joueur (xJ) ; *cote = false dans ce dernier cas
 double placeCote(double xJ, int role, bool* cote = nullptr);
 bool attaque(const Police& p, int indice, double t);
-void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ, double vJ, const std::vector<Obstacle>& obs);
+// WFS-461 (RG-03, ANO-262) : la police roule avec la fiche de SA voiture (cars.h : 208, 208 km/h ; Golf GTI si le joueur est en
+// 208) : vitesse maxi, accélération (poussée et plafond de CarPerf, même formule que Player::update) et freinage (Phys::brake ×
+// CarPerf::freinage) ; dans les virages, l'adhérence de ses pneus (même modèle que la voiture du joueur). Avant : MAX_SPEED × 1,45
+// (377 km/h), accélération de 70 m/s², freinage de 140 m/s². Contact avec la voiture du joueur : vraies longueurs et largeurs.
+struct FichePolice {
+    double vMax = 0;              // vitesse maxi (unités/s) : spec.vmax
+    double a0 = 0, top = 0;       // poussée (m/s²) et plafond (unités/s) de CarPerf
+    double frein = 0;             // décélération au freinage (m/s²)
+    double gLat = 0;              // accélération latérale permise dans les virages (m/s²) ; 0 : pas de limite de virage
+    double contactL = CONTACT_L_M, contactW = CONTACT_W_M;   // contact avec la voiture du joueur (m) : (L + L') / 2, (W + W') / 2
+};
+// fiche de la voiture de police `police` ; `joueur` (peut être nul) : voiture du joueur, pour les distances de contact
+FichePolice fichePolice(const char* police, const char* joueur);
+// un pas de vitesse de la police vers vCible (unités/s), avec la fiche : accélère, freine, jamais au-delà de vMax
+double vitessePolice(const FichePolice& f, double v, double vCible, double dt);
+// t (peut être nul) : piste, pour ralentir avant les virages (adhérence de la fiche)
+void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ, double vJ, const std::vector<Obstacle>& obs,
+             const FichePolice& f, const Track* piste = nullptr);
 // renfort : une voiture de plus, APPARITION_M derrière le joueur (WFS-338 : avant 90 m, en vue dans le rétroviseur)
 Police renfort(int indice, double sJ, double vJ, uint32_t graine);
 // distance (m) de la police mobile la plus proche du joueur (1e9 sans police)

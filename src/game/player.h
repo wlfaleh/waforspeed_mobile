@@ -105,6 +105,8 @@ struct Player {
     // WFS-256 : chocs avec le décor depuis la dernière lecture (lus et remis à zéro par le système chocs_decor.cpp) :
     // nombre, vitesse d'impact la plus forte (m/s, vers l'obstacle) et genre de l'objet touché
     struct ChocsDuPas { int n = 0; double impact = 0; chocs::Genre genre = chocs::Genre::Autre; } chocsDecor;
+    // WFS-461 (RG-01) : μ du sol sous la voiture (saison de la carte, chaussée ou bas-côté), lu par les contacts entre voitures
+    double muSol() const { return muSol_; }
     bool freinAide = false;   // WFS-258 : l'aide à la direction freine ou coupe le gaz avant un virage (ce pas)
 private:
     // WFS-256 : test continu du pas (pose de départ → pose (x, z, cap) d'arrivée) et réaction de corps rigide ; vrai si contact

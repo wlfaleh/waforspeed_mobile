@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstring>
 #include "../core/math.h"
+#include "cars.h"     // WFS-461 : fiche de la voiture de police
+#include "player.h"   // WFS-461 : Phys (freinage, résistance), vitesseVirageAide
 
 namespace wfs {
 namespace poursuite {
@@ -42,23 +44,52 @@ bool attaque(const Police& p, int indice, double t) {
     return std::fmod(t + indice * (CYCLE_S / 2.7), CYCLE_S) < ATTAQUE_S;
 }
 
-void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ, double vJ, const std::vector<Obstacle>& obs) {
-    const double vMax = MAX_SPEED * 1.45;
+FichePolice fichePolice(const char* police, const char* joueur) {
+    const CarDef& c = carById(police ? police : "p208");
+    const CarPerf pf = carPerf(c);
+    FichePolice f;
+    f.vMax = c.spec.vmax / 3.6 / M;
+    f.a0 = pf.a0; f.top = MAX_SPEED * pf.top;
+    f.frein = Phys::brake * pf.freinage + Phys::engineBrake;   // ≈ 10 m/s² (100 → 0 en 33 à 40 m, WFS-188)
+    f.gLat = Phys::grip * pf.handling;                         // même adhérence que la voiture du joueur (Player::update)
+    if (joueur) { const CarDef& j = carById(joueur); f.contactL = (c.d.L + j.d.L) / 2; f.contactW = (c.d.W + j.d.W) / 2; }
+    return f;
+}
+
+double vitessePolice(const FichePolice& f, double v, double vCible, double dt) {
+    vCible = std::clamp(vCible, 0.0, f.vMax);
+    const double vm = std::abs(v * M), resist = Phys::roll + Phys::drag * vm * vm;   // m/s² (air et roulement)
+    if (vCible > v) {   // accélère : poussée de la fiche (comme Player::update, sans nitro)
+        const double push = f.a0 * std::max(0.0, 1 - std::pow(std::max(0.0, v) / std::max(1.0, f.top), 2.2));
+        v = std::min(vCible, v + std::max(0.0, push - resist * 0.35) * dt / M);
+    } else v = std::max(vCible, v - (f.frein + resist) * dt / M);   // freine
+    return std::min(v, f.vMax);
+}
+
+void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ, double vJ, const std::vector<Obstacle>& obs,
+             const FichePolice& f, const Track* piste) {
     for (size_t i = 0; i < ps.size(); i++) {
         Police& p = ps[i];
         p.hitCd = std::max(0.0, p.hitCd - dt);
         if (p.fixe) { p.v = 0; continue; }
+        p.v = std::min(p.v, f.vMax);   // WFS-461 (RG-03) : renfort né à la vitesse du joueur : jamais au-delà de sa fiche
         double rel = (sJ - p.rd) * M;   // > 0 : le joueur est devant (m)
         // la poursuite ne se perd pas ; WFS-338 (RG-05) : retour hors de la distance de dessin (avant : 250 → 120 m, en vue)
-        if (rel > PERDUE_M) { p.rd = sJ - APPARITION_M / M; p.v = std::max(p.v, vJ); rel = APPARITION_M; }
+        // WFS-461 (RG-03) : replacée à une vitesse ≤ sa fiche
+        if (rel > PERDUE_M) { p.rd = sJ - APPARITION_M / M; p.v = std::min(f.vMax, std::max(p.v, vJ)); rel = APPARITION_M; }
         // place visée : derrière à 15 m, à côté à 18 / 21 m (une file à gauche / à droite) ; en attaque : contre le joueur
         const bool att = attaque(p, (int)i, t);
         // WFS-338 (RG-05) : derrière, la poussée se fait pare-chocs contre pare-chocs (avant : à 2 m, la moitié dans le joueur)
-        const double viseM = att ? (p.role == 0 ? CONTACT_L_M - 0.2 : 0.0) : 15.0 + p.role * 3.0;
+        const double viseM = att ? (p.role == 0 ? f.contactL - 0.2 : 0.0) : 15.0 + p.role * 3.0;
         const double ecart = rel - viseM;
-        // rattrape (WFS-338 : ≤ approcheMax, de 45 m/s au loin à 4 m/s au contact : elle se voit arriver), recule s'il dépasse
-        double vCible = vJ + std::clamp(ecart * 1.6, -12.0, approcheMax(rel)) / M;
-        vCible = std::clamp(vCible, 0.0, vMax);
+        // rattrape (WFS-338 : ≤ approcheMax, de 45 m/s au loin à 4 m/s au contact : elle se voit arriver), recule s'il dépasse ;
+        // WFS-461 (RG-03, RG-04) : jamais au-delà de sa fiche, ni plus vite que ses pneus ne le permettent dans le virage qui vient
+        // WFS-461 (RG-04) : trop près, elle ne recule qu'à la vitesse qu'elle pourra reprendre avec sa vraie accélération sur
+        // l'écart à combler (√(2 × 1,5 m/s² × écart)), 12 m/s au plus : avant, −12 m/s d'un coup, rattrapés à 70 m/s²
+        const double recul = std::min(12.0, std::sqrt(2 * 1.5 * std::max(0.0, -ecart)));
+        double vCible = vJ + std::clamp(ecart * 1.6, -recul, approcheMax(rel)) / M;
+        vCible = std::clamp(vCible, 0.0, f.vMax);
+        if (piste && f.gLat > 0) vCible = std::min(vCible, vitesseVirageAide(*piste, p.rd, f.gLat / 9.81, f.frein / 9.81) / M);
         double cx = p.role == 0 ? xJ : placeCote(xJ, p.role);   // WFS-338 : jamais par-dessus le joueur (bord de la chaussée)
         if (rel > 40 && !att) cx = p.cibleX;   // loin : reste dans sa file (moins de zigzags)
         // trafic devant dans sa trajectoire (25 m) : change de file vers la plus dégagée, ou ralentit
@@ -84,15 +115,16 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         p.rdPrec = p.rd; p.xPrec = p.x;   // WFS-221 (accroche)
         const double dx = std::clamp(p.cibleX - p.x, -0.9 * dt, 0.9 * dt);
         p.x = std::clamp(p.x + dx, -0.92, 0.92);
-        const double acc = (vCible > p.v ? MAX_SPEED * 0.45 : MAX_SPEED * 0.9) * dt;
-        p.v = std::clamp(vCible, p.v - acc, p.v + acc);
+        p.v = vitessePolice(f, p.v, vCible, dt);   // WFS-461 (RG-03) : accélération et freinage de la fiche
         p.rd += p.v * dt;
         // WFS-338 (RG-05, ANO-195) : jamais dans la voiture du joueur : à hauteur de lui, elle garde sa largeur d'écart sur
         // son côté ; dans sa file, elle reste au contact du pare-chocs (0,2 m de recouvrement au plus, assez pour pousser)
+        // WFS-461 (RG-01) : vraies dimensions des deux voitures et 2 cm de jour à côté : avant, 1,90 m forfaitaires, moins que la
+        // largeur réelle de certaines paires (Range Rover Sport + 208 : 1,91 m) : contact permanent, voiture du joueur poussée
         const double relN = (sJ - p.rd) * M, dxM = (p.x - xJ) * RW;
-        if (std::abs(relN) < CONTACT_L_M) {
-            if (std::abs(dxM) < CONTACT_W_M && std::abs(dxM) > 0.6) p.x = xJ + (dxM > 0 ? 1 : -1) * CONTACT_W_M / RW;
-            else if (std::abs(dxM) <= 0.6 && std::abs(relN) < CONTACT_L_M - 0.2) p.rd = sJ - (relN >= 0 ? 1 : -1) * (CONTACT_L_M - 0.2) / M;
+        if (std::abs(relN) < f.contactL) {
+            if (std::abs(dxM) < f.contactW + 0.02 && std::abs(dxM) > 0.6) p.x = xJ + (dxM > 0 ? 1 : -1) * (f.contactW + 0.02) / RW;
+            else if (std::abs(dxM) <= 0.6 && std::abs(relN) < f.contactL - 0.2) p.rd = sJ - (relN >= 0 ? 1 : -1) * (f.contactL - 0.2) / M;
         }
     }
     // deux voitures de police ne se chevauchent pas : celle de derrière reste 7 m derrière celle de devant

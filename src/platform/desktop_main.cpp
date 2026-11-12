@@ -61,6 +61,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../render/bench_spots.h"
 #include "../render/qualite_banc.h"
 #include "../game/roues_banc.h"
+#include "../game/police_banc.h"   // WFS-461 (accroche) : WFS_BANC=police
 #include "../render/bench_effets.h"
 #include "../render/bench_nuit.h"
 #include "../render/bench_realisme.h"   // WFS-148 : banc de référence du réalisme
@@ -298,6 +299,7 @@ int main(int argc, char** argv) {
         benchCockpitVitrine(g, r, out, v); return finir();
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
+    if (banc == "police") { ui::chargerPolice(r); const int e = benchPolice(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-461 (accroche) : police plafonnée, contacts
     if (banc == "roues-suivies") { ui::chargerPolice(r); const int e = benchRouesSuivies(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-452 (accroche) : roues qui tournent et braquent
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
