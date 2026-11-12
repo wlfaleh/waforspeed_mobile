@@ -616,3 +616,30 @@ Pendant le test fermé puis après la sortie : utilisateurs actifs par jour, dé
 - **Nouveaux prix des voitures** (même échelle) : citadines 300 ★ (1 argent), sportives 1 200 ★ (2 or), 911 / Gallardo 3 000 ★, SF90 6 000 ★ ; peintures 50-150 ★. Chaque prix affiché aussi en équivalent euros (point 3).
 
 **Choix à faire par l'utilisateur** : (a) une seule monnaie, médailles = packs (recommandé) ; (b) deux monnaies séparées (étoiles gagnées, médailles seulement achetées, objets premium en médailles) : plus de revenus possibles, mais plus complexe et plus exposé aux règles européennes.
+
+---
+
+## R14 — 2026-11-12 — Ce qui manque au jeu actuel, hors étoiles / market (mode Diagnostic)
+
+L'utilisateur valide la structure de R13 (option a : une seule monnaie, médailles = packs d'étoiles) et demande ce qui manque encore (« les peintures ? les dessins ? »).
+Inventaire fait dans le code (`src/ui/ecrans/reglages.cpp:61-74`, `src/game/sauvegarde.h:34`, `src/ui/garage.cpp`, `src/audio/`, `assets/audio/`).
+
+**Déjà là (observé)** : 3 modes, 17 voitures, garage et showroom, 16 couleurs, nitro, combo de frôlements, fantôme, nuit, pluie, mini-carte,
+réglages complets (caméra 4 vues, qualité, son, musique, gaucher, glisser / flèches, gyroscope, aide à la direction, vibrations, grands boutons),
+sons moteur par type de voiture, trafic, klaxon, sirène, chocs, pluie, musique (synthétisée par le jeu, `src/audio/musique.cpp`).
+
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Marché | *Observé* : jeu **en français seulement** (aucune langue dans les réglages) | **Anglais** (puis espagnol, portugais, arabe…) : textes du jeu, fiche du store | Le jeu devient vendable dans le monde entier, pas seulement aux francophones | Élevé | Moyen (tous les textes passent par une table) | P1 | Polices (arabe = écriture de droite à gauche, plus tard) |
+| A02 | Personnalisation | *Observé* : 16 couleurs unies, sans finition | **Peintures** : métallisé, nacré, mat, caméléon, 12 couleurs vives, couleur secondaire | Ce qu'on achète le plus dans un jeu de voitures | Élevé | Moyen | P1 | Déjà dans R11 / V6 |
+| A03 | Personnalisation | *Observé* : aucun dessin | **Dessins (vinyles)** originaux : bandes, numéro, flammes, damier, camouflage | Voiture unique, envie de la montrer | Élevé | Moyen à Élevé (pose sur 17 carrosseries) | P2 | Aucun logo ni sponsor réel |
+| A04 | Personnalisation | *Observé* : ni jantes, ni hauteur, ni vitres | **Jantes** (6 modèles × couleur), **vitres teintées**, **étriers de frein colorés** | Petits achats fréquents, voiture « à soi » | Moyen | Moyen (modèles 3D réels de jantes) | P2 | Règle « vrai modèle 3D » ; budget triangles |
+| A05 | Progression | *Observé* : aucune amélioration de la voiture | **Préparation** en 3 niveaux : moteur, pneus, freins, nitro (payés en étoiles) | Sentir sa voiture progresser ; gros moteur de dépense d'étoiles | Élevé | Moyen | P2 | Conduite réglée sur les fiches réelles : rester dans ±10 % ; équilibrage des IA |
+| A06 | Prise en main | *Observé* : aucun tutoriel | **Tutoriel de 20 s** à la 1ʳᵉ course (accélérer, tourner, freiner, nitro, frôler) | Le joueur comprend avant d'abandonner | Élevé | Faible | P1 | — |
+| A07 | Audio | *Observé* : musique synthétisée par le jeu | **Vraies musiques** (électro / hip-hop / rock, licence CC0 ou CC BY, ou commandées), une par ambiance (menu, course, nuit) | Ambiance « street », souvenir du jeu | Moyen | Faible | P2 | Licence compatible avec la vente (pas de NC) |
+| A08 | Social | *Observé* : aucun classement ni partage | **Classements** (Google Play Jeux, déjà prévu v1.1) + **photo de sa voiture à partager** depuis le garage | Publicité gratuite par les joueurs | Moyen | Faible à Moyen | P3 | Partage = rien envoyé par le jeu lui-même |
+| A09 | Rétention | *Supposé* | **Notification** « ton cadeau du jour t'attend » (une par jour au plus, désactivable) | Rappel de revenir | Moyen | Faible | P3 | Permission Android 13+ ; pas de harcèlement |
+| A10 | Fiche store | *Supposé* : pas de vidéo | **Vidéo de 20-30 s** + 6 captures en jeu (peintures, nuit, poursuite) | Plus de téléchargements | Élevé | Faible | P1 | Captures du téléphone, pas du banc PC |
+
+**Top 3** : A01 anglais (multiplie le nombre de joueurs possibles), A02 peintures (ce qui se vend le mieux), A05 préparation (donne une raison de dépenser des étoiles).
+**Ordre conseillé, à la suite de celui de l'utilisateur** : A06 tutoriel et A01 anglais avant la sortie ; A02 avec l'étape « couleurs gratuites » ; A03, A04, A05, A07 après le market ; A08, A09 en v1.1.

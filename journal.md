@@ -1265,3 +1265,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:50:26 — R13 : avis sur la monnaie étoiles + médailles (smart-brainstorming)
 - R13 : proposition de l'utilisateur (bronze 100 ★, argent 300 ★, or 600 ★, market qui vend des médailles / étoiles) analysée ; recommandation : une seule monnaie, médailles = packs d'étoiles, rang en fin de course, nouvelle échelle de prix, prix aussi en euros (règles UE à vérifier par l'avocat). Rien envoyé au PO.
+
+### 2026-11-12 21:54:10 — R14 : ce qui manque au jeu hors étoiles / market (smart-brainstorming)
+- R14 : jeu en français seulement, 16 couleurs unies, pas de dessins, jantes, préparation, tutoriel, vraies musiques, classements, notification, vidéo du store. Top 3 : anglais, peintures, préparation. Rien envoyé au PO.
