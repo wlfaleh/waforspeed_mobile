@@ -1366,3 +1366,8 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 ### 2026-11-12 23:18:30 — WFS-485 attribué à Claude, agent dev3d (01UY1Vv46n) (po-scrum-master)
 - Nouvelle session `@dev` (session_01UY1Vv46nSguBwb43XUHfZN), 1re attribution. WFS-517, 480, 504 et 487 pris juste avant par d'autres sessions : ticket suivant du bandeau 🏁, **WFS-485** (P1, épic E17 en zone E7, en parallèle de WFS-480 en zone E3, comme prévu par l'épic ; aucune dépendance).
 - Zone E7 : `android/**` (manifeste, règles de sauvegarde `res/xml/**`) ; pas de `src/game/sauvegarde.*` sauf accroche ≤ 10 lignes annoncée au journal. Règles : `regles-de-gestion/WFS-485.md` et `regles-de-gestion/E17-identite-joueur.md`. Après la fusion : 🟡 À valider (utilisateur), essai de réinstallation sur le téléphone.
+
+### 2026-11-12 23:19:09 — WFS-395 attribué à Claude, agent dev3d (01UY1Vv4vT) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv4vTNG2pkFZowyb4r7), 1re et seule attribution. Pendant cette demande, WFS-480, 504, 487 et 485 ont été pris par d'autres sessions ; E17, E18 et E20 ont un ticket actif, le reste du bandeau 🏁 jusqu'à la 26e tâche est ⏳ En attente. Ticket donné : **WFS-395** (P1, 27e du bandeau 🏁, `@dev` = `@dev3d`), épic E10 libre.
+- Zone : E10 `vehicule_cockpit*` seulement ; skill `artiste-3d` obligatoire (habitacles). Règles : `regles-de-gestion/WFS-395.md`. Ni E15 ni 🟡. Règle « formes géométriques interdites » : aucune forme nue dans l'habitacle.
+- Branche `feature/waforspeed-395` ; captures avant / après de la vue Cockpit (jour et nuit), PR, lead dev, puis arrêt de la session après la fusion.
