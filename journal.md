@@ -1164,3 +1164,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Ticket : WFS-461 (P1, 1re priorité par ordre de l'utilisateur du 19:27), épic E3, zone autorisée `player.*`, `roues.*`, `duel.*`, `poursuite.*` (+ `tests/**`) ; règles : `regles-de-gestion/WFS-461.md` (ANO-261 glisse au contact de la police, ANO-262 police plafonnée à 208 km/h). Épic E3 sans autre ticket 🔧 / 🔀.
 - Branche `feature/waforspeed-461` créée par le développeur ; captures avant / après, PR, lead dev seul à fusionner ; après la fusion : 🟡 À valider (utilisateur), puis arrêt de la session.
 - `track-agent.md` : lignes des sessions closes enlevées (WFS-455, 453, 463).
+
+### 2026-11-12 19:36:08 — WFS-452 : ANO-265 seulement sur la M4, contrôle du modèle non fait (po-scrum-master)
+- Précision de l'utilisateur : les roues avant qui battent en ligne droite ne se voient que sur la M4. La PR #365 corrige le calcul du braquage pour tout le trafic mais ne prouve rien sur le modèle M4 (RG-09 : « vérifier aussi que les roues ne sont pas braquées dans le modèle converti »). Noté dans `regles-de-gestion/WFS-452.md` ; validation 🟡 à faire sur la M4 ; si KO → nouveau ticket M4 pour `@devartiste`.
