@@ -7,7 +7,7 @@
 // Couleurs du shader (albédo sRGB linéaire) et sources :
 //   pré tempéré 0x6B7F3A (RG-02 ; « herbe 0,15-0,25 » de DA-realisme.md § 3 ; mat.herbe.albedo de references/reel/materiaux.json,
 //   0,105 / 0,133 / 0,041, PB-MAT, Spectral Materials Database) ; herbe sèche 0x9A8F5A ; terre brune 0x6E5A40 ;
-//   méditerranéen : herbe sèche 0x9A9262, garrigue 0x5A6238, terre rouge 0x8C6D4E, maquis 0x4A5330, calcaire 0xC2BCAE / 0xA19B8E
+//   méditerranéen : herbe sèche 0x9A9262, garrigue 0x5A6238, terre rouge 0x8C6D4E, maquis 0x4A5330, calcaire gris-beige chaud 0xB8AC94 / 0x998E79
 //   (« pierre claire 0,40-0,55 » de DA-realisme.md : 0,50 de luminance moyenne) ; automne : pré fané 0x7E7C48, feuilles mortes
 //   0x7A4E2A, 0x9C6A30, 0xA88A3A, 0x5E4630, terre 0x5E4A36 ; roche grise 0x8E8A80 / 0x75716A.
 #pragma once
