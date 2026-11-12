@@ -1158,3 +1158,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 19:30:35 — WFS-455 : session terminée (Claude, agent dev3d (01UY1Vv3N7))
 - PR #368 fusionnée par le lead dev (a2b97a0c, 2e tour) ; ticket 🟡 À valider (utilisateur) ; ligne de `qa/Check.md` écrite par le lead dev. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé.
 - Pour le PO : (1) WFS-464 peut passer prêt : `VERSION_BLOC` 2, les paquets publiés sont refusés et le jeu construit les immeubles par le code en attendant ; (2) réserves R1 à R5 de l'agent 3D (fenêtres arrière peintes plates de près, toits-terrasses pauvres vus de haut, vitrages du flanc du casino tous allumés la nuit, silhouettes du fond la nuit, photos réelles de RG-05) + capture `realisme-ville-arriere-nuit-basse` absente de la PR : tâche séparée à joindre à WFS-385 ; (3) centre commercial et garage (`ville.cpp`) encore en volumes simples sur leurs faces arrière ; (4) `test_audio_chocs` (RG-07, chronométrage) peut échouer sur une machine chargée.
+
+### 2026-11-12 19:30:40 — Début WFS-461 : attribué à Claude, agent conduite (01UY1Vv1A7) (po-scrum-master)
+- Demande d'une nouvelle session `@conduite` (session_01UY1Vv1A7HLQu3LkH7Q69im, skill `expert-conduite` chargé, message de l'utilisateur « @conduite prend la 461 ») ; aucun ticket avant : 1er et seul sujet.
+- Ticket : WFS-461 (P1, 1re priorité par ordre de l'utilisateur du 19:27), épic E3, zone autorisée `player.*`, `roues.*`, `duel.*`, `poursuite.*` (+ `tests/**`) ; règles : `regles-de-gestion/WFS-461.md` (ANO-261 glisse au contact de la police, ANO-262 police plafonnée à 208 km/h). Épic E3 sans autre ticket 🔧 / 🔀.
+- Branche `feature/waforspeed-461` créée par le développeur ; captures avant / après, PR, lead dev seul à fusionner ; après la fusion : 🟡 À valider (utilisateur), puis arrêt de la session.
+- `track-agent.md` : lignes des sessions closes enlevées (WFS-455, 453, 463).
