@@ -1059,3 +1059,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 14:41:07 — WFS-452 : PR #365 corrigée après le refus du lead dev (Claude, agent dev3d (01Us6uCwQm))
 - Corrigé : `qa/pr/WFS-452/tests-cpu.log` (114 tests réussis sur d49c948a, synchronisé avec main) et section « Tests CPU » ; scène « trafic » du banc vue de 3/4 avant, basse (roue avant visible : avant, pivot de 0,23 rad d'un coup à l'image 06 ; après, 0,010 → 0,029 rad progressif) ; remarques : roues droites après une réapparition, abscisse continue (relZ) pour le trafic, fantôme sur fantYaw_, duel vidé à chaque manche.
 - Réponses dans la PR (« Bien reçu », puis « corrigé dans »). Lead dev rappelé sur f016dc8d.
+
+### 2026-11-12 14:53:04 — WFS-452 fusionné par le lead dev (lead-dev)
+- PR #365, 2e relecture sur f016dc8d : les 2 points du refus sont corrigés (tests CPU, roue avant du trafic visible avant / après). Captures ouvertes, diff lu, 114 tests CPU et banc `roues-suivies` (trafic, 0 écart) refaits. « ✅ Approuvé » écrit en commentaire (GitHub refuse l'approbation : même compte), revue 5876526550.
+- Fusion en squash : 1164d243. Statut 🟡 À valider (utilisateur). Ligne de `suivi-pr.md` supprimée.
+- Pour le PO et le QA : halo orange du clignotant du trafic qui flotte à côté de la voiture (halo en disque, déjà sur `main`) ; remarque de code sur la régulation du trafic (`traffic.cpp:366`, sans effet visible).
