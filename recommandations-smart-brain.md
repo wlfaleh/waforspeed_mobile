@@ -407,3 +407,78 @@ Pas de série de jours qui se perd, pas de « dernière chance », pas de pub im
 
 **Hypothèse testable** : si un défi du jour change chaque jour, les testeurs ouvriront le jeu plusieurs jours de suite, ce que nous vérifierons avec les
 utilisateurs actifs par jour de la Play Console pendant le test fermé.
+
+---
+
+## R09 — 2026-11-12 — Cadrage de l'utilisateur : 3 modes, étoiles / médailles / objectifs / cadeau du jour, peintures et dessins, cartes à télécharger, voitures à débloquer
+
+**Choix de l'utilisateur (2026-11-12)** : pas de nouveau mode pour l'instant (Checkpoint, Course à 5, Poursuite seulement ; R07 et R08 mis de côté) ;
+ajouter un système **score + étoiles + médailles + objectifs + cadeau du jour** ; **peintures plus attirantes et dessins sur les voitures** ;
+**une seule carte par défaut**, les autres **à télécharger** ; **3 voitures gratuites**, les autres **achetées avec les étoiles / médailles**, **gagnées dans le cadeau du jour**
+ou **achetées avec de l'argent réel**. Ci-dessous : la manière la plus simple de le faire, et les points d'attention. Remplace R05 § 2 à 5 (ligues et crédits).
+
+### 1. Une seule monnaie de jeu : les étoiles (proposition de simplification)
+Deux monnaies (étoiles + médailles + crédits) perdent le joueur. Proposé :
+- **Médaille** = la qualité d'une course : 🥉 bronze, 🥈 argent, 🥇 or (seuils par mode et par classe de voiture).
+- **Étoiles** = ce que rapporte une médaille, et **la seule monnaie** : bronze 1 ★, argent 2 ★, or 3 ★ ; + objectifs (§ 2) ; + cadeau du jour (§ 3).
+- **Score** : celui du jeu (points, combo de frôlements, temps) décide de la médaille ; affiché en fin de course avec la médaille et les étoiles gagnées.
+- Le **total d'étoiles gagnées depuis le début** reste affiché (niveau du joueur), même après dépense.
+| Mode | 🥉 | 🥈 | 🥇 (exemples à régler par classe) |
+|---|---|---|---|
+| Checkpoint | 3 checkpoints | 6 | 10 |
+| Course à 5 | 3ᵉ | 2ᵉ | 1ᵉʳ |
+| Poursuite | tenir 60 s | 120 s | s'échapper |
+Médaille améliorée = seulement les étoiles en plus (argent puis or : +1 ★), pour éviter de « farmer » la même course.
+
+### 2. Objectifs
+- **3 objectifs du jour**, simples, tirés dans une liste (« 20 frôlements », « une course de nuit », « finir sans choc en Poursuite ») : +2 ★ chacun.
+- **Objectifs permanents** (succès) : « 1ʳᵉ médaille d'or », « 1 000 frôlements », « gagner avec chaque voiture » : +5 à +20 ★, une seule fois.
+
+### 3. Cadeau du jour
+- 1 cadeau par **jour de jeu** (jours non consécutifs : **rien ne se perd si on ne joue pas**).
+- Calendrier visible de 7 cadeaux : jours 1-6 = étoiles, peinture ou dessin ; **7ᵉ cadeau = une voiture au choix parmi 3 proposées**, puis le calendrier recommence.
+- **Le contenu est montré à l'avance, pas tiré au hasard** : pas d'effet « caisse mystère », et rien du cadeau ne s'achète avec de l'argent réel (risque juridique des loot boxes).
+
+### 4. Voitures
+| Groupe | Voitures (17 aujourd'hui) | Étoiles | Argent réel (proposé) |
+|---|---|---|---|
+| Gratuites | 208, Corsa, 500 (« p208 », « corsa », « abarth ») | 0 | — |
+| Citadines / SUV | golf, tcross, compass, model3, v60, s3 | 30 à 50 ★ | 0,99 € |
+| Sportives | gt86, giulia, mustang, rrsport, m4 | 100 à 150 ★ | 1,99 € |
+| Haut de gamme | p911, gallardo | 250 à 300 ★ | 2,99 € |
+| Exception | sf90 | 500 ★ | 3,99 € |
+- **Toutes les voitures restent gagnables sans payer** : payer fait seulement gagner du temps (jeu solo, aucun avantage contre d'autres joueurs).
+- **Essai gratuit une fois** de chaque voiture bloquée.
+- Optionnel : **Pack « Toutes les voitures »** à prix fixe (ex. 9,99 €) au lieu de 14 achats séparés : plus clair, moins de « nickel and dime ».
+- **Points juridiques** (rapport du juriste, J-17) : Google Play Billing obligatoire, prix TTC affichés, CGU et confidentialité à refaire, mention « achats intégrés » sur la fiche, **avis d'avocat avant la mise en vente** ; voitures sans marque (WFS-404) **obligatoire** avant toute vente.
+
+### 5. Peintures et dessins (constat observé)
+**Aujourd'hui** : 16 couleurs **unies et plutôt ternes** (`src/game/sauvegarde.h:34` : blanc, noir, gris, rouge foncé, bleu, bordeaux, sable…), sans finition.
+- **Finitions** (shader véhicule, épic E10) : métallisé, nacré, **mat**, chromé / irisé (« caméléon »), candy ; mêmes couleurs + 12 couleurs vives (rouge vif, bleu électrique, vert acide, rose, orange fluo, jaune citron…).
+- **Dessins (vinyles)** : bandes de course, numéro de course, flammes, motifs tribaux, damier, camouflage, dégradés, éclaboussures ; **dessins originaux** (faits pour le jeu ou CC0), **aucun logo ni sponsor réel** ; posés comme de vrais adhésifs (suivent les formes, pas de bande plate qui dépasse : cf. ANO-250 de la police).
+- **Couleur secondaire** (toit, rétroviseurs, jantes) : fort effet pour peu de travail.
+- Prix : peintures 5-15 ★, dessins 10-30 ★, certains seulement dans le cadeau du jour.
+- Réalisme : un vinyle réel est **réaliste** ; rester dans des couleurs et motifs qui existent sur de vraies voitures de rue « tuning » (DA-realisme.md).
+
+### 6. Cartes
+- **Dans l'APK** : la Corniche seule (déjà décidé : WFS-405).
+- **À télécharger, gratuitement**, depuis l'écran des paquets (épic E14, déjà fait pour la Ville et la Corniche) : Ville, Campagne, Grand Prix, Neige.
+- Taille par carte à afficher **avant** le téléchargement ; plafond conseillé ≤ 300 Mo (R04-A07).
+- Option plus tard : une carte « offerte » contre des étoiles pour donner un objectif (pas en v1.0).
+
+### 7. Découpage proposé (au PO de décider)
+| # | Ticket proposé | Épic | Taille |
+|---|---|---|---|
+| P1 | Sauvegarde : étoiles (solde + total), médailles par mode × voiture, voitures / peintures / dessins possédés, cadeaux reçus ; migration des testeurs | E3 | ≤ 1 j |
+| P2 | Médailles et étoiles de fin de course (seuils dans `configgame.json`) + écran de fin | E3 + E8 | 1 j |
+| P3 | Garage : cadenas, prix en ★, achat, essai gratuit ; 3 voitures gratuites | E5 | 1 j |
+| P4 | Objectifs du jour + succès | E3 + E8 | 1 j |
+| P5 | Cadeau du jour (calendrier de 7, contenu visible) | E8 | ≤ 1 j |
+| P6 | Peintures : finitions métal / nacre / mat / caméléon + 12 couleurs vives + couleur secondaire | E10 | 1-2 j (agent `@dev3d`) |
+| P7 | Dessins (vinyles) : 10 dessins originaux, pose réaliste sur les 17 voitures | E10 | 2 j (agent `@dev3d`, à découper) |
+| P8 | Banc d'équilibrage des étoiles (temps de jeu pour chaque groupe de voitures) | E3 | ≤ 1 j |
+| M1 | Achats intégrés (Google Play Billing) : voitures + pack ; après avis d'avocat (v1.1) | E7 | 2 j |
+Ordre conseillé : P1 → (P2, P3, P6 en parallèle) → (P4, P5, P7, P8) → M1.
+
+**Hypothèse testable** : si le joueur gagne des étoiles à chaque course et voit la prochaine voiture à débloquer, il fera plusieurs courses par session
+et reviendra les jours suivants (cadeau), ce que nous vérifierons avec les utilisateurs actifs par jour de la Play Console pendant le test fermé.
