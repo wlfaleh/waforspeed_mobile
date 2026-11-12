@@ -120,7 +120,7 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         // WFS-338 (RG-05, ANO-195) : jamais dans la voiture du joueur : à hauteur de lui, elle garde sa largeur d'écart sur
         // son côté ; dans sa file, elle reste au contact du pare-chocs (0,2 m de recouvrement au plus, assez pour pousser)
         // WFS-461 (RG-01) : vraies dimensions des deux voitures et 2 cm de jour à côté : avant, 1,90 m forfaitaires, moins que la
-        // largeur réelle de certaines paires (Range Rover Sport + 208 : 1,91 m) : contact permanent, voiture du joueur poussée
+        // largeur réelle de certaines paires (Range Rover Sport + 208 : 1,90 m, contact à l'arrondi près) : contact permanent
         const double relN = (sJ - p.rd) * M, dxM = (p.x - xJ) * RW;
         if (std::abs(relN) < f.contactL) {
             if (std::abs(dxM) < f.contactW + 0.02 && std::abs(dxM) > 0.6) p.x = xJ + (dxM > 0 ? 1 : -1) * (f.contactW + 0.02) / RW;
