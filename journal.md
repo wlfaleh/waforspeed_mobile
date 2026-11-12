@@ -1929,3 +1929,15 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Anomalies créées dans `anno.md` : ANO-247 à ANO-259 (4 bloquantes : 247, 248, 254, 259 → tickets de correction prioritaires à créer par le PO ; 9 mineures). Vérifiées corrigées : ANO-134, 244, 245, 246.
 - Tickets 🟡 : captures conformes, le passage ✅ reste à l'utilisateur sur l'APK de `main`. Beaucoup de critères « non vérifiables » : bancs propres aux tickets absents du matin (`marina`, `neige`, `cockpit-voisine`, `nez-*`, `hud`…), voitures retirées (X5, A 45) encore demandées par le banc `vitrines` (ANO-257) ; à voir avec l'expert CI / CD.
 - Rapports : `qa/rapports/WFS-XX.md` (90 fichiers).
+
+### 2026-11-12 10:30:39 — Recette du matin du 2026-11-12 : tickets de correction créés (po-scrum-master)
+- **Entrée** : recette du QA (commits e556750, 3684bdb) : 92 lignes de `qa/Check.md`, 81 VALIDÉ, 8 PASSABLE (WFS-334, 338, 359, 362, 364, 323, 382, 404), 3 REFUSÉ (WFS-239, 351, 370) ; ANO-247 à 259.
+- **Bloquantes → tickets P1 prêts** (file B, en alternance avec l'ordre des 20, chacun à une **nouvelle session** du bon type, jamais à la session du ticket refusé) :
+  - **WFS-453** (E4, `@dev`, [TECHNIQUE]) ← ANO-247 : voiture du trafic à 107 m non dessinée en Basse (régression après WFS-239) ; bisection, contrôle du banc `qualite` non affaibli.
+  - **WFS-454** (E7, `@cicd`, [TECHNIQUE]) ← ANO-248 : `tools/qa/emulateur.sh` appuie sur « Duel en ligne » ; correction d'un rouge des bancs du matin, permise malgré le gel. WFS-287 (même fichier) après lui.
+  - **WFS-455** (E15, `@devartiste` + avis `@3d`) ← ANO-254 : immeubles du fond de la Ville en pavés gris nus vus de haut. Ticket séparé de WFS-385 (trop gros pour une bloquante) ; WFS-385 passe « après WFS-455 ».
+  - **WFS-456** (E10, `@devartiste`) ← ANO-259 (disque noir du hayon de la Golf, contrôle Corsa et toutes les voitures), avec ANO-258 (liseré rouge des phares de la Golf) et ANO-257 (banc `vitrines` qui demande encore A 45, Elantra, X5), mêmes captures et outils.
+- **Mineures → lots P3** : **WFS-457** (E10, après 456) ← ANO-251, 252, 253 (Brezza, Corvette, M4, S3) ; **WFS-458** (E2 + E10, prêt) ← ANO-249, 256 (gouttes sous le pare-brise, compte-tours de la Corsa) ; **WFS-459** (E3 + E13, après WFS-452, même `poursuite_system.cpp`) ← ANO-250, 255 (bandes POLICE, reflet des phares sur route mouillée).
+- `anno.md` : ANO-247 à 259 passées **📋 Planifiée** avec leur US. Règles : `regles-de-gestion/WFS-453.md` à `WFS-459.md`.
+- **Note du QA gardée** : les bancs du matin ne lancent pas plusieurs bancs propres aux tickets (marina, neige, cockpit-voisine, nez-*, hud, campagne-objets, brume, mer, halos…), d'où des critères « non vérifiables ». À proposer à l'agent expert ci cd **quand le gel de la CI le permet** (pas de ticket créé aujourd'hui : gel en cours). Les tickets 🟡 restent à valider par l'utilisateur sur l'APK de `main`.
+- `track-agent.md` remis à jour (session 01Us6uCbUS enlevée, WFS-383 : envoi à 08:26). Robot des archives : pas de commit cette nuit, ménage à surveiller au prochain passage.
