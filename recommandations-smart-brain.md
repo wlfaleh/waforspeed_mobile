@@ -583,3 +583,36 @@ Pendant le test fermé puis après la sortie : utilisateurs actifs par jour, dé
 
 ### Message à donner au PO
 > `@po` Lance la proposition finale R11 de `recommandations-smart-brain.md` avec le correctif R12 : étape 0 (0.1 à 0.8) tout de suite, puis V1 à V10 pour la v1.0 (pub volontaire et achats compris), et W1 à W4 en attente pour la v1.1.
+
+---
+
+## R13 — 2026-11-12 — Avis sur la monnaie « étoiles + médailles » proposée par l'utilisateur (mode Challenge)
+
+**Proposition de l'utilisateur** : les courses rapportent des **étoiles** (calcul selon les défis et les modes) ; **médaille de bronze = 100 ★** ;
+**argent = 300 ★ ou 3 bronze** ; **or = 600 ★ ou 2 argent** ; au market, le joueur **n'achète pas les objets directement** : il achète des **médailles ou des étoiles**, puis les objets avec.
+
+### Ce qui est bon
+- Monnaie du jeu achetée avec de l'argent réel : modèle classique des jeux mobiles ; **peu de produits à déclarer** dans Google Play (3-5 packs au lieu d'un produit par voiture).
+- Prix des objets **réglables sans toucher à Google Play** (données du jeu).
+- Les taux sont cohérents : 3 bronze = 300 ★ = 1 argent ; 2 argent = 600 ★ = 1 or.
+
+### Critiques
+1. **Les médailles ne servent à rien de plus que les étoiles** : si 1 or = 600 ★ dans les deux sens, ce sont juste des « billets » de 100, 300, 600 ★. Deux noms pour une seule valeur = confusion.
+2. **Conflit avec la médaille de fin de course** (R09-R12 : bronze / argent / or = résultat de la course). « Médaille d'or » ne peut pas vouloir dire à la fois « 1ʳᵉ place » et « 600 ★ ».
+3. **Règles européennes sur les monnaies virtuelles** (*à faire vérifier par l'avocat*) : les autorités de protection des consommateurs de l'UE (réseau CPC, principes publiés en 2025) demandent notamment d'**afficher aussi le prix en euros** des objets payés en monnaie du jeu et de **ne pas forcer le joueur à acheter plus que nécessaire** (reliquats). Il faut des packs qui tombent juste par rapport aux prix des objets.
+4. **Équilibrage** : si une course rapporte 10 à 40 ★, une médaille de bronze (100 ★) = 3 à 10 courses. Les prix des voitures de R11 (30-500 ★) sont à **multiplier** dans cette nouvelle échelle.
+
+### Proposition (garde l'idée de l'utilisateur, enlève la confusion)
+- **Une seule monnaie : les étoiles.** Les médailles deviennent des **packs d'étoiles** au market :
+  | Pack | Étoiles | Prix proposé |
+  |---|---|---|
+  | Médaille de bronze | 100 ★ | 0,99 € |
+  | Médaille d'argent | 300 ★ (+ 10 % offerts : 330 ★) | 2,49 € |
+  | Médaille d'or | 600 ★ (+ 20 % offerts : 720 ★) | 4,49 € |
+  | Coffre de champion | 5 médailles d'or (3 600 ★ + 25 %) | 19,99 € |
+  Le bonus sur les gros packs fait acheter plus.
+- **Fin de course** : le résultat devient un **rang** (« Rang C, B, A, S » ou une coupe), pour ne pas mélanger avec les médailles du market.
+- **Gains en jouant** (exemples à régler par le banc d'équilibrage) : course finie 10 ★ ; + rang B 10 ★, A 20 ★, S 30 ★ ; + objectifs selon le mode (frôlements, checkpoints, place, poursuite) ; pub volontaire ×2.
+- **Nouveaux prix des voitures** (même échelle) : citadines 300 ★ (1 argent), sportives 1 200 ★ (2 or), 911 / Gallardo 3 000 ★, SF90 6 000 ★ ; peintures 50-150 ★. Chaque prix affiché aussi en équivalent euros (point 3).
+
+**Choix à faire par l'utilisateur** : (a) une seule monnaie, médailles = packs (recommandé) ; (b) deux monnaies séparées (étoiles gagnées, médailles seulement achetées, objets premium en médailles) : plus de revenus possibles, mais plus complexe et plus exposé aux règles européennes.

@@ -1262,3 +1262,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:44:37 — Proposition v1.0 : ordre de développement de l'utilisateur (smart-brainstorming)
 - Ordre choisi par l'utilisateur : identité et historique du joueur → score → voitures et couleurs gratuites → cadeau du jour → market. Cadeau du jour passé en v1.0. `proposition-v1-argent.md` mis à jour.
+
+### 2026-11-12 21:50:26 — R13 : avis sur la monnaie étoiles + médailles (smart-brainstorming)
+- R13 : proposition de l'utilisateur (bronze 100 ★, argent 300 ★, or 600 ★, market qui vend des médailles / étoiles) analysée ; recommandation : une seule monnaie, médailles = packs d'étoiles, rang en fin de course, nouvelle échelle de prix, prix aussi en euros (règles UE à vérifier par l'avocat). Rien envoyé au PO.
