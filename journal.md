@@ -1362,3 +1362,7 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 ### 2026-11-12 23:18:06 — Début : WFS-487 attribué à Claude, agent dev3d (01Us6uCwB3) (po-scrum-master)
 - Nouvelle session `@dev` (session_01Us6uCwB3PrvQFZ2ZBBwHSv), aucun ticket avant. WFS-517, 480 et 504 (1re à 3e du bandeau 🏁) déjà pris par d'autres sessions : 4e de la liste, **WFS-487**, épic E18 (aucun autre ticket E18 actif). WFS-485 (5e) sauté : épic E17 déjà occupée par WFS-480.
 - Zone : E3 (`src/game/**` hors `game.*`, `tests/**`), `garage.cpp` (`PAINTS` lit `PEINTURES`, seul ticket actif sur ce fichier), section `boutique` de `configgame.json`. Ne dépend plus de WFS-498 (ordre de l'utilisateur 23:20 UTC) : prix en ★ et cadenas, achat branché par WFS-498. Règles : `regles-de-gestion/WFS-487.md`, `E18-personnalisation.md`. Branche `feature/waforspeed-487`.
+
+### 2026-11-12 23:18:30 — WFS-485 attribué à Claude, agent dev3d (01UY1Vv46n) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv46nSguBwb43XUHfZN), 1re attribution. WFS-517, 480, 504 et 487 pris juste avant par d'autres sessions : ticket suivant du bandeau 🏁, **WFS-485** (P1, épic E17 en zone E7, en parallèle de WFS-480 en zone E3, comme prévu par l'épic ; aucune dépendance).
+- Zone E7 : `android/**` (manifeste, règles de sauvegarde `res/xml/**`) ; pas de `src/game/sauvegarde.*` sauf accroche ≤ 10 lignes annoncée au journal. Règles : `regles-de-gestion/WFS-485.md` et `regles-de-gestion/E17-identite-joueur.md`. Après la fusion : 🟡 À valider (utilisateur), essai de réinstallation sur le téléphone.
