@@ -1064,3 +1064,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - PR #365, 2e relecture sur f016dc8d : les 2 points du refus sont corrigés (tests CPU, roue avant du trafic visible avant / après). Captures ouvertes, diff lu, 114 tests CPU et banc `roues-suivies` (trafic, 0 écart) refaits. « ✅ Approuvé » écrit en commentaire (GitHub refuse l'approbation : même compte), revue 5876526550.
 - Fusion en squash : 1164d243. Statut 🟡 À valider (utilisateur). Ligne de `suivi-pr.md` supprimée.
 - Pour le PO et le QA : halo orange du clignotant du trafic qui flotte à côté de la voiture (halo en disque, déjà sur `main`) ; remarque de code sur la régulation du trafic (`traffic.cpp:366`, sans effet visible).
+
+### 2026-11-12 14:53:54 — WFS-452 : fin, session terminée (Claude, agent dev3d (01Us6uCwQm))
+- PR #365 fusionnée par le lead dev (squash 1164d243) à la 2e revue ; statut 🟡 À valider (utilisateur), ligne dans `qa/Check.md` (lead dev).
+- À valider par l'utilisateur sur l'APK de `main` : roues des adversaires (Course à 5, duel), de la police (glisse comprise, aussi en Basse) et du fantôme qui tournent et braquent ; roues avant du trafic droites en ligne droite (ANO-265).
+- **Pour le PO** (remarques du lead dev, hors ticket) : (1) `traffic_system.cpp:377-378` : une voiture recyclée par la régulation du peloton (`traffic.cpp:366`, `c.z = c.zPrec = z`) ne saute pas de > 20 m pour `SuiviRoues` : elle garde un instant le braquage de son ancienne place (invisible : replacée à plus de 800 m, revient à 0 en moins d'1 s) ; à corriger en remettant les roues à zéro au recyclage (petit ticket E3) ; (2) halo orange du clignotant du trafic en disque flou (code existant WFS-67 / ANO-48) : forme nue à créer en anomalie. Option B de la police en lots : WFS-478 (déjà créé).
+- Session terminée : un seul sujet, aucun autre ticket demandé.
