@@ -501,3 +501,66 @@ Remarque de l'utilisateur : « on a oublié d'authentifier un joueur, son nom, p
 
 **Recommandation** : v1.0 = A01 + A04 (presque gratuit) ; v1.1 = A02 avec les achats (A03). Pas de compte maison.
 **Validation** : sur le téléphone de l'utilisateur, gagner un record, faire une sauvegarde forcée (`adb shell bmgr backupnow <paquet>`), désinstaller, réinstaller : le record revient.
+
+---
+
+## R11 — 2026-11-12 — PROPOSITION FINALE pour le PO (synthèse de R04, R06, R09, R10, avec les ajustements discutés)
+
+Synthèse demandée par l'utilisateur avant de la présenter au PO. **Remplace** les parties correspondantes de R04, R05, R06, R09 et R10 ; R07 et R08 (nouveaux modes, défi aléatoire) sont **mis de côté** par l'utilisateur.
+Objectif : **sortir un jeu fluide, léger, avec une raison de revenir, puis gagner un peu d'argent** sans gêner le joueur.
+
+### Étape 0 — Tout de suite (avant tout nouveau code)
+| # | Action | Qui |
+|---|---|---|
+| 0.1 | Vérifier le type de compte Play Console ; si compte personnel récent : **ouvrir le test fermé aujourd'hui** (≥ 12 testeurs, 14 jours) avec l'AAB de WFS-319 | Utilisateur + `@cicd` |
+| 0.2 | **Gel des fonctionnalités** hors liste ci-dessous jusqu'à la sortie | PO |
+| 0.3 | **Recette par lots** des 81 tickets 🟡 : 30 min sur l'APK de `main` (Corniche, jour / nuit, Basse) ; OK → ✅, KO → 1 ticket | Utilisateur + PO |
+| 0.4 | Lancer **maintenant** les tickets juridiques de la sortie (WFS-405, 407, 408, 409, 320) ; décider le **nom du jeu** (risque « …for Speed », J-09) | PO + `@juriste` |
+| 0.5 | Critère de sortie : **Corniche ≥ 30 img/s stables en Basse sur le S21 FE** | PO |
+
+### Étape 1 — v1.0 (sortie publique, gratuite, sans pub ni achat)
+| # | Ticket proposé | Épic | Taille |
+|---|---|---|---|
+| V1 | Retirer « Duel entre amis » de l'écran des modes de la Course solo (`src/game/modes_ecran.cpp:42`) ; **Duel en ligne caché** du menu en v1.0 | E3 + E8 | ≤ 0,5 j |
+| V2 | **Sauvegarde automatique Android** (`allowBackup` + règles : seulement le fichier de sauvegarde) ; **pseudo seul**, jamais nom / prénom / e-mail | E7 | ≤ 0,5 j |
+| V3 | Sauvegarde du système : étoiles (solde + total gagné), médailles par mode × voiture, voitures / peintures possédées ; migration des testeurs | E3 | ≤ 1 j |
+| V4 | **Médailles 🥉🥈🥇 et étoiles** en fin de course (bronze 1 ★, argent 2 ★, or 3 ★ ; seuils par mode et par classe dans `configgame.json`) + écran de fin avec la barre « prochaine voiture » | E3 + E8 | 1 j |
+| V5 | **Garage** : cadenas, prix en ★, achat avec confirmation, **essai gratuit une fois** de chaque voiture bloquée | E5 | 1 j |
+| V6 | **Peintures** : finitions métallisé, nacré, mat, caméléon + 12 couleurs vives + couleur secondaire (toit, rétros, jantes) | E10 (`@dev3d`) | 1-2 j |
+| V7 | **Banc d'équilibrage** : temps de jeu pour débloquer chaque groupe de voitures | E3 | ≤ 1 j |
+| V8 | Cartes : **Corniche seule dans l'APK** (WFS-405) ; Ville, Campagne, Grand Prix, Neige **à télécharger gratuitement**, taille affichée avant | E14 | déjà en cours |
+Ordre : V1, V2 (petits) → V3 → (V4, V5, V6 en parallèle) → V7.
+
+**Économie de départ (valeurs à régler pendant le test fermé)**
+| Groupe | Voitures | Prix |
+|---|---|---|
+| Gratuites | **208, 500 et GT86** (2 citadines + 1 sportive pour une 1ʳᵉ impression « street ») | 0 |
+| Citadines / SUV | Corsa, Golf, T-Cross, Compass, Model 3, V60, S3 | 30-50 ★ |
+| Sportives | Giulia, Mustang, Range Rover Sport, M4 | 100-150 ★ |
+| Haut de gamme | 911, Gallardo | 250-300 ★ |
+| Exception | SF90 | 500 ★ |
+- **1ʳᵉ course** : une supercar prêtée (911) pour donner envie.
+- Médaille améliorée = seulement les étoiles en plus (pas de « farm »).
+- Peintures 5-15 ★.
+
+### Étape 2 — v1.1 (≈ 2 semaines après la sortie, selon les retours)
+| # | Ticket proposé | Épic | Taille |
+|---|---|---|---|
+| W1 | **Objectifs** : 3 du jour (+2 ★ chacun) + succès permanents (+5 à +20 ★) | E3 + E8 | 1 j |
+| W2 | **Cadeau du jour** : calendrier de 7 **jours joués** (rien ne se perd) ; contenu **affiché à l'avance** ; jours 1-6 étoiles / peinture / dessin ; **7ᵉ = une voiture du groupe Citadines au choix parmi 3, ou un gros paquet d'étoiles** | E8 | ≤ 1 j |
+| W3 | **Dessins (vinyles)** originaux : bandes, numéro, flammes, damier, camouflage, dégradés ; aucun logo ni sponsor ; pose réaliste | E10 (`@dev3d`) | 2 j |
+| W4 | **Google Play Jeux** : connexion automatique, sauvegarde cloud, succès, classements par mode | E7 | 2 j |
+| W5 | **Pub volontaire** « ×2 étoiles » en fin de course, 5 par jour au plus, jamais imposée, jamais en course ; consentement RGPD | E7 | 1-2 j |
+| W6 | **Achats** (Google Play Billing) : voitures 0,99 à 3,99 € **ou** pack « toutes les voitures » ≈ 9,99 € ; « sans pub » ; achats restaurés automatiquement | E7 | 2 j |
+**Conditions de W5 et W6** : avis d'avocat (J-17), CGU, confidentialité et « Sécurité des données » refaites, prix TTC, fiche « contient des pubs / achats ».
+**Tout reste gagnable sans payer** ; aucune caisse au hasard, aucune « énergie », aucun minuteur.
+
+### Mis de côté (décision de l'utilisateur)
+Nouveaux modes (Heure de pointe, Élimination, Rival, Radars, Interception, Défi fantôme), défi aléatoire du jour (R07, R08), compte maison avec nom / prénom.
+
+### Comment on saura que ça marche
+Pendant le test fermé puis après la sortie : utilisateurs actifs par jour, désinstallations, plantages et ANR, notes (Play Console) ; question aux testeurs :
+« Quelle voiture voulez-vous débloquer ensuite ? ».
+
+### Message à donner au PO
+> `@po` Lance la proposition finale R11 de `recommandations-smart-brain.md` : étape 0 tout de suite, puis les tickets V1 à V7 pour la v1.0 dans l'ordre indiqué, et W1 à W6 en attente pour la v1.1.

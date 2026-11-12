@@ -1250,3 +1250,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:23:16 — R10 : garder l'historique du joueur sans nom ni prénom (smart-brainstorming)
 - R10 dans `recommandations-smart-brain.md` : constat `allowBackup="false"` (tout est perdu à la désinstallation) ; v1.0 sauvegarde automatique Android + pseudo seul ; v1.1 Google Play Jeux (connexion automatique, sauvegarde cloud, succès, classements) ; pas de compte maison. Rien envoyé au PO.
+
+### 2026-11-12 21:24:53 — R11 : proposition finale pour le PO (smart-brainstorming)
+- R11 dans `recommandations-smart-brain.md` : étape 0 (test fermé, gel, recette par lots, juridique, 30 img/s), v1.0 V1 à V8 (duel retiré du solo, sauvegarde Android + pseudo, étoiles et médailles, garage, peintures, équilibrage, cartes à télécharger), v1.1 W1 à W6 (objectifs, cadeau du jour, vinyles, Play Jeux, pub volontaire, achats). L'utilisateur la présente au PO.
