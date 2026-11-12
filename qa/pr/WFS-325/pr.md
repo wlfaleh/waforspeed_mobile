@@ -17,6 +17,17 @@ Agent : Claude, agent dev3d (01Us6uCbUS)
   - Nouveau banc `cockpit-vitrine` (`src/render/vehicule_cockpit_vitrine.{h,cpp}`, accroche de 5 lignes dans `desktop_main.cpp`) : l'intérieur seul, à l'éclairage d'atelier, vu de 5 places (centre, console, portière, gauche de la planche, bas de la portière) ; c'est une aide à la revue (la vue du conducteur ne montre ni la console ni le bas des portières), pas l'image du jeu ; rien n'est construit hors de ce banc.
   - `tests/test_cockpit.cpp` : visière mesurée sur la M4, la 911 et la SF90 (fonction `mesureVisiere`, sortie du test des volants de série sans changement) ; pièces propres seulement pour les 4 voitures, rien pour les 16 autres ; géométrie (indices, normales, dans l'habitacle, rien dans la bande de la rue) ; rugosités du lot 1 dans la charte. `CMakeLists.txt` : une ligne (source ajoutée à `test_cockpit`).
 - **Comment c'est vérifié** : construction complète ; **111 tests CPU réussis** (`qa/pr/WFS-325/tests-cpu.log`) ; bancs `cockpit` (4 voitures du lot et 3 témoins hors lot), `cockpit-volant`, `cockpit-reference`, `cockpit-vitrine` en 2340 × 1080, avant (`main`) / après (branche), regardés image par image.
+- **Tests CPU** (commit testé : `821b79e`, branche synchronisée avec `main` ; ensuite : `qa/pr/WFS-325/` et un nettoyage sans effet dans `vehicule_cockpit.cpp` (un seul nom pour « voiture du lot 1 », `static_assert` sur la table des matières), recompilé sans avertissement, `test_cockpit` et `test_cockpit_ferme` refaits : OK) : `bash tools/qa/tests_cpu.sh build`, code de sortie 0, journal complet dans `qa/pr/WFS-325/tests-cpu.log` :
+
+  ```
+  [OK] test_version_chargement (0 s)
+  [OK] test_ville_lieux (0 s)
+  [OK] test_ville_sol (3 s)
+  [OK] test_virages_fleches (0 s)
+  [OK] test_voitures_retirees (0 s)
+  tests CPU : 111 test(s) réussi(s) en 386 s
+  ```
+- **Parcours** (`bash tools/qa/banc_groupe.sh menu1-2400`, groupe de la CI de chaque fusion, sur la branche) : code 0, « parcours complet : 0 écart(s) OK » et « parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK » (accueil → garage → course → fin → retour à l'accueil), 19 captures du groupe produites (44 min).
 - **Mesures (RG-09)** :
 
   | Voiture | Appels de dessin de l'intérieur (banc `cockpit`, jour) | Mémoire de l'intérieur | Triangles ajoutés (pièces propres) |

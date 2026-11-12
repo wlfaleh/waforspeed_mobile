@@ -372,9 +372,9 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         mats_[M_PORTE] = r.makeMaterial(habitacle(m), nullptr, grain_.view ? &grain_ : nullptr, nullptr);
     }
     // WFS-325 (RG-07) : lot 1 : carbone vernis et noir laqué dans la plage du vernis (0,02-0,08) ; les autres voitures : valeurs de main
-    const bool lot1 = detailsPropres(d);
-    mat(M_ACCENT, d.accent, lot1 && d.carbone ? RUGO_CARBONE_LOT1 : d.accentRugo, d.accentMetal);   // alu brossé (métal 1), carbone verni (0,3), noir laqué
-    mat(M_LAQUE, 0x0a0a0b, lot1 ? RUGO_LAQUE_LOT1 : 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
+    const bool propres = detailsPropres(d);   // WFS-325 : voiture du lot 1 (pièces propres, matières ci-dessous)
+    mat(M_ACCENT, d.accent, propres && d.carbone ? RUGO_CARBONE_LOT1 : d.accentRugo, d.accentMetal);   // alu brossé (métal 1), carbone verni (0,3), noir laqué
+    mat(M_LAQUE, 0x0a0a0b, propres ? RUGO_LAQUE_LOT1 : 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
     mat(M_BRANCHES, d.branchesCol, d.branchesCol > 0x505050 ? 0.35f : 0.3f, d.branchesCol > 0x505050 ? 1.f : 0.f);
     for (int k = 0; k < 3; k++) mat(M_COUTURE0 + k, d.couture[k] ? d.couture[k] : 0x202020, 0.7f, 0);
     // repères et commandes rouges (manettino, démarreur, boutons M, agrafe GTI) : plastique rouge satiné, teinte assombrie de
@@ -386,7 +386,6 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
     mat(M_MOYEU, 0x1c1c1e, 0.85f, 0);                       // coussin du sac gonflable : plastique moussé (pièce sans uv : pas de grain)
     // enjoliveurs des aérateurs : chrome satiné (mat.chrome, albédo 0,65-0,70) ; alu brossé sur la 911
     // WFS-325 (RG-07) : lot 1 : chrome dans la plage de la charte (rugosité 0,05-0,15 : 0,12) ; les autres voitures gardent 0,18
-    const bool propres = lot1;
     if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, propres ? RUGO_CHROME_LOT1 : 0.18f, 1.f);
     // WFS-325 (RG-07) : aluminium brossé (grilles de haut-parleur, grille de la SF90) : métal, F0 linéaire ≈ 0,91 (aluminium pur,
     // base « Physically Based » de Doug Wright, de mémoire : page non ouverte), rugosité 0,3-0,5 pour un brossé (guide PBR de
@@ -625,6 +624,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
     if (propres) {
         PiecesDetails pd;
         construireDetails(d, pd);
+        static_assert((int)MatDetail::N == 12, "WFS-325 : une matière du lot 1 ajoutée sans sa correspondance ci-dessous");
         constexpr int VERS[(int)MatDetail::N] = {M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_CHROME, M_LAMES, M_CUIR, M_PAVILLON,
                                                  M_REPERE, M_ALU, M_GLACE, M_AMBIANCE};
         for (int k = 0; k < (int)MatDetail::N; k++) prend(pd.g[(size_t)k], VERS[k]);
