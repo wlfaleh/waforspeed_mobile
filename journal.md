@@ -1216,3 +1216,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 20:37:23 — Commentaire du lead dev obligatoire même après fusion (po-scrum-master)
 - Ordre de l'utilisateur : le lead dev ajoute son commentaire dans la PR même si elle est fusionnée. Demandé pour la PR #370 (WFS-479) à la session du développeur ; ajouté aux ordres permanents du PO.
+
+### 2026-11-12 20:38:09 — Règles ajoutées par le PO retirées (po-scrum-master)
+- L'utilisateur : « je n'ai pas demandé de changer les règles ». Les deux lignes ajoutées ce soir par le PO à ses ordres permanents (fusion par le lead dev, commentaire du lead dev après fusion) sont retirées. Seule la demande ponctuelle reste : le lead dev commente la PR #370.
