@@ -3,7 +3,8 @@
 // chaque roue autour d'un axe parallèle à l'axe X de la voiture, passant par le centre de la boîte de ses pièces
 // (roues::decouper et roues::matrice, WFS-60). Défauts du modèle M4 et corrections :
 //   1. roues braquées dans le modèle source (les deux roues avant modélisées braquées de 20°) : une roue dont l'axe est tourné
-//      « bat » à chaque tour. Chaque roue est tournée autour de la verticale de son moyeu jusqu'à ce que son axe soit l'axe X :
+//      « bat » à chaque tour. Chaque roue est tournée autour d'une verticale (pivot de fusée commun aux deux roues braquées
+//      d'un essieu, qui remet les deux moyeux au même niveau ; sinon son moyeu) jusqu'à ce que son axe soit l'axe X :
 //      positions, normales et tangentes (section TAN1 des .wfm version 2), avec les morceaux de pneu que le moteur laisse
 //      fixes dans le cylindre de la roue (sinon ils resteraient braqués à côté de la roue droite) ;
 // Contrôle RG-05 (tests/test_roues.cpp) : écart entre ce centre de rotation et le moyeu (cercle ajusté sur la bande de
@@ -13,7 +14,9 @@
 // Rejouable : une roue déjà droite (lacet < 0,2°) ne bouge plus.
 // Garde-fous : rien n'est écrit si un sommet tourné sert aussi à un triangle fixe hors de la roue (la caisse serait déformée)
 // ou si le moteur ne retrouve pas ses 4 roues après la retouche.
-// usage : redresser_roues [dossier du dépôt] id … ; --essai : mesure seulement (WFS-479 : la M4 seulement, RG-04)
+// Une pièce déjà droite dans une roue braquée (flasque, pièce de la caisse prise dans le cylindre de la roue) reste en place.
+// usage : redresser_roues [dossier du dépôt] id … ; --essai : mesure seulement (WFS-479 : la M4, puis la 911 sur ordre de
+// l'utilisateur du 2026-11-12)
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -154,31 +157,67 @@ int main(int argc, char** argv) {
         };
         const roues::Decoupe& d1 = d0;
 
-        // 1. roues braquées dans le modèle : tournées autour de la verticale de leur moyeu
+        // 1. roues braquées dans le modèle : axe (lacet) et moyeu de chaque roue
         bool refus = false;
+        auto points = [&](size_t mi, int k) {   // sommets distincts des triangles de la roue k dans le maillage mi
+            const Maillage& x = m.ms[mi];
+            std::vector<char> pris(x.v.size() / 8, 0);
+            std::vector<std::array<double, 3>> pts;
+            for (size_t t = 0; t < x.idx.size() / 3; t++) if (d1.roueDuTriangle[mi][t] == k)
+                for (int j = 0; j < 3; j++) if (const uint32_t v = x.idx[t * 3 + j]; !pris[v]) { pris[v] = 1; pts.push_back({x.v[8 * v], x.v[8 * v + 1], x.v[8 * v + 2]}); }
+            return pts;
+        };
+        double lacets[4] = {0, 0, 0, 0}; std::array<double, 3> moyeux[4];
         for (int k = 0; k < 4 && !refus; k++) {
             Plan best;
             for (size_t mi = 0; mi < m.ms.size(); mi++) {
-                const Maillage& x = m.ms[mi];
-                std::vector<char> pris(x.v.size() / 8, 0);
-                std::vector<std::array<double, 3>> pts;
-                for (size_t t = 0; t < x.idx.size() / 3; t++) if (d1.roueDuTriangle[mi][t] == k)
-                    for (int j = 0; j < 3; j++) if (const uint32_t v = x.idx[t * 3 + j]; !pris[v]) { pris[v] = 1; pts.push_back({x.v[8 * v], x.v[8 * v + 1], x.v[8 * v + 2]}); }
+                const auto pts = points(mi, k);
                 if (pts.size() < 100) continue;
                 const Plan p = plan(pts);
                 if (p.plat < best.plat) best = p;
             }
             if (best.nb == 0) { std::fprintf(stderr, "%s : roue %d sans pièce plate (axe inconnu)\n", id.c_str(), k); refus = true; break; }
-            const double lacet = std::atan2(best.n[2], best.n[0]), carrossage = std::asin(std::clamp(best.n[1], -1.0, 1.0));
+            lacets[k] = std::atan2(best.n[2], best.n[0]); moyeux[k] = best.c;
+            const double carrossage = std::asin(std::clamp(best.n[1], -1.0, 1.0));
             std::printf("%s : roue %s : axe lacet %+.2f°, carrossage %+.2f° (pièce plate : %zu sommets, aplatissement %.4f), moyeu x %.4f z %.4f — %s\n",
-                        id.c_str(), NOM[k], lacet * 180 / PI_D, carrossage * 180 / PI_D, best.nb, best.plat, best.c[0], best.c[2],
-                        std::fabs(lacet) < LACET_MIN ? "droite" : "à redresser");
+                        id.c_str(), NOM[k], lacets[k] * 180 / PI_D, carrossage * 180 / PI_D, best.nb, best.plat, best.c[0], best.c[2],
+                        std::fabs(lacets[k]) < LACET_MIN ? "droite" : "à redresser");
+        }
+        // centre de chaque rotation : pivot de fusée quand les deux roues d'un essieu sont braquées (comme une vraie direction :
+        // le pivot est sur l'axe de la roue, à la même place à gauche et à droite) ; les deux moyeux finissent au même niveau.
+        // Pivot K = H − t·a (H moyeu, a axe braqué) avec K gauche et droit symétriques : t_g − t_d = (Hg.z − Hd.z) / a.z,
+        // t_g + t_d = (Hg.x + Hd.x) / a.x. Sinon : le moyeu de la roue
+        double pivots[4][2];
+        for (int k = 0; k < 4; k++) { pivots[k][0] = moyeux[k][0]; pivots[k][1] = moyeux[k][2]; }
+        for (int e = 0; e < 4 && !refus; e += 2) {
+            if (std::fabs(lacets[e]) < LACET_MIN || std::fabs(lacets[e + 1]) < LACET_MIN) continue;
+            const double am = (lacets[e] + lacets[e + 1]) / 2, ax = std::cos(am), az = std::sin(am);
+            const auto &hg = moyeux[e], &hd = moyeux[e + 1];
+            const double dif = (hg[2] - hd[2]) / az, som = (hg[0] + hd[0]) / ax, tg = (som + dif) / 2, td = (som - dif) / 2;
+            if (std::fabs(tg) > 0.25 || std::fabs(td) > 0.25) continue;   // pivot invraisemblable (> 25 cm du moyeu) : moyeu
+            pivots[e][0] = hg[0] - tg * ax; pivots[e][1] = hg[2] - tg * az;
+            pivots[e + 1][0] = hd[0] - td * ax; pivots[e + 1][1] = hd[2] - td * az;
+            std::printf("%s : essieu %s : pivots de fusée x ±%.4f z %.4f (à %.0f et %.0f mm des moyeux)\n", id.c_str(), e ? "arrière" : "avant",
+                        pivots[e + 1][0], pivots[e][1], std::fabs(tg) * 1000, std::fabs(td) * 1000);
+        }
+        for (int k = 0; k < 4 && !refus; k++) {
+            const double lacet = lacets[k];
             if (std::fabs(lacet) < LACET_MIN) continue;
             // l'axe (cos a, ·, sin a) devient l'axe X : X = x cos a + z sin a, Z = −x sin a + z cos a
-            const double c = std::cos(lacet), s = std::sin(lacet), cx = best.c[0], cz = best.c[2];
+            const double c = std::cos(lacet), s = std::sin(lacet), cx = pivots[k][0], cz = pivots[k][1];
             auto tourner = [&](double x, double z, double& X, double& Z) { X = x * c + z * s; Z = -x * s + z * c; };
             for (size_t mi = 0; mi < m.ms.size() && !refus; mi++) {
                 Maillage& x = m.ms[mi];
+                // pièce de ce maillage déjà droite alors que la roue est braquée (flasque, pièce de la caisse prise dans le
+                // cylindre de la roue) : elle reste où elle est
+                if (const auto pts = points(mi, k); pts.size() >= 12) {
+                    const Plan p = plan(pts);
+                    const double l = std::atan2(p.n[2], p.n[0]);
+                    if (p.plat < 0.35 && std::fabs(l) < 1 * PI_D / 180 && std::fabs(lacet) > 10 * PI_D / 180) {
+                        std::printf("%s : roue %s : maillage %zu : pièce déjà droite (lacet %+.2f°, %zu sommets), laissée en place\n", id.c_str(), NOM[k], mi, l * 180 / PI_D, pts.size());
+                        continue;
+                    }
+                }
                 std::vector<int8_t> etat(x.v.size() / 8, 0);   // 1 : sommet de cette roue, 2 : sommet d'un triangle fixe
                 for (size_t t = 0; t < x.idx.size() / 3; t++)
                     for (int j = 0; j < 3; j++) etat[x.idx[t * 3 + j]] |= d1.roueDuTriangle[mi][t] == k || dansZone(mi, t, k) ? 1 : d1.roueDuTriangle[mi][t] < 0 ? 2 : 0;

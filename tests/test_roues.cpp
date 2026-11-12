@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         // (normale de sa pièce la plus plate : voile de jante, disque) parallèle à l'axe X, lacet < 0,5° (les roues avant étaient
         // modélisées braquées de 20°, d'où le battement) ; centre de rotation à moins de 2 mm du centre du cercle de la bande
         // de roulement (sommets à plus de 0,9 R)
-        if (std::strcmp(id, "m4") == 0) for (int k = 0; k < 4; k++) {
+        if (std::strcmp(id, "m4") == 0 || std::strcmp(id, "p911") == 0) for (int k = 0; k < 4; k++) {
             const RoueModele& r = d.roues[k];
             auto resoudre = [](double M[3][4]) {   // Gauss-Jordan 3 × 3
                 for (int i = 0; i < 3; i++) {
@@ -96,8 +96,8 @@ int main(int argc, char** argv) {
             }
             const auto h = resoudre(A);
             const double ecart = std::hypot(h[0] - r.centre.y, h[1] - r.centre.z) * 1000;
-            VERIFIE(nb >= 24 && ecart < 2.0 && lacet < 0.5, "m4 : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° (RG-05 : < 2 mm, < 0,5°)", k, ecart, lacet);
-            std::printf("m4 : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° de l'axe X (WFS-479)\n", k, ecart, lacet);
+            VERIFIE(nb >= 24 && ecart < 2.0 && lacet < 0.5, "%s : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° (RG-05 : < 2 mm, < 0,5°)", id, k, ecart, lacet);
+            std::printf("%s : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° de l'axe X (WFS-479)\n", id, k, ecart, lacet);
         }
         std::printf("%s : 4 roues, rayons %.3f %.3f %.3f %.3f m, centres avant z %.2f, arrière z %.2f, %zu triangles sur %zu tournent : OK\n",
                     id, d.roues[0].rayon, d.roues[1].rayon, d.roues[2].rayon, d.roues[3].rayon, d.roues[0].centre.z, d.roues[2].centre.z, tri, total);

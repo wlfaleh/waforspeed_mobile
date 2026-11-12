@@ -87,9 +87,10 @@ node effacer_logos.mjs "$@"
 # (rejouable ; arrêt sans rien écrire si un modèle a changé ; .lod refait ici aussi, puis par la boucle ci-dessous)
 node retoucher_formes.mjs "$@"
 # WFS-479 (RG-01, RG-04) : roues braquées dans le modèle source remises droites autour de leur moyeu (sinon elles battent en
-# tournant) : la M4 seulement (roues avant modélisées braquées de 20°) ; rejouable (une roue droite ne bouge plus)
+# tournant) : la M4 et la 911 (roues avant modélisées braquées de 20° ; 911 sur ordre de l'utilisateur du 2026-11-12) ;
+# rejouable (une roue droite ne bouge plus)
 RED="$RACINE/build/redresser_roues"
-for id in m4; do
+for id in m4 p911; do
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   if [ -x "$RED" ]; then "$RED" "$RACINE" "$id"
   else echo "⚠️  $RED absent : construire la cible redresser_roues (ninja -C build redresser_roues), puis la lancer" >&2; exit 1; fi

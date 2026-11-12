@@ -814,7 +814,7 @@
    }
   ],
   "empreinteApres": "7c66e923c1debae9",
-  "empreinteRedressee": "fc54d8b8149010d5"
+  "empreinteRedressee": "1de372a80521570c"
  },
  "s3": {
   "materiaux": 29,
@@ -4763,6 +4763,7 @@
   "materiaux": 13,
   "empreinteAvant": "f935519bc9ff4232",
   "empreinteApres": "9e04d0dc1bad7fe2",
+  "empreinteRedressee": "b157b5d0fedea61b",
   "retouches": [
    {
     "decouper": true,

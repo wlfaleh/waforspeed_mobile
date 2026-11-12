@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include <vector>
 #include "../core/log.h"
 #include "../render/model_loader.h"
@@ -21,8 +22,9 @@
 
 namespace wfs {
 
-void benchRoues(Renderer& r, const std::string& out) {
-    const CarDef& car = carById("golf");
+void benchRoues(Renderer& r, const std::string& out, const char* id) {
+    const CarDef& car = carById(id);
+    const std::string pre = std::string(id) == "golf" ? "roues" : "roues-" + std::string(id);   // golf : noms d'origine (WFS-60)
     Model m;
     if (!loadCarModel(r, car.file, m)) { WFS_ERR("roues : %s introuvable", car.file); return; }
     // sol gris uni de 40 m
@@ -33,7 +35,7 @@ void benchRoues(Renderer& r, const std::string& out) {
     auto lin = [](unsigned h) { auto c = [&](int s) { return std::pow(((h >> s) & 255) / 255.f, 2.2f); }; return vec3{c(16), c(8), c(0)}; };
     const vec3 peinture = lin(car.paint);
     const float rayon = m.nRoues ? m.roues[0].rayon : roues::RW_DEFAUT;
-    auto image = [&](const vec3& eye, const vec3& look, const RouesPose& p, const char* nom) {
+    auto image = [&](const vec3& eye, const vec3& look, const RouesPose& p, const std::string& nom) {
         FrameParams fp;
         fp.view = lookAt(eye, look, {0, 1, 0});
         fp.proj = perspectiveVk(40.f * PI / 180.f, (float)r.width() / (float)std::max(1u, r.height()), 0.1f);
@@ -44,7 +46,7 @@ void benchRoues(Renderer& r, const std::string& out) {
             r.draw(m, mat4::identity(), &peinture, &p);
             r.endFrame();
         }
-        r.capturePng(out + "/" + nom + ".png");
+        r.capturePng(out + "/" + pre + nom.substr(5) + ".png");
     };
     // de côté, à hauteur de roue, vers l'avant gauche (jantes bien visibles)
     const vec3 cote{-4.2f, 0.75f, -0.9f}, cible{0, 0.35f, -0.4f};
@@ -56,6 +58,13 @@ void benchRoues(Renderer& r, const std::string& out) {
     // virage à droite à l'arrêt (steer = 1) : braquage 0,6 rad, roue intérieure (droite) × 1,12 ; vue de dessus, de l'avant
     const RouesPose virage = roues::poseJoueur(1, 0, 0, rayon);
     image({0.6f, 4.2f, -5.2f}, {0, 0.2f, -0.6f}, virage, "roues-virage");
+    // WFS-479 (RG-02) : voiture autre que la Golf : roue avant gauche en gros plan, de 3/4 avant, bas, pendant un tour de
+    // roue (8 images, 45° chacune) : une roue qui bat (axe tourné, pivot hors du moyeu) bouge d'une image à l'autre
+    if (pre != "roues") for (int k = 0; k < 8; k++) {
+        char nom[32]; std::snprintf(nom, sizeof nom, "roues-tour-%02d", k);
+        const float cz = m.nRoues ? m.roues[0].centre.z : -1.3f, cx = m.nRoues ? m.roues[0].centre.x : -0.8f;
+        image({cx - 2.6f, 0.55f, cz - 1.9f}, {cx, rayon, cz}, roues::poseJoueur(0, 0, k * (PI / 4) * rayon / M, rayon), nom);
+    }
     WFS_LOG("captures roues-* : %d roues, rayon %.3f m, roulage %.3f rad (%.0f°), braquage %.2f rad (int. %.3f, ext. %.3f)",
             m.nRoues, rayon, roule.roulage, roule.roulage * 180 / PI, virage.braquage, virage.braquage * 1.12f, virage.braquage * 0.9f);
     r.vk().waitIdle();
@@ -67,22 +76,28 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
     const ModeCourse mode0 = modeCourse();
     int ecarts = 0;
     constexpr double PAS = 1.0 / 60;   // une mise à jour = 2 pas de 1/120 s ; une image dessinée sur deux : 30 img/s
-    struct Scene { const char* nom; ModeCourse mode; bool nuit; int images; bool basse = false; };
+    // WFS-479 : m4 = voiture du trafic changée en ce modèle (M4, 911), tenue dans sa file, tout droit, vue de 3/4 arrière, basse (une seule passe :
+    // l'« avant » est le même banc avec le modèle de main) ; terrain : Ville, ou Corniche de nuit (vidéo de l'utilisateur)
+    struct Scene { const char* nom; ModeCourse mode; bool nuit; int images; bool basse = false; const char* terrain = "ville"; const char* m4 = nullptr; };
     const Scene scenes[] = {{"c5", ModeCourse::Course5, false, 12}, {"c5-nuit", ModeCourse::Course5, true, 12},
                             {"police", ModeCourse::Poursuite, false, 14}, {"police-basse", ModeCourse::Poursuite, false, 14, true},
-                            {"fantome", ModeCourse::Checkpoint, false, 12}, {"trafic", ModeCourse::Checkpoint, false, 24}};
+                            {"fantome", ModeCourse::Checkpoint, false, 12}, {"trafic", ModeCourse::Checkpoint, false, 24},
+                            {"m4", ModeCourse::Checkpoint, false, 12, false, "ville", "m4"}, {"m4-nuit", ModeCourse::Checkpoint, true, 12, false, "corniche", "m4"},
+                            {"p911", ModeCourse::Checkpoint, false, 12, false, "ville", "p911"}};   // WFS-479 : 911 sur ordre de l'utilisateur
     const int qualite0 = ecrans::reglages().qualite;
     const char* seule = std::getenv("WFS_ROUES_SCENE");   // banc : une seule scène (mise au point)
+    if (!seule || std::string(seule) == "m4-vitrine") benchRoues(r, out, "m4");   // WFS-479 : roues de la M4 en gros plan
+    if (!seule || std::string(seule) == "p911-vitrine") benchRoues(r, out, "p911");   // WFS-479 : et de la 911
     for (const Scene& sc : scenes) {
         if (seule && std::string(seule) != sc.nom) continue;
         double msRendu[2] = {0, 0}; int nRendu[2] = {0, 0}; double appels[2] = {0, 0}, triangles[2] = {0, 0};
-        for (int passe = 0; passe < 2; passe++) {
+        for (int passe = sc.m4 ? 1 : 0; passe < 2; passe++) {
             roues::g_avant452 = passe == 0;
             setenv("WFS_DEPART", "0", 1); setenv("WFS_MOMENT", sc.nuit ? "nuit" : "jour", 1);
             modeCourse() = sc.mode;
             ecrans::reglages().qualite = sc.basse ? ecrans::QUALITE_BASSE : qualite0; ecrans::appliquerQualiteNiveau(r);
             if (sc.mode == ModeCourse::Course5) kmCourse5() = 10;
-            if (!g.init(r, "golf", "ville")) { WFS_ERR("roues-suivies : chargement de la Ville impossible"); ecarts++; continue; }
+            if (!g.init(r, "golf", sc.terrain)) { WFS_ERR("roues-suivies : chargement de %s impossible", sc.terrain); ecarts++; continue; }
             g.allerA(Ecran::Course); g.camMode = 2;
             double t = 1500;
             // caméra « vitrine » autour du joueur : point de vue à avantM devant et droiteM à droite de sa voiture, à hauteur m
@@ -117,10 +132,12 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
                 for (int k = 0; k < 200; k++) tr.e.push_back({g.player().dist + 1.3 / M + v * k * fantome::PAS_S, px + cote * 0.62, 0, v});
                 courseBancFantome(tr);
             }
-            if (sc.nom[0] == 't') {   // trafic : le joueur 14 m derrière une voiture, dans sa file, à sa vitesse
-                trafficBenchPlace(14, 0, 0, true);
+            if (sc.nom[0] == 't' || sc.m4) {   // trafic : le joueur 14 m derrière une voiture, dans sa file, à sa vitesse
+                trafficBenchPlace(sc.m4 ? 10 : 14, 0, 0, true);
                 for (int i = 0; i < 4; i++) pas(false);
                 voiture = trafficBenchCar();
+                if (Traffic* tf = activeTrafficMut(); sc.m4 && tf && voiture >= 0 && voiture < (int)tf->cars.size())
+                    for (int w = 0; w < WEB_CAR_COUNT; w++) if (std::string(WEB_CARS[w].id) == sc.m4) tf->cars[(size_t)voiture].type = w;   // WFS-479
                 if (const Traffic* tf = activeTraffic(); tf && voiture >= 0 && voiture < (int)tf->cars.size()) sens = tf->cars[(size_t)voiture].lane > 0 ? -1 : 1;
             }
             for (int i = 0; i < 40; i++) pas(i % 2 == 1);   // mise en place (voitures tenues, filtres du braquage établis)
@@ -137,7 +154,14 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
                     } else { WFS_ERR("roues-suivies : trafic : aucune voiture placée"); ecarts++; }
                 }
                 // point de vue : roue arrière de côté (c5, fantôme) ; 3/4 avant (police) ; de face, au-dessus (trafic)
-                if (sc.nom[0] == 't') {   // trafic : 3/4 avant, bas, du côté opposé au changement de file : roue avant visible
+                if (sc.m4) {   // WFS-479 : 3/4 arrière, bas, côté droit : roues arrière et avant droites
+                    const Traffic* tf = activeTraffic();
+                    if (tf && voiture >= 0 && voiture < (int)tf->cars.size()) {
+                        const TrafficCar& c = tf->cars[(size_t)voiture];
+                        viser((c.z - g.player().position) * M - 4.2, (c.offset - g.player().playerX) * RW + 2.4, 0.7f);
+                    }
+                }
+                else if (sc.nom[0] == 't') {   // trafic : 3/4 avant, bas, du côté opposé au changement de file : roue avant visible
                     const Traffic* tf = activeTraffic();
                     if (tf && voiture >= 0 && voiture < (int)tf->cars.size()) {
                         const TrafficCar& c = tf->cars[(size_t)voiture];

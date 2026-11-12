@@ -6,7 +6,9 @@ namespace wfs {
 class Renderer;
 class Game;
 namespace fantome { struct Trace; }
-void benchRoues(Renderer& r, const std::string& out);
+// WFS-479 : id = voiture (golf par défaut, noms d'origine) ; autre voiture : captures roues-<id>-…, plus roues-<id>-tour-00 à 07
+// (roue avant gauche en gros plan pendant un tour de roue)
+void benchRoues(Renderer& r, const std::string& out, const char* id = "golf");
 // WFS-452 (RG-06, RG-08, RG-09) : banc « roues-suivies » (WFS_BANC=roues-suivies) : suites d'images à 30 img/s, rejouées
 // « avant » (roues::g_avant452 : roues figées, braquage du trafic d'avant) puis « après », même trajet, Ville de jour :
 //   - c5     : adversaire de la Course à 5 à côté du joueur, vers 30 km/h, roue arrière vue de côté (et c5-nuit, de nuit) ;
