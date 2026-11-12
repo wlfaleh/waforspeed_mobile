@@ -956,3 +956,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **ANO-263** (roues de la 208 de police : pneu et jante en une masse noire, plis de tôle, hauteur de caisse) → **WFS-452** (P1, même sujet : roues de la police), RG-08 et critère 3 ajoutés, zone élargie au modèle de la 208 ; 🟡 À valider (utilisateur) après fusion.
 - **ANO-264** (passages de roue gris clair et pneus sans flanc de la M4) → **WFS-457** (retouches M4, `dev-artiste-3d`), RG-05 et RG-06 (contrôle des 17 voitures, de nuit) ; priorité P3 → **P2** (vue par l'utilisateur) ; 🟡 après fusion ; toujours après WFS-456.
 - Anomalies en 📋 Planifiée dans `anno.md` ; aucune attribution (tickets donnés à la demande d'une nouvelle session).
+
+### 2026-11-12 12:00:03 — ANO-265 : roues avant du trafic qui braquent en ligne droite (vidéo de l'utilisateur 00:11) (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
+- Précision de l'utilisateur sur la M4 rouge : ce sont les roues avant qui « jouent » alors que la voiture est droite ; confirmé à 6 img/s ; à rattacher par le PO (WFS-452).
