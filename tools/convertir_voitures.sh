@@ -86,6 +86,14 @@ node effacer_logos.mjs "$@"
 # WFS-193 : retouches de forme (calandres de marque remplacées par une grille générique, …) d'après tools/formes.json
 # (rejouable ; arrêt sans rien écrire si un modèle a changé ; .lod refait ici aussi, puis par la boucle ci-dessous)
 node retoucher_formes.mjs "$@"
+# WFS-479 (RG-01, RG-04) : roues braquées dans le modèle source remises droites autour de leur moyeu (sinon elles battent en
+# tournant) : la M4 seulement (roues avant modélisées braquées de 20°) ; rejouable (une roue droite ne bouge plus)
+RED="$RACINE/build/redresser_roues"
+for id in m4; do
+  if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
+  if [ -x "$RED" ]; then "$RED" "$RACINE" "$id"
+  else echo "⚠️  $RED absent : construire la cible redresser_roues (ninja -C build redresser_roues), puis la lancer" >&2; exit 1; fi
+done
 # WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : versions allégées des 20 voitures (assets/cars/<id>.lod : indices seuls, niveaux
 # de détail 1 à 3, de 30 % à 5 % des triangles environ) ; choisies par la taille de la voiture à l'écran, avec fondu
 # (src/render/vehicule_lod.h) ; avec une liste d'id, seules les voitures de la liste sont allégées

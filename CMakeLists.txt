@@ -169,6 +169,8 @@ else()
   target_compile_definitions(test_fidelite_routes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(corriger_voitures tools/corriger_voitures.cpp src/game/roues.cpp)   # WFS-158 (ST-2) : échelle et roues d'après le référentiel
   target_compile_definitions(corriger_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(redresser_roues tools/redresser_roues.cpp src/game/roues.cpp)   # WFS-479 : roues braquées dans le modèle source remises droites
+  target_compile_definitions(redresser_roues PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   target_compile_definitions(test_fidelite_soleil PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   target_compile_definitions(test_fidelite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_archi_kit tests/archi_kit.cpp src/world/archi_kit.cpp)   # WFS-161 (ST-1) : kit d'architecture, M-01 et règles des ouvertures

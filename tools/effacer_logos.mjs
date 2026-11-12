@@ -274,7 +274,7 @@ async function traiter(id) {
     parMateriau.get(p.materiau).push(p);
   }
   const mailAFaire = [];
-  const formesFinies = FORMES[id]?.empreinteApres && empreinteFormes(w) === FORMES[id].empreinteApres;
+  const formesFinies = FORMES[id]?.empreinteApres && [FORMES[id].empreinteApres, FORMES[id].empreinteRedressee].includes(empreinteFormes(w));   // WFS-479 : ou roues redressées ensuite
   for (const [k, ps] of parMateriau) {
     const lesquels = w.maillages.map((m, i) => (m.mat === k ? i : -1)).filter((i) => i >= 0);
     if (lesquels.length > 1) throw new Error(`matériau ${k} : ${lesquels.length} maillages (un seul attendu)`);
