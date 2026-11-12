@@ -952,6 +952,8 @@ function traiter(id, verifier) {
   if (w.nM !== cfg.materiaux && w.nM !== cfg.materiaux + ajoutes) throw new Error(`${id} : ${w.nM} matériaux, ${cfg.materiaux} attendus`);
   const e = empreinte(w);
   if (cfg.empreinteApres && e === cfg.empreinteApres) { console.log(`${id} : déjà retouchée (${e})`); return true; }
+  // WFS-479 : roues ensuite redressées par tools/redresser_roues.cpp (étape suivante de convertir_voitures.sh) : état final connu
+  if (cfg.empreinteRedressee && e === cfg.empreinteRedressee) { console.log(`${id} : déjà retouchée, roues redressées (${e})`); return true; }
   if (e !== cfg.empreinteAvant) { console.error(`${id} : empreinte ${e}, ni « avant » (${cfg.empreinteAvant}) ni « après » (${cfg.empreinteApres}) : rien écrit`); return false; }
   const touches = new Set(); const journal = [];
   let structure = false;   // triangles retirés ou pièce ajoutée : .lod à régénérer

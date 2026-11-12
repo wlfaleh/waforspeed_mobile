@@ -49,7 +49,8 @@
     "note": "grille générique : cadre, 3 barres horizontales, galbe du nez"
    }
   ],
-  "empreinteApres": "3479cb3aaa9d323f"
+  "empreinteApres": "3479cb3aaa9d323f",
+  "empreinteRedressee": "53d9d325239c500d"
  },
  "p208": {
   "materiaux": 17,
@@ -813,7 +814,8 @@
     "note": "grille générique basse et large, d'un seul tenant, ajustée à l'ouverture : 1,5 cm derrière la carrosserie, 7 lames chanfreinées, rebord, paroi depuis le bord de la carrosserie, toujours derrière la plaque, fond noir mat (WFS-362)"
    }
   ],
-  "empreinteApres": "7c66e923c1debae9"
+  "empreinteApres": "7c66e923c1debae9",
+  "empreinteRedressee": "1de372a80521570c"
  },
  "s3": {
   "materiaux": 29,
@@ -4762,6 +4764,7 @@
   "materiaux": 13,
   "empreinteAvant": "f935519bc9ff4232",
   "empreinteApres": "9e04d0dc1bad7fe2",
+  "empreinteRedressee": "b157b5d0fedea61b",
   "retouches": [
    {
     "decouper": true,
