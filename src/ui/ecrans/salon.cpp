@@ -25,9 +25,9 @@
 #include "../text.h"
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
+#include "../../platform/manette.h"   // WFS-517 (RG-06) : boutons du menu (banc du duel entre amis)
 
 namespace wfs {
-bool choixModeZone(const std::string& nom, float& x, float& y);   // modes_ecran.cpp (WFS-112, banc d'essai)
 namespace ecrans {
 namespace {
 
@@ -533,9 +533,9 @@ private:
 
 // ---------------------------------------------------------------- banc d'essai
 // WFS-112 (RG-11) : parcours complet du duel entre amis, au doigt, avec le relais local et un second client simulé :
-// accueil → Course solo → « Duel entre amis » → Continuer → salon → « Créer un duel » (code) → « Inviter » (lien) →
-// l'ami rejoint par le lien → les deux « Prêt » → course sans trafic → arrivée → écran de fin → « Revanche » → course →
-// arrivée → « Retour » → menu des modes. Captures salon-amis (code, « Inviter », 2 pilotes, ping) et salon-amis-fin.
+// accueil → « Duel en ligne » → salon → « Créer un duel » (code) → « Inviter » (lien) → l'ami rejoint par le lien → les
+// deux « Prêt » → course sans trafic → arrivée → écran de fin → « Revanche » → course → arrivée → « Retour » → menu
+// principal (WFS-517, RG-05, RG-06 : plus de carte « Duel entre amis » dans la Course solo). Captures salon-amis (code, « Inviter », 2 pilotes, ping) et salon-amis-fin.
 // Chaque étape est écrite au journal (« parcours duel : … (ok) ») ; rend le nombre d'écarts.
 static int benchDuelAmis(Game& g, Renderer& r, const std::string& out, double& t) {
     int erreurs = 0, n = 0, doigt = 60;
@@ -606,12 +606,18 @@ static int benchDuelAmis(Game& g, Renderer& r, const std::string& out, double& t
     choixModeBanc(true); duelArriveeForcee(false);
     g.allerA(Ecran::Menu); images(20);
     verifier(g.ecran() == Ecran::Menu, "accueil");
-    ouvrirChoixMode(); images(5);
-    float x = 0, y = 0;
-    if (choixModeZone("carte3", x, y)) appui(x, y); else erreurs++;
-    if (choixModeZone("continuer", x, y)) appui(x, y); else erreurs++;
-    images(5);
-    verifier(g.ecran() == Ecran::Salon, "« Duel entre amis » puis « Continuer » → salon");
+    // WFS-517 (RG-06) : « Duel en ligne » = 2e bouton déclaré par le menu (Course solo, Duel en ligne, Showroom : focus de
+    // la manette, dans l'ordre du dessin ; même méthode que le parcours d'endurance pour « Course solo »)
+    auto duelEnLigne = [&]() {
+        g.render(t);
+        const auto& z = manette::zonesPrecedentes();
+        if (g.ecran() != Ecran::Menu || choixModeOuvert() || z.size() < 2) { erreurs++; WFS_ERR("parcours duel : bouton « Duel en ligne » absent"); return; }
+        appui(z[1].x + z[1].w * 0.4f, z[1].y + z[1].h * 0.5f);
+        images(5);
+    };
+    verifier(!choixModeOuvert(), "accueil : panneau des modes fermé");
+    duelEnLigne();
+    verifier(g.ecran() == Ecran::Salon, "« Duel en ligne » → salon");
     zone(g_creer); images(5);
     const std::string code = duelSession().code();
     for (int i = 0; i < 200 && duelSession().transport() && duelSession().transport()->lien() != duel::Lien::Pret; i++) image();
@@ -643,12 +649,13 @@ static int benchDuelAmis(Game& g, Renderer& r, const std::string& out, double& t
     manche(2);
     verifier(duelBouton("retour", rx, ry), "bouton « Retour » affiché");
     appui(rx, ry); images(10);
-    verifier(g.ecran() == Ecran::Menu && choixModeOuvert() && !duelSession().inRoom(), "« Retour » → menu des modes (duel quitté)");
+    verifier(g.ecran() == Ecran::Menu && !choixModeOuvert() && !duelSession().inRoom(), "« Retour » → menu principal (duel quitté, WFS-517 RG-05)");
+    images(20);
+    capture("duel-retour-menu", "WFS-517 (RG-05) : menu principal après « Retour » de la fin du duel");
     // WFS-122 (RG-01) : retour au salon : « Derniers adversaires » (3 noms) ; toucher le 1er : duel créé, « Inviter » ouvert
     for (auto& a : amis) a.leave();
-    if (choixModeZone("carte3", x, y)) appui(x, y); else erreurs++;
-    if (choixModeZone("continuer", x, y)) appui(x, y); else erreurs++;
-    images(10);
+    duelEnLigne();
+    images(5);
     const auto& adv = sauvegarde().adversaires;
     verifier(g.ecran() == Ecran::Salon && adv.size() == 3 && g_derniers[2].w > 0, "salon : « Derniers adversaires », 3 noms");
     capture("salon-derniers", "WFS-122 : 3 derniers adversaires, le plus récent en haut");

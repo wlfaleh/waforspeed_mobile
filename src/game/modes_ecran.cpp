@@ -1,7 +1,8 @@
 // WaForSpeed — choix du mode de course (WFS-110, RG-01 / RG-09) : panneau ouvert par « Course solo » au menu, par-dessus
-// le menu (comme les réglages). Quatre cartes : Checkpoint (60 s, +30 s par checkpoint), Course à 5 voitures (avec les
-// puces 2 / 4 / 6 / 10 km), Poursuite (« Bientôt », WFS-111) et Duel (→ salon). « Continuer » lance le parcours habituel
-// (garage, terrain, course) ; « Retour » referme le panneau. Le mode et la distance sont gardés dans la sauvegarde.
+// le menu (comme les réglages). Trois cartes : Checkpoint (60 s, +30 s par checkpoint), Course à 5 voitures (avec les
+// puces 2 / 4 / 6 / 10 km) et Poursuite (WFS-111). WFS-517 (RG-01, RG-02) : plus de carte « Duel entre amis » ici, le duel
+// s'ouvre seulement par « Duel en ligne » du menu principal. « Continuer » lance le parcours habituel (garage, terrain,
+// course) ; « Retour » referme le panneau. Le mode et la distance sont gardés dans la sauvegarde.
 #include <algorithm>
 #include <cstdlib>   // WFS-202 : std::getenv
 #include <cmath>
@@ -9,6 +10,7 @@
 #include <string>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../platform/manette.h"   // WFS-517 (RG-03) : focus de la manette sur les cartes
 #include "../render/renderer.h"
 #include "../ui/appui.h"
 #include "../ui/ecrans/terrain.h"
@@ -35,11 +37,11 @@ const unsigned BG = 0x0A0B10, SURF = 0x14161F, SURF2 = 0x1E2130, TXT = 0xF2F4F8,
 struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
 
 struct Carte { ModeCourse mode; const char* titre; const char* desc; bool dispo; };
-const Carte CARTES[4] = {
+constexpr int NB_CARTES = 3;   // WFS-517 (RG-01) : Checkpoint, Course à 5, Poursuite
+const Carte CARTES[NB_CARTES] = {
     {ModeCourse::Checkpoint, "Checkpoint", "", true},   // description : descCarte (checkpoint.depart, checkpoint.bonus)
     {ModeCourse::Course5, "Course à 5", "", true},      // description : descCarte (course5.ordinateurs)
     {ModeCourse::Poursuite, "Poursuite", "La police à tes trousses", true},   // WFS-111
-    {ModeCourse::Duel, "Duel entre amis", "Défie un ami où qu'il soit, sans trafic", true},   // WFS-112
 };
 
 // nombre de secondes en français : « 60 », « 7,5 »
@@ -84,7 +86,7 @@ public:
         }
         if (appui_.consomme(t.id, t.down)) return true;
         if (!t.down) return true;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < NB_CARTES; i++)
             if (cartes_[i].contient(t.x, t.y)) {
                 appui_.prendre(t.id);
                 if (!CARTES[i].dispo) { WFS_LOG("modes : « %s » pas encore disponible", CARTES[i].titre); return true; }
@@ -110,20 +112,24 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_ouvert || g.ecran != Ecran::Menu || !ui::fontReady()) return;
+        // WFS-517 (RG-04) : dernier mode = duel (ou inconnu) → Checkpoint présélectionné
         if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); diff_ = course5::difficulte(); ouverture_ = false; }
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         r.uiRect(0, 0, W, H, hex(BG, 0.92f));   // WFS-141 (RG-04, ANO-54) : voile #0A0B10 à 0,92 (le menu ne dessine plus ses textes dessous)
         const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;
         ui::text(r, cx, g.marges.haut + 7 * u, 2.6f * u, "NOUVELLE COURSE", hex(ACC2), ui::CENTRE, 0.16f, false);
         ui::text(r, cx, g.marges.haut + 11 * u, 8 * u, "CHOISIS TON MODE", hex(TXT), ui::CENTRE, 0.04f, false, true);
-        // quatre cartes côte à côte
-        const float gap = 2.4f * u, cw = std::min(42 * u, ((R - L) - 8 * u - 3 * gap) / 4), ch = 34 * u, y0 = g.marges.haut + 26 * u;
-        const float x0 = cx - (4 * cw + 3 * gap) / 2;
-        for (int i = 0; i < 4; i++) {
+        // WFS-517 (RG-01, RG-03) : trois cartes côte à côte, même largeur qu'avant (42 u au plus), le bloc reste centré
+        // (pas de trou à la place de l'ancienne 4e carte) ; « Retour » et « Continuer » suivent les bords du bloc
+        const float gap = 2.4f * u, cw = std::min(42 * u, ((R - L) - 8 * u - (NB_CARTES - 1) * gap) / NB_CARTES), ch = 34 * u, y0 = g.marges.haut + 26 * u;
+        const float blocW = NB_CARTES * cw + (NB_CARTES - 1) * gap, x0 = cx - blocW / 2;
+        manette::zonesImage().clear();   // WFS-517 (RG-03) : panneau ouvert → seuls ses boutons ont le focus (comme les réglages)
+        for (int i = 0; i < NB_CARTES; i++) {
             const Carte& c = CARTES[i];
             const float x = x0 + i * (cw + gap);
             const bool sel = c.dispo && c.mode == choix_;
             cartes_[i] = {x, y0, cw, ch};
+            manette::focus(cartes_[i]);
             r.uiRect(x, y0, cw, ch, hex(sel ? SURF2 : SURF, c.dispo ? 0.96f : 0.6f));
             r.uiRect(x, y0, cw, 0.6f * u, sel ? hex(ACC) : hex(SURF2));
             if (sel) { r.uiRect(x, y0 + ch - 0.4f * u, cw, 0.4f * u, hex(ACC)); r.uiRect(x, y0, 0.4f * u, ch, hex(ACC)); r.uiRect(x + cw - 0.4f * u, y0, 0.4f * u, ch, hex(ACC)); }
@@ -146,6 +152,7 @@ public:
                 const float x = kx0 + i * (kw + 1.6f * u);
                 const bool sel = KMS[i] == km_;
                 kms_[i] = {x, ky, kw, kh};
+                manette::focus(kms_[i]);
                 r.uiRect(x, ky, kw, kh, sel ? hex(ACC) : hex(SURF2));
                 char t[16]; std::snprintf(t, sizeof t, "%d KM", KMS[i]);
                 ui::text(r, x + kw / 2, ky + 1.6f * u, 3.2f * u, t, sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
@@ -161,6 +168,7 @@ public:
                 const float x = dx0 + i * (dw + 1.6f * u);
                 const bool sel = i == (int)diff_;
                 diffs_[i] = {x, dy, dw, kh};
+                manette::focus(diffs_[i]);
                 r.uiRect(x, dy, dw, kh, sel ? hex(ACC2) : hex(SURF2));
                 ui::text(r, x + dw / 2, dy + 1.6f * u, 3.2f * u, DIFFS[i], sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
             }
@@ -168,7 +176,8 @@ public:
         // « Retour » et « Continuer »
         const float bw = 28 * u, bh = 8 * u, by = H - g.marges.bas - bh - 6 * u;
         retour_ = {x0, by, bw, bh};
-        continuer_ = {x0 + 4 * cw + 3 * gap - bw, by, bw, bh};
+        continuer_ = {x0 + blocW - bw, by, bw, bh};
+        manette::focus(retour_, true); manette::focus(continuer_);
         r.uiRect(retour_.x, by, bw, bh, hex(0xFFFFFF, 0.10f));
         ui::text(r, retour_.x + bw / 2, by + 2.2f * u, 3.6f * u, "RETOUR", hex(TXT), ui::CENTRE, 0.08f, false);
         r.uiRect(continuer_.x, by, bw, bh, hex(ACC));
@@ -190,7 +199,6 @@ private:
     }
     void valider(const GameView& g) {
         g_ouvert = false;
-        if (choix_ == ModeCourse::Duel) { WFS_LOG("modes : « Continuer » → salon du duel"); g.allerA(Ecran::Salon); return; }
         modeCourse() = choix_; kmCourse5() = km_; course5::difficulte() = diff_;   // WFS-133 : difficulté gardée
         if (sauvegarde().actif()) {
             sauvegarde().mode = modeCle(choix_); sauvegarde().km5 = km_; sauvegarde().diff5 = course5::cleDifficulte(diff_); sauvegarde().enregistrer();
@@ -204,15 +212,15 @@ private:
     course5::Difficulte diff_ = course5::NORMALE;   // WFS-133
     int bouton_ = 0, doigtBouton_ = -1;   // WFS-115 : bouton appuyé (1 Continuer, 2 Retour) et son doigt
     bool lu_ = false;
-    Zone cartes_[4], kms_[4], diffs_[3], continuer_, retour_;
+    Zone cartes_[NB_CARTES], kms_[4], diffs_[3], continuer_, retour_;
     ui::FiltreAppui appui_;
 public:
     static bool ouverture_;
     static ChoixMode* actif_;
-    // banc d'essai (WFS-115) : centre d'une zone du panneau (« continuer », « retour », « carte0 » à « carte3 », « km0 » à « km3 »)
+    // banc d'essai (WFS-115) : centre d'une zone du panneau (« continuer », « retour », « carte0 » à « carte2 », « km0 » à « km3 »)
     bool centre(const std::string& nom, float& x, float& y) const {
         const Zone* z = nom == "continuer" || nom == "continuer-droite" ? &continuer_ : nom == "retour" ? &retour_ : nullptr;
-        if (nom.size() == 6 && nom.compare(0, 5, "carte") == 0) z = &cartes_[(nom[5] - '0') & 3];
+        if (nom.size() == 6 && nom.compare(0, 5, "carte") == 0 && nom[5] >= '0' && nom[5] < '0' + NB_CARTES) z = &cartes_[nom[5] - '0'];   // WFS-517 : « carte3 » n'existe plus
         if (nom.size() == 3 && nom.compare(0, 2, "km") == 0) z = &kms_[(nom[2] - '0') & 3];
         if (nom.size() == 5 && nom.compare(0, 4, "diff") == 0 && nom[4] >= '0' && nom[4] <= '2') z = &diffs_[nom[4] - '0'];   // WFS-133
         if (!z || z->w <= 0) return false;
@@ -235,13 +243,12 @@ bool ouvrirChoixMode() {
     return true;
 }
 bool choixModeOuvert() { return g_ouvert; }
-// WFS-112 (banc du duel entre amis) : centre d'une zone du panneau des modes (voir ChoixMode::centre)
-bool choixModeZone(const std::string& nom, float& x, float& y) { return ChoixMode::actif_ && ChoixMode::actif_->centre(nom, x, y); }
 void choixModeBanc(bool force) { g_forceBanc = force; if (!force) g_ouvert = false; }
 
 // ---------- banc d'essai (WFS_BANC=parcours, WFS-115) ----------
 // Parcours complet au doigt, comme sur Android : chaque appui = un « down », quelques mouvements (« down » répétés du même
-// doigt, une image chacun), puis le « up ». Chemins : Duel → salon ; Showroom → garage → « Choisir » → menu ; Course à 5
+// doigt, une image chacun), puis le « up ». Chemins : « Duel en ligne » du menu → salon (WFS-517) ; 3 cartes ; dernier
+// mode duel → Checkpoint → garage ; Showroom → garage → « Choisir » → menu ; Course à 5
 // (6 km) → garage → « Retour » (un cran : panneau des modes) → garage → « Choisir » → terrain (mode et km gardés) →
 // « Retour » → menu ; Course solo → Checkpoint → garage → « Choisir » → terrain → « Rouler » → course.
 // Captures parcours-mode, parcours-terrain, parcours-course. Rend le nombre d'écarts (0 = parcours conforme).
@@ -300,10 +307,27 @@ int benchParcours(Game& g, Renderer& r, const std::string& out) {
     };
     auto soloOuvert = [&]() { ouvrirChoixMode(); images(10); verifier(choixModeOuvert(), "« Course solo » : panneau des modes ouvert"); };
     g.allerA(Ecran::Menu); images(30);
-    // 1) Duel → salon
-    soloOuvert(); panneau("carte3"); panneau("continuer", true);   // appui rapide : tout dans la même boucle d'entrées
-    attendu(Ecran::Salon, "Duel puis « Continuer »");
-    g.allerA(Ecran::Menu); images(20);
+    // 1) WFS-517 (RG-02, RG-07) : « Duel en ligne » du menu principal → salon (2e bouton déclaré par le menu : focus de la
+    // manette, dans l'ordre du dessin) ; la Course solo n'a plus de carte « Duel entre amis » (zone « carte3 » absente)
+    {
+        g.render(t);
+        const auto& z = manette::zonesPrecedentes();
+        if (z.size() < 2) { erreurs++; WFS_ERR("parcours : bouton « Duel en ligne » du menu absent"); }
+        else appuyer(z[1].x + z[1].w * 0.4f, z[1].y + z[1].h * 0.5f);
+        attendu(Ecran::Salon, "menu principal puis « Duel en ligne »");
+        g.allerA(Ecran::Menu); images(20);
+        soloOuvert();
+        float zx = 0, zy = 0;
+        verifier(ChoixMode::actif_ && ChoixMode::actif_->centre("carte2", zx, zy) && !ChoixMode::actif_->centre("carte3", zx, zy),
+                 "Course solo : 3 cartes (Checkpoint, Course à 5, Poursuite), plus de « Duel entre amis »");
+        // RG-04 : dernier mode = duel → Checkpoint présélectionné ; « Continuer » mène au garage, jamais au salon
+        modeCourse() = ModeCourse::Duel; g_ouvert = false; soloOuvert(); images(5);
+        capture("parcours-mode-3-cartes");
+        panneau("continuer", true);
+        attendu(Ecran::Garage, "dernier mode duel : Course solo puis « Continuer » (Checkpoint présélectionné)");
+        verifier(modeCourse() == ModeCourse::Checkpoint, "dernier mode duel → Checkpoint retenu");
+        g.allerA(Ecran::Menu); images(20);
+    }
     // 2) Showroom (garage ouvert depuis le menu) : « Choisir » ramène au menu, comme avant
     ecrans::garageRegarder(); g.allerA(Ecran::Garage); images(5);
     garage("choisir");
