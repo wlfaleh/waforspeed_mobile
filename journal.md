@@ -1241,3 +1241,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:08:45 — R07 : nouveaux modes de jeu (smart-brainstorming)
 - R07 dans `recommandations-smart-brain.md` : Heure de pointe, Élimination, Rival, Convoi fragile, Radars, Interception, Défi fantôme, Défi du jour. Rien envoyé au PO.
+
+### 2026-11-12 21:12:56 — R08 : défi aléatoire du jour sans coût de mélange (smart-brainstorming)
+- R08 dans `recommandations-smart-brain.md` : défi = tirage (graine = date) de mode, moment, voiture, objectif dans `configgame.json` ; liste d'interdits, seuils par classe, banc des 365 jours ; ≈ 2,5 j. Rien envoyé au PO.

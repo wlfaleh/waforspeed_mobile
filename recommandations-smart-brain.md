@@ -371,3 +371,39 @@ Règle à respecter : tout objet nouveau visible (radar, colis…) doit être un
 **Ordre conseillé** : dans les 14 jours du test fermé seulement A01 et A02 (petits) ; A03 avec la Carrière ; A07 en v1.1 pour remplacer le Duel ; A06 plus tard.
 **Hypothèse testable** : si nous ajoutons l'Heure de pointe, alors les testeurs referont plusieurs fois la même course pour battre leur score,
 ce que nous vérifierons en demandant aux testeurs leur mode préféré et en comptant les parties par mode dans le journal du jeu (sur leurs retours).
+
+---
+
+## R08 — 2026-11-12 — Défi aléatoire du jour sans coût de mélange (mode Prototype)
+
+L'utilisateur aime le « défi aléatoire » (R07-A08) mais craint que « mélanger plus de défis » coûte cher. **Réponse proposée** : ne pas écrire de défis,
+**les fabriquer à partir de pièces qui existent déjà**. Le coût est **fixe** (un générateur, un écran, une récompense) et ne grandit pas avec le nombre de défis.
+
+### 1. Un défi = 4 tirages dans des listes (données dans `configgame.json`)
+| Pièce | Valeurs possibles (existantes) |
+|---|---|
+| Mode | Checkpoint, Course à 5, Poursuite (+ Heure de pointe, Élimination quand ils existeront : ajoutés à la liste, rien d'autre à coder) |
+| Moment / météo | jour, nuit, jour sous la pluie, nuit sous la pluie |
+| Voiture | imposée parmi une classe (prêtée pour le défi, même si le joueur ne l'a pas : vitrine pour la Carrière R05) |
+| Objectif | tiré dans la liste du mode : temps, place, X frôlements, aucun choc, distance |
+- **Même défi pour tout le monde, sans serveur** : le tirage part de la date du jour (graine = AAAAMMJJ). Rien à envoyer, rien à stocker en ligne.
+- 3 modes × 4 moments × 17 voitures × ≈ 4 objectifs ≈ **800 défis différents** sans écrire une seule épreuve.
+
+### 2. Ce qui évite les défis ratés (le vrai risque du mélange)
+- **Liste d'interdits** dans les données : ex. Poursuite + voiture lente, pluie + objectif « aucun choc » en Difficile.
+- **Seuils calculés, pas inventés** : l'objectif est réglé par classe de voiture (temps de référence de la classe × 1,1, par exemple).
+- **Banc CPU** : générer les 365 défis de l'année et vérifier qu'aucun n'est interdit ni impossible (seuil hors limites) ; captures de 3 défis au banc PC.
+
+### 3. Coût estimé (qualitatif)
+| Tâche | Zone | Taille |
+|---|---|---|
+| Générateur à graine + listes et interdits dans `configgame.json` + banc des 365 jours | E3 | ≤ 1 j |
+| Écran « Défi du jour » (carte au menu : mode, moment, voiture, objectif) + fin de défi | E8 | ≤ 1 j |
+| Récompense (crédits, R05) et « déjà fait aujourd'hui » dans la sauvegarde | E3 | ≤ 0,5 j |
+Sans Carrière (R05), la récompense est seulement un record du jour : le défi marche quand même.
+
+### 4. À éviter
+Pas de série de jours qui se perd, pas de « dernière chance », pas de pub imposée pour relancer un défi raté (règles du mode Rétention).
+
+**Hypothèse testable** : si un défi du jour change chaque jour, les testeurs ouvriront le jeu plusieurs jours de suite, ce que nous vérifierons avec les
+utilisateurs actifs par jour de la Play Console pendant le test fermé.
