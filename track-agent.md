@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent conduite (01UY1Vv1A7) (session_01UY1Vv1A7HLQu3LkH7Q69im) | WFS-461 | conduite : glisse au contact de la police, police plafonnée à sa fiche (208 km/h) (ANO-261, 262) ; skill `expert-conduite` ; après la fusion 🟡 À valider (utilisateur) | `feature/waforspeed-461` (à créer) | 🔧 attribué 19:30, 1er et seul sujet |
+| Claude, agent conduite (01UY1Vv1A7) (session_01UY1Vv1A7HLQu3LkH7Q69im) | WFS-461 | conduite : glisse au contact de la police, police plafonnée à sa fiche (208 km/h) (ANO-261, 262) ; skill `expert-conduite` ; après la fusion 🟡 À valider (utilisateur) | `feature/waforspeed-461`, 20:08 (b105633) | ↩️ retour lead dev sur PR #369 : à corriger (20:20 : journal des tests CPU manquant) |
 
 ## Agents de pilotage
 
