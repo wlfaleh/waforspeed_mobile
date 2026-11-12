@@ -962,3 +962,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 12:00:32 — ANO-265 rattachée à WFS-452 (po-scrum-master)
 - **ANO-265** (roues avant du trafic qui braquent puis se redressent en ligne droite, M4 rouge) → **WFS-452** (P1, roues des autres voitures) : RG-09 (braquage du trafic lissé, 0 en ligne droite, piste `roues.h` l. 45), critère 4, zone élargie à `roues.h` et `traffic_system.cpp` pour ce point ; 🟡 À valider (utilisateur) après fusion. Anomalie en 📋 Planifiée.
+
+### 2026-11-12 12:01:30 — Gravités fixées par l'utilisateur : ANO-265 bloquante, ANO-263 et ANO-264 mineures (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
+- Seule la roue avant de la M4 rouge qui « joue » en ligne droite est bloquante ; les autres défauts de roues sont des anomalies mineures. Transmis au PO pour les priorités (WFS-452, WFS-457).
