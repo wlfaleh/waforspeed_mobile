@@ -216,14 +216,14 @@ void mansart(const Plan& p, float D, int lod, Batiment& out) {
         // WFS-455 (ANO-254) : lucarnes aussi sur le brisis arrière, dans l'axe des fenêtres de la façade sur cour, tournées de 180°
         // (niveau 0 seulement, RG-04 ; au loin le brisis arrière garde son zinc, comme vu depuis la cour à plus de 120 m)
         if (lod == 0) {
-        Batiment r;
-        lucarnes(facadeSecondaire(p, L, 1), lod, y1, r);
-        for (int k = 0; k < NB_PARTS; k++) {
-            Maillage& dst = out.part[k];
-            const uint32_t base = (uint32_t)dst.v.size();
-            for (const Sommet& v : r.part[k].v) dst.v.push_back({{L - v.p.x, v.p.y, -D - v.p.z}, {-v.n.x, v.n.y, -v.n.z}, v.uv});
-            for (uint32_t i : r.part[k].i) dst.i.push_back(base + i);
-        }
+            Batiment r;
+            lucarnes(facadeSecondaire(p, L, 1), lod, y1, r);
+            for (int k = 0; k < NB_PARTS; k++) {
+                Maillage& dst = out.part[k];
+                const uint32_t base = (uint32_t)dst.v.size();
+                for (const Sommet& v : r.part[k].v) dst.v.push_back({{L - v.p.x, v.p.y, -D - v.p.z}, {-v.n.x, v.n.y, -v.n.z}, v.uv});
+                for (uint32_t i : r.part[k].i) dst.i.push_back(base + i);
+            }
         }
     }
     // souches de cheminée sur les deux murs pignons (maçonnerie, couronnement, mitrons)

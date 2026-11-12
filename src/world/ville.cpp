@@ -1392,8 +1392,9 @@ public:
             for (float al = -demi; al <= demi + 0.01f; al += 4.f) {
                 if (std::fabs(std::fabs(al) - demi) < 0.01f) {   // WFS-455 (ANO-254) : côtés rythmés comme la façade (plus de pan aveugle de 24 m)
                     for (int k = 0; k <= 6; k++) bloc(U, f0 + (k < 6 ? 0.4f + 4.f * (float)k : 23.6f), al, 0, 0.4f, 0.4f, 13.f, uvc(U_CREME));
-                } else
-                bloc(U, f0 + 12.f, al, 0, 12.f, 0.4f, 13.f, uvc(U_CREME));                               // pilastres
+                } else {
+                    bloc(U, f0 + 12.f, al, 0, 12.f, 0.4f, 13.f, uvc(U_CREME));                           // pilastres
+                }
                 if (!lod) bloc(out[P_OR], f0 - 0.08f, al, 12.4f, 0.12f, 0.5f, 0.6f, {0, 0});             // chapiteaux
             }
             for (int k = 0; k < 3; k++)                                                                   // marches

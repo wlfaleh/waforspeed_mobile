@@ -39,8 +39,9 @@ inline int graineBaie(const Plan& p, int niveau, int travee) {
 // + 0 à 0,999 sur la largeur de la baie, v = 0 à 1 sur sa hauteur) ; les volets simplifiés du niveau 1 restent en volume ;
 // Aucune : murs percés, toiture et traits des planchers seulement, sans le contenu des baies (la cuisson le pose à part, baie
 // par baie, pour ne garder qu'un exemplaire de chaque modèle : archi_cuit.h).
-// WFS-455 : Simples : trou en retrait, vitre ou porte au fond (forme d'avant WFS-402), toujours : façades arrière et latérales
-// (facadeSecondaire), construites avec le gros œuvre à chaque niveau (la cuisson ne les range pas en instances).
+// WFS-455 : Simples : baie sans menuiserie ni image (vitre ou porte au fond d'un trou en retrait aux niveaux 0 et 1, peinte à
+// plat au niveau 2). Les façades arrière et latérales (facadeSecondaire) l'emploient au niveau 2 à toutes les distances : baies
+// peintes 1 cm devant le mur ; construites avec le gros œuvre (la cuisson ne les range pas en instances).
 enum class Baies : uint8_t { Interrupteur, Reelles, Image, Aucune, Simples };
 // numéro de la tuile d'image d'une baie (0 à NB_TUILES − 1) : style, type d'ouverture et modèle (4 fenêtres, 4 portes par style)
 inline constexpr int TUILES_PAR_STYLE = 16, NB_TUILES = TUILES_PAR_STYLE * (int)Style::Nombre;
