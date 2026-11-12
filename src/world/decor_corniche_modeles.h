@@ -26,8 +26,8 @@
 //     (membrures Ø 48 mm, diagonales Ø 20 mm), 6,2 m de haut, enceintes en caissons, table du DJ ;
 //   - candélabre de promenade (lanterne de style) : fût cannelé de fonte de 5,3 m (Ø 160 mm au pied, 100 mm en tête), socle
 //     mouluré, crosse de 0,6 m à volute, lanterne vitrée à 4 faces de 0,42 × 0,42 × 0,75 m sous chapeau ;
-//   - palmier (Phoenix / Washingtonia) : gaines des palmes en 10 pétioles de 0,9 m, noix de coco Ø 0,20 × 0,26 m ;
-//   - guirlande guinguette : mât de pin de 4,1 m (Ø 140 → 100 mm), ampoules G60 (Ø 60 × 90 mm) ; bûche de 0,9 × Ø 0,14 m.
+//   - palmier (Phoenix / Washingtonia) : gaines des palmes en 10 pétioles de 0,6 m (hors palme), noix de coco Ø 0,20 × 0,26 m ;
+//   - guirlande guinguette : mât de pin de 4,1 m (Ø 140 → 100 mm), ampoules G60 (Ø 60 × 90 mm) ; bûche de bois de chauffage de 50 cm × Ø 0,11 m.
 #pragma once
 #include <cstdint>
 #include <vector>
@@ -57,16 +57,18 @@ constexpr int PARASOL_BALEINES = 8;
 constexpr float TRANSAT_ARTIC = 1.10f;   // longueur de l'assise, du pied à l'articulation du dossier
 constexpr float TRANSAT_L = 1.90f, TRANSAT_W = 0.65f, TRANSAT_ASSISE = 0.32f, TRANSAT_DOSSIER_DEG = 40.f, TRANSAT_TUBE = 0.030f;
 constexpr float PAILLE_DIAM = 2.40f, PAILLE_HAUT = 2.60f, PAILLE_MAT = 0.080f;
+constexpr float COMPTOIR_HAUT = 1.10f, ETAGERE_HAUT = 1.70f;
 constexpr float TABOURET_ASSISE = 0.76f, TABOURET_DIAM = 0.36f, TABOURET_EMBASE = 0.42f;
 constexpr float TABLE_COTE = 0.80f, TABLE_HAUT = 0.45f, POUF_DIAM = 0.60f, POUF_HAUT = 0.40f;
 constexpr float BOUTEILLE_H = 0.300f, BOUTEILLE_D = 0.076f;
 constexpr float POSTE_PLANCHER = 2.40f, POSTE_COTE = 2.20f, POSTE_CABINE = 2.00f, POSTE_DEBORD = 0.30f;
 constexpr float GLISS_HAUT = 0.75f, GLISS_LISSE = 0.310f, GLISS_PROF = 0.083f, GLISS_EP = 0.003f, GLISS_PAS = 4.0f, GLISS_ECARTEUR = 0.30f;
+constexpr float LYRE_Y = 5.6f, LYRE_X = -2.35f;   // centre de la tête des 4 lyres sous la poutre de façade (plage.cpp : z = −3,6 à 3,6)
 constexpr float SCENE_L = 10.f, SCENE_P = 5.f, SCENE_PLANCHER = 1.0f, SCENE_PORTIQUE = 6.2f, TRUSS = 0.29f;
 constexpr float CANDELABRE_FUT = 5.3f, CANDELABRE_CROSSE = 0.6f, LANTERNE_COTE = 0.42f, LANTERNE_H = 0.75f;
 constexpr float LANTERNE_Y = 5.6f;   // centre du verre de la lanterne (lumière de nuit.cpp : 5,6 m, inchangée)
-constexpr float NOIX_DIAM = 0.20f, NOIX_LONG = 0.26f, GAINE_PETIOLE = 0.9f;
-constexpr float MAT_GUIRLANDE = 4.1f, AMPOULE_D = 0.060f, AMPOULE_H = 0.090f, BUCHE_L = 0.9f, BUCHE_D = 0.14f;
+constexpr float NOIX_DIAM = 0.20f, NOIX_LONG = 0.26f, GAINE_PETIOLE = 0.6f;
+constexpr float MAT_GUIRLANDE = 4.1f, AMPOULE_D = 0.060f, AMPOULE_H = 0.090f, BUCHE_L = 0.50f, BUCHE_D = 0.11f;
 
 // profil de la lisse à double onde (section en x = saillie vers la route, y = hauteur au-dessus du sol), du bas vers le haut ;
 // x = 0 : fond des ondes (contre l'écarteur). Utilisé par plage.cpp pour la lisse continue le long de la route.
@@ -79,6 +81,11 @@ Modele parasol(const Couleurs& c, bool loin);
 Modele transat(const Couleurs& c, bool loin);
 // parasol de paille, mât en (0, 0, 0)
 Modele parasolPaille(const Couleurs& c, bool loin);
+// comptoir de bar de longueur L (le long de z), face aux clients vers −x : caisson à lames verticales, plateau de teck
+// débordant chanfreiné (dessus à COMPTOIR_HAUT), socle en retrait ; centre au sol
+Modele comptoir(const Couleurs& c, float L);
+// étagère de bar (L le long de z, 0,40 m de profondeur, ETAGERE_HAUT), dos contre x = +0,2 ; centre au sol
+Modele etagere(const Couleurs& c, float L);
 // tabouret de bar, pied en (0, 0, 0)
 Modele tabouret(const Couleurs& c);
 // table basse carrée centrée en (0, 0, 0)
@@ -95,6 +102,8 @@ Modele poteauGlissiere(const Couleurs& c);
 Modele scene(const Couleurs& c, bool loin);
 // enceinte de façade (2 caissons de basses et une enceinte à pavillon), face vers −x, pied en (0, 0, 0)
 Modele enceinte(const Couleurs& c, bool loin);
+// lentille bombée d'une lyre (Ø 0,15 m), tournée vers le bas, centre de la face en (0, 0, 0) : maillage éclairé de la fête
+Modele lentilleLyre();
 // candélabre de promenade : pied en (0, 0, 0), crosse et lanterne vers −x
 Modele candelabre(const Couleurs& c, bool loin);
 // couronne d'un palmier : gaines (pétioles) autour de (0, 0, 0), le haut du stipe ; noix de coco en grappe sous la couronne

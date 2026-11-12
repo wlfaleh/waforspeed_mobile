@@ -3,7 +3,7 @@
 //                   paille Ø 2,40 m et 2,60 m ; tabouret 0,76 m ; table 0,80 × 0,45 m ; pouf Ø 0,60 × 0,40 m ; bouteille
 //                   0,30 m ; poste de secours : plancher 2,40 m, cabine 2,2 m ; lisse à double onde 310 × 83 mm, bord à
 //                   0,75 m ; scène 10 × 5 m, plancher 1,0 m, portique 6,2 m ; candélabre : lanterne centrée à 5,6 m ;
-//                   noix de coco 0,26 m ; mât de guirlande 4,1 m ; bûche 0,9 m) ;
+//                   noix de coco 0,26 m ; mât de guirlande 4,1 m ; bûche 0,50 m) ;
 //   RG-04 : budget de triangles tenu ; la version « loin » est plus légère que la version proche ;
 //   qualité : aucun triangle dégénéré, normales unitaires, triangles tournés comme leurs normales (pas de face inversée) ;
 //   formes nues interdites : aucun modèle n'est une boîte seule (bien plus de 12 triangles, plusieurs pièces).
@@ -100,6 +100,14 @@ int main() {
                 proche(b3.mx.y, POUF_HAUT) && proche(b4.mx.y, BOUTEILLE_H) && proche(b4.mx.x - b4.mn.x, BOUTEILLE_D, 0.02f), t);
         qualite(ta, "tabouret", 900); qualite(tb, "table basse", 600); qualite(po, "pouf", 900); qualite(bo, "bouteille", 160);
     }
+    {   // comptoir et étagère du bar
+        const Modele co = comptoir(c, 7.f), et = etagere(c, 5.2f);
+        const Boite b1 = boite(co), b2 = boite(et);
+        std::snprintf(t, sizeof t, "comptoir : plateau à %.3f m (1,10 ± 1 %%), %.2f m de long (7 + débords 0,10) ; étagère %.3f m de haut (1,70), %.2f m de long",
+                      b1.mx.y, b1.mx.z - b1.mn.z, b2.mx.y, b2.mx.z - b2.mn.z);
+        verifie(proche(b1.mx.y, COMPTOIR_HAUT) && proche(b1.mx.z - b1.mn.z, 7.1f) && proche(b2.mx.y, ETAGERE_HAUT) && proche(b2.mx.z - b2.mn.z, 5.2f), t);
+        qualite(co, "comptoir de 7 m", 3000); qualite(et, "étagère de 5,2 m", 600);
+    }
     {   // poste de secours
         const Modele p = posteSecours(c, false), l = posteSecours(c, true);
         const Boite bc = boite(p.uni, c.rouge), bp = boite(p.uni, c.planche);
@@ -123,7 +131,7 @@ int main() {
         const Modele e = enceinte(c, false), el = enceinte(c, true);
         std::snprintf(t, sizeof t, "enceinte : %.3f m de haut (2 × 0,60 + 1,0 + joints)", boite(e).mx.y);
         verifie(proche(boite(e).mx.y, 2.23f), t);
-        qualite(e, "enceinte (proche)", 700); qualite(el, "enceinte (loin)", 120, 20); plusLeger(e, el, "enceinte");
+        qualite(e, "enceinte (proche)", 700); qualite(lentilleLyre(), "lentille de lyre", 100, 12); qualite(el, "enceinte (loin)", 120, 20); plusLeger(e, el, "enceinte");
     }
     {   // candélabre
         const Modele p = candelabre(c, false), l = candelabre(c, true);
@@ -138,10 +146,10 @@ int main() {
         const Boite bn = boite(p.uni, c.noix);
         std::snprintf(t, sizeof t, "couronne de palmier : grappe de noix sous la couronne (haut %.2f m)", bn.mx.y);
         verifie(bn.mx.y < -0.25f, t);
-        qualite(p, "couronne de palmier (proche)", 1600); qualite(l, "couronne de palmier (loin)", 400); plusLeger(p, l, "couronne de palmier");
+        qualite(p, "couronne de palmier (proche)", 900); qualite(l, "couronne de palmier (loin)", 120); plusLeger(p, l, "couronne de palmier");
         const Modele m = matGuirlande(c), a = ampoule(), b = buche(c, 7);
         const Boite bm = boite(m), ba = boite(a.neon), bb = boite(b);
-        std::snprintf(t, sizeof t, "mât de guirlande %.3f m (4,1), ampoule Ø %.3f m (0,060), bûche %.3f m (0,90 ± 2 %%)", bm.mx.y, ba.mx.x - ba.mn.x, bb.mx.x - bb.mn.x);
+        std::snprintf(t, sizeof t, "mât de guirlande %.3f m (4,1), ampoule Ø %.3f m (0,060), bûche %.3f m (0,50 ± 2 %%)", bm.mx.y, ba.mx.x - ba.mn.x, bb.mx.x - bb.mn.x);
         verifie(proche(bm.mx.y, MAT_GUIRLANDE, 0.02f) && proche(ba.mx.x - ba.mn.x, AMPOULE_D, 0.03f) && proche(bb.mx.x - bb.mn.x, BUCHE_L, 0.02f), t);
         qualite(m, "mât de guirlande", 400); qualite(a, "ampoule", 120); qualite(b, "bûche", 300); qualite(rondin(c, 3), "rondin", 200);
     }

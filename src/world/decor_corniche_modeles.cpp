@@ -301,6 +301,38 @@ Modele tabouret(const Couleurs& c) {
     return M;
 }
 
+Modele comptoir(const Couleurs& c, float L) {
+    Modele M;
+    const float hz = L / 2, y = COMPTOIR_HAUT, ep = 0.05f;
+    // socle en retrait de 8 cm (plinthe sombre), caisson à lames verticales de 12 cm (joints de 6 mm) sur les 4 faces
+    poutre(M.uni, {0.05f, 0.f, -hz + 0.1f}, {0.05f, 0.f, hz - 0.1f}, HAUT, 0.44f, 0.20f, 0.f, c.boisSombre);
+    const float lame = 0.12f;
+    for (float z = -hz; z < hz - 1e-3f; z += lame) {
+        const float zm = std::min(z + lame, hz), m = (z + zm) / 2;
+        poutre(M.uni, {-0.29f, 0.10f, m}, {-0.29f, y - ep, m}, AX, zm - z - 0.006f, 0.022f, 0.003f, c.bois);   // face aux clients
+    }
+    for (float x = -0.28f; x < 0.28f; x += lame) for (float s : {-1.f, 1.f})   // côtés
+        poutre(M.uni, {x + lame / 2, 0.10f, s * (hz - 0.011f)}, {x + lame / 2, y - ep, s * (hz - 0.011f)}, AZ, std::min(lame, 0.30f - x) - 0.006f, 0.022f, 0.003f, c.bois);
+    poutre(M.uni, {0.29f, 0.10f, 0}, {0.29f, y - ep, 0}, AX, 2 * hz, 0.02f, 0.f, c.bois);   // dos (côté barman)
+    poutre(M.uni, {-0.06f, y - ep / 2, -hz - 0.05f}, {-0.06f, y - ep / 2, hz + 0.05f}, HAUT, 0.72f, ep, 0.012f, c.boisSombre);   // plateau
+    poutre(M.uni, {0.10f, 0.80f, -hz + 0.05f}, {0.10f, 0.80f, hz - 0.05f}, HAUT, 0.36f, 0.025f, 0.004f, c.boisSombre);         // tablette du barman
+    return M;
+}
+
+Modele etagere(const Couleurs& c, float L) {
+    Modele M;
+    const float hz = L / 2, H = ETAGERE_HAUT, p = 0.40f;
+    poutre(M.uni, {0.19f, 0, 0}, {0.19f, H, 0}, AX, 2 * hz, 0.02f, 0.f, c.boisSombre);   // dos
+    const int nm = std::max(2, (int)std::round(L / 1.3f) + 1);   // montants tous les ≈ 1,3 m
+    for (int k = 0; k < nm; k++) {
+        const float z = -hz + 0.011f + (2 * hz - 0.022f) * k / (nm - 1);
+        poutre(M.uni, {0, 0, z}, {0, H, z}, AX, 0.022f, p, 0.003f, c.boisSombre);
+    }
+    for (float y : {0.10f, 0.55f, 1.05f, 1.55f, H - 0.011f})   // tablettes
+        poutre(M.uni, {0, y, -hz}, {0, y, hz}, HAUT, p - 0.01f, 0.022f, 0.003f, c.boisSombre);
+    return M;
+}
+
 Modele tableBasse(const Couleurs& c) {
     Modele M;
     const float h = TABLE_COTE / 2, y = TABLE_HAUT, ep = 0.022f;
@@ -534,6 +566,15 @@ Modele scene(const Couleurs& c, bool loin) {
         }
         loft(M.uni, an, c.noir, false, {px - 1, y, 0}, {px - 1, yt, 0});
     }
+    // 4 lyres (projecteurs asservis) pendues sous la poutre de façade : embase serrée sur la membrure, lyre en U, tête ronde
+    // (lentille éclairée dessinée à part par plage.cpp, sous la tête)
+    if (!loin) for (int i = 0; i < 4; i++) {
+        const vec3 o{LYRE_X, LYRE_Y, -3.6f + 2.4f * i};
+        poutre(M.uni, o + vec3{0, 0.09f, 0}, o + vec3{0, 0.16f, 0}, AX, 0.30f, 0.30f, 0.02f, c.noir);   // embase
+        tube(M.acier, o + vec3{0, 0.16f, 0}, o + vec3{0, yt - TRUSS / 2 + 0.01f - LYRE_Y, 0}, 0.012f, 5, c.alu);   // crochet
+        for (float s : {-1.f, 1.f}) poutre(M.uni, o + vec3{0, 0.09f, s * 0.135f}, o + vec3{0, -0.03f, s * 0.135f}, AX, 0.025f, 0.08f, 0.006f, c.noir);   // bras
+        revolution(M.uni, o + vec3{0, -0.16f, 0}, HAUT, {{0.f, 0.085f}, {0.02f, 0.11f}, {0.20f, 0.11f}, {0.24f, 0.07f}, {0.25f, 0.f}}, 12, c.noir);   // tête
+    }
     // table du DJ : plateau de 2,0 × 0,7 m à 1,0 m au-dessus de la scène, nappe noire, deux platines et une table de mixage
     const float xd = -0.3f, yd = y + 1.0f;
     poutre(M.uni, {xd, yd - 0.02f, -1.0f}, {xd, yd - 0.02f, 1.0f}, HAUT, 0.7f, 0.04f, 0.006f, c.noir);
@@ -573,6 +614,12 @@ Modele enceinte(const Couleurs& c, bool loin) {
         quadPlat(M.uni, a0, a1, b1, b0, c.noir, HAUT); quadPlat(M.uni, a1, a2, b2, b1, c.noir, -AZ);
         quadPlat(M.uni, a2, a3, b3, b2, c.noir, -HAUT); quadPlat(M.uni, a3, a0, b0, b3, c.noir, AZ);
     }
+    return M;
+}
+
+Modele lentilleLyre() {
+    Modele M;
+    revolution(M.uni, {0, 0, 0}, -HAUT, {{0.f, 0.078f}, {0.008f, 0.07f}, {0.016f, 0.045f}, {0.02f, 0.f}}, 12, 0);
     return M;
 }
 
@@ -646,8 +693,8 @@ Modele gainesPalmier(const Couleurs& c, uint32_t graine, bool loin) {
         }
         loft(M.uni, an, c.gaine, true, {0, -1, 0}, {0, 0.2f, 0});
     }
-    if (!loin) for (int k = 0; k < 10; k++) {   // pétioles : base large et plate, effilée vers la palme
-        const float a = 2 * PI * k / 10 + H.sym(0.2f), el = -0.25f + H() * 0.75f;
+    if (!loin) for (int k = 0; k < 10; k++) {   // pétioles : base large et plate, effilée vers la palme (relevés comme les palmes)
+        const float a = 2 * PI * k / 10 + H.sym(0.2f), el = 0.15f + H() * 0.6f;
         const vec3 d = normalize(vec3{std::cos(a) * std::cos(el), std::sin(el), std::sin(a) * std::cos(el)});
         const vec3 p0 = vec3{std::cos(a) * 0.14f, -0.30f + H.sym(0.08f), std::sin(a) * 0.14f}, p1 = p0 + d * GAINE_PETIOLE;
         const vec3 lat = normalize(cross(d, HAUT));
@@ -657,19 +704,21 @@ Modele gainesPalmier(const Couleurs& c, uint32_t graine, bool loin) {
             const vec3 p = p0 + (p1 - p0) * u;
             an.push_back({p + lat * w, p + nn * e, p - lat * w, p - nn * e * 0.6f});
         }
-        loft(M.uni, an, c.gaine, true, p0, p1);
+        loft(M.uni, an, c.bois, true, p0, p1);
     }
     // noix de coco en grappe (5 de près, 3 de loin) : coque ovoïde à 3 arêtes, calice, pédoncule
-    const int nn = loin ? 3 : 5;
+    const int nn = loin ? 2 : 5;
     for (int k = 0; k < nn; k++) {
         const float a = 2 * PI * k / nn + H.sym(0.3f);
         const vec3 ctr{std::cos(a) * 0.24f, -0.55f + H.sym(0.06f), std::sin(a) * 0.24f};
         const vec3 ax = normalize(vec3{std::cos(a) * 0.5f, -1.f, std::sin(a) * 0.5f});
         vec3 e1, e2; base(ax, e1, e2);
-        const int ns = loin ? 6 : 12;
+        const int ns = loin ? 5 : 8;
         std::vector<std::vector<vec3>> an;
         const float L = NOIX_LONG, R = NOIX_DIAM / 2;
-        for (auto [u, r] : {std::pair{-0.5f, 0.15f}, std::pair{-0.38f, 0.7f}, std::pair{-0.15f, 0.98f}, std::pair{0.1f, 1.f}, std::pair{0.32f, 0.82f}, std::pair{0.46f, 0.4f}, std::pair{0.5f, 0.05f}}) {
+        const std::vector<std::pair<float, float>> prof = loin ? std::vector<std::pair<float, float>>{{-0.5f, 0.15f}, {-0.2f, 0.95f}, {0.25f, 0.9f}, {0.5f, 0.05f}}
+                                                              : std::vector<std::pair<float, float>>{{-0.5f, 0.15f}, {-0.36f, 0.72f}, {-0.1f, 1.f}, {0.22f, 0.9f}, {0.42f, 0.45f}, {0.5f, 0.05f}};
+        for (auto [u, r] : prof) {
             std::vector<vec3> ring;
             for (int j = 0; j < ns; j++) { const float t = 2 * PI * j / ns, rr = R * r * (1 + 0.07f * std::cos(3 * t)); ring.push_back(ctr + ax * (u * L) + e1 * (std::cos(t) * rr) + e2 * (std::sin(t) * rr)); }
             an.push_back(ring);
