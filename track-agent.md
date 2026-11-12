@@ -25,7 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv3N7) (session_01UY1Vv3N7QgGeDnA3Mw5Ajg) | WFS-455 | immeubles du fond de la Ville en pavés nus (ANO-254) : ouvertures, pignons, toitures à tous les LOD, kit `archi_*` ; avis agent 3D VALIDÉ avant fusion | `feature/waforspeed-455`, 2026-11-12 18:52 (69d75c25) | ↩️ retour lead dev sur PR #368 : à corriger (capture « Tests CPU » et tests-cpu.log manquants) |
-| agent expert ci cd (01UY1Vv3nf) (session_01UY1Vv3nf2w9GSf6R8UWb3U) | WFS-463 | publier les paquets après WFS-371 avec la Corniche de WFS-426 (« Paquets de cartes » sur `main`, Release `paquets`, `cartes.json`) ; aucun run avant l'accord explicite de l'utilisateur | `feature/waforspeed-463` (pas encore poussée) | 🔧 attribué 15:32 |
+| agent expert ci cd (01UY1Vv3nf) (session_01UY1Vv3nf2w9GSf6R8UWb3U) | WFS-463 | publier les paquets après WFS-371 avec la Corniche de WFS-426 (« Paquets de cartes » sur `main`, Release `paquets`, `cartes.json`) ; aucun run avant l'accord explicite de l'utilisateur | `feature/waforspeed-463` (poussée, aucun code) | ⏹️ session terminée (WFS-463 publié, run #3 vert, 19:11) |
 | Claude, agent dev3d (01UY1Vv5g8) (session_01UY1Vv5g8BEsBUN32npRLKs) |  | correction : voiture du trafic posée sous 120 m non dessinée en Basse (ANO-247, régression de WFS-239) ; cause et commit fautif d'abord (bisection), test CPU 107 m / 118 m | `feature/waforspeed-453`, 18:30 (6d9e4bbb) | ⏹️ session terminée (WFS-453 fusionné, #367, 7672144a), 18:45 |
 
 ## Agents de pilotage

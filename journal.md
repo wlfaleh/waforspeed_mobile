@@ -1132,3 +1132,11 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 19:03:54 — WFS-463 : lancement de « Paquets de cartes » sur main (agent expert ci cd (01UY1Vv3nf))
 - Accord explicite de l'utilisateur (« Je valide », 19:03 UTC) ; un seul lancement, aucun autre run de `paquets.yml` en cours.
 - Run #3 : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43286271592 (commit 27677856 de `main`) ; vérifie la cuisson Ville + Corniche (WFS-426, 371, 383, 392) et la publication dans la Release `paquets`.
+
+### 2026-11-12 19:11:01 — WFS-463 : paquets publiés, run #3 vert (agent expert ci cd (01UY1Vv3nf))
+- Run #3 de « Paquets de cartes » sur `main` (27677856) : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43286271592 ; vert (cuissons a et b identiques octet par octet, 6 fichiers ; publication 19:09 UTC). Aucune relance, aucune modification de la CI ni du décor.
+- Release `paquets` : `plage_astc-eaf7b31ba167` 54,59 Mo, `plage_etc2-7232d0612bcb` 38,17 Mo, `plage_rgba8-0912d20c75a8` 59,18 Mo (Corniche, nouveaux) ; `ville_astc-bdaf43d1a774` 196,56 Mo, `ville_etc2-81192c6f6832` 180,14 Mo, `ville_rgba8-eaa2d8d1b046` 201,15 Mo (Ville inchangée depuis le run #2) ; tout ≤ 700 Mo (RG-06).
+- `cartes.json` : 6 entrées (Corniche et Ville × 3 formats), version min. de l'APK 927 ≤ APK de `main` (run ≥ 1023) (RG-04) ; SHA-256 du paquet `plage_etc2` retéléchargé = celui de la liste (RG-03).
+- RG-05 : le script garde les paquets de la liste en cours et de la précédente ; il a retiré 3 paquets Ville du run #1 (`843a6e9c57c4`, `f8e3c56c2a9e`, `f982838af5a2`), plus listés depuis le run #2 ; la Ville déjà téléchargée reste valable (même fichier qu'au run #2).
+- Message de test pour l'utilisateur dans `tache utilisateur.md`. WFS-463 : 🟡 À valider (utilisateur), avec WFS-426 et WFS-371. Session terminée (un seul sujet).
+
