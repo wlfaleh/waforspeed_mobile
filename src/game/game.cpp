@@ -74,7 +74,7 @@ void Game::setCar(const char* carId) {
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &voiturePermise(carId);   // WFS-404 (RG-04, accroche) : voiture retirée (licence NC) ou inconnue → 1re voiture permise
     paint_ = hexColor(carDef_->paint);
-    if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureChoisie(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24
+    if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureCourse(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24 ; WFS-487 (RG-07) : possédée seulement
     loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
     camInit_ = false;

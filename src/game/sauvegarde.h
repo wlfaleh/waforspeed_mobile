@@ -29,7 +29,9 @@
 
 namespace wfs {
 
-// les 16 peintures du jeu web (PAINTS de js/cars/catalog.js, mêmes identifiants et hex que le garage, src/ui/garage.cpp)
+// WFS-487 (RG-01, RG-02) : LA liste des couleurs du jeu (le garage, src/ui/garage.cpp, la lit) : les 16 peintures du jeu web
+// (PAINTS de js/cars/catalog.js, mêmes identifiants et hex), puis 12 couleurs vives (sRGB ; affinables par WFS-490, jamais un nom
+// ou une teinte déposés d'un constructeur). Même ordre que BOUTIQUE_COULEURS_IDS (src/core/configgame.h), qui porte les prix.
 struct PeintureDef { const char* id; const char* nom; unsigned hex; };
 inline const PeintureDef PEINTURES[] = {
     {"blanc", "Blanc", 0xc9ccd2}, {"noir", "Noir", 0x0f1014}, {"gris", "Gris", 0x7b808a}, {"rouge", "Rouge", 0xb3122b},
@@ -37,7 +39,14 @@ inline const PeintureDef PEINTURES[] = {
     {"nacre", "Blanc nacré", 0xe6e2d6}, {"bleunuit", "Bleu nuit", 0x141c3a}, {"anglais", "Vert anglais", 0x0f3324},
     {"bordeaux", "Bordeaux", 0x5a0f1e}, {"sable", "Sable", 0xb39a72}, {"violet", "Violet", 0x4b2380},
     {"turquoise", "Turquoise", 0x0f8f8c}, {"taxi", "Jaune taxi", 0xe8b400},
+    {"bleuelectrique", "Bleu électrique", 0x0050ff}, {"vertacide", "Vert acide", 0x7fff00}, {"orangefluo", "Orange fluo", 0xff5f00},
+    {"rose", "Rose", 0xff2e88}, {"jaunecitron", "Jaune citron", 0xe6f000}, {"violetneon", "Violet néon", 0x9d00ff},
+    {"rougevif", "Rouge vif", 0xe10600}, {"cyan", "Cyan", 0x00c8ff}, {"vertmenthe", "Vert menthe", 0x3ef0b0},
+    {"magenta", "Magenta", 0xe000b4}, {"corail", "Corail", 0xff6f61}, {"bleuciel", "Bleu ciel", 0x4fa8ff},
 };
+constexpr int NB_PEINTURES = sizeof(PEINTURES) / sizeof(PEINTURES[0]);
+// WFS-487 : couleurs montrées par le garage actuel (les 16 premières) tant que WFS-489 (28 pastilles, cadenas) n'est pas fusionné
+constexpr int NB_PEINTURES_GARAGE = 16;
 const PeintureDef* peintureDef(const std::string& id);   // nullptr si inconnue
 // peinture d'origine d'une voiture (champ paint de CARS[] du jeu web)
 const char* peintureOrigine(const std::string& carId);
@@ -49,6 +58,14 @@ public:
     long long best = 0;                        // waforspeed-best : meilleur score
     std::string car = "golf";                  // car : voiture choisie (id de CARS[])
     std::map<std::string, std::string> paint;  // paint-<voiture> : peinture choisie (absente = peinture d'origine)
+    // WFS-487 (RG-05, RG-06) : personnalisation (src/game/personnalisation.h) ; identifiants du catalogue, valeurs inconnues ignorées
+    std::map<std::string, std::set<std::string>> possede;   // possede-<voiture>=a|b : couleurs, finitions, skins achetées pour CETTE voiture
+    std::set<std::string> possedeDessins;                   // possede-dessins=a|b : packs d'autocollants (toutes les voitures)
+    std::map<std::string, std::string> paint2;              // paint2-<voiture> : couleur secondaire (absente = même que la principale)
+    std::map<std::string, std::string> finition;            // finition-<voiture> (absente = brillant)
+    std::map<std::string, std::string> skin;                // skin-<voiture> (absente = aucune)
+    std::map<std::string, std::string> creation;            // creation-<voiture> : habillage actif de l'atelier (WFS-497)
+    int perso = 1;                                          // perso=1 : catalogue de WFS-487 en place (absente : sauvegarde d'avant, migrée)
     std::string map = "ville";                 // map : carte
     std::string tod = "nuit";                  // tod : moment (jour / nuit)
     std::string moment;                        // WFS-375 : midi (JOUR) ou nuit (NUIT) au chargement ; vide : déduit de tod
@@ -115,10 +132,13 @@ public:
     std::string cheminVoisin(const std::string& nom) const;
     // WFS-125 : banc d'essai : sauvegarde de nouveau inactive (défauts), pour que les scènes suivantes gardent leurs captures
     void desactiver();
-    // peinture de la voiture : choisie si valide, sinon celle d'origine (myPaint du jeu web)
+    // peinture de la voiture : choisie si valide et possédée (WFS-487, RG-07), sinon celle d'origine (myPaint du jeu web)
     std::string peinture(const std::string& carId) const;
-    // peinture choisie par le joueur pour cette voiture (nullptr : jamais choisie, la voiture garde sa couleur d'origine)
+    // peinture choisie par le joueur pour cette voiture (nullptr : jamais choisie, la voiture garde sa couleur d'origine) ;
+    // WFS-487 : choix brut, possédé ou non (aperçu du garage) ; la course lit peintureCourse
     const PeintureDef* peintureChoisie(const std::string& carId) const;
+    // WFS-487 (RG-07) : peinture choisie ET possédée (aspect en course) ; nullptr : couleur d'origine
+    const PeintureDef* peintureCourse(const std::string& carId) const;
     int camIndex() const;                        // 0 poursuite, 1 capot, 2 cockpit (= VueCamera, reglages().camera)
     void setCamIndex(int i);
     int qualiteIndex() const;                    // 0 basse, 1 moyenne, 2 haute (= reglages().qualite)
