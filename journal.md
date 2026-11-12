@@ -1164,3 +1164,19 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Ticket : WFS-461 (P1, 1re priorité par ordre de l'utilisateur du 19:27), épic E3, zone autorisée `player.*`, `roues.*`, `duel.*`, `poursuite.*` (+ `tests/**`) ; règles : `regles-de-gestion/WFS-461.md` (ANO-261 glisse au contact de la police, ANO-262 police plafonnée à 208 km/h). Épic E3 sans autre ticket 🔧 / 🔀.
 - Branche `feature/waforspeed-461` créée par le développeur ; captures avant / après, PR, lead dev seul à fusionner ; après la fusion : 🟡 À valider (utilisateur), puis arrêt de la session.
 - `track-agent.md` : lignes des sessions closes enlevées (WFS-455, 453, 463).
+
+### 2026-11-12 19:36:08 — WFS-452 : ANO-265 seulement sur la M4, contrôle du modèle non fait (po-scrum-master)
+- Précision de l'utilisateur : les roues avant qui battent en ligne droite ne se voient que sur la M4. La PR #365 corrige le calcul du braquage pour tout le trafic mais ne prouve rien sur le modèle M4 (RG-09 : « vérifier aussi que les roues ne sont pas braquées dans le modèle converti »). Noté dans `regles-de-gestion/WFS-452.md` ; validation 🟡 à faire sur la M4 ; si KO → nouveau ticket M4 pour `@devartiste`.
+
+### 2026-11-12 19:38:23 — WFS-479 créé : jeu dans les roues de la M4 (ANO-265 mal comprise) (po-scrum-master)
+- L'utilisateur précise : la M4 du trafic roule normalement tout droit, mais il y a **du jeu dans les roues** ; ce n'est pas un braquage. ANO-265 avait été décrite comme un braquage par le QA, puis par le PO ; WFS-452 (#365) a donc lissé le braquage sans traiter ce défaut. Erreur du PO : ne pas l'avoir vérifié avec l'utilisateur.
+- **WFS-479** (P1, E10, `@devartiste`, pas la session de WFS-452) : centre / axe des roues du modèle M4 à corriger à la source, contrôle des 18 voitures, suites d'images jour et nuit. Placé juste après WFS-461. ANO-265 → WFS-479 ; WFS-452 garde sa validation 🟡 pour les roues des adversaires, du duel, de la police et du fantôme.
+
+### 2026-11-12 19:39:32 — WFS-479 limité à la M4 (po-scrum-master)
+- Ordre de l'utilisateur : « corrige que ce modèle ». Contrôle des 17 autres voitures retiré (RG-04), test CPU sur la M4 seulement.
+
+### 2026-11-12 19:40:15 — WFS-479 attribué à une nouvelle session `@devartiste` (po-scrum-master)
+- Ordre de l'utilisateur : « je veux qu'il soit corrigé dans deux minutes ». Session ouverte sur son compte (session_01UY1Vv26cyFG656pvqumWgW, « WFS-479 — dev-artiste-3d (roues de la M4) »), ticket WFS-479 donné (M4 seulement), zone : modèle M4 et chaîne de conversion (`tools/**`, `assets/cars/m4*`), test CPU. Fusion par le lead dev, puis 🟡.
+
+### 2026-11-12 20:00:11 — WFS-479 : 911 ajoutée, cause trouvée (po-scrum-master)
+- Ordre de l'utilisateur dans la session du développeur (19:56 UTC, vérifié dans son fil) : « Corrige le même problème sur la 9fs ». RG-04 = M4 et 911. Cause : roues avant modélisées braquées de 20° (911 : moyeux avant décalés de 7,6 cm en plus), redressées à la source. Pneus avant de la 911 à 0,670 m au lieu de 0,679 m : hors ticket.
