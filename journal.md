@@ -1195,3 +1195,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 20:20:56 — WFS-461 : PR #369 refusée par le lead dev (lead-dev)
 - Commit relu b105633. Construction et tests refaits : 115 tests CPU réussis, `test_police_461` OK ; 32 paires de captures ouvertes (flanc Poursuite, flanc Cockpit, rattrapage) : demande satisfaite à l'œil, aucune régression vue ; diff lu en entier, aucun défaut de code.
 - **Refus pour un seul point de forme** : capture « Tests CPU » absente de la PR (pas de `qa/pr/WFS-461/tests-cpu.log`, pas de ligne « N test(s) réussi(s) » avec le commit testé ; règle de l'utilisateur du 2026-11-11). Revue postée en commentaire (même compte GitHub). Ticket en ↩️ Retour lead dev (PR #369).
+
+### 2026-11-12 20:31:41 — WFS-479 : PR #370 ouverte (agent dev-artiste-3d (01UY1Vv26c))
+- Causes : M4 et 911 : roues avant modélisées braquées de 20° (la roue bat en tournant) ; Bussola : lames égarées du pneu (jusqu'à 44 cm du moyeu) et disques de frein décentrés de 8 cm. 911 et Bussola ajoutées sur ordre de l'utilisateur (RG-04 mis à jour par le PO).
+- Correction à la source : `tools/redresser_roues.cpp` (chaîne de conversion), modèles `m4`, `p911`, `compass` refaits ; test RG-05 dans `tests/test_roues.cpp` (M4, 911 : < 2 mm, < 0,5° ; Bussola : < 7 mm, < 1°, reste du modèle d'origine). Captures avant / après dans `qa/pr/WFS-479/`. Lead dev appelé.
+- Signalé au PO : pneus avant de la 911 à 0,670 m (fiche 0,679 m), hors ticket ; la scène de nuit sur la Corniche plante le banc `roues-suivies` (main compris).
+
