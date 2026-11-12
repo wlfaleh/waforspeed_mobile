@@ -1,6 +1,6 @@
 // WaForSpeed — WFS-148 : banc de référence du réalisme (WFS_BANC=realisme) : voir bench_realisme.h.
 //
-// 13 vues fixes × jour / nuit × Basse / Haute = 52 captures (WFS-455 : vue ville-arriere ajoutée) realisme-<vue>-<moment>-<qualite>.png ; scène d'étalonnage
+// 12 vues fixes × jour / nuit × Basse / Haute = 48 captures realisme-<vue>-<moment>-<qualite>.png ; scène d'étalonnage
 // realisme-etalon.png (charte ColorChecker 24 cases et charte grise 18 % posées sur la chaussée, soleil du jeu) ;
 // realisme-fidelite.txt (rapport de fidélité, indice par domaine) et realisme-mesures.txt (images/s, ms, ms GPU, mémoire).
 //
@@ -14,7 +14,6 @@
 #include "route_mesures.h"   // WFS-206 (RG-05)
 #include <array>
 #include <cstdlib>
-#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <tuple>
@@ -44,7 +43,7 @@ struct Repere { float a = 0, l = 0, h = 0; };
 enum class Choix { Depart, LigneDroite, Virage, Terrasse };
 struct Vue { const char* nom; const char* carte; const char* zone; Choix choix; Repere oeil, cible; float fov; const char* note; };
 
-// RG-03 : les 12 vues de référence (+ ville-arriere, WFS-455). Choix de cadrage de WFS-148 (à garder identiques d'une US à l'autre : avant / après).
+// RG-03 : les 12 vues de référence. Choix de cadrage de WFS-148 (à garder identiques d'une US à l'autre : avant / après).
 const Vue VUES[] = {
     {"rue-cafes", "ville", nullptr, Choix::Terrasse, {-6, 3.5f, 1.7f}, {22, 11, 1.4f}, 60, "première terrasse de café (côté droit)"},
     {"carrefour", "ville", nullptr, Choix::Depart, {36, -5, 4}, {52, 0, 0}, 60, "la carte Ville n'a pas de carrefour : vue du premier passage piéton (≈ 50 m du départ)"},
@@ -58,7 +57,6 @@ const Vue VUES[] = {
     {"voiture-34-avant", "ville", nullptr, Choix::Depart, {4.5f, 3.2f, 1.25f}, {0, 0, 0.65f}, 50, "Golf du joueur, trois quarts avant"},
     {"pietons", "ville", nullptr, Choix::Terrasse, {-3, 5.5f, 1.6f}, {12, 10, 1.2f}, 55, "trottoir de droite, piétons et clients de la terrasse"},
     {"chaussee-1m5", "ville", nullptr, Choix::Depart, {6, -2.5f, 1.5f}, {16, -2.5f, 0}, 60, "chaussée vue à 1,5 m du sol"},
-    {"ville-arriere", "ville", nullptr, Choix::Depart, {-15, 55, 1.7f}, {20, 30, 6}, 60, "WFS-455 : arrière des immeubles de droite, à hauteur d'homme (cour)"},
 };
 constexpr int PAS_AVANT_CAPTURE = 90;   // pas de simulation (1/60 s) avant la capture : chargement des morceaux, puis figé
 // WFS-149 (RG-A, ANO-85) : vues prises sans aucune interface. Écran Chargement : comme le Menu hors course (voiture immobile,
@@ -384,10 +382,8 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     g_banc = EtatBanc{}; g_banc.actif = true;
     double t = 2000;
     const char* qualites[2] = {"basse", "haute"};
-    const char* vueSeule = std::getenv("WFS_REALISME_VUE");   // WFS-455 (accroche) : essai local d'une seule vue (captures seules)
     for (const Vue& v : VUES) {
         if (!dansPartie(E_CAPTURES)) break;
-        if (vueSeule && std::strcmp(v.nom, vueSeule)) continue;
         int64_t depart = segmentDepart(v);
         if (depart < 0) { WFS_ERR("réalisme : zone %s absente de %s", v.zone, v.carte); erreurs++; continue; }
         if (v.choix == Choix::Terrasse) {   // première terrasse : connue une fois la ville construite (commerces.cpp)
@@ -419,7 +415,6 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         }
     }
 
-    if (vueSeule) return erreurs;   // WFS-455 (accroche)
     ranger(E_CAPTURES);
 
     // ---------------- RG-06 : coût par carte (jour), Basse et Haute : 130 images rendues (le Renderer écrit le coût GPU
