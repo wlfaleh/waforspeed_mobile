@@ -346,3 +346,28 @@ Aucun ticket ni aucune anomalie ne le couvre (`TACHES.md`, `anno.md` vérifiés 
 | A02 | UX/UI | *Observé* : R04-A12 propose de cacher le duel en v1.0 | Si le duel est caché pour la sortie publique, le retirer **des deux endroits** et le remettre au menu en v1.2 | Pas de bouton qui mène à une fonction pas prête | Moyen | Faible | P2 | Décision de l'utilisateur |
 
 **Recommandation** : A01 tout de suite (petit ticket E3, zone de `src/game/modes_ecran.cpp`) ; A02 selon votre choix sur le duel.
+
+---
+
+## R07 — 2026-11-12 — Nouveaux modes de jeu (mode Créatif + Gameplay)
+
+Question de l'utilisateur : « tu n'as pas d'autre idée que Checkpoint, Course à 5 et Poursuite ? ». **Propositions** ; l'utilisateur choisit.
+Ce qui existe déjà et peut servir (observé) : quasi-contacts avec combo et 250 × combo points, nitro (`src/game/course.h:39`), chocs, accidents,
+trafic, police et barrages (Poursuite), IA de la Course à 5 (`course5.*`), fantôme (`fantome.*`), nuit, pluie, checkpoints.
+Règle à respecter : tout objet nouveau visible (radar, colis…) doit être un **vrai modèle 3D** (pas de forme nue, CLAUDE.md).
+
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Mode | *Observé* : combo de quasi-contacts déjà codé mais caché dans le Checkpoint | **« Heure de pointe »** : 2 min, trafic de plus en plus dense, score = frôlements × combo × vitesse ; un choc casse le combo, 3 accidents = fin | Le mode le plus « street » : prise de risque, record à battre | Élevé | Faible (réutilise `nearMiss`, `traffic`) | P1 | Densité du trafic et performance du téléphone |
+| A02 | Mode | *Observé* : IA de la Course à 5 | **« Élimination »** : 5 voitures, le dernier est éliminé à chaque checkpoint, jusqu'au duel final | Tension croissante, chaque dépassement compte | Élevé | Faible | P1 | Lisibilité au HUD (« ÉLIMINÉ ») |
+| A03 | Mode / Carrière | *Observé* : Course à 5 avec 1 seul adversaire possible | **« Rival »** : 1 contre 1 face au « boss » de chaque ligue de la Carrière (R05), qui a un nom, une voiture et une peinture ; le battre ouvre la ligue suivante et donne une remise sur sa voiture | Un objectif incarné, une fin de ligue | Élevé | Faible à Moyen | P1 (avec R05) | Pas de marque dans les noms ; IA du rival à régler (WFS-394) |
+| A04 | Mode | *Supposé* | **« Convoi fragile »** : aller d'un point A à un point B dans le temps ; chaque choc retire 10 % de la prime | Conduite propre récompensée (l'inverse de l'Heure de pointe) | Moyen | Faible | P2 | Point d'arrivée = vrai lieu 3D de la Corniche (pas de marqueur nu) |
+| A05 | Mode | *Supposé* | **« Radars »** : 5 radars fixes sur le parcours ; score = somme des vitesses au passage | Défi court, facile à comprendre, très rejouable | Moyen | Moyen (modèle 3D réel de radar à intégrer) | P2 | Modèle CC0 de radar aux vraies mesures ; message « vitesse excessive » à éviter dans la fiche (PEGI) |
+| A06 | Mode | *Observé* : police et fuyard déjà codés | **« Interception »** (inversé de la Poursuite) : vous êtes la police, vous devez arrêter un fuyard avant la fin du temps | Rôle nouveau, utilise la voiture de police (WFS-460) | Élevé | Moyen à Élevé (IA du fuyard) | P3 | Après la stabilisation de la conduite |
+| A07 | Social | *Observé* : fantôme enregistré ; Duel en ligne fragile | **« Défi fantôme »** : envoyer son fantôme à un ami par un code ; il court contre lui quand il veut (pas de temps réel) | Jouer « avec des amis » sans les contraintes du direct | Élevé | Moyen (relais existant, petit fichier) | P2 (remplace le Duel en v1.0, R04-A12) | Données échangées → formulaire Sécurité des données |
+| A08 | Rétention | *Supposé* | **« Défi du jour »** : chaque jour, un mode + un objectif tiré dans A01 à A05 ; même défi pour tout le monde | Une raison de revenir 2 min par jour | Moyen | Faible (si A01-A05 existent) | P2 | Pas de punition si on le rate |
+
+**Top 3** : A01 Heure de pointe (presque gratuit, le plus « street »), A02 Élimination (réutilise la Course à 5), A03 Rival (donne une histoire à la Carrière).
+**Ordre conseillé** : dans les 14 jours du test fermé seulement A01 et A02 (petits) ; A03 avec la Carrière ; A07 en v1.1 pour remplacer le Duel ; A06 plus tard.
+**Hypothèse testable** : si nous ajoutons l'Heure de pointe, alors les testeurs referont plusieurs fois la même course pour battre leur score,
+ce que nous vérifierons en demandant aux testeurs leur mode préféré et en comptant les parties par mode dans le journal du jeu (sur leurs retours).
