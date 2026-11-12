@@ -146,6 +146,27 @@ int benchPolice(Game& g, Renderer& r, const std::string& out) {
         if (vMaxToutes > vMaxPolice * 1.01) { WFS_ERR("police (WFS-461) : %.1f km/h, au-delà de sa fiche (%.0f km/h)", vMaxToutes, vMaxPolice); ecarts++; }
         g_legende.clear(); g.camMode = 0;
     }
+    // ---------- 3. vitesse : joueur au plus vite (pilote automatique sans limite), la police ne dépasse pas sa fiche ----------
+    choisirVue(VueCamera::Poursuite);
+    if (demarrer()) {
+        double vP = 0, e = 0, vJMax = 0;
+        vMaxToutes = 0;
+        g.camMode = 2;
+        for (int k = 0; k < 10; k++) {
+            for (int i = 0; i < 180; i++) { g.setAutopilot(true); g.update(PAS); t += PAS; vitesses(PAS, vP, e); vJMax = std::max(vJMax, g.player().kmh()); }   // une image toutes les 3 s
+            viser(9, 3.5, 3.2f);
+            char l[256];
+            std::snprintf(l, sizeof l, "WFS-461 banc police : vitesse, %d s\njoueur %.0f km/h (maxi %.0f)\npolice la plus proche : %.0f km/h, %.0f m derriere\nmaxi police depuis le depart : %.0f km/h (fiche 208 : %.0f)",
+                          3 * (k + 1), g.player().kmh(), vJMax, vP, e, vMaxToutes, vMaxPolice);
+            g_legende = l;
+            char nom[64]; std::snprintf(nom, sizeof nom, "police-vitesse-%02d", k);
+            image(nom);
+            WFS_LOG("capture %s : joueur %.1f km/h (maxi %.1f), police la plus proche %.1f km/h à %.1f m, maxi police %.1f km/h", nom, g.player().kmh(), vJMax, vP, e, vMaxToutes);
+        }
+        WFS_LOG("police (WFS-461) : vitesse, maxi police %.1f km/h (fiche %.0f km/h), joueur jusqu'à %.1f km/h", vMaxToutes, vMaxPolice, vJMax);
+        if (vMaxToutes > vMaxPolice * 1.01) { WFS_ERR("police (WFS-461) : %.1f km/h, au-delà de sa fiche (%.0f km/h)", vMaxToutes, vMaxPolice); ecarts++; }
+        g_legende.clear(); g.camMode = 0;
+    }
     choisirVue(vue0); modeCourse() = mode0; courseBenchRules(false);
     unsetenv("WFS_DEPART"); unsetenv("WFS_MOMENT");
     return ecarts;
