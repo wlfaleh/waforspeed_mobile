@@ -66,6 +66,7 @@ struct Plan {
     Etage etage = Etage::Fenetres;
     Toit toit = Toit::Terrasse;
     bool edicules = false;      // toiture-terrasse : édicules techniques (cage d'escalier, machinerie)
+    bool secondaire = false;    // WFS-455 : façade arrière ou latérale (facadeSecondaire) : ni balcon filant ni traits de la rue
     std::vector<Baie> baies;
     float hauteur() const { return hRdc + etages * hEtage + corniche; }   // hauteur jusqu'au haut de la corniche
     float niveauY(int n) const { return n == 0 ? 0.f : hRdc + (n - 1) * hEtage; }   // plancher du niveau n
@@ -87,6 +88,13 @@ inline constexpr int APPAREIL[(int)Style::Nombre] = {1, 4, 0, 3, 2, 0};
 
 // assemble une façade de largeur donnée, la plus proche possible de la hauteur voulue, dans les règles du style
 Plan assembler(Style s, float largeur, float hauteurVoulue, uint32_t graine);
+
+// WFS-455 (ANO-254) : façade secondaire d'un bâtiment (arrière sur cour, ou côté exposé), de largeur donnée : mêmes niveaux,
+// même style et mêmes fenêtres d'étage que la façade sur rue p (une façade réelle garde ses hauteurs d'allège et de linteau
+// sur tout le bâtiment), mais seulement des fenêtres (aucun balcon, loggia ni vitrine) ; arrière : une porte de service au
+// rez-de-chaussée. Les travées sont tirées dans la plage du style avec une graine propre (face 1 arrière, 2 gauche, 3 droite).
+// Plan sans aucune baie si la largeur est trop petite pour une fenêtre (mur aveugle : vrai mur mitoyen étroit).
+Plan facadeSecondaire(const Plan& p, float largeur, int face);
 
 // contrôles d'un plan (utilisés par le test et par l'assemblage en mode vérification) : renvoie le nombre d'erreurs
 // et écrit la première dans erreur (si non nul)

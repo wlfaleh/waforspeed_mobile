@@ -151,9 +151,10 @@ public:
         }
         precalcul::occlusionKit(g_bats.size(), [](size_t k, int lod, std::vector<Vertex>& v) {   // WFS-269 : murs, au chargement
             Cpu c; cuit::ajouter(g_bats[k], lod, Baies::Interrupteur, c.lot); v = sommets(c.lot[cuit::slot(MUR, g_bats[k].plan)]); });
-        size_t tri = 0;
-        for (const Bati& b : g_bats) { Batiment x; construire(b.plan, b.profondeur, 0, x); for (const Maillage& m : x.part) tri += m.triangles(); }
-        WFS_LOG("archi (WFS-161) : %zu bâtiments du kit posés, %zu triangles au niveau de détail 0 (tous), nuit %s", g_bats.size(), tri, nuit ? "oui" : "non");
+        size_t tri[3] = {0, 0, 0};   // WFS-455 (RG-04) : triangles des 3 niveaux, preuve avant / après au journal du banc
+        for (const Bati& b : g_bats) for (int n = 0; n < 3; n++) { Batiment x; construire(b.plan, b.profondeur, n, x); for (const Maillage& m : x.part) tri[n] += m.triangles(); }
+        WFS_LOG("archi (WFS-161) : %zu bâtiments du kit posés, %zu triangles au niveau de détail 0 (tous), %zu au niveau 1, %zu au niveau 2, nuit %s",
+                g_bats.size(), tri[0], tri[1], tri[2], nuit ? "oui" : "non");
     }
 
     void render(Renderer& r, const GameView& g) override {

@@ -74,7 +74,7 @@ void uvVitre(const Plan& p, const Baie& b, Maillage& m, uint32_t k) {
 }
 
 bool balconFilant(const Plan& p, int niveau) {   // classique : balcon filant au 2e étage et au dernier (au moins 4 étages)
-    return p.style == Style::Classique && p.etages >= 4 && (niveau == 2 || niveau == p.etages);
+    return p.style == Style::Classique && !p.secondaire && p.etages >= 4 && (niveau == 2 || niveau == p.etages);   // WFS-455 : rue seulement
 }
 
 // ST-2 : traits propres au style autour d'une baie (niveau de détail 0 seulement) ; WFS-402 : volets, meneaux et petits bois
@@ -221,6 +221,36 @@ void toiture(const Plan& p, float D, int lod, Batiment& out) {
     }
 }
 
+// WFS-455 (ANO-254) : façade arrière (sur cour) et façades latérales, au lieu des trois murs aveugles de WFS-161 : vues de haut
+// ou de l'arrière, les immeubles étaient des pavés gris sans fenêtre. Chaque face est une façade du kit (facadeSecondaire :
+// mêmes niveaux et mêmes fenêtres que la rue), construite par facade() dans son propre repère puis tournée autour de y
+// (rotation pure : faces et normales gardent leur sens). Ouvertures « Simples » (trou en retrait et vitre) au niveau 0,
+// peintes à plat sur le mur (avec leur pièce de nuit) aux niveaux 1 et 2 : le coût reste celui d'un mur (RG-04).
+void facadesSecondaires(const Plan& p, float D, int lod, Batiment& out) {
+    const float L = p.largeur;
+    // repère de chaque face : sommet local (x, y, z) → monde = o + ax · x + y + az · z
+    struct Face { int id; float largeur; vec3 o, ax, az; };
+    const Face faces[3] = {
+        {1, L, {L, 0, -D}, {-1, 0, 0}, {0, 0, -1}},   // arrière : vue de la cour, x de droite à gauche
+        {2, D, {0, 0, -D}, {0, 0, 1}, {-1, 0, 0}},    // côté gauche (x = 0)
+        {3, D, {L, 0, 0}, {0, 0, -1}, {1, 0, 0}},     // côté droit (x = L)
+    };
+    for (const Face& f : faces) {
+        const Plan q = facadeSecondaire(p, f.largeur, f.id);
+        Batiment loc;
+        facade(q, lod >= 1 ? 2 : 0, loc, Baies::Simples);   // RG-04 : au-delà du niveau 0, baies peintes (arrière vu de loin)
+        for (int k = 0; k < NB_PARTS; k++) {
+            const Maillage& src = loc.part[k];
+            if (src.i.empty()) continue;
+            Maillage& dst = out.part[k];
+            const uint32_t base = (uint32_t)dst.v.size();
+            for (const Sommet& v : src.v)
+                dst.v.push_back({f.o + f.ax * v.p.x + vec3{0, v.p.y, 0} + f.az * v.p.z, f.ax * v.n.x + vec3{0, v.n.y, 0} + f.az * v.n.z, v.uv});
+            for (uint32_t i : src.i) dst.i.push_back(base + i);
+        }
+    }
+}
+
 } // namespace
 
 float profondeurTableau(const Plan& p, const Baie& b) {
@@ -254,10 +284,7 @@ void construire(const Plan& p, float D, int lod, Batiment& out, Baies mode) {
     D = std::max(D, 2.f);
     const float H = p.hauteur(), L = p.largeur;
     facade(p, std::clamp(lod, 0, 2), out, mode);
-    Maillage& mur = out.part[MUR];
-    rectX(mur, 0, 0, -D, -SOCLE, H, -1);   // côtés et arrière (murs aveugles : mitoyens ou cours)
-    rectX(mur, L, 0, -D, -SOCLE, H, 1);
-    rectZ(mur, 0, L, -SOCLE, H, -D, -1);
+    facadesSecondaires(p, D, std::clamp(lod, 0, 2), out);   // WFS-455 (ANO-254) : arrière et côtés percés, plus de murs aveugles
     if (p.corniche > 0 && p.toit != Toit::Tuiles) {   // corniche (sous les tuiles, c'est la génoise de la toiture qui en tient lieu)
         const float s = regles(p.style).saillieCorniche;
         details::corniche(out.part[ENCADREMENT], L, D, H, p.corniche, s);   // WFS-370 (accroche) : moulurée

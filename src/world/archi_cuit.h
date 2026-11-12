@@ -31,7 +31,7 @@ namespace wfs::archi::cuit {
 
 static_assert(std::endian::native == std::endian::little, "bloc des bâtiments : sommets et indices lus tels quels (petit-boutiste)");
 
-constexpr uint32_t VERSION_BLOC = 1;
+constexpr uint32_t VERSION_BLOC = 2;   // WFS-455 : façades arrière et latérales percées (géométrie changée : anciens blocs refusés)
 constexpr const char* NOM_BLOC = "batiments";
 constexpr int64_t MORCEAU = 48;   // segments de route par morceau (≈ 58 m)
 constexpr int NIVEAUX = 3;
