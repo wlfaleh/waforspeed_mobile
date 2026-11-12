@@ -1088,3 +1088,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Choix : alternance des files ; les dernières attributions venaient de l'ordre des 20 (WFS-371) puis de l'objectif « cartes téléchargées » (WFS-463), donc la **file B des bloquantes** : P1 prêts permis à `@dev` : 453, 455, 456, 460 ; **WFS-453**, plus petit numéro. E4 libre (aucun 🔧 / 🔀). Pas la session de WFS-239 : respecté.
 - Épic E4 ; zone : le fichier qui contient la cause (trafic, rendu des voitures, coupe à distance) + `tests/**` ; `src/render/qualite_banc.cpp` en lecture ; accroche hors épic ≤ 10 lignes annoncée au journal. Pas dans E15 : pas d'avis agent 3D obligatoire. US technique : CI de branche permise (une à la fois, notée au journal).
 - Règles : `regles-de-gestion/WFS-453.md` (RG-01 à RG-05). Branche `feature/waforspeed-453`. Plan : banc `qualite` en local, bisection depuis la fusion de WFS-239, correction du dessin (jamais du contrôle du banc), test CPU 107 m / 118 m, captures avant / après, PR, lead dev. Après fusion : 🟣 puis ✅ par les bancs du matin.
+
+### 2026-11-12 15:37:53 — WFS-453 : branche créée, début de l'analyse (Claude, agent dev3d (01UY1Vv5g8))
+- Ticket attribué par le PO à 15:37. Plan : banc `qualite` en local (lavapipe) sur `main`, bisection depuis la fusion de WFS-239, puis correction du dessin et test CPU 107 m / 118 m.
