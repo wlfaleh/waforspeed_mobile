@@ -1,5 +1,6 @@
 // WaForSpeed — système de langue (WFS-504, épic E20) : voir langue.h et langue_regles.h.
 #include "langue.h"
+#include <atomic>
 #include <cstdlib>
 #include <map>
 #include <mutex>
@@ -18,6 +19,7 @@ langue::Choix g_choix = langue::Choix::Automatique;
 std::mutex g_mutexTel;   // RG-01 : écrite par le thread de l'interface Android (JNI), lue par le thread du jeu
 std::string g_tel;
 bool g_telDonne = false;
+std::atomic<int> g_telLangue{-1};   // langue déduite du téléphone (RG-01), lue sans verrou à chaque texte ; -1 : pas encore lue
 const std::string VIDE;
 
 // journal du banc (RG-07, RG-08)
@@ -32,6 +34,7 @@ const std::string& telephone() {   // sans valeur donnée par Android : WFS_LANG
         const char* e = std::getenv("WFS_LANGUE");
         g_tel = e && *e ? e : "fr";
         g_telDonne = true;
+        g_telLangue = (int)langue::langueDuCode(g_tel);
         WFS_LOG("langue : langue du téléphone « %s » (WFS_LANGUE%s)", g_tel.c_str(), e ? "" : " absente : français");
     }
     return g_tel;
@@ -61,7 +64,7 @@ bool charger() {
 
 void definirLangueTelephone(const std::string& c) {
     std::lock_guard<std::mutex> v(g_mutexTel);
-    g_tel = c; g_telDonne = true;
+    g_tel = c; g_telDonne = true; g_telLangue = (int)langueDuCode(c);
     WFS_LOG("langue : langue du téléphone « %s » (Android)", c.c_str());
 }
 std::string langueTelephone() { return telephone(); }
@@ -71,7 +74,12 @@ void choisir(Choix c) {
     WFS_LOG("langue : réglage %s → %s", cleDeChoix(c), code());
 }
 Choix choix() { return g_choix; }
-Langue active() { return langueActive(g_choix, telephone()); }
+Langue active() {
+    if (g_choix == Choix::Francais) return Langue::Francais;
+    if (g_choix == Choix::Anglais) return Langue::Anglais;
+    const int t = g_telLangue.load(std::memory_order_relaxed);
+    return t >= 0 ? (Langue)t : langueDuCode(telephone());   // 1re lecture seulement sous verrou
+}
 const char* code() { return active() == Langue::Francais ? "fr" : "en"; }
 
 void journalActif(bool oui, const char* ecran) { g_journal = oui; g_ecran = ecran ? ecran : ""; }
