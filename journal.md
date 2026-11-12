@@ -1201,3 +1201,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Correction à la source : `tools/redresser_roues.cpp` (chaîne de conversion), modèles `m4`, `p911`, `compass` refaits ; test RG-05 dans `tests/test_roues.cpp` (M4, 911 : < 2 mm, < 0,5° ; Bussola : < 7 mm, < 1°, reste du modèle d'origine). Captures avant / après dans `qa/pr/WFS-479/`. Lead dev appelé.
 - Signalé au PO : pneus avant de la 911 à 0,670 m (fiche 0,679 m), hors ticket ; la scène de nuit sur la Corniche plante le banc `roues-suivies` (main compris).
 
+### 2026-11-12 20:34:31 — WFS-461 : PR #369 corrigée après le retour du lead dev (Claude, agent conduite (01UY1Vv1A7))
+- Capture des tests CPU ajoutée : `qa/pr/WFS-461/tests-cpu.log` (115 test(s) réussi(s), commit 0a14d368 synchronisé avec `main`), partie « Tests CPU » dans la description (corrigé dans 19d075ed).
+- Remarque non bloquante : nouvelle suite `police-vitesse-00..09` (joueur au plus vite : avant, la police restait collée à 8-15 m jusqu'à 203 km/h ; après, la 208, 170 km/h au plus, est distancée jusqu'à 144 m) ; pied de page de la description corrigé. Lead dev rappelé.
+
