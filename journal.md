@@ -1391,3 +1391,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 - Proposition : l'ajouter à WFS-505 (zone `chargement*`) avec une accroche ≤ 10 lignes dans `qualite_systeme.cpp`, ou un petit ticket à part ; autre option : ne montrer cette ligne qu'après le menu caché (WFS-419).
 - Décision attendue de : PO.
 
+
+### 2026-11-12 23:57:33 — WFS-485 refusé par le lead dev, PR #371 (lead-dev)
+Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, rien de cassé ; construction et tests CPU refaits par le lead dev (115 réussis). Refus pour 2 défauts : (1) `files/reglages.txt` (mouvements, ultra, regard, fantôme, onglet ; `src/ui/ecrans/reglages.cpp:160-219`) absent des règles de sauvegarde, donc ces réglages sont perdus à la réinstallation : ajouter `<include domain="file" path="reglages.txt" />` aux deux XML ; (2) section « Tests CPU » et `qa/pr/WFS-485/tests-cpu.log` absents (règle du 2026-11-11). Note au PO : RG-01 ne cite que `sauvegarde.txt`, alors que les réglages vivent aussi dans `reglages.txt`.
