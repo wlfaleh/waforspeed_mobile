@@ -1325,3 +1325,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 22:43:36 — E22 retirée de la priorité absolue (po-scrum-master)
 - Ordre de l'utilisateur : « oublie E22 ». Priorité absolue : E17 à E21 seulement.
+
+### 2026-11-12 22:45:05 — Ordre de développement : file A (E17 → E21) et file B (5 premières tâches) en même temps (po-scrum-master)
+- Ordre de l'utilisateur. File A : E17, E18, E19, E20, E21 dans cet ordre. File B : WFS-454 (@cicd), 460, 456, 395 (@dev), 394 (@conduite). Sessions @dev : une fois A, une fois B. Bandeau 🧭 dans `TACHES.md`, ordre permanent au skill du PO.
