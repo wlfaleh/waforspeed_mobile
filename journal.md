@@ -1124,3 +1124,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Vérification : 114 tests CPU OK ; captures avant / après `qa/pr/WFS-455/` ; banc perf Ville Basse : triangles 371 825 → 398 131 (+7 %), image lavapipe +1,7 % à +10 % selon le passage (bruit). 0 Mo d'actif ajouté.
 - Références réelles (RG-05) : aucune photo téléchargée ; règles du kit (étages 2,7-3,2 m, fenêtres alignées par travée sur cour). Limite : fenêtres sur cour peintes (plates de très près).
 - Suite : avis agent 3D (RG-E15-06), puis lead dev.
+
+### 2026-11-12 19:04:17 — WFS-455 : PR #368 refusée par le lead dev (lead-dev)
+- Revue du commit 69d75c25 : 18 captures ouvertes ; elles sont bonnes (plus de pavé gris nu, jour et nuit, Haute et Basse, aucune régression). Tout le diff lu, sans défaut bloquant. Branche construite et testée par le lead dev : 114 test(s) réussi(s). Avis agent 3D « VALIDÉ avec réserves » (R1 à R5 pour le PO, RG-E15-09).
+- **Refus pour un seul point** : la section « Tests CPU » manque dans la description de la PR, et `qa/pr/WFS-455/tests-cpu.log` manque sur la branche (règle de l'utilisateur du 2026-11-11). Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/368 (posée en COMMENT, car GitHub refuse « Request changes » sur le même compte). Statut ↩️ Retour lead dev (PR #368).
+- Incident du lead dev : le commit eaed8628 (prise de la PR dans suivi-pr.md) a envoyé par erreur sur main la modification de `src/render/bench_realisme.cpp` de la PR, restée dans mon dossier de travail. Elle a été annulée tout de suite par le commit 27677856, sans réécrire l'historique. Effet net sur main : aucun.
