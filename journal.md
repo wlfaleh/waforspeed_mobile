@@ -920,3 +920,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 10:54:37 — Archives automatiques (robot archives)
 - Journal : 159 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-10).
 - TACHES.md : 32 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-451, WFS-422, WFS-424, WFS-418, WFS-449, WFS-350, WFS-351, WFS-352, WFS-339, WFS-348, WFS-340, WFS-193, WFS-359, WFS-406, WFS-396, WFS-362, WFS-363, WFS-364, WFS-365, WFS-384, WFS-392, WFS-412, WFS-427, WFS-445, WFS-377, WFS-428, WFS-429, WFS-358, WFS-214, WFS-307, WFS-343, WFS-322).
+
+### 2026-11-12 11:08:40 — Vidéo de l'utilisateur (12:04, Corniche, Poursuite) : ANO-250 confirmée, ANO-260 à 262 (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
+- 62 images extraites à 3 img/s (21 s). **ANO-250 reclassée bloquante** : bande « POLICE » côté gauche en rectangle plat qui dépasse de la caisse, aucune bande côté droit (bancs PC : ni l'une ni l'autre visibles).
+- **ANO-260** (majeure) : la voiture de police passe de gris argent à blanc en 0,2 s. **ANO-261** (bloquante, conduite) : glisse irréaliste au contact de la police. **ANO-262** (bloquante, à préciser) : citadine à 300 km/h, non visible dans la vidéo (fiches : 205 à 208 km/h).
+- Le décor plus pauvre des bancs vient de la Ville de secours (« paquet absent » aux journaux), pas d'un retrait. Preuves : `qa/retours/2026-11-12-video1204-*`, `qa/retours/2026-11-12-police-bandes-banc.png`. Transmis au PO.
