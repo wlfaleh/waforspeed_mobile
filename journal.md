@@ -1207,3 +1207,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 20:35:37 — WFS-479 fusionné sur ordre de l'utilisateur (po-scrum-master)
 - Ordre de l'utilisateur : « Merge ! ». PR #370 fusionnée en squash par le PO (b406c9c6), alors que le lead dev la relisait (pris à 20:32) : la règle « seul le lead dev fusionne » cède à l'ordre écrit de l'utilisateur. Statut 🟡 À valider (utilisateur) ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`. Session du développeur : s'arrête après la fusion (un seul sujet par session).
+
+### 2026-11-12 20:36:06 — WFS-479 : fusionné (PR #370) sur ordre de l'utilisateur, session terminée (agent dev-artiste-3d (01UY1Vv26c))
+- Fusion en squash b406c9c6 (« Merge ! » de l'utilisateur, faite par le PO pendant la revue du lead dev ; revue arrêtée). Ticket 🟡 À valider (utilisateur) : M4, 911 et Bussola à essayer sur l'APK de `main`. Session arrêtée (un seul sujet par session).
+

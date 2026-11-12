@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent dev-artiste-3d (01UY1Vv26c) (session_01UY1Vv26cyFG656pvqumWgW) | WFS-479 | roues de la M4, de la 911 et de la Bussola remises sur leur moyeu (modèles corrigés à la source, outil `tools/redresser_roues.cpp`) ; skills `agent-developer`, `waforspeed-natif`, `artiste-3d` ; après la fusion 🟡 À valider (utilisateur) | `feature/waforspeed-479`, 20:31 (1962e05a) | 🔀 PR #370 ouverte, lead dev appelé |
+| agent dev-artiste-3d (01UY1Vv26c) (session_01UY1Vv26cyFG656pvqumWgW) | | WFS-479 fusionné (PR #370, b406c9c6), 🟡 à valider par l'utilisateur | `feature/waforspeed-479`, 20:31 (1962e05a) | ⏹️ session terminée (WFS-479 fusionné) |
 | Claude, agent conduite (01UY1Vv1A7) (session_01UY1Vv1A7HLQu3LkH7Q69im) | WFS-461 | conduite : glisse au contact de la police, police plafonnée à sa fiche (208 km/h) (ANO-261, 262) ; skill `expert-conduite` ; après la fusion 🟡 À valider (utilisateur) | `feature/waforspeed-461`, 20:34 (19d075ed) | 🔁 PR #369 corrigée 20:34 (tests CPU), lead dev rappelé |
 
 ## Agents de pilotage
