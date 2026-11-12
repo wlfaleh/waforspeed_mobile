@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <sstream>
 #include "../core/configgame.h"   // SCORE_POURSUITE_MAX
 #include "../core/log.h"
@@ -38,15 +39,15 @@ static bool carteExiste(const std::string& id) { return id == mapById(id.c_str()
 static const char* CAMS[] = {"poursuite", "capot", "cockpit", "proche"};   // VUES de src/game/camera_vue.h (WFS-66, WFS-85)
 static const char* QUALITES[] = {"low", "medium", "high"};         // quality du web (low / high) + niveau moyen (WFS-68)
 
-// cleanName du jeu web (js/net/duel.js) : caractères de contrôle retirés, espaces autour retirés, 14 caractères au plus
-static std::string nettoyerPseudo(const std::string& s) {
+// cleanName du jeu web (js/net/duel.js) : caractères de contrôle retirés, espaces autour retirés, 16 caractères au plus (WFS-480 ; duel : 14)
+static std::string nettoyerPseudo(const std::string& s, size_t max = profil::PSEUDO_MAX) {
     std::string t;
     for (unsigned char c : s) if (c >= 0x20 && c != 0x7f) t += (char)c;
     const size_t a = t.find_first_not_of(' '), b = t.find_last_not_of(' ');
     if (a == std::string::npos) return "";
     t = t.substr(a, b - a + 1);
-    size_t n = 0, i = 0;   // coupe à 14 caractères (UTF-8 : octets de suite 10xxxxxx non comptés)
-    for (; i < t.size(); i++) if (((unsigned char)t[i] & 0xC0) != 0x80 && n++ == 14) break;
+    size_t n = 0, i = 0;   // coupe à 16 caractères (UTF-8 : octets de suite 10xxxxxx non comptés)
+    for (; i < t.size(); i++) if (((unsigned char)t[i] & 0xC0) != 0x80 && n++ == max) break;
     return t.substr(0, i);
 }
 
@@ -91,6 +92,7 @@ void Sauvegarde::defauts() {
     // WFS-136 (A7.4) : première installation = déjà sur le tracé 2 des cartes actives (rien à mettre de côté)
     nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1; adversaires.clear();
     for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+    profil = Profil{};   // WFS-480
 }
 
 std::string Sauvegarde::texte() const {
@@ -119,6 +121,7 @@ std::string Sauvegarde::texte() const {
         o << "\n";
     }
     for (const auto& [k, v] : anciens) o << k << "=" << v << "\n";        // records du tracé 1, gardés
+    profil.ecrire(o);   // WFS-480 (RG-11) : nouvelles clés, aucune ancienne retirée
     return o.str();
 }
 
@@ -143,6 +146,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         const std::string v = ligne.substr(eq + 1);
         if (k.rfind("waforspeed-", 0) == 0) k = k.substr(11);   // clés du web acceptées avec ou sans préfixe
         long long n = 0;
+        if (profil.lireCle(k, v)) continue;   // WFS-480 : clés du profil
         // WFS-136 (RG-07) : version du tracé, anciennes clés *_v1 gardées, valeurs brutes des records du tracé 1
         if (k == "trace") { if (entier(v, n) && n >= 1 && n <= 99) traceLu = (int)n; continue; }
         if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
@@ -245,12 +249,14 @@ bool Sauvegarde::charger(const std::string& chemin) {
     std::FILE* f = std::fopen(chemin.c_str(), "rb");
     if (!f) {   // WFS-136 : première installation : déjà sur le tracé 2 des cartes actives (aucun record à mettre de côté)
         for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+        profil.apresChargement((long long)std::time(nullptr));   // WFS-480 (RG-05) : date d'arrivée
         WFS_LOG("sauvegarde : aucun fichier (%s) : valeurs par défaut", chemin.c_str()); return false;
     }
     std::string c; char buf[4096]; size_t n;
     while ((n = std::fread(buf, 1, sizeof buf, f)) > 0 && c.size() < (1u << 20)) c.append(buf, n);   // 1 Mo au plus
     std::fclose(f);
     const bool ok = lire(c);
+    profil.apresChargement((long long)std::time(nullptr));   // WFS-480 (RG-05) : 1er lancement de cette version
     if (ok && !cartesAActiver.empty()) { activerCartes(); enregistrer(); }   // WFS-136 (A7.4)
     WFS_LOG("sauvegarde : %s lue (%s) : car=%s best=%lld", chemin.c_str(), ok ? "valide" : "corrompue, défauts", car.c_str(), best);
     return ok;
@@ -261,7 +267,7 @@ bool Sauvegarde::charger(const std::string& chemin) {
 void Sauvegarde::noterAdversaires(const std::vector<std::string>& noms) {
     for (auto it = noms.rbegin(); it != noms.rend(); ++it) {
         const std::string& n0 = *it;
-        std::string n = nettoyerPseudo(n0);
+        std::string n = nettoyerPseudo(n0, 14);   // WFS-480 : noms du duel, 14 caractères (duel::NICK_MAX)
         for (char& c : n) if (c == '|') c = ' ';
         if (n.empty()) continue;
         adversaires.erase(std::remove(adversaires.begin(), adversaires.end(), n), adversaires.end());

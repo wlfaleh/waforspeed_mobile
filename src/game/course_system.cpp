@@ -16,6 +16,7 @@
 #include "game.h"
 #include "player.h"
 #include "roues.h"          // WFS-452 : roues du fantôme qui tournent et braquent
+#include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-24 : record
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
@@ -209,6 +210,7 @@ private:
     void finCourse(const Player&) {
         nouveauRecord_ = false;
         Sauvegarde& s = sauvegarde();
+        if (course_.duelFinish <= 0 && checkpointSolo()) { CourseJouee rc; rc.score = score_; profilNoterResultat(rc); }   // WFS-480 (RG-10)
         if (!s.actif() || course_.duelFinish > 0 || !checkpointSolo()) return;   // duel, course à 5, poursuite : pas ce record
         const long long sc = score_;   // score figé affiché sur l'écran de fin (dernière image de course)
         nouveauRecord_ = s.battreRecord(sc);
@@ -389,6 +391,7 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
     s.charger(chemin);
     if (second) {
         WFS_LOG("SAUVEGARDE relue : car=%s paint=%s best=%lld", s.car.c_str(), s.peinture(s.car).c_str(), s.best);
+        WFS_LOG("PROFIL relu : %s", s.profil.texte(s.nick).c_str());   // WFS-480 : critère d'acceptation (2e lancement)
         if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); return; }
         g.camMode = 2; g.orbit = 0.7f;
         g.render(0); g.render(0); r.capturePng(out + "/sauvegarde-relue.png");
@@ -399,6 +402,7 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         return;
     }
     s.car = "m4"; s.paint["m4"] = "rouge";   // choix du « joueur » (≠ défauts golf / peinture d'origine)
+    s.profil.creer("Banc 480", "WFS-480", s.nick);   // WFS-480 (RG-06) : profil de test fixe du banc
     courseBenchRules(true);
     if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); courseBenchRules(false); return; }
     const Course* k = activeCourse();
@@ -412,6 +416,7 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
     WFS_LOG("capture fin-record : état %s, record %lld", k && k->state == RaceState::Over ? "fin" : "en course", s.best);
     s.enregistrer(); s.attendre();
     WFS_LOG("SAUVEGARDE écrite : car=%s paint=%s best=%lld (%s)", s.car.c_str(), s.peinture(s.car).c_str(), s.best, chemin.c_str());
+    WFS_LOG("PROFIL écrit : %s", s.profil.texte(s.nick).c_str());   // WFS-480
     g.shutdown();
     courseBenchRules(false);
 }
