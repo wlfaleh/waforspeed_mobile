@@ -287,6 +287,21 @@ void Session::updateGhosts(double dt) {
 // valeur déterministe tirée de l'état (même effet moyen, rejouable dans les tests).
 // hitGhosts (une voiture) : contact entre ma voiture et une autre voiture (fantôme du duel ou ordinateur de la course à 5,
 // WFS-110 RG-05) ; effet seulement sur ma voiture, la plus lourde bouge moins
+// WFS-461 (RG-01, ANO-261) : contact réaliste. L'effort entre deux voitures passe par leurs pneus : une voiture n'est poussée de
+// côté que si la poussée dépasse l'adhérence de ses pneus (μ m g) ; la poussée d'une autre voiture est elle-même bornée par
+// l'adhérence de SES pneus (μ m' g) : à masses voisines, rien ne glisse. Avant (jeu web) : côte à côte, ma voiture était
+// déplacée de 2 fois le recouvrement + 3 mm à chaque pas (jusqu'à 22 m/s de côté) et tournée de 0,06 rad par pas tant que
+// le contact durait (7 rad/s à 120 pas par seconde) : la voiture « glissait sur la glace » contre la police (vidéo 12:04).
+// Sources : μ pneu-route sèche ≈ 0,9-1,0 ; frottement tôle / plastique sur tôle ≈ 0,3-0,5 (on prend 0,4) ; coefficient de
+// restitution d'un choc de voitures à basse vitesse ≈ 0,1-0,3 (on prend 0,2) ; part motrice ≈ 55 % du poids (traction avant).
+namespace {
+constexpr double G = 9.81;
+constexpr double MU_CARROSSERIE = 0.4;   // frottement carrosserie contre carrosserie
+constexpr double RESTITUTION = 0.2;      // choc mou : les voitures se séparent à 20 % de leur vitesse d'approche
+constexpr double PART_MOTRICE = 0.55;    // part du poids sur les roues motrices (poussée maxi d'une voiture qui pousse)
+constexpr double DEMI_TOUR = 3.14159265358979323846;
+}
+
 ContactEvents contacter(double dt, Player& pl, const Track& t, const CarDef& me, Ghost& g) {
     ContactEvents ev;
     g.hitCd = std::max(0.0, g.hitCd - dt);
@@ -301,23 +316,49 @@ ContactEvents contacter(double dt, Player& pl, const Track& t, const CarDef& me,
     const int side = sx > 0 ? 1 : sx < 0 ? -1 : (g.x > 0 ? -1 : 1);
     const double overlapZ = touchZ - std::abs(dz), overlapX = touchLat - lat;
     const double oMass = oc.spec.kg / 1450.0, share = oMass / (oMass + pl.perf.mass);   // la plus lourde bouge moins
+    const double mu = std::max(0.05, pl.muSol()), aPneus = mu * G;                        // adhérence de mes pneus (m/s²)
     ev.side = side;
-    if (overlapX * RW < overlapZ * M * 0.7) {   // côte à côte : les carrosseries frottent et se repoussent
-        pl.playerX += side * std::min(overlapX * share * 2 + 0.003, dt * 2.5 + 0.004);
-        pl.heading += side * 0.06 * share; pl.speed *= 1 - 0.8 * dt;
+    if (overlapX * RW < overlapZ * M * 0.7) {   // côte à côte : les carrosseries frottent
+        // contrainte de contact : ma voiture sort juste du recouvrement, rien de plus (pas de poussée sans effort) ; un
+        // recouvrement profond (voiture posée dans l'autre) se défait progressivement, sans téléportation
+        pl.playerX += side * std::min(overlapX, dt * 2.5 + 0.004);
+        // le flanc de l'autre voiture bloque la rotation vers elle (choc mou : la vitesse vers elle est annulée) : un cap qui
+        // pointe vers elle est ramené parallèle, 2,5 rad/s au plus (comme le long de la glissière), jamais au-delà ; sans cela, la
+        // voiture qui braque contre l'autre tournait jusqu'à 50° et passait derrière elle
+        if (side * pl.speed * std::sin(pl.heading) < 0) {
+            const double axe = std::abs(pl.heading) > DEMI_TOUR / 2 ? (pl.heading > 0 ? DEMI_TOUR : -DEMI_TOUR) : 0.0;
+            pl.heading += std::clamp(axe - pl.heading, -2.5 * dt, 2.5 * dt);
+        }
+        // frottement des carrosseries : effort normal borné par l'adhérence des pneus, donc ≤ μc × μ g ; il rapproche ma vitesse
+        // de celle de l'autre voiture (jamais au-delà : un contact ne fait pas passer la marche arrière)
+        const double dv = (g.v - pl.speed) * M, aFrot = MU_CARROSSERIE * aPneus;
+        pl.speed += std::clamp(dv, -aFrot * dt, aFrot * dt) / M;
         if (g.hitCd <= 0) { g.hitCd = 0.2; ev.frottements++; }
         return ev;
     }
     const double rel = std::abs(pl.speed - g.v), impact = rel / MAX_SPEED;
-    if (dz > 0) {   // je percute l'arrière de l'adversaire : je recule derrière lui et perds ma vitesse
-        pl.position = t.wrap(pl.position - overlapZ - 0.15 / M); pl.dist = std::max(0.0, pl.dist - overlapZ - 0.15 / M);
-        pl.speed = std::min(pl.speed, g.v + rel * (0.15 + 0.3 * (1 - share)));
-    } else {        // il me percute par l'arrière : je suis poussé vers l'avant
-        pl.speed = std::max(pl.speed, g.v * (0.6 + 0.4 * share));
-        const double r = std::sin(pl.dist * 12.9898 + g.rd * 78.233) * 0.5;   // ∈ [−0,5 ; 0,5] (Math.random() − 0,5)
-        pl.heading += r * 0.12 * std::min(1.0, impact * 4);
+    const bool nouveau = g.hitCd <= 0;   // premier pas du choc (les pas suivants : contact tenu)
+    if (dz > 0) {   // je percute l'arrière de l'adversaire : je reviens au contact et perds ma vitesse (choc mou)
+        pl.position = t.wrap(pl.position - overlapZ - 0.01 / M); pl.dist = std::max(0.0, pl.dist - overlapZ - 0.01 / M);
+        if (pl.speed > g.v) pl.speed -= (1 + RESTITUTION) * share * (pl.speed - g.v);
+    } else if (g.v > pl.speed) {   // il me percute par l'arrière : quantité de mouvement échangée (choc), puis poussée tenue
+        if (nouveau) pl.speed += (1 + RESTITUTION) * share * (g.v - pl.speed);
+        else {
+            // poussée tenue : la force de ses roues motrices (≤ μ g × part motrice × sa masse) moins mon freinage (≤ μ g × ma
+            // masse) ou ma marche arrière (≤ μ g × part motrice × ma masse), sur les deux masses ; une voiture qui freine ne se
+            // laisse pas pousser par une voiture de même poids
+            const double retenue = pl.braking ? pl.perf.mass : pl.reversing ? PART_MOTRICE * pl.perf.mass : 0.0;
+            const double f = aPneus * (PART_MOTRICE * oMass - retenue);
+            pl.speed += std::min(g.v - pl.speed, std::max(0.0, f / (oMass + pl.perf.mass)) * dt / M);
+        }
+        // un choc décentré fait tourner un peu la voiture : une fois par vrai choc (vitesse d'approche > 3 m/s, 11 km/h), jamais pendant une
+        // poussée tenue (avant : à chaque pas du contact, cap tiré au hasard 120 fois par seconde : la voiture « dansait »)
+        if (nouveau && rel * M > 3.0) {
+            const double r = std::sin(pl.dist * 12.9898 + g.rd * 78.233) * 0.5;   // ∈ [−0,5 ; 0,5] (Math.random() − 0,5)
+            pl.heading += r * 0.12 * std::min(1.0, impact * 4);
+        }
     }
-    if (g.hitCd <= 0) {
+    if (nouveau) {
         g.hitCd = 0.35; ev.chocs++; ev.impact = std::max(ev.impact, impact);
         if (impact * share > 0.22) { ev.accident = true; pl.accident(std::min(1.0, impact * share * 1.5), side); }
     }

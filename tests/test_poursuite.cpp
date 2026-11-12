@@ -42,14 +42,17 @@ int testPoursuite() {
     // RG-03 : 2 voitures au départ, une de plus tous les 2 km, 6 au plus
     VERIFIE(policeVoulue(0) == 2 && policeVoulue(1.99) == 2 && policeVoulue(2) == 3 && policeVoulue(8) == 6 && policeVoulue(12) == 6, "renforts");
     // la police rattrape un joueur à 160 km/h parti 40 m devant, sans traverser le trafic
-    std::vector<Police> ps = {renfort(0, 0, 0, 7), renfort(1, 0, 0, 7)};
-    ps[0].rd = -25 / M; ps[1].rd = -40 / M;
+    // WFS-461 (RG-03) : la police roule avec la fiche de la 208 ; déjà lancée à la vitesse du joueur (avant : partie de l'arrêt,
+    // elle ne rattrapait qu'avec ses 70 m/s² d'accélération irréalistes)
+    const FichePolice f208 = fichePolice("p208", "golf");
     const double vJ = 160 / 3.6 / M; double sJ = 0, tProche = -1;
+    std::vector<Police> ps = {renfort(0, 0, vJ, 7), renfort(1, 0, vJ, 7)};
+    ps[0].rd = -25 / M; ps[1].rd = -40 / M;
     std::vector<Obstacle> obs;
     for (int i = 0; i < 120 * 30; i++) {
         sJ += vJ / 120;
         obs = {{sJ + 30 / M, ps[0].x, 80 / 3.6 / M}};   // une voiture lente devant la police
-        avancer(ps, 1.0 / 120, i / 120.0, sJ, 0, vJ, obs);
+        avancer(ps, 1.0 / 120, i / 120.0, sJ, 0, vJ, obs, f208);
         if (tProche < 0 && plusProcheM(ps, sJ, 0) < 12) tProche = i / 120.0;
     }
     VERIFIE(tProche >= 0 && tProche < 15, "la police rattrape le joueur (%.1f s)", tProche);
@@ -170,7 +173,7 @@ int testPoursuite() {
             for (int i = 0; i < 120 * 40; i++) {
                 for (size_t k = 0; k < ps.size(); k++) avant[k] = (sJ - ps[k].rd) * M;
                 sJ += vJ / 120;
-                avancer(ps, 1.0 / 120, i / 120.0, sJ, xJ, vJ, obs);
+                avancer(ps, 1.0 / 120, i / 120.0, sJ, xJ, vJ, obs, fichePolice("p208", nullptr));
                 for (size_t k = 0; k < ps.size(); k++) {
                     const double rel = (sJ - ps[k].rd) * M, rapproche = (avant[k] - rel) * 120;   // m/s
                     if (rel < DESSIN_DERRIERE_M && std::abs(rel - avant[k]) > 1.0) sauts++;

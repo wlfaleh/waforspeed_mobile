@@ -263,7 +263,8 @@ public:
         }
         for (const Plot& p : plots_) if (!p.tombe) obs_.push_back({p.s, p.x, 0});
         for (const Camion& k : camions_) for (int f = 0; f < 3; f++) if (f != k.fileLibre) obs_.push_back({k.s, FILES[f], 0});   // WFS-119
-        poursuite::avancer(police_, dt, c->raceTime, pl.dist, pl.playerX, pl.speed, obs_);
+        const FichePolice fiche = fichePolice(policeCar(&pl), pl.car ? pl.car->id : nullptr);   // WFS-461 (RG-03) : fiche de sa voiture
+        poursuite::avancer(police_, dt, c->raceTime, pl.dist, pl.playerX, pl.speed, obs_, fiche, &t);
         if (bancPoliceActive_ && !police_.empty()) {   // WFS-452 (banc « roues-suivies ») : 1re voiture tenue à côté du joueur
             Police& p0 = police_[0];   // rdPrec / xPrec : place du pas précédent (poursuite::avancer les a notées)
             p0.rd = pl.dist + bancPoliceEcart_ / M; p0.x = bancPoliceX_; p0.v = pl.speed;
