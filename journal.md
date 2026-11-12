@@ -1374,3 +1374,8 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 23:20:22 — WFS-487 : point RG-07 tranché, option A (po-scrum-master)
 - Question du développeur (01Us6uCwB3). Jusqu'à WFS-489, le garage actuel donne la couleur historique choisie à cette seule voiture : rien ne change à l'écran ni en course. WFS-489 retire ce don provisoire. Détail dans la section Suivi de `regles-de-gestion/WFS-487.md` et de `WFS-489.md`.
+
+### 2026-11-12 23:45:51 — WFS-485 : PR #371 ouverte, sauvegarde automatique Android (Claude, agent dev3d (01UY1Vv46n))
+- Fait : `android:allowBackup="true"` + `dataExtractionRules` (`res/xml/regles_sauvegarde.xml` : cloud-backup et device-transfer) + `fullBackupContent` (`res/xml/sauvegarde_ancienne.xml`) ; une seule règle `include domain="file" path="sauvegarde.txt"` (chemin vérifié : `android_main.cpp:351`, internalDataPath = getFilesDir) ; tout le reste exclu (paquets, .part, pipelines.cache, .tmp, plantage, caches).
+- Vérification : XML lus sans erreur ; captures `sauvegarde` ×2 et `menu1` 1280x720 avant / après identiques octet pour octet ; fichier de sauvegarde du banc = 323 octets (RG-03 < 64 Ko).
+- Limites : APK non construit en local (pas de SDK Android), **pas d'émulateur ici : essai désinstaller / réinstaller non fait par le développeur**, décrit pour l'utilisateur (PR et `tache utilisateur.md`). Fantômes non sauvegardés (RG-01). À déclarer dans « Sécurité des données » de Google Play (PO / juriste).
