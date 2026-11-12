@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- WFS-485 (RG-01, RG-02) : sauvegarde automatique Android 11 et moins (android:fullBackupContent, minSdk 26).
-     Mêmes règles que regles_sauvegarde.xml : seulement files/sauvegarde.txt ; paquets de cartes, caches,
+     Mêmes règles que regles_sauvegarde.xml : seulement files/sauvegarde.txt et files/reglages.txt ; paquets de cartes, caches,
      shaders compilés, fichiers temporaires et journaux restent sur le téléphone. -->
 <full-backup-content>
     <include domain="file" path="sauvegarde.txt" />
+    <include domain="file" path="reglages.txt" />
 </full-backup-content>
