@@ -1205,3 +1205,5 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Capture des tests CPU ajoutée : `qa/pr/WFS-461/tests-cpu.log` (115 test(s) réussi(s), commit 0a14d368 synchronisé avec `main`), partie « Tests CPU » dans la description (corrigé dans 19d075ed).
 - Remarque non bloquante : nouvelle suite `police-vitesse-00..09` (joueur au plus vite : avant, la police restait collée à 8-15 m jusqu'à 203 km/h ; après, la 208, 170 km/h au plus, est distancée jusqu'à 144 m) ; pied de page de la description corrigé. Lead dev rappelé.
 
+### 2026-11-12 20:35:37 — WFS-479 fusionné sur ordre de l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur : « Merge ! ». PR #370 fusionnée en squash par le PO (b406c9c6), alors que le lead dev la relisait (pris à 20:32) : la règle « seul le lead dev fusionne » cède à l'ordre écrit de l'utilisateur. Statut 🟡 À valider (utilisateur) ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`. Session du développeur : s'arrête après la fusion (un seul sujet par session).
