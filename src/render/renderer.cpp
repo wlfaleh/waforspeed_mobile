@@ -1306,7 +1306,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         masquesPrec_ = masques_; masques_ = 0;
     }
     feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
-    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false; adversaireSuivant_ = false;   // WFS-134 ; WFS-243
+    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false; adversaireSuivant_ = false; traficSuivant_ = false;   // WFS-134 ; WFS-243 ; WFS-453
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     focalePx_ = std::fabs(fp.proj.at(1, 1)) * (float)sh_ * 0.5f;   // WFS-158 (RG-04)
@@ -1393,7 +1393,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-134 (RG-05, RG-07) : ombre de contact (≈ 1,1 × la longueur) si la voiture n'a pas déjà la sienne ; fantôme sans
     const bool fantome = fantomeSuivant_, ombreDejaLa = ombreFaite_, lots = lotsSuivant_ && qualiteBasse;
     const bool adversaire = adversaireSuivant_;   // WFS-243 (ANO-117) : lu et remis à faux pour chaque voiture
-    fantomeSuivant_ = false; lotsSuivant_ = false; adversaireSuivant_ = false;
+    const bool trafic = traficSuivant_;           // WFS-453 : lu et remis à faux pour chaque voiture
+    fantomeSuivant_ = false; lotsSuivant_ = false; adversaireSuivant_ = false; traficSuivant_ = false;
     if (ombresContact_ && !fantome && !ombreDejaLa) {
         const vec3 c = (m.bmin + m.bmax) * 0.5f, t = m.bmax - m.bmin;
         draw(ombreQuad_, ombreMat_, world * translate({c.x, m.bmin.y, c.z}) * scale({t.x * 1.12f, 1.f, t.z * 1.1f}));
@@ -1402,7 +1403,13 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
-    const uint16_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
+    const masquage::Sphere sv = masquage::monde(world, masquage::deBoite(m.bmin, m.bmax));
+    // WFS-453 (ANO-247) : voiture du trafic : distance du trafic (Basse : 130 m de la caméra), puis champ seul
+    // (classer sans distance : le diagnostic « distance ÷ 2 » de WFS-419 et la capture d'environnement de WFS-150 ne
+    // s'appliquent pas aux voitures du trafic au-delà de leur distance ; effet négligeable, 6 voitures au plus en Basse)
+    const bool coupeTrafic = trafic && !adversaire && length(sv.c - camPos_) - sv.r > masquage::distanceMaxTrafic(sv.r, qualiteBasse, finBrouillard_);
+    if (coupeTrafic) { masques_++; return; }
+    const uint16_t vis = classer(sv, adversaire || trafic);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
@@ -1493,7 +1500,10 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || sceneFigee() || !m.indexCount) return;   // WFS-329 : fond figé : dessins 3D ignorés
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
-    const uint16_t vis = classer(sp);   // WFS-82
+    const bool trafic = traficSuivant_; traficSuivant_ = false;   // WFS-453 : ombre d'une voiture du trafic (même distance que la voiture)
+    const float dMax = trafic ? masquage::distanceMaxTrafic(sp.r, qualiteBasse, finBrouillard_) : masquage::distanceMax(sp.r, qualiteBasse, finBrouillard_);
+    if (trafic && sp.r >= 0 && length(sp.c - camPos_) - sp.r > dMax) { masques_++; return; }
+    const uint16_t vis = classer(sp, trafic);   // WFS-82
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.vis = vis;
@@ -1509,7 +1519,7 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     {   // WFS-265 (RG-01) : petit objet sur ses 15 derniers mètres avant sa distance maximale (masquage::distanceMax) : fondu tramé
         // au lieu d'une coupure nette ; route, trottoirs et sol jamais (bandes de la route, toujours entières)
         if (sp.r >= 0 && !(mat.flags & (MAT_ROAD | MAT_WALK | MAT_GROUND))) {
-            const float part = lod_distance::partVisible(length(sp.c - camPos_) - sp.r, masquage::distanceMax(sp.r, qualiteBasse, finBrouillard_));
+            const float part = lod_distance::partVisible(length(sp.c - camPos_) - sp.r, dMax);
             if (part < 1.f) p.pc.emissive.w = lod_distance::combinerFondu(0.f, part);
         }
     }
