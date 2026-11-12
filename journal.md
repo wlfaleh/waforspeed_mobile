@@ -931,3 +931,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **ANO-261** (bloquante, glisse au contact de la police) et **ANO-262** (bloquante, citadine à 300 km/h, à reproduire d'abord) → **WFS-461** (P1, E3 `player.*` / `roues.*` / `duel.*`, skill `expert-conduite`, nouvelle session `@conduite`, ⏳ Prêt).
 - **WFS-459** ne garde que ANO-255 (reflet des phares, E13, P3) et ne dépend plus de WFS-452 : ⏳ Prêt.
 - Après fusion : WFS-460 et WFS-461 → **🟡 À valider (utilisateur)**. Règles : `regles-de-gestion/WFS-460.md`, `WFS-461.md`. `anno.md`, `TACHES.md`, `track-agent.md` à jour. Aucun ticket attribué (attribution seulement à la demande d'une nouvelle session).
+
+### 2026-11-12 11:55:25 — ANO-262 précisée : c'est la police qui roule vers 300 km/h (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
+- Précision de l'utilisateur : les « 300 km/h » sont ceux de la voiture de police. Code lu : `poursuite.cpp` `avancer()` plafonne la police à MAX_SPEED × 1,45 ≈ 377 km/h et lui permet la vitesse du joueur + 162 km/h ; la 208 de police est donnée à 208 km/h dans `cars.h`. Ligne ANO-262 réécrite ; à corriger dans WFS-461.
