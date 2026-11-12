@@ -240,3 +240,92 @@ ce que nous vérifierons avec le nombre de sessions par testeur dans la Play Con
 d'ajouter du réalisme, c'est **un jeu fluide, léger, avec une raison de revenir**, puis une monétisation qui ne gêne pas.
 
 **Décision** : à l'utilisateur, qui en parle au PO (`@po`) s'il le souhaite.
+
+---
+
+## R05 — 2026-11-12 — Mode Carrière détaillé (suite de R04, A05 et A06)
+
+Mode Prototype + Game design, demandé par l'utilisateur (« tu proposes quoi avec plus de détails »). **Propositions** : l'utilisateur choisit et demande au PO.
+Sources : `configgame.json` (section `voitures`, 20 voitures dont 3 retirées par WFS-404), `src/game/sauvegarde.h` (records par mode, voiture, peinture),
+`src/ui/garage.cpp`, `src/ui/ecrans/menu.cpp` (Course solo, Duel), modes Checkpoint / Course à 5 / Poursuite. Tous les chiffres ci-dessous sont des
+**valeurs de départ à régler** pendant le test fermé, pas des mesures.
+
+### 1. Principe
+Menu : **Carrière** (nouveau, en premier) · **Course libre** (l'actuelle « Course solo », avec les voitures possédées) · Duel (masqué en v1.0, R04-A12) · Garage · Réglages.
+Une boucle : **épreuve → crédits + étoiles → acheter une voiture / une peinture → épreuves plus dures**.
+
+### 2. Structure : 4 ligues sur la Corniche (seule carte publique, WFS-405)
+| Ligue | Voitures exigées | Épreuves | Pour l'ouvrir | Exemples d'épreuves |
+|---|---|---|---|---|
+| 1 Rookie | Classe D | 6 | — | Checkpoint de jour ; Course à 5 au coucher ; 1ʳᵉ Poursuite courte |
+| 2 Street | Classe C | 8 | 12 étoiles | Checkpoint de nuit ; Course à 5 sous la pluie ; Poursuite 2 voitures de police |
+| 3 Pro | Classe B | 8 | 30 étoiles | Course à 5 de nuit sous la pluie ; Poursuite avec barrages |
+| 4 Légende | Classe A / S | 6 | 55 étoiles | Course à 5 contre des A ; Poursuite longue ; « finale » de nuit |
+28 épreuves écrites **dans `configgame.json`** (mode, moment, météo, classe, objectifs) : aucune carte ni aucun mode nouveau à coder, seulement des combinaisons de l'existant.
+
+### 3. Étoiles (1 à 3 par épreuve, 84 en tout)
+- ★ finir l'épreuve (Checkpoint : arriver au bout ; Course à 5 : top 3 ; Poursuite : survivre / s'échapper).
+- ★★ objectif chiffré (temps, 1ʳᵉ place, score).
+- ★★★ objectif « style » : X frôlements, aucun choc, aucun checkpoint manqué.
+Refaire une épreuve n'apporte que les **nouvelles** étoiles, mais toujours des crédits (moins : 50 %).
+
+### 4. Gains (crédits, monnaie du jeu)
+| Action | Crédits |
+|---|---|
+| Épreuve finie | 100 (ligue 1) → 400 (ligue 4) |
+| Par étoile **nouvelle** | +100 |
+| Frôlement d'une voiture du trafic | +10 (plafond 200 par course) |
+| Checkpoint en avance | +20 |
+| Course à 5 : 1ʳᵉ / 2ᵉ / 3ᵉ | +300 / +150 / +75 |
+| Poursuite gagnée | +250 |
+| Course libre | 50 % des gains (pour que la Carrière reste la voie principale) |
+Moyenne visée : **≈ 250 crédits par course de 3 min** en ligue 1, ≈ 600 en ligue 4.
+
+### 5. Voitures et prix (17 voitures actuelles ; les 2 remplaçantes de WFS-360 viendront plus tard)
+| Classe | Voitures (id) | Prix | Temps de jeu visé |
+|---|---|---|---|
+| D (offertes, au choix 1 sur 3 au départ, les 2 autres à 1 500) | p208, corsa, abarth | 0 / 1 500 | dès le départ |
+| C | golf, tcross, compass, model3, v60, s3 | 3 000 à 5 000 | 1ʳᵉ voiture ≈ 1 h |
+| B | gt86, giulia, mustang, rrsport, m4 | 10 000 à 16 000 | ≈ 5 h |
+| A | p911, gallardo | 30 000 à 35 000 | ≈ 15 h |
+| S | sf90 | 60 000 | ≈ 25-30 h |
+- **Essai gratuit** : chaque voiture bloquée peut être essayée **une fois** en Course libre (donne envie, sans la donner).
+- **Peintures** : 200 à 800 crédits (petites récompenses fréquentes) ; la peinture d'origine reste offerte.
+- **Pas d'améliorations moteur** en v1 (équilibrage trop risqué ; la conduite est réglée sur les fiches réelles).
+
+### 6. Écrans à toucher (réutiliser l'existant)
+1. **Fin de course** : détail des gains ligne par ligne qui défile, étoiles qui s'allument, total ; bouton « ×2 avec une vidéo » (v1.1, A06).
+2. **Garage** (`src/ui/garage.cpp`) : cadenas + prix sur les voitures bloquées, bouton « Acheter » avec confirmation, « Essayer » une fois.
+3. **Carrière** (nouvel écran, `src/ui/ecrans/`) : 4 ligues en cartes, épreuves avec leurs étoiles, cadenas « 12 ★ requises ».
+4. **HUD du menu** : solde de crédits et total d'étoiles en haut.
+5. **Sauvegarde** (`src/game/sauvegarde.*`) : crédits, voitures possédées, peintures possédées, étoiles par épreuve, essais utilisés. **Joueurs existants** (testeurs) : 5 000 crédits offerts + la voiture qu'ils utilisent déjà.
+
+### 7. Monétisation (v1.1, après l'avis d'avocat, R04-A06)
+- **Pub récompensée volontaire** en fin de course : « ×2 crédits », **5 fois par jour au plus**. Jamais de pub imposée, jamais en course.
+- **Pack Pilote** (achat unique, 2,99 € proposé) : plus aucune pub + crédits ×2 (le bouton de pub donne directement le double) + 10 000 crédits au départ.
+- **Refusé volontairement** : caisses au hasard, énergie qui limite le nombre de courses, voitures vendues seulement contre de l'argent réel, timers.
+- Prérequis : SDK de pub + consentement RGPD (UMP), Google Play Billing, formulaire « Sécurité des données » et confidentialité refaits, IARC (pubs).
+
+### 8. Découpage proposé (au PO de décider et d'écrire les règles de gestion)
+| # | Ticket proposé | Épic / zone | Taille | Dépend de |
+|---|---|---|---|---|
+| C1 | Sauvegarde Carrière : crédits, voitures et peintures possédées, étoiles, migration des anciens joueurs + tests CPU | E3 | ≤ 1 j | — |
+| C2 | Calcul des gains et des étoiles en fin de course (règles du § 3 et § 4, valeurs dans `configgame.json`) + tests | E3 | ≤ 1 j | C1 |
+| C3 | Écran de fin : gains détaillés, étoiles, solde | E8 | ≤ 1 j | C2 |
+| C4 | Garage : cadenas, prix, achat, essai gratuit | E5 | ≤ 1 j | C1 |
+| C5 | Écran Carrière + 28 épreuves dans `configgame.json` | E8 + E3 | 1-2 j (à découper) | C2 |
+| C6 | Banc d'équilibrage : simulation de 30 h de jeu (gains moyens → date d'achat de chaque classe) | E3 | ≤ 1 j | C2 |
+| C7 | Tutoriel de 10 s à la 1ʳᵉ épreuve de la ligue 1 | E8 | ≤ 1 j | C5 |
+| M1 | Pub récompensée + consentement (v1.1) | E7 | 1-2 j | C3, avocat |
+| M2 | Pack Pilote via Google Play Billing (v1.1) | E7 | 1-2 j | M1 |
+C1, C4 et C6 peuvent avancer **en parallèle** (zones différentes). Ordre conseillé : C1 → (C2, C4) → (C3, C5, C6) → C7.
+
+### 9. Hypothèse testable
+Si nous ajoutons la Carrière (ligues, étoiles, crédits, voitures à acheter), alors les testeurs du test fermé joueront plusieurs jours de suite et
+plusieurs courses par session, ce que nous vérifierons avec les statistiques de la Play Console (utilisateurs actifs par jour sur les 14 jours) et
+une question simple posée aux testeurs : « Quelle voiture voulez-vous acheter ensuite ? ».
+
+### 10. Risques
+- **Équilibrage** : trop lent → abandon ; trop rapide → plus rien à viser. D'où C6 et les valeurs dans `configgame.json` (réglables sans recompiler le code).
+- **Temps** : ≈ 6-8 jours de développement en parallèle ; tient dans les 14 jours du test fermé seulement si le gel des autres fonctionnalités est respecté (R04-A02).
+- **Conduite** : les épreuves de la ligue 4 exigent une conduite stable (WFS-258/259) ; sinon garder la ligue 4 pour la v1.1.

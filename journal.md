@@ -1232,3 +1232,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 ### 2026-11-12 20:43:48 — R04 : critique avant lancement et chemin vers les revenus (smart-brainstorming)
 - Recommandation R04 écrite dans `recommandations-smart-brain.md` (mode Challenge + Priorisation, demande de l'utilisateur) : test fermé Google à ouvrir tout de suite, gel des fonctionnalités et recette par lots des 81 tickets 🟡, juridique à lancer maintenant, boucle « Carrière » avant toute monétisation, pub récompensée + un achat unique en v1.1.
 - Aucune décision, aucun message au PO : l'utilisateur choisit.
+
+### 2026-11-12 20:56:35 — R05 : mode Carrière détaillé (smart-brainstorming)
+- Recommandation R05 dans `recommandations-smart-brain.md` : 4 ligues sur la Corniche, 28 épreuves dans `configgame.json`, étoiles, crédits, prix des 17 voitures, écrans, monétisation v1.1, découpage proposé C1 à C7, M1, M2. Aucune décision, rien envoyé au PO.
