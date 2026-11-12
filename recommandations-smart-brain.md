@@ -482,3 +482,22 @@ Ordre conseillé : P1 → (P2, P3, P6 en parallèle) → (P4, P5, P7, P8) → M1
 
 **Hypothèse testable** : si le joueur gagne des étoiles à chaque course et voit la prochaine voiture à débloquer, il fera plusieurs courses par session
 et reviendra les jours suivants (cadeau), ce que nous vérifierons avec les utilisateurs actifs par jour de la Play Console pendant le test fermé.
+
+---
+
+## R10 — 2026-11-12 — Garder l'historique du joueur (compte, sauvegarde) sans demander nom et prénom
+
+Remarque de l'utilisateur : « on a oublié d'authentifier un joueur, son nom, prénom…, pour qu'il garde son historique ».
+**Constat observé** : la sauvegarde est un fichier local (`src/game/sauvegarde.cpp:241`) et la sauvegarde Android est **coupée**
+(`android/app/src/main/AndroidManifest.xml:18` : `android:allowBackup="false"`). Aujourd'hui, **désinstaller ou changer de téléphone = tout perdre**
+(records, et demain étoiles, voitures débloquées, achats). Avec R09 (étoiles, voitures), c'est un vrai problème.
+
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Sauvegarde | *Observé* : `allowBackup="false"` | **Sauvegarde automatique Android** (Auto Backup vers le compte Google du téléphone) : activer `allowBackup`, règles qui ne gardent que le fichier de sauvegarde (pas les paquets de cartes ni les caches) | Rien à faire : la progression revient au changement de téléphone | Élevé | Faible (manifest + règles XML, E7) | P1 (v1.0) | Copie faite par Android ≈ 1 fois par jour (pas instantanée) ; à déclarer dans « Sécurité des données » (sauvegarde Google, pas de serveur à nous) |
+| A02 | Compte | *Supposé* | **Google Play Jeux (Play Games Services v2)** : connexion **automatique** sans formulaire, pseudo Play Jeux, **sauvegarde dans le cloud** (Saved Games), **succès** (les objectifs permanents de R09) et **classements** par mode | Progression sur tous ses téléphones, succès visibles, classement mondial | Élevé | Moyen (SDK Java + pont JNI, E7) | P2 (v1.1) | Bibliothèque Google à ajouter (licence, taille) ; déclarer dans « Sécurité des données » ; jeu jouable sans connexion |
+| A03 | Achats | *Observé* : achats prévus en v1.1 (R09) | Les achats faits avec Google Play **se restaurent seuls** (Play Billing) : pas besoin de compte à nous pour ne rien perdre | Achat jamais perdu | Élevé | Faible (inclus dans M1) | P2 | — |
+| A04 | Identité | *Supposé* | **Ne PAS demander nom, prénom, e-mail, mot de passe** : un **pseudo** suffit (il existe déjà pour le duel, `src/ui/ecrans/salon.cpp:257`) | Entrer dans le jeu en 1 s | Élevé | Faible | P1 | Un compte maison obligerait : serveur, sécurité des mots de passe, RGPD (données personnelles), **suppression du compte depuis l'appli et un site** (règle Google Play), plus de formulaires au départ = plus d'abandons |
+
+**Recommandation** : v1.0 = A01 + A04 (presque gratuit) ; v1.1 = A02 avec les achats (A03). Pas de compte maison.
+**Validation** : sur le téléphone de l'utilisateur, gagner un record, faire une sauvegarde forcée (`adb shell bmgr backupnow <paquet>`), désinstaller, réinstaller : le record revient.

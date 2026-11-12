@@ -1247,3 +1247,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 21:21:18 — R09 : cadrage de l'utilisateur (étoiles, médailles, cadeau du jour, peintures et dessins, voitures à débloquer) (smart-brainstorming)
 - R09 dans `recommandations-smart-brain.md` : choix de l'utilisateur mis en forme (3 modes seulement ; étoiles monnaie unique, médailles, objectifs, cadeau du jour sur 7 jours sans perte ; 3 voitures gratuites, autres en étoiles, cadeau ou argent ; peintures à finitions et vinyles originaux ; Corniche seule dans l'APK, autres cartes à télécharger) ; découpage proposé P1 à P8, M1. Rien envoyé au PO : l'utilisateur le transmet.
+
+### 2026-11-12 21:23:16 — R10 : garder l'historique du joueur sans nom ni prénom (smart-brainstorming)
+- R10 dans `recommandations-smart-brain.md` : constat `allowBackup="false"` (tout est perdu à la désinstallation) ; v1.0 sauvegarde automatique Android + pseudo seul ; v1.1 Google Play Jeux (connexion automatique, sauvegarde cloud, succès, classements) ; pas de compte maison. Rien envoyé au PO.
