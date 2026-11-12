@@ -316,6 +316,12 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
             WFS_LOG("capture voiture-basse-poursuite (WFS-134) : %s, %zu voitures du trafic de 8 à 151 m, vrais modèles (aucun cube), "
                     "%u appels de dessin par image", qualite::ligneRendu().c_str(), places, appels / 4);
             controler(g, r, "voiture-basse-poursuite", posees, true, 930 + 3 / 60.0, posP);   // WFS-239 (RG-03)
+            // WFS-453 (accroche, capture seule) : la voiture posée à 107 m (ANO-247), seule devant le joueur (les autres rangées)
+            if (Traffic* tr = activeTrafficMut(); tr && tr->cars.size() > 9) {
+                for (size_t i = 0; i < tr->cars.size(); i++) if (i != 9) ranger(tr->cars[i], posP, i, g.player().speed);
+                for (int i = 0; i < 3; i++) g.render(932 + i / 60.0);
+                capturer(g, r, out, "voiture-basse-poursuite-107-seule", 932 + 2 / 60.0);
+            }
             g.shutdown();
         }
         courseBenchRules(false); modeCourse() = ModeCourse::Checkpoint;

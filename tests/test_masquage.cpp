@@ -3,6 +3,7 @@
 // usage : test_masquage
 #include <cmath>
 #include <cstdio>
+#include <initializer_list>
 #include "../src/render/masquage.h"
 using namespace wfs;
 using namespace wfs::masquage;
@@ -51,6 +52,25 @@ int main() {
     VERIFIE(distanceMax(30, true, 100) > 1e8f && distanceMax(-1, true, 100) > 1e8f, "grands objets et rayon inconnu : jamais coupés");
     VERIFIE(std::abs(finBrouillard(0, 0.0022f) - 3.912f / 0.0022f) < 1e-2f && finBrouillard(40, 0.01f) == 40, "fin du brouillard");
     std::printf("sphère monde, coupure selon le rayon (200 / 110 m, brouillard, jamais) : OK\n");
+
+    // WFS-453 (ANO-247) : banc qualité, Basse, vue Poursuite (caméra 8 m derrière le joueur, 2,6 m au-dessus, game.cpp) : une
+    // citadine du trafic (boîte 1,8 × 1,5 × 4,3 m, rayon ≈ 2,4 m) posée à 107 m, 118 m ou 120 m DEVANT LE JOUEUR (limite de dessin
+    // du trafic en Basse, Traffic::dessines) est gardée par la coupe à distance ; avant : 110 m de la caméra, la voiture à 107 m
+    // (≈ 110,6 m de la caméra, rayon déduit) était coupée, celle à 118 m dessinée seulement si elle était grande (bus, camion)
+    {
+        const vec3 cam{0, 2.6f, 8.f};
+        const Sphere boite = deBoite({-0.9f, 0, -2.15f}, {0.9f, 1.5f, 2.15f});
+        auto distance = [&](float d) { const Sphere s = monde(translate({0, 0, -d}), boite); return length(s.c - cam) - s.r; };
+        for (float d : {8.f, 96.f, 107.f, 118.f, 120.f})
+            VERIFIE(distance(d) <= distanceMaxTrafic(boite.r, true, 500), "trafic Basse : voiture à %.0f m du joueur gardée (%.1f m de la caméra)", d, distance(d));
+        VERIFIE(distance(107) > distanceMax(boite.r, true, 500), "le cas d'ANO-247 : 107 m coupée par la limite des petits objets (110 m)");
+        VERIFIE(distanceMaxTrafic(boite.r, true, 500) == TRAFIC_BASSE_M && distanceMaxTrafic(boite.r, true, 100) == TRAFIC_BASSE_M,
+                "trafic Basse : 130 m, brouillard compris");
+        VERIFIE(distanceMaxTrafic(boite.r, false, 500) == distanceMax(boite.r, false, 500) && distanceMaxTrafic(5, false, 500) == distanceMax(5, false, 500) &&
+                distanceMaxTrafic(5, true, 500) == distanceMax(5, true, 500), "Haute et grands véhicules : inchangés");
+        VERIFIE(distanceMax(boite.r, true, 500) == 110, "autres petits objets en Basse : 110 m, inchangés (WFS-265)");
+        std::printf("trafic en Basse, vue Poursuite : 107 / 118 / 120 m gardées (WFS-453) : OK\n");
+    }
 
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("masquage : tout est OK\n");

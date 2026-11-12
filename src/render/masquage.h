@@ -26,6 +26,12 @@ inline Sphere deBoite(const vec3& mn, const vec3& mx) { return {(mn + mx) * 0.5f
 // RG-02 : distance au-delà de laquelle un objet n'est plus dessiné (m) ; infini = jamais coupé par la distance.
 // rayon < 3 m : 200 m (150 m en Basse) ; 3 à 10 m : fin du brouillard (420 m au plus en Basse) ; au-delà : jamais
 float distanceMax(float rayon, bool basse, float finBrouillard);
+// WFS-453 (ANO-247) : voitures et deux-roues du TRAFIC en Basse. Le trafic les choisit jusqu'à 120 m du JOUEUR
+// (Traffic::dessines) ; la coupe des petits objets (110 m de la CAMÉRA, WFS-265) les perdait de 107 à 120 m en vue Poursuite
+// (caméra 8 m derrière, 2,6 m au-dessus). Distance de la caméra gardée : 120 m + 8 m de recul + marge = 130 m ; c'est la
+// sélection du trafic (120 m du joueur) qui borne. Haute et autres objets : distanceMax, inchangée.
+constexpr float TRAFIC_BASSE_M = 130.f;
+float distanceMaxTrafic(float rayon, bool basse, float finBrouillard);
 // fin du brouillard (m) : Fog linéaire (fogFar) s'il existe, sinon distance où le brouillard exponentiel atteint 98 %
 inline float finBrouillard(float fogFar, float densite) {
     if (fogFar > 0) return fogFar;

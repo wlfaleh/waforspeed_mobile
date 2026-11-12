@@ -180,6 +180,9 @@ public:
     // (α 0,45), teintée cyan, sans ombre de contact, sans feux
     void fantomeProchaineVoiture() { fantomeSuivant_ = true; feuxProchaineVoiture(FeuxVoiture{}); }
     void adversaireProchaineVoiture() { adversaireSuivant_ = true; }   // WFS-243 (ANO-117) : adversaire (Course à 5, Duel) : sans limite de distance (WFS-82), champ seul
+    // WFS-453 (ANO-247) : le prochain draw (Model ou Mesh : ombre) est une voiture du trafic : coupe à distance du trafic
+    // (masquage::distanceMaxTrafic : 130 m de la caméra en Basse, au lieu de 110 m pour les petits objets)
+    void traficProchainDessin() { traficSuivant_ = true; }
     // WFS-144 (RG-03 a) : en qualité Basse, la prochaine voiture dessinée par draw(Model) prend sa version en lots de matériaux
     // (partsBasse : peinture, feux, vitres, reste) à toute distance : police de la poursuite, moins d'appels de dessin, jamais de cubes
     void lotsProchaineVoiture() { lotsSuivant_ = true; }
@@ -407,7 +410,7 @@ private:
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
     // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
-    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false, adversaireSuivant_ = false;
+    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false, adversaireSuivant_ = false, traficSuivant_ = false;
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;
     vec3 camPos_{};
