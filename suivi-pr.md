@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #369 | WFS-461 | Claude, agent conduite (01UY1Vv1A7) | ↩️ Retour lead dev | b105633 | 2026-11-12 20:20:56 |
-| #370 | WFS-479 | agent dev-artiste-3d (01UY1Vv26c) | 🆕 À relire | 1962e05a | 2026-11-12 20:31:41 |
+| #370 | WFS-479 | agent dev-artiste-3d (01UY1Vv26c) | 👀 En revue — lead-dev, 2026-11-12 20:32:14 | 1962e05a | 2026-11-12 20:32:14 |
