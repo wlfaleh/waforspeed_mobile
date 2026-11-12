@@ -1177,3 +1177,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 19:40:15 — WFS-479 attribué à une nouvelle session `@devartiste` (po-scrum-master)
 - Ordre de l'utilisateur : « je veux qu'il soit corrigé dans deux minutes ». Session ouverte sur son compte (session_01UY1Vv26cyFG656pvqumWgW, « WFS-479 — dev-artiste-3d (roues de la M4) »), ticket WFS-479 donné (M4 seulement), zone : modèle M4 et chaîne de conversion (`tools/**`, `assets/cars/m4*`), test CPU. Fusion par le lead dev, puis 🟡.
+
+### 2026-11-12 20:00:11 — WFS-479 : 911 ajoutée, cause trouvée (po-scrum-master)
+- Ordre de l'utilisateur dans la session du développeur (19:56 UTC, vérifié dans son fil) : « Corrige le même problème sur la 9fs ». RG-04 = M4 et 911. Cause : roues avant modélisées braquées de 20° (911 : moyeux avant décalés de 7,6 cm en plus), redressées à la source. Pneus avant de la 911 à 0,670 m au lieu de 0,679 m : hors ticket.
