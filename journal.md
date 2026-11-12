@@ -1037,3 +1037,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - **Refus, 2 points** : (1) capture « Tests CPU » et `qa/pr/WFS-452/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-09 / ANO-265 non prouvée à l'image : la voiture du trafic est vue de face, roues avant cachées ; il faut une suite où les roues avant du trafic se voient (ligne droite puis changement de file, avant / après).
 - Remarques non bloquantes dans la revue (reprise du braquage après un saut, commentaire de `g_avant452`, cap du fantôme, `suivi_` du duel).
 - **Pour le PO** : halo du clignotant du trafic en disque orange flou (code existant WFS-67 / ANO-48), forme nue visible sur les captures du trafic : à rattacher à une US de correction.
+
+### 2026-11-12 14:19:22 — WFS-371 : PR #366 ouverte (Claude, agent dev3d (01UY1Vv2rp))
+- Fait : 21 modèles au niveau du vrai objet (`src/world/decor_corniche_modeles.*`), branchés dans `plage.cpp` (inventaire RG-01 au journal précédent) ; D4 (scène, sable 0xD8C8A0, laisse de mer), R4 (candélabres à lanterne), R5 (glissière double onde en volume).
+- Vérifié : `test_decor_corniche` et 113 tests CPU verts ; bancs `corniche` avant / après et `corniche-objets` (14 gros plans) regardés ; perf Corniche nuit (lavapipe) : Basse 318,6 → 312,9 ms, Haute 508,7 → 481,0 ms, triangles +27 %, 0 création en course.
+- Limites : traces dans le sable non faites (texture) ; formes nues hors ticket listées pour le PO (`qa/pr/WFS-371/inventaire.md`) ; mesure du S21 FE à faire sur l'APK de `main`.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
