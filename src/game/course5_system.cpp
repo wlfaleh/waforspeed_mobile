@@ -19,6 +19,7 @@
 #include "duel_system.h"
 #include "game.h"
 #include "player.h"
+#include "roues.h"   // WFS-452 : roues des ordinateurs qui tournent et braquent
 #include "poursuite.h"   // WFS-141 : titrePlace
 #include "sauvegarde.h"
 #include "traffic.h"
@@ -87,7 +88,7 @@ public:
             // WFS-183 (RG-04) : au banc (WFS_BANC défini) graine fixe 1234 (minicarte-ligne, course5-rejouer) ; en jeu, horloge
             if (!graineFixe_) { graine_ = g_graineBanc ? g_graineBanc : std::getenv("WFS_BANC") ? 1234u : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 17u; graineFixe_ = true; }
             c->duelFinish = kmCourse5() * duel::KM;
-            os_ = course5::tirer(graine_, pl.car->id, course5::difficulte());   // WFS-133 (RG-03) : difficulté choisie
+            os_ = course5::tirer(graine_, pl.car->id, course5::difficulte()); suivi_.clear();   // WFS-133 (RG-03) : difficulté choisie
             // WFS-242 (RG-01, RG-02) : grille derrière la ligne, place du joueur tirée au sort (même graine : même place)
             placeJoueur_ = std::min((int)os_.size(), course5::tirerPlaceJoueur(graine_));
             course5::grille(os_, placeJoueur_); depasses_.reset();
@@ -116,6 +117,7 @@ public:
                 o.file = g_bancSuiveurs[k].second; o.g.x = o.g.xPrec = o.cibleX = course5::FILES[o.file];
                 o.g.rdPrec = o.g.rd; o.g.rd = pl.dist + g_bancSuiveurs[k].first / M; o.g.v = pl.speed;
             }
+            majRoues(dt, *g.track);   // WFS-452 : roues des voitures tenues par le banc aussi
             return;
         }
         if (!actif_ || c->state == RaceState::Count || g_figerBanc) return;   // décompte : tout le monde attend sur la grille ; banc : figés
@@ -134,6 +136,7 @@ public:
         }
         std::vector<int> nitros; for (const auto& o : os_) nitros.push_back(o.nitrosPrises);
         course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed, g.track);   // WFS-189 : virages
+        majRoues(dt, *g.track);   // WFS-452 (RG-03) : braquage des roues avant d'après le vrai mouvement
         if (c->state == RaceState::Play && !fini_) {   // WFS-189 (RG-04) : nitro rechargée au temps et aux dépassements
             const int n = depasses_.compter(os_, pl.dist);
             pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, n);
@@ -204,7 +207,13 @@ public:
                         o.nom.c_str(), rel * M, prof, (o.g.rdRendu(g.alpha) - sP) * M, carById(o.car.c_str()).d.W * focale / std::max(prof, 0.1f));
             }
             if (!g_bancAvant) r.adversaireProchaineVoiture();   // WFS-243 (ANO-117) : visible jusqu'à 700 m (avant : coupée à 150 m en Basse, 200 m en Haute)
-            r.draw(it->second, m, &peintures_[o.car]);
+            // WFS-452 (RG-02, RG-03) : roues qui tournent (distance interpolée, rayon de la roue du modèle) et qui braquent
+            const size_t k = (size_t)(&o - os_.data());
+            static const roues::SuiviRoues droites{};
+            const RouesPose rp = roues::poseSuivi(k < suivi_.size() ? suivi_[k] : droites, g.alpha, o.g.rdRendu(g.alpha),
+                                                  it->second.nRoues ? it->second.roues[0].rayon : roues::RW_DEFAUT);
+            if (roues::g_journal452 && k == 0) WFS_LOG("roues (banc) : course à 5 : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
+            r.draw(it->second, m, &peintures_[o.car], &rp);
         }
     }
     void drawUi(Renderer& r, const GameView& g) override {
@@ -339,6 +348,14 @@ private:
     Renderer* r_ = nullptr;
     std::vector<course5::Ordinateur> os_;
     std::map<std::string, Model> models_;
+    std::vector<roues::SuiviRoues> suivi_;   // WFS-452 : braquage des roues avant, un par ordinateur (même indice que os_)
+    void majRoues(double dt, const Track& t) {
+        if (suivi_.size() != os_.size()) suivi_.assign(os_.size(), {});
+        for (size_t k = 0; k < os_.size(); k++) {   // caisse dans l'axe de la route (render) : capCaisse = 0
+            const duel::Ghost& o = os_[k].g;
+            suivi_[k].pas(o.rd * M, o.x * RW, 0, roues::courbureRoute(t, o.rd), carById(os_[k].car.c_str()).d.wb, dt);
+        }
+    }
     std::map<std::string, vec3> peintures_;
     bool actif_ = false, fini_ = false, depart_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false, aspJoueur_ = false;
     course5::SuiviDepassements depasses_;   // WFS-189 (RG-04) : dépassements du joueur

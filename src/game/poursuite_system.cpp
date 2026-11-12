@@ -29,6 +29,7 @@
 #include "player.h"
 #include "poursuite.h"
 #include "sauvegarde.h"   // WFS-119 : redémarrage simulé
+#include "roues.h"   // WFS-452 : roues de la police qui tournent et braquent (glisse comprise)
 #include "traffic.h"
 #include "traffic_system.h"
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
@@ -66,6 +67,7 @@ struct Bande { double s = 0; bool passe = false; };                             
 class PoursuiteSystem : public System {
 public:
     static PoursuiteSystem* actif;
+    void bancPolice(bool a, double ecartM, double x) { bancPoliceActive_ = a; bancPoliceEcart_ = ecartM; bancPoliceX_ = x; }   // WFS-452 (banc)
     const char* name() const override { return "poursuite"; }
     void init(Renderer& r, const GameView&) override {
         r_ = &r; actif_ = false; police_.clear(); plots_.clear(); actif = this;
@@ -262,6 +264,14 @@ public:
         for (const Plot& p : plots_) if (!p.tombe) obs_.push_back({p.s, p.x, 0});
         for (const Camion& k : camions_) for (int f = 0; f < 3; f++) if (f != k.fileLibre) obs_.push_back({k.s, FILES[f], 0});   // WFS-119
         poursuite::avancer(police_, dt, c->raceTime, pl.dist, pl.playerX, pl.speed, obs_);
+        if (bancPoliceActive_ && !police_.empty()) {   // WFS-452 (banc « roues-suivies ») : 1re voiture tenue à côté du joueur
+            Police& p0 = police_[0]; p0.rdPrec = p0.rd; p0.xPrec = p0.x;
+            p0.rd = pl.dist + bancPoliceEcart_ / M; p0.x = bancPoliceX_; p0.v = pl.speed;
+            for (size_t i = 1; i < police_.size(); i++) police_[i].rd = police_[i].rdPrec = pl.dist - 400 / M;   // les autres loin derrière
+        }
+        if (suivi_.size() != police_.size()) suivi_.resize(police_.size());   // WFS-452 (RG-03, RG-08) : braquage d'après le vrai
+        for (size_t i = 0; i < police_.size(); i++)                          // mouvement : contre-braque quand elle glisse de côté
+            suivi_[i].pas(police_[i].rd * M, police_[i].x * RW, 0, roues::courbureRoute(t, police_[i].rd), carById(policeCar_).d.wb, dt);
         if (c->state == RaceState::Play) {
             for (Police& p : police_) {
                 duel::Ghost gh; gh.rd = p.rd; gh.x = p.x; gh.v = p.v; gh.car = policeCar_;
@@ -345,7 +355,13 @@ public:
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
             if (!modele_.ok || i >= 16) continue;
-            peintures_[i] = lin(blancOrigine_ ? 0xf2f4f8u : p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[i]);
+            peintures_[i] = lin(blancOrigine_ ? 0xf2f4f8u : p.peinture); r.lotsProchaineVoiture();
+            // WFS-452 (RG-02, RG-03, RG-08) : roues qui tournent (distance interpolée, rayon de la roue du modèle) et qui braquent
+            static const roues::SuiviRoues droites{};
+            const RouesPose rp = roues::poseSuivi((size_t)i < suivi_.size() ? suivi_[(size_t)i] : droites, al, p.rdPrec + (p.rd - p.rdPrec) * al,
+                                                  modele_.nRoues ? modele_.roues[0].rayon : roues::RW_DEFAUT);
+            if (roues::g_journal452 && i == 0) WFS_LOG("roues (banc) : police : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
+            r.draw(modele_, m, &peintures_[i], &rp);
             if (std::abs(rel) <= 80 && !g_bancSans338) conducteurs::ajouter(modele_, m, policeCar_, 0x50000000u + (uint32_t)i, true);   // WFS-338 (RG-06) : policier au volant
             // repère du modèle (m) : sol bmin.y, centre (cx, cz), avant vers −z ; pavillon mesuré au-dessus de la place du
             // conducteur (Model::siege, WFS-73), sinon le haut du modèle
@@ -719,6 +735,8 @@ private:
     double distAvant_ = 0;
     vec3 peintures_[16];   // Renderer::draw garde l'adresse de la peinture jusqu'à la fin de l'image
     std::vector<Police> police_;
+    std::vector<roues::SuiviRoues> suivi_;   // WFS-452 : braquage des roues avant, une par voiture de police (même indice)
+    bool bancPoliceActive_ = false; double bancPoliceEcart_ = 0, bancPoliceX_ = 0;   // WFS-452 : banc « roues-suivies »
     std::vector<Obstacle> obs_;
     std::vector<Plot> plots_;
     std::vector<Panneau> panneaux_;   // WFS-338
@@ -757,6 +775,11 @@ bool poursuiteBouton(const std::string& nom, float& x, float& y) {
 bool poursuiteNouveauRecord() { return PoursuiteSystem::actif && PoursuiteSystem::actif->nouveauRecord(); }
 void poursuiteBancFin(int mode) { g_bancFin = mode; }
 void poursuiteBancFixe(bool oui) { g_banc = oui; }
+// WFS-452 (banc « roues-suivies ») : 1re voiture de police tenue à ecartM du joueur (m, < 0 : derrière), au latéral x (demi-largeurs)
+void poursuiteBancPolice(bool actif, double ecartM, double x) {
+    if (!PoursuiteSystem::actif) return;
+    PoursuiteSystem::actif->bancPolice(actif, ecartM, x);
+}
 
 // ---------- banc d'essai (WFS_BANC=course5) ----------
 // police avec gyrophares derrière le joueur, bandeau de surprise (barrage), embouteillage, HUD du score, fin « ARRÊTÉ »

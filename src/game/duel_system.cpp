@@ -14,6 +14,7 @@
 #include "commandes_tactiles.h"   // WFS-146 (accroche, ANO-35) : dessin2d::biseau des boutons du résultat
 #include "game.h"
 #include "player.h"
+#include "roues.h"   // WFS-452 : roues des adversaires qui tournent et braquent
 #include "sauvegarde.h"   // WFS-122 (RG-01) : derniers adversaires
 #include "traffic_system.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
@@ -103,6 +104,8 @@ public:
                 WFS_LOG("duel : arrivée en %.2f s, position %d/%d", s.myFinish(), s.position(pl.dist), (int)s.board(pl.dist).size());
         }
         s.updateGhosts(dt);
+        if (g.track) for (const auto& [id, gh] : s.ghosts())   // WFS-452 (RG-03) : braquage des roues avant d'après le vrai mouvement
+            suivi_[id].pas(gh.rd * M, gh.x * RW, gh.h, roues::courbureRoute(*g.track, gh.rd), carById(gh.car.c_str()).d.wb, dt);
         if (s.status() == duel::Status::Done) overT_ += dt;
         if (s.status() != duel::Status::Done) { arrives_ = -1; return; }
         // WFS-183 (RG-01, ANO-93) : à chaque arrivée, derniers adversaires repris dans l'ordre du classement de la manche
@@ -126,7 +129,9 @@ public:
             const CarDef& cd = carById(gh.car.c_str());
             const vec3 paint = hexLin(cd.paint);
             r.adversaireProchaineVoiture();   // WFS-243 (ANO-117, accroche) : visible jusqu'à 600 m, pas coupé à 150 / 200 m
-            r.draw(it->second, m, &paint);
+            // WFS-452 (RG-02, RG-03) : roues qui tournent (distance interpolée, rayon de la roue du modèle) et qui braquent
+            const RouesPose rp = roues::poseSuivi(suivi_[id], g.alpha, gh.rdRendu(g.alpha), it->second.nRoues ? it->second.roues[0].rayon : roues::RW_DEFAUT);
+            r.draw(it->second, m, &paint, &rp);
             conducteurs::ajouter(it->second, m, cd.id, (uint32_t)std::hash<std::string>{}(id) | 1u);   // WFS-73 (accroche) : adversaire
         }
     }
@@ -270,6 +275,7 @@ private:
     Renderer* r_ = nullptr;
     std::map<std::string, Model> models_;
     std::map<std::string, double> yaw_;
+    std::map<std::string, roues::SuiviRoues> suivi_;   // WFS-452 : braquage des roues avant, par adversaire
     double overT_ = 0;
     int arrives_ = -1;   // WFS-183 : arrivés déjà notés dans « Derniers adversaires »
     Zone revanche_, menu_;
