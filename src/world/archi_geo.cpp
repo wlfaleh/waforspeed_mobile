@@ -224,8 +224,9 @@ void toiture(const Plan& p, float D, int lod, Batiment& out) {
 // WFS-455 (ANO-254) : façade arrière (sur cour) et façades latérales, au lieu des trois murs aveugles de WFS-161 : vues de haut
 // ou de l'arrière, les immeubles étaient des pavés gris sans fenêtre. Chaque face est une façade du kit (facadeSecondaire :
 // mêmes niveaux et mêmes fenêtres que la rue), construite par facade() dans son propre repère puis tournée autour de y
-// (rotation pure : faces et normales gardent leur sens). Ouvertures « Simples » (trou en retrait et vitre) au niveau 0,
-// peintes à plat sur le mur (avec leur pièce de nuit) aux niveaux 1 et 2 : le coût reste celui d'un mur (RG-04).
+// (rotation pure : faces et normales gardent leur sens). Baies peintes à plat 1 cm devant le mur, avec leur pièce de nuit
+// (decor.glsl), à tous les niveaux : un mur et un rectangle par fenêtre, sans tableau (RG-04 : banc perf Ville en Basse,
+// les trous en retrait sur les 4 faces coûtaient +150 % de triangles au système des bâtiments).
 void facadesSecondaires(const Plan& p, float D, int lod, Batiment& out) {
     const float L = p.largeur;
     // repère de chaque face : sommet local (x, y, z) → monde = o + ax · x + y + az · z
@@ -238,7 +239,7 @@ void facadesSecondaires(const Plan& p, float D, int lod, Batiment& out) {
     for (const Face& f : faces) {
         const Plan q = facadeSecondaire(p, f.largeur, f.id);
         Batiment loc;
-        facade(q, lod >= 1 ? 2 : 0, loc, Baies::Simples);   // RG-04 : au-delà du niveau 0, baies peintes (arrière vu de loin)
+        facade(q, 2, loc, Baies::Simples);   // RG-04 : baies peintes à tous les niveaux (coût d'un mur ; la rue garde ses vrais trous)
         for (int k = 0; k < NB_PARTS; k++) {
             const Maillage& src = loc.part[k];
             if (src.i.empty()) continue;
