@@ -951,3 +951,8 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Vérification : 112 tests CPU verts ; banc perf PC (lavapipe) série 4, Corniche Basse 235,4 → 241,2 ms (+2,5 %), +5,7 k triangles.
 - Limites : Corniche ≤ 33 ms sur le S21 FE non mesurée (🟡, à l'utilisateur) ; réserves R1 à R4 de l'agent 3D à transformer en tickets par le PO.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-12 11:59:29 — ANO-263 et ANO-264 rattachées (po-scrum-master)
+- **ANO-263** (roues de la 208 de police : pneu et jante en une masse noire, plis de tôle, hauteur de caisse) → **WFS-452** (P1, même sujet : roues de la police), RG-08 et critère 3 ajoutés, zone élargie au modèle de la 208 ; 🟡 À valider (utilisateur) après fusion.
+- **ANO-264** (passages de roue gris clair et pneus sans flanc de la M4) → **WFS-457** (retouches M4, `dev-artiste-3d`), RG-05 et RG-06 (contrôle des 17 voitures, de nuit) ; priorité P3 → **P2** (vue par l'utilisateur) ; 🟡 après fusion ; toujours après WFS-456.
+- Anomalies en 📋 Planifiée dans `anno.md` ; aucune attribution (tickets donnés à la demande d'une nouvelle session).
