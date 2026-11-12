@@ -986,3 +986,7 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - Zone : appels de dessin et pose des roues de `course5_system.cpp`, `duel_system.cpp`, `poursuite_system.cpp`, `course_system.cpp` ; `roues.*` ; `traffic_system.cpp` pour RG-09 seulement ; `tests/**`. WFS-460 (bandes et peinture de la police, même `poursuite_system.cpp`) peut partir en parallèle : lignes différentes, synchroniser souvent.
 - Règles : `regles-de-gestion/WFS-452.md` (RG-01 à RG-09). Après fusion : 🟡 À valider (utilisateur). Branche `feature/waforspeed-452`, premier commit poussé tout de suite.
 
+
+### 2026-11-12 12:55:45 — WFS-462 créé : publier les paquets de la Corniche (po-scrum-master)
+- Capture de l'utilisateur (choix du terrain, Corniche sans « Télécharger ») : vérifié sur GitHub, dernier run de `paquets.yml` = #2 (2026-11-11 09:08 UTC, avant la fusion de WFS-426 / #350) ; Release `paquets` sans `plage_*.wfcarte`.
+- **WFS-462** (P1, [TECHNIQUE], E14, `@cicd`) créé à la demande de l'utilisateur ; règles : `regles-de-gestion/WFS-462.md` (la demande vaut accord pour lancer `paquets.yml` une fois sur `main`). Premier ticket pour la prochaine session `@cicd`, avant WFS-454. WFS-426 reste 🟡.
