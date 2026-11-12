@@ -374,7 +374,9 @@ private:
         for (size_t i = 0; i < traffic_.cars.size(); i++) {
             const TrafficCar& c = traffic_.cars[i];
             if (c.deuxRoues) continue;   // WFS-232 : les deux-roues n'ont pas de braquage (inclinaison seulement)
-            suivi_[i].pas(c.z * M, c.offset * RW, c.laneYaw, roues::courbureRoute(t, c.z), CARS[nativeModelFor(c.type)].d.wb, dt, c.crashed || c.traverse >= 0);
+            roues::SuiviRoues& sv = suivi_[i];   // abscisse continue au tour de piste (relZ) ; une voiture recyclée saute de > 20 m
+            const double s = sv.init ? sv.sPrec + t.relZ(c.z - c.zPrec) * M : c.z * M;
+            sv.pas(s, c.offset * RW, c.laneYaw, roues::courbureRoute(t, c.z), CARS[nativeModelFor(c.type)].d.wb, dt, c.crashed || c.traverse >= 0);
         }
     }
     std::vector<std::pair<float, double>> niveaux_;   // WFS-109 : niveau du stop de chaque voiture et heure de la dernière image

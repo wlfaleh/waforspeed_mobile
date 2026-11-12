@@ -174,9 +174,9 @@ RouesPose poseTrafic(double laneYaw, bool crashed, double zUnits, float rayon) {
 void SuiviRoues::pas(double s, double lat, double capCaisse, double kappa, float empattement, double h, bool droites) {
     braquagePrec = braquage;
     const double ds = s - sPrec, dl = lat - latPrec, d = std::hypot(ds, dl);
-    if (!init || d > 20) {   // première image ou réapparition : rien à dériver, angle de départ gardé
-        sPrec = s; latPrec = lat; init = true; psiConnu = false;
-        if (droites) braquage = braquagePrec = 0;
+    if (!init || d > 20) {   // première image ou réapparition : rien à dériver, roues droites (rien d'hérité d'une autre place)
+        *this = SuiviRoues{};
+        sPrec = s; latPrec = lat; init = true;
         return;
     }
     sPrec = s; latPrec = lat;

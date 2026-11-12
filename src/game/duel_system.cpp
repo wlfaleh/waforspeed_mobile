@@ -79,6 +79,7 @@ public:
             if (!s.checkStart()) return;
             // startDuelRace : resetRace('play', hashStr(code) + round × 977), compte à rebours de 3 s
             pl.reset(*pl.car);
+            suivi_.clear();   // WFS-452 : roues des adversaires remises à zéro à chaque manche
             // WFS-242 (RG-05) : chaque joueur à sa place de la grille, derrière la ligne (avant : tous sur la ligne, l'un dans l'autre)
             course5::placerSurGrille(pl, *g.track, course5::placeGrille(s.place()));
             WFS_LOG("duel : place %d sur la grille", s.place() + 1);

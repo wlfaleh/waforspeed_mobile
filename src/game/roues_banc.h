@@ -12,7 +12,8 @@ void benchRoues(Renderer& r, const std::string& out);
 //   - c5     : adversaire de la Course à 5 à côté du joueur, vers 30 km/h, roue arrière vue de côté (et c5-nuit, de nuit) ;
 //   - police : voiture de police de la Poursuite qui glisse de côté vers le joueur, vue de 3/4 avant (et police-basse, en Basse) ;
 //   - fantome : fantôme du record (Checkpoint) à côté du joueur, vers 30 km/h, vu de côté ;
-//   - trafic : voiture du trafic devant le joueur, vue de face : ligne droite, puis changement de file forcé.
+//   - trafic : voiture du trafic devant le joueur, vue de 3/4 avant, basse (roue avant visible) : ligne droite, puis changement
+//     de file forcé (image 06).
 // Captures roues-<scène>-<avant|apres>-NN.png ; durée du rendu de chaque passe au journal (RG-05). Rend le nombre d'écarts.
 int benchRouesSuivies(Game& g, Renderer& r, const std::string& out);
 // accroches du banc (WFS-452), définies avec leur système : police tenue à côté du joueur (poursuite_system.cpp), fantôme

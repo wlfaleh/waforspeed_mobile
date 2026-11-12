@@ -106,7 +106,7 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
             if (g.player().kmh() < cible - 3) { WFS_ERR("roues-suivies : %s : %.0f km/h au lieu de %.0f", sc.nom, g.player().kmh(), cible); ecarts++; }
             const double px = g.player().playerX;
             const int cote = px <= 0 ? 1 : -1;            // la voiture suivie est du côté où la route est la plus large
-            int voiture = -1, fileDepart = -1;
+            int voiture = -1, fileDepart = -1, sens = 1;   // sens : côté du changement de file du trafic (+1 : à droite)
             // écart latéral (m) entre le joueur et la voiture suivie : la caméra se place 4,5 m au-delà de cette voiture
             double ecartLat = 0.62 * RW;
             if (sc.mode == ModeCourse::Course5) { course5BancSuiveurs({{1.3, cote > 0 ? 2 : 0}, {-60, 1}, {-75, 1}, {-90, 1}}); ecartLat = std::abs((cote > 0 ? 0.62 : -0.62) - px) * RW; }   // essieu arrière au milieu de l'image
@@ -121,6 +121,7 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
                 trafficBenchPlace(14, 0, 0, true);
                 for (int i = 0; i < 4; i++) pas(false);
                 voiture = trafficBenchCar();
+                if (const Traffic* tf = activeTraffic(); tf && voiture >= 0 && voiture < (int)tf->cars.size()) sens = tf->cars[(size_t)voiture].lane > 0 ? -1 : 1;
             }
             for (int i = 0; i < 40; i++) pas(i % 2 == 1);   // mise en place (voitures tenues, filtres du braquage établis)
             for (int k = 0; k < sc.images; k++) {
@@ -132,11 +133,17 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
                     if (tf && voiture >= 0 && voiture < (int)tf->cars.size()) {
                         TrafficCar& c = tf->cars[(size_t)voiture];
                         fileDepart = c.lane;
-                        c.target = c.lane > 0 ? c.lane - 1 : c.lane + 1; c.pending = false; c.signal = c.target > c.lane ? 1 : -1;
+                        c.target = c.lane + sens; c.pending = false; c.signal = sens;
                     } else { WFS_ERR("roues-suivies : trafic : aucune voiture placée"); ecarts++; }
                 }
                 // point de vue : roue arrière de côté (c5, fantôme) ; 3/4 avant (police) ; de face, au-dessus (trafic)
-                if (sc.nom[0] == 't') viser(19.5, 1.2, 1.9);
+                if (sc.nom[0] == 't') {   // trafic : 3/4 avant, bas, du côté opposé au changement de file : roue avant visible
+                    const Traffic* tf = activeTraffic();
+                    if (tf && voiture >= 0 && voiture < (int)tf->cars.size()) {
+                        const TrafficCar& c = tf->cars[(size_t)voiture];
+                        viser((c.z - g.player().position) * M + 5.2, (c.offset - g.player().playerX) * RW - sens * 2.8, 0.75f);
+                    }
+                }
                 else if (sc.mode == ModeCourse::Poursuite) viser(5.5, cote * (ecartLat + 4.5), 1.4);
                 else if (sc.nom[0] == 'f') viser(-0.4, cote * (ecartLat + 4.5), 2.3);   // fantôme : plus haut, le joueur passe derrière
                 else viser(-0.4, cote * (ecartLat + 4.5), 0.75);

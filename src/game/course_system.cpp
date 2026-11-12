@@ -88,7 +88,7 @@ public:
         if (fantActif_ && g.track) {   // WFS-452 (RG-03) : braquage des roues avant du fantôme d'après sa trace
             fantome::Echantillon e;
             if (fantome::interpoler(lecture_, tJeu_, e))
-                fantSuivi_.pas(e.d * M, e.x * RW, e.h, roues::courbureRoute(*g.track, e.d), carById(lecture_.car.c_str()).d.wb, dt);
+                fantSuivi_.pas(e.d * M, e.x * RW, fantYaw_, roues::courbureRoute(*g.track, e.d), carById(lecture_.car.c_str()).d.wb, dt);
         }
         if (course_.level != cp)
             WFS_LOG("course : checkpoint %d à %.1f s de course, +%.1f s, reste %.2f s, score %lld", course_.level, course_.raceTime,

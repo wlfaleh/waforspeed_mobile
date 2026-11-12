@@ -53,8 +53,8 @@ RouesPose poseTrafic(double laneYaw, bool crashed, double zUnits, float rayon);
 // vitesse de braquage bornée) : aucun saut d'une image à l'autre, 0 exactement en ligne droite sans changement de file.
 // À l'arrêt, les roues gardent leur angle (comme une vraie voiture). Avant (WFS-60) : braquage du trafic = cap de file × 1,6,
 // jusqu'à 2,5 rad (voiture qui traverse, voiture lente qui change de file) et en sauts (ANO-265) ; aucun braquage ailleurs.
-inline bool g_avant452 = false;
-inline bool g_journal452 = false;   // banc « roues-suivies » : roulage et braquage de la voiture suivie écrits au journal à chaque image   // banc « roues-suivies » seulement : vrai = rendu d'avant WFS-452 (captures « avant »)
+inline bool g_avant452 = false;     // banc « roues-suivies » seulement : vrai = rendu d'avant WFS-452 (captures « avant »)
+inline bool g_journal452 = false;   // banc « roues-suivies » : roulage et braquage de la voiture suivie écrits au journal à chaque image
 constexpr float BRAQUAGE_MAX = 0.61f;          // rad aux roues (≈ 35°, butée d'une voiture de série)
 constexpr float BRAQUAGE_VITESSE = 1.5f;       // rad/s aux roues, au plus (coup de volant rapide d'un conducteur)
 constexpr double BRAQUAGE_TAU = 0.10;          // s, constante de chacun des deux filtres
@@ -65,7 +65,8 @@ struct SuiviRoues {
     double sPrec = 0, latPrec = 0, psiPrec = 0; bool init = false, psiConnu = false;
     // un pas fixe : s = abscisse sur la route (m), lat = écart latéral (m, + à droite), capCaisse = cap de la caisse par rapport
     // à la route (rad, + à droite), kappa = courbure de la route (1/m, + à droite), h = durée du pas (s) ;
-    // droites = roues forcées droites (accident, voiture qui traverse le carrefour) ; un saut > 20 m (réapparition) : reprise
+    // droites = roues forcées droites (accident, voiture qui traverse le carrefour) ; un saut > 20 m (réapparition : voiture
+    // recyclée, nouvelle place) : roues remises droites. s doit être continu (tour de piste : l'appelant passe s + relZ)
     void pas(double s, double lat, double capCaisse, double kappa, float empattement, double h, bool droites = false);
     float rendu(double alpha) const { return braquagePrec + (braquage - braquagePrec) * (float)alpha; }
 };
