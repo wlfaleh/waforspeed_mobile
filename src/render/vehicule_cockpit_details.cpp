@@ -393,9 +393,108 @@ void sf90(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
     plafonnier(p, cx, HAUT_PARE_BRISE_Z + 0.12f, false);
 }
 
+// ---------------------------------------------------------------- WFS-395 : Corvette C7 et Vitara Brezza 2022
+// Corvette C7 Stingray (id « mustang ») : console centrale haute qui monte jusqu'à la planche, toute la façade (écran, aérateurs,
+// climatisation) tournée de 15° vers le conducteur ; deux aérateurs verticaux de part et d'autre de l'écran, un aérateur à chaque
+// bout de la planche ; climatisation : panneau laqué, deux molettes de température et une rangée de touches ; démarreur à gauche
+// de la console ; poignée de maintien du passager gainée de cuir le long du flanc droit de la console ; sélecteur gainé, molette des
+// modes de conduite ; portière : décor alu, insert cuir, haut-parleur et tweeter ; pas de plafonnier sous le toit amovible (E)
+void corvette(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
+    const float Y = d.plancheY, zF = zFacePlanche(d) + AER_PROF, x0 = cx - demi, x1 = cx + demi;
+    for (float x : {x0 + 0.075f, x1 - 0.075f}) aerateur(p, surFace(x, Y - 0.150f, zF, 0.10f), {0.100f, 0.068f, 0.024f, 0.0080f, 4, false, true, false, M::Chrome});
+    // façade de la console centrale, sur la face de la planche, de part et d'autre de l'écran ; les aérateurs sont tournés vers le
+    // conducteur comme l'écran (chacun autour de son centre : la face de la planche reste droite, aucun ne s'y enfonce de plus de 7 mm)
+    auto surConsole = [&](float u, float y, float leve = 0, float lacet = 0) { return translate({d.ecranPos.x + u, y, zF}) * rotateY(lacet) * rotateX(-leve); };
+    const float ye = d.ecranPos.y;
+    for (float s : {-1.f, 1.f}) aerateur(p, surConsole(s * (d.ecranW * 0.5f + 0.045f), ye, 0.10f, d.ecranLacet) * translate({0, 0, 0.007f}),
+                                         {0.050f, 0.110f, 0.018f, 0.0070f, 4, true, true, false, M::Chrome});
+    // climatisation sous l'écran : panneau laqué, molettes de température aux bouts, touches au milieu, feux de détresse au-dessus
+    dalleFace(p[M::Laque], surConsole(0, ye - 0.100f, 0.15f), 0.26f, 0.052f, 0.006f, 0.012f, 0.002f);
+    for (float s : {-1.f, 1.f}) molette(p, surConsole(s * 0.100f, ye - 0.100f, 0.15f) * translate({0, 0, 0.003f}), 0.019f, 0.014f, M::Chrome, M::Lames);
+    touches(p, surConsole(0, ye - 0.100f, 0.15f) * translate({0, 0, 0.003f}), 5, 0.022f, 0.016f, 0.030f, M::Lames);
+    dalleFace(p[M::Laque], surConsole(0, ye - 0.062f, 0.10f), 0.030f, 0.020f, 0.006f, 0.005f, 0.002f);
+    cadreArrondi(p[M::Repere], surConsole(0, ye - 0.062f, 0.10f) * translate({0, 0, 0.004f}), 0.016f, 0.012f, 0.003f, 0.0028f, 0.002f);
+    // commandes d'éclairage à gauche du volant ; démarreur sur la console, côté conducteur
+    dalleFace(p[M::Laque], surFace(x0 + 0.095f, Y - 0.240f, zF - 0.012f), 0.090f, 0.055f, 0.006f, 0.010f, 0.002f);
+    molette(p, surFace(x0 + 0.080f, Y - 0.240f, zF - 0.009f), 0.017f, 0.012f, M::Chrome, M::Lames);
+    touches(p, surFace(x0 + 0.122f, Y - 0.240f, zF - 0.008f) * rotateZ(PI / 2), 2, 0.016f, 0.014f, 0.020f, M::Lames);
+    boutonRond(p, surConsole(-0.150f, ye - 0.150f), 0.013f, 0.007f, M::Chrome, M::Laque);
+    // console haute : dessus à 0,50 m sous l'œil (≈ 7 cm plus haut que la Golf), étroite à l'avant entre les deux sièges baquets
+    const Console c{cx, -0.505f, zFacePlanche(d) + 0.02f, 0.16f, 0.22f, 0.07f};
+    corpsConsole(p, d, c, M::PlancheBas);
+    const float zc0 = c.z0 - (c.z0 + c.z1) * 0.5f;
+    bac(p, c, zc0 + 0.03f, zc0 + 0.15f, 0.16f);
+    {   // sélecteur gainé (soufflet, poignée, touche chromée), molette des modes de conduite à droite, touches à gauche
+        const mat4 C = repereConsole(c) * translate({0, 0.004f, zc0 + 0.29f});
+        dalle(p[M::Laque], C, 0.19f, 0.19f, 0.008f, 0.025f, 0.003f);
+        dalle(p[M::Cuir], C * translate({-0.010f, 0.008f, 0.f}), 0.066f, 0.086f, 0.010f, 0.030f, 0.005f, 0.9f);
+        profile(p[M::Cuir], C, {-0.010f, 0.012f, 0.010f}, {-0.010f, 0.082f, -0.010f}, 0.038f, 0.054f, 0.017f, 0.046f, 0.034f);
+        dalle(p[M::Chrome], C * translate({-0.010f, 0.085f, -0.014f}) * rotateX(0.40f), 0.026f, 0.022f, 0.006f, 0.009f, 0.002f);
+        molette(p, C * translate({0.058f, 0.006f, 0.040f}) * rotateX(-PI / 2), 0.024f, 0.022f, M::Chrome, M::Lames);
+        touches(p, C * translate({-0.070f, 0.006f, 0.020f}) * rotateX(-PI / 2) * rotateZ(PI / 2), 3, 0.020f, 0.016f, 0.026f, M::Lames);
+    }
+    accoudoir(p, c, zc0 + 0.56f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
+    {   // poignée de maintien du passager : barre gainée qui descend du haut de la console au flanc droit, deux pieds alu
+        const float xg = cx + c.w * 0.5f + 0.030f, za = zFacePlanche(d) + 0.06f;
+        lisse(p[M::Cuir], mat4::identity(), {{xg, Y - 0.170f, za}, {xg + 0.004f, Y - 0.240f, za + 0.050f}, {xg + 0.004f, -0.440f, za + 0.150f},
+                                             {xg, -0.470f, za + 0.240f}}, 0.030f, 0.034f, 0.013f);
+        for (const vec3 b : {vec3{xg - 0.016f, Y - 0.172f, za - 0.004f}, vec3{xg - 0.016f, -0.472f, za + 0.244f}})
+            dalle(p[M::Alu], translate(b) * rotateZ(PI / 2), 0.034f, 0.040f, 0.024f, 0.010f, 0.004f);
+    }
+    const Porte porte{-0.400f, -0.60f, 0.15f, 0.080f, -0.290f, -0.62f, -0.64f, -0.58f, 0.16f, 0.14f, true, false, M::Alu, M::Cuir, M::Alu,
+                      M::Chrome, M::Cuir, 2};
+    for (float sx : {-1.f, 1.f}) portiere(p, d, cx, demi, sx, porte, sx < 0);
+}
+
+// Vitara Brezza 2022 (id « tcross ») : planche horizontale deux tons traversée par un jonc argent ; aérateurs rectangulaires à lunette
+// chromée aux deux bouts et deux sous l'écran flottant, feux de détresse entre eux ; climatisation automatique : panneau laqué,
+// petit afficheur, deux molettes et une rangée de touches ; console : levier de boîte automatique (soufflet, pommeau, touche),
+// porte-gobelets, accoudoir ; portière : décor argent, insert gainé, poignée chromée, haut-parleur ; plafonnier sans appel d'urgence
+void brezza(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
+    const float Y = d.plancheY, zF = zFacePlanche(d) + AER_PROF, x0 = cx - demi, x1 = cx + demi;
+    for (float x : {x0 + 0.090f, x1 - 0.090f}) aerateur(p, surFace(x, Y - 0.110f, zF, 0.10f), {0.105f, 0.070f, 0.014f, 0.0080f, 4, false, true, false, M::Chrome});
+    const float xe = d.ecranPos.x;
+    for (float s : {-1.f, 1.f}) aerateur(p, surFace(xe + s * 0.078f, Y - 0.105f, zF, 0.10f), {0.130f, 0.048f, 0.012f, 0.0070f, 3, false, true, false, M::Chrome});
+    dalleFace(p[M::Laque], surFace(xe, Y - 0.105f, zF - 0.010f), 0.022f, 0.036f, 0.008f, 0.005f, 0.002f);   // feux de détresse
+    cadreArrondi(p[M::Repere], surFace(xe, Y - 0.105f, zF - 0.005f), 0.012f, 0.016f, 0.003f, 0.0025f, 0.002f);
+    // jonc argent sur toute la largeur, au-dessus des aérateurs (coupé par le combiné et les aérateurs du milieu)
+    for (const float xa : {x0 + 0.15f, xe + 0.150f}) {
+        const float xb = xa < cx ? cx - 0.20f : x1 - 0.15f;
+        profile(p[M::Accent], mat4::identity(), {xa, Y - 0.058f, zF - 0.012f}, {xb, Y - 0.058f, zF - 0.012f}, 0.016f, 0.008f, 0.004f);
+    }
+    // climatisation automatique : panneau laqué, afficheur sombre au milieu, molettes aux bouts, touches dessous
+    dalleFace(p[M::Laque], surFace(xe, Y - 0.185f, zF - 0.012f, 0.20f), 0.25f, 0.070f, 0.006f, 0.012f, 0.002f);
+    dalleFace(p[M::Lames], surFace(xe, Y - 0.178f, zF - 0.008f, 0.20f), 0.070f, 0.026f, 0.002f, 0.004f, 0.0008f);
+    for (float s : {-1.f, 1.f}) molette(p, surFace(xe + s * 0.090f, Y - 0.185f, zF - 0.009f, 0.20f), 0.020f, 0.014f, M::Chrome, M::Lames);
+    touches(p, surFace(xe, Y - 0.205f, zF - 0.008f, 0.20f), 4, 0.022f, 0.012f, 0.028f, M::Lames);
+    // commandes à gauche du volant (réglage des phares, rétroviseurs) : platine et touches
+    dalleFace(p[M::Laque], surFace(x0 + 0.100f, Y - 0.220f, zF - 0.012f), 0.080f, 0.050f, 0.006f, 0.010f, 0.002f);
+    touches(p, surFace(x0 + 0.100f, Y - 0.220f, zF - 0.008f), 2, 0.022f, 0.018f, 0.032f, M::Lames);
+    // console
+    const Console c{cx, -0.585f, zFacePlanche(d) + 0.02f, 0.16f, 0.22f, 0.05f};
+    corpsConsole(p, d, c, M::PlancheBas);
+    const float zc0 = c.z0 - (c.z0 + c.z1) * 0.5f;
+    bac(p, c, zc0 + 0.03f, zc0 + 0.16f, 0.17f);
+    {   // levier de boîte automatique : platine laquée, grille sombre, soufflet, pommeau gainé et sa touche argent
+        const mat4 C = repereConsole(c) * translate({0, 0.004f, zc0 + 0.31f});
+        dalle(p[M::Laque], C, 0.15f, 0.20f, 0.008f, 0.025f, 0.003f);
+        dalle(p[M::Lames], C * translate({0, 0.0065f, 0}), 0.016f, 0.13f, 0.002f, 0.007f, 0.0008f);
+        profile(p[M::Lames], C, {0, 0.008f, 0.010f}, {0, 0.060f, -0.006f}, 0.014f, 0.014f, 0.006f);
+        tour(p[M::Cuir], C * translate({0, 0.060f, -0.006f}), {{0.f, 0.f}, {0.018f, 0.004f}, {0.022f, 0.022f}, {0.020f, 0.040f}, {0.011f, 0.050f}, {0.f, 0.052f}}, 40);
+        dalle(p[M::Accent], C * translate({-0.020f, 0.090f, -0.006f}) * rotateZ(PI / 2), 0.016f, 0.012f, 0.006f, 0.004f, 0.0015f);
+    }
+    gobelets(p, c, zc0 + 0.49f, M::Laque);
+    accoudoir(p, c, zc0 + 0.64f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
+    const Porte porte{-0.430f, -0.62f, 0.20f, 0.085f, -0.300f, -0.60f, -0.64f, -0.58f, 0.17f, 0.16f, false, false, M::Accent, M::Tissu, M::PlancheBas,
+                      M::Chrome, M::PlancheBas, 4};
+    for (float sx : {-1.f, 1.f}) portiere(p, d, cx, demi, sx, porte, sx < 0);
+    plafonnier(p, cx, HAUT_PARE_BRISE_Z + 0.13f, false);
+}
+
 struct DetailsDef { const char* car; void (*construire)(PiecesDetails&, const InterieurDef&, float, float); unsigned ambiance; };
-// lumière d'ambiance la nuit : Golf GTI rouge (couleur du liseré), M4 blanche ; 911 et SF90 : sans (E)
-const DetailsDef DETAILS[] = {{"golf", golf, 0xd0141e}, {"m4", m4, 0xe8eef6}, {"p911", p911, 0}, {"sf90", sf90, 0}};
+// lumière d'ambiance la nuit : Golf GTI rouge (couleur du liseré), M4 blanche ; 911, SF90, Corvette C7 et Vitara Brezza : sans (E)
+const DetailsDef DETAILS[] = {{"golf", golf, 0xd0141e}, {"m4", m4, 0xe8eef6}, {"p911", p911, 0}, {"sf90", sf90, 0},
+                              {"mustang", corvette, 0}, {"tcross", brezza, 0}};   // WFS-395
 const DetailsDef* detailsDef(const InterieurDef& d) {
     for (const DetailsDef& k : DETAILS) if (std::strcmp(k.car, d.car) == 0) return &k;
     return nullptr;
