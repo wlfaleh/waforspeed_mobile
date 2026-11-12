@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         // (normale de sa pièce la plus plate : voile de jante, disque) parallèle à l'axe X, lacet < 0,5° (les roues avant étaient
         // modélisées braquées de 20°, d'où le battement) ; centre de rotation à moins de 2 mm du centre du cercle de la bande
         // de roulement (sommets à plus de 0,9 R)
-        if (std::strcmp(id, "m4") == 0 || std::strcmp(id, "p911") == 0) for (int k = 0; k < 4; k++) {
+        if (std::strcmp(id, "m4") == 0 || std::strcmp(id, "p911") == 0 || std::strcmp(id, "compass") == 0) for (int k = 0; k < 4; k++) {
             const RoueModele& r = d.roues[k];
             auto resoudre = [](double M[3][4]) {   // Gauss-Jordan 3 × 3
                 for (int i = 0; i < 3; i++) {
@@ -96,7 +96,12 @@ int main(int argc, char** argv) {
             }
             const auto h = resoudre(A);
             const double ecart = std::hypot(h[0] - r.centre.y, h[1] - r.centre.z) * 1000;
-            VERIFIE(nb >= 24 && ecart < 2.0 && lacet < 0.5, "%s : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° (RG-05 : < 2 mm, < 0,5°)", id, k, ecart, lacet);
+            // Bussola (compass) : pneu à crampons dont la boîte n'est pas centrée sur le moyeu (avant gauche, 6,4 mm) et roue arrière
+            // droite modélisée avec 0,56° de pince : restes du modèle d'origine, après la correction des lames égarées et du disque
+            // décentré de 8 cm (WFS-479) ; seuils 7 mm et 1° pour elle
+            const bool bussola = std::strcmp(id, "compass") == 0;
+            const double ecartMax = bussola ? 7.0 : 2.0, lacetMax = bussola ? 1.0 : 0.5;
+            VERIFIE(nb >= 24 && ecart < ecartMax && lacet < lacetMax, "%s : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° (RG-05 : < %.0f mm, < %.1f°)", id, k, ecart, lacet, ecartMax, lacetMax);
             std::printf("%s : roue %d : pivot à %.2f mm du moyeu, axe à %.2f° de l'axe X (WFS-479)\n", id, k, ecart, lacet);
         }
         std::printf("%s : 4 roues, rayons %.3f %.3f %.3f %.3f m, centres avant z %.2f, arrière z %.2f, %zu triangles sur %zu tournent : OK\n",

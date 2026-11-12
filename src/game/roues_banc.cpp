@@ -88,6 +88,7 @@ int benchRouesSuivies(Game& g, Renderer& r, const std::string& out) {
     const char* seule = std::getenv("WFS_ROUES_SCENE");   // banc : une seule scène (mise au point)
     if (!seule || std::string(seule) == "m4-vitrine") benchRoues(r, out, "m4");   // WFS-479 : roues de la M4 en gros plan
     if (!seule || std::string(seule) == "p911-vitrine") benchRoues(r, out, "p911");   // WFS-479 : et de la 911
+    if (seule && std::string(seule) == "compass-vitrine") benchRoues(r, out, "compass");   // WFS-479 : et de la Bussola
     for (const Scene& sc : scenes) {
         if (seule && std::string(seule) != sc.nom) continue;
         double msRendu[2] = {0, 0}; int nRendu[2] = {0, 0}; double appels[2] = {0, 0}, triangles[2] = {0, 0};

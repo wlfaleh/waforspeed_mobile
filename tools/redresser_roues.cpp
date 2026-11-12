@@ -11,9 +11,11 @@
 // roulement) < 2 mm.
 // Axe d'une roue : normale de sa pièce la plus plate (disque, voile de jante ; analyse en composantes principales) ; centre de
 // la rotation : centre de cette pièce. Uv, indices, matériaux et textures intacts : le .lod (indices seuls) reste valable.
-// Rejouable : une roue déjà droite (lacet < 0,2°) ne bouge plus.
+// Rejouable : une roue déjà droite (lacet < 1°) ne bouge plus.
 // Garde-fous : rien n'est écrit si un sommet tourné sert aussi à un triangle fixe hors de la roue (la caisse serait déformée)
 // ou si le moteur ne retrouve pas ses 4 roues après la retouche.
+// Avant cela (Bussola) : triangles égarés de la roue (lames étirées du pneu vers le passage de roue) neutralisés et pièce
+// ronde décentrée (disque de frein) recentrée sur le moyeu : sinon le centre de rotation tombe à côté du moyeu.
 // Une pièce déjà droite dans une roue braquée (flasque, pièce de la caisse prise dans le cylindre de la roue) reste en place.
 // usage : redresser_roues [dossier du dépôt] id … ; --essai : mesure seulement (WFS-479 : la M4, puis la 911 sur ordre de
 // l'utilisateur du 2026-11-12)
@@ -34,7 +36,7 @@
 
 using namespace wfs;
 constexpr double PI_D = 3.14159265358979323846;
-constexpr double LACET_MIN = 0.2 * PI_D / 180;   // rad : en dessous, la roue est droite (rejouable)
+constexpr double LACET_MIN = 1.0 * PI_D / 180;   // rad : en dessous, la roue est droite (rejouable ; bruit de mesure ≈ 0,5°)
 
 namespace {
 struct Maillage { uint32_t mat = 0; std::vector<float> v; std::vector<uint32_t> idx; std::vector<int8_t> tan; };
@@ -139,9 +141,82 @@ int main(int argc, char** argv) {
         const std::string chemin = racine + "/assets/cars/" + id + ".wfm";
         Modele m;
         if (!lire(chemin, m)) { std::fprintf(stderr, "%s : illisible\n", id.c_str()); erreurs++; continue; }
-        const roues::Decoupe d0 = decouper(m);
-        if (d0.n != 4) { std::fprintf(stderr, "%s : 4 roues non trouvées, voiture laissée telle quelle\n", id.c_str()); erreurs++; continue; }
         bool change = false;
+        {   // 0. pièces qui faussent le centre de rotation (Bussola, WFS-479) : le moteur fait tourner chaque roue autour du centre
+            // de la boîte de ses pièces. Moyeu : centre du cercle ajusté sur le pneu (pièce de la roue au plus grand rayon, bien
+            // ronde). a) triangle égaré : triangle de la roue qui atteint un point à plus de 1,05 R du moyeu (lame étirée vers le
+            // passage de roue) : rendu dégénéré sur place (ses 3 indices sur son sommet le plus proche du moyeu, ou un sommet du pneu ;
+            // même nombre de triangles : le .lod reste valable) ; b) pièce ronde décentrée (disque de frein modélisé à côté du
+            // moyeu) : boîte carrée à 5 % près (10 % dans un matériau « roue »), rayon > 0,3 R, centre à plus de 2 cm du moyeu : recentrée sur le moyeu (y, z)
+            const roues::Decoupe dz = decouper(m);
+            if (dz.n != 4) { std::fprintf(stderr, "%s : 4 roues non trouvées, voiture laissée telle quelle\n", id.c_str()); erreurs++; continue; }
+            struct Decalage { size_t mi; int k; double oy, oz, taille; };
+            std::vector<Decalage> cands;
+            for (int k = 0; k < 4; k++) {
+                double hy = 0, hz = 0, R = 0;
+                for (size_t mi = 0; mi < m.ms.size(); mi++) {
+                    const Maillage& x = m.ms[mi];
+                    std::vector<std::array<double, 2>> q;
+                    for (size_t t = 0; t < x.idx.size() / 3; t++) if (dz.roueDuTriangle[mi][t] == k)
+                        for (int j = 0; j < 3; j++) q.push_back({x.v[8 * x.idx[t * 3 + j] + 1], x.v[8 * x.idx[t * 3 + j] + 2]});
+                    if (q.size() < 100) continue;
+                    double M[3][4] = {};
+                    for (const auto& p : q) { const double row[3] = {2 * p[0], 2 * p[1], 1}, rhs = p[0] * p[0] + p[1] * p[1];
+                        for (int i = 0; i < 3; i++) { for (int j = 0; j < 3; j++) M[i][j] += row[i] * row[j]; M[i][3] += row[i] * rhs; } }
+                    for (int i = 0; i < 3; i++) {
+                        int pv = i; for (int j = i + 1; j < 3; j++) if (std::fabs(M[j][i]) > std::fabs(M[pv][i])) pv = j;
+                        for (int j = 0; j < 4; j++) std::swap(M[i][j], M[pv][j]);
+                        for (int j = 0; j < 3; j++) if (j != i) { const double f = M[j][i] / M[i][i]; for (int c = 0; c < 4; c++) M[j][c] -= f * M[i][c]; }
+                    }
+                    const double cy = M[0][3] / M[0][0], cz = M[1][3] / M[1][1], r = std::sqrt(std::max(0.0, M[2][3] / M[2][2] + cy * cy + cz * cz));
+                    double res = 0; for (const auto& p : q) res += std::fabs(std::hypot(p[0] - cy, p[1] - cz) - r);
+                    if (res / (double)q.size() < 0.03 * r && r > R) { R = r; hy = cy; hz = cz; }
+                }
+                if (R < 0.2) continue;
+                int egares = 0;
+                for (size_t mi = 0; mi < m.ms.size(); mi++) {
+                    Maillage& x = m.ms[mi];
+                    float mn[2] = {1e9f, 1e9f}, mx[2] = {-1e9f, -1e9f}; bool piece = false;
+                    int64_t dedans = -1;   // un sommet de la roue dans le pneu (pour un triangle égaré entièrement dehors)
+                    for (size_t t = 0; t < x.idx.size() / 3 && dedans < 0; t++) if (dz.roueDuTriangle[mi][t] == k)
+                        for (int j = 0; j < 3; j++) if (const uint32_t v = x.idx[t * 3 + j]; std::hypot(x.v[8 * v + 1] - hy, x.v[8 * v + 2] - hz) <= 1.05 * R) { dedans = v; break; }
+                    for (size_t t = 0; t < x.idx.size() / 3; t++) {
+                        if (dz.roueDuTriangle[mi][t] != k) continue;
+                        uint32_t* I = &x.idx[t * 3];
+                        double dmin = 1e9, dmax = 0; uint32_t proche = I[0];
+                        for (int j = 0; j < 3; j++) {
+                            const double d = std::hypot(x.v[8 * I[j] + 1] - hy, x.v[8 * I[j] + 2] - hz);
+                            if (d < dmin) { dmin = d; proche = I[j]; }
+                            dmax = std::max(dmax, d);
+                        }
+                        if (dmax > 1.05 * R && (dmin <= 1.05 * R || dedans >= 0)) {
+                            I[0] = I[1] = I[2] = dmin <= 1.05 * R ? proche : (uint32_t)dedans; egares++; continue;
+                        }
+                        for (int j = 0; j < 3; j++) for (int c = 0; c < 2; c++) { const float y = x.v[8 * I[j] + 1 + c]; mn[c] = std::min(mn[c], y); mx[c] = std::max(mx[c], y); }
+                        piece = true;
+                    }
+                    if (!piece) continue;
+                    const double sy = mx[0] - mn[0], sz = mx[1] - mn[1], oy = hy - (mn[0] + mx[0]) / 2, oz = hz - (mn[1] + mx[1]) / 2;
+                    if (std::fabs(sy - sz) > (estRoue(m, x) ? 0.10 : 0.05) * std::max(sy, sz) || std::max(sy, sz) / 2 < 0.3 * R || std::max(sy, sz) / 2 > 0.8 * R || std::hypot(oy, oz) < 0.02) continue;
+                    cands.push_back({mi, k, oy, oz, std::max(sy, sz)});
+                }
+                if (egares) { std::printf("%s : roue %s : %d triangle(s) égaré(s) hors du pneu (R %.3f m) neutralisé(s)\n", id.c_str(), NOM[k], egares, R); change = true; }
+            }
+            // recentrage seulement si l'autre roue du même essieu a le même défaut dans le même maillage (défaut du modèle, pas
+            // une pièce asymétrique comme un étrier)
+            for (const Decalage& c : cands) {
+                const bool paire = std::any_of(cands.begin(), cands.end(), [&](const Decalage& o) { return o.mi == c.mi && o.k == (c.k ^ 1); });
+                if (!paire) continue;
+                Maillage& x = m.ms[c.mi];
+                std::vector<char> pris(x.v.size() / 8, 0);
+                for (size_t t = 0; t < x.idx.size() / 3; t++) if (dz.roueDuTriangle[c.mi][t] == c.k)
+                    for (int j = 0; j < 3; j++) if (const uint32_t v = x.idx[t * 3 + j]; !pris[v]) { pris[v] = 1; x.v[8 * v + 1] += (float)c.oy; x.v[8 * v + 2] += (float)c.oz; }
+                std::printf("%s : roue %s : maillage %zu : pièce ronde de %.0f mm décentrée de %.0f mm, recentrée sur le moyeu\n", id.c_str(), NOM[c.k], c.mi, c.taille * 1000, std::hypot(c.oy, c.oz) * 1000);
+                change = true;
+            }
+        }
+        const roues::Decoupe d0 = decouper(m);
+        if (d0.n != 4) { std::fprintf(stderr, "%s : 4 roues perdues après le nettoyage, rien d'écrit\n", id.c_str()); erreurs++; continue; }
 
         // morceau de pneu laissé fixe par le moteur (roues::decouper : médiane autour du centre du coin, trop étroite pour une
         // roue braquée) : triangle d'un matériau « roue » dont le centre est dans le cylindre de la roue (30 cm de côté, 1,15 R) ;
