@@ -1213,3 +1213,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 20:36:40 — Erreur du PO : fusion de WFS-479 sans le lead dev (po-scrum-master)
 - L'utilisateur précise : « j'ai dit merge pour le lead dev » : il voulait que le lead dev fusionne. Le PO a fusionné lui-même la PR #370 (b406c9c6) pendant la revue : **faute du PO**. Pas de revert (aucun ordre). Rattrapage : le lead dev de la session du développeur refait une revue complète après fusion de #370 ; tout défaut est corrigé par le même développeur dans une nouvelle PR, fusionnée par le lead dev. Le PO ne fusionne plus aucune PR.
+
+### 2026-11-12 20:37:23 — Commentaire du lead dev obligatoire même après fusion (po-scrum-master)
+- Ordre de l'utilisateur : le lead dev ajoute son commentaire dans la PR même si elle est fusionnée. Demandé pour la PR #370 (WFS-479) à la session du développeur ; ajouté aux ordres permanents du PO.
