@@ -925,3 +925,9 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 - 62 images extraites à 3 img/s (21 s). **ANO-250 reclassée bloquante** : bande « POLICE » côté gauche en rectangle plat qui dépasse de la caisse, aucune bande côté droit (bancs PC : ni l'une ni l'autre visibles).
 - **ANO-260** (majeure) : la voiture de police passe de gris argent à blanc en 0,2 s. **ANO-261** (bloquante, conduite) : glisse irréaliste au contact de la police. **ANO-262** (bloquante, à préciser) : citadine à 300 km/h, non visible dans la vidéo (fiches : 205 à 208 km/h).
 - Le décor plus pauvre des bancs vient de la Ville de secours (« paquet absent » aux journaux), pas d'un retrait. Preuves : `qa/retours/2026-11-12-video1204-*`, `qa/retours/2026-11-12-police-bandes-banc.png`. Transmis au PO.
+
+### 2026-11-12 11:11:24 — Vidéo de l'utilisateur (Poursuite) : WFS-460 et WFS-461 créés, ANO-250 sortie de WFS-459 (po-scrum-master)
+- Constats du QA (11:08:40) pris en compte. **ANO-250** (bloquante, forme nue) et **ANO-260** (majeure, peinture argent / blanc) → **WFS-460** (P1, E3 + E10, nouvelle session `@dev`, ⏳ Prêt) : bandes « POLICE » sur la tôle des deux côtés, une seule peinture blanche à toutes les distances. Exception PO : en parallèle de WFS-452 (même fichier, lignes différentes : roues pour 452, bandes et peinture pour 460).
+- **ANO-261** (bloquante, glisse au contact de la police) et **ANO-262** (bloquante, citadine à 300 km/h, à reproduire d'abord) → **WFS-461** (P1, E3 `player.*` / `roues.*` / `duel.*`, skill `expert-conduite`, nouvelle session `@conduite`, ⏳ Prêt).
+- **WFS-459** ne garde que ANO-255 (reflet des phares, E13, P3) et ne dépend plus de WFS-452 : ⏳ Prêt.
+- Après fusion : WFS-460 et WFS-461 → **🟡 À valider (utilisateur)**. Règles : `regles-de-gestion/WFS-460.md`, `WFS-461.md`. `anno.md`, `TACHES.md`, `track-agent.md` à jour. Aucun ticket attribué (attribution seulement à la demande d'une nouvelle session).
