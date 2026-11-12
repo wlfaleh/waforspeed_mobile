@@ -1293,3 +1293,10 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 - **WFS-499** (E18, zone E5 ; après WFS-498) : garage, cadenas, prix ★ / médailles / €, « Acheter » avec confirmation, essai gratuit, français et anglais.
 - E18 : prix du PO remplacés par la grille de l'utilisateur (base × coefficient, achat pour une seule voiture, prix dans `configgame.json` au lieu de `assets/perso/catalogue.txt`) : `E18-personnalisation.md` (RC-E18-07, RC-E18-11), WFS-487 (dépend de WFS-498), 489, 491, 494.
 - Choix du PO : partie déjà commencée → voiture gardée ; partie neuve → 208 ; euros sur le pack de bronze (0,99 € / 100 ★, R13) ; gain 10 ★ / course en attendant l'étape « score ».
+
+### 2026-11-12 22:28:40 — Épic E19 « Cadeau du jour aléatoire » créée, WFS-500 à 503 (po-scrum-master)
+- Demande de l'utilisateur (`@po`, étape « cadeau » de l'ordre identité → score → voitures et couleurs → cadeau → market) : 1 cadeau gratuit par jour (minuit local), chances en données (10-15 ★ 45 %, 16-25 ★ 28 %, 26-40 ★ 9 %, 41-50 ★ 3 %, coloris 8 %, skin 4 %, voiture prêtée 3 h 3 %), minimum 10 ★, garantie au 30e, protection de l'heure, sauvegarde.
+- Numéros 498-499 pris entre-temps par une autre session PO (portefeuille d'étoiles, garage des voitures bloquées) : l'épic E19 prend **WFS-500 à 503** et s'appuie sur eux (`crediter`, `voitures-possedees`, `possede-<voiture>`, `boutique.voitures`).
+- Tickets (P2, ≤ 1 jour, une session chacun) : **WFS-500** logique + test 100 000 tirages (E3 + section `cadeau` de configgame, après WFS-498) ; WFS-501 écran FR / EN (E8) ; WFS-502 voiture prêtée 3 h (après 499) ; WFS-503 gains réels (après 487, 494).
+- Choix du PO : pas de série de jours ; les cadeaux ne s'accumulent pas ; un seul prêt à la fois ; repli des catégories pleines par les poids des étoiles ; garantie = skin (4) ou voiture (3).
+- Aucune tâche `@cicd` compagne (rien n'est cuit dans un paquet de carte).
