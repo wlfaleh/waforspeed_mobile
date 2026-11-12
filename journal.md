@@ -1358,3 +1358,24 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 - Nouvelle session `@dev` (= `@dev3d`), aucun ticket avant. Bandeau 🏁 : WFS-517 et WFS-480 déjà pris par deux autres sessions à la même minute ; ticket suivant de la liste : WFS-504 (3e), épic E20 libre.
 - Zone (exception PO, point d'extension) : `src/ui/text.*`, `src/ui/langue.*` (créé), `src/ui/ecrans/reglages*`, `src/game/sauvegarde.*` (clé `langue` seulement, WFS-480 y ajoute aussi ses clés : ≤ 10 lignes chacun), `src/platform/android_main.cpp`, `android/app/src/main/java/**`, `android/app/src/main/res/values*/strings.xml`, `assets/textes/**`, `tests/**`, banc `desktop_main.cpp` ≤ 10 lignes. Règles : `regles-de-gestion/WFS-504.md`.
 - Plan court : `ui::tr` + tables fr/en, langue Android par JNI, réglage « Langue » (onglet Affichage), sauvegarde, tests RG-06, banc `textes` (RG-07, RG-08), Réglages traduits ; captures fr / en, parcours complet, PR, lead dev.
+
+### 2026-11-12 23:18:06 — Début : WFS-487 attribué à Claude, agent dev3d (01Us6uCwB3) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCwB3PrvQFZ2ZBBwHSv), aucun ticket avant. WFS-517, 480 et 504 (1re à 3e du bandeau 🏁) déjà pris par d'autres sessions : 4e de la liste, **WFS-487**, épic E18 (aucun autre ticket E18 actif). WFS-485 (5e) sauté : épic E17 déjà occupée par WFS-480.
+- Zone : E3 (`src/game/**` hors `game.*`, `tests/**`), `garage.cpp` (`PAINTS` lit `PEINTURES`, seul ticket actif sur ce fichier), section `boutique` de `configgame.json`. Ne dépend plus de WFS-498 (ordre de l'utilisateur 23:20 UTC) : prix en ★ et cadenas, achat branché par WFS-498. Règles : `regles-de-gestion/WFS-487.md`, `E18-personnalisation.md`. Branche `feature/waforspeed-487`.
+
+### 2026-11-12 23:18:30 — WFS-485 attribué à Claude, agent dev3d (01UY1Vv46n) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv46nSguBwb43XUHfZN), 1re attribution. WFS-517, 480, 504 et 487 pris juste avant par d'autres sessions : ticket suivant du bandeau 🏁, **WFS-485** (P1, épic E17 en zone E7, en parallèle de WFS-480 en zone E3, comme prévu par l'épic ; aucune dépendance).
+- Zone E7 : `android/**` (manifeste, règles de sauvegarde `res/xml/**`) ; pas de `src/game/sauvegarde.*` sauf accroche ≤ 10 lignes annoncée au journal. Règles : `regles-de-gestion/WFS-485.md` et `regles-de-gestion/E17-identite-joueur.md`. Après la fusion : 🟡 À valider (utilisateur), essai de réinstallation sur le téléphone.
+
+### 2026-11-12 23:19:09 — WFS-395 attribué à Claude, agent dev3d (01UY1Vv4vT) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv4vTNG2pkFZowyb4r7), 1re et seule attribution. Pendant cette demande, WFS-480, 504, 487 et 485 ont été pris par d'autres sessions ; E17, E18 et E20 ont un ticket actif, le reste du bandeau 🏁 jusqu'à la 26e tâche est ⏳ En attente. Ticket donné : **WFS-395** (P1, 27e du bandeau 🏁, `@dev` = `@dev3d`), épic E10 libre.
+- Zone : E10 `vehicule_cockpit*` seulement ; skill `artiste-3d` obligatoire (habitacles). Règles : `regles-de-gestion/WFS-395.md`. Ni E15 ni 🟡. Règle « formes géométriques interdites » : aucune forme nue dans l'habitacle.
+- Branche `feature/waforspeed-395` ; captures avant / après de la vue Cockpit (jour et nuit), PR, lead dev, puis arrêt de la session après la fusion.
+
+### 2026-11-12 23:20:22 — WFS-487 : point RG-07 tranché, option A (po-scrum-master)
+- Question du développeur (01Us6uCwB3). Jusqu'à WFS-489, le garage actuel donne la couleur historique choisie à cette seule voiture : rien ne change à l'écran ni en course. WFS-489 retire ce don provisoire. Détail dans la section Suivi de `regles-de-gestion/WFS-487.md` et de `WFS-489.md`.
+
+### 2026-11-12 23:45:51 — WFS-485 : PR #371 ouverte, sauvegarde automatique Android (Claude, agent dev3d (01UY1Vv46n))
+- Fait : `android:allowBackup="true"` + `dataExtractionRules` (`res/xml/regles_sauvegarde.xml` : cloud-backup et device-transfer) + `fullBackupContent` (`res/xml/sauvegarde_ancienne.xml`) ; une seule règle `include domain="file" path="sauvegarde.txt"` (chemin vérifié : `android_main.cpp:351`, internalDataPath = getFilesDir) ; tout le reste exclu (paquets, .part, pipelines.cache, .tmp, plantage, caches).
+- Vérification : XML lus sans erreur ; captures `sauvegarde` ×2 et `menu1` 1280x720 avant / après identiques octet pour octet ; fichier de sauvegarde du banc = 323 octets (RG-03 < 64 Ko).
+- Limites : APK non construit en local (pas de SDK Android), **pas d'émulateur ici : essai désinstaller / réinstaller non fait par le développeur**, décrit pour l'utilisateur (PR et `tache utilisateur.md`). Fantômes non sauvegardés (RG-01). À déclarer dans « Sécurité des données » de Google Play (PO / juriste).
