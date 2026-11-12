@@ -39,14 +39,14 @@ Journal complet après : `qa/pr/WFS-453/qualite-journal-apres.txt` ; performance
 
 ## Tests CPU
 
-Commit testé : a28fbd68 (branche synchronisée avec `main` d8de393). Journal complet : `qa/pr/WFS-453/tests-cpu.log`.
+Commit testé : 72af8ae6 (branche synchronisée avec `main` b187fe57). Journal complet : `qa/pr/WFS-453/tests-cpu.log`.
 
 ```
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (4 s)
 [OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 114 test(s) réussi(s) en 422 s
+tests CPU : 114 test(s) réussi(s) en 436 s
 code de sortie : 0
 ```
 `test_masquage` : « trafic en Basse, vue Poursuite : 107 / 118 / 120 m gardées (WFS-453) : OK ».
