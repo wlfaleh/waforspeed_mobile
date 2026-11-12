@@ -965,3 +965,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 12:01:30 — Gravités fixées par l'utilisateur : ANO-265 bloquante, ANO-263 et ANO-264 mineures (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
 - Seule la roue avant de la M4 rouge qui « joue » en ligne droite est bloquante ; les autres défauts de roues sont des anomalies mineures. Transmis au PO pour les priorités (WFS-452, WFS-457).
+
+### 2026-11-12 12:02:12 — Gravités des roues fixées par l'utilisateur : priorités remises d'accord (po-scrum-master)
+- **ANO-265** (bloquante) reste dans **WFS-452** (P1, RG-09). **ANO-263** (mineure) sort de WFS-452 (RG-08 retirée, la rotation des roues de la police y reste) et va dans **WFS-457** (RG-07). **WFS-457** repasse **P3** (ANO-251 à 253, 263, 264 ; RG-05 à RG-07), toujours après WFS-456, 🟡 après fusion. `anno.md` (colonne US de correction) et `TACHES.md` à jour.
