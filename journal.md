@@ -1319,3 +1319,6 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 ### 2026-11-12 22:42:22 — Épics E18 à E22 en priorité absolue (po-scrum-master)
 - Ordre de l'utilisateur : « tu passes les épics 18 19 20 21 22 en priorité absolue ». Tickets de E18 (487 à 499), E19 (500 à 503), E20 (504 à 509), E21 (510 à 516) passés P1 Urgent ; bandeau 🚨 en tête des ordres de `TACHES.md` ; ordre permanent ajouté au skill du PO.
 - Têtes de file prêtes : **WFS-498** (étoiles) et **WFS-504** (langue), en parallèle. E22 pas encore créée : même priorité dès sa création.
+
+### 2026-11-12 22:43:21 — E17 aussi en priorité absolue, en parallèle (po-scrum-master)
+- Ordre de l'utilisateur : « et 17 aussi, en parallèle ». Tickets de E17 (WFS-480 à 486) passés P1 Urgent ; WFS-480 et WFS-485 prêts tout de suite, en parallèle de WFS-498 et WFS-504 ; WFS-486 attend toujours la décision de l'utilisateur.
