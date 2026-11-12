@@ -937,3 +937,6 @@ Nouvelle session `@dev` (session_01UY1Vv4BWx2FaXBYrKwi2KD, aucun ticket avant : 
 
 ### 2026-11-12 11:56:54 — ANO-263 : roues de la voiture de police vues par l'utilisateur (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
 - Vidéo 12:04 : pneu et jante en une masse noire, plis de tôle autour des passages de roue, roues qui ne tournent pas quand la police glisse ; rattachée à WFS-452 (roues de la police), à confirmer par le PO.
+
+### 2026-11-12 11:57:49 — ANO-264 : roues de la M4 (vidéo de l'utilisateur du 2026-11-12 00:11) (Agent qa (session_01UY1Vv5i7UtkGveRXL23feQ))
+- 40 images à 3 img/s : anneau gris clair dans les passages de roue de la M4 rouge, pneu sans flanc ; à rattacher par le PO (WFS-457 ou WFS-452).
