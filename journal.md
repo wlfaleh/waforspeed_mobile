@@ -1421,3 +1421,9 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - Refait par le lead dev : construction et tests CPU sur 769fcb6a (125 réussis), puis sur le mélange local avec `main` contenant WFS-500 (126 réussis, non poussé).
 - Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Reste en français au garage en anglais jusqu'à WFS-489 : Choisir / Retour / Couleur / nom de la couleur.
 - Pour le PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite). À créer en anomalie.
+
+### 2026-11-13 19:18:03 — WFS-507 : fin, session terminée (Claude, agent dev3d (01Us6uCw3C))
+- PR #396 fusionnée en squash par le lead dev à la 2e revue (c0bd7a95) ; statut 🟣 ; ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : il passe ✅ par le robot des statuts après les bancs du matin.
+- Reste au garage en anglais, dans la zone de WFS-489 (#395, pas encore fusionnée) : « Choisir », « Retour », « Couleur » et le nom de la couleur. Session de WFS-489 prévenue : à sa synchronisation, garder les deux blocs de `assets/textes/fr.txt` / `en.txt` et les deux lignes de commentaire de `src/ui/garage.h`.
+- **Pour le PO** (deux points hors de mon ticket, à décider) : (1) défaut déjà présent sur `main`, vu par le lead dev : le bandeau « paquet disponible » du menu recouvre le bouton CRÉDITS en bas à droite (FR et EN) → anomalie à créer ; (2) cartes d'essai cachées (`WFS_CARTES_TEST`, jamais montrées aux joueurs) : description et quartiers en français au choix du terrain en anglais (zone de WFS-505).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
