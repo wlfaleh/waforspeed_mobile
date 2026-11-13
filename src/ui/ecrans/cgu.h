@@ -37,6 +37,12 @@ struct ParagrapheCgu {
 std::vector<ParagrapheCgu> paragraphesMarkdown(const std::string& md);
 // première ligne « Version N » du texte (0 si absente) : tests/test_cgu.cpp la compare à VERSION_CGU
 int versionDansTexte(const std::string& md);
+// WFS-508 (RG-01, RG-02) : fichier du texte dans la langue du jeu (« cgu.md » / « cgu-en.md », « confidentialite.md » /
+// « confidentialite-en.md ») ; le texte anglais manquant, l'écran garde le français (ligne au journal)
+const char* fichierTexteCgu(bool confidentialite, bool anglais);
+// la politique de confidentialité s'arrête avant les notes réservées aux stores (questionnaires, classification d'âge) ;
+// titre français « ## Réponses aux questionnaires » ou anglais « ## Answers to the store questionnaires » (WFS-508)
+std::string sansNotesStore(const std::string& md);
 
 class Cgu {
 public:
@@ -81,6 +87,7 @@ public:
     const Zone& zoneTexte() const { return zTexte_; }
     float defilement() const { return defil_; }
     float defilementMax() const { return defilMax_; }
+    int lignesTropLongues() const { return tropLongues_; }   // WFS-508 : lignes plus larges que le cadre à la dernière mise en page
 
 private:
     struct Ligne { ParagrapheCgu::Style style; std::string texte; float x, y, taille; };
@@ -92,6 +99,7 @@ private:
     std::vector<ParagrapheCgu> paras_;
     std::vector<Ligne> lignes_;
     float largeurPage_ = -1, kPage_ = -1, hauteurTexte_ = 0;
+    int tropLongues_ = 0;
     float defil_ = 0, defilMax_ = 0;
     double tRefus_ = -1, maintenant_ = 0;
     int essaisRotation_ = 0;
@@ -105,6 +113,8 @@ Cgu& cgu();   // écran unique (premier lancement et Réglages)
 
 // banc d'essai (WFS_BANC=cgu) : parcours RG-06 simulé (sauvegarde du banc) et captures cgu-* puis Réglages → Conditions
 int benchCgu(Game& g, Renderer& r, const std::string& out);
+// banc « textes » (WFS-508, RG-06) : écran des CGU dans la langue du banc (WFS_LANGUE), captures textes-<langue>-cgu-*, nombre d'échecs
+int benchCguTextes(Renderer& r, const std::string& out);
 
 } // namespace ecrans
 } // namespace wfs

@@ -1012,3 +1012,47 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Cause du retour : conflits avec `main` (WFS-505 fusionné pendant la revue) ; contenu déjà approuvé par le lead dev.
 - Fait : synchronisation (6e20bb27) : `assets/textes/fr.txt` et `en.txt` (blocs menus et `cgu.*` gardés, aucune clé en double), `src/platform/desktop_main.cpp` (banc `textes` = CGU + Réglages + menus). Tests CPU 121/121 sur 6e20bb27, banc `textes` VERT en `fr` et `en` ; logs dans `qa/pr/WFS-508/` (3ae66c11) ; nouvelle synchronisation ca749915 (fichiers `.md` seulement).
 - Réponse point par point dans la PR ; `suivi-pr.md` en 🔁 ; lead dev rappelé.
+
+### 2026-11-13 13:24:40 — WFS-498 fusionné par le lead dev (lead-dev)
+- PR #382, 2e revue sur 792e2240, squash c196a59b. Les 3 points du refus sont corrigés : `configgame.json` et README limités à la section `boutique`, 16 captures identiques octet pour octet à `main`, accroches annoncées au journal.
+- Lead dev : diff relu, branche fusionnée en local avec `main` (WFS-505 compris), construction et 122 tests CPU réussis. « ✅ Approuvé » en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Débloque WFS-499, WFS-500, WFS-510.
+
+### 2026-11-13 13:25:59 — WFS-498 : fin, session terminée (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- PR #382 fusionnée en squash par le lead dev (c196a59b) à la 2e revue, après un refus (configgame.json régénéré en entier : corrigé, seule la section `boutique` change). Ticket 🟣 Fusionné ; réponse à l'utilisateur dans `tache utilisateur.md` (demande « Prix des voitures, peintures et skins »).
+- Débloque WFS-499, WFS-500, WFS-510. Pour le PO : écart `configgame.json` / valeurs du code sur `main` (ticket à part) ; essais gratuits consommés d'ici WFS-499.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-13 13:27:14 — Début WFS-456 attribué à Claude, agent dev3d (01Us6uCu2B) (po-scrum-master)
+- Nouvelle session `@dev` (dev-artiste-3d), jamais de ticket avant : **WFS-456** (P1, E10, 28e de la liste 🏁, 1er ticket prêt permis à `@dev` ; WFS-460 déjà fusionné #376, 🟡). Correction : hayon de la Golf continu sans disque noir ni emblème (et toutes les voitures à emblème effacé), phares de la Golf sans liseré rouge, banc `vitrines` sans A 45 / Elantra / X5 (ANO-259, 258, 257).
+- Zone : `tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json`, modèles convertis des voitures concernées, banc `vitrines`, `tests/**`. Règles : `regles-de-gestion/WFS-456.md`. Garde-fou E10 : WFS-490 (shader) en parallèle, pas les mêmes fichiers.
+- Branche `feature/waforspeed-456` à pousser tout de suite ; captures avant / après jour et nuit ; PR, appel du `lead-dev` ; arrêt de la session après la fusion.
+
+### 2026-11-13 13:48:50 — WFS-508 fusionné par le lead dev (lead-dev)
+- PR #384 relue sur ca749915 (2e revue). Le contenu avait été approuvé sur cee751f5 ; le 1er retour portait sur les conflits avec `main` (WFS-505). Réponse du développeur présente dans la PR.
+- Conflits relus (`assets/textes/fr.txt`, `en.txt` : pas de clé en double ; `desktop_main.cpp` : banc `textes` = CGU + Réglages + menus) ; captures rouvertes. Construction, 121 tests CPU et banc `textes` en FR et EN (VERT) refaits par le lead dev ; 122 tests sur la fusion locale avec `main` après WFS-498.
+- « ✅ Approuvé » en commentaire (même compte GitHub), puis fusion en squash : **d83ead9c**. Statut 🟣, ligne de `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 13:49:53 — WFS-508 : fin, session terminée (Claude, agent dev3d (01Us6uCudS))
+- PR #384 fusionnée en squash par le lead dev (d83ead9c) ; statut 🟣 Fusionné, ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : ✅ par le robot des statuts après les bancs du matin.
+- Rappel pour le PO (avis du juriste, hors ticket, avant la sortie publique) : 🔴 contact de l'éditeur (ANO-205) ; 🔴 politique en ligne sans les notes internes (WFS-509) ; 🟠 lignes « Brouillon / Draft » et « texte à publier… » visibles dans l'écran des CGU ; 🟠 droit applicable non précisé.
+- À signaler : dans le dossier de travail de cette session, la branche locale `main` (vieille copie du clone, 50 commits en avance / 84 en retard) a été déplacée sur `origin/main` pendant la revue, mais ses fichiers sont restés à l'ancien état (642 fichiers indexés, qui annuleraient 84 commits). Rien n'a été commité ni poussé depuis ce dossier ; état conservé, à jeter (aucun travail perdu : l'ancien arbre = commit ca549dcb).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 14:35:01 — WFS-456 : PR #385 ouverte (Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz))
+- **Inventaire RG-01** (17 voitures livrées, arrière vu de près, banc `vitrines-feux`, `WFS_VITRINE_BAS`) :
+  - corrigées : **Golf** (emblème rond du hayon, disque noir d'ANO-259 : découpe, tôle continue derrière) ; **Corsa** (anneau + barre et socle de l'emblème : découpe) ; **Giulia** (écusson noir du coffre : découpe + bouchon, trou recousu) ; **Compass** (creux des lettres « Jeep » dans la peinture : découpe + couture, roues redressées ensuite) ; **T-Cross** (plaque grise du badge : découpe) ;
+  - propres : M4, 911, Gallardo, 208, Abarth, S3, Model 3, GT86 (reflets sous le becquet, sans emblème), V60, RR Sport, Corvette, SF90 ;
+  - non touchées : A 45, Elantra, X5 (retirées, RG-05).
+- **RG-02** : phares de la Golf, liseré rouge → 351 triangles en projection plane sur le noir du boîtier (#101010). **Écart à la RG** (repeindre par `logos.json`) : la zone rouge de la texture est aussi lue par les catadioptres arrière ; les repeindre les aurait noircis.
+- **RG-03** : `benchVitrinesFeux` saute `VOITURES_RETIREES` (0 image pour a45, elantra, x5).
+- **Outil** : `couture` accepte `"arriere": true` (miroir z, normales vers +Z). Cause trouvée sur mes captures : sur un hayon, environ 60 % des normales de la peau pointaient vers l'intérieur.
+- **Test** : `test_hayon_golf` (échoue sur le `golf.wfm` de `main`). 123 tests CPU verts sur la branche synchronisée ; contrôles `--verifier` (formes, logos, peinture2) et licences OK.
+- **Limites** : Compass (plaque lisse un peu plus brillante en lumière rasante), Giulia (léger dégradé au centre). Mineurs ; une tâche de finition est à proposer au PO si besoin. Rendu vérifié au banc PC seulement.
+- Captures : 35 paires avant / après jour et nuit dans `qa/pr/WFS-456/`. Le 1er passage de nuit a échoué (GitHub 503 au `git fetch`) et a été relancé.
+
+### 2026-11-13 14:42:03 — WFS-506 : PR #386 ouverte (Claude, agent dev3d (01Us6uCvEv))
+- Fait : course en anglais. HUD, commandes (Gas / Brake / Nitro), nom de la vue, étiquette du fantôme, bandeaux, consignes de la carte de navigation (noms de rues inchangés), fin de course Checkpoint, Course à 5, Poursuite (annonces et pertes de points comprises) et Duel, tout par `ui::tr`. Environ 120 clés en FR et en EN. Aides `src/game/textes_course.h` (tampon réutilisé, capitales gardées par langue : aucune allocation nouvelle par image).
+- Banc : `src/game/textes_course_banc.cpp`, groupes `textes` (CGU, Réglages, menus, puis course) et `textes-course`. Parcours fin → Rejouer → fin → Menu dans les 3 modes solo ; course → résultat → Revanche → résultat → Retour en Duel.
+- **Accroche hors zone annoncée** : 3 lignes dans `src/platform/desktop_main.cpp` (groupes `textes` et `textes-course`, include). Petites fonctions de banc : `courseBouton`, `poursuiteBancMessages`, `benchDuelTextes`.
+- Vérifié : construction, 122 tests CPU verts (`2b9cd185`, synchronisé avec `main` après WFS-505 et 508). Banc `textes` EN vert (0 phrase française, 0 dépassement, 0 écart) ; FR vert et inchangé. Chauffe `main` / branche identique (mêmes appels et triangles, 145 s / 146 s). Captures avant / après (`hud`, `course5`, en anglais) : seul le texte change.
+- Limites : images par seconde réelles non mesurables sur lavapipe ; banc `textes` hors CI ; les nombres gardent la virgule française (hors E20).

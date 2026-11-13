@@ -8,6 +8,7 @@
 #include "../core/configgame.h"   // SCORE_POURSUITE_MAX
 #include "../core/log.h"
 #include "cars.h"
+#include "boutique.h"   // WFS-498
 #include "personnalisation.h"   // WFS-487
 #include "track.h"
 #ifndef _WIN32
@@ -99,6 +100,7 @@ void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear();
     map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
     possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487
+    etoiles = 0; voituresPossedees.clear(); essais.clear();   // WFS-498
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     aideDirection = true;   // WFS-217
@@ -133,6 +135,10 @@ std::string Sauvegarde::texte() const {
     for (const auto& [id, v] : finition) o << "finition-" << id << "=" << v << "\n";
     for (const auto& [id, v] : skin) o << "skin-" << id << "=" << v << "\n";
     for (const auto& [id, v] : creation) o << "creation-" << id << "=" << v << "\n";
+    // WFS-498 (RG-01, RG-07, RG-08) : portefeuille (toujours écrit : sa présence marque une sauvegarde à jour), voitures, essais
+    o << "etoiles=" << etoiles << "\n";
+    liste("voitures-possedees", voituresPossedees);
+    for (const std::string& id : essais) o << "essai-" << id << "=1\n";
     o << "map=" << map << "\n" << "tod=" << tod << "\n";
     if (!moment.empty()) o << "moment=" << moment << "\n";   // WFS-208
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
@@ -164,6 +170,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
     std::string ligne;
     bool premiere = true;
     int persoLu = 0;   // WFS-487 : sans clé « perso », la sauvegarde date d'avant le catalogue (migration RG-03)
+    bool etoilesLues = false;   // WFS-498 (RG-09) : sans clé « etoiles », la sauvegarde date d'avant le portefeuille (migration)
     int traceLu = 1;   // WFS-136 : sans clé « trace », la sauvegarde date du tracé 1
     cartesV2.clear();  // lues dans le fichier (clés trace-<carte>=2)
     std::map<std::string, std::string> v1;   // records du tracé 1 lus tels quels (mis de côté si traceLu < 2)
@@ -196,6 +203,10 @@ bool Sauvegarde::lire(const std::string& contenu) {
         if (k == "best") { if (entier(v, n)) best = n; }
         else if (k == "car") { if (voitureExiste(v)) car = v; }
         // WFS-487 (RG-05, RG-06) : chaque identifiant est vérifié dans le catalogue ; inconnu → ignoré (défaut), sans erreur
+        // WFS-498 : solde borné (valeur mal écrite : 0, sans erreur), voitures et essais vérifiés dans CARS[]
+        else if (k == "etoiles") { etoilesLues = true; if (entier(v, n) && n <= boutique::SOLDE_MAX) etoiles = n; }
+        else if (k == "voitures-possedees") { for (const std::string& id : morceaux(v)) if (voitureExiste(id)) voituresPossedees.insert(id); }
+        else if (k.rfind("essai-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && v == "1") essais.insert(id); }
         else if (k == "perso") { if (entier(v, n) && n >= 1 && n <= 99) persoLu = (int)n; }
         else if (k == "possede-dessins") { for (const std::string& id : morceaux(v)) if (const perso::Objet* o = perso::objet(id); o && o->type == perso::Type::Dessins) possedeDessins.insert(id); }
         else if (k.rfind("possede-", 0) == 0) {
@@ -237,6 +248,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
     }
     if (premiere) return false;   // fichier vide
     if (persoLu == 0) perso::migrer(*this); else perso = persoLu;   // WFS-487 (RG-03) : couleurs déjà choisies gardées gratuitement
+    if (!etoilesLues) boutique::migrer(*this);   // WFS-498 (RG-09) : la voiture choisie reste au joueur
     trace = traceLu;
     bool active = false; for (const char* c : trace::CARTES_ACTIVES) { (void)c; active = true; }
     if (active && traceLu < trace::VERSION) {   // WFS-136 (RG-07, A7.4) : records du tracé 1 mis de côté une fois, jamais effacés
@@ -298,6 +310,7 @@ bool Sauvegarde::charger(const std::string& chemin) {
     std::FILE* f = std::fopen(chemin.c_str(), "rb");
     if (!f) {   // WFS-136 : première installation : déjà sur le tracé 2 des cartes actives (aucun record à mettre de côté)
         for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+        car = "p208";   // WFS-498 (RG-09) : partie neuve : voiture de départ gratuite (les défauts du banc d'essai restent la Golf)
         profil.apresChargement((long long)std::time(nullptr));   // WFS-480 (RG-05) : date d'arrivée
         WFS_LOG("sauvegarde : aucun fichier (%s) : valeurs par défaut", chemin.c_str()); return false;
     }
