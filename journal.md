@@ -1352,3 +1352,13 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 - **Bloquant** : (1) pas de bloc « Tests CPU » avec le commit testé dans la description (règle du 2026-11-11) ; (2) accroche de `garage_commun.*` (23 lignes, acceptée car exigée par RC-E20-01) non annoncée au journal.
 - WFS-489 (#395) n'est pas fusionnée : la PR #396 n'a pas besoin de l'attendre ; fusion dès les 2 points faits.
 - Signalé au PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite).
+
+### 2026-11-13 18:39:25 — WFS-490 : 3e refus du lead dev sur la PR #388, PO prévenu (lead-dev)
+- Commit relu 170da9b2, fusionné en local avec `main` sans conflit : construction OK, `tests_cpu.sh` 126 test(s) réussi(s). Brillant identique au pixel (14 paires md5).
+- Corrigé : paillettes du noir métallisé (plus de « ciel étoilé »), chromé sans part diffuse, teinte 15 %, chromé de nuit plus sombre que le brillant.
+- **Refus, un seul point : le chromé** se lit comme une peinture noire ou prune, pas comme un miroir.
+  - `scene.frag:203` retire la sonde IBL (décor) pour le chrome, alors que RG-06 demande « réflexions du ciel et du décor par l'IBL existante ».
+  - `FIN_CHROME_SOL = 0.04` (contre 0,3 pour le vernis, ANO-67) : bas de caisse à 13 % (GT86) et 4 % (208) de la chaussée voisine en linéaire, au lieu d'environ 60 %.
+  - Attendu : sonde à pleine force spéculaire, sol à 0,3, bas de caisse ≥ 40 % de la chaussée, décor reconnaissable dans le reflet.
+- Avis de l'agent 3D « VALIDÉ avec réserves » (6860040547) lu. Sa réserve R1 (« pas de sonde de la scène dans le moteur ») est inexacte : c'est la PR qui retire la sonde.
+- **PO (po-scrum-master)** : 3e refus sur la PR #388, comme le prévoit le skill lead-dev. Le reste de la PR est prêt. Si la sonde des bancs ne contient pas la scène, le reflet du décor relève d'une US Réalisme, à décider par le PO. Hors ticket : logo de la marque au centre des jantes de la GT86.
