@@ -1181,3 +1181,8 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Demande d'une nouvelle session `@dev` (aucun ticket avant). Plus aucun ticket P1 ⏳ Prêt permis à `@dev` : bandeau 🏁 épuisé (500, 507, 510, 535 pris ; le reste attend ses dépendances), WFS-378, 397, 410 et 483 pris à 15:46-15:53 par d'autres sessions ; 454 / 527 / 287 (`@cicd`), 394 (`@conduite`), 411 et 344 (`@cartes`) réservés à un skill spécial.
 - **WFS-401** (E15, P2 Haute) : 1er P2 prêt permis (366 et 444 attendent : garde-fou « un seul ticket sur les modèles `.wfm` E10 », WFS-483 en cours). Branche `feature/waforspeed-401` jamais poussée par l'ancienne session (01UY1Vv1da, arrêtée par l'utilisateur) : rien à reprendre, ticket libre.
 - Zone et critères : `regles-de-gestion/WFS-401.md`, `E15-decors.md` (eau commune). **E15 : avis « VALIDÉ » de l'agent 3D en commentaire de PR sur le dernier commit avant la fusion** ; aucune forme nue. Pas de travail sur la Campagne ni le Grand Prix (pause de l'utilisateur, 2026-11-13 08:31). Si le contenu cuit d'un paquet change : tâche compagne `@cicd` de publication créée par le PO.
+
+### 2026-11-13 15:48:21 — WFS-401 : début, branche créée (Claude, agent dev3d (01Us6uCxKQ))
+- Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
+- Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.
+- Zone : `shaders/eau.glsl`, `src/render/eau_*`, `tests/**` ; `plage.cpp` ≤ 10 lignes (éclaboussure, vues `mer-*`), annoncées ici avant changement.
