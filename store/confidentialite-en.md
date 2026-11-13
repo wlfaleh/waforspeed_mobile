@@ -11,7 +11,7 @@ WaForSpeed collects **no personal data**.
 - **Online duel** (if you use it): the **nickname** you choose and your **presence in the race** (position, speed,
   score, about ten times per second) are sent to the other player in the lobby, for the length of the match. Nothing is kept
   after the duel ends.
-- Gamepad: gamepad inputs are only used to drive; they never leave the device.
+- Gamepad: gamepad inputs are only used to drive; they do not leave the device.
 - **Crash report**: if the game closes by itself, a technical report (game version, phone model,
   Android version, program addresses and the last lines of the game's log, with no personal data) is kept
   in the app's private folder. It is **never sent automatically**: at the next launch, the game

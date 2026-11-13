@@ -21,7 +21,7 @@ WaForSpeed is a car racing game for phones. It is free, with no account, no ads 
 ## Data kept on the phone
 
 - The save file (settings, records, chosen car, version of the accepted terms) and the map packs stay in the **app's private folder**.
-- Everything is deleted when you uninstall the game. Map packs can also be deleted one by one from the track selection.
+- Everything is deleted when you uninstall the game. Map packs will also be able to be deleted one by one from the track selection.
 
 ## Driving and safety
 
