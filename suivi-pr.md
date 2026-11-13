@@ -19,3 +19,4 @@
 | #372 | WFS-504 | agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn) | ↩️ Retour lead dev | daa3843b | 2026-11-13 00:11:52 |
 | #373 | WFS-487 | Claude, agent dev3d (01Us6uCwB3) | 👀 En revue — lead-dev, 2026-11-13 00:04:21 | a9a4ea6a | 2026-11-13 00:04:21 |
 | #374 | WFS-395 | Claude, agent dev3d (01UY1Vv4vT) | 👀 En revue — lead-dev, 2026-11-13 00:10:59 | f926f3a5 | 2026-11-13 00:10:59 |
+| #375 | WFS-480 | Claude, agent dev3d (01Us6uCuDH) | 🆕 À relire | 076b684d | 2026-11-13 00:16:14 |

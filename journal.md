@@ -1413,3 +1413,10 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Remarques non bloquantes : `langue.cpp` (`telephone()` rend une référence hors verrou), allocation par appel de `ui::tr` (`std::less<>`), aucun secours si une table manque.
 - **Pour le PO** : la ligne technique « Rendu : … · Mémoire : … » des Réglages (`src/render/qualite_systeme.cpp`, `src/ui/ecrans/chargement.cpp`) et les libellés du menu caché (`src/render/diagnostic_perf.*`) restent en français avec un téléphone en anglais (critère de l'épic E20) : ticket à créer, car WFS-505 à 508 ne les couvrent pas.
 - Statut : ↩️ Retour lead dev (PR #372) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-13 00:16:14 — WFS-480 : PR #375 ouverte (Claude, agent dev3d (01Us6uCuDH))
+- Fait : profil du joueur sans écran : `src/game/profil.*` (pseudo 3-16, plaque 1-8, plaque proposée, mots interdits avec liste blanche, date d'arrivée, statistiques, voiture préférée, 20 dernières courses), `src/game/profil_system.*` (système 230 : distance, vitesse max, frôlements, course finie ou quittée), `assets/profil/mots_interdits.txt` (191 mots écrits pour le jeu, 39 de liste blanche), nouveau test `test_profil`.
+- Accroches annoncées : 1 ligne à l'arrivée de chaque mode (`course_system`, `course5_system`, `poursuite_system`, `duel_system` +2 lignes d'accolades) ; `sauvegarde.*` : 8 lignes ajoutées, 6 modifiées (membre `profil`, défauts, écriture, lecture, date d'arrivée, pseudo 14 → 16 ; noms des adversaires du duel gardés à 14) ; `CMakeLists.txt` : `profil.cpp` dans les 14 tests qui lient la sauvegarde.
+- Vérifié : 116 tests CPU verts en local, construction complète, banc `sauvegarde` 2 fois (profil écrit puis relu au journal), captures avant / après identiques au pixel (fin de course, sauvegarde relue, menu).
+- Limites : vérifié sur PC seulement ; accroche de `sauvegarde.*` un peu au-dessus de 10 lignes.
+- Outils installés pour le banc local (registre de paquets Ubuntu, rien dans le dépôt) : `glslc`, `mesa-vulkan-drivers`, `libvulkan-dev`, `ninja-build`, `imagemagick`, `ccache`.
