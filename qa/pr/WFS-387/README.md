@@ -9,14 +9,20 @@ Branche `feature/waforspeed-387` comparée à `origin/main` ; bancs : campagne-o
 | `campagne-objets-bottes-pres` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-bottes-pres.jpg) |
 | `campagne-objets-cloture` | ![avant](avant-campagne-objets-cloture.jpg) | ![après](apres-campagne-objets-cloture.jpg) |
 | `campagne-objets-cloture-nuit` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-cloture-nuit.jpg) |
+| `campagne-objets-cloture-soleil` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-cloture-soleil.jpg) |
 | `campagne-objets-ferme` | ![avant](avant-campagne-objets-ferme.jpg) | ![après](apres-campagne-objets-ferme.jpg) |
 | `campagne-objets-ferme-nuit` | ![avant](avant-campagne-objets-ferme-nuit.jpg) | ![après](apres-campagne-objets-ferme-nuit.jpg) |
 | `campagne-objets-ferme-soleil` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-ferme-soleil.jpg) |
 | `campagne-objets-hangar` | ![avant](avant-campagne-objets-hangar.jpg) | ![après](apres-campagne-objets-hangar.jpg) |
 | `campagne-objets-hangar-moyen` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-hangar-moyen.jpg) |
 | `campagne-objets-hangar-nuit` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-hangar-nuit.jpg) |
+| `campagne-objets-muret` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-muret.jpg) |
+| `campagne-objets-muret-nuit` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-muret-nuit.jpg) |
+| `campagne-objets-muret-voiture` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-muret-voiture.jpg) |
+| `campagne-objets-muret-voiture-nuit` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-muret-voiture-nuit.jpg) |
 | `campagne-objets-poteau` | ![avant](avant-campagne-objets-poteau.jpg) | ![après](apres-campagne-objets-poteau.jpg) |
 | `campagne-objets-poteau-nuit` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-poteau-nuit.jpg) |
+| `campagne-objets-poteau-soleil` | — (vue nouvelle, absente du banc de main) | ![après](apres-campagne-objets-poteau-soleil.jpg) |
 | `campagne-objets-vigne` | ![avant](avant-campagne-objets-vigne.jpg) | ![après](apres-campagne-objets-vigne.jpg) |
 | `campagne-objets-vigne-nuit` | ![avant](avant-campagne-objets-vigne-nuit.jpg) | ![après](apres-campagne-objets-vigne-nuit.jpg) |
 | `carte-campagne-autoroute` | ![avant](avant-carte-campagne-autoroute.jpg) | ![après](apres-carte-campagne-autoroute.jpg) |

@@ -56,8 +56,15 @@ Agent : Claude, agent dev3d (01UY1Vv43z)
     - liaisons des poteaux, avec un cas qui montre l'ancienne faute de « a + 3 » ;
     - parapet et boîte de choc à la même place ;
   - `qa/pr/WFS-387/inventaire.md` : inventaire RG-02, chaque partie renvoyée à son ticket (WFS-518 à 521).
+- **Reprise après l'avis de l'agent 3D (À REPRENDRE, commit 2f642514)** :
+  1. RG-11 : nouvelles vues `campagne-objets-muret` et `-muret-voiture` (jour et nuit) : parapet extérieur d'une épingle de près (moellons en pierre calcaire `C_PIERRE0`, joints creux, chaperon) et la voiture lancée vers lui puis freinée, arrêtée contre lui (choc WFS-256) ;
+  2. RG-10 : parois grises supprimées : la hauteur du sol lointain n'est plus celle de la route la plus proche (elle sautait entre deux routes de hauteurs différentes) ; les points loin des bandes sont relâchés (Gauss-Seidel sur-relaxé) entre les points fixés contre le bord des bandes : pentes douces, collines ajoutées ensuite ;
+  3. filet des bottes crème chaud 0xd2bf8f, bouts 0xcaae6c ;
+  4. bois du poteau 0x8d7d68 et de la clôture 0x9c8466, vues `poteau-soleil` et `cloture-soleil` ajoutées ;
+  5. sol lointain dans une case à lui, kaki d'herbe sèche 0x8f8c5e (comme les bandes voisines), au lieu du vert vif des collines ;
+  6. `inventaire.md` : teintes alignées sur le code.
 - **Comment c'est vérifié** :
-  - **tests CPU** : `bash tools/qa/tests_cpu.sh build` → **120 test(s) réussi(s)** (branche synchronisée avec `main`), dont `test_decor_campagne` et `test_muret_campagne` (coin de la voiture arrêté entre 7,99 et 8,07 m pour une face visible à 8,00 m) ;
+  - **tests CPU** : `bash tools/qa/tests_cpu.sh build` → **120 test(s) réussi(s)** (branche synchronisée avec `main`, avant la reprise ; `test_decor_campagne` et `test_muret_campagne` relancés après : OK), dont `test_decor_campagne` et `test_muret_campagne` (coin de la voiture arrêté entre 7,99 et 8,07 m pour une face visible à 8,00 m) ;
   - **captures** : bancs `campagne-objets`, `campagne` (jour et nuit) et `course5` (vues de dessus), lavapipe comme la CI, avant `main` et après branche (tableau ci-dessous) ;
   - **taille du décor (≤ 700 Mo)** : `du -cb assets/world/animaux/{vache,cheval,mouton}.wfa assets/world/feuillage.png` = **2 906 962 octets (2,9 Mo)** ; le reste du décor est construit par le code au chargement (aucun fichier ajouté par ce ticket) ;
   - **performance, banc `perf` en Basse** (`WFS_BANC=perf WFS_PERF_CARTE=campagne`, lavapipe, `main` et branche lancés l'un après l'autre, en alternance) :
@@ -74,9 +81,10 @@ Agent : Claude, agent dev3d (01UY1Vv43z)
   - la façade de la ferme vue depuis la route est à contre-jour dans la vue du banc : elle reste éclairée par le ciel bleu. La vue `ferme-soleil` montre l'enduit au soleil ;
   - performance : +5,4 % de temps par image sur le banc PC en Basse (accepté par le PO, gain dans WFS-528) ;
   - la grille du sol lointain suit le bord des bandes : vue de très près, au bord d'une bande, la jonction peut faire une petite marche de quelques dizaines de centimètres (cachée par l'herbe et le brouillard sur les captures) ;
-  - les vues `bottes-pres`, `ferme-soleil`, `hangar-moyen` et plusieurs vues de nuit sont nouvelles : elles n'ont pas d'« avant ».
+  - le filet blanc des bottes prend encore un peu du bleu du ciel sur l'arête de l'épaule (lumière du ciel rasante sur un plastique clair) ; sa teinte propre est crème ;
+  - les vues `bottes-pres`, `ferme-soleil`, `hangar-moyen`, `poteau-soleil`, `cloture-soleil`, `muret`, `muret-voiture` et plusieurs vues de nuit sont nouvelles : elles n'ont pas d'« avant ».
 
-## Captures pour le lead dev (42 après)
+## Captures pour le lead dev (48 après)
 
 Dossier : [`qa/pr/WFS-387`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387) — bancs `campagne-objets`, `campagne` (1280x720) et `course5` (vues de dessus), lavapipe comme la CI. Avant = `origin/main`, après = branche.
 
@@ -87,14 +95,20 @@ Dossier : [`qa/pr/WFS-387`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `campagne-objets-bottes-pres` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-bottes-pres.jpg?raw=true) |
 | `campagne-objets-cloture` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-cloture.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-cloture.jpg?raw=true) |
 | `campagne-objets-cloture-nuit` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-cloture-nuit.jpg?raw=true) |
+| `campagne-objets-cloture-soleil` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-cloture-soleil.jpg?raw=true) |
 | `campagne-objets-ferme` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-ferme.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-ferme.jpg?raw=true) |
 | `campagne-objets-ferme-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-ferme-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-ferme-nuit.jpg?raw=true) |
 | `campagne-objets-ferme-soleil` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-ferme-soleil.jpg?raw=true) |
 | `campagne-objets-hangar` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-hangar.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-hangar.jpg?raw=true) |
 | `campagne-objets-hangar-moyen` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-hangar-moyen.jpg?raw=true) |
 | `campagne-objets-hangar-nuit` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-hangar-nuit.jpg?raw=true) |
+| `campagne-objets-muret` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-muret.jpg?raw=true) |
+| `campagne-objets-muret-nuit` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-muret-nuit.jpg?raw=true) |
+| `campagne-objets-muret-voiture` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-muret-voiture.jpg?raw=true) |
+| `campagne-objets-muret-voiture-nuit` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-muret-voiture-nuit.jpg?raw=true) |
 | `campagne-objets-poteau` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-poteau.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-poteau.jpg?raw=true) |
 | `campagne-objets-poteau-nuit` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-poteau-nuit.jpg?raw=true) |
+| `campagne-objets-poteau-soleil` | — (vue nouvelle, absente du banc de main) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-poteau-soleil.jpg?raw=true) |
 | `campagne-objets-vigne` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-vigne.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-vigne.jpg?raw=true) |
 | `campagne-objets-vigne-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-campagne-objets-vigne-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-campagne-objets-vigne-nuit.jpg?raw=true) |
 | `carte-campagne-autoroute` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-carte-campagne-autoroute.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-carte-campagne-autoroute.jpg?raw=true) |
