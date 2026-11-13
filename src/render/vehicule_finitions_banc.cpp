@@ -2,9 +2,11 @@
 // du joueur en vitrine (Ville), les 8 finitions de vehicule_finitions.h, comme les captures demandées par le ticket :
 //   - finitions-<id>-jour, -nuit : planche 4 × 2 (de gauche à droite et de haut en bas : brillant, métallisé, nacré, mat /
 //     satiné, chromé, caméléon, candy), 3/4 avant gauche, GT86, Corvette (id mustang), 208 (RG-12 : 8 finitions × 3 voitures) ;
-//   - finitions-gt86-<finition>-pres : gros plan de la portière de la GT86 (métallisé, nacré, candy : paillettes, flop), jour ;
+//   - finitions-gt86-<finition>-pres : gros plan de la portière de la GT86, les 8 finitions (paillettes, flop, satiné, mat), jour ;
 //   - finitions-mustang-cameleon-1, -2, -3 : caméléon sur la Corvette sous 3 angles (la couleur change), jour ;
-//   - finitions-p208-course-chrome, -mat : 208 en course de jour (caméra de poursuite), chromé puis mat.
+//   - finitions-p208-course-chrome, -mat : 208 en course de jour (caméra de poursuite), chromé puis mat ;
+//   - finitions-p208-toit-<finition> : 208, toit et rétroviseurs en Noir (couleur 2, WFS-488), métallisé puis chromé : la
+//     finition s'applique aussi à la couleur 2 (RG-11), 3/4 avant et de dessus, jour.
 // WFS_FINITIONS_VOITURES="id id …" : seulement ces voitures pour les planches. Le brillant est l'aspect d'avant : contrôle par le
 // banc peinture2 (mêmes images que main). Domaine : E10 Véhicules ; appelé par desktop_main.cpp (accroche).
 #include <algorithm>
@@ -23,6 +25,7 @@
 #include "../game/sauvegarde.h"
 #include "renderer.h"
 #include "vehicule_finitions.h"
+#include "vehicule_peinture2.h"
 
 namespace wfs {
 namespace {
@@ -106,7 +109,7 @@ void benchFinitions(Game& g, Renderer& r, const std::string& out) {
             WFS_LOG("capture %s : planche Rouge, brillant, métallisé, nacré, mat / satiné, chromé, caméléon, candy (WFS-490)", nom.c_str());
             // gros plans de jour sur la GT86 : paillettes, flop et teinte du candy, vus de près (portière avant gauche)
             if (id == "gt86" && std::string(moment) == "jour")
-                for (int f : {(int)vf::METALLISE, (int)vf::NACRE, (int)vf::CANDY}) {
+                for (int f = 0; f < vf::NOMBRE; f++) {
                     r.finitionJoueur(f); viser(0.4, -1.9, 1.1);
                     capture(std::string("finitions-gt86-") + vf::IDS[f] + "-pres");
                 }
@@ -131,6 +134,18 @@ void benchFinitions(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 60; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 6 == 0) g.render(t); }
         r.finitionJoueur(vf::MAT); capture("finitions-p208-course-mat");
         g.setAutopilot(false);
+        finir();
+    }
+    // couleur 2 (toit et rétroviseurs Noir) avec une finition : 208, 3/4 avant gauche et de dessus, jour
+    const PeintureDef* noir = peintureDef("noir");
+    if (noir && preparer("p208")) {
+        g.setPeinture2(vehicule_peinture2::code(noir->hex));   // après le rechargement (setCar relit la sauvegarde)
+        images(2);
+        for (int f : {(int)vf::METALLISE, (int)vf::CHROME}) {
+            r.finitionJoueur(f);
+            viser(4.0, -3.2, 2.3); capture(std::string("finitions-p208-toit-") + vf::IDS[f]);
+            viser(1.2, -0.9, 5.2); capture(std::string("finitions-p208-toit-") + vf::IDS[f] + "-dessus");
+        }
         finir();
     }
     unsetenv("WFS_MOMENT");

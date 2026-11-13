@@ -123,7 +123,9 @@ void main() {
     if (fine) detailK = clamp(pc.emissive.w / max(length(fwidth(vWorld)), 1e-6), 0.0, 1.0);
     // opaque : pas d'alpha → les reflets (soleil, ciel, vernis) sont atténués par la couverture ; transparent : alpha × couverture
     float specK = (flags & F_BLEND) == 0u ? detailK : 1.0;
-    if (finition != 0) finitionSurface(finition, base.rgb, metal, rough, NoV);   // WFS-490 (accroche) : couleur, métal, rugosité
+    // WFS-490 (accroche) : couleur, métal, rugosité ; une carrosserie couvre toujours le pixel (specK = 1 : les caisses très denses,
+    // classées « très fines » par erreur, perdaient leurs reflets, cf. WFS-460) ; brillant : inchangé
+    if (finition != 0) { finitionSurface(finition, base.rgb, metal, rough); specK = 1.0; }
     float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);

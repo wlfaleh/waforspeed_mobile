@@ -118,15 +118,16 @@ void vernisPeinture(inout vec3 col, vec3 R, vec3 sun, float NoV, float NoH, floa
 // Valeurs sourcées : references/reel/voitures/peintures.md (rugosités, réflectances, tailles de paillettes, flop).
 const int FIN_BRILLANT = 0, FIN_METALLISE = 1, FIN_NACRE = 2, FIN_MAT = 3, FIN_SATINE = 4, FIN_CHROME = 5, FIN_CAMELEON = 6, FIN_CANDY = 7;
 const float FIN_VERNIS_BRILLANT = 0.03;   // rugosité du vernis 2K brillant (≥ 90 GU à 20°) : valeur d'avant (alpha 0,0009)
-const float FIN_VERNIS_SATINE = 0.25;     // vernis satiné (30 à 60 GU à 60°)
+const float FIN_VERNIS_SATINE = 0.18;     // vernis satiné (30 à 60 GU à 60°)
 const float FIN_MAT_RUGOSITE = 0.62;      // vernis mat (< 10 GU à 60°) : reflet du soleil large et faible, aucun reflet net
 const float FIN_SATINE_RUGOSITE = 0.45;   // base sous le vernis satiné
 const float FIN_METAL_RUGOSITE = 0.35;    // base métallisée (paillettes d'aluminium orientées ± 15°)
-const float FIN_METAL_METAL = 0.50;       // part « métal » de la base métallisée (aluminium à 15-20 % du film, réflectance 0,91)
+const float FIN_METAL_METAL = 0.65;       // part « métal » de la base métallisée (aluminium à 15-20 % du film, réflectance 0,91)
 const float FIN_NACRE_RUGOSITE = 0.30, FIN_NACRE_METAL = 0.25;   // mica enrobé d'oxyde de titane : reflet doux et teinté
 const float FIN_CHROME_F0 = 0.60;         // chrome (chrome métal, n et k de Rakić 1998) : réflectance 0,55 à 0,65 dans le visible
 const float FIN_CHROME_RUGOSITE = 0.06;   // chrome poli (DA-realisme § 3 : 0,05 à 0,15, métal 1)
-const float FIN_CAMELEON_TOUR = 1.9;      // rotation de teinte de face → rasant (rad) : ex. rouge → or → vert (décalage vers le bleu)
+const float FIN_CHROME_TEINTE = 0.30;     // part de la couleur choisie dans la teinte du chrome
+const float FIN_CAMELEON_TOUR = 1.5;      // rotation de teinte de face → rasant (rad) : ex. rouge → orange → or → jaune-vert (décalage vers le bleu)
 const float FIN_CANDY_RUGOSITE = 0.20, FIN_CANDY_METAL = 0.85;   // base argent sous le vernis teinté
 const float FIN_PAILLETTE = 0.0004;       // taille d'une cellule de paillette au plus près (m) : 0,4 mm (amas de paillettes de 20-40 µm)
 
@@ -159,9 +160,9 @@ float eclatCellule(vec3 q, float t, vec3 N, vec3 H, float NoL) {
 // tailles voisines mêlées en fondu (aucun saut quand la caméra avance) ; au loin, les paillettes se fondent dans la couleur
 // moyenne (base métallisée). Basse : aucune paillette (RG-10), même couleur moyenne.
 float paillettes(vec3 N, vec3 H, float NoL) {
+    float px = length(fwidth(vWorld));   // dérivée calculée avant tout retour anticipé (contrôle uniforme, résultat défini)
     if (F.spotN.z > 0.5 && F.spotN.z < 8.0) return 0.0;   // Basse (WFS-263 : 4 lectures en Basse, 12 sinon)
     if (NoL <= 0.0) return 0.0;
-    float px = length(fwidth(vWorld));
     float niv = log2(max(px / FIN_PAILLETTE, 1.0));
     float n0 = floor(niv), fr = niv - n0;
     float t0 = FIN_PAILLETTE * exp2(n0);
@@ -170,40 +171,47 @@ float paillettes(vec3 N, vec3 H, float NoL) {
     float e = eclatCellule(q, t0, N, H, NoL) * (1.0 - fr) + eclatCellule(q, t0 * 2.0, N, H, NoL) * fr;
     return e * (1.0 - smoothstep(0.006, 0.02, t0));
 }
-// teinte tournée de a radians autour de l'axe gris (YIQ) : luminance gardée, variation continue
+// teinte tournée de a radians en TSV (teinte, saturation, valeur), sur la couleur affichée (sRGB approché, puissance 1/2,2) :
+// saturation (au moins 0,85) et clarté gardées, couleurs vives (une rotation à luminance constante donnait des olives boueuses)
 vec3 tournerTeinte(vec3 c, float a) {
-    const mat3 VERS = mat3(0.299, 0.596, 0.211, 0.587, -0.274, -0.523, 0.114, -0.322, 0.312);
-    const mat3 DEPUIS = mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703);
-    vec3 yiq = VERS * c;
-    float cs = cos(a), sn = sin(a);
-    yiq.yz = vec2(yiq.y * cs - yiq.z * sn, yiq.y * sn + yiq.z * cs);
-    return max(DEPUIS * yiq, vec3(0.0));
+    vec3 s = pow(max(c, vec3(0.0)), vec3(1.0 / 2.2));
+    float mx = max(s.r, max(s.g, s.b)), mn = min(s.r, min(s.g, s.b)), d = mx - mn;
+    float h = 0.0;
+    if (d > 1e-5) h = mx == s.r ? mod((s.g - s.b) / d, 6.0) : mx == s.g ? (s.b - s.r) / d + 2.0 : (s.r - s.g) / d + 4.0;
+    h = fract(h / 6.0 + a / 6.2831853);
+    float sat = max(mx > 1e-5 ? d / mx : 0.0, 0.85);
+    vec3 k = clamp(abs(fract(h + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+    return pow(mx * mix(vec3(1.0), k, sat), vec3(2.2));
 }
 // teinte normalisée (canal le plus fort = 1) : couleur d'un vernis teinté ou d'un chrome teinté
 vec3 teinteNormee(vec3 c) { return c / max(max(c.r, max(c.g, c.b)), 1e-3); }
 
 // surface sous le vernis : couleur (albedo), métal et rugosité selon la finition ; NoV = cosinus de la vue (flop, angle)
-void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float rough, float NoV) {
+void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float rough) {
     // angle pris sur la normale lissée du maillage (sans la carte de normales) : variation continue sur la carrosserie, sans
-    // taches dues au relief fin (RG-07 : pas de bandes) ; NoV gardé pour mémoire de l'appelant
-    NoV = clamp(abs(dot(normalize(vNrm), normalize(F.camPos.xyz - vWorld))), 0.0, 1.0);
-    float rasant = 1.0 - NoV;
+    // taches dues au relief fin (RG-07 : pas de bandes)
+    float NoVg = clamp(abs(dot(normalize(vNrm), normalize(F.camPos.xyz - vWorld))), 0.0, 1.0);
+    float rasant = 1.0 - NoVg;
     if (fin == FIN_METALLISE) {
-        albedo *= mix(0.22, 1.45, pow(NoV, 0.8));   // flop : plus clair de face, plus sombre de biais (moyenne ≈ 1)
+        albedo *= mix(0.15, 1.6, pow(NoVg, 0.9));   // flop : plus clair de face, plus sombre de biais (moyenne ≈ 1)
         metal = FIN_METAL_METAL; rough = FIN_METAL_RUGOSITE;
     } else if (fin == FIN_NACRE) {
         // mica : reflet légèrement froid de face, doré / rosé en rasant (interférence du TiO2)
-        float k = smoothstep(0.15, 0.85, rasant);
-        albedo = albedo * mix(vec3(0.97, 0.99, 1.03), vec3(1.10, 0.88, 0.70), k) + vec3(0.075, 0.062, 0.050) * (1.0 - 0.6 * k);   // lustre laiteux
+        // lustre laiteux : ≤ 0,03 sur une couleur saturée (pas de rouge délavé), jusqu'à 0,075 sur les blancs et les gris
+        float k = smoothstep(0.15, 0.85, rasant), mx = max(albedo.r, max(albedo.g, albedo.b));
+        float chroma = mx > 1e-4 ? (mx - min(albedo.r, min(albedo.g, albedo.b))) / mx : 0.0;
+        albedo = albedo * mix(vec3(0.97, 0.99, 1.03), vec3(1.10, 0.88, 0.70), k) + vec3(1.0, 0.83, 0.67) * mix(0.075, 0.03, chroma) * (1.0 - 0.6 * k)
+               + vec3(0.09, 0.055, 0.01) * k;   // reflet doré d'interférence du TiO₂ en rasant
         metal = FIN_NACRE_METAL; rough = FIN_NACRE_RUGOSITE;
     } else if (fin == FIN_MAT) {
         metal = 0.0; rough = FIN_MAT_RUGOSITE;
     } else if (fin == FIN_SATINE) {
         metal = 0.0; rough = FIN_SATINE_RUGOSITE;
     } else if (fin == FIN_CHROME) {
-        // chrome teinté : réflectance 0,60 × teinte (45 % de la couleur choisie : un miroir trop teinté reflète un ciel bleu presque noir) ; noir → chrome fumé (≈ 0,30)
+        // chrome teinté : réflectance 0,60 × teinte (30 % de la couleur choisie : au-delà, un miroir teinté sous un ciel bleu
+        // devient sombre et ne se lit plus comme du chrome) ; noir → chrome fumé (≈ 0,30)
         float force = max(albedo.r, max(albedo.g, albedo.b));
-        albedo = FIN_CHROME_F0 * mix(vec3(1.0), teinteNormee(albedo), 0.45) * mix(0.5, 1.0, smoothstep(0.0, 0.2, force));
+        albedo = FIN_CHROME_F0 * mix(vec3(1.0), teinteNormee(albedo), FIN_CHROME_TEINTE) * mix(0.5, 1.0, smoothstep(0.0, 0.2, force));
         metal = 1.0; rough = FIN_CHROME_RUGOSITE;
     } else if (fin == FIN_CAMELEON) {
         // pigment à interférence sur base sombre : la teinte tourne avec l'angle de vue ; couleur sans teinte (gris, blanc,
@@ -211,13 +219,13 @@ void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float 
         float chroma = max(albedo.r, max(albedo.g, albedo.b)) - min(albedo.r, min(albedo.g, albedo.b));
         vec3 c = mix(vec3(0.20, 0.03, 0.42), albedo, smoothstep(0.05, 0.2, chroma));
         // décalage vers le bleu en rasant (interférence en couche mince : la longueur d'onde renforcée raccourcit avec l'angle)
-        albedo = tournerTeinte(c, -FIN_CAMELEON_TOUR * pow(rasant, 1.8));
-        metal = 0.6; rough = 0.30;
+        albedo = tournerTeinte(c, FIN_CAMELEON_TOUR * rasant);
+        metal = 0.75; rough = 0.20;
     } else if (fin == FIN_CANDY) {
         // vernis teinté transparent sur base argent : le chemin dans le vernis s'allonge en biais (Beer-Lambert) → plus saturé
         // et plus sombre de biais, lumineux de face
         vec3 t = teinteNormee(albedo);
-        albedo = 0.9 * pow(max(t, vec3(1e-4)), vec3(mix(0.7, 2.6, smoothstep(0.0, 1.0, rasant)))) * mix(1.0, 0.18, pow(rasant, 1.2));
+        albedo = 0.9 * pow(max(t, vec3(1e-4)), vec3(mix(1.0, 2.8, smoothstep(0.0, 1.0, rasant)))) * mix(1.0, 0.10, rasant);
         metal = FIN_CANDY_METAL; rough = FIN_CANDY_RUGOSITE;
     }
 }
@@ -232,17 +240,20 @@ void vernisFinition(int fin, inout vec3 col, vec3 R, vec3 sun, float NoV, float 
         col += min(teinte * paillettes(N, H, NoL) * kP * sun * ombre, vec3(SPEC_MAX * 0.5)) * specK;
     }
     if (fin == FIN_CHROME) {
-        // chrome : miroir du ciel et du soleil comme le vernis, réflectance teintée f0 (Schlick), au-dessus de l'horizon ; en dessous,
-        // le reflet reste celui de la sonde d'environnement (chaussée et façades réelles, déjà ajouté par scene.frag)
+        // chrome : miroir, réflectance teintée f0 (Schlick). Même image du monde pour toutes les voitures et toutes les scènes :
+        // au-dessus de l'horizon le ciel, en dessous la chaussée éclairée (asphalte ρ = 0,14 au soleil et sous le ciel, DA-realisme
+        // § 3), horizon net (−0,05 à 0,02) ; la sonde d'environnement (décor réel, déjà ajoutée par scene.frag) garde 30 %
         vec3 Fm = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0);
         float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0) * pow(1.0 - FIN_CHROME_RUGOSITE, 6.0);
         float aC = sqrt(pow(FIN_CHROME_RUGOSITE, 4.0) + aaKernel);
-        float wC = smoothstep(-0.3, 0.0, R.y);
-        vec3 miroir = (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, aC) * V_Smith(NoV, NoL, aC) * sun * NoL) * Fm;
-        col = col * (1.0 - Fm * wC) + min(miroir, vec3(SPEC_MAX)) * specK * wC;
+        vec3 cielMoyen = mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5) * F.misc.z;
+        vec3 chaussee = 0.14 * (sun * max(F.sunDir.y, 0.0) / PI + cielMoyen);
+        vec3 monde = mix(chaussee, skyColor(R, sunKc) * F.misc.z, smoothstep(-0.05, 0.02, R.y)) * F.misc.w;
+        vec3 miroir = (monde + D_GGX(NoH, aC) * V_Smith(NoV, NoL, aC) * sun * NoL) * Fm;
+        col = col * (1.0 - Fm * 0.7) + min(miroir, vec3(SPEC_MAX)) * specK * 0.7;
     }
     float rV = fin == FIN_SATINE ? FIN_VERNIS_SATINE : FIN_VERNIS_BRILLANT;
-    float kV = (fin == FIN_MAT || fin == FIN_CHROME) ? 0.0 : fin == FIN_SATINE ? 0.7 : 1.0;   // satiné : vernis moins réfléchissant
+    float kV = (fin == FIN_MAT || fin == FIN_CHROME) ? 0.0 : fin == FIN_SATINE ? 0.85 : 1.0;   // satiné : vernis moins réfléchissant
     vec3 cNuit = fin == FIN_CHROME ? f0 * 0.5 : albedo;
     vernisCouche(col, R, sun, NoV, NoH, NoL, aaKernel, specK, rV, kV, cNuit);
 }

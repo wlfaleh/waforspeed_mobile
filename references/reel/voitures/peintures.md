@@ -16,7 +16,7 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
 | Finition | Brillant mesuré (réel) | Modèle du jeu | Constante |
 |---|---|---|---|
 | Brillant | ≥ 90 GU à 20° (vernis 2K tendu) | vernis rugosité 0,03 (alpha 0,0009), aspect d'avant inchangé (RG-01) | `FIN_VERNIS_BRILLANT` |
-| Satiné | 30 à 60 GU à 60° | base rugosité 0,45, vernis rugosité 0,25, force du vernis 0,7 : reflet du ciel flou, soleil large | `FIN_SATINE_RUGOSITE`, `FIN_VERNIS_SATINE` |
+| Satiné | 30 à 60 GU à 60° | base rugosité 0,45, vernis rugosité 0,18, force du vernis 0,85 : reflet du ciel flou, soleil large | `FIN_SATINE_RUGOSITE`, `FIN_VERNIS_SATINE` |
 | Mat | < 10 GU à 60° (vernis mat, silice) | pas de vernis net, rugosité 0,62 : reflet du soleil large et faible ; couleur gardée (aucun blanchiment) | `FIN_MAT_RUGOSITE` |
 
 ## Métallisé (paillettes d'aluminium)
@@ -25,7 +25,7 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
   optical constants of metal films: application to aluminum », Appl. Opt. 34 (1995) ; données sur refractiveindex.info).
 - **Flop** : clair près du spéculaire (15°), sombre loin du spéculaire (110°) ; rapport de luminance typique 3 à 6 entre 15° et 110°
   (indice de flop DuPont / X-Rite, 10 à 17 pour un argent, 3 à 8 pour une couleur).
-- Jeu : flop × 0,22 (rasant) à × 1,45 (de face), part métal 0,50, rugosité de base 0,35 ; paillettes visibles seulement de près
+- Jeu : flop × 0,15 (rasant) à × 1,6 (de face), part métal 0,65, rugosité de base 0,35 ; paillettes visibles seulement de près
   (cellule de 0,4 mm au plus près, une sur 6 porte un éclat, orientation ± 8°, lobe alpha 0,05) : points plus fins qu'un pixel
   autour du reflet du soleil, fondus dans la couleur moyenne au loin et en qualité Basse (RG-02, RG-10).
 
@@ -34,24 +34,28 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
   (Merck, gamme Iriodin, documentation technique ; Pfaff G., « Special Effect Pigments », Vincentz 2008).
 - Effet : lustre laiteux et reflet teinté (doré / rosé pour un blanc nacré) qui change doucement avec l'angle, moins de contraste
   que le métallisé.
-- Jeu : part métal 0,25, rugosité 0,30 ; reflet légèrement froid de face, doré-rosé en rasant ; paillettes 0,3 × celles du métallisé.
+- Jeu : part métal 0,25, rugosité 0,30 ; reflet légèrement froid de face, doré-rosé en rasant (+ reflet doré d'interférence) ; lustre laiteux 0,03 sur une couleur saturée, jusqu'à 0,075 sur les blancs et gris ; paillettes 0,3 × celles du métallisé.
 
 ## Chromé (film chromé, chrome teinté)
 - Chrome métal : réflectance 0,55 à 0,65 dans le visible (constantes n et k du chrome, Rakić A. D. et al., Appl. Opt. 37 (1998),
   données sur refractiveindex.info) ; jamais 1 (miroir parfait) ni blanc uniforme.
-- Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 45 % : un miroir plus teinté reflète un ciel bleu presque noir), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; reflet du ciel et du soleil comme le vernis, en réflectance teintée (Schlick) ; noir → chrome
-  fumé (F0 ≈ 0,30). Reflets nets du ciel et du décor par la sonde d'environnement existante (RG-06).
+- Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 30 %), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; noir → chrome
+  fumé (F0 ≈ 0,30). Miroir (Schlick) du même monde pour toutes les voitures : ciel au-dessus de l'horizon, chaussée éclairée
+  en dessous (asphalte ρ = 0,14 sous le soleil et le ciel), horizon net (R.y de −0,05 à 0,02) ; la sonde d'environnement
+  (décor réel) garde 30 % (RG-06). Contrôle sur les planches de jour : luminance moyenne de la carrosserie 0,41 (GT86), 0,44
+  (Corvette), 0,42 (208).
 
 ## Caméléon (pigments à interférence multicouche)
 - Pigments à interférence multicouche (ex. ChromaFlair de Viavi, Colorstream de Merck) : la couleur renforcée se décale vers les
   courtes longueurs d'onde quand l'angle augmente (couche mince : λ ∝ cos θ_réfracté) ; 2 à 4 teintes vues sur la même caisse.
-- Jeu : teinte tournée en continu de 0 (de face) à −1,9 rad (rasant, × rasant^1,8) autour de l'axe gris (YIQ, luminance gardée) : ex. rouge → or →
-  vert ; couleur sans teinte (gris, blanc, noir) : base violette. Part métal 0,6, rugosité 0,30, vernis brillant (RG-07).
+- Jeu : teinte tournée en continu de 0 (de face) à +1,5 rad (rasant, proportionnel à 1 − cos θ) en TSV sur la couleur affichée,
+  saturation au moins 0,85 et clarté gardées (couleurs vives, jamais olive) : ex. rouge → orange → or ; couleur sans teinte (gris,
+  blanc, noir) : base violette. Angle pris sur la normale lissée du maillage. Part métal 0,75, rugosité 0,20, vernis brillant (RG-07).
 
 ## Candy (vernis teinté sur base argent)
 - Base argent métallisée, puis vernis teinté transparent, puis vernis incolore : le chemin de la lumière dans le vernis teinté
   s'allonge en biais (loi de Beer-Lambert) → couleur plus saturée et plus sombre de biais, lumineuse de face.
-- Jeu : teinte normée (canal le plus fort = 1) élevée à la puissance 0,7 (de face) à 2,6 (rasant), × 1 à 0,18 ; base argent
+- Jeu : teinte normée (canal le plus fort = 1) élevée à la puissance 1,0 (de face) à 2,8 (rasant), × 1 à 0,10 ; base argent
   (métal 0,85, rugosité 0,20) ; vernis brillant par-dessus (RG-08).
 
 ## Nuit (RG-09)
