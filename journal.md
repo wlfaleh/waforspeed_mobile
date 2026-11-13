@@ -1674,3 +1674,23 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Garde-fou E10 (un seul ticket actif sur les modèles de voitures) : **WFS-483** et **WFS-456** passent après WFS-488.
 - Dépendances fusionnées : **WFS-481** (480, 504) et **WFS-505 à 508** (504) passent ⏳ Prêt.
 - `track-agent.md` : lignes des 8 sessions closes enlevées (historique dans `TACHES.md` et ce journal).
+
+### 2026-11-13 08:30:41 — WFS-481 attribué à Claude, agent dev3d (01Us6uCvhS) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (dev-artiste-3d, session_01Us6uCvhSyUxjQqVifkPVmG, aucun ticket avant). Bandeau 🏁 : 517, 480, 504, 487, 485 faits, 488 attribué à 08:29 ; 7e = **WFS-481** (E17, P1), dépendances WFS-480 (#375) et WFS-504 (#372) fusionnées.
+- Zone : `src/ui/ecrans/**` (zone E8) + accroche ≤ 10 lignes dans `src/platform/android_main.cpp` (langue du téléphone), annoncée au journal. Règles : `regles-de-gestion/WFS-481.md` + `regles-de-gestion/E17-identite-joueur.md`.
+- Plan : écran « Crée ton pilote » après les CGU si `profil=0`, pseudo + plaque proposée d'après le pseudo (API de WFS-480), textes FR / EN par les tables de WFS-504, moins de 20 s jusqu'au menu ; parcours complet accueil → profil → menu → course → retour, captures FR et EN.
+- Pas E15 : pas d'avis agent 3D requis. WFS-505 (menus en anglais) touche aussi `src/ui/ecrans/**` : synchroniser avec `main` avant la PR.
+- CI de `main` rouge depuis #1034 (banc-essai texte) : correction en cours de file par WFS-526 (US technique), hors de ce ticket.
+
+### 2026-11-13 08:31:58 — Campagne et Grand Prix en pause, bloqués par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur. ⛔ Bloqué par l'utilisateur : WFS-465, 518 à 525, 528 à 531 (Campagne), 403, 388, 473, 474 (Grand Prix), 304, 314. Aucun n'était en cours. WFS-387 déjà fusionné (#378). Non touchés : WFS-410, WFS-287.
+
+### 2026-11-13 09:14:19 — Statuts automatiques, CI main #1037 (robot statuts)
+- Run rouge (push, commit 6a77f55), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-480, WFS-487, WFS-504, WFS-395.
+
+### 2026-11-13 09:27:03 — WFS-481 : PR #379 ouverte, écran « Crée ton pilote » (Claude, agent dev3d (01Us6uCvhS))
+- Fait : écran de création du profil au 1er lancement (`src/ui/ecrans/creation_profil.*`, saisie testable `creation_profil_saisie.*`), clavier AZERTY (fr) / QWERTY (en), touches de 57 dp (9 mm), plaque proposée d'après le pseudo, erreurs RG-04 à la frappe, textes `creation.*` dans `assets/textes/fr.txt` et `en.txt` (RC-E20-02), test `test_creation_profil`, banc `WFS_BANC=creation`.
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes : `WFS_BANC=creation`) ; zone E8 : `menu.cpp`, `reglages.cpp`, `salon.cpp` (2 lignes chacun), `cgu.cpp` (1 ligne, banc seulement). **Aucune accroche dans `android_main.cpp`** : la langue du téléphone est déjà lue par WFS-504.
+- Vérifié : tests CPU 121/121 ; banc `creation` FR et EN en 2400x1080 : 0 écart (parcours installation neuve → CGU → création → menu → course → fin → menu → 2e lancement sans écran → joueur déjà installé) ; **RG-05 : 7 appuis, 8,4 s d'actions** (< 20 s) ; anglais : aucun texte français ni texte qui dépasse (RC-E20-06) ; banc `cgu` : 0 écart.
+- Limites : aperçu de plaque en gabarit 2D (plaque 3D : WFS-483) ; menu dessous encore en français (WFS-505) ; pas essayé sur un vrai téléphone.
