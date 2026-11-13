@@ -26,7 +26,9 @@ constexpr float ECLAIREUR = 0.30f;
 struct Ressources {
     bool pret = false;
     Mesh plaque[2], vis;                   // [0] complet, [1] simple
-    std::map<std::string, Mesh> supports;  // clé : id + côté + niveau
+    std::map<std::string, Mesh> supports;  // clé : id + côté + niveau (fait au choix de la voiture, jamais à chaque image)
+    const PlacesVoiture* courante = nullptr;   // voiture dont les porte-plaques sont dans actuels
+    const Mesh* actuels[2][2] = {};            // [côté][niveau] : lus à chaque image sans recherche ni allocation
     Material matSupport, matVis, matPlaque, matPlaqueArriere;
     Image couleur, normales;
     std::string texte;                     // texte de la texture actuelle
@@ -42,6 +44,9 @@ Mesh versGpu(Renderer& r, const Maillage& m) {
     return r.makeMesh(v, m.indices);
 }
 
+// porte-plaques de la voiture pv (faits si besoin) gardés dans actuels : la clé n'est construite qu'au changement de voiture
+void choisirVoiture(Renderer& r, const PlacesVoiture& pv);
+
 const Mesh& support(Renderer& r, const PlacesVoiture& pv, int cote, int niveau) {
     const std::string cle = std::string(pv.id) + (cote ? "/ar/" : "/av/") + std::to_string(niveau);
     auto it = g.supports.find(cle);
@@ -50,6 +55,12 @@ const Mesh& support(Renderer& r, const PlacesVoiture& pv, int cote, int niveau) 
         it = g.supports.emplace(cle, versGpu(r, p.support)).first;
     }
     return it->second;
+}
+
+void choisirVoiture(Renderer& r, const PlacesVoiture& pv) {
+    if (g.courante == &pv) return;
+    for (int cote = 0; cote < 2; cote++) for (int n = 0; n < 2; n++) g.actuels[cote][n] = &support(r, pv, cote, n);
+    g.courante = &pv;
 }
 
 std::string texteVoulu() {
@@ -103,7 +114,7 @@ void voiturePreparee(Renderer& r, const char* idVoiture) {
     if (!g.pret) preparer(r);
     const PlacesVoiture* pv = places(idVoiture);
     if (!pv) return;
-    for (int cote = 0; cote < 2; cote++) for (int n = 0; n < 2; n++) support(r, *pv, cote, n);
+    choisirVoiture(r, *pv);
     const std::string t = texteVoulu();
     if (t != g.texte || !g.matPlaque.set) preparerTexte(r, t);
 }
@@ -115,6 +126,7 @@ void dessiner(Renderer& r, const char* idVoiture, const mat4& monde, bool nuit, 
     const std::string t = texteVoulu();
     if (t != g.texte || !g.matPlaque.set) preparerTexte(r, t);   // RG-03 : plaque changée au garage (écran Profil)
     if (!g.matPlaque.set) return;
+    choisirVoiture(r, *pv);   // déjà fait au choix de la voiture : simple comparaison de pointeur
     const vec3 centre{monde.at(0, 3), monde.at(1, 3), monde.at(2, 3)};
     // RG-06 / RG-07 : version simple au-delà de LOD_M, et en Basse dès LOD_BASSE_M (caméra de poursuite à ≈ 5 m) ; complète au garage
     const float d = length(camera - centre);
@@ -122,7 +134,7 @@ void dessiner(Renderer& r, const char* idVoiture, const mat4& monde, bool nuit, 
     g.matPlaqueArriere.emissive = nuit ? vec3{ECLAIREUR, ECLAIREUR, ECLAIREUR} : vec3{0, 0, 0};
     for (int cote = 0; cote < 2; cote++) {
         const mat4 M = monde * repere(cote ? pv->arriere : pv->avant);
-        r.draw(support(r, *pv, cote, niveau), g.matSupport, M);
+        r.draw(*g.actuels[cote][niveau], g.matSupport, M);
         r.draw(g.plaque[niveau], cote ? g.matPlaqueArriere : g.matPlaque, M);
         if (niveau == 0) r.draw(g.vis, g.matVis, M);
     }
@@ -133,6 +145,8 @@ void liberer(Renderer& r) {
     libererTexte(r);
     for (auto& [k, m] : g.supports) r.destroy(m);
     g.supports.clear();
+    g.courante = nullptr;
+    for (auto& c : g.actuels) for (auto& m : c) m = nullptr;
     for (Mesh& m : g.plaque) r.destroy(m);
     r.destroy(g.vis);
     r.destroy(g.matSupport); r.destroy(g.matVis);

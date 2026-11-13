@@ -3,7 +3,7 @@
 //   - plaque-<id>-poursuite-jour / -nuit : en course, caméra de poursuite (vue arrière) ;
 //   - plaque-<id>-zoom : gros plan de 3/4 arrière (relief des caractères, vis, porte-plaque, jonction avec la caisse) ;
 //   - plaque-1car / plaque-8car : plaques « 7 » et « WFS-2026 » (1 et 8 caractères) en gros plan ;
-//   - plaque-garage : garage de la 208 ; plaque-planche-<id> : les autres voitures permises, 3/4 arrière (RG-04 : toutes).
+//   - plaque-garage, plaque-garage-ar : garage de la 208 de 3/4 avant, puis de 3/4 arrière ; plaque-planche-<id> : les autres voitures permises, 3/4 arrière (RG-04 : toutes).
 //   - plaque-mesure (WFS_BANC=plaque-mesure, RG-07) : Corniche, Basse, 208 en course, caméra de poursuite ; 180 images de
 //     chauffe puis 30 paires de blocs de 20 images chronométrées (update + render), plaques dessinées et masquées en alternance
 //     (même partie, même scène : la dérive de la machine s'annule) ; écart moyen par image et erreur type au journal et dans
@@ -90,6 +90,9 @@ void benchPlaque(Game& g, Renderer& r, const std::string& out) {
         g.allerA(Ecran::Garage);
         for (int k = 0; k < 40; k++) { g.update(1.0 / 60); if (k % 10 == 0) g.render(950 + k / 60.0); }
         image(g, r, out + "/plaque-garage.png", 951);
+        // RG-06 : garage de 3/4 arrière : la voiture tourne seule (0,35 rad/s) ; ≈ 7 s de plus montrent l'arrière
+        for (int k = 0; k < 420; k++) { g.update(1.0 / 60); if (k % 30 == 0) g.render(952 + k / 60.0); }
+        image(g, r, out + "/plaque-garage-ar.png", 960);
         g.shutdown();
     }
     // les autres voitures permises (RG-04 : plaque sur toutes les voitures du garage)
