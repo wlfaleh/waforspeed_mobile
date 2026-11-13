@@ -5,18 +5,20 @@
 //   - appui sur « Acheter » : solde suffisant → tout ce qui manque est acheté (boutique::acheterObjet, débit une seule fois
 //     chacun), le choix est gardé (paint-, paint2-) et la sauvegarde écrite ; sinon bandeau « Il te manque N ★ », rien n'est
 //     débité (le bandeau reste tant que la même couleur est montrée).
-// Emplacement suivant : voitures à acheter (WFS-499), finitions (WFS-491), skins (WFS-494).
+// WFS-491 : la finition montrée non possédée s'ajoute à ce qui manque (même bouton « Acheter N ★ », même refus).
+// Emplacement suivant : voitures à acheter (WFS-499), skins (WFS-494).
 // Outils partagés avec la rangée des couleurs : étoile dessinée (la police n'a pas le caractère ★), texte avec ★, équivalents.
 #pragma once
 #include <string>
 #include "garage_commun.h"
+#include "../core/configgame.h"   // WFS-491 : BOUTIQUE_FINITIONS_IDS
 #include "../game/personnalisation.h"
 
 namespace wfs::ecrans::garage {
 
 // ce qui manque pour que l'aspect montré parte en course (WFS-489) : objets à acheter pour cette voiture et leur total en ★
 struct Manque {
-    const perso::Objet* objets[3] = {};
+    const perso::Objet* objets[4] = {};   // WFS-491 : + la finition
     int n = 0;
     long long total = 0;
 };

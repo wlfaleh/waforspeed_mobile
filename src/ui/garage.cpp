@@ -60,6 +60,7 @@ public:
             bouton_ = 0; doigtBouton_ = -1;   // WFS-115
             index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
             couleur_.ouvrir(peinture_);   // WFS-489 (accroche) : dernières couleurs possédées, aperçu oublié (RG-03)
+            finition_.ouvrir();           // WFS-491 (accroche) : dernières finitions possédées, aperçu oublié (RG-03)
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(placeDe(index_) + 1).c_str(),
                     voituresPermises().n, PAINTS[peinture_[index_]].nom);
@@ -98,7 +99,8 @@ public:
             const vec3 p = lin(PAINTS[peinture_[index_]].hex);
             const mat4 M = translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_);
             r.peinture2ProchaineVoiture(couleur_.code2(index_));   // WFS-489 (accroche) : toit et rétros montrés (voiture seulement : le renderer remet la couleur 2 à zéro après ce dessin)
-            r.draw(voiture_, M, &p);
+            const int f0 = r.finitionJoueur(); r.finitionJoueur(FinitionGarage::rendu(finition_.finition(index_)));   // WFS-491 (accroche) : aperçu de la finition (RG-02)
+            r.dessinJoueur = true; r.draw(voiture_, M, &p); r.dessinJoueur = false; r.finitionJoueur(f0);   // voiture du joueur (finition, modèle complet), puis finition de la course remise
             plaque_joueur::dessiner(r, CARS[index_].id, M, g.night, vec3{M.at(0, 3), M.at(1, 3), M.at(2, 3)});   // WFS-483 (accroche) : plaque complète (RG-06)
         }
     }
@@ -128,8 +130,8 @@ public:
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
             if (const int p = fiche_.appui(t.x, t.y); p >= 0) { appui_.prendre(t.id); if (const int i = voituresPermises().idx[p]; i != index_) aller(p, i > index_ ? 1 : -1); return true; }
-            // WFS-491 / WFS-494 : finition et skin (emplacements vides aujourd'hui : aucune zone, appui toujours -1)
-            if (finition_.appui(t.x, t.y) >= 0 || skin_.appui(t.x, t.y) >= 0) { appui_.prendre(t.id); return true; }
+            if (const int f = finition_.appui(t.x, t.y); f >= 0) { appui_.prendre(t.id); finition_.choisir(f, index_); return true; }   // WFS-491 (accroche)
+            if (skin_.appui(t.x, t.y) >= 0) { appui_.prendre(t.id); return true; }   // WFS-494 : skin (emplacement vide : appui toujours -1)
             if (const int b = achat_.appui(t.x, t.y); b >= 0) { bouton_ = b; doigtBouton_ = t.id; return true; }   // WFS-115 : action au relâcher
             doigt_ = t.id; glisse_ = true; x0_ = t.x; yaw0_ = yaw_; tAppui_ = g.time;   // gDrag
             return true;
@@ -151,13 +153,14 @@ public:
         mp.W = g.uiWidth; mp.H = g.uiHeight; mp.op = std::clamp((float)(g.time - t0_) / 0.3f, 0.f, 1.f);
         mp.gl = g.marges.gauche + 16 * k; mp.gr = g.marges.droite + 16 * k; mp.gt = g.marges.haut + 14 * k; mp.gb = g.marges.bas + 14 * k;
         const CarDef& car = CARS[index_];
-        const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_)};   // WFS-489 (accroche)
+        const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_), finition_.finition(index_)};   // WFS-489, WFS-491 (accroches)
         cadre::voiles(r, mp);
         fiche_.dessiner(r, mp, e);   // .show-head : marque · index, nom, type + accroche, points des voitures
         cadre::fleches(r, mp);
         // ---------- .show-panel : fiche, barres, peintures, boutons ----------
         mp.padX = 24 * k; mp.padY = 18 * k;
         mp.statH = 4 * 14 * k + 3 * 10 * k; mp.paintH = CouleurGarage::hauteur(k); mp.panelH = mp.padY * 2 + mp.statH + 14 * k + mp.paintH;   // WFS-489 (accroche) : ligne des prix
+        mp.panelH += FinitionGarage::hauteur(k);   // WFS-491 (accroche) : rangée « Finition » sous les couleurs
         mp.px0 = mp.gl; mp.px1 = mp.W - mp.gr; mp.py0 = mp.H - mp.gb - 26 * k - mp.panelH;
         cadre::fondPanneau(r, mp);
         mp.y1 = mp.py0 + mp.padY;
@@ -167,7 +170,7 @@ public:
         for (const Zone* z : {&g_z.choisir, &g_z.retour, &g_z.prev, &g_z.next}) manette::focus(*z, z == &g_z.retour);   // WFS-22
         fiche_.stats(r, mp, car, xStats);   // .statlist : 4 barres sur 10
         couleur_.dessiner(r, mp, e);        // .paint-line (WFS-489)
-        finition_.dessiner(r, mp, e);       // vide (WFS-491)
+        finition_.dessiner(r, mp, e);       // rangée « Finition » (WFS-491)
         skin_.dessiner(r, mp, e);           // vide (WFS-494)
         cadre::pied(r, mp, car, voiture_.ok);
     }

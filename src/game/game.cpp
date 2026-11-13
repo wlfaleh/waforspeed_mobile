@@ -20,6 +20,7 @@
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 #include "personnalisation.h"   // WFS-488 (accroche) : couleur 2 possédée
 #include "../render/vehicule_peinture2.h"   // WFS-488 (accroche)
+#include "../render/vehicule_finitions.h"   // WFS-491 (accroche) : finition possédée du joueur
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 #include "../ui/ecrans/chargement.h"   // WFS-146 (accroche, ANO-45) : fondu du chargement
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9) : revêtements de route réels
@@ -81,6 +82,8 @@ void Game::setCar(const char* carId) {
     if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureCourse(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24 ; WFS-487 (RG-07) : possédée seulement
     const PeintureDef* p2 = sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), carDef_->id).peinture2 : nullptr;   // WFS-488 : possédée seulement
     paint2_ = p2 ? vehicule_peinture2::code(p2->hex) : vehicule_peinture2::UNE_COULEUR;
+    if (!std::getenv("WFS_FINITION"))   // WFS-491 (accroche) : finition possédée de la voiture du joueur (RG-03 ; bancs : WFS_FINITION)
+        r_->finitionJoueur(sauvegarde().actif() ? vehicule_finitions::depuisId(perso::aspectCourse(sauvegarde(), carDef_->id).finition) : 0);
     if (const PeintureDef* e = std::getenv("WFS_PEINTURE2") ? peintureDef(std::getenv("WFS_PEINTURE2")) : nullptr) paint2_ = vehicule_peinture2::code(e->hex);   // WFS-488 : bancs (mesure RC-E18-03)
     loadCarModel(*r_, std::string(carDef_->file), car_);
     plaque_joueur::voiturePreparee(*r_, carDef_->id);   // WFS-483 (accroche) : porte-plaques et texte, avant la course
