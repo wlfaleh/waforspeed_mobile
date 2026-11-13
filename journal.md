@@ -1124,3 +1124,9 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Demande d'une nouvelle session `@dev` (jamais de ticket avant). **WFS-489** (E18, P1) : 1er ticket prêt du bandeau 🏁 (9e place ; 517 à 488 pris ou fusionnés), WFS-487, 488, 498, 504 et 534 fusionnés.
 - Zone : `src/ui/garage_couleur.*` et `src/ui/garage_achat.*` (après le découpage WFS-534) ; `garage.cpp` / `garage_commun.*` : accroches ≤ 10 lignes annoncées au journal ; textes par `ui::tr` (FR / EN). Règles : `regles-de-gestion/WFS-489.md` + `E18-personnalisation.md`.
 - Attention : retirer le don provisoire de couleur de WFS-487 ; WFS-499 (même panneau `garage_achat.*`) attend sa fusion ; WFS-507 (textes du garage) avance en parallèle : synchroniser avec `main` avant la PR. Hors E15 : pas d'avis agent 3D obligatoire.
+
+### 2026-11-13 15:44:22 — WFS-507 attribué à Claude, agent dev3d (01Us6uCw3C) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCw3CcwYdVgdJvnqpWC), sans ticket depuis la règle « un seul sujet par session ». WFS-489 (1er du bandeau 🏁) venait d'être donné à la session 01Us6uCxMq : 1er ticket prêt suivant, **WFS-507** (E20, P1, prêt en parallèle de WFS-489).
+- Zone : `assets/textes/**` (FR / EN), appels `ui::tr` courts dans `src/ui/garage_*.cpp`, `src/ui/planche_voitures.*`, `src/ui/ecrans/paquets.*`, `paquets_etape.cpp` ; banc `textes` étendu au garage et aux paquets. Format de `cartes.json` inchangé sans accord de l'agent expert ci (RG-03).
+- Règles : `regles-de-gestion/WFS-507.md` + `regles-de-gestion/E20-langue-anglaise.md`. Attention : WFS-489 (session 01Us6uCxMq) touche en même temps `garage_couleur.*` et `garage_achat.*` : ne pas y réécrire de code, synchroniser avec `main` après sa fusion en gardant les deux modifications ; textes de prix et d'achat hors périmètre (WFS-499) ; taille des boutons inchangée (ordre permanent).
+- Branche attendue : `feature/waforspeed-507`, premier commit poussé tout de suite.
