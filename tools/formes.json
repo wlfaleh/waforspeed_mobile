@@ -53,14 +53,14 @@
     "materiau": 0,
     "contour": {
      "rectangle": [
-      -0.085,
-      1.136,
-      0.095,
+      -0.1,
+      1.122,
+      0.11,
       1.197
      ],
      "rayons": [
-      0.01,
-      0.01
+      0.012,
+      0.006
      ],
      "pas": 4
     },
@@ -68,22 +68,22 @@
      2.05,
      2.25
     ],
-    "note": "Compass : creux en forme des lettres « Jeep » resté dans la peinture du hayon (lettres retirées par WFS-192, leur empreinte se lisait encore) découpé sur un rectangle aux coins arrondis (WFS-456, RG-01)",
-    "triangles": 421
+    "note": "Compass : creux en forme des lettres « Jeep » resté dans la peinture du hayon (lettres retirées par WFS-192, leur empreinte se lisait encore) découpé sur un rectangle aux coins arrondis, pris assez large pour que le bord tombe dans la tôle plate (WFS-456, RG-01)",
+    "triangles": 503
    },
    {
     "couture": {
      "materiau": 0,
      "contour": {
       "rectangle": [
-       -0.085,
-       1.136,
-       0.095,
+       -0.1,
+       1.122,
+       0.11,
        1.197
       ],
       "rayons": [
-       0.01,
-       0.01
+       0.012,
+       0.006
       ],
       "pas": 4
      },
@@ -91,19 +91,20 @@
       2.05,
       2.25
      ],
-     "bande": 0.02,
+     "bande": 0.03,
      "baseFace": 2,
      "ignorer": [
       2,
       7
-     ]
+     ],
+     "arriere": true
     },
-    "note": "Compass : découpe refermée par une peau de carrosserie cousue au bord (même peinture, aucun joint) : hayon continu, plus aucune forme de lettre (WFS-456, RG-01, skill artiste-3d § 5)",
-    "triangles": 255
+    "note": "Compass : découpe refermée par une peau de carrosserie cousue au bord (même peinture, aucun joint, normales vers l'arrière comme le hayon) : hayon continu, plus aucune forme de lettre (WFS-456, RG-01, skill artiste-3d § 5)",
+    "triangles": 364
    }
   ],
-  "empreinteApres": "57a7666fece417e7",
-  "empreinteRedressee": "1a3871331ef2322e"
+  "empreinteApres": "bfc196a43fd97b15",
+  "empreinteRedressee": "56177a41e77d429a"
  },
  "p208": {
   "materiaux": 17,
@@ -3551,229 +3552,26 @@
     "triangles": 128
    },
    {
-    "decouper": true,
+    "boucher": true,
     "materiau": 7,
-    "contour": [
-     [
-      0.044,
-      0.9495
-     ],
-     [
-      0.0424,
-      0.9617
-     ],
-     [
-      0.0377,
-      0.973
-     ],
-     [
-      0.0302,
-      0.9827
-     ],
-     [
-      0.0205,
-      0.9902
-     ],
-     [
-      0.0092,
-      0.9949
-     ],
-     [
-      -0.003,
-      0.9965
-     ],
-     [
-      -0.0152,
-      0.9949
-     ],
-     [
-      -0.0265,
-      0.9902
-     ],
-     [
-      -0.0362,
-      0.9827
-     ],
-     [
-      -0.0437,
-      0.973
-     ],
-     [
-      -0.0484,
-      0.9617
-     ],
-     [
-      -0.05,
-      0.9495
-     ],
-     [
-      -0.0484,
-      0.9373
-     ],
-     [
-      -0.0437,
-      0.926
-     ],
-     [
-      -0.0362,
-      0.9163
-     ],
-     [
-      -0.0265,
-      0.9088
-     ],
-     [
-      -0.0152,
-      0.9041
-     ],
-     [
-      -0.003,
-      0.9025
-     ],
-     [
-      0.0092,
-      0.9041
-     ],
-     [
-      0.0205,
-      0.9088
-     ],
-     [
-      0.0302,
-      0.9163
-     ],
-     [
-      0.0377,
-      0.926
-     ],
-     [
-      0.0424,
-      0.9373
-     ]
+    "centre": [
+     -0.003,
+     0.9495
     ],
+    "rayons": [
+     0.07,
+     0.07
+    ],
+    "seuil": 1.0,
     "z": [
      2.15,
      2.4
     ],
-    "note": "Giulia : bord de l'encoche ronde de l'écusson, dans la peinture du coffre, découpé sur un cercle net (WFS-456, RG-01)",
-    "triangles": 92
-   },
-   {
-    "couture": {
-     "materiau": 7,
-     "contour": [
-      [
-       0.044,
-       0.9495
-      ],
-      [
-       0.0424,
-       0.9617
-      ],
-      [
-       0.0377,
-       0.973
-      ],
-      [
-       0.0302,
-       0.9827
-      ],
-      [
-       0.0205,
-       0.9902
-      ],
-      [
-       0.0092,
-       0.9949
-      ],
-      [
-       -0.003,
-       0.9965
-      ],
-      [
-       -0.0152,
-       0.9949
-      ],
-      [
-       -0.0265,
-       0.9902
-      ],
-      [
-       -0.0362,
-       0.9827
-      ],
-      [
-       -0.0437,
-       0.973
-      ],
-      [
-       -0.0484,
-       0.9617
-      ],
-      [
-       -0.05,
-       0.9495
-      ],
-      [
-       -0.0484,
-       0.9373
-      ],
-      [
-       -0.0437,
-       0.926
-      ],
-      [
-       -0.0362,
-       0.9163
-      ],
-      [
-       -0.0265,
-       0.9088
-      ],
-      [
-       -0.0152,
-       0.9041
-      ],
-      [
-       -0.003,
-       0.9025
-      ],
-      [
-       0.0092,
-       0.9041
-      ],
-      [
-       0.0205,
-       0.9088
-      ],
-      [
-       0.0302,
-       0.9163
-      ],
-      [
-       0.0377,
-       0.926
-      ],
-      [
-       0.0424,
-       0.9373
-      ]
-     ],
-     "z": [
-      2.15,
-      2.4
-     ],
-     "bande": 0.03,
-     "baseFace": 2,
-     "ignorer": [
-      45
-     ]
-    },
-    "note": "Giulia : encoche de l'écusson refermée par une peau de carrosserie cousue au bord découpé (même peinture, aucun joint) : coffre continu, sans disque ni trou (WFS-456, RG-01, skill artiste-3d § 5)",
-    "triangles": 225
+    "note": "Giulia : creux de l'écusson dans la peinture du coffre (biseau et bord du trou) retiré, trou recousu dans la peau du coffre à partir des sommets de son bord (membrane tendue, étanche, aucune pièce rapportée) : coffre continu, sans disque ni trou (WFS-456, RG-01)",
+    "triangles": 123
    }
   ],
-  "empreinteApres": "a35ebfc206bf3941"
+  "empreinteApres": "b3a6ab7041c0a533"
  },
  "rrsport": {
   "materiaux": 22,
