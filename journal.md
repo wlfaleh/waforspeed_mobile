@@ -1598,3 +1598,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Ordre de l'utilisateur : « mets-moi la 499 en prochaine tâche à prendre ».
 - WFS-499 : ⏳ En attente → ⏳ Prêt, en tête de la file (bandeau 🥇 de `TACHES.md`), pour le premier `@dev` qui demande.
 - Risque noté : même panneau `garage_achat.*` que WFS-489 (code approuvé, fusion en attente) : synchronisation avec `main` après la fusion de WFS-489.
+
+### 2026-11-13 21:39:35 — WFS-501 passée en 2e tâche à prendre (po-scrum-master)
+- Ordre de l'utilisateur : « mets-moi la 501 dans les 5 tâches qui viennent ».
+- Vérifié : aucune dépendance ouverte (WFS-500 🟣 #392, WFS-504 🟣 #372). WFS-501 en 2e place, juste après WFS-499 (bandeau 🥈 de `TACHES.md`).
