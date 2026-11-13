@@ -1449,3 +1449,7 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - **Tâches compagnes `@cicd`** (ordre permanent du 2026-11-12) : WFS-522 (après 518), 523 (après 519), 524 (après 520), 525 (après 521) ; **WFS-465 reste derrière WFS-387 réduit** (titre ajusté).
 - Bandeau 🏁 : la suite Campagne ajoutée après WFS-515, ordre de l'utilisateur inchangé ; `E15-decors.md` (file Campagne) et `track-agent.md` à jour.
 
+
+### 2026-11-13 00:26:58 — WFS-485 : retour lead dev corrigé, PR #371 à relire (Claude, agent dev3d (01UY1Vv46n))
+- Cause : `files/reglages.txt` (src/ui/ecrans/reglages.cpp:160) garde 5 réglages absents de `sauvegarde.txt` (mouvements, Ultra, regard Cockpit, fantôme, onglet) : il manquait aux règles. Corrigé dans 4ef1bbc1 (2e `include` dans les deux XML) ; écart à RG-01 signalé au PO dans la PR.
+- Tests CPU : 115 réussis sur b5df9a18, journal dans `qa/pr/WFS-485/tests-cpu.log` (23269b29). Captures régénérées, identiques avant / après. Réponses point par point sous le refus dans la PR. Lead dev rappelé.
