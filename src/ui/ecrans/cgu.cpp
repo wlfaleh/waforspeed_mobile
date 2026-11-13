@@ -368,6 +368,7 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
     // chargement → menu → Réglages → « Conditions d'utilisation » (lecture seule) → course → retour au menu
     if (!g.init(r, "golf", "ville")) { WFS_ERR("CGU (WFS-308) banc : chargement impossible"); sauvegarde().desactiver(); std::remove(chemin.c_str()); return ecarts + 1; }
     g.setAutopilot(true); g.camMode = 0;
+    { std::string nick; sauvegarde().profil.creer("Pilote1", "WFS-001", nick); sauvegarde().nick = nick; }   // WFS-481 : profil créé (écran « Crée ton pilote » : WFS_BANC=creation)
     double tg = 1000;
     auto imageJeu = [&]() { g.update(1.0 / 60); tg += 1.0 / 60; g.render(tg); };
     auto captureJeu = [&](const char* nom, const char* quoi) { g.render(tg); g.render(tg + 0.01); r.capturePng(out + "/" + nom + ".png"); WFS_LOG("capture %s : écran %s, %s", nom, nomEcran(g.ecran()), quoi); };

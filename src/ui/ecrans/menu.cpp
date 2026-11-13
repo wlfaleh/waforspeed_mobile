@@ -15,6 +15,7 @@
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/direction.h"   // WFS-146 (RG-05) : réglages Direction et Gyroscope, dessin2d
 #include "chargement.h"
+#include "creation_profil.h"   // WFS-481 (accroche) : écran « Crée ton pilote » par-dessus le menu
 #include "reglages.h"
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
@@ -99,6 +100,7 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
+        if (creationProfilOuverte()) { t0_ = -1; return; }   // WFS-481 (RG-02) : rien du menu sous la création du profil ; fondu d'entrée ensuite
         if (t0_ < 0) t0_ = g.time;
         const float W = g.uiWidth, H = g.uiHeight, t = (float)(g.time - t0_);
         // WFS-147 (RG-01, RG-02, RG-06, ANO-17, ANO-19) : sur téléphone couché, mise en page propre au menu, dessinée en dp

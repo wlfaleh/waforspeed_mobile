@@ -70,6 +70,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
+#include "../ui/ecrans/creation_profil.h"   // WFS-481 (accroche) : WFS_BANC=creation
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
 #include "../ui/ecrans/paquets.h"   // WFS-306 (accroche) : WFS_BANC=paquets
 #include "../world/cartes_v2/paquet_carte.h"   // WFS-301 (accroche) : WFS_BANC=cuisson, 2e source de readAsset
@@ -212,6 +213,7 @@ int main(int argc, char** argv) {
     if (banc == "batiments") { const int e = cartes_v2::benchBatiments(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-416 (accroche) : bâtiments cuits dans le paquet, captures batiments-*
     if (banc == "neige") { ui::chargerPolice(r); const int e = cartes_v2::benchNeige(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-346 (accroche) : neige lue du paquet, captures neige-*
     if (banc == "credits") { ui::chargerPolice(r); const int e = credits::benchCredits(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-406 (accroche) : menu → Crédits → retour, garage des voitures renommées
+    if (banc == "creation") { const int e = ecrans::benchCreationProfil(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-481 (accroche) : création du profil (WFS_LANGUE=fr|en)
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)

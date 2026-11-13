@@ -154,6 +154,7 @@ else()
   target_compile_definitions(test_cartes_v2_saison PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cartes_v2_abris tests/test_cartes_v2_abris.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/render/route_revetements_defs.cpp)   # WFS-392 : tunnels (chaussée sèche, luminaires)
   target_compile_definitions(test_cartes_v2_abris PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_creation_profil tests/test_creation_profil.cpp src/ui/ecrans/creation_profil_saisie.cpp src/game/profil.cpp)   # WFS-481 : saisie de l'écran « Crée ton pilote » (claviers, plaque proposée, erreurs, textes FR / EN)
   add_executable(test_cgu tests/test_cgu.cpp src/ui/ecrans/cgu_texte.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-308 : CGU (texte, version, clé cgu=)
   add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
