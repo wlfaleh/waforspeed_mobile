@@ -22,13 +22,13 @@ sont anciens, par exemple le garage avant le découpage WFS-534).
 | Zone | NUE | MODELÉE | EFFET | INVISIBLE |
 |---|---|---|---|---|
 | 1. Garage et menus 3D | 4 | 0 | 0 | 1 |
-| 2. Habitacle et vue Cockpit | 1 (à arbitrer) | ≈ 25 familles de pièces | 0 | 2 |
+| 2. Habitacle et vue Cockpit | 1 (dessus et face de la planche) | ≈ 25 familles de pièces | 0 | 2 |
 | 3. Véhicules : police (Poursuite) | 1 (rampe : 3 cubes) | 1 (bandes POLICE) | 1 | 1 |
 | 4. Objets de course : portique, chantier, ralentisseur | 4 | 1 (feux du Grand Prix) | 0 | 0 |
 | 5. Personnes et animaux | 2 | 0 | 0 | 0 |
 | 6. Deux-roues | 1 (casque, à arbitrer) | 0 | 1 | 0 |
 | 7. Effets visibles | 0 | 0 | 12 | 3 |
-| **Total** | **13** | | **14** | **7** |
+| **Total** | **13** (dont 1 à arbitrer : le casque) | | **14** | **7** |
 
 ## 1. Garage et menus 3D (fort : premier écran vu)
 
@@ -55,7 +55,7 @@ moyeu `moule` lissé) : MODELÉ. Rétroviseurs : coques balayées (`coqueRetro`,
 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
-| Dessus, creux et face de la planche de bord | `src/render/vehicule_cockpit.cpp:451-452, 457-458` (`extruder` :46) | profil de 4 points extrudé, **arêtes vives**, bouts plats | 2 à 5 bandes | **à arbitrer** : pas une primitive, mais un « bloc » (le commentaire :463 dit la même chose de l'ancienne visière) | `apres-vitrine-golf-centre.jpg`, `apres-vitrine-m4-centre.jpg` |
+| Dessus, creux et face de la planche de bord | `src/render/vehicule_cockpit.cpp:451-452, 457-458` (`extruder` :46) | profil de 4 points extrudé, **arêtes vives**, bouts plats | 2 à 5 bandes | **NUE** (revue du lead dev, PR #391) : arêtes vives et bouts plats du profil extrudé → grandes facettes sombres sous le volant, vues en permanence en vue Cockpit | `apres-vitrine-golf-centre.jpg`, `apres-vitrine-golf-portiere-bas.jpg`, `apres-vitrine-m4-centre.jpg` |
 | Contre-portes, plancher, tablier | `vehicule_cockpit.cpp:608` (`boitesFermeture`, `vehicule_cockpit.h:201`) | `dalle` arrondie (r 1,5 cm, chanfrein 8 mm), mais pièces pleines | 4 | MODELÉE (E16 les voyait « blocs pleins » : à regarder dans le ticket de la planche) | `apres-vitrine-golf-centre.jpg`, `apres-vitrine-m4-centre.jpg` |
 | Gabarit magenta du banc (portes, tablier) | `vehicule_cockpit.cpp:693-694` | boîtes de 2 mm | 0 en jeu (banc `cockpit-voisine`) | INVISIBLE | — |
 | Cockpit commun de secours (planche, casquette, montants, pavillon en `boite` ; cadran en `anneau` ; aiguille en `plan` ; volant `tore` + `cylindre` + 3 `boite`) | `src/game/camera_vue.cpp:284-298` (dessin :339-347) | **boîtes, disques, tore, cylindre** | **0 en jeu** : seulement pour une voiture sans intérieur, or les 20 en ont un | INVISIBLE (secours) : à supprimer ou à garder hors jeu, pas à remodeler | — |
@@ -69,7 +69,7 @@ Pas de trace de pneus dans le code. Plaques : prévues en vrai 3D par **WFS-483 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
 | Rampe de gyrophares : socle gris + 2 feux bleus | `src/game/poursuite_system.cpp:428-430` (cube :111-123) | **cube mis à l'échelle** ×3 (1 m × 5 cm × 30 cm ; feux 40 × 7 × 26 cm) | 1 rampe par voiture de police à moins de 80 m (≤ 6) | **NUE** (WFS-338 a seulement remplacé les anciennes boîtes rouge et bleue) | `apres-poursuite-police-gros-plan-jour.jpg`, `-nuit.jpg` |
-| Bandes « POLICE » des portières | `poursuite_system.cpp:756-788`, `src/game/police_bandes.h` | maillage collé à la tôle | 1 par voiture | MODELÉE (WFS-460, fusionné) | `apres-police-flanc-00.jpg` |
+| Bandes « POLICE » des portières | `poursuite_system.cpp:756-788`, `src/game/police_bandes.h` | maillage collé à la tôle | 1 par voiture | MODELÉE (WFS-460, fusionné) | — (banc `police-bandes` ; pas de capture du flanc dans cette PR) |
 | Anciennes bandes plates (comparaison avant / après) | `poursuite_system.cpp:741-752, 417-420` | quads plats | 0 en jeu (`g_bancBandesAvant`) | INVISIBLE | — |
 | Halos des gyrophares | `poursuite_system.cpp:432-433` | carré face caméra (≈ 0,6 m) | ≤ 2 par voiture | EFFET | `apres-poursuite-police-gros-plan-nuit.jpg` |
 
@@ -135,7 +135,7 @@ depuis WFS-382) ; `Renderer::haloSol` (`renderer.cpp:1594`, plus d'appel depuis 
 - laisse du chien (`ville.cpp:1342`, § 5) ;
 - nombre d'appels de formes par fichier de décor (pour mémoire) : `decor_grandprix_modeles.cpp` 211, `plage.cpp` 186, `decor_corniche_modeles.cpp` 122, `campagne.cpp` 71, `ville.cpp` 69, `decor_campagne_modeles.cpp` 61, `marina_bateaux.cpp` 30, `decor_carte.cpp` 30, `archi_ouvertures.cpp` 20, `enseignes.cpp` 16, `mobilier_ville.cpp` 12 (beaucoup sont des pièces MODELÉES : à trier par les tickets E15).
 
-## 9. Proposition de découpage au PO (RG-03 : une zone par ticket, deux au plus, ordre de visibilité en course)
+## 9. Proposition de découpage au PO (RG-03 : une zone par ticket, deux au plus, ordre de visibilité en course ; revu après la revue du lead dev, PR #391)
 
 | Ordre | Ticket proposé | Zones | Objets | Agent | Taille |
 |---|---|---|---|---|---|
@@ -143,9 +143,10 @@ depuis WFS-382) ; `Renderer::haloSol` (`renderer.cpp:1594`, plus d'appel depuis 
 | 2 | **Chantier et ralentisseur de la Poursuite** | 4 | cône K5a réel (socle chanfreiné à bord, bagues rétroréfléchissantes), panneau AK5 sur chevalet (panneau à bord tombé, mât, pied lesté), ralentisseur modulaire (dos d'âne en caoutchouc, bandes, plots J11) | `@dev` (artiste 3D) | 1 j |
 | 3 | **Portique des checkpoints réel** | 4 | portique en treillis ou en tube (pieds lestés, poutre caisson, bandeau « CHECKPOINT » rétroéclairé, néons dans un profilé) ; secours mémoire WFS-447 gardé | `@dev` (artiste 3D) | 1 j |
 | 4 | **Garage 3D : sol, plateau tournant, néons** | 1 | sol en résine ou béton ciré (texture), plateau tournant réel (disque métal chanfreiné, joint, éclairage encastré, ANO-225 V3), réglettes LED dans un profilé alu au lieu des barres | `@dev` (artiste 3D) | 1 j |
-| 5 | **Poussette et casque des deux-roues** | 5 + 6 | vraie poussette (CC0 / CC BY ou modelée au réel) ; vrai casque intégral (mentonnière, visière, aération) | `@devartiste` | 1 j |
-| 6 | **Planche de bord à arêtes arrondies** | 2 | dessus et face de la planche : arêtes vives → rayons réels (4 à 10 mm), bouts fermés ; contre-portes, plancher, tablier vérifiés | `@dev` (artiste 3D) | 0,5 j |
-| 7 | **[TECHNIQUE] Formes invisibles retirées** | 1 + 2 + 3 + 7 | supprimer le code mort (`dessineLoin`, `poolMat`, `haloSol`) ; cockpit commun de secours : supprimé ou réservé au banc | `@dev` | 0,25 j |
+| 5 | **Planche de bord à arêtes arrondies** | 2 | dessus et face de la planche (NUE, vue en permanence en vue Cockpit) : arêtes vives → rayons réels (4 à 10 mm), bouts fermés ; contre-portes, plancher, tablier vérifiés | `@dev` (artiste 3D) | 0,5 j |
+| 6 | **Poussette et casque des deux-roues** | 5 + 6 | vraie poussette (CC0 / CC BY ou modelée au réel) ; vrai casque intégral (mentonnière, visière, aération) | `@devartiste` | 1 j |
+| 7 | **[TECHNIQUE] Formes invisibles retirées (7a) : garage, habitacle** | 1 + 2 | cube de la scène d'essai (`scene_essai.cpp`) réservé au banc ou supprimé ; gabarit magenta du banc `cockpit-voisine` (`vehicule_cockpit.cpp:693-694`) gardé hors jeu ; cockpit commun de secours (`camera_vue.cpp:284-298`) supprimé ou réservé au banc | `@dev` | 0,25 j |
+| 8 | **[TECHNIQUE] Formes invisibles retirées (7b) : police, effets** | 3 + 7 | anciennes bandes plates du banc (`poursuite_system.cpp:741-752`) ; code mort `dessineLoin` (`traffic_system.cpp:274-284, 318-321`), `poolMat` (`renderer.cpp:283-285`), `Renderer::haloSol` (`renderer.cpp:1594`) supprimés | `@dev` | 0,25 j |
 
 **Question au PO (à trancher, pas à l'utilisateur sauf doute)** : les **EFFETS** du § 7 (halos face caméra, particules, ombres floues, gouttes)
 sont-ils permis comme « effets visibles » ? Proposition : les garder (ce sont des lumières et des particules, pas des objets ; la règle
