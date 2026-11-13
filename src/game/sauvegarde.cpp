@@ -96,7 +96,8 @@ bool poursuiteBat(bool victoire, int score, long long distM, bool ancVictoire, i
 
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear();
-    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487 map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
+    map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
+    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     aideDirection = true;   // WFS-217

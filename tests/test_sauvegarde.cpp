@@ -27,6 +27,17 @@ int main(int argc, char** argv) {
     // 1) défauts du jeu web, fichier absent
     { Sauvegarde s; VERIFIER(estDefaut(s)); VERIFIER(!s.actif()); VERIFIER(!s.charger(chemin)); VERIFIER(s.actif()); VERIFIER(estDefaut(s)); }
 
+    // 1 bis) WFS-487 (revue du lead dev, PR #373) : defauts() et un 2e lire() remettent carte, moment, qualité (et son choix) et vue au défaut
+    {
+        Sauvegarde s; s.map = "corniche"; s.tod = "jour"; s.moment = "midi"; s.quality = "low"; s.qualityChoisie = true; s.cam = "cockpit";
+        s.possede["m4"].insert("rose"); s.finition["m4"] = "mat"; s.perso = 7;
+        s.defauts();
+        VERIFIER(estDefaut(s)); VERIFIER(s.moment.empty()); VERIFIER(s.possede.empty() && s.finition.empty() && s.perso == 1);
+        s.map = "corniche"; s.tod = "jour"; s.moment = "midi"; s.quality = "low"; s.qualityChoisie = true; s.cam = "cockpit";
+        VERIFIER(s.lire("version=1\ncar=m4\n"));
+        VERIFIER(s.map == "ville" && s.tod == "nuit" && s.moment.empty() && s.quality == "high" && !s.qualityChoisie && s.cam == "poursuite" && s.car == "m4");
+    }
+
     // 2) écrire toutes les clés (thread de travail, fichier temporaire puis renommage) puis relire
     {
         Sauvegarde s; s.charger(chemin);

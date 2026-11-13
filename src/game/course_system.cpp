@@ -16,8 +16,8 @@
 #include "game.h"
 #include "player.h"
 #include "roues.h"          // WFS-452 : roues du fantôme qui tournent et braquent
-#include "sauvegarde.h"
-#include "personnalisation.h"   // WFS-487 : banc sauvegarde (catalogue, possession)   // WFS-24 : record
+#include "sauvegarde.h"   // WFS-24 : record
+#include "personnalisation.h"   // WFS-487 : banc sauvegarde (catalogue, possession)
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
 #include "../ui/ecrans/chargement.h"  // WFS-242 (RG-07) : fondu du chargement (commandes cachées)
