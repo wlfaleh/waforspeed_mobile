@@ -131,7 +131,6 @@ void benchSkins(Game& g, Renderer& r, const std::string& out) {
             finir();
         }
     }
-    std::remove(tmp.c_str());
     // sans skin : même vitrine (aspect d'avant) ; le contrôle pixel près se fait sur les bancs existants (peinture2, finitions)
     setenv("WFS_MOMENT", "jour", 1);
     if (avec("golf") && preparer("golf", "")) { planche("skins-golf-sans"); finir(); }
@@ -151,6 +150,7 @@ void benchSkins(Game& g, Renderer& r, const std::string& out) {
         }
     }
     unsetenv("WFS_MOMENT");
+    std::remove(tmp.c_str());
     const vs::Etat e = vs::etat();
     WFS_LOG("skins : fin du banc : %d texture(s) d'habillage en mémoire (0 attendu), textures du GPU %.1f Mo (avant le banc %.1f Mo)", e.textures,
             r.vk().octetsTextures / 1048576.0, texAvant / 1048576.0);
