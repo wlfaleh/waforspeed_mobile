@@ -18,10 +18,10 @@ par l'utilisateur. Le réseau autorisé n'ouvre que GitHub (dépôts publics) et
 | Partie | Code | État avant | État après WFS-387 | Ticket suivant |
 |---|---|---|---|---|
 | Bottes rondes | `T_BALES`, `campagne::botte` | stylisé : flanc lisse d'une seule teinte | flanc à fibres de paille (luminosité ± 14 %, touffes), filet blanc sur les épaules, bandes des brins, bouts à brins coupés | WFS-521 (texture PBR de paille) |
-| Corps de ferme | `T_FARM`, `campagne::ferme` | teinte unie : enduit gris-bleu froid | enduit ocre clair chaud (0xd6bf96, albédo ≈ 0,54), taches et grain (± 7 % et ± 4 %), pied de mur plus sombre, tuiles de cuissons variées | WFS-521 |
+| Corps de ferme | `T_FARM`, `campagne::ferme` | teinte unie : enduit gris-bleu froid | enduit ocre clair chaud (0xdcbd8d, albédo ≈ 0,53), taches et grain (± 10 % et ± 7 %), pied de mur plus sombre, tuiles de cuissons variées | WFS-521 |
 | Hangar agricole | `T_FARM` (`k = 1`), `campagne::hangar` | ondes de la tôle invisibles à moyenne distance | creux plus sombres que les crêtes, recouvrement des plaques tous les 1,06 m, teinte propre à chaque plaque ; version « loin » en bandes de plaques | WFS-521 |
-| Clôture des champs | `T_FENCE`, `poteauCloture`, `lisse` | poteaux presque noirs, lisses brunes | même bois gris-brun (0x8c7a66) pour les poteaux et les lisses, veines dans le fil ; chaque lisse finit sur un poteau posé | WFS-519 (enclos, haies) |
-| Poteau de ligne électrique | `T_POLE`, `poteauLigne` | bois trop sombre (0x56463a) | bois traité vieilli gris-brun (0x7e7264), gerces, pied plus sombre ; chaque câble finit sur un poteau posé | — |
+| Clôture des champs | `T_FENCE`, `poteauCloture`, `lisse` | poteaux presque noirs, lisses brunes | même bois gris-brun (0x9c8466) pour les poteaux et les lisses, veines dans le fil ; chaque lisse finit sur un poteau posé | WFS-519 (enclos, haies) |
+| Poteau de ligne électrique | `T_POLE`, `poteauLigne` | bois trop sombre (0x56463a) | bois traité vieilli gris-brun (0x8d7d68), gerces, pied plus sombre ; chaque câble finit sur un poteau posé | — |
 | Parapet des épingles du col | `T_MURET` | **forme nue** (boîte grise de 0,4 × 0,5 m), choc au même endroit | parapet de moellons (une teinte par pierre, joints creux), chaperon arrondi ; boîte de choc tirée des mêmes mesures (`chocMuret`) | — |
 | Sol au-delà de la bande de 220 m | `construireSolFond`, bandes de `profil()` | plan uni (`C_FARHILL`) 1 m sous le point le plus bas de la route | voir la PR (RG-10) | WFS-520 (collines) |
 

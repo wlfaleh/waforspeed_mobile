@@ -109,7 +109,7 @@ constexpr ChocMuret chocMuret(float lat) { return {lat + MURET_EPAISSEUR / 2, MU
 void muretTroncon(Maille& m, vec3 a0, vec3 b0, vec3 dehorsA, vec3 dehorsB, int pierre, int chaperon, uint32_t graine);
 
 // ---------- banc d'essai (gros plans) : premier objet de chaque sorte placé sur le tour (rempli par campagne.cpp au chargement)
-enum ObjetSorte { OB_VIGNE, OB_CLOTURE, OB_BOTTES, OB_FERME, OB_POTEAU, NB_OBJETS_BANC };
+enum ObjetSorte { OB_VIGNE, OB_CLOTURE, OB_BOTTES, OB_FERME, OB_POTEAU, OB_MURET, NB_OBJETS_BANC };   // WFS-387 : OB_MURET (parapet des épingles)
 struct ObjetBanc { int64_t seg = -1; int side = 1; float lat = 0; };
 ObjetBanc objetBanc(int sorte);
 

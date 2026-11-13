@@ -1,7 +1,8 @@
 // WaForSpeed — WFS-372 : banc d'essai des gros plans des objets agricoles modélisés de la Campagne (WFS_BANC=campagne-objets).
 // Une vue libre (carte::g_vueCarte, comme la vue haute du col de WFS-216) par sorte d'objet, à hauteur d'homme, de jour, et la
 // nuit pour chaque objet : campagne-objets-vigne, -cloture, -bottes, -ferme, -hangar, -poteau (+ -nuit) ; WFS-387 : -bottes-pres
-// (grain et filet) et -hangar-moyen (couverture à 80 m, ondes et plaques). Les objets sont les
+// (grain et filet), -hangar-moyen (couverture à 80 m, ondes et plaques), -poteau-soleil, -cloture-soleil, -muret et
+// -muret-voiture (parapet des épingles, voiture arrêtée contre lui). Les objets sont les
 // premiers de leur sorte posés sur le tour (campagne::objetBanc, rempli au chargement de la carte).
 #include <cstdlib>
 #include <cstring>
@@ -25,7 +26,7 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
     const float R = (float)RW;
     // œil et point visé : (lat, le long en m, hauteur) depuis le pied de l'objet ; lat compté vers l'extérieur de la route
-    struct Vue { const char* nom; int sorte; float oLat, oLong, oY, cLat, cLong, cY, fov; bool nuit; };
+    struct Vue { const char* nom; int sorte; float oLat, oLong, oY, cLat, cLong, cY, fov; bool nuit; bool voiture = false; };   // voiture : lancée contre l'objet
     const Vue vues[] = {
         {"vigne", campagne::OB_VIGNE, -3.2f, -2.f, 1.6f, 1.2f, 7.f, 0.9f, 55, true},
         {"cloture", campagne::OB_CLOTURE, -1.9f, -1.5f, 1.3f, 0.f, 5.f, 0.6f, 50, true},
@@ -36,6 +37,12 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
         {"hangar", campagne::OB_FERME, -12.f, 32.f, 4.f, 0.f, 6.f, 3.f, 60, true},   // de l'avant : pignon et façade du hangar au soleil
         {"hangar-moyen", campagne::OB_FERME, -70.f, 60.f, 22.f, 0.f, 16.f, 5.f, 40, false},   // WFS-387 : couverture à 80 m, vue plongeante
         {"poteau", campagne::OB_POTEAU, -R - 2.6f, -14.f, 1.6f, 0.f, 0.f, 6.5f, 50, true},
+        // WFS-387 (avis de l'agent 3D) : poteau et clôture vus de l'autre côté, au soleil (bois sans reflet bleu du ciel)
+        {"poteau-soleil", campagne::OB_POTEAU, 9.f, 12.f, 1.6f, 0.f, 0.f, 6.f, 50, false},
+        {"cloture-soleil", campagne::OB_CLOTURE, 2.4f, 4.5f, 1.3f, 0.f, -1.f, 0.6f, 50, false},
+        // WFS-387 (RG-11) : parapet de moellons d'une épingle du col, de près, et la voiture arrêtée contre lui (repère : la voiture)
+        {"muret", campagne::OB_MURET, -5.f, -3.5f, 1.5f, 0.2f, 1.5f, 0.4f, 55, true},
+        {"muret-voiture", campagne::OB_MURET, -6.5f, -7.f, 2.2f, -0.6f, 0.f, 0.6f, 55, true, true},
     };
     for (const char* mo : {"jour", "nuit"}) for (const Vue& v : vues) {
         if (!std::strcmp(mo, "nuit") && !v.nuit) continue;
@@ -46,8 +53,22 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
         if (!g.init(r, "golf", "campagne")) { ecarts++; continue; }
         g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course);
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+        double segVue = (double)o.seg;
+        if (v.voiture) {   // la voiture part vers le parapet à 30 km/h environ, puis frein : arrêtée contre lui (choc WFS-256)
+            g.modeManette = true;
+            for (int i = 0; i < 360; i++) {
+                const Player& pj = g.player();
+                g.manette = DriveInput{}; g.manette.steer = i < 90 ? (float)o.side * 0.7f : 0.f;
+                g.manette.gas = i < 90 && pj.kmh() < 30; g.manette.brake = i >= 90;
+                g.update(1.0 / 60); if (i % 30 == 0) g.render(402 + i / 60.0);
+            }
+            g.manette = DriveInput{}; g.modeManette = false;
+            const Player& pj = g.player();
+            segVue = pj.dist / SEG;
+            WFS_LOG("muret-voiture : voiture arrêtée à %.2f m de l'axe (face du parapet à %.2f m), %.0f km/h", o.side * pj.playerX * RW, o.lat, pj.kmh());
+        }
         auto P = [&](float lat, float lg, float y) {
-            const TrackPoint q = t.point(((double)o.seg + lg / SEG_M) * SEG, o.side * (o.lat + lat));
+            const TrackPoint q = t.point((segVue + lg / SEG_M) * SEG, o.side * (o.lat + lat));
             return vec3{(float)q.x, (float)q.y + y, (float)q.z};
         };
         carte::g_vueCarte.oeil = P(v.oLat, v.oLong, v.oY); carte::g_vueCarte.cible = P(v.cLat, v.cLong, v.cY);

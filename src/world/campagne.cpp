@@ -63,15 +63,15 @@ void ligneTexte(Geo& g, vec3 c, vec3 x, float w, float h, const vie::Texte& T) {
 // terre cuite 0,15-0,25, béton 0,25-0,40, acier galvanisé 0,25-0,35)
 // WFS-387 : C_FILET juste après C_FOIN (cases voisines : le filet se fond dans la paille sans passer par une autre couleur)
 enum ColCampagne { C_PIQUET = C_NB, C_CEP, C_FIL, C_FOIN, C_FILET, C_FOIN_BOUT, C_CREPI, C_TUILE, C_VOLET, C_MENUIS, C_PORTE, C_EMBRAS,
-                   C_BARDAGE, C_BARDAGE2, C_TOLE, C_ACIER, C_BETON, C_ZINC, C_POTEAU, C_FERRURE, C_ISOL, C_CABLE, C_FIN_CAMPAGNE };
+                   C_BARDAGE, C_BARDAGE2, C_TOLE, C_ACIER, C_BETON, C_ZINC, C_POTEAU, C_FERRURE, C_ISOL, C_CABLE, C_PRE_LOIN, C_FIN_CAMPAGNE };
 static_assert(C_FIN_CAMPAGNE <= PAL_W, "palette trop petite");
 constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
-    0x967f65,   // piquet de vigne, poteau et lisses de clôture : châtaignier vieilli, gris-brun (WFS-387 : même bois partout)
+    0x9c8466,   // piquet de vigne, poteau et lisses de clôture : châtaignier vieilli, gris-brun (WFS-387 : même bois partout)
     0x5b4636,   // écorce de cep
     0xa3a7a9,   // fil de palissage galvanisé
     0xcfb56f,   // paille de la botte (flanc)
-    0xd6cfb6,   // WFS-387 : filet d'enrubannage en polyéthylène blanc, vu sur la paille (épaules de la botte)
-    0xc4a965,   // bout de la botte (foin enroulé, à peine plus sombre)
+    0xdccfa8,   // WFS-387 : filet d'enrubannage en polyéthylène blanc crème (jaunâtre : ne bleuit pas à l'ombre), vu sur la paille (épaules de la botte)
+    0xcaae6c,   // bout de la botte (foin enroulé, à peine plus sombre)
     0xdcbd8d,   // WFS-387 : enduit à la chaux ocre clair, chaud (albédo ≈ 0,53 ; l'ancien 0xcbbb9b virait au gris-bleu à l'ombre)
     0xa65a3c,   // tuile canal de terre cuite
     0x7d8f84,   // volets peints vert-gris
@@ -84,10 +84,11 @@ constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
     0x5a6066,   // ossature d'acier peint
     0xa8a59c,   // béton
     0x8f9599,   // zinc (gouttières, rives)
-    0x7e7264,   // WFS-387 : poteau de bois traité vieilli, gris-brun (albédo ≈ 0,17 ; l'ancien 0x56463a était presque noir)
+    0x8d7d68,   // WFS-387 : poteau de bois traité vieilli, gris-brun (albédo ≈ 0,20 ; l'ancien 0x56463a était presque noir)
     0x8c9094,   // ferrures galvanisées
     0xc9cfc8,   // isolateurs de porcelaine
     0x7d8184,   // câbles d'aluminium
+    0x8f8c5e,   // WFS-387 (avis de l'agent 3D) : prairie lointaine, kaki d'herbe sèche comme le sol naturel des bandes voisines
 };
 campagne::Couleurs couleursModeles() {
     campagne::Couleurs c;
@@ -217,7 +218,7 @@ protected:
                                  it.t == T_CHURCH ? 10.f : it.t == T_FARM ? 8.f : std::max(it.d, 6.f), it.t == T_CHURCH ? parois::ALPHA_PIERRE : parois::ALPHA_DUR);   // WFS-278 : obstacle, matériau
             {   // WFS-372 : premier objet de chaque sorte (banc des gros plans) ; ferme avec hangar, rang de vigne le plus proche
                 const int o = it.t == T_VINES && it.lat < (float)RW + 7 ? campagne::OB_VIGNE : it.t == T_FENCE ? campagne::OB_CLOTURE : it.t == T_BALES && it.k >= 3 ? campagne::OB_BOTTES
-                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : -1;
+                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : it.t == T_MURET ? campagne::OB_MURET : -1;
                 if (o >= 0 && g_objets[o].seg < 0 && n > 200) g_objets[o] = {n, it.side, it.lat};
             }
             {   // WFS-387 (RG-12, remarque 7) : poteaux réellement posés (clôture par côté, ligne électrique), pour leurs liaisons
@@ -1199,6 +1200,8 @@ private:
         };
         std::vector<float> H((size_t)(nx + 1) * (nz + 1));
         std::vector<uint8_t> couvert((size_t)(nx + 1) * (nz + 1), 0);   // point sous une bande de sol, à 6 m au moins de son bord
+        std::vector<uint8_t> genre((size_t)(nx + 1) * (nz + 1), 2);   // 0 : sous les bandes ; 1 : contre leur bord (fixé) ; 2 : relâché
+        std::vector<float> loinBord((size_t)(nx + 1) * (nz + 1), 1.f);   // 0 contre le bord des bandes, 1 à 600 m et au-delà
         for (int j = 0; j <= nz; j++) for (int i = 0; i <= nx; i++) {
             const float x = x0 + i * px, z = z0 + j * pz;
             const int ci = std::clamp((int)((x - x0) / cr), 0, gx - 1), cj = std::clamp((int)((z - z0) / cr), 0, gz - 1);
@@ -1210,13 +1213,39 @@ private:
                 for (uint32_t k : cases[(size_t)v * gx + u]) { const Bord& q = bords[k]; if ((q.x - x) * (q.x - x) + (q.z - z) * (q.z - z) < 320.f * 320.f) yMin = std::min(yMin, std::min(q.yRoute, q.yBord)); }
             float y;
             const float d = std::sqrt(d2);
-            if (!pr) y = 0;
-            else if (d < pr->dBord + 30) y = std::min(yMin, pr->yRoute) - 3.f;   // sous les bandes de sol (et le trou entre deux bandes)
-            else { const float loin = std::clamp((d - pr->dBord - 30) / 600.f, 0.f, 1.f); y = std::min(pr->yBord, yMin + 20.f) - 0.5f + loin * loin * (3 - 2 * loin) * 25.f * colline(x, z); }
-            H[(size_t)j * (nx + 1) + i] = y;
-            couvert[(size_t)j * (nx + 1) + i] = pr && d < pr->dBord - 6;
+            const size_t ix = (size_t)j * (nx + 1) + i;
+            if (!pr) { y = 0; genre[ix] = 2; }
+            else if (d < pr->dBord + 30) { y = std::min(yMin, pr->yRoute) - 3.f; genre[ix] = 0; }   // sous les bandes de sol (et le trou entre deux bandes)
+            else { y = std::min(pr->yBord, yMin + 20.f) - 0.5f; genre[ix] = d < pr->dBord + 30 + 1.5f * std::max(px, pz) ? 1 : 2; }   // 1 : contre le bord des bandes
+            H[ix] = y;
+            loinBord[ix] = pr ? std::clamp((d - pr->dBord - 30) / 600.f, 0.f, 1.f) : 1.f;
+            couvert[ix] = pr && d < pr->dBord - 6;
         }
-        const vec2 u = uv(C_FARHILL);
+        // WFS-387 (avis de l'agent 3D) : la hauteur « de la route la plus proche » saute là où deux routes de hauteurs différentes se
+        // partagent le terrain (col, vignes en terrasses jusqu'à + 26 m) : parois verticales à sommet plat. Les points loin des bandes
+        // sont donc relâchés (moyenne de leurs voisins, Gauss-Seidel sur-relaxé) entre les points fixés contre le bord des bandes : pentes douces
+        // d'une route à l'autre, sans marche ; les collines s'ajoutent ensuite, nulles contre les bandes.
+        for (int it = 0; it < 400; it++)
+            for (int j = 0; j <= nz; j++) for (int i = 0; i <= nx; i++) {
+                const size_t ix = (size_t)j * (nx + 1) + i;
+                if (genre[ix] != 2) continue;
+                float sm = 0; int nb = 0;
+                for (const auto [di, dj] : {std::pair{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) {
+                    const int a = i + di, b = j + dj;
+                    if (a < 0 || b < 0 || a > nx || b > nz) continue;
+                    const size_t q = (size_t)b * (nx + 1) + a;
+                    if (genre[q] == 0) continue;   // points cachés sous les bandes : ne tirent pas le relief vers le bas
+                    sm += H[q]; nb++;
+                }
+                if (nb) H[ix] += 1.9f * (sm / nb - H[ix]);   // sur-relaxation (SOR) : convergence en quelques centaines de passes
+            }
+        for (int j = 0; j <= nz; j++) for (int i = 0; i <= nx; i++) {
+            const size_t ix = (size_t)j * (nx + 1) + i;
+            if (genre[ix] == 0) continue;
+            const float l = loinBord[ix];
+            H[ix] += l * l * (3 - 2 * l) * 25.f * colline(x0 + i * px, z0 + j * pz);
+        }
+        const vec2 u = uv(C_PRE_LOIN);
         auto h = [&](int a, int b) { return H[(size_t)std::clamp(b, 0, nz) * (nx + 1) + std::clamp(a, 0, nx)]; };
         size_t tris = 0, cachees = 0;
         const int T = 32;
