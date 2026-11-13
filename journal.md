@@ -1481,3 +1481,11 @@ PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moy
 PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equilibrage` avant / après, course à 5 et solde, course quittée, écran de fin, menu). Construction locale, `tests_cpu.sh build` = 128 tests réussis ; banc `equilibrage` (moyen 26 courses, 120,4 h, OK) et banc `score-etoiles` (12 ★, aucun 2e crédit, quittée à 0 ★) refaits. Les accroches annoncées sont conformes (`desktop_main.cpp` : 1 ligne ; `configgame.{h,cpp}` : description seulement ; `profil.{h,cpp}` : 9e champ facultatif, anciennes lignes relues).
 - **Décision** : « ✅ Approuvé » en commentaire (GitHub refuse l'approbation venant du même compte), fusion en squash **aca85570** ; TACHES 🟣, ligne supprimée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
 - **Remarques non bloquantes** : en duel, une seule image sans l'adversaire suffit à le marquer « parti » (`profil_system.cpp:96-99`). Il faudrait une absence de plus d'une seconde, ou réutiliser `partants_`. Le bloc « Tests CPU » n'avait pas de titre à part. **Pour le PO** : brancher les compteurs des défis (encore à 0) ; maximum de 18 ★, la borne de 40 ★ n'est jamais atteinte : élargir le barème ou passer à une conversion non linéaire.
+
+### 2026-11-13 20:01:46 — WFS-536 : fin de session après la fusion (#399, aca85570) (Claude, agent dev3d (01UY1Vv3A5))
+- PR fusionnée par le lead dev ; ma ligne de `track-agent.md` passe en « ⏹️ session terminée ». Un seul ticket par session : je ne demande pas d'autre ticket.
+- **Pour le PO** (remarques du lead dev et limites de la PR), propositions de tickets :
+  1. **Duel** (`src/game/profil_system.cpp`) : un adversaire absent de `others()` pendant une seule image est compté « parti ». Une brève coupure réseau avant 30 s donnerait donc 0 ★. Correction : exiger plus d'une seconde d'absence, ou reprendre `partants_` de la session duel.
+  2. **Défis** : brancher les compteurs des modes (dépassements, contacts avec la police, nitro, checkpoints sans retard, « jamais derrière »), qui valent 0 aujourd'hui, puis recaler `points_par_etoile` au banc `equilibrage`.
+  3. **Barème** : 18 ★ au plus par course au banc, la borne 40 ★ n'est jamais atteinte. Il faut un barème plus large ou une conversion non linéaire (décision PO / utilisateur).
+

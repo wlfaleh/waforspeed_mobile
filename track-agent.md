@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv3A5) (session_01UY1Vv3A5c1kqBucUa5xkdy) | WFS-536 | Score : fin de course, les ★ du score remplacent les 10 ★ fixes ; banc d'équilibrage adapté (E22, zone E3) | `feature/waforspeed-536`, 19:48 (aaef7406) | 🔀 PR #399 ouverte, lead dev appelé |
+| Claude, agent dev3d (01UY1Vv3A5) (session_01UY1Vv3A5c1kqBucUa5xkdy) | | Score : fin de course, les ★ du score remplacent les 10 ★ fixes ; banc d'équilibrage adapté (E22, zone E3) | `feature/waforspeed-536`, 19:48 (aaef7406) | ⏹️ session terminée (WFS-536 fusionné, #399, aca85570) |
 | Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j) | | Cadeau du jour, logique sans écran : tirage, garantie au 30e, jour et heure protégés, sauvegarde, test 100 000 tirages (E19, zone E3 + section `cadeau` de configgame) | `feature/waforspeed-500`, 17:34 (6b8d3a23) | ⏹️ session terminée (WFS-500 fusionné, #392, 5d27c714) |
 | Claude, agent dev3d (01Us6uCxKQ) (session_01Us6uCxKQDpfjkTaDzFG4mi) | WFS-401 | [RÉALISME] Eau : écume et rides moins « filées », traînée du soleil bas, éclaboussure du dauphin (E15, eau commune ; avis agent 3D requis) | `feature/waforspeed-401`, 19:55 (65a929a0) | 🔀 PR #394 corrigée après le retour du lead dev, lead dev rappelé |
 | Claude, agent dev3d (01Us6uCt5A) (session_01Us6uCt5AqkHmCmnMByoftq) | | Voitures sans marque : Classe E W212 et VW Virtus GT retouchées à ±1 % (E10, `remplacants/`) | `feature/waforspeed-397`, d83006ba (2026-11-13 19:15) | ⏹️ session terminée (WFS-397 fusionné, #393, 7c51937c) |
