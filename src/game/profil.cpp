@@ -249,7 +249,9 @@ void Profil::ecrire(std::ostream& o) const {
         char cle[24];
         std::snprintf(cle, sizeof cle, "historique-%02d", (int)i + 1);
         o << cle << "=" << idModeJoue(c.mode) << ";" << c.voiture << ";" << c.date << ";" << (c.quittee ? 1 : 0) << ";" << (c.victoire ? 1 : 0)
-          << ";" << c.place << ";" << c.tempsMs << ";" << c.score << "\n";
+          << ";" << c.place << ";" << c.tempsMs << ";" << c.score;
+        if (c.etoiles >= 0) o << ";" << c.etoiles;   // WFS-536 (RG-03) : ★ gagnées, en fin de ligne
+        o << "\n";
     }
 }
 
@@ -276,14 +278,16 @@ bool Profil::lireCle(const std::string& k, const std::string& v) {
     if (k.rfind("historique-", 0) == 0) {
         long long idx = 0;
         if (!entierPositif(k.substr(11), idx) || idx < 1 || idx > profil::HISTORIQUE_MAX) return true;
-        const auto f = champs(v, 8);
+        const auto f = champs(v, 9);   // WFS-536 (RG-03) : 9e champ (★) facultatif : les lignes d'avant restent lisibles
         CourseJouee c;
         long long w[6];
-        bool ok = f.size() == 8 && modeParId(f[0], c.mode) && idVoitureOk(f[1]);
+        bool ok = (f.size() == 8 || f.size() == 9) && modeParId(f[0], c.mode) && idVoitureOk(f[1]);
         for (size_t i = 0; ok && i < 6; i++) ok = entierPositif(f[2 + i], w[i]);
         if (!ok) return true;   // ligne mal formée : ignorée (RG-11 : jamais d'erreur)
         c.voiture = f[1]; c.date = w[0]; c.quittee = w[1] == 1; c.victoire = w[2] == 1; c.place = (int)std::min(w[3], 99LL);
         c.tempsMs = w[4]; c.score = w[5];
+        long long e = 0;
+        if (f.size() == 9 && entierPositif(f[8], e)) c.etoiles = (int)std::min(e, 1000000LL);   // ★ mal écrites : inconnues, ligne gardée
         if ((long long)dernieres.size() < idx) dernieres.resize((size_t)idx);
         dernieres[(size_t)idx - 1] = c;
         return true;

@@ -1,0 +1,9 @@
+ÉQUILIBRAGE : gain 10 ★ par course, 2.96 min par course
+ÉQUILIBRAGE : 1re voiture (corsa, 250 ★) : 25 courses (cible 22 à 28)
+ÉQUILIBRAGE : les 14 voitures : 24 350 ★, 2 435 courses, 120.1 h (cible 108 à 132 h)
+ÉQUILIBRAGE (information) : peintures, finitions, skins et dessins : 90 550 ★ ; tout : 114 900 ★, 11 490 courses, 566.8 h
+ÉQUILIBRAGE : équivalents : 250 ★ = 1 argent = 2,48 € ; 24 350 ★ = 40 or + 1 argent + 1 bronze = 241,07 €
+ÉQUILIBRAGE (score) joueur moyen : 9.99 ★ par course en moyenne (5 à 18 ★) ; 1re voiture : 26 courses ; toutes les voitures : 2440 courses, 120.4 h ; tout : 11497 courses, 567.2 h
+ÉQUILIBRAGE (score) joueur bon : 12.68 ★ par course en moyenne (5 à 18 ★) ; 1re voiture : 19 courses ; toutes les voitures : 1923 courses, 94.9 h ; tout : 9061 courses, 447.0 h
+ÉQUILIBRAGE (score) joueur débutant : 7.89 ★ par course en moyenne (5 à 18 ★) ; 1re voiture : 29 courses ; toutes les voitures : 3062 courses, 151.1 h ; tout : 14565 courses, 718.5 h
+ÉQUILIBRAGE : OK (bornes de RG-04 de WFS-536 tenues)
