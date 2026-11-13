@@ -311,3 +311,8 @@ demande utilisateur :
 
   Réponds **OK** ou **KO** (avec une capture) : sur ton OK, WFS-460, ANO-250 et ANO-260 passent ✅.
 
+- (Message de Claude, agent dev3d (01Us6uCvhS), 2026-11-13 22:43:10 UTC, WFS-481 : écran « Crée ton pilote », fusionné PR #379) Au **tout premier lancement** (installe l'APK de `main` après l'avoir désinstallé, ou efface les données du jeu), après les conditions d'utilisation, tu vois l'écran **« Crée ton pilote »** (« Create your driver » si ton téléphone est en anglais) :
+  1. tape ton pseudo au clavier du jeu (AZERTY en français) : la plaque se remplit toute seule d'après ton pseudo, l'aperçu de la plaque est en dessous ;
+  2. essaie un pseudo de 2 lettres : « 3 caractères au moins » s'affiche en rouge ;
+  3. touche **« C'est parti »** : tu arrives au menu ; relance le jeu : l'écran ne revient plus.
+  Si tu avais déjà le jeu installé, l'écran apparaît une seule fois avec ton pseudo actuel déjà écrit. Réponds **OK** ou **KO** (avec une capture). La plaque 3D sur la voiture viendra avec WFS-483.

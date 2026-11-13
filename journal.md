@@ -1634,3 +1634,41 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Branche fusionnée en local avec main (WFS-489 compris) : construction OK, 131 tests CPU réussis. Tests CPU dans la PR : corrigé.
 - Bloquant : `tools/qa/emulateur.sh:151`, l'étape `profil()` lit après la marque (`tail -n +$((MARQUE + 1))`) alors que `attendre` a posé la marque sur la ligne des points d'appui, écrite une seule fois : points jamais lus, l'émulateur du matin s'arrête avant « Course solo ». Reproduit avec un faux journal. Correction attendue : lire la ligne de la marque (`sed -n "${MARQUE}p"`).
 - Statut : ↩️ Retour lead dev (PR #379) ; revue : https://github.com/wlfaleh/waforspeed_mobile/pull/379
+
+### 2026-11-13 22:30:09 — WFS-492 : PR #400 ouverte, accroches annoncées (Claude, agent dev3d (01Us6uCutV))
+- Fait : skins de la voiture du joueur (`src/render/vehicule_skin.*`, `shaders/vehicule.glsl` habillage) ; skin Rallye (dessin original : bandes, filets, plaque « 07 ») sur 208, 500, GT86, Golf, Corvette C7, Giulia ; textures EAC RG11 1024², 1,33 Mo chacune (`assets/cars/skins/`), outil `tools/skins/generer.py` (encodeur EAC écrit dans le dépôt) ; banc `WFS_BANC=skins`, test `test_vehicule_skin`.
+- Accroches (≤ 10 lignes chacune) : `renderer.cpp` (draw : matériau habillé, code de la skin), `renderer.h` (`vuesMateriau`), `game.cpp` (setCar : pose de la skin possédée ; shutdown : libération), `scene.frag` (1 ligne), `ktx2.cpp` (format EAC RG11), `tools/textures/ktx2.py` (EAC RG11), `tools/qa/verifier_licences.py` (skins = dessins du projet), `desktop_main.cpp` (banc), `CMakeLists.txt` (test).
+- Vérification : 130 tests CPU réussis ; 1 seule texture d'habillage en mémoire, 0 création en course ; sans skin : planche peinture2 identique à main au pixel près ; Basse (208, Ville) : sans 3,89 / 4,00 img/s, Rallye 3,93 / 3,95 img/s (aucun écart) ; mémoire GPU : 1 365 Ko (EAC, téléphone), 2 731 Ko (RG8 décodé, PC).
+- Limites : ASTC non produit (l'encodeur ASTC est un binaire téléchargé, interdit d'exécution, `regles-reseau.md` § 3.5) : EAC RG11 à la place ; rendu vu sur lavapipe seulement ; écran des skins = WFS-494.
+
+### 2026-11-13 22:31:02 — WFS-491 : PR #401 ouverte, accroches annoncées (Claude, agent dev3d (01Us6uCwfT))
+- Fait : rangée « Finition » au garage (`src/ui/garage_finition.*`) : 8 finitions (ordre de RG-01), échantillon 2D, cadenas et prix en ★ (base × coefficient de la classe), équivalent médailles / euros ; aperçu immédiat sur la voiture qui tourne ; achat par le bouton « Acheter N ★ » de WFS-489 (sans copie) ; finition gardée par voiture (`finition-<voiture>`), reprise à l'ouverture du garage et en course (`Game::setCar` → `Renderer::finitionJoueur`, finition possédée seulement). Textes FR / EN.
+- Accroches (≤ 10 lignes chacune) : `garage.cpp` 7 ; `garage_commun.h` 4 (`EtatGarage::finition`, `g_z.finitions`, cadenas partagé) ; `garage_couleur.cpp` 2 (cadenas sorti de l'espace anonyme) ; `garage_achat.*` / `garage_achat_prix.cpp` 4 (finition dans « ce qui manque », gardée à l'achat) ; `game.cpp` 3 ; `vehicule_finitions.h` 1 (`nacree` = `NACRE`) ; `desktop_main.cpp`, `garage.h`, `CMakeLists.txt` 1 chacun.
+- Vérification : `test_garage_finition` (16 cas) ; 131 tests CPU réussis ; banc `WFS_BANC=garage-finitions` : 0 écart. **Parcours RC-E18-09** : Golf Caméléon acheté (refus à 100 ★ sans débit, puis 600 ★ débitées une fois), Giulia Mat, 500 Chromé ; « Choisir » → terrain → « Rouler » → la 500 roule en Chromé → retour au garage ; relance du jeu : finitions, achats et solde gardés ; courses jour / nuit des 3 voitures avec leur finition. Captures `qa/pr/WFS-491/` (36 après).
+- Limites : rendu des finitions = WFS-490 ; pas de mesure d'endurance (rien n'est ajouté par image) ; captures « avant » prises sur `main` avant la fusion de WFS-489.
+
+### 2026-11-13 22:32:15 — WFS-481 : 2e retour du lead dev corrigé, PR #379 à relire (Claude, agent dev3d (01Us6uCvhS))
+- Cause : dans `profil()` de `tools/qa/emulateur.sh`, la ligne « points d'appui » était cherchée après la marque, alors que `attendre` venait de poser la marque sur cette ligne (écrite une seule fois par le jeu) → étape toujours en échec.
+- Correction (`cb486823`) : lecture de la ligne de la marque (`sed -n "${MARQUE}p"`). Essai avec un faux journal (`qa/pr/WFS-481/essai-emulateur/`) : ancienne version en échec, corrigée OK (6 appuis, profil créé), cas sans écran OK. Avis expert CI / CD : OK.
+- Revérifié sur `4a30e45b` (main synchronisé, WFS-489) : 131 tests CPU réussis, banc `creation` FR 0 écart. Lead dev rappelé.
+
+### 2026-11-13 22:41:03 — Statuts automatiques, CI main #1057 (robot statuts)
+- Run rouge (push, commit ae6a828), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 22:42:34 — WFS-481 fusionné par le lead dev (lead-dev)
+- PR #379, 3e revue, commit relu c216a4c3 : le défaut bloquant de la 2e revue est corrigé. `tools/qa/emulateur.sh:151` lit maintenant la ligne de la marque (`sed -n "${MARQUE}p"`). Essai avec un faux journal vérifié : 6 appuis, profil créé ; sans écran, l'étape continue.
+- 12 captures rouvertes. Construction et `tests_cpu.sh` refaits par le lead dev : 131 réussis. « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash 6adb9a71.
+- Statut 🟣 (pas de 🟡 : ce n'est ni un défaut vu par l'utilisateur, ni un ticket de conduite). L'utilisateur le verra sur l'APK de `main` (ligne ajoutée dans `qa/Check.md`).
+- Hors PR : la CI de `main` #1057 (commit ae6a828, WFS-489) est rouge sur banc-essai (texte). Le PO doit créer l'US technique P1.
+
+### 2026-11-13 22:43:10 — WFS-481 fusionné (PR #379), session terminée (Claude, agent dev3d (01Us6uCvhS))
+- Fusionné en squash par le lead dev (`6adb9a71`) après 3 revues (tests CPU dans la PR ; étape `profil()` de l'émulateur, puis lecture de la ligne de la marque). Statut 🟣, ligne `qa/Check.md` ajoutée par le lead dev.
+- À surveiller aux bancs du matin : l'émulateur doit passer l'étape `profil` (captures `02a-profil`, `02b-profil-cree`) puis « Course solo ».
+- Pour le PO : CI de `main` #1057 rouge sur « banc-essai (texte) », commit ae6a828 (WFS-489), sans lien avec WFS-481 (vu par le lead dev) : US technique P1 à vérifier (WFS-526 suit déjà le banc texte).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 22:45:34 — WFS-492 : PR #400 refusée par le lead dev (lead-dev)
+- Relu au commit 6f04868c. J'ai construit et testé moi-même : 131 tests CPU réussis. J'ai ouvert les 19 captures et lu tout le diff. Code et rendu bons : Rallye propre sur les 6 voitures, aucune couture (RG-04), sans skin = même rendu au bit près (code), aucune skin sur le fantôme ni le trafic. Écarts acceptés : EAC RG11, couleurs dans le shader, projection, accroches.
+- Ce qui bloque : (1) pas de capture « Tests CPU » ni de `qa/pr/WFS-492/tests-cpu.log` (règle du 2026-11-11) ; (2) la planche `peinture2-planche` ne montre qu'une voiture sur 17 (le reste est noir) : il faut un avant / après sans skin sur 3 voitures ; (3) le parcours RC-E18-09 (version réduite par la sauvegarde) et le parcours « 0 écart » ne sont pas au journal.
+- Revue postée en commentaire (même compte GitHub). TACHES et track-agent passés en « ↩️ Retour lead dev (PR #400) ».
