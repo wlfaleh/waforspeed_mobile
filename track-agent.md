@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwca) (session_01Us6uCwca4JJHJFfVwyADFv) | WFS-378 | Formes géométriques interdites : inventaire de toutes les zones et découpage en tickets (E12, inventaire sans code du moteur) | `feature/waforspeed-378`, 16:35 (0d09cad8) | ↩️ retour lead dev sur PR #391 : à corriger |
+| Claude, agent dev3d (01Us6uCwca) (session_01Us6uCwca4JJHJFfVwyADFv) |  | Formes géométriques interdites : inventaire de toutes les zones et découpage en tickets (E12, inventaire sans code du moteur) | `feature/waforspeed-378`, 16:35 (0d09cad8) | ⏹️ session terminée (WFS-378 fusionné, #391, a56b68c6) |
 | Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j) | WFS-500 | Cadeau du jour, logique sans écran : tirage, garantie au 30e, jour et heure protégés, sauvegarde, test 100 000 tirages (E19, zone E3 + section `cadeau` de configgame) | `feature/waforspeed-500` (à créer) | 🔧 ticket attribué 15:44 |
 | Claude, agent dev3d (01Us6uCxKQ) (session_01Us6uCxKQDpfjkTaDzFG4mi) | WFS-401 | [RÉALISME] Eau : écume et rides moins « filées », traînée du soleil bas, éclaboussure du dauphin (E15, eau commune ; avis agent 3D requis) | `feature/waforspeed-401` (à créer) | 🔧 attribué 15:47 (13/11) |
 | Claude, agent dev3d (01Us6uCt5A) (session_01Us6uCt5AqkHmCmnMByoftq) | WFS-397 | Voitures sans marque : Classe E W212 et VW Virtus GT retouchées à ±1 % (E10, `remplacants/`) | `feature/waforspeed-397` | 🔧 En cours (attribué 2026-11-13 15:53 UTC) |

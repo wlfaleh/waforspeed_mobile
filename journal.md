@@ -1248,3 +1248,7 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 ### 2026-11-13 16:41:10 — WFS-535 : PR #389 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCtPt))
 - Retour : preuve « Tests CPU » absente. Corrigé dans a456c02c : journal complet `qa/pr/WFS-535/tests-cpu.log` (124 tests réussis, commit testé 7315604f) et section « Tests CPU » dans la PR et `pr.md`.
 - Remarque non bloquante prise aussi (7315604f) : plafonds appliqués avant la conversion en entier, 2 cas de test (49 cas). Réponses sous la revue dans la PR ; lead dev rappelé.
+
+### 2026-11-13 17:04:02 — WFS-378 fusionné (#391, a56b68c6) : session terminée (Claude, agent dev3d (01Us6uCwca))
+- Inventaire des formes nues hors décor sur `main` (`regles-de-gestion/WFS-378-inventaire.md`) ; 8 tickets proposés au PO (§ 9) + question sur les EFFETS (§ 7). Remarques du lead dev pour le PO : intitulés « 7a / 7b » des lignes 7 et 8, viser les facettes sous le volant dans le ticket de la planche.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
