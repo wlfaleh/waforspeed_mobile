@@ -69,6 +69,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../render/bench_realisme.h"   // WFS-148 : banc de référence du réalisme
 #include "../render/atmosphere_brume_banc.h"   // WFS-381 (accroche) : WFS_BANC=brume
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
+namespace wfs { void benchPlaque(Game& g, Renderer& r, const std::string& out); void benchPlaqueMesure(Game& g, Renderer& r, const std::string& out); }   // WFS-483 (accroche) : vehicule_plaque_banc.cpp
 namespace wfs { void benchPeinture2(Game& g, Renderer& r, const std::string& out); void benchPeinture2Mesure(Game& g, Renderer& r, const std::string& out); }   // WFS-488 (accroche) : vehicule_peinture2_banc.cpp, _mesure.cpp
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -246,6 +247,8 @@ int main(int argc, char** argv) {
         return finir();
     }
     if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }
+    if (banc == "plaque") { ui::chargerPolice(r); benchPlaque(g, r, out); return finir(); }   // WFS-483 (accroche) : plaque 3D du joueur
+    if (banc == "plaque-mesure") { benchPlaqueMesure(g, r, out); return finir(); }   // WFS-483 (accroche) : coût par image (RG-07)
     if (banc == "peinture2") { benchPeinture2(g, r, out); return finir(); }   // WFS-488 (accroche) : couleur secondaire (toit, rétroviseurs)
     if (banc == "peinture2-mesure") { benchPeinture2Mesure(g, r, out); return finir(); }   // WFS-488 (accroche) : img/s en Basse (RC-E18-03)
     if (banc == "phares-optiques") { benchPharesOptiques(g, r, out); return finir(); }   // WFS-413 (accroche) : optiques avant de nuit   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
@@ -272,8 +275,9 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
     if (banc == "banc-telephone") { ui::chargerPolice(r); const int e = ecrans::banc_telephone::benchBancTelephone(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-420 (accroche) : banc de performance du téléphone, captures banc-tel-*
-    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchCguTextes(r, out) + ecrans::benchReglagesTextes(g, r, out) + ecrans::textes::benchMenusTextes(g, r, out) + benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE) ; WFS-505 (accroche) : menus ; WFS-508 : écran des CGU ; WFS-506 (accroche) : course
+    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchCguTextes(r, out) + ecrans::benchReglagesTextes(g, r, out) + ecrans::textes::benchMenusTextes(g, r, out) + benchCourseTextes(g, r, out) + ecrans::benchPaquetsTextes(g, r, out, g_root) + ecrans::benchGarageTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE) ; WFS-505 (accroche) : menus ; WFS-508 : écran des CGU ; WFS-506 (accroche) : course
     if (banc == "textes-menus") { ui::chargerPolice(r); const int e = ecrans::textes::benchMenusTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-505 (accroche) : menus seuls (essai local, captures de la PR)
+    if (banc == "textes-garage") { ui::chargerPolice(r); const int e = ecrans::benchPaquetsTextes(g, r, out, g_root) + ecrans::benchGarageTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-507 (accroche) : garage et paquets seuls (essai local, captures de la PR)
     if (banc == "textes-course") { ui::chargerPolice(r); const int e = benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-506 (accroche) : course seule (essai local, captures de la PR)
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer

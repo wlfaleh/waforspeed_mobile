@@ -33,8 +33,9 @@ inline const PeintureDef* const PAINTS = PEINTURES;
 constexpr int NB_PEINTURES = NB_PEINTURES_GARAGE;
 int peintureParId(const char* id);
 
-// champs de CARS (catalog.js) utilisés seulement par le garage : type (body), accroche (tag), néon (glow), peinture par défaut
-struct Fiche { const char* id; const char* body; const char* tag; unsigned glow; const char* paint; };
+// champs de CARS (catalog.js) utilisés seulement par le garage : néon (glow), peinture par défaut ; type et accroche : textes
+// traduits garage.type.<id> et garage.accroche.<id> (WFS-507, assets/textes)
+struct Fiche { const char* id; unsigned glow; const char* paint; };
 const Fiche& ficheDe(const char* id);
 
 int indexDe(const CarDef* c);   // indice dans CARS[] de la voiture de la partie (1re voiture permise sinon)

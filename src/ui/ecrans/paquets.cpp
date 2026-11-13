@@ -20,6 +20,8 @@
 #include "../../game/chocs_decor.h"   // WFS-343 : chocs déclarés (banc)
 #include "../../world/archi_carte.h"   // WFS-426 : bâtiments de la carte chargée gardés pendant une cuisson (banc)
 #include "../../core/configgame.h"
+#include "textes_banc.h"   // WFS-507 : banc « textes » (journal, noms propres)
+#include "../langue.h"   // WFS-507 : textes par ui::tr
 #include "../petit_ecran.h"
 #include "../text.h"
 
@@ -37,7 +39,8 @@ constexpr double TEMPS_RESTANT_APRES_S = 5.0;
 void bouton(Renderer& r, const EtapePaquets::Zone& z, float k, bool principal, const std::string& t, float tp) {
     if (!principal) dessin2d::biseau(r, z.x - 1, z.y - 1, z.w + 2, z.h + 2, 14 * k, dessin2d::uni(BORD));
     dessin2d::biseau(r, z.x, z.y, z.w, z.h, 14 * k, dessin2d::uni(principal ? hex(ACCENT) : GLASS));
-    ui::text(r, z.x + z.w / 2, z.y + (z.h - tp) / 2, tp, ui::majuscules(t), principal ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+    // WFS-507 (RG-04) : texte posé dans le bouton (police réduite de 20 % au plus si besoin, dépassement noté au banc « textes »)
+    ui::textBoite(r, z.x + z.w / 2, z.y, z.w - 20 * k, z.h, tp, ui::majuscules(t), principal ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
 }
 // barre dégradée cyan → orange (même dessin que la barre de l'écran de chargement, chargement.cpp)
 void barre(Renderer& r, float x, float y, float w, float h, float p) {
@@ -56,6 +59,27 @@ std::string duree(double s) {
     if (n < 60) return std::to_string(n) + " s";
     return std::to_string(n / 60) + " min " + (n % 60 < 10 ? "0" : "") + std::to_string(n % 60) + " s";
 }
+// WFS-507 (RG-04, RC-E20-04) : texte d'un bouton dans la langue active ; la largeur du bouton est celle du plus long des deux
+// textes (français, anglais), pour que le bouton garde la même taille dans les deux langues
+float largeurBouton(float px, const char* cle, const std::string& v1, float marge) {
+    float w = 0;
+    for (ui::langue::Langue l : {ui::langue::Langue::Francais, ui::langue::Langue::Anglais}) {
+        std::string t = ui::trLangue(cle, l);
+        if (const size_t p = t.find("{1}"); p != std::string::npos) t.replace(p, 3, v1);
+        w = std::max(w, ui::width(px, ui::majuscules(t), 0.12f));
+    }
+    return w + marge;
+}
+// WFS-507 : journal du banc « textes » limité aux écrans des paquets (étape, bandeau du menu, vignettes du choix du terrain) :
+// les autres écrans (menu, terrain) ont leur propre banc (WFS-505)
+bool& journalPaquets() { static bool oui = false; return oui; }
+struct JournalPaquets {
+    const bool ouvert = journalPaquets();
+    JournalPaquets() { if (ouvert) ui::langue::journalActif(true, "paquets"); }
+    ~JournalPaquets() { if (ouvert) ui::langue::journalActif(false); }
+    JournalPaquets(const JournalPaquets&) = delete;
+    JournalPaquets& operator=(const JournalPaquets&) = delete;
+};
 std::string cheminPaquet(const std::string& c, carte::FormatTexture f) { return carte::dossierPaquets() + "/" + carte::nomFichier(c, f); }
 
 } // namespace
@@ -71,11 +95,12 @@ std::vector<carte::FormatTexture> formatsAcceptes(const VkCtx& vk) {
 }
 int versionApk() { return versionApk(versionJeu()); }   // « 0.1.N » sur l'APK de la CI, « dev » ailleurs
 
+// WFS-507 : astuces dans la langue active (astuces-paquets.txt en français, astuces-paquets-en.txt en anglais), lues une fois par langue
 const std::vector<std::string>& astuces() {
-    static std::vector<std::string> a = [] {
+    auto lire = [](const char* fichier, const char* cleDefaut) {
         std::vector<std::string> v;
         std::vector<uint8_t> o;
-        if (readAsset("textes/astuces-paquets.txt", o)) {
+        if (readAsset(fichier, o)) {
             std::string l;
             for (size_t i = 0; i <= o.size(); i++) {
                 if (i == o.size() || o[i] == '\n') {
@@ -85,10 +110,15 @@ const std::vector<std::string>& astuces() {
                 } else l += (char)o[i];
             }
         }
-        if (v.empty()) v.push_back("Une fois installée, la carte reste sur ton téléphone.");
+        if (v.empty()) v.push_back(ui::tr(cleDefaut));
         return v;
-    }();
-    return a;
+    };
+    if (ui::langue::active() == ui::langue::Langue::Anglais) {
+        static const std::vector<std::string> en = lire("textes/astuces-paquets-en.txt", "paquets.astuce_defaut");
+        return en;
+    }
+    static const std::vector<std::string> fr = lire("textes/astuces-paquets.txt", "paquets.astuce_defaut");
+    return fr;
 }
 
 // ---------------------------------------------------------------- étape
@@ -103,79 +133,80 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
     if (!ui::fontReady()) return;
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
-    if (!menu_) dessinerChargement(r, W, H, 1.f, "Paquets de cartes", false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
+    if (!menu_) dessinerChargement(r, W, H, 1.f, ui::tr("chargement.etape.paquets"), false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
+    const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes » (après le fond de l'écran de chargement)
     r.uiRect(0, 0, W, H, hex(BG, menu_ ? 0.72f : 0.82f));   // au menu (RG-06) : voile sur le menu
     const float pw = std::min(W - m.gauche - m.droite - 32 * k, 760 * k), px = m.gauche + (W - m.gauche - m.droite - pw) / 2;
     const float ph = (cp ? 300 : 340) * k, py = std::max(m.haut + 8 * k, (H - ph) / 2);
     r.uiRect(px, py, pw, ph, SURFACE);
     r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));
     const float x0 = px + 28 * k, lw = pw - 56 * k;
-    ui::text(r, x0, py + 18 * k, 12 * k, ui::majuscules("Paquets de cartes"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+    ui::text(r, x0, py + 18 * k, 12 * k, ui::majuscules(ui::tr("chargement.etape.paquets")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
     const float tt = (cp ? 24 : 30) * k;
-    ui::text(r, x0, py + 36 * k, tt, ui::majuscules("Mise à jour et installation"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+    ui::text(r, x0, py + 36 * k, tt, ui::majuscules(ui::tr("paquets.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
     float y = py + 36 * k + tt + 22 * k;
     const float tc = (cp ? 16 : 18) * k, ts = (cp ? 14 : 15) * k, bh = 50 * kb, tb = (cp ? 18 : 20) * k;
     const float by = py + ph - 22 * k - bh;
-    auto largeur = [&](const std::string& s) { return ui::width(tb, ui::majuscules(s), 0.12f) + 56 * kb; };
+    auto largeur = [&](const char* cle) { return largeurBouton(tb, cle, "", 56 * kb); };   // WFS-507 : même taille en FR et EN
     zInstaller_ = zPlusTard_ = zContinuer_ = {};
     switch (etat_) {
     case Etat::Recherche: {
-        ui::text(r, x0, y, tc, "Recherche des paquets de cartes…", hex(TEXTE), ui::GAUCHE, 0.f, false);
+        ui::text(r, x0, y, tc, ui::tr("paquets.recherche"), hex(TEXTE), ui::GAUCHE, 0.f, false);
         const float p = (float)std::fmod((t - t0_) * 0.6, 1.0);   // barre d'attente qui défile
         r.uiRect(x0, y + tc + 14 * k, lw, 6 * k, hex(SURFACE2));
         r.uiRect(x0 + lw * std::max(0.f, p - 0.25f), y + tc + 14 * k, lw * (std::min(p, 0.75f) - std::max(0.f, p - 0.25f) + 0.25f) * 0.999f, 6 * k, hex(ACCENT2, 0.85f));
         break;
     }
     case Etat::Proposition: {
-        ui::text(r, x0, y, tc + 4 * k, nom_ + " — " + texteMo(taille_), hex(TEXTE), ui::GAUCHE, 0.02f, false);
+        { const textes::NomPropre np; ui::text(r, x0, y, tc + 4 * k, nom_ + " — " + texteMo(taille_), hex(TEXTE), ui::GAUCHE, 0.02f, false); }   // nom de la carte inchangé
         y += tc + 14 * k;
-        ui::text(r, x0, y, ts, "Carte téléchargée une seule fois : elle reste ensuite sur le téléphone.", hex(MUTED), ui::GAUCHE, 0.f, false);
+        ui::text(r, x0, y, ts, ui::tr("paquets.une_fois"), hex(MUTED), ui::GAUCHE, 0.f, false);
         y += ts + 12 * k;
-        ui::text(r, x0, y, ts, "Wi-Fi conseillé.", hex(ACCENT2), ui::GAUCHE, 0.f, false);
-        if (reseau_ == 2) ui::text(r, x0, y + ts + 8 * k, ts, "Vous êtes sur les données mobiles (" + texteMo(taille_) + ").", hex(ACCENT), ui::GAUCHE, 0.f, false);
-        else if (reseau_ == 0) ui::text(r, x0, y + ts + 8 * k, ts, "Pas de connexion pour le moment.", hex(MUTED), ui::GAUCHE, 0.f, false);
-        const float wi = largeur("Installer"), wp = largeur("Plus tard");
+        ui::text(r, x0, y, ts, ui::tr("paquets.wifi"), hex(ACCENT2), ui::GAUCHE, 0.f, false);
+        if (reseau_ == 2) ui::text(r, x0, y + ts + 8 * k, ts, ui::tr("paquets.mobile", texteMo(taille_)), hex(ACCENT), ui::GAUCHE, 0.f, false);
+        else if (reseau_ == 0) ui::text(r, x0, y + ts + 8 * k, ts, ui::tr("paquets.sans_connexion"), hex(MUTED), ui::GAUCHE, 0.f, false);
+        const float wi = largeur("paquets.installer"), wp = largeur("paquets.plus_tard");
         zInstaller_ = {px + pw - 28 * k - wi, by, wi, bh};
         zPlusTard_ = {zInstaller_.x - 16 * k - wp, by, wp, bh};
-        bouton(r, zPlusTard_, kb, false, "Plus tard", tb);
-        bouton(r, zInstaller_, kb, reseau_ == 1, "Installer", tb);   // RG-02 : mis en avant sur Wi-Fi seulement
+        bouton(r, zPlusTard_, kb, false, ui::tr("paquets.plus_tard"), tb);
+        bouton(r, zInstaller_, kb, reseau_ == 1, ui::tr("paquets.installer"), tb);   // RG-02 : mis en avant sur Wi-Fi seulement
         break;
     }
     case Etat::Telechargement: {
         const float p = taille_ > 0 ? (float)recus_ / (float)taille_ : 0.f;
-        ui::text(r, x0, y, tc, nom_ + " — " + texteMo(recus_) + " / " + texteMo(taille_), hex(TEXTE), ui::GAUCHE, 0.f, false);
+        { const textes::NomPropre np; ui::text(r, x0, y, tc, nom_ + " — " + texteMo(recus_) + " / " + texteMo(taille_), hex(TEXTE), ui::GAUCHE, 0.f, false); }
         barre(r, x0, y + tc + 8 * k, lw, 6 * k, p);
         y += tc + 26 * k;
-        ui::text(r, x0, y, ts, "Total — " + texteMo(recus_) + " / " + texteMo(taille_), hex(MUTED), ui::GAUCHE, 0.f, false);   // une seule carte pour l'étape 1
+        ui::text(r, x0, y, ts, ui::tr("paquets.total", texteMo(recus_), texteMo(taille_)), hex(MUTED), ui::GAUCHE, 0.f, false);   // une seule carte pour l'étape 1
         barre(r, x0, y + ts + 8 * k, lw, 4 * k, p);
         y += ts + 26 * k;
         std::string etat;
-        if (tFini_ >= 0) etat = nom_ + " installée";
-        else if (coupure_) etat = "Connexion perdue, reprise automatique";
+        if (tFini_ >= 0) etat = ui::tr("paquets.installee", nom_);
+        else if (coupure_) etat = ui::tr("paquets.coupure");
         else if (tDebutTelechargement_ >= 0 && t - tDebutTelechargement_ >= TEMPS_RESTANT_APRES_S && recus_ > recusDebut_) {
             const double v = (recus_ - recusDebut_) / std::max(0.1, t - tDebutTelechargement_);
-            etat = "Temps restant : " + duree((taille_ - recus_) / std::max(1.0, v));
+            etat = ui::tr("paquets.temps_restant", duree((taille_ - recus_) / std::max(1.0, v)));
         }
         if (!etat.empty()) ui::text(r, x0, y, ts, etat, coupure_ ? hex(ACCENT) : hex(ACCENT2), ui::GAUCHE, 0.f, false);
         const auto& a = astuces();
         const size_t i = (size_t)std::max(0.0, (t - t0_) / ASTUCE_S) % a.size();
-        ui::text(r, x0, by - ts - 18 * k, ts, "Astuce : " + a[i], hex(TEXTE, 0.85f), ui::GAUCHE, 0.f, false);
-        if (tFini_ < 0) { const float wp = largeur("Plus tard"); zPlusTard_ = {px + pw - 28 * k - wp, by, wp, bh}; bouton(r, zPlusTard_, kb, false, "Plus tard", tb); }
+        ui::text(r, x0, by - ts - 18 * k, ts, ui::tr("paquets.astuce", a[i]), hex(TEXTE, 0.85f), ui::GAUCHE, 0.f, false);
+        if (tFini_ < 0) { const float wp = largeur("paquets.plus_tard"); zPlusTard_ = {px + pw - 28 * k - wp, by, wp, bh}; bouton(r, zPlusTard_, kb, false, ui::tr("paquets.plus_tard"), tb); }
         break;
     }
     case Etat::Place: case Etat::Echec: {
         ui::text(r, x0, y, tc, message_, hex(DANGER), ui::GAUCHE, 0.f, false);
-        ui::text(r, x0, y + tc + 12 * k, ts, "Le jeu démarre avec la carte livrée dans l'application.", hex(MUTED), ui::GAUCHE, 0.f, false);
+        ui::text(r, x0, y + tc + 12 * k, ts, ui::tr("paquets.carte_livree"), hex(MUTED), ui::GAUCHE, 0.f, false);
         if (etat_ == Etat::Echec) {
-            const float wi = largeur("Réessayer"), wp = largeur("Plus tard");
+            const float wi = largeur("paquets.reessayer"), wp = largeur("paquets.plus_tard");
             zInstaller_ = {px + pw - 28 * k - wi, by, wi, bh};
             zPlusTard_ = {zInstaller_.x - 16 * k - wp, by, wp, bh};
-            bouton(r, zPlusTard_, kb, false, "Plus tard", tb);
-            bouton(r, zInstaller_, kb, true, "Réessayer", tb);
+            bouton(r, zPlusTard_, kb, false, ui::tr("paquets.plus_tard"), tb);
+            bouton(r, zInstaller_, kb, true, ui::tr("paquets.reessayer"), tb);
         } else {
-            const float wc = largeur("Continuer");
+            const float wc = largeur("paquets.continuer");
             zContinuer_ = {px + pw - 28 * k - wc, by, wc, bh};
-            bouton(r, zContinuer_, kb, true, "Continuer", tb);
+            bouton(r, zContinuer_, kb, true, ui::tr("paquets.continuer"), tb);
         }
         break;
     }
@@ -259,43 +290,47 @@ void assombrirCarte(Renderer& r, const std::string& c, float x, float y, float w
 
 void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, float w, float h, float k, double t) {
     UiTerrain& u = uiTerrain();
+    const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes »
     for (auto& z : u.z) z = {};
     CartesPaquets& cp = cartesPaquets();
     const EtatCarte e = cp.etat(c);
     if (u.dialogue != UiTerrain::Aucun && u.carteDialogue != c) u.dialogue = UiTerrain::Aucun;   // carte changée : confirmation refermée
     const float tp = 15 * k, ts = 14 * k, bh = std::max(44.f, ui::TOUCHER_MIN_DP) * k, m = 16 * k;
-    auto largeur = [&](const std::string& s) { return ui::width(tp, ui::majuscules(s), 0.12f) + 40 * k; };
+    auto largeur = [&](const char* cle, const std::string& v1 = "") { return largeurBouton(tp, cle, v1, 40 * k); };   // WFS-507 : FR = EN
     const float pwMax = std::min(w - 2 * m, 460 * k);
     // ---- confirmations (RG-04 suppression, RG-02 données mobiles) : panneau au milieu de la vignette
     if (u.dialogue != UiTerrain::Aucun) {
         const bool sup = u.dialogue == UiTerrain::Supprimer;
-        const std::string l1 = sup ? "Supprimer le paquet de la " + e.nom + " ?" : "Vous êtes sur les données mobiles (" + texteMo(e.taille) + ")",
-                          l2 = sup ? "Libère " + texteMo(e.surDisque) + ". La carte reste jouable, construite par le jeu." : "Wi-Fi conseillé. Télécharger quand même ?",
-                          oui = sup ? "Supprimer" : "Télécharger", non = sup ? "Annuler" : "Plus tard";
-        const float pw = std::min(w - 2 * m, std::max({ui::width(tp + 2 * k, l1), ui::width(ts, l2), largeur(oui) + largeur(non) + 12 * k}) + 48 * k);
+        const std::string l1 = sup ? ui::tr("paquets.question_supprimer", e.nom) : ui::tr("paquets.question_mobile", texteMo(e.taille)),
+                          l2 = sup ? ui::tr("paquets.supprimer_libere", texteMo(e.surDisque)) : ui::tr("paquets.quand_meme");
+        const char* cleOui = sup ? "paquets.supprimer" : "paquets.telecharger";
+        const char* cleNon = sup ? "paquets.annuler" : "paquets.plus_tard";
+        const std::string &oui = ui::tr(cleOui), &non = ui::tr(cleNon);
+        const float pw = std::min(w - 2 * m, std::max({ui::width(tp + 2 * k, l1), ui::width(ts, l2), largeur(cleOui) + largeur(cleNon) + 12 * k}) + 48 * k);
         const float ph = 24 * k + tp + 2 * k + 10 * k + ts + 18 * k + bh + 20 * k, px = x + (w - pw) / 2, py = y + (h - ph) / 2;
         r.uiRect(x, y, w, h, hex(BG, 0.55f));
         bloc(r, px, py, pw, ph, k);
         ui::text(r, px + 24 * k, py + 24 * k, tp + 2 * k, l1, hex(TEXTE), ui::GAUCHE, 0.f, false);
         ui::text(r, px + 24 * k, py + 24 * k + tp + 12 * k, ts, l2, hex(MUTED), ui::GAUCHE, 0.f, false);
-        const float by = py + ph - 20 * k - bh, wo = largeur(oui), wn = largeur(non);
+        const float by = py + ph - 20 * k - bh, wo = largeur(cleOui), wn = largeur(cleNon);
         u.z[2] = {px + pw - 24 * k - wo, by, wo, bh};
         u.z[3] = {u.z[2].x - 12 * k - wn, by, wn, bh};
         bouton(r, u.z[3], k, false, non, tp);
         if (sup) {   // bouton de suppression rouge (action destructrice)
             dessin2d::biseau(r, u.z[2].x, u.z[2].y, u.z[2].w, u.z[2].h, 14 * k, dessin2d::uni(hex(DANGER)));
-            ui::text(r, u.z[2].x + wo / 2, by + (bh - tp) / 2, tp, ui::majuscules(oui), hex(TEXTE), ui::CENTRE, 0.12f, false);
+            ui::textBoite(r, u.z[2].x + wo / 2, by, wo - 20 * k, bh, tp, ui::majuscules(oui), hex(TEXTE), ui::CENTRE, 0.12f, false);   // WFS-507
         } else bouton(r, u.z[2], k, false, oui, tp);   // RG-02 de WFS-306 : sur données mobiles, pas mis en avant
         return;
     }
     const float px0 = x + w - m;   // panneaux calés en haut à droite (le badge « Choisi » est en haut à gauche)
     switch (e.etat) {
     case EtatCarte::Disponible: case EtatCarte::MiseAJour: case EtatCarte::Echec: {
-        const std::string l = (e.etat == EtatCarte::MiseAJour ? "Mise à jour — " : e.etat == EtatCarte::Echec ? "Réessayer — " : "Télécharger — ") + texteMo(e.taille);
-        const float bw = largeur(l);
+        const char* cle = e.etat == EtatCarte::MiseAJour ? "paquets.bouton_maj" : e.etat == EtatCarte::Echec ? "paquets.bouton_reessayer" : "paquets.bouton_telecharger";
+        const std::string l = ui::tr(cle, texteMo(e.taille));
+        const float bw = largeur(cle, texteMo(e.taille));
         u.z[0] = {px0 - bw, y + m, bw, bh};
         bouton(r, u.z[0], k, cp.reseau() != 2, l, tp);
-        if (e.etat == EtatCarte::Echec) ui::text(r, px0, y + m + bh + 8 * k, ts, "Paquet abîmé ou erreur : la carte reste jouable", hex(DANGER), ui::DROITE, 0.f, true);
+        if (e.etat == EtatCarte::Echec) ui::text(r, px0, y + m + bh + 8 * k, ts, ui::tr("paquets.abime"), hex(DANGER), ui::DROITE, 0.f, true);
         break;
     }
     case EtatCarte::Attente: case EtatCarte::Telechargement: case EtatCarte::Coupure: {
@@ -303,12 +338,12 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
         bloc(r, px, py, pw, ph, k);
         const float x0 = px + 20 * k, lw = pw - 40 * k;
         std::string l1;
-        if (e.etat == EtatCarte::Attente) l1 = e.nom + " — en file d'attente (" + texteMo(e.taille) + ")";
+        if (e.etat == EtatCarte::Attente) l1 = ui::tr("paquets.attente", e.nom, texteMo(e.taille));
         else l1 = e.nom + " — " + texteMo(e.recus) + " / " + texteMo(e.taille);
-        ui::text(r, x0, py + 20 * k, tp, l1, hex(TEXTE), ui::GAUCHE, 0.f, false);
+        { const textes::NomPropre np; ui::text(r, x0, py + 20 * k, tp, l1, hex(TEXTE), ui::GAUCHE, 0.f, false); }   // nom de la carte, tailles
         barre(r, x0, py + 20 * k + tp + 12 * k, lw, 6 * k, e.taille > 0 ? (float)e.recus / (float)e.taille : 0.f);
         const float y2 = py + 20 * k + tp + 12 * k + 6 * k + 14 * k;
-        if (e.etat == EtatCarte::Coupure) ui::text(r, x0, y2, ts, "Connexion perdue, reprise automatique", hex(ACCENT), ui::GAUCHE, 0.f, false);
+        if (e.etat == EtatCarte::Coupure) ui::text(r, x0, y2, ts, ui::tr("paquets.coupure"), hex(ACCENT), ui::GAUCHE, 0.f, false);
         else {
             const auto& a = astuces();
             const size_t i = (size_t)std::max(0.0, t / ASTUCE_S) % a.size();
@@ -316,15 +351,15 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
             while (s.size() > 4 && ui::width(ts, s) > lw) { s.resize(s.size() - 4); while (!s.empty() && ((unsigned char)s.back() & 0xC0) == 0x80) s.pop_back(); if (!s.empty()) s.pop_back(); s += "…"; }
             ui::text(r, x0, y2, ts, s, hex(TEXTE, 0.85f), ui::GAUCHE, 0.f, false);
         }
-        const float wa = largeur("Annuler");
+        const float wa = largeur("paquets.annuler");
         u.z[1] = {px + pw - 20 * k - wa, py + ph - 16 * k - bh, wa, bh};
-        bouton(r, u.z[1], k, false, "Annuler", tp);
-        ui::text(r, x0, u.z[1].y + (bh - ts) / 2, ts, "Tu peux rouler pendant ce temps", hex(ACCENT2), ui::GAUCHE, 0.f, false);
+        bouton(r, u.z[1], k, false, ui::tr("paquets.annuler"), tp);
+        ui::text(r, x0, u.z[1].y + (bh - ts) / 2, ts, ui::tr("paquets.rouler_pendant"), hex(ACCENT2), ui::GAUCHE, 0.f, false);
         break;
     }
     case EtatCarte::Installee: {
-        const std::string l = "Supprimer — libère " + texteMo(e.surDisque);
-        const float bw = largeur(l);
+        const std::string l = ui::tr("paquets.bouton_supprimer", texteMo(e.surDisque));
+        const float bw = largeur("paquets.bouton_supprimer", texteMo(e.surDisque));
         u.z[1] = {px0 - bw, y + m, bw, bh};
         bouton(r, u.z[1], k, false, l, tp);
         break;
@@ -360,7 +395,7 @@ bool toucherPaquetCarte(const std::string& c, int id, float x, float y, bool dow
     if (u.dialogue != UiTerrain::Aucun) {
         const UiTerrain::Dialogue d = u.dialogue;
         u.dialogue = UiTerrain::Aucun;
-        if (zi == 2 && d == UiTerrain::Supprimer) { long long l = 0; if (cp.supprimer(c, l)) message(e.nom + " supprimée : " + texteMo(l) + " libérés"); }
+        if (zi == 2 && d == UiTerrain::Supprimer) { long long l = 0; if (cp.supprimer(c, l)) message(ui::tr("paquets.supprimee", e.nom, texteMo(l))); }
         else if (zi == 2 && d == UiTerrain::Mobile) lancer();
         else WFS_LOG("paquets (WFS-307) : %s : confirmation refusée", c.c_str());
         return true;
@@ -399,7 +434,7 @@ public:
         if (g.ecran == Ecran::Menu) {   // RG-03 : « Corniche prête » au retour au menu
             for (const std::string& c : cp.pretes()) {
                 const EtatCarte ec = cp.etat(c);
-                annonces_.push_back(ec.nom + " prête");
+                annonces_.push_back(ec.nom);   // WFS-507 : nom seul, phrase traduite au dessin (paquets.annonce)
                 WFS_LOG("paquets (WFS-307) : menu, annonce « %s prête »", ec.nom.c_str());
             }
             if (!annonces_.empty() && tAnnonce_ < 0) tAnnonce_ = g.time;
@@ -420,10 +455,11 @@ public:
     void shutdown(Renderer&) override { paquets().fermerMenu(); }   // fenêtre perdue en jeu (termGraphics) : la proposition du menu se referme
     void drawUi(Renderer& r, const GameView& g) override {
         z_ = {};
+        const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes »
         if (g.ecran == Ecran::Menu && !g.sceneDediee && ui::fontReady() && !annonces_.empty() && !paquets().enMenu()) {   // WFS-307 (RG-03)
             const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
             const float k = cp ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f, tp = 16 * k;
-            const std::string t = annonces_.front() + " pour la prochaine course";
+            const std::string t = ui::tr("paquets.annonce", annonces_.front());
             const float w = ui::width(tp, t) + 64 * k, h = 48 * k, x = (g.uiWidth - w) / 2, y = g.marges.haut + 20 * k;
             dessin2d::biseau(r, x - 1, y - 1, w + 2, h + 2, 10 * k, dessin2d::uni(hex(ACCENT2, 0.6f)));
             dessin2d::biseau(r, x, y, w, h, 10 * k, dessin2d::uni(SURFACE));
@@ -438,9 +474,9 @@ public:
         const SourcePaquets::Phase ph = s->phase(recus, taille);
         std::string nom, fmt, t;
         if (!s->proposition(nom, fmt)) return;
-        if (ph == SourcePaquets::PRETE) t = "Paquet de la " + nom + " disponible — Installer";
-        else if (ph == SourcePaquets::TELECHARGE || ph == SourcePaquets::COUPURE) t = nom + " — " + texteMo(recus) + " / " + texteMo(taille);
-        else if (ph == SourcePaquets::FINI) t = nom + " installée : prête pour la prochaine course";   // WFS-307 (RG-08)
+        if (ph == SourcePaquets::PRETE) t = ui::tr("paquets.bandeau_dispo", nom);
+        else if (ph == SourcePaquets::TELECHARGE || ph == SourcePaquets::COUPURE) t = nom + " — " + texteMo(recus) + " / " + texteMo(taille);   // nom de la carte et tailles
+        else if (ph == SourcePaquets::FINI) t = ui::tr("paquets.bandeau_fini", nom);   // WFS-307 (RG-08)
         else return;
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
         const float k = cp ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f, tp = (cp ? 14 : 15) * k;
@@ -576,6 +612,8 @@ struct SourceMulti : SourcePaquets {
     }
 };
 } // namespace
+
+void journalPaquetsActif(bool oui) { journalPaquets() = oui; }
 
 int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string& racine) {
     int ecarts = 0;
@@ -864,6 +902,9 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         unsetenv("WFS_CARTES_TEST");
         for (const char* id : ids) fs::remove(carte::dossierPaquets() + "/" + carte::nomFichier(id, carte::FormatTexture::RGBA8), ec);
     }
+    // WFS-507 : la source factice (variable de ce banc) disparaît au retour : l'étape n'est plus en secours, le bandeau du menu ne la lit
+    // plus (sinon plantage au menu d'un banc lancé ensuite, banc « textes »)
+    e.secours_ = false;
     g.shutdown();
     retirer();
     WFS_LOG("paquets (WFS-306) banc : %d écart(s)%s", ecarts, ecarts ? " ÉCHEC" : " OK");

@@ -2,6 +2,7 @@
 #include "garage_cadre.h"
 #include "../game/commandes_tactiles.h"   // WFS-99 : dessin2d (biseaux d'un seul tenant, traits lissés)
 #include "../render/renderer.h"
+#include "langue.h"   // WFS-507 : textes par ui::tr
 #include "text.h"
 
 namespace wfs::ecrans::garage::cadre {
@@ -43,9 +44,9 @@ void pied(Renderer& r, const MiseEnPage& mp, const CarDef& car, bool voiturePret
     const float W = mp.W, H = mp.H, k = mp.k, op = mp.op, gr = mp.gr, gb = mp.gb;
     // .show-credit : crédit du modèle (licence obligatoire), en bas à droite ; WFS-99 (RG-06, ANO-33) : capitales de
     // 10 px à 720p (taille 14 = capitales + jambages), #8A90A6, sous le panneau
-    ui::text(r, W - gr, H - gb - 17 * k, 14 * k, creditAffiche(car), hex(MUTED, op), ui::DROITE, 0, false);   // WFS-191 (RG-03)
+    ui::text(r, W - gr, H - gb - 17 * k, 14 * k, ui::tr("garage.credit", auteurDuCredit(car)), hex(MUTED, op), ui::DROITE, 0, false);   // WFS-191 (RG-03)
     if (!voiturePrete) {   // .show-loading
-        const std::string l = "Chargement du modèle 3D…";
+        const std::string& l = ui::tr("chargement.etape.modele");   // WFS-507 : même clé que l'écran de chargement
         const float lw = ui::width(14 * k, l, 0.08f) + 36 * k;
         r.uiRect(W / 2 - lw / 2, H * 0.44f - 22 * k, lw, 44 * k, {GLASS.x, GLASS.y, GLASS.z, GLASS.w * op});
         ui::text(r, W / 2, H * 0.44f - 8 * k, 14 * k, l, hex(TEXTE, op), ui::CENTRE, 0.08f, false);

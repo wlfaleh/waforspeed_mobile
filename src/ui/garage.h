@@ -20,6 +20,7 @@
 //   - garage_cadre.*       voiles, flèches, fond vitré du panneau, crédit, « Chargement… » ;
 //   - garage_decor.*       décor 3D de la scène dédiée (sol, plateau, anneau, barres, lumières) ;
 //   - garage_bancs.cpp     bancs d'essai benchGarage et benchGarageTour.
+//   - garage_textes_banc.cpp  banc « textes » du garage et des paquets (WFS-507).
 #pragma once
 #include <string>
 
@@ -37,5 +38,7 @@ const char* garageVoitureAffichee();   // WFS-127 : identifiant de la voiture af
 // (planche des 16 peintures), garage-course (course avec la voiture et la peinture choisies), puis g.shutdown()
 void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::string& suffixe = "");
 void benchGarageTour(Game& g, Renderer& r, const std::string& outDir);   // WFS-404 : une capture par place du garage
+// WFS-507 : banc « textes » du garage (garage_textes_banc.cpp) : captures textes-<fr|en>-garage-*, parcours, garde-fou ; rend le nombre d'échecs
+int benchGarageTextes(Game& g, Renderer& r, const std::string& outDir);
 } // namespace ecrans
 } // namespace wfs
