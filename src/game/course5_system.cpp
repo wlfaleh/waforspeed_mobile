@@ -21,6 +21,7 @@
 #include "player.h"
 #include "roues.h"   // WFS-452 : roues des ordinateurs qui tournent et braquent
 #include "poursuite.h"   // WFS-141 : titrePlace
+#include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"
 #include "traffic.h"
 #include "traffic_system.h"
@@ -164,6 +165,7 @@ public:
                 fini_ = true; ftJoueur_ = c->raceTime;
                 const auto ls = lignes(pl);
                 WFS_LOG("course à 5 : arrivée en %.2f s, position %d/5", ftJoueur_, course5::position(ls));
+                { CourseJouee rc; rc.mode = ModeJoue::Course5; rc.place = course5::position(ls); rc.tempsMs = std::llround(ftJoueur_ * 1000); rc.victoire = rc.place == 1; profilNoterResultat(rc); }   // WFS-480
                 // WFS-125 (RG-02) : record Course à 5 (meilleure place, puis meilleur temps), écrit seulement s'il est battu
                 nouveauRecord_ = false;
                 Sauvegarde& sv = sauvegarde();

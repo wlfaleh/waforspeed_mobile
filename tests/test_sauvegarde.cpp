@@ -27,6 +27,17 @@ int main(int argc, char** argv) {
     // 1) défauts du jeu web, fichier absent
     { Sauvegarde s; VERIFIER(estDefaut(s)); VERIFIER(!s.actif()); VERIFIER(!s.charger(chemin)); VERIFIER(s.actif()); VERIFIER(estDefaut(s)); }
 
+    // 1 bis) WFS-487 (revue du lead dev, PR #373) : defauts() et un 2e lire() remettent carte, moment, qualité (et son choix) et vue au défaut
+    {
+        Sauvegarde s; s.map = "corniche"; s.tod = "jour"; s.moment = "midi"; s.quality = "low"; s.qualityChoisie = true; s.cam = "cockpit";
+        s.possede["m4"].insert("rose"); s.finition["m4"] = "mat"; s.perso = 7;
+        s.defauts();
+        VERIFIER(estDefaut(s)); VERIFIER(s.moment.empty()); VERIFIER(s.possede.empty() && s.finition.empty() && s.perso == 1);
+        s.map = "corniche"; s.tod = "jour"; s.moment = "midi"; s.quality = "low"; s.qualityChoisie = true; s.cam = "cockpit";
+        VERIFIER(s.lire("version=1\ncar=m4\n"));
+        VERIFIER(s.map == "ville" && s.tod == "nuit" && s.moment.empty() && s.quality == "high" && !s.qualityChoisie && s.cam == "poursuite" && s.car == "m4");
+    }
+
     // 2) écrire toutes les clés (thread de travail, fichier temporaire puis renommage) puis relire
     {
         Sauvegarde s; s.charger(chemin);
@@ -69,7 +80,7 @@ int main(int argc, char** argv) {
         VERIFIER(estDefaut(s));
         VERIFIER(s.lire("version=1\ntrace=2\nwaforspeed-car=gallardo\nbest=12\nkm=2\nnick=\tUn pseudo beaucoup trop long\n"));
         VERIFIER(s.car == "gallardo"); VERIFIER(s.best == 12); VERIFIER(s.km == 2);
-        VERIFIER(s.nick == "Un pseudo beau");   // 14 caractères (cleanName du jeu web)
+        VERIFIER(s.nick == "Un pseudo beauco");   // WFS-480 (RG-01) : 16 caractères (14 avant, cleanName du jeu web ; le duel coupe toujours à 14)
         VERIFIER(s.peinture("gallardo") == "jaune");
         VERIFIER(s.peinture("sf90") == "rouge"); VERIFIER(s.peinture("x5") == "blanc");   // voitures de WFS-13
         VERIFIER(s.lire("version=1\ncar=sf90\npaint-sf90=turquoise\nquality=medium\ncam=proche\n"));

@@ -24,6 +24,15 @@ constexpr int VOITURES_NB = 20, MARQUE_MAX = 16, MODELE_MAX = 24, ADRESSE_MAX = 
 inline constexpr const char* VOITURES_IDS[VOITURES_NB] = {"golf", "m4", "p911", "gallardo", "p208", "abarth", "tcross", "compass", "s3", "x5",
                                                          "giulia", "a45", "model3", "corsa", "gt86", "elantra", "v60", "rrsport", "mustang", "sf90"};
 struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 + 1]; };
+// WFS-487 (RG-04) : identifiants du catalogue de personnalisation (section « boutique ») ; noms, couleurs et règles dans
+// src/game/personnalisation.* ; les 16 premières couleurs sont celles du garage actuel (PEINTURES de src/game/sauvegarde.h, même ordre)
+constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 4, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
+inline constexpr const char* BOUTIQUE_COULEURS_IDS[BOUTIQUE_COULEURS] = {
+    "blanc", "noir", "gris", "rouge", "bleu", "orange", "jaune", "vert", "nacre", "bleunuit", "anglais", "bordeaux", "sable", "violet", "turquoise", "taxi",
+    "bleuelectrique", "vertacide", "orangefluo", "rose", "jaunecitron", "violetneon", "rougevif", "cyan", "vertmenthe", "magenta", "corail", "bleuciel"};
+inline constexpr const char* BOUTIQUE_FINITIONS_IDS[BOUTIQUE_FINITIONS] = {"brillant", "metallise", "nacree", "mat", "satine", "candy", "chrome", "cameleon"};
+inline constexpr const char* BOUTIQUE_SKINS_IDS[BOUTIQUE_SKINS] = {"rallye", "drifttokyo", "neonnuit", "camouflage"};
+inline constexpr const char* BOUTIQUE_DESSINS_IDS[BOUTIQUE_DESSINS] = {"essentiels", "numeros", "bandes", "flammes", "etoiles"};
 constexpr int SCORE_POURSUITE_MAX = 1000;   // borne de poursuite.score_depart, reprise par la relecture des records (sauvegarde)   // = Poursuite de src/game/camera_vue.h
 
 struct ConfigJeu {
@@ -90,6 +99,25 @@ struct ConfigJeu {
     struct Paquets {   // WFS-306 : liste des paquets de cartes (cartes.json de la Release « paquets », WFS-302) ; adresse https seulement
         char adresseListe[ADRESSE_MAX * 4 + 1] = "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json";
     } paquets;
+    // WFS-487 (RG-03, RG-04 ; prix de l'utilisateur, E18 et WFS-498 RG-04 à RG-06) : catalogue de personnalisation. Prix de BASE en étoiles,
+    // multipliés par le coefficient de la classe de la voiture (packs de dessins : sans coefficient) ; gratuit = 1 : offert sur toutes les voitures ;
+    // cadeau = 1 : seulement cadeau du jour ou succès, jamais en vente. Réglables sans recompiler (configgame.json).
+    struct Boutique {
+        struct Objet { int prix, gratuit, cadeau; };
+        double coefficient[BOUTIQUE_CLASSES] = {1, 1, 1.5, 2, 3, 4};   // gratuites, classes 1 à 5
+        // classe de chaque voiture (ordre de VOITURES_IDS) : 0 = gratuite (p208, abarth, gt86) ; x5, a45, elantra retirées (jamais vendues)
+        int classe[VOITURES_NB] = {2, 3, 4, 4, 0, 0, 1, 1, 2, 3, 3, 3, 2, 1, 0, 2, 2, 2, 3, 5};
+        Objet couleur[BOUTIQUE_COULEURS] = {
+            {0, 1, 0}, {0, 1, 0}, {0, 1, 0}, {0, 1, 0}, {0, 1, 0}, {0, 1, 0}, {0, 1, 0}, {0, 1, 0},   // les 8 gratuites (RG-03)
+            {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0},
+            {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}};
+        int couleurSecondaire = 50;   // couleur secondaire (toit, rétroviseurs : WFS-488, 489)
+        Objet finition[BOUTIQUE_FINITIONS] = {{0, 1, 0}, {100, 0, 0}, {150, 0, 0}, {150, 0, 0}, {150, 0, 0}, {250, 0, 0}, {400, 0, 0}, {400, 0, 0}};
+        Objet skin[BOUTIQUE_SKINS] = {{300, 0, 0}, {600, 0, 0}, {800, 0, 1}, {450, 0, 0}};   // Néon nuit : cadeau du jour / succès seulement
+        char skinVoitures[BOUTIQUE_SKINS][SKIN_VOITURES_MAX * 4 + 1] = {
+            "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia"};
+        Objet dessins[BOUTIQUE_DESSINS] = {{0, 1, 0}, {150, 0, 0}, {200, 0, 0}, {250, 0, 0}, {300, 0, 0}};   // « essentiels » : les 10 autocollants gratuits
+    } boutique;
     // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
     char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
 };

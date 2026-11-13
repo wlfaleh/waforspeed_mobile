@@ -131,16 +131,18 @@ int chauffe::benchChauffe(Game& g, Renderer& r, const std::string& out, Source s
         if (g.ecran() == e) WFS_LOG("chauffe (parcours) : %s → écran %s (attendu)", etape, nomEcran(e));
         else { ecarts++; WFS_ERR("chauffe (parcours) : %s → écran %s, attendu %s", etape, nomEcran(g.ecran()), nomEcran(e)); }
     };
-    const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f, cx = W / 2;
+    const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f;
     // accueil → « Course solo » (panneau des modes) → carte « Checkpoint » → « Continuer » → garage → « Choisir » → terrain
     // → « Rouler » (mise en page de modes_ecran.cpp, marges nulles au banc, comme le parcours de la poursuite)
     g.allerA(Ecran::Menu); images(30, 10);
     verifier(plafondCourant() == 30, "accueil : plafond 30 images/s");
     ouvrirChoixMode(); images(10, 5);
     verifier(choixModeOuvert(), "« Course solo » : panneau des modes ouvert");
-    const float gap = 2.4f * u, cw = std::min(42 * u, (W - 8 * u - 3 * gap) / 4), x0 = cx - (4 * cw + 3 * gap) / 2;
-    appuyer(x0 + cw / 2, 26 * u + 17 * u);                                  // carte 01 « Checkpoint »
-    appuyer(x0 + 4 * cw + 3 * gap - 14 * u, H - 8 * u - 6 * u + 4 * u);      // « Continuer »
+    // WFS-517 : zones lues sur le panneau lui-même (avant : mise en page à 4 cartes recopiée ici)
+    for (const char* zone : {"carte0", "continuer"}) {   // carte 01 « Checkpoint », puis « Continuer »
+        float zx = 0, zy = 0;
+        if (choixModeCentre(zone, zx, zy)) appuyer(zx, zy); else { ecarts++; WFS_ERR("chauffe (parcours) : zone %s du panneau absente", zone); }
+    }
     attendu(Ecran::Garage, "« Checkpoint » puis « Continuer »");
     verifier(modeCourse() == ModeCourse::Checkpoint, "mode Checkpoint retenu");
     float x = 0, y = 0;

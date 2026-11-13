@@ -3,10 +3,12 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <sstream>
 #include "../core/configgame.h"   // SCORE_POURSUITE_MAX
 #include "../core/log.h"
 #include "cars.h"
+#include "personnalisation.h"   // WFS-487
 #include "track.h"
 #ifndef _WIN32
 #include <unistd.h>
@@ -38,16 +40,29 @@ static bool carteExiste(const std::string& id) { return id == mapById(id.c_str()
 static const char* CAMS[] = {"poursuite", "capot", "cockpit", "proche"};   // VUES de src/game/camera_vue.h (WFS-66, WFS-85)
 static const char* QUALITES[] = {"low", "medium", "high"};         // quality du web (low / high) + niveau moyen (WFS-68)
 
-// cleanName du jeu web (js/net/duel.js) : caractères de contrôle retirés, espaces autour retirés, 14 caractères au plus
-static std::string nettoyerPseudo(const std::string& s) {
+// cleanName du jeu web (js/net/duel.js) : caractères de contrôle retirés, espaces autour retirés, 16 caractères au plus (WFS-480 ; duel : 14)
+static std::string nettoyerPseudo(const std::string& s, size_t max = profil::PSEUDO_MAX) {
     std::string t;
     for (unsigned char c : s) if (c >= 0x20 && c != 0x7f) t += (char)c;
     const size_t a = t.find_first_not_of(' '), b = t.find_last_not_of(' ');
     if (a == std::string::npos) return "";
     t = t.substr(a, b - a + 1);
-    size_t n = 0, i = 0;   // coupe à 14 caractères (UTF-8 : octets de suite 10xxxxxx non comptés)
-    for (; i < t.size(); i++) if (((unsigned char)t[i] & 0xC0) != 0x80 && n++ == 14) break;
+    size_t n = 0, i = 0;   // coupe à 16 caractères (UTF-8 : octets de suite 10xxxxxx non comptés)
+    for (; i < t.size(); i++) if (((unsigned char)t[i] & 0xC0) != 0x80 && n++ == max) break;
     return t.substr(0, i);
+}
+
+// WFS-487 : « a|b|c » → morceaux non vides
+static std::vector<std::string> morceaux(const std::string& s) {
+    std::vector<std::string> v; size_t a = 0;
+    while (a <= s.size()) { const size_t b = std::min(s.find('|', a), s.size()); if (b > a) v.push_back(s.substr(a, b - a)); a = b + 1; }
+    return v;
+}
+// WFS-487 : identifiant d'habillage de l'atelier (WFS-497) : 1 à 32 caractères a-z, 0-9, « - »
+static bool identifiantSur(const std::string& s) {
+    if (s.empty() || s.size() > 32) return false;
+    for (char c : s) if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-')) return false;
+    return true;
 }
 
 static bool entier(const std::string& s, long long& v) {
@@ -81,16 +96,20 @@ bool poursuiteBat(bool victoire, int score, long long distM, bool ancVictoire, i
 } // namespace records
 
 void Sauvegarde::defauts() {
-    best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
+    best = 0; car = "golf"; paint.clear();
+    map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
+    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     aideDirection = true;   // WFS-217
     cgu = 0;   // WFS-308
+    langue = "auto";   // WFS-504
     mode = "checkpoint"; km5 = 4; diff5 = "normale";   // WFS-110 ; WFS-133
     rec5Place = 0; rec5Ms = 0; recPVictoire = false; recPScore = 0; recPDistM = -1;   // WFS-125 : records vides
     // WFS-136 (A7.4) : première installation = déjà sur le tracé 2 des cartes actives (rien à mettre de côté)
     nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1; adversaires.clear();
     for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+    profil = Profil{};   // WFS-480
 }
 
 std::string Sauvegarde::texte() const {
@@ -99,6 +118,21 @@ std::string Sauvegarde::texte() const {
     o << "waforspeed-best=" << best << "\n";
     o << "car=" << car << "\n";
     for (const auto& [id, p] : paint) o << "paint-" << id << "=" << p << "\n";
+    // WFS-487 (RG-05, RG-06) : personnalisation ; perso=1 : la sauvegarde connaît le catalogue (plus de migration)
+    o << "perso=" << perso << "\n";
+    auto liste = [&](const std::string& k, const std::set<std::string>& ids) {
+        if (ids.empty()) return;
+        o << k << "=";
+        bool premier = true;
+        for (const std::string& id : ids) { o << (premier ? "" : "|") << id; premier = false; }
+        o << "\n";
+    };
+    for (const auto& [id, ids] : possede) liste("possede-" + id, ids);
+    liste("possede-dessins", possedeDessins);
+    for (const auto& [id, v] : paint2) o << "paint2-" << id << "=" << v << "\n";
+    for (const auto& [id, v] : finition) o << "finition-" << id << "=" << v << "\n";
+    for (const auto& [id, v] : skin) o << "skin-" << id << "=" << v << "\n";
+    for (const auto& [id, v] : creation) o << "creation-" << id << "=" << v << "\n";
     o << "map=" << map << "\n" << "tod=" << tod << "\n";
     if (!moment.empty()) o << "moment=" << moment << "\n";   // WFS-208
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
@@ -108,6 +142,7 @@ std::string Sauvegarde::texte() const {
     o << "boutons=" << (grandsBoutons ? "grands" : "normaux") << "\n" << "gyro=" << gyro << "\n" << "gyroZone=" << gyroZone << "\n";   // WFS-108
     o << "aide=" << (aideDirection ? "activee" : "desactivee") << "\n";   // WFS-217
     o << "cgu=" << cgu << "\n";   // WFS-308 (RG-04)
+    o << "langue=" << langue << "\n";   // WFS-504 (RG-04)
     o << "mode=" << mode << "\n" << "km5=" << km5 << "\n" << "diff5=" << diff5 << "\n";   // WFS-110 ; WFS-133
     if (aRecordCourse5()) o << "record-course5=" << rec5Place << ";" << rec5Ms << "\n";   // WFS-125 : absents tant que vides
     if (aRecordPoursuite()) o << "record-poursuite=" << (recPVictoire ? 1 : 0) << ";" << recPScore << ";" << recPDistM << "\n";
@@ -119,6 +154,7 @@ std::string Sauvegarde::texte() const {
         o << "\n";
     }
     for (const auto& [k, v] : anciens) o << k << "=" << v << "\n";        // records du tracé 1, gardés
+    profil.ecrire(o);   // WFS-480 (RG-11) : nouvelles clés, aucune ancienne retirée
     return o.str();
 }
 
@@ -127,6 +163,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
     std::istringstream in(contenu);
     std::string ligne;
     bool premiere = true;
+    int persoLu = 0;   // WFS-487 : sans clé « perso », la sauvegarde date d'avant le catalogue (migration RG-03)
     int traceLu = 1;   // WFS-136 : sans clé « trace », la sauvegarde date du tracé 1
     cartesV2.clear();  // lues dans le fichier (clés trace-<carte>=2)
     std::map<std::string, std::string> v1;   // records du tracé 1 lus tels quels (mis de côté si traceLu < 2)
@@ -143,6 +180,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         const std::string v = ligne.substr(eq + 1);
         if (k.rfind("waforspeed-", 0) == 0) k = k.substr(11);   // clés du web acceptées avec ou sans préfixe
         long long n = 0;
+        if (profil.lireCle(k, v)) continue;   // WFS-480 : clés du profil
         // WFS-136 (RG-07) : version du tracé, anciennes clés *_v1 gardées, valeurs brutes des records du tracé 1
         if (k == "trace") { if (entier(v, n) && n >= 1 && n <= 99) traceLu = (int)n; continue; }
         if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
@@ -157,6 +195,17 @@ bool Sauvegarde::lire(const std::string& contenu) {
         // RG-04 : chaque valeur est validée, une valeur inconnue garde le défaut de sa clé
         if (k == "best") { if (entier(v, n)) best = n; }
         else if (k == "car") { if (voitureExiste(v)) car = v; }
+        // WFS-487 (RG-05, RG-06) : chaque identifiant est vérifié dans le catalogue ; inconnu → ignoré (défaut), sans erreur
+        else if (k == "perso") { if (entier(v, n) && n >= 1 && n <= 99) persoLu = (int)n; }
+        else if (k == "possede-dessins") { for (const std::string& id : morceaux(v)) if (const perso::Objet* o = perso::objet(id); o && o->type == perso::Type::Dessins) possedeDessins.insert(id); }
+        else if (k.rfind("possede-", 0) == 0) {
+            const std::string id = k.substr(8);
+            if (voitureExiste(id)) for (const std::string& x : morceaux(v)) if (const perso::Objet* o = perso::objet(x); o && o->type != perso::Type::Dessins) possede[id].insert(x);
+        }
+        else if (k.rfind("paint2-", 0) == 0) { const std::string id = k.substr(7); if (voitureExiste(id) && peintureDef(v)) paint2[id] = v; }
+        else if (k.rfind("finition-", 0) == 0) { const std::string id = k.substr(9); const perso::Objet* o = perso::objet(v); if (voitureExiste(id) && o && o->type == perso::Type::Finition) finition[id] = v; }
+        else if (k.rfind("skin-", 0) == 0) { const std::string id = k.substr(5); const perso::Objet* o = perso::objet(v); if (voitureExiste(id) && o && o->type == perso::Type::Skin) skin[id] = v; }
+        else if (k.rfind("creation-", 0) == 0) { const std::string id = k.substr(9); if (voitureExiste(id) && identifiantSur(v)) creation[id] = v; }
         else if (k.rfind("paint-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && peintureDef(v)) paint[id] = v; }
         else if (k == "map") { if (carteExiste(v)) map = v; }
         else if (k == "tod") { tod = v == "jour" ? "jour" : "nuit"; }
@@ -173,6 +222,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "gyro") { if (entier(v, n) && n >= 0 && n <= 3) gyro = (int)n; }
         else if (k == "gyroZone") { if (entier(v, n) && n >= 0 && n <= 2) gyroZone = (int)n; }
         else if (k == "aide") { aideDirection = v != "desactivee"; }   // WFS-217 : inconnue → activée
+        else if (k == "langue") { langue = v == "fr" || v == "en" ? v : "auto"; }   // WFS-504 (RG-04) : inconnue → auto
         else if (k == "cgu") { if (entier(v, n) && n >= 0 && n <= 1000) cgu = (int)n; }   // WFS-308 (RG-04) : invalide → 0 (écran remontré)
         else if (k == "mode") { mode = v == "course5" || v == "poursuite" ? v : "checkpoint"; }   // WFS-110 ; WFS-119 : poursuite
         else if (k == "km5") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km5 = (int)n; }
@@ -186,6 +236,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         }
     }
     if (premiere) return false;   // fichier vide
+    if (persoLu == 0) perso::migrer(*this); else perso = persoLu;   // WFS-487 (RG-03) : couleurs déjà choisies gardées gratuitement
     trace = traceLu;
     bool active = false; for (const char* c : trace::CARTES_ACTIVES) { (void)c; active = true; }
     if (active && traceLu < trace::VERSION) {   // WFS-136 (RG-07, A7.4) : records du tracé 1 mis de côté une fois, jamais effacés
@@ -218,14 +269,16 @@ bool Sauvegarde::battreRecordPoursuite(bool victoire, int score, long long dista
 }
 
 std::string Sauvegarde::peinture(const std::string& carId) const {
-    const auto it = paint.find(carId);
-    return it != paint.end() && peintureDef(it->second) ? it->second : peintureOrigine(carId);
+    const PeintureDef* p = peintureCourse(carId);   // WFS-487 (RG-07) : seulement une couleur possédée
+    return p ? p->id : peintureOrigine(carId);
 }
 
 const PeintureDef* Sauvegarde::peintureChoisie(const std::string& carId) const {
     const auto it = paint.find(carId);
     return it != paint.end() ? peintureDef(it->second) : nullptr;
 }
+
+const PeintureDef* Sauvegarde::peintureCourse(const std::string& carId) const { return perso::aspectCourse(*this, carId).peinture; }
 
 int Sauvegarde::camIndex() const {
     for (int i = 0; i < 4; i++) if (cam == CAMS[i]) return i;
@@ -245,12 +298,14 @@ bool Sauvegarde::charger(const std::string& chemin) {
     std::FILE* f = std::fopen(chemin.c_str(), "rb");
     if (!f) {   // WFS-136 : première installation : déjà sur le tracé 2 des cartes actives (aucun record à mettre de côté)
         for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+        profil.apresChargement((long long)std::time(nullptr));   // WFS-480 (RG-05) : date d'arrivée
         WFS_LOG("sauvegarde : aucun fichier (%s) : valeurs par défaut", chemin.c_str()); return false;
     }
     std::string c; char buf[4096]; size_t n;
     while ((n = std::fread(buf, 1, sizeof buf, f)) > 0 && c.size() < (1u << 20)) c.append(buf, n);   // 1 Mo au plus
     std::fclose(f);
     const bool ok = lire(c);
+    profil.apresChargement((long long)std::time(nullptr));   // WFS-480 (RG-05) : 1er lancement de cette version
     if (ok && !cartesAActiver.empty()) { activerCartes(); enregistrer(); }   // WFS-136 (A7.4)
     WFS_LOG("sauvegarde : %s lue (%s) : car=%s best=%lld", chemin.c_str(), ok ? "valide" : "corrompue, défauts", car.c_str(), best);
     return ok;
@@ -261,7 +316,7 @@ bool Sauvegarde::charger(const std::string& chemin) {
 void Sauvegarde::noterAdversaires(const std::vector<std::string>& noms) {
     for (auto it = noms.rbegin(); it != noms.rend(); ++it) {
         const std::string& n0 = *it;
-        std::string n = nettoyerPseudo(n0);
+        std::string n = nettoyerPseudo(n0, 14);   // WFS-480 : noms du duel, 14 caractères (duel::NICK_MAX)
         for (char& c : n) if (c == '|') c = ' ';
         if (n.empty()) continue;
         adversaires.erase(std::remove(adversaires.begin(), adversaires.end(), n), adversaires.end());

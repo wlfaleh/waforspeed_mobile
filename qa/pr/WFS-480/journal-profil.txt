@@ -1,0 +1,7 @@
+profil : 191 mots interdits chargés
+profil : course notée (Checkpoint, m4, 1450 pts, 0.295 km, 157 km/h, 0 frôlement(s)) : 1 course(s), 0.3 km au total
+SAUVEGARDE écrite : car=m4 paint=rouge best=1450
+PROFIL écrit : pseudo=Banc 480 plaque=WFS-480 profil=1 arrivée=2026-11-12 23:38:49 | courses=1 km=0.3 vmax=157 km/h frôlements=0 victoires=0 voiture préférée=m4 | 1 dernière(s) course(s) : Checkpoint, m4, 1450 pts, 2026-11-12 23:40:00
+SAUVEGARDE relue : car=m4 paint=rouge best=1450
+PROFIL relu : pseudo=Banc 480 plaque=WFS-480 profil=1 arrivée=2026-11-12 23:38:49 | courses=1 km=0.3 vmax=157 km/h frôlements=0 victoires=0 voiture préférée=m4 | 1 dernière(s) course(s) : Checkpoint, m4, 1450 pts, 2026-11-12 23:40:00
+profil : 191 mots interdits chargés

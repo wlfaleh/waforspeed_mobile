@@ -28,6 +28,7 @@
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../text.h"
+#include "../langue.h"   // WFS-504 : textes dans la langue du joueur (ui::tr), réglage « Langue »
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "reglages_appui.h"   // WFS-290 : cible de 48 dp, anti-rebond
 #include "reglages_onglets.h"   // WFS-291, WFS-318 : lignes et onglets
@@ -54,24 +55,33 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
     dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
 
+// WFS-504 (RC-E20-04) : largeur d'un bouton = celle de son texte le plus long des deux langues (capitales) : aucun bouton ne
+// change de taille avec la langue, le français garde sa taille d'avant
+float largeurMax(float tp, const char* cle, float esp) {
+    return std::max(ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Francais)), esp),
+                    ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Anglais)), esp));
+}
+
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
+// WFS-504 (RG-10) : libellés et choix sont des clés des tables de textes (assets/textes/fr.txt, en.txt), affichées par ui::tr
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
-const Ligne LIGNES[14] = {
-    {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
-    {"Graphismes", 3, {"Basse", "Moyenne", "Haute", "Ultra"}},   // WFS-150 (RG-04) : « Ultra » seulement si la Haute tient (nChoix)
-    {"Son", 2, {"Activé", "Coupé", nullptr}},
-    {"Musique", 2, {"Activée", "Coupée", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
-    {"Commandes", 2, {"Droitier", "Gaucher", nullptr}},   // WFS-75 : miroir des commandes tactiles
-    {"Vibrations", 2, {"Activées", "Coupées", nullptr}},  // WFS-75 : vibrer() de WFS-70
-    {"Direction", 2, {"Glisser", "Flèches", nullptr}},     // WFS-80 : steerMode du web (ModeDirection de WFS-70)
-    {"Réduire les mouvements", 2, {"Non", "Oui", nullptr}},   // WFS-80 : reduceMotion du web
-    {"Boutons", 2, {"Normaux", "Grands", nullptr}},             // WFS-108 RG-04 : taille des commandes tactiles (× 1,25)
-    {"Gyroscope", 4, {"Coupé", "Doux", "Moyen", "Fort"}},       // WFS-108 RG-03 : sensibilité (28°, 20°, 14° pour braquer à fond)
-    {"Zone morte gyro", 3, {"Petite", "Moyenne", "Grande"}},    // WFS-108 RG-03 : 1,5°, 3°, 5°
-    {"Aide à la direction", 2, {"Activée", "Désactivée", nullptr}},   // WFS-217 RG-02 : reglagesConduite (player.h)
-    {"Regard cockpit", 3, {"Bas", "Normal", "Haut"}},   // WFS-235 RG-03 : regardCockpit (camera_vue.h), clé regard
-    {"Fantôme du record", 2, {"Affiché", "Caché", nullptr}},   // WFS-318 RG-01 : fantome::affiche (fantome.h), clé fantome
+const Ligne LIGNES[N_LIGNES] = {
+    {"reglages.camera", 4, {"vue.poursuite", "vue.capot", "vue.cockpit", "vue.proche"}},   // colonne = VueCamera (VUES de WFS-66, id)
+    {"reglages.graphismes", 3, {"reglages.graphismes.basse", "reglages.graphismes.moyenne", "reglages.graphismes.haute", "reglages.graphismes.ultra"}},   // WFS-150 (RG-04) : « Ultra » seulement si la Haute tient (nChoix)
+    {"reglages.son", 2, {"reglages.son.active", "reglages.son.coupe", nullptr}},
+    {"reglages.musique", 2, {"reglages.musique.active", "reglages.musique.coupee", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
+    {"reglages.commandes", 2, {"reglages.commandes.droitier", "reglages.commandes.gaucher", nullptr}},   // WFS-75 : miroir des commandes tactiles
+    {"reglages.vibrations", 2, {"reglages.vibrations.activees", "reglages.vibrations.coupees", nullptr}},  // WFS-75 : vibrer() de WFS-70
+    {"reglages.direction", 2, {"reglages.direction.glisser", "reglages.direction.fleches", nullptr}},     // WFS-80 : steerMode du web (ModeDirection de WFS-70)
+    {"reglages.mouvements", 2, {"reglages.mouvements.non", "reglages.mouvements.oui", nullptr}},   // WFS-80 : reduceMotion du web
+    {"reglages.boutons", 2, {"reglages.boutons.normaux", "reglages.boutons.grands", nullptr}},             // WFS-108 RG-04 : taille des commandes tactiles (× 1,25)
+    {"reglages.gyro", 4, {"reglages.gyro.coupe", "reglages.gyro.doux", "reglages.gyro.moyen", "reglages.gyro.fort"}},       // WFS-108 RG-03 : sensibilité (28°, 20°, 14° pour braquer à fond)
+    {"reglages.gyrozone", 3, {"reglages.gyrozone.petite", "reglages.gyrozone.moyenne", "reglages.gyrozone.grande"}},    // WFS-108 RG-03 : 1,5°, 3°, 5°
+    {"reglages.aide", 2, {"reglages.aide.activee", "reglages.aide.desactivee", nullptr}},   // WFS-217 RG-02 : reglagesConduite (player.h)
+    {"reglages.regard", 3, {"reglages.regard.bas", "reglages.regard.normal", "reglages.regard.haut"}},   // WFS-235 RG-03 : regardCockpit (camera_vue.h), clé regard
+    {"reglages.fantome", 2, {"reglages.fantome.affiche", "reglages.fantome.cache", nullptr}},   // WFS-318 RG-01 : fantome::affiche (fantome.h), clé fantome
+    {"reglages.langue", 3, {"reglages.langue.auto", "reglages.langue.fr", "reglages.langue.en"}},   // WFS-504 RG-02 : ui::langue::choisir, clé langue
 };
 // lignes et onglets : reglages_onglets.h (WFS-291, WFS-318, testé par tests/test_reglages_onglets.cpp)
 constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau comptée pour 13 lignes (« Fermer » ne bouge pas)
@@ -116,7 +126,7 @@ bool toucherDiag(float x, float y) {
 }
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
 float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
-    const float tp = 13 * k; const std::string t = ui::majuscules("Conditions d'utilisation"); const float w = ui::width(tp, t, 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
+    const float tp = 13 * k; const std::string t = ui::majuscules(ui::tr("reglages.cgu")); const float w = largeurMax(tp, "reglages.cgu", 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
     g_cgu = {x - w, y + (h - zh) / 2, w, zh}; biseau(r, x - w - 1, y - 1, w + 2, h + 2, 8 * k, BORD); biseau(r, x - w, y, w, h, 8 * k, GLASS);
     ui::text(r, x - w / 2, y + (h - tp) / 2, tp, t, hex(ACCENT2), ui::CENTRE, 0.12f, false); return w;
 }
@@ -148,11 +158,12 @@ void dessinerOnglets(Renderer& r, float x, float y, float w, float h, float tp, 
         g_onglets[o] = {ox, y, ow, h};
         if (on) { r.uiRect(ox, y, ow, h, hex(ACCENT2, 0.16f)); r.uiRect(ox, y + h - trait, ow, trait, hex(ACCENT2)); }
         else r.uiRect(ox, y, ow, h, hex(SURFACE2));
-        ui::text(r, ox + ow / 2, y + (h - tp) / 2, tp, ui::majuscules(ONGLETS[o]), on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+        ui::textBoite(r, ox + ow / 2, y, ow, h, tp, ui::majuscules(ui::tr(ONGLETS_CLE[o])), on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, 0.12f);   // WFS-504 (RG-08)
     }
 }
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
+std::string g_journalEcran;   // WFS-504 : banc « textes » : nom de l'écran dont les textes sont notés (vide : rien)
 
 // ---------------------------------------------------------------- sauvegarde simple (camera=, qualite=, son=)
 std::string fichier() {
@@ -170,6 +181,7 @@ bool lire() {
         R.gaucher = s.gaucher; R.vibrations = s.vibrations;   // WFS-75
         grandsBoutons() = s.grandsBoutons; reglagesGyro() = {s.gyro, s.gyroZone};   // WFS-108
         reglagesConduite().aideDirection = s.aideDirection;   // WFS-217
+        ui::langue::choisir(ui::langue::choixDeCle(s.langue));   // WFS-504 (RG-04) : absente → auto
         if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
     }
     const std::string f = fichier();
@@ -182,6 +194,7 @@ bool lire() {
         else if (!std::strcmp(cle, "ultra")) qualite::ultraChoisi = v != 0;   // WFS-150 : Ultra (absent de la sauvegarde commune)
         else if (!std::strcmp(cle, "regard")) choisirRegard((RegardCockpit)std::clamp(v, 0, 2));   // WFS-235 (RG-03), comme « mouvements »
         else if (!std::strcmp(cle, "fantome")) fantome::affiche() = v != 0;   // WFS-318 (RG-01) : Affiché par défaut
+        else if (!std::strcmp(cle, "langue")) { if (!commune) ui::langue::choisir((ui::langue::Choix)std::clamp(v, 0, 2)); }   // WFS-504 (RG-04) : banc sans sauvegarde commune
         else if (!std::strcmp(cle, "onglet")) g_onglet = v >= 0 && v < N_ONGLETS ? v : O_AFFICHAGE;   // WFS-291 (RG-03) : inconnu → Affichage
         else if (commune) continue;   // WFS-24 : les autres réglages viennent de la sauvegarde commune
         else if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
@@ -205,6 +218,7 @@ void ecrire() {
         s.gaucher = R.gaucher; s.vibrations = R.vibrations;   // WFS-75
         s.grandsBoutons = grandsBoutons(); s.gyro = reglagesGyro().niveau; s.gyroZone = reglagesGyro().zone;   // WFS-108
         s.aideDirection = reglagesConduite().aideDirection;   // WFS-217
+        s.langue = ui::langue::cleDeChoix(ui::langue::choix());   // WFS-504 (RG-04)
         if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
         s.enregistrer();   // WFS-80 : le fichier simple garde en plus « mouvements » (absent de la sauvegarde commune)
     }
@@ -215,7 +229,7 @@ void ecrire() {
     std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
                  (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
     std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\nultra=%d\nregard=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone, (int)qualite::ultraChoisi, (int)regardCockpit());   // WFS-108 ; WFS-150 ; WFS-235
-    std::fprintf(fp, "onglet=%d\nfantome=%d\n", g_onglet, (int)fantome::affiche());   // WFS-318 : fantome   // WFS-291 (RG-03) : pas un réglage, la place où on en était
+    std::fprintf(fp, "onglet=%d\nfantome=%d\nlangue=%d\n", g_onglet, (int)fantome::affiche(), (int)ui::langue::choix());   // WFS-504 : langue   // WFS-318 : fantome   // WFS-291 (RG-03) : pas un réglage, la place où on en était
     std::fclose(fp);
 }
 
@@ -250,6 +264,7 @@ int valeur(int ligne) {
     case L_AIDE: return reglagesConduite().aideDirection ? 0 : 1;   // WFS-217
     case L_REGARD: return (int)regardCockpit();   // WFS-235
     case L_FANTOME: return fantome::affiche() ? 0 : 1;   // WFS-318
+    case L_LANGUE: return (int)ui::langue::choix();   // WFS-504
     default: return R.vibrations ? 0 : 1;
     }
 }
@@ -327,6 +342,7 @@ public:
             else if (l == L_AIDE) reglagesConduite().aideDirection = c == 0;   // WFS-217 : appliquée au pas suivant
             else if (l == L_REGARD) choisirRegard((RegardCockpit)c);   // WFS-235 (RG-03) : appliqué à l'image suivante
             else if (l == L_FANTOME) fantome::affiche() = c == 0;   // WFS-318 (RG-01, RG-02) : appliqué à l'image suivante
+            else if (l == L_LANGUE) ui::langue::choisir((ui::langue::Choix)c);   // WFS-504 (RG-03) : l'image suivante est dans la langue choisie
             else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
@@ -335,6 +351,9 @@ public:
     }
 
     void drawUi(Renderer& r, const GameView& g) override {
+        // WFS-504 (RG-07) : banc « textes » : seuls les textes dessinés ici sont notés (pas ceux du menu ou de la pause dessous)
+        struct Journal { Journal() { if (!g_journalEcran.empty()) ui::langue::journalActif(true, g_journalEcran.c_str()); }
+                         ~Journal() { if (!g_journalEcran.empty()) ui::langue::journalActif(false); } } journal;
         if (!ui::fontReady() || g.sceneDediee || (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause)) return;
         // WFS-147 (RG-01, RG-02, ANO-19) : sur téléphone couché, mise en page propre aux réglages, dessinée en dp
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
@@ -359,13 +378,14 @@ private:
     // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte et place gardés
     void dessinerBouton(Renderer& r, const GameView& g, float W, float k, float kb) {
         const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
-        const std::string t = ui::majuscules("Réglages");
-        const float w = pad + ui::width(tp, t, 0.12f) + pad, x = W - g.marges.droite - 16 * k - w, y = g.marges.haut + 14 * k;
+        const std::string t = ui::majuscules(ui::tr("reglages.bouton"));   // WFS-504
+        const float tw = largeurMax(tp, "reglages.bouton", 0.12f), dx = (tw - ui::width(tp, t, 0.12f)) / 2;   // RC-E20-04 : taille fixe
+        const float w = pad + tw + pad, x = W - g.marges.droite - 16 * k - w, y = g.marges.haut + 14 * k;
         g_bouton = {x, y, w, h};
         biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, BORD);
         biseau(r, x, y, w, h, 8 * kb, GLASS);
         if (g_presse == P_BOUTON) biseau(r, x, y, w, h, 8 * kb, hex(ACCENT2, 0.22f));   // WFS-290 (RG-04) : appuyé, voile cyan
-        ui::text(r, std::round(x + pad), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
+        ui::text(r, std::round(x + pad + dx), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
     }
     // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
     void dessinerPanneau(Renderer& r, const GameView& g, float W, float H, float k) {
@@ -380,10 +400,10 @@ private:
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
-        ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
+        ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu")), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
-        ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        g_titre = {x0, py + 52 * k, ui::width(56 * k, ui::majuscules("Réglages"), 0.02f), 56 * k};   // WFS-419 : 5 touchers → menu caché
+        ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules(ui::tr("reglages.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        g_titre = {x0, py + 52 * k, ui::width(56 * k, ui::majuscules(ui::tr("reglages.titre")), 0.02f), 56 * k};   // WFS-419 : 5 touchers → menu caché
         boutonCgu(r, px + pw - 36 * k, py + 30 * k, 36 * k, k);   // WFS-308 (RG-05)
         // WFS-291 : onglets sous le titre, puis les lignes de l'onglet ouvert (plus hautes : la place de 13 lignes est gardée,
         // « Fermer » ne bouge pas) ; les lignes des autres onglets n'ont plus de zone de toucher
@@ -396,7 +416,7 @@ private:
             const int l = LIGNES_ONGLET[g_onglet][i];
             const float rowH = rowO, gap = gapO;
             r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
-            ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(ui::tr(LIGNES[l].libelle)), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = nChoix(l);
             float bx = px + pw - 36 * k - n * segW - (n - 1) * 6 * k;
             for (int c = 0; c < n; c++) {
@@ -406,8 +426,8 @@ private:
                     r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
                     r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
                 } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
-                ui::text(r, bx + segW / 2, y + (rowH - 15 * k) / 2, 15 * k, ui::majuscules(LIGNES[l].choix[c]), on ? hex(ACCENT2) : hex(TEXTE),
-                         ui::CENTRE, 0.08f, false);
+                ui::textBoite(r, bx + segW / 2, y, segW - 8 * k, rowH, 15 * k, ui::majuscules(ui::tr(LIGNES[l].choix[c])), on ? hex(ACCENT2) : hex(TEXTE),
+                              ui::CENTRE, 0.08f);   // WFS-504 (RG-08) : réduit de 20 % au plus s'il ne tient pas
                 bx += segW + 6 * k;
             }
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
@@ -416,11 +436,13 @@ private:
         // .btn « Fermer » (orange, biais 14 px), à droite, sous la dernière ligne ; WFS-286 (RG-01, ANO-156) : toutes les lignes à la
         // suite (avant : « Aide à la direction » et « Regard cockpit » sous le bouton, placé après la ligne 11) ; tailles inchangées
         const float tp = 20 * k;
-        const std::string ft = ui::majuscules("Fermer");
-        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)LIGNES_PLACE * (rowH + gap) + 10 * k;
+        const std::string ft = ui::majuscules(ui::tr("reglages.fermer"));
+        const float fw = largeurMax(tp, "reglages.fermer", 0.12f) + 56 * k,   // WFS-504 (RC-E20-04) : même taille dans les deux langues
+        fx = px + pw - 36 * k - fw, fy = py + haut + (float)LIGNES_PLACE * (rowH + gap) + 10 * k;
         g_fermer = {fx, fy, fw, bh};
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »
+        ui::langue::journalTechnique(true);   // WFS-504 : lignes de mesure (textes de src/render, hors de cette zone) notées à part
         {   // WFS-297 (RG-06) : rendu puis mémoire sur la même ligne, réduite pour tenir avant « Fermer » (aucun bouton ne bouge)
             const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
             const float tr = std::min(15 * k, 15 * k * (fx - x0 - 8 * k) / std::max(ui::width(15 * k, lr, 0.02f), 1.f));
@@ -428,6 +450,7 @@ private:
         }
         if (!lm.empty()) { const float tm = std::min(12 * k, 12 * k * (fx - x0 - 8 * k) / std::max(ui::width(12 * k, lm, 0.f), 1.f)); g_mesure = {x0, fy, fx - x0 - 8 * k, bh};
                            ui::text(r, x0, fy + bh / 2 + 1 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
+        ui::langue::journalTechnique(false);
         biseau(r, fx, fy, fw, bh, 14 * k, g_presse == P_FERMER ? hex(ACCENT_PRESSE) : hex(ACCENT));   // WFS-290 (RG-04) : appuyé, plus clair
         ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
     }
@@ -450,14 +473,14 @@ private:
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 24 * k;
-        ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
+        ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu")), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
-        ui::text(r, x0, py + 30 * k, 30 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        g_titre = {x0, py + 26 * k, ui::width(30 * k, ui::majuscules("Réglages"), 0.02f), 38 * k};   // WFS-419 : 5 touchers → menu caché
+        ui::text(r, x0, py + 30 * k, 30 * k, ui::majuscules(ui::tr("reglages.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        g_titre = {x0, py + 26 * k, ui::width(30 * k, ui::majuscules(ui::tr("reglages.titre")), 0.02f), 38 * k};   // WFS-419 : 5 touchers → menu caché
         {   // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau
             const float tp = 18 * k;
-            const std::string ft = ui::majuscules("Fermer");
-            const float fw = ui::width(tp, ft, 0.12f) + 56 * kb, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
+            const std::string ft = ui::majuscules(ui::tr("reglages.fermer"));
+            const float fw = largeurMax(tp, "reglages.fermer", 0.12f) + 56 * kb, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
             g_fermer = {fx, fy, fw, bh};
             biseau(r, fx, fy, fw, bh, 14 * kb, g_presse == P_FERMER ? hex(ACCENT_PRESSE) : hex(ACCENT));   // WFS-290 (RG-04) : appuyé, plus clair
             ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
@@ -467,14 +490,16 @@ private:
         // lignes de l'onglet ouvert en deux colonnes de 3 ; taille du panneau inchangée, « Fermer » ne bouge pas
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < 4; c++) g_choix[l][c] = {};
         dessinerOnglets(r, px + (pw - colW) / 2, py + (haut - rowH) / 2, colW, rowH, 14 * k, segGap, 3 * kb);
-        constexpr int PAR_COL_ONGLET = 3;
+        // WFS-504 : 3 lignes par colonne jusqu'à 6 lignes (Conduite, Son : inchangés) ; Affichage (7 lignes avec « Langue ») : 4 + 3,
+        // dans la hauteur du panneau (place de 6 rangs)
+        const int PAR_COL_ONGLET = nLignesOnglet(g_onglet) > 6 ? 4 : 3;
         for (int i = 0; i < nLignesOnglet(g_onglet); i++) {
             const int l = LIGNES_ONGLET[g_onglet][i];
             const int col = i / PAR_COL_ONGLET, rang = i % PAR_COL_ONGLET;
             const float cx = x0 + col * (colW + colGap), y = py + haut + rang * (rowH + gap);
             r.uiRect(cx, y + rowH + gap / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             // libellé : sur deux lignes s'il dépasse sa place (« Réduire les mouvements », « Zone morte gyro »)
-            const std::string lib = ui::majuscules(LIGNES[l].libelle);
+            const std::string lib = ui::majuscules(ui::tr(LIGNES[l].libelle));
             const float lp = 12 * k;
             if (ui::width(lp, lib, 0.12f) <= libW) ui::text(r, cx, y + (rowH - lp) / 2, lp, lib, hex(MUTED), ui::GAUCHE, 0.12f, false);
             else {
@@ -496,10 +521,10 @@ private:
                     r.uiRect(bx, cy, segW, choixH, hex(ACCENT2, 0.16f));
                     r.uiRect(bx, cy + choixH - 3 * kb, segW, 3 * kb, hex(ACCENT2));
                 } else r.uiRect(bx, cy, segW, choixH, hex(SURFACE2));
-                const std::string ch = ui::majuscules(LIGNES[l].choix[c]);
+                const std::string ch = ui::majuscules(ui::tr(LIGNES[l].choix[c]));
                 float tp = 14 * k, esp = 0.06f;
                 if (ui::width(tp, ch, esp) > segW - 6 * k) esp = 0;   // texte serré plutôt que plus petit (RG-02 : 14 dp)
-                ui::text(r, bx + segW / 2, cy + (choixH - tp) / 2, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, esp, false);
+                ui::textBoite(r, bx + segW / 2, cy, segW - 6 * k, choixH, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, esp);   // WFS-504 (RG-08) : puis 20 % au plus
                 bx += segW + segGap;
             }
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
@@ -508,12 +533,14 @@ private:
         {   // WFS-297 (RG-06) : rendu puis mémoire du jeu, de la carte graphique et numéro de la partie, réduits s'ils ne tiennent pas
             const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
             const float lw = pw - 48 * k - boutonCgu(r, px + pw - 24 * k, py + ph - 32 * k, 26 * k, k) - 12 * k;   // WFS-308 (RG-05) : en bas à droite
+            ui::langue::journalTechnique(true);   // WFS-504 : lignes de mesure (src/render, hors de cette zone), notées à part
             const float tr = std::min(14 * k, 14 * k * lw / std::max(ui::width(14 * k, lr, 0.02f), 1.f));
             ui::text(r, x0, py + ph - 12 * k - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
         }
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne sous le rendu (toucher : partager)
         if (!lm.empty()) { const float lw = g_cgu.x - 12 * k - x0, tm = std::min(10 * k, 10 * k * lw / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, lw, 28 * k};
                            ui::text(r, x0, py + ph - 11 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
+        ui::langue::journalTechnique(false);
     }
 
     // WFS-419 : menu caché (k = pixels par dp) : interrupteurs en deux colonnes (zones de 44 dp), appareil, temps par passe, explication
@@ -521,10 +548,10 @@ private:
         r.uiRect(0, 0, W, H, hex(BG, 0.92f));
         const float m = 16 * k, x0 = m, lw = W - 2 * m;
         float y = m;
-        ui::text(r, x0, y, 18 * k, ui::majuscules("Diagnostic performance (WFS-419)"), hex(ACCENT2), ui::GAUCHE, 0.08f, false);
+        ui::text(r, x0, y, 18 * k, ui::majuscules(ui::tr("diag.titre")), hex(ACCENT2), ui::GAUCHE, 0.08f, false);
         {   // « Fermer » et « Tout rétablir » en haut à droite
             const float bh = std::max(44.f * k, 30 * k), tp = 14 * k;
-            const std::string ft = ui::majuscules("Fermer"), tt = ui::majuscules("Tout rétablir"), bt = ui::majuscules("Banc auto");
+            const std::string ft = ui::majuscules(ui::tr("diag.fermer")), tt = ui::majuscules(ui::tr("diag.tout")), bt = ui::majuscules(ui::tr("diag.banc"));   // WFS-504
             const float fw = ui::width(tp, ft, 0.1f) + 32 * k, tw = ui::width(tp, tt, 0.1f) + 32 * k, bw = ui::width(tp, bt, 0.1f) + 32 * k;
             g_diagFermer = {W - m - fw, y - 6 * k, fw, bh};
             g_diagTout = {W - m - fw - 8 * k - tw, y - 6 * k, tw, bh};
@@ -546,7 +573,7 @@ private:
             g_diagLigne[i] = {cx, cy, colW, rowH};
             r.uiRect(cx, cy, colW, rowH, on ? hex(ACCENT, 0.22f) : hex(SURFACE2));
             if (on) r.uiRect(cx, cy + rowH - 3 * k, colW, 3 * k, hex(ACCENT));
-            const std::string etat = !on ? "ACTIF" : diag::menu((diag::Interrupteur)i) ? "COUPÉ" : "COUPÉ (JSON)";
+            const std::string etat = ui::majuscules(ui::tr(!on ? "diag.actif" : diag::menu((diag::Interrupteur)i) ? "diag.coupe" : "diag.coupe_json"));   // WFS-504
             const float tp = 14 * k, ew = ui::width(tp, etat, 0.04f);
             const std::string lib = diag::INFOS[i].libelle;
             const float tl = std::min(tp, tp * (colW - ew - 30 * k) / std::max(ui::width(tp, lib, 0.02f), 1.f));
@@ -562,7 +589,7 @@ private:
         ligne(diag::texteAppareil(r.vk()), hex(ACCENT2));
         ligne(qualite::ligneRendu(), hex(TEXTE));
         const std::string lm = qualite::ligneMesure();
-        ligne(lm.empty() ? "Mesure : roule quelques secondes en course (fenêtre de 20 s)." : lm, hex(TEXTE));
+        ligne(lm.empty() ? ui::tr("diag.mesure_vide") : lm, hex(TEXTE));
         ligne(diag::explicationZero(r.qualiteBasse, passes::horodatagesDisponibles()), hex(MUTED));
     }
 
@@ -951,3 +978,94 @@ void appliquerQualiteNiveau(Renderer& r) { appliquerQualite(r); }   // WFS-15
 WFS_SYSTEM(ecrans::EcranReglages, 460)   // interface (400-499) : par-dessus le menu (450) et la pause (455)
 
 } // namespace wfs
+
+namespace wfs::ecrans {
+// WFS-504 (RG-07, RG-08, RG-10) : banc WFS_BANC=textes, dans la langue de WFS_LANGUE (téléphone simulé, réglage Automatique).
+// Captures textes-<fr|en>-* : menu principal, Réglages (3 onglets) au menu, Affichage en pause ; textes notés (journal) puis
+// vérifiés : aucune phrase française en anglais, aucun texte qui dépasse. Puis le parcours de l'utilisateur : accueil → Réglages
+// → Langue = English → retour → course → pause → Réglages (en anglais) → Automatique. Rend le nombre d'échecs.
+int benchReglagesTextes(Game& g, Renderer& r, const std::string& out) {
+    courseBenchRules(true);
+    if (!g.init(r, "golf", "ville")) { WFS_ERR("textes (WFS-504) : chargement impossible"); courseBenchRules(false); return 1; }
+    g.setAutopilot(true); g.camMode = 0;
+    ui::langue::choisir(ui::langue::Choix::Automatique);
+    const std::string lg = ui::langue::code();
+    int echecs = 0;
+    double t = 1300;
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; g_horlogeBanc = t; g.render(t); };
+    auto attendre = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; g_horlogeBanc = t; } };
+    auto capture = [&](const std::string& nom, const char* quoi) {
+        g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : écran %s, langue %s, onglet %s, %s", nom.c_str(), nomEcran(g.ecran()), ui::langue::code(), ONGLETS[g_onglet], quoi);
+    };
+    auto toucher = [&](int id, const Zone& z) {
+        const float x = z.x + z.w / 2, y = z.y + z.h / 2;
+        attendre(24); g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); image();
+    };
+    auto noterEcran = [&](const std::string& ecran) {   // textes des Réglages (drawUi de ce système seulement) de deux images
+        g_journalEcran = ecran; g.render(t); g.render(t + 0.01); g_journalEcran.clear();
+    };
+    const char* NOMS_O[N_ONGLETS] = {"affichage", "conduite", "son"};
+    ui::langue::viderJournal();
+    g_onglet = O_AFFICHAGE;
+    g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) image();
+    capture("textes-" + lg + "-menu", "menu principal (bouton « Réglages »)");
+    noterEcran("menu-bouton-reglages");   // seul le bouton « Réglages » est à cet écran (le reste du menu : WFS-505)
+    toucher(1, g_bouton);
+    for (int o = 0; o < N_ONGLETS; o++) {
+        toucher(10 + o, g_onglets[o]);
+        noterEcran("reglages-" + std::string(NOMS_O[o]) + "-menu");
+        capture("textes-" + lg + "-reglages-" + NOMS_O[o], "Réglages ouverts depuis le menu");
+    }
+    toucher(2, g_fermer);
+    g.allerA(Ecran::Course); for (int i = 0; i < 60 * 3; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 29) g.render(t); }
+    g.allerA(Ecran::Pause); image();
+    toucher(3, g_bouton); toucher(13, g_onglets[O_AFFICHAGE]);
+    noterEcran("reglages-affichage-pause");
+    capture("textes-" + lg + "-reglages-pause", "Réglages ouverts depuis la pause, onglet Affichage");
+    toucher(4, g_fermer);
+    echecs += ui::langue::verifierJournal();
+
+    // parcours de l'utilisateur (critère d'acceptation) : Automatique → English → course → pause → Réglages en anglais → Automatique
+    auto etape = [&](bool ok, const char* quoi) {
+        if (!ok) echecs++;
+        WFS_LOG("textes (WFS-504) : parcours : %s : %s", quoi, ok ? "OK" : "ÉCHEC");
+    };
+    g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) image();
+    toucher(5, g_bouton); toucher(14, g_onglets[O_AFFICHAGE]);
+    etape(g_ouvert, "accueil → Réglages ouverts");
+    toucher(6, g_choix[L_LANGUE][(int)ui::langue::Choix::Anglais]);
+    etape(ui::langue::choix() == ui::langue::Choix::Anglais && ui::langue::active() == ui::langue::Langue::Anglais && ui::tr("reglages.titre") == "Settings",
+          "Langue = English, panneau aussitôt en anglais (titre « Settings »)");
+    capture("textes-" + lg + "-parcours-1-english", "Langue = English choisi : panneau redessiné en anglais tout de suite (RG-03)");
+    toucher(7, g_fermer);
+    etape(!g_ouvert, "retour (« Close »)");
+    g.allerA(Ecran::Course); for (int i = 0; i < 60 * 3; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 29) g.render(t); }
+    etape(g.ecran() == Ecran::Course, "course");
+    g.allerA(Ecran::Pause); image();
+    toucher(8, g_bouton);
+    ui::langue::viderJournal(); noterEcran("parcours-reglages-pause-anglais");
+    etape(g_ouvert && ui::langue::verifierJournal() == 0, "pause → Réglages en anglais (aucune phrase française)");
+    capture("textes-" + lg + "-parcours-2-pause-english", "en pause, Réglages en anglais");
+    toucher(9, g_choix[L_LANGUE][(int)ui::langue::Choix::Automatique]);
+    const bool attenduFr = ui::langue::langueDuCode(ui::langue::langueTelephone()) == ui::langue::Langue::Francais;
+    etape(ui::langue::choix() == ui::langue::Choix::Automatique && (ui::langue::active() == ui::langue::Langue::Francais) == attenduFr,
+          "Automatique : retour à la langue du téléphone");
+    capture("textes-" + lg + "-parcours-3-auto", "Automatique : langue du téléphone");
+    toucher(15, g_fermer);
+    {   // RG-04 : le choix reste après un redémarrage (fichier écrit, choix oublié, relu)
+        const std::string f = out + "/reglages-wfs504.txt";
+        setenv("WFS_REGLAGES", f.c_str(), 1);
+        ui::langue::choisir(ui::langue::Choix::Anglais); ecrire();
+        ui::langue::choisir(ui::langue::Choix::Automatique); lire();
+        etape(ui::langue::choix() == ui::langue::Choix::Anglais, "English gardé après un redémarrage (clé langue relue)");
+        unsetenv("WFS_REGLAGES"); std::remove(f.c_str());
+        ui::langue::choisir(ui::langue::Choix::Automatique);
+    }
+    g_horlogeBanc = -1;
+    WFS_LOG("textes (WFS-504) : banc %s : %d échec(s) → %s", lg.c_str(), echecs, echecs ? "ROUGE" : "VERT");
+    courseBenchRules(false);
+    g.shutdown();
+    return echecs;
+}
+} // namespace wfs::ecrans

@@ -195,5 +195,272 @@
       "marque": "Cavallo",
       "modele": "SF-X"
     }
+  },
+  "boutique": {
+    "coefficients_classe": {
+      "gratuites": 1.0,
+      "classe1": 1.0,
+      "classe2": 1.5,
+      "classe3": 2.0,
+      "classe4": 3.0,
+      "classe5": 4.0
+    },
+    "voitures": {
+      "golf": {
+        "classe": 2
+      },
+      "m4": {
+        "classe": 3
+      },
+      "p911": {
+        "classe": 4
+      },
+      "gallardo": {
+        "classe": 4
+      },
+      "p208": {
+        "classe": 0
+      },
+      "abarth": {
+        "classe": 0
+      },
+      "tcross": {
+        "classe": 1
+      },
+      "compass": {
+        "classe": 1
+      },
+      "s3": {
+        "classe": 2
+      },
+      "x5": {
+        "classe": 3
+      },
+      "giulia": {
+        "classe": 3
+      },
+      "a45": {
+        "classe": 3
+      },
+      "model3": {
+        "classe": 2
+      },
+      "corsa": {
+        "classe": 1
+      },
+      "gt86": {
+        "classe": 0
+      },
+      "elantra": {
+        "classe": 2
+      },
+      "v60": {
+        "classe": 2
+      },
+      "rrsport": {
+        "classe": 2
+      },
+      "mustang": {
+        "classe": 3
+      },
+      "sf90": {
+        "classe": 5
+      }
+    },
+    "couleurs": {
+      "blanc": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "noir": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "gris": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "rouge": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "bleu": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "orange": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "jaune": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "vert": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "nacre": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "bleunuit": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "anglais": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "bordeaux": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "sable": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "violet": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "turquoise": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "taxi": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "bleuelectrique": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "vertacide": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "orangefluo": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "rose": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "jaunecitron": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "violetneon": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "rougevif": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "cyan": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "vertmenthe": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "magenta": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "corail": {
+        "prix": 50,
+        "gratuit": 0
+      },
+      "bleuciel": {
+        "prix": 50,
+        "gratuit": 0
+      }
+    },
+    "couleur_secondaire": {
+      "prix": 50
+    },
+    "finitions": {
+      "brillant": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "metallise": {
+        "prix": 100,
+        "gratuit": 0
+      },
+      "nacree": {
+        "prix": 150,
+        "gratuit": 0
+      },
+      "mat": {
+        "prix": 150,
+        "gratuit": 0
+      },
+      "satine": {
+        "prix": 150,
+        "gratuit": 0
+      },
+      "candy": {
+        "prix": 250,
+        "gratuit": 0
+      },
+      "chrome": {
+        "prix": 400,
+        "gratuit": 0
+      },
+      "cameleon": {
+        "prix": 400,
+        "gratuit": 0
+      }
+    },
+    "skins": {
+      "rallye": {
+        "prix": 300,
+        "cadeau": 0,
+        "voitures": "p208 abarth gt86 golf mustang giulia"
+      },
+      "drifttokyo": {
+        "prix": 600,
+        "cadeau": 0,
+        "voitures": "p208 abarth gt86 golf mustang giulia"
+      },
+      "neonnuit": {
+        "prix": 800,
+        "cadeau": 1,
+        "voitures": "p208 abarth gt86 golf mustang giulia"
+      },
+      "camouflage": {
+        "prix": 450,
+        "cadeau": 0,
+        "voitures": "p208 abarth gt86 golf mustang giulia"
+      }
+    },
+    "dessins": {
+      "essentiels": {
+        "prix": 0,
+        "gratuit": 1
+      },
+      "numeros": {
+        "prix": 150,
+        "gratuit": 0
+      },
+      "bandes": {
+        "prix": 200,
+        "gratuit": 0
+      },
+      "flammes": {
+        "prix": 250,
+        "gratuit": 0
+      },
+      "etoiles": {
+        "prix": 300,
+        "gratuit": 0
+      }
+    }
   }
 }

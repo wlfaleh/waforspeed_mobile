@@ -186,6 +186,7 @@ public:
     // WFS-144 (RG-03 a) : en qualité Basse, la prochaine voiture dessinée par draw(Model) prend sa version en lots de matériaux
     // (partsBasse : peinture, feux, vitres, reste) à toute distance : police de la poursuite, moins d'appels de dessin, jamais de cubes
     void lotsProchaineVoiture() { lotsSuivant_ = true; }
+    bool bancPeintureFineMain = false;   // WFS-460 (banc seulement, avant / après) : règle de main (peinture très fine non dessinée en Basse au-delà de 15 m)
     Material poolMat;   // WFS-09 : matériau de la tache des phares (couleur 0xfff0dc du jeu web)
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);

@@ -10,11 +10,12 @@
 #include "../render/renderer.h"
 #include "../ui/text.h"
 #include "course_system.h"
-#include "course5.h"   // WFS-112 : ouvrirChoixMode (« Retour » de la fin du duel) ; WFS-189 : rechargerNitro
+#include "course5.h"   // WFS-189 : rechargerNitro
 #include "commandes_tactiles.h"   // WFS-146 (accroche, ANO-35) : dessin2d::biseau des boutons du résultat
 #include "game.h"
 #include "player.h"
 #include "roues.h"   // WFS-452 : roues des adversaires qui tournent et braquent
+#include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-122 (RG-01) : derniers adversaires
 #include "traffic_system.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
@@ -101,8 +102,10 @@ public:
                 // (équité réseau) ; chaque téléphone le calcule pour son joueur, rien de plus n'est envoyé
                 if (pl.dist < s.finish()) pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, 0);
             }
-            if (s.raceTick(dt, pl, c->raceTime))
+            if (s.raceTick(dt, pl, c->raceTime)) {
                 WFS_LOG("duel : arrivée en %.2f s, position %d/%d", s.myFinish(), s.position(pl.dist), (int)s.board(pl.dist).size());
+                CourseJouee rc; rc.mode = ModeJoue::Duel; rc.victoire = s.position(pl.dist) == 1; profilNoterResultat(rc);   // WFS-480 : gagné / perdu
+            }
         }
         s.updateGhosts(dt);
         if (g.track) for (const auto& [id, gh] : s.ghosts())   // WFS-452 (RG-03) : braquage des roues avant d'après le vrai mouvement
@@ -158,8 +161,9 @@ public:
             const int b = bouton_; doigt_ = -1; bouton_ = 0;
             if (g.ecran != Ecran::Course || !s.inRoom()) return true;
             if (b == 1 && revanche_.contient(t.x, t.y) && s.status() == duel::Status::Done) { WFS_LOG("duel : « Revanche »"); s.setReady(true); }   // prêt pour la manche suivante
-            // RG-11 : « Retour » quitte le duel et ramène au menu des modes (jamais à l'accueil seul)
-            if (b == 2 && menu_.contient(t.x, t.y)) { WFS_LOG("duel : « Retour » → menu des modes"); s.leave(); g.allerA(Ecran::Menu); ouvrirChoixMode(); }
+            // WFS-517 (RG-05) : « Retour » quitte le duel et ramène au menu principal (le duel ne s'ouvre plus par le menu
+            // des modes de la Course solo, mais par « Duel en ligne » du menu principal)
+            if (b == 2 && menu_.contient(t.x, t.y)) { WFS_LOG("duel : « Retour » → menu principal"); s.leave(); g.allerA(Ecran::Menu); }
             return true;
         }
         if (g.ecran != Ecran::Course || (s.status() != duel::Status::Done && s.status() != duel::Status::Ready) || overT_ < 0.9) return false;
