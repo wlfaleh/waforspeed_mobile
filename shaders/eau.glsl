@@ -272,7 +272,7 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         // sous le soleil (ou la lune), comme en vrai. Avis 3D B2 : chaque carré tire au hasard s'il porte une facette selon ce poids :
         // les reflets se raréfient en douceur vers les bords de la traînée (plus de limite nette) ; les autres gardent le lobe moyen
         vec3 Hs = normalize(V + normalize(F.sunDir.xyz));
-        float poids = exp(-(1.0 - dot(N, Hs)) / sig2);
+        float poids = exp(-(1.0 - dot(N, Hs)) / (1.6 * sig2));   // queue un peu plus large que la loi : bords encore plus doux
         if (poids > 0.01) {
             // une facette par carré de 2 × 2 pixels, calé sur les quads du GPU : la normale ne change pas dans le quad, donc les
             // dérivées dFdx / dFdy de N sont nulles et l'anticrénelage des reflets (scene.frag, Tokuyoshi) n'élargit pas le reflet de
