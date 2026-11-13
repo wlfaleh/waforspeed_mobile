@@ -15,15 +15,30 @@ Agent : Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y)
   - **À l'écran : rien ne change** (garage pixel pour pixel identique, voir plus bas).
 - **Comment c'est vérifié** :
   - **`test_boutique`** (RG-12 et RG-11, 51 cas) : 3 voitures gratuites ; prix et classes des 17 voitures ; coefficients ; métallisé SF90 = 400 ★, candy Golf = 375 ★, pack sans coefficient ; équivalents médailles et euros ; crédit / débit / refus ; achat suffisant, insuffisant, déjà possédé, voiture retirée ; peinture achetée sur la Golf absente sur la M4 ; pack de dessins sur toutes ; essai une seule fois, voiture encore bloquée après, essai relu ; sauvegarde d'avant (voiture et couleurs gardées) ; partie neuve sur la p208 ; `configgame.json` mal écrit (prix négatif, gain en texte → valeur du code + message) ; banc d'équilibrage dans les bornes, puis Corsa à 400 ★ → 1re voiture T-Cross 30 courses, écart signalé ;
-  - `test_sauvegarde` : partie neuve sur la p208 (ajout d'une vérification) ; `test_configgame` : `configgame.json` du dépôt relu, 0 erreur ; **les 122 tests CPU passent** (bloc « Tests CPU » ci-dessous) ;
-  - **banc `equilibrage`** : [texte](texte-equilibrage.md) — 1re voiture (Corsa 250 ★) **25 courses**, les 14 voitures 24 350 ★ = 2 435 courses = **120,1 h** ; **même banc, prix changé dans `configgame.json` sans recompiler** : [texte](texte-equilibrage-prix-change.md) (Corsa 400 ★ → T-Cross 30 courses, code 3) ;
-  - **banc `sauvegarde`** lancé deux fois : [texte](texte-sauvegarde.md) — 250 ★ ; rose sur la M4 achetée (100 ★) ; chromé (800 ★) et la M4 (2 200 ★ = 3 or + 1 argent + 1 bronze = 21,78 €) refusés faute d'étoiles, rien de débité ; essai de la M4 noté au départ ; +10 ★ à la fin ; relu : 160 ★, voitures p208 abarth gt86, essai m4 ;
+  - `test_sauvegarde` : partie neuve sur la p208 (ajout d'une vérification) ; `test_configgame` : `configgame.json` du dépôt relu, 0 erreur ; **les 121 tests CPU passent** (bloc « Tests CPU » ci-dessous) ;
+  - **banc `equilibrage`** : [texte](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/texte-equilibrage.md) — 1re voiture (Corsa 250 ★) **25 courses**, les 14 voitures 24 350 ★ = 2 435 courses = **120,1 h** ; **même banc, prix changé dans `configgame.json` sans recompiler** : [texte](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/texte-equilibrage-prix-change.md) (Corsa 400 ★ → T-Cross 30 courses, code 3) ;
+  - **banc `sauvegarde`** lancé deux fois : [texte](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/texte-sauvegarde.md) — 250 ★ ; rose sur la M4 achetée (100 ★) ; chromé (800 ★) et la M4 (2 200 ★ = 3 or + 1 argent + 1 bronze = 21,78 €) refusés faute d'étoiles, rien de débité ; essai de la M4 noté au départ ; +10 ★ à la fin ; relu : 160 ★, voitures p208 abarth gt86, essai m4 ;
   - **garage avant / après** : les 13 images du garage sont **identiques octet pour octet** (`cmp`) entre `main` et la branche, ainsi que `sauvegarde-relue`. Les 3 images de course (`garage-course`, `course-p911-gris`, `fin-record`) diffèrent : c'est la variation du banc (deux lancements de la **même** branche donnent déjà des images différentes ; la sauvegarde est inactive dans le banc `garage`).
 - **Limites et risques connus** :
   - pas d'écran : le garage laisse encore choisir et conduire toutes les voitures (cadenas et « Acheter » : WFS-499). D'ici là, conduire une voiture non possédée en solo **utilise son essai gratuit** (donnée seulement, rien ne se bloque) ;
   - le gain de 10 ★ par course est provisoire (étape « score ») ; il compte aussi les duels terminés ;
   - la sauvegarde garde `version=1` (nouvelles clés seulement, comme WFS-480 et 487) ;
   - le total « tout débloquer avec peintures et skins » (≈ 567 h) est donné pour information (RG-11), sans borne.
+
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main`, code testé : commit b9f602c8 (les commits suivants n'ajoutent que `qa/pr/WFS-498/`). Journal complet : [`tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/tests-cpu.log). Aucun échec.
+
+```
+[OK] test_vehicule_lod (1 s)
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (1 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 121 test(s) réussi(s) en 438 s
+code de sortie : 0
+```
 
 ## Captures pour le lead dev (16 après)
 
@@ -47,3 +62,8 @@ Dossier : [`qa/pr/WFS-498`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `showroom-suivante-3` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/avant-showroom-suivante-3.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/apres-showroom-suivante-3.jpg?raw=true) |
 | `fin-record` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/avant-fin-record.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/apres-fin-record.jpg?raw=true) |
 | `sauvegarde-relue` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/avant-sauvegarde-relue.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-498/qa/pr/WFS-498/apres-sauvegarde-relue.jpg?raw=true) |
+
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01Us6uCvzsxvoKDpDXD7tC4y
