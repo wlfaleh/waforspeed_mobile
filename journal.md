@@ -940,3 +940,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Vérification : 121 tests CPU OK (`test_boutique` 51 cas), banc `equilibrage` : Corsa 25 courses, 14 voitures 120,1 h ; prix Corsa changé dans un `configgame.json` (sans recompiler) → T-Cross 30 courses, écart signalé ; banc `sauvegarde` ×2 : 250 ★, achat accepté, refus faute d'étoiles, relu 160 ★ ; garage identique octet pour octet avant / après.
 - Limites : pas d'écran (WFS-499) ; conduire une voiture non possédée en solo utilise son essai d'ici là ; gain provisoire de 10 ★ (étape « score »), duels compris.
 
+### 2026-11-13 12:32:09 — WFS-505 : PR #383 ouverte (Claude, agent dev3d (01UY1Vv4v6))
+- PR #383 (commit dfa30d16, branche synchronisée avec `main`) : description complète, captures `qa/pr/WFS-505/` (FR avant / après identiques : 59 captures identiques à l'octet, les autres ne diffèrent que par le code du salon, la mémoire mesurée et les temps du duel ; EN du parcours complet), `tests-cpu.log` (120 réussis). Banc « textes » vert en `en` et en `fr` ; licences : 0 manque.
+- Statut 🔀 En PR, ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
+
