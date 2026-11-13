@@ -39,6 +39,7 @@ const char* garageVoitureAffichee();   // WFS-127 : identifiant de la voiture af
 void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::string& suffixe = "");
 void benchGarageTour(Game& g, Renderer& r, const std::string& outDir);   // WFS-404 : une capture par place du garage
 int benchGarageCouleurs(Game& g, Renderer& r, const std::string& outDir);   // WFS-489 : garage-couleurs-* (garage_couleur_banc.cpp), rend les écarts
+int benchGarageVoitures(Game& g, Renderer& r, const std::string& outDir);   // WFS-499 : garage-voitures-* (garage_voitures_banc.cpp), rend les écarts
 // WFS-507 : banc « textes » du garage (garage_textes_banc.cpp) : captures textes-<fr|en>-garage-*, parcours, garde-fou ; rend le nombre d'échecs
 int benchGarageTextes(Game& g, Renderer& r, const std::string& outDir);
 } // namespace ecrans

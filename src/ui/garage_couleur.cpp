@@ -20,8 +20,9 @@ namespace {
 constexpr float PASTILLE = 30, ECART = 8, LIGNE_PRIX = 14, ONGLET_H = 30, CHEVRON = 16, NOM = 190, SEUIL_GLISSE = 10;
 
 const std::string& nomCouleur(int p) { return ui::tr(("couleur." + std::string(PAINTS[p].id)).c_str()); }
+} // namespace
 
-// petit cadenas (interface 2D) : anse en arc et corps aux coins coupés, cerné de sombre pour se lire sur toute couleur
+// petit cadenas (WFS-499 : partagé avec les voitures bloquées, déclaré dans garage_achat.h) (interface 2D) : anse en arc et corps aux coins coupés, cerné de sombre pour se lire sur toute couleur
 void cadenas(Renderer& r, float cx, float cy, float u, float op) {
     const vec4 fond = hex(BG, 0.85f * op), clair = hex(TEXTE, op);
     auto corps = [&](float marge, const vec4& c) {
@@ -36,7 +37,6 @@ void cadenas(Renderer& r, float cx, float cy, float u, float op) {
     corps(0, clair);
     r.uiCircle(cx, cy + u * 0.22f, u * 0.08f, fond);   // trou de la serrure
 }
-} // namespace
 
 float CouleurGarage::hauteur(float k) { return (PASTILLE + LIGNE_PRIX) * k; }
 

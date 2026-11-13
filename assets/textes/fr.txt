@@ -368,6 +368,15 @@ garage.couleur.comme=Comme la carrosserie
 garage.acheter=Acheter {1} ★
 garage.solde=Solde : {1} ★
 garage.manque=Il te manque {1} ★
+# WFS-499 : voitures bloquées, achat avec confirmation, essai gratuit
+garage.bloquee=Voiture bloquée
+garage.essai=Essai gratuit
+garage.essai_fait=Essai déjà fait
+garage.achat_titre=Achat d'une voiture
+garage.achat_question=Acheter la {1} pour {2} ★ ?
+garage.confirmer=Confirmer
+garage.annuler=Annuler
+fin.essai_termine=Essai gratuit terminé
 medaille.bronze=bronze
 medaille.argent=argent
 medaille.or=or

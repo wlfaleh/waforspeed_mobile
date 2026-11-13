@@ -52,7 +52,8 @@ struct Zone {
 // d'essai et les parcours lisent garageBouton juste après un Game::init) et sont vidées en quittant l'écran Garage.
 // Chaque panneau n'écrit que ses propres champs.
 struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT];
-               Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1]; };   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
+               Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1];   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
+               Zone essai; };                                            // WFS-499 : « Essai gratuit » d'une voiture bloquée
 extern Zones g_z;
 
 // parallélogramme d'un seul tenant (WFS-99), haut décalé à droite de `biais`

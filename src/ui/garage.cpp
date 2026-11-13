@@ -108,12 +108,17 @@ public:
         // WFS-113 : un doigt = un appui. Le doigt qui a actionné un bouton est ignoré jusqu'à ce qu'il se relève
         // (sur Android, ses micro-mouvements arrivent aussi comme des appuis : la flèche sautait des voitures)
         if (appui_.consomme(t.id, t.down)) return true;
+        if (FenetreAchatVoiture& f = achat_.fenetre(); f.ouverte()) {   // WFS-499 (accroche) : la fenêtre d'achat garde tous les touchers
+            if (const int c = t.down ? f.appui(t.x, t.y) : -1; c >= 0) { appui_.prendre(t.id); if (c == f.CONFIRMER && f.confirmer() && g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); else if (c == f.ANNULER) f.fermer(); }
+            return true;
+        }
         // WFS-115 : « Choisir » et « Retour » agissent au relâcher, sur le bouton appuyé : le doigt est levé quand l'écran
         // change, ses mouvements n'atteignent jamais l'écran suivant (ils y arrivaient comme des appuis neufs)
         if (t.id == doigtBouton_) {
             if (t.down) return true;
             const int b = bouton_, z = achat_.appui(t.x, t.y); bouton_ = 0; doigtBouton_ = -1;
             if (b == AchatGarage::CHOISIR && z == AchatGarage::CHOISIR) { if (!achat_.acheter()) choisir(g); }   // WFS-489 (accroche) : « Acheter N ★ »
+            else if (b == AchatGarage::ESSAI && z == AchatGarage::ESSAI) { if (achat_.essaiDemande()) essayer(g); }   // WFS-499 (accroche)
             else if (b == AchatGarage::RETOUR && z == AchatGarage::RETOUR) { WFS_LOG("garage : « Retour »"); choisi_ = false; retour_ = true; g.allerA(Ecran::Menu); }
             return true;
         }
@@ -170,6 +175,7 @@ public:
         finition_.dessiner(r, mp, e);       // vide (WFS-491)
         skin_.dessiner(r, mp, e);           // vide (WFS-494)
         cadre::pied(r, mp, car, voiture_.ok);
+        achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout
     }
 
     // ---------- accès du banc d'essai (garage_bancs.cpp) ----------
@@ -182,6 +188,7 @@ public:
         }
     }
     int index() const override { return index_; }
+    bool boutonFenetre(const char* nom, float& x, float& y) { return achat_.boutonFenetre(nom, x, y); }   // WFS-499 (banc)
     void choisirPeinture(int i) override { peinture_[index_] = i; }
     bool reglerScene(FrameParams& fp, SceneDediee& s, const GameView& g) override { return scene(fp, s, g); }
 
@@ -217,6 +224,7 @@ private:
         }
         choisi_ = true; g.allerA(Ecran::Menu);
     }
+    void essayer(const GameView& g) { WFS_LOG("garage : « Essai gratuit » %s", CARS[index_].id); if (g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); g_regarder = false; choisi_ = true; g.allerA(Ecran::Menu); }   // WFS-499 (accroche) : « Choisir » sans garder la voiture dans la sauvegarde
 
     Renderer* r_ = nullptr;
     DecorGarage decor_;   // sol, plateau, anneau, barres, lumières (garage_decor.cpp)
@@ -238,7 +246,9 @@ AccesBancGarage* garage::garageEnCours() { return g_garage; }
 
 bool garageBouton(const char* nom, float& x, float& y) {
     const Zone* z = std::strcmp(nom, "choisir") == 0 ? &g_z.choisir : std::strcmp(nom, "retour") == 0 ? &g_z.retour
-                  : std::strcmp(nom, "suivant") == 0 ? &g_z.next : std::strcmp(nom, "precedent") == 0 ? &g_z.prev : nullptr;
+                  : std::strcmp(nom, "suivant") == 0 ? &g_z.next : std::strcmp(nom, "precedent") == 0 ? &g_z.prev
+                  : std::strcmp(nom, "essai") == 0 ? &g_z.essai : nullptr;   // WFS-499 (accroche)
+    if (g_garage && (std::strcmp(nom, "confirmer") == 0 || std::strcmp(nom, "annuler") == 0)) return g_garage->boutonFenetre(nom, x, y);   // WFS-499
     if (!z || z->w <= 0) return false;
     x = z->x + z->w / 2; y = z->y + z->h / 2;
     return true;
