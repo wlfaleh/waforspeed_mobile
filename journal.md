@@ -1552,3 +1552,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #398 relue sur 8be141c1 (2e revue) : les 3 points du refus de 20:08 sont corrigés (`tests-cpu.log` et section Tests CPU ; description à jour ; corniche de la devanture faite avec `archi::details::corniche`, plus de boîte). Captures `carte-ville-mobilier-terrasse` jour et nuit ouvertes : haut mouluré, aucune régression. Avis agent 3D « VALIDÉ avec réserves » sur 8be141c1.
 - Construction et **129 tests CPU réussis** (449 s), refaits par le lead dev sur la branche fusionnée localement avec `main` (WFS-401 compris).
 - « ✅ Approuvé » en commentaire (GitHub refuse l'approbation pour le même compte), fusion en squash **19279c41**. WFS-410 → 🟡 À valider (utilisateur) ; WFS-471 → ⏳ Prêt (republier les paquets de la Corniche et de la Ville). Réserves R1, R6, R7 et l'église au loin sans capture : pour le PO.
+
+### 2026-11-13 20:45:28 — WFS-537 attribué à Claude, agent dev3d (01UY1Vv4Hv) (po-scrum-master)
+- Demande : nouvelle session `@dev` (développeur artiste 3D, session_01UY1Vv4HvRfWvDZhYEc8aco), aucun ticket avant ; aucun souhait de l'utilisateur (« go »).
+- Choix : **WFS-537** (E22 « Score », P1, ⏳ Prêt depuis la fusion de WFS-535) : bandeau 🏆, E22 juste après les tickets prêts du moment, donc avant WFS-511 (33e de l'ordre 🏁), qui reste ⏳ Prêt pour la prochaine session `@dev`.
+- Zone : écran de fin des 4 modes (`src/game/modes_ecran.cpp`, accroches ≤ 10 lignes dans `course_system`, `course5_system`, `poursuite_system`, `duel_system`, annoncées au journal), textes `assets/textes/**`, compteur `src/ui/ecrans/compteur_etoiles.{h,cpp}` + accroche ≤ 10 lignes dans `src/ui/ecrans/menu.cpp`. Règles : `regles-de-gestion/WFS-537.md`, `regles-de-gestion/E22-score.md`.
+- Pièges : WFS-536 vient d'être fusionné (#399, crédit des ★ du score) : partir de `main` à jour (RG-06 tombe) ; WFS-489 (#395) en retour lead dev sur le garage : ne pas toucher `garage_*` (RG-09 : seulement ouvrir le garage) ; aucun bouton du menu déplacé ni rétréci (ordre du 2026-11-06).
+- Un seul ticket pour cette session (règle du 2026-11-09) : arrêt après la fusion par le lead dev.
