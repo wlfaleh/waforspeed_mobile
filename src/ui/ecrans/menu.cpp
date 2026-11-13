@@ -193,7 +193,7 @@ public:
         // WFS-406 (RG-02) : en bas à droite, style du bouton « Réglages ». WFS-415 (RG-05, accroche) : dessiné APRÈS les choix,
         // pour que « Course solo » reste la 1re zone de la manette (manette::focus) et du parcours d'endurance (CI #993, #994)
         credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
-        compteur_etoiles::dessiner(r, g, presse_ == COMPTEUR);   // WFS-537 (RG-07, RG-08) : solde relu à chaque image
+        compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
     double t0_ = -1;

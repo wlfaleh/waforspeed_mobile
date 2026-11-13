@@ -4,7 +4,9 @@
 //   - RG-08 : relu à chaque image (à jour dès le retour au menu après une course, un achat, un cadeau) ; « 12 450 » en
 //     français, « 12,450 » en anglais ; libellé pour le lecteur d'écran par ui::tr (menu.etoiles.lecteur) ;
 //   - RG-09 : appui → garage (WFS-513 le fera ouvrir le Market).
-// Le menu (menu.cpp) l'appelle : dessiner() à chaque image, dans() pour ses appuis (appui au relâcher, comme ses choix).
+// Dessin : système CompteurEtoiles (461), juste après le bouton « Réglages » (460) de la même image, seulement si ce bouton a été
+// dessiné (rien sous « Crée ton pilote », le choix du mode, les Crédits), avec le fondu d'entrée du menu (0,3 s).
+// Le menu (menu.cpp) garde les appuis : dans() pour sa cible, appuye() pour l'état appuyé (action au relâcher, comme ses choix).
 #pragma once
 #include <string>
 
@@ -13,8 +15,8 @@ class Renderer;
 struct GameView;
 namespace ecrans::compteur_etoiles {
 
-// dessine le compteur à gauche du bouton « Réglages » (rien tant que ce bouton n'a pas été dessiné) ; presse : état appuyé
-void dessiner(Renderer& r, const GameView& g, bool presse);
+// état appuyé (voile cyan), posé par le menu à chaque image
+void appuye(bool oui);
 // appui dans la cible du compteur (dessin élargi à 48 dp de haut, comme « Réglages ») ; faux s'il n'est pas dessiné
 bool dans(float x, float y);
 // texte lu par le lecteur d'écran (« 12 450 étoiles » / « 12,450 stars ») ; aussi noté au journal du banc

@@ -123,7 +123,7 @@ private:
             dessinerEtoile(r, x0 + tw + 1.2f * s + re, yy + px * 0.5f, re, ui::ORANGE);
             yy += 8 * s;
             if (e.solde >= 0) {   // nouveau solde du portefeuille (ce qu'il a vraiment reçu)
-                ui::textBoite(r, x + cw / 2, yy, lw, 3 * s, 3 * s, ui::tr("fin.score.solde", nombreEtoiles(e.solde, en)), ui::GRIS, ui::CENTRE, 0.f, false);
+                ui::textBoite(r, x + cw / 2, yy, lw, 3 * s, 3 * s, ui::tr(singulier(e.solde, en) ? "fin.score.solde.un" : "fin.score.solde", nombreEtoiles(e.solde, en)), ui::GRIS, ui::CENTRE, 0.f, false);
                 yy += 4 * s;
             }
         }

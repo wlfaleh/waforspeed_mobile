@@ -1,6 +1,7 @@
 // WaForSpeed — banc de l'écran de fin du score et du compteur d'étoiles (WFS-537, épic E22) : WFS_BANC=score-fin, voir score_fin.h.
 // Vraie partie au banc d'essai PC, sauvegarde active dans un fichier propre au banc (effacé au début et à la fin), en français
 // puis en anglais (réglage « Langue ») :
+//   0. 1er lancement : « Crée ton pilote » ouvert, compteur caché ; profil du banc créé ;
 //   1. menu principal avec 0, 250 et 12 450 ★ (RG-07, RG-08, RG-10) ;
 //   2. course solo terminée → bloc « Score », « +N ★ », nouveau solde ; « Menu » → accueil, compteur = nouveau solde (parcours) ;
 //   3. course à 5 (2 km) gagnée : adversaires tenus derrière le joueur (course5BancSuiveurs) ;
@@ -22,6 +23,7 @@
 #include "../render/renderer.h"
 #include "../ui/ecrans/cgu.h"
 #include "../ui/ecrans/compteur_etoiles.h"
+#include "../ui/ecrans/creation_profil.h"   // WFS-481 : écran « Crée ton pilote »
 #include "../ui/langue.h"
 #include "boutique.h"
 #include "course.h"
@@ -94,6 +96,18 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
     courseBenchRules(true);
     ui::langue::viderJournal();
 
+    // ---------- 0. 1er lancement : « Crée ton pilote » (WFS-481) ouvert : ni « Réglages » ni compteur ; puis profil du banc ----------
+    ui::langue::choisir(ui::langue::Choix::Francais);
+    if (g.init(r, "golf", "ville")) {
+        g.setAutopilot(false); g.allerA(Ecran::Menu); images(90);
+        capture("score-menu-creation-fr");
+        float cx = 0, cy = 0;
+        verifier(ecrans::creationProfilOuverte() && !ecrans::compteur_etoiles::centre(cx, cy), "« Crée ton pilote » ouvert : compteur caché");
+        { std::string nick; s.profil.creer("Banc 537", "WFS-537", nick); s.nick = nick; }   // profil du banc, comme WFS-481 (cgu.cpp)
+        images(30);
+        verifier(!ecrans::creationProfilOuverte() && ecrans::compteur_etoiles::centre(cx, cy), "profil créé : menu et compteur dessinés");
+        g.shutdown();
+    }
     for (const ui::langue::Choix lg : {ui::langue::Choix::Francais, ui::langue::Choix::Anglais}) {
         ui::langue::choisir(lg);
         const std::string code = ui::langue::code();
@@ -105,7 +119,7 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
                 capture("score-menu-" + code + "-" + std::to_string(n));
                 float cx = 0, cy = 0;
                 verifier(ecrans::compteur_etoiles::centre(cx, cy), "menu " + std::to_string(n) + " ★ : compteur dessiné (RG-07)");
-                verifier(ecrans::compteur_etoiles::texteLecteur() == ui::tr("menu.etoiles.lecteur", nombreEtoiles(n, code == "en")),
+                verifier(ecrans::compteur_etoiles::texteLecteur() == ui::tr(singulier(n, code == "en") ? "menu.etoiles.lecteur.un" : "menu.etoiles.lecteur", nombreEtoiles(n, code == "en")),
                          "menu : lecteur d'écran « " + ecrans::compteur_etoiles::texteLecteur() + " » (RG-08)");
             }
             fixerSolde(0);
@@ -124,7 +138,7 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
             verifier(g.ecran() == Ecran::Menu && !etat().pret, "fin → « Menu » : accueil, bloc effacé");
             images(30);
             capture("score-parcours-" + code + "-menu");
-            verifier(ecrans::compteur_etoiles::texteLecteur() == ui::tr("menu.etoiles.lecteur", nombreEtoiles(boutique::solde(s), code == "en")),
+            verifier(ecrans::compteur_etoiles::texteLecteur() == ui::tr(singulier(boutique::solde(s), code == "en") ? "menu.etoiles.lecteur.un" : "menu.etoiles.lecteur", nombreEtoiles(boutique::solde(s), code == "en")),
                      "parcours accueil → course → fin → menu : compteur = nouveau solde (RG-08)");
             // ---------- 7. appui sur le compteur → garage (RG-09) ----------
             if (ecrans::compteur_etoiles::centre(x, y)) toucher(x, y);

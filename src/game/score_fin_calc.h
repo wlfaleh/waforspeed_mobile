@@ -33,4 +33,7 @@ inline std::string nombreEtoiles(long long v, bool anglais) {
     return neg ? "-" + out : out;
 }
 
+// accord du nom « étoile » / « star » : singulier pour 0 et 1 en français, pour 1 seulement en anglais
+inline bool singulier(long long n, bool anglais) { return anglais ? n == 1 : (n == 0 || n == 1); }
+
 } // namespace wfs::score_fin

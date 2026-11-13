@@ -34,6 +34,9 @@ int main() {
     verifier(nombreEtoiles(1000000000000LL, true) == "1,000,000,000,000", "RG-08 : solde maximal (10^12) en anglais");
     verifier(nombreEtoiles(-1234, true) == "-1,234", "négatif (jamais affiché, sans plantage)");
     verifier(nombreEtoiles(std::numeric_limits<long long>::min(), true).size() > 20, "plus petit entier : sans débordement");
+    // accord : « 1 étoile », « 0 étoile », « 2 étoiles » ; « 1 star », « 0 stars »
+    verifier(singulier(1, false) && singulier(0, false) && !singulier(2, false) && !singulier(12450, false), "singulier en français (0 et 1)");
+    verifier(singulier(1, true) && !singulier(0, true) && !singulier(2, true), "singulier en anglais (1 seulement)");
     std::printf("%s (%d échec(s))\n", g_echecs ? "ROUGE" : "VERT", g_echecs);
     return g_echecs ? 1 : 0;
 }
