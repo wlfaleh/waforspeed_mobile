@@ -1415,3 +1415,9 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - **Limite** : garde au sol réelle non sourcée (fiche sans valeur, sites des constructeurs fermés au réseau de la session).
 - **Incident évité** : un `git stash` a mis de côté mes fichiers en cours pendant une capture ; restaurés aussitôt (`git stash pop`), captures de ce moment effacées et refaites.
 
+
+### 2026-11-13 19:17:33 — WFS-507 fusionné par le lead dev (lead-dev)
+- PR #396 fusionnée en squash (c0bd7a95) après la 2e revue sur 769fcb6a : bloc « Tests CPU » ajouté (125 réussis, commit testé d7cbcd71), changement de `garage_commun.*` annoncé au journal, `creditAffiche()` retirée. « ✅ Approuvé » en commentaire (même compte GitHub).
+- Refait par le lead dev : construction et tests CPU sur 769fcb6a (125 réussis), puis sur le mélange local avec `main` contenant WFS-500 (126 réussis, non poussé).
+- Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Reste en français au garage en anglais jusqu'à WFS-489 : Choisir / Retour / Couleur / nom de la couleur.
+- Pour le PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite). À créer en anomalie.

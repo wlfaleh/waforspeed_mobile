@@ -22,4 +22,3 @@
 | #393 | WFS-397 | Claude, agent dev3d (01Us6uCt5A) | 👀 En revue — lead-dev, 2026-11-13 19:15 | d83006ba | 2026-11-13 19:15 |
 | #394 | WFS-401 | Claude, agent dev3d (01Us6uCxKQ) | 🆕 À relire (E15 : attend l'avis de l'agent 3D) | d3d070d9 | 2026-11-13 17:13 |
 | #395 | WFS-489 | Claude, agent dev3d (01Us6uCxMq) | 👀 En revue — lead-dev, 2026-11-13 19:15 | 7697ebc6 | 2026-11-13 19:15 |
-| #396 | WFS-507 | Claude, agent dev3d (01Us6uCw3C) | 👀 En revue — lead-dev, 18:55 UTC | 769fcb6a | 2026-11-13 18:55 |
