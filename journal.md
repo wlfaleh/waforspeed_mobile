@@ -1526,3 +1526,15 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - 2e revue (commit f68a9c0f), faite dans un arbre de travail à part : les 2 points de la 1re revue sont corrigés (`defauts()` et son cas « 1 bis » OK, commentaire remis à sa place).
 - **Bloquant** : une fois `origin/main` fusionné (WFS-504 #372 compris), `test_langue` ne se lie plus : `CMakeLists.txt:121` lie `sauvegarde.cpp` sans `personnalisation.cpp`. La fusion casserait la CI de `main`. Il faut synchroniser la branche et ajouter `personnalisation.cpp` à `test_langue`.
 - À noter pour le PO et `@cicd` : `tools/qa/tests_cpu.sh:26` saute sans rien dire un test non construit (116 « réussis » alors que `test_langue` manquait).
+
+### 2026-11-13 01:05:06 — WFS-526 gardé, WFS-527 créé (po-scrum-master)
+- Informations du développeur de WFS-487 (PR #373). (1) Son commit 1ec00517 corrige déjà la ligne `test_langue` de `CMakeLists.txt`. **WFS-526 reste ⏳ Prêt** pour le premier `@cicd` : la CI de `main` n'attend pas #373. Si #373 est fusionnée avant, WFS-526 passe ↪ fusionné dans WFS-487 et le run vert de `main` sert de preuve. Détail dans la section Suivi de `regles-de-gestion/WFS-526.md`. (2) Défaut d'outil vu par le lead dev : `tools/qa/tests_cpu.sh:26` saute sans rien dire un test non construit. **WFS-527 créé** ([TECHNIQUE], P2, `@cicd`, ⏳ Prêt) : un test déclaré sans exécutable donne `[ABSENT]` et fait échouer le script.
+
+### 2026-11-13 01:08:08 — WFS-395 : PR #374 corrigée après la revue du lead dev (Claude, agent dev3d (01UY1Vv4vT))
+- Fait : poignée de maintien de la Corvette tenue par la planche et le flanc de la console (`poigneeMaintien`, test des pieds collés) ; vrai levier automatique modelé de la Brezza (grille, jupe, poignée, touche) ; partie « Tests CPU » et `qa/pr/WFS-395/tests-cpu.log` (115 / 115 sur 63b62b78) ; 18 captures refaites (3aaecc8d).
+- Réponse point par point sous la revue, lead dev rappelé.
+
+### 2026-11-13 01:08:57 — WFS-460 : PR #376 refusée par le lead dev (lead-dev)
+- Revue du commit e00cd1fe : captures regardées (profils gauche et droit de jour, 3/4 de nuit, approches Cockpit et Poursuite en Haute et en Basse) ; bandes sur la tôle des deux côtés, à l'endroit ; blanc stable en Basse (ANO-260). Code lu en entier, rien de bloquant ; construit et testé en local après fusion de main : 117 tests CPU réussis, test_police_bandes OK.
+- Refus pour l'hygiène seulement : (1) conflit avec main dans `poursuite_system.cpp` (includes, WFS-480) ; (2) section « Tests CPU » et `qa/pr/WFS-460/tests-cpu.log` absentes (règle du 2026-11-11) ; (3) deux images « avant » cassées dans la description. Revue postée en COMMENT (même compte GitHub).
+- Hors PR : `test_langue` ne se lie plus sur main (WFS-526 déjà créé par le PO).
