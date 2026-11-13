@@ -1,0 +1,13 @@
+[QA] étape menu atteinte après 0 s — attendu « Écran : course → menu » — ligne 1 du journal du jeu : [info] Écran : course → menu
+[QA] étape profil-ecran atteinte après 0 s — attendu « création du profil \(WFS-481\) : points d'appui » — ligne 4 du journal du jeu : [info] création du profil (WFS-481) : points d'appui : p=2195,302 e=548,302 t=820,302 i=1636,302 valider=318,893
+[QA] appui profil-p 2195,302
+[QA] appui profil-e 548,302
+[QA] appui profil-t 820,302
+[QA] appui profil-i 1636,302
+[QA] appui profil-t 820,302
+[QA] appui profil-valider 318,893
+[QA] étape profil atteinte après 0 s — attendu « création du profil \(WFS-481\) : « .* » : pseudo « Petit » » — ligne 7 du journal du jeu : [info] création du profil (WFS-481) : « C'est parti » : pseudo « Petit », plaque « PETIT » enregistrés → menu
+code de profil() = 0 ; appuis : profil-p profil-e profil-t profil-i profil-t profil-valider  ; captures : 02a-profil.png 02b-profil-cree.png 
+[QA] étape menu atteinte après 0 s — attendu « Écran : course → menu » — ligne 1 du journal du jeu : [info] Écran : course → menu
+[QA] profil : pas d'écran de création (profil déjà créé)
+code de profil() sans écran = 0
