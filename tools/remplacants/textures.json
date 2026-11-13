@@ -1,0 +1,9 @@
+{
+  "w212": [
+    { "fichier": "textures/mat_chrome_baseColor.jpeg", "zones": [
+      { "nom": "écusson rond « MERCEDES-BENZ » à l'étoile", "disque": [0.2114, 0.1294, 0.034] },
+      { "nom": "étoile (haut de l'atlas)", "rect": [0.398, 0.015, 0.440, 0.068] },
+      { "nom": "étoile (bas de l'atlas)", "rect": [0.838, 0.638, 0.902, 0.712] }
+    ] }
+  ]
+}

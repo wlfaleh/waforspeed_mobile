@@ -1,0 +1,166 @@
+{
+  "w212": [
+    {
+      "nom": "anneau chromé de l'étoile de la calandre",
+      "materiau": 4,
+      "triangles": 382,
+      "boite": [
+        -0.12,
+        0.55,
+        -2.42,
+        0.12,
+        0.78,
+        -2.33
+      ]
+    },
+    {
+      "nom": "étoile de la calandre",
+      "materiau": 4,
+      "triangles": 28,
+      "boite": [
+        -0.09,
+        0.6,
+        -2.41,
+        0.09,
+        0.77,
+        -2.34
+      ]
+    },
+    {
+      "nom": "disque noir derrière l'étoile de la calandre",
+      "materiau": 3,
+      "triangles": 32,
+      "boite": [
+        -0.11,
+        0.56,
+        -2.41,
+        0.11,
+        0.77,
+        -2.34
+      ]
+    },
+    {
+      "nom": "anneau peint de l'étoile, pris dans la pièce peinte des bords de la calandre",
+      "action": "cercle",
+      "centre": [
+        0,
+        0.666
+      ],
+      "rayon": 0.16,
+      "materiau": 9,
+      "triangles": 1410,
+      "boite": [
+        -0.44,
+        0.55,
+        -2.42,
+        0.44,
+        0.78,
+        -2.19
+      ]
+    },
+    {
+      "nom": "lames peintes de la calandre (bouts amenés au milieu, après l'anneau peint)",
+      "action": "prolonger",
+      "mode": "bouts",
+      "seuil": 0.2,
+      "materiau": 9,
+      "triangles": 1410,
+      "boite": [
+        -0.44,
+        0.55,
+        -2.42,
+        0.44,
+        0.78,
+        -2.19
+      ]
+    },
+    {
+      "nom": "barres basses de la calandre, gauche et droite (prolongées jusqu'au milieu)",
+      "action": "prolonger",
+      "seuil": 0.15,
+      "nombre": 2,
+      "materiau": 4,
+      "triangles": 66,
+      "boite": [
+        -0.44,
+        0.6,
+        -2.39,
+        0.44,
+        0.66,
+        -2.3
+      ],
+      "mode": "bouts"
+    },
+    {
+      "nom": "barre haute de la calandre, côté gauche (prolongée)",
+      "action": "prolonger",
+      "seuil": 0.15,
+      "materiau": 4,
+      "triangles": 77,
+      "boite": [
+        -0.44,
+        0.68,
+        -2.37,
+        -0.1,
+        0.72,
+        -2.27
+      ],
+      "mode": "bouts"
+    },
+    {
+      "nom": "barre haute de la calandre, côté droit (prolongée)",
+      "action": "prolonger",
+      "seuil": 0.15,
+      "materiau": 4,
+      "triangles": 75,
+      "boite": [
+        0.1,
+        0.68,
+        -2.37,
+        0.44,
+        0.72,
+        -2.27
+      ],
+      "mode": "bouts"
+    },
+    {
+      "nom": "socle de l'étoile du capot",
+      "materiau": 4,
+      "triangles": 176,
+      "boite": [
+        -0.03,
+        0.83,
+        -2.24,
+        0.03,
+        0.87,
+        -2.17
+      ]
+    },
+    {
+      "nom": "anneau de l'étoile du coffre",
+      "materiau": 4,
+      "triangles": 240,
+      "boite": [
+        -0.06,
+        0.94,
+        2.29,
+        0.06,
+        1.05,
+        2.37
+      ]
+    },
+    {
+      "nom": "étoile du coffre",
+      "materiau": 4,
+      "triangles": 19,
+      "boite": [
+        -0.05,
+        0.96,
+        2.3,
+        0.05,
+        1.04,
+        2.36
+      ]
+    }
+  ]
+}
