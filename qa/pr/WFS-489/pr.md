@@ -24,7 +24,7 @@
 
 ## Tests CPU
 
-Commit testé : a19d1cf3 (branche synchronisée avec `main`, code identique à 2a298679 côté garage), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
+Commit testé : d71cde43 (branche synchronisée avec `main` après la fusion de WFS-507, code du garage identique à 2a298679), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
 
 ```
 [OK] test_ville_lieux (0 s)
