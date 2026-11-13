@@ -717,8 +717,10 @@ protected:
         int nS = 0;
         if (!solFondPret_) construireSolFond(r);
         for (const TuileSol& tu : solFond_)   // WFS-387 (RG-10) : tuiles du sol à moins de 2,6 km de la caméra (le brouillard cache le reste)
-            if (tu.m.indexCount && (tu.c.x - g.camPos.x) * (tu.c.x - g.camPos.x) + (tu.c.z - g.camPos.z) * (tu.c.z - g.camPos.z) < 2600.f * 2600.f + tu.r * tu.r) {
-                r.draw(tu.m, mats_[solActif_ ? P_TERRE : P_UNI], translate({0, SOL_DECALE_Y, 0})); nS++;
+            if (const float d = std::hypot(tu.c.x - g.camPos.x, tu.c.z - g.camPos.z) - tu.r; tu.m.indexCount && d < 2600.f) {
+                // sol naturel (sols.glsl) seulement sur la tuile où l'on est et ses voisines à moins de 200 m ; au-delà, le brouillard
+                // efface son grain : teinte unie de la prairie lointaine, bien moins chère par pixel (RG-06, banc perf en Basse)
+                r.draw(tu.m, mats_[solActif_ && d < 200.f ? P_TERRE : P_UNI], translate({0, SOL_DECALE_Y, 0})); nS++;
             }
         if (!sommets_.empty() && !sommetsMesh_.indexCount) construireSommets(r);
         if (sommetsMesh_.indexCount) { r.draw(sommetsMesh_, mats_[P_UNI], mat4::identity()); nS = 1; }   // WFS-138 : un appel
@@ -1217,7 +1219,7 @@ private:
         const vec2 u = uv(C_FARHILL);
         auto h = [&](int a, int b) { return H[(size_t)std::clamp(b, 0, nz) * (nx + 1) + std::clamp(a, 0, nx)]; };
         size_t tris = 0, cachees = 0;
-        const int T = 12;
+        const int T = 32;
         for (int tj = 0; tj < nz; tj += T) for (int ti = 0; ti < nx; ti += T) {
             const int i1 = std::min(nx, ti + T), j1 = std::min(nz, tj + T), w = i1 - ti + 1;
             std::vector<Vertex> V; std::vector<uint32_t> I;
