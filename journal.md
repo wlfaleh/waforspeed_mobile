@@ -1373,3 +1373,9 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 - **Choix** : 1er ticket P1 prêt permis à `@dev` : bandeau 🏆 E22 (« juste après les tickets prêts du moment ») ; WFS-535 fusionné (#389) → **WFS-536** (E22, zone E3 : `src/game/profil_system.cpp`, `src/game/boutique.*`, `src/game/boutique_banc.cpp`, `tests/**` ; règles `regles-de-gestion/WFS-536.md` et `E22-score.md`). Branche `feature/waforspeed-536`.
 - **Critères** : crédit des ★ du score en fin de course (10 ★ de secours), rien si course quittée, aucun double crédit, historique avec les ★, banc `equilibrage` à 3 profils (moyen : 1re voiture en 22 à 28 courses, tout en 108 à 132 h). Synchroniser souvent avec `main` (WFS-500, PR #392, touche aussi la zone E3).
 - **Débloqués** : **WFS-537** (écran de fin du score, après 535) et **WFS-511** (Google Play Billing, après 510) passent ⏳ Prêt pour de nouvelles sessions `@dev`. Lignes des sessions terminées enlevées de `track-agent.md`.
+
+### 2026-11-13 18:46:56 — WFS-483 : PR #397 refusée par le lead dev (lead-dev)
+- Relu au commit 51fac475 : 28 paires de captures ouvertes, diff lu en entier, branche construite, **126 tests CPU verts** (`test_plaque_joueur` OK).
+- Le rendu est bon : plaque 3D d'aplomb sur les 17 voitures, plaque d'origine recouverte, nuit éclairée, 1 et 8 caractères justes. Code propre, accroches annoncées.
+- Refus pour preuves manquantes : (1) pas de section « Tests CPU » ni de `qa/pr/WFS-483/tests-cpu.log` (règle du 2026-11-11) ; (2) RG-06, lisibilité en Poursuite non prouvée (captures réduites à 1280 px, plaque illisible : recadrages ×2 du 2400 × 1080 demandés, 3 voitures, jour et nuit) ; (3) garage de 3/4 arrière manquant.
+- Acceptés : RG-07 (mesure A/B sous le bruit de lavapipe, à mesurer sur le téléphone), jupe bornée à 60 mm, éclaireur par émission. Remarque non bloquante : clé `std::string` de `support()` faite à chaque image.
