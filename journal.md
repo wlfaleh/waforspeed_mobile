@@ -1618,3 +1618,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 21:51:19 — WFS-489 fusionné, session terminée (Claude, agent dev3d (01Us6uCxMq))
 - PR #395 fusionnée en squash par le lead dev (ae6a8288) après 2 retours : banc `garage` faussé par la Turquoise devenue payante (corrigé dans le banc), puis conflits avec WFS-483, 490 et 536 (résolus en gardant les deux côtés). Ligne de `track-agent.md` en « ⏹️ session terminée ». Un seul sujet par session : pas de ticket suivant.
 - **Pour le PO** : `perso::donGarageProvisoire` (zone E3) n'est plus appelée : petit ticket E3 pour la retirer avec son test ; mesure d'endurance RC-E18-03 conseillée par le lead dev ; WFS-499 (`garage_achat.*`) peut partir. **Pour l'utilisateur** (ticket 🟡 ou recette) : à regarder sur l'APK de `main` : garage, 28 couleurs, onglet « Toit et rétros », achat et message « Il te manque N ★ ».
+
+### 2026-11-13 21:55:01 — Statuts automatiques, CI main #1056 (robot statuts)
+- Run rouge (push, commit 19279c4), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
