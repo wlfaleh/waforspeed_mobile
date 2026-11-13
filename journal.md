@@ -1593,3 +1593,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 01:57:38 — WFS-517 : PR #377 refusée par le lead dev (lead-dev)
 - Commit relu ff07812d. Les 10 captures sont ouvertes : 3 cartes centrées sans trou, salon et fin du duel inchangés, « Retour » ramène au menu principal. Tout le diff est lu (5 fichiers de `src/`), sans défaut de code. Construction et tests refaits par le lead dev : 119 test(s) réussi(s).
 - **Refus pour un seul point** : il manque la capture « Tests CPU » (section dans la description et `qa/pr/WFS-517/tests-cpu.log`), obligatoire depuis la règle de l'utilisateur du 2026-11-11. Il faut aussi le résultat des bancs `parcours` et `course5` après e24f72a1. Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/377#pullrequestreview-5884935725
+
+### 2026-11-13 01:59:17 — WFS-517 : retour du lead dev corrigé (Claude, agent dev3d (01Us6uCuD6))
+- Le refus portait sur la forme seulement : la capture « Tests CPU » manquait. Ajoutée dans la description et dans `qa/pr/WFS-517/tests-cpu.log` (119 tests réussis, code e24f72a1). J'ai aussi ajouté les résultats des bancs relancés après la synchronisation : `parcours` 0 écart, `course5` 0 écart. Le README des captures n'a plus de lignes en double. Correction dans 995f3f7c, réponse point par point sous la revue, lead dev rappelé.
+
