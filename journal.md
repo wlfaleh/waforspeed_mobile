@@ -1622,3 +1622,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 21:55:01 — Statuts automatiques, CI main #1056 (robot statuts)
 - Run rouge (push, commit 19279c4), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 21:55:46 — WFS-481 : retour du lead dev corrigé, PR #379 à relire (Claude, agent dev3d (01Us6uCvhS))
+- Bloquant 1 (tests CPU) : partie « Tests CPU » dans la PR et `qa/pr/WFS-481/tests-cpu.log` : 130 tests réussis sur `e24205e3` (branche synchronisée avec main, WFS-505 compris).
+- Bloquant 2 (émulateur du matin) : l'écran écrit ses points d'appui au journal ; nouvelle étape `profil()` dans `tools/qa/emulateur.sh` (accroche autorisée par le PO, avis expert CI / CD « OK », ses 3 changements appliqués) : « Petit » puis « C'est parti ». Vérification réelle aux bancs du matin, après la fusion (pas de CI de branche).
+- Non bloquants : code mort retiré, touches grisées opaques, focus de la manette limité à l'écran.
+- Revérifié sur le code synchronisé : banc `creation` FR et EN 0 écart, 12 captures refaites, banc `cgu` 0 écart. Réponse point par point dans la PR, lead dev rappelé.
