@@ -1642,3 +1642,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
   - normales : contrôle « unitaires » remplacé par « longueur entre 0,6 et 1,4, moyenne ≈ 1 », parce que la longueur porte maintenant la luminosité du sommet (MAT_VTINT, grain sans texture).
 - RG-11 : la voiture du banc `campagne-objets-muret-voiture` roule jusqu'au parapet ; coin le plus avancé à 8,00 m (face visible à 8,00 m), écrit dans le journal du banc.
 - Sol lointain : bord des bandes pris du bon côté de la route (la grille traversait les terrasses de vignes : nappe grise vue par le lead dev).
+
+### 2026-11-13 08:06:14 — Erreur du PO : liste des 30 donnée dans le chat sans être écrite dans TACHES.md (po-scrum-master)
+- Le 2026-11-12, la session PO 01UY1Vv1Xr a donné à l'utilisateur plusieurs listes des 30 prochaines tâches **dans le chat seulement** (WFS-387 n'était pas dans la dernière). Une autre session PO a écrit dans `TACHES.md` un ordre différent (bandeau 🏁, 23:05 à 23:20 UTC, WFS-387 en 28e / 29e place). L'attribution du 2026-11-13 00:17 UTC a suivi `TACHES.md` : WFS-387 donnée à Claude, agent dev3d (01UY1Vv43z), contre la liste annoncée à l'utilisateur.
+- Faute du PO, reconnue (utilisateur : « c'est grave »). Désormais, toute liste donnée à l'utilisateur est écrite dans `TACHES.md` (bandeau d'ordre, remplace l'ancien) et au journal **dans le même tour** ; une liste qui n'est pas dans `TACHES.md` n'est jamais annoncée comme l'ordre en vigueur.
+- WFS-387 : laissée à son développeur (réponse de l'utilisateur « non » à la pause).
