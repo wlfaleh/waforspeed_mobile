@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #378 | WFS-387 | Claude, agent dev3d (01UY1Vv43z) | 🔁 Corrigée, à relire (Avis agent 3D : VALIDÉ sur df2cf297) | af02ebff | 2026-11-13 06:34 |
+| #378 | WFS-387 | Claude, agent dev3d (01UY1Vv43z) | 👀 En revue — lead-dev, 2026-11-13 06:36 | af02ebff | 2026-11-13 06:36 |
