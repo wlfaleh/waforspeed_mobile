@@ -3394,11 +3394,12 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
     if (roc >= 0) {
         vue("mer-rochers", "midi", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
         vue("mer-rochers-nuit", "nuit", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
-        vue("mer-rochers-pres", "midi", roc, R + 50, merY + 1.6f, roc + s8, R + 39, merY, 50);   // WFS-401 (R8) : écume contre les blocs, de près
     } else WFS_ERR("banc mer : aucune côte rocheuse");
     int64_t fal = -1;   // WFS-401 (R8) : pied de la falaise (route à plus de 12 m au-dessus de la mer sur ± 48 m), vue depuis l'eau
     for (int64_t a = 100; t2 && a + 100 < L && fal < 0; a += 10) { bool h = true; for (int64_t k = a - 40; k <= a + 40 && h; k += 10) h = t.pose(k).y - OCEAN_Y > 12; if (h) fal = a; }
+    const float D = fal >= 0 ? (float)t.pose(fal).y - OCEAN_Y : 0, pied = R + 4.8f + std::max(3.f, 0.25f * D) + std::max(3.f, 0.3f * D);   // pied (profilFalaise)
     if (fal >= 0) vue("mer-falaise", "midi", fal, R + 32, OCEAN_Y + 1.6f - (float)t.pose(fal).y, fal + s8, R + 15, OCEAN_Y + 0.5f, 55); else WFS_ERR("banc mer : aucune falaise");
+    if (fal >= 0) vue("mer-falaise-blocs", "midi", fal + s30, pied + 9, OCEAN_Y + 1.2f - (float)t.pose(fal + s30).y, fal + s30 + s8, pied - 1, OCEAN_Y + 0.2f, 45);   // R8 : blocs dans l'eau
     // RG-05 : la même eau dans la Ville : rivière sous le pont, vue depuis l'eau vers le pont et ses quais, jour et nuit
     if (trace::carteActive("ville")) {
         Track tv; tv.build(mapById("ville"), trace::versionCarte("ville"));

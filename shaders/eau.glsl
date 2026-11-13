@@ -50,17 +50,21 @@ float eauCellules(vec2 p, float t) {
         }
     return sqrt(d);
 }
-// WFS-401 (RG-01) : écume réelle d'une part de couverture cov (0..1) : une mousse qui se défait en dentelle, pas une tache unie ni un
-// trait filé. Les trous (centres des cellules) grandissent quand la couverture baisse : mousse dense à cov 1 (petits trous), réseau de filaments
-// à 0,5, quelques îlots à 0,2. Deux tailles de bulles (42 cm et 15 cm, plaques et petites bulles), isotropes : les cellules ont un
-// rapport longueur / largeur ≈ 1 (RG-01 : 4 au plus). « fin » (0..1) : part de la petite échelle (0 au loin : rien sous le pixel)
+// WFS-401 (RG-01) : écume réelle d'une part de couverture cov (0..1), rendue en OPACITÉ (0..1) : une mousse qui se défait en dentelle,
+// pas une tache unie ni un trait filé, ni un aplat découpé (avis 3D B1). Cœur dense là où les bulles se serrent (bords des grosses
+// cellules), bords minces et translucides en dégradé vers les trous (centres des cellules, rayon tiré par cellule : trous de tailles
+// et de formes irrégulières), filaments fins (bords des petites cellules) qui relient les plaques par-dessus les trous. Les trous
+// grandissent quand la couverture baisse ; une couverture faible reste translucide. Deux tailles (42 cm et 15 cm), isotropes : rapport
+// longueur / largeur ≈ 1 (RG-01 : 4 au plus). « fin » (0..1) : part de la petite échelle (0 au loin : rien sous le pixel)
 float eauMousse(vec2 p, float t, float cov, float fin) {
     if (cov <= 0.01) return 0.0;
     vec2 q = p + 0.35 * vec2(eauBruit(p * 0.9 + 3.1), eauBruit(p * 0.9 - 1.7));   // bords des cellules ondulés (pas de polygones)
     float c1 = eauCellules(q * 2.4, t), c2 = fin > 0.01 ? eauCellules(q * 6.5 + 7.3, t * 1.3) : 0.6;
-    float trou = mix(0.62, 0.14, cov);   // rayon des trous (part de la cellule) : même la mousse la plus dense garde des trous
-    float m = smoothstep(trou, trou + 0.12, mix(c1, min(c1 + 0.12, c2 * 0.9 + 0.15), 0.45 * fin));
-    return m * smoothstep(0.0, 0.25, cov);
+    float trou = mix(0.62, 0.12, cov) + 0.22 * (eauBruit(q * 1.7 + 5.3) - 0.5);   // rayon du trou, variable d'un endroit à l'autre
+    float corps = smoothstep(trou - 0.04, trou + 0.38, c1);                       // dégradé : mince au bord du trou, dense au cœur
+    float m = corps * (0.3 + 0.7 * corps);
+    float fil = smoothstep(0.38, 0.6, c2) * fin * (1.0 - smoothstep(trou - 0.05, trou + 0.1, c1)) * 0.45;   // filaments dans les trous
+    return max(m, fil) * (0.45 + 0.55 * smoothstep(0.0, 0.6, cov));
 }
 
 // pente de la surface (dh/dx, dh/dz), hauteur (m) et variance de pente perdue par les vagues trop petites pour le pixel (elle passe
@@ -166,7 +170,7 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         }
         float sec = smoothstep(mouille - 0.7, mouille, r);
         // nappe : film d'eau sur le sable (sable sombre, lisse, le ciel s'y reflète) ; derrière : sable mouillé mat qui sèche
-        base.rgb = mix(mix(vec3(0.20, 0.17, 0.12), vec3(0.24, 0.21, 0.15), 1.0 - nappe), vec3(0.80, 0.82, 0.84), ecumeN);
+        base.rgb = mix(mix(vec3(0.20, 0.17, 0.12), vec3(0.24, 0.21, 0.15), 1.0 - nappe), basse ? vec3(0.80, 0.82, 0.84) : vec3(0.70, 0.73, 0.75), ecumeN);
         rough = mix(mix(0.32, 0.07, nappe), 0.8, ecumeN);
         float d = length(F.camPos.xyz - vWorld);
         alpha = clamp(max(nappe * 0.85, 0.75 * (1.0 - sec)), 0.0, 1.0) * (1.0 - smoothstep(60.0, 90.0, d)) * smoothstep(-0.5, -0.2, r);
@@ -184,12 +188,17 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
             // WFS-401 (RG-04) : couronne d'eau soulevée par le dauphin : en bas une nappe d'eau laiteuse translucide, plus haut des
             // doigts (jets) qui se brisent en gouttes de 1 à 4 cm ; bord du haut déchiré, pied fondu dans l'eau ; jamais une paroi pleine
             float u = vUv.x, v = clamp(vUv.y - 2.0, 0.0, 1.0);
-            float doigt = eauBruit(vec2(u * 15.0, 0.7)) * 0.65 + eauBruit(vec2(u * 41.0, 2.3)) * 0.35;   // ≈ 15 jets autour, inégaux
-            float haut = 0.25 + 0.75 * doigt * doigt;                                               // hauteur atteinte par le jet
-            float vh = v / haut;
-            float nappeC = (1.0 - smoothstep(0.12, 0.35, vh)) * smoothstep(0.0, 0.08, v) * 0.35;
+            // avis 3D R3 : jets inégaux et penchés (pas une palissade) : le tour est décalé selon la hauteur (jet incliné, sens et
+            // angle propres à chaque jet), trois fréquences mêlées (largeurs variées), hauteur tirée par jet, base irrégulière
+            float pen = (eauBruit(vec2(u * 9.0, 5.1)) - 0.5) * 0.06;                                 // inclinaison locale
+            float uj = u + pen * v;
+            float doigt = eauBruit(vec2(uj * 11.0, 0.7)) * 0.5 + eauBruit(vec2(uj * 27.0, 2.3)) * 0.3 + eauBruit(vec2(uj * 63.0, 4.9)) * 0.2;
+            float haut = 0.15 + 0.85 * pow(eauBruit(vec2(uj * 17.0, 8.3)), 1.5) * (0.5 + doigt);   // hauteur du jet, très variable
+            float vh = v / max(haut, 0.05);
+            float pied = 0.12 + 0.2 * eauBruit(vec2(u * 13.0, 6.6));                                // base de la nappe irrégulière
+            float nappeC = (1.0 - smoothstep(pied, pied + 0.25, v)) * smoothstep(0.0, 0.08, v) * 0.35;
             // jet : s'amincit en montant (le seuil monte avec la hauteur), se défait en gouttes avant son sommet
-            float jet = smoothstep(0.5 + 0.22 * vh, 0.62 + 0.22 * vh, doigt) * (1.0 - smoothstep(0.55, 0.9, vh)) * smoothstep(0.0, 0.12, v) * 0.6;
+            float jet = smoothstep(0.48 + 0.25 * vh, 0.6 + 0.25 * vh, doigt) * (1.0 - smoothstep(0.45, 0.85, vh)) * smoothstep(0.0, 0.12, v) * 0.6;
             // gouttes : une par cellule au plus (36 autour, 9 en hauteur), au-dessus du tiers de la gerbe et jusqu'au-dessus des jets
             // (gouttes lancées plus haut), rayon tiré, un peu étirées en hauteur (chute)
             vec2 cg = vec2(u * 36.0, v * 9.0), ic = floor(cg), fc = fract(cg);
@@ -249,25 +258,30 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     rough = clamp(sqrt(sqrt(0.0004 + 2.0 * (varPerdue + vmPetites * agit))), 0.08, 0.35);
     // WFS-401 (RG-03) : traînée du soleil faite de reflets séparés. Les rides plus petites que le pixel ne floutent pas le soleil en
     // tache : chacune est une petite facette qui renvoie le soleil vers l'œil ou non (« glitter », Cox et Munk 1954). Dans la zone où
-    // le reflet du soleil peut tomber (voir « zone » ci-dessous), chaque
+    // le reflet du soleil peut tomber (voir « poids » ci-dessous), chaque
     // pixel tire sa facette : pente gaussienne de la variance perdue, tirage changé 12 fois par seconde (scintillement), et la
     // rugosité redevient celle d'une facette lisse. En moyenne sur plusieurs pixels, l'énergie reste celle du lobe large ; la zone
     // s'élargit au loin avec les pentes perdues (traînée plus large au loin qu'au près). Hors Basse ; le jour (soleil levé).
     if (!basse && F.sunDir.w > 0.0 && F.sunDir.y > -0.02) {
         float sig2 = varPerdue + vmPetites * agit + 0.0008;
-        // zone : la facette qui renverrait le soleil (demi-vecteur H entre l'œil et le soleil) est à moins de ≈ 3 écarts types de
-        // la normale moyenne. Mesurée sur H et non sur le reflet : à angle rasant, une pente de côté ne dévie presque pas le reflet
-        // (2 sin(élévation) × pente) : la traînée reste une colonne étroite sous le soleil, comme en vrai
+        // poids : probabilité relative que la facette qui renverrait le soleil (demi-vecteur H entre l'œil et le soleil) existe sous
+        // le pixel, loi gaussienne des pentes : exp(−tan²θ / 2σ²), tan²θ ≈ 2 (1 − N·H). Mesurée sur H et non sur le reflet : à angle
+        // rasant, une pente de côté ne dévie presque pas le reflet (2 sin(élévation) × pente) : la traînée reste une colonne étroite
+        // sous le soleil (ou la lune), comme en vrai. Avis 3D B2 : chaque carré tire au hasard s'il porte une facette selon ce poids :
+        // les reflets se raréfient en douceur vers les bords de la traînée (plus de limite nette) ; les autres gardent le lobe moyen
         vec3 Hs = normalize(V + normalize(F.sunDir.xyz));
-        float zone = 1.0 - smoothstep(4.5 * sig2, 9.0 * sig2, 1.0 - dot(N, Hs));
-        if (zone > 0.0) {
+        float poids = exp(-(1.0 - dot(N, Hs)) / sig2);
+        if (poids > 0.01) {
             // une facette par carré de 2 × 2 pixels, calé sur les quads du GPU : la normale ne change pas dans le quad, donc les
             // dérivées dFdx / dFdy de N sont nulles et l'anticrénelage des reflets (scene.frag, Tokuyoshi) n'élargit pas le reflet de
             // la facette en tache floue ; chaque reflet reste un point net de 2 pixels
-            vec2 hh = eauHash2(floor(gl_FragCoord.xy * 0.5) + floor(t * 12.0) * vec2(17.31, 9.13));
-            vec2 s = sqrt(-2.0 * log(max(hh.x, 1e-4)) * sig2) * vec2(cos(6.2831853 * hh.y), sin(6.2831853 * hh.y));
-            N = normalize(N + zone * vec3(-s.x, 0.0, -s.y));
-            rough = mix(rough, 0.06, zone);
+            vec2 cel = floor(gl_FragCoord.xy * 0.5) + floor(t * 12.0) * vec2(17.31, 9.13);
+            if (eauHash(cel + 3.7) < poids) {
+                vec2 hh = eauHash2(cel);
+                vec2 s = sqrt(-2.0 * log(max(hh.x, 1e-4)) * sig2) * vec2(cos(6.2831853 * hh.y), sin(6.2831853 * hh.y));
+                N = normalize(N + vec3(-s.x, 0.0, -s.y));
+                rough = 0.06;
+            }
         }
     }
     float NoV = max(dot(N, V), 1e-3);
@@ -312,10 +326,12 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         if (pres > 0.0) {
             vec2 pm = vec2(le, x + 0.35 * t);   // repère du bord : la mousse avance avec le front vers le rivage
             float m = eauMousse(pm, t, clamp(ecume * 1.25, 0.0, 1.0), 1.0 - smoothstep(0.03, 0.08, empreinte));
+            m *= smoothstep(0.03, 0.3, ecume) * (1.0 - 0.6 * smoothstep(4.0, 9.0, x));   // avis 3D B1 : au large du bord, plaques minces
             ecume = mix(ecume, 0.9 * m, pres);
         }
     }
-    base.rgb = mix(base.rgb, vec3(0.80, 0.82, 0.84), ecume);
+    // avis 3D B1 : hors Basse, écume blanc cassé (albédo ≈ 0,72, mousse humide qui laisse passer un peu l'eau) au lieu de 0,82
+    base.rgb = mix(base.rgb, basse ? vec3(0.80, 0.82, 0.84) : vec3(0.70, 0.73, 0.75), ecume);
     rough = mix(rough, 0.8, ecume);
     N = normalize(mix(N, vec3(0.0, 1.0, 0.0), ecume));
     return ecume;
