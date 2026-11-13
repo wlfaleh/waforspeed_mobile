@@ -1,0 +1,21 @@
+Model Information:
+* title:	Mercedes E Class W212
+* source:	https://sketchfab.com/3d-models/mercedes-e-class-w212-119c5e10733142b197aa53b86f6aeb04
+* author:	Peter_D (https://sketchfab.com/better_peter)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mercedes E Class W212" (https://sketchfab.com/3d-models/mercedes-e-class-w212-119c5e10733142b197aa53b86f6aeb04) by Peter_D (https://sketchfab.com/better_peter) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Found in the public GitHub repository bujue600-arch/carVison, folder car-vision-frontend/public/models/mercedes-e-class/
+(license.txt above copied verbatim from that folder).
+Source files: scene.gltf SHA-256 a1e14552aababef903a2fcd2dfeb6dd0d97de3062d316c8d5d6d489d5a106822 (238 832 bytes),
+              scene.bin  SHA-256 cfed9ca335f5de90062e4fd893c53c7d4897f6ed67c42733d989c89529fed44a (20 244 980 bytes).
+
+Modifications for WaForSpeed (WFS-397): modified (ride height). Converted to .wfm (tools/remplacants/convertir_remplacants.sh);
+body raised by 40 mm above the wheels (height 1430 -> 1472 mm, real car 1470 mm); interior, wheels and textures lightened;
+all brand marks removed (three-pointed stars of the grille, bonnet and boot lid, "Mercedes-Benz" roundel in the chrome texture);
+grille bars joined across the former badge area. Brand-free car: the game gives it an invented name.

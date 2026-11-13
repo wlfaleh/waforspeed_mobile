@@ -8,6 +8,7 @@
 // coupées par l'anneau du logo se rejoignent au milieu (grille continue, rien de posé devant la carrosserie : leçon de la X5).
 // Action « cercle » : seuls les triangles de la pièce entièrement dans le cercle (plan x, y) de centre « centre » et de rayon
 // « rayon » sont retirés (anneau de logo modelé dans la même pièce peinte que les bords de la calandre).
+// Action « normales » : disque d'un logo modelé à fleur de tôle, effacé en lissant ses normales (positions inchangées).
 // usage : node retirer_pieces.mjs <id> entree.wfm sortie.wfm
 import fs from 'fs';
 import path from 'path';
@@ -23,8 +24,32 @@ const parMaillage = new Map();
 let erreurs = 0;
 for (const p of liste) {
   const k = w.maillages.findIndex((m) => m.mat === p.materiau);
-  const trouvees = k < 0 ? [] : pieces(w.maillages[k]).filter((x) => dans(x.boite, p.boite) && x.triangles.length === p.triangles);
-  if (trouvees.length !== (p.nombre || 1)) { console.error(`  ${p.nom} : ${trouvees.length} pièce(s) trouvée(s) au lieu de ${p.nombre || 1}`); erreurs++; continue; }
+  // « tous » : toutes les pièces de la boîte, quel que soit leur nombre de triangles (lamelles d'une grille, au moins une attendue)
+  const trouvees = k < 0 ? [] : pieces(w.maillages[k]).filter((x) => dans(x.boite, p.boite) && (p.tous || x.triangles.length === p.triangles));
+  if (p.tous ? !trouvees.length : trouvees.length !== (p.nombre || 1)) { console.error(`  ${p.nom} : ${trouvees.length} pièce(s) trouvée(s) au lieu de ${p.nombre || 1}`); erreurs++; continue; }
+  if (p.action === 'normales') {
+    // disque d'un logo modelé à fleur de tôle, visible par ses normales en biseau : les positions ne bougent pas, la normale de
+    // chaque sommet à moins de « rayon » de « centre » (plan x, y) est interpolée (inverse du carré de la distance) entre celles de
+    // la peau extérieure de l'anneau [rayon ; appui × rayon] (normale vers +z, z > zMin) : la tôle redevient lisse au rendu
+    const m = w.maillages[k], vus = new Set();
+    for (const x of trouvees) for (const t of x.triangles) for (let j = 0; j < 3; j++) vus.add(m.idx[t * 3 + j]);
+    const ids = [...vus].filter((i) => m.pos[i * 3 + 2] > p.zMin);
+    const r = (i) => Math.hypot(m.pos[i * 3] - p.centre[0], m.pos[i * 3 + 1] - p.centre[1]);
+    const appui = ids.filter((i) => r(i) >= p.rayon && r(i) <= p.rayon * p.appui && m.nrm[i * 3 + 2] > 0.5);
+    if (appui.length < 8) { console.error(`  ${p.nom} : ${appui.length} sommets d'appui seulement`); erreurs++; continue; }
+    let n = 0;
+    for (const i of ids) if (r(i) < p.rayon) {
+      const nv = [0, 0, 0];
+      for (const a of appui) {
+        const d2 = (m.pos[i * 3] - m.pos[a * 3]) ** 2 + (m.pos[i * 3 + 1] - m.pos[a * 3 + 1]) ** 2 + 1e-6;
+        for (let q = 0; q < 3; q++) nv[q] += m.nrm[a * 3 + q] / d2;
+      }
+      const l = Math.hypot(...nv); if (nv[2] / l < 0.5) continue;   // doublure intérieure : laissée telle quelle
+      for (let q = 0; q < 3; q++) m.nrm[i * 3 + q] = nv[q] / l; n++;
+    }
+    console.log(`  ${p.nom} : normales de ${n} sommets lissées (${appui.length} sommets d'appui)`);
+    continue;
+  }
   if (p.action === 'prolonger') {
     // la barre est allongée en x de son bout extérieur jusqu'au milieu (x = 0) : x' = xExt + (x − xExt) · |xExt| / |xExt − xSeuil|
     // pour |x| ≥ seuil, sommets de la pointe arrondie (|x| < seuil) amenés au milieu, cachés dans la section de l'autre moitié ;

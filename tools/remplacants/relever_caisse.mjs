@@ -6,7 +6,7 @@
 // Les pièces qui ne sont qu'en partie dans le cylindre d'une roue (morceau d'étrier, pare-boue) suivent la caisse ou la roue
 // selon où est la plus grande partie de leurs sommets, pour qu'aucun triangle ne soit étiré entre les deux.
 // usage : node relever_caisse.mjs entree.wfm sortie.wfm <mm> [--essai]
-import { lireWfm, ecrireWfm, roues, sommetsDesRoues, jeuPassages, ROUE, PEINTURE } from './wfm.mjs';
+import { lireWfm, ecrireWfm, roues, sommetsDesRoues, jeuPassages, estRoue, PEINTURE } from './wfm.mjs';
 
 const [,, entree, sortie, mmArg, ...opts] = process.argv;
 const essai = opts.includes('--essai');
@@ -19,7 +19,7 @@ const fixe = sommetsDesRoues(w, R4);
 // pièces (composantes connexes par les indices) des maillages ni roue ni peinture : toute la pièce suit la majorité
 let pieces = 0;
 w.maillages.forEach((m, k) => {
-  if (m.drapeaux & (ROUE | PEINTURE)) return;
+  if (estRoue(m) || (m.drapeaux & PEINTURE)) return;
   const parent = new Int32Array(m.nv).map((_, i) => i);
   const racine = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
   for (let t = 0; t < m.idx.length; t += 3) for (let j = 1; j < 3; j++) {

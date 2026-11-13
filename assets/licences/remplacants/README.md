@@ -9,3 +9,8 @@ Les modèles convertis sont dans `assets/cars/remplacants/` et **ne sont pas enc
 avant +1,8 %, hors de la tolérance de ± 1 % (aucune dérogation, décision du PO). La voiture « mustang » du jeu est maintenant une
 Chevrolet Corvette C7 (Martin Trafas, CC BY 4.0) et « tcross » une Suzuki Vitara Brezza (BHP3D, CC BY 4.0) : licences dans
 `assets/licences/mustang.txt` et `assets/licences/tcross.txt`. Ce dossier ne contient plus de modèle.
+
+**WFS-397 (2026-11-13)** : deux remplaçants convertis dans `assets/cars/remplacants/`, **pas encore branchés** (WFS-360) :
+- `w212.wfm` / `.lod` : « Mercedes E Class W212 » de Peter_D, CC BY 4.0 (`w212.txt`), place de l'A 45 ; caisse relevée de 40 mm, sans marque ;
+- `virtus.wfm` / `.lod` : « 2022 Volkswagen Virtus GT » de BHP3D, CC BY 4.0 (`virtus.txt`), place de l'Elantra N ; caisse relevée de 39 mm, sans marque.
+Chaîne rejouable : `tools/remplacants/convertir_remplacants.sh`.

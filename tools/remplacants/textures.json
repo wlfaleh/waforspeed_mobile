@@ -1,9 +1,59 @@
 {
   "w212": [
-    { "fichier": "textures/mat_chrome_baseColor.jpeg", "zones": [
-      { "nom": "écusson rond « MERCEDES-BENZ » à l'étoile", "disque": [0.2114, 0.1294, 0.034] },
-      { "nom": "étoile (haut de l'atlas)", "rect": [0.398, 0.015, 0.440, 0.068] },
-      { "nom": "étoile (bas de l'atlas)", "rect": [0.838, 0.638, 0.902, 0.712] }
-    ] }
+    {
+      "fichier": "textures/mat_chrome_baseColor.jpeg",
+      "zones": [
+        {
+          "nom": "écusson rond « MERCEDES-BENZ » à l'étoile",
+          "disque": [
+            0.2114,
+            0.1294,
+            0.034
+          ]
+        },
+        {
+          "nom": "étoile (haut de l'atlas)",
+          "rect": [
+            0.398,
+            0.015,
+            0.44,
+            0.068
+          ]
+        },
+        {
+          "nom": "étoile (bas de l'atlas)",
+          "rect": [
+            0.838,
+            0.638,
+            0.902,
+            0.712
+          ]
+        }
+      ]
+    }
+  ],
+  "virtus": [
+    {
+      "fichier": "textures/seat_label.0_baseColor.png",
+      "zones": [
+        {
+          "nom": "mot « Virtus » des plaques avant et arrière",
+          "rect": [
+            0.155,
+            0.705,
+            0.445,
+            0.825
+          ]
+        },
+        {
+          "nom": "bouchon à lettres de la marque",
+          "disque": [
+            0.4,
+            0.915,
+            0.06
+          ]
+        }
+      ]
+    }
   ]
 }

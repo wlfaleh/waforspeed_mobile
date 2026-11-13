@@ -17,27 +17,27 @@ export function lireWfm(chemin) {
   const debutMaillages = o, maillages = [];
   for (let k = 0; k < nMe; k++) {
     const mat = u32(o), nv = u32(o + 4), ni = u32(o + 8); o += 12;
-    const pos = new Float32Array(nv * 3);
-    for (let i = 0; i < nv; i++) for (let q = 0; q < 3; q++) pos[i * 3 + q] = buf.readFloatLE(o + i * 32 + q * 4);
+    const pos = new Float32Array(nv * 3), nrm = new Float32Array(nv * 3);
+    for (let i = 0; i < nv; i++) for (let q = 0; q < 3; q++) { pos[i * 3 + q] = buf.readFloatLE(o + i * 32 + q * 4); nrm[i * 3 + q] = buf.readFloatLE(o + i * 32 + 12 + q * 4); }
     const debutSommets = o; o += nv * 32;
     const idx = new Uint32Array(ni);
     for (let i = 0; i < ni; i++) idx[i] = u32(o + i * 4);
     o += ni * 4;
-    maillages.push({ mat, drapeaux: drapeauxMat[mat], nv, pos, idx, debutSommets });
+    maillages.push({ mat, drapeaux: drapeauxMat[mat], nv, pos, nrm, idx, debutSommets });
   }
   if (o > buf.length) throw new Error(`${chemin} : fichier tronqué`);
   return { buf, maillages, debutMaillages, finMaillages: o };
 }
 
 export function ecrireWfm(chemin, w) {
-  // en-tête, textures et matériaux recopiés ; maillages réécrits (positions, indices éventuellement réduits par retirerPieces) ;
+  // en-tête, textures et matériaux recopiés ; maillages réécrits (positions, normales, indices éventuellement réduits par retirerPieces) ;
   // section TAN1 recopiée : le nombre de sommets de chaque maillage ne change jamais
   const morceaux = [Buffer.from(w.buf.subarray(0, w.debutMaillages))];
   const bb = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
   for (const m of w.maillages) {
     const tete = Buffer.alloc(12); tete.writeUInt32LE(m.mat, 0); tete.writeUInt32LE(m.nv, 4); tete.writeUInt32LE(m.idx.length, 8);
     const s = Buffer.from(w.buf.subarray(m.debutSommets, m.debutSommets + m.nv * 32));
-    for (let i = 0; i < m.nv; i++) for (let q = 0; q < 3; q++) s.writeFloatLE(m.pos[i * 3 + q], i * 32 + q * 4);
+    for (let i = 0; i < m.nv; i++) for (let q = 0; q < 3; q++) { s.writeFloatLE(m.pos[i * 3 + q], i * 32 + q * 4); s.writeFloatLE(m.nrm[i * 3 + q], i * 32 + 12 + q * 4); }
     const ix = Buffer.alloc(m.idx.length * 4);
     m.idx.forEach((v, i) => ix.writeUInt32LE(v, i * 4));
     for (const i of m.idx) for (let q = 0; q < 3; q++) { const v = m.pos[i * 3 + q]; bb[q] = Math.min(bb[q], v); bb[q + 3] = Math.max(bb[q + 3], v); }
@@ -78,11 +78,19 @@ export function retirerTriangles(m, rangs) {
   m.idx = Uint32Array.from(idx);
 }
 
-// les 4 roues : maillages marqués « roue » (drapeau 128), regroupés par côté (x) et par essieu (z) ; centre = milieu de la boîte,
+// maillage de roue : drapeau 128, sauf la peinture et ce qui dépasse 0,9 m de haut (tools/convert_car.mjs reconnaît les roues à
+// /rim/ dans le nom : la peinture « primary » des modèles de BHP3D et ses rétroviseurs « primary.001 » sont marqués « roue »)
+export function estRoue(m) {
+  if (!(m.drapeaux & ROUE) || (m.drapeaux & PEINTURE)) return false;
+  let haut = -Infinity; for (const i of m.idx) haut = Math.max(haut, m.pos[i * 3 + 1]);
+  return haut < 0.9;
+}
+
+// les 4 roues : maillages de roue (estRoue), regroupés par côté (x) et par essieu (z) ; centre = milieu de la boîte,
 // rayon = demi-hauteur, demi-largeur + 1 cm (comme le moteur)
 export function roues(w) {
   const b = new Map();
-  for (const m of w.maillages) if (m.drapeaux & ROUE) for (const i of m.idx) {
+  for (const m of w.maillages) if (estRoue(m)) for (const i of m.idx) {
     const x = m.pos[i * 3], y = m.pos[i * 3 + 1], z = m.pos[i * 3 + 2];
     const cle = `${x > 0 ? 'D' : 'G'}${z < 0 ? 'AV' : 'AR'}`;
     const r = b.get(cle) || { cle, min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
@@ -103,7 +111,7 @@ export function sommetsDesRoues(w, R4) {
   const dedans = (p) => R4.some((r) => Math.abs(p[0] - r.c[0]) <= r.hx && Math.hypot(p[1] - r.c[1], p[2] - r.c[2]) <= r.R * 0.97);
   return w.maillages.map((m) => {
     const fixe = new Uint8Array(m.nv);
-    if (m.drapeaux & ROUE) { fixe.fill(1); return fixe; }
+    if (estRoue(m)) { fixe.fill(1); return fixe; }
     if (m.drapeaux & PEINTURE) return fixe;
     const P = (i) => [m.pos[i * 3], m.pos[i * 3 + 1], m.pos[i * 3 + 2]];
     for (let t = 0; t < m.idx.length; t += 3) {
