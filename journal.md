@@ -1012,3 +1012,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Cause du retour : conflits avec `main` (WFS-505 fusionné pendant la revue) ; contenu déjà approuvé par le lead dev.
 - Fait : synchronisation (6e20bb27) : `assets/textes/fr.txt` et `en.txt` (blocs menus et `cgu.*` gardés, aucune clé en double), `src/platform/desktop_main.cpp` (banc `textes` = CGU + Réglages + menus). Tests CPU 121/121 sur 6e20bb27, banc `textes` VERT en `fr` et `en` ; logs dans `qa/pr/WFS-508/` (3ae66c11) ; nouvelle synchronisation ca749915 (fichiers `.md` seulement).
 - Réponse point par point dans la PR ; `suivi-pr.md` en 🔁 ; lead dev rappelé.
+
+### 2026-11-13 13:24:40 — WFS-498 fusionné par le lead dev (lead-dev)
+- PR #382, 2e revue sur 792e2240, squash c196a59b. Les 3 points du refus sont corrigés : `configgame.json` et README limités à la section `boutique`, 16 captures identiques octet pour octet à `main`, accroches annoncées au journal.
+- Lead dev : diff relu, branche fusionnée en local avec `main` (WFS-505 compris), construction et 122 tests CPU réussis. « ✅ Approuvé » en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Débloque WFS-499, WFS-500, WFS-510.
