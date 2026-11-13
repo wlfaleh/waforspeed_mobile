@@ -4175,7 +4175,7 @@
  "golf": {
   "materiaux": 21,
   "empreinteAvant": "5790c40fa148f955",
-  "empreinteApres": "8f23796c9548b9fb",
+  "empreinteApres": "2fce5a6cabdb57b8",
   "retouches": [
    {
     "decouper": true,
@@ -4757,6 +4757,152 @@
      ]
     },
     "note": "grille générique à 2 lames horizontales noir brillant dans la fente entre les phares, 1 cm derrière la carrosserie, rebord, paroi, fond noir mat (WFS-364)"
+   },
+   {
+    "decouper": true,
+    "materiau": 10,
+    "contour": [
+     [
+      0.058,
+      0.861
+     ],
+     [
+      0.056,
+      0.876
+     ],
+     [
+      0.0502,
+      0.89
+     ],
+     [
+      0.041,
+      0.902
+     ],
+     [
+      0.029,
+      0.9112
+     ],
+     [
+      0.015,
+      0.917
+     ],
+     [
+      0.0,
+      0.919
+     ],
+     [
+      -0.015,
+      0.917
+     ],
+     [
+      -0.029,
+      0.9112
+     ],
+     [
+      -0.041,
+      0.902
+     ],
+     [
+      -0.0502,
+      0.89
+     ],
+     [
+      -0.056,
+      0.876
+     ],
+     [
+      -0.058,
+      0.861
+     ],
+     [
+      -0.056,
+      0.846
+     ],
+     [
+      -0.0502,
+      0.832
+     ],
+     [
+      -0.041,
+      0.82
+     ],
+     [
+      -0.029,
+      0.8108
+     ],
+     [
+      -0.015,
+      0.805
+     ],
+     [
+      -0.0,
+      0.803
+     ],
+     [
+      0.015,
+      0.805
+     ],
+     [
+      0.029,
+      0.8108
+     ],
+     [
+      0.041,
+      0.82
+     ],
+     [
+      0.0502,
+      0.832
+     ],
+     [
+      0.056,
+      0.846
+     ]
+    ],
+    "z": [
+     2.0,
+     2.2
+    ],
+    "note": "emblème rond du hayon (disque noir plat laissé par WFS-192 / WFS-404, ANO-259) retiré par découpe exacte : la tôle peinte du hayon, continue 3 à 7 mm derrière, reste seule (WFS-456, RG-01)",
+    "triangles": 104
+   },
+   {
+    "uvPlan": {
+     "materiau": 10,
+     "boite": [
+      -0.86,
+      0.685,
+      -2.05,
+      0.86,
+      0.76,
+      -1.5
+     ],
+     "sources": [
+      [
+       0.955,
+       0.17,
+       0.996,
+       0.55
+      ]
+     ],
+     "cible": [
+      0.4,
+      0.062,
+      0.6,
+      0.082
+     ],
+     "x": [
+      0.47,
+      0.85
+     ],
+     "y": [
+      0.76,
+      0.685
+     ],
+     "miroirX": true
+    },
+    "note": "phares avant : liseré rouge (signature de marque) imprimé dans la texture de la lampe → noir du boîtier du phare de la même texture (#101010, projection plane ; DEL et autres matériaux inchangés ; feux catadioptres arrière qui lisent la même zone de texture gardés rouges) (WFS-456, RG-02, ANO-258)",
+    "triangles": 351
    }
   ]
  },
