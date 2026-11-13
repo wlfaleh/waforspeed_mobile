@@ -71,14 +71,14 @@ Les données de toute la personnalisation des voitures, sans écran : 28 couleur
 
 ## Tests CPU
 
-Commit testé : `d6a8b888` (correction de la revue du lead dev, branche synchronisée avec `main`). Commande : `bash tools/qa/tests_cpu.sh build`. Journal complet : [`qa/pr/WFS-487/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-487/qa/pr/WFS-487/tests-cpu.log).
+Commit testé : `1ec00517` (2e revue du lead dev : branche synchronisée avec `main`, qui contient WFS-480 et WFS-504 ; `test_langue` lie `personnalisation.cpp` et `profil.cpp`). Les 118 tests déclarés dans `CMakeLists.txt` ont tous leur exécutable (vérifié à part, car `tests_cpu.sh` saute un test absent : WFS-527). Commande : `bash tools/qa/tests_cpu.sh build`. Journal complet : [`qa/pr/WFS-487/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-487/qa/pr/WFS-487/tests-cpu.log).
 
 ```
 [OK] test_ville_lieux (0 s)
-[OK] test_ville_sol (3 s)
-[OK] test_virages_fleches (1 s)
+[OK] test_ville_sol (4 s)
+[OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 116 test(s) réussi(s) en 442 s
+tests CPU : 118 test(s) réussi(s) en 443 s
 code de sortie : 0
 ```
 
