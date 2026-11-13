@@ -1105,3 +1105,9 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 
 ### 2026-11-13 15:14:08 — WFS-500 et 510 prêts ; 499 après 489 (po-scrum-master)
 - WFS-498 fusionné (#382) : **WFS-500** (cadeau du jour, tirage) et **WFS-510** (market, packs) passent ⏳ Prêt ; **WFS-499** attend WFS-489 (même panneau `garage_achat.*`, règle « un ticket par fichier de panneau »).
+
+### 2026-11-13 15:16:27 — WFS-456 fusionné par le lead dev (lead-dev)
+- PR #385, 2e revue sur a38bdb52 : les deux preuves demandées sont là (`tests-cpu.log` : 123 tests sur 68036a49 ; `banc-vitrines.log` : 0 image pour les voitures retirées, 17 sinon). Le diff du code est identique à la 1re revue.
+- Construction et 123 tests CPU refaits par le lead dev sur a38bdb52. Captures rouvertes (Golf jour et nuit, phares, Corsa, Giulia, Compass, T-Cross).
+- « ✅ Approuvé » en commentaire (GitHub refuse l'approbation : même compte), puis fusion en squash : **66bf9698**. Statut 🟣 ; `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Au PO : tâche de finition à créer (pli de la membrane de la Giulia, plaque brillante de la Compass), non bloquante. WFS-457 et WFS-483 ne sont plus bloqués par WFS-456.
