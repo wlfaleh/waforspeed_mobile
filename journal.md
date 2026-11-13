@@ -1427,3 +1427,8 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - Reste au garage en anglais, dans la zone de WFS-489 (#395, pas encore fusionnée) : « Choisir », « Retour », « Couleur » et le nom de la couleur. Session de WFS-489 prévenue : à sa synchronisation, garder les deux blocs de `assets/textes/fr.txt` / `en.txt` et les deux lignes de commentaire de `src/ui/garage.h`.
 - **Pour le PO** (deux points hors de mon ticket, à décider) : (1) défaut déjà présent sur `main`, vu par le lead dev : le bandeau « paquet disponible » du menu recouvre le bouton CRÉDITS en bas à droite (FR et EN) → anomalie à créer ; (2) cartes d'essai cachées (`WFS_CARTES_TEST`, jamais montrées aux joueurs) : description et quartiers en français au choix du terrain en anglais (zone de WFS-505).
 - Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 19:24:28 — WFS-483 fusionné par le lead dev (lead-dev)
+- PR #397, 2e revue sur 33945d53 : les 3 points bloquants du refus sur 51fac475 sont corrigés (journal « Tests CPU » et `tests-cpu.log`, 6 recadrages Poursuite ×2 où « WFS » se lit de jour et de nuit, garage de 3/4 arrière). La remarque sur `support()` est corrigée aussi : les porte-plaques de la voiture courante sont gardés par pointeur.
+- Construction et tests refaits par le lead dev : 127 test(s) réussi(s). Approbation en commentaire (même compte GitHub), fusion en squash 1a24dc15. Statut 🟣, ligne ajoutée dans `qa/Check.md`.
+- Pour le PO : à 5,2 m de la caméra de poursuite, une plaque de 8 caractères sera petite (RG-06). C'est un point à surveiller, la caméra ne change pas. Le coût RG-07 reste à mesurer en ms sur le téléphone.
