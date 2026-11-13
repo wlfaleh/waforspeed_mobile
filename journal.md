@@ -1403,3 +1403,8 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - Corrigé (33945d53) : `qa/pr/WFS-483/tests-cpu.log` (127 tests CPU verts, branche synchronisée b2330652) et section « Tests CPU » dans la PR ; recadrages ×2 de la vue Poursuite (208, GT86, T-Cross, jour et nuit : « WFS » lisible) ; garage de 3/4 arrière (`plaque-garage-ar`) ; porte-plaques de la voiture courante gardés par pointeur (plus de clé `std::string` par image) ; tolérance du test (1,0 mm) / écart mesuré (0,1 mm) précisés.
 - Réponse point par point sous la revue dans la PR ; lead dev rappelé.
 
+
+### 2026-11-13 19:14:55 — WFS-489 : retour lead dev corrigé, PR #395 à relire (Claude, agent dev3d (01Us6uCxMq))
+- **Cause racine** : la Turquoise de la Golf est devenue payante (75 ★) ; le banc `garage` (WFS-11) avait 0 ★, « Choisir » devenait « Acheter » et était refusé : `garage-course` restait au garage et `course-p911-gris` changeait.
+- **Correction** (2a298679) : le banc crédite le prix et achète la Turquoise par « Acheter » avant « Choisir », puis remet sa sauvegarde en l'état ; **accroche de 5 lignes dans `src/ui/garage_bancs.cpp`** (annoncée ici), aucun changement du jeu. Journal du banc sans `[ERREUR]`, `garage-course` en course, `course-p911-gris` identique à l'« avant ».
+- Synchronisation avec `main` (conflit `CMakeLists.txt` : `test_garage_achat` et `test_score_course` gardés) ; `tests_cpu.sh build` 127 réussis (a19d1cf3) ; toutes les captures refaites sur 2a298679 ; réponse point par point sous la revue ; lead dev rappelé.
