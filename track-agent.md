@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) | WFS-488 | Couleur secondaire : toit et rétroviseurs séparés sur les 17 voitures (E18, zone E10) | `feature/waforspeed-488`, 09:51 (dda54015) | 🔀 En PR #380, lead dev appelé |
+| Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) | WFS-488 | Couleur secondaire : toit et rétroviseurs séparés sur les 17 voitures (E18, zone E10) | `feature/waforspeed-488`, 09:51 (dda54015) | ↩️ retour lead dev sur PR #380 : à corriger (capture Tests CPU, endurance Basse) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
 
 ## Agents de pilotage
