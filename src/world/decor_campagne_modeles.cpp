@@ -23,6 +23,25 @@ struct Hasard {
     float sym(float a) { return ((*this)() * 2 - 1) * a; }
 };
 
+// WFS-387 (RG-12) : bruit de valeur lissé (0..1), déterministe, sans état global : variation d'albédo et de relief d'un sommet
+// à l'autre (grain de la paille, taches de l'enduit, veines du bois, plaques de la couverture)
+float hache3(int x, int y, int z, uint32_t g) {
+    uint32_t h = (uint32_t)x * 73856093u ^ (uint32_t)y * 19349663u ^ (uint32_t)z * 83492791u ^ g * 2654435761u;
+    h ^= h >> 13; h *= 0x5bd1e995u; h ^= h >> 15;
+    return (float)(h & 0xffffffu) / 16777215.f;
+}
+float bruit(vec3 p, uint32_t g) {
+    const float fx = std::floor(p.x), fy = std::floor(p.y), fz = std::floor(p.z);
+    const int x = (int)fx, y = (int)fy, z = (int)fz;
+    auto L = [](float t) { return t * t * (3 - 2 * t); };
+    const float u = L(p.x - fx), v = L(p.y - fy), w = L(p.z - fz);
+    auto M = [](float a, float b, float t) { return a + (b - a) * t; };
+    return M(M(M(hache3(x, y, z, g), hache3(x + 1, y, z, g), u), M(hache3(x, y + 1, z, g), hache3(x + 1, y + 1, z, g), u), v),
+             M(M(hache3(x, y, z + 1, g), hache3(x + 1, y, z + 1, g), u), M(hache3(x, y + 1, z + 1, g), hache3(x + 1, y + 1, z + 1, g), u), v), w);
+}
+// deux octaves, moyenne 0 (−1..1 environ)
+float bruit2(vec3 p, uint32_t g) { return (bruit(p, g) * 0.65f + bruit(p * 2.7f, g + 17u) * 0.35f) * 2 - 1; }
+
 // quadrilatère plan (2 triangles), tourné vers dehors
 void quadPlat(Maille& m, vec3 a, vec3 b, vec3 c, vec3 d, int couleur, vec3 dehors) {
     vec3 nn = cross(b - a, c - a);
@@ -88,7 +107,8 @@ void prisme(Maille& m, vec3 a, vec3 b, vec3 haut, const std::vector<vec2>& sec, 
 struct Ouv { float u0, v0, u1, v1; };   // ouverture dans le repère du mur (u depuis le centre du mur, v depuis le bas)
 // mur plan : centre du bas en c, u le long du mur (longueur L), haut HAUT (hauteur H), normale dehors d ; ouvertures percées,
 // embrasures (tableaux, appui, linteau) de profondeur prof, de la couleur emb
-void murPerce(Maille& m, vec3 c, vec3 u, vec3 d, float L, float H, const std::vector<Ouv>& ouv, int couleur, float prof, int emb) {
+// pas > 0 : les parties pleines sont découpées en carreaux d'au plus pas × pas (WFS-387 : grain de l'enduit sur les sommets)
+void murPerce(Maille& m, vec3 c, vec3 u, vec3 d, float L, float H, const std::vector<Ouv>& ouv, int couleur, float prof, int emb, float pas = 0) {
     std::vector<float> xs{-L / 2, L / 2}, ys{0, H};
     for (const Ouv& o : ouv) { xs.push_back(o.u0); xs.push_back(o.u1); ys.push_back(o.v0); ys.push_back(o.v1); }
     std::sort(xs.begin(), xs.end()); xs.erase(std::unique(xs.begin(), xs.end()), xs.end());
@@ -106,7 +126,14 @@ void murPerce(Maille& m, vec3 c, vec3 u, vec3 d, float L, float H, const std::ve
             if (!trou && debut > 1e8f) debut = xs[i];
             if ((trou || i + 2 == xs.size()) && debut < 1e8f) {
                 const float fin = trou ? xs[i] : xs[i + 1];
-                if (fin - debut > 1e-4f) quadPlat(m, P(debut, y0), P(fin, y0), P(fin, y1), P(debut, y1), couleur, d);
+                if (fin - debut > 1e-4f) {
+                    const int nx = pas > 0 ? std::max(1, (int)std::ceil((fin - debut) / pas)) : 1, ny = pas > 0 ? std::max(1, (int)std::ceil((y1 - y0) / pas)) : 1;
+                    for (int q = 0; q < nx; q++) for (int r = 0; r < ny; r++) {
+                        const float xa = debut + (fin - debut) * q / nx, xb = debut + (fin - debut) * (q + 1) / nx;
+                        const float ya = y0 + (y1 - y0) * r / ny, yb = y0 + (y1 - y0) * (r + 1) / ny;
+                        quadPlat(m, P(xa, ya), P(xb, ya), P(xb, yb), P(xa, yb), couleur, d);
+                    }
+                }
                 debut = 1e9f;
             }
         }
@@ -139,8 +166,10 @@ void fenetre(Maille& m, const Couleurs& k, vec3 c, vec3 u, vec3 d, float w, floa
                                    {P(w / 2 - fw / 2, 0, -r + 0.025f), P(w / 2 - fw / 2, h, -r + 0.025f)},
                                    {P(0, 0, -r + 0.025f), P(0, h, -r + 0.025f)}})
             poutre(m, a, b, d, fw, 0.05f, 0, k.menuiserie);
-        for (const float y : {fw / 2, h - fw / 2, h * 0.62f})
-            poutre(m, P(-w / 2 + fw, y, -r + 0.025f), P(w / 2 - fw, y, -r + 0.025f), d, fw * (y == h * 0.62f ? 0.6f : 1.f), 0.05f, 0, k.menuiserie);
+        // traverses basse et haute du dormant (6 cm), petit bois aux 0,62 de la hauteur (60 % de la largeur du dormant)
+        const std::pair<float, float> traverses[3] = {{fw / 2, fw}, {h - fw / 2, fw}, {h * 0.62f, fw * 0.6f}};
+        for (const auto& [y, larg] : traverses)
+            poutre(m, P(-w / 2 + fw, y, -r + 0.025f), P(w / 2 - fw, y, -r + 0.025f), d, larg, 0.05f, 0, k.menuiserie);
         // appui de pierre saillant de 4 cm, 6 cm d'épaisseur, en pente vers l'extérieur
         poutre(m, P(-w / 2 - 0.06f, -0.03f, -0.08f), P(w / 2 + 0.06f, -0.03f, -0.08f), HAUT, 0.24f, 0.06f, 0.012f, k.pierre);
         // volets battants à lames verticales et barres, ouverts à plat contre le mur, à 3 cm du nu
@@ -155,22 +184,59 @@ void fenetre(Maille& m, const Couleurs& k, vec3 c, vec3 u, vec3 d, float w, floa
 
 // tuiles canal : surface ondulée (tuiles de courant et de couvert) entre la ligne d'égout et le faîtage ; z de z0 à z1, onde
 // de période per (0,22 m pour la tuile canal), creux de ampl
-void ondule(Maille& m, vec3 egoutA, vec3 faitA, vec3 dz, float z0, float z1, float per, float ampl, vec3 normale, int couleur, int pts) {
-    std::vector<std::vector<vec3>> an(2);
+// WFS-387 (RG-12, réserve 5) : plaques > 0 (couverture en plaques ondulées) : les ondes et les plaques se lisent aussi de loin,
+// comme sur une vraie couverture vieillie : creux plus sombres (mousse, poussière, ombre portée de l'onde), crêtes plus claires,
+// recouvrement latéral des plaques toutes les « plaques » ondes (1,06 m pour 6 ondes de 177 mm) marqué par un creux plus sombre,
+// et chaque plaque de sa propre teinte (± 10 %, vieillissement inégal), plaques de 2,5 m dans le sens de la pente
+void ondule(Maille& m, vec3 egoutA, vec3 faitA, vec3 dz, float z0, float z1, float per, float ampl, vec3 normale, int couleur, int pts, int plaques = 0) {
+    const int nr = plaques > 0 ? std::max(2, (int)std::ceil(length(faitA - egoutA) / 2.5f) + 1) : 2;
+    std::vector<std::vector<vec3>> an((size_t)nr);
     const int n = std::max(2, (int)std::ceil((z1 - z0) / per * pts));
-    for (int i = 0; i <= n; i++) {
-        const float z = z0 + (z1 - z0) * i / n, o = ampl * 0.5f * std::sin(2 * PI * (z - z0) / per);
-        an[0].push_back(egoutA + dz * z + normale * o);
-        an[1].push_back(faitA + dz * z + normale * o);
+    for (int r = 0; r < nr; r++) {
+        const vec3 base = egoutA + (faitA - egoutA) * ((float)r / (nr - 1));
+        for (int i = 0; i <= n; i++) {
+            const float z = z0 + (z1 - z0) * i / n, o = ampl * 0.5f * std::sin(2 * PI * (z - z0) / per);
+            an[(size_t)r].push_back(base + dz * z + normale * o);
+        }
     }
     // axe sous la surface : les triangles se tournent vers le haut (normale)
     const vec3 m0 = (egoutA + faitA) * 0.5f - normale * 5.f;
+    const size_t v0 = m.v.size();
     loft(m, an, couleur, false, m0 + dz * z0, m0 + dz * z1);
+    if (plaques <= 0) return;
+    for (int r = 0; r < nr; r++) for (int i = 0; i <= n; i++) {
+        Sommet& s = m.v[v0 + (size_t)r * (size_t)(n + 1) + (size_t)i];
+        const float z = z0 + (z1 - z0) * i / n, ph = std::sin(2 * PI * (z - z0) / per);
+        const int onde = (int)std::floor((z - z0) / per), plaque = onde / plaques;
+        float l = 1 + 0.12f * ph;                                       // crête + 12 %, creux − 12 %
+        if (onde % plaques == 0 && ph < 0) l *= 0.72f;                  // creux du recouvrement de deux plaques
+        l *= 1 + 0.10f * (hache3(plaque, r * 2 / std::max(1, nr - 1), 7, 89u) * 2 - 1);   // teinte de la plaque
+        s.n = s.n * std::clamp(l, 0.62f, 1.38f);
+    }
 }
 
 } // namespace
 
 // ---------------------------------------------------------------- outils publics
+void teinte(Maille& m, size_t v0, int couleur, vec3 e, float ampl, uint32_t graine) {
+    for (size_t k = v0; k < m.v.size(); k++) {
+        Sommet& s = m.v[k];
+        if (couleur >= 0 && s.couleur != couleur) continue;
+        const float b = bruit2({s.p.x / e.x, s.p.y / e.y, s.p.z / e.z}, graine);
+        s.n = s.n * std::clamp(1 + ampl * b, LUM_MIN, LUM_MAX);
+    }
+}
+void relief(Maille& m, size_t v0, int couleur, float incl, uint32_t graine) {
+    for (size_t k = v0; k < m.v.size(); k++) {
+        Sommet& s = m.v[k];
+        if (couleur >= 0 && s.couleur != couleur) continue;
+        const float l = length(s.n);
+        if (l < 1e-6f) continue;
+        const vec3 q = s.p * 23.f;   // un tirage par sommet (pas de 4 cm environ)
+        const vec3 t{bruit2(q, graine), bruit2(q, graine + 1u), bruit2(q, graine + 2u)};
+        s.n = normalize(s.n * (1.f / l) + t * incl) * l;
+    }
+}
 void poutre(Maille& m, vec3 a, vec3 b, vec3 haut, float w, float h, float ch, int couleur) {
     const float x = w / 2, y = h / 2, c = std::min(ch, std::min(x, y) * 0.5f);
     if (c <= 1e-4f) prisme(m, a, b, haut, {{-x, -y}, {x, -y}, {x, y}, {-x, y}}, couleur, true);
@@ -203,9 +269,11 @@ void lisse(Maille& m, vec3 a, vec3 b, vec3 plat, int couleur, bool loin) {
         for (int k = 0; k < nc; k++) { const float g = -PI / 2 + PI * k / (nc - 1); sec.push_back(o - hv * (std::cos(g) * r) + sd * (std::sin(g) * r)); }
         an.push_back(sec);
     }
+    const size_t v0 = m.v.size();
     loft(m, an, couleur, true, a, b);
     eventail(m, an.front(), couleur, -ax);
     eventail(m, an.back(), couleur, ax);
+    if (!loin) teinte(m, v0, -1, {0.35f, 0.035f, 0.35f}, 0.12f, 107u);   // WFS-387 : même bois que les poteaux, veines
 }
 
 void cable(Maille& m, vec3 a, vec3 b, float fleche, float diam, int n, int couleur) {
@@ -215,6 +283,80 @@ void cable(Maille& m, vec3 a, vec3 b, float fleche, float diam, int n, int coule
         const vec3 p = a + (b - a) * t - HAUT * (fleche * 4 * t * (1 - t));
         ligne(m, p0, p, diam, couleur);
         p0 = p;
+    }
+}
+
+int64_t poteauSuivant(const std::vector<int64_t>& tries, int64_t a, int64_t portee, int64_t L) {
+    if (tries.empty() || L <= 0 || portee <= 0) return -1;
+    a = ((a % L) + L) % L;
+    auto it = std::upper_bound(tries.begin(), tries.end(), a);
+    int64_t n = -1;
+    if (it != tries.end()) n = *it;
+    else if (tries.front() + L > a) n = tries.front();   // fin du tour : premier poteau du tour suivant
+    if (n < 0) return -1;
+    const int64_t d = ((n - a) % L + L) % L;
+    return d > 0 && d <= portee ? n : -1;
+}
+
+// ---------------------------------------------------------------- parapet des épingles (WFS-387, RG-11)
+void muretTroncon(Maille& m, vec3 a0, vec3 b0, vec3 dA, vec3 dB, int pierre, int chaperon, uint32_t graine) {
+    const float E = MURET_EPAISSEUR, H = MURET_HAUT - MURET_CHAPERON;   // corps maçonné sous le chaperon
+    const float lg = length(b0 - a0);
+    if (lg < 1e-3f) return;
+    // moellons : assises de 0,14 à 0,18 m, pierres de 0,22 à 0,40 m de long, une teinte par pierre (± 14 %), joints creux de 1 cm
+    // (la pierre est un quad plat avancé de 1 cm devant le plan du joint, de la teinte du mortier en dessous)
+    const int na = 3;
+    for (const int face : {0, 1}) {   // 0 : face côté route (en a0, b0), 1 : face côté vide (à E vers dehors)
+        auto P = [&](float u, float y, float avance) {
+            const float t = u / lg;
+            const vec3 d = normalize(dA * (1 - t) + dB * t);
+            const vec3 base = a0 + (b0 - a0) * t + d * (face ? E + avance : -avance);
+            return base + HAUT * y;
+        };
+        const vec3 dm = normalize(dA + dB) * (face ? 1.f : -1.f);
+        // plan des joints (mortier, un peu plus sombre)
+        { const size_t v0 = m.v.size(); quadPlat(m, P(0, 0, 0), P(lg, 0, 0), P(lg, H, 0), P(0, H, 0), pierre, dm); for (size_t q = v0; q < m.v.size(); q++) m.v[q].n = m.v[q].n * 0.80f; }
+        Hasard Hs{graine * 7u + (uint32_t)face * 131u + 1u};
+        float y = 0;
+        for (int r = 0; r < na; r++) {
+            const float h = r + 1 < na ? H / na * (0.9f + Hs() * 0.2f) : H - y;
+            float u = r % 2 ? -Hs() * 0.15f : 0;
+            while (u < lg) {
+                const float l = 0.22f + Hs() * 0.18f, ua = std::max(u, 0.f) + 0.005f, ub = std::min(u + l, lg) - 0.005f;
+                if (ub - ua > 0.03f) {
+                    const size_t v0 = m.v.size();
+                    quadPlat(m, P(ua, y + 0.005f, 0.01f), P(ub, y + 0.005f, 0.01f), P(ub, y + h - 0.005f, 0.01f), P(ua, y + h - 0.005f, 0.01f), pierre, dm);
+                    const float lum = std::clamp(1 + Hs.sym(0.14f), LUM_MIN, LUM_MAX);
+                    for (size_t q = v0; q < m.v.size(); q++) m.v[q].n = m.v[q].n * lum;
+                }
+                u += l;
+            }
+            y += h;
+        }
+    }
+    // chaperon : demi-rond aplati de 0,44 m de large et 0,08 m de haut, posé sur le corps, débordant de 2 cm de chaque côté
+    std::vector<std::vector<vec3>> an;
+    for (const float t : {0.f, 1.f}) {
+        const vec3 d = normalize(dA * (1 - t) + dB * t), o = a0 + (b0 - a0) * t + d * (E / 2) + HAUT * H;
+        std::vector<vec3> sec;
+        const float w = E / 2 + MURET_DEBORD;
+        sec.push_back(o - d * w);
+        for (int k = 0; k <= 6; k++) { const float g = PI * k / 6; sec.push_back(o - d * (std::cos(g) * w) + HAUT * (0.015f + std::sin(g) * (MURET_CHAPERON - 0.015f))); }
+        sec.push_back(o + d * w);
+        an.push_back(sec);
+    }
+    const vec3 mil = (a0 + b0) * 0.5f + normalize(dA + dB) * (E / 2) + HAUT * (H - 1.f);
+    loft(m, an, chaperon, false, mil - (b0 - a0) * 0.5f, mil + (b0 - a0) * 0.5f);
+    // bouts du tronçon (pignons du parapet ; cachés entre deux tronçons, visibles aux extrémités de l'épingle)
+    const vec3 ax = normalize(b0 - a0);
+    eventail(m, an.front(), chaperon, -ax); eventail(m, an.back(), chaperon, ax);
+    quadPlat(m, a0, a0 + dA * E, a0 + dA * E + HAUT * H, a0 + HAUT * H, pierre, -ax);
+    quadPlat(m, b0, b0 + dB * E, b0 + dB * E + HAUT * H, b0 + HAUT * H, pierre, ax);
+    // sous-face du débord (vue d'en bas, rare) : bandes fines
+    for (const int c : {-1, 1}) {
+        const vec3 oa = a0 + dA * (E / 2 + c * (E / 2 + MURET_DEBORD / 2)) + HAUT * H, ob = b0 + dB * (E / 2 + c * (E / 2 + MURET_DEBORD / 2)) + HAUT * H;
+        const vec3 ea = dA * (MURET_DEBORD / 2), eb = dB * (MURET_DEBORD / 2);
+        quadPlat(m, oa - ea, ob - eb, ob + eb, oa + ea, chaperon, -HAUT);
     }
 }
 
@@ -283,29 +425,51 @@ Maille poteauCloture(const Couleurs& c, int variante) {
     const vec3 sommet = vec3{0, CLOTURE_HAUT, 0} + incl;
     const std::vector<vec3>& d = an.back();
     for (size_t k = 0; k < d.size(); k++) triPlat(m, d[k], d[(k + 1) % d.size()], sommet, c.piquet, (d[k] + d[(k + 1) % d.size()]) * 0.5f - vec3{0, CLOTURE_HAUT - 0.2f, 0});
+    // WFS-387 (RG-12, réserve 3) : même bois que les lisses (même case de la palette), veines et gerces dans le fil du bois
+    teinte(m, 0, -1, {0.03f, 0.45f, 0.03f}, 0.12f, 101u + (uint32_t)variante);
     return m;
 }
 
 // ---------------------------------------------------------------- botte ronde
+// WFS-387 (RG-12, réserve 1) : flanc à grain de paille et filet d'enrubannage visibles. Le filet (polyéthylène blanc, mailles de
+// 2 à 3 cm, posé d'un bord à l'autre et rabattu sur les arrondis) se voit surtout sur les épaules, où il se tend et blanchit le
+// flanc ; sur le flanc, ses brins tournent autour de la botte (bandes à peine plus claires tous les 8 cm). La paille enroulée
+// donne des fibres le long du tour (bruit allongé dans le sens du roulement) et des touffes (normales penchées).
 Maille botte(const Couleurs& c, bool loin) {
     Maille m;
-    const int n = loin ? 10 : 20;
+    const int n = loin ? 10 : 24;
     const float R = BOTTE_DIAM / 2, X = BOTTE_LARGEUR / 2, yC = R - 0.04f;   // posée : écrasée de 4 cm sur le sol
     const vec3 o{0, yC, 0}, ax{1, 0, 0};
     // flanc et bords arrondis (rayon 0,12 m), à peine bombé (+5 mm au milieu) ; un seul loft : normales lissées
-    std::vector<std::pair<float, float>> prof;
+    struct Anneau { float x, r; bool filet; };
+    std::vector<Anneau> prof;
     const float rb = 0.12f;
-    for (int i = 0; i <= 3; i++) { const float a = PI / 2 * i / 3; prof.push_back({-X + rb - rb * std::cos(a), R - rb + rb * std::sin(a)}); }
-    if (!loin) { prof.push_back({-X * 0.45f, R + 0.003f}); prof.push_back({0, R + 0.005f}); prof.push_back({X * 0.45f, R + 0.003f}); }
-    for (int i = 3; i >= 0; i--) { const float a = PI / 2 * i / 3; prof.push_back({X - rb + rb * std::cos(a), R - rb + rb * std::sin(a)}); }
+    for (int i = 0; i <= 3; i++) { const float a = PI / 2 * i / 3; prof.push_back({-X + rb - rb * std::cos(a), R - rb + rb * std::sin(a), !loin && i < 3}); }
+    if (!loin) {   // flanc : un anneau tous les 8 cm environ (bandes du filet), bombé de 5 mm au milieu
+        const int nf = 11;
+        for (int i = 1; i < nf; i++) { const float t = (float)i / nf, x = -X + rb + (2 * X - 2 * rb) * t; prof.push_back({x, R + 0.005f * std::sin(PI * t), false}); }
+    }
+    for (int i = 3; i >= 0; i--) { const float a = PI / 2 * i / 3; prof.push_back({X - rb + rb * std::cos(a), R - rb + rb * std::sin(a), !loin && i < 3}); }
     std::vector<std::vector<vec3>> an;
-    for (auto [x, r] : prof) {
-        std::vector<vec3> a = cercle(o + ax * x, {0, 0, 1}, HAUT, r, r, n);
+    for (const Anneau& q : prof) {
+        std::vector<vec3> a = cercle(o + ax * q.x, {0, 0, 1}, HAUT, q.r, q.r, n);
         for (vec3& p : a) p.y = std::max(p.y, 0.f);   // aplati au contact du sol
         an.push_back(a);
     }
     loft(m, an, c.foin, true, o - ax * X, o + ax * X);
+    if (!loin) {
+        // filet sur les épaules (fondu avec la paille : cases voisines de la palette) ; bandes des brins sur le flanc
+        for (size_t i = 0; i < prof.size(); i++) for (int j = 0; j < n; j++) {
+            Sommet& s = m.v[i * (size_t)n + (size_t)j];
+            if (prof[i].filet) s.couleur = c.filet;
+            else s.n = s.n * (0.92f + 0.16f * hache3((int)i, 3, 5, 37u));   // couches de paille enroulée : chaque tour de sa teinte
+        }
+        // fibres de la paille le long du tour (bruit allongé selon le roulement), touffes
+        teinte(m, 0, -1, {0.05f, 0.22f, 0.22f}, 0.24f, 41u);
+        relief(m, 0, c.foin, 0.18f, 43u);
+    }
     // bouts : spirale de foin enroulé (anneaux alternés), un peu creusés au centre (3 cm)
+    const size_t vBouts = m.v.size();
     for (const int s : {-1, 1}) {
         const float x0 = s * X;
         std::vector<vec3> prec = an[s < 0 ? 0 : an.size() - 1];
@@ -325,6 +489,7 @@ Maille botte(const Couleurs& c, bool loin) {
             prec = a;
         }
     }
+    if (!loin) { teinte(m, vBouts, -1, {0.2f, 0.06f, 0.06f}, 0.16f, 47u); relief(m, vBouts, -1, 0.15f, 53u); }   // bouts : brins coupés
     return m;
 }
 
@@ -346,7 +511,7 @@ Maille ferme(const Couleurs& c, bool loin) {
     for (const Face& f : faces) {
         const vec3 cb = f.d * (f.d.x != 0 ? W : L);
         if (loin) murPerce(m, cb, f.u, f.d, f.L, H, {}, c.crepi, 0, c.embrasure);
-        else murPerce(m, cb, f.u, f.d, f.L, H, f.o, c.crepi, 0.20f, c.embrasure);
+        else murPerce(m, cb, f.u, f.d, f.L, H, f.o, c.crepi, 0.20f, c.embrasure, 0.25f);   // WFS-387 : carreaux de 0,25 m (grain)
         for (size_t k = 0; k < f.o.size(); k++) {
             const Ouv& o = f.o[k];
             fenetre(m, c, cb + f.u * ((o.u0 + o.u1) / 2) + HAUT * o.v0, f.u, f.d, o.u1 - o.u0, o.v1 - o.v0, f.porte[k], loin);
@@ -391,6 +556,14 @@ Maille ferme(const Couleurs& c, bool loin) {
         loft(m, an, c.tuile, false, {0, faite - 1, -(L + G)}, {0, faite - 1, L + G});
     } else {
         poutre(m, {0, faite + ep, -(L + G)}, {0, faite + ep, L + G}, HAUT, 0.24f, 0.08f, 0, c.tuile);
+    }
+    // WFS-387 (RG-12, réserve 2) : enduit à la chaux taloché, jamais d'une seule teinte : taches de 0,5 à 1 m (reprises,
+    // séchage inégal) de ± 10 %, grain plus fin de ± 7 % (carreaux de 0,25 m), et pied de mur plus sombre (rejaillissement de la pluie) sur 1 m
+    if (!loin) {
+        teinte(m, 0, c.crepi, {0.8f, 0.6f, 0.8f}, 0.10f, 61u);
+        teinte(m, 0, c.crepi, {0.22f, 0.22f, 0.22f}, 0.07f, 67u);
+        for (Sommet& s : m.v) if (s.couleur == c.crepi && s.p.y < 1.6f) s.n = s.n * (0.88f + 0.12f * std::clamp((s.p.y - 0.6f) / 1.0f, 0.f, 1.f));
+        teinte(m, 0, c.tuile, {0.5f, 0.5f, 0.5f}, 0.10f, 71u);   // tuiles canal : teintes de cuisson variées
     }
     // cheminée de maçonnerie crépie, chapeau de pierre débordant
     const vec3 ch{0.35f, 0, 2.8f};
@@ -458,8 +631,18 @@ Maille hangar(const Couleurs& c, const Maille& botteRangee, bool loin) {
     for (const float s : {-1.f, 1.f}) {
         const vec3 n = normalize(vec3{s * T, 1, 0});
         const vec3 eg{s * (W + deb), yT(W + deb), 0}, fa{s * 0.01f, faite, 0};
-        if (loin) quadPlat(m, eg - vec3{0, 0, L + deb}, eg + vec3{0, 0, L + deb}, fa + vec3{0, 0, L + deb}, fa - vec3{0, 0, L + deb}, c.tole, n);
-        else ondule(m, eg, fa, {0, 0, 1}, -L - deb, L + deb, 0.177f, 0.051f, n, c.tole, 4);
+        if (loin) {   // WFS-387 : bandes d'une plaque (1,06 m), teinte de chaque plaque : la couverture se lit encore de loin
+            const float zz = L + deb;
+            const int np = (int)std::ceil(2 * zz / 1.062f);
+            for (int k = 0; k < np; k++) {
+                const float za = -zz + 2 * zz * k / np, zb = -zz + 2 * zz * (k + 1) / np;
+                const size_t v0 = m.v.size();
+                quadPlat(m, eg + vec3{0, 0, za}, eg + vec3{0, 0, zb}, fa + vec3{0, 0, zb}, fa + vec3{0, 0, za}, c.tole, n);
+                const float l = 1 + 0.10f * (hache3(k, 0, 7, 89u) * 2 - 1);
+                for (size_t q = v0; q < m.v.size(); q++) m.v[q].n = m.v[q].n * l;
+            }
+        }
+        else ondule(m, eg, fa, {0, 0, 1}, -L - deb, L + deb, 0.177f, 0.051f, n, c.tole, 4, 6);   // plaques de 6 ondes (1,06 m)
         // faîtière : bande pliée de 0,25 m de part et d'autre du faîtage
         quadPlat(m, {0, faite + 0.06f, -L - deb}, {0, faite + 0.06f, L + deb}, {s * 0.25f, faite + 0.06f - 0.25f * T, L + deb}, {s * 0.25f, faite + 0.06f - 0.25f * T, -L - deb}, c.tole, n);
         // rives (tôle pliée) sur les pignons
@@ -501,6 +684,11 @@ Maille poteauLigne(const Couleurs& c, bool loin) {
     const int n = loin ? 6 : 10;
     // fût conique de bois traité (Ø 0,28 m au pied, 0,20 m en tête), tête chanfreinée
     revolution(m, {0, -0.2f, 0}, HAUT, {{0, POTEAU_DIAM_PIED / 2}, {3.f, 0.133f}, {6.f, 0.116f}, {POTEAU_HAUT + 0.2f - 0.05f, POTEAU_DIAM_TETE / 2}, {POTEAU_HAUT + 0.2f, POTEAU_DIAM_TETE / 2 - 0.04f}}, n, c.poteau);
+    // WFS-387 (RG-12, réserve 4) : bois traité vieilli gris-brun, gerces verticales et pied plus sombre (humidité du sol)
+    if (!loin) {
+        teinte(m, 0, c.poteau, {0.04f, 1.2f, 0.04f}, 0.10f, 113u);
+        for (Sommet& s : m.v) if (s.couleur == c.poteau && s.p.y < 1.f) s.n = s.n * (0.88f + 0.12f * std::max(s.p.y, 0.f));
+    }
     // traverse en cornière d'acier galvanisé de 1,6 m, devant le fût, et deux jambes de force
     const float zT = -0.17f, yT = TRAVERSE_Y;
     if (loin) poutre(m, {-TRAVERSE / 2, yT, zT}, {TRAVERSE / 2, yT, zT}, HAUT, 0.08f, 0.08f, 0, c.ferrure);
