@@ -1056,3 +1056,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - **Accroche hors zone annoncée** : 3 lignes dans `src/platform/desktop_main.cpp` (groupes `textes` et `textes-course`, include). Petites fonctions de banc : `courseBouton`, `poursuiteBancMessages`, `benchDuelTextes`.
 - Vérifié : construction, 122 tests CPU verts (`2b9cd185`, synchronisé avec `main` après WFS-505 et 508). Banc `textes` EN vert (0 phrase française, 0 dépassement, 0 écart) ; FR vert et inchangé. Chauffe `main` / branche identique (mêmes appels et triangles, 145 s / 146 s). Captures avant / après (`hud`, `course5`, en anglais) : seul le texte change.
 - Limites : images par seconde réelles non mesurables sur lavapipe ; banc `textes` hors CI ; les nombres gardent la virgule française (hors E20).
+
+### 2026-11-13 14:48:33 — WFS-534 en PR #387 (lead-dev, renfort WFS-534)
+- Fait : `src/ui/garage.cpp` 678 → 249 lignes ; panneaux `garage_commun`, `garage_couleur` (→ 489), `garage_finition` (vide, → 491), `garage_skin` (vide, → 494), `garage_achat` (Choisir / Retour, → 489 / 499 / 502), `garage_fiche`, `garage_cadre`, `garage_decor`, `garage_bancs` ; guide en tête de `garage.h` (RG-05). API publique, ordre 440 et nom du système inchangés.
+- Vérifié : construction complète ; tests CPU 122 réussis (commit ab6f7cac ; 1er passage : `test_audio_chocs` RG-07 en échec de chronométrage sous charge, vert seul puis toute la suite) ; 59 paires de captures avant / après **identiques au pixel** (`garage` 1280x720 et 2400x1080, `garage` en anglais, tour du garage) ; journal du banc identique.
+- Limites : `captures_pr.sh` arrêté par la limite de temps de la session en fin de captures « avant » de `voitures-retirees` (tour du garage déjà fait) : JPG et tableau faits ensuite avec les commandes de l'étape 4 du script. Aucune CI de branche lancée.
+- Fusion : par son auteur, **sur ordre de l'utilisateur (2026-11-13)** relayé par le PO (exception pour WFS-534 seulement).
