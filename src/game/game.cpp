@@ -17,6 +17,8 @@
 #include "commandes_tactiles.h"   // WFS-98 : pédales et nitro du jeu web
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
+#include "personnalisation.h"   // WFS-488 (accroche) : couleur 2 possédée
+#include "../render/vehicule_peinture2.h"   // WFS-488 (accroche)
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 #include "../ui/ecrans/chargement.h"   // WFS-146 (accroche, ANO-45) : fondu du chargement
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9) : revêtements de route réels
@@ -75,6 +77,8 @@ void Game::setCar(const char* carId) {
     carDef_ = &voiturePermise(carId);   // WFS-404 (RG-04, accroche) : voiture retirée (licence NC) ou inconnue → 1re voiture permise
     paint_ = hexColor(carDef_->paint);
     if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureCourse(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24 ; WFS-487 (RG-07) : possédée seulement
+    const PeintureDef* p2 = sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), carDef_->id).peinture2 : nullptr;   // WFS-488 : possédée seulement
+    paint2_ = p2 ? vehicule_peinture2::code(p2->hex) : vehicule_peinture2::UNE_COULEUR;
     loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
     camInit_ = false;
@@ -402,6 +406,7 @@ void Game::render(double time) {
         RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
         if (player_.modeleMonde()) rouesJoueur.braquage = (float)player_.braquageRoues;   // WFS-247 : angle appliqué (joueur + aide, WFS-241), pas le doigt
         r_->dessinJoueur = true;    // WFS-265 (accroche) : voiture du joueur toujours complète (niveaux de détail du renderer)
+        r_->peinture2ProchaineVoiture(paint2_);   // WFS-488 (accroche)
         r_->draw(car_, carM, &paint_, &rouesJoueur);
         r_->dessinJoueur = false;
         if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
@@ -410,6 +415,7 @@ void Game::render(double time) {
         RouesPose rj = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);
         if (player_.modeleMonde()) rj.braquage = (float)player_.braquageRoues;
         r_->retroSeul = r_->dessinJoueur = true;
+        r_->peinture2ProchaineVoiture(paint2_);   // WFS-488 (accroche)
         r_->draw(car_, carM, &paint_, &rj);
         r_->retroSeul = r_->dessinJoueur = false;
     }

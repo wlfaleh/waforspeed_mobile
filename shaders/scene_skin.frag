@@ -95,7 +95,7 @@ void main() {
     vec4 base = texture(texColor, vUv) * pc.color;
     // WFS-100 (RG-03, ANO-28) : carrosserie = couleur de peinture choisie × 1, sans la texture de couleur du modèle
     // (js/cars/models.js : color.set(paint), carte de couleur retirée) ; vitres, feux, jantes et logos gardent leur texture
-    if ((flags & F_PAINT) != 0u) base = pc.color;
+    if ((flags & F_PAINT) != 0u) base = couleurPeinture();   // WFS-488 (accroche) : couleur 2 du toit et des rétros (vehicule.glsl)
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
