@@ -58,11 +58,13 @@ float eauCellules(vec2 p, float t) {
 // longueur / largeur ≈ 1 (RG-01 : 4 au plus). « fin » (0..1) : part de la petite échelle (0 au loin : rien sous le pixel)
 float eauMousse(vec2 p, float t, float cov, float fin) {
     if (cov <= 0.01) return 0.0;
-    vec2 q = p + 0.35 * vec2(eauBruit(p * 0.9 + 3.1), eauBruit(p * 0.9 - 1.7));   // bords des cellules ondulés (pas de polygones)
+    // bords des cellules très ondulés (deux échelles de déformation : trous allongés, en virgule, jamais ronds ni alignés)
+    vec2 q = p + 0.55 * vec2(eauBruit(p * 1.3 + 3.1), eauBruit(p * 1.3 - 1.7)) + 0.2 * vec2(eauBruit(p * 4.1 + 8.2), eauBruit(p * 4.1 - 6.4));
     float c1 = eauCellules(q * 2.4, t), c2 = fin > 0.01 ? eauCellules(q * 6.5 + 7.3, t * 1.3) : 0.6;
-    float trou = mix(0.62, 0.12, cov) + 0.22 * (eauBruit(q * 1.7 + 5.3) - 0.5);   // rayon du trou, variable d'un endroit à l'autre
+    float var = eauBruit(q * 0.8 + 5.3);                                           // plaques plus ou moins serrées
+    float trou = mix(0.62, 0.12, cov) + 0.4 * (var - 0.5);                         // rayon du trou, très variable d'un endroit à l'autre
     float corps = smoothstep(trou - 0.04, trou + 0.38, c1);                       // dégradé : mince au bord du trou, dense au cœur
-    float m = corps * (0.3 + 0.7 * corps);
+    float m = corps * (0.3 + 0.7 * corps) * (0.65 + 0.35 * eauBruit(q * 3.3 - 2.1));   // épaisseur inégale (ombrage, translucidité)
     float fil = smoothstep(0.38, 0.6, c2) * fin * (1.0 - smoothstep(trou - 0.05, trou + 0.1, c1)) * 0.45;   // filaments dans les trous
     return max(m, fil) * (0.45 + 0.55 * smoothstep(0.0, 0.6, cov));
 }
@@ -170,7 +172,7 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         }
         float sec = smoothstep(mouille - 0.7, mouille, r);
         // nappe : film d'eau sur le sable (sable sombre, lisse, le ciel s'y reflète) ; derrière : sable mouillé mat qui sèche
-        base.rgb = mix(mix(vec3(0.20, 0.17, 0.12), vec3(0.24, 0.21, 0.15), 1.0 - nappe), basse ? vec3(0.80, 0.82, 0.84) : vec3(0.70, 0.73, 0.75), ecumeN);
+        base.rgb = mix(mix(vec3(0.20, 0.17, 0.12), vec3(0.24, 0.21, 0.15), 1.0 - nappe), basse ? vec3(0.80, 0.82, 0.84) : vec3(0.60, 0.63, 0.65), ecumeN);
         rough = mix(mix(0.32, 0.07, nappe), 0.8, ecumeN);
         float d = length(F.camPos.xyz - vWorld);
         alpha = clamp(max(nappe * 0.85, 0.75 * (1.0 - sec)), 0.0, 1.0) * (1.0 - smoothstep(60.0, 90.0, d)) * smoothstep(-0.5, -0.2, r);
@@ -330,8 +332,8 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
             ecume = mix(ecume, 0.9 * m, pres);
         }
     }
-    // avis 3D B1 : hors Basse, écume blanc cassé (albédo ≈ 0,72, mousse humide qui laisse passer un peu l'eau) au lieu de 0,82
-    base.rgb = mix(base.rgb, basse ? vec3(0.80, 0.82, 0.84) : vec3(0.70, 0.73, 0.75), ecume);
+    // avis 3D B1 : hors Basse, écume blanc cassé (albédo ≈ 0,63, mousse humide qui laisse passer un peu l'eau) au lieu de 0,82
+    base.rgb = mix(base.rgb, basse ? vec3(0.80, 0.82, 0.84) : vec3(0.60, 0.63, 0.65), ecume);
     rough = mix(rough, 0.8, ecume);
     N = normalize(mix(N, vec3(0.0, 1.0, 0.0), ecume));
     return ecume;
