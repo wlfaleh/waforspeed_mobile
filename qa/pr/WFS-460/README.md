@@ -1,0 +1,72 @@
+# WFS-460 — captures avant / après (tools/qa/captures_pr.sh)
+
+Branche `feature/waforspeed-460` comparée à `origin/main` ; bancs : police-bandes:1280x720 ; filtre : `police-bandes-@(gauche|droite|3-4|approche-cockpit-basse|approche-basse-1[0-5]|approche-cockpit-1[2-5]|approche-poursuite-1[2-5])*`.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `police-bandes-3-4-nuit-avant` | — | ![après](apres-police-bandes-3-4-nuit-avant.jpg) |
+| `police-bandes-3-4-nuit` | — | ![après](apres-police-bandes-3-4-nuit.jpg) |
+| `police-bandes-approche-basse-10-avant` | — | ![après](apres-police-bandes-approche-basse-10-avant.jpg) |
+| `police-bandes-approche-basse-10` | — | ![après](apres-police-bandes-approche-basse-10.jpg) |
+| `police-bandes-approche-basse-11-avant` | — | ![après](apres-police-bandes-approche-basse-11-avant.jpg) |
+| `police-bandes-approche-basse-11` | — | ![après](apres-police-bandes-approche-basse-11.jpg) |
+| `police-bandes-approche-basse-12-avant` | — | ![après](apres-police-bandes-approche-basse-12-avant.jpg) |
+| `police-bandes-approche-basse-12` | — | ![après](apres-police-bandes-approche-basse-12.jpg) |
+| `police-bandes-approche-basse-13-avant` | — | ![après](apres-police-bandes-approche-basse-13-avant.jpg) |
+| `police-bandes-approche-basse-13` | — | ![après](apres-police-bandes-approche-basse-13.jpg) |
+| `police-bandes-approche-basse-14-avant` | — | ![après](apres-police-bandes-approche-basse-14-avant.jpg) |
+| `police-bandes-approche-basse-14` | — | ![après](apres-police-bandes-approche-basse-14.jpg) |
+| `police-bandes-approche-basse-15-avant` | — | ![après](apres-police-bandes-approche-basse-15-avant.jpg) |
+| `police-bandes-approche-basse-15` | — | ![après](apres-police-bandes-approche-basse-15.jpg) |
+| `police-bandes-approche-cockpit-12-avant` | — | ![après](apres-police-bandes-approche-cockpit-12-avant.jpg) |
+| `police-bandes-approche-cockpit-12` | — | ![après](apres-police-bandes-approche-cockpit-12.jpg) |
+| `police-bandes-approche-cockpit-13-avant` | — | ![après](apres-police-bandes-approche-cockpit-13-avant.jpg) |
+| `police-bandes-approche-cockpit-13` | — | ![après](apres-police-bandes-approche-cockpit-13.jpg) |
+| `police-bandes-approche-cockpit-14-avant` | — | ![après](apres-police-bandes-approche-cockpit-14-avant.jpg) |
+| `police-bandes-approche-cockpit-14` | — | ![après](apres-police-bandes-approche-cockpit-14.jpg) |
+| `police-bandes-approche-cockpit-15-avant` | — | ![après](apres-police-bandes-approche-cockpit-15-avant.jpg) |
+| `police-bandes-approche-cockpit-15` | — | ![après](apres-police-bandes-approche-cockpit-15.jpg) |
+| `police-bandes-approche-cockpit-basse-00-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-00-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-00` | — | ![après](apres-police-bandes-approche-cockpit-basse-00.jpg) |
+| `police-bandes-approche-cockpit-basse-01-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-01-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-01` | — | ![après](apres-police-bandes-approche-cockpit-basse-01.jpg) |
+| `police-bandes-approche-cockpit-basse-02-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-02-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-02` | — | ![après](apres-police-bandes-approche-cockpit-basse-02.jpg) |
+| `police-bandes-approche-cockpit-basse-03-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-03-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-03` | — | ![après](apres-police-bandes-approche-cockpit-basse-03.jpg) |
+| `police-bandes-approche-cockpit-basse-04-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-04-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-04` | — | ![après](apres-police-bandes-approche-cockpit-basse-04.jpg) |
+| `police-bandes-approche-cockpit-basse-05-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-05-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-05` | — | ![après](apres-police-bandes-approche-cockpit-basse-05.jpg) |
+| `police-bandes-approche-cockpit-basse-06-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-06-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-06` | — | ![après](apres-police-bandes-approche-cockpit-basse-06.jpg) |
+| `police-bandes-approche-cockpit-basse-07-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-07-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-07` | — | ![après](apres-police-bandes-approche-cockpit-basse-07.jpg) |
+| `police-bandes-approche-cockpit-basse-08-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-08-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-08` | — | ![après](apres-police-bandes-approche-cockpit-basse-08.jpg) |
+| `police-bandes-approche-cockpit-basse-09-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-09-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-09` | — | ![après](apres-police-bandes-approche-cockpit-basse-09.jpg) |
+| `police-bandes-approche-cockpit-basse-10-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-10-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-10` | — | ![après](apres-police-bandes-approche-cockpit-basse-10.jpg) |
+| `police-bandes-approche-cockpit-basse-11-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-11-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-11` | — | ![après](apres-police-bandes-approche-cockpit-basse-11.jpg) |
+| `police-bandes-approche-cockpit-basse-12-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-12-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-12` | — | ![après](apres-police-bandes-approche-cockpit-basse-12.jpg) |
+| `police-bandes-approche-cockpit-basse-13-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-13-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-13` | — | ![après](apres-police-bandes-approche-cockpit-basse-13.jpg) |
+| `police-bandes-approche-cockpit-basse-14-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-14-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-14` | — | ![après](apres-police-bandes-approche-cockpit-basse-14.jpg) |
+| `police-bandes-approche-cockpit-basse-15-avant` | — | ![après](apres-police-bandes-approche-cockpit-basse-15-avant.jpg) |
+| `police-bandes-approche-cockpit-basse-15` | — | ![après](apres-police-bandes-approche-cockpit-basse-15.jpg) |
+| `police-bandes-approche-poursuite-12-avant` | — | ![après](apres-police-bandes-approche-poursuite-12-avant.jpg) |
+| `police-bandes-approche-poursuite-12` | — | ![après](apres-police-bandes-approche-poursuite-12.jpg) |
+| `police-bandes-approche-poursuite-13-avant` | — | ![après](apres-police-bandes-approche-poursuite-13-avant.jpg) |
+| `police-bandes-approche-poursuite-13` | — | ![après](apres-police-bandes-approche-poursuite-13.jpg) |
+| `police-bandes-approche-poursuite-14-avant` | — | ![après](apres-police-bandes-approche-poursuite-14-avant.jpg) |
+| `police-bandes-approche-poursuite-14` | — | ![après](apres-police-bandes-approche-poursuite-14.jpg) |
+| `police-bandes-approche-poursuite-15-avant` | — | ![après](apres-police-bandes-approche-poursuite-15-avant.jpg) |
+| `police-bandes-approche-poursuite-15` | — | ![après](apres-police-bandes-approche-poursuite-15.jpg) |
+| `police-bandes-droite-jour-avant` | — | ![après](apres-police-bandes-droite-jour-avant.jpg) |
+| `police-bandes-droite-jour` | — | ![après](apres-police-bandes-droite-jour.jpg) |
+| `police-bandes-gauche-jour-avant` | — | ![après](apres-police-bandes-gauche-jour-avant.jpg) |
+| `police-bandes-gauche-jour` | — | ![après](apres-police-bandes-gauche-jour.jpg) |
