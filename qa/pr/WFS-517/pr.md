@@ -16,7 +16,10 @@
   - Banc `parcours` (1280x720, avant et après) : « parcours complet : 0 écart(s) OK » et « en vue Cockpit : 0 écart(s) OK ». Il fait les deux parcours de RG-07 : accueil → « Duel en ligne » → salon ; accueil → Course solo → 3 cartes → Checkpoint → garage → terrain → course → fin → « Menu » → accueil.
   - Banc `menu2` (salon + duel entre amis, relais local) : « parcours duel : conforme (0 écart(s)) », avec « Duel en ligne » → salon, puis 2 manches, « Retour » → menu principal (panneau fermé), et « Derniers adversaires ».
   - Banc `chauffe` : parcours Checkpoint → garage → course → menu, 0 écart.
-  - Banc `course5` : le parcours de la Poursuite passe par la carte 03 → garage → terrain → course (voir le journal).
+  - Banc `course5` : parcours de la Poursuite par la carte 03 « accueil → … → poursuite → fin → Menu → accueil : 0 écart(s) OK » ; redémarrage : « le panneau des modes rouvre sur Poursuite ».
+  - Après la dernière synchronisation avec `main` (0bea2f53) : 116 tests CPU verts, parcours, menu2 et course5 relancés, mêmes résultats.
+  - Lignes « ERREUR » des bancs qui ne viennent pas de ce ticket : « 2 pipeline(s) créé(s) pendant la course » (menu2) apparaît aussi sur `main` (captures « avant ») ; « aucune police à 10-30 m pour poursuite-police-basse » (course5) vient d'une scène fixe de la poursuite, que ce ticket ne touche pas.
+  - `test_langue` ne se construit plus sur `main` depuis la fusion de WFS-480 (`profil.cpp` manque à la cible) : ce n'est pas lié à ce ticket. Le PO l'a signalé et a créé l'US technique **WFS-526**.
 - **Limites et risques connus** :
   - Le banc du duel trouve « Duel en ligne » comme 2e zone de focus du menu (même méthode que l'endurance pour « Course solo », qui est la 1re). Si l'ordre des boutons du menu change un jour, ce banc échouera en le disant (« bouton absent » ou mauvais écran), sans rien casser en silence.
   - Pas d'essai manette sur un vrai téléphone. La manette appuie déjà au centre des zones déclarées : c'est le même principe que les réglages.
