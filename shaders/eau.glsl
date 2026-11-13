@@ -239,14 +239,17 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     rough = clamp(sqrt(sqrt(0.0004 + 2.0 * (varPerdue + vmPetites * agit))), 0.08, 0.35);
     // WFS-401 (RG-03) : traînée du soleil faite de reflets séparés. Les rides plus petites que le pixel ne floutent pas le soleil en
     // tache : chacune est une petite facette qui renvoie le soleil vers l'œil ou non (« glitter », Cox et Munk 1954). Dans la zone où
-    // le reflet du soleil peut tomber (angle du miroir moyen au soleil de moins de ≈ 4 écarts types des pentes perdues), chaque
+    // le reflet du soleil peut tomber (voir « zone » ci-dessous), chaque
     // pixel tire sa facette : pente gaussienne de la variance perdue, tirage changé 12 fois par seconde (scintillement), et la
     // rugosité redevient celle d'une facette lisse. En moyenne sur plusieurs pixels, l'énergie reste celle du lobe large ; la zone
     // s'élargit au loin avec les pentes perdues (traînée plus large au loin qu'au près). Hors Basse ; le jour (soleil levé).
     if (!basse && F.sunDir.w > 0.0 && F.sunDir.y > -0.02) {
         float sig2 = varPerdue + vmPetites * agit + 0.0008;
-        vec3 R0 = reflect(-V, N), Ls = normalize(F.sunDir.xyz);
-        float zone = 1.0 - smoothstep(16.0 * sig2, 36.0 * sig2, 1.0 - dot(R0, Ls));
+        // zone : la facette qui renverrait le soleil (demi-vecteur H entre l'œil et le soleil) est à moins de ≈ 3 écarts types de
+        // la normale moyenne. Mesurée sur H et non sur le reflet : à angle rasant, une pente de côté ne dévie presque pas le reflet
+        // (2 sin(élévation) × pente) : la traînée reste une colonne étroite sous le soleil, comme en vrai
+        vec3 Hs = normalize(V + normalize(F.sunDir.xyz));
+        float zone = 1.0 - smoothstep(3.0 * sig2, 6.0 * sig2, 1.0 - dot(N, Hs));
         if (zone > 0.0) {
             vec2 hh = eauHash2(floor(gl_FragCoord.xy) + floor(t * 12.0) * vec2(17.31, 9.13));
             vec2 s = sqrt(-2.0 * log(max(hh.x, 1e-4)) * sig2) * vec2(cos(6.2831853 * hh.y), sin(6.2831853 * hh.y));
