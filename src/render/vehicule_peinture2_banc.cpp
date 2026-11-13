@@ -2,7 +2,8 @@
 // en Noir (couleurs du catalogue, PEINTURES), comme les captures demandées par le ticket :
 //   - peinture2-<id>-34, -dessus : 208, GT86, Corvette (id mustang), de 3/4 avant gauche et de dessus (Ville, jour) ;
 //   - peinture2-<id>-retro, -joint : gros plans du rétroviseur gauche et du joint avant du pavillon ;
-//   - peinture2-planche : les voitures permises (17) de 3/4 avant, en mosaïque (RG-01 : toit + rétros sur chaque voiture) ;
+//   - peinture2-planche : les voitures permises (17) de 3/4 avant, toit et rétros en Blanc (visible aussi sur les toits noirs
+//     d'origine), en mosaïque (RG-01 : toit + rétros sur chaque voiture) ;
 //   - peinture2-course-jour, -nuit : 208 en course (caméra de poursuite), Ville.
 // WFS_PEINTURE2_VOITURES="id id …" : seulement ces voitures (gros plans et planche ; WFS_VOITURES reste au banc vitrines-feux). Sans couleur 2, l'aspect d'avant est contrôlé par le
 // banc vitrines-feux (mêmes images que main). Domaine : E10 Véhicules ; appelé par desktop_main.cpp (accroche).
@@ -51,7 +52,7 @@ unsigned hexDe(const char* id) { const PeintureDef* p = peintureDef(id); return 
 WFS_SYSTEM(Peinture2Banc, 497)
 
 void benchPeinture2(Game& g, Renderer& r, const std::string& out) {
-    const unsigned ROUGE = hexDe("rouge"), NOIR = hexDe("noir");
+    const unsigned ROUGE = hexDe("rouge"), NOIR = hexDe("noir"), BLANC = hexDe("blanc");
     std::vector<std::string> ids;
     if (const char* l = std::getenv("WFS_PEINTURE2_VOITURES")) { std::istringstream is(l); std::string id; while (is >> id) ids.push_back(id); }
     else for (int i = 0; i < CAR_COUNT; i++) if (!voitureRetiree(CARS[i].id)) ids.push_back(CARS[i].id);
@@ -59,12 +60,12 @@ void benchPeinture2(Game& g, Renderer& r, const std::string& out) {
     auto images = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; g.render(t); } };
     auto capture = [&](const std::string& nom) { g.render(t + 0.001); g.render(t + 0.002); r.capturePng(out + "/" + nom + ".png"); WFS_LOG("capture %s (WFS-488)", nom.c_str()); };
     // charge la voiture, carrosserie Rouge, toit et rétros Noir ; faux si impossible
-    auto preparer = [&](const std::string& id, const char* carte) {
+    auto preparer = [&](const std::string& id, const char* carte, unsigned couleur2) {
         if (!g.init(r, id.c_str(), carte)) { WFS_ERR("peinture2 : %s impossible à charger", id.c_str()); return false; }
         g.setAutopilot(false); g.camMode = 2;
         g_actif = true; g_repeindre = true; g_peinture = lin(ROUGE); g_modele = nullptr;
         images(3);                                          // choix appliqué entre deux images (modèle rechargé)
-        g.setPeinture2(vehicule_peinture2::code(NOIR));     // après le rechargement (setCar relit la sauvegarde)
+        g.setPeinture2(vehicule_peinture2::code(couleur2));  // après le rechargement (setCar relit la sauvegarde)
         images(2);
         return true;
     };
@@ -85,7 +86,7 @@ void benchPeinture2(Game& g, Renderer& r, const std::string& out) {
     };
     const float h0 = g.orbitHauteur, r0 = g.orbitRecul;
     for (const char* id : {"p208", "gt86", "mustang"}) {
-        if (std::find(ids.begin(), ids.end(), id) == ids.end() || !preparer(id, "ville")) continue;
+        if (std::find(ids.begin(), ids.end(), id) == ids.end() || !preparer(id, "ville", NOIR)) continue;
         viser(4.0, -3.2, 2.3); capture(std::string("peinture2-") + id + "-34");
         viser(1.2, -0.9, 5.2); capture(std::string("peinture2-") + id + "-dessus");
         if (g_modele && g_modele->retroMesure[0]) { grosPlan((g_modele->retroMin[0] + g_modele->retroMax[0]) * 0.5f, 0.75f); capture(std::string("peinture2-") + id + "-retro"); }
@@ -104,7 +105,7 @@ void benchPeinture2(Game& g, Renderer& r, const std::string& out) {
         const std::string tmp = out + "/.peinture2-tmp.png";
         int place = 0; std::string ordre;
         for (const std::string& id : ids) {
-            if (place >= COL * LIG || !preparer(id, "ville")) continue;
+            if (place >= COL * LIG || !preparer(id, "ville", BLANC)) continue;
             viser(4.6, -3.6, 2.6); g.render(t); g.render(t + 0.001); r.capturePng(tmp);
             g.orbitHauteur = h0; g.orbitRecul = r0; g_actif = false;
             g.shutdown();
@@ -123,13 +124,13 @@ void benchPeinture2(Game& g, Renderer& r, const std::string& out) {
         }
         std::remove(tmp.c_str());
         stbi_write_png((out + "/peinture2-planche.png").c_str(), COL * CW, LIG * CH, 3, planche.data(), COL * CW * 3);
-        WFS_LOG("capture peinture2-planche : %d voitures (Rouge, toit et rétroviseurs Noir), de gauche à droite et de haut en bas : %s (WFS-488)", place, ordre.c_str());
+        WFS_LOG("capture peinture2-planche : %d voitures (Rouge, toit et rétroviseurs Blanc), de gauche à droite et de haut en bas : %s (WFS-488)", place, ordre.c_str());
     }
     // course : 208, caméra de poursuite, de jour puis de nuit
     if (std::find(ids.begin(), ids.end(), "p208") != ids.end())
         for (const char* moment : {"jour", "nuit"}) {
             setenv("WFS_MOMENT", moment, 1);
-            if (!preparer("p208", "ville")) continue;
+            if (!preparer("p208", "ville", NOIR)) continue;
             g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
             images(4);
             g.setPeinture2(vehicule_peinture2::code(NOIR));   // l'écran Course recharge-t-il la voiture ? la couleur 2 reste posée
