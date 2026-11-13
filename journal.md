@@ -1730,3 +1730,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **WFS-484** (E17, P1) : plaques au hasard pour le trafic, les adversaires, la police, le duel et le fantôme, même style que la plaque du joueur. Dépendance WFS-483 (#397) fusionnée : réutiliser sa plaque 3D, ne pas la recréer.
 - Zone : E10 (`src/render/vehicule_*`, `shaders/vehicule*.glsl`, `assets/cars/**`) + accroche ≤ 10 lignes dans `src/game/traffic*` / systèmes de course (annoncée au journal). Règles : `regles-de-gestion/WFS-484.md`, `regles-de-gestion/E17-identite-joueur.md`. Branche `feature/waforspeed-484`. Règle des formes nues : la plaque est un vrai objet (chanfreins, matériau), pas un rectangle plat.
 - `track-agent.md` : ligne ajoutée.
+
+### 2026-11-13 23:26:37 — Statuts automatiques, CI main #1058 (robot statuts)
+- Run rouge (push, commit 6adb9a7), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
