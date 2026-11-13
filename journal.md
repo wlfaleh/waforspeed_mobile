@@ -1476,3 +1476,9 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Points du refus corrigés : partie « Tests CPU » et `tests-cpu.log` (116 réussis, `d8f997a1`) ; captures téléphone avant / après en français (Affichage, Conduite, Son), seul déplacement « Réduire les mouvements » pour la ligne « Langue ». Remarques corrigées (copie sous verrou, recherche sans copie, secours de l'autre table).
 - Refait par le lead dev : construction, 116 tests CPU, banc `textes` en anglais VERT.
 - Statut 🟣 Fusionné ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`. **Pour le PO** : ticket à créer pour traduire la ligne technique des Réglages et le menu caché (hors WFS-505 à 508).
+
+### 2026-11-13 00:45:10 — WFS-504 : fin de session (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Fait : WFS-504 fusionné par le lead dev (PR #372, `d239b68a`) ; réponse à l'utilisateur dans `tache utilisateur.md` ; ligne de `track-agent.md` en « ⏹️ session terminée ».
+- Reste pour le PO : ticket pour la ligne technique de mesure et le menu caché de diagnostic encore en français (voir l'entrée « risque signalé ») ; WFS-505 à 508 débloqués.
+- Session arrêtée (un seul ticket par session).
+
