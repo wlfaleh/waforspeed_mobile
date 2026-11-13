@@ -1441,3 +1441,6 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - Corrigé (21bff82f, 38dcdca7) : chrome = métal PBR standard (sonde de reflet à pleine force, sans part diffuse) ; sous l'horizon, chaussée réelle (asphalte ρ 0,14, DA-realisme § 3) ; preuve que la sonde ne contient que le ciel (`qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg`) ; arbitrage du PO (7b9baef9) : « haut plus clair » et « décor reflété » passent à WFS-539.
 - Accroches `scene.frag` : 8 lignes au total (chrome : 3 lignes, commentaire compris).
 - Vérifié : bas de caisse / chaussée au soleil 48 à 155 % (≥ 40 %) ; nuit chromé < brillant ; brillant identique au pixel (14 images) ; 127 tests CPU (99657589).
+
+### 2026-11-13 19:37:26 — WFS-397 fusionné par le lead dev (lead-dev)
+PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moyeux de la Virtus sans logo, feux de la Virtus allumés sur les verres et sans halo, doublures des passages de roue de la W212, tests CPU joints, caisse +25 mm et pavillon +15 / +14 mm, 6/6 à ±1 %). Captures ouvertes, diff lu, construction et 126 tests CPU refaits sur la branche fusionnée avec main. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7c51937c. Statut 🟣. Remarques pour WFS-360 et le PO : encoche au coffre de la Virtus, 3e feu stop de la W212.
