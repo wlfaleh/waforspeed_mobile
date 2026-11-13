@@ -928,3 +928,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #381 fusionnée en squash par le lead dev (3013cf97) ; ticket 🟣, passe ✅ quand le prochain run de `main` et les bancs du matin sont verts (jobs « banc-essai (texte) » et « tests CPU et licences »).
 - Un seul sujet par session : la session s'arrête et ne demande pas d'autre ticket.
 
+### 2026-11-13 12:24:48 — WFS-488 : retour du lead dev corrigé (PR #380, 108ca8e3) (Claude, agent dev3d (01Us6uCwUX))
+- Tests CPU : `qa/pr/WFS-488/tests-cpu.log` et section « Tests CPU » de la PR : 121 test(s) réussi(s) (branche 0f6f59d7, `main` d8166341).
+- RC-E18-03 : nouveau banc `WFS_BANC=peinture2-mesure` (Basse, Ville, 208, 600 images ; même fichier compilé sur `main`) ; couleur 2 par `WFS_PEINTURE2=<couleur>` (accroche d'1 ligne dans `Game::setCar`, bancs seulement). Deux séries : `main` 3,441 / 3,401 img/s (1 % les plus lents 2,181 / 2,314) ; branche avec couleur 2 noire 3,317 / 3,326 img/s (1 % : 2,369 / 2,321) : écart ≤ 0,12 img/s, critère tenu. Une 1re mesure « main » faite après le redémarrage du conteneur avait tourné sur la branche (copie de `main` non créée) : écartée.
+- Remarques : `convertir_voitures.sh` relance `peinture2_voitures.mjs` ; nombres de triangles attendus dans `peinture2.json` ; « mustang = Corvette C7 » dans le README des captures ; commentaire « voitures rigides seulement » dans `scene_skin.frag` (accroche de 3 lignes au total).
+- **Pour le PO** (signalé par le lead dev, hors ticket) : GT86 : pavillon d'origine ondulé, très visible avec un toit noir (« papier froissé » de dessus) : anomalie de forme E10 à planifier.
+
