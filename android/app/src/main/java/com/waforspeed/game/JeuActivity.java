@@ -65,6 +65,8 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     private static native void nativeManetteRetiree();
     // WFS-126 : version de l'appli et déclencheur de test, donnés avant le démarrage du thread du jeu (plantage_android.cpp)
     private static native void nativeInfosPlantage(String version, int code, boolean declencheur);
+    // WFS-504 (RG-01) : langue du téléphone (« fr », « en », « ar »…), donnée avant le démarrage du thread du jeu (src/ui/langue.cpp)
+    private static native void nativeLangue(String code);
     private final HashSet<Integer> manettes = new HashSet<>();
     private String derniersEncarts = "";   // WFS-129 : dernières marges écrites au journal
     private InputManager entrees;
@@ -301,6 +303,9 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         final boolean declencheur = demande && apkDeTest();
         if (demande && !declencheur) Log.i("WaForSpeed", "PLANTAGE déclencheur ignoré (appli installée par le store)");
         nativeInfosPlantage(versionNom, versionCode, declencheur);
+        String langue = "";   // WFS-504 (RG-01) : illisible → vide → anglais
+        try { langue = java.util.Locale.getDefault().getLanguage(); } catch (RuntimeException e) { Log.w("WaForSpeed", "LANGUE illisible : " + e); }
+        nativeLangue(langue == null ? "" : langue);
         installerPlantageJava();
         final String rapport = prendreRapportPrecedent();
         super.onCreate(etat);

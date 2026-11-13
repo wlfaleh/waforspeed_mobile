@@ -86,6 +86,7 @@ void Sauvegarde::defauts() {
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     aideDirection = true;   // WFS-217
     cgu = 0;   // WFS-308
+    langue = "auto";   // WFS-504
     mode = "checkpoint"; km5 = 4; diff5 = "normale";   // WFS-110 ; WFS-133
     rec5Place = 0; rec5Ms = 0; recPVictoire = false; recPScore = 0; recPDistM = -1;   // WFS-125 : records vides
     // WFS-136 (A7.4) : première installation = déjà sur le tracé 2 des cartes actives (rien à mettre de côté)
@@ -108,6 +109,7 @@ std::string Sauvegarde::texte() const {
     o << "boutons=" << (grandsBoutons ? "grands" : "normaux") << "\n" << "gyro=" << gyro << "\n" << "gyroZone=" << gyroZone << "\n";   // WFS-108
     o << "aide=" << (aideDirection ? "activee" : "desactivee") << "\n";   // WFS-217
     o << "cgu=" << cgu << "\n";   // WFS-308 (RG-04)
+    o << "langue=" << langue << "\n";   // WFS-504 (RG-04)
     o << "mode=" << mode << "\n" << "km5=" << km5 << "\n" << "diff5=" << diff5 << "\n";   // WFS-110 ; WFS-133
     if (aRecordCourse5()) o << "record-course5=" << rec5Place << ";" << rec5Ms << "\n";   // WFS-125 : absents tant que vides
     if (aRecordPoursuite()) o << "record-poursuite=" << (recPVictoire ? 1 : 0) << ";" << recPScore << ";" << recPDistM << "\n";
@@ -173,6 +175,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "gyro") { if (entier(v, n) && n >= 0 && n <= 3) gyro = (int)n; }
         else if (k == "gyroZone") { if (entier(v, n) && n >= 0 && n <= 2) gyroZone = (int)n; }
         else if (k == "aide") { aideDirection = v != "desactivee"; }   // WFS-217 : inconnue → activée
+        else if (k == "langue") { langue = v == "fr" || v == "en" ? v : "auto"; }   // WFS-504 (RG-04) : inconnue → auto
         else if (k == "cgu") { if (entier(v, n) && n >= 0 && n <= 1000) cgu = (int)n; }   // WFS-308 (RG-04) : invalide → 0 (écran remontré)
         else if (k == "mode") { mode = v == "course5" || v == "poursuite" ? v : "checkpoint"; }   // WFS-110 ; WFS-119 : poursuite
         else if (k == "km5") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km5 = (int)n; }
