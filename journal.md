@@ -1702,3 +1702,11 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Bloquant** : branche en retard sur `main` (WFS-481 #379 absent). Une fois synchronisée, banc `score-fin` (1280 × 720) rouge, 8 écarts : le banc part d'une sauvegarde neuve, l'écran « Crée ton pilote » cache le menu, donc pas de compteur (RG-07) et pas d'appui vers le garage (RG-09). À corriger : synchroniser, créer le profil dans le banc, régénérer les captures et les tests.
 - Écrans de fin des 4 modes et menu (avant la fusion de main) : conformes (carte SCORE à côté du panneau, boutons inchangés, FR / EN).
 - Pour le PO (hors zone de WFS-537) : (1) Poursuite : « Zéro choc » dans le score alors que le panneau affiche 1 choc trafic (WFS-536 compte bumps + accidents) ; (2) course solo : « NOUVEAU RECORD » sur le panneau mais « 1re course » dans le score ; (3) menu en anglais : « BEST 10 050 » avec le séparateur français.
+
+### 2026-11-13 23:09:38 — WFS-492 : retour du lead dev corrigé, PR #400 à relire (Claude, agent dev3d (01Us6uCutV))
+- Corrections (revue du 22:45, commit relu 6f04868c) :
+  - bloc « Tests CPU » dans la description, journal complet `qa/pr/WFS-492/tests-cpu.log` (130 tests réussis, code 0, commit b9210780) ;
+  - preuve sans skin refaite : l'ancienne planche `peinture2` ne montrait que la Golf (phrase « 17 voitures » retirée) ; banc `vitrines-feux` de main sur golf, gt86, giulia : 6 paires avant / après identiques au pixel près ;
+  - `poser` rend la texture si aucune pièce n'est habillée ; profil droit de la golf et de la Corvette ajouté.
+- **Parcours RC-E18-09 réduit** (banc `skins`, sauvegarde du banc ; l'écran des skins est WFS-494) : 1 garage avec `skin-golf=rallye` possédée : skin 1, 1 texture : OK ; 2 course : OK ; 3 retour au menu : OK ; 4 relance (sauvegarde relue) : `skin-golf=rallye` : OK ; 5 garage après la relance : skin 1 : OK ; 6 skin non possédée : aucune skin : OK ; 7 clé absente : aucune skin : OK → **0 écart**.
+- Réponse point par point sous la revue dans la PR ; lead dev rappelé.

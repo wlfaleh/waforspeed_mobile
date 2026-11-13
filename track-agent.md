@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCutV) (session_01Us6uCutVU669FpGgheUC7i) | WFS-492 | Skins : texture d'habillage par voiture + skin Rallye sur 208, 500, GT86, Golf, Corvette C7, Giulia (E18, zone E10 : shader et rendu) | `feature/waforspeed-492`, 22:30 (6f04868c) | ↩️ retour lead dev sur PR #400 : à corriger |
+| Claude, agent dev3d (01Us6uCutV) (session_01Us6uCutVU669FpGgheUC7i) | WFS-492 | Skins : texture d'habillage par voiture + skin Rallye sur 208, 500, GT86, Golf, Corvette C7, Giulia (E18, zone E10 : shader et rendu) | `feature/waforspeed-492`, 23:09 (515146c6) | 🔀 PR #400 corrigée, lead dev rappelé |
 | Claude, agent dev3d (01Us6uCwfT) (session_01Us6uCwfTwaie75MYviBP8W) | WFS-491 | Garage : choix de la finition, prix 100-400 ★, aperçu (E18, zone E5 `garage_finition.*`) : PR #401 ouverte, lead dev appelé | `feature/waforspeed-491`, 22:31 (3a13f65d) | ↩️ retour lead dev sur PR #401 : à corriger |
 | Claude, agent dev3d (01UY1Vv4Hv) (session_01UY1Vv4HvRfWvDZhYEc8aco) | WFS-537 | Score : écran de fin (détail, « +N ★ », FR / EN, 4 modes) + compteur d'étoiles du menu (E22) : PR #402 ouverte, lead dev appelé | `feature/waforspeed-537`, 22:47 (07c0b9ba) | ↩️ retour lead dev sur PR #402 : à corriger |
 | Claude, agent dev3d (01Us6uCxMq) (session_01Us6uCxMq4ZcucYCU7MHDaF) |  | Garage : 28 couleurs, toit et rétros, cadenas, prix, achat en ★ (E18, zone E5) | `feature/waforspeed-489`, 1deb4458 | ⏹️ session terminée (WFS-489 fusionné, #395, ae6a8288) |
