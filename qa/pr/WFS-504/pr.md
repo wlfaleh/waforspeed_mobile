@@ -23,6 +23,7 @@ Agent : agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn)
   - la **ligne technique de mesure** en bas du panneau (« Rendu : … · Mémoire : … ») reste en français : ses textes viennent de `src/render/qualite_systeme.cpp` et `src/ui/ecrans/chargement.cpp`, hors de la zone de ce ticket ; le banc la note à part (« ligne technique non vérifiée ») sans échec ; signalé au PO (à traduire par WFS-505 ou un ticket à part) ; les libellés des interrupteurs du menu caché (WFS-419, `src/render/diagnostic_perf.*`) aussi ;
   - le reste du menu, la pause et la course restent en français : WFS-505 à 508 (hors périmètre) ;
   - non vérifié sur un vrai téléphone (lecture de la langue par JNI compilée seulement par la CI Android) ; les captures ont été faites au commit `a9638ffd`, le commit suivant ne change que la lecture de la langue du téléphone (valeur atomique au lieu d'un verrou à chaque texte), banc `textes` refait : vert.
+  - après la revue #372 (commit `d8f997a1`) : langue du téléphone copiée sous verrou, recherche des textes sans copie (`std::less<>`), une table absente de l'APK est remplacée par l'autre (les deux absentes : texte vide et trace au journal ; `test_langue` vérifie leur présence dans `assets/`) ; tests CPU refaits sur ce commit.
 
 ## Tests CPU
 
