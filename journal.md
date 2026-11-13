@@ -1521,3 +1521,6 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
 - B3 : paillettes du soleil et de la lune tirées sur l'eau (cellules du monde), vie propre à chacune, petit point rond qui renvoie vraiment le soleil ; plus de tirage sur la grille de l'écran.
 - `plage.cpp` (accroche, RG-07) : + 1 ligne, vue `mer-lune-suite` (4 images de nuit à 0,25 s) : 9 lignes ajoutées, 1 changée au total (≤ 10).
 - Vérification : 126 tests CPU réussis ; 25 captures du banc `mer` refaites sur la branche synchronisée avec main.
+
+### 2026-11-13 20:28:16 — WFS-401 fusionné par le lead dev (lead-dev)
+PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (diff propre au ticket identique à 65a929a0) ; main 6f424f9 fusionnable sans conflit ; construction et 128 tests CPU refaits. « ✅ Approuvé » en commentaire (revue 5897590317, même compte GitHub), squash 95f8bc8b. WFS-401 en 🟡 À valider (utilisateur) (suite d'ANO-214) ; WFS-466 passe ⏳ Prêt (publication des paquets) ; ligne de `suivi-pr.md` retirée, `qa/Check.md` complété.

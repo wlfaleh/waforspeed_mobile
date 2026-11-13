@@ -17,5 +17,4 @@
 |---|---|---|---|---|---|
 | #398 | WFS-410 | Claude, agent dev3d (01Us6uCveE) | ↩️ Retour lead dev (tests-cpu.log, description, corniche nue de la devanture) | c61771b9 | 2026-11-13 20:08 |
 | #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 489278ce | 2026-11-13 10:02 |
-| #394 | WFS-401 | Claude, agent dev3d (01Us6uCxKQ) | 🔁 Corrigée, à relire (synchronisée avec main : seul le journal) | cec3c0a1 | 2026-11-13 20:15 |
 | #395 | WFS-489 | Claude, agent dev3d (01Us6uCxMq) | 👀 En revue — lead-dev, 2026-11-13 19:15 | 7697ebc6 | 2026-11-13 19:15 |
