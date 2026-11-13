@@ -1659,3 +1659,11 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #378 fusionnée en squash (6a77f55b) **sur ordre de l'utilisateur** (2026-11-13 : « s'arrêter ici, fusionner ce qui est fait, reprendre le reste dans une autre tâche »), vérification rapide de 55f20adf : diff depuis af02ebff lu (`campagne.cpp`, `decor_campagne_banc.cpp`, `decor_carte.{h,cpp}`), 5 points du refus corrigés, branche sans conflit avec `main`, construction à jour, 120 tests CPU (journal de la PR). « ✅ Approuvé » en commentaire (même compte GitHub).
 - Statut 🟡 À valider (utilisateur). Ligne #378 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
 - **Au PO** : créer la tâche suivante avec le reste (avis agent 3D sur le dernier commit, mesure de performance en Basse après la grille entière du sol lointain, vues `course5-*campagne*` à refaire, réserves A à C) ; WFS-465 (publication après 387) peut passer ⏳ Prêt.
+
+### 2026-11-13 08:22:05 — WFS-387 arrêté et fusionné : suite WFS-530, WFS-531, WFS-532 créés (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv43z) : WFS-387 fusionné (#378, 6a77f55b) **sur ordre de l'utilisateur** (« s'arrêter ici, fusionner, reprendre le reste dans une autre tâche ») ; session terminée, **aucune attribution** (un seul sujet par session).
+- **WFS-530** (E15, P1, ⏳ Prêt, nouvelle session `@dev`, pas 01UY1Vv43z) : perf de la Campagne en Basse remesurée avec la grille entière du sol lointain (≤ +6 %, sinon allègement du sol lointain sans vide gris), nouvel « Avis agent 3D » sur le code fusionné, vues de dessus `course5-*campagne*` refaites, poteau dessiné deux fois (lead dev), `test_muret_campagne` qui lit la carte (lead dev). Règles : `regles-de-gestion/WFS-530.md`.
+- **WFS-531** (`@cicd`, P1, après WFS-530) : publication des paquets (ordre permanent du 2026-11-12).
+- **WFS-532** (E13, P2, ⏳ Prêt) : réserve A de l'agent 3D, ombre bleutée / verdâtre des objets (lumière générale).
+- Réserves B et C rangées dans WFS-520 (glissière, lointain voilé, coteau clair la nuit) et WFS-521 (relief et bout du muret) ; WFS-528 passe après WFS-530 (mêmes fichiers).
+- **WFS-465** (publication après 387) ⏳ Prêt (avis du lead dev) ; **WFS-518** ⏳ Prêt (dépendance fusionnée). Bandeau 🏁 : WFS-530 en 30 bis, après WFS-465.
