@@ -1049,3 +1049,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - **Test** : `test_hayon_golf` (échoue sur le `golf.wfm` de `main`). 123 tests CPU verts sur la branche synchronisée ; contrôles `--verifier` (formes, logos, peinture2) et licences OK.
 - **Limites** : Compass (plaque lisse un peu plus brillante en lumière rasante), Giulia (léger dégradé au centre). Mineurs ; une tâche de finition est à proposer au PO si besoin. Rendu vérifié au banc PC seulement.
 - Captures : 35 paires avant / après jour et nuit dans `qa/pr/WFS-456/`. Le 1er passage de nuit a échoué (GitHub 503 au `git fetch`) et a été relancé.
+
+### 2026-11-13 14:42:03 — WFS-506 : PR #386 ouverte (Claude, agent dev3d (01Us6uCvEv))
+- Fait : course en anglais. HUD, commandes (Gas / Brake / Nitro), nom de la vue, étiquette du fantôme, bandeaux, consignes de la carte de navigation (noms de rues inchangés), fin de course Checkpoint, Course à 5, Poursuite (annonces et pertes de points comprises) et Duel, tout par `ui::tr`. Environ 120 clés en FR et en EN. Aides `src/game/textes_course.h` (tampon réutilisé, capitales gardées par langue : aucune allocation nouvelle par image).
+- Banc : `src/game/textes_course_banc.cpp`, groupes `textes` (CGU, Réglages, menus, puis course) et `textes-course`. Parcours fin → Rejouer → fin → Menu dans les 3 modes solo ; course → résultat → Revanche → résultat → Retour en Duel.
+- **Accroche hors zone annoncée** : 3 lignes dans `src/platform/desktop_main.cpp` (groupes `textes` et `textes-course`, include). Petites fonctions de banc : `courseBouton`, `poursuiteBancMessages`, `benchDuelTextes`.
+- Vérifié : construction, 122 tests CPU verts (`2b9cd185`, synchronisé avec `main` après WFS-505 et 508). Banc `textes` EN vert (0 phrase française, 0 dépassement, 0 écart) ; FR vert et inchangé. Chauffe `main` / branche identique (mêmes appels et triangles, 145 s / 146 s). Captures avant / après (`hud`, `course5`, en anglais) : seul le texte change.
+- Limites : images par seconde réelles non mesurables sur lavapipe ; banc `textes` hors CI ; les nombres gardent la virgule française (hors E20).
