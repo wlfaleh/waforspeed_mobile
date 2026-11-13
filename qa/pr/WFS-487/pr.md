@@ -47,6 +47,7 @@ Les données de toute la personnalisation des voitures, sans écran : 28 couleur
   - prix changé sans recompiler (rose à 80 → 120 ★ sur la Golf) ;
   - don provisoire du garage (cette voiture seulement, jamais une couleur nouvelle) ;
   - exemples de WFS-498 RG-05 (métallisé SF90 400 ★, candy Golf 375 ★).
+- `test_sauvegarde` : nouveau cas (revue du lead dev) : `defauts()` et un 2e `lire()` remettent carte, moment, qualité (et son choix) et vue au défaut.
 - `test_configgame` OK (245 clés, 0 erreur, `configgame.json` du dépôt lu en entier). `test_sauvegarde` OK.
 - **Tous les tests CPU** : voir « Tests CPU » ci-dessous.
 - **Captures** :
@@ -70,7 +71,7 @@ Les données de toute la personnalisation des voitures, sans écran : 28 couleur
 
 ## Tests CPU
 
-Commit testé : code de `1e480dd6` (branche synchronisée avec `main`, correction du garage comprise ; les synchronisations suivantes ne touchent que TACHES / journal / suivi : code identique au dernier commit de la PR), `bash tools/qa/tests_cpu.sh build` ; journal complet : [`qa/pr/WFS-487/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-487/qa/pr/WFS-487/tests-cpu.log).
+Commit testé : `d6a8b888` (correction de la revue du lead dev, branche synchronisée avec `main`). Commande : `bash tools/qa/tests_cpu.sh build`. Journal complet : [`qa/pr/WFS-487/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-487/qa/pr/WFS-487/tests-cpu.log).
 
 ```
 [OK] test_ville_lieux (0 s)
