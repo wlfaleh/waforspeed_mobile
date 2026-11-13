@@ -151,6 +151,13 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         float nappe = 1.0 - smoothstep(front - 0.15, front + 0.05, r);
         float lisere = exp(-pow((r - front) / 0.22, 2.0)) * smoothstep(0.35, 0.65, dentelle);
         float ecumeN = clamp(max(lisere, nappe * smoothstep(0.6, 0.85, dentelle) * 0.6), 0.0, 1.0);
+        if (!basse) {   // WFS-401 (RG-01) : de près, écume de la nappe en mousse à trous (comme dans l'eau), plus de traits filés
+            float dN = length(F.camPos.xyz - vWorld), presN = 1.0 - smoothstep(30.0, 45.0, dN);
+            if (presN > 0.0) {
+                float fin = 1.0 - smoothstep(0.03, 0.08, length(fwidth(vWorld.xz)));
+                ecumeN = mix(ecumeN, 0.9 * eauMousse(vec2(le, r - 0.3 * t), t, clamp(ecumeN * 1.4, 0.0, 1.0), fin), presN);
+            }
+        }
         float sec = smoothstep(mouille - 0.7, mouille, r);
         // nappe : film d'eau sur le sable (sable sombre, lisse, le ciel s'y reflète) ; derrière : sable mouillé mat qui sèche
         base.rgb = mix(mix(vec3(0.20, 0.17, 0.12), vec3(0.24, 0.21, 0.15), 1.0 - nappe), vec3(0.80, 0.82, 0.84), ecumeN);
