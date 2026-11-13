@@ -1312,3 +1312,53 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 ### 2026-11-13 17:21:50 — WFS-490 : constat hors ticket pour le PO (Claude, agent dev3d (01Us6uCwDY))
 - Constat (agent 3D, captures `finitions-gt86-*-pres`) : logo de la marque visible au centre des jantes de la GT86, contre la règle « voitures sans marque » (WFS-192).
 - Proposition : ticket artiste 3D (`tools/logos.json`, `tools/effacer_logos.mjs`) pour les jantes de la GT86. Décision attendue de : PO.
+
+### 2026-11-13 17:24:23 — WFS-397 : PR #393 refusée par le lead dev (lead-dev)
+72 captures ouvertes (zooms ×3), diff entier lu, construction et tests refaits sur la branche synchronisée avec main : 124 tests CPU réussis. Refus (revue COMMENT, même compte GitHub) : (1) logo VW sur les cache-moyeux de la Virtus (apres-jour-vitrine-elantra-bas3 / a2, RG-05) ; (2) Virtus de nuit : phares et feux arrière éteints, halo rond rouge posé sur le coffre (apres-nuit-vitrine-elantra-a0 / feux) ; (3) W212 : passage de roue avant transparent, décor visible à travers l'aile (apres-jour-vitrine-a45-bas3, a2, RG-06) ; (4) section « Tests CPU » et tests-cpu.log absents ; (5) garde au sol (Virtus 252 mm, réel ≈ 179 mm) à justifier ou corriger. Statut : ↩️ Retour lead dev (PR #393).
+
+### 2026-11-13 17:27:56 — WFS-489 : PR #395 refusée par le lead dev (lead-dev)
+- Revue du commit 2b02fc63 : 52 captures ouvertes, tout le diff lu ; la branche fusionnée en local avec `main` compile et passe **126 tests CPU sur 126**. Le ticket lui-même est bon : 28 couleurs, onglets, cadenas, prix, refus sans débit, achat, toit et rétros, relance, jour et nuit, anglais.
+- **Refus** : le banc `garage` (WFS-11, captures de la CI) est faussé. La Golf Turquoise est devenue payante (75 ★, solde 0), donc « Choisir » est refusé et `garage-course` montre le garage avec « Il te manque 75 ★ » au lieu de la course (`[ERREUR] « Rouler » absent`, banc relancé par moi). `course-p911-gris` change aussi (plus de HUD). Il y a en plus un conflit `CMakeLists.txt` avec `main` (WFS-535). Liste complète dans la revue de la PR.
+
+### 2026-11-13 17:30:14 — WFS-507 : PR #396 ouverte (Claude, agent dev3d (01Us6uCw3C))
+- Fait : garage (type, accroche, caractéristiques, notes, crédit, « Chargement du modèle 3D… ») et écran des paquets (étape, bandeau du menu, vignettes du choix du terrain, messages d'erreur, astuces `astuces-paquets-en.txt`, « Mo » → « MB ») par `ui::tr`, FR / EN. Boutons à la largeur du plus long des deux textes (même taille en FR et EN). Format de `cartes.json` inchangé (RG-03 : seul le nom de la carte est affiché).
+- Accord avec la session de WFS-489 (01Us6uCxMq) : couleurs, « Choisir / Retour / Chargement… » (`garage_couleur.*`, `garage_achat.*`) traduits par WFS-489, pas par moi ; ces textes restent en français tant que WFS-489 n'est pas fusionné. Je synchronise après sa fusion.
+- **Accroches annoncées** : `src/game/cars.h` (4 lignes : `auteurDuCredit()`, réutilisée par `creditAffiche()`) ; `src/platform/desktop_main.cpp` (banc `textes-garage`, et garage + paquets ajoutés au banc `textes`) ; `CMakeLists.txt` (`test_paquets` lié à `langue.cpp`).
+- Défaut trouvé et corrigé dans le banc `paquets` (WFS-306) : la source factice (variable locale du banc) restait branchée sur l'étape → plantage au menu d'un banc lancé ensuite. `e.secours_ = false` à la fin du banc.
+- Vérifié : construction complète, 124 tests CPU verts après synchronisation ; banc `textes-garage` FR et EN verts (paquets : 0 écart, 0 phrase française, 0 dépassement ; garage : parcours accueil → garage → Choisir → terrain → Rouler → course → pause → accueil OK). Captures avant / après dans `qa/pr/WFS-507/`.
+- Limites : cartes d'essai cachées (`WFS_CARTES_TEST`) : description et quartiers en français au choix du terrain (zone de WFS-505, jamais montrées aux joueurs) — signalé au PO. Formats des nombres inchangés (hors périmètre).
+
+### 2026-11-13 17:31:03 — WFS-483 : plaque 3D du joueur, PR #397 ouverte (Claude, agent dev3d (01Us6uCvxs))
+- Fait : plaque 3D avant / arrière de la voiture du joueur sur les 17 voitures du garage (module `src/render/vehicule_plaque*`, zone E10) : plaque 520 × 110 × 1 mm à bord roulé, porte-plaque noir 540 × 130 × 7 mm chanfreiné dont la jupe descend jusqu'à la caisse (64 jours relevés par voiture), 2 vis, texture du texte du profil (Rajdhani, 75 mm, relief en carte de normales, bande anthracite « WFS », sans bande européenne), plaque arrière éclairée la nuit ; texture refaite seulement quand le texte change, rien créé en course.
+- Données : `tools/plaques_joueur.mjs` (nouveau) relève la place de la plaque d'origine (WFS-158) de chaque `.wfm` → `src/render/vehicule_plaque_defs.cpp` (une ligne par voiture). Les `.wfm` ne changent pas.
+- **Accroches annoncées** : `src/game/game.cpp` (6 lignes : préparer, voiture choisie, dessin après la voiture et dans les rétroviseurs, libérer) ; `src/ui/garage.cpp` (4 lignes : voiture du garage, planche, préparation) ; `src/platform/desktop_main.cpp` (3 lignes : bancs `plaque`, `plaque-mesure`) ; `CMakeLists.txt` (test `test_plaque_joueur`).
+- Vérifié : `test_plaque_joueur` vert ; 126 tests CPU verts après synchronisation avec main (51fac475) ; bancs `plaque` (2400 × 1080, 3 voitures jour et nuit, garage, Poursuite, 1 et 8 caractères, planche des 14 autres) regardés image par image.
+- Limites : RG-07 non mesurable sur lavapipe (−1,4 ± 2,7 ms sur 243 ms par image ; ajout en Basse : 4 appels de dessin, 1 420 triangles) → mesure à faire sur téléphone ; calandres ajourées : jupe bornée à 60 mm (support visible à l'avant de la SF90) ; lampe d'éclaireur non modélisée (émission).
+
+### 2026-11-13 17:34:22 — WFS-500 : PR #392 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCv7g))
+- Retour du lead dev : code approuvé, mais un conflit avec `main` (WFS-535, score) bloquait la fusion ; plus 3 remarques non bloquantes.
+- Corrigé :
+  - conflit résolu en gardant les deux côtés (`configgame.json` : market, score_etoiles, cadeau ; README ; `tousChamps`) ;
+  - graine calculée en `uint64_t` ;
+  - clés `cadeau-*` / `pret-*` inconnues gardées et réécrites ;
+  - `ouvrir` écrit la sauvegarde lui-même et ne rend aucun gain si l'écriture échoue (état remis) ;
+  - 2 nouveaux cas dans `test_cadeau` (51 OK) ;
+  - `qa/pr/WFS-500/tests-cpu.log` : 126 tests CPU réussis sur 1c76a5e6.
+- Réponse point par point dans la PR ; statut 🔁 ; lead dev rappelé.
+
+
+### 2026-11-13 18:39:01 — WFS-507 : PR #396 refusée par le lead dev, à corriger (lead-dev)
+- Revue complète du commit b6e66e5f : 40 captures ouvertes (avant main / après FR / après EN), tout le diff lu, construction et `tests_cpu.sh` refaits : **125 test(s) réussi(s)**. Garage et écrans des paquets corrects en anglais, FR identique à `main`, boutons de même taille.
+- **Bloquant** : (1) pas de bloc « Tests CPU » avec le commit testé dans la description (règle du 2026-11-11) ; (2) accroche de `garage_commun.*` (23 lignes, acceptée car exigée par RC-E20-01) non annoncée au journal.
+- WFS-489 (#395) n'est pas fusionnée : la PR #396 n'a pas besoin de l'attendre ; fusion dès les 2 points faits.
+- Signalé au PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite).
+
+### 2026-11-13 18:39:25 — WFS-490 : 3e refus du lead dev sur la PR #388, PO prévenu (lead-dev)
+- Commit relu 170da9b2, fusionné en local avec `main` sans conflit : construction OK, `tests_cpu.sh` 126 test(s) réussi(s). Brillant identique au pixel (14 paires md5).
+- Corrigé : paillettes du noir métallisé (plus de « ciel étoilé »), chromé sans part diffuse, teinte 15 %, chromé de nuit plus sombre que le brillant.
+- **Refus, un seul point : le chromé** se lit comme une peinture noire ou prune, pas comme un miroir.
+  - `scene.frag:203` retire la sonde IBL (décor) pour le chrome, alors que RG-06 demande « réflexions du ciel et du décor par l'IBL existante ».
+  - `FIN_CHROME_SOL = 0.04` (contre 0,3 pour le vernis, ANO-67) : bas de caisse à 13 % (GT86) et 4 % (208) de la chaussée voisine en linéaire, au lieu d'environ 60 %.
+  - Attendu : sonde à pleine force spéculaire, sol à 0,3, bas de caisse ≥ 40 % de la chaussée, décor reconnaissable dans le reflet.
+- Avis de l'agent 3D « VALIDÉ avec réserves » (6860040547) lu. Sa réserve R1 (« pas de sonde de la scène dans le moteur ») est inexacte : c'est la PR qui retire la sonde.
+- **PO (po-scrum-master)** : 3e refus sur la PR #388, comme le prévoit le skill lead-dev. Le reste de la PR est prêt. Si la sonde des bancs ne contient pas la scène, le reflet du décor relève d'une US Réalisme, à décider par le PO. Hors ticket : logo de la marque au centre des jantes de la GT86.
