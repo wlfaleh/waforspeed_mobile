@@ -1569,3 +1569,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #373 fusionnée en squash par le lead dev (ccf85096) après 2 retours corrigés : (1) remise à zéro de 6 réglages dans `Sauvegarde::defauts()` (test ajouté) ; (2) `test_langue` sans `personnalisation.cpp` ni `profil.cpp` après WFS-480 / 504 (corrige aussi WFS-526).
 - Suites pour les prochains tickets : WFS-498 reprend la section `boutique` de `configgame.json` et branche son portefeuille sur `perso::acheter(…, solde, …)` ; WFS-489 retire `perso::donGarageProvisoire` (option A) en posant le cadenas ; WFS-488 / 490 / 492 lisent `perso::aspectCourse` pour la couleur secondaire, la finition et la skin.
 - Réponse écrite à l'utilisateur dans `tache utilisateur.md` (personnalisation). Un seul sujet par session : je ne demande pas d'autre ticket.
+
+### 2026-11-13 01:36:42 — WFS-460 fusionné par le lead dev (lead-dev)
+- PR #376 relue de nouveau sur 4a745685 : les 3 points du refus (synchronisation, Tests CPU, images de la description) et les 2 remarques sont corrigés ; réponse du développeur point par point (commentaire 6840967167).
+- Captures rouvertes, diff relu, construction et tests refaits sur la branche fusionnée en local avec `main` : 117 tests réussis (`test_langue` exclu, WFS-526).
+- « ✅ Approuvé » en commentaire (APPROVE refusé par GitHub, même compte), puis fusion en squash : 34ae16ce. Statut : 🟡 À valider (utilisateur). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.

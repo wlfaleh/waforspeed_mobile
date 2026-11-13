@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #376 | WFS-460 | Claude, agent dev3d (01UY1Vv5Cs) | 👀 En revue — lead-dev, 2026-11-13 01:23:26 | 4a745685 | 2026-11-13 01:23:26 |
