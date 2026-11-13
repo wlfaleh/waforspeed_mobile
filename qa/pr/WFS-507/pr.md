@@ -25,3 +25,19 @@ Agent : Claude, agent dev3d (01Us6uCw3C)
 - Cartes d'essai cachées (`WFS_CARTES_TEST`, jamais montrées aux joueurs) : leur description et leurs quartiers restent en français au choix du terrain (zone de WFS-505) ; non vérifiés par ce banc.
 - Formats des nombres (« 6,2 s ») inchangés (hors périmètre de l'épic).
 - Les messages déjà affichés (place insuffisante, échec) sont écrits dans la langue active au moment où ils apparaissent.
+
+## Résultats des bancs (après)
+- `WFS_LANGUE=en WFS_BANC=textes-garage` : paquets **0 écart du banc, 0 phrase française, 0 dépassement → VERT** (526 textes vus) ; garage **0 échec → VERT** (88 textes vus), parcours complet OK.
+- `WFS_LANGUE=fr WFS_BANC=textes-garage` : paquets **VERT**, garage **VERT**.
+
+## Captures
+Tableau complet (avant `main` / après FR / après EN, 14 écrans + 26 autres) : https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-507/qa/pr/WFS-507/README.md
+
+| Écran | Avant (main) | Après FR | Après EN |
+|---|---|---|---|
+| Fiche du garage | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/avant-garage-0.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-fr-garage-fiche.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-en-garage-fiche.jpg) |
+| Liste des paquets (choix du terrain) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/avant-paquets-terrain-telecharger.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-fr-paquets-terrain-telecharger.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-en-paquets-terrain-telecharger.jpg) |
+| Téléchargement en cours | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/avant-paquets-telechargement.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-fr-paquets-telechargement.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-en-paquets-telechargement.jpg) |
+| Erreur « pas d'Internet » | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/avant-paquets-terrain-sans-connexion.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-fr-paquets-terrain-sans-connexion.jpg) | ![](https://github.com/wlfaleh/waforspeed_mobile/raw/feature/waforspeed-507/qa/pr/WFS-507/apres-textes-en-paquets-terrain-sans-connexion.jpg) |
+
+**À fusionner après WFS-489** (ou fusionnée avant, puis WFS-489 synchronise) : je synchronise ma branche dès la fusion de WFS-489 et je refais la capture de la fiche du garage.
