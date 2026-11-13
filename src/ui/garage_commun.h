@@ -7,7 +7,7 @@
 #include <string>
 #include "../core/math.h"
 #include "../game/cars.h"
-#include "../game/sauvegarde.h"   // WFS-487 : PEINTURES, NB_PEINTURES_GARAGE
+#include "../game/sauvegarde.h"   // WFS-487 : PEINTURES
 
 namespace wfs {
 class Renderer;
@@ -27,10 +27,9 @@ inline vec3 lin(unsigned h) {
     return {c(16), c(8), c(0)};
 }
 
-// WFS-487 (RG-01) : une seule liste de couleurs, PEINTURES (src/game/sauvegarde.h) ; le garage actuel en montre les 16 premières
-// (PAINTS de js/cars/catalog.js, mêmes identifiants et hex) jusqu'à WFS-489 (28 pastilles, cadenas, prix)
+// WFS-487 (RG-01) : une seule liste de couleurs, PEINTURES (src/game/sauvegarde.h) ; WFS-489 : le garage les montre toutes (28)
 inline const PeintureDef* const PAINTS = PEINTURES;
-constexpr int NB_PEINTURES = NB_PEINTURES_GARAGE;
+constexpr int NB_PEINTURES = wfs::NB_PEINTURES;
 int peintureParId(const char* id);
 
 // champs de CARS (catalog.js) utilisés seulement par le garage : néon (glow), peinture par défaut ; type et accroche : textes
@@ -52,7 +51,8 @@ struct Zone {
 // Toutes les zones du garage, une seule variable globale comme avant le découpage : elles survivent à la partie (le banc
 // d'essai et les parcours lisent garageBouton juste après un Game::init) et sont vidées en quittant l'écran Garage.
 // Chaque panneau n'écrit que ses propres champs.
-struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT]; };
+struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT];
+               Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1]; };   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
 extern Zones g_z;
 
 // parallélogramme d'un seul tenant (WFS-99), haut décalé à droite de `biais`
@@ -73,6 +73,8 @@ struct EtatGarage {
     int index = 0;            // voiture affichée (indice dans CARS[])
     int peinture = 0;         // peinture de cette voiture (indice dans PAINTS)
     bool voiturePrete = false;   // modèle 3D chargé (sinon « Chargement… »)
+    int peinture2 = -1;          // WFS-489 : couleur secondaire montrée (indice dans PAINTS), −1 = comme la carrosserie
+    bool operator==(const EtatGarage&) const = default;
 };
 
 // interface commune d'un panneau du garage (WFS-534, RG-01)

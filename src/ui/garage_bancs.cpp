@@ -4,6 +4,7 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/game.h"
+#include "../game/personnalisation.h"   // WFS-489 (accroche) : prix de la Turquoise
 #include "../render/renderer.h"
 #include "ecrans/terrain.h"   // WFS-172 (banc) : « Rouler » après « Choisir »
 #include "garage.h"
@@ -99,6 +100,11 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
     };
     planche("garage-peintures");
     // « Choisir » : la Golf en Turquoise part en course (décompte puis course)
+    // WFS-489 (accroche) : la Turquoise coûte 75 ★ sur la Golf : le banc crédite ce prix et l'achète comme un joueur (« Acheter »),
+    // puis rend la sauvegarde du banc dans son état d'avant après la course
+    Sauvegarde& sv = sauvegarde(); const long long solde0 = sv.etoiles; const auto possede0 = sv.possede;
+    if (const perso::Objet* o = perso::couleur("turquoise")) sv.etoiles += perso::prix(*o, CARS[garageEnCours()->index()].id);
+    if (garageBouton("choisir", x, y)) toucher(17, x, y);   // « Acheter 75 ★ » → « Choisir »
     if (garageBouton("choisir", x, y)) {
         toucher(14, x, y);
         // WFS-172 (RG-01, ANO-80) : « Choisir » mène au terrain ; le banc appuie sur « Rouler » avant les 5 s de course
@@ -111,6 +117,7 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
         g.setAutopilot(false);
         capture("garage-course", "course avec la voiture et la peinture choisies");
     }
+    sv.etoiles = solde0; sv.possede = possede0;   // WFS-489 (accroche) : achat du banc annulé
     // « Retour » : du garage au menu sans changement
     g.allerA(Ecran::Garage); for (int i = 0; i < 30; i++) image();
     if (garageBouton("retour", x, y)) { toucher(15, x, y); for (int i = 0; i < 30; i++) image(); WFS_LOG("garage : « Retour » → écran %s", nomEcran(g.ecran())); }
