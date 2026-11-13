@@ -169,6 +169,8 @@ else()
   target_compile_definitions(test_fidelite_humains PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_voitures tests/fidelite_voitures.cpp src/game/roues.cpp)   # WFS-158 : audit des 20 voitures (mesure « fiche »)
   target_compile_definitions(test_fidelite_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_fidelite_voitures_finitions tests/fidelite_voitures_finitions.cpp)   # WFS-490 : finitions de la peinture (codage, valeurs du shader)
+  target_compile_definitions(test_fidelite_voitures_finitions PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_police_bandes tests/test_police_bandes.cpp src/game/roues.cpp)   # WFS-460 : bandes « POLICE » posées sur la tôle
   target_compile_definitions(test_police_bandes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_plaque_joueur tests/test_plaque_joueur.cpp src/render/vehicule_plaque_defs.cpp src/render/vehicule_plaque_geo.cpp src/render/vehicule_plaque_image.cpp src/game/roues.cpp)   # WFS-483 : plaque 3D du joueur
