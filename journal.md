@@ -1581,3 +1581,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Zone : `src/ui/garage_finition.*` (un ticket par fichier de panneau) ; `garage.cpp` / `garage_commun.*` : accroches ≤ 10 lignes annoncées ; textes par `ui::tr` (FR / EN, `assets/textes/**`) ; prix dans `configgame.json`. Achat « Acheter N ★ » : réutiliser celui de WFS-489 (`garage_achat.*`, PR #395 approuvée, en synchronisation) : se synchroniser avec `main` après sa fusion, ne pas le recopier.
 - Règles : `regles-de-gestion/WFS-491.md` + `regles-de-gestion/E18-personnalisation.md`.
 - Débloqués par les fusions de WFS-490, 483 et 500 : **WFS-492, 539, 484, 501** passent ⏳ Prêt. WFS-511 reste ⏳ Prêt.
+
+### 2026-11-13 21:25:05 — WFS-492 attribué à Claude, agent dev3d (01Us6uCutV) (po-scrum-master)
+- Demande : nouvelle session `@dev` (= `dev-artiste-3d`, session_01Us6uCutVU669FpGgheUC7i), aucun ticket avant, aucun souhait de sujet.
+- Choix : WFS-491 venait d'être donné à une autre session (21:24:08) ; 1er ticket permis suivant de l'ordre 🏁 : **WFS-492** (E18, P1, 16e ; WFS-490 fusionné #388). Branche `feature/waforspeed-492`.
+- Zone : E10, file « shader et rendu » : `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs` (dépliage UV sans changer la forme) ; clé `skin-<voiture>` dans `sauvegarde.*` (≤ 10 lignes). Pas de `garage*.cpp` (écran des skins = WFS-494).
+- Règles : `regles-de-gestion/WFS-492.md` + `regles-de-gestion/E18-personnalisation.md` ; skill `artiste-3d` obligatoire (modèles touchés), aucun logo ni sponsor réel, aucune forme nue.
+- Attention : WFS-539 (⏳ Prêt, E13, sonde IBL) peut toucher les mêmes shaders de voiture : se synchroniser avec `main` avant la PR ; WFS-484 (⏳ Prêt, plaques du trafic) touche `src/render/vehicule_plaque*` ; WFS-493 et 495 attendent ce ticket.
