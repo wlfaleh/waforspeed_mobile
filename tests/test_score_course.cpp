@@ -49,6 +49,8 @@ int main() {
         cas("course solo terminée, 2 500 points de distance : 600 + 250 = 850", calculer(r, b).total == 850);
         r.pointsDistance = 9000;
         cas("course solo : part de la distance plafonnée à 400 (600 + 400)", calculer(r, b).total == 1000 && points(calculer(r, b), "score.solo_distance") == 400);
+        r.pointsDistance = 9000000000000LL;
+        cas("course solo : compteur de distance énorme : plafond 400, sans débordement", points(calculer(r, b), "score.solo_distance") == 400);
         r.pointsDistance = -1;
         cas("course solo sans compteur de distance : 600", calculer(r, b).total == 600);
     }
@@ -82,6 +84,7 @@ int main() {
         ResultatCourse r = base(ModeJoue::Course5); r.place = 5;
         r.depassements = 3; cas("course à 5 : 3 dépassements : +60", points(calculer(r, b), "score.defi_depassements") == 60);
         r.depassements = 14; cas("course à 5 : dépassements plafonnés à +200", points(calculer(r, b), "score.defi_depassements") == 200);
+        r.depassements = 2000000000; cas("course à 5 : dépassements énormes : +200, sans débordement", points(calculer(r, b), "score.defi_depassements") == 200);
         r.depassements = -1; r.enTeteDernierTour = Defi::Reussi; cas("course à 5 : en tête au dernier tour : +100", points(calculer(r, b), "score.defi_en_tete") == 100 && calculer(r, b).total == 350);
         r.enTeteDernierTour = Defi::Rate; cas("course à 5 : pas en tête au dernier tour : 0", calculer(r, b).total == 250);
 

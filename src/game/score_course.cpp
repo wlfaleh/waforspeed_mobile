@@ -33,7 +33,8 @@ Score calculer(const ResultatCourse& r, const ConfigJeu::ScoreEtoiles& b) {
             break;
         case ModeJoue::Checkpoint:
             ajouter("score.solo_terminee", b.soloTerminee);
-            if (r.pointsDistance > 0) ajouter("score.solo_distance", (int)std::min<double>(b.soloPlafondDistance, arrondi(b.soloPartDistance * (double)r.pointsDistance)));
+            // plafond appliqué en réel, avant la conversion en entier : un compteur énorme ne déborde pas
+            if (r.pointsDistance > 0) ajouter("score.solo_distance", arrondi(std::min<double>(b.soloPlafondDistance, b.soloPartDistance * (double)r.pointsDistance)));
             break;
     }
 
@@ -49,7 +50,7 @@ Score calculer(const ResultatCourse& r, const ConfigJeu::ScoreEtoiles& b) {
     // RG-04 : 2 défis par mode (compteur inconnu : 0, sans erreur)
     switch (r.mode) {
         case ModeJoue::Course5:
-            if (r.depassements > 0) ajouter("score.defi_depassements", std::min(b.c5DepassementMax, r.depassements * b.c5Depassement));
+            if (r.depassements > 0) ajouter("score.defi_depassements", (int)std::min<long long>(b.c5DepassementMax, (long long)r.depassements * b.c5Depassement));
             if (r.enTeteDernierTour == Defi::Reussi) ajouter("score.defi_en_tete", b.c5EnTete);
             break;
         case ModeJoue::Poursuite:
