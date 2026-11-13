@@ -19,6 +19,7 @@ bool decrireFormat(VkFormat f, Bloc& b) {
         case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:     b = {6, 6, 16, false, true}; return true;
         case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:  b = {4, 4, 16, true, true}; return true;
         case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK: b = {4, 4, 16, false, true}; return true;
+        case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:   b = {4, 4, 16, false, true}; return true;   // WFS-492 (accroche) : masques des skins
         case VK_FORMAT_R8G8B8A8_SRGB:            b = {1, 1, 4, true, false}; return true;
         case VK_FORMAT_R8G8B8A8_UNORM:           b = {1, 1, 4, false, false}; return true;
         default: return false;
@@ -33,6 +34,7 @@ const char* nomFormat(VkFormat f) {
         case VK_FORMAT_ASTC_6x6_UNORM_BLOCK: return "ASTC 6x6 linéaire";
         case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: return "ETC2 RGBA sRGB";
         case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK: return "ETC2 RGBA linéaire";
+        case VK_FORMAT_EAC_R11G11_UNORM_BLOCK: return "EAC RG11 linéaire";   // WFS-492 (accroche)
         case VK_FORMAT_R8G8B8A8_SRGB: return "RGBA8 sRGB";
         case VK_FORMAT_R8G8B8A8_UNORM: return "RGBA8 linéaire";
         default: return "inconnu";

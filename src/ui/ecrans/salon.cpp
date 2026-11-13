@@ -28,6 +28,7 @@
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "../../platform/manette.h"   // WFS-517 (RG-06) : boutons du menu (banc du duel entre amis)
+#include "creation_profil.h"   // WFS-481 (accroche) : le lien d'invitation attend la création du profil
 
 namespace wfs {
 namespace ecrans {
@@ -153,6 +154,7 @@ public:
     void lienProfond(double dt, const GameView& g) {
         attenteLien_ -= dt;
         if (attenteLien_ > 0 || g.ecran == Ecran::Course || g.ecran == Ecran::Pause || g.ecran == Ecran::Chargement) return;
+        if (creationProfilOuverte()) return;   // WFS-481 (RG-01) : pas de duel sans pseudo ; le lien est lu après « C'est parti »
         attenteLien_ = 0.5;
         const std::string lien = reseau::prendreLienRecu();
         std::string code;

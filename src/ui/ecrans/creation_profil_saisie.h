@@ -1,0 +1,66 @@
+// WaForSpeed — écran de création du profil au 1er lancement (WFS-481, épic E17, zone E8) : la saisie, sans rendu ni fichier
+// (testée par tests/test_creation_profil.cpp). Le dessin, les touchers et le banc sont dans creation_profil.cpp.
+//   RG-02 : deux champs (Pseudo, Plaque) ; plaque proposée d'après le pseudo (profil::plaqueProposee, WFS-480 RG-03) et remise
+//           à jour tant que le joueur ne l'a pas touchée ; « C'est parti » actif seulement si le pseudo et la plaque sont valides.
+//   RG-03 : clavier du jeu, AZERTY en français, QWERTY en anglais : chiffres, lettres, espace, « - », « _ », effacer, majuscules ;
+//           sur la plaque, seulement A-Z, 0-9 et « - » (les autres touches sont grisées et sans effet).
+//   RG-04 : erreur sous le champ dès la frappe (clé de la table de textes) ; aucune erreur ne répète le mot refusé.
+#pragma once
+#include <cstdint>
+#include <string>
+#include "../../game/profil.h"
+#include "../langue_regles.h"
+
+namespace wfs::ecrans::creation {
+
+enum class Champ { Pseudo, Plaque };
+
+// une touche du clavier : un caractère (lettres en minuscules), ou une touche spéciale
+struct Touche {
+    enum Genre { Caractere, Majuscules, Effacer, Espace } genre = Caractere;
+    char c = 0;          // Caractere : 'a'..'z', '0'..'9', '-', '_'
+    int ligne = 0;       // 0 = chiffres, 1 à 3 = lettres, 4 = espace
+    float colonne = 0;   // position en largeurs de touche (0 à 9)
+    float largeur = 1;   // en largeurs de touche
+};
+constexpr int COLONNES = 10, LIGNES = 5;
+// RG-03 : 41 touches dans l'ordre de dessin (10 chiffres, 3 lignes de 10, espace) ; anglais → QWERTY, français → AZERTY
+constexpr int NB_TOUCHES = 41;
+const Touche* clavier(ui::langue::Langue l);
+// RG-03 : touche utilisable dans ce champ (plaque : lettres, chiffres, « - », effacer seulement)
+bool toucheActive(const Touche& t, Champ champ);
+
+class Saisie {
+public:
+    // pseudoPropose : pseudo actuel d'un joueur déjà installé (Profil::pseudoPropose, WFS-480 RG-05), vide sinon ;
+    // graine : hasard de la plaque de secours « WFS-123 » (même graine = même plaque proposée pendant tout l'écran)
+    void ouvrir(const std::string& pseudoPropose, uint32_t graine);
+    void choisirChamp(Champ c) { champ_ = c; plein_ = false; }
+    // RG-03 : appui sur une touche du clavier (sans effet si la touche n'est pas active dans le champ)
+    void appuyer(const Touche& t);
+
+    const std::string& pseudo() const { return pseudo_; }
+    const std::string& plaque() const { return plaque_; }
+    Champ champ() const { return champ_; }
+    bool majuscules() const { return maj_; }
+    bool plaqueTouchee() const { return plaqueTouchee_; }
+    profil::Refus refusPseudo() const { return profil::verifierPseudo(pseudo_); }
+    profil::Refus refusPlaque() const { return profil::verifierPlaque(plaque_); }
+    // RG-02 : « C'est parti » actif
+    bool valide() const { return refusPseudo() == profil::Refus::Aucun && refusPlaque() == profil::Refus::Aucun; }
+    // RG-04 : clé du message d'erreur sous le champ (assets/textes), nullptr s'il n'y a rien à dire (champ vide encore jamais
+    // rempli, ou texte accepté) ; le message ne contient jamais le texte saisi
+    const char* erreur(Champ c) const;
+
+private:
+    void proposerPlaque();
+    std::string pseudo_, plaque_;
+    Champ champ_ = Champ::Pseudo;
+    bool maj_ = true;              // majuscule pour la prochaine lettre (une seule lettre, comme le clavier d'un téléphone)
+    bool plaqueTouchee_ = false;   // RG-02 : une touche a été appuyée dans la plaque : elle ne suit plus le pseudo
+    bool plein_ = false;           // touche appuyée alors que le champ choisi est plein : « 16 caractères au plus »
+    bool pseudoEcrit_ = false;     // le pseudo a déjà eu un caractère (champ vidé ensuite : « 3 caractères au moins »)
+    uint32_t graine_ = 1;
+};
+
+} // namespace wfs::ecrans::creation

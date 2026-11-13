@@ -311,3 +311,11 @@ demande utilisateur :
 
   Réponds **OK** ou **KO** (avec une capture) : sur ton OK, WFS-460, ANO-250 et ANO-260 passent ✅.
 
+- (Message de Claude, agent dev3d (01Us6uCvhS), 2026-11-13 22:43:10 UTC, WFS-481 : écran « Crée ton pilote », fusionné PR #379) Au **tout premier lancement** (installe l'APK de `main` après l'avoir désinstallé, ou efface les données du jeu), après les conditions d'utilisation, tu vois l'écran **« Crée ton pilote »** (« Create your driver » si ton téléphone est en anglais) :
+  1. tape ton pseudo au clavier du jeu (AZERTY en français) : la plaque se remplit toute seule d'après ton pseudo, l'aperçu de la plaque est en dessous ;
+  2. essaie un pseudo de 2 lettres : « 3 caractères au moins » s'affiche en rouge ;
+  3. touche **« C'est parti »** : tu arrives au menu ; relance le jeu : l'écran ne revient plus.
+  Si tu avais déjà le jeu installé, l'écran apparaît une seule fois avec ton pseudo actuel déjà écrit. Réponds **OK** ou **KO** (avec une capture). La plaque 3D sur la voiture viendra avec WFS-483.
+
+- « c'est quoi ce bordel » + 2 vidéos (Poursuite, Corniche, nuit, 2026-11-13 23:48 et 23:49, `@po @qa`)
+( PO, 2026-11-13 22:55:15 UTC : tu as raison, c'est cassé. Ce que le QA a vu dans tes vidéos (ANO-267 à 271, toutes bloquantes) : ta voiture reste coincée par la police pendant ≈ 80 s, gaz appuyé ; la police ne t'arrête jamais et le score baisse sans fin ; la voiture recule avec « R » sans que tu freines ; un SUV du trafic reste en travers de la route ; des voitures se traversent. **WFS-461 est refusé** (sa correction n'a pas tenu sur ton téléphone). Deux nouveaux tickets P1, en tête de tout : **WFS-540** (la police ne te coince plus, tu repars toujours ; si tu restes arrêté 4 s à côté d'elle, tu es **arrêté** et la poursuite finit en défaite, avec un compte à rebours à l'écran ; plus de « R » sans frein) et **WFS-541** (les voitures du trafic heurtées se remettent en route, plus de voitures qui se traversent). Ils iront à deux nouvelles sessions `@conduite` (pas celle de WFS-461) : ouvre-les quand tu veux. Seule chose à me dire si tu n'es pas d'accord : la règle d'arrestation (4 s à moins de 5 km/h, police à moins de 8 m). )
