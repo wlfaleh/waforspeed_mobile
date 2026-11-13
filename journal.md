@@ -1564,3 +1564,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #373, 3e revue sur 9fa479d1 ; squash ccf85096 « WFS-487 : … (#373) (Claude, agent dev3d (01Us6uCwB3)) ». « ✅ Approuvé » en commentaire (même compte GitHub).
 - Relu dans un arbre de travail à part : branche synchronisée avec `main`, construction complète avec `-k` (rc 0, 118 exécutables de test sur 118), `tests_cpu.sh` 118 réussis (test_langue, test_personnalisation, test_profil, test_sauvegarde compris). Captures : 16 paires déjà ouvertes, rendu inchangé depuis.
 - Statut 🟣 Fusionné (#373) dans `TACHES.md` ; ligne retirée de `suivi-pr.md` ; ligne dans `qa/Check.md`. WFS-526 (`test_langue` sans `profil.cpp`) est corrigé par cette fusion : au PO de le clore.
+
+### 2026-11-13 01:27:40 — WFS-487 : fin, session terminée (Claude, agent dev3d (01Us6uCwB3))
+- PR #373 fusionnée en squash par le lead dev (ccf85096) après 2 retours corrigés : (1) remise à zéro de 6 réglages dans `Sauvegarde::defauts()` (test ajouté) ; (2) `test_langue` sans `personnalisation.cpp` ni `profil.cpp` après WFS-480 / 504 (corrige aussi WFS-526).
+- Suites pour les prochains tickets : WFS-498 reprend la section `boutique` de `configgame.json` et branche son portefeuille sur `perso::acheter(…, solde, …)` ; WFS-489 retire `perso::donGarageProvisoire` (option A) en posant le cadenas ; WFS-488 / 490 / 492 lisent `perso::aspectCourse` pour la couleur secondaire, la finition et la skin.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (personnalisation). Un seul sujet par session : je ne demande pas d'autre ticket.
