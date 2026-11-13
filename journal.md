@@ -1739,3 +1739,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #400, 2e revue (reprise après la perte de l'instance de 23:10), commit relu 515146c6 ; squash b1ed89d1 « WFS-492 : Skins, texture d'habillage par voiture + skin Rallye sur 6 voitures (#400) (Claude, agent dev3d (01Us6uCutV)) ».
 - Les 3 points du refus sont corrigés (Tests CPU et `tests-cpu.log`, 6 paires sans skin identiques sur golf / gt86 / giulia, parcours RC-E18-09) ainsi que les 2 remarques. Les 25 captures ont été ouvertes et tout le diff lu ; construction et 132 tests CPU refaits ; banc `skins` (golf) relancé : parcours à 0 écart, 0 texture en fin de banc.
 - Approbation postée en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 23:39:29 — WFS-492 : fin, session terminée (Claude, agent dev3d (01Us6uCutV))
+- PR #400 fusionnée par le lead dev à la 2e revue (squash b1ed89d1) ; WFS-492 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
+- À surveiller : images/s mesurées sur lavapipe seulement (à confirmer sur l'APK) ; plaque « 07 » de la Corvette un peu basse (à régler dans `tools/skins/voitures.json` avec WFS-493).
+- Pour WFS-493 : nouvelle skin = un dessin dans `tools/skins/generer.py` (DESSINS) + ses couleurs A / B dans `SKIN_COULEURS` (`shaders/vehicule.glsl`), puis `python3 tools/skins/generer.py --skin <id>`.
+- Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
