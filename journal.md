@@ -1725,3 +1725,23 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Chevauchement : WFS-537 (↩️ PR #402) ajoute aussi le compteur d'étoiles dans `menu.cpp` : synchroniser avec `main`, garder les deux, le bouton ne prend pas la place du compteur. Pas de fichier commun avec WFS-499 (`garage_achat.*`), 491 (`garage_finition.*`), 492 (E10 rendu).
 - Plan court : écran du cadeau (FR / EN), bouton + pastille au menu, parcours accueil → cadeau → menu → course → retour, captures avant / après jour et nuit, PR, appel du lead dev, arrêt de la session après la fusion.
 
+### 2026-11-13 23:24:50 — WFS-484 attribué à Claude, agent dev3d (01Us6uCvb4) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCvb4k2hKzbSGajCV7R), aucun ticket avant. WFS-501 venait d'être donné à 01Us6uCviA (23:23 UTC) : cette session reçoit la tâche suivante prête et permise du classement 📋, **WFS-484** (3e).
+- **WFS-484** (E17, P1) : plaques au hasard pour le trafic, les adversaires, la police, le duel et le fantôme, même style que la plaque du joueur. Dépendance WFS-483 (#397) fusionnée : réutiliser sa plaque 3D, ne pas la recréer.
+- Zone : E10 (`src/render/vehicule_*`, `shaders/vehicule*.glsl`, `assets/cars/**`) + accroche ≤ 10 lignes dans `src/game/traffic*` / systèmes de course (annoncée au journal). Règles : `regles-de-gestion/WFS-484.md`, `regles-de-gestion/E17-identite-joueur.md`. Branche `feature/waforspeed-484`. Règle des formes nues : la plaque est un vrai objet (chanfreins, matériau), pas un rectangle plat.
+- `track-agent.md` : ligne ajoutée.
+
+### 2026-11-13 23:26:37 — Statuts automatiques, CI main #1058 (robot statuts)
+- Run rouge (push, commit 6adb9a7), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 23:38:39 — WFS-492 fusionné par le lead dev (lead-dev)
+- PR #400, 2e revue (reprise après la perte de l'instance de 23:10), commit relu 515146c6 ; squash b1ed89d1 « WFS-492 : Skins, texture d'habillage par voiture + skin Rallye sur 6 voitures (#400) (Claude, agent dev3d (01Us6uCutV)) ».
+- Les 3 points du refus sont corrigés (Tests CPU et `tests-cpu.log`, 6 paires sans skin identiques sur golf / gt86 / giulia, parcours RC-E18-09) ainsi que les 2 remarques. Les 25 captures ont été ouvertes et tout le diff lu ; construction et 132 tests CPU refaits ; banc `skins` (golf) relancé : parcours à 0 écart, 0 texture en fin de banc.
+- Approbation postée en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 23:39:29 — WFS-492 : fin, session terminée (Claude, agent dev3d (01Us6uCutV))
+- PR #400 fusionnée par le lead dev à la 2e revue (squash b1ed89d1) ; WFS-492 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
+- À surveiller : images/s mesurées sur lavapipe seulement (à confirmer sur l'APK) ; plaque « 07 » de la Corvette un peu basse (à régler dans `tools/skins/voitures.json` avec WFS-493).
+- Pour WFS-493 : nouvelle skin = un dessin dans `tools/skins/generer.py` (DESSINS) + ses couleurs A / B dans `SKIN_COULEURS` (`shaders/vehicule.glsl`), puis `python3 tools/skins/generer.py --skin <id>`.
+- Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
