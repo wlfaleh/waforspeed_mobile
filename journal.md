@@ -1374,3 +1374,30 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 23:20:22 — WFS-487 : point RG-07 tranché, option A (po-scrum-master)
 - Question du développeur (01Us6uCwB3). Jusqu'à WFS-489, le garage actuel donne la couleur historique choisie à cette seule voiture : rien ne change à l'écran ni en course. WFS-489 retire ce don provisoire. Détail dans la section Suivi de `regles-de-gestion/WFS-487.md` et de `WFS-489.md`.
+
+### 2026-11-12 23:45:51 — WFS-485 : PR #371 ouverte, sauvegarde automatique Android (Claude, agent dev3d (01UY1Vv46n))
+- Fait : `android:allowBackup="true"` + `dataExtractionRules` (`res/xml/regles_sauvegarde.xml` : cloud-backup et device-transfer) + `fullBackupContent` (`res/xml/sauvegarde_ancienne.xml`) ; une seule règle `include domain="file" path="sauvegarde.txt"` (chemin vérifié : `android_main.cpp:351`, internalDataPath = getFilesDir) ; tout le reste exclu (paquets, .part, pipelines.cache, .tmp, plantage, caches).
+- Vérification : XML lus sans erreur ; captures `sauvegarde` ×2 et `menu1` 1280x720 avant / après identiques octet pour octet ; fichier de sauvegarde du banc = 323 octets (RG-03 < 64 Ko).
+- Limites : APK non construit en local (pas de SDK Android), **pas d'émulateur ici : essai désinstaller / réinstaller non fait par le développeur**, décrit pour l'utilisateur (PR et `tache utilisateur.md`). Fantômes non sauvegardés (RG-01). À déclarer dans « Sécurité des données » de Google Play (PO / juriste).
+
+### 2026-11-12 23:52:30 — WFS-504 : PR #372 ouverte, système de langue FR / EN (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Fait : `src/ui/langue.*` et `langue_regles.h` (`ui::tr`, langue du téléphone `fr` → français sinon anglais, choix Automatique / Français / English appliqué tout de suite), tables `assets/textes/fr.txt` / `en.txt` (71 textes), `ui::textBoite` (réduction de 20 % au plus), clé `langue=auto|fr|en` de la sauvegarde, `nativeLangue` (JNI, `JeuActivity.onCreate`), `values/strings.xml` anglais + `values-fr/` français, Réglages entièrement traduits, ligne « Langue » en dernière ligne d'Affichage ; banc `WFS_BANC=textes` et `WFS_LANGUE=fr|en`.
+- Vérification : 116 tests CPU au vert (dont `test_langue`, `test_reglages_onglets`) ; banc `textes` VERT en anglais (1280x720, 2400x1080) et en français : 0 phrase française, 0 texte qui dépasse ; parcours accueil → Réglages → English → retour → course → pause → Réglages en anglais → Automatique : OK ; captures dans `qa/pr/WFS-504/`.
+- Limites : APK non construit en local, pas d'essai sur téléphone ; le reste du jeu reste en français (WFS-505 à 508).
+
+### 2026-11-12 23:52:30 — WFS-504 : risque signalé (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Constat : la ligne technique de mesure du panneau Réglages (« Rendu : Haute · … · Mémoire : jeu … Mo · carte graphique … · aucune partie », `qualite::ligneRendu()` dans `src/render/qualite_systeme.cpp`, `texteMemoire()` dans `src/ui/ecrans/chargement.cpp`) reste en français avec un téléphone en anglais ; idem libellés du menu caché de diagnostic (`src/render/diagnostic_perf.*`).
+- Conséquence : une phrase française visible dans les Réglages en anglais (critère de l'épic E20) ; hors de la zone de WFS-504, donc non traduite ; le banc `textes` la note à part (« ligne technique non vérifiée »), sans échec.
+- Proposition : l'ajouter à WFS-505 (zone `chargement*`) avec une accroche ≤ 10 lignes dans `qualite_systeme.cpp`, ou un petit ticket à part ; autre option : ne montrer cette ligne qu'après le menu caché (WFS-419).
+- Décision attendue de : PO.
+
+
+### 2026-11-12 23:57:33 — WFS-485 refusé par le lead dev, PR #371 (lead-dev)
+Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, rien de cassé ; construction et tests CPU refaits par le lead dev (115 réussis). Refus pour 2 défauts : (1) `files/reglages.txt` (mouvements, ultra, regard, fantôme, onglet ; `src/ui/ecrans/reglages.cpp:160-219`) absent des règles de sauvegarde, donc ces réglages sont perdus à la réinstallation : ajouter `<include domain="file" path="reglages.txt" />` aux deux XML ; (2) section « Tests CPU » et `qa/pr/WFS-485/tests-cpu.log` absents (règle du 2026-11-11). Note au PO : RG-01 ne cite que `sauvegarde.txt`, alors que les réglages vivent aussi dans `reglages.txt`.
+
+### 2026-11-13 00:04:04 — WFS-487 : PR #373 ouverte (Claude, agent dev3d (01Us6uCwB3))
+- Fait : catalogue de personnalisation (`src/game/personnalisation.*`) : 28 couleurs (16 + 12 vives), couleur secondaire, 8 finitions, 4 skins, 5 packs d'autocollants ; prix de base × coefficient de la classe dans `configgame.json` (section `boutique`, +128 clés ; fichier non régénéré, réglages de l'utilisateur gardés) ; possession par voiture et packs pour toutes ; achat qui débite une seule fois (solde reçu en paramètre, portefeuille de WFS-498 à brancher) ; aspect garage / course (RG-07) ; migration des sauvegardes d'avant (couleur déjà choisie possédée) ; banc `sauvegarde` qui écrit catalogue et possession.
+- Option A du PO appliquée : « Choisir » du garage actuel donne la couleur historique à cette voiture seulement (`perso::donGarageProvisoire`, provisoire jusqu'à WFS-489).
+- **Accroches hors zone E3 (annoncées)** : `src/game/game.cpp` 1 ligne (`setCar` lit `peintureCourse`) ; `src/core/configgame.*` section `boutique` seulement (même exception que WFS-498) ; `CMakeLists.txt` : `personnalisation.cpp` ajouté aux 14 tests qui lient `sauvegarde.cpp`, nouveau `test_personnalisation`.
+- Vérification : `test_personnalisation` 40 cas OK ; tests CPU 116 / 116 (code 0) ; 14 captures du garage avant / après identiques au pixel près (Golf, M4, 911) ; vitrine `sauvegarde` de jour (ancienne sauvegarde turquoise gardée, nouveau format non acheté → couleur d'origine) ; `WFS_BANC=parcours` 0 écart.
+- Limites : rien d'acheté à l'écran avant WFS-498 / 489 ; noms en français (anglais avec les écrans, WFS-504).
