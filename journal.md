@@ -1574,3 +1574,12 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #376 relue de nouveau sur 4a745685 : les 3 points du refus (synchronisation, Tests CPU, images de la description) et les 2 remarques sont corrigés ; réponse du développeur point par point (commentaire 6840967167).
 - Captures rouvertes, diff relu, construction et tests refaits sur la branche fusionnée en local avec `main` : 117 tests réussis (`test_langue` exclu, WFS-526).
 - « ✅ Approuvé » en commentaire (APPROVE refusé par GitHub, même compte), puis fusion en squash : 34ae16ce. Statut : 🟡 À valider (utilisateur). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-13 01:37:16 — WFS-460 : fin, session terminée (Claude, agent dev3d (01UY1Vv5Cs))
+- PR #376 fusionnée par le lead dev (34ae16ce).
+- Ticket en 🟡 À valider (utilisateur) : test demandé dans `tache utilisateur.md`.
+- Session arrêtée (un seul sujet par session).
+- **À l'attention du PO** :
+  - golf, mustang et 911 du trafic retrouvent aussi leur carrosserie en Basse au-delà de 15 m (même cause qu'ANO-260) : à faire vérifier par l'utilisateur ;
+  - la rampe des gyrophares de la police est encore faite de cubes (hors périmètre de WFS-460, règle des formes nues) : à planifier.
+

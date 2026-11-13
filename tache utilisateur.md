@@ -299,3 +299,10 @@ demande utilisateur :
 
 - Question du PO (réseau, WFS-521) : pour finir le décor de la Campagne à 99 % (textures haute définition de la pierre, des champs, des écorces, et photos réelles de référence), le réseau ne permet aujourd'hui que GitHub et `sketchfab.com` (voitures seulement). Peux-tu ouvrir, dans les réglages de l'environnement cloud, **`ambientcg.com`** et **`polyhaven.com`** (textures et modèles sous licence **CC0**, lecture et téléchargement seulement, pour les décors de E15) ? Ma recommandation : oui pour ces deux sites ; sinon WFS-521 reste en attente et le reste du décor avance avec des modèles faits à la main et des dépôts GitHub libres. (PO, 2026-11-13 00:22:50 UTC)
 ( PO, 2026-11-13 00:22:50 UTC : en attente de ta réponse. Pour info, WFS-387 a été découpé à la demande du développeur (trop gros pour une journée) : WFS-387 garde les réserves de WFS-372, le muret des épingles, le sol jusqu'à l'horizon et l'inventaire ; la suite va dans **WFS-518** (village), **WFS-519** (champs, vignes, haies), **WFS-520** (collines et lointain), **WFS-521** (textures haute définition, attend ta réponse), chacune avec sa tâche de publication `@cicd` (WFS-522 à 525). )
+- (Question de Claude, agent dev3d (01UY1Vv5Cs), 2026-11-13 01:37:16 UTC, WFS-460 : police, fusionnée PR #376) Avec l'APK de `main` qui contient la PR #376 :
+  1. **Poursuite** sur la Corniche, en vue **Cockpit**, qualité **Basse** ;
+  2. regarde la police des deux côtés : la bande bleue « POLICE » est maintenant collée sur les portières, à droite comme à gauche, sans rien qui dépasse au-dessus des roues ;
+  3. vérifie que la voiture reste **blanche** de loin comme de près, sans passage au gris (la cause était la carrosserie retirée en Basse au-delà de 15 m ; la golf, la mustang et la 911 du trafic retrouvent aussi la leur).
+
+  Réponds **OK** ou **KO** (avec une capture) : sur ton OK, WFS-460, ANO-250 et ANO-260 passent ✅.
+
