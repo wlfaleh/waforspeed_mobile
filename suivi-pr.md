@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | 🆕 À relire | — | 2026-11-13 09:27 |
