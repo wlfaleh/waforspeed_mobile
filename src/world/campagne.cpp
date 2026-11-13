@@ -1203,7 +1203,6 @@ private:
             return (b(x / 700.f, z / 700.f) * 0.7f + b(x / 260.f + 9.1f, z / 260.f + 3.7f) * 0.3f) * 2 - 1;
         };
         std::vector<float> H((size_t)(nx + 1) * (nz + 1));
-        std::vector<uint8_t> couvert((size_t)(nx + 1) * (nz + 1), 0);   // point sous une bande de sol, à 6 m au moins de son bord
         std::vector<uint8_t> genre((size_t)(nx + 1) * (nz + 1), 2);   // 0 : sous les bandes ; 1 : contre leur bord (fixé) ; 2 : relâché
         std::vector<float> loinBord((size_t)(nx + 1) * (nz + 1), 1.f);   // 0 contre le bord des bandes, 1 à 600 m et au-delà
         for (int j = 0; j <= nz; j++) for (int i = 0; i <= nx; i++) {
@@ -1225,7 +1224,6 @@ private:
             else { y = std::min(yB, yMin + 30.f) - 0.5f; genre[ix] = d < dB + 30 + 1.5f * std::max(px, pz) ? 1 : 2; }   // 1 : contre le bord des bandes
             H[ix] = y;
             loinBord[ix] = pr ? std::clamp((d - dB - 30) / 600.f, 0.f, 1.f) : 1.f;
-            couvert[ix] = pr && d < dB - 6;
         }
         // WFS-387 (avis de l'agent 3D) : la hauteur « de la route la plus proche » saute là où deux routes de hauteurs différentes se
         // partagent le terrain (col, vignes en terrasses jusqu'à + 26 m) : parois verticales à sommet plat. Les points loin des bandes
@@ -1253,7 +1251,7 @@ private:
         }
         const vec2 u = uv(C_PRE_LOIN);
         auto h = [&](int a, int b) { return H[(size_t)std::clamp(b, 0, nz) * (nx + 1) + std::clamp(a, 0, nx)]; };
-        size_t tris = 0, cachees = 0;
+        size_t tris = 0;
         const int T = 32;
         for (int tj = 0; tj < nz; tj += T) for (int ti = 0; ti < nx; ti += T) {
             const int i1 = std::min(nx, ti + T), j1 = std::min(nz, tj + T), w = i1 - ti + 1;
@@ -1265,9 +1263,6 @@ private:
                 V.push_back({x0 + i * px, h(i, j) - SOL_DECALE_Y, z0 + j * pz, n.x, n.y, n.z, u.x, u.y});
             }
             for (int j = 0; j < j1 - tj; j++) for (int i = 0; i < i1 - ti; i++) {
-                // case entièrement cachée par les bandes de sol (ses 4 coins dessous) : rien à dessiner (RG-06, pixels jamais vus)
-                auto cv = [&](int a, int b) { return couvert[(size_t)(tj + b) * (nx + 1) + ti + a] != 0; };
-                if (cv(i, j) && cv(i + 1, j) && cv(i, j + 1) && cv(i + 1, j + 1)) { cachees++; continue; }
                 const uint32_t k = (uint32_t)(j * w + i), ww = (uint32_t)w;
                 I.insert(I.end(), {k, k + ww, k + 1, k + 1, k + ww, k + ww + 1});   // tournés vers le haut (+y)
             }
@@ -1276,7 +1271,7 @@ private:
             if (!I.empty()) solFond_.push_back({r.makeMesh(V, I), c, 0.75f * std::max((i1 - ti) * px, (j1 - tj) * pz)});
         }
         solFondPret_ = true;
-        WFS_LOG("campagne : sol jusqu'à l'horizon, grille %d × %d (pas %.0f × %.0f m), %zu tuiles, %zu triangles (%zu cases cachées par les bandes)", nx, nz, px, pz, solFond_.size(), tris, cachees);
+        WFS_LOG("campagne : sol jusqu'à l'horizon, grille %d × %d (pas %.0f × %.0f m), %zu tuiles, %zu triangles", nx, nz, px, pz, solFond_.size(), tris);
     }
     bool aCol_ = false, aCascade_ = false;
     int64_t cascadeSeg_ = -1; int cascadeCote_ = 0;
