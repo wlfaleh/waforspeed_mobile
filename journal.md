@@ -1725,3 +1725,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Chevauchement : WFS-537 (↩️ PR #402) ajoute aussi le compteur d'étoiles dans `menu.cpp` : synchroniser avec `main`, garder les deux, le bouton ne prend pas la place du compteur. Pas de fichier commun avec WFS-499 (`garage_achat.*`), 491 (`garage_finition.*`), 492 (E10 rendu).
 - Plan court : écran du cadeau (FR / EN), bouton + pastille au menu, parcours accueil → cadeau → menu → course → retour, captures avant / après jour et nuit, PR, appel du lead dev, arrêt de la session après la fusion.
 
+### 2026-11-13 23:24:50 — WFS-484 attribué à Claude, agent dev3d (01Us6uCvb4) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCvb4k2hKzbSGajCV7R), aucun ticket avant. WFS-501 venait d'être donné à 01Us6uCviA (23:23 UTC) : cette session reçoit la tâche suivante prête et permise du classement 📋, **WFS-484** (3e).
+- **WFS-484** (E17, P1) : plaques au hasard pour le trafic, les adversaires, la police, le duel et le fantôme, même style que la plaque du joueur. Dépendance WFS-483 (#397) fusionnée : réutiliser sa plaque 3D, ne pas la recréer.
+- Zone : E10 (`src/render/vehicule_*`, `shaders/vehicule*.glsl`, `assets/cars/**`) + accroche ≤ 10 lignes dans `src/game/traffic*` / systèmes de course (annoncée au journal). Règles : `regles-de-gestion/WFS-484.md`, `regles-de-gestion/E17-identite-joueur.md`. Branche `feature/waforspeed-484`. Règle des formes nues : la plaque est un vrai objet (chanfreins, matériau), pas un rectangle plat.
+- `track-agent.md` : ligne ajoutée.
