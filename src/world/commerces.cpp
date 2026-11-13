@@ -23,6 +23,7 @@
 #include "mobilier_ville.h"   // WFS-369 : tables, chaises, parasols et jardinières modélisés
 #include "ville_quartiers.h"
 #include "../render/eclairage_unites.h"   // WFS-410 : lampe de la pièce de nuit des vitrines
+#include "archi_details.h"   // WFS-410 : corniche moulurée de la devanture
 #include "archi_lieux.h"   // WFS-410 : devanture percée, menuiseries réelles de WFS-402
 #include "zones.h"
 
@@ -243,7 +244,13 @@ private:
                 archi::lieux::versMonde(b.part[k], o, x, z);
                 archi::lieux::ajouter(k == archi::VITRE ? vitre : pal, b.part[k], k == archi::METAL || k == archi::FIN ? fer : bg0, k == archi::VITRE);
             }
-            boite(pal, lateral(pm, s * (face - ep / 2 - 0.03f), 0.15f + H), pm.r, pm.f, ep + 0.06f, 0.14f, W + 0.12f, bg0);   // corniche
+            {   // corniche moulurée de la devanture (cordon, doucine, larmier : archi::details::corniche du kit), 14 cm, saillie 6 cm,
+                // retournée jusqu'à la façade de l'immeuble (avis du lead dev : plus de boîte)
+                archi::Maillage cor;
+                archi::details::corniche(cor, W, ep, H + 0.14f, 0.14f, 0.06f);
+                archi::lieux::versMonde(cor, o, x, z);
+                archi::lieux::ajouter(pal, cor, bg0);
+            }
             for (float sd : {-1.f, 1.f}) {   // retours de la devanture jusqu'à la façade
                 plan(pal, lateral(pm, s * (face - ep / 2), 0.15f + H / 2) + pm.f * (sd * W / 2), pm.r, {0, 1, 0}, pm.f * sd, ep, H, bg0.x, bg0.y, bg0.x, bg0.y);
             }

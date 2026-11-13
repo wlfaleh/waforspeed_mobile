@@ -142,8 +142,8 @@ public:
             for (const EgliseVue& e : eglises_) {
                 const Pose p = poseAt(*g.track, e.seg);
                 const vec3 b = lateral(p, (float)e.side * e.lat, solY(zone(e.seg), e.seg, e.side, e.lat) - 0.2f);
-                Geo G; poserModele(G, mod_.egliseP.vitraux, b, p.r * -(float)e.side, p.f);
-                vitraux_.push_back({e.seg, r.makeMesh(G.v, G.i)});
+                Geo G, Gl; poserModele(G, mod_.egliseP.vitraux, b, p.r * -(float)e.side, p.f); poserModele(Gl, mod_.egliseL.vitraux, b, p.r * -(float)e.side, p.f);
+                vitraux_.push_back({e.seg, r.makeMesh(G.v, G.i), r.makeMesh(Gl.v, Gl.i)});   // près / loin (même choix que les morceaux du décor)
             }
         }
         for (auto& T : txt_) T = {};
@@ -758,9 +758,12 @@ protected:
                 }
             }
         }
-        for (const auto& [seg, m] : vitraux_) {   // WFS-410 : vitraux des églises des morceaux dessinés
+        for (const Vitraux& v : vitraux_) {   // WFS-410 : vitraux des églises des morceaux dessinés, au niveau de détail de leur morceau
             int64_t a;
-            if (m.indexCount && dansMorceau(seg, c0 * CH, (c1 + 1) * CH, a)) { r.draw(m, vitrailMat_, mat4::identity()); nS++; }
+            if (!dansMorceau(v.seg, c0 * CH, (c1 + 1) * CH, a)) continue;
+            const int64_t pc = (int64_t)std::floor(g.player->dist / SEG) / CH, ca = (int64_t)std::floor((double)a / CH);
+            const Mesh& m = std::abs(ca - pc) * CH * SEG_M > LOD_FAR_M ? v.loin : v.pres;   // comme CarteDecor::render (morceau allégé au-delà de 200 m)
+            if (m.indexCount) { r.draw(m, vitrailMat_, mat4::identity()); nS++; }
         }
         nS += autoroutesAnimes(r, g, c0, c1);   // WFS-179
         nS += animauxAnimes(r, g, c0, c1);      // WFS-186
@@ -848,7 +851,7 @@ protected:
         sommetsMesh_ = Mesh{}; sommets_.clear(); libre_.clear(); aCol_ = aCascade_ = false;
         atlas_.detruire(r); for (auto& T : txt_) T = {};   // WFS-178
         if (lampeMesh_.vb.buf) r.destroy(lampeMesh_);
-        for (auto& [seg, m] : vitraux_) r.destroy(m);   // WFS-410
+        for (Vitraux& v : vitraux_) { r.destroy(v.pres); r.destroy(v.loin); }   // WFS-410
         r.destroy(vitrailMat_);
         vitraux_.clear(); eglises_.clear(); vitrailMat_ = Material{};
         for (int k = 0; k < 3; k++) { r.destroy(lampeOn_[k]); r.destroy(lampeOff_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
@@ -871,7 +874,8 @@ private:
     } mod_;
     struct EgliseVue { int64_t seg; int side; float lat; };   // WFS-410 : églises posées (segment, côté, distance à l'axe)
     std::vector<EgliseVue> eglises_;
-    std::vector<std::pair<int64_t, Mesh>> vitraux_;           // WFS-410 : vitraux de chaque église (monde), matériau à part
+    struct Vitraux { int64_t seg; Mesh pres, loin; };
+    std::vector<Vitraux> vitraux_;                            // WFS-410 : vitraux de chaque église (monde, près et loin), matériau à part
     Material vitrailMat_{};
     void construireModeles() {
         if (mod_.prets) return;

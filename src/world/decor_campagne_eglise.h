@@ -7,7 +7,7 @@
 // Mesures (RG-04 de WFS-410 : nef de 8 à 12 m de large, 20 à 35 m de long ; portail de 1,8 à 2,4 m × 3,5 à 4,5 m) :
 //   - nef : 9,0 m de large, 22,0 m de long (avis de l'agent 3D : la nef seule dans 20 à 35 m), murs gouttereaux de 8,0 m, toit à
 //     deux pans à 30 % ; abside de 3,4 m de rayon (6,2 m de haut) : 25,75 m hors tout avec l'abside et le débord de son toit ;
-//   - portail en plein cintre au midi : 2,2 × 4,4 m, porte à deux vantaux de planches, pentures de fer ; deux marches ;
+//   - portail en plein cintre au midi : 2,2 × 4,4 m, porte à deux vantaux de planches, pentures de fer ; perron de 6 marches ;
 //   - baies en plein cintre : 0,8 × 2,2 m (3 au nord, 2 au midi de part et d'autre du portail), 0,9 × 2,4 m (ouest), vitraux sous
 //     plomb en losanges (plombs de 6 mm, barlotières de fer) ;
 //   - clocher-mur : 4,4 m de large, 0,9 m d'épaisseur, de 8,0 à 14,6 m (pignon à 15,35 m), deux baies campanaires de 1,0 ×

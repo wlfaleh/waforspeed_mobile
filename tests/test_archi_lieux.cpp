@@ -5,7 +5,7 @@
 //   4. arcs en plein cintre : aucun triangle du mur dans l'ouverture (rectangle + demi-cercle), claveaux, vitrail ou porte ;
 //   5. versMonde : repère direct (normales unitaires, la façade regarde z) ;
 //   6. budget : triangles d'une façade de casino de 44 m (33 baies) au niveau 0 sous 60 000 ;
-//   7. église de la Campagne (RG-04) : nef 9 × 17 m, portail 2,2 × 4,4 m (±1 %), clocher-mur, budget, aucun triangle dégénéré.
+//   7. église de la Campagne (RG-04) : nef 9 × 22 m, portail 2,2 × 4,4 m (±1 %), clocher-mur, budget, aucun triangle dégénéré.
 #include <algorithm>
 #include <cmath>
 #include <cstdio>

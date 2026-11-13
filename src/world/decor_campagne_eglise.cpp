@@ -67,7 +67,7 @@ Eglise eglise(const CouleursEglise& c, bool loin) {
     // gouttereau du midi (vers la route, +x) : portail au milieu, deux baies ; x de la façade de z = +L vers z = −L
     mur(m, e.vitraux, c, {W, 0, L}, {1, 0, 0}, 2 * L, F, H,
         {A{L, 0.f, EGLISE_PORTAIL_L, EGLISE_PORTAIL_H, true}, A{L - 6.5f, 4.2f, 0.8f, 2.2f, false}, A{L + 6.5f, 4.2f, 0.8f, 2.2f, false}}, d, loin, c.vitrail[0]);
-    // gouttereau nord : deux baies
+    // gouttereau nord : trois baies
     mur(m, e.vitraux, c, {-W, 0, -L}, {-1, 0, 0}, 2 * L, F, H, {A{L - 7.f, 4.2f, 0.8f, 2.2f, false}, A{L, 4.2f, 0.8f, 2.2f, false}, A{L + 7.f, 4.2f, 0.8f, 2.2f, false}}, d, loin, c.vitrail[2]);
     // façade ouest (z = −L) : grande baie axiale ; chevet (z = +L) : mur plein derrière l'abside
     mur(m, e.vitraux, c, {W, 0, -L}, {0, 0, -1}, 2 * W, F, H, {A{W, 3.0f, 0.9f, 2.4f, false}}, d, loin, c.vitrail[1]);
