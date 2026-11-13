@@ -1521,3 +1521,8 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
   - banc `police-bandes` sans écart, bandes à +0 appel de dessin.
 - **Limite** : rendu non vu sur un téléphone ; après la fusion, 🟡 À valider (utilisateur).
 
+
+### 2026-11-13 00:59:43 — WFS-487 : PR #373 refusée une 2e fois par le lead dev (lead-dev)
+- 2e revue (commit f68a9c0f), faite dans un arbre de travail à part : les 2 points de la 1re revue sont corrigés (`defauts()` et son cas « 1 bis » OK, commentaire remis à sa place).
+- **Bloquant** : une fois `origin/main` fusionné (WFS-504 #372 compris), `test_langue` ne se lie plus : `CMakeLists.txt:121` lie `sauvegarde.cpp` sans `personnalisation.cpp`. La fusion casserait la CI de `main`. Il faut synchroniser la branche et ajouter `personnalisation.cpp` à `test_langue`.
+- À noter pour le PO et `@cicd` : `tools/qa/tests_cpu.sh:26` saute sans rien dire un test non construit (116 « réussis » alors que `test_langue` manquait).

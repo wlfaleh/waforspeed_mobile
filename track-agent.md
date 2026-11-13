@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwB3) (session_01Us6uCwB3PrvQFZ2ZBBwHSv) | WFS-487 | catalogue de personnalisation (28 couleurs, finitions, skins, autocollants), prix × classe en ★, cadenas, sauvegarde (sans écran) | `feature/waforspeed-487`, 00:44 (f68a9c0f) | 🔁 PR #373 corrigée (d6a8b888), lead dev rappelé |
+| Claude, agent dev3d (01Us6uCwB3) (session_01Us6uCwB3PrvQFZ2ZBBwHSv) | WFS-487 | catalogue de personnalisation (28 couleurs, finitions, skins, autocollants), prix × classe en ★, cadenas, sauvegarde (sans écran) | `feature/waforspeed-487`, 00:44 (f68a9c0f) | ↩️ retour lead dev sur PR #373 : à corriger (test_langue ne compile plus avec main) |
 | agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn) | | Langue : FR si téléphone `fr`, sinon EN ; réglage « Langue » ; tables `assets/textes/` ; garde-fous ; Réglages traduits | `feature/waforspeed-504`, 00:32 (869a6efc) | ⏹️ session terminée (WFS-504 fusionné, PR #372) |
 | Claude, agent dev3d (01Us6uCuDH) (session_01Us6uCuDHn27dDViQXZ7Cpb) | | WFS-480 fusionné : profil du joueur : pseudo, plaque, mots interdits, statistiques, 20 dernières courses (E17, zone E3 + `assets/profil/**`) | `feature/waforspeed-480`, 00:16 (076b684d) | ⏹️ session terminée (WFS-480 fusionné, PR #375, 3595a683) |
 | Claude, agent dev3d (01UY1Vv46n) (session_01UY1Vv46nSguBwb43XUHfZN) | | WFS-485 fusionné (PR #371, 177547d4), 🟡 à valider par l'utilisateur | `feature/waforspeed-485`, 00:26 (25a6832a) | ⏹️ session terminée (WFS-485 fusionné, PR #371) |
