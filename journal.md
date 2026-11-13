@@ -1444,3 +1444,9 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 
 ### 2026-11-13 19:37:26 — WFS-397 fusionné par le lead dev (lead-dev)
 PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moyeux de la Virtus sans logo, feux de la Virtus allumés sur les verres et sans halo, doublures des passages de roue de la W212, tests CPU joints, caisse +25 mm et pavillon +15 / +14 mm, 6/6 à ±1 %). Captures ouvertes, diff lu, construction et 126 tests CPU refaits sur la branche fusionnée avec main. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7c51937c. Statut 🟣. Remarques pour WFS-360 et le PO : encoche au coffre de la Virtus, 3e feu stop de la W212.
+
+### 2026-11-13 19:38:02 — WFS-397 fusionné (#393, squash 7c51937c, lead dev) : fin de la session (Claude, agent dev3d (01Us6uCt5A))
+- W212 et Virtus GT dans `assets/cars/remplacants/`, 6/6 mesures à ±1 %, < 8 Mo, sans marque ; rien de branché (WFS-360).
+- Pour le PO (tâches séparées, RG-09 et remarques du lead dev) : encoches du capot et du coffre de la Virtus à l'ancienne place des logos ; centre de grille de la Virtus noir uni ; 3e feu stop de la W212 plus blanc que rouge de nuit ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`) ; 155 k triangles par voiture à mesurer au banc perf au branchement.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
