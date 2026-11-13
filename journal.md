@@ -902,3 +902,29 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Zone : E8 (`src/ui/ecrans/cgu.*`, `cgu_texte.cpp`, `cgu_appui.h` ; `store/cgu-en.md`, `store/confidentialite-en.md` créés ; `assets/textes/**` ; banc `textes`). Règles : `regles-de-gestion/WFS-508.md` + `regles-de-gestion/E20-langue-anglaise.md`.
 - Plan : traduction fidèle (rien ajouté ni retiré) de l'écran des CGU et des deux textes de `store/`, phrase « la version française fait foi », acceptation déjà donnée gardée, banc `textes` avec l'écran des CGU qui défile ; **avis de l'agent `juriste` collé dans la PR avant l'appel du lead dev** (RG-04).
 - Points d'attention : WFS-505 (🔧), 506 (🔧) et 481 (↩️) touchent aussi `assets/textes/fr.txt` / `en.txt` : synchroniser avec `main` avant la PR, garder les deux. Pas E15, pas 🟡. CI de `main` rouge (licences) en cours de correction par WFS-533.
+
+### 2026-11-13 11:45:08 — WFS-506 : branche créée, plan (Claude, agent dev3d (01Us6uCvEv))
+- Inventaire des textes français en dur de la zone : HUD (`hud.cpp` : Temps, Score, Combo, Arrivée, Checkpoint, km/h, Nitro, Menu), bandeaux (`toasts.cpp`), consignes de navigation (`navigation.h`, `minicarte.cpp` : « Tourner à droite », « Au rond-point, 3e sortie »…), fin de course Checkpoint (`course_system.cpp`), Course à 5 (`course5_system.cpp`, `course5.cpp`), Poursuite (`poursuite_system.cpp`, `poursuite.cpp` : annonces de police, fin), Duel (`duel_system.cpp`, `duel.cpp` « (toi) »), commandes tactiles (`commandes_tactiles.cpp` : GAZ, FREIN, NITRO), étiquette du fantôme (`fantome_etiquette.cpp`).
+- Plan : clés `course.*`, `hud.*`, `nav.*`, `fin.*`, `police.*`, `duel.*` dans `assets/textes/fr.txt` / `en.txt` ; textes variables fabriqués par `ui::tr` avec valeurs (mêmes chemins qu'aujourd'hui, pas de nouvelle allocation par image) ; noms de rues inventés inchangés ; banc `textes` étendu à une course de chaque mode (journal vérifié en anglais).
+- Hors périmètre laissé à WFS-505 : textes de l'écran de chargement (`game.cpp`, « Construction de la route… ») et `modes_ecran.cpp`.
+
+### 2026-11-13 11:45:31 — WFS-505 : écrans traduits, banc « textes » vert (Claude, agent dev3d (01UY1Vv4v6))
+- Fait (branche `feature/waforspeed-505`, 2b23b007) : accueil, choix du mode, choix du terrain (descriptions, quartiers), chargement (étapes, échec, lignes de mesure), pause, salon du duel (messages du lien compris) et crédits passent par `ui::tr` ; 141 clés FR / EN ajoutées à `assets/textes/fr.txt` et `en.txt`. Boutons : largeur mesurée sur le texte français (identique à `main`), texte anglais par `ui::textBoite`.
+- Crédits (RG-02) : `CREDITS.txt` reste fabriqué en français par `tools/qa/verifier_licences.py` (hors zone) ; en anglais, l'écran le traduit par morceaux (`assets/textes/credits-en.txt`), noms d'auteurs, d'œuvres et de licences inchangés. `tests/test_credits.cpp` échoue si une nouvelle phrase française de `CREDITS.txt` n'a pas sa traduction : **à savoir pour toute modification des crédits**.
+- Banc « textes » (accroche ≤ 10 lignes dans `desktop_main.cpp`) : parcours au doigt accueil → mode → garage → terrain → course → pause → quitter → accueil, puis Duel → salon → retour, crédits, chargement ; nouveau groupe local `textes-menus`. En anglais : 192 textes vus, 0 phrase française, 0 dépassement (VERT). Noms des cartes (« Ville néon ») et des voitures notés à part comme noms propres (décision du PO : noms inchangés).
+- Vérification : 120 tests CPU verts ; licences : seul le manque connu de WFS-533. Captures avant / après en cours.
+- Pour WFS-506 (même tables) : j'ai créé les clés communes `mode.checkpoint`, `mode.course5`, `mode.poursuite` (noms des modes) et `terrain.jour` / `terrain.nuit` ; les étapes de `game.cpp` (« Construction de la route »…) sont traduites à l'affichage par l'écran de chargement (`chargement.etape.*`) : `game.cpp` n'a pas à changer. Réutiliser ces clés plutôt que d'en recréer (une clé en double fait échouer `test_langue`).
+
+### 2026-11-13 11:50:05 — WFS-533 : PR #381 ouverte, lead dev appelé (Claude, agent dev3d-cori (01UY1Vv4T3))
+- Run de branche build.yml #43416967480 : étape « Test de la piste » du job banc-essai (texte) (tests CPU + licences, l'étape rouge de `main`) **verte** ; compilation, android et publication-apk verts ; captures et endurance encore en cours à l'ouverture.
+- PR #381 (commit 3834ad2f, synchronisée avec `main`), ligne 🆕 dans `suivi-pr.md`, `TACHES.md` 🔀 En PR (#381). Lead dev appelé.
+
+### 2026-11-13 12:05:09 — WFS-533 fusionné par le lead dev (lead-dev)
+- PR #381 relue sur 3834ad2f : diff entier lu (1 ligne de `tools/qa/verifier_licences.py` + `qa/pr/WFS-533/pr.md`) ; contrôle des licences refait (`main` 1 manque → branche 0 manque) ; construction et `tests_cpu.sh` refaits : 120 test(s) réussi(s) ; run de branche #43416967480 « Test de la piste » vert.
+- Écart à RG-01 accepté : `AUTRES` ne sert qu'aux œuvres tierces ; fichier écrit pour le jeu déclaré `(None, None)` dans `COUVERTURE` (comme `textes/.*`). Signalé au PO : RG-01 mal posée.
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash 3013cf97 ; `TACHES.md` 🟣, ligne de `suivi-pr.md` supprimée, `qa/Check.md` à jour. CI de `main` attendue verte.
+
+### 2026-11-13 12:05:39 — Fin WFS-533 : session terminée (Claude, agent dev3d-cori (01UY1Vv4T3))
+- PR #381 fusionnée en squash par le lead dev (3013cf97) ; ticket 🟣, passe ✅ quand le prochain run de `main` et les bancs du matin sont verts (jobs « banc-essai (texte) » et « tests CPU et licences »).
+- Un seul sujet par session : la session s'arrête et ne demande pas d'autre ticket.
+
