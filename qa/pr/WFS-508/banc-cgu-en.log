@@ -1,0 +1,33 @@
+[info] CGU (WFS-308) banc : installation neuve → écran des CGU : OK
+[info] CGU (WFS-308) banc : « Accepter » sans la case : rien ne se passe : OK
+[info] CGU (WFS-308) banc : défilement 310 / 665 px
+[info] CGU (WFS-308) banc : le texte défile au doigt : OK
+[info] CGU (WFS-308) banc : case cochée : OK
+[info] CGU (WFS-308) banc : « Refuser » → message : OK
+[info] CGU (WFS-308) banc : refus → fermeture de l'application : OK
+[info] CGU (WFS-308) banc : relance après refus → écran des CGU à nouveau : OK
+[info] CGU (WFS-308) banc : demarrer : écran ouvert (police chargée) : OK
+[info] CGU (WFS-308) banc : fenêtre perdue : écran fermé, police libérée : OK
+[info] CGU (WFS-308) banc : fenêtre retrouvée : écran rouvert, police rechargée : OK
+[info] CGU (WFS-308) banc : case décochée à la réouverture : OK
+[info] CGU (WFS-355) banc : « Accepter » 116 × 50 px (116 × 50 dp), cible 50 dp de haut
+[info] CGU (WFS-308) banc : WFS-355 : case, pose jamais reçue → cochée : OK
+[info] CGU (WFS-308) banc : WFS-355 : doigt glissé hors d'« Accepter » → annulé : OK
+[info] CGU (WFS-308) banc : WFS-355 : lever perdu sur « Refuser » puis « Accepter » au bord bas de la cible de 48 dp → accepté : OK
+[info] CGU (WFS-308) banc : « Accepter » pas encore traité : la fenêtre reste tenue par les CGU : OK
+[info] CGU (WFS-308) banc : WFS-355 : « Accepter » touché → boucle Android sans attente (image() suivante) : OK
+[info] CGU (WFS-308) banc : WFS-355 : ancienne condition (premierLancement) : boucle bloquée, écran figé — cause du défaut : OK
+[info] CGU (WFS-308) banc : fenêtre perdue après « Accepter » : acceptation gardée, renderer refermé : OK
+[info] CGU (WFS-308) banc : fenêtre retrouvée après « Accepter » : pas d'écran des CGU, chargement normal : OK
+[info] CGU (WFS-308) banc : sauvegarde relue : cgu=1
+[info] CGU (WFS-308) banc : relance après acceptation → pas d'écran des CGU : OK
+[info] CGU (WFS-308) banc : version des CGU changée → écran à nouveau : OK
+[info] CGU (WFS-308) banc : Réglages : bouton « Conditions d'utilisation » présent : OK
+[info] CGU (WFS-308) banc : Réglages → texte en lecture seule : OK
+[info] CGU (WFS-308) banc : « Fermer » → retour aux Réglages : OK
+[info] CGU (WFS-308) banc : lecture ouverte depuis les Réglages : pas le premier lancement : OK
+[info] CGU (WFS-308) banc : fenêtre perdue en jeu (Game::shutdown) : lecture fermée : OK
+[info] CGU (WFS-308) banc : fenêtre retrouvée : jeu rechargé, lecture fermée, pas d'écran des CGU : OK
+[info] CGU (WFS-308) banc : course après les CGU : OK
+[info] CGU (WFS-308) banc : retour au menu : OK
+[info] CGU (WFS-308) banc : parcours complet : 0 écart(s) OK

@@ -221,3 +221,13 @@ credits.surtitre=Main menu
 credits.titre=Credits
 credits.retour=Back
 credits.aide=Slide your finger on the text to scroll.
+# ---- terms of use and privacy (WFS-508); the long text comes from store/cgu-en.md and store/confidentialite-en.md
+cgu.surtitre.premier=First launch · version {1}
+cgu.surtitre.reglages=Settings · version {1}
+cgu.titre=Terms of use
+cgu.accepter=Accept
+cgu.refuser=Decline
+cgu.case=I have read and I accept
+cgu.fermer=Close
+cgu.refus=The game cannot start without your consent
+cgu.fermeture=Closing the game…

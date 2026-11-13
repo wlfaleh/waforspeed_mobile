@@ -15,6 +15,7 @@
 #include "../../render/renderer.h"
 #include "../../render/vk.h"   // rotation de l'écran avant le chargement (Cgu::image)
 #include "../petit_ecran.h"
+#include "../langue.h"
 #include "../text.h"
 #include "cgu_appui.h"
 #include "reglages.h"
@@ -28,7 +29,6 @@ const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6
                DANGER = 0xFF1F4B;
 const unsigned ACCENT_PRESSE = 0xFF9A4D;   // WFS-355 : « Accepter » sous le doigt (même teinte que les Réglages, WFS-290)
 const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.98f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
-const char* MESSAGE_REFUS = "Le jeu ne peut pas démarrer sans votre accord";
 
 // texte d'un fichier : assets de l'APK (cgu/…, copiés par android/app/build.gradle), sinon store/ (PC, depuis la racine du dépôt)
 std::string lireTexte(const char* nom) {
@@ -40,10 +40,15 @@ std::string lireTexte(const char* nom) {
     return "";
 }
 
-// la politique de confidentialité s'arrête avant les notes réservées aux stores (questionnaires, classification d'âge)
-std::string sansNotesStore(const std::string& md) {
-    const size_t p = md.find("\n## Réponses aux questionnaires");
-    return p == std::string::npos ? md : md.substr(0, p);
+// WFS-508 (RG-01) : texte dans la langue du jeu ; texte anglais introuvable → texte français (jamais un écran vide)
+std::string lireTexteLangue(bool confidentialite) {
+    const bool anglais = ui::langue::active() == ui::langue::Langue::Anglais;
+    if (anglais) {
+        std::string t = lireTexte(fichierTexteCgu(confidentialite, true));
+        if (!t.empty()) return t;
+        WFS_ERR("CGU (WFS-508) : texte anglais introuvable, texte français affiché");
+    }
+    return lireTexte(fichierTexteCgu(confidentialite, false));
 }
 
 // trait épais de (ax, ay) à (bx, by)
@@ -64,18 +69,19 @@ void bouton(Renderer& r, const Cgu::Zone& z, float biais, const vec4& fond, cons
 
 void Cgu::ouvrir(Renderer& r, Mode m) {
     r_ = &r; mode_ = m; etat_ = Etat::Ouvert; coche_ = false; defil_ = 0; tRefus_ = -1; doigt_ = -1; cible_ = 0;
-    paras_ = paragraphesMarkdown(lireTexte("cgu.md"));
-    const std::vector<ParagrapheCgu> conf = paragraphesMarkdown(sansNotesStore(lireTexte("confidentialite.md")));
+    // WFS-508 : textes relus à chaque ouverture, dans la langue active (Réglages → Langue puis « Terms of use » : anglais)
+    paras_ = paragraphesMarkdown(lireTexteLangue(false));
+    const std::vector<ParagrapheCgu> conf = paragraphesMarkdown(sansNotesStore(lireTexteLangue(true)));
     if (!paras_.empty() && !conf.empty()) paras_.push_back({ParagrapheCgu::VIDE, ""});
     paras_.insert(paras_.end(), conf.begin(), conf.end());
     largeurPage_ = -1;
-    WFS_LOG("CGU (WFS-308) : écran ouvert (%s), version %d, %zu paragraphes", m == Mode::Premier ? "premier lancement" : "Réglages, lecture seule",
-            VERSION_CGU, paras_.size());
+    WFS_LOG("CGU (WFS-308) : écran ouvert (%s), version %d, langue %s, %zu paragraphes", m == Mode::Premier ? "premier lancement" : "Réglages, lecture seule",
+            VERSION_CGU, ui::langue::code(), paras_.size());
 }
 
 // découpe des paragraphes en lignes de la largeur du cadre (mots entiers ; suite d'une puce alignée sur son texte)
 void Cgu::mettreEnPage(float largeur, float k) {
-    largeurPage_ = largeur; kPage_ = k; lignes_.clear();
+    largeurPage_ = largeur; kPage_ = k; lignes_.clear(); tropLongues_ = 0;
     // corps de 16 (dp sur téléphone couché : au-dessus du minimum de 14 dp, petit_ecran.h), titres 22 et 17
     const float corps = 16 * k, titre = 22 * k, sous = 17 * k;
     float y = 0;
@@ -90,6 +96,8 @@ void Cgu::mettreEnPage(float largeur, float k) {
         bool premiere = true;
         size_t i = 0;
         auto pousser = [&]() {
+            // WFS-508 (RG-06) : un mot plus long que le cadre (adresse) dépasserait : compté pour le banc « textes »
+            if (ui::width(t, ligne) > largeur - (premiere ? 0 : retrait) + 0.5f) tropLongues_++;
             lignes_.push_back({p.style, ligne, premiere ? 0.f : retrait, y, t});
             y += interligne; premiere = false; ligne.clear();
         };
@@ -127,10 +135,10 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     r.uiRect(px, py, pw, ph, SURFACE);
     r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
     const float x0 = px + 24 * k;
-    const std::string sur = (mode_ == Mode::Premier ? std::string("Premier lancement") : std::string("Réglages")) + " · version " + std::to_string(VERSION_CGU);
+    const std::string sur = ui::tr(mode_ == Mode::Premier ? "cgu.surtitre.premier" : "cgu.surtitre.reglages", std::to_string(VERSION_CGU));
     ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(sur), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
     const float tt = (cp ? 26 : 34) * k;
-    ui::text(r, x0, py + 32 * k, tt, ui::majuscules("Conditions d'utilisation"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+    ui::text(r, x0, py + 32 * k, tt, ui::majuscules(ui::tr("cgu.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
     const float haut = py + 32 * k + tt + 12 * k;
 
     // barre du bas : case et boutons (premier lancement) ou « Fermer » (lecture)
@@ -138,18 +146,18 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     auto largeurBouton = [&](const std::string& t) { return ui::width(tp, t, 0.12f) + 56 * kb; };
     float xDroite = px + pw - 24 * k;
     if (mode_ == Mode::Premier) {
-        const std::string ta = ui::majuscules("Accepter"), tr = ui::majuscules("Refuser");
-        const float wa = largeurBouton(ta), wr = largeurBouton(tr);
+        const std::string ta = ui::majuscules(ui::tr("cgu.accepter")), trf = ui::majuscules(ui::tr("cgu.refuser"));
+        const float wa = largeurBouton(ta), wr = largeurBouton(trf);
         zAccepter_ = {xDroite - wa, by, wa, bh};
         zRefuser_ = {zAccepter_.x - 16 * k - wr, by, wr, bh};
         zFermer_ = {};
-        bouton(r, zRefuser_, 14 * kb, GLASS, tr, tp, hex(TEXTE), true);
+        bouton(r, zRefuser_, 14 * kb, GLASS, trf, tp, hex(TEXTE), true);
         // RG-03 : « Accepter » actif seulement après la case (inactif : gris, texte atténué)
         // WFS-355 : teinte plus claire tant que le doigt est posé sur « Accepter » (l'appui se voit)
         const bool presse = coche_ && doigt_ >= 0 && cible_ == cgu_appui::ACCEPTER;
         bouton(r, zAccepter_, 14 * kb, coche_ ? hex(presse ? ACCENT_PRESSE : ACCENT) : hex(SURFACE2), ta, tp, coche_ ? hex(BG) : hex(MUTED, 0.8f), false);
         const float cs = 28 * k, cy = by + (bh - cs) / 2, tl = (cp ? 16 : 18) * k;
-        const std::string lib = "J'ai lu et j'accepte";
+        const std::string& lib = ui::tr("cgu.case");
         r.uiRect(x0, cy, cs, cs, coche_ ? hex(ACCENT2) : hex(TEXTE, 0.85f));
         r.uiRect(x0 + 2 * k, cy + 2 * k, cs - 4 * k, cs - 4 * k, coche_ ? hex(ACCENT2) : hex(SURFACE2));
         if (coche_) {   // coche en deux traits (la police n'a pas le caractère ✓)
@@ -161,7 +169,7 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
         const float zh = std::max(bh, ui::TOUCHER_MIN_DP * k);
         zCase_ = {x0 - 8 * k, by + (bh - zh) / 2, cs + 20 * k + ui::width(tl, lib, 0.02f) + 8 * k, zh};
     } else {
-        const std::string tf = ui::majuscules("Fermer");
+        const std::string tf = ui::majuscules(ui::tr("cgu.fermer"));
         const float wf = largeurBouton(tf);
         zFermer_ = {xDroite - wf, by, wf, bh};
         zAccepter_ = zRefuser_ = zCase_ = {};
@@ -193,8 +201,8 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     if (etat_ == Etat::Refuse) {   // RG-04 : message, puis fermeture après CGU_DELAI_FERMETURE
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));
         const float tm = (cp ? 22 : 30) * k;
-        ui::text(r, W / 2, H / 2 - tm, tm, MESSAGE_REFUS, hex(DANGER), ui::CENTRE, 0.02f, false);
-        ui::text(r, W / 2, H / 2 + 16 * k, (cp ? 15 : 17) * k, "Fermeture du jeu…", hex(MUTED), ui::CENTRE, 0.02f, false);
+        ui::text(r, W / 2, H / 2 - tm, tm, ui::tr("cgu.refus"), hex(DANGER), ui::CENTRE, 0.02f, false);
+        ui::text(r, W / 2, H / 2 + 16 * k, (cp ? 15 : 17) * k, ui::tr("cgu.fermeture"), hex(MUTED), ui::CENTRE, 0.02f, false);
     }
 }
 
@@ -240,7 +248,7 @@ bool Cgu::toucher(int id, float x, float y, bool down, bool premierDoigt) {
     else if (c == ca::ACCEPTER) {
         if (!coche_) WFS_LOG("CGU (WFS-308) : « Accepter » inactif (case décochée)");
         else { etat_ = Etat::Accepte; WFS_LOG("CGU (WFS-308) : « Accepter » (version %d)", VERSION_CGU); }
-    } else if (c == ca::REFUSER) { etat_ = Etat::Refuse; tRefus_ = maintenant_; WFS_LOG("CGU (WFS-308) : « Refuser » — %s", MESSAGE_REFUS); }
+    } else if (c == ca::REFUSER) { etat_ = Etat::Refuse; tRefus_ = maintenant_; WFS_LOG("CGU (WFS-308) : « Refuser » — %s", ui::tr("cgu.refus").c_str()); }
     else if (c == ca::FERMER) { etat_ = Etat::Ferme; WFS_LOG("CGU (WFS-308) : lecture fermée"); }
     return true;
 }
@@ -284,6 +292,61 @@ Cgu::Etat Cgu::image(VkCtx& vk, uint32_t lf, uint32_t hf, double maintenant) {
 }
 
 Cgu& cgu() { static Cgu c; return c; }
+
+// ---------------------------------------------------------------- banc « textes » (WFS-508, RG-06) : écran des CGU dans la langue
+// du banc (WFS_LANGUE) ; captures haut, milieu, bas ; journal des textes (aucune phrase française en anglais), texte long qui
+// défile sans dépasser, boutons qui ne se chevauchent pas
+int benchCguTextes(Renderer& r, const std::string& out) {
+    namespace lg = ui::langue;
+    int echecs = 0;
+    auto verifier = [&](bool ok, const char* quoi) { WFS_LOG("textes (WFS-508) : CGU : %s : %s", quoi, ok ? "OK" : "ÉCHEC"); if (!ok) echecs++; };
+    ui::chargerPolice(r);
+    lg::choisir(lg::Choix::Automatique);
+    const std::string code = lg::code();
+    Cgu& c = cgu();
+    double t = 0;
+    auto image = [&](const char* ecran) { t += 1.0 / 60; lg::journalActif(true, ecran); c.dessinerImage(t); lg::journalActif(false); };
+    auto capture = [&](const char* ecran, const char* quoi) {
+        image(ecran); image(ecran);
+        const std::string nom = "textes-" + code + "-" + ecran;
+        r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : langue %s, défilement %.0f / %.0f, %s", nom.c_str(), code.c_str(), c.defilement(), c.defilementMax(), quoi);
+    };
+    // glisser dans le texte jusqu'à la part voulue du défilement (0 haut, 1 bas)
+    auto defiler = [&](float part) {
+        const Cgu::Zone& z = c.zoneTexte();
+        const float x = z.x + z.w / 2;
+        for (int n = 0; n < 200 && c.defilement() < part * c.defilementMax() - 1; n++) {
+            const float y0 = z.y + z.h * 0.8f, pas = std::min(z.h * 0.6f, part * c.defilementMax() - c.defilement());
+            c.toucher(7, x, y0, true); c.toucher(7, x, y0 - pas, true); c.toucher(7, x, y0 - pas, false);
+        }
+    };
+    lg::viderJournal();
+    c.ouvrir(r, Cgu::Mode::Premier);
+    capture("cgu-haut", "premier lancement, haut du texte");
+    verifier(c.ouvert() && c.defilementMax() > 0, "texte long : il défile (plus haut que le cadre)");
+    verifier(c.lignesTropLongues() == 0, "aucune ligne plus large que le cadre");
+    const Cgu::Zone &zc = c.zoneCase(), &zr = c.zoneRefuser(), &za = c.zoneAccepter();
+    verifier(zc.x + zc.w <= zr.x && zr.x + zr.w <= za.x, "case, « Refuser » et « Accepter » côte à côte, sans chevauchement");
+    defiler(0.5f);
+    capture("cgu-milieu", "texte défilé à mi-hauteur");
+    verifier(c.defilement() > 0 && c.defilement() < c.defilementMax(), "milieu du texte atteint au doigt");
+    defiler(1.f);
+    {   // case cochée (appui au centre de sa zone) : bouton principal actif
+        const float x = zc.x + zc.w / 2, y = zc.y + zc.h / 2;
+        c.toucher(8, x, y, true); c.toucher(8, x, y, false);
+    }
+    capture("cgu-bas", "bas du texte, case cochée, bouton principal actif");
+    verifier(c.defilement() >= c.defilementMax() - 1 && c.caseCochee(), "bas du texte atteint, case cochée");
+    c.ouvrir(r, Cgu::Mode::Lecture);
+    capture("cgu-lecture", "Réglages : lecture seule, bouton « Fermer »");
+    verifier(c.zoneFermer().w > 0, "lecture : bouton « Fermer » présent");
+    c.fermer();
+    echecs += lg::verifierJournal();
+    lg::viderJournal();
+    WFS_LOG("textes (WFS-508) : CGU %s : %d échec(s) → %s", code.c_str(), echecs, echecs ? "ROUGE" : "VERT");
+    return echecs;
+}
 
 // ---------------------------------------------------------------- banc d'essai (WFS_BANC=cgu)
 int benchCgu(Game& g, Renderer& r, const std::string& out) {

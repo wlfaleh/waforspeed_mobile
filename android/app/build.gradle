@@ -56,7 +56,7 @@ android {
 // WFS-128 : configgame.json (racine du dépôt) copié dans des assets générés (jamais toute la racine dans l'APK)
 tasks.register('copierConfiggame', Copy) {
     from '../../configgame.json'; into "$buildDir/generated/configgame"
-    from('../../store') { include 'cgu.md', 'confidentialite.md'; into 'cgu' }   // WFS-308 (RG-03) : textes des CGU dans l'APK (assets cgu/)
+    from('../../store') { include 'cgu.md', 'confidentialite.md', 'cgu-en.md', 'confidentialite-en.md'; into 'cgu' }   // WFS-308 (RG-03) : textes des CGU dans l'APK (assets cgu/) ; WFS-508 : versions anglaises
 }
 preBuild.dependsOn 'copierConfiggame'
 

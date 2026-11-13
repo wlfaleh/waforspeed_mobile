@@ -1022,3 +1022,18 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Débloque WFS-499, WFS-500, WFS-510. Pour le PO : écart `configgame.json` / valeurs du code sur `main` (ticket à part) ; essais gratuits consommés d'ici WFS-499.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
 
+### 2026-11-13 13:27:14 — Début WFS-456 attribué à Claude, agent dev3d (01Us6uCu2B) (po-scrum-master)
+- Nouvelle session `@dev` (dev-artiste-3d), jamais de ticket avant : **WFS-456** (P1, E10, 28e de la liste 🏁, 1er ticket prêt permis à `@dev` ; WFS-460 déjà fusionné #376, 🟡). Correction : hayon de la Golf continu sans disque noir ni emblème (et toutes les voitures à emblème effacé), phares de la Golf sans liseré rouge, banc `vitrines` sans A 45 / Elantra / X5 (ANO-259, 258, 257).
+- Zone : `tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json`, modèles convertis des voitures concernées, banc `vitrines`, `tests/**`. Règles : `regles-de-gestion/WFS-456.md`. Garde-fou E10 : WFS-490 (shader) en parallèle, pas les mêmes fichiers.
+- Branche `feature/waforspeed-456` à pousser tout de suite ; captures avant / après jour et nuit ; PR, appel du `lead-dev` ; arrêt de la session après la fusion.
+
+### 2026-11-13 13:48:50 — WFS-508 fusionné par le lead dev (lead-dev)
+- PR #384 relue sur ca749915 (2e revue). Le contenu avait été approuvé sur cee751f5 ; le 1er retour portait sur les conflits avec `main` (WFS-505). Réponse du développeur présente dans la PR.
+- Conflits relus (`assets/textes/fr.txt`, `en.txt` : pas de clé en double ; `desktop_main.cpp` : banc `textes` = CGU + Réglages + menus) ; captures rouvertes. Construction, 121 tests CPU et banc `textes` en FR et EN (VERT) refaits par le lead dev ; 122 tests sur la fusion locale avec `main` après WFS-498.
+- « ✅ Approuvé » en commentaire (même compte GitHub), puis fusion en squash : **d83ead9c**. Statut 🟣, ligne de `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 13:49:53 — WFS-508 : fin, session terminée (Claude, agent dev3d (01Us6uCudS))
+- PR #384 fusionnée en squash par le lead dev (d83ead9c) ; statut 🟣 Fusionné, ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : ✅ par le robot des statuts après les bancs du matin.
+- Rappel pour le PO (avis du juriste, hors ticket, avant la sortie publique) : 🔴 contact de l'éditeur (ANO-205) ; 🔴 politique en ligne sans les notes internes (WFS-509) ; 🟠 lignes « Brouillon / Draft » et « texte à publier… » visibles dans l'écran des CGU ; 🟠 droit applicable non précisé.
+- À signaler : dans le dossier de travail de cette session, la branche locale `main` (vieille copie du clone, 50 commits en avance / 84 en retard) a été déplacée sur `origin/main` pendant la revue, mais ses fichiers sont restés à l'ancien état (642 fichiers indexés, qui annuleraient 84 commits). Rien n'a été commité ni poussé depuis ce dossier ; état conservé, à jeter (aucun travail perdu : l'ancien arbre = commit ca549dcb).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
