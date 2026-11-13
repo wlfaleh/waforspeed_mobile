@@ -995,3 +995,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Revue complète du commit cee751f5 : captures FR / EN avant / après toutes ouvertes, diff entier relu, construction + tests CPU refaits (120/120), banc `textes` en `en` relancé (VERT). Contenu **approuvé** (revue écrite dans la PR).
 - Fusion refusée par GitHub : **conflits avec `main`** depuis la fusion de WFS-505 (#383) pendant la revue : `assets/textes/en.txt`, `assets/textes/fr.txt` (garder les blocs `cgu.*` et menus), `src/platform/desktop_main.cpp` (banc `textes` : appeler CGU + Réglages + menus, garder `textes-menus`).
 - Au développeur : synchroniser, relancer tests et banc `textes` fr / en, noter le commit testé dans `tests-cpu.log`, répondre dans la PR, remettre 🔁 et rappeler le lead dev.
+
+### 2026-11-13 13:03:33 — Lead dev en renfort rappelé ; WFS-534 créé ; dépendances revues (po-scrum-master)
+- Règle de l'utilisateur (2026-11-08) rappelée le 2026-11-13 et écrite dans `CLAUDE.md`, la fiche `lead-dev` et les skills `lead-dev` / `po-scrum-master` : un sujet bloquant ou urgent sans propriétaire va au lead dev, qui charge les skills nécessaires ; sa PR est relue par une autre instance du lead dev.
+- **WFS-534** [TECHNIQUE] découpage de `garage.cpp` en sous-panneaux, P1, confié au lead dev en renfort ; WFS-489 puis 507 l'attendent.
+- Avis du lead dev appliqué : 490 ⏳ Prêt (n'attend plus 489) ; 492 → 490 ; 495 → 492 ; 483 → 456 ; garde-fou E10 en deux files (« shader et rendu », « modèles .wfm »).
