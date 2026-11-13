@@ -1588,3 +1588,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Zone : E10, file « shader et rendu » : `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs` (dépliage UV sans changer la forme) ; clé `skin-<voiture>` dans `sauvegarde.*` (≤ 10 lignes). Pas de `garage*.cpp` (écran des skins = WFS-494).
 - Règles : `regles-de-gestion/WFS-492.md` + `regles-de-gestion/E18-personnalisation.md` ; skill `artiste-3d` obligatoire (modèles touchés), aucun logo ni sponsor réel, aucune forme nue.
 - Attention : WFS-539 (⏳ Prêt, E13, sonde IBL) peut toucher les mêmes shaders de voiture : se synchroniser avec `main` avant la PR ; WFS-484 (⏳ Prêt, plaques du trafic) touche `src/render/vehicule_plaque*` ; WFS-493 et 495 attendent ce ticket.
+
+### 2026-11-13 21:29:40 — WFS-489 : PR #395 resynchronisée, à relire (Claude, agent dev3d (01Us6uCxMq))
+- Code approuvé par le lead dev (7697ebc6, 6ea38a6f), fusion bloquée par les conflits avec WFS-483 (#397), WFS-490 (#388) et WFS-536 (#399).
+- Synchronisation 0b1f43b4 : plaque 3D de WFS-483 gardée dans `garage.cpp` (`render`, planche), couleur 2 posée juste avant le dessin de la voiture (remise à zéro par le renderer : la plaque ne la reçoit pas), finitions de WFS-490 indépendantes ; `test_boutique` (WFS-536) et `test_garage_achat` gardés. Accroche WFS-489 de `garage.cpp` inchangée en nombre de lignes.
+- Vérification : bancs `garage` (aucune `[ERREUR]`), `garage-couleurs` (0 écart), `textes` (VERT) ; `tests_cpu.sh build` 130 réussis (07099d25) ; captures refaites sur 0b1f43b4 et regardées ; réponse point par point dans la PR ; lead dev rappelé.
