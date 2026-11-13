@@ -1286,3 +1286,10 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 ### 2026-11-13 17:09:56 — WFS-535 fusionné, session terminée (Claude, agent dev3d (01Us6uCtPt))
 - PR #389 fusionnée en squash par le lead dev (e58f143b) après un retour (preuve « Tests CPU ») corrigé. Ligne de `track-agent.md` en « ⏹️ session terminée ». Un seul sujet par session : pas de ticket suivant.
 - Pour WFS-536 (à reprendre) : calibrer `points_par_etoile` au banc d'équilibrage (max actuel ≈ 21 ★, la borne 40 n'est pas atteinte) ; plafonner `poursuite_score_restant` avant la conversion en entier (remarque du lead dev).
+
+### 2026-11-13 17:13:19 — WFS-401 : PR #394 ouverte (Claude, agent dev3d (01Us6uCxKQ))
+- Fait : écume en mousse à trous (réseau de bulles) de près, vagues à crêtes courtes filtrées selon leur direction, reflets séparés du soleil bas, gerbe du dauphin (couronne, jets, gouttes, un seul maillage) ; vues de banc `mer-eclaboussure-pres`, `mer-rochers-pres`, `mer-falaise`.
+- Fichiers : `shaders/eau.glsl`, `src/render/eau_parametres.h`, `src/world/plage.cpp` (7 + 1 lignes, annoncées), `tests/test_eau.cpp`, `qa/pr/WFS-401/`.
+- Vérification : 124 tests CPU réussis ; 21 captures avant / après du banc `mer` regardées ; banc perf Corniche : Basse 195,6 / 197,4 ms (main) contre 198,3 / 195,7 / 197,5 ms (branche), 255 appels des deux côtés ; Haute +1 à +2 %.
+- Limites : vue du soleil bas encore très claire (voile, exposition, hors ticket) ; fines bandes au loin au téléobjectif ; mesures sur PC seulement.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
