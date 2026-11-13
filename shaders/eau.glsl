@@ -278,11 +278,18 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
             vec2 cw = floor(p / taille);
             vec2 cel = cw + floor(t * 2.5 + eauHash(cw + 1.3)) * vec2(17.31, 9.13);
             // une paillette tirée est une facette qui renvoie vraiment le soleil (normale = demi-vecteur, à peine bougée) : plus de
-            // pixel noir dans la traînée ; les autres gardent la normale et le lobe moyens (densité ≤ 35 % : paillettes séparées)
+            // pixel noir dans la traînée ; ailleurs la normale et le lobe moyens restent (au plus 35 % des cellules : paillettes séparées)
+            // la facette est un petit point rond à une place tirée dans la cellule (rayon : 1,5 cm ou un demi-pixel au moins, bord
+            // fondu), pas la cellule entière : aucun carré ; vu en rasant, il s'aplatit en petit trait horizontal comme en vrai
             if (eauHash(cel + 3.7) < 0.35 * poids) {
-                vec2 hh = eauHash2(cel) - 0.5;
-                N = normalize(Hs + vec3(hh.x, 0.0, hh.y) * 0.02);
-                rough = 0.06;
+                vec2 hh = eauHash2(cel);
+                vec2 c = (cw + 0.2 + 0.6 * hh) * taille;
+                float rg = max(0.015, 0.5 * empreinte);
+                float w = 1.0 - smoothstep(0.5 * rg, rg, length(p - c));
+                if (w > 0.0) {
+                    N = normalize(mix(N, normalize(Hs + vec3(hh.x - 0.5, 0.0, hh.y - 0.5) * 0.02), w));
+                    rough = mix(rough, 0.06, w);
+                }
             }
         }
     }
