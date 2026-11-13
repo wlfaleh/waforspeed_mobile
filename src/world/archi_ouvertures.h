@@ -74,5 +74,9 @@ void appuiEtLinteau(const Plan& p, const Baie& b, Batiment& out);
 //   de la baie (les volets battants ne se posent que s'ils peuvent s'y rabattre) ; graine : choix des modèles (RG-05).
 void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y, float l, float h, float plancher,
                   float murLibre, int lod, Batiment& out);
+// WFS-410 (ajout) : même baie, façon des menuiseries choisie (Baies::Reelles pour les lieux hors kit, préparés au chargement :
+// menuiseries réelles même quand l'interrupteur de WFS-415 est coupé)
+void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y, float l, float h, float plancher,
+                  float murLibre, int lod, Batiment& out, Baies mode);
 
 }  // namespace wfs::archi::ouvertures

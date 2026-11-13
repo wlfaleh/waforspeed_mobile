@@ -218,6 +218,10 @@ void ondule(Maille& m, vec3 egoutA, vec3 faitA, vec3 dz, float z0, float z1, flo
 } // namespace
 
 // ---------------------------------------------------------------- outils publics
+// WFS-410 (accroche) : couverture de tuiles canal de la ferme, réutilisée par l'église (decor_campagne_eglise.cpp)
+void tuilesCanal(Maille& m, vec3 egoutA, vec3 faitA, vec3 dz, float z0, float z1, vec3 normale, int couleur) {
+    ondule(m, egoutA, faitA, dz, z0, z1, 0.22f, 0.05f, normale, couleur, 4);
+}
 void teinte(Maille& m, size_t v0, int couleur, vec3 e, float ampl, uint32_t graine) {
     for (size_t k = v0; k < m.v.size(); k++) {
         Sommet& s = m.v[k];

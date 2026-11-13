@@ -33,6 +33,7 @@
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "../render/eclairage.h"   // WFS-09
+#include "../render/eclairage_unites.h"   // WFS-410 : lampe de la pièce de nuit des vitres
 #include "../render/effets_particules.h"   // WFS-94 : effets::versHdr (fenêtres allumées)
 #include "../../third_party/stb/stb_image.h"
 #include "../core/platform.h"
@@ -49,13 +50,16 @@
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : fontaines déclarées au son des lieux
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 #include "decor_ville_port.h"   // WFS-370 : conteneurs, portiques et clôture du port modélisés
+#include "archi_lieux.h"   // WFS-410 : façades percées des lieux, menuiseries réelles de WFS-402
 
 namespace wfs {
 namespace {
 
 enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE,
            P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL,
-           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_GLACE, P_COUNT };   // WFS-369 : P_GLACE, verre clair des abribus (sans lumière intérieure)
+           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_GLACE,
+           P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 60 % allumés)
+           P_COUNT };   // WFS-369 : P_GLACE, verre clair des abribus (sans lumière intérieure)
              // WFS-176 : dorures, vitrages, néons du casino (A) et des autres enseignes (B)   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
@@ -68,7 +72,8 @@ enum Couleur {
     // shiba et husky (6 teintes chacun, matériaux du modèle), laisse, enrobé du parking, aluminium des menuiseries
     U_CREME, U_MARCHE, U_TAPIS, U_ENDUIT, U_SOL_GARAGE, U_PONT, U_NOIR, U_PIG0, U_SHI0 = U_PIG0 + 4, U_HUS0 = U_SHI0 + 6,
     U_LAISSE = U_HUS0 + 6, U_PARKING, U_ALU,
-    U_FONTE, U_AFFICHE, U_NB   // WFS-369 : fonte peinte, affiche
+    U_FONTE, U_AFFICHE,   // WFS-369 : fonte peinte, affiche
+    U_CHASSIS, U_MENUIS, U_VOLETK, U_METALK, U_NB   // WFS-410 : menuiseries des lieux (albédos du kit de WFS-402)
 };
 constexpr uint32_t PALETTE[U_NB] = {
     0x3a3d44, 0x6b4a2e, 0xbfe8ff, 0xc9c4b8, 0x4aa3c7,
@@ -93,7 +98,9 @@ constexpr uint32_t PALETTE[U_NB] = {
     0x47494a, 0x2e2e2e, 0xd9d9d4, 0x0e0e0e, 0xf0f0f0, 0x2a2a2a,
     0xb02a2a, 0x45474b, 0xc8ccd0,
     // WFS-369 : fonte peinte vert foncé des bancs et grilles (RAL 6009, albédo ≈ 0,04), affiche claire sous verre
-    0x27352d, 0xd6cdbd};
+    0x27352d, 0xd6cdbd,
+    // WFS-410 : bois peint blanc cassé (RAL 9001, albédo 0,70), bois teinté des portes, volets peints, aluminium laqué sombre (0,28)
+    0xdad7ce, 0x76614b, 0x557c65, 0x8f9090};
 vec2 uvc(int c) { return {(c + 0.5f) / (float)U_NB, 0.5f}; }
 
 // teintes du feuillage (VEG_TINT de life.js) : tilleuls sur le matériau des platanes, pins sur leur propre matériau
@@ -1309,6 +1316,14 @@ public:
         Material mv; mv.color = {0.06f, 0.08f, 0.09f, 1}; mv.rough = 0.05f; mv.flags = MAT_DOUBLE;
         if (nuit_) mv.emissive = vec3{1.f, 0.72f, 0.45f} * 0.9f;
         mats_[P_VERRE] = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+        for (int k = 0; k < 2; k++) {   // WFS-410 (avis de l'agent 3D, B1) : vitres des lieux comme celles du kit (pièce de nuit, 2 850 K)
+            double c[3]; lumiere::couleurTemperature(2850, c);
+            const float L = archi::lieux::LUMINANCE_PIECE;
+            Material m; m.color = {0.03f, 0.035f, 0.04f, 1}; m.rough = 0.05f; m.flags = MAT_DOUBLE | MAT_INTERIEUR;
+            m.emissive = {(float)c[0] * L, (float)c[1] * L, (float)c[2] * L};
+            m.cutoff = nuit_ ? (k ? archi::lieux::VITRINES_ALLUMEES : archi::lieux::ETAGES_ALLUMES) : 0.f;
+            mats_[k ? P_VITRE_COMMERCE : P_VITRE_ETAGE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        }
         for (const char* x : {"CASINO", "GARAGE 88", "GALERIE DES ARCADES", "LUNA MODE", "ATELIER 7", "MAISON VERTE"}) atlasLieux_.ajouter(x);
         if (!P.lieux.empty() && atlasLieux_.construire(r)) {
             // néons bornés (pas de halo qui mange l'écran) : or-rose pour le casino, cyan pour les autres (design-street-racing)
@@ -1358,6 +1373,24 @@ public:
         }
     }
 
+    // WFS-410 (RG-02, RG-03) : façade d'un lieu percée de ses baies, menuiseries réelles de WFS-402 (préparée au chargement) ;
+    // c : milieu du bas de la façade, z : normale sortante ; mur et tableaux uvMur, encadrements et appuis uvPierre, vitres avec la
+    // pièce de nuit du kit (P_VITRE_ETAGE, P_VITRE_COMMERCE) ;
+    // loin (lod) : mur plein, baies peintes 1 cm devant
+    static void facadeLieu(Geo out[P_COUNT], const archi::lieux::Facade& f, vec3 c, vec3 z, bool lod, vec2 uvMur, vec2 uvPierre) {
+        archi::Batiment b, v;   // b : mur et fenêtres d'étage ; v : vitrines et portes (commerces)
+        archi::lieux::construire(f, lod ? 2 : 0, b, &v);
+        const vec3 x = archi::lieux::axeFacade(z), o = c - x * (f.largeur / 2);
+        const vec2 uv[archi::NB_PARTS] = {uvMur, uvPierre, {0, 0}, uvc(U_MENUIS), uvPierre, uvc(U_METALK), uvc(U_VOLETK), uvc(U_METALK), uvc(U_CHASSIS), uvMur};
+        for (archi::Batiment* B : {&b, &v})
+            for (int k = 0; k < archi::NB_PARTS; k++) {
+                if (B->part[k].v.empty()) continue;
+                archi::lieux::versMonde(B->part[k], o, x, z);
+                if (k == archi::VITRE) archi::lieux::ajouter(out[B == &v ? P_VITRE_COMMERCE : P_VITRE_ETAGE], B->part[k], {0, 0}, true);
+                else archi::lieux::ajouter(out[P_UNI], B->part[k], uv[k]);
+            }
+    }
+
     // géométrie fixe d'un lieu, dans le repère de la route au milieu de sa façade (lignes droites : RG-C1)
     void lieuVille(Track& t, int64_t a, const ville::Lieu& l, bool lod, Geo out[P_COUNT]) const {
         const float R = (float)RW, s = (float)l.side, demi = l.len / 2;
@@ -1384,8 +1417,40 @@ public:
             // dorés, marquise dorée de 12 m au-dessus de 3 marches (17 / 30 cm : 2h + g = 64 cm, loi de Blondel) et d'un tapis
             const float f0 = R + 12.f;
             quad(U, P(R + 6.5f, -demi, 0.16f), P(R + 6.5f, demi, 0.16f), P(f0, demi, 0.16f), P(f0, -demi, 0.16f), up, uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE));
-            bloc(out[P_VERRE], f0 + 12.f, 0, 0, 11.65f, demi - 0.2f, 14.f, {0, 0});                     // vitrages (en retrait de 0,35 m devant et derrière, WFS-455)
-            bloc(U, f0 + 12.f, 0, 0, 12.f, demi, 1.2f, uvc(U_CREME));                                    // soubassement
+            {   // WFS-410 (RG-03) : façades percées (avant et côtés, 15 cm en retrait des pilastres et des bandeaux, qui restent en
+                // relief), à la place du bloc de verre : par travée de 4 m, grandes baies du rez-de-chaussée (2,4 × 3,2 m), portes
+                // vitrées à deux vantaux sous la marquise (2,4 × 3,5 m), fenêtres des étages (2,2 × 3,0 m puis 1,8 × 2,0 m),
+                // menuiseries de bois peint, petits bois, impostes, appuis de pierre ; murs arrière et toit pleins
+                const float fa = f0 + 0.15f, prof = 24.f - 0.15f, ds = demi - 0.1f;
+                const vec2 cr = uvc(U_CREME);
+                const vec3 a0 = P(fa, -ds, 0), a1 = P(fa, ds, 0), b0 = P(f0 + 24.f, -ds, 0), b1 = P(f0 + 24.f, ds, 0), h{0, 14.f, 0};
+                carte::quad(U, b1, b0, b0 + h, b1 + h, cr);   // mur arrière (sur cour), toit
+                carte::quadSol(U, a0 + h, a1 + h, b1 + h, b0 + h, cr);
+                archi::lieux::Facade f;
+                f.style = archi::Style::Classique; f.graine = (uint32_t)(a * 3 + 1); f.largeur = 2 * demi; f.y0 = 0; f.y1 = 14.f;
+                for (float al = -demi + 2.f; al < demi; al += 4.f) {
+                    const float x = al + demi;
+                    if (std::fabs(al) < 4.f) f.baies.push_back({archi::Ouverture::Vitrine, x, 0.69f, 2.4f, 3.5f, 0.69f});
+                    else f.baies.push_back({archi::Ouverture::Fenetre, x, 1.5f, 2.4f, 3.2f, 0.69f});
+                    f.baies.push_back({archi::Ouverture::Fenetre, x, 6.0f, 2.2f, 3.0f, 5.6f});
+                    f.baies.push_back({archi::Ouverture::Fenetre, x, 10.6f, 1.8f, 2.0f, 10.2f});
+                }
+                facadeLieu(out, f, P(fa, 0, 0), X * -1.f, lod, cr, uvc(U_CREME));
+                for (float sd : {-1.f, 1.f}) {   // côtés : mêmes baies que la façade, entre les pilastres (tous les 4 m)
+                    archi::lieux::Facade c;
+                    c.style = archi::Style::Classique; c.graine = (uint32_t)(a * 3 + (sd > 0 ? 2 : 3)); c.largeur = prof; c.y0 = 0; c.y1 = 14.f;
+                    const vec3 zc = Z * sd, xc = archi::lieux::axeFacade(zc);
+                    const float sens = dot(X, xc);   // +1 : x de la façade vers l'arrière du casino
+                    for (float lc : {2.4f, 6.4f, 10.4f, 14.4f, 18.4f}) {
+                        const float x = prof / 2 + sens * (lc - 0.15f - prof / 2);
+                        c.baies.push_back({archi::Ouverture::Fenetre, x, 1.5f, 2.2f, 3.2f, 0.69f});
+                        c.baies.push_back({archi::Ouverture::Fenetre, x, 6.0f, 2.2f, 3.0f, 5.6f});
+                        c.baies.push_back({archi::Ouverture::Fenetre, x, 10.6f, 1.8f, 2.0f, 10.2f});
+                    }
+                    facadeLieu(out, c, P(fa + prof / 2, sd * ds, 0), zc, lod, cr, cr);
+                }
+            }
+            for (float sd : {-1.f, 1.f}) bloc(U, f0 + 12.f, sd * (demi + 4.f) / 2, 0, 12.f, (demi - 4.f) / 2, 1.2f, uvc(U_CREME));   // soubassement (coupé devant les portes)
             for (float y : {5.f, 9.6f}) bloc(U, f0 + 12.f, 0, y, 12.f, demi, 0.6f, uvc(U_CREME));       // bandeaux d'étage
             bloc(U, f0 + 12.f, 0, 13.f, 12.f, demi, 1.f, uvc(U_CREME));                                  // attique
             bloc(out[P_OR], f0 + 11.85f, 0, 14.f, 12.15f, demi + 0.15f, 0.45f, {0, 0});                  // corniche dorée
@@ -1417,10 +1482,28 @@ public:
                     quad(U, P(r0, al - 0.05f, 0.17f), P(r0, al + 0.05f, 0.17f), P(r0 + 5.f, al + 0.05f, 0.17f), P(r0 + 5.f, al - 0.05f, 0.17f), up, uvc(U_PEINTURE), uvc(U_PEINTURE), uvc(U_PEINTURE), uvc(U_PEINTURE));
             }
             quad(U, P(R + 25.f, -demi, 0.18f), P(R + 25.f, demi, 0.18f), P(b0, demi, 0.18f), P(b0, -demi, 0.18f), up, uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE));   // parvis piéton
-            bloc(out[P_VERRE], b0 + 13.f, 0, 0, 13.f, demi, 9.f, {0, 0});
+            {   // WFS-410 (RG-03) : façade vitrée percée en travées de 3 m (trumeaux d'enduit de 0,3 m), à la place du bloc de verre et
+                // des baguettes : en bas, vitrines à soubassement et portes vitrées d'aluminium (2,7 × 2,8 m), au-dessus une verrière
+                // fixe à petits bois d'acier (2,7 × 5,4 m) ; côtés : verrières ; arrière et toit pleins (bandeau opaque au-dessus)
+                const vec2 cl = uvc(U_CLAIR);
+                const vec3 a0 = P(b0, -demi, 0), a1 = P(b0, demi, 0), c0 = P(b0 + 26.f, -demi, 0), c1 = P(b0 + 26.f, demi, 0), h{0, 9.f, 0};
+                carte::quad(U, c1, c0, c0 + h, c1 + h, cl);
+                carte::quadSol(U, a0 + h, a1 + h, c1 + h, c0 + h, cl);
+                archi::lieux::Facade f;
+                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + 1); f.largeur = 2 * demi; f.y0 = 0; f.y1 = 9.f;
+                for (float x = 1.5f; x < 2 * demi; x += 3.f) {
+                    f.baies.push_back({archi::Ouverture::Vitrine, x, 0.18f, 2.7f, 2.8f, 0.18f});
+                    f.baies.push_back({archi::Ouverture::Fenetre, x, 3.3f, 2.7f, 5.4f, 3.1f});
+                }
+                facadeLieu(out, f, P(b0, 0, 0), X * -1.f, lod, cl, cl);
+                for (float sd : {-1.f, 1.f}) {
+                    archi::lieux::Facade c;
+                    c.style = archi::Style::Industriel; c.graine = (uint32_t)(a * 5 + (sd > 0 ? 2 : 3)); c.largeur = 26.f; c.y0 = 0; c.y1 = 9.f;
+                    for (float x = 1.75f; x < 26.f; x += 3.5f) c.baies.push_back({archi::Ouverture::Fenetre, x, 3.3f, 2.7f, 5.4f, 3.1f});
+                    facadeLieu(out, c, P(b0 + 13.f, sd * demi, 0), Z * sd, lod, cl, cl);
+                }
+            }
             bloc(U, b0 + 13.f, 0, 9.f, 13.f, demi, 3.f, uvc(U_CLAIR));                                     // bandeau opaque
-            if (!lod) for (float al = -demi; al <= demi + 0.01f; al += 1.5f) bloc(U, b0 - 0.05f, al, 0, 0.06f, 0.05f, 9.f, uvc(U_ALU));
-            if (!lod) for (float y : {3.f, 6.f}) bloc(U, b0 - 0.05f, 0, y, 0.06f, demi, 0.08f, uvc(U_ALU));
             bloc(U, b0 - 2.5f, 0, 4.f, 2.5f, 10.f, 0.35f, uvc(U_ALU));                                     // auvent de l'entrée
             enseigne(out[P_TXT_B], "GALERIE DES ARCADES", b0 - 0.1f, 0, 10.5f, 1.6f, 40.f);
             const char* boutiques[3] = {"LUNA MODE", "ATELIER 7", "MAISON VERTE"};
@@ -1435,10 +1518,37 @@ public:
             for (float sd : {-1.f, 1.f}) bloc(U, f0 + 6.25f, sd * (demi - 0.2f), 0, 6.25f, 0.2f, 6.f, uvc(U_ENDUIT));   // pignons
             bloc(U, f0 + 6.25f, 0, 5.8f, 6.25f, demi, 0.2f, uvc(U_ENDUIT));                                // toiture
             bloc(U, f0 + 0.2f, (al0 - 2.25f - demi) / 2, 0, 0.2f, (demi + al0 - 2.25f) / 2, 6.f, uvc(U_ENDUIT));       // façade : trumeau gauche
-            bloc(U, f0 + 0.2f, (al0 + 2.25f + demi) / 2, 0, 0.2f, (demi - al0 - 2.25f) / 2, 6.f, uvc(U_ENDUIT));       // trumeau droit
+            {   // WFS-410 (RG-03) : trumeau droit percé de la porte vitrée du bureau (0,9 × 2,2 m, aluminium, soubassement) ; avant :
+                // une plaque de verre cachée dans l'épaisseur du mur
+                const float w = demi - al0 - 2.25f, cx = (al0 + 2.25f + demi) / 2;
+                archi::lieux::Facade f;
+                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 7 + 1); f.largeur = w; f.y0 = 0; f.y1 = 6.f;
+                const float xp = w / 2 + dot(Z, archi::lieux::axeFacade(X * -1.f)) * (al0 + 4.6f - cx);
+                f.baies.push_back({archi::Ouverture::Vitrine, xp, 0.17f, 0.9f, 2.2f, 0.17f});
+                facadeLieu(out, f, P(f0, cx, 0), X * -1.f, lod, uvc(U_ENDUIT), uvc(U_ENDUIT));
+                carte::quad(U, P(f0 + 0.4f, cx + w / 2, 0), P(f0 + 0.4f, cx - w / 2, 0), P(f0 + 0.4f, cx - w / 2, 6.f), P(f0 + 0.4f, cx + w / 2, 6.f), uvc(U_ENDUIT));   // dos du trumeau
+            }
             bloc(U, f0 + 0.2f, al0, 3.6f, 0.2f, 2.25f, 2.4f, uvc(U_ENDUIT));                                // linteau
             quad(U, P(f0, -demi, 0.17f), P(f0, demi, 0.17f), P(f0 + 12.1f, demi, 0.17f), P(f0 + 12.1f, -demi, 0.17f), up, uvc(U_SOL_GARAGE), uvc(U_SOL_GARAGE), uvc(U_SOL_GARAGE), uvc(U_SOL_GARAGE));
-            carte::cylAxe(out[P_ACIER], P(f0 + 0.6f, al0 - 2.3f, 3.95f), Z, 0.3f, 4.6f, 10, {0, 0});        // rouleau du rideau
+            {   // WFS-410 : rideau métallique levé : coffre d'acier laqué sous le linteau (0,35 × 0,35 m, face avant à pan coupé de
+                // 45°, joues aux deux bouts) et coulisses en U de 60 × 40 mm de chaque côté de la baie (plus de cylindre nu)
+                const vec2 ac = uvc(U_METALK);
+                const float l0 = f0 + 0.42f, l1 = l0 + 0.35f, y1 = 3.6f, y0 = y1 - 0.35f, c = 0.12f, g0 = al0 - 2.3f, g1 = al0 + 2.3f;
+                // quadrilatère et triangle tournés vers n (le repère X, Z de la route est indirect du côté gauche)
+                auto qn = [&](vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n) { if (dot(cross(p1 - p0, p2 - p0), n) < 0) std::swap(p1, p3); carte::quad(U, p0, p1, p2, p3, ac); };
+                auto tn = [&](vec3 p0, vec3 p1, vec3 p2, vec3 n) { if (dot(cross(p1 - p0, p2 - p0), n) < 0) std::swap(p1, p2); carte::tri(U, p0, p1, p2, ac); };
+                qn(P(l0, g1, y0 + c), P(l0, g0, y0 + c), P(l0, g0, y1), P(l0, g1, y1), X * -1.f);                        // face avant
+                qn(P(l0 + c, g1, y0), P(l0 + c, g0, y0), P(l0, g0, y0 + c), P(l0, g1, y0 + c), normalize(X * -1.f - up));  // pan coupé
+                qn(P(l1, g1, y0), P(l1, g0, y0), P(l0 + c, g0, y0), P(l0 + c, g1, y0), up * -1.f);                       // dessous
+                for (float g : {g0, g1}) {
+                    const float sg = g < al0 ? -1.f : 1.f;
+                    const vec3 n0 = P(l0, g, y0 + c), n1 = P(l0 + c, g, y0), n2 = P(l1, g, y0), n3 = P(l1, g, y1), n4 = P(l0, g, y1), nz = Z * sg;
+                    tn(n0, n1, n2, nz); tn(n0, n2, n3, nz); tn(n0, n3, n4, nz);   // joues
+                    for (float e : {0.f, 0.06f})   // coulisse en U : deux ailes de 40 mm et le fond
+                        bloc(U, l0 + 0.02f, g - sg * (0.03f - e + 0.003f), 0.17f, 0.02f, 0.003f, y0 - 0.17f, ac);
+                    bloc(U, l0 + 0.04f, g - sg * 0.03f, 0.17f, 0.003f, 0.03f, y0 - 0.17f, ac);
+                }
+            }
             bloc(out[P_ACIER], f0 + 6.5f, al0 - 1.6f, 0.17f, 0.18f, 0.18f, 3.f, {0, 0});                   // colonnes du pont
             for (float sd : {-1.6f, 1.6f}) {
                 bloc(U, f0 + 6.5f, al0 + sd, 0.17f, 0.18f, 0.18f, 3.f, uvc(U_PONT));
@@ -1446,7 +1556,6 @@ public:
             }
             bloc(U, f0 - 0.15f, al0, 3.7f, 0.12f, 2.6f, 1.1f, uvc(U_NOIR));                                 // fond de l'enseigne
             enseigne(out[P_TXT_B], "GARAGE 88", f0 - 0.3f, al0, 4.25f, 0.65f, 4.8f);
-            bloc(out[P_VERRE], f0 + 0.25f, al0 + 4.6f, 0.17f, 0.05f, 0.9f, 2.2f, {0, 0});                    // porte vitrée du bureau
             break;
         }
         }

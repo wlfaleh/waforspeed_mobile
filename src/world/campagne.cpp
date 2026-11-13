@@ -24,6 +24,7 @@
 #include "../render/eclairage.h"    // WFS-179 : lumières de nuit du péage
 #include "../render/model_loader.h" // WFS-179 : modèles des voitures en sens inverse
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : troupeaux et fontaine déclarés au son des lieux
+#include "decor_campagne_eglise.h"   // WFS-410 : église modélisée
 #include "../audio/parois_sons.h"      // WFS-275 (accroche) : maisons, église, commerces, fermes (écho)
 
 namespace wfs {
@@ -63,7 +64,8 @@ void ligneTexte(Geo& g, vec3 c, vec3 x, float w, float h, const vie::Texte& T) {
 // terre cuite 0,15-0,25, béton 0,25-0,40, acier galvanisé 0,25-0,35)
 // WFS-387 : C_FILET juste après C_FOIN (cases voisines : le filet se fond dans la paille sans passer par une autre couleur)
 enum ColCampagne { C_PIQUET = C_NB, C_CEP, C_FIL, C_FOIN, C_FILET, C_FOIN_BOUT, C_CREPI, C_TUILE, C_VOLET, C_MENUIS, C_PORTE, C_EMBRAS,
-                   C_BARDAGE, C_BARDAGE2, C_TOLE, C_ACIER, C_BETON, C_ZINC, C_POTEAU, C_FERRURE, C_ISOL, C_CABLE, C_PRE_LOIN, C_FIN_CAMPAGNE };
+                   C_BARDAGE, C_BARDAGE2, C_TOLE, C_ACIER, C_BETON, C_ZINC, C_POTEAU, C_FERRURE, C_ISOL, C_CABLE, C_PRE_LOIN,
+                   C_BRONZE, C_VITRAIL0, C_VITRAIL1, C_VITRAIL2, C_FIN_CAMPAGNE };   // WFS-410 : cloches, vitraux de l'église
 static_assert(C_FIN_CAMPAGNE <= PAL_W, "palette trop petite");
 constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
     0x9c8466,   // piquet de vigne, poteau et lisses de clôture : châtaignier vieilli, gris-brun (WFS-387 : même bois partout)
@@ -89,6 +91,12 @@ constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
     0xc9cfc8,   // isolateurs de porcelaine
     0x7d8184,   // câbles d'aluminium
     0x8f8c5e,   // WFS-387 (avis de l'agent 3D) : prairie lointaine, kaki d'herbe sèche comme le sol naturel des bandes voisines
+    // WFS-410 : bronze des cloches patiné (brun-vert sombre, métal vu à l'ombre de la baie : albédo ≈ 0,10) ; vitraux sous plomb
+    // vus de dehors : verres sombres de jour (albédo ≈ 0,02-0,04), à peine allumés la nuit (part P_NEON : lumière de la nef)
+    0x5b5238,
+    0x26385e,   // vitrail bleu
+    0x5e2430,   // vitrail rubis
+    0x6a5226,   // vitrail ambre
 };
 campagne::Couleurs couleursModeles() {
     campagne::Couleurs c;
@@ -121,11 +129,23 @@ public:
         betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1; for (auto& o : g_objets) o = {};   // WFS-186 : placés de nouveau par CarteDecor::init
         fermesSon_.clear(); fontaineSon_.clear(); parois::effacer("campagne");   // WFS-261, WFS-275 (accroches)
         construireModeles();   // WFS-372 : une fois, avant la préparation du décor
+        eglises_.clear();      // WFS-410 : remplie par place()
         for (auto& v : postesClo_) v.clear(); postesLigne_.clear(); coteLigne_.clear();   // WFS-387 : files de poteaux, remplies par place()
         CarteDecor::init(r, g);
         for (auto& v : postesClo_) std::sort(v.begin(), v.end());   // WFS-387 : triées avant la préparation des morceaux (dessine, en parallèle)
         std::sort(postesLigne_.begin(), postesLigne_.end());
         if (active_) { lieux::poser("campagne", lieux::FERME, fermesSon_); lieux::poser("campagne", lieux::FONTAINE, fontaineSon_); }   // WFS-261
+        if (active_ && g.track) {   // WFS-410 (RG-04) : vitraux de chaque église, posés au chargement (aucune création en course) ; verres sombres
+            // de jour (albédo ≈ 0,02-0,04), la nuit à peine allumés de la couleur du verre par la lumière de la nef (émission × albédo)
+            Material mv; mv.rough = 0.35f; mv.flags = MAT_DOUBLE | MAT_EMTEX; mv.emissive = vec3{1, 1, 1} * (night_ ? 1.2f : 0.f);   // avis de l'agent 3D : verre ancien martelé (R2), nuit moins saturée (R3)
+            vitrailMat_ = r.makeMaterial(mv, &palTex_, nullptr, nullptr);
+            for (const EgliseVue& e : eglises_) {
+                const Pose p = poseAt(*g.track, e.seg);
+                const vec3 b = lateral(p, (float)e.side * e.lat, solY(zone(e.seg), e.seg, e.side, e.lat) - 0.2f);
+                Geo G, Gl; poserModele(G, mod_.egliseP.vitraux, b, p.r * -(float)e.side, p.f); poserModele(Gl, mod_.egliseL.vitraux, b, p.r * -(float)e.side, p.f);
+                vitraux_.push_back({e.seg, r.makeMesh(G.v, G.i), r.makeMesh(Gl.v, Gl.i)});   // près / loin (même choix que les morceaux du décor)
+            }
+        }
         for (auto& T : txt_) T = {};
         if (!active_) return;
         {   // tête du feu : une lampe de Ø 200 mm (disque à 12 côtés, face −z), dessinée 3 fois par feu
@@ -213,14 +233,15 @@ protected:
             if (it.t == T_LAMP) { poserLampe(n, it.side); return; }   // WFS-225 (RG-01) : mât et lumière de nuit ensemble
             if (it.t == T_VILLA) { const Pose pv = poseAt(*track_, n); const float s = (float)it.side; const vec3 x = pv.f * -s;   // WFS-161 (accroche) : maison du kit
                 archi::carte::poser(n, lateral(pv, s * it.lat, solY(z, n, it.side, it.lat) - 0.2f) - x * (it.w / 2), x, pv.r * -s, it.w, it.d, it.h, archi::Style::Village, (uint32_t)(n * 2 + (it.side > 0))); }
+            if (it.t == T_CHURCH) eglises_.push_back({n, it.side, it.lat});   // WFS-410 : vitraux de l'église (dessinés à part)
             if (it.t == T_VILLA || it.t == T_COMMERCE || it.t == T_CHURCH || it.t == T_FARM)   // WFS-275 (accroche) : façade côté route (écho)
                 parois::declarer("campagne", len(), n, it.side, it.t == T_CHURCH ? it.lat - 5 : it.t == T_FARM ? it.lat - 4 : it.lat,
-                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 18.f : it.t == T_FARM ? 11.f : it.w,
+                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 22.f : it.t == T_FARM ? 11.f : it.w,
                                  it.t == T_CHURCH ? 10.f : it.t == T_FARM ? 8.f : std::max(it.d, 6.f), it.t == T_CHURCH ? parois::ALPHA_PIERRE : parois::ALPHA_DUR);   // WFS-278 : obstacle, matériau
             {   // WFS-372 : premier objet de chaque sorte (banc des gros plans) ; ferme avec hangar, rang de vigne le plus proche
                 const int o = it.t == T_VINES && it.lat < (float)RW + 7 ? campagne::OB_VIGNE : it.t == T_FENCE ? campagne::OB_CLOTURE : it.t == T_BALES && it.k >= 3 ? campagne::OB_BOTTES
-                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : -1;
-                if (o >= 0 && g_objets[o].seg < 0 && n > 200) g_objets[o] = {n, it.side, it.lat};
+                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : it.t == T_CHURCH ? campagne::OB_EGLISE : -1;   // WFS-410 : église
+                if (o >= 0 && g_objets[o].seg < 0 && n > 200) g_objets[o] = {n, it.side, it.lat, it.t == T_CHURCH ? solY(z, n, it.side, it.lat) - 0.2f : 0.f};
             }
             {   // WFS-387 (RG-12, remarque 7) : poteaux réellement posés (clôture par côté, ligne électrique), pour leurs liaisons
                 const int64_t L = len(), m = ((n % L) + L) % L;
@@ -435,13 +456,11 @@ protected:
             toit(S, o + vec3{0, it.h + 0.9f, 0}, p.r, p.f, it.d * 1.05f, 1.8f, it.w * 1.05f, uv(it.roof == 2 ? C_ROOF2 : C_ROOF0));
             break;
         }
-        case T_CHURCH: {
+        case T_CHURCH: {   // WFS-410 (RG-04) : église romane de village modélisée (decor_campagne_eglise.h) : nef, abside, clocher-mur,
+            // portail et baies en plein cintre vers la route ; vitraux dessinés à part (animes, matériau du vitrail) ; plus de boîte ni de cône
             const vec3 b = lateral(p, s * it.lat, gy(it.lat) - 0.2f);
-            box(S, b, p.r, p.f, 10, 9, 18, uv(C_CHURCH));
-            toit(S, b + vec3{0, 10.2f, 0}, p.r, p.f, 10.6f, 2.6f, 18.6f, uv(C_ROOF0));
-            const vec3 tw = b - p.f * 10;
-            box(S, tw, p.r, p.f, 4.5f, 20, 4.5f, uv(C_CHURCH));
-            cone(S, tw + vec3{0, 20, 0}, 3.4f, 8, 8, uv(C_ROOF2), PI / 4 - p.th);
+            const campagne::Eglise& e = lod ? mod_.egliseL : mod_.egliseP;
+            poserModele(S, e.m, b, p.r * -s, p.f);
             break;
         }
         case T_ZEBRA: {   // passage piéton : bandes blanches parallèles à la route
@@ -739,6 +758,13 @@ protected:
                 }
             }
         }
+        for (const Vitraux& v : vitraux_) {   // WFS-410 : vitraux des églises des morceaux dessinés, au niveau de détail de leur morceau
+            int64_t a;
+            if (!dansMorceau(v.seg, c0 * CH, (c1 + 1) * CH, a)) continue;
+            const int64_t pc = (int64_t)std::floor(g.player->dist / SEG) / CH, ca = (int64_t)std::floor((double)a / CH);
+            const Mesh& m = std::abs(ca - pc) * CH * SEG_M > LOD_FAR_M ? v.loin : v.pres;   // comme CarteDecor::render (morceau allégé au-delà de 200 m)
+            if (m.indexCount) { r.draw(m, vitrailMat_, mat4::identity()); nS++; }
+        }
         nS += autoroutesAnimes(r, g, c0, c1);   // WFS-179
         nS += animauxAnimes(r, g, c0, c1);      // WFS-186
         if (rotors_.empty()) {
@@ -825,6 +851,9 @@ protected:
         sommetsMesh_ = Mesh{}; sommets_.clear(); libre_.clear(); aCol_ = aCascade_ = false;
         atlas_.detruire(r); for (auto& T : txt_) T = {};   // WFS-178
         if (lampeMesh_.vb.buf) r.destroy(lampeMesh_);
+        for (Vitraux& v : vitraux_) { r.destroy(v.pres); r.destroy(v.loin); }   // WFS-410
+        r.destroy(vitrailMat_);
+        vitraux_.clear(); eglises_.clear(); vitrailMat_ = Material{};
         for (int k = 0; k < 3; k++) { r.destroy(lampeOn_[k]); r.destroy(lampeOff_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
         lampeMesh_ = Mesh{}; fontaineSeg_ = feuSeg_ = -1; vigilance_.clear(); commerces_.clear();
         for (Model& m : autos_) if (m.ok) { r.destroy(m); m = Model{}; }   // WFS-179
@@ -840,8 +869,14 @@ private:
     // WFS-372 : modèles des objets agricoles (construits une fois, recopiés à chaque pose : un maillage par sorte d'objet)
     struct Modeles {
         campagne::Maille piquet[4], cepP[4], cepL[4], poteau[3], botteP, botteL, fermeP, fermeL, hangarP, hangarL, poteauP, poteauL;
+        campagne::Eglise egliseP, egliseL;   // WFS-410
         bool prets = false;
     } mod_;
+    struct EgliseVue { int64_t seg; int side; float lat; };   // WFS-410 : églises posées (segment, côté, distance à l'axe)
+    std::vector<EgliseVue> eglises_;
+    struct Vitraux { int64_t seg; Mesh pres, loin; };
+    std::vector<Vitraux> vitraux_;                            // WFS-410 : vitraux de chaque église (monde, près et loin), matériau à part
+    Material vitrailMat_{};
     void construireModeles() {
         if (mod_.prets) return;
         const campagne::Couleurs c = couleursModeles();
@@ -851,6 +886,12 @@ private:
         mod_.fermeP = campagne::ferme(c, false); mod_.fermeL = campagne::ferme(c, true);
         mod_.hangarP = campagne::hangar(c, mod_.botteL, false); mod_.hangarL = campagne::hangar(c, mod_.botteL, true);
         mod_.poteauP = campagne::poteauLigne(c, false); mod_.poteauL = campagne::poteauLigne(c, true);
+        {   // WFS-410 : église de village (pierre calcaire, tuiles canal, porte de bois, fer forgé, bronze, vitraux)
+            campagne::CouleursEglise e;
+            e.pierre = C_PIERRE0 + 2; e.pierre2 = C_PIERRE0; e.tuile = C_TUILE; e.porte = C_PORTE; e.fer = C_ACIER; e.bronze = C_BRONZE;
+            e.bois = C_PIQUET; e.vitrail[0] = C_VITRAIL0; e.vitrail[1] = C_VITRAIL1; e.vitrail[2] = C_VITRAIL2;
+            mod_.egliseP = campagne::eglise(e, false); mod_.egliseL = campagne::eglise(e, true);
+        }
         mod_.prets = true;
     }
     // WFS-387 (RG-12, remarque 7) : poteaux réellement posés par place() (clôture des champs, par côté ; ligne électrique, avec

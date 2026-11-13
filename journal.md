@@ -1547,3 +1547,30 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 20:29:03 — WFS-489 : 2e relecture, code approuvé, retour pour synchronisation (PR #395) (lead-dev)
 - Les 3 points du refus de 17:27 sont corrigés : banc `garage` sans `[ERREUR]` (Turquoise achetée, puis course), `course-p911-gris` identique à l'avant, conflit `test_score_course` réglé. J'ai construit et testé la branche moi-même sur 7697ebc6, puis sur 6ea38a6f (synchronisée avec WFS-507) : 127 tests CPU réussis ; bancs `garage`, `garage-couleurs` (0 écart) et `textes` (VERT) relancés. Approbation écrite dans la PR (en commentaire, à cause du même compte).
 - **Fusion refusée par GitHub** : de nouveaux conflits avec `main` sont apparus pendant la relecture (WFS-483 #397 dans `src/ui/garage.cpp`, WFS-490 #388, WFS-536 #399 dans `CMakeLists.txt`). Retour au développeur : synchroniser en gardant les deux côtés, relancer les tests et les 3 bancs, refaire les captures du garage (plaque de WFS-483). La prochaine relecture portera seulement sur la résolution et les captures.
+
+### 2026-11-13 20:45:14 — WFS-410 fusionné par le lead dev (lead-dev)
+- PR #398 relue sur 8be141c1 (2e revue) : les 3 points du refus de 20:08 sont corrigés (`tests-cpu.log` et section Tests CPU ; description à jour ; corniche de la devanture faite avec `archi::details::corniche`, plus de boîte). Captures `carte-ville-mobilier-terrasse` jour et nuit ouvertes : haut mouluré, aucune régression. Avis agent 3D « VALIDÉ avec réserves » sur 8be141c1.
+- Construction et **129 tests CPU réussis** (449 s), refaits par le lead dev sur la branche fusionnée localement avec `main` (WFS-401 compris).
+- « ✅ Approuvé » en commentaire (GitHub refuse l'approbation pour le même compte), fusion en squash **19279c41**. WFS-410 → 🟡 À valider (utilisateur) ; WFS-471 → ⏳ Prêt (republier les paquets de la Corniche et de la Ville). Réserves R1, R6, R7 et l'église au loin sans capture : pour le PO.
+
+### 2026-11-13 20:45:28 — WFS-537 attribué à Claude, agent dev3d (01UY1Vv4Hv) (po-scrum-master)
+- Demande : nouvelle session `@dev` (développeur artiste 3D, session_01UY1Vv4HvRfWvDZhYEc8aco), aucun ticket avant ; aucun souhait de l'utilisateur (« go »).
+- Choix : **WFS-537** (E22 « Score », P1, ⏳ Prêt depuis la fusion de WFS-535) : bandeau 🏆, E22 juste après les tickets prêts du moment, donc avant WFS-511 (33e de l'ordre 🏁), qui reste ⏳ Prêt pour la prochaine session `@dev`.
+- Zone : écran de fin des 4 modes (`src/game/modes_ecran.cpp`, accroches ≤ 10 lignes dans `course_system`, `course5_system`, `poursuite_system`, `duel_system`, annoncées au journal), textes `assets/textes/**`, compteur `src/ui/ecrans/compteur_etoiles.{h,cpp}` + accroche ≤ 10 lignes dans `src/ui/ecrans/menu.cpp`. Règles : `regles-de-gestion/WFS-537.md`, `regles-de-gestion/E22-score.md`.
+- Pièges : WFS-536 vient d'être fusionné (#399, crédit des ★ du score) : partir de `main` à jour (RG-06 tombe) ; WFS-489 (#395) en retour lead dev sur le garage : ne pas toucher `garage_*` (RG-09 : seulement ouvrir le garage) ; aucun bouton du menu déplacé ni rétréci (ordre du 2026-11-06).
+- Un seul ticket pour cette session (règle du 2026-11-09) : arrêt après la fusion par le lead dev.
+
+### 2026-11-13 20:45:50 — WFS-410 : fin de session (Claude, agent dev3d (01Us6uCveE))
+- WFS-410 fusionné par le lead dev (#398, 19279c41), statut 🟡 À valider (utilisateur) ; WFS-471 (`@cicd`) prêt pour republier les paquets de la Corniche et de la Ville.
+- Restes pour le PO : réserves de l'agent 3D R1 (pierre PBR de l'église → WFS-521), R6 (formes nues hors ticket : poteaux de la galerie, marquise du centre commercial, scooters), R7 (taux de fenêtres allumées par type de lieu), capture de l'église au-delà de 200 m ; commerces du village de la Campagne → WFS-518.
+- Session arrêtée (un seul ticket par session).
+
+### 2026-11-13 20:50:47 — Statuts automatiques, CI main #1054 (robot statuts)
+- Run rouge (push, commit aca8557), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 21:14:32 — WFS-537 : plan et accroches annoncées (Claude, agent dev3d (01UY1Vv4Hv))
+- Plan : composant commun `src/game/score_fin.{h,cpp}` (système ScoreFin, 405) : bloc « Score » posé **à côté** du panneau de l'écran de fin (lignes du score, total, « +N ★ » compté en 0,8 s, nouveau solde, « Nouveau record ! ») ; les boutons « Rejouer » / « Menu » ne bougent pas (RG-04). Compteur d'étoiles du menu `src/ui/ecrans/compteur_etoiles.{h,cpp}`, à gauche de « Réglages », même hauteur et même style ; appui → garage (RG-09). Textes `score.*`, `fin.score.*`, `menu.etoiles.lecteur` en FR / EN. Banc `WFS_BANC=score-fin` (vraies courses des 4 modes, FR et EN, sauvegarde active) et test CPU `test_score_fin`.
+- Remarque : l'écran de fin des modes n'est pas dans `modes_ecran.cpp` (choix du mode) mais dans chaque système de mode : accroches ≤ 10 lignes annoncées ici.
+- Accroches : `course_system.cpp` (4 lignes : panneau plus étroit en 16:9 quand le bloc est là, libellés des statistiques par `ui::textBoite`, `score_fin::poser`), `course5_system.cpp`, `poursuite_system.cpp`, `duel_system.cpp` (1 ligne `poser` chacun ; duel : + 2 lignes de banc, `benchDuelTextes(..., gagne)`), `profil_system.cpp` (6 lignes : le score calculé par WFS-536 est publié pour l'écran, effacé au départ et si la course est quittée), `menu.cpp` (4 lignes), `reglages.{h,cpp}` (1 accesseur `boutonReglages`), `desktop_main.cpp` (1 ligne de banc).
+- Limite connue : le jeu natif n'a pas encore de lien avec le lecteur d'écran d'Android (TalkBack) ; le texte lu (« 12 450 étoiles » / « 12,450 stars ») est prêt (`compteur_etoiles::texteLecteur`) et vérifié au banc.
