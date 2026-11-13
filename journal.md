@@ -1588,3 +1588,43 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Zone : E10, file « shader et rendu » : `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs` (dépliage UV sans changer la forme) ; clé `skin-<voiture>` dans `sauvegarde.*` (≤ 10 lignes). Pas de `garage*.cpp` (écran des skins = WFS-494).
 - Règles : `regles-de-gestion/WFS-492.md` + `regles-de-gestion/E18-personnalisation.md` ; skill `artiste-3d` obligatoire (modèles touchés), aucun logo ni sponsor réel, aucune forme nue.
 - Attention : WFS-539 (⏳ Prêt, E13, sonde IBL) peut toucher les mêmes shaders de voiture : se synchroniser avec `main` avant la PR ; WFS-484 (⏳ Prêt, plaques du trafic) touche `src/render/vehicule_plaque*` ; WFS-493 et 495 attendent ce ticket.
+
+### 2026-11-13 21:29:40 — WFS-489 : PR #395 resynchronisée, à relire (Claude, agent dev3d (01Us6uCxMq))
+- Code approuvé par le lead dev (7697ebc6, 6ea38a6f), fusion bloquée par les conflits avec WFS-483 (#397), WFS-490 (#388) et WFS-536 (#399).
+- Synchronisation 0b1f43b4 : plaque 3D de WFS-483 gardée dans `garage.cpp` (`render`, planche), couleur 2 posée juste avant le dessin de la voiture (remise à zéro par le renderer : la plaque ne la reçoit pas), finitions de WFS-490 indépendantes ; `test_boutique` (WFS-536) et `test_garage_achat` gardés. Accroche WFS-489 de `garage.cpp` inchangée en nombre de lignes.
+- Vérification : bancs `garage` (aucune `[ERREUR]`), `garage-couleurs` (0 écart), `textes` (VERT) ; `tests_cpu.sh build` 130 réussis (07099d25) ; captures refaites sur 0b1f43b4 et regardées ; réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-13 21:37:01 — WFS-499 passée en 1re tâche à prendre (po-scrum-master)
+- Ordre de l'utilisateur : « mets-moi la 499 en prochaine tâche à prendre ».
+- WFS-499 : ⏳ En attente → ⏳ Prêt, en tête de la file (bandeau 🥇 de `TACHES.md`), pour le premier `@dev` qui demande.
+- Risque noté : même panneau `garage_achat.*` que WFS-489 (code approuvé, fusion en attente) : synchronisation avec `main` après la fusion de WFS-489.
+
+### 2026-11-13 21:39:35 — WFS-501 passée en 2e tâche à prendre (po-scrum-master)
+- Ordre de l'utilisateur : « mets-moi la 501 dans les 5 tâches qui viennent ».
+- Vérifié : aucune dépendance ouverte (WFS-500 🟣 #392, WFS-504 🟣 #372). WFS-501 en 2e place, juste après WFS-499 (bandeau 🥈 de `TACHES.md`).
+
+### 2026-11-13 21:42:02 — Classement des 40 prochaines tâches, WFS-511 en 15e (po-scrum-master)
+- Ordre de l'utilisateur : WFS-511 en 15e tâche à prendre, classement à envoyer sur `main`.
+- Bandeau 📋 de `TACHES.md` : 40 tâches dans l'ordre (499, 501, … 511 en 15e …), type de session pour chacune ; tâches en cours (481, 489, 537, 491, 492) finies par leur session.
+
+### 2026-11-13 21:45:04 — WFS-538 passée en 8e place du classement (po-scrum-master)
+- Ordre de l'utilisateur : WFS-538 en 8e (elle attend WFS-482, elle-même après WFS-481). Bandeau 📋 de `TACHES.md` mis à jour ; WFS-511 reste 15e.
+
+### 2026-11-13 21:50:42 — WFS-489 fusionné par le lead dev (lead-dev)
+- PR #395, 3e revue sur 1deb4458, limitée à la résolution des conflits et aux captures : le diff du code de `src/`, `tests/` et `CMakeLists.txt` est identique à celui approuvé sur 6ea38a6f (seul un commentaire change) ; plaque WFS-483 et `test_boutique` WFS-536 gardés.
+- Construction et `tests_cpu.sh build` refaits par le lead dev : 130 tests réussis. Banc `garage-couleurs` relancé : 0 `[ERREUR]` (arrêté à 500 s, pendant les courses de nuit). Captures eb493dcf ouvertes (garage-0, planche, toit Noir, « Il te manque », course de nuit de la GT86).
+- Approbation écrite en commentaire (même compte GitHub), puis fusion en squash : ae6a8288. Statut 🟣, ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`. WFS-499 peut partir de ce panneau.
+
+### 2026-11-13 21:51:19 — WFS-489 fusionné, session terminée (Claude, agent dev3d (01Us6uCxMq))
+- PR #395 fusionnée en squash par le lead dev (ae6a8288) après 2 retours : banc `garage` faussé par la Turquoise devenue payante (corrigé dans le banc), puis conflits avec WFS-483, 490 et 536 (résolus en gardant les deux côtés). Ligne de `track-agent.md` en « ⏹️ session terminée ». Un seul sujet par session : pas de ticket suivant.
+- **Pour le PO** : `perso::donGarageProvisoire` (zone E3) n'est plus appelée : petit ticket E3 pour la retirer avec son test ; mesure d'endurance RC-E18-03 conseillée par le lead dev ; WFS-499 (`garage_achat.*`) peut partir. **Pour l'utilisateur** (ticket 🟡 ou recette) : à regarder sur l'APK de `main` : garage, 28 couleurs, onglet « Toit et rétros », achat et message « Il te manque N ★ ».
+
+### 2026-11-13 21:55:01 — Statuts automatiques, CI main #1056 (robot statuts)
+- Run rouge (push, commit 19279c4), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 21:55:46 — WFS-481 : retour du lead dev corrigé, PR #379 à relire (Claude, agent dev3d (01Us6uCvhS))
+- Bloquant 1 (tests CPU) : partie « Tests CPU » dans la PR et `qa/pr/WFS-481/tests-cpu.log` : 130 tests réussis sur `e24205e3` (branche synchronisée avec main, WFS-505 compris).
+- Bloquant 2 (émulateur du matin) : l'écran écrit ses points d'appui au journal ; nouvelle étape `profil()` dans `tools/qa/emulateur.sh` (accroche autorisée par le PO, avis expert CI / CD « OK », ses 3 changements appliqués) : « Petit » puis « C'est parti ». Vérification réelle aux bancs du matin, après la fusion (pas de CI de branche).
+- Non bloquants : code mort retiré, touches grisées opaques, focus de la manette limité à l'écran.
+- Revérifié sur le code synchronisé : banc `creation` FR et EN 0 écart, 12 captures refaites, banc `cgu` 0 écart. Réponse point par point dans la PR, lead dev rappelé.
