@@ -1,0 +1,49 @@
+OK    course à 5 : 1er 1000, 2e 700, 3e 500, 4e 350, 5e 250
+OK    course à 5 : place hors bornes : 0 point de place, sans erreur
+OK    duel gagné : 1000
+OK    duel perdu : 400
+OK    Poursuite gagnée : 1000
+OK    Poursuite perdue avec 300 points restants : 300 + 0,5 × 300 = 450
+OK    course solo terminée, 2 500 points de distance : 600 + 250 = 850
+OK    course solo : part de la distance plafonnée à 400 (600 + 400)
+OK    course solo : compteur de distance énorme : plafond 400, sans débordement
+OK    course solo sans compteur de distance : 600
+OK    record battu : +300, « nouveau record »
+OK    à 5 % du record (105 s pour 100 s) : +150, pas de nouveau record
+OK    à plus de 5 % du record : 0
+OK    record égalé (pas battu) : +150 (proche)
+OK    1re course sur cette carte : +150
+OK    0 choc : +200
+OK    1 choc : +100
+OK    2 chocs : +100
+OK    3 chocs : 0
+OK    chocs inconnus : 0, sans erreur
+OK    course à 5 : 3 dépassements : +60
+OK    course à 5 : dépassements plafonnés à +200
+OK    course à 5 : dépassements énormes : +200, sans débordement
+OK    course à 5 : en tête au dernier tour : +100
+OK    course à 5 : pas en tête au dernier tour : 0
+OK    Poursuite : aucun contact avec la police : +200
+OK    Poursuite : 2 contacts avec la police : 0
+OK    Poursuite : arrivée avec 50 % du score : +100
+OK    Poursuite : arrivée avec 49,9 % du score : 0
+OK    Poursuite perdue : pas d'« arrivée » : défi du score à 0
+OK    duel : jamais derrière après la mi-course : +150
+OK    duel : gagné avec 3,5 s d'avance : +100
+OK    duel : 3,0 s d'avance (pas plus de 3 s) : 0
+OK    course solo : tous les checkpoints sans retard : +150
+OK    course solo : nitro jamais vide : +100
+OK    course solo : compteurs de défis absents : 0, sans erreur
+OK    borne basse : 250 points → 5 ★ (pas 3)
+OK    borne haute : 1800 points à 10 par ★ → 40 ★ (pas 180)
+OK    conversion : 1800 points à 85 par ★ → 21 ★ (21,2 arrondi)
+OK    course à 5 moyenne (3e, 1 choc, 2 dépassements) : 640 points → 8 ★
+OK    duel gagné (2 chocs, jamais derrière) : 1250 points → 15 ★
+OK    course quittée : aucune ligne, 0 point, 0 ★
+OK    duel : adversaire parti à 12 s : 0 point, 0 ★
+OK    duel : adversaire parti à 45 s : score normal (1000 + 200)
+OK    configgame.json : place_1 = 1500 et 50 points par ★ lus → 1500 points, 30 ★
+OK    configgame.json : points_par_etoile = 0 refusé (hors bornes) : valeur du code (85)
+OK    configgame.json : min > max : min ramené à max
+OK    valeurs du code = barème de départ du PO (points par ★ 85, bornes 5 et 40)
+OK : 0 échec(s)
