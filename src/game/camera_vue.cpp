@@ -19,6 +19,7 @@
 #include "../world/meteo.h"                  // WFS-197 (RG-06) : pluieActive (lecture)
 #include "../ui/hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../ui/text.h"
+#include "../ui/langue.h"   // WFS-506 : nom de la vue en français ou en anglais
 #include "../../third_party/stb/stb_image.h"   // WFS-235 : banc (lecture des captures, part cachée par l'intérieur)
 #include "cars.h"
 #include "commandes_tactiles.h"   // WFS-98 : dessin2d (biseau à bords lissés)
@@ -351,7 +352,11 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (!boutonVisible(g) || !ui::fontReady()) { g_bouton = {}; return; }
         const float k = g.uiHeight / 720.f;
+        // WFS-506 (RG-01, RC-E20-04) : bouton mesuré sur le nom français de la vue (taille identique dans les deux langues, comme
+        // pause.cpp), nom dessiné dans la langue active (clés vue.* de WFS-504, partagées avec les Réglages)
         const std::string t = ui::majuscules(VUES[(int)vueCamera()].nom);
+        static const char* const CLES[VUE_NOMBRE] = {"vue.poursuite", "vue.capot", "vue.cockpit", "vue.proche"};   // ordre de VueCamera
+        const std::string nom = ui::majuscules(ui::tr(CLES[(int)vueCamera()]));
         hud::BoutonHud menu, b;
         hud::rangeeBoutons(g.uiWidth, g.uiHeight, g.marges, t, menu, b);
         const float x = b.x, y = b.y, w = b.w, h = b.h, ic = b.icone;
@@ -363,7 +368,8 @@ public:
         r.uiRect(ix + 3 * u, iy + 7 * u, 18 * u, 12 * u, c);
         r.uiRect(ix + 8.6f * u, iy + 5 * u, 6.8f * u, 2 * u, c);
         r.uiCircle(ix + 12 * u, iy + 13.5f * u, 3.3f * u, hex(BG, 0.9f));
-        ui::text(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), b.texte, t, c, ui::GAUCHE, 0.1f, false);
+        ui::textBoite(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), ui::width(b.texte, t, 0.1f), b.texte, b.texte, nom, c,
+                      ui::GAUCHE, 0.1f, false);
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {

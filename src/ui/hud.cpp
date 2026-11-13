@@ -2,6 +2,7 @@
 #include "hud.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include "../core/log.h"
 #include "../core/system.h"
@@ -15,6 +16,7 @@
 #include "minicarte.h"         // WFS-173 : banc de la mini-carte
 #include "text.h"
 #include "toasts.h"
+#include "../game/textes_course.h"   // WFS-506 : textes en français ou en anglais
 
 namespace wfs {
 namespace {
@@ -130,9 +132,13 @@ public:
             const bool bas = !ligne && c->timeLeft < 8;   // .time-value.low
             const std::string t = ligne ? ui::chrono(c->raceTime) : ui::decimal(std::max(0.0, c->timeLeft), 1);
             const std::string dist = ligne ? ui::majuscules(ui::decimal(std::max(0.0, c->duelFinish - pl.dist) * M / 1000, 2) + " km") : "";
-            const std::string lib2 = ligne ? "Arrivée" : "Checkpoint " + std::to_string(c->level + 1);
+            // WFS-506 (RG-01) : libellés par ui::tr ; « Checkpoint n » écrit dans un tampon réutilisé (RG-04)
+            static std::string tamponCp;
+            char n[16]; std::snprintf(n, sizeof n, "%d", c->level + 1);
+            const std::string& lib2 = ligne ? ui::tr("hud.arrivee") : textes::remplir(tamponCp, "hud.checkpoint", n);
+            const std::string& libTemps = ui::tr("hud.temps");
             const float tp = hud::CHRONO_PX * k, ap = ARRIVEE_PX * k, m = hud::TEMPS_MARGE * k, ecart = 8 * k;
-            const float l1 = ui::width(tp, t, 0) + ecart + largeurLabel(k, "Temps");
+            const float l1 = ui::width(tp, t, 0) + ecart + largeurLabel(k, libTemps);
             const float l2 = largeurLabel(k, lib2) + (ligne ? ecart + ui::width(ap, dist, 0) : 0);
             const float w = std::max(hud::TEMPS_L * k, 2 * m + std::max(l1, l2)), h = hud::TEMPS_H * k, x = mg.gauche + gl, y = mg.haut + gt;
             r.uiRect(x, y, w, h, FOND_PANNEAU);
@@ -140,7 +146,7 @@ public:
             // WFS-48 : .time-value en italique (font-style: italic du web)
             halo(r, x + m, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k, true);
             ui::text(r, x + m, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false, true);
-            labelSurBase(r, x + m + ui::width(tp, t, 0) + ecart, base1, k, "Temps");
+            labelSurBase(r, x + m + ui::width(tp, t, 0) + ecart, base1, k, libTemps);
             const float base2 = base1 + 9 * k + CAPITALES * ap;   // 9 px entre les deux lignes de chiffres
             labelSurBase(r, x + m, base2, k, lib2);
             if (ligne) ui::text(r, x + m + largeurLabel(k, lib2) + ecart, base2 - BASE * ap, ap, dist, hex(TEXTE), ui::GAUCHE, 0, false, true);
@@ -153,15 +159,18 @@ public:
             const float w = hud::SCORE_L * k, h = (c->combo > 1 ? hud::SCORE_H_COMBO : hud::SCORE_H) * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
             r.uiRect(x, y, w, h, FOND_PANNEAU);   // WFS-135 (ANO-64) : fond opaque, l'enseigne derrière ne se lit plus
             const float xr = x + w - pad;
-            label(r, xr, y + 8 * k, k, "Score", ui::DROITE);
+            label(r, xr, y + 8 * k, k, ui::tr("hud.score"), ui::DROITE);
             // WFS-48 : .score-value et .combo en italique ; WFS-135 : ombre de 2 px sous les chiffres ; WFS-245 : chiffres 40 (au lieu
             // de 34), plus grands que l'étiquette, sous elle (capitales de l'étiquette de 14 à 28 px, chiffres de 36 à 56 px du haut)
             const float sp = hud::SCORE_PX * k, sb = y + 8 * k + BASE * labelPx(k) + 8 * k + CAPITALES * sp, sy = sb - BASE * sp;
             ui::text(r, xr, sy + 2 * k, sp, ui::nombre(c->score(pl)), vec4{0, 0, 0, 0.6f}, ui::DROITE, 0, false, true);
             ui::text(r, xr, sy, sp, ui::nombre(c->score(pl)), hex(TEXTE), ui::DROITE, 0, false, true);
             g_surfaceHud += w * h / (k * k);
-            if (c->combo > 1)   // .combo : cyan, 16 px
-                ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
+            if (c->combo > 1) {   // .combo : cyan, 16 px
+                static std::string tamponCombo;   // WFS-506 (RG-04)
+                char n[16]; std::snprintf(n, sizeof n, "%d", c->combo);
+                ui::text(r, xr, y + 66 * k, 16 * k, textes::remplir(tamponCombo, "hud.combo", n), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
+            }
         }
         const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));
         const bool rouge = v > 300, arriere = (pl.speed < -1 || pl.reversing) && g_kmhForce < 0;   // WFS-108 : « R » dès le passage en marche arrière
@@ -172,7 +181,7 @@ public:
         // à côté du score, le panneau ne se cale plus à sa droite
         // WFS-245 : chiffres 40 (au lieu de 28) et étiquette 27, marges de 10 px, hauteur de 40 px
         if (etatCockpit().actif) {
-            const std::string lib = arriere ? "R · km/h" : "km/h";
+            const std::string& lib = ui::tr(arriere ? "hud.kmh_arriere" : "hud.kmh");
             const float tp = hud::VITESSE_COCKPIT_PX * k, mp = 10 * k, wd = ui::width(tp, "000", 0), h = 40 * k;
             const float w = mp + wd + 6 * k + largeurLabel(k, lib) + mp;
             const float x = mg.gauche + gl + hud::TEMPS_L * k - w, y = mg.haut + gt + 112 * k + 10 * k;
@@ -198,7 +207,7 @@ public:
             compteur(r, cx, ccy, k, v);
             ui::text(r, cx, ccy - 30 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
             const vec4 clair = hex(ETIQUETTE_ARC);
-            label(r, cx, ccy + 8 * k - (BASE - CAPITALES) * labelPx(k), k, arriere ? "R · km/h" : "km/h", ui::CENTRE, &clair);
+            label(r, cx, ccy + 8 * k - (BASE - CAPITALES) * labelPx(k), k, ui::tr(arriere ? "hud.kmh_arriere" : "hud.kmh"), ui::CENTRE, &clair);
             if (arriere) {   // WFS-296 : à gauche du compteur, à mi-hauteur (au-dessus, elle cachait la voiture du joueur)
                 const float hp = 64 * k, wp = hp * 0.95f + hp * 0.176f;
                 pastilleArriere(r, cx - R - 14 * k - wp, ccy - hp * 0.5f, hp, k);
@@ -206,7 +215,7 @@ public:
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
             const vec4 lumineux = hex(SUCCESS);
             const float w = 112 * k, x = cx - w / 2, pad = 0;
-            label(r, cx, ccy + 29 * k - (BASE - CAPITALES) * labelPx(k), k, "Nitro", ui::CENTRE, pl.nitroOn ? &lumineux : &clair);
+            label(r, cx, ccy + 29 * k - (BASE - CAPITALES) * labelPx(k), k, ui::tr("hud.nitro"), ui::CENTRE, pl.nitroOn ? &lumineux : &clair);
             const float gap = 2 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 9 * k, cy = ccy + 64 * k;
             for (int i = 0; i < 10; i++) {
                 const float xi = x + pad + i * (cw + gap);
@@ -224,7 +233,8 @@ WFS_SYSTEM(Hud, 420)   // interface (400-499) : après le texte (400), avant le 
 // WFS-429 : une seule source pour la place et la taille des boutons « Menu » et « Caméra » (dessin et zones de toucher)
 void hud::rangeeBoutons(float W, float H, const Marges& m, const std::string& libelleCamera, BoutonHud& menu, BoutonHud& camera) {
     const float k = H / 720.f, tp = BOUTON_TEXTE * k * BOUTON_ECHELLE;
-    menu = mesuresBouton(k, ui::width(tp, ui::majuscules("Menu"), 0.1f));
+    // WFS-506 (RC-E20-04) : largeur mesurée sur le texte français (« Menu » : même mot en anglais), bouton identique dans les deux langues
+    menu = mesuresBouton(k, ui::width(tp, ui::majuscules(ui::trLangue("hud.menu", ui::langue::Langue::Francais)), 0.1f));
     camera = mesuresBouton(k, ui::width(tp, libelleCamera, 0.1f));
     placerBoutons(W, H, m, menu, camera);
 }

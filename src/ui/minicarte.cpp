@@ -30,6 +30,7 @@
 #include "ecrans/reglages.h"   // gaucher (lecture seule)
 #include "navigation.h"
 #include "text.h"
+#include "../game/textes_course.h"   // WFS-506 : consignes en français ou en anglais
 
 namespace wfs {
 namespace {
@@ -439,8 +440,9 @@ private:
         P.rect(x, y + h - 2 * u, w, 2 * u, hex(ACCENT2, 0.9f));                   // liseré cyan : information
         const float ic = FLECHE * u, cx = x + FLECHE_X * u + ic / 2, cy = y + FLECHE_Y * u + ic / 2;
         fleche(P, pr.m, pr.sortie, {cx, cy}, ic, k);
-        const std::string dist = pr.m == nav::Manoeuvre::Aucune ? std::string() : nav::texteDistance(pr.distanceM);
-        const std::string cons = nav::texteConsigne(pr), d = dist.empty() ? "Tout droit" : dist;
+        // WFS-506 (RG-02) : consigne et distance dans la langue active (distances en mètres comme avant)
+        const std::string dist = pr.m == nav::Manoeuvre::Aucune ? std::string() : texteDistance(pr.distanceM);
+        const std::string cons = texteConsigne(pr), d = dist.empty() ? ui::tr("nav.tout_droit") : dist;
         // rangée 1 : distance à droite de la flèche, capitales centrées sur elle (y + 18)
         const float tx = x + DISTANCE_X * u, lwD = x + w - CONSIGNE_X * u - tx;
         const float dp = taille(d, DISTANCE_PX * u, DISTANCE_MIN * u, lwD), baseD = y + DISTANCE_MILIEU * u + 0.5f * hud::CAPITALES * dp;
@@ -452,6 +454,32 @@ private:
         if (pr.section >= 0 && pr.section + 1 < (int)secs.size())
             g_etat.rueSuivante = nav::nomRue(g.map ? g.map->id : "", g.map ? g.map->seed : 0, pr.section + 1, secs[pr.section + 1].type, secs[pr.section + 1].autoroute);
     }
+    // WFS-506 (RG-02) : textes du bandeau par ui::tr ; nav::texteConsigne et nav::texteDistance (français, navigation.h) restent la
+    // référence des tests de navigation
+    static const char* cleManoeuvre(nav::Manoeuvre m) {
+        switch (m) {
+            case nav::Manoeuvre::LegerGauche: return "nav.leger_gauche";
+            case nav::Manoeuvre::LegerDroite: return "nav.leger_droite";
+            case nav::Manoeuvre::Gauche: return "nav.gauche";
+            case nav::Manoeuvre::Droite: return "nav.droite";
+            case nav::Manoeuvre::SerreGauche: return "nav.serre_gauche";
+            case nav::Manoeuvre::SerreDroite: return "nav.serre_droite";
+            case nav::Manoeuvre::EpingleGauche: return "nav.epingle_gauche";
+            case nav::Manoeuvre::EpingleDroite: return "nav.epingle_droite";
+            case nav::Manoeuvre::Lacets: return "nav.lacets";
+            case nav::Manoeuvre::Chicane: return "nav.chicane";
+            case nav::Manoeuvre::RondPoint: return "nav.rond_point";
+            case nav::Manoeuvre::Feux: return "nav.feux";
+            case nav::Manoeuvre::Arrivee: return "nav.arrivee";
+            default: return "nav.continuer";
+        }
+    }
+    static std::string texteConsigne(const nav::Prochaine& p) {   // « Au rond-point, 3e sortie » / « At the roundabout, take the 3rd exit »
+        if (p.m != nav::Manoeuvre::RondPoint) return ui::tr(cleManoeuvre(p.m));
+        std::string o, t;
+        return textes::remplir(t, "nav.rond_point_sortie", textes::ordinal(o, p.sortie));
+    }
+    static std::string texteDistance(double m) { return m >= 15 ? nav::texteDistance(m) : ui::tr("nav.maintenant"); }   // « Maintenant » / « Now »
     // WFS-245 (RG-09) : facteur des tailles du bandeau et du nom de rue (px de référence × k), réduit sur un cadre de moins de 150
     static float echelle(const Cadre& carre, float k) { return k * std::min(1.f, carre.w / (COTE * k)); }
     // taille du texte (minicarte::tailleTexte) mesurée avec la police chargée
@@ -525,7 +553,10 @@ private:
         const float w = std::min(lw, ui::width(px, s)) + 8 * u, x = carre.x + (carre.w - w) / 2, y = carre.y + carre.h - h - NOM_BAS * u;
         P.rect(x, y, w, h, nuit_ ? hex(0x0E1117, 0.88f) : hex(0xFFFFFF, 0.92f));
         const float base = y + h / 2 + 0.5f * hud::CAPITALES * px;
-        ui::text(r, carre.x + carre.w / 2, base - hud::BASE * px, px, s, nuit_ ? hex(TEXTE) : hex(0x3C4043), ui::CENTRE, 0, false);
+        {
+            const textes::NomPropre nomPropre;   // WFS-506 (RG-02) : nom de rue inventé, inchangé en anglais
+            ui::text(r, carre.x + carre.w / 2, base - hud::BASE * px, px, s, nuit_ ? hex(TEXTE) : hex(0x3C4043), ui::CENTRE, 0, false);
+        }
         g_etat.tailleRue = px;
         (void)pal;
     }

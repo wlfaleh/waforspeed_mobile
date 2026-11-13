@@ -231,3 +231,114 @@ cgu.case=I have read and I accept
 cgu.fermer=Close
 cgu.refus=The game cannot start without your consent
 cgu.fermeture=Closing the game…
+
+
+# ---- Race (WFS-506): HUD, toasts, navigation map, race end of the 4 modes
+# ordinal numbers (places, roundabout exits)
+ordinal.1=1st
+ordinal.2=2nd
+ordinal.3=3rd
+ordinal.4=4th
+ordinal.5=5th
+ordinal.6=6th
+ordinal.n={1}th
+# HUD (src/ui/hud.cpp, touch controls, ghost label)
+hud.temps=Time
+hud.arrivee=Finish
+hud.checkpoint=Checkpoint {1}
+hud.score=Score
+hud.combo=Combo ×{1}
+hud.kmh=km/h
+hud.kmh_arriere=R · km/h
+hud.nitro=Nitro
+hud.menu=Menu
+hud.gaz=Gas
+hud.frein=Brake
+hud.fantome=Your best
+# toasts (src/ui/toasts.cpp)
+toast.checkpoint=Checkpoint {1}
+toast.quasi=Near miss
+toast.quasi_combo=Near miss ×{1}
+toast.accident=Crash!
+toast.combo_perdu=Combo lost
+toast.feu_grille=Red light run
+toast.nouveaux_traces=New tracks
+toast.nouveaux_records=new records to beat
+# navigation map (src/ui/minicarte.cpp); invented street names are not translated
+nav.maintenant=Now
+nav.tout_droit=Straight ahead
+nav.leger_gauche=Keep left
+nav.leger_droite=Keep right
+nav.gauche=Turn left
+nav.droite=Turn right
+nav.serre_gauche=Sharp left
+nav.serre_droite=Sharp right
+nav.epingle_gauche=Hairpin left
+nav.epingle_droite=Hairpin right
+nav.lacets=Winding road
+nav.chicane=Chicane
+nav.rond_point=At the roundabout
+nav.rond_point_sortie=At the roundabout, take the {1} exit
+nav.feux=At the lights, go straight
+nav.arrivee=Finish
+nav.continuer=Continue straight
+# race end (Checkpoint, 5-Car Race, Pursuit, Duel); titles already in capitals
+fin.temps_ecoule=Time's up
+fin.distance=Distance
+fin.vitesse_max=Top speed
+fin.quasi=Near misses
+fin.checkpoints=Checkpoints
+fin.rejouer=Restart
+fin.menu=Menu
+fin.nouveau_record=New record
+fin.record=Best
+fin.victoire=VICTORY
+fin.place={1} PLACE
+fin.arrive=FINISHED
+fin.temps=Time
+# 5-Car Race (src/game/course5_system.cpp)
+c5.position=POSITION {1}
+c5.arrive=Finished
+c5.surtitre=5-CAR RACE · {1} KM
+c5.pilote=Driver
+c5.record={1} place · {2}
+# Pursuit (src/game/poursuite_system.cpp): panel, announcements, point losses, race end
+police.score=Score
+police.police=Police
+police.renfort=POLICE BACKUP
+police.embouteillage=TRAFFIC JAM
+police.barrage=POLICE ROADBLOCK
+police.deboite=WATCH OUT: CAR PULLING OUT
+police.travaux=ROADWORKS: LANE CLOSED
+police.accident=CRASH AHEAD
+police.camion=TRUCK ACROSS THE ROAD
+police.ralentisseur=SPEED BUMP
+police.perte=-{1} {2}
+police.raison.trafic=HIT TRAFFIC
+police.raison.glissiere=HIT THE GUARDRAIL
+police.raison.police=HIT THE POLICE
+police.raison.colle=POLICE ON YOUR BUMPER
+police.raison.ralentisseur=SPEED BUMP TOO FAST
+police.raison.plot=TRAFFIC CONE
+police.raison.camion=HIT THE TRUCK
+police.raison.banc=BENCH STOP
+police.surtitre=POLICE PURSUIT · {1} KM
+police.arrete=BUSTED
+police.score_final=Final score
+police.chocs=Hits: traffic / guardrail / police
+police.voitures=Police cars
+police.record_victoire=Victory · {1} pts
+police.record_arrete=Busted · {1} km
+# Duel (src/game/duel_system.cpp)
+duel.toi={1} (you)
+duel.position_reconnexion=POSITION {1} · RECONNECTING…
+duel.position_ping=POSITION {1} · {2} MS
+duel.sur.partis=YOUR OPPONENTS LEFT THE DUEL
+duel.sur.parti=YOUR OPPONENT LEFT THE DUEL
+duel.sur.continue=FINISHED · THE RACE GOES ON
+duel.sur.roule=FINISHED · YOUR OPPONENT IS STILL DRIVING
+duel.sur.termine=DUEL OVER
+duel.parti=Left
+duel.pret=READY…
+duel.revanche=REMATCH
+duel.retour=BACK
