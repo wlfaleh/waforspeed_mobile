@@ -9,6 +9,19 @@
 #include <string>
 #include "../src/core/carte_cuite.h"
 #include "../src/ui/ecrans/paquets.h"
+#include "../src/ui/langue.h"
+
+namespace wfs {   // WFS-507 : les tables de langue (assets/textes) sont lues dans le dépôt
+bool readAsset(const std::string& chemin, std::vector<uint8_t>& out) {
+    std::ifstream f(std::string(WFS_SOURCE_DIR) + "/assets/" + chemin, std::ios::binary);
+    if (!f) return false;
+    out.assign(std::istreambuf_iterator<char>(f), {});
+    return true;
+}
+namespace ui {   // langue.cpp ne s'en sert que pour cleDuTexte (journal du banc, non utilisé ici) : capitales ASCII suffisent
+std::string majuscules(const std::string& s) { std::string m = s; for (char& c : m) if (c >= 'a' && c <= 'z') c = (char)(c - 32); return m; }
+}
+}
 using namespace wfs;
 using namespace wfs::ecrans;
 
@@ -40,10 +53,18 @@ int main(int argc, char** argv) {
     VERIFIER(versionApk("v0.1.7") == 7);
     VERIFIER(versionApk("dev") == 0);
     VERIFIER(versionApk(nullptr) == 0);
+    ui::langue::choisir(ui::langue::Choix::Francais);   // WFS-507 : messages en français pour la suite du test
     VERIFIER(texteMo(22771234) == "22 Mo");
     VERIFIER(texteMo(10) == "1 Mo");
     VERIFIER(texteMo(210LL << 20) == "210 Mo");
     VERIFIER(texteFormats(formats) == "astc,rgba8");
+    // WFS-507 (RG-02) : tailles et messages en anglais (MB), puis retour au français
+    ui::langue::choisir(ui::langue::Choix::Anglais);
+    VERIFIER(texteMo(22771234) == "22 MB");
+    VERIFIER(ui::tr("paquets.place", texteMo(30LL << 20), texteMo(12LL << 20)) == "Not enough space: 30 MB needed, 12 MB free");
+    VERIFIER(ui::tr("paquets.connexion") == "Connection required");
+    ui::langue::choisir(ui::langue::Choix::Francais);
+    VERIFIER(ui::tr("paquets.connexion") == "Connexion nécessaire");
 
     EtapePaquets e;
     double t = 0;

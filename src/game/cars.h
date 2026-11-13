@@ -80,12 +80,12 @@ inline const char* marque(const CarDef& c) { const NomVoiture* n = nomVoiture(c)
 inline const char* modele(const CarDef& c) { const NomVoiture* n = nomVoiture(c); return n ? n->modele : ""; }
 // crédit affiché (RG-03) : « Modèle 3D par <auteur> (<site>), <licence> · modèle modifié pour WaForSpeed », sans le titre
 // d'origine (qui nomme la vraie voiture : il reste dans assets/licences/ et store/credits.md, obligatoire pour CC-BY)
-inline std::string creditAffiche(const CarDef& c) {
+inline std::string auteurDuCredit(const CarDef& c) {   // WFS-507 : auteur seul, pour la phrase traduite du garage (garage.credit)
     const std::string cr = c.credit ? c.credit : "";
     const size_t p = cr.find("» par ");
-    const std::string auteur = p == std::string::npos ? cr : cr.substr(p + std::strlen("» par "));
-    return "Modèle 3D par " + auteur + " · modèle modifié pour WaForSpeed";
+    return p == std::string::npos ? cr : cr.substr(p + std::strlen("» par "));
 }
+inline std::string creditAffiche(const CarDef& c) { return "Modèle 3D par " + auteurDuCredit(c) + " · modèle modifié pour WaForSpeed"; }
 
 constexpr int TRAFIC_MODELES = 4;   // WFS-13 : modèles chargés par le trafic (les 4 premières voitures), variété : WFS-67
 constexpr int CAR_COUNT = sizeof(CARS) / sizeof(CARS[0]);

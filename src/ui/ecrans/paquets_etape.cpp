@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <cstdio>
 #include "../../core/log.h"
+#include "../langue.h"   // WFS-507 : messages par ui::tr
 
 namespace wfs {
 namespace ecrans {
@@ -27,7 +28,7 @@ int versionApk(const char* v) {
     for (size_t i = p + 1; i < s.size() && s[i] >= '0' && s[i] <= '9' && n < 100000000; i++) n = n * 10 + (s[i] - '0');
     return n;
 }
-std::string texteMo(long long o) { return std::to_string(std::max(1LL, (o + 524288) / 1048576)) + " Mo"; }
+std::string texteMo(long long o) { return ui::tr("unite.mo", std::to_string(std::max(1LL, (o + 524288) / 1048576))); }   // « 210 Mo » / « 210 MB » (WFS-507)
 
 bool EtapePaquets::demarrerAvec(SourcePaquets& s, const std::string& c, const std::vector<carte::FormatTexture>& formats, uint64_t e, int apk, double t) {
     source_ = &s; carte_ = c; fenetre_ = true; installe_ = false; secours_ = false; menu_ = false;
@@ -66,7 +67,7 @@ void EtapePaquets::avancer(double t) {
             reseau_ = source_->reseau();
             const long long libre = source_->placeLibre(), besoin = taille + taille / 10;   // RG-07 (le reste exact est revu par Java)
             if (libre >= 0 && libre < besoin) {
-                message_ = "Place insuffisante : " + texteMo(besoin) + " nécessaires, " + texteMo(libre) + " libres";
+                message_ = ui::tr("paquets.place", texteMo(besoin), texteMo(libre));
                 etat_ = Etat::Place;
                 WFS_LOG("paquets (WFS-306) : %s", message_.c_str());
                 break;
@@ -86,11 +87,11 @@ void EtapePaquets::avancer(double t) {
             if (tFini_ < 0) { tFini_ = t; installe_ = true; WFS_LOG("paquets (WFS-306) : %s installée (%s)", nom_.c_str(), texteMo(taille_).c_str()); }
             if (t - tFini_ >= FIN_AFFICHEE_S) finir(true, "téléchargé et vérifié");
         } else if (ph == SourcePaquets::SHA_FAUX || ph == SourcePaquets::ERREUR) {
-            message_ = ph == SourcePaquets::SHA_FAUX ? "Le paquet téléchargé est abîmé (deux essais)." : "Le téléchargement a échoué.";
+            message_ = ui::tr(ph == SourcePaquets::SHA_FAUX ? "paquets.abime_deux" : "paquets.echec");
             etat_ = Etat::Echec;
             WFS_LOG("paquets (WFS-306) : échec : %s", message_.c_str());
         } else if (ph == SourcePaquets::PLACE) {
-            message_ = "Place insuffisante : " + texteMo(taille_ + taille_ / 10) + " nécessaires, " + texteMo(source_->placeLibre()) + " libres";
+            message_ = ui::tr("paquets.place", texteMo(taille_ + taille_ / 10), texteMo(source_->placeLibre()));
             etat_ = Etat::Place;
         }
         break;
@@ -202,13 +203,13 @@ void CartesPaquets::avancer() {
 
 bool CartesPaquets::telecharger(const std::string& c, std::string& message) {
     message.clear();
-    if (!source_ || !suivi(c)) { message = "Paquet indisponible"; return false; }
-    if (source_->reseau() == 0) { message = "Connexion nécessaire"; WFS_LOG("paquets (WFS-307) : %s : %s", c.c_str(), message.c_str()); return false; }   // RG-05
+    if (!source_ || !suivi(c)) { message = ui::tr("paquets.indisponible"); return false; }
+    if (source_->reseau() == 0) { message = ui::tr("paquets.connexion"); WFS_LOG("paquets (WFS-307) : %s : %s", c.c_str(), message.c_str()); return false; }   // RG-05
     long long r = 0, t = 0;
     source_->phaseCarte(c, r, t);
     const long long libre = source_->placeLibre(), besoin = t + t / 10;   // RG-07 de WFS-306
-    if (t > 0 && libre >= 0 && libre < besoin) { message = "Place insuffisante : " + texteMo(besoin) + " nécessaires, " + texteMo(libre) + " libres"; WFS_LOG("paquets (WFS-307) : %s : %s", c.c_str(), message.c_str()); return false; }
-    if (!source_->installerCarte(c)) { message = "Paquet indisponible"; return false; }
+    if (t > 0 && libre >= 0 && libre < besoin) { message = ui::tr("paquets.place", texteMo(besoin), texteMo(libre)); WFS_LOG("paquets (WFS-307) : %s : %s", c.c_str(), message.c_str()); return false; }
+    if (!source_->installerCarte(c)) { message = ui::tr("paquets.indisponible"); return false; }
     suivi(c)->phase = SourcePaquets::ATTENTE;
     WFS_LOG("paquets (WFS-307) : %s : « Télécharger » (%s)", c.c_str(), texteMo(t).c_str());
     return true;

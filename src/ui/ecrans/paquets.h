@@ -163,6 +163,8 @@ const std::vector<std::string>& astuces();   // ≥ 15 textes courts (assets/tex
 
 // banc d'essai (WFS_BANC=paquets) : source factice qui copie pas à pas un paquet cuit (WFS-301) ; captures paquets-* et parcours
 int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string& racine);
+// WFS-507 : le même banc dans la langue de WFS_LANGUE, textes notés et vérifiés (garde-fou de WFS-504), captures textes-<fr|en>-paquets-*
+int benchPaquetsTextes(Game& g, Renderer& r, const std::string& out, const std::string& racine);
 
 } // namespace ecrans
 } // namespace wfs
