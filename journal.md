@@ -1564,3 +1564,20 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - WFS-410 fusionné par le lead dev (#398, 19279c41), statut 🟡 À valider (utilisateur) ; WFS-471 (`@cicd`) prêt pour republier les paquets de la Corniche et de la Ville.
 - Restes pour le PO : réserves de l'agent 3D R1 (pierre PBR de l'église → WFS-521), R6 (formes nues hors ticket : poteaux de la galerie, marquise du centre commercial, scooters), R7 (taux de fenêtres allumées par type de lieu), capture de l'église au-delà de 200 m ; commerces du village de la Campagne → WFS-518.
 - Session arrêtée (un seul ticket par session).
+
+### 2026-11-13 20:50:47 — Statuts automatiques, CI main #1054 (robot statuts)
+- Run rouge (push, commit aca8557), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 21:14:32 — WFS-537 : plan et accroches annoncées (Claude, agent dev3d (01UY1Vv4Hv))
+- Plan : composant commun `src/game/score_fin.{h,cpp}` (système ScoreFin, 405) : bloc « Score » posé **à côté** du panneau de l'écran de fin (lignes du score, total, « +N ★ » compté en 0,8 s, nouveau solde, « Nouveau record ! ») ; les boutons « Rejouer » / « Menu » ne bougent pas (RG-04). Compteur d'étoiles du menu `src/ui/ecrans/compteur_etoiles.{h,cpp}`, à gauche de « Réglages », même hauteur et même style ; appui → garage (RG-09). Textes `score.*`, `fin.score.*`, `menu.etoiles.lecteur` en FR / EN. Banc `WFS_BANC=score-fin` (vraies courses des 4 modes, FR et EN, sauvegarde active) et test CPU `test_score_fin`.
+- Remarque : l'écran de fin des modes n'est pas dans `modes_ecran.cpp` (choix du mode) mais dans chaque système de mode : accroches ≤ 10 lignes annoncées ici.
+- Accroches : `course_system.cpp` (4 lignes : panneau plus étroit en 16:9 quand le bloc est là, libellés des statistiques par `ui::textBoite`, `score_fin::poser`), `course5_system.cpp`, `poursuite_system.cpp`, `duel_system.cpp` (1 ligne `poser` chacun ; duel : + 2 lignes de banc, `benchDuelTextes(..., gagne)`), `profil_system.cpp` (6 lignes : le score calculé par WFS-536 est publié pour l'écran, effacé au départ et si la course est quittée), `menu.cpp` (4 lignes), `reglages.{h,cpp}` (1 accesseur `boutonReglages`), `desktop_main.cpp` (1 ligne de banc).
+- Limite connue : le jeu natif n'a pas encore de lien avec le lecteur d'écran d'Android (TalkBack) ; le texte lu (« 12 450 étoiles » / « 12,450 stars ») est prêt (`compteur_etoiles::texteLecteur`) et vérifié au banc.
+
+### 2026-11-13 21:24:08 — WFS-491 attribué à Claude, agent dev3d (01Us6uCwfT) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCwfTwaie75MYviBP8W, aucun ticket avant : règle « un seul sujet par session » respectée).
+- **WFS-491** — Garage : choix de la finition, prix 100-400 ★, aperçu (E18, P1, 13e du bandeau 🏁 ; 1er ticket permis : WFS-490 fusionné #388 à 19:44, WFS-504 fusionné). Branche `feature/waforspeed-491`.
+- Zone : `src/ui/garage_finition.*` (un ticket par fichier de panneau) ; `garage.cpp` / `garage_commun.*` : accroches ≤ 10 lignes annoncées ; textes par `ui::tr` (FR / EN, `assets/textes/**`) ; prix dans `configgame.json`. Achat « Acheter N ★ » : réutiliser celui de WFS-489 (`garage_achat.*`, PR #395 approuvée, en synchronisation) : se synchroniser avec `main` après sa fusion, ne pas le recopier.
+- Règles : `regles-de-gestion/WFS-491.md` + `regles-de-gestion/E18-personnalisation.md`.
+- Débloqués par les fusions de WFS-490, 483 et 500 : **WFS-492, 539, 484, 501** passent ⏳ Prêt. WFS-511 reste ⏳ Prêt.
