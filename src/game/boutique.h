@@ -8,14 +8,19 @@
 //   - voitures : prix dans configgame.json (boutique.voitures.<id>.prix) ; prix 0 = gratuite, possédée dès le départ ;
 //     voitures retirées (VOITURES_RETIREES de cars.h) jamais vendues ; achat : débit une seule fois (clé voitures-possedees) ;
 //   - essai gratuit : une course solo par voiture bloquée, une seule fois (clé essai-<voiture>=1, écrite au départ) ;
-//   - banc d'équilibrage : courses pour la 1re voiture et heures pour toutes les voitures (cibles ≈ 25 courses et ≈ 120 h).
+//   - banc d'équilibrage : courses pour la 1re voiture et heures pour toutes les voitures (cibles ≈ 25 courses et ≈ 120 h) ;
+//     WFS-536 : avec les étoiles du score (joueurs moyen, bon et débutant simulés), gain_course n'étant plus qu'un secours.
 // Prix lus dans config() à chaque appel : un prix changé dans configgame.json compte à la partie suivante, sans recompiler.
 // Thread principal (comme la sauvegarde). La sauvegarde n'est pas écrite ici : l'appelant appelle enregistrer().
 #pragma once
 #include <string>
 #include <vector>
 #include "personnalisation.h"
+#include "profil.h"
 #include "sauvegarde.h"
+#include "score_course.h"   // WFS-536 : types seulement (le calcul est dans score_course.cpp, lié par le jeu et le banc)
+
+namespace wfs { class Game; class Renderer; }
 
 namespace wfs::boutique {
 
@@ -27,8 +32,39 @@ long long solde(const Sauvegarde& s);
 void crediter(Sauvegarde& s, long long n, const char* raison);
 // retire n ★ si le solde suffit ; faux (rien de changé) sinon ou si n < 0
 bool debiter(Sauvegarde& s, long long n, const char* raison);
-// RG-01 : fin d'une course terminée (pas quittée) : boutique.gain_course ★ ; rend les étoiles créditées
-int crediterCourse(Sauvegarde& s);
+// fin d'une course terminée (pas quittée) ; rend les étoiles créditées :
+//   - WFS-536 (RG-01) : etoilesScore ≥ 0 = étoiles calculées par le score de la course (WFS-535, score_course.h), créditées telles quelles ;
+//   - WFS-536 (RG-02) : etoilesScore < 0 = calcul impossible : secours boutique.gain_course ★, noté au journal du jeu.
+int crediterCourse(Sauvegarde& s, int etoilesScore);
+
+// WFS-536 : records du mode au départ de la course (lus avant l'arrivée : le mode écrit son nouveau record à l'arrivée)
+struct RecordsDepart {
+    long long pointsSolo = 0;       // course solo : meilleur score (clé waforspeed-best) ; 0 = pas encore de record
+    long long tempsCourse5Ms = 0;   // course à 5 : temps du record (record-course5) ; 0 = pas encore de record
+    bool poursuite = false;         // Poursuite : un record existe déjà
+};
+RecordsDepart recordsDepart(const Sauvegarde& s);
+// WFS-536 : entrée du score (WFS-535) d'après la course notée au profil, ce qui est connu du jeu aujourd'hui :
+//   - place ou issue, score du mode (points de distance de la course solo, score restant de la Poursuite) ;
+//   - temps contre le record (RG-02 de WFS-535), records par mode (par carte : WFS-538) :
+//       course à 5 : temps contre record-course5 ; course solo : pas de chrono, le score joue le rôle du temps
+//       (temps = record ÷ score, record = 1 : score > record ⇔ « record battu », score ≥ record ÷ 1,05 ⇔ « proche ») ;
+//       Poursuite : pas de temps, seulement « 1re course » sans record ; duel : aucun record, aucun point de temps ;
+//   - chocs de la voiture du joueur (-1 : inconnus) ; duel : adversaireParti = secondes de course à son départ (-1 : resté) ;
+//   - défis : compteurs pas encore donnés par les modes (0 point, RG-04 de WFS-535).
+score::ResultatCourse resultatScore(const CourseJouee& c, const RecordsDepart& r, int chocs, double adversaireParti);
+
+// WFS-536 (RG-05) : une course = un seul crédit. depart() ouvre la course ; finir() crédite une seule fois puis la ferme :
+// un 2e appel (écran de fin rouvert, retour d'arrière-plan, quitter après l'arrivée) ne crédite plus rien.
+class GainCourse {
+public:
+    void depart() { ouverte_ = true; }
+    bool ouverte() const { return ouverte_; }
+    // quittée : 0 ★ ; sinon crediterCourse(s, etoilesScore) ; course déjà fermée (ou jamais ouverte) : 0 ★, rien de changé
+    int finir(Sauvegarde& s, bool quittee, int etoilesScore);
+private:
+    bool ouverte_ = false;
+};
 
 // ---- équivalents d'un prix (RG-02)
 // prix arrondi à la centaine supérieure, puis or, argent, bronze dans cet ordre : 2 200 ★ → « 3 or + 1 argent + 1 bronze » ;
@@ -82,5 +118,29 @@ std::vector<std::string> bilanPortefeuille(const Sauvegarde& s);   // solde, voi
 // banc WFS_BANC=equilibrage (sans rendu, < 1 s) : configgame.json lu, lignes au journal et dans <out>/equilibrage.txt ;
 // rend le nombre d'écarts aux bornes de RG-11 (0 : équilibré)
 int benchEquilibrage(const std::string& out);
+
+// ---- WFS-536 (RG-04) : équilibrage avec le vrai calcul du score (boutique_banc.cpp, lie score_course.cpp)
+// Joueurs simulés : place, chocs et temps tirés par un Mulberry32 à graine fixe (même résultat à chaque lancement), modes
+// joués à tour de rôle (course solo, course à 5, Poursuite, duel), avec seulement ce que le jeu donne au score (voir
+// profil_system.cpp : place ou issue, temps contre le record, chocs, score du mode ; défis pas encore comptés : 0 point).
+enum class Joueur { Moyen, Bon, Debutant };
+const char* nomJoueur(Joueur j);   // « moyen », « bon », « débutant »
+struct SimulationJoueur {
+    Joueur joueur = Joueur::Moyen;
+    double etoilesMoyennes = 0;      // ★ par course, sur toutes les courses simulées
+    int etoilesMin = 0, etoilesMax = 0;
+    long long coursesPremiere = 0;   // courses pour acheter la 1re voiture (Equilibrage::prixPremiere)
+    long long coursesVoitures = 0; double heuresVoitures = 0;   // toutes les voitures payantes (« tout débloquer », RG-11 de WFS-498)
+    long long coursesTout = 0; double heuresTout = 0;           // pour information : voitures + personnalisation
+};
+SimulationJoueur simulerJoueur(Joueur j, const Equilibrage& e);
+std::vector<std::string> bilanJoueur(const SimulationJoueur& sj);
+// bornes de RG-04 : moyen : 1re voiture en 22 à 28 courses, tout débloquer en 108 à 132 h ; débutant : 1re voiture en 40 courses au plus ;
+// vide si bon, sinon une ligne par écart (le bon joueur est seulement affiché)
+std::vector<std::string> verifierJoueur(const SimulationJoueur& sj);
+
+// WFS-536 : banc WFS_BANC=score-etoiles (score_banc.cpp, moteur et banc seulement) : vraie course à 5 terminée puis quittée,
+// sauvegarde active dans un fichier du banc ; solde avant / après, aucun 2e crédit ; rend le nombre d'écarts (0 : bon)
+int benchScoreEtoiles(Game& g, Renderer& r, const std::string& out);
 
 } // namespace wfs::boutique

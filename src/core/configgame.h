@@ -126,7 +126,7 @@ struct ConfigJeu {
         // WFS-498 (RG-03, RG-04) : prix des voitures en étoiles (ordre de VOITURES_IDS) ; 0 = gratuite (p208, abarth, gt86) ;
         // x5, a45, elantra : retirées (VOITURES_RETIREES de src/game/cars.h), jamais vendues quel que soit leur prix. Total vendu : 24 350 ★
         int prixVoiture[VOITURES_NB] = {600, 2200, 3500, 3000, 0, 0, 300, 300, 1000, 0, 2400, 0, 1200, 250, 0, 0, 1000, 800, 1800, 6000};
-        int gainCourse = 10;              // WFS-498 (RG-01) : ★ créditées à la fin d'une course terminée (en attendant l'étape « score »)
+        int gainCourse = 10;              // WFS-498 (RG-01) ; WFS-536 (RG-02) : secours, ★ d'une course terminée dont le score ne peut pas être calculé
         double minutesParCourse = 2.96;   // WFS-498 (RG-11) : durée moyenne d'une course pour le banc d'équilibrage (120 h pour 24 350 ★)
         // WFS-498 (RG-02) : packs de médailles du market (pas une monnaie) : étoiles du pack et prix en euros ; bronze, argent, or
         struct Medaille { int etoiles; double euros; };

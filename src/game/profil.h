@@ -8,6 +8,7 @@
 //   stats=courses;metres;vmax;frolements;victoires                                  (RG-07)
 //   voiture-<id>=metres;courses       km et courses par voiture (voiture préférée, RG-09)
 //   historique-01=mode;voiture;date;quittee;victoire;place;temps_ms;score   … jusqu'à historique-20, 01 = la plus récente (RG-10)
+//                 WFS-536 (RG-03) : + « ;etoiles » à la fin (★ gagnées) ; ligne d'avant sans ce champ : lue, étoiles inconnues (-1)
 // Une ancienne sauvegarde (sans ces clés) se lit sans erreur : profil=0, records gardés (ils restent dans sauvegarde.*, RG-08).
 //
 // Le pseudo reste la clé « nick » de la sauvegarde (RC-E17-03) ; ce module ne fait que le vérifier (RG-01).
@@ -72,6 +73,7 @@ struct CourseJouee {
     int place = 0;                // Course à 5 : place (1..5)
     long long tempsMs = 0;        // Course à 5 : temps
     long long score = 0;          // Checkpoint, Poursuite : score
+    int etoiles = -1;             // WFS-536 (RG-03) : ★ gagnées (quittée : 0) ; -1 = inconnues (course d'avant WFS-536)
     std::string resultat() const; // « 12 345 pts », « 2e en 1:23,45 », « Échappé · 900 pts », « Gagné », « Quittée »
 };
 
