@@ -1,6 +1,6 @@
 # WFS-498 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-498` comparée à `origin/main` ; bancs : garage:1280x720 sauvegarde:1280x720 sauvegarde:1280x720 equilibrage ; filtre : `*`.
+Branche `feature/waforspeed-498` comparée à `origin/main` ; bancs : garage:1280x720 sauvegarde:1280x720 sauvegarde:1280x720 ; filtre : `*`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
