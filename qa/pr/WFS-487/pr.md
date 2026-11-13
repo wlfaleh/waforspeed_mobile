@@ -55,7 +55,7 @@ Les données de toute la personnalisation des voitures, sans écran : 28 couleur
     - (a) sauvegarde d'avant le ticket avec `paint-m4=turquoise` → M4 turquoise, avant comme après ;
     - (b) sauvegarde au nouveau format, turquoise jamais achetée → M4 dans sa couleur d'origine (noir) après : c'est RG-07 ;
   - texte du banc dans `qa/pr/WFS-487/banc-sauvegarde.txt`.
-- Parcours complet (`WFS_BANC=parcours`) : voir le journal.
+- **Parcours complet** (`WFS_BANC=parcours`, branche) : accueil → mode → garage → « Choisir » → terrain → course → fin → « Menu » → accueil : **0 écart**, en vue Poursuite et en vue Cockpit.
 
 ## Limites et risques
 - **Pas encore de portefeuille d'étoiles** (WFS-498, ordre de l'utilisateur du 2026-11-12 23:20) : `acheter()` reçoit le solde à débiter, WFS-498 y branchera le sien. Avant cela, aucun écran n'achète : une couleur bloquée reste bloquée.
