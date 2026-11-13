@@ -15,7 +15,7 @@ Agent : Claude, agent dev3d (01Us6uCveE)
 - **Inventaire avant / après (RG-01)** : `qa/pr/WFS-410/inventaire.md` — 8 sortes de bâtiments hors kit + l'église sans vraies baies avant → **0 après** dans la zone du ticket. Hors zone (RG-07) : commerces du village de la Campagne (WFS-518, en pause).
 - **Comment c'est vérifié** :
   - `tests/test_archi_lieux.cpp` (nouveau) : mur vraiment percé (aire = façade − baies, aucun triangle dans une baie), menuiseries réelles même interrupteur WFS-415 coupé, niveau loin plein, arcs sans mur dans l'ouverture, repère direct, budget (casino de la Corniche : 5 830 triangles), église : nef 9,00 × 22,00 m, portail 2,20 × 4,40 m (±1 %), aucun triangle dégénéré, 8 792 triangles (976 au loin) ; vitrines séparées des fenêtres d'étage, uv de la pièce de nuit gardées.
-  - `bash tools/qa/tests_cpu.sh build` : **126 tests réussis** (après synchronisation avec main).
+  - `bash tools/qa/tests_cpu.sh build` : **129 tests réussis** sur le dernier commit, branche synchronisée avec main (voir « Tests CPU »).
   - Captures jour et nuit ci-dessous (bancs `corniche`, `ville`, `campagne-objets`), avant sur `main`, après sur la branche.
 - **Performance (RG-06), banc `perf` en Basse, avant (main) / après (branche), même machine (rendu logiciel lavapipe : temps relatifs)** : Ville 339,0 → 337,4 ms par image (398 761 → 410 242 triangles, +2,9 %, 201 appels de dessin des deux côtés) ; Corniche 255,1 → 239,3 ms (255 appels des deux côtés) ; Campagne 256,0 → 254,8 ms (194 appels des deux côtés). Aucune perte ; tout est préparé au chargement.
 - **Taille des actifs ajoutés (RG-08)** : **0 Mo** (tout est calculé par le code, aucun fichier d'actif).
@@ -33,7 +33,13 @@ Agent : Claude, agent dev3d (01Us6uCveE)
 - R4 : perron de 6 marches chanfreinées qui descendent jusqu'au sol.
 - R5 : vitrines des devantures : la boutique se voit derrière la vitre de jour.
 - B1 bis (2e avis) : graine propre à chaque baie des lieux (allumée ou non, teinte, luminance), test 2 ter (12 baies → au moins 8 graines) ; `graineBaie` du kit inchangée.
+- Retour du lead dev (c61771b9) : journal complet des tests CPU (`tests-cpu.log`), description à jour, corniche de la devanture moulurée (`archi::details::corniche`, plus de boîte), vitraux de l'église aussi au loin, 3 commentaires corrigés.
+- R7 (taux de fenêtres allumées par type de lieu, 3e avis) → proposé au PO comme petite US de réglage.
 - R1 (pierre PBR) → WFS-521 ; R6 (poteaux de la galerie, marquise du centre commercial, scooters, déjà sur main) : signalé au PO au journal.
+
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build`, dernier commit de la branche (synchronisée avec main) : **129 test(s) réussi(s) en 451 s**, 0 échec, dont `test_archi_lieux` (nouveau). Journal complet : [`qa/pr/WFS-410/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-410/qa/pr/WFS-410/tests-cpu.log).
 
 ## Captures pour le lead dev (29 après)
 
