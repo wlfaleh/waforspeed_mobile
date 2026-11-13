@@ -17,13 +17,27 @@ Agent : Claude, agent dev3d (01Us6uCuD6)
   - Banc `menu2` (salon + duel entre amis, relais local) : « parcours duel : conforme (0 écart(s)) », avec « Duel en ligne » → salon, puis 2 manches, « Retour » → menu principal (panneau fermé), et « Derniers adversaires ».
   - Banc `chauffe` : parcours Checkpoint → garage → course → menu, 0 écart.
   - Banc `course5` : parcours de la Poursuite par la carte 03 « accueil → … → poursuite → fin → Menu → accueil : 0 écart(s) OK » ; redémarrage : « le panneau des modes rouvre sur Poursuite ».
-  - Après la synchronisation 0bea2f53 : 116 tests CPU verts ; parcours, menu2 et course5 relancés, mêmes résultats. Nouvelle synchronisation e24f72a1 (WFS-460 police, WFS-487 personnalisation) : tout compile ; les tests, le parcours et course5 tournent encore, le résultat sera donné en commentaire.
+  - Après la synchronisation 0bea2f53 : 116 tests CPU verts ; parcours, menu2 et course5 relancés, mêmes résultats. Après la synchronisation e24f72a1 (WFS-460 police, WFS-487 personnalisation ; depuis, `main` n'a plus changé de code) : **119 tests CPU verts** (voir « Tests CPU ») ; `parcours` : « parcours complet : 0 écart(s) OK » ; `course5` : « poursuite (parcours) : parcours complet et redémarrage : 0 écart(s) OK », « course à 5 (parcours) : … : 0 écart(s) OK », sortie 0.
   - Lignes « ERREUR » des bancs qui ne viennent pas de ce ticket : « 2 pipeline(s) créé(s) pendant la course » (menu2) apparaît aussi sur `main` (captures « avant ») ; « aucune police à 10-30 m pour poursuite-police-basse » (course5) vient d'une scène fixe de la poursuite, que ce ticket ne touche pas.
   - Pendant le ticket, `test_langue` ne se construisait plus sur `main` après la fusion de WFS-480 (`profil.cpp` manquait à la cible). Ce n'est pas lié à ce ticket : signalé au PO, qui a créé l'US technique **WFS-526**. Depuis la synchronisation e24f72a1, la cible se construit de nouveau.
 - **Limites et risques connus** :
   - Le banc du duel trouve « Duel en ligne » comme 2e zone de focus du menu (même méthode que l'endurance pour « Course solo », qui est la 1re). Si l'ordre des boutons du menu change un jour, ce banc échouera en le disant (« bouton absent » ou mauvais écran), sans rien casser en silence.
   - Pas d'essai manette sur un vrai téléphone. La manette appuie déjà au centre des zones déclarées : c'est le même principe que les réglages.
   - Écran des modes en anglais : WFS-505, hors périmètre.
+
+## Tests CPU
+
+Commit testé : code de e24f72a1 (synchronisation avec `main`) ; ff07812d et suivants ne changent que `qa/pr/WFS-517/`. Commande : `bash tools/qa/tests_cpu.sh build`, code de sortie 0. Journal complet : [`qa/pr/WFS-517/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-517/qa/pr/WFS-517/tests-cpu.log).
+
+```
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 119 test(s) réussi(s) en 366 s
+```
+Échecs : aucun.
 
 ## Captures pour le lead dev (6 après, 4 avant)
 

@@ -10,5 +10,3 @@ Branche `feature/waforspeed-517` comparée à `origin/main` ; bancs : parcours:1
 | `salon-derniers` | ![avant](avant-salon-derniers.jpg) | ![après](apres-salon-derniers.jpg) |
 | `parcours-mode-3-cartes` | — | ![après](apres-parcours-mode-3-cartes.jpg) |
 | `parcours-mode` | ![avant](avant-parcours-mode.jpg) | ![après](apres-parcours-mode.jpg) |
-| `parcours-mode-3-cartes` | — | ![après](apres-parcours-mode-3-cartes.jpg) |
-| `parcours-mode` | ![avant](avant-parcours-mode.jpg) | ![après](apres-parcours-mode.jpg) |
