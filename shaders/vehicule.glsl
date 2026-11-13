@@ -131,6 +131,12 @@ const float FIN_CAMELEON_TOUR = 1.5;      // rotation de teinte de face → rasa
 const float FIN_CANDY_RUGOSITE = 0.20, FIN_CANDY_METAL = 0.85;   // base argent sous le vernis teinté
 const float FIN_PAILLETTE = 0.0004;       // taille d'une cellule de paillette au plus près (m) : 0,4 mm (amas de paillettes de 20-40 µm)
 
+// chaussée vue dans un miroir (chrome), avant le facteur des réflexions : asphalte ρ = 0,14 (DA-realisme § 3, comme WFS-270) éclairé
+// comme le sol de scene.frag (soleil × cos / π + ambiance du ciel vers le haut), sans ombre (la chaussée reflétée est loin de la voiture)
+vec3 chausseeReflechie(vec3 sun) {
+    const float RHO = 0.14;
+    return RHO * (sun * max(normalize(F.sunDir.xyz).y, 0.0) / PI + F.skyTop.rgb * F.misc.z);
+}
 int lireFinition(inout float metal) {
     float f = floor(metal * 0.5);
     metal -= 2.0 * f;

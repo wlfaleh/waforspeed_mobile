@@ -200,6 +200,9 @@ void main() {
         float wR = clamp(max(F.nuitB.w, 0.0) * (1.0 - rough), 0.0, mix(0.35, 0.45, flaque)) * mix(1.0, 0.5, smoothstep(20.0, 80.0, dist));
         env = mix(env, rs, wR);
     }
+    // WFS-490 (accroche) : chrome (miroir) : sous l'horizon, la chaussée réelle (la sonde ne la contient pas : qa/pr/WFS-490/
+    // preuve-sonde-brute-gt86.jpg), au-dessus le reflet de la sonde entier (vehicule.glsl, chausseeReflechie)
+    if (finition == FIN_CHROME) env = mix(env, chausseeReflechie(sun), smoothstep(0.02, -0.05, R.y));
     float kMesure = ((flags & F_ROAD) != 0u && F.nuitB.w < 0.0) ? 0.0 : 1.0;   // WFS-142 (RG-08) : WFS_REFLETS=0, route sans reflet
     col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK * kMesure;   // WFS-100 RG-01 / RG-02
 
