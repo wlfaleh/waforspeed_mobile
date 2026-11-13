@@ -19,7 +19,7 @@ Demande de l'utilisateur (épic E22) : chaque course terminée rapporte des éto
 - **À l'écran** : rien ne change encore (le détail du score et « +N ★ » sont WFS-537) ; le solde du garage et du market suit les nouvelles étoiles.
 
 ## Vérification
-- Branche synchronisée avec `main` (dernière synchronisation 5dc0c152 : cadeau du jour WFS-500, plaques WFS-483 compris). Construction complète locale, puis `bash tools/qa/tests_cpu.sh build` : **127 tests réussis**, aucun échec (`qa/pr/WFS-536/tests-cpu.log`).
+- Branche synchronisée avec `main` (5dc0c152 : cadeau du jour WFS-500, plaques WFS-483 compris ; puis af383f48, finitions : construction complète refaite, sans erreur). Construction complète locale, puis `bash tools/qa/tests_cpu.sh build` : **127 tests réussis**, aucun échec (`qa/pr/WFS-536/tests-cpu.log`).
 - **Banc `equilibrage`** (barème de départ, sans rien changer) :
   - **joueur moyen** : 9,99 ★ par course, 1re voiture en **26 courses**, toutes les voitures en **120,4 h** → OK ;
   - **bon** : 12,68 ★, 19 courses, 94,9 h ;
