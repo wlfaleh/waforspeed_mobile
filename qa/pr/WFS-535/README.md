@@ -12,18 +12,18 @@ Agent : Claude, agent dev3d (01Us6uCtPt)
 - **Rien ne change dans le jeu** : aucun appel à `score::calculer` pour l'instant ; `boutique.gain_course` (10 ★) reste en place jusqu'à WFS-536.
 
 ## Vérification
-- Construction complète locale (870 cibles) et `bash tools/qa/tests_cpu.sh build` : **124 tests réussis**, aucun échec, après synchronisation avec `main`.
-- `test_configgame` : 308 clés, OK ; `test_boutique` vert.
+- Construction complète locale (870 cibles) et `bash tools/qa/tests_cpu.sh build` : **125 tests réussis**, aucun échec, après synchronisation avec `main`.
+- `test_configgame` : 326 clés, OK ; `test_boutique` vert.
 - Retour du lead dev (remarque non bloquante) : plafonds de la course solo et des dépassements appliqués avant la conversion en entier (aucun débordement), 2 cas de test ajoutés.
 
 ## Tests CPU
-Commit testé : **7315604f** (branche synchronisée avec `main` 3b89710b), construction complète locale. Journal complet : `qa/pr/WFS-535/tests-cpu.log`.
+Commit testé : **0eef6112** (branche synchronisée avec `main` 930296cc, market WFS-510 compris : conflits de `configgame.*` résolus en gardant les deux sections, 326 clés), construction complète locale. Journal complet : `qa/pr/WFS-535/tests-cpu.log`.
 ```
 [OK] test_score_course (0 s)
 …
 [OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 124 test(s) réussi(s) en 402 s
+tests CPU : 125 test(s) réussi(s) en 407 s
 ```
 
 ## Limites et risques
