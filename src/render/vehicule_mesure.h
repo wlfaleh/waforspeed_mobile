@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iterator>
 #include <string>
+#include <string_view>
 #include <vector>
 #include "../game/roues.h"
 
@@ -37,10 +38,9 @@ struct ModeleWfm {
 };
 
 // lecture bornée : un fichier tronqué ou d'un autre format rend false et une raison, jamais un plantage
-inline bool lireWfm(const std::string& chemin, ModeleWfm& m, std::string& erreur) {
-    std::ifstream f(chemin, std::ios::binary);
-    if (!f) { erreur = "fichier illisible"; return false; }
-    const std::string b((std::istreambuf_iterator<char>(f)), {});
+// WFS-460 : même lecture depuis les octets du fichier déjà en mémoire (readAsset sur Android : pas de chemin de fichier)
+inline bool lireWfmOctets(const uint8_t* donnees, size_t taille, ModeleWfm& m, std::string& erreur) {
+    const std::string_view b(reinterpret_cast<const char*>(donnees), taille);
     size_t o = 0;
     auto u32 = [&](uint32_t& x) { if (o + 4 > b.size()) return false; std::memcpy(&x, &b[o], 4); o += 4; return true; };
     if (b.size() < 44 || std::memcmp(b.data(), "WFM1", 4) != 0) { erreur = "format inconnu"; return false; }
@@ -66,6 +66,12 @@ inline bool lireWfm(const std::string& chemin, ModeleWfm& m, std::string& erreur
         m.drapeaux.push_back(drapeauxMat[mi]);
     }
     return true;
+}
+inline bool lireWfm(const std::string& chemin, ModeleWfm& m, std::string& erreur) {
+    std::ifstream f(chemin, std::ios::binary);
+    if (!f) { erreur = "fichier illisible"; return false; }
+    const std::string b((std::istreambuf_iterator<char>(f)), {});
+    return lireWfmOctets(reinterpret_cast<const uint8_t*>(b.data()), b.size(), m, erreur);
 }
 
 // ---- mesures

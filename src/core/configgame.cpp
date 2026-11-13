@@ -126,7 +126,52 @@ std::vector<Champ> champsVoitures(ConfigJeu& c) {
     }
     return v;
 }
-std::vector<Champ> tousChamps(ConfigJeu& c) { std::vector<Champ> v = champs(c), w = champsVoitures(c); v.insert(v.end(), w.begin(), w.end()); return v; }
+// WFS-487 (RG-04) : section « boutique » : coefficients des classes, classe de chaque voiture, prix de base des couleurs, finitions,
+// skins et packs de dessins (clés « boutique.<groupe>.<id>.<champ> ») ; un prix négatif ou un texte vide est refusé (valeur du code + journal)
+std::vector<Champ> champsBoutique(ConfigJeu& c) {
+    static std::vector<std::string> cles;   // textes des clés (la table garde des const char*), fabriqués une fois
+    static const char* CLASSES[BOUTIQUE_CLASSES] = {"gratuites", "classe1", "classe2", "classe3", "classe4", "classe5"};
+    if (cles.empty()) {
+        for (const char* k : CLASSES) cles.push_back(std::string("boutique.coefficients_classe.") + k);
+        for (const char* id : VOITURES_IDS) cles.push_back(std::string("boutique.voitures.") + id + ".classe");
+        for (const char* id : BOUTIQUE_COULEURS_IDS) { cles.push_back(std::string("boutique.couleurs.") + id + ".prix"); cles.push_back(std::string("boutique.couleurs.") + id + ".gratuit"); }
+        cles.push_back("boutique.couleur_secondaire.prix");
+        for (const char* id : BOUTIQUE_FINITIONS_IDS) { cles.push_back(std::string("boutique.finitions.") + id + ".prix"); cles.push_back(std::string("boutique.finitions.") + id + ".gratuit"); }
+        for (const char* id : BOUTIQUE_SKINS_IDS)
+            for (const char* f : {".prix", ".cadeau", ".voitures"}) cles.push_back(std::string("boutique.skins.") + id + f);
+        for (const char* id : BOUTIQUE_DESSINS_IDS) { cles.push_back(std::string("boutique.dessins.") + id + ".prix"); cles.push_back(std::string("boutique.dessins.") + id + ".gratuit"); }
+    }
+    using T = Type;
+    ConfigJeu::Boutique& b = c.boutique;
+    std::vector<Champ> v; size_t k = 0;
+    auto cle = [&]() { return cles[k++].c_str(); };
+    for (int i = 0; i < BOUTIQUE_CLASSES; i++) v.push_back({cle(), T::Reel, &b.coefficient[i], 0.1, 10, "×", i ? "coefficient des prix de personnalisation pour cette classe de voiture" : "coefficient des prix de personnalisation des voitures gratuites"});
+    for (int i = 0; i < VOITURES_NB; i++) v.push_back({cle(), T::Entier, &b.classe[i], 0, 5, "classe", "classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix"});
+    for (int i = 0; i < BOUTIQUE_COULEURS; i++) {
+        v.push_back({cle(), T::Entier, &b.couleur[i].prix, 0, 100000, "★", "prix de base de la couleur (× coefficient de la classe)"});
+        v.push_back({cle(), T::Entier, &b.couleur[i].gratuit, 0, 1, "0 / 1", "couleur gratuite sur toutes les voitures"});
+    }
+    v.push_back({cle(), T::Entier, &b.couleurSecondaire, 0, 100000, "★", "prix de base de la couleur secondaire (toit, rétroviseurs ; × coefficient)"});
+    for (int i = 0; i < BOUTIQUE_FINITIONS; i++) {
+        v.push_back({cle(), T::Entier, &b.finition[i].prix, 0, 100000, "★", "prix de base de la finition (× coefficient de la classe)"});
+        v.push_back({cle(), T::Entier, &b.finition[i].gratuit, 0, 1, "0 / 1", "finition gratuite sur toutes les voitures"});
+    }
+    for (int i = 0; i < BOUTIQUE_SKINS; i++) {
+        v.push_back({cle(), T::Entier, &b.skin[i].prix, 0, 100000, "★", "prix de base de la skin (× coefficient ; valeur si cadeau)"});
+        v.push_back({cle(), T::Entier, &b.skin[i].cadeau, 0, 1, "0 / 1", "skin seulement dans le cadeau du jour ou un succès (jamais en vente)"});
+        v.push_back({cle(), T::Texte, b.skinVoitures[i], 1, SKIN_VOITURES_MAX, "caractères", "voitures qui ont cette skin (identifiants séparés par des espaces)"});
+    }
+    for (int i = 0; i < BOUTIQUE_DESSINS; i++) {
+        v.push_back({cle(), T::Entier, &b.dessins[i].prix, 0, 100000, "★", "prix du pack d'autocollants (sans coefficient, pour toutes les voitures)"});
+        v.push_back({cle(), T::Entier, &b.dessins[i].gratuit, 0, 1, "0 / 1", "pack d'autocollants gratuit"});
+    }
+    return v;
+}
+std::vector<Champ> tousChamps(ConfigJeu& c) {
+    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c);
+    v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end());
+    return v;
+}
 
 // texte d'une marque ou d'un modèle accepté (RG-08) : UTF-8 valide, longueur [min, max] en caractères ; lettres (accents
 // latins compris), chiffres, espace, « - » et « . » ; pas d'espace au début ni à la fin
@@ -411,6 +456,10 @@ std::string configReadme() {
         "voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu "
         "(garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). "
         "Un nom invalide : le nom par défaut et une ligne au journal.\n"
+        "- **Boutique** (section `boutique`, WFS-487) : prix de **base** en étoiles des couleurs, finitions, skins et packs "
+        "d'autocollants. Le prix payé pour une voiture = prix de base × coefficient de sa classe (`coefficients_classe`, `voitures.<id>.classe`), "
+        "arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; "
+        "`cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.\n"
         "- Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans "
         "`src/core/configgame.cpp` (table `champs`), puis relancer cette commande.\n\n"
         "| Clé | Sens | Unité | Min | Max | Défaut |\n|---|---|---|---|---|---|\n";

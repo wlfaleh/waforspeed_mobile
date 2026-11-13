@@ -93,14 +93,19 @@ static const InterieurDef DEFS[] = {
      0.144f, 0.081f, {0.36f, -0.30f, -0.70f}, -0.10f,
      -0.14f, -0.72f, -0.24f, -1.25f, 0x1a1a1c, 0x1c1c1e, 0xe9ebec, 1.f, 0.35f, false,
      Essuie::Paralleles, 0.650f, 0.650f, 1.50f, 0.235f, 0, false, true},
-    // Mustang Shelby GT500 (S550) : volant rond, palettes ; combiné numérique 12 po (compte-tours en arc) ; écran SYNC 3 de 8 po ;
-    // double casquette, carbone ; balais 560 / 510 (AC)
-    {"mustang", 0.370f, 0.038f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
-     {0.f, -0.31f, -0.76f}, -0.36f,
-     Combine::FordDigital, 0.285f, 0.107f, {0.f, -0.23f, -0.87f}, 0xf4f6f8, 0x08090b, 0xe31b23,
-     0.174f, 0.105f, {0.36f, -0.30f, -0.78f}, 0.f,
-     -0.16f, -0.82f, -0.24f, -1.25f, 0x141415, 0x1b1c1e, 0x101113, 0.f, 0.15f, true,
-     Essuie::Paralleles, 0.560f, 0.510f, 1.57f, 0.389f},
+    // WFS-395 (RG-01) : Corvette C7 Stingray 2014 (id « mustang » gardé, WFS-359 ; nom inventé du garage) : petit volant rond de 14,1 po
+    // (358 mm, AC : dossier de presse de 2013, de mémoire), 3 branches, palettes ; combiné : écran couleur de 8 po au centre (compte-tours
+    // rond en barres, vitesse et rapport dedans, thème « Tour » : style FerrariIncurve, sans aiguille qui passerait sur les chiffres) et deux
+    // petits cadrans (essence, eau) de chaque côté, sous une visière (AC) ; écran de 8 po
+    // (177 × 100 mm) en haut de la console centrale, sous la casquette de la planche, haute et tournée de 15° vers le conducteur (E, photos de presse) ; planche basse,
+    // capot long : pied du pare-brise loin devant (E) ; alu satiné ; balais 560 / 530 (AC) ; assise : toit 1,24 − 0,05 − (garde au toit
+    // 0,965 − 0,102) · cos 8° − 0,095 = 0,241 m (garde au toit de 38,0 po : AC, de mémoire ; méthode du lot 2)
+    {"mustang", 0.358f, 0.036f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
+     {0.f, -0.28f, -0.70f}, -0.32f,
+     Combine::FerrariIncurve, 0.300f, 0.120f, {0.f, -0.20f, -0.82f}, 0xf2f4f6, 0x08090b, 0xff2a1a,
+     0.177f, 0.100f, {0.31f, -0.245f, -0.84f}, -0.26f,
+     -0.15f, -0.72f, -0.22f, -1.28f, 0x18181a, 0x1c1c1e, 0x8f9398, 1.f, 0.35f, false,
+     Essuie::Paralleles, 0.560f, 0.530f, 1.55f, 0.241f},
     // Model 3 (2018) : volant 2 branches avec 2 molettes, sans palettes ; aucun combiné : écran 15 po horizontal (vitesse, « D », carte),
     // planche très basse, bandeau bois ; balais 650 / 475 (V : guide d'entretien Tesla)
     {"model3", 0.350f, 0.035f, 2, 0.f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x1d1d20, 0,
@@ -170,14 +175,17 @@ static const InterieurDef DEFS[] = {
      0.290f, 0.163f, {0.36f, -0.26f, -0.80f}, 0.f,
      -0.24f, -0.86f, -0.30f, -1.25f, 0x1c1d20, 0x2a2b2e, 0xe9ebec, 1.f, 0.35f, false,
      Essuie::Paralleles, 0.600f, 0.500f, 1.62f, 0.794f},
-    // T-Cross (SAIC-VW, Chine, 2021) : volant VW famille Polo ; Active Info Display 10,25 po ; écran 8 po dans la planche ; plastique
-    // dur grainé ; balais 600 / 450 (AC, version européenne)
-    {"tcross", 0.370f, 0.034f, 3, 0.f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
-     {0.f, -0.31f, -0.74f}, -0.40f,
-     Combine::VwDigital, 0.244f, 0.091f, {0.f, -0.24f, -0.86f}, 0xdfe6ee, 0x0e1116, 0xff2a2a,
-     0.174f, 0.105f, {0.36f, -0.19f, -0.78f}, -0.10f,
-     -0.19f, -0.80f, -0.26f, -1.12f, 0x1c1d20, 0x232428, 0x101113, 0.f, 0.15f, false,
-     Essuie::Paralleles, 0.600f, 0.450f, 1.60f, 0.531f},
+    // WFS-395 (RG-02) : Vitara Brezza 2022 (id « tcross » gardé, WFS-359 ; nom inventé du garage) : volant 3 branches à méplat (famille
+    // Baleno 2022, ≈ 365 mm : E), garnitures argent sur les branches, palettes (boîte automatique 6 rapports) ; combiné : deux cadrans
+    // à aiguille dans leurs tubes (régime à gauche, vitesse à droite) et écran couleur de 4,2 po au milieu (AC) ; écran tactile flottant
+    // de 9 po (199 × 112 mm) posé au-dessus de la planche, face au milieu (AC) ; planche deux tons (haut noir, bas brun foncé) traversée
+    // par un jonc argent (AC, photos de presse ; bas de planche brun très sombre : il teinte aussi portières et plancher) ; balais 600 / 400 (E) ; assise de SUV compact (hauteur 1,685 m : 0,575 m, E)
+    {"tcross", 0.365f, 0.034f, 3, 0.15f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x8f9398, 0,
+     {0.f, -0.32f, -0.72f}, -0.43f,
+     Combine::AlfaCadrans, 0.290f, 0.115f, {0.f, -0.24f, -0.87f}, 0xe8f0f8, 0x0a0d12, 0xff3020,
+     0.199f, 0.112f, {0.36f, -0.12f, -0.80f}, 0.f,
+     -0.20f, -0.82f, -0.26f, -1.18f, 0x1c1d20, 0x2f2a27, 0xb4b8bd, 1.f, 0.35f, false,
+     Essuie::Paralleles, 0.600f, 0.400f, 1.60f, 0.575f},
     // V60 Polestar (P3, 2013) : volant à palettes ; Adaptive Digital Display TFT 8 po (thème Performance : compte-tours rouge au
     // centre) ; écran 7 po sous une visière en haut de la console flottante (RG-04 « 9 po vertical » : V60 de 2018, journal) ;
     // alu ; balais 650 / 500 (AC)
@@ -210,7 +218,7 @@ const LargeurDef LARGEURS[] = {
     {"giulia", {1.450f, 0.365f, 1.470f}},
     {"p208", {1.400f, 0.350f, 1.430f}},
     {"gallardo", {1.400f, 0.365f, 1.410f}},
-    {"mustang", {1.480f, 0.370f, 1.500f}},
+    {"mustang", {1.440f, 0.360f, 1.450f}},   // WFS-395 : Corvette C7 : épaules 54,9 po (1,394 m, AC) + 45 mm ; montants 0,77 × 1,877 m (E)
     {"model3", {1.480f, 0.370f, 1.500f}},
     {"x5", {1.550f, 0.390f, 1.620f}},
     {"abarth", {1.310f, 0.325f, 1.310f}},
@@ -219,7 +227,7 @@ const LargeurDef LARGEURS[] = {
     {"elantra", {1.465f, 0.365f, 1.480f}},
     {"gt86", {1.400f, 0.350f, 1.400f}},
     {"rrsport", {1.580f, 0.395f, 1.660f}},
-    {"tcross", {1.420f, 0.355f, 1.430f}},
+    {"tcross", {1.450f, 0.360f, 1.440f}},   // WFS-395 : Vitara Brezza 2022 : 1,790 m hors tout − 2 × 0,17 m de portière (E) ; montants 0,80 × 1,79 m (E)
     {"v60", {1.470f, 0.370f, 1.510f}},
 };
 }
@@ -235,14 +243,15 @@ Largeur largeurPour(const InterieurDef& d) {
 namespace {
 struct SerieDef { const char* car; VolantSerie s; };
 const SerieDef SERIE[] = {
-    // Mustang S550 : coussin large, presque rectangulaire, à peine rétréci en bas
-    {"mustang", {0.205f, 0.148f, 4.5f, 0.05f, 0.016f}},
+    // WFS-395 : Corvette C7 : coussin aux coins arrondis, bas un peu rétréci (photos de presse, E) ; 200 mm (bas de RG-01) : sur le petit
+    // volant de 358 mm, c'est ce qui laisse les 34 mm de plaque entre la coque et la jante (RG-03 de WFS-414)
+    {"mustang", {0.200f, 0.145f, 4.f, 0.07f, 0.016f}},
     // Golf 8 : coussin en trapèze arrondi (bas plus étroit)
     {"golf", {0.200f, 0.145f, 4.f, 0.10f, 0.012f}},
     // Abarth 500 (2008-2015) : coussin plus rond (petit volant épais)
     {"abarth", {0.200f, 0.145f, 3.f, 0.04f, 0.060f}},
-    // T-Cross (volant de la famille Polo) : trapèze arrondi
-    {"tcross", {0.200f, 0.145f, 4.f, 0.08f, 0.028f}},
+    // WFS-395 : Vitara Brezza 2022 (volant de la Baleno 2022) : coussin rond, bas nettement rétréci (E)
+    {"tcross", {0.205f, 0.150f, 3.5f, 0.10f, 0.028f}},
     // S3 berline (8V) : coussin à pans presque droits, bas rétréci
     {"s3", {0.200f, 0.145f, 5.f, 0.08f, 0.028f}},
     // Giulia : coussin arrondi, bas rétréci (le démarreur rouge passe sur la plaque gauche)

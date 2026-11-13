@@ -1501,3 +1501,85 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 ### 2026-11-13 00:50:54 — WFS-480 : fin, session terminée (Claude, agent dev3d (01Us6uCuDH))
 - PR #375 fusionnée en squash par le lead dev (3595a683). Remarques non bloquantes du lead dev, à reprendre par WFS-481 : enregistrer la sauvegarde dès la création du profil (date d'arrivée écrite tout de suite, RG-05) ; la plaque de secours `WFS-` + 3 chiffres n'est pas revérifiée contre la liste (sans risque avec la liste actuelle).
 - Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Identité et historique du joueur »). Ligne de `track-agent.md` : ⏹️ session terminée. Aucun 2e ticket demandé (un seul sujet par session).
+
+### 2026-11-13 00:54:15 — WFS-526 créé : US technique P1, correction pipeline CI (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCuD6) (sur WFS-517, rien ne lui est attribué) : sur `origin/main` 23c93399, `test_langue` ne se lie plus (`undefined reference` à `wfs::Profil::lireCle` et `Profil::apresChargement`, appelés par `sauvegarde.cpp` depuis WFS-480, #375) : `CMakeLists.txt:121` ne lie pas `src/game/profil.cpp`. Vérifié par le PO : seule `test_langue` parmi les cibles qui lient `sauvegarde.cpp` n'a pas `profil.cpp`.
+- **WFS-526** [TECHNIQUE] P1, E0 (`CMakeLists.txt` seulement), ⏳ Prêt pour une nouvelle session développeur libre ; règles : `regles-de-gestion/WFS-526.md`. CI de branche permise (US technique).
+
+### 2026-11-13 00:54:36 — WFS-460 : PR #376 ouverte, cause de l'ANO-260 trouvée, accroches annoncées (Claude, agent dev3d (01UY1Vv5Cs))
+- **ANO-250** : bandes « POLICE » posées sur la tôle des portières, des deux côtés. La grille est projetée sur les triangles de la peinture du `.wfm` (`src/game/police_bandes.h`, nouveau), entre les passages de roue, à 5 mm de la tôle. Le côté droit manquait parce que le quadrilatère de `main` y était enroulé vers l'intérieur (face arrière retirée).
+- **ANO-260, cause** : la peinture de la 208 (maillage dense, triangles de 3,5 mm) est classée « très fine » (WFS-42). En **Basse**, au-delà de 15 m de la caméra, `Renderer::draw` ne la dessinait pas : la carrosserie disparaissait et on voyait l'intérieur gris foncé. La bascule autour de 15 m en vue Cockpit donnait le « gris argent puis blanc ».
+- **Même défaut dans le trafic** en Basse pour la golf, la mustang et la 911 : la correction leur rend aussi leur carrosserie (+1,8 appel de dessin par image en Basse sur le banc). **Signalé au PO.**
+- **Accroches hors zone** (≤ 10 lignes) :
+  - `src/render/renderer.cpp` : 1 ligne (la peinture n'est jamais retirée par la règle des pièces très fines) ;
+  - `src/render/renderer.h` : 1 ligne (drapeau du banc avant / après) ;
+  - `src/platform/desktop_main.cpp` : 1 ligne (banc `police-bandes`) ;
+  - `src/render/vehicule_mesure.h` : `lireWfmOctets` (lecture depuis la mémoire, `lireWfm` inchangée).
+- **Vérifié** :
+  - `test_police_bandes` (nouveau) ;
+  - 116 tests CPU OK ;
+  - banc `police-bandes` sans écart, bandes à +0 appel de dessin.
+- **Limite** : rendu non vu sur un téléphone ; après la fusion, 🟡 À valider (utilisateur).
+
+
+### 2026-11-13 00:59:43 — WFS-487 : PR #373 refusée une 2e fois par le lead dev (lead-dev)
+- 2e revue (commit f68a9c0f), faite dans un arbre de travail à part : les 2 points de la 1re revue sont corrigés (`defauts()` et son cas « 1 bis » OK, commentaire remis à sa place).
+- **Bloquant** : une fois `origin/main` fusionné (WFS-504 #372 compris), `test_langue` ne se lie plus : `CMakeLists.txt:121` lie `sauvegarde.cpp` sans `personnalisation.cpp`. La fusion casserait la CI de `main`. Il faut synchroniser la branche et ajouter `personnalisation.cpp` à `test_langue`.
+- À noter pour le PO et `@cicd` : `tools/qa/tests_cpu.sh:26` saute sans rien dire un test non construit (116 « réussis » alors que `test_langue` manquait).
+
+### 2026-11-13 01:05:06 — WFS-526 gardé, WFS-527 créé (po-scrum-master)
+- Informations du développeur de WFS-487 (PR #373). (1) Son commit 1ec00517 corrige déjà la ligne `test_langue` de `CMakeLists.txt`. **WFS-526 reste ⏳ Prêt** pour le premier `@cicd` : la CI de `main` n'attend pas #373. Si #373 est fusionnée avant, WFS-526 passe ↪ fusionné dans WFS-487 et le run vert de `main` sert de preuve. Détail dans la section Suivi de `regles-de-gestion/WFS-526.md`. (2) Défaut d'outil vu par le lead dev : `tools/qa/tests_cpu.sh:26` saute sans rien dire un test non construit. **WFS-527 créé** ([TECHNIQUE], P2, `@cicd`, ⏳ Prêt) : un test déclaré sans exécutable donne `[ABSENT]` et fait échouer le script.
+
+### 2026-11-13 01:08:08 — WFS-395 : PR #374 corrigée après la revue du lead dev (Claude, agent dev3d (01UY1Vv4vT))
+- Fait : poignée de maintien de la Corvette tenue par la planche et le flanc de la console (`poigneeMaintien`, test des pieds collés) ; vrai levier automatique modelé de la Brezza (grille, jupe, poignée, touche) ; partie « Tests CPU » et `qa/pr/WFS-395/tests-cpu.log` (115 / 115 sur 63b62b78) ; 18 captures refaites (3aaecc8d).
+- Réponse point par point sous la revue, lead dev rappelé.
+
+### 2026-11-13 01:08:57 — WFS-460 : PR #376 refusée par le lead dev (lead-dev)
+- Revue du commit e00cd1fe : captures regardées (profils gauche et droit de jour, 3/4 de nuit, approches Cockpit et Poursuite en Haute et en Basse) ; bandes sur la tôle des deux côtés, à l'endroit ; blanc stable en Basse (ANO-260). Code lu en entier, rien de bloquant ; construit et testé en local après fusion de main : 117 tests CPU réussis, test_police_bandes OK.
+- Refus pour l'hygiène seulement : (1) conflit avec main dans `poursuite_system.cpp` (includes, WFS-480) ; (2) section « Tests CPU » et `qa/pr/WFS-460/tests-cpu.log` absentes (règle du 2026-11-11) ; (3) deux images « avant » cassées dans la description. Revue postée en COMMENT (même compte GitHub).
+- Hors PR : `test_langue` ne se lie plus sur main (WFS-526 déjà créé par le PO).
+
+### 2026-11-13 01:11:33 — WFS-487 : PR #373 corrigée après la 2e revue du lead dev (Claude, agent dev3d (01Us6uCwB3))
+- Cause : WFS-504 (#372) a ajouté `test_langue`, qui lie `sauvegarde.cpp` sans `personnalisation.cpp` (ma branche) ni `profil.cpp` (WFS-480, #375, aussi manquant sur main : WFS-526).
+- Corrigé dans 1ec00517 : synchronisation avec main (conflits de CMakeLists.txt et course_system.cpp résolus en gardant les deux côtés), `test_langue` lie `personnalisation.cpp` et `profil.cpp` ; les 17 cibles qui lient `sauvegarde.cpp` ont `personnalisation.cpp`.
+- Vérifié : construction complète `-k` rc 0 ; 118 tests déclarés, 118 exécutables ; tests CPU 118 / 118 (code 0) ; banc `sauvegarde` : catalogue, possession et profil relus. Défaut de `tests_cpu.sh` signalé au PO (WFS-527 créé). Lead dev rappelé.
+
+### 2026-11-13 01:22:30 — WFS-395 fusionné par le lead dev (lead-dev)
+PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corrigés (poignée de la Corvette tenue par la planche et la console, test à −2,0 mm ; vrai levier automatique de la Brezza ; partie « Tests CPU »). 18 paires de captures ouvertes, diff lu, branche fusionnée localement avec `main` : construction et 116 tests CPU réussis (`test_langue` ne se lie pas, défaut de `main` déjà suivi par WFS-526). « ✅ Approuvé » écrit dans la PR (commentaire, même compte), fusion en squash ffff87f4. Statut 🟣 Fusionné, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-13 01:22:51 — WFS-460 : corrections du retour du lead dev (PR #376) (Claude, agent dev3d (01UY1Vv5Cs))
+- Synchronisation avec `main` : conflit des `#include` résolu en gardant les quatre (7a2ca09f).
+- Section « Tests CPU » ajoutée : 116 tests réussis, journal dans `qa/pr/WFS-460/tests-cpu.log`.
+- Deux images de la description réparées ; commentaires remis à leur place.
+- Banc `police-bandes` relancé : 0 écart.
+- PR en 🔁, lead dev rappelé.
+
+
+### 2026-11-13 01:23:06 — WFS-395 : session terminée (Claude, agent dev3d (01UY1Vv4vT))
+- WFS-395 fusionné par le lead dev (PR #374, ffff87f4, squash) : habitacles de la Corvette C7 et de la Vitara Brezza en vue Cockpit. Statut 🟣, ✅ aux bancs du matin.
+- À regarder par la QA : cotes AC / E à confirmer sur une fiche ; bas de planche brun très sombre de la Brezza (teinte aussi portières et plancher).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 01:26:58 — WFS-487 fusionné par le lead dev (lead-dev)
+- PR #373, 3e revue sur 9fa479d1 ; squash ccf85096 « WFS-487 : … (#373) (Claude, agent dev3d (01Us6uCwB3)) ». « ✅ Approuvé » en commentaire (même compte GitHub).
+- Relu dans un arbre de travail à part : branche synchronisée avec `main`, construction complète avec `-k` (rc 0, 118 exécutables de test sur 118), `tests_cpu.sh` 118 réussis (test_langue, test_personnalisation, test_profil, test_sauvegarde compris). Captures : 16 paires déjà ouvertes, rendu inchangé depuis.
+- Statut 🟣 Fusionné (#373) dans `TACHES.md` ; ligne retirée de `suivi-pr.md` ; ligne dans `qa/Check.md`. WFS-526 (`test_langue` sans `profil.cpp`) est corrigé par cette fusion : au PO de le clore.
+
+### 2026-11-13 01:27:40 — WFS-487 : fin, session terminée (Claude, agent dev3d (01Us6uCwB3))
+- PR #373 fusionnée en squash par le lead dev (ccf85096) après 2 retours corrigés : (1) remise à zéro de 6 réglages dans `Sauvegarde::defauts()` (test ajouté) ; (2) `test_langue` sans `personnalisation.cpp` ni `profil.cpp` après WFS-480 / 504 (corrige aussi WFS-526).
+- Suites pour les prochains tickets : WFS-498 reprend la section `boutique` de `configgame.json` et branche son portefeuille sur `perso::acheter(…, solde, …)` ; WFS-489 retire `perso::donGarageProvisoire` (option A) en posant le cadenas ; WFS-488 / 490 / 492 lisent `perso::aspectCourse` pour la couleur secondaire, la finition et la skin.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (personnalisation). Un seul sujet par session : je ne demande pas d'autre ticket.
+
+### 2026-11-13 01:36:42 — WFS-460 fusionné par le lead dev (lead-dev)
+- PR #376 relue de nouveau sur 4a745685 : les 3 points du refus (synchronisation, Tests CPU, images de la description) et les 2 remarques sont corrigés ; réponse du développeur point par point (commentaire 6840967167).
+- Captures rouvertes, diff relu, construction et tests refaits sur la branche fusionnée en local avec `main` : 117 tests réussis (`test_langue` exclu, WFS-526).
+- « ✅ Approuvé » en commentaire (APPROVE refusé par GitHub, même compte), puis fusion en squash : 34ae16ce. Statut : 🟡 À valider (utilisateur). Ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-13 01:37:16 — WFS-460 : fin, session terminée (Claude, agent dev3d (01UY1Vv5Cs))
+- PR #376 fusionnée par le lead dev (34ae16ce).
+- Ticket en 🟡 À valider (utilisateur) : test demandé dans `tache utilisateur.md`.
+- Session arrêtée (un seul sujet par session).
+- **À l'attention du PO** :
+  - golf, mustang et 911 du trafic retrouvent aussi leur carrosserie en Basse au-delà de 15 m (même cause qu'ANO-260) : à faire vérifier par l'utilisateur ;
+  - la rampe des gyrophares de la police est encore faite de cubes (hors périmètre de WFS-460, règle des formes nues) : à planifier.
+

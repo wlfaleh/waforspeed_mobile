@@ -19,6 +19,9 @@ class Game; class Renderer;
 int poursuiteTrafic(int trafficN, bool enCourse);
 // banc d'essai (WFS_BANC=course5) : poursuite-police, poursuite-bouchon, poursuite-surprise, poursuite-hud, poursuite-fin
 void benchPoursuite(Game& g, Renderer& r, const std::string& outDir);
+// WFS-460 (WFS_BANC=police-bandes) : bandes « POLICE » sur la tôle et peinture blanche, avant / après dans la même image ;
+// rend le nombre d'écarts
+int benchPoliceBandes(Game& g, Renderer& r, const std::string& outDir);
 // WFS-119 RG-08 (ANO-53) : parcours au doigt de la course à 5 : fin → « Rejouer » → nouvelle course → gaz pris → fin →
 // « Menu » (même doigt) → accueil ; capture course5-rejouer ; rend le nombre d'écarts
 int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& outDir);
