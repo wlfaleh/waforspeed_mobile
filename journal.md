@@ -1153,3 +1153,8 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Zone : E12, inventaire sans code du moteur : `regles-de-gestion/WFS-378-inventaire.md` (tableau par zone : objet, fichier et ligne, forme, nombre, capture du banc PC), hors décor des cartes (déjà dans E15 : WFS-369 à 373, 376) ; skills `artiste-3d` et `expert-realisme-3d`. Les tickets de remplacement sont proposés au PO, qui les crée.
 - Règles : `regles-de-gestion/WFS-378.md` + `regles-de-gestion/DA-realisme.md` ; branche `feature/waforspeed-378` ; captures, PR, appel du `lead-dev`, arrêt de la session après la fusion.
 
+
+### 2026-11-13 15:46:15 — WFS-378 attribué à Claude, agent dev3d (01Us6uCt5A) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCt5AqkHmCmnMByoftq), sans ticket depuis la règle « un seul sujet par session ». WFS-500, 510 et 535 venaient d'être donnés à d'autres sessions : 1er ticket P1 prêt suivant permis à un développeur artiste 3D, **WFS-378** (E12, agent `dev-artiste-3d`).
+- Périmètre : inventaire des formes nues **hors décor** (garage, habitacle et vue Cockpit, véhicules, effets, checkpoints ; le décor des cartes est dans E15), tableau `regles-de-gestion/WFS-378-inventaire.md`, puis découpage proposé au PO. Pas de code du moteur.
+- Règles : `regles-de-gestion/WFS-378.md` + `regles-de-gestion/DA-realisme.md`. Branche attendue : `feature/waforspeed-378`, premier commit poussé tout de suite.
