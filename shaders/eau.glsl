@@ -300,7 +300,8 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         float monte = mix(1.8, 5.0, clamp(h * 3.0 + 0.5, 0.0, 1.0));
         float rocheE = (1.0 - smoothstep(monte * 0.5, monte, x)) * smoothstep(0.22, 0.5, eauDentelle(p * 1.5, t) * 0.8 + 0.25)
                      // liseré au pied de la roche : largeur qui varie le long du bord et avec la vague (WFS-401 : plus une bande droite)
-                     + (1.0 - smoothstep(0.0, 0.3 + 1.1 * eauBruit(vec2(le * 0.7, 0.25 * t)) + 0.6 * clamp(h * 3.0, 0.0, 1.0), x)) * 0.8
+                     // (Basse : bande fixe de 0,9 m, comme avant : même coût que main, RG-06)
+                     + (1.0 - smoothstep(0.0, basse ? 0.9 : 0.3 + 1.1 * eauBruit(vec2(le * 0.7, 0.25 * t)) + 0.6 * clamp(h * 3.0, 0.0, 1.0), x)) * 0.8
                      + (1.0 - smoothstep(3.0, 10.0, x)) * smoothstep(0.58, 0.78, eauBruit(vec2(le * 0.4, x * 1.1 - 0.4 * t)));
         // B1 (lead dev) : l'écume du bord vient des vagues : aucune dans l'eau calme (port 0,3, rivière 0,15), entière en pleine mer
         ecume = mix(max(sable, ressac), clamp(rocheE, 0.0, 1.0), roche) * 0.85 * smoothstep(0.5, 0.9, agit);
