@@ -1,0 +1,81 @@
+# WaForSpeed — game texts in English (WFS-504, epic E20). Format: key=text (UTF-8), "\n" = new line, {1} {2} = values.
+# Every key also exists in fr.txt (test_langue). Invented proper names are not translated. US English, simple and short.
+
+# ---- Settings (WFS-504, RG-10)
+reglages.bouton=Settings
+reglages.titre=Settings
+reglages.surtitre.menu=Main menu
+reglages.surtitre.pause=Race paused
+reglages.fermer=Close
+reglages.cgu=Terms of use
+reglages.onglet.affichage=Display
+reglages.onglet.conduite=Driving
+reglages.onglet.son=Sound
+
+# camera views (shared keys: also for pause and race, WFS-505, WFS-506)
+vue.poursuite=Chase
+vue.capot=Hood
+vue.cockpit=Cockpit
+vue.proche=Near
+
+reglages.camera=Camera
+reglages.graphismes=Graphics
+reglages.graphismes.basse=Low
+reglages.graphismes.moyenne=Medium
+reglages.graphismes.haute=High
+reglages.graphismes.ultra=Ultra
+reglages.son=Sound
+reglages.son.active=On
+reglages.son.coupe=Off
+reglages.musique=Music
+reglages.musique.active=On
+reglages.musique.coupee=Off
+reglages.commandes=Controls
+reglages.commandes.droitier=Right-hand
+reglages.commandes.gaucher=Left-hand
+reglages.vibrations=Vibration
+reglages.vibrations.activees=On
+reglages.vibrations.coupees=Off
+reglages.direction=Steering
+reglages.direction.glisser=Swipe
+reglages.direction.fleches=Arrows
+reglages.mouvements=Reduce motion
+reglages.mouvements.non=No
+reglages.mouvements.oui=Yes
+reglages.boutons=Buttons
+reglages.boutons.normaux=Normal
+reglages.boutons.grands=Large
+reglages.gyro=Gyroscope
+reglages.gyro.coupe=Off
+reglages.gyro.doux=Low
+reglages.gyro.moyen=Medium
+reglages.gyro.fort=High
+reglages.gyrozone=Gyro dead zone
+reglages.gyrozone.petite=Small
+reglages.gyrozone.moyenne=Medium
+reglages.gyrozone.grande=Large
+reglages.aide=Steering assist
+reglages.aide.activee=On
+reglages.aide.desactivee=Off
+reglages.regard=Cockpit view
+reglages.regard.bas=Low
+reglages.regard.normal=Normal
+reglages.regard.haut=High
+reglages.fantome=Record ghost
+reglages.fantome.affiche=Shown
+reglages.fantome.cache=Hidden
+reglages.langue=Language
+reglages.langue.auto=Automatic
+# RG-02: "Français" and "English" are always written in their own language
+reglages.langue.fr=Français
+reglages.langue.en=English
+
+# hidden performance diagnostic menu (WFS-419)
+diag.titre=Performance diagnostic (WFS-419)
+diag.fermer=Close
+diag.tout=Restore all
+diag.banc=Auto bench
+diag.actif=Active
+diag.coupe=Off
+diag.coupe_json=Off (JSON)
+diag.mesure_vide=Measurement: drive a few seconds in a race (20 s window).

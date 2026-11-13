@@ -1,0 +1,81 @@
+# WaForSpeed — textes du jeu en français (WFS-504, épic E20). Format : cle=texte (UTF-8), « \n » = retour à la ligne,
+# {1} {2} = valeurs. Chaque clé existe aussi dans en.txt (test_langue). Les noms propres inventés ne se traduisent pas.
+
+# ---- Réglages (WFS-504, RG-10)
+reglages.bouton=Réglages
+reglages.titre=Réglages
+reglages.surtitre.menu=Menu principal
+reglages.surtitre.pause=Course en pause
+reglages.fermer=Fermer
+reglages.cgu=Conditions d'utilisation
+reglages.onglet.affichage=Affichage
+reglages.onglet.conduite=Conduite
+reglages.onglet.son=Son
+
+# vues de la caméra (clés communes : aussi pour la pause et la course, WFS-505, WFS-506)
+vue.poursuite=Arrière
+vue.capot=Capot
+vue.cockpit=Cockpit
+vue.proche=Proche
+
+reglages.camera=Caméra
+reglages.graphismes=Graphismes
+reglages.graphismes.basse=Basse
+reglages.graphismes.moyenne=Moyenne
+reglages.graphismes.haute=Haute
+reglages.graphismes.ultra=Ultra
+reglages.son=Son
+reglages.son.active=Activé
+reglages.son.coupe=Coupé
+reglages.musique=Musique
+reglages.musique.active=Activée
+reglages.musique.coupee=Coupée
+reglages.commandes=Commandes
+reglages.commandes.droitier=Droitier
+reglages.commandes.gaucher=Gaucher
+reglages.vibrations=Vibrations
+reglages.vibrations.activees=Activées
+reglages.vibrations.coupees=Coupées
+reglages.direction=Direction
+reglages.direction.glisser=Glisser
+reglages.direction.fleches=Flèches
+reglages.mouvements=Réduire les mouvements
+reglages.mouvements.non=Non
+reglages.mouvements.oui=Oui
+reglages.boutons=Boutons
+reglages.boutons.normaux=Normaux
+reglages.boutons.grands=Grands
+reglages.gyro=Gyroscope
+reglages.gyro.coupe=Coupé
+reglages.gyro.doux=Doux
+reglages.gyro.moyen=Moyen
+reglages.gyro.fort=Fort
+reglages.gyrozone=Zone morte gyro
+reglages.gyrozone.petite=Petite
+reglages.gyrozone.moyenne=Moyenne
+reglages.gyrozone.grande=Grande
+reglages.aide=Aide à la direction
+reglages.aide.activee=Activée
+reglages.aide.desactivee=Désactivée
+reglages.regard=Regard cockpit
+reglages.regard.bas=Bas
+reglages.regard.normal=Normal
+reglages.regard.haut=Haut
+reglages.fantome=Fantôme du record
+reglages.fantome.affiche=Affiché
+reglages.fantome.cache=Caché
+reglages.langue=Langue
+reglages.langue.auto=Automatique
+# RG-02 : « Français » et « English » s'écrivent toujours dans leur propre langue
+reglages.langue.fr=Français
+reglages.langue.en=English
+
+# menu caché de diagnostic (WFS-419)
+diag.titre=Diagnostic performance (WFS-419)
+diag.fermer=Fermer
+diag.tout=Tout rétablir
+diag.banc=Banc auto
+diag.actif=Actif
+diag.coupe=Coupé
+diag.coupe_json=Coupé (JSON)
+diag.mesure_vide=Mesure : roule quelques secondes en course (fenêtre de 20 s).

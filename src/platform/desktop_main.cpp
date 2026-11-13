@@ -265,6 +265,7 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
     if (banc == "banc-telephone") { ui::chargerPolice(r); const int e = ecrans::banc_telephone::benchBancTelephone(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-420 (accroche) : banc de performance du téléphone, captures banc-tel-*
+    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchReglagesTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE)
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "ville-sens-inverse") { benchSensInverseVille(g, r, out); return finir(); }   // WFS-404 : sens inverse de la Ville seul

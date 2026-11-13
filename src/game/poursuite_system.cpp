@@ -29,9 +29,10 @@
 #include "game.h"
 #include "player.h"
 #include "poursuite.h"
-#include "police_bandes.h"
-#include "camera_vue.h"   // WFS-460 (banc) : vues Cockpit et Poursuite   // WFS-460 : bandes « POLICE » posées sur la tôle
+#include "police_bandes.h"   // WFS-460 : bandes « POLICE » posées sur la tôle
+#include "camera_vue.h"      // WFS-460 (banc) : vues Cockpit et Poursuite
 #include "../render/vehicule_mesure.h"   // WFS-460 : triangles de la peinture relus dans le .wfm
+#include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-119 : redémarrage simulé
 #include "roues.h"   // WFS-452 : roues de la police qui tournent et braquent (glisse comprise)
 #include "traffic.h"
@@ -328,6 +329,7 @@ public:
                 fini_ = true; ftJoueur_ = c->raceTime; arrivee(etat_, pl.dist * M / 1000);
                 sfxInterface(etat_.gagne ? SfxId::PoursuiteEchappe : SfxId::PoursuiteArrete);   // WFS-131 (RG-06) : jingle de fin
                 WFS_LOG("poursuite : fin — %s, score %d, %.2f km, %.1f s", etat_.gagne ? "victoire" : "ARRÊTÉ", etat_.score, pl.dist * M / 1000, ftJoueur_);
+                { CourseJouee rc; rc.mode = ModeJoue::Poursuite; rc.victoire = etat_.gagne; rc.score = etat_.score; profilNoterResultat(rc); }   // WFS-480
                 // WFS-125 (RG-02) : record Poursuite (victoire > « ARRÊTÉ », puis score ou distance), écrit seulement s'il est battu
                 nouveauRecord_ = false;
                 Sauvegarde& sv = sauvegarde();
@@ -696,11 +698,6 @@ private:
             }
         }
     }
-    // WFS-119 : ralentisseur franchi : −3 au-dessus de 90 km/h (poursuite::ralentisseur), la voiture tressaute et ralentit
-    // WFS-460 (RG-01, RG-02, ANO-250) : bandes « POLICE » posées sur la tôle des portières du modèle de la police (modele_),
-    // une fois à son chargement : triangles de la peinture relus dans le .wfm (le GPU ne garde pas la géométrie), passages de
-    // roue mesurés par la découpe des roues (Model::roues, WFS-60), puis police_bandes::construire. Sans bande trouvée : rien
-    // n'est dessiné (jamais un quadrilatère posé à la boîte de la voiture)
     // banc seulement (WFS-460, avant / après) : les bandes de main, un quadrilatère de chaque côté d'un cube unité (x = ±0,5),
     // recopiées telles quelles (même enroulement : le côté droit n'était jamais dessiné). Jamais créées en jeu.
     static Mesh bandesPlatesDeMain(Renderer& r) {
@@ -715,6 +712,10 @@ private:
         }
         return r.makeMesh(v, idx);
     }
+    // WFS-460 (RG-01, RG-02, ANO-250) : bandes « POLICE » posées sur la tôle des portières du modèle de la police (modele_),
+    // une fois à son chargement : triangles de la peinture relus dans le .wfm (le GPU ne garde pas la géométrie), passages de
+    // roue mesurés par la découpe des roues (Model::roues, WFS-60), puis police_bandes::construire. Sans bande trouvée : rien
+    // n'est dessiné (jamais un quadrilatère posé à la boîte de la voiture)
     void poserBandes() {
         if (bandesMesh_.indexCount) { r_->destroy(bandesMesh_); bandesMesh_ = Mesh{}; }
         const CarDef& cd = carById(policeCar_);
@@ -751,6 +752,7 @@ private:
                 "%zu triangles, %d point(s) sans tôle, %d dans un jour de porte (WFS-460)", policeCar_, b.zAvant, b.zArriere,
                 b.zArriere - b.zAvant, b.yBas, b.yHaut, vs.size(), b.indices.size() / 3, b.manques, b.creux);
     }
+    // WFS-119 : ralentisseur franchi : −3 au-dessus de 90 km/h (poursuite::ralentisseur), la voiture tressaute et ralentit
     void bandesPassees(Player& pl) {
         for (Bande& b : bandes_) {
             if (b.passe || distAvant_ >= b.s || pl.dist < b.s) continue;
