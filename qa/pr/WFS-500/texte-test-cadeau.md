@@ -1,4 +1,4 @@
-# WFS-500 — sortie de `test_cadeau` (RG-11)
+# WFS-500 — sortie de `test_cadeau` (RG-11), commit 1c76a5e6
 
 Commande : `./build/test_cadeau` (aussi lancé par `bash tools/qa/tests_cpu.sh build`, groupe `texte` de la CI).
 
@@ -53,6 +53,8 @@ OK    (g) relu → texte identique
 OK    (g) aucun cadeau ouvert : aucune clé cadeau-* écrite
 OK    (g) ancienne sauvegarde sans clés cadeau-* : lue, cadeau disponible
 OK    (g) valeurs mal écrites ignorées une à une (défauts), sans erreur
+OK    clé cadeau-* inconnue gardée et réécrite telle quelle
+OK    sauvegarde impossible à écrire : aucun gain, état inchangé, cadeau toujours disponible
 OK    (h) total 101 % : refusé, chances du jeu gardées, message au journal
 OK    (h) chances changées avec un total de 100 % : acceptées
 OK    (h) tranche min > max : tranche du jeu gardée
