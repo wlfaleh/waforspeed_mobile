@@ -116,3 +116,5 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 
 ## Le lead dev aide l'équipe (décision de l'utilisateur, 2026-11-08)
 « C'est le meilleur en code ; il prend un sujet en cas de blocage ; il est là pour l'équipe aussi. » Le lead dev peut donc **coder un ticket** quand le PO ou l'utilisateur le lui confie (blocage, PR refusée plusieurs fois, urgence). Il suit alors les règles de tout développeur (branche, captures, PR, journal). **Sa PR est relue et fusionnée par une autre instance du lead dev**, jamais par celle qui a codé : on ne juge pas son propre travail.
+
+**Rappel de l’utilisateur (2026-11-13)** : « en cas de besoin de propriétaire, le lead dev peut prendre des sujets bloquants ou urgents ; il charge les skills nécessaires pour terminer rapidement le sujet ». Avant de coder : charger `agent-developer`, `waforspeed-natif` et le skill de l’expert du domaine (`artiste-3d`, `expert-conduite`, `expert-cartes`, `expert-ci-cd`, `expert-realisme-3d`, `design-street-racing` pour l’interface). Une seule tâche de code à la fois ; la relecture des autres PR continue (passage de l’heure).

@@ -995,3 +995,15 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Revue complète du commit cee751f5 : captures FR / EN avant / après toutes ouvertes, diff entier relu, construction + tests CPU refaits (120/120), banc `textes` en `en` relancé (VERT). Contenu **approuvé** (revue écrite dans la PR).
 - Fusion refusée par GitHub : **conflits avec `main`** depuis la fusion de WFS-505 (#383) pendant la revue : `assets/textes/en.txt`, `assets/textes/fr.txt` (garder les blocs `cgu.*` et menus), `src/platform/desktop_main.cpp` (banc `textes` : appeler CGU + Réglages + menus, garder `textes-menus`).
 - Au développeur : synchroniser, relancer tests et banc `textes` fr / en, noter le commit testé dans `tests-cpu.log`, répondre dans la PR, remettre 🔁 et rappeler le lead dev.
+
+### 2026-11-13 13:03:33 — Lead dev en renfort rappelé ; WFS-534 créé ; dépendances revues (po-scrum-master)
+- Règle de l'utilisateur (2026-11-08) rappelée le 2026-11-13 et écrite dans `CLAUDE.md`, la fiche `lead-dev` et les skills `lead-dev` / `po-scrum-master` : un sujet bloquant ou urgent sans propriétaire va au lead dev, qui charge les skills nécessaires ; sa PR est relue par une autre instance du lead dev.
+- **WFS-534** [TECHNIQUE] découpage de `garage.cpp` en sous-panneaux, P1, confié au lead dev en renfort ; WFS-489 puis 507 l'attendent.
+- Avis du lead dev appliqué : 490 ⏳ Prêt (n'attend plus 489) ; 492 → 490 ; 495 → 492 ; 483 → 456 ; garde-fou E10 en deux files (« shader et rendu », « modèles .wfm »).
+
+### 2026-11-13 13:05:03 — Début : WFS-490 attribué à Claude, agent dev3d (01Us6uCwDY) (po-scrum-master)
+- Nouvelle session `@dev` (agent dev-artiste-3d, aucun ticket avant) : **WFS-490** « Finitions : 8 vraies peintures dans le shader des voitures », épic E18, P1 (10e du bandeau 🏁 ; WFS-489, 9e, attend WFS-534 du lead dev ; 1er prêt restant pour une session `@dev`).
+- Zone de code : E10, file « shader et rendu » : `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `references/reel/voitures/**`, `tests/fidelite_voitures*`. Pas de `garage.cpp` (écran de choix = WFS-491), pas de fichiers `.wfm` (file « modèles », WFS-456).
+- Règles : `regles-de-gestion/WFS-490.md` + `regles-de-gestion/E18-personnalisation.md`. Brillant identique à avant ; un seul shader (finition = paramètre) ; endurance en Basse ≤ 1 img/s d'écart ; banc de vitrine `finitions` ; avis `expert-realisme-3d` conseillé en commentaire de PR.
+- Plan court : paramètre de finition dans le matériau peinture (principale et secondaire), paillettes métallisé / nacré, flop, mat / satiné par la rugosité, chromé par l'IBL, caméléon et candy selon l'angle, banc `finitions` 8 × 3 voitures jour et nuit.
+- `track-agent.md` : lignes des sessions terminées (WFS-488, WFS-505) enlevées.
