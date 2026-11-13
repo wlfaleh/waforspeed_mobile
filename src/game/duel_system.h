@@ -3,6 +3,7 @@
 // envoie la présence, applique les contacts, dessine les adversaires avec leur nom, le classement en direct et
 // l'écran de résultat (« Revanche » / « Menu »).
 #pragma once
+#include <functional>
 #include <string>
 #include "duel.h"
 
@@ -18,5 +19,8 @@ void benchDuelScene(Game& g, Renderer& r, const std::string& outDir);
 // l'écran de fin (faux tant qu'il n'est pas dessiné)
 void duelArriveeForcee(bool oui);
 bool duelBouton(const char* nom, float& x, float& y);
+// WFS-506 (banc « textes ») : duel en mémoire, course → résultat → « Revanche » → résultat → « Retour » ; `capture(nom)` : image et
+// textes notés (duel-course, duel-fin) ; rend le nombre d'écarts du parcours
+int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::string&)>& capture);
 
 } // namespace wfs

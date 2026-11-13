@@ -1037,3 +1037,52 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Rappel pour le PO (avis du juriste, hors ticket, avant la sortie publique) : 🔴 contact de l'éditeur (ANO-205) ; 🔴 politique en ligne sans les notes internes (WFS-509) ; 🟠 lignes « Brouillon / Draft » et « texte à publier… » visibles dans l'écran des CGU ; 🟠 droit applicable non précisé.
 - À signaler : dans le dossier de travail de cette session, la branche locale `main` (vieille copie du clone, 50 commits en avance / 84 en retard) a été déplacée sur `origin/main` pendant la revue, mais ses fichiers sont restés à l'ancien état (642 fichiers indexés, qui annuleraient 84 commits). Rien n'a été commité ni poussé depuis ce dossier ; état conservé, à jeter (aucun travail perdu : l'ancien arbre = commit ca549dcb).
 - Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 14:35:01 — WFS-456 : PR #385 ouverte (Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz))
+- **Inventaire RG-01** (17 voitures livrées, arrière vu de près, banc `vitrines-feux`, `WFS_VITRINE_BAS`) :
+  - corrigées : **Golf** (emblème rond du hayon, disque noir d'ANO-259 : découpe, tôle continue derrière) ; **Corsa** (anneau + barre et socle de l'emblème : découpe) ; **Giulia** (écusson noir du coffre : découpe + bouchon, trou recousu) ; **Compass** (creux des lettres « Jeep » dans la peinture : découpe + couture, roues redressées ensuite) ; **T-Cross** (plaque grise du badge : découpe) ;
+  - propres : M4, 911, Gallardo, 208, Abarth, S3, Model 3, GT86 (reflets sous le becquet, sans emblème), V60, RR Sport, Corvette, SF90 ;
+  - non touchées : A 45, Elantra, X5 (retirées, RG-05).
+- **RG-02** : phares de la Golf, liseré rouge → 351 triangles en projection plane sur le noir du boîtier (#101010). **Écart à la RG** (repeindre par `logos.json`) : la zone rouge de la texture est aussi lue par les catadioptres arrière ; les repeindre les aurait noircis.
+- **RG-03** : `benchVitrinesFeux` saute `VOITURES_RETIREES` (0 image pour a45, elantra, x5).
+- **Outil** : `couture` accepte `"arriere": true` (miroir z, normales vers +Z). Cause trouvée sur mes captures : sur un hayon, environ 60 % des normales de la peau pointaient vers l'intérieur.
+- **Test** : `test_hayon_golf` (échoue sur le `golf.wfm` de `main`). 123 tests CPU verts sur la branche synchronisée ; contrôles `--verifier` (formes, logos, peinture2) et licences OK.
+- **Limites** : Compass (plaque lisse un peu plus brillante en lumière rasante), Giulia (léger dégradé au centre). Mineurs ; une tâche de finition est à proposer au PO si besoin. Rendu vérifié au banc PC seulement.
+- Captures : 35 paires avant / après jour et nuit dans `qa/pr/WFS-456/`. Le 1er passage de nuit a échoué (GitHub 503 au `git fetch`) et a été relancé.
+
+### 2026-11-13 14:42:03 — WFS-506 : PR #386 ouverte (Claude, agent dev3d (01Us6uCvEv))
+- Fait : course en anglais. HUD, commandes (Gas / Brake / Nitro), nom de la vue, étiquette du fantôme, bandeaux, consignes de la carte de navigation (noms de rues inchangés), fin de course Checkpoint, Course à 5, Poursuite (annonces et pertes de points comprises) et Duel, tout par `ui::tr`. Environ 120 clés en FR et en EN. Aides `src/game/textes_course.h` (tampon réutilisé, capitales gardées par langue : aucune allocation nouvelle par image).
+- Banc : `src/game/textes_course_banc.cpp`, groupes `textes` (CGU, Réglages, menus, puis course) et `textes-course`. Parcours fin → Rejouer → fin → Menu dans les 3 modes solo ; course → résultat → Revanche → résultat → Retour en Duel.
+- **Accroche hors zone annoncée** : 3 lignes dans `src/platform/desktop_main.cpp` (groupes `textes` et `textes-course`, include). Petites fonctions de banc : `courseBouton`, `poursuiteBancMessages`, `benchDuelTextes`.
+- Vérifié : construction, 122 tests CPU verts (`2b9cd185`, synchronisé avec `main` après WFS-505 et 508). Banc `textes` EN vert (0 phrase française, 0 dépassement, 0 écart) ; FR vert et inchangé. Chauffe `main` / branche identique (mêmes appels et triangles, 145 s / 146 s). Captures avant / après (`hud`, `course5`, en anglais) : seul le texte change.
+- Limites : images par seconde réelles non mesurables sur lavapipe ; banc `textes` hors CI ; les nombres gardent la virgule française (hors E20).
+
+### 2026-11-13 14:48:33 — WFS-534 en PR #387 (lead-dev, renfort WFS-534)
+- Fait : `src/ui/garage.cpp` 678 → 249 lignes ; panneaux `garage_commun`, `garage_couleur` (→ 489), `garage_finition` (vide, → 491), `garage_skin` (vide, → 494), `garage_achat` (Choisir / Retour, → 489 / 499 / 502), `garage_fiche`, `garage_cadre`, `garage_decor`, `garage_bancs` ; guide en tête de `garage.h` (RG-05). API publique, ordre 440 et nom du système inchangés.
+- Vérifié : construction complète ; tests CPU 122 réussis (commit ab6f7cac ; 1er passage : `test_audio_chocs` RG-07 en échec de chronométrage sous charge, vert seul puis toute la suite) ; 59 paires de captures avant / après **identiques au pixel** (`garage` 1280x720 et 2400x1080, `garage` en anglais, tour du garage) ; journal du banc identique.
+- Limites : `captures_pr.sh` arrêté par la limite de temps de la session en fin de captures « avant » de `voitures-retirees` (tour du garage déjà fait) : JPG et tableau faits ensuite avec les commandes de l'étape 4 du script. Aucune CI de branche lancée.
+- Fusion : par son auteur, **sur ordre de l'utilisateur (2026-11-13)** relayé par le PO (exception pour WFS-534 seulement).
+
+### 2026-11-13 14:49:27 — WFS-534 fusionné (#387, 497814ac) (lead-dev, renfort WFS-534)
+- **Fusionnée par son auteur sur ordre de l'utilisateur (2026-11-13)**, relayé par le PO ; exception pour WFS-534 seulement. Approbation formelle refusée par GitHub (même compte) : revue « ✅ Approuvé » écrite en commentaire sur 80130699.
+- Avant fusion : construction OK, 122 tests CPU réussis, 59 paires de captures identiques au pixel, diff relu en entier.
+- WFS-534 🟣 Fusionné ; **WFS-489 ⏳ Prêt** (garage découpé : couleur → `garage_couleur.*`, achat → `garage_achat.*`) ; ligne `suivi-pr.md` supprimée ; ligne `qa/Check.md` ajoutée ; session de renfort terminée.
+
+### 2026-11-13 14:50:09 — WFS-456 : PR #385 refusée par le lead dev (lead-dev)
+- Revue du commit 5acec11. J'ai ouvert les 35 paires de captures, avec des zooms ×4 sur les hayons et les phares, et lu tout le diff. J'ai construit et testé la branche moi-même : 123 tests réussis, dont `test_hayon_golf`. La comparaison pixel par pixel entre `main` et la branche ne montre des écarts que sur les emblèmes et les phares de la Golf.
+- Résultat visible bon : disque noir de la Golf retiré (ANO-259), liseré rouge des phares retiré (ANO-258), emblèmes de la Corsa, de la Giulia, du Compass et du T-Cross retirés, banc `vitrines` sans les voitures retirées (ANO-257). L'écart à RG-02 (`uvPlan` au lieu de `logos.json`, à cause des catadioptres) est accepté.
+- **Refus, deux points bloquants** : (1) la preuve des tests CPU manque (pas de `qa/pr/WFS-456/tests-cpu.log`, pas de section « Tests CPU » ; règle de l'utilisateur du 2026-11-11) ; (2) la capture 5 du ticket manque : il faut le journal du banc `vitrines` qui montre 0 image pour l'A 45, l'Elantra et le X5.
+- Non bloquant, pour une tâche de finition à proposer au PO : pli en losange de la membrane au coffre de la Giulia (visible au zoom ×4 seulement), plaque du Compass plus brillante. Revue postée en COMMENT, car GitHub refuse « changements demandés » sur une PR du même compte.
+
+### 2026-11-13 14:52:03 — WFS-490 : finitions de peinture, PR #388 ouverte (Claude, agent dev3d (01Us6uCwDY))
+- Fait : 8 finitions dans `shaders/vehicule.glsl` (un seul shader ; finition codée dans le métal des pièces peintes, `src/render/vehicule_finitions.h`) ; paillettes procédurales (aucune texture) ; joueur seulement (RG-11) ; API `Renderer::finitionJoueur` pour WFS-491 ; banc `finitions` ; test `test_fidelite_voitures_finitions` ; valeurs sourcées `references/reel/voitures/peintures.md`.
+- Accroches hors zone (≤ 10 lignes chacune) : `shaders/scene.frag` (3), `src/render/renderer.cpp` (4), `renderer.h` (5), `src/platform/desktop_main.cpp` (2), `CMakeLists.txt` (2).
+- Vérifié : brillant identique au pixel près (banc `peinture2`, 14 images, 0 pixel différent) ; 122 tests CPU réussis ; endurance Basse (lavapipe) : main 3,540 / 3,767 img/s, branche 3,307 à 3,495 img/s (écart < 0,5, bruit du banc).
+- Limites : rien de visible sur l'APK avant WFS-491 (choix au garage) ; chromé sombre dans une rue à l'ombre (miroir) ; mesure sur lavapipe, pas sur téléphone.
+
+### 2026-11-13 14:53:34 — WFS-506 fusionné par le lead dev (lead-dev)
+PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / après, 20 captures du banc `textes-course` FR / EN), tout le diff lu, construction et 122 tests CPU refaits, banc `WFS_BANC=textes-course WFS_LANGUE=en` refait : VERT. Revue « ✅ Approuvé » postée en commentaire (GitHub refuse l'approbation sur le même compte), fusion en squash 1d969bb9. 4 remarques non bloquantes dans la revue (test CPU de `textes::remplir` / `ordinal`, « 21th », rond-point non capturé, chaîne créée à chaque image comme avant). Statut 🟣, ligne de suivi-pr.md supprimée, qa/Check.md à jour.
+
+### 2026-11-13 14:54:11 — Fin WFS-506 : fusionné (#386, 1d969bb9), session terminée (Claude, agent dev3d (01Us6uCvEv))
+- Fusion en squash par le lead dev à la 1re revue. Remarques non bloquantes pour un futur ticket (au PO) : pas de test CPU propre à `textes::remplir`, `ordinal` et `titrePlace` ; `ordinal.n=1th` donnerait « 21th » (cas impossible aujourd'hui, 6 au plus) ; consigne de rond-point non capturée (aucun banc n'atteint un rond-point) : à regarder à la recette sur l'APK.
+- Session terminée : un seul sujet par session, aucun autre ticket demandé.

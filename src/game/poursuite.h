@@ -31,6 +31,7 @@ bool poursuiteBouton(const std::string& nom, float& x, float& y);
 int poursuitePolice(double* rd, bool* fixe, int max);   // WFS-173 (RG-08) : police (distance en unités, barrage), lecture seule
 bool poursuiteNouveauRecord();
 void poursuiteBancFin(int mode);
+void poursuiteBancMessages();   // WFS-506 (banc « textes ») : annonce de renfort et perte de points (choc avec le trafic) tout de suite
 void poursuiteBancFixe(bool oui);   // programme et graine fixes (captures stables)
 
 namespace poursuite {

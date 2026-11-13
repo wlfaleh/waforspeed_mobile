@@ -38,6 +38,7 @@
 #include "traffic.h"
 #include "traffic_system.h"
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
+#include "textes_course.h"   // WFS-506 : poursuite en français ou en anglais
 
 namespace wfs {
 
@@ -64,6 +65,36 @@ vec3 lin(unsigned h) {
     auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
     return {c(16), c(8), c(0)};
 }
+// WFS-506 (RG-01) : annonces et raisons des pertes de points. poursuite.cpp les garde en français (textes de référence de
+// test_poursuite et du journal) ; l'affichage passe par les clés des tables de textes
+const char* cleSurprise(Surprise s) {
+    switch (s) {
+        case Surprise::Barrage: return "police.barrage";
+        case Surprise::Deboite: return "police.deboite";
+        case Surprise::Travaux: return "police.travaux";
+        case Surprise::Accident: return "police.accident";
+        case Surprise::Camion: return "police.camion";
+        case Surprise::Ralentisseur: return "police.ralentisseur";
+        default: return "";
+    }
+}
+constexpr const char* ANNONCE_RENFORT = "RENFORT DE POLICE", *ANNONCE_BOUCHON = "EMBOUTEILLAGE", *RAISON_BANC = "ARRÊT DU BANC";
+const std::string& annonceAffichee(const std::string& fr) {
+    if (fr == ANNONCE_RENFORT) return ui::tr("police.renfort");
+    if (fr == ANNONCE_BOUCHON) return ui::tr("police.embouteillage");
+    for (int k = 0; k < TYPES_SURPRISE; k++) if (fr == bandeau((Surprise)k)) return ui::tr(cleSurprise((Surprise)k));
+    return fr;
+}
+const std::string& raisonAffichee(const char* r) {
+    static const std::pair<const char*, const char*> T[] = {{RAISON_TRAFIC, "police.raison.trafic"}, {RAISON_GLISSIERE, "police.raison.glissiere"},
+        {RAISON_POLICE, "police.raison.police"}, {RAISON_COLLE, "police.raison.colle"}, {RAISON_RALENTISSEUR, "police.raison.ralentisseur"},
+        {RAISON_PLOT, "police.raison.plot"}, {RAISON_CAMION, "police.raison.camion"}, {RAISON_BANC, "police.raison.banc"}};
+    static const std::string vide;
+    if (!r) return vide;
+    for (const auto& [fr, cle] : T) if (!std::strcmp(r, fr)) return ui::tr(cle);
+    static std::string autre; autre = r; return autre;
+}
+
 struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
 struct Plot { double s = 0, x = 0; bool tombe = false; };   // WFS-338 : un cône de chantier (K5a)
 struct Panneau { double s = 0, x = 0; };                     // WFS-338 (RG-01) : panneau « travaux » AK5 sur pied
@@ -296,11 +327,11 @@ public:
             int mobiles = 0; for (const Police& p : police_) mobiles += !p.fixe;
             if (mobiles < policeVoulue(km)) {
                 police_.push_back(renfort(mobiles, pl.dist, pl.speed, graine_));
-                annoncer("RENFORT DE POLICE");
+                annoncer(ANNONCE_RENFORT);
                 WFS_LOG("poursuite : renfort à %.2f km, %d voitures de police", km, mobiles + 1);
             }
             surprises(pl, t, tr);
-            if (g_bancFin == 1) { perdre(etat_, etat_.score, "ARRÊT DU BANC"); g_bancFin = 0; }
+            if (g_bancFin == 1) { perdre(etat_, etat_.score, RAISON_BANC); g_bancFin = 0; }
             arrivee(etat_, km);
             if (etat_.arrete && c->state != RaceState::Over) {
                 c->state = RaceState::Over;
@@ -449,10 +480,11 @@ public:
         const float cx = (g.marges.gauche + W - g.marges.droite) / 2, y0 = g.marges.haut + 2 * u, pw = 40 * u, ph = 15.5f * u;
         r.uiRect(cx - pw / 2, y0, pw, ph, SURFACE);
         const vec4 coul = etat_.score > 50 ? TEXTE : etat_.score > 20 ? ui::ORANGE : DANGER;
-        ui::text(r, cx - pw / 2 + 2 * u, y0 + 1.6f * u, 2.4f * u, "SCORE", MUTED, ui::GAUCHE, 0.16f, false);
+        static textes::Capitales libScore{"police.score"}, libPolice{"police.police"};   // WFS-506 (RG-01)
+        ui::text(r, cx - pw / 2 + 2 * u, y0 + 1.6f * u, 2.4f * u, libScore(), MUTED, ui::GAUCHE, 0.16f, false);
         ui::text(r, cx - pw / 2 + 2 * u, y0 + 4.6f * u, 9 * u, std::to_string(etat_.score), coul, ui::GAUCHE, 0.f, false, true);
         int mobiles = 0; for (const Police& p : police_) mobiles += !p.fixe;
-        ui::text(r, cx + pw / 2 - 2 * u, y0 + 1.6f * u, 2.4f * u, "POLICE", MUTED, ui::DROITE, 0.16f, false);
+        ui::text(r, cx + pw / 2 - 2 * u, y0 + 1.6f * u, 2.4f * u, libPolice(), MUTED, ui::DROITE, 0.16f, false);
         const bool flash = std::fmod(g.time, 0.5) < 0.25;
         for (int i = 0; i < POLICE_MAX; i++) {   // une pastille par voiture (allumées : rouge / bleu)
             const float px = cx + pw / 2 - 2 * u - (POLICE_MAX - i) * 2.8f * u + 0.6f * u;
@@ -464,17 +496,22 @@ public:
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, pw - 4 * u, 0.6f * u, vec4{1, 1, 1, 0.12f});
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, (pw - 4 * u) * k, 0.6f * u, ui::ORANGE);
         if (perteT_ > 0 && !perteTexte_.empty()) {   // WFS-338 (RG-03, ANO-193) : raison de la dernière perte, sous l'encart
-            const float tw = ui::width(3 * u, perteTexte_, 0.06f) + 4 * u, ty = y0 + ph + 1.f * u;
+            // WFS-506 (RG-01, RG-04) : « -5 CHOC AVEC LE TRAFIC » / « -5 HIT TRAFFIC », dans un tampon réutilisé
+            char n[16]; std::snprintf(n, sizeof n, "%d", perteCumul_);
+            static std::string perte;
+            textes::remplir(perte, "police.perte", n, raisonAffichee(perteRaison_));
+            const float tw = ui::width(3 * u, perte, 0.06f) + 4 * u, ty = y0 + ph + 1.f * u;
             r.uiRect(cx - tw / 2, ty, tw, 4.6f * u, SURFACE);
-            ui::text(r, cx, ty + 0.8f * u, 3 * u, perteTexte_, DANGER, ui::CENTRE, 0.06f, false, true);
+            ui::text(r, cx, ty + 0.8f * u, 3 * u, perte, DANGER, ui::CENTRE, 0.06f, false, true);
         }
         if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
             // WFS-141 (RG-02, ANO-57) : à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 + 10 + 40 + 8 + 40 px
             // de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route ; effacé après
             // 1,5 s. Taille inchangée (ordre permanent du 2026-11-06 sur la taille des textes : pas de passage à 5 %)
-            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, ban_, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
+            const std::string& ban = annonceAffichee(ban_);   // WFS-506 (RG-01)
+            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, ban, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
             r.uiRect(bx, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
-            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, ban_, TEXTE, ui::CENTRE, 0.1f, false, true);
+            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, ban, TEXTE, ui::CENTRE, 0.1f, false, true);
         }
     }
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -502,9 +539,10 @@ public:
         return n;
     }
     void bancScore(int score) { etat_.score = score; }
+    void bancMessages() { annoncer(ANNONCE_RENFORT); chocTrafic(etat_); }   // WFS-506 (banc « textes »)
     // banc (WFS-338) : renfort tout de suite (même chemin qu'au passage des 2 km) ; distance (m) derrière le joueur de la
     // police mobile la plus proche (négatif : devant)
-    void bancRenfort(const Player& pl) { const int n = policeMobiles(); police_.push_back(renfort(n, pl.dist, pl.speed, graine_)); annoncer("RENFORT DE POLICE"); }
+    void bancRenfort(const Player& pl) { const int n = policeMobiles(); police_.push_back(renfort(n, pl.dist, pl.speed, graine_)); annoncer(ANNONCE_RENFORT); }
     // banc (WFS-338, revue du lead dev) : toute la police mobile repart à APPARITION_M derrière (aucune à moins de 160 m),
     // à la vitesse du joueur : elle revient ensuite par la conduite normale
     void bancEloigner(const Player& pl) {
@@ -529,7 +567,7 @@ public:
     static std::string texteRecord() {
         const Sauvegarde& sv = sauvegarde();
         if (!sv.aRecordPoursuite()) return "—";
-        return sv.recPVictoire ? "Victoire · " + std::to_string(sv.recPScore) + " pts" : "Arrêté · " + ui::decimal(sv.recPDistM / 1000.0, 2) + " km";
+        return sv.recPVictoire ? ui::tr("police.record_victoire", std::to_string(sv.recPScore)) : ui::tr("police.record_arrete", ui::decimal(sv.recPDistM / 1000.0, 2));   // WFS-506
     }
     Zone menuZone() const { return menuZ_; }
 
@@ -581,7 +619,7 @@ private:
                 }
                 WFS_LOG("poursuite : embouteillage à %.2f km, %.0f m, %d voitures, passage file %d", b.km, b.longueurM, n, b.passage);
             }
-            if (devant < 160 && devant > 120 && b.place && ban_ != "EMBOUTEILLAGE") annoncer("EMBOUTEILLAGE");
+            if (devant < 160 && devant > 120 && b.place && ban_ != ANNONCE_BOUCHON) annoncer(ANNONCE_BOUCHON);
             if (!b.place || pl.dist > s1 + 200 / M) continue;
             // dans la zone : 20 à 40 km/h, pas de changement de file vers le passage (il reste étroit)
             for (TrafficCar& c : tr->cars) {
@@ -773,26 +811,30 @@ private:
         const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
         r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, "POURSUITE POLICE · 10 KM", ui::CYAN, ui::CENTRE, 0.16f, false);
+        static std::string sur;   // WFS-506 (RG-03) : « POURSUITE POLICE · 10 KM » / « POLICE PURSUIT · 10 KM »
+        textes::remplir(sur, "police.surtitre", "10");   // valeur affichée inchangée (10 km)
+        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
         const bool v = etat_.gagne;
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, v ? "VICTOIRE" : "ARRÊTÉ", v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::tr(v ? "fin.victoire" : "police.arrete"), v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
         float y = py0 + 20 * u;
-        auto ligne = [&](const char* a, const std::string& b) {
+        auto ligne = [&](const std::string& a, const std::string& b) {
             ui::text(r, px0 + 6 * u, y, 3.4f * u, a, MUTED, ui::GAUCHE, 0.f, false);
             ui::text(r, px0 + pw - 6 * u, y, 3.4f * u, b, TEXTE, ui::DROITE, 0.f, false, true);
             y += 5.6f * u;
         };
-        ligne("Score final", std::to_string(etat_.score));
-        ligne("Temps", ui::chrono(ftJoueur_));
-        ligne("Chocs trafic / glissière / police", std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice));
-        ligne("Voitures de police", std::to_string(policeMobiles()));
+        ligne(ui::tr("police.score_final"), std::to_string(etat_.score));   // WFS-506 (RG-03)
+        ligne(ui::tr("fin.temps"), ui::chrono(ftJoueur_));
+        ligne(ui::tr("police.chocs"), std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice));
+        ligne(ui::tr("police.voitures"), std::to_string(policeMobiles()));
         const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
         if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
         biseauFin(r, rejouerZ_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);
-        ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
+        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe, texte réduit de 20 % au plus s'il dépasse
+        static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
+        ui::textBoite(r, rejouerZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libRejouer(), vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
         biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
-        ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
+        ui::textBoite(r, menuZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libMenu(), TEXTE, ui::CENTRE, 0.08f, false);
     }
 
     Renderer* r_ = nullptr;
@@ -845,6 +887,8 @@ bool poursuiteBouton(const std::string& nom, float& x, float& y) {
 }
 bool poursuiteNouveauRecord() { return PoursuiteSystem::actif && PoursuiteSystem::actif->nouveauRecord(); }
 void poursuiteBancFin(int mode) { g_bancFin = mode; }
+// WFS-506 (banc « textes ») : annonce « RENFORT DE POLICE » et perte de points « -5 CHOC AVEC LE TRAFIC » tout de suite (mêmes chemins qu'en course)
+void poursuiteBancMessages() { if (PoursuiteSystem* s = PoursuiteSystem::actif) s->bancMessages(); }
 double poursuiteBancProche(const Player& pl) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->bancProche(pl) : 1e9; }   // WFS-460 (banc)
 void poursuiteBancFixe(bool oui) { g_banc = oui; }
 // WFS-452 (banc « roues-suivies ») : 1re voiture de police tenue à ecartM du joueur (m, < 0 : derrière), au latéral x (demi-largeurs)
