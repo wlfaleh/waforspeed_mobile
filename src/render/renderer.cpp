@@ -1456,8 +1456,11 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
             }
             p.pc.nuit = nuitE;
         }
-        // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
-        if (qualiteBasse && depth > 15.f && mat.detail > 0) continue;
+        // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées ;
+        // WFS-460 (accroche, ANO-260) : jamais la peinture : un maillage de carrosserie très dense (golf, mustang, 208, 911 : triangles
+        // médians de 2,4 à 3,5 mm) était classé « très fin » et la caisse disparaissait (intérieur gris foncé vu à la place, en
+        // bascule autour de 15 m de la caméra : police « gris argent » puis blanche)
+        if (qualiteBasse && depth > 15.f && mat.detail > 0 && (bancPeintureFineMain || !(mat.flags & MAT_PAINT))) continue;
         // WFS-134 (RG-11) : Basse, au-delà de 15 m : petites pièces (< 30 cm : logos, rétroviseurs, grilles, pièces de
         // l'habitacle) non dessinées, sauf feux, peinture et vitres (silhouette inchangée, moins d'appels de dessin)
         if (qualiteBasse && depth > 15.f && mat.taille > 0 && mat.taille < 0.3f && !part.feuArriere &&

@@ -300,6 +300,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "police") { ui::chargerPolice(r); const int e = benchPolice(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-461 (accroche) : police plafonnée, contacts
+    if (banc == "police-bandes") { ui::chargerPolice(r); const int e = benchPoliceBandes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-460 (accroche) : bandes « POLICE » sur la tôle
     if (banc == "roues-suivies") { ui::chargerPolice(r); const int e = benchRouesSuivies(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-452 (accroche) : roues qui tournent et braquent
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
