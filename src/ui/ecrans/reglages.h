@@ -45,6 +45,8 @@ void ouvrirMenuCacheBanc(bool oui);  // WFS-420 : banc PC seulement : menu cach�
 // toucher pour les réglages (panneau ouvert, bouton « Réglages » visé, ou doigt posé sur lui : WFS-290) : le menu et la pause le
 // laissent passer
 bool toucheReglages(float x, float y, int doigt);
+// WFS-537 (accroche) : dessin du bouton « Réglages » à la dernière image (x, y, largeur, hauteur) ; faux s'il n'est pas dessiné
+bool boutonReglages(float& x, float& y, float& w, float& h);
 bool boutonCguReglages(float& x, float& y);   // WFS-308 (RG-05) : centre du bouton « Conditions d'utilisation » (banc ; faux si absent)
 
 // banc d'essai : reglages-menu, reglages-pause, reglages-basse (qualité basse en course)

@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>   // WFS-183 : std::getenv (banc)
 #include <map>
+#include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
@@ -326,6 +327,7 @@ private:
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous le classement
         const float pw = 66 * u, ph = (34 + 6.5f * ls.size() + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
+        score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
         r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
         char km[16]; std::snprintf(km, sizeof km, "%d", kmCourse5());   // WFS-506 (RG-03)
         static std::string sur;

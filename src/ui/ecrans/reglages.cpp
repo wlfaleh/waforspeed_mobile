@@ -602,6 +602,7 @@ Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
 void ouvrirMenuCacheBanc(bool oui) { g_diagOuvert = oui; if (oui) diag::g_menuVu = true; }   // WFS-420 : banc PC (capture du menu caché)
+bool boutonReglages(float& x, float& y, float& w, float& h) { if (g_bouton.w <= 0) return false; x = g_bouton.x; y = g_bouton.y; w = g_bouton.w; h = g_bouton.h; return true; }   // WFS-537 (accroche)
 bool toucheReglages(float x, float y, int doigt) { return g_ouvert || dansCible(g_bouton, x, y) || (doigt >= 0 && doigt == g_doigt); }   // WFS-290 : même cible que onTouch, et le doigt posé sur « Réglages »
 bool boutonCguReglages(float& x, float& y) { x = g_cgu.x + g_cgu.w / 2; y = g_cgu.y + g_cgu.h / 2; return g_ouvert && g_cgu.w > 0; }   // WFS-308
 

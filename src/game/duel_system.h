@@ -21,6 +21,6 @@ void duelArriveeForcee(bool oui);
 bool duelBouton(const char* nom, float& x, float& y);
 // WFS-506 (banc « textes ») : duel en mémoire, course → résultat → « Revanche » → résultat → « Retour » ; `capture(nom)` : image et
 // textes notés (duel-course, duel-fin) ; rend le nombre d'écarts du parcours
-int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::string&)>& capture);
+int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::string&)>& capture, bool gagne = false);   // WFS-537 : gagne = le joueur arrive le 1er
 
 } // namespace wfs

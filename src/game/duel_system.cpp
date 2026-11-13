@@ -1,4 +1,5 @@
 // WaForSpeed — module « duel » (WFS-21) : voir duel_system.h.
+#include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "duel_system.h"
 #include <functional>
 #include <algorithm>
@@ -252,6 +253,7 @@ private:
         r.uiRect(0, 0, W, H, FOND);
         const float pw = 64 * u, ph = (34 + 6.5f * rows.size()) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
+        score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
         // WFS-506 (RG-03) : titres et résultats par ui::tr
         const std::string& sur = ui::tr(presents == 1 ? (rows.size() > 2 ? "duel.sur.partis" : "duel.sur.parti")
                                         : roule ? (presents > 2 ? "duel.sur.continue" : "duel.sur.roule") : "duel.sur.termine");
@@ -343,8 +345,9 @@ void benchDuelScene(Game& g, Renderer& r, const std::string& out) {
 // WFS-506 (banc « textes ») : duel en mémoire contre « Nadia » (même salon que benchDuelScene), dans la langue active.
 // Parcours : course (classement « POSITION ») → résultat (2e place) → « Revanche » → 2e manche → résultat → « Retour » →
 // menu principal. `capture(nom)` prend l'image et note ses textes (banc de textes_course_banc.cpp). Rend le nombre d'écarts.
-int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::string&)>& capture) {
+int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::string&)>& capture, bool gagne) {
     BancDuel banc; banc.salon = std::make_shared<duel::SalonMemoire>();
+    if (gagne) banc.avance = -18 / M;   // WFS-537 (accroche, banc) : l'adversaire roule 18 m derrière ; le joueur gagne
     g_banc = &banc;
     duel::Session& s = g_session;
     int ecarts = 0;
@@ -367,6 +370,7 @@ int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::st
     auto manche = [&](int n) {   // course, puis l'adversaire arrive le premier et le joueur 0,5 s après (2e place)
         images(7 * 60);
         if (n == 1) capture("duel-course");
+        if (gagne) { banc.arrivee = true; images(30); banc.rivalFt = std::max(0.0, s.trafficClock()); images(90); return; }   // WFS-537 (banc) : le joueur arrive le 1er
         banc.rivalFt = std::max(0.0, s.trafficClock());
         images(30);
         banc.arrivee = true;
