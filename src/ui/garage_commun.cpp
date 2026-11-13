@@ -11,27 +11,28 @@ Zones g_z;
 int peintureParId(const char* id) { for (int i = 0; i < NB_PEINTURES; i++) if (std::strcmp(PAINTS[i].id, id) == 0) return i; return 0; }
 
 namespace {
+// WFS-507 : type et accroche de chaque voiture dans assets/textes (garage.type.<id>, garage.accroche.<id>)
 const Fiche FICHES[] = {
-    {"golf", "Compacte", "La compacte sportive de référence : équilibrée et précise.", 0x00E5FF, "bleu"},
-    {"p208", "Citadine", "Citadine vive et légère : idéale pour se faufiler dans le trafic.", 0xFF6A00, "jaune"},
-    {"abarth", "Mini sportive", "Petite bombe italienne : minuscule, nerveuse, très agile.", 0xFF6A00, "rouge"},
-    {"tcross", "SUV compact", "SUV compact facile à conduire, stable dans les chocs.", 0xB6FF00, "orange"},
-    {"compass", "SUV", "SUV robuste : haut, lourd, solide quand ça frotte.", 0xB6FF00, "vert"},
-    {"s3", "Berline", "Berline compacte 4 roues motrices : rapide et sûre.", 0x00E5FF, "gris"},
-    {"x5", "Grand SUV", "Grand SUV premium : puissant mais lourd dans les virages.", 0x00E5FF, "blanc"},
-    {"giulia", "Berline sport", "Berline italienne de 510 ch : vitesse de pointe énorme.", 0xFF1F4B, "rouge"},
-    {"m4", "Coupé", "Coupé de course pour la route : brutal en accélération.", 0xFF6A00, "noir"},
-    {"p911", "Sportive", "La sportive absolue : 4 roues motrices, freins et virages parfaits.", 0x00E5FF, "gris"},
-    {"a45", "Compacte sportive", "Compacte de 381 ch à 4 roues motrices : une fusée de poche.", 0x00E5FF, "gris"},
-    {"model3", "Berline électrique", "Électrique : couple instantané, silence et grosse accélération.", 0x00E5FF, "blanc"},
-    {"corsa", "Citadine", "Citadine légère et maniable : parfaite pour les petites rues.", 0xB6FF00, "jaune"},
-    {"gt86", "Coupé", "Petit coupé propulsion : léger, joueur et facile à faire glisser.", 0xFF1F4B, "rouge"},
-    {"elantra", "Berline sport", "Berline coréenne affûtée sur circuit : vive et précise.", 0x00E5FF, "bleu"},
-    {"v60", "Break sport", "Break suédois de 350 ch : rapide, sûr et stable.", 0x00E5FF, "bleu"},
-    {"mustang", "Sportive", "V8 de 466 ch en propulsion : vive et précise, à doser en sortie de virage.", 0xFF6A00, "bleu"},   // WFS-359 : Corvette C7
-    {"rrsport", "Grand SUV", "SUV de luxe massif : imposant dans les chocs, lourd en virage.", 0xB6FF00, "noir"},
-    {"gallardo", "Supercar cabriolet", "V10 à ciel ouvert : 4 roues motrices et plus de 320 km/h.", 0xB6FF00, "jaune"},
-    {"sf90", "Hypercar hybride", "Hybride de 1030 ch : la plus rapide du garage, à manier avec soin.", 0xFF1F4B, "rouge"},
+    {"golf", 0x00E5FF, "bleu"},
+    {"p208", 0xFF6A00, "jaune"},
+    {"abarth", 0xFF6A00, "rouge"},
+    {"tcross", 0xB6FF00, "orange"},
+    {"compass", 0xB6FF00, "vert"},
+    {"s3", 0x00E5FF, "gris"},
+    {"x5", 0x00E5FF, "blanc"},
+    {"giulia", 0xFF1F4B, "rouge"},
+    {"m4", 0xFF6A00, "noir"},
+    {"p911", 0x00E5FF, "gris"},
+    {"a45", 0x00E5FF, "gris"},
+    {"model3", 0x00E5FF, "blanc"},
+    {"corsa", 0xB6FF00, "jaune"},
+    {"gt86", 0xFF1F4B, "rouge"},
+    {"elantra", 0x00E5FF, "bleu"},
+    {"v60", 0x00E5FF, "bleu"},
+    {"mustang", 0xFF6A00, "bleu"},   // WFS-359 : Corvette C7
+    {"rrsport", 0xB6FF00, "noir"},
+    {"gallardo", 0xB6FF00, "jaune"},
+    {"sf90", 0xFF1F4B, "rouge"},
 };
 } // namespace
 const Fiche& ficheDe(const char* id) { for (const auto& f : FICHES) if (std::strcmp(f.id, id) == 0) return f; return FICHES[0]; }
