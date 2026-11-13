@@ -66,7 +66,7 @@ float eauMousse(vec2 p, float t, float cov, float fin) {
 // pente de la surface (dh/dx, dh/dz), hauteur (m) et variance de pente perdue par les vagues trop petites pour le pixel (elle passe
 // dans la rugosité : le scintillement du soleil s'étale au loin comme en vrai, sans crénelage ni motif répété jusqu'à l'horizon)
 // WFS-401 (RG-01, RG-02) : « groupes » de vagues : hors Basse, l'amplitude de chaque vague varie lentement dans l'espace (bruit à
-// 2 longueurs d'onde le long de la crête, 1,4 en travers, qui dérive) : les crêtes infinies d'une sinusoïde deviennent des crêtes
+// 1,5 longueur d'onde le long de la crête, 1,2 en travers, qui dérive) : les crêtes infinies d'une sinusoïde deviennent des crêtes
 // courtes qui se croisent (mer du vent réelle : crêtes de 1 à 3 longueurs d'onde), et l'interférence des 8 vagues ne se répète plus
 // (aucune période commune). Moyenne de l'amplitude inchangée (bruit de moyenne 0,5 × 2) : même hauteur significative (test_eau).
 // WFS-401 (R7) : hors Basse, chaque vague est gardée selon la taille du pixel MESURÉE DANS SA DIRECTION (dp = dérivées écran de la
@@ -80,14 +80,18 @@ void eauVagues(vec2 p, float t, float agit, int n, float empreinte, vec4 dp, out
         if (i >= n) break;
         vec4 w = EAU_VAGUES[i];
         float k = 6.2831853 / w.z, om = sqrt(EAU_G * k), A = w.w * agit;
+        float dphi = 0.0;
         if (groupes) {
             vec2 cr = vec2(-w.y, w.x);   // le long de la crête
-            vec2 g = vec2(dot(p, cr) / (2.0 * w.z), dot(p, w.xy) / (1.4 * w.z)) + vec2(float(i) * 7.31, float(i) * 3.17 - 0.05 * t);
+            vec2 g = vec2(dot(p, cr) / (1.5 * w.z), dot(p, w.xy) / (1.2 * w.z)) + vec2(float(i) * 7.31, float(i) * 3.17 - 0.05 * t);
             A *= 2.0 * eauBruit(g);
+            // crêtes qui se courbent et espacement qui varie (± 1,5 rad sur 3 longueurs d'onde) : vues au téléobjectif, les vagues
+            // longues ne font plus des rayures régulières jusqu'à l'horizon (RG-02) ; la pente de ce déphasage (≈ 8 % de k) est négligée
+            dphi = 3.0 * (eauBruit(g * 0.45 + vec2(11.3, -4.7)) - 0.5);
         }
         float ew = groupes ? abs(dot(dp.xy, w.xy)) + abs(dot(dp.zw, w.xy)) : empreinte;
         float garde = 1.0 - smoothstep(0.18, 0.45, ew / w.z);   // au moins ≈ 3 pixels par longueur d'onde
-        float th = k * dot(w.xy, p) - om * t + float(i) * 1.7;
+        float th = k * dot(w.xy, p) - om * t + float(i) * 1.7 + dphi;
         h += A * sin(th) * garde;
         pente += w.xy * (A * k * cos(th) * garde);
         varPerdue += (1.0 - garde * garde) * 0.5 * (A * k) * (A * k);
