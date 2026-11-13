@@ -1667,3 +1667,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - À surveiller aux bancs du matin : l'émulateur doit passer l'étape `profil` (captures `02a-profil`, `02b-profil-cree`) puis « Course solo ».
 - Pour le PO : CI de `main` #1057 rouge sur « banc-essai (texte) », commit ae6a828 (WFS-489), sans lien avec WFS-481 (vu par le lead dev) : US technique P1 à vérifier (WFS-526 suit déjà le banc texte).
 - Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 22:45:34 — WFS-492 : PR #400 refusée par le lead dev (lead-dev)
+- Relu au commit 6f04868c. J'ai construit et testé moi-même : 131 tests CPU réussis. J'ai ouvert les 19 captures et lu tout le diff. Code et rendu bons : Rallye propre sur les 6 voitures, aucune couture (RG-04), sans skin = même rendu au bit près (code), aucune skin sur le fantôme ni le trafic. Écarts acceptés : EAC RG11, couleurs dans le shader, projection, accroches.
+- Ce qui bloque : (1) pas de capture « Tests CPU » ni de `qa/pr/WFS-492/tests-cpu.log` (règle du 2026-11-11) ; (2) la planche `peinture2-planche` ne montre qu'une voiture sur 17 (le reste est noir) : il faut un avant / après sans skin sur 3 voitures ; (3) le parcours RC-E18-09 (version réduite par la sauvegarde) et le parcours « 0 écart » ne sont pas au journal.
+- Revue postée en commentaire (même compte GitHub). TACHES et track-agent passés en « ↩️ Retour lead dev (PR #400) ».
