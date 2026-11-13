@@ -70,7 +70,7 @@ Les données de toute la personnalisation des voitures, sans écran : 28 couleur
 
 ## Tests CPU
 
-Branche synchronisée avec `main` (synchronisation 66fda6c9, + correction du garage, ligne 190), `bash tools/qa/tests_cpu.sh build` ; journal complet : [`qa/pr/WFS-487/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-487/qa/pr/WFS-487/tests-cpu.log).
+Commit testé : code de `1e480dd6` (branche synchronisée avec `main`, correction du garage comprise ; les synchronisations suivantes ne touchent que TACHES / journal / suivi : code identique au dernier commit de la PR), `bash tools/qa/tests_cpu.sh build` ; journal complet : [`qa/pr/WFS-487/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-487/qa/pr/WFS-487/tests-cpu.log).
 
 ```
 [OK] test_ville_lieux (0 s)
