@@ -1,4 +1,4 @@
-# WFS-456 (RG-03, ANO-257) — banc vitrines-feux, commit 5acec110, 2026-11-13 14:50:59 UTC
+# WFS-456 (RG-03, ANO-257) — banc vitrines-feux, commit 68036a49, 2026-11-13 15:01:43 UTC
 
 ## 1. WFS_BANC=vitrines-feux WFS_VOITURES="a45 elantra x5" WFS_TAILLE=640x360
 [info] passes (WFS-150) : 5 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : rétroviseurs (1 glace) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui

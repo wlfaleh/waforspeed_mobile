@@ -34,7 +34,7 @@ Agent : Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz)
 
 ## Tests CPU (règle de l'utilisateur du 2026-11-11)
 
-Journal complet : [`qa/pr/WFS-456/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-456/qa/pr/WFS-456/tests-cpu.log) — `bash tools/qa/tests_cpu.sh build`, **commit testé 5acec110** (dernier commit de code ; les commits suivants n'ajoutent que ces journaux et `pr.md`), 2026-11-13 14:50:59 UTC.
+Journal complet : [`qa/pr/WFS-456/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-456/qa/pr/WFS-456/tests-cpu.log) — `bash tools/qa/tests_cpu.sh build`, **commit testé 68036a49** (branche synchronisée avec `main` ; le commit suivant n'ajoute que ces journaux et `pr.md`), 2026-11-13 15:01:43 UTC.
 
 ```
 [OK] test_hayon_golf (0 s)
@@ -45,7 +45,7 @@ tests CPU : 123 test(s) réussi(s) en 333 s
 
 ## Capture 5 — banc `vitrines` sans l'A 45, l'Elantra ni le X5 (RG-03, ANO-257)
 
-Journal complet : [`qa/pr/WFS-456/banc-vitrines.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-456/qa/pr/WFS-456/banc-vitrines.log) (commit 5acec110).
+Journal complet : [`qa/pr/WFS-456/banc-vitrines.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-456/qa/pr/WFS-456/banc-vitrines.log) (commit 68036a49).
 
 ```
 ## 1. WFS_BANC=vitrines-feux WFS_VOITURES="a45 elantra x5" WFS_TAILLE=640x360
