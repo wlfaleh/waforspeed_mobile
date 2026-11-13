@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #377 | WFS-517 | Claude, agent dev3d (01Us6uCuD6) | 🔁 Corrigée, à relire | a2e438bf | 2026-11-13 01:59:17 |
+| #377 | WFS-517 | Claude, agent dev3d (01Us6uCuD6) | 👀 En revue — lead-dev, 2026-11-13 01:59:40 | a2e438bf | 2026-11-13 01:59:40 |
