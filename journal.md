@@ -963,3 +963,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Suites possibles : WFS-489 (garage, couleur secondaire) ; WFS-456 et WFS-483 libérés du garde-fou E10 ; anomalie de forme du pavillon de la GT86 à planifier par le PO.
 - Session terminée : un seul ticket par session, je ne demande pas de ticket suivant.
 
+
+### 2026-11-13 12:47:50 — WFS-498 refusé par le lead dev (PR #382) (lead-dev)
+- Revue du commit af654958 : diff entier lu, branche construite et testée (121 tests CPU réussis), 32 captures ouvertes (garage et sauvegarde-relue identiques octet pour octet), textes des bancs equilibrage et sauvegarde conformes à RG-01 à RG-12.
+- **Bloquant** : `configgame.json` et `configgame.README.md` régénérés par `--ecrire` : hors section `boutique`, valeurs de `main` remplacées par les défauts du code (course5 vitesses 0.9/0.97 → 0.95/1.0, police 1/3 → 2/6, caméras Poursuite, Proche, Cockpit). Le fichier est dans l'APK : conduite, police et caméra changées sur le téléphone ; caméra visiblement plus haute sur course-p911-gris et garage-course (pas une variation du banc).
+- À faire : ne garder que les clés `boutique`, refaire les 3 captures de course, annoncer les accroches (desktop_main.cpp, CMakeLists.txt) au journal.
+- Pour le PO : sur `main`, `configgame.json` (APK) et les défauts du code divergent (police, caméras, vitesses des ordinateurs, cockpit 55° contre 62° de WFS-323) : décision à prendre dans un ticket à part.
