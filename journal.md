@@ -1394,3 +1394,45 @@ Demande de l'utilisateur (`@po`, R16, étape « voitures et couleurs gratuites �
 
 ### 2026-11-12 23:57:33 — WFS-485 refusé par le lead dev, PR #371 (lead-dev)
 Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, rien de cassé ; construction et tests CPU refaits par le lead dev (115 réussis). Refus pour 2 défauts : (1) `files/reglages.txt` (mouvements, ultra, regard, fantôme, onglet ; `src/ui/ecrans/reglages.cpp:160-219`) absent des règles de sauvegarde, donc ces réglages sont perdus à la réinstallation : ajouter `<include domain="file" path="reglages.txt" />` aux deux XML ; (2) section « Tests CPU » et `qa/pr/WFS-485/tests-cpu.log` absents (règle du 2026-11-11). Note au PO : RG-01 ne cite que `sauvegarde.txt`, alors que les réglages vivent aussi dans `reglages.txt`.
+
+### 2026-11-13 00:04:04 — WFS-487 : PR #373 ouverte (Claude, agent dev3d (01Us6uCwB3))
+- Fait : catalogue de personnalisation (`src/game/personnalisation.*`) : 28 couleurs (16 + 12 vives), couleur secondaire, 8 finitions, 4 skins, 5 packs d'autocollants ; prix de base × coefficient de la classe dans `configgame.json` (section `boutique`, +128 clés ; fichier non régénéré, réglages de l'utilisateur gardés) ; possession par voiture et packs pour toutes ; achat qui débite une seule fois (solde reçu en paramètre, portefeuille de WFS-498 à brancher) ; aspect garage / course (RG-07) ; migration des sauvegardes d'avant (couleur déjà choisie possédée) ; banc `sauvegarde` qui écrit catalogue et possession.
+- Option A du PO appliquée : « Choisir » du garage actuel donne la couleur historique à cette voiture seulement (`perso::donGarageProvisoire`, provisoire jusqu'à WFS-489).
+- **Accroches hors zone E3 (annoncées)** : `src/game/game.cpp` 1 ligne (`setCar` lit `peintureCourse`) ; `src/core/configgame.*` section `boutique` seulement (même exception que WFS-498) ; `CMakeLists.txt` : `personnalisation.cpp` ajouté aux 14 tests qui lient `sauvegarde.cpp`, nouveau `test_personnalisation`.
+- Vérification : `test_personnalisation` 40 cas OK ; tests CPU 116 / 116 (code 0) ; 14 captures du garage avant / après identiques au pixel près (Golf, M4, 911) ; vitrine `sauvegarde` de jour (ancienne sauvegarde turquoise gardée, nouveau format non acheté → couleur d'origine) ; `WFS_BANC=parcours` 0 écart.
+- Limites : rien d'acheté à l'écran avant WFS-498 / 489 ; noms en français (anglais avec les écrans, WFS-504).
+
+### 2026-11-13 00:10:18 — WFS-395 : PR #374 ouverte (Claude, agent dev3d (01UY1Vv4vT))
+- Fait : habitacles de la Corvette C7 (« mustang ») et de la Vitara Brezza 2022 (« tcross ») en vue Cockpit : valeurs (`vehicule_cockpit_defs.cpp`, entrées des 2 voitures seulement) et pièces propres modelées (`vehicule_cockpit_details.cpp` : aérateurs, climatisation, console, poignée de maintien de la Corvette, levier de la Brezza, portières).
+- Vérification : tests CPU 115 / 115 ; banc `cockpit` : fenêtre de la rue cachée 0,0 % (jour, nuit, virage, Plage) ; vitrine : 43 / 45 appels, 2,7 / 2,6 Mo ; 18 captures avant / après dans `qa/pr/WFS-395/`.
+- Limites : cotes AC / E (sites des constructeurs bloqués) ; pas de lumière d'ambiance ; bas de planche brun très sombre de la Brezza (teinte aussi portières et plancher).
+
+### 2026-11-13 00:11:52 — WFS-504 : PR #372 refusée par le lead dev (lead-dev)
+- Relu au commit `daa3843b` : 29 captures ouvertes (FR identique sauf la ligne « Langue », EN propre, rien ne dépasse), diff complet lu. Construction et `tests_cpu.sh` refaits : 116 test(s) réussi(s). Banc `textes` relancé : VERT en anglais et en français.
+- Points bloquants : (1) capture « Tests CPU » et `qa/pr/WFS-504/tests-cpu.log` absents (règle du 2026-11-11) ; (2) pas de capture « avant » de l'onglet Affichage sur téléphone (2400x1080, FR), alors que la mise en page passe de 3 + 3 à 4 + 3 lignes.
+- Remarques non bloquantes : `langue.cpp` (`telephone()` rend une référence hors verrou), allocation par appel de `ui::tr` (`std::less<>`), aucun secours si une table manque.
+- **Pour le PO** : la ligne technique « Rendu : … · Mémoire : … » des Réglages (`src/render/qualite_systeme.cpp`, `src/ui/ecrans/chargement.cpp`) et les libellés du menu caché (`src/render/diagnostic_perf.*`) restent en français avec un téléphone en anglais (critère de l'épic E20) : ticket à créer, car WFS-505 à 508 ne les couvrent pas.
+- Statut : ↩️ Retour lead dev (PR #372) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-13 00:16:14 — WFS-480 : PR #375 ouverte (Claude, agent dev3d (01Us6uCuDH))
+- Fait : profil du joueur sans écran : `src/game/profil.*` (pseudo 3-16, plaque 1-8, plaque proposée, mots interdits avec liste blanche, date d'arrivée, statistiques, voiture préférée, 20 dernières courses), `src/game/profil_system.*` (système 230 : distance, vitesse max, frôlements, course finie ou quittée), `assets/profil/mots_interdits.txt` (191 mots écrits pour le jeu, 39 de liste blanche), nouveau test `test_profil`.
+- Accroches annoncées : 1 ligne à l'arrivée de chaque mode (`course_system`, `course5_system`, `poursuite_system`, `duel_system` +2 lignes d'accolades) ; `sauvegarde.*` : 8 lignes ajoutées, 6 modifiées (membre `profil`, défauts, écriture, lecture, date d'arrivée, pseudo 14 → 16 ; noms des adversaires du duel gardés à 14) ; `CMakeLists.txt` : `profil.cpp` dans les 14 tests qui lient la sauvegarde.
+- Vérifié : 116 tests CPU verts en local, construction complète, banc `sauvegarde` 2 fois (profil écrit puis relu au journal), captures avant / après identiques au pixel (fin de course, sauvegarde relue, menu).
+- Limites : vérifié sur PC seulement ; accroche de `sauvegarde.*` un peu au-dessus de 10 lignes.
+- Outils installés pour le banc local (registre de paquets Ubuntu, rien dans le dépôt) : `glslc`, `mesa-vulkan-drivers`, `libvulkan-dev`, `ninja-build`, `imagemagick`, `ccache`.
+
+### 2026-11-13 00:16:43 — Début WFS-460 : attribué à Claude, agent dev3d (01UY1Vv5Cs) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv5Csqpiz1H5Cr5FRK7), 1re et seule attribution (un seul sujet par session). Ticket **WFS-460** (P1, E3 + E10, exception PO) : bandes « POLICE » sur la vraie tôle de la 208 des deux côtés, une seule peinture blanche à toutes les distances (ANO-250 bloquante, ANO-260). Branche `feature/waforspeed-460`.
+- Choix : la dernière session `@dev` a reçu la file B (WFS-395) ; en file A (bandeau 🏁), WFS-517, 480, 504, 487, 485 sont pris, 488, 481, 505… attendent, et **WFS-498** (1er prêt) n'est pas attribuable tant que **WFS-487** (même épic E18, mêmes `configgame.json` / `sauvegarde.*`) est en PR #373. WFS-460 est donc le 1er ticket permis (file B, P1).
+- Zone : `src/game/poursuite_system.cpp` (bandes, peinture de la police), `src/game/poursuite.h`, texture / maillage de la 208 de police par la chaîne du dépôt (`assets/cars/**` de la 208 seulement), `tests/**`. Pas `player.*`, `duel.*`, ni `vehicule_cockpit*` (WFS-395 en PR). WFS-480 (en cours) peut toucher `poursuite_system.cpp` : celui qui fusionne en second synchronise et garde les deux.
+- Règles : `regles-de-gestion/WFS-460.md`. Formes nues interdites ; captures jour et nuit, suite d'images en approche ; banc perf Poursuite en Basse ; après la fusion **🟡 À valider (utilisateur)**.
+
+
+### 2026-11-13 00:18:05 — Début WFS-387 : attribué à Claude, agent dev3d (01UY1Vv43z) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv43zGpD9BSWxCJ7co1), 1re et seule attribution (inscrite dans `TACHES.md` à 00:17 UTC). WFS-460 (file B), visé d'abord, a été donné juste avant à la session 01UY1Vv5Cs. Bandeau 🏁 : tâches 1 à 28 prises, ⏳ En attente ou bloquées par leur épic (498 : E18 occupée par WFS-487 ; 456 : E10 occupée par WFS-395 et 460) ; 29e : **WFS-387** (P1, E15 libre, `@dev` = `@dev3d`).
+- Zone (RG-07) : `src/world/campagne.cpp`, `paquets/sources/campagne/**`, nouveaux `src/world/decor_campagne_*`, `assets/world/modeles/campagne/**`, `assets/textures/decor/campagne/**` ; fichiers communs : ajouts ≤ 10 lignes annoncés au journal. Skills `artiste-3d` et `expert-cartes`. D'abord les réserves de WFS-372 (RG-12). PR de E15 : « Avis agent 3D : VALIDÉ » obligatoire avant la fusion par le lead dev ; 700 Mo maximum ; RG-09 : si plus d'une journée, le dire au PO, qui découpe. Après la fusion : WFS-465 (`@cicd`, publication des paquets) passe ⏳ Prêt ; le ticket reste 🟡 jusqu'à la publication et l'essai de l'utilisateur.
+
+### 2026-11-13 00:20:05 — WFS-487 : PR #373 refusée par le lead dev (lead-dev)
+- Revue (commit a9a4ea6a) : construction et tests CPU refaits (116 réussis, test_personnalisation 40/40) ; 16 paires de captures ouvertes (garage identique au pixel, vitrines sauvegarde RG-03 / RG-07 justes) ; diff lu en entier.
+- **Bloquant** : `src/game/sauvegarde.cpp:98`, `Sauvegarde::defauts()` : `map`, `tod`, `moment`, `quality`, `qualityChoisie`, `cam` passés par erreur dans un commentaire, donc plus remis au défaut (`desactiver()` des bancs, `lire()` sans la clé) ; prouvé par un petit programme. Correction et test demandés. Remarque : commentaire WFS-24 déplacé dans `course_system.cpp`.
+- Statut : ↩️ Retour lead dev (PR #373) dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
