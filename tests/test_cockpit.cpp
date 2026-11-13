@@ -469,6 +469,21 @@ int main(int argc, char** argv) {
         cas("lumière d'ambiance : Golf et M4 seulement (couleur du modèle)", ambiance && couleurAmbiance(*interieurPour("golf")) && couleurAmbiance(*interieurPour("m4"))
             && !couleurAmbiance(*interieurPour("p911")) && !couleurAmbiance(*interieurPour("sf90")));
     }
+    {   // WFS-395 (revue du lead dev, PR #374) : poignée de maintien du passager de la Corvette tenue par ses deux pieds : le haut contre la
+        // face de la planche, le bas contre le flanc droit de la console (< 2 mm), la barre qui entre dans chaque pied ; aucune autre voiture
+        PoigneeMaintien g;
+        const bool corvette = poigneeMaintien(*interieurPour("mustang"), g);
+        // écart du dos de chaque pied à son support : ≤ 0 = il touche (enfoncé), > 0 = jour ; enfoncé de 2 mm voulu, 2,5 mm au plus
+        const float jHaut = g.hautMin.z - g.facePlanche, jBas = g.basMin.x - g.flanc;
+        auto dans = [](vec3 p, vec3 a, vec3 b) { return p.x >= a.x && p.x <= b.x && p.y >= a.y && p.y <= b.y && p.z >= a.z && p.z <= b.z; };
+        // bords de la barre (demi-section en travers) aux deux bouts, dans le pied
+        const bool tenue = g.barre.size() >= 2 && dans(g.barre.front(), g.hautMin, g.hautMax)
+                           && dans(g.barre.back() - vec3{POIGNEE_W * 0.5f - 0.001f, 0, 0}, g.basMin, g.basMax);
+        std::printf("cockpit : poignée de la Corvette : dos du pied haut à %+.1f mm de la planche, du pied bas à %+.1f mm du flanc de la console (négatif : enfoncé)\n", jHaut * 1000, jBas * 1000);
+        PoigneeMaintien autre;
+        cas("Corvette : poignée de maintien tenue par la planche et la console (pieds collés, sans jour, enfoncés de 2,5 mm au plus ; barre dans chaque pied) ; aucune autre voiture",
+            corvette && jHaut <= 0 && jHaut >= -0.0025f && jBas <= 0 && jBas >= -0.0025f && tenue && !poigneeMaintien(*interieurPour("tcross"), autre) && autre.barre.empty());
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
     return 0;

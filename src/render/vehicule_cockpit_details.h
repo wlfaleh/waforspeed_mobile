@@ -8,6 +8,7 @@
 // réseau des agents limité à GitHub) ; disposition et proportions décrites au journal de WFS-325, cotes estimées (E) à ±1 cm.
 #pragma once
 #include <array>
+#include <vector>
 #include "vehicule_cockpit.h"
 #include "vehicule_cockpit_geo.h"
 
@@ -45,6 +46,12 @@ constexpr float RUGO_LAQUE_LOT1 = 0.06f, RUGO_CARBONE_LOT1 = 0.06f, RUGO_CHROME_
 bool detailsPropres(const InterieurDef& d);
 // couleur sRGB de l'éclairage d'ambiance du modèle la nuit (0 : sans)
 unsigned couleurAmbiance(const InterieurDef& d);
+// WFS-395 (revue #374) : poignée de maintien du passager de la Corvette C7 (« mustang ») : barre gainée (section POIGNEE_W en travers
+// × POIGNEE_E) et ses deux pieds alu (boîtes min / max, repère de l'œil) : le haut posé sur la face de la planche (z = facePlanche), le
+// bas sur le flanc droit de la console (x = flanc), chacun enfoncé de 2 mm dans son support ; faux (et vide) pour les autres voitures
+constexpr float POIGNEE_W = 0.030f, POIGNEE_E = 0.034f, POIGNEE_PIED_E = 0.024f;
+struct PoigneeMaintien { vec3 hautMin, hautMax, basMin, basMax; std::vector<vec3> barre; float flanc = 0, facePlanche = 0; };
+bool poigneeMaintien(const InterieurDef& d, PoigneeMaintien& g);
 // pièces propres du modèle (vides pour une voiture hors du lot 1)
 void construireDetails(const InterieurDef& d, PiecesDetails& p);
 

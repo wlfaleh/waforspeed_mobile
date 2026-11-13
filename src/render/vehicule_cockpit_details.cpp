@@ -394,6 +394,8 @@ void sf90(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
 }
 
 // ---------------------------------------------------------------- WFS-395 : Corvette C7 et Vitara Brezza 2022
+// console haute de la Corvette (dessus à 0,505 m sous l'œil, 22 cm de large) : partagée avec poigneeMaintien
+Console consoleCorvette(const InterieurDef& d, float cx) { return {cx, -0.505f, zFacePlanche(d) + 0.02f, 0.16f, 0.22f, 0.07f}; }
 // Corvette C7 Stingray (id « mustang ») : console centrale haute qui monte jusqu'à la planche, toute la façade (écran, aérateurs,
 // climatisation) tournée de 15° vers le conducteur ; deux aérateurs verticaux de part et d'autre de l'écran, un aérateur à chaque
 // bout de la planche ; climatisation : panneau laqué, deux molettes de température et une rangée de touches ; démarreur à gauche
@@ -420,7 +422,7 @@ void corvette(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
     touches(p, surFace(x0 + 0.122f, Y - 0.240f, zF - 0.008f) * rotateZ(PI / 2), 2, 0.016f, 0.014f, 0.020f, M::Lames);
     boutonRond(p, surConsole(-0.150f, ye - 0.150f), 0.013f, 0.007f, M::Chrome, M::Laque);
     // console haute : dessus à 0,50 m sous l'œil (≈ 7 cm plus haut que la Golf), étroite à l'avant entre les deux sièges baquets
-    const Console c{cx, -0.505f, zFacePlanche(d) + 0.02f, 0.16f, 0.22f, 0.07f};
+    const Console c = consoleCorvette(d, cx);
     corpsConsole(p, d, c, M::PlancheBas);
     const float zc0 = c.z0 - (c.z0 + c.z1) * 0.5f;
     bac(p, c, zc0 + 0.03f, zc0 + 0.15f, 0.16f);
@@ -434,12 +436,14 @@ void corvette(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
         touches(p, C * translate({-0.070f, 0.006f, 0.020f}) * rotateX(-PI / 2) * rotateZ(PI / 2), 3, 0.020f, 0.016f, 0.026f, M::Lames);
     }
     accoudoir(p, c, zc0 + 0.56f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
-    {   // poignée de maintien du passager : barre gainée qui descend du haut de la console au flanc droit, deux pieds alu
-        const float xg = cx + c.w * 0.5f + 0.030f, za = zFacePlanche(d) + 0.06f;
-        lisse(p[M::Cuir], mat4::identity(), {{xg, Y - 0.170f, za}, {xg + 0.004f, Y - 0.240f, za + 0.050f}, {xg + 0.004f, -0.440f, za + 0.150f},
-                                             {xg, -0.470f, za + 0.240f}}, 0.030f, 0.034f, 0.013f);
-        for (const vec3 b : {vec3{xg - 0.016f, Y - 0.172f, za - 0.004f}, vec3{xg - 0.016f, -0.472f, za + 0.244f}})
-            dalle(p[M::Alu], translate(b) * rotateZ(PI / 2), 0.034f, 0.040f, 0.024f, 0.010f, 0.004f);
+    {   // poignée de maintien du passager (WFS-395, revue #374) : barre gainée de cuir le long du flanc droit de la console, tenue par
+        // deux pieds alu : le haut vissé sur la face de la planche, le bas sur le flanc de la console (géométrie : poigneeMaintien)
+        PoigneeMaintien g;
+        poigneeMaintien(d, g);
+        lisse(p[M::Cuir], mat4::identity(), g.barre, POIGNEE_W, POIGNEE_E, 0.013f);
+        const vec3 h = (g.hautMin + g.hautMax) * 0.5f, b = (g.basMin + g.basMax) * 0.5f;
+        dalleFace(p[M::Alu], translate(h), g.hautMax.x - g.hautMin.x, g.hautMax.y - g.hautMin.y, g.hautMax.z - g.hautMin.z, 0.010f, 0.004f);
+        dalleFace(p[M::Alu], translate(b) * rotateY(PI / 2), g.basMax.z - g.basMin.z, g.basMax.y - g.basMin.y, g.basMax.x - g.basMin.x, 0.010f, 0.004f);
     }
     const Porte porte{-0.400f, -0.60f, 0.15f, 0.080f, -0.290f, -0.62f, -0.64f, -0.58f, 0.16f, 0.14f, true, false, M::Alu, M::Cuir, M::Alu,
                       M::Chrome, M::Cuir, 2};
@@ -448,7 +452,7 @@ void corvette(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
 
 // Vitara Brezza 2022 (id « tcross ») : planche horizontale deux tons traversée par un jonc argent ; aérateurs rectangulaires à lunette
 // chromée aux deux bouts et deux sous l'écran flottant, feux de détresse entre eux ; climatisation automatique : panneau laqué,
-// petit afficheur, deux molettes et une rangée de touches ; console : levier de boîte automatique (soufflet, pommeau, touche),
+// petit afficheur, deux molettes et une rangée de touches ; console : levier de boîte automatique (grille, jupe, poignée, touche),
 // porte-gobelets, accoudoir ; portière : décor argent, insert gainé, poignée chromée, haut-parleur ; plafonnier sans appel d'urgence
 void brezza(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
     const float Y = d.plancheY, zF = zFacePlanche(d) + AER_PROF, x0 = cx - demi, x1 = cx + demi;
@@ -475,13 +479,22 @@ void brezza(PiecesDetails& p, const InterieurDef& d, float cx, float demi) {
     corpsConsole(p, d, c, M::PlancheBas);
     const float zc0 = c.z0 - (c.z0 + c.z1) * 0.5f;
     bac(p, c, zc0 + 0.03f, zc0 + 0.16f, 0.17f);
-    {   // levier de boîte automatique : platine laquée, grille sombre, soufflet, pommeau gainé et sa touche argent
+    {   // levier de boîte automatique (WFS-395, revue #374) : platine laquée ; grille P R N D M : fente sombre dans sa garniture chromée et
+        // 5 repères argent à droite ; jupe en caoutchouc plissée autour du pied ; poignée haute gainée de cuir, plus large en haut et
+        // penchée vers l'arrière, touche de déverrouillage argent sur le flanc gauche, jonc argent sur la face avant (E, photos de presse)
         const mat4 C = repereConsole(c) * translate({0, 0.004f, zc0 + 0.31f});
         dalle(p[M::Laque], C, 0.15f, 0.20f, 0.008f, 0.025f, 0.003f);
         dalle(p[M::Lames], C * translate({0, 0.0065f, 0}), 0.016f, 0.13f, 0.002f, 0.007f, 0.0008f);
-        profile(p[M::Lames], C, {0, 0.008f, 0.010f}, {0, 0.060f, -0.006f}, 0.014f, 0.014f, 0.006f);
-        tour(p[M::Cuir], C * translate({0, 0.060f, -0.006f}), {{0.f, 0.f}, {0.018f, 0.004f}, {0.022f, 0.022f}, {0.020f, 0.040f}, {0.011f, 0.050f}, {0.f, 0.052f}}, 40);
-        dalle(p[M::Accent], C * translate({-0.020f, 0.090f, -0.006f}) * rotateZ(PI / 2), 0.016f, 0.012f, 0.006f, 0.004f, 0.0015f);
+        cadreArrondi(p[M::Chrome], C * translate({0, 0.0065f, 0}) * rotateX(-PI / 2), 0.034f, 0.150f, 0.012f, 0.0055f, 0.0035f);
+        for (int k = 0; k < 5; k++) dalle(p[M::Accent], C * translate({0.032f, 0.0062f, -0.044f + k * 0.022f}), 0.010f, 0.006f, 0.002f, 0.002f, 0.0006f);
+        const float zl = 0.022f;   // levier sur « D »
+        tour(p[M::Lames], C * translate({0, 0.0055f, zl}), {{0.026f, 0.f}, {0.026f, 0.004f}, {0.021f, 0.016f}, {0.016f, 0.030f}, {0.0135f, 0.036f}}, 48,
+             14, 0.10f, 0.005f, 0.031f);
+        // profilé presque vertical : w le long de la voiture (z), t en travers (x)
+        profile(p[M::Cuir], C, {0, 0.032f, zl}, {0, 0.120f, zl + 0.012f}, 0.040f, 0.030f, 0.014f, 0.036f, 0.050f);
+        dalle(p[M::Cuir], C * translate({0, 0.116f, zl + 0.0115f}) * rotateX(std::atan2(0.012f, 0.088f)), 0.036f, 0.050f, 0.012f, 0.014f, 0.005f);   // dessus bombé
+        dalle(p[M::Accent], C * translate({-0.0185f, 0.104f, zl + 0.008f}) * rotateZ(PI / 2), 0.016f, 0.012f, 0.006f, 0.004f, 0.0015f);
+        profile(p[M::Accent], C, {0, 0.060f, zl - 0.0185f}, {0, 0.112f, zl - 0.0145f}, 0.004f, 0.012f, 0.0018f);
     }
     gobelets(p, c, zc0 + 0.49f, M::Laque);
     accoudoir(p, c, zc0 + 0.64f, c.z1 - (c.z0 + c.z1) * 0.5f, M::Cuir);
@@ -503,6 +516,27 @@ const DetailsDef* detailsDef(const InterieurDef& d) {
 
 bool detailsPropres(const InterieurDef& d) { return detailsDef(d) != nullptr; }
 unsigned couleurAmbiance(const InterieurDef& d) { const DetailsDef* k = detailsDef(d); return k ? k->ambiance : 0; }
+
+bool poigneeMaintien(const InterieurDef& d, PoigneeMaintien& g) {
+    g = PoigneeMaintien{};
+    if (std::strcmp(d.car, "mustang") != 0) return false;
+    const float cx = largeurPour(d).oeil;
+    const Console c = consoleCorvette(d, cx);
+    const float zF = zFacePlanche(d), e = c.yDessus - PLANCHER_Y - 0.03f;
+    // pied bas : 6 cm sous le dessus de la console, 12 cm derrière son avant ; flanc à cette hauteur (dépouille de 3 % du corps)
+    const float yb = c.yDessus - 0.06f, zb = c.z0 + 0.12f;
+    const float xs = cx + c.w * 0.5f * (1 - 0.03f * std::clamp((c.yDessus - yb - 0.02f) / (e - 0.04f), 0.f, 1.f));
+    const float xb = xs + POIGNEE_PIED_E - 0.002f + POIGNEE_W * 0.5f - 0.004f;   // axe de la barre : elle mord 4 mm dans le pied
+    g.flanc = xs; g.facePlanche = zF;
+    g.basMin = {xs - 0.002f, yb - 0.017f, zb - 0.020f}; g.basMax = {xs - 0.002f + POIGNEE_PIED_E, yb + 0.017f, zb + 0.020f};
+    // pied haut : sur la face de la planche, 20 cm sous son dessus, devant l'axe de la barre
+    const float yh = d.plancheY - 0.20f;
+    g.hautMin = {xb - 0.020f, yh - 0.017f, zF - 0.002f}; g.hautMax = {xb + 0.020f, yh + 0.017f, zF - 0.002f + POIGNEE_PIED_E};
+    // barre : sort du pied haut vers l'habitacle, descend le long de la console et finit dans le pied bas
+    const float zh = g.hautMax.z - 0.004f;
+    g.barre = {{xb, yh, zh}, {xb, yh - 0.030f, zh + 0.045f}, {xb, (yh + yb) * 0.5f, (zh + zb) * 0.5f + 0.040f}, {xb, yb + 0.010f, zb - 0.004f}, {xb, yb, zb}};
+    return true;
+}
 
 void construireDetails(const InterieurDef& d, PiecesDetails& p) {
     p = PiecesDetails{};
