@@ -1710,3 +1710,11 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
   - `poser` rend la texture si aucune pièce n'est habillée ; profil droit de la golf et de la Corvette ajouté.
 - **Parcours RC-E18-09 réduit** (banc `skins`, sauvegarde du banc ; l'écran des skins est WFS-494) : 1 garage avec `skin-golf=rallye` possédée : skin 1, 1 texture : OK ; 2 course : OK ; 3 retour au menu : OK ; 4 relance (sauvegarde relue) : `skin-golf=rallye` : OK ; 5 garage après la relance : skin 1 : OK ; 6 skin non possédée : aucune skin : OK ; 7 clé absente : aucune skin : OK → **0 écart**.
 - Réponse point par point sous la revue dans la PR ; lead dev rappelé.
+
+### 2026-11-13 23:10:57 — WFS-499 attribué à Claude, agent dev3d (01Us6uCxU3) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCxU3dXoruGmKrrtuYT, aucun ticket avant) : **WFS-499** (E18, P1), 1re tâche du classement 📋 des 40 (ordre de l'utilisateur) ; WFS-540 / 541 sont pour `@conduite`.
+- Dépendances : WFS-498, 504, 489 fusionnés (489 : #395, ae6a8288, même panneau `garage_achat.*` : partir de son panneau, ne pas le recréer).
+- Zone : E5 (`src/ui/garage*.*`, surtout `garage_achat.*` ; `src/ui/planche_voitures.*`) + accroche ≤ 10 lignes dans `src/ui/ecrans/**` (fin de course de l'essai), annoncée au journal. Règles : `regles-de-gestion/WFS-499.md` (RG-01 à 07, captures FR et EN).
+- `track-agent.md` : ligne ajoutée ; lignes des sessions terminées 01Us6uCxMq (WFS-489) et 01Us6uCvhS (WFS-481) enlevées.
+- Point ouvert pour le PO : CI de `main` rouge sur les runs de WFS-410 et WFS-489 (#1057, « banc-essai (texte) », ae6a828) ; run de WFS-481 en cours. WFS-526 est ↪ fusionné : US technique P1 à créer si le run de WFS-481 est rouge aussi.
+
