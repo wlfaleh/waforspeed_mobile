@@ -718,9 +718,9 @@ protected:
         if (!solFondPret_) construireSolFond(r);
         for (const TuileSol& tu : solFond_)   // WFS-387 (RG-10) : tuiles du sol à moins de 2,6 km de la caméra (le brouillard cache le reste)
             if (const float d = std::hypot(tu.c.x - g.camPos.x, tu.c.z - g.camPos.z) - tu.r; tu.m.indexCount && d < 2600.f) {
-                // sol naturel (sols.glsl) seulement sur la tuile où l'on est et ses voisines à moins de 200 m ; au-delà, le brouillard
-                // efface son grain : teinte unie de la prairie lointaine, bien moins chère par pixel (RG-06, banc perf en Basse)
-                r.draw(tu.m, mats_[solActif_ && d < 200.f ? P_TERRE : P_UNI], translate({0, SOL_DECALE_Y, 0})); nS++;
+                // teinte de la prairie lointaine (P_UNI, luminosité par sommet) : le sol naturel de sols.glsl coûtait 9 ms par image
+                // en Basse sur le banc (RG-06) pour un grain que le brouillard efface ; les bandes de sol gardent le sol naturel
+                r.draw(tu.m, mats_[P_UNI], translate({0, SOL_DECALE_Y, 0})); nS++;
             }
         if (!sommets_.empty() && !sommetsMesh_.indexCount) construireSommets(r);
         if (sommetsMesh_.indexCount) { r.draw(sommetsMesh_, mats_[P_UNI], mat4::identity()); nS = 1; }   // WFS-138 : un appel
@@ -1224,7 +1224,9 @@ private:
             const int i1 = std::min(nx, ti + T), j1 = std::min(nz, tj + T), w = i1 - ti + 1;
             std::vector<Vertex> V; std::vector<uint32_t> I;
             for (int j = tj; j <= j1; j++) for (int i = ti; i <= i1; i++) {
-                const vec3 n = normalize(vec3{(h(i - 1, j) - h(i + 1, j)) / (2 * px), 1.f, (h(i, j - 1) - h(i, j + 1)) / (2 * pz)});
+                // MAT_VTINT : longueur de la normale = luminosité ; parcelles de prés plus ou moins mûrs (± 8 %, bruit de 260 m)
+                const float lum = 1.f + 0.08f * colline(x0 + i * px + 517.f, z0 + j * pz - 233.f);
+                const vec3 n = normalize(vec3{(h(i - 1, j) - h(i + 1, j)) / (2 * px), 1.f, (h(i, j - 1) - h(i, j + 1)) / (2 * pz)}) * lum;
                 V.push_back({x0 + i * px, h(i, j) - SOL_DECALE_Y, z0 + j * pz, n.x, n.y, n.z, u.x, u.y});
             }
             for (int j = 0; j < j1 - tj; j++) for (int i = 0; i < i1 - ti; i++) {
