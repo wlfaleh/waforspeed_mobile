@@ -134,6 +134,7 @@ void Sauvegarde::defauts() {
     map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
     possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487
     etoiles = 0; voituresPossedees.clear(); essais.clear();   // WFS-498
+    market = EtatMarket{};   // WFS-510
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     aideDirection = true;   // WFS-217
@@ -173,6 +174,16 @@ std::string Sauvegarde::texte() const {
     o << "etoiles=" << etoiles << "\n";
     liste("voitures-possedees", voituresPossedees);
     for (const std::string& id : essais) o << "essai-" << id << "=1\n";
+    // WFS-510 : market (clés absentes tant qu'elles valent leur défaut)
+    if (!market.achats.empty()) {
+        o << "achats-credites=";
+        for (size_t i = 0; i < market.achats.size(); i++) o << (i ? "|" : "") << market.achats[i];
+        o << "\n";
+    }
+    if (market.packDebutant) o << "pack-debutant=1\n";
+    if (market.bonsSkin > 0) o << "bons-skin=" << market.bonsSkin << "\n";
+    if (market.sansPub) o << "sans-pub=1\n";
+    if (market.x2Jour > 0) o << "x2=" << market.x2Jour << ";" << market.x2Nombre << ";" << market.x2Course << "\n";
     o << "map=" << map << "\n" << "tod=" << tod << "\n";
     if (!moment.empty()) o << "moment=" << moment << "\n";   // WFS-208
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
@@ -250,6 +261,19 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "etoiles") { etoilesLues = true; if (entier(v, n) && n <= boutique::SOLDE_MAX) etoiles = n; }
         else if (k == "voitures-possedees") { for (const std::string& id : morceaux(v)) if (voitureExiste(id)) voituresPossedees.insert(id); }
         else if (k.rfind("essai-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && v == "1") essais.insert(id); }
+        // WFS-510 : market ; jeton mal écrit ignoré, livre limité aux LIVRE_MAX derniers ; ×2 : jour AAAAMMJJ plausible
+        else if (k == "achats-credites") {
+            size_t a = 0;
+            while (a <= v.size()) { const size_t b = std::min(v.find('|', a), v.size()); const std::string j = v.substr(a, b - a); if (jetonValide(j)) market.achats.push_back(j); a = b + 1; }
+            if ((int)market.achats.size() > EtatMarket::LIVRE_MAX) market.achats.erase(market.achats.begin(), market.achats.end() - EtatMarket::LIVRE_MAX);
+        }
+        else if (k == "pack-debutant") { market.packDebutant = v == "1"; }
+        else if (k == "bons-skin") { if (entier(v, n) && n >= 0 && n <= 1000) market.bonsSkin = (int)n; }
+        else if (k == "sans-pub") { market.sansPub = v == "1"; }
+        else if (k == "x2") {
+            long long w[3];
+            if (entiers(v, w, 3) && w[0] >= 19700101 && w[0] <= 99991231 && w[1] >= 0 && w[1] <= 1000) { market.x2Jour = (int)w[0]; market.x2Nombre = (int)w[1]; market.x2Course = w[2]; }
+        }
         else if (k == "perso") { if (entier(v, n) && n >= 1 && n <= 99) persoLu = (int)n; }
         else if (k == "possede-dessins") { for (const std::string& id : morceaux(v)) if (const perso::Objet* o = perso::objet(id); o && o->type == perso::Type::Dessins) possedeDessins.insert(id); }
         else if (k.rfind("possede-", 0) == 0) {

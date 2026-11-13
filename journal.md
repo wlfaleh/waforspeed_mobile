@@ -1187,3 +1187,64 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Section `market` de `configgame.*` (exception du PO) : 18 clés ajoutées, rien d'autre dans `configgame.json` / README. Sauvegarde : clés nouvelles seulement (`achats-credites`, `pack-debutant`, `bons-skin`, `sans-pub`, `x2`), écrites seulement quand elles ne valent pas leur défaut : fichiers d'aujourd'hui identiques.
 - **Accroches hors zone (≤ 10 lignes)** : `src/platform/desktop_main.cpp` +2 lignes (include + banc `market`, comme `equilibrage` de WFS-498) ; `CMakeLists.txt` +1 ligne (`test_market`).
 - Choix : les étoiles de base des 3 médailles sont dans `market.packs` (RG-01) ; les `boutique.medailles` de WFS-498 restent la base de l'équivalent du garage (mêmes valeurs aujourd'hui). Pack débutant caché tant qu'aucune skin n'est en vente (`SKINS_EN_VENTE = false`, une ligne à changer avec WFS-494). Le crédit d'un achat écrit la sauvegarde **et attend la fin de l'écriture** avant la confirmation auprès de Google (RC-E21-06).
+
+### 2026-11-13 16:11:40 — WFS-535 : score d'une course et conversion en étoiles, prêt pour la PR (Claude, agent dev3d (01Us6uCtPt))
+- Fait : `src/game/score_course.{h,cpp}` (fonction pure `score::calculer` : lignes {clé, points}, total, étoiles, nouveau record), section `score_etoiles` dans `src/core/configgame.*` (35 clés, bornes, min > max ramené), ajoutée à la main dans `configgame.json` et `configgame.README.md` (les réglages de l'utilisateur du fichier ne sont pas écrasés), test `tests/test_score_course.cpp` (RG-07). Rien ne change dans le jeu (branchement WFS-536, écran WFS-537).
+- **points_par_etoile = 85** (RG-05). Calcul du joueur moyen, barème de départ : course à 5 = 3e (500) + 1 ou 2 chocs (100) + 2 dépassements (40) = 640 ; duel = moitié gagné / perdu (700) + 100 + jamais derrière une fois sur deux (75) + écart une fois sur quatre (25) = 900 ; Poursuite = surtout perdue, 300 + 0,5 × ≈ 300 restants + 100 de conduite, quelques victoires : ≈ 650 ; course solo = 600 + 0,1 × ≈ 2 000 points de distance (200) + 100 + 50 de défis = 950 ; + ≈ 75 en moyenne pour le temps (1re course, proche du record). Moyenne ≈ (640 + 900 + 650 + 950) / 4 + 75 ≈ 860 points → 860 / 85 ≈ 10,1 ★. Le banc d'équilibrage de WFS-536 le vérifie.
+- ⚠️ Risque signalé au PO : avec ce barème, la meilleure course possible fait ≈ 1 800 points (1er + record + 0 choc + défis) = 21 ★ ; la borne 40 ★ n'est atteinte qu'en baissant `points_par_etoile` (ce qui donne plus de 10 ★ au joueur moyen). Les deux objectifs (≈ 10 ★ en moyenne, jusqu'à 40 ★ pour un bon joueur) ne tiennent pas ensemble avec les valeurs de départ des RG-01 à 04 ; à trancher au banc de WFS-536 (barème des défis plus large, ou conversion non linéaire).
+- Choix d'interprétation (notés dans le code) : plafond 400 de la course solo = sur la part tirée de la distance ; record égalé = « proche » (+150), pas battu ; 1re course = pas de record existant (record ≤ 0) ; « arrivée avec ≥ 50 % » et « écart > 3 s » seulement sur une victoire ; compteur inconnu = 0 point.
+- Vérification : test_score_course (47 cas) vert ; construction complète locale (870 cibles) et `tools/qa/tests_cpu.sh build` : 124 tests réussis, après synchronisation avec `main`. PR #389 ouverte, lead dev appelé.
+
+### 2026-11-13 16:17:24 — WFS-510 : PR #390 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCv7i))
+- PR #390 (`feature/waforspeed-510`, 07fc9c77), branche synchronisée avec `main`. **124 tests CPU réussis** (dont `test_market`, 37 cas) ; banc `market` vert (catalogue, même jeton deux fois, en attente, annulé, interrompu puis relance, pack débutant, sans pub, restaurer, 7 ×2 le même jour → 5, minuit, heure reculée) ; même banc avec l'argent à 350 ★ dans `configgame.json` → 385 ★ sans recompiler.
+- Captures `captures_pr.sh` (garage, sauvegarde ×2) : 16 paires avant / après identiques octet pour octet (rien ne change à l'écran) + 4 textes du banc dans `qa/pr/WFS-510/`.
+- Statut 🔀 En PR (#390) ; ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
+
+### 2026-11-13 16:27:15 — WFS-535 : PR #389 refusée par le lead dev (lead-dev)
+Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main construites en local : `tests_cpu.sh build` donne 124 tests réussis, `test_configgame` 308 clés OK, 35 clés `score_etoiles` identiques entre le code et `configgame.json`. Le calcul est juste (RG-01 à 07, RC-E22-04). **Refus pour un seul point** (règle de l'utilisateur du 2026-11-11) : la capture « Tests CPU » manque dans la description (fin du journal de `tests_cpu.sh` + commit testé), et `qa/pr/WFS-535/tests-cpu.log` aussi. Remarques non bloquantes : à `score_course.cpp:161/166`, le plafond est appliqué après la conversion en `int` (débordement possible si le compteur est abîmé) ; au plus 21 ★ avec 85 points par ★ (à trancher au banc de WFS-536). Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-13 16:30:21 — WFS-490 : retour lead dev corrigé, PR #388 à relire (Claude, agent dev3d (01Us6uCwDY))
+- Corrigé (c48dc1e6) : chromé homogène (cause : carrosseries Corvette et 208 classées « très fines », WFS-42, `specK` divisait leurs reflets ; finitions : carrosserie pleine, miroir à horizon net), caméléon vif (rotation TSV), métallisé, satiné, candy, nacré ; gros plans des 8 finitions ; 208 toit Noir (couleur 2) en métallisé et chromé ; `fwidth` avant les retours ; `NoV` non écrasé.
+- Accroche de plus dans `shaders/scene.frag` (2 lignes : `specK = 1` pour les finitions) : 5 lignes au total dans ce fichier.
+- Vérifié : brillant identique au pixel (14 images) ; chromé luminance 0,41 / 0,44 / 0,42 ; 124 tests CPU réussis (b8f03718, `qa/pr/WFS-490/tests-cpu.log`) ; Basse 3 + 3 passages : main 3,660, brillant 3,761, métallisé 3,536 img/s.
+
+### 2026-11-13 16:30:21 — WFS-490 : risque signalé (Claude, agent dev3d (01Us6uCwDY))
+- Constat : `scene.frag`, `detailK` / `specK` (WFS-42) : les carrosseries très denses (Corvette `mustang.wfm` matériau 1 : 2,4 mm ; 208) sont classées « très fines » ; en brillant, leurs reflets (vernis, ciel, soleil) sont atténués selon la distance (même cause que WFS-460 / ANO-260).
+- Conséquence : peinture brillante de ces voitures moins brillante que les autres, plus terne au loin.
+- Proposition : ne pas appliquer `detailK` aux pièces `F_PAINT` (comme fait ici pour les 7 autres finitions) dans un ticket E10 dédié, avec captures avant / après ; non corrigé dans WFS-490 (RG-01 : brillant identique).
+- Décision attendue de : PO.
+
+### 2026-11-13 16:33:01 — WFS-510 fusionné par le lead dev (lead-dev)
+- PR #390 relue sur 07fc9c77 : 16 captures avant / après ouvertes (identiques octet pour octet, rien ne change à l'écran, comme demandé) et 4 textes du banc `market`, conformes aux 4 captures du ticket ; tout le diff lu (market, sauvegarde : nouvelles clés seulement, section `market` de configgame : seulement des ajouts, accroches de 2 et 1 lignes).
+- Refait par le lead dev : construction, `tests_cpu.sh` → 124 tests réussis, `test_market` 0 échec, `WFS_BANC=market` code 0. Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 77f0ad8b. TACHES → 🟣, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+- Remarques pour WFS-511 (non bloquantes) : `attendre()` ne dit pas si l'écriture a réussi (ne pas confirmer à Google si elle échoue) ; ramener le rappel de Google Play sur le thread du jeu. Pour le PO : les étoiles des médailles existent dans deux sources (`boutique.medailles` et `market.packs`), à décider s'il n'en faut qu'une.
+
+### 2026-11-13 16:33:46 — WFS-510 fusionné, session terminée (Claude, agent dev3d (01Us6uCv7i))
+- PR #390 fusionnée en squash par le lead dev (77f0ad8b), revue sur 07fc9c77 ; statut 🟣 (pas 🟡), ✅ aux prochains bancs du matin verts.
+- **Pour le PO (WFS-511, remarques non bloquantes du lead dev)** : (1) `crediterAchat` attend l'écriture de la sauvegarde mais ne sait pas si elle a réussi (disque plein) : WFS-511 doit faire rendre un résultat et ne pas confirmer à Google en cas d'échec ; (2) le rappel de Google Play arrive sur un autre thread : le ramener sur le thread du jeu avant `brancher` ; (3) rappel nommé `surAchat` (RG-07 : `achatMisAJour`). **À décider** : étoiles des médailles à deux endroits (`boutique.medailles` pour l'équivalent du garage, `market.packs` pour les achats).
+- Réponse écrite sous la demande « Market » de `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 16:35:48 — WFS-378 : inventaire des formes nues hors décor, PR #391 (Claude, agent dev3d (01Us6uCwca))
+- Fait : `regles-de-gestion/WFS-378-inventaire.md` (garage, habitacle, police, objets de course, personnes, deux-roues, effets) : 13 formes NUES visibles (garage ×4, rampe de gyrophares, portique du checkpoint, socle du cône K5a, panneau AK5, ralentisseur, poussette, laisse du chien ; 2 à arbitrer : dessus de planche à arêtes vives, casque en ellipsoïde), 14 EFFETS, 7 INVISIBLES (code mort `dessineLoin`, `poolMat`, `haloSol` ; cockpit de secours jamais atteint : les 20 voitures ont un intérieur).
+- Découpage proposé au PO (§ 9) : 7 tickets (police, chantier + ralentisseur, portique, garage, poussette + casque, planche, [TECHNIQUE] code mort) + une question : les effets face caméra sont-ils permis ?
+- Vérifié : recherche des appels de formes dans `src/`, lignes relues sur `main` (d33588ad), 9 bancs PC (lavapipe) lancés, 21 captures gardées dans `qa/pr/WFS-378/`, regardées. Aucun code changé (RG-04).
+- Limites : laisse du chien non visible à 1280 px ; poussette petite sur la capture.
+
+### 2026-11-13 16:38:58 — WFS-378 : PR #391 refusée par le lead dev (lead-dev)
+- Revue du commit 0d09cad8 (inventaire sans code) : fichier:ligne justes sur `main` (≈ 40 vérifiés), 21 captures ouvertes, diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/`.
+- Refus, 4 points : (1) capture « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; (2) RG-03 : le ticket 7 du § 9 regroupe 4 zones (2 au plus) ; (3) dessus et bouts plats de la planche de bord (facettes sous le volant, vitrine-golf) à classer NUE et à monter dans l'ordre de visibilité ; (4) mineur : `police-flanc-00` ne montre pas les bandes POLICE.
+- Revue postée en commentaire (même compte GitHub). Statut : ↩️ Retour lead dev (PR #391).
+
+### 2026-11-13 16:40:16 — WFS-490 : 2e refus du lead dev, PR #388 (lead-dev)
+- Commit relu : bffe0232. Construction refaite et tests CPU refaits sur la branche (fusion avec `main` sans conflit) : 124 réussis. Le brillant est identique (14 paires md5). Les 37 captures ont été ouvertes et le diff lu entièrement.
+- Corrigés : tests CPU, caméléon, finitions qu'on distingue de jour, gros plans, couleur 2, synchronisation. Le point « journal » de la 1re revue était une erreur du lead dev : l'entrée de 14:52:03 existait.
+- Bloquant 1 : le chromé (RG-06) est encore « peinture lavande », avec trop peu d'écart entre le ciel et la chaussée. De nuit, il est blanc rosé uniforme (p50 0,16 contre 0,03 pour le brillant sur la Corvette). Cause probable : une part diffuse est gardée (`col * (1 − Fm × 0,7)` et `cNuit`).
+- Bloquant 2 : les paillettes du toit noir métallisé, vu de dessus, sont trop grosses (RG-02).
+- Avis de l'agent 3D : « À REPRENDRE » (commentaire 6858885384), mêmes points. Le développeur a demandé de ne pas fusionner et il corrige.
+
+### 2026-11-13 16:41:03 — Compteur d'étoiles du menu ajouté à WFS-537 (po-scrum-master)
+- Demande de l'utilisateur : étoiles en haut du menu principal, à côté du bouton « Réglages », dans une tâche existante → **WFS-537** (RG-07 à 10 : solde ★, même style que Réglages, aucun bouton déplacé, FR / EN, appui → garage puis Market avec WFS-513). Notes de coordination dans WFS-501 et 513.
+
+### 2026-11-13 16:41:10 — WFS-535 : PR #389 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCtPt))
+- Retour : preuve « Tests CPU » absente. Corrigé dans a456c02c : journal complet `qa/pr/WFS-535/tests-cpu.log` (124 tests réussis, commit testé 7315604f) et section « Tests CPU » dans la PR et `pr.md`.
+- Remarque non bloquante prise aussi (7315604f) : plafonds appliqués avant la conversion en entier, 2 cas de test (49 cas). Réponses sous la revue dans la PR ; lead dev rappelé.

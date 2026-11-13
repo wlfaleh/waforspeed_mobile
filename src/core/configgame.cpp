@@ -179,6 +179,34 @@ std::vector<Champ> champsBoutique(ConfigJeu& c) {
     }
     return v;
 }
+// WFS-510 (RG-01, RG-02, RG-06) : section « market » (clés « market.packs.<produit>.<champ> », puis le pack débutant et le ×2)
+std::vector<Champ> champsMarket(ConfigJeu& c) {
+    static std::vector<std::string> cles;   // textes des clés (la table garde des const char*), fabriqués une fois
+    if (cles.empty())
+        for (int i = 0; i < MARKET_PRODUITS; i++) {
+            const std::string b = std::string("market.packs.") + MARKET_PRODUITS_IDS[i];
+            if (i < MARKET_ETOILES) { cles.push_back(b + ".etoiles"); cles.push_back(b + ".offert"); }
+            else if (i == MARKET_ETOILES) { cles.push_back(b + ".etoiles"); cles.push_back(b + ".bons_skin"); cles.push_back(b + ".apres_courses"); }
+            cles.push_back(b + ".prix_secours_eur");
+        }
+    using T = Type;
+    ConfigJeu::Market& m = c.market;
+    std::vector<Champ> v; size_t k = 0;
+    auto cle = [&]() { return cles[k++].c_str(); };
+    for (int i = 0; i < MARKET_PRODUITS; i++) {
+        if (i < MARKET_ETOILES) {
+            v.push_back({cle(), T::Entier, &m.pack[i].etoiles, 1, 1000000, "★", "étoiles de base du pack (avant le bonus offert)"});
+            v.push_back({cle(), T::Entier, &m.pack[i].offert, 0, 100, "%", "étoiles offertes en plus, en % de la base (arrondi à l'étoile)"});
+        } else if (i == MARKET_ETOILES) {
+            v.push_back({cle(), T::Entier, &m.pack[i].etoiles, 0, 1000000, "★", "étoiles du pack débutant (acheté une seule fois)"});
+            v.push_back({cle(), T::Entier, &m.bonsSkinDebutant, 0, 10, "bons", "bons de skin du pack débutant (une skin en vente au choix, au garage)"});
+            v.push_back({cle(), T::Entier, &m.debutantApres, 0, 1000, "courses", "pack débutant proposé à partir de la fin de cette course terminée"});
+        }
+        v.push_back({cle(), T::Reel, &m.pack[i].prixSecours, 0.01, 1000, "€", "prix de secours (PC et bancs seulement ; sur Android, prix de Google Play)"});
+    }
+    v.push_back({"market.x2_par_jour", T::Entier, &m.x2ParJour, 0, 100, "par jour", "×2 des étoiles de fin de course par jour au plus (vidéo ou « sans pub »)"});
+    return v;
+}
 // WFS-500 (RG-01, RG-02, RG-05 ; RC-E19-02) : section « cadeau » (cadeau du jour, src/game/cadeau.h) ; total des chances et tranches
 // contrôlés après la lecture (verifierCadeau)
 std::string ecrireNombre(double v, Type t);   // plus bas (lecteur JSON)
@@ -225,8 +253,9 @@ void verifierCadeau(ConfigJeu& c, BilanConfig& b) {
     }
 }
 std::vector<Champ> tousChamps(ConfigJeu& c) {
-    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsCadeau(c);
+    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsMarket(c), z = champsCadeau(c);
     v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end()); v.insert(v.end(), y.begin(), y.end());
+    v.insert(v.end(), z.begin(), z.end());   // WFS-500
     return v;
 }
 
@@ -522,6 +551,12 @@ std::string configReadme() {
         "possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; "
         "`minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), "
         "qui donnent l'équivalent en médailles et en euros de chaque prix.\n"
+        "- **Market** (section `market`, WFS-510) : packs vendus par le market. Les noms des packs (`etoiles_bronze`…`sans_pub`) sont les "
+        "identifiants des produits de la Play Console et ne changent pas. `etoiles` = étoiles de base, `offert` = % d'étoiles en plus : le joueur "
+        "reçoit base + arrondi(base × offert / 100) (argent : 300 + 10 % = 330 ★). Le pack débutant (une seule fois) donne `etoiles` ★ et "
+        "`bons_skin` bon(s) de skin ; il est proposé à partir de la fin de la course n° `apres_courses`. `x2_par_jour` = ×2 des "
+        "étoiles de fin de course par jour au plus. Les prix en argent sont ceux de Google Play : `prix_secours_eur` ne sert que sur PC et dans les bancs. "
+        "Les `medailles` de la section `boutique` (WFS-498) donnent seulement l'équivalent des prix du garage.\n"
         "- **Cadeau du jour** (section `cadeau`, WFS-500) : un cadeau gratuit par jour (minuit, heure du téléphone). `tranches.t1` à `t4` : "
         "étoiles tirées au hasard entre `min` et `max`, avec leur `chance` en % ; `coloris`, `skin`, `voiture` : chance en % d'un coloris, d'une skin "
         "ou d'une voiture prêtée. **Le total des 7 chances doit faire 100** : sinon le jeu garde ses chances et l'écrit au journal. "

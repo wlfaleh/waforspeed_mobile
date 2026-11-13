@@ -27,6 +27,7 @@
 #include <thread>
 #include "trace_cartes.h"   // WFS-136 : version du tracé
 #include "profil.h"         // WFS-480 : profil du joueur
+#include "market_etat.h"    // WFS-510 : livre des achats, « sans pub », ×2
 
 namespace wfs {
 
@@ -85,6 +86,7 @@ public:
     long long etoiles = 0;                                  // etoiles=<entier ≥ 0> : solde d'étoiles ★
     std::set<std::string> voituresPossedees;                // voitures-possedees=a|b : voitures achetées (les gratuites n'y sont pas)
     std::set<std::string> essais;                           // essai-<voiture>=1 : essai gratuit déjà fait
+    EtatMarket market;                                      // WFS-510 : livre des achats, pack débutant, bons de skin, « sans pub », ×2 (market_etat.h)
     std::string map = "ville";                 // map : carte
     std::string tod = "nuit";                  // tod : moment (jour / nuit)
     std::string moment;                        // WFS-375 : midi (JOUR) ou nuit (NUIT) au chargement ; vide : déduit de tod
