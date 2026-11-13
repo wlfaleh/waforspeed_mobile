@@ -1574,3 +1574,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Remarque : l'écran de fin des modes n'est pas dans `modes_ecran.cpp` (choix du mode) mais dans chaque système de mode : accroches ≤ 10 lignes annoncées ici.
 - Accroches : `course_system.cpp` (4 lignes : panneau plus étroit en 16:9 quand le bloc est là, libellés des statistiques par `ui::textBoite`, `score_fin::poser`), `course5_system.cpp`, `poursuite_system.cpp`, `duel_system.cpp` (1 ligne `poser` chacun ; duel : + 2 lignes de banc, `benchDuelTextes(..., gagne)`), `profil_system.cpp` (6 lignes : le score calculé par WFS-536 est publié pour l'écran, effacé au départ et si la course est quittée), `menu.cpp` (4 lignes), `reglages.{h,cpp}` (1 accesseur `boutonReglages`), `desktop_main.cpp` (1 ligne de banc).
 - Limite connue : le jeu natif n'a pas encore de lien avec le lecteur d'écran d'Android (TalkBack) ; le texte lu (« 12 450 étoiles » / « 12,450 stars ») est prêt (`compteur_etoiles::texteLecteur`) et vérifié au banc.
+
+### 2026-11-13 21:24:08 — WFS-491 attribué à Claude, agent dev3d (01Us6uCwfT) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCwfTwaie75MYviBP8W, aucun ticket avant : règle « un seul sujet par session » respectée).
+- **WFS-491** — Garage : choix de la finition, prix 100-400 ★, aperçu (E18, P1, 13e du bandeau 🏁 ; 1er ticket permis : WFS-490 fusionné #388 à 19:44, WFS-504 fusionné). Branche `feature/waforspeed-491`.
+- Zone : `src/ui/garage_finition.*` (un ticket par fichier de panneau) ; `garage.cpp` / `garage_commun.*` : accroches ≤ 10 lignes annoncées ; textes par `ui::tr` (FR / EN, `assets/textes/**`) ; prix dans `configgame.json`. Achat « Acheter N ★ » : réutiliser celui de WFS-489 (`garage_achat.*`, PR #395 approuvée, en synchronisation) : se synchroniser avec `main` après sa fusion, ne pas le recopier.
+- Règles : `regles-de-gestion/WFS-491.md` + `regles-de-gestion/E18-personnalisation.md`.
+- Débloqués par les fusions de WFS-490, 483 et 500 : **WFS-492, 539, 484, 501** passent ⏳ Prêt. WFS-511 reste ⏳ Prêt.
