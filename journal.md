@@ -1241,3 +1241,6 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - Bloquant 1 : le chromé (RG-06) est encore « peinture lavande », avec trop peu d'écart entre le ciel et la chaussée. De nuit, il est blanc rosé uniforme (p50 0,16 contre 0,03 pour le brillant sur la Corvette). Cause probable : une part diffuse est gardée (`col * (1 − Fm × 0,7)` et `cNuit`).
 - Bloquant 2 : les paillettes du toit noir métallisé, vu de dessus, sont trop grosses (RG-02).
 - Avis de l'agent 3D : « À REPRENDRE » (commentaire 6858885384), mêmes points. Le développeur a demandé de ne pas fusionner et il corrige.
+
+### 2026-11-13 16:41:03 — Compteur d'étoiles du menu ajouté à WFS-537 (po-scrum-master)
+- Demande de l'utilisateur : étoiles en haut du menu principal, à côté du bouton « Réglages », dans une tâche existante → **WFS-537** (RG-07 à 10 : solde ★, même style que Réglages, aucun bouton déplacé, FR / EN, appui → garage puis Market avec WFS-513). Notes de coordination dans WFS-501 et 513.
