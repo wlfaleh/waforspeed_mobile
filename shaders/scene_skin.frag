@@ -96,6 +96,8 @@ void main() {
     // WFS-100 (RG-03, ANO-28) : carrosserie = couleur de peinture choisie × 1, sans la texture de couleur du modèle
     // (js/cars/models.js : color.set(paint), carte de couleur retirée) ; vitres, feux, jantes et logos gardent leur texture
     if ((flags & F_PAINT) != 0u) base = couleurPeinture();   // WFS-488 (accroche) : couleur 2 du toit et des rétros (vehicule.glsl)
+    // WFS-488 : la couleur 2 et les pièces d'origine repeintes (peinture2Piece) ne servent qu'aux voitures rigides (scene.frag) :
+    // aucune voiture n'est dessinée par ce pipeline à squelette, pc.color.w y reste l'alpha du matériau
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }

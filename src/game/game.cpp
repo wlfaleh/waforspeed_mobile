@@ -79,6 +79,7 @@ void Game::setCar(const char* carId) {
     if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureCourse(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24 ; WFS-487 (RG-07) : possédée seulement
     const PeintureDef* p2 = sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), carDef_->id).peinture2 : nullptr;   // WFS-488 : possédée seulement
     paint2_ = p2 ? vehicule_peinture2::code(p2->hex) : vehicule_peinture2::UNE_COULEUR;
+    if (const PeintureDef* e = std::getenv("WFS_PEINTURE2") ? peintureDef(std::getenv("WFS_PEINTURE2")) : nullptr) paint2_ = vehicule_peinture2::code(e->hex);   // WFS-488 : bancs (mesure RC-E18-03)
     loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
     camInit_ = false;

@@ -13,7 +13,8 @@
           1.49,
           1.27
         ],
-        "note": "pavillon et becquet"
+        "note": "pavillon et becquet",
+        "triangles": 718
       },
       {
         "partie": "retro",
@@ -26,7 +27,8 @@
           1.13,
           -0.35
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 201
       },
       {
         "partie": "retro",
@@ -39,7 +41,8 @@
           1.13,
           -0.35
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 201
       }
     ]
   },
@@ -56,7 +59,8 @@
           1.65,
           1.16
         ],
-        "note": "pavillon entre les barres de toit"
+        "note": "pavillon entre les barres de toit",
+        "triangles": 264
       },
       {
         "partie": "retro",
@@ -69,7 +73,8 @@
           1.29,
           -0.49
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 298
       },
       {
         "partie": "retro",
@@ -82,7 +87,8 @@
           1.29,
           -0.49
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 314
       }
     ],
     "note": "pavillon peint entre les barres de toit ; le cadre noir d'origine (maillage 7, mêlé à des pièces cachées) reste noir"
@@ -102,20 +108,22 @@
           1.75
         ],
         "nyMin": 0.3,
-        "note": "pavillon noir d'origine et becquet"
+        "note": "pavillon noir d'origine et becquet",
+        "triangles": 153
       },
       {
         "partie": "retro",
         "maillage": 7,
         "triangles_boite": [
-          -1.0,
+          -1,
           0.97,
           -0.61,
           -0.79,
           1.08,
           -0.4
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 132
       },
       {
         "partie": "retro",
@@ -124,11 +132,12 @@
           0.79,
           0.97,
           -0.61,
-          1.0,
+          1,
           1.08,
           -0.4
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 40
       }
     ]
   },
@@ -146,7 +155,8 @@
           0.95,
           -0.43
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 1083
       },
       {
         "partie": "retro",
@@ -159,7 +169,8 @@
           0.95,
           -0.43
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 1083
       }
     ]
   },
@@ -176,7 +187,8 @@
           1.42,
           1.23
         ],
-        "note": "pavillon et antenne"
+        "note": "pavillon et antenne",
+        "triangles": 522
       },
       {
         "partie": "retro",
@@ -189,7 +201,8 @@
           1.1,
           -0.44
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 538
       },
       {
         "partie": "retro",
@@ -202,7 +215,8 @@
           1.1,
           -0.44
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 538
       }
     ]
   },
@@ -219,7 +233,8 @@
           1.47,
           1.84
         ],
-        "note": "pavillon, joints et becquet"
+        "note": "pavillon, joints et becquet",
+        "triangles": 903
       },
       {
         "partie": "retro",
@@ -232,7 +247,8 @@
           1.08,
           -0.47
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 718
       },
       {
         "partie": "retro",
@@ -245,7 +261,8 @@
           1.08,
           -0.47
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 726
       }
     ]
   },
@@ -262,7 +279,8 @@
           1.29,
           0.95
         ],
-        "note": "pavillon"
+        "note": "pavillon",
+        "triangles": 757
       },
       {
         "partie": "retro",
@@ -275,7 +293,8 @@
           1.02,
           -0.22
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 187
       },
       {
         "partie": "retro",
@@ -288,7 +307,8 @@
           1.02,
           -0.22
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 165
       }
     ]
   },
@@ -307,7 +327,8 @@
           1.15
         ],
         "nyMin": 0.5,
-        "note": "pavillon en carbone"
+        "note": "pavillon en carbone",
+        "triangles": 1236
       },
       {
         "partie": "retro",
@@ -320,7 +341,8 @@
           1.09,
           -0.4
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 317
       },
       {
         "partie": "retro",
@@ -333,7 +355,8 @@
           1.09,
           -0.4
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 286
       }
     ]
   },
@@ -351,7 +374,8 @@
           1.03,
           -0.6
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 732
       },
       {
         "partie": "retro",
@@ -364,7 +388,8 @@
           1.03,
           -0.6
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 722
       }
     ]
   },
@@ -375,7 +400,8 @@
         "partie": "toit",
         "maillage": 28,
         "entier": true,
-        "note": "panneau de toit (targa)"
+        "note": "panneau de toit (targa)",
+        "triangles": 970
       },
       {
         "partie": "retro",
@@ -388,7 +414,8 @@
           0.98,
           0.03
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 392
       },
       {
         "partie": "retro",
@@ -401,7 +428,8 @@
           0.98,
           0.03
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 374
       }
     ]
   },
@@ -418,7 +446,8 @@
           1.5,
           1.43
         ],
-        "note": "pavillon et becquet"
+        "note": "pavillon et becquet",
+        "triangles": 2259
       },
       {
         "partie": "retro",
@@ -431,7 +460,8 @@
           1.1,
           -0.42
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 997
       },
       {
         "partie": "retro",
@@ -444,7 +474,8 @@
           1.1,
           -0.42
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 879
       }
     ]
   },
@@ -461,20 +492,22 @@
           1.31,
           0.83
         ],
-        "note": "pavillon et joints"
+        "note": "pavillon et joints",
+        "triangles": 1647
       },
       {
         "partie": "retro",
         "maillage": 2,
         "ilots": [
-          -1.0,
+          -1,
           0.9,
           -0.37,
           -0.81,
-          1.0,
+          1,
           -0.13
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 280
       },
       {
         "partie": "retro",
@@ -483,11 +516,12 @@
           0.81,
           0.9,
           -0.37,
-          1.0,
-          1.0,
+          1,
+          1,
           -0.13
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 299
       }
     ]
   },
@@ -505,7 +539,8 @@
           1.41,
           -0.37
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 300
       },
       {
         "partie": "retro",
@@ -518,7 +553,8 @@
           1.41,
           -0.37
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 306
       },
       {
         "partie": "retro",
@@ -531,7 +567,8 @@
           1.41,
           -0.39
         ],
-        "note": "coque gauche (couche extérieure)"
+        "note": "coque gauche (couche extérieure)",
+        "triangles": 162
       },
       {
         "partie": "retro",
@@ -544,7 +581,8 @@
           1.41,
           -0.39
         ],
-        "note": "coque droite (couche extérieure)"
+        "note": "coque droite (couche extérieure)",
+        "triangles": 152
       }
     ]
   },
@@ -554,14 +592,15 @@
         "partie": "retro",
         "maillage": 7,
         "ilots": [
-          -1.0,
+          -1,
           0.94,
           -0.69,
           -0.79,
           1.05,
           -0.5
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 462
       },
       {
         "partie": "retro",
@@ -570,11 +609,12 @@
           0.79,
           0.94,
           -0.69,
-          1.0,
+          1,
           1.05,
           -0.5
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 432
       }
     ],
     "note": "toit ouvrant en verre noir (matériau 13) sur l'avant du pavillon : rétroviseurs seuls (RG-03)"
@@ -586,14 +626,15 @@
         "maillage": 3,
         "triangles_boite": [
           -0.6,
-          1.0,
+          1,
           -0.55,
           0.6,
           1.22,
           0.75
         ],
         "nyMin": 0.5,
-        "note": "pavillon noir d'origine"
+        "note": "pavillon noir d'origine",
+        "triangles": 1434
       },
       {
         "partie": "retro",
@@ -606,7 +647,8 @@
           0.9,
           -0.37
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 179
       },
       {
         "partie": "retro",
@@ -619,7 +661,8 @@
           0.9,
           -0.37
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 191
       }
     ],
     "note": "toit d'origine non peint (matériau 4, carbone noir) ; rétroviseurs peints"
@@ -639,7 +682,8 @@
           1.72
         ],
         "nyMin": 0.5,
-        "note": "pavillon noir d'origine"
+        "note": "pavillon noir d'origine",
+        "triangles": 675
       },
       {
         "partie": "retro",
@@ -652,7 +696,8 @@
           1.3,
           -0.44
         ],
-        "note": "coque gauche"
+        "note": "coque gauche",
+        "triangles": 498
       },
       {
         "partie": "retro",
@@ -665,7 +710,8 @@
           1.3,
           -0.44
         ],
-        "note": "coque droite"
+        "note": "coque droite",
+        "triangles": 504
       }
     ]
   },
@@ -682,7 +728,8 @@
           1.51,
           1.68
         ],
-        "note": "pavillon et antenne"
+        "note": "pavillon et antenne",
+        "triangles": 298
       },
       {
         "partie": "retro",
@@ -695,7 +742,8 @@
           1.11,
           -0.08
         ],
-        "note": "coque gauche (noire d'origine)"
+        "note": "coque gauche (noire d'origine)",
+        "triangles": 443
       },
       {
         "partie": "retro",
@@ -708,7 +756,8 @@
           1.11,
           -0.08
         ],
-        "note": "coque droite (noire d'origine)"
+        "note": "coque droite (noire d'origine)",
+        "triangles": 445
       }
     ]
   }

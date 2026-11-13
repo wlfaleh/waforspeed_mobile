@@ -2,6 +2,8 @@
 
 Branche `feature/waforspeed-488` comparée à `origin/main` ; bancs : vitrines-feux peinture2 ; filtre : `*`.
 
+Note : `mustang` est l'identifiant historique de la **Chevrolet Corvette C7** (WFS-359, id gardé) ; `p208` = 208, `gt86` = GT86.
+
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
 | `peinture2-course-jour` | — | ![après](apres-peinture2-course-jour.jpg) |
