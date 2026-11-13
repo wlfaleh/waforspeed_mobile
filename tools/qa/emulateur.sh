@@ -142,8 +142,9 @@ if [ "$SCENARIO" = mvp ]; then
   # d'appui des touches p, e, t, i (même place en AZERTY et en QWERTY) et de « C'est parti » : pseudo « Petit » (majuscule
   # armée au départ), plaque proposée gardée, puis « C'est parti », comme un joueur ; profil déjà créé → l'écran n'apparaît pas
   profil() {
-    case "$(premier 20 "création du profil \(WFS-481\) : points d'appui" "menu : « ")" in
-      1) ;;
+    # sans écran (profil déjà créé), l'étape attend toujours 20 s puis continue
+    case "$(premier 20 "création du profil \(WFS-481\) : points d'appui")" in
+      1) attendre profil-ecran "création du profil \(WFS-481\) : points d'appui" 5 || return 1 ;;
       *) log "profil : pas d'écran de création (profil déjà créé)"; return 0 ;;
     esac
     images; capture 02a-profil
@@ -151,7 +152,8 @@ if [ "$SCENARIO" = mvp ]; then
     pt() { echo "$l" | grep -oE " $1=[0-9]+,[0-9]+" | head -1 | sed -E "s/ $1=//; s/,/ /"; }
     local c x y
     for c in p e t i t; do read x y < <(pt "$c"); [ -n "$x" ] || { log "ÉCHEC : point d'appui « $c » absent du journal"; return 1; }; appui "profil-$c" "$x" "$y"; sleep 0.3; done
-    read x y < <(pt valider); appui profil-valider "$x" "$y"
+    read x y < <(pt valider); [ -n "$x" ] || { log "ÉCHEC : point d'appui « valider » absent du journal"; return 1; }
+    appui profil-valider "$x" "$y"
     etape profil "création du profil \(WFS-481\) : « .* » : pseudo « Petit »" 30 02b-profil-cree || { log "ÉCHEC : profil non créé (pseudo « Petit »)"; return 1; }
   }
   # paquets : étape « Mise à jour et installation des paquets » (WFS-306) : proposition → « Installer » (vrai téléchargement
@@ -168,6 +170,8 @@ if [ "$SCENARIO" = mvp ]; then
   }
   parcours() {
     # délais max : 1 440 s d'étapes + 9 × 30 s d'images = 1 710 s ≈ 28,5 min ≤ 30 min (RG-07) ; jeu ≥ 1 image/s attendu avec WFS-59
+    # WFS-481 : + étape profil (installation neuve) ≈ 110 s au pire (20 + 5 + 30 d'images + 30 + 30 d'images) : ≈ 30,3 min au total,
+    # dans le délai du job de matin.yml (étape de 45 min, logcat de 40 min)
     # WFS-351 (ANO-199) : premier lancement, écran des CGU (WFS-308) avant le chargement : case puis « Accepter », comme un joueur
     # (aucun raccourci dans le jeu) ; lancement suivant (CGU déjà acceptées) : l'écran n'apparaît pas
     case "$(premier 120 "CGU \(WFS-308\) : écran ouvert" "écran complet \(police\)")" in
