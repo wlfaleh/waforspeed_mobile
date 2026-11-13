@@ -1,0 +1,24 @@
+en.log:[info] textes (WFS-504) : langue en : 528 texte(s) vus, 243 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+en.log:[info] textes (WFS-507) : paquets en : 0 écart(s) du banc, 0 échec(s) des textes → VERT
+en.log:[info] textes (WFS-507) : garage en : accueil → garage : OK
+en.log:[info] textes (WFS-507) : garage en : garage : « Choisir » dessiné : OK
+en.log:[info] textes (WFS-507) : garage en : garage « Choisir » → choix du terrain : OK
+en.log:[info] textes (WFS-507) : garage en : choix du terrain : « Rouler » dessiné : OK
+en.log:[info] textes (WFS-507) : garage en : « Rouler » → course avec la voiture choisie : OK
+en.log:[info] textes (WFS-507) : garage en : course : bouton « Menu » dessiné : OK
+en.log:[info] textes (WFS-507) : garage en : « Menu » → pause, « Quitter la course » dessiné : OK
+en.log:[info] textes (WFS-507) : garage en : « Quitter la course » → accueil (retour) : OK
+en.log:[info] textes (WFS-504) : langue en : 88 texte(s) vus, 7 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+en.log:[info] textes (WFS-507) : garage en : 0 échec(s) → VERT
+fr.log:[info] textes (WFS-504) : langue fr : 527 texte(s) vus, 243 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+fr.log:[info] textes (WFS-507) : paquets fr : 0 écart(s) du banc, 0 échec(s) des textes → VERT
+fr.log:[info] textes (WFS-507) : garage fr : accueil → garage : OK
+fr.log:[info] textes (WFS-507) : garage fr : garage : « Choisir » dessiné : OK
+fr.log:[info] textes (WFS-507) : garage fr : garage « Choisir » → choix du terrain : OK
+fr.log:[info] textes (WFS-507) : garage fr : choix du terrain : « Rouler » dessiné : OK
+fr.log:[info] textes (WFS-507) : garage fr : « Rouler » → course avec la voiture choisie : OK
+fr.log:[info] textes (WFS-507) : garage fr : course : bouton « Menu » dessiné : OK
+fr.log:[info] textes (WFS-507) : garage fr : « Menu » → pause, « Quitter la course » dessiné : OK
+fr.log:[info] textes (WFS-507) : garage fr : « Quitter la course » → accueil (retour) : OK
+fr.log:[info] textes (WFS-504) : langue fr : 88 texte(s) vus, 7 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+fr.log:[info] textes (WFS-507) : garage fr : 0 échec(s) → VERT

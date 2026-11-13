@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include "../render/renderer.h"
+#include "ecrans/textes_banc.h"   // WFS-507 : noms propres notés à part (banc « textes »)
+#include "langue.h"   // WFS-507 : textes par ui::tr
 #include "text.h"
 
 namespace wfs::ecrans::garage {
@@ -20,28 +22,31 @@ std::string virgule(float v) { std::string s = ui::decimal(v, 1); return s; }
 void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) {
     const float W = mp.W, k = mp.k, op = mp.op, gl = mp.gl, gt = mp.gt;
     const CarDef& car = CARS[e.index];
-    const Fiche& fi = ficheDe(car.id);
+    const std::string id = ficheDe(car.id).id;   // WFS-507 : type et accroche par ui::tr (garage.type.<id>, garage.accroche.<id>)
     // ---------- .show-head : marque · index, nom, type + accroche, points des voitures ----------
     {
         const float x = gl + std::clamp(W * 0.04f, 0.f, 64 * k);
         float y = gt + 8 * k;
-        const std::string eb = ui::majuscules(marque(car)) + " · " + deuxChiffres(placeDe(e.index) + 1) + " / " + deuxChiffres(voituresPermises().n);
-        ui::text(r, x, y, 12 * k, eb, hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
-        y += 22 * k;
         float np = std::min(84 * k, std::max(40 * k, W * 0.07f * 0.8f));
-        const std::string nm = ui::majuscules(modele(car));   // WFS-191 : nom de configgame.json
-        if (const float nw = ui::width(np, nm); nw > W * 0.5f) np *= W * 0.5f / nw;   // WFS-191 (RG-08) : nom long réduit pour tenir
-        ui::text(r, x, y, np, nm, hex(TEXTE, op), ui::GAUCHE, 0, true, true);
+        {
+            const textes::NomPropre nomPropre;   // WFS-507 : marque et modèle inventés, inchangés en anglais (RC-E20-03)
+            const std::string eb = ui::majuscules(marque(car)) + " · " + deuxChiffres(placeDe(e.index) + 1) + " / " + deuxChiffres(voituresPermises().n);
+            ui::text(r, x, y, 12 * k, eb, hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
+            y += 22 * k;
+            const std::string nm = ui::majuscules(modele(car));   // WFS-191 : nom de configgame.json
+            if (const float nw = ui::width(np, nm); nw > W * 0.5f) np *= W * 0.5f / nw;   // WFS-191 (RG-08) : nom long réduit pour tenir
+            ui::text(r, x, y, np, nm, hex(TEXTE, op), ui::GAUCHE, 0, true, true);
+        }
         y += np * 1.0f + 8 * k;
         // WFS-147 (ANO-47) : libellé de 13 px au moins (règle du HUD : 11 px du web portés à 13 px), calé au pixel entier
         // (en 720p, le « I » de « HYBRIDE » tombait entre deux pixels et le « D » perdait son trait) ; dès 13 px
         // (2400x1080 : 16,5 px), taille et place inchangées
-        const std::string body = ui::majuscules(fi.body);
+        const std::string body = ui::majuscules(ui::tr(("garage.type." + id).c_str()));
         const float cp = std::max(11 * k, 13.f), cy = cp > 11 * k ? (20 * k - cp) / 2 : 4 * k;
         const float cw = ui::width(cp, body, 0.16f) + 20 * k;
         biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(ACCENT2, op));   // .chip : fond cyan, skewX(-10deg)
         ui::text(r, std::round(x + 10 * k), std::round(y + cy), cp, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
-        ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, fi.tag, hex(TAG, op), ui::GAUCHE, 0, true);
+        ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, ui::tr(("garage.accroche." + id).c_str()), hex(TAG, op), ui::GAUCHE, 0, true);
         y += 20 * k + 14 * k;
         float px = x;
         const int nb = voituresPermises().n;   // WFS-404 : un point par voiture permise
@@ -69,8 +74,8 @@ float FicheGarage::specs(Renderer& r, const MiseEnPage& mp, const CarDef& car) c
     // .specs : Puissance (ch), 0 à 100 (s), Vitesse max (km/h)
     {
         const std::string val[3] = {std::to_string(car.spec.ch), virgule(car.spec.s100), std::to_string(car.spec.vmax)};
-        const char* dt[3] = {"Puissance", "0 à 100", "Vitesse max"};
-        const char* un[3] = {"ch", "s", "km/h"};
+        const char* dt[3] = {ui::tr("garage.puissance").c_str(), ui::tr("garage.zero_cent").c_str(), ui::tr("garage.vmax").c_str()};   // WFS-507
+        const char* un[3] = {"ch", "s", "km/h"};   // unités inchangées en anglais (WFS-507 RG-01)
         const float sy = y1 + statH / 2 - 26 * k;
         for (int i = 0; i < 3; i++) {
             ui::text(r, x, sy, 11 * k, ui::majuscules(dt[i]), hex(MUTED, op), ui::GAUCHE, 0.16f, false);
@@ -90,11 +95,11 @@ void FicheGarage::stats(Renderer& r, const MiseEnPage& mp, const CarDef& car, fl
     {
         const Stats st = carStats(car);
         const int v[4] = {st.v, st.a, st.m, st.p};
-        const char* lab[4] = {"Vitesse", "Accélération", "Maniabilité", "Puissance"};
+        const std::string* lab[4] = {&ui::tr("garage.note.vitesse"), &ui::tr("garage.note.acceleration"), &ui::tr("garage.note.maniabilite"), &ui::tr("garage.note.puissance")};   // WFS-507
         const float sx = x, sw = bx - 32 * k - sx, barX = sx + 112 * k + 12 * k, barW = sw - 112 * k - 12 * k - 12 * k - 28 * k;
         for (int i = 0; i < 4; i++) {
             const float yy = y1 + i * 24 * k;
-            ui::text(r, sx, yy, 13 * k, lab[i], hex(TAG, op), ui::GAUCHE, 0, false);
+            ui::text(r, sx, yy, 13 * k, *lab[i], hex(TAG, op), ui::GAUCHE, 0, false);
             const float by = yy + 4 * k, bh = 10 * k;
             biseau(r, barX, by, barW, bh, 1.8f * k, hex(SURFACE2, op));
             // remplissage en dégradé cyan → orange, découpé en 10 cases (mask repeating-linear-gradient)
