@@ -16,6 +16,8 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../langue.h"   // WFS-505 : textes du choix du terrain en français ou en anglais
+#include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "reglages.h"
@@ -36,13 +38,29 @@ const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6
 const vec4 BORD{1, 1, 1, 0.10f};
 
 // js/world/maps.js : ordre de MAPS, textes et couleurs des illustrations (art.ground [nuit, jour], art.accent)
+// WFS-505 (RG-01) : desc = clé de la description dans les tables de textes (assets/textes/fr.txt, en.txt)
 struct Carte { const char* id; const char* desc; unsigned solNuit, solJour, accent; };
 const Carte CARTES[4] = {
-    {"ville", "Avenues entre les gratte-ciel, enseignes au néon et chaussée qui brille.", 0x14151C, 0x55565C, 0x00E5FF},
-    {"plage", "Route du bord de mer : sable, palmiers, parasols et l'océan à perte de vue.", 0x2A2A22, 0xE6D3A1, 0x1D8FB8},
-    {"campagne", "Petites routes entre les champs, les haies, les fermes et les éoliennes.", 0x18200F, 0x8FAE4C, 0xCDB259},
-    {"circuit", "Circuit fermé : vibreurs, tribunes, murs de pneus. Tu doubles d'autres pilotes.", 0x14200F, 0x4F7F32, 0xE2262B},
+    {"ville", "terrain.desc.ville", 0x14151C, 0x55565C, 0x00E5FF},
+    {"plage", "terrain.desc.plage", 0x2A2A22, 0xE6D3A1, 0x1D8FB8},
+    {"campagne", "terrain.desc.campagne", 0x18200F, 0x8FAE4C, 0xCDB259},
+    {"circuit", "terrain.desc.circuit", 0x14200F, 0x4F7F32, 0xE2262B},
 };
+// WFS-505 (RG-01) : noms des quartiers (src/world/zones.cpp, en français) → clé de leur traduction ; les noms des cartes, eux,
+// restent tels quels (noms propres, RC-E20-03). Quartier inconnu (carte de données) : affiché tel quel.
+const char* const QUARTIERS[][2] = {
+    {"Centre-ville", "quartier.centre_ville"}, {"Quartier résidentiel", "quartier.residentiel"}, {"Parc urbain", "quartier.parc"},
+    {"Zone portuaire", "quartier.port"}, {"Quartier d'affaires", "quartier.affaires"}, {"Vieux quartier", "quartier.vieux"},
+    {"Corniche", "quartier.corniche"}, {"Port de plaisance", "quartier.marina"}, {"Côte rocheuse", "quartier.rochers"},
+    {"Village de pêcheurs", "quartier.pecheurs"}, {"Champs", "quartier.champs"}, {"Forêt", "quartier.foret"},
+    {"Village", "quartier.village"}, {"Vignobles", "quartier.vignes"}, {"Plaine", "quartier.plaine"}, {"Bois de pins", "quartier.pins"},
+    {"Ligne droite des tribunes", "quartier.tribunes"}, {"Paddock", "quartier.paddock"}, {"Virages rapides", "quartier.virages"},
+    {"Section boisée", "quartier.bois"},
+};
+std::string nomQuartier(const std::string& fr) {
+    for (const auto& q : QUARTIERS) if (fr == q[0]) return ui::tr(q[1]);
+    return fr;
+}
 
 // WFS-343 (RG-03) : cartes montrées : les 4 du code, puis les cartes de données enregistrées (cartes_v2::decouvrir) ; art : dessin de
 // la vignette (0 à 3 : cartes du code ; 4 : vignette générique aux couleurs de la carte). Cartes de test cachées : WFS_CARTES_TEST=1.
@@ -52,7 +70,7 @@ void listeCartes() {
     g_liste.clear();
     for (int i = 0; i < 4; i++) g_liste.push_back({CARTES[i].id, CARTES[i].desc, CARTES[i].solNuit, CARTES[i].solJour, CARTES[i].accent, i});
     for (const std::string& id : cartes_v2::cartesDonnees(std::getenv("WFS_CARTES_TEST") != nullptr))
-        if (const auto d = cartes_v2::donnees(id)) g_liste.push_back({id, d->description, d->vignetteNuit, d->vignetteJour, d->accent, 4});
+        if (const auto d = cartes_v2::donnees(id)) g_liste.push_back({id, d->description, d->vignetteNuit, d->vignetteJour, d->accent, 4});   // description du paquet (cartes de test, cachées)
 }
 int nbCartes() { if (g_liste.empty()) listeCartes(); return (int)g_liste.size(); }
 
@@ -242,7 +260,7 @@ std::vector<std::string> quartiers(const MapDef& m) {
     if (const auto d = cartes_v2::donnees(m.id)) return d->quartiers;   // WFS-343 : quartiers lus du paquet
     std::vector<std::string> v;
     for (int64_t i = 0; i < 12; i++) {
-        const std::string n = zoneName(m, i * ZONE_LEN, (int64_t)1 << 40);
+        const std::string n = nomQuartier(zoneName(m, i * ZONE_LEN, (int64_t)1 << 40));   // WFS-505 : dans la langue active
         if (std::find(v.begin(), v.end(), n) == v.end()) v.push_back(n);
     }
     return v;
@@ -298,6 +316,7 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Terrain || g.sceneDediee || !ui::fontReady()) return;
+        const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         // WFS-147 (RG-01, RG-02, RG-06, ANO-19) : sur téléphone couché, mise en page propre au terrain, dessinée en dp
         // (k = pixels par dp), d'après la mise en page petit écran de WFS-102 (6d3ed61) : en-tête et barre resserrés,
         // informations de la carte rapprochées, textes ≥ 14 dp, libellés 12 dp, boutons de 48 dp
@@ -308,8 +327,8 @@ public:
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));   // .screen--maps : fond nuit, la scène à peine visible derrière
         // ---------- .maps-head : sur-titre, titre, index « 01 / 04 » ----------
         const float hy = mg.haut + (cp ? 12 : 26) * k;
-        ui::text(r, zl, hy, (cp ? 12 : 13) * k, ui::majuscules("Étape 3 sur 3 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
-        ui::text(r, zl, hy + (cp ? 18 : 20) * k, (cp ? 28 : 44) * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        ui::text(r, zl, hy, (cp ? 12 : 13) * k, ui::majuscules(ui::tr("terrain.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+        ui::text(r, zl, hy + (cp ? 18 : 20) * k, (cp ? 28 : 44) * k, ui::majuscules(ui::tr("terrain.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
         char totc[16]; std::snprintf(totc, sizeof totc, " / %02d", nbCartes());
         const std::string tot = totc;
@@ -355,19 +374,20 @@ public:
         degradeV(r, cx0, s1, cw, s2 - s1, hex(BG, 0.6f), hex(BG, 0.97f));
         degradeV(r, cx0, s2, cw, cy0 + ch - s2, hex(BG, 0.97f), hex(BG, 1));
         // .map-sel « Choisi »
-        const std::string choisi = ui::majuscules("Choisi");
+        const std::string choisi = ui::majuscules(ui::tr("terrain.choisi"));
         const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
         r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(ACCENT2, 0.92f));   // WFS-146 (RG-07) : badge « Choisi » cyan
         ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
-        ui::text(r, ix, iy, (cp ? 26 : 36) * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
-        ui::text(r, ix, iy + dDesc, (cp ? 14 : 15) * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
+        { const textes::NomPropre np;   // WFS-505 : nom de la carte, nom propre inchangé en anglais (RC-E20-03) : noté à part au banc
+          ui::text(r, ix, iy, (cp ? 26 : 36) * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true); }
+        ui::text(r, ix, iy + dDesc, (cp ? 14 : 15) * k, c.art < 4 ? ui::tr(c.desc.c_str()) : c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
         std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
         if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
         if (cp) {   // .fact sur une ligne : bordure à l'accent, libellé 12 dp, valeur 20 dp sur la même ligne de base
             const float fy = iy + dFait, vh = 20 * k, ly = fy + vh - lf - 2 * k;
             float fx = ix;
             for (int f = 0; f < 2; f++) {
-                const std::string lib = ui::majuscules(f == 0 ? "Longueur" : "Quartiers"), val = f == 0 ? km + " km" : std::to_string(qs.size());
+                const std::string lib = ui::majuscules(ui::tr(f == 0 ? "terrain.longueur" : "terrain.quartiers")), val = f == 0 ? km + " km" : std::to_string(qs.size());
                 r.uiRect(fx - 10 * k, fy - 1 * k, 2 * k, vh + 4 * k, hex(c.accent));
                 ui::text(r, fx, ly, lf, lib, hex(MUTED), ui::GAUCHE, 0.16f, false);
                 const float vx = fx + ui::width(lf, lib, 0.16f) + 10 * k;
@@ -375,12 +395,12 @@ public:
                 fx = vx + ui::width(vh, val) + 34 * k;
             }
         } else {
-            ui::text(r, ix, iy + dFait, lf, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, ix, iy + dFait, lf, ui::majuscules(ui::tr("terrain.longueur")), hex(MUTED), ui::GAUCHE, 0.16f, false);
             ui::text(r, ix, iy + dFait + 16 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
             r.uiRect(ix - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
-            const float qx = ix + std::max(ui::width(lf, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
+            const float qx = ix + std::max(ui::width(lf, ui::majuscules(ui::tr("terrain.longueur")), 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
             r.uiRect(qx - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));
-            ui::text(r, qx, iy + dFait, lf, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, qx, iy + dFait, lf, ui::majuscules(ui::tr("terrain.quartiers")), hex(MUTED), ui::GAUCHE, 0.16f, false);
             ui::text(r, qx, iy + dFait + 16 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
         }
         lx = 0;
@@ -425,18 +445,22 @@ public:
             const float icx = x + 30 * kb, icy = by + bh / 2;   // icône soleil / lune (taille du bouton d'avant WFS-147)
             if (!nuit) { r.uiCircle(icx, icy, 7 * kb, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, on ? hex(ACCENT2) : hex(TEXTE)); }
             else { r.uiCircle(icx, icy, 9 * kb, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, on ? hex(0x0A2A33) : hex(SURFACE2)); }
-            ui::text(r, x + 52 * kb, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);   // WFS-375 (RG-01) : jamais « Midi », « Dorée »…
+            // WFS-375 (RG-01) : jamais « Midi », « Dorée »… ; WFS-505 (RG-03) : texte dans la place du bouton (police réduite de 20 % au plus)
+            ui::textBoite(r, x + 52 * kb, by, tw - 60 * kb, bh, 18 * k, ui::majuscules(ui::tr(nuit ? "terrain.nuit" : "terrain.jour")), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
         }
         const float tp = 20 * k;
-        const std::string rt = ui::majuscules("Rouler"), bt = ui::majuscules("Retour");
-        const float rw = ui::width(tp, rt, 0.12f) + 56 * kb + 26 * kb, bw = ui::width(tp, bt, 0.12f) + 52 * kb;
+        // WFS-505 (RG-03, RC-E20-04) : largeurs mesurées sur le texte français (boutons identiques dans les deux langues)
+        const std::string rt = ui::majuscules(ui::tr("terrain.rouler")), bt = ui::majuscules(ui::tr("terrain.retour"));
+        const float rtw = ui::width(tp, ui::majuscules(ui::trLangue("terrain.rouler", ui::langue::Langue::Francais)), 0.12f);
+        const float btw = ui::width(tp, ui::majuscules(ui::trLangue("terrain.retour", ui::langue::Langue::Francais)), 0.12f);
+        const float rw = rtw + 56 * kb + 26 * kb, bw = btw + 52 * kb;
         const float rx = zr - rw, bx = rx - 10 * k - bw;
         g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
         for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
         biseau(r, bx, by, bw, bh, 14 * kb, hex(SURFACE2));   // .btn--ghost
-        ui::text(r, bx + bw / 2, by + (bh - tp) / 2, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
+        ui::textBoite(r, bx + bw / 2, by, btw, bh, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
         biseau(r, rx, by, rw, bh, 14 * kb, hex(ACCENT));     // .btn--go avec la flèche
-        ui::text(r, rx + 28 * kb, by + (bh - tp) / 2, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
+        ui::textBoite(r, rx + 28 * kb, by, rtw, bh, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
         const float fx = rx + rw - 40 * kb, fy = by + bh / 2;
         r.uiRect(fx, fy - 1.5f * kb, 16 * kb, 3 * kb, hex(BG));
         chevron(r, fx + 13 * kb, fy, 14 * kb, 1, hex(BG));

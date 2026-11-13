@@ -14,5 +14,7 @@ namespace ecrans {
 // banc d'essai : captures pause-bouton (encoche simulée de 90 px), pause-0, pause-reprise, pause-recommencer,
 // pause-quitter, puis g.shutdown()
 void benchPause(Game& g, Renderer& r, const std::string& outDir);
+// WFS-505 (banc « textes ») : centre d'un bouton à la dernière image : « menu » (en course), « reprendre », « recommencer », « quitter »
+bool pauseBouton(const std::string& nom, float& x, float& y);
 } // namespace ecrans
 } // namespace wfs

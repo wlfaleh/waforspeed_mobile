@@ -14,5 +14,7 @@ namespace ecrans {
 // banc d'essai : menu-duel, salon-accueil, salon-hote, salon-pret, duel-reseau-course ; le second joueur passe par
 // TransportUdp en boucle locale (127.0.0.1)
 void benchSalon(Game& g, Renderer& r, const std::string& out);
+// WFS-505 (banc « textes ») : centre d'un bouton du salon à la dernière image : « creer », « retour », « pret », « quitter »
+bool salonBouton(const std::string& nom, float& x, float& y);
 } // namespace ecrans
 } // namespace wfs

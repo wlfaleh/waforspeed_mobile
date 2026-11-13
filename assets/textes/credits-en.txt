@@ -1,0 +1,61 @@
+# WaForSpeed — traduction anglaise de l'écran « Crédits » (WFS-505, RG-02). Le texte des crédits (licences/CREDITS.txt) est fabriqué en
+# français par tools/qa/verifier_licences.py ; en anglais, l'écran remplace chaque morceau français par sa traduction, au plus long
+# morceau trouvé d'abord, puis passe à la typographie anglaise (« mot : » → « word: », « » → “ ”).
+# Format : morceau français|morceau anglais (UTF-8). Les espaces comptent, au début et à la fin ; « # » en début de ligne : commentaire.
+# Les noms des auteurs, les titres des œuvres et les noms des licences (« CC BY 4.0 ») ne changent pas.
+# Une nouvelle phrase dans CREDITS.txt doit recevoir sa ligne ici : tests/test_credits.cpp échoue sinon (aucun mot français en anglais).
+
+# ---- titre, introduction, fin
+WaForSpeed — crédits|WaForSpeed — credits
+Politique de confidentialité|Privacy policy
+Ce jeu utilise des œuvres partagées sous licence libre : merci à leurs auteurs.|This game uses works shared under free licenses: thanks to their authors.
+Les noms des voitures et des deux-roues du jeu sont inventés ; le jeu n'est affilié à aucun constructeur.|The names of the cars and two-wheelers in the game are invented; the game is not affiliated with any manufacturer.
+Licences complètes|Full licenses
+dossier licences/ de l'application.|licences/ folder of the app.
+
+# ---- sections
+Voitures (modèles 3D modifiés pour WaForSpeed : allégés, logos effacés)|Cars (3D models modified for WaForSpeed: lightened, logos removed)
+Deux-roues du trafic (modèles 3D modifiés pour WaForSpeed : allégés, logos effacés)|Traffic two-wheelers (3D models modified for WaForSpeed: lightened, logos removed)
+Personnes|People
+Animaux|Animals
+Revêtements de route|Road surfaces
+Sons des moteurs (modifiés pour WaForSpeed : mis en boucle, niveau égalisé)|Engine sounds (modified for WaForSpeed: looped, level equalized)
+Police|Font
+Créés par le jeu|Made by the game
+Texte de la licence MIT|MIT license text
+Texte de la licence Apache 2.0|Apache 2.0 license text
+(goéland et pigeon)|(gull and pigeon)
+
+# ---- entrées : ce qu'est chaque œuvre
+Moto routière|Road motorcycle
+Moto sportive|Sport motorcycle
+Piétons et animations|Pedestrians and animations
+Humains réalistes et enfants|Realistic humans and children
+ressources de MakeHuman (communauté MakeHuman)|MakeHuman assets (MakeHuman community)
+Vache, cheval, mouton, chiens, dauphin|Cow, horse, sheep, dogs, dolphin
+Goéland et pigeon|Gull and pigeon
+Enrobés, béton, pavés, gravier|Asphalt, concrete, paving stones, gravel
+scans de Poly Haven|scans from Poly Haven
+Feuillage, ville, ciel, sons d'effets|Foliage, city, sky, sound effects
+dessinés ou calculés par le code de WaForSpeed.|drawn or computed by the WaForSpeed code.
+liste de mots interdits|banned words list
+Liste de mots interdits|Banned words list
+Liste des mots interdits|Banned words list
+écrit pour le jeu|written for the game
+écrite pour le jeu|written for the game
+
+# ---- mots et tournures des entrées
+modèle 3D par |3D model by 
+modèle |model 
+ par | by 
+ et | and 
+, modifiés pour WaForSpeed|, modified for WaForSpeed
+, modifiées pour WaForSpeed|, modified for WaForSpeed
+, modifié pour WaForSpeed|, modified for WaForSpeed
+ modifiés pour WaForSpeed| modified for WaForSpeed
+(texte de la licence en fin de page)|(license text at the end of the page)
+version de la licence non indiquée par la source|license version not stated by the source
+version modifiée partagée sous la même licence|modified version shared under the same license
+mixage de |mix of 
+(domaine public ou licence MIT, au choix)|(public domain or MIT license, your choice)
+— licence |— license 

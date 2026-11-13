@@ -68,10 +68,12 @@ void main() {
     // passe de reflet (WFS-16) : la vue miroir inverse le sens des faces
     bool face = gl_FrontFacing != (F.nuitA.w > 0.5);
     if (!face && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
-    vec4 base = texture(texColor, vUv) * pc.color;
+    vec4 base = texture(texColor, vUv) * couleurMateriau();   // WFS-488 (accroche) : alpha gardé si pc.color.w porte une couleur 2
     // WFS-100 (RG-03, ANO-28) : carrosserie = couleur de peinture choisie × 1, sans la texture de couleur du modèle
     // (js/cars/models.js : color.set(paint), carte de couleur retirée) ; vitres, feux, jantes et logos gardent leur texture
-    if ((flags & F_PAINT) != 0u) base = pc.color;
+    const bool peint2 = peinture2Piece(flags);   // WFS-488 (accroche) : toit d'origine non peint, repeint en couleur 2
+    if (peint2) flags = (flags | F_PAINT) & ~F_HASNORMAL;
+    if ((flags & F_PAINT) != 0u) base = couleurPeinture();   // WFS-488 (accroche) : couleur 2 du toit et des rétros (vehicule.glsl)
     // WFS-324 : glace de rétroviseur à reflet (F_EMTEX et params.z = −2, retroviseurs.h) : la texture est l'image du reflet (lumière
     // HDR de la scène), renvoyée × la réflexion de la glace (emissive) ; ni lumière diffuse, ni reflet du ciel (fin du shader)
     bool retro = (flags & F_EMTEX) != 0u && pc.params.z < -1.5;
@@ -80,6 +82,7 @@ void main() {
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
+    if (peint2) finitionPeinture2(metal, rough);   // WFS-488 (accroche) : finition de la carrosserie
     if (kL < 1.0) {   // WFS-263 : relief de la carte de normales seulement en deçà de 70 m (fondu de 60 à 70 m)
         vec3 Ng = N;
         if ((flags & F_HASNORMAL) != 0u && (flags & F_TANGENTE) != 0u && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)

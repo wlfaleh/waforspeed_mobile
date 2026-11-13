@@ -1,5 +1,7 @@
 // WaForSpeed — lecture du texte des crédits (WFS-406) : voir credits.h. Sans dépendance (testée par tests/test_credits.cpp).
 #include "credits.h"
+#include <algorithm>
+#include <utility>
 
 namespace wfs {
 namespace credits {
@@ -51,6 +53,52 @@ std::vector<Paragraphe> paragraphes(const std::string& texte, const std::string&
     }
     while (!v.empty() && v.back().style == Paragraphe::VIDE) v.pop_back();
     return v;
+}
+
+// WFS-505 (RG-02) : voir credits.h
+std::string traduireCredits(const std::string& texte, const std::string& table) {
+    std::vector<std::pair<std::string, std::string>> paires;
+    size_t a = 0;
+    while (a < table.size()) {
+        size_t b = table.find('\n', a);
+        if (b == std::string::npos) b = table.size();
+        std::string l = table.substr(a, b - a);
+        a = b + 1;
+        if (!l.empty() && l.back() == '\r') l.pop_back();
+        if (l.empty() || l[0] == '#') continue;
+        const size_t s = l.find('|');
+        if (s == std::string::npos || s == 0) continue;
+        paires.emplace_back(l.substr(0, s), l.substr(s + 1));
+    }
+    std::stable_sort(paires.begin(), paires.end(), [](const auto& x, const auto& y) { return x.first.size() > y.first.size(); });
+    std::string t;
+    for (size_t i = 0; i < texte.size();) {
+        bool fait = false;
+        for (const auto& [fr, en] : paires)
+            if (texte.compare(i, fr.size(), fr) == 0) { t += en; i += fr.size(); fait = true; break; }
+        if (!fait) t += texte[i++];
+    }
+    // typographie anglaise
+    std::string out;
+    for (size_t i = 0; i < t.size(); i++) {
+        if (t[i] == ' ' && i + 1 < t.size() && (t[i + 1] == ':' || t[i + 1] == ';')) continue;   // « mot : » → « mot: »
+        if (t.compare(i, 3, "\xC2\xAB ") == 0) { out += "\xE2\x80\x9C"; i += 2; continue; }   // « + espace → “
+        if (t.compare(i, 3, " \xC2\xBB") == 0) { out += "\xE2\x80\x9D"; i += 2; continue; }   // espace + » → ”
+        if (t.compare(i, 2, "\xC2\xAB") == 0) { out += "\xE2\x80\x9C"; i += 1; continue; }
+        if (t.compare(i, 2, "\xC2\xBB") == 0) { out += "\xE2\x80\x9D"; i += 1; continue; }
+        out += t[i];
+    }
+    return out;
+}
+
+void traduireParagraphes(std::vector<Paragraphe>& paras, const std::string& table) {
+    bool licence = false;
+    for (Paragraphe& p : paras) {
+        if (p.style == Paragraphe::VIDE) continue;
+        if (p.style == Paragraphe::SECTION) licence = p.texte.rfind(LICENCE_TEXTE, 0) == 0;
+        else if (licence && p.style == Paragraphe::TEXTE) continue;   // texte d'une licence : déjà en anglais
+        p.texte = traduireCredits(p.texte, table);
+    }
 }
 
 } // namespace credits

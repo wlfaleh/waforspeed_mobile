@@ -1,0 +1,18 @@
+WFS-488 — RC-E18-03 : images par seconde en qualité Basse (banc WFS_BANC=peinture2-mesure, src/render/vehicule_peinture2_mesure.cpp)
+Ville, jour, 208 en course au pilote automatique, caméra de poursuite ; 180 images de chauffe puis 600 images chronométrées (update + render).
+« 1 % les plus lents » = img/s de la moyenne des 6 images les plus longues. Banc PC, rendu logiciel lavapipe (valeurs absolues sans sens sur téléphone).
+main = d8166341 (+ ce seul fichier de mesure et son accroche) ; branche = 0f6f59d7 (aucun code changé sur main entre les deux, seulement des .md).
+Couleur 2 posée sur la voiture du joueur : WFS_PEINTURE2=noir (toit et rétroviseurs noirs), sans effet sur main.
+
+série 1 (main, puis branche sans couleur 2, puis branche avec couleur 2) :
+peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 290.64 ms = 3.441 img/s ; 1 % les plus lents (6 images) 458.50 ms = 2.181 img/s [main]
+peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 302.32 ms = 3.308 img/s ; 1 % les plus lents (6 images) 432.27 ms = 2.313 img/s [branche]
+peinture2-mesure : Basse, Ville, 208, couleur 2 noir : 600 images, moyenne 301.45 ms = 3.317 img/s ; 1 % les plus lents (6 images) 422.17 ms = 2.369 img/s [branche]
+série 2 (branche avec couleur 2, puis main, puis branche sans couleur 2) :
+peinture2-mesure : Basse, Ville, 208, couleur 2 noir : 600 images, moyenne 300.70 ms = 3.326 img/s ; 1 % les plus lents (6 images) 430.80 ms = 2.321 img/s [branche]
+peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 294.00 ms = 3.401 img/s ; 1 % les plus lents (6 images) 432.12 ms = 2.314 img/s [main]
+peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 286.86 ms = 3.486 img/s ; 1 % les plus lents (6 images) 403.30 ms = 2.480 img/s [branche]
+
+écart main → branche avec couleur 2 : moyenne −0,124 img/s (série 1), −0,075 img/s (série 2) ; 1 % les plus lents +0,188 / +0,007 img/s.
+Critère (écart ≤ 1 img/s, moyenne et 1 % les plus lents) : tenu ; les écarts sont du même ordre que le bruit entre deux mesures de main (0,04 et 0,13 img/s).
+Tests CPU (tools/qa/tests_cpu.sh build) : voir tests-cpu.log, branche 0f6f59d7 synchronisée avec main d8166341.
