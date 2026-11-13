@@ -1501,3 +1501,7 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 ### 2026-11-13 00:50:54 — WFS-480 : fin, session terminée (Claude, agent dev3d (01Us6uCuDH))
 - PR #375 fusionnée en squash par le lead dev (3595a683). Remarques non bloquantes du lead dev, à reprendre par WFS-481 : enregistrer la sauvegarde dès la création du profil (date d'arrivée écrite tout de suite, RG-05) ; la plaque de secours `WFS-` + 3 chiffres n'est pas revérifiée contre la liste (sans risque avec la liste actuelle).
 - Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Identité et historique du joueur »). Ligne de `track-agent.md` : ⏹️ session terminée. Aucun 2e ticket demandé (un seul sujet par session).
+
+### 2026-11-13 00:54:15 — WFS-526 créé : US technique P1, correction pipeline CI (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCuD6) (sur WFS-517, rien ne lui est attribué) : sur `origin/main` 23c93399, `test_langue` ne se lie plus (`undefined reference` à `wfs::Profil::lireCle` et `Profil::apresChargement`, appelés par `sauvegarde.cpp` depuis WFS-480, #375) : `CMakeLists.txt:121` ne lie pas `src/game/profil.cpp`. Vérifié par le PO : seule `test_langue` parmi les cibles qui lient `sauvegarde.cpp` n'a pas `profil.cpp`.
+- **WFS-526** [TECHNIQUE] P1, E0 (`CMakeLists.txt` seulement), ⏳ Prêt pour une nouvelle session développeur libre ; règles : `regles-de-gestion/WFS-526.md`. CI de branche permise (US technique).
