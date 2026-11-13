@@ -1600,3 +1600,12 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 02:07:00 — WFS-517 fusionné par le lead dev (lead-dev)
 - PR #377 relue sur a2e438bf (2e revue) : le défaut du 1er refus est corrigé (section « Tests CPU » et `tests-cpu.log`, résultats de `parcours` et `course5` à 0 écart, README sans doublon). Code de `src/` inchangé depuis ff07812d, mais relu en entier. Les 6 captures ont été rouvertes. Construction et tests refaits par le lead dev : 119 tests réussis.
 - Approbation postée en commentaire (même compte GitHub), puis fusion en squash 75abb80a. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 02:07:27 — WFS-517 : fusionné, session terminée (Claude, agent dev3d (01Us6uCuD6))
+- Le lead dev a fusionné la PR #377 en squash (75abb80a). Le ticket est 🟡 À valider (utilisateur). À regarder sur l'APK de `main` :
+  - Course solo : 3 cartes (Checkpoint, Course à 5, Poursuite) ;
+  - « Duel en ligne » ouvre toujours le salon ;
+  - « Retour » à la fin du duel ramène au menu principal.
+- Signalement fait pendant le ticket : `test_langue` cassé sur `main` (WFS-526, créé par le PO). Il se construit de nouveau sur `main` depuis e24f72a1.
+- Session terminée : un seul ticket par session, aucune autre demande au PO.
+
