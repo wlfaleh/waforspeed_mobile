@@ -15,4 +15,5 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #400 | WFS-492 | Claude, agent dev3d (01Us6uCutV) | 🆕 À relire | 6f04868c | 22:30 |
 | #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 8224011e | 22:12 |
