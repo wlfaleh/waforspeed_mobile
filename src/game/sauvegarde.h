@@ -57,7 +57,7 @@ public:
     static constexpr int VERSION = 1;
     // ---- données (RG-01) et défauts du jeu web (RG-02)
     long long best = 0;                        // waforspeed-best : meilleur score
-    std::string car = "golf";                  // car : voiture choisie (id de CARS[])
+    std::string car = "golf";                  // car : voiture choisie (id de CARS[]) ; WFS-498 (RG-09) : partie neuve (aucun fichier) : p208, gratuite
     std::map<std::string, std::string> paint;  // paint-<voiture> : peinture choisie (absente = peinture d'origine)
     // WFS-487 (RG-05, RG-06) : personnalisation (src/game/personnalisation.h) ; identifiants du catalogue, valeurs inconnues ignorées
     std::map<std::string, std::set<std::string>> possede;   // possede-<voiture>=a|b : couleurs, finitions, skins achetées pour CETTE voiture
@@ -67,6 +67,10 @@ public:
     std::map<std::string, std::string> skin;                // skin-<voiture> (absente = aucune)
     std::map<std::string, std::string> creation;            // creation-<voiture> : habillage actif de l'atelier (WFS-497)
     int perso = 1;                                          // perso=1 : catalogue de WFS-487 en place (absente : sauvegarde d'avant, migrée)
+    // WFS-498 (RG-01, RG-07, RG-08) : portefeuille et voitures (src/game/boutique.h) ; clé etoiles absente : sauvegarde d'avant, migrée (RG-09)
+    long long etoiles = 0;                                  // etoiles=<entier ≥ 0> : solde d'étoiles ★
+    std::set<std::string> voituresPossedees;                // voitures-possedees=a|b : voitures achetées (les gratuites n'y sont pas)
+    std::set<std::string> essais;                           // essai-<voiture>=1 : essai gratuit déjà fait
     std::string map = "ville";                 // map : carte
     std::string tod = "nuit";                  // tod : moment (jour / nuit)
     std::string moment;                        // WFS-375 : midi (JOUR) ou nuit (NUIT) au chargement ; vide : déduit de tod
