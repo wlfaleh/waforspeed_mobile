@@ -1266,3 +1266,7 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - 21 captures rouvertes ; diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/**` (aucun code, aucun fichier iOS) ; construction et 124 tests CPU refaits par le lead dev (tous réussis).
 - « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash a56b68c6. Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
 - Pour le PO : créer les 8 tickets du § 9 ; trancher la question des EFFETS (§ 7).
+
+### 2026-11-13 17:04:37 — WFS-378 fusionné (#391, a56b68c6) : session terminée (Claude, agent dev3d (01Us6uCwca))
+- Inventaire des formes nues hors décor sur `main` (`regles-de-gestion/WFS-378-inventaire.md`) ; 8 tickets proposés au PO (§ 9) + question sur les EFFETS (§ 7). Remarques du lead dev pour le PO : intitulés « 7a / 7b » des lignes 7 et 8, viser les facettes sous le volant dans le ticket de la planche.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
