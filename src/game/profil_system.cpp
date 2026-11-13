@@ -6,6 +6,8 @@
 //     (Course::maxKmh) et frôlements (Course::nearCount, le compteur des messages « frôlement » du HUD) ;
 //   - fin : course terminée (Over, avec le résultat donné par le mode) ou quittée après le départ (retour au menu,
 //     course remise à zéro). Les menus et le compte à rebours ne comptent pas.
+// WFS-498 : au départ d'une course solo avec une voiture bloquée, son essai gratuit est noté ; à la fin d'une course
+// terminée (pas quittée), boutique.gain_course ★ sont créditées au portefeuille.
 // Rien n'est écrit si la sauvegarde est inactive (banc d'essai hors WFS_BANC=sauvegarde : RG-06).
 #include "profil_system.h"
 #include <cmath>
@@ -15,6 +17,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
+#include "boutique.h"   // WFS-498 : gain d'une course, essai gratuit
 #include "cars.h"
 #include "course.h"
 #include "course5.h"
@@ -89,6 +92,9 @@ private:
             case ModeCourse::Duel: mode_ = ModeJoue::Duel; break;
             default: mode_ = ModeJoue::Checkpoint; break;
         }
+        // WFS-498 (RG-08) : départ d'une course solo avec une voiture bloquée : son essai gratuit est utilisé (une seule fois)
+        Sauvegarde& s = sauvegarde();
+        if (s.actif() && mode_ != ModeJoue::Duel && !voiture_.empty() && boutique::marquerEssai(s, voiture_)) s.enregistrer();
     }
 
     void finir(bool quittee) {
@@ -102,6 +108,7 @@ private:
         Sauvegarde& s = sauvegarde();
         if (!s.actif()) return;   // RG-06 : banc d'essai : rien n'est noté ni écrit
         s.profil.noterCourse(c);
+        if (!quittee) boutique::crediterCourse(s);   // WFS-498 (RG-01) : boutique.gain_course ★ par course terminée
         WFS_LOG("profil : course notée (%s, %s, %s, %.3f km, %d km/h, %d frôlement(s)) : %lld course(s), %.1f km au total",
                 nomModeJoue(c.mode), c.voiture.c_str(), c.resultat().c_str(), c.metres / 1000.0, c.vmax, c.frolements, s.profil.courses, s.profil.km());
         s.enregistrer();

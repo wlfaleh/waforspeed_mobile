@@ -20,6 +20,7 @@
 #include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
 #include "../render/vehicule_cockpit_vitrine.h"   // WFS-325 (accroche) : WFS_BANC=cockpit-vitrine
 #include "../game/game.h"
+#include "../game/boutique.h"   // WFS-498 (accroche) : banc equilibrage
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
 namespace wfs { int benchFluidite(Game& g, Renderer& r, const std::string& out); }   // WFS-221 (bench_fluidite.cpp)   // WFS-115 (modes_ecran.cpp)
@@ -323,6 +324,7 @@ int main(int argc, char** argv) {
     if (banc == "marina") { benchMarina(g, r, out); return finir(); }   // WFS-376 : bateaux de la marina (essai local et PR)
     if (banc == "mer") { benchMer(g, r, out); return finir(); }   // WFS-380 : vraie mer (essai local et PR)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
+    if (banc == "equilibrage") { const int e = boutique::benchEquilibrage(out); finir(); return e > 0 ? 3 : 0; }   // WFS-498 (accroche) : prix et gain, sans rendu
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
     }

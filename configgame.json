@@ -207,64 +207,84 @@
     },
     "voitures": {
       "golf": {
-        "classe": 2
+        "classe": 2,
+        "prix": 600
       },
       "m4": {
-        "classe": 3
+        "classe": 3,
+        "prix": 2200
       },
       "p911": {
-        "classe": 4
+        "classe": 4,
+        "prix": 3500
       },
       "gallardo": {
-        "classe": 4
+        "classe": 4,
+        "prix": 3000
       },
       "p208": {
-        "classe": 0
+        "classe": 0,
+        "prix": 0
       },
       "abarth": {
-        "classe": 0
+        "classe": 0,
+        "prix": 0
       },
       "tcross": {
-        "classe": 1
+        "classe": 1,
+        "prix": 300
       },
       "compass": {
-        "classe": 1
+        "classe": 1,
+        "prix": 300
       },
       "s3": {
-        "classe": 2
+        "classe": 2,
+        "prix": 1000
       },
       "x5": {
-        "classe": 3
+        "classe": 3,
+        "prix": 0
       },
       "giulia": {
-        "classe": 3
+        "classe": 3,
+        "prix": 2400
       },
       "a45": {
-        "classe": 3
+        "classe": 3,
+        "prix": 0
       },
       "model3": {
-        "classe": 2
+        "classe": 2,
+        "prix": 1200
       },
       "corsa": {
-        "classe": 1
+        "classe": 1,
+        "prix": 250
       },
       "gt86": {
-        "classe": 0
+        "classe": 0,
+        "prix": 0
       },
       "elantra": {
-        "classe": 2
+        "classe": 2,
+        "prix": 0
       },
       "v60": {
-        "classe": 2
+        "classe": 2,
+        "prix": 1000
       },
       "rrsport": {
-        "classe": 2
+        "classe": 2,
+        "prix": 800
       },
       "mustang": {
-        "classe": 3
+        "classe": 3,
+        "prix": 1800
       },
       "sf90": {
-        "classe": 5
+        "classe": 5,
+        "prix": 6000
       }
     },
     "couleurs": {
@@ -460,6 +480,22 @@
       "etoiles": {
         "prix": 300,
         "gratuit": 0
+      }
+    },
+    "gain_course": 10,
+    "minutes_par_course": 2.96,
+    "medailles": {
+      "bronze": {
+        "etoiles": 100,
+        "euros": 0.99
+      },
+      "argent": {
+        "etoiles": 300,
+        "euros": 2.49
+      },
+      "or": {
+        "etoiles": 600,
+        "euros": 4.49
       }
     }
   }
