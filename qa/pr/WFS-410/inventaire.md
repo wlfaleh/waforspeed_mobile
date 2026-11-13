@@ -19,7 +19,7 @@ d'architecture (`archi_*`, WFS-161 / WFS-402) ne dessine pas, et l'état de ses 
 | Ville | Garages (`ville.cpp`, `GARAGE`) | porte vitrée du bureau = plaque de verre cachée dans l'épaisseur du mur ; rouleau du rideau = cylindre nu | porte vitrée du bureau dans un trumeau percé ; rideau levé : coffre d'acier à pan coupé et coulisses en U |
 | Ville | Commerces (`commerces.cpp`) | plaque sombre de 8 cm et plaque de verre devant l'immeuble | devanture en applique (boiserie de la couleur du commerce, 30 cm), vitrine à soubassement et porte vitrée, corniche et retours |
 | Ville | Entrepôts et immeubles | kit (WFS-370, WFS-402) ; boîtes seulement si le kit est coupé (secours) | inchangé (kit) |
-| Campagne | Église (`campagne.cpp`, `T_CHURCH`) | une boîte, un toit en losange, une tour en boîte et un cône | église romane modélisée (`decor_campagne_eglise.*`) : nef 9 × 17 m, abside, clocher-mur à 2 cloches, portail, 6 baies et 2 baies campanaires en plein cintre, vitraux |
+| Campagne | Église (`campagne.cpp`, `T_CHURCH`) | une boîte, un toit en losange, une tour en boîte et un cône | église romane modélisée (`decor_campagne_eglise.*`) : nef 9 × 22 m, abside, clocher-mur à 2 cloches, portail, 6 baies et 2 baies campanaires en plein cintre, vitraux |
 | Campagne | Maisons du village (`T_VILLA`) | kit (WFS-402) | inchangé (kit) |
 | Campagne | Ferme et hangar (`T_FARM`) | modèles de WFS-372 (fenêtres en retrait, porte, volets) | inchangé |
 | Campagne | Commerces du village (`T_COMMERCE`) | vitrines peintes (boîtes) | **hors zone de WFS-410** (RG-07 : « campagne.cpp, église seulement ») : à reprendre par WFS-518 (village de la Campagne, en pause sur ordre de l'utilisateur) ; signalé au PO |
