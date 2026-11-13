@@ -1179,28 +1179,32 @@ int benchPoliceBandes(Game& g, Renderer& r, const std::string& out) {
         if (!demarrer(false, a.basse, a.vue)) break;
         const double px = std::clamp(g.player().playerX, -(BORD_X - COTE_X), BORD_X - COTE_X);
         constexpr int N = 16;
-        double msAvant = 0, msApres = 0; uint32_t appelsAvant = 0, appelsApres = 0, triAvant = 0, triApres = 0;
+        // coût sur la même image (rendu sur le processeur, lavapipe) : 0 = main (bandes plates, peinture très fine retirée en
+        // Basse), 1 = bandes sur la tôle seules (RG-06 : un dessin de plus au plus par voiture de police), 2 = branche entière
+        // (la carrosserie retrouvée en Basse : celle de la police et des voitures du trafic à peinture très fine)
+        double ms[3] = {0, 0, 0}, appels[3] = {0, 0, 0}, tri[3] = {0, 0, 0};
         for (int k = 0; k < N; k++) {
             const double ecart = 80.0 - 75.0 * k / (N - 1);
             poursuiteBancPolice(true, ecart, px - COTE_X);
             rouler(6);   // 0,1 s
             char nom[96]; std::snprintf(nom, sizeof nom, "police-bandes-approche-%s-%02d", a.nom, k);
-            for (int avant = 1; avant >= 0; avant--) {   // coût mesuré sur la même image (rendu sur le processeur, lavapipe)
-                g_bancBandesAvant = avant == 1; r.bancPeintureFineMain = avant == 1;
+            for (int e = 0; e < 3; e++) {
+                g_bancBandesAvant = e == 0; r.bancPeintureFineMain = e <= 1;
                 g.render(t);
                 const auto t0 = std::chrono::steady_clock::now();
                 g.render(t);
-                const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-                uint32_t ap = 0, tr = 0; r.fileScene(ap, tr);
-                if (avant) { msAvant += ms; appelsAvant += ap; triAvant += tr; } else { msApres += ms; appelsApres += ap; triApres += tr; }
-                r.capturePng(out + "/" + nom + (avant ? "-avant" : "") + ".png");
+                ms[e] += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+                uint32_t ap = 0, tr = 0; r.fileScene(ap, tr); appels[e] += ap; tri[e] += tr;
+                if (e != 1) r.capturePng(out + "/" + nom + (e == 0 ? "-avant" : "") + ".png");
             }
             g_bancBandesAvant = false; r.bancPeintureFineMain = false;
             WFS_LOG("capture %s : police à %.1f m devant (voulu %.1f m), %.0f km/h", nom, -poursuiteBancProche(g.player()), ecart, g.player().kmh());
         }
-        WFS_LOG("police-bandes (WFS-460, RG-06) : approche %s : moyenne par image : appels de dessin avant %.1f, après %.1f ; triangles avant %.0f, après %.0f ; "
-                "rendu (processeur) avant %.2f ms, après %.2f ms", a.nom, appelsAvant / (double)N, appelsApres / (double)N, triAvant / (double)N, triApres / (double)N, msAvant / N, msApres / N);
-        if (appelsApres > appelsAvant + (uint32_t)N) { WFS_ERR("police-bandes (WFS-460, RG-06) : plus d'un dessin de plus par voiture de police"); ecarts++; }
+        WFS_LOG("police-bandes (WFS-460, RG-06) : approche %s, moyenne par image : appels de dessin main %.1f, bandes sur la tôle %.1f (%+.1f), "
+                "branche %.1f (%+.1f : carrosserie retrouvée en Basse) ; triangles main %.0f, bandes %.0f, branche %.0f ; rendu (processeur) main %.1f ms, "
+                "bandes %.1f ms, branche %.1f ms", a.nom, appels[0] / N, appels[1] / N, (appels[1] - appels[0]) / N, appels[2] / N, (appels[2] - appels[1]) / N,
+                tri[0] / N, tri[1] / N, tri[2] / N, ms[0] / N, ms[1] / N, ms[2] / N);
+        if (appels[1] > appels[0] + N) { WFS_ERR("police-bandes (WFS-460, RG-06) : bandes : plus d'un dessin de plus par voiture de police"); ecarts++; }
         poursuiteBancPolice(false, 0, 0); g.setAutopilot(false); g.shutdown();
     }
     choisirVue(vue0); modeCourse() = mode0; courseBenchRules(false);
