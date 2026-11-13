@@ -20,6 +20,7 @@ public:
     void shutdown();
     void onTouch(const Touch& t);                 // coordonnées logiques (paysage, pixels)
     void setAutopilot(bool on) { autopilot_ = on; }
+    void setPeinture2(float code) { paint2_ = code; }   // WFS-488 : couleur 2 du joueur (vehicule_peinture2::code ; 1 = aucune), bancs
     void update(double dt);
     void render(double time);
     const Player& player() const { return player_; }
@@ -76,6 +77,7 @@ private:
     Model car_;
     const CarDef* carDef_ = nullptr;
     vec3 paint_{0.1f, 0.3f, 0.85f};
+    float paint2_ = 1.f;   // WFS-488 : couleur 2 (toit, rétroviseurs) en code de vehicule_peinture2.h ; 1 = même couleur partout
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frameNo_ = 0;

@@ -45,6 +45,9 @@ struct Material {
     float taille = 0;   // WFS-134 : plus grande dimension des pièces de ce matériau (m) ; 0 = inconnue
     bool filament = false;   // WFS-42 : pièce opaque faite de fils (baguettes, filets chromés) → dessinée en couverture partielle
     uint32_t flags = 0; VkDescriptorSet set = VK_NULL_HANDLE;
+    // WFS-488 : pièce d'origine non peinte dont une partie est le toit (garnitures noires, carbone) : ses sommets marqués sont peints
+    // en couleur 2 quand le joueur en pose une, avec la finition de la carrosserie (code de vehicule_peinture2.h) ; sinon aspect d'origine
+    bool peinture2Piece = false; float peinture2Finition = 4.45f;
 };
 
 struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (repère local)
@@ -179,6 +182,12 @@ public:
     // WFS-134 (RG-07, ANO-60) : la prochaine voiture dessinée par draw(Model) est le fantôme du record : translucide
     // (α 0,45), teintée cyan, sans ombre de contact, sans feux
     void fantomeProchaineVoiture() { fantomeSuivant_ = true; feuxProchaineVoiture(FeuxVoiture{}); }
+    // WFS-488 : couleur 2 (toit, rétroviseurs) de la prochaine voiture dessinée par draw(Model) : code de vehicule_peinture2.h
+    // (1 = une seule couleur, remis à chaque voiture : trafic, adversaires, police gardent leur aspect, RG-06)
+    void peinture2ProchaineVoiture(float code) { peinture2Suivante_ = code; }
+    // WFS-490 : finition de la peinture de la voiture du joueur (vehicule_finitions.h ; 0 = brillant), gardée d'une image à l'autre
+    void finitionJoueur(int f) { finitionJoueur_ = f > 0 && f < 8 ? f : 0; }
+    int finitionJoueur() const { return finitionJoueur_; }
     void adversaireProchaineVoiture() { adversaireSuivant_ = true; }   // WFS-243 (ANO-117) : adversaire (Course à 5, Duel) : sans limite de distance (WFS-82), champ seul
     // WFS-453 (ANO-247) : le prochain draw (Model ou Mesh : ombre) est une voiture du trafic : coupe à distance du trafic
     // (masquage::distanceMaxTrafic : 130 m de la caméra en Basse, au lieu de 110 m pour les petits objets)
@@ -411,6 +420,8 @@ private:
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
     // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
+    float peinture2Suivante_ = 1.f;   // WFS-488
+    int finitionJoueur_ = 0;          // WFS-490
     bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false, adversaireSuivant_ = false, traficSuivant_ = false;
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;

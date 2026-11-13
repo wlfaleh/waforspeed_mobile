@@ -61,6 +61,9 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
     else for (const CarDef& c : CARS) ids.push_back(c.id);
     if (std::getenv("WFS_VITRINE_NUIT")) setenv("WFS_MOMENT", "nuit", 1); else unsetenv("WFS_MOMENT");   // WFS-193 (banc) : vitrines de nuit
     for (const std::string& id : ids) {
+        // WFS-456 (RG-03, ANO-257) : voitures retirées (liste unique VOITURES_RETIREES, WFS-404) sautées, même demandées par
+        // WFS_VOITURES : sinon Game::init prend la voiture de secours et la capture porterait le nom de la voiture retirée
+        if (voitureRetiree(id.c_str())) { WFS_LOG("vitrine feux : %s retirée (WFS-404), pas de capture", id.c_str()); continue; }
         if (!g.init(r, id.c_str(), "ville")) { WFS_ERR("vitrine feux : chargement de %s impossible", id.c_str()); continue; }
         if (choix) { g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png"); }
         // WFS-192 (accroche, essai local) : logos vus de près : WFS_VITRINE_ANGLES="<angle de l'orbite en rad> …" (0 : arrière,

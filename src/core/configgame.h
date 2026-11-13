@@ -27,6 +27,13 @@ struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 
 // WFS-487 (RG-04) : identifiants du catalogue de personnalisation (section « boutique ») ; noms, couleurs et règles dans
 // src/game/personnalisation.* ; les 16 premières couleurs sont celles du garage actuel (PEINTURES de src/game/sauvegarde.h, même ordre)
 constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 4, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
+constexpr int CADEAU_TRANCHES = 4;      // WFS-500 (RG-01) : tranches d'étoiles du cadeau du jour
+constexpr int BOUTIQUE_MEDAILLES = 3;   // WFS-498 (RG-02) : bronze, argent, or
+// WFS-510 (RG-01) : produits du market, dans l'ordre du catalogue ; ce sont aussi les identifiants des produits de la Play Console
+// (WFS-511, 515) : ils ne changent jamais (seuls les étoiles, le % offert et les prix de secours se règlent dans configgame.json)
+constexpr int MARKET_PRODUITS = 6, MARKET_ETOILES = 4;   // les 4 premiers : packs d'étoiles consommables
+inline constexpr const char* MARKET_PRODUITS_IDS[MARKET_PRODUITS] = {"etoiles_bronze", "etoiles_argent", "etoiles_or", "etoiles_coffre", "pack_debutant", "sans_pub"};
+inline constexpr const char* BOUTIQUE_MEDAILLES_IDS[BOUTIQUE_MEDAILLES] = {"bronze", "argent", "or"};
 inline constexpr const char* BOUTIQUE_COULEURS_IDS[BOUTIQUE_COULEURS] = {
     "blanc", "noir", "gris", "rouge", "bleu", "orange", "jaune", "vert", "nacre", "bleunuit", "anglais", "bordeaux", "sable", "violet", "turquoise", "taxi",
     "bleuelectrique", "vertacide", "orangefluo", "rose", "jaunecitron", "violetneon", "rougevif", "cyan", "vertmenthe", "magenta", "corail", "bleuciel"};
@@ -117,7 +124,57 @@ struct ConfigJeu {
         char skinVoitures[BOUTIQUE_SKINS][SKIN_VOITURES_MAX * 4 + 1] = {
             "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia"};
         Objet dessins[BOUTIQUE_DESSINS] = {{0, 1, 0}, {150, 0, 0}, {200, 0, 0}, {250, 0, 0}, {300, 0, 0}};   // « essentiels » : les 10 autocollants gratuits
+        // WFS-498 (RG-03, RG-04) : prix des voitures en étoiles (ordre de VOITURES_IDS) ; 0 = gratuite (p208, abarth, gt86) ;
+        // x5, a45, elantra : retirées (VOITURES_RETIREES de src/game/cars.h), jamais vendues quel que soit leur prix. Total vendu : 24 350 ★
+        int prixVoiture[VOITURES_NB] = {600, 2200, 3500, 3000, 0, 0, 300, 300, 1000, 0, 2400, 0, 1200, 250, 0, 0, 1000, 800, 1800, 6000};
+        int gainCourse = 10;              // WFS-498 (RG-01) ; WFS-536 (RG-02) : secours, ★ d'une course terminée dont le score ne peut pas être calculé
+        double minutesParCourse = 2.96;   // WFS-498 (RG-11) : durée moyenne d'une course pour le banc d'équilibrage (120 h pour 24 350 ★)
+        // WFS-498 (RG-02) : packs de médailles du market (pas une monnaie) : étoiles du pack et prix en euros ; bronze, argent, or
+        struct Medaille { int etoiles; double euros; };
+        Medaille medaille[BOUTIQUE_MEDAILLES] = {{100, 0.99}, {300, 2.49}, {600, 4.49}};
     } boutique;
+    // WFS-535 (E22, RG-01 à RG-05) : barème du score d'une course terminée et conversion en étoiles (section « score_etoiles »).
+    // Valeurs de départ du PO ; calcul dans src/game/score_course.* (fonction pure). points_par_etoile : réglé pour ≈ 10 ★ à un
+    // joueur moyen (calcul au journal du 2026-11-13, vérifié par le banc de WFS-536).
+    struct ScoreEtoiles {
+        int place[5] = {1000, 700, 500, 350, 250};   // course à 5 : points de la 1re à la 5e place (RG-01)
+        int duelGagne = 1000, duelPerdu = 400;       // duel (RG-01)
+        double duelDepartMinS = 30;                  // RC-E22-04 : adversaire parti avant : aucun gain
+        int poursuiteVictoire = 1000, poursuiteDefaite = 300;
+        double poursuitePartScore = 0.5;             // défaite : + part du score restant
+        int soloTerminee = 600;                      // course solo (checkpoints) terminée
+        double soloPartDistance = 0.1; int soloPlafondDistance = 400;   // + part des points de distance, plafonnée
+        int recordBattu = 300, procheRecord = 150, premiereCourse = 150;   // temps (RG-02)
+        double procheRecordPart = 0.05;              // « à moins de 5 % du record »
+        int propreZero = 200, proprePeu = 100, proprePeuMax = 2;   // conduite propre (RG-03) : 0 choc, 1 à proprePeuMax chocs
+        int c5Depassement = 20, c5DepassementMax = 200, c5EnTete = 100;   // défis course à 5 (RG-04)
+        int poSansPolice = 200, poScoreGarde = 100; double poScoreGardePart = 0.5;   // défis Poursuite
+        int duJamaisDerriere = 150, duEcart = 100; double duEcartS = 3;   // défis duel
+        int soSansRetard = 150, soNitro = 100;       // défis course solo
+        int pointsParEtoile = 85, etoilesMin = 5, etoilesMax = 40;   // conversion (RG-05)
+    } scoreEtoiles;
+    // WFS-510 (RG-01, RG-02, RG-06 ; valeurs de l'utilisateur, épic E21) : market. Étoiles de base et % offert de chaque pack d'étoiles
+    // (total crédité = base + arrondi(base × offert / 100)), pack débutant (étoiles, bons de skin, course après laquelle il est proposé),
+    // ×2 de fin de course par jour. Prix de secours en euros : PC et bancs seulement, jamais montrés sur Android (prix de Google, RC-E21-05).
+    struct Market {
+        struct Pack { int etoiles, offert; double prixSecours; };   // offert en % ; pack_debutant : étoiles seulement ; sans_pub : 0 étoile
+        Pack pack[MARKET_PRODUITS] = {{100, 0, 0.99}, {300, 10, 2.49}, {600, 20, 4.49}, {3600, 25, 19.99}, {500, 0, 1.99}, {0, 0, 2.99}};
+        int bonsSkinDebutant = 1;   // bons de skin du pack débutant
+        int debutantApres = 3;      // pack débutant proposé à partir de la fin de cette course terminée
+        int x2ParJour = 5;          // ×2 de fin de course par jour (date locale du téléphone)
+    } market;
+    // WFS-500 (RG-01, RG-02, RG-05 ; RC-E19-02) : cadeau du jour (src/game/cadeau.h). Chances en % (total des 7 = 100, sinon la lecture
+    // garde les chances du jeu) ; tranches d'étoiles (entier uniforme dans [min, max]) ; minimum d'étoiles d'un cadeau (replis compris) ;
+    // garantie : le N-ième cadeau ouvert sans voiture ni skin en donne une. Durées du prêt pour WFS-502.
+    struct Cadeau {
+        struct Tranche { int min, max; double chance; };
+        Tranche tranche[CADEAU_TRANCHES] = {{10, 15, 45}, {16, 25, 28}, {26, 40, 9}, {41, 50, 3}};
+        double chanceColoris = 8, chanceSkin = 4, chanceVoiture = 3;   // % : coloris (couleur ou finition), skin, voiture prêtée
+        int etoilesMin = 10;          // ★ : jamais moins par cadeau
+        int garantie = 30;            // cadeaux : le 30e sans voiture ni skin en donne une
+        double pretHeures = 3;        // h : durée du prêt d'une voiture (WFS-502)
+        double activationHeures = 24; // h : délai pour activer la voiture prêtée (WFS-502)
+    } cadeau;
     // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
     char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
 };

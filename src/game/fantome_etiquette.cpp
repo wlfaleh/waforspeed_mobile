@@ -17,6 +17,7 @@
 #include "game.h"
 #include "player.h"
 #include "sauvegarde.h"
+#include "textes_course.h"   // WFS-506 : étiquette en français ou en anglais
 
 namespace wfs {
 
@@ -43,7 +44,9 @@ public:
         if (cw < 0.5f) return;   // derrière la caméra ou trop près
         const float sx = (cx / cw * 0.5f + 0.5f) * g.uiWidth, sy = (cy / cw * 0.5f + 0.5f) * g.uiHeight;
         const float dp = ui::pixelsParDp(g.uiWidth), px = std::clamp(16 * dp * 10.f / cw, 12 * dp, 16 * dp);   // plus petite au loin
-        const std::string lib = ui::majuscules("Votre record"), tps = fantome::tempsRecord(duree), sep = "  ·  ";
+        static textes::Capitales libRecord{"hud.fantome"};   // WFS-506 (RG-01) : « VOTRE RECORD » / « YOUR BEST »
+        const std::string& lib = libRecord();
+        const std::string tps = fantome::tempsRecord(duree), sep = "  ·  ";
         const float wl = ui::width(px * 0.8f, lib, 0.12f), wt = ui::width(px, tps, 0.f), ws = ui::width(px, sep, 0.f);
         const float w = wl + ws + wt + px * 1.4f, h = px * 1.6f, x0 = sx - w / 2, y0 = sy - h;
         auto alpha = [&](vec4 c) { c.w *= a; return c; };

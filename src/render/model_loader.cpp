@@ -13,6 +13,7 @@
 #include "retroviseurs.h"   // WFS-324 (accroche) : rétroviseurs du modèle
 #include "mesh.h"          // WFS-149 : sommets versionnés, tangentes
 #include "vehicule_lod.h"  // WFS-158 (RG-04) : niveaux de détail des voitures
+#include "vehicule_peinture2.h"   // WFS-488 (accroche) : couleur secondaire (toit, rétroviseurs)
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG
@@ -362,6 +363,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     for (std::vector<ModelPart>& n : out.partsBasseNiveaux) listes.push_back(&n);   // WFS-335
     for (std::vector<ModelPart>* l : listes)
         l->erase(std::remove_if(l->begin(), l->end(), [&](const ModelPart& p) { return p.material < retire.size() && retire[p.material]; }), l->end());
+    const std::vector<uint32_t> peints2 = vehicule_peinture2::appliquer(path, file, verts, idx, out);   // WFS-488 (accroche) : toit et rétros marqués (assets/cars/<id>.pt2)
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     out.ib = r.vk().uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
@@ -430,6 +432,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         if (mt.flags & MAT_PAINT) { mt.rough = std::min(mt.rough, 0.45f); }
         out.mats.push_back(r.makeMaterial(mt, texAt(m.tC), texAt(m.tN), texAt(m.tMR)));
     }
+    vehicule_peinture2::noterMateriaux(peints2, out);   // WFS-488 (accroche) : toit d'origine non peint → finition de la peinture
     for (uint32_t mi = 0; mi < nMat; mi++)
         if (partDetail[mi] > 0) WFS_LOG("%s : matériau %u très fin (%.1f mm) → préfiltré%s (WFS-42)", path.c_str(), mi, partDetail[mi] * 1000.f,
                                         out.mats[mi].filament ? ", fils en couverture partielle" : "");

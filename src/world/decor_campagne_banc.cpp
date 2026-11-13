@@ -2,7 +2,7 @@
 // Une vue libre (carte::g_vueCarte, comme la vue haute du col de WFS-216) par sorte d'objet, à hauteur d'homme, de jour, et la
 // nuit pour chaque objet : campagne-objets-vigne, -cloture, -bottes, -ferme, -hangar, -poteau (+ -nuit) ; WFS-387 : -bottes-pres
 // (grain et filet), -hangar-moyen (couverture à 80 m, ondes et plaques), -poteau-soleil, -cloture-soleil, -muret et
-// -muret-voiture (parapet des épingles, voiture arrêtée contre lui). Les objets sont les
+// -muret-voiture (parapet des épingles, voiture arrêtée contre lui) ; WFS-410 : -eglise, -eglise-portail, -eglise-chevet. Les objets sont les
 // premiers de leur sorte posés sur le tour (campagne::objetBanc, rempli au chargement de la carte).
 #include <algorithm>
 #include <cmath>
@@ -45,6 +45,11 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
         // WFS-387 (RG-11) : parapet de moellons d'une épingle du col, de près, et la voiture arrêtée contre lui (repère : la voiture)
         {"muret", campagne::OB_MURET, -2.6f, -1.5f, 1.2f, 0.2f, 3.5f, 0.35f, 55, true},
         {"muret-voiture", campagne::OB_MURET, -6.5f, -7.f, 2.2f, -0.6f, 0.f, 0.6f, 55, true, true},
+        // WFS-410 (RG-04) : église du village : vue d'ensemble depuis la route (clocher-mur, gouttereau du midi, portail), le portail
+        // de près (claveaux, vantaux, pentures), le chevet en abside
+        {"eglise", campagne::OB_EGLISE, -24.f, -30.f, 1.7f, 0.f, -2.f, 6.f, 55, true},
+        {"eglise-portail", campagne::OB_EGLISE, -13.f, -5.f, 1.7f, -4.5f, 0.f, 2.6f, 50, true},
+        {"eglise-chevet", campagne::OB_EGLISE, -16.f, 26.f, 1.7f, 0.f, 9.f, 4.f, 55, false},
     };
     for (const char* mo : {"jour", "nuit"}) for (const Vue& v : vues) {
         if (!std::strcmp(mo, "nuit") && !v.nuit) continue;
@@ -82,7 +87,7 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
             const TrackPoint q = t.point((segVue + lg / SEG_M) * SEG, o.side * (o.lat + lat));
             return vec3{(float)q.x, (float)q.y + y, (float)q.z};
         };
-        carte::g_vueCarte.oeil = P(v.oLat, v.oLong, v.oY); carte::g_vueCarte.cible = P(v.cLat, v.cLong, v.cY);
+        carte::g_vueCarte.oeil = P(v.oLat, v.oLong, v.oY + o.y); carte::g_vueCarte.cible = P(v.cLat, v.cLong, v.cY + o.y);   // WFS-410 : o.y, pied de l'église
         carte::g_vueCarte.fov = v.fov; carte::g_vueCarte.actif = true;
         g.render(404); g.render(404.02);
         const std::string nom = std::string("campagne-objets-") + v.nom + (!std::strcmp(mo, "nuit") ? "-nuit" : "");

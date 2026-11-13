@@ -27,6 +27,7 @@
 #include <thread>
 #include "trace_cartes.h"   // WFS-136 : version du tracé
 #include "profil.h"         // WFS-480 : profil du joueur
+#include "market_etat.h"    // WFS-510 : livre des achats, « sans pub », ×2
 
 namespace wfs {
 
@@ -52,12 +53,27 @@ const PeintureDef* peintureDef(const std::string& id);   // nullptr si inconnue
 // peinture d'origine d'une voiture (champ paint de CARS[] du jeu web)
 const char* peintureOrigine(const std::string& carId);
 
+// WFS-500 (RG-07, RG-08, RG-09 ; RC-E19-03, 04) : état du cadeau du jour (règles dans src/game/cadeau.h). Clés nouvelles, absentes
+// dans une sauvegarde d'avant (cadeau disponible tout de suite) ; les clés du prêt sont seulement gardées ici, utilisées par WFS-502.
+struct EtatCadeau {
+    long long heure = 0;       // cadeau-heure : epoch UTC (s) du dernier cadeau ouvert ; 0 : jamais
+    int decalage = 0;          // cadeau-decalage : décalage local (s, fuseau du téléphone) au moment de cette ouverture
+    std::string jour;          // cadeau-jour : jour local AAAA-MM-JJ du dernier cadeau ; vide : jamais
+    int sansRare = 0;          // cadeau-sans-rare : cadeaux ouverts de suite sans voiture ni skin (garantie)
+    long long total = 0;       // cadeau-total : cadeaux ouverts
+    std::string dernier;       // cadeau-dernier : résultat du dernier cadeau, « <type>;<valeur> » (réaffichage)
+    std::string pretVoiture;   // pret-voiture : voiture prêtée (WFS-502) ; vide : aucune
+    long long pretRecu = 0;    // pret-recu : epoch UTC où le prêt a été gagné
+    long long pretFin = 0;     // pret-fin : epoch UTC de la fin du prêt ; 0 : pas encore activé
+    std::map<std::string, std::string> inconnues;   // autres clés cadeau-* / pret-* (version plus récente) : gardées telles quelles
+};
+
 class Sauvegarde {
 public:
     static constexpr int VERSION = 1;
     // ---- données (RG-01) et défauts du jeu web (RG-02)
     long long best = 0;                        // waforspeed-best : meilleur score
-    std::string car = "golf";                  // car : voiture choisie (id de CARS[])
+    std::string car = "golf";                  // car : voiture choisie (id de CARS[]) ; WFS-498 (RG-09) : partie neuve (aucun fichier) : p208, gratuite
     std::map<std::string, std::string> paint;  // paint-<voiture> : peinture choisie (absente = peinture d'origine)
     // WFS-487 (RG-05, RG-06) : personnalisation (src/game/personnalisation.h) ; identifiants du catalogue, valeurs inconnues ignorées
     std::map<std::string, std::set<std::string>> possede;   // possede-<voiture>=a|b : couleurs, finitions, skins achetées pour CETTE voiture
@@ -67,6 +83,11 @@ public:
     std::map<std::string, std::string> skin;                // skin-<voiture> (absente = aucune)
     std::map<std::string, std::string> creation;            // creation-<voiture> : habillage actif de l'atelier (WFS-497)
     int perso = 1;                                          // perso=1 : catalogue de WFS-487 en place (absente : sauvegarde d'avant, migrée)
+    // WFS-498 (RG-01, RG-07, RG-08) : portefeuille et voitures (src/game/boutique.h) ; clé etoiles absente : sauvegarde d'avant, migrée (RG-09)
+    long long etoiles = 0;                                  // etoiles=<entier ≥ 0> : solde d'étoiles ★
+    std::set<std::string> voituresPossedees;                // voitures-possedees=a|b : voitures achetées (les gratuites n'y sont pas)
+    std::set<std::string> essais;                           // essai-<voiture>=1 : essai gratuit déjà fait
+    EtatMarket market;                                      // WFS-510 : livre des achats, pack débutant, bons de skin, « sans pub », ×2 (market_etat.h)
     std::string map = "ville";                 // map : carte
     std::string tod = "nuit";                  // tod : moment (jour / nuit)
     std::string moment;                        // WFS-375 : midi (JOUR) ou nuit (NUIT) au chargement ; vide : déduit de tod
@@ -104,6 +125,7 @@ public:
     void activerCartes();                               // fantômes renommés, cartes notées (appelée par charger)
     // WFS-122 (RG-01) : 3 derniers adversaires du duel, le plus récent en premier (clé adversaires=a|b|c)
     std::vector<std::string> adversaires;
+    EtatCadeau cadeau;                                  // WFS-500 : cadeau du jour (clés cadeau-*, pret-*)
     Profil profil;                                      // WFS-480 : plaque, date d'arrivée, statistiques, 20 dernières courses (profil.h)
     void noterAdversaires(const std::vector<std::string>& noms);   // en tête dans l'ordre reçu (classement), sans doublon, 3 au plus
 

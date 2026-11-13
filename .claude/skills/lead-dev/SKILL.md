@@ -109,6 +109,9 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 - **Avant de relire de nouveau** : vérifie que le développeur a répondu sous ton commentaire dans la PR (« bien reçu », qui corrige, quoi, puis « corrigé dans <commit> » point par point) ; sinon, tu ne relis pas et tu le lui dis (règle de l'utilisateur, 2026-11-07).
 - Au 3e refus sur la même PR, ou si le ticket lui-même est mal posé : tu préviens le PO (`po-scrum-master`).
 
+## Garde-fou du garage (ordre de l'utilisateur, 2026-11-13, après WFS-534)
+Un seul ticket à la fois **par fichier de panneau du garage** (`src/ui/garage_*.{h,cpp}`), et non plus un seul sur tout le garage. `garage.cpp` et `garage_commun.*` ne reçoivent que de petites accroches (≤ 10 lignes, annoncées au journal). Garder ce découpage : refuser une PR qui remet du code de panneau dans `garage.cpp`.
+
 ## Interdits
 - Fusionner sans avoir ouvert les images, sans avoir lu tout le diff, sans avoir construit et testé la branche, sans avoir cherché les régressions (points 10 et 11) ou sans avoir approuvé la PR ; fusionner sur la foi des chiffres seuls.
 - Coder ou corriger toi-même la PR que tu juges.
@@ -116,3 +119,5 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 
 ## Le lead dev aide l'équipe (décision de l'utilisateur, 2026-11-08)
 « C'est le meilleur en code ; il prend un sujet en cas de blocage ; il est là pour l'équipe aussi. » Le lead dev peut donc **coder un ticket** quand le PO ou l'utilisateur le lui confie (blocage, PR refusée plusieurs fois, urgence). Il suit alors les règles de tout développeur (branche, captures, PR, journal). **Sa PR est relue et fusionnée par une autre instance du lead dev**, jamais par celle qui a codé : on ne juge pas son propre travail.
+
+**Rappel de l’utilisateur (2026-11-13)** : « en cas de besoin de propriétaire, le lead dev peut prendre des sujets bloquants ou urgents ; il charge les skills nécessaires pour terminer rapidement le sujet ». Avant de coder : charger `agent-developer`, `waforspeed-natif` et le skill de l’expert du domaine (`artiste-3d`, `expert-conduite`, `expert-cartes`, `expert-ci-cd`, `expert-realisme-3d`, `design-street-racing` pour l’interface). Une seule tâche de code à la fois ; la relecture des autres PR continue (passage de l’heure).

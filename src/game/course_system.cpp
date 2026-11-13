@@ -10,6 +10,7 @@
 #include "../render/model_loader.h"   // WFS-125 : voiture du fantôme
 #include "../render/renderer.h"
 #include "../ui/text.h"
+#include "textes_course.h"   // WFS-506 : fin de course en français ou en anglais
 #include "course5.h"        // WFS-125 : mode de course (records par mode)
 #include "duel_system.h"    // WFS-125 : duel (aucun record)
 #include "fantome.h"        // WFS-125 : fantôme de ton record (Checkpoint)
@@ -19,6 +20,8 @@
 #include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-24 : record
 #include "personnalisation.h"   // WFS-487 : banc sauvegarde (catalogue, possession)
+#include "boutique.h"   // WFS-498 : banc sauvegarde (portefeuille, voitures, essai)
+#include "cadeau.h"     // WFS-500 : banc sauvegarde (cadeau du jour)
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
 #include "../ui/ecrans/chargement.h"  // WFS-242 (RG-07) : fondu du chargement (commandes cachées)
@@ -260,16 +263,17 @@ private:
         r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
         const float cx = W / 2;
         // .eyebrow : cyan --accent-2, espacement 0,22 em
-        ui::text(r, cx, py + 6 * u, 4.2f * u, ui::majuscules("Temps écoulé"), ui::CYAN, ui::CENTRE, 0.22f, false);
+        static textes::Capitales tempsEcoule{"fin.temps_ecoule"};   // WFS-506 (RG-03)
+        ui::text(r, cx, py + 6 * u, 4.2f * u, tempsEcoule(), ui::CYAN, ui::CENTRE, 0.22f, false);
         // .score-big : orange --accent avec halo (--glow-accent)
         halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u, true);
         ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false, true);
         char kmh[32]; std::snprintf(kmh, sizeof kmh, "%d km/h", course_.maxKmh);
         const std::string vals[4] = {ui::decimal(km_, 2) + " km", kmh, ui::nombre(course_.nearCount), ui::nombre(course_.level)};
-        const char* labs[4] = {"Distance", "Vitesse max", "Quasi-contacts", "Checkpoints"};
+        static textes::Capitales labs[4] = {{"fin.distance"}, {"fin.vitesse_max"}, {"fin.quasi"}, {"fin.checkpoints"}};   // WFS-506 (RG-03)
         for (int i = 0; i < 4; i++) {
             const float x = px + pw * (0.125f + 0.25f * i);
-            ui::text(r, x, py + 38 * u + dStats, 3.4f * u, ui::majuscules(labs[i]), ui::GRIS, ui::CENTRE, 0.16f);
+            ui::text(r, x, py + 38 * u + dStats, 3.4f * u, labs[i](), ui::GRIS, ui::CENTRE, 0.16f);
             ui::text(r, x, py + 43 * u + dStats, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
         }
         // bouton « Rejouer » (biseau orange, texte sombre)
@@ -280,9 +284,11 @@ private:
         rejouer_ = {bx, by, bw, bh};
         menu_ = {bx + bw + gap, by, mw, bh}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
         biseau(r, rejouer_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
-        ui::text(r, rejouer_.x + bw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
+        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe ; texte anglais réduit de 20 % au plus s'il dépasse (ui::textBoite)
+        static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
+        ui::textBoite(r, rejouer_.x + bw / 2, by + 2.6f * u, bw - 28 * H / 720, 5 * u, 5 * u, libRejouer(), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
         biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
-        ui::text(r, menu_.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
+        ui::textBoite(r, menu_.x + mw / 2, by + 2.6f * u, mw - 28 * H / 720, 5 * u, 5 * u, libMenu(), TEXTE, ui::CENTRE, 0.12f, false);
     }
     bool nouveauRecord_ = false;
     bool restartReq_ = false;
@@ -305,6 +311,7 @@ private:
 };
 CourseSystem* CourseSystem::active_ = nullptr;
 void courseBancFantome(const fantome::Trace& t) { if (CourseSystem::active_) CourseSystem::active_->bancFantome(t); }   // WFS-452 (banc)
+bool courseBouton(const std::string& nom, float& x, float& y) { return CourseSystem::active_ && CourseSystem::active_->bouton(nom, x, y); }   // WFS-506 (banc « textes »)
 bool fantomeCourant(double& d, double& x, double& duree) { return CourseSystem::active_ && CourseSystem::active_->positionFantome(d, x, duree); }   // WFS-318 (accroche)
 
 // WFS-24 : badge « NOUVEAU RECORD » (.badge #newBest du jeu web, sous le score ; accent orange, texte sombre, biais
@@ -312,7 +319,8 @@ bool fantomeCourant(double& d, double& x, double& duree) { return CourseSystem::
 // bas : bas de la ligne « RECORD » (WFS-101 : 12 px au-dessus des boutons). WFS-125 : commun aux 3 modes (RG-04).
 void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, const std::string& val, bool nouveau) {
     if (nouveau) {
-        const std::string t = ui::majuscules("Nouveau record");
+        static textes::Capitales libNouveau{"fin.nouveau_record"};   // WFS-506 (RG-03) ; badge à la largeur du texte (comme avant)
+        const std::string& t = libNouveau();
         const float px = 3.6f * u, bw = ui::width(px, t, 0.12f) + 4.f * u, bh = 5.2f * u, by = yBadge;
         const float x = cx - bw / 2, biais = bh * 0.176f;   // tan(10°) × hauteur ; biseau du bouton .btn (un quadrilatère)
         const vec4 c = ui::ORANGE;
@@ -321,7 +329,8 @@ void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, con
         r.uiQuad(q);
         ui::text(r, cx, by + 0.9f * u, px, t, {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false, true);
     }
-    const std::string lab = ui::majuscules("Record");
+    static textes::Capitales libRecord{"fin.record"};   // WFS-506 (RG-03)
+    const std::string& lab = libRecord();
     const float lw = ui::width(3.4f * u, lab, 0.16f), vw = ui::width(5.5f * u, val), gap = 2.5f * u, x0 = cx - (lw + gap + vw) / 2;
     const float y = bas - 5.5f * u;   // haut de la valeur (5,5 u) ; libellé (3,4 u) 1,2 u plus bas, comme avant
     ui::text(r, x0, y + 1.2f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
@@ -380,6 +389,9 @@ void benchCourseScene(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
 }
 
+// WFS-500 : heure fixe du banc de la sauvegarde : 2026-11-13 10:00 à Paris (09:00 UTC, décalage +1 h)
+static constexpr cadeau::Instant BANC_CADEAU_INSTANT{1794560400LL, 3600};
+
 // WFS-24 : banc de la sauvegarde, lancé deux fois de suite sur le même chemin (propre au banc).
 // 1er lancement (fichier absent) : voiture m4, peinture rouge, course solo jusqu'à la fin → record battu, capture fin-record.
 // 2e lancement (fichier présent) : relecture au journal, vitrine de la voiture relue (capture sauvegarde-relue), puis le
@@ -396,7 +408,10 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         for (const std::string& l : perso::bilanCatalogue()) WFS_LOG("%s", l.c_str());
         for (const std::string& l : perso::verifierCatalogue()) WFS_LOG("CATALOGUE problème : %s", l.c_str());
         for (const std::string& l : perso::bilanPossession(s)) WFS_LOG("%s", l.c_str());
+        for (const std::string& l : boutique::bilanPortefeuille(s)) WFS_LOG("%s", l.c_str());   // WFS-498 : solde, voitures, essais relus
         WFS_LOG("PROFIL relu : %s", s.profil.texte(s.nick).c_str());   // WFS-480 : critère d'acceptation (2e lancement)
+        // WFS-500 : clés cadeau-* relues ; le 2e lancement, même jour du banc : déjà ouvert (pas de 2e cadeau)
+        for (const std::string& l : cadeau::bilan(s, BANC_CADEAU_INSTANT)) WFS_LOG("%s", l.c_str());
         if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); return; }
         g.camMode = 2; g.orbit = 0.7f;
         g.render(0); g.render(0); r.capturePng(out + "/sauvegarde-relue.png");
@@ -407,11 +422,21 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         return;
     }
     s.car = "m4"; s.paint["m4"] = "rouge";   // choix du « joueur » (≠ défauts golf / peinture d'origine)
-    {   // WFS-487 : achats d'essai avec un solde fictif (le portefeuille d'étoiles arrive avec WFS-498) : un accepté, un refusé
-        long long solde = 250;
-        const perso::Achat a = perso::acheter(s, solde, *perso::objet("rose"), "m4"), b = perso::acheter(s, solde, *perso::objet("chrome"), "m4");
-        WFS_LOG("BOUTIQUE essai (solde fictif 250 ★) : couleur rose sur m4 (%d ★) : %s ; finition chromé sur m4 (%d ★) : %s ; solde %lld ★",
-                perso::prix(*perso::objet("rose"), "m4"), perso::texteAchat(a), perso::prix(*perso::objet("chrome"), "m4"), perso::texteAchat(b), solde);
+    {   // WFS-487, WFS-498 (RG-01, RG-07) : 250 ★ au portefeuille du banc ; couleur achetée, finition et voiture refusées faute d'étoiles
+        boutique::crediter(s, 250, "banc");
+        const perso::Achat a = boutique::acheterObjet(s, *perso::objet("rose"), "m4"), b = boutique::acheterObjet(s, *perso::objet("chrome"), "m4");
+        WFS_LOG("BOUTIQUE essai (portefeuille 250 ★) : couleur rose sur m4 (%d ★) : %s ; finition chromé sur m4 (%d ★) : %s ; solde %lld ★",
+                perso::prix(*perso::objet("rose"), "m4"), perso::texteAchat(a), perso::prix(*perso::objet("chrome"), "m4"), perso::texteAchat(b), s.etoiles);
+        const boutique::AchatVoiture v = boutique::acheterVoiture(s, "m4");
+        WFS_LOG("BOUTIQUE essai : voiture m4 (%d ★ = %s = %s) : %s ; solde %lld ★", boutique::prixVoiture("m4"), boutique::equivalentMedailles(boutique::prixVoiture("m4")).c_str(),
+                boutique::texteEuros(boutique::equivalentCentimes(boutique::prixVoiture("m4"))).c_str(), boutique::texteAchat(v), s.etoiles);
+        WFS_LOG("BOUTIQUE essai : essai gratuit de la m4 disponible avant la course : %s", boutique::essaiDisponible(s, "m4") ? "oui" : "non");
+    }
+    {   // WFS-500 (RG-08) : cadeau du jour ouvert à une heure fixe du banc (graine fixe : même cadeau à chaque banc), puis 2e essai refusé
+        for (const std::string& l : cadeau::bilan(s, BANC_CADEAU_INSTANT)) WFS_LOG("%s", l.c_str());
+        const auto r = cadeau::ouvrir(s, BANC_CADEAU_INSTANT, cadeau::entreeDepuis(s), 500);
+        const auto r2 = cadeau::ouvrir(s, {BANC_CADEAU_INSTANT.epoch + 60, BANC_CADEAU_INSTANT.decalage}, cadeau::entreeDepuis(s), 501);
+        WFS_LOG("CADEAU essai : 1re ouverture %s ; 2e ouverture le même jour %s", r ? r->texte().c_str() : "refusée", r2 ? "ACCEPTÉE (erreur)" : "refusée");
     }
     s.profil.creer("Banc 480", "WFS-480", s.nick);   // WFS-480 (RG-06) : profil de test fixe du banc
     courseBenchRules(true);
@@ -428,6 +453,7 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
     s.enregistrer(); s.attendre();
     WFS_LOG("SAUVEGARDE écrite : car=%s paint=%s best=%lld (%s)", s.car.c_str(), s.peinture(s.car).c_str(), s.best, chemin.c_str());
     WFS_LOG("PROFIL écrit : %s", s.profil.texte(s.nick).c_str());   // WFS-480
+    for (const std::string& l : boutique::bilanPortefeuille(s)) WFS_LOG("%s", l.c_str());   // WFS-498 : essai noté au départ, +gain de la course
     g.shutdown();
     courseBenchRules(false);
 }

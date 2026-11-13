@@ -39,7 +39,7 @@
 //   bouchon      { "boucher": true, "materiau": m, "centre": [x,y], "rayons": [rx,ry], "seuil": s, "z": [z0,z1], "triangles": n }
 //   grille ajustée { "grilleAjustee": { "contour", "z", "ignorer", "recul", "fond", "lames", "lame": {…}, couleurs }, … } (voir plus bas)
 //   panneau      { "panneau": { "materiau", "contour", "z", "ignorer", "recul", "debord", "bombe" }, "triangles": n } (voir plus bas)
-//   couture      { "couture": { "materiau", "contour", "z", "ignorer", "bande", "baseFace" }, "triangles": n } (WFS-363, voir plus bas)
+//   couture      { "couture": { "materiau", "contour", "z", "ignorer", "bande", "baseFace", "arriere" }, "triangles": n } (WFS-363 ; « arriere » : WFS-456, voir plus bas)
 //   lissage      { "lisser": { "materiau", "boite", "appui", "pas", "fondu" }, "sommets": n } (WFS-364, voir plus bas)
 //   uv plane     { "uvPlan": { "materiau", "boite", "sources", "cible", "x", "y", "miroirX" }, "triangles": n } (WFS-365, voir plus bas)
 // Chaque retouche porte une « note ».
@@ -856,7 +856,27 @@ function delaunay(P) {
 //   couronnes concentriques donnaient des triangles très allongés, stries en étoile une fois les normales recalculées).
 // - Normales : surface (différences finies sur ± 1,5 cm) ; bord : celles de la carrosserie.
 // { "couture": { "materiau": m, "contour": …, "z": [z0, z1], "ignorer": [mats], "bande": m, "baseFace": p }, "note", "triangles": n }
+// WFS-456 : couture sur une face ARRIÈRE (hayon, coffre : « arriere »: true). Tout le calcul de la couture (carte de profondeur :
+// surface la plus en avant, normales et orientation vers −Z, contrôle « devant ») suppose une face avant. Pour une face arrière, la
+// voiture est retournée en miroir (z → −z sur les positions et les normales de tous les maillages, sens des triangles inversé
+// pour garder leur face visible), la couture est faite sur le reflet (contour inchangé, z: [−z1, −z0]), puis tout est remis à
+// l'endroit. Négation exacte : les maillages non touchés reviennent identiques à l'octet près ; la peau ajoutée a ses normales
+// vers +Z, comme la tôle du hayon (sans cela : normales retournées, taches claires au soleil, revue des captures de WFS-456).
+function miroirZ(w) {
+  for (const m of w.maillages) {
+    for (let i = 0; i < m.nv; i++) { m.v[i * 8 + 2] = -m.v[i * 8 + 2]; m.v[i * 8 + 5] = -m.v[i * 8 + 5]; }
+    for (let t = 0; t + 2 < m.ix.length; t += 3) { const a = m.ix[t + 1]; m.ix[t + 1] = m.ix[t + 2]; m.ix[t + 2] = a; }
+  }
+}
 function couture(w, r) {
+  if (r.couture.arriere) {
+    const [z0, z1] = r.couture.z;
+    miroirZ(w);
+    try { return coutureFace(w, { ...r, couture: { ...r.couture, arriere: false, z: [-z1, -z0] } }); } finally { miroirZ(w); }
+  }
+  return coutureFace(w, r);
+}
+function coutureFace(w, r) {
   const p = r.couture;
   const ks = w.maillages.map((m, k) => (m.mat === p.materiau ? k : -1)).filter((k) => k >= 0);
   if (ks.length !== 1) throw new Error(`matériau ${p.materiau} : un maillage attendu`);

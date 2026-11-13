@@ -8,6 +8,7 @@
 #include "../core/configgame.h"   // SCORE_POURSUITE_MAX
 #include "../core/log.h"
 #include "cars.h"
+#include "boutique.h"   // WFS-498
 #include "personnalisation.h"   // WFS-487
 #include "track.h"
 #ifndef _WIN32
@@ -95,10 +96,46 @@ bool poursuiteBat(bool victoire, int score, long long distM, bool ancVictoire, i
 }
 } // namespace records
 
+// WFS-500 (RG-09) : jour local « AAAA-MM-JJ » bien écrit (mois 1..12, jour 1..31) ; le calcul du jour est dans cadeau.cpp
+static bool jourValide(const std::string& j) {
+    if (j.size() != 10 || j[4] != '-' || j[7] != '-') return false;
+    for (int i : {0, 1, 2, 3, 5, 6, 8, 9}) if (j[(size_t)i] < '0' || j[(size_t)i] > '9') return false;
+    const int m = (j[5] - '0') * 10 + (j[6] - '0'), d = (j[8] - '0') * 10 + (j[9] - '0');
+    return m >= 1 && m <= 12 && d >= 1 && d <= 31;
+}
+// WFS-500 (RG-08) : résultat « <type>;<valeur> » : petites lettres, chiffres, « ; », « : », « - » ; 64 caractères au plus
+static bool resultatSur(const std::string& r) {
+    if (r.empty() || r.size() > 64 || r.find(';') == std::string::npos) return false;
+    for (char c : r) if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == ';' || c == ':' || c == '-')) return false;
+    return true;
+}
+// WFS-500 (RG-09) : clés du cadeau du jour ; vrai si la clé en est une (lue, ou ignorée si sa valeur est invalide : défaut de la clé)
+static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string& v) {
+    if (k.rfind("cadeau-", 0) != 0 && k.rfind("pret-", 0) != 0) return false;
+    long long n = 0;
+    constexpr long long EPOCH_MAX = 32503680000LL;   // an 3000 : borne de lecture d'une heure
+    if (k == "cadeau-heure") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.heure = n; }
+    else if (k == "cadeau-decalage") {   // signé : fuseaux à l'ouest de Greenwich (Amériques) négatifs
+        const bool neg = !v.empty() && v[0] == '-';
+        if (entier(neg ? v.substr(1) : v, n) && n <= 18 * 3600) c.decalage = (int)(neg ? -n : n);
+    }
+    else if (k == "cadeau-jour") { if (jourValide(v)) c.jour = v; }
+    else if (k == "cadeau-sans-rare") { if (entier(v, n) && n >= 0 && n <= 100000) c.sansRare = (int)n; }
+    else if (k == "cadeau-total") { if (entier(v, n) && n >= 0 && n <= 1000000000LL) c.total = n; }
+    else if (k == "cadeau-dernier") { if (resultatSur(v)) c.dernier = v; }
+    else if (k == "pret-voiture") { if (voitureExiste(v)) c.pretVoiture = v; }
+    else if (k == "pret-recu") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretRecu = n; }
+    else if (k == "pret-fin") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretFin = n; }
+    else if (c.inconnues.size() < 32 && k.size() <= 40 && v.size() <= 200) c.inconnues[k] = v;   // version plus récente : gardée, réécrite telle quelle
+    return true;
+}
+
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear();
     map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
     possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487
+    etoiles = 0; voituresPossedees.clear(); essais.clear();   // WFS-498
+    market = EtatMarket{};   // WFS-510
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     aideDirection = true;   // WFS-217
@@ -110,6 +147,7 @@ void Sauvegarde::defauts() {
     nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1; adversaires.clear();
     for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
     profil = Profil{};   // WFS-480
+    cadeau = EtatCadeau{};   // WFS-500
 }
 
 std::string Sauvegarde::texte() const {
@@ -133,6 +171,20 @@ std::string Sauvegarde::texte() const {
     for (const auto& [id, v] : finition) o << "finition-" << id << "=" << v << "\n";
     for (const auto& [id, v] : skin) o << "skin-" << id << "=" << v << "\n";
     for (const auto& [id, v] : creation) o << "creation-" << id << "=" << v << "\n";
+    // WFS-498 (RG-01, RG-07, RG-08) : portefeuille (toujours écrit : sa présence marque une sauvegarde à jour), voitures, essais
+    o << "etoiles=" << etoiles << "\n";
+    liste("voitures-possedees", voituresPossedees);
+    for (const std::string& id : essais) o << "essai-" << id << "=1\n";
+    // WFS-510 : market (clés absentes tant qu'elles valent leur défaut)
+    if (!market.achats.empty()) {
+        o << "achats-credites=";
+        for (size_t i = 0; i < market.achats.size(); i++) o << (i ? "|" : "") << market.achats[i];
+        o << "\n";
+    }
+    if (market.packDebutant) o << "pack-debutant=1\n";
+    if (market.bonsSkin > 0) o << "bons-skin=" << market.bonsSkin << "\n";
+    if (market.sansPub) o << "sans-pub=1\n";
+    if (market.x2Jour > 0) o << "x2=" << market.x2Jour << ";" << market.x2Nombre << ";" << market.x2Course << "\n";
     o << "map=" << map << "\n" << "tod=" << tod << "\n";
     if (!moment.empty()) o << "moment=" << moment << "\n";   // WFS-208
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
@@ -154,6 +206,15 @@ std::string Sauvegarde::texte() const {
         o << "\n";
     }
     for (const auto& [k, v] : anciens) o << k << "=" << v << "\n";        // records du tracé 1, gardés
+    if (cadeau.total > 0 || cadeau.heure > 0) {   // WFS-500 (RG-09) : absentes tant qu'aucun cadeau n'a été ouvert
+        o << "cadeau-heure=" << cadeau.heure << "\n" << "cadeau-decalage=" << cadeau.decalage << "\n";
+        if (!cadeau.jour.empty()) o << "cadeau-jour=" << cadeau.jour << "\n";
+        o << "cadeau-sans-rare=" << cadeau.sansRare << "\n" << "cadeau-total=" << cadeau.total << "\n";
+        if (!cadeau.dernier.empty()) o << "cadeau-dernier=" << cadeau.dernier << "\n";
+    }
+    if (!cadeau.pretVoiture.empty())   // WFS-500 (RG-09) : déclarées ici, utilisées par WFS-502
+        o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n";
+    for (const auto& [k, v] : cadeau.inconnues) o << k << "=" << v << "\n";   // WFS-500 : clés d'une version plus récente, gardées
     profil.ecrire(o);   // WFS-480 (RG-11) : nouvelles clés, aucune ancienne retirée
     return o.str();
 }
@@ -164,6 +225,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
     std::string ligne;
     bool premiere = true;
     int persoLu = 0;   // WFS-487 : sans clé « perso », la sauvegarde date d'avant le catalogue (migration RG-03)
+    bool etoilesLues = false;   // WFS-498 (RG-09) : sans clé « etoiles », la sauvegarde date d'avant le portefeuille (migration)
     int traceLu = 1;   // WFS-136 : sans clé « trace », la sauvegarde date du tracé 1
     cartesV2.clear();  // lues dans le fichier (clés trace-<carte>=2)
     std::map<std::string, std::string> v1;   // records du tracé 1 lus tels quels (mis de côté si traceLu < 2)
@@ -181,6 +243,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         if (k.rfind("waforspeed-", 0) == 0) k = k.substr(11);   // clés du web acceptées avec ou sans préfixe
         long long n = 0;
         if (profil.lireCle(k, v)) continue;   // WFS-480 : clés du profil
+        if (lireCleCadeau(cadeau, k, v)) continue;   // WFS-500 : clés cadeau-* et pret-*
         // WFS-136 (RG-07) : version du tracé, anciennes clés *_v1 gardées, valeurs brutes des records du tracé 1
         if (k == "trace") { if (entier(v, n) && n >= 1 && n <= 99) traceLu = (int)n; continue; }
         if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
@@ -196,6 +259,23 @@ bool Sauvegarde::lire(const std::string& contenu) {
         if (k == "best") { if (entier(v, n)) best = n; }
         else if (k == "car") { if (voitureExiste(v)) car = v; }
         // WFS-487 (RG-05, RG-06) : chaque identifiant est vérifié dans le catalogue ; inconnu → ignoré (défaut), sans erreur
+        // WFS-498 : solde borné (valeur mal écrite : 0, sans erreur), voitures et essais vérifiés dans CARS[]
+        else if (k == "etoiles") { etoilesLues = true; if (entier(v, n) && n <= boutique::SOLDE_MAX) etoiles = n; }
+        else if (k == "voitures-possedees") { for (const std::string& id : morceaux(v)) if (voitureExiste(id)) voituresPossedees.insert(id); }
+        else if (k.rfind("essai-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && v == "1") essais.insert(id); }
+        // WFS-510 : market ; jeton mal écrit ignoré, livre limité aux LIVRE_MAX derniers ; ×2 : jour AAAAMMJJ plausible
+        else if (k == "achats-credites") {
+            size_t a = 0;
+            while (a <= v.size()) { const size_t b = std::min(v.find('|', a), v.size()); const std::string j = v.substr(a, b - a); if (jetonValide(j)) market.achats.push_back(j); a = b + 1; }
+            if ((int)market.achats.size() > EtatMarket::LIVRE_MAX) market.achats.erase(market.achats.begin(), market.achats.end() - EtatMarket::LIVRE_MAX);
+        }
+        else if (k == "pack-debutant") { market.packDebutant = v == "1"; }
+        else if (k == "bons-skin") { if (entier(v, n) && n >= 0 && n <= 1000) market.bonsSkin = (int)n; }
+        else if (k == "sans-pub") { market.sansPub = v == "1"; }
+        else if (k == "x2") {
+            long long w[3];
+            if (entiers(v, w, 3) && w[0] >= 19700101 && w[0] <= 99991231 && w[1] >= 0 && w[1] <= 1000) { market.x2Jour = (int)w[0]; market.x2Nombre = (int)w[1]; market.x2Course = w[2]; }
+        }
         else if (k == "perso") { if (entier(v, n) && n >= 1 && n <= 99) persoLu = (int)n; }
         else if (k == "possede-dessins") { for (const std::string& id : morceaux(v)) if (const perso::Objet* o = perso::objet(id); o && o->type == perso::Type::Dessins) possedeDessins.insert(id); }
         else if (k.rfind("possede-", 0) == 0) {
@@ -237,6 +317,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
     }
     if (premiere) return false;   // fichier vide
     if (persoLu == 0) perso::migrer(*this); else perso = persoLu;   // WFS-487 (RG-03) : couleurs déjà choisies gardées gratuitement
+    if (!etoilesLues) boutique::migrer(*this);   // WFS-498 (RG-09) : la voiture choisie reste au joueur
     trace = traceLu;
     bool active = false; for (const char* c : trace::CARTES_ACTIVES) { (void)c; active = true; }
     if (active && traceLu < trace::VERSION) {   // WFS-136 (RG-07, A7.4) : records du tracé 1 mis de côté une fois, jamais effacés
@@ -298,6 +379,7 @@ bool Sauvegarde::charger(const std::string& chemin) {
     std::FILE* f = std::fopen(chemin.c_str(), "rb");
     if (!f) {   // WFS-136 : première installation : déjà sur le tracé 2 des cartes actives (aucun record à mettre de côté)
         for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+        car = "p208";   // WFS-498 (RG-09) : partie neuve : voiture de départ gratuite (les défauts du banc d'essai restent la Golf)
         profil.apresChargement((long long)std::time(nullptr));   // WFS-480 (RG-05) : date d'arrivée
         WFS_LOG("sauvegarde : aucun fichier (%s) : valeurs par défaut", chemin.c_str()); return false;
     }

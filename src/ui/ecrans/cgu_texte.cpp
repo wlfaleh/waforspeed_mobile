@@ -1,4 +1,5 @@
-// WaForSpeed — CGU (WFS-308) : lecture du Markdown simple de store/cgu.md et store/confidentialite.md (voir cgu.h).
+// WaForSpeed — CGU (WFS-308) : lecture du Markdown simple de store/cgu.md et store/confidentialite.md (voir cgu.h) ;
+// WFS-508 : choix du fichier anglais (store/cgu-en.md, store/confidentialite-en.md).
 // Sans dépendance au rendu : testé seul par tests/test_cgu.cpp.
 #include "cgu.h"
 #include <cctype>
@@ -70,6 +71,19 @@ int versionDansTexte(const std::string& md) {
     int n = 0;
     for (size_t i = p + 9; i < md.size() && std::isdigit((unsigned char)md[i]) && n < 100000; i++) n = n * 10 + (md[i] - '0');
     return n;
+}
+
+const char* fichierTexteCgu(bool confidentialite, bool anglais) {
+    if (confidentialite) return anglais ? "confidentialite-en.md" : "confidentialite.md";
+    return anglais ? "cgu-en.md" : "cgu.md";
+}
+
+std::string sansNotesStore(const std::string& md) {
+    for (const char* titre : {"\n## Réponses aux questionnaires", "\n## Answers to the store questionnaires"}) {
+        const size_t p = md.find(titre);
+        if (p != std::string::npos) return md.substr(0, p);
+    }
+    return md;
 }
 
 } // namespace ecrans

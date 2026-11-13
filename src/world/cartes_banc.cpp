@@ -268,6 +268,12 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             if (l.t == ville::CENTRE_COMMERCIAL) lieux.push_back({"carte-ville-centre-commercial", l.seg, 15, true});
             if (l.t == ville::GARAGE && ng++ == 0) lieux.push_back({"carte-ville-garage", l.seg, 6, true});
         }
+        for (const ville::Lieu& l : P.lieux) {   // WFS-410 : façades des lieux vues du trottoir (cam 4 : œil au bord du trottoir, façade visée)
+            const int64_t m = (l.seg + (int64_t)(l.len / 2 / SEG_M)) * 2 + (l.side > 0);
+            if (l.t == ville::CASINO) lieux.push_back({"carte-ville-lieu-casino", m, 0, true, 4, VueCamera::Poursuite, (float)RW + 12.f, 5.f, 26});
+            if (l.t == ville::CENTRE_COMMERCIAL) lieux.push_back({"carte-ville-lieu-centre", m, 0, true, 6, VueCamera::Poursuite, (float)RW + 31.f, 4.f, 30});
+            if (l.t == ville::GARAGE && l.seg == P.lieux.back().seg) lieux.push_back({"carte-ville-lieu-garage", m, 0, true, 4, VueCamera::Poursuite, (float)RW + 6.5f, 2.5f, 12});
+        }
         if (!P.promeneurs.empty()) lieux.push_back({"carte-ville-chien", (int64_t)P.promeneurs[0].s, 12, false});
         if (!P.carrefours.empty()) lieux.push_back({"carte-ville-pigeons", P.carrefours[0].croise - (int64_t)(15 / SEG_M), -20, false});
         // WFS-269 : gros plans de l'occlusion précalculée : pied de façade d'un immeuble de plus de 15 m, vu du trottoir à hauteur

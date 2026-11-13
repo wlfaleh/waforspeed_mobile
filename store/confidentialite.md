@@ -1,5 +1,7 @@
 # Politique de confidentialité — WaForSpeed
 
+*Ce texte existe aussi en anglais (store/confidentialite-en.md). En cas de différence entre les deux versions, la version française fait foi.*
+
 *(texte à publier à une adresse publique et à renseigner dans les deux stores ; WFS-25, RG-05)*
 
 WaForSpeed ne collecte **aucune donnée personnelle**.

@@ -207,64 +207,84 @@
     },
     "voitures": {
       "golf": {
-        "classe": 2
+        "classe": 2,
+        "prix": 600
       },
       "m4": {
-        "classe": 3
+        "classe": 3,
+        "prix": 2200
       },
       "p911": {
-        "classe": 4
+        "classe": 4,
+        "prix": 3500
       },
       "gallardo": {
-        "classe": 4
+        "classe": 4,
+        "prix": 3000
       },
       "p208": {
-        "classe": 0
+        "classe": 0,
+        "prix": 0
       },
       "abarth": {
-        "classe": 0
+        "classe": 0,
+        "prix": 0
       },
       "tcross": {
-        "classe": 1
+        "classe": 1,
+        "prix": 300
       },
       "compass": {
-        "classe": 1
+        "classe": 1,
+        "prix": 300
       },
       "s3": {
-        "classe": 2
+        "classe": 2,
+        "prix": 1000
       },
       "x5": {
-        "classe": 3
+        "classe": 3,
+        "prix": 0
       },
       "giulia": {
-        "classe": 3
+        "classe": 3,
+        "prix": 2400
       },
       "a45": {
-        "classe": 3
+        "classe": 3,
+        "prix": 0
       },
       "model3": {
-        "classe": 2
+        "classe": 2,
+        "prix": 1200
       },
       "corsa": {
-        "classe": 1
+        "classe": 1,
+        "prix": 250
       },
       "gt86": {
-        "classe": 0
+        "classe": 0,
+        "prix": 0
       },
       "elantra": {
-        "classe": 2
+        "classe": 2,
+        "prix": 0
       },
       "v60": {
-        "classe": 2
+        "classe": 2,
+        "prix": 1000
       },
       "rrsport": {
-        "classe": 2
+        "classe": 2,
+        "prix": 800
       },
       "mustang": {
-        "classe": 3
+        "classe": 3,
+        "prix": 1800
       },
       "sf90": {
-        "classe": 5
+        "classe": 5,
+        "prix": 6000
       }
     },
     "couleurs": {
@@ -461,6 +481,154 @@
         "prix": 300,
         "gratuit": 0
       }
+    },
+    "gain_course": 10,
+    "minutes_par_course": 2.96,
+    "medailles": {
+      "bronze": {
+        "etoiles": 100,
+        "euros": 0.99
+      },
+      "argent": {
+        "etoiles": 300,
+        "euros": 2.49
+      },
+      "or": {
+        "etoiles": 600,
+        "euros": 4.49
+      }
     }
+  },
+  "market": {
+    "packs": {
+      "etoiles_bronze": {
+        "etoiles": 100,
+        "offert": 0,
+        "prix_secours_eur": 0.99
+      },
+      "etoiles_argent": {
+        "etoiles": 300,
+        "offert": 10,
+        "prix_secours_eur": 2.49
+      },
+      "etoiles_or": {
+        "etoiles": 600,
+        "offert": 20,
+        "prix_secours_eur": 4.49
+      },
+      "etoiles_coffre": {
+        "etoiles": 3600,
+        "offert": 25,
+        "prix_secours_eur": 19.99
+      },
+      "pack_debutant": {
+        "etoiles": 500,
+        "bons_skin": 1,
+        "apres_courses": 3,
+        "prix_secours_eur": 1.99
+      },
+      "sans_pub": {
+        "prix_secours_eur": 2.99
+      }
+    },
+    "x2_par_jour": 5
+  },
+  "score_etoiles": {
+    "course5": {
+      "place_1": 1000,
+      "place_2": 700,
+      "place_3": 500,
+      "place_4": 350,
+      "place_5": 250
+    },
+    "duel": {
+      "gagne": 1000,
+      "perdu": 400,
+      "depart_min": 30.0
+    },
+    "poursuite": {
+      "victoire": 1000,
+      "defaite": 300,
+      "part_score_restant": 0.5
+    },
+    "solo": {
+      "terminee": 600,
+      "part_distance": 0.1,
+      "plafond_distance": 400
+    },
+    "temps": {
+      "record_battu": 300,
+      "proche_record": 150,
+      "proche_record_part": 0.05,
+      "premiere_course": 150
+    },
+    "propre": {
+      "zero_choc": 200,
+      "peu_chocs": 100,
+      "peu_chocs_max": 2
+    },
+    "defis": {
+      "course5": {
+        "depassement": 20,
+        "depassement_max": 200,
+        "en_tete_dernier_tour": 100
+      },
+      "poursuite": {
+        "sans_contact_police": 200,
+        "score_garde": 100,
+        "score_garde_part": 0.5
+      },
+      "duel": {
+        "jamais_derriere": 150,
+        "ecart": 100,
+        "ecart_s": 3.0
+      },
+      "solo": {
+        "sans_retard": 150,
+        "nitro_jamais_vide": 100
+      }
+    },
+    "conversion": {
+      "points_par_etoile": 85,
+      "min": 5,
+      "max": 40
+    }
+  },
+  "cadeau": {
+    "etoiles_min": 10,
+    "garantie": 30,
+    "tranches": {
+      "t1": {
+        "min": 10,
+        "max": 15,
+        "chance": 45.0
+      },
+      "t2": {
+        "min": 16,
+        "max": 25,
+        "chance": 28.0
+      },
+      "t3": {
+        "min": 26,
+        "max": 40,
+        "chance": 9.0
+      },
+      "t4": {
+        "min": 41,
+        "max": 50,
+        "chance": 3.0
+      }
+    },
+    "coloris": {
+      "chance": 8.0
+    },
+    "skin": {
+      "chance": 4.0
+    },
+    "voiture": {
+      "chance": 3.0
+    },
+    "pret_heures": 3.0,
+    "activation_heures": 24.0
   }
 }

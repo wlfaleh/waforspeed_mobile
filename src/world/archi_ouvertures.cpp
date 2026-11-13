@@ -558,6 +558,10 @@ void appuiEtLinteau(const Plan& p, const Baie& b, Batiment& out) {
 
 void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y, float l, float h, float plancher,
                   float murLibre, int lod, Batiment& out) {
+    baieComplete(style, graine, type, x, y, l, h, plancher, murLibre, lod, out, Baies::Interrupteur);
+}
+void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y, float l, float h, float plancher,
+                  float murLibre, int lod, Batiment& out, Baies mode) {
     // plan d'une façade fictive d'un seul niveau dont le plancher est à y = 0 ; la baie est ensuite remontée de « plancher »
     Plan p;
     p.style = style; p.graine = graine;
@@ -566,7 +570,7 @@ void baieComplete(Style style, uint32_t graine, Ouverture type, float x, float y
     const Baie b{type, 0, 0, x, y - plancher, l, h, false};
     size_t debut[NB_PARTS];
     for (int k = 0; k < NB_PARTS; k++) debut[k] = out.part[k].v.size();
-    baie(p, b, lod, out);
+    baie(p, b, lod, out, mode);
     for (int k = 0; k < NB_PARTS; k++)
         for (size_t i = debut[k]; i < out.part[k].v.size(); i++) out.part[k].v[i].p.y += plancher;
 }
