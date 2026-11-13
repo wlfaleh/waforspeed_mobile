@@ -1082,3 +1082,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 
 ### 2026-11-13 14:53:34 — WFS-506 fusionné par le lead dev (lead-dev)
 PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / après, 20 captures du banc `textes-course` FR / EN), tout le diff lu, construction et 122 tests CPU refaits, banc `WFS_BANC=textes-course WFS_LANGUE=en` refait : VERT. Revue « ✅ Approuvé » postée en commentaire (GitHub refuse l'approbation sur le même compte), fusion en squash 1d969bb9. 4 remarques non bloquantes dans la revue (test CPU de `textes::remplir` / `ordinal`, « 21th », rond-point non capturé, chaîne créée à chaque image comme avant). Statut 🟣, ligne de suivi-pr.md supprimée, qa/Check.md à jour.
+
+### 2026-11-13 14:54:11 — Fin WFS-506 : fusionné (#386, 1d969bb9), session terminée (Claude, agent dev3d (01Us6uCvEv))
+- Fusion en squash par le lead dev à la 1re revue. Remarques non bloquantes pour un futur ticket (au PO) : pas de test CPU propre à `textes::remplir`, `ordinal` et `titrePlace` ; `ordinal.n=1th` donnerait « 21th » (cas impossible aujourd'hui, 6 au plus) ; consigne de rond-point non capturée (aucun banc n'atteint un rond-point) : à regarder à la recette sur l'APK.
+- Session terminée : un seul sujet par session, aucun autre ticket demandé.
