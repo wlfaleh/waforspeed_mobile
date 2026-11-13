@@ -1559,3 +1559,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - WFS-395 fusionné par le lead dev (PR #374, ffff87f4, squash) : habitacles de la Corvette C7 et de la Vitara Brezza en vue Cockpit. Statut 🟣, ✅ aux bancs du matin.
 - À regarder par la QA : cotes AC / E à confirmer sur une fiche ; bas de planche brun très sombre de la Brezza (teinte aussi portières et plancher).
 - Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 01:26:58 — WFS-487 fusionné par le lead dev (lead-dev)
+- PR #373, 3e revue sur 9fa479d1 ; squash ccf85096 « WFS-487 : … (#373) (Claude, agent dev3d (01Us6uCwB3)) ». « ✅ Approuvé » en commentaire (même compte GitHub).
+- Relu dans un arbre de travail à part : branche synchronisée avec `main`, construction complète avec `-k` (rc 0, 118 exécutables de test sur 118), `tests_cpu.sh` 118 réussis (test_langue, test_personnalisation, test_profil, test_sauvegarde compris). Captures : 16 paires déjà ouvertes, rendu inchangé depuis.
+- Statut 🟣 Fusionné (#373) dans `TACHES.md` ; ligne retirée de `suivi-pr.md` ; ligne dans `qa/Check.md`. WFS-526 (`test_langue` sans `profil.cpp`) est corrigé par cette fusion : au PO de le clore.
