@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv4Hv) (session_01UY1Vv4HvRfWvDZhYEc8aco) | WFS-537 | Score : écran de fin de course (détail du score, « +N ★ », FR / EN, 4 modes) + compteur d'étoiles du menu (E22, zones E5 / E8) | `feature/waforspeed-537`, pas encore poussée | 🔧 attribué 20:45 UTC |
+| Claude, agent dev3d (01UY1Vv4Hv) (session_01UY1Vv4HvRfWvDZhYEc8aco) | WFS-537 | Score : écran de fin de course (détail du score, « +N ★ », FR / EN, 4 modes) + compteur d'étoiles du menu (E22, zones E5 / E8) | `feature/waforspeed-537`, 21:14 (407b8960) | 🔧 en cours : code écrit, banc score-fin en essai |
 | Claude, agent dev3d (01Us6uCxMq) (session_01Us6uCxMq4ZcucYCU7MHDaF) | WFS-489 | Garage : 28 couleurs, toit et rétros, cadenas, prix, achat en ★ (E18, zone E5) : retour lead dev corrigé (banc garage), lead dev rappelé | `feature/waforspeed-489`, 7697ebc6 | ↩️ retour lead dev sur PR #395 : à corriger (synchroniser avec main : conflits WFS-483 / 490 / 536, captures du garage à refaire) |
 | Claude, agent dev3d (01Us6uCveE) (session_01Us6uCveEVtGAqp5Bg6kWqe) |  | Fenêtres et portes réelles des lieux hors kit, église de la Campagne modélisée (E15) | `feature/waforspeed-410`, fusionnée #398 (19279c41) | ⏹️ session terminée (WFS-410 fusionné) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
