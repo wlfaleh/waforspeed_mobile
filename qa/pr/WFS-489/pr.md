@@ -24,14 +24,14 @@
 
 ## Tests CPU
 
-Commit testé : 0b1f43b4 (branche synchronisée avec `main` après WFS-483, 490, 536), journal complet : `qa/pr/WFS-489/tests-cpu.log`. Bancs sur ce commit : `garage` sans `[ERREUR]`, `garage-couleurs` 0 écart, `textes` VERT (FR et EN).
+Commit testé : 07099d25 (branche synchronisée avec `main` ; depuis 0b1f43b4, `main` n'apporte aucun fichier du garage), journal complet : `qa/pr/WFS-489/tests-cpu.log`. Bancs sur ce commit : `garage` sans `[ERREUR]`, `garage-couleurs` 0 écart, `textes` VERT (FR et EN).
 
 ```
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (2 s)
-[OK] test_virages_fleches (1 s)
+[OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 129 test(s) réussi(s) en 336 s
+tests CPU : 130 test(s) réussi(s) en 334 s
 code de sortie : 0
 ```
 
