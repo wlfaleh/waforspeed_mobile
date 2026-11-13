@@ -196,7 +196,7 @@ enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P
            P_NAPPE,             // WFS-380 (D5) : nappe du ressac et sable mouillé sur la plage (transparente)
            P_TERRE,                    // WFS-383 : sol des collines, talus et rochers (sols.glsl ; part de roche de chaque sommet en uv.x)
            P_ALEP_TRONC, P_ALEP_AIG,   // WFS-383 (RG-03) : pins d'Alep : tronc et branches, aiguilles
-           P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 85 % allumés)
+           P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 60 % allumés)
            P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
@@ -1775,7 +1775,7 @@ public:
             mats_[k ? P_VITRINE_F : P_VITRINE] = r.makeMaterial(mv, nullptr, nullptr, nullptr);
         }
         // WFS-410 (avis de l'agent 3D, B1) : vitres des lieux comme celles du kit (archi_carte.cpp) : pièce de nuit derrière la vitre
-        // (decor.glsl), lampe de 2 850 K, 31,8 cd/m², teintes et luminances variées par fenêtre ; étages 40 %, vitrines 85 % allumés
+        // (decor.glsl), lampe de 2 850 K, 31,8 cd/m², teintes et luminances variées par fenêtre ; étages 40 %, vitrines 60 % allumées
         for (int k = 0; k < 2; k++) {
             double c[3]; lumiere::couleurTemperature(2850, c);
             const float L = archi::lieux::LUMINANCE_PIECE;
@@ -2063,7 +2063,7 @@ public:
             {   // WFS-410 (RG-03) : galerie vitrée : 6 travées de 1,5 m (trumeaux d'enduit de 0,2 m) ; en bas, vitrines à soubassement
                 // et portes vitrées d'aluminium (2,6 m), en haut une verrière fixe à petits bois d'acier (2,6 m) ; menuiseries réelles
                 archi::lieux::Facade f;
-                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + m); f.largeur = 10.06f; f.y0 = 0; f.y1 = H; f.commerce = true;
+                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + m); f.largeur = 10.06f; f.y0 = 0; f.y1 = H;
                 for (int k = 0; k < 6; k++) {
                     const float xb = 0.53f + 0.75f + k * 1.5f;
                     f.baies.push_back({archi::Ouverture::Vitrine, xb, 0.45f, 1.3f, 2.6f, 0.45f});

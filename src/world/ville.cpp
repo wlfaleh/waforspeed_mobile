@@ -58,7 +58,7 @@ namespace {
 enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE,
            P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL,
            P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_GLACE,
-           P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 85 % allumés)
+           P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 60 % allumés)
            P_COUNT };   // WFS-369 : P_GLACE, verre clair des abribus (sans lumière intérieure)
              // WFS-176 : dorures, vitrages, néons du casino (A) et des autres enseignes (B)   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
@@ -1490,7 +1490,7 @@ public:
                 carte::quad(U, c1, c0, c0 + h, c1 + h, cl);
                 carte::quadSol(U, a0 + h, a1 + h, c1 + h, c0 + h, cl);
                 archi::lieux::Facade f;
-                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + 1); f.largeur = 2 * demi; f.y0 = 0; f.y1 = 9.f; f.commerce = true;
+                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + 1); f.largeur = 2 * demi; f.y0 = 0; f.y1 = 9.f;
                 for (float x = 1.5f; x < 2 * demi; x += 3.f) {
                     f.baies.push_back({archi::Ouverture::Vitrine, x, 0.18f, 2.7f, 2.8f, 0.18f});
                     f.baies.push_back({archi::Ouverture::Fenetre, x, 3.3f, 2.7f, 5.4f, 3.1f});
@@ -1498,7 +1498,7 @@ public:
                 facadeLieu(out, f, P(b0, 0, 0), X * -1.f, lod, cl, cl);
                 for (float sd : {-1.f, 1.f}) {
                     archi::lieux::Facade c;
-                    c.style = archi::Style::Industriel; c.graine = (uint32_t)(a * 5 + (sd > 0 ? 2 : 3)); c.largeur = 26.f; c.y0 = 0; c.y1 = 9.f; c.commerce = true;
+                    c.style = archi::Style::Industriel; c.graine = (uint32_t)(a * 5 + (sd > 0 ? 2 : 3)); c.largeur = 26.f; c.y0 = 0; c.y1 = 9.f;
                     for (float x = 1.75f; x < 26.f; x += 3.5f) c.baies.push_back({archi::Ouverture::Fenetre, x, 3.3f, 2.7f, 5.4f, 3.1f});
                     facadeLieu(out, c, P(b0 + 13.f, sd * demi, 0), Z * sd, lod, cl, cl);
                 }

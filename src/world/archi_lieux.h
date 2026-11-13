@@ -72,7 +72,7 @@ void ajouter(G& g, const Maillage& m, vec2 uv, bool garderUv = false) {
 // pièce de nuit derrière la vitre, lampe de 2 850 K, murs à 31,8 cd/m² (E = 200 lx, ρ = 0,5), teintes de 2 700 à 4 000 K et
 // luminances 0,55 à 1,3 tirées par fenêtre (decor.glsl) ; part allumée : ETAGES_ALLUMES des fenêtres d'étage la nuit, VITRINES_ALLUMEES
 // des vitrines de commerce (ouvertes le soir) ; de jour, la pièce est éclairée par le ciel seulement
-inline constexpr float ETAGES_ALLUMES = 0.40f, VITRINES_ALLUMEES = 0.85f;
+inline constexpr float ETAGES_ALLUMES = 0.40f, VITRINES_ALLUMEES = 0.60f;
 inline constexpr float LUMINANCE_PIECE = 31.8f;   // cd/m² (0,5 × 200 lx / π)
 
 // triangles d'un bâtiment (toutes pièces) : preuves du banc et du test

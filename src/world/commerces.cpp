@@ -154,7 +154,7 @@ public:
         palette_.construire(r);
         bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
         {   // WFS-410 (avis de l'agent 3D, B1 et R5) : vitrines de la devanture avec la pièce de nuit du kit (decor.glsl) : la boutique
-            // se voit derrière la vitre, éclairée par le ciel de jour ; la nuit 85 % des vitrines allumées (lampe de 2 850 K à 31,8 cd/m²,
+            // se voit derrière la vitre, éclairée par le ciel de jour ; la nuit 60 % des vitrines allumées (lampe de 2 850 K à 31,8 cd/m²,
             // teintes et luminances tirées par vitrine), sous la luminance d'un lampadaire ; plus de plaque bleu nuit unie
             double t[3]; lumiere::couleurTemperature(2850, t);
             const float L = archi::lieux::LUMINANCE_PIECE;
