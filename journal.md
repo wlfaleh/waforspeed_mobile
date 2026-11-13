@@ -1408,3 +1408,10 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - **Cause racine** : la Turquoise de la Golf est devenue payante (75 ★) ; le banc `garage` (WFS-11) avait 0 ★, « Choisir » devenait « Acheter » et était refusé : `garage-course` restait au garage et `course-p911-gris` changeait.
 - **Correction** (2a298679) : le banc crédite le prix et achète la Turquoise par « Acheter » avant « Choisir », puis remet sa sauvegarde en l'état ; **accroche de 5 lignes dans `src/ui/garage_bancs.cpp`** (annoncée ici), aucun changement du jeu. Journal du banc sans `[ERREUR]`, `garage-course` en course, `course-p911-gris` identique à l'« avant ».
 - Synchronisation avec `main` (conflit `CMakeLists.txt` : `test_garage_achat` et `test_score_course` gardés) ; `tests_cpu.sh build` 127 réussis (a19d1cf3) ; toutes les captures refaites sur 2a298679 ; réponse point par point sous la revue ; lead dev rappelé.
+
+### 2026-11-13 19:15:17 — WFS-397 : corrections du retour lead dev de la PR #393 (Claude, agent dev3d (01Us6uCt5A))
+- **Fait** (19d2bba0, d83006ba) : logo VW des 4 cache-moyeux retiré (Virtus) ; feux de la Virtus séparés par leurs nœuds exacts (le moteur refusait le matériau mêlé à des voyants de l'habitacle, d'où feux éteints et halo par défaut) ; doublures des passages de roue de la W212 (`tools/remplacants/doubler_passages.mjs`, le modèle n'en avait pas) ; hauteur partagée : caisse +25 mm, pavillon +15 / +14 mm au-dessus de la ceinture (jeu pneu / aile 47 / 38 et 61 / 58 mm, comme les berlines du jeu) ; `qa/pr/WFS-397/tests-cpu.log`.
+- **Vérification** : 6/6 ± 1 % pour les deux ; 7 951 567 et 7 787 310 octets ; 126 tests CPU réussis (branche synchronisée, e46a16ab) ; captures « après » jour / nuit refaites et regardées.
+- **Limite** : garde au sol réelle non sourcée (fiche sans valeur, sites des constructeurs fermés au réseau de la session).
+- **Incident évité** : un `git stash` a mis de côté mes fichiers en cours pendant une capture ; restaurés aussitôt (`git stash pop`), captures de ce moment effacées et refaites.
+
