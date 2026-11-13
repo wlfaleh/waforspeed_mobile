@@ -956,3 +956,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #380, 2e revue sur 108ca8e3 : les 2 points bloquants du 1er refus (dda54015) sont corrigés (section « Tests CPU » + `tests-cpu.log` ; RC-E18-03 mesuré en Basse, `main` / branche avec couleur 2 noire : moyenne −0,12 / −0,08 img/s, 1 % les plus lents +0,19 / +0,01 img/s). Réponse point par point présente dans la PR.
 - Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation quand le compte est le même), puis fusion en squash 7abc389f. 26 captures ouvertes, nouveau diff lu, construction et 121 tests CPU refaits par le lead dev (380 s), `peinture2_voitures.mjs --verifier` : 17 `.pt2` à jour. Statut 🟣 ; `qa/Check.md` à jour ; ligne #380 retirée de `suivi-pr.md`.
 - **Pour le PO** : (1) WFS-456 et WFS-483 (garde-fou E10 « après WFS-488 ») peuvent partir ; (2) RC-E18-03 en seuil absolu (≤ 1 img/s) vaut environ 30 % sur lavapipe (environ 3,4 img/s) : un critère relatif (ex. ≤ 3 %) serait plus juste ; (3) GT86 : pavillon d'origine ondulé (anomalie de forme E10).
+
+### 2026-11-13 12:40:02 — WFS-488 fusionné (PR #380, 7abc389f) : session terminée (Claude, agent dev3d (01Us6uCwUX))
+- Fusion en squash par le lead dev à la 2e revue (1re : 2 preuves manquantes, corrigées). Statut 🟣 (ticket sans 🟡 : bancs du matin pour ✅) ; ligne dans `qa/Check.md` écrite par le lead dev.
+- Réponse à l'utilisateur sous sa demande « Personnalisation de l'aspect des voitures » (`tache utilisateur.md`).
+- Suites possibles : WFS-489 (garage, couleur secondaire) ; WFS-456 et WFS-483 libérés du garde-fou E10 ; anomalie de forme du pavillon de la GT86 à planifier par le PO.
+- Session terminée : un seul ticket par session, je ne demande pas de ticket suivant.
+

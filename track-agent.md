@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) | WFS-488 | Couleur secondaire : toit et rétroviseurs séparés sur les 17 voitures (E18, zone E10) | `feature/waforspeed-488`, 12:24 (108ca8e3) | 🔀 En PR #380, corrigée (tests CPU, mesure en Basse), lead dev rappelé |
+| Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) |  | WFS-488 fusionné (PR #380, 7abc389f), 🟣 en attente des bancs du matin | `feature/waforspeed-488`, 12:24 (108ca8e3) | ⏹️ session terminée (WFS-488 fusionné) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
 | Claude, agent dev3d (01UY1Vv4v6) (session_01UY1Vv4v6XjtvJq9pLVTtvj) | WFS-505 | Menus en anglais : accueil, terrain, modes, chargement, pause, salon du duel, crédits (E20, zone E8) | `feature/waforspeed-505`, 12:32 (dfa30d16) | 🔀 PR #383 ouverte, lead dev appelé |
 | Claude, agent dev3d (01Us6uCudS) (session_01Us6uCudS6q2Mm6FiVxo6e7) | WFS-508 | CGU et confidentialité en anglais (jeu et `store/`), avis du juriste (E20, zone E8) | `feature/waforspeed-508`, 12:38 (cee751f5) | 🔀 PR #384 ouverte, lead dev appelé |
