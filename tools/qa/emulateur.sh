@@ -148,7 +148,7 @@ if [ "$SCENARIO" = mvp ]; then
       *) log "profil : pas d'écran de création (profil déjà créé)"; return 0 ;;
     esac
     images; capture 02a-profil
-    local l; l=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -E "création du profil \(WFS-481\) : points d'appui" | head -1 | tr -d '\r')
+    local l; l=$(sed -n "${MARQUE}p" "$LIVE" | tr -d '\r')   # la marque est sur la ligne « points d'appui » (écrite une seule fois)
     pt() { echo "$l" | grep -oE " $1=[0-9]+,[0-9]+" | head -1 | sed -E "s/ $1=//; s/,/ /"; }
     local c x y
     for c in p e t i t; do read x y < <(pt "$c"); [ -n "$x" ] || { log "ÉCHEC : point d'appui « $c » absent du journal"; return 1; }; appui "profil-$c" "$x" "$y"; sleep 0.3; done
