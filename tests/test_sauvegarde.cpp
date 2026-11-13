@@ -25,7 +25,8 @@ int main(int argc, char** argv) {
     std::remove(chemin.c_str());
 
     // 1) défauts du jeu web, fichier absent
-    { Sauvegarde s; VERIFIER(estDefaut(s)); VERIFIER(!s.actif()); VERIFIER(!s.charger(chemin)); VERIFIER(s.actif()); VERIFIER(estDefaut(s)); }
+    { Sauvegarde s; VERIFIER(estDefaut(s)); VERIFIER(!s.actif()); VERIFIER(!s.charger(chemin)); VERIFIER(s.actif());
+      VERIFIER(s.car == "p208"); s.car = "golf"; VERIFIER(estDefaut(s)); }   // WFS-498 (RG-09) : partie neuve sur la p208 (gratuite), le reste aux défauts
 
     // 1 bis) WFS-487 (revue du lead dev, PR #373) : defauts() et un 2e lire() remettent carte, moment, qualité (et son choix) et vue au défaut
     {

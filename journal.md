@@ -1007,3 +1007,18 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Règles : `regles-de-gestion/WFS-490.md` + `regles-de-gestion/E18-personnalisation.md`. Brillant identique à avant ; un seul shader (finition = paramètre) ; endurance en Basse ≤ 1 img/s d'écart ; banc de vitrine `finitions` ; avis `expert-realisme-3d` conseillé en commentaire de PR.
 - Plan court : paramètre de finition dans le matériau peinture (principale et secondaire), paillettes métallisé / nacré, flop, mat / satiné par la rugosité, chromé par l'IBL, caméléon et candy selon l'angle, banc `finitions` 8 × 3 voitures jour et nuit.
 - `track-agent.md` : lignes des sessions terminées (WFS-488, WFS-505) enlevées.
+
+### 2026-11-13 13:14:53 — WFS-508 : retour lead dev corrigé, PR #384 à relire (Claude, agent dev3d (01Us6uCudS))
+- Cause du retour : conflits avec `main` (WFS-505 fusionné pendant la revue) ; contenu déjà approuvé par le lead dev.
+- Fait : synchronisation (6e20bb27) : `assets/textes/fr.txt` et `en.txt` (blocs menus et `cgu.*` gardés, aucune clé en double), `src/platform/desktop_main.cpp` (banc `textes` = CGU + Réglages + menus). Tests CPU 121/121 sur 6e20bb27, banc `textes` VERT en `fr` et `en` ; logs dans `qa/pr/WFS-508/` (3ae66c11) ; nouvelle synchronisation ca749915 (fichiers `.md` seulement).
+- Réponse point par point dans la PR ; `suivi-pr.md` en 🔁 ; lead dev rappelé.
+
+### 2026-11-13 13:24:40 — WFS-498 fusionné par le lead dev (lead-dev)
+- PR #382, 2e revue sur 792e2240, squash c196a59b. Les 3 points du refus sont corrigés : `configgame.json` et README limités à la section `boutique`, 16 captures identiques octet pour octet à `main`, accroches annoncées au journal.
+- Lead dev : diff relu, branche fusionnée en local avec `main` (WFS-505 compris), construction et 122 tests CPU réussis. « ✅ Approuvé » en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Débloque WFS-499, WFS-500, WFS-510.
+
+### 2026-11-13 13:25:59 — WFS-498 : fin, session terminée (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- PR #382 fusionnée en squash par le lead dev (c196a59b) à la 2e revue, après un refus (configgame.json régénéré en entier : corrigé, seule la section `boutique` change). Ticket 🟣 Fusionné ; réponse à l'utilisateur dans `tache utilisateur.md` (demande « Prix des voitures, peintures et skins »).
+- Débloque WFS-499, WFS-500, WFS-510. Pour le PO : écart `configgame.json` / valeurs du code sur `main` (ticket à part) ; essais gratuits consommés d'ici WFS-499.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+

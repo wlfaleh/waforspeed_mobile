@@ -27,6 +27,8 @@ struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 
 // WFS-487 (RG-04) : identifiants du catalogue de personnalisation (section « boutique ») ; noms, couleurs et règles dans
 // src/game/personnalisation.* ; les 16 premières couleurs sont celles du garage actuel (PEINTURES de src/game/sauvegarde.h, même ordre)
 constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 4, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
+constexpr int BOUTIQUE_MEDAILLES = 3;   // WFS-498 (RG-02) : bronze, argent, or
+inline constexpr const char* BOUTIQUE_MEDAILLES_IDS[BOUTIQUE_MEDAILLES] = {"bronze", "argent", "or"};
 inline constexpr const char* BOUTIQUE_COULEURS_IDS[BOUTIQUE_COULEURS] = {
     "blanc", "noir", "gris", "rouge", "bleu", "orange", "jaune", "vert", "nacre", "bleunuit", "anglais", "bordeaux", "sable", "violet", "turquoise", "taxi",
     "bleuelectrique", "vertacide", "orangefluo", "rose", "jaunecitron", "violetneon", "rougevif", "cyan", "vertmenthe", "magenta", "corail", "bleuciel"};
@@ -117,6 +119,14 @@ struct ConfigJeu {
         char skinVoitures[BOUTIQUE_SKINS][SKIN_VOITURES_MAX * 4 + 1] = {
             "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia"};
         Objet dessins[BOUTIQUE_DESSINS] = {{0, 1, 0}, {150, 0, 0}, {200, 0, 0}, {250, 0, 0}, {300, 0, 0}};   // « essentiels » : les 10 autocollants gratuits
+        // WFS-498 (RG-03, RG-04) : prix des voitures en étoiles (ordre de VOITURES_IDS) ; 0 = gratuite (p208, abarth, gt86) ;
+        // x5, a45, elantra : retirées (VOITURES_RETIREES de src/game/cars.h), jamais vendues quel que soit leur prix. Total vendu : 24 350 ★
+        int prixVoiture[VOITURES_NB] = {600, 2200, 3500, 3000, 0, 0, 300, 300, 1000, 0, 2400, 0, 1200, 250, 0, 0, 1000, 800, 1800, 6000};
+        int gainCourse = 10;              // WFS-498 (RG-01) : ★ créditées à la fin d'une course terminée (en attendant l'étape « score »)
+        double minutesParCourse = 2.96;   // WFS-498 (RG-11) : durée moyenne d'une course pour le banc d'équilibrage (120 h pour 24 350 ★)
+        // WFS-498 (RG-02) : packs de médailles du market (pas une monnaie) : étoiles du pack et prix en euros ; bronze, argent, or
+        struct Medaille { int etoiles; double euros; };
+        Medaille medaille[BOUTIQUE_MEDAILLES] = {{100, 0.99}, {300, 2.49}, {600, 4.49}};
     } boutique;
     // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
     char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
