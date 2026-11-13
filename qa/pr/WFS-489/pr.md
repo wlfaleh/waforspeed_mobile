@@ -24,14 +24,14 @@
 
 ## Tests CPU
 
-Commit testé : 2a298679 (branche synchronisée avec `main`), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
+Commit testé : a19d1cf3 (branche synchronisée avec `main`, code identique à 2a298679 côté garage), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
 
 ```
 [OK] test_ville_lieux (0 s)
-[OK] test_ville_sol (3 s)
+[OK] test_ville_sol (2 s)
 [OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 126 test(s) réussi(s) en 321 s
+tests CPU : 127 test(s) réussi(s) en 328 s
 code de sortie : 0
 ```
 
