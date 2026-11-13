@@ -1684,3 +1684,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 
 ### 2026-11-13 08:31:58 — Campagne et Grand Prix en pause, bloqués par l'utilisateur (po-scrum-master)
 - Ordre de l'utilisateur. ⛔ Bloqué par l'utilisateur : WFS-465, 518 à 525, 528 à 531 (Campagne), 403, 388, 473, 474 (Grand Prix), 304, 314. Aucun n'était en cours. WFS-387 déjà fusionné (#378). Non touchés : WFS-410, WFS-287.
+
+### 2026-11-13 09:14:19 — Statuts automatiques, CI main #1037 (robot statuts)
+- Run rouge (push, commit 6a77f55), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-480, WFS-487, WFS-504, WFS-395.
