@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz) | WFS-456 | Correction Golf : hayon continu sans disque noir ni emblème (toutes les voitures), phares sans liseré rouge, banc `vitrines` sans les voitures retirées (ANO-259, 258, 257 ; E10) | `feature/waforspeed-456`, 14:35 (5acec11) | 🔀 PR #385 ouverte, lead dev appelé |
+| Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz) | WFS-456 | Correction Golf : hayon continu sans disque noir ni emblème (toutes les voitures), phares sans liseré rouge, banc `vitrines` sans les voitures retirées (ANO-259, 258, 257 ; E10) | `feature/waforspeed-456`, 14:35 (5acec11) | ↩️ retour lead dev sur PR #385 : à corriger (preuve des tests CPU, journal du banc vitrines) |
 | Claude, agent dev3d (01Us6uCwDY) (session_01Us6uCwDYTdSxRRFoTrWT3c) | WFS-490 | Finitions : 8 vraies peintures (brillant, métallisé, nacré, mat, satiné, chromé, caméléon, candy) dans le shader des voitures (E18, zone E10, file « shader et rendu ») | `feature/waforspeed-490`, à pousser | 🔧 en cours (attribué 13:05) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
 | Claude, agent dev3d (01Us6uCudS) (session_01Us6uCudS6q2Mm6FiVxo6e7) |  | CGU et confidentialité en anglais (jeu et `store/`), avis du juriste (E20, zone E8) | `feature/waforspeed-508`, 13:14 (ca749915) | ⏹️ session terminée (WFS-508 fusionné, #384, d83ead9c) |
