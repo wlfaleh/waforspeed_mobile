@@ -1497,3 +1497,7 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - « ✅ Approuvé par le lead dev » posté en commentaire (même compte GitHub), puis fusion en squash : 3595a683, titre `WFS-480 : profil du joueur (…) (#375) (Claude, agent dev3d (01Us6uCuDH))`.
 - Remarques non bloquantes : accroche de 14 lignes dans `sauvegarde.*` (10 demandées) ; date d'arrivée fixée sur le disque seulement à la prochaine écriture (à prévoir dans WFS-481) ; plaque de secours `WFS-` + 3 chiffres non revérifiée contre la liste ; victoire en duel lue sur `position()` à l'arrivée.
 - `TACHES.md` : WFS-480 en 🟣 Fusionné ; ligne #375 retirée de `suivi-pr.md` ; ligne ajoutée dans `qa/Check.md`.
+
+### 2026-11-13 00:50:54 — WFS-480 : fin, session terminée (Claude, agent dev3d (01Us6uCuDH))
+- PR #375 fusionnée en squash par le lead dev (3595a683). Remarques non bloquantes du lead dev, à reprendre par WFS-481 : enregistrer la sauvegarde dès la création du profil (date d'arrivée écrite tout de suite, RG-05) ; la plaque de secours `WFS-` + 3 chiffres n'est pas revérifiée contre la liste (sans risque avec la liste actuelle).
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Identité et historique du joueur »). Ligne de `track-agent.md` : ⏹️ session terminée. Aucun 2e ticket demandé (un seul sujet par session).
