@@ -750,3 +750,28 @@ Total ≈ 24 350 ★ : environ 120 h de jeu sans payer (≈ 60 h avec la pub ×2
 **Hypothèse testable** : si nous faisons une boucle de 2-3 km d'une vraie ville avec OSM + IGN et des façades modélisées, alors la carte sera reconnaissable et ≤ 700 Mo, ce que nous vérifierons avec les captures du banc PC (avant / après), l'avis de l'agent 3D et ton essai sur téléphone.
 
 **Prochaine étape** : l'utilisateur choisit la ville / la rue, puis demande au PO (avis `@juriste`, puis ticket `@cartes`).
+
+## R18 — 2026-11-13 — Filmer soi-même une vraie rue en 3D (suite de R17, mode Prototype)
+
+**Question de l'utilisateur** : « et si je filme moi-même en 3D une vraie rue ? »
+
+### Diagnostic
+- **Fonctionne** : tes propres vidéos t'appartiennent : plus de problème de conditions Google. La photogrammétrie (des centaines de photos → un modèle 3D) donne des façades très réalistes.
+- **Frictions** (*supposées*, connues de la technique) : modèle brut très lourd (millions de triangles) ; **lumière et ombres du jour « peintes » dans les textures** (gênant pour le jour / nuit du jeu) ; vitres, chrome, ciel et objets qui bougent (gens, voitures) mal reconstruits ; gens, plaques, enseignes filmés → à effacer.
+- **Juridique** : filmer dans la rue est permis, mais visages et plaques doivent être effacés ; les bâtiments récents gardent le droit d'auteur de leur architecte (R17 A02) ; drone en ville : très encadré en France (*à vérifier*).
+
+### Propositions
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| B01 | Prototype | *Supposé* | **Test de 100-200 m de rue** filmé au téléphone, traité en photogrammétrie (outils libres sur PC), comparé à une façade modélisée | Savoir vite si ça vaut le coup | Élevé | Moyen | P1 | Temps de nettoyage |
+| B02 | Méthode hybride | *Supposé* | **Tracé et volumes** depuis OSM / IGN (propres, légers), **façades et sols** texturés avec tes photos (lumière enlevée) | 99 % réaliste, poids tenu, jour / nuit justes | Élevé | Moyen | P1 | Raccords entre façades |
+| B03 | Captation | *Supposé* | Règles de tournage : ciel couvert, tôt le matin (rue vide), marche lente, 4K, exposition fixe, les deux trottoirs, plusieurs hauteurs, beaucoup de recouvrement | Modèle propre du 1er coup | Moyen | Faible | P1 | Météo |
+| B04 | Nettoyage | *Observé* : règle « pas de formes nues », 700 Mo | Retopologie, allègement (LOD), effacement des gens / plaques / enseignes, avec la chaîne de l'artiste 3D | Fluide sur téléphone | Élevé | Élevé | P2 | Charge de travail |
+| B05 | Rendu | *Supposé* | « Gaussian splatting » (rendu photo animé) : très beau mais **pas d'éclairage nuit, pas de collisions, lourd sur mobile** → à écarter pour l'instant | — | Faible | Élevé | P3 | Hors moteur actuel |
+
+### Top 3
+1. **B03 + B01** : tu filmes un petit bout de rue avec ces règles, on mesure le résultat.
+2. **B02** : la méthode hybride, la plus réaliste qui tienne sur un téléphone.
+3. **R17 A02** : avis du juriste sur la rue choisie.
+
+**Hypothèse testable** : si nous texturons des volumes OSM / IGN avec tes photos (lumière enlevée), alors la rue sera reconnaissable et fluide (≤ 700 Mo), vérifié par les captures du banc PC jour et nuit, l'avis de l'agent 3D et ton essai.

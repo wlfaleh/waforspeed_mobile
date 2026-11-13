@@ -1571,3 +1571,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 
 ### 2026-11-13 20:55:15 — R17 : une vraie rue en carte du jeu (smart-brainstorming)
 Question de l'utilisateur (Google Maps → carte). Réponse : pas Google (copie interdite), oui avec OpenStreetMap + IGN + Panoramax ; proposition R17 dans `recommandations-smart-brain.md` (juriste d'abord, prototype d'une boucle de 2-3 km). Aucune décision prise.
+
+### 2026-11-13 21:10:43 — R18 : filmer soi-même une vraie rue en 3D (smart-brainstorming)
+Suite de R17. Réponse : oui, mieux que Google (tes images), méthode hybride conseillée (volumes OSM / IGN + façades texturées par tes photos), test de 100-200 m d'abord. Aucune décision prise.
