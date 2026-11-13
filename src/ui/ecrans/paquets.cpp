@@ -902,6 +902,9 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         unsetenv("WFS_CARTES_TEST");
         for (const char* id : ids) fs::remove(carte::dossierPaquets() + "/" + carte::nomFichier(id, carte::FormatTexture::RGBA8), ec);
     }
+    // WFS-507 : la source factice (variable de ce banc) disparaît au retour : l'étape n'est plus en secours, le bandeau du menu ne la lit
+    // plus (sinon plantage au menu d'un banc lancé ensuite, banc « textes »)
+    e.secours_ = false;
     g.shutdown();
     retirer();
     WFS_LOG("paquets (WFS-306) banc : %d écart(s)%s", ecarts, ecarts ? " ÉCHEC" : " OK");
