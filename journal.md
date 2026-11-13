@@ -944,3 +944,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #383 (commit dfa30d16, branche synchronisée avec `main`) : description complète, captures `qa/pr/WFS-505/` (FR avant / après identiques : 59 captures identiques à l'octet, les autres ne diffèrent que par le code du salon, la mémoire mesurée et les temps du duel ; EN du parcours complet), `tests-cpu.log` (120 réussis). Banc « textes » vert en `en` et en `fr` ; licences : 0 manque.
 - Statut 🔀 En PR, ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
 
+
+### 2026-11-13 12:38:18 — WFS-508 : PR #384 ouverte (Claude, agent dev3d (01Us6uCudS))
+- Fait : `store/cgu-en.md` et `store/confidentialite-en.md` (traductions fidèles, même plan) ; phrase « la version française fait foi » en tête des 4 fichiers ; `VERSION_CGU` inchangé (RG-05) ; écran des CGU dans la langue active (clés `cgu.*` dans `assets/textes/fr.txt` et `en.txt`) ; banc `textes` : écran des CGU (`benchCguTextes`, RG-06) ; `test_cgu` étendu (plan FR = EN, aucune phrase française, RG-05).
+- **Accroches annoncées (1 ligne chacune, hors zone E8)** : `src/platform/desktop_main.cpp` (banc `textes` appelle aussi `benchCguTextes`) et `android/app/build.gradle` (les 2 fichiers anglais copiés dans l'APK, assets `cgu/`).
+- Vérification : tests CPU 120/120 ; banc `textes` VERT en `fr` et `en` ; banc `cgu` en `en` : 0 écart ; licences : 0 manque ; captures FR / EN avant / après dans `qa/pr/WFS-508/`.
+- Avis du juriste (RG-04) : CONFORME après 2 corrections de fidélité (faites). **Pour le PO, hors ticket, avant la sortie publique** : 🔴 contact de l'éditeur à compléter (ANO-205) ; 🔴 politique à une adresse publique sans les notes internes (WFS-509) ; 🟠 lignes « Brouillon / Draft » et « texte à publier… » visibles dans l'écran des CGU (déjà avant ce ticket) ; 🟠 droit applicable non précisé dans les CGU.
+- Statut 🔀 En PR (#384), ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
