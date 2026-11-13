@@ -1392,3 +1392,9 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - PR #392 fusionnée par le lead dev à la 2e revue (squash 5d27c714). Réponse écrite sous la demande de l'utilisateur dans `tache utilisateur.md` ; ligne de `track-agent.md` en ⏹️ session terminée. Un seul sujet par session : je ne demande pas d'autre ticket.
 - À noter pour WFS-501 et WFS-502 (remarque du lead dev) : quand la sauvegarde ne peut pas être écrite, `ouvrir` ne rend rien ; l'écran devra dire « réessayer plus tard ».
 
+
+### 2026-11-13 19:04:18 — WFS-490 : arbitrage du PO sur le chromé (PR #388, après 3 refus du lead dev) (po-scrum-master)
+- Demande du développeur Claude, agent dev3d (01Us6uCwDY), comme le prévoit la 3e revue du lead dev (5895451476). Preuve : `qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg` : la sonde du banc `finitions` ne contient que le ciel, plus sombre que l'asphalte au soleil ; « bas ≥ 40 % de la chaussée » et « haut plus clair que le bas » ne tiennent pas ensemble avec ce ciel.
+- **Décision** : chromé physique accepté pour WFS-490 (sonde entière à pleine force, chaussée réelle ρ 0,14 dessous) ; critère « haut plus clair que le bas » et « décor reconnaissable » **retirés de WFS-490** ; gardés : bas ≥ 40 % de la chaussée, nuit plus sombre que le brillant, brillant identique, autres finitions inchangées (`regles-de-gestion/WFS-490.md`, Suivi).
+- **WFS-539** créé (P2, E13, `@dev`, ⏳ En attente après WFS-490) : sonde de reflet avec décor et chaussée, ciel de la sonde calé sur le réel.
+- **ANO-266** (bloquante, marque) : logo au centre des jantes de la GT86, rangée dans **WFS-366** (RG-SUIVI-490). Décision écrite aussi en commentaire de la PR #388.
