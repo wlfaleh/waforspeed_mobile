@@ -94,6 +94,7 @@ creation.erreur.mot=Mot non autorisé
 creation.erreur.plaque_vide=1 caractère au moins
 creation.erreur.plaque_long=8 caractères au plus
 creation.erreur.tiret=Tiret mal placé
+
 # ---- Menu principal (WFS-505)
 menu.solo=Course solo
 menu.solo.desc=Bats le chrono, frôle le trafic, enchaîne les checkpoints

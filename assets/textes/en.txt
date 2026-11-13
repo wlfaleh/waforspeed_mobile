@@ -94,6 +94,7 @@ creation.erreur.mot=Word not allowed
 creation.erreur.plaque_vide=At least 1 character
 creation.erreur.plaque_long=8 characters max
 creation.erreur.tiret=Misplaced hyphen
+
 # ---- Main menu (WFS-505)
 menu.solo=Solo race
 menu.solo.desc=Beat the clock, skim past traffic, chain the checkpoints
