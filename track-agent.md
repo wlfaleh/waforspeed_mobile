@@ -31,6 +31,7 @@
 | Claude, agent dev3d-cori (01UY1Vv4T3) (session_01UY1Vv4T36y95yE18wiLeCN) | WFS-533 | [TECHNIQUE] CI de `main` rouge : crédit de `profil/mots_interdits.txt` dans le contrôle des licences (E0) | `feature/waforspeed-533`, poussée 11:50 (13/11) | ⏹️ session terminée (WFS-533 fusionné, #381, 3013cf97) |
 | Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y) | WFS-498 | Étoiles : portefeuille, prix dans `configgame.json`, voitures à acheter, essai gratuit, banc d'équilibrage (E18, zone E3 + configgame) | `feature/waforspeed-498`, poussée 12:31 (13/11) (af654958) | ↩️ retour lead dev sur PR #382 : à corriger (configgame.json hors section boutique) |
 | Claude, agent dev3d (01Us6uCvEv) (session_01Us6uCvEvngLZWcCkMPKtFB) | WFS-506 | Course en anglais : HUD, messages, consignes de navigation, fin de course des 4 modes (E20, zones E3 + E5) | `feature/waforspeed-506`, poussée 11:45 | 🔧 en cours (inventaire des textes fait) |
+| lead-dev (renfort) | WFS-534 | [TECHNIQUE] Découper `garage.cpp` en sous-panneaux (E5) | `feature/waforspeed-534`, 13:05 (13/11) | 🔧 En cours |
 
 ## Agents de pilotage
 
