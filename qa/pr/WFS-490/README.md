@@ -4,11 +4,16 @@ Branche `feature/waforspeed-490` comparée à `origin/main` ; bancs : finitions:
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
+| `finitions-gt86-brillant-pres` | — | ![après](apres-finitions-gt86-brillant-pres.jpg) |
+| `finitions-gt86-cameleon-pres` | — | ![après](apres-finitions-gt86-cameleon-pres.jpg) |
 | `finitions-gt86-candy-pres` | — | ![après](apres-finitions-gt86-candy-pres.jpg) |
+| `finitions-gt86-chrome-pres` | — | ![après](apres-finitions-gt86-chrome-pres.jpg) |
 | `finitions-gt86-jour` | — | ![après](apres-finitions-gt86-jour.jpg) |
+| `finitions-gt86-mat-pres` | — | ![après](apres-finitions-gt86-mat-pres.jpg) |
 | `finitions-gt86-metallise-pres` | — | ![après](apres-finitions-gt86-metallise-pres.jpg) |
 | `finitions-gt86-nacre-pres` | — | ![après](apres-finitions-gt86-nacre-pres.jpg) |
 | `finitions-gt86-nuit` | — | ![après](apres-finitions-gt86-nuit.jpg) |
+| `finitions-gt86-satine-pres` | — | ![après](apres-finitions-gt86-satine-pres.jpg) |
 | `finitions-mustang-cameleon-1` | — | ![après](apres-finitions-mustang-cameleon-1.jpg) |
 | `finitions-mustang-cameleon-2` | — | ![après](apres-finitions-mustang-cameleon-2.jpg) |
 | `finitions-mustang-cameleon-3` | — | ![après](apres-finitions-mustang-cameleon-3.jpg) |
@@ -18,6 +23,10 @@ Branche `feature/waforspeed-490` comparée à `origin/main` ; bancs : finitions:
 | `finitions-p208-course-mat` | — | ![après](apres-finitions-p208-course-mat.jpg) |
 | `finitions-p208-jour` | — | ![après](apres-finitions-p208-jour.jpg) |
 | `finitions-p208-nuit` | — | ![après](apres-finitions-p208-nuit.jpg) |
+| `finitions-p208-toit-chrome-dessus` | — | ![après](apres-finitions-p208-toit-chrome-dessus.jpg) |
+| `finitions-p208-toit-chrome` | — | ![après](apres-finitions-p208-toit-chrome.jpg) |
+| `finitions-p208-toit-metallise-dessus` | — | ![après](apres-finitions-p208-toit-metallise-dessus.jpg) |
+| `finitions-p208-toit-metallise` | — | ![après](apres-finitions-p208-toit-metallise.jpg) |
 | `peinture2-course-jour` | ![avant](avant-peinture2-course-jour.jpg) | ![après](apres-peinture2-course-jour.jpg) |
 | `peinture2-course-nuit` | ![avant](avant-peinture2-course-nuit.jpg) | ![après](apres-peinture2-course-nuit.jpg) |
 | `peinture2-gt86-34` | ![avant](avant-peinture2-gt86-34.jpg) | ![après](apres-peinture2-gt86-34.jpg) |
