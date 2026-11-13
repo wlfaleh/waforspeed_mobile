@@ -1,0 +1,39 @@
+[info] PLANTAGE gestionnaire installé : /tmp/claude-0/-home-user-waforspeed-mobile/2618ef5f-dab7-54e7-84ec-cabe6873ef21/scratchpad/chauffe-br/chauffe/plantage.txt, version banc PC (wfs_bench), PC, banc d'essai
+[info] Rendu : Haute · 100 % · MSAA ×4 · -- img/s · chauffe 0 (netteté du niveau 2, -1 images/s)
+[info] CHAUFFE niveau=0 (statut Android 0)
+[info] IPS plafond 30 (écran menu)
+[info] chauffe (parcours) : accueil : plafond 30 images/s (ok)
+[info] chauffe (parcours) : « Course solo » : panneau des modes ouvert (ok)
+[info] chauffe (parcours) : « Checkpoint » puis « Continuer » → écran garage (attendu)
+[info] chauffe (parcours) : mode Checkpoint retenu (ok)
+[info] chauffe (parcours) : garage : plafond 30 images/s (ok)
+[info] chauffe (parcours) : garage puis « Choisir » → écran terrain (attendu)
+[info] IPS plafond 60 (écran course)
+[info] chauffe (parcours) : terrain puis « Rouler » → écran course (attendu)
+[info] chauffe (parcours) : décompte : plafond 60 images/s (ok)
+[info] CHAUFFE niveau=2 (statut Android 3)
+[info] CHAUFFE rétrogradation Haute → Moyenne (chauffe sévère, 5.0 s de course, qualité choisie par le joueur)
+[info] Rendu : Moyenne · 100 % · MSAA ×4 · -- img/s · chauffe 2 · 545 appels · 874 k triangles (décor 57 %, voitures 37 %, personnes 6 %) (netteté du niveau 2, -1 images/s)
+[info] capture chauffe-bandeau : écran course, qualité Moyenne, chauffe 2, 5.3 s de course, plafond 60 images/s
+[info] chauffe (parcours) : chauffe 2 après 5 s de course : rétrogradation Haute → Moyenne à 5.0 s de course (ok)
+[info] chauffe (parcours) : 5 s de plus à chauffe sévère : une seule rétrogradation (ok)
+[info] chauffe (parcours) : qualité toujours « choisie par le joueur » (ok)
+[info] capture chauffe-fin : écran course, qualité Moyenne, chauffe 2, 10.4 s de course, plafond 60 images/s
+[info] IPS plafond 30 (écran menu)
+[info] chauffe (parcours) : fin puis « Menu » → écran menu (attendu)
+[info] chauffe (parcours) : retour à l'accueil : plafond 30 images/s (ok)
+[info] chauffe (parcours) : accueil, chauffe encore sévère : qualité Moyenne gardée (ok)
+[info] Rendu : Moyenne · 100 % · MSAA ×4 · -- img/s · chauffe 0 · 330 appels · 518 k triangles (décor 65 %, voitures 25 %, personnes 10 %) (netteté du niveau 2, -1 images/s)
+[info] CHAUFFE niveau=0 (statut Android 0)
+[info] chauffe (parcours) : 59 s au niveau 0 : pas encore rétablie (ok)
+[info] CHAUFFE rétabli Haute (chauffe retombée depuis 60 s)
+[info] Rendu : Haute · 100 % · MSAA ×4 · -- img/s · chauffe 0 (netteté du niveau 2, -1 images/s)
+[info] chauffe (parcours) : 60 s au niveau 0 : qualité choisie (Haute) rétablie au menu (ok)
+[info] capture chauffe-retabli : écran menu, qualité Haute, chauffe 0, 10.4 s de course, plafond 30 images/s
+[info] chauffe (parcours) : sauvegarde inchangée (ok)
+[info] chauffe (parcours) : accueil → Course solo → Checkpoint → Continuer → garage → Choisir → terrain → Rouler → course (rétrogradation à 5.0 s) → fin → Menu → accueil : 0 écart(s) OK
+[info] CHAUFFE niveau=1 simulé : 25 images/s pendant 4 s → échelle 0.60, puis 60 images/s pendant 6 s → échelle 0.60 (bloquée)
+[info] CHAUFFE niveau=0 simulé : 60 images/s pendant 6 s → échelle 0.90 (remonte)
+[info] chauffe (RG-03) : échelle bloquée à chauffe modérée, remontée sans chauffe : OK
+---
+code de sortie du banc : 0 ; durée : 146 s (au plus 600)

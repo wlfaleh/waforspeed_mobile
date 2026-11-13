@@ -21,6 +21,7 @@
 #include "player.h"
 #include "roues.h"   // WFS-452 : roues des ordinateurs qui tournent et braquent
 #include "poursuite.h"   // WFS-141 : titrePlace
+#include "textes_course.h"   // WFS-506 : tableau et fin de course en français ou en anglais
 #include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"
 #include "traffic.h"
@@ -283,12 +284,13 @@ private:
     static std::string texteRecord() {
         const Sauvegarde& sv = sauvegarde();
         if (!sv.aRecordCourse5()) return "—";
-        return (sv.rec5Place == 1 ? std::string("1re") : std::to_string(sv.rec5Place) + "e") + " place · " + ui::chrono(sv.rec5Ms / 1000.0);
+        std::string o, t;   // WFS-506 (RG-03) : « 1re place · 1:23.4 » / « 1st place · 1:23.4 »
+        return textes::remplir(t, "c5.record", textes::ordinal(o, sv.rec5Place), ui::chrono(sv.rec5Ms / 1000.0));
     }
     std::vector<course5::Ligne> lignes(const Player& pl) const {
         const Course* c = activeCourse();
         const double fin = c ? c->duelFinish : kmCourse5() * duel::KM;
-        const std::string nom = sauvegarde().actif() ? sauvegarde().nick : "Pilote";
+        const std::string nom = sauvegarde().actif() ? sauvegarde().nick : ui::tr("c5.pilote");   // WFS-506 : « Pilote » / « Driver »
         return course5::classement(os_, nom, pl.dist, ftJoueur_, fini_, fin);
     }
     // RG-06 : « Position n/5 » et barres de distance (renderBoard du duel), à gauche, sous le bouton « Menu »
@@ -297,14 +299,18 @@ private:
         const double fin = c ? c->duelFinish : 1;
         const float x = g.marges.gauche + 2.5f * u, w = 34 * u, rh = 4.6f * u, px = 2.7f * u;
         float y = g.marges.haut + 33 * u;
-        char pos[48]; std::snprintf(pos, sizeof pos, "POSITION %d/%d", course5::position(ls), (int)ls.size());
+        // WFS-506 (RG-01) : « POSITION n/N » par ui::tr, dans un tampon réutilisé (RG-04)
+        char n[24]; std::snprintf(n, sizeof n, "%d/%d", course5::position(ls), (int)ls.size());
+        static std::string pos;
+        textes::remplir(pos, "c5.position", n);
         r.uiRect(x, y, w, rh * (ls.size() + 1) + 1.2f * u, SURFACE);
         ui::text(r, x + 1.2f * u, y + 0.9f * u, px, pos, ui::CYAN, ui::GAUCHE, 0.12f, false, true);
         y += rh;
         for (const auto& l : ls) {
             const float k = (float)std::clamp(l.d / fin, 0.0, 1.0);
-            const std::string km = l.fini ? "Arrivé" : ui::decimal(std::max(0.0, l.d) * M / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
-            ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, l.moi ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false);
+            const std::string km = l.fini ? ui::tr("c5.arrive") : ui::decimal(std::max(0.0, l.d) * M / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
+            if (l.moi && !sauvegarde().actif()) ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, ui::ORANGE, ui::GAUCHE, 0.f, false);   // « Pilote » / « Driver » : traduit, vérifié
+            else { const textes::NomPropre nomPropre; ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, l.moi ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false); }   // WFS-506 : pseudo, adversaires
             ui::text(r, x + w - 1.2f * u, y + 0.6f * u, px, km, TEXTE, ui::DROITE, 0.f, false);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, w - 2.4f * u, 0.5f * u, PISTE);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, (w - 2.4f * u) * k, 0.5f * u, l.moi ? ui::ORANGE : ui::CYAN);
@@ -321,9 +327,11 @@ private:
         const float pw = 66 * u, ph = (34 + 6.5f * ls.size() + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
         r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
-        char sur[64]; std::snprintf(sur, sizeof sur, "COURSE À 5 · %d KM", kmCourse5());
+        char km[16]; std::snprintf(km, sizeof km, "%d", kmCourse5());   // WFS-506 (RG-03)
+        static std::string sur;
+        textes::remplir(sur, "c5.surtitre", km);
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, poursuite::titrePlace(rang), rang == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, textes::titrePlace(rang), rang == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(ftJoueur_), TEXTE, ui::CENTRE, 0.f, false, true);
         float y = py0 + 24 * u;
         const double tete = ls[0].fini ? ls[0].ft : -1;
@@ -334,7 +342,8 @@ private:
             else if (i == 0 || tete < 0) tm = ui::chrono(l.ft);
             else tm = "+" + ui::decimal(l.ft - tete, 1) + " s";
             const vec4 c = l.moi ? ui::ORANGE : TEXTE;
-            ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false);
+            if (l.moi && !sauvegarde().actif()) ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false);   // « Pilote » / « Driver »
+            else { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false); }   // WFS-506 : noms inventés
             ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, l.fini ? c : MUTED, ui::DROITE, 0.f, false);
             y += 6.5f * u;
         }
@@ -342,9 +351,11 @@ private:
         if (rec) dessinerRecord(r, W / 2, y - 1 * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
         biseauFin(r, rejouerZ_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);
-        ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
+        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe, texte réduit de 20 % au plus s'il dépasse
+        static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
+        ui::textBoite(r, rejouerZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libRejouer(), vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
         biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
-        ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
+        ui::textBoite(r, menuZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libMenu(), TEXTE, ui::CENTRE, 0.08f, false);
     }
 
     Renderer* r_ = nullptr;

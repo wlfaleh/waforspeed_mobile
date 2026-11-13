@@ -1,5 +1,6 @@
 // WaForSpeed — module « duel » (WFS-21) : voir duel_system.h.
 #include "duel_system.h"
+#include <functional>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -19,6 +20,7 @@
 #include "sauvegarde.h"   // WFS-122 (RG-01) : derniers adversaires
 #include "traffic_system.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
+#include "textes_course.h"   // WFS-506 : duel en français ou en anglais
 
 namespace wfs {
 
@@ -206,28 +208,34 @@ private:
             const float w = std::max(ui::width(px, gh.name) + px * 1.2f, px * 4.f), h = px * 1.5f;
             r.uiRect(sx - w / 2, sy - h / 2, w, h, ETIQUETTE);
             r.uiRect(sx - w / 2, sy - h / 2, px * 0.16f, h, ui::CYAN);
+            const textes::NomPropre nomPropre;   // WFS-506 : pseudo de l'adversaire, inchangé en anglais
             ui::text(r, sx + px * 0.08f, sy - px * 0.5f, px, gh.name, TEXTE, ui::CENTRE, 0.f, false);
         }
     }
 
+    // WFS-506 : ma ligne « Alex (toi) » / « Alex (you) » ; duel.cpp écrit « (toi) » (texte de référence des tests du duel)
+    static std::string nomLigne(const duel::BoardRow& row) { return row.me ? ui::tr("duel.toi", g_session.nick()) : row.name; }
     // renderBoard + « Position n/N » : à gauche, sous le haut de l'écran (zone sûre)
     void board(Renderer& r, const GameView& g, float u) {
         const duel::Session& s = g_session;
         const auto rows = s.board(g.player->dist);
         const float x = g.marges.gauche + 2.5f * u, w = 34 * u, rh = 4.6f * u, px = 2.7f * u;
         float y = g.marges.haut + 33 * u;   // sous le bouton « Menu » (WFS-39) et le bouton de vue (WFS-66)
-        char pos[48]; std::snprintf(pos, sizeof pos, "POSITION %d/%d", s.position(g.player->dist), (int)rows.size());
+        // WFS-506 (RG-01, RG-04) : « POSITION n/N » par ui::tr, dans un tampon réutilisé
+        char n[24]; std::snprintf(n, sizeof n, "%d/%d", s.position(g.player->dist), (int)rows.size());
+        static std::string pos;
         // WFS-112 (RG-05) : ping du relais, reconnexion en cours
         const duel::Transport* tr = s.transport();
-        if (tr && tr->lien() == duel::Lien::Reconnexion) std::snprintf(pos, sizeof pos, "POSITION %d/%d · RECONNEXION…", s.position(g.player->dist), (int)rows.size());
-        else if (tr && tr->pingMs() >= 0) std::snprintf(pos, sizeof pos, "POSITION %d/%d · %d MS", s.position(g.player->dist), (int)rows.size(), tr->pingMs());
+        if (tr && tr->lien() == duel::Lien::Reconnexion) textes::remplir(pos, "duel.position_reconnexion", n);
+        else if (tr && tr->pingMs() >= 0) { char ms[16]; std::snprintf(ms, sizeof ms, "%d", tr->pingMs()); textes::remplir(pos, "duel.position_ping", n, ms); }
+        else textes::remplir(pos, "c5.position", n);
         r.uiRect(x, y, w, rh * (rows.size() + 1) + 1.2f * u, SURFACE);
         ui::text(r, x + 1.2f * u, y + 0.9f * u, px, pos, ui::CYAN, ui::GAUCHE, 0.12f, false, true);
         y += rh;
         for (const auto& row : rows) {
             const float k = (float)std::clamp(row.d / s.finish(), 0.0, 1.0);
-            const std::string km = row.d >= s.finish() ? "Arrivé" : ui::decimal(std::clamp(row.d, 0.0, s.finish()) * 0.006 / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
-            ui::text(r, x + 1.2f * u, y + 0.6f * u, px, row.name, row.me ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false);
+            const std::string km = row.d >= s.finish() ? ui::tr("c5.arrive") : ui::decimal(std::clamp(row.d, 0.0, s.finish()) * 0.006 / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
+            { const textes::NomPropre nomPropre; ui::text(r, x + 1.2f * u, y + 0.6f * u, px, nomLigne(row), row.me ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false); }   // WFS-506
             ui::text(r, x + w - 1.2f * u, y + 0.6f * u, px, km, TEXTE, ui::DROITE, 0.f, false);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, w - 2.4f * u, 0.5f * u, PISTE);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, (w - 2.4f * u) * k, 0.5f * u, row.me ? ui::ORANGE : ui::CYAN);
@@ -244,10 +252,11 @@ private:
         r.uiRect(0, 0, W, H, FOND);
         const float pw = 64 * u, ph = (34 + 6.5f * rows.size()) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
-        const std::string sur = presents == 1 ? (rows.size() > 2 ? "TES ADVERSAIRES ONT QUITTÉ LE DUEL" : "TON ADVERSAIRE A QUITTÉ LE DUEL")
-                              : roule ? (presents > 2 ? "ARRIVÉ · LA COURSE CONTINUE" : "ARRIVÉ · TON ADVERSAIRE ROULE ENCORE") : "DUEL TERMINÉ";
+        // WFS-506 (RG-03) : titres et résultats par ui::tr
+        const std::string& sur = ui::tr(presents == 1 ? (rows.size() > 2 ? "duel.sur.partis" : "duel.sur.parti")
+                                        : roule ? (presents > 2 ? "duel.sur.continue" : "duel.sur.roule") : "duel.sur.termine");
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
-        const std::string titre = presents == 1 ? "ARRIVÉ" : rank == 1 ? "VICTOIRE" : std::to_string(rank) + "e PLACE";   // WFS-146 (RG-06) : « 2e PLACE », jamais « 2E »
+        const std::string titre = presents == 1 ? ui::tr("fin.arrive") : textes::titrePlace(rank);   // WFS-146 (RG-06) : « 2e PLACE », jamais « 2E »
         ui::text(r, W / 2, py0 + 7 * u, 9 * u, titre, rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(s.myFinish()), TEXTE, ui::CENTRE, 0.f, false, true);
         float y = py0 + 24 * u;
@@ -255,13 +264,13 @@ private:
         for (size_t i = 0; i < rows.size(); i++) {
             const auto& row = rows[i];
             std::string tm;
-            if (row.parti) tm = "Parti";   // WFS-122 (RG-02) : a quitté le salon pendant la manche
+            if (row.parti) tm = ui::tr("duel.parti");   // WFS-122 (RG-02) : a quitté le salon pendant la manche
             else if (!row.done) tm = ui::decimal(std::max(0.0, row.d) * 0.006 / 1000, 2) + " km";   // WFS-242
-            else if (row.ft >= 9e9) tm = "Arrivé";
+            else if (row.ft >= 9e9) tm = ui::tr("c5.arrive");
             else if (i == 0 || lead < 0) tm = ui::chrono(row.ft / 1000);
             else tm = "+" + ui::decimal((row.ft - lead) / 1000, 1) + " s";
             const vec4 c = row.me ? ui::ORANGE : TEXTE;
-            ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + row.name, c, ui::GAUCHE, 0.f, false);
+            { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + nomLigne(row), c, ui::GAUCHE, 0.f, false); }   // WFS-506
             ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, c, ui::DROITE, 0.f, false);
             y += 6.5f * u;
         }
@@ -272,9 +281,10 @@ private:
         g_zonesMenu[0] = bx + bw + gap; g_zonesMenu[1] = by; g_zonesMenu[2] = bw; g_zonesMenu[3] = bh;
         const bool attend = s.status() == duel::Status::Ready;
         dessin2d::biseau(r, revanche_.x, revanche_.y, bw, bh, 14 * H / 720, dessin2d::uni(ui::ORANGE));   // WFS-146 (RG-06) : biseau 14 px de la fin solo
-        ui::text(r, revanche_.x + bw / 2, by + 1.9f * u, 3.4f * u, attend ? "PRÊT…" : "REVANCHE", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
+        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe, texte réduit de 20 % au plus s'il dépasse
+        ui::textBoite(r, revanche_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, ui::tr(attend ? "duel.pret" : "duel.revanche"), vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
         dessin2d::biseau(r, menu_.x, menu_.y, bw, bh, 14 * H / 720, dessin2d::uni({30 / 255.f, 33 / 255.f, 48 / 255.f, 1}));   // .btn--ghost (#1E2130), comme la fin solo
-        ui::text(r, menu_.x + bw / 2, by + 1.9f * u, 3.4f * u, "RETOUR", TEXTE, ui::CENTRE, 0.08f, false);
+        ui::textBoite(r, menu_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, ui::tr("duel.retour"), TEXTE, ui::CENTRE, 0.08f, false);
     }
 
     Renderer* r_ = nullptr;
@@ -328,6 +338,60 @@ void benchDuelScene(Game& g, Renderer& r, const std::string& out) {
     g_banc = nullptr;
     courseBenchRules(false);
     g.shutdown();
+}
+
+// WFS-506 (banc « textes ») : duel en mémoire contre « Nadia » (même salon que benchDuelScene), dans la langue active.
+// Parcours : course (classement « POSITION ») → résultat (2e place) → « Revanche » → 2e manche → résultat → « Retour » →
+// menu principal. `capture(nom)` prend l'image et note ses textes (banc de textes_course_banc.cpp). Rend le nombre d'écarts.
+int benchDuelTextes(Game& g, Renderer& r, const std::function<void(const std::string&)>& capture) {
+    BancDuel banc; banc.salon = std::make_shared<duel::SalonMemoire>();
+    g_banc = &banc;
+    duel::Session& s = g_session;
+    int ecarts = 0;
+    auto verifier = [&](bool ok, const char* quoi) { if (!ok) ecarts++; WFS_LOG("textes (WFS-506) : duel : %s : %s", quoi, ok ? "OK" : "ÉCHEC"); };
+    courseBenchRules(true);
+    if (!g.init(r, "golf", "ville")) { g_banc = nullptr; courseBenchRules(false); return 1; }
+    s.join(std::make_unique<duel::TransportMemoire>(banc.salon, "moi"), "K7QX", true, "Alex", "golf", "", "ville");
+    s.setKm(2);
+    banc.rival.join(std::make_unique<duel::TransportMemoire>(banc.salon, "rival"), "k7qx", false, "Nadia", "m4", "", "ville");
+    banc.rivalPl.reset(carById("m4"));
+    banc.rival.setReady(true); s.setReady(true);
+    g.setAutopilot(true); g.camMode = 0;
+    double t = 900;
+    auto images = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
+    auto toucher = [&](const char* nom) {   // appui puis relâcher au centre du bouton (les boutons agissent au relâcher)
+        float x = 0, y = 0;
+        if (!duelBouton(nom, x, y)) { verifier(false, nom); return; }
+        g.onTouch({31, x, y, true}); images(2); g.onTouch({31, x, y, false}); images(2);
+    };
+    auto manche = [&](int n) {   // course, puis l'adversaire arrive le premier et le joueur 0,5 s après (2e place)
+        images(7 * 60);
+        if (n == 1) capture("duel-course");
+        banc.rivalFt = std::max(0.0, s.trafficClock());
+        images(30);
+        banc.arrivee = true;
+        images(90);
+    };
+    manche(1);
+    verifier(s.status() == duel::Status::Done, "manche 1 finie");
+    capture("duel-fin");
+    toucher("revanche");
+    verifier(s.status() == duel::Status::Ready, "« Revanche » : prêt pour la manche suivante");
+    banc.arrivee = false; banc.rivalFt = 0;
+    banc.rival.setReady(true);
+    images(30);
+    verifier(s.status() == duel::Status::Race && s.round() >= 2, "2e manche lancée");
+    manche(2);
+    verifier(s.status() == duel::Status::Done, "manche 2 finie");
+    toucher("retour");
+    images(10);
+    verifier(g.ecran() == Ecran::Menu && !s.inRoom(), "fin puis « Retour » : menu principal");
+    if (s.inRoom()) s.leave();
+    banc.rival.leave();
+    g_banc = nullptr;
+    courseBenchRules(false);
+    g.shutdown();
+    return ecarts;
 }
 
 } // namespace wfs
