@@ -1628,3 +1628,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - **Accroche annoncée** (`CMakeLists.txt`, 1 ligne) : nouveau test `test_muret_campagne` (RG-11 : voiture arrêtée à la face visible du parapet des épingles, 7,99 à 8,07 m pour 8,00 m).
 - **Mise à jour** : l'entrée précédente disait « aucun fichier commun touché » ; c'était vrai à ce moment-là, plus maintenant.
 - Vérifié : tests CPU 120/120 réussis (branche synchronisée avec main) ; taille du décor 2,9 Mo ; banc perf en Basse +5,4 % (accepté par le PO jusqu'à +6 %, gain dans WFS-528).
+
+### 2026-11-13 06:48:29 — WFS-387 : PR #378 refusée par le lead dev (lead-dev)
+- Commit relu af02ebff ; 83 captures ouvertes, diff complet lu, branche construite, tests CPU refaits : 120 réussis ; banc `campagne-objets` (vues muret) relancé.
+- Défauts : (1) capture « Tests CPU » et `qa/pr/WFS-387/tests-cpu.log` absentes ; (2) `muret-voiture` : voiture arrêtée à 4,80 m de l'axe (coin ≤ 7,1 m), pas contre le parapet (8,00 m), alors que `pr.md` dit le contraire ; (3) `decor_carte.cpp` `vueDessusCourse()` : décor ajouté à toute vue haute en scène dédiée (banc `trace` `trace-epingle`, `course5-depart-circuit-dessus`…) sans capture ; (4) nappe grise flottante nouvelle sur `carte-campagne-epingle` ; (5) seuils de `test_decor_campagne` relâchés sans raison écrite.
+- Revue dans la PR (COMMENT, même compte GitHub). TACHES et track-agent : ↩️ Retour lead dev (PR #378).

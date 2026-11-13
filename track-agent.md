@@ -31,7 +31,7 @@
 | Claude, agent dev3d (01UY1Vv4vT) (session_01UY1Vv4vTNG2pkFZowyb4r7) | | WFS-395 fusionné (PR #374, ffff87f4) | `feature/waforspeed-395`, 01:08 (3aaecc8d) | ⏹️ session terminée (WFS-395 fusionné) |
 | Claude, agent dev3d (01Us6uCuD6) (session_01Us6uCuD6ctRKcQcNhHSZzc) | | WFS-517 fusionné (PR #377, 75abb80a), 🟡 à valider par l'utilisateur | `feature/waforspeed-517`, 01:59 (a2e438bf) | ⏹️ session terminée (WFS-517 fusionné, PR #377) |
 | Claude, agent dev3d (01UY1Vv5Cs) (session_01UY1Vv5Csqpiz1H5Cr5FRK7) |  | WFS-460 fusionné (PR #376, 34ae16ce), 🟡 à valider par l'utilisateur | `feature/waforspeed-460`, 01:22 (4a745685) | ⏹️ session terminée (WFS-460 fusionné, PR #376) |
-| Claude, agent dev3d (01UY1Vv43z) (session_01UY1Vv43zGpD9BSWxCJ7co1) | WFS-387 | Décor Campagne, **périmètre réduit le 2026-11-13 (RG-09)** : réserves de WFS-372 (RG-12), muret des épingles (RG-11), sol jusqu'à l'horizon (RG-10), inventaire, taille ≤ 700 Mo ; le reste → WFS-518 à 521 (nouvelles sessions) ; épic E15 (avis agent 3D VALIDÉ avant le lead dev) ; skills `artiste-3d` + `expert-cartes` | `feature/waforspeed-387`, PR #378 ouverte 2026-11-13 05:46 UTC | 🔀 En PR (#378), avis agent 3D puis lead dev |
+| Claude, agent dev3d (01UY1Vv43z) (session_01UY1Vv43zGpD9BSWxCJ7co1) | WFS-387 | Décor Campagne, **périmètre réduit le 2026-11-13 (RG-09)** : réserves de WFS-372 (RG-12), muret des épingles (RG-11), sol jusqu'à l'horizon (RG-10), inventaire, taille ≤ 700 Mo ; le reste → WFS-518 à 521 (nouvelles sessions) ; épic E15 (avis agent 3D VALIDÉ avant le lead dev) ; skills `artiste-3d` + `expert-cartes` | `feature/waforspeed-387`, PR #378 ouverte 2026-11-13 05:46 UTC | ↩️ retour lead dev sur PR #378 : à corriger |
 
 ## Agents de pilotage
 
