@@ -8,6 +8,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 - Une clé absente, un mauvais type ou une valeur hors bornes : le jeu garde sa valeur et l'écrit au journal (`configuration : …` dans logcat). Un fichier cassé : toutes les valeurs du jeu. Le jeu ne plante jamais à cause du fichier.
 - Les clés qui commencent par `_` (comme `_aide`) sont des commentaires.
 - **Noms des voitures** (section `voitures`, WFS-191) : `marque` (1 à 16 caractères) et `modele` (1 à 24) de chaque voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu (garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). Un nom invalide : le nom par défaut et une ligne au journal.
+- **Boutique** (section `boutique`, WFS-487) : prix de **base** en étoiles des couleurs, finitions, skins et packs d'autocollants. Le prix payé pour une voiture = prix de base × coefficient de sa classe (`coefficients_classe`, `voitures.<id>.classe`), arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; `cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.
 - Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans `src/core/configgame.cpp` (table `champs`), puis relancer cette commande.
 
 | Clé | Sens | Unité | Min | Max | Défaut |
@@ -136,5 +137,126 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `voitures.mustang.modele` | modèle affiché | caractères | 1 | 24 | "GT5" |
 | `voitures.sf90.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Cavallo" |
 | `voitures.sf90.modele` | modèle affiché | caractères | 1 | 24 | "SF-X" |
+| `boutique.coefficients_classe.gratuites` | coefficient des prix de personnalisation des voitures gratuites | × | 0.1 | 10.0 | 1.0 |
+| `boutique.coefficients_classe.classe1` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 1.0 |
+| `boutique.coefficients_classe.classe2` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 1.5 |
+| `boutique.coefficients_classe.classe3` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 2.0 |
+| `boutique.coefficients_classe.classe4` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 3.0 |
+| `boutique.coefficients_classe.classe5` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 4.0 |
+| `boutique.voitures.golf.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.m4.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.p911.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 4 |
+| `boutique.voitures.gallardo.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 4 |
+| `boutique.voitures.p208.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 0 |
+| `boutique.voitures.abarth.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 0 |
+| `boutique.voitures.tcross.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 1 |
+| `boutique.voitures.compass.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 1 |
+| `boutique.voitures.s3.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.x5.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.giulia.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.a45.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.model3.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.corsa.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 1 |
+| `boutique.voitures.gt86.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 0 |
+| `boutique.voitures.elantra.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.v60.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.rrsport.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.mustang.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.sf90.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 5 |
+| `boutique.couleurs.blanc.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.blanc.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.noir.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.noir.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.gris.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.gris.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.rouge.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.rouge.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.bleu.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.bleu.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.orange.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.orange.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.jaune.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.jaune.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.vert.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.couleurs.vert.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.couleurs.nacre.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.nacre.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.bleunuit.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.bleunuit.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.anglais.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.anglais.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.bordeaux.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.bordeaux.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.sable.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.sable.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.violet.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.violet.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.turquoise.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.turquoise.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.taxi.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.taxi.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.bleuelectrique.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.bleuelectrique.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.vertacide.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.vertacide.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.orangefluo.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.orangefluo.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.rose.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.rose.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.jaunecitron.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.jaunecitron.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.violetneon.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.violetneon.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.rougevif.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.rougevif.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.cyan.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.cyan.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.vertmenthe.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.vertmenthe.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.magenta.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.magenta.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.corail.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.corail.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleurs.bleuciel.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 50 |
+| `boutique.couleurs.bleuciel.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.couleur_secondaire.prix` | prix de base de la couleur secondaire (toit, rétroviseurs ; × coefficient) | ★ | 0 | 100000 | 50 |
+| `boutique.finitions.brillant.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
+| `boutique.finitions.brillant.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
+| `boutique.finitions.metallise.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 100 |
+| `boutique.finitions.metallise.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.finitions.nacree.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 150 |
+| `boutique.finitions.nacree.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.finitions.mat.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 150 |
+| `boutique.finitions.mat.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.finitions.satine.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 150 |
+| `boutique.finitions.satine.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.finitions.candy.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 250 |
+| `boutique.finitions.candy.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.finitions.chrome.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 400 |
+| `boutique.finitions.chrome.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.finitions.cameleon.prix` | prix de base de la finition (× coefficient de la classe) | ★ | 0 | 100000 | 400 |
+| `boutique.finitions.cameleon.gratuit` | finition gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 0 |
+| `boutique.skins.rallye.prix` | prix de base de la skin (× coefficient ; valeur si cadeau) | ★ | 0 | 100000 | 300 |
+| `boutique.skins.rallye.cadeau` | skin seulement dans le cadeau du jour ou un succès (jamais en vente) | 0 / 1 | 0 | 1 | 0 |
+| `boutique.skins.rallye.voitures` | voitures qui ont cette skin (identifiants séparés par des espaces) | caractères | 1 | 160 | "p208 abarth gt86 golf mustang giulia" |
+| `boutique.skins.drifttokyo.prix` | prix de base de la skin (× coefficient ; valeur si cadeau) | ★ | 0 | 100000 | 600 |
+| `boutique.skins.drifttokyo.cadeau` | skin seulement dans le cadeau du jour ou un succès (jamais en vente) | 0 / 1 | 0 | 1 | 0 |
+| `boutique.skins.drifttokyo.voitures` | voitures qui ont cette skin (identifiants séparés par des espaces) | caractères | 1 | 160 | "p208 abarth gt86 golf mustang giulia" |
+| `boutique.skins.neonnuit.prix` | prix de base de la skin (× coefficient ; valeur si cadeau) | ★ | 0 | 100000 | 800 |
+| `boutique.skins.neonnuit.cadeau` | skin seulement dans le cadeau du jour ou un succès (jamais en vente) | 0 / 1 | 0 | 1 | 1 |
+| `boutique.skins.neonnuit.voitures` | voitures qui ont cette skin (identifiants séparés par des espaces) | caractères | 1 | 160 | "p208 abarth gt86 golf mustang giulia" |
+| `boutique.skins.camouflage.prix` | prix de base de la skin (× coefficient ; valeur si cadeau) | ★ | 0 | 100000 | 450 |
+| `boutique.skins.camouflage.cadeau` | skin seulement dans le cadeau du jour ou un succès (jamais en vente) | 0 / 1 | 0 | 1 | 0 |
+| `boutique.skins.camouflage.voitures` | voitures qui ont cette skin (identifiants séparés par des espaces) | caractères | 1 | 160 | "p208 abarth gt86 golf mustang giulia" |
+| `boutique.dessins.essentiels.prix` | prix du pack d'autocollants (sans coefficient, pour toutes les voitures) | ★ | 0 | 100000 | 0 |
+| `boutique.dessins.essentiels.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 1 |
+| `boutique.dessins.numeros.prix` | prix du pack d'autocollants (sans coefficient, pour toutes les voitures) | ★ | 0 | 100000 | 150 |
+| `boutique.dessins.numeros.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 0 |
+| `boutique.dessins.bandes.prix` | prix du pack d'autocollants (sans coefficient, pour toutes les voitures) | ★ | 0 | 100000 | 200 |
+| `boutique.dessins.bandes.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 0 |
+| `boutique.dessins.flammes.prix` | prix du pack d'autocollants (sans coefficient, pour toutes les voitures) | ★ | 0 | 100000 | 250 |
+| `boutique.dessins.flammes.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 0 |
+| `boutique.dessins.etoiles.prix` | prix du pack d'autocollants (sans coefficient, pour toutes les voitures) | ★ | 0 | 100000 | 300 |
+| `boutique.dessins.etoiles.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 0 |
 
 Pas encore dans le fichier (tickets en cours sur ces zones) : taille et place des commandes tactiles (WFS-102), nombre de joueurs du duel et distances proposées (écrans de WFS-102). À ajouter quand ces tickets seront fusionnés.

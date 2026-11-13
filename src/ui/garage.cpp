@@ -10,6 +10,7 @@
 #include "../game/commandes_tactiles.h"   // WFS-99 : dessin2d (biseaux d'un seul tenant, traits lissés)
 #include "../game/game.h"
 #include "../game/sauvegarde.h"   // WFS-24 : voiture et peintures gardées
+#include "../game/personnalisation.h"   // WFS-487 : couleur du garage actuel donnée à la voiture (provisoire jusqu'à WFS-489)
 #include "../game/course5.h"   // WFS-115 : « Retour » du parcours de course = panneau des modes
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
@@ -41,16 +42,10 @@ vec3 lin(unsigned h) {
 // couleur 0xRRGGBB → valeur HDR qui ressort à l'écran avec cette couleur (fond uni, comme bench_spots.cpp)
 vec3 fondUni(unsigned h, float exposure) { return lin(h) * (1.f / (0.214f * exposure)); }
 
-// PAINTS de js/cars/catalog.js (mêmes hex)
-struct Peinture { const char* id; const char* nom; unsigned hex; };
-const Peinture PAINTS[] = {
-    {"blanc", "Blanc", 0xc9ccd2}, {"noir", "Noir", 0x0f1014}, {"gris", "Gris", 0x7b808a}, {"rouge", "Rouge", 0xb3122b},
-    {"bleu", "Bleu", 0x1d3f8f}, {"orange", "Orange", 0xff6a00}, {"jaune", "Jaune", 0xc8940a}, {"vert", "Vert", 0x1f5a3c},
-    {"nacre", "Blanc nacré", 0xe6e2d6}, {"bleunuit", "Bleu nuit", 0x141c3a}, {"anglais", "Vert anglais", 0x0f3324},
-    {"bordeaux", "Bordeaux", 0x5a0f1e}, {"sable", "Sable", 0xb39a72}, {"violet", "Violet", 0x4b2380},
-    {"turquoise", "Turquoise", 0x0f8f8c}, {"taxi", "Jaune taxi", 0xe8b400},
-};
-constexpr int NB_PEINTURES = sizeof(PAINTS) / sizeof(PAINTS[0]);
+// WFS-487 (RG-01) : une seule liste de couleurs, PEINTURES (src/game/sauvegarde.h) ; le garage actuel en montre les 16 premières
+// (PAINTS de js/cars/catalog.js, mêmes identifiants et hex) jusqu'à WFS-489 (28 pastilles, cadenas, prix)
+const PeintureDef* const PAINTS = PEINTURES;
+constexpr int NB_PEINTURES = NB_PEINTURES_GARAGE;
 int peintureParId(const char* id) { for (int i = 0; i < NB_PEINTURES; i++) if (std::strcmp(PAINTS[i].id, id) == 0) return i; return 0; }
 
 // champs de CARS (catalog.js) utilisés seulement par le garage : type (body), accroche (tag), néon (glow), peinture par défaut
@@ -187,7 +182,8 @@ public:
             matNeon_[i] = r.makeMaterial(me, nullptr, nullptr, nullptr); matNeon_[i].flags |= MAT_DOUBLE;
         }
         for (int i = 0; i < CAR_COUNT; i++) peinture_[i] = peintureParId(ficheDe(CARS[i].id).paint);
-        for (int i = 0; i < CAR_COUNT; i++) if (const PeintureDef* p = sauvegarde().peintureChoisie(CARS[i].id)) peinture_[i] = peintureParId(p->id);   // WFS-24
+        for (int i = 0; i < CAR_COUNT; i++)   // WFS-24 ; WFS-487 : une couleur hors des 16 pastilles du garage actuel garde la pastille d'origine
+            if (const PeintureDef* p = sauvegarde().peintureChoisie(CARS[i].id); p && p - PEINTURES < NB_PEINTURES) peinture_[i] = peintureParId(p->id);
     }
 
     void shutdown(Renderer& r) override {
@@ -501,7 +497,11 @@ private:
         const CarDef& c = CARS[index_];
         WFS_LOG("garage : « Choisir » %s %s, peinture %s", c.brand, c.model, PAINTS[peinture_[index_]].nom);
         if (g.choisirVoiture) g.choisirVoiture(c.id, lin(PAINTS[peinture_[index_]].hex));
-        if (Sauvegarde& s = sauvegarde(); s.actif()) { s.car = c.id; s.paint[c.id] = PAINTS[peinture_[index_]].id; s.enregistrer(); }   // WFS-24
+        if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24
+            s.car = c.id; s.paint[c.id] = PAINTS[peinture_[index_]].id;
+            perso::donGarageProvisoire(s, c.id, PAINTS[peinture_[index_]].id);   // WFS-487 : PROVISOIRE jusqu'à WFS-489 (option A du PO)
+            s.enregistrer();
+        }
         choisi_ = true; g.allerA(Ecran::Menu);
     }
 

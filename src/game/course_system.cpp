@@ -18,6 +18,7 @@
 #include "roues.h"          // WFS-452 : roues du fantôme qui tournent et braquent
 #include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-24 : record
+#include "personnalisation.h"   // WFS-487 : banc sauvegarde (catalogue, possession)
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
 #include "../ui/ecrans/chargement.h"  // WFS-242 (RG-07) : fondu du chargement (commandes cachées)
@@ -391,6 +392,10 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
     s.charger(chemin);
     if (second) {
         WFS_LOG("SAUVEGARDE relue : car=%s paint=%s best=%lld", s.car.c_str(), s.peinture(s.car).c_str(), s.best);
+        // WFS-487 : catalogue lu (configgame.json, section boutique) et objets possédés relus
+        for (const std::string& l : perso::bilanCatalogue()) WFS_LOG("%s", l.c_str());
+        for (const std::string& l : perso::verifierCatalogue()) WFS_LOG("CATALOGUE problème : %s", l.c_str());
+        for (const std::string& l : perso::bilanPossession(s)) WFS_LOG("%s", l.c_str());
         WFS_LOG("PROFIL relu : %s", s.profil.texte(s.nick).c_str());   // WFS-480 : critère d'acceptation (2e lancement)
         if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); return; }
         g.camMode = 2; g.orbit = 0.7f;
@@ -402,6 +407,12 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         return;
     }
     s.car = "m4"; s.paint["m4"] = "rouge";   // choix du « joueur » (≠ défauts golf / peinture d'origine)
+    {   // WFS-487 : achats d'essai avec un solde fictif (le portefeuille d'étoiles arrive avec WFS-498) : un accepté, un refusé
+        long long solde = 250;
+        const perso::Achat a = perso::acheter(s, solde, *perso::objet("rose"), "m4"), b = perso::acheter(s, solde, *perso::objet("chrome"), "m4");
+        WFS_LOG("BOUTIQUE essai (solde fictif 250 ★) : couleur rose sur m4 (%d ★) : %s ; finition chromé sur m4 (%d ★) : %s ; solde %lld ★",
+                perso::prix(*perso::objet("rose"), "m4"), perso::texteAchat(a), perso::prix(*perso::objet("chrome"), "m4"), perso::texteAchat(b), solde);
+    }
     s.profil.creer("Banc 480", "WFS-480", s.nick);   // WFS-480 (RG-06) : profil de test fixe du banc
     courseBenchRules(true);
     if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); courseBenchRules(false); return; }
