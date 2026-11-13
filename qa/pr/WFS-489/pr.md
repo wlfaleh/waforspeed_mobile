@@ -20,18 +20,18 @@
   - la fiche de la voiture (« Vitesse », « Puissance », type, accroche) reste en français dans les captures anglaises : c'est **WFS-507** (en cours, autre session) ;
   - RC-E18-03 (images/s en Basse) : aucun code de la course n'est touché (garage seulement ; la course lit les couleurs déjà possédées comme avant), pas de mesure d'endurance faite ;
   - aucune confirmation avant l'achat d'une couleur (le ticket n'en demande pas ; WFS-499 en a une pour les voitures) ;
-  - toutes les captures sont produites sur le commit 2a298679 (dernier commit de code).
+  - toutes les captures sont produites sur le commit **0b1f43b4** (synchronisé avec `main` : plaque 3D de WFS-483, finitions de WFS-490, WFS-536) ; de nuit, la Golf Rose paraît rougeâtre sous l'éclairage orangé des lampadaires (même rendu avant WFS-490 ; rose de jour).
 
 ## Tests CPU
 
-Commit testé : d71cde43 (branche synchronisée avec `main` après la fusion de WFS-507, code du garage identique à 2a298679), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
+Commit testé : 0b1f43b4 (branche synchronisée avec `main` après WFS-483, 490, 536), journal complet : `qa/pr/WFS-489/tests-cpu.log`. Bancs sur ce commit : `garage` sans `[ERREUR]`, `garage-couleurs` 0 écart, `textes` VERT (FR et EN).
 
 ```
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (2 s)
-[OK] test_virages_fleches (0 s)
+[OK] test_virages_fleches (1 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 127 test(s) réussi(s) en 328 s
+tests CPU : 129 test(s) réussi(s) en 336 s
 code de sortie : 0
 ```
 
