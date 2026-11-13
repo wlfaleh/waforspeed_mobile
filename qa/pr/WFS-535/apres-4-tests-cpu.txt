@@ -6,6 +6,7 @@ OK    Poursuite gagnée : 1000
 OK    Poursuite perdue avec 300 points restants : 300 + 0,5 × 300 = 450
 OK    course solo terminée, 2 500 points de distance : 600 + 250 = 850
 OK    course solo : part de la distance plafonnée à 400 (600 + 400)
+OK    course solo : compteur de distance énorme : plafond 400, sans débordement
 OK    course solo sans compteur de distance : 600
 OK    record battu : +300, « nouveau record »
 OK    à 5 % du record (105 s pour 100 s) : +150, pas de nouveau record
@@ -19,6 +20,7 @@ OK    3 chocs : 0
 OK    chocs inconnus : 0, sans erreur
 OK    course à 5 : 3 dépassements : +60
 OK    course à 5 : dépassements plafonnés à +200
+OK    course à 5 : dépassements énormes : +200, sans débordement
 OK    course à 5 : en tête au dernier tour : +100
 OK    course à 5 : pas en tête au dernier tour : 0
 OK    Poursuite : aucun contact avec la police : +200
