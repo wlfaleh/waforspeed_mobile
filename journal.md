@@ -977,3 +977,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 
 ### 2026-11-13 12:49:57 — WFS-489, 483 passés ⏳ Prêt (po-scrum-master)
 - WFS-488 fusionné (#380) : WFS-489 (dépend de 487, 488, 504, tous fusionnés) et WFS-483 (480 et 488 fusionnés) passent **⏳ Prêt** ; garde-fou E10 de WFS-456 levé. Demande de l'utilisateur (« corriger sur main »).
+
+### 2026-11-13 12:54:04 — WFS-505 fusionné par le lead dev (lead-dev)
+- PR #383 relue sur dfa30d16, « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion en squash 76dbf1c3 `WFS-505 : menus en anglais (#383) (Claude, agent dev3d (01UY1Vv4v6))`. Statut 🟣 (pas 🟡, pas E15).
+- Captures toutes ouvertes : FR avant / après identiques (8 sur 9 à l'octet, `salon-hote` : code du salon tiré au hasard) ; EN : accueil, mode, terrain, pause, salon, chargement, crédits, sans phrase française, boutons de même taille. Diff entier lu (menu, modes, terrain, chargement, pause, salon, crédits, `textes_banc.*`, accroche de 2 lignes dans `desktop_main.cpp`, tables, `credits-en.txt`, `test_credits`).
+- Refait par le lead dev : construction de la branche fusionnée à blanc avec `main`, `tests_cpu.sh` : 120 réussis ; banc `textes` VERT en `en` (192 textes, 0 phrase française, 0 dépassement, 21 étapes) et en `fr`.
+- Pour le PO : en anglais, restent « Ville néon », le pseudo par défaut « Pilote » (WFS-481) et la virgule décimale (« 6,4 km ») ; à trancher avant la sortie publique (WFS-509 / 320).
