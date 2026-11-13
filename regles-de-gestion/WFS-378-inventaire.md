@@ -55,11 +55,11 @@ moyeu `moule` lissé) : MODELÉ. Rétroviseurs : coques balayées (`coqueRetro`,
 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
-| Dessus, creux et face de la planche de bord | `src/render/vehicule_cockpit.cpp:451-452, 457-458` (`extruder` :46) | profil de 4 points extrudé, **arêtes vives**, bouts plats | 2 à 5 bandes | **à arbitrer** : pas une primitive, mais un « bloc » (le commentaire :463 dit la même chose de l'ancienne visière) | `apres-cockpit-vitrine-*.jpg` |
-| Contre-portes, plancher, tablier | `vehicule_cockpit.cpp:608` (`boitesFermeture`, `vehicule_cockpit.h:201`) | `dalle` arrondie (r 1,5 cm, chanfrein 8 mm), mais pièces pleines | 4 | MODELÉE (E16 les voyait « blocs pleins » : à regarder dans le ticket de la planche) | `apres-cockpit-vitrine-*.jpg` |
+| Dessus, creux et face de la planche de bord | `src/render/vehicule_cockpit.cpp:451-452, 457-458` (`extruder` :46) | profil de 4 points extrudé, **arêtes vives**, bouts plats | 2 à 5 bandes | **à arbitrer** : pas une primitive, mais un « bloc » (le commentaire :463 dit la même chose de l'ancienne visière) | `apres-vitrine-golf-centre.jpg`, `apres-vitrine-m4-centre.jpg` |
+| Contre-portes, plancher, tablier | `vehicule_cockpit.cpp:608` (`boitesFermeture`, `vehicule_cockpit.h:201`) | `dalle` arrondie (r 1,5 cm, chanfrein 8 mm), mais pièces pleines | 4 | MODELÉE (E16 les voyait « blocs pleins » : à regarder dans le ticket de la planche) | `apres-vitrine-golf-centre.jpg`, `apres-vitrine-m4-centre.jpg` |
 | Gabarit magenta du banc (portes, tablier) | `vehicule_cockpit.cpp:693-694` | boîtes de 2 mm | 0 en jeu (banc `cockpit-voisine`) | INVISIBLE | — |
 | Cockpit commun de secours (planche, casquette, montants, pavillon en `boite` ; cadran en `anneau` ; aiguille en `plan` ; volant `tore` + `cylindre` + 3 `boite`) | `src/game/camera_vue.cpp:284-298` (dessin :339-347) | **boîtes, disques, tore, cylindre** | **0 en jeu** : seulement pour une voiture sans intérieur, or les 20 en ont un | INVISIBLE (secours) : à supprimer ou à garder hors jeu, pas à remodeler | — |
-| Chiffres, barres et aiguilles des écrans | `vehicule_cockpit.cpp:244-300, 755-915` | quads émissifs sur l'écran | dynamique | affichage (comme une image d'écran), permis | `apres-cockpit-vitrine-*.jpg` |
+| Chiffres, barres et aiguilles des écrans | `vehicule_cockpit.cpp:244-300, 755-915` | quads émissifs sur l'écran | dynamique | affichage (comme une image d'écran), permis | `apres-vitrine-golf-centre.jpg`, `apres-vitrine-m4-centre.jpg` |
 
 ## 3. Véhicules — police (Poursuite)
 
@@ -68,19 +68,19 @@ Pas de trace de pneus dans le code. Plaques : prévues en vrai 3D par **WFS-483 
 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
-| Rampe de gyrophares : socle gris + 2 feux bleus | `src/game/poursuite_system.cpp:428-430` (cube :111-123) | **cube mis à l'échelle** ×3 (1 m × 5 cm × 30 cm ; feux 40 × 7 × 26 cm) | 1 rampe par voiture de police à moins de 80 m (≤ 6) | **NUE** (WFS-338 a seulement remplacé les anciennes boîtes rouge et bleue) | `apres-police-*.jpg`, `apres-poursuite-police*.jpg` |
-| Bandes « POLICE » des portières | `poursuite_system.cpp:756-788`, `src/game/police_bandes.h` | maillage collé à la tôle | 1 par voiture | MODELÉE (WFS-460, fusionné) | `apres-police-bandes*.jpg` |
+| Rampe de gyrophares : socle gris + 2 feux bleus | `src/game/poursuite_system.cpp:428-430` (cube :111-123) | **cube mis à l'échelle** ×3 (1 m × 5 cm × 30 cm ; feux 40 × 7 × 26 cm) | 1 rampe par voiture de police à moins de 80 m (≤ 6) | **NUE** (WFS-338 a seulement remplacé les anciennes boîtes rouge et bleue) | `apres-poursuite-police-gros-plan-jour.jpg`, `-nuit.jpg` |
+| Bandes « POLICE » des portières | `poursuite_system.cpp:756-788`, `src/game/police_bandes.h` | maillage collé à la tôle | 1 par voiture | MODELÉE (WFS-460, fusionné) | `apres-police-flanc-00.jpg` |
 | Anciennes bandes plates (comparaison avant / après) | `poursuite_system.cpp:741-752, 417-420` | quads plats | 0 en jeu (`g_bancBandesAvant`) | INVISIBLE | — |
-| Halos des gyrophares | `poursuite_system.cpp:432-433` | carré face caméra (≈ 0,6 m) | ≤ 2 par voiture | EFFET | `apres-poursuite-police*.jpg` |
+| Halos des gyrophares | `poursuite_system.cpp:432-433` | carré face caméra (≈ 0,6 m) | ≤ 2 par voiture | EFFET | `apres-poursuite-police-gros-plan-nuit.jpg` |
 
 ## 4. Objets de course : portique, chantier, ralentisseur (fort : sur la route)
 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
-| Portique du checkpoint : 2 poteaux 0,6 × 9 m, poutre 2,4 m, 2 barres néon cyan, bande au sol | `src/world/portique.cpp:69-74` (`boite` de `enseignes.cpp:34`) ; secours virage serré / tunnel :95 (bande au sol seule) ; texte « CHECKPOINT n » :86 (quads) | **6 boîtes** | 1 (le prochain checkpoint), mode Checkpoint, Ville et Corniche | **NUE** (ANO-225 R3) | `apres-vie-portique*.jpg` |
-| Cône de chantier K5a | `poursuite_system.cpp:143-176` (maillage), dessin :439 ; pose `src/game/poursuite.cpp:173-187` | troncs de cône à 14 côtés + **socle en boîte nue** 40 × 40 × 4 cm | 7 cônes de biseau + 8 à 16 sur 120 m par chantier | **NUE** (socle ; cône trop simple : pas de bord de socle, pas de bague) | `apres-poursuite-travaux*.jpg` |
-| Panneau AK5 « travaux » sur pied | `poursuite_system.cpp:446-449` (triangle :177-180) | **2 triangles plats** (rouge, jaune) + **2 cubes** (mât, pied lesté) | 1 par chantier | **NUE** | `apres-poursuite-travaux*.jpg` |
-| Ralentisseur + 2 plots orange | `poursuite_system.cpp:466-469` | **boîtes** : bande jaune, 7 bandes noires (hors qualité Basse), 2 plots 0,38 × 0,75 m | 1 par surprise « Ralentisseur » | **NUE** (WFS-119) | `apres-poursuite-ralentisseur*.jpg` |
+| Portique du checkpoint : 2 poteaux 0,6 × 9 m, poutre 2,4 m, 2 barres néon cyan, bande au sol | `src/world/portique.cpp:69-74` (`boite` de `enseignes.cpp:34`) ; secours virage serré / tunnel :95 (bande au sol seule) ; texte « CHECKPOINT n » :86 (quads) | **6 boîtes** | 1 (le prochain checkpoint), mode Checkpoint, Ville et Corniche | **NUE** (ANO-225 R3) | `apres-vie-portique.jpg` |
+| Cône de chantier K5a | `poursuite_system.cpp:143-176` (maillage), dessin :439 ; pose `src/game/poursuite.cpp:173-187` | troncs de cône à 14 côtés + **socle en boîte nue** 40 × 40 × 4 cm | 7 cônes de biseau + 8 à 16 sur 120 m par chantier | **NUE** (socle ; cône trop simple : pas de bord de socle, pas de bague) | `apres-poursuite-travaux-jour-proche.jpg`, `apres-poursuite-travaux.jpg` |
+| Panneau AK5 « travaux » sur pied | `poursuite_system.cpp:446-449` (triangle :177-180) | **2 triangles plats** (rouge, jaune) + **2 cubes** (mât, pied lesté) | 1 par chantier | **NUE** | `apres-poursuite-travaux-jour-proche.jpg`, `apres-poursuite-travaux.jpg` |
+| Ralentisseur + 2 plots orange | `poursuite_system.cpp:466-469` | **boîtes** : bande jaune, 7 bandes noires (hors qualité Basse), 2 plots 0,38 × 0,75 m | 1 par surprise « Ralentisseur » | **NUE** (WFS-119) | `apres-poursuite-ralentisseur.jpg` |
 | Ligne de départ en damier, repères de la grille du Grand Prix | `src/world/decor_carte.cpp:389-393`, `src/world/circuit.cpp:723-729` | quads posés au sol | 1 ligne ; 10 repères | marquage peint (comme une ligne blanche), permis | — |
 | Portique des 5 feux du Grand Prix | `src/world/decor_grandprix_modeles.cpp:495-515` | pylônes en treillis, poutre, boîtier congé, optiques tournées | 1 | MODELÉE (Grand Prix en pause, E15) | — |
 
@@ -93,15 +93,15 @@ Chiens, pigeons, mouettes, animaux de ferme : vrais `.wfa`. Restent :
 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
-| Poussette (tubes, roues, siège, panier, repose-pieds, dossier, capote à 6 pans) | `src/world/foule_poussette.cpp:25-62` (`carte::cylAxe` 6 à 8 côtés, `carte::box`, `carte::quad`) ; maillages `pietons.cpp:638-648`, dessin :384 | **cylindres, boîtes, quads** (≤ 400 triangles) | ≈ 1 famille sur 4, 8 au plus | **NUE** | `apres-pietons-*.jpg` |
+| Poussette (tubes, roues, siège, panier, repose-pieds, dossier, capote à 6 pans) | `src/world/foule_poussette.cpp:25-62` (`carte::cylAxe` 6 à 8 côtés, `carte::box`, `carte::quad`) ; maillages `pietons.cpp:638-648`, dessin :384 | **cylindres, boîtes, quads** (≤ 400 triangles) | ≈ 1 famille sur 4, 8 au plus | **NUE** | `apres-enfants-ville.jpg` (famille à droite) |
 | Laisse du chien | `src/world/ville.cpp:1342` (dessin :1526-1533) | **boîte** 12 × 12 mm × 1 m étirée main → collier | 1 par promeneur (≈ 1 tous les 450 m, Ville) | **NUE** (fichier du décor de la Ville : voir § 8) | — (trop fine au banc 1280 px) |
 
 ## 6. Deux-roues
 
 | Objet | Fichier:ligne | Forme | À l'écran | Classement | Capture |
 |---|---|---|---|---|---|
-| Casque du pilote (coque + visière) | `src/game/deux_roues.cpp:170, 173` (`ellipsoide` :85), dessin ≈ :225 | morceaux d'**ellipsoïde** (24 × 12, visière 12 × 4) sur le vrai pilote | 1 par deux-roues (≤ 16) | **à arbitrer** : boule lisse, pas de vraie forme de casque (mentonnière, bord de visière, aération) | `apres-motos-*.jpg` |
-| Ombre du deux-roues + tache sous chaque roue | `src/game/traffic_system.cpp:239, 251` | carré flou au sol | 3 par deux-roues | EFFET | `apres-motos-*.jpg` |
+| Casque du pilote (coque + visière) | `src/game/deux_roues.cpp:170, 173` (`ellipsoide` :85), dessin ≈ :225 | morceaux d'**ellipsoïde** (24 × 12, visière 12 × 4) sur le vrai pilote | 1 par deux-roues (≤ 16) | **à arbitrer** : boule lisse, pas de vraie forme de casque (mentonnière, bord de visière, aération) | `apres-trafic-motos-cote-scooter.jpg` |
+| Ombre du deux-roues + tache sous chaque roue | `src/game/traffic_system.cpp:239, 251` | carré flou au sol | 3 par deux-roues | EFFET | `apres-trafic-motos-cote-scooter.jpg` |
 
 ## 7. Effets visibles
 
@@ -112,15 +112,15 @@ Ce ne sont pas des objets mais de la lumière ou des particules ; E16 les classa
 | Effet | Fichier:ligne | Forme | À l'écran | Capture |
 |---|---|---|---|---|
 | Ombre de contact du joueur, des adversaires, du trafic | `src/game/game.cpp:60-65, 406` ; `renderer.cpp:286-292, 1399-1401` ; `traffic_system.cpp:60-64, 177` | carré flou au sol (`ombreContact`, `shaders/vehicule.glsl:26`) | 1 par voiture | toute capture de course — **déjà prévu (WFS-229, ombre calculée)** |
-| Halos des feux arrière, stop, recul | `renderer.cpp:1603-1626` (tailles :1363-1376) | carré face caméra (cœur 7 cm, lueur 20 cm) | 2 à 4 par voiture | `apres-halos-*.jpg` |
+| Halos des feux arrière, stop, recul | `renderer.cpp:1603-1626` (tailles :1363-1376) | carré face caméra (cœur 7 cm, lueur 20 cm) | 2 à 4 par voiture | `apres-halos-rue.jpg`, `apres-halos-pres.jpg` |
 | Point de phare vu dans le rétroviseur | `renderer.cpp:1645-1652` | carré face caméra (3,5 cm) | 2 par voiture suiveuse, nuit | — |
-| Lueur rouge des feux sur la route | `renderer.cpp:1660-1680` | grille 8 × 6 additive au sol | 1 par voiture à moins de 80 m, nuit | `apres-halos-*.jpg` |
-| Lumière des phares des autres voitures sur la route | `src/render/nuit.cpp:289-311` | grille 7 × 8 additive au sol | 1 par voiture à moins de 160 m, nuit | `apres-halos-*.jpg` |
+| Lueur rouge des feux sur la route | `renderer.cpp:1660-1680` | grille 8 × 6 additive au sol | 1 par voiture à moins de 80 m, nuit | `apres-halos-rue.jpg`, `apres-halos-pres.jpg` |
+| Lumière des phares des autres voitures sur la route | `src/render/nuit.cpp:289-311` | grille 7 × 8 additive au sol | 1 par voiture à moins de 160 m, nuit | `apres-halos-rue.jpg`, `apres-halos-pres.jpg` |
 | Halos des clignotants et warnings du trafic | `traffic_system.cpp:296-306, 326-335, 352-367` | carré texturé face caméra (0,7 m) | ≤ 64 | — |
-| **Halo des têtes de lampadaires** | `nuit.cpp:343-351` (rayon `HALO_TETE_M` 0,6 m) | **carré face caméra qui se lit comme un disque** | 1 par tête vue, coupé en qualité Basse | `apres-halos-*.jpg` — **demandé par l'avis de l'expert 3D (N2)** |
-| Étincelles des chocs | `src/render/effets_systeme.cpp:216-237`, `effets_particules.cpp:12` | carrés face caméra additifs (0,22 m) | ≤ 220 | `apres-effets-*.jpg` |
-| Fumée des pneus et des accidents | `effets_systeme.cpp:74-98, 239-275` | rectangles face caméra, volute gaussienne + bruit, éclairés comme un nuage | ≤ 140 | `apres-effets-*.jpg` |
-| Lignes de vitesse (nitro) | `effets_systeme.cpp:286-302` | quads fins devant la caméra | 28 sous nitro | `apres-effets-*.jpg` |
+| **Halo des têtes de lampadaires** | `nuit.cpp:343-351` (rayon `HALO_TETE_M` 0,6 m) | **carré face caméra qui se lit comme un disque** | 1 par tête vue, coupé en qualité Basse | `apres-halos-rue.jpg`, `apres-halos-pres.jpg` — **demandé par l'avis de l'expert 3D (N2)** |
+| Étincelles des chocs | `src/render/effets_systeme.cpp:216-237`, `effets_particules.cpp:12` | carrés face caméra additifs (0,22 m) | ≤ 220 | `apres-choc-etincelles.jpg`, `apres-fumee-derapage-jour.jpg`, `apres-nitro-lignes.jpg` |
+| Fumée des pneus et des accidents | `effets_systeme.cpp:74-98, 239-275` | rectangles face caméra, volute gaussienne + bruit, éclairés comme un nuage | ≤ 140 | `apres-choc-etincelles.jpg`, `apres-fumee-derapage-jour.jpg`, `apres-nitro-lignes.jpg` |
+| Lignes de vitesse (nitro) | `effets_systeme.cpp:286-302` | quads fins devant la caméra | 28 sous nitro | `apres-choc-etincelles.jpg`, `apres-fumee-derapage-jour.jpg`, `apres-nitro-lignes.jpg` |
 | Gouttes de pluie, gouttes sur le pare-brise | `src/world/meteo.cpp:87-99, 166-227` | quads 2D d'écran (`uiQuad`) | intensité de la carte | — (banc `pluie`) |
 | Flocons de neige | `meteo.cpp:229-283` | particules 3D projetées, dessinées en quads 2D | intensité de la carte | — (banc `neige`) |
 
