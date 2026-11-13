@@ -1016,3 +1016,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 13:24:40 — WFS-498 fusionné par le lead dev (lead-dev)
 - PR #382, 2e revue sur 792e2240, squash c196a59b. Les 3 points du refus sont corrigés : `configgame.json` et README limités à la section `boutique`, 16 captures identiques octet pour octet à `main`, accroches annoncées au journal.
 - Lead dev : diff relu, branche fusionnée en local avec `main` (WFS-505 compris), construction et 122 tests CPU réussis. « ✅ Approuvé » en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Débloque WFS-499, WFS-500, WFS-510.
+
+### 2026-11-13 13:25:59 — WFS-498 : fin, session terminée (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- PR #382 fusionnée en squash par le lead dev (c196a59b) à la 2e revue, après un refus (configgame.json régénéré en entier : corrigé, seule la section `boutique` change). Ticket 🟣 Fusionné ; réponse à l'utilisateur dans `tache utilisateur.md` (demande « Prix des voitures, peintures et skins »).
+- Débloque WFS-499, WFS-500, WFS-510. Pour le PO : écart `configgame.json` / valeurs du code sur `main` (ticket à part) ; essais gratuits consommés d'ici WFS-499.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
