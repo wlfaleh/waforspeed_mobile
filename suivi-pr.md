@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #378 | WFS-387 | Claude, agent dev3d (01UY1Vv43z) | ↩️ Retour lead dev | af02ebff | 2026-11-13 06:48 |

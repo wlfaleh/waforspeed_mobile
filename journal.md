@@ -1654,3 +1654,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 
 ### 2026-11-13 08:18:14 — Règle « un ticket en cours par épic » supprimée (po-scrum-master)
 - Ordre de l'utilisateur : « cette règle, je ne l'ai pas demandée, tu l'enlèves tout de suite ». Retirée de `CLAUDE.md`, `TACHES.md` (règles de travail en parallèle), skills `po-scrum-master` et `waforspeed-natif`. Restent : un ticket par session, les dépendances écrites, la zone de code du ticket.
+
+### 2026-11-13 08:20:56 — WFS-387 fusionné par le lead dev (lead-dev)
+- PR #378 fusionnée en squash (6a77f55b) **sur ordre de l'utilisateur** (2026-11-13 : « s'arrêter ici, fusionner ce qui est fait, reprendre le reste dans une autre tâche »), vérification rapide de 55f20adf : diff depuis af02ebff lu (`campagne.cpp`, `decor_campagne_banc.cpp`, `decor_carte.{h,cpp}`), 5 points du refus corrigés, branche sans conflit avec `main`, construction à jour, 120 tests CPU (journal de la PR). « ✅ Approuvé » en commentaire (même compte GitHub).
+- Statut 🟡 À valider (utilisateur). Ligne #378 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+- **Au PO** : créer la tâche suivante avec le reste (avis agent 3D sur le dernier commit, mesure de performance en Basse après la grille entière du sol lointain, vues `course5-*campagne*` à refaire, réserves A à C) ; WFS-465 (publication après 387) peut passer ⏳ Prêt.
