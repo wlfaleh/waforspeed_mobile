@@ -309,7 +309,8 @@ private:
         for (const auto& l : ls) {
             const float k = (float)std::clamp(l.d / fin, 0.0, 1.0);
             const std::string km = l.fini ? ui::tr("c5.arrive") : ui::decimal(std::max(0.0, l.d) * M / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
-            { const textes::NomPropre nomPropre; ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, l.moi ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false); }   // WFS-506 : pseudo, adversaires
+            if (l.moi && !sauvegarde().actif()) ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, ui::ORANGE, ui::GAUCHE, 0.f, false);   // « Pilote » / « Driver » : traduit, vérifié
+            else { const textes::NomPropre nomPropre; ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, l.moi ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false); }   // WFS-506 : pseudo, adversaires
             ui::text(r, x + w - 1.2f * u, y + 0.6f * u, px, km, TEXTE, ui::DROITE, 0.f, false);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, w - 2.4f * u, 0.5f * u, PISTE);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, (w - 2.4f * u) * k, 0.5f * u, l.moi ? ui::ORANGE : ui::CYAN);
@@ -341,7 +342,8 @@ private:
             else if (i == 0 || tete < 0) tm = ui::chrono(l.ft);
             else tm = "+" + ui::decimal(l.ft - tete, 1) + " s";
             const vec4 c = l.moi ? ui::ORANGE : TEXTE;
-            { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false); }   // WFS-506
+            if (l.moi && !sauvegarde().actif()) ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false);   // « Pilote » / « Driver »
+            else { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false); }   // WFS-506 : noms inventés
             ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, l.fini ? c : MUTED, ui::DROITE, 0.f, false);
             y += 6.5f * u;
         }
