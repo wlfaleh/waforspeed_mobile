@@ -1702,3 +1702,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Vérification : 121 tests CPU OK (synchronisé avec `main`) ; captures `qa/pr/WFS-488/` (20) ; sans couleur 2, `vitrines-feux` branche / `main` : 4 images identiques au pixel, 2 à 1 pixel de 1/255 ; banc `perf` Ville : Basse 358,4 / 357,0 ms, 201 appels de dessin des deux côtés.
 - Limites : rendu vu sur lavapipe seulement ; choix au garage = WFS-489 ; endurance au doigt non relancée.
 
+
+### 2026-11-13 10:02:47 — WFS-481 : PR #379 refusée par le lead dev (lead-dev)
+- Commit relu 489278ce. 12 captures ouvertes : l'écran FR et EN est bon (AZERTY / QWERTY, erreurs RG-04, plaque qui suit le pseudo, menu après validation, joueur déjà installé). Tout le diff a été lu.
+- Refait sur la branche : construction OK, tests CPU 121/121, banc `creation` FR et EN 0 écart (RG-05 : 7 appuis, 8,4 s ; touche 9,8 mm), banc `cgu` 0 écart.
+- Bloquant 1 : la capture « Tests CPU » et `qa/pr/WFS-481/tests-cpu.log` manquent (règle du 2026-11-11).
+- Bloquant 2 : l'émulateur du matin (`tools/qa/emulateur.sh`, installation neuve, profil=0) appuie sur « Course solo » sous l'écran « Crée ton pilote » qui prend tous les touchers. Le parcours s'arrête avant la course. Il faut une étape « création du profil » dans `emulateur.sh` (avis `expert-ci-cd` ou PO), ou une décision écrite du PO.
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/379#pullrequestreview-5889155871 (commentaire : GitHub refuse « changements demandés » sur une PR du même compte).
