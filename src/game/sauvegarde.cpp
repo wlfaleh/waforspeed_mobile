@@ -96,6 +96,40 @@ bool poursuiteBat(bool victoire, int score, long long distM, bool ancVictoire, i
 }
 } // namespace records
 
+// WFS-500 (RG-09) : jour local « AAAA-MM-JJ » bien écrit (mois 1..12, jour 1..31) ; le calcul du jour est dans cadeau.cpp
+static bool jourValide(const std::string& j) {
+    if (j.size() != 10 || j[4] != '-' || j[7] != '-') return false;
+    for (int i : {0, 1, 2, 3, 5, 6, 8, 9}) if (j[(size_t)i] < '0' || j[(size_t)i] > '9') return false;
+    const int m = (j[5] - '0') * 10 + (j[6] - '0'), d = (j[8] - '0') * 10 + (j[9] - '0');
+    return m >= 1 && m <= 12 && d >= 1 && d <= 31;
+}
+// WFS-500 (RG-08) : résultat « <type>;<valeur> » : petites lettres, chiffres, « ; », « : », « - » ; 64 caractères au plus
+static bool resultatSur(const std::string& r) {
+    if (r.empty() || r.size() > 64 || r.find(';') == std::string::npos) return false;
+    for (char c : r) if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == ';' || c == ':' || c == '-')) return false;
+    return true;
+}
+// WFS-500 (RG-09) : clés du cadeau du jour ; vrai si la clé en est une (lue, ou ignorée si sa valeur est invalide : défaut de la clé)
+static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string& v) {
+    if (k.rfind("cadeau-", 0) != 0 && k.rfind("pret-", 0) != 0) return false;
+    long long n = 0;
+    constexpr long long EPOCH_MAX = 32503680000LL;   // an 3000 : borne de lecture d'une heure
+    if (k == "cadeau-heure") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.heure = n; }
+    else if (k == "cadeau-decalage") {   // signé : fuseaux à l'ouest de Greenwich (Amériques) négatifs
+        const bool neg = !v.empty() && v[0] == '-';
+        if (entier(neg ? v.substr(1) : v, n) && n <= 18 * 3600) c.decalage = (int)(neg ? -n : n);
+    }
+    else if (k == "cadeau-jour") { if (jourValide(v)) c.jour = v; }
+    else if (k == "cadeau-sans-rare") { if (entier(v, n) && n >= 0 && n <= 100000) c.sansRare = (int)n; }
+    else if (k == "cadeau-total") { if (entier(v, n) && n >= 0 && n <= 1000000000LL) c.total = n; }
+    else if (k == "cadeau-dernier") { if (resultatSur(v)) c.dernier = v; }
+    else if (k == "pret-voiture") { if (voitureExiste(v)) c.pretVoiture = v; }
+    else if (k == "pret-recu") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretRecu = n; }
+    else if (k == "pret-fin") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretFin = n; }
+    else if (c.inconnues.size() < 32 && k.size() <= 40 && v.size() <= 200) c.inconnues[k] = v;   // version plus récente : gardée, réécrite telle quelle
+    return true;
+}
+
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear();
     map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
@@ -113,6 +147,7 @@ void Sauvegarde::defauts() {
     nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1; adversaires.clear();
     for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
     profil = Profil{};   // WFS-480
+    cadeau = EtatCadeau{};   // WFS-500
 }
 
 std::string Sauvegarde::texte() const {
@@ -171,6 +206,15 @@ std::string Sauvegarde::texte() const {
         o << "\n";
     }
     for (const auto& [k, v] : anciens) o << k << "=" << v << "\n";        // records du tracé 1, gardés
+    if (cadeau.total > 0 || cadeau.heure > 0) {   // WFS-500 (RG-09) : absentes tant qu'aucun cadeau n'a été ouvert
+        o << "cadeau-heure=" << cadeau.heure << "\n" << "cadeau-decalage=" << cadeau.decalage << "\n";
+        if (!cadeau.jour.empty()) o << "cadeau-jour=" << cadeau.jour << "\n";
+        o << "cadeau-sans-rare=" << cadeau.sansRare << "\n" << "cadeau-total=" << cadeau.total << "\n";
+        if (!cadeau.dernier.empty()) o << "cadeau-dernier=" << cadeau.dernier << "\n";
+    }
+    if (!cadeau.pretVoiture.empty())   // WFS-500 (RG-09) : déclarées ici, utilisées par WFS-502
+        o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n";
+    for (const auto& [k, v] : cadeau.inconnues) o << k << "=" << v << "\n";   // WFS-500 : clés d'une version plus récente, gardées
     profil.ecrire(o);   // WFS-480 (RG-11) : nouvelles clés, aucune ancienne retirée
     return o.str();
 }
@@ -199,6 +243,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         if (k.rfind("waforspeed-", 0) == 0) k = k.substr(11);   // clés du web acceptées avec ou sans préfixe
         long long n = 0;
         if (profil.lireCle(k, v)) continue;   // WFS-480 : clés du profil
+        if (lireCleCadeau(cadeau, k, v)) continue;   // WFS-500 : clés cadeau-* et pret-*
         // WFS-136 (RG-07) : version du tracé, anciennes clés *_v1 gardées, valeurs brutes des records du tracé 1
         if (k == "trace") { if (entier(v, n) && n >= 1 && n <= 99) traceLu = (int)n; continue; }
         if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
