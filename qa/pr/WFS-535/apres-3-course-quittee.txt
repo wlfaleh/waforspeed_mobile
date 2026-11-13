@@ -1,0 +1,4 @@
+---- 3) Course quittée (course à 5, 2e au moment de quitter)
+  total                                 0 points
+  étoiles                              0 ★
+
