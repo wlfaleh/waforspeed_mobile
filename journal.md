@@ -1421,3 +1421,55 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - Refait par le lead dev : construction et tests CPU sur 769fcb6a (125 réussis), puis sur le mélange local avec `main` contenant WFS-500 (126 réussis, non poussé).
 - Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Reste en français au garage en anglais jusqu'à WFS-489 : Choisir / Retour / Couleur / nom de la couleur.
 - Pour le PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite). À créer en anomalie.
+
+### 2026-11-13 19:18:03 — WFS-507 : fin, session terminée (Claude, agent dev3d (01Us6uCw3C))
+- PR #396 fusionnée en squash par le lead dev à la 2e revue (c0bd7a95) ; statut 🟣 ; ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : il passe ✅ par le robot des statuts après les bancs du matin.
+- Reste au garage en anglais, dans la zone de WFS-489 (#395, pas encore fusionnée) : « Choisir », « Retour », « Couleur » et le nom de la couleur. Session de WFS-489 prévenue : à sa synchronisation, garder les deux blocs de `assets/textes/fr.txt` / `en.txt` et les deux lignes de commentaire de `src/ui/garage.h`.
+- **Pour le PO** (deux points hors de mon ticket, à décider) : (1) défaut déjà présent sur `main`, vu par le lead dev : le bandeau « paquet disponible » du menu recouvre le bouton CRÉDITS en bas à droite (FR et EN) → anomalie à créer ; (2) cartes d'essai cachées (`WFS_CARTES_TEST`, jamais montrées aux joueurs) : description et quartiers en français au choix du terrain en anglais (zone de WFS-505).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 19:24:28 — WFS-483 fusionné par le lead dev (lead-dev)
+- PR #397, 2e revue sur 33945d53 : les 3 points bloquants du refus sur 51fac475 sont corrigés (journal « Tests CPU » et `tests-cpu.log`, 6 recadrages Poursuite ×2 où « WFS » se lit de jour et de nuit, garage de 3/4 arrière). La remarque sur `support()` est corrigée aussi : les porte-plaques de la voiture courante sont gardés par pointeur.
+- Construction et tests refaits par le lead dev : 127 test(s) réussi(s). Approbation en commentaire (même compte GitHub), fusion en squash 1a24dc15. Statut 🟣, ligne ajoutée dans `qa/Check.md`.
+- Pour le PO : à 5,2 m de la caméra de poursuite, une plaque de 8 caractères sera petite (RG-06). C'est un point à surveiller, la caméra ne change pas. Le coût RG-07 reste à mesurer en ms sur le téléphone.
+
+### 2026-11-13 19:24:56 — WFS-483 fusionné, session terminée (Claude, agent dev3d (01Us6uCvxs))
+- PR #397 fusionnée par le lead dev (squash 1a24dc15) au 2e passage. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé au PO.
+- Suite du sujet : WFS-484 (plaques au hasard du trafic et des adversaires) peut partir, il réutilise `src/render/vehicule_plaque*` et `tools/plaques_joueur.mjs`. À suivre : RG-07 à mesurer sur le téléphone (Corniche, Basse) ; plaque de 8 caractères petite en vue Poursuite (caméra à 5,2 m).
+
+### 2026-11-13 19:29:19 — WFS-490 : 3e retour lead dev corrigé, PR #388 à relire (Claude, agent dev3d (01Us6uCwDY))
+- Corrigé (21bff82f, 38dcdca7) : chrome = métal PBR standard (sonde de reflet à pleine force, sans part diffuse) ; sous l'horizon, chaussée réelle (asphalte ρ 0,14, DA-realisme § 3) ; preuve que la sonde ne contient que le ciel (`qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg`) ; arbitrage du PO (7b9baef9) : « haut plus clair » et « décor reflété » passent à WFS-539.
+- Accroches `scene.frag` : 8 lignes au total (chrome : 3 lignes, commentaire compris).
+- Vérifié : bas de caisse / chaussée au soleil 48 à 155 % (≥ 40 %) ; nuit chromé < brillant ; brillant identique au pixel (14 images) ; 127 tests CPU (99657589).
+
+### 2026-11-13 19:37:26 — WFS-397 fusionné par le lead dev (lead-dev)
+PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moyeux de la Virtus sans logo, feux de la Virtus allumés sur les verres et sans halo, doublures des passages de roue de la W212, tests CPU joints, caisse +25 mm et pavillon +15 / +14 mm, 6/6 à ±1 %). Captures ouvertes, diff lu, construction et 126 tests CPU refaits sur la branche fusionnée avec main. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7c51937c. Statut 🟣. Remarques pour WFS-360 et le PO : encoche au coffre de la Virtus, 3e feu stop de la W212.
+
+### 2026-11-13 19:38:02 — WFS-397 fusionné (#393, squash 7c51937c, lead dev) : fin de la session (Claude, agent dev3d (01Us6uCt5A))
+- W212 et Virtus GT dans `assets/cars/remplacants/`, 6/6 mesures à ±1 %, < 8 Mo, sans marque ; rien de branché (WFS-360).
+- Pour le PO (tâches séparées, RG-09 et remarques du lead dev) : encoches du capot et du coffre de la Virtus à l'ancienne place des logos ; centre de grille de la Virtus noir uni ; 3e feu stop de la W212 plus blanc que rouge de nuit ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`) ; 155 k triangles par voiture à mesurer au banc perf au branchement.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-13 19:43:39 — WFS-401 : PR #394 refusée par le lead dev (lead-dev)
+- Commit relu : 96a23dca. Avis agent 3D « VALIDÉ avec réserves » présent. Captures ouvertes (bord, suite, sillage, gerbe et zooms, falaise et blocs, lune, rivière la nuit, soleil bas) : mieux qu'avant, rien de dégradé. Diff lu en entier. Construction et tests refaits sur la branche fusionnée en local avec main 1f88dde2 : 127 test(s) réussi(s).
+- Refus pour l'hygiène seulement : (1) PR en conflit avec main sur `journal.md` (GitHub : dirty) ; (2) section « Tests CPU » et `qa/pr/WFS-401/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11). Remarques non bloquantes : `fwidth` calculé dans un branchement qui dépend de la distance (`shaders/eau.glsl:169`), `else` rattaché au 2e `if` (`plage.cpp:3389`). Revue 5897016069 (COMMENT : même compte GitHub).
+
+### 2026-11-13 19:44:35 — WFS-490 fusionné par le lead dev (lead-dev)
+- PR #388, 4e revue sur 35d93999, après l'arbitrage du PO (commentaire 6862309388) et la réponse du développeur (6862820871). « ✅ Approuvé » en commentaire (revue 5897026188, même compte GitHub), fusion squash cf8136e3.
+- Vérifié : sonde de reflet à pleine force, chaussée réelle ρ 0,14 sous l'horizon (même éclairage que le sol de `scene.frag`) ; bas de caisse ≥ 40 % de la chaussée (mesure du lead dev : 208 ≈ 90 %, GT86 au-dessus de la route proche) ; nuit chromé < brillant ; brillant 0 pixel différent ; 7 autres finitions identiques à 170da9b2. Construction et 128 tests CPU refaits sur la branche fusionnée avec `main`.
+- Remarques pour WFS-539 : `preuve-sonde-brute-gt86.jpg` effacée par la régénération des captures (lisible au commit 38dcdca7) ; chrome noir sous l'horizon la nuit.
+
+### 2026-11-13 19:45:18 — Fin : WFS-490 fusionné, session terminée (Claude, agent dev3d (01Us6uCwDY))
+- PR #388 fusionnée en squash par le lead dev (cf8136e3), 4e revue ; avis agent 3D « VALIDÉ avec réserves » ; arbitrage du PO sur le chromé (7b9baef9, suite dans WFS-539).
+- Remis : `qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg` (effacée par la régénération des captures, citée par `scene.frag` et l'arbitrage), reprise du commit 38dcdca7.
+- Suites hors ticket déjà chez le PO : WFS-539 (sonde avec décor et chaussée, ciel calé ; chrome de nuit qui reflète les lampadaires), ANO-266 (logo des jantes de la GT86, dans WFS-366), `specK` en brillant sur les caisses très denses (risque signalé plus haut). WFS-491 (choix au garage) peut démarrer : API `Renderer::finitionJoueur(int)`.
+- Session terminée : un seul ticket par session, aucun ticket suivant demandé.
+
+### 2026-11-13 19:48:49 — WFS-536 : PR #399 ouverte, les ★ du score remplacent les 10 ★ fixes (Claude, agent dev3d (01UY1Vv3A5))
+- Fait : fin de course branchée sur le calcul de WFS-535 (`profil_system.cpp`) ; secours `gain_course` si le résultat du mode manque ; un seul crédit par course (`boutique::GainCourse`) ; ★ gagnées en 9e champ de l'historique (anciennes lignes lues) ; banc `equilibrage` à 3 joueurs simulés avec le vrai calcul ; nouveau banc `score-etoiles` (vraie course à 5, sauvegarde active).
+- Fichiers : `src/game/boutique.*`, `boutique_banc.cpp`, `score_banc.cpp` (nouveau), `profil.*`, `profil_system.cpp`, `tests/test_boutique.cpp`, `tests/test_profil.cpp`, `CMakeLists.txt`, `configgame.README.md`.
+- **Accroches annoncées** : `src/platform/desktop_main.cpp` (1 ligne : banc `score-etoiles`) ; `src/core/configgame.{h,cpp}` (description de `gain_course` = secours, 2 lignes, aucune valeur changée) ; `profil.{h,cpp}` (zone E3, RG-03 : 9e champ de l'historique).
+- Vérification : 127 tests CPU réussis (branche synchronisée) ; banc `equilibrage` OK sans changer le barème : moyen 9,99 ★ / course, 1re voiture en 26 courses, 120,4 h ; bon 12,68 ★, 19 courses, 94,9 h ; débutant 7,89 ★, 29 courses. Banc `score-etoiles` OK : 2e place, 1 050 points → 12 ★ (0 → 12 ★), retour au menu sans 2e crédit, course quittée 0 ★.
+- Limites, à l'attention du PO : (1) les modes ne donnent pas encore les compteurs des défis (0 point) : ticket à créer pour les brancher, puis recaler `points_par_etoile` au banc ; (2) le maximum est 18 ★ par course au banc (21 avec défis) : la borne 40 ★ n'est jamais atteinte (risque déjà signalé par WFS-535) : barème plus large ou conversion non linéaire à décider ; (3) records par mode, pas encore par carte (WFS-538).
+
