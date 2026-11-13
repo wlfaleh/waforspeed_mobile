@@ -15,14 +15,15 @@ int main() {
         VERIFIE(n == 1, "ligne %d : dans %d onglet(s), 1 attendu", l, n);
     }
     VERIFIE(nLignesOnglet(O_AFFICHAGE) + nLignesOnglet(O_CONDUITE) + nLignesOnglet(O_SON) == N_LIGNES, "toutes les lignes, aucune en double");
-    const int aff[] = {L_CAMERA, L_QUALITE, L_REGARD, L_MOUVEMENTS, L_BOUTONS, L_FANTOME};
+    const int aff[] = {L_CAMERA, L_QUALITE, L_REGARD, L_MOUVEMENTS, L_BOUTONS, L_FANTOME, L_LANGUE};   // WFS-504 : « Langue » en dernier
     const int con[] = {L_DIRECTION, L_COMMANDES, L_GYRO, L_GYROZONE, L_AIDE, L_VIBRATIONS};
     const int son[] = {L_SON, L_MUSIQUE};
-    VERIFIE(nLignesOnglet(O_AFFICHAGE) == 6 && nLignesOnglet(O_CONDUITE) == 6 && nLignesOnglet(O_SON) == 2, "6, 6 et 2 lignes");
-    for (int i = 0; i < 6; i++) VERIFIE(LIGNES_ONGLET[O_AFFICHAGE][i] == aff[i], "Affichage, ligne %d dans l'ordre validé", i);
+    VERIFIE(nLignesOnglet(O_AFFICHAGE) == 7 && nLignesOnglet(O_CONDUITE) == 6 && nLignesOnglet(O_SON) == 2, "7, 6 et 2 lignes");
+    for (int i = 0; i < 7; i++) VERIFIE(LIGNES_ONGLET[O_AFFICHAGE][i] == aff[i], "Affichage, ligne %d dans l'ordre validé", i);
     for (int i = 0; i < 6; i++) VERIFIE(LIGNES_ONGLET[O_CONDUITE][i] == con[i], "Conduite, ligne %d dans l'ordre validé", i);
     for (int i = 0; i < 2; i++) VERIFIE(LIGNES_ONGLET[O_SON][i] == son[i], "Son, ligne %d dans l'ordre validé", i);
-    VERIFIE(ongletDe(L_FANTOME) == O_AFFICHAGE && LIGNES_ONGLET[O_AFFICHAGE][5] == L_FANTOME, "Fantôme du record : dernière ligne d'Affichage (WFS-318)");
+    VERIFIE(ongletDe(L_FANTOME) == O_AFFICHAGE && LIGNES_ONGLET[O_AFFICHAGE][5] == L_FANTOME, "Fantôme du record : avant « Langue » dans Affichage (WFS-318)");
+    VERIFIE(ongletDe(L_LANGUE) == O_AFFICHAGE && LIGNES_ONGLET[O_AFFICHAGE][6] == L_LANGUE, "Langue : dernière ligne d'Affichage (WFS-504, RG-02)");
     VERIFIE(ongletDe(L_DIRECTION) == O_CONDUITE && ongletDe(L_MUSIQUE) == O_SON, "ongletDe");
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("onglets des réglages : OK\n");

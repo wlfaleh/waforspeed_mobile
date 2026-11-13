@@ -53,6 +53,8 @@ void benchReglages(Game& g, Renderer& r, const std::string& out);
 void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out);
 // WFS-291 : onglets Affichage, Conduite, Son (banc reglages-onglets)
 void benchReglagesOnglets(Game& g, Renderer& r, const std::string& out);
+// WFS-504 : banc « textes » (Réglages dans la langue de WFS_LANGUE, phrases françaises, textes qui dépassent, parcours) ; rend les échecs
+int benchReglagesTextes(Game& g, Renderer& r, const std::string& out);
 
 } // namespace ecrans
 } // namespace wfs

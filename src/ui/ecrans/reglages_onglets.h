@@ -1,18 +1,21 @@
 // WaForSpeed — lignes du panneau des réglages et leurs onglets (WFS-291, WFS-318, épic E8) : table seule, sans rendu,
-// testée par tests/test_reglages_onglets.cpp (chaque ligne dans un seul onglet, ordre validé par le PO).
+// testée par tests/test_reglages_onglets.cpp (chaque ligne dans un seul onglet, ordre validé par le PO ; WFS-504 : « Langue »).
 #pragma once
 
 namespace wfs::ecrans {
 
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
-       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, L_FANTOME = 13, N_LIGNES = 14 };
+       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, L_FANTOME = 13,
+       L_LANGUE = 14, N_LIGNES = 15 };   // WFS-504 (RG-02) : « Langue », dernière ligne d'Affichage
 
 // WFS-291 (RG-01, découpage validé par le PO le 2026-11-08 23:04:56 UTC) : 3 onglets ; chaque ligne dans un seul onglet, ordre fixe
 enum { O_AFFICHAGE = 0, O_CONDUITE = 1, O_SON = 2, N_ONGLETS = 3 };
-inline const char* const ONGLETS[N_ONGLETS] = {"Affichage", "Conduite", "Son"};
-constexpr int MAX_PAR_ONGLET = 7;   // Affichage : 5 lignes, 6 avec « Fantôme du record » (WFS-318, prévu en dernière ligne)
+inline const char* const ONGLETS[N_ONGLETS] = {"Affichage", "Conduite", "Son"};   // noms du journal (français)
+// WFS-504 (RG-10) : texte affiché = ui::tr(ONGLETS_CLE[o]) (assets/textes/*.txt)
+inline const char* const ONGLETS_CLE[N_ONGLETS] = {"reglages.onglet.affichage", "reglages.onglet.conduite", "reglages.onglet.son"};
+constexpr int MAX_PAR_ONGLET = 7;   // Affichage : 5 lignes, 6 avec « Fantôme du record » (WFS-318), 7 avec « Langue » (WFS-504)
 inline constexpr int LIGNES_ONGLET[N_ONGLETS][MAX_PAR_ONGLET] = {
-    {L_CAMERA, L_QUALITE, L_REGARD, L_MOUVEMENTS, L_BOUTONS, L_FANTOME, -1},   // WFS-318 : « Fantôme du record » en dernière ligne
+    {L_CAMERA, L_QUALITE, L_REGARD, L_MOUVEMENTS, L_BOUTONS, L_FANTOME, L_LANGUE},   // WFS-318 : « Fantôme du record » ; WFS-504 : « Langue » en dernière ligne
     {L_DIRECTION, L_COMMANDES, L_GYRO, L_GYROZONE, L_AIDE, L_VIBRATIONS, -1},
     {L_SON, L_MUSIQUE, -1, -1, -1, -1, -1},
 };

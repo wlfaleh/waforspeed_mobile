@@ -1,5 +1,6 @@
 // WaForSpeed — texte de l'interface (WFS-26) : atlas SDF construit au démarrage avec stb_truetype.
 #include "text.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -9,6 +10,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../render/renderer.h"
+#include "langue.h"   // WFS-504 : journal des textes affichés (banc « textes »), tables lues avec la police
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../../third_party/stb/stb_truetype.h"
@@ -86,6 +88,7 @@ bool load(Renderer& r) {
     r.uiSetFontAtlas(F.atlas);
     F.ready = true;
     WFS_LOG("Police : %zu caractères dans l'atlas", F.glyphs.size());
+    langue::charger();   // WFS-504 (RG-05) : tables des textes lues au chargement, jamais en course
     return true;
 }
 
@@ -137,6 +140,7 @@ float width(float px, const std::string& s, float spacing) {
 void text(Renderer& r, float x, float y, float px, const std::string& s, const vec4& color, Align align, float spacing, bool ombre,
           bool italique) {
     if (!F.ready || s.empty()) return;
+    if (langue::journalOuvert()) langue::noter(s);   // WFS-504 (RG-07) : banc seulement
     auto cps = codepoints(s);
     float w = 0; run(nullptr, 0, 0, px, cps, {}, spacing, &w);
     if (align == CENTRE) x -= w * 0.5f; else if (align == DROITE) x -= w;
@@ -146,6 +150,19 @@ void text(Renderer& r, float x, float y, float px, const std::string& s, const v
         run(&r, x + o, y + o, px, cps, {0, 0, 0, 0.55f * color.w}, spacing, nullptr, pente);
     }
     run(&r, x, y, px, cps, color, spacing, nullptr, pente);
+}
+
+float textBoite(Renderer& r, float x, float y, float largeur, float hauteur, float px, const std::string& s, const vec4& color, Align align,
+                float espacement, bool ombre, bool italique) {
+    if (!F.ready || s.empty()) return px;
+    float t = px;
+    const float w = width(px, s, espacement);
+    if (w > largeur && w > 0) {   // la largeur est proportionnelle à la taille : réduction juste suffisante, 20 % au plus
+        t = std::max(px * (1 - REDUCTION_MAX), px * largeur / w);
+        if (width(t, s, espacement) > largeur + 0.5f) langue::noterDebord(s, width(t, s, espacement), largeur);
+    }
+    text(r, x, y + (hauteur - t) / 2, t, s, color, align, espacement, ombre, italique);
+    return t;
 }
 
 std::string nombre(long long v) {
