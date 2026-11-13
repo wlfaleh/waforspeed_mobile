@@ -1441,3 +1441,27 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - Corrigé (21bff82f, 38dcdca7) : chrome = métal PBR standard (sonde de reflet à pleine force, sans part diffuse) ; sous l'horizon, chaussée réelle (asphalte ρ 0,14, DA-realisme § 3) ; preuve que la sonde ne contient que le ciel (`qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg`) ; arbitrage du PO (7b9baef9) : « haut plus clair » et « décor reflété » passent à WFS-539.
 - Accroches `scene.frag` : 8 lignes au total (chrome : 3 lignes, commentaire compris).
 - Vérifié : bas de caisse / chaussée au soleil 48 à 155 % (≥ 40 %) ; nuit chromé < brillant ; brillant identique au pixel (14 images) ; 127 tests CPU (99657589).
+
+### 2026-11-13 19:37:26 — WFS-397 fusionné par le lead dev (lead-dev)
+PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moyeux de la Virtus sans logo, feux de la Virtus allumés sur les verres et sans halo, doublures des passages de roue de la W212, tests CPU joints, caisse +25 mm et pavillon +15 / +14 mm, 6/6 à ±1 %). Captures ouvertes, diff lu, construction et 126 tests CPU refaits sur la branche fusionnée avec main. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7c51937c. Statut 🟣. Remarques pour WFS-360 et le PO : encoche au coffre de la Virtus, 3e feu stop de la W212.
+
+### 2026-11-13 19:38:02 — WFS-397 fusionné (#393, squash 7c51937c, lead dev) : fin de la session (Claude, agent dev3d (01Us6uCt5A))
+- W212 et Virtus GT dans `assets/cars/remplacants/`, 6/6 mesures à ±1 %, < 8 Mo, sans marque ; rien de branché (WFS-360).
+- Pour le PO (tâches séparées, RG-09 et remarques du lead dev) : encoches du capot et du coffre de la Virtus à l'ancienne place des logos ; centre de grille de la Virtus noir uni ; 3e feu stop de la W212 plus blanc que rouge de nuit ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`) ; 155 k triangles par voiture à mesurer au banc perf au branchement.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-13 19:43:39 — WFS-401 : PR #394 refusée par le lead dev (lead-dev)
+- Commit relu : 96a23dca. Avis agent 3D « VALIDÉ avec réserves » présent. Captures ouvertes (bord, suite, sillage, gerbe et zooms, falaise et blocs, lune, rivière la nuit, soleil bas) : mieux qu'avant, rien de dégradé. Diff lu en entier. Construction et tests refaits sur la branche fusionnée en local avec main 1f88dde2 : 127 test(s) réussi(s).
+- Refus pour l'hygiène seulement : (1) PR en conflit avec main sur `journal.md` (GitHub : dirty) ; (2) section « Tests CPU » et `qa/pr/WFS-401/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11). Remarques non bloquantes : `fwidth` calculé dans un branchement qui dépend de la distance (`shaders/eau.glsl:169`), `else` rattaché au 2e `if` (`plage.cpp:3389`). Revue 5897016069 (COMMENT : même compte GitHub).
+
+### 2026-11-13 19:44:35 — WFS-490 fusionné par le lead dev (lead-dev)
+- PR #388, 4e revue sur 35d93999, après l'arbitrage du PO (commentaire 6862309388) et la réponse du développeur (6862820871). « ✅ Approuvé » en commentaire (revue 5897026188, même compte GitHub), fusion squash cf8136e3.
+- Vérifié : sonde de reflet à pleine force, chaussée réelle ρ 0,14 sous l'horizon (même éclairage que le sol de `scene.frag`) ; bas de caisse ≥ 40 % de la chaussée (mesure du lead dev : 208 ≈ 90 %, GT86 au-dessus de la route proche) ; nuit chromé < brillant ; brillant 0 pixel différent ; 7 autres finitions identiques à 170da9b2. Construction et 128 tests CPU refaits sur la branche fusionnée avec `main`.
+- Remarques pour WFS-539 : `preuve-sonde-brute-gt86.jpg` effacée par la régénération des captures (lisible au commit 38dcdca7) ; chrome noir sous l'horizon la nuit.
+
+### 2026-11-13 19:45:18 — Fin : WFS-490 fusionné, session terminée (Claude, agent dev3d (01Us6uCwDY))
+- PR #388 fusionnée en squash par le lead dev (cf8136e3), 4e revue ; avis agent 3D « VALIDÉ avec réserves » ; arbitrage du PO sur le chromé (7b9baef9, suite dans WFS-539).
+- Remis : `qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg` (effacée par la régénération des captures, citée par `scene.frag` et l'arbitrage), reprise du commit 38dcdca7.
+- Suites hors ticket déjà chez le PO : WFS-539 (sonde avec décor et chaussée, ciel calé ; chrome de nuit qui reflète les lampadaires), ANO-266 (logo des jantes de la GT86, dans WFS-366), `specK` en brillant sur les caisses très denses (risque signalé plus haut). WFS-491 (choix au garage) peut démarrer : API `Renderer::finitionJoueur(int)`.
+- Session terminée : un seul ticket par session, aucun ticket suivant demandé.

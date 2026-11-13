@@ -81,6 +81,7 @@ void main() {
     if (retro) { refletRetro = base.rgb * pc.emissive.rgb; base.rgb = vec3(0.0); }
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
+    const int finition = (flags & F_PAINT) != 0u ? lireFinition(metal) : 0;   // WFS-490 (accroche) : finition de la peinture (vehicule.glsl)
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
     if (peint2) finitionPeinture2(metal, rough);   // WFS-488 (accroche) : finition de la carrosserie
     if (kL < 1.0) {   // WFS-263 : relief de la carte de normales seulement en deçà de 70 m (fondu de 60 à 70 m)
@@ -122,6 +123,9 @@ void main() {
     if (fine) detailK = clamp(pc.emissive.w / max(length(fwidth(vWorld)), 1e-6), 0.0, 1.0);
     // opaque : pas d'alpha → les reflets (soleil, ciel, vernis) sont atténués par la couverture ; transparent : alpha × couverture
     float specK = (flags & F_BLEND) == 0u ? detailK : 1.0;
+    // WFS-490 (accroche) : couleur, métal, rugosité ; une carrosserie couvre toujours le pixel (specK = 1 : les caisses très denses,
+    // classées « très fines » par erreur, perdaient leurs reflets, cf. WFS-460) ; brillant : inchangé
+    if (finition != 0) { finitionSurface(finition, base.rgb, metal, rough); specK = 1.0; }
     float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
@@ -196,12 +200,15 @@ void main() {
         float wR = clamp(max(F.nuitB.w, 0.0) * (1.0 - rough), 0.0, mix(0.35, 0.45, flaque)) * mix(1.0, 0.5, smoothstep(20.0, 80.0, dist));
         env = mix(env, rs, wR);
     }
+    // WFS-490 (accroche) : chrome (miroir) : sous l'horizon, la chaussée réelle (la sonde ne la contient pas : qa/pr/WFS-490/
+    // preuve-sonde-brute-gt86.jpg), au-dessus le reflet de la sonde entier (vehicule.glsl, chausseeReflechie)
+    if (finition == FIN_CHROME) env = mix(env, chausseeReflechie(sun), smoothstep(0.02, -0.05, R.y));
     float kMesure = ((flags & F_ROAD) != 0u && F.nuitB.w < 0.0) ? 0.0 : 1.0;   // WFS-142 (RG-08) : WFS_REFLETS=0, route sans reflet
     col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK * kMesure;   // WFS-100 RG-01 / RG-02
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
     if ((flags & F_PAINT) != 0u) {
-        vernisPeinture(col, R, sun, NoV, NoH, NoL, aaKernel, specK);
+        vernisFinition(finition, col, R, sun, NoV, NoH, NoL, aaKernel, specK, N, H, ombre, albedo, f0);   // WFS-490 (accroche) ; brillant : vernisPeinture
     }
     float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
     if ((flags & F_EAU) != 0u) alpha = eauAlpha;   // WFS-380 (RG-04) : sillage et éclaboussure en dentelle

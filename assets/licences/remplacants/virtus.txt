@@ -1,0 +1,22 @@
+Model Information:
+* title:	2022 Volkswagen Virtus GT
+* source:	https://sketchfab.com/3d-models/2022-volkswagen-virtus-gt-3955e5c050f843398b49b2b21ab2f232
+* author:	BHP3D (https://sketchfab.com/BHP3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "2022 Volkswagen Virtus GT" (https://sketchfab.com/3d-models/2022-volkswagen-virtus-gt-3955e5c050f843398b49b2b21ab2f232) by BHP3D (https://sketchfab.com/BHP3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Found in the public GitHub repository PrathamSatpute/VehiclePredictiveMaintenance, folder models/
+(license.txt above copied verbatim from that folder).
+Source files: scene.gltf SHA-256 1bfe8554c6728fea14cf9e7ffe0f02a287904a58ca3e293faa89602347e5b8d7 (617 095 bytes),
+              scene.bin  SHA-256 70fbe3cbdf30c628463c665c9d5d0d7aa05f7c5f7752a33b72663afd6e7f5eac (22 504 008 bytes).
+
+Modifications for WaForSpeed (WFS-397): modified (ride height, roof height). Converted to .wfm
+(tools/remplacants/convertir_remplacants.sh); body raised by 25 mm above the wheels and roof raised by 14 mm above the waistline
+(height 1467 -> 1507 mm, real car 1507 mm); interior, wheels and textures lightened
+(under 8 MB); all brand marks removed (grille, doors, boot, wheel-cap and steering-wheel badges, "GT" badges, "Virtus" plates, lettered cap,
+boot-lid badge recess smoothed). Brand-free car: the game gives it an invented name.
