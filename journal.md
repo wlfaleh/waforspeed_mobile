@@ -1568,3 +1568,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 20:50:47 — Statuts automatiques, CI main #1054 (robot statuts)
 - Run rouge (push, commit aca8557), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 20:55:15 — R17 : une vraie rue en carte du jeu (smart-brainstorming)
+Question de l'utilisateur (Google Maps → carte). Réponse : pas Google (copie interdite), oui avec OpenStreetMap + IGN + Panoramax ; proposition R17 dans `recommandations-smart-brain.md` (juriste d'abord, prototype d'une boucle de 2-3 km). Aucune décision prise.

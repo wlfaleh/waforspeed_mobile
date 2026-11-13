@@ -721,3 +721,32 @@ Total ≈ 24 350 ★ : environ 120 h de jeu sans payer (≈ 60 h avec la pub ×2
 - **Skins** : 300 ★ (communes) à 800 ★ (rares) × coefficient ; certaines seulement en cadeau du jour ou en succès.
 - **Dessins (autocollants)** : packs 150-300 ★, **valables sur toutes les voitures** (pas de coefficient).
 - Achat **par voiture** (une peinture achetée sur la Golf ne passe pas sur la M4) ; les dessins sont communs.
+
+## R17 — 2026-11-13 — Une vraie rue (Google Maps) en carte du jeu ? (mode Challenge + Prototype)
+
+**Question de l'utilisateur** : « est-ce qu'on peut prendre une vraie rue de Google Maps avec le même décor et créer une carte ? »
+
+### Diagnostic
+- **Fonctionne** (*observé*) : les cartes sont déjà des paquets téléchargeables (E14, `.wfcarte`), décor jusqu'à 700 Mo (règle E15), réalisme 99 % (`regles-de-gestion/DA-realisme.md`).
+- **Frictions** : Google Maps / Street View / Google Earth 3D **ne peuvent pas être copiés** dans un jeu (conditions de Google : pas d'extraction, pas de copie hors de leurs services, pas d'usage hors ligne ; *à faire confirmer par le juriste*). Les photos Street View montrent aussi des gens, des plaques, des enseignes (marques).
+- **Opportunités** : des données **libres** donnent la même chose, légalement : OpenStreetMap (tracé des rues, voies, ronds-points, bâtiments, arbres ; ODbL, mention « © contributeurs OpenStreetMap »), IGN en France (BD TOPO : bâtiments avec hauteurs ; LiDAR HD : relief au cm ; orthophotos ; Licence Ouverte 2.0), Panoramax / Mapillary (photos de rue libres pour modéliser les façades).
+- **Manque** : *observé* (`juridique/rapport-2026-11-10.md`) : aujourd'hui « aucun lieu réel, aucune donnée OSM » : un vrai lieu change cette décision → avis du juriste. Attention au **droit d'auteur des bâtiments récents** (architecte vivant ou mort depuis moins de 70 ans ; la liberté de panorama française ne couvre pas un jeu vendu).
+
+### Propositions
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Level design | *Observé* : Google interdit la copie | **Prototype « Vraie rue »** : une boucle de 2 à 3 km d'une vraie ville française, tracé OSM + relief LiDAR HD + bâtiments BD TOPO, façades modélisées d'après Panoramax | Rouler dans une rue qu'on connaît | Élevé | Élevé | P1 | Bâtiments extrudés = boîtes interdites : chaque façade doit être modélisée ; 700 Mo |
+| A02 | Juridique | *Observé* : rapport juriste « aucun lieu réel » | **Avis du juriste avant tout code** : licences OSM / IGN, conditions Google, bâtiments protégés, noms de rues, enseignes | Pas de retrait du store | Élevé | Faible | P1 | Choisir une zone sans monument récent |
+| A03 | Outils | *Supposé* | **Outil de conversion OSM → carte** (rues, voies, trottoirs, ronds-points) réutilisable pour d'autres villes | Nouvelles cartes plus vite | Élevé | Élevé | P2 | Zone E14 ; ne pas toucher au noyau sans ticket E0 |
+| A04 | DA | *Observé* : règle « pas de formes nues » | **Kit de façades** par style (haussmannien, maison de ville, immeuble 70's) avec variations, plutôt que chaque façade unique | 99 % réaliste, poids tenu | Élevé | Moyen | P2 | Répétition visible |
+| A05 | Décor | *Supposé* | Enseignes, plaques et vitrines **inventées** (sans marque), gens et voitures du jeu, pas ceux des photos | Rien de copié | Moyen | Faible | P1 | Lien avec WFS-358 à 361 (voitures sans marque) |
+| A06 | Contenu | *Supposé* | Plus tard : « choisis ta ville » parmi plusieurs paquets (Paris, Marseille, Lyon…) | Rejouabilité, fierté locale | Élevé | Élevé | P3 | Coût par ville, place sur le téléphone |
+
+### Top 3
+1. **A02** juriste d'abord (pas cher, évite de tout refaire).
+2. **A01** une seule boucle prototype pour mesurer temps, poids et rendu.
+3. **A04** kit de façades, condition pour respecter « pas de formes nues ».
+
+**Hypothèse testable** : si nous faisons une boucle de 2-3 km d'une vraie ville avec OSM + IGN et des façades modélisées, alors la carte sera reconnaissable et ≤ 700 Mo, ce que nous vérifierons avec les captures du banc PC (avant / après), l'avis de l'agent 3D et ton essai sur téléphone.
+
+**Prochaine étape** : l'utilisateur choisit la ville / la rue, puis demande au PO (avis `@juriste`, puis ticket `@cartes`).
