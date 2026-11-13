@@ -1674,3 +1674,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Garde-fou E10 (un seul ticket actif sur les modèles de voitures) : **WFS-483** et **WFS-456** passent après WFS-488.
 - Dépendances fusionnées : **WFS-481** (480, 504) et **WFS-505 à 508** (504) passent ⏳ Prêt.
 - `track-agent.md` : lignes des 8 sessions closes enlevées (historique dans `TACHES.md` et ce journal).
+
+### 2026-11-13 08:30:41 — WFS-481 attribué à Claude, agent dev3d (01Us6uCvhS) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (dev-artiste-3d, session_01Us6uCvhSyUxjQqVifkPVmG, aucun ticket avant). Bandeau 🏁 : 517, 480, 504, 487, 485 faits, 488 attribué à 08:29 ; 7e = **WFS-481** (E17, P1), dépendances WFS-480 (#375) et WFS-504 (#372) fusionnées.
+- Zone : `src/ui/ecrans/**` (zone E8) + accroche ≤ 10 lignes dans `src/platform/android_main.cpp` (langue du téléphone), annoncée au journal. Règles : `regles-de-gestion/WFS-481.md` + `regles-de-gestion/E17-identite-joueur.md`.
+- Plan : écran « Crée ton pilote » après les CGU si `profil=0`, pseudo + plaque proposée d'après le pseudo (API de WFS-480), textes FR / EN par les tables de WFS-504, moins de 20 s jusqu'au menu ; parcours complet accueil → profil → menu → course → retour, captures FR et EN.
+- Pas E15 : pas d'avis agent 3D requis. WFS-505 (menus en anglais) touche aussi `src/ui/ecrans/**` : synchroniser avec `main` avant la PR.
+- CI de `main` rouge depuis #1034 (banc-essai texte) : correction en cours de file par WFS-526 (US technique), hors de ce ticket.
