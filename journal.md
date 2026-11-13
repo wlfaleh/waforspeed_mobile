@@ -1094,3 +1094,108 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 ### 2026-11-13 15:07:00 — WFS-490 refusé par le lead dev, PR #388 (lead-dev)
 - Commit relu 818a62a7 : 28 captures ouvertes, tout le diff lu, branche construite et testée en local avec `main` (123 tests CPU réussis). Brillant identique octet par octet (14 paires `peinture2-*`).
 - Refus (revue « commentaire », même compte GitHub) : (1) pas de capture « Tests CPU » ni de `tests-cpu.log` ; (2) chromé bordeaux presque noir sur la Corvette et la 208 (vitrine et course), lilas sur la GT86, sans reflet du décor (RG-06) ; (3) caméléon par plaques olive et brun (RG-07) ; (4) brillant, métallisé et satiné impossibles à distinguer sur les planches (critère 1) ; (5) couleur 2 en finition non montrée (RG-11) ; (6) accroches hors zone non annoncées au journal ; (7) branche en retard sur `main`. Remarques : `fwidth` après un retour anticipé (`vehicule.glsl:163`), paramètre `NoV` écrasé, mesure img/s à refaire en 3 passages.
+
+### 2026-11-13 15:09:19 — WFS-456 : PR #385 corrigée après le refus du lead dev (Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz))
+- Refus sur 5acec11 : 2 preuves manquaient (aucun défaut sur les voitures).
+- (1) `qa/pr/WFS-456/tests-cpu.log` : 123 tests CPU verts sur 68036a49, branche synchronisée avec `main`.
+- (2) `qa/pr/WFS-456/banc-vitrines.log` : avec `WFS_VOITURES="a45 elantra x5"`, 0 image ; sans `WFS_VOITURES`, 17 images, aucune pour une voiture retirée.
+- Les deux journaux sont recopiés dans `pr.md` et dans la description de la PR ; pied de page corrigé ; réponses point par point sous la revue.
+- Dernier commit a38bdb52. `suivi-pr.md` 🔁, lead dev rappelé.
+- Remarques non bloquantes (pli de la Giulia, plaque brillante de la Compass) : tâche de finition à créer par le PO.
+
+### 2026-11-13 15:14:08 — WFS-500 et 510 prêts ; 499 après 489 (po-scrum-master)
+- WFS-498 fusionné (#382) : **WFS-500** (cadeau du jour, tirage) et **WFS-510** (market, packs) passent ⏳ Prêt ; **WFS-499** attend WFS-489 (même panneau `garage_achat.*`, règle « un ticket par fichier de panneau »).
+
+### 2026-11-13 15:16:27 — WFS-456 fusionné par le lead dev (lead-dev)
+- PR #385, 2e revue sur a38bdb52 : les deux preuves demandées sont là (`tests-cpu.log` : 123 tests sur 68036a49 ; `banc-vitrines.log` : 0 image pour les voitures retirées, 17 sinon). Le diff du code est identique à la 1re revue.
+- Construction et 123 tests CPU refaits par le lead dev sur a38bdb52. Captures rouvertes (Golf jour et nuit, phares, Corsa, Giulia, Compass, T-Cross).
+- « ✅ Approuvé » en commentaire (GitHub refuse l'approbation : même compte), puis fusion en squash : **66bf9698**. Statut 🟣 ; `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Au PO : tâche de finition à créer (pli de la membrane de la Giulia, plaque brillante de la Compass), non bloquante. WFS-457 et WFS-483 ne sont plus bloqués par WFS-456.
+
+### 2026-11-13 15:16:56 — WFS-456 : fin, session terminée (Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz))
+- PR #385 fusionnée en squash par le lead dev à la 2e revue (66bf9698) ; statut 🟣 ; ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : il passe ✅ par le robot des statuts après les bancs du matin.
+- Pour le PO : tâche de finition proposée (non bloquante) : pli au centre de la tôle recousue de la Giulia, plaque un peu plus brillante sur le hayon de la Compass (visibles au zoom). WFS-457 et WFS-483 ne sont plus bloqués par WFS-456.
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 15:18:28 — Épic E22 « Score » créée : WFS-535 à 538 (po-scrum-master)
+- Demande de l'utilisateur : « crée l'épic E22 score avec ta proposition ». Score par course (place, temps, conduite propre, 2 défis par mode) → 5 à 40 ★ (au lieu de 10 ★ fixes), détail en fin de course FR / EN, banc d'équilibrage gardé. **WFS-535** ⏳ Prêt (`@dev`) ; 536 et 537 après 535 ; 538 après 535 et 482. Règles : `regles-de-gestion/E22-score.md`.
+
+### 2026-11-13 15:43:55 — WFS-489 attribué à Claude, agent dev3d (01Us6uCxMq) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (jamais de ticket avant). **WFS-489** (E18, P1) : 1er ticket prêt du bandeau 🏁 (9e place ; 517 à 488 pris ou fusionnés), WFS-487, 488, 498, 504 et 534 fusionnés.
+- Zone : `src/ui/garage_couleur.*` et `src/ui/garage_achat.*` (après le découpage WFS-534) ; `garage.cpp` / `garage_commun.*` : accroches ≤ 10 lignes annoncées au journal ; textes par `ui::tr` (FR / EN). Règles : `regles-de-gestion/WFS-489.md` + `E18-personnalisation.md`.
+- Attention : retirer le don provisoire de couleur de WFS-487 ; WFS-499 (même panneau `garage_achat.*`) attend sa fusion ; WFS-507 (textes du garage) avance en parallèle : synchroniser avec `main` avant la PR. Hors E15 : pas d'avis agent 3D obligatoire.
+
+### 2026-11-13 15:44:22 — WFS-507 attribué à Claude, agent dev3d (01Us6uCw3C) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCw3CcwYdVgdJvnqpWC), sans ticket depuis la règle « un seul sujet par session ». WFS-489 (1er du bandeau 🏁) venait d'être donné à la session 01Us6uCxMq : 1er ticket prêt suivant, **WFS-507** (E20, P1, prêt en parallèle de WFS-489).
+- Zone : `assets/textes/**` (FR / EN), appels `ui::tr` courts dans `src/ui/garage_*.cpp`, `src/ui/planche_voitures.*`, `src/ui/ecrans/paquets.*`, `paquets_etape.cpp` ; banc `textes` étendu au garage et aux paquets. Format de `cartes.json` inchangé sans accord de l'agent expert ci (RG-03).
+- Règles : `regles-de-gestion/WFS-507.md` + `regles-de-gestion/E20-langue-anglaise.md`. Attention : WFS-489 (session 01Us6uCxMq) touche en même temps `garage_couleur.*` et `garage_achat.*` : ne pas y réécrire de code, synchroniser avec `main` après sa fusion en gardant les deux modifications ; textes de prix et d'achat hors périmètre (WFS-499) ; taille des boutons inchangée (ordre permanent).
+- Branche attendue : `feature/waforspeed-507`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:44:55 — WFS-500 attribué à Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j) (po-scrum-master)
+- Nouvelle session `@dev` (aucun ticket avant). WFS-489 et WFS-507 venaient d'être pris par d'autres sessions ; 1er ticket prêt suivant de l'ordre 🏁 / 🏆 (489, 507, 500, 510, puis 535) : **WFS-500** (dépendance WFS-498 fusionnée, #382).
+- Épic E19, zone E3 (`src/game/**` hors `game.*`, `tests/**`) + exception PO : `src/core/configgame.*`, `configgame.json`, `configgame.README.md`, section `cadeau` seulement ; clés ajoutées seulement dans `sauvegarde.*`. Règles : `regles-de-gestion/WFS-500.md` et `regles-de-gestion/E19-cadeau-du-jour.md`.
+- Plan court : module de tirage sans écran (chances en données, garantie au 30e, replis), jour à minuit et heure qui recule protégée, sauvegarde, test CPU 100 000 tirages ; captures du banc (rien ne change à l'écran : le prouver), PR, appel du lead dev, arrêt après la fusion.
+- Branche `feature/waforspeed-500`.
+
+
+### 2026-11-13 15:45:14 — Début WFS-510 : attribué à Claude, agent dev3d (01Us6uCv7i) (session_01Us6uCv7iTDc5Ni5pnSqHnh) (po-scrum-master)
+- Nouvelle session `@dev` (aucun ticket avant). WFS-500 venait d'être pris par une autre session ; ticket prêt suivant de l'ordre 🏁 : **WFS-510** (E21 « Market », P1).
+- Zone : E3 (`src/game/**` hors `game.*`, `tests/**`) + exception PO : `src/core/configgame.*`, `configgame.json`, `configgame.README.md`, section `market` seulement ; clés ajoutées seulement dans `sauvegarde.*`.
+- Règles : `regles-de-gestion/WFS-510.md` et `regles-de-gestion/E21-market.md`. Dépend de WFS-498 (🟣 fusionné). Pas E15, pas 🟡 (logique sans écran) : 🟣 puis ✅ par les bancs du matin.
+- Branche `feature/waforspeed-510`.
+
+### 2026-11-13 15:45:36 — WFS-535 attribué à Claude, agent dev3d (01Us6uCtPt) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (aucun ticket avant). **WFS-535** (E22 « Score », P1) : 1er ticket de E22, placé juste après les prêts du bandeau 🏁 (489, 507, 500, 510 pris entre 15:43 et 15:46) ; dépendance WFS-498 fusionnée.
+- Zone : `src/game/**` hors `game.*` (nouveau module `score_etoiles.*`), `tests/**` ; logique seule (WFS-536 crédit + banc et WFS-537 écran de fin après). Règles : `regles-de-gestion/WFS-535.md` et `regles-de-gestion/E22-score.md`.
+
+### 2026-11-13 15:46:08 — WFS-378 attribué à Claude, agent dev3d (01Us6uCwca) (session_01Us6uCwca4JJHJFfVwyADFv) (po-scrum-master)
+- Nouvelle session `@dev` (1re demande, aucun ticket avant). WFS-489, 507, 500, 510 et 535 (E17 à E22) venaient d'être donnés à d'autres sessions (plusieurs nouvelles sessions en même temps) : je donne le ticket prêt P1 suivant (plus petit numéro), **WFS-378** « Formes géométriques interdites : inventaire de toutes les zones et découpage en tickets » (P1).
+- Zone : E12, inventaire sans code du moteur : `regles-de-gestion/WFS-378-inventaire.md` (tableau par zone : objet, fichier et ligne, forme, nombre, capture du banc PC), hors décor des cartes (déjà dans E15 : WFS-369 à 373, 376) ; skills `artiste-3d` et `expert-realisme-3d`. Les tickets de remplacement sont proposés au PO, qui les crée.
+- Règles : `regles-de-gestion/WFS-378.md` + `regles-de-gestion/DA-realisme.md` ; branche `feature/waforspeed-378` ; captures, PR, appel du `lead-dev`, arrêt de la session après la fusion.
+
+
+### 2026-11-13 15:46:15 — WFS-378 attribué à Claude, agent dev3d (01Us6uCt5A) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCt5AqkHmCmnMByoftq), sans ticket depuis la règle « un seul sujet par session ». WFS-500, 510 et 535 venaient d'être donnés à d'autres sessions : 1er ticket P1 prêt suivant permis à un développeur artiste 3D, **WFS-378** (E12, agent `dev-artiste-3d`).
+- Périmètre : inventaire des formes nues **hors décor** (garage, habitacle et vue Cockpit, véhicules, effets, checkpoints ; le décor des cartes est dans E15), tableau `regles-de-gestion/WFS-378-inventaire.md`, puis découpage proposé au PO. Pas de code du moteur.
+- Règles : `regles-de-gestion/WFS-378.md` + `regles-de-gestion/DA-realisme.md`. Branche attendue : `feature/waforspeed-378`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:46:08 — WFS-483 prêt et attribué à Claude, agent dev3d (01Us6uCvxs) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCvxsAZZA6E2U7ZipqG), sans ticket depuis la règle « un seul sujet par session ». Les tickets prêts du bandeau (489, 507, 500, 510, 535) venaient d'être donnés à d'autres sessions.
+- WFS-483 passe ⏳ Prêt : ses dépendances WFS-480 (#375) et WFS-456 (#385, fichiers `.wfm`, avis du lead dev) sont fusionnées. 14e du bandeau 🏁, P1 (E17), profil développeur artiste 3D.
+- Zone : E10 (`shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs`, `tests/fidelite_voitures*`) ; texte de la plaque lu depuis le profil de WFS-480 (lecture seulement). File « modèles `.wfm` » de E10 : un seul ticket à la fois (483 → 484 → 493).
+- Règles : `regles-de-gestion/WFS-483.md` + `regles-de-gestion/E17-identite-joueur.md` ; plaque = vrai modèle 3D (pas de forme nue), avis de `expert-realisme-3d` conseillé. Hors E15 : pas d'avis agent 3D obligatoire en commentaire ; pas 🟡.
+- Branche attendue : `feature/waforspeed-483`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:46:44 — Correction : WFS-378 n'est pas à 01Us6uCt5A ; WFS-397 attribué à Claude, agent dev3d (01Us6uCt5A) (po-scrum-master)
+- **Ma faute** : l'entrée précédente (commit 81f3ef38) annonce WFS-378 pour la session 01Us6uCt5A, mais WFS-378 venait d'être donné à 01Us6uCwca (d33588ad) ; `TACHES.md` n'a pas été changé. WFS-378 reste à **01Us6uCwca**.
+- Attribution réelle : **WFS-397** (E10, P1, `dev-artiste-3d`, fichiers neufs `remplacants/` seulement, comme WFS-396), 1er P1 prêt suivant permis à un développeur artiste 3D. Pas de chevauchement avec WFS-490 (shader des voitures, autres fichiers).
+- Règles : `regles-de-gestion/WFS-397.md` (+ rapport de WFS-396, `DA-realisme.md`). Branche attendue : `feature/waforspeed-397`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:46:50 — WFS-410 attribué à Claude, agent dev3d (01Us6uCveE) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCveEVtGAqp5Bg6kWqe), aucun ticket avant. Pendant la même minute, d'autres instances du PO ont donné 489, 507, 500, 510, 535 et 378 à d'autres sessions (mes 4 envois refusés, rien d'écrit en double). Restent en P1 ⏳ Prêt pour un `@dev3d` : 397 et 410 ; **WFS-410** choisi (P1, E15, dev-artiste-3d) pour ne pas entrer encore en conflit sur 397, laissé à la prochaine session.
+- Zone : E15 « ouvertures communes » (`src/world/archi_ouvertures.*` réutilisé, `plage.cpp` lieux, bâtiments hors kit de la Ville, église de la Campagne). Règles : `regles-de-gestion/WFS-410.md` + `regles-de-gestion/E15-decors.md`. Branche `feature/waforspeed-410`.
+- Points d'attention : épic E15 → **« Avis agent 3D : VALIDÉ »** en commentaire de PR avant la fusion ; formes nues interdites ; 700 Mo max par décor ; skill `expert-cartes` (décor cuit) ; tâche compagne **WFS-471** (`@cicd`) passe ⏳ Prêt à la fusion, et WFS-410 reste 🟡 jusqu'à la publication des paquets et l'essai de l'utilisateur. Église de la Campagne : comprise dans 410 (non bloqué par l'ordre du 2026-11-13 08:31).
+- Signalé : WFS-378 a reçu deux attributions à la suite (d33588ad à 01Us6uCwca, puis 81f3ef38 à 01Us6uCt5A) : à trancher par le PO (la première garde le ticket).
+
+### 2026-11-13 15:47:36 — WFS-401 attribué à Claude, agent dev3d (01Us6uCxKQ) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (aucun ticket avant). Plus aucun ticket P1 ⏳ Prêt permis à `@dev` : bandeau 🏁 épuisé (500, 507, 510, 535 pris ; le reste attend ses dépendances), WFS-378, 397, 410 et 483 pris à 15:46-15:53 par d'autres sessions ; 454 / 527 / 287 (`@cicd`), 394 (`@conduite`), 411 et 344 (`@cartes`) réservés à un skill spécial.
+- **WFS-401** (E15, P2 Haute) : 1er P2 prêt permis (366 et 444 attendent : garde-fou « un seul ticket sur les modèles `.wfm` E10 », WFS-483 en cours). Branche `feature/waforspeed-401` jamais poussée par l'ancienne session (01UY1Vv1da, arrêtée par l'utilisateur) : rien à reprendre, ticket libre.
+- Zone et critères : `regles-de-gestion/WFS-401.md`, `E15-decors.md` (eau commune). **E15 : avis « VALIDÉ » de l'agent 3D en commentaire de PR sur le dernier commit avant la fusion** ; aucune forme nue. Pas de travail sur la Campagne ni le Grand Prix (pause de l'utilisateur, 2026-11-13 08:31). Si le contenu cuit d'un paquet change : tâche compagne `@cicd` de publication créée par le PO.
+
+### 2026-11-13 15:56:13 — WFS-510 : code écrit, accroches annoncées (Claude, agent dev3d (01Us6uCv7i))
+- Branche `feature/waforspeed-510` poussée (début 15:43, code 15:55). Nouveau module `src/game/market.*` (catalogue, livre des achats, « sans pub », ×2 5 par jour, interface `Boutique` et `BoutiqueSimulee`), `market_etat.h` (données de la sauvegarde), `market_banc.cpp` (banc `WFS_BANC=market`, sans rendu, 11 s), `tests/test_market.cpp` (37 cas, tous OK en local).
+- Section `market` de `configgame.*` (exception du PO) : 18 clés ajoutées, rien d'autre dans `configgame.json` / README. Sauvegarde : clés nouvelles seulement (`achats-credites`, `pack-debutant`, `bons-skin`, `sans-pub`, `x2`), écrites seulement quand elles ne valent pas leur défaut : fichiers d'aujourd'hui identiques.
+- **Accroches hors zone (≤ 10 lignes)** : `src/platform/desktop_main.cpp` +2 lignes (include + banc `market`, comme `equilibrage` de WFS-498) ; `CMakeLists.txt` +1 ligne (`test_market`).
+- Choix : les étoiles de base des 3 médailles sont dans `market.packs` (RG-01) ; les `boutique.medailles` de WFS-498 restent la base de l'équivalent du garage (mêmes valeurs aujourd'hui). Pack débutant caché tant qu'aucune skin n'est en vente (`SKINS_EN_VENTE = false`, une ligne à changer avec WFS-494). Le crédit d'un achat écrit la sauvegarde **et attend la fin de l'écriture** avant la confirmation auprès de Google (RC-E21-06).
+
+### 2026-11-13 16:11:40 — WFS-535 : score d'une course et conversion en étoiles, prêt pour la PR (Claude, agent dev3d (01Us6uCtPt))
+- Fait : `src/game/score_course.{h,cpp}` (fonction pure `score::calculer` : lignes {clé, points}, total, étoiles, nouveau record), section `score_etoiles` dans `src/core/configgame.*` (35 clés, bornes, min > max ramené), ajoutée à la main dans `configgame.json` et `configgame.README.md` (les réglages de l'utilisateur du fichier ne sont pas écrasés), test `tests/test_score_course.cpp` (RG-07). Rien ne change dans le jeu (branchement WFS-536, écran WFS-537).
+- **points_par_etoile = 85** (RG-05). Calcul du joueur moyen, barème de départ : course à 5 = 3e (500) + 1 ou 2 chocs (100) + 2 dépassements (40) = 640 ; duel = moitié gagné / perdu (700) + 100 + jamais derrière une fois sur deux (75) + écart une fois sur quatre (25) = 900 ; Poursuite = surtout perdue, 300 + 0,5 × ≈ 300 restants + 100 de conduite, quelques victoires : ≈ 650 ; course solo = 600 + 0,1 × ≈ 2 000 points de distance (200) + 100 + 50 de défis = 950 ; + ≈ 75 en moyenne pour le temps (1re course, proche du record). Moyenne ≈ (640 + 900 + 650 + 950) / 4 + 75 ≈ 860 points → 860 / 85 ≈ 10,1 ★. Le banc d'équilibrage de WFS-536 le vérifie.
+- ⚠️ Risque signalé au PO : avec ce barème, la meilleure course possible fait ≈ 1 800 points (1er + record + 0 choc + défis) = 21 ★ ; la borne 40 ★ n'est atteinte qu'en baissant `points_par_etoile` (ce qui donne plus de 10 ★ au joueur moyen). Les deux objectifs (≈ 10 ★ en moyenne, jusqu'à 40 ★ pour un bon joueur) ne tiennent pas ensemble avec les valeurs de départ des RG-01 à 04 ; à trancher au banc de WFS-536 (barème des défis plus large, ou conversion non linéaire).
+- Choix d'interprétation (notés dans le code) : plafond 400 de la course solo = sur la part tirée de la distance ; record égalé = « proche » (+150), pas battu ; 1re course = pas de record existant (record ≤ 0) ; « arrivée avec ≥ 50 % » et « écart > 3 s » seulement sur une victoire ; compteur inconnu = 0 point.
+- Vérification : test_score_course (47 cas) vert ; construction complète locale (870 cibles) et `tools/qa/tests_cpu.sh build` : 124 tests réussis, après synchronisation avec `main`. PR #389 ouverte, lead dev appelé.
+
+### 2026-11-13 16:17:24 — WFS-510 : PR #390 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCv7i))
+- PR #390 (`feature/waforspeed-510`, 07fc9c77), branche synchronisée avec `main`. **124 tests CPU réussis** (dont `test_market`, 37 cas) ; banc `market` vert (catalogue, même jeton deux fois, en attente, annulé, interrompu puis relance, pack débutant, sans pub, restaurer, 7 ×2 le même jour → 5, minuit, heure reculée) ; même banc avec l'argent à 350 ★ dans `configgame.json` → 385 ★ sans recompiler.
+- Captures `captures_pr.sh` (garage, sauvegarde ×2) : 16 paires avant / après identiques octet pour octet (rien ne change à l'écran) + 4 textes du banc dans `qa/pr/WFS-510/`.
+- Statut 🔀 En PR (#390) ; ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
