@@ -182,7 +182,8 @@ public:
             matNeon_[i] = r.makeMaterial(me, nullptr, nullptr, nullptr); matNeon_[i].flags |= MAT_DOUBLE;
         }
         for (int i = 0; i < CAR_COUNT; i++) peinture_[i] = peintureParId(ficheDe(CARS[i].id).paint);
-        for (int i = 0; i < CAR_COUNT; i++) if (const PeintureDef* p = sauvegarde().peintureChoisie(CARS[i].id)) peinture_[i] = peintureParId(p->id);   // WFS-24
+        for (int i = 0; i < CAR_COUNT; i++)   // WFS-24 ; WFS-487 : une couleur hors des 16 pastilles du garage actuel garde la pastille d'origine
+            if (const PeintureDef* p = sauvegarde().peintureChoisie(CARS[i].id); p && p - PEINTURES < NB_PEINTURES) peinture_[i] = peintureParId(p->id);
     }
 
     void shutdown(Renderer& r) override {

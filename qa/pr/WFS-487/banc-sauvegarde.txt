@@ -1,0 +1,28 @@
+# WFS-487 — texte du banc WFS_BANC=sauvegarde (branche, 2 lancements)
+
+## 1er lancement
+[info] boutique : couleur rose acheté pour m4 : 100 ★ (solde 150 ★)
+[info] boutique : achat refusé (finition chrome, m4) : 800 ★ demandées, 150 ★ au solde
+[info] BOUTIQUE essai (solde fictif 250 ★) : couleur rose sur m4 (100 ★) : acheté ; finition chromé sur m4 (800 ★) : étoiles insuffisantes (rien de débité) ; solde 150 ★
+[info] SAUVEGARDE écrite : car=m4 paint=rouge best=1450 (<scratchpad>/apres/banc/sauvegarde-banc.txt)
+
+## 2e lancement (catalogue lu, possession relue)
+[info] SAUVEGARDE relue : car=m4 paint=rouge best=1450
+[info] CATALOGUE couleur : 28 (8 gratuit(s)) : blanc gratuit, noir gratuit, gris gratuit, rouge gratuit, bleu gratuit, orange gratuit, jaune gratuit, vert gratuit, nacre 50★, bleunuit 50★, anglais 50★, bordeaux 50★, sable 50★, violet 50★, turquoise 50★, taxi 50★, bleuelectrique 50★, vertacide 50★, orangefluo 50★, rose 50★, jaunecitron 50★, violetneon 50★, rougevif 50★, cyan 50★, vertmenthe 50★, magenta 50★, corail 50★, bleuciel 50★
+[info] CATALOGUE couleur secondaire : 1 (0 gratuit(s)) : secondaire 50★
+[info] CATALOGUE finition : 8 (1 gratuit(s)) : brillant gratuit, metallise 100★, nacree 150★, mat 150★, satine 150★, candy 250★, chrome 400★, cameleon 400★
+[info] CATALOGUE skin : 4 (0 gratuit(s)) : rallye 300★, drifttokyo 600★, neonnuit cadeau, camouflage 450★
+[info] CATALOGUE autocollants : 5 (1 gratuit(s)) : essentiels gratuit, numeros 150★, bandes 200★, flammes 250★, etoiles 300★
+[info] CATALOGUE coefficients des classes : gratuites ×1, 1 ×1, 2 ×1.5, 3 ×2, 4 ×3, 5 ×4
+[info] POSSÉDÉ m4 : rose
+[info] POSSÉDÉ autocollants (toutes les voitures) : essentiels
+
+## Sauvegarde d'avant le ticket (paint-m4=turquoise, sans perso) : migration
+[info] boutique : sauvegarde d'avant le catalogue : 1 couleur(s) déjà choisie(s) gardée(s) gratuitement
+[info] SAUVEGARDE relue : car=m4 paint=turquoise best=0
+[info] POSSÉDÉ m4 : turquoise
+[info] POSSÉDÉ autocollants (toutes les voitures) : essentiels
+
+## Sauvegarde au nouveau format (perso=1), turquoise jamais achetée : couleur d'origine en course
+[info] SAUVEGARDE relue : car=m4 paint=noir best=0
+[info] POSSÉDÉ autocollants (toutes les voitures) : essentiels
