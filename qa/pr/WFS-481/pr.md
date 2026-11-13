@@ -33,21 +33,21 @@ Agent : Claude, agent dev3d (01Us6uCvhS)
     - `CreationProfil` (ordre 459) dessine par-dessus le menu, les bandeaux et le panneau des modes, sous les Réglages.
 - **Comment c'est vérifié** :
   - `test_creation_profil` (nouveau) : « Petit » de l'émulateur à la même place sur les deux claviers, claviers AZERTY/QWERTY (41 touches, aucune ne chevauche une autre, 38 caractères), touches de la plaque, majuscule, plaque qui suit le pseudo puis plus, limites 16/8, chaque erreur RG-04, scénario RG-05, joueur déjà installé, clés FR/EN.
-  - `bash tools/qa/tests_cpu.sh build` : **121 tests réussis** (voir « Tests CPU »).
+  - `bash tools/qa/tests_cpu.sh build` : **130 tests réussis** après synchronisation avec main (voir « Tests CPU »).
   - Banc `WFS_BANC=creation` en **FR et EN**, 2400x1080 : **0 écart**. Parcours complet : installation neuve → CGU acceptées → chargement → création → menu → course → fin → menu → 2e lancement (plus d'écran) → joueur déjà installé (pseudo proposé).
   - **RG-05** : 6 lettres + « C'est parti » = **7 appuis, 8,4 s** d'actions (1,2 s par appui), sous la limite de 20 s.
   - En anglais, le garde-fou des textes de WFS-504 (RC-E20-06) trouve **aucune phrase française et aucun texte qui dépasse** sur l'écran.
   - Banc `cgu` relancé sur la branche : voir le résultat dans les commentaires de la PR.
 - **Limites et risques** :
   - Aperçu de la plaque en gabarit 2D : il prendra le dessin de la plaque 3D quand WFS-483 sera fusionné.
-  - Le menu sous l'écran reste en français : c'est WFS-505.
+  - Branche synchronisée avec main après la fusion de WFS-505 : le menu qui suit l'écran est maintenant en anglais sur un téléphone en anglais (capture `creation-en-menu`).
   - Les textes sont ajoutés dans `assets/textes/*` (zone de WFS-504), comme le demande RC-E20-02 (« les deux langues dans la même PR »).
   - Pas de captures « avant » : c'est un nouvel écran et le banc `creation` n'existe pas sur `main` (`SANS_AVANT=1`). Sur `main`, le 1er lancement va directement des CGU au menu.
   - Pas testé sur un vrai téléphone : à valider par l'utilisateur sur l'APK de `main`.
 
 ## Tests CPU
 
-Commit testé : `994bf7ad` + synchronisation avec main `c5ea7303` (les commits suivants ne touchent que `tools/qa/emulateur.sh` et les captures). Journal complet : [`qa/pr/WFS-481/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-481/qa/pr/WFS-481/tests-cpu.log).
+Commit testé : `e24205e3` (branche synchronisée avec main, dernier commit de code). Journal complet : [`qa/pr/WFS-481/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-481/qa/pr/WFS-481/tests-cpu.log).
 
 ```
 [OK] test_version_chargement (0 s)
@@ -55,10 +55,10 @@ Commit testé : `994bf7ad` + synchronisation avec main `c5ea7303` (les commits s
 [OK] test_ville_sol (3 s)
 [OK] test_virages_fleches (1 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 121 test(s) réussi(s) en 473 s
+tests CPU : 130 test(s) réussi(s) en 463 s
 ```
 
-## Captures pour le lead dev (12 après, banc `creation` en 2400x1080, `WFS_LANGUE=fr` puis `en`, refaites sur le dernier code)
+## Captures pour le lead dev (12 après, banc `creation` en 2400x1080, `WFS_LANGUE=fr` puis `en`, refaites sur `e24205e3`)
 
 Dossier : [`qa/pr/WFS-481`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-481/qa/pr/WFS-481) — produit par `tools/qa/captures_pr.sh` (`SANS_AVANT=1` : nouvel écran).
 
