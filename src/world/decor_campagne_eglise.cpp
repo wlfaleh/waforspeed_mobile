@@ -66,9 +66,9 @@ Eglise eglise(const CouleursEglise& c, bool loin) {
     using A = archi::lieux::Arc;
     // gouttereau du midi (vers la route, +x) : portail au milieu, deux baies ; x de la façade de z = +L vers z = −L
     mur(m, e.vitraux, c, {W, 0, L}, {1, 0, 0}, 2 * L, F, H,
-        {A{L, 0.f, EGLISE_PORTAIL_L, EGLISE_PORTAIL_H, true}, A{L - 5.5f, 4.2f, 0.8f, 2.2f, false}, A{L + 5.5f, 4.2f, 0.8f, 2.2f, false}}, d, loin, c.vitrail[0]);
+        {A{L, 0.f, EGLISE_PORTAIL_L, EGLISE_PORTAIL_H, true}, A{L - 6.5f, 4.2f, 0.8f, 2.2f, false}, A{L + 6.5f, 4.2f, 0.8f, 2.2f, false}}, d, loin, c.vitrail[0]);
     // gouttereau nord : deux baies
-    mur(m, e.vitraux, c, {-W, 0, -L}, {-1, 0, 0}, 2 * L, F, H, {A{L - 5.5f, 4.2f, 0.8f, 2.2f, false}, A{L + 5.5f, 4.2f, 0.8f, 2.2f, false}}, d, loin, c.vitrail[2]);
+    mur(m, e.vitraux, c, {-W, 0, -L}, {-1, 0, 0}, 2 * L, F, H, {A{L - 7.f, 4.2f, 0.8f, 2.2f, false}, A{L, 4.2f, 0.8f, 2.2f, false}, A{L + 7.f, 4.2f, 0.8f, 2.2f, false}}, d, loin, c.vitrail[2]);
     // façade ouest (z = −L) : grande baie axiale ; chevet (z = +L) : mur plein derrière l'abside
     mur(m, e.vitraux, c, {W, 0, -L}, {0, 0, -1}, 2 * W, F, H, {A{W, 3.0f, 0.9f, 2.4f, false}}, d, loin, c.vitrail[1]);
     mur(m, e.vitraux, c, {-W, 0, L}, {0, 0, 1}, 2 * W, F, H, {}, d, loin, c.vitrail[1]);
@@ -150,17 +150,18 @@ Eglise eglise(const CouleursEglise& c, bool loin) {
             }
         }
     }
-    // contreforts à glacis : deux par gouttereau, entre le portail et les baies
-    for (const float s : {-1.f, 1.f}) for (const float z : {-2.9f, 2.9f}) {
+    // contreforts à glacis : trois par gouttereau, entre le portail et les baies (et vers les bouts de la nef)
+    for (const float s : {-1.f, 1.f}) for (const float z : {-3.4f, 3.4f, s > 0 ? -9.6f : 9.6f}) {
         const float x0 = s * W, x1 = s * (W + 0.7f), yt = 5.0f;
         poutre(m, {(x0 + x1) / 2, F, z}, {(x0 + x1) / 2, yt, z}, {s, 0, 0}, 0.8f, 0.7f, loin ? 0 : 0.02f, c.pierre2);
         for (const float zz : {z - 0.4f, z + 0.4f}) poly(m, {{x0, yt, zz}, {x1, yt, zz}, {x0, yt + 1.0f, zz}}, c.pierre2, {0, 0, zz - z});
         poly(m, {{x1, yt, z - 0.4f}, {x1, yt, z + 0.4f}, {x0, yt + 1.0f, z + 0.4f}, {x0, yt + 1.0f, z - 0.4f}}, c.pierre2, normalize(vec3{s, 0.7f, 0}));
     }
-    // emmarchement du portail : deux marches de pierre de 16 cm (giron 0,30 m) sous le seuil, massif jusqu'aux fondations (terrain en pente)
-    for (int k = 0; k < 2; k++) {
-        const float g = 0.30f * (2 - k), haut = -0.16f * (1 - k), bas = k ? -0.16f : F;
-        poutre(m, {W + g / 2, (haut + bas) / 2, -1.7f + 0.15f * k}, {W + g / 2, (haut + bas) / 2, 1.7f - 0.15f * k}, Y, g, haut - bas, loin ? 0 : 0.01f, c.pierre2);
+    // perron du portail (avis de l'agent 3D, R4) : 6 marches de pierre de 16 cm (giron 0,30 m), arêtes chanfreinées, qui descendent
+    // du seuil vers le sol (terrain en pente) ; chaque marche repose sur la suivante, la dernière jusqu'aux fondations
+    for (int k = 0; k < 6; k++) {
+        const float g = 0.30f * (k + 1), haut = -0.16f * (float)k, bas = k == 5 ? F : haut - 0.16f, lg = 1.7f + 0.12f * k;
+        poutre(m, {W + g / 2, (haut + bas) / 2, -lg}, {W + g / 2, (haut + bas) / 2, lg}, Y, g, haut - bas, loin ? 0 : 0.015f, c.pierre2);
     }
     // soubassement : plinthe de 0,5 m en saillie de 5 cm, chanfreinée (sauf devant le portail)
     if (!loin) for (const float s : {-1.f, 1.f}) {

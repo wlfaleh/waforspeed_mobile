@@ -137,7 +137,7 @@ public:
         if (active_) { lieux::poser("campagne", lieux::FERME, fermesSon_); lieux::poser("campagne", lieux::FONTAINE, fontaineSon_); }   // WFS-261
         if (active_ && g.track) {   // WFS-410 (RG-04) : vitraux de chaque église, posés au chargement (aucune création en course) ; verres sombres
             // de jour (albédo ≈ 0,02-0,04), la nuit à peine allumés de la couleur du verre par la lumière de la nef (émission × albédo)
-            Material mv; mv.rough = 0.08f; mv.flags = MAT_DOUBLE | MAT_EMTEX; mv.emissive = vec3{1, 1, 1} * (night_ ? 2.5f : 0.f);
+            Material mv; mv.rough = 0.35f; mv.flags = MAT_DOUBLE | MAT_EMTEX; mv.emissive = vec3{1, 1, 1} * (night_ ? 1.2f : 0.f);   // avis de l'agent 3D : verre ancien martelé (R2), nuit moins saturée (R3)
             vitrailMat_ = r.makeMaterial(mv, &palTex_, nullptr, nullptr);
             for (const EgliseVue& e : eglises_) {
                 const Pose p = poseAt(*g.track, e.seg);
@@ -236,7 +236,7 @@ protected:
             if (it.t == T_CHURCH) eglises_.push_back({n, it.side, it.lat});   // WFS-410 : vitraux de l'église (dessinés à part)
             if (it.t == T_VILLA || it.t == T_COMMERCE || it.t == T_CHURCH || it.t == T_FARM)   // WFS-275 (accroche) : façade côté route (écho)
                 parois::declarer("campagne", len(), n, it.side, it.t == T_CHURCH ? it.lat - 5 : it.t == T_FARM ? it.lat - 4 : it.lat,
-                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 18.f : it.t == T_FARM ? 11.f : it.w,
+                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 22.f : it.t == T_FARM ? 11.f : it.w,
                                  it.t == T_CHURCH ? 10.f : it.t == T_FARM ? 8.f : std::max(it.d, 6.f), it.t == T_CHURCH ? parois::ALPHA_PIERRE : parois::ALPHA_DUR);   // WFS-278 : obstacle, matériau
             {   // WFS-372 : premier objet de chaque sorte (banc des gros plans) ; ferme avec hangar, rang de vigne le plus proche
                 const int o = it.t == T_VINES && it.lat < (float)RW + 7 ? campagne::OB_VIGNE : it.t == T_FENCE ? campagne::OB_CLOTURE : it.t == T_BALES && it.k >= 3 ? campagne::OB_BOTTES

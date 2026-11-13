@@ -56,6 +56,15 @@ int main() {
     VERIFIER(b.part[VITRE].triangles() > 0, "aucune vitre");
     VERIFIER(b.part[ENCADREMENT].triangles() >= 5 * 8, "tableaux absents");
     std::printf("façade de lieu 12 × 8 m, 5 baies : %zu triangles au niveau 0\n", lieux::triangles(b));
+    {   // 2 bis. WFS-410 (B1) : vitrines et portes à part (pièce de nuit des commerces), fenêtres d'étage dans le bâtiment ; uv de la pièce de nuit
+        Batiment b2, v2;
+        lieux::construire(f, 0, b2, &v2);
+        VERIFIER(v2.part[VITRE].triangles() > 0 && b2.part[VITRE].triangles() > 0, "vitrines et fenêtres d'étage non séparées");
+        VERIFIER(b2.part[MUR].triangles() == b.part[MUR].triangles(), "le mur doit rester entier dans le bâtiment");
+        bool uv = true;
+        for (const Sommet& s : b2.part[VITRE].v) uv = uv && s.uv.x >= 100.f && s.uv.y >= 100.f;   // largeur × 1000 + allège, graine × 100 + hauteur
+        VERIFIER(uv, "vitre sans les uv de la pièce de nuit");
+    }
     // 3. loin : mur plein, baies peintes
     Batiment loin;
     lieux::construire(f, 2, loin);

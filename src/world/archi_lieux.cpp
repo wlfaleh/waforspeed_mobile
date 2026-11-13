@@ -5,7 +5,8 @@
 //   - portail : 1,8 à 2,4 m de large, 3,5 à 4,5 m de haut, ébrasement 0,45 m (mur de 0,8 à 1,0 m), arc de claveaux de 0,40 m
 //     de profondeur en saillie de 3 cm, clé plus large ; porte à deux vantaux de planches de 14 cm (joints en V de 1 cm),
 //     3 pentures de fer forgé (6 cm × 8 mm) par vantail ;
-//   - baie : 0,6 à 0,9 m × 1,6 à 2,4 m, vitrail sous plomb tenu par des barlotières de fer tous les 0,45 m (2 cm).
+//   - baie : 0,6 à 0,9 m × 1,6 à 2,4 m, vitrail sous plomb en losanges (plombs de 6 mm) tenu par des barlotières de fer tous les
+//     0,45 m (2 cm).
 #include "archi_lieux.h"
 #include "archi_ouvertures.h"
 #include <algorithm>
@@ -64,7 +65,7 @@ float hautArc(float cx, float cy, float r, float x) { const float u = std::clamp
 
 size_t triangles(const Batiment& b) { size_t n = 0; for (const Maillage& m : b.part) n += m.triangles(); return n; }
 
-void construire(const Facade& f, int lod, Batiment& out) {
+void construire(const Facade& f, int lod, Batiment& out, Batiment* vitrines) {
     Maillage& mur = out.part[MUR];
     if (lod >= 2) {   // loin : mur plein, baies peintes 1 cm devant (pas de trou : rien ne se voit au travers)
         rect(mur, 0, f.largeur, f.y0, f.y1, 0);
@@ -98,7 +99,8 @@ void construire(const Facade& f, int lod, Batiment& out) {
             if (ecart >= 0) libre = std::min(libre, ecart / 2);
         }
         ouvertures::baieComplete(f.style, f.graine ^ (uint32_t)(o.x * 100.f) * 2654435761u, o.type, o.x, o.y, o.l, o.h, o.plancher,
-                                 std::clamp(libre, 0.f, f.murLibre), lod, out, Baies::Reelles);
+                                 std::clamp(libre, 0.f, f.murLibre), lod,
+                                 vitrines && (f.commerce || o.type == Ouverture::Vitrine || o.type == Ouverture::Porte) ? *vitrines : out, Baies::Reelles);
     }
 }
 
@@ -179,6 +181,25 @@ void murArcs(float largeur, float y0, float y1, const std::vector<Arc>& arcs, fl
                 pave(fer, b.x - ux, b.x + ux, y - 0.01f, y + 0.01f, -d, -d + 0.012f);
             }
             pave(fer, b.x - 0.01f, b.x + 0.01f, b.y, b.y + b.h, -d, -d + 0.012f);   // montant
+            if (lod == 0) {   // WFS-410 (avis de l'agent 3D, R2) : réseau de plombs de 6 mm en losanges (losange de 16 × 24 cm), sur la vitre
+                auto dedans = [&](float x, float y) { return x > x0 && x < x1 && y > b.y && (y <= yn || (x - b.x) * (x - b.x) + (y - yn) * (y - yn) < r * r); };
+                const float pente = 1.5f, ecart = 0.16f, e = 0.003f, zp = -d + 0.004f;
+                for (const float sens : {-1.f, 1.f})
+                    for (float c0 = x0 - b.h / pente; c0 < x1 + b.h / pente; c0 += ecart) {
+                        // ligne x = c0 + sens · (y − b.y) / pente, gardée là où elle est dans la baie (baie convexe : un seul morceau)
+                        const int N = 48;
+                        int i0 = -1, i1 = -1;
+                        for (int i = 0; i <= N; i++) {
+                            const float y = b.y + b.h * (float)i / N, x = c0 + sens * (y - b.y) / pente;
+                            if (dedans(x, y)) { if (i0 < 0) i0 = i; i1 = i; }
+                        }
+                        if (i0 < 0 || i1 <= i0) continue;
+                        const float ya = b.y + b.h * (float)i0 / N, yb = b.y + b.h * (float)i1 / N;
+                        const vec3 A{c0 + sens * (ya - b.y) / pente, ya, zp}, B{c0 + sens * (yb - b.y) / pente, yb, zp};
+                        const vec3 t = normalize(B - A), q{-t.y * e, t.x * e, 0};
+                        face(fer, A - q, B - q, B + q, A + q, {0, 0, 1});
+                    }
+            }
         } else {
             Maillage& bois = out.part[MENUISERIE];
             const int nb = std::max(6, (int)std::lround(b.l / 0.14f));

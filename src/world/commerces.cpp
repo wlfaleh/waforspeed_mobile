@@ -22,6 +22,7 @@
 #include "enseignes.h"
 #include "mobilier_ville.h"   // WFS-369 : tables, chaises, parasols et jardinières modélisés
 #include "ville_quartiers.h"
+#include "../render/eclairage_unites.h"   // WFS-410 : lampe de la pièce de nuit des vitrines
 #include "archi_lieux.h"   // WFS-410 : devanture percée, menuiseries réelles de WFS-402
 #include "zones.h"
 
@@ -151,9 +152,19 @@ public:
         for (unsigned c : MOBILIER) palette_.uv(c);   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
         if (ville_ && !atlas_.construire(r)) return;
         palette_.construire(r);
-        vitreNuit_ = neon(r, 0xffcf8a, 0.65f); bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 (accroche E13, ANO-202) : vitrine 0,65 (avant 1,4 : rouge 1,4 au-dessus du blanc et du bloom, blocs blancs) ; Y exposée ≈ 0,44, comme les pièces adaptées (pieceAdaptee)
-        Material mv; const vec3 c = lin(0x3b4a58); mv.color = {c.x, c.y, c.z, 1}; mv.rough = 0.15f; mv.metal = 0.3f;
-        vitreJour_ = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+        bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
+        {   // WFS-410 (avis de l'agent 3D, B1 et R5) : vitrines de la devanture avec la pièce de nuit du kit (decor.glsl) : la boutique
+            // se voit derrière la vitre, éclairée par le ciel de jour ; la nuit 85 % des vitrines allumées (lampe de 2 850 K à 31,8 cd/m²,
+            // teintes et luminances tirées par vitrine), sous la luminance d'un lampadaire ; plus de plaque bleu nuit unie
+            double t[3]; lumiere::couleurTemperature(2850, t);
+            const float L = archi::lieux::LUMINANCE_PIECE;
+            for (int k = 0; k < 2; k++) {
+                Material mv; mv.color = {0.03f, 0.035f, 0.04f, 1}; mv.rough = 0.05f; mv.flags = MAT_DOUBLE | MAT_INTERIEUR;
+                mv.emissive = {(float)t[0] * L, (float)t[1] * L, (float)t[2] * L};
+                mv.cutoff = k ? archi::lieux::VITRINES_ALLUMEES : 0.f;
+                (k ? vitreNuit_ : vitreJour_) = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+            }
+        }
         actif_ = true;
         g_premiereTerrasse = -1;
         if (ville_) for (const Client& cl : clientsTerrasses(*g.map, len_))   // plus proche du départ, côté droit
@@ -230,7 +241,7 @@ private:
             for (int k = 0; k < archi::NB_PARTS; k++) {
                 if (b.part[k].v.empty()) continue;
                 archi::lieux::versMonde(b.part[k], o, x, z);
-                archi::lieux::ajouter(k == archi::VITRE ? vitre : pal, b.part[k], k == archi::METAL || k == archi::FIN ? fer : bg0);
+                archi::lieux::ajouter(k == archi::VITRE ? vitre : pal, b.part[k], k == archi::METAL || k == archi::FIN ? fer : bg0, k == archi::VITRE);
             }
             boite(pal, lateral(pm, s * (face - ep / 2 - 0.03f), 0.15f + H), pm.r, pm.f, ep + 0.06f, 0.14f, W + 0.12f, bg0);   // corniche
             for (float sd : {-1.f, 1.f}) {   // retours de la devanture jusqu'à la façade

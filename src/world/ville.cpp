@@ -33,6 +33,7 @@
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "../render/eclairage.h"   // WFS-09
+#include "../render/eclairage_unites.h"   // WFS-410 : lampe de la pièce de nuit des vitres
 #include "../render/effets_particules.h"   // WFS-94 : effets::versHdr (fenêtres allumées)
 #include "../../third_party/stb/stb_image.h"
 #include "../core/platform.h"
@@ -56,7 +57,9 @@ namespace {
 
 enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE,
            P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL,
-           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_GLACE, P_COUNT };   // WFS-369 : P_GLACE, verre clair des abribus (sans lumière intérieure)
+           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_GLACE,
+           P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 85 % allumés)
+           P_COUNT };   // WFS-369 : P_GLACE, verre clair des abribus (sans lumière intérieure)
              // WFS-176 : dorures, vitrages, néons du casino (A) et des autres enseignes (B)   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
@@ -1313,6 +1316,14 @@ public:
         Material mv; mv.color = {0.06f, 0.08f, 0.09f, 1}; mv.rough = 0.05f; mv.flags = MAT_DOUBLE;
         if (nuit_) mv.emissive = vec3{1.f, 0.72f, 0.45f} * 0.9f;
         mats_[P_VERRE] = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+        for (int k = 0; k < 2; k++) {   // WFS-410 (avis de l'agent 3D, B1) : vitres des lieux comme celles du kit (pièce de nuit, 2 850 K)
+            double c[3]; lumiere::couleurTemperature(2850, c);
+            const float L = archi::lieux::LUMINANCE_PIECE;
+            Material m; m.color = {0.03f, 0.035f, 0.04f, 1}; m.rough = 0.05f; m.flags = MAT_DOUBLE | MAT_INTERIEUR;
+            m.emissive = {(float)c[0] * L, (float)c[1] * L, (float)c[2] * L};
+            m.cutoff = nuit_ ? (k ? archi::lieux::VITRINES_ALLUMEES : archi::lieux::ETAGES_ALLUMES) : 0.f;
+            mats_[k ? P_VITRE_COMMERCE : P_VITRE_ETAGE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        }
         for (const char* x : {"CASINO", "GARAGE 88", "GALERIE DES ARCADES", "LUNA MODE", "ATELIER 7", "MAISON VERTE"}) atlasLieux_.ajouter(x);
         if (!P.lieux.empty() && atlasLieux_.construire(r)) {
             // néons bornés (pas de halo qui mange l'écran) : or-rose pour le casino, cyan pour les autres (design-street-racing)
@@ -1363,18 +1374,21 @@ public:
     }
 
     // WFS-410 (RG-02, RG-03) : façade d'un lieu percée de ses baies, menuiseries réelles de WFS-402 (préparée au chargement) ;
-    // c : milieu du bas de la façade, z : normale sortante ; mur et tableaux uvMur, encadrements et appuis uvPierre, vitres P_VERRE ;
+    // c : milieu du bas de la façade, z : normale sortante ; mur et tableaux uvMur, encadrements et appuis uvPierre, vitres avec la
+    // pièce de nuit du kit (P_VITRE_ETAGE, P_VITRE_COMMERCE) ;
     // loin (lod) : mur plein, baies peintes 1 cm devant
     static void facadeLieu(Geo out[P_COUNT], const archi::lieux::Facade& f, vec3 c, vec3 z, bool lod, vec2 uvMur, vec2 uvPierre) {
-        archi::Batiment b;
-        archi::lieux::construire(f, lod ? 2 : 0, b);
+        archi::Batiment b, v;   // b : mur et fenêtres d'étage ; v : vitrines et portes (commerces)
+        archi::lieux::construire(f, lod ? 2 : 0, b, &v);
         const vec3 x = archi::lieux::axeFacade(z), o = c - x * (f.largeur / 2);
         const vec2 uv[archi::NB_PARTS] = {uvMur, uvPierre, {0, 0}, uvc(U_MENUIS), uvPierre, uvc(U_METALK), uvc(U_VOLETK), uvc(U_METALK), uvc(U_CHASSIS), uvMur};
-        for (int k = 0; k < archi::NB_PARTS; k++) {
-            if (b.part[k].v.empty()) continue;
-            archi::lieux::versMonde(b.part[k], o, x, z);
-            archi::lieux::ajouter(k == archi::VITRE ? out[P_VERRE] : out[P_UNI], b.part[k], uv[k]);
-        }
+        for (archi::Batiment* B : {&b, &v})
+            for (int k = 0; k < archi::NB_PARTS; k++) {
+                if (B->part[k].v.empty()) continue;
+                archi::lieux::versMonde(B->part[k], o, x, z);
+                if (k == archi::VITRE) archi::lieux::ajouter(out[B == &v ? P_VITRE_COMMERCE : P_VITRE_ETAGE], B->part[k], {0, 0}, true);
+                else archi::lieux::ajouter(out[P_UNI], B->part[k], uv[k]);
+            }
     }
 
     // géométrie fixe d'un lieu, dans le repère de la route au milieu de sa façade (lignes droites : RG-C1)
@@ -1476,7 +1490,7 @@ public:
                 carte::quad(U, c1, c0, c0 + h, c1 + h, cl);
                 carte::quadSol(U, a0 + h, a1 + h, c1 + h, c0 + h, cl);
                 archi::lieux::Facade f;
-                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + 1); f.largeur = 2 * demi; f.y0 = 0; f.y1 = 9.f;
+                f.style = archi::Style::Industriel; f.graine = (uint32_t)(a * 5 + 1); f.largeur = 2 * demi; f.y0 = 0; f.y1 = 9.f; f.commerce = true;
                 for (float x = 1.5f; x < 2 * demi; x += 3.f) {
                     f.baies.push_back({archi::Ouverture::Vitrine, x, 0.18f, 2.7f, 2.8f, 0.18f});
                     f.baies.push_back({archi::Ouverture::Fenetre, x, 3.3f, 2.7f, 5.4f, 3.1f});
@@ -1484,7 +1498,7 @@ public:
                 facadeLieu(out, f, P(b0, 0, 0), X * -1.f, lod, cl, cl);
                 for (float sd : {-1.f, 1.f}) {
                     archi::lieux::Facade c;
-                    c.style = archi::Style::Industriel; c.graine = (uint32_t)(a * 5 + (sd > 0 ? 2 : 3)); c.largeur = 26.f; c.y0 = 0; c.y1 = 9.f;
+                    c.style = archi::Style::Industriel; c.graine = (uint32_t)(a * 5 + (sd > 0 ? 2 : 3)); c.largeur = 26.f; c.y0 = 0; c.y1 = 9.f; c.commerce = true;
                     for (float x = 1.75f; x < 26.f; x += 3.5f) c.baies.push_back({archi::Ouverture::Fenetre, x, 3.3f, 2.7f, 5.4f, 3.1f});
                     facadeLieu(out, c, P(b0 + 13.f, sd * demi, 0), Z * sd, lod, cl, cl);
                 }

@@ -30,12 +30,17 @@ struct Facade {
     uint32_t graine = 0;   // choix des modèles de fenêtre et de porte (RG-05 de WFS-402)
     float largeur = 0, y0 = 0, y1 = 0;
     float murLibre = 100.f; // plafond du mur plein de chaque côté d'une baie (calculé baie par baie ; volets battants seulement s'ils peuvent s'y rabattre)
+    bool commerce = false;   // WFS-410 : toutes les baies sont commerçantes (galerie, centre commercial : éclairées comme des vitrines)
     std::vector<Ouv> baies;
 };
 
 // construit la façade au niveau de détail lod : 0 complet, 1 menuiserie simplifiée, 2 loin (mur plein, baies peintes 1 cm
 // devant). Le mur va dans la pièce MUR, les tableaux dans ENCADREMENT, les vitres dans VITRE, le reste selon WFS-402.
-void construire(const Facade& f, int lod, Batiment& out);
+// vitrines : si donné, les vitrines et les portes (rez-de-chaussée commerçant) y sont construites à part (leur vitre reçoit
+// une autre part la nuit : commerces presque tous éclairés, étages 30 à 50 %) ; le mur reste dans out
+// Les vitres (pièce VITRE) portent les uv de la pièce de nuit du kit (archi_geo.cpp, uvVitre ; decor.glsl, interieurFenetre) :
+// les garder (ajouter(…, garderUv = true)) et les dessiner avec un matériau MAT_INTERIEUR (voir materiauVitre).
+void construire(const Facade& f, int lod, Batiment& out, Batiment* vitrines = nullptr);
 
 // arc en plein cintre : baie dont le haut est un demi-cercle (portail, baie d'église). Le mur [0, largeur] × [y0, y1] est
 // percé d'un trou dont le haut suit l'arc (n facettes) ; tableau en retrait de d (intrados de l'arc compris), vitrail ou
@@ -62,6 +67,13 @@ void ajouter(G& g, const Maillage& m, vec2 uv, bool garderUv = false) {
     }
     for (uint32_t i : m.i) g.i.push_back(k + i);
 }
+
+// WFS-410 (avis de l'agent 3D, B1) : réglages du matériau des vitres de lieu, mêmes que les vitres du kit (archi_carte.cpp) :
+// pièce de nuit derrière la vitre, lampe de 2 850 K, murs à 31,8 cd/m² (E = 200 lx, ρ = 0,5), teintes de 2 700 à 4 000 K et
+// luminances 0,55 à 1,3 tirées par fenêtre (decor.glsl) ; part allumée : ETAGES_ALLUMES des fenêtres d'étage la nuit, VITRINES_ALLUMEES
+// des vitrines de commerce (ouvertes le soir) ; de jour, la pièce est éclairée par le ciel seulement
+inline constexpr float ETAGES_ALLUMES = 0.40f, VITRINES_ALLUMEES = 0.85f;
+inline constexpr float LUMINANCE_PIECE = 31.8f;   // cd/m² (0,5 × 200 lx / π)
 
 // triangles d'un bâtiment (toutes pièces) : preuves du banc et du test
 size_t triangles(const Batiment& b);
