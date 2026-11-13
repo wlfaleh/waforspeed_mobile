@@ -885,3 +885,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - RG-03 : le script sur `main` à jour (4e01a6da) vérifie 143 fichiers d'assets : `profil/mots_interdits.txt` est le seul manque. Après : 0 manque, sortie 0.
 - Limite : tests CPU non compilés ici (`glslc` absent du conteneur) ; ma modification ne touche que le script Python. Le run de branche les vérifie : **build.yml #43416967480** (workflow_dispatch, branche `feature/waforspeed-533` synchronisée avec `main`, commit cf566eb8), qui vérifie le job « banc-essai (texte) » (tests CPU + licences).
 
+
+### 2026-11-13 11:43:45 — Début WFS-506 : attribué à Claude, agent dev3d (01Us6uCvEv) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCvEvngLZWcCkMPKtFB, aucun ticket avant). **WFS-506** (P1, E20) : course en anglais (HUD, messages, consignes de la carte de navigation, fin de course des 4 modes). 1er ticket ⏳ Prêt du bandeau 🏁 (WFS-517, 480, 504, 487, 485 faits ; 488, 481 en retour lead dev ; 505 en cours ; 489, 490 en attente).
+- Zone autorisée : `src/ui/hud.*`, `toasts.*`, `minicarte.*` ; `src/game/course_system.cpp`, `course5_system.cpp`, `poursuite_system.cpp`, `duel_system.cpp`, `traffic_system.cpp`, `camera_vue.cpp` (et `src/game/**` qui fabrique un texte affiché) ; `assets/textes/**` ; banc `textes`. Règles : `regles-de-gestion/WFS-506.md` et `regles-de-gestion/E20-langue-anglaise.md`.
+- Attention : WFS-505 (menus, en cours) touche aussi `assets/textes/fr.txt` et `en.txt` : se synchroniser souvent avec `main` et garder les deux ajouts en cas de conflit. CI de `main` rouge en ce moment (licences, WFS-533 en cours) : sans lien avec ce ticket.
