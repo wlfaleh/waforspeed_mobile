@@ -86,6 +86,7 @@ COUVERTURE = [
     (r"world/feuillage\.png", None, None),        # atlas dessiné par le code du jeu (tools/atlas_feuillage.cjs)
     (r"textures/route/.*", "Poly Haven", "routes-revetements.txt"), (r"textures/essai/.*", None, None),
     (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"textes/.*", None, None),
+    (r"profil/mots_interdits\.txt", None, None),   # WFS-533 : liste écrite pour le jeu (WFS-480, aucune liste extérieure recopiée)
 ]
 # identifiant de la voiture → fichier de licence (dossier du modèle dans le jeu web), quand le nom diffère
 ALIAS = {"golf": "golf-8", "m4": "bmw-m4", "p911": "porsche-911", "gallardo": "lambo-gallardo"}
