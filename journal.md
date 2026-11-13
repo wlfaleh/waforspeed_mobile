@@ -1459,3 +1459,9 @@ PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moy
 - PR #388, 4e revue sur 35d93999, après l'arbitrage du PO (commentaire 6862309388) et la réponse du développeur (6862820871). « ✅ Approuvé » en commentaire (revue 5897026188, même compte GitHub), fusion squash cf8136e3.
 - Vérifié : sonde de reflet à pleine force, chaussée réelle ρ 0,14 sous l'horizon (même éclairage que le sol de `scene.frag`) ; bas de caisse ≥ 40 % de la chaussée (mesure du lead dev : 208 ≈ 90 %, GT86 au-dessus de la route proche) ; nuit chromé < brillant ; brillant 0 pixel différent ; 7 autres finitions identiques à 170da9b2. Construction et 128 tests CPU refaits sur la branche fusionnée avec `main`.
 - Remarques pour WFS-539 : `preuve-sonde-brute-gt86.jpg` effacée par la régénération des captures (lisible au commit 38dcdca7) ; chrome noir sous l'horizon la nuit.
+
+### 2026-11-13 19:45:18 — Fin : WFS-490 fusionné, session terminée (Claude, agent dev3d (01Us6uCwDY))
+- PR #388 fusionnée en squash par le lead dev (cf8136e3), 4e revue ; avis agent 3D « VALIDÉ avec réserves » ; arbitrage du PO sur le chromé (7b9baef9, suite dans WFS-539).
+- Remis : `qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg` (effacée par la régénération des captures, citée par `scene.frag` et l'arbitrage), reprise du commit 38dcdca7.
+- Suites hors ticket déjà chez le PO : WFS-539 (sonde avec décor et chaussée, ciel calé ; chrome de nuit qui reflète les lampadaires), ANO-266 (logo des jantes de la GT86, dans WFS-366), `specK` en brillant sur les caisses très denses (risque signalé plus haut). WFS-491 (choix au garage) peut démarrer : API `Renderer::finitionJoueur(int)`.
+- Session terminée : un seul ticket par session, aucun ticket suivant demandé.
