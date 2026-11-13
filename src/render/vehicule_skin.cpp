@@ -79,12 +79,17 @@ bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSki
         mats[i] = r.makeMaterial(base, &c, (src.flags & MAT_HASNORMAL) ? &nrm : nullptr, (src.flags & MAT_HASMR) ? &mr : nullptr);
         n++;
     }
+    if (n == 0) {   // aucune pièce peinte à habiller : rien n'est gardé (revue du lead dev, PR #400)
+        vk.destroy(tex);
+        WFS_LOG("skin : %s sur %s : aucune pièce peinte, texture rendue (WFS-492)", idSkin, idVoiture);
+        return false;
+    }
     g_pose.skin = skin; g_pose.voiture = idVoiture; g_pose.id = idSkin; g_pose.texture = tex; g_pose.decodeCpu = cpu;
     g_pose.mats = std::move(mats); g_pose.modele = &m; g_pose.vb = m.vb.buf;
     WFS_LOG("skin : %s posée sur %s : %s %ux%u, %zu niveaux, %.1f Ko sur le GPU, %d pièces peintes habillées ; 1 texture d'habillage en mémoire (WFS-492)",
             idSkin, idVoiture, cpu ? "RG8 (EAC décodé sur le processeur : GPU sans ETC2)" : "EAC RG11", f.w, f.h, f.niveaux.size(),
             tex.octetsTexture / 1024.0, n);
-    return n > 0;
+    return true;
 }
 
 const Material* materiau(const Model& m, uint32_t i) {

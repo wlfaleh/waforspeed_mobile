@@ -4,7 +4,11 @@
 //   - skins-<id>-nuit : même planche de nuit (golf, gt86, giulia) ;
 //   - skins-golf-jonction : gros plan de la jonction porte avant / aile avant gauche (motifs sans couture, RG-04) ;
 //   - skins-<id>-course-jour, -nuit : en course, caméra de poursuite (golf, gt86, giulia) ;
-//   - skins-golf-sans : la même vitrine sans skin (aspect d'avant).
+//   - skins-golf-droit, skins-mustang-droit : profil droit (plaque de la portière droite) ;
+//   - skins-golf-sans : la même vitrine sans skin (aspect d'avant) ;
+//   - parcours (RC-E18-09, réduit : l'écran des skins est WFS-494) : sauvegarde du banc avec skin-golf=rallye possédée → course
+//     habillée → retour au menu → relance (sauvegarde relue) : skin gardée ; skin non possédée, puis clé absente : aucune skin.
+//     Journal : « skins : parcours … OK / ÉCART », puis « skins : parcours : N écart(s) ».
 // Journal : géométrie de chaque voiture (boîte, roues : outil tools/skins/generer.py), texture posée, mémoire des textures du GPU
 // avant / après, nombre de textures d'habillage en mémoire (RG-03 : une seule). WFS_SKINS_VOITURES="id …" : seulement ces voitures.
 // Domaine : E10 Véhicules ; appelé par desktop_main.cpp (accroche).
@@ -22,6 +26,7 @@
 #include "../game/cars.h"
 #include "../game/game.h"
 #include "../game/sauvegarde.h"
+#include "../game/personnalisation.h"
 #include "renderer.h"
 #include "vehicule_skin.h"
 
@@ -128,6 +133,7 @@ void benchSkins(Game& g, Renderer& r, const std::string& out) {
             if (!preparer(id, "rallye")) continue;
             planche("skins-" + id + "-" + moment);
             if (id == "golf" && !nuit) { viser(1.3, -2.2, 1.0); capture("skins-golf-jonction"); }
+            if ((id == "golf" || id == "mustang") && !nuit) { viser(0.2, 6.2, 1.3); capture("skins-" + id + "-droit"); }
             finir();
         }
     }
@@ -151,6 +157,46 @@ void benchSkins(Game& g, Renderer& r, const std::string& out) {
     }
     unsetenv("WFS_MOMENT");
     std::remove(tmp.c_str());
+    // parcours réduit (RC-E18-09) : la skin vient de la sauvegarde (possédée), jamais de WFS_SKIN
+    if (avec("golf")) {
+        Sauvegarde& s = sauvegarde();
+        const std::string fichier = out + "/.skins-sauvegarde.txt";
+        std::remove(fichier.c_str());
+        int ecarts = 0;
+        auto verifier = [&](const char* etape, int attendu) {
+            const vs::Etat e = vs::etat();
+            const bool ok = e.skin == attendu && e.textures == (attendu ? 1 : 0);
+            if (!ok) ecarts++;
+            WFS_LOG("skins : parcours %s : skin %d, %d texture(s) d'habillage (attendu skin %d) : %s", etape, e.skin, e.textures, attendu, ok ? "OK" : "ÉCART");
+        };
+        auto charger = [&](const char* etape, int attendu) {
+            unsetenv("WFS_SKIN");
+            if (!g.init(r, "golf", "ville")) { ecarts++; WFS_ERR("skins : parcours %s : chargement impossible", etape); return false; }
+            g.setAutopilot(false); images(3); verifier(etape, attendu); return true;
+        };
+        s.charger(fichier);   // fichier absent : défauts, sauvegarde active
+        s.possede["golf"].insert("rallye"); s.skin["golf"] = "rallye"; s.enregistrer(); s.attendre();
+        if (charger("1 garage (skin-golf=rallye possédée)", 1)) {
+            g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
+            for (int i = 0; i < 240; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 8 == 0) g.render(t); }
+            verifier("2 course", 1);
+            g.setAutopilot(false); g.allerA(Ecran::Menu); images(4);
+            verifier("3 retour au menu", 1);
+            g.shutdown();
+        }
+        s.desactiver(); s.charger(fichier);   // relance du jeu : sauvegarde relue depuis le fichier
+        const auto it = s.skin.find("golf");
+        const bool garde = it != s.skin.end() && it->second == "rallye";
+        if (!garde) ecarts++;
+        WFS_LOG("skins : parcours 4 relance : skin-golf=%s relue : %s", garde ? it->second.c_str() : "(absente)", garde ? "OK" : "ÉCART");
+        if (charger("5 après la relance", 1)) g.shutdown();
+        s.possede["golf"].erase("rallye");   // skin choisie mais non possédée : la course ne l'a pas (RC-E18-07)
+        if (charger("6 skin non possédée", vs::AUCUNE)) g.shutdown();
+        s.possede["golf"].insert("rallye"); s.skin.erase("golf");   // clé absente
+        if (charger("7 sans la clé skin-golf", vs::AUCUNE)) g.shutdown();
+        s.attendre(); s.desactiver(); std::remove(fichier.c_str());
+        WFS_LOG("skins : parcours : %d écart(s) (RC-E18-09)", ecarts);
+    }
     const vs::Etat e = vs::etat();
     WFS_LOG("skins : fin du banc : %d texture(s) d'habillage en mémoire (0 attendu), textures du GPU %.1f Mo (avant le banc %.1f Mo)", e.textures,
             r.vk().octetsTextures / 1048576.0, texAvant / 1048576.0);
