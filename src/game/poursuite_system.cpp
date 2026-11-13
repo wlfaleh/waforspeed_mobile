@@ -4,6 +4,7 @@
 // (gyrophares, sirène, renforts), densifie le trafic (accroche de traffic_system.cpp), place les embouteillages et les
 // surprises, dessine le HUD de la poursuite et l'écran de fin (victoire ou « ARRÊTÉ », « Rejouer », « Menu »).
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -28,6 +29,9 @@
 #include "game.h"
 #include "player.h"
 #include "poursuite.h"
+#include "police_bandes.h"   // WFS-460 : bandes « POLICE » posées sur la tôle
+#include "camera_vue.h"      // WFS-460 (banc) : vues Cockpit et Poursuite
+#include "../render/vehicule_mesure.h"   // WFS-460 : triangles de la peinture relus dans le .wfm
 #include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-119 : redémarrage simulé
 #include "roues.h"   // WFS-452 : roues de la police qui tournent et braquent (glisse comprise)
@@ -48,6 +52,7 @@ using namespace poursuite;
 bool g_banc = false;                 // banc d'essai : programme fixe (captures stables)
 int g_bancFin = 0;                   // banc : 1 = arrêter tout de suite, 2 = sauter près de l'arrivée
 double g_bancSautKm = 0;
+bool g_bancBandesAvant = false;      // WFS-460 (banc seulement) : bandes de main (quadrilatère plat à la boîte), pour l'avant / après
 bool g_bancSans338 = false;          // WFS-338 (banc) : sans les ajouts de WFS-338 (bandes, socle, policier, chantier), pour en mesurer le coût             // WFS-141 : banc : saut en avant du joueur jusqu'à ce point (km)
 // voiture existante repeinte (RG-03) : la 208 (la Golf si le joueur roule en 208)
 const char* policeCar(const Player* pl) { return pl && pl->car && !std::strcmp(pl->car->id, "p208") ? "golf" : "p208"; }
@@ -142,34 +147,32 @@ public:
             std::vector<Vertex> v = {{-0.5f, 0, 0, 0, 0, 1, 0, 0}, {0.5f, 0, 0, 0, 0, 1, 1, 0}, {0, 0.866f, 0, 0, 0, 1, 0.5f, 1}};
             triangle_ = r.makeMesh(v, {0, 1, 2});
         }
-        {   // bandes latérales : un quadrilatère de chaque côté (x = ±0,5 du cube unité), « POLICE » lisible des deux côtés
-            std::vector<Vertex> v; std::vector<uint32_t> idx;
-            for (int sg = -1; sg <= 1; sg += 2) {
-                const uint32_t k = (uint32_t)v.size();
-                for (int i = 0; i < 4; i++) {
-                    const float z = (i == 1 || i == 2) ? 0.5f : -0.5f, y = i >= 2 ? 1.f : 0.f;
-                    // côté +x : le texte se lit de l'arrière (+z) vers l'avant (−z) ; côté −x : de l'avant vers l'arrière
-                    const float uu = sg > 0 ? 0.5f - z : z + 0.5f;
-                    v.push_back({sg * 0.5f, y, z, (float)sg, 0, 0, uu, 1.f - y});
-                }
-                idx.insert(idx.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
-            }
-            bandesMesh_ = r.makeMesh(v, idx);
-        }
-        {   // texture des bandes (320 × 32) : bleu de la police nationale, liseré rouge et blanc, « POLICE » en capitales blanches
-            constexpr int TW = 320, TH = 32;
+        {   // WFS-460 (RG-01, RG-02) : texture des bandes (960 × 96) : bleu de la police nationale, liseré blanc et rouge en bas,
+            // « POLICE » en capitales blanches à traits pleins (avant : 320 × 32, lettres de 5 × 7 carrés, en escalier de près).
+            // Le maillage des bandes est posé sur la tôle de la voiture au chargement de son modèle (poserBandes, police_bandes.h)
+            constexpr int TW = 960, TH = 96;
             std::vector<uint8_t> px(TW * TH * 4);
             auto pose = [&](int x, int y, unsigned h) { if (x < 0 || y < 0 || x >= TW || y >= TH) return; uint8_t* q = &px[(size_t)(y * TW + x) * 4]; q[0] = (h >> 16) & 255; q[1] = (h >> 8) & 255; q[2] = h & 255; q[3] = 255; };
-            for (int y = 0; y < TH; y++) for (int x = 0; x < TW; x++) pose(x, y, y >= TH - 3 ? 0xd2232a : y >= TH - 5 ? 0xf2f4f8 : 0x1d3a8c);
-            static const char* LETTRES[6][7] = {   // police à pas fixe 5 × 7 : P O L I C E
-                {"####.", "#...#", "#...#", "####.", "#....", "#....", "#...."}, {".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."},
-                {"#....", "#....", "#....", "#....", "#....", "#....", "#####"}, {"#####", "..#..", "..#..", "..#..", "..#..", "..#..", "#####"},
-                {".####", "#....", "#....", "#....", "#....", "#....", ".####"}, {"#####", "#....", "#....", "####.", "#....", "#....", "#####"}};
-            constexpr int E = 3, PAS = 7 * E, X0 = (TW - 6 * PAS + 2 * E) / 2, Y0 = 3;
-            for (int l = 0; l < 6; l++) for (int ly = 0; ly < 7; ly++) for (int lx = 0; lx < 5; lx++)
-                if (LETTRES[l][ly][lx] == '#') for (int dy = 0; dy < E; dy++) for (int dx = 0; dx < E; dx++) pose(X0 + l * PAS + lx * E + dx, Y0 + ly * E + dy, 0xffffff);
+            for (int y = 0; y < TH; y++) for (int x = 0; x < TW; x++) pose(x, y, y >= TH - 9 ? 0xd2232a : y >= TH - 15 ? 0xf2f4f8 : 0x1d3a8c);
+            // lettres sur une grille de 12 rangées, traits de 2 cases, angles adoucis (lettrage bâton des véhicules de police)
+            struct Lettre { int largeur; const char* r[12]; };
+            static const Lettre LETTRES[6] = {
+                {10, {"#########.", "##########", "##......##", "##......##", "##......##", "##########", "#########.", "##........", "##........", "##........", "##........", "##........"}},
+                {10, {".########.", "##########", "##......##", "##......##", "##......##", "##......##", "##......##", "##......##", "##......##", "##......##", "##########", ".########."}},
+                {9,  {"##.......", "##.......", "##.......", "##.......", "##.......", "##.......", "##.......", "##.......", "##.......", "##.......", "#########", "#########"}},
+                {2,  {"##", "##", "##", "##", "##", "##", "##", "##", "##", "##", "##", "##"}},
+                {10, {".#########", "##########", "##........", "##........", "##........", "##........", "##........", "##........", "##........", "##........", "##########", ".#########"}},
+                {9,  {"#########", "#########", "##.......", "##.......", "##.......", "########.", "########.", "##.......", "##.......", "##.......", "#########", "#########"}}};
+            constexpr int E = 6, ESPACE = 3, Y0 = 6;    // case de 6 px : lettres de 72 px de haut sur 81 px de bleu (≈ 13 cm)
+            int larg = 0; for (const Lettre& l : LETTRES) larg += (l.largeur + ESPACE) * E;
+            int x0 = (TW - (larg - ESPACE * E)) / 2;
+            for (const Lettre& l : LETTRES) {
+                for (int ly = 0; ly < 12; ly++) for (int lx = 0; lx < l.largeur; lx++)
+                    if (l.r[ly][lx] == '#') for (int dy = 0; dy < E; dy++) for (int dx = 0; dx < E; dx++) pose(x0 + lx * E + dx, Y0 + ly * E + dy, 0xffffff);
+                x0 += (l.largeur + ESPACE) * E;
+            }
             bandesTex_ = r.vk().uploadTexture(px.data(), TW, TH, true);
-            Material m; m.rough = 0.35f;
+            Material m; m.rough = 0.35f;   // film adhésif : satiné, sous le vernis de la caisse
             matBandes_ = r.makeMaterial(m, &bandesTex_, nullptr, nullptr);
         }
         matPanneauRouge_ = mat(0xc8102e, {0, 0, 0}, 0.4f);
@@ -184,7 +187,8 @@ public:
         if (camionModele_.ok) r.destroy(camionModele_);
         camionModele_ = Model{};
         r.destroy(cube_);
-        for (Mesh* me : {&coneMesh_, &triangle_, &bandesMesh_}) if (me->indexCount) r.destroy(*me);   // WFS-338
+        for (Mesh* me : {&coneMesh_, &triangle_, &bandesMesh_, &bandesAvant_}) if (me->indexCount) r.destroy(*me);   // WFS-338 ; WFS-460
+        bandesMesh_ = Mesh{}; bandesAvant_ = Mesh{};
         coneMesh_ = Mesh{};
         r.vk().destroy(bandesTex_); r.vk().destroy(paletteCones_);
         for (Material* m : {&matRouge_, &matBleu_, &matPlot_, &matBlanc_, &matBleuCaisse_, &matVitre_, &matJaune_, &matNoir_, &matCones_,
@@ -199,7 +203,8 @@ public:
         if (nouveau == Ecran::Course) rejouer_ = false;
     }
     void update(double, const GameView& g) override {
-        if (actif_ && policeCar_ != policeCar(g.player) && modele_.ok) { r_->vk().waitIdle(); r_->destroy(modele_); modele_ = Model{}; modeleEssaye_ = false; }
+        if (actif_ && policeCar_ != policeCar(g.player) && modele_.ok) { r_->vk().waitIdle(); r_->destroy(modele_); modele_ = Model{}; modeleEssaye_ = false;
+            if (bandesMesh_.indexCount) { r_->destroy(bandesMesh_); bandesMesh_ = Mesh{}; } }   // WFS-460 : bandes de l'ancien modèle
         if (actif_) policeCar_ = policeCar(g.player);
         if (r_ && actif_ && !modele_.ok && !modeleEssaye_) { modeleEssaye_ = true; loadCarModel(*r_, std::string(carById(policeCar_).file), modele_); WFS_LOG("poursuite : police %s, %zu pièces", policeCar_, modele_.parts.size());
             // WFS-338 (RG-07) : caisse de la police en peinture blanche unie, non métallisée (mat.peinture_voiture : métal 0,
@@ -207,6 +212,7 @@ public:
             // copie de la police change (modele_), pas le modèle du trafic ni celui du joueur
             metalModele_.clear();
             for (Material& mt : modele_.mats) { metalModele_.push_back(mt.metal); if (mt.flags & MAT_PAINT) { WFS_LOG("poursuite : peinture de la police : métal %.2f → 0, rugosité %.2f", mt.metal, mt.rough); mt.metal = 0; } }
+            if (modele_.ok) poserBandes();   // WFS-460 (RG-01) : bandes « POLICE » posées sur la tôle de ce modèle
         }
         // WFS-119 : camion en travers (x5, rrsport si le joueur roule en x5)
         const char* cam = camionCar(g.player && g.player->car ? g.player->car->id : nullptr);
@@ -353,7 +359,7 @@ public:
             const TrackPoint q = g.track->pointLisse(p.rdPrec + (p.rd - p.rdPrec) * al, (p.xPrec + (p.x - p.xPrec) * al) * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)) * rotateX((float)q.slope);
             const CarDef& cd = carById(policeCar_);
-            const float L = cd.d.L, W = cd.d.W;
+            const float W = cd.d.W;
             const int i = (int)(&p - police_.data());
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
@@ -371,12 +377,17 @@ public:
             // repère du modèle (m) : sol bmin.y, centre (cx, cz), avant vers −z ; pavillon mesuré au-dessus de la place du
             // conducteur (Model::siege, WFS-73), sinon le haut du modèle
             const vec3 b0 = modele_.bmin, b1 = modele_.bmax;
-            const float cx = (b0.x + b1.x) / 2, cz = (b0.z + b1.z) / 2, Hm = b1.y - b0.y;
+            const float cx = (b0.x + b1.x) / 2, cz = (b0.z + b1.z) / 2;
             const float toit = modele_.siege.w > 0.5f ? modele_.siege.x : b1.y, zToit = modele_.siege.w > 0.5f ? modele_.siege.z + 0.25f : cz + 0.1f;
             const bool proche = std::abs(rel) <= 80;   // WFS-338 (décision PO) : au-delà de 80 m, halos seuls (rampe, bandes, policier : de près)
             const bool detail = (!r.qualiteBasse || std::abs(rel) <= 40) && !g_bancSans338;   // Basse : bandes et socle jusqu'à 40 m (coût)
-            // WFS-338 (RG-07, ANO-197) : bandes « POLICE » sur les portières (bleu, liseré blanc et rouge), sans marque
-            if (detail) r.draw(bandesMesh_, matBandes_, m * translate({cx, b0.y + 0.40f * Hm, cz - 0.04f * L}) * scale({W + 0.012f, 0.17f * Hm, 0.50f * L}));
+            // WFS-338 (RG-07, ANO-197) : bandes « POLICE » sur les portières (bleu, liseré blanc et rouge), sans marque ;
+            // WFS-460 (RG-01, ANO-250) : maillage posé sur la tôle des portières, dans le repère du modèle (un seul dessin, comme avant)
+            if (detail && g_bancBandesAvant) {   // banc seulement : les bandes de main, même scène, même image (avant / après)
+                if (!bandesAvant_.indexCount) bandesAvant_ = bandesPlatesDeMain(r);
+                const vec3 b0 = modele_.bmin, b1 = modele_.bmax; const float Hm = b1.y - b0.y;
+                r.draw(bandesAvant_, matBandes_, m * translate({cx, b0.y + 0.40f * Hm, cz - 0.04f * cd.d.L}) * scale({W + 0.012f, 0.17f * Hm, 0.50f * cd.d.L}));
+            } else if (detail && bandesMesh_.indexCount) r.draw(bandesMesh_, matBandes_, m);
             // WFS-338 (RG-07, ANO-197) : rampe lumineuse posée sur le pavillon : socle gris de 1 m × 30 cm, deux feux bleus qui
             // clignotent l'un après l'autre (gyrophare(), 2 Hz, une voiture sur deux en opposition) ; feu éteint : verre bleu
             // sombre ; avant : deux boîtes rouge / bleue de 0,56 m posées sous le haut du modèle, qui traversaient le toit
@@ -687,6 +698,60 @@ private:
             }
         }
     }
+    // banc seulement (WFS-460, avant / après) : les bandes de main, un quadrilatère de chaque côté d'un cube unité (x = ±0,5),
+    // recopiées telles quelles (même enroulement : le côté droit n'était jamais dessiné). Jamais créées en jeu.
+    static Mesh bandesPlatesDeMain(Renderer& r) {
+        std::vector<Vertex> v; std::vector<uint32_t> idx;
+        for (int sg = -1; sg <= 1; sg += 2) {
+            const uint32_t k = (uint32_t)v.size();
+            for (int i = 0; i < 4; i++) {
+                const float z = (i == 1 || i == 2) ? 0.5f : -0.5f, y = i >= 2 ? 1.f : 0.f, uu = sg > 0 ? 0.5f - z : z + 0.5f;
+                v.push_back({sg * 0.5f, y, z, (float)sg, 0, 0, uu, 1.f - y});
+            }
+            idx.insert(idx.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
+        }
+        return r.makeMesh(v, idx);
+    }
+    // WFS-460 (RG-01, RG-02, ANO-250) : bandes « POLICE » posées sur la tôle des portières du modèle de la police (modele_),
+    // une fois à son chargement : triangles de la peinture relus dans le .wfm (le GPU ne garde pas la géométrie), passages de
+    // roue mesurés par la découpe des roues (Model::roues, WFS-60), puis police_bandes::construire. Sans bande trouvée : rien
+    // n'est dessiné (jamais un quadrilatère posé à la boîte de la voiture)
+    void poserBandes() {
+        if (bandesMesh_.indexCount) { r_->destroy(bandesMesh_); bandesMesh_ = Mesh{}; }
+        const CarDef& cd = carById(policeCar_);
+        std::vector<uint8_t> octets; vehicule::ModeleWfm w; std::string erreur;
+        if (!readAsset(cd.file, octets) || !vehicule::lireWfmOctets(octets.data(), octets.size(), w, erreur)) {
+            WFS_ERR("poursuite : bandes de la police : %s illisible (%s), pas de bandes", cd.file, erreur.c_str()); return;
+        }
+        std::vector<police_bandes::Triangle> tris;
+        for (size_t k = 0; k < w.sommets.size(); k++) {
+            if (!(w.drapeaux[k] & MAT_PAINT)) continue;   // tôle peinte seulement (pas les vitres, joints, feux, roues)
+            const float* v = w.sommets[k].data(); const std::vector<uint32_t>& I = w.indices[k];
+            for (size_t t = 0; t + 2 < I.size(); t += 3) {
+                auto P = [&](uint32_t s) { return vec3{v[8 * s], v[8 * s + 1], v[8 * s + 2]}; };
+                tris.push_back({P(I[t]), P(I[t + 1]), P(I[t + 2])});
+            }
+        }
+        // passages de roue : pneus du modèle (avant vers −z) ; sans roues séparées : empattement et rayon de la fiche
+        float zPneuAvant, zPneuArriere, sol = modele_.bmin.y;
+        if (modele_.nRoues == 4) {
+            const RoueModele* R = modele_.roues;
+            zPneuAvant = std::max(R[roues::LF].centre.z + R[roues::LF].rayon, R[roues::RF].centre.z + R[roues::RF].rayon);
+            zPneuArriere = std::min(R[roues::LB].centre.z - R[roues::LB].rayon, R[roues::RB].centre.z - R[roues::RB].rayon);
+            sol = std::min({R[0].centre.y - R[0].rayon, R[1].centre.y - R[1].rayon, R[2].centre.y - R[2].rayon, R[3].centre.y - R[3].rayon});
+        } else {
+            const float cz = (modele_.bmin.z + modele_.bmax.z) / 2;
+            zPneuAvant = cz - cd.d.wb / 2 + roues::RW_DEFAUT; zPneuArriere = cz + cd.d.wb / 2 - roues::RW_DEFAUT;
+        }
+        const police_bandes::Bandes b = police_bandes::construire(tris, zPneuAvant, zPneuArriere, sol, cd.d.H);
+        if (!b.ok()) { WFS_ERR("poursuite : bandes de la police : aucune tôle trouvée sur %s (%zu triangles peints), pas de bandes", policeCar_, tris.size()); return; }
+        std::vector<Vertex> vs; vs.reserve(b.sommets.size());
+        for (const police_bandes::Sommet& s : b.sommets) vs.push_back({s.p.x, s.p.y, s.p.z, s.n.x, s.n.y, s.n.z, s.u, s.v});
+        bandesMesh_ = r_->makeMesh(vs, b.indices);
+        WFS_LOG("poursuite : bandes de la police (%s) posées sur la tôle : z %.2f → %.2f m (%.2f m), y %.2f → %.2f m, %zu sommets, "
+                "%zu triangles, %d point(s) sans tôle, %d dans un jour de porte (WFS-460)", policeCar_, b.zAvant, b.zArriere,
+                b.zArriere - b.zAvant, b.yBas, b.yHaut, vs.size(), b.indices.size() / 3, b.manques, b.creux);
+    }
     // WFS-119 : ralentisseur franchi : −3 au-dessus de 90 km/h (poursuite::ralentisseur), la voiture tressaute et ralentit
     void bandesPassees(Player& pl) {
         for (Bande& b : bandes_) {
@@ -745,6 +810,7 @@ private:
     std::vector<Obstacle> obs_;
     std::vector<Plot> plots_;
     std::vector<Panneau> panneaux_;   // WFS-338
+    Mesh bandesAvant_;   // WFS-460 (banc seulement) : quadrilatère plat de main, créé seulement par le banc avant / après
     Mesh coneMesh_, triangle_, bandesMesh_; Image bandesTex_{}, paletteCones_{};   // WFS-338
     std::vector<Vertex> coneV_; std::vector<uint32_t> coneI_;
     static constexpr float U_ORANGE = 0.125f, U_BLANC = 0.375f, U_NOIR = 0.625f;   // centres des texels de la palette des cônes
@@ -779,6 +845,7 @@ bool poursuiteBouton(const std::string& nom, float& x, float& y) {
 }
 bool poursuiteNouveauRecord() { return PoursuiteSystem::actif && PoursuiteSystem::actif->nouveauRecord(); }
 void poursuiteBancFin(int mode) { g_bancFin = mode; }
+double poursuiteBancProche(const Player& pl) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->bancProche(pl) : 1e9; }   // WFS-460 (banc)
 void poursuiteBancFixe(bool oui) { g_banc = oui; }
 // WFS-452 (banc « roues-suivies ») : 1re voiture de police tenue à ecartM du joueur (m, < 0 : derrière), au latéral x (demi-largeurs)
 void poursuiteBancPolice(bool actif, double ecartM, double x) {
@@ -1040,6 +1107,113 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     modeCourse() = ModeCourse::Checkpoint;
     courseBenchRules(false);
     g.shutdown();
+}
+
+// ---------- WFS-460 (banc « police-bandes ») : bandes « POLICE » sur la tôle, une seule peinture blanche ----------
+// Corniche (terrain « plage »), joueur à 30 km/h, 1re voiture de police tenue par le banc (poursuiteBancPolice). Chaque
+// capture est faite deux fois dans la même scène, à la même heure : « -avant » (bandes de main : quadrilatère plat posé à la
+// boîte de la voiture) puis sans suffixe (bandes posées sur la tôle). Captures : profil gauche et profil droit de jour, 3/4
+// avant de nuit, puis approche de la police de 80 m à 5 m (une image toutes les 0,1 s), en vue Cockpit puis Poursuite, puis
+// les deux en qualité Basse ; coût mesuré en Basse (appels de dessin, triangles, temps du rendu sur le processeur). Rend le nombre d'écarts.
+int benchPoliceBandes(Game& g, Renderer& r, const std::string& out) {
+    int ecarts = 0;
+    const ModeCourse mode0 = modeCourse();
+    const VueCamera vue0 = vueCamera();
+    const int qualite0 = ecrans::reglages().qualite;
+    constexpr double PAS = 1.0 / 60;
+    double t = 1300;
+    courseBenchRules(true);
+    auto demarrer = [&](bool nuit, bool basse, VueCamera vue) {
+        setenv("WFS_DEPART", "0", 1); setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        modeCourse() = ModeCourse::Poursuite; choisirVue(vue);
+        ecrans::reglages().qualite = basse ? ecrans::QUALITE_BASSE : qualite0; ecrans::appliquerQualiteNiveau(r);
+        if (!g.init(r, "golf", "plage")) { WFS_ERR("police-bandes : chargement de la Corniche impossible"); ecarts++; return false; }
+        g.allerA(Ecran::Course); g.modeManette = false; g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 4 * 60; i++) { g.update(PAS); t += PAS; if (i % 12 == 0) g.render(t); }   // décompte
+        for (int i = 0; i < 60 * 25 && g.player().kmh() < 29; i++) { g.setAutopilot(g.player().kmh() < 30); g.update(PAS); t += PAS; if (i % 12 == 0) g.render(t); }
+        return true;
+    };
+    auto rouler = [&](int n) { for (int i = 0; i < n; i++) { g.setAutopilot(g.player().kmh() < 30); g.update(PAS); t += PAS; } };
+    // caméra « vitrine » autour du joueur : point de vue à avantM devant et droiteM à droite de sa voiture, à hauteur m
+    auto viser = [&](double avantM, double droiteM, float hauteur) {
+        const Game::Vue v = g.calculerVue(t);
+        const vec3 f = normalize(vec3{v.fwd.x, 0, v.fwd.z}), d = cross(f, {0, 1, 0});
+        const vec3 o = f * (float)avantM + d * (float)droiteM;
+        g.orbit = std::atan2(o.x, o.z); g.orbitRecul = length(o); g.orbitHauteur = hauteur;
+    };
+    // même image deux fois : bandes de main (« -avant »), puis bandes posées sur la tôle
+    auto paire = [&](const std::string& nom) {
+        for (int avant = 1; avant >= 0; avant--) {
+            g_bancBandesAvant = avant == 1; r.bancPeintureFineMain = avant == 1;
+            g.render(t); g.render(t);
+            r.capturePng(out + "/" + nom + (avant ? "-avant" : "") + ".png");
+        }
+        g_bancBandesAvant = false; r.bancPeintureFineMain = false;
+        const PoursuiteSystem* s = PoursuiteSystem::actif;
+        WFS_LOG("capture %s : %.0f km/h, police la plus proche à %.1f m, %u appels de dessin", nom.c_str(), g.player().kmh(), s ? s->bancProche(g.player()) : -1.0, r.appelsDessin());
+    };
+    // ---------- 1. et 2. profils de jour : police à gauche (flanc gauche vu de la gauche), puis à droite ----------
+    for (int cote : {-1, 1}) {
+        if (!demarrer(false, false, VueCamera::Poursuite)) break;
+        const double px = std::clamp(g.player().playerX, -(BORD_X - COTE_X), BORD_X - COTE_X);
+        poursuiteBancPolice(true, 0.0, px + cote * COTE_X);
+        rouler(40);
+        g.camMode = 2;
+        viser(0.0, cote * (COTE_X * RW + 5.2), 1.05f);   // perpendiculaire à la police, à hauteur des portières
+        rouler(2);
+        paire(cote < 0 ? "police-bandes-gauche-jour" : "police-bandes-droite-jour");
+        poursuiteBancPolice(false, 0, 0); g.camMode = 0; g.setAutopilot(false); g.shutdown();
+    }
+    // ---------- 3. 3/4 avant de nuit (police à gauche) ----------
+    if (demarrer(true, false, VueCamera::Poursuite)) {
+        const double px = std::clamp(g.player().playerX, -(BORD_X - COTE_X), BORD_X - COTE_X);
+        poursuiteBancPolice(true, 0.0, px - COTE_X);
+        rouler(40);
+        g.camMode = 2;
+        viser(6.0, -(COTE_X * RW + 3.6), 1.25f);
+        rouler(2);
+        paire("police-bandes-3-4-nuit");
+        poursuiteBancPolice(false, 0, 0); g.camMode = 0; g.setAutopilot(false); g.shutdown();
+    }
+    // ---------- 4. approche : police devant, de 80 m à 5 m, une image toutes les 0,1 s ; Cockpit, Poursuite, Poursuite en Basse ----------
+    struct Approche { const char* nom; VueCamera vue; bool basse; };
+    for (const Approche& a : {Approche{"cockpit", VueCamera::Cockpit, false}, Approche{"poursuite", VueCamera::Poursuite, false}, Approche{"basse", VueCamera::Poursuite, true}, Approche{"cockpit-basse", VueCamera::Cockpit, true}}) {
+        if (!demarrer(false, a.basse, a.vue)) break;
+        const double px = std::clamp(g.player().playerX, -(BORD_X - COTE_X), BORD_X - COTE_X);
+        constexpr int N = 16;
+        // coût sur la même image (rendu sur le processeur, lavapipe) : 0 = main (bandes plates, peinture très fine retirée en
+        // Basse), 1 = bandes sur la tôle seules (RG-06 : un dessin de plus au plus par voiture de police), 2 = branche entière
+        // (la carrosserie retrouvée en Basse : celle de la police et des voitures du trafic à peinture très fine)
+        double ms[3] = {0, 0, 0}, appels[3] = {0, 0, 0}, tri[3] = {0, 0, 0};
+        for (int k = 0; k < N; k++) {
+            const double ecart = 80.0 - 75.0 * k / (N - 1);
+            poursuiteBancPolice(true, ecart, px - COTE_X);
+            rouler(6);   // 0,1 s
+            char nom[96]; std::snprintf(nom, sizeof nom, "police-bandes-approche-%s-%02d", a.nom, k);
+            for (int e = 0; e < 3; e++) {
+                g_bancBandesAvant = e == 0; r.bancPeintureFineMain = e <= 1;
+                g.render(t);
+                const auto t0 = std::chrono::steady_clock::now();
+                g.render(t);
+                ms[e] += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+                uint32_t ap = 0, tr = 0; r.fileScene(ap, tr); appels[e] += ap; tri[e] += tr;
+                if (e != 1) r.capturePng(out + "/" + nom + (e == 0 ? "-avant" : "") + ".png");
+            }
+            g_bancBandesAvant = false; r.bancPeintureFineMain = false;
+            WFS_LOG("capture %s : police à %.1f m devant (voulu %.1f m), %.0f km/h", nom, -poursuiteBancProche(g.player()), ecart, g.player().kmh());
+        }
+        WFS_LOG("police-bandes (WFS-460, RG-06) : approche %s, moyenne par image : appels de dessin main %.1f, bandes sur la tôle %.1f (%+.1f), "
+                "branche %.1f (%+.1f : carrosserie retrouvée en Basse) ; triangles main %.0f, bandes %.0f, branche %.0f ; rendu (processeur) main %.1f ms, "
+                "bandes %.1f ms, branche %.1f ms", a.nom, appels[0] / N, appels[1] / N, (appels[1] - appels[0]) / N, appels[2] / N, (appels[2] - appels[1]) / N,
+                tri[0] / N, tri[1] / N, tri[2] / N, ms[0] / N, ms[1] / N, ms[2] / N);
+        if (appels[1] > appels[0] + N) { WFS_ERR("police-bandes (WFS-460, RG-06) : bandes : plus d'un dessin de plus par voiture de police"); ecarts++; }
+        poursuiteBancPolice(false, 0, 0); g.setAutopilot(false); g.shutdown();
+    }
+    choisirVue(vue0); modeCourse() = mode0; courseBenchRules(false);
+    ecrans::reglages().qualite = qualite0; ecrans::appliquerQualiteNiveau(r);
+    unsetenv("WFS_DEPART"); unsetenv("WFS_MOMENT");
+    WFS_LOG("police-bandes (WFS-460) : %d écart(s) %s", ecarts, ecarts ? "ÉCHEC" : "OK");
+    return ecarts;
 }
 
 // ---------- WFS-119 RG-08 (ANO-53) : course à 5, « Rejouer » puis appui suivant (groupe course5) ----------
