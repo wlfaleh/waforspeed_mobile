@@ -24,6 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01Us6uCtPt) (session_01Us6uCtPtENbPYExTDYGAkg) | | Nouvelle session `@dev` : attend son ticket du PO | | 🆕 en attente d'attribution |
 | Claude, agent dev3d (01Us6uCw3C) (session_01Us6uCw3CcwYdVgdJvnqpWC) | | Nouvelle session `@dev` : attend son ticket du PO | | 🆕 en attente d'attribution |
 | Claude, agent dev3d (01Us6uCxMq) (session_01Us6uCxMq4ZcucYCU7MHDaF) | | Nouvelle session `@dev` : attend son ticket du PO | | 🆕 en attente d'attribution |
 | Claude, agent dev3d (01Us6uCveE) (session_01Us6uCveEVtGAqp5Bg6kWqe) | | Nouvelle session `@dev` : attend son ticket du PO | | 🆕 en attente d'attribution |
