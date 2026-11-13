@@ -25,7 +25,7 @@ Agent : Claude, agent dev3d (01Us6uCwDY)
   - **Chromé homogène** : luminance moyenne de la carrosserie sur les planches de jour 0,41 (GT86), 0,44 (Corvette), 0,42 (208) ; avant correction : 0,41, 0,13 et 0,13.
   - Planches des 8 finitions (3 voitures, jour et nuit) et **gros plans des 8 finitions** (GT86, satiné et mat compris) regardés image par image ; de nuit, aucune tache blanche.
   - Caméléon sous 3 angles ; 208 en course en chromé et en mat ; **208 avec toit et rétros Noir (couleur 2)** en métallisé et en chromé (RG-11).
-  - Tests CPU : section ci-dessous.
+  - Tests CPU : section ci-dessous. Captures prises sur la synchronisation précédente ; la dernière synchronisation n'apporte de `main` que `src/render/feux_modele.cpp` (feux des voitures, autre ticket), le shader et le banc ne changent pas.
   - Performances : tableau ci-dessous.
 - **Limites et risques connus** :
   - Le choix au garage et la sauvegarde relèvent de WFS-491 : rien ne change sur l'APK avant ce ticket.
@@ -35,11 +35,11 @@ Agent : Claude, agent dev3d (01Us6uCwDY)
 
 ## Tests CPU
 
-Commit testé : `c48dc1e6` (branche synchronisée avec `main`). Journal complet : [`qa/pr/WFS-490/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-490/qa/pr/WFS-490/tests-cpu.log).
+Commit testé : `b8f03718` (branche synchronisée avec `main`, après la dernière synchronisation). Journal complet : [`qa/pr/WFS-490/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-490/qa/pr/WFS-490/tests-cpu.log).
 
 ```
 [OK] test_fidelite_voitures_finitions
-tests CPU : 123 test(s) réussi(s) en 376 s
+tests CPU : 124 test(s) réussi(s) en 358 s
 ```
 
 ## Performances en Basse (RG-10, RC-E18-03)
