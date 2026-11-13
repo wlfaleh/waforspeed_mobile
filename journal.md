@@ -1609,3 +1609,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 
 ### 2026-11-13 21:45:04 — WFS-538 passée en 8e place du classement (po-scrum-master)
 - Ordre de l'utilisateur : WFS-538 en 8e (elle attend WFS-482, elle-même après WFS-481). Bandeau 📋 de `TACHES.md` mis à jour ; WFS-511 reste 15e.
+
+### 2026-11-13 21:50:42 — WFS-489 fusionné par le lead dev (lead-dev)
+- PR #395, 3e revue sur 1deb4458, limitée à la résolution des conflits et aux captures : le diff du code de `src/`, `tests/` et `CMakeLists.txt` est identique à celui approuvé sur 6ea38a6f (seul un commentaire change) ; plaque WFS-483 et `test_boutique` WFS-536 gardés.
+- Construction et `tests_cpu.sh build` refaits par le lead dev : 130 tests réussis. Banc `garage-couleurs` relancé : 0 `[ERREUR]` (arrêté à 500 s, pendant les courses de nuit). Captures eb493dcf ouvertes (garage-0, planche, toit Noir, « Il te manque », course de nuit de la GT86).
+- Approbation écrite en commentaire (même compte GitHub), puis fusion en squash : ae6a8288. Statut 🟣, ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`. WFS-499 peut partir de ce panneau.
