@@ -90,7 +90,9 @@ void eauVagues(vec2 p, float t, float agit, int n, float empreinte, vec4 dp, out
             dphi = 3.0 * (eauBruit(g * 0.45 + vec2(11.3, -4.7)) - 0.5);
         }
         float ew = groupes ? abs(dot(dp.xy, w.xy)) + abs(dot(dp.zw, w.xy)) : empreinte;
-        float garde = 1.0 - smoothstep(0.18, 0.45, ew / w.z);   // au moins ≈ 3 pixels par longueur d'onde
+        // au moins ≈ 3 pixels par longueur d'onde (WFS-401 : hors Basse, effacée plus tôt, de 4 à 8 pixels par longueur d'onde :
+        // les vagues proches de la limite du pixel faisaient de fines rayures régulières au loin, RG-02 ; leur pente passe dans la rugosité)
+        float garde = groupes ? 1.0 - smoothstep(0.12, 0.25, ew / w.z) : 1.0 - smoothstep(0.18, 0.45, ew / w.z);
         float th = k * dot(w.xy, p) - om * t + float(i) * 1.7 + dphi;
         h += A * sin(th) * garde;
         pente += w.xy * (A * k * cos(th) * garde);
@@ -230,10 +232,7 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     // D2 (avis 3D) : petite mer du vent sans période (bruit qui dérive, deux échelles) : aucune rayure qui se répète ; s'efface quand
     // le pixel devient plus grand que ses rides (la rugosité prend le relais)
     if (!basse) {
-        // WFS-401 (R7) : moyenne géométrique des deux côtés du pixel (bruit sans direction : ni le côté long, qui l'effaçait à angle
-        // rasant, ni le côté court, qui crénèlerait)
-        float eg = sqrt(max(length(dp.xy) * length(dp.zw), 1e-8));
-        float garde = 1.0 - smoothstep(0.15, 0.45, eg / 1.2);
+        float garde = 1.0 - smoothstep(0.15, 0.45, empreinte / 1.2);   // bruit sans direction : filtré sur le côté long du pixel
         if (garde > 0.0) {
             vec2 q = p * 0.85 + vec2(0.31 * t, -0.17 * t), r2 = p * 2.3 - vec2(0.22 * t, 0.37 * t);
             const float e = 0.15;
