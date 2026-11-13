@@ -13,6 +13,7 @@
 #include "../../game/commandes_tactiles.h"   // dessin2d (biseau, contour, trait)
 #include "../../game/game.h"
 #include "../../game/sauvegarde.h"
+#include "../../platform/manette.h"   // manette : seules les zones de cet écran ont le focus
 #include "../../render/renderer.h"
 #include "../langue.h"
 #include "../petit_ecran.h"
@@ -49,6 +50,7 @@ struct Etat {
     double tOuvert = 0;        // heure d'ouverture (fondu d'entrée de 250 ms)
     double maintenant = 0;
     bool valideNote = false;   // RG-07 : profil écrit (l'écran se ferme à l'image suivante)
+    bool pointsNotes = false;  // points d'appui écrits au journal (une fois par ouverture)
 };
 Etat g_e;
 
@@ -63,7 +65,7 @@ void synchroniser(const GameView& g) {
         const std::string propose = Profil::pseudoPropose(s.nick);
         const uint32_t graine = (uint32_t)std::chrono::steady_clock::now().time_since_epoch().count() | 1u;
         g_e.saisie.ouvrir(propose, graine);
-        g_e.ouvert = true; g_e.presse = -1; g_e.tOuvert = g.time; g_e.valideNote = false;
+        g_e.ouvert = true; g_e.presse = -1; g_e.tOuvert = g.time; g_e.valideNote = g_e.pointsNotes = false;
         WFS_LOG("création du profil (WFS-481) : écran ouvert (%s, pseudo proposé « %s », plaque proposée « %s »)", ui::langue::code(),
                 propose.c_str(), g_e.saisie.plaque().c_str());
     } else if (!montrer && g_e.ouvert) {
@@ -231,7 +233,9 @@ void dessiner(Renderer& r, const GameView& g) {
         const bool active = creation::toucheActive(t, s.champ());
         const bool majArmee = t.genre == Touche::Majuscules && s.majuscules() && s.champ() == Champ::Pseudo;
         const float a = active ? 1.f : 0.35f;
-        r.uiRect(tx, ty, tw, p.touche, appuiRecent && g_e.presse == i ? hex(0x3A3F55) : hex(t.genre == Touche::Caractere ? SURFACE2 : SURFACE, a));
+        // touche grisée : fond opaque plus sombre (rien de la scène ne passe à travers), texte atténué
+        const unsigned fond = !active ? 0x111219 : t.genre == Touche::Caractere ? SURFACE2 : SURFACE;
+        r.uiRect(tx, ty, tw, p.touche, appuiRecent && g_e.presse == i ? hex(0x3A3F55) : hex(fond));
         r.uiRect(tx, ty + p.touche - 2 * u, tw, 2 * u, majArmee ? hex(ACCENT2) : hex(BG, 0.6f));   // bord bas (relief) ; cyan : majuscule armée
         // zone touchable : la touche et la moitié des écarts autour (aucun trou entre deux touches)
         g_e.zTouches[i] = {tx - p.ecart / 2, ty - p.ecart / 2, tw + p.ecart, p.touche + p.ecart};
@@ -253,6 +257,19 @@ void dessiner(Renderer& r, const GameView& g) {
     }
 }
 
+// points d'appui (pixels de l'interface) écrits au journal à la 1re image : l'émulateur du matin (tools/qa/emulateur.sh) tape
+// « Petit » (touches p, e, t, i : même place en AZERTY et en QWERTY) puis « C'est parti » sans recopier la mise en page
+void noterPoints() {
+    g_e.pointsNotes = true;
+    const Touche* cl = creation::clavier(ui::langue::active());
+    auto centre = [](const Zone& z) { char b[32]; std::snprintf(b, sizeof b, "%d,%d", (int)(z.x + z.w / 2), (int)(z.y + z.h / 2)); return std::string(b); };
+    std::string l;
+    for (char c : {'p', 'e', 't', 'i'})
+        for (int i = 0; i < creation::NB_TOUCHES; i++)
+            if (cl[i].genre == Touche::Caractere && cl[i].c == c) l += std::string(" ") + c + "=" + centre(g_e.zTouches[i]);
+    WFS_LOG("création du profil (WFS-481) : points d'appui :%s valider=%s", l.c_str(), centre(g_e.zValider).c_str());
+}
+
 class CreationProfilToucher final : public System {
 public:
     const char* name() const override { return "creation-profil-touchers"; }
@@ -271,6 +288,12 @@ public:
         if (!g_e.ouvert || g.sceneDediee || !ui::fontReady()) return;
         ui::langue::journalActif(ui::langue::journalOuvert(), "creation-profil");
         dessiner(r, g);
+        // manette : seules les zones de cet écran ont le focus (rien du menu caché dessous, comme le panneau des modes)
+        manette::zonesImage().clear();
+        manette::focus(g_e.zPseudo); manette::focus(g_e.zPlaque);
+        for (const Zone& z : g_e.zTouches) manette::focus(z);
+        manette::focus(g_e.zValider);
+        if (!g_e.pointsNotes) noterPoints();
     }
     void onEcran(Ecran, Ecran, const GameView& g) override { synchroniser(g); }
 };
@@ -326,9 +349,8 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     verifier(creationProfilOuverte(), "RG-01 : 1er lancement → après le chargement, écran « Crée ton pilote »");
     // RG-03 : touches de 9 mm au moins sur le téléphone de référence (2,625 px par dp, 401 ppp)
     {
-        const float k = g_e.zTouches[0].h - (g_e.zTouches[1].x - g_e.zTouches[0].x - g_e.zTouches[0].w), dp = ui::pixelsParDp((float)r.width());
+        const float dp = ui::pixelsParDp((float)r.width());
         WFS_LOG("création du profil (WFS-481) banc : touche %.0f px = %.1f dp (%.1f mm à 160 dp par pouce)", g_e.zTouches[0].h, g_e.zTouches[0].h / dp, g_e.zTouches[0].h / dp * 25.4f / 160.f);
-        (void)k;
         verifier(r.width() < 2000 || g_e.zTouches[0].h / dp * 25.4f / 160.f >= 9.f, "RG-03 : touches de 9 mm au moins (zone touchable)");
     }
     images(20);

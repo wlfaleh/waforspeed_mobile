@@ -138,6 +138,22 @@ if [ "$SCENARIO" = mvp ]; then
     appui cgu-accepter $AX $AY
     attendre cgu-accepter "CGU \(WFS-308\) : « Accepter » \(version" 15 || { capture 00-cgu-accepter; log "ÉCHEC : « Accepter » des CGU non reçu (appui ${AX},${AY})"; return 1; }
   }
+  # profil (WFS-481) : installation neuve → écran « Crée ton pilote » par-dessus le menu ; le jeu écrit au journal les points
+  # d'appui des touches p, e, t, i (même place en AZERTY et en QWERTY) et de « C'est parti » : pseudo « Petit » (majuscule
+  # armée au départ), plaque proposée gardée, puis « C'est parti », comme un joueur ; profil déjà créé → l'écran n'apparaît pas
+  profil() {
+    case "$(premier 20 "création du profil \(WFS-481\) : points d'appui" "menu : « ")" in
+      1) ;;
+      *) log "profil : pas d'écran de création (profil déjà créé)"; return 0 ;;
+    esac
+    images; capture 02a-profil
+    local l; l=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -E "création du profil \(WFS-481\) : points d'appui" | head -1 | tr -d '\r')
+    pt() { echo "$l" | grep -oE " $1=[0-9]+,[0-9]+" | head -1 | sed -E "s/ $1=//; s/,/ /"; }
+    local c x y
+    for c in p e t i t; do read x y < <(pt "$c"); [ -n "$x" ] || { log "ÉCHEC : point d'appui « $c » absent du journal"; return 1; }; appui "profil-$c" "$x" "$y"; sleep 0.3; done
+    read x y < <(pt valider); appui profil-valider "$x" "$y"
+    etape profil "création du profil \(WFS-481\) : « .* » : pseudo « Petit »" 30 02b-profil-cree || { log "ÉCHEC : profil non créé (pseudo « Petit »)"; return 1; }
+  }
   # paquets : étape « Mise à jour et installation des paquets » (WFS-306) : proposition → « Installer » (vrai téléchargement
   # depuis la Release « paquets », WFS-302) ; paquet déjà présent ou pas de liste → l'étape finit seule
   paquets() {
@@ -166,6 +182,7 @@ if [ "$SCENARIO" = mvp ]; then
     if attendre chargement "écran complet \(police\)" 120; then sleep 1; capture 01-chargement; else capture 01-chargement; return 1; fi
     paquets || return 1                                                       # WFS-351 : étape des paquets (WFS-306)
     etape menu "Écran : course → menu" 180 02-menu || return 1               # chargement fini, menu (WFS-37)
+    profil || return 1                                                        # WFS-481 : écran « Crée ton pilote » (installation neuve)
     read W H < <(adb shell wm size | tail -1 | sed -E 's/.* ([0-9]+)x([0-9]+).*/\1 \2/' | awk '{ if ($1 < $2) print $2, $1; else print $1, $2 }')
     log "écran ${W}x${H} (paysage)"
     # WFS-50 : la fenêtre du jeu peut être plus petite que l'écran (barre de navigation de l'émulateur affichée, ex.

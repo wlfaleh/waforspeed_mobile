@@ -67,6 +67,13 @@ int main(int argc, char** argv) {
         VERIFIER(toucheActive(*special(fr, Touche::Effacer), Champ::Plaque) && toucheActive(*trouver(fr, '_'), Champ::Pseudo) && toucheActive(*special(fr, Touche::Espace), Champ::Pseudo));
     }
 
+    {   // émulateur du matin (tools/qa/emulateur.sh) : « Petit » avec p, e, t, i, à la même place en AZERTY et en QWERTY, accepté
+        const Touche* fr = clavier(Langue::Francais); const Touche* en = clavier(Langue::Anglais);
+        for (char c : {'p', 'e', 't', 'i'}) VERIFIER(trouver(fr, c)->ligne == trouver(en, c)->ligne && trouver(fr, c)->colonne == trouver(en, c)->colonne);
+        Saisie s; s.ouvrir("", 5);
+        for (char c : {'p', 'e', 't', 'i', 't'}) s.appuyer(*trouver(en, c));
+        VERIFIER(s.pseudo() == "Petit" && s.valide());
+    }
     const Touche* cl = clavier(Langue::Francais);
     // ---- RG-02, RG-05 : 1er lancement, 6 lettres, plaque proposée gardée
     {
