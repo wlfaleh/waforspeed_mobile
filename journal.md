@@ -1147,3 +1147,9 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 ### 2026-11-13 15:45:36 — WFS-535 attribué à Claude, agent dev3d (01Us6uCtPt) (po-scrum-master)
 - Demande d'une nouvelle session `@dev` (aucun ticket avant). **WFS-535** (E22 « Score », P1) : 1er ticket de E22, placé juste après les prêts du bandeau 🏁 (489, 507, 500, 510 pris entre 15:43 et 15:46) ; dépendance WFS-498 fusionnée.
 - Zone : `src/game/**` hors `game.*` (nouveau module `score_etoiles.*`), `tests/**` ; logique seule (WFS-536 crédit + banc et WFS-537 écran de fin après). Règles : `regles-de-gestion/WFS-535.md` et `regles-de-gestion/E22-score.md`.
+
+### 2026-11-13 15:46:08 — WFS-378 attribué à Claude, agent dev3d (01Us6uCwca) (session_01Us6uCwca4JJHJFfVwyADFv) (po-scrum-master)
+- Nouvelle session `@dev` (1re demande, aucun ticket avant). WFS-489, 507, 500, 510 et 535 (E17 à E22) venaient d'être donnés à d'autres sessions (plusieurs nouvelles sessions en même temps) : je donne le ticket prêt P1 suivant (plus petit numéro), **WFS-378** « Formes géométriques interdites : inventaire de toutes les zones et découpage en tickets » (P1).
+- Zone : E12, inventaire sans code du moteur : `regles-de-gestion/WFS-378-inventaire.md` (tableau par zone : objet, fichier et ligne, forme, nombre, capture du banc PC), hors décor des cartes (déjà dans E15 : WFS-369 à 373, 376) ; skills `artiste-3d` et `expert-realisme-3d`. Les tickets de remplacement sont proposés au PO, qui les crée.
+- Règles : `regles-de-gestion/WFS-378.md` + `regles-de-gestion/DA-realisme.md` ; branche `feature/waforspeed-378` ; captures, PR, appel du `lead-dev`, arrêt de la session après la fusion.
+
