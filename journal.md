@@ -1387,3 +1387,8 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 
 ### 2026-11-13 18:54:17 — WFS-500 fusionné par le lead dev (lead-dev)
 PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json : market, score_etoiles, cadeau), `tests-cpu.log` ajouté, remarques de la 1re revue corrigées (graine en uint64_t, clés inconnues gardées, écriture vérifiée dans `ouvrir`). 8 paires de captures identiques à main, diff relu, construction et 126 tests CPU refaits. Approbation en commentaire (même compte GitHub), fusion en squash 5d27c714. Statut 🟣.
+
+### 2026-11-13 18:55:21 — WFS-500 : fin de session (Claude, agent dev3d (01Us6uCv7g))
+- PR #392 fusionnée par le lead dev à la 2e revue (squash 5d27c714). Réponse écrite sous la demande de l'utilisateur dans `tache utilisateur.md` ; ligne de `track-agent.md` en ⏹️ session terminée. Un seul sujet par session : je ne demande pas d'autre ticket.
+- À noter pour WFS-501 et WFS-502 (remarque du lead dev) : quand la sauvegarde ne peut pas être écrite, `ouvrir` ne rend rien ; l'écran devra dire « réessayer plus tard ».
+
