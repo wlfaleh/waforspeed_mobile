@@ -1384,6 +1384,81 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 - Fait : façades des lieux hors kit percées avec les menuiseries réelles de WFS-402 (nouveau `src/world/archi_lieux.*` ; ajout d'une surcharge de `baieComplete` avec le mode des baies) : casino, cafés, galerie, scooters de la Corniche ; casino, centre commercial, garages, devantures des commerces de la Ville ; église de la Campagne modélisée (`decor_campagne_eglise.*` : nef 9 × 17 m, abside, clocher-mur, portail et baies en plein cintre, vitraux à part). Accroches annoncées : `tuilesCanal` (4 lignes, `decor_campagne_modeles.*`), `OB_EGLISE` et `ObjetBanc::y` pour le banc `campagne-objets`, 3 vues `carte-ville-lieu-*` dans `cartes_banc.cpp`.
 - Vérification : `test_archi_lieux` (nouveau) et 126 tests CPU réussis ; 29 paires de captures avant / après jour et nuit (`qa/pr/WFS-410/`) ; banc perf en Basse sans perte (Ville 339,0 → 337,4 ms, Corniche 255,1 → 239,3 ms, Campagne 256,0 → 254,8 ms ; lavapipe).
 - Limites : commerces du village de la Campagne hors zone (RG-07) → WFS-518 (en pause) ; paquets à republier après la fusion (WFS-471, `@cicd`) ; `captures_pr.sh` non lancé tel quel (dossier `build/` en Make), images faites par les mêmes bancs.
+
+### 2026-11-13 18:54:17 — WFS-500 fusionné par le lead dev (lead-dev)
+PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json : market, score_etoiles, cadeau), `tests-cpu.log` ajouté, remarques de la 1re revue corrigées (graine en uint64_t, clés inconnues gardées, écriture vérifiée dans `ouvrir`). 8 paires de captures identiques à main, diff relu, construction et 126 tests CPU refaits. Approbation en commentaire (même compte GitHub), fusion en squash 5d27c714. Statut 🟣.
+
+### 2026-11-13 18:55:21 — WFS-500 : fin de session (Claude, agent dev3d (01Us6uCv7g))
+- PR #392 fusionnée par le lead dev à la 2e revue (squash 5d27c714). Réponse écrite sous la demande de l'utilisateur dans `tache utilisateur.md` ; ligne de `track-agent.md` en ⏹️ session terminée. Un seul sujet par session : je ne demande pas d'autre ticket.
+- À noter pour WFS-501 et WFS-502 (remarque du lead dev) : quand la sauvegarde ne peut pas être écrite, `ouvrir` ne rend rien ; l'écran devra dire « réessayer plus tard ».
+
+
+### 2026-11-13 19:04:18 — WFS-490 : arbitrage du PO sur le chromé (PR #388, après 3 refus du lead dev) (po-scrum-master)
+- Demande du développeur Claude, agent dev3d (01Us6uCwDY), comme le prévoit la 3e revue du lead dev (5895451476). Preuve : `qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg` : la sonde du banc `finitions` ne contient que le ciel, plus sombre que l'asphalte au soleil ; « bas ≥ 40 % de la chaussée » et « haut plus clair que le bas » ne tiennent pas ensemble avec ce ciel.
+- **Décision** : chromé physique accepté pour WFS-490 (sonde entière à pleine force, chaussée réelle ρ 0,14 dessous) ; critère « haut plus clair que le bas » et « décor reconnaissable » **retirés de WFS-490** ; gardés : bas ≥ 40 % de la chaussée, nuit plus sombre que le brillant, brillant identique, autres finitions inchangées (`regles-de-gestion/WFS-490.md`, Suivi).
+- **WFS-539** créé (P2, E13, `@dev`, ⏳ En attente après WFS-490) : sonde de reflet avec décor et chaussée, ciel de la sonde calé sur le réel.
+- **ANO-266** (bloquante, marque) : logo au centre des jantes de la GT86, rangée dans **WFS-366** (RG-SUIVI-490). Décision écrite aussi en commentaire de la PR #388.
+
+### 2026-11-13 19:10:51 — WFS-483 : PR #397 corrigée après le 1er retour du lead dev (Claude, agent dev3d (01Us6uCvxs))
+- Corrigé (33945d53) : `qa/pr/WFS-483/tests-cpu.log` (127 tests CPU verts, branche synchronisée b2330652) et section « Tests CPU » dans la PR ; recadrages ×2 de la vue Poursuite (208, GT86, T-Cross, jour et nuit : « WFS » lisible) ; garage de 3/4 arrière (`plaque-garage-ar`) ; porte-plaques de la voiture courante gardés par pointeur (plus de clé `std::string` par image) ; tolérance du test (1,0 mm) / écart mesuré (0,1 mm) précisés.
+- Réponse point par point sous la revue dans la PR ; lead dev rappelé.
+
+
+### 2026-11-13 19:14:55 — WFS-489 : retour lead dev corrigé, PR #395 à relire (Claude, agent dev3d (01Us6uCxMq))
+- **Cause racine** : la Turquoise de la Golf est devenue payante (75 ★) ; le banc `garage` (WFS-11) avait 0 ★, « Choisir » devenait « Acheter » et était refusé : `garage-course` restait au garage et `course-p911-gris` changeait.
+- **Correction** (2a298679) : le banc crédite le prix et achète la Turquoise par « Acheter » avant « Choisir », puis remet sa sauvegarde en l'état ; **accroche de 5 lignes dans `src/ui/garage_bancs.cpp`** (annoncée ici), aucun changement du jeu. Journal du banc sans `[ERREUR]`, `garage-course` en course, `course-p911-gris` identique à l'« avant ».
+- Synchronisation avec `main` (conflit `CMakeLists.txt` : `test_garage_achat` et `test_score_course` gardés) ; `tests_cpu.sh build` 127 réussis (a19d1cf3) ; toutes les captures refaites sur 2a298679 ; réponse point par point sous la revue ; lead dev rappelé.
+
+### 2026-11-13 19:15:17 — WFS-397 : corrections du retour lead dev de la PR #393 (Claude, agent dev3d (01Us6uCt5A))
+- **Fait** (19d2bba0, d83006ba) : logo VW des 4 cache-moyeux retiré (Virtus) ; feux de la Virtus séparés par leurs nœuds exacts (le moteur refusait le matériau mêlé à des voyants de l'habitacle, d'où feux éteints et halo par défaut) ; doublures des passages de roue de la W212 (`tools/remplacants/doubler_passages.mjs`, le modèle n'en avait pas) ; hauteur partagée : caisse +25 mm, pavillon +15 / +14 mm au-dessus de la ceinture (jeu pneu / aile 47 / 38 et 61 / 58 mm, comme les berlines du jeu) ; `qa/pr/WFS-397/tests-cpu.log`.
+- **Vérification** : 6/6 ± 1 % pour les deux ; 7 951 567 et 7 787 310 octets ; 126 tests CPU réussis (branche synchronisée, e46a16ab) ; captures « après » jour / nuit refaites et regardées.
+- **Limite** : garde au sol réelle non sourcée (fiche sans valeur, sites des constructeurs fermés au réseau de la session).
+- **Incident évité** : un `git stash` a mis de côté mes fichiers en cours pendant une capture ; restaurés aussitôt (`git stash pop`), captures de ce moment effacées et refaites.
+
+
+### 2026-11-13 19:17:33 — WFS-507 fusionné par le lead dev (lead-dev)
+- PR #396 fusionnée en squash (c0bd7a95) après la 2e revue sur 769fcb6a : bloc « Tests CPU » ajouté (125 réussis, commit testé d7cbcd71), changement de `garage_commun.*` annoncé au journal, `creditAffiche()` retirée. « ✅ Approuvé » en commentaire (même compte GitHub).
+- Refait par le lead dev : construction et tests CPU sur 769fcb6a (125 réussis), puis sur le mélange local avec `main` contenant WFS-500 (126 réussis, non poussé).
+- Statut 🟣 ; ligne ajoutée à `qa/Check.md`. Reste en français au garage en anglais jusqu'à WFS-489 : Choisir / Retour / Couleur / nom de la couleur.
+- Pour le PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite). À créer en anomalie.
+
+### 2026-11-13 19:18:03 — WFS-507 : fin, session terminée (Claude, agent dev3d (01Us6uCw3C))
+- PR #396 fusionnée en squash par le lead dev à la 2e revue (c0bd7a95) ; statut 🟣 ; ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : il passe ✅ par le robot des statuts après les bancs du matin.
+- Reste au garage en anglais, dans la zone de WFS-489 (#395, pas encore fusionnée) : « Choisir », « Retour », « Couleur » et le nom de la couleur. Session de WFS-489 prévenue : à sa synchronisation, garder les deux blocs de `assets/textes/fr.txt` / `en.txt` et les deux lignes de commentaire de `src/ui/garage.h`.
+- **Pour le PO** (deux points hors de mon ticket, à décider) : (1) défaut déjà présent sur `main`, vu par le lead dev : le bandeau « paquet disponible » du menu recouvre le bouton CRÉDITS en bas à droite (FR et EN) → anomalie à créer ; (2) cartes d'essai cachées (`WFS_CARTES_TEST`, jamais montrées aux joueurs) : description et quartiers en français au choix du terrain en anglais (zone de WFS-505).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 19:24:28 — WFS-483 fusionné par le lead dev (lead-dev)
+- PR #397, 2e revue sur 33945d53 : les 3 points bloquants du refus sur 51fac475 sont corrigés (journal « Tests CPU » et `tests-cpu.log`, 6 recadrages Poursuite ×2 où « WFS » se lit de jour et de nuit, garage de 3/4 arrière). La remarque sur `support()` est corrigée aussi : les porte-plaques de la voiture courante sont gardés par pointeur.
+- Construction et tests refaits par le lead dev : 127 test(s) réussi(s). Approbation en commentaire (même compte GitHub), fusion en squash 1a24dc15. Statut 🟣, ligne ajoutée dans `qa/Check.md`.
+- Pour le PO : à 5,2 m de la caméra de poursuite, une plaque de 8 caractères sera petite (RG-06). C'est un point à surveiller, la caméra ne change pas. Le coût RG-07 reste à mesurer en ms sur le téléphone.
+
+### 2026-11-13 19:24:56 — WFS-483 fusionné, session terminée (Claude, agent dev3d (01Us6uCvxs))
+- PR #397 fusionnée par le lead dev (squash 1a24dc15) au 2e passage. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé au PO.
+- Suite du sujet : WFS-484 (plaques au hasard du trafic et des adversaires) peut partir, il réutilise `src/render/vehicule_plaque*` et `tools/plaques_joueur.mjs`. À suivre : RG-07 à mesurer sur le téléphone (Corniche, Basse) ; plaque de 8 caractères petite en vue Poursuite (caméra à 5,2 m).
+
+### 2026-11-13 19:29:19 — WFS-490 : 3e retour lead dev corrigé, PR #388 à relire (Claude, agent dev3d (01Us6uCwDY))
+- Corrigé (21bff82f, 38dcdca7) : chrome = métal PBR standard (sonde de reflet à pleine force, sans part diffuse) ; sous l'horizon, chaussée réelle (asphalte ρ 0,14, DA-realisme § 3) ; preuve que la sonde ne contient que le ciel (`qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg`) ; arbitrage du PO (7b9baef9) : « haut plus clair » et « décor reflété » passent à WFS-539.
+- Accroches `scene.frag` : 8 lignes au total (chrome : 3 lignes, commentaire compris).
+- Vérifié : bas de caisse / chaussée au soleil 48 à 155 % (≥ 40 %) ; nuit chromé < brillant ; brillant identique au pixel (14 images) ; 127 tests CPU (99657589).
+
+### 2026-11-13 19:37:26 — WFS-397 fusionné par le lead dev (lead-dev)
+PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moyeux de la Virtus sans logo, feux de la Virtus allumés sur les verres et sans halo, doublures des passages de roue de la W212, tests CPU joints, caisse +25 mm et pavillon +15 / +14 mm, 6/6 à ±1 %). Captures ouvertes, diff lu, construction et 126 tests CPU refaits sur la branche fusionnée avec main. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7c51937c. Statut 🟣. Remarques pour WFS-360 et le PO : encoche au coffre de la Virtus, 3e feu stop de la W212.
+
+### 2026-11-13 19:38:02 — WFS-397 fusionné (#393, squash 7c51937c, lead dev) : fin de la session (Claude, agent dev3d (01Us6uCt5A))
+- W212 et Virtus GT dans `assets/cars/remplacants/`, 6/6 mesures à ±1 %, < 8 Mo, sans marque ; rien de branché (WFS-360).
+- Pour le PO (tâches séparées, RG-09 et remarques du lead dev) : encoches du capot et du coffre de la Virtus à l'ancienne place des logos ; centre de grille de la Virtus noir uni ; 3e feu stop de la W212 plus blanc que rouge de nuit ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`) ; 155 k triangles par voiture à mesurer au banc perf au branchement.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-13 19:43:39 — WFS-401 : PR #394 refusée par le lead dev (lead-dev)
+- Commit relu : 96a23dca. Avis agent 3D « VALIDÉ avec réserves » présent. Captures ouvertes (bord, suite, sillage, gerbe et zooms, falaise et blocs, lune, rivière la nuit, soleil bas) : mieux qu'avant, rien de dégradé. Diff lu en entier. Construction et tests refaits sur la branche fusionnée en local avec main 1f88dde2 : 127 test(s) réussi(s).
+- Refus pour l'hygiène seulement : (1) PR en conflit avec main sur `journal.md` (GitHub : dirty) ; (2) section « Tests CPU » et `qa/pr/WFS-401/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11). Remarques non bloquantes : `fwidth` calculé dans un branchement qui dépend de la distance (`shaders/eau.glsl:169`), `else` rattaché au 2e `if` (`plage.cpp:3389`). Revue 5897016069 (COMMENT : même compte GitHub).
+
+### 2026-11-13 19:44:35 — WFS-490 fusionné par le lead dev (lead-dev)
+- PR #388, 4e revue sur 35d93999, après l'arbitrage du PO (commentaire 6862309388) et la réponse du développeur (6862820871). « ✅ Approuvé » en commentaire (revue 5897026188, même compte GitHub), fusion squash cf8136e3.
+- Vérifié : sonde de reflet à pleine force, chaussée réelle ρ 0,14 sous l'horizon (même éclairage que le sol de `scene.frag`) ; bas de caisse ≥ 40 % de la chaussée (mesure du lead dev : 208 ≈ 90 %, GT86 au-dessus de la route proche) ; nuit chromé < brillant ; brillant 0 pixel différent ; 7 autres finitions identiques à 170da9b2. Construction et 128 tests CPU refaits sur la branche fusionnée avec `main`.
+- Remarques pour WFS-539 : `preuve-sonde-brute-gt86.jpg` effacée par la régénération des captures (lisible au commit 38dcdca7) ; chrome noir sous l'horizon la nuit.
 ### 2026-11-13 15:48:21 — WFS-401 : début, branche créée (Claude, agent dev3d (01Us6uCxKQ))
 - Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
 - Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.

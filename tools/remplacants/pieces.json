@@ -1,0 +1,307 @@
+{
+  "w212": [
+    {
+      "nom": "anneau chromé de l'étoile de la calandre",
+      "materiau": 4,
+      "triangles": 382,
+      "boite": [
+        -0.12,
+        0.5355,
+        -2.42,
+        0.12,
+        0.7655,
+        -2.33
+      ]
+    },
+    {
+      "nom": "étoile de la calandre",
+      "materiau": 4,
+      "triangles": 28,
+      "boite": [
+        -0.09,
+        0.5855,
+        -2.41,
+        0.09,
+        0.7555,
+        -2.34
+      ]
+    },
+    {
+      "nom": "disque noir derrière l'étoile de la calandre",
+      "materiau": 3,
+      "triangles": 32,
+      "boite": [
+        -0.11,
+        0.5455,
+        -2.41,
+        0.11,
+        0.7555,
+        -2.34
+      ]
+    },
+    {
+      "nom": "anneau peint de l'étoile, pris dans la pièce peinte des bords de la calandre",
+      "action": "cercle",
+      "centre": [
+        0,
+        0.6515
+      ],
+      "rayon": 0.16,
+      "materiau": 9,
+      "triangles": 1410,
+      "boite": [
+        -0.44,
+        0.5355,
+        -2.42,
+        0.44,
+        0.7655,
+        -2.19
+      ]
+    },
+    {
+      "nom": "lames peintes de la calandre (bouts amenés au milieu, après l'anneau peint)",
+      "action": "prolonger",
+      "mode": "bouts",
+      "seuil": 0.2,
+      "materiau": 9,
+      "triangles": 1410,
+      "boite": [
+        -0.44,
+        0.5355,
+        -2.42,
+        0.44,
+        0.7655,
+        -2.19
+      ]
+    },
+    {
+      "nom": "barres basses de la calandre, gauche et droite (prolongées jusqu'au milieu)",
+      "action": "prolonger",
+      "seuil": 0.15,
+      "nombre": 2,
+      "materiau": 4,
+      "triangles": 66,
+      "boite": [
+        -0.44,
+        0.5855,
+        -2.39,
+        0.44,
+        0.6455,
+        -2.3
+      ],
+      "mode": "bouts"
+    },
+    {
+      "nom": "barre haute de la calandre, côté gauche (prolongée)",
+      "action": "prolonger",
+      "seuil": 0.15,
+      "materiau": 4,
+      "triangles": 77,
+      "boite": [
+        -0.44,
+        0.6655,
+        -2.37,
+        -0.1,
+        0.7055,
+        -2.27
+      ],
+      "mode": "bouts"
+    },
+    {
+      "nom": "barre haute de la calandre, côté droit (prolongée)",
+      "action": "prolonger",
+      "seuil": 0.15,
+      "materiau": 4,
+      "triangles": 75,
+      "boite": [
+        0.1,
+        0.6655,
+        -2.37,
+        0.44,
+        0.7055,
+        -2.27
+      ],
+      "mode": "bouts"
+    },
+    {
+      "nom": "socle de l'étoile du capot",
+      "materiau": 4,
+      "triangles": 176,
+      "boite": [
+        -0.03,
+        0.8155,
+        -2.24,
+        0.03,
+        0.8555,
+        -2.17
+      ]
+    },
+    {
+      "nom": "anneau de l'étoile du coffre",
+      "materiau": 4,
+      "triangles": 240,
+      "boite": [
+        -0.06,
+        0.9255,
+        2.29,
+        0.06,
+        1.0355,
+        2.37
+      ]
+    },
+    {
+      "nom": "étoile du coffre",
+      "materiau": 4,
+      "triangles": 19,
+      "boite": [
+        -0.05,
+        0.9455,
+        2.3,
+        0.05,
+        1.0255,
+        2.36
+      ]
+    }
+  ],
+  "virtus": [
+    {
+      "nom": "logo de la calandre (chrome)",
+      "materiau": 6,
+      "triangles": 210,
+      "boite": [
+        -0.08,
+        0.6365,
+        -2.24,
+        0.08,
+        0.8065,
+        -2.11
+      ]
+    },
+    {
+      "nom": "fond du logo de la calandre (2 pièces)",
+      "materiau": 7,
+      "triangles": 19,
+      "nombre": 2,
+      "boite": [
+        -0.08,
+        0.6365,
+        -2.24,
+        0.08,
+        0.8065,
+        -2.11
+      ]
+    },
+    {
+      "nom": "fond du logo de la calandre (pièce moyenne)",
+      "materiau": 7,
+      "triangles": 9,
+      "boite": [
+        -0.08,
+        0.6365,
+        -2.24,
+        0.08,
+        0.8065,
+        -2.11
+      ]
+    },
+    {
+      "nom": "fond du logo de la calandre (petite pièce)",
+      "materiau": 7,
+      "triangles": 8,
+      "boite": [
+        -0.08,
+        0.6365,
+        -2.24,
+        0.08,
+        0.8065,
+        -2.11
+      ]
+    },
+    {
+      "nom": "logo du moyeu du volant",
+      "materiau": 6,
+      "triangles": 42,
+      "boite": [
+        0.3,
+        0.9265,
+        -0.46,
+        0.37,
+        0.9865,
+        -0.42
+      ]
+    },
+    {
+      "nom": "disque du logo du coffre, modelé à fleur de tôle (normales lissées)",
+      "action": "normales",
+      "centre": [
+        0.004,
+        0.9595
+      ],
+      "rayon": 0.095,
+      "appui": 1.6,
+      "zMin": 2.05,
+      "materiau": 0,
+      "triangles": 6460,
+      "boite": [
+        -0.7,
+        0.5865,
+        1.6,
+        0.7,
+        1.2365,
+        2.3
+      ]
+    },
+    {
+      "nom": "logo du cache-moyeu, roue avant gauche",
+      "materiau": 6,
+      "tous": true,
+      "boite": [
+        -0.87,
+        0.29,
+        -1.439,
+        -0.79,
+        0.375,
+        -1.349
+      ]
+    },
+    {
+      "nom": "logo du cache-moyeu, roue avant droit",
+      "materiau": 6,
+      "tous": true,
+      "boite": [
+        0.79,
+        0.29,
+        -1.439,
+        0.87,
+        0.375,
+        -1.349
+      ]
+    },
+    {
+      "nom": "logo du cache-moyeu, roue arrière gauche",
+      "materiau": 6,
+      "tous": true,
+      "boite": [
+        -0.87,
+        0.29,
+        1.2,
+        -0.79,
+        0.375,
+        1.29
+      ]
+    },
+    {
+      "nom": "logo du cache-moyeu, roue arrière droit",
+      "materiau": 6,
+      "tous": true,
+      "boite": [
+        0.79,
+        0.29,
+        1.2,
+        0.87,
+        0.375,
+        1.29
+      ]
+    }
+  ]
+}
