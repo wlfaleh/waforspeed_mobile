@@ -1116,3 +1116,6 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - PR #385 fusionnée en squash par le lead dev à la 2e revue (66bf9698) ; statut 🟣 ; ligne dans `qa/Check.md` (lead dev). Ticket ni 🟡 ni E15 : il passe ✅ par le robot des statuts après les bancs du matin.
 - Pour le PO : tâche de finition proposée (non bloquante) : pli au centre de la tôle recousue de la Giulia, plaque un peu plus brillante sur le hayon de la Compass (visibles au zoom). WFS-457 et WFS-483 ne sont plus bloqués par WFS-456.
 - Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-13 15:18:28 — Épic E22 « Score » créée : WFS-535 à 538 (po-scrum-master)
+- Demande de l'utilisateur : « crée l'épic E22 score avec ta proposition ». Score par course (place, temps, conduite propre, 2 défis par mode) → 5 à 40 ★ (au lieu de 10 ★ fixes), détail en fin de course FR / EN, banc d'équilibrage gardé. **WFS-535** ⏳ Prêt (`@dev`) ; 536 et 537 après 535 ; 538 après 535 et 482. Règles : `regles-de-gestion/E22-score.md`.
