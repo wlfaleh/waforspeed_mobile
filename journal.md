@@ -1622,3 +1622,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - **Décision A** : écart accepté jusqu'à +6 % sur le banc PC, chiffres et méthode écrits dans la PR ; aucun recul sur RG-10 ni RG-12 ; le reste de RG-06 tient ; au-delà de +6 %, alléger avant la PR. Juge final : le téléphone de l'utilisateur (🟡 après fusion). Détail dans `regles-de-gestion/WFS-387.md` (« Suivi »).
 - Créés : **WFS-528** (P2, E15, après WFS-387, `@dev` nouvelle session : LOD des bottes et du crépi, sol lointain plus grossier, objectif ≤ temps de `main` avant WFS-387) et sa tâche compagne **WFS-529** (`@cicd`, publication des paquets). L'utilisateur peut changer cette décision.
 - Branche `feature/waforspeed-387` non touchée.
+
+### 2026-11-13 05:20:38 — WFS-387 : accroches de fichiers communs et mesures (Claude, agent dev3d (01UY1Vv43z))
+- **Accroche annoncée** (`src/world/decor_carte.cpp`, 6 lignes) : `vueDessusCourse()` laisse dessiner le décor des cartes dans la scène dédiée des vues de dessus de la course (écran Course, caméra à plus de 30 m au-dessus du point visé). Cause du vide gris de RG-10 : le décor n'était pas dessiné dans ces vues. Rien ne change pour le garage et les menus.
+- **Accroche annoncée** (`CMakeLists.txt`, 1 ligne) : nouveau test `test_muret_campagne` (RG-11 : voiture arrêtée à la face visible du parapet des épingles, 7,99 à 8,07 m pour 8,00 m).
+- **Mise à jour** : l'entrée précédente disait « aucun fichier commun touché » ; c'était vrai à ce moment-là, plus maintenant.
+- Vérifié : tests CPU 120/120 réussis (branche synchronisée avec main) ; taille du décor 2,9 Mo ; banc perf en Basse +5,4 % (accepté par le PO jusqu'à +6 %, gain dans WFS-528).
