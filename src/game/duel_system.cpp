@@ -10,7 +10,7 @@
 #include "../render/renderer.h"
 #include "../ui/text.h"
 #include "course_system.h"
-#include "course5.h"   // WFS-112 : ouvrirChoixMode (« Retour » de la fin du duel) ; WFS-189 : rechargerNitro
+#include "course5.h"   // WFS-189 : rechargerNitro
 #include "commandes_tactiles.h"   // WFS-146 (accroche, ANO-35) : dessin2d::biseau des boutons du résultat
 #include "game.h"
 #include "player.h"
@@ -161,8 +161,9 @@ public:
             const int b = bouton_; doigt_ = -1; bouton_ = 0;
             if (g.ecran != Ecran::Course || !s.inRoom()) return true;
             if (b == 1 && revanche_.contient(t.x, t.y) && s.status() == duel::Status::Done) { WFS_LOG("duel : « Revanche »"); s.setReady(true); }   // prêt pour la manche suivante
-            // RG-11 : « Retour » quitte le duel et ramène au menu des modes (jamais à l'accueil seul)
-            if (b == 2 && menu_.contient(t.x, t.y)) { WFS_LOG("duel : « Retour » → menu des modes"); s.leave(); g.allerA(Ecran::Menu); ouvrirChoixMode(); }
+            // WFS-517 (RG-05) : « Retour » quitte le duel et ramène au menu principal (le duel ne s'ouvre plus par le menu
+            // des modes de la Course solo, mais par « Duel en ligne » du menu principal)
+            if (b == 2 && menu_.contient(t.x, t.y)) { WFS_LOG("duel : « Retour » → menu principal"); s.leave(); g.allerA(Ecran::Menu); }
             return true;
         }
         if (g.ecran != Ecran::Course || (s.status() != duel::Status::Done && s.status() != duel::Status::Ready) || overT_ < 0.9) return false;

@@ -915,14 +915,17 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
         if (g.ecran() == e) WFS_LOG("poursuite (parcours) : %s → écran %s (attendu)", etape, nomEcran(e));
         else { ecarts++; WFS_ERR("poursuite (parcours) : %s → écran %s, attendu %s", etape, nomEcran(g.ecran()), nomEcran(e)); }
     };
-    {   // cartes et « Continuer » du panneau des modes (mise en page de modes_ecran.cpp, marges nulles au banc)
-        const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f, cx = W / 2;
-        const float gap = 2.4f * u, cw = std::min(42 * u, (W - 8 * u - 3 * gap) / 4), x0 = cx - (4 * cw + 3 * gap) / 2;
+    // WFS-517 : zones lues sur le panneau lui-même (avant : mise en page à 4 cartes recopiée ici)
+    auto panneau = [&](const char* zone) {
+        float zx = 0, zy = 0;
+        if (choixModeCentre(zone, zx, zy)) appuyer(zx, zy); else { ecarts++; WFS_ERR("poursuite (parcours) : zone %s du panneau absente", zone); }
+    };
+    {   // cartes et « Continuer » du panneau des modes
         g.allerA(Ecran::Menu); images(30, 10);
         choixModeBanc(true); ouvrirChoixMode(); images(10, 5);
         if (!choixModeOuvert()) { ecarts++; WFS_ERR("poursuite (parcours) : panneau des modes fermé"); }
-        appuyer(x0 + 2 * (cw + gap) + cw / 2, 26 * u + 17 * u);                         // carte 03 « Poursuite »
-        appuyer(x0 + 4 * cw + 3 * gap - 14 * u, H - 8 * u - 6 * u + 4 * u);               // « Continuer »
+        panneau("carte2");      // carte 03 « Poursuite »
+        panneau("continuer");
         attendu(Ecran::Garage, "« Poursuite » puis « Continuer »");
         if (modeCourse() != ModeCourse::Poursuite) { ecarts++; WFS_ERR("poursuite (parcours) : mode %s après « Continuer »", nomMode(modeCourse())); }
         else WFS_LOG("poursuite (parcours) : mode %s retenu", nomMode(modeCourse()));
@@ -1041,12 +1044,10 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
         Sauvegarde inconnue; inconnue.lire("version=1\nmode=helico\n");
         if (modeDeCle(ancienne.mode) != ModeCourse::Checkpoint || modeDeCle(inconnue.mode) != ModeCourse::Checkpoint) { ecarts++; WFS_ERR("poursuite (parcours) : ancienne sauvegarde : mode %s", nomMode(modeDeCle(ancienne.mode))); }
         else WFS_LOG("poursuite (parcours) : ancienne sauvegarde (sans clé mode, ou mode inconnu) → Checkpoint");
-        const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f, cx = W / 2;
-        const float gap = 2.4f * u, cw = std::min(42 * u, (W - 8 * u - 3 * gap) / 4), x0 = cx - (4 * cw + 3 * gap) / 2;
         choixModeBanc(true); ouvrirChoixMode(); images(10, 5);
         if (!choixModeOuvert()) { ecarts++; WFS_ERR("poursuite (parcours) : redémarrage : panneau des modes fermé"); }
         capture("poursuite-redemarrage");
-        appuyer(x0 + 4 * cw + 3 * gap - 14 * u, H - 8 * u - 6 * u + 4 * u);   // « Continuer », sans toucher de carte
+        panneau("continuer");   // « Continuer », sans toucher de carte
         attendu(Ecran::Garage, "redémarrage, Course solo puis « Continuer »");
         if (modeCourse() != ModeCourse::Poursuite) { ecarts++; WFS_ERR("poursuite (parcours) : redémarrage : panneau sur %s, attendu Poursuite", nomMode(modeCourse())); }
         else WFS_LOG("poursuite (parcours) : redémarrage : le panneau des modes rouvre sur Poursuite");
