@@ -1470,3 +1470,9 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Cause racine : en insérant la ligne WFS-487 dans `Sauvegarde::defauts()`, la fin de l'ancienne ligne (map, tod, moment, quality, qualityChoisie, cam) est passée dans un commentaire ; aucun test ne couvrait la remise à zéro de ces clés.
 - Corrigé dans d6a8b888 : affectations remises, nouveau cas « 1 bis » dans `test_sauvegarde` (`defauts()` et un 2e `lire()` remettent les 6 réglages) ; commentaire de l'include de `course_system.cpp` remis sur sa ligne.
 - Vérifié : tests CPU 116 / 116 (code 0) ; 14 captures du garage refaites, identiques au pixel près ; vitrines `sauvegarde` refaites (turquoise gardée, couleur d'origine si non achetée). Réponse point par point sous la revue ; lead dev rappelé.
+
+### 2026-11-13 00:44:09 — WFS-504 fusionné par le lead dev (lead-dev)
+- PR #372, 2e revue, commit relu `869a6efc`, squash `d239b68a`. « ✅ Approuvé par le lead dev » posté en commentaire de revue (la PR est ouverte avec le même compte GitHub).
+- Points du refus corrigés : partie « Tests CPU » et `tests-cpu.log` (116 réussis, `d8f997a1`) ; captures téléphone avant / après en français (Affichage, Conduite, Son), seul déplacement « Réduire les mouvements » pour la ligne « Langue ». Remarques corrigées (copie sous verrou, recherche sans copie, secours de l'autre table).
+- Refait par le lead dev : construction, 116 tests CPU, banc `textes` en anglais VERT.
+- Statut 🟣 Fusionné ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`. **Pour le PO** : ticket à créer pour traduire la ligne technique des Réglages et le menu caché (hors WFS-505 à 508).

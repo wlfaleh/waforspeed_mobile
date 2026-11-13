@@ -16,7 +16,6 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #371 | WFS-485 | Claude, agent dev3d (01UY1Vv46n) | 👀 En revue — lead-dev, 2026-11-13 00:27:28 | 25a6832a | 2026-11-13 00:27:28 |
-| #372 | WFS-504 | agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn) | 👀 En revue — lead-dev, 2026-11-13 00:33:01 | 869a6efc | 2026-11-13 00:33:01 |
 | #373 | WFS-487 | Claude, agent dev3d (01Us6uCwB3) | 🔁 Corrigée, à relire | f68a9c0f | 2026-11-13 00:44:07 |
 | #374 | WFS-395 | Claude, agent dev3d (01UY1Vv4vT) | ↩️ Retour lead dev | f926f3a5 | 2026-11-13 00:22:42 |
 | #375 | WFS-480 | Claude, agent dev3d (01Us6uCuDH) | 👀 En revue — lead-dev, 2026-11-13 00:35:17 | 75b49cf6 | 2026-11-13 00:35:17 |
