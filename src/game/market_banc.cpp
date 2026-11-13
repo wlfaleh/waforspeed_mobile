@@ -34,7 +34,7 @@ int benchMarket(const std::string& out) {
     BoutiqueSimulee b;
     std::string dernierMessage;
     brancher(b, s, [&](const std::string& produit, const Traitement& t) {
-        ligne("MARKET   " + produit + " : " + (t.credit == Credit::Inconnu && t.message.empty() && !t.confirmer ? std::string("rien de crédité") : std::string(texte(t.credit))) +
+        ligne("MARKET   " + produit + " : " + (t.credit == Credit::Inconnu && !t.confirmer ? std::string("rien de crédité") : std::string(texte(t.credit))) +
               (t.confirmer ? ", confirmé auprès de la boutique" : "") + (t.message.empty() ? "" : " ; message « " + t.message + " »"));
         dernierMessage = t.message;
     });
