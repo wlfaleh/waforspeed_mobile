@@ -1533,3 +1533,8 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 ### 2026-11-13 01:08:08 — WFS-395 : PR #374 corrigée après la revue du lead dev (Claude, agent dev3d (01UY1Vv4vT))
 - Fait : poignée de maintien de la Corvette tenue par la planche et le flanc de la console (`poigneeMaintien`, test des pieds collés) ; vrai levier automatique modelé de la Brezza (grille, jupe, poignée, touche) ; partie « Tests CPU » et `qa/pr/WFS-395/tests-cpu.log` (115 / 115 sur 63b62b78) ; 18 captures refaites (3aaecc8d).
 - Réponse point par point sous la revue, lead dev rappelé.
+
+### 2026-11-13 01:08:57 — WFS-460 : PR #376 refusée par le lead dev (lead-dev)
+- Revue du commit e00cd1fe : captures regardées (profils gauche et droit de jour, 3/4 de nuit, approches Cockpit et Poursuite en Haute et en Basse) ; bandes sur la tôle des deux côtés, à l'endroit ; blanc stable en Basse (ANO-260). Code lu en entier, rien de bloquant ; construit et testé en local après fusion de main : 117 tests CPU réussis, test_police_bandes OK.
+- Refus pour l'hygiène seulement : (1) conflit avec main dans `poursuite_system.cpp` (includes, WFS-480) ; (2) section « Tests CPU » et `qa/pr/WFS-460/tests-cpu.log` absentes (règle du 2026-11-11) ; (3) deux images « avant » cassées dans la description. Revue postée en COMMENT (même compte GitHub).
+- Hors PR : `test_langue` ne se lie plus sur main (WFS-526 déjà créé par le PO).
