@@ -24,6 +24,29 @@ Agent : agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn)
   - le reste du menu, la pause et la course restent en français : WFS-505 à 508 (hors périmètre) ;
   - non vérifié sur un vrai téléphone (lecture de la langue par JNI compilée seulement par la CI Android) ; les captures ont été faites au commit `a9638ffd`, le commit suivant ne change que la lecture de la langue du téléphone (valeur atomique au lieu d'un verrou à chaque texte), banc `textes` refait : vert.
 
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` : **116 test(s) réussi(s)** (dont `test_langue`, `test_reglages_onglets`), commit testé `d8f997a1` ; journal complet : [`tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/tests-cpu.log).
+
+```
+[OK] test_ville_sol (4 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 116 test(s) réussi(s) en 461 s
+```
+
+## Téléphone 2400x1080, en français : avant (main) / après (branche) — revue #372, point 2
+
+Sur téléphone, l'onglet Affichage passe de 3 + 3 à 4 + 3 lignes parce qu'il reçoit la 7e ligne « Langue » demandée par RG-02 (la place de 6 rangs du panneau ne change pas). Seul déplacement : « Réduire les mouvements » passe du haut de la 2e colonne au 4e rang de la 1re ; toutes les autres lignes, les boutons et leurs tailles sont inchangés. Conduite et Son : identiques (3 + 3 et 2). Au menu comme en pause, le panneau est le même (seul le surtitre change) : l'Affichage en pause sur téléphone est la capture `textes-fr-reglages-pause` (après), main ne capture pas cet onglet en pause.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| Affichage, menu | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/avant-telephone-reglages-onglet-affichage-menu.jpg?raw=true) | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/apres-telephone-reglages-onglet-affichage-menu.jpg?raw=true) |
+| Affichage, pause | — | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/apres-textes-fr-reglages-pause.jpg?raw=true) |
+| Conduite, pause | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/avant-telephone-reglages-onglet-conduite-pause.jpg?raw=true) | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/apres-telephone-reglages-onglet-conduite-pause.jpg?raw=true) |
+| Son, pause | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/avant-telephone-reglages-onglet-son-pause.jpg?raw=true) | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/apres-telephone-reglages-onglet-son-pause.jpg?raw=true) |
+| Son, gaucher | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/avant-telephone-reglages-onglet-son-gaucher.jpg?raw=true) | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/apres-telephone-reglages-onglet-son-gaucher.jpg?raw=true) |
+
 ## Captures anglaises (après seulement : l'anglais n'existe pas sur main)
 
 - `apres-textes-en-reglages-affichage` : ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-504/qa/pr/WFS-504/apres-textes-en-reglages-affichage.jpg?raw=true)
