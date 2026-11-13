@@ -15,7 +15,7 @@ Agent : Claude, agent dev3d (01Us6uCveE)
 - **Inventaire avant / après (RG-01)** : `qa/pr/WFS-410/inventaire.md` — 8 sortes de bâtiments hors kit + l'église sans vraies baies avant → **0 après** dans la zone du ticket. Hors zone (RG-07) : commerces du village de la Campagne (WFS-518, en pause).
 - **Comment c'est vérifié** :
   - `tests/test_archi_lieux.cpp` (nouveau) : mur vraiment percé (aire = façade − baies, aucun triangle dans une baie), menuiseries réelles même interrupteur WFS-415 coupé, niveau loin plein, arcs sans mur dans l'ouverture, repère direct, budget (casino de la Corniche : 5 830 triangles), église : nef 9,00 × 17,00 m, portail 2,20 × 4,40 m (±1 %), aucun triangle dégénéré, 7 568 triangles (846 au loin).
-  - `bash tools/qa/tests_cpu.sh build` : **124 tests réussis**.
+  - `bash tools/qa/tests_cpu.sh build` : **126 tests réussis** (après synchronisation avec main).
   - Captures jour et nuit ci-dessous (bancs `corniche`, `ville`, `campagne-objets`), avant sur `main`, après sur la branche.
 - **Performance (RG-06), banc `perf` en Basse, avant (main) / après (branche), même machine (rendu logiciel lavapipe : temps relatifs)** : Ville 339,0 → 337,4 ms par image (398 761 → 410 242 triangles, +2,9 %, 201 appels de dessin des deux côtés) ; Corniche 255,1 → 239,3 ms (255 appels des deux côtés) ; Campagne 256,0 → 254,8 ms (194 appels des deux côtés). Aucune perte ; tout est préparé au chargement.
 - **Taille des actifs ajoutés (RG-08)** : **0 Mo** (tout est calculé par le code, aucun fichier d'actif).
