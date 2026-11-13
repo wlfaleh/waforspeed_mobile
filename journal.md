@@ -1583,3 +1583,13 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
   - golf, mustang et 911 du trafic retrouvent aussi leur carrosserie en Basse au-delà de 15 m (même cause qu'ANO-260) : à faire vérifier par l'utilisateur ;
   - la rampe des gyrophares de la police est encore faite de cubes (hors périmètre de WFS-460, règle des formes nues) : à planifier.
 
+### 2026-11-13 01:43:57 — WFS-517 : PR #377 ouverte (Claude, agent dev3d (01Us6uCuD6))
+- Fait : Course solo à 3 cartes (Checkpoint, Course à 5, Poursuite), bloc centré, focus de la manette sur le panneau ; « Retour » de la fin du duel → menu principal ; bancs `benchDuelAmis`, `benchParcours`, chauffe et poursuite qui ne recopient plus la mise en page à 4 cartes.
+- Fichiers : `src/game/modes_ecran.cpp`, `src/game/duel_system.cpp`, `src/ui/ecrans/salon.cpp` (banc), `src/platform/chauffe_systeme.cpp` et `src/game/poursuite_system.cpp` (accroches de banc, quelques lignes).
+- Vérification (RG-07) : 116 tests CPU verts ; banc `parcours` : 0 écart (accueil → « Duel en ligne » → salon ; accueil → Course solo → Checkpoint → garage → terrain → course → fin → menu ; dernier mode duel → Checkpoint) ; `menu2` : parcours duel conforme, « Retour » → menu principal ; `chauffe` 0 écart ; `course5` : parcours de la poursuite 0 écart, redémarrage OK. Captures dans `qa/pr/WFS-517/`.
+- Limites : les lignes « 2 pipelines créés pendant la course » (menu2, déjà sur main) et « aucune police à 10-30 m » (course5) ne viennent pas de ce ticket. La casse de `test_langue` sur main a été signalée au PO (WFS-526). Bancs relancés après la synchronisation e24f72a1 : résultat en commentaire de la PR.
+
+
+### 2026-11-13 01:57:38 — WFS-517 : PR #377 refusée par le lead dev (lead-dev)
+- Commit relu ff07812d. Les 10 captures sont ouvertes : 3 cartes centrées sans trou, salon et fin du duel inchangés, « Retour » ramène au menu principal. Tout le diff est lu (5 fichiers de `src/`), sans défaut de code. Construction et tests refaits par le lead dev : 119 test(s) réussi(s).
+- **Refus pour un seul point** : il manque la capture « Tests CPU » (section dans la description et `qa/pr/WFS-517/tests-cpu.log`), obligatoire depuis la règle de l'utilisateur du 2026-11-11. Il faut aussi le résultat des bancs `parcours` et `course5` après e24f72a1. Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/377#pullrequestreview-5884935725
