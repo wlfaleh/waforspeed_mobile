@@ -42,7 +42,7 @@ Retoucher les deux modèles libres trouvés par WFS-396 (Classe E W212 de Peter_
 5. **Garde au sol** : voir ci-dessus (relèvement partiel + pavillon, jeu pneu / aile de berline).
 
 ## Tests CPU
-`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main`, **sans** l'accroche locale : RÉSULTAT_TESTS (journal complet : `qa/pr/WFS-397/tests-cpu.log`).
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main`, **sans** l'accroche locale : **126 tests réussis** en 437 s, code 0 (dont `test_fidelite_voitures`, `test_voitures_retirees` ; journal complet : `qa/pr/WFS-397/tests-cpu.log`).
 
 ## Comment c'est vérifié
 - Mesures : `corriger_voitures --essai` ci-dessus (6/6 ± 1 %) ; poids < 8 Mo (8 000 000 octets) ; `relever_caisse.mjs` : 0 triangle étiré ; contrôle des pièces de logo (boîte + nombre de triangles) : toutes trouvées.
