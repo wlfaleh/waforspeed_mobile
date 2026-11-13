@@ -1086,3 +1086,11 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 ### 2026-11-13 14:54:11 — Fin WFS-506 : fusionné (#386, 1d969bb9), session terminée (Claude, agent dev3d (01Us6uCvEv))
 - Fusion en squash par le lead dev à la 1re revue. Remarques non bloquantes pour un futur ticket (au PO) : pas de test CPU propre à `textes::remplir`, `ordinal` et `titrePlace` ; `ordinal.n=1th` donnerait « 21th » (cas impossible aujourd'hui, 6 au plus) ; consigne de rond-point non capturée (aucun banc n'atteint un rond-point) : à regarder à la recette sur l'APK.
 - Session terminée : un seul sujet par session, aucun autre ticket demandé.
+
+### 2026-11-13 15:03:33 — Garage : un ticket par fichier de panneau ; WFS-507 prêt en parallèle de 489 (po-scrum-master)
+- Ordre de l'utilisateur après WFS-534 (#387) : le garde-fou « un seul ticket sur garage.cpp » devient « un seul ticket par fichier de panneau » (`garage_couleur.*`, `garage_finition.*`, `garage_skin.*`, `garage_achat.*`…) ; `garage.cpp` et `garage_commun.*` : accroches ≤ 10 lignes. Écrit dans `TACHES.md` et le skill `lead-dev`.
+- **WFS-507** passe ⏳ Prêt en parallèle de WFS-489.
+
+### 2026-11-13 15:07:00 — WFS-490 refusé par le lead dev, PR #388 (lead-dev)
+- Commit relu 818a62a7 : 28 captures ouvertes, tout le diff lu, branche construite et testée en local avec `main` (123 tests CPU réussis). Brillant identique octet par octet (14 paires `peinture2-*`).
+- Refus (revue « commentaire », même compte GitHub) : (1) pas de capture « Tests CPU » ni de `tests-cpu.log` ; (2) chromé bordeaux presque noir sur la Corvette et la 208 (vitrine et course), lilas sur la GT86, sans reflet du décor (RG-06) ; (3) caméléon par plaques olive et brun (RG-07) ; (4) brillant, métallisé et satiné impossibles à distinguer sur les planches (critère 1) ; (5) couleur 2 en finition non montrée (RG-11) ; (6) accroches hors zone non annoncées au journal ; (7) branche en retard sur `main`. Remarques : `fwidth` après un retour anticipé (`vehicule.glsl:163`), paramètre `NoV` écrasé, mesure img/s à refaire en 3 passages.

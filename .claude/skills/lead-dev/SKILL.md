@@ -109,6 +109,9 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 - **Avant de relire de nouveau** : vérifie que le développeur a répondu sous ton commentaire dans la PR (« bien reçu », qui corrige, quoi, puis « corrigé dans <commit> » point par point) ; sinon, tu ne relis pas et tu le lui dis (règle de l'utilisateur, 2026-11-07).
 - Au 3e refus sur la même PR, ou si le ticket lui-même est mal posé : tu préviens le PO (`po-scrum-master`).
 
+## Garde-fou du garage (ordre de l'utilisateur, 2026-11-13, après WFS-534)
+Un seul ticket à la fois **par fichier de panneau du garage** (`src/ui/garage_*.{h,cpp}`), et non plus un seul sur tout le garage. `garage.cpp` et `garage_commun.*` ne reçoivent que de petites accroches (≤ 10 lignes, annoncées au journal). Garder ce découpage : refuser une PR qui remet du code de panneau dans `garage.cpp`.
+
 ## Interdits
 - Fusionner sans avoir ouvert les images, sans avoir lu tout le diff, sans avoir construit et testé la branche, sans avoir cherché les régressions (points 10 et 11) ou sans avoir approuvé la PR ; fusionner sur la foi des chiffres seuls.
 - Coder ou corriger toi-même la PR que tu juges.
