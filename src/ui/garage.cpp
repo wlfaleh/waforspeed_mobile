@@ -7,7 +7,6 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/game.h"
-#include "../game/personnalisation.h"   // WFS-487 : couleur du garage actuel donnée à la voiture (provisoire jusqu'à WFS-489)
 #include "../game/course5.h"   // WFS-115 : « Retour » du parcours de course = panneau des modes
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
@@ -59,6 +58,7 @@ public:
             appui_.vider();   // WFS-113 : aucun doigt retenu d'un écran précédent
             bouton_ = 0; doigtBouton_ = -1;   // WFS-115
             index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
+            couleur_.ouvrir(peinture_);   // WFS-489 (accroche) : dernières couleurs possédées, aperçu oublié (RG-03)
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(placeDe(index_) + 1).c_str(),
                     voituresPermises().n, PAINTS[peinture_[index_]].nom);
@@ -95,6 +95,7 @@ public:
         decor_.dessiner(r, ficheDe(CARS[index_].id).glow);
         if (voiture_.ok) {   // RG-06 : que des vraies voitures, pas de silhouette provisoire
             const vec3 p = lin(PAINTS[peinture_[index_]].hex);
+            r.peinture2ProchaineVoiture(couleur_.code2(index_));   // WFS-489 (accroche) : toit et rétros montrés
             r.draw(voiture_, translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_), &p);
         }
     }
@@ -109,10 +110,11 @@ public:
         if (t.id == doigtBouton_) {
             if (t.down) return true;
             const int b = bouton_, z = achat_.appui(t.x, t.y); bouton_ = 0; doigtBouton_ = -1;
-            if (b == AchatGarage::CHOISIR && z == AchatGarage::CHOISIR) choisir(g);
+            if (b == AchatGarage::CHOISIR && z == AchatGarage::CHOISIR) { if (!achat_.acheter()) choisir(g); }   // WFS-489 (accroche) : « Acheter N ★ »
             else if (b == AchatGarage::RETOUR && z == AchatGarage::RETOUR) { WFS_LOG("garage : « Retour »"); choisi_ = false; retour_ = true; g.allerA(Ecran::Menu); }
             return true;
         }
+        if (const int c = couleur_.toucher(t, doigt_ < 0 && doigtBouton_ < 0, index_, peinture_[index_]); c) { if (c == 1) appui_.prendre(t.id); return true; }   // WFS-489 (accroche) : rangée qui défile
         if (t.down) {
             if (doigt_ >= 0 && t.id == doigt_) {   // glisser : tourner la voiture (0,01 rad par pixel)
                 if (glisse_) yaw_ = yaw0_ + (t.x - x0_) * 0.01f * (720.f / g.uiHeight);
@@ -123,7 +125,6 @@ public:
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
             if (const int p = fiche_.appui(t.x, t.y); p >= 0) { appui_.prendre(t.id); if (const int i = voituresPermises().idx[p]; i != index_) aller(p, i > index_ ? 1 : -1); return true; }
-            if (const int i = couleur_.appui(t.x, t.y); i >= 0) { appui_.prendre(t.id); peinture_[index_] = i; WFS_LOG("garage : peinture %s", PAINTS[i].nom); return true; }
             // WFS-491 / WFS-494 : finition et skin (emplacements vides aujourd'hui : aucune zone, appui toujours -1)
             if (finition_.appui(t.x, t.y) >= 0 || skin_.appui(t.x, t.y) >= 0) { appui_.prendre(t.id); return true; }
             if (const int b = achat_.appui(t.x, t.y); b >= 0) { bouton_ = b; doigtBouton_ = t.id; return true; }   // WFS-115 : action au relâcher
@@ -147,13 +148,13 @@ public:
         mp.W = g.uiWidth; mp.H = g.uiHeight; mp.op = std::clamp((float)(g.time - t0_) / 0.3f, 0.f, 1.f);
         mp.gl = g.marges.gauche + 16 * k; mp.gr = g.marges.droite + 16 * k; mp.gt = g.marges.haut + 14 * k; mp.gb = g.marges.bas + 14 * k;
         const CarDef& car = CARS[index_];
-        const EtatGarage e{index_, peinture_[index_], voiture_.ok};
+        const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_)};   // WFS-489 (accroche)
         cadre::voiles(r, mp);
         fiche_.dessiner(r, mp, e);   // .show-head : marque · index, nom, type + accroche, points des voitures
         cadre::fleches(r, mp);
         // ---------- .show-panel : fiche, barres, peintures, boutons ----------
         mp.padX = 24 * k; mp.padY = 18 * k;
-        mp.statH = 4 * 14 * k + 3 * 10 * k; mp.paintH = 30 * k; mp.panelH = mp.padY * 2 + mp.statH + 14 * k + mp.paintH;
+        mp.statH = 4 * 14 * k + 3 * 10 * k; mp.paintH = CouleurGarage::hauteur(k); mp.panelH = mp.padY * 2 + mp.statH + 14 * k + mp.paintH;   // WFS-489 (accroche) : ligne des prix
         mp.px0 = mp.gl; mp.px1 = mp.W - mp.gr; mp.py0 = mp.H - mp.gb - 26 * k - mp.panelH;
         cadre::fondPanneau(r, mp);
         mp.y1 = mp.py0 + mp.padY;
@@ -171,7 +172,7 @@ public:
     // ---------- accès du banc d'essai (garage_bancs.cpp) ----------
     // planche des 16 peintures (4 × 4 voitures sur le sol du garage)
     void dessinerPlanche(Renderer& r) override {
-        for (int i = 0; i < NB_PEINTURES; i++) {
+        for (int i = 0; i < 16; i++) {   // WFS-489 (accroche) : planche des 16 peintures historiques, inchangée
             const vec3 p = lin(PAINTS[i].hex);
             if (voiture_.ok) r.draw(voiture_, translate({(i % 4 - 1.5f) * 5.2f, 0.0f, (i / 4 - 1.5f) * 2.7f}) * rotateY(PI / 2), &p);
         }
@@ -207,7 +208,6 @@ private:
         if (g.choisirVoiture) g.choisirVoiture(c.id, lin(PAINTS[peinture_[index_]].hex));
         if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24
             s.car = c.id; s.paint[c.id] = PAINTS[peinture_[index_]].id;
-            perso::donGarageProvisoire(s, c.id, PAINTS[peinture_[index_]].id);   // WFS-487 : PROVISOIRE jusqu'à WFS-489 (option A du PO)
             s.enregistrer();
         }
         choisi_ = true; g.allerA(Ecran::Menu);
