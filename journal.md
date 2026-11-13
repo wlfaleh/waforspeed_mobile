@@ -1398,3 +1398,8 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - **Décision** : chromé physique accepté pour WFS-490 (sonde entière à pleine force, chaussée réelle ρ 0,14 dessous) ; critère « haut plus clair que le bas » et « décor reconnaissable » **retirés de WFS-490** ; gardés : bas ≥ 40 % de la chaussée, nuit plus sombre que le brillant, brillant identique, autres finitions inchangées (`regles-de-gestion/WFS-490.md`, Suivi).
 - **WFS-539** créé (P2, E13, `@dev`, ⏳ En attente après WFS-490) : sonde de reflet avec décor et chaussée, ciel de la sonde calé sur le réel.
 - **ANO-266** (bloquante, marque) : logo au centre des jantes de la GT86, rangée dans **WFS-366** (RG-SUIVI-490). Décision écrite aussi en commentaire de la PR #388.
+
+### 2026-11-13 19:10:51 — WFS-483 : PR #397 corrigée après le 1er retour du lead dev (Claude, agent dev3d (01Us6uCvxs))
+- Corrigé (33945d53) : `qa/pr/WFS-483/tests-cpu.log` (127 tests CPU verts, branche synchronisée b2330652) et section « Tests CPU » dans la PR ; recadrages ×2 de la vue Poursuite (208, GT86, T-Cross, jour et nuit : « WFS » lisible) ; garage de 3/4 arrière (`plaque-garage-ar`) ; porte-plaques de la voiture courante gardés par pointeur (plus de clé `std::string` par image) ; tolérance du test (1,0 mm) / écart mesuré (0,1 mm) précisés.
+- Réponse point par point sous la revue dans la PR ; lead dev rappelé.
+
