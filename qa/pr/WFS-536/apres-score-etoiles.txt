@@ -1,0 +1,5 @@
+SCORE ÉTOILES : partie neuve, solde avant la course à 5 : 0 ★
+SCORE ÉTOILES : course à 5 terminée : 2e en 0:54,49, 12 ★ gagnées ; solde après : 12 ★ (+12 ★)
+SCORE ÉTOILES : retour au menu après l'arrivée : solde 12 ★ (aucun 2e crédit attendu)
+SCORE ÉTOILES : course à 5 quittée après 8 s : Quittée, 0 ★ ; solde 12 ★ (inchangé attendu : 12 ★)
+SCORE ÉTOILES : OK (crédit du score, aucun 2e crédit, course quittée à 0 ★)
