@@ -1482,3 +1482,7 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Reste pour le PO : ticket pour la ligne technique de mesure et le menu caché de diagnostic encore en français (voir l'entrée « risque signalé ») ; WFS-505 à 508 débloqués.
 - Session arrêtée (un seul ticket par session).
 
+### 2026-11-13 00:48:03 — WFS-485 fusionné par le lead dev (lead-dev)
+- PR #371 relue à la 2e revue sur 25a6832a : retours du 1er refus corrigés (`reglages.txt` dans les deux fichiers de règles, section « Tests CPU » et `tests-cpu.log`). 6 paires de captures ouvertes (identiques octet pour octet), diff lu (manifeste et deux XML Android), construction et 115 tests CPU refaits par le lead dev.
+- « ✅ Approuvé » en commentaire (GitHub refuse l'approbation sur le même compte), puis fusion en squash : 177547d4. Ticket 🟡 À valider (utilisateur) : essai record → sauvegarde → désinstaller → réinstaller sur le téléphone.
+- Pour le PO : RG-01 ne citait que `sauvegarde.txt` ; `reglages.txt` est ajouté pour que tous les réglages reviennent. À déclarer aussi dans le formulaire « Sécurité des données ».
