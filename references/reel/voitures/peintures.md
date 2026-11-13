@@ -40,11 +40,11 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
 - Chrome métal : réflectance 0,55 à 0,65 dans le visible (constantes n et k du chrome, Rakić A. D. et al., Appl. Opt. 37 (1998),
   données sur refractiveindex.info) ; jamais 1 (miroir parfait) ni blanc uniforme ; métal pur : **aucune part diffuse**.
 - Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 15 % au plus), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; noir →
-  chrome fumé (F0 ≈ 0,30). Miroir net (Schlick) du même monde pour toutes les voitures : ciel au-dessus de l'horizon, chaussée
-  sombre en dessous (× 0,04 la couleur du sol du ciel : asphalte vu en rasant), horizon net (R.y de −0,05 à 0,02) ; la sonde
-  d'environnement floue n'est pas utilisée (elle donnait un aspect de peinture), ni la lumière diffuse de la chaussée la nuit.
-  Contrôle (planches et gros plan, `/tmp` du développeur, chiffres dans la PR #388) : portière de la GT86 0,30 en haut, 0,05 en bas
-  (écart 0,25) ; de nuit, chromé plus sombre que le brillant sur les 3 voitures (RG-06, RG-09).
+  chrome fumé (F0 ≈ 0,30). Reflet : au-dessus de l'horizon, la sonde d'environnement existante à pleine force (RG-06) ; en dessous,
+  la chaussée réelle (asphalte ρ = 0,14, DA-realisme § 3, éclairé par le soleil et le ciel comme le sol de `scene.frag`) ; horizon
+  net (R.y de 0,02 à −0,05) ; aucune lumière diffuse la nuit. Arbitrage du PO (2026-11-13, `regles-de-gestion/WFS-490.md`) :
+  le décor dans le reflet et un ciel plus clair que l'asphalte au soleil viendront de WFS-539 (la sonde actuelle ne contient que
+  le ciel : `qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg`).
 
 ## Caméléon (pigments à interférence multicouche)
 - Pigments à interférence multicouche (ex. ChromaFlair de Viavi, Colorstream de Merck) : la couleur renforcée se décale vers les
