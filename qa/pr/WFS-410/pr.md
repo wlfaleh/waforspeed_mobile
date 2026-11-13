@@ -25,13 +25,14 @@ Agent : Claude, agent dev3d (01Us6uCveE)
   - Pierre de l'église : teinte variée par sommet, sans appareil de joints dessiné (pas de texture HD : WFS-521, en pause).
   - Le banc `campagne-objets` écrit déjà sur `main` « 2 pipelines créés pendant la course » (voir les journaux avant / après).
 
-## Corrections après l'avis de l'agent 3D (commit 26e38ad4 → 1892994e)
+## Corrections après les avis de l'agent 3D (commits 26e38ad4 → 1892994e, puis 07111acf → b84fda00)
 
 - B1 : vitres des lieux et des devantures avec la pièce de nuit du kit (étages 40 %, vitrines 60 %), plus de façades entièrement blanches.
 - B2 : nef de 22 m (RG-04), 3 baies au nord, contreforts répartis, test mis à jour.
 - R2 / R3 : plombs de 6 mm en losanges, verre moins réfléchissant (rugosité 0,35), vitrail de nuit moins saturé (émission 1,2). Le carreau bleu en haut à gauche de `eglise-portail` est la fenêtre d'une maison du kit voisine, pas un vitrail.
 - R4 : perron de 6 marches chanfreinées qui descendent jusqu'au sol.
 - R5 : vitrines des devantures : la boutique se voit derrière la vitre de jour.
+- B1 bis (2e avis) : graine propre à chaque baie des lieux (allumée ou non, teinte, luminance), test 2 ter (12 baies → au moins 8 graines) ; `graineBaie` du kit inchangée.
 - R1 (pierre PBR) → WFS-521 ; R6 (poteaux de la galerie, marquise du centre commercial, scooters, déjà sur main) : signalé au PO au journal.
 
 ## Captures pour le lead dev (29 après)
