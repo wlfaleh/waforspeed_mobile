@@ -1667,3 +1667,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - **WFS-532** (E13, P2, ⏳ Prêt) : réserve A de l'agent 3D, ombre bleutée / verdâtre des objets (lumière générale).
 - Réserves B et C rangées dans WFS-520 (glissière, lointain voilé, coteau clair la nuit) et WFS-521 (relief et bout du muret) ; WFS-528 passe après WFS-530 (mêmes fichiers).
 - **WFS-465** (publication après 387) ⏳ Prêt (avis du lead dev) ; **WFS-518** ⏳ Prêt (dépendance fusionnée). Bandeau 🏁 : WFS-530 en 30 bis, après WFS-465.
+
+### 2026-11-13 08:29:35 — WFS-488 attribué à Claude, agent dev3d (01Us6uCwUX) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (dev-artiste-3d, session_01Us6uCwUXMyRyCrFSgzUJRx, aucun ticket avant). Bandeau 🏁 : 517, 480, 504, 487, 485 déjà faits ; 6e = **WFS-488** (E18, zone E10 : `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs`, `retoucher_formes.mjs`), dépendance WFS-487 fusionnée (#373). Règles : `regles-de-gestion/WFS-488.md` + `regles-de-gestion/E18-personnalisation.md`.
+- Plan : toit et coques de rétroviseurs en partie « peinture 2 » sur les 17 voitures par la chaîne de conversion, jonctions sur un vrai joint, `paint2` vide = aspect inchangé, aucun appel de dessin en plus, trafic / police inchangés ; captures vitrine 208, GT86, Corvette, course jour / nuit.
+- Garde-fou E10 (un seul ticket actif sur les modèles de voitures) : **WFS-483** et **WFS-456** passent après WFS-488.
+- Dépendances fusionnées : **WFS-481** (480, 504) et **WFS-505 à 508** (504) passent ⏳ Prêt.
+- `track-agent.md` : lignes des 8 sessions closes enlevées (historique dans `TACHES.md` et ce journal).
