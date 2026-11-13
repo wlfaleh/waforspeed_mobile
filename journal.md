@@ -1684,3 +1684,28 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 
 ### 2026-11-13 08:31:58 — Campagne et Grand Prix en pause, bloqués par l'utilisateur (po-scrum-master)
 - Ordre de l'utilisateur. ⛔ Bloqué par l'utilisateur : WFS-465, 518 à 525, 528 à 531 (Campagne), 403, 388, 473, 474 (Grand Prix), 304, 314. Aucun n'était en cours. WFS-387 déjà fusionné (#378). Non touchés : WFS-410, WFS-287.
+
+### 2026-11-13 09:14:19 — Statuts automatiques, CI main #1037 (robot statuts)
+- Run rouge (push, commit 6a77f55), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-480, WFS-487, WFS-504, WFS-395.
+
+### 2026-11-13 09:27:03 — WFS-481 : PR #379 ouverte, écran « Crée ton pilote » (Claude, agent dev3d (01Us6uCvhS))
+- Fait : écran de création du profil au 1er lancement (`src/ui/ecrans/creation_profil.*`, saisie testable `creation_profil_saisie.*`), clavier AZERTY (fr) / QWERTY (en), touches de 57 dp (9 mm), plaque proposée d'après le pseudo, erreurs RG-04 à la frappe, textes `creation.*` dans `assets/textes/fr.txt` et `en.txt` (RC-E20-02), test `test_creation_profil`, banc `WFS_BANC=creation`.
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes : `WFS_BANC=creation`) ; zone E8 : `menu.cpp`, `reglages.cpp`, `salon.cpp` (2 lignes chacun), `cgu.cpp` (1 ligne, banc seulement). **Aucune accroche dans `android_main.cpp`** : la langue du téléphone est déjà lue par WFS-504.
+- Vérifié : tests CPU 121/121 ; banc `creation` FR et EN en 2400x1080 : 0 écart (parcours installation neuve → CGU → création → menu → course → fin → menu → 2e lancement sans écran → joueur déjà installé) ; **RG-05 : 7 appuis, 8,4 s d'actions** (< 20 s) ; anglais : aucun texte français ni texte qui dépasse (RC-E20-06) ; banc `cgu` : 0 écart.
+- Limites : aperçu de plaque en gabarit 2D (plaque 3D : WFS-483) ; menu dessous encore en français (WFS-505) ; pas essayé sur un vrai téléphone.
+
+### 2026-11-13 09:51:52 — WFS-488 : PR #380 ouverte, toit et rétroviseurs en couleur 2 sur les 17 voitures (Claude, agent dev3d (01Us6uCwUX))
+- Fait : outil `tools/peinture2_voitures.mjs` + `tools/peinture2.json` → `assets/cars/<id>.pt2` (bit par triangle du pavillon / des coques de rétroviseurs, îlots entiers = vrais joints ; `.wfm` non modifié) ; moteur `src/render/vehicule_peinture2.*` (normales × 4 sur la zone, sommets du bord dédoublés, aucun appel de dessin en plus) ; couleur 2 dans `pc.color.w` (code −(hex + 1)), `couleurPeinture()` de `shaders/vehicule.glsl` ; toits noirs ou carbone d'origine repeints au pixel seulement avec une couleur 2 ; couleur 2 posée sur la voiture du joueur seule (`aspectCourse`), trafic / adversaires / police inchangés ; banc `WFS_BANC=peinture2` ; test `test_peinture2`.
+- **Accroches hors zone E10 (≤ 10 lignes chacune)** : `src/render/model_loader.cpp` (2), `src/render/renderer.h` (5) et `renderer.cpp` (4), `shaders/scene.frag` (5), `shaders/scene_skin.frag` (1), `src/game/game.h` (2) et `game.cpp` (6), `src/platform/desktop_main.cpp` (2), `CMakeLists.txt` (2).
+- **RG-03 (voiture par voiture)** : rétroviseurs seuls pour la Gallardo **Spyder** (cabriolet), la **Model 3** (toit en verre), l'**S3** (toit ouvrant en verre noir, matériau 13) et le **Range Rover Sport** (toit panoramique en verre, matériau 12). Compass : panneau peint du pavillon seul (cadre noir d'origine mêlé à des pièces cachées, laissé noir). Corsa, M4, Brezza, SF90 : pavillon noir / carbone d'origine repeint au pixel. 208, 500, Golf : becquet de pavillon compris ; Giulia, V60 : antenne comprise ; Corvette : panneau targa.
+- Vérification : 121 tests CPU OK (synchronisé avec `main`) ; captures `qa/pr/WFS-488/` (20) ; sans couleur 2, `vitrines-feux` branche / `main` : 4 images identiques au pixel, 2 à 1 pixel de 1/255 ; banc `perf` Ville : Basse 358,4 / 357,0 ms, 201 appels de dessin des deux côtés.
+- Limites : rendu vu sur lavapipe seulement ; choix au garage = WFS-489 ; endurance au doigt non relancée.
+
+
+### 2026-11-13 10:02:47 — WFS-481 : PR #379 refusée par le lead dev (lead-dev)
+- Commit relu 489278ce. 12 captures ouvertes : l'écran FR et EN est bon (AZERTY / QWERTY, erreurs RG-04, plaque qui suit le pseudo, menu après validation, joueur déjà installé). Tout le diff a été lu.
+- Refait sur la branche : construction OK, tests CPU 121/121, banc `creation` FR et EN 0 écart (RG-05 : 7 appuis, 8,4 s ; touche 9,8 mm), banc `cgu` 0 écart.
+- Bloquant 1 : la capture « Tests CPU » et `qa/pr/WFS-481/tests-cpu.log` manquent (règle du 2026-11-11).
+- Bloquant 2 : l'émulateur du matin (`tools/qa/emulateur.sh`, installation neuve, profil=0) appuie sur « Course solo » sous l'écran « Crée ton pilote » qui prend tous les touchers. Le parcours s'arrête avant la course. Il faut une étape « création du profil » dans `emulateur.sh` (avis `expert-ci-cd` ou PO), ou une décision écrite du PO.
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/379#pullrequestreview-5889155871 (commentaire : GitHub refuse « changements demandés » sur une PR du même compte).
