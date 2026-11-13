@@ -16,7 +16,7 @@ Agent : Claude, agent dev3d (01Us6uCxKQ) (session_01Us6uCxKQDpfjkTaDzFG4mi)
   - `src/world/plage.cpp` (7 lignes ajoutées, 1 changée, annoncées au journal) : hauteur de la gerbe dans l'échelle du dessin ; vues de banc `mer-eclaboussure-pres` (gros plan depuis l'eau, 0,2 et 0,45 s), `mer-rochers-pres` (écume contre les blocs), `mer-falaise` (pied de la falaise depuis l'eau).
   - `tests/test_eau.cpp` : 6 contrôles de la gerbe (un maillage, nappe dans le rayon 1, couronne marquée et évasée, hauteur balistique).
 - **Comment c'est vérifié** :
-  - construction complète, `tools/qa/tests_cpu.sh build` : 123 tests réussis (dont `test_eau`) ;
+  - construction complète, `tools/qa/tests_cpu.sh build` : 124 tests réussis (dont `test_eau`) sur la branche synchronisée avec main ;
   - banc `mer` avant (main) / après (branche) : 21 captures, toutes regardées ;
   - zooms ajoutés : `zoom-soleil-avant/apres.jpg` (niveaux étirés 60–100 % pour voir sous le voile du soleil : tache floue sur main, colonne de reflets séparés sur la branche), `zoom-eclaboussure-loin-avant/apres.jpg` (trait blanc plat → gerbe), `zoom-eclaboussure-apres-1/2.jpg` (gros plan ×4) ;
   - **banc perf de la Corniche** (`WFS_BANC=perf WFS_PERF_CARTE=plage`, main et branche l'un après l'autre sur la même machine, lavapipe) :
