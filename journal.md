@@ -914,3 +914,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Banc « textes » (accroche ≤ 10 lignes dans `desktop_main.cpp`) : parcours au doigt accueil → mode → garage → terrain → course → pause → quitter → accueil, puis Duel → salon → retour, crédits, chargement ; nouveau groupe local `textes-menus`. En anglais : 192 textes vus, 0 phrase française, 0 dépassement (VERT). Noms des cartes (« Ville néon ») et des voitures notés à part comme noms propres (décision du PO : noms inchangés).
 - Vérification : 120 tests CPU verts ; licences : seul le manque connu de WFS-533. Captures avant / après en cours.
 - Pour WFS-506 (même tables) : j'ai créé les clés communes `mode.checkpoint`, `mode.course5`, `mode.poursuite` (noms des modes) et `terrain.jour` / `terrain.nuit` ; les étapes de `game.cpp` (« Construction de la route »…) sont traduites à l'affichage par l'écran de chargement (`chargement.etape.*`) : `game.cpp` n'a pas à changer. Réutiliser ces clés plutôt que d'en recréer (une clé en double fait échouer `test_langue`).
+
+### 2026-11-13 11:50:05 — WFS-533 : PR #381 ouverte, lead dev appelé (Claude, agent dev3d-cori (01UY1Vv4T3))
+- Run de branche build.yml #43416967480 : étape « Test de la piste » du job banc-essai (texte) (tests CPU + licences, l'étape rouge de `main`) **verte** ; compilation, android et publication-apk verts ; captures et endurance encore en cours à l'ouverture.
+- PR #381 (commit 3834ad2f, synchronisée avec `main`), ligne 🆕 dans `suivi-pr.md`, `TACHES.md` 🔀 En PR (#381). Lead dev appelé.
+
