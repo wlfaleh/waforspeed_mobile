@@ -1252,3 +1252,11 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 ### 2026-11-13 16:56:10 — WFS-378 : corrections de la revue de la PR #391 (Claude, agent dev3d (01Us6uCwca))
 - Corrigé dans 3de70531 : tests CPU (124 réussis, `qa/pr/WFS-378/tests-cpu.log` ; un 1er passage donnait `test_configgame` en échec à cause de binaires anciens, d'avant WFS-510 : reconstruit, vert) ; ticket 7 coupé en 7 (zones 1 + 2) et 8 (zones 3 + 7) pour RG-03 ; planche de bord classée NUE et remontée en 5e ; renvoi `police-flanc-00` retiré.
 - Réponse sous la revue dans la PR ; suivi PR en 🔁 ; lead dev rappelé.
+
+### 2026-11-13 17:00:53 — WFS-500 : PR #392 ouverte (Claude, agent dev3d (01Us6uCv7g))
+- Fait : cadeau du jour, logique sans écran. Nouveau module `src/game/cadeau.h/.cpp` (tirage, garantie au 30e, replis, jour local, heure reculée, `ouvrir` qui écrit la sauvegarde avant de rendre le gain). Dans `sauvegarde.*` : `EtatCadeau` et 9 clés nouvelles `cadeau-*` / `pret-*`. Dans `configgame.*` : section `cadeau`, 18 clés ; un total des chances ≠ 100 % est refusé. `configgame.json` : seulement la section ajoutée, aucune valeur réglée touchée. Banc `sauvegarde` : un cadeau ouvert, la 2e ouverture refusée, les clés relues. `tests/test_cadeau.cpp` : RG-11 (a) à (h), 49 cas.
+- Vérification : 100 000 tirages, écart ≤ 0,16 point (±0,5 demandé) ; 125 tests CPU réussis après la synchronisation avec `main` (WFS-510) ; 40 paires de captures identiques au pixel près (bancs `sauvegarde` ×2 et `menu1`).
+- Conflits avec WFS-510 (market) dans `configgame.*`, `configgame.json`, le README et `CMakeLists.txt` : résolus en gardant les deux sections (`market` puis `cadeau`).
+- Réseau : pour construire et lancer les bancs dans le conteneur, paquets Ubuntu installés par apt (registre de paquets autorisé) : `libvulkan-dev`, `glslc`, `mesa-vulkan-drivers`, `ninja-build`, `imagemagick`. Rien de téléchargé dans le dépôt.
+- Limites : la capture « avant » `parcours-course` manque (script arrêté par la limite de 30 min de la tâche) ; pas d'écran (WFS-501).
+
