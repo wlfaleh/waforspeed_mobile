@@ -1593,3 +1593,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Code approuvé par le lead dev (7697ebc6, 6ea38a6f), fusion bloquée par les conflits avec WFS-483 (#397), WFS-490 (#388) et WFS-536 (#399).
 - Synchronisation 0b1f43b4 : plaque 3D de WFS-483 gardée dans `garage.cpp` (`render`, planche), couleur 2 posée juste avant le dessin de la voiture (remise à zéro par le renderer : la plaque ne la reçoit pas), finitions de WFS-490 indépendantes ; `test_boutique` (WFS-536) et `test_garage_achat` gardés. Accroche WFS-489 de `garage.cpp` inchangée en nombre de lignes.
 - Vérification : bancs `garage` (aucune `[ERREUR]`), `garage-couleurs` (0 écart), `textes` (VERT) ; `tests_cpu.sh build` 130 réussis (07099d25) ; captures refaites sur 0b1f43b4 et regardées ; réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-13 21:37:01 — WFS-499 passée en 1re tâche à prendre (po-scrum-master)
+- Ordre de l'utilisateur : « mets-moi la 499 en prochaine tâche à prendre ».
+- WFS-499 : ⏳ En attente → ⏳ Prêt, en tête de la file (bandeau 🥇 de `TACHES.md`), pour le premier `@dev` qui demande.
+- Risque noté : même panneau `garage_achat.*` que WFS-489 (code approuvé, fusion en attente) : synchronisation avec `main` après la fusion de WFS-489.
