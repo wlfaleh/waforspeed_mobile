@@ -86,6 +86,7 @@ COUVERTURE = [
     (r"world/feuillage\.png", None, None),        # atlas dessiné par le code du jeu (tools/atlas_feuillage.cjs)
     (r"textures/route/.*", "Poly Haven", "routes-revetements.txt"), (r"textures/essai/.*", None, None),
     (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"textes/.*", None, None),
+    (r"cars/skins/[\w-]+\.etc2\.ktx2", None, None),   # WFS-492 : skins dessinées par le projet (tools/skins/generer.py, police Rajdhani déjà créditée)
     (r"profil/mots_interdits\.txt", None, None),   # WFS-533 : liste écrite pour le jeu (WFS-480, aucune liste extérieure recopiée)
 ]
 # identifiant de la voiture → fichier de licence (dossier du modèle dans le jeu web), quand le nom diffère
@@ -191,7 +192,7 @@ def main():
         rel = f.relative_to(RACINE / "assets").as_posix()
         if not f.is_file() or rel.startswith("licences/") or f.name.startswith("."): continue   # fichiers cachés : jamais dans l'APK (aapt)
         nb += 1
-        if rel.startswith("cars/") and not rel.startswith("cars/deux_roues/"):
+        if rel.startswith("cars/") and not rel.startswith("cars/deux_roues/") and not rel.startswith("cars/skins/"):   # WFS-492 (accroche) : skins (COUVERTURE)
             if f.stem in ret: continue   # WFS-404 : modèle gardé dans le dépôt, hors de l'APK
             v = ids.get(f"cars/{f.stem.removesuffix('-lod')}.wfm")   # WFS-134 : .lod et version allégée = crédit de sa voiture
             if not v: manques.append(f"{rel} : absent de CARS[] (pas de crédit)"); continue

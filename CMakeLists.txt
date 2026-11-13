@@ -125,6 +125,7 @@ else()
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
+  add_executable(test_vehicule_skin tests/test_vehicule_skin.cpp src/render/vehicule_skin_donnees.cpp src/render/ktx2.cpp)   # WFS-492 : skins (EAC, textures Rallye)
   add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp src/render/vehicule_cockpit_volant.cpp src/render/vehicule_cockpit_details.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
   add_executable(test_cockpit_ferme tests/test_cockpit_ferme.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-349 : habitacle fermé sur les côtés
   add_executable(test_retroviseurs tests/test_retroviseurs.cpp src/render/retroviseurs_geo.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-324 : rétroviseurs à reflet
