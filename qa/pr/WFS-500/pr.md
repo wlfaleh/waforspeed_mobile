@@ -14,7 +14,7 @@ Agent : Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j)
     - `maintenant` : heure UTC et décalage local du téléphone, calculé sans `tm_gmtoff` (RC-E19-04). Calendrier : algorithme `days_from_civil` de H. Hinnant (domaine public), recopié dans le fichier sans aucune dépendance ;
     - hasard : graine `Mulberry32` (RG-10). Même graine, même cadeau ; au jeu, graine tirée à l'ouverture (`std::random_device`), sans aucun lien avec les images ;
   - **`src/game/sauvegarde.h/.cpp`** : struct `EtatCadeau` et clés **nouvelles** `cadeau-heure`, `cadeau-decalage`, `cadeau-jour`, `cadeau-sans-rare`, `cadeau-total`, `cadeau-dernier`, ainsi que `pret-voiture`, `pret-recu`, `pret-fin` (seulement déclarées, lues et écrites : leur usage est pour WFS-502). Chaque valeur est contrôlée : une valeur fausse prend sa valeur par défaut, sans erreur. Aucune clé ancienne n'est retirée ; une ancienne sauvegarde se lit sans erreur et le cadeau y est disponible. Les clés ne sont écrites qu'après un 1er cadeau. `cadeau-decalage` vient de RC-E19-04 (« le décalage local du moment ») ;
-  - **`src/core/configgame.h/.cpp`**, exception du PO (section `cadeau` seulement) : 18 clés `cadeau.*`. Après la lecture, `verifierCadeau` refuse un **total des chances ≠ 100 %** (les chances du jeu sont gardées, avec un message au journal) et une tranche min > max. La durée du prêt (3 h) et le délai d'activation (24 h) sont déjà dans les données (RC-E19-02), pour WFS-502 ;
+  - **`src/core/configgame.h/.cpp`** (section `cadeau` après la section `market` de WFS-510, conflits résolus en gardant les deux), exception du PO (section `cadeau` seulement) : 18 clés `cadeau.*`. Après la lecture, `verifierCadeau` refuse un **total des chances ≠ 100 %** (les chances du jeu sont gardées, avec un message au journal) et une tranche min > max. La durée du prêt (3 h) et le délai d'activation (24 h) sont déjà dans les données (RC-E19-02), pour WFS-502 ;
   - **`configgame.json` / `configgame.README.md`** : seulement la section `cadeau` ajoutée à la fin, plus un paragraphe et 18 lignes au README. **Aucune de tes valeurs réglées n'est touchée** (le fichier n'est pas régénéré en entier) ;
   - **`src/game/course_system.cpp`**, banc `sauvegarde` seulement : au 1er lancement, un cadeau est ouvert à une heure fixe du banc et une 2e ouverture le même jour est refusée ; au 2e lancement, les clés `cadeau-*` relues sont écrites au journal ;
   - **`tests/test_cadeau.cpp`** (+ 1 ligne `CMakeLists.txt`) ;
@@ -29,7 +29,7 @@ Agent : Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j)
     - (f) heure reculée de 2 jours → bloqué, puis repassée → « déjà ouvert », puis le lendemain → disponible ; changement de fuseau Paris → Dubaï / New York ;
     - (g) 9 clés écrites puis relues à l'identique, ancienne sauvegarde → disponible, valeurs fausses ignorées ;
     - (h) total 101 % refusé, 100 % accepté, min > max refusé ;
-  - **124 tests CPU réussis** (bloc « Tests CPU » ci-dessous), construction CMake complète sans avertissement dans les fichiers touchés ;
+  - **125 tests CPU réussis** après la synchronisation avec `main` (WFS-510 Market compris) (bloc « Tests CPU » ci-dessous), construction CMake complète sans avertissement dans les fichiers touchés ;
   - **banc `sauvegarde`** lancé deux fois : [journal avant / après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-500/qa/pr/WFS-500/texte-sauvegarde.md) ;
     - 1er lancement : « disponible », « cadeau du jour ouvert (2026-11-13) : etoiles;14 », « 2e ouverture le même jour refusée » ;
     - 2e lancement : `cadeau-heure=1794560400 cadeau-decalage=3600 cadeau-jour=2026-11-13 cadeau-sans-rare=1 cadeau-total=1 cadeau-dernier=etoiles;14`, « déjà ouvert aujourd'hui » ;
@@ -59,10 +59,11 @@ Agent : Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j)
 [OK] test_boutique (0 s)
 [OK] test_cadeau (0 s)
 [OK] test_configgame (0 s)
+[OK] test_market (0 s)
 [OK] test_personnalisation (0 s)
 [OK] test_profil (0 s)
 [OK] test_sauvegarde (0 s)
-tests CPU : 124 test(s) réussi(s) en 439 s
+tests CPU : 125 test(s) réussi(s) en 412 s
 ```
 
 ## Captures pour le lead dev (8 paires montrées, 40 comparées au pixel : toutes identiques)
