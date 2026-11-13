@@ -21,11 +21,11 @@ Agent : Claude, agent dev3d (01Us6uCxKQ) (session_01Us6uCxKQDpfjkTaDzFG4mi)
   - zooms ajoutés : `zoom-soleil-avant/apres.jpg` (niveaux étirés 60–100 % pour voir sous le voile du soleil : tache floue sur main, colonne de reflets séparés sur la branche), `zoom-eclaboussure-loin-avant/apres.jpg` (trait blanc plat → gerbe), `zoom-eclaboussure-apres-1/2.jpg` (gros plan ×4) ;
   - **banc perf de la Corniche** (`WFS_BANC=perf WFS_PERF_CARTE=plage`, main et branche l'un après l'autre sur la même machine, lavapipe) :
 
-    | | main (2 passes) | branche (3 passes avant l'avis 3D + 1 sur la version finale) |
+    | | main (2 passes) | branche (3 passes avant l'avis 3D, 1 après le 1er avis, 1 sur la version finale) |
     |---|---|---|
-    | **Basse**, image | 195,6 / 197,4 ms | 198,3 / 195,7 / 197,5 ms ; finale **196,0 ms** |
+    | **Basse**, image | 195,6 / 197,4 ms | 198,3 / 195,7 / 197,5 ms ; 196,0 ms ; finale **190,8 ms** |
     | Basse, appels de dessin / triangles | 255 / 311 526 | 255 / 311 526 |
-    | Haute, image | 417,6 / 420,7 ms | 435,4 / 424,0 / 413,9 ms ; finale 423,5 ms |
+    | Haute, image | 417,6 / 420,7 ms | 435,4 / 424,0 / 413,9 ms ; 423,5 ms ; finale 418,3 ms |
 
     Basse : dans le bruit de mesure (même chemin du shader que main, inchangé par les corrections de l'avis 3D), mêmes appels de dessin ; Haute : ≈ +1 à +2 %.
 - **Après les avis 3D « À REPRENDRE »** : sur d3d070d9, B1 (écume en aplat découpé), B2 (chemin de lune coupé net), R3 (jets en palissade), R4 (blocs dans l'eau) ; sur ebef5f1b, B3 (paillettes en grain d'écran) : corrigés ; captures refaites en entier sur la branche synchronisée avec main.
