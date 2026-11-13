@@ -1678,3 +1678,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Vérifié : banc `score-fin` vert en 2400 × 1080 et 1280 × 720 (4 modes FR et EN, menu 0 / 250 / 12 450 ★, parcours, appui → garage, course quittée, garde-fous WFS-504) ; tests CPU 131 / 131 ; banc `parcours` 0 écart ; banc `textes-course` VERT ; 38 captures dans `qa/pr/WFS-537/`.
 - Constat (pas de mon fait) : banc `textes-menus` : 4 échecs de parcours salon / Crédits, identiques sur `main` (CI #1054 rouge, groupe texte).
 - Limite : pas encore de lien avec TalkBack (texte du lecteur d'écran prêt, non envoyé à Android).
+
+### 2026-11-13 22:53:36 — Vidéos de l'utilisateur 23:48 et 23:49 (Poursuite, joueur coincé) : ANO-267 à 271 (qa-lead)
+- Images `qa/retours/2026-11-13-video2348-police-coince/` et `…video2349-police-coince/` ouvertes une par une.
+- ANO-267 (bloquante) joueur coincé à 6,50 km, gaz appuyé ; ANO-268 (bloquante) poursuite sans fin, pas d'arrestation, score −1/s ; ANO-269 (bloquante) SUV du trafic en travers 75 s + bouchon ; ANO-270 (bloquante) voitures du trafic qui se traversent et traversent la caméra ; ANO-271 (bloquante) recul « R » à 31 km/h sans frein.
+- Avis QA : **WFS-461 KO** (RG-01, RG-02, RG-04, RG-06 non tenues sur l'APK de `main`) ; RG-03 (police ≤ 208 km/h) non vérifiable sur ces vidéos (police à l'arrêt). Tickets à créer par le PO.
