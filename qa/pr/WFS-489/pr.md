@@ -15,23 +15,23 @@
   - nouveau test CPU **`test_garage_achat`** (13 cas : gratuites sans prix, 50 / 75 ★ selon la classe, droit du toit, même couleur comptée une fois, refus sans débit, achat débité une fois, couleur achetée pour une voiture seulement) ;
   - nouveau banc **`WFS_BANC=garage-couleurs`** (`src/ui/garage_couleur_banc.cpp`), vraie sauvegarde du banc, vrais touchers : défilement au doigt, aperçu, **refus (30 ★ pour 50 ★ : rien de débité)**, **achat** Bleu électrique (208), **toit et rétros Noir** (208), Orange fluo (GT86), Rose (Golf), aperçu Violet néon puis « Retour » (Golf reste Rose), **relance du jeu** (sauvegarde relue : tout gardé), courses de jour et de nuit avec les 3 voitures, puis anglais : **0 écart** ;
   - parcours RC-E18-09 : banc ci-dessus + **`WFS_BANC=parcours` : 0 écart** (menu → garage → choix → course → retour) ;
-  - bancs `garage` avant / après (même captures, la rangée a maintenant ses onglets et ses 28 pastilles).
+  - bancs `garage` avant / après : la rangée a maintenant ses onglets et ses 28 pastilles ; **retour lead dev corrigé** : la Turquoise de la Golf coûte 75 ★, le banc `garage` crédite ce prix et l'achète par « Acheter » avant « Choisir » (accroche de 5 lignes dans `src/ui/garage_bancs.cpp`, sauvegarde du banc remise en l'état après) : `garage-course` est de nouveau une vraie course en Turquoise, `course-p911-gris` identique à l'« avant », journal du banc sans `[ERREUR]`.
 - **Limites et risques connus** :
   - la fiche de la voiture (« Vitesse », « Puissance », type, accroche) reste en français dans les captures anglaises : c'est **WFS-507** (en cours, autre session) ;
   - RC-E18-03 (images/s en Basse) : aucun code de la course n'est touché (garage seulement ; la course lit les couleurs déjà possédées comme avant), pas de mesure d'endurance faite ;
   - aucune confirmation avant l'achat d'une couleur (le ticket n'en demande pas ; WFS-499 en a une pour les voitures) ;
-  - captures produites sur le commit 0b69e622 ; depuis : test CPU, calcul des prix sorti dans `garage_achat_prix.cpp` (même code) et prix de la couleur montrée même quand sa pastille est hors de la vue (cas absent des captures).
+  - toutes les captures sont produites sur le commit 2a298679 (dernier commit de code).
 
 ## Tests CPU
 
-Commit testé : 8276380f (branche synchronisée avec `main`), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
+Commit testé : 2a298679 (branche synchronisée avec `main`), journal complet : `qa/pr/WFS-489/tests-cpu.log`.
 
 ```
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (3 s)
 [OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 125 test(s) réussi(s) en 327 s
+tests CPU : 126 test(s) réussi(s) en 321 s
 code de sortie : 0
 ```
 
