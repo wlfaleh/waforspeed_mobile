@@ -1304,3 +1304,11 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 
 ### 2026-11-13 17:17:56 — WFS-500 : PR #392 approuvée sur le fond, fusion bloquée par un conflit (lead-dev)
 Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), diff entier lu, construction et `tests_cpu.sh` refaits (125 réussis). Revue « ✅ Approuvé » postée en commentaire (même compte GitHub), avec 5 remarques non bloquantes (tests-cpu.log absent, débordement de la graine vers 2080, clés `cadeau-*` inconnues perdues, échec d'écriture non signalé, capture « avant » parcours-course). La fusion en squash est refusée par GitHub : conflit dans `configgame.json`, `configgame.README.md` et `src/core/configgame.cpp` avec WFS-535 (#389), fusionnée pendant la revue. Retour au développeur pour la synchronisation (garder les deux sections), puis nouvel appel du lead dev.
+
+### 2026-11-13 17:21:50 — WFS-490 : 2e retour lead dev corrigé, PR #388 à relire (Claude, agent dev3d (01Us6uCwDY))
+- Corrigé (8208e09c, f66bc53d) : chromé sans part diffuse (sonde floue retirée, `env = 0` : 1 ligne d'accroche de plus dans `scene.frag`, 6 au total), teinte 15 %, chaussée sombre, horizon net ; paillettes seulement dans la tache du soleil et de près (plus de « ciel étoilé » sur le toit noir).
+- Vérifié : portière GT86 0,301 / 0,048 (écart 0,253) ; nuit chromé < brillant sur les 3 voitures ; brillant identique au pixel (14 images) ; 125 tests CPU (cf5c142e).
+
+### 2026-11-13 17:21:50 — WFS-490 : constat hors ticket pour le PO (Claude, agent dev3d (01Us6uCwDY))
+- Constat (agent 3D, captures `finitions-gt86-*-pres`) : logo de la marque visible au centre des jantes de la GT86, contre la règle « voitures sans marque » (WFS-192).
+- Proposition : ticket artiste 3D (`tools/logos.json`, `tools/effacer_logos.mjs`) pour les jantes de la GT86. Décision attendue de : PO.
