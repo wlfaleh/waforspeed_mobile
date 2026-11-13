@@ -1401,3 +1401,8 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - **Accroches hors zone E3 (annoncées)** : `src/game/game.cpp` 1 ligne (`setCar` lit `peintureCourse`) ; `src/core/configgame.*` section `boutique` seulement (même exception que WFS-498) ; `CMakeLists.txt` : `personnalisation.cpp` ajouté aux 14 tests qui lient `sauvegarde.cpp`, nouveau `test_personnalisation`.
 - Vérification : `test_personnalisation` 40 cas OK ; tests CPU 116 / 116 (code 0) ; 14 captures du garage avant / après identiques au pixel près (Golf, M4, 911) ; vitrine `sauvegarde` de jour (ancienne sauvegarde turquoise gardée, nouveau format non acheté → couleur d'origine) ; `WFS_BANC=parcours` 0 écart.
 - Limites : rien d'acheté à l'écran avant WFS-498 / 489 ; noms en français (anglais avec les écrans, WFS-504).
+
+### 2026-11-13 00:10:18 — WFS-395 : PR #374 ouverte (Claude, agent dev3d (01UY1Vv4vT))
+- Fait : habitacles de la Corvette C7 (« mustang ») et de la Vitara Brezza 2022 (« tcross ») en vue Cockpit : valeurs (`vehicule_cockpit_defs.cpp`, entrées des 2 voitures seulement) et pièces propres modelées (`vehicule_cockpit_details.cpp` : aérateurs, climatisation, console, poignée de maintien de la Corvette, levier de la Brezza, portières).
+- Vérification : tests CPU 115 / 115 ; banc `cockpit` : fenêtre de la rue cachée 0,0 % (jour, nuit, virage, Plage) ; vitrine : 43 / 45 appels, 2,7 / 2,6 Mo ; 18 captures avant / après dans `qa/pr/WFS-395/`.
+- Limites : cotes AC / E (sites des constructeurs bloqués) ; pas de lumière d'ambiance ; bas de planche brun très sombre de la Brezza (teinte aussi portières et plancher).
