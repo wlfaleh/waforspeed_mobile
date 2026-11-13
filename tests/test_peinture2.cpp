@@ -5,7 +5,7 @@
 //    RG-02), normales de longueur 4 sur la zone seulement, aucun triangle ni pièce en plus (RG-05) ; niveau allégé : triangle de
 //    la zone en couleur 2, triangle mêlé en couleur 1 ; .pt2 tronqué ou faux refusé ;
 // 3) les 17 voitures permises (assets/cars/<id>.pt2, tools/peinture2_voitures.mjs) : fichier lisible, empreintes égales au .wfm,
-//    toit repéré (sauf Spyder et Model 3 : RG-03), deux rétroviseurs, triangles inchangés, chaque triangle repéré marqué.
+//    toit repéré (sauf Spyder, Model 3, S3 et Range Rover Sport, toits en verre : RG-03), deux rétroviseurs, triangles inchangés, chaque triangle repéré marqué.
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -146,7 +146,7 @@ int main() {
             toit += b.toit; retro += b.retro;
             for (uint32_t t = 0; t < b.triangles; t++) attendu += (b.bits[t >> 3] >> (t & 7)) & 1;
         }
-        const bool sansToit = !std::strcmp(c.id, "gallardo") || !std::strcmp(c.id, "model3");   // Spyder, toit en verre (RG-03)
+        const bool sansToit = !std::strcmp(c.id, "gallardo") || !std::strcmp(c.id, "model3") || !std::strcmp(c.id, "s3") || !std::strcmp(c.id, "rrsport");   // Spyder, toits en verre (RG-03)
         VERIFIE(sansToit ? toit == 0 : toit >= 50, "%s : toit %u triangles", c.id, toit);
         VERIFIE(retro >= 40, "%s : rétroviseurs %u triangles", c.id, retro);
         const size_t nIdx = idx.size();

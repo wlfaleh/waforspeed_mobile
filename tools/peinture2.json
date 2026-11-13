@@ -59,6 +59,20 @@
         "note": "pavillon entre les barres de toit"
       },
       {
+        "partie": "toit",
+        "maillage": 7,
+        "triangles_boite": [
+          -0.66,
+          1.55,
+          -0.25,
+          0.66,
+          1.66,
+          1.8
+        ],
+        "nyMin": 0.5,
+        "note": "pavillon noir d'origine"
+      },
+      {
         "partie": "retro",
         "maillage": 0,
         "ilots": [
@@ -84,7 +98,8 @@
         ],
         "note": "coque droite"
       }
-    ]
+    ],
+    "note": "toit bi-ton d'origine : pavillon noir (maillage 7) autour d'un panneau peint ; barres de toit exclues (au-dessus de 1,66 m)"
   },
   "corsa": {
     "note": "toit et rétroviseurs noirs d'origine (garnitures noires, maillage 7)",
@@ -491,22 +506,8 @@
     ]
   },
   "rrsport": {
-    "note": "toit et rétroviseurs noirs d'origine (maillage 17)",
+    "note": "toit panoramique en verre (matériau 12) : rétroviseurs seuls (RG-03) ; coques noires d'origine (maillages 9 et 17)",
     "zones": [
-      {
-        "partie": "toit",
-        "maillage": 17,
-        "triangles_boite": [
-          -0.7,
-          1.62,
-          -0.45,
-          0.7,
-          1.8,
-          2.05
-        ],
-        "nyMin": 0.5,
-        "note": "pavillon noir d'origine"
-      },
       {
         "partie": "retro",
         "maillage": 17,
@@ -532,24 +533,37 @@
           -0.37
         ],
         "note": "coque droite"
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "triangles_boite": [
+          -1.11,
+          1.23,
+          -0.58,
+          -0.91,
+          1.41,
+          -0.39
+        ],
+        "note": "coque gauche (couche extérieure)"
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "triangles_boite": [
+          0.91,
+          1.23,
+          -0.58,
+          1.11,
+          1.41,
+          -0.39
+        ],
+        "note": "coque droite (couche extérieure)"
       }
     ]
   },
   "s3": {
     "zones": [
-      {
-        "partie": "toit",
-        "maillage": 7,
-        "ilots": [
-          -0.61,
-          1.25,
-          -0.32,
-          0.61,
-          1.38,
-          1.19
-        ],
-        "note": "pavillon et antenne"
-      },
       {
         "partie": "retro",
         "maillage": 7,
@@ -576,7 +590,8 @@
         ],
         "note": "coque droite"
       }
-    ]
+    ],
+    "note": "toit ouvrant en verre noir (matériau 13) sur l'avant du pavillon : rétroviseurs seuls (RG-03)"
   },
   "sf90": {
     "zones": [
