@@ -2,6 +2,8 @@
 
 Version 1 — 2026-11-08
 
+*Ce texte existe aussi en anglais (store/cgu-en.md). En cas de différence entre les deux versions, la version française fait foi.*
+
 *Brouillon : relecture juridique conseillée avant publication sur le Play Store (WFS-308).*
 
 ## Le jeu
