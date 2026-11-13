@@ -87,6 +87,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 6. **Avant chaque action**, tu relis `tache utilisateur.md` et la liste « Ordres permanents » : si ton action contredit un ordre, tu ne la fais pas.
 
 ## Ordres permanents de l'utilisateur (à compléter à chaque nouvel ordre, avec la date)
+- **2026-11-13 08:31 UTC — Campagne et Grand Prix en pause, bloqués jusqu'à un ordre de l'utilisateur** : aucun ticket de décor, de performance, de contrôle ou de publication des paquets de la Campagne ou du Grand Prix n'est attribué ni créé (liste dans le bandeau ⛔ de `TACHES.md`).
 - **2026-11-13 — Plus de règle « un ticket en cours par épic » (ordre de l'utilisateur : « je ne l'ai pas demandée, tu l'enlèves tout de suite »)** : plusieurs tickets d'une même épic peuvent être en cours en même temps ; seules restent les dépendances écrites (« après WFS-XX ») et un ticket par session.
 - **2026-11-12 23:20 UTC — Les 30 prochaines tâches = seulement E17 à E21 ; peinture des voitures (E18) avant l'étape score (WFS-498) (ordre de l'utilisateur)** : bandeau 🏁 de `TACHES.md` ; la file B (454, 394, 460, 456, 395) reste en parallèle.
 - **2026-11-12 22:56 UTC — Ordre de développement en deux files en même temps (ordre de l'utilisateur)** : file A = épics dans l'ordre E17 → E18 → E19 → E20 → E21 ; file B = WFS-454 (`@cicd`), 460, 456, 395 (`@dev`), 394 (`@conduite`) ; les sessions `@dev` alternent A puis B (bandeau 🧭 de `TACHES.md`).
