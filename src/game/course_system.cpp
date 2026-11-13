@@ -21,6 +21,7 @@
 #include "sauvegarde.h"   // WFS-24 : record
 #include "personnalisation.h"   // WFS-487 : banc sauvegarde (catalogue, possession)
 #include "boutique.h"   // WFS-498 : banc sauvegarde (portefeuille, voitures, essai)
+#include "cadeau.h"     // WFS-500 : banc sauvegarde (cadeau du jour)
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
 #include "../ui/ecrans/chargement.h"  // WFS-242 (RG-07) : fondu du chargement (commandes cachées)
@@ -388,6 +389,9 @@ void benchCourseScene(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
 }
 
+// WFS-500 : heure fixe du banc de la sauvegarde : 2026-11-13 10:00 à Paris (09:00 UTC, décalage +1 h)
+static constexpr cadeau::Instant BANC_CADEAU_INSTANT{1794560400LL, 3600};
+
 // WFS-24 : banc de la sauvegarde, lancé deux fois de suite sur le même chemin (propre au banc).
 // 1er lancement (fichier absent) : voiture m4, peinture rouge, course solo jusqu'à la fin → record battu, capture fin-record.
 // 2e lancement (fichier présent) : relecture au journal, vitrine de la voiture relue (capture sauvegarde-relue), puis le
@@ -406,6 +410,8 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         for (const std::string& l : perso::bilanPossession(s)) WFS_LOG("%s", l.c_str());
         for (const std::string& l : boutique::bilanPortefeuille(s)) WFS_LOG("%s", l.c_str());   // WFS-498 : solde, voitures, essais relus
         WFS_LOG("PROFIL relu : %s", s.profil.texte(s.nick).c_str());   // WFS-480 : critère d'acceptation (2e lancement)
+        // WFS-500 : clés cadeau-* relues ; le 2e lancement, même jour du banc : déjà ouvert (pas de 2e cadeau)
+        for (const std::string& l : cadeau::bilan(s, BANC_CADEAU_INSTANT)) WFS_LOG("%s", l.c_str());
         if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); return; }
         g.camMode = 2; g.orbit = 0.7f;
         g.render(0); g.render(0); r.capturePng(out + "/sauvegarde-relue.png");
@@ -425,6 +431,12 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         WFS_LOG("BOUTIQUE essai : voiture m4 (%d ★ = %s = %s) : %s ; solde %lld ★", boutique::prixVoiture("m4"), boutique::equivalentMedailles(boutique::prixVoiture("m4")).c_str(),
                 boutique::texteEuros(boutique::equivalentCentimes(boutique::prixVoiture("m4"))).c_str(), boutique::texteAchat(v), s.etoiles);
         WFS_LOG("BOUTIQUE essai : essai gratuit de la m4 disponible avant la course : %s", boutique::essaiDisponible(s, "m4") ? "oui" : "non");
+    }
+    {   // WFS-500 (RG-08) : cadeau du jour ouvert à une heure fixe du banc (graine fixe : même cadeau à chaque banc), puis 2e essai refusé
+        for (const std::string& l : cadeau::bilan(s, BANC_CADEAU_INSTANT)) WFS_LOG("%s", l.c_str());
+        const auto r = cadeau::ouvrir(s, BANC_CADEAU_INSTANT, cadeau::entreeDepuis(s), 500);
+        const auto r2 = cadeau::ouvrir(s, {BANC_CADEAU_INSTANT.epoch + 60, BANC_CADEAU_INSTANT.decalage}, cadeau::entreeDepuis(s), 501);
+        WFS_LOG("CADEAU essai : 1re ouverture %s ; 2e ouverture le même jour %s", r ? r->texte().c_str() : "refusée", r2 ? "ACCEPTÉE (erreur)" : "refusée");
     }
     s.profil.creer("Banc 480", "WFS-480", s.nick);   // WFS-480 (RG-06) : profil de test fixe du banc
     courseBenchRules(true);
