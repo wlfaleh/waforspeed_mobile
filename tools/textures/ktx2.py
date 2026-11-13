@@ -8,6 +8,7 @@ IDENTIFIANT = bytes([0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32, 0x30, 0xBB, 0x0D, 0x0A,
 # vkFormat (vulkan_core.h) → (largeur du bloc, hauteur du bloc, octets par bloc, sRGB, modèle de couleur du DFD)
 MODELE_RGBSDA, MODELE_ETC2, MODELE_ASTC = 1, 161, 162   # Khronos Data Format Specification 1.3, § 5.6
 FORMATS = {
+    155: (4, 4, 16, False, MODELE_ETC2),   # VK_FORMAT_EAC_R11G11_UNORM_BLOCK (WFS-492, accroche : masques des skins, tools/skins)
     37: (1, 1, 4, False, MODELE_RGBSDA),   # VK_FORMAT_R8G8B8A8_UNORM
     43: (1, 1, 4, True, MODELE_RGBSDA),    # VK_FORMAT_R8G8B8A8_SRGB
     151: (4, 4, 16, False, MODELE_ETC2),   # VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK
@@ -43,6 +44,9 @@ def _dfd(fmt):
     if modele == MODELE_RGBSDA:
         ech = [(0, 8, 0), (8, 8, 1), (16, 8, 2), (24, 8, 15 | (LINEAIRE if srgb else 0))]
         bas, haut = 0, 255
+    elif fmt == 155:   # WFS-492 (accroche) : EAC RG11, deux blocs R11 (canal rouge 0 puis vert 1)
+        ech = [(0, 64, 0), (64, 64, 1)]
+        bas, haut = 0, 0xFFFFFFFF
     elif modele == MODELE_ETC2:
         ech = [(0, 64, 15 | (LINEAIRE if srgb else 0)), (64, 64, 2)]   # alpha EAC puis couleur ETC2
         bas, haut = 0, 0xFFFFFFFF
