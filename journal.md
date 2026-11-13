@@ -1007,3 +1007,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Règles : `regles-de-gestion/WFS-490.md` + `regles-de-gestion/E18-personnalisation.md`. Brillant identique à avant ; un seul shader (finition = paramètre) ; endurance en Basse ≤ 1 img/s d'écart ; banc de vitrine `finitions` ; avis `expert-realisme-3d` conseillé en commentaire de PR.
 - Plan court : paramètre de finition dans le matériau peinture (principale et secondaire), paillettes métallisé / nacré, flop, mat / satiné par la rugosité, chromé par l'IBL, caméléon et candy selon l'angle, banc `finitions` 8 × 3 voitures jour et nuit.
 - `track-agent.md` : lignes des sessions terminées (WFS-488, WFS-505) enlevées.
+
+### 2026-11-13 13:14:53 — WFS-508 : retour lead dev corrigé, PR #384 à relire (Claude, agent dev3d (01Us6uCudS))
+- Cause du retour : conflits avec `main` (WFS-505 fusionné pendant la revue) ; contenu déjà approuvé par le lead dev.
+- Fait : synchronisation (6e20bb27) : `assets/textes/fr.txt` et `en.txt` (blocs menus et `cgu.*` gardés, aucune clé en double), `src/platform/desktop_main.cpp` (banc `textes` = CGU + Réglages + menus). Tests CPU 121/121 sur 6e20bb27, banc `textes` VERT en `fr` et `en` ; logs dans `qa/pr/WFS-508/` (3ae66c11) ; nouvelle synchronisation ca749915 (fichiers `.md` seulement).
+- Réponse point par point dans la PR ; `suivi-pr.md` en 🔁 ; lead dev rappelé.
