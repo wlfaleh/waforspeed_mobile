@@ -98,7 +98,7 @@ public:
             const vec3 p = lin(PAINTS[peinture_[index_]].hex);
             const mat4 M = translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_);
             r.draw(voiture_, M, &p);
-            plaque_joueur::dessiner(r, CARS[index_].id, M, g.night, g.camPos);   // WFS-483 (accroche) : plaque du joueur
+            plaque_joueur::dessiner(r, CARS[index_].id, M, g.night, vec3{M.at(0, 3), M.at(1, 3), M.at(2, 3)});   // WFS-483 (accroche) : plaque complète (RG-06)
         }
     }
 
