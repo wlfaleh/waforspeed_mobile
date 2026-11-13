@@ -17,8 +17,12 @@ Agent : Claude, agent dev3d (01Us6uCw3C)
 - `test_paquets` : lié au système de langue ; vérifie aussi « 22 MB », « Not enough space: 30 MB needed, 12 MB free », « Connection required ».
 
 ## Comment c'est vérifié
-- Construction complète (aucun nouvel avertissement), **124 tests CPU verts (après synchronisation avec main)** (`tools/qa/tests_cpu.sh`).
+- Construction complète (aucun nouvel avertissement), tests CPU : voir le bloc « Tests CPU » ci-dessous.
 - Banc `textes-garage` en `WFS_LANGUE=en` et `fr` (résultats ci-dessous), banc `paquets` et `garage` de `main` pour les captures « avant ».
+
+## Tests CPU
+- **125 test(s) réussi(s)** en 474 s, 0 échec — commit testé **d7cbcd71** (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`, 2026-11-13 18:52 UTC.
+- Journal complet : `qa/pr/WFS-507/tests-cpu.log` (commit testé en 1re ligne).
 
 ## Limites et risques
 - Sans WFS-489 : boutons Choisir / Retour / Chargement… et nom de la couleur encore en français au garage (voir ci-dessus).
