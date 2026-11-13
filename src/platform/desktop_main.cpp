@@ -68,6 +68,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../render/bench_realisme.h"   // WFS-148 : banc de référence du réalisme
 #include "../render/atmosphere_brume_banc.h"   // WFS-381 (accroche) : WFS_BANC=brume
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
+namespace wfs { void benchPeinture2(Game& g, Renderer& r, const std::string& out); void benchPeinture2Mesure(Game& g, Renderer& r, const std::string& out); }   // WFS-488 (accroche) : vehicule_peinture2_banc.cpp, _mesure.cpp
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
@@ -242,6 +243,8 @@ int main(int argc, char** argv) {
         return finir();
     }
     if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }
+    if (banc == "peinture2") { benchPeinture2(g, r, out); return finir(); }   // WFS-488 (accroche) : couleur secondaire (toit, rétroviseurs)
+    if (banc == "peinture2-mesure") { benchPeinture2Mesure(g, r, out); return finir(); }   // WFS-488 (accroche) : img/s en Basse (RC-E18-03)
     if (banc == "phares-optiques") { benchPharesOptiques(g, r, out); return finir(); }   // WFS-413 (accroche) : optiques avant de nuit   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
     if (banc == "phares") { ui::chargerPolice(r); benchPhares(g, r, out); return finir(); }   // WFS-382 (accroche) : banc court des phares de nuit

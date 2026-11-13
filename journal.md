@@ -934,3 +934,38 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Remarques : `convertir_voitures.sh` relance `peinture2_voitures.mjs` ; nombres de triangles attendus dans `peinture2.json` ; « mustang = Corvette C7 » dans le README des captures ; commentaire « voitures rigides seulement » dans `scene_skin.frag` (accroche de 3 lignes au total).
 - **Pour le PO** (signalé par le lead dev, hors ticket) : GT86 : pavillon d'origine ondulé, très visible avec un toit noir (« papier froissé » de dessus) : anomalie de forme E10 à planifier.
 
+### 2026-11-13 12:31:20 — WFS-498 : PR #382 ouverte (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- Fait : module `src/game/boutique.*` (portefeuille d'étoiles, prix des 17 voitures, achat, essai gratuit, équivalents médailles / euros, migration, équilibrage), clés `boutique.voitures.<id>.prix`, `gain_course`, `minutes_par_course`, `medailles.*` dans `configgame.json` (régénéré), sauvegarde `etoiles=`, `voitures-possedees=`, `essai-<voiture>=1`, partie neuve sur la p208, +10 ★ par course terminée et essai noté au départ (`profil_system.cpp`), banc `WFS_BANC=equilibrage` (`boutique_banc.cpp`).
+- **Accroches annoncées** : `src/platform/desktop_main.cpp` (1 include + 1 ligne : banc `equilibrage`) ; `CMakeLists.txt` : `boutique.cpp` ajouté aux 17 tests qui lient `personnalisation.cpp` + `test_boutique`.
+- Vérification : 121 tests CPU OK (`test_boutique` 51 cas), banc `equilibrage` : Corsa 25 courses, 14 voitures 120,1 h ; prix Corsa changé dans un `configgame.json` (sans recompiler) → T-Cross 30 courses, écart signalé ; banc `sauvegarde` ×2 : 250 ★, achat accepté, refus faute d'étoiles, relu 160 ★ ; garage identique octet pour octet avant / après.
+- Limites : pas d'écran (WFS-499) ; conduire une voiture non possédée en solo utilise son essai d'ici là ; gain provisoire de 10 ★ (étape « score »), duels compris.
+
+### 2026-11-13 12:32:09 — WFS-505 : PR #383 ouverte (Claude, agent dev3d (01UY1Vv4v6))
+- PR #383 (commit dfa30d16, branche synchronisée avec `main`) : description complète, captures `qa/pr/WFS-505/` (FR avant / après identiques : 59 captures identiques à l'octet, les autres ne diffèrent que par le code du salon, la mémoire mesurée et les temps du duel ; EN du parcours complet), `tests-cpu.log` (120 réussis). Banc « textes » vert en `en` et en `fr` ; licences : 0 manque.
+- Statut 🔀 En PR, ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
+
+
+### 2026-11-13 12:38:18 — WFS-508 : PR #384 ouverte (Claude, agent dev3d (01Us6uCudS))
+- Fait : `store/cgu-en.md` et `store/confidentialite-en.md` (traductions fidèles, même plan) ; phrase « la version française fait foi » en tête des 4 fichiers ; `VERSION_CGU` inchangé (RG-05) ; écran des CGU dans la langue active (clés `cgu.*` dans `assets/textes/fr.txt` et `en.txt`) ; banc `textes` : écran des CGU (`benchCguTextes`, RG-06) ; `test_cgu` étendu (plan FR = EN, aucune phrase française, RG-05).
+- **Accroches annoncées (1 ligne chacune, hors zone E8)** : `src/platform/desktop_main.cpp` (banc `textes` appelle aussi `benchCguTextes`) et `android/app/build.gradle` (les 2 fichiers anglais copiés dans l'APK, assets `cgu/`).
+- Vérification : tests CPU 120/120 ; banc `textes` VERT en `fr` et `en` ; banc `cgu` en `en` : 0 écart ; licences : 0 manque ; captures FR / EN avant / après dans `qa/pr/WFS-508/`.
+- Avis du juriste (RG-04) : CONFORME après 2 corrections de fidélité (faites). **Pour le PO, hors ticket, avant la sortie publique** : 🔴 contact de l'éditeur à compléter (ANO-205) ; 🔴 politique à une adresse publique sans les notes internes (WFS-509) ; 🟠 lignes « Brouillon / Draft » et « texte à publier… » visibles dans l'écran des CGU (déjà avant ce ticket) ; 🟠 droit applicable non précisé dans les CGU.
+- Statut 🔀 En PR (#384), ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
+
+### 2026-11-13 12:38:58 — WFS-488 fusionné par le lead dev (lead-dev)
+- PR #380, 2e revue sur 108ca8e3 : les 2 points bloquants du 1er refus (dda54015) sont corrigés (section « Tests CPU » + `tests-cpu.log` ; RC-E18-03 mesuré en Basse, `main` / branche avec couleur 2 noire : moyenne −0,12 / −0,08 img/s, 1 % les plus lents +0,19 / +0,01 img/s). Réponse point par point présente dans la PR.
+- Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation quand le compte est le même), puis fusion en squash 7abc389f. 26 captures ouvertes, nouveau diff lu, construction et 121 tests CPU refaits par le lead dev (380 s), `peinture2_voitures.mjs --verifier` : 17 `.pt2` à jour. Statut 🟣 ; `qa/Check.md` à jour ; ligne #380 retirée de `suivi-pr.md`.
+- **Pour le PO** : (1) WFS-456 et WFS-483 (garde-fou E10 « après WFS-488 ») peuvent partir ; (2) RC-E18-03 en seuil absolu (≤ 1 img/s) vaut environ 30 % sur lavapipe (environ 3,4 img/s) : un critère relatif (ex. ≤ 3 %) serait plus juste ; (3) GT86 : pavillon d'origine ondulé (anomalie de forme E10).
+
+### 2026-11-13 12:40:02 — WFS-488 fusionné (PR #380, 7abc389f) : session terminée (Claude, agent dev3d (01Us6uCwUX))
+- Fusion en squash par le lead dev à la 2e revue (1re : 2 preuves manquantes, corrigées). Statut 🟣 (ticket sans 🟡 : bancs du matin pour ✅) ; ligne dans `qa/Check.md` écrite par le lead dev.
+- Réponse à l'utilisateur sous sa demande « Personnalisation de l'aspect des voitures » (`tache utilisateur.md`).
+- Suites possibles : WFS-489 (garage, couleur secondaire) ; WFS-456 et WFS-483 libérés du garde-fou E10 ; anomalie de forme du pavillon de la GT86 à planifier par le PO.
+- Session terminée : un seul ticket par session, je ne demande pas de ticket suivant.
+
+
+### 2026-11-13 12:47:50 — WFS-498 refusé par le lead dev (PR #382) (lead-dev)
+- Revue du commit af654958 : diff entier lu, branche construite et testée (121 tests CPU réussis), 32 captures ouvertes (garage et sauvegarde-relue identiques octet pour octet), textes des bancs equilibrage et sauvegarde conformes à RG-01 à RG-12.
+- **Bloquant** : `configgame.json` et `configgame.README.md` régénérés par `--ecrire` : hors section `boutique`, valeurs de `main` remplacées par les défauts du code (course5 vitesses 0.9/0.97 → 0.95/1.0, police 1/3 → 2/6, caméras Poursuite, Proche, Cockpit). Le fichier est dans l'APK : conduite, police et caméra changées sur le téléphone ; caméra visiblement plus haute sur course-p911-gris et garage-course (pas une variation du banc).
+- À faire : ne garder que les clés `boutique`, refaire les 3 captures de course, annoncer les accroches (desktop_main.cpp, CMakeLists.txt) au journal.
+- Pour le PO : sur `main`, `configgame.json` (APK) et les défauts du code divergent (police, caméras, vitesses des ordinateurs, cockpit 55° contre 62° de WFS-323) : décision à prendre dans un ticket à part.

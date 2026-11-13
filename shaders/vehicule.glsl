@@ -56,6 +56,25 @@ vec3 eclairementRouteAutour() {
     }
     return E / 3.0;
 }
+// WFS-488 (RG-04, RG-05) : couleur de la peinture au pixel. Couleur 2 (toit, coques de rétroviseurs) posée par la partie dans
+// pc.color.w = −(0xRRGGBB + 1) (src/render/vehicule_peinture2.h ; ≥ 0 : une seule couleur, aspect d'avant) ; pièces en couleur 2
+// repérées au chargement par une normale de longueur 4 (sommets dédoublés au bord : limite nette sur le joint). Même vernis, même
+// rugosité et même métal que la couleur principale ; sRGB → linéaire comme hexColor (game.cpp) : puissance 2,2.
+bool marquePeinture2() { return length(vNrm) >= 2.0 * length(pc.model[1].xyz); }
+vec4 couleurPeinture() {
+    if (pc.color.w > -0.5) return pc.color;
+    if (!marquePeinture2()) return vec4(pc.color.rgb, 1.0);
+    uint h = uint(-pc.color.w) - 1u;   // entier exact (−0,5 serait perdu au-delà de 2²³)
+    vec3 c = vec3(float((h >> 16) & 255u), float((h >> 8) & 255u), float(h & 255u)) / 255.0;
+    return vec4(pow(c, vec3(2.2)), 1.0);
+}
+// couleur d'un matériau non peint : alpha remis à 1 quand pc.color.w porte une couleur 2 (pièce opaque, voir peinture2Piece)
+vec4 couleurMateriau() { return pc.color.w < -0.5 ? vec4(pc.color.rgb, 1.0) : pc.color; }
+// WFS-488 : pièce d'origine NON peinte (toit noir ou carbone pris dans les garnitures noires : Corsa, M4, Range Rover Sport, Brezza) :
+// avec une couleur 2, ses pixels marqués deviennent de la peinture (couleur 2, vernis), sans carte de normales ; finition de la
+// carrosserie dans pc.params.z = 4 + métal × 100 (entier) + rugosité (< 1) ; pixels non marqués : aspect d'origine
+bool peinture2Piece(uint flags) { return (flags & F_PAINT) == 0u && pc.color.w < -0.5 && marquePeinture2(); }
+void finitionPeinture2(inout float metal, inout float rough) { float v = pc.params.z - 4.0; metal = floor(v) / 100.0; rough = fract(v); }
 // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
 void vernisPeinture(inout vec3 col, vec3 R, vec3 sun, float NoV, float NoH, float NoL, float aaKernel, float specK) {
     float Fc = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
@@ -73,7 +92,7 @@ void vernisPeinture(inout vec3 col, vec3 R, vec3 sun, float NoV, float NoH, floa
         // posée dans pc.nuit (w = 1) ; sinon (Moyenne, Haute, pièces hors voiture) : calcul d'avant, ici
         solNuit = RHO_ROUTE * (pc.nuit.w > 0.5 ? pc.nuit.rgb : eclairementRouteAutour()) / PI;
         solNuit /= 1.0 + dot(solNuit, vec3(0.2126, 0.7152, 0.0722)) / L_SAT;
-        col += pc.color.rgb * solNuit * (0.5 * (1.0 - Nc.y) + K_DIFFUS) * specK;
+        col += couleurPeinture().rgb * solNuit * (0.5 * (1.0 - Nc.y) + K_DIFFUS) * specK;   // WFS-488 : couleur 2 sur le toit
     }
     float acA = sqrt(0.03 * 0.03 * 0.03 * 0.03 + aaKernel);          // vernis : alpha 0,0009, élargi sur les arêtes
     float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0);        // disque du soleil reflété : seulement si net

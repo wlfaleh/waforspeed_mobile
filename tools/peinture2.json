@@ -1,0 +1,764 @@
+{
+  "_": "WFS-488 : toit (pavillon, becquet de pavillon compris) et coques de rétroviseurs de chaque voiture (tools/peinture2_voitures.mjs). Repère du .wfm : avant vers −Z, x à droite, y en haut, mètres. « ilots » : îlots entiers dans la boîte (vrais joints) ; « triangles_boite » : triangles d'un toit noir d'origine fait de triangles séparés.",
+  "abarth": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 9,
+        "ilots": [
+          -0.53,
+          1.29,
+          -0.27,
+          0.53,
+          1.49,
+          1.27
+        ],
+        "note": "pavillon et becquet",
+        "triangles": 718
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "ilots": [
+          -0.95,
+          0.98,
+          -0.52,
+          -0.72,
+          1.13,
+          -0.35
+        ],
+        "note": "coque gauche",
+        "triangles": 201
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "ilots": [
+          0.72,
+          0.98,
+          -0.52,
+          0.95,
+          1.13,
+          -0.35
+        ],
+        "note": "coque droite",
+        "triangles": 201
+      }
+    ]
+  },
+  "compass": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 0,
+        "ilots": [
+          -0.44,
+          1.59,
+          -0.13,
+          0.44,
+          1.65,
+          1.16
+        ],
+        "note": "pavillon entre les barres de toit",
+        "triangles": 264
+      },
+      {
+        "partie": "retro",
+        "maillage": 0,
+        "ilots": [
+          -1.02,
+          1.17,
+          -0.68,
+          -0.8,
+          1.29,
+          -0.49
+        ],
+        "note": "coque gauche",
+        "triangles": 298
+      },
+      {
+        "partie": "retro",
+        "maillage": 0,
+        "ilots": [
+          0.8,
+          1.17,
+          -0.68,
+          1.02,
+          1.29,
+          -0.49
+        ],
+        "note": "coque droite",
+        "triangles": 314
+      }
+    ],
+    "note": "pavillon peint entre les barres de toit ; le cadre noir d'origine (maillage 7, mêlé à des pièces cachées) reste noir"
+  },
+  "corsa": {
+    "note": "toit et rétroviseurs noirs d'origine (garnitures noires, maillage 7)",
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 7,
+        "triangles_boite": [
+          -0.62,
+          1.27,
+          -0.3,
+          0.62,
+          1.45,
+          1.75
+        ],
+        "nyMin": 0.3,
+        "note": "pavillon noir d'origine et becquet",
+        "triangles": 153
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "triangles_boite": [
+          -1,
+          0.97,
+          -0.61,
+          -0.79,
+          1.08,
+          -0.4
+        ],
+        "note": "coque gauche",
+        "triangles": 132
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "triangles_boite": [
+          0.79,
+          0.97,
+          -0.61,
+          1,
+          1.08,
+          -0.4
+        ],
+        "note": "coque droite",
+        "triangles": 40
+      }
+    ]
+  },
+  "gallardo": {
+    "note": "Spyder (cabriolet) : rétroviseurs seuls (RG-03)",
+    "zones": [
+      {
+        "partie": "retro",
+        "maillage": 1,
+        "ilots": [
+          -1.1,
+          0.76,
+          -0.69,
+          -0.86,
+          0.95,
+          -0.43
+        ],
+        "note": "coque gauche",
+        "triangles": 1083
+      },
+      {
+        "partie": "retro",
+        "maillage": 1,
+        "ilots": [
+          0.86,
+          0.76,
+          -0.69,
+          1.1,
+          0.95,
+          -0.43
+        ],
+        "note": "coque droite",
+        "triangles": 1083
+      }
+    ]
+  },
+  "giulia": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 7,
+        "ilots": [
+          -0.53,
+          1.27,
+          -0.31,
+          0.53,
+          1.42,
+          1.23
+        ],
+        "note": "pavillon et antenne",
+        "triangles": 522
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "ilots": [
+          -1.03,
+          0.93,
+          -0.66,
+          -0.78,
+          1.1,
+          -0.44
+        ],
+        "note": "coque gauche",
+        "triangles": 538
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "ilots": [
+          0.78,
+          0.93,
+          -0.66,
+          1.03,
+          1.1,
+          -0.44
+        ],
+        "note": "coque droite",
+        "triangles": 538
+      }
+    ]
+  },
+  "golf": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 4,
+        "ilots": [
+          -0.59,
+          1.31,
+          -0.27,
+          0.59,
+          1.47,
+          1.84
+        ],
+        "note": "pavillon, joints et becquet",
+        "triangles": 903
+      },
+      {
+        "partie": "retro",
+        "maillage": 4,
+        "ilots": [
+          -1.07,
+          0.97,
+          -0.68,
+          -0.83,
+          1.08,
+          -0.47
+        ],
+        "note": "coque gauche",
+        "triangles": 718
+      },
+      {
+        "partie": "retro",
+        "maillage": 4,
+        "ilots": [
+          0.83,
+          0.97,
+          -0.68,
+          1.07,
+          1.08,
+          -0.47
+        ],
+        "note": "coque droite",
+        "triangles": 726
+      }
+    ]
+  },
+  "gt86": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 5,
+        "ilots": [
+          -0.56,
+          1.16,
+          -0.13,
+          0.56,
+          1.29,
+          0.95
+        ],
+        "note": "pavillon",
+        "triangles": 757
+      },
+      {
+        "partie": "retro",
+        "maillage": 5,
+        "ilots": [
+          -0.97,
+          0.9,
+          -0.37,
+          -0.78,
+          1.02,
+          -0.22
+        ],
+        "note": "coque gauche",
+        "triangles": 187
+      },
+      {
+        "partie": "retro",
+        "maillage": 5,
+        "ilots": [
+          0.78,
+          0.9,
+          -0.37,
+          0.97,
+          1.02,
+          -0.22
+        ],
+        "note": "coque droite",
+        "triangles": 165
+      }
+    ]
+  },
+  "m4": {
+    "note": "toit et rétroviseurs en carbone d'origine (maillage 3)",
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 3,
+        "triangles_boite": [
+          -0.6,
+          1.28,
+          -0.3,
+          0.6,
+          1.41,
+          1.15
+        ],
+        "nyMin": 0.5,
+        "note": "pavillon en carbone",
+        "triangles": 1236
+      },
+      {
+        "partie": "retro",
+        "maillage": 3,
+        "triangles_boite": [
+          -1.06,
+          0.95,
+          -0.63,
+          -0.83,
+          1.09,
+          -0.4
+        ],
+        "note": "coque gauche",
+        "triangles": 317
+      },
+      {
+        "partie": "retro",
+        "maillage": 3,
+        "triangles_boite": [
+          0.83,
+          0.95,
+          -0.63,
+          1.06,
+          1.09,
+          -0.4
+        ],
+        "note": "coque droite",
+        "triangles": 286
+      }
+    ]
+  },
+  "model3": {
+    "note": "toit en verre (pas de pavillon peint) : rétroviseurs seuls (RG-03)",
+    "zones": [
+      {
+        "partie": "retro",
+        "maillage": 6,
+        "ilots": [
+          -1.12,
+          0.9,
+          -0.84,
+          -0.89,
+          1.03,
+          -0.6
+        ],
+        "note": "coque gauche",
+        "triangles": 732
+      },
+      {
+        "partie": "retro",
+        "maillage": 6,
+        "ilots": [
+          0.89,
+          0.9,
+          -0.84,
+          1.12,
+          1.03,
+          -0.6
+        ],
+        "note": "coque droite",
+        "triangles": 722
+      }
+    ]
+  },
+  "mustang": {
+    "note": "Corvette C7 (id mustang) : panneau de toit amovible (maillage 28)",
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 28,
+        "entier": true,
+        "note": "panneau de toit (targa)",
+        "triangles": 970
+      },
+      {
+        "partie": "retro",
+        "maillage": 27,
+        "ilots": [
+          -1.09,
+          0.77,
+          -0.22,
+          -0.8,
+          0.98,
+          0.03
+        ],
+        "note": "coque gauche",
+        "triangles": 392
+      },
+      {
+        "partie": "retro",
+        "maillage": 27,
+        "ilots": [
+          0.8,
+          0.77,
+          -0.22,
+          1.09,
+          0.98,
+          0.03
+        ],
+        "note": "coque droite",
+        "triangles": 374
+      }
+    ]
+  },
+  "p208": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 7,
+        "ilots": [
+          -0.6,
+          1.24,
+          -0.3,
+          0.6,
+          1.5,
+          1.43
+        ],
+        "note": "pavillon et becquet",
+        "triangles": 2259
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "ilots": [
+          -0.95,
+          0.99,
+          -0.64,
+          -0.75,
+          1.1,
+          -0.42
+        ],
+        "note": "coque gauche",
+        "triangles": 997
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "ilots": [
+          0.75,
+          0.99,
+          -0.64,
+          0.95,
+          1.1,
+          -0.42
+        ],
+        "note": "coque droite",
+        "triangles": 879
+      }
+    ]
+  },
+  "p911": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 2,
+        "ilots": [
+          -0.62,
+          1.17,
+          -0.2,
+          0.62,
+          1.31,
+          0.83
+        ],
+        "note": "pavillon et joints",
+        "triangles": 1647
+      },
+      {
+        "partie": "retro",
+        "maillage": 2,
+        "ilots": [
+          -1,
+          0.9,
+          -0.37,
+          -0.81,
+          1,
+          -0.13
+        ],
+        "note": "coque gauche",
+        "triangles": 280
+      },
+      {
+        "partie": "retro",
+        "maillage": 2,
+        "ilots": [
+          0.81,
+          0.9,
+          -0.37,
+          1,
+          1,
+          -0.13
+        ],
+        "note": "coque droite",
+        "triangles": 299
+      }
+    ]
+  },
+  "rrsport": {
+    "note": "toit panoramique en verre (matériau 12) : rétroviseurs seuls (RG-03) ; coques noires d'origine (maillages 9 et 17)",
+    "zones": [
+      {
+        "partie": "retro",
+        "maillage": 17,
+        "triangles_boite": [
+          -1.11,
+          1.23,
+          -0.47,
+          -0.91,
+          1.41,
+          -0.37
+        ],
+        "note": "coque gauche",
+        "triangles": 300
+      },
+      {
+        "partie": "retro",
+        "maillage": 17,
+        "triangles_boite": [
+          0.91,
+          1.23,
+          -0.47,
+          1.11,
+          1.41,
+          -0.37
+        ],
+        "note": "coque droite",
+        "triangles": 306
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "triangles_boite": [
+          -1.11,
+          1.23,
+          -0.58,
+          -0.91,
+          1.41,
+          -0.39
+        ],
+        "note": "coque gauche (couche extérieure)",
+        "triangles": 162
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "triangles_boite": [
+          0.91,
+          1.23,
+          -0.58,
+          1.11,
+          1.41,
+          -0.39
+        ],
+        "note": "coque droite (couche extérieure)",
+        "triangles": 152
+      }
+    ]
+  },
+  "s3": {
+    "zones": [
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "ilots": [
+          -1,
+          0.94,
+          -0.69,
+          -0.79,
+          1.05,
+          -0.5
+        ],
+        "note": "coque gauche",
+        "triangles": 462
+      },
+      {
+        "partie": "retro",
+        "maillage": 7,
+        "ilots": [
+          0.79,
+          0.94,
+          -0.69,
+          1,
+          1.05,
+          -0.5
+        ],
+        "note": "coque droite",
+        "triangles": 432
+      }
+    ],
+    "note": "toit ouvrant en verre noir (matériau 13) sur l'avant du pavillon : rétroviseurs seuls (RG-03)"
+  },
+  "sf90": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 3,
+        "triangles_boite": [
+          -0.6,
+          1,
+          -0.55,
+          0.6,
+          1.22,
+          0.75
+        ],
+        "nyMin": 0.5,
+        "note": "pavillon noir d'origine",
+        "triangles": 1434
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "ilots": [
+          -1.16,
+          0.8,
+          -0.64,
+          -0.93,
+          0.9,
+          -0.37
+        ],
+        "note": "coque gauche",
+        "triangles": 179
+      },
+      {
+        "partie": "retro",
+        "maillage": 9,
+        "ilots": [
+          0.93,
+          0.8,
+          -0.64,
+          1.16,
+          0.9,
+          -0.37
+        ],
+        "note": "coque droite",
+        "triangles": 191
+      }
+    ],
+    "note": "toit d'origine non peint (matériau 4, carbone noir) ; rétroviseurs peints"
+  },
+  "tcross": {
+    "note": "Brezza : toit et rétroviseurs noirs d'origine (maillage 15)",
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 15,
+        "triangles_boite": [
+          -0.64,
+          1.55,
+          -0.4,
+          0.64,
+          1.7,
+          1.72
+        ],
+        "nyMin": 0.5,
+        "note": "pavillon noir d'origine",
+        "triangles": 675
+      },
+      {
+        "partie": "retro",
+        "maillage": 15,
+        "triangles_boite": [
+          -1.01,
+          1.16,
+          -0.67,
+          -0.79,
+          1.3,
+          -0.44
+        ],
+        "note": "coque gauche",
+        "triangles": 498
+      },
+      {
+        "partie": "retro",
+        "maillage": 15,
+        "triangles_boite": [
+          0.79,
+          1.16,
+          -0.67,
+          1.01,
+          1.3,
+          -0.44
+        ],
+        "note": "coque droite",
+        "triangles": 504
+      }
+    ]
+  },
+  "v60": {
+    "zones": [
+      {
+        "partie": "toit",
+        "maillage": 0,
+        "ilots": [
+          -0.61,
+          1.34,
+          -0.34,
+          0.61,
+          1.51,
+          1.68
+        ],
+        "note": "pavillon et antenne",
+        "triangles": 298
+      },
+      {
+        "partie": "retro",
+        "maillage": 1,
+        "triangles_boite": [
+          -1.04,
+          0.92,
+          -0.86,
+          -0.81,
+          1.11,
+          -0.08
+        ],
+        "note": "coque gauche (noire d'origine)",
+        "triangles": 443
+      },
+      {
+        "partie": "retro",
+        "maillage": 1,
+        "triangles_boite": [
+          0.81,
+          0.92,
+          -0.86,
+          1.04,
+          1.11,
+          -0.08
+        ],
+        "note": "coque droite (noire d'origine)",
+        "triangles": 445
+      }
+    ]
+  }
+}
