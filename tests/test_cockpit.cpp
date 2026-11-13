@@ -178,9 +178,9 @@ int main(int argc, char** argv) {
     {
         const InterieurDef &a45 = *interieurPour("a45"), &s3 = *interieurPour("s3"), &giulia = *interieurPour("giulia"), &p208 = *interieurPour("p208"),
                            &gallardo = *interieurPour("gallardo"), &mustang = *interieurPour("mustang"), &model3 = *interieurPour("model3"), &x5 = *interieurPour("x5");
-        cas("Ø des volants du lot 2 : A 45 370, S3 359, Giulia 362, 208 350, Gallardo 360, Mustang 370, Model 3 350, X5 370 mm",
+        cas("Ø des volants du lot 2 : A 45 370, S3 359, Giulia 362, 208 350, Gallardo 360, Corvette C7 358 (WFS-395), Model 3 350, X5 370 mm",
             a45.volantD == 0.370f && s3.volantD == 0.359f && giulia.volantD == 0.362f && p208.volantD == 0.350f && gallardo.volantD == 0.360f
-            && mustang.volantD == 0.370f && model3.volantD == 0.350f && x5.volantD == 0.370f);
+            && mustang.volantD == 0.358f && model3.volantD == 0.350f && x5.volantD == 0.370f);
         cas("208 : volant plat en haut et en bas ; méplat A 45, S3, Giulia ; Mustang, Gallardo, Model 3, X5 ronds",
             p208.meplat > 0 && p208.meplatHaut > 0 && a45.meplat > 0 && s3.meplat > 0 && giulia.meplat > 0 && mustang.meplat == 0 && gallardo.meplat == 0
             && model3.meplat == 0 && x5.meplat == 0 && golf.meplatHaut == 0);
@@ -189,9 +189,9 @@ int main(int argc, char** argv) {
             && std::abs(model3.ecranW - 0.323f) < 0.0033f && std::abs(model3.ecranH - 0.202f) < 0.0021f);
         cas("Giulia : démarreur rouge sur le volant, palettes fixées sur la colonne (Gallardo aussi) ; A 45 : repère à midi",
             giulia.demarreur && !giulia.manettino && giulia.palettesColonne && gallardo.palettesColonne && !mustang.palettesColonne && a45.repereHaut);
-        cas("combinés : 2 cadrans (A 45, S3 : génération du .wfm), Alfa, i-Cockpit, Lamborghini, Ford, BMW (X5)",
+        cas("combinés : 2 cadrans (A 45, S3 : génération du .wfm), Alfa, i-Cockpit, Lamborghini (Gallardo), compte-tours rond en barres (Corvette C7 : WFS-395), BMW (X5)",
             a45.combine == Combine::AudiVirtual && s3.combine == Combine::AudiVirtual && giulia.combine == Combine::AlfaCadrans
-            && p208.combine == Combine::PeugeotICockpit && gallardo.combine == Combine::LamboCompteTours && mustang.combine == Combine::FordDigital
+            && p208.combine == Combine::PeugeotICockpit && gallardo.combine == Combine::LamboCompteTours && mustang.combine == Combine::FerrariIncurve
             && x5.combine == Combine::BmwLive);
         // 208 : combiné lu AU-DESSUS du volant : la ligne œil → bas du combiné passe au-dessus du haut de la jante
         const float R = p208.volantD / 2, hautY = p208.volantPos.y + R * std::cos(p208.volantIncl), hautZ = p208.volantPos.z + R * std::sin(p208.volantIncl);
@@ -214,9 +214,9 @@ int main(int argc, char** argv) {
         const InterieurDef &abarth = *interieurPour("abarth"), &compass = *interieurPour("compass"), &corsa = *interieurPour("corsa"),
                            &elantra = *interieurPour("elantra"), &gt86 = *interieurPour("gt86"), &rrsport = *interieurPour("rrsport"),
                            &tcross = *interieurPour("tcross"), &v60 = *interieurPour("v60");
-        cas("Ø des volants du lot 3 : Abarth 365, Compass 380, Corsa 365, Elantra 370, GT86 363,5, RR Sport 380, T-Cross 370, V60 375 mm",
+        cas("Ø des volants du lot 3 : Abarth 365, Compass 380, Corsa 365, Elantra 370, GT86 363,5, RR Sport 380, Vitara Brezza 365 (WFS-395), V60 375 mm",
             abarth.volantD == 0.365f && compass.volantD == 0.380f && corsa.volantD == 0.365f && elantra.volantD == 0.370f
-            && gt86.volantD == 0.3635f && rrsport.volantD == 0.380f && tcross.volantD == 0.370f && v60.volantD == 0.375f);
+            && gt86.volantD == 0.3635f && rrsport.volantD == 0.380f && tcross.volantD == 0.365f && v60.volantD == 0.375f);
         cas("Abarth (2008-2015) : un seul cadran rond (l = h), pas d'écran central (carte dans le cadran)",
             abarth.combine == Combine::FerrariIncurve && abarth.combineW == abarth.combineH && abarth.ecranW == 0 && abarth.meplat > 0);
         cas("Range Rover Sport L461 : volant 3 branches (pas 4), palettes ; 3 branches pour tout le lot",
@@ -227,14 +227,15 @@ int main(int argc, char** argv) {
             && elantra.ecranPos.x - elantra.ecranW / 2 >= elantra.combinePos.x + elantra.combineW / 2 - 0.001f && elantra.ecranLacet < 0);
         cas("V60 P3 : écran 7 po (152 × 91 mm), pas le 9 po vertical ; combiné TFT 8 po",
             std::abs(v60.ecranW - 0.152f) < 0.0016f && v60.ecranW > v60.ecranH && std::abs(v60.combineW - 0.190f) < 0.002f);
-        cas("combinés : VW (Compass, Corsa, T-Cross), Lamborghini (GT86), Audi (RR Sport), Ferrari (Elantra, V60)",
-            compass.combine == Combine::VwDigital && corsa.combine == Combine::VwDigital && tcross.combine == Combine::VwDigital
+        cas("combinés : VW (Compass, Corsa), Alfa (Vitara Brezza : 2 cadrans et écran au milieu, WFS-395), Lamborghini (GT86), Audi (RR Sport), Ferrari (Elantra, V60)",
+            compass.combine == Combine::VwDigital && corsa.combine == Combine::VwDigital && tcross.combine == Combine::AlfaCadrans
             && gt86.combine == Combine::LamboCompteTours && rrsport.combine == Combine::AudiVirtual
             && elantra.combine == Combine::FerrariIncurve && v60.combine == Combine::FerrariIncurve);
         std::printf("cockpit : œil du lot 3 : RR Sport %.3f, Compass %.3f, T-Cross %.3f, V60 %.3f, Abarth %.3f, Corsa %.3f, Elantra %.3f, GT86 %.3f m\n",
                     hauteurOeil(rrsport), hauteurOeil(compass), hauteurOeil(tcross), hauteurOeil(v60), hauteurOeil(abarth), hauteurOeil(corsa),
                     hauteurOeil(elantra), hauteurOeil(gt86));
-        bool sousGt = true; for (int i = 0; i < nombreInterieurs(); i++) if (std::strcmp(interieur(i).car, "gallardo") && std::strcmp(interieur(i).car, "sf90") && std::strcmp(interieur(i).car, "p911"))
+        bool sousGt = true; for (int i = 0; i < nombreInterieurs(); i++) if (std::strcmp(interieur(i).car, "gallardo") && std::strcmp(interieur(i).car, "sf90") && std::strcmp(interieur(i).car, "p911")
+                                                                       && std::strcmp(interieur(i).car, "mustang"))   // WFS-395 : Corvette C7 (1,24 m), plus basse que la GT86
             sousGt = sousGt && hauteurOeil(gt86) <= hauteurOeil(interieur(i)) + 1e-6f;
         bool plusHaut = true; for (int i = 0; i < nombreInterieurs(); i++) plusHaut = plusHaut && hauteurOeil(rrsport) >= hauteurOeil(interieur(i)) - 1e-6f;
         cas("œil : RR Sport le plus haut, Compass au-dessus des berlines, GT86 la plus basse hors supercars", plusHaut && hauteurOeil(compass) > hauteurOeil(golf) && sousGt);
@@ -414,7 +415,7 @@ int main(int argc, char** argv) {
             std::fabs(g.pts[3].z - (interieurPour("golf")->combinePos.z + volantSeriePour(*interieurPour("golf"))->visiereAvance)) < 1e-6f);
     }
     {   // WFS-325 (RG-06, RG-08) : pièces propres du lot 1 (vehicule_cockpit_details.cpp), mesurées sur la géométrie construite
-        const char* lot[] = {"golf", "m4", "p911", "sf90"};
+        const char* lot[] = {"golf", "m4", "p911", "sf90", "mustang", "tcross"};   // WFS-395 : Corvette C7 et Vitara Brezza
         bool liste = true, vides = true;
         for (int i = 0; i < nombreInterieurs(); i++) {
             const InterieurDef& d = interieur(i);
@@ -425,7 +426,7 @@ int main(int argc, char** argv) {
                 for (const Geo& g : p.g) vides = vides && g.v.empty() && g.i.empty();
             }
         }
-        cas("RG-08 : pièces propres pour Golf, M4, 911 et SF90 seulement ; aucune pour les 16 autres", liste && vides);
+        cas("RG-08 : pièces propres pour Golf, M4, 911, SF90, Corvette C7 et Vitara Brezza seulement ; aucune pour les autres", liste && vides);
         bool pieces = true, indices = true, habitacle = true, rue = true, normales = true, ambiance = true;
         for (const char* car : lot) {
             const InterieurDef& d = *interieurPour(car);
@@ -458,7 +459,7 @@ int main(int argc, char** argv) {
             if (hors || devantRue) std::printf("  %s : %ld sommets hors de l'habitacle, %ld dans la bande de la rue\n", car, hors, devantRue);
             habitacle = habitacle && hors == 0; rue = rue && devantRue == 0;
         }
-        cas("RG-06 : aérateurs, lunettes, commandes laquées, console et garnitures construits pour les 4 voitures", pieces);
+        cas("RG-06 : aérateurs, lunettes, commandes laquées, console et garnitures construits pour les 6 voitures", pieces);
         cas("pièces propres : indices valides, triangles complets, normales unitaires", indices && normales);
         cas("pièces propres dans l'habitacle (portières, plancher, ciel de toit, pied du pare-brise)", habitacle);
         cas("WFS-235 (RG-05) : aucune pièce propre devant la rue (horizon à +9°, ±60°)", rue);
@@ -467,6 +468,21 @@ int main(int argc, char** argv) {
             && RUGO_CHROME_LOT1 >= 0.05f && RUGO_CHROME_LOT1 <= 0.15f && RUGO_ALU >= 0.3f && RUGO_ALU <= 0.5f);
         cas("lumière d'ambiance : Golf et M4 seulement (couleur du modèle)", ambiance && couleurAmbiance(*interieurPour("golf")) && couleurAmbiance(*interieurPour("m4"))
             && !couleurAmbiance(*interieurPour("p911")) && !couleurAmbiance(*interieurPour("sf90")));
+    }
+    {   // WFS-395 (revue du lead dev, PR #374) : poignée de maintien du passager de la Corvette tenue par ses deux pieds : le haut contre la
+        // face de la planche, le bas contre le flanc droit de la console (< 2 mm), la barre qui entre dans chaque pied ; aucune autre voiture
+        PoigneeMaintien g;
+        const bool corvette = poigneeMaintien(*interieurPour("mustang"), g);
+        // écart du dos de chaque pied à son support : ≤ 0 = il touche (enfoncé), > 0 = jour ; enfoncé de 2 mm voulu, 2,5 mm au plus
+        const float jHaut = g.hautMin.z - g.facePlanche, jBas = g.basMin.x - g.flanc;
+        auto dans = [](vec3 p, vec3 a, vec3 b) { return p.x >= a.x && p.x <= b.x && p.y >= a.y && p.y <= b.y && p.z >= a.z && p.z <= b.z; };
+        // bords de la barre (demi-section en travers) aux deux bouts, dans le pied
+        const bool tenue = g.barre.size() >= 2 && dans(g.barre.front(), g.hautMin, g.hautMax)
+                           && dans(g.barre.back() - vec3{POIGNEE_W * 0.5f - 0.001f, 0, 0}, g.basMin, g.basMax);
+        std::printf("cockpit : poignée de la Corvette : dos du pied haut à %+.1f mm de la planche, du pied bas à %+.1f mm du flanc de la console (négatif : enfoncé)\n", jHaut * 1000, jBas * 1000);
+        PoigneeMaintien autre;
+        cas("Corvette : poignée de maintien tenue par la planche et la console (pieds collés, sans jour, enfoncés de 2,5 mm au plus ; barre dans chaque pied) ; aucune autre voiture",
+            corvette && jHaut <= 0 && jHaut >= -0.0025f && jBas <= 0 && jBas >= -0.0025f && tenue && !poigneeMaintien(*interieurPour("tcross"), autre) && autre.barre.empty());
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
