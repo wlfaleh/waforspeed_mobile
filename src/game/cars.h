@@ -1,7 +1,7 @@
 // WaForSpeed — catalogue des voitures (repris de js/cars/catalog.js) et performances dérivées de la fiche réelle.
 // WFS-191 : brand / model / credit gardent les noms d'origine des modèles 3D (licences, tools/qa/verifier_licences.py) ;
 // le joueur ne les lit jamais : l'écran affiche marque(c), modele(c) (section « voitures » de configgame.json, noms inventés
-// par défaut) et creditAffiche(c) (auteur, licence, « modèle modifié pour WaForSpeed »). Les id ne changent pas.
+// par défaut) et auteurDuCredit(c) (auteur et licence ; phrase traduite garage.credit, WFS-507). Les id ne changent pas.
 #pragma once
 #include <algorithm>
 #include <array>
@@ -78,14 +78,14 @@ inline const NomVoiture* nomVoiture(const CarDef& c) {
 }
 inline const char* marque(const CarDef& c) { const NomVoiture* n = nomVoiture(c); return n ? n->marque : ""; }
 inline const char* modele(const CarDef& c) { const NomVoiture* n = nomVoiture(c); return n ? n->modele : ""; }
-// crédit affiché (RG-03) : « Modèle 3D par <auteur> (<site>), <licence> · modèle modifié pour WaForSpeed », sans le titre
+// crédit affiché (RG-03) : phrase traduite garage.credit (« Modèle 3D par <auteur> (<site>), <licence> · modèle modifié pour
+// WaForSpeed », WFS-507) ; auteurDuCredit en rend la partie <auteur> (<site>), <licence>, sans le titre
 // d'origine (qui nomme la vraie voiture : il reste dans assets/licences/ et store/credits.md, obligatoire pour CC-BY)
-inline std::string auteurDuCredit(const CarDef& c) {   // WFS-507 : auteur seul, pour la phrase traduite du garage (garage.credit)
+inline std::string auteurDuCredit(const CarDef& c) {
     const std::string cr = c.credit ? c.credit : "";
     const size_t p = cr.find("» par ");
     return p == std::string::npos ? cr : cr.substr(p + std::strlen("» par "));
 }
-inline std::string creditAffiche(const CarDef& c) { return "Modèle 3D par " + auteurDuCredit(c) + " · modèle modifié pour WaForSpeed"; }
 
 constexpr int TRAFIC_MODELES = 4;   // WFS-13 : modèles chargés par le trafic (les 4 premières voitures), variété : WFS-67
 constexpr int CAR_COUNT = sizeof(CARS) / sizeof(CARS[0]);
