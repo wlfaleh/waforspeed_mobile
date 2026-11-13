@@ -35,6 +35,26 @@ PROFIL relu : pseudo=Banc 480 plaque=WFS-480 profil=1 arrivée=2026-11-12 23:38:
 profil : 191 mots interdits chargés
 ```
 
+## Tests CPU
+
+Commit testé : `076b684d` (branche synchronisée avec `main`) — journal complet : [`qa/pr/WFS-480/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-480/qa/pr/WFS-480/tests-cpu.log)
+```
+$ bash tools/qa/tests_cpu.sh build
+…
+[OK] test_vehicule_lod (0 s)
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (1 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 116 test(s) réussi(s) en 445 s
+code de sortie : 0
+```
+
+## Parcours complet
+
+`WFS_BANC=parcours` (même commit) : accueil → mode → garage → terrain → course → pause → reprendre → fin → menu → accueil : **0 écart** (« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »).
+
 ## Captures pour le lead dev (4 après)
 
 Dossier : [`qa/pr/WFS-480`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-480/qa/pr/WFS-480) — produit par `tools/qa/captures_pr.sh`.
