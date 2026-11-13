@@ -34,7 +34,7 @@ Agent : Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz)
 
 ## Tests CPU (règle de l'utilisateur du 2026-11-11)
 
-Journal complet : [`qa/pr/WFS-456/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-456/qa/pr/WFS-456/tests-cpu.log) — `bash tools/qa/tests_cpu.sh build`, **commit testé 68036a49** (branche synchronisée avec `main` ; le commit suivant n'ajoute que ces journaux et `pr.md`), 2026-11-13 15:01:43 UTC.
+Journal complet : [`qa/pr/WFS-456/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-456/qa/pr/WFS-456/tests-cpu.log) — `bash tools/qa/tests_cpu.sh build`, **commit testé 68036a49** (branche synchronisée avec `main` ; les commits suivants n'ajoutent que ces journaux, `pr.md` et une synchronisation avec `main` sans code (TACHES, journal, règles)), 2026-11-13 15:01:43 UTC.
 
 ```
 [OK] test_hayon_golf (0 s)
