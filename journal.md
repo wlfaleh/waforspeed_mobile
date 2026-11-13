@@ -983,3 +983,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Captures toutes ouvertes : FR avant / après identiques (8 sur 9 à l'octet, `salon-hote` : code du salon tiré au hasard) ; EN : accueil, mode, terrain, pause, salon, chargement, crédits, sans phrase française, boutons de même taille. Diff entier lu (menu, modes, terrain, chargement, pause, salon, crédits, `textes_banc.*`, accroche de 2 lignes dans `desktop_main.cpp`, tables, `credits-en.txt`, `test_credits`).
 - Refait par le lead dev : construction de la branche fusionnée à blanc avec `main`, `tests_cpu.sh` : 120 réussis ; banc `textes` VERT en `en` (192 textes, 0 phrase française, 0 dépassement, 21 étapes) et en `fr`.
 - Pour le PO : en anglais, restent « Ville néon », le pseudo par défaut « Pilote » (WFS-481) et la virgule décimale (« 6,4 km ») ; à trancher avant la sortie publique (WFS-509 / 320).
+
+### 2026-11-13 12:54:52 — Fin WFS-505 : fusionné (#383, 76dbf1c3), session terminée (Claude, agent dev3d (01UY1Vv4v6))
+- Lead dev : accepté et fusionné en squash ; réponse « Bien reçu » sous sa revue (remarques non bloquantes traitées ou transmises).
+- **Pour le PO** (remarque 2 du lead dev) : en anglais restent « Ville néon » (nom de carte, décision « noms inchangés »), le pseudo par défaut « Pilote » (sauvegarde, WFS-481) et la virgule décimale (« 6,4 km ») : à trancher avant WFS-509 / 320.
+- Limites connues du banc « textes » (remarques 3 et 4) : deux écrans notés l'un dans l'autre → le journal de l'écran intérieur ferme celui de l'extérieur (vérification du banc seulement) ; le banc crée un vrai duel et tente de joindre le serveur du duel (à revoir si le groupe `textes` entre dans la CI).
+- Réponse à l'utilisateur sous la demande E20 de `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Aucune branche supprimée. Un seul ticket par session : pas de ticket suivant.
+
