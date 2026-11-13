@@ -6,6 +6,7 @@
 //   5. versMonde : repère direct (normales unitaires, la façade regarde z) ;
 //   6. budget : triangles d'une façade de casino de 44 m (33 baies) au niveau 0 sous 60 000 ;
 //   7. église de la Campagne (RG-04) : nef 9 × 17 m, portail 2,2 × 4,4 m (±1 %), clocher-mur, budget, aucun triangle dégénéré.
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include "../src/world/archi_lieux.h"
@@ -64,6 +65,20 @@ int main() {
         bool uv = true;
         for (const Sommet& s : b2.part[VITRE].v) uv = uv && s.uv.x >= 100.f && s.uv.y >= 100.f;   // largeur × 1000 + allège, graine × 100 + hauteur
         VERIFIER(uv, "vitre sans les uv de la pièce de nuit");
+    }
+    {   // 2 ter. WFS-410 (2e avis de l'agent 3D, B1 bis) : chaque baie a sa graine (allumée ou non, teinte) : une façade de 12 baies
+        // identiques en a au moins 8 différentes ; deux façades de graines différentes ne tirent pas les mêmes
+        lieux::Facade c;
+        c.style = Style::Classique; c.graine = 11; c.largeur = 48; c.y0 = 0; c.y1 = 10;
+        for (int k = 0; k < 12; k++) c.baies.push_back({Ouverture::Fenetre, 2.f + 4.f * k, 6.f, 1.4f, 2.3f, 5.3f});
+        Batiment x0;
+        lieux::construire(c, 0, x0);
+        std::vector<int> graines;
+        for (const Sommet& s : x0.part[VITRE].v) {
+            const int g = (int)std::floor(s.uv.y / 100.f);
+            if (std::find(graines.begin(), graines.end(), g) == graines.end()) graines.push_back(g);
+        }
+        VERIFIER(graines.size() >= 8, "baies d'une façade de lieu : %zu graine(s) différente(s) pour 12 baies", graines.size());
     }
     // 3. loin : mur plein, baies peintes
     Batiment loin;

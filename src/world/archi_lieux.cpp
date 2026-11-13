@@ -98,9 +98,20 @@ void construire(const Facade& f, int lod, Batiment& out, Batiment* vitrines) {
             const float ecart = v.x > o.x ? (v.x - v.l / 2) - (o.x + o.l / 2) : (o.x - o.l / 2) - (v.x + v.l / 2);
             if (ecart >= 0) libre = std::min(libre, ecart / 2);
         }
+        Batiment& dst = vitrines && (f.commerce || o.type == Ouverture::Vitrine || o.type == Ouverture::Porte) ? *vitrines : out;
+        const size_t v0 = dst.part[VITRE].v.size();
         ouvertures::baieComplete(f.style, f.graine ^ (uint32_t)(o.x * 100.f) * 2654435761u, o.type, o.x, o.y, o.l, o.h, o.plancher,
-                                 std::clamp(libre, 0.f, f.murLibre), lod,
-                                 vitrines && (f.commerce || o.type == Ouverture::Vitrine || o.type == Ouverture::Porte) ? *vitrines : out, Baies::Reelles);
+                                 std::clamp(libre, 0.f, f.murLibre), lod, dst, Baies::Reelles);
+        // WFS-410 (2e avis de l'agent 3D, B1 bis) : graine propre à chaque baie dans les centaines de v (pièce de nuit : allumée ou non,
+        // teinte, luminance, meuble). baieComplete pose la baie au niveau 0, travée 0 d'un plan fictif : graineBaie (archi_geo.h) donnait
+        // la même graine à toutes les baies de même taille d'une façade. Ici : graine du lieu × rang de la baie (graineBaie inchangée)
+        uint32_t h = f.graine * 2654435761u ^ (uint32_t)(&o - f.baies.data()) * 40503u ^ 0x9e3779b9u;
+        h ^= h >> 15; h *= 2246822519u; h ^= h >> 13;
+        const float g = 100.f * (float)(1 + h % 100u);
+        for (size_t j = v0; j < dst.part[VITRE].v.size(); j++) {
+            float& y = dst.part[VITRE].v[j].uv.y;
+            if (y >= 100.f) y = g + std::fmod(y, 100.f);
+        }
     }
 }
 
