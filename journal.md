@@ -1277,3 +1277,8 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - **Vérification** : `corriger_voitures --essai` 6/6 ; `tests_cpu.sh build` 123 réussis ; captures `vitrines-feux` jour / nuit avant / après (accroche locale non poussée : A 45 et Elantra retirées sur `main`) dans `qa/pr/WFS-397/`.
 - **Limites, pour le PO** : petite encoche du capot de la Virtus (tâche séparée, RG-09) ; phares et feux de forme d'origine ; 155 k triangles (repère 120 k) ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`), hors zone, non modifié.
 
+### 2026-11-13 17:09:31 — WFS-535 fusionné par le lead dev (lead-dev)
+- **PR #389** relue de nouveau sur 4a3ad642 (2e revue) : le point bloquant de la 1re revue (preuve « Tests CPU ») est corrigé : `qa/pr/WFS-535/tests-cpu.log` complet (commit testé 0eef6112, 125 réussis) et section « Tests CPU » dans la PR et `pr.md`. Remarque des plafonds prise (calcul en réel / `long long` avant l'entier, 2 cas de test).
+- **Synchronisation avec WFS-510** vérifiée : aucune ligne supprimée dans `configgame.json` / README, section `market` identique à `main` (comparaison JSON), `champsMarket` inchangé, `test_market` gardé dans `CMakeLists.txt`.
+- **Refait par le lead dev** : branche + `origin/main` fusionnées en local, construction complète, `tests_cpu.sh build` : 125 test(s) réussi(s) ; `test_configgame` 326 clés OK. 5 captures ouvertes.
+- **Décision** : « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion en squash **e58f143b** ; TACHES 🟣, ligne supprimée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`. Remarque non bloquante pour WFS-536 : plafonner `score.poursuite_score_restant` avant la conversion en entier.
