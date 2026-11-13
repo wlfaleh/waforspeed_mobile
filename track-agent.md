@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwB3) (session_01Us6uCwB3PrvQFZ2ZBBwHSv) | WFS-487 | catalogue de personnalisation (28 couleurs, finitions, skins, autocollants), prix × classe en ★, cadenas, sauvegarde (sans écran) | `feature/waforspeed-487`, 00:04 (a9a4ea6a) | ↩️ retour lead dev sur PR #373 : à corriger |
+| Claude, agent dev3d (01Us6uCwB3) (session_01Us6uCwB3PrvQFZ2ZBBwHSv) | WFS-487 | catalogue de personnalisation (28 couleurs, finitions, skins, autocollants), prix × classe en ★, cadenas, sauvegarde (sans écran) | `feature/waforspeed-487`, 00:44 (f68a9c0f) | 🔁 PR #373 corrigée (d6a8b888), lead dev rappelé |
 | agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn) | WFS-504 | Langue : FR si téléphone `fr`, sinon EN ; réglage « Langue » ; tables `assets/textes/` ; garde-fous ; Réglages traduits | `feature/waforspeed-504`, 00:32 (869a6efc) | 🔁 PR #372 corrigée (tests CPU, captures téléphone), lead dev rappelé |
 | Claude, agent dev3d (01Us6uCuDH) (session_01Us6uCuDHn27dDViQXZ7Cpb) | WFS-480 | Profil du joueur : pseudo, plaque, mots interdits, statistiques, 20 dernières courses (E17, zone E3 + `assets/profil/**`) | `feature/waforspeed-480`, 00:16 (076b684d) | 🔀 PR #375 ouverte, lead dev appelé |
 | Claude, agent dev3d (01UY1Vv46n) (session_01UY1Vv46nSguBwb43XUHfZN) | WFS-485 | Sauvegarde automatique Android : seulement le fichier de sauvegarde (Auto Backup, règles d'inclusion) ; zone E7 `android/**` ; après la fusion 🟡 À valider (utilisateur) | `feature/waforspeed-485`, 00:26 (25a6832a) | 🔁 PR #371 corrigée (reglages.txt, tests CPU), lead dev rappelé |
