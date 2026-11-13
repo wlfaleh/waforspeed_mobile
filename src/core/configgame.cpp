@@ -179,6 +179,49 @@ std::vector<Champ> champsBoutique(ConfigJeu& c) {
     }
     return v;
 }
+// WFS-535 (E22) : section « score_etoiles » : barème du score d'une course terminée et conversion en étoiles (src/game/score_course.*)
+std::vector<Champ> champsScoreEtoiles(ConfigJeu& c) {
+    using T = Type;
+    ConfigJeu::ScoreEtoiles& e = c.scoreEtoiles;
+    static const char* PLACES[5] = {"score_etoiles.course5.place_1", "score_etoiles.course5.place_2", "score_etoiles.course5.place_3",
+                                    "score_etoiles.course5.place_4", "score_etoiles.course5.place_5"};
+    std::vector<Champ> v;
+    for (int i = 0; i < 5; i++) v.push_back({PLACES[i], T::Entier, &e.place[i], 0, 100000, "points", "course à 5 : points de cette place d'arrivée"});
+    const std::vector<Champ> w = {
+        {"score_etoiles.duel.gagne", T::Entier, &e.duelGagne, 0, 100000, "points", "duel gagné"},
+        {"score_etoiles.duel.perdu", T::Entier, &e.duelPerdu, 0, 100000, "points", "duel perdu (course terminée)"},
+        {"score_etoiles.duel.depart_min", T::Reel, &e.duelDepartMinS, 0, 600, "s", "duel : adversaire parti avant ce délai : aucun point, 0 ★ (partie arrangée)"},
+        {"score_etoiles.poursuite.victoire", T::Entier, &e.poursuiteVictoire, 0, 100000, "points", "Poursuite gagnée"},
+        {"score_etoiles.poursuite.defaite", T::Entier, &e.poursuiteDefaite, 0, 100000, "points", "Poursuite perdue (avant la part du score restant)"},
+        {"score_etoiles.poursuite.part_score_restant", T::Reel, &e.poursuitePartScore, 0, 10, "× score", "Poursuite perdue : points en plus = cette part du score de Poursuite restant"},
+        {"score_etoiles.solo.terminee", T::Entier, &e.soloTerminee, 0, 100000, "points", "course solo (checkpoints) terminée"},
+        {"score_etoiles.solo.part_distance", T::Reel, &e.soloPartDistance, 0, 10, "× points", "course solo : points en plus = cette part des points de distance de la course"},
+        {"score_etoiles.solo.plafond_distance", T::Entier, &e.soloPlafondDistance, 0, 100000, "points", "course solo : plafond des points tirés de la distance"},
+        {"score_etoiles.temps.record_battu", T::Entier, &e.recordBattu, 0, 100000, "points", "record de temps du mode et de la carte battu"},
+        {"score_etoiles.temps.proche_record", T::Entier, &e.procheRecord, 0, 100000, "points", "temps proche du record (sans le battre)"},
+        {"score_etoiles.temps.proche_record_part", T::Reel, &e.procheRecordPart, 0, 1, "× record", "« proche » : temps au plus record × (1 + cette part)"},
+        {"score_etoiles.temps.premiere_course", T::Entier, &e.premiereCourse, 0, 100000, "points", "1re course sur cette carte dans ce mode (pas encore de record)"},
+        {"score_etoiles.propre.zero_choc", T::Entier, &e.propreZero, 0, 100000, "points", "conduite propre : aucun choc"},
+        {"score_etoiles.propre.peu_chocs", T::Entier, &e.proprePeu, 0, 100000, "points", "conduite propre : de 1 choc à peu_chocs_max chocs"},
+        {"score_etoiles.propre.peu_chocs_max", T::Entier, &e.proprePeuMax, 1, 100, "chocs", "nombre de chocs le plus grand qui donne encore peu_chocs"},
+        {"score_etoiles.defis.course5.depassement", T::Entier, &e.c5Depassement, 0, 100000, "points", "défi course à 5 : points par adversaire dépassé"},
+        {"score_etoiles.defis.course5.depassement_max", T::Entier, &e.c5DepassementMax, 0, 100000, "points", "défi course à 5 : plafond des points de dépassement"},
+        {"score_etoiles.defis.course5.en_tete_dernier_tour", T::Entier, &e.c5EnTete, 0, 100000, "points", "défi course à 5 : en tête au dernier tour"},
+        {"score_etoiles.defis.poursuite.sans_contact_police", T::Entier, &e.poSansPolice, 0, 100000, "points", "défi Poursuite : aucun contact avec la police"},
+        {"score_etoiles.defis.poursuite.score_garde", T::Entier, &e.poScoreGarde, 0, 100000, "points", "défi Poursuite : arrivée avec au moins score_garde_part du score de départ"},
+        {"score_etoiles.defis.poursuite.score_garde_part", T::Reel, &e.poScoreGardePart, 0, 1, "× score de départ", "défi Poursuite : part du score de départ à garder à l'arrivée"},
+        {"score_etoiles.defis.duel.jamais_derriere", T::Entier, &e.duJamaisDerriere, 0, 100000, "points", "défi duel : jamais derrière après la mi-course"},
+        {"score_etoiles.defis.duel.ecart", T::Entier, &e.duEcart, 0, 100000, "points", "défi duel : gagné avec plus de ecart_s d'avance"},
+        {"score_etoiles.defis.duel.ecart_s", T::Reel, &e.duEcartS, 0, 600, "s", "défi duel : avance à l'arrivée à dépasser"},
+        {"score_etoiles.defis.solo.sans_retard", T::Entier, &e.soSansRetard, 0, 100000, "points", "défi course solo : tous les checkpoints passés sans retard"},
+        {"score_etoiles.defis.solo.nitro_jamais_vide", T::Entier, &e.soNitro, 0, 100000, "points", "défi course solo : nitro jamais vide"},
+        {"score_etoiles.conversion.points_par_etoile", T::Entier, &e.pointsParEtoile, 1, 100000, "points", "points pour une étoile (arrondi) ; réglé pour ≈ 10 ★ à un joueur moyen"},
+        {"score_etoiles.conversion.min", T::Entier, &e.etoilesMin, 0, 1000, "★", "étoiles au moins pour une course terminée (quittée : 0)"},
+        {"score_etoiles.conversion.max", T::Entier, &e.etoilesMax, 0, 1000, "★", "étoiles au plus pour une course"},
+    };
+    v.insert(v.end(), w.begin(), w.end());
+    return v;
+}
 // WFS-510 (RG-01, RG-02, RG-06) : section « market » (clés « market.packs.<produit>.<champ> », puis le pack débutant et le ×2)
 std::vector<Champ> champsMarket(ConfigJeu& c) {
     static std::vector<std::string> cles;   // textes des clés (la table garde des const char*), fabriqués une fois
@@ -207,9 +250,55 @@ std::vector<Champ> champsMarket(ConfigJeu& c) {
     v.push_back({"market.x2_par_jour", T::Entier, &m.x2ParJour, 0, 100, "par jour", "×2 des étoiles de fin de course par jour au plus (vidéo ou « sans pub »)"});
     return v;
 }
+// WFS-500 (RG-01, RG-02, RG-05 ; RC-E19-02) : section « cadeau » (cadeau du jour, src/game/cadeau.h) ; total des chances et tranches
+// contrôlés après la lecture (verifierCadeau)
+std::string ecrireNombre(double v, Type t);   // plus bas (lecteur JSON)
+std::vector<Champ> champsCadeau(ConfigJeu& c) {
+    static std::vector<std::string> cles;
+    if (cles.empty())
+        for (int i = 0; i < CADEAU_TRANCHES; i++)
+            for (const char* f : {".min", ".max", ".chance"}) cles.push_back("cadeau.tranches.t" + std::to_string(i + 1) + f);
+    using T = Type;
+    ConfigJeu::Cadeau& d = c.cadeau;
+    std::vector<Champ> v;
+    v.push_back({"cadeau.etoiles_min", T::Entier, &d.etoilesMin, 1, 1000, "★", "étoiles au moins par cadeau, replis compris"});
+    v.push_back({"cadeau.garantie", T::Entier, &d.garantie, 2, 1000, "cadeaux", "le cadeau ouvert numéro N sans voiture ni skin donne une voiture prêtée ou une skin"});
+    for (int i = 0; i < CADEAU_TRANCHES; i++) {
+        v.push_back({cles[(size_t)i * 3].c_str(), T::Entier, &d.tranche[i].min, 1, 100000, "★", "plus petit nombre d'étoiles de la tranche"});
+        v.push_back({cles[(size_t)i * 3 + 1].c_str(), T::Entier, &d.tranche[i].max, 1, 100000, "★", "plus grand nombre d'étoiles de la tranche (≥ min)"});
+        v.push_back({cles[(size_t)i * 3 + 2].c_str(), T::Reel, &d.tranche[i].chance, 0, 100, "%", "chance de tirer cette tranche d'étoiles"});
+    }
+    v.push_back({"cadeau.coloris.chance", T::Reel, &d.chanceColoris, 0, 100, "%", "chance d'un coloris (couleur ou finition) pas encore possédé, pour une voiture du joueur"});
+    v.push_back({"cadeau.skin.chance", T::Reel, &d.chanceSkin, 0, 100, "%", "chance d'une skin pas encore possédée, pour une voiture du joueur"});
+    v.push_back({"cadeau.voiture.chance", T::Reel, &d.chanceVoiture, 0, 100, "%", "chance d'une voiture que le joueur n'a pas, prêtée"});
+    v.push_back({"cadeau.pret_heures", T::Reel, &d.pretHeures, 0.1, 72, "h", "durée du prêt d'une voiture gagnée (WFS-502)"});
+    v.push_back({"cadeau.activation_heures", T::Reel, &d.activationHeures, 1, 720, "h", "délai pour activer une voiture prêtée (WFS-502)"});
+    return v;
+}
+// WFS-500 (RG-01) : total des 7 chances = 100 % et tranches min ≤ max ; sinon valeurs du jeu pour ce groupe et une ligne au journal
+void verifierCadeau(ConfigJeu& c, BilanConfig& b) {
+    const ConfigJeu::Cadeau defaut{};
+    ConfigJeu::Cadeau& d = c.cadeau;
+    for (int i = 0; i < CADEAU_TRANCHES; i++)
+        if (d.tranche[i].min > d.tranche[i].max) {
+            b.erreurs++;
+            b.messages.push_back("cadeau.tranches.t" + std::to_string(i + 1) + " : min " + std::to_string(d.tranche[i].min) + " > max " +
+                                 std::to_string(d.tranche[i].max) + " : tranche du jeu gardée");
+            d.tranche[i].min = defaut.tranche[i].min; d.tranche[i].max = defaut.tranche[i].max;
+        }
+    double total = d.chanceColoris + d.chanceSkin + d.chanceVoiture;
+    for (const auto& t : d.tranche) total += t.chance;
+    if (std::fabs(total - 100) > 1e-6) {
+        b.erreurs++;
+        b.messages.push_back("cadeau : total des chances = " + ecrireNombre(total, Type::Reel) + " % (100 % attendu) : chances du jeu gardées");
+        for (int i = 0; i < CADEAU_TRANCHES; i++) d.tranche[i].chance = defaut.tranche[i].chance;
+        d.chanceColoris = defaut.chanceColoris; d.chanceSkin = defaut.chanceSkin; d.chanceVoiture = defaut.chanceVoiture;
+    }
+}
 std::vector<Champ> tousChamps(ConfigJeu& c) {
-    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsMarket(c);
-    v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end()); v.insert(v.end(), y.begin(), y.end());
+    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsMarket(c), z = champsScoreEtoiles(c), u = champsCadeau(c);
+    v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end()); v.insert(v.end(), y.begin(), y.end()); v.insert(v.end(), z.begin(), z.end());
+    v.insert(v.end(), u.begin(), u.end());   // WFS-500
     return v;
 }
 
@@ -409,10 +498,15 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
         if (cle.empty() || cle[0] == '_' || cle.find("._") != std::string::npos) continue;   // « _aide » : commentaires du fichier
         b.erreurs++; b.messages.push_back(cle + " : clé inconnue, sans effet");
     }
+    if (c.scoreEtoiles.etoilesMin > c.scoreEtoiles.etoilesMax) {   // WFS-535 : bornes croisées : min ramené à max
+        b.messages.push_back("score_etoiles.conversion.min > max : min ramené à max");
+        c.scoreEtoiles.etoilesMin = c.scoreEtoiles.etoilesMax;
+    }
     if (c.poursuite.policeDepart > c.poursuite.policeMax) {   // (contrôle inchangé)
         b.messages.push_back("poursuite.police_depart > police_max : police_depart ramené à police_max");
         c.poursuite.policeDepart = c.poursuite.policeMax;
     }
+    verifierCadeau(c, b);   // WFS-500 (RG-01)
     deduire(c);
     return b;
 }
@@ -504,12 +598,21 @@ std::string configReadme() {
         "possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; "
         "`minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), "
         "qui donnent l'équivalent en médailles et en euros de chaque prix.\n"
+        "- **Score en étoiles** (section `score_etoiles`, WFS-535, épic E22) : barème du score d'une course **terminée** : place ou issue "
+        "(`course5`, `duel`, `poursuite`, `solo`), temps contre le record (`temps`), conduite propre (`propre`) et 2 défis par mode (`defis`). "
+        "Étoiles = arrondi(total ÷ `conversion.points_par_etoile`), bornées entre `conversion.min` et `conversion.max` ; course quittée : 0 ★ ; "
+        "duel dont l'adversaire est parti avant `duel.depart_min` s : 0 ★. Un compteur de défi que le mode n'a pas vaut 0 point.\n"
         "- **Market** (section `market`, WFS-510) : packs vendus par le market. Les noms des packs (`etoiles_bronze`…`sans_pub`) sont les "
         "identifiants des produits de la Play Console et ne changent pas. `etoiles` = étoiles de base, `offert` = % d'étoiles en plus : le joueur "
         "reçoit base + arrondi(base × offert / 100) (argent : 300 + 10 % = 330 ★). Le pack débutant (une seule fois) donne `etoiles` ★ et "
         "`bons_skin` bon(s) de skin ; il est proposé à partir de la fin de la course n° `apres_courses`. `x2_par_jour` = ×2 des "
         "étoiles de fin de course par jour au plus. Les prix en argent sont ceux de Google Play : `prix_secours_eur` ne sert que sur PC et dans les bancs. "
         "Les `medailles` de la section `boutique` (WFS-498) donnent seulement l'équivalent des prix du garage.\n"
+        "- **Cadeau du jour** (section `cadeau`, WFS-500) : un cadeau gratuit par jour (minuit, heure du téléphone). `tranches.t1` à `t4` : "
+        "étoiles tirées au hasard entre `min` et `max`, avec leur `chance` en % ; `coloris`, `skin`, `voiture` : chance en % d'un coloris, d'une skin "
+        "ou d'une voiture prêtée. **Le total des 7 chances doit faire 100** : sinon le jeu garde ses chances et l'écrit au journal. "
+        "`etoiles_min` : jamais moins d'étoiles par cadeau (aussi quand tout est déjà possédé) ; `garantie` : le cadeau numéro N ouvert sans voiture "
+        "ni skin en donne une ; `pret_heures` et `activation_heures` : durée du prêt et délai pour l'activer (WFS-502).\n"
         "- Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans "
         "`src/core/configgame.cpp` (table `champs`), puis relancer cette commande.\n\n"
         "| Clé | Sens | Unité | Min | Max | Défaut |\n|---|---|---|---|---|---|\n";

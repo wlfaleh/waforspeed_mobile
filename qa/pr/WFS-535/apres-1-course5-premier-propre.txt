@@ -1,0 +1,10 @@
+---- 1) Course à 5 : 1er, conduite propre (0 choc), record battu, 4 dépassements, en tête au dernier tour
+  score.place                       +1000
+  score.record_battu                 +300
+  score.zero_choc                    +200
+  score.defi_depassements             +80
+  score.defi_en_tete                 +100
+  total                              1680 points
+  étoiles                             20 ★   (nouveau record)
+
+
