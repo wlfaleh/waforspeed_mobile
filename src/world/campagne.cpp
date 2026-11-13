@@ -158,6 +158,7 @@ protected:
     const char* carteId() const override { return "campagne"; }
     Env env() const override { return {0xd3e0d0, 820, 0x1b2236, 0x0d1218, 540}; }
     // WFS-372 : couleurs des objets agricoles modélisés
+    bool decorVueDessus() const override { return true; }   // WFS-387 (RG-10) : vues de dessus course5 sans vide gris
     void couleursCarte(std::array<uint32_t, PAL_W>& p) const override { for (int k = C_NB; k < C_FIN_CAMPAGNE; k++) p[(size_t)k] = COULEURS_CAMPAGNE[k - (int)C_NB]; }
 
     // GROUND.country : distances depuis le bord de la chaussée
@@ -1172,7 +1173,9 @@ private:
     struct TuileSol { Mesh m; vec3 c; float r; };   // tuile de 32 × 32 cases (≈ 1,5 km), centre et rayon
     std::vector<TuileSol> solFond_;
     bool solFondPret_ = false;
-    struct Bord { float x, z, yRoute, yBord, dBord; };   // échantillon de route : axe, hauteur, bord du sol (hauteur, distance à l'axe)
+    // échantillon de route : axe, vecteur « droite », hauteur ; bord des bandes de sol DE CHAQUE CÔTÉ (hauteur, distance à l'axe) :
+    // WFS-387 (revue du lead dev) : un seul bord moyen faisait passer la grille à travers les terrasses du côté des vignes (+ 26 m)
+    struct Bord { float x, z, rx, rz, yRoute, yBord[2], dBord[2]; };
     void construireSolFond(Renderer& r) {
         Track& t = *track_;
         const int64_t L = len();
@@ -1180,10 +1183,9 @@ private:
         float x0 = 1e9f, x1 = -1e9f, z0 = 1e9f, z1 = -1e9f;
         for (int64_t a = 0; a < L; a += 6) {
             const Pose p = poseAt(t, a);
-            float yb = 0, db = 1e9f;
-            for (int s : {-1, 1}) { Band b[6] = {}; const int n = profil(zone(a), a, s, b); if (n) { yb += b[n - 1].yb * 0.5f; db = std::min(db, b[n - 1].b); } }
-            if (db > 1e8f) db = (float)RW + 3;
-            bords.push_back({p.o.x, p.o.z, p.o.y, p.o.y + yb, db});
+            Bord bo{p.o.x, p.o.z, p.r.x, p.r.z, p.o.y, {p.o.y, p.o.y}, {(float)RW + 3, (float)RW + 3}};
+            for (int s : {-1, 1}) { Band b[6] = {}; const int n = profil(zone(a), a, s, b); if (n) { bo.yBord[s > 0] = p.o.y + b[n - 1].yb; bo.dBord[s > 0] = b[n - 1].b; } }
+            bords.push_back(bo);
             x0 = std::min(x0, p.o.x); x1 = std::max(x1, p.o.x); z0 = std::min(z0, p.o.z); z1 = std::max(z1, p.o.z);
         }
         const float marge = 1800, pas = 48;
@@ -1212,16 +1214,18 @@ private:
                 for (int v = std::max(0, cj - rr); v <= std::min(gz - 1, cj + rr); v++) for (int u = std::max(0, ci - rr); u <= std::min(gx - 1, ci + rr); u++)
                     for (uint32_t k : cases[(size_t)v * gx + u]) { const Bord& q = bords[k]; const float dd = (q.x - x) * (q.x - x) + (q.z - z) * (q.z - z); if (dd < d2) { d2 = dd; pr = &q; } }
             for (int v = std::max(0, cj - 2); v <= std::min(gz - 1, cj + 2); v++) for (int u = std::max(0, ci - 2); u <= std::min(gx - 1, ci + 2); u++)
-                for (uint32_t k : cases[(size_t)v * gx + u]) { const Bord& q = bords[k]; if ((q.x - x) * (q.x - x) + (q.z - z) * (q.z - z) < 320.f * 320.f) yMin = std::min(yMin, std::min(q.yRoute, q.yBord)); }
+                for (uint32_t k : cases[(size_t)v * gx + u]) { const Bord& q = bords[k]; if ((q.x - x) * (q.x - x) + (q.z - z) * (q.z - z) < 320.f * 320.f) yMin = std::min({yMin, q.yRoute, q.yBord[0], q.yBord[1]}); }
             float y;
             const float d = std::sqrt(d2);
+            const int cote = pr && (x - pr->x) * pr->rx + (z - pr->z) * pr->rz > 0;   // côté de la route où tombe le point
+            const float dB = pr ? pr->dBord[cote] : 0, yB = pr ? pr->yBord[cote] : 0;
             const size_t ix = (size_t)j * (nx + 1) + i;
             if (!pr) { y = 0; genre[ix] = 2; }
-            else if (d < pr->dBord + 30) { y = std::min(yMin, pr->yRoute) - 3.f; genre[ix] = 0; }   // sous les bandes de sol (et le trou entre deux bandes)
-            else { y = std::min(pr->yBord, yMin + 20.f) - 0.5f; genre[ix] = d < pr->dBord + 30 + 1.5f * std::max(px, pz) ? 1 : 2; }   // 1 : contre le bord des bandes
+            else if (d < dB + 30) { y = std::min(yMin, pr->yRoute) - 3.f; genre[ix] = 0; }   // sous les bandes de sol (et le trou entre deux bandes)
+            else { y = std::min(yB, yMin + 30.f) - 0.5f; genre[ix] = d < dB + 30 + 1.5f * std::max(px, pz) ? 1 : 2; }   // 1 : contre le bord des bandes
             H[ix] = y;
-            loinBord[ix] = pr ? std::clamp((d - pr->dBord - 30) / 600.f, 0.f, 1.f) : 1.f;
-            couvert[ix] = pr && d < pr->dBord - 6;
+            loinBord[ix] = pr ? std::clamp((d - dB - 30) / 600.f, 0.f, 1.f) : 1.f;
+            couvert[ix] = pr && d < dB - 6;
         }
         // WFS-387 (avis de l'agent 3D) : la hauteur « de la route la plus proche » saute là où deux routes de hauteurs différentes se
         // partagent le terrain (col, vignes en terrasses jusqu'à + 26 m) : parois verticales à sommet plat. Les points loin des bandes

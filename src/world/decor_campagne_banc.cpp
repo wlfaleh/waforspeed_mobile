@@ -4,6 +4,8 @@
 // (grain et filet), -hangar-moyen (couverture à 80 m, ondes et plaques), -poteau-soleil, -cloture-soleil, -muret et
 // -muret-voiture (parapet des épingles, voiture arrêtée contre lui). Les objets sont les
 // premiers de leur sorte posés sur le tour (campagne::objetBanc, rempli au chargement de la carte).
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -56,18 +58,25 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course);
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
         double segVue = (double)o.seg;
-        if (v.voiture) {   // la voiture va tout droit vers le parapet extérieur à 30 km/h environ, puis frein : arrêtée contre lui (choc WFS-256)
+        if (v.voiture) {   // WFS-387 (RG-11) : la voiture roule vers le parapet extérieur jusqu'au choc (WFS-256), puis freine
             g.modeManette = true;
-            for (int i = 0; i < 360; i++) {
+            // coin de la voiture le plus avancé vers le parapet (repère de la route, même calcul que test_muret_campagne)
+            auto coin = [&](const Player& pj) { const double h = pj.heading; return o.side * pj.playerX * RW + pj.car->d.L / 2 * std::abs(std::sin(h)) + pj.car->d.W / 2 * std::abs(std::cos(h)); };
+            bool choc = false; double coinMax = -1e9;
+            for (int i = 0; i < 600; i++) {
                 const Player& pj = g.player();
-                g.manette = DriveInput{}; g.manette.steer = i < 90 ? (float)o.side * 0.7f : 0.f;   // braquage vers le parapet extérieur (steer > 0 : playerX croissant, vu au banc)
-                g.manette.gas = i < 90 && pj.kmh() < 30; g.manette.brake = i >= 90 && pj.kmh() > 2;   // frein sans enchaîner la marche arrière
+                choc = choc || pj.chocsDecor.n > 0 || coin(pj) >= o.lat - 0.1;   // choc vu par le registre, ou coin contre la face
+                coinMax = std::max(coinMax, coin(pj));
+                g.manette = DriveInput{}; g.manette.steer = choc ? 0.f : (float)o.side * 0.7f;   // steer > 0 : playerX croissant (vu au banc)
+                g.manette.gas = !choc && pj.kmh() < 25; g.manette.brake = choc && pj.kmh() > 2;   // frein après le choc, sans marche arrière
                 g.update(1.0 / 60); if (i % 30 == 0) g.render(402 + i / 60.0);
             }
             g.manette = DriveInput{}; g.modeManette = false;
             const Player& pj = g.player();
             segVue = pj.dist / SEG;
-            WFS_LOG("muret-voiture : voiture arrêtée à %.2f m de l'axe (face du parapet à %.2f m), %.0f km/h", o.side * pj.playerX * RW, o.lat, pj.kmh());
+            WFS_LOG("muret-voiture : %s ; coin le plus avancé de la voiture à %.2f m de l'axe (au plus %.2f m), face du parapet à %.2f m ; centre à %.2f m, %.0f km/h",
+                    choc ? "contact avec le parapet" : "AUCUN contact", coin(pj), coinMax, o.lat, o.side * pj.playerX * RW, pj.kmh());
+            if (!choc || std::abs(coinMax - o.lat) > 0.2) { ecarts++; WFS_ERR("muret-voiture : la voiture ne s'arrête pas à la face visible du parapet (RG-11)"); }
         }
         auto P = [&](float lat, float lg, float y) {
             const TrackPoint q = t.point((segVue + lg / SEG_M) * SEG, o.side * (o.lat + lat));

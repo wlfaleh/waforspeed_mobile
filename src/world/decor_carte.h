@@ -86,6 +86,8 @@ public:
 protected:
     // identifiant de la carte (MAPS[].id)
     virtual const char* carteId() const = 0;
+    // WFS-387 (accroche) : décor dessiné dans les vues de dessus d'une course à 5 (banc course5) ; seule la Campagne le demande
+    virtual bool decorVueDessus() const { return false; }
     // envFor (maps.js) : jour (couleur et distance du brouillard) ; nuit : horizon, brouillard, distance
     struct Env { uint32_t fogJour; float farJour; uint32_t horizonNuit, fogNuit; float farNuit; };
     virtual Env env() const = 0;
