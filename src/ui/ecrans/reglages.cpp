@@ -1,5 +1,6 @@
 // WaForSpeed — écran de réglages (WFS-68 dans WFS-41) : voir reglages.h.
 #include "../../render/qualite_auto.h"   // WFS-104
+#include "creation_profil.h"   // WFS-481 (accroche) : écran « Crée ton pilote » ouvert
 #include "reglages.h"
 #include <algorithm>
 #include <cmath>
@@ -355,6 +356,7 @@ public:
         struct Journal { Journal() { if (!g_journalEcran.empty()) ui::langue::journalActif(true, g_journalEcran.c_str()); }
                          ~Journal() { if (!g_journalEcran.empty()) ui::langue::journalActif(false); } } journal;
         if (!ui::fontReady() || g.sceneDediee || (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause)) return;
+        if (creationProfilOuverte()) return;   // WFS-481 (accroche, RG-02) : pas de bouton « Réglages » sur l'écran « Crée ton pilote »
         // WFS-147 (RG-01, RG-02, ANO-19) : sur téléphone couché, mise en page propre aux réglages, dessinée en dp
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
         const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
