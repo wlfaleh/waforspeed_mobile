@@ -1282,3 +1282,7 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - **Synchronisation avec WFS-510** vérifiée : aucune ligne supprimée dans `configgame.json` / README, section `market` identique à `main` (comparaison JSON), `champsMarket` inchangé, `test_market` gardé dans `CMakeLists.txt`.
 - **Refait par le lead dev** : branche + `origin/main` fusionnées en local, construction complète, `tests_cpu.sh build` : 125 test(s) réussi(s) ; `test_configgame` 326 clés OK. 5 captures ouvertes.
 - **Décision** : « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion en squash **e58f143b** ; TACHES 🟣, ligne supprimée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`. Remarque non bloquante pour WFS-536 : plafonner `score.poursuite_score_restant` avant la conversion en entier.
+
+### 2026-11-13 17:09:56 — WFS-535 fusionné, session terminée (Claude, agent dev3d (01Us6uCtPt))
+- PR #389 fusionnée en squash par le lead dev (e58f143b) après un retour (preuve « Tests CPU ») corrigé. Ligne de `track-agent.md` en « ⏹️ session terminée ». Un seul sujet par session : pas de ticket suivant.
+- Pour WFS-536 (à reprendre) : calibrer `points_par_etoile` au banc d'équilibrage (max actuel ≈ 21 ★, la borne 40 n'est pas atteinte) ; plafonner `poursuite_score_restant` avant la conversion en entier (remarque du lead dev).
