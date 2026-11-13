@@ -126,6 +126,7 @@ const float FIN_METAL_METAL = 0.65;       // part « métal » de la base métal
 const float FIN_NACRE_RUGOSITE = 0.30, FIN_NACRE_METAL = 0.25;   // mica enrobé d'oxyde de titane : reflet doux et teinté
 const float FIN_CHROME_F0 = 0.60;         // chrome (chrome métal, n et k de Rakić 1998) : réflectance 0,55 à 0,65 dans le visible
 const float FIN_CHROME_RUGOSITE = 0.06;   // chrome poli (DA-realisme § 3 : 0,05 à 0,15, métal 1)
+const float FIN_CHROME_SOL = 0.04;        // chaussée reflétée par le chrome : × couleur du sol du ciel (asphalte sombre vu en rasant)
 const float FIN_CHROME_TEINTE = 0.15;     // part de la couleur choisie dans la teinte du chrome (au plus 15 % : il reste un miroir)
 const float FIN_CAMELEON_TOUR = 1.5;      // rotation de teinte de face → rasant (rad) : ex. rouge → orange → or → jaune-vert (décalage vers le bleu)
 const float FIN_CANDY_RUGOSITE = 0.20, FIN_CANDY_METAL = 0.85;   // base argent sous le vernis teinté
@@ -244,11 +245,11 @@ void vernisFinition(int fin, inout vec3 col, vec3 R, vec3 sun, float NoV, float 
     if (fin == FIN_CHROME) {
         // chrome : métal pur, sans aucune part diffuse (la sonde d'environnement floue est retirée par scene.frag) : miroir net,
         // réflectance teintée f0 (Schlick), du même monde pour toutes les voitures : ciel au-dessus de l'horizon, chaussée sombre
-        // en dessous (même règle que le vernis, ANO-67), horizon net (−0,05 à 0,02) ; soleil et lumières de nuit : reflet
+        // en dessous (asphalte vu en rasant, plus sombre que le sol clair du ciel : ANO-67), horizon net (−0,05 à 0,02) ; soleil et lumières de nuit : reflet
         // spéculaire du métal déjà calculé par scene.frag (GGX, rugosité 0,06)
         vec3 Fm = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0);
         float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0) * pow(1.0 - FIN_CHROME_RUGOSITE, 6.0);
-        vec3 monde = mix(F.groundCol.rgb * 0.3, skyColor(R, sunKc), smoothstep(-0.05, 0.02, R.y)) * F.misc.z * F.misc.w;
+        vec3 monde = mix(F.groundCol.rgb * FIN_CHROME_SOL, skyColor(R, sunKc), smoothstep(-0.05, 0.02, R.y)) * F.misc.z * F.misc.w;
         col += min(monde * Fm, vec3(SPEC_MAX)) * specK;
     }
     float rV = fin == FIN_SATINE ? FIN_VERNIS_SATINE : FIN_VERNIS_BRILLANT;

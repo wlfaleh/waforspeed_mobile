@@ -38,12 +38,13 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
 
 ## Chromé (film chromé, chrome teinté)
 - Chrome métal : réflectance 0,55 à 0,65 dans le visible (constantes n et k du chrome, Rakić A. D. et al., Appl. Opt. 37 (1998),
-  données sur refractiveindex.info) ; jamais 1 (miroir parfait) ni blanc uniforme.
-- Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 30 %), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; noir → chrome
-  fumé (F0 ≈ 0,30). Miroir (Schlick) du même monde pour toutes les voitures : ciel au-dessus de l'horizon, chaussée éclairée
-  en dessous (asphalte ρ = 0,14 sous le soleil et le ciel), horizon net (R.y de −0,05 à 0,02) ; la sonde d'environnement
-  (décor réel) garde 30 % (RG-06). Contrôle sur les planches de jour : luminance moyenne de la carrosserie 0,41 (GT86), 0,44
-  (Corvette), 0,42 (208).
+  données sur refractiveindex.info) ; jamais 1 (miroir parfait) ni blanc uniforme ; métal pur : **aucune part diffuse**.
+- Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 15 % au plus), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; noir →
+  chrome fumé (F0 ≈ 0,30). Miroir net (Schlick) du même monde pour toutes les voitures : ciel au-dessus de l'horizon, chaussée
+  sombre en dessous (× 0,04 la couleur du sol du ciel : asphalte vu en rasant), horizon net (R.y de −0,05 à 0,02) ; la sonde
+  d'environnement floue n'est pas utilisée (elle donnait un aspect de peinture), ni la lumière diffuse de la chaussée la nuit.
+  Contrôle (planches et gros plan, `/tmp` du développeur, chiffres dans la PR #388) : portière de la GT86 0,30 en haut, 0,05 en bas
+  (écart 0,25) ; de nuit, chromé plus sombre que le brillant sur les 3 voitures (RG-06, RG-09).
 
 ## Caméléon (pigments à interférence multicouche)
 - Pigments à interférence multicouche (ex. ChromaFlair de Viavi, Colorstream de Merck) : la couleur renforcée se décale vers les
