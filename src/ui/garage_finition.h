@@ -8,7 +8,8 @@
 //     passe par le bouton « Acheter N ★ » de WFS-489 (AchatGarage : la finition s'ajoute à ce qui manque) ;
 //   - RG-03 : une finition achetée vaut pour une seule voiture ; un choix possédé est gardé tout de suite (finition-<voiture>) ;
 //     à chaque ouverture du garage, chaque voiture reprend sa dernière finition possédée (aperçu non acheté oublié) ;
-//   - RG-04 : boutons de taille fixe (30 px de haut, comme les pastilles des couleurs), style design-street-racing.
+//   - RG-04 : boutons de taille fixe (104 × 30 px, hauteur des pastilles des couleurs), style design-street-racing ; écran étroit (4:3) :
+//     la rangée défile par des chevrons, comme celle des couleurs ; texte à 12 px, réduit de 20 % au plus (E20), jamais coupé.
 // La course lit la finition dans la sauvegarde (perso::aspectCourse, Game::setCar) : une finition non possédée ne part jamais en course.
 #pragma once
 #include "garage_commun.h"
@@ -32,13 +33,20 @@ public:
     // ouverture du garage : dernière finition possédée de chaque voiture (sauvegarde active seulement), sinon brillant
     void ouvrir();
     int finition(int index) const;   // finition montrée pour cette voiture (indice dans BOUTIQUE_FINITIONS_IDS)
-    void choisir(int ordre, int index);   // appui sur un bouton : aperçu ; gardé dans la sauvegarde si possédée
-    void dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) override;   // zones g_z.finitions
-    int appui(float x, float y) const override;   // ordre (0..7) du bouton touché, −1 si aucun
+    static constexpr int CHEVRON_GAUCHE = NB, CHEVRON_DROIT = NB + 1;   // zones des chevrons rendues par appui()
+    // appui sur la zone rendue par appui() : bouton = aperçu, gardé dans la sauvegarde si possédée ; chevron = défilement
+    void appuyer(int zone, int index);
+    static float largeurBouton(float k);
+    // taille du texte des boutons (langue active) : 12 px × k, réduite de 20 % au plus ; faux si le plus long nom ne tient pas
+    static bool police(float k, float& px);
+    void dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) override;   // zones g_z.finitions, g_z.chevronsFinition
+    int appui(float x, float y) const override;   // ordre (0..7) du bouton touché, CHEVRON_GAUCHE / CHEVRON_DROIT, −1 si aucun
     void viderZones() override;
 
 private:
     int fin_[CAR_COUNT] = {};
+    int premier_ = 0, visibles_ = NB;        // 1er bouton visible, nombre de boutons visibles (dernière image)
+    int selVue_ = -1, indexVu_ = -1;         // sélection rendue visible à la dernière image
 };
 
 } // namespace wfs::ecrans::garage

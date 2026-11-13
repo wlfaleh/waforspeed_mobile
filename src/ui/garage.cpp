@@ -130,7 +130,7 @@ public:
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
             if (const int p = fiche_.appui(t.x, t.y); p >= 0) { appui_.prendre(t.id); if (const int i = voituresPermises().idx[p]; i != index_) aller(p, i > index_ ? 1 : -1); return true; }
-            if (const int f = finition_.appui(t.x, t.y); f >= 0) { appui_.prendre(t.id); finition_.choisir(f, index_); return true; }   // WFS-491 (accroche)
+            if (const int f = finition_.appui(t.x, t.y); f >= 0) { appui_.prendre(t.id); finition_.appuyer(f, index_); return true; }   // WFS-491 (accroche) : finition ou chevron
             if (skin_.appui(t.x, t.y) >= 0) { appui_.prendre(t.id); return true; }   // WFS-494 : skin (emplacement vide : appui toujours -1)
             if (const int b = achat_.appui(t.x, t.y); b >= 0) { bouton_ = b; doigtBouton_ = t.id; return true; }   // WFS-115 : action au relâcher
             doigt_ = t.id; glisse_ = true; x0_ = t.x; yaw0_ = yaw_; tAppui_ = g.time;   // gDrag

@@ -8,6 +8,7 @@
 #include "../core/math.h"
 #include "../game/cars.h"
 #include "../game/sauvegarde.h"   // WFS-487 : PEINTURES
+#include "../core/configgame.h"   // WFS-491 : BOUTIQUE_FINITIONS
 
 namespace wfs {
 class Renderer;
@@ -53,7 +54,7 @@ struct Zone {
 // Chaque panneau n'écrit que ses propres champs.
 struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT];
                Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1];   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
-               Zone finitions[8]; };   // WFS-491 : rangée « Finition », dans l'ordre affiché (garage_finition.h)
+               Zone finitions[BOUTIQUE_FINITIONS], chevronsFinition[2]; };   // WFS-491 : rangée « Finition » (ordre affiché) et ses chevrons
 extern Zones g_z;
 
 // parallélogramme d'un seul tenant (WFS-99), haut décalé à droite de `biais`

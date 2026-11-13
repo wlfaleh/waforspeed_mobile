@@ -7,6 +7,8 @@
 //   4. relance du jeu (sauvegarde relue) : finitions gardées, une finition achetée pour une seule voiture ;
 //   5. course de jour et de nuit avec les 3 voitures (caméra de poursuite, Ville) ;
 //   6. en anglais : garage de la Golf, aperçu Nacré, refus.
+// Hors 1280x720 (WFS_TAILLE=1024x768, 1280x800, 2400x1080) : étapes 1 (sans l'achat) et 6 seulement, rangée qui défile, captures
+// garage-finitions-<L>x<H>-*.png ; dans chaque langue, contrôle « les noms tiennent dans leurs boutons » (police réduite de 20 % au plus).
 // Captures garage-finitions-*.png ; chaque contrôle au journal (« garage-finitions (WFS-491) : OK / ÉCART ») ; rend le nombre d'écarts.
 #include <cstdio>
 #include <cstdlib>
@@ -37,12 +39,16 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
     Sauvegarde& s = sauvegarde();
     s.charger(chemin);
     ui::langue::choisir(ui::langue::Choix::Francais);
+    // écran de référence 1280x720 : parcours complet ; autre taille (4:3, 16:10, téléphone 2400x1080) : écran du garage seulement
+    // (rangée, défilement, aperçu, refus, FR / EN), captures suffixées par la taille ; les courses sont vérifiées en 1280x720
+    const bool complet = (r.width() == 1280 && r.height() == 720) || std::getenv("WFS_GARAGE_FINITIONS_COMPLET");
+    const std::string taille = complet ? "" : "-" + std::to_string(r.width()) + "x" + std::to_string(r.height());
     double t = 4000;
     bool ouvert = false;
     auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; g.render(t); };
     auto images = [&](int n) { for (int i = 0; i < n; i++) image(); };
     auto capture = [&](const std::string& nom, const char* quoi) {
-        g.render(t); g.render(t + 0.01); r.capturePng(out + "/garage-finitions-" + nom + ".png");
+        g.render(t); g.render(t + 0.01); r.capturePng(out + "/garage-finitions" + taille + "-" + nom + ".png");
         WFS_LOG("capture garage-finitions-%s : %s (solde %lld ★, finition du rendu %d)", nom.c_str(), quoi, boutique::solde(s), r.finitionJoueur());
     };
     int doigt = 50;
@@ -58,11 +64,26 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
     };
     // ordre affiché (0..7) d'une finition du catalogue
     auto ordre = [](const char* id) { for (int o = 0; o < FinitionGarage::NB; o++) if (std::strcmp(BOUTIQUE_FINITIONS_IDS[FinitionGarage::catalogue(o)], id) == 0) return o; return -1; };
+    auto toucherZone = [&](Zone z) { if (z.w > 0) toucher(z.x + z.w / 2, z.y + z.h / 2); return z.w > 0; };   // copie : zones réécrites
+    // touche le bouton de la finition, après l'avoir amené par les chevrons si la rangée défile (écran étroit)
     auto montrer = [&](const char* id) {
-        const Zone z = g_z.finitions[std::max(0, ordre(id))];
-        if (z.w <= 0) { WFS_ERR("garage-finitions : bouton %s introuvable", id); ecarts++; return false; }
-        toucher(z.x + z.w / 2, z.y + z.h / 2); images(6);
+        const int o = std::max(0, ordre(id));
+        for (int i = 0; i < 8 && g_z.finitions[o].w <= 0 && g_z.chevronsFinition[0].w > 0; i++) toucherZone(g_z.chevronsFinition[0]);
+        for (int i = 0; i < 8 && g_z.finitions[o].w <= 0 && g_z.chevronsFinition[1].w > 0; i++) toucherZone(g_z.chevronsFinition[1]);
+        if (!toucherZone(g_z.finitions[o])) { WFS_ERR("garage-finitions : bouton %s introuvable", id); ecarts++; return false; }
+        images(6);
         return true;
+    };
+    // RG-04 / E20 : le plus long nom tient dans son bouton, police réduite de 20 % au plus ; boutons visibles entiers, sans chevauchement
+    auto texteTient = [&](const char* langue) {
+        float px = 0;
+        const float k = r.height() / 720.f;
+        const bool tient = FinitionGarage::police(k, px);
+        int n = 0; bool chevauche = false; float fin = -1e9f;
+        for (const Zone& z : g_z.finitions) if (z.w > 0) { n++; if (z.x < fin - 0.5f) chevauche = true; fin = z.x + z.w; }
+        verifier(tient && px >= 12 * k * 0.8f - 0.01f && n >= 1 && !chevauche,
+                 std::string(langue) + " (" + std::to_string(r.width()) + "x" + std::to_string(r.height()) + ") : noms des finitions dans leurs boutons (police " +
+                 std::to_string(px / k).substr(0, 4) + " px sur 12), " + std::to_string(n) + " bouton(s) visible(s)" + (g_z.chevronsFinition[1].w > 0 ? ", chevron" : ""));
     };
     auto bouton = [&](const char* nom) { float x, y; if (!garageBouton(nom, x, y)) return false; toucher(x, y); images(4); return true; };
     auto voiture = [&](const char* id) {
@@ -77,16 +98,18 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
     // 1. Golf : la rangée, Caméléon en aperçu, refus, achat
     if (!ouvrirGarage("golf")) { s.desactiver(); std::remove(chemin.c_str()); return ecarts + 1; }
     s.etoiles = 100; images(4);
+    texteTient("français");
     capture("golf-debut", "Golf : rangée « Finition » (8 boutons), cadenas et prix des 7 finitions payantes, solde 100 ★");
     verifier(r.finitionJoueur() == vf::BRILLANT, "ouverture : la Golf est en Brillant (gratuit)");
     montrer("cameleon");
     verifier(!possede("golf", "cameleon") && boutique::solde(s) == 100, "aperçu Caméléon : rien de débité, finition non possédée");
     capture("golf-cameleon-apercu-1", "aperçu Caméléon sur la Golf (angle 1) : « Acheter N ★ », équivalents");
-    tourner(200); capture("golf-cameleon-apercu-2", "aperçu Caméléon : la voiture a tourné (angle 2), la couleur change");
-    tourner(200); capture("golf-cameleon-apercu-3", "aperçu Caméléon (angle 3)");
+    if (complet) tourner(200), capture("golf-cameleon-apercu-2", "aperçu Caméléon : la voiture a tourné (angle 2), la couleur change");
+    if (complet) tourner(200), capture("golf-cameleon-apercu-3", "aperçu Caméléon (angle 3)");
     bouton("choisir");
     verifier(boutique::solde(s) == 100 && !possede("golf", "cameleon") && s.finition.count("golf") == 0, "« Acheter » avec 100 ★ : refus, rien de débité");
     capture("golf-il-manque", "refus : bandeau « Il te manque N ★ »");
+    if (complet) {
     boutique::crediter(s, 2000, "banc WFS-491");
     const long long avant = boutique::solde(s), pCam = prix("golf", "cameleon");
     bouton("choisir");
@@ -148,10 +171,12 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
         }
     }
     unsetenv("WFS_MOMENT");
+    }
     // 6. en anglais
     ui::langue::choisir(ui::langue::Choix::Anglais);
     if (ouvrirGarage("golf")) {
         s.etoiles = 40; images(4);
+        texteTient("English");
         capture("en-golf", "English: Golf, « Finish » row, locks and prices");
         montrer("nacree");
         capture("en-golf-nacre-apercu", "English: Pearl preview, « Buy N ★ »");
