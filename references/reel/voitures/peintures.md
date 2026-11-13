@@ -45,7 +45,7 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
 ## Caméléon (pigments à interférence multicouche)
 - Pigments à interférence multicouche (ex. ChromaFlair de Viavi, Colorstream de Merck) : la couleur renforcée se décale vers les
   courtes longueurs d'onde quand l'angle augmente (couche mince : λ ∝ cos θ_réfracté) ; 2 à 4 teintes vues sur la même caisse.
-- Jeu : teinte tournée en continu de 0 (de face) à −2,2 rad (rasant) autour de l'axe gris (YIQ, luminance gardée) : ex. rouge → or →
+- Jeu : teinte tournée en continu de 0 (de face) à −1,9 rad (rasant, × rasant^1,8) autour de l'axe gris (YIQ, luminance gardée) : ex. rouge → or →
   vert ; couleur sans teinte (gris, blanc, noir) : base violette. Part métal 0,6, rugosité 0,30, vernis brillant (RG-07).
 
 ## Candy (vernis teinté sur base argent)

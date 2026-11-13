@@ -126,7 +126,7 @@ const float FIN_METAL_METAL = 0.50;       // part « métal » de la base métal
 const float FIN_NACRE_RUGOSITE = 0.30, FIN_NACRE_METAL = 0.25;   // mica enrobé d'oxyde de titane : reflet doux et teinté
 const float FIN_CHROME_F0 = 0.60;         // chrome (chrome métal, n et k de Rakić 1998) : réflectance 0,55 à 0,65 dans le visible
 const float FIN_CHROME_RUGOSITE = 0.06;   // chrome poli (DA-realisme § 3 : 0,05 à 0,15, métal 1)
-const float FIN_CAMELEON_TOUR = 2.2;      // rotation de teinte de face → rasant (rad) : ex. rouge → or → vert (décalage vers le bleu)
+const float FIN_CAMELEON_TOUR = 1.9;      // rotation de teinte de face → rasant (rad) : ex. rouge → or → vert (décalage vers le bleu)
 const float FIN_CANDY_RUGOSITE = 0.20, FIN_CANDY_METAL = 0.85;   // base argent sous le vernis teinté
 const float FIN_PAILLETTE = 0.0004;       // taille d'une cellule de paillette au plus près (m) : 0,4 mm (amas de paillettes de 20-40 µm)
 
@@ -184,6 +184,9 @@ vec3 teinteNormee(vec3 c) { return c / max(max(c.r, max(c.g, c.b)), 1e-3); }
 
 // surface sous le vernis : couleur (albedo), métal et rugosité selon la finition ; NoV = cosinus de la vue (flop, angle)
 void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float rough, float NoV) {
+    // angle pris sur la normale lissée du maillage (sans la carte de normales) : variation continue sur la carrosserie, sans
+    // taches dues au relief fin (RG-07 : pas de bandes) ; NoV gardé pour mémoire de l'appelant
+    NoV = clamp(abs(dot(normalize(vNrm), normalize(F.camPos.xyz - vWorld))), 0.0, 1.0);
     float rasant = 1.0 - NoV;
     if (fin == FIN_METALLISE) {
         albedo *= mix(0.22, 1.45, pow(NoV, 0.8));   // flop : plus clair de face, plus sombre de biais (moyenne ≈ 1)
@@ -208,7 +211,7 @@ void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float 
         float chroma = max(albedo.r, max(albedo.g, albedo.b)) - min(albedo.r, min(albedo.g, albedo.b));
         vec3 c = mix(vec3(0.20, 0.03, 0.42), albedo, smoothstep(0.05, 0.2, chroma));
         // décalage vers le bleu en rasant (interférence en couche mince : la longueur d'onde renforcée raccourcit avec l'angle)
-        albedo = tournerTeinte(c, -FIN_CAMELEON_TOUR * smoothstep(0.15, 1.0, rasant));
+        albedo = tournerTeinte(c, -FIN_CAMELEON_TOUR * pow(rasant, 1.8));
         metal = 0.6; rough = 0.30;
     } else if (fin == FIN_CANDY) {
         // vernis teinté transparent sur base argent : le chemin dans le vernis s'allonge en biais (Beer-Lambert) → plus saturé
