@@ -1252,3 +1252,55 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 ### 2026-11-13 16:56:10 — WFS-378 : corrections de la revue de la PR #391 (Claude, agent dev3d (01Us6uCwca))
 - Corrigé dans 3de70531 : tests CPU (124 réussis, `qa/pr/WFS-378/tests-cpu.log` ; un 1er passage donnait `test_configgame` en échec à cause de binaires anciens, d'avant WFS-510 : reconstruit, vert) ; ticket 7 coupé en 7 (zones 1 + 2) et 8 (zones 3 + 7) pour RG-03 ; planche de bord classée NUE et remontée en 5e ; renvoi `police-flanc-00` retiré.
 - Réponse sous la revue dans la PR ; suivi PR en 🔁 ; lead dev rappelé.
+
+### 2026-11-13 17:00:53 — WFS-500 : PR #392 ouverte (Claude, agent dev3d (01Us6uCv7g))
+- Fait : cadeau du jour, logique sans écran. Nouveau module `src/game/cadeau.h/.cpp` (tirage, garantie au 30e, replis, jour local, heure reculée, `ouvrir` qui écrit la sauvegarde avant de rendre le gain). Dans `sauvegarde.*` : `EtatCadeau` et 9 clés nouvelles `cadeau-*` / `pret-*`. Dans `configgame.*` : section `cadeau`, 18 clés ; un total des chances ≠ 100 % est refusé. `configgame.json` : seulement la section ajoutée, aucune valeur réglée touchée. Banc `sauvegarde` : un cadeau ouvert, la 2e ouverture refusée, les clés relues. `tests/test_cadeau.cpp` : RG-11 (a) à (h), 49 cas.
+- Vérification : 100 000 tirages, écart ≤ 0,16 point (±0,5 demandé) ; 125 tests CPU réussis après la synchronisation avec `main` (WFS-510) ; 40 paires de captures identiques au pixel près (bancs `sauvegarde` ×2 et `menu1`).
+- Conflits avec WFS-510 (market) dans `configgame.*`, `configgame.json`, le README et `CMakeLists.txt` : résolus en gardant les deux sections (`market` puis `cadeau`).
+- Réseau : pour construire et lancer les bancs dans le conteneur, paquets Ubuntu installés par apt (registre de paquets autorisé) : `libvulkan-dev`, `glslc`, `mesa-vulkan-drivers`, `ninja-build`, `imagemagick`. Rien de téléchargé dans le dépôt.
+- Limites : la capture « avant » `parcours-course` manque (script arrêté par la limite de 30 min de la tâche) ; pas d'écran (WFS-501).
+
+
+### 2026-11-13 17:03:30 — WFS-378 fusionné par le lead dev (lead-dev)
+- PR #391, 2e revue sur 3de70531 : les 4 points du 1er refus sont corrigés (tests CPU joints, ticket 7 coupé en 7 et 8 selon RG-03, planche de bord classée NUE et remontée en 5e, renvoi `police-flanc-00` retiré).
+- 21 captures rouvertes ; diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/**` (aucun code, aucun fichier iOS) ; construction et 124 tests CPU refaits par le lead dev (tous réussis).
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash a56b68c6. Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Pour le PO : créer les 8 tickets du § 9 ; trancher la question des EFFETS (§ 7).
+
+### 2026-11-13 17:04:37 — WFS-378 fusionné (#391, a56b68c6) : session terminée (Claude, agent dev3d (01Us6uCwca))
+- Inventaire des formes nues hors décor sur `main` (`regles-de-gestion/WFS-378-inventaire.md`) ; 8 tickets proposés au PO (§ 9) + question sur les EFFETS (§ 7). Remarques du lead dev pour le PO : intitulés « 7a / 7b » des lignes 7 et 8, viser les facettes sous le volant dans le ticket de la planche.
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 17:06:35 — WFS-397 : PR #393 ouverte, W212 et Virtus GT à ±1 %, sans marque (Claude, agent dev3d (01Us6uCt5A))
+- **Fait** : W212 (Peter_D) et Virtus GT (BHP3D), CC BY 4.0, convertis dans `assets/cars/remplacants/` par une chaîne neuve et rejouable `tools/remplacants/` (caisse relevée de 40 / 39 mm roues fixes, logos retirés ou repeints, calandre de la W212 à barres continues, disque du logo du coffre de la Virtus lissé). 6/6 mesures dans ±1 % pour chacune (hauteur 1472 / 1507 mm pour 1470 / 1507), 7,95 et 7,74 Mo, 155 k triangles. Rien de branché (WFS-360).
+- **Téléchargements** (clone partiel GitHub, bac à sable, rien exécuté, CC BY 4.0 lue dans `license.txt`) : `bujue600-arch/carVison` `car-vision-frontend/public/models/mercedes-e-class/` scene.gltf a1e14552aababef903a2fcd2dfeb6dd0d97de3062d316c8d5d6d489d5a106822, scene.bin cfed9ca335f5de90062e4fd893c53c7d4897f6ed67c42733d989c89529fed44a ; `PrathamSatpute/VehiclePredictiveMaintenance` `models/` scene.gltf 1bfe8554c6728fea14cf9e7ffe0f02a287904a58ca3e293faa89602347e5b8d7, scene.bin 70fbe3cbdf30c628463c665c9d5d0d7aa05f7c5f7752a33b72663afd6e7f5eac (mêmes empreintes que WFS-396).
+- **Vérification** : `corriger_voitures --essai` 6/6 ; `tests_cpu.sh build` 123 réussis ; captures `vitrines-feux` jour / nuit avant / après (accroche locale non poussée : A 45 et Elantra retirées sur `main`) dans `qa/pr/WFS-397/`.
+- **Limites, pour le PO** : petite encoche du capot de la Virtus (tâche séparée, RG-09) ; phares et feux de forme d'origine ; 155 k triangles (repère 120 k) ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`), hors zone, non modifié.
+
+### 2026-11-13 17:09:31 — WFS-535 fusionné par le lead dev (lead-dev)
+- **PR #389** relue de nouveau sur 4a3ad642 (2e revue) : le point bloquant de la 1re revue (preuve « Tests CPU ») est corrigé : `qa/pr/WFS-535/tests-cpu.log` complet (commit testé 0eef6112, 125 réussis) et section « Tests CPU » dans la PR et `pr.md`. Remarque des plafonds prise (calcul en réel / `long long` avant l'entier, 2 cas de test).
+- **Synchronisation avec WFS-510** vérifiée : aucune ligne supprimée dans `configgame.json` / README, section `market` identique à `main` (comparaison JSON), `champsMarket` inchangé, `test_market` gardé dans `CMakeLists.txt`.
+- **Refait par le lead dev** : branche + `origin/main` fusionnées en local, construction complète, `tests_cpu.sh build` : 125 test(s) réussi(s) ; `test_configgame` 326 clés OK. 5 captures ouvertes.
+- **Décision** : « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion en squash **e58f143b** ; TACHES 🟣, ligne supprimée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`. Remarque non bloquante pour WFS-536 : plafonner `score.poursuite_score_restant` avant la conversion en entier.
+
+### 2026-11-13 17:09:56 — WFS-535 fusionné, session terminée (Claude, agent dev3d (01Us6uCtPt))
+- PR #389 fusionnée en squash par le lead dev (e58f143b) après un retour (preuve « Tests CPU ») corrigé. Ligne de `track-agent.md` en « ⏹️ session terminée ». Un seul sujet par session : pas de ticket suivant.
+- Pour WFS-536 (à reprendre) : calibrer `points_par_etoile` au banc d'équilibrage (max actuel ≈ 21 ★, la borne 40 n'est pas atteinte) ; plafonner `poursuite_score_restant` avant la conversion en entier (remarque du lead dev).
+
+### 2026-11-13 17:13:19 — WFS-401 : PR #394 ouverte (Claude, agent dev3d (01Us6uCxKQ))
+- Fait : écume en mousse à trous (réseau de bulles) de près, vagues à crêtes courtes filtrées selon leur direction, reflets séparés du soleil bas, gerbe du dauphin (couronne, jets, gouttes, un seul maillage) ; vues de banc `mer-eclaboussure-pres`, `mer-rochers-pres`, `mer-falaise`.
+- Fichiers : `shaders/eau.glsl`, `src/render/eau_parametres.h`, `src/world/plage.cpp` (7 + 1 lignes, annoncées), `tests/test_eau.cpp`, `qa/pr/WFS-401/`.
+- Vérification : 124 tests CPU réussis ; 21 captures avant / après du banc `mer` regardées ; banc perf Corniche : Basse 195,6 / 197,4 ms (main) contre 198,3 / 195,7 / 197,5 ms (branche), 255 appels des deux côtés ; Haute +1 à +2 %.
+- Limites : vue du soleil bas encore très claire (voile, exposition, hors ticket) ; fines bandes au loin au téléobjectif ; mesures sur PC seulement.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
+
+### 2026-11-13 17:15:10 — WFS-489 : PR #395 ouverte (Claude, agent dev3d (01Us6uCxMq))
+- **Fait** : rangée des couleurs du garage (`src/ui/garage_couleur.*`) : onglets « Principale » / « Toit et rétros », 28 pastilles de taille inchangée qui défilent au doigt ou par chevrons, pastille « Comme la carrosserie », cadenas et prix en ★ (base × coefficient), aperçu immédiat sur la voiture (toit et rétros compris), nom et équivalent « 75 ★ = 1 bronze = 0,74 € » ; colonne d'action (`src/ui/garage_achat.*`, `garage_achat_prix.cpp`) : « Acheter N ★ » à la place de « Choisir », solde, bandeau « Il te manque N ★ » sans débit, achat par `boutique::acheterObjet`, choix gardé (`paint-`, `paint2-`). Dernière couleur possédée reprise à chaque ouverture (aperçu oublié). Textes FR / EN (`couleur.<id>`, `garage.*`, `medaille.*`), étoile dessinée (absente de la police).
+- **Don provisoire de WFS-487 retiré** du garage ; `perso::donGarageProvisoire` (zone E3) n'est plus appelée : **pour le PO**, à retirer avec son test par un petit ticket E3.
+- **Accroches annoncées** : `src/ui/garage.cpp` 8 lignes changées + 2 retirées ; `src/ui/garage_commun.h` (28 couleurs, `EtatGarage::peinture2`, zones onglets / chevrons / toit) ; `src/ui/garage.h` 1 ligne ; `src/platform/desktop_main.cpp` 1 ligne (banc `garage-couleurs`) ; `CMakeLists.txt` 1 ligne (`test_garage_achat`). Accord avec WFS-507 (01Us6uCw3C) sur les clés de texte.
+- **Parcours RC-E18-09** (banc `WFS_BANC=garage-couleurs`, vraie sauvegarde, vrais touchers) : 208 aperçu Bleu électrique → « Acheter » avec 30 ★ : **refus, rien de débité** (bandeau « Il te manque 20 ★ ») → 400 ★ : **achat** (350 ★) → toit et rétros Noir acheté (300 ★) → GT86 Orange fluo, Golf Rose achetées → aperçu Violet néon, « Retour » : Golf reste Rose → **relance du jeu** : couleurs, toit, achats et solde gardés → courses jour et nuit des 3 voitures avec leurs couleurs → anglais : **0 écart**. `WFS_BANC=parcours` : 0 écart.
+- **Vérification** : `tests_cpu.sh build` 125 réussis (8276380f, nouveau `test_garage_achat` 13 cas) ; 37 captures après / 15 avant (`garage`, `garage-couleurs` en 2400 × 1080) regardées.
+- **Limites** : fiche de la voiture encore en français dans les captures anglaises (WFS-507) ; pas de mesure d'endurance (course non touchée) ; pas de confirmation avant l'achat d'une couleur (non demandée).
+
+### 2026-11-13 17:17:56 — WFS-500 : PR #392 approuvée sur le fond, fusion bloquée par un conflit (lead-dev)
+Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), diff entier lu, construction et `tests_cpu.sh` refaits (125 réussis). Revue « ✅ Approuvé » postée en commentaire (même compte GitHub), avec 5 remarques non bloquantes (tests-cpu.log absent, débordement de la graine vers 2080, clés `cadeau-*` inconnues perdues, échec d'écriture non signalé, capture « avant » parcours-course). La fusion en squash est refusée par GitHub : conflit dans `configgame.json`, `configgame.README.md` et `src/core/configgame.cpp` avec WFS-535 (#389), fusionnée pendant la revue. Retour au développeur pour la synchronisation (garder les deux sections), puis nouvel appel du lead dev.

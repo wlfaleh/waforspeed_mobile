@@ -533,6 +533,67 @@
     },
     "x2_par_jour": 5
   },
+  "score_etoiles": {
+    "course5": {
+      "place_1": 1000,
+      "place_2": 700,
+      "place_3": 500,
+      "place_4": 350,
+      "place_5": 250
+    },
+    "duel": {
+      "gagne": 1000,
+      "perdu": 400,
+      "depart_min": 30.0
+    },
+    "poursuite": {
+      "victoire": 1000,
+      "defaite": 300,
+      "part_score_restant": 0.5
+    },
+    "solo": {
+      "terminee": 600,
+      "part_distance": 0.1,
+      "plafond_distance": 400
+    },
+    "temps": {
+      "record_battu": 300,
+      "proche_record": 150,
+      "proche_record_part": 0.05,
+      "premiere_course": 150
+    },
+    "propre": {
+      "zero_choc": 200,
+      "peu_chocs": 100,
+      "peu_chocs_max": 2
+    },
+    "defis": {
+      "course5": {
+        "depassement": 20,
+        "depassement_max": 200,
+        "en_tete_dernier_tour": 100
+      },
+      "poursuite": {
+        "sans_contact_police": 200,
+        "score_garde": 100,
+        "score_garde_part": 0.5
+      },
+      "duel": {
+        "jamais_derriere": 150,
+        "ecart": 100,
+        "ecart_s": 3.0
+      },
+      "solo": {
+        "sans_retard": 150,
+        "nitro_jamais_vide": 100
+      }
+    },
+    "conversion": {
+      "points_par_etoile": 85,
+      "min": 5,
+      "max": 40
+    }
+  },
   "cadeau": {
     "etoiles_min": 10,
     "garantie": 30,
