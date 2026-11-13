@@ -82,6 +82,7 @@ void main() {
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     const int finition = (flags & F_PAINT) != 0u ? lireFinition(metal) : 0;   // WFS-490 (accroche) : finition de la peinture (vehicule.glsl)
+    if (skinPixel != 0) base.rgb = habillage(base.rgb, skinPixel);   // WFS-492 (accroche) : skin du joueur, sous la finition et le vernis
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
     if (peint2) finitionPeinture2(metal, rough);   // WFS-488 (accroche) : finition de la carrosserie
     if (kL < 1.0) {   // WFS-263 : relief de la carte de normales seulement en deçà de 70 m (fondu de 60 à 70 m)

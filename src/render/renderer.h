@@ -155,6 +155,8 @@ public:
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
     void destroy(Model& m);
+    // WFS-492 (accroche) : vues des 3 textures (couleur, normales, métal-rugosité) d'un jeu de descripteurs de matériau ; faux si inconnu
+    bool vuesMateriau(VkDescriptorSet s, VkImageView v[3]) const { for (const MatTex& t : matTex_) if (t.set == s) { for (int i = 0; i < 3; i++) v[i] = t.v[i]; return true; } return false; }
     void destroy(Material& m);   // WFS-187 (accroche E0) : rend le jeu de descripteurs du matériau (GPU arrêté sur ce jeu) ; vide : rien
     // WFS-63 : maillage à squelette (les maillages rigides ne changent pas)
     SkinnedMesh makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx);
