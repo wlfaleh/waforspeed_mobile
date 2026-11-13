@@ -1192,6 +1192,7 @@ private:
             return (b(x / 700.f, z / 700.f) * 0.7f + b(x / 260.f + 9.1f, z / 260.f + 3.7f) * 0.3f) * 2 - 1;
         };
         std::vector<float> H((size_t)(nx + 1) * (nz + 1));
+        std::vector<uint8_t> couvert((size_t)(nx + 1) * (nz + 1), 0);   // point sous une bande de sol, à 6 m au moins de son bord
         for (int j = 0; j <= nz; j++) for (int i = 0; i <= nx; i++) {
             const float x = x0 + i * px, z = z0 + j * pz;
             const int ci = std::clamp((int)((x - x0) / cr), 0, gx - 1), cj = std::clamp((int)((z - z0) / cr), 0, gz - 1);
@@ -1207,10 +1208,11 @@ private:
             else if (d < pr->dBord + 30) y = std::min(yMin, pr->yRoute) - 3.f;   // sous les bandes de sol (et le trou entre deux bandes)
             else { const float loin = std::clamp((d - pr->dBord - 30) / 600.f, 0.f, 1.f); y = std::min(pr->yBord, yMin + 20.f) - 0.5f + loin * loin * (3 - 2 * loin) * 25.f * colline(x, z); }
             H[(size_t)j * (nx + 1) + i] = y;
+            couvert[(size_t)j * (nx + 1) + i] = pr && d < pr->dBord - 6;
         }
         const vec2 u = uv(C_FARHILL);
         auto h = [&](int a, int b) { return H[(size_t)std::clamp(b, 0, nz) * (nx + 1) + std::clamp(a, 0, nx)]; };
-        size_t tris = 0;
+        size_t tris = 0, cachees = 0;
         const int T = 32;
         for (int tj = 0; tj < nz; tj += T) for (int ti = 0; ti < nx; ti += T) {
             const int i1 = std::min(nx, ti + T), j1 = std::min(nz, tj + T), w = i1 - ti + 1;
@@ -1220,15 +1222,18 @@ private:
                 V.push_back({x0 + i * px, h(i, j), z0 + j * pz, n.x, n.y, n.z, u.x, u.y});
             }
             for (int j = 0; j < j1 - tj; j++) for (int i = 0; i < i1 - ti; i++) {
+                // case entièrement cachée par les bandes de sol (ses 4 coins dessous) : rien à dessiner (RG-06, pixels jamais vus)
+                auto cv = [&](int a, int b) { return couvert[(size_t)(tj + b) * (nx + 1) + ti + a] != 0; };
+                if (cv(i, j) && cv(i + 1, j) && cv(i, j + 1) && cv(i + 1, j + 1)) { cachees++; continue; }
                 const uint32_t k = (uint32_t)(j * w + i), ww = (uint32_t)w;
                 I.insert(I.end(), {k, k + ww, k + 1, k + 1, k + ww, k + ww + 1});   // tournés vers le haut (+y)
             }
             tris += I.size() / 3;
             const vec3 c{x0 + (ti + i1) * 0.5f * px, 0, z0 + (tj + j1) * 0.5f * pz};
-            solFond_.push_back({r.makeMesh(V, I), c, 0.75f * std::max((i1 - ti) * px, (j1 - tj) * pz)});
+            if (!I.empty()) solFond_.push_back({r.makeMesh(V, I), c, 0.75f * std::max((i1 - ti) * px, (j1 - tj) * pz)});
         }
         solFondPret_ = true;
-        WFS_LOG("campagne : sol jusqu'à l'horizon, grille %d × %d (pas %.0f × %.0f m), %zu tuiles, %zu triangles", nx, nz, px, pz, solFond_.size(), tris);
+        WFS_LOG("campagne : sol jusqu'à l'horizon, grille %d × %d (pas %.0f × %.0f m), %zu tuiles, %zu triangles (%zu cases cachées par les bandes)", nx, nz, px, pz, solFond_.size(), tris, cachees);
     }
     bool aCol_ = false, aCascade_ = false;
     int64_t cascadeSeg_ = -1; int cascadeCote_ = 0;
