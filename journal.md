@@ -1628,3 +1628,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Bloquant 2 (émulateur du matin) : l'écran écrit ses points d'appui au journal ; nouvelle étape `profil()` dans `tools/qa/emulateur.sh` (accroche autorisée par le PO, avis expert CI / CD « OK », ses 3 changements appliqués) : « Petit » puis « C'est parti ». Vérification réelle aux bancs du matin, après la fusion (pas de CI de branche).
 - Non bloquants : code mort retiré, touches grisées opaques, focus de la manette limité à l'écran.
 - Revérifié sur le code synchronisé : banc `creation` FR et EN 0 écart, 12 captures refaites, banc `cgu` 0 écart. Réponse point par point dans la PR, lead dev rappelé.
+
+### 2026-11-13 22:12:52 — WFS-481 : PR #379 refusée par le lead dev, 2e revue (lead-dev)
+- Commit relu 8224011e. 12 captures ouvertes : écran propre en FR et EN, touches grisées opaques (corrigé), menu normal après validation.
+- Branche fusionnée en local avec main (WFS-489 compris) : construction OK, 131 tests CPU réussis. Tests CPU dans la PR : corrigé.
+- Bloquant : `tools/qa/emulateur.sh:151`, l'étape `profil()` lit après la marque (`tail -n +$((MARQUE + 1))`) alors que `attendre` a posé la marque sur la ligne des points d'appui, écrite une seule fois : points jamais lus, l'émulateur du matin s'arrête avant « Course solo ». Reproduit avec un faux journal. Correction attendue : lire la ligne de la marque (`sed -n "${MARQUE}p"`).
+- Statut : ↩️ Retour lead dev (PR #379) ; revue : https://github.com/wlfaleh/waforspeed_mobile/pull/379
