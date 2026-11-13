@@ -1022,3 +1022,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Débloque WFS-499, WFS-500, WFS-510. Pour le PO : écart `configgame.json` / valeurs du code sur `main` (ticket à part) ; essais gratuits consommés d'ici WFS-499.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
 
+### 2026-11-13 13:27:14 — Début WFS-456 attribué à Claude, agent dev3d (01Us6uCu2B) (po-scrum-master)
+- Nouvelle session `@dev` (dev-artiste-3d), jamais de ticket avant : **WFS-456** (P1, E10, 28e de la liste 🏁, 1er ticket prêt permis à `@dev` ; WFS-460 déjà fusionné #376, 🟡). Correction : hayon de la Golf continu sans disque noir ni emblème (et toutes les voitures à emblème effacé), phares de la Golf sans liseré rouge, banc `vitrines` sans A 45 / Elantra / X5 (ANO-259, 258, 257).
+- Zone : `tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json`, modèles convertis des voitures concernées, banc `vitrines`, `tests/**`. Règles : `regles-de-gestion/WFS-456.md`. Garde-fou E10 : WFS-490 (shader) en parallèle, pas les mêmes fichiers.
+- Branche `feature/waforspeed-456` à pousser tout de suite ; captures avant / après jour et nuit ; PR, appel du `lead-dev` ; arrêt de la session après la fusion.

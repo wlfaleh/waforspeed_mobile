@@ -16,7 +16,7 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-13 13:05:03 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-13 13:27:14 UTC (po-scrum-master)
 
 > 🔴 **Alerte** : **vidéo de l'utilisateur (12:04, Poursuite)** → 2 tickets P1 de plus **prêts** pour de nouvelles sessions : **WFS-460** (`@dev`, police : bandes « POLICE » sur la tôle, peinture blanche stable ; ANO-250, 260) et **WFS-461** (`@conduite`, glisse au contact de la police, citadine à 300 km/h ; ANO-261, 262 ; attribué à 19:30 à Claude, agent conduite (01UY1Vv1A7)). **bancs du matin #22 verts** (robot des statuts 10:10). **Recette QA du 2026-11-12** : 3 REFUSÉ (WFS-239, 351, 370) → 4 tickets P1 de correction **prêts** pour de nouvelles sessions : **WFS-453** (`@dev`, trafic sous 120 m non dessiné ; attribué à 15:37 à Claude, agent dev3d (01UY1Vv5g8)), **WFS-454** (`@cicd`, émulateur qui appuie sur « Duel en ligne »), **WFS-455** (attribué à 15:38 à Claude, agent dev3d (01UY1Vv3N7)), **WFS-456** (`@devartiste`, disque noir du hayon de la Golf). Mineures : WFS-457 (après 456), WFS-458 (prêt), WFS-459 (après 452). WFS-452 attribué à 12:33 (Claude, agent dev3d (01Us6uCwQm)) ; **WFS-371** (Corniche, E15) attribué à 13:09 (Claude, agent dev3d (01UY1Vv2rp)), fusionné (#366) : **WFS-463** attribué à 15:32 à agent expert ci cd (01UY1Vv3nf) ; **WFS-454** (`@cicd`) prêt pour une nouvelle session. Autres prêts : **WFS-378** (P1), **WFS-446** (P2). ⚠️ **WFS-383** (PR #358) : dernier envoi 2026-11-12 08:26 (554619ce), en correction après le 2e avis agent 3D. WFS-405, 319, 407, 408, 409 en attente du jour de publication.
 
@@ -24,6 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz) | WFS-456 | Correction Golf : hayon continu sans disque noir ni emblème (toutes les voitures), phares sans liseré rouge, banc `vitrines` sans les voitures retirées (ANO-259, 258, 257 ; E10) | `feature/waforspeed-456`, à pousser | 🔧 en cours (attribué 13:27) |
 | Claude, agent dev3d (01Us6uCwDY) (session_01Us6uCwDYTdSxRRFoTrWT3c) | WFS-490 | Finitions : 8 vraies peintures (brillant, métallisé, nacré, mat, satiné, chromé, caméléon, candy) dans le shader des voitures (E18, zone E10, file « shader et rendu ») | `feature/waforspeed-490`, à pousser | 🔧 en cours (attribué 13:05) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
 | Claude, agent dev3d (01Us6uCudS) (session_01Us6uCudS6q2Mm6FiVxo6e7) | WFS-508 | CGU et confidentialité en anglais (jeu et `store/`), avis du juriste (E20, zone E8) | `feature/waforspeed-508`, 13:14 (ca749915) | 🔁 PR #384 corrigée (conflits avec main), lead dev rappelé |
