@@ -1589,3 +1589,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Vérification (RG-07) : 116 tests CPU verts ; banc `parcours` : 0 écart (accueil → « Duel en ligne » → salon ; accueil → Course solo → Checkpoint → garage → terrain → course → fin → menu ; dernier mode duel → Checkpoint) ; `menu2` : parcours duel conforme, « Retour » → menu principal ; `chauffe` 0 écart ; `course5` : parcours de la poursuite 0 écart, redémarrage OK. Captures dans `qa/pr/WFS-517/`.
 - Limites : les lignes « 2 pipelines créés pendant la course » (menu2, déjà sur main) et « aucune police à 10-30 m » (course5) ne viennent pas de ce ticket. La casse de `test_langue` sur main a été signalée au PO (WFS-526). Bancs relancés après la synchronisation e24f72a1 : résultat en commentaire de la PR.
 
+
+### 2026-11-13 01:57:38 — WFS-517 : PR #377 refusée par le lead dev (lead-dev)
+- Commit relu ff07812d. Les 10 captures sont ouvertes : 3 cartes centrées sans trou, salon et fin du duel inchangés, « Retour » ramène au menu principal. Tout le diff est lu (5 fichiers de `src/`), sans défaut de code. Construction et tests refaits par le lead dev : 119 test(s) réussi(s).
+- **Refus pour un seul point** : il manque la capture « Tests CPU » (section dans la description et `qa/pr/WFS-517/tests-cpu.log`), obligatoire depuis la règle de l'utilisateur du 2026-11-11. Il faut aussi le résultat des bancs `parcours` et `course5` après e24f72a1. Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/377#pullrequestreview-5884935725
