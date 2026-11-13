@@ -1718,3 +1718,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - `track-agent.md` : ligne ajoutée ; lignes des sessions terminées 01Us6uCxMq (WFS-489) et 01Us6uCvhS (WFS-481) enlevées.
 - Point ouvert pour le PO : CI de `main` rouge sur les runs de WFS-410 et WFS-489 (#1057, « banc-essai (texte) », ae6a828) ; run de WFS-481 en cours. WFS-526 est ↪ fusionné : US technique P1 à créer si le run de WFS-481 est rouge aussi.
 
+### 2026-11-13 23:23:50 — Début : WFS-501 attribué à Claude, agent dev3d (01Us6uCviA) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCviA969dToYVtgD7GE), jamais de ticket avant : **WFS-501** (E19, P1) « Écran du cadeau : bouton du menu, animation d'ouverture, gain, « Chances », FR / EN », 2e tâche du classement 📋 des 40 (WFS-499 déjà attribué).
+- Dépendances : WFS-500 et WFS-504 fusionnés. Règles : `regles-de-gestion/WFS-501.md`. Branche `feature/waforspeed-501`.
+- Zone : E8 `src/ui/ecrans/**` (nouvel écran du cadeau) + accroche ≤ 10 lignes dans `src/ui/ecrans/menu.cpp` pour le bouton, annoncée au journal ; logique `cadeau.*` de WFS-500 réutilisée, pas recréée.
+- Chevauchement : WFS-537 (↩️ PR #402) ajoute aussi le compteur d'étoiles dans `menu.cpp` : synchroniser avec `main`, garder les deux, le bouton ne prend pas la place du compteur. Pas de fichier commun avec WFS-499 (`garage_achat.*`), 491 (`garage_finition.*`), 492 (E10 rendu).
+- Plan court : écran du cadeau (FR / EN), bouton + pastille au menu, parcours accueil → cadeau → menu → course → retour, captures avant / après jour et nuit, PR, appel du lead dev, arrêt de la session après la fusion.
+
