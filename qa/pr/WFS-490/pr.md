@@ -6,15 +6,13 @@ Agent : Claude, agent dev3d (01Us6uCwDY)
 
 - **Demande de l'utilisateur** (en une phrase) : le joueur choisit la finition de sa peinture (brillant, métallisé, nacré, mat, satiné, chromé, caméléon, candy) et chacune doit ressembler à la vraie peinture automobile du même nom, de jour comme de nuit (épic E18, RG-01 à RG-12 de `regles-de-gestion/WFS-490.md`).
 - **Ce qui change** :
-  - `shaders/vehicule.glsl` :
-    - `finitionSurface` (couleur, métal, rugosité selon la finition, angle pris sur la normale lissée) ;
-    - `vernisFinition` (paillettes procédurales, vernis satiné flou, miroir du chrome, pas de vernis pour mat et chromé) ;
-    - `vernisCouche` (ancien `vernisPeinture`, paramétré ; `vernisPeinture` l'appelle avec les valeurs d'avant) ;
-    - **aucune texture ajoutée**.
-  - Transport : la finition est codée dans le métal des pièces peintes (`pc.params.x = métal + 2 × finition`, `src/render/vehicule_finitions.h`), sans constante de poussée en plus. Seule la voiture du joueur la reçoit (RG-11) ; la couleur 2 (toit, rétros) suit la même finition. API pour WFS-491 : `Renderer::finitionJoueur(int)` ; bancs : `WFS_FINITION=<id>`.
-  - Pour les finitions (pas le brillant), la carrosserie couvre toujours le pixel (`specK = 1`). Sinon, les caisses très denses (Corvette 2,4 mm, 208) classées « très fines » perdaient leurs reflets : c'était la cause du chromé noir.
-  - Accroches hors zone (journal, entrée 14:52:03 et suivante) :
-    - `shaders/scene.frag` : 5 lignes ;
+  - `shaders/vehicule.glsl` : `finitionSurface`, `vernisFinition`, `vernisCouche` (ancien `vernisPeinture` paramétré, que `vernisPeinture` appelle avec les valeurs d'avant). Paillettes procédurales ; **aucune texture ajoutée**.
+  - Transport : finition codée dans le métal des pièces peintes (`pc.params.x = métal + 2 × finition`, `src/render/vehicule_finitions.h`) ; joueur seulement (RG-11) ; la couleur 2 (toit, rétros) suit. API pour WFS-491 : `Renderer::finitionJoueur(int)` ; bancs : `WFS_FINITION=<id>`.
+  - Finitions (pas le brillant) : carrosserie pleine (`specK = 1`). Les caisses très denses (Corvette, 208), classées « très fines », perdaient leurs reflets.
+  - **Chromé** : métal pur, **aucune part diffuse**. La sonde floue est retirée (`env = 0`), la lumière de nuit de la chaussée aussi. Miroir net : ciel au-dessus, chaussée sombre en dessous, horizon net (`smoothstep(-0.05, 0.02, R.y)`) ; teinte 15 %.
+  - **Paillettes** : seulement dans la tache du soleil (± 10°) et de près (pixel ≤ 3 mm), jamais plus petites qu'un pixel.
+  - Accroches hors zone (au journal) :
+    - `shaders/scene.frag` : 6 lignes ;
     - `src/render/renderer.cpp` : 4 lignes ;
     - `renderer.h` : 5 lignes ;
     - `desktop_main.cpp` : 2 lignes ;
@@ -22,29 +20,46 @@ Agent : Claude, agent dev3d (01Us6uCwDY)
   - Banc `finitions`, test `test_fidelite_voitures_finitions`, valeurs sourcées dans `references/reel/voitures/peintures.md`.
 - **Comment c'est vérifié** :
   - **Brillant identique au pixel près** (RG-01) : banc `peinture2` avant / après, 14 images, 0 pixel différent.
-  - **Chromé homogène** : luminance moyenne de la carrosserie sur les planches de jour 0,41 (GT86), 0,44 (Corvette), 0,42 (208) ; avant correction : 0,41, 0,13 et 0,13.
-  - Planches des 8 finitions (3 voitures, jour et nuit) et **gros plans des 8 finitions** (GT86, satiné et mat compris) regardés image par image ; de nuit, aucune tache blanche.
-  - Caméléon sous 3 angles ; 208 en course en chromé et en mat ; **208 avec toit et rétros Noir (couleur 2)** en métallisé et en chromé (RG-11).
-  - Tests CPU : section ci-dessous. Captures prises sur la synchronisation précédente ; la dernière synchronisation apporte de `main` WFS-456 (#385 : modèles Golf, T-Cross… et `src/render/feux_modele.cpp`) : ni la GT86, ni la Corvette, ni la 208, ni le shader ne changent.
-  - Performances : tableau ci-dessous.
+  - **Mesures du chromé** (luminance affichée 0..1, sur les captures de ce commit) :
+
+    | Mesure | GT86 | Corvette | 208 |
+    |---|---|---|---|
+    | Jour, carrosserie chromée (médiane) | 0,287 | 0,319 | 0,292 |
+    | **Nuit, chromé / brillant** | **0,027 / 0,100** | **0,025 / 0,042** | **0,033 / 0,058** |
+    | Portière (gros plan) haut / bas | 0,301 / 0,048 : **écart 0,253** | — | — |
+
+  - Images regardées une à une :
+    - planches des 8 finitions (3 voitures, jour et nuit) et gros plans des 8 finitions ;
+    - caméléon sous 3 angles ;
+    - 208 en course en chromé et en mat ;
+    - 208 avec toit et rétros Noir en métallisé (**plus de « ciel étoilé »**) et en chromé ;
+    - de nuit, aucune tache blanche.
+  - Tests CPU : section ci-dessous. Performances : tableau ci-dessous.
 - **Limites et risques connus** :
   - Le choix au garage et la sauvegarde relèvent de WFS-491 : rien ne change sur l'APK avant ce ticket.
-  - Caméléon : la couleur suit la courbure ; sur le capot très creusé de la Corvette, les changements de teinte sont rapprochés.
-  - Constat hors ticket : en **brillant**, les reflets des caisses très denses sont aussi atténués (`specK`, même cause que WFS-460). Je ne le corrige pas ici (RG-01 : brillant identique). Je le signale au PO.
-  - La mesure des img/s est faite sur lavapipe (processeur), pas sur téléphone.
+  - Chromé : miroir réaliste, donc sombre là où il reflète la chaussée (bas de caisse). Couleur choisie limitée à 15 % de teinte.
+  - Caméléon : quelques plages or suivent les facettes du capot de la Corvette (mineur, noté par l'agent 3D).
+  - Hors ticket, signalés au PO dans le journal :
+    - en brillant, `specK` atténue les reflets des caisses très denses ;
+    - logo au centre des jantes de la GT86.
+  - Mesure des img/s sur lavapipe, pas sur téléphone.
 
 ## Tests CPU
 
-Commit testé : `b8f03718` (branche synchronisée avec `main`, après la dernière synchronisation). Journal complet : [`qa/pr/WFS-490/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-490/qa/pr/WFS-490/tests-cpu.log).
+Commit testé : `cf5c142e`, branche synchronisée avec `main`. Journal complet : [`qa/pr/WFS-490/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-490/qa/pr/WFS-490/tests-cpu.log).
 
 ```
 [OK] test_fidelite_voitures_finitions
-tests CPU : 124 test(s) réussi(s) en 358 s
+tests CPU : 125 test(s) réussi(s) en 348 s
 ```
 
 ## Performances en Basse (RG-10, RC-E18-03)
 
-Banc `peinture2-mesure` : 208, Ville, 600 images, lavapipe, 3 passages de chaque côté.
+Banc `peinture2-mesure` : 208, Ville, 600 images, lavapipe, 3 passages de chaque côté, mesuré sur c48dc1e6.
+
+Les corrections suivantes ne changent pas le coût en Basse :
+- le chromé lit une sonde de moins ;
+- les paillettes sont éteintes en Basse.
 
 | | Passage 1 | Passage 2 | Passage 3 | Moyenne | 1 % les plus lents (moyenne) |
 |---|---|---|---|---|---|
@@ -52,7 +67,7 @@ Banc `peinture2-mesure` : 208, Ville, 600 images, lavapipe, 3 passages de chaque
 | branche, brillant | 3,701 | 3,827 | 3,754 | **3,761 img/s** | 2,710 img/s |
 | branche, métallisé | 3,710 | 3,662 | 3,235 | **3,536 img/s** | 2,457 img/s |
 
-Écart avec `main` : +0,10 img/s en brillant, −0,12 img/s en métallisé (1 % les plus lents : +0,12 et −0,13), dans la limite de ≤ 1 img/s. L'écart d'un passage à l'autre sur `main` atteint 0,28 img/s.
+Écart avec `main` : ≤ 0,13 img/s (limite : 1 img/s). Sur `main` seul, l'écart entre passages atteint déjà 0,28 img/s.
 
 ## Captures pour le lead dev (37 après)
 
