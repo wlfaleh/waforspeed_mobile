@@ -25,6 +25,7 @@
 #include "../world/cartes_v2/paquet_carte.h"   // WFS-301 : paquet de la carte ou secours, 2e source de readAsset
 #include "../ui/ecrans/cgu.h"   // WFS-308 : conditions d'utilisation au premier lancement
 #include "../ui/ecrans/cgu_appui.h"   // WFS-355 : destination des appuis rejoués
+#include "../ui/langue.h"   // WFS-504 : langue du téléphone (JNI nativeLangue)
 #include "../ui/ecrans/chargement.h"
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "paquets_android.cpp"   // WFS-306 : pont JNI vers Paquets.java (liste cartes.json, téléchargement)
@@ -62,6 +63,13 @@ static std::atomic<bool> g_margesNeuves{false};
 extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeMarges(JNIEnv*, jclass, jint g, jint h, jint d, jint b) {
     g_marges[0] = g; g_marges[1] = h; g_marges[2] = d; g_marges[3] = b; g_margesNeuves = true;
     WFS_LOG("Marges de l'écran : gauche %d, haut %d, droite %d, bas %d", g, h, d, b);
+}
+
+// WFS-504 (RG-01) : langue du système, donnée par JeuActivity.onCreate avant super.onCreate (thread de l'interface Android)
+extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeLangue(JNIEnv* env, jclass, jstring code) {
+    const char* c = code ? env->GetStringUTFChars(code, nullptr) : nullptr;
+    ui::langue::definirLangueTelephone(c ? c : "");
+    if (c) env->ReleaseStringUTFChars(code, c);
 }
 
 struct App {

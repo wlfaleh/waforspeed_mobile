@@ -28,6 +28,7 @@
 #include "game.h"
 #include "player.h"
 #include "poursuite.h"
+#include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-119 : redémarrage simulé
 #include "roues.h"   // WFS-452 : roues de la police qui tournent et braquent (glisse comprise)
 #include "traffic.h"
@@ -322,6 +323,7 @@ public:
                 fini_ = true; ftJoueur_ = c->raceTime; arrivee(etat_, pl.dist * M / 1000);
                 sfxInterface(etat_.gagne ? SfxId::PoursuiteEchappe : SfxId::PoursuiteArrete);   // WFS-131 (RG-06) : jingle de fin
                 WFS_LOG("poursuite : fin — %s, score %d, %.2f km, %.1f s", etat_.gagne ? "victoire" : "ARRÊTÉ", etat_.score, pl.dist * M / 1000, ftJoueur_);
+                { CourseJouee rc; rc.mode = ModeJoue::Poursuite; rc.victoire = etat_.gagne; rc.score = etat_.score; profilNoterResultat(rc); }   // WFS-480
                 // WFS-125 (RG-02) : record Poursuite (victoire > « ARRÊTÉ », puis score ou distance), écrit seulement s'il est battu
                 nouveauRecord_ = false;
                 Sauvegarde& sv = sauvegarde();

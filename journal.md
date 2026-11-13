@@ -1465,3 +1465,64 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Plan : grain porté par la luminosité des sommets (MAT_VTINT de la part P_UNI : longueur de la normale), sans texture ni nouveau matériau ; liaisons des poteaux par la liste des poteaux réellement posés (`poteauSuivant`) ; parapet `muretTroncon` et boîte de choc `chocMuret` tirés des mêmes mesures ; sol lointain en grille de 48 m (20 tuiles, 31 920 triangles, tuiles à plus de 2,6 km de la caméra non dessinées), préparé au chargement.
 - Accroches : aucune hors de la zone de WFS-387 (`campagne.cpp`, `decor_campagne_*`, `tests/test_decor_campagne.cpp`). Aucun fichier commun touché.
 - Taille du décor (RG-E15-01) : **2,9 Mo** (`du -cb assets/world/animaux/{vache,cheval,mouton}.wfa assets/world/feuillage.png` = 2 906 962 octets ; aucun dossier `assets/world/modeles/campagne`, `assets/textures/decor/campagne` ni `paquets/sources/campagne` : le reste est calculé au chargement) ≤ 700 Mo.
+
+### 2026-11-13 00:44:07 — WFS-487 : PR #373 corrigée après la revue du lead dev (Claude, agent dev3d (01Us6uCwB3))
+- Cause racine : en insérant la ligne WFS-487 dans `Sauvegarde::defauts()`, la fin de l'ancienne ligne (map, tod, moment, quality, qualityChoisie, cam) est passée dans un commentaire ; aucun test ne couvrait la remise à zéro de ces clés.
+- Corrigé dans d6a8b888 : affectations remises, nouveau cas « 1 bis » dans `test_sauvegarde` (`defauts()` et un 2e `lire()` remettent les 6 réglages) ; commentaire de l'include de `course_system.cpp` remis sur sa ligne.
+- Vérifié : tests CPU 116 / 116 (code 0) ; 14 captures du garage refaites, identiques au pixel près ; vitrines `sauvegarde` refaites (turquoise gardée, couleur d'origine si non achetée). Réponse point par point sous la revue ; lead dev rappelé.
+
+### 2026-11-13 00:44:09 — WFS-504 fusionné par le lead dev (lead-dev)
+- PR #372, 2e revue, commit relu `869a6efc`, squash `d239b68a`. « ✅ Approuvé par le lead dev » posté en commentaire de revue (la PR est ouverte avec le même compte GitHub).
+- Points du refus corrigés : partie « Tests CPU » et `tests-cpu.log` (116 réussis, `d8f997a1`) ; captures téléphone avant / après en français (Affichage, Conduite, Son), seul déplacement « Réduire les mouvements » pour la ligne « Langue ». Remarques corrigées (copie sous verrou, recherche sans copie, secours de l'autre table).
+- Refait par le lead dev : construction, 116 tests CPU, banc `textes` en anglais VERT.
+- Statut 🟣 Fusionné ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`. **Pour le PO** : ticket à créer pour traduire la ligne technique des Réglages et le menu caché (hors WFS-505 à 508).
+
+### 2026-11-13 00:45:10 — WFS-504 : fin de session (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Fait : WFS-504 fusionné par le lead dev (PR #372, `d239b68a`) ; réponse à l'utilisateur dans `tache utilisateur.md` ; ligne de `track-agent.md` en « ⏹️ session terminée ».
+- Reste pour le PO : ticket pour la ligne technique de mesure et le menu caché de diagnostic encore en français (voir l'entrée « risque signalé ») ; WFS-505 à 508 débloqués.
+- Session arrêtée (un seul ticket par session).
+
+### 2026-11-13 00:48:03 — WFS-485 fusionné par le lead dev (lead-dev)
+- PR #371 relue à la 2e revue sur 25a6832a : retours du 1er refus corrigés (`reglages.txt` dans les deux fichiers de règles, section « Tests CPU » et `tests-cpu.log`). 6 paires de captures ouvertes (identiques octet pour octet), diff lu (manifeste et deux XML Android), construction et 115 tests CPU refaits par le lead dev.
+- « ✅ Approuvé » en commentaire (GitHub refuse l'approbation sur le même compte), puis fusion en squash : 177547d4. Ticket 🟡 À valider (utilisateur) : essai record → sauvegarde → désinstaller → réinstaller sur le téléphone.
+- Pour le PO : RG-01 ne citait que `sauvegarde.txt` ; `reglages.txt` est ajouté pour que tous les réglages reviennent. À déclarer aussi dans le formulaire « Sécurité des données ».
+
+### 2026-11-13 00:48:43 — WFS-485 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv46n))
+- PR #371 fusionnée en squash par le lead dev (177547d4) à la 2e revue ; ticket 🟡 À valider (utilisateur) : essai record → `adb shell bmgr backupnow com.waforspeed.game` → désinstaller → réinstaller (décrit dans `tache utilisateur.md`).
+- Limites : APK non construit en local, essai sur émulateur non fait (aucun ici) ; la CI de `main` dira si les deux XML passent dans l'APK.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-13 00:50:13 — WFS-480 fusionné par le lead dev (lead-dev)
+- PR #375 relue sur 75b49cf6 : 4 paires de captures ouvertes (identiques au pixel, ticket sans écran), diff complet lu, branche fusionnée en local avec `main` sans conflit, construction complète et **116 tests CPU réussis** (`test_profil` compris).
+- « ✅ Approuvé par le lead dev » posté en commentaire (même compte GitHub), puis fusion en squash : 3595a683, titre `WFS-480 : profil du joueur (…) (#375) (Claude, agent dev3d (01Us6uCuDH))`.
+- Remarques non bloquantes : accroche de 14 lignes dans `sauvegarde.*` (10 demandées) ; date d'arrivée fixée sur le disque seulement à la prochaine écriture (à prévoir dans WFS-481) ; plaque de secours `WFS-` + 3 chiffres non revérifiée contre la liste ; victoire en duel lue sur `position()` à l'arrivée.
+- `TACHES.md` : WFS-480 en 🟣 Fusionné ; ligne #375 retirée de `suivi-pr.md` ; ligne ajoutée dans `qa/Check.md`.
+
+### 2026-11-13 00:50:54 — WFS-480 : fin, session terminée (Claude, agent dev3d (01Us6uCuDH))
+- PR #375 fusionnée en squash par le lead dev (3595a683). Remarques non bloquantes du lead dev, à reprendre par WFS-481 : enregistrer la sauvegarde dès la création du profil (date d'arrivée écrite tout de suite, RG-05) ; la plaque de secours `WFS-` + 3 chiffres n'est pas revérifiée contre la liste (sans risque avec la liste actuelle).
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Identité et historique du joueur »). Ligne de `track-agent.md` : ⏹️ session terminée. Aucun 2e ticket demandé (un seul sujet par session).
+
+### 2026-11-13 00:54:15 — WFS-526 créé : US technique P1, correction pipeline CI (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCuD6) (sur WFS-517, rien ne lui est attribué) : sur `origin/main` 23c93399, `test_langue` ne se lie plus (`undefined reference` à `wfs::Profil::lireCle` et `Profil::apresChargement`, appelés par `sauvegarde.cpp` depuis WFS-480, #375) : `CMakeLists.txt:121` ne lie pas `src/game/profil.cpp`. Vérifié par le PO : seule `test_langue` parmi les cibles qui lient `sauvegarde.cpp` n'a pas `profil.cpp`.
+- **WFS-526** [TECHNIQUE] P1, E0 (`CMakeLists.txt` seulement), ⏳ Prêt pour une nouvelle session développeur libre ; règles : `regles-de-gestion/WFS-526.md`. CI de branche permise (US technique).
+
+### 2026-11-13 00:54:36 — WFS-460 : PR #376 ouverte, cause de l'ANO-260 trouvée, accroches annoncées (Claude, agent dev3d (01UY1Vv5Cs))
+- **ANO-250** : bandes « POLICE » posées sur la tôle des portières, des deux côtés. La grille est projetée sur les triangles de la peinture du `.wfm` (`src/game/police_bandes.h`, nouveau), entre les passages de roue, à 5 mm de la tôle. Le côté droit manquait parce que le quadrilatère de `main` y était enroulé vers l'intérieur (face arrière retirée).
+- **ANO-260, cause** : la peinture de la 208 (maillage dense, triangles de 3,5 mm) est classée « très fine » (WFS-42). En **Basse**, au-delà de 15 m de la caméra, `Renderer::draw` ne la dessinait pas : la carrosserie disparaissait et on voyait l'intérieur gris foncé. La bascule autour de 15 m en vue Cockpit donnait le « gris argent puis blanc ».
+- **Même défaut dans le trafic** en Basse pour la golf, la mustang et la 911 : la correction leur rend aussi leur carrosserie (+1,8 appel de dessin par image en Basse sur le banc). **Signalé au PO.**
+- **Accroches hors zone** (≤ 10 lignes) :
+  - `src/render/renderer.cpp` : 1 ligne (la peinture n'est jamais retirée par la règle des pièces très fines) ;
+  - `src/render/renderer.h` : 1 ligne (drapeau du banc avant / après) ;
+  - `src/platform/desktop_main.cpp` : 1 ligne (banc `police-bandes`) ;
+  - `src/render/vehicule_mesure.h` : `lireWfmOctets` (lecture depuis la mémoire, `lireWfm` inchangée).
+- **Vérifié** :
+  - `test_police_bandes` (nouveau) ;
+  - 116 tests CPU OK ;
+  - banc `police-bandes` sans écart, bandes à +0 appel de dessin.
+- **Limite** : rendu non vu sur un téléphone ; après la fusion, 🟡 À valider (utilisateur).
+
+
+### 2026-11-13 00:59:43 — WFS-487 : PR #373 refusée une 2e fois par le lead dev (lead-dev)
+- 2e revue (commit f68a9c0f), faite dans un arbre de travail à part : les 2 points de la 1re revue sont corrigés (`defauts()` et son cas « 1 bis » OK, commentaire remis à sa place).
+- **Bloquant** : une fois `origin/main` fusionné (WFS-504 #372 compris), `test_langue` ne se lie plus : `CMakeLists.txt:121` lie `sauvegarde.cpp` sans `personnalisation.cpp`. La fusion casserait la CI de `main`. Il faut synchroniser la branche et ajouter `personnalisation.cpp` à `test_langue`.
+- À noter pour le PO et `@cicd` : `tools/qa/tests_cpu.sh:26` saute sans rien dire un test non construit (116 « réussis » alors que `test_langue` manquait).

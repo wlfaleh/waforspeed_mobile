@@ -94,9 +94,9 @@ else()
   add_executable(test_effets tests/test_effets.cpp src/render/effets_particules.cpp)   # WFS-65
   add_executable(test_roues tests/test_roues.cpp src/game/roues.cpp)   # WFS-60
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
-  add_executable(test_trafic_duree tests/test_trafic_duree.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-281 : trafic stable sur 10 min
+  add_executable(test_trafic_duree tests/test_trafic_duree.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-281 : trafic stable sur 10 min
   target_link_libraries(test_trafic_duree Threads::Threads)
-  add_executable(test_roues_suivies tests/test_roues_suivies.cpp src/game/roues.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-452 : roues qui tournent et braquent
+  add_executable(test_roues_suivies tests/test_roues_suivies.cpp src/game/roues.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-452 : roues qui tournent et braquent
   target_link_libraries(test_roues_suivies Threads::Threads)
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
@@ -108,16 +108,17 @@ else()
   add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
   add_executable(test_version_chargement tests/test_version_chargement.cpp)   # WFS-279 : version de l'écran de chargement
   add_executable(test_minicarte tests/test_minicarte.cpp)   # WFS-173 : place et projection de la mini-carte
-  add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
-  add_executable(test_course5_ordinateurs tests/test_course5_ordinateurs.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-327 : adversaires sur une vitesse de virage possible, course disputée
+  add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
+  add_executable(test_course5_ordinateurs tests/test_course5_ordinateurs.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-327 : adversaires sur une vitesse de virage possible, course disputée
   target_link_libraries(test_course5_ordinateurs Threads::Threads)
-  add_executable(test_voitures_retirees tests/test_voitures_retirees.cpp src/game/course5.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-404 : voitures retirées (licence NC)
+  add_executable(test_voitures_retirees tests/test_voitures_retirees.cpp src/game/course5.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-404 : voitures retirées (licence NC)
   target_link_libraries(test_voitures_retirees Threads::Threads)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_reglages_appui tests/test_reglages_appui.cpp)   # WFS-290 : cible de 48 dp, anti-rebond des réglages
   add_executable(test_credits tests/test_credits.cpp src/ui/credits_texte.cpp)   # WFS-406 : écran Crédits (lecture de CREDITS.txt, noms, RG-06)
   add_executable(test_cgu_appui tests/test_cgu_appui.cpp)   # WFS-355 : appuis des CGU (destination, cible de 48 dp, pose ou lever perdu)
   add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
+  add_executable(test_langue tests/test_langue.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-504 : tables FR / EN, langue du téléphone, clé langue=
   add_executable(test_banc_telephone tests/test_banc_telephone.cpp src/render/banc_telephone.cpp)   # WFS-420 : banc de performance du téléphone
   add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
@@ -139,8 +140,9 @@ else()
   add_executable(test_commandes tests/test_commandes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-108 : commandes tactiles
   target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/audio/trafic_sons.cpp src/game/player.cpp src/game/track.cpp)   # WFS-121 : sons du trafic
-  add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
-  add_executable(test_personnalisation tests/test_personnalisation.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-487 : catalogue de personnalisation, prix, possession
+  add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
+  add_executable(test_personnalisation tests/test_personnalisation.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-487 : catalogue de personnalisation, prix, possession
+  add_executable(test_profil tests/test_profil.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-480 : profil du joueur (pseudo, plaque, mots interdits, statistiques, 20 dernières courses)
   add_executable(test_paquets tests/test_paquets.cpp src/ui/ecrans/paquets_etape.cpp src/core/carte_cuite.cpp)   # WFS-306 : étape « Mise à jour et installation des paquets » (machine d'états)
   add_executable(test_carte_cuite tests/test_carte_cuite.cpp src/core/carte_cuite.cpp)   # WFS-301 : paquets de cartes (format, vérification, 2e source)
   add_executable(test_batiments_cuits tests/test_batiments_cuits.cpp src/world/archi_cuit.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp src/world/archi_ouvertures.cpp src/core/carte_cuite.cpp)   # WFS-416 : bâtiments du kit cuits dans le paquet (3 niveaux, recopie, zéro construction, blocs refusés)
@@ -152,8 +154,8 @@ else()
   target_compile_definitions(test_cartes_v2_saison PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_cartes_v2_abris tests/test_cartes_v2_abris.cpp src/world/cartes_v2/carte_donnees.cpp src/core/carte_cuite.cpp src/game/track.cpp src/game/trace_cartes.cpp src/render/route_revetements_defs.cpp)   # WFS-392 : tunnels (chaussée sèche, luminaires)
   target_compile_definitions(test_cartes_v2_abris PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-  add_executable(test_cgu tests/test_cgu.cpp src/ui/ecrans/cgu_texte.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/track.cpp)   # WFS-308 : CGU (texte, version, clé cgu=)
-  add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
+  add_executable(test_cgu tests/test_cgu.cpp src/ui/ecrans/cgu_texte.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-308 : CGU (texte, version, clé cgu=)
+  add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
   add_executable(test_fidelite_soleil tests/fidelite_soleil.cpp)   # WFS-148 (RG-02) : soleil (NOAA) contre 10 valeurs de contrôle
   add_executable(test_fidelite tests/fidelite_referentiel.cpp src/game/roues.cpp)   # WFS-148 (RG-01, RG-05) : référentiel du réel, mesures géométriques
@@ -201,9 +203,9 @@ else()
   add_executable(test_pluie tests/test_pluie.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-334 : pluie sous un toit, vue Cockpit, gouttes inclinées par la vitesse
   add_executable(test_ville_lieux tests/test_ville_lieux.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-137 : lieux de la Ville au tracé 2
   add_executable(test_ville_sol tests/test_ville_sol.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-305 : sol fermé côté intérieur des courbes serrées (ANO-171)
-  add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-136
-  add_executable(test_aide_direction tests/test_aide_direction.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-217 : aide à la direction
-  add_executable(test_conduite tests/test_conduite.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-241 : banc de conduite sans GPU (fiches, 6 virages, RG-07, déterminisme)
+  add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-136
+  add_executable(test_aide_direction tests/test_aide_direction.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-217 : aide à la direction
+  add_executable(test_conduite tests/test_conduite.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-241 : banc de conduite sans GPU (fiches, 6 virages, RG-07, déterminisme)
   add_executable(test_sons_conduite tests/test_sons_conduite.cpp src/audio/engine_synth.cpp)   # WFS-255 : sons et vibrations liés aux forces
   add_executable(test_audio_lieux tests/test_audio_lieux.cpp src/audio/ambiance_lieux.cpp src/game/track.cpp src/game/player.cpp)   # WFS-261 : son des lieux
   add_executable(test_audio_voitures tests/test_audio_voitures.cpp src/audio/voitures_sons.cpp src/audio/ambiance_lieux.cpp src/audio/engine_synth.cpp src/game/track.cpp src/game/player.cpp)   # WFS-272 : son des autres voitures
@@ -224,12 +226,12 @@ else()
   target_link_libraries(test_penetration_voitures Threads::Threads)
   add_executable(test_police_461 tests/test_police_461.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-461 : police plafonnée à sa fiche, contacts sans glisse
   target_link_libraries(test_police_461 Threads::Threads)
-  add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
+  add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
   add_executable(test_hud_lisible tests/test_hud_lisible.cpp)   # WFS-245 : textes du HUD lisibles (tailles, surfaces, contrastes)
   add_executable(test_hud_boutons tests/test_hud_boutons.cpp)   # WFS-429 : boutons Menu et Caméra à côté du score, +5 %, sans recouvrement
   add_executable(test_bandeau_gps tests/test_bandeau_gps.cpp)   # WFS-245 (RG-09) : textes du bandeau de la carte GPS (tailles, place, toutes les consignes et rues)
-  add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
-  add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)
+  add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
+  add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)
   add_executable(test_memoire tests/test_memoire.cpp)   # WFS-297 : compteurs de mémoire et de chargement
   add_executable(test_repli_memoire tests/test_repli_memoire.cpp)   # WFS-418 : voie de repli de la mémoire graphique (en-tête vk.h seul)
   target_include_directories(test_repli_memoire PRIVATE ${Vulkan_INCLUDE_DIRS})

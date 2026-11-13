@@ -26,6 +26,7 @@
 #include <string>
 #include <thread>
 #include "trace_cartes.h"   // WFS-136 : version du tracé
+#include "profil.h"         // WFS-480 : profil du joueur
 
 namespace wfs {
 
@@ -74,7 +75,7 @@ public:
     std::string cam = "poursuite";             // cam : vue (poursuite / capot / cockpit = 0, 1, 2 : VUES de WFS-66)
     bool muted = false;                        // muted : son coupé
     bool music = true;                         // music : musique (WFS-76, propre au jeu natif)
-    std::string nick = "Pilote";               // nick : pseudo (14 caractères au plus)
+    std::string nick = "Pilote";               // nick : pseudo (16 caractères au plus, WFS-480 ; coupé à 14 pour le duel, duel::cleanName)
     int km = 4;                                // km : distance de duel (2, 4, 6 ou 10)
     std::string steer = "glisser";             // steer : mode de braquage (glisser / fleches), stocké seulement
     bool gaucher = false, vibrations = true;   // WFS-75 : commandes en miroir, vibrations (propres au jeu natif)
@@ -82,6 +83,7 @@ public:
     int gyro = 0, gyroZone = 1;                // WFS-108 : gyroscope 0 coupé, 1 doux, 2 moyen, 3 fort ; zone morte 0..2
     bool aideDirection = true;                 // WFS-217 : aide à la direction (clé aide : activee / desactivee)
     int cgu = 0;                               // WFS-308 (RG-04) : version des CGU acceptée (0 : jamais acceptées)
+    std::string langue = "auto";               // WFS-504 (RG-04) : langue=auto|fr|en (absente : auto, langue du téléphone)
     std::string mode = "checkpoint";           // WFS-110 : mode de course (checkpoint / course5 / poursuite : WFS-119)
     int km5 = 4;                               // WFS-110 : distance de la course à 5 (2, 4, 6 ou 10 km)
     std::string diff5 = "normale";             // WFS-133 (RG-02) : difficulté de la course à 5 (facile / normale / difficile)
@@ -102,6 +104,7 @@ public:
     void activerCartes();                               // fantômes renommés, cartes notées (appelée par charger)
     // WFS-122 (RG-01) : 3 derniers adversaires du duel, le plus récent en premier (clé adversaires=a|b|c)
     std::vector<std::string> adversaires;
+    Profil profil;                                      // WFS-480 : plaque, date d'arrivée, statistiques, 20 dernières courses (profil.h)
     void noterAdversaires(const std::vector<std::string>& noms);   // en tête dans l'ordre reçu (classement), sans doublon, 3 au plus
 
     ~Sauvegarde();
