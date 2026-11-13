@@ -16,29 +16,6 @@ const char ETOILE[] = "\xE2\x98\x85";   // ★ (U+2605) : absent de la police Ra
 constexpr float LARGEUR_ETOILE = 0.95f;   // place d'une étoile dans le texte, × taille de la police
 }
 
-// ---------- ce qui manque (RG-03) ----------
-long long prixPastille(const Sauvegarde& s, const char* carId, int peinture, bool secondaire) {
-    if (peinture < 0 || peinture >= NB_PEINTURES) return 0;
-    long long total = 0;
-    if (const perso::Objet* c = perso::couleur(PAINTS[peinture].id); c && !perso::possede(s, *c, carId)) total += perso::prix(*c, carId);
-    if (secondaire)   // « Toit et rétros » : le droit de poser une couleur secondaire sur cette voiture (WFS-487, 50 ★ × coefficient)
-        if (const perso::Objet* d = perso::objet(perso::ID_SECONDAIRE); d && !perso::possede(s, *d, carId)) total += perso::prix(*d, carId);
-    return total;
-}
-
-Manque manque(const Sauvegarde& s, const EtatGarage& e) {
-    Manque m;
-    const char* car = CARS[e.index].id;
-    auto ajouter = [&](const perso::Objet* o) {
-        if (!o || perso::possede(s, *o, car) || m.n >= 3) return;
-        for (int i = 0; i < m.n; i++) if (m.objets[i] == o) return;   // même couleur en principale et en secondaire : une fois
-        m.objets[m.n++] = o; m.total += perso::prix(*o, car);
-    };
-    if (e.peinture >= 0 && e.peinture < NB_PEINTURES) ajouter(perso::couleur(PAINTS[e.peinture].id));
-    if (e.peinture2 >= 0 && e.peinture2 < NB_PEINTURES) { ajouter(perso::objet(perso::ID_SECONDAIRE)); ajouter(perso::couleur(PAINTS[e.peinture2].id)); }
-    return m;
-}
-
 // ---------- étoile et texte avec ★ ----------
 void etoile(Renderer& r, float cx, float cy, float R, const vec4& c) {
     // 5 pointes (triangles) autour d'un pentagone central : chaque morceau est convexe (dessin2d::polygone)

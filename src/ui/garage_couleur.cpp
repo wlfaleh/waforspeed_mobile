@@ -105,14 +105,13 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
         g_z.chevrons[c] = {xc - CHEVRON * k * 0.6f, yy - 4 * k, CHEVRON * k * 1.2f, s + 8 * k};
         manette::focus(g_z.chevrons[c]);
     }
-    long long prixSel = 0;
     for (int j = premier_; j < premier_ + visibles_ && j < n; j++) {
         const float x = x0 + (j - premier_) * pas;
         const bool comme = toit_ && j == 0;                     // « Comme la carrosserie »
         const int p = comme ? e.peinture : (toit_ ? j - 1 : j);  // couleur dessinée (indice dans PAINTS)
         const long long prix = comme ? 0 : prixPastille(sv, car, p, toit_);
         const bool on = j == sel;
-        if (on) { biseau(r, x - 4 * k, yy - 4 * k, s + 8 * k, s + 8 * k, s * 0.18f, hex(ACCENT2, 0.35f * op)); prixSel = prix; }   // halo
+        if (on) biseau(r, x - 4 * k, yy - 4 * k, s + 8 * k, s + 8 * k, s * 0.18f, hex(ACCENT2, 0.35f * op));   // halo
         biseau(r, x - 2 * k, yy - 2 * k, s + 4 * k, s + 4 * k, s * 0.18f, on ? hex(ACCENT2, op) : vec4{1, 1, 1, 0.08f * op});
         biseau(r, x, yy, s, s, s * 0.18f, hex(PAINTS[p].hex, op));
         if (comme) {   // « = » sombre sur une couleur claire, clair sur une couleur sombre
@@ -131,6 +130,7 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
     // nom de la couleur montrée et, si elle n'est pas possédée, son prix et ses équivalents (RC-E18-11)
     const float xn = bx - 32 * k - NOM * k + 10 * k;
     const bool commeSel = toit_ && sel == 0;
+    const long long prixSel = commeSel ? 0 : prixPastille(sv, car, toit_ ? sel - 1 : sel, toit_);   // même si la pastille est hors de la vue
     ui::text(r, xn, yy + 1 * k, 15 * k, commeSel ? ui::tr("garage.couleur.comme") : nomCouleur(toit_ ? sel - 1 : sel), hex(TEXTE, op), ui::GAUCHE, 0, false);
     if (prixSel > 0) texteEtoiles(r, xn, yy + 21 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::GAUCHE);
 }
