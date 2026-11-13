@@ -1,0 +1,87 @@
+# WFS-456 (RG-03, ANO-257) — banc vitrines-feux, commit 5acec110, 2026-11-13 14:50:59 UTC
+
+## 1. WFS_BANC=vitrines-feux WFS_VOITURES="a45 elantra x5" WFS_TAILLE=640x360
+[info] passes (WFS-150) : 5 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : rétroviseurs (1 glace) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+[info] vitrine feux : a45 retirée (WFS-404), pas de capture
+[info] vitrine feux : elantra retirée (WFS-404), pas de capture
+[info] vitrine feux : x5 retirée (WFS-404), pas de capture
+code de sortie : 0
+contenu du dossier de sortie (0 fichier(s)) :
+
+## 2. WFS_BANC=vitrines-feux sans WFS_VOITURES (liste CARS[] complète) WFS_TAILLE=640x360
+[info] passes (WFS-150) : 5 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : rétroviseurs (1 glace) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+[info] environnement (WFS-150) : capture 1 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 2 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-golf-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 3 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 4 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-m4-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 5 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 6 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-p911-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 7 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 8 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-gallardo-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 9 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 10 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-p208-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 11 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 12 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-abarth-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 13 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 14 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-tcross-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 15 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 16 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-compass-feux : frein 1 (WFS-170)
+[info] cars/s3.wfm : matériau 10 : vitre en double retirée (camouflage de la lunette, RG-03) (WFS-170)
+[info] environnement (WFS-150) : capture 17 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 18 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-s3-feux : frein 1 (WFS-170)
+[info] vitrine feux : x5 retirée (WFS-404), pas de capture
+[info] environnement (WFS-150) : capture 19 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 20 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-giulia-feux : frein 1 (WFS-170)
+[info] vitrine feux : a45 retirée (WFS-404), pas de capture
+[info] environnement (WFS-150) : capture 21 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 22 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-model3-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 23 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 24 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-corsa-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 25 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 26 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-gt86-feux : frein 1 (WFS-170)
+[info] vitrine feux : elantra retirée (WFS-404), pas de capture
+[info] environnement (WFS-150) : capture 27 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 28 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-v60-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 29 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 30 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-rrsport-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 31 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 32 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-mustang-feux : frein 1 (WFS-170)
+[info] environnement (WFS-150) : capture 33 prête (128 px, point 0.0 1.5 0.0)
+[info] environnement (WFS-150) : capture 34 prête (128 px, point 0.0 1.5 0.0)
+[info] capture vitrine-sf90-feux : frein 1 (WFS-170)
+code de sortie : 0
+contenu du dossier de sortie (17 fichier(s)) :
+vitrine-abarth-feux.png
+vitrine-compass-feux.png
+vitrine-corsa-feux.png
+vitrine-gallardo-feux.png
+vitrine-giulia-feux.png
+vitrine-golf-feux.png
+vitrine-gt86-feux.png
+vitrine-m4-feux.png
+vitrine-model3-feux.png
+vitrine-mustang-feux.png
+vitrine-p208-feux.png
+vitrine-p911-feux.png
+vitrine-rrsport-feux.png
+vitrine-s3-feux.png
+vitrine-sf90-feux.png
+vitrine-tcross-feux.png
+vitrine-v60-feux.png
+fichiers des voitures retirées (a45, elantra, x5) : 0
