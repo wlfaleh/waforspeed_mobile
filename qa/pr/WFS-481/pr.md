@@ -37,7 +37,7 @@ Agent : Claude, agent dev3d (01Us6uCvhS)
   - Banc `WFS_BANC=creation` en **FR et EN**, 2400x1080 : **0 écart**. Parcours complet : installation neuve → CGU acceptées → chargement → création → menu → course → fin → menu → 2e lancement (plus d'écran) → joueur déjà installé (pseudo proposé).
   - **RG-05** : 6 lettres + « C'est parti » = **7 appuis, 8,4 s** d'actions (1,2 s par appui), sous la limite de 20 s.
   - En anglais, le garde-fou des textes de WFS-504 (RC-E20-06) trouve **aucune phrase française et aucun texte qui dépasse** sur l'écran.
-  - Banc `cgu` relancé sur la branche : voir le résultat dans les commentaires de la PR.
+  - Banc `cgu` (WFS-308) relancé sur la branche synchronisée (`e24205e3`) : **0 écart** (profil créé avant la partie Réglages du banc).
 - **Limites et risques** :
   - Aperçu de la plaque en gabarit 2D : il prendra le dessin de la plaque 3D quand WFS-483 sera fusionné.
   - Branche synchronisée avec main après la fusion de WFS-505 : le menu qui suit l'écran est maintenant en anglais sur un téléphone en anglais (capture `creation-en-menu`).
