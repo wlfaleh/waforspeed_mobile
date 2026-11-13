@@ -17,7 +17,7 @@ Agent : Claude, agent dev3d (01Us6uCw3C)
 - `test_paquets` : lié au système de langue ; vérifie aussi « 22 MB », « Not enough space: 30 MB needed, 12 MB free », « Connection required ».
 
 ## Comment c'est vérifié
-- Construction complète (aucun nouvel avertissement), **123 tests CPU verts** (`tools/qa/tests_cpu.sh`).
+- Construction complète (aucun nouvel avertissement), **124 tests CPU verts (après synchronisation avec main)** (`tools/qa/tests_cpu.sh`).
 - Banc `textes-garage` en `WFS_LANGUE=en` et `fr` (résultats ci-dessous), banc `paquets` et `garage` de `main` pour les captures « avant ».
 
 ## Limites et risques
