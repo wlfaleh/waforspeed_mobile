@@ -55,6 +55,10 @@ int main(int argc, char** argv) {
     VERIFIE(vb >= 0.02 && vb <= 0.08, "vernis brillant hors de la charte (0,02-0,08)");
     VERIFIE(cf >= 0.55 && cf <= 0.65, "chrome : réflectance %.2f hors 0,55-0,65 (RG-06)", cf);
     VERIFIE(cr >= 0.05 && cr <= 0.15, "chrome : rugosité %.2f hors 0,05-0,15 (charte § 3)", cr);
+    const double ct = constante(glsl, "FIN_CHROME_TEINTE");
+    VERIFIE(ct >= 0.0 && ct <= 0.15, "chrome : teinte %.2f au-delà de 15 %% (miroir lisible, RG-06)", ct);
+    VERIFIE(glsl.find("FIN_CHROME ? vec3(0.0) : albedo") != std::string::npos && frag.find("finition == FIN_CHROME) env = vec3(0.0)") != std::string::npos,
+            "chrome : part diffuse revenue (sonde floue ou lumière de nuit diffuse, RG-06)");
     VERIFIE(rm > rs && rs > 0.3 && vs > vb && rm >= 0.5, "ordre des rugosités mat > satiné > brillant faux (RG-04, RG-05)");
     VERIFIE(glsl.find("vernisCouche(col, R, sun, NoV, NoH, NoL, aaKernel, specK, 0.03, 1.0, couleurPeinture().rgb)") != std::string::npos,
             "vernisPeinture ne garde plus le vernis d'avant (RG-01)");
