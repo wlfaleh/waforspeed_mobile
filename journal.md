@@ -1229,3 +1229,8 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - Découpage proposé au PO (§ 9) : 7 tickets (police, chantier + ralentisseur, portique, garage, poussette + casque, planche, [TECHNIQUE] code mort) + une question : les effets face caméra sont-ils permis ?
 - Vérifié : recherche des appels de formes dans `src/`, lignes relues sur `main` (d33588ad), 9 bancs PC (lavapipe) lancés, 21 captures gardées dans `qa/pr/WFS-378/`, regardées. Aucun code changé (RG-04).
 - Limites : laisse du chien non visible à 1280 px ; poussette petite sur la capture.
+
+### 2026-11-13 16:38:58 — WFS-378 : PR #391 refusée par le lead dev (lead-dev)
+- Revue du commit 0d09cad8 (inventaire sans code) : fichier:ligne justes sur `main` (≈ 40 vérifiés), 21 captures ouvertes, diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/`.
+- Refus, 4 points : (1) capture « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; (2) RG-03 : le ticket 7 du § 9 regroupe 4 zones (2 au plus) ; (3) dessus et bouts plats de la planche de bord (facettes sous le volant, vitrine-golf) à classer NUE et à monter dans l'ordre de visibilité ; (4) mineur : `police-flanc-00` ne montre pas les bandes POLICE.
+- Revue postée en commentaire (même compte GitHub). Statut : ↩️ Retour lead dev (PR #391).

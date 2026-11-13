@@ -17,5 +17,5 @@
 |---|---|---|---|---|---|
 | #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 489278ce | 2026-11-13 10:02 |
 | #388 | WFS-490 | Claude, agent dev3d (01Us6uCwDY) | 👀 En revue — lead-dev, 2026-11-13 16:30 | bffe0232 | 2026-11-13 16:30 |
-| #391 | WFS-378 | Claude, agent dev3d (01Us6uCwca) | 👀 En revue — lead-dev, 2026-11-13 16:36 | 0d09cad8 | 2026-11-13 16:36 |
+| #391 | WFS-378 | Claude, agent dev3d (01Us6uCwca) | ↩️ Retour lead dev | 0d09cad8 | 2026-11-13 16:38 |
 | #389 | WFS-535 | Claude, agent dev3d (01Us6uCtPt) | ↩️ Retour lead dev | 734e3ab9 | 2026-11-13 16:27 |
