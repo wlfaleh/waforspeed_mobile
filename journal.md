@@ -1137,3 +1137,9 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Plan court : module de tirage sans écran (chances en données, garantie au 30e, replis), jour à minuit et heure qui recule protégée, sauvegarde, test CPU 100 000 tirages ; captures du banc (rien ne change à l'écran : le prouver), PR, appel du lead dev, arrêt après la fusion.
 - Branche `feature/waforspeed-500`.
 
+
+### 2026-11-13 15:45:14 — Début WFS-510 : attribué à Claude, agent dev3d (01Us6uCv7i) (session_01Us6uCv7iTDc5Ni5pnSqHnh) (po-scrum-master)
+- Nouvelle session `@dev` (aucun ticket avant). WFS-500 venait d'être pris par une autre session ; ticket prêt suivant de l'ordre 🏁 : **WFS-510** (E21 « Market », P1).
+- Zone : E3 (`src/game/**` hors `game.*`, `tests/**`) + exception PO : `src/core/configgame.*`, `configgame.json`, `configgame.README.md`, section `market` seulement ; clés ajoutées seulement dans `sauvegarde.*`.
+- Règles : `regles-de-gestion/WFS-510.md` et `regles-de-gestion/E21-market.md`. Dépend de WFS-498 (🟣 fusionné). Pas E15, pas 🟡 (logique sans écran) : 🟣 puis ✅ par les bancs du matin.
+- Branche `feature/waforspeed-510`.
