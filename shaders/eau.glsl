@@ -258,30 +258,30 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     // Plafonnée à 0,35 : au-delà, le ciel reflété au loin s'assombrissait (bande sombre sous l'horizon, D1 de l'avis 3D)
     float vmPetites = basse ? 0.0024 : 0.0006;
     rough = clamp(sqrt(sqrt(0.0004 + 2.0 * (varPerdue + vmPetites * agit))), 0.08, 0.35);
-    // WFS-401 (RG-03) : traînée du soleil faite de reflets séparés. Les rides plus petites que le pixel ne floutent pas le soleil en
-    // tache : chacune est une petite facette qui renvoie le soleil vers l'œil ou non (« glitter », Cox et Munk 1954). Dans la zone où
-    // le reflet du soleil peut tomber (voir « poids » ci-dessous), chaque
-    // pixel tire sa facette : pente gaussienne de la variance perdue, tirage changé 12 fois par seconde (scintillement), et la
-    // rugosité redevient celle d'une facette lisse. En moyenne sur plusieurs pixels, l'énergie reste celle du lobe large ; la zone
-    // s'élargit au loin avec les pentes perdues (traînée plus large au loin qu'au près). Hors Basse ; le jour (soleil levé).
+    // WFS-401 (RG-03) : traînée du soleil (ou de la lune) faite de reflets séparés. Les rides plus petites que le pixel ne floutent pas
+    // le soleil en tache : chacune est une petite facette qui renvoie le soleil vers l'œil ou non (« glitter », Cox et Munk 1954).
+    // Hors Basse ; soleil ou lune levé.
     if (!basse && F.sunDir.w > 0.0 && F.sunDir.y > -0.02) {
         float sig2 = varPerdue + vmPetites * agit + 0.0008;
-        // poids : probabilité relative que la facette qui renverrait le soleil (demi-vecteur H entre l'œil et le soleil) existe sous
-        // le pixel, loi gaussienne des pentes : exp(−tan²θ / 2σ²), tan²θ ≈ 2 (1 − N·H). Mesurée sur H et non sur le reflet : à angle
-        // rasant, une pente de côté ne dévie presque pas le reflet (2 sin(élévation) × pente) : la traînée reste une colonne étroite
-        // sous le soleil (ou la lune), comme en vrai. Avis 3D B2 : chaque carré tire au hasard s'il porte une facette selon ce poids :
-        // les reflets se raréfient en douceur vers les bords de la traînée (plus de limite nette) ; les autres gardent le lobe moyen
+        // poids : probabilité relative que la facette qui renverrait le soleil (demi-vecteur H entre l'œil et le soleil) existe là,
+        // loi gaussienne des pentes : exp(−tan²θ / 2σ²), tan²θ ≈ 2 (1 − N·H). Mesurée sur H et non sur le reflet : à angle rasant, une
+        // pente de côté ne dévie presque pas le reflet (2 sin(élévation) × pente) : la traînée reste une colonne étroite sous le soleil,
+        // comme en vrai ; elle s'élargit au loin avec les pentes perdues. Queue un peu plus large que la loi : bords doux (avis 3D B2).
         vec3 Hs = normalize(V + normalize(F.sunDir.xyz));
-        float poids = exp(-(1.0 - dot(N, Hs)) / (1.6 * sig2));   // queue un peu plus large que la loi : bords encore plus doux
+        float poids = exp(-(1.0 - dot(N, Hs)) / (1.6 * sig2));
         if (poids > 0.01) {
-            // une facette par carré de 2 × 2 pixels, calé sur les quads du GPU : la normale ne change pas dans le quad, donc les
-            // dérivées dFdx / dFdy de N sont nulles et l'anticrénelage des reflets (scene.frag, Tokuyoshi) n'élargit pas le reflet de
-            // la facette en tache floue ; chaque reflet reste un point net de 2 pixels
-            vec2 cel = floor(gl_FragCoord.xy * 0.5) + floor(t * 12.0) * vec2(17.31, 9.13);
-            if (eauHash(cel + 3.7) < poids) {
-                vec2 hh = eauHash2(cel);
-                vec2 s = sqrt(-2.0 * log(max(hh.x, 1e-4)) * sig2) * vec2(cos(6.2831853 * hh.y), sin(6.2831853 * hh.y));
-                N = normalize(N + vec3(-s.x, 0.0, -s.y));
+            // avis 3D B3 : les paillettes sont tirées SUR L'EAU (cellules du monde), pas sur la grille de l'écran : elles restent à
+            // leur place sur la mer quand la caméra bouge. Taille de la cellule : 0,2 m au moins et 2 pixels au moins, par paliers
+            // (puissances de 2 : la cellule ne change pas d'une image à l'autre). Chaque paillette a sa propre vie (≈ 0,4 s, début
+            // décalé d'une cellule à l'autre) : elles naissent et s'éteignent une à une, sans fourmillement de tout l'écran.
+            float taille = exp2(ceil(log2(max(0.2, 2.0 * empreinte))));
+            vec2 cw = floor(p / taille);
+            vec2 cel = cw + floor(t * 2.5 + eauHash(cw + 1.3)) * vec2(17.31, 9.13);
+            // une paillette tirée est une facette qui renvoie vraiment le soleil (normale = demi-vecteur, à peine bougée) : plus de
+            // pixel noir dans la traînée ; les autres gardent la normale et le lobe moyens (densité ≤ 35 % : paillettes séparées)
+            if (eauHash(cel + 3.7) < 0.35 * poids) {
+                vec2 hh = eauHash2(cel) - 0.5;
+                N = normalize(Hs + vec3(hh.x, 0.0, hh.y) * 0.02);
                 rough = 0.06;
             }
         }

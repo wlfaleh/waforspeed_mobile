@@ -3394,6 +3394,7 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
     if (roc >= 0) {
         vue("mer-rochers", "midi", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
         vue("mer-rochers-nuit", "nuit", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
+        vue("mer-lune-suite", "nuit", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55, {404.0, 404.25, 404.5, 404.75});   // WFS-401 (B3) : paillettes de lune
     } else WFS_ERR("banc mer : aucune côte rocheuse");
     int64_t fal = -1;   // WFS-401 (R8) : pied de la falaise (route à plus de 12 m au-dessus de la mer sur ± 48 m), vue depuis l'eau
     for (int64_t a = 100; t2 && a + 100 < L && fal < 0; a += 10) { bool h = true; for (int64_t k = a - 40; k <= a + 40 && h; k += 10) h = t.pose(k).y - OCEAN_Y > 12; if (h) fal = a; }
