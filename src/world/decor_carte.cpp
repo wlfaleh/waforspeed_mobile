@@ -257,9 +257,13 @@ bool CarteDecor::dansMorceau(int64_t seg, int64_t a0, int64_t a1, int64_t& abs) 
     return false;
 }
 
+// WFS-387 (RG-10, accroche annoncée au journal) : course vue de haut par une scène dédiée (vues de dessus du banc course5) : le décor
+// de la carte y est dessiné comme en course (sans lui, seule la chaussée restait, sur le fond gris)
+static bool vueDessusCourse(const GameView& g) { return g.sceneDediee && g.ecran == Ecran::Course && g.camPos.y - g.camTarget.y > 30.f; }
+
 // envFor (maps.js) : brouillard plus loin de jour, nuit sans lampadaires (campagne) ou bleutée (circuit)
 void CarteDecor::ambiance(FrameParams& fp, const GameView& g) {
-    if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
+    if (!active_ || (g.sceneDediee && !g_vueCarte.actif && !vueDessusCourse(g))) return;
     const Env e = env();
     // Game : brouillard exponentiel 0,0009 pour la ville (fogFar 620 m du jeu web) → même rapport, comme la plage
     if (!night_) {
@@ -468,7 +472,7 @@ void CarteDecor::preparerDecor(Renderer& r) {
 }
 
 void CarteDecor::render(Renderer& r, const GameView& g) {
-    if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
+    if (!active_ || (g.sceneDediee && !g_vueCarte.actif && !vueDessusCourse(g))) return;
     frame_++;
     preparerDecor(r);   // WFS-268 : repli (sans effet si déjà fait)
     Track& t = *g.track;
