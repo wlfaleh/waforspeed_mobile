@@ -22,6 +22,9 @@
 #include "enseignes.h"
 #include "mobilier_ville.h"   // WFS-369 : tables, chaises, parasols et jardinières modélisés
 #include "ville_quartiers.h"
+#include "../render/eclairage_unites.h"   // WFS-410 : lampe de la pièce de nuit des vitrines
+#include "archi_details.h"   // WFS-410 : corniche moulurée de la devanture
+#include "archi_lieux.h"   // WFS-410 : devanture percée, menuiseries réelles de WFS-402
 #include "zones.h"
 
 namespace wfs {
@@ -150,9 +153,19 @@ public:
         for (unsigned c : MOBILIER) palette_.uv(c);   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
         if (ville_ && !atlas_.construire(r)) return;
         palette_.construire(r);
-        vitreNuit_ = neon(r, 0xffcf8a, 0.65f); bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 (accroche E13, ANO-202) : vitrine 0,65 (avant 1,4 : rouge 1,4 au-dessus du blanc et du bloom, blocs blancs) ; Y exposée ≈ 0,44, comme les pièces adaptées (pieceAdaptee)
-        Material mv; const vec3 c = lin(0x3b4a58); mv.color = {c.x, c.y, c.z, 1}; mv.rough = 0.15f; mv.metal = 0.3f;
-        vitreJour_ = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+        bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
+        {   // WFS-410 (avis de l'agent 3D, B1 et R5) : vitrines de la devanture avec la pièce de nuit du kit (decor.glsl) : la boutique
+            // se voit derrière la vitre, éclairée par le ciel de jour ; la nuit 60 % des vitrines allumées (lampe de 2 850 K à 31,8 cd/m²,
+            // teintes et luminances tirées par vitrine), sous la luminance d'un lampadaire ; plus de plaque bleu nuit unie
+            double t[3]; lumiere::couleurTemperature(2850, t);
+            const float L = archi::lieux::LUMINANCE_PIECE;
+            for (int k = 0; k < 2; k++) {
+                Material mv; mv.color = {0.03f, 0.035f, 0.04f, 1}; mv.rough = 0.05f; mv.flags = MAT_DOUBLE | MAT_INTERIEUR;
+                mv.emissive = {(float)t[0] * L, (float)t[1] * L, (float)t[2] * L};
+                mv.cutoff = k ? archi::lieux::VITRINES_ALLUMEES : 0.f;
+                (k ? vitreNuit_ : vitreJour_) = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+            }
+        }
         actif_ = true;
         g_premiereTerrasse = -1;
         if (ville_) for (const Client& cl : clientsTerrasses(*g.map, len_))   // plus proche du départ, côté droit
@@ -211,8 +224,37 @@ private:
         const double debut = abs + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
         const Repere pm = repere(t, (debut + L / 2 / SEG_M) * SEG);
         const vec2 aw0 = palette_.uv(sh.aw0), aw1 = palette_.uv(sh.aw1), bg = palette_.uv(sh.bg);
-        boite(pal, lateral(pm, s * (face - 0.06f), 0.15f), pm.r, pm.f, 0.08f, 3.1f, L * 0.9f, palette_.uv(0x2a2d33));
-        boite(vitre, lateral(pm, s * (face - 0.11f), 0.45f), pm.r, pm.f, 0.04f, 2.2f, L * 0.78f, {0, 0});
+        {   // WFS-410 (RG-03) : devanture en applique (boiserie peinte de la couleur du commerce, 30 cm devant la façade, 2,8 m de
+            // haut) percée d'une vitrine à soubassement et d'une porte vitrée, menuiseries réelles de WFS-402 (dormant, petits bois
+            // du style, barre de tirage, seuil) ; corniche de la devanture et retours sur les côtés. Avant : une plaque sombre de 8 cm
+            // et une plaque de verre posées à plat devant l'immeuble (forme nue)
+            const float W = L * 0.9f, ep = 0.3f, H = 2.8f;
+            const vec3 z = pm.r * -s, x = archi::lieux::axeFacade(z), o = lateral(pm, s * (face - ep), 0.15f) - x * (W / 2);
+            archi::lieux::Facade f;
+            f.style = archi::Style::Classique; f.graine = (uint32_t)(c.seg * 2 + (c.side > 0)); f.largeur = W; f.y0 = 0; f.y1 = H;
+            const bool porteADroite = (c.seg & 1) != 0;
+            const float xp = porteADroite ? W - 0.85f : 0.85f, xv = porteADroite ? (W - 1.55f + 0.35f) / 2 : (1.55f + W - 0.35f) / 2;
+            f.baies.push_back({archi::Ouverture::Vitrine, xv, 0.45f, W - 1.9f, 2.2f, 0.f});
+            f.baies.push_back({archi::Ouverture::Vitrine, xp, 0.02f, 1.0f, 2.3f, 0.f});
+            archi::Batiment b;
+            archi::lieux::construire(f, 0, b);
+            const vec2 bg0 = palette_.uv(sh.bg), fer = palette_.uv(0x2a2d33);
+            for (int k = 0; k < archi::NB_PARTS; k++) {
+                if (b.part[k].v.empty()) continue;
+                archi::lieux::versMonde(b.part[k], o, x, z);
+                archi::lieux::ajouter(k == archi::VITRE ? vitre : pal, b.part[k], k == archi::METAL || k == archi::FIN ? fer : bg0, k == archi::VITRE);
+            }
+            {   // corniche moulurée de la devanture (cordon, doucine, larmier : archi::details::corniche du kit), 14 cm, saillie 6 cm,
+                // retournée jusqu'à la façade de l'immeuble (avis du lead dev : plus de boîte)
+                archi::Maillage cor;
+                archi::details::corniche(cor, W, ep, H + 0.14f, 0.14f, 0.06f);
+                archi::lieux::versMonde(cor, o, x, z);
+                archi::lieux::ajouter(pal, cor, bg0);
+            }
+            for (float sd : {-1.f, 1.f}) {   // retours de la devanture jusqu'à la façade
+                plan(pal, lateral(pm, s * (face - ep / 2), 0.15f + H / 2) + pm.f * (sd * W / 2), pm.r, {0, 1, 0}, pm.f * sd, ep, H, bg0.x, bg0.y, bg0.x, bg0.y);
+            }
+        }
         const int n = std::max(3, (int)std::lround(L / 0.9f));
         const float w = L * 0.92f / n;
         for (int k = 0; k < n; k++)
