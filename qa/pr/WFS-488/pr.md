@@ -17,13 +17,34 @@
   - nouveau test CPU `test_peinture2` : codes des 28 couleurs et du noir pur relus à l'identique (un défaut d'arrondi au-delà de 2²³ a été trouvé et corrigé), finition, maillage d'essai (bord dédoublé, aucune pièce ni triangle en plus, triangle mêlé du niveau allégé en couleur 1), `.pt2` tronqué / faux refusé, et les 17 voitures (empreintes = `.wfm`, toit et rétros repérés, aucun triangle à moitié marqué) ; **121 tests CPU OK** après synchronisation avec `main` ;
   - banc `WFS_BANC=peinture2` (nouveau) : 208, GT86, Corvette en toit Noir sur Rouge de 3/4 avant, de dessus, gros plans du rétroviseur et du joint avant du pavillon ; planche des 17 en toit **Blanc** (visible aussi sur les toits noirs d'origine) ; 208 en course de jour et de nuit ; gros plans Corsa, Compass, M4, Brezza regardés en local ;
   - **sans couleur 2 = aspect inchangé** (RG-04) : banc `vitrines-feux` (208, GT86, Corvette) branche contre `main` : 4 images **identiques au pixel**, 2 images `-feux` (après 2 s de conduite simulée) à **1 pixel de 1/255** près (bruit du calcul) ;
-  - performances (banc `perf`, Ville, lavapipe) : Basse 358,4 ms (`main`) / 357,0 ms (branche), Haute 807,6 / 789,8 ms : même nombre d'appels de dessin et de triangles, écart dans le bruit (RC-E18-03 ; valeurs absolues de rendu logiciel, sans sens sur téléphone).
+  - performances (banc `perf`, Ville, lavapipe) : Basse 358,4 ms (`main`) / 357,0 ms (branche), Haute 807,6 / 789,8 ms : même nombre d'appels de dessin et de triangles ;
+  - **RC-E18-03, images par seconde en Basse** (retour du lead dev) : voir la section « Mesure en Basse » ci-dessous.
 - **Limites et risques connus** :
-  - rendu vérifié sur le banc PC (lavapipe), pas sur un vrai GPU mobile ; endurance au doigt en Basse non relancée (seul le banc `perf` a été comparé) ;
+  - rendu et images par seconde mesurés sur le banc PC (lavapipe), pas sur un vrai GPU mobile ;
   - le choix de la couleur 2 au garage n'existe pas encore (WFS-489) : aujourd'hui elle ne s'applique qu'à une couleur 2 achetée et posée dans la sauvegarde ;
   - Compass : seul le panneau peint du pavillon prend la couleur 2 (le cadre noir d'origine est mêlé à des pièces cachées du modèle) ; GT86 : en noir, le vernis montre un peu plus les ondulations d'origine du pavillon ;
   - un modèle reconverti ou retouché demande de relancer `node tools/peinture2_voitures.mjs` (sinon toit d'une seule couleur, test `test_peinture2` en échec) ;
   - RC-E18-05 (captures au garage) : la vitrine du banc tient lieu de garage jusqu'à WFS-489 ; RC-E18-11 (captures FR / EN) : ticket sans texte.
+
+## Tests CPU
+
+Journal complet : [`qa/pr/WFS-488/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-488/qa/pr/WFS-488/tests-cpu.log) — `bash tools/qa/tests_cpu.sh build`, branche `0f6f59d7` synchronisée avec `main` `d8166341` (depuis, `main` n'a changé que des `.md` et `tools/qa/verifier_licences.py`, relancé : « 160 fichiers d'assets vérifiés, 0 manque(s) ») :
+
+```
+tests CPU : 121 test(s) réussi(s) en 387 s
+```
+
+## Mesure en Basse (RC-E18-03 : écart ≤ 1 img/s, moyenne et 1 % les plus lents)
+
+Banc `WFS_BANC=peinture2-mesure` (`src/render/vehicule_peinture2_mesure.cpp`, le même fichier compilé sur `main` pour la mesure « avant ») : Basse, Ville, 208 en course au pilote automatique, 180 images de chauffe, 600 images chronométrées ; couleur 2 posée sur la voiture du joueur par `WFS_PEINTURE2=noir`. Détail : [`qa/pr/WFS-488/mesure-basse.txt`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-488/qa/pr/WFS-488/mesure-basse.txt).
+
+| Mesure (lavapipe) | Moyenne | 1 % les plus lents |
+|---|---|---|
+| `main` d8166341, série 1 / série 2 | 3,441 / 3,401 img/s | 2,181 / 2,314 img/s |
+| branche, sans couleur 2, série 1 / 2 | 3,308 / 3,486 img/s | 2,313 / 2,480 img/s |
+| **branche, couleur 2 noire posée**, série 1 / 2 | **3,317 / 3,326 img/s** | **2,369 / 2,321 img/s** |
+
+Écart `main` → branche avec couleur 2 : −0,12 et −0,08 img/s en moyenne, +0,19 et +0,01 img/s pour le 1 % le plus lent : **critère tenu**, écarts du même ordre que le bruit entre deux mesures de `main`.
 
 ## Captures pour le lead dev (20 après)
 
