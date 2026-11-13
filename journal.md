@@ -1062,3 +1062,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Vérifié : construction complète ; tests CPU 122 réussis (commit ab6f7cac ; 1er passage : `test_audio_chocs` RG-07 en échec de chronométrage sous charge, vert seul puis toute la suite) ; 59 paires de captures avant / après **identiques au pixel** (`garage` 1280x720 et 2400x1080, `garage` en anglais, tour du garage) ; journal du banc identique.
 - Limites : `captures_pr.sh` arrêté par la limite de temps de la session en fin de captures « avant » de `voitures-retirees` (tour du garage déjà fait) : JPG et tableau faits ensuite avec les commandes de l'étape 4 du script. Aucune CI de branche lancée.
 - Fusion : par son auteur, **sur ordre de l'utilisateur (2026-11-13)** relayé par le PO (exception pour WFS-534 seulement).
+
+### 2026-11-13 14:49:27 — WFS-534 fusionné (#387, 497814ac) (lead-dev, renfort WFS-534)
+- **Fusionnée par son auteur sur ordre de l'utilisateur (2026-11-13)**, relayé par le PO ; exception pour WFS-534 seulement. Approbation formelle refusée par GitHub (même compte) : revue « ✅ Approuvé » écrite en commentaire sur 80130699.
+- Avant fusion : construction OK, 122 tests CPU réussis, 59 paires de captures identiques au pixel, diff relu en entier.
+- WFS-534 🟣 Fusionné ; **WFS-489 ⏳ Prêt** (garage découpé : couleur → `garage_couleur.*`, achat → `garage_achat.*`) ; ligne `suivi-pr.md` supprimée ; ligne `qa/Check.md` ajoutée ; session de renfort terminée.

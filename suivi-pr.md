@@ -15,7 +15,6 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #387 | WFS-534 | lead-dev (renfort) | 👀 En revue — lead-dev (renfort, auteur : fusion par l'auteur sur ordre de l'utilisateur), 2026-11-13 14:48 | 80130699 | 2026-11-13 14:48 |
 | #385 | WFS-456 | Claude, agent dev3d (01Us6uCu2B) | 👀 En revue — lead-dev, 2026-11-13 14:37 | 5acec11 | 2026-11-13 14:37 |
 | #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 489278ce | 2026-11-13 10:02 |
 | #386 | WFS-506 | Claude, agent dev3d (01Us6uCvEv) | 👀 En revue — lead-dev, 2026-11-13 14:42 | 2b9cd185 | 2026-11-13 14:42 |
