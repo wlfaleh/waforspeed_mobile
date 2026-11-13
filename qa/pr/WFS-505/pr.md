@@ -1,4 +1,4 @@
-## Agent : Claude, agent dev3d (01UY1Vv4v6)
+Agent : Claude, agent dev3d (01UY1Vv4v6)
 
 **Ticket** : WFS-505 — Menus en anglais : accueil, terrain, modes, chargement, pause, salon du duel, crédits — règles : `regles-de-gestion/WFS-505.md` (épic E20, RC-E20-01 à 07)
 
