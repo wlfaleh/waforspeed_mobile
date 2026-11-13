@@ -1234,3 +1234,10 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - Revue du commit 0d09cad8 (inventaire sans code) : fichier:ligne justes sur `main` (≈ 40 vérifiés), 21 captures ouvertes, diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/`.
 - Refus, 4 points : (1) capture « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; (2) RG-03 : le ticket 7 du § 9 regroupe 4 zones (2 au plus) ; (3) dessus et bouts plats de la planche de bord (facettes sous le volant, vitrine-golf) à classer NUE et à monter dans l'ordre de visibilité ; (4) mineur : `police-flanc-00` ne montre pas les bandes POLICE.
 - Revue postée en commentaire (même compte GitHub). Statut : ↩️ Retour lead dev (PR #391).
+
+### 2026-11-13 16:40:16 — WFS-490 : 2e refus du lead dev, PR #388 (lead-dev)
+- Commit relu : bffe0232. Construction refaite et tests CPU refaits sur la branche (fusion avec `main` sans conflit) : 124 réussis. Le brillant est identique (14 paires md5). Les 37 captures ont été ouvertes et le diff lu entièrement.
+- Corrigés : tests CPU, caméléon, finitions qu'on distingue de jour, gros plans, couleur 2, synchronisation. Le point « journal » de la 1re revue était une erreur du lead dev : l'entrée de 14:52:03 existait.
+- Bloquant 1 : le chromé (RG-06) est encore « peinture lavande », avec trop peu d'écart entre le ciel et la chaussée. De nuit, il est blanc rosé uniforme (p50 0,16 contre 0,03 pour le brillant sur la Corvette). Cause probable : une part diffuse est gardée (`col * (1 − Fm × 0,7)` et `cNuit`).
+- Bloquant 2 : les paillettes du toit noir métallisé, vu de dessus, sont trop grosses (RG-02).
+- Avis de l'agent 3D : « À REPRENDRE » (commentaire 6858885384), mêmes points. Le développeur a demandé de ne pas fusionner et il corrige.
