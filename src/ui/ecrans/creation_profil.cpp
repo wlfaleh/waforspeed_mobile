@@ -321,8 +321,7 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
         }
     };
     auto effacerTout = [&]() { const int e = genre(Touche::Effacer); for (int k = 0; k < 20; k++) appui(52, g_e.zTouches[e]); };
-    for (int i = 0; i < 30; i++) g.update(1.0 / 60);
-    g.allerA(Ecran::Menu);
+    g.allerA(Ecran::Menu);   // comme sur le téléphone : le chargement mène au menu (aucune course jouée avant)
     images(30);
     verifier(creationProfilOuverte(), "RG-01 : 1er lancement → après le chargement, écran « Crée ton pilote »");
     // RG-03 : touches de 9 mm au moins sur le téléphone de référence (2,625 px par dp, 401 ppp)
@@ -392,6 +391,7 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Menu); images(30);
     courseBenchRules(false);
     verifier(g.ecran() == Ecran::Menu && !creationProfilOuverte(), "fin → menu, sans écran de création");
+    verifier(sauvegarde().profil.courses == 1, "la course est notée dans le profil (WFS-480) : 1 course");
     WFS_LOG("création du profil (WFS-481) banc : %s", sauvegarde().profil.texte(sauvegarde().nick).c_str());
     g.shutdown();
     // 2e lancement : sauvegarde relue, plus d'écran de création (RG-01)
@@ -399,7 +399,6 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     verifier(sauvegarde().profil.cree && sauvegarde().nick == pseudo, "2e lancement : profil relu (profil=1)");
     if (g.init(r, "golf", "ville")) {
         g.setAutopilot(true);
-        for (int i = 0; i < 30; i++) g.update(1.0 / 60);
         g.allerA(Ecran::Menu); images(30);
         verifier(!creationProfilOuverte(), "RG-01 : 2e lancement → menu, plus d'écran de création");
         g.shutdown();
@@ -408,7 +407,6 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     sauvegarde().profil.cree = false; sauvegarde().nick = "Lina_77"; sauvegarde().enregistrer();
     if (g.init(r, "golf", "ville")) {
         g.setAutopilot(true);
-        for (int i = 0; i < 30; i++) g.update(1.0 / 60);
         g.allerA(Ecran::Menu); images(30);
         verifier(creationProfilOuverte() && g_e.saisie.pseudo() == "Lina_77", "RG-01 : joueur déjà installé → écran une fois, pseudo actuel proposé");
         capture("installe", "joueur déjà installé : pseudo actuel proposé, plaque d'après le pseudo");
@@ -418,7 +416,6 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     if (ui::langue::active() == ui::langue::Langue::Anglais) {
         ui::langue::viderJournal(); ui::langue::journalActif(true, "creation-profil");
         if (g.init(r, "golf", "ville")) {
-            for (int i = 0; i < 30; i++) g.update(1.0 / 60);
             g.allerA(Ecran::Menu); images(10);
             g.shutdown();
         }
