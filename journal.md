@@ -1655,3 +1655,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 22:41:03 — Statuts automatiques, CI main #1057 (robot statuts)
 - Run rouge (push, commit ae6a828), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 22:42:34 — WFS-481 fusionné par le lead dev (lead-dev)
+- PR #379, 3e revue, commit relu c216a4c3 : le défaut bloquant de la 2e revue est corrigé. `tools/qa/emulateur.sh:151` lit maintenant la ligne de la marque (`sed -n "${MARQUE}p"`). Essai avec un faux journal vérifié : 6 appuis, profil créé ; sans écran, l'étape continue.
+- 12 captures rouvertes. Construction et `tests_cpu.sh` refaits par le lead dev : 131 réussis. « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash 6adb9a71.
+- Statut 🟣 (pas de 🟡 : ce n'est ni un défaut vu par l'utilisateur, ni un ticket de conduite). L'utilisateur le verra sur l'APK de `main` (ligne ajoutée dans `qa/Check.md`).
+- Hors PR : la CI de `main` #1057 (commit ae6a828, WFS-489) est rouge sur banc-essai (texte). Le PO doit créer l'US technique P1.
