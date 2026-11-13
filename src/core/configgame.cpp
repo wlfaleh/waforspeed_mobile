@@ -171,7 +171,7 @@ std::vector<Champ> champsBoutique(ConfigJeu& c) {
         v.push_back({cle(), T::Entier, &b.dessins[i].gratuit, 0, 1, "0 / 1", "pack d'autocollants gratuit"});
     }
     // WFS-498 (RG-01, RG-02, RG-11) : gain d'une course, durée d'une course pour le banc d'équilibrage, packs de médailles
-    v.push_back({cle(), T::Entier, &b.gainCourse, 0, 100000, "★", "étoiles gagnées à la fin d'une course terminée (en attendant l'étape « score »)"});
+    v.push_back({cle(), T::Entier, &b.gainCourse, 0, 100000, "★", "secours (WFS-536) : étoiles d'une course terminée si son score ne peut pas être calculé (sinon : score_etoiles)"});
     v.push_back({cle(), T::Reel, &b.minutesParCourse, 0.1, 60, "min", "durée moyenne d'une course (banc d'équilibrage seulement)"});
     for (int i = 0; i < BOUTIQUE_MEDAILLES; i++) {
         v.push_back({cle(), T::Entier, &b.medaille[i].etoiles, 1, 1000000, "★", "étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix"});
@@ -595,7 +595,8 @@ std::string configReadme() {
         "arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; "
         "`cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.\n"
         "- **Étoiles et voitures** (section `boutique`, WFS-498) : `voitures.<id>.prix` = prix de la voiture en étoiles (0 : gratuite, "
-        "possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; "
+        "possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = **secours** (WFS-536) : étoiles données à la fin d'une course terminée "
+        "seulement si le score de la course ne peut pas être calculé (noté au journal du jeu) ; sinon, les étoiles viennent du score (section `score_etoiles`) ; "
         "`minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), "
         "qui donnent l'équivalent en médailles et en euros de chaque prix.\n"
         "- **Score en étoiles** (section `score_etoiles`, WFS-535, épic E22) : barème du score d'une course **terminée** : place ou issue "

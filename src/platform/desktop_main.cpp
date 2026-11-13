@@ -334,6 +334,7 @@ int main(int argc, char** argv) {
     if (banc == "mer") { benchMer(g, r, out); return finir(); }   // WFS-380 : vraie mer (essai local et PR)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "equilibrage") { const int e = boutique::benchEquilibrage(out); finir(); return e > 0 ? 3 : 0; }   // WFS-498 (accroche) : prix et gain, sans rendu
+    if (banc == "score-etoiles") { ui::chargerPolice(r); const int e = boutique::benchScoreEtoiles(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-536 (accroche) : ★ du score en fin de course
     if (banc == "market") { const int e = market::benchMarket(out); finir(); return e > 0 ? 3 : 0; }   // WFS-510 (accroche) : packs, livre des achats, ×2, sans rendu
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
