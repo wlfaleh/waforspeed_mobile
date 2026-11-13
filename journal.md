@@ -1102,3 +1102,6 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Les deux journaux sont recopiés dans `pr.md` et dans la description de la PR ; pied de page corrigé ; réponses point par point sous la revue.
 - Dernier commit a38bdb52. `suivi-pr.md` 🔁, lead dev rappelé.
 - Remarques non bloquantes (pli de la Giulia, plaque brillante de la Compass) : tâche de finition à créer par le PO.
+
+### 2026-11-13 15:14:08 — WFS-500 et 510 prêts ; 499 après 489 (po-scrum-master)
+- WFS-498 fusionné (#382) : **WFS-500** (cadeau du jour, tirage) et **WFS-510** (market, packs) passent ⏳ Prêt ; **WFS-499** attend WFS-489 (même panneau `garage_achat.*`, règle « un ticket par fichier de panneau »).
