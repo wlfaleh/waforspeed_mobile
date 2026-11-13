@@ -1217,7 +1217,7 @@ private:
         const vec2 u = uv(C_FARHILL);
         auto h = [&](int a, int b) { return H[(size_t)std::clamp(b, 0, nz) * (nx + 1) + std::clamp(a, 0, nx)]; };
         size_t tris = 0, cachees = 0;
-        const int T = 32;
+        const int T = 12;
         for (int tj = 0; tj < nz; tj += T) for (int ti = 0; ti < nx; ti += T) {
             const int i1 = std::min(nx, ti + T), j1 = std::min(nz, tj + T), w = i1 - ti + 1;
             std::vector<Vertex> V; std::vector<uint32_t> I;
