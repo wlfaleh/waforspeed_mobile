@@ -102,3 +102,7 @@ done
 for id in golf m4 p911 gallardo $(for v in "${VOITURES[@]}"; do echo "${v%%|*}"; done); do
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   node alleger_voiture.mjs "$RACINE/assets/cars/$id.wfm" "$RACINE/assets/cars/$id.lod" 0.3; done
+# WFS-488 : toit et coques de rétroviseurs en couleur 2 (assets/cars/<id>.pt2, tools/peinture2.json), toujours en dernier : le
+# .pt2 porte l'empreinte du maillage converti ; après une reconversion, les boîtes de peinture2.json sont à revoir si l'outil
+# s'arrête (nombre de triangles différent), sinon le .pt2 est réécrit pour le nouveau modèle
+node peinture2_voitures.mjs "$@"
