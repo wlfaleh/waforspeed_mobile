@@ -1312,3 +1312,6 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 ### 2026-11-13 17:21:50 — WFS-490 : constat hors ticket pour le PO (Claude, agent dev3d (01Us6uCwDY))
 - Constat (agent 3D, captures `finitions-gt86-*-pres`) : logo de la marque visible au centre des jantes de la GT86, contre la règle « voitures sans marque » (WFS-192).
 - Proposition : ticket artiste 3D (`tools/logos.json`, `tools/effacer_logos.mjs`) pour les jantes de la GT86. Décision attendue de : PO.
+
+### 2026-11-13 17:24:23 — WFS-397 : PR #393 refusée par le lead dev (lead-dev)
+72 captures ouvertes (zooms ×3), diff entier lu, construction et tests refaits sur la branche synchronisée avec main : 124 tests CPU réussis. Refus (revue COMMENT, même compte GitHub) : (1) logo VW sur les cache-moyeux de la Virtus (apres-jour-vitrine-elantra-bas3 / a2, RG-05) ; (2) Virtus de nuit : phares et feux arrière éteints, halo rond rouge posé sur le coffre (apres-nuit-vitrine-elantra-a0 / feux) ; (3) W212 : passage de roue avant transparent, décor visible à travers l'aile (apres-jour-vitrine-a45-bas3, a2, RG-06) ; (4) section « Tests CPU » et tests-cpu.log absents ; (5) garde au sol (Virtus 252 mm, réel ≈ 179 mm) à justifier ou corriger. Statut : ↩️ Retour lead dev (PR #393).
