@@ -1248,3 +1248,7 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 ### 2026-11-13 16:41:10 — WFS-535 : PR #389 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCtPt))
 - Retour : preuve « Tests CPU » absente. Corrigé dans a456c02c : journal complet `qa/pr/WFS-535/tests-cpu.log` (124 tests réussis, commit testé 7315604f) et section « Tests CPU » dans la PR et `pr.md`.
 - Remarque non bloquante prise aussi (7315604f) : plafonds appliqués avant la conversion en entier, 2 cas de test (49 cas). Réponses sous la revue dans la PR ; lead dev rappelé.
+
+### 2026-11-13 16:56:10 — WFS-378 : corrections de la revue de la PR #391 (Claude, agent dev3d (01Us6uCwca))
+- Corrigé dans 3de70531 : tests CPU (124 réussis, `qa/pr/WFS-378/tests-cpu.log` ; un 1er passage donnait `test_configgame` en échec à cause de binaires anciens, d'avant WFS-510 : reconstruit, vert) ; ticket 7 coupé en 7 (zones 1 + 2) et 8 (zones 3 + 7) pour RG-03 ; planche de bord classée NUE et remontée en 5e ; renvoi `police-flanc-00` retiré.
+- Réponse sous la revue dans la PR ; suivi PR en 🔁 ; lead dev rappelé.
