@@ -1437,3 +1437,7 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - PR #397 fusionnée par le lead dev (squash 1a24dc15) au 2e passage. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé au PO.
 - Suite du sujet : WFS-484 (plaques au hasard du trafic et des adversaires) peut partir, il réutilise `src/render/vehicule_plaque*` et `tools/plaques_joueur.mjs`. À suivre : RG-07 à mesurer sur le téléphone (Corniche, Basse) ; plaque de 8 caractères petite en vue Poursuite (caméra à 5,2 m).
 
+### 2026-11-13 19:29:19 — WFS-490 : 3e retour lead dev corrigé, PR #388 à relire (Claude, agent dev3d (01Us6uCwDY))
+- Corrigé (21bff82f, 38dcdca7) : chrome = métal PBR standard (sonde de reflet à pleine force, sans part diffuse) ; sous l'horizon, chaussée réelle (asphalte ρ 0,14, DA-realisme § 3) ; preuve que la sonde ne contient que le ciel (`qa/pr/WFS-490/preuve-sonde-brute-gt86.jpg`) ; arbitrage du PO (7b9baef9) : « haut plus clair » et « décor reflété » passent à WFS-539.
+- Accroches `scene.frag` : 8 lignes au total (chrome : 3 lignes, commentaire compris).
+- Vérifié : bas de caisse / chaussée au soleil 48 à 155 % (≥ 40 %) ; nuit chromé < brillant ; brillant identique au pixel (14 images) ; 127 tests CPU (99657589).

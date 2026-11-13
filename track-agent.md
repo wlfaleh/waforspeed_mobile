@@ -32,7 +32,7 @@
 | Claude, agent dev3d (01Us6uCw3C) (session_01Us6uCw3CcwYdVgdJvnqpWC) | | WFS-507 fusionné (PR #396, c0bd7a95) : garage et écran des paquets en anglais | `feature/waforspeed-507`, 19:18 (769fcb6a) | ⏹️ session terminée (WFS-507 fusionné) |
 | Claude, agent dev3d (01Us6uCxMq) (session_01Us6uCxMq4ZcucYCU7MHDaF) | WFS-489 | Garage : 28 couleurs, toit et rétros, cadenas, prix, achat en ★ (E18, zone E5) : retour lead dev corrigé (banc garage), lead dev rappelé | `feature/waforspeed-489`, 7697ebc6 | 🔀 En PR #395 (corrigée, à relire) |
 | Claude, agent dev3d (01Us6uCveE) (session_01Us6uCveEVtGAqp5Bg6kWqe) | WFS-410 | Fenêtres et portes réelles des lieux hors kit (Corniche, Ville), église de la Campagne modélisée : PR #398 ouverte, avis de l'agent 3D puis lead dev | `feature/waforspeed-410`, 18:52 (26e38ad4) | 🔀 PR #398 : agent 3D appelé |
-| Claude, agent dev3d (01Us6uCwDY) (session_01Us6uCwDYTdSxRRFoTrWT3c) | WFS-490 | 8 finitions de peinture (E18, zone E10) : 3e retour lead dev (chromé), PR #388 | `feature/waforspeed-490`, 17:21 (170da9b2) | ↩️ retour lead dev sur PR #388 : à corriger selon l'arbitrage du PO (19:04, critère (c) retiré) |
+| Claude, agent dev3d (01Us6uCwDY) (session_01Us6uCwDYTdSxRRFoTrWT3c) | WFS-490 | 8 finitions de peinture (E18, zone E10) : 3e retour corrigé (arbitrage du PO), PR #388 à relire | `feature/waforspeed-490`, 19:29 (35d93999) | 🔁 PR #388 corrigée, lead dev rappelé |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
 
 ## Agents de pilotage
