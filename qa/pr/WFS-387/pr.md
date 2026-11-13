@@ -64,7 +64,7 @@ Agent : Claude, agent dev3d (01UY1Vv43z)
   5. sol lointain dans une case à lui, kaki d'herbe sèche 0x8f8c5e (comme les bandes voisines), au lieu du vert vif des collines ;
   6. `inventaire.md` : teintes alignées sur le code.
 - **Comment c'est vérifié** :
-  - **tests CPU** : `bash tools/qa/tests_cpu.sh build` → **120 test(s) réussi(s)** (branche synchronisée avec `main`, avant la reprise ; `test_decor_campagne` et `test_muret_campagne` relancés après : OK), dont `test_decor_campagne` et `test_muret_campagne` (coin de la voiture arrêté entre 7,99 et 8,07 m pour une face visible à 8,00 m) ;
+  - **tests CPU** : `bash tools/qa/tests_cpu.sh build` → **120 test(s) réussi(s)** (après la reprise, commit df2cf297), dont `test_decor_campagne` et `test_muret_campagne` (coin de la voiture arrêté entre 7,99 et 8,07 m pour une face visible à 8,00 m) ;
   - **captures** : bancs `campagne-objets`, `campagne` (jour et nuit) et `course5` (vues de dessus), lavapipe comme la CI, avant `main` et après branche (tableau ci-dessous) ;
   - **taille du décor (≤ 700 Mo)** : `du -cb assets/world/animaux/{vache,cheval,mouton}.wfa assets/world/feuillage.png` = **2 906 962 octets (2,9 Mo)** ; le reste du décor est construit par le code au chargement (aucun fichier ajouté par ce ticket) ;
   - **performance, banc `perf` en Basse** (`WFS_BANC=perf WFS_PERF_CARTE=campagne`, lavapipe, `main` et branche lancés l'un après l'autre, en alternance) :
