@@ -79,5 +79,8 @@ std::vector<std::string> verifierEquilibrage(const Equilibrage& e);
 
 // ---- journal (bancs)
 std::vector<std::string> bilanPortefeuille(const Sauvegarde& s);   // solde, voitures possédées, essais faits
+// banc WFS_BANC=equilibrage (sans rendu, < 1 s) : configgame.json lu, lignes au journal et dans <out>/equilibrage.txt ;
+// rend le nombre d'écarts aux bornes de RG-11 (0 : équilibré)
+int benchEquilibrage(const std::string& out);
 
 } // namespace wfs::boutique
