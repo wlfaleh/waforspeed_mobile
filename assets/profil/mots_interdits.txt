@@ -1,0 +1,256 @@
+# WaForSpeed — mots interdits du pseudo et de la plaque (WFS-480, RG-04).
+# Liste écrite pour le jeu (aucune liste extérieure recopiée), français et anglais : insultes, injures racistes,
+# sexuelles, homophobes et haineuses, régimes et organisations criminelles.
+# Un mot par ligne. Comparaison sans majuscules, sans accents, chiffres « leet » ramenés aux lettres, espaces,
+# tirets et tirets bas retirés ; un mot refusé s'il est CONTENU dans le texte.
+# Les mots très courts qui se trouvent dans des mots courants (con, cul, ass, tit, anal, nique, chier…) ne sont pas
+# listés : ils refuseraient des pseudos normaux (Conor, Calcul, Classe, Technique, Fichier…).
+# Lignes « + mot » : liste blanche (mots courants qui contiennent un mot interdit et restent acceptés).
+
+# ---- insultes (français)
+connard
+connasse
+conasse
+abruti
+debile
+cretin
+imbecile
+batard
+filsdepute
+fdp
+niquer
+niquetamere
+niktamer
+nikta
+ntamere
+encule
+enculer
+enculee
+salaud
+salopard
+salope
+salop
+ordure
+pourriture
+trouduc
+troudcul
+merde
+merdeux
+enfoire
+pouffiasse
+grognasse
+petasse
+garce
+couillon
+branleur
+branleuse
+gogol
+triso
+attarde
+sousmerde
+sacamerde
+tafiole
+casse toi
+ferme ta gueule
+tagueule
+
+# ---- insultes (anglais)
+fuck
+fck
+fucker
+motherfucker
+shit
+bullshit
+asshole
+arsehole
+bastard
+bitch
+biatch
+cunt
+dickhead
+twat
+wanker
+jackass
+dumbass
+cocksucker
+douchebag
+scumbag
+shithead
+piss off
+pissoff
+goddamn
+sonofabitch
+
+# ---- sexuel (français)
+pute
+putain
+putasse
+nichon
+couille
+bite molle
+vagin
+penis
+fellation
+sodomie
+sodomite
+branlette
+masturbe
+masturbation
+orgasme
+partouze
+porno
+pornographie
+sexe
+baiseur
+pedophile
+pedophilie
+zoophile
+inceste
+violeur
+proxenete
+prostituee
+
+# ---- sexuel (anglais)
+pussy
+dick
+cock
+whore
+slut
+porn
+xxx
+sex
+blowjob
+handjob
+jizz
+dildo
+orgasm
+milf
+hentai
+boobs
+tits
+titties
+rapist
+raping
+paedophile
+incest
+nudes
+horny
+
+# ---- homophobe et transphobe
+tarlouze
+tantouze
+tapette
+fiotte
+gouine
+travelo
+faggot
+tranny
+dyke
+
+# ---- raciste et antisémite (les deux langues)
+nigger
+nigga
+negre
+negro
+bougnoule
+bougnoul
+bicot
+youpin
+youtre
+chinetoque
+bamboula
+salearabe
+salenoir
+salejuif
+sandnigger
+wetback
+raghead
+towelhead
+kike
+gook
+beaner
+porchmonkey
+junglebunny
+coolie
+
+# ---- haine, régimes et organisations criminelles
+nazi
+neonazi
+nazisme
+hitler
+adolfhitler
+heilhitler
+siegheil
+sieg heil
+gestapo
+waffenss
+swastika
+croixgammee
+fuhrer
+ss nazi
+kukluxklan
+kkk
+whitepower
+whitepride
+1488
+daesh
+daech
+alqaida
+alqaeda
+bokoharam
+jihadiste
+taliban
+jihadist
+terroriste
+terrorist
+genocide
+holocauste
+gaschamber
+chambreagaz
+mafia
+cosanostra
+camorra
+ndrangheta
+yakuza
+ms13
+
+# ---- liste blanche : mots courants qui contiennent un mot interdit
++ Scunthorpe
++ classe
++ Bassin
++ Montenegro
++ Negresco
++ cocktail
++ cocker
++ peacock
++ Hitchcock
++ Hancock
++ Babcock
++ Dickens
++ Dickson
++ Dickinson
++ dispute
++ computer
++ depute
++ reputation
++ imputer
++ amputer
++ Essex
++ Sussex
++ Wessex
++ Middlesex
++ therapist
++ salopette
++ shiitake
++ shitake
++ Penistone
++ Heiligen
++ Heilbronn
++ cockpit
++ Negroni
++ Pornic
++ Peniscola
++ Puteaux
++ Sexton
++ Milford
++ Van Dyke

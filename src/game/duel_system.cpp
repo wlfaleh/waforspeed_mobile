@@ -15,6 +15,7 @@
 #include "game.h"
 #include "player.h"
 #include "roues.h"   // WFS-452 : roues des adversaires qui tournent et braquent
+#include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-122 (RG-01) : derniers adversaires
 #include "traffic_system.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
@@ -101,8 +102,10 @@ public:
                 // (équité réseau) ; chaque téléphone le calcule pour son joueur, rien de plus n'est envoyé
                 if (pl.dist < s.finish()) pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, 0);
             }
-            if (s.raceTick(dt, pl, c->raceTime))
+            if (s.raceTick(dt, pl, c->raceTime)) {
                 WFS_LOG("duel : arrivée en %.2f s, position %d/%d", s.myFinish(), s.position(pl.dist), (int)s.board(pl.dist).size());
+                CourseJouee rc; rc.mode = ModeJoue::Duel; rc.victoire = s.position(pl.dist) == 1; profilNoterResultat(rc);   // WFS-480 : gagné / perdu
+            }
         }
         s.updateGhosts(dt);
         if (g.track) for (const auto& [id, gh] : s.ghosts())   // WFS-452 (RG-03) : braquage des roues avant d'après le vrai mouvement
