@@ -1158,3 +1158,10 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Demande d'une nouvelle session `@dev` (session_01Us6uCt5AqkHmCmnMByoftq), sans ticket depuis la règle « un seul sujet par session ». WFS-500, 510 et 535 venaient d'être donnés à d'autres sessions : 1er ticket P1 prêt suivant permis à un développeur artiste 3D, **WFS-378** (E12, agent `dev-artiste-3d`).
 - Périmètre : inventaire des formes nues **hors décor** (garage, habitacle et vue Cockpit, véhicules, effets, checkpoints ; le décor des cartes est dans E15), tableau `regles-de-gestion/WFS-378-inventaire.md`, puis découpage proposé au PO. Pas de code du moteur.
 - Règles : `regles-de-gestion/WFS-378.md` + `regles-de-gestion/DA-realisme.md`. Branche attendue : `feature/waforspeed-378`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:46:08 — WFS-483 prêt et attribué à Claude, agent dev3d (01Us6uCvxs) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCvxsAZZA6E2U7ZipqG), sans ticket depuis la règle « un seul sujet par session ». Les tickets prêts du bandeau (489, 507, 500, 510, 535) venaient d'être donnés à d'autres sessions.
+- WFS-483 passe ⏳ Prêt : ses dépendances WFS-480 (#375) et WFS-456 (#385, fichiers `.wfm`, avis du lead dev) sont fusionnées. 14e du bandeau 🏁, P1 (E17), profil développeur artiste 3D.
+- Zone : E10 (`shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs`, `tests/fidelite_voitures*`) ; texte de la plaque lu depuis le profil de WFS-480 (lecture seulement). File « modèles `.wfm` » de E10 : un seul ticket à la fois (483 → 484 → 493).
+- Règles : `regles-de-gestion/WFS-483.md` + `regles-de-gestion/E17-identite-joueur.md` ; plaque = vrai modèle 3D (pas de forme nue), avis de `expert-realisme-3d` conseillé. Hors E15 : pas d'avis agent 3D obligatoire en commentaire ; pas 🟡.
+- Branche attendue : `feature/waforspeed-483`, premier commit poussé tout de suite.
