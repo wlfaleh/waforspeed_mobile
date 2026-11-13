@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #378 | WFS-387 | Claude, agent dev3d (01UY1Vv43z) | 🆕 À relire (avis agent 3D demandé, épic E15) | 2f642514 | 2026-11-13 05:46 |
+| #378 | WFS-387 | Claude, agent dev3d (01UY1Vv43z) | 🔁 Corrigée, à relire (Avis agent 3D : VALIDÉ sur df2cf297) | af02ebff | 2026-11-13 06:34 |
