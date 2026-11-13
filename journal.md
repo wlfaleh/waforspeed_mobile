@@ -1672,3 +1672,33 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Relu au commit 6f04868c. J'ai construit et testé moi-même : 131 tests CPU réussis. J'ai ouvert les 19 captures et lu tout le diff. Code et rendu bons : Rallye propre sur les 6 voitures, aucune couture (RG-04), sans skin = même rendu au bit près (code), aucune skin sur le fantôme ni le trafic. Écarts acceptés : EAC RG11, couleurs dans le shader, projection, accroches.
 - Ce qui bloque : (1) pas de capture « Tests CPU » ni de `qa/pr/WFS-492/tests-cpu.log` (règle du 2026-11-11) ; (2) la planche `peinture2-planche` ne montre qu'une voiture sur 17 (le reste est noir) : il faut un avant / après sans skin sur 3 voitures ; (3) le parcours RC-E18-09 (version réduite par la sauvegarde) et le parcours « 0 écart » ne sont pas au journal.
 - Revue postée en commentaire (même compte GitHub). TACHES et track-agent passés en « ↩️ Retour lead dev (PR #400) ».
+
+### 2026-11-13 22:47:06 — WFS-537 : PR #402 ouverte (Claude, agent dev3d (01UY1Vv4Hv))
+- Fait : carte « SCORE » à droite du panneau de fin des 4 modes (lignes, total, « +N ★ » compté en 0,8 s, nouveau solde, « Nouveau record ! »), compteur ★ du menu à gauche de « Réglages » (appui → garage), textes FR / EN.
+- Vérifié : banc `score-fin` vert en 2400 × 1080 et 1280 × 720 (4 modes FR et EN, menu 0 / 250 / 12 450 ★, parcours, appui → garage, course quittée, garde-fous WFS-504) ; tests CPU 131 / 131 ; banc `parcours` 0 écart ; banc `textes-course` VERT ; 38 captures dans `qa/pr/WFS-537/`.
+- Constat (pas de mon fait) : banc `textes-menus` : 4 échecs de parcours salon / Crédits, identiques sur `main` (CI #1054 rouge, groupe texte).
+- Limite : pas encore de lien avec TalkBack (texte du lecteur d'écran prêt, non envoyé à Android).
+
+### 2026-11-13 22:53:36 — Vidéos de l'utilisateur 23:48 et 23:49 (Poursuite, joueur coincé) : ANO-267 à 271 (qa-lead)
+- Images `qa/retours/2026-11-13-video2348-police-coince/` et `…video2349-police-coince/` ouvertes une par une.
+- ANO-267 (bloquante) joueur coincé à 6,50 km, gaz appuyé ; ANO-268 (bloquante) poursuite sans fin, pas d'arrestation, score −1/s ; ANO-269 (bloquante) SUV du trafic en travers 75 s + bouchon ; ANO-270 (bloquante) voitures du trafic qui se traversent et traversent la caméra ; ANO-271 (bloquante) recul « R » à 31 km/h sans frein.
+- Avis QA : **WFS-461 KO** (RG-01, RG-02, RG-04, RG-06 non tenues sur l'APK de `main`) ; RG-03 (police ≤ 208 km/h) non vérifiable sur ces vidéos (police à l'arrêt). Tickets à créer par le PO.
+
+### 2026-11-13 22:55:15 — Vidéos de l'utilisateur (Poursuite coincée) : WFS-461 refusé, WFS-540 et WFS-541 créés (po-scrum-master)
+- Deux vidéos de l'utilisateur (APK de `main`, S21 FE, Corniche, nuit, Poursuite, « c'est quoi ce bordel ») ; images dans `qa/retours/2026-11-13-video234*-police-coince/` (87e4354) ; constats du QA : ANO-267 à 271, toutes bloquantes (28af368).
+- **WFS-461 (#369) ❌ Refusé par l'utilisateur** : voiture coincée par la police ≈ 80 s, poursuite sans fin, « R » sans frein (RG-01, 02, 04 non tenues). Règle du KO : nouvelles US, pas la session 01UY1Vv1A7.
+- **WFS-540** (P1, `@conduite`) : plus de police collée de force, le joueur repart toujours, arrestation si < 5 km/h pendant 4 s à < 8 m (décision du PO, ANO-268 : il manquait la règle ; l'utilisateur peut la changer), pénalité seulement au vrai contact, pas de « R » sans frein. ANO-267, 268, 271.
+- **WFS-541** (P1, `@conduite`, en parallèle) : voiture du trafic heurtée qui se remet en route (ou retirée hors de la vue en 8 s), plus de voitures qui se traversent. ANO-269, 270.
+- Les deux en tête de tous les tickets prêts (bandeau 🚔 de `TACHES.md`), aux deux premières nouvelles sessions `@conduite`.
+
+### 2026-11-13 23:05:07 — WFS-491 : PR #401 refusée par le lead dev (lead-dev)
+- Commit relu : 3a13f65d. 36 captures ouvertes, tout le diff lu, branche construite et testée (131 tests CPU réussis). Banc `garage-finitions` relancé en 1024x768 (0 écart) et en 1280x800.
+- Bon en 1280x720 : rangée, prix par classe, aperçu (Caméléon, Mat, Candy, Chromé), refus sans débit, achat pour une seule voiture, parcours RC-E18-09, relance, courses jour et nuit.
+- Bloquant : (1) en 4:3, les noms des finitions débordent sur le bouton voisin et sont illisibles (`garage_finition.cpp:85-92`) ; (2) police réduite de 33 % (12 → 8 px) alors que E20 en permet 20 % au plus ; (3) RC-E18-03 (endurance avant / après) pas mesurée.
+- Revue postée dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #401).
+
+### 2026-11-13 23:07:29 — WFS-537 : PR #402 refusée par le lead dev (lead-dev)
+- 44 captures ouvertes (avant / après), diff complet lu, branche fusionnée avec `main` en local, construite, `tests_cpu.sh` : 132 tests réussis.
+- **Bloquant** : branche en retard sur `main` (WFS-481 #379 absent). Une fois synchronisée, banc `score-fin` (1280 × 720) rouge, 8 écarts : le banc part d'une sauvegarde neuve, l'écran « Crée ton pilote » cache le menu, donc pas de compteur (RG-07) et pas d'appui vers le garage (RG-09). À corriger : synchroniser, créer le profil dans le banc, régénérer les captures et les tests.
+- Écrans de fin des 4 modes et menu (avant la fusion de main) : conformes (carte SCORE à côté du panneau, boutons inchangés, FR / EN).
+- Pour le PO (hors zone de WFS-537) : (1) Poursuite : « Zéro choc » dans le score alors que le panneau affiche 1 choc trafic (WFS-536 compte bumps + accidents) ; (2) course solo : « NOUVEAU RECORD » sur le panneau mais « 1re course » dans le score ; (3) menu en anglais : « BEST 10 050 » avec le séparateur français.
