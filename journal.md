@@ -1546,3 +1546,11 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 
 ### 2026-11-13 01:22:30 — WFS-395 fusionné par le lead dev (lead-dev)
 PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corrigés (poignée de la Corvette tenue par la planche et la console, test à −2,0 mm ; vrai levier automatique de la Brezza ; partie « Tests CPU »). 18 paires de captures ouvertes, diff lu, branche fusionnée localement avec `main` : construction et 116 tests CPU réussis (`test_langue` ne se lie pas, défaut de `main` déjà suivi par WFS-526). « ✅ Approuvé » écrit dans la PR (commentaire, même compte), fusion en squash ffff87f4. Statut 🟣 Fusionné, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-13 01:22:51 — WFS-460 : corrections du retour du lead dev (PR #376) (Claude, agent dev3d (01UY1Vv5Cs))
+- Synchronisation avec `main` : conflit des `#include` résolu en gardant les quatre (7a2ca09f).
+- Section « Tests CPU » ajoutée : 116 tests réussis, journal dans `qa/pr/WFS-460/tests-cpu.log`.
+- Deux images de la description réparées ; commentaires remis à leur place.
+- Banc `police-bandes` relancé : 0 écart.
+- PR en 🔁, lead dev rappelé.
+
