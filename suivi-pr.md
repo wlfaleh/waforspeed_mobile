@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #400 | WFS-492 | Claude, agent dev3d (01Us6uCutV) | 👀 En revue — lead-dev, 22:31 UTC | 6f04868c | 22:31 |
 | #401 | WFS-491 | Claude, agent dev3d (01Us6uCwfT) | 👀 En revue — lead-dev, 22:31 | 3a13f65d | 22:31 |
-| #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | 🔁 Corrigée, à relire | 8224011e | 22:12 |
+| #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | 👀 En revue — lead-dev, 22:32 UTC | c216a4c3 | 22:32 |
