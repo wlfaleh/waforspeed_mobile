@@ -85,8 +85,13 @@ void benchPeinture2(Game& g, Renderer& r, const std::string& out) {
         g.orbit = std::atan2(e.x, e.z); g.orbitRecul = std::sqrt(e.x * e.x + e.z * e.z); g.orbitHauteur = e.y;
     };
     const float h0 = g.orbitHauteur, r0 = g.orbitRecul;
-    for (const char* id : {"p208", "gt86", "mustang"}) {
-        if (std::find(ids.begin(), ids.end(), id) == ids.end() || !preparer(id, "ville", NOIR)) continue;
+    // gros plans : 208, GT86, Corvette (ticket) ; WFS_PEINTURE2_GROS_PLANS="id …" : autres voitures (essai local), toit Blanc
+    std::vector<std::string> gros{"p208", "gt86", "mustang"};
+    const char* autres = std::getenv("WFS_PEINTURE2_GROS_PLANS");
+    if (autres) { gros.clear(); std::istringstream is(autres); std::string id; while (is >> id) gros.push_back(id); }
+    for (const std::string& idg : gros) {
+        const char* id = idg.c_str();
+        if ((!autres && std::find(ids.begin(), ids.end(), idg) == ids.end()) || !preparer(idg, "ville", autres ? BLANC : NOIR)) continue;
         viser(4.0, -3.2, 2.3); capture(std::string("peinture2-") + id + "-34");
         viser(1.2, -0.9, 5.2); capture(std::string("peinture2-") + id + "-dessus");
         if (g_modele && g_modele->retroMesure[0]) { grosPlan((g_modele->retroMin[0] + g_modele->retroMax[0]) * 0.5f, 0.75f); capture(std::string("peinture2-") + id + "-retro"); }
