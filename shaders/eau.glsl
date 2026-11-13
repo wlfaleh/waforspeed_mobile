@@ -197,8 +197,8 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
             float doigt = eauBruit(vec2(uj * 11.0, 0.7)) * 0.5 + eauBruit(vec2(uj * 27.0, 2.3)) * 0.3 + eauBruit(vec2(uj * 63.0, 4.9)) * 0.2;
             float haut = 0.15 + 0.85 * pow(eauBruit(vec2(uj * 17.0, 8.3)), 1.5) * (0.5 + doigt);   // hauteur du jet, très variable
             float vh = v / max(haut, 0.05);
-            float pied = 0.12 + 0.2 * eauBruit(vec2(u * 13.0, 6.6));                                // base de la nappe irrégulière
-            float nappeC = (1.0 - smoothstep(pied, pied + 0.25, v)) * smoothstep(0.0, 0.08, v) * 0.35;
+            float pied = 0.04 + 0.22 * eauBruit(vec2(u * 13.0, 6.6)) + 0.14 * eauBruit(vec2(u * 47.0, 1.9));   // haut de la nappe déchiré
+            float nappeC = (1.0 - smoothstep(pied, pied + 0.18, v)) * smoothstep(0.0, 0.08, v) * 0.26;
             // jet : s'amincit en montant (le seuil monte avec la hauteur), se défait en gouttes avant son sommet
             float jet = smoothstep(0.48 + 0.25 * vh, 0.6 + 0.25 * vh, doigt) * (1.0 - smoothstep(0.45, 0.85, vh)) * smoothstep(0.0, 0.12, v) * 0.6;
             // gouttes : une par cellule au plus (36 autour, 9 en hauteur), au-dessus du tiers de la gerbe et jusqu'au-dessus des jets
