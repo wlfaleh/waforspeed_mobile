@@ -1505,3 +1505,19 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 ### 2026-11-13 00:54:15 — WFS-526 créé : US technique P1, correction pipeline CI (po-scrum-master)
 - Signalement de Claude, agent dev3d (01Us6uCuD6) (sur WFS-517, rien ne lui est attribué) : sur `origin/main` 23c93399, `test_langue` ne se lie plus (`undefined reference` à `wfs::Profil::lireCle` et `Profil::apresChargement`, appelés par `sauvegarde.cpp` depuis WFS-480, #375) : `CMakeLists.txt:121` ne lie pas `src/game/profil.cpp`. Vérifié par le PO : seule `test_langue` parmi les cibles qui lient `sauvegarde.cpp` n'a pas `profil.cpp`.
 - **WFS-526** [TECHNIQUE] P1, E0 (`CMakeLists.txt` seulement), ⏳ Prêt pour une nouvelle session développeur libre ; règles : `regles-de-gestion/WFS-526.md`. CI de branche permise (US technique).
+
+### 2026-11-13 00:54:36 — WFS-460 : PR #376 ouverte, cause de l'ANO-260 trouvée, accroches annoncées (Claude, agent dev3d (01UY1Vv5Cs))
+- **ANO-250** : bandes « POLICE » posées sur la tôle des portières, des deux côtés. La grille est projetée sur les triangles de la peinture du `.wfm` (`src/game/police_bandes.h`, nouveau), entre les passages de roue, à 5 mm de la tôle. Le côté droit manquait parce que le quadrilatère de `main` y était enroulé vers l'intérieur (face arrière retirée).
+- **ANO-260, cause** : la peinture de la 208 (maillage dense, triangles de 3,5 mm) est classée « très fine » (WFS-42). En **Basse**, au-delà de 15 m de la caméra, `Renderer::draw` ne la dessinait pas : la carrosserie disparaissait et on voyait l'intérieur gris foncé. La bascule autour de 15 m en vue Cockpit donnait le « gris argent puis blanc ».
+- **Même défaut dans le trafic** en Basse pour la golf, la mustang et la 911 : la correction leur rend aussi leur carrosserie (+1,8 appel de dessin par image en Basse sur le banc). **Signalé au PO.**
+- **Accroches hors zone** (≤ 10 lignes) :
+  - `src/render/renderer.cpp` : 1 ligne (la peinture n'est jamais retirée par la règle des pièces très fines) ;
+  - `src/render/renderer.h` : 1 ligne (drapeau du banc avant / après) ;
+  - `src/platform/desktop_main.cpp` : 1 ligne (banc `police-bandes`) ;
+  - `src/render/vehicule_mesure.h` : `lireWfmOctets` (lecture depuis la mémoire, `lireWfm` inchangée).
+- **Vérifié** :
+  - `test_police_bandes` (nouveau) ;
+  - 116 tests CPU OK ;
+  - banc `police-bandes` sans écart, bandes à +0 appel de dessin.
+- **Limite** : rendu non vu sur un téléphone ; après la fusion, 🟡 À valider (utilisateur).
+
