@@ -209,6 +209,23 @@ int main(int argc, char** argv) {
         VERIFIER(!s.profil.cree && s.profil.plaque.empty() && s.profil.courses == 0 && s.profil.parVoiture.empty());
         VERIFIER(s.profil.dernieres.size() == 1 && s.profil.dernieres[0].date == 10);   // trous retirés
     }
+    // ---- WFS-536 (RG-03) : ★ gagnées en fin de ligne de l'historique ; lignes d'avant (8 champs) lues sans erreur
+    {
+        { std::ofstream f(chemin, std::ios::binary);
+          f << "version=1\nhistorique-01=course5;golf;30;0;0;3;91000;0;14\nhistorique-02=checkpoint;golf;20;1;0;0;0;5;0\n"
+               "historique-03=poursuite;m4;10;0;1;0;0;800\nhistorique-04=duel;m4;5;0;1;0;0;0;abc\n"; }
+        Sauvegarde s; VERIFIER(s.charger(chemin));
+        VERIFIER(s.profil.dernieres.size() == 4);
+        VERIFIER(s.profil.dernieres[0].etoiles == 14 && s.profil.dernieres[0].place == 3);   // nouvelle ligne : 14 ★
+        VERIFIER(s.profil.dernieres[1].etoiles == 0 && s.profil.dernieres[1].quittee);        // quittée : 0 ★
+        VERIFIER(s.profil.dernieres[2].etoiles == -1 && s.profil.dernieres[2].score == 800); // ligne d'avant : ★ inconnues, rien perdu
+        VERIFIER(s.profil.dernieres[3].etoiles == -1 && s.profil.dernieres[3].victoire);     // ★ mal écrites : inconnues, ligne gardée
+        s.enregistrer(); s.attendre();
+        const std::string c = lireFichier(chemin);
+        VERIFIER(c.find("historique-01=course5;golf;30;0;0;3;91000;0;14\n") != std::string::npos);
+        VERIFIER(c.find("historique-03=poursuite;m4;10;0;1;0;0;800\n") != std::string::npos);   // inconnues : pas de 9e champ écrit
+        std::printf("WFS-536 : historique relu et réécrit avec les ★ :\n%s", c.c_str());
+    }
     std::remove(chemin.c_str());
 
     if (g_echecs) { std::printf("test_profil : %d échec(s)\n", g_echecs); return 1; }
