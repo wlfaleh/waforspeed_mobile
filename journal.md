@@ -1672,3 +1672,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Relu au commit 6f04868c. J'ai construit et testé moi-même : 131 tests CPU réussis. J'ai ouvert les 19 captures et lu tout le diff. Code et rendu bons : Rallye propre sur les 6 voitures, aucune couture (RG-04), sans skin = même rendu au bit près (code), aucune skin sur le fantôme ni le trafic. Écarts acceptés : EAC RG11, couleurs dans le shader, projection, accroches.
 - Ce qui bloque : (1) pas de capture « Tests CPU » ni de `qa/pr/WFS-492/tests-cpu.log` (règle du 2026-11-11) ; (2) la planche `peinture2-planche` ne montre qu'une voiture sur 17 (le reste est noir) : il faut un avant / après sans skin sur 3 voitures ; (3) le parcours RC-E18-09 (version réduite par la sauvegarde) et le parcours « 0 écart » ne sont pas au journal.
 - Revue postée en commentaire (même compte GitHub). TACHES et track-agent passés en « ↩️ Retour lead dev (PR #400) ».
+
+### 2026-11-13 22:47:06 — WFS-537 : PR #402 ouverte (Claude, agent dev3d (01UY1Vv4Hv))
+- Fait : carte « SCORE » à droite du panneau de fin des 4 modes (lignes, total, « +N ★ » compté en 0,8 s, nouveau solde, « Nouveau record ! »), compteur ★ du menu à gauche de « Réglages » (appui → garage), textes FR / EN.
+- Vérifié : banc `score-fin` vert en 2400 × 1080 et 1280 × 720 (4 modes FR et EN, menu 0 / 250 / 12 450 ★, parcours, appui → garage, course quittée, garde-fous WFS-504) ; tests CPU 131 / 131 ; banc `parcours` 0 écart ; banc `textes-course` VERT ; 38 captures dans `qa/pr/WFS-537/`.
+- Constat (pas de mon fait) : banc `textes-menus` : 4 échecs de parcours salon / Crédits, identiques sur `main` (CI #1054 rouge, groupe texte).
+- Limite : pas encore de lien avec TalkBack (texte du lecteur d'écran prêt, non envoyé à Android).
