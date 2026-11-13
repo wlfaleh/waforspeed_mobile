@@ -1720,3 +1720,7 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Refus pour 2 preuves manquantes : (1) section « Tests CPU » et `qa/pr/WFS-488/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) critère « endurance en Basse ≤ 1 img/s » (RC-E18-03) non mesuré : à lancer `main` / branche avec une couleur 2 posée, moyenne et 1 % bas.
 - Choix validés : fichier `.pt2` à côté du `.wfm` (empreinte FNV, secours une seule couleur), marque par la longueur de la normale (aucun shader de voiture ne lit cette longueur), couleur 2 dans `pc.color.w` (ombre et prépasse non touchées : test d'alpha seulement sur `MAT_MASK`), toits noirs d'origine repeints au pixel, RG-03 voiture par voiture. Accroches hors zone ≤ 10 lignes chacune.
 - Remarques non bloquantes : brancher `peinture2_voitures.mjs` (ou `--verifier`) dans `convertir_voitures.sh` ; écrire « mustang = Corvette » dans le README des captures ; commentaire « voitures rigides seulement » dans `scene_skin.frag`. Pour le PO : ondulations d'origine du pavillon de la GT86, très visibles avec un toit noir (anomalie de forme E10, hors ticket).
+
+### 2026-11-13 10:20:26 — Statuts automatiques, bancs du matin #27 (robot statuts)
+- Run rouge (schedule, commit e4a9d28), aucun statut changé. Job(s) en échec : tests CPU et licences.
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-480, WFS-487, WFS-504, WFS-395.
