@@ -1436,3 +1436,8 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Revue (commit a9a4ea6a) : construction et tests CPU refaits (116 réussis, test_personnalisation 40/40) ; 16 paires de captures ouvertes (garage identique au pixel, vitrines sauvegarde RG-03 / RG-07 justes) ; diff lu en entier.
 - **Bloquant** : `src/game/sauvegarde.cpp:98`, `Sauvegarde::defauts()` : `map`, `tod`, `moment`, `quality`, `qualityChoisie`, `cam` passés par erreur dans un commentaire, donc plus remis au défaut (`desactiver()` des bancs, `lire()` sans la clé) ; prouvé par un petit programme. Correction et test demandés. Remarque : commentaire WFS-24 déplacé dans `course_system.cpp`.
 - Statut : ↩️ Retour lead dev (PR #373) dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
+
+### 2026-11-13 00:22:42 — WFS-395 : PR #374 refusée par le lead dev (lead-dev)
+- Revue (commit f926f3a5) : 36 captures ouvertes (bancs cockpit et cockpit-vitrine), tout le diff lu, construction et tests CPU refaits (115 réussis). Habitacles nettement meilleurs que main, code propre (réutilise les outils du lot 1 de WFS-325).
+- **Bloquant** : (1) Corvette : poignée de maintien du passager qui flotte à 3 cm de la console, pied bas dans le vide (`vehicule_cockpit_details.cpp:437-443`) ; (2) Brezza : levier de boîte automatique réduit à une boule sur une tige, sans soufflet (`:478-484`, RG-04) ; (3) capture « Tests CPU » et `qa/pr/WFS-395/tests-cpu.log` absentes (règle du 2026-11-11).
+- Revue postée en COMMENT (même compte GitHub). Statut : ↩️ Retour lead dev (PR #374) dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
