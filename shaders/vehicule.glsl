@@ -201,9 +201,9 @@ void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float 
     } else if (fin == FIN_SATINE) {
         metal = 0.0; rough = FIN_SATINE_RUGOSITE;
     } else if (fin == FIN_CHROME) {
-        // chrome teinté : réflectance 0,60 × teinte (60 % de la couleur choisie) ; noir → chrome fumé (≈ 0,30)
+        // chrome teinté : réflectance 0,60 × teinte (45 % de la couleur choisie : un miroir trop teinté reflète un ciel bleu presque noir) ; noir → chrome fumé (≈ 0,30)
         float force = max(albedo.r, max(albedo.g, albedo.b));
-        albedo = FIN_CHROME_F0 * mix(vec3(1.0), teinteNormee(albedo), 0.6) * mix(0.5, 1.0, smoothstep(0.0, 0.2, force));
+        albedo = FIN_CHROME_F0 * mix(vec3(1.0), teinteNormee(albedo), 0.45) * mix(0.5, 1.0, smoothstep(0.0, 0.2, force));
         metal = 1.0; rough = FIN_CHROME_RUGOSITE;
     } else if (fin == FIN_CAMELEON) {
         // pigment à interférence sur base sombre : la teinte tourne avec l'angle de vue ; couleur sans teinte (gris, blanc,
@@ -230,6 +230,16 @@ void vernisFinition(int fin, inout vec3 col, vec3 R, vec3 sun, float NoV, float 
     if (kP > 0.0) {
         vec3 teinte = fin == FIN_METALLISE ? mix(vec3(1.0), teinteNormee(albedo), 0.3) : teinteNormee(albedo);
         col += min(teinte * paillettes(N, H, NoL) * kP * sun * ombre, vec3(SPEC_MAX * 0.5)) * specK;
+    }
+    if (fin == FIN_CHROME) {
+        // chrome : miroir du ciel et du soleil comme le vernis, réflectance teintée f0 (Schlick), au-dessus de l'horizon ; en dessous,
+        // le reflet reste celui de la sonde d'environnement (chaussée et façades réelles, déjà ajouté par scene.frag)
+        vec3 Fm = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0);
+        float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0) * pow(1.0 - FIN_CHROME_RUGOSITE, 6.0);
+        float aC = sqrt(pow(FIN_CHROME_RUGOSITE, 4.0) + aaKernel);
+        float wC = smoothstep(-0.3, 0.0, R.y);
+        vec3 miroir = (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, aC) * V_Smith(NoV, NoL, aC) * sun * NoL) * Fm;
+        col = col * (1.0 - Fm * wC) + min(miroir, vec3(SPEC_MAX)) * specK * wC;
     }
     float rV = fin == FIN_SATINE ? FIN_VERNIS_SATINE : FIN_VERNIS_BRILLANT;
     float kV = (fin == FIN_MAT || fin == FIN_CHROME) ? 0.0 : fin == FIN_SATINE ? 0.7 : 1.0;   // satiné : vernis moins réfléchissant

@@ -39,7 +39,7 @@ spectrophotometers », Color Res. Appl. 37 (2012) (flop, géométries 15° / 45�
 ## Chromé (film chromé, chrome teinté)
 - Chrome métal : réflectance 0,55 à 0,65 dans le visible (constantes n et k du chrome, Rakić A. D. et al., Appl. Opt. 37 (1998),
   données sur refractiveindex.info) ; jamais 1 (miroir parfait) ni blanc uniforme.
-- Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 60 %), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; noir → chrome
+- Jeu : métal 1, F0 = 0,60 × (teinte de la couleur à 45 % : un miroir plus teinté reflète un ciel bleu presque noir), rugosité 0,06 (charte : 0,05-0,15), pas de vernis ; reflet du ciel et du soleil comme le vernis, en réflectance teintée (Schlick) ; noir → chrome
   fumé (F0 ≈ 0,30). Reflets nets du ciel et du décor par la sonde d'environnement existante (RG-06).
 
 ## Caméléon (pigments à interférence multicouche)
