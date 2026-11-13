@@ -77,7 +77,7 @@ int main() {
         crediter(s, SOLDE_MAX, "test");
         cas("solde borné à 10^12 ★ (aucun débordement)", solde(s) == SOLDE_MAX);
         Sauvegarde t; t.defauts();
-        cas("gain d'une course terminée : 10 ★", crediterCourse(t) == 10 && solde(t) == 10);
+        cas("WFS-536 (RG-02) : calcul impossible : secours gain_course 10 ★", crediterCourse(t, -1) == 10 && solde(t) == 10);
     }
     // ---- RG-07 : achats
     {
@@ -161,6 +161,60 @@ int main() {
         for (const std::string& l : bilanEquilibrage(f)) std::printf("  %s\n", l.c_str());
         cas("Corsa à 400 ★ : la 1re voiture devient le T-Cross (30 courses), hors bornes signalé", f.premiereVoiture == "tcross" && f.coursesPremiere == 30 &&
             f.totalVoitures == 24500 && !verifierEquilibrage(f).empty());
+        config() = sauve;
+    }
+    // ---- WFS-536 : les étoiles du score remplacent les 10 ★ fixes
+    {
+        Sauvegarde s; s.defauts();
+        cas("RG-01 : course terminée : les ★ du score (23 ★) sont créditées", crediterCourse(s, 23) == 23 && solde(s) == 23);
+        cas("RG-01 : score à 0 ★ (duel arrangé) : rien de crédité, pas de secours", crediterCourse(s, 0) == 0 && solde(s) == 23);
+        GainCourse g;
+        cas("RG-05 : course jamais partie : rien", g.finir(s, false, 12) == 0 && solde(s) == 23);
+        g.depart();
+        cas("RG-01 : course quittée : 0 ★, solde inchangé", g.finir(s, true, 12) == 0 && solde(s) == 23 && !g.ouverte());
+        g.depart();
+        cas("RG-05 : 1er crédit de la course : 12 ★", g.finir(s, false, 12) == 12 && solde(s) == 35);
+        cas("RG-05 : écran de fin rouvert / retour d'arrière-plan : aucun 2e crédit", g.finir(s, false, 12) == 0 && g.finir(s, true, 12) == 0 && solde(s) == 35);
+        g.depart();
+        cas("RG-02 : calcul impossible : secours 10 ★ (gain_course)", g.finir(s, false, -1) == 10 && solde(s) == 45);
+        // entrée du score d'après la course du profil
+        CourseJouee c; c.mode = ModeJoue::Course5; c.place = 2; c.tempsMs = 101000;
+        RecordsDepart r; r.tempsCourse5Ms = 100000;
+        score::ResultatCourse e = resultatScore(c, r, 0, -1);
+        cas("course à 5 : place, temps contre le record (101 s pour 100 s : proche), chocs", e.terminee && e.place == 2 && e.temps == 101.0 && e.record == 100.0 && e.chocs == 0);
+        CourseJouee q = c; q.quittee = true;
+        cas("course quittée : pas terminée (0 ★ au calcul)", !resultatScore(q, r, 0, -1).terminee && score::calculer(resultatScore(q, r, 0, -1)).etoiles == 0);
+        CourseJouee so; so.mode = ModeJoue::Checkpoint; so.score = 5000;
+        RecordsDepart rs; rs.pointsSolo = 4000;
+        e = resultatScore(so, rs, 3, -1);
+        cas("course solo : 5 000 points pour un record de 4 000 : record battu", score::calculer(e).nouveauRecord && e.pointsDistance == 5000);
+        cas("course solo sans record : 1re course", resultatScore(so, RecordsDepart{}, 3, -1).record <= 0);
+        CourseJouee du; du.mode = ModeJoue::Duel; du.victoire = true;
+        cas("duel : adversaire parti à 12 s : 0 ★ (RC-E22-04)", score::calculer(resultatScore(du, RecordsDepart{}, 0, 12)).etoiles == 0);
+        cas("duel gagné : aucun point de temps (pas de record de duel)", score::calculer(resultatScore(du, RecordsDepart{}, 0, -1)).etoiles > 0 && resultatScore(du, RecordsDepart{}, 0, -1).record > 0);
+        CourseJouee po; po.mode = ModeJoue::Poursuite; po.score = 400;
+        e = resultatScore(po, RecordsDepart{}, 1, -1);
+        cas("Poursuite perdue : score restant, score de départ de configgame, 1re course", e.scorePoursuite == 400 && e.scorePoursuiteDepart == config().poursuite.scoreDepart && e.record <= 0);
+        // RG-04 : banc d'équilibrage avec le vrai calcul (valeurs du code = configgame.json)
+        const Equilibrage eq = equilibrage();
+        int ecarts = 0;
+        SimulationJoueur sim[3];
+        for (int j = 0; j < 3; j++) {
+            sim[j] = simulerJoueur((Joueur)j, eq);
+            for (const std::string& l : bilanJoueur(sim[j])) std::printf("  %s\n", l.c_str());
+            for (const std::string& l : verifierJoueur(sim[j])) { std::printf("  écart : %s\n", l.c_str()); ecarts++; }
+        }
+        cas("RG-04 : joueur moyen dans les bornes (22 à 28 courses, 108 à 132 h), débutant ≤ 40 courses", ecarts == 0);
+        cas("RG-04 : bon joueur plus rapide que le moyen, débutant plus lent", sim[1].coursesPremiere <= sim[0].coursesPremiere && sim[2].coursesPremiere >= sim[0].coursesPremiere &&
+            sim[1].heuresVoitures < sim[0].heuresVoitures && sim[2].heuresVoitures > sim[0].heuresVoitures);
+        cas("RG-04 : étoiles bornées entre 5 et 40 pour chaque course simulée", sim[0].etoilesMin >= 5 && sim[1].etoilesMax <= 40 && sim[2].etoilesMin >= 5);
+        const SimulationJoueur bis = simulerJoueur(Joueur::Moyen, eq);
+        cas("RG-04 : simulation déterministe (même graine, même résultat)", bis.coursesPremiere == sim[0].coursesPremiere && bis.coursesVoitures == sim[0].coursesVoitures);
+        // un barème changé dans configgame.json change le résultat, sans recompiler
+        const ConfigJeu sauve = config(); config().scoreEtoiles.pointsParEtoile = 40;
+        const SimulationJoueur plus = simulerJoueur(Joueur::Moyen, eq);
+        std::printf("  points_par_etoile = 40 : %s\n", bilanJoueur(plus)[0].c_str());
+        cas("RG-04 : points_par_etoile 40 : plus d'étoiles, hors bornes signalé", plus.etoilesMoyennes > sim[0].etoilesMoyennes && !verifierJoueur(plus).empty());
         config() = sauve;
     }
     std::printf("%s : %d échec(s)\n", g_echecs ? "ÉCHEC" : "OK", g_echecs);

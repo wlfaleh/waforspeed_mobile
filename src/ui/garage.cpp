@@ -8,6 +8,7 @@
 #include "../core/system.h"
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-115 : « Retour » du parcours de course = panneau des modes
+#include "../render/vehicule_plaque.h"   // WFS-483 : plaque 3D du joueur
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "text.h"
@@ -95,8 +96,10 @@ public:
         decor_.dessiner(r, ficheDe(CARS[index_].id).glow);
         if (voiture_.ok) {   // RG-06 : que des vraies voitures, pas de silhouette provisoire
             const vec3 p = lin(PAINTS[peinture_[index_]].hex);
-            r.peinture2ProchaineVoiture(couleur_.code2(index_));   // WFS-489 (accroche) : toit et rétros montrés
-            r.draw(voiture_, translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_), &p);
+            const mat4 M = translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_);
+            r.peinture2ProchaineVoiture(couleur_.code2(index_));   // WFS-489 (accroche) : toit et rétros montrés (voiture seulement : le renderer remet la couleur 2 à zéro après ce dessin)
+            r.draw(voiture_, M, &p);
+            plaque_joueur::dessiner(r, CARS[index_].id, M, g.night, vec3{M.at(0, 3), M.at(1, 3), M.at(2, 3)});   // WFS-483 (accroche) : plaque complète (RG-06)
         }
     }
 
@@ -174,7 +177,8 @@ public:
     void dessinerPlanche(Renderer& r) override {
         for (int i = 0; i < 16; i++) {   // WFS-489 (accroche) : planche des 16 peintures historiques, inchangée
             const vec3 p = lin(PAINTS[i].hex);
-            if (voiture_.ok) r.draw(voiture_, translate({(i % 4 - 1.5f) * 5.2f, 0.0f, (i / 4 - 1.5f) * 2.7f}) * rotateY(PI / 2), &p);
+            const mat4 M = translate({(i % 4 - 1.5f) * 5.2f, 0.0f, (i / 4 - 1.5f) * 2.7f}) * rotateY(PI / 2);
+            if (voiture_.ok) { r.draw(voiture_, M, &p); plaque_joueur::dessiner(r, CARS[index_].id, M, false, vec3{M.at(0, 3), M.at(1, 3), M.at(2, 3)}); }   // WFS-483
         }
     }
     int index() const override { return index_; }
@@ -186,6 +190,7 @@ private:
         if (charge_ == i && voiture_.ok) return;
         liberer();
         if (!loadCarModel(*r_, CARS[i].file, voiture_)) WFS_ERR("garage : modèle %s introuvable", CARS[i].file);
+        plaque_joueur::voiturePreparee(*r_, CARS[i].id);   // WFS-483 (accroche) : porte-plaques de cette voiture
         charge_ = i;
     }
     void liberer() {

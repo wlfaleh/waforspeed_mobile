@@ -185,6 +185,9 @@ public:
     // WFS-488 : couleur 2 (toit, rétroviseurs) de la prochaine voiture dessinée par draw(Model) : code de vehicule_peinture2.h
     // (1 = une seule couleur, remis à chaque voiture : trafic, adversaires, police gardent leur aspect, RG-06)
     void peinture2ProchaineVoiture(float code) { peinture2Suivante_ = code; }
+    // WFS-490 : finition de la peinture de la voiture du joueur (vehicule_finitions.h ; 0 = brillant), gardée d'une image à l'autre
+    void finitionJoueur(int f) { finitionJoueur_ = f > 0 && f < 8 ? f : 0; }
+    int finitionJoueur() const { return finitionJoueur_; }
     void adversaireProchaineVoiture() { adversaireSuivant_ = true; }   // WFS-243 (ANO-117) : adversaire (Course à 5, Duel) : sans limite de distance (WFS-82), champ seul
     // WFS-453 (ANO-247) : le prochain draw (Model ou Mesh : ombre) est une voiture du trafic : coupe à distance du trafic
     // (masquage::distanceMaxTrafic : 130 m de la caméra en Basse, au lieu de 110 m pour les petits objets)
@@ -418,6 +421,7 @@ private:
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
     // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
     float peinture2Suivante_ = 1.f;   // WFS-488
+    int finitionJoueur_ = 0;          // WFS-490
     bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false, adversaireSuivant_ = false, traficSuivant_ = false;
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;

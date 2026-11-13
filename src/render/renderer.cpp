@@ -18,6 +18,7 @@
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #include "../core/platform.h"   // WFS-222 : nowSeconds (banc de profilage)
 #include "vehicule_lod.h"         // WFS-158 (RG-04) : niveaux de détail des voitures
+#include "vehicule_finitions.h"   // WFS-490 (accroche) : finition de la peinture du joueur
 #if defined(__APPLE__)
 #include <chrono>
 #endif
@@ -113,6 +114,7 @@ void Renderer::enregistrerCachePipelines() {
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
     if (vk.offscreen) { const char* a = std::getenv("WFS_AVANT_222"); rendu221 = a && !std::strcmp(a, "1"); }   // WFS-222 : banc seulement
+    if (vk.offscreen && std::getenv("WFS_FINITION")) finitionJoueur(vehicule_finitions::depuisId(std::getenv("WFS_FINITION")));   // WFS-490 : bancs
     VkDevice d = vk.device;
 #if defined(__APPLE__)
     g_etapeRendu = std::chrono::steady_clock::now();
@@ -1395,6 +1397,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     const bool adversaire = adversaireSuivant_;   // WFS-243 (ANO-117) : lu et remis à faux pour chaque voiture
     const bool trafic = traficSuivant_;           // WFS-453 : lu et remis à faux pour chaque voiture
     const float peinture2 = fantome ? 1.f : peinture2Suivante_; peinture2Suivante_ = 1.f;   // WFS-488 : couleur 2 (pc.color.w des pièces peintes)
+    const int finition = dessinJoueur && !fantome && paint ? finitionJoueur_ : 0;   // WFS-490 : finition (joueur seulement, RG-11)
     fantomeSuivant_ = false; lotsSuivant_ = false; adversaireSuivant_ = false; traficSuivant_ = false;
     if (ombresContact_ && !fantome && !ombreDejaLa) {
         const vec3 c = (m.bmin + m.bmax) * 0.5f, t = m.bmax - m.bmin;
@@ -1447,6 +1450,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, peinture2};   // WFS-488 : w = couleur 2
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         if (mat.peinture2Piece && paint && peinture2 < -0.5f) { p.pc.color.w = peinture2; p.pc.params.z = mat.peinture2Finition; }   // WFS-488 : toit non peint
+        if (finition && paint && ((mat.flags & MAT_PAINT) || (mat.peinture2Piece && peinture2 < -0.5f))) p.pc.params.x = vehicule_finitions::coder(mat.metal, finition);   // WFS-490
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
         // WFS-423 (RG-02) : Basse, nuit : éclairement de la chaussée autour de la voiture calculé ici, une fois par matrice (la
         // caisse et ses pièces peintes partagent celle de la voiture), au lieu de 3 × 12 lumières pour chaque pixel peint

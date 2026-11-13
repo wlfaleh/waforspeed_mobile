@@ -143,7 +143,7 @@ else()
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/audio/trafic_sons.cpp src/game/player.cpp src/game/track.cpp)   # WFS-121 : sons du trafic
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
   add_executable(test_personnalisation tests/test_personnalisation.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-487 : catalogue de personnalisation, prix, possession
-  add_executable(test_boutique tests/test_boutique.cpp src/game/boutique.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-498 : portefeuille d'étoiles, prix des voitures, essai gratuit, équilibrage
+  add_executable(test_boutique tests/test_boutique.cpp src/game/boutique.cpp src/game/boutique_banc.cpp src/game/score_course.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-498 : portefeuille d'étoiles, prix des voitures, essai gratuit, équilibrage, WFS-536 : étoiles du score, joueurs simulés
   add_executable(test_garage_achat tests/test_garage_achat.cpp src/ui/garage_achat_prix.cpp src/game/boutique.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-489 : prix des pastilles du garage, ce qui manque, achat refusé ou fait
   add_executable(test_score_course tests/test_score_course.cpp src/game/score_course.cpp src/core/configgame.cpp)   # WFS-535 : score d'une course et conversion en étoiles
   add_executable(test_market tests/test_market.cpp src/game/market.cpp src/game/boutique.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-510 : market (packs, livre des achats, ×2, boutique simulée)
@@ -170,8 +170,12 @@ else()
   target_compile_definitions(test_fidelite_humains PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_voitures tests/fidelite_voitures.cpp src/game/roues.cpp)   # WFS-158 : audit des 20 voitures (mesure « fiche »)
   target_compile_definitions(test_fidelite_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_fidelite_voitures_finitions tests/fidelite_voitures_finitions.cpp)   # WFS-490 : finitions de la peinture (codage, valeurs du shader)
+  target_compile_definitions(test_fidelite_voitures_finitions PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_police_bandes tests/test_police_bandes.cpp src/game/roues.cpp)   # WFS-460 : bandes « POLICE » posées sur la tôle
   target_compile_definitions(test_police_bandes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_plaque_joueur tests/test_plaque_joueur.cpp src/render/vehicule_plaque_defs.cpp src/render/vehicule_plaque_geo.cpp src/render/vehicule_plaque_image.cpp src/game/roues.cpp)   # WFS-483 : plaque 3D du joueur
+  target_compile_definitions(test_plaque_joueur PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_peinture2 tests/test_peinture2.cpp src/render/vehicule_peinture2.cpp)   # WFS-488 : couleur secondaire (toit, rétroviseurs)
   target_compile_definitions(test_peinture2 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_vehicule_lod tests/test_vehicule_lod.cpp)   # WFS-158 (RG-04) : 4 niveaux de détail des voitures

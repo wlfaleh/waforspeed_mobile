@@ -1,5 +1,6 @@
 // WaForSpeed — portefeuille d'étoiles, voitures à acheter, essai gratuit, équivalents et équilibrage (WFS-498) : voir boutique.h.
 #include "boutique.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -46,10 +47,58 @@ bool debiter(Sauvegarde& s, long long n, const char* raison) {
     return true;
 }
 
-int crediterCourse(Sauvegarde& s) {
-    const int n = config().boutique.gainCourse;
-    crediter(s, n, "course terminée");
-    return n > 0 ? n : 0;
+int crediterCourse(Sauvegarde& s, int etoilesScore) {
+    if (etoilesScore >= 0) {   // WFS-536 (RG-01) : étoiles du score de la course
+        crediter(s, etoilesScore, "course terminée, score");
+        return etoilesScore;
+    }
+    const int n = std::max(0, config().boutique.gainCourse);   // WFS-536 (RG-02) : secours
+    WFS_LOG("étoiles : score de la course impossible à calculer : secours boutique.gain_course = %d ★", n);
+    crediter(s, n, "course terminée, secours");
+    return n;
+}
+
+RecordsDepart recordsDepart(const Sauvegarde& s) {
+    RecordsDepart r;
+    r.pointsSolo = std::max(0LL, s.best);
+    r.tempsCourse5Ms = s.aRecordCourse5() ? std::max(0LL, s.rec5Ms) : 0;
+    r.poursuite = s.aRecordPoursuite();
+    return r;
+}
+
+score::ResultatCourse resultatScore(const CourseJouee& c, const RecordsDepart& rec, int chocs, double adversaireParti) {
+    score::ResultatCourse r;
+    r.mode = c.mode;
+    r.terminee = !c.quittee;
+    r.place = c.place;
+    r.victoire = c.victoire;
+    r.chocs = chocs;
+    switch (c.mode) {
+        case ModeJoue::Course5:
+            r.temps = c.tempsMs / 1000.0;
+            r.record = rec.tempsCourse5Ms / 1000.0;   // 0 : 1re course
+            break;
+        case ModeJoue::Checkpoint:
+            r.pointsDistance = c.score;
+            if (rec.pointsSolo > 0) { r.record = 1.0; r.temps = c.score > 0 ? (double)rec.pointsSolo / (double)c.score : 0.0; }
+            break;
+        case ModeJoue::Poursuite:
+            r.scorePoursuite = (int)std::clamp<long long>(c.score, 0, SCORE_POURSUITE_MAX);
+            r.scorePoursuiteDepart = config().poursuite.scoreDepart;
+            r.record = rec.poursuite ? 1.0 : 0.0;   // pas de temps : seulement « 1re course »
+            break;
+        case ModeJoue::Duel:
+            r.record = 1.0;   // aucun record de duel : aucun point de temps
+            r.adversaireParti = adversaireParti;
+            break;
+    }
+    return r;
+}
+
+int GainCourse::finir(Sauvegarde& s, bool quittee, int etoilesScore) {
+    if (!ouverte_) return 0;   // RG-05 : déjà créditée (ou jamais partie) : rien
+    ouverte_ = false;
+    return quittee ? 0 : crediterCourse(s, etoilesScore);
 }
 
 // ---------------------------------------------------------------- équivalents (RG-02)

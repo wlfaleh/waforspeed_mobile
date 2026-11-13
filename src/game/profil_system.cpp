@@ -6,8 +6,10 @@
 //     (Course::maxKmh) et frôlements (Course::nearCount, le compteur des messages « frôlement » du HUD) ;
 //   - fin : course terminée (Over, avec le résultat donné par le mode) ou quittée après le départ (retour au menu,
 //     course remise à zéro). Les menus et le compte à rebours ne comptent pas.
-// WFS-498 : au départ d'une course solo avec une voiture bloquée, son essai gratuit est noté ; à la fin d'une course
-// terminée (pas quittée), boutique.gain_course ★ sont créditées au portefeuille.
+// WFS-498 : au départ d'une course solo avec une voiture bloquée, son essai gratuit est noté.
+// WFS-536 (épic E22) : à la fin d'une course terminée, les étoiles du score (score_course.h, WFS-535) sont créditées au
+// portefeuille et notées dans l'historique ; course quittée : 0 ★ ; résultat du mode jamais reçu : secours boutique.gain_course ;
+// un seul crédit par course (boutique::GainCourse). Records du mode lus au départ (le mode écrit le sien à l'arrivée).
 // Rien n'est écrit si la sauvegarde est inactive (banc d'essai hors WFS_BANC=sauvegarde : RG-06).
 #include "profil_system.h"
 #include <cmath>
@@ -17,13 +19,14 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
-#include "boutique.h"   // WFS-498 : gain d'une course, essai gratuit
+#include "boutique.h"   // WFS-498 : essai gratuit ; WFS-536 : étoiles du score, un seul crédit par course
 #include "cars.h"
 #include "course.h"
 #include "course5.h"
 #include "course_system.h"
 #include "duel_system.h"
 #include "player.h"
+#include "score_course.h"   // WFS-536 : score de la course (WFS-535)
 #include "sauvegarde.h"
 #include "track.h"
 
@@ -64,6 +67,13 @@ public:
         odo_ = pl.odo;
         vmax_ = std::max(vmax_, c->maxKmh);
         frolements_ = c->nearCount;
+        chocs_ = std::max(0, c->bumps + c->accidents - chocsDepart_);   // WFS-536 : chocs de la voiture du joueur (RG-03 de WFS-535)
+        // WFS-536 (RC-E22-04) : duel : un adversaire vu pendant la manche qui disparaît sans être arrivé est parti
+        if (mode_ == ModeJoue::Duel && adversaireParti_ < 0) {
+            const auto& gh = duelSession().ghosts();
+            if (gh.size() > adversairesVus_) adversairesVus_ = gh.size();
+            else if (gh.size() < adversairesVus_ && c->state == RaceState::Play) adversaireParti_ = c->raceTime;
+        }
         if (c->state == RaceState::Over) {
             overT_ += dt;
             if (g_resultatDonne || overT_ > 0.5) finir(false);   // résultat du mode (donné à l'arrivée), au plus 0,5 s après
@@ -78,12 +88,22 @@ private:
     bool actif_ = false;
     double odo_ = 0, metres_ = 0, overT_ = 0;
     int vmax_ = 0, frolements_ = 0;
+    int chocs_ = 0, chocsDepart_ = 0;     // WFS-536 : chocs de la course (bumps + accidents depuis le départ)
+    double adversaireParti_ = -1;         // WFS-536 : duel : secondes de course au départ d'un adversaire (-1 : aucun)
+    size_t adversairesVus_ = 0;
+    boutique::RecordsDepart records_;     // WFS-536 : records du mode au départ
+    boutique::GainCourse gain_;           // WFS-536 (RG-05) : un seul crédit par course
     std::string voiture_;
     ModeJoue mode_ = ModeJoue::Checkpoint;
 
     void commencer(const Player& pl, const GameView& g) {
         actif_ = true; g_resultatDonne = false;
         odo_ = pl.odo; metres_ = 0; overT_ = 0; vmax_ = 0; frolements_ = 0;
+        const Course* c = activeCourse();
+        chocs_ = 0; chocsDepart_ = c ? c->bumps + c->accidents : 0;
+        adversaireParti_ = -1; adversairesVus_ = 0;
+        records_ = boutique::recordsDepart(sauvegarde());
+        gain_.depart();
         voiture_ = g.car ? g.car->id : "";
         if (duelSession().inRoom()) mode_ = ModeJoue::Duel;
         else switch (modeCourse()) {
@@ -99,16 +119,30 @@ private:
 
     void finir(bool quittee) {
         actif_ = false;
+        const bool resultat = g_resultatDonne;
         CourseJouee c = g_resultatDonne && !quittee ? g_resultat : CourseJouee{};
         g_resultatDonne = false;
         c.mode = mode_; c.voiture = voiture_; c.quittee = quittee;
         c.date = (long long)std::time(nullptr);
         c.metres = std::llround(metres_); c.vmax = vmax_; c.frolements = frolements_;
         if (quittee) c.victoire = false;
+        // WFS-536 (RG-01, RG-02) : étoiles du score ; résultat du mode jamais reçu : -1 = secours boutique.gain_course
+        int etoiles = 0;
+        if (!quittee) {
+            if (resultat) {
+                const score::Score sc = score::calculer(boutique::resultatScore(c, records_, chocs_, adversaireParti_));
+                etoiles = sc.etoiles;
+                WFS_LOG("score : %s, %d point(s) sur %d ligne(s), %d choc(s) : %d ★%s", nomModeJoue(c.mode), sc.total, (int)sc.lignes.size(), chocs_,
+                        sc.etoiles, sc.nouveauRecord ? " (nouveau record)" : "");
+            } else {
+                etoiles = -1;
+            }
+        }
         Sauvegarde& s = sauvegarde();
-        if (!s.actif()) return;   // RG-06 : banc d'essai : rien n'est noté ni écrit
+        if (!s.actif()) { gain_ = {}; return; }   // RG-06 : banc d'essai : rien n'est noté ni écrit
+        const int credit = gain_.finir(s, quittee, etoiles);   // RG-05 : une seule fois par course ; quittée : 0
+        c.etoiles = credit;   // RG-03 : ★ gagnées dans l'historique
         s.profil.noterCourse(c);
-        if (!quittee) boutique::crediterCourse(s);   // WFS-498 (RG-01) : boutique.gain_course ★ par course terminée
         WFS_LOG("profil : course notée (%s, %s, %s, %.3f km, %d km/h, %d frôlement(s)) : %lld course(s), %.1f km au total",
                 nomModeJoue(c.mode), c.voiture.c_str(), c.resultat().c_str(), c.metres / 1000.0, c.vmax, c.frolements, s.profil.courses, s.profil.km());
         s.enregistrer();
