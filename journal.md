@@ -934,3 +934,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Remarques : `convertir_voitures.sh` relance `peinture2_voitures.mjs` ; nombres de triangles attendus dans `peinture2.json` ; « mustang = Corvette C7 » dans le README des captures ; commentaire « voitures rigides seulement » dans `scene_skin.frag` (accroche de 3 lignes au total).
 - **Pour le PO** (signalé par le lead dev, hors ticket) : GT86 : pavillon d'origine ondulé, très visible avec un toit noir (« papier froissé » de dessus) : anomalie de forme E10 à planifier.
 
+### 2026-11-13 12:31:20 — WFS-498 : PR #382 ouverte (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- Fait : module `src/game/boutique.*` (portefeuille d'étoiles, prix des 17 voitures, achat, essai gratuit, équivalents médailles / euros, migration, équilibrage), clés `boutique.voitures.<id>.prix`, `gain_course`, `minutes_par_course`, `medailles.*` dans `configgame.json` (régénéré), sauvegarde `etoiles=`, `voitures-possedees=`, `essai-<voiture>=1`, partie neuve sur la p208, +10 ★ par course terminée et essai noté au départ (`profil_system.cpp`), banc `WFS_BANC=equilibrage` (`boutique_banc.cpp`).
+- **Accroches annoncées** : `src/platform/desktop_main.cpp` (1 include + 1 ligne : banc `equilibrage`) ; `CMakeLists.txt` : `boutique.cpp` ajouté aux 17 tests qui lient `personnalisation.cpp` + `test_boutique`.
+- Vérification : 121 tests CPU OK (`test_boutique` 51 cas), banc `equilibrage` : Corsa 25 courses, 14 voitures 120,1 h ; prix Corsa changé dans un `configgame.json` (sans recompiler) → T-Cross 30 courses, écart signalé ; banc `sauvegarde` ×2 : 250 ★, achat accepté, refus faute d'étoiles, relu 160 ★ ; garage identique octet pour octet avant / après.
+- Limites : pas d'écran (WFS-499) ; conduire une voiture non possédée en solo utilise son essai d'ici là ; gain provisoire de 10 ★ (étape « score »), duels compris.
+
