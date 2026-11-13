@@ -1213,3 +1213,8 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - Conséquence : peinture brillante de ces voitures moins brillante que les autres, plus terne au loin.
 - Proposition : ne pas appliquer `detailK` aux pièces `F_PAINT` (comme fait ici pour les 7 autres finitions) dans un ticket E10 dédié, avec captures avant / après ; non corrigé dans WFS-490 (RG-01 : brillant identique).
 - Décision attendue de : PO.
+
+### 2026-11-13 16:33:01 — WFS-510 fusionné par le lead dev (lead-dev)
+- PR #390 relue sur 07fc9c77 : 16 captures avant / après ouvertes (identiques octet pour octet, rien ne change à l'écran, comme demandé) et 4 textes du banc `market`, conformes aux 4 captures du ticket ; tout le diff lu (market, sauvegarde : nouvelles clés seulement, section `market` de configgame : seulement des ajouts, accroches de 2 et 1 lignes).
+- Refait par le lead dev : construction, `tests_cpu.sh` → 124 tests réussis, `test_market` 0 échec, `WFS_BANC=market` code 0. Revue « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 77f0ad8b. TACHES → 🟣, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+- Remarques pour WFS-511 (non bloquantes) : `attendre()` ne dit pas si l'écriture a réussi (ne pas confirmer à Google si elle échoue) ; ramener le rappel de Google Play sur le thread du jeu. Pour le PO : les étoiles des médailles existent dans deux sources (`boutique.medailles` et `market.packs`), à décider s'il n'en faut qu'une.
