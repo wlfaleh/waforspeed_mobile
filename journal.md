@@ -1406,3 +1406,10 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Fait : habitacles de la Corvette C7 (« mustang ») et de la Vitara Brezza 2022 (« tcross ») en vue Cockpit : valeurs (`vehicule_cockpit_defs.cpp`, entrées des 2 voitures seulement) et pièces propres modelées (`vehicule_cockpit_details.cpp` : aérateurs, climatisation, console, poignée de maintien de la Corvette, levier de la Brezza, portières).
 - Vérification : tests CPU 115 / 115 ; banc `cockpit` : fenêtre de la rue cachée 0,0 % (jour, nuit, virage, Plage) ; vitrine : 43 / 45 appels, 2,7 / 2,6 Mo ; 18 captures avant / après dans `qa/pr/WFS-395/`.
 - Limites : cotes AC / E (sites des constructeurs bloqués) ; pas de lumière d'ambiance ; bas de planche brun très sombre de la Brezza (teinte aussi portières et plancher).
+
+### 2026-11-13 00:11:52 — WFS-504 : PR #372 refusée par le lead dev (lead-dev)
+- Relu au commit `daa3843b` : 29 captures ouvertes (FR identique sauf la ligne « Langue », EN propre, rien ne dépasse), diff complet lu. Construction et `tests_cpu.sh` refaits : 116 test(s) réussi(s). Banc `textes` relancé : VERT en anglais et en français.
+- Points bloquants : (1) capture « Tests CPU » et `qa/pr/WFS-504/tests-cpu.log` absents (règle du 2026-11-11) ; (2) pas de capture « avant » de l'onglet Affichage sur téléphone (2400x1080, FR), alors que la mise en page passe de 3 + 3 à 4 + 3 lignes.
+- Remarques non bloquantes : `langue.cpp` (`telephone()` rend une référence hors verrou), allocation par appel de `ui::tr` (`std::less<>`), aucun secours si une table manque.
+- **Pour le PO** : la ligne technique « Rendu : … · Mémoire : … » des Réglages (`src/render/qualite_systeme.cpp`, `src/ui/ecrans/chargement.cpp`) et les libellés du menu caché (`src/render/diagnostic_perf.*`) restent en français avec un téléphone en anglais (critère de l'épic E20) : ticket à créer, car WFS-505 à 508 ne les couvrent pas.
+- Statut : ↩️ Retour lead dev (PR #372) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
