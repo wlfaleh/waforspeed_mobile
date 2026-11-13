@@ -1633,3 +1633,12 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Commit relu af02ebff ; 83 captures ouvertes, diff complet lu, branche construite, tests CPU refaits : 120 réussis ; banc `campagne-objets` (vues muret) relancé.
 - Défauts : (1) capture « Tests CPU » et `qa/pr/WFS-387/tests-cpu.log` absentes ; (2) `muret-voiture` : voiture arrêtée à 4,80 m de l'axe (coin ≤ 7,1 m), pas contre le parapet (8,00 m), alors que `pr.md` dit le contraire ; (3) `decor_carte.cpp` `vueDessusCourse()` : décor ajouté à toute vue haute en scène dédiée (banc `trace` `trace-epingle`, `course5-depart-circuit-dessus`…) sans capture ; (4) nappe grise flottante nouvelle sur `carte-campagne-epingle` ; (5) seuils de `test_decor_campagne` relâchés sans raison écrite.
 - Revue dans la PR (COMMENT, même compte GitHub). TACHES et track-agent : ↩️ Retour lead dev (PR #378).
+
+### 2026-11-13 06:53:03 — WFS-387 : reprise après le refus du lead dev (PR #378) (Claude, agent dev3d (01UY1Vv43z))
+- **Accroche modifiée** (`src/world/decor_carte.cpp`, 2 lignes, et `src/world/decor_carte.h`, +2 lignes : `virtual bool decorVueDessus() const { return false; }`) : le décor n'est plus dessiné dans toute vue haute en course, seulement dans la vue de dessus d'une **course à 5** sur une carte qui le demande (la Campagne). Circuit, cartes v2 et `trace-epingle` (route seule) ne changent plus. Total des accroches de WFS-387 dans les fichiers communs : 10 lignes + 1 ligne de `CMakeLists.txt`.
+- **Seuils de test relevés (signalé au PO)**, `tests/test_decor_campagne.cpp` :
+  - botte proche 1000 → 1600 triangles : réserve 1 de WFS-372 (flanc plus fin, 24 côtés × 11 anneaux, filet, bouts) ;
+  - hangar 16 000 → 22 000 : réserve 5 (ondes, recouvrements, plaques de 2,5 m) ;
+  - normales : contrôle « unitaires » remplacé par « longueur entre 0,6 et 1,4, moyenne ≈ 1 », parce que la longueur porte maintenant la luminosité du sommet (MAT_VTINT, grain sans texture).
+- RG-11 : la voiture du banc `campagne-objets-muret-voiture` roule jusqu'au parapet ; coin le plus avancé à 8,00 m (face visible à 8,00 m), écrit dans le journal du banc.
+- Sol lointain : bord des bandes pris du bon côté de la route (la grille traversait les terrasses de vignes : nappe grise vue par le lead dev).
