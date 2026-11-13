@@ -9,6 +9,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 - Les clés qui commencent par `_` (comme `_aide`) sont des commentaires.
 - **Noms des voitures** (section `voitures`, WFS-191) : `marque` (1 à 16 caractères) et `modele` (1 à 24) de chaque voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu (garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). Un nom invalide : le nom par défaut et une ligne au journal.
 - **Boutique** (section `boutique`, WFS-487) : prix de **base** en étoiles des couleurs, finitions, skins et packs d'autocollants. Le prix payé pour une voiture = prix de base × coefficient de sa classe (`coefficients_classe`, `voitures.<id>.classe`), arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; `cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.
+- **Étoiles et voitures** (section `boutique`, WFS-498) : `voitures.<id>.prix` = prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; `minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), qui donnent l'équivalent en médailles et en euros de chaque prix.
 - Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans `src/core/configgame.cpp` (table `champs`), puis relancer cette commande.
 
 | Clé | Sens | Unité | Min | Max | Défaut |
@@ -144,25 +145,45 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `boutique.coefficients_classe.classe4` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 3.0 |
 | `boutique.coefficients_classe.classe5` | coefficient des prix de personnalisation pour cette classe de voiture | × | 0.1 | 10.0 | 4.0 |
 | `boutique.voitures.golf.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.golf.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 600 |
 | `boutique.voitures.m4.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.m4.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 2200 |
 | `boutique.voitures.p911.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 4 |
+| `boutique.voitures.p911.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 3500 |
 | `boutique.voitures.gallardo.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 4 |
+| `boutique.voitures.gallardo.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 3000 |
 | `boutique.voitures.p208.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 0 |
+| `boutique.voitures.p208.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 0 |
 | `boutique.voitures.abarth.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 0 |
+| `boutique.voitures.abarth.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 0 |
 | `boutique.voitures.tcross.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 1 |
+| `boutique.voitures.tcross.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 300 |
 | `boutique.voitures.compass.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 1 |
+| `boutique.voitures.compass.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 300 |
 | `boutique.voitures.s3.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.s3.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 1000 |
 | `boutique.voitures.x5.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.x5.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 0 |
 | `boutique.voitures.giulia.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.giulia.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 2400 |
 | `boutique.voitures.a45.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.a45.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 0 |
 | `boutique.voitures.model3.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.model3.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 1200 |
 | `boutique.voitures.corsa.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 1 |
+| `boutique.voitures.corsa.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 250 |
 | `boutique.voitures.gt86.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 0 |
+| `boutique.voitures.gt86.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 0 |
 | `boutique.voitures.elantra.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.elantra.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 0 |
 | `boutique.voitures.v60.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.v60.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 1000 |
 | `boutique.voitures.rrsport.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 2 |
+| `boutique.voitures.rrsport.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 800 |
 | `boutique.voitures.mustang.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 3 |
+| `boutique.voitures.mustang.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 1800 |
 | `boutique.voitures.sf90.classe` | classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix | classe | 0 | 5 | 5 |
+| `boutique.voitures.sf90.prix` | prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues) | ★ | 0 | 1000000 | 6000 |
 | `boutique.couleurs.blanc.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
 | `boutique.couleurs.blanc.gratuit` | couleur gratuite sur toutes les voitures | 0 / 1 | 0 | 1 | 1 |
 | `boutique.couleurs.noir.prix` | prix de base de la couleur (× coefficient de la classe) | ★ | 0 | 100000 | 0 |
@@ -258,5 +279,13 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `boutique.dessins.flammes.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 0 |
 | `boutique.dessins.etoiles.prix` | prix du pack d'autocollants (sans coefficient, pour toutes les voitures) | ★ | 0 | 100000 | 300 |
 | `boutique.dessins.etoiles.gratuit` | pack d'autocollants gratuit | 0 / 1 | 0 | 1 | 0 |
+| `boutique.gain_course` | étoiles gagnées à la fin d'une course terminée (en attendant l'étape « score ») | ★ | 0 | 100000 | 10 |
+| `boutique.minutes_par_course` | durée moyenne d'une course (banc d'équilibrage seulement) | min | 0.1 | 60.0 | 2.96 |
+| `boutique.medailles.bronze.etoiles` | étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix | ★ | 1 | 1000000 | 100 |
+| `boutique.medailles.bronze.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 0.99 |
+| `boutique.medailles.argent.etoiles` | étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix | ★ | 1 | 1000000 | 300 |
+| `boutique.medailles.argent.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 2.49 |
+| `boutique.medailles.or.etoiles` | étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix | ★ | 1 | 1000000 | 600 |
+| `boutique.medailles.or.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 4.49 |
 
 Pas encore dans le fichier (tickets en cours sur ces zones) : taille et place des commandes tactiles (WFS-102), nombre de joueurs du duel et distances proposées (écrans de WFS-102). À ajouter quand ces tickets seront fusionnés.

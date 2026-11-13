@@ -20,6 +20,7 @@
 #include "profil_system.h"   // WFS-480
 #include "sauvegarde.h"   // WFS-24 : record
 #include "personnalisation.h"   // WFS-487 : banc sauvegarde (catalogue, possession)
+#include "boutique.h"   // WFS-498 : banc sauvegarde (portefeuille, voitures, essai)
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
 #include "../ui/ecrans/chargement.h"  // WFS-242 (RG-07) : fondu du chargement (commandes cachées)
@@ -403,6 +404,7 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         for (const std::string& l : perso::bilanCatalogue()) WFS_LOG("%s", l.c_str());
         for (const std::string& l : perso::verifierCatalogue()) WFS_LOG("CATALOGUE problème : %s", l.c_str());
         for (const std::string& l : perso::bilanPossession(s)) WFS_LOG("%s", l.c_str());
+        for (const std::string& l : boutique::bilanPortefeuille(s)) WFS_LOG("%s", l.c_str());   // WFS-498 : solde, voitures, essais relus
         WFS_LOG("PROFIL relu : %s", s.profil.texte(s.nick).c_str());   // WFS-480 : critère d'acceptation (2e lancement)
         if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); return; }
         g.camMode = 2; g.orbit = 0.7f;
@@ -414,11 +416,15 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
         return;
     }
     s.car = "m4"; s.paint["m4"] = "rouge";   // choix du « joueur » (≠ défauts golf / peinture d'origine)
-    {   // WFS-487 : achats d'essai avec un solde fictif (le portefeuille d'étoiles arrive avec WFS-498) : un accepté, un refusé
-        long long solde = 250;
-        const perso::Achat a = perso::acheter(s, solde, *perso::objet("rose"), "m4"), b = perso::acheter(s, solde, *perso::objet("chrome"), "m4");
-        WFS_LOG("BOUTIQUE essai (solde fictif 250 ★) : couleur rose sur m4 (%d ★) : %s ; finition chromé sur m4 (%d ★) : %s ; solde %lld ★",
-                perso::prix(*perso::objet("rose"), "m4"), perso::texteAchat(a), perso::prix(*perso::objet("chrome"), "m4"), perso::texteAchat(b), solde);
+    {   // WFS-487, WFS-498 (RG-01, RG-07) : 250 ★ au portefeuille du banc ; couleur achetée, finition et voiture refusées faute d'étoiles
+        boutique::crediter(s, 250, "banc");
+        const perso::Achat a = boutique::acheterObjet(s, *perso::objet("rose"), "m4"), b = boutique::acheterObjet(s, *perso::objet("chrome"), "m4");
+        WFS_LOG("BOUTIQUE essai (portefeuille 250 ★) : couleur rose sur m4 (%d ★) : %s ; finition chromé sur m4 (%d ★) : %s ; solde %lld ★",
+                perso::prix(*perso::objet("rose"), "m4"), perso::texteAchat(a), perso::prix(*perso::objet("chrome"), "m4"), perso::texteAchat(b), s.etoiles);
+        const boutique::AchatVoiture v = boutique::acheterVoiture(s, "m4");
+        WFS_LOG("BOUTIQUE essai : voiture m4 (%d ★ = %s = %s) : %s ; solde %lld ★", boutique::prixVoiture("m4"), boutique::equivalentMedailles(boutique::prixVoiture("m4")).c_str(),
+                boutique::texteEuros(boutique::equivalentCentimes(boutique::prixVoiture("m4"))).c_str(), boutique::texteAchat(v), s.etoiles);
+        WFS_LOG("BOUTIQUE essai : essai gratuit de la m4 disponible avant la course : %s", boutique::essaiDisponible(s, "m4") ? "oui" : "non");
     }
     s.profil.creer("Banc 480", "WFS-480", s.nick);   // WFS-480 (RG-06) : profil de test fixe du banc
     courseBenchRules(true);
@@ -435,6 +441,7 @@ void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const st
     s.enregistrer(); s.attendre();
     WFS_LOG("SAUVEGARDE écrite : car=%s paint=%s best=%lld (%s)", s.car.c_str(), s.peinture(s.car).c_str(), s.best, chemin.c_str());
     WFS_LOG("PROFIL écrit : %s", s.profil.texte(s.nick).c_str());   // WFS-480
+    for (const std::string& l : boutique::bilanPortefeuille(s)) WFS_LOG("%s", l.c_str());   // WFS-498 : essai noté au départ, +gain de la course
     g.shutdown();
     courseBenchRules(false);
 }

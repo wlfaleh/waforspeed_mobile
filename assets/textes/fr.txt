@@ -221,6 +221,17 @@ credits.surtitre=Menu principal
 credits.titre=Crédits
 credits.retour=Retour
 credits.aide=Glisse le doigt sur le texte pour le faire défiler.
+# ---- conditions d'utilisation et confidentialité (WFS-508) ; le texte long vient de store/cgu.md et store/confidentialite.md
+cgu.surtitre.premier=Premier lancement · version {1}
+cgu.surtitre.reglages=Réglages · version {1}
+cgu.titre=Conditions d'utilisation
+cgu.accepter=Accepter
+cgu.refuser=Refuser
+cgu.case=J'ai lu et j'accepte
+cgu.fermer=Fermer
+cgu.refus=Le jeu ne peut pas démarrer sans votre accord
+cgu.fermeture=Fermeture du jeu…
+
 
 # ---- Course (WFS-506) : HUD, bandeaux, carte de navigation, fin de course des 4 modes
 # nombres ordinaux (places, sorties de rond-point)

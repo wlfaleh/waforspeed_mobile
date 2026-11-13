@@ -20,6 +20,7 @@
 #include "../render/vehicule_cockpit_volant_banc.h"   // WFS-414 (accroche) : WFS_BANC=cockpit-volant
 #include "../render/vehicule_cockpit_vitrine.h"   // WFS-325 (accroche) : WFS_BANC=cockpit-vitrine
 #include "../game/game.h"
+#include "../game/boutique.h"   // WFS-498 (accroche) : banc equilibrage
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
 namespace wfs { int benchFluidite(Game& g, Renderer& r, const std::string& out); }   // WFS-221 (bench_fluidite.cpp)   // WFS-115 (modes_ecran.cpp)
@@ -270,7 +271,7 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
     if (banc == "banc-telephone") { ui::chargerPolice(r); const int e = ecrans::banc_telephone::benchBancTelephone(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-420 (accroche) : banc de performance du téléphone, captures banc-tel-*
-    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchReglagesTextes(g, r, out) + ecrans::textes::benchMenusTextes(g, r, out) + benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE) ; WFS-505 (accroche) : menus ; WFS-506 (accroche) : course
+    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchCguTextes(r, out) + ecrans::benchReglagesTextes(g, r, out) + ecrans::textes::benchMenusTextes(g, r, out) + benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE) ; WFS-505 (accroche) : menus ; WFS-508 : écran des CGU ; WFS-506 (accroche) : course
     if (banc == "textes-menus") { ui::chargerPolice(r); const int e = ecrans::textes::benchMenusTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-505 (accroche) : menus seuls (essai local, captures de la PR)
     if (banc == "textes-course") { ui::chargerPolice(r); const int e = benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-506 (accroche) : course seule (essai local, captures de la PR)
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
@@ -325,6 +326,7 @@ int main(int argc, char** argv) {
     if (banc == "marina") { benchMarina(g, r, out); return finir(); }   // WFS-376 : bateaux de la marina (essai local et PR)
     if (banc == "mer") { benchMer(g, r, out); return finir(); }   // WFS-380 : vraie mer (essai local et PR)
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
+    if (banc == "equilibrage") { const int e = boutique::benchEquilibrage(out); finir(); return e > 0 ? 3 : 0; }   // WFS-498 (accroche) : prix et gain, sans rendu
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
     }

@@ -133,20 +133,25 @@ std::vector<Champ> champsBoutique(ConfigJeu& c) {
     static const char* CLASSES[BOUTIQUE_CLASSES] = {"gratuites", "classe1", "classe2", "classe3", "classe4", "classe5"};
     if (cles.empty()) {
         for (const char* k : CLASSES) cles.push_back(std::string("boutique.coefficients_classe.") + k);
-        for (const char* id : VOITURES_IDS) cles.push_back(std::string("boutique.voitures.") + id + ".classe");
+        for (const char* id : VOITURES_IDS) { cles.push_back(std::string("boutique.voitures.") + id + ".classe"); cles.push_back(std::string("boutique.voitures.") + id + ".prix"); }
         for (const char* id : BOUTIQUE_COULEURS_IDS) { cles.push_back(std::string("boutique.couleurs.") + id + ".prix"); cles.push_back(std::string("boutique.couleurs.") + id + ".gratuit"); }
         cles.push_back("boutique.couleur_secondaire.prix");
         for (const char* id : BOUTIQUE_FINITIONS_IDS) { cles.push_back(std::string("boutique.finitions.") + id + ".prix"); cles.push_back(std::string("boutique.finitions.") + id + ".gratuit"); }
         for (const char* id : BOUTIQUE_SKINS_IDS)
             for (const char* f : {".prix", ".cadeau", ".voitures"}) cles.push_back(std::string("boutique.skins.") + id + f);
         for (const char* id : BOUTIQUE_DESSINS_IDS) { cles.push_back(std::string("boutique.dessins.") + id + ".prix"); cles.push_back(std::string("boutique.dessins.") + id + ".gratuit"); }
+        cles.push_back("boutique.gain_course"); cles.push_back("boutique.minutes_par_course");   // WFS-498
+        for (const char* id : BOUTIQUE_MEDAILLES_IDS) { cles.push_back(std::string("boutique.medailles.") + id + ".etoiles"); cles.push_back(std::string("boutique.medailles.") + id + ".euros"); }
     }
     using T = Type;
     ConfigJeu::Boutique& b = c.boutique;
     std::vector<Champ> v; size_t k = 0;
     auto cle = [&]() { return cles[k++].c_str(); };
     for (int i = 0; i < BOUTIQUE_CLASSES; i++) v.push_back({cle(), T::Reel, &b.coefficient[i], 0.1, 10, "×", i ? "coefficient des prix de personnalisation pour cette classe de voiture" : "coefficient des prix de personnalisation des voitures gratuites"});
-    for (int i = 0; i < VOITURES_NB; i++) v.push_back({cle(), T::Entier, &b.classe[i], 0, 5, "classe", "classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix"});
+    for (int i = 0; i < VOITURES_NB; i++) {
+        v.push_back({cle(), T::Entier, &b.classe[i], 0, 5, "classe", "classe de la voiture (0 gratuite, 1 à 5) : choisit le coefficient des prix"});
+        v.push_back({cle(), T::Entier, &b.prixVoiture[i], 0, 1000000, "★", "prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; voitures retirées jamais vendues)"});   // WFS-498 (RG-04)
+    }
     for (int i = 0; i < BOUTIQUE_COULEURS; i++) {
         v.push_back({cle(), T::Entier, &b.couleur[i].prix, 0, 100000, "★", "prix de base de la couleur (× coefficient de la classe)"});
         v.push_back({cle(), T::Entier, &b.couleur[i].gratuit, 0, 1, "0 / 1", "couleur gratuite sur toutes les voitures"});
@@ -164,6 +169,13 @@ std::vector<Champ> champsBoutique(ConfigJeu& c) {
     for (int i = 0; i < BOUTIQUE_DESSINS; i++) {
         v.push_back({cle(), T::Entier, &b.dessins[i].prix, 0, 100000, "★", "prix du pack d'autocollants (sans coefficient, pour toutes les voitures)"});
         v.push_back({cle(), T::Entier, &b.dessins[i].gratuit, 0, 1, "0 / 1", "pack d'autocollants gratuit"});
+    }
+    // WFS-498 (RG-01, RG-02, RG-11) : gain d'une course, durée d'une course pour le banc d'équilibrage, packs de médailles
+    v.push_back({cle(), T::Entier, &b.gainCourse, 0, 100000, "★", "étoiles gagnées à la fin d'une course terminée (en attendant l'étape « score »)"});
+    v.push_back({cle(), T::Reel, &b.minutesParCourse, 0.1, 60, "min", "durée moyenne d'une course (banc d'équilibrage seulement)"});
+    for (int i = 0; i < BOUTIQUE_MEDAILLES; i++) {
+        v.push_back({cle(), T::Entier, &b.medaille[i].etoiles, 1, 1000000, "★", "étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix"});
+        v.push_back({cle(), T::Reel, &b.medaille[i].euros, 0.01, 1000, "€", "prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix)"});
     }
     return v;
 }
@@ -460,6 +472,10 @@ std::string configReadme() {
         "d'autocollants. Le prix payé pour une voiture = prix de base × coefficient de sa classe (`coefficients_classe`, `voitures.<id>.classe`), "
         "arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; "
         "`cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.\n"
+        "- **Étoiles et voitures** (section `boutique`, WFS-498) : `voitures.<id>.prix` = prix de la voiture en étoiles (0 : gratuite, "
+        "possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; "
+        "`minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), "
+        "qui donnent l'équivalent en médailles et en euros de chaque prix.\n"
         "- Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans "
         "`src/core/configgame.cpp` (table `champs`), puis relancer cette commande.\n\n"
         "| Clé | Sens | Unité | Min | Max | Défaut |\n|---|---|---|---|---|---|\n";

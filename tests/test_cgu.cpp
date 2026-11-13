@@ -8,6 +8,7 @@
 #include <string>
 #include "../src/game/sauvegarde.h"
 #include "../src/ui/ecrans/cgu.h"
+#include "../src/ui/langue_regles.h"   // WFS-508 : garde-fou « phrase française »
 using namespace wfs;
 using namespace wfs::ecrans;
 
@@ -74,6 +75,36 @@ int main(int argc, char** argv) {
         { Sauvegarde s; VERIFIER(s.lire("version=1\ncar=m4\n")); VERIFIER(s.cgu == 0); }   // ancienne sauvegarde : écran montré
         std::remove(chemin.c_str());
     }
+
+    // 5) WFS-508 : textes anglais (RG-01, RG-02) : présents, même version, phrase « fait foi » dans les 4 fichiers, même plan que le
+    //    français (titres, sous-titres, puces : traduction fidèle, rien d'ajouté ni de retiré), aucune phrase française à l'écran
+    {
+        VERIFIER(std::string(fichierTexteCgu(false, false)) == "cgu.md" && std::string(fichierTexteCgu(false, true)) == "cgu-en.md");
+        VERIFIER(std::string(fichierTexteCgu(true, false)) == "confidentialite.md" && std::string(fichierTexteCgu(true, true)) == "confidentialite-en.md");
+        for (int conf = 0; conf < 2; conf++) {
+            const std::string fr = lireFichier(std::string("store/") + fichierTexteCgu(conf, false));
+            const std::string en = lireFichier(std::string("store/") + fichierTexteCgu(conf, true));
+            VERIFIER(!fr.empty() && !en.empty());
+            if (!conf) VERIFIER(versionDansTexte(en) == VERSION_CGU);
+            VERIFIER(fr.find("la version française fait foi") != std::string::npos);
+            VERIFIER(en.find("the French version prevails") != std::string::npos);
+            const std::vector<ParagrapheCgu> pf = paragraphesMarkdown(fr), pe = paragraphesMarkdown(en);
+            VERIFIER(pf.size() == pe.size());
+            for (size_t i = 0; i < pf.size() && i < pe.size(); i++)
+                if (pf[i].style != pe[i].style) { std::printf("paragraphe %zu (%s) : plan différent du français\n", i, conf ? "confidentialité" : "CGU"); g_echecs++; }
+            // partie affichée dans le jeu (notes des stores retirées, titre français ou anglais)
+            const std::string vuFr = sansNotesStore(fr), vuEn = sansNotesStore(en);
+            if (conf) VERIFIER(vuFr.size() < fr.size() && vuEn.size() < en.size());
+            for (const ParagrapheCgu& q : paragraphesMarkdown(vuEn)) {
+                const std::string raison = ui::langue::phraseFrancaise(q.texte);
+                if (!raison.empty()) { std::printf("ÉCHEC phrase française (%s) : « %s »\n", raison.c_str(), q.texte.c_str()); g_echecs++; }
+            }
+        }
+        VERIFIER(lireFichier("store/cgu-en.md").find("legal review recommended") != std::string::npos);
+    }
+
+    // 6) WFS-508 (RG-05) : l'acceptation ne dépend pas de la langue (clé cgu= seule) : acceptée en français, rien à redemander en anglais
+    { Sauvegarde s; VERIFIER(s.lire("version=1\ncgu=" + std::to_string(VERSION_CGU) + "\nlangue=en\n")); VERIFIER(!cguAMontrer(true, s.cgu)); }
 
     if (g_echecs) { std::printf("test_cgu : %d échec(s)\n", g_echecs); return 1; }
     std::printf("test_cgu : OK\n");
