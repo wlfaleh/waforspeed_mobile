@@ -24,6 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01Us6uCw3C) (session_01Us6uCw3CcwYdVgdJvnqpWC) | | Nouvelle session `@dev` : attend son ticket du PO | | 🆕 en attente d'attribution |
 | Claude, agent dev3d (01Us6uCxMq) (session_01Us6uCxMq4ZcucYCU7MHDaF) | | Nouvelle session `@dev` : attend son ticket du PO | | 🆕 en attente d'attribution |
 | Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz) | | Correction Golf : hayon continu sans disque noir ni emblème (toutes les voitures), phares sans liseré rouge, banc `vitrines` sans les voitures retirées (ANO-259, 258, 257 ; E10) | `feature/waforspeed-456`, a38bdb52 | ⏹️ session terminée (WFS-456 fusionné, #385, 66bf9698) |
 | Claude, agent dev3d (01Us6uCwDY) (session_01Us6uCwDYTdSxRRFoTrWT3c) | WFS-490 | 8 finitions de peinture dans le shader (E18, zone E10) : PR #388 ouverte, lead dev appelé | `feature/waforspeed-490`, 14:52 | ↩️ retour lead dev sur PR #388 : à corriger |
