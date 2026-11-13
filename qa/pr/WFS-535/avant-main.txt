@@ -1,0 +1,5 @@
+---- Avant (main, WFS-498) : aucun score « étoiles »
+  configgame.json : section score_etoiles absente
+  boutique.gain_course = 10 → toute course terminée rapporte 10 ★, quels que soient le mode, la place, le temps, les chocs
+  (src/game/boutique.cpp, crediterCourse). Course quittée : 0 ★.
+  Ce comportement ne change pas encore avec WFS-535 (branchement : WFS-536 ; écran : WFS-537).

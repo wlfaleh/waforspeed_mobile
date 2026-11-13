@@ -1,0 +1,7 @@
+---- 2) Poursuite perdue : 240 points restants, 5 chocs, 3 contacts avec la police
+  score.poursuite_defaite            +300
+  score.poursuite_score_restant      +120
+  total                               420 points
+  étoiles                              5 ★
+
+
