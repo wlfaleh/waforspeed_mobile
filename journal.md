@@ -1683,3 +1683,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Images `qa/retours/2026-11-13-video2348-police-coince/` et `…video2349-police-coince/` ouvertes une par une.
 - ANO-267 (bloquante) joueur coincé à 6,50 km, gaz appuyé ; ANO-268 (bloquante) poursuite sans fin, pas d'arrestation, score −1/s ; ANO-269 (bloquante) SUV du trafic en travers 75 s + bouchon ; ANO-270 (bloquante) voitures du trafic qui se traversent et traversent la caméra ; ANO-271 (bloquante) recul « R » à 31 km/h sans frein.
 - Avis QA : **WFS-461 KO** (RG-01, RG-02, RG-04, RG-06 non tenues sur l'APK de `main`) ; RG-03 (police ≤ 208 km/h) non vérifiable sur ces vidéos (police à l'arrêt). Tickets à créer par le PO.
+
+### 2026-11-13 22:55:15 — Vidéos de l'utilisateur (Poursuite coincée) : WFS-461 refusé, WFS-540 et WFS-541 créés (po-scrum-master)
+- Deux vidéos de l'utilisateur (APK de `main`, S21 FE, Corniche, nuit, Poursuite, « c'est quoi ce bordel ») ; images dans `qa/retours/2026-11-13-video234*-police-coince/` (87e4354) ; constats du QA : ANO-267 à 271, toutes bloquantes (28af368).
+- **WFS-461 (#369) ❌ Refusé par l'utilisateur** : voiture coincée par la police ≈ 80 s, poursuite sans fin, « R » sans frein (RG-01, 02, 04 non tenues). Règle du KO : nouvelles US, pas la session 01UY1Vv1A7.
+- **WFS-540** (P1, `@conduite`) : plus de police collée de force, le joueur repart toujours, arrestation si < 5 km/h pendant 4 s à < 8 m (décision du PO, ANO-268 : il manquait la règle ; l'utilisateur peut la changer), pénalité seulement au vrai contact, pas de « R » sans frein. ANO-267, 268, 271.
+- **WFS-541** (P1, `@conduite`, en parallèle) : voiture du trafic heurtée qui se remet en route (ou retirée hors de la vue en 8 s), plus de voitures qui se traversent. ANO-269, 270.
+- Les deux en tête de tous les tickets prêts (bandeau 🚔 de `TACHES.md`), aux deux premières nouvelles sessions `@conduite`.
