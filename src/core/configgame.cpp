@@ -179,9 +179,52 @@ std::vector<Champ> champsBoutique(ConfigJeu& c) {
     }
     return v;
 }
+// WFS-535 (E22) : section « score_etoiles » : barème du score d'une course terminée et conversion en étoiles (src/game/score_course.*)
+std::vector<Champ> champsScoreEtoiles(ConfigJeu& c) {
+    using T = Type;
+    ConfigJeu::ScoreEtoiles& e = c.scoreEtoiles;
+    static const char* PLACES[5] = {"score_etoiles.course5.place_1", "score_etoiles.course5.place_2", "score_etoiles.course5.place_3",
+                                    "score_etoiles.course5.place_4", "score_etoiles.course5.place_5"};
+    std::vector<Champ> v;
+    for (int i = 0; i < 5; i++) v.push_back({PLACES[i], T::Entier, &e.place[i], 0, 100000, "points", "course à 5 : points de cette place d'arrivée"});
+    const std::vector<Champ> w = {
+        {"score_etoiles.duel.gagne", T::Entier, &e.duelGagne, 0, 100000, "points", "duel gagné"},
+        {"score_etoiles.duel.perdu", T::Entier, &e.duelPerdu, 0, 100000, "points", "duel perdu (course terminée)"},
+        {"score_etoiles.duel.depart_min", T::Reel, &e.duelDepartMinS, 0, 600, "s", "duel : adversaire parti avant ce délai : aucun point, 0 ★ (partie arrangée)"},
+        {"score_etoiles.poursuite.victoire", T::Entier, &e.poursuiteVictoire, 0, 100000, "points", "Poursuite gagnée"},
+        {"score_etoiles.poursuite.defaite", T::Entier, &e.poursuiteDefaite, 0, 100000, "points", "Poursuite perdue (avant la part du score restant)"},
+        {"score_etoiles.poursuite.part_score_restant", T::Reel, &e.poursuitePartScore, 0, 10, "× score", "Poursuite perdue : points en plus = cette part du score de Poursuite restant"},
+        {"score_etoiles.solo.terminee", T::Entier, &e.soloTerminee, 0, 100000, "points", "course solo (checkpoints) terminée"},
+        {"score_etoiles.solo.part_distance", T::Reel, &e.soloPartDistance, 0, 10, "× points", "course solo : points en plus = cette part des points de distance de la course"},
+        {"score_etoiles.solo.plafond_distance", T::Entier, &e.soloPlafondDistance, 0, 100000, "points", "course solo : plafond des points tirés de la distance"},
+        {"score_etoiles.temps.record_battu", T::Entier, &e.recordBattu, 0, 100000, "points", "record de temps du mode et de la carte battu"},
+        {"score_etoiles.temps.proche_record", T::Entier, &e.procheRecord, 0, 100000, "points", "temps proche du record (sans le battre)"},
+        {"score_etoiles.temps.proche_record_part", T::Reel, &e.procheRecordPart, 0, 1, "× record", "« proche » : temps au plus record × (1 + cette part)"},
+        {"score_etoiles.temps.premiere_course", T::Entier, &e.premiereCourse, 0, 100000, "points", "1re course sur cette carte dans ce mode (pas encore de record)"},
+        {"score_etoiles.propre.zero_choc", T::Entier, &e.propreZero, 0, 100000, "points", "conduite propre : aucun choc"},
+        {"score_etoiles.propre.peu_chocs", T::Entier, &e.proprePeu, 0, 100000, "points", "conduite propre : de 1 choc à peu_chocs_max chocs"},
+        {"score_etoiles.propre.peu_chocs_max", T::Entier, &e.proprePeuMax, 1, 100, "chocs", "nombre de chocs le plus grand qui donne encore peu_chocs"},
+        {"score_etoiles.defis.course5.depassement", T::Entier, &e.c5Depassement, 0, 100000, "points", "défi course à 5 : points par adversaire dépassé"},
+        {"score_etoiles.defis.course5.depassement_max", T::Entier, &e.c5DepassementMax, 0, 100000, "points", "défi course à 5 : plafond des points de dépassement"},
+        {"score_etoiles.defis.course5.en_tete_dernier_tour", T::Entier, &e.c5EnTete, 0, 100000, "points", "défi course à 5 : en tête au dernier tour"},
+        {"score_etoiles.defis.poursuite.sans_contact_police", T::Entier, &e.poSansPolice, 0, 100000, "points", "défi Poursuite : aucun contact avec la police"},
+        {"score_etoiles.defis.poursuite.score_garde", T::Entier, &e.poScoreGarde, 0, 100000, "points", "défi Poursuite : arrivée avec au moins score_garde_part du score de départ"},
+        {"score_etoiles.defis.poursuite.score_garde_part", T::Reel, &e.poScoreGardePart, 0, 1, "× score de départ", "défi Poursuite : part du score de départ à garder à l'arrivée"},
+        {"score_etoiles.defis.duel.jamais_derriere", T::Entier, &e.duJamaisDerriere, 0, 100000, "points", "défi duel : jamais derrière après la mi-course"},
+        {"score_etoiles.defis.duel.ecart", T::Entier, &e.duEcart, 0, 100000, "points", "défi duel : gagné avec plus de ecart_s d'avance"},
+        {"score_etoiles.defis.duel.ecart_s", T::Reel, &e.duEcartS, 0, 600, "s", "défi duel : avance à l'arrivée à dépasser"},
+        {"score_etoiles.defis.solo.sans_retard", T::Entier, &e.soSansRetard, 0, 100000, "points", "défi course solo : tous les checkpoints passés sans retard"},
+        {"score_etoiles.defis.solo.nitro_jamais_vide", T::Entier, &e.soNitro, 0, 100000, "points", "défi course solo : nitro jamais vide"},
+        {"score_etoiles.conversion.points_par_etoile", T::Entier, &e.pointsParEtoile, 1, 100000, "points", "points pour une étoile (arrondi) ; réglé pour ≈ 10 ★ à un joueur moyen"},
+        {"score_etoiles.conversion.min", T::Entier, &e.etoilesMin, 0, 1000, "★", "étoiles au moins pour une course terminée (quittée : 0)"},
+        {"score_etoiles.conversion.max", T::Entier, &e.etoilesMax, 0, 1000, "★", "étoiles au plus pour une course"},
+    };
+    v.insert(v.end(), w.begin(), w.end());
+    return v;
+}
 std::vector<Champ> tousChamps(ConfigJeu& c) {
-    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c);
-    v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end());
+    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsScoreEtoiles(c);
+    v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end()); v.insert(v.end(), y.begin(), y.end());
     return v;
 }
 
@@ -381,6 +424,10 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
         if (cle.empty() || cle[0] == '_' || cle.find("._") != std::string::npos) continue;   // « _aide » : commentaires du fichier
         b.erreurs++; b.messages.push_back(cle + " : clé inconnue, sans effet");
     }
+    if (c.scoreEtoiles.etoilesMin > c.scoreEtoiles.etoilesMax) {   // WFS-535 : bornes croisées : min ramené à max
+        b.messages.push_back("score_etoiles.conversion.min > max : min ramené à max");
+        c.scoreEtoiles.etoilesMin = c.scoreEtoiles.etoilesMax;
+    }
     if (c.poursuite.policeDepart > c.poursuite.policeMax) {   // (contrôle inchangé)
         b.messages.push_back("poursuite.police_depart > police_max : police_depart ramené à police_max");
         c.poursuite.policeDepart = c.poursuite.policeMax;
@@ -476,6 +523,10 @@ std::string configReadme() {
         "possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; "
         "`minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), "
         "qui donnent l'équivalent en médailles et en euros de chaque prix.\n"
+        "- **Score en étoiles** (section `score_etoiles`, WFS-535, épic E22) : barème du score d'une course **terminée** : place ou issue "
+        "(`course5`, `duel`, `poursuite`, `solo`), temps contre le record (`temps`), conduite propre (`propre`) et 2 défis par mode (`defis`). "
+        "Étoiles = arrondi(total ÷ `conversion.points_par_etoile`), bornées entre `conversion.min` et `conversion.max` ; course quittée : 0 ★ ; "
+        "duel dont l'adversaire est parti avant `duel.depart_min` s : 0 ★. Un compteur de défi que le mode n'a pas vaut 0 point.\n"
         "- Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans "
         "`src/core/configgame.cpp` (table `champs`), puis relancer cette commande.\n\n"
         "| Clé | Sens | Unité | Min | Max | Défaut |\n|---|---|---|---|---|---|\n";

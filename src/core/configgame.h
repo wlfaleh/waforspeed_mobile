@@ -128,6 +128,26 @@ struct ConfigJeu {
         struct Medaille { int etoiles; double euros; };
         Medaille medaille[BOUTIQUE_MEDAILLES] = {{100, 0.99}, {300, 2.49}, {600, 4.49}};
     } boutique;
+    // WFS-535 (E22, RG-01 à RG-05) : barème du score d'une course terminée et conversion en étoiles (section « score_etoiles »).
+    // Valeurs de départ du PO ; calcul dans src/game/score_course.* (fonction pure). points_par_etoile : réglé pour ≈ 10 ★ à un
+    // joueur moyen (calcul au journal du 2026-11-13, vérifié par le banc de WFS-536).
+    struct ScoreEtoiles {
+        int place[5] = {1000, 700, 500, 350, 250};   // course à 5 : points de la 1re à la 5e place (RG-01)
+        int duelGagne = 1000, duelPerdu = 400;       // duel (RG-01)
+        double duelDepartMinS = 30;                  // RC-E22-04 : adversaire parti avant : aucun gain
+        int poursuiteVictoire = 1000, poursuiteDefaite = 300;
+        double poursuitePartScore = 0.5;             // défaite : + part du score restant
+        int soloTerminee = 600;                      // course solo (checkpoints) terminée
+        double soloPartDistance = 0.1; int soloPlafondDistance = 400;   // + part des points de distance, plafonnée
+        int recordBattu = 300, procheRecord = 150, premiereCourse = 150;   // temps (RG-02)
+        double procheRecordPart = 0.05;              // « à moins de 5 % du record »
+        int propreZero = 200, proprePeu = 100, proprePeuMax = 2;   // conduite propre (RG-03) : 0 choc, 1 à proprePeuMax chocs
+        int c5Depassement = 20, c5DepassementMax = 200, c5EnTete = 100;   // défis course à 5 (RG-04)
+        int poSansPolice = 200, poScoreGarde = 100; double poScoreGardePart = 0.5;   // défis Poursuite
+        int duJamaisDerriere = 150, duEcart = 100; double duEcartS = 3;   // défis duel
+        int soSansRetard = 150, soNitro = 100;       // défis course solo
+        int pointsParEtoile = 85, etoilesMin = 5, etoilesMax = 40;   // conversion (RG-05)
+    } scoreEtoiles;
     // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
     char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
 };
