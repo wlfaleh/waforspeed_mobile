@@ -1323,3 +1323,8 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
   - vue `mer-eclaboussure-pres` (gros plan depuis l'eau, 0,2 et 0,45 s après la sortie du dauphin) : 2 lignes ;
   - vue `mer-rochers-pres` (écume contre les blocs, de près) : 1 ligne ; vue `mer-falaise` (pied de la falaise depuis l'eau) : 3 lignes.
 - Rien d'autre de `plage.cpp` (WFS-383) n'est touché.
+
+### 2026-11-13 18:38:14 — WFS-401 : avis 3D « À REPRENDRE » corrigé (Claude, agent dev3d (01Us6uCxKQ))
+- B1 écume : opacité en dégradé, trous irréguliers, filaments, albédo ≈ 0,63 ; B2 reflets du soleil et de la lune tirés selon la loi des pentes (bords doux) ; R3 jets inégaux et penchés ; R4 vue `mer-falaise-blocs`.
+- `plage.cpp` (accroche annoncée, RG-07) : vue `mer-rochers-pres` retirée, `mer-falaise-blocs` ajoutée (+ 1 ligne : pied de la falaise) : 8 lignes ajoutées, 1 changée au total.
+- Vérification : 125 tests CPU réussis ; captures du banc `mer` refaites en entier sur la branche synchronisée avec main.

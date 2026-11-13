@@ -9,6 +9,7 @@ Branche `feature/waforspeed-401` comparée à `origin/main` ; bancs : mer ; filt
 | `mer-eclaboussure-pres-1` | — | ![après](apres-mer-eclaboussure-pres-1.jpg) |
 | `mer-eclaboussure-pres-2` | — | ![après](apres-mer-eclaboussure-pres-2.jpg) |
 | `mer-eclaboussure` | ![avant](avant-mer-eclaboussure.jpg) | ![après](apres-mer-eclaboussure.jpg) |
+| `mer-falaise-blocs` | — | ![après](apres-mer-falaise-blocs.jpg) |
 | `mer-falaise` | — | ![après](apres-mer-falaise.jpg) |
 | `mer-marina-bassin` | ![avant](avant-mer-marina-bassin.jpg) | ![après](apres-mer-marina-bassin.jpg) |
 | `mer-marina` | ![avant](avant-mer-marina.jpg) | ![après](apres-mer-marina.jpg) |
@@ -16,7 +17,6 @@ Branche `feature/waforspeed-401` comparée à `origin/main` ; bancs : mer ; filt
 | `mer-promenade-soleil` | ![avant](avant-mer-promenade-soleil.jpg) | ![après](apres-mer-promenade-soleil.jpg) |
 | `mer-reflets-nuit` | ![avant](avant-mer-reflets-nuit.jpg) | ![après](apres-mer-reflets-nuit.jpg) |
 | `mer-rochers-nuit` | ![avant](avant-mer-rochers-nuit.jpg) | ![après](apres-mer-rochers-nuit.jpg) |
-| `mer-rochers-pres` | — | ![après](apres-mer-rochers-pres.jpg) |
 | `mer-rochers` | ![avant](avant-mer-rochers.jpg) | ![après](apres-mer-rochers.jpg) |
 | `mer-sillage` | ![avant](avant-mer-sillage.jpg) | ![après](apres-mer-sillage.jpg) |
 | `mer-suite-1` | ![avant](avant-mer-suite-1.jpg) | ![après](apres-mer-suite-1.jpg) |
