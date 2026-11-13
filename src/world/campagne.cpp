@@ -218,7 +218,7 @@ protected:
                                  it.t == T_CHURCH ? 10.f : it.t == T_FARM ? 8.f : std::max(it.d, 6.f), it.t == T_CHURCH ? parois::ALPHA_PIERRE : parois::ALPHA_DUR);   // WFS-278 : obstacle, matériau
             {   // WFS-372 : premier objet de chaque sorte (banc des gros plans) ; ferme avec hangar, rang de vigne le plus proche
                 const int o = it.t == T_VINES && it.lat < (float)RW + 7 ? campagne::OB_VIGNE : it.t == T_FENCE ? campagne::OB_CLOTURE : it.t == T_BALES && it.k >= 3 ? campagne::OB_BOTTES
-                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : it.t == T_MURET ? campagne::OB_MURET : -1;
+                            : it.t == T_FARM && it.k ? campagne::OB_FERME : it.t == T_POLE ? campagne::OB_POTEAU : -1;
                 if (o >= 0 && g_objets[o].seg < 0 && n > 200) g_objets[o] = {n, it.side, it.lat};
             }
             {   // WFS-387 (RG-12, remarque 7) : poteaux réellement posés (clôture par côté, ligne électrique), pour leurs liaisons
@@ -666,7 +666,7 @@ protected:
             const Pose p1 = poseAt(t, a + 1);
             const vec3 a0 = lateral(p, s * it.lat), b0 = lateral(p1, s * it.lat);
             campagne::Maille M;
-            campagne::muretTroncon(M, a0, b0, p.r * s, p1.r * s, C_WALK, C_PIERRE0 + 1, hacher(a, it.side));
+            campagne::muretTroncon(M, a0, b0, p.r * s, p1.r * s, C_PIERRE0 + 1, C_PIERRE0 + 2, hacher(a, it.side));
             poserModele(S, M, {0, 0, 0}, {1, 0, 0}, {0, 0, 1});
             break;
         }
@@ -1065,7 +1065,9 @@ private:
                 for (int side : {-1, 1}) {
                     const Libre* l = libreA(a, side);
                     if (l && l->h > 1.5f) continue;   // côté montagne : talus de roche (profil)
-                    if (ep) { Item it; it.t = T_MURET; it.side = side; it.lat = R + 0.5f; item(a, it); }
+                    if (ep) { Item it; it.t = T_MURET; it.side = side; it.lat = R + 0.5f; item(a, it);
+                        // WFS-387 : banc des gros plans : parapet EXTÉRIEUR de l'épingle (celui où file une voiture qui ne tourne pas)
+                        if (g_objets[campagne::OB_MURET].seg < 0 && a > 200 && side == (track_->segAt(a).curve > 0 ? -1 : 1)) g_objets[campagne::OB_MURET] = {a, side, it.lat}; }
                     else if (a % 2 == 0) { Item it; it.t = T_GLISS; it.side = side; it.lat = R + 0.6f; it.petit = true; CarteDecor::item(a, it); }
                 }
             }

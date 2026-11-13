@@ -41,25 +41,27 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
         {"poteau-soleil", campagne::OB_POTEAU, 9.f, 12.f, 1.6f, 0.f, 0.f, 6.f, 50, false},
         {"cloture-soleil", campagne::OB_CLOTURE, 2.4f, 4.5f, 1.3f, 0.f, -1.f, 0.6f, 50, false},
         // WFS-387 (RG-11) : parapet de moellons d'une épingle du col, de près, et la voiture arrêtée contre lui (repère : la voiture)
-        {"muret", campagne::OB_MURET, -5.f, -3.5f, 1.5f, 0.2f, 1.5f, 0.4f, 55, true},
+        {"muret", campagne::OB_MURET, -2.6f, -1.5f, 1.2f, 0.2f, 3.5f, 0.35f, 55, true},
         {"muret-voiture", campagne::OB_MURET, -6.5f, -7.f, 2.2f, -0.6f, 0.f, 0.6f, 55, true, true},
     };
     for (const char* mo : {"jour", "nuit"}) for (const Vue& v : vues) {
         if (!std::strcmp(mo, "nuit") && !v.nuit) continue;
+        if (const char* f = std::getenv("WFS_BANC_VUE"); f && !std::strstr(v.nom, f)) continue;   // essai local : vues dont le nom contient f
         const campagne::ObjetBanc& o = ob[v.sorte];
         if (o.seg < 0) { ecarts++; WFS_ERR("banc campagne-objets : aucun objet « %s » sur le tour", v.nom); continue; }
         setenv("WFS_MOMENT", mo, 1);
-        setenv("WFS_DEPART", std::to_string(o.seg - (int64_t)(25 / SEG_M)).c_str(), 1);
+        // voiture lancée contre l'objet : départ 4 m après le début du parapet (il n'existe que dans l'épingle)
+        setenv("WFS_DEPART", std::to_string(o.seg + (int64_t)((v.voiture ? 4 : -25) / SEG_M)).c_str(), 1);
         if (!g.init(r, "golf", "campagne")) { ecarts++; continue; }
         g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course);
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
         double segVue = (double)o.seg;
-        if (v.voiture) {   // la voiture part vers le parapet à 30 km/h environ, puis frein : arrêtée contre lui (choc WFS-256)
+        if (v.voiture) {   // la voiture va tout droit vers le parapet extérieur à 30 km/h environ, puis frein : arrêtée contre lui (choc WFS-256)
             g.modeManette = true;
             for (int i = 0; i < 360; i++) {
                 const Player& pj = g.player();
-                g.manette = DriveInput{}; g.manette.steer = i < 90 ? (float)o.side * 0.7f : 0.f;
-                g.manette.gas = i < 90 && pj.kmh() < 30; g.manette.brake = i >= 90;
+                g.manette = DriveInput{}; g.manette.steer = i < 90 ? (float)o.side * 0.7f : 0.f;   // braquage vers le parapet extérieur (steer > 0 : playerX croissant, vu au banc)
+                g.manette.gas = i < 90 && pj.kmh() < 30; g.manette.brake = i >= 90 && pj.kmh() > 2;   // frein sans enchaîner la marche arrière
                 g.update(1.0 / 60); if (i % 30 == 0) g.render(402 + i / 60.0);
             }
             g.manette = DriveInput{}; g.modeManette = false;
