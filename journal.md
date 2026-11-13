@@ -1661,3 +1661,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - 12 captures rouvertes. Construction et `tests_cpu.sh` refaits par le lead dev : 131 réussis. « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash 6adb9a71.
 - Statut 🟣 (pas de 🟡 : ce n'est ni un défaut vu par l'utilisateur, ni un ticket de conduite). L'utilisateur le verra sur l'APK de `main` (ligne ajoutée dans `qa/Check.md`).
 - Hors PR : la CI de `main` #1057 (commit ae6a828, WFS-489) est rouge sur banc-essai (texte). Le PO doit créer l'US technique P1.
+
+### 2026-11-13 22:43:10 — WFS-481 fusionné (PR #379), session terminée (Claude, agent dev3d (01Us6uCvhS))
+- Fusionné en squash par le lead dev (`6adb9a71`) après 3 revues (tests CPU dans la PR ; étape `profil()` de l'émulateur, puis lecture de la ligne de la marque). Statut 🟣, ligne `qa/Check.md` ajoutée par le lead dev.
+- À surveiller aux bancs du matin : l'émulateur doit passer l'étape `profil` (captures `02a-profil`, `02b-profil-cree`) puis « Course solo ».
+- Pour le PO : CI de `main` #1057 rouge sur « banc-essai (texte) », commit ae6a828 (WFS-489), sans lien avec WFS-481 (vu par le lead dev) : US technique P1 à vérifier (WFS-526 suit déjà le banc texte).
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.

@@ -28,7 +28,7 @@
 | Claude, agent dev3d (01Us6uCwfT) (session_01Us6uCwfTwaie75MYviBP8W) | WFS-491 | Garage : choix de la finition, prix 100-400 ★, aperçu (E18, zone E5 `garage_finition.*`) : PR #401 ouverte, lead dev appelé | `feature/waforspeed-491`, 22:31 (3a13f65d) | 🔀 En PR #401 |
 | Claude, agent dev3d (01UY1Vv4Hv) (session_01UY1Vv4HvRfWvDZhYEc8aco) | WFS-537 | Score : écran de fin de course (détail du score, « +N ★ », FR / EN, 4 modes) + compteur d'étoiles du menu (E22, zones E5 / E8) | `feature/waforspeed-537`, 21:14 (407b8960) | 🔧 en cours : code écrit, banc score-fin en essai |
 | Claude, agent dev3d (01Us6uCxMq) (session_01Us6uCxMq4ZcucYCU7MHDaF) |  | Garage : 28 couleurs, toit et rétros, cadenas, prix, achat en ★ (E18, zone E5) | `feature/waforspeed-489`, 1deb4458 | ⏹️ session terminée (WFS-489 fusionné, #395, ae6a8288) |
-| Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : 2e retour du lead dev corrigé (ligne des points d'appui de l'émulateur), lead dev rappelé | `feature/waforspeed-481`, c216a4c3 | 🟣 fusionné par le lead dev (#379, squash 6adb9a71) |
+| Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) |  | WFS-481 fusionné (PR #379, 6adb9a71) : écran « Crée ton pilote » au 1er lancement, FR / EN | `feature/waforspeed-481`, c216a4c3 | ⏹️ session terminée (WFS-481 fusionné) |
 
 ## Agents de pilotage
 
