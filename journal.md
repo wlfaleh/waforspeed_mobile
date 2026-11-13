@@ -1690,3 +1690,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **WFS-540** (P1, `@conduite`) : plus de police collée de force, le joueur repart toujours, arrestation si < 5 km/h pendant 4 s à < 8 m (décision du PO, ANO-268 : il manquait la règle ; l'utilisateur peut la changer), pénalité seulement au vrai contact, pas de « R » sans frein. ANO-267, 268, 271.
 - **WFS-541** (P1, `@conduite`, en parallèle) : voiture du trafic heurtée qui se remet en route (ou retirée hors de la vue en 8 s), plus de voitures qui se traversent. ANO-269, 270.
 - Les deux en tête de tous les tickets prêts (bandeau 🚔 de `TACHES.md`), aux deux premières nouvelles sessions `@conduite`.
+
+### 2026-11-13 23:05:07 — WFS-491 : PR #401 refusée par le lead dev (lead-dev)
+- Commit relu : 3a13f65d. 36 captures ouvertes, tout le diff lu, branche construite et testée (131 tests CPU réussis). Banc `garage-finitions` relancé en 1024x768 (0 écart) et en 1280x800.
+- Bon en 1280x720 : rangée, prix par classe, aperçu (Caméléon, Mat, Candy, Chromé), refus sans débit, achat pour une seule voiture, parcours RC-E18-09, relance, courses jour et nuit.
+- Bloquant : (1) en 4:3, les noms des finitions débordent sur le bouton voisin et sont illisibles (`garage_finition.cpp:85-92`) ; (2) police réduite de 33 % (12 → 8 px) alors que E20 en permet 20 % au plus ; (3) RC-E18-03 (endurance avant / après) pas mesurée.
+- Revue postée dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #401).
