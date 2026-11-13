@@ -1436,3 +1436,32 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Revue (commit a9a4ea6a) : construction et tests CPU refaits (116 réussis, test_personnalisation 40/40) ; 16 paires de captures ouvertes (garage identique au pixel, vitrines sauvegarde RG-03 / RG-07 justes) ; diff lu en entier.
 - **Bloquant** : `src/game/sauvegarde.cpp:98`, `Sauvegarde::defauts()` : `map`, `tod`, `moment`, `quality`, `qualityChoisie`, `cam` passés par erreur dans un commentaire, donc plus remis au défaut (`desactiver()` des bancs, `lire()` sans la clé) ; prouvé par un petit programme. Correction et test demandés. Remarque : commentaire WFS-24 déplacé dans `course_system.cpp`.
 - Statut : ↩️ Retour lead dev (PR #373) dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
+
+### 2026-11-13 00:22:42 — WFS-395 : PR #374 refusée par le lead dev (lead-dev)
+- Revue (commit f926f3a5) : 36 captures ouvertes (bancs cockpit et cockpit-vitrine), tout le diff lu, construction et tests CPU refaits (115 réussis). Habitacles nettement meilleurs que main, code propre (réutilise les outils du lot 1 de WFS-325).
+- **Bloquant** : (1) Corvette : poignée de maintien du passager qui flotte à 3 cm de la console, pied bas dans le vide (`vehicule_cockpit_details.cpp:437-443`) ; (2) Brezza : levier de boîte automatique réduit à une boule sur une tige, sans soufflet (`:478-484`, RG-04) ; (3) capture « Tests CPU » et `qa/pr/WFS-395/tests-cpu.log` absentes (règle du 2026-11-11).
+- Revue postée en COMMENT (même compte GitHub). Statut : ↩️ Retour lead dev (PR #374) dans `TACHES.md`, `track-agent.md`, `suivi-pr.md`.
+
+### 2026-11-13 00:22:50 — WFS-387 découpé (RG-09) : périmètre réduit, WFS-518 à 525 créés (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv43z) (RG-09 : travail de plusieurs jours ; réseau sans site de photos ni de textures PBR). Décision du PO : **découpage accepté tel que proposé**, rien de perdu.
+- **WFS-387 (même session, une PR)** : RG-12 en entier (réserves 1 à 9 de WFS-372), RG-11 (muret des épingles, test CPU), RG-10 (plus de vide gris, vues de dessus), inventaire de RG-02 (`qa/pr/WFS-387/inventaire.md`, chaque partie renvoyée à son ticket ; photos réelles reportées à WFS-521), taille ≤ 700 Mo, banc perf en Basse, captures, avis agent 3D. Règles mises à jour dans `regles-de-gestion/WFS-387.md` (section « Découpage », texte d'origine gardé).
+- **Nouvelles US E15, file Campagne, P2 Haute, ≤ 1 jour chacune, en chaîne (toutes touchent `campagne.cpp`)** : WFS-518 village en pierre (reprend WFS-231, 162) → WFS-519 champs, vignes, haies, fossés (reprend WFS-163) → WFS-520 collines, éoliennes, ouvrages de l'autoroute, cascade → WFS-521 textures PBR HD et photos (⏸, attend que l'utilisateur ouvre `ambientcg.com` / `polyhaven.com`, question dans `tache utilisateur.md`). Pour de nouvelles sessions `@dev` / `@dev3d`, jamais pour la session 01UY1Vv43z (un sujet par session).
+- **Tâches compagnes `@cicd`** (ordre permanent du 2026-11-12) : WFS-522 (après 518), 523 (après 519), 524 (après 520), 525 (après 521) ; **WFS-465 reste derrière WFS-387 réduit** (titre ajusté).
+- Bandeau 🏁 : la suite Campagne ajoutée après WFS-515, ordre de l'utilisateur inchangé ; `E15-decors.md` (file Campagne) et `track-agent.md` à jour.
+
+
+### 2026-11-13 00:26:58 — WFS-485 : retour lead dev corrigé, PR #371 à relire (Claude, agent dev3d (01UY1Vv46n))
+- Cause : `files/reglages.txt` (src/ui/ecrans/reglages.cpp:160) garde 5 réglages absents de `sauvegarde.txt` (mouvements, Ultra, regard Cockpit, fantôme, onglet) : il manquait aux règles. Corrigé dans 4ef1bbc1 (2e `include` dans les deux XML) ; écart à RG-01 signalé au PO dans la PR.
+- Tests CPU : 115 réussis sur b5df9a18, journal dans `qa/pr/WFS-485/tests-cpu.log` (23269b29). Captures régénérées, identiques avant / après. Réponses point par point sous le refus dans la PR. Lead dev rappelé.
+
+### 2026-11-13 00:32:38 — WFS-504 : PR #372 corrigée après la revue du lead dev (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Fait : réponse sous la revue (« Bien reçu », puis point par point « corrigé dans ») ; point 1 : partie « Tests CPU » et `qa/pr/WFS-504/tests-cpu.log` (116 tests réussis, commit `d8f997a1`) ; point 2 : captures téléphone 2400x1080 en français avant / après (`*-telephone-reglages-onglet-*`) ; remarques : langue du téléphone copiée sous verrou, recherche des textes sans copie, secours de l'autre table.
+- Vérification : tests CPU 116 / 116 ; captures regardées (seul déplacement sur téléphone : « Réduire les mouvements », pour la 7e ligne « Langue »).
+- Suite : lead dev rappelé (statut 🔁 dans `suivi-pr.md`).
+
+
+### 2026-11-13 00:39:55 — WFS-387 : inventaire, plan et accroches annoncées (Claude, agent dev3d (01UY1Vv43z))
+- Inventaire RG-02 (périmètre du découpage) : `qa/pr/WFS-387/inventaire.md` sur `feature/waforspeed-387`. Parties traitées ici : bottes, ferme, hangar, clôture, poteau de ligne (réserves de WFS-372), parapet des épingles (forme nue → moellons et chaperon), sol au-delà des bandes. Renvoyées : église, commerces, fontaine, feux, panneaux, J6 → WFS-518 ; champs, vignes, haies, arbres, fossés, enclos → WFS-519 ; sommets en pyramides, éoliennes, autoroute, cascade → WFS-520 ; textures PBR et photos → WFS-521.
+- Plan : grain porté par la luminosité des sommets (MAT_VTINT de la part P_UNI : longueur de la normale), sans texture ni nouveau matériau ; liaisons des poteaux par la liste des poteaux réellement posés (`poteauSuivant`) ; parapet `muretTroncon` et boîte de choc `chocMuret` tirés des mêmes mesures ; sol lointain en grille de 48 m (20 tuiles, 31 920 triangles, tuiles à plus de 2,6 km de la caméra non dessinées), préparé au chargement.
+- Accroches : aucune hors de la zone de WFS-387 (`campagne.cpp`, `decor_campagne_*`, `tests/test_decor_campagne.cpp`). Aucun fichier commun touché.
+- Taille du décor (RG-E15-01) : **2,9 Mo** (`du -cb assets/world/animaux/{vache,cheval,mouton}.wfa assets/world/feuillage.png` = 2 906 962 octets ; aucun dossier `assets/world/modeles/campagne`, `assets/textures/decor/campagne` ni `paquets/sources/campagne` : le reste est calculé au chargement) ≤ 700 Mo.
