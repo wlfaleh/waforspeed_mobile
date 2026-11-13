@@ -1543,3 +1543,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
   - code (non bloquant, lead dev) : `else WFS_ERR` du dauphin dans `benchMer` rattaché au 2e `if` ; `atan(0, 0)` au centre de la nappe de la gerbe ;
   - hors ticket, vus sur les captures : blocs d'enrochement peu détaillés et texture de la falaise en damier (WFS-383 / 386), toboggan, pédalos, bateaux en boîtes (WFS-369 à 373, 378).
 - Session terminée : un seul ticket par session ; aucun autre ticket demandé.
+
+### 2026-11-13 20:29:03 — WFS-489 : 2e relecture, code approuvé, retour pour synchronisation (PR #395) (lead-dev)
+- Les 3 points du refus de 17:27 sont corrigés : banc `garage` sans `[ERREUR]` (Turquoise achetée, puis course), `course-p911-gris` identique à l'avant, conflit `test_score_course` réglé. J'ai construit et testé la branche moi-même sur 7697ebc6, puis sur 6ea38a6f (synchronisée avec WFS-507) : 127 tests CPU réussis ; bancs `garage`, `garage-couleurs` (0 écart) et `textes` (VERT) relancés. Approbation écrite dans la PR (en commentaire, à cause du même compte).
+- **Fusion refusée par GitHub** : de nouveaux conflits avec `main` sont apparus pendant la relecture (WFS-483 #397 dans `src/ui/garage.cpp`, WFS-490 #388, WFS-536 #399 dans `CMakeLists.txt`). Retour au développeur : synchroniser en gardant les deux côtés, relancer les tests et les 3 bancs, refaire les captures du garage (plaque de WFS-483). La prochaine relecture portera seulement sur la résolution et les captures.
