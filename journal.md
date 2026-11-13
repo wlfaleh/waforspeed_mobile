@@ -1459,3 +1459,9 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Vérification : tests CPU 116 / 116 ; captures regardées (seul déplacement sur téléphone : « Réduire les mouvements », pour la 7e ligne « Langue »).
 - Suite : lead dev rappelé (statut 🔁 dans `suivi-pr.md`).
 
+
+### 2026-11-13 00:39:55 — WFS-387 : inventaire, plan et accroches annoncées (Claude, agent dev3d (01UY1Vv43z))
+- Inventaire RG-02 (périmètre du découpage) : `qa/pr/WFS-387/inventaire.md` sur `feature/waforspeed-387`. Parties traitées ici : bottes, ferme, hangar, clôture, poteau de ligne (réserves de WFS-372), parapet des épingles (forme nue → moellons et chaperon), sol au-delà des bandes. Renvoyées : église, commerces, fontaine, feux, panneaux, J6 → WFS-518 ; champs, vignes, haies, arbres, fossés, enclos → WFS-519 ; sommets en pyramides, éoliennes, autoroute, cascade → WFS-520 ; textures PBR et photos → WFS-521.
+- Plan : grain porté par la luminosité des sommets (MAT_VTINT de la part P_UNI : longueur de la normale), sans texture ni nouveau matériau ; liaisons des poteaux par la liste des poteaux réellement posés (`poteauSuivant`) ; parapet `muretTroncon` et boîte de choc `chocMuret` tirés des mêmes mesures ; sol lointain en grille de 48 m (20 tuiles, 31 920 triangles, tuiles à plus de 2,6 km de la caméra non dessinées), préparé au chargement.
+- Accroches : aucune hors de la zone de WFS-387 (`campagne.cpp`, `decor_campagne_*`, `tests/test_decor_campagne.cpp`). Aucun fichier commun touché.
+- Taille du décor (RG-E15-01) : **2,9 Mo** (`du -cb assets/world/animaux/{vache,cheval,mouton}.wfa assets/world/feuillage.png` = 2 906 962 octets ; aucun dossier `assets/world/modeles/campagne`, `assets/textures/decor/campagne` ni `paquets/sources/campagne` : le reste est calculé au chargement) ≤ 700 Mo.
