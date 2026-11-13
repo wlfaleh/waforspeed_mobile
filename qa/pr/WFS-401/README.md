@@ -11,6 +11,10 @@ Branche `feature/waforspeed-401` comparée à `origin/main` ; bancs : mer ; filt
 | `mer-eclaboussure` | ![avant](avant-mer-eclaboussure.jpg) | ![après](apres-mer-eclaboussure.jpg) |
 | `mer-falaise-blocs` | — | ![après](apres-mer-falaise-blocs.jpg) |
 | `mer-falaise` | — | ![après](apres-mer-falaise.jpg) |
+| `mer-lune-suite-1` | — | ![après](apres-mer-lune-suite-1.jpg) |
+| `mer-lune-suite-2` | — | ![après](apres-mer-lune-suite-2.jpg) |
+| `mer-lune-suite-3` | — | ![après](apres-mer-lune-suite-3.jpg) |
+| `mer-lune-suite-4` | — | ![après](apres-mer-lune-suite-4.jpg) |
 | `mer-marina-bassin` | ![avant](avant-mer-marina-bassin.jpg) | ![après](apres-mer-marina-bassin.jpg) |
 | `mer-marina` | ![avant](avant-mer-marina.jpg) | ![après](apres-mer-marina.jpg) |
 | `mer-promenade-dos` | ![avant](avant-mer-promenade-dos.jpg) | ![après](apres-mer-promenade-dos.jpg) |

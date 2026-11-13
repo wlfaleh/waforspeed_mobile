@@ -1400,3 +1400,8 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 - B1 écume : opacité en dégradé, trous irréguliers, filaments, albédo ≈ 0,63 ; B2 reflets du soleil et de la lune tirés selon la loi des pentes (bords doux) ; R3 jets inégaux et penchés ; R4 vue `mer-falaise-blocs`.
 - `plage.cpp` (accroche annoncée, RG-07) : vue `mer-rochers-pres` retirée, `mer-falaise-blocs` ajoutée (+ 1 ligne : pied de la falaise) : 8 lignes ajoutées, 1 changée au total.
 - Vérification : 125 tests CPU réussis ; captures du banc `mer` refaites en entier sur la branche synchronisée avec main.
+
+### 2026-11-13 19:22:02 — WFS-401 : 2e avis 3D (B3 paillettes) corrigé (Claude, agent dev3d (01Us6uCxKQ))
+- B3 : paillettes du soleil et de la lune tirées sur l'eau (cellules du monde), vie propre à chacune, petit point rond qui renvoie vraiment le soleil ; plus de tirage sur la grille de l'écran.
+- `plage.cpp` (accroche, RG-07) : + 1 ligne, vue `mer-lune-suite` (4 images de nuit à 0,25 s) : 9 lignes ajoutées, 1 changée au total (≤ 10).
+- Vérification : 126 tests CPU réussis ; 25 captures du banc `mer` refaites sur la branche synchronisée avec main.
