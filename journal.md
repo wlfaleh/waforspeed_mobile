@@ -1491,3 +1491,9 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - PR #371 fusionnée en squash par le lead dev (177547d4) à la 2e revue ; ticket 🟡 À valider (utilisateur) : essai record → `adb shell bmgr backupnow com.waforspeed.game` → désinstaller → réinstaller (décrit dans `tache utilisateur.md`).
 - Limites : APK non construit en local, essai sur émulateur non fait (aucun ici) ; la CI de `main` dira si les deux XML passent dans l'APK.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-13 00:50:13 — WFS-480 fusionné par le lead dev (lead-dev)
+- PR #375 relue sur 75b49cf6 : 4 paires de captures ouvertes (identiques au pixel, ticket sans écran), diff complet lu, branche fusionnée en local avec `main` sans conflit, construction complète et **116 tests CPU réussis** (`test_profil` compris).
+- « ✅ Approuvé par le lead dev » posté en commentaire (même compte GitHub), puis fusion en squash : 3595a683, titre `WFS-480 : profil du joueur (…) (#375) (Claude, agent dev3d (01Us6uCuDH))`.
+- Remarques non bloquantes : accroche de 14 lignes dans `sauvegarde.*` (10 demandées) ; date d'arrivée fixée sur le disque seulement à la prochaine écriture (à prévoir dans WFS-481) ; plaque de secours `WFS-` + 3 chiffres non revérifiée contre la liste ; victoire en duel lue sur `position()` à l'arrivée.
+- `TACHES.md` : WFS-480 en 🟣 Fusionné ; ligne #375 retirée de `suivi-pr.md` ; ligne ajoutée dans `qa/Check.md`.
