@@ -718,7 +718,7 @@ protected:
         if (!solFondPret_) construireSolFond(r);
         for (const TuileSol& tu : solFond_)   // WFS-387 (RG-10) : tuiles du sol à moins de 2,6 km de la caméra (le brouillard cache le reste)
             if (tu.m.indexCount && (tu.c.x - g.camPos.x) * (tu.c.x - g.camPos.x) + (tu.c.z - g.camPos.z) * (tu.c.z - g.camPos.z) < 2600.f * 2600.f + tu.r * tu.r) {
-                r.draw(tu.m, mats_[solActif_ ? P_TERRE : P_UNI], mat4::identity()); nS++;
+                r.draw(tu.m, mats_[solActif_ ? P_TERRE : P_UNI], translate({0, SOL_DECALE_Y, 0})); nS++;
             }
         if (!sommets_.empty() && !sommetsMesh_.indexCount) construireSommets(r);
         if (sommetsMesh_.indexCount) { r.draw(sommetsMesh_, mats_[P_UNI], mat4::identity()); nS = 1; }   // WFS-138 : un appel
@@ -1160,6 +1160,10 @@ private:
     // collines douces loin de toute route (± 25 m à 600 m, bruit de 700 et 260 m) ; sous les bandes, il passe 3 m sous la plus basse
     // des routes voisines (aucune pointe à travers le sol posé). Sol naturel des bas-côtés (sols.glsl, pré, terre, roche selon la
     // pente) ; un seul appel de dessin, préparé une fois au chargement (RG-06).
+    // Le moteur trie les opaques du plus proche au plus loin selon l'origine de leur matrice (WFS-222) : les tuiles sont posées
+    // avec une origine à 20 km sous la carte (sommets décalés d'autant), pour être dessinées APRÈS tout le reste : les pixels du sol
+    // cachés par les bandes, les vignes et les arbres sont alors rejetés avant le shader (RG-06). Précision : 2 mm à 20 km.
+    static constexpr float SOL_DECALE_Y = -20000.f;
     struct TuileSol { Mesh m; vec3 c; float r; };   // tuile de 32 × 32 cases (≈ 1,5 km), centre et rayon
     std::vector<TuileSol> solFond_;
     bool solFondPret_ = false;
@@ -1219,7 +1223,7 @@ private:
             std::vector<Vertex> V; std::vector<uint32_t> I;
             for (int j = tj; j <= j1; j++) for (int i = ti; i <= i1; i++) {
                 const vec3 n = normalize(vec3{(h(i - 1, j) - h(i + 1, j)) / (2 * px), 1.f, (h(i, j - 1) - h(i, j + 1)) / (2 * pz)});
-                V.push_back({x0 + i * px, h(i, j), z0 + j * pz, n.x, n.y, n.z, u.x, u.y});
+                V.push_back({x0 + i * px, h(i, j) - SOL_DECALE_Y, z0 + j * pz, n.x, n.y, n.z, u.x, u.y});
             }
             for (int j = 0; j < j1 - tj; j++) for (int i = 0; i < i1 - ti; i++) {
                 // case entièrement cachée par les bandes de sol (ses 4 coins dessous) : rien à dessiner (RG-06, pixels jamais vus)
