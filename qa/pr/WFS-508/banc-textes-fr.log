@@ -1,0 +1,11 @@
+[info] textes (WFS-508) : CGU : texte long : il défile (plus haut que le cadre) : OK
+[info] textes (WFS-508) : CGU : aucune ligne plus large que le cadre : OK
+[info] textes (WFS-508) : CGU : case, « Refuser » et « Accepter » côte à côte, sans chevauchement : OK
+[info] textes (WFS-508) : CGU : milieu du texte atteint au doigt : OK
+[info] textes (WFS-508) : CGU : bas du texte atteint, case cochée : OK
+[info] textes (WFS-508) : CGU : lecture : bouton « Fermer » présent : OK
+[info] textes (WFS-504) : langue fr : 82 texte(s) vus, 0 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+[info] textes (WFS-508) : CGU fr : 0 échec(s) → VERT
+[info] textes (WFS-504) : langue fr : 112 texte(s) vus, 5 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+[info] textes (WFS-504) : langue en : 31 texte(s) vus, 1 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+[info] textes (WFS-504) : banc fr : 0 échec(s) → VERT
