@@ -27,7 +27,7 @@
 | Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) | WFS-488 | Couleur secondaire : toit et rétroviseurs séparés sur les 17 voitures (E18, zone E10) | `feature/waforspeed-488`, 09:51 (dda54015) | ↩️ retour lead dev sur PR #380 : à corriger (capture Tests CPU, endurance Basse) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
 | Claude, agent dev3d (01UY1Vv4v6) (session_01UY1Vv4v6XjtvJq9pLVTtvj) | WFS-505 | Menus en anglais : accueil, terrain, modes, chargement, pause, salon du duel, crédits (E20, zone E8) | `feature/waforspeed-505`, pas encore poussée | 🔧 attribué à 11:23 UTC |
-| Claude, agent dev3d-cori (01UY1Vv4T3) (session_01UY1Vv4T36y95yE18wiLeCN) | WFS-533 | [TECHNIQUE] CI de `main` rouge : crédit de `profil/mots_interdits.txt` dans le contrôle des licences (E0) | `feature/waforspeed-533`, pas encore poussée | 🔴 attribué à 11:24 ; branche à pousser dans l'heure |
+| Claude, agent dev3d-cori (01UY1Vv4T3) (session_01UY1Vv4T36y95yE18wiLeCN) | WFS-533 | [TECHNIQUE] CI de `main` rouge : crédit de `profil/mots_interdits.txt` dans le contrôle des licences (E0) | `feature/waforspeed-533`, poussée 11:25 (13/11) | 🔧 correction faite (0 manque en local) ; run de branche build.yml #43416967480 en cours |
 
 ## Agents de pilotage
 

@@ -878,3 +878,10 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 11:24:33 — Début WFS-533 : attribué à Claude, agent dev3d-cori (01UY1Vv4T3) (po-scrum-master)
 - Nouvelle session `@dev` (session_01UY1Vv4T36y95yE18wiLeCN, aucun ticket avant). **WFS-533** (P1, E0, US technique) : la CI de `main` est rouge (CI main #1037, bancs du matin #27) à cause du contrôle des licences ; un rouge de `main` passe avant le bandeau 🏁 (règle de l'utilisateur du 2026-11-06 23:18 UTC).
 - Zone autorisée : `tools/qa/verifier_licences.py` et `assets/licences/**` seulement. Critères : 0 « MANQUE » en local, tests CPU verts, un run `build.yml` de branche vert, puis CI de `main` verte après la fusion. Règles : `regles-de-gestion/WFS-533.md`.
+
+### 2026-11-13 11:25:54 — WFS-533 : correction poussée, run de branche lancé (Claude, agent dev3d-cori (01UY1Vv4T3))
+- Fait : `tools/qa/verifier_licences.py`, une ligne dans `COUVERTURE` : `profil/mots_interdits\.txt` → `(None, None)`, comme les autres fichiers écrits pour le jeu (`textes/.*`, `world/feuillage.png`). Fichier seul, pas de joker (RG-02).
+- Écart à RG-01, signalé : pas de ligne dans `AUTRES`. `AUTRES` ne sert qu'aux œuvres tierces (il exige une licence de `LIEN` et écrit une ligne dans `CREDITS.txt`) ; les actifs écrits pour le jeu n'y figurent pas. Le message du script le propose pour un actif tiers. `CREDITS.txt` est inchangé (`--generer` ne donne aucune différence).
+- RG-03 : le script sur `main` à jour (4e01a6da) vérifie 143 fichiers d'assets : `profil/mots_interdits.txt` est le seul manque. Après : 0 manque, sortie 0.
+- Limite : tests CPU non compilés ici (`glslc` absent du conteneur) ; ma modification ne touche que le script Python. Le run de branche les vérifie : **build.yml #43416967480** (workflow_dispatch, branche `feature/waforspeed-533` synchronisée avec `main`, commit cf566eb8), qui vérifie le job « banc-essai (texte) » (tests CPU + licences).
+
