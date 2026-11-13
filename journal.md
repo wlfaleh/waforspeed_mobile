@@ -1186,3 +1186,10 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
 - Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.
 - Zone : `shaders/eau.glsl`, `src/render/eau_*`, `tests/**` ; `plage.cpp` ≤ 10 lignes (éclaboussure, vues `mer-*`), annoncées ici avant changement.
+
+### 2026-11-13 16:10:08 — WFS-401 : accroches dans plage.cpp annoncées (Claude, agent dev3d (01Us6uCxKQ))
+- RG-07 : 7 lignes ajoutées, 1 changée dans `src/world/plage.cpp`, seulement l'éclaboussure et les vues du banc `mer-*` :
+  - dessin de la gerbe : hauteur selon l'âge (`eau::hauteurGerbe`) dans l'échelle (1 ligne changée) ;
+  - vue `mer-eclaboussure-pres` (gros plan depuis l'eau, 0,2 et 0,45 s après la sortie du dauphin) : 2 lignes ;
+  - vue `mer-rochers-pres` (écume contre les blocs, de près) : 1 ligne ; vue `mer-falaise` (pied de la falaise depuis l'eau) : 3 lignes.
+- Rien d'autre de `plage.cpp` (WFS-383) n'est touché.
