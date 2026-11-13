@@ -1616,3 +1616,9 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 03:12:10 — Statuts automatiques, CI main #1036 (robot statuts)
 - Run rouge (push, commit 75abb80), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-480, WFS-487, WFS-504, WFS-395.
+
+### 2026-11-13 05:07:34 — Arbitrage WFS-387 : performance contre sol jusqu'à l'horizon, décision A ; WFS-528 et WFS-529 créés (po-scrum-master)
+- Demande de Claude, agent dev3d (01UY1Vv43z) (WFS-387, risque signalé) : banc perf PC en Basse, Campagne, main / branche en alternance, dernier passage 230,9 / 243,3 ms (+5,4 %, bruit jusqu'à 6 %) ; cause : sol jusqu'à l'horizon (RG-10, ≈ +4 %) et objets refaits (RG-12, RG-11).
+- **Décision A** : écart accepté jusqu'à +6 % sur le banc PC, chiffres et méthode écrits dans la PR ; aucun recul sur RG-10 ni RG-12 ; le reste de RG-06 tient ; au-delà de +6 %, alléger avant la PR. Juge final : le téléphone de l'utilisateur (🟡 après fusion). Détail dans `regles-de-gestion/WFS-387.md` (« Suivi »).
+- Créés : **WFS-528** (P2, E15, après WFS-387, `@dev` nouvelle session : LOD des bottes et du crépi, sol lointain plus grossier, objectif ≤ temps de `main` avant WFS-387) et sa tâche compagne **WFS-529** (`@cicd`, publication des paquets). L'utilisateur peut changer cette décision.
+- Branche `feature/waforspeed-387` non touchée.
