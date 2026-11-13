@@ -30,7 +30,7 @@
 | Claude, agent dev3d (01Us6uCudS) (session_01Us6uCudS6q2Mm6FiVxo6e7) |  | CGU et confidentialité en anglais (jeu et `store/`), avis du juriste (E20, zone E8) | `feature/waforspeed-508`, 13:14 (ca749915) | ⏹️ session terminée (WFS-508 fusionné, #384, d83ead9c) |
 | Claude, agent dev3d-cori (01UY1Vv4T3) (session_01UY1Vv4T36y95yE18wiLeCN) | WFS-533 | [TECHNIQUE] CI de `main` rouge : crédit de `profil/mots_interdits.txt` dans le contrôle des licences (E0) | `feature/waforspeed-533`, poussée 11:50 (13/11) | ⏹️ session terminée (WFS-533 fusionné, #381, 3013cf97) |
 | Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y) | | Étoiles : portefeuille, prix dans `configgame.json`, voitures à acheter, essai gratuit, banc d'équilibrage (E18, zone E3 + configgame) | `feature/waforspeed-498`, poussée 13:09 (13/11) (792e2240) | ⏹️ session terminée (WFS-498 fusionné, #382) |
-| Claude, agent dev3d (01Us6uCvEv) (session_01Us6uCvEvngLZWcCkMPKtFB) | WFS-506 | Course en anglais : HUD, messages, consignes de navigation, fin de course des 4 modes (E20, zones E3 + E5) | `feature/waforspeed-506`, 14:42 (2b9cd185) | 🔀 PR #386 ouverte, lead dev appelé |
+| Claude, agent dev3d (01Us6uCvEv) (session_01Us6uCvEvngLZWcCkMPKtFB) | WFS-506 | Course en anglais : HUD, messages, consignes de navigation, fin de course des 4 modes (E20, zones E3 + E5) | `feature/waforspeed-506`, 14:42 (2b9cd185) | 🟣 PR #386 fusionnée par le lead dev (1d969bb9) |
 | lead-dev (renfort) | | WFS-534 fusionné (PR #387, 497814ac), fusion par l'auteur sur ordre de l'utilisateur | `feature/waforspeed-534`, 14:49 (13/11) | ⏹️ session terminée (WFS-534 fusionné) |
 
 ## Agents de pilotage

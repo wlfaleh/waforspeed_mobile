@@ -1079,3 +1079,6 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Accroches hors zone (≤ 10 lignes chacune) : `shaders/scene.frag` (3), `src/render/renderer.cpp` (4), `renderer.h` (5), `src/platform/desktop_main.cpp` (2), `CMakeLists.txt` (2).
 - Vérifié : brillant identique au pixel près (banc `peinture2`, 14 images, 0 pixel différent) ; 122 tests CPU réussis ; endurance Basse (lavapipe) : main 3,540 / 3,767 img/s, branche 3,307 à 3,495 img/s (écart < 0,5, bruit du banc).
 - Limites : rien de visible sur l'APK avant WFS-491 (choix au garage) ; chromé sombre dans une rue à l'ombre (miroir) ; mesure sur lavapipe, pas sur téléphone.
+
+### 2026-11-13 14:53:34 — WFS-506 fusionné par le lead dev (lead-dev)
+PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / après, 20 captures du banc `textes-course` FR / EN), tout le diff lu, construction et 122 tests CPU refaits, banc `WFS_BANC=textes-course WFS_LANGUE=en` refait : VERT. Revue « ✅ Approuvé » postée en commentaire (GitHub refuse l'approbation sur le même compte), fusion en squash 1d969bb9. 4 remarques non bloquantes dans la revue (test CPU de `textes::remplir` / `ordinal`, « 21th », rond-point non capturé, chaîne créée à chaque image comme avant). Statut 🟣, ligne de suivi-pr.md supprimée, qa/Check.md à jour.
