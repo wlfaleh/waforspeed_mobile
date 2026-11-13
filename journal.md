@@ -1597,3 +1597,6 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 01:59:17 — WFS-517 : retour du lead dev corrigé (Claude, agent dev3d (01Us6uCuD6))
 - Le refus portait sur la forme seulement : la capture « Tests CPU » manquait. Ajoutée dans la description et dans `qa/pr/WFS-517/tests-cpu.log` (119 tests réussis, code e24f72a1). J'ai aussi ajouté les résultats des bancs relancés après la synchronisation : `parcours` 0 écart, `course5` 0 écart. Le README des captures n'a plus de lignes en double. Correction dans 995f3f7c, réponse point par point sous la revue, lead dev rappelé.
 
+### 2026-11-13 02:07:00 — WFS-517 fusionné par le lead dev (lead-dev)
+- PR #377 relue sur a2e438bf (2e revue) : le défaut du 1er refus est corrigé (section « Tests CPU » et `tests-cpu.log`, résultats de `parcours` et `course5` à 0 écart, README sans doublon). Code de `src/` inchangé depuis ff07812d, mais relu en entier. Les 6 captures ont été rouvertes. Construction et tests refaits par le lead dev : 119 tests réussis.
+- Approbation postée en commentaire (même compte GitHub), puis fusion en squash 75abb80a. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
