@@ -1,7 +1,11 @@
 // WaForSpeed — WFS-372 : banc d'essai des gros plans des objets agricoles modélisés de la Campagne (WFS_BANC=campagne-objets).
 // Une vue libre (carte::g_vueCarte, comme la vue haute du col de WFS-216) par sorte d'objet, à hauteur d'homme, de jour, et la
-// nuit pour la vigne et la ferme : campagne-objets-vigne, -cloture, -bottes, -ferme, -hangar, -poteau (+ -nuit). Les objets sont les
+// nuit pour chaque objet : campagne-objets-vigne, -cloture, -bottes, -ferme, -hangar, -poteau (+ -nuit) ; WFS-387 : -bottes-pres
+// (grain et filet), -hangar-moyen (couverture à 80 m, ondes et plaques), -poteau-soleil, -cloture-soleil, -muret et
+// -muret-voiture (parapet des épingles, voiture arrêtée contre lui). Les objets sont les
 // premiers de leur sorte posés sur le tour (campagne::objetBanc, rempli au chargement de la carte).
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -24,26 +28,58 @@ int benchCampagneObjets(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
     const float R = (float)RW;
     // œil et point visé : (lat, le long en m, hauteur) depuis le pied de l'objet ; lat compté vers l'extérieur de la route
-    struct Vue { const char* nom; int sorte; float oLat, oLong, oY, cLat, cLong, cY, fov; bool nuit; };
+    struct Vue { const char* nom; int sorte; float oLat, oLong, oY, cLat, cLong, cY, fov; bool nuit; bool voiture = false; };   // voiture : lancée contre l'objet
     const Vue vues[] = {
         {"vigne", campagne::OB_VIGNE, -3.2f, -2.f, 1.6f, 1.2f, 7.f, 0.9f, 55, true},
-        {"cloture", campagne::OB_CLOTURE, -1.9f, -1.5f, 1.3f, 0.f, 5.f, 0.6f, 50, false},
-        {"bottes", campagne::OB_BOTTES, -5.f, 11.f, 1.8f, 0.f, 3.f, 0.7f, 50, false},   // de l'avant : côté au soleil
+        {"cloture", campagne::OB_CLOTURE, -1.9f, -1.5f, 1.3f, 0.f, 5.f, 0.6f, 50, true},
+        {"bottes", campagne::OB_BOTTES, -5.f, 11.f, 1.8f, 0.f, 3.f, 0.7f, 50, true},   // de l'avant : côté au soleil
+        {"bottes-pres", campagne::OB_BOTTES, -3.6f, 6.5f, 1.4f, 0.f, 1.5f, 0.7f, 45, false},   // WFS-387 : grain de la paille et filet
         {"ferme", campagne::OB_FERME, -24.f, -10.f, 3.5f, 0.f, 8.f, 3.5f, 55, true},   // façade et porte (côté route)
-        {"hangar", campagne::OB_FERME, -12.f, 32.f, 4.f, 0.f, 6.f, 3.f, 60, false},   // de l'avant : pignon du hangar au soleil   // de l'avant : pignon et façade au soleil
-        {"poteau", campagne::OB_POTEAU, -R - 2.6f, -14.f, 1.6f, 0.f, 0.f, 6.5f, 50, false},
+        {"ferme-soleil", campagne::OB_FERME, 26.f, -14.f, 3.f, 0.f, 4.f, 3.f, 55, false},   // WFS-387 : façade arrière, au soleil
+        {"hangar", campagne::OB_FERME, -12.f, 32.f, 4.f, 0.f, 6.f, 3.f, 60, true},   // de l'avant : pignon et façade du hangar au soleil
+        {"hangar-moyen", campagne::OB_FERME, -70.f, 60.f, 22.f, 0.f, 16.f, 5.f, 40, false},   // WFS-387 : couverture à 80 m, vue plongeante
+        {"poteau", campagne::OB_POTEAU, -R - 2.6f, -14.f, 1.6f, 0.f, 0.f, 6.5f, 50, true},
+        // WFS-387 (avis de l'agent 3D) : poteau et clôture vus de l'autre côté, au soleil (bois sans reflet bleu du ciel)
+        {"poteau-soleil", campagne::OB_POTEAU, 9.f, 12.f, 1.6f, 0.f, 0.f, 6.f, 50, false},
+        {"cloture-soleil", campagne::OB_CLOTURE, 2.4f, 4.5f, 1.3f, 0.f, -1.f, 0.6f, 50, false},
+        // WFS-387 (RG-11) : parapet de moellons d'une épingle du col, de près, et la voiture arrêtée contre lui (repère : la voiture)
+        {"muret", campagne::OB_MURET, -2.6f, -1.5f, 1.2f, 0.2f, 3.5f, 0.35f, 55, true},
+        {"muret-voiture", campagne::OB_MURET, -6.5f, -7.f, 2.2f, -0.6f, 0.f, 0.6f, 55, true, true},
     };
     for (const char* mo : {"jour", "nuit"}) for (const Vue& v : vues) {
         if (!std::strcmp(mo, "nuit") && !v.nuit) continue;
+        if (const char* f = std::getenv("WFS_BANC_VUE"); f && !std::strstr(v.nom, f)) continue;   // essai local : vues dont le nom contient f
         const campagne::ObjetBanc& o = ob[v.sorte];
         if (o.seg < 0) { ecarts++; WFS_ERR("banc campagne-objets : aucun objet « %s » sur le tour", v.nom); continue; }
         setenv("WFS_MOMENT", mo, 1);
-        setenv("WFS_DEPART", std::to_string(o.seg - (int64_t)(25 / SEG_M)).c_str(), 1);
+        // voiture lancée contre l'objet : départ 4 m après le début du parapet (il n'existe que dans l'épingle)
+        setenv("WFS_DEPART", std::to_string(o.seg + (int64_t)((v.voiture ? 4 : -25) / SEG_M)).c_str(), 1);
         if (!g.init(r, "golf", "campagne")) { ecarts++; continue; }
         g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Course);
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+        double segVue = (double)o.seg;
+        if (v.voiture) {   // WFS-387 (RG-11) : la voiture roule vers le parapet extérieur jusqu'au choc (WFS-256), puis freine
+            g.modeManette = true;
+            // coin de la voiture le plus avancé vers le parapet (repère de la route, même calcul que test_muret_campagne)
+            auto coin = [&](const Player& pj) { const double h = pj.heading; return o.side * pj.playerX * RW + pj.car->d.L / 2 * std::abs(std::sin(h)) + pj.car->d.W / 2 * std::abs(std::cos(h)); };
+            bool choc = false; double coinMax = -1e9;
+            for (int i = 0; i < 600; i++) {
+                const Player& pj = g.player();
+                choc = choc || pj.chocsDecor.n > 0 || coin(pj) >= o.lat - 0.1;   // choc vu par le registre, ou coin contre la face
+                coinMax = std::max(coinMax, coin(pj));
+                g.manette = DriveInput{}; g.manette.steer = choc ? 0.f : (float)o.side * 0.7f;   // steer > 0 : playerX croissant (vu au banc)
+                g.manette.gas = !choc && pj.kmh() < 25; g.manette.brake = choc && pj.kmh() > 2;   // frein après le choc, sans marche arrière
+                g.update(1.0 / 60); if (i % 30 == 0) g.render(402 + i / 60.0);
+            }
+            g.manette = DriveInput{}; g.modeManette = false;
+            const Player& pj = g.player();
+            segVue = pj.dist / SEG;
+            WFS_LOG("muret-voiture : %s ; coin le plus avancé de la voiture à %.2f m de l'axe (au plus %.2f m), face du parapet à %.2f m ; centre à %.2f m, %.0f km/h",
+                    choc ? "contact avec le parapet" : "AUCUN contact", coin(pj), coinMax, o.lat, o.side * pj.playerX * RW, pj.kmh());
+            if (!choc || std::abs(coinMax - o.lat) > 0.2) { ecarts++; WFS_ERR("muret-voiture : la voiture ne s'arrête pas à la face visible du parapet (RG-11)"); }
+        }
         auto P = [&](float lat, float lg, float y) {
-            const TrackPoint q = t.point(((double)o.seg + lg / SEG_M) * SEG, o.side * (o.lat + lat));
+            const TrackPoint q = t.point((segVue + lg / SEG_M) * SEG, o.side * (o.lat + lat));
             return vec3{(float)q.x, (float)q.y + y, (float)q.z};
         };
         carte::g_vueCarte.oeil = P(v.oLat, v.oLong, v.oY); carte::g_vueCarte.cible = P(v.cLat, v.cLong, v.cY);

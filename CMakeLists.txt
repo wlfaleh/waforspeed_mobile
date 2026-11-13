@@ -181,6 +181,7 @@ else()
   add_executable(test_archi_kit tests/archi_kit.cpp src/world/archi_kit.cpp)   # WFS-161 (ST-1) : kit d'architecture, M-01 et règles des ouvertures
   target_compile_definitions(test_archi_kit PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_decor_campagne tests/test_decor_campagne.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp)   # WFS-372 : objets agricoles de la Campagne (mesures ±1 %, budget, qualité)
+  add_executable(test_muret_campagne tests/test_muret_campagne.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp src/game/chocs_declaration.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/world/giratoire.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-387 (RG-11) : la voiture s'arrête au parapet visible des épingles de la Campagne
   add_executable(test_decor_grandprix tests/test_decor_grandprix.cpp src/world/decor_grandprix_modeles.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp)   # WFS-373 : objets du Grand Prix (mesures ±1 %, budget, qualité)
   add_executable(test_decor_corniche tests/test_decor_corniche.cpp src/world/decor_corniche_modeles.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp)   # WFS-371 : objets de la plage de la Corniche (mesures ±1 %, budget, qualité)
   add_executable(test_marina_bateaux tests/test_marina_bateaux.cpp src/world/marina_bateaux.cpp)   # WFS-376 : bateaux de la marina (mesures RG-04 / RG-05, budget RG-10, aucune voile hissée)

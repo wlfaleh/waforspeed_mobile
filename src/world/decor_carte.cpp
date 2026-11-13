@@ -8,6 +8,7 @@
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../core/platform.h"
+#include "../game/course5.h"   // WFS-387 : vue de dessus d'une course à 5 (decorVueDessus)
 #include "../game/player.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
 #include "sols.h"   // WFS-383 : sols des cartes
@@ -257,9 +258,12 @@ bool CarteDecor::dansMorceau(int64_t seg, int64_t a0, int64_t a1, int64_t& abs) 
     return false;
 }
 
+// WFS-387 (RG-10, accroche annoncée) : vue de dessus d'une course à 5 (banc course5), carte qui le demande : décor dessiné (sinon fond gris)
+static bool vueDessusCourse(const GameView& g, bool carte) { return carte && g.sceneDediee && g.ecran == Ecran::Course && modeCourse() == ModeCourse::Course5 && g.camPos.y - g.camTarget.y > 30.f; }
+
 // envFor (maps.js) : brouillard plus loin de jour, nuit sans lampadaires (campagne) ou bleutée (circuit)
 void CarteDecor::ambiance(FrameParams& fp, const GameView& g) {
-    if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
+    if (!active_ || (g.sceneDediee && !g_vueCarte.actif && !vueDessusCourse(g, decorVueDessus()))) return;
     const Env e = env();
     // Game : brouillard exponentiel 0,0009 pour la ville (fogFar 620 m du jeu web) → même rapport, comme la plage
     if (!night_) {
@@ -468,7 +472,7 @@ void CarteDecor::preparerDecor(Renderer& r) {
 }
 
 void CarteDecor::render(Renderer& r, const GameView& g) {
-    if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
+    if (!active_ || (g.sceneDediee && !g_vueCarte.actif && !vueDessusCourse(g, decorVueDessus()))) return;
     frame_++;
     preparerDecor(r);   // WFS-268 : repli (sans effet si déjà fait)
     Track& t = *g.track;
