@@ -5,7 +5,7 @@
 //   (1 pleine mer, 0,3 port, 0,15 rivière) ; y < 0 : eau douce trouble (rivière : 4 m de fond au plus, vert-brun). Une rotation autour
 //   de y (tours suivants de la piste) ne change ni |xz| ni y.
 // Matériau MAT_EAU ; cutoff (pc.params.z) = mode : 0 surface d'eau, 1 sillage (uv : x latéral −1..1, y 0 à l'arrière du bateau
-// → 1 au bout), 2 éclaboussure (uv : position sur le disque de rayon 1), 3 nappe de ressac sur le sable (uv.x : remontée sur la plage
+// → 1 au bout), 2 éclaboussure (uv : position sur la nappe de rayon 1, ou uv.y ≥ 2 : couronne soulevée, WFS-401), 3 nappe de ressac sur le sable (uv.x : remontée sur la plage
 // depuis le bord, m ; uv.y : abscisse le long du bord). Tout est calculé ici : aucune texture téléchargée (RG-06).
 const uint F_EAU = 8388608u;
 
@@ -36,16 +36,57 @@ float eauDentelle(vec2 p, float t) {
     float b = eauBruit(p * 4.3 - vec2(0.05 * t, 0.11 * t));
     return a * 0.65 + b * 0.35;
 }
+// WFS-401 (RG-01) : réseau de bulles de l'écume (cellules de Voronoï) : distance au centre de la cellule la plus proche, 0 (centre) à
+// ≈ 0,75 (bord) ; les centres bougent lentement (bulles qui crèvent et se reforment) : 9 cellules lues
+vec2 eauHash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
+float eauCellules(vec2 p, float t) {
+    vec2 i = floor(p), f = fract(p);
+    float d = 8.0;
+    for (int y = -1; y <= 1; y++)
+        for (int x = -1; x <= 1; x++) {
+            vec2 o = vec2(float(x), float(y)), h = eauHash2(i + o);
+            vec2 c = o + 0.5 + 0.38 * sin(6.2831853 * h + t * (0.35 + 0.3 * h.yx)) - f;
+            d = min(d, dot(c, c));
+        }
+    return sqrt(d);
+}
+// WFS-401 (RG-01) : écume réelle d'une part de couverture cov (0..1) : une mousse qui se défait en dentelle, pas une tache unie ni un
+// trait filé. Les trous (centres des cellules) grandissent quand la couverture baisse : mousse dense à cov 1 (petits trous), réseau de filaments
+// à 0,5, quelques îlots à 0,2. Deux tailles de bulles (42 cm et 15 cm, plaques et petites bulles), isotropes : les cellules ont un
+// rapport longueur / largeur ≈ 1 (RG-01 : 4 au plus). « fin » (0..1) : part de la petite échelle (0 au loin : rien sous le pixel)
+float eauMousse(vec2 p, float t, float cov, float fin) {
+    if (cov <= 0.01) return 0.0;
+    vec2 q = p + 0.35 * vec2(eauBruit(p * 0.9 + 3.1), eauBruit(p * 0.9 - 1.7));   // bords des cellules ondulés (pas de polygones)
+    float c1 = eauCellules(q * 2.4, t), c2 = fin > 0.01 ? eauCellules(q * 6.5 + 7.3, t * 1.3) : 0.6;
+    float trou = mix(0.62, 0.14, cov);   // rayon des trous (part de la cellule) : même la mousse la plus dense garde des trous
+    float m = smoothstep(trou, trou + 0.12, mix(c1, min(c1 + 0.12, c2 * 0.9 + 0.15), 0.45 * fin));
+    return m * smoothstep(0.0, 0.25, cov);
+}
 
 // pente de la surface (dh/dx, dh/dz), hauteur (m) et variance de pente perdue par les vagues trop petites pour le pixel (elle passe
 // dans la rugosité : le scintillement du soleil s'étale au loin comme en vrai, sans crénelage ni motif répété jusqu'à l'horizon)
-void eauVagues(vec2 p, float t, float agit, int n, float empreinte, out vec2 pente, out float h, out float varPerdue) {
+// WFS-401 (RG-01, RG-02) : « groupes » de vagues : hors Basse, l'amplitude de chaque vague varie lentement dans l'espace (bruit à
+// 2 longueurs d'onde le long de la crête, 1,4 en travers, qui dérive) : les crêtes infinies d'une sinusoïde deviennent des crêtes
+// courtes qui se croisent (mer du vent réelle : crêtes de 1 à 3 longueurs d'onde), et l'interférence des 8 vagues ne se répète plus
+// (aucune période commune). Moyenne de l'amplitude inchangée (bruit de moyenne 0,5 × 2) : même hauteur significative (test_eau).
+// WFS-401 (R7) : hors Basse, chaque vague est gardée selon la taille du pixel MESURÉE DANS SA DIRECTION (dp = dérivées écran de la
+// position, dFdx puis dFdy) : à angle rasant, le pixel est très long vers l'horizon et étroit en travers ; avant, la plus grande
+// des deux longueurs effaçait aussi les vagues qui vont en travers (pourtant bien vues) : il ne restait que des bandes lisses
+// parallèles à l'horizon (mer « filée »). Basse : taille du pixel isotrope (empreinte), comme avant.
+void eauVagues(vec2 p, float t, float agit, int n, float empreinte, vec4 dp, out vec2 pente, out float h, out float varPerdue) {
     pente = vec2(0.0); h = 0.0; varPerdue = 0.0;
+    bool groupes = n > 4;
     for (int i = 0; i < EAU_NB; i++) {
         if (i >= n) break;
         vec4 w = EAU_VAGUES[i];
         float k = 6.2831853 / w.z, om = sqrt(EAU_G * k), A = w.w * agit;
-        float garde = 1.0 - smoothstep(0.18, 0.45, empreinte / w.z);   // au moins ≈ 3 pixels par longueur d'onde
+        if (groupes) {
+            vec2 cr = vec2(-w.y, w.x);   // le long de la crête
+            vec2 g = vec2(dot(p, cr) / (2.0 * w.z), dot(p, w.xy) / (1.4 * w.z)) + vec2(float(i) * 7.31, float(i) * 3.17 - 0.05 * t);
+            A *= 2.0 * eauBruit(g);
+        }
+        float ew = groupes ? abs(dot(dp.xy, w.xy)) + abs(dot(dp.zw, w.xy)) : empreinte;
+        float garde = 1.0 - smoothstep(0.18, 0.45, ew / w.z);   // au moins ≈ 3 pixels par longueur d'onde
         float th = k * dot(w.xy, p) - om * t + float(i) * 1.7;
         h += A * sin(th) * garde;
         pente += w.xy * (A * k * cos(th) * garde);
@@ -126,9 +167,41 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
             float bras = exp(-pow((1.0 - u) / 0.16, 2.0));            // deux bras du V (ondes de Kelvin qui déferlent)
             float axe = exp(-pow(u / mix(0.18, 0.45, v), 2.0)) * 1.2;  // eau brassée par l'hélice, qui s'élargit
             cov = max(bras * (1.0 - v * 0.6), axe * (1.0 - v)) * (1.0 - smoothstep(0.7, 1.0, v)) * smoothstep(0.0, 0.08, v);
+        } else if (vUv.y > 1.5) {
+            // WFS-401 (RG-04) : couronne d'eau soulevée par le dauphin : en bas une nappe d'eau laiteuse translucide, plus haut des
+            // doigts (jets) qui se brisent en gouttes de 1 à 4 cm ; bord du haut déchiré, pied fondu dans l'eau ; jamais une paroi pleine
+            float u = vUv.x, v = clamp(vUv.y - 2.0, 0.0, 1.0);
+            float doigt = eauBruit(vec2(u * 15.0, 0.7)) * 0.65 + eauBruit(vec2(u * 41.0, 2.3)) * 0.35;   // ≈ 15 jets autour, inégaux
+            float haut = 0.25 + 0.75 * doigt * doigt;                                               // hauteur atteinte par le jet
+            float vh = v / haut;
+            float nappeC = (1.0 - smoothstep(0.12, 0.35, vh)) * smoothstep(0.0, 0.08, v) * 0.35;
+            // jet : s'amincit en montant (le seuil monte avec la hauteur), se défait en gouttes avant son sommet
+            float jet = smoothstep(0.5 + 0.22 * vh, 0.62 + 0.22 * vh, doigt) * (1.0 - smoothstep(0.55, 0.9, vh)) * smoothstep(0.0, 0.12, v) * 0.6;
+            // gouttes : une par cellule au plus (36 autour, 9 en hauteur), au-dessus du tiers de la gerbe et jusqu'au-dessus des jets
+            // (gouttes lancées plus haut), rayon tiré, un peu étirées en hauteur (chute)
+            vec2 cg = vec2(u * 36.0, v * 9.0), ic = floor(cg), fc = fract(cg);
+            vec2 hg = eauHash2(ic + 31.7);
+            vec2 dg = (fc - (0.25 + 0.5 * hg)) * vec2(1.0, 0.75);
+            float rg = 0.14 + 0.18 * eauHash(ic + 5.1);
+            float goutte = (1.0 - smoothstep(rg * 0.55, rg, length(dg))) * smoothstep(0.3, 0.5, vh) * (1.0 - smoothstep(1.1, 1.35, vh))
+                         * step(0.45, eauHash(ic - 2.9));
+            float aC = clamp(max(max(nappeC, jet), goutte * 0.9), 0.0, 1.0);
+            alpha = aC * base.a;
+            // eau éclairée : gouttes et jets blancs (bulles, lumière diffusée), nappe vert-bleu clair ; normale de la paroi (extérieur)
+            base.rgb = mix(vec3(0.42, 0.55, 0.58), vec3(0.80, 0.82, 0.84), clamp(max(jet * 1.6, goutte) + vh * 0.3, 0.0, 1.0));
+            rough = 0.3; metal = 0.0;
+            N = normalize(vec3(vNrm.x, 0.5 * length(vNrm.xz), vNrm.z));
+            return 1.0;
         } else {
-            float r = length(vUv);
-            cov = (1.0 - smoothstep(0.55, 1.0, r)) * (0.6 + 0.4 * smoothstep(0.0, 0.5, r));
+            // WFS-401 (RG-04) : nappe d'écume posée autour de la gerbe : bord déchiré (rayon qui varie avec l'angle), mousse en dentelle
+            float r = length(vUv), ang = atan(vUv.y, vUv.x);
+            float bord = 0.75 + 0.25 * eauBruit(vec2(ang * 2.2 + 9.0, 1.3)) + 0.12 * (eauBruit(vec2(ang * 7.0, 4.1)) - 0.5);
+            cov = (1.0 - smoothstep(0.3 * bord, bord, r)) * 0.6;
+            float m = eauMousse(vWorld.xz * 2.2, t, cov, 1.0);
+            alpha = clamp(m * 0.75, 0.0, 1.0) * base.a;
+            base.rgb = vec3(0.74, 0.77, 0.79);
+            rough = 0.85; N = vec3(0.0, 1.0, 0.0);
+            return 1.0;
         }
         float dentelle = eauDentelle(p * 1.4, t);
         alpha = clamp(smoothstep(0.25, 0.75, dentelle * cov * 1.6), 0.0, 1.0) * base.a;
@@ -140,12 +213,16 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     bool trouble = vNrm.y < 0.0;
     float x = max(vUv.x, 0.0), le = vUv.y;   // distance au bord, abscisse le long du bord (m)
     float empreinte = max(length(fwidth(vWorld.xz)), 1e-4);   // taille du pixel sur l'eau (m)
+    vec4 dp = vec4(dFdx(vWorld.xz), dFdy(vWorld.xz));          // WFS-401 (R7) : pixel dans chaque direction
     vec2 sl; float h, varPerdue;
-    eauVagues(p, t, agit, basse ? 4 : EAU_NB, empreinte, sl, h, varPerdue);
+    eauVagues(p, t, agit, basse ? 4 : EAU_NB, empreinte, dp, sl, h, varPerdue);
     // D2 (avis 3D) : petite mer du vent sans période (bruit qui dérive, deux échelles) : aucune rayure qui se répète ; s'efface quand
     // le pixel devient plus grand que ses rides (la rugosité prend le relais)
     if (!basse) {
-        float garde = 1.0 - smoothstep(0.15, 0.45, empreinte / 1.2);
+        // WFS-401 (R7) : moyenne géométrique des deux côtés du pixel (bruit sans direction : ni le côté long, qui l'effaçait à angle
+        // rasant, ni le côté court, qui crénèlerait)
+        float eg = sqrt(max(length(dp.xy) * length(dp.zw), 1e-8));
+        float garde = 1.0 - smoothstep(0.15, 0.45, eg / 1.2);
         if (garde > 0.0) {
             vec2 q = p * 0.85 + vec2(0.31 * t, -0.17 * t), r2 = p * 2.3 - vec2(0.22 * t, 0.37 * t);
             const float e = 0.15;
@@ -160,6 +237,23 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
     // Plafonnée à 0,35 : au-delà, le ciel reflété au loin s'assombrissait (bande sombre sous l'horizon, D1 de l'avis 3D)
     float vmPetites = basse ? 0.0024 : 0.0006;
     rough = clamp(sqrt(sqrt(0.0004 + 2.0 * (varPerdue + vmPetites * agit))), 0.08, 0.35);
+    // WFS-401 (RG-03) : traînée du soleil faite de reflets séparés. Les rides plus petites que le pixel ne floutent pas le soleil en
+    // tache : chacune est une petite facette qui renvoie le soleil vers l'œil ou non (« glitter », Cox et Munk 1954). Dans la zone où
+    // le reflet du soleil peut tomber (angle du miroir moyen au soleil de moins de ≈ 4 écarts types des pentes perdues), chaque
+    // pixel tire sa facette : pente gaussienne de la variance perdue, tirage changé 12 fois par seconde (scintillement), et la
+    // rugosité redevient celle d'une facette lisse. En moyenne sur plusieurs pixels, l'énergie reste celle du lobe large ; la zone
+    // s'élargit au loin avec les pentes perdues (traînée plus large au loin qu'au près). Hors Basse ; le jour (soleil levé).
+    if (!basse && F.sunDir.w > 0.0 && F.sunDir.y > -0.02) {
+        float sig2 = varPerdue + vmPetites * agit + 0.0008;
+        vec3 R0 = reflect(-V, N), Ls = normalize(F.sunDir.xyz);
+        float zone = 1.0 - smoothstep(16.0 * sig2, 36.0 * sig2, 1.0 - dot(R0, Ls));
+        if (zone > 0.0) {
+            vec2 hh = eauHash2(floor(gl_FragCoord.xy) + floor(t * 12.0) * vec2(17.31, 9.13));
+            vec2 s = sqrt(-2.0 * log(max(hh.x, 1e-4)) * sig2) * vec2(cos(6.2831853 * hh.y), sin(6.2831853 * hh.y));
+            N = normalize(N + zone * vec3(-s.x, 0.0, -s.y));
+            rough = mix(rough, 0.06, zone);
+        }
+    }
     float NoV = max(dot(N, V), 1e-3);
     // profondeur : pente du bord sur 40 m, puis le tombant du plateau (≈ 12 %, petits fonds méditerranéens), 60 m au plus ;
     // rivière : 4 m au plus
@@ -173,15 +267,17 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         float roche = smoothstep(0.1, 0.3, pente);
         float ph = t * 0.785 + le * 0.021 + 2.0 * eauBruit(vec2(le * 0.03, 0.5));
         float cyc = fract(ph / 6.2831853 + 0.35);
-        // traînées : bruit étiré (6 m le long du bord, 0,4 m en travers), dentelle fine par-dessus
-        float trainee = eauBruit(vec2(le * 0.17, (x + 1.2 * t) * 2.4));
-        float fin = eauBruit(vec2(le * 1.3 + 0.4 * t, x * 4.5 - 0.9 * t));
+        // traînées : taches de 2,2 m le long du bord sur 0,7 m en travers, dentelle fine par-dessus (WFS-401, RG-01 : avant 6 m sur
+        // 0,4 m, rapport 15 : l'écume paraissait « filée » le long du rivage ; maintenant 3 au plus)
+        float trainee = eauBruit(vec2(le * 0.45, (x + 1.2 * t) * 1.45));
+        float fin = eauBruit(vec2(le * 1.3 + 0.4 * t, x * 3.2 - 0.9 * t));
         // ligne de déferlement (sable) : naît à 10 m, roule vers le bord à ≈ 1 m/s en s'élargissant, s'efface au bord
         float xb = mix(10.0, 0.5, cyc) * agit;
         float ligne = exp(-pow((x - xb) / mix(0.35, 1.3, cyc), 2.0)) * (1.0 - cyc * 0.6);
         // reste d'écume derrière la ligne (entre la ligne et le large, 3 m), qui se défait
         float reste = smoothstep(xb, xb + 0.3, x) * (1.0 - smoothstep(xb + 0.3, xb + 3.0, x)) * 0.5;
-        float sable = clamp(ligne + reste, 0.0, 1.0) * smoothstep(0.42, 0.72, trainee * 0.7 + fin * 0.45);
+        // WFS-401 : seuil plus doux (0,3 à 0,8 au lieu de 0,42 à 0,72) : de près, c'est la mousse (eauMousse) qui découpe les bords
+        float sable = clamp(ligne + reste, 0.0, 1.0) * smoothstep(basse ? 0.42 : 0.3, basse ? 0.72 : 0.8, trainee * 0.7 + fin * 0.45);
         // ressac au bord (0 à 2 m) : nappe qui suit le cycle
         float ressac = (1.0 - smoothstep(0.0, mix(0.8, 2.2, 0.5 + 0.5 * sin(ph)), x)) * smoothstep(0.38, 0.62, fin * 0.6 + trainee * 0.5);
         // roche : la vague (hauteur h) monte contre le bord ; plaques qui dérivent vers le large
@@ -191,6 +287,15 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
                      + (1.0 - smoothstep(3.0, 10.0, x)) * smoothstep(0.58, 0.78, eauBruit(vec2(le * 0.4, x * 1.1 - 0.4 * t)));
         // B1 (lead dev) : l'écume du bord vient des vagues : aucune dans l'eau calme (port 0,3, rivière 0,15), entière en pleine mer
         ecume = mix(max(sable, ressac), clamp(rocheE, 0.0, 1.0), roche) * 0.85 * smoothstep(0.5, 0.9, agit);
+        // WFS-401 (RG-01) : de près (moins de 45 m, hors Basse), la couverture devient une mousse en dentelle (réseau de bulles, trous
+        // qui s'ouvrent quand elle se défait) ; au-delà, le pixel couvre plusieurs bulles : la couverture moyenne suffit
+        float dCam = length(F.camPos.xyz - vWorld);
+        float pres = basse ? 0.0 : 1.0 - smoothstep(30.0, 45.0, dCam);
+        if (pres > 0.0) {
+            vec2 pm = vec2(le, x + 0.35 * t);   // repère du bord : la mousse avance avec le front vers le rivage
+            float m = eauMousse(pm, t, clamp(ecume * 1.25, 0.0, 1.0), 1.0 - smoothstep(0.03, 0.08, empreinte));
+            ecume = mix(ecume, 0.9 * m, pres);
+        }
     }
     base.rgb = mix(base.rgb, vec3(0.80, 0.82, 0.84), ecume);
     rough = mix(rough, 0.8, ecume);

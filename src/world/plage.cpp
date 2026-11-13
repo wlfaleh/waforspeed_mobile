@@ -2206,7 +2206,7 @@ public:
                 const float age = s ? tl - (plage::DAUPHIN_T - 0.05f) : tl;
                 if (age < 0 || age > (s ? 0.65f : 0.5f)) continue;
                 const float rad = 0.4f + 1.8f * age;
-                r.draw(ecume_, eclabMat_, translate(Pt(s ? x0 + vx * plage::DAUPHIN_T : x0, 0.02f)) * scale({rad, 1, rad})); draws++;
+                r.draw(ecume_, eclabMat_, translate(Pt(s ? x0 + vx * plage::DAUPHIN_T : x0, 0.02f)) * scale({rad, eau::hauteurGerbe(age), rad})); draws++;   // WFS-401 : gerbe
             }
         }
         return draws;
@@ -3384,6 +3384,8 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
         if (ou.dauphinSeg >= 0)
             vue("mer-eclaboussure", "midi", ou.dauphinSeg - (int64_t)(30 / SEG_M), R + 3, 1.85f, ou.dauphinSeg, ou.dauphinLat, OCEAN_Y + 0.3f, 14,
                 {37.0 * plage::DAUPHIN_P + 0.15});
+        if (ou.dauphinSeg >= 0)   // WFS-401 (RG-04) : gros plan depuis l'eau (22 m, 1,6 m), sortie du saut k = 37 (15,25 m plus loin), 0,2 et 0,45 s
+            vue("mer-eclaboussure-pres", "midi", ou.dauphinSeg + (int64_t)(4 / SEG_M), ou.dauphinLat - 22, OCEAN_Y + 1.6f - (float)t.pose(ou.dauphinSeg).y, ou.dauphinSeg + (int64_t)(15.25f / SEG_M), ou.dauphinLat, OCEAN_Y + 0.4f, 35, {37.0 * plage::DAUPHIN_P + 0.2, 37.0 * plage::DAUPHIN_P + 0.45});
         else WFS_ERR("banc mer : aucun dauphin pour mer-eclaboussure");
     }
     // côte rocheuse (RG-09) : blocs d'enrochement et galets au bord de l'eau, écume contre la roche, vue depuis l'eau (2,5 m)
@@ -3392,7 +3394,11 @@ void benchMer(Game& g, Renderer& r, const std::string& out) {
     if (roc >= 0) {
         vue("mer-rochers", "midi", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
         vue("mer-rochers-nuit", "nuit", roc, R + 75, merY + 2.5f, roc + s30, R + 36, merY, 55);
+        vue("mer-rochers-pres", "midi", roc, R + 50, merY + 1.6f, roc + s8, R + 39, merY, 50);   // WFS-401 (R8) : écume contre les blocs, de près
     } else WFS_ERR("banc mer : aucune côte rocheuse");
+    int64_t fal = -1;   // WFS-401 (R8) : pied de la falaise (route à plus de 12 m au-dessus de la mer sur ± 48 m), vue depuis l'eau
+    for (int64_t a = 100; t2 && a + 100 < L && fal < 0; a += 10) { bool h = true; for (int64_t k = a - 40; k <= a + 40 && h; k += 10) h = t.pose(k).y - OCEAN_Y > 12; if (h) fal = a; }
+    if (fal >= 0) vue("mer-falaise", "midi", fal, R + 50, OCEAN_Y + 1.6f - (float)t.pose(fal).y, fal + s30, R + 18, OCEAN_Y + 1.f, 55); else WFS_ERR("banc mer : aucune falaise");
     // RG-05 : la même eau dans la Ville : rivière sous le pont, vue depuis l'eau vers le pont et ses quais, jour et nuit
     if (trace::carteActive("ville")) {
         Track tv; tv.build(mapById("ville"), trace::versionCarte("ville"));

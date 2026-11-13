@@ -5,6 +5,9 @@
 //   RG-07 : en Basse, 4 vagues (les plus longues) ;
 //   RG-09 : pierres du rivage : blocs de 80 triangles, galets de 20, pas de boule (au moins 3 faces de cassure planes), normales
 //           unitaires, triangles tournés vers l'extérieur, aucun triangle dégénéré, même graine = même pierre.
+//   WFS-401 (RG-04) : gerbe du dauphin : un seul maillage (nappe d'écume + couronne soulevée, un appel de dessin), couronne marquée
+//           par uv.y ≥ 2 et évasée vers le haut (pas un cylindre droit), nappe dans le rayon 1 ; hauteur de la gerbe : sommet ≈ 0,9 m
+//           vers 0,43 s (balistique), jamais nulle pendant la vie de la gerbe (0 à 0,65 s).
 #include <cmath>
 #include <cstdio>
 #include <fstream>
@@ -13,6 +16,7 @@
 #include <string>
 #include "../src/render/eau_vagues.h"
 #include "../src/render/eau_rivage.h"
+#include "../src/render/eau_parametres.h"   // WFS-401 : gerbe du dauphin
 
 using namespace wfs;
 
@@ -115,6 +119,34 @@ int main(int argc, char** argv) {
             std::snprintf(msg, sizeof msg, "RG-09 : galet aplati (hauteur / longueur = %.2f ≤ 0,75)", H / L);
             verifie(H <= 0.75f * L, msg);
         }
+    }
+    {   // ---- WFS-401 (RG-04) : gerbe du dauphin
+        struct Geo { std::vector<Vertex> v; std::vector<uint32_t> i; } g;
+        eau::eclaboussure(g);
+        const size_t triAttendus = (size_t)eau::ECLAB_DISQUE + 2u * eau::ECLAB_ANNEAU_N * eau::ECLAB_ANNEAU_H;
+        char msg[200];
+        std::snprintf(msg, sizeof msg, "WFS-401 RG-04 : gerbe en un seul maillage de %zu triangles (attendu %zu : nappe + couronne)", g.i.size() / 3, triAttendus);
+        verifie(g.i.size() / 3 == triAttendus, msg);
+        bool indices = true; for (uint32_t k : g.i) if (k >= g.v.size()) indices = false;
+        verifie(indices, "WFS-401 RG-04 : indices de la gerbe dans le maillage");
+        bool nappe = true, couronne = true; int nCouronne = 0; float rBas = 1e9f, rHaut = 0;
+        for (const Vertex& v : g.v) {
+            if (v.v >= 2.f) {   // couronne : hauteur 0..1 = uv.y − 2
+                nCouronne++;
+                const float h = v.v - 2.f, r = std::sqrt(v.px * v.px + v.pz * v.pz);
+                if (std::fabs(v.py - h) > 1e-5f || h > 1.f + 1e-5f) couronne = false;
+                if (h < 1e-5f) rBas = std::fmin(rBas, r);
+                if (h > 1.f - 1e-5f) rHaut = std::fmax(rHaut, r);
+            } else if (v.u * v.u + v.v * v.v > 1.f + 1e-4f || std::fabs(v.py) > 1e-6f) nappe = false;
+        }
+        verifie(nappe, "WFS-401 RG-04 : nappe d'écume posée sur l'eau, dans le rayon 1");
+        verifie(couronne && nCouronne == (eau::ECLAB_ANNEAU_N + 1) * (eau::ECLAB_ANNEAU_H + 1), "WFS-401 RG-04 : couronne marquée par uv.y ≥ 2, hauteur 0 à 1");
+        std::snprintf(msg, sizeof msg, "WFS-401 RG-04 : couronne évasée (rayon %.2f en bas, %.2f en haut) : pas un cylindre droit", rBas, rHaut);
+        verifie(rHaut > rBas * 1.3f && rHaut < 1.f, msg);
+        float hMax = 0, tMax = 0, hMin = 1e9f;
+        for (int k = 0; k <= 65; k++) { const float a = k * 0.01f, h = eau::hauteurGerbe(a); if (h > hMax) { hMax = h; tMax = a; } hMin = std::fmin(hMin, h); }
+        std::snprintf(msg, sizeof msg, "WFS-401 RG-04 : gerbe : sommet %.2f m à %.2f s (attendu 0,8 à 1,0 m vers 0,4 à 0,45 s), jamais sous 5 cm (%.3f)", hMax, tMax, hMin);
+        verifie(hMax > 0.8f && hMax < 1.f && tMax >= 0.4f && tMax <= 0.45f && hMin >= 0.05f - 1e-6f, msg);
     }
     std::printf("%s\n", echecs ? "test_eau : ÉCHEC" : "test_eau : OK");
     return echecs ? 1 : 0;
