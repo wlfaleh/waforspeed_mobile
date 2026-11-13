@@ -1,3 +1,4 @@
+# banc textes, WFS_LANGUE=fr, commit 6e20bb27
 [info] textes (WFS-508) : CGU : texte long : il défile (plus haut que le cadre) : OK
 [info] textes (WFS-508) : CGU : aucune ligne plus large que le cadre : OK
 [info] textes (WFS-508) : CGU : case, « Refuser » et « Accepter » côte à côte, sans chevauchement : OK
@@ -9,3 +10,5 @@
 [info] textes (WFS-504) : langue fr : 112 texte(s) vus, 5 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
 [info] textes (WFS-504) : langue en : 31 texte(s) vus, 1 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
 [info] textes (WFS-504) : banc fr : 0 échec(s) → VERT
+[info] textes (WFS-504) : langue fr : 193 texte(s) vus, 4 ligne(s) technique(s), 0 dépassement(s), 0 échec(s) → VERT
+[info] textes (WFS-505) : menus fr : 0 échec(s) → VERT
