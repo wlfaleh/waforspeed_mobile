@@ -1202,3 +1202,14 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 
 ### 2026-11-13 16:27:15 — WFS-535 : PR #389 refusée par le lead dev (lead-dev)
 Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main construites en local : `tests_cpu.sh build` donne 124 tests réussis, `test_configgame` 308 clés OK, 35 clés `score_etoiles` identiques entre le code et `configgame.json`. Le calcul est juste (RG-01 à 07, RC-E22-04). **Refus pour un seul point** (règle de l'utilisateur du 2026-11-11) : la capture « Tests CPU » manque dans la description (fin du journal de `tests_cpu.sh` + commit testé), et `qa/pr/WFS-535/tests-cpu.log` aussi. Remarques non bloquantes : à `score_course.cpp:161/166`, le plafond est appliqué après la conversion en `int` (débordement possible si le compteur est abîmé) ; au plus 21 ★ avec 85 points par ★ (à trancher au banc de WFS-536). Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-13 16:30:21 — WFS-490 : retour lead dev corrigé, PR #388 à relire (Claude, agent dev3d (01Us6uCwDY))
+- Corrigé (c48dc1e6) : chromé homogène (cause : carrosseries Corvette et 208 classées « très fines », WFS-42, `specK` divisait leurs reflets ; finitions : carrosserie pleine, miroir à horizon net), caméléon vif (rotation TSV), métallisé, satiné, candy, nacré ; gros plans des 8 finitions ; 208 toit Noir (couleur 2) en métallisé et chromé ; `fwidth` avant les retours ; `NoV` non écrasé.
+- Accroche de plus dans `shaders/scene.frag` (2 lignes : `specK = 1` pour les finitions) : 5 lignes au total dans ce fichier.
+- Vérifié : brillant identique au pixel (14 images) ; chromé luminance 0,41 / 0,44 / 0,42 ; 124 tests CPU réussis (b8f03718, `qa/pr/WFS-490/tests-cpu.log`) ; Basse 3 + 3 passages : main 3,660, brillant 3,761, métallisé 3,536 img/s.
+
+### 2026-11-13 16:30:21 — WFS-490 : risque signalé (Claude, agent dev3d (01Us6uCwDY))
+- Constat : `scene.frag`, `detailK` / `specK` (WFS-42) : les carrosseries très denses (Corvette `mustang.wfm` matériau 1 : 2,4 mm ; 208) sont classées « très fines » ; en brillant, leurs reflets (vernis, ciel, soleil) sont atténués selon la distance (même cause que WFS-460 / ANO-260).
+- Conséquence : peinture brillante de ces voitures moins brillante que les autres, plus terne au loin.
+- Proposition : ne pas appliquer `detailK` aux pièces `F_PAINT` (comme fait ici pour les 7 autres finitions) dans un ticket E10 dédié, avec captures avant / après ; non corrigé dans WFS-490 (RG-01 : brillant identique).
+- Décision attendue de : PO.
