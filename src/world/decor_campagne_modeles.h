@@ -86,6 +86,9 @@ void teinte(Maille& m, size_t v0, int couleur, vec3 e, float ampl, uint32_t grai
 void relief(Maille& m, size_t v0, int couleur, float incl, uint32_t graine);
 
 // ---------- outils de modélisation (aussi utilisés par le test)
+// WFS-410 (accroche) : pan de tuiles canal (onde de 0,22 m, 5 cm de creux) de la ligne d'égout egoutA au faîtage faitA, étiré
+// selon dz de z0 à z1 ; normale : vers le haut du pan (sens des triangles)
+void tuilesCanal(Maille& m, vec3 egoutA, vec3 faitA, vec3 dz, float z0, float z1, vec3 normale, int couleur);
 // pièce prismatique de section rectangulaire w × h, arêtes chanfreinées de ch, de a à b ; « haut » oriente la hauteur h
 void poutre(Maille& m, vec3 a, vec3 b, vec3 haut, float w, float h, float ch, int couleur);
 // profilé en I (HEA / IPE) de a à b : hauteur h selon « haut », largeur des ailes w, épaisseurs ame et aile
@@ -109,8 +112,8 @@ constexpr ChocMuret chocMuret(float lat) { return {lat + MURET_EPAISSEUR / 2, MU
 void muretTroncon(Maille& m, vec3 a0, vec3 b0, vec3 dehorsA, vec3 dehorsB, int pierre, int chaperon, uint32_t graine);
 
 // ---------- banc d'essai (gros plans) : premier objet de chaque sorte placé sur le tour (rempli par campagne.cpp au chargement)
-enum ObjetSorte { OB_VIGNE, OB_CLOTURE, OB_BOTTES, OB_FERME, OB_POTEAU, OB_MURET, NB_OBJETS_BANC };   // WFS-387 : OB_MURET (parapet des épingles)
-struct ObjetBanc { int64_t seg = -1; int side = 1; float lat = 0; };
+enum ObjetSorte { OB_VIGNE, OB_CLOTURE, OB_BOTTES, OB_FERME, OB_POTEAU, OB_MURET, OB_EGLISE, NB_OBJETS_BANC };   // WFS-387 : OB_MURET (parapet des épingles) ; WFS-410 : OB_EGLISE
+struct ObjetBanc { int64_t seg = -1; int side = 1; float lat = 0; float y = 0; };   // WFS-410 : y, hauteur du pied de l'objet au-dessus de la route (église)
 ObjetBanc objetBanc(int sorte);
 
 } // namespace campagne

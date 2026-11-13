@@ -22,6 +22,7 @@
 #include "enseignes.h"
 #include "mobilier_ville.h"   // WFS-369 : tables, chaises, parasols et jardinières modélisés
 #include "ville_quartiers.h"
+#include "archi_lieux.h"   // WFS-410 : devanture percée, menuiseries réelles de WFS-402
 #include "zones.h"
 
 namespace wfs {
@@ -211,8 +212,31 @@ private:
         const double debut = abs + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
         const Repere pm = repere(t, (debut + L / 2 / SEG_M) * SEG);
         const vec2 aw0 = palette_.uv(sh.aw0), aw1 = palette_.uv(sh.aw1), bg = palette_.uv(sh.bg);
-        boite(pal, lateral(pm, s * (face - 0.06f), 0.15f), pm.r, pm.f, 0.08f, 3.1f, L * 0.9f, palette_.uv(0x2a2d33));
-        boite(vitre, lateral(pm, s * (face - 0.11f), 0.45f), pm.r, pm.f, 0.04f, 2.2f, L * 0.78f, {0, 0});
+        {   // WFS-410 (RG-03) : devanture en applique (boiserie peinte de la couleur du commerce, 30 cm devant la façade, 2,8 m de
+            // haut) percée d'une vitrine à soubassement et d'une porte vitrée, menuiseries réelles de WFS-402 (dormant, petits bois
+            // du style, barre de tirage, seuil) ; corniche de la devanture et retours sur les côtés. Avant : une plaque sombre de 8 cm
+            // et une plaque de verre posées à plat devant l'immeuble (forme nue)
+            const float W = L * 0.9f, ep = 0.3f, H = 2.8f;
+            const vec3 z = pm.r * -s, x = archi::lieux::axeFacade(z), o = lateral(pm, s * (face - ep), 0.15f) - x * (W / 2);
+            archi::lieux::Facade f;
+            f.style = archi::Style::Classique; f.graine = (uint32_t)(c.seg * 2 + (c.side > 0)); f.largeur = W; f.y0 = 0; f.y1 = H;
+            const bool porteADroite = (c.seg & 1) != 0;
+            const float xp = porteADroite ? W - 0.85f : 0.85f, xv = porteADroite ? (W - 1.55f + 0.35f) / 2 : (1.55f + W - 0.35f) / 2;
+            f.baies.push_back({archi::Ouverture::Vitrine, xv, 0.45f, W - 1.9f, 2.2f, 0.f});
+            f.baies.push_back({archi::Ouverture::Vitrine, xp, 0.02f, 1.0f, 2.3f, 0.f});
+            archi::Batiment b;
+            archi::lieux::construire(f, 0, b);
+            const vec2 bg0 = palette_.uv(sh.bg), fer = palette_.uv(0x2a2d33);
+            for (int k = 0; k < archi::NB_PARTS; k++) {
+                if (b.part[k].v.empty()) continue;
+                archi::lieux::versMonde(b.part[k], o, x, z);
+                archi::lieux::ajouter(k == archi::VITRE ? vitre : pal, b.part[k], k == archi::METAL || k == archi::FIN ? fer : bg0);
+            }
+            boite(pal, lateral(pm, s * (face - ep / 2 - 0.03f), 0.15f + H), pm.r, pm.f, ep + 0.06f, 0.14f, W + 0.12f, bg0);   // corniche
+            for (float sd : {-1.f, 1.f}) {   // retours de la devanture jusqu'à la façade
+                plan(pal, lateral(pm, s * (face - ep / 2), 0.15f + H / 2) + pm.f * (sd * W / 2), pm.r, {0, 1, 0}, pm.f * sd, ep, H, bg0.x, bg0.y, bg0.x, bg0.y);
+            }
+        }
         const int n = std::max(3, (int)std::lround(L / 0.9f));
         const float w = L * 0.92f / n;
         for (int k = 0; k < n; k++)
