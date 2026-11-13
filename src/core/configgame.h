@@ -27,6 +27,7 @@ struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 
 // WFS-487 (RG-04) : identifiants du catalogue de personnalisation (section « boutique ») ; noms, couleurs et règles dans
 // src/game/personnalisation.* ; les 16 premières couleurs sont celles du garage actuel (PEINTURES de src/game/sauvegarde.h, même ordre)
 constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 4, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
+constexpr int CADEAU_TRANCHES = 4;      // WFS-500 (RG-01) : tranches d'étoiles du cadeau du jour
 constexpr int BOUTIQUE_MEDAILLES = 3;   // WFS-498 (RG-02) : bronze, argent, or
 inline constexpr const char* BOUTIQUE_MEDAILLES_IDS[BOUTIQUE_MEDAILLES] = {"bronze", "argent", "or"};
 inline constexpr const char* BOUTIQUE_COULEURS_IDS[BOUTIQUE_COULEURS] = {
@@ -128,6 +129,18 @@ struct ConfigJeu {
         struct Medaille { int etoiles; double euros; };
         Medaille medaille[BOUTIQUE_MEDAILLES] = {{100, 0.99}, {300, 2.49}, {600, 4.49}};
     } boutique;
+    // WFS-500 (RG-01, RG-02, RG-05 ; RC-E19-02) : cadeau du jour (src/game/cadeau.h). Chances en % (total des 7 = 100, sinon la lecture
+    // garde les chances du jeu) ; tranches d'étoiles (entier uniforme dans [min, max]) ; minimum d'étoiles d'un cadeau (replis compris) ;
+    // garantie : le N-ième cadeau ouvert sans voiture ni skin en donne une. Durées du prêt pour WFS-502.
+    struct Cadeau {
+        struct Tranche { int min, max; double chance; };
+        Tranche tranche[CADEAU_TRANCHES] = {{10, 15, 45}, {16, 25, 28}, {26, 40, 9}, {41, 50, 3}};
+        double chanceColoris = 8, chanceSkin = 4, chanceVoiture = 3;   // % : coloris (couleur ou finition), skin, voiture prêtée
+        int etoilesMin = 10;          // ★ : jamais moins par cadeau
+        int garantie = 30;            // cadeaux : le 30e sans voiture ni skin en donne une
+        double pretHeures = 3;        // h : durée du prêt d'une voiture (WFS-502)
+        double activationHeures = 24; // h : délai pour activer la voiture prêtée (WFS-502)
+    } cadeau;
     // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
     char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
 };

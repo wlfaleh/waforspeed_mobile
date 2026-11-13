@@ -10,6 +10,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 - **Noms des voitures** (section `voitures`, WFS-191) : `marque` (1 à 16 caractères) et `modele` (1 à 24) de chaque voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu (garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). Un nom invalide : le nom par défaut et une ligne au journal.
 - **Boutique** (section `boutique`, WFS-487) : prix de **base** en étoiles des couleurs, finitions, skins et packs d'autocollants. Le prix payé pour une voiture = prix de base × coefficient de sa classe (`coefficients_classe`, `voitures.<id>.classe`), arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; `cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.
 - **Étoiles et voitures** (section `boutique`, WFS-498) : `voitures.<id>.prix` = prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; `minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), qui donnent l'équivalent en médailles et en euros de chaque prix.
+- **Cadeau du jour** (section `cadeau`, WFS-500) : un cadeau gratuit par jour (minuit, heure du téléphone). `tranches.t1` à `t4` : étoiles tirées au hasard entre `min` et `max`, avec leur `chance` en % ; `coloris`, `skin`, `voiture` : chance en % d'un coloris, d'une skin ou d'une voiture prêtée. **Le total des 7 chances doit faire 100** : sinon le jeu garde ses chances et l'écrit au journal. `etoiles_min` : jamais moins d'étoiles par cadeau (aussi quand tout est déjà possédé) ; `garantie` : le cadeau numéro N ouvert sans voiture ni skin en donne une ; `pret_heures` et `activation_heures` : durée du prêt et délai pour l'activer (WFS-502).
 - Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans `src/core/configgame.cpp` (table `champs`), puis relancer cette commande.
 
 | Clé | Sens | Unité | Min | Max | Défaut |
@@ -287,5 +288,24 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `boutique.medailles.argent.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 2.49 |
 | `boutique.medailles.or.etoiles` | étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix | ★ | 1 | 1000000 | 600 |
 | `boutique.medailles.or.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 4.49 |
+| `cadeau.etoiles_min` | étoiles au moins par cadeau, replis compris | ★ | 1 | 1000 | 10 |
+| `cadeau.garantie` | le cadeau ouvert numéro N sans voiture ni skin donne une voiture prêtée ou une skin | cadeaux | 2 | 1000 | 30 |
+| `cadeau.tranches.t1.min` | plus petit nombre d'étoiles de la tranche | ★ | 1 | 100000 | 10 |
+| `cadeau.tranches.t1.max` | plus grand nombre d'étoiles de la tranche (≥ min) | ★ | 1 | 100000 | 15 |
+| `cadeau.tranches.t1.chance` | chance de tirer cette tranche d'étoiles | % | 0.0 | 100.0 | 45.0 |
+| `cadeau.tranches.t2.min` | plus petit nombre d'étoiles de la tranche | ★ | 1 | 100000 | 16 |
+| `cadeau.tranches.t2.max` | plus grand nombre d'étoiles de la tranche (≥ min) | ★ | 1 | 100000 | 25 |
+| `cadeau.tranches.t2.chance` | chance de tirer cette tranche d'étoiles | % | 0.0 | 100.0 | 28.0 |
+| `cadeau.tranches.t3.min` | plus petit nombre d'étoiles de la tranche | ★ | 1 | 100000 | 26 |
+| `cadeau.tranches.t3.max` | plus grand nombre d'étoiles de la tranche (≥ min) | ★ | 1 | 100000 | 40 |
+| `cadeau.tranches.t3.chance` | chance de tirer cette tranche d'étoiles | % | 0.0 | 100.0 | 9.0 |
+| `cadeau.tranches.t4.min` | plus petit nombre d'étoiles de la tranche | ★ | 1 | 100000 | 41 |
+| `cadeau.tranches.t4.max` | plus grand nombre d'étoiles de la tranche (≥ min) | ★ | 1 | 100000 | 50 |
+| `cadeau.tranches.t4.chance` | chance de tirer cette tranche d'étoiles | % | 0.0 | 100.0 | 3.0 |
+| `cadeau.coloris.chance` | chance d'un coloris (couleur ou finition) pas encore possédé, pour une voiture du joueur | % | 0.0 | 100.0 | 8.0 |
+| `cadeau.skin.chance` | chance d'une skin pas encore possédée, pour une voiture du joueur | % | 0.0 | 100.0 | 4.0 |
+| `cadeau.voiture.chance` | chance d'une voiture que le joueur n'a pas, prêtée | % | 0.0 | 100.0 | 3.0 |
+| `cadeau.pret_heures` | durée du prêt d'une voiture gagnée (WFS-502) | h | 0.1 | 72.0 | 3.0 |
+| `cadeau.activation_heures` | délai pour activer une voiture prêtée (WFS-502) | h | 1.0 | 720.0 | 24.0 |
 
 Pas encore dans le fichier (tickets en cours sur ces zones) : taille et place des commandes tactiles (WFS-102), nombre de joueurs du duel et distances proposées (écrans de WFS-102). À ajouter quand ces tickets seront fusionnés.

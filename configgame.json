@@ -498,5 +498,42 @@
         "euros": 4.49
       }
     }
+  },
+  "cadeau": {
+    "etoiles_min": 10,
+    "garantie": 30,
+    "tranches": {
+      "t1": {
+        "min": 10,
+        "max": 15,
+        "chance": 45.0
+      },
+      "t2": {
+        "min": 16,
+        "max": 25,
+        "chance": 28.0
+      },
+      "t3": {
+        "min": 26,
+        "max": 40,
+        "chance": 9.0
+      },
+      "t4": {
+        "min": 41,
+        "max": 50,
+        "chance": 3.0
+      }
+    },
+    "coloris": {
+      "chance": 8.0
+    },
+    "skin": {
+      "chance": 4.0
+    },
+    "voiture": {
+      "chance": 3.0
+    },
+    "pret_heures": 3.0,
+    "activation_heures": 24.0
   }
 }
