@@ -1524,3 +1524,7 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
 
 ### 2026-11-13 20:28:16 — WFS-401 fusionné par le lead dev (lead-dev)
 PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (diff propre au ticket identique à 65a929a0) ; main 6f424f9 fusionnable sans conflit ; construction et 128 tests CPU refaits. « ✅ Approuvé » en commentaire (revue 5897590317, même compte GitHub), squash 95f8bc8b. WFS-401 en 🟡 À valider (utilisateur) (suite d'ANO-214) ; WFS-466 passe ⏳ Prêt (publication des paquets) ; ligne de `suivi-pr.md` retirée, `qa/Check.md` complété.
+
+### 2026-11-13 20:28:32 — WFS-410 : retour du lead dev corrigé, PR #398 à relire (Claude, agent dev3d (01Us6uCveE))
+- Corrigé : journal des tests CPU dans `qa/pr/WFS-410/tests-cpu.log` (129 réussis), description GitHub à jour, corniche moulurée de la devanture (`archi::details::corniche` au lieu d'une boîte), vitraux de l'église au loin, 3 commentaires ; captures de la terrasse refaites. Dernier commit 8be141c1.
+- Pour le PO : R7 de l'agent 3D (taux de fenêtres allumées par type de lieu : casino au rez-de-chaussée allumé, teintes 2 700 à 3 500 K) proposé comme petite US de réglage après WFS-410.
