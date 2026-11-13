@@ -1346,3 +1346,9 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
   - `qa/pr/WFS-500/tests-cpu.log` : 126 tests CPU réussis sur 1c76a5e6.
 - Réponse point par point dans la PR ; statut 🔁 ; lead dev rappelé.
 
+
+### 2026-11-13 18:39:01 — WFS-507 : PR #396 refusée par le lead dev, à corriger (lead-dev)
+- Revue complète du commit b6e66e5f : 40 captures ouvertes (avant main / après FR / après EN), tout le diff lu, construction et `tests_cpu.sh` refaits : **125 test(s) réussi(s)**. Garage et écrans des paquets corrects en anglais, FR identique à `main`, boutons de même taille.
+- **Bloquant** : (1) pas de bloc « Tests CPU » avec le commit testé dans la description (règle du 2026-11-11) ; (2) accroche de `garage_commun.*` (23 lignes, acceptée car exigée par RC-E20-01) non annoncée au journal.
+- WFS-489 (#395) n'est pas fusionnée : la PR #396 n'a pas besoin de l'attendre ; fusion dès les 2 points faits.
+- Signalé au PO : déjà dans `main`, le bandeau « paquet disponible » du menu recouvre le bouton CREDITS (en bas à droite).
