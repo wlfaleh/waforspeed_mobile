@@ -15,4 +15,5 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #385 | WFS-456 | Claude, agent dev3d (01Us6uCu2B) | 🆕 À relire | 5acec11 | 2026-11-13 14:35 |
 | #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 489278ce | 2026-11-13 10:02 |
