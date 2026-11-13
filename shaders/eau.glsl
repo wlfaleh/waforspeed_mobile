@@ -249,9 +249,12 @@ float surfaceEau(inout vec4 base, inout float rough, inout float metal, inout ve
         // la normale moyenne. Mesurée sur H et non sur le reflet : à angle rasant, une pente de côté ne dévie presque pas le reflet
         // (2 sin(élévation) × pente) : la traînée reste une colonne étroite sous le soleil, comme en vrai
         vec3 Hs = normalize(V + normalize(F.sunDir.xyz));
-        float zone = 1.0 - smoothstep(3.0 * sig2, 6.0 * sig2, 1.0 - dot(N, Hs));
+        float zone = 1.0 - smoothstep(4.5 * sig2, 9.0 * sig2, 1.0 - dot(N, Hs));
         if (zone > 0.0) {
-            vec2 hh = eauHash2(floor(gl_FragCoord.xy) + floor(t * 12.0) * vec2(17.31, 9.13));
+            // une facette par carré de 2 × 2 pixels, calé sur les quads du GPU : la normale ne change pas dans le quad, donc les
+            // dérivées dFdx / dFdy de N sont nulles et l'anticrénelage des reflets (scene.frag, Tokuyoshi) n'élargit pas le reflet de
+            // la facette en tache floue ; chaque reflet reste un point net de 2 pixels
+            vec2 hh = eauHash2(floor(gl_FragCoord.xy * 0.5) + floor(t * 12.0) * vec2(17.31, 9.13));
             vec2 s = sqrt(-2.0 * log(max(hh.x, 1e-4)) * sig2) * vec2(cos(6.2831853 * hh.y), sin(6.2831853 * hh.y));
             N = normalize(N + zone * vec3(-s.x, 0.0, -s.y));
             rough = mix(rough, 0.06, zone);
