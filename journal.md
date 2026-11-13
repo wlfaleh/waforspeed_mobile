@@ -1651,3 +1651,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Cause : dans `profil()` de `tools/qa/emulateur.sh`, la ligne « points d'appui » était cherchée après la marque, alors que `attendre` venait de poser la marque sur cette ligne (écrite une seule fois par le jeu) → étape toujours en échec.
 - Correction (`cb486823`) : lecture de la ligne de la marque (`sed -n "${MARQUE}p"`). Essai avec un faux journal (`qa/pr/WFS-481/essai-emulateur/`) : ancienne version en échec, corrigée OK (6 appuis, profil créé), cas sans écran OK. Avis expert CI / CD : OK.
 - Revérifié sur `4a30e45b` (main synchronisé, WFS-489) : 131 tests CPU réussis, banc `creation` FR 0 écart. Lead dev rappelé.
+
+### 2026-11-13 22:41:03 — Statuts automatiques, CI main #1057 (robot statuts)
+- Run rouge (push, commit ae6a828), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
