@@ -17,11 +17,7 @@
 namespace wfs::plaque_joueur {
 namespace {
 
-constexpr float LOD_M = 14.f;              // au-delà, porte-plaque et plaque simplifiés, sans vis (RG-06 : jamais absente)
-constexpr float LOD_BASSE_M = 4.f;         // qualité Basse : version simple dès 4 m (RG-07 : coût par image)
-// RG-05 : luminance de la plaque éclairée ≈ 2 à 20 cd/m² (règlement ONU n° 4 : ≥ 2,5 cd/m² en tout point) ; en unités
-// d'émission du moteur (fenêtres éclairées de la ville : 0,9 ; enseignes : 2 à 6), 0,30 × la couleur de la plaque
-constexpr float ECLAIREUR = 0.30f;
+// LOD_M, LOD_BASSE_M, ECLAIREUR et les matériaux : vehicule_plaque.h (partagés avec WFS-484)
 
 struct Ressources {
     bool pret = false;
@@ -84,7 +80,7 @@ void preparerTexte(Renderer& r, const std::string& texte) {
     if (!dessinerImage(texte, g.ttf.data(), im)) { WFS_ERR("plaque : image impossible (police)"); g.texte = texte; return; }
     g.couleur = r.vk().uploadTexture(im.couleur.data(), IMAGE_L, IMAGE_H, true);
     g.normales = r.vk().uploadTexture(im.normales.data(), IMAGE_L, IMAGE_H, false);
-    Material m; m.color = {1, 1, 1, 1}; m.metal = 0; m.rough = 0.62f;   // RG-05 : film blanc mat, rugueux
+    Material m; m.color = {1, 1, 1, 1}; m.metal = 0; m.rough = PLAQUE_RUGOSITE;   // RG-05 : film blanc mat, rugueux
     g.matPlaque = r.makeMaterial(m, &g.couleur, &g.normales, nullptr);
     m.flags |= MAT_EMTEX;                                                 // arrière : éclaireur de plaque (émission × texture)
     g.matPlaqueArriere = r.makeMaterial(m, &g.couleur, &g.normales, nullptr);
@@ -102,10 +98,10 @@ void preparer(Renderer& r) {
         g.plaque[n] = versGpu(r, p.plaque);
         if (n == 0) g.vis = versGpu(r, p.vis);
     }
-    // porte-plaque : polypropylène noir grainé (albédo ≈ 0,03, rugueux) ; vis : acier zingué (métal, satiné)
-    Material s; s.color = {0.028f, 0.028f, 0.030f, 1}; s.metal = 0; s.rough = 0.68f;
+    // porte-plaque : polypropylène noir grainé ; vis : acier zingué (vehicule_plaque.h)
+    Material s; s.color = {SUPPORT_RVB[0], SUPPORT_RVB[1], SUPPORT_RVB[2], 1}; s.metal = 0; s.rough = SUPPORT_RUGOSITE;
     g.matSupport = r.makeMaterial(s, nullptr, nullptr, nullptr);
-    Material v; v.color = {0.62f, 0.64f, 0.66f, 1}; v.metal = 1; v.rough = 0.38f;
+    Material v; v.color = {VIS_RVB[0], VIS_RVB[1], VIS_RVB[2], 1}; v.metal = 1; v.rough = VIS_RUGOSITE;
     g.matVis = r.makeMaterial(v, nullptr, nullptr, nullptr);
     g.pret = true;
 }

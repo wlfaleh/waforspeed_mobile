@@ -164,9 +164,11 @@ bool Session::join(std::unique_ptr<Transport> t, std::string_view code, bool hos
     t_->presence({{"n", nick_}, {"st", "lobby"}, {"r", "0"}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"car", car_}, {"paint", paint_},
                   {"host", host ? "1" : "0"}, {"map", host ? map_ : ""}, {"km", host ? std::to_string(km_) : ""},
                   {"trace", trace::signature()},   // WFS-136 (RG-07, A7.5) : cartes au tracé 2
+                  {"pl", plaque_},   // WFS-484 (accroche, RG-03) : ma plaque (facultative, filtrée à la réception)
                   {"j", std::to_string(jeton_)}});
     return true;
 }
+void Session::setPlaque(const std::string& p) { if (p.size() > 8 || p == plaque_) return; plaque_ = p; if (t_) t_->presence({{"pl", plaque_}}); }   // WFS-484 (accroche)
 void Session::leave() {
     if (t_) t_->leave();
     t_.reset(); code_.clear(); st_ = Status::Lobby; ghosts_.clear(); partants_.clear();
