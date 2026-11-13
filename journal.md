@@ -1500,3 +1500,24 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
 - Construction et tests refaits sur 65a929a0 fusionné en local avec main 318f2ce9 : **128 test(s) réussi(s)**, dont `test_eau`.
 - Seul blocage : **nouveau conflit avec main sur `journal.md`** (GitHub `dirty` ; entrées WFS-490, 536, 410 arrivées après la synchronisation b2577f8c). À faire : resynchroniser, pousser, rappeler le lead dev aussitôt ; la prochaine revue ne vérifie que le diff de la synchronisation.
 - Remarques non bloquantes : `else WFS_ERR` du dauphin (`plage.cpp:3387-3389`) toujours attaché au 2e `if` ; `atan(0, 0)` au centre de la nappe de la gerbe.
+### 2026-11-13 15:48:21 — WFS-401 : début, branche créée (Claude, agent dev3d (01Us6uCxKQ))
+- Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
+- Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.
+- Zone : `shaders/eau.glsl`, `src/render/eau_*`, `tests/**` ; `plage.cpp` ≤ 10 lignes (éclaboussure, vues `mer-*`), annoncées ici avant changement.
+
+### 2026-11-13 16:10:08 — WFS-401 : accroches dans plage.cpp annoncées (Claude, agent dev3d (01Us6uCxKQ))
+- RG-07 : 7 lignes ajoutées, 1 changée dans `src/world/plage.cpp`, seulement l'éclaboussure et les vues du banc `mer-*` :
+  - dessin de la gerbe : hauteur selon l'âge (`eau::hauteurGerbe`) dans l'échelle (1 ligne changée) ;
+  - vue `mer-eclaboussure-pres` (gros plan depuis l'eau, 0,2 et 0,45 s après la sortie du dauphin) : 2 lignes ;
+  - vue `mer-rochers-pres` (écume contre les blocs, de près) : 1 ligne ; vue `mer-falaise` (pied de la falaise depuis l'eau) : 3 lignes.
+- Rien d'autre de `plage.cpp` (WFS-383) n'est touché.
+
+### 2026-11-13 18:38:14 — WFS-401 : avis 3D « À REPRENDRE » corrigé (Claude, agent dev3d (01Us6uCxKQ))
+- B1 écume : opacité en dégradé, trous irréguliers, filaments, albédo ≈ 0,63 ; B2 reflets du soleil et de la lune tirés selon la loi des pentes (bords doux) ; R3 jets inégaux et penchés ; R4 vue `mer-falaise-blocs`.
+- `plage.cpp` (accroche annoncée, RG-07) : vue `mer-rochers-pres` retirée, `mer-falaise-blocs` ajoutée (+ 1 ligne : pied de la falaise) : 8 lignes ajoutées, 1 changée au total.
+- Vérification : 125 tests CPU réussis ; captures du banc `mer` refaites en entier sur la branche synchronisée avec main.
+
+### 2026-11-13 19:22:02 — WFS-401 : 2e avis 3D (B3 paillettes) corrigé (Claude, agent dev3d (01Us6uCxKQ))
+- B3 : paillettes du soleil et de la lune tirées sur l'eau (cellules du monde), vie propre à chacune, petit point rond qui renvoie vraiment le soleil ; plus de tirage sur la grille de l'écran.
+- `plage.cpp` (accroche, RG-07) : + 1 ligne, vue `mer-lune-suite` (4 images de nuit à 0,25 s) : 9 lignes ajoutées, 1 changée au total (≤ 10).
+- Vérification : 126 tests CPU réussis ; 25 captures du banc `mer` refaites sur la branche synchronisée avec main.
