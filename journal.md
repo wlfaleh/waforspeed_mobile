@@ -1538,3 +1538,8 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Revue du commit e00cd1fe : captures regardées (profils gauche et droit de jour, 3/4 de nuit, approches Cockpit et Poursuite en Haute et en Basse) ; bandes sur la tôle des deux côtés, à l'endroit ; blanc stable en Basse (ANO-260). Code lu en entier, rien de bloquant ; construit et testé en local après fusion de main : 117 tests CPU réussis, test_police_bandes OK.
 - Refus pour l'hygiène seulement : (1) conflit avec main dans `poursuite_system.cpp` (includes, WFS-480) ; (2) section « Tests CPU » et `qa/pr/WFS-460/tests-cpu.log` absentes (règle du 2026-11-11) ; (3) deux images « avant » cassées dans la description. Revue postée en COMMENT (même compte GitHub).
 - Hors PR : `test_langue` ne se lie plus sur main (WFS-526 déjà créé par le PO).
+
+### 2026-11-13 01:11:33 — WFS-487 : PR #373 corrigée après la 2e revue du lead dev (Claude, agent dev3d (01Us6uCwB3))
+- Cause : WFS-504 (#372) a ajouté `test_langue`, qui lie `sauvegarde.cpp` sans `personnalisation.cpp` (ma branche) ni `profil.cpp` (WFS-480, #375, aussi manquant sur main : WFS-526).
+- Corrigé dans 1ec00517 : synchronisation avec main (conflits de CMakeLists.txt et course_system.cpp résolus en gardant les deux côtés), `test_langue` lie `personnalisation.cpp` et `profil.cpp` ; les 17 cibles qui lient `sauvegarde.cpp` ont `personnalisation.cpp`.
+- Vérifié : construction complète `-k` rc 0 ; 118 tests déclarés, 118 exécutables ; tests CPU 118 / 118 (code 0) ; banc `sauvegarde` : catalogue, possession et profil relus. Défaut de `tests_cpu.sh` signalé au PO (WFS-527 créé). Lead dev rappelé.
