@@ -1143,3 +1143,7 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Zone : E3 (`src/game/**` hors `game.*`, `tests/**`) + exception PO : `src/core/configgame.*`, `configgame.json`, `configgame.README.md`, section `market` seulement ; clés ajoutées seulement dans `sauvegarde.*`.
 - Règles : `regles-de-gestion/WFS-510.md` et `regles-de-gestion/E21-market.md`. Dépend de WFS-498 (🟣 fusionné). Pas E15, pas 🟡 (logique sans écran) : 🟣 puis ✅ par les bancs du matin.
 - Branche `feature/waforspeed-510`.
+
+### 2026-11-13 15:45:36 — WFS-535 attribué à Claude, agent dev3d (01Us6uCtPt) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (aucun ticket avant). **WFS-535** (E22 « Score », P1) : 1er ticket de E22, placé juste après les prêts du bandeau 🏁 (489, 507, 500, 510 pris entre 15:43 et 15:46) ; dépendance WFS-498 fusionnée.
+- Zone : `src/game/**` hors `game.*` (nouveau module `score_etoiles.*`), `tests/**` ; logique seule (WFS-536 crédit + banc et WFS-537 écran de fin après). Règles : `regles-de-gestion/WFS-535.md` et `regles-de-gestion/E22-score.md`.
