@@ -83,6 +83,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../ui/ecrans/salon.h"
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/reglages_banc.h"   // WFS-420
+#include "../game/textes_course.h"   // WFS-506 (accroche) : banc « textes » de la course
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
 #include "../world/enseignes.h"
@@ -265,7 +266,8 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "fantome") { benchFantome(g, r, out); return finir(); }   // WFS-318 (accroche) : étiquette du fantôme, fantôme caché
     if (banc == "banc-telephone") { ui::chargerPolice(r); const int e = ecrans::banc_telephone::benchBancTelephone(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-420 (accroche) : banc de performance du téléphone, captures banc-tel-*
-    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchReglagesTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE)
+    if (banc == "textes") { ui::chargerPolice(r); const int e = ecrans::benchReglagesTextes(g, r, out) + benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-504 (accroche) : textes en français ou en anglais (WFS_LANGUE) ; WFS-506 (accroche) : course
+    if (banc == "textes-course") { ui::chargerPolice(r); const int e = benchCourseTextes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-506 (accroche) : course seule (essai local, captures de la PR)
     if (banc == "reglages-onglets") { ecrans::benchReglagesOnglets(g, r, out); return finir(); }   // WFS-291 (accroche) : onglets des réglages
     if (banc == "reglages-appuis") { ecrans::benchReglagesAppuis(g, r, out); return finir(); }   // WFS-290 (accroche) : appuis sur Réglages / Fermer
     if (banc == "ville-sens-inverse") { benchSensInverseVille(g, r, out); return finir(); }   // WFS-404 : sens inverse de la Ville seul

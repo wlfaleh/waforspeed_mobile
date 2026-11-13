@@ -17,6 +17,7 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../ui/toasts.h"
+#include "../ui/langue.h"   // WFS-506 : bandeaux en français ou en anglais
 
 namespace wfs::trace {
 // ---------------------------------------------------------------- système : feux de la carte, feu grillé, records
@@ -48,7 +49,7 @@ public:
         // RG-07 : nouveaux tracés, une fois, au premier départ après la mise de côté des anciens records
         if (c->state == RaceState::Play && sauvegarde().nouveauxTraces) {
             sauvegarde().nouveauxTraces = false;
-            toasts::pousser("Nouveaux tracés", "nouveaux records à battre", 0);
+            toasts::pousser(ui::tr("toast.nouveaux_traces"), ui::tr("toast.nouveaux_records"), 0);   // WFS-506
         }
         if (c->state != RaceState::Play) { attente_ = -1; return; }
         // RG-03 : feu grillé sans toucher personne → +50 (arcade : aucune pénalité)
@@ -64,7 +65,7 @@ public:
                 if (c->accidents + c->bumps + c->scrapes != chocs_ || d < -1 / M) attente_ = -1;   // choc ou recul : rien
                 else if (d > (CARREFOUR_M + 15) / M) {
                     attente_ = -1; c->bonus += 50;
-                    toasts::pousser("Feu grillé", "+50", 0);
+                    toasts::pousser(ui::tr("toast.feu_grille"), "+50", 0);   // WFS-506
                     WFS_LOG("feux : feu %d grillé sans choc : +50", s.feu);
                 }
             }

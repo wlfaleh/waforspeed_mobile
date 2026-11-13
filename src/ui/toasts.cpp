@@ -9,6 +9,7 @@
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "text.h"
+#include "langue.h"   // WFS-506 : bandeaux en français ou en anglais
 
 namespace wfs {
 namespace {
@@ -34,24 +35,25 @@ public:
     const char* name() const override { return "Bandeaux"; }
 
     // après les règles de course (ordre 210) : compteurs de cette mise à jour comparés à ceux de la précédente
+    // WFS-506 (RG-01) : textes pris dans la langue active au moment de l'événement (une fois par bandeau, pas à chaque image)
     void update(double dt, const GameView&) override {
         const Course* c = activeCourse();
         // RG-07 : pas de course, ou nouvelle course (Rejouer → décompte) : pile vidée, compteurs repris
         if (!c || c->state == RaceState::Count || c->timeLeft > 1e6) { g_pile.clear(); garder(c); return; }
         if (c->level > level_) {   // RG-02 : checkpoint (web : toast(`Checkpoint ${level}`, `+${add.toFixed(1)} s`, 'cp'))
             for (int n = level_ + 1; n <= c->level; n++)
-                pousser({"Checkpoint " + std::to_string(n), "+" + ui::decimal(Course::checkpointBonus(n), 1) + " s", CP});
+                pousser({ui::tr("toast.checkpoint", std::to_string(n)), "+" + ui::decimal(Course::checkpointBonus(n), 1) + " s", CP});
         }
         // RG-03 : quasi-contact (web : « Quasi-contact ×N » si combo > 1, « +250×combo ») ; un bandeau par quasi-contact,
         // même si plusieurs tombent dans la même mise à jour (le combo de chacun : combo final − ceux qui suivent)
         for (int i = 0, d = c->nearCount - near_; i < d; i++) {
             const int combo = std::max(1, c->combo - (d - 1 - i));
-            pousser({combo > 1 ? "Quasi-contact ×" + std::to_string(combo) : "Quasi-contact", "+" + std::to_string(250 * combo), NORMAL});
+            pousser({combo > 1 ? ui::tr("toast.quasi_combo", std::to_string(combo)) : ui::tr("toast.quasi"), "+" + std::to_string(250 * combo), NORMAL});
         }
-        if (c->accidents > accidents_) pousser({"Accident !", "", BAD});   // RG-04 : playerAccident
+        if (c->accidents > accidents_) pousser({ui::tr("toast.accident"), "", BAD});   // RG-04 : playerAccident
         // RG-04 : combo perdu sur un choc (bump) : combo > 1 remis à 0 avant la fin de son délai ; le délai écoulé
         // (comboTimer ≤ dt) remet aussi le combo à 0 mais sans bandeau, comme le jeu web
-        else if (combo_ > 1 && c->combo == 0 && timer_ > dt + 1e-9) pousser({"Combo perdu", "", BAD});
+        else if (combo_ > 1 && c->combo == 0 && timer_ > dt + 1e-9) pousser({ui::tr("toast.combo_perdu"), "", BAD});
         garder(c);
     }
 

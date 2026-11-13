@@ -5,6 +5,7 @@
 #include "../render/renderer.h"
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX, margesCommandes (lecture seule)
 #include "../ui/text.h"
+#include "textes_course.h"   // WFS-506 : libellés des commandes en français ou en anglais
 
 namespace wfs {
 
@@ -153,7 +154,8 @@ void pedale(Renderer& r, const Cadre& c, float k, bool gaz, bool appui) {
     const float px = std::round(std::max(13.f, 13 * k)) * echelle(17.9f * k);
     float ly = lo.y - 0.4768f * px;
     if (!appui) ly = std::round(ly);
-    ui::text(r, lo.x, ly, px, gaz ? "GAZ" : "FREIN", ct, ui::CENTRE, 0.14f, false);
+    static textes::Capitales libGaz{"hud.gaz"}, libFrein{"hud.frein"};   // WFS-506 (RG-01) : « GAZ » / « GAS », « FREIN » / « BRAKE »
+    ui::text(r, lo.x, ly, px, gaz ? libGaz() : libFrein(), ct, ui::CENTRE, 0.14f, false);
 }
 
 // RG-03 : bouton .nitro-touch (disque 68 px, anneau de charge vert acide .nt-ring, flamme .nt-icon, libellé .nt-label)
@@ -182,7 +184,8 @@ void boutonNitro(Renderer& r, float cx, float cy, float k, const EtatCommandes& 
     if (nq < 40) dessin2d::anneau(r, cx, cy, 27.5f * u, R, filtre({1, 1, 1, 0.1f}), a, 2 * PI);
     iconeNitro(r, cx, cy - 4 * u, 26 * u / 24, vert);   // 26 px, margin-top −8 px
     const float px = std::round(std::max(11.f, 10 * k)) * sc;   // 10 px du web, 11 au moins pour rester lisible
-    ui::text(r, cx, cy + 14.3f * u - 0.4768f * px, px, "NITRO", vert, ui::CENTRE, 0.14f, false);
+    static textes::Capitales libNitro{"hud.nitro"};   // WFS-506 (RG-01)
+    ui::text(r, cx, cy + 14.3f * u - 0.4768f * px, px, libNitro(), vert, ui::CENTRE, 0.14f, false);
 }
 
 } // namespace
