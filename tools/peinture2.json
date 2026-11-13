@@ -59,20 +59,6 @@
         "note": "pavillon entre les barres de toit"
       },
       {
-        "partie": "toit",
-        "maillage": 7,
-        "triangles_boite": [
-          -0.66,
-          1.55,
-          -0.25,
-          0.66,
-          1.66,
-          1.8
-        ],
-        "nyMin": 0.5,
-        "note": "pavillon noir d'origine"
-      },
-      {
         "partie": "retro",
         "maillage": 0,
         "ilots": [
@@ -99,7 +85,7 @@
         "note": "coque droite"
       }
     ],
-    "note": "toit bi-ton d'origine : pavillon noir (maillage 7) autour d'un panneau peint ; barres de toit exclues (au-dessus de 1,66 m)"
+    "note": "pavillon peint entre les barres de toit ; le cadre noir d'origine (maillage 7, mêlé à des pièces cachées) reste noir"
   },
   "corsa": {
     "note": "toit et rétroviseurs noirs d'origine (garnitures noires, maillage 7)",
@@ -109,14 +95,14 @@
         "maillage": 7,
         "triangles_boite": [
           -0.62,
-          1.33,
+          1.27,
           -0.3,
           0.62,
           1.45,
-          1.6
+          1.75
         ],
         "nyMin": 0.3,
-        "note": "pavillon noir d'origine"
+        "note": "pavillon noir d'origine et becquet"
       },
       {
         "partie": "retro",
