@@ -250,9 +250,55 @@ std::vector<Champ> champsMarket(ConfigJeu& c) {
     v.push_back({"market.x2_par_jour", T::Entier, &m.x2ParJour, 0, 100, "par jour", "×2 des étoiles de fin de course par jour au plus (vidéo ou « sans pub »)"});
     return v;
 }
+// WFS-500 (RG-01, RG-02, RG-05 ; RC-E19-02) : section « cadeau » (cadeau du jour, src/game/cadeau.h) ; total des chances et tranches
+// contrôlés après la lecture (verifierCadeau)
+std::string ecrireNombre(double v, Type t);   // plus bas (lecteur JSON)
+std::vector<Champ> champsCadeau(ConfigJeu& c) {
+    static std::vector<std::string> cles;
+    if (cles.empty())
+        for (int i = 0; i < CADEAU_TRANCHES; i++)
+            for (const char* f : {".min", ".max", ".chance"}) cles.push_back("cadeau.tranches.t" + std::to_string(i + 1) + f);
+    using T = Type;
+    ConfigJeu::Cadeau& d = c.cadeau;
+    std::vector<Champ> v;
+    v.push_back({"cadeau.etoiles_min", T::Entier, &d.etoilesMin, 1, 1000, "★", "étoiles au moins par cadeau, replis compris"});
+    v.push_back({"cadeau.garantie", T::Entier, &d.garantie, 2, 1000, "cadeaux", "le cadeau ouvert numéro N sans voiture ni skin donne une voiture prêtée ou une skin"});
+    for (int i = 0; i < CADEAU_TRANCHES; i++) {
+        v.push_back({cles[(size_t)i * 3].c_str(), T::Entier, &d.tranche[i].min, 1, 100000, "★", "plus petit nombre d'étoiles de la tranche"});
+        v.push_back({cles[(size_t)i * 3 + 1].c_str(), T::Entier, &d.tranche[i].max, 1, 100000, "★", "plus grand nombre d'étoiles de la tranche (≥ min)"});
+        v.push_back({cles[(size_t)i * 3 + 2].c_str(), T::Reel, &d.tranche[i].chance, 0, 100, "%", "chance de tirer cette tranche d'étoiles"});
+    }
+    v.push_back({"cadeau.coloris.chance", T::Reel, &d.chanceColoris, 0, 100, "%", "chance d'un coloris (couleur ou finition) pas encore possédé, pour une voiture du joueur"});
+    v.push_back({"cadeau.skin.chance", T::Reel, &d.chanceSkin, 0, 100, "%", "chance d'une skin pas encore possédée, pour une voiture du joueur"});
+    v.push_back({"cadeau.voiture.chance", T::Reel, &d.chanceVoiture, 0, 100, "%", "chance d'une voiture que le joueur n'a pas, prêtée"});
+    v.push_back({"cadeau.pret_heures", T::Reel, &d.pretHeures, 0.1, 72, "h", "durée du prêt d'une voiture gagnée (WFS-502)"});
+    v.push_back({"cadeau.activation_heures", T::Reel, &d.activationHeures, 1, 720, "h", "délai pour activer une voiture prêtée (WFS-502)"});
+    return v;
+}
+// WFS-500 (RG-01) : total des 7 chances = 100 % et tranches min ≤ max ; sinon valeurs du jeu pour ce groupe et une ligne au journal
+void verifierCadeau(ConfigJeu& c, BilanConfig& b) {
+    const ConfigJeu::Cadeau defaut{};
+    ConfigJeu::Cadeau& d = c.cadeau;
+    for (int i = 0; i < CADEAU_TRANCHES; i++)
+        if (d.tranche[i].min > d.tranche[i].max) {
+            b.erreurs++;
+            b.messages.push_back("cadeau.tranches.t" + std::to_string(i + 1) + " : min " + std::to_string(d.tranche[i].min) + " > max " +
+                                 std::to_string(d.tranche[i].max) + " : tranche du jeu gardée");
+            d.tranche[i].min = defaut.tranche[i].min; d.tranche[i].max = defaut.tranche[i].max;
+        }
+    double total = d.chanceColoris + d.chanceSkin + d.chanceVoiture;
+    for (const auto& t : d.tranche) total += t.chance;
+    if (std::fabs(total - 100) > 1e-6) {
+        b.erreurs++;
+        b.messages.push_back("cadeau : total des chances = " + ecrireNombre(total, Type::Reel) + " % (100 % attendu) : chances du jeu gardées");
+        for (int i = 0; i < CADEAU_TRANCHES; i++) d.tranche[i].chance = defaut.tranche[i].chance;
+        d.chanceColoris = defaut.chanceColoris; d.chanceSkin = defaut.chanceSkin; d.chanceVoiture = defaut.chanceVoiture;
+    }
+}
 std::vector<Champ> tousChamps(ConfigJeu& c) {
-    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsMarket(c), z = champsScoreEtoiles(c);
+    std::vector<Champ> v = champs(c), w = champsVoitures(c), x = champsBoutique(c), y = champsMarket(c), z = champsScoreEtoiles(c), u = champsCadeau(c);
     v.insert(v.end(), w.begin(), w.end()); v.insert(v.end(), x.begin(), x.end()); v.insert(v.end(), y.begin(), y.end()); v.insert(v.end(), z.begin(), z.end());
+    v.insert(v.end(), u.begin(), u.end());   // WFS-500
     return v;
 }
 
@@ -460,6 +506,7 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
         b.messages.push_back("poursuite.police_depart > police_max : police_depart ramené à police_max");
         c.poursuite.policeDepart = c.poursuite.policeMax;
     }
+    verifierCadeau(c, b);   // WFS-500 (RG-01)
     deduire(c);
     return b;
 }
@@ -561,6 +608,11 @@ std::string configReadme() {
         "`bons_skin` bon(s) de skin ; il est proposé à partir de la fin de la course n° `apres_courses`. `x2_par_jour` = ×2 des "
         "étoiles de fin de course par jour au plus. Les prix en argent sont ceux de Google Play : `prix_secours_eur` ne sert que sur PC et dans les bancs. "
         "Les `medailles` de la section `boutique` (WFS-498) donnent seulement l'équivalent des prix du garage.\n"
+        "- **Cadeau du jour** (section `cadeau`, WFS-500) : un cadeau gratuit par jour (minuit, heure du téléphone). `tranches.t1` à `t4` : "
+        "étoiles tirées au hasard entre `min` et `max`, avec leur `chance` en % ; `coloris`, `skin`, `voiture` : chance en % d'un coloris, d'une skin "
+        "ou d'une voiture prêtée. **Le total des 7 chances doit faire 100** : sinon le jeu garde ses chances et l'écrit au journal. "
+        "`etoiles_min` : jamais moins d'étoiles par cadeau (aussi quand tout est déjà possédé) ; `garantie` : le cadeau numéro N ouvert sans voiture "
+        "ni skin en donne une ; `pret_heures` et `activation_heures` : durée du prêt et délai pour l'activer (WFS-502).\n"
         "- Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans "
         "`src/core/configgame.cpp` (table `champs`), puis relancer cette commande.\n\n"
         "| Clé | Sens | Unité | Min | Max | Défaut |\n|---|---|---|---|---|---|\n";

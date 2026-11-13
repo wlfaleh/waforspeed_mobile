@@ -53,6 +53,21 @@ const PeintureDef* peintureDef(const std::string& id);   // nullptr si inconnue
 // peinture d'origine d'une voiture (champ paint de CARS[] du jeu web)
 const char* peintureOrigine(const std::string& carId);
 
+// WFS-500 (RG-07, RG-08, RG-09 ; RC-E19-03, 04) : état du cadeau du jour (règles dans src/game/cadeau.h). Clés nouvelles, absentes
+// dans une sauvegarde d'avant (cadeau disponible tout de suite) ; les clés du prêt sont seulement gardées ici, utilisées par WFS-502.
+struct EtatCadeau {
+    long long heure = 0;       // cadeau-heure : epoch UTC (s) du dernier cadeau ouvert ; 0 : jamais
+    int decalage = 0;          // cadeau-decalage : décalage local (s, fuseau du téléphone) au moment de cette ouverture
+    std::string jour;          // cadeau-jour : jour local AAAA-MM-JJ du dernier cadeau ; vide : jamais
+    int sansRare = 0;          // cadeau-sans-rare : cadeaux ouverts de suite sans voiture ni skin (garantie)
+    long long total = 0;       // cadeau-total : cadeaux ouverts
+    std::string dernier;       // cadeau-dernier : résultat du dernier cadeau, « <type>;<valeur> » (réaffichage)
+    std::string pretVoiture;   // pret-voiture : voiture prêtée (WFS-502) ; vide : aucune
+    long long pretRecu = 0;    // pret-recu : epoch UTC où le prêt a été gagné
+    long long pretFin = 0;     // pret-fin : epoch UTC de la fin du prêt ; 0 : pas encore activé
+    std::map<std::string, std::string> inconnues;   // autres clés cadeau-* / pret-* (version plus récente) : gardées telles quelles
+};
+
 class Sauvegarde {
 public:
     static constexpr int VERSION = 1;
@@ -110,6 +125,7 @@ public:
     void activerCartes();                               // fantômes renommés, cartes notées (appelée par charger)
     // WFS-122 (RG-01) : 3 derniers adversaires du duel, le plus récent en premier (clé adversaires=a|b|c)
     std::vector<std::string> adversaires;
+    EtatCadeau cadeau;                                  // WFS-500 : cadeau du jour (clés cadeau-*, pret-*)
     Profil profil;                                      // WFS-480 : plaque, date d'arrivée, statistiques, 20 dernières courses (profil.h)
     void noterAdversaires(const std::vector<std::string>& noms);   // en tête dans l'ordre reçu (classement), sans doublon, 3 au plus
 
