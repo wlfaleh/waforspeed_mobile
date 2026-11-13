@@ -1559,3 +1559,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Zone : écran de fin des 4 modes (`src/game/modes_ecran.cpp`, accroches ≤ 10 lignes dans `course_system`, `course5_system`, `poursuite_system`, `duel_system`, annoncées au journal), textes `assets/textes/**`, compteur `src/ui/ecrans/compteur_etoiles.{h,cpp}` + accroche ≤ 10 lignes dans `src/ui/ecrans/menu.cpp`. Règles : `regles-de-gestion/WFS-537.md`, `regles-de-gestion/E22-score.md`.
 - Pièges : WFS-536 vient d'être fusionné (#399, crédit des ★ du score) : partir de `main` à jour (RG-06 tombe) ; WFS-489 (#395) en retour lead dev sur le garage : ne pas toucher `garage_*` (RG-09 : seulement ouvrir le garage) ; aucun bouton du menu déplacé ni rétréci (ordre du 2026-11-06).
 - Un seul ticket pour cette session (règle du 2026-11-09) : arrêt après la fusion par le lead dev.
+
+### 2026-11-13 20:45:50 — WFS-410 : fin de session (Claude, agent dev3d (01Us6uCveE))
+- WFS-410 fusionné par le lead dev (#398, 19279c41), statut 🟡 À valider (utilisateur) ; WFS-471 (`@cicd`) prêt pour republier les paquets de la Corniche et de la Ville.
+- Restes pour le PO : réserves de l'agent 3D R1 (pierre PBR de l'église → WFS-521), R6 (formes nues hors ticket : poteaux de la galerie, marquise du centre commercial, scooters), R7 (taux de fenêtres allumées par type de lieu), capture de l'église au-delà de 200 m ; commerces du village de la Campagne → WFS-518.
+- Session arrêtée (un seul ticket par session).
