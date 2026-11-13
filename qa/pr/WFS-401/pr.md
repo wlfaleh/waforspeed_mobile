@@ -16,7 +16,7 @@ Agent : Claude, agent dev3d (01Us6uCxKQ) (session_01Us6uCxKQDpfjkTaDzFG4mi)
   - `src/world/plage.cpp` (9 lignes ajoutées, 1 changée, annoncées au journal) : hauteur de la gerbe dans l'échelle du dessin ; vues de banc `mer-eclaboussure-pres` (gros plan depuis l'eau, 0,2 et 0,45 s), `mer-falaise` (pied de la falaise depuis l'eau), `mer-falaise-blocs` (blocs d'enrochement posés dans l'eau au pied de la falaise, de près), `mer-lune-suite-1..4` (nuit, 4 images à 0,25 s : paillettes de la lune).
   - `tests/test_eau.cpp` : 6 contrôles de la gerbe (un maillage, nappe dans le rayon 1, couronne marquée et évasée, hauteur balistique).
 - **Comment c'est vérifié** :
-  - construction complète, `tools/qa/tests_cpu.sh build` : 126 tests réussis (dont `test_eau`) sur la branche synchronisée avec main ;
+  - construction complète, `tools/qa/tests_cpu.sh build` : 128 tests réussis (dont `test_eau`, voir « Tests CPU ») sur la branche synchronisée avec main ;
   - banc `mer` avant (main) / après (branche) : 25 captures, toutes regardées ;
   - zooms ajoutés : `zoom-soleil-avant/apres.jpg` (niveaux étirés 60–100 % pour voir sous le voile du soleil : tache floue sur main, colonne de reflets séparés sur la branche), `zoom-eclaboussure-loin-avant/apres.jpg` (trait blanc plat → gerbe), `zoom-eclaboussure-apres-1/2.jpg` (gros plan ×4) ;
   - **banc perf de la Corniche** (`WFS_BANC=perf WFS_PERF_CARTE=plage`, main et branche l'un après l'autre sur la même machine, lavapipe) :
@@ -35,6 +35,21 @@ Agent : Claude, agent dev3d (01Us6uCxKQ) (session_01Us6uCxKQDpfjkTaDzFG4mi)
   - mesures sur le banc PC (lavapipe), pas sur le téléphone ;
   - hors périmètre, visibles sur les captures : formes nues des bateaux, du jeu gonflable et des pédalos (WFS-378 / 386), texture de la falaise (WFS-383), reflets des façades (WFS-400) ;
   - aucun actif ajouté, aucun paquet `.wfcarte` changé (RG-E15-01 sans objet).
+
+## Tests CPU
+
+Commit testé : **faf63b33** (branche `feature/waforspeed-401` synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`. Journal complet : [`qa/pr/WFS-401/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-401/qa/pr/WFS-401/tests-cpu.log).
+
+```
+[OK] test_vehicule_lod (0 s)
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (2 s)
+[OK] test_virages_fleches (1 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 128 test(s) réussi(s) en 350 s
+code de sortie : 0
+```
 
 ## Captures pour le lead dev (25 après)
 
