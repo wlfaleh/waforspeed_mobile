@@ -11,6 +11,8 @@
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../langue.h"   // WFS-505 : textes de l'écran de chargement en français ou en anglais
+#include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau du bouton de l'écran d'erreur
 
@@ -21,7 +23,20 @@ namespace ecrans {
 static vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 static const unsigned BG = 0x0A0B10, SURFACE2 = 0x1E2130, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, DANGER = 0xFF1F4B,
                       ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF;
-static const char* MESSAGE_ECHEC = "Le moteur 3D n'a pas pu démarrer sur cet appareil.";   // main.js boot()
+static const char* MESSAGE_ECHEC = "Le moteur 3D n'a pas pu démarrer sur cet appareil.";   // main.js boot() ; journal seulement (écran : clé chargement.echec, WFS-505)
+// WFS-505 (RG-01) : les étapes arrivent en français (Game::init, écran des paquets) et restent ainsi au journal ; à l'écran,
+// le libellé connu est remplacé par sa clé dans la langue active (inconnu : affiché tel quel, le banc « textes » le signale)
+static const char* const ETAPES[][2] = {
+    {"Préparation du moteur", "chargement.etape.moteur"},
+    {"Construction de la route", "chargement.etape.route"},
+    {"Chargement du modèle 3D…", "chargement.etape.modele"},
+    {"Construction de la ville", "chargement.etape.ville"},
+    {"Paquets de cartes", "chargement.etape.paquets"},
+};
+static std::string libelleAffiche(const std::string& fr) {
+    for (const auto& e : ETAPES) if (fr == e[0]) return ui::tr(e[1]);
+    return fr;
+}
 static float clampv(float v, float a, float b) { return std::max(a, std::min(b, v)); }
 #ifndef WFS_VERSION
 #define WFS_VERSION "dev"   // WFS-279 : compilé sans CMake (valeur fixe du PC)
@@ -56,7 +71,7 @@ float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
     const float x = m.x, k = m.k, logo = m.logo, sur = m.sur, gap = m.gap, ligne = m.ligne;
     const bool police = ui::fontReady();   // première image : la police n'est pas encore construite (fond + barre)
     // sur-titre .eyebrow : capitales cyan espacées de 0,22 em
-    if (police) ui::text(r, x, y, sur, ui::majuscules("Sprint urbain · vraies voitures"), hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
+    if (police) ui::text(r, x, y, sur, ui::majuscules(ui::tr("chargement.surtitre")), hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
     y += sur + gap;
     if (police) {
         // logo « Wa<em>for</em> » / « Speed » : FOR en contour de 2 px (copies décalées, puis remplissage couleur du fond)
@@ -83,6 +98,7 @@ float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
 
 static std::string texteChargement();   // WFS-297 (RG-06), plus bas
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
+    const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
     // WFS-147 (RG-01, RG-02) : téléphone couché : logo de 100 dp au plus, libellé de 19 dp, bouton de 48 dp (dp réels)
     const bool cp = ui::petitEcran(W, H);
     const MiseEnPage m = cp ? miseEnPagePetit(W, H, 100, 16) : miseEnPage(W, H);
@@ -126,18 +142,19 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     const float tv = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
     ui::text(r, W - 16 * k, H - 16 * k - tv, tv, texteVersion(versionJeu()), hex(MUTED, op), ui::DROITE, 0.15f);
     if (erreur) {   // WFS-146 (RG-10) : message inchangé (taille, place), puis bouton « Réessayer » (« Quitter » si le moteur ne repart pas)
-        ui::text(r, x, y, txt, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
+        ui::text(r, x, y, txt, ui::tr("chargement.echec"), hex(DANGER, op), ui::GAUCHE);
         // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte en dp gardé
         const float kb = H / 720.f;
         const float tp = 20 * k, bh = 56 * kb, by = y + txt + (cp ? 16 : 24) * k;
-        const std::string t = ui::majuscules(g_quitter ? "Quitter" : "Réessayer");
-        const float bw = ui::width(tp, t, 0.12f) + 56 * kb;
+        const char* cle = g_quitter ? "chargement.quitter" : "chargement.reessayer";   // WFS-505 (RG-03) : largeur du bouton mesurée en français
+        const std::string t = ui::majuscules(ui::tr(cle));
+        const float tw = ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Francais)), 0.12f), bw = tw + 56 * kb;
         g_reessayer = {x, by, bw, bh};
         dessin2d::biseau(r, x, by, bw, bh, 14 * kb, dessin2d::uni(hex(ACCENT, op)));
-        ui::text(r, x + bw / 2, by + (bh - tp) / 2, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
+        ui::textBoite(r, x + bw / 2, by, tw, bh, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
     }
     else {
-        ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
+        ui::text(r, x, y, txt, libelleAffiche(libelle) + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
         // WFS-297 (RG-06) : données chargées et mémoire utilisée, en petit sous l'étape (pendant et à la fin du chargement)
         const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
         ui::text(r, x, y + txt + 8 * k, tm, texteChargement(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
@@ -151,14 +168,16 @@ const char* versionJeu() { return WFS_VERSION; }   // WFS-279
 std::string texteMemoire(bool enChargement) {
     const double p = memoire::processusMo();
     const int n = memoire::compteurs().partie.load() + (enChargement ? 1 : 0);
-    return "Mémoire : jeu " + (p < 0 ? std::string("?") : ui::nombre(std::llround(p))) + " Mo · carte graphique " + ui::nombre(std::llround(memoire::gpuMo())) +
-           " Mo · " + (n > 0 ? "partie " + std::to_string(n) : std::string("aucune partie"));
+    // WFS-505 (RG-01) : « Mémoire : jeu {1} Mo · carte graphique {2} Mo · partie n » dans la langue active
+    return ui::tr("chargement.memoire", p < 0 ? std::string("?") : ui::nombre(std::llround(p)), ui::nombre(std::llround(memoire::gpuMo()))) + " · " +
+           (n > 0 ? ui::tr("chargement.partie", std::to_string(n)) : ui::tr("chargement.aucune_partie"));
 }
 static std::string texteChargement() {   // « Lus pour cette partie : 136 Mo · 983 objets 3D · 47 voitures · 114 personnes »
     const Traffic* tr = activeTraffic();
     const memoire::Compteurs& c = memoire::compteurs();
-    return "Lus pour cette partie : " + ui::nombre(std::llround(memoire::lusChargementMo())) + " Mo · " + ui::nombre(c.objets3d.load()) + " objets 3D · " +
-           ui::nombre(tr ? (long long)tr->cars.size() : 0) + " voitures · " + ui::nombre(c.personnes.load()) + " personnes";
+    // WFS-505 (RG-01) : même ligne dans la langue active (tables : chargement.lus, .objets, .voitures, .personnes)
+    return ui::tr("chargement.lus", ui::nombre(std::llround(memoire::lusChargementMo()))) + " · " + ui::tr("chargement.objets", ui::nombre(c.objets3d.load())) + " · " +
+           ui::tr("chargement.voitures", ui::nombre(tr ? (long long)tr->cars.size() : 0)) + " · " + ui::tr("chargement.personnes", ui::nombre(c.personnes.load()));
 }
 
 // ---------------------------------------------------------------- écran plein (avant la scène)
@@ -215,6 +234,12 @@ void Chargement::dessiner() {
     if (!r_) return;
     image(*r_, p_, libelle_, erreur_);
     if (apresImage) apresImage(-1);
+}
+
+// WFS-505 (banc « textes ») : centre du bouton de l'écran d'erreur (« Réessayer » ou « Quitter ») à la dernière image
+bool chargementBouton(float& x, float& y) {
+    if (g_reessayer.w <= 0) return false;
+    x = g_reessayer.x + g_reessayer.w / 2; y = g_reessayer.y + g_reessayer.h / 2; return true;
 }
 
 // WFS-146 (RG-10) : appui « au lever du doigt » sur le bouton de l'écran d'erreur (même règle que les autres écrans)

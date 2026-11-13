@@ -71,6 +71,8 @@ inline std::string texteVersion(const char* v) {
 void benchChargement(Game& g, Renderer& r, const std::string& outDir, double depuis, void (*racine)(bool ok));
 // fondu en cours : opacité de l'écran de chargement à l'instant `temps` de la scène (0 = fini)
 float opaciteFondu(double temps);
+// WFS-505 (banc « textes ») : centre du bouton de l'écran d'erreur à la dernière image
+bool chargementBouton(float& x, float& y);
 // WFS-146 (RG-09, ANO-45) : vrai du fin() du chargement à la fin du fondu (les commandes tactiles de conduite sont cachées)
 bool fonduEnCours();
 

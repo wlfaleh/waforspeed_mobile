@@ -29,6 +29,13 @@ struct Paragraphe {
     std::string texte;
 };
 std::vector<Paragraphe> paragraphes(const std::string& texte, const std::string& urlConfidentialite);
+// WFS-505 (RG-02) : texte des crédits en anglais. table : contenu de textes/credits-en.txt (« morceau français|morceau anglais »,
+// espaces gardés, « # » : commentaire). À chaque position, le plus long morceau français qui commence là est remplacé (une seule
+// passe : un texte déjà traduit n'est pas retraduit) ; puis typographie anglaise : « mot : » → « mot: », « ; » collé, « » → “ ”.
+// Les noms des auteurs, des œuvres et des licences ne sont pas dans la table : ils restent tels quels.
+std::string traduireCredits(const std::string& texte, const std::string& table);
+// paragraphes traduits (TITRE, SECTION, ENTREE, TEXTE) ; le texte d'une licence (déjà en anglais, sous « Texte de la licence… ») est gardé
+void traduireParagraphes(std::vector<Paragraphe>& paras, const std::string& table);
 
 // écran (un seul) : ouvrir lit licences/CREDITS.txt (APK, ou assets/ du banc) et l'adresse de configgame.json
 void ouvrir();

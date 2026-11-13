@@ -11,6 +11,8 @@ class Renderer;
 namespace ecrans {
 // banc d'essai : captures menu-anim (100 ms après l'entrée) et menu-0 (menu posé), puis g.shutdown()
 void benchMenu(Game& g, Renderer& r, const std::string& outDir);
+// WFS-505 (banc « textes ») : centre d'un choix du menu à la dernière image : « solo », « duel », « showroom »
+bool menuBouton(const std::string& nom, float& x, float& y);
 // banc d'essai (WFS-38) : touchers simulés (Game::onTouch) — menu-appui, menu-depart-3, menu-depart-go, menu-showroom, showroom-choisir (WFS-96),
 // fin-menu, fin-retour-menu — puis g.shutdown()
 void benchMenuTactile(Game& g, Renderer& r, const std::string& outDir);

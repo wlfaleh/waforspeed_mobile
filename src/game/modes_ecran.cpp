@@ -17,6 +17,8 @@
 #include "../ui/garage.h"
 #include "course_system.h"
 #include "../ui/text.h"
+#include "../ui/langue.h"   // WFS-505 : textes du choix du mode en français ou en anglais
+#include "../ui/ecrans/textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "course5.h"
 #include "game.h"
 #include "poursuite.h"   // WFS-119 : clé « poursuite » du mode
@@ -29,19 +31,20 @@ namespace {
 bool g_ouvert = false;
 bool g_forceBanc = false;   // banc d'essai : panneau ouvert sans sauvegarde
 const int KMS[4] = {2, 4, 6, 10};
-const char* const DIFFS[3] = {"FACILE", "NORMALE", "DIFFICILE"};   // WFS-133 (RG-01) : indices de course5::Difficulte
+const char* const DIFFS[3] = {"modes.facile", "modes.normale", "modes.difficile"};   // WFS-133 (RG-01) : indices de course5::Difficulte ; WFS-505 : clés
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 const unsigned BG = 0x0A0B10, SURF = 0x14161F, SURF2 = 0x1E2130, TXT = 0xF2F4F8, MUTE = 0x8A90A6, ACC = 0xFF6A00, ACC2 = 0x00E5FF;
 
 struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
 
-struct Carte { ModeCourse mode; const char* titre; const char* desc; bool dispo; };
+// WFS-505 (RG-01) : titre (nom du mode, aussi au journal) et cle (clé du nom affiché dans les tables de textes)
+struct Carte { ModeCourse mode; const char* titre; const char* cle; bool dispo; };
 constexpr int NB_CARTES = 3;   // WFS-517 (RG-01) : Checkpoint, Course à 5, Poursuite
 const Carte CARTES[NB_CARTES] = {
-    {ModeCourse::Checkpoint, "Checkpoint", "", true},   // description : descCarte (checkpoint.depart, checkpoint.bonus)
-    {ModeCourse::Course5, "Course à 5", "", true},      // description : descCarte (course5.ordinateurs)
-    {ModeCourse::Poursuite, "Poursuite", "La police à tes trousses", true},   // WFS-111
+    {ModeCourse::Checkpoint, "Checkpoint", "mode.checkpoint", true},   // description : descCarte (checkpoint.depart, checkpoint.bonus)
+    {ModeCourse::Course5, "Course à 5", "mode.course5", true},      // description : descCarte (course5.ordinateurs)
+    {ModeCourse::Poursuite, "Poursuite", "mode.poursuite", true},   // WFS-111
 };
 
 // nombre de secondes en français : « 60 », « 7,5 »
@@ -53,11 +56,12 @@ static std::string secondes(double s) {
 }
 // description d'une carte : les valeurs réglables (configgame.json) sont lues à chaque affichage, jamais recopiées
 static std::string descCarte(const Carte& c) {
+    // WFS-505 (RG-01) : phrases des tables de textes, valeurs en {1} {2}
     if (c.mode == ModeCourse::Checkpoint)
-        return secondes(TEMPS_DEPART) + " s au départ, +" + secondes(TEMPS_CHECKPOINT) + " s à chaque checkpoint";
+        return ui::tr("modes.desc.checkpoint", secondes(TEMPS_DEPART), secondes(TEMPS_CHECKPOINT));
     if (c.mode == ModeCourse::Course5)
-        return "Toi contre " + std::to_string(course5::ORDINATEURS) + (course5::ORDINATEURS > 1 ? " ordinateurs" : " ordinateur") + ", sans trafic";
-    return c.desc;
+        return ui::tr(course5::ORDINATEURS > 1 ? "modes.desc.course5" : "modes.desc.course5_un", std::to_string(course5::ORDINATEURS));
+    return ui::tr("modes.desc.poursuite");
 }
 
 std::string modeCle(ModeCourse m) { return poursuite::cleMode(m); }   // WFS-119 : « poursuite » gardé
@@ -112,13 +116,14 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_ouvert || g.ecran != Ecran::Menu || !ui::fontReady()) return;
+        const ecrans::textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         // WFS-517 (RG-04) : dernier mode = duel (ou inconnu) → Checkpoint présélectionné
         if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); diff_ = course5::difficulte(); ouverture_ = false; }
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         r.uiRect(0, 0, W, H, hex(BG, 0.92f));   // WFS-141 (RG-04, ANO-54) : voile #0A0B10 à 0,92 (le menu ne dessine plus ses textes dessous)
         const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;
-        ui::text(r, cx, g.marges.haut + 7 * u, 2.6f * u, "NOUVELLE COURSE", hex(ACC2), ui::CENTRE, 0.16f, false);
-        ui::text(r, cx, g.marges.haut + 11 * u, 8 * u, "CHOISIS TON MODE", hex(TXT), ui::CENTRE, 0.04f, false, true);
+        ui::text(r, cx, g.marges.haut + 7 * u, 2.6f * u, ui::majuscules(ui::tr("modes.surtitre")), hex(ACC2), ui::CENTRE, 0.16f, false);
+        ui::text(r, cx, g.marges.haut + 11 * u, 8 * u, ui::majuscules(ui::tr("modes.titre")), hex(TXT), ui::CENTRE, 0.04f, false, true);
         // WFS-517 (RG-01, RG-03) : trois cartes côte à côte, même largeur qu'avant (42 u au plus), le bloc reste centré
         // (pas de trou à la place de l'ancienne 4e carte) ; « Retour » et « Continuer » suivent les bords du bloc
         const float gap = 2.4f * u, cw = std::min(42 * u, ((R - L) - 8 * u - (NB_CARTES - 1) * gap) / NB_CARTES), ch = 34 * u, y0 = g.marges.haut + 26 * u;
@@ -135,18 +140,18 @@ public:
             if (sel) { r.uiRect(x, y0 + ch - 0.4f * u, cw, 0.4f * u, hex(ACC)); r.uiRect(x, y0, 0.4f * u, ch, hex(ACC)); r.uiRect(x + cw - 0.4f * u, y0, 0.4f * u, ch, hex(ACC)); }
             char num[8]; std::snprintf(num, sizeof num, "0%d", i + 1);
             ui::text(r, x + 2.4f * u, y0 + 3 * u, 2.4f * u, num, hex(c.dispo ? ACC2 : MUTE), ui::GAUCHE, 0.16f, false);
-            ui::text(r, x + 2.4f * u, y0 + 8 * u, 4.6f * u, ui::majuscules(c.titre), hex(sel ? ACC : (c.dispo ? TXT : MUTE)), ui::GAUCHE, 0.02f, false, true);
+            ui::text(r, x + 2.4f * u, y0 + 8 * u, 4.6f * u, ui::majuscules(ui::tr(c.cle)), hex(sel ? ACC : (c.dispo ? TXT : MUTE)), ui::GAUCHE, 0.02f, false, true);
             descr(r, x + 2.4f * u, y0 + 16 * u, cw - 4.8f * u, 2.5f * u, descCarte(c), hex(MUTE));
             if (!c.dispo) {
                 r.uiRect(x + 2.4f * u, y0 + ch - 7 * u, 14 * u, 4.2f * u, hex(SURF2));
-                ui::text(r, x + 9.4f * u, y0 + ch - 6.2f * u, 2.4f * u, "BIENTÔT", hex(MUTE), ui::CENTRE, 0.14f, false);
+                ui::text(r, x + 9.4f * u, y0 + ch - 6.2f * u, 2.4f * u, ui::majuscules(ui::tr("modes.bientot")), hex(MUTE), ui::CENTRE, 0.14f, false);
             }
         }
         // puces de distance sous la carte « Course à 5 »
         const float ky = y0 + ch + 3 * u, kh = 6.5f * u;
         for (auto& z : kms_) z = {};
         if (choix_ == ModeCourse::Course5) {
-            ui::text(r, x0, ky + 1.6f * u, 2.6f * u, "DISTANCE", hex(MUTE), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x0, ky + 1.6f * u, 2.6f * u, ui::majuscules(ui::tr("modes.distance")), hex(MUTE), ui::GAUCHE, 0.16f, false);
             const float kw = 12 * u, kx0 = x0 + 17 * u;
             for (int i = 0; i < 4; i++) {
                 const float x = kx0 + i * (kw + 1.6f * u);
@@ -162,7 +167,7 @@ public:
         const float dy = ky + kh + 2 * u;
         for (auto& z : diffs_) z = {};
         if (choix_ == ModeCourse::Course5) {
-            ui::text(r, x0, dy + 1.6f * u, 2.6f * u, "DIFFICULTÉ", hex(MUTE), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x0, dy + 1.6f * u, 2.6f * u, ui::majuscules(ui::tr("modes.difficulte")), hex(MUTE), ui::GAUCHE, 0.16f, false);
             const float dw = 17 * u, dx0 = x0 + 17 * u;   // alignées sur les puces de distance
             for (int i = 0; i < 3; i++) {
                 const float x = dx0 + i * (dw + 1.6f * u);
@@ -170,7 +175,8 @@ public:
                 diffs_[i] = {x, dy, dw, kh};
                 manette::focus(diffs_[i]);
                 r.uiRect(x, dy, dw, kh, sel ? hex(ACC2) : hex(SURF2));
-                ui::text(r, x + dw / 2, dy + 1.6f * u, 3.2f * u, DIFFS[i], sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
+                // WFS-505 (RG-03) : texte dans la puce (y + 1,6 % de H comme avant), police réduite de 20 % au plus si besoin
+                ui::textBoite(r, x + dw / 2, dy + 1.6f * u - (kh - 3.2f * u) / 2, dw - 1.6f * u, kh, 3.2f * u, ui::majuscules(ui::tr(DIFFS[i])), sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
             }
         }
         // « Retour » et « Continuer »
@@ -179,9 +185,9 @@ public:
         continuer_ = {x0 + blocW - bw, by, bw, bh};
         manette::focus(retour_, true); manette::focus(continuer_);
         r.uiRect(retour_.x, by, bw, bh, hex(0xFFFFFF, 0.10f));
-        ui::text(r, retour_.x + bw / 2, by + 2.2f * u, 3.6f * u, "RETOUR", hex(TXT), ui::CENTRE, 0.08f, false);
+        ui::textBoite(r, retour_.x + bw / 2, by, bw - 3 * u, bh, 3.6f * u, ui::majuscules(ui::tr("modes.retour")), hex(TXT), ui::CENTRE, 0.08f, false);   // WFS-505 (RG-03)
         r.uiRect(continuer_.x, by, bw, bh, hex(ACC));
-        ui::text(r, continuer_.x + bw / 2, by + 2.2f * u, 3.6f * u, "CONTINUER", hex(BG), ui::CENTRE, 0.08f, false);
+        ui::textBoite(r, continuer_.x + bw / 2, by, bw - 3 * u, bh, 3.6f * u, ui::majuscules(ui::tr("modes.continuer")), hex(BG), ui::CENTRE, 0.08f, false);
     }
 
 private:
