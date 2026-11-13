@@ -25,7 +25,7 @@ code=0
 ```
 
 - **Tests CPU** : je ne les ai pas compilés dans le conteneur, faute de `glslc`, dont CMake a besoin pour se configurer. La modification ne touche aucun code compilé. Les tests CPU et le contrôle des licences sont vérifiés par le run de branche (US technique) : **build.yml #43416967480** — https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43416967480 (commit cf566eb8, branche synchronisée avec `main`).
-- Résultat du run : RESULTAT_RUN
+- Résultat du run : job « banc-essai (texte) », étape « Test de la piste » (tests CPU + `verifier_licences.py`, celle qui était rouge sur `main`) : **verte** (11:37 → 11:43 UTC). Jobs compilation, android (APK + AAB) et publication-apk : verts. Captures du groupe texte, menu1-2400 et endurance : encore en cours à l'ouverture de la PR (non touchés par ce changement).
 
 ## Limites et risques
 
