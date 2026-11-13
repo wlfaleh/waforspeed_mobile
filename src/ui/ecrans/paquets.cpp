@@ -70,6 +70,16 @@ float largeurBouton(float px, const char* cle, const std::string& v1, float marg
     }
     return w + marge;
 }
+// WFS-507 : journal du banc « textes » limité aux écrans des paquets (étape, bandeau du menu, vignettes du choix du terrain) :
+// les autres écrans (menu, terrain) ont leur propre banc (WFS-505)
+bool& journalPaquets() { static bool oui = false; return oui; }
+struct JournalPaquets {
+    const bool ouvert = journalPaquets();
+    JournalPaquets() { if (ouvert) ui::langue::journalActif(true, "paquets"); }
+    ~JournalPaquets() { if (ouvert) ui::langue::journalActif(false); }
+    JournalPaquets(const JournalPaquets&) = delete;
+    JournalPaquets& operator=(const JournalPaquets&) = delete;
+};
 std::string cheminPaquet(const std::string& c, carte::FormatTexture f) { return carte::dossierPaquets() + "/" + carte::nomFichier(c, f); }
 
 } // namespace
@@ -124,7 +134,7 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     if (!menu_) dessinerChargement(r, W, H, 1.f, ui::tr("chargement.etape.paquets"), false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
-    const textes::Journal journal;   // WFS-507 : textes notés au banc « textes » (après le fond, qui a son propre journal)
+    const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes » (après le fond de l'écran de chargement)
     r.uiRect(0, 0, W, H, hex(BG, menu_ ? 0.72f : 0.82f));   // au menu (RG-06) : voile sur le menu
     const float pw = std::min(W - m.gauche - m.droite - 32 * k, 760 * k), px = m.gauche + (W - m.gauche - m.droite - pw) / 2;
     const float ph = (cp ? 300 : 340) * k, py = std::max(m.haut + 8 * k, (H - ph) / 2);
@@ -280,6 +290,7 @@ void assombrirCarte(Renderer& r, const std::string& c, float x, float y, float w
 
 void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, float w, float h, float k, double t) {
     UiTerrain& u = uiTerrain();
+    const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes »
     for (auto& z : u.z) z = {};
     CartesPaquets& cp = cartesPaquets();
     const EtatCarte e = cp.etat(c);
@@ -444,7 +455,7 @@ public:
     void shutdown(Renderer&) override { paquets().fermerMenu(); }   // fenêtre perdue en jeu (termGraphics) : la proposition du menu se referme
     void drawUi(Renderer& r, const GameView& g) override {
         z_ = {};
-        const textes::Journal journal;   // WFS-507 : textes notés au banc « textes »
+        const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes »
         if (g.ecran == Ecran::Menu && !g.sceneDediee && ui::fontReady() && !annonces_.empty() && !paquets().enMenu()) {   // WFS-307 (RG-03)
             const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
             const float k = cp ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f, tp = 16 * k;
@@ -601,6 +612,8 @@ struct SourceMulti : SourcePaquets {
     }
 };
 } // namespace
+
+void journalPaquetsActif(bool oui) { journalPaquets() = oui; }
 
 int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string& racine) {
     int ecarts = 0;

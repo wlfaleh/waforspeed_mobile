@@ -4,10 +4,11 @@
 //     fiche de la voiture la plus longue à écrire (SF90), puis parcours accueil → garage → « Choisir » → terrain → « Rouler » →
 //     course → « Menu » → pause → « Quitter la course » → accueil ;
 //   - paquets : le banc complet de WFS-306 / 307 (proposition, téléchargement, coupure, place, échec, bandeau du menu, vignettes du
-//     choix du terrain : Télécharger, sans Internet, données mobiles, progression, Supprimer), textes notés, captures renommées
-//     textes-<fr|en>-paquets-*.
+//     choix du terrain : Télécharger, sans Internet, données mobiles, progression, Supprimer), textes des écrans des paquets notés
+//     (le reste du choix du terrain : banc de WFS-505), captures renommées textes-<fr|en>-paquets-*.
 // Chaque capture note ses textes au journal de WFS-504 ; à la fin, le garde-fou vérifie qu'aucune phrase française ni aucun
 // texte qui dépasse de son bouton n'apparaît en anglais (rien n'est vérifié en français). Rend le nombre d'échecs.
+// Ordre : paquets d'abord (son parcours attend la Golf choisie), garage ensuite (son parcours choisit la SF90).
 #include <cstring>
 #include <filesystem>
 #include "../core/log.h"
@@ -96,9 +97,9 @@ int benchPaquetsTextes(Game& g, Renderer& r, const std::string& out, const std::
     namespace fs = std::filesystem;
     const std::string lg = ui::langue::code();
     ui::langue::viderJournal();
-    textes::ecranNote() = "paquets";   // chaque écran dessiné (étape, bandeau, vignettes du terrain, menu) note ses textes
+    journalPaquetsActif(true);   // seuls les écrans des paquets notent leurs textes (étape, bandeau du menu, vignettes du terrain)
     const int ecarts = benchPaquets(g, r, out, racine);
-    textes::ecranNote().clear();
+    journalPaquetsActif(false);
     const int phrases = ui::langue::verifierJournal();
     std::error_code ec;
     for (const auto& f : fs::directory_iterator(out, ec)) {   // paquets-*.png → textes-<langue>-paquets-*.png

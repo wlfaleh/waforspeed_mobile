@@ -344,10 +344,6 @@ duel.revanche=REMATCH
 duel.retour=BACK
 
 # Garage (WFS-507: src/ui/garage_*.cpp)
-garage.choisir=Choose
-garage.chargement=Loading…
-garage.retour=Back
-garage.couleur=Color
 garage.puissance=Power
 garage.zero_cent=0 to 100
 garage.vmax=Top speed
@@ -397,35 +393,6 @@ garage.type.gallardo=Supercar convertible
 garage.accroche.gallardo=Open-top V10: all-wheel drive and over 320 km/h.
 garage.type.sf90=Hybrid hypercar
 garage.accroche.sf90=Hybrid with 1030 ch: the fastest in the garage, handle with care.
-# paint colors (PEINTURES in src/game/sauvegarde.h, same ids)
-peinture.blanc=White
-peinture.noir=Black
-peinture.gris=Gray
-peinture.rouge=Red
-peinture.bleu=Blue
-peinture.orange=Orange
-peinture.jaune=Yellow
-peinture.vert=Green
-peinture.nacre=Pearl white
-peinture.bleunuit=Midnight blue
-peinture.anglais=British green
-peinture.bordeaux=Burgundy
-peinture.sable=Sand
-peinture.violet=Purple
-peinture.turquoise=Turquoise
-peinture.taxi=Taxi yellow
-peinture.bleuelectrique=Electric blue
-peinture.vertacide=Acid green
-peinture.orangefluo=Neon orange
-peinture.rose=Pink
-peinture.jaunecitron=Lemon yellow
-peinture.violetneon=Neon purple
-peinture.rougevif=Bright red
-peinture.cyan=Cyan
-peinture.vertmenthe=Mint green
-peinture.magenta=Magenta
-peinture.corail=Coral
-peinture.bleuciel=Sky blue
 # Map packs (WFS-507: src/ui/ecrans/paquets*.cpp); map names unchanged
 paquets.titre=Update and install
 paquets.recherche=Looking for map packs…

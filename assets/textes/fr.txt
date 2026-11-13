@@ -344,10 +344,6 @@ duel.revanche=REVANCHE
 duel.retour=RETOUR
 
 # Garage (WFS-507 : src/ui/garage_*.cpp)
-garage.choisir=Choisir
-garage.chargement=Chargement…
-garage.retour=Retour
-garage.couleur=Couleur
 garage.puissance=Puissance
 garage.zero_cent=0 à 100
 garage.vmax=Vitesse max
@@ -397,35 +393,6 @@ garage.type.gallardo=Supercar cabriolet
 garage.accroche.gallardo=V10 à ciel ouvert : 4 roues motrices et plus de 320 km/h.
 garage.type.sf90=Hypercar hybride
 garage.accroche.sf90=Hybride de 1030 ch : la plus rapide du garage, à manier avec soin.
-# couleurs (PEINTURES de src/game/sauvegarde.h, mêmes identifiants)
-peinture.blanc=Blanc
-peinture.noir=Noir
-peinture.gris=Gris
-peinture.rouge=Rouge
-peinture.bleu=Bleu
-peinture.orange=Orange
-peinture.jaune=Jaune
-peinture.vert=Vert
-peinture.nacre=Blanc nacré
-peinture.bleunuit=Bleu nuit
-peinture.anglais=Vert anglais
-peinture.bordeaux=Bordeaux
-peinture.sable=Sable
-peinture.violet=Violet
-peinture.turquoise=Turquoise
-peinture.taxi=Jaune taxi
-peinture.bleuelectrique=Bleu électrique
-peinture.vertacide=Vert acide
-peinture.orangefluo=Orange fluo
-peinture.rose=Rose
-peinture.jaunecitron=Jaune citron
-peinture.violetneon=Violet néon
-peinture.rougevif=Rouge vif
-peinture.cyan=Cyan
-peinture.vertmenthe=Vert menthe
-peinture.magenta=Magenta
-peinture.corail=Corail
-peinture.bleuciel=Bleu ciel
 # Paquets de cartes (WFS-507 : src/ui/ecrans/paquets*.cpp) ; noms des cartes inchangés
 paquets.titre=Mise à jour et installation
 paquets.recherche=Recherche des paquets de cartes…
