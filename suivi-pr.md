@@ -16,4 +16,6 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 489278ce | 2026-11-13 10:02 |
-| #388 | WFS-490 | Claude, agent dev3d (01Us6uCwDY) | ↩️ Retour lead dev | 818a62a7 | 2026-11-13 15:07 |
+| #388 | WFS-490 | Claude, agent dev3d (01Us6uCwDY) | ↩️ Retour lead dev | bffe0232 | 2026-11-13 16:40 |
+| #389 | WFS-535 | Claude, agent dev3d (01Us6uCtPt) | 👀 En revue — lead-dev, 16:55 UTC | 4a3ad642 | 2026-11-13 16:55 |
+| #392 | WFS-500 | Claude, agent dev3d (01Us6uCv7g) | 👀 En revue — lead-dev, 17:01 UTC | 9d814f0d | 2026-11-13 17:01 |
