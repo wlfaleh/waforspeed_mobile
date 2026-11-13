@@ -35,7 +35,8 @@ inline const char* cleDeChoix(Choix c) { return c == Choix::Francais ? "fr" : c 
 // RG-05 : lecture d'une table « cle=texte ». Lignes vides et lignes commençant par « # » ignorées ; « \n » écrit dans le
 // fichier devient un vrai retour à la ligne. Rend le nombre de lignes illisibles (sans « = » ou clé vide) ; une clé en double
 // garde la dernière valeur et compte comme illisible (le test l'interdit).
-inline int analyserTable(const std::string& contenu, std::map<std::string, std::string>& table) {
+template <class Table>   // std::map<std::string, std::string> (avec ou sans std::less<> : recherche sans copie)
+inline int analyserTable(const std::string& contenu, Table& table) {
     int illisibles = 0;
     size_t a = 0;
     if (contenu.compare(0, 3, "\xEF\xBB\xBF") == 0) a = 3;   // BOM UTF-8 éventuel

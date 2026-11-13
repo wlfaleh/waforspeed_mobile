@@ -5,6 +5,7 @@
 #include <map>
 #include <mutex>
 #include <set>
+#include <string_view>
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "text.h"
@@ -13,7 +14,8 @@ namespace wfs {
 namespace ui {
 namespace {
 
-std::map<std::string, std::string> g_tables[2];   // [Langue::Francais], [Langue::Anglais] ; immuables après charger()
+using Table = std::map<std::string, std::string, std::less<>>;   // std::less<> : find(const char*) sans copie de la clé (revue #372)
+Table g_tables[2];   // [Langue::Francais], [Langue::Anglais] ; immuables après charger()
 bool g_charge = false;
 langue::Choix g_choix = langue::Choix::Automatique;
 std::mutex g_mutexTel;   // RG-01 : écrite par le thread de l'interface Android (JNI), lue par le thread du jeu
@@ -28,7 +30,7 @@ std::string g_ecran;
 std::vector<langue::TexteVu> g_vus;
 std::vector<langue::Debord> g_debords;
 
-const std::string& telephone() {   // sans valeur donnée par Android : WFS_LANGUE du banc PC, sinon français (RG-09)
+std::string telephone() {   // copie prise sous le verrou (revue #372 : Android peut la réécrire pendant la partie)   // sans valeur donnée par Android : WFS_LANGUE du banc PC, sinon français (RG-09)
     std::lock_guard<std::mutex> v(g_mutexTel);
     if (!g_telDonne) {
         const char* e = std::getenv("WFS_LANGUE");
@@ -40,7 +42,7 @@ const std::string& telephone() {   // sans valeur donnée par Android : WFS_LANG
     return g_tel;
 }
 
-bool lireTable(const char* chemin, std::map<std::string, std::string>& t) {
+bool lireTable(const char* chemin, Table& t) {
     std::vector<uint8_t> d;
     if (!readAsset(chemin, d)) { WFS_ERR("langue : table %s introuvable", chemin); return false; }
     const int illisibles = langue::analyserTable(std::string(d.begin(), d.end()), t);
@@ -132,12 +134,14 @@ const std::string& tr(const char* cle) { return trLangue(cle, langue::active());
 const std::string& trLangue(const char* cle, langue::Langue lg) {
     if (!g_charge) langue::charger();   // filet : les tables sont normalement lues avec la police (écran de chargement)
     const int l = (int)lg;
-    const auto it = g_tables[l].find(cle);
+    const auto it = g_tables[l].find(std::string_view(cle));
     if (it != g_tables[l].end()) return it->second;
-    static std::set<std::string> signales;   // trace une fois par clé
-    if (signales.insert(cle).second) WFS_WARN("langue : clé « %s » absente de la table %s", cle, l ? "en" : "fr");
-    const auto fr = g_tables[(int)langue::Langue::Francais].find(cle);
-    return fr != g_tables[(int)langue::Langue::Francais].end() ? fr->second : VIDE;
+    static std::set<std::string, std::less<>> signales;   // trace une fois par clé (recherche sans copie, insertion une fois)
+    if (signales.find(std::string_view(cle)) == signales.end() && signales.insert(cle).second) WFS_WARN("langue : clé « %s » absente de la table %s", cle, l ? "en" : "fr");
+    // secours (revue #372) : l'autre table (une table absente de l'APK ne vide pas l'écran) ; absente des deux : texte vide
+    const Table& autre = g_tables[1 - l];
+    const auto se = autre.find(std::string_view(cle));
+    return se != autre.end() ? se->second : VIDE;
 }
 
 std::string tr(const char* cle, const std::string& v1, const std::string& v2) { return langue::remplir(tr(cle), {v1, v2}); }
