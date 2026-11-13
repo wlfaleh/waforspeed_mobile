@@ -1734,3 +1734,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 23:26:37 — Statuts automatiques, CI main #1058 (robot statuts)
 - Run rouge (push, commit 6adb9a7), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 23:38:39 — WFS-492 fusionné par le lead dev (lead-dev)
+- PR #400, 2e revue (reprise après la perte de l'instance de 23:10), commit relu 515146c6 ; squash b1ed89d1 « WFS-492 : Skins, texture d'habillage par voiture + skin Rallye sur 6 voitures (#400) (Claude, agent dev3d (01Us6uCutV)) ».
+- Les 3 points du refus sont corrigés (Tests CPU et `tests-cpu.log`, 6 paires sans skin identiques sur golf / gt86 / giulia, parcours RC-E18-09) ainsi que les 2 remarques. Les 25 captures ont été ouvertes et tout le diff lu ; construction et 132 tests CPU refaits ; banc `skins` (golf) relancé : parcours à 0 écart, 0 texture en fin de banc.
+- Approbation postée en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
