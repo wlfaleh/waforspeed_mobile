@@ -12,6 +12,8 @@
 #include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../langue.h"   // WFS-505 : textes du menu en français ou en anglais
+#include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/direction.h"   // WFS-146 (RG-05) : réglages Direction et Gyroscope, dessin2d
 #include "chargement.h"
@@ -50,10 +52,10 @@ bool dansZone(const Zone& z, float x, float y) {
     return x <= z.x + z.w - z.biais * (y - z.y) / z.h;   // coin bas droit coupé (clip-path)
 }
 int choixSous(float x, float y) { for (int i = 0; i < 4; i++) if (dansZone(g_zones[i], x, y)) return i; return -1; }
-const Choix CHOIX[3] = {   // section #menu de index.html, textes exacts
-    {"Course solo", "Bats le chrono, frôle le trafic, enchaîne les checkpoints"},
-    {"Duel en ligne", "Défie un ami où qu'il soit, sans trafic"},   // WFS-135 (ANO-63)
-    {"Showroom", "Choisis ta voiture et sa couleur"},
+const Choix CHOIX[3] = {   // section #menu de index.html ; WFS-505 (RG-01) : clés des tables de textes (titre, description)
+    {"menu.solo", "menu.solo.desc"},
+    {"menu.duel", "menu.duel.desc"},   // WFS-135 (ANO-63)
+    {"menu.showroom", "menu.showroom.desc"},
 };
 
 class Menu : public System {
@@ -99,6 +101,7 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
+        const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         if (t0_ < 0) t0_ = g.time;
         const float W = g.uiWidth, H = g.uiHeight, t = (float)(g.time - t0_);
         // WFS-147 (RG-01, RG-02, RG-06, ANO-17, ANO-19) : sur téléphone couché, mise en page propre au menu, dessinée en dp
@@ -152,8 +155,8 @@ public:
                 for (int h = 3; h >= 1; h--) r.uiRect(x - 4 * k * h, yi - 2 * k * h, 3 * k + 8 * k * h, itemH + 4 * k * h, hex(ACCENT2, 0.12f * a));
                 r.uiRect(x, yi, 3 * k, itemH, hex(ACCENT2, a));
             } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
-            ui::text(r, x + 22 * kb, yi + 12 * kb, (cp ? 21 : 26) * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
-            ui::text(r, x + 22 * kb, yi + 44 * kb, (cp ? 14 : 13) * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
+            ui::text(r, x + 22 * kb, yi + 12 * kb, (cp ? 21 : 26) * k, ui::majuscules(ui::tr(CHOIX[i].titre)), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
+            ui::text(r, x + 22 * kb, yi + 44 * kb, (cp ? 14 : 13) * k, ui::tr(CHOIX[i].desc), hex(MUTED, a), ui::GAUCHE, 0, false);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------
@@ -161,14 +164,14 @@ public:
         {
             const float x = m.x + dx;
             const float lp = (cp ? 12 : 11) * k, vp = (cp ? 20 : 22) * k, dv = (cp ? 15 : 16) * k;   // libellé, valeur
-            ui::text(r, x, y, lp, ui::majuscules("Record"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x, y, lp, ui::majuscules(ui::tr("menu.record")), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
             ui::text(r, x, y + dv, vp, g_best > 0 ? ui::nombre(g_best) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
-            const float x2 = x + std::max(ui::width(vp, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(lp, "RECORD", 0.16f)) + 28 * k;
+            const float x2 = x + std::max(ui::width(vp, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(lp, ui::majuscules(ui::tr("menu.record")), 0.16f)) + 28 * k;
             const std::string nom = ui::majuscules(g.car ? modele(*g.car) : "—");
-            ui::text(r, x2, y, lp, ui::majuscules("Ta voiture"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x2, y, lp, ui::majuscules(ui::tr("menu.voiture")), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
             const bool presse = presse_ == TA_VOITURE;   // #myCarBtn : appui = ouvre le garage (WFS-96)
-            ui::text(r, x2, y + dv, vp, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false);
-            const float nw = std::max(ui::width(vp, nom), ui::width(lp, "TA VOITURE", 0.16f));
+            { const textes::NomPropre np; ui::text(r, x2, y + dv, vp, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false); }   // WFS-505 : nom de la voiture (RC-E20-03)
+            const float nw = std::max(ui::width(vp, nom), ui::width(lp, ui::majuscules(ui::tr("menu.voiture")), 0.16f));
             r.uiRect(x2, y + dv + vp + 2 * k, ui::width(vp, nom), 2 * k, hex(ACCENT2, a));   // border-bottom cyan de .mycar strong
             g_zones[TA_VOITURE] = {x2 - 6 * kb, y - 6 * kb, nw + 12 * kb, 50 * kb, 0, true};   // WFS-168 : zone d'avant WFS-147 (44 + 6)
             manette::focus(g_zones[TA_VOITURE]);
@@ -178,10 +181,10 @@ public:
         a = glisse(5, dx);
         // WFS-146 (RG-05, ANO-32) : la 1re ligne suit les réglages Direction et Gyroscope (taille, couleur, positions inchangées)
         const bool fleches = reglagesRessenti().direction == ModeDirection::Fleches, gyro = gyroscopeActif();   // capteur présent et réglage non coupé
-        const char* volant = fleches ? (gyro ? "Flèches à gauche ou inclinaison : volant." : "Flèches à gauche : volant.")
-                                     : (gyro ? "Glisse à gauche ou incline le téléphone pour tourner." : "Glisse à gauche pour tourner.");
+        const char* volant = ui::tr(fleches ? (gyro ? "menu.aide.fleches_gyro" : "menu.aide.fleches")
+                                            : (gyro ? "menu.aide.glisser_gyro" : "menu.aide.glisser")).c_str();   // WFS-505 (RG-01)
         ui::text(r, m.x + dx, y, aideP, volant, hex(INTRO, a), ui::GAUCHE, 0, false);
-        ui::text(r, m.x + dx, y + aideL, aideP, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
+        ui::text(r, m.x + dx, y + aideL, aideP, ui::tr("menu.aide.droite"), hex(INTRO, a), ui::GAUCHE, 0, false);
         // WFS-406 (RG-02) : en bas à droite, style du bouton « Réglages ». WFS-415 (RG-05, accroche) : dessiné APRÈS les choix,
         // pour que « Course solo » reste la 1re zone de la manette (manette::focus) et du parcours d'endurance (CI #993, #994)
         credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
@@ -193,6 +196,13 @@ private:
 };
 
 } // namespace
+
+// WFS-505 (banc « textes ») : centre d'un choix du menu à la dernière image : « solo », « duel », « showroom »
+bool menuBouton(const std::string& nom, float& x, float& y) {
+    const int i = nom == "solo" ? SOLO : nom == "duel" ? DUEL : nom == "showroom" ? SHOWROOM : -1;
+    if (i < 0 || !g_zones[i].ok) return false;
+    x = g_zones[i].x + g_zones[i].w * 0.4f; y = g_zones[i].y + g_zones[i].h * 0.5f; return true;   // hors du coin coupé
+}
 
 void benchMenu(Game& g, Renderer& r, const std::string& out) {
     if (!g.init(r, "golf", "ville")) { WFS_ERR("menu : chargement impossible"); return; }

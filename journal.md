@@ -928,3 +928,70 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - PR #381 fusionnée en squash par le lead dev (3013cf97) ; ticket 🟣, passe ✅ quand le prochain run de `main` et les bancs du matin sont verts (jobs « banc-essai (texte) » et « tests CPU et licences »).
 - Un seul sujet par session : la session s'arrête et ne demande pas d'autre ticket.
 
+### 2026-11-13 12:24:48 — WFS-488 : retour du lead dev corrigé (PR #380, 108ca8e3) (Claude, agent dev3d (01Us6uCwUX))
+- Tests CPU : `qa/pr/WFS-488/tests-cpu.log` et section « Tests CPU » de la PR : 121 test(s) réussi(s) (branche 0f6f59d7, `main` d8166341).
+- RC-E18-03 : nouveau banc `WFS_BANC=peinture2-mesure` (Basse, Ville, 208, 600 images ; même fichier compilé sur `main`) ; couleur 2 par `WFS_PEINTURE2=<couleur>` (accroche d'1 ligne dans `Game::setCar`, bancs seulement). Deux séries : `main` 3,441 / 3,401 img/s (1 % les plus lents 2,181 / 2,314) ; branche avec couleur 2 noire 3,317 / 3,326 img/s (1 % : 2,369 / 2,321) : écart ≤ 0,12 img/s, critère tenu. Une 1re mesure « main » faite après le redémarrage du conteneur avait tourné sur la branche (copie de `main` non créée) : écartée.
+- Remarques : `convertir_voitures.sh` relance `peinture2_voitures.mjs` ; nombres de triangles attendus dans `peinture2.json` ; « mustang = Corvette C7 » dans le README des captures ; commentaire « voitures rigides seulement » dans `scene_skin.frag` (accroche de 3 lignes au total).
+- **Pour le PO** (signalé par le lead dev, hors ticket) : GT86 : pavillon d'origine ondulé, très visible avec un toit noir (« papier froissé » de dessus) : anomalie de forme E10 à planifier.
+
+### 2026-11-13 12:31:20 — WFS-498 : PR #382 ouverte (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- Fait : module `src/game/boutique.*` (portefeuille d'étoiles, prix des 17 voitures, achat, essai gratuit, équivalents médailles / euros, migration, équilibrage), clés `boutique.voitures.<id>.prix`, `gain_course`, `minutes_par_course`, `medailles.*` dans `configgame.json` (régénéré), sauvegarde `etoiles=`, `voitures-possedees=`, `essai-<voiture>=1`, partie neuve sur la p208, +10 ★ par course terminée et essai noté au départ (`profil_system.cpp`), banc `WFS_BANC=equilibrage` (`boutique_banc.cpp`).
+- **Accroches annoncées** : `src/platform/desktop_main.cpp` (1 include + 1 ligne : banc `equilibrage`) ; `CMakeLists.txt` : `boutique.cpp` ajouté aux 17 tests qui lient `personnalisation.cpp` + `test_boutique`.
+- Vérification : 121 tests CPU OK (`test_boutique` 51 cas), banc `equilibrage` : Corsa 25 courses, 14 voitures 120,1 h ; prix Corsa changé dans un `configgame.json` (sans recompiler) → T-Cross 30 courses, écart signalé ; banc `sauvegarde` ×2 : 250 ★, achat accepté, refus faute d'étoiles, relu 160 ★ ; garage identique octet pour octet avant / après.
+- Limites : pas d'écran (WFS-499) ; conduire une voiture non possédée en solo utilise son essai d'ici là ; gain provisoire de 10 ★ (étape « score »), duels compris.
+
+### 2026-11-13 12:32:09 — WFS-505 : PR #383 ouverte (Claude, agent dev3d (01UY1Vv4v6))
+- PR #383 (commit dfa30d16, branche synchronisée avec `main`) : description complète, captures `qa/pr/WFS-505/` (FR avant / après identiques : 59 captures identiques à l'octet, les autres ne diffèrent que par le code du salon, la mémoire mesurée et les temps du duel ; EN du parcours complet), `tests-cpu.log` (120 réussis). Banc « textes » vert en `en` et en `fr` ; licences : 0 manque.
+- Statut 🔀 En PR, ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
+
+
+### 2026-11-13 12:38:18 — WFS-508 : PR #384 ouverte (Claude, agent dev3d (01Us6uCudS))
+- Fait : `store/cgu-en.md` et `store/confidentialite-en.md` (traductions fidèles, même plan) ; phrase « la version française fait foi » en tête des 4 fichiers ; `VERSION_CGU` inchangé (RG-05) ; écran des CGU dans la langue active (clés `cgu.*` dans `assets/textes/fr.txt` et `en.txt`) ; banc `textes` : écran des CGU (`benchCguTextes`, RG-06) ; `test_cgu` étendu (plan FR = EN, aucune phrase française, RG-05).
+- **Accroches annoncées (1 ligne chacune, hors zone E8)** : `src/platform/desktop_main.cpp` (banc `textes` appelle aussi `benchCguTextes`) et `android/app/build.gradle` (les 2 fichiers anglais copiés dans l'APK, assets `cgu/`).
+- Vérification : tests CPU 120/120 ; banc `textes` VERT en `fr` et `en` ; banc `cgu` en `en` : 0 écart ; licences : 0 manque ; captures FR / EN avant / après dans `qa/pr/WFS-508/`.
+- Avis du juriste (RG-04) : CONFORME après 2 corrections de fidélité (faites). **Pour le PO, hors ticket, avant la sortie publique** : 🔴 contact de l'éditeur à compléter (ANO-205) ; 🔴 politique à une adresse publique sans les notes internes (WFS-509) ; 🟠 lignes « Brouillon / Draft » et « texte à publier… » visibles dans l'écran des CGU (déjà avant ce ticket) ; 🟠 droit applicable non précisé dans les CGU.
+- Statut 🔀 En PR (#384), ligne 🆕 dans `suivi-pr.md` ; lead dev appelé.
+
+### 2026-11-13 12:38:58 — WFS-488 fusionné par le lead dev (lead-dev)
+- PR #380, 2e revue sur 108ca8e3 : les 2 points bloquants du 1er refus (dda54015) sont corrigés (section « Tests CPU » + `tests-cpu.log` ; RC-E18-03 mesuré en Basse, `main` / branche avec couleur 2 noire : moyenne −0,12 / −0,08 img/s, 1 % les plus lents +0,19 / +0,01 img/s). Réponse point par point présente dans la PR.
+- Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation quand le compte est le même), puis fusion en squash 7abc389f. 26 captures ouvertes, nouveau diff lu, construction et 121 tests CPU refaits par le lead dev (380 s), `peinture2_voitures.mjs --verifier` : 17 `.pt2` à jour. Statut 🟣 ; `qa/Check.md` à jour ; ligne #380 retirée de `suivi-pr.md`.
+- **Pour le PO** : (1) WFS-456 et WFS-483 (garde-fou E10 « après WFS-488 ») peuvent partir ; (2) RC-E18-03 en seuil absolu (≤ 1 img/s) vaut environ 30 % sur lavapipe (environ 3,4 img/s) : un critère relatif (ex. ≤ 3 %) serait plus juste ; (3) GT86 : pavillon d'origine ondulé (anomalie de forme E10).
+
+### 2026-11-13 12:40:02 — WFS-488 fusionné (PR #380, 7abc389f) : session terminée (Claude, agent dev3d (01Us6uCwUX))
+- Fusion en squash par le lead dev à la 2e revue (1re : 2 preuves manquantes, corrigées). Statut 🟣 (ticket sans 🟡 : bancs du matin pour ✅) ; ligne dans `qa/Check.md` écrite par le lead dev.
+- Réponse à l'utilisateur sous sa demande « Personnalisation de l'aspect des voitures » (`tache utilisateur.md`).
+- Suites possibles : WFS-489 (garage, couleur secondaire) ; WFS-456 et WFS-483 libérés du garde-fou E10 ; anomalie de forme du pavillon de la GT86 à planifier par le PO.
+- Session terminée : un seul ticket par session, je ne demande pas de ticket suivant.
+
+
+### 2026-11-13 12:47:50 — WFS-498 refusé par le lead dev (PR #382) (lead-dev)
+- Revue du commit af654958 : diff entier lu, branche construite et testée (121 tests CPU réussis), 32 captures ouvertes (garage et sauvegarde-relue identiques octet pour octet), textes des bancs equilibrage et sauvegarde conformes à RG-01 à RG-12.
+- **Bloquant** : `configgame.json` et `configgame.README.md` régénérés par `--ecrire` : hors section `boutique`, valeurs de `main` remplacées par les défauts du code (course5 vitesses 0.9/0.97 → 0.95/1.0, police 1/3 → 2/6, caméras Poursuite, Proche, Cockpit). Le fichier est dans l'APK : conduite, police et caméra changées sur le téléphone ; caméra visiblement plus haute sur course-p911-gris et garage-course (pas une variation du banc).
+- À faire : ne garder que les clés `boutique`, refaire les 3 captures de course, annoncer les accroches (desktop_main.cpp, CMakeLists.txt) au journal.
+- Pour le PO : sur `main`, `configgame.json` (APK) et les défauts du code divergent (police, caméras, vitesses des ordinateurs, cockpit 55° contre 62° de WFS-323) : décision à prendre dans un ticket à part.
+
+### 2026-11-13 12:49:33 — WFS-498 : accroches annoncées, correction après le refus du lead dev (Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y))
+- **Accroches hors zone (≤ 10 lignes)** : `src/platform/desktop_main.cpp` : 1 include (`../game/boutique.h`) + 1 ligne (`WFS_BANC=equilibrage` → `boutique::benchEquilibrage`) ; `CMakeLists.txt` : `src/game/boutique.cpp` ajouté aux 17 tests qui lient déjà `personnalisation.cpp` (la sauvegarde appelle la migration du portefeuille) + nouveau test `test_boutique`.
+- Correction du point 1 de la revue (PR #382) : `configgame.json` et `configgame.README.md` repartent de `main` ; seules les nouvelles clés de la section `boutique` sont ajoutées (le diff ne touche plus que `boutique`). Cause : régénération par `test_configgame --ecrire`, qui remettait les valeurs du code (caméras, police, course à 5).
+- **Pour le PO** (signalé par le lead dev) : sur `main`, `configgame.json` (qui part dans l'APK et passe avant le code) et les valeurs par défaut du code diffèrent (course5.vitesse_normale 0.9 / 0.95, vitesse_difficile 0.97 / 1.0, police_depart 1 / 2, police_max 3 / 6, caméra Poursuite, Proche, zoom Cockpit 55 / 62) : à trancher dans un ticket à part. Et : tant que WFS-499 n'est pas fusionné, une course solo avec une voiture payante consomme son essai gratuit (remise à zéro possible au moment de WFS-499).
+
+### 2026-11-13 12:49:57 — WFS-489, 483 passés ⏳ Prêt (po-scrum-master)
+- WFS-488 fusionné (#380) : WFS-489 (dépend de 487, 488, 504, tous fusionnés) et WFS-483 (480 et 488 fusionnés) passent **⏳ Prêt** ; garde-fou E10 de WFS-456 levé. Demande de l'utilisateur (« corriger sur main »).
+
+### 2026-11-13 12:54:04 — WFS-505 fusionné par le lead dev (lead-dev)
+- PR #383 relue sur dfa30d16, « ✅ Approuvé » en commentaire (GitHub refuse l'approbation du même compte), fusion en squash 76dbf1c3 `WFS-505 : menus en anglais (#383) (Claude, agent dev3d (01UY1Vv4v6))`. Statut 🟣 (pas 🟡, pas E15).
+- Captures toutes ouvertes : FR avant / après identiques (8 sur 9 à l'octet, `salon-hote` : code du salon tiré au hasard) ; EN : accueil, mode, terrain, pause, salon, chargement, crédits, sans phrase française, boutons de même taille. Diff entier lu (menu, modes, terrain, chargement, pause, salon, crédits, `textes_banc.*`, accroche de 2 lignes dans `desktop_main.cpp`, tables, `credits-en.txt`, `test_credits`).
+- Refait par le lead dev : construction de la branche fusionnée à blanc avec `main`, `tests_cpu.sh` : 120 réussis ; banc `textes` VERT en `en` (192 textes, 0 phrase française, 0 dépassement, 21 étapes) et en `fr`.
+- Pour le PO : en anglais, restent « Ville néon », le pseudo par défaut « Pilote » (WFS-481) et la virgule décimale (« 6,4 km ») ; à trancher avant la sortie publique (WFS-509 / 320).
+
+### 2026-11-13 12:54:52 — Fin WFS-505 : fusionné (#383, 76dbf1c3), session terminée (Claude, agent dev3d (01UY1Vv4v6))
+- Lead dev : accepté et fusionné en squash ; réponse « Bien reçu » sous sa revue (remarques non bloquantes traitées ou transmises).
+- **Pour le PO** (remarque 2 du lead dev) : en anglais restent « Ville néon » (nom de carte, décision « noms inchangés »), le pseudo par défaut « Pilote » (sauvegarde, WFS-481) et la virgule décimale (« 6,4 km ») : à trancher avant WFS-509 / 320.
+- Limites connues du banc « textes » (remarques 3 et 4) : deux écrans notés l'un dans l'autre → le journal de l'écran intérieur ferme celui de l'extérieur (vérification du banc seulement) ; le banc crée un vrai duel et tente de joindre le serveur du duel (à revoir si le groupe `textes` entre dans la CI).
+- Réponse à l'utilisateur sous la demande E20 de `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Aucune branche supprimée. Un seul ticket par session : pas de ticket suivant.
+
+
+### 2026-11-13 12:56:49 — WFS-508 : retour lead dev sur PR #384, conflits avec main (lead-dev)
+- Revue complète du commit cee751f5 : captures FR / EN avant / après toutes ouvertes, diff entier relu, construction + tests CPU refaits (120/120), banc `textes` en `en` relancé (VERT). Contenu **approuvé** (revue écrite dans la PR).
+- Fusion refusée par GitHub : **conflits avec `main`** depuis la fusion de WFS-505 (#383) pendant la revue : `assets/textes/en.txt`, `assets/textes/fr.txt` (garder les blocs `cgu.*` et menus), `src/platform/desktop_main.cpp` (banc `textes` : appeler CGU + Réglages + menus, garder `textes-menus`).
+- Au développeur : synchroniser, relancer tests et banc `textes` fr / en, noter le commit testé dans `tests-cpu.log`, répondre dans la PR, remettre 🔁 et rappeler le lead dev.

@@ -10,6 +10,8 @@
 #include "../../render/renderer.h"
 #include "../hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../text.h"
+#include "../langue.h"   // WFS-505 : textes de la pause en français ou en anglais
+#include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "reglages.h"
 #include "../../platform/manette.h"   // WFS-22
@@ -30,7 +32,8 @@ struct Zone {
 // zones touchables posées à la dernière image (bouton Menu de la course, 3 boutons de la pause), lues par le banc
 Zone g_menu, g_boutons[3];
 enum { REPRENDRE = 0, RECOMMENCER = 1, QUITTER = 2 };
-const char* TEXTES[3] = {"Reprendre", "Recommencer", "Quitter la course"};   // index.html, #pause .actions
+// index.html, #pause .actions ; WFS-505 (RG-01) : clés des tables de textes (« Reprendre », « Recommencer », « Quitter la course »)
+const char* TEXTES[3] = {"pause.reprendre", "pause.recommencer", "pause.quitter"};
 
 // parallélogramme (clip-path des .btn / .cam-btn) en bandes horizontales : haut décalé à droite de `biais`
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
@@ -74,6 +77,7 @@ public:
 
     void drawUi(Renderer& r, const GameView& g) override {
         if (!ui::fontReady()) return;
+        const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
         if (boutonVisible(g)) dessinerBouton(r, g, k);
         if (g.ecran == Ecran::Pause) dessinerPause(r, W, H, k);
@@ -86,7 +90,7 @@ private:
     void dessinerBouton(Renderer& r, const GameView& g, float k) {
         hud::BoutonHud b, cam;
         hud::rangeeBoutons(g.uiWidth, g.uiHeight, g.marges, ui::majuscules(VUES[(int)vueCamera()].nom), b, cam);
-        const std::string t = ui::majuscules("Menu");
+        const std::string t = ui::majuscules(ui::tr("pause.menu"));   // WFS-505
         const float x = b.x, y = b.y, w = b.w, h = b.h, ic = b.icone;
         g_menu = {x, y, w, h};
         biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, b.biais, BORD);   // border 1px var(--border)
@@ -102,19 +106,24 @@ private:
     void dessinerPause(Renderer& r, float W, float H, float k) {
         r.uiRect(0, 0, W, H, hex(BG, 0.82f));
         const float cx = W / 2;
-        ui::text(r, cx, H * 0.24f, 14 * k, ui::majuscules("Course en pause"), hex(ACCENT2), ui::CENTRE, 0.22f, false);
-        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules("Pause"), hex(TEXTE), ui::CENTRE, 0.02f, false);
+        ui::text(r, cx, H * 0.24f, 14 * k, ui::majuscules(ui::tr("pause.surtitre")), hex(ACCENT2), ui::CENTRE, 0.22f, false);
+        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules(ui::tr("pause.titre")), hex(TEXTE), ui::CENTRE, 0.02f, false);
         // boutons de l'écran de fin (WFS-38 / WFS-57) : hauteur 10 % de H, biais 14 px, texte 5 % de H, espacement 0,12 em,
         // largeur = texte + 2 × 28 px ; rangée centrée, 2 % de H d'écart
         const float u = H / 100, bh = 10 * u, tp = 5 * u, gap = 2 * u;
-        float wb[3], total = 2 * gap;
-        for (int i = 0; i < 3; i++) { wb[i] = ui::width(tp, ui::majuscules(TEXTES[i]), 0.12f) + 56 * k; total += wb[i]; }
+        // WFS-505 (RG-03, RC-E20-04) : largeur mesurée sur le texte français (boutons identiques dans les deux langues)
+        float wb[3], tw[3], total = 2 * gap;
+        for (int i = 0; i < 3; i++) {
+            tw[i] = ui::width(tp, ui::majuscules(ui::trLangue(TEXTES[i], ui::langue::Langue::Francais)), 0.12f);
+            wb[i] = tw[i] + 56 * k; total += wb[i];
+        }
         float x = cx - total / 2;
         const float y = H * 0.56f;
         for (int i = 0; i < 3; i++) {
             g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
             biseau(r, x, y, wb[i], bh, 14 * k, i == REPRENDRE ? hex(ACCENT) : hex(SURFACE2));
-            ui::text(r, x + wb[i] / 2, y + 2.6f * u, tp, ui::majuscules(TEXTES[i]), i == REPRENDRE ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+            // texte à y + 2,6 % de H (centré dans 10 % : +0,1 % de H, comme avant) ; anglais plus long : police réduite de 20 % au plus
+            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), i == REPRENDRE ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
             x += wb[i] + gap;
         }
     }
@@ -124,6 +133,14 @@ private:
 };
 
 } // namespace
+
+// WFS-505 (banc « textes ») : centre d'un bouton à la dernière image : « menu » (en course), « reprendre », « recommencer », « quitter »
+bool pauseBouton(const std::string& nom, float& x, float& y) {
+    const Zone* z = nom == "menu" ? &g_menu : nom == "reprendre" ? &g_boutons[REPRENDRE] : nom == "recommencer" ? &g_boutons[RECOMMENCER]
+                  : nom == "quitter" ? &g_boutons[QUITTER] : nullptr;
+    if (!z || z->w <= 0) return false;
+    x = z->x + z->w / 2; y = z->y + z->h / 2; return true;
+}
 
 // banc d'essai (WFS-39) : touchers simulés avec Game::onTouch, chrono relevé au journal
 void benchPause(Game& g, Renderer& r, const std::string& out) {

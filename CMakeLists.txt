@@ -165,6 +165,8 @@ else()
   target_compile_definitions(test_fidelite_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_police_bandes tests/test_police_bandes.cpp src/game/roues.cpp)   # WFS-460 : bandes « POLICE » posées sur la tôle
   target_compile_definitions(test_police_bandes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_peinture2 tests/test_peinture2.cpp src/render/vehicule_peinture2.cpp)   # WFS-488 : couleur secondaire (toit, rétroviseurs)
+  target_compile_definitions(test_peinture2 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_vehicule_lod tests/test_vehicule_lod.cpp)   # WFS-158 (RG-04) : 4 niveaux de détail des voitures
   target_compile_definitions(test_vehicule_lod PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_conducteurs tests/conducteurs_test.cpp)   # WFS-73 : conducteurs (pavillon mesuré, placement)

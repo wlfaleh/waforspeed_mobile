@@ -12,6 +12,7 @@
 #include <string_view>
 #include "../ui/langue.h"
 #include "../ui/text.h"
+#include "../ui/ecrans/textes_banc.h"   // WFS-505 : NomPropre
 
 namespace wfs::textes {
 
@@ -57,12 +58,8 @@ struct Capitales {
 };
 
 // nom propre inventé (rue, pseudo, adversaire) : noté à part au journal du banc « textes », jamais vérifié comme une phrase
-struct NomPropre {
-    NomPropre() { ui::langue::journalTechnique(true); }
-    ~NomPropre() { ui::langue::journalTechnique(false); }
-    NomPropre(const NomPropre&) = delete;
-    NomPropre& operator=(const NomPropre&) = delete;
-};
+// (struct de WFS-505, banc des menus, réutilisée)
+using ecrans::textes::NomPropre;
 
 } // namespace wfs::textes
 

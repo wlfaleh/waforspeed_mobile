@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include "../src/ui/credits.h"
+#include "../src/ui/langue_regles.h"   // WFS-505 : garde-fou « phrase française » de WFS-504
 
 using namespace wfs::credits;
 static int g_echecs = 0;
@@ -55,6 +56,39 @@ int main() {
     for (const char* interdit : {"Folg", "Bnv", "R4 Competizione", "Giuliva", "Trefoil", "Volkswagen", "BMW", "Porsche", "Ferrari",
                                  "Lamborghini", "Kawasaki", "Honda"})
         cas((std::string("crédits sans « ") + interdit + " »").c_str(), t.find(interdit) == std::string::npos);
+    // WFS-505 (RG-02) : crédits en anglais. Règles de la traduction, puis le vrai fichier traduit par textes/credits-en.txt :
+    // aucun mot français (garde-fou de WFS-504) hors texte des licences ; auteurs, œuvres et licences inchangés
+    {
+        const std::string table = "# commentaire\nmodèle 3D par |3D model by \n — licence | — license \nmodèle |model \n";
+        cas("traduction : plus long morceau d'abord, typographie anglaise",
+            traduireCredits("Norvik Lume : modèle 3D par Ricy — licence CC BY 4.0 : https://x", table) == "Norvik Lume: 3D model by Ricy — license CC BY 4.0: https://x");
+        cas("traduction : guillemets « » → “ ”", traduireCredits("modèle « seagull »", table) == "model \xE2\x80\x9Cseagull\xE2\x80\x9D");
+        cas("traduction : table vide → texte inchangé sauf typographie", traduireCredits("Rajdhani : OFL", "") == "Rajdhani: OFL");
+    }
+    {
+        std::ifstream fe("assets/textes/credits-en.txt", std::ios::binary);
+        std::stringstream se; se << fe.rdbuf();
+        const std::string table = se.str();
+        cas("assets/textes/credits-en.txt lu", !table.empty());
+        std::vector<Paragraphe> v = paragraphes(texte, "https://exemple.org/confidentialite");
+        traduireParagraphes(v, table);
+        int francais = 0;
+        bool licence = false;
+        for (const Paragraphe& p : v) {
+            if (p.style == Paragraphe::SECTION) licence = p.texte.find("license text") != std::string::npos;
+            if (p.style == Paragraphe::VIDE || (licence && p.style == Paragraphe::TEXTE)) continue;
+            const std::string raison = wfs::ui::langue::phraseFrancaise(p.texte);
+            if (!raison.empty()) { francais++; std::printf("ÉCHEC crédits en anglais (%s) : « %s » → ajouter sa ligne dans assets/textes/credits-en.txt\n", raison.c_str(), p.texte.c_str()); }
+        }
+        cas("crédits en anglais : aucun mot français (hors texte des licences)", francais == 0);
+        const std::string en = tout(v);
+        cas("crédits en anglais : titre « WaForSpeed — credits »", !v.empty() && v[0].texte == "WaForSpeed — credits");
+        cas("crédits en anglais : « Privacy policy: <adresse> »", v.size() > 1 && v[1].texte == "Privacy policy: https://exemple.org/confidentialite");
+        for (const char* garde : {"Norvik Lume: 3D model by GT Cars: Hyperspeed (Sketchfab) — license CC BY 4.0: https://creativecommons.org/licenses/by/4.0/",
+                                  "Quaternius", "MakeHuman", "svartmc", "Poly Haven", "Indian Type Foundry", "SIL OFL 1.1", "CC BY-SA 3.0",
+                                  "CC0 1.0", "Permission is hereby granted", "Apache License"})
+            cas((std::string("crédits en anglais : gardé « ") + garde + " »").c_str(), en.find(garde) != std::string::npos);
+    }
     std::printf("%s\n", g_echecs ? "test_credits : ÉCHEC" : "test_credits : tout est bon");
     return g_echecs ? 1 : 0;
 }

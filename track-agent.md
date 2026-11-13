@@ -24,12 +24,12 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) | WFS-488 | Couleur secondaire : toit et rétroviseurs séparés sur les 17 voitures (E18, zone E10) | `feature/waforspeed-488`, 09:51 (dda54015) | ↩️ retour lead dev sur PR #380 : à corriger (capture Tests CPU, endurance Basse) |
+| Claude, agent dev3d (01Us6uCwUX) (session_01Us6uCwUXMyRyCrFSgzUJRx) |  | WFS-488 fusionné (PR #380, 7abc389f), 🟣 en attente des bancs du matin | `feature/waforspeed-488`, 12:24 (108ca8e3) | ⏹️ session terminée (WFS-488 fusionné) |
 | Claude, agent dev3d (01Us6uCvhS) (session_01Us6uCvhSyUxjQqVifkPVmG) | WFS-481 | Écran « Crée ton pilote » au 1er lancement, FR / EN, < 20 s (E17, zone E8) : PR #379 refusée par le lead dev (tests CPU, émulateur) | `feature/waforspeed-481`, 09:26 (489278ce) | ↩️ retour lead dev sur PR #379 : à corriger |
-| Claude, agent dev3d (01UY1Vv4v6) (session_01UY1Vv4v6XjtvJq9pLVTtvj) | WFS-505 | Menus en anglais : accueil, terrain, modes, chargement, pause, salon du duel, crédits (E20, zone E8) | `feature/waforspeed-505`, 11:45 (2b23b007) | 🔧 en cours : écrans traduits, banc « textes » vert en anglais, captures en cours |
-| Claude, agent dev3d (01Us6uCudS) (session_01Us6uCudS6q2Mm6FiVxo6e7) | WFS-508 | CGU et confidentialité en anglais (jeu et `store/`), avis du juriste (E20, zone E8) | `feature/waforspeed-508`, pas encore poussée | 🔧 attribué à 11:44 UTC |
+| Claude, agent dev3d (01UY1Vv4v6) (session_01UY1Vv4v6XjtvJq9pLVTtvj) |  | Menus en anglais : accueil, terrain, modes, chargement, pause, salon du duel, crédits (E20, zone E8) | `feature/waforspeed-505`, 12:32 (dfa30d16) | ⏹️ session terminée (WFS-505 fusionné, #383, 76dbf1c3) |
+| Claude, agent dev3d (01Us6uCudS) (session_01Us6uCudS6q2Mm6FiVxo6e7) | WFS-508 | CGU et confidentialité en anglais (jeu et `store/`), avis du juriste (E20, zone E8) | `feature/waforspeed-508`, 12:38 (cee751f5) | ↩️ retour lead dev sur PR #384 : à corriger (conflits avec main après WFS-505, contenu approuvé) |
 | Claude, agent dev3d-cori (01UY1Vv4T3) (session_01UY1Vv4T36y95yE18wiLeCN) | WFS-533 | [TECHNIQUE] CI de `main` rouge : crédit de `profil/mots_interdits.txt` dans le contrôle des licences (E0) | `feature/waforspeed-533`, poussée 11:50 (13/11) | ⏹️ session terminée (WFS-533 fusionné, #381, 3013cf97) |
-| Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y) | WFS-498 | Étoiles : portefeuille, prix dans `configgame.json`, voitures à acheter, essai gratuit, banc d'équilibrage (E18, zone E3 + configgame) | `feature/waforspeed-498`, pas encore poussée | 🔧 attribué à 11:44 UTC |
+| Claude, agent dev3d (01Us6uCvzs) (session_01Us6uCvzsxvoKDpDXD7tC4y) | WFS-498 | Étoiles : portefeuille, prix dans `configgame.json`, voitures à acheter, essai gratuit, banc d'équilibrage (E18, zone E3 + configgame) | `feature/waforspeed-498`, poussée 12:31 (13/11) (af654958) | ↩️ retour lead dev sur PR #382 : à corriger (configgame.json hors section boutique) |
 | Claude, agent dev3d (01Us6uCvEv) (session_01Us6uCvEvngLZWcCkMPKtFB) | WFS-506 | Course en anglais : HUD, messages, consignes de navigation, fin de course des 4 modes (E20, zones E3 + E5) | `feature/waforspeed-506`, poussée 11:45 | 🔧 en cours (inventaire des textes fait) |
 
 ## Agents de pilotage
