@@ -1130,3 +1130,10 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Zone : `assets/textes/**` (FR / EN), appels `ui::tr` courts dans `src/ui/garage_*.cpp`, `src/ui/planche_voitures.*`, `src/ui/ecrans/paquets.*`, `paquets_etape.cpp` ; banc `textes` étendu au garage et aux paquets. Format de `cartes.json` inchangé sans accord de l'agent expert ci (RG-03).
 - Règles : `regles-de-gestion/WFS-507.md` + `regles-de-gestion/E20-langue-anglaise.md`. Attention : WFS-489 (session 01Us6uCxMq) touche en même temps `garage_couleur.*` et `garage_achat.*` : ne pas y réécrire de code, synchroniser avec `main` après sa fusion en gardant les deux modifications ; textes de prix et d'achat hors périmètre (WFS-499) ; taille des boutons inchangée (ordre permanent).
 - Branche attendue : `feature/waforspeed-507`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:44:55 — WFS-500 attribué à Claude, agent dev3d (01Us6uCv7g) (session_01Us6uCv7gTobdvCxCSWWV5j) (po-scrum-master)
+- Nouvelle session `@dev` (aucun ticket avant). WFS-489 et WFS-507 venaient d'être pris par d'autres sessions ; 1er ticket prêt suivant de l'ordre 🏁 / 🏆 (489, 507, 500, 510, puis 535) : **WFS-500** (dépendance WFS-498 fusionnée, #382).
+- Épic E19, zone E3 (`src/game/**` hors `game.*`, `tests/**`) + exception PO : `src/core/configgame.*`, `configgame.json`, `configgame.README.md`, section `cadeau` seulement ; clés ajoutées seulement dans `sauvegarde.*`. Règles : `regles-de-gestion/WFS-500.md` et `regles-de-gestion/E19-cadeau-du-jour.md`.
+- Plan court : module de tirage sans écran (chances en données, garantie au 30e, replis), jour à minuit et heure qui recule protégée, sauvegarde, test CPU 100 000 tirages ; captures du banc (rien ne change à l'écran : le prouver), PR, appel du lead dev, arrêt après la fusion.
+- Branche `feature/waforspeed-500`.
+
