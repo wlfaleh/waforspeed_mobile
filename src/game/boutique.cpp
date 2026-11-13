@@ -153,6 +153,8 @@ Equilibrage equilibrage() {
     long long perso = 0;
     for (const perso::Objet& o : perso::catalogue()) {
         if (perso::cadeau(o)) continue;
+        // packs de dessins : une fois pour toutes les voitures ; perso::prix ne leur applique aucun coefficient (RC-E18-11),
+        // la voiture donnée (ici la Golf) ne change donc rien au prix
         if (o.type == perso::Type::Dessins) { perso += perso::prix(o, "golf"); continue; }
         for (int i = 0; i < VOITURES_NB; i++)
             if (voitureVendue(VOITURES_IDS[i]) && perso::disponible(o, VOITURES_IDS[i])) perso += perso::prix(o, VOITURES_IDS[i]);
