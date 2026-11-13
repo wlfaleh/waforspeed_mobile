@@ -5,6 +5,8 @@ réduites à 1280 px ; `-x2` : recadrage ×2 de la capture 2400 × 1080 sur la p
 « Avant » : le même banc avec `WFS_PLAQUE_AVANT=1` (plaques 3D masquées : la plaque d'origine du modèle reste, comme sur `main`, où ce banc n'existe pas).
 Plaque « WFS » = plaque par défaut quand le profil n'est pas encore créé (le banc n'a pas de profil) ; « 7 » et « WFS-2026 » imposés par le banc.
 
+Tests CPU : [`tests-cpu.log`](tests-cpu.log) (sortie complète de `bash tools/qa/tests_cpu.sh build`).
+
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
 | `plaque-p208-ar-jour` | ![avant](avant-plaque-p208-ar-jour.jpg) | ![après](apres-plaque-p208-ar-jour.jpg) |
@@ -14,6 +16,8 @@ Plaque « WFS » = plaque par défaut quand le profil n'est pas encore créé (l
 | `plaque-p208-ar-nuit` | ![avant](avant-plaque-p208-ar-nuit.jpg) | ![après](apres-plaque-p208-ar-nuit.jpg) |
 | `plaque-p208-poursuite-jour` | ![avant](avant-plaque-p208-poursuite-jour.jpg) | ![après](apres-plaque-p208-poursuite-jour.jpg) |
 | `plaque-p208-poursuite-nuit` | ![avant](avant-plaque-p208-poursuite-nuit.jpg) | ![après](apres-plaque-p208-poursuite-nuit.jpg) |
+| `plaque-p208-poursuite-jour-x2` | ![avant](avant-plaque-p208-poursuite-jour-x2.jpg) | ![après](apres-plaque-p208-poursuite-jour-x2.jpg) |
+| `plaque-p208-poursuite-nuit-x2` | ![avant](avant-plaque-p208-poursuite-nuit-x2.jpg) | ![après](apres-plaque-p208-poursuite-nuit-x2.jpg) |
 | `plaque-gt86-ar-jour` | ![avant](avant-plaque-gt86-ar-jour.jpg) | ![après](apres-plaque-gt86-ar-jour.jpg) |
 | `plaque-gt86-av-jour` | ![avant](avant-plaque-gt86-av-jour.jpg) | ![après](apres-plaque-gt86-av-jour.jpg) |
 | `plaque-gt86-zoom` | ![avant](avant-plaque-gt86-zoom.jpg) | ![après](apres-plaque-gt86-zoom.jpg) |
@@ -21,6 +25,8 @@ Plaque « WFS » = plaque par défaut quand le profil n'est pas encore créé (l
 | `plaque-gt86-ar-nuit` | ![avant](avant-plaque-gt86-ar-nuit.jpg) | ![après](apres-plaque-gt86-ar-nuit.jpg) |
 | `plaque-gt86-poursuite-jour` | ![avant](avant-plaque-gt86-poursuite-jour.jpg) | ![après](apres-plaque-gt86-poursuite-jour.jpg) |
 | `plaque-gt86-poursuite-nuit` | ![avant](avant-plaque-gt86-poursuite-nuit.jpg) | ![après](apres-plaque-gt86-poursuite-nuit.jpg) |
+| `plaque-gt86-poursuite-jour-x2` | ![avant](avant-plaque-gt86-poursuite-jour-x2.jpg) | ![après](apres-plaque-gt86-poursuite-jour-x2.jpg) |
+| `plaque-gt86-poursuite-nuit-x2` | ![avant](avant-plaque-gt86-poursuite-nuit-x2.jpg) | ![après](apres-plaque-gt86-poursuite-nuit-x2.jpg) |
 | `plaque-tcross-ar-jour` | ![avant](avant-plaque-tcross-ar-jour.jpg) | ![après](apres-plaque-tcross-ar-jour.jpg) |
 | `plaque-tcross-av-jour` | ![avant](avant-plaque-tcross-av-jour.jpg) | ![après](apres-plaque-tcross-av-jour.jpg) |
 | `plaque-tcross-zoom` | ![avant](avant-plaque-tcross-zoom.jpg) | ![après](apres-plaque-tcross-zoom.jpg) |
@@ -28,10 +34,14 @@ Plaque « WFS » = plaque par défaut quand le profil n'est pas encore créé (l
 | `plaque-tcross-ar-nuit` | ![avant](avant-plaque-tcross-ar-nuit.jpg) | ![après](apres-plaque-tcross-ar-nuit.jpg) |
 | `plaque-tcross-poursuite-jour` | ![avant](avant-plaque-tcross-poursuite-jour.jpg) | ![après](apres-plaque-tcross-poursuite-jour.jpg) |
 | `plaque-tcross-poursuite-nuit` | ![avant](avant-plaque-tcross-poursuite-nuit.jpg) | ![après](apres-plaque-tcross-poursuite-nuit.jpg) |
+| `plaque-tcross-poursuite-jour-x2` | ![avant](avant-plaque-tcross-poursuite-jour-x2.jpg) | ![après](apres-plaque-tcross-poursuite-jour-x2.jpg) |
+| `plaque-tcross-poursuite-nuit-x2` | ![avant](avant-plaque-tcross-poursuite-nuit-x2.jpg) | ![après](apres-plaque-tcross-poursuite-nuit-x2.jpg) |
 | `plaque-1car` | ![avant](avant-plaque-1car.jpg) | ![après](apres-plaque-1car.jpg) |
 | `plaque-1car-x2` | ![avant](avant-plaque-1car-x2.jpg) | ![après](apres-plaque-1car-x2.jpg) |
 | `plaque-8car` | ![avant](avant-plaque-8car.jpg) | ![après](apres-plaque-8car.jpg) |
 | `plaque-8car-x2` | ![avant](avant-plaque-8car-x2.jpg) | ![après](apres-plaque-8car-x2.jpg) |
 | `plaque-garage` | ![avant](avant-plaque-garage.jpg) | ![après](apres-plaque-garage.jpg) |
+| `plaque-garage-ar` | ![avant](avant-plaque-garage-ar.jpg) | ![après](apres-plaque-garage-ar.jpg) |
+| `plaque-garage-ar-x2` | ![avant](avant-plaque-garage-ar-x2.jpg) | ![après](apres-plaque-garage-ar-x2.jpg) |
 | `plaque-planche-av` | ![avant](avant-plaque-planche-av.jpg) | ![après](apres-plaque-planche-av.jpg) |
 | `plaque-planche-ar` | ![avant](avant-plaque-planche-ar.jpg) | ![après](apres-plaque-planche-ar.jpg) |
