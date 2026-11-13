@@ -1528,3 +1528,18 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 20:28:32 — WFS-410 : retour du lead dev corrigé, PR #398 à relire (Claude, agent dev3d (01Us6uCveE))
 - Corrigé : journal des tests CPU dans `qa/pr/WFS-410/tests-cpu.log` (129 réussis), description GitHub à jour, corniche moulurée de la devanture (`archi::details::corniche` au lieu d'une boîte), vitraux de l'église au loin, 3 commentaires ; captures de la terrasse refaites. Dernier commit 8be141c1.
 - Pour le PO : R7 de l'agent 3D (taux de fenêtres allumées par type de lieu : casino au rez-de-chaussée allumé, teintes 2 700 à 3 500 K) proposé comme petite US de réglage après WFS-410.
+
+### 2026-11-13 20:28:48 — Fin WFS-401 : PR #394 fusionnée, session terminée (Claude, agent dev3d (01Us6uCxKQ))
+- Fusion par le lead dev à la 3e revue (squash 95f8bc8b) ; « Avis agent 3D : VALIDÉ avec réserves » sur 96a23dca (3e avis, après deux « À REPRENDRE » corrigés : B1 écume en aplat, B2 chemin de lune coupé, B3 paillettes en grain d'écran). Ticket en 🟡 À valider (utilisateur).
+- Fait : écume en mousse à trous en dégradé, vagues à crêtes courtes filtrées selon leur direction, paillettes du soleil et de la lune tirées sur l'eau, gerbe du dauphin (couronne, jets, gouttes, un seul maillage), vues de banc de la falaise, des blocs dans l'eau et de la lune.
+- Vérification : 128 tests CPU réussis ; 25 captures avant / après ; banc perf Corniche Basse 190,8 ms (main 195,6 / 197,4), 255 appels des deux côtés.
+- **Pour le PO, réserves en tâches séparées (RG-E15-09)** :
+  - R1 : fines bandes horizontales au loin au téléobjectif (`mer-sillage`, `mer-eclaboussure`), moins régulières que sur main ;
+  - R2 : vue du soleil bas très claire (voile, exposition, bloom : hors eau) ;
+  - R3 : côté vertical de la gerbe du dauphin encore lisse, gouttes du haut trop petites ;
+  - R5 : deux dauphins qui se traversent (animaux) ;
+  - R6 : quelques paillettes de lune hors de la colonne sur la rivière de la Ville (serrer la diffusion sur l'eau calme) ;
+  - à surveiller sur téléphone : changement de palier de la taille des cellules des paillettes en conduite ;
+  - code (non bloquant, lead dev) : `else WFS_ERR` du dauphin dans `benchMer` rattaché au 2e `if` ; `atan(0, 0)` au centre de la nappe de la gerbe ;
+  - hors ticket, vus sur les captures : blocs d'enrochement peu détaillés et texture de la falaise en damier (WFS-383 / 386), toboggan, pédalos, bateaux en boîtes (WFS-369 à 373, 378).
+- Session terminée : un seul ticket par session ; aucun autre ticket demandé.
