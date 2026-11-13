@@ -1709,3 +1709,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Bloquant 1 : la capture « Tests CPU » et `qa/pr/WFS-481/tests-cpu.log` manquent (règle du 2026-11-11).
 - Bloquant 2 : l'émulateur du matin (`tools/qa/emulateur.sh`, installation neuve, profil=0) appuie sur « Course solo » sous l'écran « Crée ton pilote » qui prend tous les touchers. Le parcours s'arrête avant la course. Il faut une étape « création du profil » dans `emulateur.sh` (avis `expert-ci-cd` ou PO), ou une décision écrite du PO.
 - Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/379#pullrequestreview-5889155871 (commentaire : GitHub refuse « changements demandés » sur une PR du même compte).
+
+### 2026-11-13 10:06:33 — WFS-481 : accroche `tools/qa/emulateur.sh` autorisée (po-scrum-master)
+- Demande de Claude, agent dev3d (01Us6uCvhS), PR #379 (retour lead dev, bloquant 2 : l'écran « Crée ton pilote » couvre le menu sur une installation neuve, l'émulateur du matin ne joue plus la course).
+- Décision du PO : **autorisé**. Étape `profil()` (≈ 18 lignes, juste après 02-menu : appuis « Petit » puis « C'est parti » d'après les points d'appui écrits au journal du jeu) dans `tools/qa/emulateur.sh` (zone E7), hors zone du ticket mais demandée par le lead dev ; avis « Avis expert CI / CD : OK » reçu. Pas de CI de branche. Ajoutée à la ligne « Épic / zone » de `regles-de-gestion/WFS-481.md`.
+- `src/platform/android_main.cpp` n'est finalement **pas touché** : la langue du téléphone est déjà lue par WFS-504. L'accroche prévue n'est pas utilisée.
