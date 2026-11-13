@@ -28,6 +28,10 @@ struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 
 // src/game/personnalisation.* ; les 16 premières couleurs sont celles du garage actuel (PEINTURES de src/game/sauvegarde.h, même ordre)
 constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 4, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
 constexpr int BOUTIQUE_MEDAILLES = 3;   // WFS-498 (RG-02) : bronze, argent, or
+// WFS-510 (RG-01) : produits du market, dans l'ordre du catalogue ; ce sont aussi les identifiants des produits de la Play Console
+// (WFS-511, 515) : ils ne changent jamais (seuls les étoiles, le % offert et les prix de secours se règlent dans configgame.json)
+constexpr int MARKET_PRODUITS = 6, MARKET_ETOILES = 4;   // les 4 premiers : packs d'étoiles consommables
+inline constexpr const char* MARKET_PRODUITS_IDS[MARKET_PRODUITS] = {"etoiles_bronze", "etoiles_argent", "etoiles_or", "etoiles_coffre", "pack_debutant", "sans_pub"};
 inline constexpr const char* BOUTIQUE_MEDAILLES_IDS[BOUTIQUE_MEDAILLES] = {"bronze", "argent", "or"};
 inline constexpr const char* BOUTIQUE_COULEURS_IDS[BOUTIQUE_COULEURS] = {
     "blanc", "noir", "gris", "rouge", "bleu", "orange", "jaune", "vert", "nacre", "bleunuit", "anglais", "bordeaux", "sable", "violet", "turquoise", "taxi",
@@ -148,6 +152,16 @@ struct ConfigJeu {
         int soSansRetard = 150, soNitro = 100;       // défis course solo
         int pointsParEtoile = 85, etoilesMin = 5, etoilesMax = 40;   // conversion (RG-05)
     } scoreEtoiles;
+    // WFS-510 (RG-01, RG-02, RG-06 ; valeurs de l'utilisateur, épic E21) : market. Étoiles de base et % offert de chaque pack d'étoiles
+    // (total crédité = base + arrondi(base × offert / 100)), pack débutant (étoiles, bons de skin, course après laquelle il est proposé),
+    // ×2 de fin de course par jour. Prix de secours en euros : PC et bancs seulement, jamais montrés sur Android (prix de Google, RC-E21-05).
+    struct Market {
+        struct Pack { int etoiles, offert; double prixSecours; };   // offert en % ; pack_debutant : étoiles seulement ; sans_pub : 0 étoile
+        Pack pack[MARKET_PRODUITS] = {{100, 0, 0.99}, {300, 10, 2.49}, {600, 20, 4.49}, {3600, 25, 19.99}, {500, 0, 1.99}, {0, 0, 2.99}};
+        int bonsSkinDebutant = 1;   // bons de skin du pack débutant
+        int debutantApres = 3;      // pack débutant proposé à partir de la fin de cette course terminée
+        int x2ParJour = 5;          // ×2 de fin de course par jour (date locale du téléphone)
+    } market;
     // WFS-406 (RG-06) : adresse https de la politique de confidentialité montrée dans l'écran Crédits ; vide (défaut) : ligne cachée
     char confidentialiteUrl[ADRESSE_MAX * 4 + 1] = "";
 };

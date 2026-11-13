@@ -10,6 +10,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 - **Noms des voitures** (section `voitures`, WFS-191) : `marque` (1 à 16 caractères) et `modele` (1 à 24) de chaque voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu (garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). Un nom invalide : le nom par défaut et une ligne au journal.
 - **Boutique** (section `boutique`, WFS-487) : prix de **base** en étoiles des couleurs, finitions, skins et packs d'autocollants. Le prix payé pour une voiture = prix de base × coefficient de sa classe (`coefficients_classe`, `voitures.<id>.classe`), arrondi à l'étoile ; les packs d'autocollants n'ont pas de coefficient. `gratuit` = 1 : offert sur toutes les voitures ; `cadeau` = 1 : seulement dans le cadeau du jour ou un succès. `voitures` d'une skin : identifiants séparés par des espaces.
 - **Étoiles et voitures** (section `boutique`, WFS-498) : `voitures.<id>.prix` = prix de la voiture en étoiles (0 : gratuite, possédée dès le départ ; x5, a45, elantra retirées, jamais vendues) ; `gain_course` = étoiles gagnées à la fin d'une course terminée ; `minutes_par_course` sert seulement au banc d'équilibrage (`WFS_BANC=equilibrage`) ; `medailles` = packs du market (étoiles et prix en euros), qui donnent l'équivalent en médailles et en euros de chaque prix.
+- **Market** (section `market`, WFS-510) : packs vendus par le market. Les noms des packs (`etoiles_bronze`…`sans_pub`) sont les identifiants des produits de la Play Console et ne changent pas. `etoiles` = étoiles de base, `offert` = % d'étoiles en plus : le joueur reçoit base + arrondi(base × offert / 100) (argent : 300 + 10 % = 330 ★). Le pack débutant (une seule fois) donne `etoiles` ★ et `bons_skin` bon(s) de skin ; il est proposé à partir de la fin de la course n° `apres_courses`. `x2_par_jour` = ×2 des étoiles de fin de course par jour au plus. Les prix en argent sont ceux de Google Play : `prix_secours_eur` ne sert que sur PC et dans les bancs. Les `medailles` de la section `boutique` (WFS-498) donnent seulement l'équivalent des prix du garage.
 - **Score en étoiles** (section `score_etoiles`, WFS-535, épic E22) : barème du score d'une course **terminée** : place ou issue (`course5`, `duel`, `poursuite`, `solo`), temps contre le record (`temps`), conduite propre (`propre`) et 2 défis par mode (`defis`). Étoiles = arrondi(total ÷ `conversion.points_par_etoile`), bornées entre `conversion.min` et `conversion.max` ; course quittée : 0 ★ ; duel dont l'adversaire est parti avant `duel.depart_min` s : 0 ★. Un compteur de défi que le mode n'a pas vaut 0 point.
 - Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans `src/core/configgame.cpp` (table `champs`), puis relancer cette commande.
 
@@ -288,6 +289,24 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `boutique.medailles.argent.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 2.49 |
 | `boutique.medailles.or.etoiles` | étoiles du pack de médailles (market) ; sert à l'équivalent en médailles des prix | ★ | 1 | 1000000 | 600 |
 | `boutique.medailles.or.euros` | prix du pack de médailles en euros (bronze : sert à l'équivalent en euros des prix) | € | 0.01 | 1000.0 | 4.49 |
+| `market.packs.etoiles_bronze.etoiles` | étoiles de base du pack (avant le bonus offert) | ★ | 1 | 1000000 | 100 |
+| `market.packs.etoiles_bronze.offert` | étoiles offertes en plus, en % de la base (arrondi à l'étoile) | % | 0 | 100 | 0 |
+| `market.packs.etoiles_bronze.prix_secours_eur` | prix de secours (PC et bancs seulement ; sur Android, prix de Google Play) | € | 0.01 | 1000.0 | 0.99 |
+| `market.packs.etoiles_argent.etoiles` | étoiles de base du pack (avant le bonus offert) | ★ | 1 | 1000000 | 300 |
+| `market.packs.etoiles_argent.offert` | étoiles offertes en plus, en % de la base (arrondi à l'étoile) | % | 0 | 100 | 10 |
+| `market.packs.etoiles_argent.prix_secours_eur` | prix de secours (PC et bancs seulement ; sur Android, prix de Google Play) | € | 0.01 | 1000.0 | 2.49 |
+| `market.packs.etoiles_or.etoiles` | étoiles de base du pack (avant le bonus offert) | ★ | 1 | 1000000 | 600 |
+| `market.packs.etoiles_or.offert` | étoiles offertes en plus, en % de la base (arrondi à l'étoile) | % | 0 | 100 | 20 |
+| `market.packs.etoiles_or.prix_secours_eur` | prix de secours (PC et bancs seulement ; sur Android, prix de Google Play) | € | 0.01 | 1000.0 | 4.49 |
+| `market.packs.etoiles_coffre.etoiles` | étoiles de base du pack (avant le bonus offert) | ★ | 1 | 1000000 | 3600 |
+| `market.packs.etoiles_coffre.offert` | étoiles offertes en plus, en % de la base (arrondi à l'étoile) | % | 0 | 100 | 25 |
+| `market.packs.etoiles_coffre.prix_secours_eur` | prix de secours (PC et bancs seulement ; sur Android, prix de Google Play) | € | 0.01 | 1000.0 | 19.99 |
+| `market.packs.pack_debutant.etoiles` | étoiles du pack débutant (acheté une seule fois) | ★ | 0 | 1000000 | 500 |
+| `market.packs.pack_debutant.bons_skin` | bons de skin du pack débutant (une skin en vente au choix, au garage) | bons | 0 | 10 | 1 |
+| `market.packs.pack_debutant.apres_courses` | pack débutant proposé à partir de la fin de cette course terminée | courses | 0 | 1000 | 3 |
+| `market.packs.pack_debutant.prix_secours_eur` | prix de secours (PC et bancs seulement ; sur Android, prix de Google Play) | € | 0.01 | 1000.0 | 1.99 |
+| `market.packs.sans_pub.prix_secours_eur` | prix de secours (PC et bancs seulement ; sur Android, prix de Google Play) | € | 0.01 | 1000.0 | 2.99 |
+| `market.x2_par_jour` | ×2 des étoiles de fin de course par jour au plus (vidéo ou « sans pub ») | par jour | 0 | 100 | 5 |
 | `score_etoiles.course5.place_1` | course à 5 : points de cette place d'arrivée | points | 0 | 100000 | 1000 |
 | `score_etoiles.course5.place_2` | course à 5 : points de cette place d'arrivée | points | 0 | 100000 | 700 |
 | `score_etoiles.course5.place_3` | course à 5 : points de cette place d'arrivée | points | 0 | 100000 | 500 |
