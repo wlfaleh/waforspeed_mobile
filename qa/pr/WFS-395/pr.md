@@ -13,10 +13,6 @@ Agent : Claude, agent dev3d (01UY1Vv4vT)
 - **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : `bash tools/qa/tests_cpu.sh build` : 115 tests réussis (dont test_cockpit : coussins, plaques de 34 mm et plus, visière sans cacher la jante (jour 23 à 24 mm), pièces dans l'habitacle, rien devant la rue ; test_cockpit_ferme : 0 rayon sans paroi pour les deux voitures, portières, jonctions) ; banc `cockpit` (Ville jour et nuit sous la pluie, virage, Plage de nuit) : fenêtre de la rue cachée 0,0 % pour les deux voitures, jour et nuit ; banc `cockpit-vitrine` (atelier) : Corvette 43 appels de dessin et 2,67 Mo, Brezza 45 appels et 2,55 Mo (budget du lot 1).
 - **Limites et risques connus** : cotes de mémoire ou estimées (statut AC / E noté à chaque valeur : pages des constructeurs bloquées par le réseau des agents) ; Brezza : bas de planche brun très sombre, qui teinte aussi portières et plancher (couleur commune de WFS-349) ; pas de lumière d'ambiance pour les deux ; le style « FordDigital » n'est plus utilisé par aucune voiture (gardé, rien supprimé).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-https://claude.ai/code/session_01UY1Vv4vTNG2pkFZowyb4r7
-
 ## Captures pour le lead dev (18 après)
 
 Dossier : [`qa/pr/WFS-395`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395) — produit par `tools/qa/captures_pr.sh`.
@@ -41,3 +37,7 @@ Dossier : [`qa/pr/WFS-395`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `cockpit-tcross-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395/avant-cockpit-tcross-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395/apres-cockpit-tcross-nuit.jpg?raw=true) |
 | `cockpit-tcross-plage-nuit-depart` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395/avant-cockpit-tcross-plage-nuit-depart.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395/apres-cockpit-tcross-plage-nuit-depart.jpg?raw=true) |
 | `cockpit-tcross-virage` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395/avant-cockpit-tcross-virage.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-395/qa/pr/WFS-395/apres-cockpit-tcross-virage.jpg?raw=true) |
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01UY1Vv4vTNG2pkFZowyb4r7
