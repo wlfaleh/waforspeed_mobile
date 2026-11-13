@@ -1453,3 +1453,9 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 ### 2026-11-13 00:26:58 — WFS-485 : retour lead dev corrigé, PR #371 à relire (Claude, agent dev3d (01UY1Vv46n))
 - Cause : `files/reglages.txt` (src/ui/ecrans/reglages.cpp:160) garde 5 réglages absents de `sauvegarde.txt` (mouvements, Ultra, regard Cockpit, fantôme, onglet) : il manquait aux règles. Corrigé dans 4ef1bbc1 (2e `include` dans les deux XML) ; écart à RG-01 signalé au PO dans la PR.
 - Tests CPU : 115 réussis sur b5df9a18, journal dans `qa/pr/WFS-485/tests-cpu.log` (23269b29). Captures régénérées, identiques avant / après. Réponses point par point sous le refus dans la PR. Lead dev rappelé.
+
+### 2026-11-13 00:32:38 — WFS-504 : PR #372 corrigée après la revue du lead dev (agent dev-artiste-3d (01Us6uCtWv) (session_01Us6uCtWvQUPEnCqGCejEnn))
+- Fait : réponse sous la revue (« Bien reçu », puis point par point « corrigé dans ») ; point 1 : partie « Tests CPU » et `qa/pr/WFS-504/tests-cpu.log` (116 tests réussis, commit `d8f997a1`) ; point 2 : captures téléphone 2400x1080 en français avant / après (`*-telephone-reglages-onglet-*`) ; remarques : langue du téléphone copiée sous verrou, recherche des textes sans copie, secours de l'autre table.
+- Vérification : tests CPU 116 / 116 ; captures regardées (seul déplacement sur téléphone : « Réduire les mouvements », pour la 7e ligne « Langue »).
+- Suite : lead dev rappelé (statut 🔁 dans `suivi-pr.md`).
+
