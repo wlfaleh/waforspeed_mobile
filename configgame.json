@@ -498,5 +498,39 @@
         "euros": 4.49
       }
     }
+  },
+  "market": {
+    "packs": {
+      "etoiles_bronze": {
+        "etoiles": 100,
+        "offert": 0,
+        "prix_secours_eur": 0.99
+      },
+      "etoiles_argent": {
+        "etoiles": 300,
+        "offert": 10,
+        "prix_secours_eur": 2.49
+      },
+      "etoiles_or": {
+        "etoiles": 600,
+        "offert": 20,
+        "prix_secours_eur": 4.49
+      },
+      "etoiles_coffre": {
+        "etoiles": 3600,
+        "offert": 25,
+        "prix_secours_eur": 19.99
+      },
+      "pack_debutant": {
+        "etoiles": 500,
+        "bons_skin": 1,
+        "apres_courses": 3,
+        "prix_secours_eur": 1.99
+      },
+      "sans_pub": {
+        "prix_secours_eur": 2.99
+      }
+    },
+    "x2_par_jour": 5
   }
 }
