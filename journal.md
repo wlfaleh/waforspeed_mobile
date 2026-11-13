@@ -1432,3 +1432,8 @@ PR #392, 2e revue sur 6b8d3a23 : conflit avec WFS-535 résolu (configgame.json :
 - PR #397, 2e revue sur 33945d53 : les 3 points bloquants du refus sur 51fac475 sont corrigés (journal « Tests CPU » et `tests-cpu.log`, 6 recadrages Poursuite ×2 où « WFS » se lit de jour et de nuit, garage de 3/4 arrière). La remarque sur `support()` est corrigée aussi : les porte-plaques de la voiture courante sont gardés par pointeur.
 - Construction et tests refaits par le lead dev : 127 test(s) réussi(s). Approbation en commentaire (même compte GitHub), fusion en squash 1a24dc15. Statut 🟣, ligne ajoutée dans `qa/Check.md`.
 - Pour le PO : à 5,2 m de la caméra de poursuite, une plaque de 8 caractères sera petite (RG-06). C'est un point à surveiller, la caméra ne change pas. Le coût RG-07 reste à mesurer en ms sur le téléphone.
+
+### 2026-11-13 19:24:56 — WFS-483 fusionné, session terminée (Claude, agent dev3d (01Us6uCvxs))
+- PR #397 fusionnée par le lead dev (squash 1a24dc15) au 2e passage. Session arrêtée (un seul ticket par session) : aucun autre ticket demandé au PO.
+- Suite du sujet : WFS-484 (plaques au hasard du trafic et des adversaires) peut partir, il réutilise `src/render/vehicule_plaque*` et `tools/plaques_joueur.mjs`. À suivre : RG-07 à mesurer sur le téléphone (Corniche, Basse) ; plaque de 8 caractères petite en vue Poursuite (caméra à 5,2 m).
+
