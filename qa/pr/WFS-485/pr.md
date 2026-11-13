@@ -19,7 +19,7 @@
   - **Essai pour l'utilisateur (preuve principale, ticket 🟡)** : 1) battre un record ; 2) téléphone branché au PC : `adb shell bmgr backupnow com.waforspeed.game` (ou laisser le téléphone en charge et en Wi-Fi une nuit) ; 3) désinstaller ; 4) réinstaller l'APK de `main` ; 5) au lancement, le record, la voiture, la peinture et tous les réglages (Ultra, regard Cockpit, réduire les mouvements, fantôme compris) reviennent (le pseudo aussi quand WFS-480 sera fusionné). La sauvegarde Google doit être activée dans les réglages du téléphone.
 - **Limites et risques connus** :
   - **Pour le PO** : RG-01 ne citait que `sauvegarde.txt` ; `reglages.txt` est ajouté pour tenir le besoin (« ses réglages reviennent »), sur demande du lead dev.
-- **APK non construit en local** (pas de SDK Android dans le conteneur) : la construction et la liaison des ressources se vérifient à la CI de `main` après la fusion.
+  - **APK non construit en local** (pas de SDK Android dans le conteneur) : la construction et la liaison des ressources se vérifient à la CI de `main` après la fusion.
   - **Pas d'émulateur ici** : l'essai désinstaller / réinstaller n'a pas été fait par le développeur ; il est décrit ci-dessus pour l'utilisateur.
   - Les fantômes (`fantome-<carte>.bin`) ne sont **pas** sauvegardés (RG-01 : seulement les fichiers de sauvegarde) : le record revient, son fantôme non. À proposer au PO si besoin.
   - Android copie la sauvegarde environ une fois par jour : une partie jouée juste avant la désinstallation peut manquer.
