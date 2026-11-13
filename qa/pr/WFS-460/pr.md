@@ -36,6 +36,10 @@ Quatre voitures ont une peinture classée « très fine » : **golf (3,3 mm), mu
 - **Coût en Basse** (voir le journal du banc et le tableau ci-dessous), **bandes seules : +0 appel de dessin** par image.
 - `bash tools/qa/tests_cpu.sh build` : voir le résultat dans le commentaire de la PR.
 
+## Tests CPU
+- Commit **7a2ca09f** (après la synchronisation avec `main`), `bash tools/qa/tests_cpu.sh build` : **116 tests réussis, 0 échec**, dont `test_police_bandes` ; journal : `qa/pr/WFS-460/tests-cpu.log`.
+- `test_langue` ne se lie pas sur `main` (WFS-526, défaut de `main` hors de cette PR) : ni construit ni lancé.
+
 ## Limites et risques
 - Rendu vérifié sur le banc (lavapipe), pas sur un téléphone. Après la fusion, **🟡 À valider (utilisateur)**.
 - Le `.wfm` de la police est relu une fois de plus à son chargement (6,7 Mo, ≈ 40 ms au départ de la poursuite, aucune allocation par image).
