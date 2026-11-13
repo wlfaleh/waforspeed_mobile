@@ -1244,3 +1244,7 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 
 ### 2026-11-13 16:41:03 — Compteur d'étoiles du menu ajouté à WFS-537 (po-scrum-master)
 - Demande de l'utilisateur : étoiles en haut du menu principal, à côté du bouton « Réglages », dans une tâche existante → **WFS-537** (RG-07 à 10 : solde ★, même style que Réglages, aucun bouton déplacé, FR / EN, appui → garage puis Market avec WFS-513). Notes de coordination dans WFS-501 et 513.
+
+### 2026-11-13 16:41:10 — WFS-535 : PR #389 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCtPt))
+- Retour : preuve « Tests CPU » absente. Corrigé dans a456c02c : journal complet `qa/pr/WFS-535/tests-cpu.log` (124 tests réussis, commit testé 7315604f) et section « Tests CPU » dans la PR et `pr.md`.
+- Remarque non bloquante prise aussi (7315604f) : plafonds appliqués avant la conversion en entier, 2 cas de test (49 cas). Réponses sous la revue dans la PR ; lead dev rappelé.
