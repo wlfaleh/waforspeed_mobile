@@ -1489,3 +1489,8 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
   2. **Défis** : brancher les compteurs des modes (dépassements, contacts avec la police, nitro, checkpoints sans retard, « jamais derrière »), qui valent 0 aujourd'hui, puis recaler `points_par_etoile` au banc `equilibrage`.
   3. **Barème** : 18 ★ au plus par course au banc, la borne 40 ★ n'est jamais atteinte. Il faut un barème plus large ou une conversion non linéaire (décision PO / utilisateur).
 
+
+### 2026-11-13 20:08:51 — WFS-410 : PR #398 refusée par le lead dev (lead-dev)
+- Revue du commit c61771b9 : 29 paires de captures ouvertes (mieux que main partout, aucune régression vue), tout le diff relu, construction et **129 tests CPU réussis** refaits par le lead dev ; avis agent 3D VALIDÉ (réserves R1, R6, R7) présent.
+- Refus (revue en commentaire, même compte GitHub) pour 3 points de livraison : (1) `qa/pr/WFS-410/tests-cpu.log` et section « Tests CPU » absents (règle du 2026-11-11) ; (2) description GitHub périmée (nef 9 × 17 m, 7 568 triangles, 126 tests) ; (3) corniche de la devanture des commerces en boîte nue (`commerces.cpp`, nouveau code) : réutiliser `archi::details::corniche`.
+- Remarques non bloquantes : commentaires faux (marches, baies nord, en-tête du test) ; église au loin sans baies visibles (`egliseL.vitraux` jamais dessiné) ; R7 à donner au PO (petite US).
