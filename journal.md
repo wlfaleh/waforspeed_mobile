@@ -1335,3 +1335,14 @@ Revue de 9d814f0d : 8 paires de captures ouvertes (identiques, 40 à 0 pixel), d
 - Vérifié : `test_plaque_joueur` vert ; 126 tests CPU verts après synchronisation avec main (51fac475) ; bancs `plaque` (2400 × 1080, 3 voitures jour et nuit, garage, Poursuite, 1 et 8 caractères, planche des 14 autres) regardés image par image.
 - Limites : RG-07 non mesurable sur lavapipe (−1,4 ± 2,7 ms sur 243 ms par image ; ajout en Basse : 4 appels de dessin, 1 420 triangles) → mesure à faire sur téléphone ; calandres ajourées : jupe bornée à 60 mm (support visible à l'avant de la SF90) ; lampe d'éclaireur non modélisée (émission).
 
+### 2026-11-13 17:34:22 — WFS-500 : PR #392 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCv7g))
+- Retour du lead dev : code approuvé, mais un conflit avec `main` (WFS-535, score) bloquait la fusion ; plus 3 remarques non bloquantes.
+- Corrigé :
+  - conflit résolu en gardant les deux côtés (`configgame.json` : market, score_etoiles, cadeau ; README ; `tousChamps`) ;
+  - graine calculée en `uint64_t` ;
+  - clés `cadeau-*` / `pret-*` inconnues gardées et réécrites ;
+  - `ouvrir` écrit la sauvegarde lui-même et ne rend aucun gain si l'écriture échoue (état remis) ;
+  - 2 nouveaux cas dans `test_cadeau` (51 OK) ;
+  - `qa/pr/WFS-500/tests-cpu.log` : 126 tests CPU réussis sur 1c76a5e6.
+- Réponse point par point dans la PR ; statut 🔁 ; lead dev rappelé.
+
