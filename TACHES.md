@@ -33,11 +33,10 @@ de jeu tiers. Organisation type Jira / Scrum :
 
 ## Règles de travail en parallèle (obligatoires)
 1. **Attribution par le PO** : avant de créer une branche, un agent développeur **demande un ticket à l'agent
-   `po-scrum-master`**. Le PO choisit le ticket `⏳ Prêt` le plus prioritaire **dont l'épic n'a aucun ticket en cours**,
+   `po-scrum-master`**. Le PO choisit le ticket `⏳ Prêt` le plus prioritaire (plus de limite par épic, ordre de l'utilisateur 2026-11-13),
    l'écrit dans ce fichier (🔧, Responsable, Branche, entrée « Début » au Journal) et l'envoie sur `main`. Personne ne
    se réserve un ticket seul.
-2. **Un ticket en cours maximum par épic** et **un ticket maximum par agent** : chaque épic a sa zone de code, donc deux
-   agents ne modifient jamais les mêmes fichiers.
+2. **Un ticket maximum par agent** (règle « un ticket en cours par épic » supprimée par l'utilisateur le 2026-11-13 : plusieurs tickets d'une même épic peuvent avancer en même temps). Deux tickets qui touchent les mêmes fichiers se synchronisent avec `main` avant leur PR.
 3. **Zone de code** : un ticket ne modifie que les fichiers de la zone de son épic (tableau des épics). Exception unique :
    une « ligne d'accroche » (≤ 10 lignes, ex. enregistrer un système dans `Game`) annoncée au Journal.
    Tout autre changement du noyau passe par un ticket de l'épic E0.

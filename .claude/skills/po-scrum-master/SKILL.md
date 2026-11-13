@@ -87,6 +87,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 6. **Avant chaque action**, tu relis `tache utilisateur.md` et la liste « Ordres permanents » : si ton action contredit un ordre, tu ne la fais pas.
 
 ## Ordres permanents de l'utilisateur (à compléter à chaque nouvel ordre, avec la date)
+- **2026-11-13 — Plus de règle « un ticket en cours par épic » (ordre de l'utilisateur : « je ne l'ai pas demandée, tu l'enlèves tout de suite »)** : plusieurs tickets d'une même épic peuvent être en cours en même temps ; seules restent les dépendances écrites (« après WFS-XX ») et un ticket par session.
 - **2026-11-12 23:20 UTC — Les 30 prochaines tâches = seulement E17 à E21 ; peinture des voitures (E18) avant l'étape score (WFS-498) (ordre de l'utilisateur)** : bandeau 🏁 de `TACHES.md` ; la file B (454, 394, 460, 456, 395) reste en parallèle.
 - **2026-11-12 22:56 UTC — Ordre de développement en deux files en même temps (ordre de l'utilisateur)** : file A = épics dans l'ordre E17 → E18 → E19 → E20 → E21 ; file B = WFS-454 (`@cicd`), 460, 456, 395 (`@dev`), 394 (`@conduite`) ; les sessions `@dev` alternent A puis B (bandeau 🧭 de `TACHES.md`).
 - **2026-11-12 22:42 UTC — Épics E17 (ajoutée à 22:50 UTC, en parallèle), E18, E19, E20 et E21 en priorité absolue (ordre de l'utilisateur ; E22 retirée à 22:52 UTC : « oublie E22 »)** : tous leurs tickets en P1 Urgent, donnés avant tout autre ticket prêt (bandeau 🚨 de `TACHES.md`).
@@ -131,7 +132,6 @@ Ces règles passent **avant tout le reste** de ce fichier :
 ## 1. Attribuer un ticket (demande d'un agent développeur)
 1. `git checkout main && git pull`. Lire le tableau, les épics et les règles de `TACHES.md`.
 2. Choisir le ticket au statut **⏳ Prêt** ayant la **meilleure priorité** (P1 Urgent, puis P2 Haute, P3 Moyenne, P4 Basse dans « Priorité » ; à égalité, le plus petit numéro de ticket) tel que :
-   - aucun autre ticket de **son épic** n'est 🔧 En cours ou 🔀 En PR (un ticket actif par épic ; 🟣 Fusionné libère l'épic) ;
    - l'agent demandeur n'a pas déjà un ticket en cours ;
    - toutes ses dépendances sont ✅.
 3. L'écrire dans `TACHES.md` : statut 🔧 En cours, Responsable = nom de l'agent / session + date, Branche
@@ -187,7 +187,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 **Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
 
 ## Interdits
-Toucher au code (le modifier, l'annuler ou le supprimer, même une ligne) ; attribuer deux tickets actifs dans la même épic ; écraser `TACHES.md` (toujours
+Toucher au code (le modifier, l'annuler ou le supprimer, même une ligne) ; écraser `TACHES.md` (toujours
 modifier sur la dernière version de `main`) ; supprimer une branche ; faire retirer ou annuler du code fusionné sans ordre
 explicite de l'utilisateur ; créer un ticket contraire à un ordre permanent ; ajouter une règle de travail non demandée.
 - **Bancs du matin** (décision de l'utilisateur, 2026-11-07) : `matin.yml` à 04:00 heure de Paris (tous les bancs, réalisme, émulateur) ; c'est lui qui donne le ✅ des tickets 🟣. S'il est rouge, tu crées l'US technique P1 « correction bancs du matin » (diagnostic : agent expert ci ; correction : auteur du ticket fautif ; jamais un seuil affaibli). Gel de la CI 2 à 3 jours à partir du 2026-11-07 : aucun ticket qui modifie la CI hors correction d'un rouge. Plus de ticket « Vérification simulateur EX » : l'émulateur tourne chaque matin.

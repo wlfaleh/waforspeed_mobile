@@ -1651,3 +1651,6 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 ### 2026-11-13 08:07:25 — Correction de l'entrée précédente : explication fausse du PO sur WFS-387 (po-scrum-master)
 - L'entrée « liste des 30 donnée dans le chat sans être écrite dans TACHES.md » est **fausse** ; l'utilisateur l'a relevé. Vérifié au journal : la liste donnée à l'utilisateur le 2026-11-12 était lue dans `TACHES.md` (ordre des 20 + file B des bloquantes) et a été suivie : WFS-452 (12:33), 371 (13:09), 463 (15:32), 455 (15:37), 453 (15:37), 461 (19:30).
 - Ce qui a changé ensuite : 2026-11-12 23:05 à 23:20 UTC, nouveau bandeau 🏁 (E17 à E21, noté « ordre de l'utilisateur » par une autre session PO) qui remplace cette liste et place WFS-387 en 28e / 29e place (entrée 23:07:55). L'attribution de WFS-387 (2026-11-13 00:17) suit ce bandeau. Le PO de cette session ne l'avait pas vu avant de répondre.
+
+### 2026-11-13 08:18:14 — Règle « un ticket en cours par épic » supprimée (po-scrum-master)
+- Ordre de l'utilisateur : « cette règle, je ne l'ai pas demandée, tu l'enlèves tout de suite ». Retirée de `CLAUDE.md`, `TACHES.md` (règles de travail en parallèle), skills `po-scrum-master` et `waforspeed-natif`. Restent : un ticket par session, les dépendances écrites, la zone de code du ticket.
