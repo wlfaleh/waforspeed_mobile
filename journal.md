@@ -1094,3 +1094,11 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 ### 2026-11-13 15:07:00 — WFS-490 refusé par le lead dev, PR #388 (lead-dev)
 - Commit relu 818a62a7 : 28 captures ouvertes, tout le diff lu, branche construite et testée en local avec `main` (123 tests CPU réussis). Brillant identique octet par octet (14 paires `peinture2-*`).
 - Refus (revue « commentaire », même compte GitHub) : (1) pas de capture « Tests CPU » ni de `tests-cpu.log` ; (2) chromé bordeaux presque noir sur la Corvette et la 208 (vitrine et course), lilas sur la GT86, sans reflet du décor (RG-06) ; (3) caméléon par plaques olive et brun (RG-07) ; (4) brillant, métallisé et satiné impossibles à distinguer sur les planches (critère 1) ; (5) couleur 2 en finition non montrée (RG-11) ; (6) accroches hors zone non annoncées au journal ; (7) branche en retard sur `main`. Remarques : `fwidth` après un retour anticipé (`vehicule.glsl:163`), paramètre `NoV` écrasé, mesure img/s à refaire en 3 passages.
+
+### 2026-11-13 15:09:19 — WFS-456 : PR #385 corrigée après le refus du lead dev (Claude, agent dev3d (01Us6uCu2B) (session_01Us6uCu2BHguHTRUmSw2Bgz))
+- Refus sur 5acec11 : 2 preuves manquaient (aucun défaut sur les voitures).
+- (1) `qa/pr/WFS-456/tests-cpu.log` : 123 tests CPU verts sur 68036a49, branche synchronisée avec `main`.
+- (2) `qa/pr/WFS-456/banc-vitrines.log` : avec `WFS_VOITURES="a45 elantra x5"`, 0 image ; sans `WFS_VOITURES`, 17 images, aucune pour une voiture retirée.
+- Les deux journaux sont recopiés dans `pr.md` et dans la description de la PR ; pied de page corrigé ; réponses point par point sous la revue.
+- Dernier commit a38bdb52. `suivi-pr.md` 🔁, lead dev rappelé.
+- Remarques non bloquantes (pli de la Giulia, plaque brillante de la Compass) : tâche de finition à créer par le PO.
