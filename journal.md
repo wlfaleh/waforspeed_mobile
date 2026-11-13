@@ -1223,3 +1223,28 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - PR #390 fusionnée en squash par le lead dev (77f0ad8b), revue sur 07fc9c77 ; statut 🟣 (pas 🟡), ✅ aux prochains bancs du matin verts.
 - **Pour le PO (WFS-511, remarques non bloquantes du lead dev)** : (1) `crediterAchat` attend l'écriture de la sauvegarde mais ne sait pas si elle a réussi (disque plein) : WFS-511 doit faire rendre un résultat et ne pas confirmer à Google en cas d'échec ; (2) le rappel de Google Play arrive sur un autre thread : le ramener sur le thread du jeu avant `brancher` ; (3) rappel nommé `surAchat` (RG-07 : `achatMisAJour`). **À décider** : étoiles des médailles à deux endroits (`boutique.medailles` pour l'équivalent du garage, `market.packs` pour les achats).
 - Réponse écrite sous la demande « Market » de `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 16:35:48 — WFS-378 : inventaire des formes nues hors décor, PR #391 (Claude, agent dev3d (01Us6uCwca))
+- Fait : `regles-de-gestion/WFS-378-inventaire.md` (garage, habitacle, police, objets de course, personnes, deux-roues, effets) : 13 formes NUES visibles (garage ×4, rampe de gyrophares, portique du checkpoint, socle du cône K5a, panneau AK5, ralentisseur, poussette, laisse du chien ; 2 à arbitrer : dessus de planche à arêtes vives, casque en ellipsoïde), 14 EFFETS, 7 INVISIBLES (code mort `dessineLoin`, `poolMat`, `haloSol` ; cockpit de secours jamais atteint : les 20 voitures ont un intérieur).
+- Découpage proposé au PO (§ 9) : 7 tickets (police, chantier + ralentisseur, portique, garage, poussette + casque, planche, [TECHNIQUE] code mort) + une question : les effets face caméra sont-ils permis ?
+- Vérifié : recherche des appels de formes dans `src/`, lignes relues sur `main` (d33588ad), 9 bancs PC (lavapipe) lancés, 21 captures gardées dans `qa/pr/WFS-378/`, regardées. Aucun code changé (RG-04).
+- Limites : laisse du chien non visible à 1280 px ; poussette petite sur la capture.
+
+### 2026-11-13 16:38:58 — WFS-378 : PR #391 refusée par le lead dev (lead-dev)
+- Revue du commit 0d09cad8 (inventaire sans code) : fichier:ligne justes sur `main` (≈ 40 vérifiés), 21 captures ouvertes, diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/`.
+- Refus, 4 points : (1) capture « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; (2) RG-03 : le ticket 7 du § 9 regroupe 4 zones (2 au plus) ; (3) dessus et bouts plats de la planche de bord (facettes sous le volant, vitrine-golf) à classer NUE et à monter dans l'ordre de visibilité ; (4) mineur : `police-flanc-00` ne montre pas les bandes POLICE.
+- Revue postée en commentaire (même compte GitHub). Statut : ↩️ Retour lead dev (PR #391).
+
+### 2026-11-13 16:40:16 — WFS-490 : 2e refus du lead dev, PR #388 (lead-dev)
+- Commit relu : bffe0232. Construction refaite et tests CPU refaits sur la branche (fusion avec `main` sans conflit) : 124 réussis. Le brillant est identique (14 paires md5). Les 37 captures ont été ouvertes et le diff lu entièrement.
+- Corrigés : tests CPU, caméléon, finitions qu'on distingue de jour, gros plans, couleur 2, synchronisation. Le point « journal » de la 1re revue était une erreur du lead dev : l'entrée de 14:52:03 existait.
+- Bloquant 1 : le chromé (RG-06) est encore « peinture lavande », avec trop peu d'écart entre le ciel et la chaussée. De nuit, il est blanc rosé uniforme (p50 0,16 contre 0,03 pour le brillant sur la Corvette). Cause probable : une part diffuse est gardée (`col * (1 − Fm × 0,7)` et `cNuit`).
+- Bloquant 2 : les paillettes du toit noir métallisé, vu de dessus, sont trop grosses (RG-02).
+- Avis de l'agent 3D : « À REPRENDRE » (commentaire 6858885384), mêmes points. Le développeur a demandé de ne pas fusionner et il corrige.
+
+### 2026-11-13 16:41:03 — Compteur d'étoiles du menu ajouté à WFS-537 (po-scrum-master)
+- Demande de l'utilisateur : étoiles en haut du menu principal, à côté du bouton « Réglages », dans une tâche existante → **WFS-537** (RG-07 à 10 : solde ★, même style que Réglages, aucun bouton déplacé, FR / EN, appui → garage puis Market avec WFS-513). Notes de coordination dans WFS-501 et 513.
+
+### 2026-11-13 16:41:10 — WFS-535 : PR #389 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCtPt))
+- Retour : preuve « Tests CPU » absente. Corrigé dans a456c02c : journal complet `qa/pr/WFS-535/tests-cpu.log` (124 tests réussis, commit testé 7315604f) et section « Tests CPU » dans la PR et `pr.md`.
+- Remarque non bloquante prise aussi (7315604f) : plafonds appliqués avant la conversion en entier, 2 cas de test (49 cas). Réponses sous la revue dans la PR ; lead dev rappelé.
