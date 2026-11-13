@@ -13,6 +13,8 @@
 #include "garage.h"
 #include "petit_ecran.h"
 #include "text.h"
+#include "langue.h"   // WFS-505 : écran « Crédits » en français ou en anglais
+#include "ecrans/textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 
 namespace wfs {
 namespace credits {
@@ -23,6 +25,7 @@ const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6
 const unsigned ACCENT_PRESSE = 0xFF9A4D;   // « Retour » sous le doigt (même teinte que les CGU et les Réglages)
 const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.98f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 const char* FICHIER = "licences/CREDITS.txt";
+const char* TRADUCTION = "textes/credits-en.txt";   // WFS-505 (RG-02) : morceaux français → anglais
 
 struct Zone { float x = 0, y = 0, w = 0, h = 0; };
 struct Ligne { Paragraphe::Style style; std::string texte; float x, y, taille; };
@@ -85,6 +88,11 @@ void ouvrir() {
     if (readAsset(FICHIER, a)) texte.assign(a.begin(), a.end());
     else WFS_ERR("Crédits (WFS-406) : %s introuvable", FICHIER);
     g.paras = paragraphes(texte, config().confidentialiteUrl);
+    if (ui::langue::active() == ui::langue::Langue::Anglais) {   // WFS-505 (RG-02) : titres et phrases traduits, noms et licences gardés
+        std::vector<uint8_t> t;
+        if (readAsset(TRADUCTION, t)) traduireParagraphes(g.paras, std::string(t.begin(), t.end()));
+        else WFS_ERR("Crédits (WFS-505) : %s introuvable, crédits en français", TRADUCTION);
+    }
     g.ouvert = true; g.defil = 0; g.doigt = -1; g.cible = RIEN; g.largeurPage = -1;
     WFS_LOG("Crédits (WFS-406) : écran ouvert, %zu paragraphes, politique de confidentialité %s", g.paras.size(),
             config().confidentialiteUrl[0] ? "montrée" : "cachée (adresse vide)");
@@ -94,6 +102,7 @@ bool ouvert() { return g.ouvert; }
 
 void dessiner(Renderer& r, float W, float H, const Marges& m) {
     if (!g.ouvert || !ui::fontReady()) return;
+    const ecrans::textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     g.dp = ui::pixelsParDp(W);
@@ -104,20 +113,21 @@ void dessiner(Renderer& r, float W, float H, const Marges& m) {
     r.uiRect(px, py, pw, ph, SURFACE);
     r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
     const float x0 = px + 24 * k;
-    ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules("Menu principal"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+    ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(ui::tr("credits.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
     const float tt = (cp ? 26 : 34) * k;
-    ui::text(r, x0, py + 32 * k, tt, ui::majuscules("Crédits"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+    ui::text(r, x0, py + 32 * k, tt, ui::majuscules(ui::tr("credits.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
     const float haut = py + 32 * k + tt + 12 * k;
     // « Retour » : bouton principal orange en biseau, en bas à droite du panneau (même taille que « Fermer » des CGU)
     const float bh = 50 * kb, tp = (cp ? 18 : 20) * k, by = py + ph - 14 * k - bh;
-    const std::string tr = ui::majuscules("Retour");
-    const float wr = ui::width(tp, tr, 0.12f) + 56 * kb;
+    // WFS-505 (RG-03, RC-E20-04) : largeur mesurée sur le texte français (bouton identique dans les deux langues)
+    const std::string tr = ui::majuscules(ui::tr("credits.retour"));
+    const float twr = ui::width(tp, ui::majuscules(ui::trLangue("credits.retour", ui::langue::Langue::Francais)), 0.12f), wr = twr + 56 * kb;
     g.retour = {px + pw - 24 * k - wr, by, wr, bh};
     const bool presse = g.doigt >= 0 && g.cible == RETOUR;
     dessin2d::biseau(r, g.retour.x, g.retour.y, g.retour.w, g.retour.h, 14 * kb, dessin2d::uni(hex(presse ? ACCENT_PRESSE : ACCENT)));
-    ui::text(r, g.retour.x + g.retour.w / 2, g.retour.y + (g.retour.h - tp) / 2, tp, tr, hex(BG), ui::CENTRE, 0.12f, false);
+    ui::textBoite(r, g.retour.x + g.retour.w / 2, g.retour.y, twr, g.retour.h, tp, tr, hex(BG), ui::CENTRE, 0.12f, false);
     manette::focus(g.retour, true);
-    ui::text(r, x0, by + (bh - 14 * k) / 2, 14 * k, "Glisse le doigt sur le texte pour le faire défiler.", hex(MUTED), ui::GAUCHE, 0.02f, false);
+    ui::text(r, x0, by + (bh - 14 * k) / 2, 14 * k, ui::tr("credits.aide"), hex(MUTED), ui::GAUCHE, 0.02f, false);
     // cadre du texte défilant
     const float tx = px + 20 * k, ty = haut, tw = pw - 40 * k, th = by - 14 * k - ty, pad = 14 * k;
     g.texte = {tx, ty, tw, th};
@@ -164,14 +174,19 @@ void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse)
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
-    const std::string t = ui::majuscules("Crédits");
-    const float w = pad + ui::width(tp, t, 0.12f) + pad, x = W - m.droite - 16 * k - w, y = H - m.bas - 14 * k - h;
+    // WFS-505 (RG-03, RC-E20-04) : largeur mesurée sur le texte français, texte de la langue active centré dans la même place
+    const std::string t = ui::majuscules(ui::tr("credits.bouton"));
+    const float tw = ui::width(tp, ui::majuscules(ui::trLangue("credits.bouton", ui::langue::Langue::Francais)), 0.12f);
+    const float w = pad + tw + pad, x = W - m.droite - 16 * k - w, y = H - m.bas - 14 * k - h;
     g.bouton = {x, y, w, h};
     g.dpBouton = ui::pixelsParDp(W);
     dessin2d::biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, dessin2d::uni(BORD));
     dessin2d::biseau(r, x, y, w, h, 8 * kb, dessin2d::uni(GLASS));
     if (presse) dessin2d::biseau(r, x, y, w, h, 8 * kb, dessin2d::uni(hex(ACCENT2, 0.22f)));   // appuyé : voile cyan
-    ui::text(r, std::round(x + pad), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
+    const float lw = ui::width(tp, t, 0.12f);
+    if (lw <= tw)   // français (même place qu'avant) ou anglais plus court (centré dans la place du texte français)
+        ui::text(r, std::round(x + pad + (tw - lw) / 2), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
+    else ui::textBoite(r, x + pad, y, tw, h, tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);   // plus long : police réduite de 20 % au plus
     manette::focus(g.bouton);
 }
 bool dansBouton(float x, float y) { return g.bouton.w > 0 && ecrans::appui::dansCible(g.bouton.x, g.bouton.y, g.bouton.w, g.bouton.h, g.dpBouton, x, y); }
