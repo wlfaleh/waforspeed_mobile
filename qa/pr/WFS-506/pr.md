@@ -30,24 +30,24 @@ Sur un téléphone qui n'est pas en français, tout le jeu doit être en anglais
   - Les boutons « Menu » et de vue sont mesurés sur le texte français (comme la pause de WFS-505).
   - Le texte des boutons de fin passe par `ui::textBoite` : réduit de 20 % au plus s'il dépassait. Aucun ne dépasse dans le banc.
 - **Logique inchangée** : `poursuite.cpp`, `navigation.h` et `duel.cpp` gardent leurs textes français, qui servent de référence à `test_poursuite`, `test_navigation` et `test_duel` et au journal. Seul l'affichage passe par `ui::tr`.
-- **Banc `textes` étendu (RG-05)** : `src/game/textes_course_banc.cpp` (nouveau), avec deux accroches de 3 lignes dans `src/platform/desktop_main.cpp`. Le groupe `textes` lance maintenant Réglages, puis menus, puis course ; le groupe `textes-course` lance la course seule.
+- **Banc `textes` étendu (RG-05)** : `src/game/textes_course_banc.cpp` (nouveau), avec deux accroches de 3 lignes dans `src/platform/desktop_main.cpp`. Le groupe `textes` lance maintenant CGU, Réglages, menus, puis course ; le groupe `textes-course` lance la course seule.
   - Checkpoint, Course à 5 et Poursuite : course → fin → Rejouer → course → fin → Menu → menu principal.
   - Duel en mémoire : course → résultat → Revanche → 2e manche → résultat → Retour → menu principal.
   - Les noms inventés (rues, pseudos, adversaires) sont notés à part avec `NomPropre` de WFS-505, réutilisé.
 - **Petites fonctions de banc ajoutées** : `courseBouton()` (`course_system.*`), `poursuiteBancMessages()` (`poursuite*`), `benchDuelTextes()` (`duel_system.*`).
 
 ## Comment c'est vérifié
-- **Construction** complète et **121 tests CPU verts** sur `dfa7b08f`, branche synchronisée avec `main` après la fusion de WFS-505 (voir « Tests CPU » ci-dessous et `qa/pr/WFS-506/tests-cpu.log`).
+- **Construction** complète et **122 tests CPU verts** sur `ce8cb4fa`, branche synchronisée avec `main` après les fusions de WFS-505 et WFS-508 (voir « Tests CPU » ci-dessous et `qa/pr/WFS-506/tests-cpu.log`).
 - **Banc `textes` complet, téléphone en anglais** (`WFS_LANGUE=en`) : VERT.
-  - Réglages (WFS-504), menus (WFS-505) et course (WFS-506) : 0 phrase française, 0 texte qui dépasse.
+  - CGU (WFS-508), Réglages (WFS-504), menus (WFS-505) et course (WFS-506) : 0 phrase française, 0 texte qui dépasse.
   - Parcours : 0 écart dans les 4 modes.
-- **Même banc en français** : VERT, et le français est inchangé (voir les captures `textes-fr-*`).
+- **Même banc en français** (avant la fusion de WFS-508) : VERT, et le français est inchangé (voir les captures `textes-fr-*`).
 - **Captures avant / après** (bancs `hud` et `course5` en 1280x720, `WFS_LANGUE=en`) : seule la langue des textes change ; décor, voitures, HUD et places sont identiques au pixel près.
 - **Performance** : banc de chauffe sur `main` et sur la branche (`chauffe-main.txt`, `chauffe-branche.txt`) : vert des deux côtés, mêmes appels de dessin et mêmes triangles (545 appels, 874 k ; 330 appels, 518 k), durée 145 s contre 146 s.
 
 ## Limites et risques
 - **Images par seconde réelles non mesurées** : le PC de test fait le rendu en logiciel (lavapipe). Le code par image ne fait que remplacer des textes écrits en dur par des références aux tables. L'endurance et la chauffe de la CI de `main` le confirmeront après la fusion.
-- **Captures avant / après prises juste avant la synchronisation avec WFS-505**. WFS-505 ne touche pas aux écrans de course, et les captures du banc `textes` ont été refaites après la synchronisation.
+- **Captures avant / après prises juste avant la synchronisation avec WFS-505 et WFS-508**. Ces deux tickets ne touchent pas aux écrans de course, et les captures du banc `textes` ont été refaites après la synchronisation.
 - Le banc `textes` ne tourne pas dans la CI aujourd'hui (comme pour WFS-504 et 505) : il se lance à la main.
 - **Hors périmètre** : textes de mesure technique (ligne « Rendu : … » du menu caché), garage (WFS-507), CGU (WFS-508). Les nombres gardent la virgule française (« 0,07 km ») : formats des nombres hors de l'épic E20.
 - **Accroche hors zone** : 3 lignes dans `desktop_main.cpp` (groupes de banc), annoncées au journal.
