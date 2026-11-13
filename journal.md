@@ -1450,3 +1450,7 @@ PR #393, 2e revue sur d83006ba : les 5 points du refus sont corrigés (cache-moy
 - Pour le PO (tâches séparées, RG-09 et remarques du lead dev) : encoches du capot et du coffre de la Virtus à l'ancienne place des logos ; centre de grille de la Virtus noir uni ; 3e feu stop de la W212 plus blanc que rouge de nuit ; `tools/convert_car.mjs` marque « roue » la peinture « primary » des modèles BHP3D (`/rim/`) ; 155 k triangles par voiture à mesurer au banc perf au branchement.
 - Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
 
+
+### 2026-11-13 19:43:39 — WFS-401 : PR #394 refusée par le lead dev (lead-dev)
+- Commit relu : 96a23dca. Avis agent 3D « VALIDÉ avec réserves » présent. Captures ouvertes (bord, suite, sillage, gerbe et zooms, falaise et blocs, lune, rivière la nuit, soleil bas) : mieux qu'avant, rien de dégradé. Diff lu en entier. Construction et tests refaits sur la branche fusionnée en local avec main 1f88dde2 : 127 test(s) réussi(s).
+- Refus pour l'hygiène seulement : (1) PR en conflit avec main sur `journal.md` (GitHub : dirty) ; (2) section « Tests CPU » et `qa/pr/WFS-401/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11). Remarques non bloquantes : `fwidth` calculé dans un branchement qui dépend de la distance (`shaders/eau.glsl:169`), `else` rattaché au 2e `if` (`plage.cpp:3389`). Revue 5897016069 (COMMENT : même compte GitHub).
