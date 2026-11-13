@@ -1606,3 +1606,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-13 21:42:02 — Classement des 40 prochaines tâches, WFS-511 en 15e (po-scrum-master)
 - Ordre de l'utilisateur : WFS-511 en 15e tâche à prendre, classement à envoyer sur `main`.
 - Bandeau 📋 de `TACHES.md` : 40 tâches dans l'ordre (499, 501, … 511 en 15e …), type de session pour chacune ; tâches en cours (481, 489, 537, 491, 492) finies par leur session.
+
+### 2026-11-13 21:45:04 — WFS-538 passée en 8e place du classement (po-scrum-master)
+- Ordre de l'utilisateur : WFS-538 en 8e (elle attend WFS-482, elle-même après WFS-481). Bandeau 📋 de `TACHES.md` mis à jour ; WFS-511 reste 15e.
