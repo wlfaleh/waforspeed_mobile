@@ -1026,3 +1026,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Nouvelle session `@dev` (dev-artiste-3d), jamais de ticket avant : **WFS-456** (P1, E10, 28e de la liste 🏁, 1er ticket prêt permis à `@dev` ; WFS-460 déjà fusionné #376, 🟡). Correction : hayon de la Golf continu sans disque noir ni emblème (et toutes les voitures à emblème effacé), phares de la Golf sans liseré rouge, banc `vitrines` sans A 45 / Elantra / X5 (ANO-259, 258, 257).
 - Zone : `tools/retoucher_formes.mjs`, `tools/effacer_logos.mjs`, `tools/logos.json`, modèles convertis des voitures concernées, banc `vitrines`, `tests/**`. Règles : `regles-de-gestion/WFS-456.md`. Garde-fou E10 : WFS-490 (shader) en parallèle, pas les mêmes fichiers.
 - Branche `feature/waforspeed-456` à pousser tout de suite ; captures avant / après jour et nuit ; PR, appel du `lead-dev` ; arrêt de la session après la fusion.
+
+### 2026-11-13 13:48:50 — WFS-508 fusionné par le lead dev (lead-dev)
+- PR #384 relue sur ca749915 (2e revue). Le contenu avait été approuvé sur cee751f5 ; le 1er retour portait sur les conflits avec `main` (WFS-505). Réponse du développeur présente dans la PR.
+- Conflits relus (`assets/textes/fr.txt`, `en.txt` : pas de clé en double ; `desktop_main.cpp` : banc `textes` = CGU + Réglages + menus) ; captures rouvertes. Construction, 121 tests CPU et banc `textes` en FR et EN (VERT) refaits par le lead dev ; 122 tests sur la fusion locale avec `main` après WFS-498.
+- « ✅ Approuvé » en commentaire (même compte GitHub), puis fusion en squash : **d83ead9c**. Statut 🟣, ligne de `qa/Check.md`, ligne retirée de `suivi-pr.md`.
