@@ -126,7 +126,8 @@ static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string
     else if (k == "pret-voiture") { if (voitureExiste(v)) c.pretVoiture = v; }
     else if (k == "pret-recu") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretRecu = n; }
     else if (k == "pret-fin") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretFin = n; }
-    return true;   // autre clé cadeau-* / pret-* inconnue : ignorée (version plus récente)
+    else if (c.inconnues.size() < 32 && k.size() <= 40 && v.size() <= 200) c.inconnues[k] = v;   // version plus récente : gardée, réécrite telle quelle
+    return true;
 }
 
 void Sauvegarde::defauts() {
@@ -213,6 +214,7 @@ std::string Sauvegarde::texte() const {
     }
     if (!cadeau.pretVoiture.empty())   // WFS-500 (RG-09) : déclarées ici, utilisées par WFS-502
         o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n";
+    for (const auto& [k, v] : cadeau.inconnues) o << k << "=" << v << "\n";   // WFS-500 : clés d'une version plus récente, gardées
     profil.ecrire(o);   // WFS-480 (RG-11) : nouvelles clés, aucune ancienne retirée
     return o.str();
 }

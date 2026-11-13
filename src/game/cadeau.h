@@ -70,7 +70,8 @@ bool lireResultat(const std::string& texte, Resultat& r);   // inverse de texte(
 Resultat tirer(const ConfigJeu::Cadeau& c, const Entree& e, int& sansRare, Mulberry32& hasard);
 
 // ---- ouvrir (RG-08) : rien (nullopt) si aucun cadeau n'est disponible ; sinon tire, met à jour s.cadeau (heure, décalage, jour,
-// garantie, total, dernier), écrit la sauvegarde (attend la fin de l'écriture) puis rend le gain. Le gain n'est PAS donné au joueur ici.
+// garantie, total, dernier), écrit la sauvegarde puis rend le gain ; écriture impossible : rien (nullopt), état remis, le cadeau reste
+// disponible. Sauvegarde inactive (tests, bancs) : rien n'est écrit. Le gain n'est PAS donné au joueur ici.
 std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e, uint32_t graine);
 std::optional<Resultat> ouvrir(Sauvegarde& s);   // jeu : maintenant(), entreeDepuis(s), graine tirée à l'ouverture
 

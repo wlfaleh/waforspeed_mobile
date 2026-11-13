@@ -250,6 +250,7 @@ std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e,
         WFS_LOG("cadeau du jour : pas de cadeau (%s)", texteEtat(et));
         return std::nullopt;
     }
+    const EtatCadeau avant = s.cadeau;   // remis tel quel si la sauvegarde ne peut pas être écrite
     Mulberry32 h(graine);
     const Resultat r = tirer(config().cadeau, e, s.cadeau.sansRare, h);
     EtatCadeau& c = s.cadeau;
@@ -258,8 +259,16 @@ std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e,
     c.jour = texteJour(jourLocal(t));
     c.total = std::min(c.total + 1, 1000000000LL);
     c.dernier = r.texte();
-    s.enregistrer();   // RG-08 : écrit (et attendu) AVANT de rendre le gain : pas de 2e cadeau si le jeu est tué pendant l'animation
-    s.attendre();
+    // RG-08 : écrit AVANT de rendre le gain : pas de 2e cadeau si le jeu est tué pendant l'animation. Écriture faite ici, sur le
+    // thread principal, après les écritures en attente (attendre) : on sait si elle a réussi. Échec → rien n'est donné, état remis.
+    if (s.actif() && !s.chemin().empty()) {
+        s.attendre();
+        if (!ecrireAtomique(s.chemin(), s.texte())) {
+            s.cadeau = avant;
+            WFS_ERR("cadeau du jour : sauvegarde impossible (%s) : cadeau non ouvert, il reste disponible", s.chemin().c_str());
+            return std::nullopt;
+        }
+    }
     WFS_LOG("cadeau du jour ouvert (%s) : %s%s%s ; garantie %d/%d ; %lld cadeau(x) ouvert(s)", c.jour.c_str(), c.dernier.c_str(),
             r.garantie ? " (garantie)" : "", r.repli ? " (repli : catégorie toute possédée)" : "", c.sansRare, config().cadeau.garantie, c.total);
     return r;
@@ -268,7 +277,8 @@ std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e,
 std::optional<Resultat> ouvrir(Sauvegarde& s) {
     const Instant t = maintenant();
     std::random_device rd;   // RG-10 : graine tirée à l'ouverture, indépendante du nombre d'images
-    const uint32_t graine = rd() ^ (uint32_t)(t.epoch * 2654435761u);
+    const uint64_t e = (uint64_t)t.epoch * 2654435761ull;   // non signé sur 64 bits : aucun débordement (remarque du lead dev, PR #392)
+    const uint32_t graine = rd() ^ (uint32_t)(e ^ (e >> 32));
     return ouvrir(s, t, entreeDepuis(s), graine);
 }
 

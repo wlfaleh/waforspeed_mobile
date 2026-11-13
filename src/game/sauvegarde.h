@@ -65,6 +65,7 @@ struct EtatCadeau {
     std::string pretVoiture;   // pret-voiture : voiture prêtée (WFS-502) ; vide : aucune
     long long pretRecu = 0;    // pret-recu : epoch UTC où le prêt a été gagné
     long long pretFin = 0;     // pret-fin : epoch UTC de la fin du prêt ; 0 : pas encore activé
+    std::map<std::string, std::string> inconnues;   // autres clés cadeau-* / pret-* (version plus récente) : gardées telles quelles
 };
 
 class Sauvegarde {

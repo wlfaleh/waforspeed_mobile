@@ -214,6 +214,20 @@ int main() {
             mal.cadeau.sansRare == 0 && mal.cadeau.dernier.empty() && mal.cadeau.pretVoiture.empty() && mal.cadeau.pretFin == 0 && mal.car == "m4");
     }
 
+    // ---- remarques du lead dev (PR #392) : clé d'une version plus récente gardée ; sauvegarde impossible → aucun cadeau donné
+    {
+        Sauvegarde s;
+        s.lire("version=1\ncar=m4\ncadeau-total=4\ncadeau-heure=1794600000\ncadeau-serie-future=7;x\n");
+        cas("clé cadeau-* inconnue gardée et réécrite telle quelle", s.texte().find("cadeau-serie-future=7;x\n") != std::string::npos && s.cadeau.total == 4);
+        Sauvegarde f;
+        f.charger("/dossier-qui-n-existe-pas/wfs-500/sauvegarde.txt");   // active, mais impossible à écrire
+        const EtatCadeau avant = f.cadeau;
+        const auto r = ouvrir(f, local(2026, 11, 13, 12, 0, 0, 3600), entreePleine(), 21);
+        cas("sauvegarde impossible à écrire : aucun gain, état inchangé, cadeau toujours disponible",
+            f.actif() && !r.has_value() && f.cadeau.total == avant.total && f.cadeau.heure == avant.heure && f.cadeau.sansRare == avant.sansRare &&
+            disponible(f.cadeau, local(2026, 11, 13, 12, 0, 0, 3600)));
+    }
+
     // ---- (h) configgame.json : total des chances ≠ 100 refusé ; tranche min > max refusée ; réglage juste accepté
     {
         auto lire = [](const std::string& json, ConfigJeu& c) { c = ConfigJeu{}; return lireConfig(json, "essai", c); };
