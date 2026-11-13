@@ -50,5 +50,7 @@ Branche `feature/waforspeed-387` comparée à `origin/main` ; bancs : campagne-o
 | `carte-campagne-village` | ![avant](avant-carte-campagne-village.jpg) | ![après](apres-carte-campagne-village.jpg) |
 | `carte-campagne-village-nuit` | ![avant](avant-carte-campagne-village-nuit.jpg) | ![après](apres-carte-campagne-village-nuit.jpg) |
 | `course5-depart-campagne-dessus` | ![avant](avant-course5-depart-campagne-dessus.jpg) | ![après](apres-course5-depart-campagne-dessus.jpg) |
+| `course5-depart-circuit-dessus` | ![avant](avant-course5-depart-circuit-dessus.jpg) | ![après](apres-course5-depart-circuit-dessus.jpg) |
 | `course5-epingle-apres-1` | ![avant](avant-course5-epingle-apres-1.jpg) | ![après](apres-course5-epingle-apres-1.jpg) |
 | `course5-epingle-apres-4` | ![avant](avant-course5-epingle-apres-4.jpg) | ![après](apres-course5-epingle-apres-4.jpg) |
+| `trace-epingle` | ![avant](avant-trace-epingle.jpg) | ![après](apres-trace-epingle.jpg) |

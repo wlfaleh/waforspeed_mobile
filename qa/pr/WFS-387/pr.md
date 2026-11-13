@@ -42,7 +42,7 @@ Agent : Claude, agent dev3d (01UY1Vv43z)
     - **sol jusqu'à l'horizon (RG-10)** :
       - le plan uni (aplat vert, gris dans le brouillard) est remplacé par une grille de 48 m qui prolonge le bord des bandes de sol, puis monte en collines douces loin des routes ;
       - sous les bandes, la grille passe 3 m sous la plus basse des routes voisines ;
-      - teinte de la prairie lointaine (luminosité par sommet, parcelles de ± 8 %), en 20 tuiles ; une tuile à plus de 2,6 km de la caméra n'est pas dessinée ; les cases entièrement cachées sous les bandes de sol ne sont pas construites ; les tuiles sont dessinées après les autres opaques (pixels cachés rejetés avant le shader) ; le sol naturel de WFS-383 reste sur les bandes près de la route (il coûtait 9 ms par image en Basse sur la grille lointaine) ;
+      - teinte de la prairie lointaine (luminosité par sommet, parcelles de ± 8 %), en 20 tuiles ; une tuile à plus de 2,6 km de la caméra n'est pas dessinée ; les tuiles sont dessinées après les autres opaques (pixels cachés rejetés avant le shader) ; le sol naturel de WFS-383 reste sur les bandes près de la route (il coûtait 9 ms par image en Basse sur la grille lointaine) ;
       - elle est préparée au chargement, plus à la première image ;
   - `src/world/decor_carte.cpp` (**fichier commun, accroche de 6 lignes annoncée au journal**) : la cause du vide gris des vues de dessus `course5-*-dessus` était que le décor n'était pas dessiné dans la scène dédiée de ces vues. `vueDessusCourse()` laisse dessiner le décor quand l'écran est la course et que la caméra est à plus de 30 m au-dessus du point visé ; rien ne change pour les autres scènes dédiées (garage, menus) ;
   - `tests/test_muret_campagne.cpp` (nouveau) et **une ligne** dans `CMakeLists.txt` (fichier commun, annoncée au journal) : la vraie voiture lancée sur le parapet extérieur de chaque épingle (30, 80, 150 km/h, conduite réelle et conduite d'avant) s'arrête à la face visible (8,00 m) à ± 0,2 m ;
@@ -63,6 +63,18 @@ Agent : Claude, agent dev3d (01UY1Vv43z)
   4. bois du poteau 0x8d7d68 et de la clôture 0x9c8466, vues `poteau-soleil` et `cloture-soleil` ajoutées ;
   5. sol lointain dans une case à lui, kaki d'herbe sèche 0x8f8c5e (comme les bandes voisines), au lieu du vert vif des collines ;
   6. `inventaire.md` : teintes alignées sur le code.
+- **Reprise après le refus du lead dev (revue sur af02ebff)** :
+  1. tests CPU : journal complet dans [`qa/pr/WFS-387/tests-cpu.log`](tests-cpu.log) (partie « Tests CPU » ci-dessous) ;
+  2. RG-11 : la voiture du banc `muret-voiture` roule vers le parapet jusqu'au contact, puis freine ; journal du banc : « contact avec le parapet ; coin le plus avancé de la voiture à 8.00 m de l'axe (au plus 8.01 m), face du parapet à 8.00 m » ; le banc compte un écart si le coin n'est pas à 8,0 ± 0,2 m ;
+  3. accroche `vueDessusCourse()` limitée : vue de dessus d'une **course à 5** sur une carte qui le demande (`decorVueDessus()`, la Campagne seule ; +2 lignes dans `decor_carte.h`) ; Circuit, cartes v2 et `trace-epingle` sont inchangés : captures `course5-depart-circuit-dessus` et `trace-epingle` avant / après, **0 pixel différent** (`compare -metric AE -fuzz 3%`) ;
+  4. nappe grise au-dessus des vignes : la grille du sol lointain prenait un bord de bandes moyen des deux côtés de la route et traversait les terrasses de vignes (+ 26 m) ; le bord est maintenant pris du côté de la route où tombe chaque point ; la grille est aussi construite en entier (les bandes de sol ne sont dessinées que près du joueur : sauter les cases « sous les bandes » ouvrait un trou vers le ciel au loin) ;
+  5. seuils de `tests/test_decor_campagne.cpp` relevés, avec leur raison (signalé au PO, journal du 2026-11-13) : botte proche 1000 → 1600 triangles (réserve 1 : flanc plus fin, filet, bouts) ; hangar 16 000 → 22 000 (réserve 5 : ondes, recouvrements, plaques) ; normales « unitaires » → longueur entre 0,6 et 1,4 et moyenne ≈ 1, car la longueur porte maintenant la luminosité du sommet (MAT_VTINT).
+  Remarques non bloquantes : le poteau posé aussi dans le morceau courant quand la liaison passe au voisin est dessiné deux fois au même endroit (même modèle, même place : invisible, quelques triangles) ; `test_muret_campagne` déclare ses boîtes avec `chocMuret`, la même fonction que `campagne.cpp`, mais sans lire la carte : à rapprocher dans WFS-528.
+- **Arrêt sur ordre de l'utilisateur (2026-11-13)** : « s'arrêter ici, fusionner ce qui est fait, reprendre le reste dans une autre tâche ». Reste pour la tâche suivante (à créer par le PO) :
+  - remesurer la performance en Basse : le +5,4 % ci-dessous a été mesuré avant que la grille du sol lointain soit construite en entier (dernier correctif) ; mesure non refaite ;
+  - nouvel avis de l'agent 3D sur le dernier commit (VALIDÉ sur df2cf297 ; les corrections du lead dev viennent après) ;
+  - vues de dessus `course5-*campagne*` refaites avant le dernier correctif du sol lointain ;
+  - réserves A à C de l'agent 3D (ombre bleutée, finition du muret et de la glissière, lointain) et remarques non bloquantes du lead dev.
 - **Comment c'est vérifié** :
   - **tests CPU** : `bash tools/qa/tests_cpu.sh build` → **120 test(s) réussi(s)** (après la reprise, commit df2cf297), dont `test_decor_campagne` et `test_muret_campagne` (coin de la voiture arrêté entre 7,99 et 8,07 m pour une face visible à 8,00 m) ;
   - **captures** : bancs `campagne-objets`, `campagne` (jour et nuit) et `course5` (vues de dessus), lavapipe comme la CI, avant `main` et après branche (tableau ci-dessous) ;
@@ -84,7 +96,7 @@ Agent : Claude, agent dev3d (01UY1Vv43z)
   - le filet blanc des bottes prend encore un peu du bleu du ciel sur l'arête de l'épaule (lumière du ciel rasante sur un plastique clair) ; sa teinte propre est crème ;
   - les vues `bottes-pres`, `ferme-soleil`, `hangar-moyen`, `poteau-soleil`, `cloture-soleil`, `muret`, `muret-voiture` et plusieurs vues de nuit sont nouvelles : elles n'ont pas d'« avant ».
 
-## Captures pour le lead dev (48 après)
+## Captures pour le lead dev (50 après)
 
 Dossier : [`qa/pr/WFS-387`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387) — bancs `campagne-objets`, `campagne` (1280x720) et `course5` (vues de dessus), lavapipe comme la CI. Avant = `origin/main`, après = branche.
 
@@ -136,5 +148,7 @@ Dossier : [`qa/pr/WFS-387`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `carte-campagne-village` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-carte-campagne-village.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-carte-campagne-village.jpg?raw=true) |
 | `carte-campagne-village-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-carte-campagne-village-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-carte-campagne-village-nuit.jpg?raw=true) |
 | `course5-depart-campagne-dessus` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-course5-depart-campagne-dessus.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-course5-depart-campagne-dessus.jpg?raw=true) |
+| `course5-depart-circuit-dessus` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-course5-depart-circuit-dessus.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-course5-depart-circuit-dessus.jpg?raw=true) |
 | `course5-epingle-apres-1` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-course5-epingle-apres-1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-course5-epingle-apres-1.jpg?raw=true) |
 | `course5-epingle-apres-4` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-course5-epingle-apres-4.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-course5-epingle-apres-4.jpg?raw=true) |
+| `trace-epingle` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/avant-trace-epingle.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-387/qa/pr/WFS-387/apres-trace-epingle.jpg?raw=true) |
