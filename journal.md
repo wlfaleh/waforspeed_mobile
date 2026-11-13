@@ -990,3 +990,8 @@ PR #374 relue sur 3aaecc8d (2e revue) : les 3 défauts de la 1re revue sont corr
 - Limites connues du banc « textes » (remarques 3 et 4) : deux écrans notés l'un dans l'autre → le journal de l'écran intérieur ferme celui de l'extérieur (vérification du banc seulement) ; le banc crée un vrai duel et tente de joindre le serveur du duel (à revoir si le groupe `textes` entre dans la CI).
 - Réponse à l'utilisateur sous la demande E20 de `tache utilisateur.md`. Ligne de `track-agent.md` : ⏹️ session terminée. Aucune branche supprimée. Un seul ticket par session : pas de ticket suivant.
 
+
+### 2026-11-13 12:56:49 — WFS-508 : retour lead dev sur PR #384, conflits avec main (lead-dev)
+- Revue complète du commit cee751f5 : captures FR / EN avant / après toutes ouvertes, diff entier relu, construction + tests CPU refaits (120/120), banc `textes` en `en` relancé (VERT). Contenu **approuvé** (revue écrite dans la PR).
+- Fusion refusée par GitHub : **conflits avec `main`** depuis la fusion de WFS-505 (#383) pendant la revue : `assets/textes/en.txt`, `assets/textes/fr.txt` (garder les blocs `cgu.*` et menus), `src/platform/desktop_main.cpp` (banc `textes` : appeler CGU + Réglages + menus, garder `textes-menus`).
+- Au développeur : synchroniser, relancer tests et banc `textes` fr / en, noter le commit testé dans `tests-cpu.log`, répondre dans la PR, remettre 🔁 et rappeler le lead dev.
