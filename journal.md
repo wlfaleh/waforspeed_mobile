@@ -1696,3 +1696,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Bon en 1280x720 : rangée, prix par classe, aperçu (Caméléon, Mat, Candy, Chromé), refus sans débit, achat pour une seule voiture, parcours RC-E18-09, relance, courses jour et nuit.
 - Bloquant : (1) en 4:3, les noms des finitions débordent sur le bouton voisin et sont illisibles (`garage_finition.cpp:85-92`) ; (2) police réduite de 33 % (12 → 8 px) alors que E20 en permet 20 % au plus ; (3) RC-E18-03 (endurance avant / après) pas mesurée.
 - Revue postée dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #401).
+
+### 2026-11-13 23:07:29 — WFS-537 : PR #402 refusée par le lead dev (lead-dev)
+- 44 captures ouvertes (avant / après), diff complet lu, branche fusionnée avec `main` en local, construite, `tests_cpu.sh` : 132 tests réussis.
+- **Bloquant** : branche en retard sur `main` (WFS-481 #379 absent). Une fois synchronisée, banc `score-fin` (1280 × 720) rouge, 8 écarts : le banc part d'une sauvegarde neuve, l'écran « Crée ton pilote » cache le menu, donc pas de compteur (RG-07) et pas d'appui vers le garage (RG-09). À corriger : synchroniser, créer le profil dans le banc, régénérer les captures et les tests.
+- Écrans de fin des 4 modes et menu (avant la fusion de main) : conformes (carte SCORE à côté du panneau, boutons inchangés, FR / EN).
+- Pour le PO (hors zone de WFS-537) : (1) Poursuite : « Zéro choc » dans le score alors que le panneau affiche 1 choc trafic (WFS-536 compte bumps + accidents) ; (2) course solo : « NOUVEAU RECORD » sur le panneau mais « 1re course » dans le score ; (3) menu en anglais : « BEST 10 050 » avec le séparateur français.
