@@ -70,7 +70,7 @@ constexpr uint32_t COULEURS_CAMPAGNE[(int)C_FIN_CAMPAGNE - (int)C_NB] = {
     0x5b4636,   // écorce de cep
     0xa3a7a9,   // fil de palissage galvanisé
     0xcfb56f,   // paille de la botte (flanc)
-    0xdccfa8,   // WFS-387 : filet d'enrubannage en polyéthylène blanc crème (jaunâtre : ne bleuit pas à l'ombre), vu sur la paille (épaules de la botte)
+    0xd2bf8f,   // WFS-387 : filet d'enrubannage en polyéthylène blanc crème (jaunâtre : ne bleuit pas à l'ombre), vu sur la paille (épaules de la botte)
     0xcaae6c,   // bout de la botte (foin enroulé, à peine plus sombre)
     0xdcbd8d,   // WFS-387 : enduit à la chaux ocre clair, chaud (albédo ≈ 0,53 ; l'ancien 0xcbbb9b virait au gris-bleu à l'ombre)
     0xa65a3c,   // tuile canal de terre cuite
