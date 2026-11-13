@@ -11,6 +11,6 @@ Chevrolet Corvette C7 (Martin Trafas, CC BY 4.0) et « tcross » une Suzuki Vita
 `assets/licences/mustang.txt` et `assets/licences/tcross.txt`. Ce dossier ne contient plus de modèle.
 
 **WFS-397 (2026-11-13)** : deux remplaçants convertis dans `assets/cars/remplacants/`, **pas encore branchés** (WFS-360) :
-- `w212.wfm` / `.lod` : « Mercedes E Class W212 » de Peter_D, CC BY 4.0 (`w212.txt`), place de l'A 45 ; caisse relevée de 40 mm, sans marque ;
-- `virtus.wfm` / `.lod` : « 2022 Volkswagen Virtus GT » de BHP3D, CC BY 4.0 (`virtus.txt`), place de l'Elantra N ; caisse relevée de 39 mm, sans marque.
+- `w212.wfm` / `.lod` : « Mercedes E Class W212 » de Peter_D, CC BY 4.0 (`w212.txt`), place de l'A 45 ; caisse relevée de 25 mm et pavillon de 15 mm, doublures de passage de roue, sans marque ;
+- `virtus.wfm` / `.lod` : « 2022 Volkswagen Virtus GT » de BHP3D, CC BY 4.0 (`virtus.txt`), place de l'Elantra N ; caisse relevée de 25 mm et pavillon de 14 mm, sans marque.
 Chaîne rejouable : `tools/remplacants/convertir_remplacants.sh`.

@@ -26,24 +26,42 @@ export function lireWfm(chemin) {
     maillages.push({ mat, drapeaux: drapeauxMat[mat], nv, pos, nrm, idx, debutSommets });
   }
   if (o > buf.length) throw new Error(`${chemin} : fichier tronqué`);
-  return { buf, maillages, debutMaillages, finMaillages: o };
+  // section TAN1 (version 2) : nSommets × 4 octets par maillage, dans l'ordre des maillages
+  let finTan = o;
+  if (buf.toString('latin1', o, o + 4) === 'TAN1') {
+    finTan = o + 4;
+    for (const m of maillages) { m.tan = Buffer.from(buf.subarray(finTan, finTan + m.nv * 4)); finTan += m.nv * 4; }
+  }
+  return { buf, maillages, debutMaillages, finMaillages: o, finTan };
 }
 
 export function ecrireWfm(chemin, w) {
-  // en-tête, textures et matériaux recopiés ; maillages réécrits (positions, normales, indices éventuellement réduits par retirerPieces) ;
-  // section TAN1 recopiée : le nombre de sommets de chaque maillage ne change jamais
+  // en-tête, textures et matériaux recopiés ; maillages réécrits (positions, normales, indices éventuellement réduits par retirerPieces,
+  // sommets ajoutés par ajouterSommets) ; section TAN1 réécrite (tangentes d'origine + celles des sommets ajoutés)
   const morceaux = [Buffer.from(w.buf.subarray(0, w.debutMaillages))];
   const bb = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
   for (const m of w.maillages) {
-    const tete = Buffer.alloc(12); tete.writeUInt32LE(m.mat, 0); tete.writeUInt32LE(m.nv, 4); tete.writeUInt32LE(m.idx.length, 8);
-    const s = Buffer.from(w.buf.subarray(m.debutSommets, m.debutSommets + m.nv * 32));
+    const plus = m.ajout ? m.ajout.length : 0;
+    const tete = Buffer.alloc(12); tete.writeUInt32LE(m.mat, 0); tete.writeUInt32LE(m.nv + plus, 4); tete.writeUInt32LE(m.idx.length, 8);
+    const s = Buffer.concat([Buffer.from(w.buf.subarray(m.debutSommets, m.debutSommets + m.nv * 32)), Buffer.alloc(plus * 32)]);
     for (let i = 0; i < m.nv; i++) for (let q = 0; q < 3; q++) { s.writeFloatLE(m.pos[i * 3 + q], i * 32 + q * 4); s.writeFloatLE(m.nrm[i * 3 + q], i * 32 + 12 + q * 4); }
+    for (let j = 0; j < plus; j++) { const a = m.ajout[j], o2 = (m.nv + j) * 32; [...a.p, ...a.n, ...a.uv].forEach((v, q) => s.writeFloatLE(v, o2 + q * 4)); }
+    for (const i of m.idx) for (let q = 0; q < 3; q++) { const v = i < m.nv ? m.pos[i * 3 + q] : m.ajout[i - m.nv].p[q]; bb[q] = Math.min(bb[q], v); bb[q + 3] = Math.max(bb[q + 3], v); }
     const ix = Buffer.alloc(m.idx.length * 4);
     m.idx.forEach((v, i) => ix.writeUInt32LE(v, i * 4));
-    for (const i of m.idx) for (let q = 0; q < 3; q++) { const v = m.pos[i * 3 + q]; bb[q] = Math.min(bb[q], v); bb[q + 3] = Math.max(bb[q + 3], v); }
     morceaux.push(tete, s, ix);
   }
-  morceaux.push(Buffer.from(w.buf.subarray(w.finMaillages)));
+  if (w.maillages.every((m) => m.tan)) {
+    morceaux.push(Buffer.from('TAN1', 'latin1'));
+    for (const m of w.maillages) {
+      morceaux.push(m.tan);
+      if (m.ajout) { const t = Buffer.alloc(m.ajout.length * 4); m.ajout.forEach((a, j) => a.t.forEach((v, q) => t.writeInt8(Math.round(Math.max(-1, Math.min(1, v)) * 127), j * 4 + q))); morceaux.push(t); }
+    }
+    morceaux.push(Buffer.from(w.buf.subarray(w.finTan)));
+  } else {
+    if (w.maillages.some((m) => m.ajout)) throw new Error('sommets ajoutés : section TAN1 attendue');
+    morceaux.push(Buffer.from(w.buf.subarray(w.finMaillages)));
+  }
   const sortie = Buffer.concat(morceaux);
   for (let q = 0; q < 6; q++) sortie.writeFloatLE(bb[q], 20 + q * 4);
   fs.writeFileSync(chemin, sortie);
@@ -69,6 +87,15 @@ export function pieces(m) {
     g.set(c, e);
   }
   return [...g.values()];
+}
+
+// ajoute des sommets à un maillage (écrits après les siens) : [{ p: [x, y, z], n: [nx, ny, nz], uv: [u, v], t: [tx, ty, tz, signe] }] ;
+// renvoie l'indice du premier, pour les triangles à ajouter à m.idx
+export function ajouterSommets(m, sommets) {
+  m.ajout = m.ajout || [];
+  const premier = m.nv + m.ajout.length;
+  m.ajout.push(...sommets);
+  return premier;
 }
 
 // retire d'un maillage les triangles donnés (rangs) ; les sommets restent (inutilisés), la section TAN1 reste donc valable

@@ -10,9 +10,11 @@
 #   1. tools/simplifier_voiture.mjs à erreur très faible (soudure, presque sans perte : la carrosserie reste lisse ; à 0,002 et
 #      même à 0,0004 elle sortait froissée) ; l'allègement se fait à l'étape 2, matériau par matériau, hors carrosserie ;
 #   2. tools/convert_car.mjs : pièces de logo séparées retirées par nom de nœud, habitacle et roues allégés, textures ≤ 640 px (8 Mo) ;
-#   3. relever_caisse.mjs : caisse remontée par rapport aux roues (modèles posés bas, RG-01 / RG-02) ;
+#   3. relever_caisse.mjs : caisse remontée par rapport aux roues (modèles posés bas, RG-01 / RG-02), en partie seulement (jeu pneu /
+#      aile d'une berline), le reste au pavillon, au-dessus de la ligne de ceinture (retour du lead dev, PR #393) ;
 #   4. build/corriger_voitures sur une racine temporaire (référentiel + fiches de WFS-396) : échelle globale et assise ;
 #   5. retirer_pieces.mjs : pièces de logo prises dans un matériau partagé (pieces.json) ;
+#   5 bis. doubler_passages.mjs : doublures des passages de roue absentes du modèle (passages.json, W212) ;
 #   6. tools/alleger_voiture.mjs : niveaux de détail (.lod).
 set -euo pipefail
 ICI="$(cd "$(dirname "$0")" && pwd)"; RACINE="$(cd "$ICI/../.." && pwd)"; OUTILS="$RACINE/tools"
@@ -33,19 +35,24 @@ v.mesures.push(...r.mesures); Object.assign(v.sources, r.sources); fs.writeFileS
 # id | variable de la source | longueur (m) | rotateY | peinture | erreur de simplification | relèvement (mm) | feux arrière
 # (dernière colonne : elle peut contenir des « | »)
 VOITURES=(
-  "w212|W212|4.868|auto|^mat_body\$|0.00002|40|^mat_lights_glass2\$"
-  "virtus|VIRTUS|4.561|auto|^primary\$|0.00002|39|^(left|right)_rear_light\$"
+  "w212|W212|4.868|auto|^mat_body\$|0.00002|25|^mat_lights_glass2\$"
+  "virtus|VIRTUS|4.561|auto|^primary\$|0.00002|25|^(left|right)_rear_light\$"
 )
 # pièces de logo à part : étoile du capot (W212) ; « VW » des portes avant, « VW » et « GT » du coffre, « GT » de la calandre et des
-# ailes avec leurs fonds (Virtus)
+# ailes avec leurs fonds, cache-moyeux des 4 roues (logo en relief) (Virtus)
+# pavillon : mm ajoutés au toit, au-dessus de la ligne de ceinture (bas des vitres latérales, y en m après le relèvement)
+declare -A PAVILLON=( [w212]=15 [virtus]=14 )
+declare -A CEINTURE=( [w212]=0.96 [virtus]=0.96 )
 declare -A EXCLURE_NOEUD=( [w212]='^mesh_Hood_mat_chrome_0$'
-                          [virtus]='^(door_[lr]f_logo|b_oot_logo|boot_logo_main|boot_logo_part|gt_frnt|gt_left|gt_right|gt_bg|gt_frnt_bg)_' )
-declare -A ALLEGER=( [w212]='mat_wheels=0.2! ; mat_rubber=0.25 ; mat_salon=0.12 ; mat_bottom=0.15 ; mat_inside_panel=0.15 ; mat_leather=0.15 ; mat_plastic=0.3 ; mat_inside_gauges=0.25 ; mat_tires=0.4 ; mat_brakes=0.25 ; mat_lights=0.4 ; mat_lights_glass=0.6'
+                          [virtus]='^((door_[lr]f_logo|b_oot_logo|boot_logo_main|boot_logo_part|gt_frnt|gt_left|gt_right|gt_bg|gt_frnt_bg)_|wheel[1-4]_cons_radio)' )
+declare -A ALLEGER=( [w212]='mat_wheels=0.2! ; mat_rubber=0.25 ; mat_salon=0.10 ; mat_bottom=0.15 ; mat_inside_panel=0.15 ; mat_leather=0.15 ; mat_plastic=0.3 ; mat_inside_gauges=0.25 ; mat_tires=0.4 ; mat_brakes=0.25 ; mat_lights=0.4 ; mat_lights_glass=0.6'
                      [virtus]='seatbelt_holder_part.0=0.1 ; seatbelt_alu.0=0.1 ; seats.0=0.1 ; cons_radio.0=0.1 ; dasj2.0=0.15 ; door_lf_int_plas.0=0.15 ; cons_part.0=0.15 ; seat_label.0=0.25 ; cons_maijn.0=0.15 ; seats2.0=0.15 ; steer.0=0.25 ; seat2.0=0.15 ; fdash_red.0=0.25 ; pillars.0=0.25 ; int_roof.0=0.25 ; dash_main.0=0.25 ; tray.0=0.25 ; seat_parttt.0=0.25 ; steer3.0=0.25 ; rear_disc.1=0.25 ; caliper.0=0.3 ; alu_int.1=0.25 ; right_front_light=0.3 ; left_front_light=0.5 ; tyre2.5=0.3 ; tyre2.6=0.5 ; seat_stitch.0=0.3 ; glass=0.6' )
 # Virtus : feux arrière et phares fondus dans un seul matériau par la simplification (dedup, matériaux identiques) : séparés par
-# le nom de leurs nœuds, comme la Brezza du même auteur (tools/convertir_voitures.sh)
-declare -A FEU=( [virtus]='rear light_0$' )
-declare -A PHARE=( [virtus]='front light_0$' )
+# le nom de leurs nœuds, comme la Brezza du même auteur (tools/convertir_voitures.sh). Seulement les nœuds des blocs optiques
+# (positions relevées dans la source) : les nœuds « … light » de l'habitacle (voyants, plafonnier) et les catadioptres du bouclier
+# feraient refuser le matériau par le moteur (src/render/model_loader.cpp : toutes les pièces d'un feu au bon bout, < 0,5 m de haut)
+declare -A FEU=( [virtus]='^(main3_right rear light|mainoi_right rear light|mainkjhuyt_right front light|rear_light_glass_glass|boot_lights_glass_glass)_0 ' )   # nom vu par convert_car.mjs : « <nœud> <maillage> »
+declare -A PHARE=( [virtus]='^(mainj_right front light|headlights_glass_glass)_0 ' )
 declare -A TEXTURE_MAX=( [w212]=640 [virtus]=512 )
 
 cd "$OUTILS"
@@ -58,9 +65,10 @@ for v in "${VOITURES[@]}"; do
   node simplifier_voiture.mjs "$TMP/$id-source/$(basename "$src")" "$TMP/$id.glb" "$peinture" "$erreur"
   WFS_EXCLURE_NOEUD="${EXCLURE_NOEUD[$id]:-}" WFS_FEU="${FEU[$id]:-}" WFS_PHARE="${PHARE[$id]:-}" WFS_ALLEGER="${ALLEGER[$id]:-}" WFS_TEXTURE_MAX="${TEXTURE_MAX[$id]:-1024}" \
     node convert_car.mjs "$TMP/$id.glb" "$SORTIE/$id.wfm" "$L" "$rot" "$peinture" "$feux"
-  node "$ICI/relever_caisse.mjs" "$SORTIE/$id.wfm" "$SORTIE/$id.wfm" "$mm"
+  node "$ICI/relever_caisse.mjs" "$SORTIE/$id.wfm" "$SORTIE/$id.wfm" "$mm" --pavillon "${PAVILLON[$id]:-0}" --ceinture "${CEINTURE[$id]:-9}"
   "$CORR" "$TMP/racine" "$id"
   node "$ICI/retirer_pieces.mjs" "$id" "$SORTIE/$id.wfm" "$SORTIE/$id.wfm"
+  if grep -q "\"$id\"" "$ICI/passages.json"; then node "$ICI/doubler_passages.mjs" "$id" "$SORTIE/$id.wfm" "$SORTIE/$id.wfm"; fi
   WFS_DETAIL= "$CORR" "$TMP/racine" "$id" --essai
   node alleger_voiture.mjs "$SORTIE/$id.wfm" "$SORTIE/$id.lod" 0.3
 done

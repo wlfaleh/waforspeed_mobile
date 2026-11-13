@@ -15,7 +15,8 @@ Found in the public GitHub repository bujue600-arch/carVison, folder car-vision-
 Source files: scene.gltf SHA-256 a1e14552aababef903a2fcd2dfeb6dd0d97de3062d316c8d5d6d489d5a106822 (238 832 bytes),
               scene.bin  SHA-256 cfed9ca335f5de90062e4fd893c53c7d4897f6ed67c42733d989c89529fed44a (20 244 980 bytes).
 
-Modifications for WaForSpeed (WFS-397): modified (ride height). Converted to .wfm (tools/remplacants/convertir_remplacants.sh);
-body raised by 40 mm above the wheels (height 1430 -> 1472 mm, real car 1470 mm); interior, wheels and textures lightened;
+Modifications for WaForSpeed (WFS-397): modified (ride height, roof height, wheel-arch liners). Converted to .wfm
+(tools/remplacants/convertir_remplacants.sh); body raised by 25 mm above the wheels and roof raised by 15 mm above the waistline
+(height 1430 -> 1472 mm, real car 1470 mm); wheel-arch liners added; interior, wheels and textures lightened;
 all brand marks removed (three-pointed stars of the grille, bonnet and boot lid, "Mercedes-Benz" roundel in the chrome texture);
 grille bars joined across the former badge area. Brand-free car: the game gives it an invented name.
