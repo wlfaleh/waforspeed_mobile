@@ -1420,3 +1420,10 @@ Revue de cffcb978 : 6 paires de captures ouvertes, identiques octet pour octet, 
 - Vérifié : 116 tests CPU verts en local, construction complète, banc `sauvegarde` 2 fois (profil écrit puis relu au journal), captures avant / après identiques au pixel (fin de course, sauvegarde relue, menu).
 - Limites : vérifié sur PC seulement ; accroche de `sauvegarde.*` un peu au-dessus de 10 lignes.
 - Outils installés pour le banc local (registre de paquets Ubuntu, rien dans le dépôt) : `glslc`, `mesa-vulkan-drivers`, `libvulkan-dev`, `ninja-build`, `imagemagick`, `ccache`.
+
+### 2026-11-13 00:16:43 — Début WFS-460 : attribué à Claude, agent dev3d (01UY1Vv5Cs) (po-scrum-master)
+- Nouvelle session `@dev` (session_01UY1Vv5Csqpiz1H5Cr5FRK7), 1re et seule attribution (un seul sujet par session). Ticket **WFS-460** (P1, E3 + E10, exception PO) : bandes « POLICE » sur la vraie tôle de la 208 des deux côtés, une seule peinture blanche à toutes les distances (ANO-250 bloquante, ANO-260). Branche `feature/waforspeed-460`.
+- Choix : la dernière session `@dev` a reçu la file B (WFS-395) ; en file A (bandeau 🏁), WFS-517, 480, 504, 487, 485 sont pris, 488, 481, 505… attendent, et **WFS-498** (1er prêt) n'est pas attribuable tant que **WFS-487** (même épic E18, mêmes `configgame.json` / `sauvegarde.*`) est en PR #373. WFS-460 est donc le 1er ticket permis (file B, P1).
+- Zone : `src/game/poursuite_system.cpp` (bandes, peinture de la police), `src/game/poursuite.h`, texture / maillage de la 208 de police par la chaîne du dépôt (`assets/cars/**` de la 208 seulement), `tests/**`. Pas `player.*`, `duel.*`, ni `vehicule_cockpit*` (WFS-395 en PR). WFS-480 (en cours) peut toucher `poursuite_system.cpp` : celui qui fusionne en second synchronise et garde les deux.
+- Règles : `regles-de-gestion/WFS-460.md`. Formes nues interdites ; captures jour et nuit, suite d'images en approche ; banc perf Poursuite en Basse ; après la fusion **🟡 À valider (utilisateur)**.
+
