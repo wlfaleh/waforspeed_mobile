@@ -1165,3 +1165,8 @@ PR #386 relue sur 2b9cd185 : toutes les captures ouvertes (15 paires EN avant / 
 - Zone : E10 (`shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs`, `tests/fidelite_voitures*`) ; texte de la plaque lu depuis le profil de WFS-480 (lecture seulement). File « modèles `.wfm` » de E10 : un seul ticket à la fois (483 → 484 → 493).
 - Règles : `regles-de-gestion/WFS-483.md` + `regles-de-gestion/E17-identite-joueur.md` ; plaque = vrai modèle 3D (pas de forme nue), avis de `expert-realisme-3d` conseillé. Hors E15 : pas d'avis agent 3D obligatoire en commentaire ; pas 🟡.
 - Branche attendue : `feature/waforspeed-483`, premier commit poussé tout de suite.
+
+### 2026-11-13 15:46:44 — Correction : WFS-378 n'est pas à 01Us6uCt5A ; WFS-397 attribué à Claude, agent dev3d (01Us6uCt5A) (po-scrum-master)
+- **Ma faute** : l'entrée précédente (commit 81f3ef38) annonce WFS-378 pour la session 01Us6uCt5A, mais WFS-378 venait d'être donné à 01Us6uCwca (d33588ad) ; `TACHES.md` n'a pas été changé. WFS-378 reste à **01Us6uCwca**.
+- Attribution réelle : **WFS-397** (E10, P1, `dev-artiste-3d`, fichiers neufs `remplacants/` seulement, comme WFS-396), 1er P1 prêt suivant permis à un développeur artiste 3D. Pas de chevauchement avec WFS-490 (shader des voitures, autres fichiers).
+- Règles : `regles-de-gestion/WFS-397.md` (+ rapport de WFS-396, `DA-realisme.md`). Branche attendue : `feature/waforspeed-397`, premier commit poussé tout de suite.
