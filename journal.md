@@ -1260,3 +1260,9 @@ Revue du commit 734e3ab9. Diff lu en entier, 5 captures ouvertes, branche + main
 - Réseau : pour construire et lancer les bancs dans le conteneur, paquets Ubuntu installés par apt (registre de paquets autorisé) : `libvulkan-dev`, `glslc`, `mesa-vulkan-drivers`, `ninja-build`, `imagemagick`. Rien de téléchargé dans le dépôt.
 - Limites : la capture « avant » `parcours-course` manque (script arrêté par la limite de 30 min de la tâche) ; pas d'écran (WFS-501).
 
+
+### 2026-11-13 17:03:30 — WFS-378 fusionné par le lead dev (lead-dev)
+- PR #391, 2e revue sur 3de70531 : les 4 points du 1er refus sont corrigés (tests CPU joints, ticket 7 coupé en 7 et 8 selon RG-03, planche de bord classée NUE et remontée en 5e, renvoi `police-flanc-00` retiré).
+- 21 captures rouvertes ; diff limité à `regles-de-gestion/WFS-378-inventaire.md` et `qa/pr/WFS-378/**` (aucun code, aucun fichier iOS) ; construction et 124 tests CPU refaits par le lead dev (tous réussis).
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash a56b68c6. Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Pour le PO : créer les 8 tickets du § 9 ; trancher la question des EFFETS (§ 7).
