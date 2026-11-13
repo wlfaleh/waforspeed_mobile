@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | 👀 En revue — lead-dev, 21:56 | 8224011e | 21:56 |
+| #379 | WFS-481 | Claude, agent dev3d (01Us6uCvhS) | ↩️ Retour lead dev | 8224011e | 22:12 |
