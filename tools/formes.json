@@ -47,10 +47,63 @@
     "metal": 0.6,
     "rugosite": 0.4,
     "note": "grille générique : cadre, 3 barres horizontales, galbe du nez"
+   },
+   {
+    "decouper": true,
+    "materiau": 0,
+    "contour": {
+     "rectangle": [
+      -0.085,
+      1.136,
+      0.095,
+      1.197
+     ],
+     "rayons": [
+      0.01,
+      0.01
+     ],
+     "pas": 4
+    },
+    "z": [
+     2.05,
+     2.25
+    ],
+    "note": "Compass : creux en forme des lettres « Jeep » resté dans la peinture du hayon (lettres retirées par WFS-192, leur empreinte se lisait encore) découpé sur un rectangle aux coins arrondis (WFS-456, RG-01)",
+    "triangles": 421
+   },
+   {
+    "couture": {
+     "materiau": 0,
+     "contour": {
+      "rectangle": [
+       -0.085,
+       1.136,
+       0.095,
+       1.197
+      ],
+      "rayons": [
+       0.01,
+       0.01
+      ],
+      "pas": 4
+     },
+     "z": [
+      2.05,
+      2.25
+     ],
+     "bande": 0.02,
+     "baseFace": 2,
+     "ignorer": [
+      2,
+      7
+     ]
+    },
+    "note": "Compass : découpe refermée par une peau de carrosserie cousue au bord (même peinture, aucun joint) : hayon continu, plus aucune forme de lettre (WFS-456, RG-01, skill artiste-3d § 5)",
+    "triangles": 255
    }
   ],
-  "empreinteApres": "3479cb3aaa9d323f",
-  "empreinteRedressee": "53d9d325239c500d"
+  "empreinteApres": "57a7666fece417e7",
+  "empreinteRedressee": "1a3871331ef2322e"
  },
  "p208": {
   "materiaux": 17,
@@ -3388,9 +3441,339 @@
      ]
     },
     "note": "grille générique basse et large, d'un seul tenant, à la place des deux prises d'air et de la pointe du V : 1,5 cm derrière la carrosserie, 8 lames chanfreinées, rebord, paroi depuis le bord, toujours derrière la plaque, fond noir mat (WFS-363)"
+   },
+   {
+    "decouper": true,
+    "materiau": 45,
+    "contour": [
+     [
+      0.047,
+      0.9495
+     ],
+     [
+      0.0453,
+      0.9624
+     ],
+     [
+      0.0403,
+      0.9745
+     ],
+     [
+      0.0324,
+      0.9849
+     ],
+     [
+      0.022,
+      0.9928
+     ],
+     [
+      0.0099,
+      0.9978
+     ],
+     [
+      -0.003,
+      0.9995
+     ],
+     [
+      -0.0159,
+      0.9978
+     ],
+     [
+      -0.028,
+      0.9928
+     ],
+     [
+      -0.0384,
+      0.9849
+     ],
+     [
+      -0.0463,
+      0.9745
+     ],
+     [
+      -0.0513,
+      0.9624
+     ],
+     [
+      -0.053,
+      0.9495
+     ],
+     [
+      -0.0513,
+      0.9366
+     ],
+     [
+      -0.0463,
+      0.9245
+     ],
+     [
+      -0.0384,
+      0.9141
+     ],
+     [
+      -0.028,
+      0.9062
+     ],
+     [
+      -0.0159,
+      0.9012
+     ],
+     [
+      -0.003,
+      0.8995
+     ],
+     [
+      0.0099,
+      0.9012
+     ],
+     [
+      0.022,
+      0.9062
+     ],
+     [
+      0.0324,
+      0.9141
+     ],
+     [
+      0.0403,
+      0.9245
+     ],
+     [
+      0.0453,
+      0.9366
+     ]
+    ],
+    "z": [
+     2.15,
+     2.4
+    ],
+    "note": "Giulia : écusson rond du coffre (disque noir laissé par WFS-192, même défaut qu'ANO-259) retiré par découpe exacte (WFS-456, RG-01)",
+    "triangles": 128
+   },
+   {
+    "decouper": true,
+    "materiau": 7,
+    "contour": [
+     [
+      0.044,
+      0.9495
+     ],
+     [
+      0.0424,
+      0.9617
+     ],
+     [
+      0.0377,
+      0.973
+     ],
+     [
+      0.0302,
+      0.9827
+     ],
+     [
+      0.0205,
+      0.9902
+     ],
+     [
+      0.0092,
+      0.9949
+     ],
+     [
+      -0.003,
+      0.9965
+     ],
+     [
+      -0.0152,
+      0.9949
+     ],
+     [
+      -0.0265,
+      0.9902
+     ],
+     [
+      -0.0362,
+      0.9827
+     ],
+     [
+      -0.0437,
+      0.973
+     ],
+     [
+      -0.0484,
+      0.9617
+     ],
+     [
+      -0.05,
+      0.9495
+     ],
+     [
+      -0.0484,
+      0.9373
+     ],
+     [
+      -0.0437,
+      0.926
+     ],
+     [
+      -0.0362,
+      0.9163
+     ],
+     [
+      -0.0265,
+      0.9088
+     ],
+     [
+      -0.0152,
+      0.9041
+     ],
+     [
+      -0.003,
+      0.9025
+     ],
+     [
+      0.0092,
+      0.9041
+     ],
+     [
+      0.0205,
+      0.9088
+     ],
+     [
+      0.0302,
+      0.9163
+     ],
+     [
+      0.0377,
+      0.926
+     ],
+     [
+      0.0424,
+      0.9373
+     ]
+    ],
+    "z": [
+     2.15,
+     2.4
+    ],
+    "note": "Giulia : bord de l'encoche ronde de l'écusson, dans la peinture du coffre, découpé sur un cercle net (WFS-456, RG-01)",
+    "triangles": 92
+   },
+   {
+    "couture": {
+     "materiau": 7,
+     "contour": [
+      [
+       0.044,
+       0.9495
+      ],
+      [
+       0.0424,
+       0.9617
+      ],
+      [
+       0.0377,
+       0.973
+      ],
+      [
+       0.0302,
+       0.9827
+      ],
+      [
+       0.0205,
+       0.9902
+      ],
+      [
+       0.0092,
+       0.9949
+      ],
+      [
+       -0.003,
+       0.9965
+      ],
+      [
+       -0.0152,
+       0.9949
+      ],
+      [
+       -0.0265,
+       0.9902
+      ],
+      [
+       -0.0362,
+       0.9827
+      ],
+      [
+       -0.0437,
+       0.973
+      ],
+      [
+       -0.0484,
+       0.9617
+      ],
+      [
+       -0.05,
+       0.9495
+      ],
+      [
+       -0.0484,
+       0.9373
+      ],
+      [
+       -0.0437,
+       0.926
+      ],
+      [
+       -0.0362,
+       0.9163
+      ],
+      [
+       -0.0265,
+       0.9088
+      ],
+      [
+       -0.0152,
+       0.9041
+      ],
+      [
+       -0.003,
+       0.9025
+      ],
+      [
+       0.0092,
+       0.9041
+      ],
+      [
+       0.0205,
+       0.9088
+      ],
+      [
+       0.0302,
+       0.9163
+      ],
+      [
+       0.0377,
+       0.926
+      ],
+      [
+       0.0424,
+       0.9373
+      ]
+     ],
+     "z": [
+      2.15,
+      2.4
+     ],
+     "bande": 0.03,
+     "baseFace": 2,
+     "ignorer": [
+      45
+     ]
+    },
+    "note": "Giulia : encoche de l'écusson refermée par une peau de carrosserie cousue au bord découpé (même peinture, aucun joint) : coffre continu, sans disque ni trou (WFS-456, RG-01, skill artiste-3d § 5)",
+    "triangles": 225
    }
   ],
-  "empreinteApres": "639a0b8d26dcf0bf"
+  "empreinteApres": "a35ebfc206bf3941"
  },
  "rrsport": {
   "materiaux": 22,
@@ -3695,7 +4078,7 @@
  "corsa": {
   "materiaux": 17,
   "empreinteAvant": "c55642b0853fabe9",
-  "empreinteApres": "a360b53ebd48dccf",
+  "empreinteApres": "da0505f1f659af4d",
   "retouches": [
    {
     "lisser": {
@@ -4169,6 +4552,222 @@
      ]
     },
     "note": "grille générique à 4 lames horizontales chanfreinées dans l'ouverture de la calandre, 1,2 cm derrière la carrosserie, rebord, paroi, fond noir mat ; le dos plat de l'ancienne calandre (matériau 2, derrière la peinture) n'est pas pris pour la carrosserie (WFS-364)"
+   },
+   {
+    "decouper": true,
+    "materiau": 3,
+    "contour": [
+     [
+      0.084,
+      0.871
+     ],
+     [
+      0.0812,
+      0.8925
+     ],
+     [
+      0.0729,
+      0.9125
+     ],
+     [
+      0.0597,
+      0.9297
+     ],
+     [
+      0.0425,
+      0.9429
+     ],
+     [
+      0.0225,
+      0.9512
+     ],
+     [
+      0.001,
+      0.954
+     ],
+     [
+      -0.0205,
+      0.9512
+     ],
+     [
+      -0.0405,
+      0.9429
+     ],
+     [
+      -0.0577,
+      0.9297
+     ],
+     [
+      -0.0709,
+      0.9125
+     ],
+     [
+      -0.0792,
+      0.8925
+     ],
+     [
+      -0.082,
+      0.871
+     ],
+     [
+      -0.0792,
+      0.8495
+     ],
+     [
+      -0.0709,
+      0.8295
+     ],
+     [
+      -0.0577,
+      0.8123
+     ],
+     [
+      -0.0405,
+      0.7991
+     ],
+     [
+      -0.0205,
+      0.7908
+     ],
+     [
+      0.001,
+      0.788
+     ],
+     [
+      0.0225,
+      0.7908
+     ],
+     [
+      0.0425,
+      0.7991
+     ],
+     [
+      0.0597,
+      0.8123
+     ],
+     [
+      0.0729,
+      0.8295
+     ],
+     [
+      0.0812,
+      0.8495
+     ]
+    ],
+    "z": [
+     1.88,
+     2.1
+    ],
+    "note": "Corsa : anneau chromé et barre de l'emblème du hayon (restés après WFS-192, RG-10) retirés par découpe exacte : la tôle peinte du hayon, continue derrière, reste seule (WFS-456, RG-01)",
+    "triangles": 252
+   },
+   {
+    "decouper": true,
+    "materiau": 7,
+    "contour": [
+     [
+      0.084,
+      0.871
+     ],
+     [
+      0.0812,
+      0.8925
+     ],
+     [
+      0.0729,
+      0.9125
+     ],
+     [
+      0.0597,
+      0.9297
+     ],
+     [
+      0.0425,
+      0.9429
+     ],
+     [
+      0.0225,
+      0.9512
+     ],
+     [
+      0.001,
+      0.954
+     ],
+     [
+      -0.0205,
+      0.9512
+     ],
+     [
+      -0.0405,
+      0.9429
+     ],
+     [
+      -0.0577,
+      0.9297
+     ],
+     [
+      -0.0709,
+      0.9125
+     ],
+     [
+      -0.0792,
+      0.8925
+     ],
+     [
+      -0.082,
+      0.871
+     ],
+     [
+      -0.0792,
+      0.8495
+     ],
+     [
+      -0.0709,
+      0.8295
+     ],
+     [
+      -0.0577,
+      0.8123
+     ],
+     [
+      -0.0405,
+      0.7991
+     ],
+     [
+      -0.0205,
+      0.7908
+     ],
+     [
+      0.001,
+      0.788
+     ],
+     [
+      0.0225,
+      0.7908
+     ],
+     [
+      0.0425,
+      0.7991
+     ],
+     [
+      0.0597,
+      0.8123
+     ],
+     [
+      0.0729,
+      0.8295
+     ],
+     [
+      0.0812,
+      0.8495
+     ]
+    ],
+    "z": [
+     1.88,
+     2.1
+    ],
+    "note": "Corsa : socle noir de l'emblème du hayon retiré par découpe exacte (même contour ; peinture continue derrière) (WFS-456, RG-01)",
+    "triangles": 93
    }
   ]
  },
@@ -5478,5 +6077,35 @@
     "note": "prise d'air avant gauche : grille générique à lames horizontales, découpée sur le contour de l'ouverture, en retrait derrière la carrosserie"
    }
   ]
+ },
+ "tcross": {
+  "materiaux": 39,
+  "empreinteAvant": "8a16d1b1452ee3bb",
+  "retouches": [
+   {
+    "decouper": true,
+    "materiau": 5,
+    "contour": {
+     "rectangle": [
+      0.505,
+      0.852,
+      0.615,
+      0.876
+     ],
+     "rayons": [
+      0.003,
+      0.003
+     ],
+     "pas": 2
+    },
+    "z": [
+     1.9,
+     2.05
+    ],
+    "note": "T-Cross : plaque grise du badge du hayon (restée après le retrait de « BREZZA » et du logo par WFS-192) retirée par découpe exacte : la tôle peinte du hayon, continue derrière, reste seule (WFS-456, RG-01)",
+    "triangles": 74
+   }
+  ],
+  "empreinteApres": "33cf1ff46a31c317"
  }
 }
