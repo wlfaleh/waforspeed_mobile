@@ -2003,3 +2003,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 23:51:38 — R19 : 3 versions du bloc des caractéristiques (smart-brainstorming)
 - Demande de l'utilisateur : caractéristiques de la voiture avec plus de design ; planche `references/maquettes-R19/options-caracteristiques.jpg` (cadrans fins, fiche technique, radar), choix à faire par l'utilisateur. Rien transmis au PO.
+
+### 2026-11-14 23:52:40 — R19 : caractéristiques en cadrans fins (smart-brainstorming)
+- Choix n° 1 de l'utilisateur intégré dans l'onglet Voiture du garage ; planche des 3 versions retirée. Rien transmis au PO.
