@@ -1583,3 +1583,6 @@ Revue de fa87bc44 : les 4 points du refus sont corrigés (crédits en anglais, s
 
 ### 2026-11-14 12:37:48 — R17 (suite) : compatibilité réelle du code pour PC / console (smart-brainstorming)
 Relecture du code : jeu déjà compilé et rendu sur Linux en CI ; à écrire pour un PC jouable : fenêtre, son, clavier/manette PC, remplaçants des services Android, essai Windows. Détail dans R17 (suite).
+
+### 2026-11-14 12:41:20 — R17 (suite 2) : état et coût d'iOS (smart-brainstorming)
+Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simulateur), retard sur les services ajoutés à Android depuis le gel ; aucune action iOS (gel maintenu).
