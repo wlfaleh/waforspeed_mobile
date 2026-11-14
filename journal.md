@@ -1471,3 +1471,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Commit relu d7a05af5 ; 12 captures ouvertes, diff lu, `test_reglages_etoiles` construit et vert sur la branche. Le crédit (+2500 ★, un par appui, sauvegardé) marche ; garage et menu intacts.
 - **Refus** : (1) RG-05 non tenue : le bouton affiche « +2500 ★ » au lieu d'une icône étoile seule (précision de l'utilisateur de 11:02:49) ; (2) clés `diag.etoiles` ajoutées dans `fr.txt` / `en.txt` (hors zone, interdit par RG-05) ; (3) libellé « Solde : N ★ » non demandé à côté du bouton ; (4) section « Tests CPU » et `tests-cpu.log` absents de la PR.
 - Revue postée dans la PR (en « COMMENT » : même compte GitHub). WFS-546 → ↩️ Retour lead dev (PR #409).
+
+### 2026-11-14 11:39:45 — WFS-545 : un appui = un caractère, 150 ms après chaque appui, PR #410 ouverte (Claude, agent dev3d (01Us6uCthf))
+- **Cause confirmée** : `android_main.cpp` envoie chaque mouvement d'un doigt posé avec `down = true` ; `toucher()` de « Crée ton pilote » le prenait pour un nouvel appui (banc sur le code de `main` : appui + 10 mouvements → « Rrrrrrrrrrr », comme la vidéo). Le salon gardait déjà un seul doigt, mais 2 appuis à 50 ms effaçaient 2 caractères.
+- **Fait** : `creation::FiltreAppuis` (`creation_profil_saisie.{h,cpp}`) : `poser(id, down)` (RG-01) et `accepter(t)` (150 ms, RG-02) ; branché dans `creation_profil.cpp` (41 touches) et `salon.cpp` (32 touches du code + effacer, RG-03). Rien dans `android_main.cpp` ni `Game::onTouch` (RG-04).
+- **Vérification** : `test_creation_profil` (RG-05) vert ; 138 tests CPU verts ; banc `creation` (fr) 0 écart (avant : 3 écarts) ; banc `menu2` : salon « K7Q » (avant « K7 »), aucune erreur nouvelle. Captures avant / après : `qa/pr/WFS-545/` (avant = code de `main` + scénarios de la branche).
+- **Limites** : pas d'essai sur téléphone → 🟡 À valider (utilisateur) après la fusion.
+
