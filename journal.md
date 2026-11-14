@@ -1991,3 +1991,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 22:01:02 — R19 : précédent / suivant en palettes au volant (smart-brainstorming)
 - Garage, onglet Voiture : flèches remplacées par des palettes au volant (carbone, chevron et −/+ rétroéclairés). Rien transmis au PO.
+
+### 2026-11-14 22:02:02 — R19 : palettes refusées, 4 styles de précédent / suivant à choisir (smart-brainstorming)
+- Palettes au volant refusées par l'utilisateur : image 13 remise à la version d'avant ; planche `references/maquettes-R19/options-precedent-suivant.jpg` (chevrons, clignotants, balises de virage, flèches au sol). Rien transmis au PO.
