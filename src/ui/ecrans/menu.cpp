@@ -17,6 +17,7 @@
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/direction.h"   // WFS-146 (RG-05) : réglages Direction et Gyroscope, dessin2d
 #include "chargement.h"
+#include "cadeau_jour.h"   // WFS-501 (accroche) : bouton et écran « Cadeau du jour »
 #include "creation_profil.h"   // WFS-481 (accroche) : écran « Crée ton pilote » par-dessus le menu
 #include "reglages.h"
 #include "terrain.h"
@@ -44,7 +45,7 @@ float ease(float t) {
 }
 
 struct Choix { const char* titre; const char* desc; };
-enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, COMPTEUR = 5 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-537 : compteur d'étoiles
+enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
 Zone g_zones[4];
@@ -71,11 +72,13 @@ public:
     // RG-01 : appui = état pressé ; l'action part au relâcher sur le même choix, glisser hors du choix l'annule.
     // RG-05 : sur le menu, tout toucher est gardé (aucune commande de conduite).
     bool onTouch(const Touch& t, const GameView& g) override {
+        if (g.ecran == Ecran::Menu && cadeau_jour::ouvert()) { doigt_ = -1; presse_ = -1; return cadeau_jour::toucher(t.id, t.x, t.y, t.down); }   // WFS-501
         if (g.ecran == Ecran::Menu && credits::ouvert()) { doigt_ = -1; presse_ = -1; return credits::toucher(t.id, t.x, t.y, t.down); }   // WFS-406 : écran Crédits par-dessus
         if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y, t.id) || toucheBandeauPaquets(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages (WFS-290 : et le doigt posé sur « Réglages ») ; WFS-306 : proposition des paquets
         if (choixModeOuvert()) { doigt_ = -1; presse_ = -1; return false; }   // WFS-110 : panneau des modes par-dessus
         int sous = choixSous(t.x, t.y);
         if (sous < 0 && credits::dansBouton(t.x, t.y)) sous = CREDITS;   // WFS-406
+        if (sous < 0 && cadeau_jour::dansBouton(t.x, t.y)) sous = CADEAU;   // WFS-501
         if (sous < 0 && compteur_etoiles::dans(t.x, t.y)) sous = COMPTEUR;   // WFS-537 (RG-09)
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; presse_ = sous; }   // WFS-83 : « Duel en ligne » actif (plus grisé)
@@ -89,6 +92,7 @@ public:
         if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); if (!ouvrirChoixMode()) g.allerA(Ecran::Garage); }   // WFS-110 : modes             // RG-03 ; WFS-11 : garage d'abord
         else if (choix == DUEL) { WFS_LOG("menu : « Duel en ligne »"); modeCourse() = ModeCourse::Duel; g.allerA(Ecran::Salon); }   // WFS-83 : écran Salon
         else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom »"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-96 (RG-01)
+        else if (choix == CADEAU) { WFS_LOG("menu : « Cadeau du jour »"); cadeau_jour::ouvrir(); }   // WFS-501 (RG-01)
         else if (choix == CREDITS) { WFS_LOG("menu : « Crédits »"); credits::ouvrir(); }   // WFS-406 (RG-02)
         else if (choix == COMPTEUR) { WFS_LOG("menu : compteur d'étoiles → garage"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-537 (RG-09) : Market avec WFS-513
         else if (choix == TA_VOITURE) { WFS_LOG("menu : « Ta voiture »"); garageRegarder(); g.allerA(Ecran::Garage); }   // #myCarBtn
@@ -126,6 +130,7 @@ public:
             r.uiQuad(q);
         }
         if (choixModeOuvert()) return;   // WFS-141 (RG-04, ANO-54) : panneau des modes ouvert : ni textes ni aide du menu dessous
+        if (cadeau_jour::ouvert()) return;   // WFS-501 : écran du cadeau par-dessus (système CadeauJour, 466)
         if (credits::ouvert()) return;   // WFS-406 : écran Crédits par-dessus (système Credits, 470) : rien du menu dessous
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
         // WFS-168 (RG-01) : taille des choix d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; textes en dp gardés
@@ -193,6 +198,7 @@ public:
         // WFS-406 (RG-02) : en bas à droite, style du bouton « Réglages ». WFS-415 (RG-05, accroche) : dessiné APRÈS les choix,
         // pour que « Course solo » reste la 1re zone de la manette (manette::focus) et du parcours d'endurance (CI #993, #994)
         credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
+        cadeau_jour::dessinerBouton(r, W, H, g.marges, presse_ == CADEAU);   // WFS-501 (RG-01) : au-dessus de « Crédits »
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:

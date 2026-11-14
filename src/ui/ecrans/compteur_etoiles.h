@@ -5,7 +5,7 @@
 //     français, « 12,450 » en anglais ; libellé pour le lecteur d'écran par ui::tr (menu.etoiles.lecteur) ;
 //   - RG-09 : appui → garage (WFS-513 le fera ouvrir le Market).
 // Dessin : système CompteurEtoiles (461), juste après le bouton « Réglages » (460) de la même image, seulement si ce bouton a été
-// dessiné (rien sous « Crée ton pilote », le choix du mode, les Crédits), avec le fondu d'entrée du menu (0,3 s).
+// dessiné (rien sous « Crée ton pilote », le choix du mode, les Crédits, le cadeau du jour), avec le fondu d'entrée du menu (0,3 s).
 // Le menu (menu.cpp) garde les appuis : dans() pour sa cible, appuye() pour l'état appuyé (action au relâcher, comme ses choix).
 #pragma once
 #include <string>

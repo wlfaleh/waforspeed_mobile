@@ -10,6 +10,7 @@
 #include "../core/system.h"
 #include "../render/model_loader.h"   // WFS-125 : voiture du fantôme
 #include "../render/renderer.h"
+#include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../ui/text.h"
 #include "textes_course.h"   // WFS-506 : fin de course en français ou en anglais
 #include "course5.h"        // WFS-125 : mode de course (records par mode)
@@ -124,6 +125,7 @@ public:
         const RouesPose rp = roues::poseSuivi(fantSuivi_, g.alpha, e.d, fantModele_.nRoues ? fantModele_.roues[0].rayon : roues::RW_DEFAUT);
         if (roues::g_journal452) WFS_LOG("roues (banc) : fantôme : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
         r.draw(fantModele_, m, &fantPeinture_, &rp);
+        plaques_autres::dessiner(r, carById(fantModeleCar_.c_str()).id, m, 1.f, plaques_autres::FANTOME, plaques_autres::Genre::Fantome, g.night, g.camPos);   // WFS-484 (accroche, RG-03) : plaque du joueur
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {

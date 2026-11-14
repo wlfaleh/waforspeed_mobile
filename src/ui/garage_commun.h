@@ -8,6 +8,7 @@
 #include "../core/math.h"
 #include "../game/cars.h"
 #include "../game/sauvegarde.h"   // WFS-487 : PEINTURES
+#include "../core/configgame.h"   // WFS-491 : BOUTIQUE_FINITIONS
 
 namespace wfs {
 class Renderer;
@@ -52,11 +53,14 @@ struct Zone {
 // d'essai et les parcours lisent garageBouton juste après un Game::init) et sont vidées en quittant l'écran Garage.
 // Chaque panneau n'écrit que ses propres champs.
 struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT];
-               Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1]; };   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
+               Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1];   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
+               Zone finitions[BOUTIQUE_FINITIONS], chevronsFinition[2]; };   // WFS-491 : rangée « Finition » (ordre affiché) et ses chevrons
 extern Zones g_z;
 
 // parallélogramme d'un seul tenant (WFS-99), haut décalé à droite de `biais`
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c);
+// petit cadenas d'un objet non possédé, centré en (cx, cy), taille u (WFS-489 ; partagé avec les finitions, WFS-491)
+void cadenas(Renderer& r, float cx, float cy, float u, float op);
 // dégradé linéaire d'un seul uiQuad (WFS-99) : c0 → c1 de gauche à droite (horizontal) ou de haut en bas
 void degrade(Renderer& r, float x0, float y0, float x1, float y1, const vec4& c0, const vec4& c1, bool horizontal);
 
@@ -74,6 +78,7 @@ struct EtatGarage {
     int peinture = 0;         // peinture de cette voiture (indice dans PAINTS)
     bool voiturePrete = false;   // modèle 3D chargé (sinon « Chargement… »)
     int peinture2 = -1;          // WFS-489 : couleur secondaire montrée (indice dans PAINTS), −1 = comme la carrosserie
+    int finition = 0;            // WFS-491 : finition montrée (indice dans BOUTIQUE_FINITIONS_IDS, 0 = brillant)
     bool operator==(const EtatGarage&) const = default;
 };
 

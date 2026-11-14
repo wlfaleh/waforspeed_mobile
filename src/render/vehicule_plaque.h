@@ -73,9 +73,22 @@ struct ImagePlaque {
     float hauteurTexteMm = 0;               // hauteur des caractères posés (75 mm, sauf texte trop large : réduit, jamais étiré)
     float largeurTexteMm = 0;               // largeur du texte posé
     int caracteres = 0;                     // caractères dessinés
+    int largeur = 0, hauteur = 0;           // taille de l'image (px)
 };
 // texte : 1 à 8 caractères A-Z, 0-9, « - » (profil.h) ; un autre caractère est ignoré. ttf : police Rajdhani Bold
-bool dessinerImage(const std::string& texte, const uint8_t* ttf, ImagePlaque& sortie);
+// largeur (WFS-484) : largeur de l'image en px (64 à IMAGE_L), hauteur dans la proportion de la plaque (256 → 54 px)
+bool dessinerImage(const std::string& texte, const uint8_t* ttf, ImagePlaque& sortie, int largeur = IMAGE_L);
+
+// ---- matériaux et niveaux de détail (RG-05 à RG-07), partagés avec les plaques des autres voitures (WFS-484 RG-01)
+// porte-plaque : polypropylène noir grainé (albédo ≈ 0,03, rugueux) ; vis : acier zingué (métal, satiné) ; plaque : film blanc mat
+constexpr float SUPPORT_RVB[3] = {0.028f, 0.028f, 0.030f}, SUPPORT_RUGOSITE = 0.68f;
+constexpr float VIS_RVB[3] = {0.62f, 0.64f, 0.66f}, VIS_RUGOSITE = 0.38f;
+constexpr float PLAQUE_RUGOSITE = 0.62f;
+// RG-05 : luminance de la plaque éclairée ≈ 2 à 20 cd/m² (règlement ONU n° 4 : ≥ 2,5 cd/m² en tout point) ; en unités
+// d'émission du moteur (fenêtres éclairées de la ville : 0,9 ; enseignes : 2 à 6), 0,30 × la couleur de la plaque
+constexpr float ECLAIREUR = 0.30f;
+constexpr float LOD_M = 14.f;              // au-delà, porte-plaque et plaque simplifiés, sans vis (RG-06 : jamais absente)
+constexpr float LOD_BASSE_M = 4.f;         // qualité Basse : version simple dès 4 m (RG-07 : coût par image)
 
 // ---- dessin (thread principal, vehicule_plaque.cpp) ----
 void preparer(Renderer& r);                 // maillages et matériaux (au chargement de la partie)

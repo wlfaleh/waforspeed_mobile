@@ -117,6 +117,7 @@ bool AchatGarage::acheter() {
     if (manque(s, e_).n == 0 && s.actif()) {
         s.paint[car] = PAINTS[e_.peinture].id;
         if (e_.peinture2 >= 0) s.paint2[car] = PAINTS[e_.peinture2].id; else s.paint2.erase(car);
+        if (e_.finition > 0) s.finition[car] = BOUTIQUE_FINITIONS_IDS[e_.finition]; else s.finition.erase(car);   // WFS-491 (RG-03) : finition-<voiture>
         s.enregistrer();
     }
     manque_ = 0;

@@ -17,6 +17,7 @@
 #include "../render/effets_particules.h"   // WFS-141 : effets::versHdr (gyrophares)
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
+#include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../ui/appui.h"
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"   // RG-12 : « Rouler »
@@ -405,6 +406,7 @@ public:
                                                   modele_.nRoues ? modele_.roues[0].rayon : roues::RW_DEFAUT);
             if (roues::g_journal452 && i == 0) WFS_LOG("roues (banc) : police : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
             r.draw(modele_, m, &peintures_[i], &rp);
+            plaques_autres::dessiner(r, policeCar_, m, 1.f, plaques_autres::POLICE_0 + i % plaques_autres::POLICE_N, plaques_autres::Genre::Police, g.night, g.camPos);   // WFS-484 (accroche, RG-04)
             if (std::abs(rel) <= 80 && !g_bancSans338) conducteurs::ajouter(modele_, m, policeCar_, 0x50000000u + (uint32_t)i, true);   // WFS-338 (RG-06) : policier au volant
             // repère du modèle (m) : sol bmin.y, centre (cx, cz), avant vers −z ; pavillon mesuré au-dessus de la place du
             // conducteur (Model::siege, WFS-73), sinon le haut du modèle

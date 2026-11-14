@@ -1,0 +1,10 @@
+# WFS-491 — RC-E18-03 : images/s en qualité Basse (banc peinture2-mesure : Basse, Ville, 208, 600 images après 180 de chauffe, lavapipe)
+# main = 30f50ce5 (brillant) ; branche = 83d16521 ; finition posée par WFS_FINITION (même chemin de rendu que la finition achetée)
+main brillant passage 1 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 310.17 ms = 3.224 img/s ; 1 % les plus lents (6 images) 410.59 ms = 2.435 img/s
+branche brillant passage 1 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 309.45 ms = 3.232 img/s ; 1 % les plus lents (6 images) 406.02 ms = 2.463 img/s
+branche chrome passage 1 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 312.96 ms = 3.195 img/s ; 1 % les plus lents (6 images) 413.24 ms = 2.420 img/s
+branche cameleon passage 1 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 320.23 ms = 3.123 img/s ; 1 % les plus lents (6 images) 419.69 ms = 2.383 img/s
+main brillant passage 2 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 311.88 ms = 3.206 img/s ; 1 % les plus lents (6 images) 432.45 ms = 2.312 img/s
+branche brillant passage 2 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 312.56 ms = 3.199 img/s ; 1 % les plus lents (6 images) 408.63 ms = 2.447 img/s
+branche chrome passage 2 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 310.04 ms = 3.225 img/s ; 1 % les plus lents (6 images) 410.87 ms = 2.434 img/s
+branche cameleon passage 2 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 311.82 ms = 3.207 img/s ; 1 % les plus lents (6 images) 426.96 ms = 2.342 img/s
