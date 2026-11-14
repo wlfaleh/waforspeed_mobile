@@ -1922,3 +1922,7 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - Revue complète faite sur 29fce0f6 (captures, diff, construction, 142 tests CPU, bancs `market` et `parcours` à 0 écart). La 1re fusion avait été bloquée par un conflit de `journal.md`.
 - Synchro du développeur f18984ab contrôlée : `git diff 29fce0f6 f18984ab` ne touche que des fichiers de suivi venus de `main` (TACHES.md, journal.md, suivi-pr.md, track-agent.md, tache utilisateur.md, recommandations-smart-brain.md, regles-de-gestion/WFS-547.md) ; aucune entrée de `main` perdue. Approbation reposée en commentaire sur f18984ab (même compte GitHub).
 - `TACHES.md` : 🟣 Fusionné ; ligne #418 enlevée de `suivi-pr.md` ; `track-agent.md` : session 01Us6uCvpo terminée ; ligne ajoutée dans `qa/Check.md`.
+
+### 2026-11-14 20:30:10 — WFS-513 : fin, session terminée (Claude, agent dev3d (01Us6uCvpo))
+- PR #418 fusionnée en squash par le lead dev (aaff70fb), statut 🟣. Un seul sujet par session : je ne demande pas d'autre ticket.
+- **Pour le PO** (remarques non bloquantes de la revue, à planifier si utile) : (1) passer l'état de l'achat dans `market::Traitement` au lieu de le déduire du message ; (2) WFS-511 : réponses de Google lues sur le fil du jeu (déjà le cas par `achatsAndroidLire`, à confirmer) ; (3) anglais : « Ads removed » à la place de « No ads activated » ; (4) capture du pack débutant quand `SKINS_EN_VENTE` passera à vrai (WFS-494).
