@@ -106,10 +106,10 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
         default: break;
     }
     titre = ui::majuscules(titre);
-    // mise en page : au-dessus de « Profil » (WFS-482), lui-même au-dessus de « Cadeau du jour » et de « Crédits » (boutons de 44 px,
-    // écarts de 10 px) : même calcul que profil.cpp ; aucun bouton existant ne bouge, aucune zone d'appui ne se recouvre
+    // mise en page : au-dessus de « Market » (WFS-513), lui-même au-dessus de « Profil » (WFS-482), « Cadeau du jour » et « Crédits »
+    // (boutons de 44 px, écarts de 10 px) : même calcul que market_ecran.cpp ; aucune zone d'appui ne se recouvre
     const float hBtn = 44 * kb, h = 58 * kb, pad = 16 * kb, tp1 = 12 * k, tp2 = 16 * k;
-    const float yProfil = H - m.bas - 14 * k - 3 * hBtn - 20 * k;
+    const float yProfil = H - m.bas - 14 * k - 4 * hBtn - 30 * k;   // WFS-513 : haut du bouton « Market »
     const float bp = 15 * k, bw = bouton.empty() ? 0 : ui::width(bp, ui::majuscules(ui::tr(bouton.c_str())), 0.1f) + 40 * kb, bh = 38 * kb;
     float wTexte = 0;
     { const textes::NomPropre np; wTexte = ui::width(tp1, titre, 0.14f); }

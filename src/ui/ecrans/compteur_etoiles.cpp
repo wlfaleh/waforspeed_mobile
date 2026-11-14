@@ -19,6 +19,7 @@
 #include "../credits.h"
 #include "cadeau_jour.h"   // WFS-501 : écran du cadeau du jour (compteur caché dessous)
 #include "profil.h"   // WFS-482 : écran Profil (compteur caché dessous)
+#include "market_ecran.h"   // WFS-513 : écran Market (compteur caché dessous)
 #include "../../game/course5.h"   // choixModeOuvert
 
 namespace wfs::ecrans::compteur_etoiles {
@@ -70,7 +71,7 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         float bx, by, bw, bh;
         const bool bouton = boutonReglages(bx, by, bw, bh);   // lu à chaque image : « Réglages » dessiné à cette image ?
-        if (!bouton || g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady() || choixModeOuvert() || credits::ouvert() || creationProfilOuverte() || cadeau_jour::ouvert() || profil_ecran::ouvert()) {   // WFS-482
+        if (!bouton || g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady() || choixModeOuvert() || credits::ouvert() || creationProfilOuverte() || cadeau_jour::ouvert() || profil_ecran::ouvert() || market_ecran::ouvert()) {   // WFS-482, WFS-513
             g_zone = {}; t0_ = -1; return;   // rien sans « Réglages », ni sous un panneau du menu ; fondu au retour
         }
         if (t0_ < 0 || g.time < t0_) t0_ = g.time;

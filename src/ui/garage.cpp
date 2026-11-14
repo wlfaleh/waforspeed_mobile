@@ -22,6 +22,7 @@
 #include "garage_fiche.h"
 #include "garage_finition.h"
 #include "garage_skin.h"
+#include "ecrans/market_ecran.h"   // WFS-513 (accroche) : bouton et écran « Market »
 
 namespace wfs {
 namespace ecrans {
@@ -112,6 +113,7 @@ public:
         // WFS-113 : un doigt = un appui. Le doigt qui a actionné un bouton est ignoré jusqu'à ce qu'il se relève
         // (sur Android, ses micro-mouvements arrivent aussi comme des appuis : la flèche sautait des voitures)
         if (appui_.consomme(t.id, t.down)) return true;
+        if (market_ecran::ouvert()) return market_ecran::toucher(t.id, t.x, t.y, t.down);   // WFS-513 (accroche) : Market par-dessus le garage
         if (FenetreAchatVoiture& f = achat_.fenetre(); f.ouverte()) {   // WFS-499 (accroche) : la fenêtre d'achat garde tous les touchers
             if (const int c = t.down ? f.appui(t.x, t.y) : -1; c >= 0) { appui_.prendre(t.id); if (c == f.CONFIRMER && f.confirmer() && g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); else if (c == f.ANNULER) f.fermer(); }
             return true;
@@ -133,6 +135,7 @@ public:
                 return true;
             }
             if (doigt_ >= 0) return true;
+            if (market_ecran::dansBoutonGarage(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("garage : « Market »"); market_ecran::ouvrir(Ecran::Garage); return true; }   // WFS-513 (accroche, RG-01)
             // boutons et panneaux, dans l'ordre d'avant le découpage : action à l'appui (comme les boutons de la pause)
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
@@ -180,6 +183,7 @@ public:
         finition_.dessiner(r, mp, e);       // rangée « Finition » (WFS-491)
         skin_.dessiner(r, mp, e);           // vide (WFS-494)
         cadre::pied(r, mp, car, voiture_.ok);
+        market_ecran::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, mp.op);   // WFS-513 (accroche, RG-01) : sous le solde d'étoiles
         achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout
     }
 
