@@ -1786,3 +1786,10 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - PR #414 fusionnée par le lead dev (squash 651dc471), WFS-502 en 🟡 À valider (utilisateur) ; message laissé à l'utilisateur dans `tache utilisateur.md` (essai sur l'APK de `main`).
 - Pour le PO : défaut d'avant ce ticket, vu par le lead dev : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles ; aucune capture du menu en petit écran pour le bandeau du prêt (à regarder par l'utilisateur).
 - Session terminée : un seul ticket par session, aucun autre ticket demandé.
+
+### 2026-11-14 16:30:41 — WFS-511 attribué à Claude, agent dev3d (01Us6uCtfa) (po-scrum-master)
+- Début : WFS-511 « Android : Google Play Billing » (E21, zone E7 : `android/**`, `src/platform/*_android.cpp`), P1, branche `feature/waforspeed-511`, à Claude, agent dev3d (01Us6uCtfa) (session_01Us6uCtfaZCtBn6FQY7UQw9), nouvelle session `@dev`, à sa demande.
+- Choix : classement 📋 des 40 ; 1 à 12 fusionnés, pris ou en attente (493 en retour lead dev, 494, 496, 497, 503, 538 en attente), 13 `@cicd`, 14 `@conduite` → 15e WFS-511, dépendance WFS-510 fusionnée (#390).
+- Critères : `regles-de-gestion/WFS-511.md` (RG-01 à RG-09 : bibliothèque Billing ≥ 7, `Achats.java` + `achats_android.cpp`, créditer puis consommer, rattrapage au lancement, restauration, hors ligne sans plantage, aucun jeton complet au journal, tests JVM). Vrai essai Play Console : WFS-515.
+- Plan court : `Achats.java` sur le modèle de `Paquets.java`, pont JNI sur le modèle de `paquets_android.cpp`, branchement sur `Boutique` de WFS-510, tests JVM avec un faux client, captures (tests JVM, logcat, banc `market`), PR, lead dev.
+- Prochaine `@dev` : WFS-513 (écran Market, prêt).
