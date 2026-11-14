@@ -973,6 +973,7 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
 - Construction et tests refaits sur 65a929a0 fusionné en local avec main 318f2ce9 : **128 test(s) réussi(s)**, dont `test_eau`.
 - Seul blocage : **nouveau conflit avec main sur `journal.md`** (GitHub `dirty` ; entrées WFS-490, 536, 410 arrivées après la synchronisation b2577f8c). À faire : resynchroniser, pousser, rappeler le lead dev aussitôt ; la prochaine revue ne vérifie que le diff de la synchronisation.
 - Remarques non bloquantes : `else WFS_ERR` du dauphin (`plage.cpp:3387-3389`) toujours attaché au 2e `if` ; `atan(0, 0)` au centre de la nappe de la gerbe.
+
 ### 2026-11-13 15:48:21 — WFS-401 : début, branche créée (Claude, agent dev3d (01Us6uCxKQ))
 - Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
 - Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.
@@ -1533,6 +1534,7 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
 - Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
 - Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
+
 ### 2026-11-14 10:44:24 — WFS-543 : crédits des remplaçants reliés au contrôle, CI de branche #1066 (Claude, agent dev3d (01Us6uCwcF))
 - Cause (RG-01, déjà trouvée par le PO) : WFS-397 (PR #393, 7c51937c) a livré `assets/cars/remplacants/w212.*` et `virtus.*` ; `verifier_licences.py` ne cherchait le crédit d'un fichier `cars/` que dans CARS[] → 4 manques, `build.yml` rouge depuis #1054.
 - Correction (`feature/waforspeed-543`) : une ligne COUVERTURE **par modèle** (w212 → Peter_D + `remplacants/w212.txt`, virtus → BHP3D + `remplacants/virtus.txt`), `cars/remplacants/` passé de la branche CARS[] à COUVERTURE (tout autre fichier de ce dossier reste un manque) ; section « Voitures à venir » dans AUTRES (libellés sans marque) ; `CREDITS.txt` et `store/credits.md` régénérés par `--generer` (fichier généré et vérifié par le même script : hors zone annoncée mais obligatoire).
@@ -1636,6 +1638,9 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - **WFS-502** (P1, E19 : E3 `src/game/**` état du prêt, E5 panneaux du garage, E8 `src/ui/ecrans/**`, accroches ≤ 10 lignes annoncées) attribué à cette session, qui n'avait rien commencé sur WFS-511 ; règles `regles-de-gestion/WFS-502.md`, `regles-de-gestion/E19-cadeau-du-jour.md` ; branche `feature/waforspeed-502`. Aucun autre ticket actif sur les panneaux du garage ; WFS-482 (🔧) touche aussi `src/ui/ecrans/**` et le menu : se synchroniser avec `main`.
 - **WFS-511** revient ⏳ Prêt (15e) pour la prochaine session `@dev`.
 
+### 2026-11-14 13:22:17 — WFS-502 : début, branche feature/waforspeed-502 (Claude, agent dev3d (01Us6uCv9g))
+- Ticket attribué par le PO (voiture prêtée 3 h). Lecture des règles WFS-502 et E19, étude du code de WFS-498 à 501 avant de coder.
+
 ### 2026-11-14 13:42:40 — WFS-493 : branche poussée, 18 textures faites, captures en cours (Claude, agent dev3d (01Us6uCwTQ))
 - Fait : `tools/skins/generer.py` dessine Drift Tokyo (dégradé vermillon penché à 35°, entailles noires, 3 signes inventés, ni lettre ni idéogramme), Néon nuit (filets cyan et magenta ; émission la nuit seulement, 0,5 × la couleur : luminance ≤ celle d'un feu arrière de position) et Camouflage (blanc, gris, noir ; taches dessinées de 20 à 60 cm, posées en 3D : continues d'un panneau à l'autre ; taille mesurée à chaque génération) ; 18 textures EAC RG11 de 1,33 Mo (≤ 1,5 Mo).
 - Accroches : `shaders/vehicule.glsl` (couleurs, émission du Néon) et une ligne dans `shaders/scene.frag` ; banc `WFS_BANC=skins` (variable `WFS_SKINS`) ; `test_vehicule_skin` vérifie les 18 nouvelles textures (OK).
@@ -1656,3 +1661,128 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Revue du commit e85d008 : 26 captures ouvertes, diff lu en entier, branche construite, 140 tests CPU verts, banc `profil` relancé (0 écart FR + EN). Logique saine (« Valider » ne remet pas les statistiques à zéro, accroches ≤ 10 lignes annoncées).
 - Refus (revue « changements demandés » écrite dans la PR) : (1) capture des tests CPU absente (`qa/pr/WFS-482/tests-cpu.log` et section « Tests CPU », règle du 2026-11-11) ; (2) RG-08 : dans le formulaire « Modifier », le pseudo de 16 « W » et le curseur sortent du cadre du champ (`creation_profil.cpp`, `champ()`, taille fixe sans limite de largeur ; captures `profil-*-16w-modification`).
 - Statut : ↩️ Retour lead dev (PR #412) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 14:24:53 — WFS-502 : code, tests et captures faits, PR ouverte (Claude, agent dev3d (01Us6uCv9g))
+- Fait : prêt de voiture du cadeau du jour (`src/game/pret.*`, système `pret` 206), bandeau du menu (`src/ui/ecrans/pret_bandeau.*`), garage (carte du prêt, « Activer le prêt »), écran du cadeau (« Activer » lance le prêt), clés `pret-restant-vu`, `pret-avant`, `pret-message`, textes FR / EN.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `src/ui/ecrans/menu.cpp` (4), `src/ui/garage.cpp` (4) et `garage.h` (2), `src/game/profil_system.cpp` (2 : la voiture prêtée n'utilise pas l'essai gratuit), `src/ui/ecrans/cadeau_jour.cpp`. Test de WFS-500 mis à jour (`test_cadeau` : un seul prêt à la fois, RG-01 de WFS-502).
+- Vérifié : `test_pret` (39 cas RG-08), `test_garage_voitures`, tests CPU 141/141 verts ; banc `WFS_BANC=cadeau` (pret-attente, pret-actif, pret-fin) : parcours RG-10 complet FR / EN, 0 erreur, textes WFS-504 VERT ; 28 captures de WFS-501 identiques à main (RMSE 0).
+- Parcours RG-10 : menu → cadeau (voiture) → garage « Activer le prêt » → « Prêtée : 2 h 41 min » → « Choisir » → menu (bandeau) → course jour et nuit → fin du prêt pendant la course (voiture gardée) → menu « Garde-la pour toujours : 2 400 ★ » → « Garage » (bloquée, prix) → prêt expiré → relance (état gardé).
+- Limite : « Rejouer » après une fin de prêt pendant la course repart avec la voiture prêtée jusqu'au prochain passage au menu ; Market : bouton « Garage » en attendant.
+
+### 2026-11-14 14:19:31 — WFS-493 : PR #413 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwTQ))
+- PR #413 (commit 1f756edf, branche synchronisée avec `main`) : 18 textures (Drift Tokyo, Néon nuit, Camouflage × 6 voitures), lueur du Néon la nuit (`vehicule.glsl` + 1 ligne d'accroche dans `scene.frag`), banc `skins` (`WFS_SKINS`), `test_vehicule_skin` étendu.
+- Vérification : 140 tests CPU réussis ; 55 captures du banc lavapipe regardées (`qa/pr/WFS-493/`) ; Rallye et vitrine sans skin identiques à `main` (PSNR 37 à 57 dB) ; contrôle des licences : 0 manque.
+- Limites : la partie visible des taches grises du Camouflage est plus petite que la tache dessinée (les noires mordent dessus) ; banc d'endurance non relancé (coût du shader : un test et une addition par pixel habillé).
+
+### 2026-11-14 14:20:10 — WFS-543 : CI de main verte (RG-04) (Claude, agent dev3d (01Us6uCwcF))
+- Run **#1073** de `build.yml` sur `main` (39d1ddc7, contient la fusion de WFS-543 8cb64d33) : **vert** (success), tous les jobs, banc-essai (texte) compris. Première CI de `main` verte depuis #1049. Reste pour RG-04 : bancs du matin suivants (robot des statuts).
+
+### 2026-11-14 14:29:30 — WFS-482 : retour du lead dev corrigé (PR #412) (Claude, agent dev3d (01Us6uCv3H))
+- Point 1 : `qa/pr/WFS-482/tests-cpu.log` (140 tests réussis) et section « Tests CPU » dans la PR.
+- Point 2 (RG-08) : cause : `champ()` de `creation_profil.cpp` dessinait le texte saisi à taille fixe ; il est maintenant réduit pour tenir dans le champ, curseur placé d'après la taille réelle ; nouvelle vérification au banc `profil` (OK FR / EN), banc `creation` 0 écart ; captures 16 « W » régénérées.
+- Commit e00de6d5, synchronisé avec `main` (dd79a20b) ; réponse point par point sous la revue ; lead dev rappelé.
+
+
+### 2026-11-14 14:33:22 — WFS-493 refusé par le lead dev, PR #413 (lead-dev)
+- Commit relu : 1f756edf. Toutes les captures ouvertes (55 après, 19 avant) ; tout le diff lu ; construction et tests sur la branche synchronisée avec `main` : 140 tests réussis.
+- Néon nuit, Drift Tokyo et non-régression Rallye / sans skin : bons ; code propre (accroche de `scene.frag` en 1 ligne).
+- **Refus** : (1) le Camouflage ressemble à une robe de vache (taches noires rondes et isolées sur fond surtout blanc, gris presque absent), pas à un camouflage urbain (RG-04) ; (2) section « Tests CPU » avec le commit testé absente de la description (règle du 2026-11-11) ; (3) banc d'endurance en qualité Basse non lancé (RC-E18-03).
+- Revue dans la PR : https://github.com/wlfaleh/waforspeed_mobile/pull/413#pullrequestreview-5904959985 . Statut : ↩️ Retour lead dev (PR #413).
+
+### 2026-11-14 14:37:51 — WFS-482 fusionné par le lead dev (lead-dev)
+- Revue du commit dd79a20b (correction e00de6d5) : réponse du développeur sous la revue présente (« Bien reçu », puis « corrigé dans e00de6d5 » point par point). Captures `profil-fr/en-16w-modification` régénérées ouvertes : texte et curseur dans le cadre du champ ; `creation-fr-vide` inchangée.
+- Vérifié moi-même : construction OK, `tests_cpu.sh build` 140 réussis ; banc `profil` FR + EN 0 écart (nouvelle vérification RG-08 « Modifier » OK) ; banc `creation` 0 écart. Diff de e00de6d5 lu : rien de bloquant.
+- « ✅ Approuvé » posté en commentaire de revue (GitHub refuse l'approbation sur le même compte), fusion en squash de89e0f1 (#412). Statut 🟣 Fusionné ; ligne `suivi-pr.md` retirée ; `qa/Check.md` à jour.
+
+### 2026-11-14 14:38:20 — WFS-482 : fin de session (Claude, agent dev3d (01Us6uCv3H))
+- PR #412 fusionnée par le lead dev (de89e0f1) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` posée par le lead dev.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+
+### 2026-11-14 14:45:01 — WFS-502 : retour lead dev sur PR #414 (lead-dev)
+- Revue complète du commit 31029178 : 20 captures `pret-*` ouvertes (FR / EN), 28 paires `cadeau-*` identiques à main (RMSE 0), diff entier lu, branche construite et 141 tests CPU refaits : fond du ticket bon (avis écrit dans la PR).
+- Fusion refusée par GitHub : conflit avec `main` après la fusion de WFS-482 (#412). `src/ui/ecrans/menu.cpp` (enum `PROFIL = 7` / `PRET = 7`, 4 blocs) et `journal.md`. Surtout, le bouton « Profil » occupe la place du bandeau du prêt (même bas) : chevauchement à l'écran.
+- Demandé : synchroniser avec main, `PRET = 8`, bandeau au-dessus de « Profil » sans déplacer les boutons, tests et banc relancés, captures du menu (attente / actif / fin / expiré, FR et EN) avec « Profil » visible.
+- Remarque au PO : prix des pastilles du garage en anglais à peine lisibles (« 100 ★ » rendu flou en petit), défaut d'avant ce ticket.
+
+### 2026-11-14 14:46:27 — WFS-495 : PR #415 ouverte, autocollants cuits dans la texture d'habillage (Claude, agent dev3d (01Us6uCv3C))
+- **Fait** :
+  - les autocollants sont cuits dans la texture d'habillage de WFS-492, par la même projection : rien ne flotte (ANO-250), rien sur les vitres, phares, calandre ni jantes ;
+  - `src/render/vehicule_autocollants.*` : calques, texte court, 50 motifs vectoriels originaux (lettres en Rajdhani Bold, OFL), rastérisation à couverture exacte, cuisson skin + calques ;
+  - `vehicule_etc2.*` : encodeur et décodeur ETC2 RGBA8 ;
+  - `vehicule_skin::poser(…, calques)` : skin n° 5 « cuit », une seule texture ;
+  - `shaders/vehicule.glsl` : `habillageCuit` ;
+  - banc `WFS_BANC=autocollants` et test `test_vehicule_autocollants`.
+- **Accroches** (hors zone, ≤ 10 lignes) : `src/game/game.cpp` (1 ligne : variable `WFS_AUTOCOLLANTS` ; l'atelier WFS-496 y branchera la sauvegarde), `src/platform/desktop_main.cpp` (2 lignes : banc), `CMakeLists.txt` (1 ligne : test).
+- **Vérifié** :
+  - 141 tests CPU réussis ;
+  - 3 voitures (208, GT86, Corvette) : bande capot-toit-coffre, flamme coupée par le passage de roue, numéro sur les portières, de jour, de nuit et en course ;
+  - cuisson de 48 à 76 ms sur PC (4 cœurs) ;
+  - captures `skins` identiques au pixel près à `main` ;
+  - qualité Basse : 3,891 contre 3,843 img/s, soit 0,05 img/s d'écart (`qa/pr/WFS-495/mesure-basse.txt`).
+- **Limites et risques** :
+  - la clé de sauvegarde des calques et l'atelier restent à faire (WFS-496 et WFS-497) ; `creation-<voiture>` n'accepte qu'un identifiant de 32 caractères ;
+  - un miroir de lettres inverse l'ordre d'un mot ;
+  - le temps de cuisson sur le S21 FE n'est pas mesuré sur l'appareil.
+- **Pour le PO et WFS-493 (01Us6uCwTQ)** :
+  - même bloc `SKIN_COULEURS` du shader : la PR fusionnée en second garde les deux ;
+  - `test_vehicule_autocollants` exige que `vehicule_skin::couleurs` (C++) recopie `SKIN_COULEURS` ;
+  - la lueur de nuit du Néon ne passe pas dans la texture cuite (Néon + autocollants : plus de lueur) : à trancher par le PO (petit ticket de suite possible).
+
+
+### 2026-11-14 15:00:19 — WFS-495 : PR #415 refusée par le lead dev (lead-dev)
+- Commit relu `cdea30d4`. **Un seul défaut** : la section « Tests CPU » (fin du journal avec le commit testé) manque dans la description de la PR (règle de l'utilisateur du 2026-11-11, absente = REFUS).
+- Tout le reste est vérifié et bon :
+  - captures ouvertes (3 voitures, jour, nuit, course, gros plans, skin Rallye, bibliothèque) ;
+  - 7 paires `skins` identiques octet pour octet à main ;
+  - construction et 141 tests refaits par le lead dev ;
+  - ETC2 recoupé avec le décodeur indépendant `tools/textures/etc2.py` : 0 écart ;
+  - diff lu en entier.
+- Le développeur ajoute la section, puis rappelle le lead dev.
+
+### 2026-11-14 15:07:48 — WFS-495 : PR #415 corrigée après le refus du lead dev (Claude, agent dev3d (01Us6uCv3C))
+- **Refus** : la section « Tests CPU » manquait dans la PR (règle du 2026-11-11).
+- **Correction** (commit `b5afdf16`) :
+  - la section est ajoutée à la description de la PR et à `qa/pr/WFS-495/pr.md` : fin du journal, ligne « 141 test(s) réussi(s) », `[OK] test_vehicule_autocollants`, commit testé `b39bc7e0` ;
+  - le commit testé est écrit en tête de `tests-cpu.log` ;
+  - remarque non bloquante prise aussi : un échec de cuisson est maintenant écrit au journal (`b39bc7e0`).
+- **Réponses** dans la PR : « Bien reçu », puis « corrigé dans ».
+- **Suite** : ticket en 🔀 En PR, ligne en 🔁 dans `suivi-pr.md`, lead dev rappelé.
+
+
+### 2026-11-14 15:22:04 — WFS-495 fusionné par le lead dev (lead-dev)
+- **PR #415**, 2e revue sur `b5afdf16`, squash `719afd1d`. « ✅ Approuvé par le lead dev » posté en commentaire, car GitHub refuse l'approbation avec le même compte.
+- **Défaut de la 1re revue corrigé** : la section « Tests CPU » est présente, avec le commit testé `b39bc7e0`. Le seul changement de code est une ligne de journal en cas d'échec de la cuisson.
+- **Captures** : rouvertes, tout est conforme. Sans autocollant, les captures `skins` sont identiques à `main` octet pour octet.
+- **Vérification** : construction et `tests_cpu.sh` refaits sur la branche synchronisée avec `main` : 141 tests réussis.
+- **Statuts** : ticket 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne de `track-agent.md` en « fusionnée », entrée ajoutée dans `qa/Check.md`.
+
+### 2026-11-14 15:22:29 — WFS-502 : retour lead dev, PR #414 à resynchroniser (lead-dev)
+Relecture du commit 5eefd514 : tous les points du retour précédent sont corrigés. Le bandeau est au-dessus de « Profil » (même calcul que profil.cpp) et `PROFIL = 7` / `PRET = 8` sont gardés. J'ai ouvert les 8 captures du menu en FR et en EN ; les 28 paires `cadeau-*` ont un écart RMSE de 0. Construction et tests refaits : 141 tests réussis. Approbation écrite dans la PR. La fusion squash est refusée par GitHub parce que WFS-495 (#415) est entré dans `main` pendant la revue (conflit dans `journal.md` seulement). Retour au développeur : resynchroniser, relancer les tests CPU, recopier `pr.md` dans la description, puis rappeler le lead dev.
+
+### 2026-11-14 15:22:37 — Fin WFS-495 : session terminée (Claude, agent dev3d (01Us6uCv3C))
+- PR #415 fusionnée en squash par le lead dev (`719afd1d`) à la 2e revue ; ticket 🟣 Fusionné, le robot des statuts le passera en ✅ après les bancs du matin.
+- `qa/Check.md` : entrée ajoutée par le lead dev.
+- **Reste à suivre par d'autres sessions** :
+  - temps de cuisson et mémoire temporaire (environ 40 Mo) à mesurer sur le S21 FE ;
+  - la clé de sauvegarde des calques et l'atelier : WFS-496 et WFS-497 ;
+  - lueur du Néon sous des autocollants (WFS-493) : décision du PO.
+- Un seul ticket par session : cette session s'arrête et ne demande pas d'autre ticket.
+
+
+### 2026-11-14 15:01:04 — WFS-502 : retour du lead dev corrigé (PR #414) (Claude, agent dev3d (01Us6uCv9g))
+- Synchronisation avec main (WFS-482) : conflits de `menu.cpp` (`PROFIL = 7`, `PRET = 8`) et du journal résolus en gardant les deux côtés.
+- Bandeau du prêt posé au-dessus de « Profil » (même calcul que `profil.cpp`), aucun bouton existant déplacé, zones d'appui séparées ; temps restant aussi écrit à chaque changement d'écran ; ligne inutile retirée de `test_pret`.
+- Vérifié : tests CPU 141/141 ; banc `cadeau` refait avant / après (48 après, 28 paires de WFS-501 identiques) ; menus FR / EN regardés : « Profil » visible et libre.
+- Pour le PO (défaut d'avant ce ticket, vu par le lead dev) : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles.
+
+### 2026-11-14 15:53:58 — WFS-502 fusionné par le lead dev (lead-dev)
+- PR #414, squash `651dc471`, revue sur `6d86ca96` (« ✅ Approuvé » en commentaire, même compte GitHub).
+- Relecture du commit de synchronisation `f2d01c6a` : la fusion automatique des deux parents, refaite par le lead dev, ne diffère que par `journal.md` (entrées des deux côtés gardées). Aucun fichier de code commun avec WFS-495 ; `CMakeLists.txt` construit `test_pret` et `test_vehicule_autocollants`.
+- Construction et tests CPU refaits par le lead dev sur `6d86ca96` : 142 réussis, code de sortie 0.
+- Statut 🟡 À valider (utilisateur) ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 15:54:33 — WFS-502 : fin de session (Claude, agent dev3d (01Us6uCv9g))
+- PR #414 fusionnée par le lead dev (squash 651dc471), WFS-502 en 🟡 À valider (utilisateur) ; message laissé à l'utilisateur dans `tache utilisateur.md` (essai sur l'APK de `main`).
+- Pour le PO : défaut d'avant ce ticket, vu par le lead dev : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles ; aucune capture du menu en petit écran pour le bandeau du prêt (à regarder par l'utilisateur).
+- Session terminée : un seul ticket par session, aucun autre ticket demandé.

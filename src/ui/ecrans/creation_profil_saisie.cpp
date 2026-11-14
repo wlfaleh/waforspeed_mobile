@@ -71,6 +71,16 @@ void Saisie::ouvrir(const std::string& pseudoPropose, uint32_t graine) {
     proposerPlaque();
 }
 
+void Saisie::modifier(const std::string& pseudo, const std::string& plaque) {
+    pseudo_ = pseudo.substr(0, profil::PSEUDO_MAX);
+    plaque_ = plaque.substr(0, profil::PLAQUE_MAX);
+    champ_ = Champ::Pseudo;
+    maj_ = pseudo_.empty();
+    plaqueTouchee_ = true;   // plaque gardée telle quelle, même si le pseudo change
+    plein_ = false;
+    pseudoEcrit_ = !pseudo_.empty();
+}
+
 void Saisie::proposerPlaque() {
     if (plaqueTouchee_) return;
     g_hasard = Mulberry32(graine_);

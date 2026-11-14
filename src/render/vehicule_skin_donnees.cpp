@@ -46,6 +46,18 @@ int depuisId(const char* id) {
     return AUCUNE;
 }
 
+bool couleurs(int skin, float a[3], float b[3]) {
+    // codes sRGB 0..1, mêmes valeurs que SKIN_COULEURS (shaders/vehicule.glsl) : 2 couleurs par skin, numéros 0 à NOMBRE
+    static const float C[(NOMBRE + 1) * 2][3] = {{0, 0, 0}, {0, 0, 0},
+        {0.91f, 0.91f, 0.89f}, {0.10f, 0.11f, 0.125f},   // 1 Rallye
+        {0.93f, 0.30f, 0.10f}, {0.06f, 0.06f, 0.07f},    // 2 Drift Tokyo (WFS-493)
+        {0.0f, 0.90f, 1.0f}, {1.0f, 0.12f, 0.85f},       // 3 Néon nuit (WFS-493)
+        {0.85f, 0.86f, 0.84f}, {0.09f, 0.09f, 0.10f}};   // 4 Camouflage (WFS-493)
+    if (skin <= AUCUNE || skin > NOMBRE) return false;
+    for (int c = 0; c < 3; c++) { a[c] = C[skin * 2][c]; b[c] = C[skin * 2 + 1][c]; }
+    return true;
+}
+
 std::string chemin(const char* idVoiture, const char* idSkin) {
     return std::string("cars/skins/") + (idVoiture ? idVoiture : "") + "-" + (idSkin ? idSkin : "");
 }

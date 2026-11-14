@@ -126,6 +126,9 @@ static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string
     else if (k == "pret-voiture") { if (voitureExiste(v)) c.pretVoiture = v; }
     else if (k == "pret-recu") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretRecu = n; }
     else if (k == "pret-fin") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretFin = n; }
+    else if (k == "pret-restant-vu") { if (entier(v, n) && n >= 0 && n <= 30 * 86400LL) c.pretRestantVu = n; }   // WFS-502 (RG-04)
+    else if (k == "pret-avant") { if (voitureExiste(v)) c.pretAvant = v; }                                        // WFS-502 (RG-05)
+    else if (k == "pret-message") { if (resultatSur(v)) c.pretMessage = v; }                                      // WFS-502 : « fin;m4 »
     else if (c.inconnues.size() < 32 && k.size() <= 40 && v.size() <= 200) c.inconnues[k] = v;   // version plus récente : gardée, réécrite telle quelle
     return true;
 }
@@ -213,7 +216,10 @@ std::string Sauvegarde::texte() const {
         if (!cadeau.dernier.empty()) o << "cadeau-dernier=" << cadeau.dernier << "\n";
     }
     if (!cadeau.pretVoiture.empty())   // WFS-500 (RG-09) : déclarées ici, utilisées par WFS-502
-        o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n";
+        o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n"
+          << "pret-restant-vu=" << cadeau.pretRestantVu << "\n";   // WFS-502 (RG-04, RG-06)
+    if (!cadeau.pretVoiture.empty() && !cadeau.pretAvant.empty()) o << "pret-avant=" << cadeau.pretAvant << "\n";   // WFS-502 (RG-05)
+    if (!cadeau.pretMessage.empty()) o << "pret-message=" << cadeau.pretMessage << "\n";                           // WFS-502 : message pas encore vu
     for (const auto& [k, v] : cadeau.inconnues) o << k << "=" << v << "\n";   // WFS-500 : clés d'une version plus récente, gardées
     profil.ecrire(o);   // WFS-480 (RG-11) : nouvelles clés, aucune ancienne retirée
     return o.str();

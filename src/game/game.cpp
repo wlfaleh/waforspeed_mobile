@@ -91,7 +91,8 @@ void Game::setCar(const char* carId) {
     loadCarModel(*r_, std::string(carDef_->file), car_);
     {   // WFS-492 (accroche) : skin possédée de cette voiture (une seule texture d'habillage en mémoire) ; bancs : WFS_SKIN=<id>
         const char* sk = std::getenv("WFS_SKIN") ? std::getenv("WFS_SKIN") : sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), carDef_->id).skin : "";
-        vehicule_skin::poser(*r_, car_, carDef_->id, sk);
+        const char* ac = std::getenv("WFS_AUTOCOLLANTS");   // WFS-495 (accroche) : autocollants cuits par-dessus (bancs ; l'atelier : WFS-496)
+        vehicule_skin::poser(*r_, car_, carDef_->id, sk, ac ? ac : "");
     }
     plaque_joueur::voiturePreparee(*r_, carDef_->id);   // WFS-483 (accroche) : porte-plaques et texte, avant la course
     player_.reset(*carDef_);

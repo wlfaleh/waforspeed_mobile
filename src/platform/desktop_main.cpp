@@ -76,10 +76,12 @@ namespace wfs { void benchPlaquesAutres(Game& g, Renderer& r, const std::string&
 namespace wfs { void benchPeinture2(Game& g, Renderer& r, const std::string& out); void benchPeinture2Mesure(Game& g, Renderer& r, const std::string& out); }   // WFS-488 (accroche) : vehicule_peinture2_banc.cpp, _mesure.cpp
 namespace wfs { void benchFinitions(Game& g, Renderer& r, const std::string& out); }   // WFS-490 (accroche) : vehicule_finitions_banc.cpp
 namespace wfs { void benchSkins(Game& g, Renderer& r, const std::string& out); }   // WFS-492 (accroche) : vehicule_skin_banc.cpp
+namespace wfs { void benchAutocollants(Game& g, Renderer& r, const std::string& out); }   // WFS-495 (accroche) : vehicule_autocollants_banc.cpp
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
 #include "../ui/ecrans/creation_profil.h"   // WFS-481 (accroche) : WFS_BANC=creation
+#include "../ui/ecrans/profil.h"   // WFS-482 (accroche) : WFS_BANC=profil
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
 #include "../ui/ecrans/cadeau_jour.h"   // WFS-501 (accroche) : WFS_BANC=cadeau
 #include "../game/score_fin.h"   // WFS-537 (accroche) : WFS_BANC=score-fin
@@ -229,6 +231,7 @@ int main(int argc, char** argv) {
     if (banc == "score-fin") { ui::chargerPolice(r); const int e = score_fin::benchScoreFin(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-537 (accroche) : écran de fin du score, compteur d'étoiles du menu
     if (banc == "credits") { ui::chargerPolice(r); const int e = credits::benchCredits(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-406 (accroche) : menu → Crédits → retour, garage des voitures renommées
     if (banc == "creation") { const int e = ecrans::benchCreationProfil(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-481 (accroche) : création du profil (WFS_LANGUE=fr|en)
+    if (banc == "profil") { const int e = ecrans::profil_ecran::benchProfil(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-482 (accroche) : écran Profil (WFS_LANGUE=fr|en)
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
@@ -266,6 +269,7 @@ int main(int argc, char** argv) {
     if (banc == "peinture2-mesure") { benchPeinture2Mesure(g, r, out); return finir(); }   // WFS-488 (accroche) : img/s en Basse (RC-E18-03)
     if (banc == "finitions") { benchFinitions(g, r, out); return finir(); }   // WFS-490 (accroche) : 8 finitions de la peinture
     if (banc == "skins") { benchSkins(g, r, out); return finir(); }   // WFS-492 (accroche) : skin Rallye sur 6 voitures
+    if (banc == "autocollants") { benchAutocollants(g, r, out); return finir(); }   // WFS-495 (accroche) : autocollants sur 3 voitures
     if (banc == "phares-optiques") { benchPharesOptiques(g, r, out); return finir(); }   // WFS-413 (accroche) : optiques avant de nuit   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
     if (banc == "phares") { ui::chargerPolice(r); benchPhares(g, r, out); return finir(); }   // WFS-382 (accroche) : banc court des phares de nuit

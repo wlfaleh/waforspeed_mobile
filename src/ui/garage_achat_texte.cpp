@@ -49,4 +49,12 @@ std::string questionAchat(const std::string& nom, long long prix) {
 
 std::string texteEquivalentVoiture(long long prix) { return "≈ " + texteMedailles(prix) + " · ≈ " + texteEuros(prix); }
 
+// WFS-502 (RG-03) : « 2 h 41 min », « 41 min » (minutes arrondies au-dessus : jamais « 0 min » tant qu'il reste du temps)
+std::string texteDuree(long long secondes) {
+    const long long m = secondes <= 0 ? 0 : (secondes + 59) / 60;
+    if (m < 60) return ui::tr("pret.duree.min", std::to_string(m));
+    const long long mm = m % 60;
+    return ui::tr("pret.duree.h", std::to_string(m / 60), (mm < 10 ? "0" : "") + std::to_string(mm));
+}
+
 } // namespace wfs::ecrans::garage

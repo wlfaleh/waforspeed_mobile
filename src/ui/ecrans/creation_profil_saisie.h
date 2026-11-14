@@ -54,6 +54,9 @@ public:
     // pseudoPropose : pseudo actuel d'un joueur déjà installé (Profil::pseudoPropose, WFS-480 RG-05), vide sinon ;
     // graine : hasard de la plaque de secours « WFS-123 » (même graine = même plaque proposée pendant tout l'écran)
     void ouvrir(const std::string& pseudoPropose, uint32_t graine);
+    // WFS-482 (RG-07) : « Modifier » de l'écran Profil : pseudo et plaque actuels ; la plaque ne suit plus le pseudo (le joueur
+    // l'a déjà choisie : changer de pseudo ne doit pas remplacer sa plaque) ; mêmes règles et même clavier ensuite
+    void modifier(const std::string& pseudo, const std::string& plaque);
     void choisirChamp(Champ c) { champ_ = c; plein_ = false; }
     // RG-03 : appui sur une touche du clavier (sans effet si la touche n'est pas active dans le champ)
     void appuyer(const Touche& t);

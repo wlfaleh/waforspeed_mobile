@@ -31,6 +31,9 @@ namespace wfs::vehicule_skin {
 
 constexpr int AUCUNE = 0;   // numéro 0 : aucune skin (aspect d'avant, au bit près)
 constexpr int NOMBRE = 4;   // skins du catalogue (BOUTIQUE_SKINS_IDS de configgame.h) : numéros 1 à 4
+// WFS-495 : numéro 5 = habillage cuit (skin éventuelle + autocollants, vehicule_autocollants.h) : texture RGBA (RGB = couleur en
+// codes sRGB, A = couverture), lue par le shader au lieu des masques A / B
+constexpr int CUIT = 5;
 
 // cadre du dépliage, en mètres du repère de la voiture (avant vers −Z, posée au sol, centrée) ; mêmes valeurs dans le shader
 // (SKIN_*) et dans tools/skins/generer.py (ATLAS). Lignes de la texture (pixels sur 1024) : zones séparées par 8 px de marge.
@@ -54,15 +57,23 @@ std::string chemin(const char* idVoiture, const char* idSkin);
 // la skin précédente est libérée d'abord (une seule texture en mémoire). idSkin vide ou inconnu, ou texture absente : aucune skin
 // (aspect d'avant), faux. À appeler hors course (chargement de la voiture), GPU arrêté sur l'ancienne skin.
 bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin);
+// WFS-495 : même chose avec des autocollants (texte des calques, vehicule_autocollants.h) cuits par-dessus la skin, en une seule
+// texture ETC2 RGBA8 (RC-E18-02) ; calques vide : exactement poser() ci-dessus (skin seule, aspect de WFS-492 au bit près).
+// Cuisson sur le processeur (< 1 s, RG-03), jamais en course. Faux si rien n'est posé.
+bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin, const std::string& calques);
 void liberer(Renderer& r);   // texture et matériaux rendus (GPU arrêté : à l'appelant d'attendre la fin des images en vol)
 
 // matériau habillé de la pièce d'indice « materiau » du modèle m (peinture du joueur), sinon nullptr (aspect d'avant)
 const Material* materiau(const Model& m, uint32_t materiau);
-// métal codé (pc.params.x, déjà codé avec la finition) + 16 × numéro de la skin posée
+// métal codé (pc.params.x, déjà codé avec la finition) + 16 × numéro de la skin posée (CUIT si autocollants)
 float coder(float metalCode);
+// WFS-495 : couleurs A et B d'une skin (codes sRGB 0..1), copie de SKIN_COULEURS de shaders/vehicule.glsl (contrôlée par
+// tests/test_vehicule_autocollants.cpp) ; faux si la skin n'a pas de couleurs
+bool couleurs(int skin, float a[3], float b[3]);
 
 // état (journal du banc, RG-03 : une seule texture d'habillage en mémoire)
-struct Etat { int skin = AUCUNE; std::string voiture, id; int textures = 0; size_t octetsGpu = 0; bool decodeCpu = false; int materiaux = 0; };
+struct Etat { int skin = AUCUNE; std::string voiture, id; int textures = 0; size_t octetsGpu = 0; bool decodeCpu = false; int materiaux = 0;
+              int calques = 0; double msCuisson = 0; };   // WFS-495 : calques posés, durée de la cuisson (ms)
 Etat etat();
 
 // ---- EAC (Khronos Data Format Specification 1.3, § 21.3 « EAC R11 ») : décodage d'un bloc de 4 × 4 texels
