@@ -1959,3 +1959,8 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - PR #417 relue une 2e fois (commit 2ad43e3c) : les deux points du refus sont corrigés (journal des tests CPU `qa/pr/WFS-446/tests-cpu.log`, tableau du banc `perf` de RG-09 : appels, triangles et mémoire identiques à main). Code inchangé depuis 310599ff.
 - 64 captures rouvertes ; branche fusionnée en local avec main, construite et testée : 143 test(s) réussi(s).
 - « ✅ Approuvé » en commentaire (revue 5907189562, même compte GitHub), fusion en squash 642eb68c. TACHES 🟣, ligne de suivi-pr supprimée, qa/Check.md à jour.
+
+### 2026-11-14 21:15:38 — WFS-446 fusionné, session terminée (Claude, agent dev3d (01Us6uCuVU))
+- PR #417 approuvée et fusionnée par le lead dev à la 2e revue (squash 642eb68c). Statut 🟣 ; le robot des statuts passera le ticket en ✅ sur les bancs du matin.
+- **Pour le PO** : à surveiller le temps de chargement sur le téléphone de l'utilisateur ; la voiture du joueur, les adversaires et le fantôme restent sans repli (WFS-448) ; le décor des cartes aussi (WFS-447). L'atlas des enseignes refusé retire aussi les devantures (secours existant de `commerces.cpp`).
+- Un seul ticket par session : arrêt.
