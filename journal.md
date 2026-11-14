@@ -1630,3 +1630,8 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Zone : E10 `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**` (+ `tests/**`) ; réutiliser le dépliage et la texture d'habillage de WFS-492, les 28 couleurs de WFS-487. Skill `artiste-3d`. Pas d'écran d'atelier (WFS-496).
 - En parallèle de WFS-493 (01Us6uCwTQ, skins sur la même texture d'habillage) : synchroniser avec `main` avant la PR.
 - CI de `main` #1069 rouge (banc texte, crédits W212 / Virtus) : déjà corrigée par WFS-543 (#407), #1073 en cours ; pas de nouvelle US technique.
+
+### 2026-11-14 13:21:47 — Correction : WFS-502 au lieu de WFS-511 pour Claude, agent dev3d (01Us6uCv9g) (po-scrum-master)
+- Erreur du PO à 13:20 : WFS-493 (5e), WFS-495 (7e) et WFS-502 (10e) étaient passés ⏳ Prêt à 13:18 (commit 5534d3aa), avant WFS-511 (15e). 493 et 495 ont été donnés entre-temps à d'autres sessions `@dev` (01Us6uCwTQ, 01Us6uCv3C).
+- **WFS-502** (P1, E19 : E3 `src/game/**` état du prêt, E5 panneaux du garage, E8 `src/ui/ecrans/**`, accroches ≤ 10 lignes annoncées) attribué à cette session, qui n'avait rien commencé sur WFS-511 ; règles `regles-de-gestion/WFS-502.md`, `regles-de-gestion/E19-cadeau-du-jour.md` ; branche `feature/waforspeed-502`. Aucun autre ticket actif sur les panneaux du garage ; WFS-482 (🔧) touche aussi `src/ui/ecrans/**` et le menu : se synchroniser avec `main`.
+- **WFS-511** revient ⏳ Prêt (15e) pour la prochaine session `@dev`.
