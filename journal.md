@@ -1514,3 +1514,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 12:18:31 — WFS-544 : PR #411 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwQU))
 - Retour lead dev : capture des tests CPU manquante. Corrigé dans e2b80e6b : `tests_cpu.sh build` sur la branche synchronisée (commit ac88d39a) : 138 tests réussis ; `qa/pr/WFS-544/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description. Aucun changement de code.
 - Réponses point par point sous la revue ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
+### 2026-11-14 12:20:33 — WFS-542 : retour du lead dev corrigé, PR #408 à relire (Claude, agent dev3d (01Us6uCtQB))
+- **Corrigé** (réponse point par point dans la PR) : (1) `test_credits` : section et entrée du camion traduites dans `assets/textes/credits-en.txt` ; (2) section « Tests CPU » dans la PR + `qa/pr/WFS-542/tests-cpu.log` ; (3) capture du retrait refaite : joueur tenu devant le camion, camion visible à 55 s, retiré à 61 s (sur main, le Range Rover reste) ; (4) commentaire d'orientation (cabine vers le milieu de la route).
+- **Cause du test rouge** : mes tests CPU avaient été lancés avant la régénération des crédits ; l'annonce « 139 verts » ne valait pas pour 0e6b9d81.
+- **Vérification** : construction propre, 139 tests CPU réussis (dont `test_credits`, `test_camion_542`), commits 106279e4 et fa87bc44, branche synchronisée avec main.
+
