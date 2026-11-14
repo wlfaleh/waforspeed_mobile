@@ -1786,3 +1786,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 00:22:24 — Ordre permanent de l'utilisateur : « une voiture de police est une voiture comme les autres » (po-scrum-master)
 - « La règle est la réalité, il n'y a pas d'événements extraterrestres ; une voiture de police est une voiture comme les autres. »
 - Inscrit dans les ordres permanents du PO ; **WFS-540 RG-00** (prioritaire) : la police est simulée par le même moteur de conduite que le joueur, avec sa fiche, et n'a que les commandes d'un conducteur ; plus aucune écriture directe de sa position, de sa vitesse ou de son cap. Titre de WFS-540 mis à jour.
+
+### 2026-11-14 00:26:46 — WFS-540 attribué à Claude, agent conduite (01UY1Vv3RA) (po-scrum-master)
+- Demande de l'utilisateur : « @conduite la 540 t'attend ». Nouvelle session `@conduite` (session_01UY1Vv3RAD7auNAuR4e1UiD), aucun ticket avant : attribution permise (ce n'est pas 01UY1Vv1A7, exclue par le KO de WFS-461).
+- **WFS-540** (P1, E3) : police = vraie voiture (même moteur de conduite que le joueur, RG-00, ordre permanent du 2026-11-14 00:22 UTC), plus de coincement, arrestation, plus de « R » sans frein (ANO-267, 268, 271, 272). Règles : `regles-de-gestion/WFS-540.md`. Zone : `poursuite.*`, `player.*`, `duel.*`. Branche `feature/waforspeed-540`. Skills : `agent-developer`, `waforspeed-natif`, `expert-conduite`. Captures avant / après (Poursuite, Corniche, jour et nuit, suite d'images), PR, lead dev ; après fusion 🟡 À valider (utilisateur), puis arrêt de la session.
