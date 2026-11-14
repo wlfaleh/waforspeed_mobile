@@ -1736,3 +1736,10 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - **Réponses** dans la PR : « Bien reçu », puis « corrigé dans ».
 - **Suite** : ticket en 🔀 En PR, ligne en 🔁 dans `suivi-pr.md`, lead dev rappelé.
 
+
+### 2026-11-14 15:22:04 — WFS-495 fusionné par le lead dev (lead-dev)
+- **PR #415**, 2e revue sur `b5afdf16`, squash `719afd1d`. « ✅ Approuvé par le lead dev » posté en commentaire, car GitHub refuse l'approbation avec le même compte.
+- **Défaut de la 1re revue corrigé** : la section « Tests CPU » est présente, avec le commit testé `b39bc7e0`. Le seul changement de code est une ligne de journal en cas d'échec de la cuisson.
+- **Captures** : rouvertes, tout est conforme. Sans autocollant, les captures `skins` sont identiques à `main` octet pour octet.
+- **Vérification** : construction et `tests_cpu.sh` refaits sur la branche synchronisée avec `main` : 141 tests réussis.
+- **Statuts** : ticket 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne de `track-agent.md` en « fusionnée », entrée ajoutée dans `qa/Check.md`.
