@@ -3,6 +3,7 @@
 // WFS-499 : voiture bloquée (testée par tests/test_garage_voitures.cpp).
 #include "garage_achat.h"
 #include "../game/boutique.h"
+#include "../game/pret.h"   // WFS-502
 
 namespace wfs::ecrans::garage {
 
@@ -30,7 +31,8 @@ Manque manque(const Sauvegarde& s, const EtatGarage& e) {
 }
 
 bool voitureBloquee(const Sauvegarde& s, const char* carId) {
-    return carId && s.actif() && boutique::voitureVendue(carId) && !boutique::possedeVoiture(s, carId);
+    // WFS-502 (RG-02) : la voiture prêtée par le cadeau du jour, prêt actif, se choisit comme une voiture possédée
+    return carId && s.actif() && boutique::voitureVendue(carId) && !boutique::possedeVoiture(s, carId) && !pret::utilisable(s, carId);
 }
 
 } // namespace wfs::ecrans::garage

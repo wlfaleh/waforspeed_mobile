@@ -973,6 +973,7 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
 - Construction et tests refaits sur 65a929a0 fusionné en local avec main 318f2ce9 : **128 test(s) réussi(s)**, dont `test_eau`.
 - Seul blocage : **nouveau conflit avec main sur `journal.md`** (GitHub `dirty` ; entrées WFS-490, 536, 410 arrivées après la synchronisation b2577f8c). À faire : resynchroniser, pousser, rappeler le lead dev aussitôt ; la prochaine revue ne vérifie que le diff de la synchronisation.
 - Remarques non bloquantes : `else WFS_ERR` du dauphin (`plage.cpp:3387-3389`) toujours attaché au 2e `if` ; `atan(0, 0)` au centre de la nappe de la gerbe.
+
 ### 2026-11-13 15:48:21 — WFS-401 : début, branche créée (Claude, agent dev3d (01Us6uCxKQ))
 - Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
 - Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.
@@ -1533,6 +1534,7 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
 - Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
 - Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
+
 ### 2026-11-14 10:44:24 — WFS-543 : crédits des remplaçants reliés au contrôle, CI de branche #1066 (Claude, agent dev3d (01Us6uCwcF))
 - Cause (RG-01, déjà trouvée par le PO) : WFS-397 (PR #393, 7c51937c) a livré `assets/cars/remplacants/w212.*` et `virtus.*` ; `verifier_licences.py` ne cherchait le crédit d'un fichier `cars/` que dans CARS[] → 4 manques, `build.yml` rouge depuis #1054.
 - Correction (`feature/waforspeed-543`) : une ligne COUVERTURE **par modèle** (w212 → Peter_D + `remplacants/w212.txt`, virtus → BHP3D + `remplacants/virtus.txt`), `cars/remplacants/` passé de la branche CARS[] à COUVERTURE (tout autre fichier de ce dossier reste un manque) ; section « Voitures à venir » dans AUTRES (libellés sans marque) ; `CREDITS.txt` et `store/credits.md` régénérés par `--generer` (fichier généré et vérifié par le même script : hors zone annoncée mais obligatoire).
@@ -1636,6 +1638,9 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - **WFS-502** (P1, E19 : E3 `src/game/**` état du prêt, E5 panneaux du garage, E8 `src/ui/ecrans/**`, accroches ≤ 10 lignes annoncées) attribué à cette session, qui n'avait rien commencé sur WFS-511 ; règles `regles-de-gestion/WFS-502.md`, `regles-de-gestion/E19-cadeau-du-jour.md` ; branche `feature/waforspeed-502`. Aucun autre ticket actif sur les panneaux du garage ; WFS-482 (🔧) touche aussi `src/ui/ecrans/**` et le menu : se synchroniser avec `main`.
 - **WFS-511** revient ⏳ Prêt (15e) pour la prochaine session `@dev`.
 
+### 2026-11-14 13:22:17 — WFS-502 : début, branche feature/waforspeed-502 (Claude, agent dev3d (01Us6uCv9g))
+- Ticket attribué par le PO (voiture prêtée 3 h). Lecture des règles WFS-502 et E19, étude du code de WFS-498 à 501 avant de coder.
+
 ### 2026-11-14 13:42:40 — WFS-493 : branche poussée, 18 textures faites, captures en cours (Claude, agent dev3d (01Us6uCwTQ))
 - Fait : `tools/skins/generer.py` dessine Drift Tokyo (dégradé vermillon penché à 35°, entailles noires, 3 signes inventés, ni lettre ni idéogramme), Néon nuit (filets cyan et magenta ; émission la nuit seulement, 0,5 × la couleur : luminance ≤ celle d'un feu arrière de position) et Camouflage (blanc, gris, noir ; taches dessinées de 20 à 60 cm, posées en 3D : continues d'un panneau à l'autre ; taille mesurée à chaque génération) ; 18 textures EAC RG11 de 1,33 Mo (≤ 1,5 Mo).
 - Accroches : `shaders/vehicule.glsl` (couleurs, émission du Néon) et une ligne dans `shaders/scene.frag` ; banc `WFS_BANC=skins` (variable `WFS_SKINS`) ; `test_vehicule_skin` vérifie les 18 nouvelles textures (OK).
@@ -1656,6 +1661,13 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Revue du commit e85d008 : 26 captures ouvertes, diff lu en entier, branche construite, 140 tests CPU verts, banc `profil` relancé (0 écart FR + EN). Logique saine (« Valider » ne remet pas les statistiques à zéro, accroches ≤ 10 lignes annoncées).
 - Refus (revue « changements demandés » écrite dans la PR) : (1) capture des tests CPU absente (`qa/pr/WFS-482/tests-cpu.log` et section « Tests CPU », règle du 2026-11-11) ; (2) RG-08 : dans le formulaire « Modifier », le pseudo de 16 « W » et le curseur sortent du cadre du champ (`creation_profil.cpp`, `champ()`, taille fixe sans limite de largeur ; captures `profil-*-16w-modification`).
 - Statut : ↩️ Retour lead dev (PR #412) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 14:24:53 — WFS-502 : code, tests et captures faits, PR ouverte (Claude, agent dev3d (01Us6uCv9g))
+- Fait : prêt de voiture du cadeau du jour (`src/game/pret.*`, système `pret` 206), bandeau du menu (`src/ui/ecrans/pret_bandeau.*`), garage (carte du prêt, « Activer le prêt »), écran du cadeau (« Activer » lance le prêt), clés `pret-restant-vu`, `pret-avant`, `pret-message`, textes FR / EN.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `src/ui/ecrans/menu.cpp` (4), `src/ui/garage.cpp` (4) et `garage.h` (2), `src/game/profil_system.cpp` (2 : la voiture prêtée n'utilise pas l'essai gratuit), `src/ui/ecrans/cadeau_jour.cpp`. Test de WFS-500 mis à jour (`test_cadeau` : un seul prêt à la fois, RG-01 de WFS-502).
+- Vérifié : `test_pret` (39 cas RG-08), `test_garage_voitures`, tests CPU 141/141 verts ; banc `WFS_BANC=cadeau` (pret-attente, pret-actif, pret-fin) : parcours RG-10 complet FR / EN, 0 erreur, textes WFS-504 VERT ; 28 captures de WFS-501 identiques à main (RMSE 0).
+- Parcours RG-10 : menu → cadeau (voiture) → garage « Activer le prêt » → « Prêtée : 2 h 41 min » → « Choisir » → menu (bandeau) → course jour et nuit → fin du prêt pendant la course (voiture gardée) → menu « Garde-la pour toujours : 2 400 ★ » → « Garage » (bloquée, prix) → prêt expiré → relance (état gardé).
+- Limite : « Rejouer » après une fin de prêt pendant la course repart avec la voiture prêtée jusqu'au prochain passage au menu ; Market : bouton « Garage » en attendant.
 
 ### 2026-11-14 14:19:31 — WFS-493 : PR #413 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwTQ))
 - PR #413 (commit 1f756edf, branche synchronisée avec `main`) : 18 textures (Drift Tokyo, Néon nuit, Camouflage × 6 voitures), lueur du Néon la nuit (`vehicule.glsl` + 1 ligne d'accroche dans `scene.frag`), banc `skins` (`WFS_SKINS`), `test_vehicule_skin` étendu.
@@ -1692,6 +1704,7 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Fusion refusée par GitHub : conflit avec `main` après la fusion de WFS-482 (#412). `src/ui/ecrans/menu.cpp` (enum `PROFIL = 7` / `PRET = 7`, 4 blocs) et `journal.md`. Surtout, le bouton « Profil » occupe la place du bandeau du prêt (même bas) : chevauchement à l'écran.
 - Demandé : synchroniser avec main, `PRET = 8`, bandeau au-dessus de « Profil » sans déplacer les boutons, tests et banc relancés, captures du menu (attente / actif / fin / expiré, FR et EN) avec « Profil » visible.
 - Remarque au PO : prix des pastilles du garage en anglais à peine lisibles (« 100 ★ » rendu flou en petit), défaut d'avant ce ticket.
+
 ### 2026-11-14 14:46:27 — WFS-495 : PR #415 ouverte, autocollants cuits dans la texture d'habillage (Claude, agent dev3d (01Us6uCv3C))
 - **Fait** :
   - les autocollants sont cuits dans la texture d'habillage de WFS-492, par la même projection : rien ne flotte (ANO-250), rien sur les vitres, phares, calandre ni jantes ;
@@ -1756,3 +1769,9 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
   - lueur du Néon sous des autocollants (WFS-493) : décision du PO.
 - Un seul ticket par session : cette session s'arrête et ne demande pas d'autre ticket.
 
+
+### 2026-11-14 15:01:04 — WFS-502 : retour du lead dev corrigé (PR #414) (Claude, agent dev3d (01Us6uCv9g))
+- Synchronisation avec main (WFS-482) : conflits de `menu.cpp` (`PROFIL = 7`, `PRET = 8`) et du journal résolus en gardant les deux côtés.
+- Bandeau du prêt posé au-dessus de « Profil » (même calcul que `profil.cpp`), aucun bouton existant déplacé, zones d'appui séparées ; temps restant aussi écrit à chaque changement d'écran ; ligne inutile retirée de `test_pret`.
+- Vérifié : tests CPU 141/141 ; banc `cadeau` refait avant / après (48 après, 28 paires de WFS-501 identiques) ; menus FR / EN regardés : « Profil » visible et libre.
+- Pour le PO (défaut d'avant ce ticket, vu par le lead dev) : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles.

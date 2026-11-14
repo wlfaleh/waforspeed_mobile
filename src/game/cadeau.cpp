@@ -7,6 +7,7 @@
 #include "../core/log.h"
 #include "boutique.h"
 #include "personnalisation.h"
+#include "pret.h"   // WFS-502
 
 namespace wfs::cadeau {
 
@@ -158,8 +159,8 @@ Entree entreeDepuis(const Sauvegarde& s) {
                 else if (o.type == perso::Type::Skin) j.skins.push_back(o.id);
             }
             e.voitures.push_back(std::move(j));
-        } else if (id != s.cadeau.pretVoiture) {
-            e.voituresPretables.push_back(id);   // jamais une voiture déjà possédée ni déjà prêtée
+        } else if (s.cadeau.pretVoiture.empty()) {
+            e.voituresPretables.push_back(id);   // jamais une voiture déjà possédée ; WFS-502 (RG-01) : un seul prêt à la fois (en attente ou actif)
         }
     }
     return e;
@@ -259,6 +260,7 @@ std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e,
     c.jour = texteJour(jourLocal(t));
     c.total = std::min(c.total + 1, 1000000000LL);
     c.dernier = r.texte();
+    if (r.gain == Gain::Voiture) pret::recevoir(c, r.voiture, t.epoch);   // WFS-502 (RG-01) : écrit avec le cadeau, jamais perdu
     // RG-08 : écrit AVANT de rendre le gain : pas de 2e cadeau si le jeu est tué pendant l'animation. Écriture faite ici, sur le
     // thread principal, après les écritures en attente (attendre) : on sait si elle a réussi. Échec → rien n'est donné, état remis.
     if (s.actif() && !s.chemin().empty()) {

@@ -307,6 +307,23 @@ cadeau.chances.minimum=Minimum {1} ★ par cadeau
 cadeau.chances.garantie=Garantie : une voiture ou une skin au plus tard au {1}e cadeau
 cadeau.chances.restants=Pour toi : encore {1} cadeaux au plus
 cadeau.chances.restant1=Pour toi : ton prochain cadeau est une voiture ou une skin
+
+# ---- voiture prêtée par le cadeau du jour (WFS-502)
+pret.duree.h={1} h {2} min
+pret.duree.min={1} min
+pret.garage.activer=Activer le prêt
+pret.garage.titre=Voiture prêtée
+pret.garage.restant=Prêtée : {1}
+pret.garder=Garde-la pour toujours : {1} ★
+pret.bandeau.titre=Voiture prêtée : {1}
+pret.bandeau.attente=À activer dans {1}
+pret.bandeau.actif=Encore {1} au volant
+pret.bandeau.activer=Activer
+pret.bandeau.expire=Prêt expiré : {1}
+pret.bandeau.expire.aide=Pas activée dans les {1} h
+pret.bandeau.fin=Fin du prêt : {1}
+pret.bandeau.garage=Garage
+
 skin.rallye=Rallye
 skin.drifttokyo=Drift Tokyo
 skin.neonnuit=Néon nuit

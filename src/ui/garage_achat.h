@@ -12,6 +12,8 @@
 //     « cadenas · 2 200 ★ · ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € » au-dessus du panneau ; « Acheter 2 200 ★ » ouvre la
 //     fenêtre de confirmation (Annuler / Confirmer ; solde insuffisant : « Il te manque N ★ », pas de Confirmer) ;
 //     « Essai gratuit » (une course solo, jamais en duel) puis « Essai déjà fait » ; la voiture ne part pas en course autrement.
+//   - WFS-502 : voiture prêtée par le cadeau du jour : en attente, « Activer le prêt » à la place de l'essai (temps restant pour
+//     l'activer sur la carte) ; prêt actif, carte « Voiture prêtée · Prêtée : 2 h 41 min · Garde-la pour toujours : N ★ ».
 // Emplacements suivants : skins (WFS-494), skin offerte à l'achat d'une voiture (WFS-494, RG-04 de WFS-499).
 // Outils partagés avec la rangée des couleurs : étoile dessinée (la police n'a pas le caractère ★), texte avec ★, équivalents, cadenas.
 #pragma once
@@ -55,6 +57,8 @@ std::string texteEquivalent(long long prix);
 std::string questionAchat(const std::string& nom, long long prix);
 // WFS-499 (RG-01) : « ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € »
 std::string texteEquivalentVoiture(long long prix);
+// WFS-502 (RG-03) : durée d'un prêt dans la langue active : « 2 h 41 min », « 41 min » (minutes arrondies au-dessus)
+std::string texteDuree(long long secondes);
 
 // WFS-499 (RG-02) : fenêtre de confirmation de l'achat d'une voiture, commune au garage et à l'écran de fin de l'essai.
 // « Acheter la Draven Vantor GT pour 2 200 ★ ? » · Annuler / Confirmer ; solde insuffisant : « Il te manque N ★ », Annuler seul.
@@ -91,6 +95,9 @@ public:
     bool acheter();
     // relâcher sur ESSAI : vrai si l'essai gratuit de la voiture affichée peut partir (sinon « Essai déjà fait » : rien)
     bool essaiDemande() const;
+    // WFS-502 (RG-01) : relâcher sur ESSAI quand la voiture affichée est la voiture prêtée en attente : « Activer le prêt » ;
+    // vrai si le bouton était celui-là (prêt activé et sauvegarde écrite : la voiture se choisit ensuite comme une voiture possédée)
+    bool activerPret();
     long long manqueAffiche() const { return manque_; }   // banc : N du bandeau « Il te manque N ★ » (0 : pas de bandeau)
     FenetreAchatVoiture& fenetre() { return fenetre_; }
     // WFS-499 : fenêtre de confirmation, dessinée après tous les panneaux (au-dessus)

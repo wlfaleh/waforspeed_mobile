@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include "../src/game/boutique.h"
+#include "../src/game/pret.h"
 #include "../src/ui/garage_achat.h"
 #include "../src/ui/langue.h"
 
@@ -83,6 +84,19 @@ int main(int argc, char** argv) {
     cas("EN : You need 1,200 more ★", ui::tr("garage.manque", nombreLangue(1200)) == "You need 1,200 more ★");
     cas("EN : Buy / Confirm / Cancel / Free test drive", ui::tr("garage.acheter", "2,200") == "Buy 2,200 ★" && ui::tr("garage.confirmer") == "Confirm" &&
         ui::tr("garage.annuler") == "Cancel" && ui::tr("garage.essai") == "Free test drive");
+    cas("EN : WFS-502 : durée du prêt « 2 h 41 min », « 59 min », « Keep it forever: 2,400 ★ »", texteDuree(2 * 3600 + 40 * 60 + 1) == "2 h 41 min" &&
+        texteDuree(59 * 60) == "59 min" && ui::tr("pret.garder", nombreLangue(2400)) == "Keep it forever: 2,400 ★");
+    ui::langue::choisir(ui::langue::Choix::Francais);
+    cas("FR : WFS-502 : « Prêtée : 2 h 05 min », minutes arrondies au-dessus (1 s → 1 min)", ui::tr("pret.garage.restant", texteDuree(2 * 3600 + 5 * 60)) == "Prêtée : 2 h 05 min" &&
+        texteDuree(1) == "1 min" && texteDuree(0) == "0 min");
+    // WFS-502 (RG-02) : voiture prêtée, prêt actif : pas de cadenas ; en attente ou finie : bloquée
+    pret::recevoir(s.cadeau, "corsa", 1794600000);
+    cas("WFS-502 : prêt en attente : Corsa toujours bloquée", voitureBloquee(s, "corsa"));
+    pret::activer(s, 1794600000);
+    cas("WFS-502 : prêt actif : Corsa choisissable (pas de cadenas), jamais achetée, essai gratuit pas utilisé",
+        !voitureBloquee(s, "corsa") && !boutique::possedeVoiture(s, "corsa") && s.essais.count("corsa") == 0);
+    pret::mettreAJour(s, 1794600000 + 3 * 3600 + 1);
+    cas("WFS-502 : fin du prêt : Corsa de nouveau bloquée", voitureBloquee(s, "corsa"));
     ui::langue::choisir(ui::langue::Choix::Automatique);
     s.desactiver();
     std::filesystem::remove(chemin);

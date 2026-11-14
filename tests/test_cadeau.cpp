@@ -265,7 +265,8 @@ int main() {
         s.cadeau.pretVoiture = "m4";
         e = entreeDepuis(s);
         bool m4 = false; for (const std::string& id : e.voituresPretables) if (id == "m4") m4 = true;
-        cas("entrée : la voiture déjà prêtée n'est pas reprêtée", !m4 && e.voituresPretables.size() == 13);
+        // WFS-502 (RG-01) : un seul prêt à la fois : tant qu'un prêt est en attente ou actif, le tirage ne donne aucune voiture (repli)
+        cas("entrée : prêt en cours → aucune voiture à prêter (WFS-502 RG-01), ni la voiture déjà prêtée", !m4 && e.voituresPretables.empty());
     }
 
     std::printf("%s : %d échec(s)\n", g_echecs ? "ÉCHEC" : "OK", g_echecs);

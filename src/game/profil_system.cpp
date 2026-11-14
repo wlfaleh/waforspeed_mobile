@@ -26,6 +26,7 @@
 #include "course_system.h"
 #include "duel_system.h"
 #include "player.h"
+#include "pret.h"   // WFS-502 : voiture prêtée
 #include "score_course.h"   // WFS-536 : score de la course (WFS-535)
 #include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "sauvegarde.h"
@@ -116,7 +117,8 @@ private:
         }
         // WFS-498 (RG-08) : départ d'une course solo avec une voiture bloquée : son essai gratuit est utilisé (une seule fois)
         Sauvegarde& s = sauvegarde();
-        if (s.actif() && mode_ != ModeJoue::Duel && !voiture_.empty() && boutique::marquerEssai(s, voiture_)) s.enregistrer();
+        // WFS-502 (accroche) : la voiture prêtée par le cadeau du jour roule sans toucher à son essai gratuit (deux mécanismes distincts)
+        if (s.actif() && mode_ != ModeJoue::Duel && !voiture_.empty() && !pret::utilisable(s, voiture_) && boutique::marquerEssai(s, voiture_)) s.enregistrer();
     }
 
     void finir(bool quittee) {
