@@ -94,17 +94,20 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         const long long prix = boutique::prixVoiture(car);
         const std::string t1 = nombreLangue(prix) + " ★", t2 = texteEquivalentVoiture(prix), t0 = ui::majuscules(ui::tr("garage.bloquee"));
         const float pad = 18 * k, cad = 30 * k, w1 = cad + 12 * k + largeurEtoiles(30 * k, t1), w = std::max({w1, ui::width(14 * k, t2), ui::width(14 * k, t0, 0.14f)}) + 2 * pad;
-        const float h = 100 * k, x = mp.px1 - mp.padX - w, y = mp.py0 - h - 12 * k;
+        const float h = 88 * k, y = mp.py0 - h - 12 * k;
+        float x = mp.px1 - mp.padX - w;
+        // jamais sur la flèche « suivante » (panneau plus haut avec la rangée des finitions, WFS-491) : la carte passe à sa gauche
+        if (const Zone& n = g_z.next; n.w > 0 && y < n.y + n.h && x + w > n.x) x = std::min(x, n.x - w - 10 * k);
         // .card : verre teinté, coin supérieur droit coupé, liseré cyan à gauche (information)
         const float b = 14 * k;
         const vec2 c[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};
         dessin2d::polygone(r, c, 5, dessin2d::uni(vec4{GLASS.x, GLASS.y, GLASS.z, 0.9f * op}));
         dessin2d::contour(r, c, 5, std::max(1.f, k), vec4{BORD.x, BORD.y, BORD.z, BORD.w * op});
         r.uiRect(x, y, 3 * k, h, hex(ACCENT2, op));
-        ui::text(r, x + pad, y + 12 * k, 14 * k, t0, hex(TAG, op), ui::GAUCHE, 0.14f, false);
-        cadenas(r, x + pad + cad / 2, y + 50 * k, cad, op);
-        texteEtoiles(r, x + pad + cad + 12 * k, y + 34 * k, 30 * k, t1, hex(TEXTE, op), ui::GAUCHE);
-        ui::text(r, x + pad, y + 76 * k, 14 * k, t2, hex(TAG, op), ui::GAUCHE, 0, false);
+        ui::text(r, x + pad, y + 10 * k, 14 * k, t0, hex(TAG, op), ui::GAUCHE, 0.14f, false);
+        cadenas(r, x + pad + cad / 2, y + 45 * k, cad, op);
+        texteEtoiles(r, x + pad + cad + 12 * k, y + 29 * k, 30 * k, t1, hex(TEXTE, op), ui::GAUCHE);
+        ui::text(r, x + pad, y + 66 * k, 14 * k, t2, hex(TAG, op), ui::GAUCHE, 0, false);
     }
     // bandeau « Il te manque N ★ » : glissé au-dessus du panneau, bord gauche rouge (notification de design-street-racing)
     if (manque_ > 0) {
