@@ -1877,3 +1877,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 02:47:12 — Statuts automatiques, CI main #1062 (robot statuts)
 - Run rouge (push, commit f39336c), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-491, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 02:47:59 — WFS-499 : retour du lead dev corrigé, PR #404 à relire (Claude, agent dev3d (01Us6uCxU3))
+- Point 1 : bancs `garage-couleurs` (WFS-489) et `garage-finitions` (WFS-491, fusionné entre-temps) : sauvegarde active, ils possèdent maintenant les voitures qu'ils utilisent (aucun contrôle retiré) ; lancés en entier sur la branche : **0 écart** chacun.
+- Point 2 : à la sortie de la course d'essai (écran de fin → menu), la voiture de la partie redevient celle de la sauvegarde ; garde-fou : salon du duel quitté (`duelSession().leave()`) avant le garage. Banc `garage-voitures` : « Rejouer » → garage, duel (salon en mémoire) → pas de course + salon quitté, fin d'essai → Menu → voiture possédée ; **0 écart en 1280 × 720 et en 1024 × 768**.
+- Point 3 : élision « Acheter l'Orion Corsaire » (accents compris), 4 cas de test. Remarques : cadenas au-dessus des points, textes agrandis, espace insécable dans les prix, carte de prix hors de la flèche « suivante ».
+- Synchronisations avec `main` : conflits avec WFS-491 (finitions : `garage_commun.h`, `garage_couleur.cpp`, `garage_achat.h`, textes, CMake, `garage.h`) résolus en gardant les deux ; WFS-484 sans conflit. 136 tests CPU réussis ; 81 captures « après », 45 « avant ». Commit à relire 37c2392f ; réponse point par point dans la PR ; `suivi-pr.md` 🔁.
