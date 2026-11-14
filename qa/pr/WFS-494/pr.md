@@ -22,7 +22,23 @@
 ## Tests CPU
 
 - `test_garage_skin` (nouveau, 41 cas) : ordre affiché, 6 voitures, prix × classe, Néon nuit jamais en vente ni en course sans être possédée, `donnerSkin`, ce qui manque (5 objets), refus sans débit, achat pour une seule voiture, skin offerte (gratuites dès le départ, voiture achetée, une seule, pas Néon nuit), bon de skin, relecture de la sauvegarde (clé inconnue ignorée, ancienne sauvegarde lue sans erreur), pack débutant proposé.
-- `bash tools/qa/tests_cpu.sh build` : **143 tests réussis**.
+- `bash tools/qa/tests_cpu.sh build` sur **7c7ff37e** (branche synchronisée avec main 29898e55) : **143 tests réussis**, journal complet : [`qa/pr/WFS-494/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/tests-cpu.log). Fin du journal :
+
+```
+# WFS-494 — tests CPU sur 7c7ff37e (branche feature/waforspeed-494 synchronisée avec main 29898e55), 2026-11-14 20:31:27 UTC
+[OK] test_version_chargement (0 s)
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (2 s)
+[OK] test_virages_fleches (1 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 143 test(s) réussi(s) en 352 s
+```
+
+## Corrections après la revue du lead dev (PR #419, commit relu 6f3d4391)
+
+- Bloquant : journal des tests CPU joint (ci-dessus).
+- Skin offerte encore due : un appui sur une skin en vente non possédée ouvre la fenêtre « Choisis ta skin offerte » sur cette skin (jamais « Acheter N ★ » pour une skin gratuite) ; banc `garage-skins` : 0 écart, nouveau contrôle et capture `en-gt86-fenetre-drift`.
+- Commentaire de `garage_skin.cpp` (« Plus tard ») corrigé.
 
 ## Parcours RC-E18-09 et banc `garage-skins` (0 écart, 1280x720 et 1024x768)
 
@@ -65,6 +81,7 @@ Dossier : [`qa/pr/WFS-494`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `garage-skins-course-p208-jour` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-course-p208-jour.jpg?raw=true) |
 | `garage-skins-course-p208-nuit` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-course-p208-nuit.jpg?raw=true) |
 | `garage-skins-en-gt86-fenetre` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-en-gt86-fenetre.jpg?raw=true) |
+| `garage-skins-en-gt86-fenetre-drift` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-en-gt86-fenetre-drift.jpg?raw=true) |
 | `garage-skins-en-gt86-rangee` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-en-gt86-rangee.jpg?raw=true) |
 | `garage-skins-en-il-manque` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-en-il-manque.jpg?raw=true) |
 | `garage-skins-en-neon` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-494/qa/pr/WFS-494/apres-garage-skins-en-neon.jpg?raw=true) |
