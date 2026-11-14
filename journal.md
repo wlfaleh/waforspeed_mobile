@@ -1828,3 +1828,10 @@ PR #413, 2e revue sur 73b2d8ac : les 3 défauts de la 1re revue sont corrigés (
 - Réponse « Bien reçu » sous la revue. Corrigé : `android.useAndroidX=true` dans `android/gradle.properties` (Billing 8 tire AndroidX) ; branche synchronisée avec main, journal sans conflit (mes entrées à la fin).
 - Remarques non bloquantes traitées dans ma zone : achat demandé avant le démarrage du service → événement « erreur » rendu au jeu ; démarrage noté réussi seulement sans exception Java.
 - **Pour le PO** (hors ticket) : pack débutant recrédité après réinstallation (livre vide, Google le rend : règle à trancher dans E21) ; résultat de l'écriture de la sauvegarde non rendu à `crediterAchat`.
+
+### 2026-11-14 18:03:10 — WFS-511 fusionné par le lead dev (lead-dev)
+PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (`android.useAndroidX=true` ; journal sans conflit). Le développeur a répondu point par point dans la PR.
+- Refait : branche + main en local, construction propre, 142 tests CPU réussis (460 s) ; LogiqueAchatsTest 12/12 OK (javac + JUnit).
+- Diff depuis 59c34947 relu : erreur rendue au jeu si l'achat est demandé avant le démarrage (file sous `synchronized`), `g_achDemarre` seulement sans exception Java. Correct.
+- « ✅ Approuvé » en commentaire (même compte GitHub), puis squash 8138cf90. Statut 🟣.
+- À surveiller : la CI de `main` construit pour la 1re fois l'APK avec Billing 8 : si elle est rouge, US technique P1. Pour le PO (E21) : pack débutant recrédité après réinstallation ; résultat de l'écriture de la sauvegarde non rendu à `crediterAchat`.
