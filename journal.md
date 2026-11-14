@@ -1929,3 +1929,6 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 20:34:58 — R18 (suite) : animations du garage (smart-brainstorming)
 - Code du garage relu : rotation, glissé et arrivée de la voiture existent ; pas de zoom, couleur et finition changent d'un coup. 5 axes ajoutés (A13 à A17) dans `recommandations-smart-brain.md`. Rien transmis au PO.
+
+### 2026-11-14 20:35:57 — R18 (suite 2) : design du garage (smart-brainstorming)
+- Captures du garage relues (couleurs, finitions) ; 6 axes ajoutés (A18 à A23) dans `recommandations-smart-brain.md`. Top : lumière neutre pour juger la teinte, nuancier repensé. Rien transmis au PO.

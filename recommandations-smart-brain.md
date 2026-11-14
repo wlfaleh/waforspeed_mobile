@@ -840,3 +840,27 @@ Choisir les axes qui t'intéressent et les demander au PO (`@po`). Avant A07, un
 | A17 | Garage | *Code* : changement de voiture = simple glissé | Changement de voiture plus vivant : plateau qui tourne, la voiture sortante s'en va et la nouvelle entre phares allumés, son du moteur qui démarre | Chaque voiture a son entrée | Moyen | Moyen | P3 | Temps de chargement du modèle (la voiture ne doit pas apparaître en retard) |
 
 **Recommandation** : A13 et A14 d'abord (ce sont les deux qui manquent le plus), A15 juste après WFS-494, A16 avec le Market (E21).
+
+### R18 (suite 2) — 2026-11-14 — Design (aspect) du garage : couleurs, finitions, skins
+**Précision de l'utilisateur** : « je parle de design ». Captures regardées : `garage-2-2400`, `garage-peinture-1-2400`, `garage-peintures-2400` (run 32). Skins : pas encore à l'écran (WFS-494 non fusionné).
+
+**Constats (observés)**
+1. **Lumière colorée = couleurs fausses** : sol cyan, anneau cyan, projecteurs cyan et orange. La voiture bleue prend des reflets cyan, la turquoise se fond dans l'anneau : on ne voit pas la vraie teinte qu'on achète.
+2. **Pastilles trop petites et trop bruyantes** : 28 carrés plats d'environ 30 px sur une seule rangée, chacun avec un cadenas posé dessus et « 75 ★ » dessous. Aucun regroupement (blancs, gris, rouges…), gratuites et payantes mélangées.
+3. **Sélection peu visible** : la pastille choisie n'a qu'un liseré cyan, la même couleur que tout le reste de l'écran.
+4. **Finitions illisibles** : chaque finition (Brillant, Mat, Chromé, Caméléon…) est un petit carré de couleur unie. On ne voit pas la différence entre mat et chromé avant d'appuyer.
+5. **Infos éparpillées** : nom de la couleur et prix (« Turquoise · 75 ★ = 1 bronze = 0,74 € ») tout à droite en petit, solde « 0 ★ » en haut à droite en très petit, loin du bouton « Acheter ».
+6. **Deux écrans en un** : la fiche de la voiture (puissance, 0 à 100, 4 barres) et la peinture partagent le même panneau ; il occupe un tiers de l'écran, et la voiture est vue de 3/4 arrière, sans la face avant.
+7. **Onglets « Principale / Toit et rétros »** petits et gris : ils ont l'air désactivés.
+8. **Point fort à reprendre** : `garage-peintures-2400` (16 Golf vues d'en haut, une par teinte) est très beau. C'est la preuve que les teintes sont belles quand on les montre en grand.
+
+| ID | Domaine | Constat | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A18 | Garage / DA | Constat 1 | **Lumière de studio neutre** (blanche, douce, grand plafond lumineux) dès que l'onglet Peinture est ouvert ; les néons colorés baissent | On achète la couleur qu'on voit | Élevé | Faible | P1 | Avec A10 (vrais luminaires) ; avis `@3d` |
+| A19 | UX/UI | Constats 2, 3 | **Nuancier repensé** : pastilles rondes ou en biseau plus grandes (≈ 44 px), groupées par famille sur 2 rangées ; gratuites d'abord ; cadenas petit dans un coin, prix seulement sous la pastille choisie ; sélection = pastille agrandie + anneau blanc | Choix rapide, écran calme | Élevé | Faible | P1 | Fichier `garage_couleur.*` (un ticket à la fois) ; bancs du garage à refaire |
+| A20 | UX/UI | Constat 4 | **Finitions montrées par leur matière** : chaque bouton montre un petit morceau de carrosserie rendu avec la finition (reflet du chromé, grain du mat, reflet changeant du caméléon) | Différence comprise avant l'achat | Moyen | Moyen | P2 | Images rendues par le moteur ; `garage_finition.*` |
+| A21 | UX/UI | Constats 5, 6, 7 | **Panneau Peinture séparé de la fiche** : onglets clairs en haut (Voiture · Peinture · Finition · Skins), sous la voiture une seule barre « nom de la couleur · prix · solde · Acheter » ; la voiture prend plus de place et tourne vers sa face avant | Hiérarchie claire, la voiture redevient la vedette | Élevé | Moyen | P2 | Touche plusieurs panneaux : à découper en tickets (un par fichier de panneau) |
+| A22 | Skins | Pas encore à l'écran | Dès WFS-494 : chaque skin en **vignette rendue sur la voiture choisie** (pas une icône), nom, rareté en un mot, prix ; même barre d'achat que A21 | Envie de collectionner | Moyen | Faible | P2 | Ne pas changer le périmètre de WFS-494 en cours : à faire ensuite |
+| A23 | Garage | Constat 8 | Vue « **Toutes les teintes** » : un appui montre la voiture en grille dans toutes les couleurs (comme `garage-peintures`), puis on touche celle qu'on veut | Effet « waouh », comparaison facile | Moyen | Moyen | P3 | Mémoire : 16 voitures affichées en même temps (version légère du modèle) |
+
+**Recommandation** : A18 et A19 d'abord (peu de travail, gros gain), puis A21 (réorganisation) et A20.
