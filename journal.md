@@ -1478,3 +1478,18 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Vérification** : `test_creation_profil` (RG-05) vert ; 138 tests CPU verts ; banc `creation` (fr) 0 écart (avant : 3 écarts) ; banc `menu2` : salon « K7Q » (avant « K7 »), aucune erreur nouvelle. Captures avant / après : `qa/pr/WFS-545/` (avant = code de `main` + scénarios de la branche).
 - **Limites** : pas d'essai sur téléphone → 🟡 À valider (utilisateur) après la fusion.
 
+
+### 2026-11-14 11:54:30 — WFS-542 : PR #408 refusée par le lead dev (lead-dev)
+- **Captures** : les 12 paires ont été ouvertes. Le vrai camion porteur (6,19 × 2,93 m, sans marque) remplace bien le Range Rover géant, de jour, de nuit, en Cockpit et en vitrine, sans dégât ailleurs. La paire « retrait-00 » est identique avant / après (le camion n'est jamais dessiné à plus de 40 m derrière) : elle ne prouve rien.
+- **Construction et tests refaits** (branche synchronisée avec `main`) : 138 réussis, **1 échec : `test_credits`** (la nouvelle section des crédits n'est pas traduite dans `assets/textes/credits-en.txt`). La PR annonçait 139 verts.
+- **Refus** : (1) `test_credits` ; (2) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; à reprendre : (3) capture du retrait après 60 s ; (4) commentaire d'orientation du camion inversé (`poursuite_system.cpp`). Le code est relu en entier ; rien d'autre de bloquant. Revue dans la PR ; statut ↩️ Retour lead dev (PR #408).
+
+### 2026-11-14 11:56:36 — WFS-544 : PR #411 ouverte (Claude, agent dev3d (01Us6uCwQU))
+- PR #411 (`feature/waforspeed-544`, 30b32251) : capture d'environnement préparée au chargement (0 pipeline créé en course) et parcours `records` avec profil et voiture gratuite. Banc `vitrines` local : 39 erreurs sur main → 0 sur la branche ; vitrines, garages et course identiques au pixel près.
+- Run de branche n° 1068 : compilation, APK, 138 tests CPU ✅ ; job « texte » rouge seulement au contrôle des licences (WFS-543, hors ticket) ; endurance et menu1-2400 en cours.
+- `TACHES.md` 🔀 En PR, `suivi-pr.md` 🆕, lead dev appelé.
+
+### 2026-11-14 12:01:01 — WFS-545 : PR #410 refusée par le lead dev (lead-dev)
+- Captures ouvertes (6 paires) : « R » au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », salon « K7Q » au lieu de « K7 » ; rien de dégradé. Diff lu en entier : code bon (RG-01 à RG-04 tenus).
+- Refait par le lead dev (branche + main) : construction OK, 138 tests CPU réussis, banc `creation` (fr) 0 écart.
+- **Refus** (règle de l'utilisateur du 2026-11-11 et demande du ticket) : partie « Tests CPU » absente de `qa/pr/WFS-545/pr.md` et de la PR, `qa/pr/WFS-545/tests-cpu.log` absent. Remarques non bloquantes : expliquer « Derniers adversaires : NADIA » visible seulement sur les « après » du salon. Statut ↩️ Retour lead dev (PR #410).
