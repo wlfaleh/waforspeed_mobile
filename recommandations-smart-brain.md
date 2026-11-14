@@ -894,3 +894,15 @@ Retour de l'utilisateur : « je ne vois pas d'amélioration, je veux des objets 
 - **Garage = un studio de carrossier** : plateau tournant en alu brossé, lumière blanche neutre, et le nuancier remplacé par de **vraies plaquettes de peinture courbes** (« speed shapes ») sur pied, chacune avec la vraie matière (brillant, métallisé, mat, chromé, caméléon).
 - **Fin de course = la ligne d'arrivée** : portique en treillis d'alu avec bandeau LED « ARRIVÉE », damier peint au sol, **score en chiffres 3D** posés sur l'asphalte, voiture phares allumés.
 Points à vérifier avant tout ticket : performance du téléphone (scène de menu en plus de la course), mémoire, règle « formes nues » (tous les objets sont modélisés : chanfreins, profilés, treillis), avis `@3d`.
+
+### R18 (suite 6) — 2026-11-14 — Boutons créatifs : de vrais objets
+Retour de l'utilisateur : « les boutons sont toujours les mêmes, design figé, on dirait un jeu Atari de 1995 ». Proposition : chaque type de bouton devient **un vrai objet de voiture ou de rue**, en 3D, avec son geste :
+| Rôle | Objet | Geste |
+|---|---|---|
+| Action principale (Course solo, Rouler) | **Bouton Start / Stop moteur** : lunette chrome moletée, anneau LED orange, capuchon laqué gravé | appui : le capuchon s'enfonce, l'anneau s'allume, le moteur démarre (son) |
+| Choix d'un menu (Duel, Garage) | **Plaque d'immatriculation** 520 × 110 mm, lettres embouties, rivets, bande « WFS » orange | la plaque bascule un peu au toucher |
+| Élément sélectionné | **Enseigne néon** en vrais tubes de verre sur plaque d'acrylique | le tube s'allume avec un grésillement, les autres restent éteints |
+| Action risquée (Quitter la course) | **Interrupteur d'aviation à capot rouge** | soulever le capot, puis basculer : pas de clic par erreur |
+| Bouton secondaire (Rejouer, Retour) | **Autocollant vinyle** découpé, coin qui se décolle | il s'arrache à l'appui |
+| Confirmer (départ, achat) | **Compte-tours à maintenir** | garder le doigt : l'aiguille monte jusqu'à la zone rouge |
+Images : `references/maquettes-3D-R18/4-planche-boutons-3d.jpg` et `5-menu-boutons-3d.jpg` (console en carbone dans le parking). Points à vérifier : lisibilité sur petit écran, taille du doigt (≥ 48 dp), coût en images/s (objets 3D dans l'interface), sons et vibrations à chaque geste.

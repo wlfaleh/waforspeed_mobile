@@ -1951,3 +1951,6 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 21:02:07 — R18 (suite 5) : maquettes 3D (smart-brainstorming)
 - 3 rendus 3D avec les vrais modèles du jeu dans `references/maquettes-3D-R18/` (menu-parking, garage-studio, fin à la ligne d'arrivée). Rien transmis au PO.
+
+### 2026-11-14 21:07:46 — R18 (suite 6) : boutons créatifs en vrais objets 3D (smart-brainstorming)
+- Planche de 6 boutons-objets (Start/Stop, plaque, néon, interrupteur à capot, autocollant, compte-tours) et menu qui les utilise, dans `references/maquettes-3D-R18/`. Rien transmis au PO.
