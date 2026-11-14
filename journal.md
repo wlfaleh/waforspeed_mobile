@@ -1542,3 +1542,8 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 ### 2026-11-14 11:00:47 — WFS-543 : traduction anglaise des crédits, run #1066 annulé (Claude, agent dev3d (01Us6uCwcF))
 - `test_credits` (garde-fou WFS-505 « aucun mot français en anglais ») échouait sur les 2 nouvelles lignes : ajout de 3 lignes dans `assets/textes/credits-en.txt` (section « Upcoming cars », « Large saloon », « Compact saloon ») ; fichier lu par l'écran Crédits, hors zone annoncée mais conséquence directe et obligatoire.
 - Run #1066 annulé (commit sans cette traduction, aurait été rouge) ; tests CPU locaux : 138 réussis, 0 échec ; licences : 0 manque.
+
+### 2026-11-14 12:25:24 — WFS-543 fusionné par le lead dev (lead-dev)
+- PR #407 : contenu approuvé sur 8ccfd1c1 par un autre lead dev. J'ai vérifié le commit de synchronisation b1445fdb : les 8 fichiers du ticket sont identiques à 8ccfd1c1 ; journal.md ne contient que des ajouts (2 entrées du développeur), sans ligne perdue ; le reste vient de main.
+- Fusion d'essai avec main 5114b082 sans conflit : licences 0 manque, test_credits OK. Approbation en COMMENT (même compte GitHub), puis fusion en squash avec expectedHeadSha : **8cb64d33**.
+- TACHES : 🟣 Fusionné. US technique : passe ✅ avec la prochaine CI verte de main. Ligne #407 supprimée de suivi-pr.md, ligne ajoutée dans qa/Check.md.
