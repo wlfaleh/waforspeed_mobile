@@ -20,13 +20,15 @@ Manque manque(const Sauvegarde& s, const EtatGarage& e) {
     Manque m;
     const char* car = CARS[e.index].id;
     auto ajouter = [&](const perso::Objet* o) {
-        if (!o || perso::possede(s, *o, car) || m.n >= 4) return;
+        if (!o || perso::possede(s, *o, car) || m.n >= 5) return;
         for (int i = 0; i < m.n; i++) if (m.objets[i] == o) return;   // même couleur en principale et en secondaire : une fois
         m.objets[m.n++] = o; m.total += perso::prix(*o, car);
     };
     if (e.peinture >= 0 && e.peinture < NB_PEINTURES) ajouter(perso::couleur(PAINTS[e.peinture].id));
     if (e.peinture2 >= 0 && e.peinture2 < NB_PEINTURES) { ajouter(perso::objet(perso::ID_SECONDAIRE)); ajouter(perso::couleur(PAINTS[e.peinture2].id)); }
     if (e.finition > 0 && e.finition < BOUTIQUE_FINITIONS) ajouter(perso::objet(BOUTIQUE_FINITIONS_IDS[e.finition]));   // WFS-491
+    if (e.skin >= 0 && e.skin < BOUTIQUE_SKINS)   // WFS-494 : skin en vente (une skin « cadeau » ne s'achète pas : elle ne part pas en course)
+        if (const perso::Objet* k = perso::objet(BOUTIQUE_SKINS_IDS[e.skin]); k && !perso::cadeau(*k) && perso::disponible(*k, car)) ajouter(k);
     return m;
 }
 

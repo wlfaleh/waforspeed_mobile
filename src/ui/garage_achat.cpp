@@ -189,6 +189,8 @@ bool AchatGarage::acheter() {
         s.paint[car] = PAINTS[e_.peinture].id;
         if (e_.peinture2 >= 0) s.paint2[car] = PAINTS[e_.peinture2].id; else s.paint2.erase(car);
         if (e_.finition > 0) s.finition[car] = BOUTIQUE_FINITIONS_IDS[e_.finition]; else s.finition.erase(car);   // WFS-491 (RG-03) : finition-<voiture>
+        if (const perso::Objet* k = e_.skin >= 0 && e_.skin < BOUTIQUE_SKINS ? perso::objet(BOUTIQUE_SKINS_IDS[e_.skin]) : nullptr; !k) s.skin.erase(car);   // WFS-494 : skin-<voiture>
+        else if (perso::possede(s, *k, car)) s.skin[car] = k->id;
         s.enregistrer();
     }
     manque_ = 0;

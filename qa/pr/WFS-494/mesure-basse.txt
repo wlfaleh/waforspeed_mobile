@@ -1,0 +1,5 @@
+# WFS-494 — RC-E18-03 : images/s en qualité Basse (banc peinture2-mesure : Basse, Ville, 208, 600 images après la chauffe, lavapipe), skin Camouflage (WFS_SKIN), main / branche alternés
+main (5ea1572d) camouflage passage 1 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 276.30 ms = 3.619 img/s ; 1 % les plus lents (6 images) 394.40 ms = 2.535 img/s (WFS-488)
+branche (7432cc25) camouflage passage 1 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 254.19 ms = 3.934 img/s ; 1 % les plus lents (6 images) 388.56 ms = 2.574 img/s (WFS-488)
+main (5ea1572d) camouflage passage 2 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 251.66 ms = 3.974 img/s ; 1 % les plus lents (6 images) 348.95 ms = 2.866 img/s (WFS-488)
+branche (7432cc25) camouflage passage 2 : peinture2-mesure : Basse, Ville, 208, couleur 2 aucune : 600 images, moyenne 255.19 ms = 3.919 img/s ; 1 % les plus lents (6 images) 341.55 ms = 2.928 img/s (WFS-488)

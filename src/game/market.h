@@ -21,8 +21,8 @@
 namespace wfs::market {
 
 // RG-02 : le pack débutant donne un bon de skin ; il n'est proposé qu'une fois des skins en vente au garage.
-// Passe à true avec WFS-494 (garage des skins, épic E18) : c'est la seule ligne à changer.
-constexpr bool SKINS_EN_VENTE = false;
+// WFS-494 : les skins sont en vente au garage (rangée « Skin ») et le bon s'y utilise.
+constexpr bool SKINS_EN_VENTE = true;
 
 // ---- catalogue (RG-01)
 struct Pack {

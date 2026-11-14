@@ -136,7 +136,7 @@ static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear();
     map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
-    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1;   // WFS-487
+    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1; skinsOffertes.clear();   // WFS-487 ; WFS-494
     etoiles = 0; voituresPossedees.clear(); essais.clear();   // WFS-498
     market = EtatMarket{};   // WFS-510
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
@@ -173,6 +173,7 @@ std::string Sauvegarde::texte() const {
     for (const auto& [id, v] : paint2) o << "paint2-" << id << "=" << v << "\n";
     for (const auto& [id, v] : finition) o << "finition-" << id << "=" << v << "\n";
     for (const auto& [id, v] : skin) o << "skin-" << id << "=" << v << "\n";
+    liste("skins-offertes", skinsOffertes);   // WFS-494 (RG-02)
     for (const auto& [id, v] : creation) o << "creation-" << id << "=" << v << "\n";
     // WFS-498 (RG-01, RG-07, RG-08) : portefeuille (toujours écrit : sa présence marque une sauvegarde à jour), voitures, essais
     o << "etoiles=" << etoiles << "\n";
@@ -290,6 +291,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         }
         else if (k.rfind("paint2-", 0) == 0) { const std::string id = k.substr(7); if (voitureExiste(id) && peintureDef(v)) paint2[id] = v; }
         else if (k.rfind("finition-", 0) == 0) { const std::string id = k.substr(9); const perso::Objet* o = perso::objet(v); if (voitureExiste(id) && o && o->type == perso::Type::Finition) finition[id] = v; }
+        else if (k == "skins-offertes") { for (const std::string& id : morceaux(v)) if (voitureExiste(id)) skinsOffertes.insert(id); }   // WFS-494 (RG-02)
         else if (k.rfind("skin-", 0) == 0) { const std::string id = k.substr(5); const perso::Objet* o = perso::objet(v); if (voitureExiste(id) && o && o->type == perso::Type::Skin) skin[id] = v; }
         else if (k.rfind("creation-", 0) == 0) { const std::string id = k.substr(9); if (voitureExiste(id) && identifiantSur(v)) creation[id] = v; }
         else if (k.rfind("paint-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && peintureDef(v)) paint[id] = v; }

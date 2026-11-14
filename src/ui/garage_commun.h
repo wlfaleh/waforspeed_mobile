@@ -55,7 +55,8 @@ struct Zone {
 struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT];
                Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1];   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
                Zone finitions[BOUTIQUE_FINITIONS], chevronsFinition[2];   // WFS-491 : rangée « Finition » (ordre affiché) et ses chevrons
-               Zone essai; };                                            // WFS-499 : « Essai gratuit » d'une voiture bloquée
+               Zone essai;                                               // WFS-499 : « Essai gratuit » d'une voiture bloquée
+               Zone skins[BOUTIQUE_SKINS + 1], chevronsSkin[2], actionSkin; };   // WFS-494 : rangée « Skin » (ordre affiché), chevrons, skin offerte ou bon
 extern Zones g_z;
 
 // parallélogramme d'un seul tenant (WFS-99), haut décalé à droite de `biais`
@@ -80,6 +81,7 @@ struct EtatGarage {
     bool voiturePrete = false;   // modèle 3D chargé (sinon « Chargement… »)
     int peinture2 = -1;          // WFS-489 : couleur secondaire montrée (indice dans PAINTS), −1 = comme la carrosserie
     int finition = 0;            // WFS-491 : finition montrée (indice dans BOUTIQUE_FINITIONS_IDS, 0 = brillant)
+    int skin = -1;               // WFS-494 : skin montrée (indice dans BOUTIQUE_SKINS_IDS), −1 = aucune
     bool operator==(const EtatGarage&) const = default;
 };
 

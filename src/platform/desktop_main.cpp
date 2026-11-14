@@ -312,6 +312,7 @@ int main(int argc, char** argv) {
     if (banc == "garage-voitures") { const int e = ecrans::benchGarageVoitures(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-499 (accroche) : voitures bloquées, achat confirmé, essai gratuit, relance
     if (banc == "garage-couleurs") { const int e = ecrans::benchGarageCouleurs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-489 (accroche) : 28 couleurs, achat en ★, relance
     if (banc == "garage-finitions") { const int e = ecrans::benchGarageFinitions(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-491 (accroche) : finitions, achat en ★, relance
+    if (banc == "garage-skins") { const int e = ecrans::benchGarageSkins(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-494 (accroche) : skins, skin offerte, bon, achat en ★, relance
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)
         std::vector<std::string> v = COCKPIT_LOT1; v.insert(v.end(), COCKPIT_LOT2A.begin(), COCKPIT_LOT2A.end()); v.insert(v.end(), COCKPIT_LOT2B.begin(), COCKPIT_LOT2B.end());
