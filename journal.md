@@ -1885,3 +1885,8 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Vérifié** : `test_garage_skin` 41 cas OK ; 143 tests CPU réussis ; banc `garage-skins` 0 écart en 1280x720 et 1024x768 (parcours RC-E18-09 : skin offerte, refus faute d'étoiles, achat, course, « Retour », relance) ; `garage-finitions` 0 écart ; Basse (208 Camouflage) : main 3,62 / 3,97, branche 3,93 / 3,92 img/s (écart < 1). 37 captures dans `qa/pr/WFS-494/`.
 - **Limites** : mesures sur lavapipe seulement ; changer de skin au garage recharge une texture (petit à-coup possible au toucher, jamais en course).
 
+
+### 2026-11-14 20:23:43 — WFS-494 : PR #419 refusée par le lead dev, un seul point de forme (lead-dev)
+- **Refus** (commit 6f3d4391) : capture des tests CPU absente (pas de `qa/pr/WFS-494/tests-cpu.log`, pas de fin de journal ni de commit testé dans la section « Tests CPU »), règle de l'utilisateur du 2026-11-11.
+- **Vérifié bon** : construction et `tests_cpu.sh` refaits par le lead dev (143 réussis, `test_garage_skin` OK) ; 37 captures ouvertes (rangée, fenêtre de la skin offerte, achat, refus, Néon nuit, bon, relance, courses jour / nuit, anglais, 1024x768), pas de régression sur `garage-finitions` ; diff lu (accroches ≤ 10 lignes, découpage du garage respecté, ancienne sauvegarde lue).
+- **Point tranché** : bouton « Choisis ta skin offerte » dans la rangée au lieu d'une fenêtre automatique à l'ouverture du garage : accepté. **Au PO** : mettre à jour RG-04 de `regles-de-gestion/WFS-494.md` / WFS-499 (« proposée à l'ouverture suivante » → « bouton de la rangée »).
