@@ -638,3 +638,26 @@ score.defi_jamais_derriere=Jamais derrière
 score.defi_ecart=Large avance
 score.defi_sans_retard=Checkpoints à l'heure
 score.defi_nitro=Nitro jamais vide
+
+# WFS-513 : écran Market (épic E21)
+market.bouton=Market
+market.surtitre=Boutique d'étoiles
+market.titre=Market
+market.solde=Ton solde
+market.offert=+{1} % offerts
+market.base={1} ★ + {2} offertes
+market.acheter=Acheter
+market.patiente=Patiente…
+market.achete=Acheté
+market.debutant.badge=Une seule fois
+market.debutant.skin=+ {1} skin offerte
+market.sans_pub.desc=Plus aucune proposition de vidéo. Les étoiles doublées de fin de course sont données directement.
+market.sans_pub.active=Sans pub activé
+market.hors_ligne=Connexion à Google Play nécessaire
+market.mentions=Les étoiles s'utilisent seulement dans le jeu. Tout peut aussi se gagner en jouant.
+market.restaurer=Restaurer mes achats
+market.retour=Retour
+market.gain=+{1} ★
+market.attente=Achat en attente de paiement
+market.restaures=Achats restaurés
+market.rien_a_restaurer=Aucun achat à restaurer

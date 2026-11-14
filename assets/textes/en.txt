@@ -638,3 +638,26 @@ score.defi_jamais_derriere=Never behind
 score.defi_ecart=Big lead
 score.defi_sans_retard=Checkpoints on time
 score.defi_nitro=Nitro never empty
+
+# WFS-513: Market screen (epic E21)
+market.bouton=Market
+market.surtitre=Star shop
+market.titre=Market
+market.solde=Your balance
+market.offert=+{1}% free
+market.base={1} ★ + {2} free
+market.acheter=Buy
+market.patiente=Please wait…
+market.achete=Purchased
+market.debutant.badge=One time only
+market.debutant.skin=+ {1} free skin
+market.sans_pub.desc=No more video offers. End-of-race doubled stars are given right away.
+market.sans_pub.active=No ads activated
+market.hors_ligne=Connection to Google Play required
+market.mentions=Stars can only be used in the game. Everything can also be earned by playing.
+market.restaurer=Restore purchases
+market.retour=Back
+market.gain=+{1} ★
+market.attente=Purchase pending payment
+market.restaures=Purchases restored
+market.rien_a_restaurer=No purchases to restore

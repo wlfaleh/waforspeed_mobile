@@ -21,6 +21,7 @@
 #include "pret_bandeau.h"   // WFS-502 (accroche) : bandeau « Voiture prêtée »
 #include "creation_profil.h"   // WFS-481 (accroche) : écran « Crée ton pilote » par-dessus le menu
 #include "profil.h"   // WFS-482 (accroche) : bouton et écran « Profil »
+#include "market_ecran.h"   // WFS-513 (accroche) : bouton et écran « Market »
 #include "reglages.h"
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
@@ -47,7 +48,7 @@ float ease(float t) {
 }
 
 struct Choix { const char* titre; const char* desc; };
-enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6, PROFIL = 7, PRET = 8 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles ; WFS-482 : « Profil »
+enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6, PROFIL = 7, PRET = 8, MARKET = 9 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles ; WFS-482 : « Profil »
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
 Zone g_zones[4];
@@ -74,6 +75,7 @@ public:
     // RG-01 : appui = état pressé ; l'action part au relâcher sur le même choix, glisser hors du choix l'annule.
     // RG-05 : sur le menu, tout toucher est gardé (aucune commande de conduite).
     bool onTouch(const Touch& t, const GameView& g) override {
+        if (g.ecran == Ecran::Menu && market_ecran::ouvert()) { doigt_ = -1; presse_ = -1; return market_ecran::toucher(t.id, t.x, t.y, t.down); }   // WFS-513
         if (g.ecran == Ecran::Menu && profil_ecran::ouvert()) { doigt_ = -1; presse_ = -1; return profil_ecran::toucher(t.id, t.x, t.y, t.down); }   // WFS-482
         if (g.ecran == Ecran::Menu && cadeau_jour::ouvert()) { doigt_ = -1; presse_ = -1; return cadeau_jour::toucher(t.id, t.x, t.y, t.down); }   // WFS-501
         if (g.ecran == Ecran::Menu && credits::ouvert()) { doigt_ = -1; presse_ = -1; return credits::toucher(t.id, t.x, t.y, t.down); }   // WFS-406 : écran Crédits par-dessus
@@ -85,6 +87,7 @@ public:
         if (sous < 0 && compteur_etoiles::dans(t.x, t.y)) sous = COMPTEUR;   // WFS-537 (RG-09)
         if (sous < 0 && profil_ecran::dansBouton(t.x, t.y)) sous = PROFIL;   // WFS-482 (RG-01)
         if (sous < 0 && pret_bandeau::dans(t.x, t.y)) sous = PRET;   // WFS-502
+        if (sous < 0 && market_ecran::dansBouton(t.x, t.y)) sous = MARKET;   // WFS-513 (RG-01)
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; presse_ = sous; }   // WFS-83 : « Duel en ligne » actif (plus grisé)
             else if (t.id == doigt_ && sous != presse_) presse_ = -1;               // glissé hors du choix : annulé
@@ -101,7 +104,8 @@ public:
         else if (choix == PROFIL) { WFS_LOG("menu : « Profil »"); profil_ecran::ouvrir(); }   // WFS-482 (RG-01)
         else if (choix == PRET) pret_bandeau::appuyer(g);   // WFS-502 : Activer, garage ou message vu
         else if (choix == CREDITS) { WFS_LOG("menu : « Crédits »"); credits::ouvrir(); }   // WFS-406 (RG-02)
-        else if (choix == COMPTEUR) { WFS_LOG("menu : compteur d'étoiles → garage"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-537 (RG-09) : Market avec WFS-513
+        else if (choix == COMPTEUR) { WFS_LOG("menu : compteur d'étoiles → Market"); market_ecran::ouvrir(Ecran::Menu); }   // WFS-537 (RG-09), WFS-513 : le compteur ouvre le Market
+        else if (choix == MARKET) { WFS_LOG("menu : « Market »"); market_ecran::ouvrir(Ecran::Menu); }   // WFS-513 (RG-01)
         else if (choix == TA_VOITURE) { WFS_LOG("menu : « Ta voiture »"); garageRegarder(); g.allerA(Ecran::Garage); }   // #myCarBtn
         return true;
     }
@@ -138,6 +142,7 @@ public:
         }
         if (choixModeOuvert()) return;   // WFS-141 (RG-04, ANO-54) : panneau des modes ouvert : ni textes ni aide du menu dessous
         if (cadeau_jour::ouvert()) return;   // WFS-501 : écran du cadeau par-dessus (système CadeauJour, 466)
+        if (market_ecran::ouvert()) return;   // WFS-513 : écran Market par-dessus (système MarketEcran, 469)
         if (profil_ecran::ouvert()) return;   // WFS-482 : écran Profil par-dessus (système ProfilEcran, 468)
         if (credits::ouvert()) return;   // WFS-406 : écran Crédits par-dessus (système Credits, 470) : rien du menu dessous
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
@@ -208,6 +213,7 @@ public:
         credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
         cadeau_jour::dessinerBouton(r, W, H, g.marges, presse_ == CADEAU);   // WFS-501 (RG-01) : au-dessus de « Crédits »
         profil_ecran::dessinerBouton(r, W, H, g.marges, presse_ == PROFIL);   // WFS-482 (RG-01) : au-dessus du « Cadeau du jour »
+        market_ecran::dessinerBouton(r, W, H, g.marges, presse_ == MARKET);   // WFS-513 (RG-01) : au-dessus de « Profil »
         pret_bandeau::dessiner(r, W, H, g.marges, presse_ == PRET);   // WFS-502 (RG-01, RG-03, RG-05) : au-dessus de « Profil » (WFS-482)
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }

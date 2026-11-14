@@ -3,7 +3,7 @@
 //     même hauteur et même style vitré que lui ; le bouton « Réglages » et les autres boutons ne bougent pas ;
 //   - RG-08 : relu à chaque image (à jour dès le retour au menu après une course, un achat, un cadeau) ; « 12 450 » en
 //     français, « 12,450 » en anglais ; libellé pour le lecteur d'écran par ui::tr (menu.etoiles.lecteur) ;
-//   - RG-09 : appui → garage (WFS-513 le fera ouvrir le Market).
+//   - RG-09 : appui → écran Market (WFS-513 ; avant : garage).
 // Dessin : système CompteurEtoiles (461), juste après le bouton « Réglages » (460) de la même image, seulement si ce bouton a été
 // dessiné (rien sous « Crée ton pilote », le choix du mode, les Crédits, le cadeau du jour), avec le fondu d'entrée du menu (0,3 s).
 // Le menu (menu.cpp) garde les appuis : dans() pour sa cible, appuye() pour l'état appuyé (action au relâcher, comme ses choix).
