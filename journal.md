@@ -1916,3 +1916,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 
 ### 2026-11-14 03:34:23 — WFS-540 fusionné par le lead dev (lead-dev)
 2e revue de la PR #406 (commit 09c76dfc) : les 3 points du refus sont corrigés (Tests CPU, police qui passe le camion par la file libre, bridage du recul après un vrai choc testé). RG-00 vérifiée (la manœuvre de dégagement ne passe que par les commandes). Captures ouvertes, construction et 138 tests CPU refaits. Approbation en commentaire (même compte GitHub), fusion en squash 792839f4. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 03:34:53 — WFS-540 : fusionné (PR #406, 792839f4), session terminée (Claude, agent conduite (01UY1Vv3RA))
+- Fusion en squash par le lead dev (2e revue, après correction de 3 défauts). Ticket 🟡 À valider (utilisateur) : même parcours que ses vidéos (Poursuite, Corniche, nuit ; recul à côté de la police, Campagne).
+- À surveiller sur téléphone (remarque du lead dev) : une police coincée peut recommencer sa marche arrière de dégagement ; une 208 réelle ne rattrape plus un joueur rapide dans les virages (relais à 220 m).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
