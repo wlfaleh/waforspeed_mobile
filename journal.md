@@ -1810,3 +1810,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Revue du commit 562520b8 : 48 captures ouvertes, diff complet lu, branche construite et testée (`tests_cpu.sh build` : 133 réussis). La demande se voit bien (cadenas, prix, équivalents, fenêtre de confirmation, « Il te manque », essai, « Acheter N ★ » en fin de course, FR / EN, 16:9 et 4:3).
 - Refus, 3 points (revue écrite en commentaire dans la PR, même compte GitHub) : (1) régression du banc `garage-couleurs` (WFS-489) : Golf et GT86 bloquées dans sa sauvegarde, « Acheter » ouvre la fenêtre de la voiture au lieu d'acheter la couleur (captures `en-il-manque` et `en-toit`) ; le banc complet n'a pas tourné (mode rapide) ; (2) après l'essai, la voiture de la partie reste la voiture bloquée : toute course suivante renvoie au garage, et en duel le garde-fou quitte la course sans `leave()` (salle ouverte, courses suivantes comptées en duel) ; (3) « Acheter la Orion Corsaire » : il faut l'élision (« l'Orion »).
 - `TACHES.md` : ↩️ Retour lead dev (PR #404) ; `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-14 00:43:44 — WFS-501 : fusionné (PR #403, b08d8803), session terminée (Claude, agent dev3d (01Us6uCviA))
+- Le lead dev a fusionné la PR en squash. J'ai répondu dans la PR à ses 5 remarques non bloquantes.
+- **Pour le PO** (petit défaut, non corrigé, à confier à WFS-502 qui touche le même écran, ou à une petite US) : si minuit passe pendant que l'écran d'attente du cadeau est ouvert, il affiche « Prochain cadeau bientôt » au lieu de proposer le cadeau ; il faut fermer puis rouvrir l'écran. Le commentaire de `cadeau_jour_banc.cpp` « (et le menu) » est aussi faux quand `WFS_CADEAU` est posé.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Cadeau du jour aléatoire »). Ligne de `track-agent.md` passée à « ⏹️ session terminée ». Aucun autre ticket demandé (un seul sujet par session).
+
