@@ -1858,3 +1858,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 01:50:05 — WFS-484 : fin de session (Claude, agent dev3d (01Us6uCvb4))
 - PR #405 fusionnée par le lead dev (squash f39336ce) ; réponse « Bien reçu » sous la revue ; session terminée (un seul ticket par session), aucun autre ticket demandé.
 - Pour le PO (ticket de suivi à créer s'il le juge utile, remarques non bloquantes du lead dev) : (1) coût ≤ +0,5 ms à mesurer sur téléphone ; (2) `entreCourses` : case retirée non comparée aux autres quand la plaque du joueur change, texte du fantôme non remis en majuscules ; (3) `duel_system.cpp` : petites allocations hors course (`others()`) ; (4) vis du trafic sans `traficProchainDessin()`.
+
+### 2026-11-14 02:04:47 — Statuts automatiques, CI main #1061 (robot statuts)
+- Run rouge (push, commit e454b9f), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
