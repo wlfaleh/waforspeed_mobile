@@ -1651,3 +1651,8 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Vérification : 140 tests CPU verts (nouveau cas dans `test_creation_profil`) ; banc `profil` FR + EN 0 écart (parcours menu → Profil → Modifier → Valider → Retour → course → fin → Profil, 22 courses → 20 lignes, 16 « W » entier, 0 texte français en anglais) ; banc `creation` 0 écart avant / après ; 26 captures dans `qa/pr/WFS-482/`.
 - Limites : non essayé sur téléphone ; nombres au format français dans les deux langues (comme le reste du jeu).
 
+
+### 2026-11-14 14:11:37 — WFS-482 refusé par le lead dev, PR #412 (lead-dev)
+- Revue du commit e85d008 : 26 captures ouvertes, diff lu en entier, branche construite, 140 tests CPU verts, banc `profil` relancé (0 écart FR + EN). Logique saine (« Valider » ne remet pas les statistiques à zéro, accroches ≤ 10 lignes annoncées).
+- Refus (revue « changements demandés » écrite dans la PR) : (1) capture des tests CPU absente (`qa/pr/WFS-482/tests-cpu.log` et section « Tests CPU », règle du 2026-11-11) ; (2) RG-08 : dans le formulaire « Modifier », le pseudo de 16 « W » et le curseur sortent du cadre du champ (`creation_profil.cpp`, `champ()`, taille fixe sans limite de largeur ; captures `profil-*-16w-modification`).
+- Statut : ↩️ Retour lead dev (PR #412) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
