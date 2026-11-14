@@ -6,6 +6,7 @@
 #include <cstring>
 #include "../core/math.h"
 #include "cars.h"     // WFS-461 : fiche de la voiture de police
+#include "roues.h"    // WFS-540 : courbure de la route (volant du policier)
 #include "player.h"   // WFS-461 : Phys (freinage, résistance), vitesseVirageAide
 
 namespace wfs {
@@ -196,17 +197,28 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         const bool att = attaque(p, (int)i, t) && !joueurLent;
         // WFS-338 (RG-05) : en attaque derrière, pare-chocs contre pare-chocs (le contact se fait par les vitesses, sans téléportation)
         double viseM = att ? (p.role == 0 ? f.contactL - 0.2 : 0.0) : 15.0 + p.role * 3.0;
-        if (joueurLent) viseM = std::max(viseM, f.contactL + GARDE_M);   // RG-02 : jamais collée à un joueur qui repart
+        // RG-02 / RG-03 : joueur (presque) arrêté : elle vient s'arrêter derrière lui, GARDE_M de jour entre les pare-chocs (assez près
+        // pour l'arrêter, jamais collée : il peut toujours repartir) ; les voitures « à côté » s'arrêtent derrière elle
+        if (joueurLent) viseM = f.contactL + GARDE_M + p.role * (f.longueur + 1.5);
         const bool joueurDerriere = rel < -1.0;
+        const bool memeFile = std::abs(xJ - p.x) * RW < f.contactW + 0.5;
+        double cxLaisse = -9;   // file où elle se range pour laisser passer le joueur (-9 : aucune)
         double vCible;   // m/s, < 0 : marche arrière
         if (joueurDerriere) {
-            // RG-10 : le joueur est passé derrière (il recule) : la police ne recule pas avec lui. Elle freine jusqu'à l'arrêt ;
-            // arrêtée, elle recule doucement vers lui (≤ V_RECUL_POLICE, en braquant) s'il est entre 8 et 60 m, sinon elle attend
             const double d = -rel;
-            vCible = u > 0.3 || d < ARRET_M || d > 60 ? 0.0 : -std::min(V_RECUL_POLICE, 0.4 * (d - ARRET_M));
-            // RG-02 : joueur arrêté juste derrière elle, dans sa file (elle lui barre la route) : elle avance au pas pour lui laisser
-            // la place (jour de GARDE_M au moins entre les pare-chocs)
-            if (joueurLent && d < f.contactL + GARDE_M + 0.5 && std::abs(xJ - p.x) * RW < f.contactW) vCible = 2.0;
+            if (vJm > 1.0) {
+                // le joueur roule vers l'avant derrière elle : elle le laisse passer (dans sa file : elle garde de l'avance et se
+                // range sur le côté ; rangée : elle ralentit pour qu'il passe)
+                if (memeFile) { vCible = vJm + 2.0; cxLaisse = placeCote(xJ, p.role == 2 ? 2 : 1); }
+                else vCible = std::max(0.0, vJm - 3.0);
+            } else if (joueurLent && memeFile && d < f.contactL + GARDE_M + 0.5) {
+                // RG-02 : joueur arrêté juste derrière elle, dans sa file (elle lui barre la route) : elle avance au pas en se rangeant
+                vCible = 2.0; cxLaisse = placeCote(xJ, p.role == 2 ? 2 : 1);
+            } else {
+                // RG-10 : le joueur recule (ou attend) derrière elle : elle ne recule pas avec lui. Elle freine jusqu'à l'arrêt ;
+                // arrêtée, elle recule doucement vers lui (≤ V_RECUL_POLICE, en braquant) s'il est entre 8 et 60 m, sinon elle attend
+                vCible = u > 0.3 || d < ARRET_M || d > 60 ? 0.0 : -std::min(V_RECUL_POLICE, 0.4 * (d - ARRET_M));
+            }
         } else {
             // rattrape (WFS-338 : ≤ approcheMax, de 45 m/s au loin à 4 m/s au contact : elle se voit arriver) ; trop près, elle se
             // laisse glisser en arrière doucement (WFS-461 RG-04 : √(2 × 1,5 m/s² × écart), sans à-coup près de sa place)
@@ -219,21 +231,23 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
             // virage de 180 m à 130 km/h et 0,90 g dans un virage de 60 m ; freinage avant le virage : 0,8 μ)
             if (au > 1) vCible = std::min(vCible, vitesseVirageAide(piste, p.rd, 0.65 * P.mu * muRoute, 0.8 * muRoute));
         }
-        double cx = joueurDerriere ? p.cibleX : p.role == 0 ? xJ : placeCote(xJ, p.role);   // WFS-338 : jamais par-dessus le joueur
+        double cx = cxLaisse > -9 ? cxLaisse : joueurDerriere ? p.cibleX : p.role == 0 ? xJ : placeCote(xJ, p.role);   // WFS-338 : jamais par-dessus le joueur
         if (rel > 40 && !att) cx = p.cibleX;   // loin : reste dans sa file (moins de zigzags)
         // obstacles devant elle dans sa trajectoire (trafic, cônes, camion, barrage) : contourne par une file libre, sinon s'arrête ;
         // une autre voiture de police qui roule devant dans sa file : elle la suit à 7 m (convoi, comme avant WFS-540)
+        // il regarde d'autant plus loin qu'il roule vite (3 s devant lui, 30 m au moins, 120 m au plus)
+        const double portee = std::clamp(3.0 * au, 30.0, 120.0);
         const Obstacle* gene = nullptr; double geneD = 1e9;
         for (const Obstacle& o : obs) {
             const double d = (o.s - p.rd) * M;
-            if (d > 0 && d < 30 && std::abs(o.x - p.x) < 0.36 && d < geneD) { geneD = d; gene = &o; }
+            if (d > 0 && d < portee && std::abs(o.x - p.x) < 0.36 && d < geneD) { geneD = d; gene = &o; }
         }
         Obstacle barrage;   // voiture de police garée devant (copie : obs reste en lecture seule)
         double suivreD = 1e9, suivreV = 0;
         for (size_t k = 0; k < ps.size(); k++) {
             if (k == i) continue;
             const double d = (ps[k].rd - p.rd) * M;
-            if (d <= 0 || d >= 30 || std::abs(ps[k].x - p.x) >= 0.36) continue;
+            if (d <= 0 || d >= portee || std::abs(ps[k].x - p.x) >= 0.36) continue;
             if (ps[k].fixe) { if (d < geneD) { geneD = d; barrage = {ps[k].rd, ps[k].x, 0}; gene = &barrage; } }
             else if (d < suivreD) { suivreD = d; suivreV = ps[k].monde.u(); }
         }
@@ -281,19 +295,31 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         const double ecartFile = std::abs(p.x - p.cibleX) * RW;
         if (ecartFile > 1.5 && vCible > 0 && au > 8) vCible = std::min(vCible, au - 0.2);   // lève le pied (sans freiner en virage)
         if (gene && vCible > 0) vCible = std::min(vCible, gene->v * M + std::sqrt(2 * f.frein * std::max(0.0, geneD - (f.longueur + OBSTACLE_L) / 2 - 2.5)));
-        if (suivreD < 30 && vCible > 0) vCible = std::min(vCible, std::max(0.0, suivreV) + std::sqrt(2 * f.frein * std::max(0.0, suivreD - 7)));
+        if (suivreD < portee && vCible > 0) vCible = std::min(vCible, std::max(0.0, suivreV) + std::sqrt(2 * f.frein * std::max(0.0, suivreD - 7)));
 
-        // ---------- volant : poursuite pure d'un point de la file visée, devant (derrière en marche arrière), comme un conducteur qui
-        // regarde où il va ; braquage anticipé selon le sous-virage de la voiture (gradient du modèle bicyclette, Rajamani § 3.3) et
-        // corrigé par la rotation ressentie (vitesse de lacet) : sans cela, la voiture « pompe » dans les grandes courbes rapides ----------
-        const double sens = vCible < 0 ? -1.0 : 1.0;
-        const double ld = std::clamp(au + 5, 7.0, 45.0);
-        const TrackPoint T = piste.pointLisse(p.rd + sens * ld / M, p.cibleX * RW);
-        const double sn = std::sin(m.cap), cs = std::cos(m.cap), dxT = T.x - m.x, dzT = T.z - m.z;
-        const double av = dxT * sn - dzT * cs, dr = dxT * cs + dzT * sn;
-        const double kappa = 2 * dr / std::max(1.0, av * av + dr * dr);   // cercle tangent au cap passant par le point visé (1/m)
+        // ---------- volant : comme un conducteur qui suit sa file : courbure de la file (la route qui tourne), plus la correction de
+        // l'écart de position et de cap mesuré à une distance de visée devant lui (poursuite pure rapportée à la file : elle ne coupe
+        // pas les virages) ; braquage anticipé selon le sous-virage de la voiture (gradient du modèle bicyclette, Rajamani § 3.3) et
+        // corrigé par la rotation ressentie (vitesse de lacet) : sans cela, la voiture « pompe » dans les grandes courbes rapides.
+        // En marche arrière (lente) : poursuite pure d'un point de la file derrière elle ----------
         const double mg = P.masse * physique::G, Caf = P.cyAvant * mg * P.b / P.L, Car = P.cyArriere * mg * P.a / P.L;
         const double Kus = P.masse / P.L * (P.b / Caf - P.a / Car);       // gradient de sous-virage (s²/m)
+        double kappa;   // courbure voulue de la trajectoire (1/m, + à droite)
+        if (vCible < 0) {
+            const double ld = 6.0;
+            const TrackPoint T = piste.pointLisse(p.rd - ld / M, p.cibleX * RW);
+            const double sn = std::sin(m.cap), cs = std::cos(m.cap), dxT = T.x - m.x, dzT = T.z - m.z;
+            const double av = dxT * sn - dzT * cs, dr = dxT * cs + dzT * sn;
+            kappa = 2 * dr / std::max(1.0, av * av + dr * dr);
+        } else {
+            const double ld = std::clamp(0.9 * au + 4, 6.0, 40.0);
+            const double kRoute = roues::courbureRoute(piste, p.rd), n = p.cibleX * RW;
+            const double kFile = kRoute / std::max(0.2, 1 - kRoute * n);   // file décalée de n : rayon R − n
+            const double ey = (p.cibleX - p.x) * RW;                       // + : la file visée est à droite
+            // correction bornée : un changement de file se fait à 0,35 g au plus (conduite ferme mais pas brutale)
+            const double kMax = 0.35 * P.mu * muRoute * physique::G / std::max(1.0, u * u);
+            kappa = kFile + std::clamp(2 * (ey - std::sin(p.h) * ld) / (ld * ld), -kMax, kMax);
+        }
         const double rVoulu = u * kappa;
         double roue = std::atan((P.L + Kus * u * u) * kappa) + (au > physique::V_DYNAMIQUE ? 0.08 * (rVoulu - m.r) : 0.0);
         const double roueMax = physique::braquageMax(P, au);
