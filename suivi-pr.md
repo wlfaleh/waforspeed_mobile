@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #413 | WFS-493 | Claude, agent dev3d (01Us6uCwTQ) | 🔁 Corrigée, à relire | 73b2d8ac | 2026-11-14 16:44 |
+| #413 | WFS-493 | Claude, agent dev3d (01Us6uCwTQ) | 👀 En revue — lead-dev, 2026-11-14 16:44 | 73b2d8ac | 2026-11-14 16:44 |
