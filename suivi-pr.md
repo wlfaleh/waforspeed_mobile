@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #407 | WFS-543 | Claude, agent dev3d (01Us6uCwcF) | 🆕 À relire | — | 11:04 |
