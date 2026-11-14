@@ -141,7 +141,7 @@ vec3 chausseeReflechie(vec3 sun) {
 int skinPixel = 0;
 int lireFinition(inout float metal) {
     float k = floor(metal / 16.0);   // WFS-492 : skin (vehicule_skin.h) ; métal + 2 × finition < 16
-    skinPixel = int(clamp(k, 0.0, 4.0));
+    skinPixel = int(clamp(k, 0.0, 5.0));   // WFS-495 : 5 = habillage cuit (skin + autocollants, SKIN_CUIT)
     metal -= 16.0 * k;
     float f = floor(metal * 0.5);
     metal -= 2.0 * f;
@@ -275,13 +275,40 @@ const vec4 SKIN_FACES = vec4(872.0, 1024.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0
 const vec3 SKIN_COULEURS[10] = vec3[10](vec3(0.0), vec3(0.0),
     vec3(0.91, 0.91, 0.89), vec3(0.10, 0.11, 0.125),   // 1 Rallye
     vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));   // 2 à 4 : WFS-493
+// WFS-495 : habillage cuit (skin éventuelle + autocollants, src/render/vehicule_autocollants.h) : texture RGBA, RGB = couleur en
+// codes sRGB, A = couverture (vrais adhésifs : ils suivent la carrosserie par la même projection, sous la finition et le vernis)
+const int SKIN_CUIT = 5;
 // lecture d'une zone : (s, t) ∈ [0, 1]² dans la zone, bornés d'un demi-texel (pas de fuite vers la zone voisine) ; gradients donnés
-vec2 skinLire(vec4 zone, vec2 st, vec2 gx, vec2 gy) {
+vec4 skinLire4(vec4 zone, vec2 st, vec2 gx, vec2 gy) {
     float hv = zone.y - zone.x, demi = 0.5 / SKIN_T;
     vec2 uv = vec2(clamp(st.x, demi, 1.0 - demi), zone.x + clamp(st.y * hv, demi, hv - demi));
-    return textureGrad(texColor, uv, gx * vec2(1.0, hv), gy * vec2(1.0, hv)).rg;
+    return textureGrad(texColor, uv, gx * vec2(1.0, hv), gy * vec2(1.0, hv));
+}
+vec2 skinLire(vec4 zone, vec2 st, vec2 gx, vec2 gy) { return skinLire4(zone, st, gx, gy).rg; }
+// habillage cuit : couverture et couleur (linéaire, prémultipliée) d'une projection
+vec4 cuitLire(vec4 zone, vec2 st, vec2 gx, vec2 gy) {
+    vec4 c = skinLire4(zone, st, gx, gy);
+    return vec4(pow(c.rgb, vec3(2.2)) * c.a, c.a);   // sRGB → linéaire (comme hexColor), puis prémultiplié
+}
+vec3 habillageCuit(vec3 peinture) {   // mêmes projections et mêmes poids que habillage() ci-dessous
+    vec3 q = positionCarrosserie();
+    vec3 dqx = dFdx(q), dqy = dFdy(q);
+    vec3 n = normalize(transpose(mat3(pc.model)) * vNrm);
+    vec3 w = pow(abs(n), vec3(8.0)); w /= max(w.x + w.y + w.z, 1e-6);
+    float sz = 0.5 / SKIN_DZ, sx = 0.5 / SKIN_DX, sy = 1.0 / SKIN_H;
+    vec4 flanc = n.x < 0.0
+        ? cuitLire(SKIN_GAUCHE, vec2((q.z + SKIN_DZ) * sz, (SKIN_H - q.y) * sy), vec2(dqx.z * sz, -dqx.y * sy), vec2(dqy.z * sz, -dqy.y * sy))
+        : cuitLire(SKIN_DROITE, vec2((SKIN_DZ - q.z) * sz, (SKIN_H - q.y) * sy), vec2(-dqx.z * sz, -dqx.y * sy), vec2(-dqy.z * sz, -dqy.y * sy));
+    vec4 dessus = cuitLire(SKIN_DESSUS, vec2((q.z + SKIN_DZ) * sz, (q.x + SKIN_DX) * sx), vec2(dqx.z * sz, dqx.x * sx), vec2(dqy.z * sz, dqy.x * sx));
+    float sf = 0.25 / SKIN_DX;
+    vec4 face = n.z < 0.0
+        ? cuitLire(SKIN_FACES, vec2((SKIN_DX - q.x) * sf, (SKIN_H - q.y) * sy), vec2(-dqx.x * sf, -dqx.y * sy), vec2(-dqy.x * sf, -dqy.y * sy))
+        : cuitLire(SKIN_FACES, vec2(0.5 + (q.x + SKIN_DX) * sf, (SKIN_H - q.y) * sy), vec2(dqx.x * sf, -dqx.y * sy), vec2(dqy.x * sf, -dqy.y * sy));
+    vec4 c = flanc * w.x + dessus * w.y + face * w.z;
+    return peinture * (1.0 - c.a) + c.rgb;
 }
 vec3 habillage(vec3 peinture, int skin) {
+    if (skin == SKIN_CUIT) return habillageCuit(peinture);   // WFS-495
     vec3 q = positionCarrosserie();                       // m, repère de la voiture
     vec3 dqx = dFdx(q), dqy = dFdy(q);
     vec3 n = normalize(transpose(mat3(pc.model)) * vNrm);  // normale lissée du maillage, repère de la voiture
