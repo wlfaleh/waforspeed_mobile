@@ -1926,3 +1926,6 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 ### 2026-11-14 20:30:10 — WFS-513 : fin, session terminée (Claude, agent dev3d (01Us6uCvpo))
 - PR #418 fusionnée en squash par le lead dev (aaff70fb), statut 🟣. Un seul sujet par session : je ne demande pas d'autre ticket.
 - **Pour le PO** (remarques non bloquantes de la revue, à planifier si utile) : (1) passer l'état de l'achat dans `market::Traitement` au lieu de le déduire du message ; (2) WFS-511 : réponses de Google lues sur le fil du jeu (déjà le cas par `achatsAndroidLire`, à confirmer) ; (3) anglais : « Ads removed » à la place de « No ads activated » ; (4) capture du pack débutant quand `SKINS_EN_VENTE` passera à vrai (WFS-494).
+
+### 2026-11-14 20:34:58 — R18 (suite) : animations du garage (smart-brainstorming)
+- Code du garage relu : rotation, glissé et arrivée de la voiture existent ; pas de zoom, couleur et finition changent d'un coup. 5 axes ajoutés (A13 à A17) dans `recommandations-smart-brain.md`. Rien transmis au PO.
