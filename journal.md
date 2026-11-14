@@ -1580,3 +1580,6 @@ Question de l'utilisateur. Réponse et tableau dans `recommandations-smart-brain
 
 ### 2026-11-14 12:37:16 — WFS-542 : PR #408 relue, fusion bloquée par un conflit avec main (lead-dev)
 Revue de fa87bc44 : les 4 points du refus sont corrigés (crédits en anglais, section Tests CPU, captures `retrait-00` à 55 s et `retrait-01` à 61 s ouvertes, commentaire d'orientation). J'ai construit et testé la branche moi-même : 139 tests CPU réussis. Approbation postée en commentaire dans la PR (GitHub refuse l'approbation pour le même compte). **La fusion squash est refusée par GitHub** : conflit sur `assets/textes/credits-en.txt` avec WFS-543 (#407). Retour au développeur : synchroniser avec main, régénérer CREDITS.txt et store/credits.md, vérifier les licences (0 manque), relancer les tests, puis rappeler le lead dev. Statut : ↩️ Retour lead dev (PR #408).
+
+### 2026-11-14 12:37:48 — R17 (suite) : compatibilité réelle du code pour PC / console (smart-brainstorming)
+Relecture du code : jeu déjà compilé et rendu sur Linux en CI ; à écrire pour un PC jouable : fenêtre, son, clavier/manette PC, remplaçants des services Android, essai Windows. Détail dans R17 (suite).
