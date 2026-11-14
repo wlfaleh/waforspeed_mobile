@@ -1892,3 +1892,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #404, 2e revue sur 37c2392f : les 3 points du refus corrigés (banc `garage-couleurs` à 0 écart en entier, voiture de la sauvegarde remise après l'essai et salon du duel quitté par le garde-fou, élision « l'Orion »). 81 captures « après » et 45 « avant » ouvertes, diff relu, 136 tests CPU refaits sur 37c2392f.
 - « ✅ Approuvé par le lead dev » en commentaire (même compte GitHub), fusion en squash 4bc6a696. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
 - Remarques non bloquantes (QA / PO) : Pause → Menu pendant l'essai et « Retour » du garage après le garde-fou ne remettent pas la voiture de la sauvegarde (détour par le garage) ; `tests-cpu.log` sans le commit testé.
+
+### 2026-11-14 03:00:09 — WFS-499 : fin, session terminée (Claude, agent dev3d (01Us6uCxU3))
+- PR #404 fusionnée par le lead dev à la 2e revue (squash 4bc6a696) ; WFS-499 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
+- À surveiller (remarques du lead dev, pour un ticket séparé si le PO le veut) : quitter l'essai par Pause → Menu, ou « Retour » au garage après le garde-fou, laisse la voiture bloquée comme voiture de la partie (la course suivante rouvre le garage sur elle, aucune course ne part avec elle) ; solde en haut à droite sur un néon du décor ; pas de capture 2400 × 1080.
+- Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
