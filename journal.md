@@ -1830,3 +1830,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 01:23:50 — WFS-537 : retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
 - Corrigé : branche synchronisée (WFS-481) ; profil créé dans le banc `score-fin` ; compteur caché sous « Crée ton pilote » (capture et vérification) ; compteur dessiné par un système (461) juste après « Réglages » à la même image, avec le fondu du menu ; singulier « 1 étoile ».
 - Vérifié : `score-fin` vert en 2400 × 1080 et 1280 × 720 ; tests CPU 133 / 133 ; `textes-course` VERT ; `textes-menus` vert sur la branche (un échec « Quitter le salon » pendant la passe de captures, dû au relais du duel injoignable, absent à la relance).
+
+### 2026-11-14 01:25:44 — Statuts automatiques, CI main #1060 (robot statuts)
+- Run rouge (push, commit b08d880), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
