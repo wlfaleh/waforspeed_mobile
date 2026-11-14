@@ -193,7 +193,9 @@ public:
         if (g.face >= 0 && u.shadowP.x > 0.5f && length(g.point - c) > u.ombreDemi.x && g.attente < 120) { g.attente++; return false; }
         return g.face >= 0;
     }
-    void creer(Renderer& r) override { g.r = &r; }
+    // WFS-544 (WFS-262 RG-02) : ressources fixes (dont les 2 pipelines des personnages et de la tache des phares) créées au
+    // chargement : créées à la 1re capture, elles l'étaient pendant la course (banc des vitrines, bancs du matin #32)
+    void creer(Renderer& r) override { g.r = &r; creerFixes(r); }
     void detruire(Renderer& r) override { detruireTout(r); }
     void executer(const ImagePasse& img) override {
         Renderer& r = img.r;
