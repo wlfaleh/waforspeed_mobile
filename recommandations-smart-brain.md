@@ -932,7 +932,7 @@ Limites : maquettes de création (rendu web), pas le moteur ; à valider avant t
 **Images** : `references/maquettes-R19/` — vue d'ensemble + 12 écrans (menu, mode, carte, duel, cadeau, garage couleur, garage skin, chargement, départ, fin, résultats, market).
 | N° | Écran | Proposition R19 |
 |---|---|---|
-| 01 | Menu | voiture du joueur en gros plan (ex. Cavallo SF-X caméléon, skin Rallye) ; console : deux boutons Start/Stop identiques « Course solo » et « Course en ligne », plaque « Garage » ; en haut à droite, étoiles, bouton **Réglages** (roue dentée) et bouton **Cadeau du jour** (pastille orange quand un cadeau attend), en verre dépoli ; **plus de bouton Crédits** au menu |
+| 01 | Menu | voiture du joueur en gros plan (ex. Cavallo SF-X caméléon, skin Rallye) ; console : deux boutons Start/Stop identiques « Course solo » et « Course en ligne », plaque « Garage » ; en haut à droite, étoiles et bouton **Réglages** (roue dentée) en verre dépoli ; **en bas à droite, à la place du nom de la voiture : le Cadeau du jour** (idée de l'utilisateur) : anneau de 24 h façon cadran fin (cyan → orange) autour d'un paquet, **compte à rebours** hh:mm:ss jusqu'au prochain cadeau, rappel de la garantie du 30e ; quand le cadeau est prêt, l'anneau est plein, il pulse en orange et le texte devient « OUVRIR » ; **plus de bouton Crédits** au menu |
 | 02 | Choix du mode | cartes à plat avec vraies images du jeu ; Start/Stop « Suivant », autocollant « Retour » |
 | 03 | Choix de la carte | grande carte de la ville choisie (vraie image), les autres en aperçu sur les côtés ; interrupteur jour / nuit ; Start/Stop « Rouler » |
 | 04 à 12 | Duel, cadeau, garage (onglets), chargement, départ, fin, résultats, market | repris de R18, sans les petits titres bleus |

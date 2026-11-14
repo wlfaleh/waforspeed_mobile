@@ -2009,3 +2009,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 23:55:16 — R19 : menu (Réglages, Cadeau du jour) et Crédits dans Réglages (smart-brainstorming)
 - Retours de l'utilisateur : boutons Réglages et Cadeau du jour ajoutés au menu ; Crédits retiré du menu et placé dans Réglages à côté de « Conditions d'utilisation » (`14-reglages-credits.jpg`). Rien transmis au PO.
+
+### 2026-11-14 23:59:52 — R19 : Cadeau du jour en bas du menu avec compte à rebours (smart-brainstorming)
+- Idée de l'utilisateur : Cadeau du jour à la place du nom de la voiture, anneau de 24 h et compte à rebours. Rien transmis au PO.
