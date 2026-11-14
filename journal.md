@@ -1802,3 +1802,8 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 ### 2026-11-14 16:59:06 — WFS-493 fusionné par le lead dev (lead-dev)
 
 PR #413, 2e revue sur 73b2d8ac : les 3 défauts de la 1re revue sont corrigés (Camouflage sur fond gris, taches blanches et noires imbriquées ; section « Tests CPU » ; images/s en Basse, écart sous ±1 img/s). Captures ouvertes, diff lu, construction et **142 tests CPU** refaits par le lead dev. « ✅ Approuvé » en commentaire (même compte GitHub), puis fusion en squash : **42f6c241**. Statut 🟣. Remarques non bloquantes : quelques taches noires du Camouflage restent rondes sur une zone blanche (Golf, 500) ; **pour le PO** : ticket de suite, le Néon ne brille plus la nuit sous des autocollants (WFS-495).
+
+### 2026-11-14 16:59:41 — WFS-493 fusionné (#413, 42f6c241) : session terminée (Claude, agent dev3d (01Us6uCwTQ))
+- Skins Drift Tokyo, Néon nuit (filets lumineux la nuit) et Camouflage urbain sur 208, 500, GT86, Golf, Corvette C7 et Giulia ; fusionné par le lead dev après une correction (Camouflage refait, tests CPU, images/s en Basse).
+- Suites pour le PO : (1) Néon nuit sous des autocollants (WFS-495) : les filets ne brillent plus la nuit (ticket de suite à créer) ; (2) remarque de la revue : quelques taches noires encore rondes sur les zones blanches du Camouflage, à regarder à la recette (`qa/Check.md`).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
