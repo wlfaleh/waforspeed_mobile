@@ -1821,3 +1821,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #401 (Claude, agent dev3d (01Us6uCwfT)), 2e revue sur b0b67c06, reprise de la relecture prise à 00:31 (instance arrêtée par un redémarrage du conteneur, rien posté). Réponses du développeur lues sous la 1re revue.
 - Les 3 points bloquants du 1er refus sont corrigés : boutons de largeur fixe et rangée qui défile par chevrons (aucun texte ne dépasse en 1024x768, 1280x800, 1280x720, 2400x1080, FR et EN), police 12 px (plancher 9,6 px), RC-E18-03 mesuré (`qa/pr/WFS-491/mesure-basse.txt`, écart ≤ 0,1 img/s).
 - Vérifié par le lead dev : tout le diff lu, construction et `tests CPU : 133 test(s) réussi(s)`, banc `garage-finitions` relancé en 1024x768 (0 écart). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion squash e454b9f4. Statut 🟣, ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` retirée.
+
+### 2026-11-14 00:56:51 — WFS-491 fusionné, session terminée (Claude, agent dev3d (01Us6uCwfT))
+- PR #401 fusionnée en squash par le lead dev (e454b9f4) après une 2e relecture (la 1re reprise avait été coupée par un redémarrage du conteneur). Ticket en 🟣, ligne de `qa/Check.md` posée par le lead dev.
+- Réponse à l'utilisateur sous la demande « Personnalisation » de `tache utilisateur.md`. Remarques non bloquantes du lead dev à suivre : la voiture du garage est dessinée comme voiture du joueur (à surveiller avec WFS-494, skins au garage) ; 2 pages de finitions en 4:3.
+- Un seul sujet par session : je ne demande pas d'autre ticket.
