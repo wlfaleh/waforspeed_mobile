@@ -241,14 +241,26 @@ int benchBatiments(Game& g, Renderer& r, const std::string& out, const std::stri
         verifier(f.ok, "bloc des bâtiments refusé → kit de secours, aucun plantage");
     }
     {   // 5) WFS-418 (accroche, RG-04) : mémoire graphique refusée au chargement des bâtiments cuits → kit de secours, sans arrêt du jeu
-        VkCtx& vk = r.vk(); verifier(ecrireFichier(chemin, octets) && preparerCarte(c), "paquet valide réactivé"); uint32_t a = vk.reservationsRepli; double m0 = memoire::gpuMo();
-        scene("paquet cuit (réservations comptées)", "jour", 1, 0, "batiments-gpu-compte", 6); const uint32_t n = vk.reservationsRepli - a; const double perte0 = memoire::gpuMo() - m0;
-        for (const uint32_t rang : {3u, n / 2 + 1, n}) {   // 3 : image du 2e atlas ; milieu : maillages fixes ; n : dernier tampon du niveau 0 (de nuit)
-            const uint32_t r0 = archi::carte::replisMemoireGraphique(); a = vk.reservationsRepli; m0 = memoire::gpuMo(); vk.echecReservation = a + rang;
-            const Mesure f = scene("mémoire graphique refusée → kit de secours", rang == n ? "nuit" : "jour", 0, 50, std::string("batiments-gpu-refus-") + (rang == 3 ? "atlas" : rang == n ? "dernier-nuit" : "milieu"), rapide ? 30 : 60);   // même trajet que « rue-jour » du kit
-            vk.echecReservation = 0; WFS_LOG("batiments (WFS-418) banc : %u réservations des bâtiments cuits, refus de la n° %u ; mémoire graphique après la partie %+.2f Mo (paquet sans refus %+.2f Mo)", n, rang, memoire::gpuMo() - m0, perte0);
-            verifier(n > 8 && f.ok && archi::carte::replisMemoireGraphique() == r0 + 1 && vk.reservationsRepli - a == rang && memoire::gpuMo() - m0 <= perte0 + 0.01, "mémoire graphique refusée (réservation n° " + std::to_string(rang) + ") → kit de secours, aucun arrêt du jeu, aucune mémoire graphique perdue");
+        // WFS-446 (accroche, RG-07, RG-08) : captures préfixées par la carte (Ville et Corniche) ; le trafic, les piétons, les conducteurs, les
+        // enseignes et la route passent aussi par la voie de repli, AVANT les bâtiments (110) : n0 = leurs réservations (kit sans paquet)
+        VkCtx& vk = r.vk(); carte::desactiver(); uint32_t a = vk.reservationsRepli;
+        scene("kit (réservations des autres systèmes comptées)", "jour", 1, 0, prefixe + "-gpu-compte-kit", 6); const uint32_t n0 = vk.reservationsRepli - a;
+        verifier(ecrireFichier(chemin, octets) && preparerCarte(c), "paquet valide réactivé"); a = vk.reservationsRepli; double m0 = memoire::gpuMo();
+        scene("paquet cuit (réservations comptées)", "jour", 1, 0, prefixe + "-gpu-compte", 6); const uint32_t n = vk.reservationsRepli - a - n0; const double perte0 = memoire::gpuMo() - m0;
+        // rangs (après n0) : 3 image du 2e atlas ; milieu maillages fixes ; n dernier tampon du niveau 0 (de nuit) ; WFS-446 : 1 - n0 = 1re réservation
+        // de la partie (tout est refusé : route, conducteurs, trafic, piétons, enseignes, bâtiments) ; n0 / 2 + 1 - n0 : milieu des autres systèmes
+        for (const int64_t rang : {(int64_t)3, (int64_t)(n / 2 + 1), (int64_t)n, 1 - (int64_t)n0, (int64_t)(n0 / 2 + 1) - (int64_t)n0}) {
+            const std::string quoi = rang == 3 ? "atlas" : rang == n ? "dernier-nuit" : rang == 1 - (int64_t)n0 ? "tout" : rang <= 0 ? "autres-nuit" : "milieu";
+            const uint32_t r0 = archi::carte::replisMemoireGraphique(), absolu = (uint32_t)((int64_t)n0 + rang); a = vk.reservationsRepli; m0 = memoire::gpuMo(); vk.echecReservation = a + absolu;
+            const Mesure f = scene("mémoire graphique refusée → secours", quoi.find("nuit") != std::string::npos ? "nuit" : "jour", 0, 50, prefixe + "-gpu-refus-" + quoi, rapide ? 30 : 60);   // même trajet que « rue-jour » du kit
+            vk.echecReservation = 0; WFS_LOG("batiments (WFS-418, WFS-446) banc : %u réservations des autres systèmes, %u des bâtiments cuits, refus de la n° %u ; mémoire graphique après la partie %+.2f Mo (paquet sans refus %+.2f Mo)", n0, n, absolu, memoire::gpuMo() - m0, perte0);
+            verifier(n > 8 && n0 > 8 && f.ok && archi::carte::replisMemoireGraphique() == r0 + 1 && (rang > 0 ? vk.reservationsRepli - a == absolu : vk.reservationsRepli - a >= absolu) && memoire::gpuMo() - m0 <= perte0 + 0.01, "mémoire graphique refusée (réservation n° " + std::to_string(absolu) + ", " + quoi + ") → secours, aucun arrêt du jeu, aucune mémoire graphique perdue");
         }
+        const uint32_t v0 = archi::carte::replisMemoireVive();   // WFS-446 (RG-06, RG-08) : std::bad_alloc simulé dans initCuit → kit de secours
+        archi::carte::essaiManqueMemoireVive(true); m0 = memoire::gpuMo();
+        const Mesure f = scene("mémoire vive refusée → kit de secours", "jour", 0, 50, prefixe + "-vive-refus", rapide ? 30 : 60);
+        archi::carte::essaiManqueMemoireVive(false);
+        verifier(f.ok && archi::carte::replisMemoireVive() == v0 + 1 && memoire::gpuMo() - m0 <= perte0 + 0.01, "mémoire vive refusée (std::bad_alloc dans initCuit) → kit de secours, aucun arrêt du jeu, aucune mémoire graphique perdue");
     }
     carte::desactiver();
     fs::remove(chemin, ec);   // le banc ne laisse aucun paquet

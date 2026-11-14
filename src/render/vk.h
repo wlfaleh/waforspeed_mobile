@@ -82,7 +82,8 @@ public:
     // WFS-134 : repli sans blit ; WFS-418 : repli = vrai : tampon de transfert par essayerBuffer, faux rendu s'il est refusé (image non remplie)
     bool uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips, bool repli = false);
     // WFS-149 (RG-01) : texture dont TOUS les niveaux sont fournis (KTX2 : ASTC, ETC2 ou RGBA8), copiés tels quels
-    Image uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux);
+    // WFS-446 (RG-05) : repli = vrai : tampon de transfert et image par essayerBuffer / essayerImage, image vide si refusée
+    Image uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux, bool repli = false);
     // WFS-149 : le GPU sait échantillonner ce format avec filtre linéaire (fonctions ASTC / ETC2 activées à la création)
     bool formatEchantillonnable(VkFormat fmt) const;
     size_t octetsTextures = 0;   // WFS-149 : mémoire des textures envoyées (niveaux compris), journal et banc du réalisme

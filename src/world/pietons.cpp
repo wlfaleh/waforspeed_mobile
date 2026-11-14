@@ -207,7 +207,7 @@ public:
             if (!garder() || !garderVille(VILLE_PASSANTS)) continue;   // WFS-222 (RG-07) ; WFS-317 (RG-03)
             Personne P; P.s = c.s; P.lat = c.lat; P.v = c.v; P.dir = c.dir; P.feu = c.feu; P.pose = 5; P.yawFixe = true; P.y = 0.15; gens_.push_back(P); }
         if (gens_.empty()) return;
-        if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0]) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1])) {
+        if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0], true) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1], true)) {   // WFS-446 (RG-03) : refus de mémoire → même secours
             WFS_ERR("Piétons indisponibles (assets/people) : aucun piéton affiché");   // pas de silhouettes de repli
             gens_.clear(); return;
         }
@@ -549,7 +549,7 @@ private:
         const double part = familles::partEnfants(map.id);
         if (part <= 0) return;
         bool ok = true;
-        for (int k = 0; k < familles::NB_ENFANTS && ok; k++) ok = chargerPersonnage(r, std::string("people/humains/") + familles::ENFANTS[k] + ".wfp", enfants_[k]);
+        for (int k = 0; k < familles::NB_ENFANTS && ok; k++) ok = chargerPersonnage(r, std::string("people/humains/") + familles::ENFANTS[k] + ".wfp", enfants_[k], true);   // WFS-446 (RG-03)
         if (!ok) {
             WFS_ERR("Enfants (WFS-233) : humains illisibles (assets/people/humains/e*.wfp) : piétons adultes seulement");
             for (Personnage& m : enfants_) if (m.ok) detruirePersonnage(r, m);

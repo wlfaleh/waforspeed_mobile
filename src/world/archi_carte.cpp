@@ -33,6 +33,8 @@ static_assert(sizeof(cuit::Sommet) == sizeof(Vertex) && offsetof(cuit::Sommet, t
 std::vector<Bati> g_bats;
 Chrono g_chrono;
 uint32_t g_replisGpu = 0;   // WFS-418 : replis faute de mémoire graphique (jamais remis à zéro)
+uint32_t g_replisVive = 0;   // WFS-446 (RG-06) : replis sur un std::bad_alloc d'initCuit (jamais remis à zéro)
+bool g_essaiVive = false;    // WFS-446 (RG-08) : banc seulement : initCuit lève std::bad_alloc après le 1er maillage fixe
 // même disposition en mémoire (vérifiée ci-dessus) : copie en bloc des sommets d'un lot vers des Vertex
 std::vector<Vertex> sommets(const Lot& l) {
     std::vector<Vertex> v(l.v.size());
@@ -142,8 +144,12 @@ public:
             // Manque de mémoire VIVE (std::bad_alloc) : repli sur le kit, décidé AVANT l'occlusion des murs (preparerCuit ne touche pas
             // à la grille gardée : le kit calcule ensuite son occlusion comme d'habitude). WFS-418 (RG-02) : manque de mémoire
             // GRAPHIQUE (un tampon refusé par la voie de repli) : initCuit rend tout ce qu'il a pris et la grille gardée reste pour le kit.
-            const bool vive = preparerCuit();
-            if (vive && initCuit(r, g)) return;
+            bool vive = preparerCuit();
+            try { if (vive && initCuit(r, g)) return; }
+            catch (const std::bad_alloc&) {   // WFS-446 (RG-06) : mémoire vive refusée dans initCuit : tout ce qui a été pris est rendu
+                rendreCuit(r); tamponV_ = {}; tamponI_ = {}; vive = false; g_replisVive++;
+                WFS_WARN("bâtiments (WFS-446) : mémoire vive insuffisante : kit de secours");   // grille de l'occlusion gardée jusqu'ici : murs du kit occultés
+            }
             if (!vive) WFS_LOG("bâtiments (WFS-416) : mémoire vive insuffisante pour les bâtiments cuits : kit de secours (bâtiments construits par le code)");
             else { g_replisGpu++; WFS_LOG("bâtiments (WFS-418) : mémoire graphique insuffisante : kit de secours (bâtiments construits par le code), %.0f Mo de carte graphique utilisés", memoire::gpuMo()); }
             cuits_.clear(); murs0_.clear();
@@ -280,6 +286,7 @@ private:
                 x = r.essayerMesh(v, i, false);
                 if (!x.vb.buf) return refus();
                 fixes += v.size() * sizeof(Vertex) + i.size() * sizeof(uint32_t);
+                if (g_essaiVive) throw std::bad_alloc();   // WFS-446 (RG-08) : banc seulement
             }
             for (int s = 0; s < NS; s++) {   // murs du niveau 0, occlusion appliquée, gardés en mémoire vive (recopiés tels quels en course)
                 lotCuit(d.morceaux[k].lot[0][S_MUR + s], murs0_[k][(size_t)s]);
@@ -413,6 +420,8 @@ void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profo
 const std::vector<cuit::Bati>& poses() { return g_bats; }
 Chrono& chrono() { return g_chrono; }
 uint32_t replisMemoireGraphique() { return g_replisGpu; }
+uint32_t replisMemoireVive() { return g_replisVive; }
+void essaiManqueMemoireVive(bool oui) { g_essaiVive = oui; }
 
 void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i) {   // WFS-269 (accroche) : voir archi_carte.h
     auto verser = [&](const Lot& l) {

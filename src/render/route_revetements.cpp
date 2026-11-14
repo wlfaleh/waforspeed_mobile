@@ -36,8 +36,8 @@ bool chargerCarte(VkCtx& vk, const std::string& base, uint32_t maxi, Image& out,
         for (size_t k = (size_t)sauter; k < f.niveaux.size(); k++) {
             niv.push_back(f.donnees + f.niveaux[k].offset); tailles.push_back(f.niveaux[k].taille); total += f.niveaux[k].taille;
         }
-        out = vk.uploadNiveaux(f.format, f.niveaux[sauter].w, f.niveaux[sauter].h, niv.data(), tailles.data(), (uint32_t)niv.size());
-        if (!out.view) continue;
+        out = vk.uploadNiveaux(f.format, f.niveaux[sauter].w, f.niveaux[sauter].h, niv.data(), tailles.data(), (uint32_t)niv.size(), true);
+        if (!out.view) { WFS_WARN("route : mémoire graphique insuffisante, surface procédurale (WFS-446)"); return false; }   // RG-05 : pas de variante plus lourde
         octets += total; variante = v;
         WFS_LOG("route : %s : %s, %ux%u (%d niveau(x) sauté(s)), %.1f Ko (WFS-205)", chemin.c_str(), ktx2::nomFormat(f.format),
                 out.w, out.h, sauter, total / 1024.0);

@@ -151,9 +151,10 @@ bool AtlasTextes::construire(Renderer& r) {
         T.aspect = (x - x0 + 8.f) / LIGNE; T.ok = true;
         places_[textes_[t]] = T;
     }
-    img_ = r.vk().uploadTexture(px.data(), AW, AH, false);
+    img_ = r.vk().essayerUploadTexture(px.data(), AW, AH, false);   // WFS-446 (RG-04) : voie de repli de WFS-418
+    if (!img_.img) { WFS_WARN("vie : mémoire graphique insuffisante : atlas des enseignes refusé, enseignes sans texte (WFS-446)"); places_.clear(); return false; }
     WFS_LOG("vie : %zu textes d'enseignes dans l'atlas", places_.size());
-    return img_.img != VK_NULL_HANDLE;
+    return true;
 }
 const Texte& AtlasTextes::texte(const std::string& t) const {
     static const Texte vide;
