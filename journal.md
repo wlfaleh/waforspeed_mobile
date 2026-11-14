@@ -1941,3 +1941,6 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - Remarques : skin offerte due → un appui sur une skin en vente ouvre la fenêtre de la skin offerte sur elle (plus de « Acheter N ★ » pour une skin gratuite) ; commentaire de `garage_skin.cpp` corrigé. Banc `garage-skins` refait : 0 écart (40 contrôles).
 - Réponses « Bien reçu » puis « corrigé dans » sous la revue ; PR en 🔁 (a53f1a22), lead dev rappelé.
 
+
+### 2026-11-14 20:49:55 — R18 (suite 4) : maquettes en image (smart-brainstorming)
+- 5 maquettes dans `references/maquettes-R18/` (planche de style, menu, mode, garage, fin de course). Rien transmis au PO.

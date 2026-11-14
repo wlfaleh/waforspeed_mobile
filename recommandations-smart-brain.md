@@ -884,3 +884,6 @@ Choisir les axes qui t'intéressent et les demander au PO (`@po`). Avant A07, un
 | D10 | Deux directions artistiques | Ville réaliste au menu et en course ; garage en néons « gaming » (tubes et anneau) | Garage dans la même réalité que le jeu (vrai showroom, nuit urbaine), le néon réservé à l'interface 2D | P2 |
 
 **Recommandation** : D01 + D02 + D03 ensemble (c'est la base visuelle : formes, couleurs, typo), puis D04 (logo). Avant de toucher au code, une **planche de style** (une image par écran clé : menu, mode, garage, HUD, fin) à valider par l'utilisateur, faite par un agent qui charge `design-street-racing`.
+
+### R18 (suite 4) — 2026-11-14 — Maquettes en image
+Demande de l'utilisateur : « donne-moi ta proposition en image ». Cinq maquettes dans `references/maquettes-R18/` : planche de style (logo, couleurs, texte, formes, icônes), menu, choix du mode, garage (peinture), fin de course. Fonds = vraies captures du jeu (banc du matin, run 32) ; interface = maquette (HTML rendu en image), valeurs d'exemple. Ce ne sont pas des captures du jeu.
