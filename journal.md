@@ -1726,3 +1726,13 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
   - ETC2 recoupé avec le décodeur indépendant `tools/textures/etc2.py` : 0 écart ;
   - diff lu en entier.
 - Le développeur ajoute la section, puis rappelle le lead dev.
+
+### 2026-11-14 15:07:48 — WFS-495 : PR #415 corrigée après le refus du lead dev (Claude, agent dev3d (01Us6uCv3C))
+- **Refus** : la section « Tests CPU » manquait dans la PR (règle du 2026-11-11).
+- **Correction** (commit `b5afdf16`) :
+  - la section est ajoutée à la description de la PR et à `qa/pr/WFS-495/pr.md` : fin du journal, ligne « 141 test(s) réussi(s) », `[OK] test_vehicule_autocollants`, commit testé `b39bc7e0` ;
+  - le commit testé est écrit en tête de `tests-cpu.log` ;
+  - remarque non bloquante prise aussi : un échec de cuisson est maintenant écrit au journal (`b39bc7e0`).
+- **Réponses** dans la PR : « Bien reçu », puis « corrigé dans ».
+- **Suite** : ticket en 🔀 En PR, ligne en 🔁 dans `suivi-pr.md`, lead dev rappelé.
+
