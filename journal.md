@@ -1878,3 +1878,10 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - Code sans défaut bloquant ; accroches `renderer.*` (6 lignes) et `vk.*` (4 lignes) acceptées.
 - **Refus pour deux preuves manquantes** : (1) capture « Tests CPU » et `qa/pr/WFS-446/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11) ; (2) RG-09 : banc `perf` Basse et Haute avant / après (appels, triangles, mémoire, chargement) non montré.
 - Statut : ↩️ Retour lead dev (PR #417) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 20:09:48 — WFS-494 : PR #419 ouverte (Claude, agent dev3d (01Us6uCwV6))
+- **Fait** : rangée « Skin » du garage (Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit ; 6 voitures ; prix × classe ; cadenas ; aperçu sur la voiture ; achat en ★ par voiture) ; Néon nuit « Bientôt dans le cadeau du jour », jamais en vente ; fenêtre « Choisis ta skin offerte » (une par voiture, clé `skins-offertes`) ouverte d'elle-même à l'achat d'une voiture, sinon par le bouton « Choisis ta skin offerte » de la rangée (pas de fenêtre surprise : elle bloquait le joueur et 5 bancs existants) ; `skins::donnerSkin(voiture, skin)` prête pour WFS-503 ; bon de skin du market utilisable au garage. FR / EN.
+- **Accroches annoncées** : E3 `sauvegarde.*` (clé `skins-offertes`, 4 lignes) ; `market.h` `SKINS_EN_VENTE = true` (ligne prévue pour WFS-494 : le pack débutant est maintenant proposé) ; E5 `garage.cpp`, `garage_commun.h`, `garage_achat*`, `garage.h` ; `desktop_main.cpp` (banc `garage-skins`). Nouveaux : `src/game/skin_offerte.*`, `src/ui/garage_skin.cpp`, `src/ui/garage_skin_banc.cpp`, `tests/test_garage_skin.cpp`.
+- **Vérifié** : `test_garage_skin` 41 cas OK ; 143 tests CPU réussis ; banc `garage-skins` 0 écart en 1280x720 et 1024x768 (parcours RC-E18-09 : skin offerte, refus faute d'étoiles, achat, course, « Retour », relance) ; `garage-finitions` 0 écart ; Basse (208 Camouflage) : main 3,62 / 3,97, branche 3,93 / 3,92 img/s (écart < 1). 37 captures dans `qa/pr/WFS-494/`.
+- **Limites** : mesures sur lavapipe seulement ; changer de skin au garage recharge une texture (petit à-coup possible au toucher, jamais en course).
+
