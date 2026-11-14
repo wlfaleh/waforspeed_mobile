@@ -1848,6 +1848,25 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Plan court** : écran Market (solde, cartes de packs, « Sans pub », achat par `Boutique`, « Restaurer mes achats », hors ligne grisé), FR / EN, banc `market`, parcours menu → Market → retour et garage → Market → retour ; captures ≥ 3 ; PR ; lead dev.
 - Session 01Us6uCtfa (WFS-511, #416 fusionnée) : ligne enlevée de `track-agent.md`.
 
+### 2026-11-14 18:29:40 — WFS-446 attribué à Claude, agent dev3d (01Us6uCuVU) (po-scrum-master)
+- **Attribution** : WFS-446 (P2, [TECHNIQUE] manque de mémoire graphique, suite 1 ; E0 + rendu) à **Claude, agent dev3d (01Us6uCuVU)** (session_01Us6uCuVUrprrAqPN7XTCnJ), nouvelle session `@dev`, à sa demande (« @dev go », aucun sujet souhaité ; aucun ticket avant : règle « un sujet par session » respectée).
+- **Pourquoi lui** : 24e du classement 📋, 1re tâche prête permise à `@dev` ; avant elle, tout est fusionné, pris, en attente (494, 496, 497, 503, 512, 514, 538) ou réservé à `@cicd` / `@conduite` (WFS-541 aussi `@conduite`). Dépendance WFS-418 ✅ (bancs du matin #22) ; pas la session de WFS-418.
+- **Zone** : `src/render/model_loader.*`, appels de `loadCarModel` dans `src/game/traffic_system.cpp`, `src/world/pietons.cpp`, `src/render/squelette.cpp`, `src/world/conducteurs.cpp`, `src/world/enseignes.cpp`, appel d'`uploadNiveaux` dans `src/render/route_revetements.cpp`, `bad_alloc` dans `src/world/archi_carte.cpp`, étape 5 de `src/world/cartes_v2/batiments_banc.cpp`, `tests/**` ; `vk.*` seulement ajout ≤ 10 lignes annoncé. Règles : `regles-de-gestion/WFS-446.md`.
+- **Plan court** : brancher les secours existants de WFS-418 (`essayer…`) sur le refus de mémoire, tests de refus simulé (Ville et Corniche), aucun écart quand la mémoire suffit ; captures ≥ 3 (`batiments`) ; PR ; lead dev.
+- Session 01Us6uCwTQ (WFS-493, #413 fusionnée) : ligne enlevée de `track-agent.md`. WFS-513 : branche poussée (c449553).
+
+### 2026-11-14 18:30:50 — Début WFS-446 : manque de mémoire graphique, suite 1 (Claude, agent dev3d (01Us6uCuVU))
+- Branche `feature/waforspeed-446` créée depuis main (2c893003) et poussée. Règles lues (RG-01 à RG-10).
+- Plan : paramètre « repli » par défaut à faux sur `loadCarModel` (trafic seulement à vrai), `uploadNiveaux` (route), piétons / conducteurs / enseignes par les fonctions `essayer…` de WFS-418 ; `bad_alloc` d'`initCuit` → kit ; étape 5 du banc `batiments` préfixée et sur la Corniche ; tests de refus simulé.
+- **Accroche annoncée dans `src/render/vk.*` (≤ 10 lignes)** : paramètre par défaut `repli = false` sur `VkCtx::uploadNiveaux` (tampon de transfert et image par `essayerBuffer` / `essayerImage`), car aucune fonction `essayer…` n'existe pour les niveaux KTX2.
+
+### 2026-11-14 18:31:05 — Début WFS-494 : garage, skins et skin offerte attribué (po-scrum-master)
+- **Demande** : nouvelle session `@dev` (agent dev-artiste-3d), Claude, agent dev3d (01Us6uCwV6), jamais eu de ticket.
+- **Choix** : classement 📋 des 40 : 1 à 5 fusionnés ou pris ; **6. WFS-494** prêt (WFS-493 #413 et WFS-504 #372 fusionnés ; l'entrée de 18:29 le croyait encore en attente). P1, E18.
+- **Zone** : `src/ui/garage_skin.*` (E5, un ticket à la fois sur ce panneau) + accroche E3 ≤ 10 lignes (skin offerte, sauvegarde), annoncée au journal. Textes par `ui::tr`, FR / EN. Règles : `regles-de-gestion/WFS-494.md`, `regles-de-gestion/E18-personnalisation.md`.
+- **Plan court** : rangée « Skin » (Aucune, Rallye, Camouflage, Drift Tokyo ; Néon nuit verrouillée « cadeau »), prix × classe ; fenêtre « Choisis ta skin offerte » ; achat ★ par voiture ; `donnerSkin()` ; parcours RC-E18-09 ; captures ≥ 3 jour / nuit, FR / EN ; PR ; lead dev.
+- **Aussi** : WFS-538 et WFS-496 passent ⏳ Prêt (dépendances fusionnées).
+
 ### 2026-11-14 18:13:34 — WFS-513 : début, branche `feature/waforspeed-513` créée (Claude, agent dev3d (01Us6uCvpo))
 - Écran Market FR / EN (zone E8 `src/ui/ecrans/**`). Accroches annoncées (≤ 10 lignes chacune) : `src/ui/garage.cpp` (bouton Market) et `src/ui/ecrans/compteur_etoiles.*` (le compteur ouvre le Market).
 - Réutilise : `Boutique` / `BoutiqueSimulee` (WFS-510), système de langue (WFS-504), `navigation.h`, `toasts.cpp`, composants du garage (WFS-499).
