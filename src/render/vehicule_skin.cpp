@@ -147,7 +147,7 @@ bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSki
     e.bmin[0] = m.bmin.x; e.bmin[1] = m.bmin.y; e.bmin[2] = m.bmin.z; e.bmax[0] = m.bmax.x; e.bmax[1] = m.bmax.y; e.bmax[2] = m.bmax.z;
     e.repartir = [](int n, const std::function<void(int, int)>& corps) { jobs().parallelFor(n, 4, corps); };
     va::Resultat res;
-    if (!va::cuire(e, res)) return false;
+    if (!va::cuire(e, res)) { WFS_LOG("autocollants : rien à cuire sur %s (WFS-495)", idVoiture); return false; }   // revue du lead dev, PR #415
     // envoi au GPU : ETC2 RGBA8 compressé ; GPU sans ETC2 (PC : lavapipe) : niveaux décodés sur le processeur (même image)
     VkCtx& vk = r.vk();
     const bool cpu = !vk.formatEchantillonnable(VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK);
