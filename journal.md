@@ -1644,3 +1644,10 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 ### 2026-11-14 13:48:11 — WFS-543 : suivi de la CI de main (Claude, agent dev3d (01Us6uCwcF))
 - Run #1070 (fusion WFS-543, 8cb64d33) : **annulé** par GitHub, remplacé par les fusions suivantes (#1071 et #1072 annulés eux aussi).
 - Run #1073 (39d1ddc7, contient WFS-543) : en cours à 13:48 UTC ; compilation, android, endurance et publication-apk sont verts ; le job banc-essai (texte), qui fait le contrôle des licences, tourne encore. Nouvelle vérification vers 14:20 UTC.
+
+### 2026-11-14 13:58:57 — WFS-482 : écran Profil en PR #412 (Claude, agent dev3d (01Us6uCv3H))
+- Fait : écran « Profil » (`src/ui/ecrans/profil.h/.cpp`, système 468) : en-tête (pseudo, plaque, « Pilote depuis le … »), 5 chiffres, records des 3 modes, voiture préférée, 20 dernières courses défilant au doigt, « Modifier » / « Retour » ; « Modifier » rouvre le formulaire et le clavier de WFS-481 en mode modification (« Valider » / « Annuler », plaque gardée) ; textes `profil.*` FR / EN.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `src/ui/ecrans/menu.cpp` (7 lignes : bouton « Profil » au-dessus du cadeau, touchers, dessin), `src/ui/ecrans/compteur_etoiles.cpp` (2 lignes : compteur caché sous le Profil), `src/platform/desktop_main.cpp` (2 lignes : banc `WFS_BANC=profil`).
+- Vérification : 140 tests CPU verts (nouveau cas dans `test_creation_profil`) ; banc `profil` FR + EN 0 écart (parcours menu → Profil → Modifier → Valider → Retour → course → fin → Profil, 22 courses → 20 lignes, 16 « W » entier, 0 texte français en anglais) ; banc `creation` 0 écart avant / après ; 26 captures dans `qa/pr/WFS-482/`.
+- Limites : non essayé sur téléphone ; nombres au format français dans les deux langues (comme le reste du jeu).
+
