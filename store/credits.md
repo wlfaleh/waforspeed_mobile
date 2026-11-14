@@ -31,6 +31,11 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` (WFS-406
 - Moto routière : modèle 3D par DevanirGrau (Sketchfab) — licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - Moto sportive : modèle 3D par valvetin (Sketchfab) — licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
+## Voitures à venir (modèles 3D modifiés pour WaForSpeed, livrés mais pas encore au catalogue)
+
+- Grande berline : modèle 3D par Peter_D (Sketchfab) — licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Berline compacte : modèle 3D par BHP3D (Sketchfab) — licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
 ## Personnes
 
 - Piétons et animations : « Universal Base Characters » et « Universal Animation Library » par Quaternius (quaternius.com) — licence [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)

@@ -35,6 +35,12 @@ AUTRES = [
         ("Moto routière", "modèle 3D par DevanirGrau (Sketchfab)", "CC BY 4.0"),
         ("Moto sportive", "modèle 3D par valvetin (Sketchfab)", "CC BY 4.0"),
     ]),
+    # WFS-543 : remplaçants convertis par WFS-397, livrés dans l'APK (assets/cars/remplacants/) mais pas encore au catalogue
+    # (CARS[], WFS-360 / 361) : CC BY 4.0 exige le crédit dès la distribution. Libellés sans marque ni modèle réel.
+    ("Voitures à venir (modèles 3D modifiés pour WaForSpeed, livrés mais pas encore au catalogue)", [
+        ("Grande berline", "modèle 3D par Peter_D (Sketchfab)", "CC BY 4.0"),
+        ("Berline compacte", "modèle 3D par BHP3D (Sketchfab)", "CC BY 4.0"),
+    ]),
     ("Personnes", [
         ("Piétons et animations", "« Universal Base Characters » et « Universal Animation Library » par Quaternius (quaternius.com)", "CC0 1.0"),
         ("Humains réalistes et enfants", "ressources de MakeHuman (communauté MakeHuman), modifiées pour WaForSpeed", "CC0 1.0"),
@@ -79,6 +85,9 @@ def texte_apache():
 COUVERTURE = [
     (r"cars/deux_roues/scooter.*", "neshallads", "deux-roues-scooter.txt"), (r"cars/deux_roues/routiere.*", "DevanirGrau", "deux-roues-routiere.txt"),
     (r"cars/deux_roues/sportive.*", "valvetin", "deux-roues-sportive.txt"),
+    # WFS-543 : un motif par modèle remplaçant, avec son propre fichier de licence (jamais tout cars/remplacants/ d'un coup)
+    (r"cars/remplacants/w212\.(wfm|lod)", "modèle 3D par Peter_D (Sketchfab)", "remplacants/w212.txt"),
+    (r"cars/remplacants/virtus\.(wfm|lod)", "modèle 3D par BHP3D (Sketchfab)", "remplacants/virtus.txt"),
     (r"people/(homme|femme)\.wfp", "Quaternius", "personnages-quaternius.txt"), (r"people/humains/.*\.wfp", "MakeHuman", "humains-makehuman.txt"),
     (r"world/animaux/(vache|cheval|mouton)\.wfa", "Quaternius", "animaux-campagne.txt"), (r"world/animaux/(shiba|husky)\.wfa", "Quaternius", "animaux-ville.txt"),
     (r"world/animaux/dauphin\.wfa", "Quaternius", "animaux-corniche.txt"), (r"world/animaux/mouette\.wfa", "svartmc", "animaux-corniche.txt"),
@@ -192,7 +201,7 @@ def main():
         rel = f.relative_to(RACINE / "assets").as_posix()
         if not f.is_file() or rel.startswith("licences/") or f.name.startswith("."): continue   # fichiers cachés : jamais dans l'APK (aapt)
         nb += 1
-        if rel.startswith("cars/") and not rel.startswith("cars/deux_roues/") and not rel.startswith("cars/skins/"):   # WFS-492 (accroche) : skins (COUVERTURE)
+        if rel.startswith("cars/") and not rel.startswith("cars/deux_roues/") and not rel.startswith("cars/skins/") and not rel.startswith("cars/remplacants/"):   # WFS-492 : skins, WFS-543 : remplaçants (COUVERTURE)
             if f.stem in ret: continue   # WFS-404 : modèle gardé dans le dépôt, hors de l'APK
             v = ids.get(f"cars/{f.stem.removesuffix('-lod')}.wfm")   # WFS-134 : .lod et version allégée = crédit de sa voiture
             if not v: manques.append(f"{rel} : absent de CARS[] (pas de crédit)"); continue
