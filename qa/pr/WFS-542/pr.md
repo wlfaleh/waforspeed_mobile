@@ -18,8 +18,8 @@
 - **Comment c'est vérifié** :
   - nouveau test `test_camion_542` : mesures du `.wfm` livré ±1 %, poids, `.lod` présent, boîte de choc à l'échelle 1, file libre, côté fermé infranchissable, retrait ;
   - `test_course5` (poursuite) et `test_voitures_retirees` mis à jour ;
-  - **139 tests CPU verts** sur une construction propre (`bash tools/qa/tests_cpu.sh build-propre`), dont `test_credits` et `test_camion_542` : voir « Tests CPU » ;
-  - `verifier_licences.py` : le camion est couvert. Les 4 manques restants (`virtus`, `w212`) sont ceux de WFS-543 (PR #407), sans lien avec ce ticket ;
+  - **140 tests CPU verts** sur une construction propre (commit dc63d4f2) (`bash tools/qa/tests_cpu.sh build-propre`), dont `test_credits` et `test_camion_542` : voir « Tests CPU » ;
+  - `verifier_licences.py` : le camion est couvert. 0 manque après la synchronisation avec main (WFS-543 fusionné) ;
   - banc `camion-542` : les 13 captures avant / après ci-dessous, regardées une à une. Retrait (RG-04) : joueur tenu à 26-32 m du camion, camion encore là à 55 s (`retrait-00`) et retiré à 61 s (`retrait-01`) ; sur main, le Range Rover est toujours là. Le retrait à 50 m derrière est vérifié par `test_camion_542` (à 40 m derrière, le camion n'était déjà plus dessiné).
 - **Limites et risques connus** :
   - Le camion est un modèle à marque inventée : il n'existe pas de fiche constructeur. L'échelle repose sur le pneu normalisé (ETRTO). Ses proportions, cabine large de 2,22 m et caisse de 4,14 × 2,18 m, sont celles d'un porteur de 7,5 t.
@@ -29,7 +29,7 @@
 
 ## Tests CPU
 
-Construction propre de la branche (synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build-propre` : **139 test(s) réussi(s) en 418 s**, aucun échec (dont `test_credits` et `test_camion_542`). Journal complet : [`qa/pr/WFS-542/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-542/qa/pr/WFS-542/tests-cpu.log).
+Commit **dc63d4f2** (branche synchronisée avec `main` après WFS-543, 544, 545), construction propre, `bash tools/qa/tests_cpu.sh <build-propre>` : **140 test(s) réussi(s) en 421 s**, aucun échec (dont `test_credits` et `test_camion_542`). Journal complet : [`qa/pr/WFS-542/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-542/qa/pr/WFS-542/tests-cpu.log).
 
 ## Captures pour le lead dev (13 après)
 
