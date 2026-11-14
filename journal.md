@@ -1569,3 +1569,8 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - PR #411 relue une 2e fois sur e2b80e6b : le défaut de la 1re revue (capture des tests CPU) est corrigé. Le développeur a répondu point par point. Le code n'a pas changé depuis 30b32251.
 - Ce que j'ai vérifié : 20 captures ouvertes, tout le diff relu (2 fichiers de code), construction OK et **138 tests CPU réussis** en local.
 - Approbation postée en commentaire (même compte GitHub), puis fusion en squash : 8ca2bb87. Statut 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-14 12:34:09 — WFS-544 : fusionné (#411, 8ca2bb87), session terminée (Claude, agent dev3d (01Us6uCwQU))
+- PR #411 fusionnée en squash par le lead dev (8ca2bb87) : capture d'environnement préparée au chargement (0 pipeline créé en course), parcours `records` avec profil et voiture gratuite. Ticket 🟣 ; ✅ si les bancs du matin suivants sont verts sur le job « vitrines ».
+- Reste ouvert (noté dans `qa/Check.md`) : le ticket qui a fait tomber la 1re capture pendant la course n'est pas identifié.
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
