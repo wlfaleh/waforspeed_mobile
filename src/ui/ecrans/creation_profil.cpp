@@ -141,6 +141,7 @@ Page miseEnPage(float W, float H, const Marges& m) {
 }
 
 // champ de saisie (verre teinté, liseré bas, contour cyan quand il est choisi) ; texte du joueur, curseur clignotant
+bool g_champsEntiers = true;   // WFS-482 (RG-08) : textes saisis entiers dans leur champ à la dernière image
 void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const char* indice, bool choisi, bool clignote, float espacement) {
     r.uiRect(z.x, z.y, z.w, z.h, GLASS);
     r.uiRect(z.x, z.y + z.h - 3 * u, z.w, 3 * u, choisi ? hex(ACCENT2) : hex(SURFACE2));
@@ -148,7 +149,11 @@ void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const
         const vec2 c[4] = {{z.x, z.y}, {z.x + z.w, z.y}, {z.x + z.w, z.y + z.h}, {z.x, z.y + z.h}};
         dessin2d::contour(r, c, 4, 2 * u, hex(ACCENT2, 0.9f));
     }
-    const float px = 24 * u, tx = z.x + 12 * u, ty = z.y + (z.h - px) / 2 - 1.5f * u;
+    // WFS-482 (RG-08) : texte saisi réduit pour tenir dans le champ (16 « W » sans rien qui déborde), curseur compris
+    const float px0 = 24 * u, tx = z.x + 12 * u, place = z.w - 24 * u - 6 * u;
+    const float large = valeur.empty() ? 0.f : ui::width(px0, valeur, espacement);
+    const float px = large > place && large > 0 ? px0 * place / large : px0;
+    const float ty = z.y + (z.h - px) / 2 - 1.5f * u * px / px0;
     if (valeur.empty()) {
         if (indice) {   // indice en gris : texte de la table (journal des textes du banc)
             ui::text(r, tx, ty + 3 * u, 18 * u, ui::tr(indice), hex(MUTED), ui::GAUCHE, 0, false);
@@ -159,6 +164,8 @@ void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const
         ui::text(r, tx, ty, px, valeur, hex(TEXTE), ui::GAUCHE, espacement, false);
         ui::langue::journalTechnique(false);
     }
+    // WFS-482 (RG-08) : fin du texte et curseur dans le cadre (vérifié par le banc « profil »)
+    if (!valeur.empty() && tx + ui::width(px, valeur, espacement) + 4 * u > z.x + z.w - 2 * u) g_champsEntiers = false;
     if (choisi && clignote) {
         const float cx = valeur.empty() ? tx : tx + ui::width(px, valeur, espacement) + 2 * u;
         r.uiRect(cx, z.y + 10 * u, 2 * u, z.h - 20 * u, hex(ACCENT2));
@@ -237,6 +244,7 @@ void dessiner(Renderer& r, const GameView& g) {
         if (const char* e = s.erreur(c)) ui::textBoite(r, x, y, L, 16 * u, 14 * u, ui::tr(e), hex(DANGER), ui::GAUCHE, 0, false);
         y += 16 * u + 10 * u;
     };
+    g_champsEntiers = true;
     bloc(Champ::Pseudo, "creation.pseudo", g_e.zPseudo, s.pseudo(), "creation.indice", 0.02f);
     bloc(Champ::Plaque, "creation.plaque", g_e.zPlaque, s.plaque(), nullptr, 0.10f);
     const float wp = std::min(L, 200 * u);
@@ -343,6 +351,7 @@ void ouvrirModificationProfil() {
     g_modifDemandee = true;
     WFS_LOG("profil (WFS-482) : « Modifier » → formulaire de WFS-481 (pseudo « %s », plaque « %s »)", sauvegarde().nick.c_str(), sauvegarde().profil.plaque.c_str());
 }
+bool champsCreationEntiers() { return g_champsEntiers; }
 bool modificationProfilOuverte() { return g_modifDemandee || (g_e.ouvert && g_e.modification); }
 
 bool centreCreationProfil(const std::string& nom, float& x, float& y) {

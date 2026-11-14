@@ -24,6 +24,8 @@ bool creationProfilOuverte();
 // (rien ne change ; c'est aussi la touche Retour d'Android). Se ferme seul si l'écran Menu est quitté.
 void ouvrirModificationProfil();
 bool modificationProfilOuverte();
+// WFS-482 (RG-08) : à la dernière image, pseudo et plaque saisis dessinés entiers dans leur champ (banc)
+bool champsCreationEntiers();
 // banc et tests : centre d'une zone de l'écran (« pseudo », « plaque », « valider », « annuler », ou un caractère du clavier : « a »)
 bool centreCreationProfil(const std::string& nom, float& x, float& y);
 // WFS-482 (RG-02) : aperçu 2D de la plaque de WFS-481 (gabarit 520 x 110 mm, bande « WFS »), réutilisé par l'écran Profil

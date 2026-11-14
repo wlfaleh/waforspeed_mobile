@@ -454,6 +454,7 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     capture("16w", "pseudo de 16 « W » et plaque « WWWWWWWW » sans coupure");
     // « Modifier » avec le pseudo de 16 « W » (formulaire de WFS-481)
     appuyer("modifier"); images(5);
+    verifier(creationProfilOuverte() && champsCreationEntiers(), "RG-08 : « Modifier » : pseudo de 16 « W » et curseur dans le champ");
     capture("16w-modification", "« Modifier » avec le pseudo de 16 « W »");
     touche("annuler"); images(3);
     appuyer("retour"); images(10);

@@ -21,6 +21,10 @@
   - date en heure locale du téléphone (banc : UTC) ; la plaque 3D change à la course suivante (WFS-483, hors ticket) ;
   - non essayé sur téléphone (pas d'APK de branche) : à regarder sur l'APK de `main` après la fusion.
 
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` : **140 test(s) réussi(s) en 335 s**, 0 échec — journal complet : [`qa/pr/WFS-482/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-482/qa/pr/WFS-482/tests-cpu.log).
+
 ## Captures pour le lead dev (26 après)
 
 Dossier : [`qa/pr/WFS-482`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-482/qa/pr/WFS-482) — produit par `tools/qa/captures_pr.sh`.

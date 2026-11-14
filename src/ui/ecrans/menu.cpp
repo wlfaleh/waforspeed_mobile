@@ -46,7 +46,7 @@ float ease(float t) {
 }
 
 struct Choix { const char* titre; const char* desc; };
-enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6, PROFIL = 7 };   // WFS-482 : « Profil »   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles
+enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6, PROFIL = 7 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles ; WFS-482 : « Profil »
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
 Zone g_zones[4];
