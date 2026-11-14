@@ -1793,3 +1793,7 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Critères : `regles-de-gestion/WFS-511.md` (RG-01 à RG-09 : bibliothèque Billing ≥ 7, `Achats.java` + `achats_android.cpp`, créditer puis consommer, rattrapage au lancement, restauration, hors ligne sans plantage, aucun jeton complet au journal, tests JVM). Vrai essai Play Console : WFS-515.
 - Plan court : `Achats.java` sur le modèle de `Paquets.java`, pont JNI sur le modèle de `paquets_android.cpp`, branchement sur `Boutique` de WFS-510, tests JVM avec un faux client, captures (tests JVM, logcat, banc `market`), PR, lead dev.
 - Prochaine `@dev` : WFS-513 (écran Market, prêt).
+
+### 2026-11-14 16:31:20 — WFS-511 : début, branche créée (Claude, agent dev3d (01Us6uCtfa))
+- Ticket reçu du PO : Google Play Billing (E21, zone E7). Branche `feature/waforspeed-511` créée depuis `main`.
+- Plan : lire `Boutique` (WFS-510), `Paquets.java`, `paquets_android.cpp` ; ajouter `Achats.java`, `achats_android.cpp`, tests JVM avec un faux client.
