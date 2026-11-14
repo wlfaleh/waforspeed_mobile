@@ -21,6 +21,8 @@ const PLAQUES = [
   { id: 'v60', w: 1024, h: 512, zone: [0.048, 0.335, 0.938, 0.747], retourne: true, numero: 'EH-604-KB', dep: '69' },
   { id: 'a45', w: 1024, h: 256, zone: [0, 0, 1, 1], retourne: true, numero: 'FN-145-TW', dep: '13' },
   { id: 'rrsport', w: 512, h: 256, zone: [0, 0, 1, 1], retourne: false, numero: 'GR-502-DS', dep: '33' },
+  // WFS-542 : camion en travers de la Poursuite (atlas de plaques américaines de l'auteur, plaques avant et arrière dans la même zone)
+  { id: 'camion', w: 1024, h: 1024, zone: [0.8335, 0.7502, 0.9990, 0.8335], retourne: false, numero: 'DL-418-KT', dep: '06' },
 ];
 
 function etoiles(cx, cy) {   // 12 étoiles à cinq branches sur un cercle de 13 mm (drapeau européen)

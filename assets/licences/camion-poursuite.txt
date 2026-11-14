@@ -1,0 +1,15 @@
+Model Information:
+* title:	'90 Light Commercial Truck - Low poly model
+* source:	https://sketchfab.com/3d-models/90-light-commercial-truck-low-poly-model-663a0953c038434a918cb85725c88ffa
+* author:	Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "'90 Light Commercial Truck - Low poly model" (https://sketchfab.com/3d-models/90-light-commercial-truck-low-poly-model-663a0953c038434a918cb85725c88ffa) by Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Found in the public GitHub repository MiguelJordans/LAPR5 (commit b03a13d054e9d0db7c1877ebb29aeceaf070ecde), folder Frontend/WebUI/ElectricGo/src/assets/truck ; files SHA-256: scene.gltf 00ea6ed01e2823cb075570601485ff34b883c7bca56e6752b054e83d0a5d5763, scene.bin 43db277d985006a2b060dea29dbe2936561ce1242c2c84ce7b36af470fd37082, license.txt 86538357783310e2d1d12dfaf1d5a800b6e93cbd42a63e5e36cee03210c1c8b6.
+The same model is also published as « LCT 3000 '95 - Low poly model » (same Sketchfab identifier 663a0953c038434a918cb85725c88ffa) ; the « LCT » brand is invented by the author.
+Modifications for WaForSpeed (WFS-542, 2026-11-14): converted to .wfm by tools/convert_car.mjs (assets/world/camion/porteur.wfm) ; scaled on its 215/75 R17.5 tyre (diameter 767 mm) : length 6,19 m ; badges removed (nodes Badge_*) ; US number plates replaced by a neutral French plate (tools/plaques/camion.png, tools/plaques_neutres.mjs) resized to 520 × 110 mm ; front plate holder removed ; levels of detail (.lod, tools/alleger_voiture.mjs). No brand name is shown in the game. Commands : tools/convertir_camion.sh.

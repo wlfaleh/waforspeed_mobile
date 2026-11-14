@@ -101,7 +101,7 @@ const std::string& raisonAffichee(const char* r) {
 struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
 struct Plot { double s = 0, x = 0; bool tombe = false; };   // WFS-338 : un cône de chantier (K5a)
 struct Panneau { double s = 0, x = 0; };                     // WFS-338 (RG-01) : panneau « travaux » AK5 sur pied
-struct Camion { double s = 0; Travers tv; int fileLibre = 2; double cd = 0; };   // WFS-119 : camion en travers
+struct Camion { double s = 0; Travers tv; int fileLibre = 2; double cd = 0; double age = -1; };   // WFS-119 : camion en travers ; WFS-542 : age (s) depuis qu'il est à portée de vue (< 0 : pas encore)
 struct Bande { double s = 0; bool passe = false; };                              // WFS-119 : ralentisseur
 
 class PoursuiteSystem : public System {
@@ -248,11 +248,8 @@ public:
             for (Material& mt : modele_.mats) { metalModele_.push_back(mt.metal); if (mt.flags & MAT_PAINT) { WFS_LOG("poursuite : peinture de la police : métal %.2f → 0, rugosité %.2f", mt.metal, mt.rough); mt.metal = 0; } }
             if (modele_.ok) poserBandes();   // WFS-460 (RG-01) : bandes « POLICE » posées sur la tôle de ce modèle
         }
-        // WFS-119 : camion en travers (x5, rrsport si le joueur roule en x5)
-        const char* cam = camionCar(g.player && g.player->car ? g.player->car->id : nullptr);
-        if (actif_ && cam != camionCar_ && camionModele_.ok) { r_->vk().waitIdle(); r_->destroy(camionModele_); camionModele_ = Model{}; camionEssaye_ = false; }
-        if (actif_) camionCar_ = cam;
-        if (r_ && actif_ && !camionModele_.ok && !camionEssaye_) { camionEssaye_ = true; loadCarModel(*r_, std::string(carById(camionCar_).file), camionModele_); WFS_LOG("poursuite : camion %s, %zu pièces", camionCar_, camionModele_.parts.size()); }
+        // WFS-119 : camion en travers ; WFS-542 : un vrai camion porteur (le même pour toutes les voitures du joueur), chargé une fois
+        if (r_ && actif_ && !camionModele_.ok && !camionEssaye_) { camionEssaye_ = true; loadCarModel(*r_, CAMION_MODELE, camionModele_); WFS_LOG("poursuite : camion %s, %zu pièces", CAMION_MODELE, camionModele_.parts.size()); }
     }
 
     // après la course (210), le duel (220) et la course à 5 (222)
@@ -296,6 +293,7 @@ public:
         }
         distAvant_ = pl.dist;
         camionsTrafic(pl, t, tr);
+        camionsRetires(dt, pl);   // WFS-542 (RG-04)
         // police : trafic autour d'elle, conduite, contacts (règle du duel : duel::contacter)
         obs_.clear();
         if (tr) for (const TrafficCar& v : tr->cars) {
@@ -457,15 +455,15 @@ public:
             r.draw(triangle_, matPanneauRouge_, m * translate({0, 0.38f, 0}));
             r.draw(triangle_, matPanneauJaune_, m * translate({0, 0.38f + 0.289f * 0.30f, 0.008f}) * scale({0.70f, 0.70f, 1}));
         }
-        for (const Camion& k : camions_) {   // WFS-119 : camion en travers (modèle existant agrandi), silhouette au loin et en qualité Basse (RG-04)
+        for (const Camion& k : camions_) {   // WFS-119 : camion en travers ; WFS-542 : vrai camion porteur à l'échelle 1 (allégé au loin, vehicule_lod)
             const double rel = (k.s - sP) * M;
-            if (rel < -40 || rel > 300) continue;
+            if (rel < -40 || rel > DESSIN_DEVANT_M) continue;
             const TrackPoint q = g.track->point(k.s, k.tv.xM);
-            const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th + 1.5707963)) * rotateX((float)q.slope);
-            const CarDef& cd = carById(camionCar_);
-            const float E = CAMION_ECHELLE, L = cd.d.L * E, W = cd.d.W * E, H = cd.d.H * E;
-            (void)L; (void)W; (void)H;   // WFS-134 (RG-11) : camion = vrai modèle partout (allégé au-delà de 60 m), jamais de cubes
-            if (camionModele_.ok) { peintureCamion_ = lin(0xd8dade); r.draw(camionModele_, m * scale({E, E, E}), &peintureCamion_); }
+            // en travers, perpendiculaire à la route : la cabine (avant, −Z du modèle) tournée vers le milieu de la route et la file
+            // libre, le hayon de la caisse vers le bord fermé (le camion a tourné pour reculer vers le trottoir : livraison)
+            const double quart = k.fileLibre == 0 ? -1.5707963 : 1.5707963;
+            const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th + quart)) * rotateX((float)q.slope);
+            if (camionModele_.ok) { peintureCamion_ = lin(0xe8eaea); r.draw(camionModele_, m, &peintureCamion_); }   // caisse blanche de loueur
         }
         for (const Bande& b : bandes_) {   // WFS-119 : ralentisseur jaune (bandes noires hors qualité Basse) et 2 plots
             const double rel = (b.s - sP) * M;
@@ -695,8 +693,7 @@ private:
                         }
                     break;
                 case Surprise::Camion: {  // WFS-119 : gros véhicule en travers de 2 files, la file e.file reste libre
-                    const CarDef& cd = carById(camionCar_);
-                    Camion k; k.s = s; k.fileLibre = fileLibreCamion(e.file); k.tv = camionTravers(k.fileLibre, cd.d.L, cd.d.W);
+                    Camion k; k.s = s; k.fileLibre = fileLibreCamion(e.file); k.tv = camionTravers(k.fileLibre);   // WFS-542 : vraies mesures
                     camions_.push_back(k);
                     break;
                 }
@@ -733,6 +730,18 @@ private:
             }
             if (k.cd <= 0) { k.cd = 1.0; chocTrafic(etat_, RAISON_CAMION); c.bump(std::max(0.1, impact)); WFS_LOG("poursuite : choc contre le camion (%.0f km/h)", impact * 260); }
         }
+    }
+    // WFS-542 (RG-04) : le camion ne reste pas toute la course : retiré 50 m derrière le joueur, ou 60 s après son apparition
+    // (compté dès qu'il est à portée de vue, DESSIN_DEVANT_M : posé 450 m avant, il ne compte pas tant qu'on ne le voit pas)
+    void camionsRetires(double dt, const Player& pl) {
+        for (Camion& k : camions_) {
+            const double derriere = (pl.dist - k.s) * M;
+            if (k.age < 0 && -derriere <= DESSIN_DEVANT_M) k.age = 0;
+            else if (k.age >= 0) k.age += dt;
+        }
+        const size_t n = camions_.size();
+        camions_.erase(std::remove_if(camions_.begin(), camions_.end(), [&](const Camion& k) { return camionARetirer((pl.dist - k.s) * M, std::max(0.0, k.age)); }), camions_.end());
+        if (camions_.size() != n) WFS_LOG("poursuite : camion retiré (%zu restant)", camions_.size());
     }
     // WFS-119 : le trafic des 2 files fermées s'arrête derrière le camion (la file libre roule) ; une voiture posée
     // dans le camion au déclenchement passe devant lui
@@ -859,7 +868,7 @@ private:
     Model modele_; std::vector<float> metalModele_; bool blancOrigine_ = false; bool modeleEssaye_ = false; const char* policeCar_ = "p208";
     Mesh cube_; Material matRouge_, matBleu_, matPlot_, matBlanc_, matBleuCaisse_, matVitre_, matJaune_, matNoir_;
     vec3 haloRouge_{}, haloBleu_{};   // WFS-141 : couleurs HDR des halos des gyrophares
-    Model camionModele_; bool camionEssaye_ = false; const char* camionCar_ = "rrsport"; vec3 peintureCamion_{};   // WFS-119
+    Model camionModele_; bool camionEssaye_ = false; vec3 peintureCamion_{};   // WFS-119
     std::vector<Camion> camions_;
     std::vector<Bande> bandes_;
     double distAvant_ = 0;

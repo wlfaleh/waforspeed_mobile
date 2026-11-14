@@ -36,7 +36,7 @@ int main() {
         for (uint32_t gr = 1; gr <= 200; gr++)
             for (const course5::Ordinateur& o : course5::tirer(gr, CARS[v.idx[p]].id)) { tirages++; VERIFIE(!voitureRetiree(o.car.c_str()) && o.car != "rrsport", "adversaire %s (joueur %s, graine %u)", o.car.c_str(), CARS[v.idx[p]].id, gr); }
     // RG-03 : camion de la Poursuite et voiture d'un pilote du duel
-    for (int i = 0; i < CAR_COUNT; i++) VERIFIE(!voitureRetiree(poursuite::camionCar(CARS[i].id)), "camion %s (joueur %s)", poursuite::camionCar(CARS[i].id), CARS[i].id);
+    // (WFS-542 : le camion de la Poursuite n'est plus une voiture du jeu : vrai camion porteur, assets/world/camion/porteur.wfm)
     for (const char* id : {"x5", "a45", "elantra"}) { duel::Fields f{{"car", id}}; VERIFIE(!std::strcmp(duel::peerCar(f), "golf"), "duel : %s → %s", id, duel::peerCar(f)); }
     { duel::Fields f{{"car", "m4"}}; VERIFIE(!std::strcmp(duel::peerCar(f), "m4"), "duel : m4 gardée"); }
     // RG-03 : listes des captures du cockpit sans voiture retirée

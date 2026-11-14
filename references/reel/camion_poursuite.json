@@ -1,0 +1,13 @@
+{
+  "_doc": "WFS-542 : camion en travers de la Poursuite (porteur à caisse de 7,5 t, cabine large). Modèle « LCT 3000 » de Daniel Zhabotinsky (CC BY 4.0, marque inventée), mis à l'échelle sur son pneu. Contrôlé par tests/test_camion_542.cpp (±1 %).",
+  "source": "Pneu 215/75 R17.5 des porteurs de 7,5 t : diamètre extérieur = 17,5 × 25,4 + 2 × 0,75 × 215 = 767 mm (désignation ETRTO / ISO 4209 : largeur 215 mm, série 75, jante 17,5 pouces). Toutes les mesures du modèle suivent de ce seul facteur d'échelle (aucune échelle par axe). Largeur maximale des véhicules en Europe : 2,55 m (directive 96/53/CE).",
+  "tolerance": 0.01,
+  "statut": "calculé (pneu normalisé) ; pas de fiche constructeur : le modèle est un camion à marque inventée",
+  "pneu_diametre_m": 0.767,
+  "longueur_m": 6.19,
+  "hauteur_m": 2.93,
+  "largeur_cabine_m": 2.22,
+  "largeur_caisse_m": 2.18,
+  "largeur_retroviseurs_m": 2.69,
+  "empattement_m": 3.42
+}

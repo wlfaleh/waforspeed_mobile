@@ -16,6 +16,7 @@ dossier licences/ de l'application.|licences/ folder of the app.
 # ---- sections
 Voitures (modèles 3D modifiés pour WaForSpeed : allégés, logos effacés)|Cars (3D models modified for WaForSpeed: lightened, logos removed)
 Deux-roues du trafic (modèles 3D modifiés pour WaForSpeed : allégés, logos effacés)|Traffic two-wheelers (3D models modified for WaForSpeed: lightened, logos removed)
+Camion de la Poursuite (modèle 3D modifié pour WaForSpeed : badges retirés, plaques neutres, allégé)|Pursuit truck (3D model modified for WaForSpeed: badges removed, neutral plates, lightened)
 Voitures à venir (modèles 3D modifiés pour WaForSpeed, livrés mais pas encore au catalogue)|Upcoming cars (3D models modified for WaForSpeed, shipped but not yet in the showroom)
 Personnes|People
 Animaux|Animals
@@ -28,6 +29,7 @@ Texte de la licence Apache 2.0|Apache 2.0 license text
 (goéland et pigeon)|(gull and pigeon)
 
 # ---- entrées : ce qu'est chaque œuvre
+Camion porteur|Box truck
 Moto routière|Road motorcycle
 Grande berline|Large saloon
 Berline compacte|Compact saloon

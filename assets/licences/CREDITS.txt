@@ -39,6 +39,9 @@ Animaux :
   Vache, cheval, mouton, chiens, dauphin : « Ultimate Animated Animal Pack », « Farm Animals Pack » et « Animated Fish Pack » par Quaternius, modifiés pour WaForSpeed — licence CC0 1.0 : https://creativecommons.org/publicdomain/zero/1.0/
   Goéland et pigeon : modèle « seagull » par svartmc (Copyright (c) 2020 svartmc), modifié pour WaForSpeed (texte de la licence en fin de page) — licence MIT : https://opensource.org/license/mit
 
+Camion de la Poursuite (modèle 3D modifié pour WaForSpeed : badges retirés, plaques neutres, allégé) :
+  Camion porteur : modèle 3D par Daniel Zhabotinsky (Sketchfab) — licence CC BY 4.0 : https://creativecommons.org/licenses/by/4.0/
+
 Revêtements de route :
   Enrobés, béton, pavés, gravier : scans de Poly Haven (polyhaven.com), modifiés pour WaForSpeed — licence CC0 1.0 : https://creativecommons.org/publicdomain/zero/1.0/
 
