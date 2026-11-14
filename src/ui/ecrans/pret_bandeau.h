@@ -1,5 +1,5 @@
 // WaForSpeed — bandeau « Voiture prêtée » du menu principal (WFS-502, épic E19, zone E8 ; accroche E8 dans menu.cpp).
-// Au-dessus du bouton « Cadeau du jour », en bas à droite de la zone sûre (style design-street-racing : verre teinté, coin coupé,
+// Au-dessus du bouton « Profil » (WFS-482, lui-même au-dessus de « Cadeau du jour »), en bas à droite de la zone sûre (style design-street-racing : verre teinté, coin coupé,
 // liseré néon, bouton orange en biseau) :
 //   - prêt en attente (RG-01) : « VOITURE PRÊTÉE : <NOM> » · « À activer dans 23 h 12 min » · bouton « Activer » ;
 //   - prêt actif (RG-03) : « VOITURE PRÊTÉE : <NOM> » · « Encore 2 h 41 min au volant » (relu à chaque image, minutes) ; appui :

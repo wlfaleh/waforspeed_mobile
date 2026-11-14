@@ -135,7 +135,7 @@ int main() {
         cas("(f) prêt en attente : aucune voiture à prêter (repli sur les étoiles)", e.voituresPretables.empty());
         pret::activer(s, T0 + 10);
         cas("(f) prêt actif : toujours aucune voiture à prêter", cadeau::entreeDepuis(s).voituresPretables.empty());
-        s.car = "m4"; s.car = "abarth";   // pendant le prêt, le joueur choisit une autre voiture possédée, puis la m4
+        s.car = "abarth";   // pendant le prêt, le joueur choisit une autre voiture possédée, puis la m4
         pret::mettreAJour(s, T0 + 20);
         s.car = "m4";
         pret::mettreAJour(s, T0 + 10 + PRET + 1);

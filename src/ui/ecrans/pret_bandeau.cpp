@@ -106,15 +106,16 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
         default: break;
     }
     titre = ui::majuscules(titre);
-    // mise en page : au-dessus de « Cadeau du jour » (lui-même au-dessus de « Crédits » : boutons de 44 px, écart de 10 px)
+    // mise en page : au-dessus de « Profil » (WFS-482), lui-même au-dessus de « Cadeau du jour » et de « Crédits » (boutons de 44 px,
+    // écarts de 10 px) : même calcul que profil.cpp ; aucun bouton existant ne bouge, aucune zone d'appui ne se recouvre
     const float hBtn = 44 * kb, h = 58 * kb, pad = 16 * kb, tp1 = 12 * k, tp2 = 16 * k;
-    const float yCadeau = H - m.bas - 14 * k - hBtn - 10 * k - hBtn;
+    const float yProfil = H - m.bas - 14 * k - 3 * hBtn - 20 * k;
     const float bp = 15 * k, bw = bouton.empty() ? 0 : ui::width(bp, ui::majuscules(ui::tr(bouton.c_str())), 0.1f) + 40 * kb, bh = 38 * kb;
     float wTexte = 0;
     { const textes::NomPropre np; wTexte = ui::width(tp1, titre, 0.14f); }
     wTexte = std::max(wTexte, garage::largeurEtoiles(tp2, phrase));
     const float w = pad + 4 * kb + wTexte + (bw > 0 ? 14 * kb + bw : 0) + pad;
-    const float x = W - m.droite - 16 * k - w, y = yCadeau - 10 * k - h;
+    const float x = W - m.droite - 16 * k - w, y = yProfil - 10 * k - h;
     // .card : verre teinté, coin supérieur droit coupé, lisere à gauche (cyan : à faire ; orange : temps compté ; rouge : perdu)
     const float b = 12 * kb;
     const vec2 c[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};

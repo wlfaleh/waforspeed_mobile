@@ -973,6 +973,7 @@ PR #399, revue sur aaef7406. Diff lu en entier, 6 images ouvertes (planches `equ
 - Construction et tests refaits sur 65a929a0 fusionné en local avec main 318f2ce9 : **128 test(s) réussi(s)**, dont `test_eau`.
 - Seul blocage : **nouveau conflit avec main sur `journal.md`** (GitHub `dirty` ; entrées WFS-490, 536, 410 arrivées après la synchronisation b2577f8c). À faire : resynchroniser, pousser, rappeler le lead dev aussitôt ; la prochaine revue ne vérifie que le diff de la synchronisation.
 - Remarques non bloquantes : `else WFS_ERR` du dauphin (`plage.cpp:3387-3389`) toujours attaché au 2e `if` ; `atan(0, 0)` au centre de la nappe de la gerbe.
+
 ### 2026-11-13 15:48:21 — WFS-401 : début, branche créée (Claude, agent dev3d (01Us6uCxKQ))
 - Ticket reçu du PO (eau commune E15 : écume et rides moins filées, rides au loin, traînée du soleil bas, éclaboussure du dauphin).
 - Branche `feature/waforspeed-401` créée depuis `main` (3ddf2e6e) et poussée. Skills chargés : agent-developer, waforspeed-natif, artiste-3d, expert-realisme-3d.
@@ -1533,6 +1534,7 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
 - Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
 - Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
+
 ### 2026-11-14 10:44:24 — WFS-543 : crédits des remplaçants reliés au contrôle, CI de branche #1066 (Claude, agent dev3d (01Us6uCwcF))
 - Cause (RG-01, déjà trouvée par le PO) : WFS-397 (PR #393, 7c51937c) a livré `assets/cars/remplacants/w212.*` et `virtus.*` ; `verifier_licences.py` ne cherchait le crédit d'un fichier `cars/` que dans CARS[] → 4 manques, `build.yml` rouge depuis #1054.
 - Correction (`feature/waforspeed-543`) : une ligne COUVERTURE **par modèle** (w212 → Peter_D + `remplacants/w212.txt`, virtus → BHP3D + `remplacants/virtus.txt`), `cars/remplacants/` passé de la branche CARS[] à COUVERTURE (tout autre fichier de ce dossier reste un manque) ; section « Voitures à venir » dans AUTRES (libellés sans marque) ; `CREDITS.txt` et `store/credits.md` régénérés par `--generer` (fichier généré et vérifié par le même script : hors zone annoncée mais obligatoire).
@@ -1666,3 +1668,39 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Vérifié : `test_pret` (39 cas RG-08), `test_garage_voitures`, tests CPU 141/141 verts ; banc `WFS_BANC=cadeau` (pret-attente, pret-actif, pret-fin) : parcours RG-10 complet FR / EN, 0 erreur, textes WFS-504 VERT ; 28 captures de WFS-501 identiques à main (RMSE 0).
 - Parcours RG-10 : menu → cadeau (voiture) → garage « Activer le prêt » → « Prêtée : 2 h 41 min » → « Choisir » → menu (bandeau) → course jour et nuit → fin du prêt pendant la course (voiture gardée) → menu « Garde-la pour toujours : 2 400 ★ » → « Garage » (bloquée, prix) → prêt expiré → relance (état gardé).
 - Limite : « Rejouer » après une fin de prêt pendant la course repart avec la voiture prêtée jusqu'au prochain passage au menu ; Market : bouton « Garage » en attendant.
+
+### 2026-11-14 14:19:31 — WFS-493 : PR #413 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwTQ))
+- PR #413 (commit 1f756edf, branche synchronisée avec `main`) : 18 textures (Drift Tokyo, Néon nuit, Camouflage × 6 voitures), lueur du Néon la nuit (`vehicule.glsl` + 1 ligne d'accroche dans `scene.frag`), banc `skins` (`WFS_SKINS`), `test_vehicule_skin` étendu.
+- Vérification : 140 tests CPU réussis ; 55 captures du banc lavapipe regardées (`qa/pr/WFS-493/`) ; Rallye et vitrine sans skin identiques à `main` (PSNR 37 à 57 dB) ; contrôle des licences : 0 manque.
+- Limites : la partie visible des taches grises du Camouflage est plus petite que la tache dessinée (les noires mordent dessus) ; banc d'endurance non relancé (coût du shader : un test et une addition par pixel habillé).
+
+### 2026-11-14 14:20:10 — WFS-543 : CI de main verte (RG-04) (Claude, agent dev3d (01Us6uCwcF))
+- Run **#1073** de `build.yml` sur `main` (39d1ddc7, contient la fusion de WFS-543 8cb64d33) : **vert** (success), tous les jobs, banc-essai (texte) compris. Première CI de `main` verte depuis #1049. Reste pour RG-04 : bancs du matin suivants (robot des statuts).
+
+### 2026-11-14 14:29:30 — WFS-482 : retour du lead dev corrigé (PR #412) (Claude, agent dev3d (01Us6uCv3H))
+- Point 1 : `qa/pr/WFS-482/tests-cpu.log` (140 tests réussis) et section « Tests CPU » dans la PR.
+- Point 2 (RG-08) : cause : `champ()` de `creation_profil.cpp` dessinait le texte saisi à taille fixe ; il est maintenant réduit pour tenir dans le champ, curseur placé d'après la taille réelle ; nouvelle vérification au banc `profil` (OK FR / EN), banc `creation` 0 écart ; captures 16 « W » régénérées.
+- Commit e00de6d5, synchronisé avec `main` (dd79a20b) ; réponse point par point sous la revue ; lead dev rappelé.
+
+
+### 2026-11-14 14:33:22 — WFS-493 refusé par le lead dev, PR #413 (lead-dev)
+- Commit relu : 1f756edf. Toutes les captures ouvertes (55 après, 19 avant) ; tout le diff lu ; construction et tests sur la branche synchronisée avec `main` : 140 tests réussis.
+- Néon nuit, Drift Tokyo et non-régression Rallye / sans skin : bons ; code propre (accroche de `scene.frag` en 1 ligne).
+- **Refus** : (1) le Camouflage ressemble à une robe de vache (taches noires rondes et isolées sur fond surtout blanc, gris presque absent), pas à un camouflage urbain (RG-04) ; (2) section « Tests CPU » avec le commit testé absente de la description (règle du 2026-11-11) ; (3) banc d'endurance en qualité Basse non lancé (RC-E18-03).
+- Revue dans la PR : https://github.com/wlfaleh/waforspeed_mobile/pull/413#pullrequestreview-5904959985 . Statut : ↩️ Retour lead dev (PR #413).
+
+### 2026-11-14 14:37:51 — WFS-482 fusionné par le lead dev (lead-dev)
+- Revue du commit dd79a20b (correction e00de6d5) : réponse du développeur sous la revue présente (« Bien reçu », puis « corrigé dans e00de6d5 » point par point). Captures `profil-fr/en-16w-modification` régénérées ouvertes : texte et curseur dans le cadre du champ ; `creation-fr-vide` inchangée.
+- Vérifié moi-même : construction OK, `tests_cpu.sh build` 140 réussis ; banc `profil` FR + EN 0 écart (nouvelle vérification RG-08 « Modifier » OK) ; banc `creation` 0 écart. Diff de e00de6d5 lu : rien de bloquant.
+- « ✅ Approuvé » posté en commentaire de revue (GitHub refuse l'approbation sur le même compte), fusion en squash de89e0f1 (#412). Statut 🟣 Fusionné ; ligne `suivi-pr.md` retirée ; `qa/Check.md` à jour.
+
+### 2026-11-14 14:38:20 — WFS-482 : fin de session (Claude, agent dev3d (01Us6uCv3H))
+- PR #412 fusionnée par le lead dev (de89e0f1) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` posée par le lead dev.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+
+### 2026-11-14 14:45:01 — WFS-502 : retour lead dev sur PR #414 (lead-dev)
+- Revue complète du commit 31029178 : 20 captures `pret-*` ouvertes (FR / EN), 28 paires `cadeau-*` identiques à main (RMSE 0), diff entier lu, branche construite et 141 tests CPU refaits : fond du ticket bon (avis écrit dans la PR).
+- Fusion refusée par GitHub : conflit avec `main` après la fusion de WFS-482 (#412). `src/ui/ecrans/menu.cpp` (enum `PROFIL = 7` / `PRET = 7`, 4 blocs) et `journal.md`. Surtout, le bouton « Profil » occupe la place du bandeau du prêt (même bas) : chevauchement à l'écran.
+- Demandé : synchroniser avec main, `PRET = 8`, bandeau au-dessus de « Profil » sans déplacer les boutons, tests et banc relancés, captures du menu (attente / actif / fin / expiré, FR et EN) avec « Profil » visible.
+- Remarque au PO : prix des pastilles du garage en anglais à peine lisibles (« 100 ★ » rendu flou en petit), défaut d'avant ce ticket.

@@ -37,6 +37,13 @@ public:
             g.choisirVoiture(s.car.c_str(), vec3{c(16), c(8), c(0)});
         }
     }
+    // RG-06 (remarque du lead dev, PR #414) : temps restant vu écrit aussi à chaque changement d'écran (sortie de course, de menu…) :
+    // une fermeture forcée ne rend pas la minute pas encore écrite
+    void onEcran(Ecran, Ecran, const GameView&) override {
+        Sauvegarde& s = sauvegarde();
+        if (!s.actif() || pret::etat(s.cadeau) != pret::Etat::Actif) return;
+        s.enregistrer(); ecrit_ = pret::maintenant();
+    }
 private:
     long long dernier_ = 0, ecrit_ = 0;
     bool dernierEnCourse_ = false;
