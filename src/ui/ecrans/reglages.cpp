@@ -125,6 +125,7 @@ bool toucherDiag(float x, float y) {
     }
     return true;   // le menu garde tous les touchers
 }
+bool g_boutonFrais = false;   // WFS-537 (accroche) : « Réglages » dessiné depuis la dernière lecture de boutonReglages
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
 float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
     const float tp = 13 * k; const std::string t = ui::majuscules(ui::tr("reglages.cgu")); const float w = largeurMax(tp, "reglages.cgu", 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
@@ -384,6 +385,7 @@ private:
         const float tw = largeurMax(tp, "reglages.bouton", 0.12f), dx = (tw - ui::width(tp, t, 0.12f)) / 2;   // RC-E20-04 : taille fixe
         const float w = pad + tw + pad, x = W - g.marges.droite - 16 * k - w, y = g.marges.haut + 14 * k;
         g_bouton = {x, y, w, h};
+        g_boutonFrais = true;   // WFS-537 (accroche) : compteur d'étoiles posé à cette image
         biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, BORD);
         biseau(r, x, y, w, h, 8 * kb, GLASS);
         if (g_presse == P_BOUTON) biseau(r, x, y, w, h, 8 * kb, hex(ACCENT2, 0.22f));   // WFS-290 (RG-04) : appuyé, voile cyan
@@ -604,6 +606,7 @@ Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
 void ouvrirMenuCacheBanc(bool oui) { g_diagOuvert = oui; if (oui) diag::g_menuVu = true; }   // WFS-420 : banc PC (capture du menu caché)
+bool boutonReglages(float& x, float& y, float& w, float& h) { if (!g_boutonFrais || g_bouton.w <= 0) return false; g_boutonFrais = false; x = g_bouton.x; y = g_bouton.y; w = g_bouton.w; h = g_bouton.h; return true; }   // WFS-537 (accroche)
 bool toucheReglages(float x, float y, int doigt) { return g_ouvert || dansCible(g_bouton, x, y) || (doigt >= 0 && doigt == g_doigt); }   // WFS-290 : même cible que onTouch, et le doigt posé sur « Réglages »
 bool boutonCguReglages(float& x, float& y) { x = g_cgu.x + g_cgu.w / 2; y = g_cgu.y + g_cgu.h / 2; return g_ouvert && g_cgu.w > 0; }   // WFS-308
 

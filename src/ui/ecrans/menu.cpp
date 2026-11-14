@@ -23,6 +23,7 @@
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
 #include "../credits.h"   // WFS-406 (accroche E8) : bouton et écran « Crédits »
+#include "compteur_etoiles.h"   // WFS-537 (accroche) : compteur d'étoiles à côté de « Réglages »
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
 
 namespace wfs {
@@ -44,7 +45,7 @@ float ease(float t) {
 }
 
 struct Choix { const char* titre; const char* desc; };
-enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5 };   // WFS-501 : « Cadeau du jour »   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits »
+enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
 Zone g_zones[4];
@@ -78,6 +79,7 @@ public:
         int sous = choixSous(t.x, t.y);
         if (sous < 0 && credits::dansBouton(t.x, t.y)) sous = CREDITS;   // WFS-406
         if (sous < 0 && cadeau_jour::dansBouton(t.x, t.y)) sous = CADEAU;   // WFS-501
+        if (sous < 0 && compteur_etoiles::dans(t.x, t.y)) sous = COMPTEUR;   // WFS-537 (RG-09)
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; presse_ = sous; }   // WFS-83 : « Duel en ligne » actif (plus grisé)
             else if (t.id == doigt_ && sous != presse_) presse_ = -1;               // glissé hors du choix : annulé
@@ -92,6 +94,7 @@ public:
         else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom »"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-96 (RG-01)
         else if (choix == CADEAU) { WFS_LOG("menu : « Cadeau du jour »"); cadeau_jour::ouvrir(); }   // WFS-501 (RG-01)
         else if (choix == CREDITS) { WFS_LOG("menu : « Crédits »"); credits::ouvrir(); }   // WFS-406 (RG-02)
+        else if (choix == COMPTEUR) { WFS_LOG("menu : compteur d'étoiles → garage"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-537 (RG-09) : Market avec WFS-513
         else if (choix == TA_VOITURE) { WFS_LOG("menu : « Ta voiture »"); garageRegarder(); g.allerA(Ecran::Garage); }   // #myCarBtn
         return true;
     }
@@ -196,6 +199,7 @@ public:
         // pour que « Course solo » reste la 1re zone de la manette (manette::focus) et du parcours d'endurance (CI #993, #994)
         credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
         cadeau_jour::dessinerBouton(r, W, H, g.marges, presse_ == CADEAU);   // WFS-501 (RG-01) : au-dessus de « Crédits »
+        compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
     double t0_ = -1;

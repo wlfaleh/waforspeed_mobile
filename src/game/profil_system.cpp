@@ -27,6 +27,7 @@
 #include "duel_system.h"
 #include "player.h"
 #include "score_course.h"   // WFS-536 : score de la course (WFS-535)
+#include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "sauvegarde.h"
 #include "track.h"
 
@@ -104,6 +105,7 @@ private:
         adversaireParti_ = -1; adversairesVus_ = 0;
         records_ = boutique::recordsDepart(sauvegarde());
         gain_.depart();
+        score_fin::effacer();   // WFS-537 (accroche) : le bloc de la course d'avant disparaît
         voiture_ = g.car ? g.car->id : "";
         if (duelSession().inRoom()) mode_ = ModeJoue::Duel;
         else switch (modeCourse()) {
@@ -128,9 +130,10 @@ private:
         if (quittee) c.victoire = false;
         // WFS-536 (RG-01, RG-02) : étoiles du score ; résultat du mode jamais reçu : -1 = secours boutique.gain_course
         int etoiles = 0;
+        score::Score sc;   // WFS-537 (accroche) : gardé pour le bloc « Score » de l'écran de fin
         if (!quittee) {
             if (resultat) {
-                const score::Score sc = score::calculer(boutique::resultatScore(c, records_, chocs_, adversaireParti_));
+                sc = score::calculer(boutique::resultatScore(c, records_, chocs_, adversaireParti_));
                 etoiles = sc.etoiles;
                 WFS_LOG("score : %s, %d point(s) sur %d ligne(s), %d choc(s) : %d ★%s", nomModeJoue(c.mode), sc.total, (int)sc.lignes.size(), chocs_,
                         sc.etoiles, sc.nouveauRecord ? " (nouveau record)" : "");
@@ -139,8 +142,10 @@ private:
             }
         }
         Sauvegarde& s = sauvegarde();
-        if (!s.actif()) { gain_ = {}; return; }   // RG-06 : banc d'essai : rien n'est noté ni écrit
+        if (quittee) score_fin::effacer();   // WFS-537 (RG-03, accroche) : course quittée : pas de bloc « Score »
+        if (!s.actif()) { if (!quittee) score_fin::publier(resultat ? &sc : nullptr, etoiles, -1); gain_ = {}; return; }   // RG-06 : banc d'essai : rien n'est noté ni écrit
         const int credit = gain_.finir(s, quittee, etoiles);   // RG-05 : une seule fois par course ; quittée : 0
+        if (!quittee) score_fin::publier(resultat ? &sc : nullptr, credit, boutique::solde(s));   // WFS-537 (accroche) : ★ vraiment reçues, nouveau solde
         c.etoiles = credit;   // RG-03 : ★ gagnées dans l'historique
         s.profil.noterCourse(c);
         WFS_LOG("profil : course notée (%s, %s, %s, %.3f km, %d km/h, %d frôlement(s)) : %lld course(s), %.1f km au total",

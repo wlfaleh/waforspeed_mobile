@@ -1,4 +1,5 @@
 // WaForSpeed — module « course » (WFS-12) : voir course_system.h.
+#include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "course_system.h"
 #include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
@@ -260,8 +261,10 @@ private:
         // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px
         const bool rec = sauvegarde().actif();
         const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
-        const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
+        // WFS-537 (accroche) : avec le bloc « Score », panneau plus étroit en 16:9 (place du bloc à droite) ; boutons inchangés (centrés)
+        const float pw = std::min({W * 0.86f, 120 * u, score_fin::affiche() ? W - 78 * u : W}), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
         r.uiRect(px, py, pw, ph, SURFACE);
+        score_fin::poser(px, py, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
         r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
         const float cx = W / 2;
         // .eyebrow : cyan --accent-2, espacement 0,22 em
@@ -275,7 +278,7 @@ private:
         static textes::Capitales labs[4] = {{"fin.distance"}, {"fin.vitesse_max"}, {"fin.quasi"}, {"fin.checkpoints"}};   // WFS-506 (RG-03)
         for (int i = 0; i < 4; i++) {
             const float x = px + pw * (0.125f + 0.25f * i);
-            ui::text(r, x, py + 38 * u + dStats, 3.4f * u, labs[i](), ui::GRIS, ui::CENTRE, 0.16f);
+            ui::textBoite(r, x, py + 38 * u + dStats, pw / 4 - 1 * u, 3.4f * u, 3.4f * u, labs[i](), ui::GRIS, ui::CENTRE, 0.16f, true);   // WFS-537 : réduit (20 % au plus) si le panneau est plus étroit
             ui::text(r, x, py + 43 * u + dStats, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
         }
         // bouton « Rejouer » (biseau orange, texte sombre)

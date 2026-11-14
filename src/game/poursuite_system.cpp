@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "../audio/sfx.h"
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -812,6 +813,7 @@ private:
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
         const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
+        score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
         r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
         static std::string sur;   // WFS-506 (RG-03) : « POURSUITE POLICE · 10 KM » / « POLICE PURSUIT · 10 KM »
         textes::remplir(sur, "police.surtitre", "10");   // valeur affichée inchangée (10 km)
