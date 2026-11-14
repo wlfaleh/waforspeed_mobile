@@ -1520,3 +1520,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Cause du test rouge** : mes tests CPU avaient été lancés avant la régénération des crédits ; l'annonce « 139 verts » ne valait pas pour 0e6b9d81.
 - **Vérification** : construction propre, 139 tests CPU réussis (dont `test_credits`, `test_camion_542`), commits 106279e4 et fa87bc44, branche synchronisée avec main.
 
+
+### 2026-11-14 12:22:24 — WFS-546 fusionné par le lead dev (lead-dev)
+PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (étoile seule, aucune clé de texte, solde retiré, Tests CPU). 12 captures ouvertes, diff lu en entier, construction et 139 tests CPU refaits, banc `testeur` 0 écart. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 30278f0d. Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
