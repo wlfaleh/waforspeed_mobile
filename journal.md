@@ -1777,3 +1777,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - L'utilisateur vise **la petite voiture de police collée au « camion » géant** (Range Rover agrandi, ANO-273), pas la police à côté du joueur. Images à 6,7 /s : `qa/retours/2026-11-13-video2348-police-coince/video2348-police-a-cote-du-camion-6ips-5.0s-8.6s.jpg`.
 - Elle glisse à gauche, revient à droite et entre à moitié dans le camion, puis recommence, sans jamais tourner. Cause (`poursuite.cpp` l. 93-112) : sa cible change à chaque image entre la file libre et le joueur, qui est derrière le camion (aller-retour sans fin) ; décalage par glissement direct, cap de la route ; aucun choc police ↔ camion.
 - ANO-272 complétée ; **WFS-540 RG-09** ajoutée (file gardée pendant le contournement, camion solide pour la police, arrêt derrière sinon) ; RG-08 (cap propre, pas de glissement) gardée.
+
+### 2026-11-14 00:20:24 — 2e vidéo de l'utilisateur (Campagne, jour, 01:19) : même défaut de la police « carte à jouer » (po-scrum-master)
+- Vidéo `Screen_Recording_20261114_011901` (15 s) ; images dans `qa/retours/2026-11-14-video0119-police-carte/`.
+- Le joueur recule (« R », 14-31 km/h) ; la police **recule avec lui, collée à son flanc**, carrosserie toujours parallèle à la route ; puis elle glisse de l'avant à l'arrière du joueur et **sort sur l'herbe** en glissant de côté.
+- ANO-272 complétée ; **WFS-540 RG-10** ajoutée (pas de recul pour suivre le joueur, vraie marche arrière ≤ 15 km/h, reste sur la chaussée, aucune position collée entretenue par le code). Pas de nouveau ticket : même cause (police posée, pas conduite). La pause Campagne ne s'applique pas : c'est le code de la Poursuite, pas le décor.
