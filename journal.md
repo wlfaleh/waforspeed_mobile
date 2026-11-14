@@ -1979,3 +1979,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 21:50:43 — R18 (suite 8) : proposition finale corrigée (smart-brainstorming)
 - Maquettes refaites selon les retours de l'utilisateur (menu gros plan, mode et carte à plat, plus de titres bleus, voiture et crédits gardés). Proposition seulement, rien transmis au PO.
+
+### 2026-11-14 21:51:23 — R19 : proposition corrigée des écrans, R18 gardée (smart-brainstorming)
+- Sur demande de l'utilisateur : R18 laissée telle quelle (`references/maquettes-finales-R18/`, 14 écrans) ; la version corrigée devient R19 (`references/maquettes-R19/`, 12 écrans + vue d'ensemble). Proposition seulement, rien transmis au PO.

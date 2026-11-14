@@ -927,6 +927,14 @@ Demande de l'utilisateur : la proposition finale pour chaque page. Images dans `
 | 14 | Market | **borne « Station ★ »** : écran du pack, 4 boutons de grade (Bronze, Argent, Or, Coffre), prix de `configgame.json` |
 Limites : maquettes de création (rendu web), pas le moteur ; à valider avant tout ticket : performance du téléphone (une scène 3D par écran), lisibilité sur petit écran, avis `@3d` (réalisme, formes nues), `@juriste` (borne de carburant et plaques sans signe réel). Découpage proposé si l'utilisateur valide : un ticket par écran, en commençant par 01 (menu), 10 (départ) et 11-12 (fin et résultats).
 
-### R18 (suite 8) — 2026-11-14 — Proposition finale corrigée selon l'utilisateur
-Retour de l'utilisateur : « trop de changement pour un truc simple » ; on garde les **boutons-objets** et les **onglets du garage** ; **voiture et crédits : on garde l'existant** ; menu : **même bouton pour Course solo et Course en ligne**, plus de Golf garée au loin mais **la voiture en gros plan avec skin et peinture spéciale** ; mode et carte : **style à plat** (cartes avec vraies images) ; **plus de petits titres bleus**.
-`references/maquettes-finales-R18/` remplacé : 12 écrans (menu, mode, carte, duel, cadeau, garage couleur, garage skin, chargement, départ, fin, résultats, market) + vue d'ensemble. Proposition seulement : aucun code, aucun ticket.
+## R19 — 2026-11-14 — Proposition corrigée des écrans (suite des retours de l'utilisateur sur R18)
+**Retours de l'utilisateur sur R18** : « trop de changement pour un truc simple » ; on garde les **boutons-objets** et les **onglets du garage** ; **choix de la voiture et crédits : on garde l'existant** ; menu : **même bouton pour Course solo et Course en ligne**, plus de Golf garée au loin mais **la voiture du joueur en gros plan avec skin et peinture spéciale** ; choix du mode et de la carte : **style à plat** (cartes avec vraies images du jeu) ; **plus de petits titres bleus**. R18 reste tel quel.
+**Images** : `references/maquettes-R19/` — vue d'ensemble + 12 écrans (menu, mode, carte, duel, cadeau, garage couleur, garage skin, chargement, départ, fin, résultats, market).
+| N° | Écran | Proposition R19 |
+|---|---|---|
+| 01 | Menu | voiture du joueur en gros plan (ex. Cavallo SF-X caméléon, skin Rallye) ; console : deux boutons Start/Stop identiques « Course solo » et « Course en ligne », plaque « Garage » |
+| 02 | Choix du mode | cartes à plat avec vraies images du jeu ; Start/Stop « Suivant », autocollant « Retour » |
+| 03 | Choix de la carte | grande carte de la ville choisie (vraie image), les autres en aperçu sur les côtés ; interrupteur jour / nuit ; Start/Stop « Rouler » |
+| 04 à 12 | Duel, cadeau, garage (onglets), chargement, départ, fin, résultats, market | repris de R18, sans les petits titres bleus |
+| — | Choix de la voiture, crédits | **inchangés** (écrans actuels du jeu) |
+Proposition seulement : aucun code, aucun ticket ; l'utilisateur choisit et demande au PO.
