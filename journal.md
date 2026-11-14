@@ -1982,3 +1982,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 21:51:23 — R19 : proposition corrigée des écrans, R18 gardée (smart-brainstorming)
 - Sur demande de l'utilisateur : R18 laissée telle quelle (`references/maquettes-finales-R18/`, 14 écrans) ; la version corrigée devient R19 (`references/maquettes-R19/`, 12 écrans + vue d'ensemble). Proposition seulement, rien transmis au PO.
+
+### 2026-11-14 21:56:22 — R19 : garage, choix de la voiture (smart-brainstorming)
+- Sur retour de l'utilisateur : écran actuel du garage gardé, seules la zone d'infos (cadrans, barres à LED) et les boutons évoluent ; `references/maquettes-R19/13-garage-choix-voiture.jpg`. Rien transmis au PO.

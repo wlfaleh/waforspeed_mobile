@@ -936,5 +936,6 @@ Limites : maquettes de création (rendu web), pas le moteur ; à valider avant t
 | 02 | Choix du mode | cartes à plat avec vraies images du jeu ; Start/Stop « Suivant », autocollant « Retour » |
 | 03 | Choix de la carte | grande carte de la ville choisie (vraie image), les autres en aperçu sur les côtés ; interrupteur jour / nuit ; Start/Stop « Rouler » |
 | 04 à 12 | Duel, cadeau, garage (onglets), chargement, départ, fin, résultats, market | repris de R18, sans les petits titres bleus |
-| — | Choix de la voiture, crédits | **inchangés** (écrans actuels du jeu) |
+| 13 | Garage, choix de la voiture | **écran actuel gardé** (plateau, nom, description, nuancier, finitions) ; seules évoluent la **zone d'infos** (puissance, 0 à 100, vitesse max en **cadrans de combiné de bord**, vitesse / accélération / maniabilité / puissance en **barres à LED**, orange au-delà de 7) et les **boutons** (Start/Stop « Choisir », autocollant « Retour ») |
+| — | Crédits | **inchangé** (écran actuel du jeu) |
 Proposition seulement : aucun code, aucun ticket ; l'utilisateur choisit et demande au PO.
