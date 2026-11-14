@@ -1997,3 +1997,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 22:02:59 — R19 : précédent / suivant sobres (smart-brainstorming)
 - Sur demande de l'utilisateur (« un bouton plus propre ») : boutons ronds en verre dépoli, chevron fin, orange au toucher ; planche des 4 styles retirée. Rien transmis au PO.
+
+### 2026-11-14 22:03:58 — R19 : précédent / suivant en clignotants épurés (smart-brainstorming)
+- Choix de l'utilisateur « proche du 2 » : flèches de clignotant épurées sur l'onglet Voiture du garage. Rien transmis au PO.
