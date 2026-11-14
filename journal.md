@@ -1976,3 +1976,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 21:30:09 — R18 (suite 7) : proposition finale des 14 écrans (smart-brainstorming)
 - 14 maquettes 3D + vue d'ensemble dans `references/maquettes-finales-R18/` (menu, mode, voiture, carte, duel, cadeau, garage couleur et skin, chargement, départ, fin, résultats, crédits, market). Rien transmis au PO.
+
+### 2026-11-14 21:50:43 — R18 (suite 8) : proposition finale corrigée (smart-brainstorming)
+- Maquettes refaites selon les retours de l'utilisateur (menu gros plan, mode et carte à plat, plus de titres bleus, voiture et crédits gardés). Proposition seulement, rien transmis au PO.

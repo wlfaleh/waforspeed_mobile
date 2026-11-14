@@ -926,3 +926,7 @@ Demande de l'utilisateur : la proposition finale pour chaque page. Images dans `
 | 13 | Crédits | générique **peint au pochoir sur le mur**, néon « MERCI », vrais auteurs et licences |
 | 14 | Market | **borne « Station ★ »** : écran du pack, 4 boutons de grade (Bronze, Argent, Or, Coffre), prix de `configgame.json` |
 Limites : maquettes de création (rendu web), pas le moteur ; à valider avant tout ticket : performance du téléphone (une scène 3D par écran), lisibilité sur petit écran, avis `@3d` (réalisme, formes nues), `@juriste` (borne de carburant et plaques sans signe réel). Découpage proposé si l'utilisateur valide : un ticket par écran, en commençant par 01 (menu), 10 (départ) et 11-12 (fin et résultats).
+
+### R18 (suite 8) — 2026-11-14 — Proposition finale corrigée selon l'utilisateur
+Retour de l'utilisateur : « trop de changement pour un truc simple » ; on garde les **boutons-objets** et les **onglets du garage** ; **voiture et crédits : on garde l'existant** ; menu : **même bouton pour Course solo et Course en ligne**, plus de Golf garée au loin mais **la voiture en gros plan avec skin et peinture spéciale** ; mode et carte : **style à plat** (cartes avec vraies images) ; **plus de petits titres bleus**.
+`references/maquettes-finales-R18/` remplacé : 12 écrans (menu, mode, carte, duel, cadeau, garage couleur, garage skin, chargement, départ, fin, résultats, market) + vue d'ensemble. Proposition seulement : aucun code, aucun ticket.
