@@ -1,0 +1,16 @@
+# WFS-493 (RC-E18-03) : images/s en qualité Basse, banc WFS_BANC=peinture2-mesure (208, Ville, course au pilote automatique, 400 images chronométrées après 180 de chauffe), lavapipe (PC, pilote logiciel)
+# avant = main 34141463 sans skin ; après = branche 5a35f750 avec WFS_SKIN (Camouflage de jour ; Néon nuit de nuit : lueur des filets) ; 3 passages alternés
+avant jour skin=- passage 1 : images, moyenne 343.44 ms = 2.912 img/s ; 1 % les plus lents (4 images) 474.54 ms = 2.107 img/s ; 
+apres jour skin=camouflage passage 1 : images, moyenne 327.84 ms = 3.050 img/s ; 1 % les plus lents (4 images) 407.89 ms = 2.452 img/s ; 
+avant nuit skin=- passage 1 : images, moyenne 379.28 ms = 2.637 img/s ; 1 % les plus lents (4 images) 478.44 ms = 2.090 img/s ; 
+apres nuit skin=neonnuit passage 1 : images, moyenne 379.32 ms = 2.636 img/s ; 1 % les plus lents (4 images) 524.69 ms = 1.906 img/s ; 
+avant jour skin=- passage 2 : images, moyenne 271.99 ms = 3.677 img/s ; 1 % les plus lents (4 images) 384.26 ms = 2.602 img/s ; 
+apres jour skin=camouflage passage 2 : images, moyenne 267.65 ms = 3.736 img/s ; 1 % les plus lents (4 images) 345.75 ms = 2.892 img/s ; 
+avant nuit skin=- passage 2 : images, moyenne 302.88 ms = 3.302 img/s ; 1 % les plus lents (4 images) 394.32 ms = 2.536 img/s ; 
+apres nuit skin=neonnuit passage 2 : images, moyenne 301.40 ms = 3.318 img/s ; 1 % les plus lents (4 images) 381.37 ms = 2.622 img/s ; 
+avant jour skin=- passage 3 : images, moyenne 260.04 ms = 3.846 img/s ; 1 % les plus lents (4 images) 335.22 ms = 2.983 img/s ; 
+apres jour skin=camouflage passage 3 : images, moyenne 268.79 ms = 3.720 img/s ; 1 % les plus lents (4 images) 343.58 ms = 2.911 img/s ; 
+avant nuit skin=- passage 3 : images, moyenne 301.58 ms = 3.316 img/s ; 1 % les plus lents (4 images) 409.56 ms = 2.442 img/s ; 
+apres nuit skin=neonnuit passage 3 : images, moyenne 305.02 ms = 3.278 img/s ; 1 % les plus lents (4 images) 401.03 ms = 2.494 img/s ; 
+jour : moyenne avant 3.478, après 3.502 img/s (écart +0.024) ; 1 % les plus lents avant 2.564, après 2.752 img/s (écart +0.188) ; limite ±1 img/s : OK
+nuit : moyenne avant 3.085, après 3.077 img/s (écart -0.008) ; 1 % les plus lents avant 2.356, après 2.341 img/s (écart -0.015) ; limite ±1 img/s : OK
