@@ -13,6 +13,7 @@
 #include "../../game/cars.h"
 #include "../../game/commandes_tactiles.h"   // dessin2d
 #include "../../game/personnalisation.h"
+#include "../../game/pret.h"   // WFS-502 : « Activer » la voiture prêtée
 #include "../../game/sauvegarde.h"
 #include "../../platform/manette.h"
 #include "../../render/renderer.h"
@@ -327,7 +328,8 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     const float bh = 50 * kb, tp = (cp ? 18 : 20) * k, by = py + ph - 14 * k - bh;
     g.retour = g.chances = g.activer = {};
     if (g.vue != Vue::Animation) {
-        const bool voiture = g.vue == Vue::Gain && g.res && g.res->gain == cadeau::Gain::Voiture;
+        // WFS-502 (RG-01) : « Activer » seulement tant que le prêt attend (réaffichage après activation ou perte : « Retour » seul)
+        const bool voiture = g.vue == Vue::Gain && g.res && g.res->gain == cadeau::Gain::Voiture && pret::etat(sauvegarde().cadeau) == pret::Etat::EnAttente;
         float xd = px + pw - 24 * k;   // bord droit du prochain bouton
         auto poser = [&](Zone& z, const char* cle) {
             const float w = largeurTexte(tp, cle) + 56 * kb;
@@ -378,7 +380,12 @@ bool toucher(int id, float x, float y, bool down) {
         if (g.vue == Vue::Chances) { g.vue = g.avantChances; WFS_LOG("cadeau du jour (WFS-501) : « Retour » → %s", g.vue == Vue::Gain ? "gain" : "attente"); }
         else { WFS_LOG("cadeau du jour (WFS-501) : « Retour » → menu"); fermer(); }
     } else if (c == CHANCES) { g.avantChances = g.vue; g.vue = Vue::Chances; WFS_LOG("cadeau du jour (WFS-501) : « Chances »"); }
-    else if (c == ACTIVER) { WFS_LOG("cadeau du jour (WFS-501) : « Activer » (voiture prêtée : WFS-502) → menu"); fermer(); }
+    else if (c == ACTIVER) {   // WFS-502 (RG-02) : le prêt de 3 h commence, la sauvegarde est écrite
+        Sauvegarde& s = sauvegarde();
+        if (pret::activer(s, pret::maintenant())) s.enregistrer();
+        WFS_LOG("cadeau du jour : « Activer » : voiture prêtée %s → menu", pret::etat(s.cadeau) == pret::Etat::Actif ? "activée" : "pas activée (aucun prêt en attente)");
+        fermer();
+    }
     return true;
 }
 
