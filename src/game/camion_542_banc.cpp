@@ -120,13 +120,25 @@ int benchCamion542(Game& g, Renderer& r, const std::string& out) {
         }
         finir();
     }
-    // ---------- 5. retrait (RG-04) : le joueur 60 m après le camion, caméra tournée vers l'arrière ----------
+    // ---------- 5. retrait (RG-04) : joueur tenu à 26-32 m du camion, dans la file libre : camion encore là à 55 s, retiré à 61 s ----------
     if (scene("retrait") && demarrer("jour", VueCamera::Poursuite)) {
-        placer(-20, poursuite::FILES[2]);
-        joueur.dist = joueur.position = sCamion + 60 / M; rouler(30, 0);
-        g.camMode = 2; viser(14, 4, 6.f);   // caméra devant la voiture, tournée vers l'arrière (le camion était à 60 m)
-        legende("retrait", 0, "60 m apres le camion, vue vers l'arriere :\nle camion doit etre retire (RG-04 : 50 m derriere)");
-        image("camion542-retrait-00");
+        placer(30, poursuite::FILES[2]);   // le camion apparaît (à portée de vue) au moment où le joueur arrive à 30 m
+        double age = 0;
+        // le joueur roule au pas (12 km/h : au-dessus de la reprise, la police ne l'arrête pas, ce qui finirait la course) et
+        // revient à 32 m du camion dès qu'il arrive à 26 m : il reste devant lui ; une image rendue par seconde (rendu logiciel lent)
+        auto attendre = [&](double jusqua) {
+            for (int i = 0; age < jusqua; i++) {
+                DriveInput in; in.gas = joueur.kmh() < 12; g.manette = in; g.update(PAS); t += PAS; age += PAS;
+                if ((sCamion - joueur.dist) * M < 26) { joueur.dist = joueur.position = sCamion - 32 / M; joueur.playerX = poursuite::FILES[2]; joueur.heading = 0; }
+                if (i % 60 == 0) g.render(t);
+            }
+        };
+        attendre(55);
+        char l[160]; std::snprintf(l, sizeof l, "%.0f s apres l'apparition du camion :\nil doit encore etre la (RG-04 : 60 s)", age);
+        legende("retrait", 0, l); image("camion542-retrait-00");
+        attendre(61);
+        std::snprintf(l, sizeof l, "%.0f s apres l'apparition du camion :\nil doit etre retire (RG-04 : 60 s)", age);
+        legende("retrait", 1, l); image("camion542-retrait-01");
         finir();
     }
     choisirVue(vue0); modeCourse() = mode0; courseBenchRules(false);

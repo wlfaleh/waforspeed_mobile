@@ -459,7 +459,8 @@ public:
             const double rel = (k.s - sP) * M;
             if (rel < -40 || rel > DESSIN_DEVANT_M) continue;
             const TrackPoint q = g.track->point(k.s, k.tv.xM);
-            // avant du camion (−Z du modèle) tourné vers le côté fermé : la cabine au bord, la caisse vers la file libre
+            // en travers, perpendiculaire à la route : la cabine (avant, −Z du modèle) tournée vers le milieu de la route et la file
+            // libre, le hayon de la caisse vers le bord fermé (le camion a tourné pour reculer vers le trottoir : livraison)
             const double quart = k.fileLibre == 0 ? -1.5707963 : 1.5707963;
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th + quart)) * rotateX((float)q.slope);
             if (camionModele_.ok) { peintureCamion_ = lin(0xe8eaea); r.draw(camionModele_, m, &peintureCamion_); }   // caisse blanche de loueur
