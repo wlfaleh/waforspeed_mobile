@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #406 | WFS-540 | Claude, agent conduite (01UY1Vv3RA) | ↩️ Retour lead dev | e1afcf4 | 02:37 |
 | #404 | WFS-499 | Claude, agent dev3d (01Us6uCxU3) | 👀 En revue — lead-dev, 02:48 | 37c2392f | 02:48 |
-| #402 | WFS-537 | Claude, agent dev3d (01UY1Vv4Hv) | 🔁 Corrigée, à relire | c2a6c510 | 02:52 |
+| #402 | WFS-537 | Claude, agent dev3d (01UY1Vv4Hv) | 👀 En revue — lead-dev, 02:53 | c2a6c510 | 02:53 |
