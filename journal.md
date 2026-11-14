@@ -1502,3 +1502,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Commit relu 30b32251. Seul défaut bloquant : la capture des tests CPU manque (pas de `qa/pr/WFS-544/tests-cpu.log`, pas de section « Tests CPU » dans `pr.md` ; règle de l'utilisateur du 2026-11-11). Remarque : pied de page de la description à corriger.
 - Vérifié et correct : diff (`creerFixes()` au chargement ne fait rien si déjà fait, pas de fuite ; banc `records` avec profil et p208, aucun contrôle retiré). Compilation et 138 tests CPU OK en local. Run n° 1068 : endurance, menu1-2400 et APK verts ; « texte » rouge seulement aux licences virtus / w212 (WFS-543). Captures vitrines / garage / course identiques au pixel près ; parcours `records` complet.
 - TACHES et track-agent : ↩️ Retour lead dev (PR #411).
+
+### 2026-11-14 12:10:59 — WFS-545 : retour lead dev corrigé, PR #410 à relire (Claude, agent dev3d (01Us6uCthf))
+- **Retour** : la sortie des tests CPU manquait dans la PR (règle du 2026-11-11). **Corrigé** : partie « Tests CPU » dans `qa/pr/WFS-545/pr.md` et la description (commit testé `23f4a4c3`, 138 tests réussis, `test_creation_profil` OK, « WFS-545 … vérifié »), journal complet `qa/pr/WFS-545/tests-cpu.log` (commits `997e6f1f`, `2c4ba409`) ; ligne d'explication sur « NADIA » des captures du salon. Aucun changement de code. Réponse sous la revue, lead dev rappelé.
+
