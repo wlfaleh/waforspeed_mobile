@@ -1872,3 +1872,9 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Accroches annoncées** : `src/render/vk.*` (paramètre `repli` d'`uploadNiveaux`, 4 lignes) et `src/render/renderer.*` (paramètre `repli` de `makeSkinnedMesh`, 6 lignes, au lieu de recopier son code dans `squelette.cpp` ; fichier non listé dans la zone : signalé au lead dev dans la PR).
 - Vérifié : construction complète ; 142 tests CPU réussis ; banc `batiments` rapide Ville 0 écart, Corniche 0 écart (aucune mémoire graphique perdue) ; captures sans refus identiques à `main` hors ligne de mesure (RG-09).
 - Limites : refus en cascade (mémoire pleine après le 1er refus, règle de WFS-418) ; l'atlas refusé retire aussi les devantures (`commerces.cpp`, secours existant) ; banc PC seulement.
+
+### 2026-11-14 20:02:02 — WFS-446 : PR #417 refusée par le lead dev (lead-dev)
+- Revue du commit 310599ff : 38 captures « après » et 26 paires ouvertes ; tout le diff lu ; construction refaite (branche synchronisée), **142 tests CPU réussis** ; banc `batiments` rapide Ville refait : **0 écart**, +0,00 Mo après chaque refus, chaque secours écrit sa ligne.
+- Code sans défaut bloquant ; accroches `renderer.*` (6 lignes) et `vk.*` (4 lignes) acceptées.
+- **Refus pour deux preuves manquantes** : (1) capture « Tests CPU » et `qa/pr/WFS-446/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11) ; (2) RG-09 : banc `perf` Basse et Haute avant / après (appels, triangles, mémoire, chargement) non montré.
+- Statut : ↩️ Retour lead dev (PR #417) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
