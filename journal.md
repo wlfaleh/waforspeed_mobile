@@ -1859,3 +1859,10 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - Branche `feature/waforspeed-446` créée depuis main (2c893003) et poussée. Règles lues (RG-01 à RG-10).
 - Plan : paramètre « repli » par défaut à faux sur `loadCarModel` (trafic seulement à vrai), `uploadNiveaux` (route), piétons / conducteurs / enseignes par les fonctions `essayer…` de WFS-418 ; `bad_alloc` d'`initCuit` → kit ; étape 5 du banc `batiments` préfixée et sur la Corniche ; tests de refus simulé.
 - **Accroche annoncée dans `src/render/vk.*` (≤ 10 lignes)** : paramètre par défaut `repli = false` sur `VkCtx::uploadNiveaux` (tampon de transfert et image par `essayerBuffer` / `essayerImage`), car aucune fonction `essayer…` n'existe pour les niveaux KTX2.
+
+### 2026-11-14 18:31:05 — Début WFS-494 : garage, skins et skin offerte attribué (po-scrum-master)
+- **Demande** : nouvelle session `@dev` (agent dev-artiste-3d), Claude, agent dev3d (01Us6uCwV6), jamais eu de ticket.
+- **Choix** : classement 📋 des 40 : 1 à 5 fusionnés ou pris ; **6. WFS-494** prêt (WFS-493 #413 et WFS-504 #372 fusionnés ; l'entrée de 18:29 le croyait encore en attente). P1, E18.
+- **Zone** : `src/ui/garage_skin.*` (E5, un ticket à la fois sur ce panneau) + accroche E3 ≤ 10 lignes (skin offerte, sauvegarde), annoncée au journal. Textes par `ui::tr`, FR / EN. Règles : `regles-de-gestion/WFS-494.md`, `regles-de-gestion/E18-personnalisation.md`.
+- **Plan court** : rangée « Skin » (Aucune, Rallye, Camouflage, Drift Tokyo ; Néon nuit verrouillée « cadeau »), prix × classe ; fenêtre « Choisis ta skin offerte » ; achat ★ par voiture ; `donnerSkin()` ; parcours RC-E18-09 ; captures ≥ 3 jour / nuit, FR / EN ; PR ; lead dev.
+- **Aussi** : WFS-538 et WFS-496 passent ⏳ Prêt (dépendances fusionnées).
