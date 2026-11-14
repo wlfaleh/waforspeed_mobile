@@ -1895,3 +1895,6 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Demande de l'utilisateur** (urgente) : « le compteur de prochains cadeaux est figé ».
 - **Constat** : `texteHeures()` n'affiche que hh:mm (une mise à jour par minute) ; 2e cause éventuelle (menu non redessiné) à vérifier sur l'APK.
 - **Ticket** : WFS-547, P1 Urgent, E19 zone E8, ⏳ Prêt en tête, `@dev` (ou lead dev en renfort) ; 🟡 après fusion. Règles : `regles-de-gestion/WFS-547.md`.
+
+### 2026-11-14 20:26:45 — WFS-547 annulé (po-scrum-master)
+- **Ordre de l'utilisateur** : « pas besoin, enlève » (il lisait hh:mm comme minutes:secondes). Statut 🚫 Annulé ; aucun code touché ; le robot des archives le déplacera.

@@ -15,6 +15,7 @@ demande utilisateur :
 
 - Ticket urgent : le compteur de prochains cadeaux est figé, il ne bouge pas (2026-11-14 20:23 UTC).
 ( PO, 2026-11-14 20:23:40 UTC : c'est créé — **WFS-547** (P1 Urgent), en tête des tickets prêts. Cause vue dans le code : le compteur est bien recalculé, mais il n'affiche que les heures et les minutes (hh:mm), donc il ne change qu'une fois par minute et paraît figé. Le ticket le passe en **hh:mm:ss**, les secondes défilent dans le menu et sur l'écran du cadeau ; à minuit, la pastille « cadeau disponible » arrive tout de suite sans relancer le jeu. Le développeur vérifie aussi sur l'APK qu'il n'y a pas une 2e cause (écran pas redessiné). Pour lancer : ouvre une session `@dev`, elle recevra WFS-547 en premier. Après la fusion, tu le valides sur ton téléphone. )
+( PO, 2026-11-14 20:26:45 UTC : compris, **WFS-547 annulé** : tu pensais que c'était des minutes:secondes, le compteur en heures:minutes est bon. Rien ne change dans le jeu. )
 
 - Mode testeur : dans Réglages → mode diagnostic, un bouton qui ajoute 2500 étoiles à chaque clic.
 ( PO, 2026-11-14 10:57:05 UTC : c'est créé — **WFS-546** (P1 Urgent), juste après WFS-545 pour le prochain `@dev`. Bouton « +2500 ★ » dans le menu caché de diagnostic (5 touchers sur le titre « Réglages »), 2500 ★ à chaque appui, gardées dans la sauvegarde. Règles : `regles-de-gestion/WFS-546.md`. **Une question pour plus tard** : avant la sortie publique, faudra-t-il retirer ce bouton de la version Google Play ? Sans réponse, il reste caché comme tu l'as demandé. )
