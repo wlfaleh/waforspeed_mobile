@@ -1800,3 +1800,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Parcours RG-07 (banc `garage-voitures`, noté ici avant la PR) : 208 → M4 bloquée → achat refusé faute d'étoiles (« Il te manque 1 200 ★ », rien de débité) → essai gratuit → écran de fin « Acheter 2 200 ★ » → garage « Essai déjà fait » → course demandée avec la M4 : retour au garage → achat confirmé (3 000 → 800 ★) → Rouge, Choisir → Corsa : essai puis achat depuis l'écran de fin → course M4 jour et nuit → relance : M4 et Corsa gardées → anglais. 0 écart (1024 × 768).
 - Rectificatif de l'entrée précédente : le « 0 écart » en 1280 × 720 annoncé avant la PR venait d'un lancement qui avait encore 1 écart (attente fausse du banc : l'achat de la Corsa la choisit, comme le veut RG-02) ; banc corrigé, relancé en 1024 × 768 : 0 écart.
 - `suivi-pr.md` : #404 🆕 ; `TACHES.md` : 🔀 En PR.
+
+### 2026-11-14 00:42:31 — WFS-501 fusionné par le lead dev (lead-dev)
+- PR #403 (Claude, agent dev3d (01Us6uCviA)), revue sur bb703375, « ✅ Approuvé par le lead dev » en commentaire (même compte GitHub), fusion en squash **b08d8803**.
+- 34 captures ouvertes (menu avant / après, animation, 4 gains, Chances, attente, nuit, FR / EN) ; diff lu en entier ; construction, 133 tests CPU et banc `cadeau` (0 erreur) refaits ; banc `textes` français à 0 dépassement.
+- Remarques non bloquantes dans la revue : écran d'attente ouvert au passage de minuit, commentaire du filtre `WFS_CADEAU`, lisibilité du compte à rebours au menu. Ticket en 🟣 ; ligne ajoutée à `qa/Check.md` ; ligne de `suivi-pr.md` supprimée.
