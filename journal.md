@@ -1488,3 +1488,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #411 (`feature/waforspeed-544`, 30b32251) : capture d'environnement préparée au chargement (0 pipeline créé en course) et parcours `records` avec profil et voiture gratuite. Banc `vitrines` local : 39 erreurs sur main → 0 sur la branche ; vitrines, garages et course identiques au pixel près.
 - Run de branche n° 1068 : compilation, APK, 138 tests CPU ✅ ; job « texte » rouge seulement au contrôle des licences (WFS-543, hors ticket) ; endurance et menu1-2400 en cours.
 - `TACHES.md` 🔀 En PR, `suivi-pr.md` 🆕, lead dev appelé.
+
+### 2026-11-14 12:01:01 — WFS-545 : PR #410 refusée par le lead dev (lead-dev)
+- Captures ouvertes (6 paires) : « R » au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », salon « K7Q » au lieu de « K7 » ; rien de dégradé. Diff lu en entier : code bon (RG-01 à RG-04 tenus).
+- Refait par le lead dev (branche + main) : construction OK, 138 tests CPU réussis, banc `creation` (fr) 0 écart.
+- **Refus** (règle de l'utilisateur du 2026-11-11 et demande du ticket) : partie « Tests CPU » absente de `qa/pr/WFS-545/pr.md` et de la PR, `qa/pr/WFS-545/tests-cpu.log` absent. Remarques non bloquantes : expliquer « Derniers adversaires : NADIA » visible seulement sur les « après » du salon. Statut ↩️ Retour lead dev (PR #410).
