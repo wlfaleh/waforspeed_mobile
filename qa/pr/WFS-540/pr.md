@@ -12,16 +12,31 @@
   - `src/game/player.*`, `src/ui/hud.cpp` (1 ligne) (RG-05) : `reculVoulu` ; un choc ne met jamais « R » ; recul dû à un choc ≤ 5 km/h, amorti en < 1 s (voiture du joueur seulement ; l'ordinateur garde les règles du jeu web).
   - `src/game/poursuite_system.cpp` : branchement (adhérence de la saison, cap du joueur), cap propre de la caisse dessiné (RG-08 : avant, celui de la route), roues suivies avec le vrai cap, bandeau d'arrestation, ligne « ARRÊTÉ PAR LA POLICE » sur l'écran de fin ; `assets/textes/fr.txt`, `en.txt` : 2 textes.
   - Tests : `tests/test_police_540.cpp` (nouveau), `tests/test_police_461.cpp`, `tests/test_poursuite.cpp` adaptés ; banc de captures `WFS_BANC=police-540` (`src/game/police_540_banc.*`, accroche dans `desktop_main.cpp`).
+- **Corrections après la revue du lead dev** (https://github.com/wlfaleh/waforspeed_mobile/pull/406#pullrequestreview-5900941227) :
+  1. Tests CPU : section « Tests CPU » ci-dessous et sortie complète dans `qa/pr/WFS-540/tests-cpu.log`.
+  2. RG-09, camion : **cause** : en changeant de file, le policier jugeait la gêne sur sa file de départ (bande de ±2,7 m, sans tenir compte de son cap) : le camion de la file du milieu le faisait freiner jusqu'à l'arrêt, en biais, à moitié sorti de la file. **Correction** : la gêne se juge là où sera sa voiture en arrivant à l'obstacle (son cap, borné à la file visée) avec la largeur réelle des deux voitures ; en changement de file, il avance au pas en braquant tant que les carrosseries ne se touchent pas ; s'il reste coincé l'avant contre l'obstacle (> 1 s), il fait comme un conducteur : 4 m de marche arrière braquage à fond (l'avant pivote vers la file libre), puis il repart. Cas exact du banc ajouté au test (E) (joueur au pas 25 m après le camion, police à 66 km/h dans une file barrée, voiture du trafic arrêtée derrière le camion) : l'ancien code y reste bloqué (ÉCHEC), le nouveau passe en 13,4 s, 0 aller-retour, 0 recouvrement. Suite `police540-camion-*` recadrée (vue de haut, de côté) : la police est visible, hors du compteur ; dans le jeu, elle passe par la file libre en ≈ 3,5 s.
+  3. RG-05, test (D) : nouveau cas d'un **vrai choc qui fait reculer** : une autre voiture (contact du jeu, `duel::contacter`) recule à 8-25 km/h dans l'avant de la voiture arrêtée du joueur (24 cas, 63 chocs, GAZ une fois sur 4) : le bridage de `player.cpp` sert (764 pas), recul ≤ 4,9 km/h, arrêt en moins d'1 s, jamais de « R ». Sans le bridage, le même test échoue (recul jusqu'à 20 km/h, 3 324 pas au-delà de 5 km/h).
+  - Non bloquant : suite « contourne » recadrée (vue de côté) : la police n'est plus sous le compteur.
 - **Comment c'est vérifié** :
-  - `test_police_540` (Corniche, même enchaînement que la Poursuite) — **OK** : 60 s de poursuite, 3 polices, trafic : hors glisse (pneus à < 50 % de leur adhérence, ≤ 0,2 g) vitesse latérale à l'essieu arrière ≤ 0,48 m/s, écart cap / déplacement ≤ 0,93° ; en virage appuyé (jusqu'à 0,95 g) dérive arrière ≤ 6,3° (réel : 3 à 5° vers 0,8 g) ; 0 saut de position, 0 décalage à l'arrêt, 0 pas hors chaussée, ≤ 141 km/h ; arrestation 4,0 s après le début du compte (police à 5,4 m) ; joueur encadré + GAZ : > 10 km/h en 0,57 à 0,81 s (Golf, 208, Range Rover) ; **200 chocs sans frein : 0 « R »**, recul 0 km/h ; camion : 0 aller-retour, 0 recouvrement, arrêt 5,5 m derrière quand tout est barré ; joueur qui recule : police ≤ 11 km/h en arrière, jamais collée, toujours sur la chaussée.
-  - `test_police_461` OK (fiche : 208 km/h, 0-100 8,7 s, 100-0 38,7 m ; contacts : 0 glisse due à la police), `test_course5` OK ; **tous les tests CPU : 136 / 136** (`tools/qa/tests_cpu.sh build`, branche synchronisée avec main 1590cf7).
+  - `test_police_540` (Corniche, même enchaînement que la Poursuite) — **OK** : 60 s de poursuite, 3 polices, trafic : hors glisse (pneus à < 50 % de leur adhérence, ≤ 0,2 g) vitesse latérale à l'essieu arrière ≤ 0,45 m/s, écart cap / déplacement ≤ 0,74° ; en virage appuyé (jusqu'à 0,97 g) dérive arrière ≤ 6,3° (réel : 3 à 5° vers 0,8 g) ; 0 saut de position, 0 décalage à l'arrêt, 0 pas hors chaussée, ≤ 153 km/h ; arrestation 4,0 s après le début du compte (police à 5,4 m) ; joueur encadré + GAZ : > 10 km/h en 0,57 à 0,81 s (Golf, 208, Range Rover) ; **200 chocs sans frein : 0 « R »** ; 63 chocs d'une voiture qui recule dans le joueur : recul ≤ 4,9 km/h, arrêt < 1 s, 0 « R » ; camion : 0 aller-retour, 0 recouvrement, scène du banc passée en 13,4 s, arrêt 5,5 m derrière quand tout est barré ; joueur qui recule : police ≤ 11 km/h en arrière, jamais collée, toujours sur la chaussée.
+  - `test_police_461` OK (fiche : 208 km/h, 0-100 8,7 s, 100-0 38,7 m ; contacts : 0 glisse due à la police), `test_course5` OK ; **tous les tests CPU : 138 / 138** (voir « Tests CPU »).
   - Captures avant / après ci-dessous (59 paires, même banc compilé sur main).
 - **Limites et risques connus** :
+  - Images « avant » : même banc compilé sur main 59f684d ; depuis, main n'a changé dans la Poursuite que le bloc « Score » de l'écran de fin (WFS-537, 2 lignes), sans effet sur la police.
   - **Réalisme assumé (RG-00)** : une 208 de 130 ch ne rattrape plus un joueur rapide dans les virages (avant : 70 m/s² d'accélération, 1,8 g en virage). Un joueur qui roule vite la distance ; une autre voiture prend le relais à 220 m (hors de vue). Deux tests anciens fondés sur l'accélération irréaliste sont adaptés (joueur à 110 / 120 km/h au lieu de 160) : écrit dans les tests.
   - Mesure RG-08 : la vitesse latérale se mesure à l'essieu arrière (au centre, une voiture qui tourne a toujours b·r de vitesse latérale) et « hors glisse » = pneus à moins de la moitié de leur adhérence et ≤ 0,2 g ; en virage appuyé, c'est la dérive réelle des pneus (bornée à 8°). À valider par le PO si la lecture de la RG diffère.
   - Le joueur garde la conduite d'avant (WFS-258 : `g_conduiteMonde` faux) ; la police utilise le modèle réaliste, comme le demande la RG-00.
   - Effet sur le joueur au contact : toujours `duel::contacter` (WFS-461) ; la police cède entièrement (elle prend toute l'impulsion).
   - Non vérifié sur téléphone : statut **🟡 À valider (utilisateur)** après fusion (même parcours que ses vidéos).
+
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec main (974a8485), sortie complète : [`qa/pr/WFS-540/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-540/qa/pr/WFS-540/tests-cpu.log) (avec la sortie entière de `test_police_540` à la fin).
+
+```
+tests CPU : 138 test(s) réussi(s) en 400 s
+police de la Poursuite, vraie voiture (WFS-540) : OK
+```
 
 ## Captures pour le lead dev (59 après, 59 avant)
 
