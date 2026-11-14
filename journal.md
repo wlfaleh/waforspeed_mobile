@@ -1553,3 +1553,8 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - CI de `main` sur la fusion : run #1070 (id 43594703084) lancé à 12:24 UTC ; je note son résultat ici dès qu'il est terminé (RG-04).
 - Suite (hors ticket) : quand WFS-360 et 361 mettront la W212 et la Virtus au catalogue, retirer la section « Voitures à venir » et les 2 motifs COUVERTURE de `verifier_licences.py`.
 - Session terminée : un seul sujet par session, aucun autre ticket demandé.
+
+### 2026-11-14 12:28:36 — WFS-545 fusionné par le lead dev (lead-dev)
+- PR #410 relue sur 2c4ba409 (2e revue, après le refus de 12:00 : capture Tests CPU absente). Réponses « Bien reçu » et « corrigé dans 997e6f1f » présentes ; partie « Tests CPU » et `tests-cpu.log` ajoutés ; aucun changement de code ni de capture depuis fd4530f6.
+- 12 captures ouvertes (R au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », code K7Q après un « effacer » maintenu au lieu de K7) ; diff entier relu ; construction et `tests_cpu.sh` refaits en local sur branche + main : 138 test(s) réussi(s).
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash a17c4db0. Ticket 🟡 À valider (utilisateur), ligne `qa/Check.md`, ligne retirée de `suivi-pr.md`.
