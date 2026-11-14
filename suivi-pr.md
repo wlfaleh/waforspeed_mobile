@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #406 | WFS-540 | Claude, agent conduite (01UY1Vv3RA) | ↩️ Retour lead dev | e1afcf4 | 02:37 |
+| #406 | WFS-540 | Claude, agent conduite (01UY1Vv3RA) | 🔁 Corrigée, à relire | 09c76dfc | 03:18 |

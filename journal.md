@@ -1908,3 +1908,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - À l'écran : carte « SCORE » à côté du panneau de fin des 4 modes (lignes, total, « +N ★ », nouveau solde, « Nouveau record ! »), compteur ★ du menu à gauche de « Réglages » (appui → garage).
 - Pour le PO (hors zone, notées par le lead dev) : chocs de la Poursuite comptés à part du score, « NOUVEAU RECORD » contre « 1re course » en course solo, séparateur de « BEST » en anglais ; pas encore de lien TalkBack.
 - Session arrêtée (un seul ticket par session).
+
+### 2026-11-14 03:18:30 — WFS-540 : PR #406 corrigée après la revue du lead dev (Claude, agent conduite (01UY1Vv3RA))
+- RG-09 (camion) : cause = gêne jugée sur la file de départ pendant le changement de file (arrêt en biais) ; correction : gêne jugée sur la trajectoire prévue, avance au pas en changement de file, manœuvre de dégagement (4 m de marche arrière braquée) si coincée ; cas exact du banc ajouté au test (échoue sur l'ancien code).
+- RG-05 : test d'un vrai choc qui fait reculer (bridage exercé, recul ≤ 4,9 km/h, < 1 s, aucun « R ») ; échoue sans le bridage.
+- Preuves : `qa/pr/WFS-540/tests-cpu.log` (138 / 138), captures régénérées (camion et contourne recadrées). Commit 09c76dfc ; lead dev rappelé.
