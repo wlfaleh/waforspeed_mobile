@@ -15,7 +15,6 @@
 namespace wfs::plaque_joueur {
 namespace {
 
-constexpr float PX_MM = IMAGE_L / PLAQUE_L_MM;   // ≈ 1,97 px par mm
 
 // couleurs (sRGB 8 bits) : blanc cassé d'un film rétroréfléchissant neuf, noir d'encre sérigraphiée, anthracite RAL 7016
 constexpr uint8_t FOND[3] = {236, 234, 226}, ENCRE[3] = {22, 22, 24}, BANDE[3] = {56, 62, 66}, MOTIF[3] = {196, 200, 204};
@@ -34,7 +33,8 @@ float grain(int x, int y) { uint32_t h = (uint32_t)x * 374761393u + (uint32_t)y 
 
 // pose les glyphes d'une chaîne dans un masque (couverture 0..1), à l'échelle sx, sy (px par unité de la police), ligne de base
 // en (x0, base) ; rend la largeur posée (px)
-float poser(const stbtt_fontinfo& f, const std::string& s, float sx, float sy, float x0, float base, float ecart, std::vector<float>& masque) {
+// L × Hi : taille du masque (px) ; WFS-484 : résolution réglable
+float poser(const stbtt_fontinfo& f, const std::string& s, float sx, float sy, float x0, float base, float ecart, int L, int Hi, std::vector<float>& masque) {
     float x = x0;
     std::vector<unsigned char> tampon;
     for (size_t i = 0; i < s.size(); i++) {
@@ -49,8 +49,8 @@ float poser(const stbtt_fontinfo& f, const std::string& s, float sx, float sy, f
             for (int j = 0; j < h; j++)
                 for (int k = 0; k < w; k++) {
                     const int px = (int)std::floor(x) + bx0 + k, py = (int)std::lround(base) + by0 + j;
-                    if (px < 0 || py < 0 || px >= IMAGE_L || py >= IMAGE_H) continue;
-                    float& m = masque[(size_t)py * IMAGE_L + px];
+                    if (px < 0 || py < 0 || px >= L || py >= Hi) continue;
+                    float& m = masque[(size_t)py * L + px];
                     m = std::max(m, tampon[(size_t)j * w + k] / 255.f);
                 }
         }
@@ -72,8 +72,13 @@ float largeurTexte(const stbtt_fontinfo& f, const std::string& s, float sx, floa
 
 } // namespace
 
-bool dessinerImage(const std::string& brut, const uint8_t* ttf, ImagePlaque& im) {
+bool dessinerImage(const std::string& brut, const uint8_t* ttf, ImagePlaque& im, int largeur) {
     im = ImagePlaque{};
+    // WFS-484 : résolution demandée (atlas des autres voitures : 256 × 54 px) ; plaque du joueur : 1024 × 216 px (≈ 1,97 px par mm)
+    const int IMAGE_L = std::clamp(largeur, 64, wfs::plaque_joueur::IMAGE_L);
+    const int IMAGE_H = (int)std::lround(IMAGE_L * (float)wfs::plaque_joueur::IMAGE_H / wfs::plaque_joueur::IMAGE_L);
+    const float PX_MM = IMAGE_L / PLAQUE_L_MM;
+    im.largeur = IMAGE_L; im.hauteur = IMAGE_H;
     stbtt_fontinfo f;
     if (!ttf || !stbtt_InitFont(&f, ttf, stbtt_GetFontOffsetForIndex(ttf, 0))) return false;
     std::string texte;
@@ -99,7 +104,7 @@ bool dessinerImage(const std::string& brut, const uint8_t* ttf, ImagePlaque& im)
         int x0b, y0b, x1b, y1b; stbtt_GetCodepointBox(&f, texte[0], &x0b, &y0b, &x1b, &y1b);
         const float centre = ((zoneG + zoneD) / 2 + PLAQUE_L_MM / 2) * PX_MM;
         const float base = IMAGE_H / 2.f + hauteur * PX_MM / 2;   // capitales centrées en hauteur
-        poser(f, texte, sx, sy, centre - w / 2 - x0b * sx, base, ecart, texteM);
+        poser(f, texte, sx, sy, centre - w / 2 - x0b * sx, base, ecart, IMAGE_L, IMAGE_H, texteM);
     }
     im.hauteurTexteMm = texte.empty() ? 0 : hauteur;
     im.largeurTexteMm = w / PX_MM;
@@ -109,7 +114,7 @@ bool dessinerImage(const std::string& brut, const uint8_t* ttf, ImagePlaque& im)
     {
         const float sm = 10.f / capitale * PX_MM;   // capitales de 10 mm
         const float lw = largeurTexte(f, "WFS", sm * CONDENSE, 0.8f * PX_MM);
-        poser(f, "WFS", sm * CONDENSE, sm, bandeCx * PX_MM - lw / 2, (PLAQUE_H_MM - 17.f) * PX_MM, 0.8f * PX_MM, motifM);
+        poser(f, "WFS", sm * CONDENSE, sm, bandeCx * PX_MM - lw / 2, (PLAQUE_H_MM - 17.f) * PX_MM, 0.8f * PX_MM, IMAGE_L, IMAGE_H, motifM);
     }
     // ---- assemblage : couleur et hauteur (mm)
     std::vector<float> H(N, 0.f);
@@ -145,7 +150,9 @@ bool dessinerImage(const std::string& brut, const uint8_t* ttf, ImagePlaque& im)
         }
     // relief des caractères : masque adouci (flou 3 × 3 deux fois : bords arrondis de l'emboutissage, ≈ 1 mm)
     std::vector<float> m = texteM, tmp(N);
-    for (int passe = 0; passe < 2; passe++) {
+    // WFS-484 : flou de ≈ 1 mm : 2 passes à 2 px / mm, 1 à 1 px / mm, aucune en dessous
+    const int passes = IMAGE_L >= 1024 ? 2 : IMAGE_L >= 512 ? 1 : 0;
+    for (int passe = 0; passe < passes; passe++) {
         for (int y = 0; y < IMAGE_H; y++)
             for (int x = 0; x < IMAGE_L; x++) {
                 float s = 0; int n = 0;

@@ -10,6 +10,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"   // nowSeconds (WFS-74)
 #include "../render/vehicule_plaque.h"   // WFS-483 : plaque 3D du joueur
+#include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../render/model_loader.h"
 #include "../render/eclairage_physique.h"   // WFS-151 (accroche E13)
 #include "course_system.h"   // WFS-12 : ralenti après un accident
@@ -61,6 +62,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     { sols::Climat c; groundMat_ = r.makeMaterial(sols::climatCarte(mapId, c) ? sols::materiau(c) : m, nullptr, nullptr, nullptr); }   // WFS-383 (accroche) : sol de la carte
     conducteurs::preparer(r);   // WFS-73 (accroche) : homme / femme en pose assise
     plaque_joueur::preparer(r);   // WFS-483 (accroche) : plaque 3D du joueur
+    plaques_autres::preparer(r, mapId);   // WFS-484 (accroche) : atlas des plaques des autres voitures (RG-05)
     m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f}; shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     {
         // carré 1x1 au sol (uv 0..1), légèrement surélevé
@@ -111,6 +113,7 @@ void Game::shutdown() {
     route::liberer(*r_);   // WFS-205 (accroche) : textures de route rendues (matériaux de Game et des cartes déjà rendus)
     conducteurs::liberer(*r_);   // WFS-73 (accroche)
     plaque_joueur::liberer(*r_);   // WFS-483 (accroche)
+    plaques_autres::liberer(*r_);   // WFS-484 (accroche)
     r_ = nullptr;
 }
 
@@ -413,6 +416,7 @@ void Game::render(double time) {
         if (!trottoirPropre) r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
+    plaques_autres::entreCourses(*r_, ecran_ == Ecran::Course || ecran_ == Ecran::Pause || ecran_ == Ecran::Fin);   // WFS-484 (accroche, RG-05) : avant tout dessin de plaque
     systemsRender(eye, look, fp.view, fp.proj, time);
     if (dessin3d && (!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)

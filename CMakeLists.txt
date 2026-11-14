@@ -180,6 +180,8 @@ else()
   target_compile_definitions(test_police_bandes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_plaque_joueur tests/test_plaque_joueur.cpp src/render/vehicule_plaque_defs.cpp src/render/vehicule_plaque_geo.cpp src/render/vehicule_plaque_image.cpp src/game/roues.cpp)   # WFS-483 : plaque 3D du joueur
   target_compile_definitions(test_plaque_joueur PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_plaques_autres tests/test_plaques_autres.cpp src/render/vehicule_plaques_tirage.cpp src/render/vehicule_plaque_image.cpp src/game/profil.cpp)   # WFS-484 : plaques au hasard des autres voitures
+  target_compile_definitions(test_plaques_autres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_peinture2 tests/test_peinture2.cpp src/render/vehicule_peinture2.cpp)   # WFS-488 : couleur secondaire (toit, rétroviseurs)
   target_compile_definitions(test_peinture2 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_vehicule_lod tests/test_vehicule_lod.cpp)   # WFS-158 (RG-04) : 4 niveaux de détail des voitures

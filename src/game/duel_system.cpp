@@ -9,6 +9,7 @@
 #include "../core/system.h"
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
+#include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../ui/text.h"
 #include "course_system.h"
 #include "course5.h"   // WFS-189 : rechargerNitro
@@ -62,8 +63,9 @@ public:
     }
 
     // modèles des adversaires chargés hors de l'image (pas de chargement entre beginFrame et endFrame)
-    void update(double dt, const GameView&) override {
+    void update(double dt, const GameView& vue) override {
         if (g_banc) g_banc->salon->now += dt * 1000;
+        if (vue.ecran != Ecran::Course) { g_session.setPlaque(sauvegarde().profil.plaque); for (const duel::PeerView& p : g_session.others()) plaques_autres::plaqueDuel(p.id, duel::str(p.f, "pl")); }   // WFS-484 (accroche, RG-03) : salon
         if (!r_) return;
         for (const auto& [id, gh] : g_session.ghosts()) {
             if (models_.count(gh.car)) continue;
@@ -138,6 +140,7 @@ public:
             // WFS-452 (RG-02, RG-03) : roues qui tournent (distance interpolée, rayon de la roue du modèle) et qui braquent
             const RouesPose rp = roues::poseSuivi(suivi_[id], g.alpha, gh.rdRendu(g.alpha), it->second.nRoues ? it->second.roues[0].rayon : roues::RW_DEFAUT);
             r.draw(it->second, m, &paint, &rp);
+            plaques_autres::dessiner(r, cd.id, m, 1.f, plaques_autres::caseDuel(id), plaques_autres::Genre::Adversaire, g.night, g.camPos);   // WFS-484 (accroche, RG-03)
             conducteurs::ajouter(it->second, m, cd.id, (uint32_t)std::hash<std::string>{}(id) | 1u);   // WFS-73 (accroche) : adversaire
         }
     }

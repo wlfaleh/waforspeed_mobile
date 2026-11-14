@@ -135,6 +135,7 @@ public:
     Status status() const { return st_; }
     const std::string& code() const { return code_; }
     const std::string& nick() const { return nick_; }
+    void setPlaque(const std::string& p);   // WFS-484 (accroche, RG-03) : ma plaque, envoyée dans la présence (« pl », facultatif)
     bool host() const { return host_; }
     const std::map<std::string, Ghost>& ghosts() const { return ghosts_; }
     std::vector<PeerView> others() const;
@@ -154,6 +155,7 @@ private:
     void followHost();
     std::unique_ptr<Transport> t_;
     std::string code_, nick_ = "Pilote", car_ = "golf", paint_, map_;
+    std::string plaque_;   // WFS-484 (accroche)
     bool host_ = false;
     int km_ = 4, round_ = 0;
     Status st_ = Status::Lobby;
