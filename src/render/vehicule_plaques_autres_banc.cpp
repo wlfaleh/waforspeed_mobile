@@ -7,7 +7,7 @@
 //   - plaques-fantome-jour : fantôme du record (plaque du joueur, translucide) 5 m devant.
 // WFS_PLAQUES_AUTRES_AVANT=1 : plaques des autres voitures masquées (images « avant » : rendu de main, où ce banc n'existe pas).
 // WFS_BANC=plaques-autres-mesure (RG-05) : Corniche, Basse, Poursuite (trafic dense de la Poursuite en Basse, police), vue
-// Poursuite ; 180 images de chauffe puis 30 paires de blocs de 20 images chronométrées (update + render), plaques des autres
+// Poursuite, joueur dans le trafic le plus dense (trafficBenchPlace) ; 180 images de chauffe puis 30 paires de blocs de 20 images chronométrées (update + render), plaques des autres
 // voitures dessinées et masquées en alternance (même partie : la dérive de la machine s'annule) ; écart au journal et dans
 // plaques-autres-mesure.txt (exigence : ≤ +0,5 ms).
 // Domaine : E10 Véhicules ; appelé par desktop_main.cpp (accroche). N'utilise que des accroches de banc déjà sur main
@@ -162,6 +162,9 @@ void benchPlaquesAutresMesure(Game& g, Renderer& r, const std::string& out) {
     g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
     double t = 1000;
     for (int k = 0; k < 180; k++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }
+    // joueur placé 8 m derrière la voiture qui a le plus de voitures devant elle (120 m) : trafic au plus dense devant la caméra
+    trafficBenchPlace(8, -0.3, 0, true);
+    for (int k = 0; k < 30; k++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }
     constexpr int PAIRES = 30, IMAGES = 20;
     std::vector<double> ecarts;
     double somme[2] = {0, 0};
