@@ -1862,3 +1862,49 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 02:04:47 — Statuts automatiques, CI main #1061 (robot statuts)
 - Run rouge (push, commit e454b9f), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 02:19:03 — WFS-540 : PR #406 ouverte, police = vraie voiture (Claude, agent conduite (01UY1Vv3RA))
+- Fait : police simulée par `physique::pas` (moteur de conduite du joueur, fiche de sa 208), policier = gaz / frein / volant / marche arrière seulement ; contacts par impulsions ; arrestation (4 s sous 5 km/h à moins de 8 m, compte à rebours FR / EN) ; pénalité au contact réel seulement ; plus de « R » après un choc (`reculVoulu`, 1 ligne de HUD) ; cap propre dessiné.
+- Fichiers : `src/game/poursuite.*`, `poursuite_system.cpp`, `player.*`, `src/ui/hud.cpp` (1 ligne), textes FR / EN, `tests/test_police_540.cpp` (nouveau), `test_police_461.cpp`, `test_poursuite.cpp`, banc `police-540` (`src/game/police_540_banc.*`, accroche `desktop_main.cpp`), `CMakeLists.txt`.
+- Vérification : tests CPU 136 / 136 (branche synchronisée avec main) ; banc `police-540` avant / après (59 paires, `qa/pr/WFS-540/`), rendu lavapipe local.
+- Limites : une 208 réelle ne rattrape plus un joueur rapide dans les virages (relais à 220 m) ; mesure RG-08 faite à l'essieu arrière, « hors glisse » = pneus à < 50 % de leur adhérence (à valider par le PO) ; non testé sur téléphone (🟡 après fusion). CI de `main` #1061 rouge (banc-essai texte) avant cette PR : pas de lien avec WFS-540.
+
+### 2026-11-14 02:37:28 — WFS-540 : PR #406 refusée par le lead dev (lead-dev)
+- Relu : tout le diff, les 59 paires de captures, branche synchronisée construite et testée (136 test(s) réussi(s), `test_police_540` OK). RG-00 tenue (aucune écriture de la position / vitesse / cap de la police hors `poser` et `projeter`).
+- Refus (revue https://github.com/wlfaleh/waforspeed_mobile/pull/406#pullrequestreview-5900941227) : (1) section « Tests CPU » et `qa/pr/WFS-540/tests-cpu.log` absentes ; (2) RG-09 : sur `police540-camion-08` à `-14` (après), la police reste arrêtée en biais derrière le camion alors que la file de droite est libre, et elle est cachée sous le compteur ; cas à corriger et à ajouter au test (E) ; (3) RG-05 : le test (D) ne passe jamais dans le nouveau code (recul maxi 0,0 km/h), ajouter un vrai choc qui fait reculer.
+- Acceptés : mesure RG-08 à l'essieu arrière, anciens tests adaptés (vraie 208), relais à 220 m hors de vue, CI de main déjà rouge (#1060, #1061).
+
+### 2026-11-14 02:47:12 — Statuts automatiques, CI main #1062 (robot statuts)
+- Run rouge (push, commit f39336c), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-491, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 02:47:59 — WFS-499 : retour du lead dev corrigé, PR #404 à relire (Claude, agent dev3d (01Us6uCxU3))
+- Point 1 : bancs `garage-couleurs` (WFS-489) et `garage-finitions` (WFS-491, fusionné entre-temps) : sauvegarde active, ils possèdent maintenant les voitures qu'ils utilisent (aucun contrôle retiré) ; lancés en entier sur la branche : **0 écart** chacun.
+- Point 2 : à la sortie de la course d'essai (écran de fin → menu), la voiture de la partie redevient celle de la sauvegarde ; garde-fou : salon du duel quitté (`duelSession().leave()`) avant le garage. Banc `garage-voitures` : « Rejouer » → garage, duel (salon en mémoire) → pas de course + salon quitté, fin d'essai → Menu → voiture possédée ; **0 écart en 1280 × 720 et en 1024 × 768**.
+- Point 3 : élision « Acheter l'Orion Corsaire » (accents compris), 4 cas de test. Remarques : cadenas au-dessus des points, textes agrandis, espace insécable dans les prix, carte de prix hors de la flèche « suivante ».
+- Synchronisations avec `main` : conflits avec WFS-491 (finitions : `garage_commun.h`, `garage_couleur.cpp`, `garage_achat.h`, textes, CMake, `garage.h`) résolus en gardant les deux ; WFS-484 sans conflit. 136 tests CPU réussis ; 81 captures « après », 45 « avant ». Commit à relire 37c2392f ; réponse point par point dans la PR ; `suivi-pr.md` 🔁.
+
+### 2026-11-14 02:52:43 — WFS-537 : 2e retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
+- Conflit avec WFS-501 (cadeau du jour) résolu en gardant les deux : menu `CADEAU = 5`, `COMPTEUR = 6` ; bancs `cadeau` et `score-fin` ; compteur caché sous l'écran du cadeau.
+- Vérifié : `score-fin` vert (2400 × 1080, 1280 × 720), `textes-menus` et `textes-course` VERTS, banc `cadeau` code 0, tests CPU 136 / 136 ; captures refaites.
+
+### 2026-11-14 02:59:42 — WFS-499 fusionné par le lead dev (lead-dev)
+- PR #404, 2e revue sur 37c2392f : les 3 points du refus corrigés (banc `garage-couleurs` à 0 écart en entier, voiture de la sauvegarde remise après l'essai et salon du duel quitté par le garde-fou, élision « l'Orion »). 81 captures « après » et 45 « avant » ouvertes, diff relu, 136 tests CPU refaits sur 37c2392f.
+- « ✅ Approuvé par le lead dev » en commentaire (même compte GitHub), fusion en squash 4bc6a696. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+- Remarques non bloquantes (QA / PO) : Pause → Menu pendant l'essai et « Retour » du garage après le garde-fou ne remettent pas la voiture de la sauvegarde (détour par le garage) ; `tests-cpu.log` sans le commit testé.
+
+### 2026-11-14 03:00:09 — WFS-499 : fin, session terminée (Claude, agent dev3d (01Us6uCxU3))
+- PR #404 fusionnée par le lead dev à la 2e revue (squash 4bc6a696) ; WFS-499 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
+- À surveiller (remarques du lead dev, pour un ticket séparé si le PO le veut) : quitter l'essai par Pause → Menu, ou « Retour » au garage après le garde-fou, laisse la voiture bloquée comme voiture de la partie (la course suivante rouvre le garage sur elle, aucune course ne part avec elle) ; solde en haut à droite sur un néon du décor ; pas de capture 2400 × 1080.
+- Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-14 03:07:35 — WFS-537 fusionné par le lead dev (lead-dev)
+- PR #402 (Claude, agent dev3d (01UY1Vv4Hv)) relue à la 3e revue sur c2a6c510 : conflit avec WFS-501 bien résolu (`CADEAU = 5`, `COMPTEUR = 6`, les deux bancs), compteur caché sous l'écran du cadeau.
+- Captures ouvertes (menu avec « Cadeau du jour » et compteur, cadeau, menus FR / EN, « Crée ton pilote », fins des 4 modes), diff complet lu ; construction, 136 tests CPU, bancs `score-fin` (0 échec) et `cadeau` (code 0) refaits en 1280x720.
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash 4069c33c. WFS-537 🟣 ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 03:08:09 — WFS-537 : fusionné (#402), session terminée (Claude, agent dev3d (01UY1Vv4Hv))
+- PR #402 approuvée et fusionnée en squash par le lead dev (4069c33c) après 2 retours corrigés (synchronisation avec WFS-481 puis WFS-501). Ticket 🟣, ✅ après les bancs du matin.
+- À l'écran : carte « SCORE » à côté du panneau de fin des 4 modes (lignes, total, « +N ★ », nouveau solde, « Nouveau record ! »), compteur ★ du menu à gauche de « Réglages » (appui → garage).
+- Pour le PO (hors zone, notées par le lead dev) : chocs de la Poursuite comptés à part du score, « NOUVEAU RECORD » contre « 1re course » en course solo, séparateur de « BEST » en anglais ; pas encore de lien TalkBack.
+- Session arrêtée (un seul ticket par session).

@@ -22,7 +22,7 @@ constexpr float PASTILLE = 30, ECART = 8, LIGNE_PRIX = 14, ONGLET_H = 30, CHEVRO
 const std::string& nomCouleur(int p) { return ui::tr(("couleur." + std::string(PAINTS[p].id)).c_str()); }
 } // namespace
 
-// petit cadenas (WFS-491 : partagé avec la rangée des finitions, garage_commun.h) (interface 2D) : anse en arc et corps aux coins coupés, cerné de sombre pour se lire sur toute couleur
+// petit cadenas (WFS-491 : partagé avec la rangée des finitions, garage_commun.h ; WFS-499 : aussi les voitures bloquées) (interface 2D) : anse en arc et corps aux coins coupés, cerné de sombre pour se lire sur toute couleur
 void cadenas(Renderer& r, float cx, float cy, float u, float op) {
     const vec4 fond = hex(BG, 0.85f * op), clair = hex(TEXTE, op);
     auto corps = [&](float marge, const vec4& c) {

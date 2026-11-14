@@ -1,6 +1,8 @@
 // WaForSpeed — garage : prix des pastilles et ce qui manque pour partir en course (WFS-489, RG-03) : voir garage_achat.h.
 // Calcul seul (catalogue et possession de WFS-487), sans rendu : testé par tests/test_garage_achat.cpp.
+// WFS-499 : voiture bloquée (testée par tests/test_garage_voitures.cpp).
 #include "garage_achat.h"
+#include "../game/boutique.h"
 
 namespace wfs::ecrans::garage {
 
@@ -25,6 +27,10 @@ Manque manque(const Sauvegarde& s, const EtatGarage& e) {
     if (e.peinture2 >= 0 && e.peinture2 < NB_PEINTURES) { ajouter(perso::objet(perso::ID_SECONDAIRE)); ajouter(perso::couleur(PAINTS[e.peinture2].id)); }
     if (e.finition > 0 && e.finition < BOUTIQUE_FINITIONS) ajouter(perso::objet(BOUTIQUE_FINITIONS_IDS[e.finition]));   // WFS-491
     return m;
+}
+
+bool voitureBloquee(const Sauvegarde& s, const char* carId) {
+    return carId && s.actif() && boutique::voitureVendue(carId) && !boutique::possedeVoiture(s, carId);
 }
 
 } // namespace wfs::ecrans::garage
