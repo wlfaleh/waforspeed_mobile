@@ -932,10 +932,10 @@ Limites : maquettes de création (rendu web), pas le moteur ; à valider avant t
 **Images** : `references/maquettes-R19/` — vue d'ensemble + 12 écrans (menu, mode, carte, duel, cadeau, garage couleur, garage skin, chargement, départ, fin, résultats, market).
 | N° | Écran | Proposition R19 |
 |---|---|---|
-| 01 | Menu | voiture du joueur en gros plan (ex. Cavallo SF-X caméléon, skin Rallye) ; console : deux boutons Start/Stop identiques « Course solo » et « Course en ligne », plaque « Garage » |
+| 01 | Menu | voiture du joueur en gros plan (ex. Cavallo SF-X caméléon, skin Rallye) ; console : deux boutons Start/Stop identiques « Course solo » et « Course en ligne », plaque « Garage » ; en haut à droite, étoiles, bouton **Réglages** (roue dentée) et bouton **Cadeau du jour** (pastille orange quand un cadeau attend), en verre dépoli ; **plus de bouton Crédits** au menu |
 | 02 | Choix du mode | cartes à plat avec vraies images du jeu ; Start/Stop « Suivant », autocollant « Retour » |
 | 03 | Choix de la carte | grande carte de la ville choisie (vraie image), les autres en aperçu sur les côtés ; interrupteur jour / nuit ; Start/Stop « Rouler » |
 | 04 à 12 | Duel, cadeau, garage (onglets), chargement, départ, fin, résultats, market | repris de R18, sans les petits titres bleus |
 | 13 | Garage, onglet Voiture | **onglets gardés** (Voiture en néon, Peinture, Finition, Skins en plaques), même studio que les autres onglets ; **contenu inspiré de l'écran actuel** : marque et numéro, nom, étiquette « Compacte », description, flèches, **caractéristiques en « cadrans fins »** (choix de l'utilisateur : puissance, 0 à 100, vitesse max dans trois cadrans à arc fin cyan → orange ; vitesse, accélération, maniabilité, puissance en barres fines graduées), dans un panneau en verre dépoli ; les couleurs restent dans l'onglet Peinture ; boutons : Start/Stop « Choisir », autocollant « Retour » ; précédent / suivant : **flèches de clignotant épurées** (verre ambré à fines stries, liseré chrome fin) : éteintes (ambre fumé) au repos, **allumées** avec un halo au toucher, deux clignotements et le « tic-tac » |
-| — | Crédits | **inchangé** (écran actuel du jeu) |
+| 14 | Réglages | écran actuel ; **bouton « Crédits » ajouté à côté de « Conditions d'utilisation »** (proposition de l'utilisateur) ; l'écran Crédits lui-même reste celui d'aujourd'hui |
 Proposition seulement : aucun code, aucun ticket ; l'utilisateur choisit et demande au PO.
