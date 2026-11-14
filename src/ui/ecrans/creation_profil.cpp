@@ -44,7 +44,8 @@ struct Zone {
 struct Etat {
     bool ouvert = false;
     Saisie saisie;
-    Zone zPseudo, zPlaque, zValider, zTouches[creation::NB_TOUCHES];
+    Zone zPseudo, zPlaque, zValider, zAnnuler, zTouches[creation::NB_TOUCHES];
+    bool modification = false;   // WFS-482 (RG-07) : ouvert par « Modifier » de l'écran Profil (profil déjà créé)
     int presse = -1;           // touche sous le doigt (retour visuel)
     double tPresse = -1;       // heure de l'appui (la touche s'éclaire 120 ms)
     double tOuvert = 0;        // heure d'ouverture (fondu d'entrée de 250 ms)
@@ -55,8 +56,13 @@ struct Etat {
 };
 Etat g_e;
 
-// RG-01 : écran à montrer : sauvegarde active (le banc d'essai sans WFS_BANC=creation ne la charge pas) et profil=0
-bool aMontrer(const GameView& g) { return g.ecran == Ecran::Menu && sauvegarde().actif() && !sauvegarde().profil.cree; }
+// RG-01 : écran à montrer : sauvegarde active (le banc d'essai sans WFS_BANC=creation ne la charge pas) et profil=0 ;
+// WFS-482 : ou modification demandée par l'écran Profil
+bool g_modifDemandee = false;
+bool aMontrer(const GameView& g) {
+    if (g.ecran != Ecran::Menu) g_modifDemandee = false;   // menu quitté : la modification est abandonnée (rien d'écrit)
+    return g.ecran == Ecran::Menu && sauvegarde().actif() && (!sauvegarde().profil.cree || g_modifDemandee);
+}
 
 // ouverture / fermeture selon la sauvegarde, appelée par les deux systèmes (touchers et dessin)
 void synchroniser(const GameView& g) {
@@ -65,7 +71,9 @@ void synchroniser(const GameView& g) {
         const Sauvegarde& s = sauvegarde();
         const std::string propose = Profil::pseudoPropose(s.nick);
         const uint32_t graine = (uint32_t)std::chrono::steady_clock::now().time_since_epoch().count() | 1u;
-        g_e.saisie.ouvrir(propose, graine);
+        g_e.modification = s.profil.cree;   // WFS-482 : profil déjà créé → modification (pseudo et plaque actuels)
+        if (g_e.modification) g_e.saisie.modifier(s.nick, s.profil.plaque);
+        else g_e.saisie.ouvrir(propose, graine);
         g_e.ouvert = true; g_e.presse = -1; g_e.tOuvert = g.time; g_e.valideNote = g_e.pointsNotes = false;
         g_e.filtre.oublier();
         WFS_LOG("création du profil (WFS-481) : écran ouvert (%s, pseudo proposé « %s », plaque proposée « %s »)", ui::langue::code(),
@@ -84,6 +92,7 @@ void valider() {
     s.nick = nick;
     s.enregistrer();
     g_e.valideNote = true;
+    g_modifDemandee = false;   // WFS-482 : modification écrite, retour à l'écran Profil
     WFS_LOG("création du profil (WFS-481) : « %s » : pseudo « %s », plaque « %s » enregistrés → menu", ui::tr("creation.valider").c_str(),
             s.nick.c_str(), s.profil.plaque.c_str());
 }
@@ -96,6 +105,11 @@ bool toucher(const Touch& t) {
     if (g_e.zPseudo.contient(t.x, t.y)) { g_e.saisie.choisirChamp(Champ::Pseudo); return true; }
     if (g_e.zPlaque.contient(t.x, t.y)) { g_e.saisie.choisirChamp(Champ::Plaque); return true; }
     if (g_e.zValider.contient(t.x, t.y)) { if (g_e.saisie.valide()) valider(); return true; }
+    if (g_e.modification && g_e.zAnnuler.contient(t.x, t.y)) {   // WFS-482 (RG-07) : « Annuler » : rien ne change
+        g_modifDemandee = false;
+        WFS_LOG("profil (WFS-482) : modification annulée, pseudo « %s » et plaque « %s » gardés", sauvegarde().nick.c_str(), sauvegarde().profil.plaque.c_str());
+        return true;
+    }
     const Touche* cl = creation::clavier(ui::langue::active());
     for (int i = 0; i < creation::NB_TOUCHES; i++)
         if (g_e.zTouches[i].contient(t.x, t.y)) {
@@ -153,7 +167,8 @@ void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const
 
 // RG-02 : aperçu 2D de la plaque (gabarit du jeu, en attendant la plaque 3D de WFS-483) : plaque claire 520 x 110 mm,
 // bord sombre, bande « WFS » à gauche (marque inventée du jeu, aucune marque ni aucun pays réel), texte du joueur en noir
-void apercuPlaque(Renderer& r, float x, float y, float w, const std::string& texte, float u) {
+} // namespace
+void dessinerApercuPlaque(Renderer& r, float x, float y, float w, const std::string& texte, float u) {
     const float h = w * 110.f / 520.f, bande = w * 0.11f, b = std::max(1.f, 2 * u);
     r.uiRect(x - b, y - b, w + 2 * b, h + 2 * b, hex(BG));
     r.uiRect(x, y, w, h, hex(TEXTE));
@@ -164,6 +179,7 @@ void apercuPlaque(Renderer& r, float x, float y, float w, const std::string& tex
     if (!texte.empty()) ui::textBoite(r, x + bande + (w - bande) / 2, y, w - bande - 8 * u, h, h * 0.70f, texte, hex(BG), ui::CENTRE, 0.10f);
     ui::langue::journalTechnique(false);
 }
+namespace {
 
 // icône majuscules : flèche vers le haut (pentagone), pleine quand la majuscule est armée
 void iconeMajuscules(Renderer& r, float cx, float cy, float s, bool armee, const vec4& c) {
@@ -207,7 +223,8 @@ void dessiner(Renderer& r, const GameView& g) {
     const float x = p.x0, L = p.colonne;
     float y = p.y0;
     r.uiRect(x, y + 4 * u, 4 * u, 26 * u, hex(ACCENT));   // barre néon du titre
-    ui::textBoite(r, x + 14 * u, y, L - 14 * u, 34 * u, 30 * u, ui::majuscules(ui::tr("creation.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
+    const char* titre = g_e.modification ? "profil.modifier_titre" : "creation.titre";   // WFS-482 (RG-07)
+    ui::textBoite(r, x + 14 * u, y, L - 14 * u, 34 * u, 30 * u, ui::majuscules(ui::tr(titre)), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
     y += 34 * u + 16 * u;
     auto bloc = [&](Champ c, const char* libelle, Zone& z, const std::string& valeur, const char* indice, float esp) {
         ui::textBoite(r, x, y, L, 14 * u, 12 * u, ui::majuscules(ui::tr(libelle)), hex(MUTED), ui::GAUCHE, 0.15f);
@@ -221,14 +238,24 @@ void dessiner(Renderer& r, const GameView& g) {
     bloc(Champ::Pseudo, "creation.pseudo", g_e.zPseudo, s.pseudo(), "creation.indice", 0.02f);
     bloc(Champ::Plaque, "creation.plaque", g_e.zPlaque, s.plaque(), nullptr, 0.10f);
     const float wp = std::min(L, 200 * u);
-    apercuPlaque(r, x, y, wp, s.plaque(), u);
+    dessinerApercuPlaque(r, x, y, wp, s.plaque(), u);
     // « C'est parti » en bas de la colonne (bouton orange incliné ; grisé tant que le pseudo ou la plaque ne sont pas valides)
     const float bh = 50 * u, by = std::max(y + wp * 110.f / 520.f + 14 * u, p.ky + creation::LIGNES * p.touche + (creation::LIGNES - 1) * p.ecart - bh);
-    const float bw = std::min(L, 260 * u);
+    // WFS-482 (RG-07) : en modification, « Valider » (orange) et « Annuler » (vitré, texte cyan) côte à côte
+    const float bw = g_e.modification ? std::min((L - 10 * u) / 2, 200 * u) : std::min(L, 260 * u);
     const bool ok = s.valide();
     dessin2d::biseau(r, x, by, bw, bh, 14 * u, dessin2d::uni(ok ? hex(ACCENT) : hex(SURFACE2)));
-    ui::textBoite(r, x + bw / 2, by, bw - 36 * u, bh, 22 * u, ui::majuscules(ui::tr("creation.valider")), ok ? hex(BG) : hex(MUTED, 0.8f), ui::CENTRE, 0.12f, false, true);
+    const char* valider = g_e.modification ? "profil.valider" : "creation.valider";
+    ui::textBoite(r, x + bw / 2, by, bw - 36 * u, bh, 22 * u, ui::majuscules(ui::tr(valider)), ok ? hex(BG) : hex(MUTED, 0.8f), ui::CENTRE, 0.12f, false, true);
     g_e.zValider = {x, by, bw, bh};
+    g_e.zAnnuler = {};
+    if (g_e.modification) {
+        const float ax = x + bw + 10 * u;
+        dessin2d::biseau(r, ax - u, by - u, bw + 2 * u, bh + 2 * u, 14 * u, dessin2d::uni(vec4{1, 1, 1, 0.16f}));
+        dessin2d::biseau(r, ax, by, bw, bh, 14 * u, dessin2d::uni(GLASS));
+        ui::textBoite(r, ax + bw / 2, by, bw - 36 * u, bh, 20 * u, ui::majuscules(ui::tr("profil.annuler")), hex(ACCENT2), ui::CENTRE, 0.12f, false);
+        g_e.zAnnuler = {ax, by, bw, bh};
+    }
     // ---- clavier (RG-03)
     const Touche* cl = creation::clavier(ui::langue::active());
     const bool appuiRecent = g_e.presse >= 0 && g_e.maintenant - g_e.tPresse < 0.12;
@@ -299,6 +326,7 @@ public:
         manette::focus(g_e.zPseudo); manette::focus(g_e.zPlaque);
         for (const Zone& z : g_e.zTouches) manette::focus(z);
         manette::focus(g_e.zValider);
+        manette::focus(g_e.zAnnuler, true);   // WFS-482 (RG-01) : Retour d'Android = « Annuler » (zone vide hors modification)
         if (!g_e.pointsNotes) noterPoints();
     }
     void onEcran(Ecran, Ecran, const GameView& g) override { synchroniser(g); }
@@ -307,6 +335,24 @@ public:
 } // namespace
 
 bool creationProfilOuverte() { return g_e.ouvert; }
+
+void ouvrirModificationProfil() {
+    if (!sauvegarde().actif() || !sauvegarde().profil.cree) return;
+    g_modifDemandee = true;
+    WFS_LOG("profil (WFS-482) : « Modifier » → formulaire de WFS-481 (pseudo « %s », plaque « %s »)", sauvegarde().nick.c_str(), sauvegarde().profil.plaque.c_str());
+}
+bool modificationProfilOuverte() { return g_modifDemandee || (g_e.ouvert && g_e.modification); }
+
+bool centreCreationProfil(const std::string& nom, float& x, float& y) {
+    const Zone* z = nom == "pseudo" ? &g_e.zPseudo : nom == "plaque" ? &g_e.zPlaque : nom == "valider" ? &g_e.zValider : nom == "annuler" ? &g_e.zAnnuler : nullptr;
+    if (!z && nom.size() == 1) {
+        const Touche* cl = creation::clavier(ui::langue::active());
+        for (int i = 0; i < creation::NB_TOUCHES; i++)
+            if ((cl[i].genre == Touche::Caractere && cl[i].c == nom[0]) || (nom[0] == '<' && cl[i].genre == Touche::Effacer)) { z = &g_e.zTouches[i]; break; }
+    }
+    if (!z || z->w <= 0) return false;
+    x = z->x + z->w / 2; y = z->y + z->h / 2; return true;
+}
 
 // ---------------------------------------------------------------- banc d'essai (WFS_BANC=creation)
 int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {

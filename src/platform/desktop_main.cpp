@@ -80,6 +80,7 @@ namespace wfs { void benchSkins(Game& g, Renderer& r, const std::string& out); }
 #include "../render/vk.h"
 #include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
 #include "../ui/ecrans/creation_profil.h"   // WFS-481 (accroche) : WFS_BANC=creation
+#include "../ui/ecrans/profil.h"   // WFS-482 (accroche) : WFS_BANC=profil
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
 #include "../ui/ecrans/cadeau_jour.h"   // WFS-501 (accroche) : WFS_BANC=cadeau
 #include "../game/score_fin.h"   // WFS-537 (accroche) : WFS_BANC=score-fin
@@ -229,6 +230,7 @@ int main(int argc, char** argv) {
     if (banc == "score-fin") { ui::chargerPolice(r); const int e = score_fin::benchScoreFin(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-537 (accroche) : écran de fin du score, compteur d'étoiles du menu
     if (banc == "credits") { ui::chargerPolice(r); const int e = credits::benchCredits(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-406 (accroche) : menu → Crédits → retour, garage des voitures renommées
     if (banc == "creation") { const int e = ecrans::benchCreationProfil(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-481 (accroche) : création du profil (WFS_LANGUE=fr|en)
+    if (banc == "profil") { const int e = ecrans::profil_ecran::benchProfil(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-482 (accroche) : écran Profil (WFS_LANGUE=fr|en)
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)

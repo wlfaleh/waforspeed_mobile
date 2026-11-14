@@ -19,6 +19,16 @@ namespace ecrans {
 // RG-01 : écran ouvert (le menu ne dessine rien dessous, le lien d'invitation du duel attend la création du profil)
 bool creationProfilOuverte();
 
+// WFS-482 (RG-07) : même formulaire et même clavier ouverts par « Modifier » de l'écran Profil, avec le pseudo et la plaque
+// actuels ; titre « Modifier ton pilote », boutons « Valider » (écrit tout de suite : pseudo du duel compris) et « Annuler »
+// (rien ne change ; c'est aussi la touche Retour d'Android). Se ferme seul si l'écran Menu est quitté.
+void ouvrirModificationProfil();
+bool modificationProfilOuverte();
+// banc et tests : centre d'une zone de l'écran (« pseudo », « plaque », « valider », « annuler », ou un caractère du clavier : « a »)
+bool centreCreationProfil(const std::string& nom, float& x, float& y);
+// WFS-482 (RG-02) : aperçu 2D de la plaque de WFS-481 (gabarit 520 x 110 mm, bande « WFS »), réutilisé par l'écran Profil
+void dessinerApercuPlaque(Renderer& r, float x, float y, float w, const std::string& texte, float u);
+
 // banc d'essai (WFS_BANC=creation, WFS_LANGUE=fr|en) : 1er lancement (sauvegarde du banc) → CGU acceptées → création → menu →
 // course → fin → menu ; 2e lancement sans écran ; erreurs RG-04 ; chrono du scénario RG-05. Rend le nombre d'écarts.
 int benchCreationProfil(Game& g, Renderer& r, const std::string& out);
