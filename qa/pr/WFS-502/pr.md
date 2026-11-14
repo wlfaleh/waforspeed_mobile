@@ -52,16 +52,16 @@ Quand le cadeau du jour donne une voiture que le joueur n'a pas, il a 24 h pour 
 
 ## Tests CPU
 
-Commit testé : `ca13d7cb` (branche synchronisée avec `main`, WFS-482 compris) ; journal complet : `qa/pr/WFS-502/tests-cpu.log`.
+Commit testé : `f2d01c6a` (branche synchronisée avec `main`, WFS-482 et WFS-495 compris) ; journal complet : `qa/pr/WFS-502/tests-cpu.log`.
 
 ```
 [OK] test_vehicule_skin (0 s)
 [OK] test_version_chargement (0 s)
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (4 s)
-[OK] test_virages_fleches (0 s)
+[OK] test_virages_fleches (1 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 141 test(s) réussi(s) en 497 s
+tests CPU : 142 test(s) réussi(s) en 483 s
 code de sortie : 0
 ```
 
