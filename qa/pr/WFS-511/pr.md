@@ -23,3 +23,27 @@ Agent : Claude, agent dev3d (01Us6uCtfa) (session_01Us6uCtfaZCtBn6FQY7UQw9)
   - tant que les produits ne sont pas créés dans la Play Console (WFS-515), Google ne rend aucun prix : tous les packs seront masqués (comportement voulu, RG-03) ;
   - **à signaler au PO (hors zone E7)** : `crediterAchat` (WFS-510) attend l'écriture de la sauvegarde mais n'en reçoit pas le résultat ; si le disque est plein, l'achat serait consommé sans étoiles gardées. Correction possible dans `sauvegarde.*` (zone E3) : petit ticket proposé au PO ;
   - pas de serveur de vérification (RC-E21-07, accepté).
+
+## Tests CPU
+
+Branche synchronisée avec `main` (commit a198eff7) ; journal complet : [`tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511/tests-cpu.log).
+
+```
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 142 test(s) réussi(s) en 503 s
+```
+
+## Captures pour le lead dev (3, textes : ce ticket n'a pas d'écran)
+
+Dossier : [`qa/pr/WFS-511`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511).
+
+| Capture | Ce qu'elle montre |
+|---|---|
+| 1 — [tests JVM](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511/texte-1-tests-jvm.md) | `LogiqueAchatsTest` : 12 cas OK (créditer puis consommer, rattrapage, en attente, annulé, même jeton deux fois, restauration, hors ligne), avec les lignes `ACHATS` du journal de chaque cas |
+| 2 — [journal du démarrage](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511/texte-2-journal-demarrage.md) | lignes exactes écrites par `Achats.java` (connexion, produits demandés, rattrapage) + même séquence rejouée sur la JVM ; aucun jeton complet. **Pas un vrai logcat** (limite ci-dessus) |
+| 3 — [banc PC `market` avant / après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511/texte-3-banc-market.md) | `main` et branche : `market.txt` identiques octet pour octet (`cmp`), code 0 |
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01Us6uCtfaZCtBn6FQY7UQw9
