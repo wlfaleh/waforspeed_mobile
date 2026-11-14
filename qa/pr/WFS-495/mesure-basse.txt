@@ -1,0 +1,12 @@
+WFS-495 — RC-E18-03 : images par seconde en qualité Basse (banc peinture2-mesure : Ville, jour, 208 en course au pilote automatique,
+caméra de poursuite, 180 images de chauffe puis 600 chronométrées ; rendu logiciel lavapipe, 4 cœurs ; 3 passages alternés).
+« avec » : WFS_AUTOCOLLANTS = 7 calques du banc autocollants (double bande, flamme + miroir, numéro 27 des deux côtés, étoile + miroir).
+
+passage   sans autocollant           avec autocollants
+1         3,906 img/s (1 % : 2,716)  3,886 img/s (1 % : 3,033)
+2         3,971 img/s (1 % : 2,737)  3,767 img/s (1 % : 2,775)
+3         3,796 img/s (1 % : 2,693)  3,875 img/s (1 % : 2,772)
+moyenne   3,891 img/s (1 % : 2,715)  3,843 img/s (1 % : 2,860)
+
+Écart : 0,05 img/s sur la moyenne, aucun sur le 1 % le plus lent (≤ 1 img/s demandé). En course, la texture d'habillage cuite
+remplace celle de la skin : même nombre de lectures de texture par pixel peint (une par projection), rien n'est calculé en course.
