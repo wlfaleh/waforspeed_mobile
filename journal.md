@@ -1790,3 +1790,75 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 00:26:46 — WFS-540 attribué à Claude, agent conduite (01UY1Vv3RA) (po-scrum-master)
 - Demande de l'utilisateur : « @conduite la 540 t'attend ». Nouvelle session `@conduite` (session_01UY1Vv3RAD7auNAuR4e1UiD), aucun ticket avant : attribution permise (ce n'est pas 01UY1Vv1A7, exclue par le KO de WFS-461).
 - **WFS-540** (P1, E3) : police = vraie voiture (même moteur de conduite que le joueur, RG-00, ordre permanent du 2026-11-14 00:22 UTC), plus de coincement, arrestation, plus de « R » sans frein (ANO-267, 268, 271, 272). Règles : `regles-de-gestion/WFS-540.md`. Zone : `poursuite.*`, `player.*`, `duel.*`. Branche `feature/waforspeed-540`. Skills : `agent-developer`, `waforspeed-natif`, `expert-conduite`. Captures avant / après (Poursuite, Corniche, jour et nuit, suite d'images), PR, lead dev ; après fusion 🟡 À valider (utilisateur), puis arrêt de la session.
+
+### 2026-11-14 00:30:05 — WFS-491 : retour lead dev corrigé, PR #401 à relire (Claude, agent dev3d (01Us6uCwfT))
+- (1) écran étroit : boutons de largeur fixe (104 × 30 px), rangée qui défile par chevrons comme les couleurs (3 boutons en 4:3, 5 en 16:10, 6 en 16:9, 8 en 2400x1080) ; (2) police 12 px, réduite de 20 % au plus (aucun nom FR / EN n'en a besoin) ; contrôle au banc dans chaque langue et chaque taille ; (3) RC-E18-03 mesuré (`peinture2-mesure`, Basse, 2 passages) : `main` 3,215 img/s, branche brillant 3,216 / chromé 3,210 / caméléon 3,165 ; 1 % les plus lents 2,374 / 2,455 / 2,427 / 2,363 : écart ≤ 0,05 img/s.
+- Synchronisée avec `main` (WFS-492 skins, WFS-481) : la skin de course n'est jamais posée sur la voiture du garage (`vehicule_skin::materiau` compare le modèle). 133 tests CPU réussis ; banc `garage-finitions` 0 écart à chaque taille. Captures régénérées (54). Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-14 00:33:03 — WFS-499 : PR #404 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCxU3))
+- PR #404 (commit 562520b8, branche synchronisée avec `main`) : 42 captures « après » (1280 × 720 et 1024 × 768, FR et EN) et 6 « avant » dans `qa/pr/WFS-499/`, `tests-cpu.log` (133 tests réussis).
+- Parcours RG-07 (banc `garage-voitures`, noté ici avant la PR) : 208 → M4 bloquée → achat refusé faute d'étoiles (« Il te manque 1 200 ★ », rien de débité) → essai gratuit → écran de fin « Acheter 2 200 ★ » → garage « Essai déjà fait » → course demandée avec la M4 : retour au garage → achat confirmé (3 000 → 800 ★) → Rouge, Choisir → Corsa : essai puis achat depuis l'écran de fin → course M4 jour et nuit → relance : M4 et Corsa gardées → anglais. 0 écart (1024 × 768).
+- Rectificatif de l'entrée précédente : le « 0 écart » en 1280 × 720 annoncé avant la PR venait d'un lancement qui avait encore 1 écart (attente fausse du banc : l'achat de la Corsa la choisit, comme le veut RG-02) ; banc corrigé, relancé en 1024 × 768 : 0 écart.
+- `suivi-pr.md` : #404 🆕 ; `TACHES.md` : 🔀 En PR.
+
+### 2026-11-14 00:42:31 — WFS-501 fusionné par le lead dev (lead-dev)
+- PR #403 (Claude, agent dev3d (01Us6uCviA)), revue sur bb703375, « ✅ Approuvé par le lead dev » en commentaire (même compte GitHub), fusion en squash **b08d8803**.
+- 34 captures ouvertes (menu avant / après, animation, 4 gains, Chances, attente, nuit, FR / EN) ; diff lu en entier ; construction, 133 tests CPU et banc `cadeau` (0 erreur) refaits ; banc `textes` français à 0 dépassement.
+- Remarques non bloquantes dans la revue : écran d'attente ouvert au passage de minuit, commentaire du filtre `WFS_CADEAU`, lisibilité du compte à rebours au menu. Ticket en 🟣 ; ligne ajoutée à `qa/Check.md` ; ligne de `suivi-pr.md` supprimée.
+
+### 2026-11-14 00:42:42 — WFS-499 : PR #404 refusée par le lead dev (lead-dev)
+- Revue du commit 562520b8 : 48 captures ouvertes, diff complet lu, branche construite et testée (`tests_cpu.sh build` : 133 réussis). La demande se voit bien (cadenas, prix, équivalents, fenêtre de confirmation, « Il te manque », essai, « Acheter N ★ » en fin de course, FR / EN, 16:9 et 4:3).
+- Refus, 3 points (revue écrite en commentaire dans la PR, même compte GitHub) : (1) régression du banc `garage-couleurs` (WFS-489) : Golf et GT86 bloquées dans sa sauvegarde, « Acheter » ouvre la fenêtre de la voiture au lieu d'acheter la couleur (captures `en-il-manque` et `en-toit`) ; le banc complet n'a pas tourné (mode rapide) ; (2) après l'essai, la voiture de la partie reste la voiture bloquée : toute course suivante renvoie au garage, et en duel le garde-fou quitte la course sans `leave()` (salle ouverte, courses suivantes comptées en duel) ; (3) « Acheter la Orion Corsaire » : il faut l'élision (« l'Orion »).
+- `TACHES.md` : ↩️ Retour lead dev (PR #404) ; `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-14 00:43:44 — WFS-501 : fusionné (PR #403, b08d8803), session terminée (Claude, agent dev3d (01Us6uCviA))
+- Le lead dev a fusionné la PR en squash. J'ai répondu dans la PR à ses 5 remarques non bloquantes.
+- **Pour le PO** (petit défaut, non corrigé, à confier à WFS-502 qui touche le même écran, ou à une petite US) : si minuit passe pendant que l'écran d'attente du cadeau est ouvert, il affiche « Prochain cadeau bientôt » au lieu de proposer le cadeau ; il faut fermer puis rouvrir l'écran. Le commentaire de `cadeau_jour_banc.cpp` « (et le menu) » est aussi faux quand `WFS_CADEAU` est posé.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Cadeau du jour aléatoire »). Ligne de `track-agent.md` passée à « ⏹️ session terminée ». Aucun autre ticket demandé (un seul sujet par session).
+
+
+### 2026-11-14 00:56:04 — WFS-491 fusionné par le lead dev (lead-dev)
+- PR #401 (Claude, agent dev3d (01Us6uCwfT)), 2e revue sur b0b67c06, reprise de la relecture prise à 00:31 (instance arrêtée par un redémarrage du conteneur, rien posté). Réponses du développeur lues sous la 1re revue.
+- Les 3 points bloquants du 1er refus sont corrigés : boutons de largeur fixe et rangée qui défile par chevrons (aucun texte ne dépasse en 1024x768, 1280x800, 1280x720, 2400x1080, FR et EN), police 12 px (plancher 9,6 px), RC-E18-03 mesuré (`qa/pr/WFS-491/mesure-basse.txt`, écart ≤ 0,1 img/s).
+- Vérifié par le lead dev : tout le diff lu, construction et `tests CPU : 133 test(s) réussi(s)`, banc `garage-finitions` relancé en 1024x768 (0 écart). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion squash e454b9f4. Statut 🟣, ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` retirée.
+
+### 2026-11-14 00:56:51 — WFS-491 fusionné, session terminée (Claude, agent dev3d (01Us6uCwfT))
+- PR #401 fusionnée en squash par le lead dev (e454b9f4) après une 2e relecture (la 1re reprise avait été coupée par un redémarrage du conteneur). Ticket en 🟣, ligne de `qa/Check.md` posée par le lead dev.
+- Réponse à l'utilisateur sous la demande « Personnalisation » de `tache utilisateur.md`. Remarques non bloquantes du lead dev à suivre : la voiture du garage est dessinée comme voiture du joueur (à surveiller avec WFS-494, skins au garage) ; 2 pages de finitions en 4:3.
+- Un seul sujet par session : je ne demande pas d'autre ticket.
+
+### 2026-11-14 01:23:50 — WFS-537 : retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
+- Corrigé : branche synchronisée (WFS-481) ; profil créé dans le banc `score-fin` ; compteur caché sous « Crée ton pilote » (capture et vérification) ; compteur dessiné par un système (461) juste après « Réglages » à la même image, avec le fondu du menu ; singulier « 1 étoile ».
+- Vérifié : `score-fin` vert en 2400 × 1080 et 1280 × 720 ; tests CPU 133 / 133 ; `textes-course` VERT ; `textes-menus` vert sur la branche (un échec « Quitter le salon » pendant la passe de captures, dû au relais du duel injoignable, absent à la relance).
+
+### 2026-11-14 01:25:44 — Statuts automatiques, CI main #1060 (robot statuts)
+- Run rouge (push, commit b08d880), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 01:39:00 — WFS-484 : PR #405 ouverte, accroches annoncées (Claude, agent dev3d (01Us6uCvb4))
+- Fait : plaques au hasard des autres voitures, même plaque que WFS-483 (maillages, places, matériaux, éclaireur, LOD réutilisés) ; atlas unique de 64 plaques (2048 × 512 px) préparé au chargement de la carte ; tirage 7 caractères sans mot interdit ni plaque du joueur ; duel : champ facultatif `pl` de la présence, filtré à la réception ; fantôme : plaque du joueur, translucide ; Basse : version simple, trafic sans plaque au-delà de 40 m.
+- Fichiers (zone E10) : `src/render/vehicule_plaques_autres.{h,cpp}`, `vehicule_plaques_tirage.cpp`, `vehicule_plaques_autres_banc.cpp`, `vehicule_plaque.{h,cpp}` et `vehicule_plaque_image.cpp` (largeur d'image réglable, constantes partagées), `tests/test_plaques_autres.cpp`.
+- **Accroches annoncées** (≤ 10 lignes par fichier, autorisées par le ticket) : `src/game/game.cpp` (4 : include, préparer, libérer, entre deux courses), `traffic_system.cpp` (2), `course5_system.cpp` (2), `poursuite_system.cpp` (2), `duel_system.cpp` (3 : include, plaques du salon, dessin), `course_system.cpp` (2 : fantôme), `duel.h` (2) et `duel.cpp` (2) : `setPlaque` et champ `pl`, `src/platform/desktop_main.cpp` (3 : bancs `plaques-autres`, `plaques-autres-mesure`), `CMakeLists.txt` (2 : test).
+- Vérifié : 135 tests CPU au vert (branche synchronisée avec `main`) ; banc `plaques-autres` 2400 × 1080, 21 captures avant / après (jour et nuit) regardées ; banc `parcours` : 0 écart (et vue Cockpit) ; coût (Corniche, Basse, Poursuite, trafic le plus dense) : +5,2 appels de dessin, +1 846 triangles par image ; temps lavapipe +3,8 ± 3,2 ms sur 300 ms (bruit).
+- Limites : aucune mesure sur GPU de téléphone (≤ +0,5 ms à confirmer) ; deux-roues sans plaque ; au-delà de 44 voitures du trafic, un texte peut revenir sur une voiture éloignée.
+
+### 2026-11-14 01:49:27 — WFS-484 fusionné par le lead dev (lead-dev)
+- PR #405 (Claude, agent dev3d (01Us6uCvb4)), revue sur 924a0465, squash f39336ce. « ✅ Approuvé par le lead dev » posté en commentaire (GitHub refuse l'approbation : même compte).
+- 21 paires de captures ouvertes : plaques du même style que le joueur sur le trafic, la Course à 5, la police (avant = arrière), fantôme translucide ; jour et nuit justes, rien d'autre de changé.
+- Diff entier lu ; construction et 135 tests CPU refaits par le lead dev. Remarques non bloquantes : coût sur téléphone à confirmer (RG-05) ; petit risque de doublon d'une case refaite quand la plaque du joueur change ; petites allocations par image hors course dans `duel_system.cpp`.
+- Statut 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne de `qa/Check.md` ajoutée ; session du développeur terminée.
+
+### 2026-11-14 01:49:46 — WFS-537 : retour lead dev sur PR #402 (lead-dev)
+- 2e revue, commit 23912814. Les 6 points du 1er refus sont corrigés : profil du banc, compteur caché sous « Crée ton pilote », système 461 avec fondu, singulier.
+- **Refus pour un seul point bloquant** : la PR est en conflit avec `main` (`mergeable: false`). WFS-501 (« Cadeau du jour », #403) est entré après la synchronisation `dcfe7a10`. Conflits dans `menu.cpp` (les deux tickets utilisent la valeur 5 de l'`enum`) et dans `desktop_main.cpp`. Sur la capture `textes-fr-menu-principal`, le bouton « Cadeau du jour » disparaît dans l'« après ».
+- Essai local du lead dev (rien poussé), conflit résolu avec `COMPTEUR = 6` : construction OK, 135 tests CPU réussis, bancs `score-fin` (1280 × 720) et `cadeau` à 0 échec, menu propre avec les 4 boutons.
+- Remarque non bloquante : cacher aussi le compteur sous l'écran du cadeau (`cadeau_jour::ouvert()`).
+- 40 captures regardées. Statut ↩️ dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 01:50:05 — WFS-484 : fin de session (Claude, agent dev3d (01Us6uCvb4))
+- PR #405 fusionnée par le lead dev (squash f39336ce) ; réponse « Bien reçu » sous la revue ; session terminée (un seul ticket par session), aucun autre ticket demandé.
+- Pour le PO (ticket de suivi à créer s'il le juge utile, remarques non bloquantes du lead dev) : (1) coût ≤ +0,5 ms à mesurer sur téléphone ; (2) `entreCourses` : case retirée non comparée aux autres quand la plaque du joueur change, texte du fantôme non remis en majuscules ; (3) `duel_system.cpp` : petites allocations hors course (`others()`) ; (4) vis du trafic sans `traficProchainDessin()`.
+
+### 2026-11-14 02:04:47 — Statuts automatiques, CI main #1061 (robot statuts)
+- Run rouge (push, commit e454b9f), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.

@@ -13,7 +13,7 @@
 //   - garage.cpp           écran (système « garage », 440), mise en page, touchers, enchaînement des panneaux ;
 //   - garage_commun.*      jetons de couleur, fiches des voitures, zones d'appui, MiseEnPage, interface PanneauGarage ;
 //   - garage_couleur.*     rangée des couleurs (principale, puis « toit et rétros »)       → WFS-489 ;
-//   - garage_finition.*    finition (emplacement vide)                                     → WFS-491 ;
+//   - garage_finition.*    rangée « Finition » (8 finitions, prix, aperçu)                 → WFS-491 ;
 //   - garage_skin.*        skins (emplacement vide)                                        → WFS-494 ;
 //   - garage_achat.*       Choisir / Retour, puis cadenas, prix, « Acheter », « Il te manque N ★ » → WFS-489, 499, 502 ;
 //   - garage_fiche.*       en-tête, caractéristiques et barres de la voiture ; textes FR / EN du garage → WFS-507 ;
@@ -39,6 +39,7 @@ const char* garageVoitureAffichee();   // WFS-127 : identifiant de la voiture af
 void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::string& suffixe = "");
 void benchGarageTour(Game& g, Renderer& r, const std::string& outDir);   // WFS-404 : une capture par place du garage
 int benchGarageCouleurs(Game& g, Renderer& r, const std::string& outDir);   // WFS-489 : garage-couleurs-* (garage_couleur_banc.cpp), rend les écarts
+int benchGarageFinitions(Game& g, Renderer& r, const std::string& outDir);   // WFS-491 : garage-finitions-* (garage_finition_banc.cpp), rend les écarts
 // WFS-507 : banc « textes » du garage (garage_textes_banc.cpp) : captures textes-<fr|en>-garage-*, parcours, garde-fou ; rend le nombre d'échecs
 int benchGarageTextes(Game& g, Renderer& r, const std::string& outDir);
 } // namespace ecrans

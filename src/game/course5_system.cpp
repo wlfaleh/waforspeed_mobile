@@ -12,6 +12,7 @@
 #include "../core/system.h"
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
+#include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../ui/appui.h"
 #include "../ui/text.h"
 #include "course5.h"
@@ -217,6 +218,7 @@ public:
                                                   it->second.nRoues ? it->second.roues[0].rayon : roues::RW_DEFAUT);
             if (roues::g_journal452 && k == 0) WFS_LOG("roues (banc) : course à 5 : roulage %.3f rad, braquage %.3f rad", rp.roulage, rp.braquage);
             r.draw(it->second, m, &peintures_[o.car], &rp);
+            plaques_autres::dessiner(r, carById(o.car.c_str()).id, m, 1.f, plaques_autres::COURSE5_0 + (int)(k % plaques_autres::COURSE5_N), plaques_autres::Genre::Adversaire, g.night, g.camPos);   // WFS-484 (accroche)
         }
     }
     void drawUi(Renderer& r, const GameView& g) override {
