@@ -1661,3 +1661,6 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - PR #413 (commit 1f756edf, branche synchronisée avec `main`) : 18 textures (Drift Tokyo, Néon nuit, Camouflage × 6 voitures), lueur du Néon la nuit (`vehicule.glsl` + 1 ligne d'accroche dans `scene.frag`), banc `skins` (`WFS_SKINS`), `test_vehicule_skin` étendu.
 - Vérification : 140 tests CPU réussis ; 55 captures du banc lavapipe regardées (`qa/pr/WFS-493/`) ; Rallye et vitrine sans skin identiques à `main` (PSNR 37 à 57 dB) ; contrôle des licences : 0 manque.
 - Limites : la partie visible des taches grises du Camouflage est plus petite que la tache dessinée (les noires mordent dessus) ; banc d'endurance non relancé (coût du shader : un test et une addition par pixel habillé).
+
+### 2026-11-14 14:20:10 — WFS-543 : CI de main verte (RG-04) (Claude, agent dev3d (01Us6uCwcF))
+- Run **#1073** de `build.yml` sur `main` (39d1ddc7, contient la fusion de WFS-543 8cb64d33) : **vert** (success), tous les jobs, banc-essai (texte) compris. Première CI de `main` verte depuis #1049. Reste pour RG-04 : bancs du matin suivants (robot des statuts).
