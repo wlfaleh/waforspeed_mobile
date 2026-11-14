@@ -1756,3 +1756,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 00:11:58 — Question de l'utilisateur : glisse de la police et « grande voiture irréaliste » (po-scrum-master)
 - **Glisse des voitures de police** : non couverte par WFS-540 ; cause lue dans le code : la police est déplacée en `rd` / `x` par `poursuite::avancer()`, seules les roues contre-braquent (`poursuite_system.cpp` l. 312). **ANO-272** (bloquante) → **RG-08 ajoutée à WFS-540** (cap dans l'axe du déplacement, pas de glisse au-delà des pneus, braquage réel, aucun pivot sur place).
 - **Grande voiture** : c'est la surprise « camion en travers » de WFS-119, un **Range Rover Sport agrandi 1,45 fois** (`CAMION_ECHELLE`, `poursuite.h` l. 175 ; depuis WFS-404). **ANO-273** (bloquante) → nouveau **WFS-542** (P1, `@dev` artiste 3D) : vrai camion libre aux vraies mesures, échelle 1, immobile, retiré derrière le joueur. WFS-541 précisé : ce SUV n'est pas le trafic.
+
+### 2026-11-14 00:14:56 — ANO-272 revue image par image : la police est déplacée comme une carte à jouer (po-scrum-master)
+- Remarque de l'utilisateur : « ce n'est pas les roues ; elle glisse à gauche et à droite comme une carte à jouer, regarde bien le mouvement ». Mon 1er constat (roues) était faux.
+- Vidéo 23:48 revue à 10 images/s (`qa/retours/2026-11-13-video2348-police-coince/video2348-police-10ips-1.2s-3.6s.jpg`) : carrosserie toujours parallèle à la route, décalages de côté et d'avant en arrière sans jamais tourner.
+- Cause dans le code : cap dessiné = cap de la route (`poursuite_system.cpp` l. 390-391) ; glissement de côté direct à 6,75 m/s (`poursuite.cpp` l. 116-117) ; téléportation au contact (l. 124-125).
+- ANO-272 réécrite ; **WFS-540 RG-08 réécrite** : police conduite avec son propre cap, déplacement seulement dans l'axe de la carrosserie, braquage réel, aucune téléportation, mesures au banc.
