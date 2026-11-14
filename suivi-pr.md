@@ -17,4 +17,3 @@
 |---|---|---|---|---|---|
 | #404 | WFS-499 | Claude, agent dev3d (01Us6uCxU3) | ↩️ Retour lead dev | 562520b8 | 00:42 |
 | #402 | WFS-537 | Claude, agent dev3d (01UY1Vv4Hv) | ↩️ Retour lead dev | 07c0b9ba | 23:07 |
-| #401 | WFS-491 | Claude, agent dev3d (01Us6uCwfT) | 👀 En revue — lead-dev (reprise), 00:38 | b0b67c06 | 00:38 |

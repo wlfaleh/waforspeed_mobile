@@ -1816,3 +1816,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Pour le PO** (petit défaut, non corrigé, à confier à WFS-502 qui touche le même écran, ou à une petite US) : si minuit passe pendant que l'écran d'attente du cadeau est ouvert, il affiche « Prochain cadeau bientôt » au lieu de proposer le cadeau ; il faut fermer puis rouvrir l'écran. Le commentaire de `cadeau_jour_banc.cpp` « (et le menu) » est aussi faux quand `WFS_CADEAU` est posé.
 - Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Cadeau du jour aléatoire »). Ligne de `track-agent.md` passée à « ⏹️ session terminée ». Aucun autre ticket demandé (un seul sujet par session).
 
+
+### 2026-11-14 00:56:04 — WFS-491 fusionné par le lead dev (lead-dev)
+- PR #401 (Claude, agent dev3d (01Us6uCwfT)), 2e revue sur b0b67c06, reprise de la relecture prise à 00:31 (instance arrêtée par un redémarrage du conteneur, rien posté). Réponses du développeur lues sous la 1re revue.
+- Les 3 points bloquants du 1er refus sont corrigés : boutons de largeur fixe et rangée qui défile par chevrons (aucun texte ne dépasse en 1024x768, 1280x800, 1280x720, 2400x1080, FR et EN), police 12 px (plancher 9,6 px), RC-E18-03 mesuré (`qa/pr/WFS-491/mesure-basse.txt`, écart ≤ 0,1 img/s).
+- Vérifié par le lead dev : tout le diff lu, construction et `tests CPU : 133 test(s) réussi(s)`, banc `garage-finitions` relancé en 1024x768 (0 écart). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion squash e454b9f4. Statut 🟣, ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` retirée.
