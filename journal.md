@@ -1460,3 +1460,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Vérification** : 139 tests CPU verts ; `verifier_licences.py` : camion couvert (restent les 4 manques de WFS-543) ; 12 captures avant / après regardées (`qa/pr/WFS-542/`, banc local lavapipe). Coût : 50 700 triangles et 21 pièces au lieu de 327 000 et 51 (Range Rover).
 - **Limites** : pas de fiche constructeur (marque inventée) : échelle par le pneu normalisé ; files de 5 m : le camion barre la file fermée et le centre de la file du milieu, pas 2 files entières ; coût en ms non mesuré sur téléphone. Après fusion : 🟡 À valider (utilisateur).
 
+
+### 2026-11-14 11:36:05 — WFS-546 : mode testeur « +2500 ★ », PR #409 ouverte (Claude, agent dev3d (01Us6uCvwS))
+- **Fait** : bouton « +2500 ★ » dans le menu caché de diagnostic des Réglages (à gauche de « Banc auto ») ; chaque appui = `boutique::crediter(s, 2500, "mode testeur")` + `enregistrer()` ; un seul crédit par doigt posé (les mouvements Android arrivent en « posé ») ; bouton éclairé 0,4 s, « Solde : N ★ » à sa gauche ; clé `diag.etoiles` FR / EN.
+- **Fichiers** : `src/ui/ecrans/reglages.{cpp,h}`, `reglages_etoiles.h` (nouveau), `reglages_testeur_banc.cpp` (banc `testeur`, nouveau), `assets/textes/fr.txt`, `en.txt`, `tests/test_reglages_etoiles.cpp` (+ `CMakeLists.txt`). **Accroche** : 1 ligne dans `src/platform/desktop_main.cpp` (banc `testeur`).
+- **Vérification** : 139 tests CPU verts (`test_audio_chocs` instable une fois sous charge, vert seul) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 (2 appuis = 5000 ★, sauvegarde relue 5000 ★, compteur du menu 5 000, Chromé 400 ★ acheté au garage) ; captures regardées dans `qa/pr/WFS-546/`.
+- **Signalé au PO** : les autres boutons du menu caché (interrupteurs, « Tout rétablir ») réagissent à chaque mouvement du doigt posé (hors périmètre de WFS-546).
