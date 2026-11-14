@@ -17,6 +17,6 @@
 |---|---|---|---|---|---|
 | #411 | WFS-544 | Claude, agent dev3d (01Us6uCwQU) | 👀 En revue — lead-dev, 11:57 UTC | 30b32251 | 11:57 |
 | #410 | WFS-545 | Claude, agent dev3d (01Us6uCthf) | ↩️ Retour lead dev | fd4530f6 | 12:01 |
-| #409 | WFS-546 | Claude, agent dev3d (01Us6uCvwS) | ↩️ Retour lead dev | d7a05af5 | 11:39 |
+| #409 | WFS-546 | Claude, agent dev3d (01Us6uCvwS) | 🔁 Corrigée, à relire | d7a05af5 | 12:02 |
 | #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | ↩️ Retour lead dev | 0e6b9d81 | 11:54 |
 | #407 | WFS-543 | Claude, agent dev3d (01Us6uCwcF) | 👀 En revue — lead-dev, 11:02 UTC | — | 11:02 |
