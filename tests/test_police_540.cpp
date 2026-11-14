@@ -228,6 +228,38 @@ int main() {
         VERIFIE(rAffiche == 0, "RG-05 : « R » sans frein (%d pas)", rAffiche);
         VERIFIE(reculTrop == 0, "RG-05 : recul dû au choc au-delà de 5 km/h (%.1f km/h)", -vMin);
         VERIFIE(amortiLent == 0, "RG-05 : recul dû au choc non amorti en 1 s (%d pas)", amortiLent);
+        // revue du lead dev (PR #406) : un vrai choc qui fait reculer (le bridage de Player::update doit servir) : une autre voiture
+        // (contact du jeu : duel::contacter) recule dans l'avant de la voiture arrêtée du joueur, de 8 à 25 km/h, GAZ ou rien
+        int bride = 0, rChoc = 0, tropVite = 0, tropLong = 0, chocsRecul = 0; double vMinChoc = 0;
+        const char* autres[3] = {"p208", "rrsport", "compass"};
+        for (int k = 0; k < 24; k++) {
+            Player pl; pl.reset(carById(k % 2 ? "p208" : "golf")); pl.aide = Aide::Activee;
+            pl.dist = (9500 + 50 * k) / M; pl.position = corniche.wrap(pl.dist); pl.playerX = 0; pl.speed = 0;
+            duel::Ghost gh; gh.car = autres[k % 3]; gh.x = (k % 5 - 2) * 0.02;
+            gh.rd = pl.dist + (carById(gh.car.c_str()).d.L + pl.car->d.L) / 2 / M + 3 / M; gh.v = -(8 + (k * 17) % 18) / 3.6 / M;
+            double tNeg = -1;
+            for (int i = 0; i < 120 * 3; i++) {
+                DriveInput in; in.gas = k % 4 == 0;   // une fois sur 4, GAZ tenu
+                pl.update(DT, in, corniche, true);
+                // vitesse après la conduite du pas (bridage du recul dû au choc compris) : ≤ 5 km/h en arrière, nulle en moins d'1 s
+                const double kmh = pl.speed * M * 3.6;
+                vMinChoc = std::min(vMinChoc, kmh);
+                if (kmh < -5.05) tropVite++;
+                if (kmh < -0.01) { if (tNeg < 0) tNeg = i * DT; else if (i * DT - tNeg > 1.0) tropLong++; } else tNeg = -1;
+                gh.rd += gh.v * DT;
+                const duel::ContactEvents e = duel::contacter(DT, pl, corniche, *pl.car, gh);
+                if (e.chocs) { chocsRecul++; gh.v = 0; }   // l'autre voiture s'arrête au choc
+                if (pl.speed < 0 && !pl.reculVoulu) bride++;
+                if ((pl.speed < -1 && pl.reculVoulu) || pl.reversing) rChoc++;   // condition du « R » du HUD (lue après les contacts)
+            }
+        }
+        std::printf("%d chocs d'une voiture qui recule dans le joueur arrêté : %d pas de recul dû au choc (bridage), recul le plus rapide "
+                    "%.1f km/h, « R » %d pas, %d pas de recul au-delà de 5 km/h, %d pas de recul de plus d'1 s\n",
+                    chocsRecul, bride, -vMinChoc, rChoc, tropVite, tropLong);
+        VERIFIE(chocsRecul >= 20 && bride > 0, "RG-05 : aucun choc ne fait reculer le joueur (%d chocs, %d pas) : le bridage n'est pas essayé", chocsRecul, bride);
+        VERIFIE(rChoc == 0, "RG-05 : « R » après un choc (%d pas)", rChoc);
+        VERIFIE(tropVite == 0, "RG-05 : recul dû au choc au-delà de 5 km/h (%d pas)", tropVite);
+        VERIFIE(tropLong == 0, "RG-05 : recul dû au choc non amorti en 1 s (%d pas)", tropLong);
         // marche arrière voulue (FREIN tenu à l'arrêt) : toujours possible, avec « R »
         Banc b(corniche, "golf"); b.placerJoueur(9000, 0, 0);
         DriveInput in; in.brake = true; bool r = false;
@@ -279,6 +311,33 @@ int main() {
         VERIFIE(ecart > (c.f.longueur + 4.4) / 2 - 0.05, "RG-09 : la police entre dans l'obstacle (%.2f m)", ecart);
         VERIFIE(cote == 0, "RG-09 : la police glisse de côté à l'arrêt (%d)", cote);
         VERIFIE(std::abs(c.ps[0].monde.u()) < 0.3, "RG-09 : la police ne s'arrête pas (%.1f km/h)", c.ps[0].monde.u() * 3.6);
+        // revue du lead dev (PR #406) : la scène exacte du banc police-540 (capture camion) : le joueur roule au pas (8 km/h) dans la
+        // file libre, 25 m après le camion ; la police arrive 55 m derrière lui, dans une file barrée par le camion : elle doit passer
+        // par la file libre (avant : elle s'arrêtait en biais derrière le camion et n'en bougeait plus), sans entrer dans le camion
+        Banc d(corniche, "golf");
+        const double sCam = 6500;
+        d.placerJoueur(sCam + 25, FILES[2], 0);
+        d.ajouter(0, -55, FILES[0], 66);   // comme dans le jeu (banc police-540) : elle arrive à ≈ 66 km/h
+        int dedans2 = 0, retours2 = 0, sens2 = 0; double pen2 = 0, ext2 = d.ps[0].x, tPasse = -1;
+        for (int i = 0; i < 120 * 25; i++) {
+            DriveInput in; in.gas = d.pl.kmh() < 8;
+            // camion sur les files de gauche et du milieu, et (comme dans le jeu) une voiture du trafic arrêtée derrière lui, file du milieu
+            d.obs = {{sCam / M, FILES[0], 0}, {sCam / M, FILES[1], 0}, {(sCam - 6) / M, FILES[1], 0}};
+            d.pas(in);
+            const Police& p = d.ps[0];
+            for (double xo : {FILES[0], FILES[1]}) {
+                const double ovZ = (d.f.longueur + 4.4) / 2 - std::abs(p.rd * M - sCam), ovX = (d.f.largeur + 1.9) / 2 - std::abs(p.x - xo) * RW;
+                if (ovZ > 0 && ovX > 0) { pen2 = std::max(pen2, std::min(ovZ, ovX)); if (std::min(ovZ, ovX) > 0.05) dedans2++; }
+            }
+            if (sens2 >= 0 && p.x > ext2) ext2 = p.x; else if (sens2 <= 0 && p.x < ext2) ext2 = p.x;
+            if (std::abs(p.x - ext2) > 0.1) { const int s2 = p.x > ext2 ? 1 : -1; if (sens2 != 0 && s2 != sens2) retours2++; sens2 = s2; ext2 = p.x; }
+            if (tPasse < 0 && p.rd * M > sCam + (d.f.longueur + 4.4) / 2) tPasse = d.temps;
+        }
+        std::printf("scène du banc (joueur au pas après le camion) : police passée en %.1f s (x = %.2f, %.1f m derrière le joueur), "
+                    "%d aller-retour, recouvrement du camion au plus %.3f m\n", tPasse, d.ps[0].x, (d.pl.dist - d.ps[0].rd) * M, retours2, pen2);
+        VERIFIE(tPasse > 0 && tPasse < 20, "RG-09 : la police reste bloquée derrière le camion alors qu'une file est libre (%.1f s)", tPasse);
+        VERIFIE(dedans2 == 0, "RG-09 : la police entre dans le camion (%.3f m)", pen2);
+        VERIFIE(retours2 == 0, "RG-09 : %d aller-retour de la police à côté du camion", retours2);
     }
 
     std::printf("== (F) RG-10 : le joueur recule à côté de la police\n");

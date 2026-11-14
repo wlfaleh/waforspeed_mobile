@@ -112,7 +112,7 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
         for (int k = 0; k < 16; k++) {
             const float volant = k >= 1 && k < 6 ? -0.7f : 0.f;   // changement de file à gauche (1 s), puis volant lâché (l'aide tient la file)
             rouler(12, tenir(30, volant));   // 0,2 s
-            viser(-13, 0, 34.f);             // de haut, derrière le joueur : la police (12 à 15 m derrière lui) est dans l'image
+            viser(-9, -14, 34.f);            // de haut, sur le côté : le joueur et la police (12 à 15 m derrière lui), loin du compteur
             legende("contourne (vue de dessus)", k, "le joueur change de file : la police doit tourner,\npas glisser de cote");
             char nom[64]; std::snprintf(nom, sizeof nom, "police540-contourne-%02d", k); image(nom);
         }
@@ -179,7 +179,7 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
         g.camMode = 2;
         for (int k = 0; k < 16; k++) {
             rouler(20, tenir(8, 0));   // 0,33 s ; le joueur roule au pas, passé le camion
-            viser(-75, 6, 45.f);        // de haut, loin derrière le joueur, regard vers lui : la police (≈ 40 à 60 m) puis le camion (25 m)
+            viser(-30, -34, 34.f);      // de haut, sur le côté gauche, derrière le joueur : la police et le camion au milieu de l'image
             legende("camion en travers (vue de haut)", k, "la police derriere le camion : elle garde sa file\nou s'arrete, sans aller-retour ni entrer dedans");
             char nom[64]; std::snprintf(nom, sizeof nom, "police540-camion-%02d", k); image(nom);
         }

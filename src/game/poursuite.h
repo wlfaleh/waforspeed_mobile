@@ -126,6 +126,7 @@ struct Police {
     bool mondeOk = false;             // faux : monde à construire depuis (rd, x, h, v) au prochain pas (naissance, banc)
     bool evite = false;               // RG-09 : file choisie pour contourner un obstacle, gardée jusqu'à l'avoir dépassé
     double eviteX = 0, eviteFinS = 0, eviteT = 0;   // file gardée (demi-largeurs), abscisse de l'obstacle (unités), durée (s)
+    double bloque = 0, manoeuvre = 0, recul0 = 0;   // revue PR #406 : temps arrêtée contre un obstacle alors qu'elle veut avancer (s) ; marche arrière de dégagement restante (s) et son départ (unités)
 };
 struct Obstacle { double s = 0, x = 0, v = 0; };   // voiture du trafic, cône, camion (distance, latéral, vitesse)
 // WFS-540 : naissance ou banc seulement : pose la voiture à (rd, x), dans l'axe de la route, à la vitesse v (unités/s) ; son

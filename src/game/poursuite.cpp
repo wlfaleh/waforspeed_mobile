@@ -75,7 +75,7 @@ FichePolice fichePolice(const char* police, const char* joueur) {
 
 void poser(Police& p, double rd, double x, double v) {
     p.rd = p.rdPrec = rd; p.x = p.xPrec = x; p.v = v; p.h = p.hPrec = 0; p.braquage = 0;
-    p.mondeOk = false; p.evite = false;
+    p.mondeOk = false; p.evite = false; p.bloque = p.manoeuvre = 0;
 }
 
 namespace {
@@ -237,17 +237,26 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         // une autre voiture de police qui roule devant dans sa file : elle la suit à 7 m (convoi, comme avant WFS-540)
         // il regarde d'autant plus loin qu'il roule vite (3 s devant lui, 30 m au moins, 120 m au plus)
         const double portee = std::clamp(3.0 * au, 30.0, 120.0);
+        // revue du lead dev (PR #406) : la gêne se juge là où sera SA voiture en arrivant à l'obstacle (cap actuel ; en changement de
+        // file, bornée à la file visée) et avec la largeur réelle des deux voitures : avant, un véhicule arrêté dans la file qu'elle
+        // quittait la faisait freiner jusqu'à l'arrêt, en biais, à moitié sortie de la file (camion en travers, RG-09)
+        const double demiLargeurs = ((f.largeur + OBSTACLE_W) / 2 + 0.4) / RW;
+        auto xEnArrivant = [&](double d) {
+            if (!p.evite) return p.x;
+            const double xa = p.x + std::sin(p.h) * d / RW;
+            return p.eviteX > p.x ? std::clamp(xa, p.x, p.eviteX) : std::clamp(xa, p.eviteX, p.x);
+        };
         const Obstacle* gene = nullptr; double geneD = 1e9;
         for (const Obstacle& o : obs) {
             const double d = (o.s - p.rd) * M;
-            if (d > 0 && d < portee && std::abs(o.x - p.x) < 0.36 && d < geneD) { geneD = d; gene = &o; }
+            if (d > 0 && d < portee && std::abs(o.x - xEnArrivant(d)) < demiLargeurs && d < geneD) { geneD = d; gene = &o; }
         }
         Obstacle barrage;   // voiture de police garée devant (copie : obs reste en lecture seule)
         double suivreD = 1e9, suivreV = 0;
         for (size_t k = 0; k < ps.size(); k++) {
             if (k == i) continue;
             const double d = (ps[k].rd - p.rd) * M;
-            if (d <= 0 || d >= portee || std::abs(ps[k].x - p.x) >= 0.36) continue;
+            if (d <= 0 || d >= portee || std::abs(ps[k].x - xEnArrivant(d)) >= demiLargeurs) continue;
             if (ps[k].fixe) { if (d < geneD) { geneD = d; barrage = {ps[k].rd, ps[k].x, 0}; gene = &barrage; } }
             else if (d < suivreD) { suivreD = d; suivreV = ps[k].monde.u(); }
         }
@@ -294,9 +303,20 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
         // comme un conducteur : la voiture s'écarte de sa file (sous-virage) : il lève le pied, puis freine
         const double ecartFile = std::abs(p.x - p.cibleX) * RW;
         if (ecartFile > 1.5 && vCible > 0 && au > 8) vCible = std::min(vCible, au - 0.2);   // lève le pied (sans freiner en virage)
-        if (gene && vCible > 0) vCible = std::min(vCible, gene->v * M + std::sqrt(2 * f.frein * std::max(0.0, geneD - (f.longueur + OBSTACLE_L) / 2 - 2.5)));
+        if (gene && vCible > 0) {
+            vCible = std::min(vCible, gene->v * M + std::sqrt(2 * f.frein * std::max(0.0, geneD - (f.longueur + OBSTACLE_L) / 2 - 2.5)));
+            // en changement de file pour le contourner : elle avance au pas en braquant (rayon de braquage de 5 m) tant que les
+            // carrosseries ne se touchent pas (le contact anticipé l'empêche d'entrer dedans) ; sinon elle resterait arrêtée derrière
+            if (p.evite && geneD > (f.longueur + OBSTACLE_L) / 2 + 0.3) vCible = std::max(vCible, std::min(1.5, vCible + 1.5));
+        }
         if (suivreD < portee && vCible > 0) vCible = std::min(vCible, std::max(0.0, suivreV) + std::sqrt(2 * f.frein * std::max(0.0, suivreD - 7)));
 
+        // revue du lead dev (PR #406) : coincée l'avant contre un obstacle (coin du camion pris en biais) alors qu'elle veut avancer :
+        // comme un conducteur, elle recule au pas de 4 m (5 s au plus), l'arrière vers le côté opposé à sa file visée (le nez se tourne
+        // vers elle), puis repart braquage serré
+        if (p.manoeuvre > 0) { p.manoeuvre -= dt; vCible = -1.5; if ((p.recul0 - p.rd) * M > 4.0) p.manoeuvre = 0; }
+        else if (vCible > 1 && au < 0.3 && !joueurDerriere) { p.bloque += dt; if (p.bloque > 1.0) { p.manoeuvre = 5.0; p.recul0 = p.rd; p.bloque = 0; } }
+        else p.bloque = 0;
         // ---------- volant : comme un conducteur qui suit sa file : courbure de la file (la route qui tourne), plus la correction de
         // l'écart de position et de cap mesuré à une distance de visée devant lui (poursuite pure rapportée à la file : elle ne coupe
         // pas les virages) ; braquage anticipé selon le sous-virage de la voiture (gradient du modèle bicyclette, Rajamani § 3.3) et
@@ -311,6 +331,12 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
             const double sn = std::sin(m.cap), cs = std::cos(m.cap), dxT = T.x - m.x, dzT = T.z - m.z;
             const double av = dxT * sn - dzT * cs, dr = dxT * cs + dzT * sn;
             kappa = 2 * dr / std::max(1.0, av * av + dr * dr);
+            // manœuvre de dégagement : braquage à fond du côté opposé à la file visée (en marche arrière, l'avant pivote vers elle),
+            // jusqu'à ≈ 60° par rapport à la route
+            if (p.manoeuvre > 0) {
+                const double sens = p.cibleX > p.x ? 1.0 : -1.0;   // + : file visée à droite, l'avant doit pivoter à droite
+                kappa = p.h * sens < 1.05 ? -sens / 5.0 : 0.0;
+            }
         } else {
             const double ld = std::clamp(0.9 * au + 4, 6.0, 40.0);
             const double kRoute = roues::courbureRoute(piste, p.rd), n = p.cibleX * RW;
