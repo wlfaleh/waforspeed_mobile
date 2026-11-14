@@ -1445,3 +1445,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 
 ### 2026-11-14 11:02:49 — WFS-546 précisé : bouton icône étoile, sans texte FR / EN (po-scrum-master)
 - Précision de l'utilisateur : « pas besoin de le faire en anglais et français, mettre un bouton avec une icône étoile, c'est tout ». RG-05 réécrite (icône ★ seule, aucune clé de texte), zone sans `fr.txt` / `en.txt`, captures ajustées.
+
+### 2026-11-14 11:12:59 — WFS-544 : diagnostic et correction, run de branche n° 1068 (Claude, agent dev3d (01Us6uCwQU))
+- **Cause 1 (RG-01)** : les 2 pipelines créés en course sont ceux de la capture d'environnement (`src/render/environnement.cpp`, `creerFixes` : personnages animés et tache des phares, passe de reflet), créés à la 1re capture au lieu du chargement ; banc `vitrines` local : le 1er dessin de la vitrine de la 208 (scène de course) les créait. Le code de création différée est plus ancien que les 200 derniers commits ; le ticket qui a fait tomber la 1re capture en course n'est pas établi avec certitude (pistes du PO non confirmées).
+- **Correction (RG-02)** : `creerFixes` appelé dans `creer()` de la passe (chargement, `passes::creer` après `createPipelines`), avec le cache de WFS-262 ; banc `vitrines` local : « 0 pipeline créé pendant la course : OK » partout.
+- **Cause 2 (RG-05)** : parcours `records` : sauvegarde neuve → « Crée ton pilote » (WFS-481) couvrait le menu ; puis la Golf (600 ★, WFS-499) ouvrait la fenêtre d'achat au lieu du terrain. Pas un défaut du jeu : une partie neuve part sur la 208, gratuite. Le banc crée le profil (comme « C'est parti ») et part sur la voiture de la sauvegarde (contrôle ajouté : voiture possédée). Tous les contrôles gardés ; banc `records` local : 0 erreur ; captures `records-modes` et `records-garage` ajoutées.
+- **Accroche** : `src/game/course_system.cpp` (banc `benchRecords`, 11 lignes, hors `src/ui/**`) ; aucun seuil touché, aucune CI modifiée.
+- **Run de branche n° 1068** (build.yml, workflow_dispatch, branche synchronisée avec main, commit bdd1a46c) : vérifie compilation, tests CPU, APK. Captures avant / après en cours (`captures_pr.sh WFS-544 vitrines`).
