@@ -34,6 +34,9 @@ Chrono& chrono();
 bool actif();
 // WFS-418 (RG-04) : replis sur le kit de secours faute de mémoire graphique (bâtiments cuits) depuis le lancement : preuve du banc
 uint32_t replisMemoireGraphique();
+// WFS-446 (RG-06, RG-08) : replis sur le kit faute de mémoire vive dans initCuit (std::bad_alloc) ; essai du banc : bad_alloc simulé
+uint32_t replisMemoireVive();
+void essaiManqueMemoireVive(bool oui);
 // WFS-269 (accroche) : tous les bâtiments posés au niveau lod, dans le monde (ils cachent le ciel : DecorFixe::occultants)
 void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i);
 

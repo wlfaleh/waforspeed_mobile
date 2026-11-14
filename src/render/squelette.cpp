@@ -93,7 +93,7 @@ int ajouterNiveauTresSimple(const std::vector<SkinVertex>& v, std::vector<uint32
     return ajoutees;
 }
 
-bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) {
+bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out, bool repli) {
     std::vector<uint8_t> fichier;
     if (!readAsset(chemin, fichier)) { WFS_ERR("Personnage introuvable : %s", chemin.c_str()); return false; }
     Lecteur l{fichier.data(), fichier.data() + fichier.size()};
@@ -156,13 +156,21 @@ bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) 
         int w, h, c;
         stbi_uc* px = blobs[t].first ? stbi_load_from_memory(blobs[t].first, (int)blobs[t].second, &w, &h, &c, 4) : nullptr;
         if (!px) { WFS_ERR("%s : texture %d illisible", chemin.c_str(), t); return false; }
-        out.textures[t] = r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, t == 0);
+        out.textures[t] = repli ? r.vk().essayerUploadTexture(px, (uint32_t)w, (uint32_t)h, t == 0) : r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, t == 0);
         stbi_image_free(px);
+        if (!out.textures[t].view) break;   // WFS-446 (RG-03) : texture refusée (voie de repli)
     }
+    auto refuse = [&]() {   // WFS-446 (RG-03) : tout ce qui a été pris est rendu ; l'appelant applique son secours
+        detruirePersonnage(r, out);
+        WFS_WARN("mémoire graphique insuffisante : personnage %s non chargé (WFS-446)", chemin.c_str());
+        return false;
+    };
+    if (!out.textures[0].view || !out.textures[1].view) return refuse();
     Material m; m.rough = rugo; m.metal = metal;
     out.materiau = r.makeMaterial(m, &out.textures[0], &out.textures[1], nullptr);
     ajouterNiveauTresSimple(v, idx, out.plages);   // WFS-299 (RG-01)
-    out.maillage = r.makeSkinnedMesh(v, idx);
+    out.maillage = r.makeSkinnedMesh(v, idx, repli);
+    if (!out.maillage.vb.buf) return refuse();
     out.ok = true;
     WFS_LOG("%s : %u sommets, %u indices, %u os (palette %u), %u clips, %u plages, %.2f m", chemin.c_str(), nV, nI, nO, nPal, nC, nP, out.hauteur);
     return true;

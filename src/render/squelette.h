@@ -43,7 +43,8 @@ struct PoseSquelette {
     std::vector<mat4> modele, palette;
 };
 
-bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out);
+// WFS-446 (RG-03) : repli = vrai : textures et maillage par la voie de repli de WFS-418 ; refusé → tout est rendu, faux (secours de l'appelant)
+bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out, bool repli = false);
 // WFS-299 : ajoute « <nom>-3 » (très simple) pour chaque plage « <nom>-2 », par regroupement des sommets ; rend le nombre de plages ajoutées
 int ajouterNiveauTresSimple(const std::vector<SkinVertex>& v, std::vector<uint32_t>& idx, std::vector<Plage>& plages);
 void detruirePersonnage(Renderer& r, Personnage& p);

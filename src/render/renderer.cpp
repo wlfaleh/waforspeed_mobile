@@ -1127,14 +1127,18 @@ void Renderer::updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vect
 
 void Renderer::destroy(Mesh& m) { if (m.vb.buf) memoire::compteurs().objets3d--; vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }   // WFS-297 : objets 3D vivants
 
-SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx) {
+SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx, bool repli) {
     SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
     memoire::compteurs().objets3d++;   // WFS-297 (RG-06)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r < 0 ? b.r : b.r * 1.5f; }   // WFS-82 : marge pour l'animation
-    m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    // WFS-446 (accroche, RG-03) : repli = vrai : tampons par la voie de repli de WFS-418 ; refusé → tout est rendu, maillage vide
+    auto envoyer = [&](const void* d, VkDeviceSize n, VkBufferUsageFlags u) { return repli ? vk_->essayerUploadBuffer(d, n, u) : vk_->uploadBuffer(d, n, u); };
+    m.vb = envoyer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m.i16 = v.size() <= 65536;   // WFS-210 (RG-05) : moins de 65 536 sommets → indices 16 bits (mémoire GPU ÷ 2 pour les indices)
-    if (m.i16) { std::vector<uint16_t> c(idx.begin(), idx.end()); m.ib = vk_->uploadBuffer(c.data(), c.size() * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT); }
-    else m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    if (!m.vb.buf && repli) {}   // WFS-446 : sommets refusés, indices non demandés
+    else if (m.i16) { std::vector<uint16_t> c(idx.begin(), idx.end()); m.ib = envoyer(c.data(), c.size() * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT); }
+    else m.ib = envoyer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    if (repli && !m.ib.buf) { vk_->destroy(m.vb); memoire::compteurs().objets3d--; return SkinnedMesh{}; }
     return m;
 }
 

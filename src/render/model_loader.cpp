@@ -92,7 +92,7 @@ float lisserSiFacettes(Vertex* V, uint32_t nv, const uint32_t* I, uint32_t ni) {
 inline float linSrgb(unsigned c) { return std::pow(c / 255.f, 2.2f); }
 }
 
-bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
+bool loadCarModel(Renderer& r, const std::string& path, Model& out, bool repli) {
     std::vector<uint8_t> file;
     if (!readAsset(path, file)) { WFS_ERR("Fichier introuvable : %s", path.c_str()); return false; }
     Reader rd{file.data(), file.data() + file.size()};
@@ -365,12 +365,28 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         l->erase(std::remove_if(l->begin(), l->end(), [&](const ModelPart& p) { return p.material < retire.size() && retire[p.material]; }), l->end());
     const std::vector<uint32_t> peints2 = vehicule_peinture2::appliquer(path, file, verts, idx, out);   // WFS-488 (accroche) : toit et rétros marqués (assets/cars/<id>.pt2)
     // vitres et pièces transparentes dessinées après les pièces opaques
-    out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    out.ib = r.vk().uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    VkCtx& vk = r.vk();
+    if (!repli) {
+        out.vb = vk.uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        out.ib = vk.uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    } else {   // WFS-446 (RG-02) : voie de repli de WFS-418, rien n'est gardé si une réservation est refusée
+        out.vb = vk.essayerUploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        if (out.vb.buf) out.ib = vk.essayerUploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    }
+    bool refuse = !out.ib.buf;
 
     out.textures.resize(nTex);
-    for (uint32_t i = 0; i < nTex; i++)
-        if (dec[i].w) out.textures[i] = r.vk().uploadTexture(dec[i].rgba.data(), (uint32_t)dec[i].w, (uint32_t)dec[i].h, dec[i].srgb);
+    for (uint32_t i = 0; i < nTex && !refuse; i++) {
+        if (!dec[i].w) continue;
+        out.textures[i] = repli ? vk.essayerUploadTexture(dec[i].rgba.data(), (uint32_t)dec[i].w, (uint32_t)dec[i].h, dec[i].srgb)
+                                : vk.uploadTexture(dec[i].rgba.data(), (uint32_t)dec[i].w, (uint32_t)dec[i].h, dec[i].srgb);
+        refuse = !out.textures[i].view;
+    }
+    if (refuse) {   // WFS-446 (RG-02) : tout ce qui a été pris est rendu, out.ok = faux : le trafic saute ce modèle
+        r.destroy(out);
+        WFS_WARN("mémoire graphique insuffisante : modèle du trafic %s sauté (WFS-446)", path.c_str());
+        return false;
+    }
     auto texAt = [&](int32_t t) -> const Image* { return (t >= 0 && t < (int32_t)nTex && out.textures[t].view) ? &out.textures[t] : nullptr; };
     // WFS-09 : feux repérés par matériau (lampAt de js/cars/models.js). Un matériau n'est un feu que si toutes ses pièces
     // sont au bon endroit : feux arrière dans le dernier tiers (z > 0,3 L), phares dans le premier (z < −0,3 L), bloc

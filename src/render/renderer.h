@@ -159,7 +159,7 @@ public:
     bool vuesMateriau(VkDescriptorSet s, VkImageView v[3]) const { for (const MatTex& t : matTex_) if (t.set == s) { for (int i = 0; i < 3; i++) v[i] = t.v[i]; return true; } return false; }
     void destroy(Material& m);   // WFS-187 (accroche E0) : rend le jeu de descripteurs du matériau (GPU arrêté sur ce jeu) ; vide : rien
     // WFS-63 : maillage à squelette (les maillages rigides ne changent pas)
-    SkinnedMesh makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx);
+    SkinnedMesh makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx, bool repli = false);   // WFS-446 : repli = voie de WFS-418, maillage vide si refusé
     void destroy(SkinnedMesh& m);
     VkCtx& vk() { return *vk_; }
 

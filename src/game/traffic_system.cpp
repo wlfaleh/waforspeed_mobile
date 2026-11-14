@@ -35,17 +35,17 @@ public:
     void init(Renderer& r, const GameView& g) override {
         { const char* mo = std::getenv("WFS_MOMENT"); nuit_ = mo && !std::strcmp(mo, "nuit"); }   // WFS-81 : feux stop portés par le moteur la nuit
         // modèles natifs, partagés par toutes les voitures du trafic
-        for (int i = 0; i < TRAFIC_MODELES; i++) loadCarModel(r, std::string(CARS[i].file), models_[i]);   // WFS-13
+        for (int i = 0; i < TRAFIC_MODELES; i++) loadCarModel(r, std::string(CARS[i].file), models_[i], true);   // WFS-13 ; WFS-446 (RG-02) : refusé → modèle sauté
         // WFS-232 : deux-roues (cartes qui en ont : Ville, Corniche, Campagne) ; un phare et un feu arrière au milieu (pas de paire)
         // corps sans roues + roue avant + roue arrière (tools/convert_car.mjs, WFS_ROUES_2R), qui tournent à v / r (DA-realisme)
         avecDeuxRoues_ = g.map && partDeuxRoues(g.map->id) > 0;
         for (int k = 0; k < DEUX_ROUES_COUNT && avecDeuxRoues_; k++) {
             Model& b = deuxRoues_[k];
             const std::string base = std::string("cars/deux_roues/") + DEUX_ROUES[k].id;
-            loadCarModel(r, base + ".wfm", b);
+            loadCarModel(r, base + ".wfm", b, true);   // WFS-446 (RG-02)
             for (int w = 0; w < 2; w++) {
                 Model& R = rouesDR_[k][w];
-                loadCarModel(r, base + (w ? "-roue-arriere.wfm" : "-roue-avant.wfm"), R);
+                loadCarModel(r, base + (w ? "-roue-arriere.wfm" : "-roue-avant.wfm"), R, true);   // WFS-446 (RG-02)
                 if (R.ok) roueDR_[k][w] = {(R.bmin + R.bmax) * 0.5f, (R.bmax.y - R.bmin.y) * 0.5f, w == 0};
             }
             // RG-02 : aucun deux-roues sans pilote ni sans roues : un modèle manquant retire les deux-roues du trafic (voitures à la place)

@@ -554,11 +554,12 @@ bool VkCtx::formatEchantillonnable(VkFormat fmt) const {
 
 // WFS-149 (RG-01) : niveaux fournis (KTX2) copiés d'un seul envoi : aucune mipmap calculée par le GPU (les formats
 // compressés ne se « blittent » pas, et l'outil les a filtrées en linéaire)
-Image VkCtx::uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux) {
+Image VkCtx::uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux, bool repli) {
     if (!nNiveaux || !w || !h) return Image{};
     size_t total = 0;
     for (uint32_t i = 0; i < nNiveaux; i++) total += (tailles[i] + 15) & ~(size_t)15;   // décalages alignés sur 16 octets (bloc)
-    Buffer staging = createBuffer(total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    Buffer staging = repli ? essayerBuffer(total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true) : createBuffer(total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    if (!staging.buf) return Image{};   // WFS-446 (accroche, RG-05) : voie de repli de WFS-418, plus de mémoire
     std::vector<VkBufferImageCopy> copies;
     size_t ofs = 0; uint32_t lw = w, lh = h;
     for (uint32_t i = 0; i < nNiveaux; i++) {
@@ -569,7 +570,9 @@ Image VkCtx::uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* 
         ofs += (tailles[i] + 15) & ~(size_t)15;
         lw = lw > 1 ? lw / 2 : 1; lh = lh > 1 ? lh / 2 : 1;
     }
-    Image img = createImage(w, h, nNiveaux, fmt, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    const VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    Image img = repli ? essayerImage(w, h, nNiveaux, fmt, usage) : createImage(w, h, nNiveaux, fmt, usage);
+    if (!img.img) { destroy(staging); return Image{}; }   // WFS-446 : tout ce qui a été pris est rendu
     VkCommandBuffer cb = beginOneShot();
     barrier(cb, img.img, 0, nNiveaux, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);

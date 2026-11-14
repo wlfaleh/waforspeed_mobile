@@ -90,7 +90,7 @@ float sommetCorps(const char* chemin) {
 }
 
 bool chargerModele(Renderer& r, const char* chemin, Modele& M, int sexe) {
-    if (!chargerPersonnage(r, chemin, M.p)) return false;
+    if (!chargerPersonnage(r, chemin, M.p, true)) return false;   // WFS-446 (RG-03) : refus de mémoire → repli homme / femme, puis sans conducteur
     preparerPose(M.p, M.pose);
     const int tete = osParNom(M.p, "Head"), cuisse = osParNom(M.p, "thigh_l");
     if (tete < 0 || cuisse < 0) { WFS_ERR("conducteurs : %s : os Head / thigh_l absents", chemin); return false; }
