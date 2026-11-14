@@ -100,6 +100,16 @@ void SkinGarage::appuyer(int zone, int index) {
     }
     if (zone < 0 || zone >= NB) return;
     const int k = catalogue(zone);
+    // revue du lead dev (PR #419) : skin offerte encore due et skin en vente pas encore possédée : la fenêtre de la skin offerte s'ouvre
+    // sur elle (jamais « Acheter N ★ » pour une skin que le joueur peut prendre gratuitement)
+    if (k >= 0 && skins::offerteDue(s, c)) {
+        const std::vector<int> v = skinsOffrables(c);
+        if (const auto it = std::find(v.begin(), v.end(), k); it != v.end()) {
+            proposer(index);
+            if (fenetre_) { choixFenetre_ = (int)(it - v.begin()); skin_[index] = k; }
+            return;
+        }
+    }
     skin_[index] = k;
     WFS_LOG("garage : skin %s%s", k < 0 ? "aucune" : BOUTIQUE_SKINS_IDS[k],
             !possedee(s, k, c) ? (cadeauSeul(k) ? " (aperçu, cadeau du jour seulement)" : (" (aperçu, " + std::to_string(prixSkin(s, k, c)) + " ★)").c_str()) : "");
@@ -239,7 +249,7 @@ bool SkinGarage::toucherFenetre(float x, float y, int index) {
     const std::vector<int> v = skinsOffrables(car(fenetreIndex_));
     for (int i = 0; i < (int)v.size() && i < BOUTIQUE_SKINS; i++)
         if (zSkinsFenetre_[i].contient(x, y)) { choixFenetre_ = i; skin_[fenetreIndex_] = v[i]; return true; }
-    if (zPlusTard_.contient(x, y)) {   // la skin reste due : proposée à la prochaine ouverture du garage
+    if (zPlusTard_.contient(x, y)) {   // la skin reste due : bouton « Choisis ta skin offerte » de la rangée, ou appui sur une skin en vente
         skin_[fenetreIndex_] = skinAvant_; fenetre_ = false;
         WFS_LOG("garage : skin offerte de %s : « Plus tard »", car(fenetreIndex_));
         return true;

@@ -220,6 +220,11 @@ int benchGarageSkins(Game& g, Renderer& r, const std::string& out) {
         bouton("plustard"); images(6);
         montrer("neonnuit");
         capture("en-neon", "English: Neon Night « Coming soon in the daily gift »");
+        montrer("drifttokyo");   // revue PR #419 : skin offerte due → la fenêtre s'ouvre sur la skin touchée (jamais « Buy N ★ »)
+        verifier(fenetre() && skinPosee("gt86", "drifttokyo") && boutique::solde(s) == 40, "English: tap on Drift Tokyo while the free skin is due: free skin window on Drift Tokyo");
+        capture("en-gt86-fenetre-drift", "English: tap on Drift Tokyo opens the free skin window on it");
+        bouton("skin1"); bouton("prendre"); images(10);   // Camouflage offerte
+        verifier(possede("gt86", "camouflage") && boutique::solde(s) == 40, "English: Camouflage taken as the free skin");
         montrer("rallye");
         bouton("choisir");
         verifier(boutique::solde(s) == 40 && !possede("gt86", "rallye"), "English: not enough stars, nothing charged");
