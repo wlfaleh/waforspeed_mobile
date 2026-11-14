@@ -1577,3 +1577,6 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 
 ### 2026-11-14 12:34:51 — R17 : coût d'une version PC ou console (smart-brainstorming)
 Question de l'utilisateur. Réponse et tableau dans `recommandations-smart-brain.md` (R17) : PC Steam conseillé après Android (≈ 100 $ + travail moyen, l'exécutable PC et la manette existent déjà) ; Switch plus tard avec une société ; Xbox / PlayStation déconseillés (pas de Vulkan, rendu à réécrire). Aucune décision : l'utilisateur choisit.
+
+### 2026-11-14 12:37:16 — WFS-542 : PR #408 relue, fusion bloquée par un conflit avec main (lead-dev)
+Revue de fa87bc44 : les 4 points du refus sont corrigés (crédits en anglais, section Tests CPU, captures `retrait-00` à 55 s et `retrait-01` à 61 s ouvertes, commentaire d'orientation). J'ai construit et testé la branche moi-même : 139 tests CPU réussis. Approbation postée en commentaire dans la PR (GitHub refuse l'approbation pour le même compte). **La fusion squash est refusée par GitHub** : conflit sur `assets/textes/credits-en.txt` avec WFS-543 (#407). Retour au développeur : synchroniser avec main, régénérer CREDITS.txt et store/credits.md, vérifier les licences (0 manque), relancer les tests, puis rappeler le lead dev. Statut : ↩️ Retour lead dev (PR #408).

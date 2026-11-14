@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | 👀 En revue — lead-dev, 12:21 UTC | fa87bc44 | 12:21 |
+| #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | ↩️ Retour lead dev (conflit avec main : synchroniser) | fa87bc44 | 12:37 |
