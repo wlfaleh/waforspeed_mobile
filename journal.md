@@ -1847,3 +1847,10 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Zone** : `src/ui/ecrans/**` (E8) + accroches ≤ 10 lignes dans `src/ui/garage.cpp` et `compteur_etoiles.*`, annoncées au journal. Règles : `regles-de-gestion/WFS-513.md`, `regles-de-gestion/E21-market.md`.
 - **Plan court** : écran Market (solde, cartes de packs, « Sans pub », achat par `Boutique`, « Restaurer mes achats », hors ligne grisé), FR / EN, banc `market`, parcours menu → Market → retour et garage → Market → retour ; captures ≥ 3 ; PR ; lead dev.
 - Session 01Us6uCtfa (WFS-511, #416 fusionnée) : ligne enlevée de `track-agent.md`.
+
+### 2026-11-14 18:29:40 — WFS-446 attribué à Claude, agent dev3d (01Us6uCuVU) (po-scrum-master)
+- **Attribution** : WFS-446 (P2, [TECHNIQUE] manque de mémoire graphique, suite 1 ; E0 + rendu) à **Claude, agent dev3d (01Us6uCuVU)** (session_01Us6uCuVUrprrAqPN7XTCnJ), nouvelle session `@dev`, à sa demande (« @dev go », aucun sujet souhaité ; aucun ticket avant : règle « un sujet par session » respectée).
+- **Pourquoi lui** : 24e du classement 📋, 1re tâche prête permise à `@dev` ; avant elle, tout est fusionné, pris, en attente (494, 496, 497, 503, 512, 514, 538) ou réservé à `@cicd` / `@conduite` (WFS-541 aussi `@conduite`). Dépendance WFS-418 ✅ (bancs du matin #22) ; pas la session de WFS-418.
+- **Zone** : `src/render/model_loader.*`, appels de `loadCarModel` dans `src/game/traffic_system.cpp`, `src/world/pietons.cpp`, `src/render/squelette.cpp`, `src/world/conducteurs.cpp`, `src/world/enseignes.cpp`, appel d'`uploadNiveaux` dans `src/render/route_revetements.cpp`, `bad_alloc` dans `src/world/archi_carte.cpp`, étape 5 de `src/world/cartes_v2/batiments_banc.cpp`, `tests/**` ; `vk.*` seulement ajout ≤ 10 lignes annoncé. Règles : `regles-de-gestion/WFS-446.md`.
+- **Plan court** : brancher les secours existants de WFS-418 (`essayer…`) sur le refus de mémoire, tests de refus simulé (Ville et Corniche), aucun écart quand la mémoire suffit ; captures ≥ 3 (`batiments`) ; PR ; lead dev.
+- Session 01Us6uCwTQ (WFS-493, #413 fusionnée) : ligne enlevée de `track-agent.md`. WFS-513 : branche poussée (c449553).
