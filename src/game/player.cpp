@@ -100,12 +100,17 @@ void Player::reset(const CarDef& c) {
     car = &c; perf = carPerf(c);
     cm_ = nullptr; mondeOk_ = cibleOk_ = false; monde = {}; braquageRoues = aideRoues = latCible_ = 0;   // WFS-241
     position = dist = playerX = speed = steer = heading = odo = 0;
-    latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
+    latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = reculVoulu = false;
     playerSpin = spinYaw = controlLock = 0;
     fileAide_ = playerX; finPasX_ = 1e9; cedeAuDoigt_ = true; freinAide = false;   // WFS-258 : maintien de voie repris à la position de la voiture
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
+    // WFS-540 (RG-05, ANO-271) : un choc (police, trafic, décor) ne met jamais la marche arrière : la voiture repoussée en arrière
+    // sans que le joueur l'ait demandé recule au plus à 5 km/h et s'arrête en moins d'1 s (avant : 16 à 31 km/h en arrière, « R »)
+    // (voiture du joueur seulement : l'ordinateur, Aide::Web, garde les règles du jeu web, références des tests)
+    if (speed >= 0) reculVoulu = false;
+    else if (!reculVoulu && aide != Aide::Web) speed = std::min(0.0, std::max(speed, -RECUL_CHOC_MAX / M) + RECUL_CHOC_AMORTI / M * dt);
     if (aide != Aide::Web) {   // WFS-346 (accroche) : voiture du joueur, μ du sol lu de la saison de la carte
         const auto& sz = cartes_v2::saisonPartie(); const bool bc = std::abs(playerX) > 1;
         // WFS-391 (RG-02, ANO-229) : le bas-côté n'accroche jamais relativement plus que la chaussée qu'au sec (rapport μ ≤ MU_HERBE,
@@ -220,6 +225,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     const bool accelerating = playing && !locked && cmd.gas && !cmd.brake;
     // WFS-90 (RG-03) : marche arrière sans attendre l'arrêt complet (sous 3 m/s, le frein enchaîne sur la marche arrière)
     reversing = playing && !locked && cmd.brake && !cmd.gas && speed * M < Phys::vRecul;
+    reculVoulu = reculVoulu || reversing;   // WFS-540 (RG-05)
     braking = playing && !locked && cmd.brake && speed > 0 && !reversing;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
@@ -429,6 +435,7 @@ void Player::updateMonde(double dt, const DriveInput& in, Track& track, bool pla
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
     const bool accelerating = playing && !locked && in.gas && !in.brake;
     reversing = playing && !locked && in.brake && !in.gas && u < Phys::vRecul;
+    reculVoulu = reculVoulu || reversing;   // WFS-540 (RG-05)
     braking = playing && !locked && in.brake && u > 0 && !reversing;
     physique::Commande c;
     c.braquage = braquageRoues;

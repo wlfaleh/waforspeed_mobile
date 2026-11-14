@@ -31,6 +31,7 @@ namespace wfs { void benchMer(Game& g, Renderer& r, const std::string& out); }  
 namespace wfs { void benchFantome(Game& g, Renderer& r, const std::string& out); }   // WFS-318 (fantome_etiquette.cpp)
 namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }   // WFS-161 (accroche) : kit d'architecture (archi_banc.cpp)
 #include "../game/poursuite.h"   // WFS-111
+#include "../game/police_540_banc.h"   // WFS-540
 #include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
@@ -330,6 +331,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "police") { ui::chargerPolice(r); const int e = benchPolice(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-461 (accroche) : police plafonnée, contacts
+    if (banc == "police-540") { ui::chargerPolice(r); const int e = benchPolice540(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-540 (accroche) : police = vraie voiture
     if (banc == "police-bandes") { ui::chargerPolice(r); const int e = benchPoliceBandes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-460 (accroche) : bandes « POLICE » sur la tôle
     if (banc == "roues-suivies") { ui::chargerPolice(r); const int e = benchRouesSuivies(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-452 (accroche) : roues qui tournent et braquent
     if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)

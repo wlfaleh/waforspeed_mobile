@@ -252,6 +252,8 @@ else()
   target_link_libraries(test_penetration_voitures Threads::Threads)
   add_executable(test_police_461 tests/test_police_461.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-461 : police plafonnée à sa fiche, contacts sans glisse
   target_link_libraries(test_police_461 Threads::Threads)
+  add_executable(test_police_540 tests/test_police_540.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-540 : police = vraie voiture, arrestation, plus de « R » sans frein
+  target_link_libraries(test_police_540 Threads::Threads)
   add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
   add_executable(test_hud_lisible tests/test_hud_lisible.cpp)   # WFS-245 : textes du HUD lisibles (tailles, surfaces, contrastes)
   add_executable(test_hud_boutons tests/test_hud_boutons.cpp)   # WFS-429 : boutons Menu et Caméra à côté du score, +5 %, sans recouvrement

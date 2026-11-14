@@ -173,7 +173,7 @@ public:
             }
         }
         const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));
-        const bool rouge = v > 300, arriere = (pl.speed < -1 || pl.reversing) && g_kmhForce < 0;   // WFS-108 : « R » dès le passage en marche arrière
+        const bool rouge = v > 300, arriere = ((pl.speed < -1 && pl.reculVoulu) || pl.reversing) && g_kmhForce < 0;   // WFS-108 ; WFS-540 (RG-05) : jamais après un choc
         const int on = (int)std::lround(std::clamp(pl.nitro, 0.0, 1.0) * 10);   // cases de nitro allumées
         // ---------- vue cockpit (WFS-98, RG-06, ANO-24) : vitesse sous le temps ----------
         // le cadran du tableau de bord 3D donne déjà la vitesse : pas de compteur en arc ; chiffres 28 px et cases de nitro

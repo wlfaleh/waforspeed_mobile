@@ -23,6 +23,7 @@
 #include "../ui/ecrans/terrain.h"   // RG-12 : « Rouler »
 #include "../ui/garage.h"           // RG-12 : « Choisir »   // banc : appels de dessin en qualité Basse
 #include "../ui/text.h"
+#include "../world/cartes_v2/carte_donnees.h"   // WFS-540 : adhérence de la chaussée (saison) pour la police
 #include "../world/conducteurs.h"   // WFS-338 (RG-06) : un policier au volant de chaque voiture de police
 #include "course5.h"
 #include "course_system.h"
@@ -263,7 +264,7 @@ public:
         Track& t = *g.track;
         if (g_bancFin == 2) {   // banc : saut à 150 m de l'arrivée (capture de la victoire)
             const double d = c->duelFinish - 150 / M - pl.dist;
-            if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); for (Police& p : police_) p.rd += d; }
+            if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); for (Police& p : police_) poursuite::poser(p, p.rd + d, p.x, p.v); }
             // WFS-145 : le trafic n'a pas sauté avec la voiture : celui de la zone d'arrivée (−40 à +220 m) passe 400 m plus
             // loin, sinon la voiture atterrit dans une file et le pilote automatique du banc reste coincé (CI rouge au hasard)
             if (Traffic* trs = activeTrafficMut())
@@ -304,26 +305,29 @@ public:
         for (const Plot& p : plots_) if (!p.tombe) obs_.push_back({p.s, p.x, 0});
         for (const Camion& k : camions_) for (int f = 0; f < 3; f++) if (f != k.fileLibre) obs_.push_back({k.s, FILES[f], 0});   // WFS-119
         const FichePolice fiche = fichePolice(policeCar(&pl), pl.car ? pl.car->id : nullptr);   // WFS-461 (RG-03) : fiche de sa voiture
-        poursuite::avancer(police_, dt, c->raceTime, pl.dist, pl.playerX, pl.speed, obs_, fiche, &t);
-        if (bancPoliceActive_ && !police_.empty()) {   // WFS-452 (banc « roues-suivies ») : 1re voiture tenue à côté du joueur
+        // WFS-540 (RG-00) : la police roule avec le moteur de conduite de la voiture du joueur, sur la chaussée de la carte (saison)
+        poursuite::avancer(police_, dt, c->raceTime, pl.dist, pl.playerX, pl.speed, obs_, fiche, t, cartes_v2::saisonPartie().muChaussee, pl.heading + pl.spinYaw);
+        if (bancPoliceActive_ && !police_.empty()) {   // WFS-452 (banc « roues-suivies » seulement) : 1re voiture tenue à côté du joueur
             Police& p0 = police_[0];   // rdPrec / xPrec : place du pas précédent (poursuite::avancer les a notées)
-            p0.rd = pl.dist + bancPoliceEcart_ / M; p0.x = bancPoliceX_; p0.v = pl.speed;
-            for (size_t i = 1; i < police_.size(); i++) police_[i].rd = police_[i].rdPrec = pl.dist - 400 / M;   // les autres loin derrière
+            const double rdP = p0.rdPrec, xP = p0.xPrec;
+            poursuite::poser(p0, pl.dist + bancPoliceEcart_ / M, bancPoliceX_, pl.speed); p0.rdPrec = rdP; p0.xPrec = xP;
+            for (size_t i = 1; i < police_.size(); i++) poursuite::poser(police_[i], pl.dist - 400 / M, police_[i].x, 0);   // les autres loin derrière
         }
         if (suivi_.size() != police_.size()) suivi_.resize(police_.size());   // WFS-452 (RG-03, RG-08) : braquage d'après le vrai
-        for (size_t i = 0; i < police_.size(); i++)                          // mouvement : contre-braque quand elle glisse de côté
-            suivi_[i].pas(police_[i].rd * M, police_[i].x * RW, 0, roues::courbureRoute(t, police_[i].rd), carById(policeCar_).d.wb, dt);
+        for (size_t i = 0; i < police_.size(); i++)                          // mouvement ; WFS-540 : avec le vrai cap de la caisse
+            suivi_[i].pas(police_[i].rd * M, police_[i].x * RW, police_[i].h, roues::courbureRoute(t, police_[i].rd), carById(policeCar_).d.wb, dt);
         if (c->state == RaceState::Play) {
             for (Police& p : police_) {
-                duel::Ghost gh; gh.rd = p.rd; gh.x = p.x; gh.v = p.v; gh.car = policeCar_;
+                // WFS-540 : vitesse de la police le long de la route (sa caisse a son propre cap)
+                duel::Ghost gh; gh.rd = p.rd; gh.x = p.x; gh.v = p.v * std::cos(p.h); gh.car = policeCar_;
                 const duel::ContactEvents e = duel::contacter(dt, pl, t, *g.car, gh);
-                if ((e.chocs || e.frottements) && p.hitCd <= 0) {
-                    p.hitCd = 1.5; chocPolice(etat_);
-                    if (!p.fixe) p.v *= 0.85;
+                if ((e.chocs || e.frottements) && p.hitCd <= 0) {   // WFS-540 : la vitesse de la police change par l'impulsion du choc
+                    p.hitCd = 1.5; chocPolice(etat_);                // (poursuite::avancer), plus à la main (avant : × 0,85)
                     if (e.accident) c->accident(); else c->bump(std::max(0.1, e.impact));
                 }
             }
-            poursuite::pas(etat_, dt, plusProcheM(police_, pl.dist, pl.playerX));
+            // WFS-540 (RG-03, RG-04) : arrestation (joueur arrêté près de la police), pénalité seulement au contact réel
+            poursuite::pas(etat_, dt, plusProcheM(police_, pl.dist, pl.playerX), ecartCarrosseriesM(police_, pl.dist, pl.playerX, fiche), pl.kmh());
             // RG-03 : un renfort tous les 2 km (6 au plus)
             const double km = pl.dist * M / 1000;
             int mobiles = 0; for (const Police& p : police_) mobiles += !p.fixe;
@@ -337,7 +341,7 @@ public:
             arrivee(etat_, km);
             if (etat_.arrete && c->state != RaceState::Over) {
                 c->state = RaceState::Over;
-                WFS_LOG("poursuite : ARRÊTÉ à %.2f km (%d chocs trafic, %d glissière, %d police)", km, etat_.chocsTrafic, etat_.chocsGlissiere, etat_.chocsPolice);
+                WFS_LOG("poursuite : ARRÊTÉ%s à %.2f km (%d chocs trafic, %d glissière, %d police)", etat_.parPolice ? " PAR LA POLICE" : "", km, etat_.chocsTrafic, etat_.chocsGlissiere, etat_.chocsPolice);
             }
         }
         bouchons(pl, t, tr);
@@ -390,7 +394,9 @@ public:
             if (r.qualiteBasse && std::abs(rel) > 90) continue;   // WFS-134 (RG-11) : Basse : police dessinée jusqu'à 90 m (coût)
             const double al = std::abs(p.rd - p.rdPrec) * M > 20 ? 1.0 : g.alpha;   // WFS-221 (accroche) : rendu interpolé
             const TrackPoint q = g.track->pointLisse(p.rdPrec + (p.rd - p.rdPrec) * al, (p.xPrec + (p.x - p.xPrec) * al) * RW);
-            const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)) * rotateX((float)q.slope);
+            // WFS-540 (RG-08, ANO-272) : la caisse est dessinée avec SON cap (avant : celui de la route : elle glissait de côté sans tourner)
+            const double hR = p.hPrec + std::remainder(p.h - p.hPrec, 6.283185307179586) * al;
+            const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th + hR)) * rotateX((float)q.slope);
             const CarDef& cd = carById(policeCar_);
             const float W = cd.d.W;
             const int i = (int)(&p - police_.data());
@@ -507,7 +513,14 @@ public:
             r.uiRect(cx - tw / 2, ty, tw, 4.6f * u, SURFACE);
             ui::text(r, cx, ty + 0.8f * u, 3 * u, perte, DANGER, ui::CENTRE, 0.06f, false, true);
         }
-        if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
+        if (const int n = compteArrestation(etat_)) {   // WFS-540 (RG-03) : « ARRESTATION 4 » … « 1 », à la place du bandeau de surprise
+            char b[8]; std::snprintf(b, sizeof b, "%d", n);
+            static std::string arr;
+            textes::remplir(arr, "police.arrestation", b);
+            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, arr, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
+            r.uiRect(bx, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
+            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, arr, TEXTE, ui::CENTRE, 0.1f, false, true);
+        } else if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
             // WFS-141 (RG-02, ANO-57) : à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 + 10 + 40 + 8 + 40 px
             // de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route ; effacé après
             // 1,5 s. Taille inchangée (ordre permanent du 2026-11-06 sur la taille des textes : pas de passage à 5 %)
@@ -550,11 +563,11 @@ public:
     // à la vitesse du joueur : elle revient ensuite par la conduite normale
     void bancEloigner(const Player& pl) {
         int k = 0;
-        for (Police& p : police_) if (!p.fixe) { p.rd = p.rdPrec = pl.dist - (APPARITION_M + 12 * k++) / M; p.v = pl.speed; p.x = p.xPrec = p.cibleX = FILES[k % 3]; }
+        for (Police& p : police_) if (!p.fixe) { const double rd = pl.dist - (APPARITION_M + 12 * k++) / M; poursuite::poser(p, rd, FILES[k % 3], pl.speed); p.cibleX = p.x; }
     }
     // banc (WFS-338, RG-06) : une voiture de police posée à côté du joueur (dzM m devant, x en demi-largeurs), arrêtée
     void bancPoser(const Player& pl, double dzM, double x) {
-        for (Police& p : police_) if (!p.fixe) { p.rd = p.rdPrec = pl.dist + dzM / M; p.x = p.xPrec = p.cibleX = x; p.v = 0; return; }
+        for (Police& p : police_) if (!p.fixe) { poursuite::poser(p, pl.dist + dzM / M, x, 0); p.cibleX = x; return; }
     }
     // banc (WFS-338, RG-07) : peinture métallisée d'origine du modèle (true) ou peinture unie de la police (false), pour l'avant / après
     void bancPeintureOrigine(bool origine) {
@@ -580,7 +593,7 @@ private:
         c.duelFinish = KM_ARRIVEE * duel::KM;
         etat_ = Etat{}; prog_ = programme(graine_, g_banc);
         police_.clear(); plots_.clear(); panneaux_.clear(); camions_.clear(); bandes_.clear(); distAvant_ = pl.dist; pertesVues_ = 0; perteT_ = 0; perteCumul_ = 0; perteTexte_.clear();
-        for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); p.rd = pl.dist - (22 + 14 * i) / M; police_.push_back(p); }
+        for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); poursuite::poser(p, pl.dist - (22 + 14 * i) / M, p.x, 0); police_.push_back(p); }
         const TrafficStats* st = activeTrafficStats();
         chocsVus_ = st ? st->bumps + st->accidents + st->scrapes : 0; quasiVus_ = st ? st->nearMisses : 0;
         actif_ = true; fini_ = false; nouveauRecord_ = false; ftJoueur_ = 0; overT_ = 0; banT_ = 0; ban_.clear(); contreBord_ = false; sireneT_ = 0;
@@ -658,7 +671,7 @@ private:
             reserves_.clear();
             switch (e.type) {
                 case Surprise::Barrage:   // deux voitures de police en travers de deux files ; la file e.file reste libre
-                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; p.rd = s; p.x = p.cibleX = FILES[f]; p.peinture = 0xe6e8ea; police_.push_back(p); }
+                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; poursuite::poser(p, s, FILES[f], 0); p.cibleX = FILES[f]; p.peinture = 0xe6e8ea; police_.push_back(p); }
                     break;
                 case Surprise::Deboite: {   // une voiture d'une file voisine se rabat devant le joueur
                     if (!tr) break;
@@ -820,6 +833,7 @@ private:
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
         const bool v = etat_.gagne;
         ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::tr(v ? "fin.victoire" : "police.arrete"), v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
+        if (!v && etat_.parPolice) ui::text(r, W / 2, py0 + 16.2f * u, 2.6f * u, ui::tr("police.arrete_police"), TEXTE, ui::CENTRE, 0.16f, false);   // WFS-540 (RG-03)
         float y = py0 + 20 * u;
         auto ligne = [&](const std::string& a, const std::string& b) {
             ui::text(r, px0 + 6 * u, y, 3.4f * u, a, MUTED, ui::GAUCHE, 0.f, false);
