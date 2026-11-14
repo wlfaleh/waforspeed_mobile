@@ -1702,3 +1702,78 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Bloquant** : branche en retard sur `main` (WFS-481 #379 absent). Une fois synchronisée, banc `score-fin` (1280 × 720) rouge, 8 écarts : le banc part d'une sauvegarde neuve, l'écran « Crée ton pilote » cache le menu, donc pas de compteur (RG-07) et pas d'appui vers le garage (RG-09). À corriger : synchroniser, créer le profil dans le banc, régénérer les captures et les tests.
 - Écrans de fin des 4 modes et menu (avant la fusion de main) : conformes (carte SCORE à côté du panneau, boutons inchangés, FR / EN).
 - Pour le PO (hors zone de WFS-537) : (1) Poursuite : « Zéro choc » dans le score alors que le panneau affiche 1 choc trafic (WFS-536 compte bumps + accidents) ; (2) course solo : « NOUVEAU RECORD » sur le panneau mais « 1re course » dans le score ; (3) menu en anglais : « BEST 10 050 » avec le séparateur français.
+
+### 2026-11-13 23:09:38 — WFS-492 : retour du lead dev corrigé, PR #400 à relire (Claude, agent dev3d (01Us6uCutV))
+- Corrections (revue du 22:45, commit relu 6f04868c) :
+  - bloc « Tests CPU » dans la description, journal complet `qa/pr/WFS-492/tests-cpu.log` (130 tests réussis, code 0, commit b9210780) ;
+  - preuve sans skin refaite : l'ancienne planche `peinture2` ne montrait que la Golf (phrase « 17 voitures » retirée) ; banc `vitrines-feux` de main sur golf, gt86, giulia : 6 paires avant / après identiques au pixel près ;
+  - `poser` rend la texture si aucune pièce n'est habillée ; profil droit de la golf et de la Corvette ajouté.
+- **Parcours RC-E18-09 réduit** (banc `skins`, sauvegarde du banc ; l'écran des skins est WFS-494) : 1 garage avec `skin-golf=rallye` possédée : skin 1, 1 texture : OK ; 2 course : OK ; 3 retour au menu : OK ; 4 relance (sauvegarde relue) : `skin-golf=rallye` : OK ; 5 garage après la relance : skin 1 : OK ; 6 skin non possédée : aucune skin : OK ; 7 clé absente : aucune skin : OK → **0 écart**.
+- Réponse point par point sous la revue dans la PR ; lead dev rappelé.
+
+### 2026-11-13 23:10:57 — WFS-499 attribué à Claude, agent dev3d (01Us6uCxU3) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCxU3dXoruGmKrrtuYT, aucun ticket avant) : **WFS-499** (E18, P1), 1re tâche du classement 📋 des 40 (ordre de l'utilisateur) ; WFS-540 / 541 sont pour `@conduite`.
+- Dépendances : WFS-498, 504, 489 fusionnés (489 : #395, ae6a8288, même panneau `garage_achat.*` : partir de son panneau, ne pas le recréer).
+- Zone : E5 (`src/ui/garage*.*`, surtout `garage_achat.*` ; `src/ui/planche_voitures.*`) + accroche ≤ 10 lignes dans `src/ui/ecrans/**` (fin de course de l'essai), annoncée au journal. Règles : `regles-de-gestion/WFS-499.md` (RG-01 à 07, captures FR et EN).
+- `track-agent.md` : ligne ajoutée ; lignes des sessions terminées 01Us6uCxMq (WFS-489) et 01Us6uCvhS (WFS-481) enlevées.
+- Point ouvert pour le PO : CI de `main` rouge sur les runs de WFS-410 et WFS-489 (#1057, « banc-essai (texte) », ae6a828) ; run de WFS-481 en cours. WFS-526 est ↪ fusionné : US technique P1 à créer si le run de WFS-481 est rouge aussi.
+
+### 2026-11-13 23:23:50 — Début : WFS-501 attribué à Claude, agent dev3d (01Us6uCviA) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCviA969dToYVtgD7GE), jamais de ticket avant : **WFS-501** (E19, P1) « Écran du cadeau : bouton du menu, animation d'ouverture, gain, « Chances », FR / EN », 2e tâche du classement 📋 des 40 (WFS-499 déjà attribué).
+- Dépendances : WFS-500 et WFS-504 fusionnés. Règles : `regles-de-gestion/WFS-501.md`. Branche `feature/waforspeed-501`.
+- Zone : E8 `src/ui/ecrans/**` (nouvel écran du cadeau) + accroche ≤ 10 lignes dans `src/ui/ecrans/menu.cpp` pour le bouton, annoncée au journal ; logique `cadeau.*` de WFS-500 réutilisée, pas recréée.
+- Chevauchement : WFS-537 (↩️ PR #402) ajoute aussi le compteur d'étoiles dans `menu.cpp` : synchroniser avec `main`, garder les deux, le bouton ne prend pas la place du compteur. Pas de fichier commun avec WFS-499 (`garage_achat.*`), 491 (`garage_finition.*`), 492 (E10 rendu).
+- Plan court : écran du cadeau (FR / EN), bouton + pastille au menu, parcours accueil → cadeau → menu → course → retour, captures avant / après jour et nuit, PR, appel du lead dev, arrêt de la session après la fusion.
+
+### 2026-11-13 23:24:50 — WFS-484 attribué à Claude, agent dev3d (01Us6uCvb4) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCvb4k2hKzbSGajCV7R), aucun ticket avant. WFS-501 venait d'être donné à 01Us6uCviA (23:23 UTC) : cette session reçoit la tâche suivante prête et permise du classement 📋, **WFS-484** (3e).
+- **WFS-484** (E17, P1) : plaques au hasard pour le trafic, les adversaires, la police, le duel et le fantôme, même style que la plaque du joueur. Dépendance WFS-483 (#397) fusionnée : réutiliser sa plaque 3D, ne pas la recréer.
+- Zone : E10 (`src/render/vehicule_*`, `shaders/vehicule*.glsl`, `assets/cars/**`) + accroche ≤ 10 lignes dans `src/game/traffic*` / systèmes de course (annoncée au journal). Règles : `regles-de-gestion/WFS-484.md`, `regles-de-gestion/E17-identite-joueur.md`. Branche `feature/waforspeed-484`. Règle des formes nues : la plaque est un vrai objet (chanfreins, matériau), pas un rectangle plat.
+- `track-agent.md` : ligne ajoutée.
+
+### 2026-11-13 23:26:37 — Statuts automatiques, CI main #1058 (robot statuts)
+- Run rouge (push, commit 6adb9a7), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 23:38:39 — WFS-492 fusionné par le lead dev (lead-dev)
+- PR #400, 2e revue (reprise après la perte de l'instance de 23:10), commit relu 515146c6 ; squash b1ed89d1 « WFS-492 : Skins, texture d'habillage par voiture + skin Rallye sur 6 voitures (#400) (Claude, agent dev3d (01Us6uCutV)) ».
+- Les 3 points du refus sont corrigés (Tests CPU et `tests-cpu.log`, 6 paires sans skin identiques sur golf / gt86 / giulia, parcours RC-E18-09) ainsi que les 2 remarques. Les 25 captures ont été ouvertes et tout le diff lu ; construction et 132 tests CPU refaits ; banc `skins` (golf) relancé : parcours à 0 écart, 0 texture en fin de banc.
+- Approbation postée en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 23:39:29 — WFS-492 : fin, session terminée (Claude, agent dev3d (01Us6uCutV))
+- PR #400 fusionnée par le lead dev à la 2e revue (squash b1ed89d1) ; WFS-492 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
+- À surveiller : images/s mesurées sur lavapipe seulement (à confirmer sur l'APK) ; plaque « 07 » de la Corvette un peu basse (à régler dans `tools/skins/voitures.json` avec WFS-493).
+- Pour WFS-493 : nouvelle skin = un dessin dans `tools/skins/generer.py` (DESSINS) + ses couleurs A / B dans `SKIN_COULEURS` (`shaders/vehicule.glsl`), puis `python3 tools/skins/generer.py --skin <id>`.
+- Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 23:58:49 — WFS-499 : code fait, captures en cours (Claude, agent dev3d (01Us6uCxU3))
+- Fait (branche `feature/waforspeed-499`, 8de3bff2) : au garage, voiture bloquée = cadenas sous son point et carte « cadenas · 2 200 ★ · ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € » ; « Acheter 2 200 ★ » ouvre une fenêtre de confirmation (Annuler / Confirmer ; solde insuffisant : « Il te manque N ★ », pas de Confirmer) ; « Essai gratuit » puis « Essai déjà fait » ; solde en haut à droite ; écran de fin de l'essai : « Acheter N ★ » en haut à droite (même fenêtre) ; FR / EN (séparateur « 2 200 » / « 2,200 », « 21,78 € » / « €21.78 »).
+- Garde-fou RG-03 : une voiture bloquée ne repart pas en course hors de son essai (« Rejouer », « Recommencer », duel) : retour au garage sur elle. Sans sauvegarde active (bancs des autres tickets, parcours de la CI) : aucune voiture bloquée, rien ne change.
+- Fichiers : `src/ui/garage_achat.*`, nouveaux `garage_achat_voiture.cpp` (fenêtre, écran de fin, garde-fou : 2 petits systèmes 205 et 445, aucun code des modes touché), `garage_achat_texte.cpp`, `garage_voitures_banc.cpp`, `tests/test_garage_voitures.cpp` ; textes `assets/textes/fr.txt` / `en.txt`.
+- Accroches annoncées : `garage.cpp` (+11 / −1 : fenêtre, bouton Essai, noms du banc), `garage_commun.h` (zone `essai`), `garage_couleur.cpp` (cadenas sorti de l'espace anonyme pour être partagé), `desktop_main.cpp` (1 ligne : banc `garage-voitures`), `CMakeLists.txt` (test). Aucune accroche dans `src/ui/ecrans/**` ni dans les modes : l'écran de fin est complété par-dessus (pas de conflit avec WFS-537).
+- RG-04 : WFS-494 pas fusionné : aucune fenêtre de skin offerte. Vérifié : 132 tests CPU au vert en local (dont `test_garage_voitures`, 24 cas) ; banc `garage-voitures` (1280x720) : parcours complet, 0 écart.
+
+### 2026-11-14 00:11:58 — Question de l'utilisateur : glisse de la police et « grande voiture irréaliste » (po-scrum-master)
+- **Glisse des voitures de police** : non couverte par WFS-540 ; cause lue dans le code : la police est déplacée en `rd` / `x` par `poursuite::avancer()`, seules les roues contre-braquent (`poursuite_system.cpp` l. 312). **ANO-272** (bloquante) → **RG-08 ajoutée à WFS-540** (cap dans l'axe du déplacement, pas de glisse au-delà des pneus, braquage réel, aucun pivot sur place).
+- **Grande voiture** : c'est la surprise « camion en travers » de WFS-119, un **Range Rover Sport agrandi 1,45 fois** (`CAMION_ECHELLE`, `poursuite.h` l. 175 ; depuis WFS-404). **ANO-273** (bloquante) → nouveau **WFS-542** (P1, `@dev` artiste 3D) : vrai camion libre aux vraies mesures, échelle 1, immobile, retiré derrière le joueur. WFS-541 précisé : ce SUV n'est pas le trafic.
+
+### 2026-11-14 00:14:56 — ANO-272 revue image par image : la police est déplacée comme une carte à jouer (po-scrum-master)
+- Remarque de l'utilisateur : « ce n'est pas les roues ; elle glisse à gauche et à droite comme une carte à jouer, regarde bien le mouvement ». Mon 1er constat (roues) était faux.
+- Vidéo 23:48 revue à 10 images/s (`qa/retours/2026-11-13-video2348-police-coince/video2348-police-10ips-1.2s-3.6s.jpg`) : carrosserie toujours parallèle à la route, décalages de côté et d'avant en arrière sans jamais tourner.
+- Cause dans le code : cap dessiné = cap de la route (`poursuite_system.cpp` l. 390-391) ; glissement de côté direct à 6,75 m/s (`poursuite.cpp` l. 116-117) ; téléportation au contact (l. 124-125).
+- ANO-272 réécrite ; **WFS-540 RG-08 réécrite** : police conduite avec son propre cap, déplacement seulement dans l'axe de la carrosserie, braquage réel, aucune téléportation, mesures au banc.
+
+### 2026-11-14 00:15:42 — WFS-501 : écran du cadeau du jour, PR #403 ouverte (Claude, agent dev3d (01Us6uCviA))
+- Fait : écran du cadeau du jour (`src/ui/ecrans/cadeau_jour.{h,cpp}`, calculs purs `cadeau_jour_calculs.cpp`, banc `cadeau_jour_banc.cpp`, test `tests/test_cadeau_ecran.cpp`) ; bouton « Cadeau du jour » au-dessus de « Crédits », avec la pastille ou le compte à rebours ; animation 2D de la boîte (≈ 1,5 s, un appui la passe) ; gain des 4 types ; « Chances » lu dans `configgame.json` ; écran d'attente avec le dernier gain ; FR / EN (30 clés `cadeau.*`, 4 clés `skin.*`). Le tirage se fait avant l'animation (`cadeau::ouvrir` de WFS-500). Aucun bouton payant.
+- **Accroches annoncées** : `src/ui/ecrans/menu.cpp` (7 lignes : include, `CADEAU = 5`, touchers, zone, action, menu masqué sous l'écran, dessin du bouton) ; `src/platform/desktop_main.cpp` (2 lignes : banc `WFS_BANC=cadeau`) ; `CMakeLists.txt` (1 ligne : `test_cadeau_ecran`).
+- Vérification : 133 tests CPU verts (commit ff166e29, `qa/pr/WFS-501/tests-cpu.log`) ; banc `cadeau` à 0 erreur ; parcours RG-08 en FR et en EN (menu → cadeau → animation → gain → Chances → Retour → menu sans pastille → 2e appui : attente, aucun 2e cadeau → relance : aucun 2e cadeau → « Activer » ferme l'écran) ; garde-fou des textes anglais (WFS-504) sans échec ; 30 captures regardées.
+- Limites : gain non crédité (WFS-503), « Activer » sans prêt (WFS-502) ; noms des finitions par `finition.<id>` de WFS-491 (nom du catalogue en attendant) ; rendu lavapipe seulement.
+
+### 2026-11-14 00:16:24 — Statuts automatiques, CI main #1059 (robot statuts)
+- Run rouge (push, commit b1ed89d), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 00:16:31 — ANO-272 précisée par l'utilisateur : la voiture de police à côté du camion géant (po-scrum-master)
+- L'utilisateur vise **la petite voiture de police collée au « camion » géant** (Range Rover agrandi, ANO-273), pas la police à côté du joueur. Images à 6,7 /s : `qa/retours/2026-11-13-video2348-police-coince/video2348-police-a-cote-du-camion-6ips-5.0s-8.6s.jpg`.
+- Elle glisse à gauche, revient à droite et entre à moitié dans le camion, puis recommence, sans jamais tourner. Cause (`poursuite.cpp` l. 93-112) : sa cible change à chaque image entre la file libre et le joueur, qui est derrière le camion (aller-retour sans fin) ; décalage par glissement direct, cap de la route ; aucun choc police ↔ camion.
+- ANO-272 complétée ; **WFS-540 RG-09** ajoutée (file gardée pendant le contournement, camion solide pour la police, arrêt derrière sinon) ; RG-08 (cap propre, pas de glissement) gardée.

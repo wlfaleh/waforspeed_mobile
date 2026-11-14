@@ -137,7 +137,12 @@ vec3 chausseeReflechie(vec3 sun) {
     const float RHO = 0.14;
     return RHO * (sun * max(normalize(F.sunDir.xyz).y, 0.0) / PI + F.skyTop.rgb * F.misc.z);
 }
+// WFS-492 : numéro de la skin de la pièce peinte (0 : aucune), lu par lireFinition dans le métal codé (+ 16 × skin)
+int skinPixel = 0;
 int lireFinition(inout float metal) {
+    float k = floor(metal / 16.0);   // WFS-492 : skin (vehicule_skin.h) ; métal + 2 × finition < 16
+    skinPixel = int(clamp(k, 0.0, 4.0));
+    metal -= 16.0 * k;
     float f = floor(metal * 0.5);
     metal -= 2.0 * f;
     return int(clamp(f, 0.0, 7.0));
@@ -253,6 +258,49 @@ void vernisFinition(int fin, inout vec3 col, vec3 R, vec3 sun, float NoV, float 
     float kV = (fin == FIN_MAT || fin == FIN_CHROME) ? 0.0 : fin == FIN_SATINE ? 0.85 : 1.0;   // satiné : vernis moins réfléchissant
     vec3 cNuit = fin == FIN_CHROME ? vec3(0.0) : albedo;   // chrome : aucune lumière diffuse de la chaussée
     vernisCouche(col, R, sun, NoV, NoH, NoL, aaKernel, specK, rV, kV, cNuit);
+}
+// ---------------------------------------------------------------------------------------------------------------------------
+// WFS-492 (épic E18) : skins de la voiture du joueur (src/render/vehicule_skin.h). texColor de la pièce peinte habillée = la
+// texture d'habillage (EAC RG11) : R = couverture de la couleur A, G = couverture de la couleur B (par-dessus A). Dépliage par
+// projection, en mètres du repère de la voiture (même cadre que vehicule_skin::atlas et tools/skins/generer.py) : flancs, dessus,
+// avant, arrière, mêlés selon la normale lissée (poids |n|⁸ : passage court, sur des zones que le dessin laisse en peinture ou
+// qu'il dessine de la même façon des deux côtés). Les motifs gardent leur taille réelle : rien n'est étiré par la forme.
+const float SKIN_DX = 1.10, SKIN_DZ = 2.50, SKIN_H = 1.60;   // demi-largeur, demi-longueur, hauteur du cadre (m)
+const float SKIN_T = 1024.0;
+const vec4 SKIN_GAUCHE = vec4(0.0, 272.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);   // lignes [v0, v1) de chaque zone
+const vec4 SKIN_DROITE = vec4(280.0, 552.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
+const vec4 SKIN_DESSUS = vec4(560.0, 864.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
+const vec4 SKIN_FACES = vec4(872.0, 1024.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
+// couleurs A et B de chaque skin (codes sRGB 0..1 ; 0 = aucune) : Rallye = blanc de compétition, anthracite (dessin original, RG-05)
+const vec3 SKIN_COULEURS[10] = vec3[10](vec3(0.0), vec3(0.0),
+    vec3(0.91, 0.91, 0.89), vec3(0.10, 0.11, 0.125),   // 1 Rallye
+    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));   // 2 à 4 : WFS-493
+// lecture d'une zone : (s, t) ∈ [0, 1]² dans la zone, bornés d'un demi-texel (pas de fuite vers la zone voisine) ; gradients donnés
+vec2 skinLire(vec4 zone, vec2 st, vec2 gx, vec2 gy) {
+    float hv = zone.y - zone.x, demi = 0.5 / SKIN_T;
+    vec2 uv = vec2(clamp(st.x, demi, 1.0 - demi), zone.x + clamp(st.y * hv, demi, hv - demi));
+    return textureGrad(texColor, uv, gx * vec2(1.0, hv), gy * vec2(1.0, hv)).rg;
+}
+vec3 habillage(vec3 peinture, int skin) {
+    vec3 q = positionCarrosserie();                       // m, repère de la voiture
+    vec3 dqx = dFdx(q), dqy = dFdy(q);
+    vec3 n = normalize(transpose(mat3(pc.model)) * vNrm);  // normale lissée du maillage, repère de la voiture
+    vec3 w = pow(abs(n), vec3(8.0)); w /= max(w.x + w.y + w.z, 1e-6);
+    // flancs : s le long de la voiture (vu de dehors), t de haut en bas
+    float sz = 0.5 / SKIN_DZ, sx = 0.5 / SKIN_DX, sy = 1.0 / SKIN_H;
+    vec2 flanc = n.x < 0.0
+        ? skinLire(SKIN_GAUCHE, vec2((q.z + SKIN_DZ) * sz, (SKIN_H - q.y) * sy), vec2(dqx.z * sz, -dqx.y * sy), vec2(dqy.z * sz, -dqy.y * sy))
+        : skinLire(SKIN_DROITE, vec2((SKIN_DZ - q.z) * sz, (SKIN_H - q.y) * sy), vec2(-dqx.z * sz, -dqx.y * sy), vec2(-dqy.z * sz, -dqy.y * sy));
+    // dessus : s de l'avant à l'arrière, t de gauche à droite (dessous de la caisse : même projection, jamais vu)
+    vec2 dessus = skinLire(SKIN_DESSUS, vec2((q.z + SKIN_DZ) * sz, (q.x + SKIN_DX) * sx), vec2(dqx.z * sz, dqx.x * sx), vec2(dqy.z * sz, dqy.x * sx));
+    // avant (z < 0, vu de face : droite de la voiture à gauche de l'image) et arrière (vu de dos), chacun sur une demi-largeur
+    float sf = 0.25 / SKIN_DX;
+    vec2 face = n.z < 0.0
+        ? skinLire(SKIN_FACES, vec2((SKIN_DX - q.x) * sf, (SKIN_H - q.y) * sy), vec2(-dqx.x * sf, -dqx.y * sy), vec2(-dqy.x * sf, -dqy.y * sy))
+        : skinLire(SKIN_FACES, vec2(0.5 + (q.x + SKIN_DX) * sf, (SKIN_H - q.y) * sy), vec2(dqx.x * sf, -dqx.y * sy), vec2(dqy.x * sf, -dqy.y * sy));
+    vec2 c = flanc * w.x + dessus * w.y + face * w.z;
+    vec3 a = pow(SKIN_COULEURS[skin * 2], vec3(2.2)), b = pow(SKIN_COULEURS[skin * 2 + 1], vec3(2.2));   // sRGB → linéaire (comme hexColor)
+    return mix(mix(peinture, a, c.r), b, c.g);
 }
 // vitres (F_GLASS)
 void vitre(inout vec3 col, inout float alpha, vec3 albedo, vec3 skyAmb, vec3 R, vec3 sun, float NoV, float NoH, float NoL) {
