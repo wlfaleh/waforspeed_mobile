@@ -97,11 +97,13 @@ std::string calques(const Model& m, const Couleurs& c) {
     o << ";flamme-1,g," << cm(zav + 0.18f - an[2]) << "," << cm(yr + 0.17f - an[1]) << ",0,95," << c.flamme << ",1";
     // 3-4. numéro 27 sur la portière avant (42 % de l'empattement), entre le bas de caisse et la vitre ; posé de chaque côté (le
     //      miroir garde chaque chiffre lisible mais inverserait leur ordre : « 72 »). Flanc droit : x vers l'avant
-    const float zp = zav + 0.42f * (zar - zav), yp = yr + rayon + 0.14f;
-    o << ";chiffre-2,g," << cm(zp - 0.11f - an[2]) << "," << cm(yp - an[1]) << ",0,100," << c.numero << ",0";
-    o << ";chiffre-7,g," << cm(zp + 0.11f - an[2]) << "," << cm(yp - an[1]) << ",0,100," << c.numero << ",0";
-    o << ";chiffre-2,d," << cm(-(zp + 0.11f - an[2])) << "," << cm(yp - an[1]) << ",0,100," << c.numero << ",0";
-    o << ";chiffre-7,d," << cm(-(zp - 0.11f - an[2])) << "," << cm(yp - an[1]) << ",0,100," << c.numero << ",0";
+    //      chiffres de 24 cm (80 %), centrés 2 cm au-dessus du haut des roues : sous la vitre des trois voitures (ceinture de la
+    //      Corvette à 0,80 m, tools/skins/voitures.json)
+    const float zp = zav + 0.42f * (zar - zav), yp = yr + rayon + 0.02f;
+    o << ";chiffre-2,g," << cm(zp - 0.09f - an[2]) << "," << cm(yp - an[1]) << ",0,80," << c.numero << ",0";
+    o << ";chiffre-7,g," << cm(zp + 0.09f - an[2]) << "," << cm(yp - an[1]) << ",0,80," << c.numero << ",0";
+    o << ";chiffre-2,d," << cm(-(zp + 0.09f - an[2])) << "," << cm(yp - an[1]) << ",0,80," << c.numero << ",0";
+    o << ";chiffre-7,d," << cm(-(zp - 0.09f - an[2])) << "," << cm(yp - an[1]) << ",0,80," << c.numero << ",0";
     // 5. étoile sur le côté droit du capot (repère du capot : y vers la droite de la voiture), un peu tournée
     o << ";etoile-1,c,10,46,12,70," << c.etoile << ",1";
     if (g_texteSkin) {   // variante sur la skin Rallye : pas de numéro (la skin a sa plaque), éclair sur l'aile arrière, étoiles du toit
