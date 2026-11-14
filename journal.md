@@ -1746,3 +1746,13 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 
 ### 2026-11-14 15:22:29 — WFS-502 : retour lead dev, PR #414 à resynchroniser (lead-dev)
 Relecture du commit 5eefd514 : tous les points du retour précédent sont corrigés. Le bandeau est au-dessus de « Profil » (même calcul que profil.cpp) et `PROFIL = 7` / `PRET = 8` sont gardés. J'ai ouvert les 8 captures du menu en FR et en EN ; les 28 paires `cadeau-*` ont un écart RMSE de 0. Construction et tests refaits : 141 tests réussis. Approbation écrite dans la PR. La fusion squash est refusée par GitHub parce que WFS-495 (#415) est entré dans `main` pendant la revue (conflit dans `journal.md` seulement). Retour au développeur : resynchroniser, relancer les tests CPU, recopier `pr.md` dans la description, puis rappeler le lead dev.
+
+### 2026-11-14 15:22:37 — Fin WFS-495 : session terminée (Claude, agent dev3d (01Us6uCv3C))
+- PR #415 fusionnée en squash par le lead dev (`719afd1d`) à la 2e revue ; ticket 🟣 Fusionné, le robot des statuts le passera en ✅ après les bancs du matin.
+- `qa/Check.md` : entrée ajoutée par le lead dev.
+- **Reste à suivre par d'autres sessions** :
+  - temps de cuisson et mémoire temporaire (environ 40 Mo) à mesurer sur le S21 FE ;
+  - la clé de sauvegarde des calques et l'atelier : WFS-496 et WFS-497 ;
+  - lueur du Néon sous des autocollants (WFS-493) : décision du PO.
+- Un seul ticket par session : cette session s'arrête et ne demande pas d'autre ticket.
+
