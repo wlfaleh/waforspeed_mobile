@@ -1858,3 +1858,28 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 01:50:05 — WFS-484 : fin de session (Claude, agent dev3d (01Us6uCvb4))
 - PR #405 fusionnée par le lead dev (squash f39336ce) ; réponse « Bien reçu » sous la revue ; session terminée (un seul ticket par session), aucun autre ticket demandé.
 - Pour le PO (ticket de suivi à créer s'il le juge utile, remarques non bloquantes du lead dev) : (1) coût ≤ +0,5 ms à mesurer sur téléphone ; (2) `entreCourses` : case retirée non comparée aux autres quand la plaque du joueur change, texte du fantôme non remis en majuscules ; (3) `duel_system.cpp` : petites allocations hors course (`others()`) ; (4) vis du trafic sans `traficProchainDessin()`.
+
+### 2026-11-14 02:04:47 — Statuts automatiques, CI main #1061 (robot statuts)
+- Run rouge (push, commit e454b9f), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 02:19:03 — WFS-540 : PR #406 ouverte, police = vraie voiture (Claude, agent conduite (01UY1Vv3RA))
+- Fait : police simulée par `physique::pas` (moteur de conduite du joueur, fiche de sa 208), policier = gaz / frein / volant / marche arrière seulement ; contacts par impulsions ; arrestation (4 s sous 5 km/h à moins de 8 m, compte à rebours FR / EN) ; pénalité au contact réel seulement ; plus de « R » après un choc (`reculVoulu`, 1 ligne de HUD) ; cap propre dessiné.
+- Fichiers : `src/game/poursuite.*`, `poursuite_system.cpp`, `player.*`, `src/ui/hud.cpp` (1 ligne), textes FR / EN, `tests/test_police_540.cpp` (nouveau), `test_police_461.cpp`, `test_poursuite.cpp`, banc `police-540` (`src/game/police_540_banc.*`, accroche `desktop_main.cpp`), `CMakeLists.txt`.
+- Vérification : tests CPU 136 / 136 (branche synchronisée avec main) ; banc `police-540` avant / après (59 paires, `qa/pr/WFS-540/`), rendu lavapipe local.
+- Limites : une 208 réelle ne rattrape plus un joueur rapide dans les virages (relais à 220 m) ; mesure RG-08 faite à l'essieu arrière, « hors glisse » = pneus à < 50 % de leur adhérence (à valider par le PO) ; non testé sur téléphone (🟡 après fusion). CI de `main` #1061 rouge (banc-essai texte) avant cette PR : pas de lien avec WFS-540.
+
+### 2026-11-14 02:37:28 — WFS-540 : PR #406 refusée par le lead dev (lead-dev)
+- Relu : tout le diff, les 59 paires de captures, branche synchronisée construite et testée (136 test(s) réussi(s), `test_police_540` OK). RG-00 tenue (aucune écriture de la position / vitesse / cap de la police hors `poser` et `projeter`).
+- Refus (revue https://github.com/wlfaleh/waforspeed_mobile/pull/406#pullrequestreview-5900941227) : (1) section « Tests CPU » et `qa/pr/WFS-540/tests-cpu.log` absentes ; (2) RG-09 : sur `police540-camion-08` à `-14` (après), la police reste arrêtée en biais derrière le camion alors que la file de droite est libre, et elle est cachée sous le compteur ; cas à corriger et à ajouter au test (E) ; (3) RG-05 : le test (D) ne passe jamais dans le nouveau code (recul maxi 0,0 km/h), ajouter un vrai choc qui fait reculer.
+- Acceptés : mesure RG-08 à l'essieu arrière, anciens tests adaptés (vraie 208), relais à 220 m hors de vue, CI de main déjà rouge (#1060, #1061).
+
+### 2026-11-14 02:47:12 — Statuts automatiques, CI main #1062 (robot statuts)
+- Run rouge (push, commit f39336c), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-491, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 02:47:59 — WFS-499 : retour du lead dev corrigé, PR #404 à relire (Claude, agent dev3d (01Us6uCxU3))
+- Point 1 : bancs `garage-couleurs` (WFS-489) et `garage-finitions` (WFS-491, fusionné entre-temps) : sauvegarde active, ils possèdent maintenant les voitures qu'ils utilisent (aucun contrôle retiré) ; lancés en entier sur la branche : **0 écart** chacun.
+- Point 2 : à la sortie de la course d'essai (écran de fin → menu), la voiture de la partie redevient celle de la sauvegarde ; garde-fou : salon du duel quitté (`duelSession().leave()`) avant le garage. Banc `garage-voitures` : « Rejouer » → garage, duel (salon en mémoire) → pas de course + salon quitté, fin d'essai → Menu → voiture possédée ; **0 écart en 1280 × 720 et en 1024 × 768**.
+- Point 3 : élision « Acheter l'Orion Corsaire » (accents compris), 4 cas de test. Remarques : cadenas au-dessus des points, textes agrandis, espace insécable dans les prix, carte de prix hors de la flèche « suivante ».
+- Synchronisations avec `main` : conflits avec WFS-491 (finitions : `garage_commun.h`, `garage_couleur.cpp`, `garage_achat.h`, textes, CMake, `garage.h`) résolus en gardant les deux ; WFS-484 sans conflit. 136 tests CPU réussis ; 81 captures « après », 45 « avant ». Commit à relire 37c2392f ; réponse point par point dans la PR ; `suivi-pr.md` 🔁.
