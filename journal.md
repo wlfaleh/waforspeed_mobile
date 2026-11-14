@@ -1656,3 +1656,8 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Revue du commit e85d008 : 26 captures ouvertes, diff lu en entier, branche construite, 140 tests CPU verts, banc `profil` relancé (0 écart FR + EN). Logique saine (« Valider » ne remet pas les statistiques à zéro, accroches ≤ 10 lignes annoncées).
 - Refus (revue « changements demandés » écrite dans la PR) : (1) capture des tests CPU absente (`qa/pr/WFS-482/tests-cpu.log` et section « Tests CPU », règle du 2026-11-11) ; (2) RG-08 : dans le formulaire « Modifier », le pseudo de 16 « W » et le curseur sortent du cadre du champ (`creation_profil.cpp`, `champ()`, taille fixe sans limite de largeur ; captures `profil-*-16w-modification`).
 - Statut : ↩️ Retour lead dev (PR #412) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 14:19:31 — WFS-493 : PR #413 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwTQ))
+- PR #413 (commit 1f756edf, branche synchronisée avec `main`) : 18 textures (Drift Tokyo, Néon nuit, Camouflage × 6 voitures), lueur du Néon la nuit (`vehicule.glsl` + 1 ligne d'accroche dans `scene.frag`), banc `skins` (`WFS_SKINS`), `test_vehicule_skin` étendu.
+- Vérification : 140 tests CPU réussis ; 55 captures du banc lavapipe regardées (`qa/pr/WFS-493/`) ; Rallye et vitrine sans skin identiques à `main` (PSNR 37 à 57 dB) ; contrôle des licences : 0 manque.
+- Limites : la partie visible des taches grises du Camouflage est plus petite que la tache dessinée (les noires mordent dessus) ; banc d'endurance non relancé (coût du shader : un test et une addition par pixel habillé).
