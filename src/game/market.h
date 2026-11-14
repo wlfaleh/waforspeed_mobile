@@ -120,8 +120,11 @@ private:
     std::map<std::string, std::string> possedes_;                // non consommables confirmés : produit → jeton
 };
 
-// WFS_BOUTIQUE=simulee : boutique simulée ; sinon nullptr (Android : WFS-511)
+// WFS_BOUTIQUE=simulee : boutique simulée ; sinon nullptr (sur Android, la boutique Google Play est boutiqueActive())
 std::unique_ptr<Boutique> creerBoutique();
+// WFS-511 (accroche) : boutique de la plateforme, déjà branchée sur sauvegarde() au démarrage (Android : Google Play,
+// src/platform/achats_android.cpp) ; nullptr ailleurs. L'écran Market (WFS-513) l'utilise, ou creerBoutique() sur PC et bancs.
+Boutique*& boutiqueActive();
 
 // ---- banc WFS_BANC=market (RG-09, sans rendu, < 1 s) : configgame.json lu ; lignes au journal et dans <out>/market.txt ;
 // rend le nombre de résultats faux (0 : tout est juste)
