@@ -28,7 +28,7 @@ Quand le cadeau du jour donne une voiture que le joueur n'a pas, il a 24 h pour 
   - fin du prêt : « Garde-la pour toujours : <prix> ★ » et un bouton « Garage ».
 - **Écran du cadeau** : « Activer » lance vraiment le prêt. Le bouton ne s'affiche que tant que le prêt attend.
 - **Essai gratuit** (accroche dans `profil_system.cpp`) : rouler avec la voiture prêtée n'utilise pas son essai gratuit de WFS-498. Ce défaut a été vu sur les captures, puis corrigé.
-- **Textes** FR et EN (`pret.*`, 13 clés dans chaque table).
+- **Textes** FR et EN (`pret.*`, 14 clés dans chaque table).
 - **Accroches** (≤ 10 lignes chacune, annoncées au journal) : `menu.cpp` (4 lignes), `garage.cpp` (4), `garage.h` (2), `profil_system.cpp` (2), `cadeau_jour.cpp`.
 
 ## Comment c'est vérifié
