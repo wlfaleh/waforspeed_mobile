@@ -1873,3 +1873,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Relu : tout le diff, les 59 paires de captures, branche synchronisée construite et testée (136 test(s) réussi(s), `test_police_540` OK). RG-00 tenue (aucune écriture de la position / vitesse / cap de la police hors `poser` et `projeter`).
 - Refus (revue https://github.com/wlfaleh/waforspeed_mobile/pull/406#pullrequestreview-5900941227) : (1) section « Tests CPU » et `qa/pr/WFS-540/tests-cpu.log` absentes ; (2) RG-09 : sur `police540-camion-08` à `-14` (après), la police reste arrêtée en biais derrière le camion alors que la file de droite est libre, et elle est cachée sous le compteur ; cas à corriger et à ajouter au test (E) ; (3) RG-05 : le test (D) ne passe jamais dans le nouveau code (recul maxi 0,0 km/h), ajouter un vrai choc qui fait reculer.
 - Acceptés : mesure RG-08 à l'essieu arrière, anciens tests adaptés (vraie 208), relais à 220 m hors de vue, CI de main déjà rouge (#1060, #1061).
+
+### 2026-11-14 02:47:12 — Statuts automatiques, CI main #1062 (robot statuts)
+- Run rouge (push, commit f39336c), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-491, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
