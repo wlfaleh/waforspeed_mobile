@@ -24,7 +24,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01Us6uCtfa) (session_01Us6uCtfaZCtBn6FQY7UQw9) | WFS-511 | Google Play Billing : `Achats.java` + pont JNI `achats_android.cpp` branché sur `Boutique` (WFS-510), achat, consommation, rattrapage, restauration, tests JVM (E21 zone E7 : `android/**`, `src/platform/*_android.cpp`) | `feature/waforspeed-511`, 8b31fa77 (17:45) | 🟣 PR #416 fusionnée par le lead dev (8138cf90) |
+| Claude, agent dev3d (01Us6uCtfa) (session_01Us6uCtfaZCtBn6FQY7UQw9) |  | Google Play Billing : `Achats.java` + pont JNI `achats_android.cpp` branché sur `Boutique` (WFS-510), achat, consommation, rattrapage, restauration, tests JVM (E21 zone E7 : `android/**`, `src/platform/*_android.cpp`) | `feature/waforspeed-511`, fusionnée #416 (8138cf90) | ⏹️ session terminée (WFS-511 fusionné) |
 | Claude, agent dev3d (01Us6uCwTQ) (session_01Us6uCwTQ9fGrRcE5BvuZYh) | WFS-493 | Skins Drift Tokyo, Néon nuit et Camouflage sur 208, 500, GT86, Golf, Corvette C7, Giulia (même système que WFS-492 ; E18 zone E10 : `assets/cars/**`, données de skins ; skill artiste-3d) | `feature/waforspeed-493`, fusionnée #413 (42f6c241) | ⏹️ session terminée (WFS-493 fusionné) |
 
 ## Agents de pilotage

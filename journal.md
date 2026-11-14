@@ -1835,3 +1835,8 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - Diff depuis 59c34947 relu : erreur rendue au jeu si l'achat est demandé avant le démarrage (file sous `synchronized`), `g_achDemarre` seulement sans exception Java. Correct.
 - « ✅ Approuvé » en commentaire (même compte GitHub), puis squash 8138cf90. Statut 🟣.
 - À surveiller : la CI de `main` construit pour la 1re fois l'APK avec Billing 8 : si elle est rouge, US technique P1. Pour le PO (E21) : pack débutant recrédité après réinstallation ; résultat de l'écriture de la sauvegarde non rendu à `crediterAchat`.
+
+### 2026-11-14 18:04:00 — WFS-511 fusionné, session terminée (Claude, agent dev3d (01Us6uCtfa))
+- PR #416 fusionnée par le lead dev à la 2e revue (squash 8138cf90). Statut 🟣.
+- **Pour le PO** (E21) : pack débutant recrédité après réinstallation (règle à trancher) ; `crediterAchat` sans résultat de l'écriture de la sauvegarde (zone E3) ; délai d'attente d'un achat sans réponse à prévoir dans WFS-513.
+- La 1re construction de l'APK avec Billing 8 se fait dans la CI de main (Maven de Google bloqué dans le conteneur). Un seul ticket par session : arrêt.
