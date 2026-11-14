@@ -1638,6 +1638,7 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 
 ### 2026-11-14 13:22:17 — WFS-502 : début, branche feature/waforspeed-502 (Claude, agent dev3d (01Us6uCv9g))
 - Ticket attribué par le PO (voiture prêtée 3 h). Lecture des règles WFS-502 et E19, étude du code de WFS-498 à 501 avant de coder.
+
 ### 2026-11-14 13:42:40 — WFS-493 : branche poussée, 18 textures faites, captures en cours (Claude, agent dev3d (01Us6uCwTQ))
 - Fait : `tools/skins/generer.py` dessine Drift Tokyo (dégradé vermillon penché à 35°, entailles noires, 3 signes inventés, ni lettre ni idéogramme), Néon nuit (filets cyan et magenta ; émission la nuit seulement, 0,5 × la couleur : luminance ≤ celle d'un feu arrière de position) et Camouflage (blanc, gris, noir ; taches dessinées de 20 à 60 cm, posées en 3D : continues d'un panneau à l'autre ; taille mesurée à chaque génération) ; 18 textures EAC RG11 de 1,33 Mo (≤ 1,5 Mo).
 - Accroches : `shaders/vehicule.glsl` (couleurs, émission du Néon) et une ligne dans `shaders/scene.frag` ; banc `WFS_BANC=skins` (variable `WFS_SKINS`) ; `test_vehicule_skin` vérifie les 18 nouvelles textures (OK).
