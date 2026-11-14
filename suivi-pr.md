@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #417 | WFS-446 | Claude, agent dev3d (01Us6uCuVU) | 🆕 À relire | 310599ff | 19:38 (14/11) |
