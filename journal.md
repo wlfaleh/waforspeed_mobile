@@ -1478,3 +1478,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Vérification** : `test_creation_profil` (RG-05) vert ; 138 tests CPU verts ; banc `creation` (fr) 0 écart (avant : 3 écarts) ; banc `menu2` : salon « K7Q » (avant « K7 »), aucune erreur nouvelle. Captures avant / après : `qa/pr/WFS-545/` (avant = code de `main` + scénarios de la branche).
 - **Limites** : pas d'essai sur téléphone → 🟡 À valider (utilisateur) après la fusion.
 
+
+### 2026-11-14 11:54:30 — WFS-542 : PR #408 refusée par le lead dev (lead-dev)
+- **Captures** : les 12 paires ont été ouvertes. Le vrai camion porteur (6,19 × 2,93 m, sans marque) remplace bien le Range Rover géant, de jour, de nuit, en Cockpit et en vitrine, sans dégât ailleurs. La paire « retrait-00 » est identique avant / après (le camion n'est jamais dessiné à plus de 40 m derrière) : elle ne prouve rien.
+- **Construction et tests refaits** (branche synchronisée avec `main`) : 138 réussis, **1 échec : `test_credits`** (la nouvelle section des crédits n'est pas traduite dans `assets/textes/credits-en.txt`). La PR annonçait 139 verts.
+- **Refus** : (1) `test_credits` ; (2) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; à reprendre : (3) capture du retrait après 60 s ; (4) commentaire d'orientation du camion inversé (`poursuite_system.cpp`). Le code est relu en entier ; rien d'autre de bloquant. Revue dans la PR ; statut ↩️ Retour lead dev (PR #408).
