@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | 🔁 Corrigée, à relire (synchronisée avec main) | b08b195a | 12:53 |
+| #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | 👀 En revue — lead-dev, 12:54 | b08b195a | 12:54 |
