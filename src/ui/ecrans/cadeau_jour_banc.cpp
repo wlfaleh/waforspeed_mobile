@@ -13,6 +13,7 @@
 #include "../langue.h"
 #include "../../core/log.h"
 #include "../../game/game.h"
+#include "../../game/pret.h"   // WFS-502
 #include "../../game/sauvegarde.h"
 #include "../../render/renderer.h"
 
@@ -29,6 +30,7 @@ int benchCadeau(Game& g, Renderer& r, const std::string& out) {
     int erreurs = 0;
     const char* filtreEnv = std::getenv("WFS_CADEAU");
     const std::string filtre = filtreEnv ? filtreEnv : "";
+    if (filtre.rfind("pret-", 0) == 0) return benchPret(g, r, out, filtre);   // WFS-502 : captures de la voiture prêtée seulement
     const ui::langue::Choix choixAvant = ui::langue::choix();
     const cadeau::Instant heure{1794599220LL, 3600};   // 2026-11-13 19:47 UTC = 20:47 à Paris : prochain cadeau dans 03:13
     detail::forcerHeure(&heure);
@@ -115,9 +117,16 @@ int benchCadeau(Game& g, Renderer& r, const std::string& out) {
             sauvegarde().cadeau = EtatCadeau{};   // un cadeau de nouveau disponible (banc seulement)
             detail::forcerResultat(&gains[i]);
             appuyer(10 + i, "bouton");
+            if (i == 2) { pret::forcerHeure(heure.epoch); pret::recevoir(sauvegarde().cadeau, "giulia", heure.epoch); }   // WFS-502 : prêt en attente, comme après un vrai tirage « voiture »
             detail::forcerFinAnimation(); image();
             capture(noms[i], noms[i], "gain montré par le banc (WFS_CADEAU)");
-            if (i == 2) { float x, y; etape(detail::centre("activer", x, y), "voiture prêtée : bouton « Activer »"); appuyer(20, "activer"); etape(!ouvert(), "« Activer » ferme l'écran"); }
+            if (i == 2) {   // WFS-502 : « Activer » commence le prêt
+                float x, y; etape(detail::centre("activer", x, y), "voiture prêtée : bouton « Activer »"); appuyer(20, "activer"); etape(!ouvert(), "« Activer » ferme l'écran");
+                etape(pret::utilisable(sauvegarde(), "giulia"), "« Activer » : prêt de la giulia commencé (WFS-502)");
+                EtatCadeau& c = sauvegarde().cadeau;   // prêt retiré : captures suivantes de WFS-501 inchangées (pas de bandeau au menu)
+                c.pretVoiture.clear(); c.pretRecu = c.pretFin = c.pretRestantVu = 0; c.pretAvant.clear(); c.pretMessage.clear();
+                pret::forcerHeure(0);
+            }
             else appuyer(20 + i, "retour");
         }
         // heure reculée (WFS-500 RG-07) : « Prochain cadeau bientôt »
@@ -144,6 +153,7 @@ int benchCadeau(Game& g, Renderer& r, const std::string& out) {
     detail::forcerResultat(nullptr);
     detail::forcerHeure(nullptr);
     WFS_LOG("cadeau (WFS-501) : banc terminé, %d erreur(s)", erreurs);
+    if (filtre.empty()) erreurs += benchPret(g, r, out, filtre);   // WFS-502 : puis la voiture prêtée
     return erreurs;
 }
 

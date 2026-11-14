@@ -28,6 +28,7 @@ namespace ecrans {
 using namespace garage;
 namespace {
 bool g_regarder = false;   // WFS-96 : garageFor = 'look'
+std::string g_ouvrirSur;   // WFS-502 : prochaine ouverture du garage sur cette voiture (fin du prêt : « Garage »)
 // WFS-99 (RG-05, ANO-33) : cap de départ 0,6 + π, voiture vue de 3/4 avant (gYaw = 0,6 de garage.js la montrait de l'arrière)
 constexpr float CAP_DEPART = 0.6f + PI;
 class Garage;
@@ -59,6 +60,7 @@ public:
             appui_.vider();   // WFS-113 : aucun doigt retenu d'un écran précédent
             bouton_ = 0; doigtBouton_ = -1;   // WFS-115
             index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
+            if (!g_ouvrirSur.empty()) { for (int i = 0; i < voituresPermises().n; i++) if (g_ouvrirSur == CARS[voituresPermises().idx[i]].id) index_ = voituresPermises().idx[i]; g_ouvrirSur.clear(); }   // WFS-502 (accroche)
             couleur_.ouvrir(peinture_);   // WFS-489 (accroche) : dernières couleurs possédées, aperçu oublié (RG-03)
             finition_.ouvrir();           // WFS-491 (accroche) : dernières finitions possédées, aperçu oublié (RG-03)
             charger(index_);
@@ -120,7 +122,7 @@ public:
             if (t.down) return true;
             const int b = bouton_, z = achat_.appui(t.x, t.y); bouton_ = 0; doigtBouton_ = -1;
             if (b == AchatGarage::CHOISIR && z == AchatGarage::CHOISIR) { if (!achat_.acheter()) choisir(g); }   // WFS-489 (accroche) : « Acheter N ★ »
-            else if (b == AchatGarage::ESSAI && z == AchatGarage::ESSAI) { if (achat_.essaiDemande()) essayer(g); }   // WFS-499 (accroche)
+            else if (b == AchatGarage::ESSAI && z == AchatGarage::ESSAI) { if (!achat_.activerPret() && achat_.essaiDemande()) essayer(g); }   // WFS-499 (accroche) ; WFS-502 : « Activer le prêt »
             else if (b == AchatGarage::RETOUR && z == AchatGarage::RETOUR) { WFS_LOG("garage : « Retour »"); choisi_ = false; retour_ = true; g.allerA(Ecran::Menu); }
             return true;
         }
@@ -245,6 +247,7 @@ using GarageEnregistre = Garage;   // nom du système dans le journal (« Systè
 } // namespace
 
 void garageRegarder() { g_regarder = true; }
+void garageOuvrirSur(const char* carId) { g_ouvrirSur = carId ? carId : ""; }   // WFS-502
 AccesBancGarage* garage::garageEnCours() { return g_garage; }
 
 bool garageBouton(const char* nom, float& x, float& y) {

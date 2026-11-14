@@ -65,6 +65,9 @@ struct EtatCadeau {
     std::string pretVoiture;   // pret-voiture : voiture prêtée (WFS-502) ; vide : aucune
     long long pretRecu = 0;    // pret-recu : epoch UTC où le prêt a été gagné
     long long pretFin = 0;     // pret-fin : epoch UTC de la fin du prêt ; 0 : pas encore activé
+    long long pretRestantVu = 0;   // WFS-502 (RG-04) pret-restant-vu : dernier temps restant vu (s) : le temps restant ne remonte jamais
+    std::string pretAvant;     // WFS-502 (RG-05) pret-avant : voiture choisie avant le prêt (rendue à la fin si la prêtée était choisie)
+    std::string pretMessage;   // WFS-502 (RG-01, RG-05) pret-message : « expire;<voiture> » ou « fin;<voiture> », montré une fois au menu
     std::map<std::string, std::string> inconnues;   // autres clés cadeau-* / pret-* (version plus récente) : gardées telles quelles
 };
 

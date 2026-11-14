@@ -6,6 +6,7 @@
 #include "../core/log.h"
 #include "../game/boutique.h"
 #include "../game/commandes_tactiles.h"   // dessin2d : étoile
+#include "../game/pret.h"   // WFS-502 : voiture prêtée
 #include "../render/renderer.h"
 #include "langue.h"
 #include "text.h"
@@ -69,11 +70,12 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     else ui::text(r, bx + bw / 2, by + 13 * k, 20 * k, ui::majuscules(ui::tr("garage.choisir")), hex(ON_ACCENT, op), ui::CENTRE, 0.1f, false);
     g_z.choisir = {bx, by, bw, hb};
     float gy = by + hb + gap;
-    if (bloquee) {   // WFS-499 (RG-03) : « Essai gratuit » (info : cyan) puis « Essai déjà fait » (inactif)
-        const bool libre = essaiPossible(s, car);
+    const bool pretAttente = bloquee && pret::etat(s.cadeau) == pret::Etat::EnAttente && s.cadeau.pretVoiture == car;   // WFS-502 (RG-01)
+    if (bloquee) {   // WFS-499 (RG-03) : « Essai gratuit » (info : cyan) puis « Essai déjà fait » (inactif) ; WFS-502 : « Activer le prêt »
+        const bool libre = pretAttente || essaiPossible(s, car);
         biseau(r, bx, gy, bw, hg, 14 * k, hex(SURFACE2, op));
         if (libre) biseau(r, bx, gy, 4 * k, hg, 14 * k * 4 / bw, hex(ACCENT2, op));   // liseré cyan : bouton actif
-        const std::string t = ui::majuscules(ui::tr(libre ? "garage.essai" : "garage.essai_fait"));
+        const std::string t = ui::majuscules(ui::tr(pretAttente ? "pret.garage.activer" : libre ? "garage.essai" : "garage.essai_fait"));
         ui::textBoite(r, bx + bw / 2, gy, bw - 28 * k, hg, 16 * k, t, hex(libre ? ACCENT2 : MUTED, op), ui::CENTRE, 0.1f, false);
         g_z.essai = {bx, gy, bw, hg};
         gy += hg + gap;
@@ -92,7 +94,10 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     // WFS-499 (RG-01) : carte de la voiture bloquée, au-dessus du panneau, à droite : cadenas, prix, équivalents
     if (bloquee) {
         const long long prix = boutique::prixVoiture(car);
-        const std::string t1 = nombreLangue(prix) + " ★", t2 = texteEquivalentVoiture(prix), t0 = ui::majuscules(ui::tr("garage.bloquee"));
+        // WFS-502 (RG-01) : voiture prêtée pas encore activée : « Voiture prêtée » et « À activer dans 23 h 12 min » (carte de même largeur)
+        const std::string t1 = nombreLangue(prix) + " ★";
+        const std::string t2 = pretAttente ? ui::tr("pret.bandeau.attente", texteDuree(pret::resteActivation(s.cadeau, pret::maintenant()))) : texteEquivalentVoiture(prix);
+        const std::string t0 = ui::majuscules(ui::tr(pretAttente ? "pret.garage.titre" : "garage.bloquee"));
         const float pad = 18 * k, cad = 30 * k, w1 = cad + 12 * k + largeurEtoiles(30 * k, t1), w = std::max({w1, ui::width(14 * k, t2), ui::width(14 * k, t0, 0.14f)}) + 2 * pad;
         const float h = 88 * k, y = mp.py0 - h - 12 * k;
         float x = mp.px1 - mp.padX - w;
@@ -108,6 +113,25 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         cadenas(r, x + pad + cad / 2, y + 45 * k, cad, op);
         texteEtoiles(r, x + pad + cad + 12 * k, y + 29 * k, 30 * k, t1, hex(TEXTE, op), ui::GAUCHE);
         ui::text(r, x + pad, y + 66 * k, 14 * k, t2, hex(TAG, op), ui::GAUCHE, 0, false);
+    }
+    // WFS-502 (RG-03) : voiture prêtée, prêt actif : carte au même endroit que celle d'une voiture bloquée, liseré orange (temps
+    // compté) : « Voiture prêtée » · « Prêtée : 2 h 41 min » · « Garde-la pour toujours : 2 200 ★ » ; relue à chaque image (minute)
+    if (!bloquee && pret::utilisable(s, car)) {
+        const long long reste = pret::restant(s.cadeau, pret::maintenant());
+        const std::string t0 = ui::majuscules(ui::tr("pret.garage.titre")), t1 = ui::tr("pret.garage.restant", texteDuree(reste));
+        const std::string t2 = ui::tr("pret.garder", nombreLangue(boutique::prixVoiture(car)));
+        const float pad = 18 * k, w = std::max({largeurEtoiles(26 * k, t1), largeurEtoiles(14 * k, t2), ui::width(14 * k, t0, 0.14f)}) + 2 * pad;
+        const float h = 88 * k, y = mp.py0 - h - 12 * k;
+        float x = mp.px1 - mp.padX - w;
+        if (const Zone& n = g_z.next; n.w > 0 && y < n.y + n.h && x + w > n.x) x = std::min(x, n.x - w - 10 * k);
+        const float b = 14 * k;
+        const vec2 c[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};
+        dessin2d::polygone(r, c, 5, dessin2d::uni(vec4{GLASS.x, GLASS.y, GLASS.z, 0.9f * op}));
+        dessin2d::contour(r, c, 5, std::max(1.f, k), vec4{BORD.x, BORD.y, BORD.z, BORD.w * op});
+        r.uiRect(x, y, 3 * k, h, hex(ACCENT, op));
+        ui::text(r, x + pad, y + 10 * k, 14 * k, t0, hex(TAG, op), ui::GAUCHE, 0.14f, false);
+        texteEtoiles(r, x + pad, y + 31 * k, 26 * k, t1, hex(TEXTE, op), ui::GAUCHE);
+        texteEtoiles(r, x + pad, y + 66 * k, 14 * k, t2, hex(TAG, op), ui::GAUCHE);
     }
     // bandeau « Il te manque N ★ » : glissé au-dessus du panneau, bord gauche rouge (notification de design-street-racing)
     if (manque_ > 0) {
@@ -131,6 +155,14 @@ bool AchatGarage::boutonFenetre(const char* nom, float& x, float& y) const {
 }
 
 bool AchatGarage::essaiDemande() const { return e_.voiturePrete && essaiPossible(sauvegarde(), CARS[e_.index].id); }
+
+bool AchatGarage::activerPret() {
+    Sauvegarde& s = sauvegarde();
+    const char* car = CARS[e_.index].id;
+    if (!e_.voiturePrete || !voitureBloquee(s, car) || pret::etat(s.cadeau) != pret::Etat::EnAttente || s.cadeau.pretVoiture != car) return false;
+    if (pret::activer(s, pret::maintenant())) { WFS_LOG("garage : « Activer le prêt » de la %s", car); s.enregistrer(); }
+    return true;
+}
 
 bool AchatGarage::acheter() {
     if (!e_.voiturePrete) return false;

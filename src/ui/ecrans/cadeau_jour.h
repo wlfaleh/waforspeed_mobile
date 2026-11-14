@@ -9,7 +9,7 @@
 //   - un appui pendant l'animation la passe, sans redonner de cadeau ; aucune 2e ouverture le même jour depuis l'écran ;
 //   - AUCUNE offre payante (RC-E19-01) : ni « rouvrir », ni « doubler », ni pub, ni prix ;
 //   - textes par ui::tr (français / anglais, WFS-504) ; noms des voitures : noms affichés de configgame.json (jamais une marque).
-//   - le gain n'est pas donné ici (WFS-503) ; « Activer » de la voiture prêtée ferme l'écran (branché par WFS-502).
+//   - le gain n'est pas donné ici (WFS-503) ; « Activer » de la voiture prêtée commence le prêt et ferme l'écran (WFS-502).
 //
 // Utilisation (menu.cpp) : cadeau_jour::dessinerBouton(...) dans drawUi ; dans onTouch, cadeau_jour::ouvert() →
 // cadeau_jour::toucher(...), sinon un appui relâché sur cadeau_jour::dansBouton(...) → cadeau_jour::ouvrir(). Le panneau est
@@ -51,6 +51,9 @@ bool dansBouton(float x, float y);
 // ---- banc d'essai (WFS_BANC=cadeau, RG-07) : WFS_CADEAU=etoiles|coloris|skin|voiture|chances|attente ne garde que ces captures ;
 // la vraie sauvegarde n'est jamais touchée (sauvegarde inactive du banc). Rend le nombre d'erreurs du parcours RG-08.
 int benchCadeau(Game& g, Renderer& r, const std::string& out);
+// WFS-502 (RG-09, RG-10) : banc de la voiture prêtée (pret_bandeau_banc.cpp), lancé par benchCadeau : WFS_CADEAU=pret-attente|pret-actif|
+// pret-fin ne garde que ces captures (sans WFS_CADEAU : toutes, après celles de WFS-501). Rend le nombre d'erreurs du parcours RG-10.
+int benchPret(Game& g, Renderer& r, const std::string& out, const std::string& filtre);
 
 } // namespace ecrans::cadeau_jour
 } // namespace wfs

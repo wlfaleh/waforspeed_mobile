@@ -263,6 +263,23 @@ cadeau.chances.minimum=At least {1} ★ per gift
 cadeau.chances.garantie=Guarantee: a car or a skin by gift number {1} at the latest
 cadeau.chances.restants=For you: {1} more gifts at most
 cadeau.chances.restant1=For you: your next gift is a car or a skin
+
+# ---- loan car from the daily gift (WFS-502)
+pret.duree.h={1} h {2} min
+pret.duree.min={1} min
+pret.garage.activer=Start the loan
+pret.garage.titre=Loan car
+pret.garage.restant=On loan: {1}
+pret.garder=Keep it forever: {1} ★
+pret.bandeau.titre=Loan car: {1}
+pret.bandeau.attente=Activate within {1}
+pret.bandeau.actif={1} left behind the wheel
+pret.bandeau.activer=Activate
+pret.bandeau.expire=Loan expired: {1}
+pret.bandeau.expire.aide=Not activated within {1} h
+pret.bandeau.fin=Loan over: {1}
+pret.bandeau.garage=Garage
+
 skin.rallye=Rally
 skin.drifttokyo=Drift Tokyo
 skin.neonnuit=Neon Night
