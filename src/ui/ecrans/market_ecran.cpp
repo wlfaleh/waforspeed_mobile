@@ -199,22 +199,26 @@ void carte(Renderer& r, int i, float x, float y, float w, float h, float k, floa
         r.uiRect(x, y, e, h, hex(ACCENT)); r.uiRect(x + w - e, y, e, h, hex(ACCENT));
     } else r.uiRect(x, y, w, 3 * k, hex(TEINTE_PACK[i]));   // liseré de la teinte de la médaille
     const float pad = 14 * k;
-    float yy = y + 16 * k;
+    // téléphone couché (environ 410 dp de haut) : carte basse ; le badge chevauche le bord du haut, la médaille rétrécit ou disparaît
+    const bool compacte = h < 220 * k;
+    float yy = y + (compacte ? 12 : 16) * k;
     ui::textBoite(r, x + w / 2, yy, w - 2 * pad, 18 * k, 14 * k, ui::majuscules(nomPack(i)), hex(TEXTE), ui::CENTRE, 0.10f);
-    yy += 26 * k;
+    yy += (compacte ? 22 : 26) * k;
     // badge du bonus (« +20 % offerts ») ou « Une seule fois » (pack débutant)
     const std::string badge = debutant ? ui::majuscules(ui::tr("market.debutant.badge")) : ui::majuscules(texteOffert(i));
     if (!badge.empty()) {
-        const float bp = 12 * k, bw = std::min(w - 2 * pad, ui::width(bp, badge, 0.10f) + 22 * kb), bh = 22 * k;
-        dessin2d::biseau(r, x + (w - bw) / 2, yy, bw, bh, 8 * kb, dessin2d::uni(hex(debutant ? ACCENT2 : ACCENT)));
-        ui::textBoite(r, x + w / 2, yy, bw - 12 * kb, bh, bp, badge, hex(BG), ui::CENTRE, 0.10f);
+        const float bp = (compacte ? 11 : 12) * k, bh = (compacte ? 20 : 22) * k, bw = std::min(w - 2 * pad, ui::width(bp, badge, 0.10f) + 22 * kb);
+        const float by = compacte ? y - bh / 2 : yy;
+        dessin2d::biseau(r, x + (w - bw) / 2, by, bw, bh, 8 * kb, dessin2d::uni(hex(debutant ? ACCENT2 : ACCENT)));
+        ui::textBoite(r, x + w / 2, by, bw - 12 * kb, bh, bp, badge, hex(BG), ui::CENTRE, 0.10f);
     }
-    yy += 30 * k;   // place du badge gardée sans bonus : les cartes restent alignées
+    if (!compacte) yy += 30 * k;   // place du badge gardée sans bonus : les cartes restent alignées
     // mise en page du bas vers le haut : bouton, base, total ; la médaille prend la place qui reste (rien ne se chevauche)
     const float bh = std::min(50 * kb, 46 * k), yb = y + h - pad * 0.8f - bh;
     const std::string total = garage::nombreLangue(p.total) + " \u2605";
-    const float tp = std::min(34 * k, (w - 2 * pad) / std::max(1.f, garage::largeurEtoiles(1, total, 0.02f)));
-    const float yBase = yb - 8 * k - 14 * k, yTotal = yBase - 4 * k - tp;
+    const float yBase = yb - 8 * k - 14 * k;
+    const float tp = std::max(14 * k, std::min({34 * k, (w - 2 * pad) / std::max(1.f, garage::largeurEtoiles(1, total, 0.02f)), yBase - 4 * k - yy}));
+    const float yTotal = yBase - 4 * k - tp;
     const float place = yTotal - 6 * k - yy, rm = std::min(44 * k, place / 2 / 1.32f);
     if (rm >= 10 * k) {   // médaille : étoile de la teinte du pack, sur un anneau
         const float cy = yy + place / 2;
