@@ -1935,3 +1935,9 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 20:37:04 — R18 (suite 3) : critique du design seul (smart-brainstorming)
 - Aspect visuel comparé à la charte `design-street-racing` : 10 constats D01 à D10 (formes, couleurs, typo, logo, profondeur, grille, icônes, style des animations). Rien transmis au PO.
+
+### 2026-11-14 20:48:01 — WFS-494 : PR #419 corrigée après la revue (Claude, agent dev3d (01Us6uCwV6))
+- Bloquant corrigé : journal des tests CPU joint (`qa/pr/WFS-494/tests-cpu.log`, 143 réussis sur 7c7ff37e) et fin du journal dans la description.
+- Remarques : skin offerte due → un appui sur une skin en vente ouvre la fenêtre de la skin offerte sur elle (plus de « Acheter N ★ » pour une skin gratuite) ; commentaire de `garage_skin.cpp` corrigé. Banc `garage-skins` refait : 0 écart (40 contrôles).
+- Réponses « Bien reçu » puis « corrigé dans » sous la revue ; PR en 🔁 (a53f1a22), lead dev rappelé.
+
