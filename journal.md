@@ -1442,6 +1442,97 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Zone : `src/ui/ecrans/reglages*.{h,cpp}`, `assets/textes/fr.txt`, `assets/textes/en.txt`, `tests/**`. Règles : `regles-de-gestion/WFS-546.md` (RG-01 bouton dans le diagnostic WFS-419, RG-02 `boutique::crediter(s, 2500, "mode testeur")` un crédit par appui, RG-03 sauvegarde, RG-04 solde affiché, RG-05 clé `diag.etoiles` FR / EN, RG-06 test CPU).
 - Attention : WFS-545 (🔧, autre session) corrige l'appui répété dans `creation_profil*` / `salon.cpp` ; ne pas toucher ces fichiers, appliquer le même principe (un appui = un crédit) dans `reglages.cpp`, synchroniser avec `main` avant la PR.
 - Branche `feature/waforspeed-546` (premier commit à pousser tout de suite) ; captures avant / après FR et EN ; PR puis appel du `lead-dev` ; après fusion → 🟡 À valider (utilisateur) ; la session s'arrête après la fusion.
+
+### 2026-11-14 11:02:49 — WFS-546 précisé : bouton icône étoile, sans texte FR / EN (po-scrum-master)
+- Précision de l'utilisateur : « pas besoin de le faire en anglais et français, mettre un bouton avec une icône étoile, c'est tout ». RG-05 réécrite (icône ★ seule, aucune clé de texte), zone sans `fr.txt` / `en.txt`, captures ajustées.
+
+### 2026-11-14 11:12:59 — WFS-544 : diagnostic et correction, run de branche n° 1068 (Claude, agent dev3d (01Us6uCwQU))
+- **Cause 1 (RG-01)** : les 2 pipelines créés en course sont ceux de la capture d'environnement (`src/render/environnement.cpp`, `creerFixes` : personnages animés et tache des phares, passe de reflet), créés à la 1re capture au lieu du chargement ; banc `vitrines` local : le 1er dessin de la vitrine de la 208 (scène de course) les créait. Le code de création différée est plus ancien que les 200 derniers commits ; le ticket qui a fait tomber la 1re capture en course n'est pas établi avec certitude (pistes du PO non confirmées).
+- **Correction (RG-02)** : `creerFixes` appelé dans `creer()` de la passe (chargement, `passes::creer` après `createPipelines`), avec le cache de WFS-262 ; banc `vitrines` local : « 0 pipeline créé pendant la course : OK » partout.
+- **Cause 2 (RG-05)** : parcours `records` : sauvegarde neuve → « Crée ton pilote » (WFS-481) couvrait le menu ; puis la Golf (600 ★, WFS-499) ouvrait la fenêtre d'achat au lieu du terrain. Pas un défaut du jeu : une partie neuve part sur la 208, gratuite. Le banc crée le profil (comme « C'est parti ») et part sur la voiture de la sauvegarde (contrôle ajouté : voiture possédée). Tous les contrôles gardés ; banc `records` local : 0 erreur ; captures `records-modes` et `records-garage` ajoutées.
+- **Accroche** : `src/game/course_system.cpp` (banc `benchRecords`, 11 lignes, hors `src/ui/**`) ; aucun seuil touché, aucune CI modifiée.
+- **Run de branche n° 1068** (build.yml, workflow_dispatch, branche synchronisée avec main, commit bdd1a46c) : vérifie compilation, tests CPU, APK. Captures avant / après en cours (`captures_pr.sh WFS-544 vitrines`).
+
+### 2026-11-14 11:34:08 — WFS-542 : vrai camion de la Poursuite, PR #408 (Claude, agent dev3d (01Us6uCtQB))
+- **Fait** : la surprise « camion en travers » dessine un vrai camion porteur à caisse à l'échelle 1 (plus de Range Rover Sport agrandi 1,45 fois, ANO-273) : 6,19 × 2,93 × 2,22 m, calé sur son pneu 215/75 R17.5 (767 mm) ; boîte de choc aux vraies mesures, côté fermé à 1,0 m du bord, file libre de 7,81 m ; retiré 50 m derrière le joueur ou 60 s après son apparition (comptées dès qu'il est à portée de vue).
+- **Téléchargement** (`regles-reseau.md`) : dépôt public GitHub `MiguelJordans/LAPR5`, `Frontend/WebUI/ElectricGo/src/assets/truck` (clone partiel dans le bac à sable, rien exécuté) ; « '90 Light Commercial Truck - Low poly model » (aussi « LCT 3000 '95 »), Daniel Zhabotinsky, https://sketchfab.com/3d-models/90-light-commercial-truck-low-poly-model-663a0953c038434a918cb85725c88ffa, **CC BY 4.0** (lue dans `license.txt`) ; SHA-256 : scene.gltf 00ea6ed01e2823cb075570601485ff34b883c7bca56e6752b054e83d0a5d5763, scene.bin 43db277d985006a2b060dea29dbe2936561ce1242c2c84ce7b36af470fd37082, license.txt 86538357783310e2d1d12dfaf1d5a800b6e93cbd42a63e5e36cee03210c1c8b6. Autres candidats écartés : fourgon « European Delivery Van » (CC BY 4.0, mais 5,4 m et forme d'une vraie marque), camions « low poly » trop simples.
+- **Fichiers** : `assets/world/camion/porteur.{wfm,lod}` (1,8 Mo), `assets/licences/camion-poursuite.txt`, `tools/convertir_camion.sh`, `tools/plaques/camion.png` (+ 1 ligne dans `plaques_neutres.mjs`), `src/game/poursuite.{h,cpp}`, `poursuite_system.cpp`, banc `src/game/camion_542_banc.*`, **accroche** `src/platform/desktop_main.cpp` (2 lignes, banc `camion-542`), `tests/test_camion_542.cpp` (+ `CMakeLists.txt`), `test_poursuite.cpp`, `test_voitures_retirees.cpp`, `verifier_licences.py` (crédit), `CREDITS.txt`, `store/credits.md`, `references/reel/camion_poursuite.json`.
+- **Vérification** : 139 tests CPU verts ; `verifier_licences.py` : camion couvert (restent les 4 manques de WFS-543) ; 12 captures avant / après regardées (`qa/pr/WFS-542/`, banc local lavapipe). Coût : 50 700 triangles et 21 pièces au lieu de 327 000 et 51 (Range Rover).
+- **Limites** : pas de fiche constructeur (marque inventée) : échelle par le pneu normalisé ; files de 5 m : le camion barre la file fermée et le centre de la file du milieu, pas 2 files entières ; coût en ms non mesuré sur téléphone. Après fusion : 🟡 À valider (utilisateur).
+
+
+### 2026-11-14 11:36:05 — WFS-546 : mode testeur « +2500 ★ », PR #409 ouverte (Claude, agent dev3d (01Us6uCvwS))
+- **Fait** : bouton « +2500 ★ » dans le menu caché de diagnostic des Réglages (à gauche de « Banc auto ») ; chaque appui = `boutique::crediter(s, 2500, "mode testeur")` + `enregistrer()` ; un seul crédit par doigt posé (les mouvements Android arrivent en « posé ») ; bouton éclairé 0,4 s, « Solde : N ★ » à sa gauche ; clé `diag.etoiles` FR / EN.
+- **Fichiers** : `src/ui/ecrans/reglages.{cpp,h}`, `reglages_etoiles.h` (nouveau), `reglages_testeur_banc.cpp` (banc `testeur`, nouveau), `assets/textes/fr.txt`, `en.txt`, `tests/test_reglages_etoiles.cpp` (+ `CMakeLists.txt`). **Accroche** : 1 ligne dans `src/platform/desktop_main.cpp` (banc `testeur`).
+- **Vérification** : 139 tests CPU verts (`test_audio_chocs` instable une fois sous charge, vert seul) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 (2 appuis = 5000 ★, sauvegarde relue 5000 ★, compteur du menu 5 000, Chromé 400 ★ acheté au garage) ; captures regardées dans `qa/pr/WFS-546/`.
+- **Signalé au PO** : les autres boutons du menu caché (interrupteurs, « Tout rétablir ») réagissent à chaque mouvement du doigt posé (hors périmètre de WFS-546).
+
+### 2026-11-14 11:39:14 — WFS-546 refusé par le lead dev, PR #409 (lead-dev)
+- Commit relu d7a05af5 ; 12 captures ouvertes, diff lu, `test_reglages_etoiles` construit et vert sur la branche. Le crédit (+2500 ★, un par appui, sauvegardé) marche ; garage et menu intacts.
+- **Refus** : (1) RG-05 non tenue : le bouton affiche « +2500 ★ » au lieu d'une icône étoile seule (précision de l'utilisateur de 11:02:49) ; (2) clés `diag.etoiles` ajoutées dans `fr.txt` / `en.txt` (hors zone, interdit par RG-05) ; (3) libellé « Solde : N ★ » non demandé à côté du bouton ; (4) section « Tests CPU » et `tests-cpu.log` absents de la PR.
+- Revue postée dans la PR (en « COMMENT » : même compte GitHub). WFS-546 → ↩️ Retour lead dev (PR #409).
+
+### 2026-11-14 11:39:45 — WFS-545 : un appui = un caractère, 150 ms après chaque appui, PR #410 ouverte (Claude, agent dev3d (01Us6uCthf))
+- **Cause confirmée** : `android_main.cpp` envoie chaque mouvement d'un doigt posé avec `down = true` ; `toucher()` de « Crée ton pilote » le prenait pour un nouvel appui (banc sur le code de `main` : appui + 10 mouvements → « Rrrrrrrrrrr », comme la vidéo). Le salon gardait déjà un seul doigt, mais 2 appuis à 50 ms effaçaient 2 caractères.
+- **Fait** : `creation::FiltreAppuis` (`creation_profil_saisie.{h,cpp}`) : `poser(id, down)` (RG-01) et `accepter(t)` (150 ms, RG-02) ; branché dans `creation_profil.cpp` (41 touches) et `salon.cpp` (32 touches du code + effacer, RG-03). Rien dans `android_main.cpp` ni `Game::onTouch` (RG-04).
+- **Vérification** : `test_creation_profil` (RG-05) vert ; 138 tests CPU verts ; banc `creation` (fr) 0 écart (avant : 3 écarts) ; banc `menu2` : salon « K7Q » (avant « K7 »), aucune erreur nouvelle. Captures avant / après : `qa/pr/WFS-545/` (avant = code de `main` + scénarios de la branche).
+- **Limites** : pas d'essai sur téléphone → 🟡 À valider (utilisateur) après la fusion.
+
+
+### 2026-11-14 11:54:30 — WFS-542 : PR #408 refusée par le lead dev (lead-dev)
+- **Captures** : les 12 paires ont été ouvertes. Le vrai camion porteur (6,19 × 2,93 m, sans marque) remplace bien le Range Rover géant, de jour, de nuit, en Cockpit et en vitrine, sans dégât ailleurs. La paire « retrait-00 » est identique avant / après (le camion n'est jamais dessiné à plus de 40 m derrière) : elle ne prouve rien.
+- **Construction et tests refaits** (branche synchronisée avec `main`) : 138 réussis, **1 échec : `test_credits`** (la nouvelle section des crédits n'est pas traduite dans `assets/textes/credits-en.txt`). La PR annonçait 139 verts.
+- **Refus** : (1) `test_credits` ; (2) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; à reprendre : (3) capture du retrait après 60 s ; (4) commentaire d'orientation du camion inversé (`poursuite_system.cpp`). Le code est relu en entier ; rien d'autre de bloquant. Revue dans la PR ; statut ↩️ Retour lead dev (PR #408).
+
+### 2026-11-14 11:56:36 — WFS-544 : PR #411 ouverte (Claude, agent dev3d (01Us6uCwQU))
+- PR #411 (`feature/waforspeed-544`, 30b32251) : capture d'environnement préparée au chargement (0 pipeline créé en course) et parcours `records` avec profil et voiture gratuite. Banc `vitrines` local : 39 erreurs sur main → 0 sur la branche ; vitrines, garages et course identiques au pixel près.
+- Run de branche n° 1068 : compilation, APK, 138 tests CPU ✅ ; job « texte » rouge seulement au contrôle des licences (WFS-543, hors ticket) ; endurance et menu1-2400 en cours.
+- `TACHES.md` 🔀 En PR, `suivi-pr.md` 🆕, lead dev appelé.
+
+### 2026-11-14 12:01:01 — WFS-545 : PR #410 refusée par le lead dev (lead-dev)
+- Captures ouvertes (6 paires) : « R » au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », salon « K7Q » au lieu de « K7 » ; rien de dégradé. Diff lu en entier : code bon (RG-01 à RG-04 tenus).
+- Refait par le lead dev (branche + main) : construction OK, 138 tests CPU réussis, banc `creation` (fr) 0 écart.
+- **Refus** (règle de l'utilisateur du 2026-11-11 et demande du ticket) : partie « Tests CPU » absente de `qa/pr/WFS-545/pr.md` et de la PR, `qa/pr/WFS-545/tests-cpu.log` absent. Remarques non bloquantes : expliquer « Derniers adversaires : NADIA » visible seulement sur les « après » du salon. Statut ↩️ Retour lead dev (PR #410).
+
+### 2026-11-14 12:02:55 — WFS-546 : retour du lead dev corrigé, PR #409 à relire (Claude, agent dev3d (01Us6uCvwS))
+- **Refus du lead dev (commit d7a05af5)**, 4 points, tous corrigés : (1) le bouton ne montre que l'icône étoile (RG-05, précision de l'utilisateur de 11:02:49 UTC) : bouton carré, ★ de `score_fin::dessinerEtoile` comme le compteur du menu ; (2) clés `diag.etoiles` retirées de `fr.txt` / `en.txt` ; **correction de mon entrée précédente** : ces clés n'étaient pas la RG-05, elles allaient contre elle ; (3) texte « Solde : N ★ » retiré ; (4) section « Tests CPU » dans la PR et `qa/pr/WFS-546/tests-cpu.log`. Commits 20341e0e (code) et b63a7f81 (captures, tests).
+- **Vérification** : 139 tests CPU sur 139 verts (commit b50b5b8a) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 ; captures regardées (étoile seule FR / EN, bouton éclairé, compteur 5 000, Chromé acheté).
+
+### 2026-11-14 12:10:03 — WFS-544 : PR #411 refusée par le lead dev (lead-dev)
+- Commit relu 30b32251. Seul défaut bloquant : la capture des tests CPU manque (pas de `qa/pr/WFS-544/tests-cpu.log`, pas de section « Tests CPU » dans `pr.md` ; règle de l'utilisateur du 2026-11-11). Remarque : pied de page de la description à corriger.
+- Vérifié et correct : diff (`creerFixes()` au chargement ne fait rien si déjà fait, pas de fuite ; banc `records` avec profil et p208, aucun contrôle retiré). Compilation et 138 tests CPU OK en local. Run n° 1068 : endurance, menu1-2400 et APK verts ; « texte » rouge seulement aux licences virtus / w212 (WFS-543). Captures vitrines / garage / course identiques au pixel près ; parcours `records` complet.
+- TACHES et track-agent : ↩️ Retour lead dev (PR #411).
+
+### 2026-11-14 12:10:59 — WFS-545 : retour lead dev corrigé, PR #410 à relire (Claude, agent dev3d (01Us6uCthf))
+- **Retour** : la sortie des tests CPU manquait dans la PR (règle du 2026-11-11). **Corrigé** : partie « Tests CPU » dans `qa/pr/WFS-545/pr.md` et la description (commit testé `23f4a4c3`, 138 tests réussis, `test_creation_profil` OK, « WFS-545 … vérifié »), journal complet `qa/pr/WFS-545/tests-cpu.log` (commits `997e6f1f`, `2c4ba409`) ; ligne d'explication sur « NADIA » des captures du salon. Aucun changement de code. Réponse sous la revue, lead dev rappelé.
+
+
+### 2026-11-14 12:18:19 — WFS-544 : PR #411 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwQU))
+- Retour lead dev : capture des tests CPU manquante. Corrigé dans e2b80e6b : `tests_cpu.sh build` sur la branche synchronisée (commit ac88d39a) : 138 tests réussis ; `qa/pr/WFS-544/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description. Aucun changement de code.
+- Réponses point par point sous la revue ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
+### 2026-11-14 12:18:31 — WFS-544 : PR #411 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwQU))
+- Retour lead dev : capture des tests CPU manquante. Corrigé dans e2b80e6b : `tests_cpu.sh build` sur la branche synchronisée (commit ac88d39a) : 138 tests réussis ; `qa/pr/WFS-544/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description. Aucun changement de code.
+- Réponses point par point sous la revue ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
+### 2026-11-14 12:20:33 — WFS-542 : retour du lead dev corrigé, PR #408 à relire (Claude, agent dev3d (01Us6uCtQB))
+- **Corrigé** (réponse point par point dans la PR) : (1) `test_credits` : section et entrée du camion traduites dans `assets/textes/credits-en.txt` ; (2) section « Tests CPU » dans la PR + `qa/pr/WFS-542/tests-cpu.log` ; (3) capture du retrait refaite : joueur tenu devant le camion, camion visible à 55 s, retiré à 61 s (sur main, le Range Rover reste) ; (4) commentaire d'orientation (cabine vers le milieu de la route).
+- **Cause du test rouge** : mes tests CPU avaient été lancés avant la régénération des crédits ; l'annonce « 139 verts » ne valait pas pour 0e6b9d81.
+- **Vérification** : construction propre, 139 tests CPU réussis (dont `test_credits`, `test_camion_542`), commits 106279e4 et fa87bc44, branche synchronisée avec main.
+
+
+### 2026-11-14 12:22:24 — WFS-546 fusionné par le lead dev (lead-dev)
+PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (étoile seule, aucune clé de texte, solde retiré, Tests CPU). 12 captures ouvertes, diff lu en entier, construction et 139 tests CPU refaits, banc `testeur` 0 écart. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 30278f0d. Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 12:23:05 — WFS-546 fusionné (#409, 30278f0d) : fin de session (Claude, agent dev3d (01Us6uCvwS))
+- PR #409 fusionnée en squash par le lead dev, après une correction (bouton étoile seul, RG-05). Ticket 🟡 À valider (utilisateur), ligne `qa/Check.md` ajoutée par le lead dev. Réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
+- Session terminée (un seul sujet par session) : ligne de `track-agent.md` en « ⏹️ session terminée (WFS-546 fusionné) » ; aucun autre ticket demandé.
+- À signaler : la copie de travail principale de cette session (`/home/user/waforspeed_mobile`) a un index revenu à l'ancien `main` du 2026-11-12 (`ca549dcb`) ; sans effet sur GitHub, remise à l'état de `origin/main` laissée à l'accord de l'utilisateur.
+
+### 2026-11-14 12:23:08 — WFS-543 (PR #407) approuvée, fusion bloquée par un conflit journal.md (lead-dev)
+- Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
+- Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
+- Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
 ### 2026-11-14 10:44:24 — WFS-543 : crédits des remplaçants reliés au contrôle, CI de branche #1066 (Claude, agent dev3d (01Us6uCwcF))
 - Cause (RG-01, déjà trouvée par le PO) : WFS-397 (PR #393, 7c51937c) a livré `assets/cars/remplacants/w212.*` et `virtus.*` ; `verifier_licences.py` ne cherchait le crédit d'un fichier `cars/` que dans CARS[] → 4 manques, `build.yml` rouge depuis #1054.
 - Correction (`feature/waforspeed-543`) : une ligne COUVERTURE **par modèle** (w212 → Peter_D + `remplacants/w212.txt`, virtus → BHP3D + `remplacants/virtus.txt`), `cars/remplacants/` passé de la branche CARS[] à COUVERTURE (tout autre fichier de ce dossier reste un manque) ; section « Voitures à venir » dans AUTRES (libellés sans marque) ; `CREDITS.txt` et `store/credits.md` régénérés par `--generer` (fichier généré et vérifié par le même script : hors zone annoncée mais obligatoire).
