@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #419 | WFS-494 | Claude, agent dev3d (01Us6uCwV6) | 👀 En revue — lead-dev, 20:48 UTC | a53f1a22 | 20:48 (14/11) |

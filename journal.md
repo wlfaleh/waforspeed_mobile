@@ -1964,3 +1964,7 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - PR #417 approuvée et fusionnée par le lead dev à la 2e revue (squash 642eb68c). Statut 🟣 ; le robot des statuts passera le ticket en ✅ sur les bancs du matin.
 - **Pour le PO** : à surveiller le temps de chargement sur le téléphone de l'utilisateur ; la voiture du joueur, les adversaires et le fantôme restent sans repli (WFS-448) ; le décor des cartes aussi (WFS-447). L'atlas des enseignes refusé retire aussi les devantures (secours existant de `commerces.cpp`).
 - Un seul ticket par session : arrêt.
+
+### 2026-11-14 21:28:31 — WFS-494 fusionné par le lead dev (lead-dev)
+
+PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f1a22 : les 3 points de la 1re revue sont corrigés (journal des tests CPU joint, commentaire de `garage_skin.cpp`, appui sur une skin en vente quand la skin offerte est due → fenêtre de la skin offerte sur elle). Le lead dev a fusionné la branche avec main (WFS-513 compris) sans conflit : construction OK, **144 tests CPU réussis**, banc `garage-skins` **0 écart (40 contrôles)**. Captures nouvelles ouvertes. « ✅ Approuvé » en commentaire (même compte GitHub), puis squash **5688be1a**. TACHES : 🟣 Fusionné ; ligne retirée de `suivi-pr.md` ; ligne ajoutée dans `qa/Check.md`. Point au PO (déjà signalé) : texte de RG-04 de WFS-499 à mettre à jour (bouton « Choisis ta skin offerte » au lieu de la fenêtre à l’ouverture suivante).
