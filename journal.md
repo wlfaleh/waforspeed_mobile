@@ -1898,3 +1898,5 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 20:26:45 — WFS-547 annulé (po-scrum-master)
 - **Ordre de l'utilisateur** : « pas besoin, enlève » (il lisait hh:mm comme minutes:secondes). Statut 🚫 Annulé ; aucun code touché ; le robot des archives le déplacera.
+### 2026-11-14 20:27:16 — R18 : critique du design (menus, boutons, logo, transitions, départ) (smart-brainstorming)
+- Captures du banc du matin (run 32, `menu1-2400`, `menu2-2400`) et code relus ; 12 axes dans `recommandations-smart-brain.md` (R18). Top 3 : fin de course claire (A01), départ mis en scène + départ parfait (A02, A03), vrai logo + un seul jeu de boutons (A04, A05). Rien transmis au PO : l'utilisateur choisit.
