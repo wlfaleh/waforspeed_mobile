@@ -1483,3 +1483,22 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Captures** : les 12 paires ont été ouvertes. Le vrai camion porteur (6,19 × 2,93 m, sans marque) remplace bien le Range Rover géant, de jour, de nuit, en Cockpit et en vitrine, sans dégât ailleurs. La paire « retrait-00 » est identique avant / après (le camion n'est jamais dessiné à plus de 40 m derrière) : elle ne prouve rien.
 - **Construction et tests refaits** (branche synchronisée avec `main`) : 138 réussis, **1 échec : `test_credits`** (la nouvelle section des crédits n'est pas traduite dans `assets/textes/credits-en.txt`). La PR annonçait 139 verts.
 - **Refus** : (1) `test_credits` ; (2) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; à reprendre : (3) capture du retrait après 60 s ; (4) commentaire d'orientation du camion inversé (`poursuite_system.cpp`). Le code est relu en entier ; rien d'autre de bloquant. Revue dans la PR ; statut ↩️ Retour lead dev (PR #408).
+
+### 2026-11-14 11:56:36 — WFS-544 : PR #411 ouverte (Claude, agent dev3d (01Us6uCwQU))
+- PR #411 (`feature/waforspeed-544`, 30b32251) : capture d'environnement préparée au chargement (0 pipeline créé en course) et parcours `records` avec profil et voiture gratuite. Banc `vitrines` local : 39 erreurs sur main → 0 sur la branche ; vitrines, garages et course identiques au pixel près.
+- Run de branche n° 1068 : compilation, APK, 138 tests CPU ✅ ; job « texte » rouge seulement au contrôle des licences (WFS-543, hors ticket) ; endurance et menu1-2400 en cours.
+- `TACHES.md` 🔀 En PR, `suivi-pr.md` 🆕, lead dev appelé.
+
+### 2026-11-14 12:01:01 — WFS-545 : PR #410 refusée par le lead dev (lead-dev)
+- Captures ouvertes (6 paires) : « R » au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », salon « K7Q » au lieu de « K7 » ; rien de dégradé. Diff lu en entier : code bon (RG-01 à RG-04 tenus).
+- Refait par le lead dev (branche + main) : construction OK, 138 tests CPU réussis, banc `creation` (fr) 0 écart.
+- **Refus** (règle de l'utilisateur du 2026-11-11 et demande du ticket) : partie « Tests CPU » absente de `qa/pr/WFS-545/pr.md` et de la PR, `qa/pr/WFS-545/tests-cpu.log` absent. Remarques non bloquantes : expliquer « Derniers adversaires : NADIA » visible seulement sur les « après » du salon. Statut ↩️ Retour lead dev (PR #410).
+
+### 2026-11-14 12:02:55 — WFS-546 : retour du lead dev corrigé, PR #409 à relire (Claude, agent dev3d (01Us6uCvwS))
+- **Refus du lead dev (commit d7a05af5)**, 4 points, tous corrigés : (1) le bouton ne montre que l'icône étoile (RG-05, précision de l'utilisateur de 11:02:49 UTC) : bouton carré, ★ de `score_fin::dessinerEtoile` comme le compteur du menu ; (2) clés `diag.etoiles` retirées de `fr.txt` / `en.txt` ; **correction de mon entrée précédente** : ces clés n'étaient pas la RG-05, elles allaient contre elle ; (3) texte « Solde : N ★ » retiré ; (4) section « Tests CPU » dans la PR et `qa/pr/WFS-546/tests-cpu.log`. Commits 20341e0e (code) et b63a7f81 (captures, tests).
+- **Vérification** : 139 tests CPU sur 139 verts (commit b50b5b8a) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 ; captures regardées (étoile seule FR / EN, bouton éclairé, compteur 5 000, Chromé acheté).
+
+### 2026-11-14 12:10:03 — WFS-544 : PR #411 refusée par le lead dev (lead-dev)
+- Commit relu 30b32251. Seul défaut bloquant : la capture des tests CPU manque (pas de `qa/pr/WFS-544/tests-cpu.log`, pas de section « Tests CPU » dans `pr.md` ; règle de l'utilisateur du 2026-11-11). Remarque : pied de page de la description à corriger.
+- Vérifié et correct : diff (`creerFixes()` au chargement ne fait rien si déjà fait, pas de fuite ; banc `records` avec profil et p208, aucun contrôle retiré). Compilation et 138 tests CPU OK en local. Run n° 1068 : endurance, menu1-2400 et APK verts ; « texte » rouge seulement aux licences virtus / w212 (WFS-543). Captures vitrines / garage / course identiques au pixel près ; parcours `records` complet.
+- TACHES et track-agent : ↩️ Retour lead dev (PR #411).
