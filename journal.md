@@ -1433,3 +1433,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Nouvelle session `@dev` (session_01Us6uCthf4jktVzSWmVecyC), aucun ticket auparavant : **WFS-545** (P1 Urgent, E17 zone E8, en tête du bandeau ⌨️).
 - Zone : `src/ui/ecrans/creation_profil*.{h,cpp}`, `src/ui/ecrans/salon.cpp` (saisie du code), `tests/**`. Règles : `regles-de-gestion/WFS-545.md` (RG-01 un caractère par appui, RG-02 150 ms, RG-03 les deux claviers, RG-04 noyau inchangé, RG-05 test CPU).
 - Branche `feature/waforspeed-545` (premier commit à pousser tout de suite) ; captures avant / après ; PR puis appel du `lead-dev` ; après fusion → 🟡 À valider (utilisateur) ; la session s'arrête après la fusion.
+
+### 2026-11-14 10:57:05 — WFS-546 créé : mode testeur, bouton « +2500 ★ » dans le diagnostic des Réglages (po-scrum-master)
+- **Demande de l'utilisateur** : tester couleurs, skins et voitures sans étoiles. **WFS-546** (P1 Urgent, E17 zone E8) : bouton « +2500 ★ » dans le menu caché de diagnostic (WFS-419), `boutique::crediter(2500)` à chaque appui, sauvegardé, FR / EN, test CPU. ⏳ Prêt, bandeau ⭐ juste après WFS-545. Après fusion → 🟡. Question ouverte à l'utilisateur : retirer le bouton de la version Google Play avant la sortie publique.

@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Mode testeur : dans Réglages → mode diagnostic, un bouton qui ajoute 2500 étoiles à chaque clic.
+( PO, 2026-11-14 10:57:05 UTC : c'est créé — **WFS-546** (P1 Urgent), juste après WFS-545 pour le prochain `@dev`. Bouton « +2500 ★ » dans le menu caché de diagnostic (5 touchers sur le titre « Réglages »), 2500 ★ à chaque appui, gardées dans la sauvegarde. Règles : `regles-de-gestion/WFS-546.md`. **Une question pour plus tard** : avant la sortie publique, faudra-t-il retirer ce bouton de la version Google Play ? Sans réponse, il reste caché comme tu l'as demandé. )
+
 - Tâche urgente : ajouter un délai après chaque clic sur le clavier ; je tape sur une lettre ou un chiffre, il la crée plusieurs fois (vidéo du 2026-11-14).
 ( PO, 2026-11-14 10:43:30 UTC : c'est créé — **WFS-545** (P1 Urgent), en tête des tickets prêts pour le prochain `@dev`. Cause trouvée dans le code : chaque petit mouvement du doigt posé était compté comme un nouvel appui. Le ticket demande : **une lettre par appui** + **150 ms de délai** après chaque appui, sur le clavier « Crée ton pilote » et sur celui du code du salon. Règles : `regles-de-gestion/WFS-545.md`. Ouvre une session `@dev` pour qu'il soit pris tout de suite. )
 
