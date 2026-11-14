@@ -147,13 +147,13 @@ int main(int argc, char** argv) {
             VERIFIE(d.g(u, v) > 200, "%s-%s : filet magenta du dessus : %u", id, skin, d.g(u, v));
             pxDessus(0.f, 0.f, u, v);
             VERIFIE(d.r(u, v) < 15 && d.g(u, v) < 15, "%s-%s : peinture au milieu : (%u, %u)", id, skin, d.r(u, v), d.g(u, v));
-        } else {   // RG-04 : habillage complet (A partout), fond gris (B 55 %), taches blanches (B 0) et noires (B 100 %) ; retour du
+        } else {   // RG-04 : habillage complet (A partout), fond gris (B 72 %), taches blanches (B 0) et noires (B 100 %) ; retour du
                    // lead dev (PR #413) : pas de pois noirs sur fond blanc → blanc ≤ 35 % du flanc, gris ≥ 30 %, noir ≥ 1/8
             long n = 0, sansA = 0, blanc = 0, gris = 0, noir = 0;
             for (int y = vs::atlas::GAUCHE0; y < vs::atlas::GAUCHE1; y++) for (int x = 0; x < 1024; x++) {
                 n++; sansA += d.r(x, y) < 240;
                 const unsigned g = d.g(x, y);
-                blanc += g < 15; gris += g > 120 && g < 160; noir += g > 240;
+                blanc += g < 15; gris += g > 165 && g < 200; noir += g > 240;   // gris : B à 72 % (184)
             }
             VERIFIE(sansA == 0, "%s-%s : %ld pixels du flanc sans couleur A", id, skin, sansA);
             VERIFIE(blanc > n / 8 && blanc * 100 <= n * 35 && gris * 100 >= n * 30 && noir > n / 8, "%s-%s : tons du flanc blanc %ld, gris %ld, noir %ld sur %ld",

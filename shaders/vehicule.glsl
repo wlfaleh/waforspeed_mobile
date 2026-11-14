@@ -272,7 +272,7 @@ const vec4 SKIN_DROITE = vec4(280.0, 552.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0
 const vec4 SKIN_DESSUS = vec4(560.0, 864.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
 const vec4 SKIN_FACES = vec4(872.0, 1024.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
 // couleurs A et B de chaque skin (codes sRGB 0..1 ; 0 = aucune) : Rallye = blanc de compétition, anthracite (dessin original, RG-05) ;
-// WFS-493 : Drift Tokyo = vermillon, noir ; Néon nuit = cyan, magenta ; Camouflage = blanc cassé, noir (posé à 55 % : le gris)
+// WFS-493 : Drift Tokyo = vermillon, noir ; Néon nuit = cyan, magenta ; Camouflage = blanc cassé, noir (posé à 72 % : le gris du fond)
 // (mêmes valeurs que COULEURS de tools/skins/generer.py)
 const vec3 SKIN_COULEURS[10] = vec3[10](vec3(0.0), vec3(0.0),
     vec3(0.91, 0.91, 0.89), vec3(0.10, 0.11, 0.125),   // 1 Rallye

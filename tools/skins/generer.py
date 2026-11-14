@@ -226,13 +226,13 @@ def neon_nuit(v):
     return A, B
 
 # ---------------------------------------------------------------- Camouflage (RG-04) : urbain gris, noir et blanc, à taches de 20 à 60 cm
-# Habillage complet. Couleur A (blanc cassé) partout ; couleur B (noir) posée à 55 % = le gris, FOND du camouflage ; taches blanches
+# Habillage complet. Couleur A (blanc cassé) partout ; couleur B (noir) posée à 72 % = le gris, FOND du camouflage ; taches blanches
 # (B à 0) et noires (B à 100 %) qui s'imbriquent sur ce fond gris (retour du lead dev, PR #413 : pas de pois noirs sur fond blanc).
-# Une tache = 2 ou 3 lobes allongés (rapport 1,4 à 2,4) et ondulés autour d'un centre : contour irrégulier, pas un rond ; son
+# Une tache = 2 à 4 lobes allongés (rapport 1,4 à 2,4) et ondulés autour d'un centre : contour irrégulier, pas un rond ; son
 # étendue va de 20 à 60 cm. Taches posées en 3D sur l'enveloppe de la voiture (flancs, dessus, faces) par tirage avec distance
 # minimale (graine fixe) : deux taches de même ton ne se fondent pas en nappe ; une noire peut mordre sur une blanche. Évaluées au
 # point 3D de chaque pixel (points()) : continues d'une zone à l'autre. Taille et part de chaque ton contrôlées à chaque génération.
-CAMO_GRIS = 0.55               # couverture de B pour le fond gris
+CAMO_GRIS = 0.72               # couverture de B pour le fond gris (gris moyen foncé : bien distinct du blanc au soleil)
 CAMO_BLANC, CAMO_NOIR = 0, 1   # tons des taches
 CAMO_D = (0.28, 0.70)          # étendue des taches (m) : la tache visible (lobes réunis) fait 20 à 60 cm de diamètre équivalent
 CAMO_GRAINE = 4931
@@ -258,9 +258,9 @@ def taches(v):
         ton = CAMO_NOIR if rng.random() < 0.52 else CAMO_BLANC
         if any(np.linalg.norm(c - t[0]) < (0.85 if t[2] == ton else 0.35) * (R + t[1]) for t in centres): continue
         centres.append((c, R, ton))
-        for j in range(rng.integers(2, 4)):
+        for j in range(rng.integers(2, 5)):
             o = rng.normal(size=3); o /= np.linalg.norm(o)
-            cl = c + o * R * rng.uniform(0.15, 0.45)
+            cl = c + o * R * rng.uniform(0.25, 0.55)
             r = R * rng.uniform(0.55, 0.75)
             u = rng.normal(size=(4, 3)); u /= np.linalg.norm(u, axis=1)[:, None]
             ondes = (u, rng.uniform(0.8, 1.8, 4), rng.uniform(0, 2 * math.pi, 4), rng.uniform(0.06, 0.12, 4))
