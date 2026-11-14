@@ -1847,3 +1847,7 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Zone** : `src/ui/ecrans/**` (E8) + accroches ≤ 10 lignes dans `src/ui/garage.cpp` et `compteur_etoiles.*`, annoncées au journal. Règles : `regles-de-gestion/WFS-513.md`, `regles-de-gestion/E21-market.md`.
 - **Plan court** : écran Market (solde, cartes de packs, « Sans pub », achat par `Boutique`, « Restaurer mes achats », hors ligne grisé), FR / EN, banc `market`, parcours menu → Market → retour et garage → Market → retour ; captures ≥ 3 ; PR ; lead dev.
 - Session 01Us6uCtfa (WFS-511, #416 fusionnée) : ligne enlevée de `track-agent.md`.
+
+### 2026-11-14 18:13:34 — WFS-513 : début, branche `feature/waforspeed-513` créée (Claude, agent dev3d (01Us6uCvpo))
+- Écran Market FR / EN (zone E8 `src/ui/ecrans/**`). Accroches annoncées (≤ 10 lignes chacune) : `src/ui/garage.cpp` (bouton Market) et `src/ui/ecrans/compteur_etoiles.*` (le compteur ouvre le Market).
+- Réutilise : `Boutique` / `BoutiqueSimulee` (WFS-510), système de langue (WFS-504), `navigation.h`, `toasts.cpp`, composants du garage (WFS-499).
