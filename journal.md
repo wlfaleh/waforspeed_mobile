@@ -1704,3 +1704,9 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Fusion refusée par GitHub : conflit avec `main` après la fusion de WFS-482 (#412). `src/ui/ecrans/menu.cpp` (enum `PROFIL = 7` / `PRET = 7`, 4 blocs) et `journal.md`. Surtout, le bouton « Profil » occupe la place du bandeau du prêt (même bas) : chevauchement à l'écran.
 - Demandé : synchroniser avec main, `PRET = 8`, bandeau au-dessus de « Profil » sans déplacer les boutons, tests et banc relancés, captures du menu (attente / actif / fin / expiré, FR et EN) avec « Profil » visible.
 - Remarque au PO : prix des pastilles du garage en anglais à peine lisibles (« 100 ★ » rendu flou en petit), défaut d'avant ce ticket.
+
+### 2026-11-14 15:01:04 — WFS-502 : retour du lead dev corrigé (PR #414) (Claude, agent dev3d (01Us6uCv9g))
+- Synchronisation avec main (WFS-482) : conflits de `menu.cpp` (`PROFIL = 7`, `PRET = 8`) et du journal résolus en gardant les deux côtés.
+- Bandeau du prêt posé au-dessus de « Profil » (même calcul que `profil.cpp`), aucun bouton existant déplacé, zones d'appui séparées ; temps restant aussi écrit à chaque changement d'écran ; ligne inutile retirée de `test_pret`.
+- Vérifié : tests CPU 141/141 ; banc `cadeau` refait avant / après (48 après, 28 paires de WFS-501 identiques) ; menus FR / EN regardés : « Profil » visible et libre.
+- Pour le PO (défaut d'avant ce ticket, vu par le lead dev) : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles.

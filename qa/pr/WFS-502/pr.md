@@ -21,7 +21,7 @@ Quand le cadeau du jour donne une voiture que le joueur n'a pas, il a 24 h pour 
   - carte « Voiture prêtée · Prêtée : 2 h 41 min · Garde-la pour toujours : 2 400 ★ » ;
   - pour une voiture prêtée en attente, le bouton « Activer le prêt » remplace « Essai gratuit », et la carte affiche « À activer dans 23 h 13 min » ;
   - accroche `garageOuvrirSur` : le garage s'ouvre sur la voiture prêtée.
-- **Menu** (E8) : nouveau bandeau `src/ui/ecrans/pret_bandeau.*` au-dessus de « Cadeau du jour ». Il a 4 cas :
+- **Menu** (E8) : nouveau bandeau `src/ui/ecrans/pret_bandeau.*` au-dessus du bouton « Profil » de WFS-482 (après le retour du lead dev ; aucun bouton existant ne bouge). Il a 4 cas :
   - en attente : « Activer » ;
   - prêt actif : compte à rebours, et un appui ouvre le garage ;
   - prêt expiré : message montré une fois ;
@@ -29,7 +29,7 @@ Quand le cadeau du jour donne une voiture que le joueur n'a pas, il a 24 h pour 
 - **Écran du cadeau** : « Activer » lance vraiment le prêt. Le bouton ne s'affiche que tant que le prêt attend.
 - **Essai gratuit** (accroche dans `profil_system.cpp`) : rouler avec la voiture prêtée n'utilise pas son essai gratuit de WFS-498. Ce défaut a été vu sur les captures, puis corrigé.
 - **Textes** FR et EN (`pret.*`, 14 clés dans chaque table).
-- **Accroches** (≤ 10 lignes chacune, annoncées au journal) : `menu.cpp` (4 lignes), `garage.cpp` (4), `garage.h` (2), `profil_system.cpp` (2), `cadeau_jour.cpp`.
+- **Accroches** (≤ 10 lignes chacune, annoncées au journal) : `menu.cpp` (4 lignes, `PRET = 8` après `PROFIL = 7`), `garage.cpp` (4), `garage.h` (2), `profil_system.cpp` (2), `cadeau_jour.cpp`.
 
 ## Comment c'est vérifié
 - **Nouveau test `test_pret`** (RG-08, 39 cas), qui couvre :
@@ -52,23 +52,23 @@ Quand le cadeau du jour donne une voiture que le joueur n'a pas, il a 24 h pour 
 
 ## Tests CPU
 
-Commit testé : `c277fb1c` (branche synchronisée avec `main`) ; journal complet : `qa/pr/WFS-502/tests-cpu.log`.
+Commit testé : `ca13d7cb` (branche synchronisée avec `main`, WFS-482 compris) ; journal complet : `qa/pr/WFS-502/tests-cpu.log`.
 
 ```
 [OK] test_vehicule_skin (0 s)
 [OK] test_version_chargement (0 s)
 [OK] test_ville_lieux (0 s)
 [OK] test_ville_sol (4 s)
-[OK] test_virages_fleches (1 s)
+[OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 141 test(s) réussi(s) en 481 s
+tests CPU : 141 test(s) réussi(s) en 497 s
 code de sortie : 0
 ```
 
 ## Lecture des captures
-- `pret-*` : nouvelles captures (aucun prêt n'existe sur `main`), FR et EN : gain « voiture prêtée » avec « Activer » ; menu en attente ; garage « Activer le prêt » ; garage actif « Prêtée : 2 h 41 min » ; menu actif ; course jour et nuit avec la voiture prêtée ; menu « Garde-la pour toujours : 2 400 ★ » + « Garage » ; garage après la fin (voiture de nouveau bloquée, prix) ; menu « Prêt expiré ».
-- Avant (main) du garage et du menu : le menu sans bandeau = `cadeau-menu-*`, le garage d'une voiture bloquée = `pret-garage-fin` (même écran qu'avant le ticket).
-- `cadeau-*` (WFS-501) : 28 paires avant / après **identiques au pixel près** (écart RMSE 0, `compare` d'ImageMagick) : aucune régression de l'écran du cadeau.
+- `pret-*` : nouvelles captures (aucun prêt n'existe sur `main`), FR et EN : gain « voiture prêtée » avec « Activer » ; menu en attente ; garage « Activer le prêt » ; garage actif « Prêtée : 2 h 41 min » ; menu actif ; course jour et nuit avec la voiture prêtée ; menu « Garde-la pour toujours : 2 400 ★ » + « Garage » ; garage après la fin (voiture de nouveau bloquée, prix) ; menu « Prêt expiré ». Sur les 4 menus, le bandeau est **au-dessus de « Profil »**, qui reste visible et libre.
+- Menu sans prêt, avant / après (même `main` avec « Profil ») : `cadeau-menu-*` (identiques).
+- `cadeau-*` (WFS-501) : 28 paires avant / après **identiques au pixel près** (écart RMSE 0, `compare` d'ImageMagick).
 
 ## Captures pour le lead dev (48 après)
 
