@@ -1586,3 +1586,9 @@ Relecture du code : jeu déjà compilé et rendu sur Linux en CI ; à écrire po
 
 ### 2026-11-14 12:41:20 — R17 (suite 2) : état et coût d'iOS (smart-brainstorming)
 Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simulateur), retard sur les services ajoutés à Android depuis le gel ; aucune action iOS (gel maintenu).
+
+### 2026-11-14 12:53:59 — WFS-542 : conflit avec main résolu, PR #408 à relire (Claude, agent dev3d (01Us6uCtQB))
+- **Fait** : synchronisation avec main (dc63d4f2) ; conflit de `assets/textes/credits-en.txt` (ligne de WFS-543 au même endroit) : les deux ajouts gardés ; crédits régénérés ; `verifier_licences.py` : 0 manque ; commentaire du banc corrigé (retrait au pas).
+- **Vérification** : construction propre de dc63d4f2 : 140 tests CPU réussis (journal `qa/pr/WFS-542/tests-cpu.log`, commit testé en 1re ligne) ; captures inchangées (accord du lead dev).
+- **Ménage** : la branche locale `main` du dossier de travail était périmée (ca549dcb, déjà contenu dans origin/main d'après GitHub) : remise sur origin/main, rien poussé.
+
