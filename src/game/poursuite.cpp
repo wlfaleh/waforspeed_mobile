@@ -497,17 +497,18 @@ Programme programme(uint32_t graine, bool banc) {
 }
 
 // ---------------------------------------------------------------- camion en travers (WFS-119)
-// WFS-404 (RG-03) : X5 retiré (licence NC) → Range Rover Sport ; joueur en Range Rover Sport → Jeep Compass (autre grand modèle libre)
-const char* camionCar(const char* carJoueur) { return carJoueur && !std::strcmp(carJoueur, "rrsport") ? "compass" : "rrsport"; }
 int fileLibreCamion(int file) { return file == 1 ? 0 : file; }
 Travers camionTravers(int fileLibre, double longueurM, double largeurM) {
-    // à cheval sur la limite des 2 files couvertes (±RW/3) : la file libre (0 : gauche, 2 : droite) n'est pas touchée
+    // WFS-542 (RG-02) : échelle 1 ; le bout côté fermé est à CAMION_ECART_FERME du bord (aucune voiture n'y passe), l'autre
+    // bout entre dans la file du milieu ; la file libre (0 : gauche, 2 : droite) n'est pas touchée
+    const double sens = fileLibre == 0 ? 1 : -1;
     Travers tv;
-    tv.xM = (fileLibre == 0 ? 1 : -1) * RW / 3;
-    tv.demiX = longueurM * CAMION_ECHELLE / 2;
-    tv.demiZ = largeurM * CAMION_ECHELLE / 2;
+    tv.demiX = longueurM / 2;
+    tv.demiZ = largeurM / 2;
+    tv.xM = sens * (RW - CAMION_ECART_FERME - tv.demiX);
     return tv;
 }
+bool camionARetirer(double derriereM, double ageS) { return derriereM >= CAMION_RETRAIT_DERRIERE_M || ageS >= CAMION_RETRAIT_S; }
 
 // ---------------------------------------------------------------- mode gardé (WFS-119 RG-03)
 std::string cleMode(ModeCourse m) { return m == ModeCourse::Course5 ? "course5" : m == ModeCourse::Poursuite ? "poursuite" : "checkpoint"; }

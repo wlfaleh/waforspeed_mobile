@@ -114,16 +114,15 @@ int testPoursuite() {
         VERIFIE(r && c, "banc : ralentisseur %d, camion %d", r, c);
     }
     std::printf("6 surprises (barrage, déboîte, travaux, accident, camion, ralentisseur) sur 10 000 graines : OK\n");
-    // camion en travers : rrsport (compass si le joueur roule en rrsport ; X5 retiré, WFS-404), à cheval sur 2 files, la file libre n'est pas touchée
-    VERIFIE(std::string(camionCar("golf")) == "rrsport" && std::string(camionCar("rrsport")) == "compass", "modèle du camion");
+    // camion en travers : WFS-542 : vrai camion porteur à l'échelle 1 (tests/test_camion_542.cpp), à cheval sur 2 files, la file libre n'est pas touchée
     VERIFIE(fileLibreCamion(1) == 0 && fileLibreCamion(0) == 0 && fileLibreCamion(2) == 2, "file libre du camion");
     for (int libre : {0, 2}) {
-        const Travers tv = camionTravers(libre, 4.92, 2.0);
+        const Travers tv = camionTravers(libre);
         const double a = tv.xM - tv.demiX, b = tv.xM + tv.demiX;   // largeur couverte (m)
         const double fl0 = FILES[libre] * RW - RW / 3, fl1 = FILES[libre] * RW + RW / 3;   // la file libre (5 m)
-        bool couvre = true;
-        for (int f = 0; f < 3; f++) if (f != libre) couvre = couvre && FILES[f] * RW > a && FILES[f] * RW < b;
-        VERIFIE(couvre, "camion (file libre %d) : les 2 autres files couvertes [%.1f ; %.1f] m", libre, a, b);
+        bool couvre = true;   // une voiture (1,6 m de large au moins) au centre de chacune des 2 autres files heurte le camion
+        for (int f = 0; f < 3; f++) if (f != libre) couvre = couvre && FILES[f] * RW + 0.8 > a && FILES[f] * RW - 0.8 < b;
+        VERIFIE(couvre, "camion (file libre %d) : les 2 autres files barrées [%.1f ; %.1f] m", libre, a, b);
         VERIFIE(b <= fl0 || a >= fl1, "camion (file libre %d) : la file libre [%.1f ; %.1f] m est touchée [%.1f ; %.1f]", libre, fl0, fl1, a, b);
     }
     std::printf("camion en travers : 2 files couvertes, une file libre : OK\n");

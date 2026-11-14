@@ -206,14 +206,24 @@ Programme programme(uint32_t graine, bool banc = false);
 constexpr double BANC_RALENTISSEUR_KM = 1.55, BANC_CAMION_KM = 1.95;
 constexpr double BANC_TRAVAUX_KM = 2.20;   // WFS-338 : banc : chantier sur la file de gauche (capture poursuite-travaux)
 
-// ---- WFS-119 RG-01 : « CAMION EN TRAVERS » : un gros véhicule existant (x5, rrsport si le joueur roule en x5), agrandi,
-// posé en travers à cheval sur 2 files ; la file `fileLibre` (0 ou 2) reste libre
-constexpr float CAMION_ECHELLE = 1.45f;
+// ---- WFS-119 RG-01 : « CAMION EN TRAVERS », posé en travers à cheval sur 2 files ; la file `fileLibre` (0 ou 2) reste libre.
+// WFS-542 (ANO-273) : un vrai camion porteur à caisse (« LCT 3000 », Daniel Zhabotinsky, CC BY 4.0, marque inventée, badges
+// retirés), à l'échelle 1 : plus aucune voiture agrandie. Mesures du modèle converti (assets/world/camion/porteur.wfm),
+// calées sur son pneu réel 215/75 R17.5 (porteur de 7,5 t : diamètre 767 mm) : references/reel/camion_poursuite.json
+constexpr const char* CAMION_MODELE = "world/camion/porteur.wfm";
+constexpr double CAMION_L = 6.19;         // m, pare-chocs compris (RG-02 : longueur couverte en travers de la route)
+constexpr double CAMION_LARGEUR = 2.22;   // m, cabine sans rétroviseurs (caisse : 2,18 m) : épaisseur de la boîte de choc
+constexpr double CAMION_H = 2.93;         // m, toit de la caisse
+constexpr double CAMION_ECART_FERME = 1.0;   // m entre le bout du camion et le bord, côté fermé : aucune voiture n'y passe (la plus étroite : 1,63 m) ;
+                                             // une voiture au centre de la file du milieu le heurte (files de 5 m : 6,19 m ne couvrent pas 2 files entières)
+constexpr double CAMION_RETRAIT_DERRIERE_M = 50, CAMION_RETRAIT_S = 60;   // RG-04 : retiré 50 m derrière le joueur, ou 60 s après son apparition
 constexpr double RAPPEL_M = 110;   // camion et ralentisseur : bandeau rappelé 110 m avant (obstacle à éviter / à passer lentement)
-const char* camionCar(const char* carJoueur);
 int fileLibreCamion(int file);   // 0 ou 2 (la file du milieu ne peut pas rester seule libre)
 struct Travers { double xM = 0, demiX = 0, demiZ = 0; };   // centre latéral (m), demi-largeur couverte (m), demi-épaisseur (m)
-Travers camionTravers(int fileLibre, double longueurM, double largeurM);
+// boîte de choc aux vraies mesures (RG-02) : le bout côté fermé à CAMION_ECART_FERME du bord de la route
+Travers camionTravers(int fileLibre, double longueurM = CAMION_L, double largeurM = CAMION_LARGEUR);
+// RG-04 : derriereM = distance du camion derrière le joueur (m, < 0 : devant) ; ageS = secondes depuis son apparition
+bool camionARetirer(double derriereM, double ageS);
 
 // ---- WFS-119 RG-03 : mode gardé dans la sauvegarde (clé mode) : « checkpoint », « course5 », « poursuite » ;
 // inconnu ou absent (ancienne sauvegarde) : Checkpoint

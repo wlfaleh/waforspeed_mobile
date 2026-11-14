@@ -187,6 +187,8 @@ else()
   target_compile_definitions(test_plaques_autres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_peinture2 tests/test_peinture2.cpp src/render/vehicule_peinture2.cpp)   # WFS-488 : couleur secondaire (toit, rétroviseurs)
   target_compile_definitions(test_peinture2 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_camion_542 tests/test_camion_542.cpp src/game/poursuite.cpp src/game/track.cpp)   # WFS-542 : vrai camion de la Poursuite (mesures, file libre, retrait)
+  target_compile_definitions(test_camion_542 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_vehicule_lod tests/test_vehicule_lod.cpp)   # WFS-158 (RG-04) : 4 niveaux de détail des voitures
   target_compile_definitions(test_vehicule_lod PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_conducteurs tests/conducteurs_test.cpp)   # WFS-73 : conducteurs (pavillon mesuré, placement)

@@ -43,6 +43,9 @@ AUTRES = [
         ("Vache, cheval, mouton, chiens, dauphin", "« Ultimate Animated Animal Pack », « Farm Animals Pack » et « Animated Fish Pack » par Quaternius, modifiés pour WaForSpeed", "CC0 1.0"),
         ("Goéland et pigeon", "modèle « seagull » par svartmc (Copyright (c) 2020 svartmc), modifié pour WaForSpeed (texte de la licence en fin de page)", "MIT"),
     ]),
+    ("Camion de la Poursuite (modèle 3D modifié pour WaForSpeed : badges retirés, plaques neutres, allégé)", [
+        ("Camion porteur", "modèle 3D par Daniel Zhabotinsky (Sketchfab)", "CC BY 4.0"),
+    ]),
     ("Revêtements de route", [
         ("Enrobés, béton, pavés, gravier", "scans de Poly Haven (polyhaven.com), modifiés pour WaForSpeed", "CC0 1.0"),
     ]),
@@ -82,6 +85,7 @@ COUVERTURE = [
     (r"people/(homme|femme)\.wfp", "Quaternius", "personnages-quaternius.txt"), (r"people/humains/.*\.wfp", "MakeHuman", "humains-makehuman.txt"),
     (r"world/animaux/(vache|cheval|mouton)\.wfa", "Quaternius", "animaux-campagne.txt"), (r"world/animaux/(shiba|husky)\.wfa", "Quaternius", "animaux-ville.txt"),
     (r"world/animaux/dauphin\.wfa", "Quaternius", "animaux-corniche.txt"), (r"world/animaux/mouette\.wfa", "svartmc", "animaux-corniche.txt"),
+    (r"world/camion/porteur\.(wfm|lod)", "Daniel Zhabotinsky", "camion-poursuite.txt"),   # WFS-542
     (r"world/animaux/.*\.py", None, None),        # scripts de conversion du projet
     (r"world/feuillage\.png", None, None),        # atlas dessiné par le code du jeu (tools/atlas_feuillage.cjs)
     (r"textures/route/.*", "Poly Haven", "routes-revetements.txt"), (r"textures/essai/.*", None, None),
