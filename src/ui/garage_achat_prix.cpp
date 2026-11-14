@@ -19,12 +19,13 @@ Manque manque(const Sauvegarde& s, const EtatGarage& e) {
     Manque m;
     const char* car = CARS[e.index].id;
     auto ajouter = [&](const perso::Objet* o) {
-        if (!o || perso::possede(s, *o, car) || m.n >= 3) return;
+        if (!o || perso::possede(s, *o, car) || m.n >= 4) return;
         for (int i = 0; i < m.n; i++) if (m.objets[i] == o) return;   // même couleur en principale et en secondaire : une fois
         m.objets[m.n++] = o; m.total += perso::prix(*o, car);
     };
     if (e.peinture >= 0 && e.peinture < NB_PEINTURES) ajouter(perso::couleur(PAINTS[e.peinture].id));
     if (e.peinture2 >= 0 && e.peinture2 < NB_PEINTURES) { ajouter(perso::objet(perso::ID_SECONDAIRE)); ajouter(perso::couleur(PAINTS[e.peinture2].id)); }
+    if (e.finition > 0 && e.finition < BOUTIQUE_FINITIONS) ajouter(perso::objet(BOUTIQUE_FINITIONS_IDS[e.finition]));   // WFS-491
     return m;
 }
 

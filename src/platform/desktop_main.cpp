@@ -78,6 +78,7 @@ namespace wfs { void benchSkins(Game& g, Renderer& r, const std::string& out); }
 #include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
 #include "../ui/ecrans/creation_profil.h"   // WFS-481 (accroche) : WFS_BANC=creation
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
+#include "../ui/ecrans/cadeau_jour.h"   // WFS-501 (accroche) : WFS_BANC=cadeau
 #include "../ui/ecrans/paquets.h"   // WFS-306 (accroche) : WFS_BANC=paquets
 #include "../world/cartes_v2/paquet_carte.h"   // WFS-301 (accroche) : WFS_BANC=cuisson, 2e source de readAsset
 #include "../ui/ecrans/chargement.h"
@@ -220,6 +221,7 @@ int main(int argc, char** argv) {
     if (banc == "cuisson") { ui::chargerPolice(r); const int e = cartes_v2::benchCuisson(g, r, out, g_root, [](Game& g2, Renderer& r2, const std::string& o) { return benchParcours(g2, r2, o) + parcoursFinMenu(g2, r2, o); }); finir(); return e > 0 ? 3 : 0; }   // WFS-301 (accroche) : paquets de la Ville ; RG-08 : parcours complet
     if (banc == "batiments") { const int e = cartes_v2::benchBatiments(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-416 (accroche) : bâtiments cuits dans le paquet, captures batiments-*
     if (banc == "neige") { ui::chargerPolice(r); const int e = cartes_v2::benchNeige(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-346 (accroche) : neige lue du paquet, captures neige-*
+    if (banc == "cadeau") { ui::chargerPolice(r); const int e = ecrans::cadeau_jour::benchCadeau(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-501 (accroche) : écran du cadeau du jour, FR / EN
     if (banc == "credits") { ui::chargerPolice(r); const int e = credits::benchCredits(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-406 (accroche) : menu → Crédits → retour, garage des voitures renommées
     if (banc == "creation") { const int e = ecrans::benchCreationProfil(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-481 (accroche) : création du profil (WFS_LANGUE=fr|en)
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
@@ -296,6 +298,7 @@ int main(int argc, char** argv) {
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "garage-voitures") { const int e = ecrans::benchGarageVoitures(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-499 (accroche) : voitures bloquées, achat confirmé, essai gratuit, relance
     if (banc == "garage-couleurs") { const int e = ecrans::benchGarageCouleurs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-489 (accroche) : 28 couleurs, achat en ★, relance
+    if (banc == "garage-finitions") { const int e = ecrans::benchGarageFinitions(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-491 (accroche) : finitions, achat en ★, relance
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)
         std::vector<std::string> v = COCKPIT_LOT1; v.insert(v.end(), COCKPIT_LOT2A.begin(), COCKPIT_LOT2A.end()); v.insert(v.end(), COCKPIT_LOT2B.begin(), COCKPIT_LOT2B.end());

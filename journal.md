@@ -1794,3 +1794,35 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 00:30:05 — WFS-491 : retour lead dev corrigé, PR #401 à relire (Claude, agent dev3d (01Us6uCwfT))
 - (1) écran étroit : boutons de largeur fixe (104 × 30 px), rangée qui défile par chevrons comme les couleurs (3 boutons en 4:3, 5 en 16:10, 6 en 16:9, 8 en 2400x1080) ; (2) police 12 px, réduite de 20 % au plus (aucun nom FR / EN n'en a besoin) ; contrôle au banc dans chaque langue et chaque taille ; (3) RC-E18-03 mesuré (`peinture2-mesure`, Basse, 2 passages) : `main` 3,215 img/s, branche brillant 3,216 / chromé 3,210 / caméléon 3,165 ; 1 % les plus lents 2,374 / 2,455 / 2,427 / 2,363 : écart ≤ 0,05 img/s.
 - Synchronisée avec `main` (WFS-492 skins, WFS-481) : la skin de course n'est jamais posée sur la voiture du garage (`vehicule_skin::materiau` compare le modèle). 133 tests CPU réussis ; banc `garage-finitions` 0 écart à chaque taille. Captures régénérées (54). Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-14 00:33:03 — WFS-499 : PR #404 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCxU3))
+- PR #404 (commit 562520b8, branche synchronisée avec `main`) : 42 captures « après » (1280 × 720 et 1024 × 768, FR et EN) et 6 « avant » dans `qa/pr/WFS-499/`, `tests-cpu.log` (133 tests réussis).
+- Parcours RG-07 (banc `garage-voitures`, noté ici avant la PR) : 208 → M4 bloquée → achat refusé faute d'étoiles (« Il te manque 1 200 ★ », rien de débité) → essai gratuit → écran de fin « Acheter 2 200 ★ » → garage « Essai déjà fait » → course demandée avec la M4 : retour au garage → achat confirmé (3 000 → 800 ★) → Rouge, Choisir → Corsa : essai puis achat depuis l'écran de fin → course M4 jour et nuit → relance : M4 et Corsa gardées → anglais. 0 écart (1024 × 768).
+- Rectificatif de l'entrée précédente : le « 0 écart » en 1280 × 720 annoncé avant la PR venait d'un lancement qui avait encore 1 écart (attente fausse du banc : l'achat de la Corsa la choisit, comme le veut RG-02) ; banc corrigé, relancé en 1024 × 768 : 0 écart.
+- `suivi-pr.md` : #404 🆕 ; `TACHES.md` : 🔀 En PR.
+
+### 2026-11-14 00:42:31 — WFS-501 fusionné par le lead dev (lead-dev)
+- PR #403 (Claude, agent dev3d (01Us6uCviA)), revue sur bb703375, « ✅ Approuvé par le lead dev » en commentaire (même compte GitHub), fusion en squash **b08d8803**.
+- 34 captures ouvertes (menu avant / après, animation, 4 gains, Chances, attente, nuit, FR / EN) ; diff lu en entier ; construction, 133 tests CPU et banc `cadeau` (0 erreur) refaits ; banc `textes` français à 0 dépassement.
+- Remarques non bloquantes dans la revue : écran d'attente ouvert au passage de minuit, commentaire du filtre `WFS_CADEAU`, lisibilité du compte à rebours au menu. Ticket en 🟣 ; ligne ajoutée à `qa/Check.md` ; ligne de `suivi-pr.md` supprimée.
+
+### 2026-11-14 00:42:42 — WFS-499 : PR #404 refusée par le lead dev (lead-dev)
+- Revue du commit 562520b8 : 48 captures ouvertes, diff complet lu, branche construite et testée (`tests_cpu.sh build` : 133 réussis). La demande se voit bien (cadenas, prix, équivalents, fenêtre de confirmation, « Il te manque », essai, « Acheter N ★ » en fin de course, FR / EN, 16:9 et 4:3).
+- Refus, 3 points (revue écrite en commentaire dans la PR, même compte GitHub) : (1) régression du banc `garage-couleurs` (WFS-489) : Golf et GT86 bloquées dans sa sauvegarde, « Acheter » ouvre la fenêtre de la voiture au lieu d'acheter la couleur (captures `en-il-manque` et `en-toit`) ; le banc complet n'a pas tourné (mode rapide) ; (2) après l'essai, la voiture de la partie reste la voiture bloquée : toute course suivante renvoie au garage, et en duel le garde-fou quitte la course sans `leave()` (salle ouverte, courses suivantes comptées en duel) ; (3) « Acheter la Orion Corsaire » : il faut l'élision (« l'Orion »).
+- `TACHES.md` : ↩️ Retour lead dev (PR #404) ; `track-agent.md` et `suivi-pr.md` à jour.
+
+### 2026-11-14 00:43:44 — WFS-501 : fusionné (PR #403, b08d8803), session terminée (Claude, agent dev3d (01Us6uCviA))
+- Le lead dev a fusionné la PR en squash. J'ai répondu dans la PR à ses 5 remarques non bloquantes.
+- **Pour le PO** (petit défaut, non corrigé, à confier à WFS-502 qui touche le même écran, ou à une petite US) : si minuit passe pendant que l'écran d'attente du cadeau est ouvert, il affiche « Prochain cadeau bientôt » au lieu de proposer le cadeau ; il faut fermer puis rouvrir l'écran. Le commentaire de `cadeau_jour_banc.cpp` « (et le menu) » est aussi faux quand `WFS_CADEAU` est posé.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « Cadeau du jour aléatoire »). Ligne de `track-agent.md` passée à « ⏹️ session terminée ». Aucun autre ticket demandé (un seul sujet par session).
+
+
+### 2026-11-14 00:56:04 — WFS-491 fusionné par le lead dev (lead-dev)
+- PR #401 (Claude, agent dev3d (01Us6uCwfT)), 2e revue sur b0b67c06, reprise de la relecture prise à 00:31 (instance arrêtée par un redémarrage du conteneur, rien posté). Réponses du développeur lues sous la 1re revue.
+- Les 3 points bloquants du 1er refus sont corrigés : boutons de largeur fixe et rangée qui défile par chevrons (aucun texte ne dépasse en 1024x768, 1280x800, 1280x720, 2400x1080, FR et EN), police 12 px (plancher 9,6 px), RC-E18-03 mesuré (`qa/pr/WFS-491/mesure-basse.txt`, écart ≤ 0,1 img/s).
+- Vérifié par le lead dev : tout le diff lu, construction et `tests CPU : 133 test(s) réussi(s)`, banc `garage-finitions` relancé en 1024x768 (0 écart). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion squash e454b9f4. Statut 🟣, ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` retirée.
+
+### 2026-11-14 00:56:51 — WFS-491 fusionné, session terminée (Claude, agent dev3d (01Us6uCwfT))
+- PR #401 fusionnée en squash par le lead dev (e454b9f4) après une 2e relecture (la 1re reprise avait été coupée par un redémarrage du conteneur). Ticket en 🟣, ligne de `qa/Check.md` posée par le lead dev.
+- Réponse à l'utilisateur sous la demande « Personnalisation » de `tache utilisateur.md`. Remarques non bloquantes du lead dev à suivre : la voiture du garage est dessinée comme voiture du joueur (à surveiller avec WFS-494, skins au garage) ; 2 pages de finitions en 4:3.
+- Un seul sujet par session : je ne demande pas d'autre ticket.

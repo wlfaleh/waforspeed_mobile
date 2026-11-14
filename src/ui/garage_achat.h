@@ -6,23 +6,25 @@
 //   - appui sur « Acheter » : solde suffisant → tout ce qui manque est acheté (boutique::acheterObjet, débit une seule fois
 //     chacun), le choix est gardé (paint-, paint2-) et la sauvegarde écrite ; sinon bandeau « Il te manque N ★», rien n'est
 //     débité (le bandeau reste tant que la même couleur est montrée).
+// WFS-491 : la finition montrée non possédée s'ajoute à ce qui manque (même bouton « Acheter N ★ », même refus).
 //   - WFS-499 : solde d'étoiles toujours écrit en haut à droite du garage (RG-01) ;
 //   - WFS-499 : voiture bloquée (sauvegarde active, vendue, ni gratuite ni achetée) : cadenas sur son point (vignette) et carte
 //     « cadenas · 2 200 ★ · ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € » au-dessus du panneau ; « Acheter 2 200 ★ » ouvre la
 //     fenêtre de confirmation (Annuler / Confirmer ; solde insuffisant : « Il te manque N ★ », pas de Confirmer) ;
 //     « Essai gratuit » (une course solo, jamais en duel) puis « Essai déjà fait » ; la voiture ne part pas en course autrement.
-// Emplacements suivants : finitions (WFS-491), skins (WFS-494), skin offerte à l'achat d'une voiture (WFS-494, RG-04 de WFS-499).
+// Emplacements suivants : skins (WFS-494), skin offerte à l'achat d'une voiture (WFS-494, RG-04 de WFS-499).
 // Outils partagés avec la rangée des couleurs : étoile dessinée (la police n'a pas le caractère ★), texte avec ★, équivalents, cadenas.
 #pragma once
 #include <string>
 #include "garage_commun.h"
+#include "../core/configgame.h"   // WFS-491 : BOUTIQUE_FINITIONS_IDS
 #include "../game/personnalisation.h"
 
 namespace wfs::ecrans::garage {
 
 // ce qui manque pour que l'aspect montré parte en course (WFS-489) : objets à acheter pour cette voiture et leur total en ★
 struct Manque {
-    const perso::Objet* objets[3] = {};
+    const perso::Objet* objets[4] = {};   // WFS-491 : + la finition
     int n = 0;
     long long total = 0;
 };
@@ -38,8 +40,7 @@ bool essaiPossible(const Sauvegarde& s, const char* carId);
 
 // étoile pleine à 5 branches (interface 2D : icône de la monnaie), centrée en (cx, cy), rayon extérieur R
 void etoile(Renderer& r, float cx, float cy, float R, const vec4& c);
-// petit cadenas (interface 2D) centré en (cx, cy), taille u (WFS-489 ; WFS-499 : aussi les voitures bloquées)
-void cadenas(Renderer& r, float cx, float cy, float u, float op);
+// cadenas : garage_commun.h (WFS-491) ; WFS-499 : aussi les voitures bloquées
 // ui::text où chaque « ★ » est une étoile dessinée ; rend la largeur
 float texteEtoiles(Renderer& r, float x, float y, float px, const std::string& s, const vec4& c, int align, float espacement = 0);
 float largeurEtoiles(float px, const std::string& s, float espacement = 0);
