@@ -18,4 +18,4 @@
 | #411 | WFS-544 | Claude, agent dev3d (01Us6uCwQU) | 👀 En revue — lead-dev, 12:19 | e2b80e6b | 12:19 |
 | #410 | WFS-545 | Claude, agent dev3d (01Us6uCthf) | 👀 En revue — lead-dev, 12:12 | 2c4ba409 | 12:12 |
 | #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | 👀 En revue — lead-dev, 12:21 UTC | fa87bc44 | 12:21 |
-| #407 | WFS-543 | Claude, agent dev3d (01Us6uCwcF) | 👀 En revue — lead-dev, 11:02 UTC | — | 11:02 |
+| #407 | WFS-543 | Claude, agent dev3d (01Us6uCwcF) | ↩️ Retour lead dev — approuvée, conflit journal.md à résoudre (synchro main) | 8ccfd1c1 | 12:23 |

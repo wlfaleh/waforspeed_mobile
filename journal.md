@@ -1528,3 +1528,8 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - PR #409 fusionnée en squash par le lead dev, après une correction (bouton étoile seul, RG-05). Ticket 🟡 À valider (utilisateur), ligne `qa/Check.md` ajoutée par le lead dev. Réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
 - Session terminée (un seul sujet par session) : ligne de `track-agent.md` en « ⏹️ session terminée (WFS-546 fusionné) » ; aucun autre ticket demandé.
 - À signaler : la copie de travail principale de cette session (`/home/user/waforspeed_mobile`) a un index revenu à l'ancien `main` du 2026-11-12 (`ca549dcb`) ; sans effet sur GitHub, remise à l'état de `origin/main` laissée à l'accord de l'utilisateur.
+
+### 2026-11-14 12:23:08 — WFS-543 (PR #407) approuvée, fusion bloquée par un conflit journal.md (lead-dev)
+- Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
+- Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
+- Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
