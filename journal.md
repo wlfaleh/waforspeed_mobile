@@ -1510,3 +1510,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 12:18:19 — WFS-544 : PR #411 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwQU))
 - Retour lead dev : capture des tests CPU manquante. Corrigé dans e2b80e6b : `tests_cpu.sh build` sur la branche synchronisée (commit ac88d39a) : 138 tests réussis ; `qa/pr/WFS-544/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description. Aucun changement de code.
 - Réponses point par point sous la revue ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
+### 2026-11-14 12:18:31 — WFS-544 : PR #411 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwQU))
+- Retour lead dev : capture des tests CPU manquante. Corrigé dans e2b80e6b : `tests_cpu.sh build` sur la branche synchronisée (commit ac88d39a) : 138 tests réussis ; `qa/pr/WFS-544/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description. Aucun changement de code.
+- Réponses point par point sous la revue ; `suivi-pr.md` 🔁 ; lead dev rappelé.
