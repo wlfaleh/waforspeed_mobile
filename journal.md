@@ -1913,3 +1913,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - RG-09 (camion) : cause = gêne jugée sur la file de départ pendant le changement de file (arrêt en biais) ; correction : gêne jugée sur la trajectoire prévue, avance au pas en changement de file, manœuvre de dégagement (4 m de marche arrière braquée) si coincée ; cas exact du banc ajouté au test (échoue sur l'ancien code).
 - RG-05 : test d'un vrai choc qui fait reculer (bridage exercé, recul ≤ 4,9 km/h, < 1 s, aucun « R ») ; échoue sans le bridage.
 - Preuves : `qa/pr/WFS-540/tests-cpu.log` (138 / 138), captures régénérées (camion et contourne recadrées). Commit 09c76dfc ; lead dev rappelé.
+
+### 2026-11-14 03:34:23 — WFS-540 fusionné par le lead dev (lead-dev)
+2e revue de la PR #406 (commit 09c76dfc) : les 3 points du refus sont corrigés (Tests CPU, police qui passe le camion par la file libre, bridage du recul après un vrai choc testé). RG-00 vérifiée (la manœuvre de dégagement ne passe que par les commandes). Captures ouvertes, construction et 138 tests CPU refaits. Approbation en commentaire (même compte GitHub), fusion en squash 792839f4. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
