@@ -14,11 +14,22 @@
     - **avant (main)** : 39 `[ERREUR]`, dont `pipelines (WFS-262 RG-02) : 2 pipeline(s) créé(s) pendant la course (0 attendu)` et `records (parcours) : « Course solo » : panneau des modes ouvert (ÉCHEC)` ;
     - **après (branche)** : **0 `[ERREUR]`**, 5 × `pipelines (WFS-262 RG-02) : 0 pipeline créé pendant la course : OK`, parcours `records` complet (accueil → Course solo → Checkpoint → Continuer → garage → Choisir → terrain → Rouler → course → NOUVEAU RECORD → Rejouer avec fantôme → Poursuite → Course à 5), code de sortie 0.
   - Comparaison au pixel des captures `vitrine-p208-0`, `vitrine-sf90-0`, `garage-p208`, `garage-sf90`, `course-sf90` avant / après : **0 pixel différent** (écart max 0).
-  - Run de branche n° 1068 (build.yml, US technique, branche synchronisée avec main, [lien](https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43588935668)) : compilation ✅, APK et AAB ✅, **138 tests CPU réussis** ; le job « texte » est rouge **seulement** au contrôle des licences (`cars/remplacants/virtus`, `w212` absents de `CARS[]`) : c'est le rouge de main confié à WFS-543, hors de ce ticket. Endurance et menu1-2400 : résultat ajouté sous la PR dès la fin.
+  - Run de branche n° 1068 (build.yml, US technique, branche synchronisée avec main, [lien](https://github.com/wlfaleh/waforspeed_mobile/actions/runs/43588935668)) : compilation ✅, APK et AAB ✅, **138 tests CPU réussis** ; le job « texte » est rouge **seulement** au contrôle des licences (`cars/remplacants/virtus`, `w212` absents de `CARS[]`) : c'est le rouge de main confié à WFS-543, hors de ce ticket. Endurance + chauffe et menu1-2400 : verts.
 - **Limites et risques connus** :
   - Les ressources fixes de la capture d'environnement (2 pipelines repris du cache, quelques tampons et descripteurs, < 1 Mo) sont créées au chargement même si la passe ne tourne pas : coût négligeable.
   - RG-01 : la création différée existe depuis WFS-150 ; je n'ai pas pu établir avec certitude quel ticket récent a fait tomber la 1re capture pendant la course (historique local limité) : les pistes du PO (WFS-484, 488, 490, 491, 492) ne sont pas confirmées.
   - Les captures `records-*` « avant » montrent le parcours bloqué de main (attendu).
+
+## Tests CPU
+
+Commande : `bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main`, commit testé **ac88d39a** ; journal complet : [`qa/pr/WFS-544/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-544/qa/pr/WFS-544/tests-cpu.log).
+
+```
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 138 test(s) réussi(s) en 401 s
+```
 
 ## Captures pour le lead dev (11 après)
 
