@@ -88,7 +88,7 @@ int benchCamion542(Game& g, Renderer& r, const std::string& out) {
         if (!scene(moment)) continue;
         if (!demarrer(moment, VueCamera::Poursuite)) break;
         placer(42, poursuite::FILES[2] - 0.08);
-        poursuiteBancPolice(true, -24, poursuite::FILES[2]); g.update(PAS); t += PAS; poursuiteBancPolice(false, 0, 0);
+        poursuiteBancPolice(true, -7, poursuite::FILES[1] + 0.1); g.update(PAS); t += PAS; poursuiteBancPolice(false, 0, 0);   // police dans l'image, file voisine
         int k = 0;
         for (double cible : {30.0, 20.0, 12.0}) {
             for (int i = 0; i < 60 * 20 && (sCamion - joueur.dist) * M > cible; i++) { DriveInput in; in.gas = joueur.kmh() < 18; g.manette = in; g.update(PAS); t += PAS; if (i % 12 == 0) g.render(t); }
