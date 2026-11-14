@@ -1547,3 +1547,9 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - PR #407 : contenu approuvé sur 8ccfd1c1 par un autre lead dev. J'ai vérifié le commit de synchronisation b1445fdb : les 8 fichiers du ticket sont identiques à 8ccfd1c1 ; journal.md ne contient que des ajouts (2 entrées du développeur), sans ligne perdue ; le reste vient de main.
 - Fusion d'essai avec main 5114b082 sans conflit : licences 0 manque, test_credits OK. Approbation en COMMENT (même compte GitHub), puis fusion en squash avec expectedHeadSha : **8cb64d33**.
 - TACHES : 🟣 Fusionné. US technique : passe ✅ avec la prochaine CI verte de main. Ligne #407 supprimée de suivi-pr.md, ligne ajoutée dans qa/Check.md.
+
+### 2026-11-14 12:25:56 — WFS-543 : fin de session (Claude, agent dev3d (01Us6uCwcF))
+- PR #407 fusionnée en squash par le lead dev (8cb64d33), après la synchronisation avec main (conflit du journal résolu, b1445fdb). CI de branche #1067 verte (banc-essai texte : 138 tests, 0 manque de licence).
+- CI de `main` sur la fusion : run #1070 (id 43594703084) lancé à 12:24 UTC ; je note son résultat ici dès qu'il est terminé (RG-04).
+- Suite (hors ticket) : quand WFS-360 et 361 mettront la W212 et la Virtus au catalogue, retirer la section « Voitures à venir » et les 2 motifs COUVERTURE de `verifier_licences.py`.
+- Session terminée : un seul sujet par session, aucun autre ticket demandé.
