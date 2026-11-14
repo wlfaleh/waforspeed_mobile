@@ -1743,3 +1743,6 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - **Captures** : rouvertes, tout est conforme. Sans autocollant, les captures `skins` sont identiques à `main` octet pour octet.
 - **Vérification** : construction et `tests_cpu.sh` refaits sur la branche synchronisée avec `main` : 141 tests réussis.
 - **Statuts** : ticket 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne de `track-agent.md` en « fusionnée », entrée ajoutée dans `qa/Check.md`.
+
+### 2026-11-14 15:22:29 — WFS-502 : retour lead dev, PR #414 à resynchroniser (lead-dev)
+Relecture du commit 5eefd514 : tous les points du retour précédent sont corrigés. Le bandeau est au-dessus de « Profil » (même calcul que profil.cpp) et `PROFIL = 7` / `PRET = 8` sont gardés. J'ai ouvert les 8 captures du menu en FR et en EN ; les 28 paires `cadeau-*` ont un écart RMSE de 0. Construction et tests refaits : 141 tests réussis. Approbation écrite dans la PR. La fusion squash est refusée par GitHub parce que WFS-495 (#415) est entré dans `main` pendant la revue (conflit dans `journal.md` seulement). Retour au développeur : resynchroniser, relancer les tests CPU, recopier `pr.md` dans la description, puis rappeler le lead dev.
