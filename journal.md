@@ -1686,3 +1686,9 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - PR #412 fusionnée par le lead dev (de89e0f1) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` posée par le lead dev.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
 
+
+### 2026-11-14 14:45:01 — WFS-502 : retour lead dev sur PR #414 (lead-dev)
+- Revue complète du commit 31029178 : 20 captures `pret-*` ouvertes (FR / EN), 28 paires `cadeau-*` identiques à main (RMSE 0), diff entier lu, branche construite et 141 tests CPU refaits : fond du ticket bon (avis écrit dans la PR).
+- Fusion refusée par GitHub : conflit avec `main` après la fusion de WFS-482 (#412). `src/ui/ecrans/menu.cpp` (enum `PROFIL = 7` / `PRET = 7`, 4 blocs) et `journal.md`. Surtout, le bouton « Profil » occupe la place du bandeau du prêt (même bas) : chevauchement à l'écran.
+- Demandé : synchroniser avec main, `PRET = 8`, bandeau au-dessus de « Profil » sans déplacer les boutons, tests et banc relancés, captures du menu (attente / actif / fin / expiré, FR et EN) avec « Profil » visible.
+- Remarque au PO : prix des pastilles du garage en anglais à peine lisibles (« 100 ★ » rendu flou en petit), défaut d'avant ce ticket.
