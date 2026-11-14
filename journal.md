@@ -1954,3 +1954,8 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 21:07:46 — R18 (suite 6) : boutons créatifs en vrais objets 3D (smart-brainstorming)
 - Planche de 6 boutons-objets (Start/Stop, plaque, néon, interrupteur à capot, autocollant, compte-tours) et menu qui les utilise, dans `references/maquettes-3D-R18/`. Rien transmis au PO.
+
+### 2026-11-14 21:15:08 — WFS-446 fusionné par le lead dev (lead-dev)
+- PR #417 relue une 2e fois (commit 2ad43e3c) : les deux points du refus sont corrigés (journal des tests CPU `qa/pr/WFS-446/tests-cpu.log`, tableau du banc `perf` de RG-09 : appels, triangles et mémoire identiques à main). Code inchangé depuis 310599ff.
+- 64 captures rouvertes ; branche fusionnée en local avec main, construite et testée : 143 test(s) réussi(s).
+- « ✅ Approuvé » en commentaire (revue 5907189562, même compte GitHub), fusion en squash 642eb68c. TACHES 🟣, ligne de suivi-pr supprimée, qa/Check.md à jour.
