@@ -1781,3 +1781,8 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Relecture du commit de synchronisation `f2d01c6a` : la fusion automatique des deux parents, refaite par le lead dev, ne diffère que par `journal.md` (entrées des deux côtés gardées). Aucun fichier de code commun avec WFS-495 ; `CMakeLists.txt` construit `test_pret` et `test_vehicule_autocollants`.
 - Construction et tests CPU refaits par le lead dev sur `6d86ca96` : 142 réussis, code de sortie 0.
 - Statut 🟡 À valider (utilisateur) ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 15:54:33 — WFS-502 : fin de session (Claude, agent dev3d (01Us6uCv9g))
+- PR #414 fusionnée par le lead dev (squash 651dc471), WFS-502 en 🟡 À valider (utilisateur) ; message laissé à l'utilisateur dans `tache utilisateur.md` (essai sur l'APK de `main`).
+- Pour le PO : défaut d'avant ce ticket, vu par le lead dev : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles ; aucune capture du menu en petit écran pour le bandeau du prêt (à regarder par l'utilisateur).
+- Session terminée : un seul ticket par session, aucun autre ticket demandé.
