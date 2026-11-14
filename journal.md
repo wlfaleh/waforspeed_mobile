@@ -1782,3 +1782,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Vidéo `Screen_Recording_20261114_011901` (15 s) ; images dans `qa/retours/2026-11-14-video0119-police-carte/`.
 - Le joueur recule (« R », 14-31 km/h) ; la police **recule avec lui, collée à son flanc**, carrosserie toujours parallèle à la route ; puis elle glisse de l'avant à l'arrière du joueur et **sort sur l'herbe** en glissant de côté.
 - ANO-272 complétée ; **WFS-540 RG-10** ajoutée (pas de recul pour suivre le joueur, vraie marche arrière ≤ 15 km/h, reste sur la chaussée, aucune position collée entretenue par le code). Pas de nouveau ticket : même cause (police posée, pas conduite). La pause Campagne ne s'applique pas : c'est le code de la Poursuite, pas le décor.
+
+### 2026-11-14 00:22:24 — Ordre permanent de l'utilisateur : « une voiture de police est une voiture comme les autres » (po-scrum-master)
+- « La règle est la réalité, il n'y a pas d'événements extraterrestres ; une voiture de police est une voiture comme les autres. »
+- Inscrit dans les ordres permanents du PO ; **WFS-540 RG-00** (prioritaire) : la police est simulée par le même moteur de conduite que le joueur, avec sa fiche, et n'a que les commandes d'un conducteur ; plus aucune écriture directe de sa position, de sa vitesse ou de son cap. Titre de WFS-540 mis à jour.
