@@ -15,7 +15,20 @@
   - `test_creation_profil` (RG-05) : appui + 10 mouvements + lever → 1 caractère ; 2 appuis à 50 ms → 1 ; à 200 ms → 2 ; pareil pour « effacer » ; bornes 149 / 150 ms. **138 tests CPU réussis** (`tools/qa/tests_cpu.sh`).
   - Banc `creation` (fr) : avant « Rrrrrrrrrrr » et « Ghjjj » (3 écarts), après « R » et « Ghj » ; **parcours complet : 0 écart** (scénario chronométré RG-05 de WFS-481 compris).
   - Banc `menu2` (salon) : avant « K7 » (effacement en série), après « K7Q » ; aucune nouvelle erreur au journal (les 3 erreurs restantes existent aussi sur `main`).
-- **Limites et risques connus** : l'heure utilisée est celle de la dernière image (horloge réelle sur le téléphone) : si une image dure plus de 150 ms, deux vrais appuis tombés dans cette même image ne donnent qu'un caractère (cas rare, sans double frappe). Pas d'essai sur téléphone ici : ticket **🟡 À valider (utilisateur)** après la fusion. Captures « avant » faites à la main (code de `main` + scénarios du banc de la branche), car ces scénarios n'existent pas sur `main`.
+- **Limites et risques connus** : l'heure utilisée est celle de la dernière image (horloge réelle sur le téléphone) : si une image dure plus de 150 ms, deux vrais appuis tombés dans cette même image ne donnent qu'un caractère (cas rare, sans double frappe). Pas d'essai sur téléphone ici : ticket **🟡 À valider (utilisateur)** après la fusion. Captures « avant » faites à la main (code de `main` + scénarios du banc de la branche), car ces scénarios n'existent pas sur `main`. Salon : « Derniers adversaires : NADIA » n'apparaît que sur les « après » ; aucune ligne du diff ne touche cette liste : c'est l'état du banc `menu2` à ce moment (les appuis du banc sont maintenant espacés de 150 ms, l'horloge du banc avance donc autrement qu'avec le banc de `main` lancé dans un arbre neuf), pas un changement du jeu.
+
+## Tests CPU
+
+Commit testé : `23f4a4c3` (branche synchronisée avec `main`). Journal complet : [`qa/pr/WFS-545/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-545/qa/pr/WFS-545/tests-cpu.log).
+
+```
+$ bash tools/qa/tests_cpu.sh build
+[OK] test_creation_profil (0 s)
+tests CPU : 138 test(s) réussi(s) en 493 s
+$ ./build/test_creation_profil
+WFS-545 : un appui = un caractère, 150 ms après chaque caractère (caractères et « effacer ») : vérifié
+test_creation_profil : OK (0 échec(s))
+```
 
 ## Captures pour le lead dev (6 après)
 
