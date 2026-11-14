@@ -1745,3 +1745,48 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - À surveiller : images/s mesurées sur lavapipe seulement (à confirmer sur l'APK) ; plaque « 07 » de la Corvette un peu basse (à régler dans `tools/skins/voitures.json` avec WFS-493).
 - Pour WFS-493 : nouvelle skin = un dessin dans `tools/skins/generer.py` (DESSINS) + ses couleurs A / B dans `SKIN_COULEURS` (`shaders/vehicule.glsl`), puis `python3 tools/skins/generer.py --skin <id>`.
 - Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 23:58:49 — WFS-499 : code fait, captures en cours (Claude, agent dev3d (01Us6uCxU3))
+- Fait (branche `feature/waforspeed-499`, 8de3bff2) : au garage, voiture bloquée = cadenas sous son point et carte « cadenas · 2 200 ★ · ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € » ; « Acheter 2 200 ★ » ouvre une fenêtre de confirmation (Annuler / Confirmer ; solde insuffisant : « Il te manque N ★ », pas de Confirmer) ; « Essai gratuit » puis « Essai déjà fait » ; solde en haut à droite ; écran de fin de l'essai : « Acheter N ★ » en haut à droite (même fenêtre) ; FR / EN (séparateur « 2 200 » / « 2,200 », « 21,78 € » / « €21.78 »).
+- Garde-fou RG-03 : une voiture bloquée ne repart pas en course hors de son essai (« Rejouer », « Recommencer », duel) : retour au garage sur elle. Sans sauvegarde active (bancs des autres tickets, parcours de la CI) : aucune voiture bloquée, rien ne change.
+- Fichiers : `src/ui/garage_achat.*`, nouveaux `garage_achat_voiture.cpp` (fenêtre, écran de fin, garde-fou : 2 petits systèmes 205 et 445, aucun code des modes touché), `garage_achat_texte.cpp`, `garage_voitures_banc.cpp`, `tests/test_garage_voitures.cpp` ; textes `assets/textes/fr.txt` / `en.txt`.
+- Accroches annoncées : `garage.cpp` (+11 / −1 : fenêtre, bouton Essai, noms du banc), `garage_commun.h` (zone `essai`), `garage_couleur.cpp` (cadenas sorti de l'espace anonyme pour être partagé), `desktop_main.cpp` (1 ligne : banc `garage-voitures`), `CMakeLists.txt` (test). Aucune accroche dans `src/ui/ecrans/**` ni dans les modes : l'écran de fin est complété par-dessus (pas de conflit avec WFS-537).
+- RG-04 : WFS-494 pas fusionné : aucune fenêtre de skin offerte. Vérifié : 132 tests CPU au vert en local (dont `test_garage_voitures`, 24 cas) ; banc `garage-voitures` (1280x720) : parcours complet, 0 écart.
+
+### 2026-11-14 00:11:58 — Question de l'utilisateur : glisse de la police et « grande voiture irréaliste » (po-scrum-master)
+- **Glisse des voitures de police** : non couverte par WFS-540 ; cause lue dans le code : la police est déplacée en `rd` / `x` par `poursuite::avancer()`, seules les roues contre-braquent (`poursuite_system.cpp` l. 312). **ANO-272** (bloquante) → **RG-08 ajoutée à WFS-540** (cap dans l'axe du déplacement, pas de glisse au-delà des pneus, braquage réel, aucun pivot sur place).
+- **Grande voiture** : c'est la surprise « camion en travers » de WFS-119, un **Range Rover Sport agrandi 1,45 fois** (`CAMION_ECHELLE`, `poursuite.h` l. 175 ; depuis WFS-404). **ANO-273** (bloquante) → nouveau **WFS-542** (P1, `@dev` artiste 3D) : vrai camion libre aux vraies mesures, échelle 1, immobile, retiré derrière le joueur. WFS-541 précisé : ce SUV n'est pas le trafic.
+
+### 2026-11-14 00:14:56 — ANO-272 revue image par image : la police est déplacée comme une carte à jouer (po-scrum-master)
+- Remarque de l'utilisateur : « ce n'est pas les roues ; elle glisse à gauche et à droite comme une carte à jouer, regarde bien le mouvement ». Mon 1er constat (roues) était faux.
+- Vidéo 23:48 revue à 10 images/s (`qa/retours/2026-11-13-video2348-police-coince/video2348-police-10ips-1.2s-3.6s.jpg`) : carrosserie toujours parallèle à la route, décalages de côté et d'avant en arrière sans jamais tourner.
+- Cause dans le code : cap dessiné = cap de la route (`poursuite_system.cpp` l. 390-391) ; glissement de côté direct à 6,75 m/s (`poursuite.cpp` l. 116-117) ; téléportation au contact (l. 124-125).
+- ANO-272 réécrite ; **WFS-540 RG-08 réécrite** : police conduite avec son propre cap, déplacement seulement dans l'axe de la carrosserie, braquage réel, aucune téléportation, mesures au banc.
+
+### 2026-11-14 00:15:42 — WFS-501 : écran du cadeau du jour, PR #403 ouverte (Claude, agent dev3d (01Us6uCviA))
+- Fait : écran du cadeau du jour (`src/ui/ecrans/cadeau_jour.{h,cpp}`, calculs purs `cadeau_jour_calculs.cpp`, banc `cadeau_jour_banc.cpp`, test `tests/test_cadeau_ecran.cpp`) ; bouton « Cadeau du jour » au-dessus de « Crédits », avec la pastille ou le compte à rebours ; animation 2D de la boîte (≈ 1,5 s, un appui la passe) ; gain des 4 types ; « Chances » lu dans `configgame.json` ; écran d'attente avec le dernier gain ; FR / EN (30 clés `cadeau.*`, 4 clés `skin.*`). Le tirage se fait avant l'animation (`cadeau::ouvrir` de WFS-500). Aucun bouton payant.
+- **Accroches annoncées** : `src/ui/ecrans/menu.cpp` (7 lignes : include, `CADEAU = 5`, touchers, zone, action, menu masqué sous l'écran, dessin du bouton) ; `src/platform/desktop_main.cpp` (2 lignes : banc `WFS_BANC=cadeau`) ; `CMakeLists.txt` (1 ligne : `test_cadeau_ecran`).
+- Vérification : 133 tests CPU verts (commit ff166e29, `qa/pr/WFS-501/tests-cpu.log`) ; banc `cadeau` à 0 erreur ; parcours RG-08 en FR et en EN (menu → cadeau → animation → gain → Chances → Retour → menu sans pastille → 2e appui : attente, aucun 2e cadeau → relance : aucun 2e cadeau → « Activer » ferme l'écran) ; garde-fou des textes anglais (WFS-504) sans échec ; 30 captures regardées.
+- Limites : gain non crédité (WFS-503), « Activer » sans prêt (WFS-502) ; noms des finitions par `finition.<id>` de WFS-491 (nom du catalogue en attendant) ; rendu lavapipe seulement.
+
+### 2026-11-14 00:16:24 — Statuts automatiques, CI main #1059 (robot statuts)
+- Run rouge (push, commit b1ed89d), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 00:16:31 — ANO-272 précisée par l'utilisateur : la voiture de police à côté du camion géant (po-scrum-master)
+- L'utilisateur vise **la petite voiture de police collée au « camion » géant** (Range Rover agrandi, ANO-273), pas la police à côté du joueur. Images à 6,7 /s : `qa/retours/2026-11-13-video2348-police-coince/video2348-police-a-cote-du-camion-6ips-5.0s-8.6s.jpg`.
+- Elle glisse à gauche, revient à droite et entre à moitié dans le camion, puis recommence, sans jamais tourner. Cause (`poursuite.cpp` l. 93-112) : sa cible change à chaque image entre la file libre et le joueur, qui est derrière le camion (aller-retour sans fin) ; décalage par glissement direct, cap de la route ; aucun choc police ↔ camion.
+- ANO-272 complétée ; **WFS-540 RG-09** ajoutée (file gardée pendant le contournement, camion solide pour la police, arrêt derrière sinon) ; RG-08 (cap propre, pas de glissement) gardée.
+
+### 2026-11-14 00:20:24 — 2e vidéo de l'utilisateur (Campagne, jour, 01:19) : même défaut de la police « carte à jouer » (po-scrum-master)
+- Vidéo `Screen_Recording_20261114_011901` (15 s) ; images dans `qa/retours/2026-11-14-video0119-police-carte/`.
+- Le joueur recule (« R », 14-31 km/h) ; la police **recule avec lui, collée à son flanc**, carrosserie toujours parallèle à la route ; puis elle glisse de l'avant à l'arrière du joueur et **sort sur l'herbe** en glissant de côté.
+- ANO-272 complétée ; **WFS-540 RG-10** ajoutée (pas de recul pour suivre le joueur, vraie marche arrière ≤ 15 km/h, reste sur la chaussée, aucune position collée entretenue par le code). Pas de nouveau ticket : même cause (police posée, pas conduite). La pause Campagne ne s'applique pas : c'est le code de la Poursuite, pas le décor.
+
+### 2026-11-14 00:22:24 — Ordre permanent de l'utilisateur : « une voiture de police est une voiture comme les autres » (po-scrum-master)
+- « La règle est la réalité, il n'y a pas d'événements extraterrestres ; une voiture de police est une voiture comme les autres. »
+- Inscrit dans les ordres permanents du PO ; **WFS-540 RG-00** (prioritaire) : la police est simulée par le même moteur de conduite que le joueur, avec sa fiche, et n'a que les commandes d'un conducteur ; plus aucune écriture directe de sa position, de sa vitesse ou de son cap. Titre de WFS-540 mis à jour.
+
+### 2026-11-14 00:26:46 — WFS-540 attribué à Claude, agent conduite (01UY1Vv3RA) (po-scrum-master)
+- Demande de l'utilisateur : « @conduite la 540 t'attend ». Nouvelle session `@conduite` (session_01UY1Vv3RAD7auNAuR4e1UiD), aucun ticket avant : attribution permise (ce n'est pas 01UY1Vv1A7, exclue par le KO de WFS-461).
+- **WFS-540** (P1, E3) : police = vraie voiture (même moteur de conduite que le joueur, RG-00, ordre permanent du 2026-11-14 00:22 UTC), plus de coincement, arrestation, plus de « R » sans frein (ANO-267, 268, 271, 272). Règles : `regles-de-gestion/WFS-540.md`. Zone : `poursuite.*`, `player.*`, `duel.*`. Branche `feature/waforspeed-540`. Skills : `agent-developer`, `waforspeed-natif`, `expert-conduite`. Captures avant / après (Poursuite, Corniche, jour et nuit, suite d'images), PR, lead dev ; après fusion 🟡 À valider (utilisateur), puis arrêt de la session.
