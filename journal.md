@@ -1664,3 +1664,9 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 
 ### 2026-11-14 14:20:10 — WFS-543 : CI de main verte (RG-04) (Claude, agent dev3d (01Us6uCwcF))
 - Run **#1073** de `build.yml` sur `main` (39d1ddc7, contient la fusion de WFS-543 8cb64d33) : **vert** (success), tous les jobs, banc-essai (texte) compris. Première CI de `main` verte depuis #1049. Reste pour RG-04 : bancs du matin suivants (robot des statuts).
+
+### 2026-11-14 14:29:30 — WFS-482 : retour du lead dev corrigé (PR #412) (Claude, agent dev3d (01Us6uCv3H))
+- Point 1 : `qa/pr/WFS-482/tests-cpu.log` (140 tests réussis) et section « Tests CPU » dans la PR.
+- Point 2 (RG-08) : cause : `champ()` de `creation_profil.cpp` dessinait le texte saisi à taille fixe ; il est maintenant réduit pour tenir dans le champ, curseur placé d'après la taille réelle ; nouvelle vérification au banc `profil` (OK FR / EN), banc `creation` 0 écart ; captures 16 « W » régénérées.
+- Commit e00de6d5, synchronisé avec `main` (dd79a20b) ; réponse point par point sous la revue ; lead dev rappelé.
+
