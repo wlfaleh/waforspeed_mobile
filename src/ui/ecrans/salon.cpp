@@ -29,6 +29,7 @@
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "../../platform/manette.h"   // WFS-517 (RG-06) : boutons du menu (banc du duel entre amis)
 #include "creation_profil.h"   // WFS-481 (accroche) : le lien d'invitation attend la création du profil
+#include "creation_profil_saisie.h"   // WFS-545 : FiltreAppuis (150 ms après chaque caractère du code)
 
 namespace wfs {
 namespace ecrans {
@@ -48,6 +49,8 @@ Zone g_touches[32], g_effacer, g_rejoindre;
 Zone g_inviter, g_reessayer;   // WFS-112 : « Inviter » (partage du lien) ; WFS-141 : « Réessayer » (relais injoignable)
 Zone g_derniers[3];            // WFS-122 (RG-01) : « Derniers adversaires » (toucher un nom : duel créé, « Inviter » ouvert)
 std::string g_saisie;
+// WFS-545 RG-02 : 150 ms après chaque caractère du code (ou effacement) ; RG-01 (un doigt à la fois) : doigt_ de SalonSysteme
+creation::FiltreAppuis g_filtreCode;
 const reseau::TransportDouble* g_double = nullptr;   // transport du salon en cours (Wi-Fi local + Internet), si ouvert ici
 std::string g_doubleCode;
 std::vector<reseau::SalonOuvert> g_liste;          // salons affichés à la dernière image (touchés dans le même ordre)
@@ -194,8 +197,8 @@ public:
                 return true;
             }
             for (int i = 0; i < 32; i++)   // WFS-89 : saisie du code
-                if (g_touches[i].contient(t.x, t.y) && g_saisie.size() < 4) { g_saisie += duel::CODE_CHARS[i]; return true; }
-            if (g_effacer.contient(t.x, t.y)) { if (!g_saisie.empty()) g_saisie.pop_back(); return true; }
+                if (g_touches[i].contient(t.x, t.y) && g_saisie.size() < 4) { if (g_filtreCode.accepter(g.time)) g_saisie += duel::CODE_CHARS[i]; return true; }
+            if (g_effacer.contient(t.x, t.y)) { if (!g_saisie.empty() && g_filtreCode.accepter(g.time)) g_saisie.pop_back(); return true; }
             if (g_rejoindre.contient(t.x, t.y) && g_saisie.size() == 4) {
                 const std::string code = g_saisie;
                 s.join(transportDouble(code, false), code, false, sv.nick, car, sv.peinture(car).c_str(), "");
@@ -716,6 +719,7 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     auto toucher = [&](int id, const Zone& z) {
         const float x = z.x + z.w / 2, y = z.y + z.h / 2;
         g.onTouch({id, x, y, true}); pas(1); g.onTouch({id, x, y, false}); pas(1);
+        t += creation::FiltreAppuis::DELAI;   // WFS-545 RG-02 : le doigt suivant vient après les 150 ms du clavier
     };
     pas(20);
     g.allerA(Ecran::Menu); pas(60);
@@ -766,7 +770,23 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
         if (p) { g.render(t); toucher(30, g_touches[p - duel::CODE_CHARS]); }
     }
     capture("salon-code-saisi", "code K7QX saisi, « Rejoindre » actif");
-    for (int i = 0; i < 4; i++) { g.render(t); toucher(31, g_effacer); }
+    const bool codeOk = g_saisie == "k7qx";
+    // WFS-545 RG-01 / RG-02 : « effacer » posé, 10 mouvements du même doigt, puis un 2e doigt 50 ms après : un seul caractère retiré
+    {
+        g.render(t);
+        const float ex = g_effacer.x + g_effacer.w / 2, ey = g_effacer.y + g_effacer.h / 2;
+        g.onTouch({37, ex, ey, true});
+        for (int k = 0; k < 10; k++) g.onTouch({37, ex + k * 0.5f, ey, true});
+        g.onTouch({37, ex, ey, false});
+        t += 0.05; g.render(t);
+        g.onTouch({38, ex, ey, true}); g.onTouch({38, ex, ey, false});
+        t += creation::FiltreAppuis::DELAI; pas(1);
+    }
+    const bool effaceUn = g_saisie == "k7q";
+    capture("salon-code-efface", "« effacer » maintenu (10 mouvements) puis 2e appui à 50 ms : un seul caractère retiré (K7Q)");
+    if (codeOk && effaceUn) WFS_LOG("salon (WFS-545) : code K7QX saisi touche par touche (4 caractères), « effacer » maintenu + appui à 50 ms → K7Q : 0 écart");
+    else WFS_ERR("salon (WFS-545) : saisie « %s » (attendu k7qx puis k7q), effacement %s", g_saisie.c_str(), effaceUn ? "ok" : "EN SÉRIE");
+    for (int i = 0; i < 3; i++) { g.render(t); toucher(31, g_effacer); }
     // WFS-112 : un ami qui passe par Internet (relais local), comme un téléphone en 4G
     g.render(t); toucher(32, g_creer);
     const std::string codeNet = duelSession().code();

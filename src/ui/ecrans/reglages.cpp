@@ -36,6 +36,8 @@
 #include "../../render/diagnostic_perf.h"   // WFS-419 : menu caché des interrupteurs de diagnostic
 #include "../../render/passes.h"   // WFS-419 : horodatages GPU disponibles
 #include "reglages_banc.h"   // WFS-420 : banc de performance automatique (protocole, résultats)
+#include "reglages_etoiles.h"   // WFS-546 : mode testeur, bouton étoile, +2500 ★ par appui (un appui = un crédit)
+#include "../../game/score_fin.h"   // WFS-546 (RG-05) : dessinerEtoile, la ★ du compteur d'étoiles du menu (WFS-537)
 
 namespace wfs {
 namespace ecrans {
@@ -91,6 +93,8 @@ constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau compté
 // 5 touchers sur le titre « Réglages » en moins de 3 s ouvrent, par-dessus le panneau, la liste des interrupteurs (un toucher :
 // allumé / éteint), l'appareil (RG-03), le temps GPU de chaque passe (RG-04) et l'explication des « 0,0 ». Rien n'est enregistré.
 Zone g_titre, g_diagLigne[diag::N_INTERRUPTEURS], g_diagFermer, g_diagTout, g_diagBanc;   // WFS-420 : g_diagBanc, « Banc auto »
+// WFS-546 : mode testeur : bouton étoile (+2500 ★ par appui) à gauche de « Banc auto » ; g_etoilesEclat : GameView::time du dernier crédit (bouton éclairé 0,4 s)
+Zone g_diagEtoiles; testeur::BoutonEtoiles g_etoiles; double g_etoilesEclat = -10;
 bool g_diagOuvert = false;
 int g_titreTouchers = 0; double g_titrePremier = -10;
 Renderer* g_diagR = nullptr;
@@ -109,9 +113,17 @@ void appliquerDiag(diag::Interrupteur i) {
     if (diag::INFOS[i].recreeCibles && g_diagR) g_diagR->resize();
     WFS_LOG("diagnostic (WFS-419) : %s %s · %s", diag::INFOS[i].libelle, diag::actif(i) ? "COUPÉ" : "rétabli", diag::texteActifs().c_str());
 }
-bool toucherDiag(float x, float y) {
-    if (g_diagFermer.contient(x, y)) { g_diagOuvert = false; WFS_LOG("réglages : menu caché de diagnostic fermé"); return true; }
-    if (g_diagBanc.contient(x, y)) { g_diagOuvert = false; banc_telephone::ouvrirProtocole(); return true; }   // WFS-420 : protocole, puis le banc
+bool toucherDiag(int id, float x, float y, double temps) {
+    // WFS-546 (RG-02, RG-03) : 2500 ★ par appui, une seule fois par doigt posé (ses mouvements arrivent aussi « posés »), puis la
+    // sauvegarde est écrite comme après un achat ; le compteur du menu (WFS-537) relit le solde à chaque image
+    if (g_etoiles.poser(id, g_diagEtoiles.contient(x, y), sauvegarde())) {
+        if (sauvegarde().actif()) sauvegarde().enregistrer();
+        g_etoilesEclat = temps;
+        return true;
+    }
+    if (g_diagEtoiles.contient(x, y)) return true;   // même doigt encore posé sur le bouton étoile : déjà crédité
+    if (g_diagFermer.contient(x, y)) { g_diagOuvert = false; g_etoiles.oublier(); WFS_LOG("réglages : menu caché de diagnostic fermé"); return true; }
+    if (g_diagBanc.contient(x, y)) { g_diagOuvert = false; g_etoiles.oublier(); banc_telephone::ouvrirProtocole(); return true; }   // WFS-420 : protocole, puis le banc
     if (g_diagTout.contient(x, y)) {
         bool recree = false;
         for (int i = 0; i < diag::N_INTERRUPTEURS; i++) recree |= diag::menu((diag::Interrupteur)i) && diag::INFOS[i].recreeCibles;
@@ -285,7 +297,7 @@ public:
     }
     // WFS-290 : la zone du bouton n'est plus effacée au changement d'écran (même place au menu et en pause) : un appui juste après
     // l'arrivée sur l'écran, avant la 1re image dessinée, comptait pour rien (banc : 0 sur 100) ; hors menu et pause, onTouch l'ignore
-    void onEcran(Ecran, Ecran, const GameView&) override { g_diagOuvert = false; g_ouvert = false; g_presse = P_AUCUN; g_doigt = -1; cgu().fermer(); }   // WFS-291 : g_doigt aussi (remarque du lead dev, PR #287)
+    void onEcran(Ecran, Ecran, const GameView&) override { g_diagOuvert = false; g_etoiles.oublier(); g_ouvert = false; g_presse = P_AUCUN; g_doigt = -1; cgu().fermer(); }   // WFS-291 : g_doigt aussi (remarque du lead dev, PR #287)
     void shutdown(Renderer&) override { if (cgu().mode() == Cgu::Mode::Lecture) cgu().fermer(); }   // WFS-308 : fenêtre perdue en jeu (termGraphics)
 
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -305,6 +317,7 @@ public:
             return true;
         }
         if (!t.down) {
+            g_etoiles.lever(t.id);   // WFS-546 : doigt levé, le prochain appui sur le bouton étoile crédite de nouveau
             if (t.id == g_doigt) {   // WFS-290 : « Fermer » au relâcher, dans sa cible
                 const bool vise = g_presse == P_FERMER && dansCible(g_fermer, t.x, t.y);
                 g_doigt = -1; g_presse = P_AUCUN;
@@ -318,7 +331,7 @@ public:
         if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
         if (banc_telephone::protocoleOuvert()) return banc_telephone::toucherProtocole(t.x, t.y);   // WFS-420 : par-dessus le panneau
         if (banc_telephone::resultatsOuverts()) return banc_telephone::toucherResultats(t.x, t.y);
-        if (g_diagOuvert) return toucherDiag(t.x, t.y);   // WFS-419 : menu caché par-dessus le panneau
+        if (g_diagOuvert) return toucherDiag(t.id, t.x, t.y, g.time);   // WFS-419 : menu caché par-dessus le panneau
         if (g_titre.contient(t.x, t.y)) { toucherTitre(); return true; }   // WFS-419 : 5 touchers ouvrent le menu caché
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); g_doigt = t.id; return true; }   // WFS-308 (RG-05)
         if (dansCible(g_fermer, t.x, t.y)) { g_doigt = t.id; g_presse = P_FERMER; return true; }   // WFS-290 : fermé au relâcher
@@ -371,7 +384,7 @@ public:
         manette::focus(g_fermer, true);
         if (cgu().ouvert()) cgu().dessiner(r, W, H, g.marges, g.time);   // WFS-308 (RG-05) : par-dessus le panneau
         g_diagR = &r;
-        if (g_diagOuvert) dessinerDiagnostic(r, W, H, cp ? k : ui::unitePetitEcran(W, H));   // WFS-419 : menu caché
+        if (g_diagOuvert) dessinerDiagnostic(r, W, H, cp ? k : ui::unitePetitEcran(W, H), g.time);   // WFS-419 : menu caché
         if (banc_telephone::protocoleOuvert()) banc_telephone::dessinerProtocole(r, W, H, cp ? k : ui::unitePetitEcran(W, H));   // WFS-420
         else if (banc_telephone::resultatsOuverts()) banc_telephone::dessinerResultats(r, W, H, cp ? k : ui::unitePetitEcran(W, H));
     }
@@ -548,7 +561,7 @@ private:
     }
 
     // WFS-419 : menu caché (k = pixels par dp) : interrupteurs en deux colonnes (zones de 44 dp), appareil, temps par passe, explication
-    void dessinerDiagnostic(Renderer& r, float W, float H, float k) {
+    void dessinerDiagnostic(Renderer& r, float W, float H, float k, double temps) {
         r.uiRect(0, 0, W, H, hex(BG, 0.92f));
         const float m = 16 * k, x0 = m, lw = W - 2 * m;
         float y = m;
@@ -560,6 +573,13 @@ private:
             g_diagFermer = {W - m - fw, y - 6 * k, fw, bh};
             g_diagTout = {W - m - fw - 8 * k - tw, y - 6 * k, tw, bh};
             g_diagBanc = {g_diagTout.x - 8 * k - bw, y - 6 * k, bw, bh};   // WFS-420 : banc de performance automatique
+            {   // WFS-546 (RG-01, RG-04, RG-05) : bouton carré à gauche de « Banc auto », même style ; seulement l'icône étoile (aucun
+                // texte) ; éclairé 0,4 s après un crédit
+                g_diagEtoiles = {g_diagBanc.x - 8 * k - bh, y - 6 * k, bh, bh};
+                const bool eclat = temps - g_etoilesEclat >= 0 && temps - g_etoilesEclat < 0.4;
+                biseau(r, g_diagEtoiles.x, g_diagEtoiles.y, bh, bh, 10 * k, hex(eclat ? ACCENT_PRESSE : SURFACE2));
+                score_fin::dessinerEtoile(r, g_diagEtoiles.x + bh / 2, g_diagEtoiles.y + bh / 2, bh * 0.30f, eclat ? hex(BG) : ui::ORANGE);
+            }
             biseau(r, g_diagBanc.x, g_diagBanc.y, bw, bh, 10 * k, hex(ACCENT2));
             ui::text(r, g_diagBanc.x + bw / 2, g_diagBanc.y + (bh - tp) / 2, tp, bt, hex(BG), ui::CENTRE, 0.1f, false);
             biseau(r, g_diagFermer.x, g_diagFermer.y, fw, bh, 10 * k, hex(ACCENT));
@@ -606,6 +626,7 @@ Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
 void ouvrirMenuCacheBanc(bool oui) { g_diagOuvert = oui; if (oui) diag::g_menuVu = true; }   // WFS-420 : banc PC (capture du menu caché)
+bool boutonEtoilesDiag(float& x, float& y) { x = g_diagEtoiles.x + g_diagEtoiles.w / 2; y = g_diagEtoiles.y + g_diagEtoiles.h / 2; return g_diagOuvert && g_diagEtoiles.w > 0; }   // WFS-546
 bool boutonReglages(float& x, float& y, float& w, float& h) { if (!g_boutonFrais || g_bouton.w <= 0) return false; g_boutonFrais = false; x = g_bouton.x; y = g_bouton.y; w = g_bouton.w; h = g_bouton.h; return true; }   // WFS-537 (accroche)
 bool toucheReglages(float x, float y, int doigt) { return g_ouvert || dansCible(g_bouton, x, y) || (doigt >= 0 && doigt == g_doigt); }   // WFS-290 : même cible que onTouch, et le doigt posé sur « Réglages »
 bool boutonCguReglages(float& x, float& y) { x = g_cgu.x + g_cgu.w / 2; y = g_cgu.y + g_cgu.h / 2; return g_ouvert && g_cgu.w > 0; }   // WFS-308

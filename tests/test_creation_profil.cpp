@@ -1,7 +1,8 @@
 // WFS-481 : saisie de l'écran « Crée ton pilote » (creation_profil_saisie.h) : claviers AZERTY / QWERTY (41 touches, chiffres,
 // « - », « _ », espace, majuscules, effacer), touches de la plaque, majuscule pour une seule lettre, plaque proposée qui suit le
 // pseudo tant qu'elle n'est pas touchée (et stable avec la même graine), limites 16 / 8, erreurs RG-04 (clé de la table,
-// jamais le mot saisi), scénario RG-05 (6 lettres + « C'est parti »), clés creation.* présentes en français et en anglais.
+// jamais le mot saisi), scénario RG-05 (6 lettres + « C'est parti »), clés creation.* présentes en français et en anglais ;
+// WFS-545 (RG-05) : un appui = un caractère, 150 ms après chaque caractère (FiltreAppuis).
 // usage : test_creation_profil [liste des mots interdits] [dossier des textes]   (à lancer depuis la racine du dépôt)
 #include <cstdio>
 #include <cstring>
@@ -159,6 +160,54 @@ int main(int argc, char** argv) {
         VERIFIER(fr["creation.titre"] == "Crée ton pilote" && en["creation.titre"] == "Create your driver");
         VERIFIER(en["creation.pseudo"] == "Nickname" && en["creation.plaque"] == "Licence plate" && en["creation.valider"] == "Let's go");
         VERIFIER(fr["creation.valider"] == "C'est parti");
+    }
+    // WFS-545 (RG-05) : filtre des appuis du clavier, branché comme dans toucher() de l'écran (creation_profil.cpp) :
+    // poser(id, down) d'abord (un appui = le poser d'un doigt), puis accepter(heure) pour chaque caractère (150 ms)
+    {
+        const Touche* cl = clavier(Langue::Francais);
+        auto toucher = [&](FiltreAppuis& f, Saisie& s, int id, bool down, double t, const Touche& k) {
+            if (f.poser(id, down) && f.accepter(t)) s.appuyer(k);
+        };
+        // RG-01 : un appui suivi de 10 mouvements du même doigt, puis le lever → 1 caractère
+        { FiltreAppuis f; Saisie s; s.ouvrir("", 1);
+          toucher(f, s, 0, true, 1.000, *trouver(cl, 'r'));
+          for (int k = 0; k < 10; k++) toucher(f, s, 0, true, 1.000 + 0.016 * (k + 1), *trouver(cl, 'r'));
+          toucher(f, s, 0, false, 1.200, *trouver(cl, 'r'));
+          VERIFIER(s.pseudo() == "R");
+          // le doigt levé, un nouvel appui 300 ms plus tard écrit de nouveau
+          toucher(f, s, 0, true, 1.500, *trouver(cl, 'r')); toucher(f, s, 0, false, 1.550, *trouver(cl, 'r'));
+          VERIFIER(s.pseudo() == "Rr"); }
+        // RG-02 : deux appuis à 50 ms d'écart (deux doigts) → 1 caractère ; à 200 ms → 2 caractères
+        { FiltreAppuis f; Saisie s; s.ouvrir("", 1);
+          toucher(f, s, 0, true, 2.000, *trouver(cl, 'j')); toucher(f, s, 0, false, 2.020, *trouver(cl, 'j'));
+          toucher(f, s, 1, true, 2.050, *trouver(cl, 'j')); toucher(f, s, 1, false, 2.070, *trouver(cl, 'j'));
+          VERIFIER(s.pseudo() == "J"); }
+        { FiltreAppuis f; Saisie s; s.ouvrir("", 1);
+          toucher(f, s, 0, true, 2.000, *trouver(cl, 'j')); toucher(f, s, 0, false, 2.020, *trouver(cl, 'j'));
+          toucher(f, s, 1, true, 2.200, *trouver(cl, 'j')); toucher(f, s, 1, false, 2.220, *trouver(cl, 'j'));
+          VERIFIER(s.pseudo() == "Jj"); }
+        // même chose pour « effacer » : maintenu (10 mouvements) → 1 caractère retiré ; 2 appuis à 50 ms → 1 ; à 200 ms → 2
+        const Touche& eff = *special(cl, Touche::Effacer);
+        { FiltreAppuis f; Saisie s; s.ouvrir("Karima", 1);
+          toucher(f, s, 3, true, 5.000, eff);
+          for (int k = 0; k < 10; k++) toucher(f, s, 3, true, 5.000 + 0.016 * (k + 1), eff);
+          toucher(f, s, 3, false, 5.300, eff);
+          VERIFIER(s.pseudo() == "Karim");
+          toucher(f, s, 4, true, 6.000, eff); toucher(f, s, 4, false, 6.010, eff);
+          toucher(f, s, 5, true, 6.050, eff); toucher(f, s, 5, false, 6.060, eff);
+          VERIFIER(s.pseudo() == "Kari");
+          toucher(f, s, 6, true, 6.200, eff); toucher(f, s, 6, false, 6.210, eff);
+          VERIFIER(s.pseudo() == "Kar"); }
+        // tout juste 150 ms : accepté ; 149 ms : refusé ; horloge revenue en arrière (nouvelle partie) : accepté
+        { FiltreAppuis f;
+          VERIFIER(f.accepter(10.0)); VERIFIER(!f.accepter(10.149)); VERIFIER(f.accepter(10.150)); VERIFIER(f.accepter(3.0)); }
+        // un mouvement ou un lever d'un doigt jamais posé n'est pas un appui ; oublier() remet le filtre à neuf
+        { FiltreAppuis f;
+          VERIFIER(!f.poser(7, false)); VERIFIER(f.poser(7, true)); VERIFIER(!f.poser(7, true));
+          f.oublier(); VERIFIER(f.poser(7, true)); VERIFIER(f.accepter(0.0)); }
+        // deux doigts posés en même temps : chacun est un appui (le délai de 150 ms départage les caractères)
+        { FiltreAppuis f; VERIFIER(f.poser(0, true)); VERIFIER(f.poser(1, true)); VERIFIER(!f.poser(0, true)); VERIFIER(!f.poser(1, false)); VERIFIER(f.poser(1, true)); }
+        std::printf("WFS-545 : un appui = un caractère, 150 ms après chaque caractère (caractères et « effacer ») : vérifié\n");
     }
     std::printf("test_creation_profil : %s (%d échec(s))\n", g_echecs ? "ÉCHEC" : "OK", g_echecs);
     return g_echecs ? 1 : 0;

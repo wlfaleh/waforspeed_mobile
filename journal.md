@@ -1514,3 +1514,69 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 12:18:31 — WFS-544 : PR #411 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwQU))
 - Retour lead dev : capture des tests CPU manquante. Corrigé dans e2b80e6b : `tests_cpu.sh build` sur la branche synchronisée (commit ac88d39a) : 138 tests réussis ; `qa/pr/WFS-544/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description. Aucun changement de code.
 - Réponses point par point sous la revue ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
+### 2026-11-14 12:20:33 — WFS-542 : retour du lead dev corrigé, PR #408 à relire (Claude, agent dev3d (01Us6uCtQB))
+- **Corrigé** (réponse point par point dans la PR) : (1) `test_credits` : section et entrée du camion traduites dans `assets/textes/credits-en.txt` ; (2) section « Tests CPU » dans la PR + `qa/pr/WFS-542/tests-cpu.log` ; (3) capture du retrait refaite : joueur tenu devant le camion, camion visible à 55 s, retiré à 61 s (sur main, le Range Rover reste) ; (4) commentaire d'orientation (cabine vers le milieu de la route).
+- **Cause du test rouge** : mes tests CPU avaient été lancés avant la régénération des crédits ; l'annonce « 139 verts » ne valait pas pour 0e6b9d81.
+- **Vérification** : construction propre, 139 tests CPU réussis (dont `test_credits`, `test_camion_542`), commits 106279e4 et fa87bc44, branche synchronisée avec main.
+
+
+### 2026-11-14 12:22:24 — WFS-546 fusionné par le lead dev (lead-dev)
+PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (étoile seule, aucune clé de texte, solde retiré, Tests CPU). 12 captures ouvertes, diff lu en entier, construction et 139 tests CPU refaits, banc `testeur` 0 écart. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 30278f0d. Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 12:23:05 — WFS-546 fusionné (#409, 30278f0d) : fin de session (Claude, agent dev3d (01Us6uCvwS))
+- PR #409 fusionnée en squash par le lead dev, après une correction (bouton étoile seul, RG-05). Ticket 🟡 À valider (utilisateur), ligne `qa/Check.md` ajoutée par le lead dev. Réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
+- Session terminée (un seul sujet par session) : ligne de `track-agent.md` en « ⏹️ session terminée (WFS-546 fusionné) » ; aucun autre ticket demandé.
+- À signaler : la copie de travail principale de cette session (`/home/user/waforspeed_mobile`) a un index revenu à l'ancien `main` du 2026-11-12 (`ca549dcb`) ; sans effet sur GitHub, remise à l'état de `origin/main` laissée à l'accord de l'utilisateur.
+
+### 2026-11-14 12:23:08 — WFS-543 (PR #407) approuvée, fusion bloquée par un conflit journal.md (lead-dev)
+- Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
+- Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
+- Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
+### 2026-11-14 10:44:24 — WFS-543 : crédits des remplaçants reliés au contrôle, CI de branche #1066 (Claude, agent dev3d (01Us6uCwcF))
+- Cause (RG-01, déjà trouvée par le PO) : WFS-397 (PR #393, 7c51937c) a livré `assets/cars/remplacants/w212.*` et `virtus.*` ; `verifier_licences.py` ne cherchait le crédit d'un fichier `cars/` que dans CARS[] → 4 manques, `build.yml` rouge depuis #1054.
+- Correction (`feature/waforspeed-543`) : une ligne COUVERTURE **par modèle** (w212 → Peter_D + `remplacants/w212.txt`, virtus → BHP3D + `remplacants/virtus.txt`), `cars/remplacants/` passé de la branche CARS[] à COUVERTURE (tout autre fichier de ce dossier reste un manque) ; section « Voitures à venir » dans AUTRES (libellés sans marque) ; `CREDITS.txt` et `store/credits.md` régénérés par `--generer` (fichier généré et vérifié par le même script : hors zone annoncée mais obligatoire).
+- Vérifié : 4 manques → 0 ; contre-épreuve : licence w212 retirée + fichier inconnu dans `remplacants/` → 3 manques (contrôle intact).
+- CI de branche (US technique) : run #1066 (build.yml, workflow_dispatch, commit 0073f7a6), vérifie le job banc-essai (texte).
+
+### 2026-11-14 11:00:47 — WFS-543 : traduction anglaise des crédits, run #1066 annulé (Claude, agent dev3d (01Us6uCwcF))
+- `test_credits` (garde-fou WFS-505 « aucun mot français en anglais ») échouait sur les 2 nouvelles lignes : ajout de 3 lignes dans `assets/textes/credits-en.txt` (section « Upcoming cars », « Large saloon », « Compact saloon ») ; fichier lu par l'écran Crédits, hors zone annoncée mais conséquence directe et obligatoire.
+- Run #1066 annulé (commit sans cette traduction, aurait été rouge) ; tests CPU locaux : 138 réussis, 0 échec ; licences : 0 manque.
+
+### 2026-11-14 12:25:24 — WFS-543 fusionné par le lead dev (lead-dev)
+- PR #407 : contenu approuvé sur 8ccfd1c1 par un autre lead dev. J'ai vérifié le commit de synchronisation b1445fdb : les 8 fichiers du ticket sont identiques à 8ccfd1c1 ; journal.md ne contient que des ajouts (2 entrées du développeur), sans ligne perdue ; le reste vient de main.
+- Fusion d'essai avec main 5114b082 sans conflit : licences 0 manque, test_credits OK. Approbation en COMMENT (même compte GitHub), puis fusion en squash avec expectedHeadSha : **8cb64d33**.
+- TACHES : 🟣 Fusionné. US technique : passe ✅ avec la prochaine CI verte de main. Ligne #407 supprimée de suivi-pr.md, ligne ajoutée dans qa/Check.md.
+
+### 2026-11-14 12:25:56 — WFS-543 : fin de session (Claude, agent dev3d (01Us6uCwcF))
+- PR #407 fusionnée en squash par le lead dev (8cb64d33), après la synchronisation avec main (conflit du journal résolu, b1445fdb). CI de branche #1067 verte (banc-essai texte : 138 tests, 0 manque de licence).
+- CI de `main` sur la fusion : run #1070 (id 43594703084) lancé à 12:24 UTC ; je note son résultat ici dès qu'il est terminé (RG-04).
+- Suite (hors ticket) : quand WFS-360 et 361 mettront la W212 et la Virtus au catalogue, retirer la section « Voitures à venir » et les 2 motifs COUVERTURE de `verifier_licences.py`.
+- Session terminée : un seul sujet par session, aucun autre ticket demandé.
+
+### 2026-11-14 12:28:36 — WFS-545 fusionné par le lead dev (lead-dev)
+- PR #410 relue sur 2c4ba409 (2e revue, après le refus de 12:00 : capture Tests CPU absente). Réponses « Bien reçu » et « corrigé dans 997e6f1f » présentes ; partie « Tests CPU » et `tests-cpu.log` ajoutés ; aucun changement de code ni de capture depuis fd4530f6.
+- 12 captures ouvertes (R au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », code K7Q après un « effacer » maintenu au lieu de K7) ; diff entier relu ; construction et `tests_cpu.sh` refaits en local sur branche + main : 138 test(s) réussi(s).
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash a17c4db0. Ticket 🟡 À valider (utilisateur), ligne `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 12:29:10 — WFS-545 : fusionné (#410, a17c4db0), session terminée (Claude, agent dev3d (01Us6uCthf))
+- PR #410 acceptée et fusionnée en squash par le lead dev ; ticket 🟡 À valider (utilisateur). Réponse écrite à l'utilisateur dans `tache utilisateur.md` (essai à faire sur l'APK de `main`).
+- Un seul sujet par session : la session s'arrête, elle ne demande pas d'autre ticket.
+- À signaler au PO : la branche `main` **locale** du conteneur de cette session (sans effet sur GitHub) avait divergé (50 commits du PO du 2026-11-12 absents de `origin/main`) ; elle n'a pas été poussée ni modifiée.
+
+
+### 2026-11-14 12:33:40 — WFS-544 fusionné par le lead dev (lead-dev)
+- PR #411 relue une 2e fois sur e2b80e6b : le défaut de la 1re revue (capture des tests CPU) est corrigé. Le développeur a répondu point par point. Le code n'a pas changé depuis 30b32251.
+- Ce que j'ai vérifié : 20 captures ouvertes, tout le diff relu (2 fichiers de code), construction OK et **138 tests CPU réussis** en local.
+- Approbation postée en commentaire (même compte GitHub), puis fusion en squash : 8ca2bb87. Statut 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-14 12:34:09 — WFS-544 : fusionné (#411, 8ca2bb87), session terminée (Claude, agent dev3d (01Us6uCwQU))
+- PR #411 fusionnée en squash par le lead dev (8ca2bb87) : capture d'environnement préparée au chargement (0 pipeline créé en course), parcours `records` avec profil et voiture gratuite. Ticket 🟣 ; ✅ si les bancs du matin suivants sont verts sur le job « vitrines ».
+- Reste ouvert (noté dans `qa/Check.md`) : le ticket qui a fait tomber la 1re capture pendant la course n'est pas identifié.
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-14 12:34:51 — R17 : coût d'une version PC ou console (smart-brainstorming)
+Question de l'utilisateur. Réponse et tableau dans `recommandations-smart-brain.md` (R17) : PC Steam conseillé après Android (≈ 100 $ + travail moyen, l'exécutable PC et la manette existent déjà) ; Switch plus tard avec une société ; Xbox / PlayStation déconseillés (pas de Vulkan, rendu à réécrire). Aucune décision : l'utilisateur choisit.
+
+### 2026-11-14 12:37:16 — WFS-542 : PR #408 relue, fusion bloquée par un conflit avec main (lead-dev)
+Revue de fa87bc44 : les 4 points du refus sont corrigés (crédits en anglais, section Tests CPU, captures `retrait-00` à 55 s et `retrait-01` à 61 s ouvertes, commentaire d'orientation). J'ai construit et testé la branche moi-même : 139 tests CPU réussis. Approbation postée en commentaire dans la PR (GitHub refuse l'approbation pour le même compte). **La fusion squash est refusée par GitHub** : conflit sur `assets/textes/credits-en.txt` avec WFS-543 (#407). Retour au développeur : synchroniser avec main, régénérer CREDITS.txt et store/credits.md, vérifier les licences (0 manque), relancer les tests, puis rappeler le lead dev. Statut : ↩️ Retour lead dev (PR #408).

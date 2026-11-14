@@ -475,6 +475,9 @@ int benchRecords(Game& g, Renderer& r, const std::string& out) {
     s.charger(chemin);
     int ecarts = 0;
     auto verifier = [&](bool ok, const char* quoi) { if (ok) WFS_LOG("records (parcours) : %s (ok)", quoi); else { ecarts++; WFS_ERR("records (parcours) : %s (ÉCHEC)", quoi); } };
+    // WFS-544 (RG-05) : joueur déjà installé : profil du banc créé (comme « C'est parti » de WFS-481), sinon « Crée ton pilote »
+    // couvre le menu et « Course solo » n'est jamais touché ; l'écran de création a son propre banc (WFS_BANC=creation)
+    { std::string nick; verifier(s.profil.creer("Banc 544", "WFS-544", nick), "profil du banc créé (WFS-481)"); s.nick = nick; }
     {   // RG-03 : ancienne sauvegarde (sans les nouvelles clés) et clés mal formées
         Sauvegarde anc;
         const bool lu = anc.lire("version=1\nwaforspeed-best=48210\ncar=m4\nrecord-course5=x;12\nrecord-poursuite=1;2\n");
@@ -487,7 +490,10 @@ int benchRecords(Game& g, Renderer& r, const std::string& out) {
                  "ancienne sauvegarde relue sans perte (record mis de côté sous best_v1), records vides");
     }
     courseBenchRules(true);
-    if (!g.init(r, "golf", "ville")) { WFS_ERR("records : chargement impossible"); s.desactiver(); courseBenchRules(false); return 1; }
+    // WFS-544 (RG-05) : voiture de la sauvegarde du banc (partie neuve : p208, gratuite, WFS-498 RG-09) : depuis WFS-499, la golf
+    // (600 ★) ouvre la fenêtre d'achat au lieu du terrain ; un vrai joueur arrive au garage sur sa voiture
+    verifier(boutique::possedeVoiture(s, s.car), "voiture de la partie neuve possédée (WFS-498, WFS-499)");
+    if (!g.init(r, s.car.c_str(), "ville")) { WFS_ERR("records : chargement impossible"); s.desactiver(); courseBenchRules(false); return 1; }
     g.setAutopilot(false); g.camMode = 0;
     double t = 2000;
     int n = 0, doigt = 80;
@@ -523,6 +529,7 @@ int benchRecords(Game& g, Renderer& r, const std::string& out) {
         appuyer(x, y);
     };
     // accueil → « Course solo » (vrai toucher : 1re zone du menu, déclarée pour la manette) → mode → garage → terrain → course
+    int n0 = 0;   // WFS-544 : passages par le garage
     auto jusquaCourse = [&](const char* carte, const char* km, ModeCourse m) {
         g.allerA(Ecran::Menu); images(40);
         const auto& z = manette::zonesPrecedentes();
@@ -530,8 +537,10 @@ int benchRecords(Game& g, Renderer& r, const std::string& out) {
         appuyer(z[0].x + z[0].w * 0.4f, z[0].y + z[0].h * 0.5f);
         verifier(choixModeOuvert(), "« Course solo » : panneau des modes ouvert");
         panneau(carte); if (km) panneau(km);
+        if (n0 == 0) capture("records-modes");   // WFS-544 (RG-05) : panneau des modes et garage atteints au doigt (1er passage)
         panneau("continuer");
         attendu(Ecran::Garage, "mode puis « Continuer »");
+        if (n0++ == 0) { images(30); capture("records-garage"); }
         float x = 0, y = 0;
         for (int i = 0; i < 600 && !ecrans::garageBouton("choisir", x, y); i++) image();
         images(30);

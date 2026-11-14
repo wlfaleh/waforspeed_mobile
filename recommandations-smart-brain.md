@@ -721,3 +721,40 @@ Total ≈ 24 350 ★ : environ 120 h de jeu sans payer (≈ 60 h avec la pub ×2
 - **Skins** : 300 ★ (communes) à 800 ★ (rares) × coefficient ; certaines seulement en cadeau du jour ou en succès.
 - **Dessins (autocollants)** : packs 150-300 ★, **valables sur toutes les voitures** (pas de coefficient).
 - Achat **par voiture** (une peinture achetée sur la Golf ne passe pas sur la M4) ; les dessins sont communs.
+
+## R17 — 2026-11-14 — Coût d'une version PC ou console (mode Diagnostic + Priorisation)
+
+**Question de l'utilisateur** : « ça coûte quoi de créer une version PC ou console ? »
+**Hypothèses** : jeu payé par l'utilisateur seul (pas de société d'édition) ; Android reste la priorité (gel iOS, sortie publique Android reportée). Les montants sont des **tarifs publics connus (2025), à revérifier** sur les sites officiels avant toute décision ; aucun chiffre de durée n'est mesuré (estimation qualitative).
+
+### Diagnostic
+- **Déjà là (observé)** : moteur maison C++20 / Vulkan multiplateforme ; un exécutable PC existe déjà (`wfs_bench`, `src/platform/desktop_main.cpp`) mais **sans fenêtre** (rendu hors écran pour la CI) ; manettes déjà gérées (`src/platform/manette.*`, WFS-22 / 23) avec focus des menus ; prix et contenus dans `configgame.json`.
+- **Manque pour le PC** : une vraie fenêtre (Windows : Win32 ou une petite bibliothèque comme SDL / GLFW), clavier / souris, réglages graphiques PC (résolution, plein écran, qualité au-dessus du téléphone), sauvegarde dans le dossier utilisateur, installeur, achats (Google Play Billing et AdMob n'existent pas sur PC).
+- **Consoles (observé côté moteur)** : Xbox impose DirectX 12, PlayStation son API à elle (pas de Vulkan) ; Switch accepte Vulkan mais avec son propre SDK. Il faudrait donc **réécrire la couche de rendu** pour Xbox et PlayStation. Les SDK sont sous NDA : rien ne peut être dans un dépôt public ni dans la CI GitHub actuelle.
+
+### Coûts
+| Cible | Frais d'entrée (public, à revérifier) | Matériel | Travail | Autres |
+|---|---|---|---|---|
+| **PC Steam** | 100 $ par jeu (Steam Direct, remboursés après 1 000 $ de ventes) | aucun (un PC Windows de test) | **Moyen** : fenêtre, clavier/souris, réglages, paiement par Steam | Steam garde 30 % ; classification d'âge non obligatoire ; captures et bande-annonce de fiche |
+| **PC Microsoft Store / itch.io** | Microsoft : gratuit pour un particulier depuis 2024 ; itch.io : gratuit | aucun | même base que Steam | itch.io : part au choix du vendeur |
+| **Nintendo Switch** | inscription gratuite mais **sur dossier** (Nintendo accepte surtout des sociétés) | kit de développement payant (quelques centaines d'euros) | **Élevé** : Vulkan partiel, NVN, mémoire et performance proches d'un téléphone | contrôle de conformité (lotcheck), classification PEGI / IARC, NDA |
+| **Xbox** | programme ID@Xbox gratuit, **sur dossier** (société + jeu présenté) | kits souvent prêtés | **Très élevé** : rendu DirectX 12 à écrire | certification, Xbox Live, NDA |
+| **PlayStation** | inscription PlayStation Partners gratuite, **sur dossier** | kits payants (plusieurs milliers d'euros) | **Très élevé** : API graphique propre à Sony | certification (TRC), trophées, NDA |
+| **Commun à tout** | — | — | traduction (E20 déjà en cours), juriste (marques, licences des modèles 3D : vérifier que CC BY couvre ces stores) | souvent une **société** (SIRET) demandée par les consoles |
+
+### Propositions
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Technique | *observé* : exécutable PC sans fenêtre déjà compilé en CI | Après la sortie Android : version **PC Windows** avec fenêtre, clavier/souris, manette (déjà faite), sur Steam | jouer sur grand écran à 60 img/s et plus | Élevé | Moyen | P2 | gel de la CI ; achats à refaire avec Steam ; performance déjà meilleure sur PC |
+| A02 | Économie | *observé* : market E21 lié à Google Play | Sur PC, **jeu payant une fois** (pas de pub ni d'étoiles achetées) | pas de pub, prix clair | Moyen | Faible | P2 | équilibrage des étoiles (R16) sans achats |
+| A03 | Technique | *supposé* : Steam Deck lit Vulkan sous Linux | Viser le **Steam Deck** en même temps que le PC | portable sans nouveau portage | Moyen | Faible | P3 | à vérifier au banc sur Linux |
+| A04 | Plateforme | *observé* : Switch accepte Vulkan, matériel proche d'un téléphone | Switch **seulement après** succès Android + PC, avec une société | public console nomade | Élevé | Élevé | P3 | accès refusé sans société ; kit payant ; NDA incompatible avec le dépôt actuel |
+| A05 | Plateforme | *observé* : Xbox / PlayStation sans Vulkan | **Ne pas viser** Xbox / PlayStation pour l'instant | — | Faible maintenant | Très élevé | P3 | réécriture du rendu ; mieux via un éditeur de portage plus tard |
+
+### Top 3
+1. **A01** : le PC est le seul portage à coût faible (100 $ + du travail moyen), car le moteur tourne déjà sur ordinateur et la manette est faite.
+2. **A02** : un prix unique sur PC évite de refaire tout le market.
+3. **A05** : ne rien dépenser sur Xbox / PlayStation tant qu'Android n'est pas sorti.
+
+### Prochaine étape
+Après la sortie Android (règle : Android d'abord) : si l'utilisateur le veut, demander au PO une **étude technique « version PC fenêtrée »** (une US) et au `@juriste` de vérifier les licences des modèles 3D et les marques pour Steam.

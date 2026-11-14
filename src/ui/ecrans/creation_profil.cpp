@@ -51,6 +51,7 @@ struct Etat {
     double maintenant = 0;
     bool valideNote = false;   // RG-07 : profil écrit (l'écran se ferme à l'image suivante)
     bool pointsNotes = false;  // points d'appui écrits au journal (une fois par ouverture)
+    creation::FiltreAppuis filtre;   // WFS-545 : un appui = un caractère, 150 ms après chaque caractère
 };
 Etat g_e;
 
@@ -66,6 +67,7 @@ void synchroniser(const GameView& g) {
         const uint32_t graine = (uint32_t)std::chrono::steady_clock::now().time_since_epoch().count() | 1u;
         g_e.saisie.ouvrir(propose, graine);
         g_e.ouvert = true; g_e.presse = -1; g_e.tOuvert = g.time; g_e.valideNote = g_e.pointsNotes = false;
+        g_e.filtre.oublier();
         WFS_LOG("création du profil (WFS-481) : écran ouvert (%s, pseudo proposé « %s », plaque proposée « %s »)", ui::langue::code(),
                 propose.c_str(), g_e.saisie.plaque().c_str());
     } else if (!montrer && g_e.ouvert) {
@@ -86,9 +88,10 @@ void valider() {
             s.nick.c_str(), s.profil.plaque.c_str());
 }
 
-// RG-03 : appui (au poser du doigt, comme le clavier du salon du duel)
+// RG-03 : appui (au poser du doigt, comme le clavier du salon du duel) ; WFS-545 RG-01 : les mouvements d'un doigt posé
+// (down = true répété par Android) ne sont pas de nouveaux appuis
 bool toucher(const Touch& t) {
-    if (!t.down) { return true; }
+    if (!g_e.filtre.poser(t.id, t.down)) return true;
     g_e.presse = -1;
     if (g_e.zPseudo.contient(t.x, t.y)) { g_e.saisie.choisirChamp(Champ::Pseudo); return true; }
     if (g_e.zPlaque.contient(t.x, t.y)) { g_e.saisie.choisirChamp(Champ::Plaque); return true; }
@@ -96,7 +99,10 @@ bool toucher(const Touch& t) {
     const Touche* cl = creation::clavier(ui::langue::active());
     for (int i = 0; i < creation::NB_TOUCHES; i++)
         if (g_e.zTouches[i].contient(t.x, t.y)) {
-            if (creation::toucheActive(cl[i], g_e.saisie.champ())) { g_e.saisie.appuyer(cl[i]); g_e.presse = i; g_e.tPresse = g_e.maintenant; }
+            // WFS-545 RG-02 : 150 ms après chaque caractère accepté (heure de la dernière image, horloge réelle sur le téléphone)
+            if (creation::toucheActive(cl[i], g_e.saisie.champ()) && g_e.filtre.accepter(g_e.maintenant)) {
+                g_e.saisie.appuyer(cl[i]); g_e.presse = i; g_e.tPresse = g_e.maintenant;
+            }
             return true;
         }
     return true;   // RG-02 : tout toucher est gardé (rien du menu dessous)
@@ -328,7 +334,12 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
         r.capturePng(out + "/" + fichier + ".png");
         WFS_LOG("capture %s : écran %s, %s", fichier.c_str(), nomEcran(g.ecran()), quoi);
     };
-    auto appui = [&](int id, const Zone& z) { const float x = z.x + z.w / 2, y = z.y + z.h / 2; g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); image(); };
+    // WFS-545 RG-02 : chaque appui du banc vient 150 ms après le précédent (délai du clavier), comme un pouce rapide
+    auto appui = [&](int id, const Zone& z) {
+        const float x = z.x + z.w / 2, y = z.y + z.h / 2;
+        t += creation::FiltreAppuis::DELAI;
+        g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); image();
+    };
     const Touche* cl = creation::clavier(ui::langue::active());
     auto indice = [&](char c) { for (int i = 0; i < creation::NB_TOUCHES; i++) if (cl[i].genre == Touche::Caractere && cl[i].c == c) return i; return -1; };
     auto genre = [&](Touche::Genre gn) { for (int i = 0; i < creation::NB_TOUCHES; i++) if (cl[i].genre == gn) return i; return -1; };
@@ -358,6 +369,34 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     verifier(!g_e.saisie.valide(), "RG-02 : « C'est parti » grisé sans pseudo");
     appui(53, g_e.zValider);
     verifier(creationProfilOuverte() && !sauvegarde().profil.cree, "RG-02 : « C'est parti » grisé : rien ne se passe");
+    // WFS-545 RG-01 : doigt posé sur « r » (majuscule armée), 10 mouvements du même doigt (down répété par Android), lever → « R »
+    {
+        const Zone& z = g_e.zTouches[indice('r')];
+        const float x = z.x + z.w / 2, y = z.y + z.h / 2;
+        t += creation::FiltreAppuis::DELAI;
+        g.onTouch({60, x, y, true}); image();
+        for (int k = 0; k < 10; k++) { g.onTouch({60, x + (k % 3) * 0.7f, y + (k % 2) * 0.7f, true}); image(); }
+        WFS_LOG("création du profil (WFS-545) banc : appui sur « r » + 10 mouvements du doigt → pseudo « %s »", g_e.saisie.pseudo().c_str());
+        verifier(g_e.saisie.pseudo() == "R", "WFS-545 RG-01 : un appui + 10 mouvements du même doigt → un seul « R »");
+        capture("repetition", "WFS-545 : doigt posé sur « r » qui bouge (10 mouvements) : un seul « R »");
+        g.onTouch({60, x, y, false}); image();
+    }
+    effacerTout();
+    // WFS-545 RG-02 : « Gh » puis 3 appuis sur « j » à 50 ms d'écart (rebond, 3 doigts différents) → un seul « j » ; à 200 ms → deux
+    taper("Gh");
+    {
+        const Zone& z = g_e.zTouches[indice('j')];
+        const float x = z.x + z.w / 2, y = z.y + z.h / 2;
+        t += creation::FiltreAppuis::DELAI;
+        for (int k = 0; k < 3; k++) { t += 0.05; g.render(t); g.onTouch({61 + k, x, y, true}); g.onTouch({61 + k, x, y, false}); }
+        image();
+        WFS_LOG("création du profil (WFS-545) banc : « Gh » + 3 appuis sur « j » à 50 ms → pseudo « %s »", g_e.saisie.pseudo().c_str());
+        verifier(g_e.saisie.pseudo() == "Ghj", "WFS-545 RG-02 : 3 appuis à 50 ms → un seul « j »");
+        capture("rapide", "WFS-545 : « Gh » puis 3 appuis sur « j » à 50 ms : « Ghj »");
+        t += 0.2; g.render(t); g.onTouch({64, x, y, true}); g.onTouch({64, x, y, false}); image();
+        verifier(g_e.saisie.pseudo() == "Ghjj", "WFS-545 RG-02 : appui suivant à 200 ms → accepté");
+    }
+    effacerTout();
     // RG-04 : pseudo trop court
     taper("Ma");
     verifier(g_e.saisie.erreur(Champ::Pseudo) && std::strcmp(g_e.saisie.erreur(Champ::Pseudo), "creation.erreur.pseudo_court") == 0, "RG-04 : « 3 caractères au moins » à la frappe");
