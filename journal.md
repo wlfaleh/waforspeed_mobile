@@ -1826,3 +1826,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #401 fusionnée en squash par le lead dev (e454b9f4) après une 2e relecture (la 1re reprise avait été coupée par un redémarrage du conteneur). Ticket en 🟣, ligne de `qa/Check.md` posée par le lead dev.
 - Réponse à l'utilisateur sous la demande « Personnalisation » de `tache utilisateur.md`. Remarques non bloquantes du lead dev à suivre : la voiture du garage est dessinée comme voiture du joueur (à surveiller avec WFS-494, skins au garage) ; 2 pages de finitions en 4:3.
 - Un seul sujet par session : je ne demande pas d'autre ticket.
+
+### 2026-11-14 01:23:50 — WFS-537 : retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
+- Corrigé : branche synchronisée (WFS-481) ; profil créé dans le banc `score-fin` ; compteur caché sous « Crée ton pilote » (capture et vérification) ; compteur dessiné par un système (461) juste après « Réglages » à la même image, avec le fondu du menu ; singulier « 1 étoile ».
+- Vérifié : `score-fin` vert en 2400 × 1080 et 1280 × 720 ; tests CPU 133 / 133 ; `textes-course` VERT ; `textes-menus` vert sur la branche (un échec « Quitter le salon » pendant la passe de captures, dû au relais du duel injoignable, absent à la relance).
