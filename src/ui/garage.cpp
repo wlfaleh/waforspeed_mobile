@@ -169,7 +169,7 @@ public:
         const float xStats = fiche_.specs(r, mp, car);   // .specs : Puissance, 0 à 100, Vitesse max
         mp.bw = 200 * k; mp.bx = mp.px1 - mp.padX - mp.bw;
         achat_.dessiner(r, mp, e);   // Choisir, Retour (achat : WFS-489 / 499 / 502)
-        for (const Zone* z : {&g_z.choisir, &g_z.retour, &g_z.prev, &g_z.next}) manette::focus(*z, z == &g_z.retour);   // WFS-22
+        for (const Zone* z : {&g_z.choisir, &g_z.essai, &g_z.retour, &g_z.prev, &g_z.next}) manette::focus(*z, z == &g_z.retour);   // WFS-22 ; WFS-499 : Essai
         fiche_.stats(r, mp, car, xStats);   // .statlist : 4 barres sur 10
         couleur_.dessiner(r, mp, e);        // .paint-line (WFS-489)
         finition_.dessiner(r, mp, e);       // vide (WFS-491)
