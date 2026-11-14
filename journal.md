@@ -1932,3 +1932,6 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 20:35:57 — R18 (suite 2) : design du garage (smart-brainstorming)
 - Captures du garage relues (couleurs, finitions) ; 6 axes ajoutés (A18 à A23) dans `recommandations-smart-brain.md`. Top : lumière neutre pour juger la teinte, nuancier repensé. Rien transmis au PO.
+
+### 2026-11-14 20:37:04 — R18 (suite 3) : critique du design seul (smart-brainstorming)
+- Aspect visuel comparé à la charte `design-street-racing` : 10 constats D01 à D10 (formes, couleurs, typo, logo, profondeur, grille, icônes, style des animations). Rien transmis au PO.

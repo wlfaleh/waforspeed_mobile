@@ -864,3 +864,23 @@ Choisir les axes qui t'intéressent et les demander au PO (`@po`). Avant A07, un
 | A23 | Garage | Constat 8 | Vue « **Toutes les teintes** » : un appui montre la voiture en grille dans toutes les couleurs (comme `garage-peintures`), puis on touche celle qu'on veut | Effet « waouh », comparaison facile | Moyen | Moyen | P3 | Mémoire : 16 voitures affichées en même temps (version légère du modèle) |
 
 **Recommandation** : A18 et A19 d'abord (peu de travail, gros gain), puis A21 (réorganisation) et A20.
+
+### R18 (suite 3) — 2026-11-14 — Critique du design seul (aspect visuel, sans nouvelle fonction)
+**Précision de l'utilisateur** : « je parle de design, pas des fonctionnalités ». Base : captures du run 32 comparées à la charte `design-street-racing` (inclinaison −8° à −12°, coins coupés, un seul accent dominant par écran, verre teinté flouté, lignes de vitesse).
+
+**Verdict d'ensemble** : propre et cohérent en couleurs, mais **plat et générique** : on dirait un tableau de bord sombre ou un site web plutôt qu'un jeu de course de rue. La charte promet vitesse et néon ; les écrans montrent surtout des rectangles gris-bleu.
+
+| ID | Élément | Constat (observé) | Direction de design | Priorité |
+|---|---|---|---|---|
+| D01 | Formes | Rectangles droits presque partout (cartes des modes, carte du terrain, boutons du choix du mode, panneau du garage, fin de course) ; biseaux seulement sur quelques boutons | Une seule langue de formes : **tout incliné à −10° et coin supérieur droit coupé** (cartes, boutons, onglets, panneaux, pastilles) | P1 |
+| D02 | Couleurs | Orange et cyan se battent sur le même écran (Terrain : cadre cyan, « CHOISI » cyan, Nuit cyan, compteur 01 orange, Rouler orange) ; cyan partout (titres, labels, bordures, sol du garage) ; **vert citron** de la nitro hors palette | **Rôles fixes** : orange = l'action (un seul élément par écran), cyan = l'info et la sélection, blanc = le texte ; retirer le vert citron | P1 |
+| D03 | Typographie | Une seule police, **Rajdhani Bold** pour tout (titres, boutons, descriptions, chiffres) : pas de contraste de graisse ; petits textes gris sur fond sombre peu lisibles ; titres en italique, boutons droits | 2 niveaux : titres et chiffres en grasse condensée **inclinée**, textes courants en graisse normale plus claire ; descriptions plus grandes et plus contrastées ; chiffres du HUD dans une police de chiffres dédiée (charte) | P1 |
+| D04 | Logo | Texte tapé, lueur de « SPEED » en pavé flou, contour de « FOR » en escalier, sans lien avec l'icône « W » | Un vrai logo dessiné (marque « W » inclinée + mot), lueur propre, mêmes formes inclinées que D01 | P1 |
+| D05 | Profondeur, matières | Panneaux opaques unis, aucun flou, aucune texture ; le voile du menu (94 % d'opacité à gauche) éteint la ville 3D | **Verre teinté flouté** (charte) qui laisse voir la 3D derrière, fin liseré de lumière en haut des panneaux, léger grain ou trame d'asphalte dans les fonds | P2 |
+| D06 | Énergie, vitesse | Aucune ligne de vitesse, aucune diagonale forte, mises en page centrées et statiques | Diagonales dans la composition (titres décalés, bandeaux inclinés), lignes de vitesse discrètes derrière les titres et les boutons d'action | P2 |
+| D07 | Composition | Pas de grille commune : menu aligné à gauche, modes centrés avec un grand vide, garage écrasé par un panneau d'un tiers d'écran, fin de course avec un panneau Score décollé | Une grille unique (marges, colonnes, place fixe du titre en haut à gauche, actions en bas) ; moins de cadres, plus d'air autour de la voiture | P2 |
+| D08 | Icônes | Presque pas d'icônes ; celles qui existent n'ont pas le même style (volant détaillé, flamme, soleil / lune au trait) | Un jeu d'icônes unique (trait épais, coupé en biseau) pour boutons, onglets, HUD | P2 |
+| D09 | Style des animations | Fondu + glissé de 36 px repris du jeu web : correct mais sans signature | Une **signature de mouvement** : balayage en diagonale à −10° pour entrer et sortir des écrans, accélération franche puis freinage court (comme une voiture) | P2 |
+| D10 | Deux directions artistiques | Ville réaliste au menu et en course ; garage en néons « gaming » (tubes et anneau) | Garage dans la même réalité que le jeu (vrai showroom, nuit urbaine), le néon réservé à l'interface 2D | P2 |
+
+**Recommandation** : D01 + D02 + D03 ensemble (c'est la base visuelle : formes, couleurs, typo), puis D04 (logo). Avant de toucher au code, une **planche de style** (une image par écran clé : menu, mode, garage, HUD, fin) à valider par l'utilisateur, faite par un agent qui charge `design-street-racing`.
