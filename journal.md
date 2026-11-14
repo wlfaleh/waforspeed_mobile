@@ -1670,3 +1670,9 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Point 2 (RG-08) : cause : `champ()` de `creation_profil.cpp` dessinait le texte saisi à taille fixe ; il est maintenant réduit pour tenir dans le champ, curseur placé d'après la taille réelle ; nouvelle vérification au banc `profil` (OK FR / EN), banc `creation` 0 écart ; captures 16 « W » régénérées.
 - Commit e00de6d5, synchronisé avec `main` (dd79a20b) ; réponse point par point sous la revue ; lead dev rappelé.
 
+
+### 2026-11-14 14:33:22 — WFS-493 refusé par le lead dev, PR #413 (lead-dev)
+- Commit relu : 1f756edf. Toutes les captures ouvertes (55 après, 19 avant) ; tout le diff lu ; construction et tests sur la branche synchronisée avec `main` : 140 tests réussis.
+- Néon nuit, Drift Tokyo et non-régression Rallye / sans skin : bons ; code propre (accroche de `scene.frag` en 1 ligne).
+- **Refus** : (1) le Camouflage ressemble à une robe de vache (taches noires rondes et isolées sur fond surtout blanc, gris presque absent), pas à un camouflage urbain (RG-04) ; (2) section « Tests CPU » avec le commit testé absente de la description (règle du 2026-11-11) ; (3) banc d'endurance en qualité Basse non lancé (RC-E18-03).
+- Revue dans la PR : https://github.com/wlfaleh/waforspeed_mobile/pull/413#pullrequestreview-5904959985 . Statut : ↩️ Retour lead dev (PR #413).
