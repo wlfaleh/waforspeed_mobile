@@ -11,6 +11,7 @@
 #include "../render/effets_particules.h"   // WFS-109 : effets::versHdr (halos du jeu web)
 #include "../render/feux_modele.h"         // WFS-109 : transition du feu stop
 #include "../render/renderer.h"
+#include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques du trafic
 #include "course5.h"   // WFS-110
 #include "course_system.h"
 #include "game.h"
@@ -189,6 +190,7 @@ public:
             r.traficProchainDessin();   // WFS-453 (accroche)
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
             conducteurs::ajouter(models_[mi], m * scale({k0, k0, k0}), CARS[mi].id, (uint32_t)ci + 2);   // WFS-73 (accroche)
+            plaques_autres::dessiner(r, CARS[mi].id, m, k0, plaques_autres::TRAFIC_0 + (int)(ci % plaques_autres::TRAFIC_N), plaques_autres::Genre::Trafic, g.night, g.camPos);   // WFS-484 (accroche)
         }
         deux_roues::dessinerFile(r, g.camPos);   // WFS-232 : pilotes des deux-roues les plus proches
         dessineHalos(r, g);   // WFS-67

@@ -1826,3 +1826,50 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #401 fusionnée en squash par le lead dev (e454b9f4) après une 2e relecture (la 1re reprise avait été coupée par un redémarrage du conteneur). Ticket en 🟣, ligne de `qa/Check.md` posée par le lead dev.
 - Réponse à l'utilisateur sous la demande « Personnalisation » de `tache utilisateur.md`. Remarques non bloquantes du lead dev à suivre : la voiture du garage est dessinée comme voiture du joueur (à surveiller avec WFS-494, skins au garage) ; 2 pages de finitions en 4:3.
 - Un seul sujet par session : je ne demande pas d'autre ticket.
+
+### 2026-11-14 01:23:50 — WFS-537 : retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
+- Corrigé : branche synchronisée (WFS-481) ; profil créé dans le banc `score-fin` ; compteur caché sous « Crée ton pilote » (capture et vérification) ; compteur dessiné par un système (461) juste après « Réglages » à la même image, avec le fondu du menu ; singulier « 1 étoile ».
+- Vérifié : `score-fin` vert en 2400 × 1080 et 1280 × 720 ; tests CPU 133 / 133 ; `textes-course` VERT ; `textes-menus` vert sur la branche (un échec « Quitter le salon » pendant la passe de captures, dû au relais du duel injoignable, absent à la relance).
+
+### 2026-11-14 01:25:44 — Statuts automatiques, CI main #1060 (robot statuts)
+- Run rouge (push, commit b08d880), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 01:39:00 — WFS-484 : PR #405 ouverte, accroches annoncées (Claude, agent dev3d (01Us6uCvb4))
+- Fait : plaques au hasard des autres voitures, même plaque que WFS-483 (maillages, places, matériaux, éclaireur, LOD réutilisés) ; atlas unique de 64 plaques (2048 × 512 px) préparé au chargement de la carte ; tirage 7 caractères sans mot interdit ni plaque du joueur ; duel : champ facultatif `pl` de la présence, filtré à la réception ; fantôme : plaque du joueur, translucide ; Basse : version simple, trafic sans plaque au-delà de 40 m.
+- Fichiers (zone E10) : `src/render/vehicule_plaques_autres.{h,cpp}`, `vehicule_plaques_tirage.cpp`, `vehicule_plaques_autres_banc.cpp`, `vehicule_plaque.{h,cpp}` et `vehicule_plaque_image.cpp` (largeur d'image réglable, constantes partagées), `tests/test_plaques_autres.cpp`.
+- **Accroches annoncées** (≤ 10 lignes par fichier, autorisées par le ticket) : `src/game/game.cpp` (4 : include, préparer, libérer, entre deux courses), `traffic_system.cpp` (2), `course5_system.cpp` (2), `poursuite_system.cpp` (2), `duel_system.cpp` (3 : include, plaques du salon, dessin), `course_system.cpp` (2 : fantôme), `duel.h` (2) et `duel.cpp` (2) : `setPlaque` et champ `pl`, `src/platform/desktop_main.cpp` (3 : bancs `plaques-autres`, `plaques-autres-mesure`), `CMakeLists.txt` (2 : test).
+- Vérifié : 135 tests CPU au vert (branche synchronisée avec `main`) ; banc `plaques-autres` 2400 × 1080, 21 captures avant / après (jour et nuit) regardées ; banc `parcours` : 0 écart (et vue Cockpit) ; coût (Corniche, Basse, Poursuite, trafic le plus dense) : +5,2 appels de dessin, +1 846 triangles par image ; temps lavapipe +3,8 ± 3,2 ms sur 300 ms (bruit).
+- Limites : aucune mesure sur GPU de téléphone (≤ +0,5 ms à confirmer) ; deux-roues sans plaque ; au-delà de 44 voitures du trafic, un texte peut revenir sur une voiture éloignée.
+
+### 2026-11-14 01:49:27 — WFS-484 fusionné par le lead dev (lead-dev)
+- PR #405 (Claude, agent dev3d (01Us6uCvb4)), revue sur 924a0465, squash f39336ce. « ✅ Approuvé par le lead dev » posté en commentaire (GitHub refuse l'approbation : même compte).
+- 21 paires de captures ouvertes : plaques du même style que le joueur sur le trafic, la Course à 5, la police (avant = arrière), fantôme translucide ; jour et nuit justes, rien d'autre de changé.
+- Diff entier lu ; construction et 135 tests CPU refaits par le lead dev. Remarques non bloquantes : coût sur téléphone à confirmer (RG-05) ; petit risque de doublon d'une case refaite quand la plaque du joueur change ; petites allocations par image hors course dans `duel_system.cpp`.
+- Statut 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne de `qa/Check.md` ajoutée ; session du développeur terminée.
+
+### 2026-11-14 01:49:46 — WFS-537 : retour lead dev sur PR #402 (lead-dev)
+- 2e revue, commit 23912814. Les 6 points du 1er refus sont corrigés : profil du banc, compteur caché sous « Crée ton pilote », système 461 avec fondu, singulier.
+- **Refus pour un seul point bloquant** : la PR est en conflit avec `main` (`mergeable: false`). WFS-501 (« Cadeau du jour », #403) est entré après la synchronisation `dcfe7a10`. Conflits dans `menu.cpp` (les deux tickets utilisent la valeur 5 de l'`enum`) et dans `desktop_main.cpp`. Sur la capture `textes-fr-menu-principal`, le bouton « Cadeau du jour » disparaît dans l'« après ».
+- Essai local du lead dev (rien poussé), conflit résolu avec `COMPTEUR = 6` : construction OK, 135 tests CPU réussis, bancs `score-fin` (1280 × 720) et `cadeau` à 0 échec, menu propre avec les 4 boutons.
+- Remarque non bloquante : cacher aussi le compteur sous l'écran du cadeau (`cadeau_jour::ouvert()`).
+- 40 captures regardées. Statut ↩️ dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 01:50:05 — WFS-484 : fin de session (Claude, agent dev3d (01Us6uCvb4))
+- PR #405 fusionnée par le lead dev (squash f39336ce) ; réponse « Bien reçu » sous la revue ; session terminée (un seul ticket par session), aucun autre ticket demandé.
+- Pour le PO (ticket de suivi à créer s'il le juge utile, remarques non bloquantes du lead dev) : (1) coût ≤ +0,5 ms à mesurer sur téléphone ; (2) `entreCourses` : case retirée non comparée aux autres quand la plaque du joueur change, texte du fantôme non remis en majuscules ; (3) `duel_system.cpp` : petites allocations hors course (`others()`) ; (4) vis du trafic sans `traficProchainDessin()`.
+
+### 2026-11-14 02:04:47 — Statuts automatiques, CI main #1061 (robot statuts)
+- Run rouge (push, commit e454b9f), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 02:19:03 — WFS-540 : PR #406 ouverte, police = vraie voiture (Claude, agent conduite (01UY1Vv3RA))
+- Fait : police simulée par `physique::pas` (moteur de conduite du joueur, fiche de sa 208), policier = gaz / frein / volant / marche arrière seulement ; contacts par impulsions ; arrestation (4 s sous 5 km/h à moins de 8 m, compte à rebours FR / EN) ; pénalité au contact réel seulement ; plus de « R » après un choc (`reculVoulu`, 1 ligne de HUD) ; cap propre dessiné.
+- Fichiers : `src/game/poursuite.*`, `poursuite_system.cpp`, `player.*`, `src/ui/hud.cpp` (1 ligne), textes FR / EN, `tests/test_police_540.cpp` (nouveau), `test_police_461.cpp`, `test_poursuite.cpp`, banc `police-540` (`src/game/police_540_banc.*`, accroche `desktop_main.cpp`), `CMakeLists.txt`.
+- Vérification : tests CPU 136 / 136 (branche synchronisée avec main) ; banc `police-540` avant / après (59 paires, `qa/pr/WFS-540/`), rendu lavapipe local.
+- Limites : une 208 réelle ne rattrape plus un joueur rapide dans les virages (relais à 220 m) ; mesure RG-08 faite à l'essieu arrière, « hors glisse » = pneus à < 50 % de leur adhérence (à valider par le PO) ; non testé sur téléphone (🟡 après fusion). CI de `main` #1061 rouge (banc-essai texte) avant cette PR : pas de lien avec WFS-540.
+
+### 2026-11-14 02:37:28 — WFS-540 : PR #406 refusée par le lead dev (lead-dev)
+- Relu : tout le diff, les 59 paires de captures, branche synchronisée construite et testée (136 test(s) réussi(s), `test_police_540` OK). RG-00 tenue (aucune écriture de la position / vitesse / cap de la police hors `poser` et `projeter`).
+- Refus (revue https://github.com/wlfaleh/waforspeed_mobile/pull/406#pullrequestreview-5900941227) : (1) section « Tests CPU » et `qa/pr/WFS-540/tests-cpu.log` absentes ; (2) RG-09 : sur `police540-camion-08` à `-14` (après), la police reste arrêtée en biais derrière le camion alors que la file de droite est libre, et elle est cachée sous le compteur ; cas à corriger et à ajouter au test (E) ; (3) RG-05 : le test (D) ne passe jamais dans le nouveau code (recul maxi 0,0 km/h), ajouter un vrai choc qui fait reculer.
+- Acceptés : mesure RG-08 à l'essieu arrière, anciens tests adaptés (vraie 208), relais à 220 m hors de vue, CI de main déjà rouge (#1060, #1061).
