@@ -1775,3 +1775,9 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Bandeau du prêt posé au-dessus de « Profil » (même calcul que `profil.cpp`), aucun bouton existant déplacé, zones d'appui séparées ; temps restant aussi écrit à chaque changement d'écran ; ligne inutile retirée de `test_pret`.
 - Vérifié : tests CPU 141/141 ; banc `cadeau` refait avant / après (48 après, 28 paires de WFS-501 identiques) ; menus FR / EN regardés : « Profil » visible et libre.
 - Pour le PO (défaut d'avant ce ticket, vu par le lead dev) : au garage en anglais, les petits prix sous les pastilles de couleur sont presque illisibles.
+
+### 2026-11-14 15:53:58 — WFS-502 fusionné par le lead dev (lead-dev)
+- PR #414, squash `651dc471`, revue sur `6d86ca96` (« ✅ Approuvé » en commentaire, même compte GitHub).
+- Relecture du commit de synchronisation `f2d01c6a` : la fusion automatique des deux parents, refaite par le lead dev, ne diffère que par `journal.md` (entrées des deux côtés gardées). Aucun fichier de code commun avec WFS-495 ; `CMakeLists.txt` construit `test_pret` et `test_vehicule_autocollants`.
+- Construction et tests CPU refaits par le lead dev sur `6d86ca96` : 142 réussis, code de sortie 0.
+- Statut 🟡 À valider (utilisateur) ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
