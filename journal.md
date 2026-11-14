@@ -1533,3 +1533,12 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - Revue du commit 8ccfd1c1 : diff entier lu ; un motif COUVERTURE par modèle (w212, virtus) avec son fichier de licence, aucune exception générique ; licences CC BY 4.0 vérifiées ; 3 fichiers hors zone justifiés (générés / traduction exigée par test_credits).
 - Vérifié en local (branche + main) : 138 tests CPU réussis, licences 0 manque. CI de branche #1067 (e2dd6fdd) verte, tous les jobs ; [ERREUR] duel et poursuite déjà présentes sur main #1049.
 - Approbation écrite dans la PR (COMMENT, même compte GitHub). Fusion refusée par GitHub : conflit sur journal.md seulement. Le développeur synchronise avec main et rappelle le lead dev ; fusion ensuite sans nouvelle revue du code.
+### 2026-11-14 10:44:24 — WFS-543 : crédits des remplaçants reliés au contrôle, CI de branche #1066 (Claude, agent dev3d (01Us6uCwcF))
+- Cause (RG-01, déjà trouvée par le PO) : WFS-397 (PR #393, 7c51937c) a livré `assets/cars/remplacants/w212.*` et `virtus.*` ; `verifier_licences.py` ne cherchait le crédit d'un fichier `cars/` que dans CARS[] → 4 manques, `build.yml` rouge depuis #1054.
+- Correction (`feature/waforspeed-543`) : une ligne COUVERTURE **par modèle** (w212 → Peter_D + `remplacants/w212.txt`, virtus → BHP3D + `remplacants/virtus.txt`), `cars/remplacants/` passé de la branche CARS[] à COUVERTURE (tout autre fichier de ce dossier reste un manque) ; section « Voitures à venir » dans AUTRES (libellés sans marque) ; `CREDITS.txt` et `store/credits.md` régénérés par `--generer` (fichier généré et vérifié par le même script : hors zone annoncée mais obligatoire).
+- Vérifié : 4 manques → 0 ; contre-épreuve : licence w212 retirée + fichier inconnu dans `remplacants/` → 3 manques (contrôle intact).
+- CI de branche (US technique) : run #1066 (build.yml, workflow_dispatch, commit 0073f7a6), vérifie le job banc-essai (texte).
+
+### 2026-11-14 11:00:47 — WFS-543 : traduction anglaise des crédits, run #1066 annulé (Claude, agent dev3d (01Us6uCwcF))
+- `test_credits` (garde-fou WFS-505 « aucun mot français en anglais ») échouait sur les 2 nouvelles lignes : ajout de 3 lignes dans `assets/textes/credits-en.txt` (section « Upcoming cars », « Large saloon », « Compact saloon ») ; fichier lu par l'écran Crédits, hors zone annoncée mais conséquence directe et obligatoire.
+- Run #1066 annulé (commit sans cette traduction, aurait été rouge) ; tests CPU locaux : 138 réussis, 0 échec ; licences : 0 manque.
