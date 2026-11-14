@@ -1424,3 +1424,24 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Demande d'une nouvelle session `@dev` (session_01Us6uCwQUXuoKdjYZMp2hbi), jamais eu de ticket. WFS-542 et WFS-543 déjà pris (01Us6uCtQB, 01Us6uCwcF) ; WFS-544 (P1, bancs du matin rouges) est le 1er ticket prêt pour `@dev` (règle « bancs rouges → US technique P1 à un développeur libre », avant le classement 📋 des 40).
 - **RG-05 ajoutée** à `regles-de-gestion/WFS-544.md` : le même job « banc (vitrines) » du #32 a une 2e cause, vérifiée sur le run 43574486481 : parcours `records` bloqué au menu après l'écran « Crée ton pilote » (WFS-481). Sans elle le job resterait rouge. Zone : `src/render/**` (préchauffage WFS-262) + bancs `tools/qa/**` du parcours `records`, accroches ≤ 10 lignes dans `src/ui/**` annoncées.
 - Branche `feature/waforspeed-544` ; CI de branche permise (US technique, une à la fois, chaque run au journal). Se synchroniser avec `main` quand WFS-543 (licences) est fusionné.
+
+### 2026-11-14 10:43:30 — WFS-545 créé : clavier, une touche écrit plusieurs fois (urgent, demande de l'utilisateur) (po-scrum-master)
+- **Demande** (vidéo de l'utilisateur, écran « Crée ton pilote ») : « Rrrrrr », « Ghjjjjj » pour un seul appui. Cause probable : `android_main.cpp` envoie les mouvements du doigt avec `down = true`, `toucher()` de `creation_profil.cpp` les compte comme des appuis.
+- **WFS-545** (P1 Urgent, E17 zone E8) : un caractère par appui + délai de 150 ms après chaque appui, clavier du profil et code du salon ; correction dans les écrans (noyau inchangé), test CPU. ⏳ Prêt, bandeau ⌨️ pour le prochain `@dev` (après les US techniques de la CI rouge), ou lead dev en renfort. Après fusion → 🟡. (Numéro 544 pris entre-temps par une autre attribution.)
+
+### 2026-11-14 10:51:06 — WFS-545 attribué à Claude, agent dev3d (01Us6uCthf) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCthf4jktVzSWmVecyC), aucun ticket auparavant : **WFS-545** (P1 Urgent, E17 zone E8, en tête du bandeau ⌨️).
+- Zone : `src/ui/ecrans/creation_profil*.{h,cpp}`, `src/ui/ecrans/salon.cpp` (saisie du code), `tests/**`. Règles : `regles-de-gestion/WFS-545.md` (RG-01 un caractère par appui, RG-02 150 ms, RG-03 les deux claviers, RG-04 noyau inchangé, RG-05 test CPU).
+- Branche `feature/waforspeed-545` (premier commit à pousser tout de suite) ; captures avant / après ; PR puis appel du `lead-dev` ; après fusion → 🟡 À valider (utilisateur) ; la session s'arrête après la fusion.
+
+### 2026-11-14 10:57:05 — WFS-546 créé : mode testeur, bouton « +2500 ★ » dans le diagnostic des Réglages (po-scrum-master)
+- **Demande de l'utilisateur** : tester couleurs, skins et voitures sans étoiles. **WFS-546** (P1 Urgent, E17 zone E8) : bouton « +2500 ★ » dans le menu caché de diagnostic (WFS-419), `boutique::crediter(2500)` à chaque appui, sauvegardé, FR / EN, test CPU. ⏳ Prêt, bandeau ⭐ juste après WFS-545. Après fusion → 🟡. Question ouverte à l'utilisateur : retirer le bouton de la version Google Play avant la sortie publique.
+
+### 2026-11-14 10:58:29 — WFS-546 attribué à Claude, agent dev3d (01Us6uCvwS) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCvwSLhHTdP5RNYXKda), aucun ticket auparavant : **WFS-546** (P1 Urgent, demande de l'utilisateur, bandeau ⭐ « au premier `@dev` qui demande », juste après WFS-545 déjà attribué). Passe avant WFS-482 (4e du classement 📋, prêt, reste ⏳ pour la prochaine session `@dev`).
+- Zone : `src/ui/ecrans/reglages*.{h,cpp}`, `assets/textes/fr.txt`, `assets/textes/en.txt`, `tests/**`. Règles : `regles-de-gestion/WFS-546.md` (RG-01 bouton dans le diagnostic WFS-419, RG-02 `boutique::crediter(s, 2500, "mode testeur")` un crédit par appui, RG-03 sauvegarde, RG-04 solde affiché, RG-05 clé `diag.etoiles` FR / EN, RG-06 test CPU).
+- Attention : WFS-545 (🔧, autre session) corrige l'appui répété dans `creation_profil*` / `salon.cpp` ; ne pas toucher ces fichiers, appliquer le même principe (un appui = un crédit) dans `reglages.cpp`, synchroniser avec `main` avant la PR.
+- Branche `feature/waforspeed-546` (premier commit à pousser tout de suite) ; captures avant / après FR et EN ; PR puis appel du `lead-dev` ; après fusion → 🟡 À valider (utilisateur) ; la session s'arrête après la fusion.
+
+### 2026-11-14 11:02:49 — WFS-546 précisé : bouton icône étoile, sans texte FR / EN (po-scrum-master)
+- Précision de l'utilisateur : « pas besoin de le faire en anglais et français, mettre un bouton avec une icône étoile, c'est tout ». RG-05 réécrite (icône ★ seule, aucune clé de texte), zone sans `fr.txt` / `en.txt`, captures ajustées.
