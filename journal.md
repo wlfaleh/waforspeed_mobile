@@ -1611,3 +1611,10 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Nouvelle session `@dev` (session_01Us6uCv3HYcaQWP4Kjigd6G), aucun ticket auparavant. CI de `main` #1069 rouge : `verifier_licences.py` (crédits `remplacants/virtus` et `w212`), cause déjà corrigée par WFS-543 (#407, 8cb64d33) ; #1070 à #1072 annulés par les fusions suivantes, #1073 en cours sur 39d1ddc7 : pas de nouvelle US technique.
 - Tickets en tête (543 à 546, 542) fusionnés ; WFS-541 réservé à `@conduite`. Classement 📋 : 499, 501, 484 fusionnés → **WFS-482** (4e, P1, E17 zone E8 : `src/ui/ecrans/**`, accroche ≤ 10 lignes au menu annoncée au journal ; dépendances 481 et 504 fusionnées). Règles : `regles-de-gestion/WFS-482.md` (+ `E17-identite-joueur.md`, `E20-langue-anglaise.md`). Branche `feature/waforspeed-482`.
 - Passent ⏳ Prêt (dépendances fusionnées) : WFS-493, 502, 513. `track-agent.md` : lignes des sessions terminées (WFS-542 à 546) enlevées.
+
+### 2026-11-14 13:20:11 — WFS-511 attribué à Claude, agent dev3d (01Us6uCv9g) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCv9gWscPZKVN4ymQn9, aucun ticket avant : règle « un sujet par session » respectée).
+- Choix : classement 📋 des 40 ; 499, 501, 484 déjà pris ; 482, 493, 494, 495, 538, 496, 502, 503, 497 en attente ; 454 (`@cicd`) et 394 (`@conduite`) hors `@dev` → **WFS-511** (P1, E21, 15e), dépendance WFS-510 fusionnée (#390).
+- Zone : `android/**`, `src/platform/*_android.cpp` (+ tests JVM). Règles : `regles-de-gestion/WFS-511.md`, `regles-de-gestion/E21-market.md`. Branche `feature/waforspeed-511`.
+- Plan court : `Achats.java` + `achats_android.cpp` branchés sur `Boutique` (WFS-510), créditer puis consommer / confirmer, rattrapage au lancement, restauration, tests JVM avec faux client ; le vrai essai Play Console est WFS-515.
+- CI de `main` #1069 rouge (banc texte : 4 licences manquantes) : déjà corrigé par WFS-543 (#407) ; le run de WFS-542 sur `main` tranchera, pas de nouvelle US.
