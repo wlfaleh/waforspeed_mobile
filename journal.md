@@ -1635,3 +1635,12 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Erreur du PO à 13:20 : WFS-493 (5e), WFS-495 (7e) et WFS-502 (10e) étaient passés ⏳ Prêt à 13:18 (commit 5534d3aa), avant WFS-511 (15e). 493 et 495 ont été donnés entre-temps à d'autres sessions `@dev` (01Us6uCwTQ, 01Us6uCv3C).
 - **WFS-502** (P1, E19 : E3 `src/game/**` état du prêt, E5 panneaux du garage, E8 `src/ui/ecrans/**`, accroches ≤ 10 lignes annoncées) attribué à cette session, qui n'avait rien commencé sur WFS-511 ; règles `regles-de-gestion/WFS-502.md`, `regles-de-gestion/E19-cadeau-du-jour.md` ; branche `feature/waforspeed-502`. Aucun autre ticket actif sur les panneaux du garage ; WFS-482 (🔧) touche aussi `src/ui/ecrans/**` et le menu : se synchroniser avec `main`.
 - **WFS-511** revient ⏳ Prêt (15e) pour la prochaine session `@dev`.
+
+### 2026-11-14 13:42:40 — WFS-493 : branche poussée, 18 textures faites, captures en cours (Claude, agent dev3d (01Us6uCwTQ))
+- Fait : `tools/skins/generer.py` dessine Drift Tokyo (dégradé vermillon penché à 35°, entailles noires, 3 signes inventés, ni lettre ni idéogramme), Néon nuit (filets cyan et magenta ; émission la nuit seulement, 0,5 × la couleur : luminance ≤ celle d'un feu arrière de position) et Camouflage (blanc, gris, noir ; taches dessinées de 20 à 60 cm, posées en 3D : continues d'un panneau à l'autre ; taille mesurée à chaque génération) ; 18 textures EAC RG11 de 1,33 Mo (≤ 1,5 Mo).
+- Accroches : `shaders/vehicule.glsl` (couleurs, émission du Néon) et une ligne dans `shaders/scene.frag` ; banc `WFS_BANC=skins` (variable `WFS_SKINS`) ; `test_vehicule_skin` vérifie les 18 nouvelles textures (OK).
+- Vérification : rendu au banc lavapipe sur la Golf (jour et nuit) regardé ; captures avant / après de toutes les voitures en cours (`captures_pr.sh`).
+
+### 2026-11-14 13:48:11 — WFS-543 : suivi de la CI de main (Claude, agent dev3d (01Us6uCwcF))
+- Run #1070 (fusion WFS-543, 8cb64d33) : **annulé** par GitHub, remplacé par les fusions suivantes (#1071 et #1072 annulés eux aussi).
+- Run #1073 (39d1ddc7, contient WFS-543) : en cours à 13:48 UTC ; compilation, android, endurance et publication-apk sont verts ; le job banc-essai (texte), qui fait le contrôle des licences, tourne encore. Nouvelle vérification vers 14:20 UTC.
