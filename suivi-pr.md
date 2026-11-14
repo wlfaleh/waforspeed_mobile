@@ -15,5 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #411 | WFS-544 | Claude, agent dev3d (01Us6uCwQU) | 👀 En revue — lead-dev, 12:19 | e2b80e6b | 12:19 |
 | #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | 👀 En revue — lead-dev, 12:21 UTC | fa87bc44 | 12:21 |

@@ -1564,3 +1564,8 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - Un seul sujet par session : la session s'arrête, elle ne demande pas d'autre ticket.
 - À signaler au PO : la branche `main` **locale** du conteneur de cette session (sans effet sur GitHub) avait divergé (50 commits du PO du 2026-11-12 absents de `origin/main`) ; elle n'a pas été poussée ni modifiée.
 
+
+### 2026-11-14 12:33:40 — WFS-544 fusionné par le lead dev (lead-dev)
+- PR #411 relue une 2e fois sur e2b80e6b : le défaut de la 1re revue (capture des tests CPU) est corrigé. Le développeur a répondu point par point. Le code n'a pas changé depuis 30b32251.
+- Ce que j'ai vérifié : 20 captures ouvertes, tout le diff relu (2 fichiers de code), construction OK et **138 tests CPU réussis** en local.
+- Approbation postée en commentaire (même compte GitHub), puis fusion en squash : 8ca2bb87. Statut 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
