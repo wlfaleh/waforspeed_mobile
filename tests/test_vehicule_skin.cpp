@@ -5,7 +5,7 @@
 //     complète de mipmaps, ≤ 1,5 Mo sur le disque (RG-02) ; dessin au bon endroit du dépliage (atlas de vehicule_skin.h) :
 //     larges bandes du dessus, peinture entre elles, filet, numéro sur les flancs, rien dans les marges entre zones ;
 //   - WFS-493 : Drift Tokyo (dégradé plein à l'arrière, peinture à l'avant), Néon nuit (filets cyan et magenta), Camouflage
-//     (habillage complet en trois tons) sur les 6 mêmes voitures, mêmes limites.
+//     (habillage complet : fond gris, taches blanches et noires ; blanc ≤ 35 %, gris ≥ 30 %) sur les 6 mêmes voitures, mêmes limites.
 // Argument facultatif : dossier des assets (défaut : assets, depuis la racine du dépôt).
 #include <cmath>
 #include <cstdio>
@@ -147,7 +147,8 @@ int main(int argc, char** argv) {
             VERIFIE(d.g(u, v) > 200, "%s-%s : filet magenta du dessus : %u", id, skin, d.g(u, v));
             pxDessus(0.f, 0.f, u, v);
             VERIFIE(d.r(u, v) < 15 && d.g(u, v) < 15, "%s-%s : peinture au milieu : (%u, %u)", id, skin, d.r(u, v), d.g(u, v));
-        } else {   // RG-04 : habillage complet (A partout), trois tons : blanc (B 0), gris (B 55 %), noir (B 100 %)
+        } else {   // RG-04 : habillage complet (A partout), fond gris (B 55 %), taches blanches (B 0) et noires (B 100 %) ; retour du
+                   // lead dev (PR #413) : pas de pois noirs sur fond blanc → blanc ≤ 35 % du flanc, gris ≥ 30 %, noir ≥ 1/8
             long n = 0, sansA = 0, blanc = 0, gris = 0, noir = 0;
             for (int y = vs::atlas::GAUCHE0; y < vs::atlas::GAUCHE1; y++) for (int x = 0; x < 1024; x++) {
                 n++; sansA += d.r(x, y) < 240;
@@ -155,7 +156,8 @@ int main(int argc, char** argv) {
                 blanc += g < 15; gris += g > 120 && g < 160; noir += g > 240;
             }
             VERIFIE(sansA == 0, "%s-%s : %ld pixels du flanc sans couleur A", id, skin, sansA);
-            VERIFIE(blanc > n / 8 && gris > n / 8 && noir > n / 8, "%s-%s : tons du flanc blanc %ld, gris %ld, noir %ld sur %ld", id, skin, blanc, gris, noir, n);
+            VERIFIE(blanc > n / 8 && blanc * 100 <= n * 35 && gris * 100 >= n * 30 && noir > n / 8, "%s-%s : tons du flanc blanc %ld, gris %ld, noir %ld sur %ld",
+                    id, skin, blanc, gris, noir, n);
         }
         lues493++;
     }

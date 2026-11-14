@@ -226,17 +226,21 @@ def neon_nuit(v):
     return A, B
 
 # ---------------------------------------------------------------- Camouflage (RG-04) : urbain gris, noir et blanc, à taches de 20 à 60 cm
-# Habillage complet : A (blanc) couvre toute la carrosserie ; B (noir) posé à 55 % donne le gris, à 100 % le noir. Taches : formes
-# organiques allongées (rayon qui ondule avec la direction, 4 ondes au hasard ; rapport 1,4 à 2,2) de 20 à 60 cm de diamètre, posées en 3D sur l'enveloppe de la
-# voiture (flancs, dessus, faces) par tirage avec distance minimale (graine fixe) ; chaque tache est grise ou noire. Évaluées au point
-# 3D de chaque pixel (points()) : continues d'une zone à l'autre. Taille contrôlée à chaque génération (taches_cm).
-CAMO_GRIS, CAMO_NOIR = 0.55, 1.0
-CAMO_D = (0.20, 0.60)          # diamètre des taches (m)
+# Habillage complet. Couleur A (blanc cassé) partout ; couleur B (noir) posée à 55 % = le gris, FOND du camouflage ; taches blanches
+# (B à 0) et noires (B à 100 %) qui s'imbriquent sur ce fond gris (retour du lead dev, PR #413 : pas de pois noirs sur fond blanc).
+# Une tache = 2 ou 3 lobes allongés (rapport 1,4 à 2,4) et ondulés autour d'un centre : contour irrégulier, pas un rond ; son
+# étendue va de 20 à 60 cm. Taches posées en 3D sur l'enveloppe de la voiture (flancs, dessus, faces) par tirage avec distance
+# minimale (graine fixe) : deux taches de même ton ne se fondent pas en nappe ; une noire peut mordre sur une blanche. Évaluées au
+# point 3D de chaque pixel (points()) : continues d'une zone à l'autre. Taille et part de chaque ton contrôlées à chaque génération.
+CAMO_GRIS = 0.55               # couverture de B pour le fond gris
+CAMO_BLANC, CAMO_NOIR = 0, 1   # tons des taches
+CAMO_D = (0.28, 0.70)          # étendue des taches (m) : la tache visible (lobes réunis) fait 20 à 60 cm de diamètre équivalent
 CAMO_GRAINE = 4931
 CAMO_PIXEL = 0.0055            # taille d'un pixel sur la carrosserie (m) : bord adouci sur un pixel
 
 def taches(v):
-    """liste (centre, rayon, ondes, tonalité, axe d'allongement, rapport) ; centres sur l'enveloppe (|x| = largeur, y = ceinture, z = boucliers)"""
+    """liste de lobes (centre, rayon, ondes, ton, axe d'allongement, rapport) ; taches centrées sur l'enveloppe (|x| = largeur,
+    y = ceinture, z = boucliers), chacune faite de 2 ou 3 lobes"""
     rng = np.random.default_rng(CAMO_GRAINE)
     l, av, ar = v['largeur'], v['avant'], v['arriere']
     faces = [  # (aire, tirage d'un point)
@@ -246,28 +250,30 @@ def taches(v):
         (2 * l * H, lambda: (rng.uniform(-l, l), rng.uniform(0, H), av)),
         (2 * l * H, lambda: (rng.uniform(-l, l), rng.uniform(0, H), ar))]
     aires = np.array([f[0] for f in faces]); aires /= aires.sum()
-    liste = []
-    for _ in range(20000):
-        if len(liste) >= 600: break
+    centres, lobes = [], []
+    for _ in range(30000):
+        if len(centres) >= 700: break
         c = np.array(faces[rng.choice(len(faces), p=aires)][1]())
-        r = rng.uniform(*CAMO_D) / 2
-        ton = CAMO_NOIR if rng.random() < 0.4 else CAMO_GRIS
-        # écart minimal : deux taches de même ton se touchent à peine (pas de grande nappe de plus de 60 cm) ; une noire mord
-        # largement sur une grise (taches imbriquées, comme un vrai camouflage urbain, pas des pois sur fond blanc)
-        if any(np.linalg.norm(c - t[0]) < (0.95 if t[3] == ton else 0.45) * (r + t[1]) for t in liste): continue
-        u = rng.normal(size=(4, 3)); u /= np.linalg.norm(u, axis=1)[:, None]
-        ondes = (u, rng.uniform(0.8, 1.8, 4), rng.uniform(0, 2 * math.pi, 4), rng.uniform(0.07, 0.13, 4))
-        # tache allongée (rapport 1,4 à 2,2) dans une direction au hasard, même aire : formes de camouflage, pas des ronds
-        a = rng.normal(size=3); a /= np.linalg.norm(a)
-        liste.append((c, r, ondes, ton, a, rng.uniform(1.4, 2.2)))
-    return liste
+        R = rng.uniform(*CAMO_D) / 2
+        ton = CAMO_NOIR if rng.random() < 0.52 else CAMO_BLANC
+        if any(np.linalg.norm(c - t[0]) < (0.85 if t[2] == ton else 0.35) * (R + t[1]) for t in centres): continue
+        centres.append((c, R, ton))
+        for j in range(rng.integers(2, 4)):
+            o = rng.normal(size=3); o /= np.linalg.norm(o)
+            cl = c + o * R * rng.uniform(0.15, 0.45)
+            r = R * rng.uniform(0.55, 0.75)
+            u = rng.normal(size=(4, 3)); u /= np.linalg.norm(u, axis=1)[:, None]
+            ondes = (u, rng.uniform(0.8, 1.8, 4), rng.uniform(0, 2 * math.pi, 4), rng.uniform(0.06, 0.12, 4))
+            a = rng.normal(size=3); a /= np.linalg.norm(a)
+            lobes.append((cl, r, ondes, ton, a, rng.uniform(1.4, 2.4)))
+    return lobes
 
 def couverture_taches(X, Y, Z, liste, ton):
     P = np.stack([X, Y, Z], -1)
     cov = np.zeros(X.shape)
     for c, r, (u, k, ph, amp), t, a, e in liste:
         if t != ton: continue
-        m = 1.6 * r * math.sqrt(e)   # demi-côté de la boîte englobante (tache allongée, ondulée)
+        m = 1.6 * r * math.sqrt(e)   # demi-côté de la boîte englobante (lobe allongé, ondulé)
         boite = (np.abs(X - c[0]) < m) & (np.abs(Y - c[1]) < m) & (np.abs(Z - c[2]) < m)
         if not boite.any(): continue
         d = P[boite] - c
@@ -281,10 +287,10 @@ def couverture_taches(X, Y, Z, liste, ton):
 def camouflage(v):
     X, Y, Z, dedans = points(v)
     liste = taches(v)
-    gris = couverture_taches(X, Y, Z, liste, CAMO_GRIS)
+    blanc = couverture_taches(X, Y, Z, liste, CAMO_BLANC)
     noir = couverture_taches(X, Y, Z, liste, CAMO_NOIR)
     A = np.where(dedans, 1.0, 0.0)
-    B = np.where(dedans, np.maximum(CAMO_GRIS * gris * (1 - noir), CAMO_NOIR * noir), 0.0)
+    B = np.where(dedans, CAMO_GRIS * (1 - blanc) * (1 - noir) + noir, 0.0)   # fond gris, taches blanches, noires par-dessus
     return A, B
 
 def etiqueter(masque):
@@ -304,19 +310,19 @@ def etiqueter(masque):
     return np.array(L, np.int32), n
 
 def taches_cm(v, B):
-    """taille des taches visibles sur le flanc gauche de la texture (zone entière, 0 à 1,60 m) : taches grises (partie visible) et
+    """taille des taches visibles sur le flanc gauche de la texture (zone entière, 0 à 1,60 m) : taches blanches (partie visible) et
     noires séparées, celles qui touchent le bord du cadre exclues ; renvoie pour chaque tonalité les diamètres équivalents (cm) et la
     part de sa surface portée par des taches de 20 à 60 cm"""
     v0, v1 = ZONES['gauche']
     zone = B[v0:v1]
     aire_px = (2 * DZ / T) * (H / (v1 - v0)) * 1e4        # cm² par pixel
     res = []
-    for masque in ((zone > 0.3) & (zone < 0.8), zone >= 0.8):
+    for masque in (zone < 0.2, zone >= 0.8):   # taches blanches, noires (le gris est le fond)
         lab, nb = etiqueter(masque)
         bord = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
         aires = np.bincount(lab.ravel(), minlength=nb + 1).astype(float) * aire_px
         garde = np.ones(nb + 1, bool); garde[0] = False; garde[bord] = False
-        garde &= aires >= math.pi * 2.5 ** 2   # liserés d'adoucissement (gris entre noir et blanc, < 5 cm) : pas des taches
+        garde &= aires >= math.pi * 2.5 ** 2   # miettes < 5 cm (bord d'une tache coupée par une autre) : pas des taches
         d = 2 * np.sqrt(aires[garde] / math.pi)
         part = aires[garde][(d >= 20) & (d <= 60)].sum() / max(aires[garde].sum(), 1)
         res.append((d, part))
@@ -432,7 +438,7 @@ def main():
         A, B = DESSINS[arg.skin](mesures[vid])
         canaux = [remplir_marges(reduire_dessin(c) if isinstance(c, Image.Image) else c.copy()) for c in (A, B)]   # WFS-493 : dessin en tableau (T × T)
         if arg.skin == 'camouflage':   # WFS-493 (RG-04) : taille des taches, contrôlée sur le flanc gauche
-            for nom, (d, part) in zip(('grises', 'noires'), taches_cm(mesures[vid], canaux[1])):
+            for nom, (d, part) in zip(('blanches', 'noires'), taches_cm(mesures[vid], canaux[1])):
                 print(f'{vid}-camouflage : taches {nom} du flanc gauche : {len(d)}, diamètre équivalent médiane {np.median(d):.0f} cm, '
                       f'quartiles {np.percentile(d, 25):.0f} à {np.percentile(d, 75):.0f} cm ; {100 * part:.0f} % de la surface en taches de 20 à 60 cm')
         nivR, nivG = mipmaps(canaux[0]), mipmaps(canaux[1])
