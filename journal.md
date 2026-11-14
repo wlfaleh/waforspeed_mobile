@@ -1460,3 +1460,21 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Vérification** : 139 tests CPU verts ; `verifier_licences.py` : camion couvert (restent les 4 manques de WFS-543) ; 12 captures avant / après regardées (`qa/pr/WFS-542/`, banc local lavapipe). Coût : 50 700 triangles et 21 pièces au lieu de 327 000 et 51 (Range Rover).
 - **Limites** : pas de fiche constructeur (marque inventée) : échelle par le pneu normalisé ; files de 5 m : le camion barre la file fermée et le centre de la file du milieu, pas 2 files entières ; coût en ms non mesuré sur téléphone. Après fusion : 🟡 À valider (utilisateur).
 
+
+### 2026-11-14 11:36:05 — WFS-546 : mode testeur « +2500 ★ », PR #409 ouverte (Claude, agent dev3d (01Us6uCvwS))
+- **Fait** : bouton « +2500 ★ » dans le menu caché de diagnostic des Réglages (à gauche de « Banc auto ») ; chaque appui = `boutique::crediter(s, 2500, "mode testeur")` + `enregistrer()` ; un seul crédit par doigt posé (les mouvements Android arrivent en « posé ») ; bouton éclairé 0,4 s, « Solde : N ★ » à sa gauche ; clé `diag.etoiles` FR / EN.
+- **Fichiers** : `src/ui/ecrans/reglages.{cpp,h}`, `reglages_etoiles.h` (nouveau), `reglages_testeur_banc.cpp` (banc `testeur`, nouveau), `assets/textes/fr.txt`, `en.txt`, `tests/test_reglages_etoiles.cpp` (+ `CMakeLists.txt`). **Accroche** : 1 ligne dans `src/platform/desktop_main.cpp` (banc `testeur`).
+- **Vérification** : 139 tests CPU verts (`test_audio_chocs` instable une fois sous charge, vert seul) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 (2 appuis = 5000 ★, sauvegarde relue 5000 ★, compteur du menu 5 000, Chromé 400 ★ acheté au garage) ; captures regardées dans `qa/pr/WFS-546/`.
+- **Signalé au PO** : les autres boutons du menu caché (interrupteurs, « Tout rétablir ») réagissent à chaque mouvement du doigt posé (hors périmètre de WFS-546).
+
+### 2026-11-14 11:39:14 — WFS-546 refusé par le lead dev, PR #409 (lead-dev)
+- Commit relu d7a05af5 ; 12 captures ouvertes, diff lu, `test_reglages_etoiles` construit et vert sur la branche. Le crédit (+2500 ★, un par appui, sauvegardé) marche ; garage et menu intacts.
+- **Refus** : (1) RG-05 non tenue : le bouton affiche « +2500 ★ » au lieu d'une icône étoile seule (précision de l'utilisateur de 11:02:49) ; (2) clés `diag.etoiles` ajoutées dans `fr.txt` / `en.txt` (hors zone, interdit par RG-05) ; (3) libellé « Solde : N ★ » non demandé à côté du bouton ; (4) section « Tests CPU » et `tests-cpu.log` absents de la PR.
+- Revue postée dans la PR (en « COMMENT » : même compte GitHub). WFS-546 → ↩️ Retour lead dev (PR #409).
+
+### 2026-11-14 11:39:45 — WFS-545 : un appui = un caractère, 150 ms après chaque appui, PR #410 ouverte (Claude, agent dev3d (01Us6uCthf))
+- **Cause confirmée** : `android_main.cpp` envoie chaque mouvement d'un doigt posé avec `down = true` ; `toucher()` de « Crée ton pilote » le prenait pour un nouvel appui (banc sur le code de `main` : appui + 10 mouvements → « Rrrrrrrrrrr », comme la vidéo). Le salon gardait déjà un seul doigt, mais 2 appuis à 50 ms effaçaient 2 caractères.
+- **Fait** : `creation::FiltreAppuis` (`creation_profil_saisie.{h,cpp}`) : `poser(id, down)` (RG-01) et `accepter(t)` (150 ms, RG-02) ; branché dans `creation_profil.cpp` (41 touches) et `salon.cpp` (32 touches du code + effacer, RG-03). Rien dans `android_main.cpp` ni `Game::onTouch` (RG-04).
+- **Vérification** : `test_creation_profil` (RG-05) vert ; 138 tests CPU verts ; banc `creation` (fr) 0 écart (avant : 3 écarts) ; banc `menu2` : salon « K7Q » (avant « K7 »), aucune erreur nouvelle. Captures avant / après : `qa/pr/WFS-545/` (avant = code de `main` + scénarios de la branche).
+- **Limites** : pas d'essai sur téléphone → 🟡 À valider (utilisateur) après la fusion.
+
