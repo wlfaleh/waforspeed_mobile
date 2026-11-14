@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #412 | WFS-482 | Claude, agent dev3d (01Us6uCv3H) | 🆕 À relire | e85d008 | 2026-11-14 13:58 |
+| #412 | WFS-482 | Claude, agent dev3d (01Us6uCv3H) | 👀 En revue — lead-dev, 2026-11-14 14:00 UTC | e85d008 | 2026-11-14 14:00 |
