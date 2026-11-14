@@ -1730,3 +1730,35 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **WFS-484** (E17, P1) : plaques au hasard pour le trafic, les adversaires, la police, le duel et le fantôme, même style que la plaque du joueur. Dépendance WFS-483 (#397) fusionnée : réutiliser sa plaque 3D, ne pas la recréer.
 - Zone : E10 (`src/render/vehicule_*`, `shaders/vehicule*.glsl`, `assets/cars/**`) + accroche ≤ 10 lignes dans `src/game/traffic*` / systèmes de course (annoncée au journal). Règles : `regles-de-gestion/WFS-484.md`, `regles-de-gestion/E17-identite-joueur.md`. Branche `feature/waforspeed-484`. Règle des formes nues : la plaque est un vrai objet (chanfreins, matériau), pas un rectangle plat.
 - `track-agent.md` : ligne ajoutée.
+
+### 2026-11-13 23:26:37 — Statuts automatiques, CI main #1058 (robot statuts)
+- Run rouge (push, commit 6adb9a7), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-13 23:38:39 — WFS-492 fusionné par le lead dev (lead-dev)
+- PR #400, 2e revue (reprise après la perte de l'instance de 23:10), commit relu 515146c6 ; squash b1ed89d1 « WFS-492 : Skins, texture d'habillage par voiture + skin Rallye sur 6 voitures (#400) (Claude, agent dev3d (01Us6uCutV)) ».
+- Les 3 points du refus sont corrigés (Tests CPU et `tests-cpu.log`, 6 paires sans skin identiques sur golf / gt86 / giulia, parcours RC-E18-09) ainsi que les 2 remarques. Les 25 captures ont été ouvertes et tout le diff lu ; construction et 132 tests CPU refaits ; banc `skins` (golf) relancé : parcours à 0 écart, 0 texture en fin de banc.
+- Approbation postée en commentaire (même compte GitHub). Statut 🟣 ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-13 23:39:29 — WFS-492 : fin, session terminée (Claude, agent dev3d (01Us6uCutV))
+- PR #400 fusionnée par le lead dev à la 2e revue (squash b1ed89d1) ; WFS-492 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
+- À surveiller : images/s mesurées sur lavapipe seulement (à confirmer sur l'APK) ; plaque « 07 » de la Corvette un peu basse (à régler dans `tools/skins/voitures.json` avec WFS-493).
+- Pour WFS-493 : nouvelle skin = un dessin dans `tools/skins/generer.py` (DESSINS) + ses couleurs A / B dans `SKIN_COULEURS` (`shaders/vehicule.glsl`), puis `python3 tools/skins/generer.py --skin <id>`.
+- Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-13 23:58:49 — WFS-499 : code fait, captures en cours (Claude, agent dev3d (01Us6uCxU3))
+- Fait (branche `feature/waforspeed-499`, 8de3bff2) : au garage, voiture bloquée = cadenas sous son point et carte « cadenas · 2 200 ★ · ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € » ; « Acheter 2 200 ★ » ouvre une fenêtre de confirmation (Annuler / Confirmer ; solde insuffisant : « Il te manque N ★ », pas de Confirmer) ; « Essai gratuit » puis « Essai déjà fait » ; solde en haut à droite ; écran de fin de l'essai : « Acheter N ★ » en haut à droite (même fenêtre) ; FR / EN (séparateur « 2 200 » / « 2,200 », « 21,78 € » / « €21.78 »).
+- Garde-fou RG-03 : une voiture bloquée ne repart pas en course hors de son essai (« Rejouer », « Recommencer », duel) : retour au garage sur elle. Sans sauvegarde active (bancs des autres tickets, parcours de la CI) : aucune voiture bloquée, rien ne change.
+- Fichiers : `src/ui/garage_achat.*`, nouveaux `garage_achat_voiture.cpp` (fenêtre, écran de fin, garde-fou : 2 petits systèmes 205 et 445, aucun code des modes touché), `garage_achat_texte.cpp`, `garage_voitures_banc.cpp`, `tests/test_garage_voitures.cpp` ; textes `assets/textes/fr.txt` / `en.txt`.
+- Accroches annoncées : `garage.cpp` (+11 / −1 : fenêtre, bouton Essai, noms du banc), `garage_commun.h` (zone `essai`), `garage_couleur.cpp` (cadenas sorti de l'espace anonyme pour être partagé), `desktop_main.cpp` (1 ligne : banc `garage-voitures`), `CMakeLists.txt` (test). Aucune accroche dans `src/ui/ecrans/**` ni dans les modes : l'écran de fin est complété par-dessus (pas de conflit avec WFS-537).
+- RG-04 : WFS-494 pas fusionné : aucune fenêtre de skin offerte. Vérifié : 132 tests CPU au vert en local (dont `test_garage_voitures`, 24 cas) ; banc `garage-voitures` (1280x720) : parcours complet, 0 écart.
+
+### 2026-11-14 00:11:58 — Question de l'utilisateur : glisse de la police et « grande voiture irréaliste » (po-scrum-master)
+- **Glisse des voitures de police** : non couverte par WFS-540 ; cause lue dans le code : la police est déplacée en `rd` / `x` par `poursuite::avancer()`, seules les roues contre-braquent (`poursuite_system.cpp` l. 312). **ANO-272** (bloquante) → **RG-08 ajoutée à WFS-540** (cap dans l'axe du déplacement, pas de glisse au-delà des pneus, braquage réel, aucun pivot sur place).
+- **Grande voiture** : c'est la surprise « camion en travers » de WFS-119, un **Range Rover Sport agrandi 1,45 fois** (`CAMION_ECHELLE`, `poursuite.h` l. 175 ; depuis WFS-404). **ANO-273** (bloquante) → nouveau **WFS-542** (P1, `@dev` artiste 3D) : vrai camion libre aux vraies mesures, échelle 1, immobile, retiré derrière le joueur. WFS-541 précisé : ce SUV n'est pas le trafic.
+
+### 2026-11-14 00:14:56 — ANO-272 revue image par image : la police est déplacée comme une carte à jouer (po-scrum-master)
+- Remarque de l'utilisateur : « ce n'est pas les roues ; elle glisse à gauche et à droite comme une carte à jouer, regarde bien le mouvement ». Mon 1er constat (roues) était faux.
+- Vidéo 23:48 revue à 10 images/s (`qa/retours/2026-11-13-video2348-police-coince/video2348-police-10ips-1.2s-3.6s.jpg`) : carrosserie toujours parallèle à la route, décalages de côté et d'avant en arrière sans jamais tourner.
+- Cause dans le code : cap dessiné = cap de la route (`poursuite_system.cpp` l. 390-391) ; glissement de côté direct à 6,75 m/s (`poursuite.cpp` l. 116-117) ; téléportation au contact (l. 124-125).
+- ANO-272 réécrite ; **WFS-540 RG-08 réécrite** : police conduite avec son propre cap, déplacement seulement dans l'axe de la carrosserie, braquage réel, aucune téléportation, mesures au banc.

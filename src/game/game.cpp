@@ -21,6 +21,7 @@
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 #include "personnalisation.h"   // WFS-488 (accroche) : couleur 2 possédée
 #include "../render/vehicule_peinture2.h"   // WFS-488 (accroche)
+#include "../render/vehicule_skin.h"   // WFS-492 (accroche)
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 #include "../ui/ecrans/chargement.h"   // WFS-146 (accroche, ANO-45) : fondu du chargement
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9) : revêtements de route réels
@@ -85,6 +86,10 @@ void Game::setCar(const char* carId) {
     paint2_ = p2 ? vehicule_peinture2::code(p2->hex) : vehicule_peinture2::UNE_COULEUR;
     if (const PeintureDef* e = std::getenv("WFS_PEINTURE2") ? peintureDef(std::getenv("WFS_PEINTURE2")) : nullptr) paint2_ = vehicule_peinture2::code(e->hex);   // WFS-488 : bancs (mesure RC-E18-03)
     loadCarModel(*r_, std::string(carDef_->file), car_);
+    {   // WFS-492 (accroche) : skin possédée de cette voiture (une seule texture d'habillage en mémoire) ; bancs : WFS_SKIN=<id>
+        const char* sk = std::getenv("WFS_SKIN") ? std::getenv("WFS_SKIN") : sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), carDef_->id).skin : "";
+        vehicule_skin::poser(*r_, car_, carDef_->id, sk);
+    }
     plaque_joueur::voiturePreparee(*r_, carDef_->id);   // WFS-483 (accroche) : porte-plaques et texte, avant la course
     player_.reset(*carDef_);
     camInit_ = false;
@@ -98,6 +103,7 @@ void Game::shutdown() {
     chunks_.clear();
     for (auto& g : graveyard_) r_->destroy(g.second);
     graveyard_.clear();
+    vehicule_skin::liberer(*r_);   // WFS-492 (accroche) : avant le modèle (GPU arrêté)
     r_->destroy(car_);
     r_->destroy(shadowQuad_);
     for (Material* m : {&roadMat_, &walkMat_, &groundMat_, &shadowMat_}) r_->destroy(*m);   // WFS-187 : refaits à chaque init
