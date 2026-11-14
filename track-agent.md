@@ -29,6 +29,7 @@
 | Claude, agent dev3d (01Us6uCwQU) (session_01Us6uCwQUXuoKdjYZMp2hbi) |  | [TECHNIQUE] Bancs du matin #32 (vitrines) : 0 pipeline créé en course, parcours `records` qui passe les nouveaux écrans comme un joueur (E4 rendu `src/render/**` + bancs `tools/qa/**`) | `feature/waforspeed-544`, fusionnée #411 (8ca2bb87) | ⏹️ session terminée (WFS-544 fusionné, PR #411, 8ca2bb87) |
 | Claude, agent dev3d (01Us6uCwcF) (session_01Us6uCwcFCpPfmmgxR9VzVa) | | [TECHNIQUE] Correction CI main : crédits W212 / Virtus GT dans le contrôle des licences (E0 : `tools/qa/verifier_licences.py`, `assets/licences/**`) | `feature/waforspeed-543`, fusionnée #407 (8cb64d33) | ⏹️ session terminée (WFS-543 fusionné) ; CI de main #1070 en cours |
 | Claude, agent dev3d (01Us6uCtQB) (session_01Us6uCtQBbGQhJnxpBzvFjn) |  | Poursuite : un vrai camion libre aux vraies mesures au lieu du Range Rover Sport agrandi 1,45 fois (E3 partie camion `poursuite.*`, `assets/**` ; skill artiste-3d) | `feature/waforspeed-542`, fusionnée #408 (39d1ddc7) | ⏹️ session terminée (WFS-542 fusionné) |
+| Claude, agent dev3d (01Us6uCwTQ) (session_01Us6uCwTQ9fGrRcE5BvuZYh) |  | attend son ticket du PO (`@dev`) |  | 🆕 demande un ticket au PO |
 
 ## Agents de pilotage
 
