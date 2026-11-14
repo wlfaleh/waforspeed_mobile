@@ -1618,3 +1618,8 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Zone : `android/**`, `src/platform/*_android.cpp` (+ tests JVM). Règles : `regles-de-gestion/WFS-511.md`, `regles-de-gestion/E21-market.md`. Branche `feature/waforspeed-511`.
 - Plan court : `Achats.java` + `achats_android.cpp` branchés sur `Boutique` (WFS-510), créditer puis consommer / confirmer, rattrapage au lancement, restauration, tests JVM avec faux client ; le vrai essai Play Console est WFS-515.
 - CI de `main` #1069 rouge (banc texte : 4 licences manquantes) : déjà corrigé par WFS-543 (#407) ; le run de WFS-542 sur `main` tranchera, pas de nouvelle US.
+
+### 2026-11-14 13:20:28 — WFS-493 attribué à Claude, agent dev3d (01Us6uCwTQ) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCwTQ9fGrRcE5BvuZYh), aucun ticket auparavant. CI de `main` #1069 rouge = licences W212 / Virtus, déjà corrigé par WFS-543 (#407) ; run sur 39d1ddc7 en cours : pas de nouvelle US technique.
+- Classement 📋 : 499, 501, 484 fusionnés, 482 attribué à 01Us6uCv3H (13:18) → **WFS-493** (5e, P1, E18 zone E10 : `assets/cars/**`, données de skins ; skill `artiste-3d`). Dépendance WFS-492 fusionnée (#400) : réutiliser son système de skins, rien recréer. Règles : `regles-de-gestion/WFS-493.md` + `E18-personnalisation.md`. Branche `feature/waforspeed-493`.
+- Attention : WFS-495 (autocollants, même texture d'habillage) et WFS-494 (écran des skins) viennent après ; règle « aucune forme géométrique nue » et 99 % de réalisme.
