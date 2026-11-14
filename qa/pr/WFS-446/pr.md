@@ -25,6 +25,35 @@
   - Le pilote des deux-roues (`deux_roues.cpp`, hors zone) garde le chargement normal : il n'est appelé que si les modèles des deux-roues ont été acceptés.
   - Banc PC (lavapipe) seulement ; le banc `batiments` n'est pas dans la CI (comme pour WFS-418).
 
+## Tests CPU
+
+Commit testé : **da36b2bd** (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build` ; journal complet : [`qa/pr/WFS-446/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-446/qa/pr/WFS-446/tests-cpu.log).
+
+```
+[OK] test_voitures_retirees (0 s)
+tests CPU : 142 test(s) réussi(s) en 338 s
+```
+
+## RG-09 : banc `perf` et chargement, avant (main 02cdaf15) / après (branche da36b2bd)
+
+Banc PC (lavapipe, 1280×720), même machine, lancés l'un après l'autre. `WFS_BANC=perf WFS_PERF_CARTE=<carte> WFS_PERF_IMAGES=120 WFS_PERF_CHAUFFE=60` (pilote automatique, golf) ; chargement et mémoire graphique : banc `batiments` (scènes `*-rue-jour`, qualité Basse).
+
+| Carte | Qualité | Appels (main → branche) | Triangles (main → branche) | Image moyenne, ms (main → branche) |
+|---|---|---|---|---|
+| Ville | Haute | 792 → **792** | 1 602 303 → **1 602 303** | 751,2 → 699,8 |
+| Ville | Basse | 263 → **263** | 467 957 → **467 957** | 324,2 → 302,0 |
+| Corniche | Haute | 603 → **603** | 1 155 839 → **1 155 839** | 454,1 → 436,4 |
+| Corniche | Basse | 282 → **282** | 319 606 → **319 606** | 219,3 → 202,6 |
+
+| Carte | Scène (Basse) | Chargement, ms (main → branche) | Mémoire graphique, Mo (main → branche) |
+|---|---|---|---|
+| Ville | kit (sans paquet) | 4 332 → 4 073 | 930 → **930** |
+| Ville | paquet cuit | 4 326 → 4 360 | 1 042 → **1 042** |
+| Corniche | kit (sans paquet) | 3 734 → 3 550 | 632 → **632** |
+| Corniche | paquet cuit | 3 630 → 3 663 | 650 → **650** |
+
+Appels, triangles et mémoire graphique **identiques** ; les temps restent dans le bruit du rendu logiciel (écarts de −7 % à +1 %, dans les deux sens). Quand la mémoire suffit, la voie de repli fait les mêmes réservations, dans le même ordre, que la voie normale : seul un compteur s'ajoute.
+
 ## Captures pour le lead dev (38 après)
 
 Les 5 demandées par les règles :
