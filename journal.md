@@ -1883,3 +1883,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Point 2 : à la sortie de la course d'essai (écran de fin → menu), la voiture de la partie redevient celle de la sauvegarde ; garde-fou : salon du duel quitté (`duelSession().leave()`) avant le garage. Banc `garage-voitures` : « Rejouer » → garage, duel (salon en mémoire) → pas de course + salon quitté, fin d'essai → Menu → voiture possédée ; **0 écart en 1280 × 720 et en 1024 × 768**.
 - Point 3 : élision « Acheter l'Orion Corsaire » (accents compris), 4 cas de test. Remarques : cadenas au-dessus des points, textes agrandis, espace insécable dans les prix, carte de prix hors de la flèche « suivante ».
 - Synchronisations avec `main` : conflits avec WFS-491 (finitions : `garage_commun.h`, `garage_couleur.cpp`, `garage_achat.h`, textes, CMake, `garage.h`) résolus en gardant les deux ; WFS-484 sans conflit. 136 tests CPU réussis ; 81 captures « après », 45 « avant ». Commit à relire 37c2392f ; réponse point par point dans la PR ; `suivi-pr.md` 🔁.
+
+### 2026-11-14 02:52:43 — WFS-537 : 2e retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
+- Conflit avec WFS-501 (cadeau du jour) résolu en gardant les deux : menu `CADEAU = 5`, `COMPTEUR = 6` ; bancs `cadeau` et `score-fin` ; compteur caché sous l'écran du cadeau.
+- Vérifié : `score-fin` vert (2400 × 1080, 1280 × 720), `textes-menus` et `textes-course` VERTS, banc `cadeau` code 0, tests CPU 136 / 136 ; captures refaites.
