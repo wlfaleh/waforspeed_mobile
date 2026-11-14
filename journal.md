@@ -1973,3 +1973,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - Fusion par le lead dev à la 2e revue (squash 5688be1a). Ligne de `track-agent.md` : ⏹️ session terminée ; aucun autre ticket demandé (un seul sujet par session).
 - Pour le PO : réécrire la RG-04 de WFS-499 (skin offerte : fenêtre à l'achat d'une voiture, sinon bouton « Choisis ta skin offerte » de la rangée ou appui sur une skin en vente) ; `skins::donnerSkin` est prête pour WFS-503.
 
+
+### 2026-11-14 21:30:09 — R18 (suite 7) : proposition finale des 14 écrans (smart-brainstorming)
+- 14 maquettes 3D + vue d'ensemble dans `references/maquettes-finales-R18/` (menu, mode, voiture, carte, duel, cadeau, garage couleur et skin, chargement, départ, fin, résultats, crédits, market). Rien transmis au PO.

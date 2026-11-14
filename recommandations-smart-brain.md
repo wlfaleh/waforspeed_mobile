@@ -906,3 +906,23 @@ Retour de l'utilisateur : « les boutons sont toujours les mêmes, design figé,
 | Bouton secondaire (Rejouer, Retour) | **Autocollant vinyle** découpé, coin qui se décolle | il s'arrache à l'appui |
 | Confirmer (départ, achat) | **Compte-tours à maintenir** | garder le doigt : l'aiguille monte jusqu'à la zone rouge |
 Images : `references/maquettes-3D-R18/4-planche-boutons-3d.jpg` et `5-menu-boutons-3d.jpg` (console en carbone dans le parking). Points à vérifier : lisibilité sur petit écran, taille du doigt (≥ 48 dp), coût en images/s (objets 3D dans l'interface), sons et vibrations à chaque geste.
+
+### R18 (suite 7) — 2026-11-14 — Proposition finale : les 14 écrans
+Demande de l'utilisateur : la proposition finale pour chaque page. Images dans `references/maquettes-finales-R18/` (`00-vue-ensemble.jpg` + une image par écran), rendus 3D avec les vrais modèles du jeu (`.wfm`), plaques « WFS », noms inventés. Principe commun : **chaque écran est un lieu réel** (parking souterrain de nuit, studio de carrossier, route mouillée) et **chaque bouton est un objet** (R18 suite 6) ; seuls les titres et les chiffres restent en 2D (charte `design-street-racing`).
+| N° | Écran | Idée |
+|---|---|---|
+| 01 | Menu | console en carbone : bouton Start/Stop « Course solo », plaques DUEL et GARAGE ; enseigne du jeu en lettres métal |
+| 02 | Choix du mode | **molette de mode de conduite** (Checkpoint / Course à 5 / Poursuite), repère orange sur le mode choisi |
+| 03 | Choix de la voiture | trois voitures garées sur leurs places, plaque du nom au mur, la voiture choisie sous le projecteur |
+| 04 | Choix de la carte | **panneaux de direction routiers** (Ville néon, Corniche, Campagne, Grand Prix), le choisi éclairé ; interrupteur jour / nuit |
+| 05 | Duel en ligne | **digicode d'interphone** vissé sur un poteau pour taper le code, plaque du pseudo ; Start/Stop « Créer duel » |
+| 06 | Cadeau du jour | **caisse en bois** qui s'ouvre avec de la lumière, gain en chiffres 3D (« +23 ★ ») ; autocollant « Chances » |
+| 07 | Garage, couleur | plateau tournant, **plaquettes de peinture** sur pied ; onglets en plaques, onglet ouvert en néon |
+| 08 | Garage, skin | skin Rallye peinte sur la voiture, vignettes des skins, **compte-tours à maintenir** pour acheter |
+| 09 | Chargement | **compteur kilométrique à rouleaux** qui tourne jusqu'à 100 %, astuce de jeu |
+| 10 | Départ | **portique de feux** (5 feux rouges = le décompte), consigne du départ parfait |
+| 11 | Fin de course | portique « ARRIVÉE », damier au sol, **score en chiffres 3D** sur l'asphalte |
+| 12 | Résultats | **tableau d'affichage LED ambre** des temps, détail du score, Rejouer / Menu, ×2 par vidéo à maintenir |
+| 13 | Crédits | générique **peint au pochoir sur le mur**, néon « MERCI », vrais auteurs et licences |
+| 14 | Market | **borne « Station ★ »** : écran du pack, 4 boutons de grade (Bronze, Argent, Or, Coffre), prix de `configgame.json` |
+Limites : maquettes de création (rendu web), pas le moteur ; à valider avant tout ticket : performance du téléphone (une scène 3D par écran), lisibilité sur petit écran, avis `@3d` (réalisme, formes nues), `@juriste` (borne de carburant et plaques sans signe réel). Découpage proposé si l'utilisateur valide : un ticket par écran, en commençant par 01 (menu), 10 (départ) et 11-12 (fin et résultats).
