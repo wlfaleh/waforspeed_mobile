@@ -1428,3 +1428,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 10:43:30 — WFS-545 créé : clavier, une touche écrit plusieurs fois (urgent, demande de l'utilisateur) (po-scrum-master)
 - **Demande** (vidéo de l'utilisateur, écran « Crée ton pilote ») : « Rrrrrr », « Ghjjjjj » pour un seul appui. Cause probable : `android_main.cpp` envoie les mouvements du doigt avec `down = true`, `toucher()` de `creation_profil.cpp` les compte comme des appuis.
 - **WFS-545** (P1 Urgent, E17 zone E8) : un caractère par appui + délai de 150 ms après chaque appui, clavier du profil et code du salon ; correction dans les écrans (noyau inchangé), test CPU. ⏳ Prêt, bandeau ⌨️ pour le prochain `@dev` (après les US techniques de la CI rouge), ou lead dev en renfort. Après fusion → 🟡. (Numéro 544 pris entre-temps par une autre attribution.)
+
+### 2026-11-14 10:51:06 — WFS-545 attribué à Claude, agent dev3d (01Us6uCthf) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCthf4jktVzSWmVecyC), aucun ticket auparavant : **WFS-545** (P1 Urgent, E17 zone E8, en tête du bandeau ⌨️).
+- Zone : `src/ui/ecrans/creation_profil*.{h,cpp}`, `src/ui/ecrans/salon.cpp` (saisie du code), `tests/**`. Règles : `regles-de-gestion/WFS-545.md` (RG-01 un caractère par appui, RG-02 150 ms, RG-03 les deux claviers, RG-04 noyau inchangé, RG-05 test CPU).
+- Branche `feature/waforspeed-545` (premier commit à pousser tout de suite) ; captures avant / après ; PR puis appel du `lead-dev` ; après fusion → 🟡 À valider (utilisateur) ; la session s'arrête après la fusion.
