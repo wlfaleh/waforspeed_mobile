@@ -1890,3 +1890,8 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Refus** (commit 6f3d4391) : capture des tests CPU absente (pas de `qa/pr/WFS-494/tests-cpu.log`, pas de fin de journal ni de commit testé dans la section « Tests CPU »), règle de l'utilisateur du 2026-11-11.
 - **Vérifié bon** : construction et `tests_cpu.sh` refaits par le lead dev (143 réussis, `test_garage_skin` OK) ; 37 captures ouvertes (rangée, fenêtre de la skin offerte, achat, refus, Néon nuit, bon, relance, courses jour / nuit, anglais, 1024x768), pas de régression sur `garage-finitions` ; diff lu (accroches ≤ 10 lignes, découpage du garage respecté, ancienne sauvegarde lue).
 - **Point tranché** : bouton « Choisis ta skin offerte » dans la rangée au lieu d'une fenêtre automatique à l'ouverture du garage : accepté. **Au PO** : mettre à jour RG-04 de `regles-de-gestion/WFS-494.md` / WFS-499 (« proposée à l'ouverture suivante » → « bouton de la rangée »).
+
+### 2026-11-14 20:23:40 — WFS-547 créé : compte à rebours du cadeau qui bouge à chaque seconde (po-scrum-master)
+- **Demande de l'utilisateur** (urgente) : « le compteur de prochains cadeaux est figé ».
+- **Constat** : `texteHeures()` n'affiche que hh:mm (une mise à jour par minute) ; 2e cause éventuelle (menu non redessiné) à vérifier sur l'APK.
+- **Ticket** : WFS-547, P1 Urgent, E19 zone E8, ⏳ Prêt en tête, `@dev` (ou lead dev en renfort) ; 🟡 après fusion. Règles : `regles-de-gestion/WFS-547.md`.
