@@ -62,13 +62,17 @@ int testPoursuite() {
     std::vector<Police> ps = {renfort(0, 0, vJ, 7), renfort(1, 0, vJ, 7)};
     poser(ps[0], -25 / M, ps[0].x, vJ); poser(ps[1], -40 / M, ps[1].x, vJ);
     std::vector<Obstacle> obs;
+    // une voiture lente devant la police, dans sa file, qui roule à 60 km/h (WFS-540 : une vraie voiture ; avant, elle suivait la
+    // police d'une file à l'autre à chaque pas, ce qu'aucune voiture ne fait, et la police ne pouvait jamais la contourner)
+    double sLente = 5 / M; const double xLente = ps[0].x;
     for (int i = 0; i < 120 * 30; i++) {
-        sJ += vJ / 120;
-        obs = {{sJ + 30 / M, ps[0].x, 60 / 3.6 / M}};   // une voiture lente devant la police
+        sJ += vJ / 120; sLente += 60 / 3.6 / M / 120;
+        obs = {{sLente, xLente, 60 / 3.6 / M}};
         avancer(ps, 1.0 / 120, i / 120.0, sJ, 0, vJ, obs, f208, pisteEssai());
-        if (tProche < 0 && plusProcheM(ps, sJ, 0) < 12) tProche = i / 120.0;
+        if (tProche < 0 && plusProcheM(ps, sJ, 0) < 16) tProche = i / 120.0;   // WFS-540 : à sa place (15 m derrière)
     }
-    VERIFIE(tProche >= 0 && tProche < 15, "la police rattrape le joueur (%.1f s)", tProche);
+    // WFS-540 : vraie 208 (pas l'ancienne accélération de 70 m/s²) : elle contourne la voiture lente puis prend sa place en moins de 20 s
+    VERIFIE(tProche >= 0 && tProche < 20, "la police rattrape le joueur (%.1f s)", tProche);
     VERIFIE(std::abs(ps[0].rd - sJ) * M < 20 && std::abs(ps[1].rd - sJ) * M < 20, "la police reste au contact (%.0f m, %.0f m)", (sJ - ps[0].rd) * M, (sJ - ps[1].rd) * M);
     std::printf("police : 2 au départ, renfort tous les 2 km (6 au plus), au contact en %.1f s : OK\n", tProche);
 

@@ -29,7 +29,7 @@ public:
     const char* name() const override { return "legende-banc-540"; }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g_legende540.empty()) return;
-        const float u = g.uiHeight / 100.f, px = 2.6f * u, x = 2 * u, y = 30 * u;
+        const float u = g.uiHeight / 100.f, px = 2.6f * u, x = 2 * u, y = 45 * u;   // sous le bandeau de la Poursuite (ARRESTATION…)
         size_t n = 1; for (char c : g_legende540) n += c == '\n';
         r.uiRect(x - u, y - u, 66 * u, (float)n * px * 1.35f + 2 * u, {0, 0, 0, 0.72f});
         size_t p0 = 0; float yy = y;
@@ -98,18 +98,21 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
         } else std::snprintf(l, sizeof l, "WFS-540 banc police : %s, image %02d\njoueur %.0f km/h\n%s", scene, k, joueur.kmh(), texte);
         g_legende540 = l;
     };
+    // WFS_SCENE (facultatif) : une seule scène (contourne, repart, arrestation, choc, camion, recul)
+    const char* seule = std::getenv("WFS_SCENE");
+    auto scene = [&](const char* nom) { return !seule || !*seule || std::string(seule) == nom; };
     auto tenir = [&](double kmh, float volant) { return [&joueur, kmh, volant]() { DriveInput in; in.gas = joueur.kmh() < kmh; in.steer = volant; return in; }; };
 
     // ---------- 1. contourne (ANO-272) : le joueur change de file, la police derrière le suit ----------
-    if (demarrer("plage", "jour", VueCamera::Poursuite, false)) {
+    if (scene("contourne") && demarrer("plage", "jour", VueCamera::Poursuite, false)) {
         rouler(60 * 6, tenir(30, 0));
-        poserPolice(-13, joueur.playerX);
+        poserPolice(-12, joueur.playerX);
         rouler(30, tenir(30, 0));
         g.camMode = 2;
-        for (int k = 0; k < 14; k++) {
-            const float volant = k >= 1 && k < 4 ? -0.45f : 0.f;   // changement de file à gauche, puis volant lâché (l'aide tient la file)
+        for (int k = 0; k < 16; k++) {
+            const float volant = k >= 1 && k < 6 ? -0.7f : 0.f;   // changement de file à gauche (1 s), puis volant lâché (l'aide tient la file)
             rouler(12, tenir(30, volant));   // 0,2 s
-            viser(-6, 0, 24.f);              // de haut, un peu derrière le joueur : la police est derrière lui
+            viser(-13, 0, 34.f);             // de haut, derrière le joueur : la police (12 à 15 m derrière lui) est dans l'image
             legende("contourne (vue de dessus)", k, "le joueur change de file : la police doit tourner,\npas glisser de cote");
             char nom[64]; std::snprintf(nom, sizeof nom, "police540-contourne-%02d", k); image(nom);
         }
@@ -118,6 +121,7 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
     // ---------- 2. repart (ANO-267) : joueur arrêté, police collée devant lui, GAZ appuyé ; vue Poursuite de nuit, puis Cockpit ----------
     struct Repart { const char* nom; VueCamera vue; };
     for (const Repart& rp : {Repart{"repart-nuit", VueCamera::Poursuite}, Repart{"repart-cockpit", VueCamera::Cockpit}}) {
+        if (!scene("repart")) break;
         if (!demarrer("plage", "nuit", rp.vue, false)) break;
         rouler(60 * 4, tenir(20, 0));
         poserPolice((carById("golf").d.L + police.d.L) / 2 + 0.1, joueur.playerX);   // pare-chocs contre pare-chocs, devant
@@ -131,7 +135,7 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
         finir();
     }
     // ---------- 3. arrestation (ANO-268) : joueur arrêté, la police arrive ----------
-    if (demarrer("plage", "jour", VueCamera::Poursuite, false)) {
+    if (scene("arrestation") && demarrer("plage", "jour", VueCamera::Poursuite, false)) {
         rouler(60 * 4, tenir(20, 0));
         poserPolice(-30, joueur.playerX);
         joueur.speed = 0;
@@ -145,11 +149,11 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
         finir();
     }
     // ---------- 4. choc de face (ANO-271) : barrage de police (programme du banc, 0,45 km), 30 km/h, sans frein ----------
-    if (demarrer("plage", "jour", VueCamera::Poursuite, true)) {
+    if (scene("choc") && demarrer("plage", "jour", VueCamera::Poursuite, true)) {
         joueur.playerX = 0;   // file du milieu : barrée
         int k = 0;
         for (int i = 0; i < 60 * 60 && k < 8; i++) {
-            DriveInput in; in.gas = joueur.kmh() < 30 || i % 2 == 0;   // GAZ, jamais de frein
+            DriveInput in; in.gas = joueur.kmh() < 30;   // GAZ (tenu à 30 km/h), jamais de frein
             g.manette = in; g.update(PAS); t += PAS;
             const poursuite::Police* p = nullptr;
             if (const std::vector<poursuite::Police>* ps = poursuiteVoitures(nullptr))
@@ -165,24 +169,24 @@ int benchPolice540(Game& g, Renderer& r, const std::string& out) {
         finir();
     }
     // ---------- 5. camion en travers (RG-09) : programme du banc, camion à 1,95 km (files de gauche et du milieu barrées) ----------
-    if (demarrer("plage", "jour", VueCamera::Poursuite, true)) {
+    if (scene("camion") && demarrer("plage", "jour", VueCamera::Poursuite, true)) {
         joueur.dist = joueur.position = 1.55 * 1000 / M;   // 1er tour de la Corniche (5,5 km) : position = distance
         rouler(60, tenir(15, 0));   // le camion est posé 450 m avant
         joueur.dist = joueur.position = (poursuite::BANC_CAMION_KM * 1000 + 25) / M; joueur.playerX = poursuite::FILES[2];
         joueur.speed = 0;
         rouler(20, [] { return DriveInput{}; });
-        poserPolice(-75, poursuite::FILES[0]);   // file de gauche, barrée par le camion
+        poserPolice(-55, poursuite::FILES[0]);   // file de gauche, barrée par le camion
         g.camMode = 2;
         for (int k = 0; k < 16; k++) {
             rouler(20, tenir(8, 0));   // 0,33 s ; le joueur roule au pas, passé le camion
-            viser(10, -9, 26.f);        // de haut, devant à gauche du joueur : le camion et la police derrière
+            viser(-75, 6, 45.f);        // de haut, loin derrière le joueur, regard vers lui : la police (≈ 40 à 60 m) puis le camion (25 m)
             legende("camion en travers (vue de haut)", k, "la police derriere le camion : elle garde sa file\nou s'arrete, sans aller-retour ni entrer dedans");
             char nom[64]; std::snprintf(nom, sizeof nom, "police540-camion-%02d", k); image(nom);
         }
         finir();
     }
     // ---------- 6. recul (RG-10) : Campagne de jour, le joueur recule à 30 km/h à côté de la police ----------
-    if (demarrer("campagne", "jour", VueCamera::Poursuite, false)) {
+    if (scene("recul") && demarrer("campagne", "jour", VueCamera::Poursuite, false)) {
         rouler(60 * 6, tenir(30, 0));
         const double x = std::clamp(joueur.playerX, -0.25, 0.6);
         joueur.playerX = x;

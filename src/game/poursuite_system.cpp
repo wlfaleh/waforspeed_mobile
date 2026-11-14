@@ -262,7 +262,7 @@ public:
         Track& t = *g.track;
         if (g_bancFin == 2) {   // banc : saut à 150 m de l'arrivée (capture de la victoire)
             const double d = c->duelFinish - 150 / M - pl.dist;
-            if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); for (Police& p : police_) poser(p, p.rd + d, p.x, p.v); }
+            if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); for (Police& p : police_) poursuite::poser(p, p.rd + d, p.x, p.v); }
             // WFS-145 : le trafic n'a pas sauté avec la voiture : celui de la zone d'arrivée (−40 à +220 m) passe 400 m plus
             // loin, sinon la voiture atterrit dans une file et le pilote automatique du banc reste coincé (CI rouge au hasard)
             if (Traffic* trs = activeTrafficMut())
@@ -308,8 +308,8 @@ public:
         if (bancPoliceActive_ && !police_.empty()) {   // WFS-452 (banc « roues-suivies » seulement) : 1re voiture tenue à côté du joueur
             Police& p0 = police_[0];   // rdPrec / xPrec : place du pas précédent (poursuite::avancer les a notées)
             const double rdP = p0.rdPrec, xP = p0.xPrec;
-            poser(p0, pl.dist + bancPoliceEcart_ / M, bancPoliceX_, pl.speed); p0.rdPrec = rdP; p0.xPrec = xP;
-            for (size_t i = 1; i < police_.size(); i++) poser(police_[i], pl.dist - 400 / M, police_[i].x, 0);   // les autres loin derrière
+            poursuite::poser(p0, pl.dist + bancPoliceEcart_ / M, bancPoliceX_, pl.speed); p0.rdPrec = rdP; p0.xPrec = xP;
+            for (size_t i = 1; i < police_.size(); i++) poursuite::poser(police_[i], pl.dist - 400 / M, police_[i].x, 0);   // les autres loin derrière
         }
         if (suivi_.size() != police_.size()) suivi_.resize(police_.size());   // WFS-452 (RG-03, RG-08) : braquage d'après le vrai
         for (size_t i = 0; i < police_.size(); i++)                          // mouvement ; WFS-540 : avec le vrai cap de la caisse
@@ -560,11 +560,11 @@ public:
     // à la vitesse du joueur : elle revient ensuite par la conduite normale
     void bancEloigner(const Player& pl) {
         int k = 0;
-        for (Police& p : police_) if (!p.fixe) { const double rd = pl.dist - (APPARITION_M + 12 * k++) / M; poser(p, rd, FILES[k % 3], pl.speed); p.cibleX = p.x; }
+        for (Police& p : police_) if (!p.fixe) { const double rd = pl.dist - (APPARITION_M + 12 * k++) / M; poursuite::poser(p, rd, FILES[k % 3], pl.speed); p.cibleX = p.x; }
     }
     // banc (WFS-338, RG-06) : une voiture de police posée à côté du joueur (dzM m devant, x en demi-largeurs), arrêtée
     void bancPoser(const Player& pl, double dzM, double x) {
-        for (Police& p : police_) if (!p.fixe) { poser(p, pl.dist + dzM / M, x, 0); p.cibleX = x; return; }
+        for (Police& p : police_) if (!p.fixe) { poursuite::poser(p, pl.dist + dzM / M, x, 0); p.cibleX = x; return; }
     }
     // banc (WFS-338, RG-07) : peinture métallisée d'origine du modèle (true) ou peinture unie de la police (false), pour l'avant / après
     void bancPeintureOrigine(bool origine) {
@@ -590,7 +590,7 @@ private:
         c.duelFinish = KM_ARRIVEE * duel::KM;
         etat_ = Etat{}; prog_ = programme(graine_, g_banc);
         police_.clear(); plots_.clear(); panneaux_.clear(); camions_.clear(); bandes_.clear(); distAvant_ = pl.dist; pertesVues_ = 0; perteT_ = 0; perteCumul_ = 0; perteTexte_.clear();
-        for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); poser(p, pl.dist - (22 + 14 * i) / M, p.x, 0); police_.push_back(p); }
+        for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); poursuite::poser(p, pl.dist - (22 + 14 * i) / M, p.x, 0); police_.push_back(p); }
         const TrafficStats* st = activeTrafficStats();
         chocsVus_ = st ? st->bumps + st->accidents + st->scrapes : 0; quasiVus_ = st ? st->nearMisses : 0;
         actif_ = true; fini_ = false; nouveauRecord_ = false; ftJoueur_ = 0; overT_ = 0; banT_ = 0; ban_.clear(); contreBord_ = false; sireneT_ = 0;
@@ -668,7 +668,7 @@ private:
             reserves_.clear();
             switch (e.type) {
                 case Surprise::Barrage:   // deux voitures de police en travers de deux files ; la file e.file reste libre
-                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; poser(p, s, FILES[f], 0); p.cibleX = FILES[f]; p.peinture = 0xe6e8ea; police_.push_back(p); }
+                    for (int f = 0; f < 3; f++) if (f != e.file) { Police p; p.fixe = true; poursuite::poser(p, s, FILES[f], 0); p.cibleX = FILES[f]; p.peinture = 0xe6e8ea; police_.push_back(p); }
                     break;
                 case Surprise::Deboite: {   // une voiture d'une file voisine se rabat devant le joueur
                     if (!tr) break;
