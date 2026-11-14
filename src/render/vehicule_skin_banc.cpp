@@ -9,6 +9,7 @@
 //   - parcours (RC-E18-09, réduit : l'écran des skins est WFS-494) : sauvegarde du banc avec skin-golf=rallye possédée → course
 //     habillée → retour au menu → relance (sauvegarde relue) : skin gardée ; skin non possédée, puis clé absente : aucune skin.
 //     Journal : « skins : parcours … OK / ÉCART », puis « skins : parcours : N écart(s) ».
+// WFS-493 : skins Drift Tokyo, Néon nuit et Camouflage (WFS_SKINS="…" : seulement ces skins ; voir benchSkins).
 // Journal : géométrie de chaque voiture (boîte, roues : outil tools/skins/generer.py), texture posée, mémoire des textures du GPU
 // avant / après, nombre de textures d'habillage en mémoire (RG-03 : une seule). WFS_SKINS_VOITURES="id …" : seulement ces voitures.
 // Domaine : E10 Véhicules ; appelé par desktop_main.cpp (accroche).
@@ -124,6 +125,58 @@ void benchSkins(Game& g, Renderer& r, const std::string& out) {
         stbi_write_png((out + "/" + nom + ".png").c_str(), COL * CW, LIG * CH, 3, p.data(), COL * CW * 3);
         WFS_LOG("capture %s : 3/4 avant gauche, profil gauche, 3/4 arrière droit, dessus (WFS-492)", nom.c_str());
     };
+
+    // WFS-493 : skins à passer au banc (WFS_SKINS="rallye drifttokyo …", toutes par défaut). Rallye : captures de WFS-492, noms
+    // inchangés ; les autres : skins-<skin>-<voiture>-jour (planche 2 × 2), skins-<skin>-6-avant / -6-arriere (les 6 voitures, 3/4
+    // avant gauche et 3/4 arrière droit, 3 × 2), Néon nuit de nuit (planches et course : golf, gt86, giulia), Drift Tokyo et
+    // Camouflage en course de jour (golf, gt86, giulia).
+    std::vector<std::string> skins{"rallye", "drifttokyo", "neonnuit", "camouflage"};
+    if (const char* l = std::getenv("WFS_SKINS")) { skins.clear(); std::istringstream is(l); std::string sk; while (is >> sk) skins.push_back(sk); }
+    auto avecSkin = [&](const std::string& sk) { return std::find(skins.begin(), skins.end(), sk) != skins.end(); };
+    auto enCourse = [&](const std::string& id, const std::string& sk, const char* moment, const std::string& nom) {
+        setenv("WFS_MOMENT", moment, 1);
+        if (!avec(id) || !preparer(id, sk.c_str())) return;
+        g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
+        images(4);
+        for (int i = 0; i < 300; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 6 == 0) g.render(t); }
+        const vs::Etat e = vs::etat();
+        WFS_LOG("skins : en course (%s, %s, %s) : %d texture(s) d'habillage en mémoire (RG-03)", id.c_str(), sk.c_str(), moment, e.textures);
+        capture(nom);
+        g.setAutopilot(false);
+        finir();
+    };
+    for (const std::string& sk : skins) {
+        if (sk == "rallye") continue;
+        constexpr int C6 = 3, L6 = 2, W6 = 640, H6 = 540;
+        std::vector<uint8_t> av((size_t)C6 * W6 * L6 * H6 * 3, 18), ar(av.size(), 18);
+        int k = 0;
+        for (const char* moment : {"jour", "nuit"}) {
+            setenv("WFS_MOMENT", moment, 1);
+            const bool nuit = std::string(moment) == "nuit";
+            if (nuit && sk != "neonnuit") continue;
+            for (const std::string& id : ids) {
+                if (nuit && id != "golf" && id != "gt86" && id != "giulia") continue;
+                if (!preparer(id, sk.c_str())) continue;
+                planche("skins-" + sk + "-" + id + "-" + moment);
+                if (!nuit && k < C6 * L6) {   // planches des 6 voitures (ordre de ids)
+                    viser(VUES[0][0], VUES[0][1], (float)VUES[0][2]); rendre(tmp); coller(tmp, av, C6, W6, H6, k % C6, k / C6, 0.55f);
+                    viser(VUES[2][0], VUES[2][1], (float)VUES[2][2]); rendre(tmp); coller(tmp, ar, C6, W6, H6, k % C6, k / C6, 0.55f);
+                    k++;
+                }
+                finir();
+            }
+        }
+        if (k > 0) {
+            for (auto [img, vue] : {std::pair{&av, "avant"}, std::pair{&ar, "arriere"}}) {
+                const std::string nom = "skins-" + sk + "-6-" + vue;
+                stbi_write_png((out + "/" + nom + ".png").c_str(), C6 * W6, L6 * H6, 3, img->data(), C6 * W6 * 3);
+                WFS_LOG("capture %s : %d voitures (WFS-493)", nom.c_str(), k);
+            }
+        }
+        for (const char* id : {"golf", "gt86", "giulia"})
+            enCourse(id, sk, sk == "neonnuit" ? "nuit" : "jour", "skins-" + sk + "-" + id + "-course-" + (sk == "neonnuit" ? "nuit" : "jour"));
+    }
+    if (!avecSkin("rallye")) { unsetenv("WFS_MOMENT"); std::remove(tmp.c_str()); return; }
 
     for (const char* moment : {"jour", "nuit"}) {
         setenv("WFS_MOMENT", moment, 1);

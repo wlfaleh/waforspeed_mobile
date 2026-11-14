@@ -271,10 +271,20 @@ const vec4 SKIN_GAUCHE = vec4(0.0, 272.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 
 const vec4 SKIN_DROITE = vec4(280.0, 552.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
 const vec4 SKIN_DESSUS = vec4(560.0, 864.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
 const vec4 SKIN_FACES = vec4(872.0, 1024.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0, 1.0);
-// couleurs A et B de chaque skin (codes sRGB 0..1 ; 0 = aucune) : Rallye = blanc de compétition, anthracite (dessin original, RG-05)
+// couleurs A et B de chaque skin (codes sRGB 0..1 ; 0 = aucune) : Rallye = blanc de compétition, anthracite (dessin original, RG-05) ;
+// WFS-493 : Drift Tokyo = vermillon, noir ; Néon nuit = cyan, magenta ; Camouflage = blanc cassé, noir (posé à 55 % : le gris)
+// (mêmes valeurs que COULEURS de tools/skins/generer.py)
 const vec3 SKIN_COULEURS[10] = vec3[10](vec3(0.0), vec3(0.0),
     vec3(0.91, 0.91, 0.89), vec3(0.10, 0.11, 0.125),   // 1 Rallye
-    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));   // 2 à 4 : WFS-493
+    vec3(0.93, 0.30, 0.10), vec3(0.06, 0.06, 0.07),     // 2 Drift Tokyo
+    vec3(0.0, 0.90, 1.0), vec3(1.0, 0.12, 0.85),        // 3 Néon nuit
+    vec3(0.85, 0.86, 0.84), vec3(0.09, 0.09, 0.10));    // 4 Camouflage
+// WFS-493 (RG-03) : Néon nuit : les filets émettent un peu de lumière la nuit seulement (F.misc.y), comme un adhésif lumineux :
+// luminance ≤ celle d'un feu arrière de position (E_POSITION = 1,6 × verre rouge, renderer.cpp : ≈ 0,36) : cyan 0,5 × 0,64 = 0,32,
+// magenta 0,5 × 0,27 = 0,14 ; aucune lumière projetée, aucun halo (seul le pixel du filet brille). Lu par scene.frag (accroche).
+const int SKIN_NEON = 3;
+const float SKIN_NEON_E = 0.5;
+vec3 skinEmission = vec3(0.0);
 // lecture d'une zone : (s, t) ∈ [0, 1]² dans la zone, bornés d'un demi-texel (pas de fuite vers la zone voisine) ; gradients donnés
 vec2 skinLire(vec4 zone, vec2 st, vec2 gx, vec2 gy) {
     float hv = zone.y - zone.x, demi = 0.5 / SKIN_T;
@@ -300,6 +310,7 @@ vec3 habillage(vec3 peinture, int skin) {
         : skinLire(SKIN_FACES, vec2(0.5 + (q.x + SKIN_DX) * sf, (SKIN_H - q.y) * sy), vec2(dqx.x * sf, -dqx.y * sy), vec2(dqy.x * sf, -dqy.y * sy));
     vec2 c = flanc * w.x + dessus * w.y + face * w.z;
     vec3 a = pow(SKIN_COULEURS[skin * 2], vec3(2.2)), b = pow(SKIN_COULEURS[skin * 2 + 1], vec3(2.2));   // sRGB → linéaire (comme hexColor)
+    if (skin == SKIN_NEON) skinEmission = (a * c.r * (1.0 - c.g) + b * c.g) * (SKIN_NEON_E * F.misc.y);   // WFS-493 (RG-03)
     return mix(mix(peinture, a, c.r), b, c.g);
 }
 // vitres (F_GLASS)

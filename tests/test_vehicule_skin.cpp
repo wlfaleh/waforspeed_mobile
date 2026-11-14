@@ -3,7 +3,9 @@
 //   - identifiants des skins (BOUTIQUE_SKINS_IDS) et chemin des textures ;
 //   - textures livrées (assets/cars/skins/<voiture>-rallye.etc2.ktx2) : les 6 voitures du 1er lot, EAC RG11 1024 × 1024, chaîne
 //     complète de mipmaps, ≤ 1,5 Mo sur le disque (RG-02) ; dessin au bon endroit du dépliage (atlas de vehicule_skin.h) :
-//     larges bandes du dessus, peinture entre elles, filet, numéro sur les flancs, rien dans les marges entre zones.
+//     larges bandes du dessus, peinture entre elles, filet, numéro sur les flancs, rien dans les marges entre zones ;
+//   - WFS-493 : Drift Tokyo (dégradé plein à l'arrière, peinture à l'avant), Néon nuit (filets cyan et magenta), Camouflage
+//     (habillage complet : fond gris, taches blanches et noires ; blanc ≤ 35 %, gris ≥ 30 %) sur les 6 mêmes voitures, mêmes limites.
 // Argument facultatif : dossier des assets (défaut : assets, depuis la racine du dépôt).
 #include <cmath>
 #include <cstdio>
@@ -116,7 +118,51 @@ int main(int argc, char** argv) {
         lues++;
     }
     VERIFIE(lues == 6, "%d textures de skin lues sur 6", lues);
+    // ---- WFS-493 : Drift Tokyo, Néon nuit, Camouflage sur les mêmes 6 voitures
+    int lues493 = 0;
+    for (const char* skin : {"drifttokyo", "neonnuit", "camouflage"}) for (const char* id : {"p208", "abarth", "gt86", "golf", "mustang", "giulia"}) {
+        const std::string chemin = dossier + id + "-" + skin + ".etc2.ktx2";
+        std::ifstream in(chemin, std::ios::binary);
+        std::vector<uint8_t> b((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+        VERIFIE(!b.empty(), "%s absente", chemin.c_str());
+        if (b.empty()) continue;
+        VERIFIE(b.size() <= 1572864, "%s : %zu octets > 1,5 Mo (RG-01 : limites de WFS-492)", chemin.c_str(), b.size());
+        ktx2::Fichier f; std::string err;
+        const bool ok = ktx2::lire(b.data(), b.size(), f, err);
+        VERIFIE(ok, "%s illisible : %s", chemin.c_str(), err.c_str());
+        if (!ok || f.w != 1024 || f.h != 1024) continue;
+        VERIFIE(f.format == VK_FORMAT_EAC_R11G11_UNORM_BLOCK && f.niveaux.size() == 11, "%s : EAC RG11 1024 × 1024, 11 niveaux attendus", chemin.c_str());
+        const Decode d = decoder(f);
+        int u, v;
+        const std::string sk = skin;
+        if (sk == "drifttokyo") {   // RG-02 : dégradé plein à l'arrière, peinture à l'avant
+            pxDessus(0.6f, 2.0f, u, v);
+            VERIFIE(d.r(u, v) > 240, "%s-%s : arrière du dessus en couleur A : %u", id, skin, d.r(u, v));
+            pxDessus(0.6f, -1.8f, u, v);
+            VERIFIE(d.r(u, v) < 15 && d.g(u, v) < 15, "%s-%s : avant du dessus en peinture : (%u, %u)", id, skin, d.r(u, v), d.g(u, v));
+        } else if (sk == "neonnuit") {   // RG-03 : filets cyan (A) et magenta (B) du dessus, peinture entre eux
+            pxDessus(0.3175f, 0.f, u, v);
+            VERIFIE(d.r(u, v) > 200, "%s-%s : filet cyan du dessus : %u", id, skin, d.r(u, v));
+            pxDessus(-0.3725f, 0.f, u, v);
+            VERIFIE(d.g(u, v) > 200, "%s-%s : filet magenta du dessus : %u", id, skin, d.g(u, v));
+            pxDessus(0.f, 0.f, u, v);
+            VERIFIE(d.r(u, v) < 15 && d.g(u, v) < 15, "%s-%s : peinture au milieu : (%u, %u)", id, skin, d.r(u, v), d.g(u, v));
+        } else {   // RG-04 : habillage complet (A partout), fond gris (B 55 %), taches blanches (B 0) et noires (B 100 %) ; retour du
+                   // lead dev (PR #413) : pas de pois noirs sur fond blanc → blanc ≤ 35 % du flanc, gris ≥ 30 %, noir ≥ 1/8
+            long n = 0, sansA = 0, blanc = 0, gris = 0, noir = 0;
+            for (int y = vs::atlas::GAUCHE0; y < vs::atlas::GAUCHE1; y++) for (int x = 0; x < 1024; x++) {
+                n++; sansA += d.r(x, y) < 240;
+                const unsigned g = d.g(x, y);
+                blanc += g < 15; gris += g > 120 && g < 160; noir += g > 240;
+            }
+            VERIFIE(sansA == 0, "%s-%s : %ld pixels du flanc sans couleur A", id, skin, sansA);
+            VERIFIE(blanc > n / 8 && blanc * 100 <= n * 35 && gris * 100 >= n * 30 && noir > n / 8, "%s-%s : tons du flanc blanc %ld, gris %ld, noir %ld sur %ld",
+                    id, skin, blanc, gris, noir, n);
+        }
+        lues493++;
+    }
+    VERIFIE(lues493 == 18, "%d textures WFS-493 lues sur 18", lues493);
     if (echecs) { std::printf("test_vehicule_skin : %d échec(s)\n", echecs); return 1; }
-    std::printf("test_vehicule_skin : OK (décodeur EAC, identifiants, codage, %d textures Rallye ≤ 1,5 Mo)\n", lues);
+    std::printf("test_vehicule_skin : OK (décodeur EAC, identifiants, codage, %d textures Rallye et %d textures Drift Tokyo, Néon nuit, Camouflage ≤ 1,5 Mo)\n", lues, lues493);
     return 0;
 }
