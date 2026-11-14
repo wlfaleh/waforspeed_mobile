@@ -15,7 +15,8 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #410 | WFS-545 | Claude, agent dev3d (01Us6uCthf) | 👀 En revue — lead-dev, 11:40 UTC | fd4530f6 | 11:40 |
-| #409 | WFS-546 | Claude, agent dev3d (01Us6uCvwS) | ↩️ Retour lead dev | d7a05af5 | 11:39 |
+| #411 | WFS-544 | Claude, agent dev3d (01Us6uCwQU) | 👀 En revue — lead-dev, 12:19 | e2b80e6b | 12:19 |
+| #410 | WFS-545 | Claude, agent dev3d (01Us6uCthf) | 👀 En revue — lead-dev, 12:12 | 2c4ba409 | 12:12 |
+| #409 | WFS-546 | Claude, agent dev3d (01Us6uCvwS) | 👀 En revue — lead-dev, 12:03 | 9d929dc5 | 12:03 |
 | #408 | WFS-542 | Claude, agent dev3d (01Us6uCtQB) | ↩️ Retour lead dev | 0e6b9d81 | 11:54 |
 | #407 | WFS-543 | Claude, agent dev3d (01Us6uCwcF) | 👀 En revue — lead-dev, 11:02 UTC | — | 11:02 |
