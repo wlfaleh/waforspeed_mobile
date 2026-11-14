@@ -1994,3 +1994,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 22:02:02 — R19 : palettes refusées, 4 styles de précédent / suivant à choisir (smart-brainstorming)
 - Palettes au volant refusées par l'utilisateur : image 13 remise à la version d'avant ; planche `references/maquettes-R19/options-precedent-suivant.jpg` (chevrons, clignotants, balises de virage, flèches au sol). Rien transmis au PO.
+
+### 2026-11-14 22:02:59 — R19 : précédent / suivant sobres (smart-brainstorming)
+- Sur demande de l'utilisateur (« un bouton plus propre ») : boutons ronds en verre dépoli, chevron fin, orange au toucher ; planche des 4 styles retirée. Rien transmis au PO.
