@@ -1,9 +1,9 @@
 {
-  "_commentaire": "WFS-492 : mesures des 6 voitures du 1er lot de skins, en mètres du repère du modèle (avant vers -z, posé au sol, centré). roue_av / roue_ar : z du centre des roues avant / arrière (journal du banc WFS_BANC=skins, « géométrie ») ; rayon : rayon de roue ; bas : haut du bas de caisse ; ceinture : bas des vitres latérales ; porte : place du centre de la plaque de numéro le long de l'empattement (0 = roue avant, 1 = roue arrière), sur la portière avant ; largeur : demi-largeur de caisse (sans rétroviseurs) ; toit : hauteur du pavillon.",
-  "p208":    {"roue_av": -1.189, "roue_ar": 1.357, "rayon": 0.310, "bas": 0.34, "ceinture": 0.93, "porte": 0.40, "largeur": 0.875, "toit": 1.43},
-  "abarth":  {"roue_av": -1.048, "roue_ar": 1.252, "rayon": 0.291, "bas": 0.34, "ceinture": 0.95, "porte": 0.44, "largeur": 0.815, "toit": 1.49},
-  "gt86":    {"roue_av": -1.222, "roue_ar": 1.276, "rayon": 0.312, "bas": 0.33, "ceinture": 0.84, "porte": 0.45, "largeur": 0.89, "toit": 1.29},
-  "golf":    {"roue_av": -1.264, "roue_ar": 1.373, "rayon": 0.319, "bas": 0.34, "ceinture": 0.93, "porte": 0.38, "largeur": 0.895, "toit": 1.46},
-  "mustang": {"roue_av": -1.338, "roue_ar": 1.373, "rayon": 0.333, "bas": 0.30, "ceinture": 0.80, "porte": 0.40, "largeur": 0.94, "toit": 1.24},
-  "giulia":  {"roue_av": -1.523, "roue_ar": 1.294, "rayon": 0.325, "bas": 0.34, "ceinture": 0.92, "porte": 0.36, "largeur": 0.935, "toit": 1.43}
+  "_commentaire": "WFS-492 : mesures des 6 voitures du 1er lot de skins, en mètres du repère du modèle (avant vers -z, posé au sol, centré). roue_av / roue_ar : z du centre des roues avant / arrière (journal du banc WFS_BANC=skins, « géométrie ») ; rayon : rayon de roue ; bas : haut du bas de caisse ; ceinture : bas des vitres latérales ; porte : place du centre de la plaque de numéro le long de l'empattement (0 = roue avant, 1 = roue arrière), sur la portière avant ; largeur : demi-largeur de caisse (sans rétroviseurs) ; toit : hauteur du pavillon ; avant / arriere (WFS-493) : z des boucliers avant et arrière (boîte du modèle, journal du banc WFS_BANC=skins).",
+  "p208":    {"roue_av": -1.189, "roue_ar": 1.357, "rayon": 0.310, "bas": 0.34, "ceinture": 0.93, "porte": 0.40, "largeur": 0.875, "avant": -2.030, "arriere": 2.030, "toit": 1.43},
+  "abarth":  {"roue_av": -1.048, "roue_ar": 1.252, "rayon": 0.291, "bas": 0.34, "ceinture": 0.95, "porte": 0.44, "largeur": 0.815, "avant": -1.830, "arriere": 1.830, "toit": 1.49},
+  "gt86":    {"roue_av": -1.222, "roue_ar": 1.276, "rayon": 0.312, "bas": 0.33, "ceinture": 0.84, "porte": 0.45, "largeur": 0.89, "avant": -2.120, "arriere": 2.120, "toit": 1.29},
+  "golf":    {"roue_av": -1.264, "roue_ar": 1.373, "rayon": 0.319, "bas": 0.34, "ceinture": 0.93, "porte": 0.38, "largeur": 0.895, "avant": -2.145, "arriere": 2.145, "toit": 1.46},
+  "mustang": {"roue_av": -1.338, "roue_ar": 1.373, "rayon": 0.333, "bas": 0.30, "ceinture": 0.80, "porte": 0.40, "largeur": 0.94, "avant": -2.245, "arriere": 2.245, "toit": 1.24},
+  "giulia":  {"roue_av": -1.523, "roue_ar": 1.294, "rayon": 0.325, "bas": 0.34, "ceinture": 0.92, "porte": 0.36, "largeur": 0.935, "avant": -2.320, "arriere": 2.320, "toit": 1.43}
 }
