@@ -1623,3 +1623,15 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Nouvelle session `@dev` (session_01Us6uCwTQ9fGrRcE5BvuZYh), aucun ticket auparavant. CI de `main` #1069 rouge = licences W212 / Virtus, déjà corrigé par WFS-543 (#407) ; run sur 39d1ddc7 en cours : pas de nouvelle US technique.
 - Classement 📋 : 499, 501, 484 fusionnés, 482 attribué à 01Us6uCv3H (13:18) → **WFS-493** (5e, P1, E18 zone E10 : `assets/cars/**`, données de skins ; skill `artiste-3d`). Dépendance WFS-492 fusionnée (#400) : réutiliser son système de skins, rien recréer. Règles : `regles-de-gestion/WFS-493.md` + `E18-personnalisation.md`. Branche `feature/waforspeed-493`.
 - Attention : WFS-495 (autocollants, même texture d'habillage) et WFS-494 (écran des skins) viennent après ; règle « aucune forme géométrique nue » et 99 % de réalisme.
+
+### 2026-11-14 13:21:12 — Début WFS-495 : autocollants attribués (po-scrum-master)
+- Demande d'une nouvelle session `@dev` : Claude, agent dev3d (01Us6uCv3C) (session_01Us6uCv3C6S1vVKfworyoRt), aucun ticket avant (WFS-482 puis WFS-493 pris entre-temps par d'autres sessions : aucune attribution faite à cette session avant celle-ci).
+- Ticket : **WFS-495** (E18, P1), 7e du classement 📋 ; seule dépendance WFS-492 (même shader) fusionnée (#400) : passe de ⏳ En attente à 🔧. Règles : `regles-de-gestion/WFS-495.md` + `regles-de-gestion/E18-personnalisation.md`.
+- Zone : E10 `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**` (+ `tests/**`) ; réutiliser le dépliage et la texture d'habillage de WFS-492, les 28 couleurs de WFS-487. Skill `artiste-3d`. Pas d'écran d'atelier (WFS-496).
+- En parallèle de WFS-493 (01Us6uCwTQ, skins sur la même texture d'habillage) : synchroniser avec `main` avant la PR.
+- CI de `main` #1069 rouge (banc texte, crédits W212 / Virtus) : déjà corrigée par WFS-543 (#407), #1073 en cours ; pas de nouvelle US technique.
+
+### 2026-11-14 13:21:47 — Correction : WFS-502 au lieu de WFS-511 pour Claude, agent dev3d (01Us6uCv9g) (po-scrum-master)
+- Erreur du PO à 13:20 : WFS-493 (5e), WFS-495 (7e) et WFS-502 (10e) étaient passés ⏳ Prêt à 13:18 (commit 5534d3aa), avant WFS-511 (15e). 493 et 495 ont été donnés entre-temps à d'autres sessions `@dev` (01Us6uCwTQ, 01Us6uCv3C).
+- **WFS-502** (P1, E19 : E3 `src/game/**` état du prêt, E5 panneaux du garage, E8 `src/ui/ecrans/**`, accroches ≤ 10 lignes annoncées) attribué à cette session, qui n'avait rien commencé sur WFS-511 ; règles `regles-de-gestion/WFS-502.md`, `regles-de-gestion/E19-cadeau-du-jour.md` ; branche `feature/waforspeed-502`. Aucun autre ticket actif sur les panneaux du garage ; WFS-482 (🔧) touche aussi `src/ui/ecrans/**` et le menu : se synchroniser avec `main`.
+- **WFS-511** revient ⏳ Prêt (15e) pour la prochaine session `@dev`.
