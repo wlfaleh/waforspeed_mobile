@@ -30,6 +30,25 @@ const Touche* clavier(ui::langue::Langue l);
 // RG-03 : touche utilisable dans ce champ (plaque : lettres, chiffres, « - », effacer seulement)
 bool toucheActive(const Touche& t, Champ champ);
 
+// WFS-545 : filtre des appuis d'un clavier du jeu (« Crée ton pilote » et code du salon du duel), sans rendu ni horloge.
+//   RG-01 : un appui = un caractère : Android envoie chaque mouvement d'un doigt posé avec down = true ; seul le poser d'un
+//           doigt (identifiant pas encore posé) est un nouvel appui ; ses mouvements n'écrivent rien jusqu'au lever.
+//   RG-02 : après chaque caractère accepté, 150 ms pendant lesquelles aucun autre caractère n'est accepté (rebond du doigt).
+class FiltreAppuis {
+public:
+    static constexpr double DELAI = 0.150;   // s (RG-02, demande de l'utilisateur : ≈ 6 touches par seconde restent possibles)
+    // toucher reçu : vrai seulement au poser d'un doigt qui n'était pas posé (mouvement ou lever : faux ; le lever oublie le doigt)
+    bool poser(int id, bool down);
+    // caractère (ou effacement) demandé à l'heure t (s) : vrai s'il est accepté, faux pendant les 150 ms qui suivent le précédent
+    bool accepter(double t);
+    void oublier() { nb_ = 0; dernier_ = -1e9; }   // ouverture de l'écran : aucun doigt posé, aucun délai en cours
+private:
+    static constexpr int DOIGTS = 10;   // doigts suivis à la fois (au-delà, un doigt de plus n'écrit rien jusqu'à un lever)
+    int doigts_[DOIGTS] = {};
+    int nb_ = 0;
+    double dernier_ = -1e9;
+};
+
 class Saisie {
 public:
     // pseudoPropose : pseudo actuel d'un joueur déjà installé (Profil::pseudoPropose, WFS-480 RG-05), vide sinon ;

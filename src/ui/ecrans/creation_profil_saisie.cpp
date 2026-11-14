@@ -34,6 +34,24 @@ bool estChiffre(char c) { return c >= '0' && c <= '9'; }
 
 } // namespace
 
+bool FiltreAppuis::poser(int id, bool down) {
+    for (int i = 0; i < nb_; i++)
+        if (doigts_[i] == id) {
+            if (!down) doigts_[i] = doigts_[--nb_];   // lever : le doigt est oublié
+            return false;                             // mouvement d'un doigt déjà posé : pas un nouvel appui (RG-01)
+        }
+    if (!down || nb_ >= DOIGTS) return false;
+    doigts_[nb_++] = id;
+    return true;
+}
+
+bool FiltreAppuis::accepter(double t) {
+    // t < dernier_ : horloge revenue en arrière (nouvelle partie, banc) : on accepte et on repart de t
+    if (t >= dernier_ && t - dernier_ < DELAI) return false;
+    dernier_ = t;
+    return true;
+}
+
 const Touche* clavier(ui::langue::Langue l) { return l == ui::langue::Langue::Francais ? AZERTY.t : QWERTY.t; }
 
 bool toucheActive(const Touche& t, Champ champ) {
