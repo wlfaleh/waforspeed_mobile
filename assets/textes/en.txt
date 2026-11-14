@@ -75,7 +75,6 @@ diag.titre=Performance diagnostic (WFS-419)
 diag.fermer=Close
 diag.tout=Restore all
 diag.banc=Auto bench
-diag.etoiles=+2500 ★
 diag.actif=Active
 diag.coupe=Off
 diag.coupe_json=Off (JSON)

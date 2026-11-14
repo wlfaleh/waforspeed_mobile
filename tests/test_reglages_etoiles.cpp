@@ -1,4 +1,4 @@
-// Mode testeur (WFS-546) : bouton « +2500 ★ » du menu caché de diagnostic des Réglages.
+// Mode testeur (WFS-546) : bouton étoile (+2500 ★) du menu caché de diagnostic des Réglages.
 // RG-02 : un appui = 2500 ★, un doigt posé qui bouge ne recrédite pas ; RG-06 : 3 appuis = 7500 ★, sauvegarde relue = 7500 ★.
 // usage : test_reglages_etoiles
 #include <cstdio>

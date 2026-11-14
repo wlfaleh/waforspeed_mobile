@@ -36,8 +36,8 @@
 #include "../../render/diagnostic_perf.h"   // WFS-419 : menu caché des interrupteurs de diagnostic
 #include "../../render/passes.h"   // WFS-419 : horodatages GPU disponibles
 #include "reglages_banc.h"   // WFS-420 : banc de performance automatique (protocole, résultats)
-#include "reglages_etoiles.h"   // WFS-546 : mode testeur, bouton « +2500 ★ » (un appui = un crédit)
-#include "../garage_achat.h"   // WFS-546 : texteEtoiles (★ dessinée), nombreLangue (« 12 500 »)
+#include "reglages_etoiles.h"   // WFS-546 : mode testeur, bouton étoile, +2500 ★ par appui (un appui = un crédit)
+#include "../../game/score_fin.h"   // WFS-546 (RG-05) : dessinerEtoile, la ★ du compteur d'étoiles du menu (WFS-537)
 
 namespace wfs {
 namespace ecrans {
@@ -93,7 +93,7 @@ constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau compté
 // 5 touchers sur le titre « Réglages » en moins de 3 s ouvrent, par-dessus le panneau, la liste des interrupteurs (un toucher :
 // allumé / éteint), l'appareil (RG-03), le temps GPU de chaque passe (RG-04) et l'explication des « 0,0 ». Rien n'est enregistré.
 Zone g_titre, g_diagLigne[diag::N_INTERRUPTEURS], g_diagFermer, g_diagTout, g_diagBanc;   // WFS-420 : g_diagBanc, « Banc auto »
-// WFS-546 : mode testeur : « +2500 ★ » à gauche de « Banc auto » ; g_etoilesEclat : GameView::time du dernier crédit (bouton éclairé 0,4 s)
+// WFS-546 : mode testeur : bouton étoile (+2500 ★ par appui) à gauche de « Banc auto » ; g_etoilesEclat : GameView::time du dernier crédit (bouton éclairé 0,4 s)
 Zone g_diagEtoiles; testeur::BoutonEtoiles g_etoiles; double g_etoilesEclat = -10;
 bool g_diagOuvert = false;
 int g_titreTouchers = 0; double g_titrePremier = -10;
@@ -121,7 +121,7 @@ bool toucherDiag(int id, float x, float y, double temps) {
         g_etoilesEclat = temps;
         return true;
     }
-    if (g_diagEtoiles.contient(x, y)) return true;   // même doigt encore posé sur « +2500 ★ » : déjà crédité
+    if (g_diagEtoiles.contient(x, y)) return true;   // même doigt encore posé sur le bouton étoile : déjà crédité
     if (g_diagFermer.contient(x, y)) { g_diagOuvert = false; g_etoiles.oublier(); WFS_LOG("réglages : menu caché de diagnostic fermé"); return true; }
     if (g_diagBanc.contient(x, y)) { g_diagOuvert = false; g_etoiles.oublier(); banc_telephone::ouvrirProtocole(); return true; }   // WFS-420 : protocole, puis le banc
     if (g_diagTout.contient(x, y)) {
@@ -317,7 +317,7 @@ public:
             return true;
         }
         if (!t.down) {
-            g_etoiles.lever(t.id);   // WFS-546 : doigt levé, le prochain appui sur « +2500 ★ » crédite de nouveau
+            g_etoiles.lever(t.id);   // WFS-546 : doigt levé, le prochain appui sur le bouton étoile crédite de nouveau
             if (t.id == g_doigt) {   // WFS-290 : « Fermer » au relâcher, dans sa cible
                 const bool vise = g_presse == P_FERMER && dansCible(g_fermer, t.x, t.y);
                 g_doigt = -1; g_presse = P_AUCUN;
@@ -573,14 +573,12 @@ private:
             g_diagFermer = {W - m - fw, y - 6 * k, fw, bh};
             g_diagTout = {W - m - fw - 8 * k - tw, y - 6 * k, tw, bh};
             g_diagBanc = {g_diagTout.x - 8 * k - bw, y - 6 * k, bw, bh};   // WFS-420 : banc de performance automatique
-            {   // WFS-546 (RG-01, RG-04) : « +2500 ★ » à gauche de « Banc auto », même style ; éclairé 0,4 s après un crédit, solde à sa gauche
-                const std::string et = ui::tr("diag.etoiles"), st = ui::majuscules(ui::tr("garage.solde", garage::nombreLangue(boutique::solde(sauvegarde()))));
-                const float ew = garage::largeurEtoiles(tp, et, 0.1f) + 32 * k;
-                g_diagEtoiles = {g_diagBanc.x - 8 * k - ew, y - 6 * k, ew, bh};
+            {   // WFS-546 (RG-01, RG-04, RG-05) : bouton carré à gauche de « Banc auto », même style ; seulement l'icône étoile (aucun
+                // texte) ; éclairé 0,4 s après un crédit
+                g_diagEtoiles = {g_diagBanc.x - 8 * k - bh, y - 6 * k, bh, bh};
                 const bool eclat = temps - g_etoilesEclat >= 0 && temps - g_etoilesEclat < 0.4;
-                biseau(r, g_diagEtoiles.x, g_diagEtoiles.y, ew, bh, 10 * k, hex(eclat ? ACCENT_PRESSE : SURFACE2));
-                garage::texteEtoiles(r, g_diagEtoiles.x + ew / 2, g_diagEtoiles.y + (bh - tp) / 2, tp, et, hex(eclat ? BG : ACCENT), ui::CENTRE, 0.1f);
-                garage::texteEtoiles(r, g_diagEtoiles.x - 12 * k, g_diagEtoiles.y + (bh - tp) / 2, tp, st, hex(TEXTE), ui::DROITE, 0.1f);
+                biseau(r, g_diagEtoiles.x, g_diagEtoiles.y, bh, bh, 10 * k, hex(eclat ? ACCENT_PRESSE : SURFACE2));
+                score_fin::dessinerEtoile(r, g_diagEtoiles.x + bh / 2, g_diagEtoiles.y + bh / 2, bh * 0.30f, eclat ? hex(BG) : ui::ORANGE);
             }
             biseau(r, g_diagBanc.x, g_diagBanc.y, bw, bh, 10 * k, hex(ACCENT2));
             ui::text(r, g_diagBanc.x + bw / 2, g_diagBanc.y + (bh - tp) / 2, tp, bt, hex(BG), ui::CENTRE, 0.1f, false);

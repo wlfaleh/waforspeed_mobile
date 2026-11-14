@@ -1,4 +1,4 @@
-// WaForSpeed — mode testeur (WFS-546) : bouton « +2500 ★ » du menu caché de diagnostic des Réglages.
+// WaForSpeed — mode testeur (WFS-546) : bouton étoile (+2500 ★) du menu caché de diagnostic des Réglages.
 // Calculs seuls (sans dessin), testés par tests/test_reglages_etoiles.cpp :
 //   - RG-02 : chaque appui ajoute exactement 2500 ★ par boutique::crediter (aucun nouveau calcul de solde) ;
 //   - un appui = un seul crédit : sur Android, un doigt posé qui bouge envoie d'autres événements « posé » (ACTION_MOVE,

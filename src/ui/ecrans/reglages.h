@@ -42,7 +42,7 @@ void appliquerQualiteNiveau(Renderer& r);   // WFS-15 : applique reglages().qual
 bool reglagesOuverts();
 void ouvrirReglagesBanc(bool oui);   // WFS-297 : banc seulement (captures du panneau en 1re, 2e, 3e partie) ; WFS-420 : fin du banc du téléphone
 void ouvrirMenuCacheBanc(bool oui);  // WFS-420 : banc PC seulement : menu caché de WFS-419 ouvert
-bool boutonEtoilesDiag(float& x, float& y);   // WFS-546 : centre du bouton « +2500 ★ » du menu caché (banc ; faux si pas dessiné)
+bool boutonEtoilesDiag(float& x, float& y);   // WFS-546 : centre du bouton étoile (+2500 ★) du menu caché (banc ; faux si pas dessiné)
 // toucher pour les réglages (panneau ouvert, bouton « Réglages » visé, ou doigt posé sur lui : WFS-290) : le menu et la pause le
 // laissent passer
 bool toucheReglages(float x, float y, int doigt);
@@ -59,7 +59,7 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out);
 void benchReglagesOnglets(Game& g, Renderer& r, const std::string& out);
 // WFS-504 : banc « textes » (Réglages dans la langue de WFS_LANGUE, phrases françaises, textes qui dépassent, parcours) ; rend les échecs
 int benchReglagesTextes(Game& g, Renderer& r, const std::string& out);
-// WFS-546 : mode testeur, bouton « +2500 ★ » (banc testeur, captures testeur-*) ; rend le nombre d'écarts
+// WFS-546 : mode testeur, bouton étoile (+2500 ★) (banc testeur, captures testeur-*) ; rend le nombre d'écarts
 int benchTesteur(Game& g, Renderer& r, const std::string& out);
 
 } // namespace ecrans

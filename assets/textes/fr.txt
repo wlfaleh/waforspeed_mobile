@@ -75,7 +75,6 @@ diag.titre=Diagnostic performance (WFS-419)
 diag.fermer=Fermer
 diag.tout=Tout rétablir
 diag.banc=Banc auto
-diag.etoiles=+2500 ★
 diag.actif=Actif
 diag.coupe=Coupé
 diag.coupe_json=Coupé (JSON)

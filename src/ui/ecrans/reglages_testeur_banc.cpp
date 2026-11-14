@@ -1,9 +1,9 @@
-// WaForSpeed — banc d'essai de WFS-546 (WFS_BANC=testeur) : mode testeur, bouton « +2500 ★ » du menu caché de diagnostic.
+// WaForSpeed — banc d'essai de WFS-546 (WFS_BANC=testeur) : mode testeur, bouton étoile (+2500 ★) du menu caché de diagnostic.
 // Vraie sauvegarde (fichier du banc, effacé au début et à la fin), solde de départ 0 ★, vrais touchers comme sur Android :
-//   1. menu caché ouvert en français : bouton « +2500 ★ » dans la rangée du haut, solde 0 ★ ;
-//   2. 2 appuis (chacun : posé, 2 mouvements du même doigt, levé) : « Solde : 5 000 ★ », sauvegarde relue = 5000 ★ ;
+//   1. menu caché ouvert en français : bouton étoile (icône seule, RG-05) dans la rangée du haut, solde 0 ★ ;
+//   2. 2 appuis (chacun : posé, 2 mouvements du même doigt, levé) : bouton éclairé, solde 5000 ★, sauvegarde relue = 5000 ★ ;
 //   3. menu principal : le compteur d'étoiles (WFS-537) montre 5 000 ;
-//   4. menu caché en anglais (« Balance: 5,000 ★ ») ;
+//   4. menu caché en anglais : même bouton étoile (aucun texte) ;
 //   5. garage de la 208 (coefficient 1 : prix du catalogue) : Chromé (400 ★) en aperçu, « Acheter », puis achetée (cadenas tombé, 400 ★ débitées).
 // Captures testeur-*.png ; chaque contrôle au journal (« testeur (WFS-546) : OK / ÉCART ») ; rend le nombre d'écarts.
 #include <cstdio>
@@ -58,13 +58,13 @@ int benchTesteur(Game& g, Renderer& r, const std::string& out) {
     // 1. menu caché, français
     ouvrirDiag();
     float bx = 0, by = 0;
-    verifier(boutonEtoilesDiag(bx, by), "RG-01 : bouton « +2500 ★ » dessiné dans le menu caché");
-    capture("1-diagnostic-fr", "menu caché : « +2500 ★ » à gauche de « Banc auto », solde 0 ★");
+    verifier(boutonEtoilesDiag(bx, by), "RG-01 : bouton étoile (+2500 ★) dessiné dans le menu caché");
+    capture("1-diagnostic-fr", "menu caché : bouton étoile à gauche de « Banc auto »");
     // 2. deux appuis
     appui(bx, by);
     verifier(boutique::solde(s) == 2500, "RG-02 : 1er appui (avec mouvements du doigt) : 2500 ★, une seule fois");
     appui(bx, by);
-    capture("2-solde-5000", "après 2 appuis : « Solde : 5 000 ★ »");
+    capture("2-etoile-eclairee", "juste après le 2e appui : bouton étoile éclairé");
     verifier(boutique::solde(s) == 5000, "RG-02 : 2 appuis : 5000 ★");
     s.attendre();
     { Sauvegarde relue; const bool lu = relue.lire([&] { std::string c; if (FILE* f = std::fopen(chemin.c_str(), "rb")) { char b[4096]; size_t n; while ((n = std::fread(b, 1, sizeof b, f)) > 0) c.append(b, n); std::fclose(f); } return c; }());
@@ -76,7 +76,7 @@ int benchTesteur(Game& g, Renderer& r, const std::string& out) {
     // 4. anglais
     ui::langue::choisir(ui::langue::Choix::Anglais);
     ouvrirDiag();
-    capture("4-diagnostic-en", "menu caché en anglais : « +2500 ★ », « Balance: 5,000 ★ »");
+    capture("4-diagnostic-en", "menu caché en anglais : bouton étoile, aucun texte");
     fermerDiag();
     ui::langue::choisir(ui::langue::Choix::Francais);
     // 5. garage : Chromé à 400 ★
