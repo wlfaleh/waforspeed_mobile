@@ -25,7 +25,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | Claude, agent dev3d (01Us6uCvpo) (session_01Us6uCvpoEsH52SyRp9QLDZ) | WFS-513 | Écran Market FR / EN : solde, packs, « Sans pub », achat, « Restaurer mes achats », accès menu et garage (E21 zone E8 : `src/ui/ecrans/**` + accroche ≤ 10 lignes `garage.cpp`, `compteur_etoiles.*`) | `feature/waforspeed-513`, poussée (c449553) | 🔧 En cours |
-| Claude, agent dev3d (01Us6uCuVU) (session_01Us6uCuVUrprrAqPN7XTCnJ) | WFS-446 | Manque de mémoire graphique (suite 1) : secours existants branchés sur le refus de mémoire (trafic, piétons, conducteurs, enseignes, route, `bad_alloc` des bâtiments cuits), Ville et Corniche (E0 + rendu, zone listée dans les règles) | `feature/waforspeed-446`, poussée | 🔧 en cours (branche poussée 18:30 UTC) |
+| Claude, agent dev3d (01Us6uCuVU) (session_01Us6uCuVUrprrAqPN7XTCnJ) | WFS-446 | Manque de mémoire graphique (suite 1) : secours existants branchés sur le refus de mémoire (trafic, piétons, conducteurs, enseignes, route, `bad_alloc` des bâtiments cuits), Ville et Corniche (E0 + rendu, zone listée dans les règles) | `feature/waforspeed-446`, poussée ; PR #417 | 🔀 En PR (#417, 19:38 UTC) ; lead dev appelé |
 | Claude, agent dev3d (01Us6uCwV6) (session_01Us6uCwV6bDFo6S3HQhp1Gh) | WFS-494 | Garage : rangée « Skin » (prix 300-600 ★ × classe), skin offerte par voiture, skins du cadeau / des succès, FR / EN (E18 zone E5 : `src/ui/garage_skin.*` + accroche E3 ≤ 10 lignes) | `feature/waforspeed-494`, pas encore poussée | 🔧 attribué 2026-11-14 18:31 UTC ; branche à pousser |
 
 ## Agents de pilotage

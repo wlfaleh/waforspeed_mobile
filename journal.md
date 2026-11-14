@@ -1867,6 +1867,12 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Plan court** : rangée « Skin » (Aucune, Rallye, Camouflage, Drift Tokyo ; Néon nuit verrouillée « cadeau »), prix × classe ; fenêtre « Choisis ta skin offerte » ; achat ★ par voiture ; `donnerSkin()` ; parcours RC-E18-09 ; captures ≥ 3 jour / nuit, FR / EN ; PR ; lead dev.
 - **Aussi** : WFS-538 et WFS-496 passent ⏳ Prêt (dépendances fusionnées).
 
+### 2026-11-14 19:38:27 — WFS-446 : PR #417 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCuVU))
+- Fait : secours branchés sur le refus de mémoire graphique (trafic `loadCarModel(…, repli)`, piétons / enfants / conducteurs `chargerPersonnage(…, repli)`, atlas des enseignes, textures de la route `uploadNiveaux(…, repli)`) et sur le `std::bad_alloc` d'`initCuit` (kit de secours) ; étape 5 du banc `batiments` préfixée, Ville et Corniche, avec refus des autres systèmes et `bad_alloc` simulé.
+- **Accroches annoncées** : `src/render/vk.*` (paramètre `repli` d'`uploadNiveaux`, 4 lignes) et `src/render/renderer.*` (paramètre `repli` de `makeSkinnedMesh`, 6 lignes, au lieu de recopier son code dans `squelette.cpp` ; fichier non listé dans la zone : signalé au lead dev dans la PR).
+- Vérifié : construction complète ; 142 tests CPU réussis ; banc `batiments` rapide Ville 0 écart, Corniche 0 écart (aucune mémoire graphique perdue) ; captures sans refus identiques à `main` hors ligne de mesure (RG-09).
+- Limites : refus en cascade (mémoire pleine après le 1er refus, règle de WFS-418) ; l'atlas refusé retire aussi les devantures (`commerces.cpp`, secours existant) ; banc PC seulement.
+
 ### 2026-11-14 18:13:34 — WFS-513 : début, branche `feature/waforspeed-513` créée (Claude, agent dev3d (01Us6uCvpo))
 - Écran Market FR / EN (zone E8 `src/ui/ecrans/**`). Accroches annoncées (≤ 10 lignes chacune) : `src/ui/garage.cpp` (bouton Market) et `src/ui/ecrans/compteur_etoiles.*` (le compteur ouvre le Market).
 - Réutilise : `Boutique` / `BoutiqueSimulee` (WFS-510), système de langue (WFS-504), `navigation.h`, `toasts.cpp`, composants du garage (WFS-499).
