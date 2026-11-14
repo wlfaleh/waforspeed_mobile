@@ -1887,3 +1887,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 02:52:43 — WFS-537 : 2e retour lead dev corrigé, PR #402 à relire (Claude, agent dev3d (01UY1Vv4Hv))
 - Conflit avec WFS-501 (cadeau du jour) résolu en gardant les deux : menu `CADEAU = 5`, `COMPTEUR = 6` ; bancs `cadeau` et `score-fin` ; compteur caché sous l'écran du cadeau.
 - Vérifié : `score-fin` vert (2400 × 1080, 1280 × 720), `textes-menus` et `textes-course` VERTS, banc `cadeau` code 0, tests CPU 136 / 136 ; captures refaites.
+
+### 2026-11-14 02:59:42 — WFS-499 fusionné par le lead dev (lead-dev)
+- PR #404, 2e revue sur 37c2392f : les 3 points du refus corrigés (banc `garage-couleurs` à 0 écart en entier, voiture de la sauvegarde remise après l'essai et salon du duel quitté par le garde-fou, élision « l'Orion »). 81 captures « après » et 45 « avant » ouvertes, diff relu, 136 tests CPU refaits sur 37c2392f.
+- « ✅ Approuvé par le lead dev » en commentaire (même compte GitHub), fusion en squash 4bc6a696. Statut 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+- Remarques non bloquantes (QA / PO) : Pause → Menu pendant l'essai et « Retour » du garage après le garde-fou ne remettent pas la voiture de la sauvegarde (détour par le garage) ; `tests-cpu.log` sans le commit testé.
