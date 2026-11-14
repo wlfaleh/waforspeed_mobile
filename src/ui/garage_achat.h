@@ -50,6 +50,8 @@ std::string texteMedailles(long long prix);
 std::string texteEuros(long long prix);
 // « 75 ★ = 1 bronze = 0,74 € » dans la langue active (RC-E18-11 : équivalent en médailles et en euros)
 std::string texteEquivalent(long long prix);
+// WFS-499 (RG-02) : « Acheter la Draven Vantor GT pour 2 200 ★ ? », « Acheter l'Orion Corsaire pour 250 ★ ? » / « Buy the … for … ★? »
+std::string questionAchat(const std::string& nom, long long prix);
 // WFS-499 (RG-01) : « ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 € »
 std::string texteEquivalentVoiture(long long prix);
 

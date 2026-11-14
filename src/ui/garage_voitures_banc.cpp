@@ -3,21 +3,26 @@
 //   1. garage de la 208 (gratuite), solde 1 000 ★ ; flèche « suivante » ; garage de la M4 (2 200 ★) : cadenas, prix, médailles, euros, solde ;
 //   2. « Acheter » : fenêtre, « Il te manque 1 200 ★ », pas de Confirmer, rien de débité ; Annuler ;
 //   3. « Essai gratuit » : terrain puis course solo avec la M4 ; essai noté ; écran de fin : « Acheter 2 200 ★ » ;
-//   4. « Menu » puis garage : « Essai déjà fait » ; une course demandée avec la M4 bloquée revient au garage (garde-fou) ;
+//   4. « Rejouer » : garage (garde-fou), « Essai déjà fait » ; duel (salon en mémoire) avec la M4 bloquée : pas de course, salon quitté ;
 //   5. solde porté à 3 000 ★ : « Acheter » → fenêtre de confirmation → Confirmer : 800 ★, M4 débloquée et choisie ;
 //      peinture gratuite Rouge sur la M4, « Choisir » ;
 //   6. Corsa (250 ★) : essai, écran de fin, « Acheter » → Confirmer depuis l'écran de fin ;
 //   7. course avec la M4 achetée, de jour et de nuit ; relance du jeu (sauvegarde relue) : M4 et Corsa gardées, Corsa choisie ;
-//   8. en anglais : Golf bloquée, fenêtre « You need N more ★ », fenêtre « Confirm », écran de fin de l'essai.
+//   8. en anglais : Golf bloquée, fenêtre « You need N more ★ », fenêtre « Confirm », écran de fin de l'essai ; « Menu » :
+//      la voiture de la partie redevient celle de la sauvegarde, la course suivante part avec elle.
 // Format 4:3 (WFS_TAILLE=1024x768) : captures préfixées « 4x3- ». Chaque contrôle au journal (« garage-voitures (WFS-499) : OK / ÉCART ») ;
 // rend le nombre d'écarts.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include "../core/log.h"
 #include "../game/boutique.h"
 #include "../game/course.h"
 #include "../game/course_system.h"
+#include "../game/duel.h"
+#include "../game/duel_system.h"
+#include "../game/player.h"
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "garage.h"
@@ -98,18 +103,24 @@ int benchGarageVoitures(Game& g, Renderer& r, const std::string& out) {
     // 3. essai gratuit de la M4
     essai("m4");
     capture("fin-essai-m4", "écran de fin de l'essai : « Essai gratuit terminé », « Acheter 2 200 ★ »");
-    // 4. retour au garage : « Essai déjà fait » ; garde-fou
-    float mx, my;
-    if (courseBouton("menu", mx, my)) toucher(mx, my);
-    images(10);
-    g.allerA(Ecran::Garage); images(45);
+    // 4. « Rejouer » après l'essai (la course repart sur place) : garde-fou → garage sur la M4, « Essai déjà fait »
+    courseRejouer(); images(20);
+    verifier(g.ecran() == Ecran::Garage, "« Rejouer » avec la M4 bloquée, essai fait : pas de 2e course, retour au garage (garde-fou)");
+    images(30);
     verifier(garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), "m4") == 0 && !essaiPossible(s, "m4"), "garage après l'essai : M4 affichée, essai plus possible");
     capture("m4-essai-fait", "M4 : « Essai déjà fait »");
     bouton("essai");
     verifier(g.ecran() == Ecran::Garage, "« Essai déjà fait » : rien ne se passe");
-    g.allerA(Ecran::Menu); images(4); g.allerA(Ecran::Course); images(20);   // comme « Rejouer » : la course repart (compte à rebours)
-    verifier(g.ecran() == Ecran::Garage, "course demandée avec la M4 bloquée, essai fait : retour au garage (garde-fou)");
-    images(30);
+    // duel avec la M4 bloquée (salon en mémoire, comme le banc du duel) : la course ne part pas et le salon est quitté
+    {
+        auto salon = std::make_shared<duel::SalonMemoire>();
+        duelSession().join(std::make_unique<duel::TransportMemoire>(salon, "moi"), "K7QX", true, "Banc", "m4", "", "ville");
+        verifier(duelSession().inRoom(), "duel : salon en mémoire rejoint avec la M4 bloquée");
+        g.allerA(Ecran::Menu); images(4); g.allerA(Ecran::Course); images(20);
+        verifier(g.ecran() == Ecran::Garage && !duelSession().inRoom(), "duel avec la M4 bloquée : pas de course, salon quitté (leave), retour au garage");
+        if (duelSession().inRoom()) duelSession().leave();
+        images(30);
+    }
     // 5. achat confirmé
     s.etoiles = 3000;
     bouton("choisir");
@@ -173,6 +184,14 @@ int benchGarageVoitures(Game& g, Renderer& r, const std::string& out) {
         boutonFin("acheter");
         capture("en-fin-essai-confirmation", "English: end screen, « Buy the … for 600 ★? »");
         boutonFin("annuler");
+        // fin de l'essai → « Menu » : la voiture de la partie redevient la voiture de la sauvegarde (Corsa), plus la Golf bloquée
+        float mx, my;
+        if (courseBouton("menu", mx, my)) toucher(mx, my);
+        images(10);
+        verifier(g.ecran() == Ecran::Menu && g.player().car && s.car == g.player().car->id,
+                 std::string("fin de l'essai → Menu : voiture de la partie remise sur la ") + s.car + " (sauvegarde), plus la Golf bloquée");
+        g.allerA(Ecran::Course); images(30);
+        verifier(g.ecran() == Ecran::Course && g.player().car && s.car == g.player().car->id, "course suivante depuis le menu : avec la voiture possédée, pas de retour au garage");
         ouvrirGarage("golf");
         capture("en-golf-essai-fait", "English: « Test drive used »");
     }

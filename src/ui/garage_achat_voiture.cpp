@@ -8,6 +8,7 @@
 //     course avec elle (« Rejouer », « Recommencer », duel), le jeu ouvre le garage sur cette voiture (Acheter, Retour).
 // Sans sauvegarde active (bancs d'essai des autres tickets, parcours de la CI) : aucune voiture bloquée, rien ne change.
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include "garage_achat.h"
 #include "../core/log.h"
@@ -48,7 +49,7 @@ void FenetreAchatVoiture::dessiner(Renderer& r, float W, float H, float k, float
     // fond assombri : la fenêtre garde le regard et tous les touchers
     r.uiRect(0, 0, W, H, {0.02f, 0.02f, 0.03f, 0.66f});
     const std::string nom = std::string(marque(c)) + " " + modele(c);   // WFS-191 : noms inventés
-    const std::string titre = ui::majuscules(ui::tr("garage.achat_titre")), question = ui::tr("garage.achat_question", nom, nombreLangue(prix));
+    const std::string titre = ui::majuscules(ui::tr("garage.achat_titre")), question = questionAchat(nom, prix);
     const std::string eq = texteEquivalentVoiture(prix), soldeT = ui::majuscules(ui::tr("garage.solde", nombreLangue(solde)));
     const std::string manqueT = manque > 0 ? ui::tr("garage.manque", nombreLangue(manque)) : std::string();
     const float bw = 200 * k, hb = 52 * k, hg = 46 * k, gapB = 16 * k, pad = 32 * k;
@@ -171,7 +172,22 @@ public:
         if (!c || c->state != RaceState::Count || !g.car || !voitureBloquee(sauvegarde(), g.car->id)) return;
         if (essaiPossible(sauvegarde(), g.car->id)) return;   // l'essai gratuit lui-même
         WFS_LOG("garage : la %s est bloquée et son essai gratuit est fait : pas de course, retour au garage", g.car->id);
+        if (duelSession().inRoom()) { WFS_LOG("garage : salon du duel quitté (voiture bloquée)"); duelSession().leave(); }   // jamais de salle laissée ouverte
         g.allerA(Ecran::Garage);
+    }
+    // RG-03 : en quittant la course (écran de fin de l'essai → menu), la voiture de la partie redevient celle de la sauvegarde
+    // (voiture possédée) : aucune course suivante, solo ou duel, ne part avec la voiture bloquée. Garage et terrain : pas de
+    // changement (le garage montre la voiture essayée, l'essai lui-même passe par le terrain avant son départ).
+    void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
+        if (ancien != Ecran::Course || nouveau == Ecran::Pause || nouveau == Ecran::Garage || nouveau == Ecran::Terrain) return;
+        const Sauvegarde& s = sauvegarde();
+        if (!g.car || !g.choisirVoiture || !voitureBloquee(s, g.car->id) || essaiPossible(s, g.car->id)) return;
+        if (s.car.empty() || voitureBloquee(s, s.car.c_str()) || !boutique::voitureVendue(s.car)) return;
+        const PeintureDef* pd = peintureDef(s.peinture(s.car));
+        const unsigned h = pd ? pd->hex : 0xFFFFFF;
+        auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
+        WFS_LOG("garage : fin de l'essai de la %s : voiture de la partie remise sur la %s (sauvegarde)", g.car->id, s.car.c_str());
+        g.choisirVoiture(s.car.c_str(), vec3{c(16), c(8), c(0)});
     }
     void drawUi(Renderer& r, const GameView& g) override {
         g_acheterFin = Zone{};
@@ -183,7 +199,7 @@ public:
         // modes (leur haut est à 10 % de l'écran au moins), libellé « Essai gratuit terminé » à sa gauche
         const float bw = 200 * k, hb = 52 * k, x = W - gr - bw, y = gt;
         const std::string lib = ui::majuscules(ui::tr("fin.essai_termine"));
-        ui::text(r, x - 14 * k, y + (hb - 13 * k) / 2, 13 * k, lib, hex(ACCENT2), ui::DROITE, 0.16f, false);
+        ui::text(r, x - 14 * k, y + (hb - 16 * k) / 2, 16 * k, lib, hex(ACCENT2), ui::DROITE, 0.14f, false);
         biseau(r, x, y, bw, hb, 14 * k, hex(ACCENT));
         const std::string t = ui::majuscules(ui::tr("garage.acheter", nombreLangue(prix)));
         float px = 20 * k;

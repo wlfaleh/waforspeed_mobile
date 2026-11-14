@@ -63,12 +63,15 @@ int main(int argc, char** argv) {
     }
     // RG-05 : textes en français
     ui::langue::choisir(ui::langue::Choix::Francais);
-    cas("FR : 2 200 (espace fine insécable)", nombreLangue(2200) == "2\xE2\x80\xAF" "200" && nombreLangue(24350) == "24\xE2\x80\xAF" "350" && nombreLangue(250) == "250");
+    cas("FR : 2 200 (espace insécable)", nombreLangue(2200) == "2\xC2\xA0" "200" && nombreLangue(24350) == "24\xC2\xA0" "350" && nombreLangue(250) == "250");
     cas("FR : 3 or + 1 argent + 1 bronze", texteMedailles(2200) == "3 or + 1 argent + 1 bronze");
     cas("FR : 21,78 €", texteEuros(2200) == "21,78 €");
     cas("FR : ≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 €", texteEquivalentVoiture(2200) == "≈ 3 or + 1 argent + 1 bronze · ≈ 21,78 €");
     cas("FR : 250 ★ → 1 argent", texteMedailles(250) == "1 argent");
-    cas("FR : question de la fenêtre", ui::tr("garage.achat_question", "Draven Vantor GT", nombreLangue(2200)) == "Acheter la Draven Vantor GT pour 2\xE2\x80\xAF" "200 ★ ?");
+    cas("FR : question de la fenêtre", questionAchat("Draven Vantor GT", 2200) == "Acheter la Draven Vantor GT pour 2\xC2\xA0" "200 ★ ?");
+    cas("FR : élision devant une voyelle (« l'Orion Corsaire »)", questionAchat("Orion Corsaire", 250) == "Acheter l'Orion Corsaire pour 250 ★ ?");
+    cas("FR : élision devant une voyelle accentuée (« l'Étoile »)", questionAchat("Étoile X", 600) == "Acheter l'Étoile X pour 600 ★ ?");
+    cas("FR : pas d'élision devant une consonne (« la Norvik Lume »)", questionAchat("Norvik Lume", 600) == "Acheter la Norvik Lume pour 600 ★ ?");
     cas("FR : boutons", ui::tr("garage.confirmer") == "Confirmer" && ui::tr("garage.annuler") == "Annuler" && ui::tr("garage.essai") == "Essai gratuit" && ui::tr("garage.essai_fait") == "Essai déjà fait");
     // RG-05 : textes en anglais
     ui::langue::choisir(ui::langue::Choix::Anglais);
@@ -76,6 +79,7 @@ int main(int argc, char** argv) {
     cas("EN : 3 gold + 1 silver + 1 bronze", texteMedailles(2200) == "3 gold + 1 silver + 1 bronze");
     cas("EN : €21.78", texteEuros(2200) == "€21.78");
     cas("EN : ≈ 3 gold + 1 silver + 1 bronze · ≈ €21.78", texteEquivalentVoiture(2200) == "≈ 3 gold + 1 silver + 1 bronze · ≈ €21.78");
+    cas("EN : question de la fenêtre (« the », voyelle ou non)", questionAchat("Orion Corsaire", 250) == "Buy the Orion Corsaire for 250 ★?" && questionAchat("Draven Vantor GT", 2200) == "Buy the Draven Vantor GT for 2,200 ★?");
     cas("EN : You need 1,200 more ★", ui::tr("garage.manque", nombreLangue(1200)) == "You need 1,200 more ★");
     cas("EN : Buy / Confirm / Cancel / Free test drive", ui::tr("garage.acheter", "2,200") == "Buy 2,200 ★" && ui::tr("garage.confirmer") == "Confirm" &&
         ui::tr("garage.annuler") == "Cancel" && ui::tr("garage.essai") == "Free test drive");

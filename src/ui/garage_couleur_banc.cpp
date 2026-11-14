@@ -32,6 +32,8 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
     std::remove(chemin.c_str());
     Sauvegarde& s = sauvegarde();
     s.charger(chemin);
+    // WFS-499 : avec la sauvegarde active, la Golf et la GT86 sont à acheter ; ce banc ne teste que les couleurs : il les possède
+    s.voituresPossedees.insert("golf"); s.voituresPossedees.insert("gt86");
     ui::langue::choisir(ui::langue::Choix::Francais);
     double t = 4000;
     bool ouvert = false;

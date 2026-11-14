@@ -85,25 +85,26 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     g_z.retour = {bx, gy, bw, hg};
     // WFS-499 (RG-01) : solde d'étoiles toujours affiché, en haut à droite du garage (au-dessus de la flèche « suivante »)
     texteEtoiles(r, mp.W - mp.gr, mp.gt + 6 * k, 14 * k, ui::majuscules(ui::tr("garage.solde", nombreLangue(boutique::solde(s)))), hex(TEXTE, op), ui::DROITE, 0.12f);
-    // WFS-499 (RG-01) : cadenas sous le point (vignette) de chaque voiture bloquée
+    // WFS-499 (RG-01) : cadenas juste au-dessus du point (vignette) de chaque voiture bloquée, entre l'étiquette du type et les
+    // points (dessous, il passait sur le toit de la voiture en 4:3 : revue de la PR #404)
     for (int p = 0; p < voituresPermises().n; p++)
-        if (const Zone& z = g_z.points[p]; z.w > 0 && voitureBloquee(s, CARS[voituresPermises().idx[p]].id)) cadenas(r, z.x + z.w / 2, z.y + 31 * k, 11 * k, op);
+        if (const Zone& z = g_z.points[p]; z.w > 0 && voitureBloquee(s, CARS[voituresPermises().idx[p]].id)) cadenas(r, z.x + z.w / 2, z.y + 1 * k, 9 * k, op);
     // WFS-499 (RG-01) : carte de la voiture bloquée, au-dessus du panneau, à droite : cadenas, prix, équivalents
     if (bloquee) {
         const long long prix = boutique::prixVoiture(car);
         const std::string t1 = nombreLangue(prix) + " ★", t2 = texteEquivalentVoiture(prix), t0 = ui::majuscules(ui::tr("garage.bloquee"));
-        const float pad = 18 * k, cad = 30 * k, w1 = cad + 12 * k + largeurEtoiles(30 * k, t1), w = std::max({w1, ui::width(13 * k, t2), ui::width(11 * k, t0, 0.16f)}) + 2 * pad;
-        const float h = 96 * k, x = mp.px1 - mp.padX - w, y = mp.py0 - h - 12 * k;
+        const float pad = 18 * k, cad = 30 * k, w1 = cad + 12 * k + largeurEtoiles(30 * k, t1), w = std::max({w1, ui::width(14 * k, t2), ui::width(14 * k, t0, 0.14f)}) + 2 * pad;
+        const float h = 100 * k, x = mp.px1 - mp.padX - w, y = mp.py0 - h - 12 * k;
         // .card : verre teinté, coin supérieur droit coupé, liseré cyan à gauche (information)
         const float b = 14 * k;
         const vec2 c[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};
         dessin2d::polygone(r, c, 5, dessin2d::uni(vec4{GLASS.x, GLASS.y, GLASS.z, 0.9f * op}));
         dessin2d::contour(r, c, 5, std::max(1.f, k), vec4{BORD.x, BORD.y, BORD.z, BORD.w * op});
         r.uiRect(x, y, 3 * k, h, hex(ACCENT2, op));
-        ui::text(r, x + pad, y + 12 * k, 11 * k, t0, hex(MUTED, op), ui::GAUCHE, 0.16f, false);
-        cadenas(r, x + pad + cad / 2, y + 46 * k, cad, op);
-        texteEtoiles(r, x + pad + cad + 12 * k, y + 30 * k, 30 * k, t1, hex(TEXTE, op), ui::GAUCHE);
-        ui::text(r, x + pad, y + 72 * k, 13 * k, t2, hex(TAG, op), ui::GAUCHE, 0, false);
+        ui::text(r, x + pad, y + 12 * k, 14 * k, t0, hex(TAG, op), ui::GAUCHE, 0.14f, false);
+        cadenas(r, x + pad + cad / 2, y + 50 * k, cad, op);
+        texteEtoiles(r, x + pad + cad + 12 * k, y + 34 * k, 30 * k, t1, hex(TEXTE, op), ui::GAUCHE);
+        ui::text(r, x + pad, y + 76 * k, 14 * k, t2, hex(TAG, op), ui::GAUCHE, 0, false);
     }
     // bandeau « Il te manque N ★ » : glissé au-dessus du panneau, bord gauche rouge (notification de design-street-racing)
     if (manque_ > 0) {

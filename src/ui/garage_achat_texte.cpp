@@ -1,6 +1,7 @@
 // WaForSpeed — garage : prix en texte dans la langue active (WFS-499, RG-05 ; reprise des équivalents de WFS-489) : voir garage_achat.h.
 // Calcul seul, sans rendu : testé par tests/test_garage_voitures.cpp.
 #include <cstdio>
+#include <cstring>
 #include "garage_achat.h"
 #include "../game/boutique.h"
 #include "langue.h"
@@ -8,8 +9,9 @@
 namespace wfs::ecrans::garage {
 
 std::string nombreLangue(long long v) {
-    // français : espace fine insécable, comme ui::nombre (« 2 200 ») ; anglais : virgule (« 2,200 »)
-    const char* sep = ui::langue::active() == ui::langue::Langue::Francais ? "\xE2\x80\xAF" : ",";
+    // français : espace insécable (« 2 200 » ; l'espace fine de ui::nombre est trop étroite dans la police du garage, revue de
+    // la PR #404) ; anglais : virgule (« 2,200 »)
+    const char* sep = ui::langue::active() == ui::langue::Langue::Francais ? "\xC2\xA0" : ",";
     std::string d = std::to_string(v < 0 ? -v : v), out;
     for (size_t i = 0; i < d.size(); i++) { if (i && (d.size() - i) % 3 == 0) out += sep; out += d[i]; }
     return v < 0 ? "-" + out : out;
@@ -36,6 +38,14 @@ std::string texteEuros(long long prix) {
 }
 
 std::string texteEquivalent(long long prix) { return nombreLangue(prix) + " ★ = " + texteMedailles(prix) + " = " + texteEuros(prix); }
+
+std::string questionAchat(const std::string& nom, long long prix) {
+    // français : élision devant une voyelle (« Acheter l'Orion Corsaire », « Acheter la Draven Vantor GT ») ; anglais : « the »
+    const unsigned char c0 = nom.empty() ? 0 : (unsigned char)nom[0];
+    bool voyelle = std::strchr("AEIOUYaeiouy", c0) != nullptr && c0 != 0;
+    if (c0 == 0xC3 && nom.size() > 1) voyelle = true;   // É, È, Â, Î, Ô… (lettres accentuées en UTF-8 : 0xC3 xx)
+    return ui::tr(voyelle ? "garage.achat_question_voyelle" : "garage.achat_question", nom, nombreLangue(prix));
+}
 
 std::string texteEquivalentVoiture(long long prix) { return "≈ " + texteMedailles(prix) + " · ≈ " + texteEuros(prix); }
 
