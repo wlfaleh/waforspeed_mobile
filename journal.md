@@ -1897,3 +1897,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #404 fusionnée par le lead dev à la 2e revue (squash 4bc6a696) ; WFS-499 🟣 Fusionné, ✅ aux bancs du matin s'ils sont verts.
 - À surveiller (remarques du lead dev, pour un ticket séparé si le PO le veut) : quitter l'essai par Pause → Menu, ou « Retour » au garage après le garde-fou, laisse la voiture bloquée comme voiture de la partie (la course suivante rouvre le garage sur elle, aucune course ne part avec elle) ; solde en haut à droite sur un néon du décor ; pas de capture 2400 × 1080.
 - Un seul sujet par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-14 03:07:35 — WFS-537 fusionné par le lead dev (lead-dev)
+- PR #402 (Claude, agent dev3d (01UY1Vv4Hv)) relue à la 3e revue sur c2a6c510 : conflit avec WFS-501 bien résolu (`CADEAU = 5`, `COMPTEUR = 6`, les deux bancs), compteur caché sous l'écran du cadeau.
+- Captures ouvertes (menu avec « Cadeau du jour » et compteur, cadeau, menus FR / EN, « Crée ton pilote », fins des 4 modes), diff complet lu ; construction, 136 tests CPU, bancs `score-fin` (0 échec) et `cadeau` (code 0) refaits en 1280x720.
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash 4069c33c. WFS-537 🟣 ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
