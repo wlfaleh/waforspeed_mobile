@@ -1769,3 +1769,6 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Vérification : 133 tests CPU verts (commit ff166e29, `qa/pr/WFS-501/tests-cpu.log`) ; banc `cadeau` à 0 erreur ; parcours RG-08 en FR et en EN (menu → cadeau → animation → gain → Chances → Retour → menu sans pastille → 2e appui : attente, aucun 2e cadeau → relance : aucun 2e cadeau → « Activer » ferme l'écran) ; garde-fou des textes anglais (WFS-504) sans échec ; 30 captures regardées.
 - Limites : gain non crédité (WFS-503), « Activer » sans prêt (WFS-502) ; noms des finitions par `finition.<id>` de WFS-491 (nom du catalogue en attendant) ; rendu lavapipe seulement.
 
+### 2026-11-14 00:16:24 — Statuts automatiques, CI main #1059 (robot statuts)
+- Run rouge (push, commit b1ed89d), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
