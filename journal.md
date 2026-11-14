@@ -1854,3 +1854,8 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - **Zone** : `src/render/model_loader.*`, appels de `loadCarModel` dans `src/game/traffic_system.cpp`, `src/world/pietons.cpp`, `src/render/squelette.cpp`, `src/world/conducteurs.cpp`, `src/world/enseignes.cpp`, appel d'`uploadNiveaux` dans `src/render/route_revetements.cpp`, `bad_alloc` dans `src/world/archi_carte.cpp`, étape 5 de `src/world/cartes_v2/batiments_banc.cpp`, `tests/**` ; `vk.*` seulement ajout ≤ 10 lignes annoncé. Règles : `regles-de-gestion/WFS-446.md`.
 - **Plan court** : brancher les secours existants de WFS-418 (`essayer…`) sur le refus de mémoire, tests de refus simulé (Ville et Corniche), aucun écart quand la mémoire suffit ; captures ≥ 3 (`batiments`) ; PR ; lead dev.
 - Session 01Us6uCwTQ (WFS-493, #413 fusionnée) : ligne enlevée de `track-agent.md`. WFS-513 : branche poussée (c449553).
+
+### 2026-11-14 18:30:50 — Début WFS-446 : manque de mémoire graphique, suite 1 (Claude, agent dev3d (01Us6uCuVU))
+- Branche `feature/waforspeed-446` créée depuis main (2c893003) et poussée. Règles lues (RG-01 à RG-10).
+- Plan : paramètre « repli » par défaut à faux sur `loadCarModel` (trafic seulement à vrai), `uploadNiveaux` (route), piétons / conducteurs / enseignes par les fonctions `essayer…` de WFS-418 ; `bad_alloc` d'`initCuit` → kit ; étape 5 du banc `batiments` préfixée et sur la Corniche ; tests de refus simulé.
+- **Accroche annoncée dans `src/render/vk.*` (≤ 10 lignes)** : paramètre par défaut `repli = false` sur `VkCtx::uploadNiveaux` (tampon de transfert et image par `essayerBuffer` / `essayerImage`), car aucune fonction `essayer…` n'existe pour les niveaux KTX2.
