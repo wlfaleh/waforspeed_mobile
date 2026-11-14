@@ -1988,3 +1988,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 21:59:00 — R19 : garage, onglet Voiture refait (smart-brainstorming)
 - Sur retour de l'utilisateur : onglets gardés, contenu de l'onglet Voiture inspiré de l'écran actuel ; image `references/maquettes-R19/13-garage-choix-voiture.jpg` remplacée. Rien transmis au PO.
+
+### 2026-11-14 22:01:02 — R19 : précédent / suivant en palettes au volant (smart-brainstorming)
+- Garage, onglet Voiture : flèches remplacées par des palettes au volant (carbone, chevron et −/+ rétroéclairés). Rien transmis au PO.
