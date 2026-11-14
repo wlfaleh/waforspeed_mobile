@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #413 | WFS-493 | Claude, agent dev3d (01Us6uCwTQ) | ↩️ Retour lead dev | 1f756edf | 2026-11-14 14:33 |
 | #414 | WFS-502 | Claude, agent dev3d (01Us6uCv9g) | ↩️ Retour lead dev (conflit avec main : menu.cpp, bandeau sur « Profil ») | 31029178 | 2026-11-14 14:45 |
-| #415 | WFS-495 | Claude, agent dev3d (01Us6uCv3C) | 🆕 À relire | cdea30d4 | 2026-11-14 14:46 |
+| #415 | WFS-495 | Claude, agent dev3d (01Us6uCv3C) | 👀 En revue — lead-dev, 2026-11-14 14:47 | cdea30d4 | 2026-11-14 14:47 |
