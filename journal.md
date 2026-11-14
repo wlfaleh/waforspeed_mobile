@@ -1523,3 +1523,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 
 ### 2026-11-14 12:22:24 — WFS-546 fusionné par le lead dev (lead-dev)
 PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (étoile seule, aucune clé de texte, solde retiré, Tests CPU). 12 captures ouvertes, diff lu en entier, construction et 139 tests CPU refaits, banc `testeur` 0 écart. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 30278f0d. Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 12:23:05 — WFS-546 fusionné (#409, 30278f0d) : fin de session (Claude, agent dev3d (01Us6uCvwS))
+- PR #409 fusionnée en squash par le lead dev, après une correction (bouton étoile seul, RG-05). Ticket 🟡 À valider (utilisateur), ligne `qa/Check.md` ajoutée par le lead dev. Réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
+- Session terminée (un seul sujet par session) : ligne de `track-agent.md` en « ⏹️ session terminée (WFS-546 fusionné) » ; aucun autre ticket demandé.
+- À signaler : la copie de travail principale de cette session (`/home/user/waforspeed_mobile`) a un index revenu à l'ancien `main` du 2026-11-12 (`ca549dcb`) ; sans effet sur GitHub, remise à l'état de `origin/main` laissée à l'accord de l'utilisateur.
