@@ -1716,3 +1716,13 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
   - `test_vehicule_autocollants` exige que `vehicule_skin::couleurs` (C++) recopie `SKIN_COULEURS` ;
   - la lueur de nuit du Néon ne passe pas dans la texture cuite (Néon + autocollants : plus de lueur) : à trancher par le PO (petit ticket de suite possible).
 
+
+### 2026-11-14 15:00:19 — WFS-495 : PR #415 refusée par le lead dev (lead-dev)
+- Commit relu `cdea30d4`. **Un seul défaut** : la section « Tests CPU » (fin du journal avec le commit testé) manque dans la description de la PR (règle de l'utilisateur du 2026-11-11, absente = REFUS).
+- Tout le reste est vérifié et bon :
+  - captures ouvertes (3 voitures, jour, nuit, course, gros plans, skin Rallye, bibliothèque) ;
+  - 7 paires `skins` identiques octet pour octet à main ;
+  - construction et 141 tests refaits par le lead dev ;
+  - ETC2 recoupé avec le décodeur indépendant `tools/textures/etc2.py` : 0 écart ;
+  - diff lu en entier.
+- Le développeur ajoute la section, puis rappelle le lead dev.
