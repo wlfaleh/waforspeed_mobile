@@ -1466,3 +1466,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Fichiers** : `src/ui/ecrans/reglages.{cpp,h}`, `reglages_etoiles.h` (nouveau), `reglages_testeur_banc.cpp` (banc `testeur`, nouveau), `assets/textes/fr.txt`, `en.txt`, `tests/test_reglages_etoiles.cpp` (+ `CMakeLists.txt`). **Accroche** : 1 ligne dans `src/platform/desktop_main.cpp` (banc `testeur`).
 - **Vérification** : 139 tests CPU verts (`test_audio_chocs` instable une fois sous charge, vert seul) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 (2 appuis = 5000 ★, sauvegarde relue 5000 ★, compteur du menu 5 000, Chromé 400 ★ acheté au garage) ; captures regardées dans `qa/pr/WFS-546/`.
 - **Signalé au PO** : les autres boutons du menu caché (interrupteurs, « Tout rétablir ») réagissent à chaque mouvement du doigt posé (hors périmètre de WFS-546).
+
+### 2026-11-14 11:39:14 — WFS-546 refusé par le lead dev, PR #409 (lead-dev)
+- Commit relu d7a05af5 ; 12 captures ouvertes, diff lu, `test_reglages_etoiles` construit et vert sur la branche. Le crédit (+2500 ★, un par appui, sauvegardé) marche ; garage et menu intacts.
+- **Refus** : (1) RG-05 non tenue : le bouton affiche « +2500 ★ » au lieu d'une icône étoile seule (précision de l'utilisateur de 11:02:49) ; (2) clés `diag.etoiles` ajoutées dans `fr.txt` / `en.txt` (hors zone, interdit par RG-05) ; (3) libellé « Solde : N ★ » non demandé à côté du bouton ; (4) section « Tests CPU » et `tests-cpu.log` absents de la PR.
+- Revue postée dans la PR (en « COMMENT » : même compte GitHub). WFS-546 → ↩️ Retour lead dev (PR #409).
