@@ -13,6 +13,7 @@ Branche `feature/waforspeed-542` comparée à `origin/main` (9eaa8c74 synchronis
 | `camion542-nuit-01` | ![avant](avant-camion542-nuit-01.jpg) | ![après](apres-camion542-nuit-01.jpg) |
 | `camion542-nuit-02` | ![avant](avant-camion542-nuit-02.jpg) | ![après](apres-camion542-nuit-02.jpg) |
 | `camion542-retrait-00` | ![avant](avant-camion542-retrait-00.jpg) | ![après](apres-camion542-retrait-00.jpg) |
+| `camion542-retrait-01` | ![avant](avant-camion542-retrait-01.jpg) | ![après](apres-camion542-retrait-01.jpg) |
 | `camion542-vitrine-00` | ![avant](avant-camion542-vitrine-00.jpg) | ![après](apres-camion542-vitrine-00.jpg) |
 | `camion542-vitrine-01` | ![avant](avant-camion542-vitrine-01.jpg) | ![après](apres-camion542-vitrine-01.jpg) |
 | `camion542-vitrine-02` | ![avant](avant-camion542-vitrine-02.jpg) | ![après](apres-camion542-vitrine-02.jpg) |
