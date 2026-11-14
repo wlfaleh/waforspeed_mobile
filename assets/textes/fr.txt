@@ -344,6 +344,8 @@ police.chocs=Chocs trafic / glissière / police
 police.voitures=Voitures de police
 police.record_victoire=Victoire · {1} pts
 police.record_arrete=Arrêté · {1} km
+police.arrestation=ARRESTATION {1}
+police.arrete_police=ARRÊTÉ PAR LA POLICE
 # Duel (src/game/duel_system.cpp)
 duel.toi={1} (toi)
 duel.position_reconnexion=POSITION {1} · RECONNEXION…

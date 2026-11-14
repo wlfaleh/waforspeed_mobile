@@ -344,6 +344,8 @@ police.chocs=Hits: traffic / guardrail / police
 police.voitures=Police cars
 police.record_victoire=Victory · {1} pts
 police.record_arrete=Busted · {1} km
+police.arrestation=ARREST {1}
+police.arrete_police=PULLED OVER BY THE POLICE
 # Duel (src/game/duel_system.cpp)
 duel.toi={1} (you)
 duel.position_reconnexion=POSITION {1} · RECONNECTING…

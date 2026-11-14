@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "conduite_monde.h"   // WFS-540 (RG-00) : la police roule avec le moteur de conduite de la voiture du joueur
 #include "course5.h"   // WFS-119 : ModeCourse (clé de sauvegarde)
 #include "track.h"
 #include "../core/configgame.h"   // WFS-128
@@ -61,6 +62,8 @@ struct Etat {
     int pertes = 0;                   // nombre de pertes depuis le départ (le HUD voit ainsi chaque nouvelle perte)
     int dernierePerte = 0;            // points de la dernière perte
     const char* raison = "";          // raison de la dernière perte
+    double arrestation = 0;           // WFS-540 (RG-03) : temps passé arrêté près de la police (s)
+    bool parPolice = false;           // WFS-540 (RG-03) : défaite par arrestation (et non score à 0)
 };
 // WFS-338 (RG-03) : raisons d'une perte de points, telles qu'elles s'écrivent à l'écran
 inline constexpr const char* RAISON_TRAFIC = "CHOC AVEC LE TRAFIC";
@@ -81,8 +84,17 @@ std::string textePerte(int points, const char* raison);
 constexpr double PERTE_S = 2.0;   // durée d'affichage de la raison d'une perte (s)
 // RG-01 : quasi-contact réussi : +1 (jamais au-dessus de 100)
 void quasiContact(Etat& e);
-// RG-02 : un pas de dt secondes ; dPoliceM = distance (m) de la police la plus proche
-void pas(Etat& e, double dt, double dPoliceM);
+// RG-02 : un pas de dt secondes ; dPoliceM = distance (m) de la police mobile la plus proche (centres) ; WFS-540 : ecartM = jour
+// entre les carrosseries (m, 0 au contact), kmhJ = vitesse de la voiture du joueur (km/h)
+// WFS-540 (RG-03, ANO-268) : ARRESTATION : joueur à moins de ARRET_KMH pendant ARRET_S secondes de suite avec une police à moins de
+// ARRET_M : arrêté (défaite « arrêté par la police ») ; le compte à rebours s'annule au-dessus de REPRISE_KMH (ou police à ARRET_M et
+// plus) ; entre les deux, il attend. (RG-04) « POLICE AU CONTACT » : −1 par seconde seulement au contact réel (jour ≤ CONTACT_REEL_M),
+// jamais pendant le compte à rebours d'arrestation. Décision du PO (2026-11-13), l'utilisateur peut la changer.
+constexpr double ARRET_KMH = 5, REPRISE_KMH = 10, ARRET_S = 4, ARRET_M = 8, CONTACT_REEL_M = 0.3;
+void pas(Etat& e, double dt, double dPoliceM, double ecartM, double kmhJ);
+inline constexpr const char* RAISON_ARRESTATION = "ARRÊTÉ PAR LA POLICE";
+// secondes affichées par le compte à rebours (4, 3, 2, 1) ; 0 : pas d'arrestation en cours
+int compteArrestation(const Etat& e);
 // WFS-119 RG-01 : ralentisseur passé à kmh : −3 au-dessus de 90 km/h (comme un plot), rien dessous ; rend les points perdus
 constexpr double RALENTISSEUR_KMH = 90;
 constexpr int CHOC_RALENTISSEUR = 3;
@@ -93,18 +105,36 @@ void arrivee(Etat& e, double distKm);
 int policeVoulue(double distKm);
 
 // ---- RG-03 : une voiture de police (distance rd en unités comme Player::dist, x en demi-largeurs de route, v en unités/s)
+// WFS-540 (RG-00, ordre de l'utilisateur du 2026-11-14 : « une voiture de police est une voiture comme les autres ») : chaque voiture
+// de police est une vraie voiture, simulée par le moteur de conduite de la voiture du joueur (conduite_monde.h : pneus, masse,
+// moteur, boîte, freins, braquage) avec la fiche de SA voiture. Son état est `monde` (position, cap, vitesses dans le monde) ; rd,
+// x, h et v n'en sont que la projection sur la route, écrite après chaque pas (rendu, contacts avec le joueur, distances, sirène).
+// Le « policier » ne choisit que gaz, frein, volant et marche arrière (avancer) : le code n'écrit jamais sa position, sa vitesse ni
+// son cap. Seules exceptions : sa naissance (renfort, relais d'une voiture perdue de vue, hors de toute vue) et les bancs d'essai
+// (poser). Un contact (joueur, trafic, autre police, glissière) agit par une impulsion sur sa vitesse, comme un choc réel.
 struct Police {
     double rd = 0, x = 0, v = 0, hitCd = 0;
     double rdPrec = 0, xPrec = 0;     // WFS-221 (accroche) : état avant le dernier pas (rendu interpolé)
     double cibleX = 0;
-    int role = 0;                     // 0 : derrière (pousse), 1 : à gauche, 2 : à droite
-    bool fixe = false;                // barrage (RG-05) : immobile
+    int role = 0;                     // 0 : derrière, 1 : à gauche, 2 : à droite
+    bool fixe = false;                // barrage (RG-05) : immobile, voiture garée
     unsigned peinture = 0xf2f4f8;     // blanc / bleu marine (voitures existantes repeintes)
+    // WFS-540
+    double h = 0, hPrec = 0;          // cap de la caisse par rapport à la route (rad, + à droite) : celui qui est dessiné
+    double braquage = 0;              // angle des roues avant voulu par le policier (rad, + à droite)
+    physique::Etat monde{};           // état réel dans le monde : seul physique::pas le fait avancer
+    bool mondeOk = false;             // faux : monde à construire depuis (rd, x, h, v) au prochain pas (naissance, banc)
+    bool evite = false;               // RG-09 : file choisie pour contourner un obstacle, gardée jusqu'à l'avoir dépassé
+    double eviteX = 0, eviteFinS = 0, eviteT = 0;   // file gardée (demi-largeurs), abscisse de l'obstacle (unités), durée (s)
 };
-struct Obstacle { double s = 0, x = 0, v = 0; };   // voiture du trafic (distance, latéral, vitesse)
-// un pas de conduite de la police (dt en s, t : temps de course) : rattrape le joueur (sJ, xJ, vJ), se place derrière
-// (15 m) ou à côté (18 / 21 m), contourne le trafic ; à tour de rôle, une voiture tente de pousser (ATTAQUE_S secondes
-// toutes les CYCLE_S secondes, décalées) ; trop loin derrière (> PERDUE_M) : revient à APPARITION_M (la poursuite ne se perd pas)
+struct Obstacle { double s = 0, x = 0, v = 0; };   // voiture du trafic, cône, camion (distance, latéral, vitesse)
+// WFS-540 : naissance ou banc seulement : pose la voiture à (rd, x), dans l'axe de la route, à la vitesse v (unités/s) ; son
+// état dans le monde est reconstruit au pas suivant
+void poser(Police& p, double rd, double x, double v);
+// un pas de la police (dt en s, t : temps de course) : chaque policier choisit ses commandes pour rejoindre sa place derrière
+// le joueur (15 m) ou à côté (18 / 21 m, une file d'écart), contourne le trafic en braquant ; à tour de rôle, une voiture vient au
+// contact (ATTAQUE_S secondes toutes les CYCLE_S secondes, décalées) ; trop loin derrière (> PERDUE_M) : une autre voiture prend le
+// relais à APPARITION_M (la poursuite ne se perd pas)
 constexpr double CYCLE_S = 12, ATTAQUE_S = 3;
 // WFS-338 (RG-05, ANO-195) : la police n'apparaît jamais d'un coup ni collée au joueur. Elle est dessinée jusqu'à
 // DESSIN_DERRIERE_M derrière lui (rétroviseur, vue arrière) ; elle naît (renfort) et revient (trop loin) à APPARITION_M
@@ -116,32 +146,37 @@ constexpr double APPROCHE_MIN = 4, APPROCHE_PENTE = 0.3, APPROCHE_MAX = 45;   //
 double approcheMax(double relM);   // vitesse de rapprochement permise (m/s) à relM mètres derrière le joueur
 constexpr double CONTACT_L_M = 4.1, CONTACT_W_M = 1.9;   // contact entre deux voitures (m) : longueur et largeur moyennes
 constexpr double COTE_X = 0.62, BORD_X = 0.92;   // écart latéral à côté du joueur, bord de la chaussée (demi-largeurs)
+// WFS-540 (RG-10) : file visée toujours sur la chaussée (|x| ≤ CHAUSSEE_X) ; marche arrière d'un policier : 10 km/h au plus
+constexpr double CHAUSSEE_X = 0.85, V_RECUL_POLICE = 10 / 3.6;
+// WFS-540 (RG-02) : sous REPRISE_KMH, plus d'attaque et au moins GARDE_M de jour derrière le joueur : il peut toujours repartir
+constexpr double GARDE_M = 2.0;
 // file visée par une voiture « à côté » (role 1 : à gauche, 2 : à droite) ; côté impossible (bord) : l'autre côté ;
 // aucun des deux : derrière le joueur (xJ) ; *cote = false dans ce dernier cas
 double placeCote(double xJ, int role, bool* cote = nullptr);
 bool attaque(const Police& p, int indice, double t);
-// WFS-461 (RG-03, ANO-262) : la police roule avec la fiche de SA voiture (cars.h : 208, 208 km/h ; Golf GTI si le joueur est en
-// 208) : vitesse maxi, accélération (poussée et plafond de CarPerf, même formule que Player::update) et freinage (Phys::brake ×
-// CarPerf::freinage) ; dans les virages, l'adhérence de ses pneus (même modèle que la voiture du joueur). Avant : MAX_SPEED × 1,45
-// (377 km/h), accélération de 70 m/s², freinage de 140 m/s². Contact avec la voiture du joueur : vraies longueurs et largeurs.
+// WFS-461 (RG-03, ANO-262) / WFS-540 (RG-00) : la police roule avec la fiche de SA voiture (cars.h : 208, 208 km/h ; Golf GTI si le
+// joueur est en 208), étalonnée par le moteur de conduite (0-100 et vitesse maxi de la fiche). Contact avec la voiture du joueur :
+// vraies longueurs, largeurs et masses.
 struct FichePolice {
-    double vMax = 0;              // vitesse maxi (unités/s) : spec.vmax
-    double a0 = 0, top = 0;       // poussée (m/s²) et plafond (unités/s) de CarPerf
-    double frein = 0;             // décélération au freinage (m/s²)
-    double gLat = 0;              // accélération latérale permise dans les virages (m/s²) ; 0 : pas de limite de virage
+    const physique::Params* P = nullptr;   // moteur de conduite de sa voiture (physique::params)
+    double vMax = 0;              // vitesse maxi de la fiche (unités/s) : spec.vmax
+    double frein = 0;             // décélération de confort pour s'arrêter derrière un obstacle (m/s²)
     double contactL = CONTACT_L_M, contactW = CONTACT_W_M;   // contact avec la voiture du joueur (m) : (L + L') / 2, (W + W') / 2
+    double longueur = 4.1, largeur = 1.9;   // dimensions de la voiture de police (m)
 };
 // fiche de la voiture de police `police` ; `joueur` (peut être nul) : voiture du joueur, pour les distances de contact
 FichePolice fichePolice(const char* police, const char* joueur);
-// un pas de vitesse de la police vers vCible (unités/s), avec la fiche : accélère, freine, jamais au-delà de vMax
-double vitessePolice(const FichePolice& f, double v, double vCible, double dt);
-// t (peut être nul) : piste, pour ralentir avant les virages (adhérence de la fiche)
+// un pas de toutes les voitures de police : commandes du policier, moteur de conduite, contacts (joueur, trafic, autre police,
+// glissière), projection sur la route. muRoute : adhérence de la chaussée (saison de la carte) ; hJ : cap de la voiture du joueur par
+// rapport à la route (rad), pour la direction de sa vitesse dans les contacts
 void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ, double vJ, const std::vector<Obstacle>& obs,
-             const FichePolice& f, const Track* piste = nullptr);
+             const FichePolice& f, Track& piste, double muRoute = 1.0, double hJ = 0);
 // renfort : une voiture de plus, APPARITION_M derrière le joueur (WFS-338 : avant 90 m, en vue dans le rétroviseur)
 Police renfort(int indice, double sJ, double vJ, uint32_t graine);
 // distance (m) de la police mobile la plus proche du joueur (1e9 sans police)
 double plusProcheM(const std::vector<Police>& ps, double sJ, double xJ);
+// WFS-540 (RG-04) : jour (m) entre la carrosserie du joueur et la police la plus proche (0 au contact ; 1e9 sans police)
+double ecartCarrosseriesM(const std::vector<Police>& ps, double sJ, double xJ, const FichePolice& f);
 // WFS-338 (RG-02, ANO-192) : chiffre de l'encart POLICE : distance à la police la plus proche (« 45 M », « 1,20 KM », « — »)
 std::string texteDistancePolice(double m);
 

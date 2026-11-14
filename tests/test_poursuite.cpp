@@ -12,24 +12,35 @@ using namespace wfs::poursuite;
 static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
 
+// WFS-540 : la police roule sur une vraie route (moteur de conduite en coordonnées du monde). Ces scénarios font rouler le joueur à
+// vitesse constante, ce qu'aucune voiture ne peut faire dans les virages : une ligne droite (carte de la Corniche sans virage ni relief)
+static Track& pisteEssai() {
+    static MapDef m = mapById("plage"); static Track t; static bool ok = false;
+    if (!ok) { m.sections = 0; m.hills = 0; m.construire = nullptr; t.build(m, 1); ok = true; }
+    return t;
+}
+
 int testPoursuite() {
     // RG-01 / RG-02 : score de départ 100, −5 au choc avec le trafic (une fois par seconde au plus), −3 glissière, −10 police
     Etat e; const int D = e.score;   // score de départ de configgame.json (1000 depuis e23fa51), les écarts restent ceux de RG-02
     VERIFIE(e.score == SCORE_DEPART && D > 25, "score de départ %d", e.score);
     chocTrafic(e); VERIFIE(e.score == D - 5, "choc trafic : %d (D − 5 attendu)", e.score);
     chocTrafic(e); VERIFIE(e.score == D - 5, "deuxième choc dans la même seconde : %d", e.score);
-    pas(e, 1.01, 100); chocTrafic(e); VERIFIE(e.score == D - 10, "choc trafic après 1 s : %d", e.score);
+    pas(e, 1.01, 100, 100, 100); chocTrafic(e); VERIFIE(e.score == D - 10, "choc trafic après 1 s : %d", e.score);
     chocGlissiere(e); VERIFIE(e.score == D - 13, "glissière : %d", e.score);
     chocPolice(e); VERIFIE(e.score == D - 23, "police : %d", e.score);
     quasiContact(e); VERIFIE(e.score == D - 22, "quasi-contact : %d", e.score);
-    // police collée à moins de 12 m : −1 par seconde ; éloignée : rien
-    for (int i = 0; i < 120 * 3 + 2; i++) pas(e, 1.0 / 120, 8);   // 3 s (+ 2 pas : arrondis)
+    // police au contact (WFS-540 RG-04 : carrosseries à ≤ 0,3 m), joueur qui roule : −1 par seconde ; à 8 m sans contact (avant :
+    // compté sous 12 m) ou à 30 m : rien
+    for (int i = 0; i < 120 * 3 + 2; i++) pas(e, 1.0 / 120, 4.5, 0.1, 40);   // 3 s (+ 2 pas : arrondis)
     VERIFIE(e.score == D - 25, "3 s collée : %d (D − 25 attendu)", e.score);
-    for (int i = 0; i < 120 * 3; i++) pas(e, 1.0 / 120, 30);
+    for (int i = 0; i < 120 * 3; i++) pas(e, 1.0 / 120, 8, 3.5, 40);
+    VERIFIE(e.score == D - 25, "3 s à 8 m sans contact : %d", e.score);
+    for (int i = 0; i < 120 * 3; i++) pas(e, 1.0 / 120, 30, 25, 40);
     VERIFIE(e.score == D - 25, "3 s à 30 m : %d", e.score);
     std::printf("score : 100, −5 trafic, −3 glissière, −10 police, +1 quasi-contact, −1/s collée : OK\n");
     // arrêt à 0 : défaite immédiate, plus aucune victoire possible
-    for (int i = 0; i < D && !e.arrete; i++) { pas(e, 1.01, 100); chocTrafic(e); }
+    for (int i = 0; i < D && !e.arrete; i++) { pas(e, 1.01, 100, 100, 100); chocTrafic(e); }
     VERIFIE(e.arrete && e.score == 0, "arrêt à 0 (score %d)", e.score);
     arrivee(e, 10.5); VERIFIE(!e.gagne, "arrêté puis 10 km : pas de victoire");
     std::printf("score à 0 : ARRÊTÉ après %d chocs : OK\n", e.chocsTrafic);
@@ -44,15 +55,17 @@ int testPoursuite() {
     // la police rattrape un joueur à 160 km/h parti 40 m devant, sans traverser le trafic
     // WFS-461 (RG-03) : la police roule avec la fiche de la 208 ; déjà lancée à la vitesse du joueur (avant : partie de l'arrêt,
     // elle ne rattrapait qu'avec ses 70 m/s² d'accélération irréalistes)
+    // WFS-540 (RG-00) : vrai moteur de conduite : à 160 km/h, une 208 de 130 ch n'a presque plus de réserve d'accélération (elle
+    // ne vient pas au contact en 3 s d'attaque) ; le joueur roule à 110 km/h, comme dans un embouteillage qui se dégage
     const FichePolice f208 = fichePolice("p208", "golf");
-    const double vJ = 160 / 3.6 / M; double sJ = 0, tProche = -1;
+    const double vJ = 110 / 3.6 / M; double sJ = 0, tProche = -1;
     std::vector<Police> ps = {renfort(0, 0, vJ, 7), renfort(1, 0, vJ, 7)};
-    ps[0].rd = -25 / M; ps[1].rd = -40 / M;
+    poser(ps[0], -25 / M, ps[0].x, vJ); poser(ps[1], -40 / M, ps[1].x, vJ);
     std::vector<Obstacle> obs;
     for (int i = 0; i < 120 * 30; i++) {
         sJ += vJ / 120;
-        obs = {{sJ + 30 / M, ps[0].x, 80 / 3.6 / M}};   // une voiture lente devant la police
-        avancer(ps, 1.0 / 120, i / 120.0, sJ, 0, vJ, obs, f208);
+        obs = {{sJ + 30 / M, ps[0].x, 60 / 3.6 / M}};   // une voiture lente devant la police
+        avancer(ps, 1.0 / 120, i / 120.0, sJ, 0, vJ, obs, f208, pisteEssai());
         if (tProche < 0 && plusProcheM(ps, sJ, 0) < 12) tProche = i / 120.0;
     }
     VERIFIE(tProche >= 0 && tProche < 15, "la police rattrape le joueur (%.1f s)", tProche);
@@ -166,14 +179,14 @@ int testPoursuite() {
         for (double xJ : {0.0, -0.66, 0.66, -0.9}) {
             std::vector<Police> ps = {renfort(0, 0, 0, 3), renfort(1, 0, 0, 3), renfort(2, 0, 0, 3)};
             double sJ = 0; const double vJ = 160 / 3.6 / M; int sauts = 0, dessus = 0, trop = 0; double prochePlus = 1e9;
-            for (auto& p : ps) p.rd = -APPARITION_M / M, p.v = vJ;
+            for (auto& p : ps) poser(p, -APPARITION_M / M, p.x, vJ);
             ps[1].role = 1; ps[2].role = 2;
             std::vector<Obstacle> obs;
             std::vector<double> avant(ps.size());
             for (int i = 0; i < 120 * 40; i++) {
                 for (size_t k = 0; k < ps.size(); k++) avant[k] = (sJ - ps[k].rd) * M;
                 sJ += vJ / 120;
-                avancer(ps, 1.0 / 120, i / 120.0, sJ, xJ, vJ, obs, fichePolice("p208", nullptr));
+                avancer(ps, 1.0 / 120, i / 120.0, sJ, xJ, vJ, obs, fichePolice("p208", nullptr), pisteEssai());
                 for (size_t k = 0; k < ps.size(); k++) {
                     const double rel = (sJ - ps[k].rd) * M, rapproche = (avant[k] - rel) * 120;   // m/s
                     if (rel < DESSIN_DERRIERE_M && std::abs(rel - avant[k]) > 1.0) sauts++;
@@ -199,15 +212,15 @@ int testPoursuite() {
     {
         Etat e; int n = 0;
         auto verifie = [&](const char* attendu) { n++; VERIFIE(e.pertes == n && std::string(e.raison) == attendu && e.dernierePerte > 0, "perte %d : « %s » (attendu « %s »)", n, e.raison, attendu); };
-        chocTrafic(e); verifie(RAISON_TRAFIC); pas(e, 1.01, 100);
-        chocGlissiere(e); verifie(RAISON_GLISSIERE); pas(e, 1.01, 100);
+        chocTrafic(e); verifie(RAISON_TRAFIC); pas(e, 1.01, 100, 100, 100);
+        chocGlissiere(e); verifie(RAISON_GLISSIERE); pas(e, 1.01, 100, 100, 100);
         chocGlissiere(e, RAISON_PLOT); verifie(RAISON_PLOT);
         chocTrafic(e, RAISON_CAMION); verifie(RAISON_CAMION);
         chocPolice(e); verifie(RAISON_POLICE);
         ralentisseur(e, 130); verifie(RAISON_RALENTISSEUR);
-        for (int i = 0; i < 130; i++) pas(e, 1.0 / 120, 5);
+        for (int i = 0; i < 130; i++) pas(e, 1.0 / 120, 5, 0.0, 40);
         verifie(RAISON_COLLE);
-        const int avant = e.pertes; pas(e, 1, 100); quasiContact(e);
+        const int avant = e.pertes; pas(e, 1, 100, 100, 100); quasiContact(e);
         VERIFIE(e.pertes == avant, "aucune perte sans raison");
         VERIFIE(textePerte(5, RAISON_TRAFIC) == "-5 CHOC AVEC LE TRAFIC", "texte : %s", textePerte(5, RAISON_TRAFIC).c_str());
         std::printf("score : chaque perte a sa raison à l'écran (%d raisons) : OK\n", n);

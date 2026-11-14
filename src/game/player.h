@@ -77,6 +77,10 @@ struct Player {
     double odo = 0;   // WFS-90 : distance parcourue dans le sens de la voiture (unités, signée) : roulage des roues, même à contresens
     double latAcc = 0, lonAcc = 0, nitro = 0.4;
     bool nitroOn = false, braking = false, reversing = false;
+    // WFS-540 (RG-05, ANO-271) : la voiture recule parce que le joueur a passé la marche arrière (FREIN tenu à l'arrêt) ; faux quand
+    // elle recule après un choc : pas de « R » au HUD, recul physique borné à RECUL_CHOC_MAX et amorti en moins d'1 s
+    bool reculVoulu = false;
+    static constexpr double RECUL_CHOC_MAX = 5 / 3.6, RECUL_CHOC_AMORTI = 3.0;   // m/s ; m/s² (≈ 0,3 g : roues en prise, la voiture s'arrête)
     // accident (playerAccident du jeu web) : tête-à-queue puis remise dans l'axe, commandes bloquées un moment
     double playerSpin = 0, spinYaw = 0, controlLock = 0;
     Aide aide = Aide::Web;   // WFS-217 : gardée par reset()
