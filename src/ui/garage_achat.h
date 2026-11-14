@@ -26,7 +26,7 @@ namespace wfs::ecrans::garage {
 
 // ce qui manque pour que l'aspect montré parte en course (WFS-489) : objets à acheter pour cette voiture et leur total en ★
 struct Manque {
-    const perso::Objet* objets[4] = {};   // WFS-491 : + la finition
+    const perso::Objet* objets[5] = {};   // WFS-491 : + la finition ; WFS-494 : + la skin
     int n = 0;
     long long total = 0;
 };

@@ -63,6 +63,7 @@ public:
             if (!g_ouvrirSur.empty()) { for (int i = 0; i < voituresPermises().n; i++) if (g_ouvrirSur == CARS[voituresPermises().idx[i]].id) index_ = voituresPermises().idx[i]; g_ouvrirSur.clear(); }   // WFS-502 (accroche)
             couleur_.ouvrir(peinture_);   // WFS-489 (accroche) : dernières couleurs possédées, aperçu oublié (RG-03)
             finition_.ouvrir();           // WFS-491 (accroche) : dernières finitions possédées, aperçu oublié (RG-03)
+            skin_.ouvrir();               // WFS-494 (accroche) : dernières skins possédées, aperçu oublié (RG-05)
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(placeDe(index_) + 1).c_str(),
                     voituresPermises().n, PAINTS[peinture_[index_]].nom);
@@ -70,6 +71,7 @@ public:
         if (ancien == Ecran::Garage) {
             g_z.prev = g_z.next = Zone{};
             for (PanneauGarage* p : panneaux_) p->viderZones();
+            if (r_) skin_.quitter(*r_, g, !(nouveau == Ecran::Menu && choisi_));   // WFS-494 (accroche) : la voiture de la course reprend sa skin (« Choisir » : Game::setCar)
             liberer();   // mémoire rendue pendant la course
             // « Choisir » : Garage → Menu → Course, appliqués avant l'image suivante (le menu n'est jamais dessiné) ;
             // l'entrée en course depuis le menu remet la course à zéro (même chemin que « Recommencer » de la pause)
@@ -101,6 +103,7 @@ public:
             const vec3 p = lin(PAINTS[peinture_[index_]].hex);
             const mat4 M = translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_);
             r.peinture2ProchaineVoiture(couleur_.code2(index_));   // WFS-489 (accroche) : toit et rétros montrés (voiture seulement : le renderer remet la couleur 2 à zéro après ce dessin)
+            skin_.apercu(r, voiture_, index_);   // WFS-494 (accroche) : aperçu de la skin montrée (RG-05)
             const int f0 = r.finitionJoueur(); r.finitionJoueur(FinitionGarage::rendu(finition_.finition(index_)));   // WFS-491 (accroche) : aperçu de la finition (RG-02)
             r.dessinJoueur = true; r.draw(voiture_, M, &p); r.dessinJoueur = false; r.finitionJoueur(f0);   // voiture du joueur (finition, modèle complet), puis finition de la course remise
             plaque_joueur::dessiner(r, CARS[index_].id, M, g.night, vec3{M.at(0, 3), M.at(1, 3), M.at(2, 3)});   // WFS-483 (accroche) : plaque complète (RG-06)
@@ -113,9 +116,10 @@ public:
         // (sur Android, ses micro-mouvements arrivent aussi comme des appuis : la flèche sautait des voitures)
         if (appui_.consomme(t.id, t.down)) return true;
         if (FenetreAchatVoiture& f = achat_.fenetre(); f.ouverte()) {   // WFS-499 (accroche) : la fenêtre d'achat garde tous les touchers
-            if (const int c = t.down ? f.appui(t.x, t.y) : -1; c >= 0) { appui_.prendre(t.id); if (c == f.CONFIRMER && f.confirmer() && g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); else if (c == f.ANNULER) f.fermer(); }
+            if (const int c = t.down ? f.appui(t.x, t.y) : -1; c >= 0) { appui_.prendre(t.id); if (c == f.CONFIRMER && f.confirmer()) { skin_.proposer(index_); if (g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); } else if (c == f.ANNULER) f.fermer(); }   // WFS-494 (accroche) : skin offerte à l'achat
             return true;
         }
+        if (skin_.fenetreOuverte()) { if (t.down && skin_.toucherFenetre(t.x, t.y, index_)) appui_.prendre(t.id); return true; }   // WFS-494 (accroche) : fenêtre de la skin offerte
         // WFS-115 : « Choisir » et « Retour » agissent au relâcher, sur le bouton appuyé : le doigt est levé quand l'écran
         // change, ses mouvements n'atteignent jamais l'écran suivant (ils y arrivaient comme des appuis neufs)
         if (t.id == doigtBouton_) {
@@ -138,7 +142,7 @@ public:
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
             if (const int p = fiche_.appui(t.x, t.y); p >= 0) { appui_.prendre(t.id); if (const int i = voituresPermises().idx[p]; i != index_) aller(p, i > index_ ? 1 : -1); return true; }
             if (const int f = finition_.appui(t.x, t.y); f >= 0) { appui_.prendre(t.id); finition_.appuyer(f, index_); return true; }   // WFS-491 (accroche) : finition ou chevron
-            if (skin_.appui(t.x, t.y) >= 0) { appui_.prendre(t.id); return true; }   // WFS-494 : skin (emplacement vide : appui toujours -1)
+            if (const int k = skin_.appui(t.x, t.y); k >= 0) { appui_.prendre(t.id); skin_.appuyer(k, index_); return true; }   // WFS-494 (accroche) : skin, chevron ou bon
             if (const int b = achat_.appui(t.x, t.y); b >= 0) { bouton_ = b; doigtBouton_ = t.id; return true; }   // WFS-115 : action au relâcher
             doigt_ = t.id; glisse_ = true; x0_ = t.x; yaw0_ = yaw_; tAppui_ = g.time;   // gDrag
             return true;
@@ -160,7 +164,7 @@ public:
         mp.W = g.uiWidth; mp.H = g.uiHeight; mp.op = std::clamp((float)(g.time - t0_) / 0.3f, 0.f, 1.f);
         mp.gl = g.marges.gauche + 16 * k; mp.gr = g.marges.droite + 16 * k; mp.gt = g.marges.haut + 14 * k; mp.gb = g.marges.bas + 14 * k;
         const CarDef& car = CARS[index_];
-        const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_), finition_.finition(index_)};   // WFS-489, WFS-491 (accroches)
+        const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_), finition_.finition(index_), skin_.skin(index_)};   // WFS-489, WFS-491, WFS-494 (accroches)
         cadre::voiles(r, mp);
         fiche_.dessiner(r, mp, e);   // .show-head : marque · index, nom, type + accroche, points des voitures
         cadre::fleches(r, mp);
@@ -168,6 +172,7 @@ public:
         mp.padX = 24 * k; mp.padY = 18 * k;
         mp.statH = 4 * 14 * k + 3 * 10 * k; mp.paintH = CouleurGarage::hauteur(k); mp.panelH = mp.padY * 2 + mp.statH + 14 * k + mp.paintH;   // WFS-489 (accroche) : ligne des prix
         mp.panelH += FinitionGarage::hauteur(k);   // WFS-491 (accroche) : rangée « Finition » sous les couleurs
+        if (SkinGarage::visible(index_)) mp.panelH += SkinGarage::hauteur(k);   // WFS-494 (accroche) : rangée « Skin » (voitures qui ont des skins)
         mp.px0 = mp.gl; mp.px1 = mp.W - mp.gr; mp.py0 = mp.H - mp.gb - 26 * k - mp.panelH;
         cadre::fondPanneau(r, mp);
         mp.y1 = mp.py0 + mp.padY;
@@ -178,9 +183,10 @@ public:
         fiche_.stats(r, mp, car, xStats);   // .statlist : 4 barres sur 10
         couleur_.dessiner(r, mp, e);        // .paint-line (WFS-489)
         finition_.dessiner(r, mp, e);       // rangée « Finition » (WFS-491)
-        skin_.dessiner(r, mp, e);           // vide (WFS-494)
+        skin_.dessiner(r, mp, e);           // rangée « Skin » (WFS-494)
         cadre::pied(r, mp, car, voiture_.ok);
         achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout
+        skin_.dessinerFenetre(r, mp, index_);   // WFS-494 (accroche) : fenêtre de la skin offerte
     }
 
     // ---------- accès du banc d'essai (garage_bancs.cpp) ----------
@@ -193,7 +199,7 @@ public:
         }
     }
     int index() const override { return index_; }
-    bool boutonFenetre(const char* nom, float& x, float& y) { return achat_.boutonFenetre(nom, x, y); }   // WFS-499 (banc)
+    bool boutonFenetre(const char* nom, float& x, float& y) { return achat_.boutonFenetre(nom, x, y) || skin_.boutonFenetre(nom, x, y); }   // WFS-499 (banc) ; WFS-494 : fenêtre de la skin offerte
     void choisirPeinture(int i) override { peinture_[index_] = i; }
     bool reglerScene(FrameParams& fp, SceneDediee& s, const GameView& g) override { return scene(fp, s, g); }
 
@@ -254,7 +260,7 @@ bool garageBouton(const char* nom, float& x, float& y) {
     const Zone* z = std::strcmp(nom, "choisir") == 0 ? &g_z.choisir : std::strcmp(nom, "retour") == 0 ? &g_z.retour
                   : std::strcmp(nom, "suivant") == 0 ? &g_z.next : std::strcmp(nom, "precedent") == 0 ? &g_z.prev
                   : std::strcmp(nom, "essai") == 0 ? &g_z.essai : nullptr;   // WFS-499 (accroche)
-    if (g_garage && (std::strcmp(nom, "confirmer") == 0 || std::strcmp(nom, "annuler") == 0)) return g_garage->boutonFenetre(nom, x, y);   // WFS-499
+    if (g_garage && (std::strcmp(nom, "confirmer") == 0 || std::strcmp(nom, "annuler") == 0 || std::strcmp(nom, "plustard") == 0 || std::strcmp(nom, "prendre") == 0 || std::strncmp(nom, "skin", 4) == 0)) return g_garage->boutonFenetre(nom, x, y);   // WFS-499 ; WFS-494
     if (!z || z->w <= 0) return false;
     x = z->x + z->w / 2; y = z->y + z->h / 2;
     return true;

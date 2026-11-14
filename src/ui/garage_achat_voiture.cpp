@@ -114,7 +114,7 @@ bool FenetreAchatVoiture::confirmer() {
     const boutique::AchatVoiture a = boutique::acheterVoiture(s, id);   // débit une seule fois ; refus : rien de débité
     WFS_LOG("garage : achat de la %s confirmé : %s, solde %lld ★", id, boutique::texteAchat(a), boutique::solde(s));
     if (a != boutique::AchatVoiture::Achetee && a != boutique::AchatVoiture::DejaPossedee) return false;
-    // RG-02 : cadenas retiré, voiture choisie (gardée à la relance) ; RG-04 : skin offerte de WFS-494, pas encore fusionné : rien
+    // RG-02 : cadenas retiré, voiture choisie (gardée à la relance) ; RG-04 : la fenêtre « Choisis ta skin offerte » s'ouvre à l'image suivante (WFS-494)
     if (s.actif()) { s.car = id; s.enregistrer(); }
     fermer();
     return a == boutique::AchatVoiture::Achetee;

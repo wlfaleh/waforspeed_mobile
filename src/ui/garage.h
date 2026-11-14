@@ -14,7 +14,7 @@
 //   - garage_commun.*      jetons de couleur, fiches des voitures, zones d'appui, MiseEnPage, interface PanneauGarage ;
 //   - garage_couleur.*     rangée des couleurs (principale, puis « toit et rétros »)       → WFS-489 ;
 //   - garage_finition.*    rangée « Finition » (8 finitions, prix, aperçu)                 → WFS-491 ;
-//   - garage_skin.*        skins (emplacement vide)                                        → WFS-494 ;
+//   - garage_skin.*        rangée « Skin », skin offerte, bon de skin (règles : src/game/skin_offerte.*) → WFS-494 ;
 //   - garage_achat.*       Choisir / Retour, puis cadenas, prix, « Acheter », « Il te manque N ★ » → WFS-489, 499, 502 ;
 //   - garage_fiche.*       en-tête, caractéristiques et barres de la voiture ; textes FR / EN du garage → WFS-507 ;
 //   - garage_cadre.*       voiles, flèches, fond vitré du panneau, crédit, « Chargement… » ;
@@ -42,6 +42,7 @@ void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::str
 void benchGarageTour(Game& g, Renderer& r, const std::string& outDir);   // WFS-404 : une capture par place du garage
 int benchGarageCouleurs(Game& g, Renderer& r, const std::string& outDir);   // WFS-489 : garage-couleurs-* (garage_couleur_banc.cpp), rend les écarts
 int benchGarageFinitions(Game& g, Renderer& r, const std::string& outDir);   // WFS-491 : garage-finitions-* (garage_finition_banc.cpp), rend les écarts
+int benchGarageSkins(Game& g, Renderer& r, const std::string& outDir);   // WFS-494 : garage-skins-* (garage_skin_banc.cpp), rend les écarts
 int benchGarageVoitures(Game& g, Renderer& r, const std::string& outDir);   // WFS-499 : garage-voitures-* (garage_voitures_banc.cpp), rend les écarts
 // WFS-507 : banc « textes » du garage (garage_textes_banc.cpp) : captures textes-<fr|en>-garage-*, parcours, garde-fou ; rend le nombre d'échecs
 int benchGarageTextes(Game& g, Renderer& r, const std::string& outDir);
