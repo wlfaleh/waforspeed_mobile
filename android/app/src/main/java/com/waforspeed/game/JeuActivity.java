@@ -361,6 +361,7 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         super.onResume();
         pleinEcran();
         performancesSoutenues(true);   // WFS-123 (RG-05)
+        Achats.premierPlan(this);      // WFS-511 (RG-05) : rattrapage des achats à chaque retour au premier plan
         entrees = (InputManager) getSystemService(Context.INPUT_SERVICE);
         if (entrees != null) {
             entrees.registerInputDeviceListener(this, null);

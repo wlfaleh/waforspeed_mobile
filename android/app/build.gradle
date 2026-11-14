@@ -70,4 +70,9 @@ tasks.configureEach { t ->
 }
 
 // WFS-132 (RG-08) : test JUnit de la règle de mise à jour (MiseAJourTest, lancé par la CI : testReleaseUnitTest)
-dependencies { testImplementation 'junit:junit:4.13.2' }
+// WFS-511 (RG-01) : Google Play Billing, bibliothèque officielle (dépôt Maven de Google) ; la version 8 est exigée par Google Play pour
+// les nouvelles applications et les mises à jour depuis le 31/08/2026 ; elle ajoute elle-même la permission com.android.vending.BILLING
+dependencies {
+    implementation 'com.android.billingclient:billing:8.0.0'
+    testImplementation 'junit:junit:4.13.2'
+}

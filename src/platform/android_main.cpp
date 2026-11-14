@@ -30,6 +30,7 @@
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "paquets_android.cpp"   // WFS-306 : pont JNI vers Paquets.java (liste cartes.json, téléchargement)
 #include "reseau_android.cpp"     // WFS-83 : verrou de diffusion du Wi-Fi (duel sur le réseau local)
+#include "achats_android.cpp"     // WFS-511 : pont JNI vers Achats.java (Google Play Billing)
 #include "manette_jeu.h"   // WFS-22 : manettes
 #include "retour_systeme.h"   // WFS-116 : bouton / geste Retour du téléphone
 #include "gyroscope_android.cpp"   // WFS-108 : inclinaison du téléphone (gyroscope), densité de l'écran (dp)
@@ -362,6 +363,7 @@ void android_main(android_app* a) {
     cache_pipelines::dossier = a->activity->internalDataPath ? a->activity->internalDataPath : "";   // WFS-262 (accroche, RG-01) : pipelines.cache
     carte::dossierPaquets() = std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/paquets";   // WFS-301 (RG-01)
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
+    achatsAndroidDemarrer(a->activity->vm, a->activity->clazz);   // WFS-511 (RG-02, RG-05) : Google Play, rattrapage des achats (sauvegarde lue)
     app.start = nowSeconds();
     veilleur::demarrer(a);   // WFS-284
     while (!a->destroyRequested) {
@@ -378,6 +380,7 @@ void android_main(android_app* a) {
         }
         veilleur::g_enAttente = false; veilleur::g_dernierLu = nowSeconds();
         if (a->destroyRequested) break;
+        achatsAndroidLire();   // WFS-511 : réponses de Google Play (achats crédités puis consommés), 4 fois par seconde au plus
         if (!app.ready && a->window) switch (ecrans::cgu().image(app.vk, ANativeWindow_getWidth(a->window), ANativeWindow_getHeight(a->window), nowSeconds())) {   // WFS-308
             case ecrans::Cgu::Etat::Quitter: ANativeActivity_finish(a->activity); break;   // RG-04 : refus
             case ecrans::Cgu::Etat::Accepte: chargerJeu(app, a, nowSeconds()); break;      // acceptation notée : chargement

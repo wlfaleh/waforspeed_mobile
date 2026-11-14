@@ -214,6 +214,8 @@ void BoutiqueSimulee::confirmer(const std::string& id, const std::string& jeton)
     if (i >= MARKET_ETOILES) possedes_[id] = jeton;   // non consommable : rendu par restaurer()
 }
 
+Boutique*& boutiqueActive() { static Boutique* b = nullptr; return b; }   // WFS-511 (accroche)
+
 std::unique_ptr<Boutique> creerBoutique() {
     const char* e = std::getenv("WFS_BOUTIQUE");
     if (e && std::string(e) == "simulee") return std::make_unique<BoutiqueSimulee>();
