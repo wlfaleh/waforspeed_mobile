@@ -1635,3 +1635,24 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Erreur du PO à 13:20 : WFS-493 (5e), WFS-495 (7e) et WFS-502 (10e) étaient passés ⏳ Prêt à 13:18 (commit 5534d3aa), avant WFS-511 (15e). 493 et 495 ont été donnés entre-temps à d'autres sessions `@dev` (01Us6uCwTQ, 01Us6uCv3C).
 - **WFS-502** (P1, E19 : E3 `src/game/**` état du prêt, E5 panneaux du garage, E8 `src/ui/ecrans/**`, accroches ≤ 10 lignes annoncées) attribué à cette session, qui n'avait rien commencé sur WFS-511 ; règles `regles-de-gestion/WFS-502.md`, `regles-de-gestion/E19-cadeau-du-jour.md` ; branche `feature/waforspeed-502`. Aucun autre ticket actif sur les panneaux du garage ; WFS-482 (🔧) touche aussi `src/ui/ecrans/**` et le menu : se synchroniser avec `main`.
 - **WFS-511** revient ⏳ Prêt (15e) pour la prochaine session `@dev`.
+
+### 2026-11-14 13:42:40 — WFS-493 : branche poussée, 18 textures faites, captures en cours (Claude, agent dev3d (01Us6uCwTQ))
+- Fait : `tools/skins/generer.py` dessine Drift Tokyo (dégradé vermillon penché à 35°, entailles noires, 3 signes inventés, ni lettre ni idéogramme), Néon nuit (filets cyan et magenta ; émission la nuit seulement, 0,5 × la couleur : luminance ≤ celle d'un feu arrière de position) et Camouflage (blanc, gris, noir ; taches dessinées de 20 à 60 cm, posées en 3D : continues d'un panneau à l'autre ; taille mesurée à chaque génération) ; 18 textures EAC RG11 de 1,33 Mo (≤ 1,5 Mo).
+- Accroches : `shaders/vehicule.glsl` (couleurs, émission du Néon) et une ligne dans `shaders/scene.frag` ; banc `WFS_BANC=skins` (variable `WFS_SKINS`) ; `test_vehicule_skin` vérifie les 18 nouvelles textures (OK).
+- Vérification : rendu au banc lavapipe sur la Golf (jour et nuit) regardé ; captures avant / après de toutes les voitures en cours (`captures_pr.sh`).
+
+### 2026-11-14 13:48:11 — WFS-543 : suivi de la CI de main (Claude, agent dev3d (01Us6uCwcF))
+- Run #1070 (fusion WFS-543, 8cb64d33) : **annulé** par GitHub, remplacé par les fusions suivantes (#1071 et #1072 annulés eux aussi).
+- Run #1073 (39d1ddc7, contient WFS-543) : en cours à 13:48 UTC ; compilation, android, endurance et publication-apk sont verts ; le job banc-essai (texte), qui fait le contrôle des licences, tourne encore. Nouvelle vérification vers 14:20 UTC.
+
+### 2026-11-14 13:58:57 — WFS-482 : écran Profil en PR #412 (Claude, agent dev3d (01Us6uCv3H))
+- Fait : écran « Profil » (`src/ui/ecrans/profil.h/.cpp`, système 468) : en-tête (pseudo, plaque, « Pilote depuis le … »), 5 chiffres, records des 3 modes, voiture préférée, 20 dernières courses défilant au doigt, « Modifier » / « Retour » ; « Modifier » rouvre le formulaire et le clavier de WFS-481 en mode modification (« Valider » / « Annuler », plaque gardée) ; textes `profil.*` FR / EN.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `src/ui/ecrans/menu.cpp` (7 lignes : bouton « Profil » au-dessus du cadeau, touchers, dessin), `src/ui/ecrans/compteur_etoiles.cpp` (2 lignes : compteur caché sous le Profil), `src/platform/desktop_main.cpp` (2 lignes : banc `WFS_BANC=profil`).
+- Vérification : 140 tests CPU verts (nouveau cas dans `test_creation_profil`) ; banc `profil` FR + EN 0 écart (parcours menu → Profil → Modifier → Valider → Retour → course → fin → Profil, 22 courses → 20 lignes, 16 « W » entier, 0 texte français en anglais) ; banc `creation` 0 écart avant / après ; 26 captures dans `qa/pr/WFS-482/`.
+- Limites : non essayé sur téléphone ; nombres au format français dans les deux langues (comme le reste du jeu).
+
+
+### 2026-11-14 14:11:37 — WFS-482 refusé par le lead dev, PR #412 (lead-dev)
+- Revue du commit e85d008 : 26 captures ouvertes, diff lu en entier, branche construite, 140 tests CPU verts, banc `profil` relancé (0 écart FR + EN). Logique saine (« Valider » ne remet pas les statistiques à zéro, accroches ≤ 10 lignes annoncées).
+- Refus (revue « changements demandés » écrite dans la PR) : (1) capture des tests CPU absente (`qa/pr/WFS-482/tests-cpu.log` et section « Tests CPU », règle du 2026-11-11) ; (2) RG-08 : dans le formulaire « Modifier », le pseudo de 16 « W » et le curseur sortent du cadre du champ (`creation_profil.cpp`, `champ()`, taille fixe sans limite de largeur ; captures `profil-*-16w-modification`).
+- Statut : ↩️ Retour lead dev (PR #412) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
