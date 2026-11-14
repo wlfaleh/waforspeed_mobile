@@ -40,6 +40,7 @@ struct Ressources {
     std::vector<uint8_t> ttf;
     std::string joueur;                            // plaque du joueur au dernier tirage
     bool masqueBanc = false;
+    uint32_t compte = 0;                           // banc : voitures dont les plaques ont été dessinées
 };
 Ressources g;
 
@@ -191,6 +192,7 @@ void dessiner(Renderer& r, const char* idVoiture, const mat4& monde, float echel
     const bool fantome = genre == Genre::Fantome;
     g.matPlaqueArriere.emissive = nuit ? vec3{pj::ECLAIREUR, pj::ECLAIREUR, pj::ECLAIREUR} : vec3{0, 0, 0};
     const pj::PlacesVoiture& pv = pj::voiture(i);
+    g.compte++;
     for (int cote = 0; cote < 2; cote++) {
         // la place suit l'échelle du modèle dessiné ; la plaque garde ses vraies mesures (RG-01)
         mat4 R = pj::repere(cote ? pv.arriere : pv.avant);
@@ -216,6 +218,7 @@ void liberer(Renderer& r) {
 }
 
 void masquerBanc(bool masque) { g.masqueBanc = masque; }
+uint32_t compteBanc() { return g.compte; }
 
 const std::string& texteCase(int cas) { return g.textes[(size_t)std::clamp(cas, 0, CASES - 1)]; }
 

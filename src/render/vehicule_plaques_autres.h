@@ -68,5 +68,6 @@ void dessiner(Renderer& r, const char* idVoiture, const mat4& monde, float echel
 void liberer(Renderer& r);
 const std::string& texteCase(int cas);   // banc et tests : texte actuel d'une case
 void masquerBanc(bool masque);            // banc seulement : plaques des autres voitures non dessinées (images « avant »)
+uint32_t compteBanc();                    // banc seulement : voitures dont les plaques ont été dessinées depuis le lancement
 
 } // namespace wfs::plaques_autres

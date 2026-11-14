@@ -182,6 +182,7 @@ void benchPlaquesAutresMesure(Game& g, Renderer& r, const std::string& out) {
     // appels de dessin et triangles ajoutés (compte exact, sans bruit) : même image dessinée sans puis avec les plaques
     double appels[2] = {0, 0}, triangles[2] = {0, 0};
     constexpr int ECHANTILLONS = 20;
+    const uint32_t c0 = plaques_autres::compteBanc();
     for (int k = 0; k < ECHANTILLONS; k++) {
         for (int i = 0; i < 6; i++) g.update(1.0 / 60);
         for (int avec = 0; avec < 2; avec++) {
@@ -192,6 +193,7 @@ void benchPlaquesAutresMesure(Game& g, Renderer& r, const std::string& out) {
         t += 0.1;
     }
     plaques_autres::masquerBanc(false);
+    const double voitures = (plaques_autres::compteBanc() - c0) / (double)ECHANTILLONS;   // voitures avec plaques par image
     double m = 0, v = 0;
     for (double e : ecarts) m += e;
     m /= ecarts.size();
@@ -202,10 +204,10 @@ void benchPlaquesAutresMesure(Game& g, Renderer& r, const std::string& out) {
     char b[640];
     std::snprintf(b, sizeof b, "plaques-autres-mesure : Basse, Corniche, Poursuite (%zu voitures de trafic) : avec plaques %.2f ms, sans %.2f ms par image ; "
                   "écart %+.2f ms ± %.2f ms (erreur type, %d paires de %d images) = %+.2f %% du temps d'image ; exigence RG-05 : ≤ +0,5 ms ; "
-                  "appels de dessin de la scène : %.1f sans, %.1f avec (%+.1f) ; triangles : %.0f sans, %.0f avec (%+.0f) (moyenne de %d images)",
+                  "appels de dessin de la scène : %.1f sans, %.1f avec (%+.1f) ; triangles : %.0f sans, %.0f avec (%+.0f) (moyenne de %d images, %.1f voitures avec plaques par image)",
                   tf ? tf->cars.size() : (size_t)0, avec, sans, m, et, PAIRES, IMAGES, 100 * m / sans,
                   appels[0] / ECHANTILLONS, appels[1] / ECHANTILLONS, (appels[1] - appels[0]) / ECHANTILLONS,
-                  triangles[0] / ECHANTILLONS, triangles[1] / ECHANTILLONS, (triangles[1] - triangles[0]) / ECHANTILLONS, ECHANTILLONS);
+                  triangles[0] / ECHANTILLONS, triangles[1] / ECHANTILLONS, (triangles[1] - triangles[0]) / ECHANTILLONS, ECHANTILLONS, voitures);
     WFS_LOG("%s", b);
     std::ofstream(out + "/plaques-autres-mesure.txt") << b << "\n";
     g.setAutopilot(false);
