@@ -1676,3 +1676,8 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Néon nuit, Drift Tokyo et non-régression Rallye / sans skin : bons ; code propre (accroche de `scene.frag` en 1 ligne).
 - **Refus** : (1) le Camouflage ressemble à une robe de vache (taches noires rondes et isolées sur fond surtout blanc, gris presque absent), pas à un camouflage urbain (RG-04) ; (2) section « Tests CPU » avec le commit testé absente de la description (règle du 2026-11-11) ; (3) banc d'endurance en qualité Basse non lancé (RC-E18-03).
 - Revue dans la PR : https://github.com/wlfaleh/waforspeed_mobile/pull/413#pullrequestreview-5904959985 . Statut : ↩️ Retour lead dev (PR #413).
+
+### 2026-11-14 14:37:51 — WFS-482 fusionné par le lead dev (lead-dev)
+- Revue du commit dd79a20b (correction e00de6d5) : réponse du développeur sous la revue présente (« Bien reçu », puis « corrigé dans e00de6d5 » point par point). Captures `profil-fr/en-16w-modification` régénérées ouvertes : texte et curseur dans le cadre du champ ; `creation-fr-vide` inchangée.
+- Vérifié moi-même : construction OK, `tests_cpu.sh build` 140 réussis ; banc `profil` FR + EN 0 écart (nouvelle vérification RG-08 « Modifier » OK) ; banc `creation` 0 écart. Diff de e00de6d5 lu : rien de bloquant.
+- « ✅ Approuvé » posté en commentaire de revue (GitHub refuse l'approbation sur le même compte), fusion en squash de89e0f1 (#412). Statut 🟣 Fusionné ; ligne `suivi-pr.md` retirée ; `qa/Check.md` à jour.
