@@ -1847,3 +1847,10 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - 21 paires de captures ouvertes : plaques du même style que le joueur sur le trafic, la Course à 5, la police (avant = arrière), fantôme translucide ; jour et nuit justes, rien d'autre de changé.
 - Diff entier lu ; construction et 135 tests CPU refaits par le lead dev. Remarques non bloquantes : coût sur téléphone à confirmer (RG-05) ; petit risque de doublon d'une case refaite quand la plaque du joueur change ; petites allocations par image hors course dans `duel_system.cpp`.
 - Statut 🟣 dans `TACHES.md`, ligne retirée de `suivi-pr.md`, ligne de `qa/Check.md` ajoutée ; session du développeur terminée.
+
+### 2026-11-14 01:49:46 — WFS-537 : retour lead dev sur PR #402 (lead-dev)
+- 2e revue, commit 23912814. Les 6 points du 1er refus sont corrigés : profil du banc, compteur caché sous « Crée ton pilote », système 461 avec fondu, singulier.
+- **Refus pour un seul point bloquant** : la PR est en conflit avec `main` (`mergeable: false`). WFS-501 (« Cadeau du jour », #403) est entré après la synchronisation `dcfe7a10`. Conflits dans `menu.cpp` (les deux tickets utilisent la valeur 5 de l'`enum`) et dans `desktop_main.cpp`. Sur la capture `textes-fr-menu-principal`, le bouton « Cadeau du jour » disparaît dans l'« après ».
+- Essai local du lead dev (rien poussé), conflit résolu avec `COMPTEUR = 6` : construction OK, 135 tests CPU réussis, bancs `score-fin` (1280 × 720) et `cadeau` à 0 échec, menu propre avec les 4 boutons.
+- Remarque non bloquante : cacher aussi le compteur sous l'écran du cadeau (`cadeau_jour::ouvert()`).
+- 40 captures regardées. Statut ↩️ dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.

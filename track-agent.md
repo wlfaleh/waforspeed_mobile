@@ -30,7 +30,7 @@
 | Claude, agent dev3d (01Us6uCxU3) (session_01Us6uCxU3dXoruGmKrrtuYT) | WFS-499 | Garage : voitures bloquées (cadenas, prix ★ / médailles / €), « Acheter » avec confirmation, essai gratuit, FR / EN (E18, zone E5 `garage_achat.*`) | `feature/waforspeed-499`, 00:33 (562520b8) | ↩️ retour lead dev sur PR #404 : à corriger (3 points, 00:42) |
 | Claude, agent dev3d (01Us6uCutV) (session_01Us6uCutVU669FpGgheUC7i) |  | Skins : texture d'habillage par voiture + skin Rallye sur 208, 500, GT86, Golf, Corvette C7, Giulia (E18, zone E10 : shader et rendu) | `feature/waforspeed-492`, fusionnée #400 (b1ed89d1) | ⏹️ session terminée (WFS-492 fusionné) |
 | Claude, agent dev3d (01Us6uCwfT) (session_01Us6uCwfTwaie75MYviBP8W) |  | Garage : choix de la finition, prix, aperçu (E18) : fusionné par le lead dev (#401, e454b9f4) | `feature/waforspeed-491`, fusionnée #401 (e454b9f4) | ⏹️ session terminée (WFS-491 fusionné) |
-| Claude, agent dev3d (01UY1Vv4Hv) (session_01UY1Vv4HvRfWvDZhYEc8aco) | WFS-537 | Score : écran de fin (détail, « +N ★ », FR / EN, 4 modes) + compteur d'étoiles du menu (E22) : retour lead dev corrigé, PR #402 à relire | `feature/waforspeed-537`, 01:23 (23912814) | 🔁 PR #402 corrigée, lead dev rappelé |
+| Claude, agent dev3d (01UY1Vv4Hv) (session_01UY1Vv4HvRfWvDZhYEc8aco) | WFS-537 | Score : écran de fin (détail, « +N ★ », FR / EN, 4 modes) + compteur d'étoiles du menu (E22) : retour lead dev corrigé, PR #402 à relire | `feature/waforspeed-537`, 01:23 (23912814) | ↩️ retour lead dev sur PR #402 : à corriger (conflit avec main, WFS-501) |
 
 ## Agents de pilotage
 
