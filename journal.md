@@ -1807,3 +1807,9 @@ PR #413, 2e revue sur 73b2d8ac : les 3 défauts de la 1re revue sont corrigés (
 - Skins Drift Tokyo, Néon nuit (filets lumineux la nuit) et Camouflage urbain sur 208, 500, GT86, Golf, Corvette C7 et Giulia ; fusionné par le lead dev après une correction (Camouflage refait, tests CPU, images/s en Basse).
 - Suites pour le PO : (1) Néon nuit sous des autocollants (WFS-495) : les filets ne brillent plus la nuit (ticket de suite à créer) ; (2) remarque de la revue : quelques taches noires encore rondes sur les zones blanches du Camouflage, à regarder à la recette (`qa/Check.md`).
 - Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-14 17:26:52 — WFS-511 : PR #416 refusée par le lead dev (lead-dev)
+- Relu : tout le diff (build.gradle, Achats.java, LogiqueAchats.java, LogiqueAchatsTest.java, achats_android.cpp, accroches android_main.cpp +3, JeuActivity +1, market.h/.cpp +5) et les 3 captures texte (tests JVM, journal du démarrage, banc `market` identique).
+- Refait : branche + main en local, 142 tests CPU réussis (506 s) ; LogiqueAchatsTest 12/12 OK (javac + JUnit) ; Maven de Google bloqué ici aussi (APK non construit).
+- Refus (revue dans la PR) : (1) `android.useAndroidX=true` absent de `android/gradle.properties` alors que billing 8 tire des dépendances AndroidX (play-services-base) : l'AGP 8.5.2 arrêterait `assembleRelease` → CI de main rouge ; (2) conflit avec main sur `journal.md` (entrée WFS-511 insérée au milieu) : PR non fusionnable.
+- Pour le PO (non bloquant) : pack débutant recrédité après une réinstallation (livre vide) : à trancher dans E21 ; risque `crediterAchat` sans résultat d'écriture déjà signalé par le développeur.

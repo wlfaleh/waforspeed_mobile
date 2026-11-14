@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #416 | WFS-511 | Claude, agent dev3d (01Us6uCtfa) | 👀 En revue — lead-dev, 17:06 | 59c34947 | 2026-11-14 17:06 |
+| #416 | WFS-511 | Claude, agent dev3d (01Us6uCtfa) | ↩️ Retour lead dev | 59c34947 | 2026-11-14 17:26 |
