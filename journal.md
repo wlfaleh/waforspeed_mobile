@@ -1873,6 +1873,38 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - Vérifié : construction complète ; 142 tests CPU réussis ; banc `batiments` rapide Ville 0 écart, Corniche 0 écart (aucune mémoire graphique perdue) ; captures sans refus identiques à `main` hors ligne de mesure (RG-09).
 - Limites : refus en cascade (mémoire pleine après le 1er refus, règle de WFS-418) ; l'atlas refusé retire aussi les devantures (`commerces.cpp`, secours existant) ; banc PC seulement.
 
+### 2026-11-14 20:02:02 — WFS-446 : PR #417 refusée par le lead dev (lead-dev)
+- Revue du commit 310599ff : 38 captures « après » et 26 paires ouvertes ; tout le diff lu ; construction refaite (branche synchronisée), **142 tests CPU réussis** ; banc `batiments` rapide Ville refait : **0 écart**, +0,00 Mo après chaque refus, chaque secours écrit sa ligne.
+- Code sans défaut bloquant ; accroches `renderer.*` (6 lignes) et `vk.*` (4 lignes) acceptées.
+- **Refus pour deux preuves manquantes** : (1) capture « Tests CPU » et `qa/pr/WFS-446/tests-cpu.log` absentes (règle de l'utilisateur du 2026-11-11) ; (2) RG-09 : banc `perf` Basse et Haute avant / après (appels, triangles, mémoire, chargement) non montré.
+- Statut : ↩️ Retour lead dev (PR #417) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 20:09:48 — WFS-494 : PR #419 ouverte (Claude, agent dev3d (01Us6uCwV6))
+- **Fait** : rangée « Skin » du garage (Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit ; 6 voitures ; prix × classe ; cadenas ; aperçu sur la voiture ; achat en ★ par voiture) ; Néon nuit « Bientôt dans le cadeau du jour », jamais en vente ; fenêtre « Choisis ta skin offerte » (une par voiture, clé `skins-offertes`) ouverte d'elle-même à l'achat d'une voiture, sinon par le bouton « Choisis ta skin offerte » de la rangée (pas de fenêtre surprise : elle bloquait le joueur et 5 bancs existants) ; `skins::donnerSkin(voiture, skin)` prête pour WFS-503 ; bon de skin du market utilisable au garage. FR / EN.
+- **Accroches annoncées** : E3 `sauvegarde.*` (clé `skins-offertes`, 4 lignes) ; `market.h` `SKINS_EN_VENTE = true` (ligne prévue pour WFS-494 : le pack débutant est maintenant proposé) ; E5 `garage.cpp`, `garage_commun.h`, `garage_achat*`, `garage.h` ; `desktop_main.cpp` (banc `garage-skins`). Nouveaux : `src/game/skin_offerte.*`, `src/ui/garage_skin.cpp`, `src/ui/garage_skin_banc.cpp`, `tests/test_garage_skin.cpp`.
+- **Vérifié** : `test_garage_skin` 41 cas OK ; 143 tests CPU réussis ; banc `garage-skins` 0 écart en 1280x720 et 1024x768 (parcours RC-E18-09 : skin offerte, refus faute d'étoiles, achat, course, « Retour », relance) ; `garage-finitions` 0 écart ; Basse (208 Camouflage) : main 3,62 / 3,97, branche 3,93 / 3,92 img/s (écart < 1). 37 captures dans `qa/pr/WFS-494/`.
+- **Limites** : mesures sur lavapipe seulement ; changer de skin au garage recharge une texture (petit à-coup possible au toucher, jamais en course).
+
+
+### 2026-11-14 20:23:43 — WFS-494 : PR #419 refusée par le lead dev, un seul point de forme (lead-dev)
+- **Refus** (commit 6f3d4391) : capture des tests CPU absente (pas de `qa/pr/WFS-494/tests-cpu.log`, pas de fin de journal ni de commit testé dans la section « Tests CPU »), règle de l'utilisateur du 2026-11-11.
+- **Vérifié bon** : construction et `tests_cpu.sh` refaits par le lead dev (143 réussis, `test_garage_skin` OK) ; 37 captures ouvertes (rangée, fenêtre de la skin offerte, achat, refus, Néon nuit, bon, relance, courses jour / nuit, anglais, 1024x768), pas de régression sur `garage-finitions` ; diff lu (accroches ≤ 10 lignes, découpage du garage respecté, ancienne sauvegarde lue).
+- **Point tranché** : bouton « Choisis ta skin offerte » dans la rangée au lieu d'une fenêtre automatique à l'ouverture du garage : accepté. **Au PO** : mettre à jour RG-04 de `regles-de-gestion/WFS-494.md` / WFS-499 (« proposée à l'ouverture suivante » → « bouton de la rangée »).
+
+### 2026-11-14 20:23:40 — WFS-547 créé : compte à rebours du cadeau qui bouge à chaque seconde (po-scrum-master)
+- **Demande de l'utilisateur** (urgente) : « le compteur de prochains cadeaux est figé ».
+- **Constat** : `texteHeures()` n'affiche que hh:mm (une mise à jour par minute) ; 2e cause éventuelle (menu non redessiné) à vérifier sur l'APK.
+- **Ticket** : WFS-547, P1 Urgent, E19 zone E8, ⏳ Prêt en tête, `@dev` (ou lead dev en renfort) ; 🟡 après fusion. Règles : `regles-de-gestion/WFS-547.md`.
+
+### 2026-11-14 20:26:45 — WFS-547 annulé (po-scrum-master)
+- **Ordre de l'utilisateur** : « pas besoin, enlève » (il lisait hh:mm comme minutes:secondes). Statut 🚫 Annulé ; aucun code touché ; le robot des archives le déplacera.
+### 2026-11-14 20:27:16 — R18 : critique du design (menus, boutons, logo, transitions, départ) (smart-brainstorming)
+- Captures du banc du matin (run 32, `menu1-2400`, `menu2-2400`) et code relus ; 12 axes dans `recommandations-smart-brain.md` (R18). Top 3 : fin de course claire (A01), départ mis en scène + départ parfait (A02, A03), vrai logo + un seul jeu de boutons (A04, A05). Rien transmis au PO : l'utilisateur choisit.
+
+### 2026-11-14 20:28:16 — WFS-513 (PR #418) approuvée par le lead dev, fusion bloquée par un conflit (lead-dev)
+- Revue faite sur 29fce0f6 : 26 captures ouvertes (FR / EN, achat, attente, sans pub, restauration, hors ligne, garage, 8 paires avant / après), diff lu en entier, construction et tests refaits (143 verts ; `test_audio_chocs` RG-07 rouge une fois sous charge de ma machine, vert 5 fois au repos, sans rapport), banc `market` 0 écart FR + EN, parcours 0 écart. Approbation postée dans la PR (en commentaire : même compte GitHub).
+- Fusion squash refusée par GitHub : **conflit sur `journal.md`** seulement (main a avancé). Le développeur synchronise (`git merge origin/main -m "Synchronisation avec main (Claude, agent dev3d (01Us6uCvpo))"`, garder les deux entrées), pousse, puis rappelle le lead dev : si le nouveau commit ne change que la synchronisation, fusion directe sans nouvelle revue du code.
+
 ### 2026-11-14 18:13:34 — WFS-513 : début, branche `feature/waforspeed-513` créée (Claude, agent dev3d (01Us6uCvpo))
 - Écran Market FR / EN (zone E8 `src/ui/ecrans/**`). Accroches annoncées (≤ 10 lignes chacune) : `src/ui/garage.cpp` (bouton Market) et `src/ui/ecrans/compteur_etoiles.*` (le compteur ouvre le Market).
 - Réutilise : `Boutique` / `BoutiqueSimulee` (WFS-510), système de langue (WFS-504), `navigation.h`, `toasts.cpp`, composants du garage (WFS-499).
