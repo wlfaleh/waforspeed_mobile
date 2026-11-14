@@ -887,3 +887,10 @@ Choisir les axes qui t'intéressent et les demander au PO (`@po`). Avant A07, un
 
 ### R18 (suite 4) — 2026-11-14 — Maquettes en image
 Demande de l'utilisateur : « donne-moi ta proposition en image ». Cinq maquettes dans `references/maquettes-R18/` : planche de style (logo, couleurs, texte, formes, icônes), menu, choix du mode, garage (peinture), fin de course. Fonds = vraies captures du jeu (banc du matin, run 32) ; interface = maquette (HTML rendu en image), valeurs d'exemple. Ce ne sont pas des captures du jeu.
+
+### R18 (suite 5) — 2026-11-14 — Maquettes 3D (création)
+Retour de l'utilisateur : « je ne vois pas d'amélioration, je veux des objets 3D, de la création ». Trois rendus 3D dans `references/maquettes-3D-R18/`, faits avec les **vrais modèles du jeu** (`assets/cars/golf.wfm`, `giulia.wfm`, lus tels quels) dans un rendu web (three.js), pas dans le moteur :
+- **Menu = un lieu** : parking souterrain de nuit (sol mouillé, poteaux avec bande de sécurité, réglettes LED), l'enseigne WAFORSPEED en lettres métal sur le mur, le menu en **dalles 3D** qui flottent à côté de la voiture, phares allumés.
+- **Garage = un studio de carrossier** : plateau tournant en alu brossé, lumière blanche neutre, et le nuancier remplacé par de **vraies plaquettes de peinture courbes** (« speed shapes ») sur pied, chacune avec la vraie matière (brillant, métallisé, mat, chromé, caméléon).
+- **Fin de course = la ligne d'arrivée** : portique en treillis d'alu avec bandeau LED « ARRIVÉE », damier peint au sol, **score en chiffres 3D** posés sur l'asphalte, voiture phares allumés.
+Points à vérifier avant tout ticket : performance du téléphone (scène de menu en plus de la course), mémoire, règle « formes nues » (tous les objets sont modélisés : chanfreins, profilés, treillis), avis `@3d`.
