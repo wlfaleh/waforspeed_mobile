@@ -39,6 +39,7 @@ struct Ressources {
     Material matSupportF, matVisF, matPlaqueF;                              // fantôme (translucides)
     std::vector<uint8_t> ttf;
     std::string joueur;                            // plaque du joueur au dernier tirage
+    bool masqueBanc = false;
 };
 Ressources g;
 
@@ -178,7 +179,7 @@ void entreCourses(Renderer& r, bool enCourse) {
 }
 
 void dessiner(Renderer& r, const char* idVoiture, const mat4& monde, float echelle, int cas, Genre genre, bool nuit, const vec3& camera) {
-    if (!g.pret || !g.matPlaque.set) return;
+    if (!g.pret || !g.matPlaque.set || g.masqueBanc) return;
     const int i = indiceVoiture(idVoiture);
     if (i < 0) return;   // modèle sans place connue : aucune plaque (comme WFS-483)
     const vec3 centre{monde.at(0, 3), monde.at(1, 3), monde.at(2, 3)};
@@ -213,6 +214,8 @@ void liberer(Renderer& r) {
     for (Material* m : {&g.matSupport, &g.matVis, &g.matSupportF, &g.matVisF}) { r.destroy(*m); *m = Material{}; }
     g.pret = false;
 }
+
+void masquerBanc(bool masque) { g.masqueBanc = masque; }
 
 const std::string& texteCase(int cas) { return g.textes[(size_t)std::clamp(cas, 0, CASES - 1)]; }
 

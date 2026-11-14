@@ -67,5 +67,6 @@ int caseDuel(const std::string& id);
 void dessiner(Renderer& r, const char* idVoiture, const mat4& monde, float echelle, int cas, Genre genre, bool nuit, const vec3& camera);
 void liberer(Renderer& r);
 const std::string& texteCase(int cas);   // banc et tests : texte actuel d'une case
+void masquerBanc(bool masque);            // banc seulement : plaques des autres voitures non dessinées (images « avant »)
 
 } // namespace wfs::plaques_autres

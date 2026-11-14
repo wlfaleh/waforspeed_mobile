@@ -70,6 +70,7 @@ namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const
 #include "../render/atmosphere_brume_banc.h"   // WFS-381 (accroche) : WFS_BANC=brume
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
 namespace wfs { void benchPlaque(Game& g, Renderer& r, const std::string& out); void benchPlaqueMesure(Game& g, Renderer& r, const std::string& out); }   // WFS-483 (accroche) : vehicule_plaque_banc.cpp
+namespace wfs { void benchPlaquesAutres(Game& g, Renderer& r, const std::string& out); void benchPlaquesAutresMesure(Game& g, Renderer& r, const std::string& out); }   // WFS-484 (accroche) : vehicule_plaques_autres_banc.cpp
 namespace wfs { void benchPeinture2(Game& g, Renderer& r, const std::string& out); void benchPeinture2Mesure(Game& g, Renderer& r, const std::string& out); }   // WFS-488 (accroche) : vehicule_peinture2_banc.cpp, _mesure.cpp
 namespace wfs { void benchFinitions(Game& g, Renderer& r, const std::string& out); }   // WFS-490 (accroche) : vehicule_finitions_banc.cpp
 #include "../render/renderer.h"
@@ -252,6 +253,8 @@ int main(int argc, char** argv) {
     if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }
     if (banc == "plaque") { ui::chargerPolice(r); benchPlaque(g, r, out); return finir(); }   // WFS-483 (accroche) : plaque 3D du joueur
     if (banc == "plaque-mesure") { benchPlaqueMesure(g, r, out); return finir(); }   // WFS-483 (accroche) : coût par image (RG-07)
+    if (banc == "plaques-autres") { ui::chargerPolice(r); benchPlaquesAutres(g, r, out); return finir(); }   // WFS-484 (accroche) : plaques des autres voitures
+    if (banc == "plaques-autres-mesure") { benchPlaquesAutresMesure(g, r, out); return finir(); }   // WFS-484 (accroche) : coût par image (RG-05)
     if (banc == "peinture2") { benchPeinture2(g, r, out); return finir(); }   // WFS-488 (accroche) : couleur secondaire (toit, rétroviseurs)
     if (banc == "peinture2-mesure") { benchPeinture2Mesure(g, r, out); return finir(); }   // WFS-488 (accroche) : img/s en Basse (RC-E18-03)
     if (banc == "finitions") { benchFinitions(g, r, out); return finir(); }   // WFS-490 (accroche) : 8 finitions de la peinture
