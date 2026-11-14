@@ -1772,3 +1772,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 00:16:24 — Statuts automatiques, CI main #1059 (robot statuts)
 - Run rouge (push, commit b1ed89d), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-480, WFS-481, WFS-483, WFS-498, WFS-487, WFS-488, WFS-489, WFS-490, WFS-500, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 00:16:31 — ANO-272 précisée par l'utilisateur : la voiture de police à côté du camion géant (po-scrum-master)
+- L'utilisateur vise **la petite voiture de police collée au « camion » géant** (Range Rover agrandi, ANO-273), pas la police à côté du joueur. Images à 6,7 /s : `qa/retours/2026-11-13-video2348-police-coince/video2348-police-a-cote-du-camion-6ips-5.0s-8.6s.jpg`.
+- Elle glisse à gauche, revient à droite et entre à moitié dans le camion, puis recommence, sans jamais tourner. Cause (`poursuite.cpp` l. 93-112) : sa cible change à chaque image entre la file libre et le joueur, qui est derrière le camion (aller-retour sans fin) ; décalage par glissement direct, cap de la route ; aucun choc police ↔ camion.
+- ANO-272 complétée ; **WFS-540 RG-09** ajoutée (file gardée pendant le contournement, camion solide pour la police, arrêt derrière sinon) ; RG-08 (cap propre, pas de glissement) gardée.
