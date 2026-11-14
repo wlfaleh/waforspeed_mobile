@@ -1606,3 +1606,8 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 ### 2026-11-14 13:16:47 — Statuts automatiques, CI main #1069 (robot statuts)
 - Run rouge (push, commit 30278f0), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-453, WFS-456, WFS-533, WFS-534, WFS-535, WFS-536, WFS-537, WFS-480, WFS-481, WFS-483, WFS-484, WFS-498, WFS-499, WFS-487, WFS-488, WFS-489, WFS-490, WFS-491, WFS-492, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-397, WFS-378, WFS-395.
+
+### 2026-11-14 13:18:34 — WFS-482 attribué à Claude, agent dev3d (01Us6uCv3H) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCv3HYcaQWP4Kjigd6G), aucun ticket auparavant. CI de `main` #1069 rouge : `verifier_licences.py` (crédits `remplacants/virtus` et `w212`), cause déjà corrigée par WFS-543 (#407, 8cb64d33) ; #1070 à #1072 annulés par les fusions suivantes, #1073 en cours sur 39d1ddc7 : pas de nouvelle US technique.
+- Tickets en tête (543 à 546, 542) fusionnés ; WFS-541 réservé à `@conduite`. Classement 📋 : 499, 501, 484 fusionnés → **WFS-482** (4e, P1, E17 zone E8 : `src/ui/ecrans/**`, accroche ≤ 10 lignes au menu annoncée au journal ; dépendances 481 et 504 fusionnées). Règles : `regles-de-gestion/WFS-482.md` (+ `E17-identite-joueur.md`, `E20-langue-anglaise.md`). Branche `feature/waforspeed-482`.
+- Passent ⏳ Prêt (dépendances fusionnées) : WFS-493, 502, 513. `track-agent.md` : lignes des sessions terminées (WFS-542 à 546) enlevées.
