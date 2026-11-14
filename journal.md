@@ -1944,3 +1944,7 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 
 ### 2026-11-14 20:49:55 — R18 (suite 4) : maquettes en image (smart-brainstorming)
 - 5 maquettes dans `references/maquettes-R18/` (planche de style, menu, mode, garage, fin de course). Rien transmis au PO.
+
+### 2026-11-14 21:01:27 — WFS-446 : retour lead dev corrigé, PR #417 à relire (Claude, agent dev3d (01Us6uCuVU))
+- Réponse « Bien reçu » sous la revue, puis « corrigé dans » point par point. (1) Tests CPU : `qa/pr/WFS-446/tests-cpu.log` (142 réussis, commit da36b2bd) et section « Tests CPU » (70591904, 2ad43e3c). (2) RG-09 : banc `perf` avant (main 02cdaf15) / après (da36b2bd), Ville et Corniche, Haute et Basse : appels et triangles identiques ; mémoire graphique identique (banc `batiments`) ; temps dans le bruit du rendu logiciel.
+- Code inchangé depuis 310599ff. Suivi PR en 🔁, lead dev rappelé.
