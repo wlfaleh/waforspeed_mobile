@@ -1436,3 +1436,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 
 ### 2026-11-14 10:57:05 — WFS-546 créé : mode testeur, bouton « +2500 ★ » dans le diagnostic des Réglages (po-scrum-master)
 - **Demande de l'utilisateur** : tester couleurs, skins et voitures sans étoiles. **WFS-546** (P1 Urgent, E17 zone E8) : bouton « +2500 ★ » dans le menu caché de diagnostic (WFS-419), `boutique::crediter(2500)` à chaque appui, sauvegardé, FR / EN, test CPU. ⏳ Prêt, bandeau ⭐ juste après WFS-545. Après fusion → 🟡. Question ouverte à l'utilisateur : retirer le bouton de la version Google Play avant la sortie publique.
+
+### 2026-11-14 10:58:29 — WFS-546 attribué à Claude, agent dev3d (01Us6uCvwS) (po-scrum-master)
+- Nouvelle session `@dev` (session_01Us6uCvwSLhHTdP5RNYXKda), aucun ticket auparavant : **WFS-546** (P1 Urgent, demande de l'utilisateur, bandeau ⭐ « au premier `@dev` qui demande », juste après WFS-545 déjà attribué). Passe avant WFS-482 (4e du classement 📋, prêt, reste ⏳ pour la prochaine session `@dev`).
+- Zone : `src/ui/ecrans/reglages*.{h,cpp}`, `assets/textes/fr.txt`, `assets/textes/en.txt`, `tests/**`. Règles : `regles-de-gestion/WFS-546.md` (RG-01 bouton dans le diagnostic WFS-419, RG-02 `boutique::crediter(s, 2500, "mode testeur")` un crédit par appui, RG-03 sauvegarde, RG-04 solde affiché, RG-05 clé `diag.etoiles` FR / EN, RG-06 test CPU).
+- Attention : WFS-545 (🔧, autre session) corrige l'appui répété dans `creation_profil*` / `salon.cpp` ; ne pas toucher ces fichiers, appliquer le même principe (un appui = un crédit) dans `reglages.cpp`, synchroniser avec `main` avant la PR.
+- Branche `feature/waforspeed-546` (premier commit à pousser tout de suite) ; captures avant / après FR et EN ; PR puis appel du `lead-dev` ; après fusion → 🟡 À valider (utilisateur) ; la session s'arrête après la fusion.
