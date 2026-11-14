@@ -1692,3 +1692,27 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 - Fusion refusée par GitHub : conflit avec `main` après la fusion de WFS-482 (#412). `src/ui/ecrans/menu.cpp` (enum `PROFIL = 7` / `PRET = 7`, 4 blocs) et `journal.md`. Surtout, le bouton « Profil » occupe la place du bandeau du prêt (même bas) : chevauchement à l'écran.
 - Demandé : synchroniser avec main, `PRET = 8`, bandeau au-dessus de « Profil » sans déplacer les boutons, tests et banc relancés, captures du menu (attente / actif / fin / expiré, FR et EN) avec « Profil » visible.
 - Remarque au PO : prix des pastilles du garage en anglais à peine lisibles (« 100 ★ » rendu flou en petit), défaut d'avant ce ticket.
+### 2026-11-14 14:46:27 — WFS-495 : PR #415 ouverte, autocollants cuits dans la texture d'habillage (Claude, agent dev3d (01Us6uCv3C))
+- **Fait** :
+  - les autocollants sont cuits dans la texture d'habillage de WFS-492, par la même projection : rien ne flotte (ANO-250), rien sur les vitres, phares, calandre ni jantes ;
+  - `src/render/vehicule_autocollants.*` : calques, texte court, 50 motifs vectoriels originaux (lettres en Rajdhani Bold, OFL), rastérisation à couverture exacte, cuisson skin + calques ;
+  - `vehicule_etc2.*` : encodeur et décodeur ETC2 RGBA8 ;
+  - `vehicule_skin::poser(…, calques)` : skin n° 5 « cuit », une seule texture ;
+  - `shaders/vehicule.glsl` : `habillageCuit` ;
+  - banc `WFS_BANC=autocollants` et test `test_vehicule_autocollants`.
+- **Accroches** (hors zone, ≤ 10 lignes) : `src/game/game.cpp` (1 ligne : variable `WFS_AUTOCOLLANTS` ; l'atelier WFS-496 y branchera la sauvegarde), `src/platform/desktop_main.cpp` (2 lignes : banc), `CMakeLists.txt` (1 ligne : test).
+- **Vérifié** :
+  - 141 tests CPU réussis ;
+  - 3 voitures (208, GT86, Corvette) : bande capot-toit-coffre, flamme coupée par le passage de roue, numéro sur les portières, de jour, de nuit et en course ;
+  - cuisson de 48 à 76 ms sur PC (4 cœurs) ;
+  - captures `skins` identiques au pixel près à `main` ;
+  - qualité Basse : 3,891 contre 3,843 img/s, soit 0,05 img/s d'écart (`qa/pr/WFS-495/mesure-basse.txt`).
+- **Limites et risques** :
+  - la clé de sauvegarde des calques et l'atelier restent à faire (WFS-496 et WFS-497) ; `creation-<voiture>` n'accepte qu'un identifiant de 32 caractères ;
+  - un miroir de lettres inverse l'ordre d'un mot ;
+  - le temps de cuisson sur le S21 FE n'est pas mesuré sur l'appareil.
+- **Pour le PO et WFS-493 (01Us6uCwTQ)** :
+  - même bloc `SKIN_COULEURS` du shader : la PR fusionnée en second garde les deux ;
+  - `test_vehicule_autocollants` exige que `vehicule_skin::couleurs` (C++) recopie `SKIN_COULEURS` ;
+  - la lueur de nuit du Néon ne passe pas dans la texture cuite (Néon + autocollants : plus de lueur) : à trancher par le PO (petit ticket de suite possible).
+
