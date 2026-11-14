@@ -220,6 +220,7 @@ void main() {
     else if (retro) col = refletRetro;   // WFS-324 : reflet du rétroviseur, déjà en lumière de la scène (pas de facteur des lumières
                                          // artistiques) ; la face avant du verre renvoie la même vue (pas le ciel de la sonde : il voilait la glace)
     else col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
+    col += skinEmission * F.iblB.w;   // WFS-493 (accroche) : filets de la skin Néon nuit, la nuit (vehicule.glsl) ; 0 sinon
     // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
     if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 

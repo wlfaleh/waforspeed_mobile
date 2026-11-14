@@ -112,7 +112,221 @@ def rallye(v):
         B.paste(255, (round(cx - txt.width / 2), round(cy - txt.height / 2)), txt)
     return A, B
 
-DESSINS = {'rallye': rallye}
+# ---------------------------------------------------------------- WFS-493 : outils communs aux skins dessinées en 3D
+def points(v):
+    """point 3D (m, repère de la voiture) de chaque pixel de la texture (T × T), par zone : flancs à |x| = largeur, dessus à la
+    hauteur de la ceinture, faces avant / arrière aux z des boucliers (voitures.json) ; dedans = pixels d'une zone (pas les marges).
+    Les projections se rejoignent : arête d'épaule (flanc à y = ceinture ↔ dessus à |x| = largeur) et coins (flanc à z du bouclier
+    ↔ face à |x| = largeur) donnent le même point, d'où des motifs continus d'une zone à l'autre (RG-04 de WFS-492)."""
+    X = np.zeros((T, T)); Y = np.zeros((T, T)); Z = np.zeros((T, T)); dedans = np.zeros((T, T), bool)
+    u = (np.arange(T) + 0.5) / T
+    for zone, (v0, v1) in ZONES.items():
+        t = (np.arange(v0, v1) + 0.5 - v0) / (v1 - v0)
+        uu, tt = np.meshgrid(u, t)
+        sl = slice(v0, v1)
+        if zone in ('gauche', 'droite'):
+            Z[sl] = -DZ + uu * 2 * DZ if zone == 'gauche' else DZ - uu * 2 * DZ
+            Y[sl] = H * (1 - tt); X[sl] = -v['largeur'] if zone == 'gauche' else v['largeur']
+        elif zone == 'dessus':
+            Z[sl] = -DZ + uu * 2 * DZ; X[sl] = -DX + tt * 2 * DX; Y[sl] = v['ceinture']
+        else:
+            arr = uu >= 0.5
+            X[sl] = np.where(arr, (uu - 0.5) * 4 * DX - DX, DX - uu * 4 * DX)
+            Y[sl] = H * (1 - tt); Z[sl] = np.where(arr, v['arriere'], v['avant'])
+        dedans[sl] = True
+    return X, Y, Z, dedans
+
+def poly(draw, pts):
+    draw.polygon([(round(a), round(b)) for a, b in pts], fill=255)
+
+def flanc_poly(draw, zone, pts_zy):
+    """polygone donné en (z, y) mètres sur un flanc"""
+    poly(draw, [px_flanc(zone, z, y) for z, y in pts_zy])
+
+def dessus_poly(draw, pts_xz):
+    poly(draw, [px_dessus(x, z) for x, z in pts_xz])
+
+def face_poly(draw, arriere, pts_xy):
+    poly(draw, [px_face(arriere, x, y) for x, y in pts_xy])
+
+def lisse(a, b, x):
+    t = np.clip((x - a) / (b - a), 0.0, 1.0)
+    return t * t * (3 - 2 * t)
+
+# ---------------------------------------------------------------- Drift Tokyo (RG-02, dessin original : aucun texte réel, aucune marque)
+# Couleur A (vermillon) en dégradé : pleine à l'arrière, fondue vers l'avant le long d'une ligne penchée vers l'avant (35°), sur
+# 1,1 m ; couleur B (noir) : trois entailles penchées dans le dégradé, deux entailles sur le capot, et trois signes décoratifs
+# inventés (pochoirs anguleux : ni lettre, ni idéogramme, ni chiffre) sur l'aile arrière, au-dessus de la roue.
+DRIFT_PENTE = math.tan(math.radians(35))
+DRIFT_FONDU = 1.10
+# signes inventés, en unités d'une grille 5 × 6 (x vers l'arrière, y vers le haut) : chaque signe = polygones
+SIGNES = [
+    [[(0, 0), (1.2, 0), (2.6, 6), (1.4, 6)], [(2.2, 2.4), (5, 3.2), (5, 4.3), (2.5, 3.5)]],
+    [[(0, 1.4), (2.5, 0), (5, 1.4), (5, 2.6), (2.5, 1.2), (0, 2.6)], [(0, 3.6), (2.5, 2.2), (5, 3.6), (5, 4.8), (2.5, 3.4), (0, 4.8)]],
+    [[(3.8, 0), (5, 0), (5, 6), (0.4, 6), (0.4, 4.9), (3.8, 4.9)], [(0, 0), (2.6, 2.4), (2.6, 3.6), (0, 1.2)]],
+]
+
+def drift_couverture(v, Y, Z):
+    zc = v['roue_av'] + 0.55 * (v['roue_ar'] - v['roue_av'])
+    y = np.clip(Y, v['bas'], v['ceinture'])
+    return lisse(0.0, 1.0, (Z - (zc - (y - v['bas']) * DRIFT_PENTE)) / DRIFT_FONDU)
+
+def drift_tokyo(v):
+    X, Y, Z, dedans = points(v)
+    A = np.where(dedans, drift_couverture(v, Y, Z), 0.0)
+    B = Image.new('L', (T * S, T * S), 0); db = ImageDraw.Draw(B)
+    zc = v['roue_av'] + 0.55 * (v['roue_ar'] - v['roue_av'])
+    y0, y1 = v['bas'] + 0.04, v['ceinture'] - 0.05
+    for zone in ('gauche', 'droite'):
+        # entailles : bas à zc + décalage, penchées comme le dégradé ; largeurs 14, 8 et 4 cm
+        for dz, l in ((0.18, 0.14), (0.42, 0.08), (0.58, 0.04)):
+            za = zc + dz
+            flanc_poly(db, zone, [(za, y0), (za + l, y0), (za + l - (y1 - y0) * DRIFT_PENTE, y1), (za - (y1 - y0) * DRIFT_PENTE, y1)])
+        # signes : hauteur 11 cm, entre le haut de l'arche arrière et la ceinture, derrière le centre de la roue arrière
+        h = 0.11; e = h / 6
+        ybas = max(2 * v['rayon'] + 0.06, v['ceinture'] - 0.05 - h - 0.03)
+        for k, signe in enumerate(SIGNES):
+            z0 = v['roue_ar'] - 0.22 + k * (5 * e + 0.035)
+            for p in signe:
+                flanc_poly(db, zone, [(z0 + a * e, ybas + b * e) for a, b in p])
+    # capot : deux entailles en travers, côté gauche (dessin asymétrique), loin des arêtes d'épaule (|x| ≤ largeur − 0,18 m)
+    xm = v['largeur'] - 0.18
+    zh = v['avant'] + 0.40   # du milieu du capot vers le pare-brise (fin à ≈ avant + 1,2 m)
+    for dz, l in ((0.0, 0.12), (0.20, 0.06)):
+        dessus_poly(db, [(-xm, zh + dz), (-xm, zh + dz + l), (0.20, zh + dz + l + 0.55), (0.20, zh + dz + 0.55)])
+    return A, B
+
+# ---------------------------------------------------------------- Néon nuit (RG-03) : filets cyan (A) et magenta (B), émissifs la nuit
+# (shaders/vehicule.glsl, SKIN_NEON) ; de jour, filets de couleur normaux. Flancs : filet magenta bas sur toute la longueur, filet
+# cyan qui monte en biais (25°) au-dessus de la roue arrière ; mêmes hauteurs sur les faces (continus aux coins) ; dessus : deux
+# paires de filets du capot au coffre, qui descendent sur les faces jusqu'au filet cyan.
+NEON_CYAN_L, NEON_MAG_L = 0.035, 0.025
+
+def neon_nuit(v):
+    A = Image.new('L', (T * S, T * S), 0); B = Image.new('L', (T * S, T * S), 0)
+    da, db = ImageDraw.Draw(A), ImageDraw.Draw(B)
+    ym = v['bas'] + 0.10                     # filet magenta
+    yc = v['bas'] + 0.17                     # filet cyan, avant
+    y2 = v['ceinture'] - 0.06                # filet cyan, arrière (monté)
+    zk = v['roue_ar'] - 0.90
+    zk2 = zk + (y2 - yc) / math.tan(math.radians(25))
+    c, m = NEON_CYAN_L / 2, NEON_MAG_L / 2
+    for zone in ('gauche', 'droite'):
+        flanc_poly(db, zone, [(-DZ, ym - m), (DZ, ym - m), (DZ, ym + m), (-DZ, ym + m)])
+        flanc_poly(da, zone, [(-DZ, yc - c), (zk, yc - c), (zk2, y2 - c), (DZ, y2 - c), (DZ, y2 + c), (zk2, y2 + c), (zk, yc + c), (-DZ, yc + c)])
+    for arr, ycy in ((False, yc), (True, y2)):
+        face_poly(db, arr, [(-DX, ym - m), (DX, ym - m), (DX, ym + m), (-DX, ym + m)])
+        face_poly(da, arr, [(-DX, ycy - c), (DX, ycy - c), (DX, ycy + c), (-DX, ycy + c)])
+        for signe in (-1, 1):
+            for (x0, x1), d in (((0.30, 0.335), da), ((0.36, 0.385), db)):
+                face_poly(d, arr, [(signe * x0, H), (signe * x1, H), (signe * x1, ycy + c + 0.04), (signe * x0, ycy + c + 0.04)])
+    for signe in (-1, 1):
+        for (x0, x1), d in (((0.30, 0.335), da), ((0.36, 0.385), db)):
+            dessus_poly(d, [(signe * x0, -DZ), (signe * x1, -DZ), (signe * x1, DZ), (signe * x0, DZ)])
+    return A, B
+
+# ---------------------------------------------------------------- Camouflage (RG-04) : urbain gris, noir et blanc, à taches de 20 à 60 cm
+# Habillage complet : A (blanc) couvre toute la carrosserie ; B (noir) posé à 55 % donne le gris, à 100 % le noir. Taches : formes
+# organiques allongées (rayon qui ondule avec la direction, 4 ondes au hasard ; rapport 1,4 à 2,2) de 20 à 60 cm de diamètre, posées en 3D sur l'enveloppe de la
+# voiture (flancs, dessus, faces) par tirage avec distance minimale (graine fixe) ; chaque tache est grise ou noire. Évaluées au point
+# 3D de chaque pixel (points()) : continues d'une zone à l'autre. Taille contrôlée à chaque génération (taches_cm).
+CAMO_GRIS, CAMO_NOIR = 0.55, 1.0
+CAMO_D = (0.20, 0.60)          # diamètre des taches (m)
+CAMO_GRAINE = 4931
+CAMO_PIXEL = 0.0055            # taille d'un pixel sur la carrosserie (m) : bord adouci sur un pixel
+
+def taches(v):
+    """liste (centre, rayon, ondes, tonalité, axe d'allongement, rapport) ; centres sur l'enveloppe (|x| = largeur, y = ceinture, z = boucliers)"""
+    rng = np.random.default_rng(CAMO_GRAINE)
+    l, av, ar = v['largeur'], v['avant'], v['arriere']
+    faces = [  # (aire, tirage d'un point)
+        (H * (ar - av), lambda: (-l, rng.uniform(0, H), rng.uniform(av, ar))),
+        (H * (ar - av), lambda: (l, rng.uniform(0, H), rng.uniform(av, ar))),
+        (2 * l * (ar - av), lambda: (rng.uniform(-l, l), v['ceinture'], rng.uniform(av, ar))),
+        (2 * l * H, lambda: (rng.uniform(-l, l), rng.uniform(0, H), av)),
+        (2 * l * H, lambda: (rng.uniform(-l, l), rng.uniform(0, H), ar))]
+    aires = np.array([f[0] for f in faces]); aires /= aires.sum()
+    liste = []
+    for _ in range(20000):
+        if len(liste) >= 600: break
+        c = np.array(faces[rng.choice(len(faces), p=aires)][1]())
+        r = rng.uniform(*CAMO_D) / 2
+        ton = CAMO_NOIR if rng.random() < 0.4 else CAMO_GRIS
+        # écart minimal : deux taches de même ton se touchent à peine (pas de grande nappe de plus de 60 cm) ; une noire mord
+        # largement sur une grise (taches imbriquées, comme un vrai camouflage urbain, pas des pois sur fond blanc)
+        if any(np.linalg.norm(c - t[0]) < (0.95 if t[3] == ton else 0.45) * (r + t[1]) for t in liste): continue
+        u = rng.normal(size=(4, 3)); u /= np.linalg.norm(u, axis=1)[:, None]
+        ondes = (u, rng.uniform(0.8, 1.8, 4), rng.uniform(0, 2 * math.pi, 4), rng.uniform(0.07, 0.13, 4))
+        # tache allongée (rapport 1,4 à 2,2) dans une direction au hasard, même aire : formes de camouflage, pas des ronds
+        a = rng.normal(size=3); a /= np.linalg.norm(a)
+        liste.append((c, r, ondes, ton, a, rng.uniform(1.4, 2.2)))
+    return liste
+
+def couverture_taches(X, Y, Z, liste, ton):
+    P = np.stack([X, Y, Z], -1)
+    cov = np.zeros(X.shape)
+    for c, r, (u, k, ph, amp), t, a, e in liste:
+        if t != ton: continue
+        m = 1.6 * r * math.sqrt(e)   # demi-côté de la boîte englobante (tache allongée, ondulée)
+        boite = (np.abs(X - c[0]) < m) & (np.abs(Y - c[1]) < m) & (np.abs(Z - c[2]) < m)
+        if not boite.any(): continue
+        d = P[boite] - c
+        pa = d @ a                                                     # allongement : × √e le long de a, ÷ √e en travers
+        d = (d - pa[:, None] * a[None, :]) * math.sqrt(e) + pa[:, None] * a[None, :] / math.sqrt(e)
+        n = np.maximum(np.linalg.norm(d, axis=1), 1e-9)
+        rd = r * (1 + (amp[None, :] * np.sin(k[None, :] * ((d / n[:, None]) @ u.T) * math.pi + ph[None, :])).sum(1))
+        cov[boite] = np.maximum(cov[boite], np.clip((rd - n) / CAMO_PIXEL + 0.5, 0.0, 1.0))
+    return cov
+
+def camouflage(v):
+    X, Y, Z, dedans = points(v)
+    liste = taches(v)
+    gris = couverture_taches(X, Y, Z, liste, CAMO_GRIS)
+    noir = couverture_taches(X, Y, Z, liste, CAMO_NOIR)
+    A = np.where(dedans, 1.0, 0.0)
+    B = np.where(dedans, np.maximum(CAMO_GRIS * gris * (1 - noir), CAMO_NOIR * noir), 0.0)
+    return A, B
+
+def etiqueter(masque):
+    """composantes 4-connexes d'un masque booléen (étiquettes 1..n, 0 = fond) ; sans dépendance en plus de numpy"""
+    h, w = masque.shape
+    lab = np.zeros((h, w), np.int32); n = 0
+    m = masque.tolist(); L = lab.tolist()
+    for a in range(h):
+        for b in range(w):
+            if not m[a][b] or L[a][b]: continue
+            n += 1; L[a][b] = n; pile = [(a, b)]
+            while pile:
+                p, q = pile.pop()
+                for r, t in ((p + 1, q), (p - 1, q), (p, q + 1), (p, q - 1)):
+                    if 0 <= r < h and 0 <= t < w and m[r][t] and not L[r][t]:
+                        L[r][t] = n; pile.append((r, t))
+    return np.array(L, np.int32), n
+
+def taches_cm(v, B):
+    """taille des taches visibles sur le flanc gauche de la texture (zone entière, 0 à 1,60 m) : taches grises (partie visible) et
+    noires séparées, celles qui touchent le bord du cadre exclues ; renvoie pour chaque tonalité les diamètres équivalents (cm) et la
+    part de sa surface portée par des taches de 20 à 60 cm"""
+    v0, v1 = ZONES['gauche']
+    zone = B[v0:v1]
+    aire_px = (2 * DZ / T) * (H / (v1 - v0)) * 1e4        # cm² par pixel
+    res = []
+    for masque in ((zone > 0.3) & (zone < 0.8), zone >= 0.8):
+        lab, nb = etiqueter(masque)
+        bord = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+        aires = np.bincount(lab.ravel(), minlength=nb + 1).astype(float) * aire_px
+        garde = np.ones(nb + 1, bool); garde[0] = False; garde[bord] = False
+        garde &= aires >= math.pi * 2.5 ** 2   # liserés d'adoucissement (gris entre noir et blanc, < 5 cm) : pas des taches
+        d = 2 * np.sqrt(aires[garde] / math.pi)
+        part = aires[garde][(d >= 20) & (d <= 60)].sum() / max(aires[garde].sum(), 1)
+        res.append((d, part))
+    return res
+
+# couleurs A et B de chaque skin (codes sRGB, mêmes valeurs que SKIN_COULEURS de shaders/vehicule.glsl) : pour l'aperçu seulement
+COULEURS = {'rallye': ((0.91, 0.91, 0.89), (0.10, 0.11, 0.125)), 'drifttokyo': ((0.93, 0.30, 0.10), (0.06, 0.06, 0.07)),
+            'neonnuit': ((0.0, 0.90, 1.0), (1.0, 0.12, 0.85)), 'camouflage': ((0.85, 0.86, 0.84), (0.09, 0.09, 0.10))}
+
+DESSINS = {'rallye': rallye, 'drifttokyo': drift_tokyo, 'neonnuit': neon_nuit, 'camouflage': camouflage}
 
 # ---------------------------------------------------------------- réduction, marges, mipmaps
 def reduire_dessin(img):
@@ -216,7 +430,11 @@ def main():
     for vid in ids:
         if vid not in mesures: print(f'{vid} : mesures absentes de voitures.json'); code = 1; continue
         A, B = DESSINS[arg.skin](mesures[vid])
-        canaux = [remplir_marges(reduire_dessin(A)), remplir_marges(reduire_dessin(B))]
+        canaux = [remplir_marges(reduire_dessin(c) if isinstance(c, Image.Image) else c.copy()) for c in (A, B)]   # WFS-493 : dessin en tableau (T × T)
+        if arg.skin == 'camouflage':   # WFS-493 (RG-04) : taille des taches, contrôlée sur le flanc gauche
+            for nom, (d, part) in zip(('grises', 'noires'), taches_cm(mesures[vid], canaux[1])):
+                print(f'{vid}-camouflage : taches {nom} du flanc gauche : {len(d)}, diamètre équivalent médiane {np.median(d):.0f} cm, '
+                      f'quartiles {np.percentile(d, 25):.0f} à {np.percentile(d, 75):.0f} cm ; {100 * part:.0f} % de la surface en taches de 20 à 60 cm')
         nivR, nivG = mipmaps(canaux[0]), mipmaps(canaux[1])
         niveaux, pires = [], []
         for k, (r, g) in enumerate(zip(nivR, nivG)):
@@ -229,7 +447,7 @@ def main():
         if arg.apercu:
             ap_dir = pathlib.Path(arg.apercu); ap_dir.mkdir(parents=True, exist_ok=True)
             img = np.zeros((T, T, 3)); img[:] = (0.11, 0.25, 0.56)                          # peinture Bleu (aperçu)
-            for c, col in ((canaux[0], (0.91, 0.91, 0.89)), (canaux[1], (0.10, 0.11, 0.125))):
+            for c, col in zip(canaux, COULEURS[arg.skin]):
                 img = img * (1 - c[:, :, None]) + np.array(col) * c[:, :, None]
             Image.fromarray((img * 255).astype(np.uint8)).save(ap_dir / f'{vid}-{arg.skin}.png')
         p0, pmin = pires[0], min(pires)
