@@ -412,6 +412,16 @@ finition.satine=Satin
 finition.candy=Candy
 finition.chrome=Chrome
 finition.cameleon=Chameleon
+# WFS-499 : locked cars, purchase with confirmation, free test drive
+garage.bloquee=Locked car
+garage.essai=Free test drive
+garage.essai_fait=Test drive used
+garage.achat_titre=Buy a car
+garage.achat_question=Buy the {1} for {2} ★?
+garage.achat_question_voyelle=Buy the {1} for {2} ★?
+garage.confirmer=Confirm
+garage.annuler=Cancel
+fin.essai_termine=Free test drive over
 medaille.bronze=bronze
 medaille.argent=silver
 medaille.or=gold

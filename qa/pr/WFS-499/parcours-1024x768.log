@@ -1,0 +1,32 @@
+[info] garage-voitures (WFS-499) : OK : 208 gratuite (pas de cadenas), M4 bloquée
+[info] garage-voitures (WFS-499) : OK : flèche « suivante » : voiture suivante
+[info] garage-voitures (WFS-499) : OK : garage ouvert sur la M4
+[info] garage-voitures (WFS-499) : OK : « Acheter » avec 1 000 ★ : fenêtre ouverte, pas de Confirmer
+[info] garage-voitures (WFS-499) : OK : achat refusé : rien de débité, M4 toujours bloquée
+[info] garage-voitures (WFS-499) : OK : « Essai gratuit » de la m4 : écran du terrain
+[info] garage-voitures (WFS-499) : OK : essai de la m4 noté au départ (essai-m4=1)
+[info] garage-voitures (WFS-499) : OK : fin de l'essai de la m4 : « Acheter » sur l'écran de fin
+[info] garage-voitures (WFS-499) : OK : « Rejouer » avec la M4 bloquée, essai fait : pas de 2e course, retour au garage (garde-fou)
+[info] garage-voitures (WFS-499) : OK : garage après l'essai : M4 affichée, essai plus possible
+[info] garage-voitures (WFS-499) : OK : « Essai déjà fait » : rien ne se passe
+[info] garage-voitures (WFS-499) : OK : duel : salon en mémoire rejoint avec la M4 bloquée
+[info] garage-voitures (WFS-499) : OK : duel avec la M4 bloquée : pas de course, salon quitté (leave), retour au garage
+[info] garage-voitures (WFS-499) : OK : « Acheter » avec 3 000 ★ : fenêtre avec Confirmer
+[info] garage-voitures (WFS-499) : OK : Confirmer : 2 200 ★ débitées une fois, M4 débloquée et choisie (car=m4)
+[info] garage-voitures (WFS-499) : OK : M4 possédée : « Choisir » part en course, aucun 2e débit
+[info] garage-voitures (WFS-499) : OK : peinture Rouge gardée pour la M4 (paint-m4)
+[info] garage-voitures (WFS-499) : OK : « Essai gratuit » de la corsa : écran du terrain
+[info] garage-voitures (WFS-499) : OK : essai de la corsa noté au départ (essai-corsa=1)
+[info] garage-voitures (WFS-499) : OK : fin de l'essai de la corsa : « Acheter » sur l'écran de fin
+[info] garage-voitures (WFS-499) : OK : fin de l'essai, « Acheter » avec 800 ★ pour 250 ★ : fenêtre avec Confirmer
+[info] garage-voitures (WFS-499) : OK : Confirmer à la fin de l'essai : 250 ★ débitées, Corsa débloquée, bouton retiré
+[info] garage-voitures (WFS-499) : OK : course avec la M4 achetée (jour) : pas de retour au garage
+[info] garage-voitures (WFS-499) : OK : course avec la M4 achetée (nuit) : pas de retour au garage
+[info] garage-voitures (WFS-499) : OK : relance : M4 et Corsa possédées, Corsa choisie (dernier achat), solde et essais gardés
+[info] garage-voitures (WFS-499) : OK : English: Cancel, nothing charged
+[info] garage-voitures (WFS-499) : OK : « Essai gratuit » de la golf : écran du terrain
+[info] garage-voitures (WFS-499) : OK : essai de la golf noté au départ (essai-golf=1)
+[info] garage-voitures (WFS-499) : OK : fin de l'essai de la golf : « Acheter » sur l'écran de fin
+[info] garage-voitures (WFS-499) : OK : fin de l'essai → Menu : voiture de la partie remise sur la corsa (sauvegarde), plus la Golf bloquée
+[info] garage-voitures (WFS-499) : OK : course suivante depuis le menu : avec la voiture possédée, pas de retour au garage
+[info] garage-voitures (WFS-499) : 0 écart(s)

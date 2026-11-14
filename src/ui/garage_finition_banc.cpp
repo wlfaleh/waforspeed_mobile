@@ -38,6 +38,8 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
     std::remove(chemin.c_str());
     Sauvegarde& s = sauvegarde();
     s.charger(chemin);
+    // WFS-499 : avec la sauvegarde active, la Golf est à acheter ; ce banc ne teste que les finitions : il possède ses voitures
+    for (int i = 0; i < CAR_COUNT; i++) s.voituresPossedees.insert(CARS[i].id);
     ui::langue::choisir(ui::langue::Choix::Francais);
     // écran de référence 1280x720 : parcours complet ; autre taille (4:3, 16:10, téléphone 2400x1080) : écran du garage seulement
     // (rangée, défilement, aperçu, refus, FR / EN), captures suffixées par la taille ; les courses sont vérifiées en 1280x720
