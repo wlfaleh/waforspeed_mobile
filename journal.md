@@ -1574,3 +1574,6 @@ PR #409 relue sur 9d929dc5 (2e revue) : les 4 points du refus sont corrigés (é
 - PR #411 fusionnée en squash par le lead dev (8ca2bb87) : capture d'environnement préparée au chargement (0 pipeline créé en course), parcours `records` avec profil et voiture gratuite. Ticket 🟣 ; ✅ si les bancs du matin suivants sont verts sur le job « vitrines ».
 - Reste ouvert (noté dans `qa/Check.md`) : le ticket qui a fait tomber la 1re capture pendant la course n'est pas identifié.
 - Session terminée (un seul ticket par session) : aucun autre ticket demandé.
+
+### 2026-11-14 12:34:51 — R17 : coût d'une version PC ou console (smart-brainstorming)
+Question de l'utilisateur. Réponse et tableau dans `recommandations-smart-brain.md` (R17) : PC Steam conseillé après Android (≈ 100 $ + travail moyen, l'exécutable PC et la manette existent déjà) ; Switch plus tard avec une société ; Xbox / PlayStation déconseillés (pas de Vulkan, rendu à réécrire). Aucune décision : l'utilisateur choisit.
