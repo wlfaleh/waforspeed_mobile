@@ -15,7 +15,7 @@ Agent : Claude, agent dev3d (01Us6uCtfa) (session_01Us6uCtfaZCtBn6FQY7UQw9)
 - **Comment c'est vérifié** :
   - **`LogiqueAchatsTest`** (RG-09, 12 cas, faux client de facturation qui note chaque appel à Google) : créditer puis consommer (aucune consommation avant le crédit du jeu) ; non consommable confirmé (jamais consommé) ; en attente puis payé ; annulé ; rattrapage au lancement (jeu tué après le paiement) ; même jeton deux fois → une consommation ; consommation refusée puis reprise ; « sans pub » restauré après réinstallation sans reconfirmation ; « déjà possédé » ; hors ligne ; prix de Google ; journal sans jeton complet. **12 / 12 OK** en local (javac + JUnit 4.13.2) ; en CI : `testReleaseUnitTest` (déjà dans `build.yml` et `matin.yml`) ;
   - `Achats.java` compilé en local contre de petites copies vides des classes Android et Google (signatures de Billing 8) : aucune erreur ; `achats_android.cpp` vérifié avec `g++ -fsyntax-only -D__ANDROID__` (jni.h du JDK) : seule différence, `AttachCurrentThread(JNIEnv**)` du NDK, écrit comme dans `paquets_android.cpp` ;
-  - **`test_market`** OK et **TESTS_CPU** (voir plus bas), sur la branche synchronisée avec `main` ;
+  - **`test_market`** OK et **les 142 tests CPU** (voir plus bas), sur la branche synchronisée avec `main` ;
   - **banc PC `market`** : identique octet pour octet entre `main` et la branche (`cmp`).
 - **Limites et risques connus** :
   - **pas de vrai `logcat` de l'APK ici** : pas de NDK ni d'émulateur dans le conteneur, et le dépôt Maven de Google est bloqué par le proxy de la session (pas de contournement, `regles-reseau.md`) ; la CI de branche n'est pas permise pour ce ticket. **La compilation de l'APK avec la bibliothèque n'est donc prouvée que par la CI de `main` après la fusion** (risque : une signature de Billing 8 différente de mes copies → CI de `main` rouge, je corrige tout de suite tant que ma session existe). Capture 2 = lignes exactes du code + même séquence rejouée sur la JVM ; le vrai `logcat` : APK de `main` (émulateur des bancs du matin) et WFS-515 (comptes de test de la Play Console) ;
@@ -26,7 +26,7 @@ Agent : Claude, agent dev3d (01Us6uCtfa) (session_01Us6uCtfaZCtBn6FQY7UQw9)
 
 ## Tests CPU
 
-Branche synchronisée avec `main` (commit a198eff7) ; journal complet : [`tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511/tests-cpu.log).
+Branche synchronisée avec `main` (code testé : commit 5e64a5c0 ; les commits suivants ne changent que `qa/pr/WFS-511` et `journal.md`) ; journal complet : [`tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-511/qa/pr/WFS-511/tests-cpu.log).
 
 ```
 [OK] test_virages_fleches (0 s)

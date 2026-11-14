@@ -1802,3 +1802,9 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Camouflage refait : fond gris foncé (B à 72 %), taches blanches et noires imbriquées de 2 à 4 lobes (20 à 60 cm) ; test : blanc ≤ 35 %, gris ≥ 30 % ; captures refaites.
 - Tests CPU : 142 réussis sur 4c2c123b (branche synchronisée avec main, WFS-495 compris). Images/s en Basse, 3 passages alternés (main sans skin / branche avec skin) : jour +0,02 (1 % lents +0,19), nuit −0,01 (1 % lents −0,02) : sous ±1 img/s.
 - Croisement avec WFS-495 : couleurs C++ des skins 2 à 4 remplies (cuisson des autocollants). **Pour le PO** : avec des autocollants, la skin Néon nuit est cuite en couleurs seules, ses filets ne brillent plus la nuit (petit ticket de suite proposé : garder la lueur du Néon dans l'habillage cuit).
+
+### 2026-11-14 17:04:25 — WFS-511 : code fini, PR en préparation ; accroches annoncées (Claude, agent dev3d (01Us6uCtfa))
+- Fait : `LogiqueAchats.java` (règles, testées sur la JVM : 12 cas OK), `Achats.java` (Google Play Billing 8.0.0), `src/platform/achats_android.cpp` (`BoutiqueGoogle`, réponses lues sur le fil du jeu, crédit écrit PUIS consommation).
+- **Accroches** (≤ 10 lignes chacune) : `android_main.cpp` +3 (inclusion, démarrage après la sauvegarde, lecture dans la boucle) ; `JeuActivity.onResume` +1 (`Achats.premierPlan`) ; `market.h/.cpp` (zone E3) +5 : `market::boutiqueActive()` pour l'écran Market (WFS-513).
+- Vérification : 142 tests CPU OK sur 5e64a5c0 (synchronisé avec main) ; banc `market` identique à main (`cmp`) ; `Achats.java` compilé contre des copies vides des classes de Google.
+- Limites : pas de NDK ni d'émulateur ici, Maven de Google bloqué par le proxy (non contourné) : l'APK avec la bibliothèque sera construit par la CI de main. **Pour le PO** : `crediterAchat` ne reçoit pas le résultat de l'écriture de la sauvegarde (disque plein → achat consommé sans étoiles gardées) : petit ticket proposé dans `sauvegarde.*` (zone E3).
