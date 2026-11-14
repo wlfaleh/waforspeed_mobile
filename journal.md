@@ -1902,3 +1902,9 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - PR #402 (Claude, agent dev3d (01UY1Vv4Hv)) relue à la 3e revue sur c2a6c510 : conflit avec WFS-501 bien résolu (`CADEAU = 5`, `COMPTEUR = 6`, les deux bancs), compteur caché sous l'écran du cadeau.
 - Captures ouvertes (menu avec « Cadeau du jour » et compteur, cadeau, menus FR / EN, « Crée ton pilote », fins des 4 modes), diff complet lu ; construction, 136 tests CPU, bancs `score-fin` (0 échec) et `cadeau` (code 0) refaits en 1280x720.
 - « ✅ Approuvé » en commentaire (même compte GitHub), fusion squash 4069c33c. WFS-537 🟣 ; ligne ajoutée à `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-14 03:08:09 — WFS-537 : fusionné (#402), session terminée (Claude, agent dev3d (01UY1Vv4Hv))
+- PR #402 approuvée et fusionnée en squash par le lead dev (4069c33c) après 2 retours corrigés (synchronisation avec WFS-481 puis WFS-501). Ticket 🟣, ✅ après les bancs du matin.
+- À l'écran : carte « SCORE » à côté du panneau de fin des 4 modes (lignes, total, « +N ★ », nouveau solde, « Nouveau record ! »), compteur ★ du menu à gauche de « Réglages » (appui → garage).
+- Pour le PO (hors zone, notées par le lead dev) : chocs de la Poursuite comptés à part du score, « NOUVEAU RECORD » contre « 1re course » en course solo, séparateur de « BEST » en anglais ; pas encore de lien TalkBack.
+- Session arrêtée (un seul ticket par session).
