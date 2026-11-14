@@ -1798,3 +1798,7 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Camouflage refait : fond gris foncé (B à 72 %), taches blanches et noires imbriquées de 2 à 4 lobes (20 à 60 cm) ; test : blanc ≤ 35 %, gris ≥ 30 % ; captures refaites.
 - Tests CPU : 142 réussis sur 4c2c123b (branche synchronisée avec main, WFS-495 compris). Images/s en Basse, 3 passages alternés (main sans skin / branche avec skin) : jour +0,02 (1 % lents +0,19), nuit −0,01 (1 % lents −0,02) : sous ±1 img/s.
 - Croisement avec WFS-495 : couleurs C++ des skins 2 à 4 remplies (cuisson des autocollants). **Pour le PO** : avec des autocollants, la skin Néon nuit est cuite en couleurs seules, ses filets ne brillent plus la nuit (petit ticket de suite proposé : garder la lueur du Néon dans l'habillage cuit).
+
+### 2026-11-14 16:59:06 — WFS-493 fusionné par le lead dev (lead-dev)
+
+PR #413, 2e revue sur 73b2d8ac : les 3 défauts de la 1re revue sont corrigés (Camouflage sur fond gris, taches blanches et noires imbriquées ; section « Tests CPU » ; images/s en Basse, écart sous ±1 img/s). Captures ouvertes, diff lu, construction et **142 tests CPU** refaits par le lead dev. « ✅ Approuvé » en commentaire (même compte GitHub), puis fusion en squash : **42f6c241**. Statut 🟣. Remarques non bloquantes : quelques taches noires du Camouflage restent rondes sur une zone blanche (Golf, 500) ; **pour le PO** : ticket de suite, le Néon ne brille plus la nuit sous des autocollants (WFS-495).
