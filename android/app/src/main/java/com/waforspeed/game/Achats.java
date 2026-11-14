@@ -59,6 +59,8 @@ public final class Achats {
     private static volatile List<String> produitsDemandes = new ArrayList<>();
     private static final Map<String, ProductDetails> details = new ConcurrentHashMap<>();
     private static long attenteMs = 1000;
+    // achats demandés avant le démarrage de la boutique : réponse « erreur » rendue au jeu (l'écran ne reste pas en attente)
+    private static final List<String> erreursAvantDemarrage = new ArrayList<>();
 
     // ---- appelés par le jeu (JNI, fil du jeu)
 
@@ -103,7 +105,11 @@ public final class Achats {
     public static void acheter(final String produit) {
         PRINCIPAL.post(new Runnable() {
             @Override public void run() {
-                if (logique == null) return;
+                if (logique == null) {
+                    JOURNAL.ecrire("achat demandé avant le démarrage du service : " + produit + " (rien de crédité)");
+                    synchronized (erreursAvantDemarrage) { erreursAvantDemarrage.addAll(Arrays.asList(LogiqueAchats.EV_ERREUR, produit, "")); }
+                    return;
+                }
                 logique.demande(produit);
                 final ProductDetails d = details.get(produit);
                 final Activity a = activite.get();
@@ -133,8 +139,11 @@ public final class Achats {
 
     // événements pour le jeu (triplets type, produit, valeur) ; tableau vide s'il n'y a rien
     public static String[] evenements() {
+        final List<String> t = new ArrayList<>();
+        synchronized (erreursAvantDemarrage) { t.addAll(erreursAvantDemarrage); erreursAvantDemarrage.clear(); }
         final LogiqueAchats l = logique;
-        return l == null ? new String[0] : l.vider();
+        if (l != null) t.addAll(Arrays.asList(l.vider()));
+        return t.toArray(new String[0]);
     }
 
     // ---- appelé par JeuActivity.onResume (fil de l'interface) : RG-05, rattrapage à chaque retour au premier plan

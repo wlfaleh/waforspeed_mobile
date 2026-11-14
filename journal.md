@@ -1794,17 +1794,37 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Plan court : `Achats.java` sur le modèle de `Paquets.java`, pont JNI sur le modèle de `paquets_android.cpp`, branchement sur `Boutique` de WFS-510, tests JVM avec un faux client, captures (tests JVM, logcat, banc `market`), PR, lead dev.
 - Prochaine `@dev` : WFS-513 (écran Market, prêt).
 
-### 2026-11-14 16:31:20 — WFS-511 : début, branche créée (Claude, agent dev3d (01Us6uCtfa))
-- Ticket reçu du PO : Google Play Billing (E21, zone E7). Branche `feature/waforspeed-511` créée depuis `main`.
-- Plan : lire `Boutique` (WFS-510), `Paquets.java`, `paquets_android.cpp` ; ajouter `Achats.java`, `achats_android.cpp`, tests JVM avec un faux client.
-
 ### 2026-11-14 16:44:24 — WFS-493 : retour lead dev corrigé, PR #413 à relire (Claude, agent dev3d (01Us6uCwTQ))
 - Camouflage refait : fond gris foncé (B à 72 %), taches blanches et noires imbriquées de 2 à 4 lobes (20 à 60 cm) ; test : blanc ≤ 35 %, gris ≥ 30 % ; captures refaites.
 - Tests CPU : 142 réussis sur 4c2c123b (branche synchronisée avec main, WFS-495 compris). Images/s en Basse, 3 passages alternés (main sans skin / branche avec skin) : jour +0,02 (1 % lents +0,19), nuit −0,01 (1 % lents −0,02) : sous ±1 img/s.
 - Croisement avec WFS-495 : couleurs C++ des skins 2 à 4 remplies (cuisson des autocollants). **Pour le PO** : avec des autocollants, la skin Néon nuit est cuite en couleurs seules, ses filets ne brillent plus la nuit (petit ticket de suite proposé : garder la lueur du Néon dans l'habillage cuit).
+
+### 2026-11-14 16:59:06 — WFS-493 fusionné par le lead dev (lead-dev)
+
+PR #413, 2e revue sur 73b2d8ac : les 3 défauts de la 1re revue sont corrigés (Camouflage sur fond gris, taches blanches et noires imbriquées ; section « Tests CPU » ; images/s en Basse, écart sous ±1 img/s). Captures ouvertes, diff lu, construction et **142 tests CPU** refaits par le lead dev. « ✅ Approuvé » en commentaire (même compte GitHub), puis fusion en squash : **42f6c241**. Statut 🟣. Remarques non bloquantes : quelques taches noires du Camouflage restent rondes sur une zone blanche (Golf, 500) ; **pour le PO** : ticket de suite, le Néon ne brille plus la nuit sous des autocollants (WFS-495).
+
+### 2026-11-14 16:59:41 — WFS-493 fusionné (#413, 42f6c241) : session terminée (Claude, agent dev3d (01Us6uCwTQ))
+- Skins Drift Tokyo, Néon nuit (filets lumineux la nuit) et Camouflage urbain sur 208, 500, GT86, Golf, Corvette C7 et Giulia ; fusionné par le lead dev après une correction (Camouflage refait, tests CPU, images/s en Basse).
+- Suites pour le PO : (1) Néon nuit sous des autocollants (WFS-495) : les filets ne brillent plus la nuit (ticket de suite à créer) ; (2) remarque de la revue : quelques taches noires encore rondes sur les zones blanches du Camouflage, à regarder à la recette (`qa/Check.md`).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-14 17:26:52 — WFS-511 : PR #416 refusée par le lead dev (lead-dev)
+- Relu : tout le diff (build.gradle, Achats.java, LogiqueAchats.java, LogiqueAchatsTest.java, achats_android.cpp, accroches android_main.cpp +3, JeuActivity +1, market.h/.cpp +5) et les 3 captures texte (tests JVM, journal du démarrage, banc `market` identique).
+- Refait : branche + main en local, 142 tests CPU réussis (506 s) ; LogiqueAchatsTest 12/12 OK (javac + JUnit) ; Maven de Google bloqué ici aussi (APK non construit).
+- Refus (revue dans la PR) : (1) `android.useAndroidX=true` absent de `android/gradle.properties` alors que billing 8 tire des dépendances AndroidX (play-services-base) : l'AGP 8.5.2 arrêterait `assembleRelease` → CI de main rouge ; (2) conflit avec main sur `journal.md` (entrée WFS-511 insérée au milieu) : PR non fusionnable.
+- Pour le PO (non bloquant) : pack débutant recrédité après une réinstallation (livre vide) : à trancher dans E21 ; risque `crediterAchat` sans résultat d'écriture déjà signalé par le développeur.
+
+### 2026-11-14 16:31:20 — WFS-511 : début, branche créée (Claude, agent dev3d (01Us6uCtfa))
+- Ticket reçu du PO : Google Play Billing (E21, zone E7). Branche `feature/waforspeed-511` créée depuis `main`.
+- Plan : lire `Boutique` (WFS-510), `Paquets.java`, `paquets_android.cpp` ; ajouter `Achats.java`, `achats_android.cpp`, tests JVM avec un faux client.
 
 ### 2026-11-14 17:04:25 — WFS-511 : code fini, PR en préparation ; accroches annoncées (Claude, agent dev3d (01Us6uCtfa))
 - Fait : `LogiqueAchats.java` (règles, testées sur la JVM : 12 cas OK), `Achats.java` (Google Play Billing 8.0.0), `src/platform/achats_android.cpp` (`BoutiqueGoogle`, réponses lues sur le fil du jeu, crédit écrit PUIS consommation).
 - **Accroches** (≤ 10 lignes chacune) : `android_main.cpp` +3 (inclusion, démarrage après la sauvegarde, lecture dans la boucle) ; `JeuActivity.onResume` +1 (`Achats.premierPlan`) ; `market.h/.cpp` (zone E3) +5 : `market::boutiqueActive()` pour l'écran Market (WFS-513).
 - Vérification : 142 tests CPU OK sur 5e64a5c0 (synchronisé avec main) ; banc `market` identique à main (`cmp`) ; `Achats.java` compilé contre des copies vides des classes de Google.
 - Limites : pas de NDK ni d'émulateur ici, Maven de Google bloqué par le proxy (non contourné) : l'APK avec la bibliothèque sera construit par la CI de main. **Pour le PO** : `crediterAchat` ne reçoit pas le résultat de l'écriture de la sauvegarde (disque plein → achat consommé sans étoiles gardées) : petit ticket proposé dans `sauvegarde.*` (zone E3).
+
+### 2026-11-14 17:27:58 — WFS-511 : retour lead dev (PR #416) en correction (Claude, agent dev3d (01Us6uCtfa))
+- Réponse « Bien reçu » sous la revue. Corrigé : `android.useAndroidX=true` dans `android/gradle.properties` (Billing 8 tire AndroidX) ; branche synchronisée avec main, journal sans conflit (mes entrées à la fin).
+- Remarques non bloquantes traitées dans ma zone : achat demandé avant le démarrage du service → événement « erreur » rendu au jeu ; démarrage noté réussi seulement sans exception Java.
+- **Pour le PO** (hors ticket) : pack débutant recrédité après réinstallation (livre vide, Google le rend : règle à trancher dans E21) ; résultat de l'écriture de la sauvegarde non rendu à `crediterAchat`.

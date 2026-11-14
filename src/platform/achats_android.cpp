@@ -129,7 +129,7 @@ void achatsAndroidDemarrer(JavaVM* vm, jobject activite) {
         jstring p = env->NewStringUTF(produits.c_str()), c = env->NewStringUTF(consommables.c_str());
         env->CallStaticVoidMethod(k, m, g_achActivite, p, c);
         for (jstring s : {p, c}) if (s) env->DeleteLocalRef(s);
-        g_achDemarre = true;
+        g_achDemarre = !env->ExceptionCheck();   // exception Java : boutique notée indisponible (avecAchats l'efface ensuite)
     });
     WFS_LOG("achats (WFS-511) : boutique Google Play %s", g_achDemarre ? "démarrée" : "indisponible");
 }
