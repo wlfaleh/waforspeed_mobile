@@ -1,4 +1,4 @@
-## Agent : Claude, agent dev3d (01Us6uCwTQ)
+Agent : Claude, agent dev3d (01Us6uCwTQ)
 
 **Ticket** : WFS-493 — règles : `regles-de-gestion/WFS-493.md`
 
@@ -9,8 +9,8 @@
   - `tools/skins/generer.py` : 3 nouveaux dessins, en mètres réels et dans le même dépliage que la Rallye :
     - **Drift Tokyo** (RG-02) : dégradé vermillon, plein à l'arrière et fondu vers l'avant le long d'une ligne penchée à 35° (1,10 m) ; trois entailles noires dans le dégradé, deux sur le capot ; trois **signes inventés** de 11 cm sur l'aile arrière, qui ne sont ni des lettres, ni des idéogrammes, ni des chiffres.
     - **Néon nuit** (RG-03) : filets cyan de 3,5 cm et magenta de 2,5 cm sur les flancs (le cyan monte en biais à 25° au-dessus de la roue arrière), sur les faces avant et arrière, et en deux paires sur le dessus.
-    - **Camouflage** (RG-04) : habillage complet en blanc, gris et noir, avec des taches organiques allongées de 20 à 60 cm de diamètre. Elles sont posées en 3D sur l'enveloppe de la voiture, donc continues d'un panneau à l'autre.
-  - **Taille des taches** : elle est mesurée à chaque génération (journal de l'outil). Les taches noires visibles du flanc mesurent 19 à 36 cm (quartiles), et 72 à 92 % de leur surface est en taches de 20 à 60 cm.
+    - **Camouflage** (RG-04, refait après la revue) : habillage complet, avec un **fond gris moyen foncé** et des taches blanches et noires qui s'imbriquent. Chaque tache est faite de 2 à 4 lobes allongés et ondulés : le contour est irrégulier, pas un rond. Les taches font de 20 à 60 cm et sont posées en 3D sur l'enveloppe de la voiture, donc continues d'un panneau à l'autre.
+  - **Taille des taches** : elle est mesurée à chaque génération (journal de l'outil). Sur les flancs, la médiane va de 19 à 23 cm pour les blanches et de 24 à 30 cm pour les noires. La part de la surface en taches de 20 à 60 cm va de 73 à 91 % (blanches) et de 88 à 98 % (noires). Flanc de la Golf : 23 % de blanc, 38 % de gris, 37 % de noir.
   - `tools/skins/voitures.json` : z des boucliers avant et arrière. Pour la Golf, la boîte relevée au banc va de −2,148 à 2,145 m.
   - **Textures** : 18 nouvelles dans `assets/cars/skins/` (EAC RG11, 1024 × 1024, 11 niveaux, **1,33 Mo** chacune, sous la limite de 1,5 Mo).
   - `shaders/vehicule.glsl` :
@@ -20,20 +20,44 @@
   - `src/render/vehicule_skin_banc.cpp` : banc `WFS_BANC=skins`, nouvelle variable `WFS_SKINS`. Captures par skin : planche de chaque voiture, planches des 6 voitures de 3/4 avant et de 3/4 arrière, Néon de nuit (vitrine et course), Drift Tokyo et Camouflage en course de jour. Les captures de la Rallye gardent leur nom.
   - Rien d'autre ne change : ni moteur, ni sauvegarde, ni écran.
 - **Comment c'est vérifié** :
-  - **Tests CPU** : 140 réussis (`qa/pr/WFS-493/tests-cpu.log`). `test_vehicule_skin` lit les 18 nouvelles textures et vérifie :
+  - **Tests CPU** : voir la section ci-dessous. `test_vehicule_skin` lit les 18 nouvelles textures et vérifie :
     - poids ≤ 1,5 Mo, format, 11 niveaux ;
     - Drift : plein à l'arrière, peinture à l'avant ;
     - Néon : filets cyan et magenta, peinture entre eux ;
-    - Camouflage : couleur A partout sur le flanc, et au moins 1/8 du flanc dans chaque ton (blanc, gris, noir).
+    - Camouflage : couleur A partout sur le flanc, **blanc ≤ 35 %**, **gris ≥ 30 %**, noir ≥ 1/8.
   - **Banc lavapipe** (même rendu que la CI) : 55 captures après, toutes regardées. Les 3 skins sont propres sur les 6 voitures, des 4 côtés. Le Néon se lit la nuit sans tache blanche (vitrine et course). Les motifs sont continus aux jonctions des panneaux.
   - **Non-régression** : les 19 captures Rallye / sans skin d'avant et d'après sont identiques à l'œil (PSNR 37 à 57 dB ; les petits écarts viennent de la scène animée). Une seule texture d'habillage est en mémoire en course (journal du banc, RG-03 de WFS-492).
   - Contrôle des licences : 0 manque. Aucun téléchargement.
 - **Limites et risques connus** :
-  - **Taches grises du Camouflage** : les noires mordent dessus, donc la partie grise visible est plus petite que la tache dessinée (médiane visible 19 cm). Les taches dessinées font toutes 20 à 60 cm.
+  - **Néon nuit sous des autocollants** (WFS-495, fusionné entre-temps) : avec des autocollants, la skin est « cuite » dans une seule texture de couleurs. Les couleurs du Néon y sont justes (la copie C++ des couleurs des skins 2 à 4 est remplie dans cette PR, sinon `test_vehicule_autocollants` échouait), mais les filets ne brillent plus la nuit. Le PO en est informé (journal) pour un petit ticket de suite.
   - **Nez très incliné (Corvette)** : la projection de face s'y allonge un peu, comme pour la Rallye.
   - **Prix et règles d'obtention** (Néon nuit seulement en cadeau ou en succès) : ils sont déjà dans `configgame.json` ; l'écran viendra avec WFS-494, hors périmètre.
-  - **Mémoire** : inchangée (une seule texture de 1,33 Mo en course). Le banc d'endurance n'a pas été relancé : l'écart de coût du shader se limite à un test d'entier et à une addition par pixel peint habillé.
-  - **WFS-495** (autocollants, autre session) touche la même texture d'habillage : synchronisation avec `main` juste avant la fusion.
+  - **Mémoire** : inchangée (une seule texture de 1,33 Mo en course).
+  - **Images par seconde mesurées au PC** (lavapipe, pilote logiciel) : ce n'est pas une mesure sur téléphone.
+
+## Tests CPU
+
+Commit testé : **4c2c123b** (branche synchronisée avec `main`, WFS-495 compris). Journal complet : `qa/pr/WFS-493/tests-cpu.log`. Fin du journal :
+
+```
+[OK] test_ville_sol (2 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 142 test(s) réussi(s) en 341 s
+```
+
+## Images par seconde en qualité Basse (RC-E18-03)
+
+Banc `WFS_BANC=peinture2-mesure` (208, Ville, course au pilote automatique, 400 images chronométrées), 3 passages alternés :
+- avant = `main` sans skin ;
+- après = branche avec skin, Camouflage de jour et Néon nuit de nuit (avec la lueur).
+
+Détail : `qa/pr/WFS-493/endurance-basse.txt`. Les textures du Camouflage ont changé depuis la mesure, mais le coût est le même : même format, même lecture dans le shader.
+
+```
+jour : moyenne avant 3.478, après 3.502 img/s (écart +0.024) ; 1 % les plus lents avant 2.564, après 2.752 img/s (écart +0.188) ; limite ±1 img/s : OK
+nuit : moyenne avant 3.085, après 3.077 img/s (écart -0.008) ; 1 % les plus lents avant 2.356, après 2.341 img/s (écart -0.015) ; limite ±1 img/s : OK
+```
 
 ## Captures pour le lead dev (55 après)
 
