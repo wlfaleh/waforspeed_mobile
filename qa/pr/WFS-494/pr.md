@@ -30,7 +30,14 @@
 
 ## Images/s en qualité Basse (RC-E18-03)
 
-MESURE
+Banc `peinture2-mesure` (Basse, Ville, 208 en Camouflage, 600 images, lavapipe), main 5ea1572d et branche alternés, 2 passages (`qa/pr/WFS-494/mesure-basse.txt`) :
+
+| Passage | main | branche | écart | 1 % les plus lents (main / branche) |
+|---|---|---|---|---|
+| 1 | 3,619 img/s | 3,934 img/s | +0,32 | 2,535 / 2,574 |
+| 2 | 3,974 img/s | 3,919 img/s | −0,06 | 2,866 / 2,928 |
+
+Écart sous ±1 img/s (bruit du banc) : le ticket ne change rien au rendu en course (la skin en course est celle de WFS-492, posée au chargement).
 
 ## Captures pour le lead dev (37 après)
 
