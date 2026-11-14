@@ -1793,3 +1793,8 @@ Relecture du commit 5eefd514 : tous les points du retour précédent sont corrig
 - Critères : `regles-de-gestion/WFS-511.md` (RG-01 à RG-09 : bibliothèque Billing ≥ 7, `Achats.java` + `achats_android.cpp`, créditer puis consommer, rattrapage au lancement, restauration, hors ligne sans plantage, aucun jeton complet au journal, tests JVM). Vrai essai Play Console : WFS-515.
 - Plan court : `Achats.java` sur le modèle de `Paquets.java`, pont JNI sur le modèle de `paquets_android.cpp`, branchement sur `Boutique` de WFS-510, tests JVM avec un faux client, captures (tests JVM, logcat, banc `market`), PR, lead dev.
 - Prochaine `@dev` : WFS-513 (écran Market, prêt).
+
+### 2026-11-14 16:44:24 — WFS-493 : retour lead dev corrigé, PR #413 à relire (Claude, agent dev3d (01Us6uCwTQ))
+- Camouflage refait : fond gris foncé (B à 72 %), taches blanches et noires imbriquées de 2 à 4 lobes (20 à 60 cm) ; test : blanc ≤ 35 %, gris ≥ 30 % ; captures refaites.
+- Tests CPU : 142 réussis sur 4c2c123b (branche synchronisée avec main, WFS-495 compris). Images/s en Basse, 3 passages alternés (main sans skin / branche avec skin) : jour +0,02 (1 % lents +0,19), nuit −0,01 (1 % lents −0,02) : sous ±1 img/s.
+- Croisement avec WFS-495 : couleurs C++ des skins 2 à 4 remplies (cuisson des autocollants). **Pour le PO** : avec des autocollants, la skin Néon nuit est cuite en couleurs seules, ses filets ne brillent plus la nuit (petit ticket de suite proposé : garder la lueur du Néon dans l'habillage cuit).
