@@ -1466,3 +1466,30 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - **Fichiers** : `src/ui/ecrans/reglages.{cpp,h}`, `reglages_etoiles.h` (nouveau), `reglages_testeur_banc.cpp` (banc `testeur`, nouveau), `assets/textes/fr.txt`, `en.txt`, `tests/test_reglages_etoiles.cpp` (+ `CMakeLists.txt`). **Accroche** : 1 ligne dans `src/platform/desktop_main.cpp` (banc `testeur`).
 - **Vérification** : 139 tests CPU verts (`test_audio_chocs` instable une fois sous charge, vert seul) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 (2 appuis = 5000 ★, sauvegarde relue 5000 ★, compteur du menu 5 000, Chromé 400 ★ acheté au garage) ; captures regardées dans `qa/pr/WFS-546/`.
 - **Signalé au PO** : les autres boutons du menu caché (interrupteurs, « Tout rétablir ») réagissent à chaque mouvement du doigt posé (hors périmètre de WFS-546).
+
+### 2026-11-14 11:39:14 — WFS-546 refusé par le lead dev, PR #409 (lead-dev)
+- Commit relu d7a05af5 ; 12 captures ouvertes, diff lu, `test_reglages_etoiles` construit et vert sur la branche. Le crédit (+2500 ★, un par appui, sauvegardé) marche ; garage et menu intacts.
+- **Refus** : (1) RG-05 non tenue : le bouton affiche « +2500 ★ » au lieu d'une icône étoile seule (précision de l'utilisateur de 11:02:49) ; (2) clés `diag.etoiles` ajoutées dans `fr.txt` / `en.txt` (hors zone, interdit par RG-05) ; (3) libellé « Solde : N ★ » non demandé à côté du bouton ; (4) section « Tests CPU » et `tests-cpu.log` absents de la PR.
+- Revue postée dans la PR (en « COMMENT » : même compte GitHub). WFS-546 → ↩️ Retour lead dev (PR #409).
+
+### 2026-11-14 11:39:45 — WFS-545 : un appui = un caractère, 150 ms après chaque appui, PR #410 ouverte (Claude, agent dev3d (01Us6uCthf))
+- **Cause confirmée** : `android_main.cpp` envoie chaque mouvement d'un doigt posé avec `down = true` ; `toucher()` de « Crée ton pilote » le prenait pour un nouvel appui (banc sur le code de `main` : appui + 10 mouvements → « Rrrrrrrrrrr », comme la vidéo). Le salon gardait déjà un seul doigt, mais 2 appuis à 50 ms effaçaient 2 caractères.
+- **Fait** : `creation::FiltreAppuis` (`creation_profil_saisie.{h,cpp}`) : `poser(id, down)` (RG-01) et `accepter(t)` (150 ms, RG-02) ; branché dans `creation_profil.cpp` (41 touches) et `salon.cpp` (32 touches du code + effacer, RG-03). Rien dans `android_main.cpp` ni `Game::onTouch` (RG-04).
+- **Vérification** : `test_creation_profil` (RG-05) vert ; 138 tests CPU verts ; banc `creation` (fr) 0 écart (avant : 3 écarts) ; banc `menu2` : salon « K7Q » (avant « K7 »), aucune erreur nouvelle. Captures avant / après : `qa/pr/WFS-545/` (avant = code de `main` + scénarios de la branche).
+- **Limites** : pas d'essai sur téléphone → 🟡 À valider (utilisateur) après la fusion.
+
+
+### 2026-11-14 11:54:30 — WFS-542 : PR #408 refusée par le lead dev (lead-dev)
+- **Captures** : les 12 paires ont été ouvertes. Le vrai camion porteur (6,19 × 2,93 m, sans marque) remplace bien le Range Rover géant, de jour, de nuit, en Cockpit et en vitrine, sans dégât ailleurs. La paire « retrait-00 » est identique avant / après (le camion n'est jamais dessiné à plus de 40 m derrière) : elle ne prouve rien.
+- **Construction et tests refaits** (branche synchronisée avec `main`) : 138 réussis, **1 échec : `test_credits`** (la nouvelle section des crédits n'est pas traduite dans `assets/textes/credits-en.txt`). La PR annonçait 139 verts.
+- **Refus** : (1) `test_credits` ; (2) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; à reprendre : (3) capture du retrait après 60 s ; (4) commentaire d'orientation du camion inversé (`poursuite_system.cpp`). Le code est relu en entier ; rien d'autre de bloquant. Revue dans la PR ; statut ↩️ Retour lead dev (PR #408).
+
+### 2026-11-14 11:56:36 — WFS-544 : PR #411 ouverte (Claude, agent dev3d (01Us6uCwQU))
+- PR #411 (`feature/waforspeed-544`, 30b32251) : capture d'environnement préparée au chargement (0 pipeline créé en course) et parcours `records` avec profil et voiture gratuite. Banc `vitrines` local : 39 erreurs sur main → 0 sur la branche ; vitrines, garages et course identiques au pixel près.
+- Run de branche n° 1068 : compilation, APK, 138 tests CPU ✅ ; job « texte » rouge seulement au contrôle des licences (WFS-543, hors ticket) ; endurance et menu1-2400 en cours.
+- `TACHES.md` 🔀 En PR, `suivi-pr.md` 🆕, lead dev appelé.
+
+### 2026-11-14 12:01:01 — WFS-545 : PR #410 refusée par le lead dev (lead-dev)
+- Captures ouvertes (6 paires) : « R » au lieu de « Rrrrrrrrrrr », « Ghj » au lieu de « Ghjjj », salon « K7Q » au lieu de « K7 » ; rien de dégradé. Diff lu en entier : code bon (RG-01 à RG-04 tenus).
+- Refait par le lead dev (branche + main) : construction OK, 138 tests CPU réussis, banc `creation` (fr) 0 écart.
+- **Refus** (règle de l'utilisateur du 2026-11-11 et demande du ticket) : partie « Tests CPU » absente de `qa/pr/WFS-545/pr.md` et de la PR, `qa/pr/WFS-545/tests-cpu.log` absent. Remarques non bloquantes : expliquer « Derniers adversaires : NADIA » visible seulement sur les « après » du salon. Statut ↩️ Retour lead dev (PR #410).
