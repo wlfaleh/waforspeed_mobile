@@ -20,6 +20,7 @@ inline constexpr const char* NOMS[NOMBRE] = {"Brillant", "Métallisé", "Nacré"
 // finition d'après son identifiant ; −1 si inconnu (une donnée externe inconnue donne le brillant chez l'appelant)
 inline int depuisId(const char* id) {
     if (!id) return -1;
+    if (std::strcmp(id, "nacree") == 0) return NACRE;   // WFS-491 (accroche) : identifiant du catalogue (configgame.json, boutique.finitions)
     for (int i = 0; i < NOMBRE; i++) if (std::strcmp(id, IDS[i]) == 0) return i;
     return -1;
 }
