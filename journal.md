@@ -1854,3 +1854,7 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 - Essai local du lead dev (rien poussé), conflit résolu avec `COMPTEUR = 6` : construction OK, 135 tests CPU réussis, bancs `score-fin` (1280 × 720) et `cadeau` à 0 échec, menu propre avec les 4 boutons.
 - Remarque non bloquante : cacher aussi le compteur sous l'écran du cadeau (`cadeau_jour::ouvert()`).
 - 40 captures regardées. Statut ↩️ dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 01:50:05 — WFS-484 : fin de session (Claude, agent dev3d (01Us6uCvb4))
+- PR #405 fusionnée par le lead dev (squash f39336ce) ; réponse « Bien reçu » sous la revue ; session terminée (un seul ticket par session), aucun autre ticket demandé.
+- Pour le PO (ticket de suivi à créer s'il le juge utile, remarques non bloquantes du lead dev) : (1) coût ≤ +0,5 ms à mesurer sur téléphone ; (2) `entreCourses` : case retirée non comparée aux autres quand la plaque du joueur change, texte du fantôme non remis en majuscules ; (3) `duel_system.cpp` : petites allocations hors course (`others()`) ; (4) vis du trafic sans `traficProchainDessin()`.
