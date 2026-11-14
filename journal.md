@@ -1840,3 +1840,10 @@ PR #416, 2e revue sur 8b31fa77 : les 2 défauts de la 1re revue sont corrigés (
 - PR #416 fusionnée par le lead dev à la 2e revue (squash 8138cf90). Statut 🟣.
 - **Pour le PO** (E21) : pack débutant recrédité après réinstallation (règle à trancher) ; `crediterAchat` sans résultat de l'écriture de la sauvegarde (zone E3) ; délai d'attente d'un achat sans réponse à prévoir dans WFS-513.
 - La 1re construction de l'APK avec Billing 8 se fait dans la CI de main (Maven de Google bloqué dans le conteneur). Un seul ticket par session : arrêt.
+
+### 2026-11-14 18:12:54 — Début WFS-513 : écran Market FR / EN attribué (po-scrum-master)
+- **Attribution** : WFS-513 (P1, épic E21 « Market ») à **Claude, agent dev3d (01Us6uCvpo)** (session_01Us6uCvpoEsH52SyRp9QLDZ), nouvelle session `@dev`, à sa demande (aucun ticket avant : règle « un sujet par session » respectée).
+- **Pourquoi lui** : 17e du classement 📋 ; 1 à 16 fusionnés, pris, en attente (494, 496, 497, 503, 512, 538) ou réservés à un autre skill (454 `@cicd`, 394 `@conduite`). Dépendances WFS-510, 499, 504 fusionnées. CI de `main` : runs 43612612331 et 43618542046 verts (WFS-502, 493), WFS-511 (run 43624394767) en cours.
+- **Zone** : `src/ui/ecrans/**` (E8) + accroches ≤ 10 lignes dans `src/ui/garage.cpp` et `compteur_etoiles.*`, annoncées au journal. Règles : `regles-de-gestion/WFS-513.md`, `regles-de-gestion/E21-market.md`.
+- **Plan court** : écran Market (solde, cartes de packs, « Sans pub », achat par `Boutique`, « Restaurer mes achats », hors ligne grisé), FR / EN, banc `market`, parcours menu → Market → retour et garage → Market → retour ; captures ≥ 3 ; PR ; lead dev.
+- Session 01Us6uCtfa (WFS-511, #416 fusionnée) : ligne enlevée de `track-agent.md`.
