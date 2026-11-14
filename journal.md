@@ -1644,3 +1644,45 @@ Réponse à l'utilisateur : base iOS déjà faite (MoltenVK, Metal, son, CI simu
 ### 2026-11-14 13:48:11 — WFS-543 : suivi de la CI de main (Claude, agent dev3d (01Us6uCwcF))
 - Run #1070 (fusion WFS-543, 8cb64d33) : **annulé** par GitHub, remplacé par les fusions suivantes (#1071 et #1072 annulés eux aussi).
 - Run #1073 (39d1ddc7, contient WFS-543) : en cours à 13:48 UTC ; compilation, android, endurance et publication-apk sont verts ; le job banc-essai (texte), qui fait le contrôle des licences, tourne encore. Nouvelle vérification vers 14:20 UTC.
+
+### 2026-11-14 13:58:57 — WFS-482 : écran Profil en PR #412 (Claude, agent dev3d (01Us6uCv3H))
+- Fait : écran « Profil » (`src/ui/ecrans/profil.h/.cpp`, système 468) : en-tête (pseudo, plaque, « Pilote depuis le … »), 5 chiffres, records des 3 modes, voiture préférée, 20 dernières courses défilant au doigt, « Modifier » / « Retour » ; « Modifier » rouvre le formulaire et le clavier de WFS-481 en mode modification (« Valider » / « Annuler », plaque gardée) ; textes `profil.*` FR / EN.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `src/ui/ecrans/menu.cpp` (7 lignes : bouton « Profil » au-dessus du cadeau, touchers, dessin), `src/ui/ecrans/compteur_etoiles.cpp` (2 lignes : compteur caché sous le Profil), `src/platform/desktop_main.cpp` (2 lignes : banc `WFS_BANC=profil`).
+- Vérification : 140 tests CPU verts (nouveau cas dans `test_creation_profil`) ; banc `profil` FR + EN 0 écart (parcours menu → Profil → Modifier → Valider → Retour → course → fin → Profil, 22 courses → 20 lignes, 16 « W » entier, 0 texte français en anglais) ; banc `creation` 0 écart avant / après ; 26 captures dans `qa/pr/WFS-482/`.
+- Limites : non essayé sur téléphone ; nombres au format français dans les deux langues (comme le reste du jeu).
+
+
+### 2026-11-14 14:11:37 — WFS-482 refusé par le lead dev, PR #412 (lead-dev)
+- Revue du commit e85d008 : 26 captures ouvertes, diff lu en entier, branche construite, 140 tests CPU verts, banc `profil` relancé (0 écart FR + EN). Logique saine (« Valider » ne remet pas les statistiques à zéro, accroches ≤ 10 lignes annoncées).
+- Refus (revue « changements demandés » écrite dans la PR) : (1) capture des tests CPU absente (`qa/pr/WFS-482/tests-cpu.log` et section « Tests CPU », règle du 2026-11-11) ; (2) RG-08 : dans le formulaire « Modifier », le pseudo de 16 « W » et le curseur sortent du cadre du champ (`creation_profil.cpp`, `champ()`, taille fixe sans limite de largeur ; captures `profil-*-16w-modification`).
+- Statut : ↩️ Retour lead dev (PR #412) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-14 14:19:31 — WFS-493 : PR #413 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwTQ))
+- PR #413 (commit 1f756edf, branche synchronisée avec `main`) : 18 textures (Drift Tokyo, Néon nuit, Camouflage × 6 voitures), lueur du Néon la nuit (`vehicule.glsl` + 1 ligne d'accroche dans `scene.frag`), banc `skins` (`WFS_SKINS`), `test_vehicule_skin` étendu.
+- Vérification : 140 tests CPU réussis ; 55 captures du banc lavapipe regardées (`qa/pr/WFS-493/`) ; Rallye et vitrine sans skin identiques à `main` (PSNR 37 à 57 dB) ; contrôle des licences : 0 manque.
+- Limites : la partie visible des taches grises du Camouflage est plus petite que la tache dessinée (les noires mordent dessus) ; banc d'endurance non relancé (coût du shader : un test et une addition par pixel habillé).
+
+### 2026-11-14 14:20:10 — WFS-543 : CI de main verte (RG-04) (Claude, agent dev3d (01Us6uCwcF))
+- Run **#1073** de `build.yml` sur `main` (39d1ddc7, contient la fusion de WFS-543 8cb64d33) : **vert** (success), tous les jobs, banc-essai (texte) compris. Première CI de `main` verte depuis #1049. Reste pour RG-04 : bancs du matin suivants (robot des statuts).
+
+### 2026-11-14 14:29:30 — WFS-482 : retour du lead dev corrigé (PR #412) (Claude, agent dev3d (01Us6uCv3H))
+- Point 1 : `qa/pr/WFS-482/tests-cpu.log` (140 tests réussis) et section « Tests CPU » dans la PR.
+- Point 2 (RG-08) : cause : `champ()` de `creation_profil.cpp` dessinait le texte saisi à taille fixe ; il est maintenant réduit pour tenir dans le champ, curseur placé d'après la taille réelle ; nouvelle vérification au banc `profil` (OK FR / EN), banc `creation` 0 écart ; captures 16 « W » régénérées.
+- Commit e00de6d5, synchronisé avec `main` (dd79a20b) ; réponse point par point sous la revue ; lead dev rappelé.
+
+
+### 2026-11-14 14:33:22 — WFS-493 refusé par le lead dev, PR #413 (lead-dev)
+- Commit relu : 1f756edf. Toutes les captures ouvertes (55 après, 19 avant) ; tout le diff lu ; construction et tests sur la branche synchronisée avec `main` : 140 tests réussis.
+- Néon nuit, Drift Tokyo et non-régression Rallye / sans skin : bons ; code propre (accroche de `scene.frag` en 1 ligne).
+- **Refus** : (1) le Camouflage ressemble à une robe de vache (taches noires rondes et isolées sur fond surtout blanc, gris presque absent), pas à un camouflage urbain (RG-04) ; (2) section « Tests CPU » avec le commit testé absente de la description (règle du 2026-11-11) ; (3) banc d'endurance en qualité Basse non lancé (RC-E18-03).
+- Revue dans la PR : https://github.com/wlfaleh/waforspeed_mobile/pull/413#pullrequestreview-5904959985 . Statut : ↩️ Retour lead dev (PR #413).
+
+### 2026-11-14 14:37:51 — WFS-482 fusionné par le lead dev (lead-dev)
+- Revue du commit dd79a20b (correction e00de6d5) : réponse du développeur sous la revue présente (« Bien reçu », puis « corrigé dans e00de6d5 » point par point). Captures `profil-fr/en-16w-modification` régénérées ouvertes : texte et curseur dans le cadre du champ ; `creation-fr-vide` inchangée.
+- Vérifié moi-même : construction OK, `tests_cpu.sh build` 140 réussis ; banc `profil` FR + EN 0 écart (nouvelle vérification RG-08 « Modifier » OK) ; banc `creation` 0 écart. Diff de e00de6d5 lu : rien de bloquant.
+- « ✅ Approuvé » posté en commentaire de revue (GitHub refuse l'approbation sur le même compte), fusion en squash de89e0f1 (#412). Statut 🟣 Fusionné ; ligne `suivi-pr.md` retirée ; `qa/Check.md` à jour.
+
+### 2026-11-14 14:38:20 — WFS-482 : fin de session (Claude, agent dev3d (01Us6uCv3H))
+- PR #412 fusionnée par le lead dev (de89e0f1) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md` posée par le lead dev.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+

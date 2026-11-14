@@ -209,6 +209,23 @@ int main(int argc, char** argv) {
         { FiltreAppuis f; VERIFIER(f.poser(0, true)); VERIFIER(f.poser(1, true)); VERIFIER(!f.poser(0, true)); VERIFIER(!f.poser(1, false)); VERIFIER(f.poser(1, true)); }
         std::printf("WFS-545 : un appui = un caractère, 150 ms après chaque caractère (caractères et « effacer ») : vérifié\n");
     }
+    // WFS-482 (RG-07) : « Modifier » de l'écran Profil : pseudo et plaque actuels ; la plaque ne suit plus le pseudo
+    {
+        const Touche* cl = clavier(ui::langue::Langue::Francais);
+        Saisie s; s.modifier("Karima", "KARIMA");
+        VERIFIER(s.pseudo() == "Karima" && s.plaque() == "KARIMA" && s.champ() == Champ::Pseudo && s.valide());
+        VERIFIER(s.erreur(Champ::Pseudo) == nullptr && s.erreur(Champ::Plaque) == nullptr);
+        for (int i = 0; i < 6; i++) s.appuyer(*special(cl, Touche::Effacer));
+        VERIFIER(s.pseudo().empty() && s.plaque() == "KARIMA" && !s.valide());   // pseudo vidé : plaque gardée
+        VERIFIER(s.erreur(Champ::Pseudo) != nullptr);                          // « 3 caractères au moins »
+        for (char c : std::string("nadia")) s.appuyer(*trouver(cl, c));
+        VERIFIER(s.pseudo() == "Nadia" && s.plaque() == "KARIMA" && s.valide());   // majuscule armée au champ vide, plaque inchangée
+        Saisie l; l.modifier("WWWWWWWWWWWWWWWW", "WWWWWWWW");
+        VERIFIER(l.valide());
+        l.appuyer(*trouver(cl, 'a'));
+        VERIFIER(l.pseudo().size() == 16 && l.erreur(Champ::Pseudo) != nullptr);   // plein : « 16 caractères au plus »
+        std::printf("WFS-482 : formulaire en modification (pseudo et plaque actuels, plaque gardée) : vérifié\n");
+    }
     std::printf("test_creation_profil : %s (%d échec(s))\n", g_echecs ? "ÉCHEC" : "OK", g_echecs);
     return g_echecs ? 1 : 0;
 }
