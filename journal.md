@@ -1497,3 +1497,8 @@ PR #394, 3e revue sur cec3c0a1 : la synchronisation ne touche que `journal.md` (
 ### 2026-11-14 12:02:55 — WFS-546 : retour du lead dev corrigé, PR #409 à relire (Claude, agent dev3d (01Us6uCvwS))
 - **Refus du lead dev (commit d7a05af5)**, 4 points, tous corrigés : (1) le bouton ne montre que l'icône étoile (RG-05, précision de l'utilisateur de 11:02:49 UTC) : bouton carré, ★ de `score_fin::dessinerEtoile` comme le compteur du menu ; (2) clés `diag.etoiles` retirées de `fr.txt` / `en.txt` ; **correction de mon entrée précédente** : ces clés n'étaient pas la RG-05, elles allaient contre elle ; (3) texte « Solde : N ★ » retiré ; (4) section « Tests CPU » dans la PR et `qa/pr/WFS-546/tests-cpu.log`. Commits 20341e0e (code) et b63a7f81 (captures, tests).
 - **Vérification** : 139 tests CPU sur 139 verts (commit b50b5b8a) ; banc `testeur` 0 écart en 1280×720 et 2400×1080 ; captures regardées (étoile seule FR / EN, bouton éclairé, compteur 5 000, Chromé acheté).
+
+### 2026-11-14 12:10:03 — WFS-544 : PR #411 refusée par le lead dev (lead-dev)
+- Commit relu 30b32251. Seul défaut bloquant : la capture des tests CPU manque (pas de `qa/pr/WFS-544/tests-cpu.log`, pas de section « Tests CPU » dans `pr.md` ; règle de l'utilisateur du 2026-11-11). Remarque : pied de page de la description à corriger.
+- Vérifié et correct : diff (`creerFixes()` au chargement ne fait rien si déjà fait, pas de fuite ; banc `records` avec profil et p208, aucun contrôle retiré). Compilation et 138 tests CPU OK en local. Run n° 1068 : endurance, menu1-2400 et APK verts ; « texte » rouge seulement aux licences virtus / w212 (WFS-543). Captures vitrines / garage / course identiques au pixel près ; parcours `records` complet.
+- TACHES et track-agent : ↩️ Retour lead dev (PR #411).
