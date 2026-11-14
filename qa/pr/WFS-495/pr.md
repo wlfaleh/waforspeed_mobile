@@ -32,6 +32,19 @@
   4. **Conflit prévisible avec WFS-493** (même bloc `SKIN_COULEURS` du shader) : la PR fusionnée en second garde les deux. Si WFS-493 passe après, `test_vehicule_autocollants` lui demandera de recopier ses couleurs dans `vehicule_skin::couleurs`. La **lueur de nuit de la skin Néon** (WFS-493) ne passe pas dans la texture cuite : sous des autocollants, le Néon ne brillerait plus. Signalé au PO.
   5. Le temps de cuisson sur le S21 FE n'est pas mesuré sur l'appareil (pas de téléphone ici), seulement estimé d'après le PC. Le journal du jeu l'écrit à chaque cuisson.
 
+## Tests CPU
+
+Commit testé : **`b39bc7e0`** (branche synchronisée avec `main`), 2026-11-14 15:06:52 UTC, `bash tools/qa/tests_cpu.sh build`. Journal complet : [`qa/pr/WFS-495/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-495/qa/pr/WFS-495/tests-cpu.log).
+
+```
+[OK] test_vehicule_autocollants (0 s)
+[OK] test_vehicule_skin (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 141 test(s) réussi(s) en 338 s
+```
+
 ## Captures pour le lead dev (31 après)
 
 Dossier : [`qa/pr/WFS-495`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-495/qa/pr/WFS-495) — produit par `tools/qa/captures_pr.sh`.
