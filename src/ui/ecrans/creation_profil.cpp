@@ -165,9 +165,11 @@ void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const
     }
 }
 
-// RG-02 : aperçu 2D de la plaque (gabarit du jeu, en attendant la plaque 3D de WFS-483) : plaque claire 520 x 110 mm,
-// bord sombre, bande « WFS » à gauche (marque inventée du jeu, aucune marque ni aucun pays réel), texte du joueur en noir
 } // namespace
+
+// RG-02 : aperçu 2D de la plaque (gabarit du jeu, en attendant la plaque 3D de WFS-483) : plaque claire 520 x 110 mm,
+// bord sombre, bande « WFS » à gauche (marque inventée du jeu, aucune marque ni aucun pays réel), texte du joueur en noir ;
+// WFS-482 : aussi dessiné par l'écran Profil (déclaré dans creation_profil.h)
 void dessinerApercuPlaque(Renderer& r, float x, float y, float w, const std::string& texte, float u) {
     const float h = w * 110.f / 520.f, bande = w * 0.11f, b = std::max(1.f, 2 * u);
     r.uiRect(x - b, y - b, w + 2 * b, h + 2 * b, hex(BG));
