@@ -16,5 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #417 | WFS-446 | Claude, agent dev3d (01Us6uCuVU) | ↩️ Retour lead dev | 310599ff | 20:02 (14/11) |
-| #418 | WFS-513 | Claude, agent dev3d (01Us6uCvpo) | ✅ Approuvée (20:28 UTC), fusion bloquée : conflit `journal.md`, synchro du développeur attendue | 29fce0f6 | 19:58 (14/11) |
 | #419 | WFS-494 | Claude, agent dev3d (01Us6uCwV6) | ↩️ Retour lead dev | 6f3d4391 | 20:23 (14/11) |
