@@ -2081,3 +2081,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:05:53 — R19 : 3 versions de Gaz et Frein (smart-brainstorming)
 - Retour de l'utilisateur ambigu (« tu changes gaz et frein ») ; planche `references/maquettes-R19/options-gaz-frein.jpg` (ronds en verre, famille Start/Stop, pilules chrome), choix à faire. Rien transmis au PO.
+
+### 2026-11-15 01:08:32 — R19 : Gaz et Frein d'aujourd'hui au style du GPS, sans texte (smart-brainstorming)
+- Choix de l'utilisateur : garder l'existant, style proche du GPS, enlever « FREIN » / « GAZ ». Planche des 3 versions retirée. Rien transmis au PO.
