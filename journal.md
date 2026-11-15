@@ -2072,3 +2072,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:52:28 — R19 : finitions avec l'icône de pistolet de l'utilisateur (smart-brainstorming)
 - Retour de l'utilisateur : utiliser son image ; icône reprise telle quelle, seul le godet et le jet changent de finition ; image gardée dans `references/maquettes-R19/icone-pistolet-utilisateur.png`. Rien transmis au PO.
+
+### 2026-11-15 00:58:39 — R19 : proposition pour l'interface de conduite (smart-brainstorming)
+- Demande de l'utilisateur : améliorer boutons et infos en course ; maquette `17-conduite-hud.jpg` et avant / après. Rien transmis au PO.
