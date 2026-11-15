@@ -86,31 +86,6 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
 
 } // namespace
 
-int contourArrondi(vec2* p, float x, float y, float w, float h, float rayon) {
-    if (w <= 0 || h <= 0) return 0;
-    const float R = std::clamp(rayon, 0.f, std::min(w, h) / 2);
-    if (R < 0.5f) {   // coins vifs : 4 sommets
-        p[0] = {x, y}; p[1] = {x + w, y}; p[2] = {x + w, y + h}; p[3] = {x, y + h};
-        return 4;
-    }
-    // coins : centres TR, BR, BL, TL ; angles en repère écran (y vers le bas) : croissants = sens horaire
-    const int seg = std::clamp((int)std::ceil(R / 3.f), 3, MAX_SOMMETS / 4 - 1);   // arêtes par quart de cercle
-    const vec2 c[4] = {{x + w - R, y + R}, {x + w - R, y + h - R}, {x + R, y + h - R}, {x + R, y + R}};
-    int n = 0;
-    for (int k = 0; k < 4; k++) {
-        const float a0 = -0.5f * PI + k * 0.5f * PI;
-        for (int i = 0; i <= seg; i++) {
-            const float a = a0 + 0.5f * PI * i / seg;
-            const vec2 q{c[k].x + R * std::cos(a), c[k].y + R * std::sin(a)};
-            // deux coins qui se touchent (pilule) : le dernier sommet d'un coin est le premier du suivant
-            if (n > 0 && std::fabs(q.x - p[n - 1].x) < 1e-3f && std::fabs(q.y - p[n - 1].y) < 1e-3f) continue;
-            p[n++] = q;
-        }
-    }
-    if (n > 1 && std::fabs(p[0].x - p[n - 1].x) < 1e-3f && std::fabs(p[0].y - p[n - 1].y) < 1e-3f) n--;
-    return n;
-}
-
 void startStop(Renderer& r, float x, float y, float w, float h, const std::string& titre, float op, bool appuye,
                const std::string& sousTitre, float px, bool grise) {
     if (grise) op *= 0.45f;
@@ -142,6 +117,16 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
     ui::textBoite(r, x0 + s + ecart, yt, largeurDispo, px, px, titre, blanc, ui::GAUCHE, 0.04f, false, true);
     if (!sousTitre.empty())
         ui::textBoite(r, x0 + s + ecart, yt + px * 1.05f, largeurDispo, px * 0.6f, px * 0.6f, sousTitre, hex(0xC9CDDA, op), ui::GAUCHE, 0.04f, false, true);
+}
+
+ZoneTexte startStopFond(Renderer& r, float x, float y, float w, float h, float op, bool appuye, bool grise) {
+    if (grise) op *= 0.45f;
+    const float m = bagueChrome(r, x, y, w, h, op, appuye && !grise, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
+    const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m, rayonInt = std::min(wi, hi) / 2;
+    const float s = hi * 0.36f, xs = xi + rayonInt * 0.55f + s / 2;
+    iconeMarche(r, xs, y + h / 2, s, hex(appuye ? 0xFF8C33 : ACCENT, op));
+    const float x0 = xs + s / 2 + s * 0.3f, x1 = xi + wi - rayonInt * 0.55f;
+    return {x0, std::max(0.f, x1 - x0)};
 }
 
 void autocollant(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op, bool appuye, float px,

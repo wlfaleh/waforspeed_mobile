@@ -12,6 +12,7 @@
 #include "../render/renderer.h"
 #include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../ui/text.h"
+#include "../ui/boutons.h"   // WFS-549 (accroche E23) : boutons au modèle R19
 #include "course_system.h"
 #include "course5.h"   // WFS-189 : rechargerNitro
 #include "commandes_tactiles.h"   // WFS-146 (accroche, ANO-35) : dessin2d::biseau des boutons du résultat
@@ -285,11 +286,9 @@ private:
         g_zones[0] = bx; g_zones[1] = by; g_zones[2] = bw; g_zones[3] = bh;
         g_zonesMenu[0] = bx + bw + gap; g_zonesMenu[1] = by; g_zonesMenu[2] = bw; g_zonesMenu[3] = bh;
         const bool attend = s.status() == duel::Status::Ready;
-        dessin2d::biseau(r, revanche_.x, revanche_.y, bw, bh, 14 * H / 720, dessin2d::uni(ui::ORANGE));   // WFS-146 (RG-06) : biseau 14 px de la fin solo
-        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe, texte réduit de 20 % au plus s'il dépasse
-        ui::textBoite(r, revanche_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, ui::tr(attend ? "duel.pret" : "duel.revanche"), vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        dessin2d::biseau(r, menu_.x, menu_.y, bw, bh, 14 * H / 720, dessin2d::uni({30 / 255.f, 33 / 255.f, 48 / 255.f, 1}));   // .btn--ghost (#1E2130), comme la fin solo
-        ui::textBoite(r, menu_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, ui::tr("duel.retour"), TEXTE, ui::CENTRE, 0.08f, false);
+        // WFS-549 (RG-01, RG-02) : « Revanche » en bouton Start/Stop (enfoncé pendant l'attente), « Retour » en autocollant ; mêmes rectangles
+        ui::boutons::startStop(r, revanche_.x, revanche_.y, bw, bh, ui::tr(attend ? "duel.pret" : "duel.revanche"), 1, attend, "", 3.4f * u);
+        ui::boutons::autocollant(r, menu_.x, menu_.y, bw, bh, ui::tr("duel.retour"), 1, false, 3.4f * u);
     }
 
     Renderer* r_ = nullptr;

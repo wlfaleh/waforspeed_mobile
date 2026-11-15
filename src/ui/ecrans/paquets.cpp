@@ -24,6 +24,7 @@
 #include "../langue.h"   // WFS-507 : textes par ui::tr
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 
 namespace wfs {
 namespace ecrans {
@@ -168,7 +169,7 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
         const float wi = largeur("paquets.installer"), wp = largeur("paquets.plus_tard");
         zInstaller_ = {px + pw - 28 * k - wi, by, wi, bh};
         zPlusTard_ = {zInstaller_.x - 16 * k - wp, by, wp, bh};
-        bouton(r, zPlusTard_, kb, false, ui::tr("paquets.plus_tard"), tb);
+        ui::boutons::autocollant(r, zPlusTard_.x, zPlusTard_.y, zPlusTard_.w, zPlusTard_.h, ui::majuscules(ui::tr("paquets.plus_tard")), 1, false, tb);   // WFS-549 (RG-02)
         bouton(r, zInstaller_, kb, reseau_ == 1, ui::tr("paquets.installer"), tb);   // RG-02 : mis en avant sur Wi-Fi seulement
         break;
     }
@@ -191,7 +192,7 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
         const auto& a = astuces();
         const size_t i = (size_t)std::max(0.0, (t - t0_) / ASTUCE_S) % a.size();
         ui::text(r, x0, by - ts - 18 * k, ts, ui::tr("paquets.astuce", a[i]), hex(TEXTE, 0.85f), ui::GAUCHE, 0.f, false);
-        if (tFini_ < 0) { const float wp = largeur("paquets.plus_tard"); zPlusTard_ = {px + pw - 28 * k - wp, by, wp, bh}; bouton(r, zPlusTard_, kb, false, ui::tr("paquets.plus_tard"), tb); }
+        if (tFini_ < 0) { const float wp = largeur("paquets.plus_tard"); zPlusTard_ = {px + pw - 28 * k - wp, by, wp, bh}; ui::boutons::autocollant(r, zPlusTard_.x, zPlusTard_.y, zPlusTard_.w, zPlusTard_.h, ui::majuscules(ui::tr("paquets.plus_tard")), 1, false, tb); }   // WFS-549 (RG-02)
         break;
     }
     case Etat::Place: case Etat::Echec: {
@@ -201,7 +202,7 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
             const float wi = largeur("paquets.reessayer"), wp = largeur("paquets.plus_tard");
             zInstaller_ = {px + pw - 28 * k - wi, by, wi, bh};
             zPlusTard_ = {zInstaller_.x - 16 * k - wp, by, wp, bh};
-            bouton(r, zPlusTard_, kb, false, ui::tr("paquets.plus_tard"), tb);
+            ui::boutons::autocollant(r, zPlusTard_.x, zPlusTard_.y, zPlusTard_.w, zPlusTard_.h, ui::majuscules(ui::tr("paquets.plus_tard")), 1, false, tb);   // WFS-549 (RG-02)
             bouton(r, zInstaller_, kb, true, ui::tr("paquets.reessayer"), tb);
         } else {
             const float wc = largeur("paquets.continuer");
@@ -315,7 +316,7 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
         const float by = py + ph - 20 * k - bh, wo = largeur(cleOui), wn = largeur(cleNon);
         u.z[2] = {px + pw - 24 * k - wo, by, wo, bh};
         u.z[3] = {u.z[2].x - 12 * k - wn, by, wn, bh};
-        bouton(r, u.z[3], k, false, non, tp);
+        ui::boutons::autocollant(r, u.z[3].x, u.z[3].y, u.z[3].w, u.z[3].h, ui::majuscules(non), 1, false, tp);   // WFS-549 (RG-02) : Annuler / Plus tard
         if (sup) {   // bouton de suppression rouge (action destructrice)
             dessin2d::biseau(r, u.z[2].x, u.z[2].y, u.z[2].w, u.z[2].h, 14 * k, dessin2d::uni(hex(DANGER)));
             ui::textBoite(r, u.z[2].x + wo / 2, by, wo - 20 * k, bh, tp, ui::majuscules(oui), hex(TEXTE), ui::CENTRE, 0.12f, false);   // WFS-507
@@ -353,7 +354,7 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
         }
         const float wa = largeur("paquets.annuler");
         u.z[1] = {px + pw - 20 * k - wa, py + ph - 16 * k - bh, wa, bh};
-        bouton(r, u.z[1], k, false, ui::tr("paquets.annuler"), tp);
+        ui::boutons::autocollant(r, u.z[1].x, u.z[1].y, u.z[1].w, u.z[1].h, ui::majuscules(ui::tr("paquets.annuler")), 1, false, tp);   // WFS-549 (RG-02)
         ui::text(r, x0, u.z[1].y + (bh - ts) / 2, ts, ui::tr("paquets.rouler_pendant"), hex(ACCENT2), ui::GAUCHE, 0.f, false);
         break;
     }

@@ -27,7 +27,9 @@ constexpr float FOND_ALPHA = 0.85f, DISQUE_ALPHA = 0.72f;
 constexpr float SCORE_L = 180.f, SCORE_H = 70.f, SCORE_H_COMBO = 92.f, GOUTTIERE_L = 16.f, GOUTTIERE_H = 14.f;
 // WFS-429 (ordre de l'utilisateur du 2026-11-11, exception à l'ordre du 2026-11-06 sur la taille des boutons) : les boutons
 // « Menu » (pause.cpp) et « Caméra » (camera_vue.cpp) de la course grandissent de 5 % exactement, eux seuls (RG-02)
-constexpr float BOUTON_ECHELLE = 1.05f;
+// WFS-549 (RG-07, R19 maquette 17b, validée par l'utilisateur) : Menu et Caméra agrandis, eux seuls : 1,5 × les mesures d'avant
+// WFS-429 (hauteur 40 → 60 px, mesurée sur la maquette : 62 px pour 720), toujours centrés sur les 70 px du score
+constexpr float BOUTON_ECHELLE = 1.5f;
 // .cam-btn avant WFS-429 : 40 px de haut, icône 18, marges 14, écart icône-texte 6, texte 14, biais 8 ; .hud-btns gap 8 px
 constexpr float BOUTON_H = 40.f, BOUTON_ICONE = 18.f, BOUTON_MARGE = 14.f, BOUTON_ECART_ICONE = 6.f, BOUTON_TEXTE = 14.f,
                 BOUTON_BIAIS = 8.f, BOUTONS_ECART = 8.f;

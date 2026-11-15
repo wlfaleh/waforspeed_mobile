@@ -1,4 +1,4 @@
-// WaForSpeed — test WFS-429 : boutons « Menu » et « Caméra » de la course à côté du score, agrandis de 5 %.
+// WaForSpeed — test WFS-429 : boutons « Menu » et « Caméra » de la course à côté du score, agrandis (5 %, puis × 1,5 : WFS-549).
 // Vérifie par le calcul (hud::mesuresBouton, hud::placerBoutons) : RG-01 (rangée [MENU] [CAMÉRA] [SCORE], écarts de 8 px,
 // centrés sur les 70 px du score), RG-02 (chaque dimension × 1,05), RG-04 (rien ne se recouvre : temps, score et combo,
 // carte GPS, bandeaux, commandes, nitro ; HUD de la poursuite) à 2400 × 1080 et 1600 × 720, avec et sans encoche, droitier
@@ -14,13 +14,14 @@ static int echecs = 0;
 static Cadre cadre(const hud::BoutonHud& b) { return {b.x, b.y, b.w, b.h}; }
 
 int main() {
-    // RG-02 : chaque dimension × 1,05 (40 → 42, 18 → 18,9, 14 → 14,7, 6 → 6,3, biais 8 → 8,4), à k = 1
+    // RG-02 : chaque dimension × BOUTON_ECHELLE ; WFS-549 (RG-07, maquette 17b) : 1,5 (40 → 60, 18 → 27, 14 → 21, 6 → 9, biais 8 → 12), à k = 1
     const hud::BoutonHud b1 = hud::mesuresBouton(1.f, 0.f);
-    VERIFIE(std::fabs(b1.h - 42.f) < 1e-4f, "RG-02 : hauteur %.3f (attendu 42)", b1.h);
-    VERIFIE(std::fabs(b1.icone - 18.9f) < 1e-4f && std::fabs(b1.texte - 14.7f) < 1e-4f && std::fabs(b1.marge - 14.7f) < 1e-4f,
-            "RG-02 : icône %.3f, texte %.3f, marge %.3f (attendu 18,9 / 14,7 / 14,7)", b1.icone, b1.texte, b1.marge);
-    VERIFIE(std::fabs(b1.ecartIcone - 6.3f) < 1e-4f && std::fabs(b1.biais - 8.4f) < 1e-4f, "RG-02 : écart %.3f, biais %.3f", b1.ecartIcone, b1.biais);
-    VERIFIE(std::fabs(hud::BOUTON_ECHELLE - 1.05f) < 1e-6f, "RG-02 : échelle %.3f", hud::BOUTON_ECHELLE);
+    VERIFIE(std::fabs(b1.h - 60.f) < 1e-4f, "RG-02 : hauteur %.3f (attendu 60)", b1.h);
+    VERIFIE(std::fabs(b1.icone - 27.f) < 1e-4f && std::fabs(b1.texte - 21.f) < 1e-4f && std::fabs(b1.marge - 21.f) < 1e-4f,
+            "RG-02 : icône %.3f, texte %.3f, marge %.3f (attendu 27 / 21 / 21)", b1.icone, b1.texte, b1.marge);
+    VERIFIE(std::fabs(b1.ecartIcone - 9.f) < 1e-4f && std::fabs(b1.biais - 12.f) < 1e-4f, "RG-02 : écart %.3f, biais %.3f", b1.ecartIcone, b1.biais);
+    VERIFIE(std::fabs(hud::BOUTON_ECHELLE - 1.5f) < 1e-6f, "RG-02 : échelle %.3f", hud::BOUTON_ECHELLE);
+    VERIFIE(b1.h <= hud::SCORE_H, "WFS-549 : boutons pas plus hauts que le score (%.1f)", b1.h);
 
     struct Ecran { float W, H, encoche; };
     const Ecran ecrans[] = {{2400, 1080, 0}, {1600, 720, 0}, {2400, 1080, 90}, {2340, 1080, 0}};

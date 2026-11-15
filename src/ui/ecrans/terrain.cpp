@@ -16,6 +16,7 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../langue.h"   // WFS-505 : textes du choix du terrain en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
@@ -88,10 +89,6 @@ Moment g_moment = Moment::Nuit;
 // téléphone) et NUIT = nuit ; plus de défilement des moments de WFS-208 (aube, dorée, réelle… restent pour les bancs de lumière)
 Moment modeSimple(bool nuit) { return nuit ? Moment::Nuit : Moment::Midi; }
 
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
-    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
-}
 // chevron < ou > (path « M15 4 7 12l8 8 » du web) : WFS-147 (QA tour 1, B) : un trait lissé de s / 6 d'épaisseur
 // (3 dp pour la flèche de 18 dp), bouts ronds, au lieu de petits carrés en escalier ; couleur opaque (pas de
 // recouvrement visible aux jointures)
@@ -436,17 +433,19 @@ public:
         }
         // ---------- .maps-bar : Jour / Nuit (.tod-btn), Retour, Rouler ----------
         const float tw = 132 * kb;   // WFS-168 : largeur d'avant WFS-147
+        ui::boutons::selecteurFond(r, zl, by, 2 * tw + 6 * k, bh);   // WFS-549 (RG-05) : Jour / Nuit dans une rangée de verre
         for (int s = 0; s < 2; s++) {
             const bool nuit = s == 1, on = nuit == g_nuitChoisie;
             const float x = zl + s * (tw + 6 * k);
             (nuit ? g_nuit : g_jour) = {x, by, tw, bh};
-            r.uiRect(x, by, tw, bh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2));
-            if (on) r.uiRect(x, by + bh - 3 * kb, tw, 3 * kb, hex(ACCENT2));
+            // WFS-549 (RG-05, RG-07) : choix actif = pilule blanche, texte et icône sombres ; mêmes rectangles qu'avant
+            ui::boutons::selecteurChoix(r, x, by, tw, bh, "", on);
+            const vec4 ci = on ? hex(BG) : hex(TEXTE), fondIcone = on ? hex(0xEDEFF3) : hex(0x15171E);
             const float icx = x + 30 * kb, icy = by + bh / 2;   // icône soleil / lune (taille du bouton d'avant WFS-147)
-            if (!nuit) { r.uiCircle(icx, icy, 7 * kb, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, on ? hex(ACCENT2) : hex(TEXTE)); }
-            else { r.uiCircle(icx, icy, 9 * kb, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, on ? hex(0x0A2A33) : hex(SURFACE2)); }
+            if (!nuit) { r.uiCircle(icx, icy, 7 * kb, ci); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, ci); }
+            else { r.uiCircle(icx, icy, 9 * kb, ci); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, fondIcone); }
             // WFS-375 (RG-01) : jamais « Midi », « Dorée »… ; WFS-505 (RG-03) : texte dans la place du bouton (police réduite de 20 % au plus)
-            ui::textBoite(r, x + 52 * kb, by, tw - 60 * kb, bh, 18 * k, ui::majuscules(ui::tr(nuit ? "terrain.nuit" : "terrain.jour")), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
+            ui::textBoite(r, x + 52 * kb, by, tw - 60 * kb, bh, 18 * k, ui::majuscules(ui::tr(nuit ? "terrain.nuit" : "terrain.jour")), ci, ui::GAUCHE, 0.08f, false);
         }
         const float tp = 20 * k;
         // WFS-505 (RG-03, RC-E20-04) : largeurs mesurées sur le texte français (boutons identiques dans les deux langues)
@@ -457,13 +456,9 @@ public:
         const float rx = zr - rw, bx = rx - 10 * k - bw;
         g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
         for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
-        biseau(r, bx, by, bw, bh, 14 * kb, hex(SURFACE2));   // .btn--ghost
-        ui::textBoite(r, bx + bw / 2, by, btw, bh, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
-        biseau(r, rx, by, rw, bh, 14 * kb, hex(ACCENT));     // .btn--go avec la flèche
-        ui::textBoite(r, rx + 28 * kb, by, rtw, bh, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
-        const float fx = rx + rw - 40 * kb, fy = by + bh / 2;
-        r.uiRect(fx, fy - 1.5f * kb, 16 * kb, 3 * kb, hex(BG));
-        chevron(r, fx + 13 * kb, fy, 14 * kb, 1, hex(BG));
+        // WFS-549 (RG-01, RG-02, RG-07) : « Retour » en autocollant, « Rouler » en bouton Start/Stop ; mêmes rectangles qu'avant
+        ui::boutons::autocollant(r, bx, by, bw, bh, bt, 1, false, tp);
+        ui::boutons::startStop(r, rx, by, rw, bh, rt, 1, false, "", tp);
     }
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités

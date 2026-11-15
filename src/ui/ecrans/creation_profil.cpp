@@ -18,6 +18,7 @@
 #include "../langue.h"
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 
 namespace wfs {
 namespace ecrans {
@@ -254,16 +255,14 @@ void dessiner(Renderer& r, const GameView& g) {
     // WFS-482 (RG-07) : en modification, « Valider » (orange) et « Annuler » (vitré, texte cyan) côte à côte
     const float bw = g_e.modification ? std::min((L - 10 * u) / 2, 200 * u) : std::min(L, 260 * u);
     const bool ok = s.valide();
-    dessin2d::biseau(r, x, by, bw, bh, 14 * u, dessin2d::uni(ok ? hex(ACCENT) : hex(SURFACE2)));
+    // WFS-549 (RG-01, RG-07) : « C'est parti » / « Valider » en bouton Start/Stop, même rectangle, grisé tant que ce n'est pas valide
     const char* valider = g_e.modification ? "profil.valider" : "creation.valider";
-    ui::textBoite(r, x + bw / 2, by, bw - 36 * u, bh, 22 * u, ui::majuscules(ui::tr(valider)), ok ? hex(BG) : hex(MUTED, 0.8f), ui::CENTRE, 0.12f, false, true);
+    ui::boutons::startStop(r, x, by, bw, bh, ui::majuscules(ui::tr(valider)), 1, false, "", 21 * u, !ok);
     g_e.zValider = {x, by, bw, bh};
     g_e.zAnnuler = {};
     if (g_e.modification) {
         const float ax = x + bw + 10 * u;
-        dessin2d::biseau(r, ax - u, by - u, bw + 2 * u, bh + 2 * u, 14 * u, dessin2d::uni(vec4{1, 1, 1, 0.16f}));
-        dessin2d::biseau(r, ax, by, bw, bh, 14 * u, dessin2d::uni(GLASS));
-        ui::textBoite(r, ax + bw / 2, by, bw - 36 * u, bh, 20 * u, ui::majuscules(ui::tr("profil.annuler")), hex(ACCENT2), ui::CENTRE, 0.12f, false);
+        ui::boutons::autocollant(r, ax, by, bw, bh, ui::majuscules(ui::tr("profil.annuler")), 1, false, 20 * u);   // WFS-549 (RG-02) : sortie
         g_e.zAnnuler = {ax, by, bw, bh};
     }
     // ---- clavier (RG-03)

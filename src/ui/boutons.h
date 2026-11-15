@@ -12,6 +12,8 @@
 // le déclenchement unique reste celui de chaque écran (src/ui/appui.h). Interface 2D : skill design-street-racing.
 // Couleurs en codes sRGB 0..1 (comme Renderer::uiRect) ; op = opacité de l'écran (fondus d'entrée).
 #pragma once
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include "../core/math.h"
 
@@ -22,11 +24,38 @@ namespace ui::boutons {
 // contour d'un rectangle aux coins arrondis de rayon `rayon` (borné à min(w, h) / 2 : pilule), sommets dans le sens horaire
 // à l'écran ; rend le nombre de sommets écrits dans p (MAX_SOMMETS au plus). Calcul seul : testé par tests/test_boutons.cpp.
 constexpr int MAX_SOMMETS = 64;
-int contourArrondi(vec2* p, float x, float y, float w, float h, float rayon);
+inline int contourArrondi(vec2* p, float x, float y, float w, float h, float rayon) {
+    if (w <= 0 || h <= 0) return 0;
+    const float R = std::clamp(rayon, 0.f, std::min(w, h) / 2);
+    if (R < 0.5f) {   // coins vifs : 4 sommets
+        p[0] = {x, y}; p[1] = {x + w, y}; p[2] = {x + w, y + h}; p[3] = {x, y + h};
+        return 4;
+    }
+    // coins : centres TR, BR, BL, TL ; angles en repère écran (y vers le bas) : croissants = sens horaire
+    const int seg = std::clamp((int)std::ceil(R / 3.f), 3, MAX_SOMMETS / 4 - 1);   // arêtes par quart de cercle
+    const vec2 c[4] = {{x + w - R, y + R}, {x + w - R, y + h - R}, {x + R, y + h - R}, {x + R, y + R}};
+    int n = 0;
+    for (int k = 0; k < 4; k++) {
+        const float a0 = -0.5f * PI + k * 0.5f * PI;
+        for (int i = 0; i <= seg; i++) {
+            const float a = a0 + 0.5f * PI * i / seg;
+            const vec2 q{c[k].x + R * std::cos(a), c[k].y + R * std::sin(a)};
+            // deux coins qui se touchent (pilule) : le dernier sommet d'un coin est le premier du suivant
+            if (n > 0 && std::fabs(q.x - p[n - 1].x) < 1e-3f && std::fabs(q.y - p[n - 1].y) < 1e-3f) continue;
+            p[n++] = q;
+        }
+    }
+    if (n > 1 && std::fabs(p[0].x - p[n - 1].x) < 1e-3f && std::fabs(p[0].y - p[n - 1].y) < 1e-3f) n--;
+    return n;
+}
 
 // RG-01 : titre (une ligne, capitales) ; sousTitre facultatif (« ★ 6 000 », « Solo ») ; px = hauteur du titre (0 : d'après h)
 void startStop(Renderer& r, float x, float y, float w, float h, const std::string& titre, float op = 1, bool appuye = false,
                const std::string& sousTitre = "", float px = 0, bool grise = false);
+// RG-01, texte posé par l'appelant (prix avec étoile dessinée, texteEtoiles du garage) : bague, liseré et icône à gauche ;
+// rend la zone libre pour le texte (x0, largeur), à droite de l'icône
+struct ZoneTexte { float x = 0, w = 0; };
+ZoneTexte startStopFond(Renderer& r, float x, float y, float w, float h, float op = 1, bool appuye = false, bool grise = false);
 // RG-02 : texte (capitales) ; sousTitre facultatif (« Garder mes étoiles »)
 void autocollant(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
                  float px = 0, const std::string& sousTitre = "");

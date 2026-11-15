@@ -10,6 +10,7 @@
 #include "../render/renderer.h"
 #include "langue.h"
 #include "text.h"
+#include "boutons.h"   // WFS-549 : boutons au modèle R19
 
 namespace wfs::ecrans::garage {
 namespace {
@@ -63,11 +64,14 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     const float hb = 52 * k, hg = 46 * k, gap = (bloquee ? 8 : 12) * k, tot = hb + gap + hg + (bloquee ? gap + hg : 0), by = mp.py0 + (mp.panelH - tot) / 2;
     const bool pret = e.voiturePrete;
     const Manque m = manque(s, e);
-    biseau(r, bx, by, bw, hb, 14 * k, pret ? hex(ACCENT, op) : hex(SURFACE2, op));
-    if (!pret) ui::text(r, bx + bw / 2, by + 13 * k, 20 * k, ui::majuscules(ui::tr("garage.chargement")), hex(MUTED, op), ui::CENTRE, 0.1f, false);
-    else if (bloquee) texteEtoiles(r, bx + bw / 2, by + 13 * k, 20 * k, ui::majuscules(ui::tr("garage.acheter", nombreLangue(boutique::prixVoiture(car)))), hex(ON_ACCENT, op), ui::CENTRE, 0.1f);
-    else if (m.n > 0) texteEtoiles(r, bx + bw / 2, by + 13 * k, 20 * k, ui::majuscules(ui::tr("garage.acheter", nombreLangue(m.total))), hex(ON_ACCENT, op), ui::CENTRE, 0.1f);
-    else ui::text(r, bx + bw / 2, by + 13 * k, 20 * k, ui::majuscules(ui::tr("garage.choisir")), hex(ON_ACCENT, op), ui::CENTRE, 0.1f, false);
+    // WFS-549 (RG-01, RG-07) : Choisir / Acheter en bouton Start/Stop, même rectangle qu'avant (bw × 52) ; texte blanc sur le
+    // centre sombre, étoile dessinée comme avant (texteEtoiles), centré à droite de l'icône
+    const ui::boutons::ZoneTexte zt = ui::boutons::startStopFond(r, bx, by, bw, hb, op, false, !pret);
+    const float cxT = zt.x + zt.w / 2;
+    if (!pret) ui::text(r, cxT, by + 15 * k, 18 * k, ui::majuscules(ui::tr("garage.chargement")), hex(MUTED, op), ui::CENTRE, 0.1f, false);
+    else if (bloquee) texteEtoiles(r, cxT, by + 15 * k, 19 * k, ui::majuscules(ui::tr("garage.acheter", nombreLangue(boutique::prixVoiture(car)))), hex(TEXTE, op), ui::CENTRE, 0.1f);
+    else if (m.n > 0) texteEtoiles(r, cxT, by + 15 * k, 19 * k, ui::majuscules(ui::tr("garage.acheter", nombreLangue(m.total))), hex(TEXTE, op), ui::CENTRE, 0.1f);
+    else ui::text(r, cxT, by + 15 * k, 19 * k, ui::majuscules(ui::tr("garage.choisir")), hex(TEXTE, op), ui::CENTRE, 0.1f, false, true);
     g_z.choisir = {bx, by, bw, hb};
     float gy = by + hb + gap;
     const bool pretAttente = bloquee && pret::etat(s.cadeau) == pret::Etat::EnAttente && s.cadeau.pretVoiture == car;   // WFS-502 (RG-01)
@@ -82,8 +86,7 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     } else {
         g_z.essai = Zone{};
     }
-    biseau(r, bx, gy, bw, hg, 14 * k, hex(SURFACE2, op));
-    ui::text(r, bx + bw / 2, gy + 13 * k, 16 * k, ui::majuscules(ui::tr("garage.retour")), hex(TEXTE, op), ui::CENTRE, 0.1f, false);
+    ui::boutons::autocollant(r, bx, gy, bw, hg, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k);   // WFS-549 (RG-02) : sortie
     g_z.retour = {bx, gy, bw, hg};
     // WFS-499 (RG-01) : solde d'étoiles toujours affiché, en haut à droite du garage (au-dessus de la flèche « suivante »)
     texteEtoiles(r, mp.W - mp.gr, mp.gt + 6 * k, 14 * k, ui::majuscules(ui::tr("garage.solde", nombreLangue(boutique::solde(s)))), hex(TEXTE, op), ui::DROITE, 0.12f);

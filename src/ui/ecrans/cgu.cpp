@@ -17,6 +17,7 @@
 #include "../petit_ecran.h"
 #include "../langue.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "cgu_appui.h"
 #include "reglages.h"
 
@@ -155,7 +156,8 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
         // RG-03 : « Accepter » actif seulement après la case (inactif : gris, texte atténué)
         // WFS-355 : teinte plus claire tant que le doigt est posé sur « Accepter » (l'appui se voit)
         const bool presse = coche_ && doigt_ >= 0 && cible_ == cgu_appui::ACCEPTER;
-        bouton(r, zAccepter_, 14 * kb, coche_ ? hex(presse ? ACCENT_PRESSE : ACCENT) : hex(SURFACE2), ta, tp, coche_ ? hex(BG) : hex(MUTED, 0.8f), false);
+        // WFS-549 (RG-01, RG-07) : « J'accepte » en bouton Start/Stop, même rectangle ; grisé tant que la case n'est pas cochée
+        ui::boutons::startStop(r, zAccepter_.x, zAccepter_.y, zAccepter_.w, zAccepter_.h, ta, 1, presse, "", tp, !coche_);
         const float cs = 28 * k, cy = by + (bh - cs) / 2, tl = (cp ? 16 : 18) * k;
         const std::string& lib = ui::tr("cgu.case");
         r.uiRect(x0, cy, cs, cs, coche_ ? hex(ACCENT2) : hex(TEXTE, 0.85f));

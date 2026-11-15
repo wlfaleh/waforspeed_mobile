@@ -10,6 +10,7 @@
 #include "../../render/renderer.h"
 #include "../hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../langue.h"   // WFS-505 : textes de la pause en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
@@ -121,9 +122,14 @@ private:
         const float y = H * 0.56f;
         for (int i = 0; i < 3; i++) {
             g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
-            biseau(r, x, y, wb[i], bh, 14 * k, i == REPRENDRE ? hex(ACCENT) : hex(SURFACE2));
+            if (i == REPRENDRE) {   // WFS-549 (RG-01, RG-07) : action principale en bouton Start/Stop, même rectangle qu'avant
+                ui::boutons::startStop(r, x, y, wb[i], bh, ui::majuscules(ui::tr(TEXTES[i])), 1, false, "", tp * 0.9f);
+                x += wb[i] + gap;
+                continue;
+            }
+            biseau(r, x, y, wb[i], bh, 14 * k, hex(SURFACE2));
             // texte à y + 2,6 % de H (centré dans 10 % : +0,1 % de H, comme avant) ; anglais plus long : police réduite de 20 % au plus
-            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), i == REPRENDRE ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), hex(TEXTE), ui::CENTRE, 0.12f, false);
             x += wb[i] + gap;
         }
     }

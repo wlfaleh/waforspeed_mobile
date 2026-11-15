@@ -17,6 +17,7 @@
 #include "garage_finition.h"
 #include "langue.h"
 #include "text.h"
+#include "boutons.h"   // WFS-549 : boutons au modèle R19
 
 namespace wfs::ecrans::garage {
 namespace {
@@ -315,11 +316,10 @@ void SkinGarage::dessinerFenetre(Renderer& r, const MiseEnPage& mp, int index) {
     // boutons : « Plus tard » (.btn--ghost 200 × 46) et « Prendre » (.btn orange 200 × 52), tailles du garage
     const float xa = x + (w - (2 * bw + gapB)) / 2;
     zPlusTard_ = {xa, yy + (hb - hg) / 2, bw, hg};
-    biseau(r, zPlusTard_.x, zPlusTard_.y, bw, hg, 14 * k, hex(SURFACE2));
-    ui::textBoite(r, zPlusTard_.x + bw / 2, zPlusTard_.y, bw - 28 * k, hg, 16 * k, ui::majuscules(ui::tr("garage.skin.offerte.plustard")), hex(TEXTE), ui::CENTRE, 0.1f, false);
+    // WFS-549 (RG-01, RG-02, RG-07) : « Plus tard » en autocollant, « Prendre » en Start/Stop, mêmes rectangles qu'avant
+    ui::boutons::autocollant(r, zPlusTard_.x, zPlusTard_.y, bw, hg, ui::majuscules(ui::tr("garage.skin.offerte.plustard")), 1, false, 17 * k);
     zPrendre_ = {xa + bw + gapB, yy, bw, hb};
-    biseau(r, zPrendre_.x, yy, bw, hb, 14 * k, hex(ACCENT));
-    ui::textBoite(r, zPrendre_.x + bw / 2, yy, bw - 28 * k, hb, 20 * k, ui::majuscules(ui::tr("garage.skin.offerte.prendre")), hex(ON_ACCENT), ui::CENTRE, 0.1f, false);
+    ui::boutons::startStop(r, zPrendre_.x, yy, bw, hb, ui::majuscules(ui::tr("garage.skin.offerte.prendre")), 1, false, "", 19 * k);
     manette::focus(zPrendre_, true);
     manette::focus(zPlusTard_);
 }
