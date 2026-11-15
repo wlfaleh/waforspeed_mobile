@@ -1088,3 +1088,22 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Zone : fichiers de RG-07 (`garage_fiche.*`, `garage_cadre.*`, `toasts.*`, `cadeau_jour*`, `pret_bandeau*`, `compteur_etoiles*`, `chargement*`, nouveau `src/ui/jauges.*`), `shaders/ui*`, `tests/**` ; `hud.*` seulement l'appel de la jauge de combo (≤ 10 lignes). Interface 2D : skill `design-street-racing` ; pas d'avis agent 3D. Taille des boutons inchangée.
 - Critères : `regles-de-gestion/WFS-550.md` (RG-01 à RG-08, captures avant / après, parcours FR / EN). Après fusion : 🟡 À valider (utilisateur).
 - `track-agent.md` : lignes des sessions terminées (01Us6uCucP, 01Us6uCvCC, 01Us6uCwZ7, 01UY1Vv1WU) enlevées. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-551, puis WFS-554.
+
+### 2026-11-15 20:48:39 — WFS-549 : revue complète du lead dev sur f90e01bb (lead-dev)
+- Revue faite en parallèle de la fusion sur ordre de l'utilisateur (PR prise 👀 à 20:34) : même commit f90e01bb, même conclusion. Approbation « ✅ Approuvé par le lead dev » postée en commentaire sur la PR #420 (GitHub refuse APPROVE avec le même compte) ; squash c20f5c06.
+- Construction Release et `bash tools/qa/tests_cpu.sh build` refaits : **148 test(s) réussi(s)** ; avertissements seulement dans du code déjà sur `main`. Banc `reglages-onglets` relancé : « Crédits » → ouvert, « Retour » → Réglages ouverts, 1er appui (doigt 0) → « appui compté ».
+- Captures ouvertes : les 4 points du refus sur ce342a2e sont corrigés (tests-cpu.log, « Crédits » au relâcher, 185 captures des écrans touchés, inactifs lisibles). Remarques non bloquantes : « Inviter » jamais grisé hors ligne (comme sur `main`, description inexacte), quelques « avant » marqués « main à venir », commentaire en double dans `reglages.cpp`.
+- `qa/Check.md` complété ; statut 🟡 À valider (utilisateur) inchangé.
+
+### 2026-11-15 20:49:38 — Fin WFS-549 : fusionné (#420, squash c20f5c06), session terminée (Claude, agent dev3d (01Us6uCvCC))
+- Boutons R19 sur tous les écrans (Start/Stop, autocollants, pilule chrome, prix, sélecteurs de verre, « ✕ Fermer », « Crédits » dans les Réglages), Menu et Caméra du HUD × 1,5 ; corrections de la revue #420 (tests-cpu.log, « Crédits » au relâcher, captures de tous les écrans, états inactifs lisibles) ; synchronisé avec WFS-548 et WFS-552.
+- Statut : 🟡 À valider (utilisateur) ; demande de test ajoutée dans `tache utilisateur.md`. Restes notés par le lead dev (non bloquants) : « Inviter » hors ligne reste orange (phrase de la PR inexacte), quelques captures « avant » marquées « main à venir », un commentaire en double dans `reglages.cpp`.
+- Session terminée : un seul ticket par session, plus aucune demande au PO.
+
+### 2026-11-15 21:01:43 — Début WFS-551 : attribué à Claude, agent dev3d (01UY1Vv2KF) (po-scrum-master)
+- **Ticket** : WFS-551 — Interface R19 (4/5) : gouttes de peinture, pastilles des skins, pistolet de l'utilisateur recoloré par finition, cadenas-jauge de la voiture bloquée, flèches qui clignotent, HUD Menu / Caméra en verre, gaz et frein sans texte, cartes grisées et couleur qui revient au téléchargement. Épic **E23** (P1 Urgent, plus récente demande de l'utilisateur).
+- **Session** : nouvelle session `@dev` (session_01UY1Vv2KFV5cJpjafKsfwV5), à sa demande ; aucune attribution antérieure à cette session. Dépendances WFS-548 (#422) et WFS-549 (#420) fusionnées.
+- **Zone de code** : `garage_couleur.*`, `garage_skin.*`, `garage_finition.*`, `garage_achat*`, `hud.*`, `terrain.*`, `paquets*` ; accroche ≤ 10 lignes dans `garage_fiche.*` (fichier de WFS-550) pour le cadenas-jauge ; icône `references/maquettes-R19/icone-pistolet-utilisateur.png` copiée dans `assets/` de l'interface ; `shaders/ui*`, `tests/**`. Réutiliser `src/ui/verre.*` (548) et `src/ui/boutons.*` (549).
+- **Règles** : `regles-de-gestion/WFS-551.md` (RG-01 à RG-09, parcours complet FR et EN). WFS-550 est en cours en parallèle (01UY1Vv1yg) : le 2e fusionné se synchronise et refait ses captures.
+- **Plan** : branche `feature/waforspeed-551` poussée tout de suite ; captures avant / après (`captures_pr.sh WFS-551 garage-couleurs garage-finitions garage-skins garage-voitures paquets hud:1280x720`, jour et nuit pour le HUD) ; PR ; appel du lead dev ; après la fusion **🟡 À valider (utilisateur)** ; arrêt de la session.
+
