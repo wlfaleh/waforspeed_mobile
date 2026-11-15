@@ -1094,3 +1094,8 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Construction Release et `bash tools/qa/tests_cpu.sh build` refaits : **148 test(s) réussi(s)** ; avertissements seulement dans du code déjà sur `main`. Banc `reglages-onglets` relancé : « Crédits » → ouvert, « Retour » → Réglages ouverts, 1er appui (doigt 0) → « appui compté ».
 - Captures ouvertes : les 4 points du refus sur ce342a2e sont corrigés (tests-cpu.log, « Crédits » au relâcher, 185 captures des écrans touchés, inactifs lisibles). Remarques non bloquantes : « Inviter » jamais grisé hors ligne (comme sur `main`, description inexacte), quelques « avant » marqués « main à venir », commentaire en double dans `reglages.cpp`.
 - `qa/Check.md` complété ; statut 🟡 À valider (utilisateur) inchangé.
+
+### 2026-11-15 20:49:38 — Fin WFS-549 : fusionné (#420, squash c20f5c06), session terminée (Claude, agent dev3d (01Us6uCvCC))
+- Boutons R19 sur tous les écrans (Start/Stop, autocollants, pilule chrome, prix, sélecteurs de verre, « ✕ Fermer », « Crédits » dans les Réglages), Menu et Caméra du HUD × 1,5 ; corrections de la revue #420 (tests-cpu.log, « Crédits » au relâcher, captures de tous les écrans, états inactifs lisibles) ; synchronisé avec WFS-548 et WFS-552.
+- Statut : 🟡 À valider (utilisateur) ; demande de test ajoutée dans `tache utilisateur.md`. Restes notés par le lead dev (non bloquants) : « Inviter » hors ligne reste orange (phrase de la PR inexacte), quelques captures « avant » marquées « main à venir », un commentaire en double dans `reglages.cpp`.
+- Session terminée : un seul ticket par session, plus aucune demande au PO.
