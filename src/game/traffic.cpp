@@ -330,7 +330,10 @@ void Traffic::step(double h, const TrafficView& pv) {
         const double droite = car.deuxRoues ? DROITE_VOIE : 0;   // WFS-232 : deux-roues du côté droit de sa voie
         if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - (LANE_X[car.lane] + droite) * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
         const double d = (LANE_X[car.target] + droite) * kv - car.offset;
-        const double move = clampd(d, -0.5 * h, 0.5 * h);
+        // WFS-541 (RG-02) : au pas, dans un bouchon, une voiture ne glisse pas de côté plus vite qu'elle ne roule (avant : 3,75 m/s
+        // de côté même arrêtée, caisse tournée de 90°) : au plus v · tan 17° + 0,3 m/s ; au-delà de 45 km/h, rien ne change
+        const double latMax = contactsTrafic && !g_avant541 ? std::min(0.5, (car.speed * M * 0.3 + 0.3) / RW) : 0.5;
+        const double move = clampd(d, -latMax * h, latMax * h);
         car.offset += move;
         car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, 1e-3));
         if (std::abs(d) < 0.01) { car.lane = car.target; if (!car.pending) car.signal = 0; }

@@ -19,6 +19,7 @@
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "deux_roues.h"   // WFS-232 : pilotes casqués des deux-roues
 #include "trace_cartes.h"   // WFS-232 : tracé des captures en courbe
+#include "roues_banc.h"   // WFS-541 : police tenue loin pendant les scènes du banc (poursuiteBancPolice)
 #include "camera_vue.h"   // WFS-333 : vues Poursuite et Cockpit du banc (lecture seule)
 
 namespace wfs {
@@ -675,9 +676,11 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 4 * 60; i++) { g.update(PAS); t += PAS; if (i % 12 == 0) g.render(t); }   // décompte
         DriveInput in; in.gas = true;
         for (int i = 0; i < 4 * 60; i++) { g.manette = in; g.update(PAS); t += PAS; if (i % 12 == 0) g.render(t); }   // départ, la police derrière
+        // la police reste à 350 m derrière pendant la scène : le joueur arrêté près d'elle serait arrêté au bout de 4 s (WFS-540)
+        poursuiteBancPolice(true, -350, 0);
         return TrafficSystem::active_ != nullptr;
     };
-    auto finir = [&]() { g.manette = DriveInput{}; g.modeManette = false; g.camMode = 0; poursuiteBancFixe(false); g.shutdown(); };
+    auto finir = [&]() { poursuiteBancPolice(false, 0, 0); g.manette = DriveInput{}; g.modeManette = false; g.camMode = 0; poursuiteBancFixe(false); g.shutdown(); };
     // pose une voiture du trafic lointaine (hors de la vue) à dzM devant le joueur, dans la file f, à kmh ; type : modèle du jeu web
     auto poser = [&](double dzM, int f, double kmh, int type = -1) -> int {
         Traffic& T = TrafficSystem::active_->traffic_; const Track& tk = *TrafficSystem::active_->track_;
@@ -718,6 +721,8 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < n; i++) { g.manette = in; g.update(PAS); t += PAS; pireTout = std::max(pireTout, pireTrafic()); if (i % 12 == 0) g.render(t); }
     };
     auto tenir = [&](double kmh) { DriveInput in; in.gas = joueur.kmh() < kmh; in.brake = joueur.kmh() > kmh + 2; return in; };
+    // arrêté : frein tant qu'il roule, rien ensuite (frein tenu à l'arrêt = marche arrière)
+    auto arret = [&]() { DriveInput in; in.brake = joueur.kmh() > 1; return in; };
     auto image = [&](const std::string& nom, std::initializer_list<int> suivies) {
         g.render(t); g.render(t + PAS); t += PAS;
         r.capturePng(out + "/" + nom + ".png");
@@ -744,11 +749,10 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         libererPoses();
         if (k < 0) { WFS_ERR("trafic-541 : aucune voiture à poser"); ecarts++; }
         else {
-            DriveInput frein; frein.brake = true;
-            rouler(2, frein);
+            rouler(2, arret());
             Traffic::crash(TrafficSystem::active_->traffic_.cars[(size_t)k], 0.75, fJ == 2 ? -1 : 1);
             for (int img = 0; img < 12; img++) {
-                rouler(45, joueur.kmh() > 1 ? frein : DriveInput{});
+                for (int i = 0; i < 45; i++) rouler(1, arret());
                 char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-suv-%02d", img); image(nom, {k});
             }
             const TrafficCar& c = TrafficSystem::active_->traffic_.cars[(size_t)k];
@@ -768,9 +772,8 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         else {
             TrafficCar& ca = TrafficSystem::active_->traffic_.cars[(size_t)a];
             ca.crashed = true; ca.crashT = -30; ca.crashYaw = 0.6; ca.crashSpin = ca.crashVx = 0; ca.speed = 0;
-            DriveInput frein; frein.brake = true;
             for (int img = 0; img < 10; img++) {
-                rouler(48, frein);
+                for (int i = 0; i < 48; i++) rouler(1, arret());
                 char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-bouchon-%02d", img); image(nom, {a, b1, b2, b3});
             }
         }
@@ -778,7 +781,7 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
     }
     // ---------- 3. bouchon serré vu de près : la voisine glisse vers la file du milieu ----------
     if (scene("pres") && demarrer(VueCamera::Proche)) {
-        rouler(60 * 3, tenir(12));
+        for (int i = 0; i < 60 * 3; i++) rouler(1, tenir(12));
         degager();
         const double xJ = joueur.playerX;
         const int fJ = xJ < -0.33 ? 0 : xJ > 0.33 ? 2 : 1, fG = fJ == 0 ? 1 : fJ - 1, fD = fJ == 2 ? 1 : fJ + 1;
@@ -786,10 +789,10 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         libererPoses();
         if (g1 < 0 || d1 < 0) { WFS_ERR("trafic-541 : aucune voiture à poser"); ecarts++; }
         else {
-            rouler(20, tenir(12));
+            for (int i = 0; i < 20; i++) rouler(1, tenir(12));
             Traffic::crash(TrafficSystem::active_->traffic_.cars[(size_t)g2], 0.35, fG < fJ ? 1 : -1);   // vers le joueur et la voiture devant lui
             for (int img = 0; img < 8; img++) {
-                rouler(24, tenir(12));
+                for (int i = 0; i < 24; i++) rouler(1, tenir(12));
                 char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-pres-%02d", img); image(nom, {g1, g2, d1, j1});
             }
         }
