@@ -2063,3 +2063,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:43:13 — R19 : couleurs en gouttes de peinture (smart-brainstorming)
 - Choix de l'utilisateur (style 1, goutte) intégré à l'onglet Peinture ; planche des 4 styles retirée. Rien transmis au PO.
+
+### 2026-11-15 00:45:59 — R19 : onglets Finition et Skins du garage (smart-brainstorming)
+- Demande de l'utilisateur : tabs Finition et Skins dans le style de l'onglet Peinture (gouttes) ; `16-garage-finition.jpg`, `07-garage-skin.jpg` remplacé. Rien transmis au PO.
