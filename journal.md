@@ -2012,3 +2012,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-14 23:59:52 — R19 : Cadeau du jour en bas du menu avec compte à rebours (smart-brainstorming)
 - Idée de l'utilisateur : Cadeau du jour à la place du nom de la voiture, anneau de 24 h et compte à rebours. Rien transmis au PO.
+
+### 2026-11-15 00:02:50 — R19 : 3 versions du bouton Garage (smart-brainstorming)
+- Demande de l'utilisateur : bouton Garage du menu à améliorer ; planche `references/maquettes-R19/options-bouton-garage.jpg` (plaque actuelle, clé de voiture, pilule chrome lumineuse), choix à faire. Rien transmis au PO.
