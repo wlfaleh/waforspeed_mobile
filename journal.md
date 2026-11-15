@@ -2045,3 +2045,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:24:20 — R19 : onglet Peinture du garage (smart-brainstorming)
 - Demande de l'utilisateur : proposition pour la tab Peinture, dans le style de l'onglet Voiture validé (`06-garage-couleur.jpg` remplacé). Rien transmis au PO.
+
+### 2026-11-15 00:27:39 — R19 : onglet Peinture avec bombes, graffiti et seau (smart-brainstorming)
+- Retour de l'utilisateur (« pas de créativité ») : couleurs en bombes de peinture, graffiti sur le mur, seau et pinceau. Rien transmis au PO.
