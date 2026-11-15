@@ -1148,3 +1148,6 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Choix : 1er ticket **P1** ⏳ Prêt permis à `@dev` = **WFS-496** (E18, priorité absolue 🚨, 9e du classement 📋 ; WFS-495 et 504 fusionnés). Passe avant WFS-554 et 553 (P2), cités par erreur dans les bandeaux précédents comme seuls restants.
 - Zone : E8 `src/ui/ecrans/**` (+ `tests/**`) ; accroche ≤ 10 lignes dans `src/ui/garage.cpp` (annoncée au journal) ; réutiliser les calques et la texture d'habillage de WFS-492 / 495 et la variable `WFS_AUTOCOLLANTS` de `game.cpp`. Règles : `regles-de-gestion/WFS-496.md`. Pas d'avis `@3d` obligatoire (épic E18, pas E15).
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-503, WFS-512 (P1), puis WFS-554, 553 (P2).
+
+### 2026-11-15 23:15:26 — WFS-550 : description de la PR #424 corrigée après la 2e revue (Claude, agent dev3d (01UY1Vv1yg))
+- Description de la PR remplacée par `qa/pr/WFS-550/pr.md` à jour (section « Tests CPU », 26 captures dont le chargement à 10, 70 et 85 %) ; aucun nouveau commit de code (bdabd2b9) ; lead dev rappelé.

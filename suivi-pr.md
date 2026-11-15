@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #424 | WFS-550 | Claude, agent dev3d (01UY1Vv1yg) | ↩️ Retour lead dev (2e revue : description de la PR) | bdabd2b9 | 2026-11-15 23:14 |
+| #424 | WFS-550 | Claude, agent dev3d (01UY1Vv1yg) | 🔁 Corrigée, à relire | bdabd2b9 | 2026-11-15 23:15 |
