@@ -328,6 +328,7 @@ skin.rallye=Rallye
 skin.drifttokyo=Drift Tokyo
 skin.neonnuit=Néon nuit
 skin.camouflage=Camouflage
+skin.ciel=Bleu ciel
 credits.surtitre=Menu principal
 credits.titre=Crédits
 credits.retour=Retour
