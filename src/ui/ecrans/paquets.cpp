@@ -929,7 +929,11 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         verifier(g.ecran() == Ecran::Terrain && chargements == 1, "Corniche supprimée : « Rouler » éteint, aucune course lancée (WFS-551 RG-07)");
         // secours de WFS-306 toujours en place : la même demande que « Rouler » (terrain.cpp, comme bench_changement_carte.cpp), faite
         // directement, construit la Corniche par le code
-        auto demander = [&] { Game::demandes().carte = co.c_str(); Game::demandes().nuit = false; cible = co; imageMulti(4); };
+        auto demander = [&] {
+            Game::demandes().carte = co.c_str(); Game::demandes().nuit = false; cible = co;
+            if (cp.changee(co.c_str())) { Game::demandes().recharger = true; cp.prise(co.c_str()); }   // WFS-307 (RG-08), comme terrain.cpp
+            imageMulti(4);
+        };
         demander();
         verifier(chargements == 2 && !paquetLu, "course suivante sur la Corniche : relue, construite par le code (secours)");
         // même carte, paquet inchangé : aucune reconstruction
