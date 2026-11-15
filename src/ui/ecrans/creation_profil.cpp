@@ -223,8 +223,8 @@ void dessiner(Renderer& r, const GameView& g) {
     const bool clignote = std::fmod(g.time - g_e.tOuvert, 1.0) < 0.6;
     // WFS-548 (RG-02, maquette 20) : écran arrêté : la scène derrière est floutée et assombrie (avant : fond presque opaque),
     // lueur orange en bas à gauche gardée
-    verre::fondFloute(r);
-    verre::assombrir(r, W, H, 0.72f * op);
+    verre::fenetreSurEcran(r);   // menu dessous : rien de son interface (verre::couvert)
+    verre::assombrir(r, W, H, 0.55f * op);
     {
         const vec4 a = hex(ACCENT, 0.10f * op), z = hex(ACCENT, 0);
         const UiVertex q[4] = {{0, H * 0.55f, -1, -1, z.x, z.y, z.z, 0}, {W * 0.5f, H * 0.55f, -1, -1, z.x, z.y, z.z, 0},
@@ -243,7 +243,7 @@ void dessiner(Renderer& r, const GameView& g) {
         const float lClavier = W - g.marges.droite - p.kx - (p.x0 - g.marges.gauche);
         verre::Style st; st.rayon = 12 * u; st.lisere = 1.2f * u; st.opacite = op;
         verre::panneau(r, x - 10 * u, y - 12 * u, L + 20 * u, 2 * 94 * u + wp0 * 110.f / 520.f + 26 * u, st);
-        verre::panneau(r, p.kx - 14 * u, p.ky - 14 * u, lClavier + 28 * u, hClavier + 28 * u, st);
+        verre::panneau(r, p.kx - 10 * u, p.ky - 10 * u, lClavier + 20 * u, hClavier + 20 * u, st);   // 6 dp du bord droit (marge de 16 dp)
     }
     auto bloc = [&](Champ c, const char* libelle, Zone& z, const std::string& valeur, const char* indice, float esp) {
         ui::textBoite(r, x, y, L, 14 * u, 12 * u, ui::majuscules(ui::tr(libelle)), verre::hexa(verre::SUR_TITRE), ui::GAUCHE, 0.22f);   // WFS-548 (RG-03)

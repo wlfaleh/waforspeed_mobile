@@ -131,7 +131,7 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     dp_ = ui::pixelsParDp(W);
     // WFS-548 (RG-02, maquette 22) : écran arrêté : scène floutée et assombrie derrière (sans scène : fond --bg presque opaque)
     if (mode_ == Mode::Premier) r.uiRect(0, 0, W, H, hex(BG));   // 1er lancement : aucune scène derrière, fond --bg comme avant
-    else { verre::fondFloute(r); verre::assombrir(r, W, H, 0.72f); }   // ouvertes depuis les Réglages : menu ou pause dessous
+    else { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }   // ouvertes depuis les Réglages : menu ou pause dessous, couverts
     const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
     const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
     const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;

@@ -5,6 +5,8 @@ layout(set = 0, binding = 0) uniform sampler2D hdr;        // passe finale : sc�
 layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : bloom remonté ; remontée : niveau inférieur
 // params : x exposition, y sortie sRGB matérielle, z force du bloom, w exposition physique k la nuit (WFS-230 : vision de nuit ;
 //          0 de jour : image inchangée ; WFS-276 : négative dans la Ville = sans relèvement des basses lumières)
+//          WFS-548 (fond flouté des écrans arrêtés) : passes du bloom : y = 1 → mode 1 SANS seuil (toute l'image) ;
+//          passe finale : z < 0 → la scène est remplacée par le bloom flouté (bloomTex × −z), halo et ajout du bloom sautés
 // bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
 //                   y poids du niveau (remontée) ; passe finale : luminance d'adaptation de nuit en cd/m² (WFS-214, 0 de jour), z pas du flou en texels de la source / niveau inférieur présent (remontée)
 layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;

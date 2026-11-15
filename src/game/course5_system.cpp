@@ -227,8 +227,9 @@ public:
         if (!actif_ || !ui::fontReady() || g.ecran != Ecran::Course || !g.player) return;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         const auto ls = lignes(*g.player);
-        tableau(r, g, u, ls);
-        if (fini_ && overT_ >= 0.9) resultat(r, W, H, u, ls);
+        const bool fin = fini_ && overT_ >= 0.9;
+        if (!fin) tableau(r, g, u, ls);   // WFS-548 : le tableau de course n'est plus dessiné sous le résultat (maquette 31)
+        if (fin && !verre::couvert()) resultat(r, W, H, u, ls);   // WFS-548 : rien sous la fenêtre d'achat
     }
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Course) return false;

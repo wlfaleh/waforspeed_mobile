@@ -151,8 +151,8 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     const Sauvegarde& s = sauvegarde();
     const Profil& p = s.profil;
     // WFS-548 (RG-01 à RG-03, maquette 21) : écran arrêté : fond flouté et assombri, fenêtre de verre dépoli (plus de liseré cyan)
-    verre::fondFloute(r);
-    verre::assombrir(r, W, H, 0.72f * op);   // menu dessous : voile qui cache son interface, scène floutée visible
+    verre::fenetreSurEcran(r);   // menu dessous : son interface n'est plus dessinée (verre::couvert)
+    verre::assombrir(r, W, H, 0.55f * op);
     const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
     const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
     const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;

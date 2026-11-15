@@ -37,6 +37,27 @@ int main() {
     bool lisible = true;
     for (unsigned c : {TOI, PERTE, PRET, SUR_TITRE, INTERTITRE}) lisible = lisible && contraste(c, 0x111218) >= 4.5;
     cas("textes d'état, sur-titres et intertitres lisibles sur le verre sombre (≥ 4,5:1)", lisible);
+    // contour des coins arrondis (verre::contourArrondi) : dans le rectangle, bornes atteintes, sens horaire, rayon borné
+    auto dans = [](const vec2* p, float x, float y, float w, float h) {
+        for (int i = 0; i < NP_CONTOUR; i++) if (p[i].x < x - 1e-3f || p[i].x > x + w + 1e-3f || p[i].y < y - 1e-3f || p[i].y > y + h + 1e-3f) return false;
+        return true;
+    };
+    auto aire = [](const vec2* p) { double a = 0; for (int i = 0; i < NP_CONTOUR; i++) { const vec2 &u = p[i], &v = p[(i + 1) % NP_CONTOUR]; a += (double)u.x * v.y - (double)v.x * u.y; } return a / 2; };
+    {
+        vec2 p[NP_CONTOUR];
+        contourArrondi(10, 20, 300, 100, 14, p);
+        float x0 = 1e9f, x1 = -1e9f, y0 = 1e9f, y1 = -1e9f;
+        for (const vec2& q : p) { x0 = std::min(x0, q.x); x1 = std::max(x1, q.x); y0 = std::min(y0, q.y); y1 = std::max(y1, q.y); }
+        cas("rayon 14 : contour dans le rectangle, bords atteints", dans(p, 10, 20, 300, 100) && std::fabs(x0 - 10) < 1e-3f && std::fabs(x1 - 310) < 1e-3f && std::fabs(y0 - 20) < 1e-3f && std::fabs(y1 - 120) < 1e-3f);
+        const double a = aire(p), attendu = 300.0 * 100 - (4 - 3.14159265) * 14 * 14;
+        cas("rayon 14 : sens horaire à l'écran (y vers le bas), aire ≈ rectangle moins les 4 coins (±1 %)", a > 0 && std::fabs(a - attendu) / attendu < 0.01);
+        contourArrondi(10, 20, 300, 100, 0, p);
+        cas("rayon 0 : coins vifs (points confondus avec les 4 sommets)", std::fabs(p[0].x - 10) < 1e-3f && std::fabs(p[0].y - 20) < 1e-3f && std::fabs(p[COIN_POINTS].x - 310) < 1e-3f && std::fabs(aire(p) - 30000) < 1);
+        contourArrondi(10, 20, 300, 100, 500, p);
+        cas("rayon trop grand : borné à la moitié de la hauteur (bouts ronds), contour dans le rectangle", dans(p, 10, 20, 300, 100) && std::fabs(p[COIN_POINTS - 1].x - 60) < 1e-3f && aire(p) > 0);
+        contourArrondi(0, 0, -5, 10, 4, p);
+        cas("taille négative : rayon 0, aucun NaN", std::isfinite(p[3].x) && std::isfinite(p[3].y));
+    }
     std::printf("verre : %s\n", echecs ? "ÉCHEC" : "tout est bon");
     return echecs ? 1 : 0;
 }

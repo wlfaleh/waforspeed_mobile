@@ -48,8 +48,8 @@ void FenetreAchatVoiture::dessiner(Renderer& r, float W, float H, float k, float
     const CarDef& c = CARS[index_];
     const long long prix = std::max(0, boutique::prixVoiture(c.id)), solde = boutique::solde(s), manque = prix - solde;
     // fond flouté et assombri (WFS-548, RG-02, maquettes 27 et 28 : écran arrêté) : la fenêtre garde le regard et tous les touchers
-    verre::fondFloute(r);
-    verre::assombrir(r, W, H, 0.78f);   // garage ou écran de fin dessous : leur interface ne se voit plus au travers
+    verre::fenetreSurEcran(r);   // garage ou écran de fin dessous : leur interface n'est plus dessinée (verre::couvert)
+    verre::assombrir(r, W, H, 0.50f);
     const std::string nom = std::string(marque(c)) + " " + modele(c);   // WFS-191 : noms inventés
     const std::string titre = ui::majuscules(ui::tr("garage.achat_titre")), question = questionAchat(nom, prix);
     const std::string eq = texteEquivalentVoiture(prix), soldeT = ui::majuscules(ui::tr("garage.solde", nombreLangue(solde)));
@@ -197,6 +197,8 @@ public:
         // modes (leur haut est à 10 % de l'écran au moins), libellé « Essai gratuit terminé » à sa gauche
         const float bw = 200 * k, hb = 52 * k, x = W - gr - bw, y = gt;
         const std::string lib = ui::majuscules(ui::tr("fin.essai_termine"));
+        g_acheterFin = {x, y, bw, hb};
+        if (verre::couvert()) { g_fenetreFin.dessiner(r, W, H, k, gl, gr, gt, gb); return; }   // WFS-548 : fenêtre ouverte : rien d'autre sous le verre
         ui::text(r, x - 14 * k, y + (hb - 16 * k) / 2, 16 * k, lib, verre::hexa(verre::SUR_TITRE), ui::DROITE, 0.14f, false);   // WFS-548 (RG-03) : gris
         biseau(r, x, y, bw, hb, 14 * k, hex(ACCENT));
         const std::string t = ui::majuscules(ui::tr("garage.acheter", nombreLangue(prix)));

@@ -4,26 +4,15 @@
 #include <cmath>
 #include "../game/commandes_tactiles.h"   // dessin2d::contour, halo (bords lissés d'un pixel)
 #include "../render/renderer.h"
+#include "../core/system.h"
 
 namespace wfs::verre {
 namespace {
 
-constexpr int COIN = 9;              // points par coin arrondi (quart de cercle)
-constexpr int NP = 4 * COIN;         // contour complet (≤ 64 points de dessin2d)
+constexpr int NP = NP_CONTOUR;       // contour complet (≤ 64 points de dessin2d)
 
 vec4 melange(const vec4& a, const vec4& b, float t) {
     return {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t};
-}
-
-// contour d'un rectangle aux coins arrondis, dans le sens horaire à l'écran (y vers le bas)
-void contourArrondi(float x, float y, float w, float h, float rayon, vec2* p) {
-    const float rr = std::clamp(rayon, 0.f, std::min(w, h) / 2);
-    const vec2 c[4] = {{x + rr, y + rr}, {x + w - rr, y + rr}, {x + w - rr, y + h - rr}, {x + rr, y + h - rr}};
-    for (int k = 0; k < 4; k++)
-        for (int i = 0; i < COIN; i++) {
-            const float a = PI * (1.f + 0.5f * (float)k) + 0.5f * PI * (float)i / (COIN - 1);
-            p[k * COIN + i] = {c[k].x + rr * std::cos(a), c[k].y + rr * std::sin(a)};
-        }
 }
 
 float distance(vec2 a, vec2 b) { return std::hypot(a.x - b.x, a.y - b.y); }
@@ -79,4 +68,21 @@ void fondFloute(Renderer& r) { r.flouFond = 1.f; }
 
 void assombrir(Renderer& r, float W, float H, float a) { r.uiRect(0, 0, W, H, hexa(0x0A0B10, a)); }
 
+namespace {
+bool g_demande = false, g_couvert = false;   // demande de l'image en cours ; état lu par les écrans du dessous à cette image
+
+// premier système de l'image (ordre 1) : la demande de l'image précédente devient l'état de cette image
+class FenetreCouvre : public System {
+public:
+    const char* name() const override { return "verre-couvre"; }
+    void drawUi(Renderer&, const GameView&) override { g_couvert = g_demande; g_demande = false; }
+    void onEcran(Ecran, Ecran, const GameView&) override { g_couvert = g_demande = false; }   // changement d'écran : rien de couvert
+};
+} // namespace
+
+void fenetreSurEcran(Renderer& r) { fondFloute(r); g_demande = true; }
+bool couvert() { return g_couvert; }
+
 } // namespace wfs::verre
+
+namespace wfs { WFS_SYSTEM(verre::FenetreCouvre, 1) }   // avant tout dessin de l'interface (systèmes 100 à 499)

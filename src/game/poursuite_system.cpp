@@ -482,7 +482,7 @@ public:
         if (!actif_ || !ui::fontReady() || g.ecran != Ecran::Course || !g.player) return;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         const Course* c = activeCourse();
-        if (fini_ && overT_ >= 0.9) { resultat(r, W, H, u); return; }
+        if (fini_ && overT_ >= 0.9) { if (!verre::couvert()) resultat(r, W, H, u); return; }   // WFS-548 : rien sous la fenêtre d'achat
         if (!c || c->state == RaceState::Over) return;
         // RG-06 : en haut au centre : score (100 → 1), police (nombre de voitures), bandeau de surprise
         const float cx = (g.marges.gauche + W - g.marges.droite) / 2, y0 = g.marges.haut + 2 * u, pw = 40 * u, ph = 15.5f * u;

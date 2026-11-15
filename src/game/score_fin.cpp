@@ -74,6 +74,7 @@ private:
     bool sonJoue_ = false;
 
     void dessiner(Renderer& r, const GameView& g, double ecoule) {
+        if (verre::couvert()) return;   // WFS-548 : fenêtre d'achat par-dessus : seule la scène floutée dessous
         const Etat& e = g_etat;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         // RG-04 : à droite du panneau (à gauche s'il y a plus de place), jamais par-dessus ; trop étroit : tout est réduit (70 % au plus)

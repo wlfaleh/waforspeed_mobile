@@ -256,6 +256,7 @@ private:
                 lecture_.e.size(), lecture_.duree());
     }
     void drawOver(Renderer& r, float W, float H, float u) {
+        if (verre::couvert()) return;   // WFS-548 : fenêtre d'achat par-dessus : seule la scène floutée dessous
         verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
         // WFS-101 (RG-04, ANO-36) : avec la sauvegarde (ligne « RECORD », badge si battu), mise en page aérée : statistiques
         // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px

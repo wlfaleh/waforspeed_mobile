@@ -250,7 +250,7 @@ public:
         const float zl = mg.gauche + (cp_ ? 24 : 32) * k, zr = W - mg.droite - (cp_ ? 24 : 32) * k;
         // WFS-548 (RG-02, maquette 23) : écran arrêté : fond flouté et assombri (avant : voile --bg à 94 %)
         verre::fondFloute(r);
-        verre::assombrir(r, W, H, 0.72f);
+        verre::assombrir(r, W, H, 0.55f);
         // en-tête (#lobby) : .eyebrow + .big (petit écran : resserré, @media (max-height: 520px) du web)
         const float hy = mg.haut + (cp_ ? 12 : 26) * k;
         verre::surTitre(r, zl, hy, (cp_ ? 12 : 13) * k, ui::tr("salon.surtitre"));   // WFS-548 (RG-03) : gris

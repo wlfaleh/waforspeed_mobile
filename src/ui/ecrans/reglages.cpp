@@ -376,6 +376,7 @@ public:
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
         const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
         g_dpAppui = ui::pixelsParDp(W);   // WFS-290 : cible des boutons en dp
+        if (!g_ouvert && verre::couvert()) { g_bouton = {}; return; }   // WFS-548 : sous une fenêtre de verre (Profil, Market…) : pas de bouton
         if (!g_ouvert) { dessinerBouton(r, g, W, k, H / 720.f); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
@@ -409,8 +410,8 @@ private:
     // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
     void dessinerPanneau(Renderer& r, const GameView& g, float W, float H, float k) {
         // WFS-548 (RG-02, maquettes 14, 24, 25) : écran arrêté : fond flouté et assombri (avant : voile --bg à 86 %)
-        verre::fondFloute(r);
-        verre::assombrir(r, W, H, 0.72f);   // menu ou pause dessous : leur interface ne se voit plus au travers
+        verre::fenetreSurEcran(r);   // menu ou pause dessous : leur interface n'est plus dessinée (verre::couvert)
+        verre::assombrir(r, W, H, 0.55f);
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
@@ -480,8 +481,8 @@ private:
     // « Fermer » en haut à droite (48 dp), ligne « Rendu » en bas (14 dp) : tout tient dans 400 dp de haut, sans défilement.
     void dessinerPanneauPetit(Renderer& r, const GameView& g, float W, float H, float k) {
         // WFS-548 (RG-02, maquettes 14, 24, 25) : écran arrêté : fond flouté et assombri (avant : voile --bg à 86 %)
-        verre::fondFloute(r);
-        verre::assombrir(r, W, H, 0.72f);   // menu ou pause dessous : leur interface ne se voit plus au travers
+        verre::fenetreSurEcran(r);   // menu ou pause dessous : leur interface n'est plus dessinée (verre::couvert)
+        verre::assombrir(r, W, H, 0.55f);
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const int PAR_COL = (L_REGARD + 1) / 2;   // WFS-235 : « Regard cockpit » dans l'en-tête, les 12 autres lignes ne bougent pas

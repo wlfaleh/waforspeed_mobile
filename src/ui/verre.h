@@ -5,6 +5,8 @@
 // Maquettes : references/maquettes-R19/ ; règles : regles-de-gestion/WFS-548.md. Interface 2D seulement (skill
 // design-street-racing) : le monde 3D n'est pas concerné.
 #pragma once
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include "../core/math.h"
 #include "text.h"
@@ -31,8 +33,22 @@ inline vec4 degradeMarque(float t, float a = 1) {
     const float u = t < 0 ? 0 : t > 1 ? 1 : t;
     return {c0.x + (c1.x - c0.x) * u, c0.y + (c1.y - c0.y) * u, c0.z + (c1.z - c0.z) * u, a};
 }
-// barre horizontale remplie du dégradé de la marque (x0 → x1), en 16 tranches
+// barre horizontale remplie du dégradé de la marque (x → x + w), un seul quadrilatère à couleurs par sommet
 void barreMarque(Renderer& r, float x, float y, float w, float h, float a = 1);
+
+// contour d'un rectangle aux coins arrondis (NP_CONTOUR points, sens horaire à l'écran, y vers le bas) ; rayon borné à
+// [0, moitié du plus petit côté] (rayon 0 : coins vifs, points confondus ; rayon trop grand : bout arrondi, jamais de croisement)
+constexpr int COIN_POINTS = 9, NP_CONTOUR = 4 * COIN_POINTS;   // ≤ 64 points de dessin2d
+inline void contourArrondi(float x, float y, float w, float h, float rayon, vec2* p) {
+    const float rr = std::clamp(rayon, 0.f, std::max(0.f, std::min(w, h) / 2));
+    const vec2 c[4] = {{x + rr, y + rr}, {x + w - rr, y + rr}, {x + w - rr, y + h - rr}, {x + rr, y + h - rr}};
+    constexpr float PI_ = 3.14159265358979f;
+    for (int k = 0; k < 4; k++)
+        for (int i = 0; i < COIN_POINTS; i++) {
+            const float a = PI_ * (1.f + 0.5f * (float)k) + 0.5f * PI_ * (float)i / (COIN_POINTS - 1);
+            p[k * COIN_POINTS + i] = {c[k].x + rr * std::cos(a), c[k].y + rr * std::sin(a)};
+        }
+}
 
 // RG-01 : style d'un panneau
 struct Style {
@@ -54,6 +70,14 @@ void surTitre(Renderer& r, float x, float y, float px, const std::string& texte,
 void fondFloute(Renderer& r);
 // voile sombre plein écran (sur le fond flouté, ou seul en course)
 void assombrir(Renderer& r, float W, float H, float a);
+
+// Fenêtre posée sur un autre écran (Réglages et CGU sur le menu, Market sur le menu ou le garage, fenêtre d'achat sur le garage
+// ou sur une fin de course) : seule la scène floutée doit se voir sous le verre, jamais l'interface de l'écran du dessous.
+// La fenêtre appelle fenetreSurEcran(r) à chaque image (fond flouté + écran du dessous couvert) ; l'écran du dessous ne
+// dessine pas son interface tant que couvert() est vrai. Valable pour l'image suivante (même règle que le fond flouté) :
+// une image de décalage à l'ouverture et à la fermeture.
+void fenetreSurEcran(Renderer& r);
+bool couvert();
 
 } // namespace verre
 } // namespace wfs

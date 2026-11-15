@@ -154,9 +154,9 @@ public:
         const bool attente = s.status() == duel::Status::Ready && overT_ >= 0.9;
         if (s.status() != duel::Status::Race && s.status() != duel::Status::Done && !attente) return;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
-        noms(r, g, u);
-        board(r, g, u);
-        if ((s.status() == duel::Status::Done || attente) && overT_ >= 0.9) resultat(r, W, H, u);
+        const bool fin = (s.status() == duel::Status::Done || attente) && overT_ >= 0.9;
+        if (!fin) { noms(r, g, u); board(r, g, u); }   // WFS-548 : noms et tableau de course pas dessinés sous le résultat (maquette 33)
+        if (fin && !verre::couvert()) resultat(r, W, H, u);   // WFS-548 : rien sous la fenêtre d'achat
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {
