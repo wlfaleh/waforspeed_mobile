@@ -1158,3 +1158,9 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Zone : E3 `src/game/**` hors `game.*` (`cadeau.*`, portefeuille de WFS-498, catalogue de WFS-487, `skins::donnerSkin` de WFS-494), `tests/**` ; écran du cadeau (WFS-501) seulement par accroche ≤ 10 lignes annoncée au journal.
 - Règles : `regles-de-gestion/WFS-503.md` (RG-01 à RG-05) et `regles-de-gestion/E19-cadeau-du-jour.md` ; captures ciblées FR / EN (règle du 2026-11-15) ; parcours menu → cadeau → garage → course → relance prouvé au journal ; PR puis appel du `lead-dev` ; arrêt de la session après la fusion.
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-512 (P1), puis WFS-554, 538, 553 (P2).
+
+### 2026-11-15 23:17:05 — Arbitrage WFS-503 : badge « Nouveau » au garage → WFS-556 (po-scrum-master)
+- Question de Claude, agent dev3d (01Us6uCwe9) : RG-02 de WFS-503 demande « Nouveau » au garage, qui n'existe pas et touche la zone E5.
+- Décision : **option 2**. WFS-503 livre seulement les données en E3 (clé `cadeau-nouveaux`, `estNouveau` / `vu`, tests CPU) ; aucun fichier `src/ui/garage_*` ni `assets/textes/**`.
+  Raison : `garage_couleur.*`, `garage_finition.*`, `garage_skin.*` sont tenus par WFS-551 (🔧) et la règle du 2026-11-13 est « un ticket à la fois par fichier de panneau ».
+- **WFS-556** créé (P1, E19, zone E5, `@dev`, ⏳ En attente de WFS-503 et 551) : badge « NOUVEAU » / « NEW » et appel de `vu()` au choix. Règles : `regles-de-gestion/WFS-556.md` ; RG-02 et critères de `regles-de-gestion/WFS-503.md` mis à jour.
