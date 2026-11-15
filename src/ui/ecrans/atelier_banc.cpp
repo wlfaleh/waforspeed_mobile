@@ -4,7 +4,7 @@
 //   2. 5 calques (RC-E18-09) : bande, numéro déplacé au doigt, flamme tournée et agrandie à deux doigts (capture pendant le geste),
 //      éclair sur le flanc droit, bande sur le capot ; ± 5°, ± 5 %, miroir, couleur, masquer, monter, annuler / refaire ;
 //      motif d'un pack non possédé : message ; « Valider » : gardé et cuit ;
-//   3. 20 calques au plus (« 20 calques au maximum »), « Quitter » → confirmation → rien de gardé ;
+//   3. 20 calques au plus (« 20 calques au maximum »), « Quitter » (ou la touche Retour du téléphone) → confirmation → rien de gardé ;
 //   4. parcours : « Choisir » → terrain → « Rouler » → course de jour avec les autocollants → retour au garage ;
 //   5. 500 et GT86 habillées dans l'atelier (3 voitures) ; relance du jeu (sauvegarde relue) : habillages gardés ;
 //   6. course de jour et de nuit avec les 3 voitures ;
@@ -18,6 +18,7 @@
 #include "../../core/log.h"
 #include "../../game/game.h"
 #include "../../game/sauvegarde.h"
+#include "../../platform/retour_systeme.h"   // touche Retour du téléphone
 #include "../../render/renderer.h"
 #include "../../render/vehicule_skin.h"
 #include "../garage.h"
@@ -172,6 +173,11 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
     capture("confirmation", "« Quitter » après des changements : « Quitter sans valider ? »");
     zone("conf-rester"); images(2);
     verifier(ouvert() && nCalques() == 20, "« Rester » : l'atelier reste ouvert, rien perdu");
+    retourSysteme(g, true, 0); image(); retourSysteme(g, false, 0); images(4);   // touche Retour d'Android = « Quitter »
+    float cx, cy;
+    verifier(ouvert() && g.ecran() == Ecran::Garage && centre("conf-rester", cx, cy), "touche Retour du téléphone : confirmation « Quitter sans valider ? » (rien perdu)");
+    retourSysteme(g, true, 0); image(); retourSysteme(g, false, 0); images(4);   // dans la confirmation : « Rester »
+    verifier(ouvert() && nCalques() == 20 && !centre("conf-rester", cx, cy), "touche Retour dans la confirmation : « Rester »");
     zone("quitter"); zone("conf-quitter"); images(10);
     verifier(!ouvert() && texteGarde("p208") == cinq, "« Quitter » sans valider : les 5 calques gardés ne changent pas");
 

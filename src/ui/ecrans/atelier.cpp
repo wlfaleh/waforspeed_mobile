@@ -14,6 +14,7 @@
 #include "../../game/game.h"                 // Touch
 #include "../../game/personnalisation.h"
 #include "../../game/sauvegarde.h"
+#include "../../platform/manette.h"          // focus de la manette ; zone retour = touche Retour d'Android
 #include "../../render/renderer.h"
 #include "../../render/vehicule_skin.h"
 #include "../boutons.h"         // WFS-549 : boutons R19
@@ -462,6 +463,17 @@ void dessiner(Renderer& r, const GameView& v) {
         ui::text(r, W / 2, ty + 11 * k, 16 * k, g.message, hex(TEXTE), ui::CENTRE);
     } else if (g.maintenant - g.tMessage >= DUREE_MESSAGE) g.message.clear();
     if (g.confirmation) dessinerConfirmation(r); else g.confQuitter = g.confRester = Zone{};
+    // manette et touche Retour d'Android (WFS-116 : la zone « retour » reçoit l'appui) : « Quitter » (confirmation si changé) ;
+    // dans la confirmation : « Rester »
+    if (g.confirmation) { manette::focus(g.confQuitter); manette::focus(g.confRester, true); return; }
+    for (const Zone& z : g.vues) manette::focus(z);
+    for (const Zone& z : g.familles) manette::focus(z);
+    for (const Zone& z : g.motifs) manette::focus(z);
+    for (const Zone& z : g.calques) manette::focus(z);
+    for (const Zone& z : g.outils) manette::focus(z);
+    if (g.palette) for (const Zone& z : g.palette28) manette::focus(z);
+    for (const Zone* z : {&g.annuler, &g.refaire, &g.monter, &g.descendre, &g.valider}) manette::focus(*z);
+    manette::focus(g.quitter, true);
 }
 
 // ---------------------------------------------------------------- touchers
