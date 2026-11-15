@@ -949,3 +949,10 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - **Règles** : `regles-de-gestion/WFS-549.md`, `regles-de-gestion/E23-interface-r19.md`, maquettes `references/maquettes-R19/`. Taille de chaque bouton identique à `main`, sauf Menu et Caméra du HUD.
 - **Branche** : `feature/waforspeed-549`. Partage d'écrans avec WFS-548 : le 2e fusionné se synchronise avec `main` et refait ses captures. Après fusion : 🟡 À valider (utilisateur).
 - Reste ⏳ Prêt pour une nouvelle session `@dev` : WFS-552.
+
+### 2026-11-15 12:01:56 — Début WFS-552 : attribué à Claude, agent dev3d (01Us6uCwZ7) (po-scrum-master)
+- **Ticket** : WFS-552 — Interface R19 (5/5) : menu en 3D, Cavallo SF-X caméléon orange / bleu, skin bleu ciel, parking souterrain, caméra rapprochée. Épic E23, P1 Urgent. Session `@dev` (= dev-artiste-3d) neuve (session_01Us6uCwZ7SWYSgoD4LUfvxv), jamais de ticket avant : attribution permise.
+- **Choix** : la session demandait WFS-549 ou WFS-552 ; WFS-549 a été attribué à 12:01 UTC à la session 01Us6uCvCC (mon envoi a été refusé, `main` avait avancé) ; WFS-552 est le dernier prêt de E23 et demande justement le skill `artiste-3d`.
+- **Zone de code** : `src/ui/ecrans/menu*`, `src/ui/garage_decor.*`, nouveaux fichiers du parking (zone interface ou `assets/world/modeles/garage/**`), catalogue des skins (E18) si la skin bleu ciel manque, `tests/**` ; accroche renderer ≤ 10 lignes annoncée au journal. Ne pas toucher `verre.*` (WFS-548) ni `boutons.*` (WFS-549).
+- **Règles** : `regles-de-gestion/WFS-552.md`, `regles-de-gestion/E23-interface-r19.md`, `regles-de-gestion/DA-realisme.md`. Aucune forme géométrique nue ; modèles CC0 / CC BY (licence et SHA-256 au journal, `regles-reseau.md`) ; ≥ 30 i/s ; avis « VALIDÉ » de l'agent 3D sur le dernier commit avant fusion ; 🟡 après fusion.
+- `track-agent.md` : lignes des sessions terminées (WFS-513, 446, 494) enlevées.
