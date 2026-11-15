@@ -2078,3 +2078,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:04:31 — R19 : interface de conduite corrigée (smart-brainstorming)
 - Retours de l'utilisateur : nitro gardé (couleur seulement), volant gardé, flèches retirées (autre mode), pédales refusées → cartes Frein / Gaz en verre. Rien transmis au PO.
+
+### 2026-11-15 01:05:53 — R19 : 3 versions de Gaz et Frein (smart-brainstorming)
+- Retour de l'utilisateur ambigu (« tu changes gaz et frein ») ; planche `references/maquettes-R19/options-gaz-frein.jpg` (ronds en verre, famille Start/Stop, pilules chrome), choix à faire. Rien transmis au PO.
