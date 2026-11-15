@@ -15,7 +15,7 @@
 - **Comment c'est vérifié** :
   - `bash tools/qa/tests_cpu.sh build` : **145 tests réussis**, dont le nouveau `test_verre` (dégradé de la marque, couleurs d'état distinctes, sur-titres gris, contraste ≥ 4,5:1 sur le verre sombre).
   - Bancs PC (lavapipe, même rendu que la CI) avant / après avec `captures_pr.sh` : `pause`, `profil`, `creation`, `cgu`, `market`, `chargement`, `reglages-onglets`, `score-fin` (FR et EN). Après seulement : fins de course à 5, Poursuite et duel (`course5`, `menu2`), salon (`menu2`), fenêtre d'achat (`garage-voitures`), pause **de nuit** (`WFS_MOMENT=nuit`).
-  - Parcours (RG-09) : accueil → menu → course → pause → reprise → fin → résultats → menu, plus Réglages, Profil, Market, CGU, salon : aucun écran cassé ni texte coupé sur les captures, FR et EN.
+  - Parcours (RG-09) : chaque écran du parcours (menu → course → pause → reprise → fin → menu, Réglages, Profil, Market, CGU, salon) regardé sur les captures des bancs ci-dessus, FR et EN : aucun écran cassé ni texte coupé vu. Le banc `parcours` complet n'a pas été lancé en local (bancs du matin).
   - RG-08 : aucun flou en course (capture `pause-reprise` nette) ; à l'ouverture, une seule image refait la scène et la chaîne du bloom (même coût qu'une image de course avec bloom), puis l'image est relue.
 - **Limites et risques connus** :
   - Seule la **scène 3D** est floutée : l'interface de l'écran dessous (menu, écran de fin) est cachée par un voile sombre (0,72 sur le menu, 0,78 sous la fenêtre d'achat), pas floutée ; elle reste à peine visible sous la fenêtre.
