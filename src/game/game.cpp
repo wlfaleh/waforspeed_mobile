@@ -43,6 +43,7 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
+    fondFige_ = {};   // WFS-552 (accroche) : nouvelle partie : le fond du menu est redessiné avant d'être figé (jamais l'image de la partie d'avant)
     memoire::debutChargement();   // WFS-297 (RG-06) : « Lus » du chargement de cette partie
     chargerConfig();   // WFS-128 : configgame.json lu à chaque partie (téléphone, APK ; PC : WFS_CONFIG ou ./configgame.json)
     if (r.gpuLogiciel()) {   // WFS-59 : émulateur de la QA → ombres du soleil coupées (dt et rendu : plafondDt, vk.cpp)
@@ -79,6 +80,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
 }
 
 void Game::setCar(const char* carId) {
+    fondFige_ = {};   // WFS-552 (accroche) : autre voiture : le parking du menu est redessiné avec elle
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &voiturePermise(carId);   // WFS-404 (RG-04, accroche) : voiture retirée (licence NC) ou inconnue → 1re voiture permise
     paint_ = hexColor(carDef_->paint);
