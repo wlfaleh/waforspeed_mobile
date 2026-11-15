@@ -929,3 +929,7 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - 548 et 549 sur les mêmes écrans (exception voulue par l'utilisateur au garde-fou « un ticket par fichier de panneau du garage ») : le 2e fusionné se synchronise avec `main` et refait ses captures. 550 / 551 : fichiers répartis dans leurs règles (RG-07 / RG-08).
 - Taille des boutons inchangée, sauf Menu et Caméra du HUD (validé par l'utilisateur dans la R19). 548 à 551 = interface 2D (design-street-racing) ; 552 = monde 3D (formes géométriques interdites, 99 %).
 - Aucun ticket attribué (aucune session ouverte) : 3 nouvelles sessions `@dev` à ouvrir par l'utilisateur.
+
+### 2026-11-15 11:15:14 — Statuts remis à jour, liste des 30 prochaines tâches donnée à l'utilisateur (po-scrum-master)
+- WFS-503, 512, 457, 448, 447 : ⏳ En attente → ⏳ Prêt (dépendances fusionnées : 501, 487, 494, 511, 456, 446, 383).
+- Ordre donné : E23 (548, 549, 552 prêts ; 550, 551 après 548 + 549), WFS-541 (bloquante), puis le classement 📋 restant (538 → 368).
