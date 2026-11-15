@@ -2048,3 +2048,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:27:39 — R19 : onglet Peinture avec bombes, graffiti et seau (smart-brainstorming)
 - Retour de l'utilisateur (« pas de créativité ») : couleurs en bombes de peinture, graffiti sur le mur, seau et pinceau. Rien transmis au PO.
+
+### 2026-11-15 00:28:35 — R19 : graffiti retiré de l'onglet Peinture (smart-brainstorming)
+- Graffiti refusé par l'utilisateur, retiré ; bombes et seau gardés. Rien transmis au PO.
