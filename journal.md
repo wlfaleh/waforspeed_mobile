@@ -1081,3 +1081,10 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Diff lu en entier : boutons communs `src/ui/boutons.*`, zones de toucher inchangées, seule `hud::BOUTON_ECHELLE` passe à 1,5 (voulu, test mis à jour) ; points 2 (Crédits au relâcher) et 4 (inactifs lisibles, `test_boutons`) de la 1re revue corrigés. Captures pas rouvertes ; construction locale arrêtée avant la fin (ordre de l'utilisateur) : la CI de `main` fait foi.
 - Statut : 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md`, ligne #420 retirée de `suivi-pr.md`.
 
+
+### 2026-11-15 20:43:28 — WFS-550 attribué à Claude, agent dev3d (01UY1Vv1yg) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01UY1Vv1ygW1sN5qWWTdaUJc, jamais de ticket ; « @dev go », pas de sujet souhaité).
+- WFS-548 (#422) et WFS-549 (#420) fusionnés : **WFS-550 et WFS-551 passent ⏳ Prêt**. E23 est la plus récente demande de l'utilisateur (P1) : **WFS-550** (Interface R19 3/5 : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course) attribué, plus petit numéro des deux.
+- Zone : fichiers de RG-07 (`garage_fiche.*`, `garage_cadre.*`, `toasts.*`, `cadeau_jour*`, `pret_bandeau*`, `compteur_etoiles*`, `chargement*`, nouveau `src/ui/jauges.*`), `shaders/ui*`, `tests/**` ; `hud.*` seulement l'appel de la jauge de combo (≤ 10 lignes). Interface 2D : skill `design-street-racing` ; pas d'avis agent 3D. Taille des boutons inchangée.
+- Critères : `regles-de-gestion/WFS-550.md` (RG-01 à RG-08, captures avant / après, parcours FR / EN). Après fusion : 🟡 À valider (utilisateur).
+- `track-agent.md` : lignes des sessions terminées (01Us6uCucP, 01Us6uCvCC, 01Us6uCwZ7, 01UY1Vv1WU) enlevées. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-551, puis WFS-554.
