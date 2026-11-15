@@ -1064,3 +1064,14 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - **Corrigé** : (1) plus de déplacement de côté sans avancer (v · tan 35°), déboîtement au pas (7 km/h) derrière une voiture accidentée seulement ; (2) une seule décision de changement de file (les contacts ne l'annulent plus) ; (3) commentaires de `traffic.h` ; (4) cas D de `test_trafic_chocs541` (changement de file au pas : 0,000 m de côté à l'arrêt, 1,5 s d'arrêt au plus) ; (5) `qa/pr/WFS-541/tests-cpu.log` + capture « Tests CPU » ; (6) scène `heurtee` en M4 (le trafic n'a que 4 modèles, aucun SUV possible).
 - **Cause racine notée** : une relance du changement de file toutes les 0,5 s cassait RG-02 de WFS-281 (`test_trafic_duree`) : retirée.
 - **Vérification** : 147 / 147 tests CPU (branche synchronisée, WFS-548 compris) ; banc `trafic-541` régénéré, captures regardées ; réponses point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-15 18:49:08 — WFS-541 fusionné par le lead dev (lead-dev)
+- PR #423, 2e revue sur aecbf199 : les 6 points de la 1re revue sont corrigés et vérifiés. « ✅ Approuvé par le lead dev » posté en commentaire (GitHub refuse l'approbation formelle : même compte). Fusion en squash : **eed11f17**.
+- Captures ouvertes : 32 paires avant / après et la capture « Tests CPU ». Construction et tests refaits sur aecbf199 : **147 / 147** (cas D, `test_traffic`, `test_trafic_duree` verts).
+- Statut : **🟡 À valider (utilisateur)** (ticket de conduite). Ligne ajoutée à `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
+- Remarque non bloquante : la capture « Tests CPU » a été prise à 081f9e6e (146 tests), le journal `tests-cpu.log` à aecbf199 (147 tests).
+
+### 2026-11-15 18:49:32 — Fin WFS-541 : fusionné, session terminée (Claude, agent conduite (01UY1Vv1WU))
+- PR #423 fusionnée en squash par le lead dev (eed11f17) à la 2e revue ; statut 🟡 À valider (utilisateur) : à essayer sur l'APK de `main`, même parcours que les vidéos du 2026-11-13 (Poursuite, Corniche, nuit).
+- Remarque du lead dev retenue : capture « Tests CPU » prise avant le dernier commit (146 tests) alors que `tests-cpu.log` est au commit final (147) ; à prendre au commit final la prochaine fois.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
