@@ -328,11 +328,45 @@ def taches_cm(v, B):
         res.append((d, part))
     return res
 
+# ---------------------------------------------------------------- WFS-552 : Bleu ciel, identifiant « ciel » (R19, maquette 01 ; dessin original, aucun logo)
+# Couleur A (bleu ciel) : deux bandes de 19 cm sur le capot, du bouclier au pare-brise (elles descendent sur la face avant jusqu'à
+# la lèvre du bouclier), une bande de bas de caisse entre les passages de roue, et la prise d'air du flanc, devant la roue arrière ;
+# couleur B (blanc) : fins liserés de 12 mm le long de chaque bande et autour de la prise d'air.
+BC_BANDE_X = (0.07, 0.26)      # |x| des bandes du capot (m)
+BC_LISERE, BC_ECART = 0.012, 0.010   # liseré blanc (m) et son écart au bord de la bande
+
+def bleu_ciel(v):
+    A = Image.new('L', (T * S, T * S), 0); B = Image.new('L', (T * S, T * S), 0)
+    da, db = ImageDraw.Draw(A), ImageDraw.Draw(B)
+    zfin = v['roue_av'] + 0.45                       # base du pare-brise (fin des bandes du capot)
+    (x0, x1), e, l = BC_BANDE_X, BC_ECART, BC_LISERE
+    for signe in (-1, 1):
+        rect(da, px_dessus(signe * x0, -DZ), px_dessus(signe * x1, zfin))
+        rect(da, px_face(False, signe * x0, H), px_face(False, signe * x1, 0.45))
+        for a, b in ((x0 - e - l, x0 - e), (x1 + e, x1 + e + l)):
+            rect(db, px_dessus(signe * a, -DZ), px_dessus(signe * b, zfin))
+            rect(db, px_face(False, signe * a, H), px_face(False, signe * b, 0.45))
+    bas, ceinture, rayon = v['bas'], v['ceinture'], v['rayon']
+    za, zr = v['roue_av'] + rayon + 0.10, v['roue_ar'] - rayon - 0.10   # entre les passages de roue
+    for zone in ('gauche', 'droite'):
+        # bande de bas de caisse (9 cm) et liseré au-dessus
+        rect(da, px_flanc(zone, za, bas + 0.13), px_flanc(zone, zr, bas + 0.04))
+        rect(db, px_flanc(zone, za, bas + 0.13 + e + l), px_flanc(zone, zr, bas + 0.13 + e))
+        # prise d'air du flanc : trapèze penché vers l'avant, devant la roue arrière, sous la ligne de ceinture
+        y0, y1 = max(bas + 0.20, ceinture - 0.30), ceinture - 0.03
+        z1 = v['roue_ar'] - rayon - 0.02; z0 = z1 - 0.62
+        prise = [(z0 + 0.12, y1), (z1, y1), (z1, y0), (z0, y0)]
+        flanc_poly(da, zone, prise)
+        pts = [px_flanc(zone, z, y) for z, y in prise]
+        db.line([(round(a), round(b)) for a, b in pts + pts[:1]], fill=255, width=max(1, round(l / H * (ZONES[zone][1] - ZONES[zone][0]) * S)))
+    return A, B
+
 # couleurs A et B de chaque skin (codes sRGB, mêmes valeurs que SKIN_COULEURS de shaders/vehicule.glsl) : pour l'aperçu seulement
 COULEURS = {'rallye': ((0.91, 0.91, 0.89), (0.10, 0.11, 0.125)), 'drifttokyo': ((0.93, 0.30, 0.10), (0.06, 0.06, 0.07)),
-            'neonnuit': ((0.0, 0.90, 1.0), (1.0, 0.12, 0.85)), 'camouflage': ((0.85, 0.86, 0.84), (0.09, 0.09, 0.10))}
+            'neonnuit': ((0.0, 0.90, 1.0), (1.0, 0.12, 0.85)), 'camouflage': ((0.85, 0.86, 0.84), (0.09, 0.09, 0.10)),
+            'ciel': ((0.53, 0.81, 0.93), (0.93, 0.93, 0.92))}
 
-DESSINS = {'rallye': rallye, 'drifttokyo': drift_tokyo, 'neonnuit': neon_nuit, 'camouflage': camouflage}
+DESSINS = {'rallye': rallye, 'drifttokyo': drift_tokyo, 'neonnuit': neon_nuit, 'camouflage': camouflage, 'ciel': bleu_ciel}
 
 # ---------------------------------------------------------------- réduction, marges, mipmaps
 def reduire_dessin(img):

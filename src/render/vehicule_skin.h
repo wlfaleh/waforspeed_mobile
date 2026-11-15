@@ -30,10 +30,10 @@ class Renderer;
 namespace wfs::vehicule_skin {
 
 constexpr int AUCUNE = 0;   // numéro 0 : aucune skin (aspect d'avant, au bit près)
-constexpr int NOMBRE = 4;   // skins du catalogue (BOUTIQUE_SKINS_IDS de configgame.h) : numéros 1 à 4
-// WFS-495 : numéro 5 = habillage cuit (skin éventuelle + autocollants, vehicule_autocollants.h) : texture RGBA (RGB = couleur en
+constexpr int NOMBRE = 5;   // skins du catalogue (BOUTIQUE_SKINS_IDS de configgame.h) : numéros 1 à 5 (WFS-552 : 5 = Bleu ciel)
+// WFS-495 : numéro 6 (5 avant WFS-552) = habillage cuit (skin éventuelle + autocollants, vehicule_autocollants.h) : texture RGBA (RGB = couleur en
 // codes sRGB, A = couverture), lue par le shader au lieu des masques A / B
-constexpr int CUIT = 5;
+constexpr int CUIT = 6;
 
 // cadre du dépliage, en mètres du repère de la voiture (avant vers −Z, posée au sol, centrée) ; mêmes valeurs dans le shader
 // (SKIN_*) et dans tools/skins/generer.py (ATLAS). Lignes de la texture (pixels sur 1024) : zones séparées par 8 px de marge.
