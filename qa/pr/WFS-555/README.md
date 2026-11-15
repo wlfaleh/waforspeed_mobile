@@ -2,7 +2,7 @@
 
 Branche `feature/waforspeed-555` comparée à `origin/main` ; bancs : chargement ; filtre : `*`.
 
-Captures « avant » : `origin/main` = `42bdd896d14fd07b6b3fb6b165aa51c4f2d0c277` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
+Captures « avant » : `origin/main` = `6d2799b94b814d107b6fa8e818ad235a1a33b86c` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
