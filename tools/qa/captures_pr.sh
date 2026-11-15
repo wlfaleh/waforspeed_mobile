@@ -47,6 +47,13 @@ trap nettoyer EXIT
 # Cache des captures « avant » (WFS-555), hors du dépôt. L'arbre de travail de main est propre à chaque clone
 # (son fichier .git pointe vers ce clone) : son nom porte une empreinte du dossier git commun du clone.
 CACHE=${WFS_CACHE_CAPTURES:-${XDG_CACHE_HOME:-$HOME/.cache}/wfs-captures}
+# Chemin absolu (un chemin relatif serait relu après des « cd ») ; jamais dans le dépôt du développeur.
+CACHE=$(realpath -m "$CACHE")
+RACINE_REELLE=$(pwd -P)
+case "$CACHE/" in
+  "$RACINE_REELLE"/*) echo "erreur : le cache des captures ($CACHE) ne doit pas être dans le dépôt ($RACINE_REELLE) : changer WFS_CACHE_CAPTURES"; exit 2 ;;
+esac
+mkdir -p "$CACHE"; CACHE=$(cd "$CACHE" && pwd -P)
 GIT_COMMUN=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
 MAIN_SRC="$CACHE/main-src-$(printf '%s' "$GIT_COMMUN" | sha256sum | cut -c1-12)"
 CACHE_GARDES=3          # nombre de commits de main gardés dans le cache
@@ -80,13 +87,22 @@ cle_banc() { local nom=${1%%:*}; if [ "$1" != "$nom" ]; then echo "${nom}_${1#*:
 
 # Met l'arbre de travail de main gardé sur le commit $1 ; le recrée s'il est absent, cassé ou lié à un autre clone.
 preparer_main_src() {
-  local sha=$1
-  if [ -d "$MAIN_SRC" ] && [ "$(cd "$MAIN_SRC" 2>/dev/null && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)" = "$GIT_COMMUN" ] \
+  local sha=$1 haut="" commun=""
+  if [ -d "$MAIN_SRC" ]; then
+    # L'arbre doit être lui-même la racine de son dépôt git : sans son fichier .git, git remonterait vers un dépôt
+    # parent (celui du développeur) et le checkout ci-dessous le toucherait. Racine ≠ MAIN_SRC → arbre recréé.
+    haut=$(cd "$MAIN_SRC" && git rev-parse --show-toplevel 2>/dev/null && true) || haut=""
+    [ -n "$haut" ] && haut=$(cd "$haut" && pwd -P)
+    commun=$(cd "$MAIN_SRC" && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P) || commun=""
+  fi
+  if [ -n "$haut" ] && [ "$haut" = "$(cd "$MAIN_SRC" && pwd -P)" ] && [ "$commun" = "$GIT_COMMUN" ] \
      && git -C "$MAIN_SRC" checkout -q --force --detach "$sha" 2>/dev/null; then
     return 0
   fi
   echo "  arbre de travail de main (re)créé dans $MAIN_SRC"
-  git worktree remove --force "$MAIN_SRC" > /dev/null 2>&1 || true
+  # Un arbre verrouillé (« git worktree lock ») ne se retire et ne se recrée qu'après déverrouillage.
+  git worktree unlock "$MAIN_SRC" > /dev/null 2>&1 || true
+  git worktree remove -f -f "$MAIN_SRC" > /dev/null 2>&1 || true
   rm -rf "$MAIN_SRC"
   git worktree prune
   git worktree add -q --detach "$MAIN_SRC" "$sha"
