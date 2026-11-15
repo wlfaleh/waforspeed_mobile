@@ -122,7 +122,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     };
     reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.14f * op));
     reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.10f * op));
-    const float barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
+    const float barre = 8 * k, txt = 19 * k;   // WFS-550 (maquette 08) : barre de 8 px ; libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
     // WFS-550 (RG-02, maquette 08) : hors échec, l'étape et le pourcentage passent au-dessus de la barre (pourcentage en grand à
     // droite), puis 4 étapes en segments (Moteur, Modèles 3D, Voitures, Ville) sous la barre ; l'échec garde sa mise en page
     const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k, te = 13 * k;
@@ -149,9 +149,17 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     y += avantBarre;
     // barre .cp-bar : fond --surface-2, remplissage du dégradé de la marque cyan → orange (WFS-548, RG-04 : verre::barreMarque,
     // un seul dégradé continu, mêmes couleurs qu'avant)
-    r.uiRect(x, y, largeur, barre, hex(SURFACE2, op));
-    const float plein = largeur * pc;
-    if (plein > 0) verre::barreMarque(r, x, y, plein, barre, op);
+    {   // WFS-550 (maquette 08) : barre aux bouts arrondis, piste sombre, remplissage du dégradé de la marque
+        const float rr = barre / 2;
+        const vec2 piste[2] = {{x + rr, y + rr}, {x + largeur - rr, y + rr}};
+        dessin2d::trait(r, piste, 2, barre, hex(SURFACE2, op));
+        const float plein = largeur * pc;
+        if (plein > 2 * rr) {
+            verre::barreMarque(r, x + rr, y, plein - 2 * rr, barre, op);
+            r.uiCircle(x + rr, y + rr, rr, verre::degradeMarque(0, op));
+            r.uiCircle(x + plein - rr, y + rr, rr, verre::degradeMarque(1, op));
+        }
+    }
     y += barre;
     if (!erreur) {   // WFS-550 (RG-02) : 4 étapes ; finie = segment blanc et coche cyan, en cours = orange, à venir = grise
         static const char* const CLES[4] = {"chargement.segment.moteur", "chargement.segment.modeles", "chargement.segment.voitures", "chargement.segment.ville"};

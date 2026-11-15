@@ -171,10 +171,10 @@ public:
             if (c->combo > 1) {   // .combo : 16 px ; WFS-550 (maquette 17) : orange
                 static std::string tamponCombo;   // WFS-506 (RG-04)
                 char n[16]; std::snprintf(n, sizeof n, "%d", c->combo);
-                // WFS-550 (RG-02, maquette 17) : jauge fine du temps restant du combo (cyan → orange), le texte à sa gauche
-                const float jw = 44 * k, dc = (float)config().score.comboDuree;
-                jauges::barreFine(r, xr - jw, y + 73 * k, jw, 3 * k, dc > 0 ? (float)(c->comboTimer / dc) : 0);
-                ui::text(r, xr - jw - 8 * k, y + 66 * k, 16 * k, textes::remplir(tamponCombo, "hud.combo", n), hex(ACCENT), ui::DROITE, 0.04f, false, true);   // maquette 17 : orange
+                // WFS-550 (RG-02, maquette 17) : « COMBO ×3 » orange en capitales, barre orange du temps restant du combo à sa droite
+                const float jw = 60 * k, dc = (float)config().score.comboDuree;
+                jauges::barreUnie(r, xr - jw, y + 73 * k, jw, 4 * k, dc > 0 ? (float)(c->comboTimer / dc) : 0, hex(ACCENT));
+                ui::text(r, xr - jw - 10 * k, y + 66 * k, 16 * k, ui::majuscules(textes::remplir(tamponCombo, "hud.combo", n)), hex(ACCENT), ui::DROITE, 0.04f, false, true);
             }
         }
         const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));

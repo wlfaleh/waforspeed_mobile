@@ -21,7 +21,8 @@
 #include "profil.h"   // WFS-482 : écran Profil (compteur caché dessous)
 #include "market_ecran.h"   // WFS-513 : écran Market (compteur caché dessous)
 #include "../../game/course5.h"   // choixModeOuvert
-#include "../verre.h"   // WFS-548 : rien sous une fenêtre de verre (verre::couvert)
+#include "../verre.h"
+#include "../../game/commandes_tactiles.h"   // WFS-550 : dessin2d (pilule arrondie)   // WFS-548 : rien sous une fenêtre de verre (verre::couvert)
 
 namespace wfs::ecrans::compteur_etoiles {
 
@@ -33,13 +34,14 @@ bool g_presse = false;   // état appuyé (posé par le menu)
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f}, TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1},
            VOILE{0.f, 229 / 255.f, 1.f, 0.22f};
 
-// parallélogramme du bouton « Réglages » (haut décalé à droite de `biais`)
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
-                           {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
-    r.uiQuad(q);
-}
 long long solde() { return boutique::solde(sauvegarde()); }
+// WFS-550 (maquettes 26 et 29) : pilule arrondie du solde (remplissage, puis contour de `ep` pixels si ep > 0)
+void pilule(Renderer& r, float x, float y, float w, float h, const vec4& c, float ep = 0) {
+    vec2 p[verre::NP_CONTOUR];
+    verre::contourArrondi(x, y, w, h, h / 2, p);
+    if (ep > 0) dessin2d::contour(r, p, verre::NP_CONTOUR, ep, c);
+    else dessin2d::polygone(r, p, verre::NP_CONTOUR, dessin2d::uni(c));
+}
 
 // WFS-550 (RG-05, maquette 29) : animation d'un gain, affichage seulement (le solde enregistré n'est jamais touché ici).
 // Le compteur garde le dernier solde montré ; quand le solde enregistré monte (cadeau, fin de course, Market), au retour du
@@ -84,20 +86,22 @@ void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, floa
     const float x = bx - std::max(12 * kb, 10 * g_dp) - w, y = by, h = bh;   // ≥ 10 dp : les cibles élargies (4 dp) ne se touchent pas
     g_zone = {x, y, w, h};
     auto op = [a](vec4 c) { c.w *= a; return c; };
-    biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, op(BORD));
-    biseau(r, x, y, w, h, 8 * kb, op(GLASS));
-    if (g_presse) biseau(r, x, y, w, h, 8 * kb, op(VOILE));   // appuyé : voile cyan, comme « Réglages »
+    // maquettes 26 et 29 : pilule de verre arrondie, liseré clair
+    pilule(r, x, y, w, h, op(GLASS));
+    pilule(r, x, y, w, h, op(BORD), std::max(1.f, kb));
+    if (g_presse) pilule(r, x, y, w, h, op(VOILE));   // appuyé : voile cyan, comme « Réglages »
     if (g_gain.debut >= 0) {   // WFS-550 (RG-05) : la pilule s'allume (liseré orange) pendant le comptage, puis s'éteint
         const double age = g.time - g_gain.debut;
         const float l = (float)std::clamp(std::min((age - VOL * 0.6) / 0.15, (FIN - age) / 0.3), 0.0, 1.0);
         if (l > 0) {
-            biseau(r, x - 3 * kb, y - 3 * kb, w + 6 * kb, h + 6 * kb, 8 * kb, op(orange(0.25f * l)));
-            biseau(r, x - 1.5f * kb, y - 1.5f * kb, w + 3 * kb, h + 3 * kb, 8 * kb, op(orange(0.9f * l)));
-            biseau(r, x, y, w, h, 8 * kb, op(GLASS));
+            vec2 p[verre::NP_CONTOUR];   // maquette 29 : lueur orange autour de la pilule, liseré orange
+            verre::contourArrondi(x, y, w, h, h / 2, p);
+            dessin2d::halo(r, p, verre::NP_CONTOUR, 10 * kb, op(orange(0.45f * l)));
+            pilule(r, x, y, w, h, op(orange(0.95f * l)), 1.8f * kb);
         }
     }
     score_fin::dessinerEtoile(r, x + pad + re, y + h / 2, re, op(ui::ORANGE));
-    ui::text(r, std::round(x + pad + 2 * re + ecart), std::round(y + (h - tp) / 2), tp, t, op(TEXTE), ui::GAUCHE, 0.06f, false);
+    ui::text(r, std::round(x + pad + 2 * re + ecart), std::round(y + (h - tp) / 2), tp, t, op(TEXTE), ui::GAUCHE, 0.06f, false, true);   // maquette : italique
     if (g_gain.debut >= 0) {
         const double age = g.time - g_gain.debut;
         // étoiles en vol : de la voiture (centre de l'écran) vers l'étoile de la pilule, en courbe, décalées de 50 ms

@@ -100,13 +100,13 @@ float FicheGarage::specs(Renderer& r, const MiseEnPage& mp, const CarDef& car) c
         const char* dt[3] = {ui::tr("garage.puissance").c_str(), ui::tr("garage.zero_cent").c_str(), ui::tr("garage.vmax").c_str()};   // WFS-507
         const char* un[3] = {"ch", "s", "km/h"};   // unités inchangées en anglais (WFS-507 RG-01)
         const float fr[3] = {fractionPuissance(car.spec), fractionZeroCent(car.spec), fractionVmax(car.spec)};
-        const float rayon = 31 * k, ep = 4 * k, cy = y1 + 4 * k + rayon, ly = y1 + statH - 13 * k;
+        const float rayon = 38 * k, ep = 4.5f * k, cy = y1 + 2 * k + rayon, ly = y1 + statH - 11 * k;   // maquette 13 : grands cadrans
         for (int i = 0; i < 3; i++) {
             const std::string lib = ui::majuscules(dt[i]);
             const float colonne = std::max(2 * rayon + 16 * k, ui::width(11 * k, lib, 0.16f) + 8 * k), cx = x + colonne / 2;
             jauges::cadran(r, cx, cy, rayon, ep, fr[i], op);
-            float vp = 25 * k;   // valeur réduite si elle ne tient pas dans l'arc (« 1000 »)
-            if (const float vw = ui::width(vp, val[i]); vw > 2 * rayon - 12 * k) vp *= (2 * rayon - 12 * k) / vw;
+            float vp = 30 * k;   // valeur réduite si elle ne tient pas dans l'arc (« 1000 »)
+            if (const float vw = ui::width(vp, val[i]); vw > 2 * rayon - 14 * k) vp *= (2 * rayon - 14 * k) / vw;
             ui::text(r, cx, cy - vp * 0.62f, vp, val[i], hex(TEXTE, op), ui::CENTRE, 0, false, true);
             ui::text(r, cx, cy + vp * 0.42f, 11 * k, un[i], hex(MUTED, op), ui::CENTRE, 0.04f, false);
             ui::text(r, cx, ly, 11 * k, lib, hex(MUTED, op), ui::CENTRE, 0.16f, false);

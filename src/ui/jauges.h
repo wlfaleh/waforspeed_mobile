@@ -7,6 +7,7 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include "../core/math.h"   // vec4
 
 namespace wfs {
 class Renderer;
@@ -69,9 +70,15 @@ inline float avancementEtape(float p, int etape) {   // 0 : pas commencée ; 1 :
 void cadran(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a = 1);
 // anneau complet du temps restant : piste grise, remplissage dégradé (départ en haut, sens horaire) jusqu'à `f`
 void anneau(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a = 1);
+// anneau des cartes du menu (maquettes 01, 05, 26) : piste sombre, remplissage dégradé tournant dans le sens inverse des
+// aiguilles depuis l'angle `depart` (cyan au départ, orange au bout), point clair au départ ; `graduations` : traits autour
+// (maquette du cadeau : 24, un plus long tous les 6) ; 0 : aucun
+void anneauGradue(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a, float depart, int graduations = 0);
 // barre fine : fond de verre, remplissage du dégradé de la marque pris sur toute la largeur (le bout montre où on en est),
 // `graduations` traits fins (0 : aucun), bouts arrondis
 void barreFine(Renderer& r, float x, float y, float w, float h, float f, float a = 1, int graduations = 0);
+// barre unie d'une seule couleur (maquette 17 : combo orange) sur la piste grise, bouts arrondis
+void barreUnie(Renderer& r, float x, float y, float w, float h, float f, const vec4& couleur, float a = 1);
 // barre d'étape du chargement (4 segments) : finie = blanche, en cours = orange partielle sur fond gris, à venir = grise
 void barreEtape(Renderer& r, float x, float y, float w, float h, float avancement, bool enCours, float a = 1);
 // segments inclinés (−10°) de la position, rangée centrée sur cx, de hauteur h ; renvoie la largeur dessinée.

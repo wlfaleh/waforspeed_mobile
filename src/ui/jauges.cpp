@@ -48,6 +48,23 @@ void anneau(Renderer& r, float cx, float cy, float rayon, float ep, float f, flo
     if (f > 0) arcDegrade(r, cx, cy, rayon, ep, 0, 2 * PI_J * f, 0, 1, a);
 }
 
+void anneauGradue(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a, float depart, int graduations) {
+    f = std::clamp(f, 0.f, 1.f);
+    const float hw = ep / 2;
+    dessin2d::anneau(r, cx, cy, rayon - hw, rayon + hw, vec4{1, 1, 1, 0.10f * a});
+    for (int i = 0; i < graduations; i++) {   // graduations fines, à l'extérieur
+        const float ang = 2 * PI_J * i / graduations, lg = (i % 6 == 0) ? 7.f : 3.5f, r0 = rayon + hw + ep * 1.2f;
+        const float ux = std::sin(ang), uy = -std::cos(ang), e1 = std::max(1.f, ep * 0.22f);
+        const vec2 t[2] = {{cx + ux * r0, cy + uy * r0}, {cx + ux * (r0 + lg * ep / 4.5f), cy + uy * (r0 + lg * ep / 4.5f)}};
+        dessin2d::trait(r, t, 2, e1, vec4{1, 1, 1, (i % 6 == 0 ? 0.55f : 0.28f) * a});
+    }
+    if (f <= 0) return;
+    // sens inverse des aiguilles : de `depart` (cyan) à depart − 2π f (orange)
+    arcDegrade(r, cx, cy, rayon, ep, depart - 2 * PI_J * f, depart, 1, 0, a);
+    const float sx = cx + rayon * std::sin(depart), sy = cy - rayon * std::cos(depart);
+    r.uiCircle(sx, sy, ep * 0.95f, verre::hexa(0xFFB27A, a));   // point de départ (maquette : pastille claire)
+}
+
 void barreFine(Renderer& r, float x, float y, float w, float h, float f, float a, int graduations) {
     if (w <= 0 || h <= 0) return;
     f = std::clamp(f, 0.f, 1.f);
@@ -65,6 +82,20 @@ void barreFine(Renderer& r, float x, float y, float w, float h, float f, float a
             const float gx = std::round(x + w * i / graduations);
             r.uiRect(gx, y - dh, t, h + 2 * dh, vec4{1, 1, 1, 0.16f * a});
         }
+    }
+}
+
+void barreUnie(Renderer& r, float x, float y, float w, float h, float f, const vec4& couleur, float a) {
+    if (w <= 0 || h <= 0) return;
+    f = std::clamp(f, 0.f, 1.f);
+    const float rr = h / 2;
+    const vec2 p0{x + rr, y + rr}, p1{x + w - rr, y + rr};
+    const vec2 piste[2] = {p0, p1};
+    dessin2d::trait(r, piste, 2, h, vec4{1, 1, 1, 0.18f * a});
+    if (f > 0) {
+        vec4 c = couleur; c.w *= a;
+        const vec2 plein[2] = {p0, {x + rr + (w - 2 * rr) * f, y + rr}};
+        dessin2d::trait(r, plein, 2, h, c);
     }
 }
 

@@ -3,9 +3,11 @@
 #include "../jauges.h"   // WFS-550 (RG-03) : anneau du temps restant
 #include "../verre.h"    // WFS-550 : pilule de verre
 #include <algorithm>
+#include <cstdio>
 #include <cstring>
 #include <cmath>
 #include <optional>
+#include "../../core/configgame.h"   // WFS-550 : 30e cadeau garanti
 #include "reglages_appui.h"   // appui::dansCible : cible de 48 dp (comme les Réglages, les CGU et les Crédits)
 #include "textes_banc.h"      // banc « textes » (journal des textes de cet écran)
 #include "../garage_achat.h"   // étoile dessinée (la police n'a pas le caractère ★) et texte avec ★ (WFS-489)
@@ -412,40 +414,78 @@ static void iconeCadeau(Renderer& r, float cx, float cy, float s, const vec4& c)
     dessin2d::trait(r, d, 4, ep, c);
 }
 
+// WFS-550 (maquettes 01, 05, 26 ; ordre de l'utilisateur du 2026-11-15 : la maquette à 100 %) : texte « 07:42:13 » (heures,
+// minutes, secondes) du compte à rebours
+static std::string texteHMS(long long s) {
+    s = std::clamp(s, 0LL, 86400LL);
+    char b[16];
+    std::snprintf(b, sizeof b, "%02lld:%02lld:%02lld", s / 3600, (s / 60) % 60, s % 60);
+    return b;
+}
+
+// carte « Cadeau du jour » de la maquette (verre arrondi en pilule, anneau gradué cyan → orange autour du cadeau, « CADEAU DU
+// JOUR », compte à rebours en grand avec les secondes en orange, « avant le prochain · 30e garanti dans 12 j ») ; toute la carte
+// est le bouton. Mesures de la maquette 26 (1600 × 720) : 350 × 118, anneau de rayon 37 à 54 du bord gauche, texte à 117.
+// Elle remplace le bouton « Cadeau du jour » et se pose à gauche de la colonne Market / Profil / Crédits (absente des maquettes).
+void placeCarte(float W, float H, const Marges& m, float& droite, float& haut) {
+    const bool cp = ui::petitEcran(W, H);
+    const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
+    const float colonne = 18 * kb + largeurTexte(15 * k, "cadeau.bouton") + 18 * kb;   // largeur de l'ancien bouton (colonne de droite)
+    droite = W - m.droite - 16 * k - colonne - 12 * kb;
+    haut = H - m.bas - 22 * kb - 118 * kb;
+}
+
 void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse) {
     if (!ui::fontReady()) return;
     const textes::Journal journal;
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
-    const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
-    const std::string t = ui::majuscules(ui::tr("cadeau.bouton"));
-    const float tw = largeurTexte(tp, "cadeau.bouton");
-    const float w = pad + tw + pad, x = W - m.droite - 16 * k - w, y = H - m.bas - 14 * k - h - 10 * k - h;   // « Crédits » : H − bas − 14 − h
+    float droite, haut;
+    placeCarte(W, H, m, droite, haut);
+    const float w = 350 * kb, h = 118 * kb, x = droite - w, y = haut;
     g.bouton = {x, y, w, h};
     g.dpBouton = ui::pixelsParDp(W);
     const cadeau::Instant ti = heure();
     const EtatCadeau& c = sauvegarde().cadeau;
     const bool dispo = cadeau::disponible(c, ti);
-    dessin2d::biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, dessin2d::uni(dispo ? hex(ACCENT, 0.7f) : BORD));
-    dessin2d::biseau(r, x, y, w, h, 8 * kb, dessin2d::uni(GLASS));
-    if (presse) dessin2d::biseau(r, x, y, w, h, 8 * kb, dessin2d::uni(hex(ACCENT2, 0.22f)));
-    ui::textBoite(r, x + pad + tw / 2, y, tw, h, tp, t, hex(ACCENT2), ui::CENTRE, 0.12f, false);
-    if (dispo) {   // pastille : un cadeau attend
-        const float rp = 7 * kb, pxp = x + w - 2 * kb, pyp = y + 2 * kb;
+    verre::Style st; st.rayon = h / 2; st.lisere = std::max(1.f, kb); st.bord = dispo ? ACCENT : 0;
+    verre::panneau(r, x, y, w, h, st);
+    if (presse) {   // appuyé : voile cyan dans la carte
+        vec2 q[verre::NP_CONTOUR];
+        verre::contourArrondi(x, y, w, h, h / 2, q);
+        dessin2d::polygone(r, q, verre::NP_CONTOUR, dessin2d::uni(hex(ACCENT2, 0.18f)));
+    }
+    // anneau : fond sombre, piste, remplissage de l'attente (point de départ cyan), graduations autour, cadeau au centre
+    const float cx = x + 54 * kb, cy = y + h / 2, ra = 37 * kb;
+    const long long s = dispo ? 0 : secondesAvantProchain(c, ti);
+    dessin2d::disqueRadial(r, cx, cy, ra - 4 * kb, cx, cy - ra * 0.3f, ra, hex(0x1A1C24, 0.95f), hex(0x0E0F14, 0.95f));
+    const float f = dispo ? 1.f : s >= 0 ? jauges::fractionAttente(s, 86400) : 1.f;
+    jauges::anneauGradue(r, cx, cy, ra, 4.5f * kb, f, 1, jauges::PI_J * 1.25f, 24);   // départ en bas à gauche (maquette)
+    iconeCadeau(r, cx, cy, 26 * kb, hex(TEXTE, 0.95f));
+    // textes
+    const float tx = x + 117 * kb;
+    verre::surTitre(r, tx, y + 24 * kb, 11 * k, ui::tr("cadeau.bouton"));
+    if (dispo) {
+        ui::text(r, tx, y + 42 * kb, 28 * k, ui::majuscules(ui::tr("cadeau.carte.dispo")), hex(ACCENT), ui::GAUCHE, 0, false, true);
+        ui::text(r, tx, y + 82 * kb, 11 * k, ui::tr("cadeau.carte.dispo.aide"), hex(MUTED), ui::GAUCHE, 0, false);
+        // pastille : un cadeau attend
+        const float rp = 7 * kb, pxp = x + w - h * 0.22f, pyp = y + h * 0.18f;
         dessin2d::couronne(r, pxp, pyp, rp, rp + 9 * kb, hex(ACCENT, 0.55f), hex(ACCENT, 0));
         dessin2d::disqueRadial(r, pxp, pyp, rp, pxp - rp * 0.3f, pyp - rp * 0.3f, rp * 1.3f, hex(0xFFC08A), hex(ACCENT));
-    } else {   // RG-01 : « Prochain cadeau dans hh:mm » (ou « bientôt » si l'heure a reculé), à gauche du bouton
-        const long long s = secondesAvantProchain(c, ti);
-        const std::string p = s >= 0 ? ui::tr("cadeau.prochain", texteHeures(s)) : ui::tr("cadeau.bientot");
-        // WFS-550 (RG-03, maquette 26) : le temps restant dans une pilule de verre, avec l'anneau fin cyan → orange de l'attente
-        // (rempli à mesure que le prochain cadeau approche) ; texte inchangé, la pilule s'arrête à 12 px du bouton
-        const float pw = ui::width(14 * k, p, 0.02f), ra = h * 0.30f, pl = 2 * ra + 16 * kb, pp = 14 * kb;
-        const float wp = pl + pw + pp, xp = x - 12 * k - wp;   // pilule à 12 px du bouton, texte dedans
-        verre::Style st; st.rayon = h / 2; st.lisere = std::max(1.f, kb); st.ombre = false;
-        verre::panneau(r, xp, y, wp, h, st);
-        jauges::anneau(r, xp + 8 * kb + ra, y + h / 2, ra, 2.5f * kb, s >= 0 ? jauges::fractionAttente(s, 86400) : 1.f);
-        iconeCadeau(r, xp + 8 * kb + ra, y + h / 2, ra * 1.0f, hex(TEXTE, 0.9f));   // maquette 26 : cadeau au centre de l'anneau
-        ui::text(r, x - 12 * k - pp, y + (h - 14 * k) / 2, 14 * k, p, hex(MUTED), ui::DROITE, 0.02f, true);
+    } else if (s >= 0) {
+        // « 07:42:13 » : heures et minutes blanches, deux-points gris, secondes orange (maquette)
+        const std::string t = texteHMS(s), hh = t.substr(0, 2), mm = t.substr(3, 2), ss = t.substr(6, 2);
+        const float tp = 32 * k, ty = y + 40 * kb;
+        float xx = tx;
+        auto morceau = [&](const std::string& m2, const vec4& col) { ui::text(r, xx, ty, tp, m2, col, ui::GAUCHE, 0, false, true); xx += ui::width(tp, m2); };
+        morceau(hh, hex(TEXTE)); morceau(":", hex(MUTED)); morceau(mm, hex(TEXTE)); morceau(":", hex(MUTED)); morceau(ss, hex(0xFF9A4D));
+        // « avant le prochain · 30e garanti dans 12 j » (gris, puis blanc)
+        const std::string a1 = ui::tr("cadeau.carte.avant") + " · ";
+        const int n = restantsGarantie(config().cadeau, c);
+        ui::text(r, tx, y + 82 * kb, 11 * k, a1, hex(MUTED), ui::GAUCHE, 0, false);
+        ui::text(r, tx + ui::width(11 * k, a1), y + 82 * kb, 11 * k, ui::tr("cadeau.carte.garanti", std::to_string(config().cadeau.garantie), std::to_string(std::max(1, n))), hex(TEXTE), ui::GAUCHE, 0, false);
+    } else {   // l'heure du téléphone a reculé : « Prochain cadeau bientôt »
+        ui::text(r, tx, y + 48 * kb, 18 * k, ui::tr("cadeau.bientot"), hex(TEXTE), ui::GAUCHE, 0, false, true);
     }
     manette::focus(g.bouton);
 }

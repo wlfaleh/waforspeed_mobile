@@ -11,19 +11,18 @@
 #include "../render/renderer.h"
 #include "text.h"
 #include "langue.h"   // WFS-506 : bandeaux en français ou en anglais
-#include "../game/commandes_tactiles.h"   // WFS-550 : dessin2d::biseau (bandeaux inclinés)
 
 namespace wfs {
 namespace {
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
-const unsigned TEXTE = 0xF2F4F8, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SOMBRE = 0x0A0B10;
+const unsigned TEXTE = 0xF2F4F8, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SOMBRE = 0x10131C;   // titre sombre des bandeaux (maquette 30)
 
 // genre du bandeau : WFS-550 (RG-06, maquette 30) : checkpoint en cyan, points (quasi-contact, combo, feu grillé) en orange,
 // police et mauvais coups (accident, combo perdu) en rouge
 enum Genre { NORMAL, CP, BAD };
 unsigned couleur(Genre g) { return g == CP ? ACCENT2 : g == BAD ? DANGER : ACCENT; }
-// texte sombre sur le cyan et l'orange (contraste ≥ 4,5:1, design-street-racing), clair sur le rouge
+// titre sombre sur le cyan et l'orange (maquette 30), clair sur le rouge ; la valeur est toujours blanche
 unsigned couleurTexte(Genre g) { return g == BAD ? TEXTE : SOMBRE; }
 
 struct Toast { std::string titre, valeur; Genre genre; double naissance = -1; };   // naissance : temps de la 1re image
@@ -67,12 +66,14 @@ public:
         // mêmes conditions que le HUD (WFS-27) : en course seulement
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
-        // WFS-550 (RG-06, maquette 30) : pile de bandeaux inclinés au centre de l'écran, sous la rangée du haut (même hauteur
-        // qu'avant, bandeauxHaut) ; ils glissent du haut et s'effacent ; fond assombri sans flou (aucun coût de rendu en course)
+        // WFS-550 (RG-06, maquette 30 ; ordre de l'utilisateur du 2026-11-15 : la maquette à 100 %) : pile centrée sous la rangée
+        // du haut ; chaque bandeau est une bande de couleur droite, pleine au centre et fondue vers la gauche et la droite, titre
+        // sombre (blanc sur le rouge) et valeur blanche, en capitales italiques de même taille ; ils glissent du haut et s'effacent ;
+        // aucun flou (aucun coût de rendu ajouté en course). Mesures de la maquette (1600 × 720) : 42 px de haut, 7 px d'écart.
         const float xc = W * 0.5f + (g.marges.gauche - g.marges.droite) / 2;
         float y = bandeauxHaut(H, g.marges);
-        const float tp = 18 * k, vp = 16 * k, padL = 22 * k, padR = 26 * k, padV = 8 * k, gap = 10 * k, h = padV * 2 + tp * 1.15f;
-        const float biais = h * 0.176f;   // skewX(-10deg)
+        const float tp = 21 * k, h = 42 * k, plein = 40 * k, fondu = 34 * k, gap = 9 * k;
+        auto sommet = [](float x, float yy, const vec4& c) { return UiVertex{x, yy, -1, -1, c.x, c.y, c.z, c.w}; };
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;
             const double a = g.time - it->naissance;
@@ -80,18 +81,21 @@ public:
             // entrée : glisse du haut (−24 px → 0), opacité 0 → 1 (sortie douce) ; sortie : s'efface sur place (ease-in)
             float op = 1, dy = 0;
             if (a < ENTREE) { const float e = 1 - std::pow(1 - (float)(a / ENTREE), 3.f); op = e; dy = -24 * k * (1 - e); }
-            if (a > SORTIE_DEBUT) { const float s = std::min(1.f, (float)((a - SORTIE_DEBUT) / SORTIE)); op = 1 - s * s; }
-            const std::string titre = ui::majuscules(it->titre);
-            const float wt = ui::width(tp, titre, 0.06f), wv = it->valeur.empty() ? 0 : ui::width(vp, it->valeur, 0.02f);
-            const float w = padL + wt + (wv > 0 ? gap + wv : 0) + padR, x = xc - w / 2, yy = y + dy;
-            const vec4 fond = hex(couleur(it->genre), 0.92f * op), texte = hex(couleurTexte(it->genre), op);
-            // ombre assombrie (sans flou) puis bandeau de couleur incliné
-            dessin2d::biseau(r, x - 3 * k, yy - 2 * k, w + 6 * k, h + 6 * k, biais, dessin2d::uni(hex(SOMBRE, 0.45f * op)));
-            dessin2d::biseau(r, x, yy, w, h, biais, dessin2d::uni(fond));
-            // titre 18 px en capitales italiques (WFS-48) ; valeur 16 px à la suite, même ligne de base
-            ui::text(r, std::round(x + padL), std::round(yy + padV), tp, titre, texte, ui::GAUCHE, 0.06f, false, true);
-            if (wv > 0) ui::text(r, std::round(x + padL + wt + gap), std::round(yy + padV + (tp - vp) * 0.8f), vp, it->valeur, texte, ui::GAUCHE, 0.02f, false, true);
-            y += h + 8 * k;   // gap 8 px
+            if (a > SORTIE_DEBUT) { const float s2 = std::min(1.f, (float)((a - SORTIE_DEBUT) / SORTIE)); op = 1 - s2 * s2; }
+            const std::string titre = ui::majuscules(it->titre), valeur = ui::majuscules(it->valeur);
+            const float wt = ui::width(tp, titre, 0.06f), wv = valeur.empty() ? 0 : ui::width(tp, valeur, 0.04f), ecart = 10 * k;
+            const float wtexte = wt + (wv > 0 ? ecart + wv : 0), w = wtexte + 2 * plein, x = xc - w / 2, yy = y + dy;
+            const vec4 c1 = hex(couleur(it->genre), 0.92f * op), c0 = hex(couleur(it->genre), 0);
+            // bande : fondu gauche, plein, fondu droit (un quadrilatère à couleurs par sommet chacun)
+            const float xa = x - fondu, xb = x + plein * 0.6f, xc2 = x + w - plein * 0.6f, xd = x + w + fondu;
+            const UiVertex q1[4] = {sommet(xa, yy, c0), sommet(xb, yy, c1), sommet(xb, yy + h, c1), sommet(xa, yy + h, c0)};
+            const UiVertex q2[4] = {sommet(xb, yy, c1), sommet(xc2, yy, c1), sommet(xc2, yy + h, c1), sommet(xb, yy + h, c1)};
+            const UiVertex q3[4] = {sommet(xc2, yy, c1), sommet(xd, yy, c0), sommet(xd, yy + h, c0), sommet(xc2, yy + h, c1)};
+            r.uiQuad(q1); r.uiQuad(q2); r.uiQuad(q3);
+            const float ty = std::round(yy + (h - tp) / 2), tx = std::round(xc - wtexte / 2);
+            ui::text(r, tx, ty, tp, titre, hex(couleurTexte(it->genre), op), ui::GAUCHE, 0.06f, false, true);
+            if (wv > 0) ui::text(r, std::round(tx + wt + ecart), ty, tp, valeur, hex(TEXTE, op), ui::GAUCHE, 0.04f, false, true);
+            y += h + gap;
             ++it;
         }
     }

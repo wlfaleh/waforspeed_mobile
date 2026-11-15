@@ -7,7 +7,7 @@
 #include "textes_banc.h"      // banc « textes » (journal des textes de cet écran)
 #include "../garage.h"        // garageRegarder, garageOuvrirSur
 #include "../garage_achat.h"  // texteEtoiles (★ dessinée), texteDuree, nombreLangue
-#include "../boutons.h"   // WFS-550 : icône de voiture au trait (maquette 26)
+#include "cadeau_jour.h"   // WFS-550 : place de la carte « Cadeau du jour » (la carte du prêt se pose au-dessus)
 #include "../jauges.h"   // WFS-550 (RG-03) : anneau du temps restant
 #include "../langue.h"
 #include "../petit_ecran.h"
@@ -75,6 +75,21 @@ public:
     }
 };
 
+// WFS-550 (maquette 26) : petite voiture vue de face au trait (toit, caisse, deux phares), largeur s, centrée en (cx, cy)
+void voitureDeFace(Renderer& r, float cx, float cy, float s, const vec4& c) {
+    const float ep = std::max(1.3f, s * 0.08f), hw = s / 2, hh = s * 0.36f;
+    const vec2 toit[4] = {{cx - hw * 0.78f, cy - hh * 0.05f}, {cx - hw * 0.55f, cy - hh * 0.75f}, {cx + hw * 0.55f, cy - hh * 0.75f}, {cx + hw * 0.78f, cy - hh * 0.05f}};
+    dessin2d::trait(r, toit, 4, ep, c);
+    const vec2 caisse[5] = {{cx - hw, cy - hh * 0.05f}, {cx + hw, cy - hh * 0.05f}, {cx + hw, cy + hh * 0.75f}, {cx - hw, cy + hh * 0.75f}, {cx - hw, cy - hh * 0.05f}};
+    dessin2d::trait(r, caisse, 5, ep, c);
+    for (float sg : {-1.f, 1.f}) {   // phares
+        const vec2 ph[2] = {{cx + sg * hw * 0.70f, cy + hh * 0.30f}, {cx + sg * hw * 0.38f, cy + hh * 0.30f}};
+        dessin2d::trait(r, ph, 2, ep * 1.2f, c);
+    }
+    const vec2 pied[2] = {{cx - hw * 0.8f, cy + hh * 0.75f}, {cx - hw * 0.8f, cy + hh * 1.0f}}, pied2[2] = {{cx + hw * 0.8f, cy + hh * 0.75f}, {cx + hw * 0.8f, cy + hh * 1.0f}};
+    dessin2d::trait(r, pied, 2, ep, c); dessin2d::trait(r, pied2, 2, ep, c);   // roues
+}
+
 } // namespace
 
 bool visible() { std::string v; return casActuel(v) != Cas::Rien; }
@@ -90,55 +105,62 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     g_dp = ui::pixelsParDp(W);
-    // textes : titre (tag), phrase, bouton éventuel
+    // WFS-550 (maquette 26 ; ordre de l'utilisateur du 2026-11-15 : la maquette à 100 %) : carte de verre arrondie en pilule,
+    // bordée de cyan (rouge : prêt perdu), anneau cyan → orange du temps restant autour d'une voiture vue de face ;
+    // « VOITURE PRÊTÉE · <NOM> » en petites capitales grises, durée en grand (« 2 h 41 au volant »), aide dessous.
+    // Mesures de la maquette (1600 × 720) : 380 × 81, au-dessus de la carte « Cadeau du jour » (12 px), même bord droit.
     const std::string nom = nomVoiture(id);
-    std::string titre, phrase, bouton;
+    auto duree = [](long long sec) {   // « 2 h 41 » (maquette), « 41 min » sous 1 h
+        const long long mn = sec <= 0 ? 0 : (sec + 59) / 60;
+        if (mn < 60) return ui::tr("pret.duree.min", std::to_string(mn));
+        const long long r2 = mn % 60;
+        return ui::tr("pret.carte.duree", std::to_string(mn / 60), (r2 < 10 ? "0" : "") + std::to_string(r2));
+    };
+    std::string titre, grand, suite, aide, bouton;
     switch (cas) {
-        case Cas::Attente: titre = ui::tr("pret.bandeau.titre", nom); phrase = ui::tr("pret.bandeau.attente", garage::texteDuree(pret::resteActivation(s.cadeau, t)));
+        case Cas::Attente: titre = ui::tr("pret.carte.titre", nom); grand = duree(pret::resteActivation(s.cadeau, t)); suite = ui::tr("pret.carte.a_activer");
                            bouton = "pret.bandeau.activer"; break;
-        case Cas::Actif: titre = ui::tr("pret.bandeau.titre", nom); phrase = ui::tr("pret.bandeau.actif", garage::texteDuree(pret::restant(s.cadeau, t)));
-                         break;
+        case Cas::Actif: titre = ui::tr("pret.carte.titre", nom); grand = duree(pret::restant(s.cadeau, t)); suite = ui::tr("pret.carte.au_volant");
+                         aide = ui::tr("pret.carte.toucher"); break;
         case Cas::Expire: {
             char h[16]; std::snprintf(h, sizeof h, "%g", config().cadeau.activationHeures);
-            titre = ui::tr("pret.bandeau.expire", nom); phrase = ui::tr("pret.bandeau.expire.aide", h); g_messageVu = true; break;
+            titre = ui::tr("pret.bandeau.expire", nom); aide = ui::tr("pret.bandeau.expire.aide", h); g_messageVu = true; break;
         }
-        case Cas::Fin: titre = ui::tr("pret.bandeau.fin", nom); phrase = ui::tr("pret.garder", garage::nombreLangue(std::max(0, boutique::prixVoiture(id))));
+        case Cas::Fin: titre = ui::tr("pret.bandeau.fin", nom); aide = ui::tr("pret.garder", garage::nombreLangue(std::max(0, boutique::prixVoiture(id))));
                        bouton = "pret.bandeau.garage"; g_messageVu = true; break;
         default: break;
     }
     titre = ui::majuscules(titre);
-    // mise en page : au-dessus de « Market » (WFS-513), lui-même au-dessus de « Profil » (WFS-482), « Cadeau du jour » et « Crédits »
-    // (boutons de 44 px, écarts de 10 px) : même calcul que market_ecran.cpp ; aucune zone d'appui ne se recouvre
-    const float hBtn = 44 * kb, h = 58 * kb, pad = 16 * kb, tp1 = 12 * k, tp2 = 16 * k;
-    const float yProfil = H - m.bas - 14 * k - 4 * hBtn - 30 * k;   // WFS-513 : haut du bouton « Market »
-    const float bp = 15 * k, bw = bouton.empty() ? 0 : ui::width(bp, ui::majuscules(ui::tr(bouton.c_str())), 0.1f) + 40 * kb, bh = 38 * kb;
-    float wTexte = 0;
-    { const textes::NomPropre np; wTexte = ui::width(tp1, titre, 0.14f); }
-    wTexte = std::max(wTexte, garage::largeurEtoiles(tp2, phrase));
-    // WFS-550 (RG-03, maquette 26) : pilule de verre bordée de cyan (rouge : prêt perdu, couleur d'état de WFS-548), anneau fin
-    // cyan → orange du temps restant à gauche (à activer : délai d'activation ; au volant : temps du prêt ; fin : vide)
-    const float ra = h * 0.30f, zoneAnneau = 2 * ra + 14 * kb;
-    const float w = pad + zoneAnneau + wTexte + (bw > 0 ? 14 * kb + bw : 0) + pad;
-    const float x = W - m.droite - 16 * k - w, y = yProfil - 10 * k - h;
+    float droite, haut;
+    cadeau_jour::placeCarte(W, H, m, droite, haut);
+    const float w = 380 * kb, h = 81 * kb, x = droite - w, y = haut - 12 * kb - h;
     verre::Style st; st.rayon = h / 2; st.lisere = 1.5f * kb; st.bord = cas == Cas::Expire ? DANGER : ACCENT2;
     verre::panneau(r, x, y, w, h, st);
-    if (presse && bw <= 0) {   // appuyé : voile cyan dans la pilule
+    const float bp = 15 * k, bw = bouton.empty() ? 0 : ui::width(bp, ui::majuscules(ui::tr(bouton.c_str())), 0.1f) + 36 * kb, bh = 34 * kb;
+    if (presse && bw <= 0) {   // appuyé : voile cyan dans la carte
         vec2 c[verre::NP_CONTOUR];
         verre::contourArrondi(x, y, w, h, h / 2, c);
         dessin2d::polygone(r, c, verre::NP_CONTOUR, dessin2d::uni(hex(ACCENT2, 0.18f)));
     }
+    // anneau (rayon 27, à 43 du bord gauche) : remplissage du temps restant, départ en haut ; voiture vue de face au centre
     float fr = 0;
     if (cas == Cas::Attente) fr = jauges::fractionRestant(pret::resteActivation(s.cadeau, t), (long long)(config().cadeau.activationHeures * 3600));
     else if (cas == Cas::Actif) fr = jauges::fractionRestant(pret::restant(s.cadeau, t), (long long)(config().cadeau.pretHeures * 3600));
-    jauges::anneau(r, x + pad + ra, y + h / 2, ra, 2.5f * kb, fr);
-    // maquette 26 : la petite voiture au trait au centre de l'anneau (même icône que la pilule « Garage »)
-    ui::boutons::iconeVoitureTrait(r, x + pad + ra, y + h / 2, ra * 1.15f, hex(TEXTE, 0.9f));
-    const float xt = x + pad + zoneAnneau;
-    { const textes::NomPropre np; ui::text(r, xt, y + 10 * kb, tp1, titre, hex(TAG), ui::GAUCHE, 0.14f, false); }   // nom de la voiture : inchangé en anglais
-    garage::texteEtoiles(r, xt, y + 28 * kb, tp2, phrase, hex(cas == Cas::Expire ? MUTED : TEXTE), ui::GAUCHE);
+    const float cx = x + 43 * kb, cy = y + h / 2, ra = 27 * kb;
+    dessin2d::disqueRadial(r, cx, cy, ra - 3 * kb, cx, cy - ra * 0.3f, ra, hex(0x1A1C24, 0.95f), hex(0x0E0F14, 0.95f));
+    jauges::anneauGradue(r, cx, cy, ra, 4 * kb, fr, 1, -jauges::PI_J * 0.17f, 0);
+    voitureDeFace(r, cx, cy, 22 * kb, hex(TEXTE, 0.95f));
+    const float xt = x + 88 * kb;
+    { const textes::NomPropre np; verre::surTitre(r, xt, y + 11 * kb, 10.5f * k, titre); }   // nom de la voiture : inchangé en anglais
+    if (!grand.empty()) {
+        const float gp = 24 * k;
+        ui::text(r, xt, y + 24 * kb, gp, grand, hex(TEXTE), ui::GAUCHE, 0, false, true);
+        ui::text(r, xt + ui::width(gp, grand) + 7 * kb, y + 24 * kb + gp * 0.28f, 16 * k, suite, hex(TAG), ui::GAUCHE, 0, false, true);
+    }
+    if (!aide.empty()) garage::texteEtoiles(r, xt, grand.empty() ? y + 34 * kb : y + 57 * kb, (grand.empty() ? 15 : 11) * k, aide, hex(grand.empty() ? TEXTE : MUTED), ui::GAUCHE);
     g_bandeau = {x, y, w, h};
-    if (bw > 0) {   // .btn orange en biseau (action principale du bandeau)
-        const float bx = x + w - pad - bw, by = y + (h - bh) / 2;
+    if (bw > 0) {   // action principale de la carte (orange en biseau), à droite
+        const float bx = x + w - 22 * kb - bw, by = y + (h - bh) / 2;
         dessin2d::biseau(r, bx, by, bw, bh, 10 * kb, dessin2d::uni(hex(presse ? 0xFF9A4D : ACCENT)));
         ui::textBoite(r, bx + bw / 2, by, bw - 16 * kb, bh, bp, ui::majuscules(ui::tr(bouton.c_str())), hex(ON_ACCENT), ui::CENTRE, 0.1f, false);
         g_bouton = {bx, by, bw, bh};
