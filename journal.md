@@ -1051,3 +1051,7 @@ PR #421 relue sur ecba9dfa (2e revue) : les deux défauts du refus sont corrigé
 - Accroches hors zone (≤ 10 lignes chacune) : `src/ui/garage.cpp` (1 ligne : fenêtre d'achat seule quand elle couvre), `src/ui/ecrans/menu.cpp` (1 ligne), `src/ui/ecrans/compteur_etoiles.cpp` (1 condition), en plus des fins de course de `src/game/` déjà annoncées.
 - Vérification : 146 tests CPU réussis sur `5b190750` (synchronisé avec `main`) ; captures avant / après refaites (188 paires, 1280x720) et regardées, dont les 8 paires demandées ; réglages relancés après l'arrivée de WFS-552.
 - Commits : 897f8704, af74f8f6, 806b3672, debb6320, b3325221. Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-15 17:41:02 — WFS-548 fusionné par le lead dev (lead-dev)
+
+PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés (rien de l'écran du dessous sous le verre, tableau « POSITION » retiré des fins, section Tests CPU). Captures ouvertes, diff complet lu, branche construite et testée par le lead dev (146 tests réussis). Approbation en commentaire (même compte GitHub), fusion en squash `b06ce1a0`. Statut 🟡 À valider (utilisateur).

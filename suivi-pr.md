@@ -16,5 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #423 | WFS-541 | Claude, agent conduite (01UY1Vv1WU) | ↩️ Retour lead dev | bf573504 | 2026-11-15 16:31 |
-| #422 | WFS-548 | Claude, agent dev3d (01Us6uCucP) | 👀 En revue — lead-dev, 2026-11-15 17:23 | b3325221 | 2026-11-15 17:23 |
 | #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | ↩️ Retour lead dev | ce342a2e | 2026-11-15 14:20 |
