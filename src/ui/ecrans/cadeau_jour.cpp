@@ -421,7 +421,7 @@ void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse)
         const long long s = secondesAvantProchain(c, ti);
         const std::string p = s >= 0 ? ui::tr("cadeau.prochain", texteHeures(s)) : ui::tr("cadeau.bientot");
         // WFS-550 (RG-03, maquette 26) : le temps restant dans une pilule de verre, avec l'anneau fin cyan → orange de l'attente
-        // (rempli à mesure que le prochain cadeau approche) ; texte inchangé, à la même place (bord droit à 12 px du bouton)
+        // (rempli à mesure que le prochain cadeau approche) ; texte inchangé, la pilule s'arrête à 12 px du bouton
         const float pw = ui::width(14 * k, p, 0.02f), ra = h * 0.30f, pl = 2 * ra + 16 * kb, pp = 14 * kb;
         const float wp = pl + pw + pp, xp = x - 12 * k - wp;   // pilule à 12 px du bouton, texte dedans
         verre::Style st; st.rayon = h / 2; st.lisere = std::max(1.f, kb); st.ombre = false;

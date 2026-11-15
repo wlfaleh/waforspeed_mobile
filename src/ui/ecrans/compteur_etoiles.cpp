@@ -60,8 +60,7 @@ void appuye(bool oui) { g_presse = oui; }
 
 namespace {
 
-// RG-07 : dessiné juste après « Réglages » (même image) ; a : opacité du fondu d'entrée du menu
-// solde à montrer à l'instant `t` (comptage rapide du départ au nouveau total, sortie douce), et avancement de l'animation
+// solde à montrer à l'instant `t` (comptage rapide du départ au nouveau total, sortie douce)
 long long soldeMontre(double t) {
     const long long s = solde();
     if (g_gain.vu < 0) g_gain.vu = s;
@@ -73,6 +72,7 @@ long long soldeMontre(double t) {
     return g_gain.depart + (long long)std::llround((double)(s - g_gain.depart) * e);
 }
 
+// RG-07 : dessiné juste après « Réglages » (même image) ; a : opacité du fondu d'entrée du menu
 void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, float a) {
     const float W = g.uiWidth, H = g.uiHeight, kb = bh / 44.f;    // même unité que le bouton (44 px en 720 p)
     const float k = ui::petitEcran(W, H) ? ui::unitePetitEcran(W, H) : H / 720.f;
