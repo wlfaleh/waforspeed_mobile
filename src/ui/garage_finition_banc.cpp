@@ -61,7 +61,7 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
         if (!g.init(r, id, "ville")) { WFS_ERR("garage-finitions : chargement impossible (%s)", id); return false; }
         ouvert = true; g.setAutopilot(false); g.camMode = 0;
         for (int i = 0; i < 30; i++) g.update(1.0 / 60);
-        g.allerA(Ecran::Garage); images(45);
+        g.allerA(Ecran::Garage); images(45); choisirOnglet(ONGLET_FINITION); images(2);   // WFS-551 : onglet « Finition »
         return garageEnCours() != nullptr;
     };
     // ordre affiché (0..7) d'une finition du catalogue
@@ -144,7 +144,7 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(true); images(300); g.setAutopilot(false);
         verifier(g.ecran() == Ecran::Course && r.finitionJoueur() == vf::CHROME, "« Choisir » → « Rouler » : la 500 roule en Chromé");
         capture("parcours-abarth-course", "parcours : la 500 Chromé en course après « Choisir » et « Rouler »");
-        g.allerA(Ecran::Garage); images(30);
+        g.allerA(Ecran::Garage); images(30); choisirOnglet(ONGLET_FINITION); images(2);   // WFS-551 : onglet « Finition »
         verifier(garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), "abarth") == 0, "retour au garage : la 500, toujours Chromé");
         capture("parcours-abarth-retour-garage", "retour au garage après la course : 500 Chromé");
     }

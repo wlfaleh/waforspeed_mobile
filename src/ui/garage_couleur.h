@@ -22,7 +22,7 @@ struct Touch;
 namespace ecrans::garage {
 
 // WFS-551 (RG-01) : contour d'une goutte (pointe en haut, ventre rond en bas) de hauteur h, pointe en (cx, haut) ; sommets dans le
-// sens horaire à l'écran, polygone convexe ; rend le nombre de sommets (1 + NB_ARC). Calcul seul : tests/test_gouttes.cpp.
+// sens horaire à l'écran, polygone convexe ; rend le nombre de sommets (1 + NB_ARC). Calcul seul : tests/test_icones_r19.cpp.
 constexpr int GOUTTE_ARC = 40;
 inline int contourGoutte(vec2* p, float cx, float haut, float h) {
     if (h <= 0) return 0;

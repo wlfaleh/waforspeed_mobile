@@ -22,6 +22,7 @@
 #include "garage_fiche.h"
 #include "garage_finition.h"
 #include "garage_skin.h"
+#include "garage_onglets.h"   // WFS-551 : onglets et bouton rond
 #include "ecrans/market_ecran.h"   // WFS-513 (accroche) : bouton et écran « Market »
 #include "verre.h"   // WFS-548 (accroche) : rien du garage sous une fenêtre de verre (verre::couvert)
 
@@ -66,12 +67,14 @@ public:
             couleur_.ouvrir(peinture_);   // WFS-489 (accroche) : dernières couleurs possédées, aperçu oublié (RG-03)
             finition_.ouvrir();           // WFS-491 (accroche) : dernières finitions possédées, aperçu oublié (RG-03)
             skin_.ouvrir();               // WFS-494 (accroche) : dernières skins possédées, aperçu oublié (RG-05)
+            choisirOnglet(ONGLET_VOITURE);   // WFS-551 : le garage s'ouvre sur l'onglet « Voiture » (maquette 13)
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(placeDe(index_) + 1).c_str(),
                     voituresPermises().n, PAINTS[peinture_[index_]].nom);
         }
         if (ancien == Ecran::Garage) {
             g_z.prev = g_z.next = Zone{};
+            onglets::viderZones();   // WFS-551
             for (PanneauGarage* p : panneaux_) p->viderZones();
             if (r_) skin_.quitter(*r_, g, !(nouveau == Ecran::Menu && choisi_));   // WFS-494 (accroche) : la voiture de la course reprend sa skin (« Choisir » : Game::setCar)
             liberer();   // mémoire rendue pendant la course
@@ -133,7 +136,8 @@ public:
             else if (b == AchatGarage::RETOUR && z == AchatGarage::RETOUR) { WFS_LOG("garage : « Retour »"); choisi_ = false; retour_ = true; g.allerA(Ecran::Menu); }
             return true;
         }
-        if (const int c = couleur_.toucher(t, doigt_ < 0 && doigtBouton_ < 0, index_, peinture_[index_]); c) { if (c == 1) appui_.prendre(t.id); return true; }   // WFS-489 (accroche) : rangée qui défile
+        if (t.down && doigt_ < 0) if (const int o = onglets::appui(t.x, t.y); o >= 0) { appui_.prendre(t.id); choisirOnglet(o); return true; }   // WFS-551 : onglets
+        if (ongletGarage() == ONGLET_PEINTURE) if (const int c = couleur_.toucher(t, doigt_ < 0 && doigtBouton_ < 0, index_, peinture_[index_]); c) { if (c == 1) appui_.prendre(t.id); return true; }   // WFS-489 (accroche) : rangée qui défile
         if (t.down) {
             if (doigt_ >= 0 && t.id == doigt_) {   // glisser : tourner la voiture (0,01 rad par pixel)
                 if (glisse_) yaw_ = yaw0_ + (t.x - x0_) * 0.01f * (720.f / g.uiHeight);
@@ -177,22 +181,31 @@ public:
             clignote.op *= 0.8f + 0.2f * (float)std::cos(2 * PI * (g.time - t0_));
             cadre::fleches(r, clignote);
         }
-        // ---------- .show-panel : fiche, barres, peintures, boutons ----------
-        mp.padX = 24 * k; mp.padY = 18 * k;
-        mp.statH = 4 * 14 * k + 3 * 10 * k; mp.paintH = CouleurGarage::hauteur(k); mp.panelH = mp.padY * 2 + mp.statH + 14 * k + mp.paintH;   // WFS-489 (accroche) : ligne des prix
-        mp.panelH += FinitionGarage::hauteur(k);   // WFS-491 (accroche) : rangée « Finition » sous les couleurs
-        if (SkinGarage::visible(index_)) mp.panelH += SkinGarage::hauteur(k);   // WFS-494 (accroche) : rangée « Skin » (voitures qui ont des skins)
-        mp.px0 = mp.gl; mp.px1 = mp.W - mp.gr; mp.py0 = mp.H - mp.gb - 26 * k - mp.panelH;
-        cadre::fondPanneau(r, mp);
-        mp.y1 = mp.py0 + mp.padY;
-        const float xStats = fiche_.specs(r, mp, car);   // .specs : Puissance, 0 à 100, Vitesse max
-        mp.bw = 200 * k; mp.bx = mp.px1 - mp.padX - mp.bw;
-        achat_.dessiner(r, mp, e);   // Choisir, Retour (achat : WFS-489 / 499 / 502)
+        // ---------- WFS-551 (maquettes 06, 07, 13, 15, 16) : onglets, un seul panneau de verre en bas, bouton rond à droite ----------
+        onglets::dessiner(r, mp);
+        mp.onglet = ongletGarage();
+        if (mp.onglet == ONGLET_SKINS && !SkinGarage::visible(index_)) { choisirOnglet(ONGLET_VOITURE); mp.onglet = ONGLET_VOITURE; }   // voiture sans skin
+        mp.panelH = 140 * k; mp.py0 = mp.H - mp.gb - 6 * k - mp.panelH;
+        mp.rBouton = 56 * k; mp.cxBouton = std::min(mp.W * 0.881f, mp.W - mp.gr - mp.rBouton - 12 * k); mp.cyBouton = mp.py0 + 10 * k;
+        mp.yNom = mp.cyBouton - mp.rBouton - 64 * k;
+        mp.px0 = mp.gl + std::max(40 * k, mp.W * 0.05f) + 150 * k + 24 * k;   // à droite de « Retour »
+        mp.px1 = mp.cxBouton - mp.rBouton - 24 * k;                           // à gauche du bouton rond
+        mp.padX = 28 * k; mp.padY = 27 * k; mp.statH = 4 * 14 * k + 3 * 10 * k; mp.y1 = mp.py0 + mp.padY;
+        achat_.dessiner(r, mp, e);   // bouton rond (Choisir / Acheter), Essai, Retour, solde (achat : WFS-489 / 499 / 502)
         for (const Zone* z : {&g_z.choisir, &g_z.essai, &g_z.retour, &g_z.prev, &g_z.next}) manette::focus(*z, z == &g_z.retour);   // WFS-22 ; WFS-499 : Essai
-        fiche_.stats(r, mp, car, xStats);   // .statlist : 4 barres sur 10
-        couleur_.dessiner(r, mp, e);        // .paint-line (WFS-489)
-        finition_.dessiner(r, mp, e);       // rangée « Finition » (WFS-491)
-        skin_.dessiner(r, mp, e);           // rangée « Skin » (WFS-494)
+        if (mp.onglet != ONGLET_PEINTURE) couleur_.viderZones();
+        if (mp.onglet != ONGLET_FINITION) finition_.viderZones();
+        if (mp.onglet != ONGLET_SKINS) skin_.viderZones();
+        if (mp.onglet == ONGLET_VOITURE) {   // maquettes 13 et 15 : fiche de la voiture (chiffres et 4 barres) dans le panneau
+            MiseEnPage f = mp;
+            const float w = std::min(mp.W * 0.56f, mp.px1 - mp.px0);
+            f.px0 = panneauOnglet(r, mp, w); f.px1 = f.px0 + w;
+            f.bx = f.px1 - f.padX + 32 * k;   // fiche_.stats : fin des barres à bx − 32 (valeur alignée sur le bord du panneau)
+            const float xStats = fiche_.specs(r, f, car);   // .specs : Puissance, 0 à 100, Vitesse max
+            fiche_.stats(r, f, car, xStats);                // .statlist : 4 barres sur 10
+        } else if (mp.onglet == ONGLET_PEINTURE) couleur_.dessiner(r, mp, e);   // maquette 06 (WFS-489)
+        else if (mp.onglet == ONGLET_FINITION) finition_.dessiner(r, mp, e);    // maquette 16 (WFS-491)
+        else skin_.dessiner(r, mp, e);                                          // maquette 07 (WFS-494)
         cadre::pied(r, mp, car, voiture_.ok);
         market_ecran::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, mp.op);   // WFS-513 (accroche, RG-01) : sous le solde d'étoiles
         achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout

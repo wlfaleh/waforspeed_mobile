@@ -51,8 +51,6 @@ void rectangle(Renderer& r, float x, float y, float w, float h, const vec4& c) {
 void bouton(Renderer& r, float x, float y, float c, bool droite, bool appuye) {
     const float k = c / 76.f;   // 1 px CSS du bouton
     if (appuye) { const float d = c * 0.02f; x += d; y += d; c -= 2 * d; }   // .arrow-btn.down : transform: scale(.96)
-    const float b = c * 10.f / 76.f;
-    (void)b;
     vec2 p[ui::boutons::MAX_SOMMETS];
     const int n = ui::boutons::contourArrondi(p, x, y, c, c, c * 0.18f);   // WFS-551 (RG-06) : verre aux coins arrondis
     if (appuye) {   // fond cyan, box-shadow 0 0 16px rgba(0,229,255,.55)
@@ -72,9 +70,8 @@ void pave(Renderer& r, float W, float H, const Marges& m) {
     const Marges mc = ecrans::margesCommandes(m);
     const float k = uniteCommandes(W, H), w = std::round(156 * k), h = std::round(60 * k), y = std::round(H - mc.bas - 14 * k) - h;
     const float x = ecrans::miroirX(std::round(mc.gauche + 16 * k) + w / 2, W) - w / 2;   // WFS-75 : miroir sans retourner
-    const float cx = x + w / 2, cy = y + h / 2, b = 12 * k, s = directionBraquage(W);
+    const float cx = x + w / 2, cy = y + h / 2, s = directionBraquage(W);
     const bool appui = g_gl.id >= 0;
-    (void)b;
     vec2 p[ui::boutons::MAX_SOMMETS];
     const int np = ui::boutons::contourArrondi(p, x, y, w, h, 14 * k);   // WFS-551 (RG-06) : pavé de verre aux coins arrondis
     dessin2d::polygone(r, p, np, {VITRE_HAUT, VITRE_BAS, y, y + h});

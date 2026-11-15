@@ -9,7 +9,8 @@
 #include "../platform/manette.h"   // WFS-80 : bouton au focus de la manette
 #include "../render/renderer.h"
 #include "garage_achat.h"   // texte avec ★, équivalents
-#include "garage_finition_pistolet.h"   // WFS-551 (RG-03) : icône du pistolet de l'utilisateur
+#include "garage_finition_pistolet.h"
+#include "garage_onglets.h"   // WFS-551 : panneau de l'onglet, nom montré
 #include "langue.h"
 #include "text.h"
 
@@ -17,7 +18,8 @@ namespace wfs::ecrans::garage {
 namespace {
 // mesures de la rangée, unités de 720 px de haut (× k) ; mêmes hauteurs que la rangée des couleurs (RG-04)
 // WFS-551 (RG-03) : ICONE = côté du pistolet (déborde de 2 px en haut et en bas du bouton, dont la taille ne change pas)
-constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ECART = 8, ECHANTILLON = 18, ICONE = 34, NOM = 190, ESPACE_RANGEES = 10, CHEVRON = 16;
+constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ICONE = 34, ESPACE_RANGEES = 10, CHEVRON = 16;
+constexpr float GRAND = 64, PAS_GRAND = 84;   // WFS-551 (maquette 16) : pistolet de l'onglet « Finition », pas entre deux
 constexpr const int (&ORDRE)[FinitionGarage::NB] = FinitionGarage::ORDRE;
 
 const char* car(int index) { return CARS[std::clamp(index, 0, CAR_COUNT - 1)].id; }
@@ -120,20 +122,18 @@ bool FinitionGarage::police(float k, float& px) {
 }
 
 void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) {
-    const float k = mp.k, op = mp.op, h = BOUTON_H * k, gap = ECART * k, w = BOUTON_W * k, pas = w + gap;
+    // WFS-551 (maquette 16) : panneau de verre de l'onglet « Finition » : « FINITIONS · SUR TA COULEUR », puis un grand pistolet par
+    // finition, le nom dessous ; aperçu = pistolet plus grand, halo et trait orange ; portée = point blanc ; cadenas si à acheter
+    const float k = mp.k, op = mp.op, es = GRAND * k, pas = PAS_GRAND * k, pad = 26 * k, ch = CHEVRON * k * 1.4f;
     const Sauvegarde& sv = sauvegarde();
     const char* carId = car(e.index);
-    const float yy = mp.y1 + mp.statH + 14 * k + mp.paintH + ESPACE_RANGEES * k;
-    float cx = mp.px0 + mp.padX;
-    const std::string titre = ui::majuscules(ui::tr("garage.finition"));
-    ui::text(r, cx, yy + 9 * k, 13 * k, titre, hex(MUTED, op), ui::GAUCHE, 0.16f, false);
-    cx += ui::width(13 * k, titre, 0.16f) + 16 * k;
-    // RG-04 : boutons de largeur fixe ; si les 8 ne tiennent pas avant la colonne du nom (écran étroit, 4:3), la rangée défile
-    // par les chevrons à ses bords, comme celle des couleurs ; seuls des boutons entiers sont dessinés
-    const float place = mp.bx - 32 * k - NOM * k - cx;
-    const bool defile = NB * pas - gap > place;
-    const float x0 = defile ? cx + CHEVRON * k : cx;
-    visibles_ = defile ? std::clamp((int)((place - 2 * CHEVRON * k + gap) / pas), 1, NB) : NB;
+    const float wMax = mp.px1 - mp.px0, wPlein = NB * pas + 2 * pad;
+    const bool defile = wPlein > wMax;
+    const float xp = panneauOnglet(r, mp, defile ? wMax : wPlein);
+    ui::text(r, xp + pad, mp.py0 + 14 * k, 11 * k, ui::majuscules(ui::tr("garage.finition.sur_couleur")), hex(0xA3A8B5, op), ui::GAUCHE, 0.12f, false);
+    const float cx = xp + pad, yy = mp.py0 + 40 * k;   // yy : haut de l'icône
+    const float x0 = defile ? cx + ch : cx;
+    visibles_ = defile ? std::clamp((int)((wMax - 2 * pad - 2 * ch) / pas), 1, NB) : NB;
     int sel = 0;
     for (int o = 0; o < NB; o++) if (ORDRE[o] == e.finition) sel = o;
     if (sel != selVue_ || e.index != indexVu_) {   // nouvelle finition montrée ou autre voiture : la rendre visible
@@ -142,16 +142,14 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
         selVue_ = sel; indexVu_ = e.index;
     }
     premier_ = std::clamp(premier_, 0, NB - visibles_);
-    float px = 12 * k;
-    police(k, px);
     viderZones();
-    for (int c = 0; c < 2; c++) {   // chevrons (seulement s'il reste des boutons de ce côté)
+    for (int c = 0; c < 2; c++) {   // chevrons (seulement s'il reste des pistolets de ce côté)
         const bool reste = c == 0 ? premier_ > 0 : premier_ + visibles_ < NB;
         if (!defile || !reste) continue;
-        const float xc = c == 0 ? cx + CHEVRON * k * 0.4f : x0 + visibles_ * pas - gap + CHEVRON * k * 0.6f, yc = yy + h / 2, d = c == 0 ? 1.f : -1.f;
-        const vec2 ch[3] = {{xc + 4 * k * d, yc - 8 * k}, {xc - 4 * k * d, yc}, {xc + 4 * k * d, yc + 8 * k}};
-        dessin2d::trait(r, ch, 3, 2.4f * k, hex(ACCENT2, op));
-        g_z.chevronsFinition[c] = {xc - CHEVRON * k * 0.6f, yy - 4 * k, CHEVRON * k * 1.2f, h + 8 * k};
+        const float xc = c == 0 ? cx + ch * 0.4f : x0 + visibles_ * pas + ch * 0.6f, yc = yy + es / 2, d = c == 0 ? 1.f : -1.f;
+        const vec2 chv[3] = {{xc + 4 * k * d, yc - 8 * k}, {xc - 4 * k * d, yc}, {xc + 4 * k * d, yc + 8 * k}};
+        dessin2d::trait(r, chv, 3, 2.4f * k, hex(ACCENT2, op));
+        g_z.chevronsFinition[c] = {xc - ch * 0.6f, yy - 4 * k, ch * 1.2f, es + 8 * k};
         manette::focus(g_z.chevronsFinition[c]);
     }
     const unsigned peinture = PAINTS[std::clamp(e.peinture, 0, NB_PEINTURES - 1)].hex;
@@ -163,39 +161,35 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
     }
     for (int o = premier_; o < premier_ + visibles_; o++) {
         const int f = ORDRE[o];
-        const float x = x0 + (o - premier_) * pas;
+        const float x = x0 + (o - premier_) * pas, cxi = x + pas / 2;
         const bool on = o == sel;
         const long long prix = prixFinition(sv, f, carId);
-        // WFS-551 (maquette 16, mêmes repères que les gouttes et les skins) : aperçu = halo et trait orange, portée = point blanc
-        if (on) biseau(r, x - 4 * k, yy - 4 * k, w + 8 * k, h + 8 * k, h * 0.18f, hex(ACCENT, 0.30f * op));   // halo
-        biseau(r, x - 2 * k, yy - 2 * k, w + 4 * k, h + 4 * k, h * 0.18f, on ? hex(ACCENT, op) : vec4{1, 1, 1, 0.08f * op});
-        biseau(r, x, yy, w, h, h * 0.18f, hex(SURFACE2, op));
-        if (o == portee) r.uiCircle(x + w / 2, yy + h + 7 * k, 2 * k, hex(TEXTE, op));   // possédée : pas de prix dessous
-        float es = ECHANTILLON * k, ex = x + 7 * k, ey = yy + (h - es) / 2;
+        const float t = on ? es * 1.18f : es, ex = cxi - t / 2, ey = yy + es - t;
+        if (on) {   // halo orange sous le pistolet et trait orange sous le nom
+            dessin2d::couronne(r, cxi, yy + es * 0.6f, 0, es * 0.62f, hex(ACCENT, 0.30f * op), hex(ACCENT, 0));
+            r.uiRect(cxi - es * 0.22f, yy + es + 22 * k, es * 0.44f, 2.5f * k, hex(ACCENT, op));
+        }
         if (pistolet::pret()) {   // WFS-551 (RG-03) : pistolet de l'utilisateur, godet et jet dans la finition et la couleur
-            es = ICONE * k; ex = x + 2 * k; ey = yy + (h - es) / 2;
-            vec4 t[4];
-            teintesPistolet(f, peinture, op, t);
-            pistolet::dessiner(r, ex, ey, es, t);
+            vec4 tt[4];
+            teintesPistolet(f, peinture, op, tt);
+            pistolet::dessiner(r, ex, ey, t, tt);
             if (f == 1) {   // métallisé : paillettes claires dans le jet
                 static constexpr float P[7][2] = {{0.70f, 0.40f}, {0.78f, 0.47f}, {0.84f, 0.38f}, {0.74f, 0.53f}, {0.88f, 0.49f}, {0.66f, 0.47f}, {0.81f, 0.56f}};
-                for (const auto& q : P) r.uiCircle(ex + q[0] * es, ey + q[1] * es, 0.9f * k, {1, 1, 1, 0.9f * op});
+                for (const auto& q : P) r.uiCircle(ex + q[0] * t, ey + q[1] * t, 1.2f * k, {1, 1, 1, 0.9f * op});
             }
         } else {
-            dessin2d::biseau(r, ex, ey, es, es, es * 0.18f, echantillon(f, peinture, op, ey, ey + es));
+            dessin2d::biseau(r, ex + t * 0.2f, ey + t * 0.2f, t * 0.6f, t * 0.6f, t * 0.1f, echantillon(f, peinture, op, ey, ey + t));
         }
-        if (prix > 0) cadenas(r, ex + es * 0.32f, ey + es * 0.72f, 11 * k, op);   // RG-01 : non possédée (sous la poignée)
-        const std::string nom = ui::majuscules(nomFinition(f));
-        ui::text(r, ex + es + 4 * k, yy + (h - px) / 2 - 1 * k, px, nom, hex(on ? TEXTE : TAG, op), ui::GAUCHE, 0.06f, false);
-        if (prix > 0) texteEtoiles(r, x + w / 2, yy + h + 3 * k, 10 * k, ui::nombre(prix) + " ★", hex(TAG, op), ui::CENTRE);
-        g_z.finitions[o] = {x - 4 * k, yy - 4 * k, w + 8 * k, (BOUTON_H + LIGNE_PRIX) * k + 8 * k};
+        if (prix > 0) cadenas(r, ex + t * 0.30f, ey + t * 0.80f, 13 * k, op);   // RG-01 : non possédée (sous la poignée)
+        ui::textBoite(r, cxi, yy + es + 4 * k, pas - 6 * k, 16 * k, 12 * k, nomFinition(f), hex(on ? TEXTE : TAG, op), ui::CENTRE, 0.02f, false);
+        if (o == portee) r.uiCircle(cxi, yy + es + 30 * k, 2.5f * k, hex(TEXTE, op));
+        g_z.finitions[o] = {x, yy - 8 * k, pas, es + 40 * k};
         manette::focus(g_z.finitions[o]);   // WFS-80 : A = toucher
     }
-    // nom de la finition montrée et, si elle n'est pas possédée, son prix et ses équivalents (RC-E18-11)
-    const float xn = mp.bx - 32 * k - NOM * k + 10 * k;
+    // nom de la finition montrée (au-dessus du bouton rond) et, si elle n'est pas possédée, « aperçu » et ses équivalents (RC-E18-11)
     const long long prixSel = prixFinition(sv, e.finition, carId);
-    ui::text(r, xn, yy + 1 * k, 15 * k, nomFinition(std::clamp(e.finition, 0, NB - 1)), hex(TEXTE, op), ui::GAUCHE, 0, false);
-    if (prixSel > 0) texteEtoiles(r, xn, yy + 21 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::GAUCHE);
+    nomMontre(r, mp, nomFinition(std::clamp(e.finition, 0, NB - 1)), prixSel > 0);
+    if (prixSel > 0) texteEtoiles(r, mp.cxBouton, mp.yNom + 44 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::CENTRE);
 }
 
 int FinitionGarage::appui(float x, float y) const {

@@ -17,7 +17,7 @@ namespace ecrans::garage::pistolet {
 
 constexpr int COTE = 256;   // côté de l'icône dans l'atlas (texels)
 
-// Calcul seul (testé par tests/test_pistolet.cpp) : masques d'un pixel RGBA (codes sRGB 0..255) de l'icône → G, B, A.
+// Calcul seul (testé par tests/test_icones_r19.cpp) : masques d'un pixel RGBA (codes sRGB 0..255) de l'icône → G, B, A.
 struct Masque { uint8_t g, b, a; };
 inline Masque masque(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     const int mx = r > g ? (r > b ? r : b) : (g > b ? g : b), mn = r < g ? (r < b ? r : b) : (g < b ? g : b);

@@ -61,7 +61,7 @@ int benchGarageSkins(Game& g, Renderer& r, const std::string& out) {
         if (!g.init(r, id, "ville")) { WFS_ERR("garage-skins : chargement impossible (%s)", id); return false; }
         ouvert = true; g.setAutopilot(false); g.camMode = 0;
         for (int i = 0; i < 30; i++) g.update(1.0 / 60);
-        g.allerA(Ecran::Garage); images(45);
+        g.allerA(Ecran::Garage); images(45); choisirOnglet(ONGLET_SKINS); images(2);   // WFS-551 : onglet « Skins »
         return garageEnCours() != nullptr;
     };
     auto ordre = [](const char* id) { for (int o = 1; o < SkinGarage::NB; o++) if (std::strcmp(BOUTIQUE_SKINS_IDS[SkinGarage::catalogue(o)], id) == 0) return o; return 0; };
@@ -175,7 +175,7 @@ int benchGarageSkins(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(true); images(300); g.setAutopilot(false);
         verifier(g.ecran() == Ecran::Course && skinPosee("p208", "camouflage"), "« Choisir » → « Rouler » : la 208 roule en Camouflage");
         capture("parcours-p208-course", "parcours : la 208 Camouflage en course après « Choisir » et « Rouler »");
-        g.allerA(Ecran::Garage); images(30);
+        g.allerA(Ecran::Garage); images(30); choisirOnglet(ONGLET_SKINS); images(2);   // WFS-551 : onglet « Skins »
         montrer("neonnuit"); images(6);
         bouton("retour"); images(20);
         verifier(skinPosee("p208", "camouflage") && s.skin["p208"] == "camouflage", "« Retour » après l'aperçu Néon nuit : la voiture de la course reprend le Camouflage");

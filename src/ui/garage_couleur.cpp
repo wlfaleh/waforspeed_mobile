@@ -14,12 +14,15 @@
 #include "langue.h"
 #include "text.h"
 #include "boutons.h"   // WFS-549 : boutons au modèle R19
+#include "garage_onglets.h"   // WFS-551 : panneau de l'onglet
 
 namespace wfs::ecrans::garage {
 namespace {
 // mesures de la rangée, unités de 720 px de haut (× k)
-constexpr float PASTILLE = 30, ECART = 8, LIGNE_PRIX = 14, ONGLET_H = 30, CHEVRON = 16, NOM = 190, SEUIL_GLISSE = 10;
-constexpr unsigned SUR_TITRE_GOUTTES = 0xA3A8B5;   // WFS-551 : sur-titre gris de la R19 (verre::SUR_TITRE, WFS-548)
+constexpr float PASTILLE = 30, LIGNE_PRIX = 14, ONGLET_H = 30, CHEVRON = 16, SEUIL_GLISSE = 10;
+constexpr unsigned SUR_TITRE_GOUTTES = 0xA3A8B5;
+// WFS-551 (maquette 06) : gouttes en grand dans le panneau de verre de l'onglet « Peinture »
+constexpr float GOUTTE = 40, PAS_GOUTTE = 56, MARGE_PANNEAU = 28;   // WFS-551 : sur-titre gris de la R19 (verre::SUR_TITRE, WFS-548)
 
 const std::string& nomCouleur(int p) { return ui::tr(("couleur." + std::string(PAINTS[p].id)).c_str()); }
 
@@ -107,34 +110,35 @@ float CouleurGarage::code2(int index) const {
 }
 
 void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) {
-    const float k = mp.k, op = mp.op, bx = mp.bx;
+    const float k = mp.k, op = mp.op;
     const Sauvegarde& sv = sauvegarde();
     const char* car = CARS[e.index].id;
-    const float yy = mp.y1 + mp.statH + 14 * k, s = PASTILLE * k, pas = (PASTILLE + ECART) * k;
-    float cx = mp.px0 + mp.padX;
-    // RG-02 : onglets « Principale » / « Toit et rétros » (à la place du libellé « Couleur »)
-    // WFS-549 (RG-05, RG-07) : sélecteur de verre (rangée commune, choix actif = pilule blanche), mêmes rectangles qu'avant
+    // WFS-551 (maquette 06) : « Carrosserie » / « Toit et rétros » sous le nom de la voiture, à gauche
     {
+        float cx = mp.gl + std::clamp(mp.W * 0.04f, 0.f, 64 * k);
+        const float sy = mp.gt + 184 * k;
         float wTot = 0;
         for (int o = 0; o < 2; o++) wTot += ui::width(11 * k, ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale")), 0.14f) + 22 * k;
-        ui::boutons::selecteurFond(r, cx, yy, wTot + 6 * k, ONGLET_H * k, op);
+        ui::boutons::selecteurFond(r, cx, sy, wTot + 6 * k, ONGLET_H * k, op);
+        for (int o = 0; o < 2; o++) {
+            const std::string t = ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale"));
+            const float w = ui::width(11 * k, t, 0.14f) + 22 * k;
+            const bool on = toit_ == (o == 1);
+            ui::boutons::selecteurChoix(r, cx, sy, w, ONGLET_H * k, t, on, op, false, 11 * k);
+            g_z.onglets[o] = {cx, sy - 4 * k, w, ONGLET_H * k + 8 * k};
+            manette::focus(g_z.onglets[o]);
+            cx += w + 6 * k;
+        }
     }
-    for (int o = 0; o < 2; o++) {
-        const std::string t = ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale"));
-        const float w = ui::width(11 * k, t, 0.14f) + 22 * k;
-        const bool on = toit_ == (o == 1);
-        ui::boutons::selecteurChoix(r, cx, yy, w, ONGLET_H * k, t, on, op, false, 11 * k);
-        g_z.onglets[o] = {cx, yy - 4 * k, w, ONGLET_H * k + 8 * k};
-        manette::focus(g_z.onglets[o]);
-        cx += w + 6 * k;
-    }
-    cx += 12 * k;
-    // RG-01 : pastilles de taille fixe ; place comptée jusqu'à la zone du nom ; chevrons si tout ne tient pas
+    // WFS-551 (maquette 06) : panneau de verre en bas, gouttes en grand, rangées par prix ; chevrons si tout ne tient pas
     const int n = nbItems();
-    const float place = bx - 32 * k - NOM * k - cx;
-    const bool defile = n * pas - ECART * k > place;
-    const float x0 = defile ? cx + CHEVRON * k : cx;
-    visibles_ = defile ? std::max(1, (int)((place - 2 * CHEVRON * k + ECART * k) / pas)) : n;
+    const float s = GOUTTE * k, pas = PAS_GOUTTE * k, ecart = pas - s, pad = MARGE_PANNEAU * k, ch = CHEVRON * k * 1.4f;
+    const float wMax = mp.px1 - mp.px0, wPlein = n * pas - ecart + 2 * pad;
+    const bool defile = wPlein > wMax;
+    const float xp = panneauOnglet(r, mp, defile ? wMax : wPlein);
+    const float cx = xp + pad, yy = mp.py0 + 50 * k;   // yy : haut de la case d'une goutte
+    const float x0 = defile ? cx + ch : cx;
+    visibles_ = defile ? std::max(1, (int)((wMax - 2 * pad - 2 * ch + ecart) / pas)) : n;
     pas_ = pas;
     const int sel = toit_ ? second_[e.index] + 1 : e.peinture;
     if (doigt_ < 0 && (sel != selVue_ || e.index != indexVu_ || toit_ != toitVu_)) {   // nouvelle sélection : la rendre visible
@@ -143,7 +147,7 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
         selVue_ = sel; indexVu_ = e.index; toitVu_ = toit_;
     }
     premier_ = std::clamp(premier_, 0, std::max(0, n - visibles_));
-    rangee_ = {x0 - 4 * k, yy - 4 * k, visibles_ * pas, hauteur(k) + 8 * k};
+    rangee_ = {x0 - 4 * k, yy - 4 * k, visibles_ * pas, s + 30 * k};
     for (Zone& z : items_) z = Zone{};
     for (Zone& z : g_z.peintures) z = Zone{};
     for (Zone& z : g_z.toit) z = Zone{};
@@ -151,10 +155,10 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
         g_z.chevrons[c] = Zone{};
         const bool reste = c == 0 ? premier_ > 0 : premier_ + visibles_ < n;
         if (!defile || !reste) continue;
-        const float xc = c == 0 ? cx + CHEVRON * k * 0.4f : x0 + visibles_ * pas - ECART * k + CHEVRON * k * 0.6f, yc = yy + s / 2, d = c == 0 ? 1.f : -1.f;
-        const vec2 ch[3] = {{xc + 4 * k * d, yc - 8 * k}, {xc - 4 * k * d, yc}, {xc + 4 * k * d, yc + 8 * k}};
-        dessin2d::trait(r, ch, 3, 2.4f * k, hex(ACCENT2, op));
-        g_z.chevrons[c] = {xc - CHEVRON * k * 0.6f, yy - 4 * k, CHEVRON * k * 1.2f, s + 8 * k};
+        const float xc = c == 0 ? cx + ch * 0.4f : x0 + visibles_ * pas - ecart + ch * 0.6f, yc = yy + s / 2, d = c == 0 ? 1.f : -1.f;
+        const vec2 chv[3] = {{xc + 4 * k * d, yc - 8 * k}, {xc - 4 * k * d, yc}, {xc + 4 * k * d, yc + 8 * k}};
+        dessin2d::trait(r, chv, 3, 2.4f * k, hex(ACCENT2, op));
+        g_z.chevrons[c] = {xc - ch * 0.6f, yy - 4 * k, ch * 1.2f, s + 8 * k};
         manette::focus(g_z.chevrons[c]);
     }
     // WFS-551 (RG-01) : couleur portée (sauvegarde) ; sans sauvegarde (banc), la couleur montrée
@@ -171,40 +175,40 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
         // RG-01 : rangées par prix : titre au-dessus de la 1re goutte visible de chaque rangée, trait fin entre deux rangées
         const int gr = comme ? 0 : groupeCouleur(p);
         if (gr != groupePrec) {
-            if (groupePrec >= -1) r.uiRect(x - ECART * k / 2 - 0.5f * k, yy + 2 * k, std::max(1.f, k), s - 4 * k, {1, 1, 1, 0.14f * op});
+            if (groupePrec >= -1) r.uiRect(x - ecart / 2 - 0.5f * k, yy - 26 * k, std::max(1.f, k), s + 30 * k, {1, 1, 1, 0.16f * op});
             const int base = comme ? -1 : prixBase(p);
             const std::string titre = gr == 0 ? ui::tr("garage.couleur.groupe.classiques")
                 : ui::tr(gr == 1 ? "garage.couleur.groupe.vives" : "garage.couleur.groupe.speciales",
                          ui::nombre((long long)std::lround(base * perso::coefficient(car))));
-            texteEtoiles(r, x, yy - 13 * k, 10 * k, ui::majuscules(titre), hex(SUR_TITRE_GOUTTES, op), ui::GAUCHE, 0.12f);
+            texteEtoiles(r, x, yy - 32 * k, 11 * k, ui::majuscules(titre), hex(SUR_TITRE_GOUTTES, op), ui::GAUCHE, 0.12f);
             groupePrec = gr;
         }
         const float hg = (on ? 1.18f : 1.f) * s, cxg = x + s / 2;   // RG-01 : aperçu = goutte plus grande
         if (on) {   // halo et trait orange dessous
             r.uiCircle(cxg, yy + s * 0.68f, s * 0.62f, hex(ACCENT, 0.16f * op));
-            r.uiRect(cxg - s * 0.3f, yy + s + 3 * k, s * 0.6f, 2.2f * k, hex(ACCENT, op));
+            r.uiRect(cxg - s * 0.3f, yy + s + 6 * k, s * 0.6f, 2.5f * k, hex(ACCENT, op));
         }
         goutte(r, cxg, yy + s - hg, hg, PAINTS[p].hex, op);
-        if (portee) r.uiCircle(cxg, yy + s + 9 * k, 2 * k, hex(TEXTE, op));   // RG-01 : couleur portée = point blanc dessous
+        if (portee) r.uiCircle(cxg, yy + s + 14 * k, 2.5f * k, hex(TEXTE, op));   // RG-01 : couleur portée = point blanc dessous
         if (comme) {   // « = » sombre sur une couleur claire, clair sur une couleur sombre
             const unsigned h = PAINTS[p].hex;
             const bool claire = 0.299f * ((h >> 16) & 255) + 0.587f * ((h >> 8) & 255) + 0.114f * (h & 255) > 140;
-            ui::text(r, cxg, yy + s * 0.42f, 14 * k, "=", hex(claire ? ON_ACCENT : TEXTE, op), ui::CENTRE, 0, false);
+            ui::text(r, cxg, yy + s * 0.42f, 18 * k, "=", hex(claire ? ON_ACCENT : TEXTE, op), ui::CENTRE, 0, false);
         }
         if (prix > 0) {   // RG-01 : petit cadenas sur les gouttes à acheter ; « Toit et rétros » : prix total dessous (droit compris)
-            cadenas(r, x + s * 0.8f, yy + s * 0.78f, 10 * k, op);
-            if (toit_) texteEtoiles(r, cxg + 6 * k, yy + s + 5 * k, 9 * k, ui::nombre(prix) + " ★", hex(TAG, op), ui::CENTRE);
+            cadenas(r, x + s * 0.8f, yy + s * 0.8f, 12 * k, op);
+            if (toit_) texteEtoiles(r, cxg, yy + s + 18 * k, 10 * k, ui::nombre(prix) + " ★", hex(TAG, op), ui::CENTRE);
         }
-        items_[j] = {x - 4 * k, yy - 4 * k, s + 8 * k, hauteur(k) + 8 * k};
+        items_[j] = {x - ecart / 2, yy - 8 * k, pas, s + 34 * k};
         (toit_ ? g_z.toit[j] : g_z.peintures[p]) = items_[j];
         manette::focus(items_[j]);   // WFS-80 : pastille au focus de la manette (A = toucher)
     }
-    // nom de la couleur montrée et, si elle n'est pas possédée, son prix et ses équivalents (RC-E18-11)
-    const float xn = bx - 32 * k - NOM * k + 10 * k;
+    // nom de la couleur montrée (au-dessus du bouton rond, maquette 06) et, si elle n'est pas possédée, « aperçu · pas encore à toi »
+    // et ses équivalents (RC-E18-11)
     const bool commeSel = toit_ && sel == 0;
-    const long long prixSel = commeSel ? 0 : prixPastille(sv, car, toit_ ? sel - 1 : sel, toit_);   // même si la pastille est hors de la vue
-    ui::text(r, xn, yy + 1 * k, 15 * k, commeSel ? ui::tr("garage.couleur.comme") : nomCouleur(toit_ ? sel - 1 : sel), hex(TEXTE, op), ui::GAUCHE, 0, false);
-    if (prixSel > 0) texteEtoiles(r, xn, yy + 21 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::GAUCHE);
+    const long long prixSel = commeSel ? 0 : prixPastille(sv, car, toit_ ? sel - 1 : sel, toit_);   // même si la goutte est hors de la vue
+    nomMontre(r, mp, commeSel ? ui::tr("garage.couleur.comme") : nomCouleur(toit_ ? sel - 1 : sel), prixSel > 0);
+    if (prixSel > 0) texteEtoiles(r, mp.cxBouton, mp.yNom + 44 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::CENTRE);
 }
 
 int CouleurGarage::itemSous(float x, float y) const {
@@ -243,7 +247,7 @@ void CouleurGarage::choisirItem(int item, int index, int& peinture) {
 int CouleurGarage::toucher(const Touch& t, bool libre, int index, int& peinture) {
     if (doigt_ >= 0 && t.id == doigt_) {   // doigt suivi : glisser = défiler d'une pastille par pas
         if (t.down) {
-            if (std::abs(t.x - x0_) > SEUIL_GLISSE * pas_ / (PASTILLE + ECART)) glisse_ = true;   // 10 px de 720 px de haut
+            if (std::abs(t.x - x0_) > SEUIL_GLISSE * pas_ / PAS_GOUTTE) glisse_ = true;   // 10 px de 720 px de haut
             if (glisse_) premier_ = std::clamp(premier0_ - (int)std::lround((t.x - x0_) / pas_), 0, std::max(0, nbItems() - visibles_));
             return 2;
         }

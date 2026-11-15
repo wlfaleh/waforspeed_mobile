@@ -138,7 +138,10 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     if (!menu_) dessinerChargement(r, W, H, 1.f, ui::tr("chargement.etape.paquets"), false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
     const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes » (après le fond de l'écran de chargement)
-    r.uiRect(0, 0, W, H, hex(BG, menu_ ? 0.72f : 0.82f));   // au menu (RG-06) : voile sur le menu
+    // WFS-551 (maquette 18d, revue du lead dev) : au menu, la scène du jeu floutée et assombrie derrière la fenêtre, jamais l'interface
+    // du menu (verre::fenetreSurEcran : le menu ne dessine plus son interface tant que la fenêtre est ouverte)
+    if (menu_) { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }
+    else r.uiRect(0, 0, W, H, hex(BG, 0.82f));
     const float pw = std::min(W - m.gauche - m.droite - 32 * k, 760 * k), px = m.gauche + (W - m.gauche - m.droite - pw) / 2;
     const float ph = (cp ? 300 : 340) * k, py = std::max(m.haut + 8 * k, (H - ph) / 2);
     // WFS-551 (RG-07, maquette 18d) : fenêtre de verre aux coins arrondis (plus de liseré cyan ni de sur-titre), nuage orange devant le titre
@@ -410,7 +413,7 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
     }
     case EtatCarte::Attente: case EtatCarte::Telechargement: case EtatCarte::Coupure: {
         // WFS-551 (RG-07, maquette 18b) : panneau de verre en haut à droite : anneau de progression cyan → orange (pourcentage),
-        // Mo reçus / Mo du paquet (valeurs réelles), « Tu peux rouler pendant ce temps » ou la coupure, Annuler
+        // Mo reçus / Mo du paquet (valeurs réelles), « Tu peux rouler sur une autre carte pendant ce temps » ou la coupure, Annuler
         etiquette(r, x + 16 * k, y + 52 * k, k, ui::majuscules(ui::tr("paquets.etiquette_telecharger")), hex(TEXTE), false);
         const float pw = pwMax, px = px0 - pw, py = y + m, ph = 16 * k + bh + 16 * k;
         verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * k, 1, true});

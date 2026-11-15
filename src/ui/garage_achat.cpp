@@ -11,6 +11,7 @@
 #include "langue.h"
 #include "text.h"
 #include "boutons.h"   // WFS-549 : boutons au modèle R19
+#include "garage_onglets.h"   // WFS-551 : bouton rond
 
 namespace wfs::ecrans::garage {
 namespace {
@@ -57,52 +58,47 @@ float texteEtoiles(Renderer& r, float x, float y, float px, const std::string& s
 void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) {
     e_ = e;
     if (manque_ > 0 && !(e == eManque_)) manque_ = 0;   // autre couleur montrée : le bandeau disparaît
-    const float k = mp.k, op = mp.op, bx = mp.bx, bw = mp.bw;
+    const float k = mp.k, op = mp.op;
     const Sauvegarde& s = sauvegarde();
     const char* car = CARS[e.index].id;
     const bool bloquee = voitureBloquee(s, car);   // WFS-499 : 3 boutons (Acheter, Essai, Retour), mêmes tailles, écart réduit à 8 px
-    const float hb = 52 * k, hg = 46 * k, gap = (bloquee ? 8 : 12) * k, tot = hb + gap + hg + (bloquee ? gap + hg : 0), by = mp.py0 + (mp.panelH - tot) / 2;
     const bool pret = e.voiturePrete;
     const Manque m = manque(s, e);
-    // WFS-549 (RG-01, RG-07) : Choisir / Acheter en bouton Start/Stop, même rectangle qu'avant (bw × 52) ; texte blanc sur le
-    // centre sombre, étoile dessinée comme avant (texteEtoiles), centré à droite de l'icône
-    const ui::boutons::ZoneTexte zt = ui::boutons::startStopFond(r, bx, by, bw, hb, op, false, !pret);
-    const float cxT = zt.x + zt.w / 2;
-    if (!pret) ui::text(r, cxT, by + 15 * k, 18 * k, ui::majuscules(ui::tr("garage.chargement")), hex(MUTED, op), ui::CENTRE, 0.1f, false);
-    else if (bloquee) texteEtoiles(r, cxT, by + 15 * k, 19 * k, ui::majuscules(ui::tr("garage.acheter", nombreLangue(boutique::prixVoiture(car)))), hex(TEXTE, op), ui::CENTRE, 0.1f);
-    else if (m.n > 0) texteEtoiles(r, cxT, by + 15 * k, 19 * k, ui::majuscules(ui::tr("garage.acheter", nombreLangue(m.total))), hex(TEXTE, op), ui::CENTRE, 0.1f);
-    else ui::text(r, cxT, by + 15 * k, 19 * k, ui::majuscules(ui::tr("garage.choisir")), hex(TEXTE, op), ui::CENTRE, 0.1f, false, true);
-    g_z.choisir = {bx, by, bw, hb};
-    float gy = by + hb + gap;
+    // WFS-551 (maquettes 13, 15, 16) : grand bouton rond Start/Stop à droite (« Choisir », ou « Acheter » et le prix dessous)
+    const float cx = mp.cxBouton, cy = mp.cyBouton, R = mp.rBouton;
+    if (!pret) onglets::boutonRond(r, cx, cy, R, ui::majuscules(ui::tr("garage.chargement")), "", op, true);
+    else if (bloquee) onglets::boutonRond(r, cx, cy, R, ui::majuscules(ui::tr("garage.acheter_court")), "★ " + nombreLangue(boutique::prixVoiture(car)), op, false);
+    else if (m.n > 0) onglets::boutonRond(r, cx, cy, R, ui::majuscules(ui::tr("garage.acheter_court")), "★ " + nombreLangue(m.total), op, false);
+    else onglets::boutonRond(r, cx, cy, R, ui::majuscules(ui::tr("garage.choisir")), "", op, false);
+    g_z.choisir = {cx - R, cy - R, 2 * R, 2 * R};
     const bool pretAttente = bloquee && pret::etat(s.cadeau) == pret::Etat::EnAttente && s.cadeau.pretVoiture == car;   // WFS-502 (RG-01)
     if (bloquee) {   // WFS-499 (RG-03) : « Essai gratuit » (info : cyan) puis « Essai déjà fait » (inactif) ; WFS-502 : « Activer le prêt »
+        // WFS-551 : bouton de verre au-dessus du bouton rond (la maquette 15 n'en montre pas : la fonction reste)
         const bool libre = pretAttente || essaiPossible(s, car);
-        biseau(r, bx, gy, bw, hg, 14 * k, hex(SURFACE2, op));
-        if (libre) biseau(r, bx, gy, 4 * k, hg, 14 * k * 4 / bw, hex(ACCENT2, op));   // liseré cyan : bouton actif
         const std::string t = ui::majuscules(ui::tr(pretAttente ? "pret.garage.activer" : libre ? "garage.essai" : "garage.essai_fait"));
-        ui::textBoite(r, bx + bw / 2, gy, bw - 28 * k, hg, 16 * k, t, hex(libre ? ACCENT2 : MUTED, op), ui::CENTRE, 0.1f, false);
-        g_z.essai = {bx, gy, bw, hg};
-        gy += hg + gap;
+        const float w = std::max(150 * k, ui::width(15 * k, t, 0.1f) + 36 * k), h = 40 * k, x = cx - w / 2, y = cy - R - 18 * k - h;
+        const vec4 ct = hex(libre ? ACCENT2 : MUTED, op);
+        ui::boutons::verre(r, x, y, w, h, t, op, false, 15 * k, &ct);
+        g_z.essai = {x, y, w, h};
     } else {
         g_z.essai = Zone{};
     }
-    ui::boutons::autocollant(r, bx, gy, bw, hg, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k);   // WFS-549 (RG-02) : sortie
-    g_z.retour = {bx, gy, bw, hg};
-    // WFS-551 (RG-04, maquette 15) : voiture bloquée : « ★ solde / prix » (valeurs réelles) en bas, dans le coin, sous la colonne
-    // du bouton Acheter ; la carte « Voiture bloquée » laisse place au cadenas-jauge à côté du nom (garage_fiche.cpp)
-    if (bloquee && !pretAttente) {
-        const std::string t1 = "★ " + nombreLangue(boutique::solde(s)), t2 = " / " + nombreLangue(boutique::prixVoiture(car));
-        const float p1 = 20 * k, p2 = 14 * k, w1 = largeurEtoiles(p1, t1), w2 = ui::width(p2, t2), y0 = gy + hg + 8 * k;
-        const float x0 = bx + bw - w1 - w2;
+    // WFS-551 (maquettes 13, 15, 16) : « Retour » en autocollant en bas à gauche
+    const float rw = 150 * k, rh = 50 * k, rx = mp.gl + std::max(40 * k, mp.W * 0.05f), ry = mp.py0 + mp.panelH / 2 - rh / 2;
+    ui::boutons::autocollant(r, rx, ry, rw, rh, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k);   // WFS-549 (RG-02) : sortie
+    g_z.retour = {rx, ry, rw, rh};
+    // WFS-551 (maquettes 15, 16) : solde d'étoiles sous le bouton rond ; voiture bloquée : « ★ solde / prix » (valeurs réelles)
+    {
+        const std::string t1 = "★ " + nombreLangue(boutique::solde(s)), t2 = bloquee && !pretAttente ? " / " + nombreLangue(boutique::prixVoiture(car)) : "";
+        const float p1 = 20 * k, p2 = 14 * k, w1 = largeurEtoiles(p1, t1), w2 = t2.empty() ? 0 : ui::width(p2, t2), y0 = cy + R + 18 * k;
+        const float x0 = cx - (w1 + w2) / 2;
         texteEtoiles(r, x0, y0, p1, t1, hex(TEXTE, op), ui::GAUCHE);
-        ui::text(r, x0 + w1, y0 + p1 - p2 - 1 * k, p2, t2, hex(MUTED, op), ui::GAUCHE, 0, false);
+        if (!t2.empty()) ui::text(r, x0 + w1, y0 + p1 - p2 - 1 * k, p2, t2, hex(MUTED, op), ui::GAUCHE, 0, false);
     }
     // WFS-499 (RG-01) : solde d'étoiles toujours affiché, en haut à droite du garage (au-dessus de la flèche « suivante »)
     texteEtoiles(r, mp.W - mp.gr, mp.gt + 6 * k, 14 * k, ui::majuscules(ui::tr("garage.solde", nombreLangue(boutique::solde(s)))), hex(TEXTE, op), ui::DROITE, 0.12f);
-    // WFS-499 (RG-01) : cadenas juste au-dessus du point (vignette) de chaque voiture bloquée, entre l'étiquette du type et les
-    // points (dessous, il passait sur le toit de la voiture en 4:3 : revue de la PR #404)
-    for (int p = 0; p < voituresPermises().n; p++)
-        if (const Zone& z = g_z.points[p]; z.w > 0 && voitureBloquee(s, CARS[voituresPermises().idx[p]].id)) cadenas(r, z.x + z.w / 2, z.y + 1 * k, 9 * k, op);
+    // WFS-551 (revue du lead dev, maquette 15) : plus de petits cadenas au-dessus des points des voitures : le cadenas-jauge est à
+    // côté du nom de la voiture bloquée
     // WFS-499 (RG-01) : carte de la voiture bloquée, au-dessus du panneau, à droite : cadenas, prix, équivalents ; WFS-551 (RG-04) :
     // remplacée par le cadenas-jauge et « ★ solde / prix », gardée seulement pour la voiture prêtée en attente (WFS-502)
     if (bloquee && pretAttente) {
@@ -112,8 +108,8 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         const std::string t2 = pretAttente ? ui::tr("pret.bandeau.attente", texteDuree(pret::resteActivation(s.cadeau, pret::maintenant()))) : texteEquivalentVoiture(prix);
         const std::string t0 = ui::majuscules(ui::tr(pretAttente ? "pret.garage.titre" : "garage.bloquee"));
         const float pad = 18 * k, cad = 30 * k, w1 = cad + 12 * k + largeurEtoiles(30 * k, t1), w = std::max({w1, ui::width(14 * k, t2), ui::width(14 * k, t0, 0.14f)}) + 2 * pad;
-        const float h = 88 * k, y = mp.py0 - h - 12 * k;
-        float x = mp.px1 - mp.padX - w;
+        const float h = 88 * k, y = mp.cyBouton - mp.rBouton - 70 * k - h;   // WFS-551 : au-dessus du bouton rond et de « Essai »
+        float x = std::min(mp.cxBouton - w / 2, mp.W - mp.gr - w);
         // jamais sur la flèche « suivante » (panneau plus haut avec la rangée des finitions, WFS-491) : la carte passe à sa gauche
         if (const Zone& n = g_z.next; n.w > 0 && y < n.y + n.h && x + w > n.x) x = std::min(x, n.x - w - 10 * k);
         // .card : verre teinté, coin supérieur droit coupé, liseré cyan à gauche (information)
@@ -134,8 +130,8 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         const std::string t0 = ui::majuscules(ui::tr("pret.garage.titre")), t1 = ui::tr("pret.garage.restant", texteDuree(reste));
         const std::string t2 = ui::tr("pret.garder", nombreLangue(boutique::prixVoiture(car)));
         const float pad = 18 * k, w = std::max({largeurEtoiles(26 * k, t1), largeurEtoiles(14 * k, t2), ui::width(14 * k, t0, 0.14f)}) + 2 * pad;
-        const float h = 88 * k, y = mp.py0 - h - 12 * k;
-        float x = mp.px1 - mp.padX - w;
+        const float h = 88 * k, y = mp.cyBouton - mp.rBouton - 70 * k - h;   // WFS-551 : au-dessus du bouton rond et de « Essai »
+        float x = std::min(mp.cxBouton - w / 2, mp.W - mp.gr - w);
         if (const Zone& n = g_z.next; n.w > 0 && y < n.y + n.h && x + w > n.x) x = std::min(x, n.x - w - 10 * k);
         const float b = 14 * k;
         const vec2 c[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};
@@ -149,7 +145,7 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     // bandeau « Il te manque N ★ » : glissé au-dessus du panneau, bord gauche rouge (notification de design-street-racing)
     if (manque_ > 0) {
         const std::string t = ui::tr("garage.manque", nombreLangue(manque_));
-        const float w = largeurEtoiles(16 * k, t) + 40 * k, h = 40 * k, x = mp.px1 - mp.padX - w, y = mp.py0 - h - 12 * k;
+        const float w = largeurEtoiles(16 * k, t) + 40 * k, h = 40 * k, x = std::min(mp.cxBouton - w / 2, mp.W - mp.gr - w), y = mp.yNom - h - 12 * k;   // WFS-551 : au-dessus du nom montré
         biseau(r, x, y, w, h, 10 * k, hex(SURFACE2, 0.96f * op));
         biseau(r, x, y, 5 * k, h, 10 * k * 5 / w, hex(0xFF1F4B, op));
         texteEtoiles(r, x + 22 * k, y + 11 * k, 16 * k, t, hex(TEXTE, op), ui::GAUCHE);

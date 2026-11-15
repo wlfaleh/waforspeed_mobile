@@ -121,7 +121,7 @@ void iconeFrein(Renderer& r, float cx, float cy, float s, const vec4& c) {
 
 // RG-01 / RG-02 : pédale .pedal (coins coupés 10 px, fond dégradé, bordure 1 px, icône 26 px et libellé 13 px en bas)
 void pedale(Renderer& r, const Cadre& c, float k, bool gaz, bool appui) {
-    const float cx = c.x + c.w / 2, bas = c.y + c.h, w2 = c.w / 2, h = c.h, b = 10 * k;
+    const float cx = c.x + c.w / 2, bas = c.y + c.h, w2 = c.w / 2, h = c.h;
     // .pedal.down : perspective(420px) rotateX(16deg) scale(.97), origine au milieu du bas ; u depuis le centre, v vers le haut
     const float sn = std::sin(16 * PI / 180), cs = std::cos(16 * PI / 180), P = 420 * k;
     auto echelle = [&](float v) { return appui ? 0.97f * P / (P + 0.97f * v * sn) : 1.f; };
@@ -136,7 +136,6 @@ void pedale(Renderer& r, const Cadre& c, float k, bool gaz, bool appui) {
     };
     // WFS-551 (RG-06, maquettes 17 et 17b) : pédale de verre aux coins arrondis (taille inchangée), SANS texte : grande icône au
     // centre ; gaz : liseré et icône orange ; frein : liseré clair, icône rouge. L'enfoncement (perspective) est gardé.
-    (void)b;
     vec2 rect[ui::boutons::MAX_SOMMETS], poly[ui::boutons::MAX_SOMMETS];
     const int np = ui::boutons::contourArrondi(rect, -w2, 0, c.w, h, 14 * k);   // y local vers le bas : 0 = haut de la pédale
     for (int i = 0; i < np; i++) poly[i] = place(rect[i].x, h - rect[i].y);

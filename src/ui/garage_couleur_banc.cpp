@@ -53,7 +53,7 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
         if (!g.init(r, id, "ville")) { WFS_ERR("garage-couleurs : chargement impossible (%s)", id); return false; }
         ouvert = true; g.setAutopilot(false); g.camMode = 0;
         for (int i = 0; i < 30; i++) g.update(1.0 / 60);
-        g.allerA(Ecran::Garage); images(45);
+        g.allerA(Ecran::Garage); images(45); choisirOnglet(ONGLET_PEINTURE); images(2);   // WFS-551 : onglet « Peinture »
         return garageEnCours() != nullptr;
     };
     // touche la pastille p (indice dans PAINTS ; toit : onglet « Toit et rétros ») après l'avoir amenée par les chevrons
