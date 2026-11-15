@@ -1005,3 +1005,8 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - Le banc `score-fin` n'apparaît pas dans `build.yml` ni `matin.yml` (recherche « score ») : CI de `main` et bancs du matin non touchés ; pas d'US P1. À confirmer par le développeur (RG-05).
 - Créés : **ANO-274** (`anno.md`, 📋 Planifiée) et **WFS-553** `[TECHNIQUE]` (P2 Haute, E22, ⏳ Prêt, `@dev`, règles `regles-de-gestion/WFS-553.md`) : seul `src/game/score_fin_banc.cpp` change, aucun contrôle retiré. À donner à une **nouvelle session** `@dev` qui le demande (pas à 01Us6uCucP, qui garde son seul ticket WFS-548).
 
+
+### 2026-11-15 14:51:13 — WFS-548 : PR #422 refusée par le lead dev (lead-dev)
+- **Revue** du commit `be3919ed` : 152 captures ouvertes, tout le diff lu, branche synchronisée avec `main` construite et testée (145 tests CPU réussis, `test_verre` OK). Rendu bien fait (flou calculé une fois puis relu, net en course, 8 lignes dans le renderer).
+- **Refus** (revue postée en commentaire, GitHub refusant « changements demandés » avec le même compte) : (1) l'interface de l'écran du dessous se voit à travers le verre (logo du menu derrière « RÉGLAGES », garage à travers le Market, menu à travers les CGU, écran de fin autour de la fenêtre d'achat) ; (2) le tableau « POSITION n/N » (titre cyan) reste au premier plan sur les fins Course à 5 et duel ; (3) capture « Tests CPU » et `tests-cpu.log` absentes. Demandé aussi : des captures « avant » des fins de course prises sur `main` avec les bancs `course5` et `menu2`.
+- **Statut** : ↩️ Retour lead dev (PR #422) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
