@@ -2039,3 +2039,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:20:54 — R19 : étoiles sous le bouton Acheter (smart-brainstorming)
 - Icône validée par l'utilisateur ; « ★ 1 250 / 6 000 » déplacé sous le bouton Acheter, dans le coin. Rien transmis au PO.
+
+### 2026-11-15 00:22:31 — R19 : position de la voiture dans la liste (smart-brainstorming)
+- Demande de l'utilisateur : indicateur de position (17 segments + « 17 / 17 ») sous le plateau. Rien transmis au PO.
