@@ -2108,3 +2108,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:25:18 — R19 : caméléon seulement orange et bleu (smart-brainstorming)
 - Demande de l'utilisateur : uniquement orange et bleu. Rien transmis au PO.
+
+### 2026-11-15 01:27:52 — R19 : menu sur la Corniche de nuit, près des bateaux (smart-brainstorming)
+- Demande de l'utilisateur : arrière-plan de nuit sur la Corniche à côté des bateaux ; vraie capture du banc du matin (groupe nuit) en fond, SF-X posée sur la route. Rien transmis au PO.
