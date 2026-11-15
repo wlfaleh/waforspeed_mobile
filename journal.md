@@ -922,3 +922,10 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 10:53:37 — R19 : écrans complémentaires (smart-brainstorming)
 - Maquettes des 15 écrans qui manquaient, faites d'après les écrans actuels avec le nouveau modèle (verre, fonds floutés, Start/Stop, autocollants) : pause, création du profil, profil, conditions, salon du duel, réglages Conduite et Son, voiture prêtée, confirmation et manque d'étoiles, gain d'étoiles, messages en course, fins Course à 5, Poursuite et Duel. Images `references/maquettes-R19/19-…` à `33-…` et planche `19-33-ecrans-complementaires.jpg`, tableau R19 de `recommandations-smart-brain.md` complété. Proposition seulement : aucun code, aucun ticket.
+
+### 2026-11-15 11:13:19 — Épic E23 « Interface R19 » et 5 tickets créés (po-scrum-master)
+- Demande de l'utilisateur (transmise par smart-brainstorming) : « Ok crée les 5 tâches », découpage par thème, exactement 5 (17 puis 6 refusés).
+- Épic **E23** (`regles-de-gestion/E23-interface-r19.md`) ; tickets **WFS-548** fonds et panneaux, **WFS-549** boutons, **WFS-552** menu 3D (SF-X caméléon, parking souterrain, `@dev` = dev-artiste-3d, avis `@3d`) : ⏳ Prêt, P1, en parallèle ; **WFS-550** jauges et **WFS-551** icônes / HUD : ⏳ En attente (après 548 et 549).
+- 548 et 549 sur les mêmes écrans (exception voulue par l'utilisateur au garde-fou « un ticket par fichier de panneau du garage ») : le 2e fusionné se synchronise avec `main` et refait ses captures. 550 / 551 : fichiers répartis dans leurs règles (RG-07 / RG-08).
+- Taille des boutons inchangée, sauf Menu et Caméra du HUD (validé par l'utilisateur dans la R19). 548 à 551 = interface 2D (design-street-racing) ; 552 = monde 3D (formes géométriques interdites, 99 %).
+- Aucun ticket attribué (aucune session ouverte) : 3 nouvelles sessions `@dev` à ouvrir par l'utilisateur.
