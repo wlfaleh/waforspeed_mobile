@@ -741,11 +741,11 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
     const char* seule = std::getenv("WFS_SCENE");
     auto scene = [&](const char* nom) { return !seule || !*seule || std::string(seule) == nom; };
     // ---------- 1. SUV heurté qui se remet en route ----------
-    if (scene("suv") && demarrer(VueCamera::Poursuite)) {
+    if (scene("suv") && demarrer(VueCamera::Proche)) {
         rouler(60 * 3, DriveInput{}); joueur.speed = 0;   // arrêté (comme coincé par la police)
         degager();
         const int fJ = joueur.playerX < -0.33 ? 0 : joueur.playerX > 0.33 ? 2 : 1;
-        const int k = poser(14, fJ, 50, 16);   // rrsport (WEB_CARS[16])
+        const int k = poser(11, fJ, 40, 16);   // rrsport (WEB_CARS[16])
         libererPoses();
         if (k < 0) { WFS_ERR("trafic-541 : aucune voiture à poser"); ecarts++; }
         else {
@@ -762,13 +762,14 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         finir();
     }
     // ---------- 2. bouchon derrière une voiture arrêtée ----------
-    if (scene("bouchon") && demarrer(VueCamera::Poursuite)) {
+    if (scene("bouchon") && demarrer(VueCamera::Proche)) {
         rouler(60 * 2, DriveInput{}); joueur.speed = 0;
         degager();
-        const int a = poser(70, 1, 0, 6);   // x5 accidentée en travers de la file du milieu (accident posé : elle ne repart pas)
-        const int b1 = poser(42, 1, 40), b2 = poser(30, 1, 40), b3 = poser(18, 1, 40);
+        const int fJ = joueur.playerX < -0.33 ? 0 : joueur.playerX > 0.33 ? 2 : 1;
+        const int a = poser(34, fJ, 0, 6);   // x5 accidentée en travers de la file du joueur (accident posé : elle ne repart pas)
+        const int b1 = poser(22, fJ, 25), b2 = poser(13, fJ, 25), b3 = -1;
         libererPoses();
-        if (a < 0 || b3 < 0) { WFS_ERR("trafic-541 : aucune voiture à poser"); ecarts++; }
+        if (a < 0 || b2 < 0) { WFS_ERR("trafic-541 : aucune voiture à poser"); ecarts++; }
         else {
             TrafficCar& ca = TrafficSystem::active_->traffic_.cars[(size_t)a];
             ca.crashed = true; ca.crashT = -30; ca.crashYaw = 0.6; ca.crashSpin = ca.crashVx = 0; ca.speed = 0;
