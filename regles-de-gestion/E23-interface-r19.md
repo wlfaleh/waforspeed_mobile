@@ -24,3 +24,6 @@ Source : section « ## R19 » de `recommandations-smart-brain.md` (tableau des �
 - **Rien ne change dans les textes, la disposition et les options** des écrans, sauf ce que montre la maquette de chaque écran. Les textes restent en français et en anglais (E20 : `ui::tr`).
 - Un ticket par session, branche `feature/waforspeed-XX`, captures avant / après (`tools/qa/captures_pr.sh`, au moins 3), PR, relecture et fusion en squash par le lead dev, puis la session s'arrête. Gel iOS.
 - Tickets nés d'une demande de l'utilisateur sur ses écrans : après la fusion → **🟡 À valider (utilisateur)** sur l'APK de `main`.
+
+## Revue du lead dev : maquettes et code (règle de l’utilisateur, 2026-11-15 23:14 UTC)
+Pour **WFS-550** et **WFS-551**, le lead dev compare chaque maquette citée par les RG **au code et aux captures** (une ligne par maquette dans la revue). Le développeur cite dans sa PR, pour chaque maquette, le fichier et la fonction qui la dessinent. Sans cette comparaison, pas de fusion.
