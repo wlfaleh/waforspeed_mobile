@@ -7,6 +7,7 @@
 #include "textes_banc.h"      // banc « textes » (journal des textes de cet écran)
 #include "../garage.h"        // garageRegarder, garageOuvrirSur
 #include "../garage_achat.h"  // texteEtoiles (★ dessinée), texteDuree, nombreLangue
+#include "../boutons.h"   // WFS-550 : icône de voiture au trait (maquette 26)
 #include "../jauges.h"   // WFS-550 (RG-03) : anneau du temps restant
 #include "../langue.h"
 #include "../petit_ecran.h"
@@ -130,6 +131,8 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     if (cas == Cas::Attente) fr = jauges::fractionRestant(pret::resteActivation(s.cadeau, t), (long long)(config().cadeau.activationHeures * 3600));
     else if (cas == Cas::Actif) fr = jauges::fractionRestant(pret::restant(s.cadeau, t), (long long)(config().cadeau.pretHeures * 3600));
     jauges::anneau(r, x + pad + ra, y + h / 2, ra, 2.5f * kb, fr);
+    // maquette 26 : la petite voiture au trait au centre de l'anneau (même icône que la pilule « Garage »)
+    ui::boutons::iconeVoitureTrait(r, x + pad + ra, y + h / 2, ra * 1.15f, hex(TEXTE, 0.9f));
     const float xt = x + pad + zoneAnneau;
     { const textes::NomPropre np; ui::text(r, xt, y + 10 * kb, tp1, titre, hex(TAG), ui::GAUCHE, 0.14f, false); }   // nom de la voiture : inchangé en anglais
     garage::texteEtoiles(r, xt, y + 28 * kb, tp2, phrase, hex(cas == Cas::Expire ? MUTED : TEXTE), ui::GAUCHE);

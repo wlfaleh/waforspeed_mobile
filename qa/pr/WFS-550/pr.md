@@ -25,6 +25,20 @@
 
 `bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` : sortie complète dans [`qa/pr/WFS-550/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/tests-cpu.log) — **149 test(s) réussi(s) en 436 s, 0 échec** (dont `test_jauges` : un cas par palier du chargement, et `test_langue` : nouvelles clés FR / EN).
 
+## Maquettes (règle de l'utilisateur du 2026-11-15 23:14 UTC : maquette ↔ fichier:fonction)
+
+| Maquette | Fichier : fonction | État |
+|---|---|---|
+| **05** Cadeau du jour (anneau du temps restant) | `src/ui/ecrans/cadeau_jour.cpp` : `dessinerBouton` (pilule `verre::panneau`, `jauges::anneau`, `iconeCadeau` au centre) | conforme (3e revue : icône de cadeau ajoutée dans l'anneau) |
+| **08** Chargement (barre + 4 étapes) | `src/ui/ecrans/chargement.cpp` : `dessinerChargement` (`verre::barreMarque`, `jauges::barreEtape`, `jauges::avancementEtape`) ; annonce de la ville : système `AnnonceVille` (99) | conforme ; écart justifié : le segment en cours reste gris au moment de son annonce (un seul palier par étape, il se remplit d'un coup au palier suivant) |
+| **13** Garage, onglet Voiture (cadrans, barres fines) | `src/ui/garage_fiche.cpp` : `FicheGarage::specs` (`jauges::cadran`), `FicheGarage::stats` (`jauges::barreFine`, 10 graduations) ; `src/ui/garage_cadre.cpp` : `cadre::fondPanneau` (`verre::panneau`) | conforme |
+| **15** Voiture bloquée (17 segments) | `src/ui/garage_fiche.cpp` : `FicheGarage::position` (`jauges::segments`, « N / 17 ») | conforme ; écart justifié : les cadenas au-dessus des segments gris viennent de `garage_achat.cpp` (WFS-551, RG-07) |
+| **17** HUD : jauge de combo | `src/ui/hud.cpp` : bloc « score + combo » du `drawUi` du HUD (`jauges::barreFine` du temps restant du combo, texte « Combo ×N » en orange) | conforme (3e revue : texte passé du cyan à l'orange) |
+| **26** Voiture prêtée (pilule bordée de cyan + anneau) | `src/ui/ecrans/pret_bandeau.cpp` : `dessiner` (`verre::panneau` bord cyan / rouge, `jauges::anneau`, `ui::boutons::iconeVoitureTrait` au centre) ; cadeau : voir 05 | conforme (3e revue : icône de voiture ajoutée dans l'anneau) |
+| **29** Gain d'étoiles (vol, « +N », comptage) | `src/ui/ecrans/compteur_etoiles.cpp` : `soldeMontre` (comptage), `dessiner` (étoiles en vol, liseré orange, « +N ») | conforme |
+| **30** Messages en course (bandeaux inclinés) | `src/ui/toasts.cpp` : `Toasts::drawUi` (`dessin2d::biseau`, couleurs `couleur` / `couleurTexte`) | conforme ; écart justifié (accepté en 1re revue) : pas de message « police en approche » dans le jeu, le rouge sert à l'accident et au combo perdu |
+| **28** Achat (jauge 1 250 / 6 000) | `src/ui/garage_achat*` (WFS-551) | hors de cette PR (tranché en 1re revue : WFS-551, RG-07) |
+
 ## Captures pour le lead dev (26 après)
 
 Dossier : [`qa/pr/WFS-550`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550) — produit par `tools/qa/captures_pr.sh`.

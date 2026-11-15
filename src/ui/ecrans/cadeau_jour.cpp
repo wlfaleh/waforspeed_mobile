@@ -395,6 +395,23 @@ bool toucher(int id, float x, float y, bool down) {
 }
 
 // .cam-btn de « Crédits » (credits.cpp) : vitré, bordure 1 px, biais 8 px, 44 px de haut ; texte cyan 15 px ; posé au-dessus de « Crédits »
+// WFS-550 (maquettes 05 et 26) : petit cadeau en traits fins (boîte, couvercle, ruban, nœud), taille s, centré en (cx, cy)
+static void iconeCadeau(Renderer& r, float cx, float cy, float s, const vec4& c) {
+    const float ep = std::max(1.2f, s * 0.08f), hw = s * 0.40f, hb = s * 0.32f, hc = s * 0.16f, y0 = cy - s * 0.10f;
+    const vec2 boite[5] = {{cx - hw * 0.88f, y0 + hc}, {cx - hw * 0.88f, y0 + hc + hb}, {cx + hw * 0.88f, y0 + hc + hb},
+                           {cx + hw * 0.88f, y0 + hc}, {cx - hw * 0.88f, y0 + hc}};
+    dessin2d::trait(r, boite, 5, ep, c);
+    const vec2 couvercle[5] = {{cx - hw, y0}, {cx + hw, y0}, {cx + hw, y0 + hc}, {cx - hw, y0 + hc}, {cx - hw, y0}};
+    dessin2d::trait(r, couvercle, 5, ep, c);
+    const vec2 ruban[2] = {{cx, y0}, {cx, y0 + hc + hb}};
+    dessin2d::trait(r, ruban, 2, ep, c);
+    // nœud : deux boucles au-dessus du couvercle
+    const vec2 g[4] = {{cx, y0}, {cx - s * 0.20f, y0 - s * 0.16f}, {cx - s * 0.06f, y0 - s * 0.20f}, {cx, y0}};
+    const vec2 d[4] = {{cx, y0}, {cx + s * 0.20f, y0 - s * 0.16f}, {cx + s * 0.06f, y0 - s * 0.20f}, {cx, y0}};
+    dessin2d::trait(r, g, 4, ep, c);
+    dessin2d::trait(r, d, 4, ep, c);
+}
+
 void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse) {
     if (!ui::fontReady()) return;
     const textes::Journal journal;
@@ -427,6 +444,7 @@ void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse)
         verre::Style st; st.rayon = h / 2; st.lisere = std::max(1.f, kb); st.ombre = false;
         verre::panneau(r, xp, y, wp, h, st);
         jauges::anneau(r, xp + 8 * kb + ra, y + h / 2, ra, 2.5f * kb, s >= 0 ? jauges::fractionAttente(s, 86400) : 1.f);
+        iconeCadeau(r, xp + 8 * kb + ra, y + h / 2, ra * 1.0f, hex(TEXTE, 0.9f));   // maquette 26 : cadeau au centre de l'anneau
         ui::text(r, x - 12 * k - pp, y + (h - 14 * k) / 2, 14 * k, p, hex(MUTED), ui::DROITE, 0.02f, true);
     }
     manette::focus(g.bouton);

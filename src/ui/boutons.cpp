@@ -229,4 +229,7 @@ void verre(Renderer& r, float x, float y, float w, float h, const std::string& t
     ui::textBoite(r, x + w / 2, y + (h - px) / 2, w - h * 0.5f, px, px, texte, c, ui::CENTRE, 0.12f, false, true);
 }
 
+// WFS-550 (accroche, maquettes 05 et 26) : la même petite voiture au trait, pour l'anneau de la voiture prêtée du menu
+void iconeVoitureTrait(Renderer& r, float cx, float cy, float s, const vec4& c) { iconeVoiture(r, cx, cy, s, c); }
+
 } // namespace wfs::ui::boutons

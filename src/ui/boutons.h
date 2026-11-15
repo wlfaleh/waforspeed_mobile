@@ -93,5 +93,8 @@ void verreOrange(Renderer& r, float x, float y, float w, float h, const std::str
 void verre(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
            float px = 0, const vec4* couleurTexte = nullptr);
 
+// WFS-550 (accroche) : petite voiture au trait de la pilule « Garage » (maquette 01), largeur s, centrée en (cx, cy)
+void iconeVoitureTrait(Renderer& r, float cx, float cy, float s, const vec4& c);
+
 } // namespace ui::boutons
 } // namespace wfs
