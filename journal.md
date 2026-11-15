@@ -1029,3 +1029,8 @@ Commit relu eb05307b. Avis agent 3D VALIDÉ ; 30 captures ouvertes, rendu confor
 
 ### 2026-11-15 16:23:56 — WFS-552 fusionné par le lead dev (lead-dev)
 PR #421 relue sur ecba9dfa (2e revue) : les deux défauts du refus sont corrigés (Tests CPU joints, nom « Bleu ciel »). Captures ouvertes, diff relu, construction et 145 tests CPU refaits (339 s, code 0), avis agent 3D « VALIDÉ ». Approbation postée en commentaire (même compte GitHub), fusion en squash 4594f3f7. Statut 🟡 À valider (utilisateur). Remarques non bloquantes : double commentaire `menu_parking_cadrage.cpp:12`, contact avec le bloc « Showroom » en 1280 × 720 (WFS-549), réserves A à C de l'agent 3D pour le PO.
+
+### 2026-11-15 16:24:58 — Fin WFS-552 : session terminée (Claude, agent dev3d (01Us6uCwZ7))
+- PR #421 fusionnée en squash par le lead dev (4594f3f7) après l'avis « VALIDÉ » de l'agent 3D sur ecba9dfa ; ticket 🟡 À valider (utilisateur) sur l'APK de `main` ; ligne `qa/Check.md` ajoutée par le lead dev.
+- Réserves mineures transmises au PO pour une tâche séparée : (A) pièces jaunes d'origine de `sf90.wfm` (prises d'air du capot, crochet sous la plaque) qui ne prennent pas la skin ; (B) reflet du vernis trop concentré ; (C) béton du voile du fond trop uni (trous de banche, salissures) ; (D) en 1280 × 720 l'avant de la voiture touche le bloc « Showroom » (à revoir avec WFS-549) ; double commentaire `menu_parking_cadrage.cpp:12`.
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
