@@ -379,7 +379,8 @@ public:
         if (!g_ouvert) { dessinerBouton(r, g, W, k, H / 720.f); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
-        if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k);
+        // WFS-548 : sous les conditions d'utilisation, le panneau n'est pas dessiné (il se voyait à travers leur fenêtre de verre)
+        if (!cgu().ouvert()) { if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k); }
         for (int o = 0; o < N_ONGLETS; o++) manette::focus(g_onglets[o]);   // WFS-291 : la manette passe d'un onglet à l'autre
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) if (dansOnglet(l, g_onglet)) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
