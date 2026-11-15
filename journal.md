@@ -2111,3 +2111,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:27:52 — R19 : menu sur la Corniche de nuit, près des bateaux (smart-brainstorming)
 - Demande de l'utilisateur : arrière-plan de nuit sur la Corniche à côté des bateaux ; vraie capture du banc du matin (groupe nuit) en fond, SF-X posée sur la route. Rien transmis au PO.
+
+### 2026-11-15 01:29:08 — R19 : menu, seul l'arrière-plan passe à la Corniche (smart-brainstorming)
+- Retour de l'utilisateur : ne pas changer l'angle de la voiture ; angle, zoom et console remis, seul le fond (Corniche de nuit, bateaux) remplace le parking. Rien transmis au PO.
