@@ -2054,3 +2054,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:30:03 — R19 : bombes de peinture façon graffiti (smart-brainstorming)
 - Précision de l'utilisateur (« déodorant à graffiti » = la bombe) : bombes sans capuchon, embout blanc, coulures. Rien transmis au PO.
+
+### 2026-11-15 00:39:57 — R19 : onglet Peinture en taches de peinture (smart-brainstorming)
+- Retour de l'utilisateur : seau retiré, bombes refusées ; une tache de peinture par couleur. Rien transmis au PO.
