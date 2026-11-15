@@ -30,8 +30,9 @@ R19, maquette 01 : derrière le menu, la voiture du joueur en gros plan dans le 
   - 37 à 42 i/s en 1280 × 720 une fois le fond posé (rendu logiciel).
 
 ## Limites et risques
-- Le changement du caméléon vaut pour **toutes** les voitures caméléon (ex. Golf rouge : rouge de face, cyan sur les flancs ; avant : rouge → jaune-vert).
-- La skin est posée sous la finition (règle de WFS-492) : sur une SF-X caméléon, les bandes bleu ciel prennent le reflet métallisé du caméléon et paraissent plus sombres que sur la maquette. Les prises d'air jaunes du capot et la lame avant sont des pièces du modèle d'origine, pas de la peinture : elles ne prennent pas la skin.
+- Le changement du caméléon vaut pour **toutes** les voitures caméléon (ex. Golf rouge : rouge de face, cyan sur les flancs vus de biais ; avant : rouge → jaune-vert). Un flanc vu bien en face reste de la couleur choisie (angle 3) : c'est l'angle de vue qui fait le bleu.
+- Avis de l'agent 3D sur 5aa1b1b (À REPRENDRE) traité dans 7e6bef09 : la skin ne prend plus la rotation de teinte du caméléon (adhésif, métal 0,10) ; le caméléon garde sa luminosité d'une teinte à l'autre, métal 0,45 au lieu de 0,75 ; caméra 15 % plus près ; butées de roue profilées (trapèze arrondi, bandes jaunes dans le profil, tire-fond) ; halo des réglettes resserré. Reste mineur : plus de variation du béton du voile du fond (trous de banche), tâche séparée à proposer au PO si besoin.
+- Les prises d'air jaunes du capot et la lame avant sont des pièces du modèle d'origine, pas de la peinture : elles ne prennent pas la skin.
 - En 2400 × 1080, le rendu logiciel du PC fait 13 i/s même figé (passe finale de 2,6 Mpx sur le processeur, comme sur `main`) ; la mesure de cadence se lit en 1280 × 720.
 - WFS-548 et WFS-549 passent sur le même écran : la console du menu de la maquette viendra avec WFS-549.
 
