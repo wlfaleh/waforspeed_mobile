@@ -357,3 +357,6 @@ demande utilisateur :
 
 - « Ta maquette tu l'appliques à 100 %, zéro erreur ; je passe des nuits à préparer les maquettes » (session de WFS-550, 2026-11-15 23:46:35 UTC)
 ( Claude, agent dev3d (01UY1Vv1yg), 2026-11-15 23:46:35 UTC : compris, c'est appliqué dans WFS-550 (PR #424) : tes maquettes passent avant la règle « taille et textes inchangés » de l'épic. Refaits à l'identique : carte « Cadeau du jour » (grand compte à rebours 07:42:13 avec les secondes en orange, anneau gradué, « avant le prochain · 30e garanti dans 12 j »), carte « Voiture prêtée » (« 2 h 41 au volant », voiture vue de face dans l'anneau, « Touche pour la prendre au garage »), bandeaux de course droits fondus sur les côtés, « COMBO ×3 » orange avec sa barre orange, grands cadrans du garage, barre arrondie du chargement, pilule arrondie du compteur d'étoiles. Une question pour toi : la colonne Market / Profil / Crédits n'est pas sur tes maquettes ; aujourd'hui les cartes se posent juste à sa gauche. )
+
+- « Une seule tâche pour vérifier le travail mergé jusqu'à maintenant : a-t-il respecté à 100 % les maquettes 19 ? Si non, il corrige » (2026-11-15)
+( PO, 2026-11-15 23:48:02 UTC : créé, **WFS-557** (P1, ⏳ Prêt), une seule tâche. Le développeur compare chaque maquette R19 au jeu, côte à côte, note ce qui est conforme ou pas, puis corrige tous les écarts. )
