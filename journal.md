@@ -2057,3 +2057,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:39:57 — R19 : onglet Peinture en taches de peinture (smart-brainstorming)
 - Retour de l'utilisateur : seau retiré, bombes refusées ; une tache de peinture par couleur. Rien transmis au PO.
+
+### 2026-11-15 00:41:07 — R19 : 4 styles d'icônes pour les couleurs (smart-brainstorming)
+- Demande de l'utilisateur : une icône par couleur (goutte, pistolet, pot, bombe) ; planche `references/maquettes-R19/options-icones-couleurs.jpg`, choix à faire. Rien transmis au PO.
