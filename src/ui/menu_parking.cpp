@@ -210,6 +210,53 @@ void canalisation(Geo& rouge, Geo& acier, vec3 a, vec3 b, float r, float pas) {
     }
 }
 
+// ---------------------------------------------------------------- butée de roue
+// caoutchouc recyclé 550 × 150 × 100 mm : profil en trapèze aux arêtes arrondies (base 150 mm, dessus 70 mm) extrudé le long de x ;
+// deux bandes jaunes rétroréfléchissantes de 80 mm moulées dans le profil (même section, autre matière : aucune pièce posée
+// dessus) ; deux têtes de tire-fond Ø 28 mm à 75 mm des bouts ; embouts biseautés
+void butee(Geo& noir, Geo& jaune, Geo& acier, vec3 c) {
+    // profil (z, y), de la base avant à la base arrière par le dessus : flancs penchés, arêtes du dessus arrondies (r ≈ 12 mm)
+    const float B = 0.075f, T = 0.035f, H = 0.10f;
+    const std::vector<vec2> prof = {{-B, 0.f}, {-T - 0.012f, H - 0.012f}, {-T - 0.005f, H - 0.003f}, {-T + 0.004f, H},
+                                    {T - 0.004f, H}, {T + 0.005f, H - 0.003f}, {T + 0.012f, H - 0.012f}, {B, 0.f}};
+    const int m = (int)prof.size();
+    auto troncon = [&](Geo& g, float x0, float x1, float biseau0, float biseau1) {
+        // biseau : les bouts rentrent de 30 mm en haut (embout chanfreiné)
+        auto X = [&](float x, float y, float bz) { return x + bz * (y / H); };
+        for (int j = 0; j + 1 < m; j++) {
+            const vec2 p0 = prof[(size_t)j], p1 = prof[(size_t)j + 1];
+            vec3 n = normalize(vec3{0, p1.x - p0.x, -(p1.y - p0.y)});   // perpendiculaire au segment
+            if (dot(n, vec3{0, (p0.y + p1.y) * 0.5f - 0.03f, (p0.x + p1.x) * 0.5f}) < 0) n = n * -1.f;   // vers l'extérieur du profil
+            const uint32_t k0 = (uint32_t)g.v.size();
+            g.v.push_back({c.x + X(x0, p0.y, biseau0), c.y + p0.y, c.z + p0.x, n.x, n.y, n.z, 0, 0});
+            g.v.push_back({c.x + X(x1, p0.y, biseau1), c.y + p0.y, c.z + p0.x, n.x, n.y, n.z, 0, 0});
+            g.v.push_back({c.x + X(x1, p1.y, biseau1), c.y + p1.y, c.z + p1.x, n.x, n.y, n.z, 0, 0});
+            g.v.push_back({c.x + X(x0, p1.y, biseau0), c.y + p1.y, c.z + p1.x, n.x, n.y, n.z, 0, 0});
+            const vec3 e1{1, 0, 0}, e2{0, p1.y - p0.y, p1.x - p0.x};
+            if (dot(cross(e1, e2), n) >= 0) g.i.insert(g.i.end(), {k0, k0 + 1, k0 + 2, k0, k0 + 2, k0 + 3});
+            else g.i.insert(g.i.end(), {k0, k0 + 2, k0 + 1, k0, k0 + 3, k0 + 2});
+        }
+        for (int e = 0; e < 2; e++) {   // faces des bouts (seulement aux extrémités de la butée)
+            const float bz = e ? biseau1 : biseau0;
+            if (bz == 0.f) continue;
+            const float x = e ? x1 : x0;
+            const uint32_t k0 = (uint32_t)g.v.size();
+            const vec3 n = normalize(vec3{e ? 1.f : -1.f, std::fabs(bz) / H, 0});
+            for (const vec2& p : prof) g.v.push_back({c.x + X(x, p.y, bz), c.y + p.y, c.z + p.x, n.x, n.y, n.z, 0, 0});
+            for (uint32_t k = 1; k + 1 < (uint32_t)m; k++) {
+                if (e) g.i.insert(g.i.end(), {k0, k0 + k, k0 + k + 1}); else g.i.insert(g.i.end(), {k0, k0 + k + 1, k0 + k});
+            }
+        }
+    };
+    const float L = 0.275f, b0 = 0.06f, b1 = 0.14f;   // bandes jaunes de 80 mm, de 60 à 140 mm du centre, de chaque côté
+    troncon(noir, -L, -b1, 0.03f, 0.f); troncon(jaune, -b1, -b0, 0.f, 0.f); troncon(noir, -b0, b0, 0.f, 0.f);
+    troncon(jaune, b0, b1, 0.f, 0.f); troncon(noir, b1, L, 0.f, -0.03f);
+    for (float x : {-0.20f, 0.20f}) {   // têtes de tire-fond (rondelle + tête bombée), dans le dessus noir
+        const Repere R{{c.x + x, c.y + H - 0.004f, c.z}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        mobilier::tour(Sortie(acier), R, {0, 0, 0}, {{0.f, 0.f}, {0.014f, 0.f}, {0.014f, 0.0025f}, {0.011f, 0.003f}, {0.008f, 0.0065f}, {0.f, 0.0075f}}, 12, UV0);
+    }
+}
+
 Mesh envoyer(Renderer& r, const Geo& g, bool& ok) {
     if (g.i.empty()) return {};
     Mesh m = r.essayerMesh(g.v, g.i);
@@ -267,10 +314,7 @@ bool Parking::init(Renderer& r) {
             const float xp = 8.f * (float)grp + dp;
             if (std::fabs(xp) > X_MAX - 1.f) continue;
             for (float rangee : {1.70f, Z_ALLEE1 - PLACE_P + 0.80f})
-                for (float s : {-0.55f, 0.55f}) {
-                    pave(g[CAOUTCHOUC], {xp + s, 0.05f, rangee}, {0.275f, 0.05f, 0.075f}, 0.03f);
-                    for (float b : {-0.15f, 0.15f}) pave(g[JAUNE], {xp + s + b, 0.1005f, rangee}, {0.04f, 0.0015f, 0.045f}, 0.001f);
-                }
+                for (float s : {-0.55f, 0.55f}) butee(g[CAOUTCHOUC], g[JAUNE], g[ACIER], {xp + s, 0.f, rangee});
         }
     // ---- réglettes LED en plafond : allée (tous les 4 m) et milieu de chaque groupe de places
     for (float x = -18.f; x <= 18.f; x += 4.f) reglette(g[ALU], g[OPALE], g[ACIER], {x, HAUTEUR_DALLE, (Z_ALLEE0 + Z_ALLEE1) / 2});
@@ -355,10 +399,10 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
     };
     const float zA = (Z_ALLEE0 + Z_ALLEE1) / 2, y = HAUTEUR_DALLE - 0.08f;
     for (float x : {-6.f, -2.f, 2.f, 6.f, 10.f, -10.f}) spot({x, y, zA}, std::fabs(x) < 3 ? 2.4f : 1.4f);   // les deux réglettes devant la voiture : sa face avant
-    for (float x : {0.f, 8.f, -8.f}) spot({x, y, 0.20f}, x == 0 ? 3.2f : 1.3f);   // réglette au-dessus de la voiture
+    for (float x : {0.f, 8.f, -8.f}) spot({x, y, 0.20f}, x == 0 ? 3.2f : 1.0f);   // réglette au-dessus de la voiture
     for (float x : {0.f, 8.f}) spot({x, y, Z_ALLEE1 - PLACE_P / 2}, 0.8f);
     fp.spotCount = n;
-    fp.bloom = 0.35f;
+    fp.bloom = 0.22f;   // avis de l'agent 3D : halo des réglettes resserré
     s.route = false; s.joueur = true; s.commandes = false; s.cible = cible;
 }
 
