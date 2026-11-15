@@ -2021,3 +2021,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:05:50 — R19 : garage, exemple de voiture bloquée (smart-brainstorming)
 - Demande de l'utilisateur : voiture avec cadenas dans l'onglet Voiture (`15-garage-voiture-bloquee.jpg`). Rien transmis au PO.
+
+### 2026-11-15 00:08:36 — R19 : 3 façons de montrer une voiture bloquée (smart-brainstorming)
+- Cadenas 3D refusé par l'utilisateur ; planche `references/maquettes-R19/options-voiture-bloquee.jpg` (sobre, vitrine sombre, rideau de garage), choix à faire. Rien transmis au PO.
