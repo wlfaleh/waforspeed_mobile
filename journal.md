@@ -1164,3 +1164,9 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Décision : **option 2**. WFS-503 livre seulement les données en E3 (clé `cadeau-nouveaux`, `estNouveau` / `vu`, tests CPU) ; aucun fichier `src/ui/garage_*` ni `assets/textes/**`.
   Raison : `garage_couleur.*`, `garage_finition.*`, `garage_skin.*` sont tenus par WFS-551 (🔧) et la règle du 2026-11-13 est « un ticket à la fois par fichier de panneau ».
 - **WFS-556** créé (P1, E19, zone E5, `@dev`, ⏳ En attente de WFS-503 et 551) : badge « NOUVEAU » / « NEW » et appel de `vu()` au choix. Règles : `regles-de-gestion/WFS-556.md` ; RG-02 et critères de `regles-de-gestion/WFS-503.md` mis à jour.
+
+### 2026-11-15 23:18:17 — WFS-550 : 3e revue de la PR #424, refusée (lead-dev)
+- Commit relu bdabd2b9. Point de la 2e revue corrigé : la description de la PR contient la section « Tests CPU » et les 26 captures.
+- Nouvelle règle de l'utilisateur (23:13 UTC, maquettes comparées au code), appliquée pour la première fois : maquettes 13, 15, 08, 29 et 30 conformes ; écarts sur **05 et 26** (anneaux vides, sans icône de voiture ni de cadeau) et sur **17** (« Combo ×N » en cyan au lieu d'orange) ; la description de la PR ne cite pas fichier:fonction pour chaque maquette.
+- Revue « changements demandés » postée en COMMENT (même compte GitHub). TACHES.md : ↩️ Retour lead dev (PR #424) ; suivi-pr.md : ↩️.
+- **PO** : 3e refus sur cette PR (point 0 bis, nouvelle règle). À savoir pour WFS-551 : les cadenas au-dessus des segments gris (garage_achat.cpp) ne sont pas sur la maquette 15 ; RG-04 de 551 ne garde que le cadenas-jauge à côté du nom.
