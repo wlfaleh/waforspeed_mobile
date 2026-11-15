@@ -1,90 +1,94 @@
-# WFS-548 — captures avant / après (tools/qa/captures_pr.sh)
+# WFS-548 — captures avant / après
 
-Branche `feature/waforspeed-548` comparée à `origin/main` ; bancs : pause:1280x720 profil:1280x720 creation:1280x720 cgu:1280x720 market:1280x720 chargement:1280x720 reglages-onglets:1280x720 score-fin:1280x720 ; filtre : `*`.
+Agent : Claude, agent dev3d (01Us6uCucP). Banc d'essai PC (lavapipe), 1280 × 720.
+
+## Avant (main) / après (branche)
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
-| `cgu-accepter-appuye` | ![avant](avant-cgu-accepter-appuye.jpg) | ![après](apres-cgu-accepter-appuye.jpg) |
-| `cgu-coche` | ![avant](avant-cgu-coche.jpg) | ![après](apres-cgu-coche.jpg) |
-| `cgu-defile` | ![avant](avant-cgu-defile.jpg) | ![après](apres-cgu-defile.jpg) |
-| `cgu-premier` | ![avant](avant-cgu-premier.jpg) | ![après](apres-cgu-premier.jpg) |
-| `cgu-refus` | ![avant](avant-cgu-refus.jpg) | ![après](apres-cgu-refus.jpg) |
-| `cgu-reprise` | ![avant](avant-cgu-reprise.jpg) | ![après](apres-cgu-reprise.jpg) |
-| `cgu-retour-jeu` | ![avant](avant-cgu-retour-jeu.jpg) | ![après](apres-cgu-retour-jeu.jpg) |
-| `reglages-cgu-bouton` | ![avant](avant-reglages-cgu-bouton.jpg) | ![après](apres-reglages-cgu-bouton.jpg) |
-| `reglages-cgu-lecture` | ![avant](avant-reglages-cgu-lecture.jpg) | ![après](apres-reglages-cgu-lecture.jpg) |
-| `chargement-0` | ![avant](avant-chargement-0.jpg) | ![après](apres-chargement-0.jpg) |
-| `chargement-1` | ![avant](avant-chargement-1.jpg) | ![après](apres-chargement-1.jpg) |
-| `chargement-2` | ![avant](avant-chargement-2.jpg) | ![après](apres-chargement-2.jpg) |
-| `chargement-erreur` | ![avant](avant-chargement-erreur.jpg) | ![après](apres-chargement-erreur.jpg) |
-| `chargement-fondu` | ![avant](avant-chargement-fondu.jpg) | ![après](apres-chargement-fondu.jpg) |
-| `creation-fr-court` | ![avant](avant-creation-fr-court.jpg) | ![après](apres-creation-fr-court.jpg) |
-| `creation-fr-installe` | ![avant](avant-creation-fr-installe.jpg) | ![après](apres-creation-fr-installe.jpg) |
-| `creation-fr-interdit` | ![avant](avant-creation-fr-interdit.jpg) | ![après](apres-creation-fr-interdit.jpg) |
-| `creation-fr-menu` | ![avant](avant-creation-fr-menu.jpg) | ![après](apres-creation-fr-menu.jpg) |
-| `creation-fr-rapide` | ![avant](avant-creation-fr-rapide.jpg) | ![après](apres-creation-fr-rapide.jpg) |
-| `creation-fr-rempli` | ![avant](avant-creation-fr-rempli.jpg) | ![après](apres-creation-fr-rempli.jpg) |
-| `creation-fr-repetition` | ![avant](avant-creation-fr-repetition.jpg) | ![après](apres-creation-fr-repetition.jpg) |
-| `creation-fr-vide` | ![avant](avant-creation-fr-vide.jpg) | ![après](apres-creation-fr-vide.jpg) |
-| `market-en-achat` | ![avant](avant-market-en-achat.jpg) | ![après](apres-market-en-achat.jpg) |
-| `market-en-attente` | ![avant](avant-market-en-attente.jpg) | ![après](apres-market-en-attente.jpg) |
-| `market-en-garage-market` | ![avant](avant-market-en-garage-market.jpg) | ![après](apres-market-en-garage-market.jpg) |
-| `market-en-garage` | ![avant](avant-market-en-garage.jpg) | ![après](apres-market-en-garage.jpg) |
-| `market-en-hors-ligne` | ![avant](avant-market-en-hors-ligne.jpg) | ![après](apres-market-en-hors-ligne.jpg) |
-| `market-en-market` | ![avant](avant-market-en-market.jpg) | ![après](apres-market-en-market.jpg) |
-| `market-en-menu` | ![avant](avant-market-en-menu.jpg) | ![après](apres-market-en-menu.jpg) |
-| `market-en-restauration` | ![avant](avant-market-en-restauration.jpg) | ![après](apres-market-en-restauration.jpg) |
-| `market-en-sans-pub` | ![avant](avant-market-en-sans-pub.jpg) | ![après](apres-market-en-sans-pub.jpg) |
-| `market-fr-achat` | ![avant](avant-market-fr-achat.jpg) | ![après](apres-market-fr-achat.jpg) |
-| `market-fr-attente` | ![avant](avant-market-fr-attente.jpg) | ![après](apres-market-fr-attente.jpg) |
-| `market-fr-garage-market` | ![avant](avant-market-fr-garage-market.jpg) | ![après](apres-market-fr-garage-market.jpg) |
-| `market-fr-garage` | ![avant](avant-market-fr-garage.jpg) | ![après](apres-market-fr-garage.jpg) |
-| `market-fr-hors-ligne` | ![avant](avant-market-fr-hors-ligne.jpg) | ![après](apres-market-fr-hors-ligne.jpg) |
-| `market-fr-market` | ![avant](avant-market-fr-market.jpg) | ![après](apres-market-fr-market.jpg) |
-| `market-fr-menu` | ![avant](avant-market-fr-menu.jpg) | ![après](apres-market-fr-menu.jpg) |
-| `market-fr-restauration` | ![avant](avant-market-fr-restauration.jpg) | ![après](apres-market-fr-restauration.jpg) |
-| `market-fr-sans-pub` | ![avant](avant-market-fr-sans-pub.jpg) | ![après](apres-market-fr-sans-pub.jpg) |
-| `pause-0` | ![avant](avant-pause-0.jpg) | ![après](apres-pause-0.jpg) |
-| `pause-bouton` | ![avant](avant-pause-bouton.jpg) | ![après](apres-pause-bouton.jpg) |
-| `pause-quitter` | ![avant](avant-pause-quitter.jpg) | ![après](apres-pause-quitter.jpg) |
-| `pause-recommencer` | ![avant](avant-pause-recommencer.jpg) | ![après](apres-pause-recommencer.jpg) |
-| `pause-reprise` | ![avant](avant-pause-reprise.jpg) | ![après](apres-pause-reprise.jpg) |
-| `profil-en-16w-modification` | ![avant](avant-profil-en-16w-modification.jpg) | ![après](apres-profil-en-16w-modification.jpg) |
-| `profil-en-16w` | ![avant](avant-profil-en-16w.jpg) | ![après](apres-profil-en-16w.jpg) |
-| `profil-en-apres-course` | ![avant](avant-profil-en-apres-course.jpg) | ![après](apres-profil-en-apres-course.jpg) |
-| `profil-en-apres-modification` | ![avant](avant-profil-en-apres-modification.jpg) | ![après](apres-profil-en-apres-modification.jpg) |
-| `profil-en-menu` | ![avant](avant-profil-en-menu.jpg) | ![après](apres-profil-en-menu.jpg) |
-| `profil-en-modification` | ![avant](avant-profil-en-modification.jpg) | ![après](apres-profil-en-modification.jpg) |
-| `profil-en-neuf` | ![avant](avant-profil-en-neuf.jpg) | ![après](apres-profil-en-neuf.jpg) |
-| `profil-en-plein-defile` | ![avant](avant-profil-en-plein-defile.jpg) | ![après](apres-profil-en-plein-defile.jpg) |
-| `profil-en-plein` | ![avant](avant-profil-en-plein.jpg) | ![après](apres-profil-en-plein.jpg) |
-| `profil-fr-16w-modification` | ![avant](avant-profil-fr-16w-modification.jpg) | ![après](apres-profil-fr-16w-modification.jpg) |
-| `profil-fr-16w` | ![avant](avant-profil-fr-16w.jpg) | ![après](apres-profil-fr-16w.jpg) |
-| `profil-fr-apres-course` | ![avant](avant-profil-fr-apres-course.jpg) | ![après](apres-profil-fr-apres-course.jpg) |
-| `profil-fr-apres-modification` | ![avant](avant-profil-fr-apres-modification.jpg) | ![après](apres-profil-fr-apres-modification.jpg) |
-| `profil-fr-menu` | ![avant](avant-profil-fr-menu.jpg) | ![après](apres-profil-fr-menu.jpg) |
-| `profil-fr-modification` | ![avant](avant-profil-fr-modification.jpg) | ![après](apres-profil-fr-modification.jpg) |
-| `profil-fr-neuf` | ![avant](avant-profil-fr-neuf.jpg) | ![après](apres-profil-fr-neuf.jpg) |
-| `profil-fr-plein-defile` | ![avant](avant-profil-fr-plein-defile.jpg) | ![après](apres-profil-fr-plein-defile.jpg) |
-| `profil-fr-plein` | ![avant](avant-profil-fr-plein.jpg) | ![après](apres-profil-fr-plein.jpg) |
-| `reglages-onglet-affichage-menu` | ![avant](avant-reglages-onglet-affichage-menu.jpg) | ![après](apres-reglages-onglet-affichage-menu.jpg) |
-| `reglages-onglet-conduite-pause` | ![avant](avant-reglages-onglet-conduite-pause.jpg) | ![après](apres-reglages-onglet-conduite-pause.jpg) |
-| `reglages-onglet-son-gaucher` | ![avant](avant-reglages-onglet-son-gaucher.jpg) | ![après](apres-reglages-onglet-son-gaucher.jpg) |
-| `reglages-onglet-son-pause` | ![avant](avant-reglages-onglet-son-pause.jpg) | ![après](apres-reglages-onglet-son-pause.jpg) |
-| `score-fin-en-course5-1280x720` | ![avant](avant-score-fin-en-course5-1280x720.jpg) | ![après](apres-score-fin-en-course5-1280x720.jpg) |
-| `score-fin-en-duel-1280x720` | ![avant](avant-score-fin-en-duel-1280x720.jpg) | ![après](apres-score-fin-en-duel-1280x720.jpg) |
-| `score-fin-en-poursuite-1280x720` | ![avant](avant-score-fin-en-poursuite-1280x720.jpg) | ![après](apres-score-fin-en-poursuite-1280x720.jpg) |
-| `score-fin-en-solo-1280x720` | ![avant](avant-score-fin-en-solo-1280x720.jpg) | ![après](apres-score-fin-en-solo-1280x720.jpg) |
-| `score-fin-fr-course5-1280x720` | ![avant](avant-score-fin-fr-course5-1280x720.jpg) | ![après](apres-score-fin-fr-course5-1280x720.jpg) |
-| `score-fin-fr-duel-1280x720` | ![avant](avant-score-fin-fr-duel-1280x720.jpg) | ![après](apres-score-fin-fr-duel-1280x720.jpg) |
-| `score-fin-fr-poursuite-1280x720` | ![avant](avant-score-fin-fr-poursuite-1280x720.jpg) | ![après](apres-score-fin-fr-poursuite-1280x720.jpg) |
-| `score-fin-fr-solo-1280x720` | ![avant](avant-score-fin-fr-solo-1280x720.jpg) | ![après](apres-score-fin-fr-solo-1280x720.jpg) |
-| `score-menu-creation-fr-1280x720` | ![avant](avant-score-menu-creation-fr-1280x720.jpg) | ![après](apres-score-menu-creation-fr-1280x720.jpg) |
-| `score-menu-en-0-1280x720` | ![avant](avant-score-menu-en-0-1280x720.jpg) | ![après](apres-score-menu-en-0-1280x720.jpg) |
-| `score-menu-en-12450-1280x720` | ![avant](avant-score-menu-en-12450-1280x720.jpg) | ![après](apres-score-menu-en-12450-1280x720.jpg) |
-| `score-menu-en-250-1280x720` | ![avant](avant-score-menu-en-250-1280x720.jpg) | ![après](apres-score-menu-en-250-1280x720.jpg) |
-| `score-menu-fr-0-1280x720` | ![avant](avant-score-menu-fr-0-1280x720.jpg) | ![après](apres-score-menu-fr-0-1280x720.jpg) |
-| `score-menu-fr-12450-1280x720` | ![avant](avant-score-menu-fr-12450-1280x720.jpg) | ![après](apres-score-menu-fr-12450-1280x720.jpg) |
-| `score-menu-fr-250-1280x720` | ![avant](avant-score-menu-fr-250-1280x720.jpg) | ![après](apres-score-menu-fr-250-1280x720.jpg) |
-| `score-parcours-en-menu-1280x720` | ![avant](avant-score-parcours-en-menu-1280x720.jpg) | ![après](apres-score-parcours-en-menu-1280x720.jpg) |
-| `score-parcours-fr-menu-1280x720` | ![avant](avant-score-parcours-fr-menu-1280x720.jpg) | ![après](apres-score-parcours-fr-menu-1280x720.jpg) |
+| `cgu-accepter-appuye` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-accepter-appuye.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-accepter-appuye.jpg?raw=true) |
+| `cgu-coche` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-coche.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-coche.jpg?raw=true) |
+| `cgu-defile` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-defile.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-defile.jpg?raw=true) |
+| `cgu-premier` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-premier.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-premier.jpg?raw=true) |
+| `cgu-refus` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-refus.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-refus.jpg?raw=true) |
+| `cgu-reprise` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-reprise.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-reprise.jpg?raw=true) |
+| `cgu-retour-jeu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-cgu-retour-jeu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-cgu-retour-jeu.jpg?raw=true) |
+| `chargement-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-chargement-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-chargement-0.jpg?raw=true) |
+| `chargement-1` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-chargement-1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-chargement-1.jpg?raw=true) |
+| `chargement-2` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-chargement-2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-chargement-2.jpg?raw=true) |
+| `chargement-erreur` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-chargement-erreur.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-chargement-erreur.jpg?raw=true) |
+| `chargement-fondu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-chargement-fondu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-chargement-fondu.jpg?raw=true) |
+| `creation-fr-court` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-court.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-court.jpg?raw=true) |
+| `creation-fr-installe` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-installe.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-installe.jpg?raw=true) |
+| `creation-fr-interdit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-interdit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-interdit.jpg?raw=true) |
+| `creation-fr-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-menu.jpg?raw=true) |
+| `creation-fr-rapide` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-rapide.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-rapide.jpg?raw=true) |
+| `creation-fr-rempli` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-rempli.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-rempli.jpg?raw=true) |
+| `creation-fr-repetition` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-repetition.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-repetition.jpg?raw=true) |
+| `creation-fr-vide` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-creation-fr-vide.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-creation-fr-vide.jpg?raw=true) |
+| `market-en-achat` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-achat.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-achat.jpg?raw=true) |
+| `market-en-attente` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-attente.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-attente.jpg?raw=true) |
+| `market-en-garage-market` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-garage-market.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-garage-market.jpg?raw=true) |
+| `market-en-garage` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-garage.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-garage.jpg?raw=true) |
+| `market-en-hors-ligne` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-hors-ligne.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-hors-ligne.jpg?raw=true) |
+| `market-en-market` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-market.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-market.jpg?raw=true) |
+| `market-en-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-menu.jpg?raw=true) |
+| `market-en-restauration` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-restauration.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-restauration.jpg?raw=true) |
+| `market-en-sans-pub` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-en-sans-pub.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-en-sans-pub.jpg?raw=true) |
+| `market-fr-achat` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-achat.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-achat.jpg?raw=true) |
+| `market-fr-attente` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-attente.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-attente.jpg?raw=true) |
+| `market-fr-garage-market` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-garage-market.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-garage-market.jpg?raw=true) |
+| `market-fr-garage` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-garage.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-garage.jpg?raw=true) |
+| `market-fr-hors-ligne` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-hors-ligne.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-hors-ligne.jpg?raw=true) |
+| `market-fr-market` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-market.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-market.jpg?raw=true) |
+| `market-fr-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-menu.jpg?raw=true) |
+| `market-fr-restauration` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-restauration.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-restauration.jpg?raw=true) |
+| `market-fr-sans-pub` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-market-fr-sans-pub.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-market-fr-sans-pub.jpg?raw=true) |
+| `pause-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-pause-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-pause-0.jpg?raw=true) |
+| `pause-bouton` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-pause-bouton.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-pause-bouton.jpg?raw=true) |
+| `pause-quitter` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-pause-quitter.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-pause-quitter.jpg?raw=true) |
+| `pause-recommencer` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-pause-recommencer.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-pause-recommencer.jpg?raw=true) |
+| `pause-reprise` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-pause-reprise.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-pause-reprise.jpg?raw=true) |
+| `profil-en-16w-modification` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-16w-modification.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-16w-modification.jpg?raw=true) |
+| `profil-en-16w` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-16w.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-16w.jpg?raw=true) |
+| `profil-en-apres-course` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-apres-course.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-apres-course.jpg?raw=true) |
+| `profil-en-apres-modification` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-apres-modification.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-apres-modification.jpg?raw=true) |
+| `profil-en-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-menu.jpg?raw=true) |
+| `profil-en-modification` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-modification.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-modification.jpg?raw=true) |
+| `profil-en-neuf` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-neuf.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-neuf.jpg?raw=true) |
+| `profil-en-plein-defile` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-plein-defile.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-plein-defile.jpg?raw=true) |
+| `profil-en-plein` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-en-plein.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-en-plein.jpg?raw=true) |
+| `profil-fr-16w-modification` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-16w-modification.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-16w-modification.jpg?raw=true) |
+| `profil-fr-16w` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-16w.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-16w.jpg?raw=true) |
+| `profil-fr-apres-course` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-apres-course.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-apres-course.jpg?raw=true) |
+| `profil-fr-apres-modification` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-apres-modification.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-apres-modification.jpg?raw=true) |
+| `profil-fr-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-menu.jpg?raw=true) |
+| `profil-fr-modification` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-modification.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-modification.jpg?raw=true) |
+| `profil-fr-neuf` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-neuf.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-neuf.jpg?raw=true) |
+| `profil-fr-plein-defile` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-plein-defile.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-plein-defile.jpg?raw=true) |
+| `profil-fr-plein` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-profil-fr-plein.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-profil-fr-plein.jpg?raw=true) |
+| `reglages-cgu-bouton` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-reglages-cgu-bouton.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-reglages-cgu-bouton.jpg?raw=true) |
+| `reglages-cgu-lecture` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-reglages-cgu-lecture.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-reglages-cgu-lecture.jpg?raw=true) |
+| `reglages-onglet-affichage-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-reglages-onglet-affichage-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-reglages-onglet-affichage-menu.jpg?raw=true) |
+| `reglages-onglet-conduite-pause` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-reglages-onglet-conduite-pause.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-reglages-onglet-conduite-pause.jpg?raw=true) |
+| `reglages-onglet-son-gaucher` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-reglages-onglet-son-gaucher.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-reglages-onglet-son-gaucher.jpg?raw=true) |
+| `reglages-onglet-son-pause` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-reglages-onglet-son-pause.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-reglages-onglet-son-pause.jpg?raw=true) |
+| `score-fin-en-solo-1280x720` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-score-fin-en-solo-1280x720.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-score-fin-en-solo-1280x720.jpg?raw=true) |
+| `score-fin-fr-solo-1280x720` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-score-fin-fr-solo-1280x720.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-score-fin-fr-solo-1280x720.jpg?raw=true) |
+| `score-parcours-en-menu-1280x720` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-score-parcours-en-menu-1280x720.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-score-parcours-en-menu-1280x720.jpg?raw=true) |
+| `score-parcours-fr-menu-1280x720` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/avant-score-parcours-fr-menu-1280x720.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-score-parcours-fr-menu-1280x720.jpg?raw=true) |
+
+## Après seulement
+
+| Capture | Après (branche) |
+|---|---|
+| `achat-confirmation` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-achat-confirmation.jpg?raw=true) |
+| `achat-fin-essai` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-achat-fin-essai.jpg?raw=true) |
+| `achat-il-manque` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-achat-il-manque.jpg?raw=true) |
+| `fin-course5` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-fin-course5.jpg?raw=true) |
+| `fin-duel` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-fin-duel.jpg?raw=true) |
+| `fin-poursuite-arrete` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-fin-poursuite-arrete.jpg?raw=true) |
+| `nuit-pause-0` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-nuit-pause-0.jpg?raw=true) |
+| `nuit-pause-reprise` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-nuit-pause-reprise.jpg?raw=true) |
+| `salon-hote` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-salon-hote.jpg?raw=true) |
+| `salon-pret` | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/apres-salon-pret.jpg?raw=true) |
