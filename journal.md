@@ -1125,3 +1125,8 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - **Règles 3 et 4** écrites en bandeau ⏱️ de `TACHES.md` (dès maintenant, PR en cours comprises) : captures ciblées (écrans du ticket, une taille par défaut, 10 à 20 paires, minimum de 3 gardé) ; après un refus, seulement les captures des points corrigés.
 - **CLAUDE.md et skills (`.claude/skills/lead-dev`, `agent-developer`) non modifiés par le PO** : un message d'agent ne suffit pas pour changer `CLAUDE.md` ou la configuration ; à faire par la session qui a reçu l'accord de l'utilisateur, ou après sa confirmation directe au PO.
 - **WFS-555** `[TECHNIQUE]` P1 créé (`regles-de-gestion/WFS-555.md` : cache des captures « avant » par SHA de main, compilation de main persistante, rendu identique, temps mesurés et captures identiques au pixel) et **confié au lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV)** en renfort (règle du 2026-11-08 / 2026-11-13) ; zone `tools/qa/captures_pr.sh` seulement, gel de la CI respecté ; PR relue et fusionnée par une autre instance du lead dev.
+
+### 2026-11-15 22:59:31 — Règles des captures ciblées écrites dans CLAUDE.md et les skills (lead-dev)
+- Sur accord direct de l'utilisateur dans la session lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) : « Ok ca me vas ta proposition … on l'applique toutes de suite ».
+- Règles 3 et 4 (déjà au bandeau de `TACHES.md` par le PO, 155f29a0) recopiées dans `CLAUDE.md`, `.claude/skills/lead-dev/SKILL.md` (point 2 de la revue) et `.claude/skills/agent-developer/references/checklist-livraison.md` (case `captures_pr.sh`).
+- Points 1 et 2 (cache) : WFS-555, en cours par le lead dev.

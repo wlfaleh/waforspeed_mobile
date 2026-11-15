@@ -28,7 +28,7 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 - [ ] Serveur touché : `serveur/test` vert.
 - [ ] Captures du banc d'essai du ticket produites et **regardées** ; aucune autre capture dégradée.
 - [ ] Description de la PR : **« Agent : <mon nom dans track-agent.md> »** en tête, puis demande de l'utilisateur, ce qui change, vérification, limites (aucun « À REMPLIR »).
-- [ ] **`AGENT='<mon nom>' bash tools/qa/captures_pr.sh WFS-XX <banc>[:LxH] ...`** lancé : au moins 3 captures avant / après (jour et nuit si le sujet se voit) dans `qa/pr/WFS-XX/`, `pr.md` collé dans la PR.
+- [ ] **`AGENT='<mon nom>' bash tools/qa/captures_pr.sh WFS-XX <banc>[:LxH] ...`** lancé : au moins 3 captures avant / après (jour et nuit si le sujet se voit) dans `qa/pr/WFS-XX/`, `pr.md` collé dans la PR. **Captures ciblées (règle de l'utilisateur, 2026-11-15)** : seulement les bancs des écrans du ticket, une seule taille d'écran, 10 à 20 paires ; après un refus du lead dev, ne refaire que les captures des points corrigés (et des écrans changés par une synchronisation avec `main`).
 - [ ] Commentaire ou refus du lead dev : **réponse sous son commentaire dans la PR** (bien reçu, qui corrige, quoi, quand), puis « corrigé dans <commit> » point par point.
 - [ ] PR ouverte : ligne ajoutée dans `suivi-pr.md` sur `main` (🆕 À relire) ; après une correction, ligne remise en 🔁 « Corrigée, à relire ».
 - [ ] PR ouverte, puis **agent `lead-dev` appelé** (numéro de PR, ticket) : c'est lui qui fusionne ; je ne fusionne jamais moi-même (règle de l'utilisateur, 2026-11-07).

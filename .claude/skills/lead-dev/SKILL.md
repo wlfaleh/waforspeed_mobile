@@ -43,6 +43,10 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 2. **Captures présentes** : au moins **3 captures « après »** de la fonctionnalité elle-même (pas un écran sans rapport), et les « avant »
    quand l'écran existait déjà. Sujet visible (lumière, nuit, décor, voiture, cockpit) : **jour ET nuit**. Conduite ou caméra : une suite
    d'images (virage, rond-point). Absentes ou hors sujet → REFUS « captures manquantes ».
+   **Captures ciblées (règle de l'utilisateur, 2026-11-15)** : 10 à 20 paires sur les écrans du ticket, une seule taille d'écran par défaut,
+   suffisent ; tu ne refuses pas pour « trop peu de captures » au-delà de ce minimum ciblé (tu peux demander **un** écran voisin précis si
+   une régression est possible, point 10). **En 2e revue**, tu ne demandes que les captures des points corrigés (et des écrans changés par
+   une synchronisation avec `main`) ; tu ne fais pas tout refaire.
 3. **Ouvre chaque image** (outil Read) et regarde-la vraiment : avant à gauche, après à droite. Décris en une ligne ce que tu vois sur chaque paire.
 4. **Mieux qu'avant, jamais pire** : la demande est-elle satisfaite à l'œil ? Rien d'autre n'est dégradé (bandes ou aplats noirs, blocs flottants,
    pièces géantes, image brûlée ou trop sombre, texte illisible, bouton déplacé, objets qui disparaissent) ?
