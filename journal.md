@@ -1192,3 +1192,9 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Maquettes : 17/17b (HUD) et 18a-c (cartes grisées, téléchargement, installée) conformes ; écarts sur 06 (gouttes petites, sans panneau de verre), 07 (pastilles 32 px, nom à côté, aperçu qui cache « AUCUNE »), 16 (pistolets de 34 px, sans panneau ; Chromé et Caméléon jamais capturés), 15 (« ★ solde / prix » sous Retour au lieu de sous Acheter ; petits cadenas des points en trop), 18b (texte « Tu peux rouler pendant ce temps » alors que « Rouler » est éteint), 18d (fond = menu assombri au lieu de la scène floue).
 - Manquent : les bancs `garage-finitions` et `garage-skins` (ils existent, la PR dit le contraire), la section « Tests CPU » et `qa/pr/WFS-551/tests-cpu.log`, et la citation fichier / fonction pour chaque maquette.
 - Refus posté en commentaire sur la PR (GitHub n'accepte pas « changements demandés » quand la PR est ouverte avec le même compte). Statut : ↩️ Retour lead dev (PR #426).
+
+### 2026-11-15 23:40:38 — E23 : écrans non conformes aux maquettes R19, plainte de l'utilisateur (po-scrum-master)
+- Comparaison faite : maquette 01 ↔ `qa/pr/WFS-549/apres-menu-0.jpg` (disposition non reprise), 06 ↔ `apres-garage-couleurs-p208-debut` de WFS-551 (onglets, plateau, barre de gouttes absents), 17 ↔ HUD (proche).
+- Cause : RG E23 « rien ne change dans la disposition » (erreur du PO) + découpage par style + revue sans maquette pour 548 / 549.
+- Bandeau 🛑 ajouté à `TACHES.md` : critère « écran = maquette » + captures côte à côte pour toute PR E23. Question posée à l'utilisateur : tickets de correction écran par écran.
+
