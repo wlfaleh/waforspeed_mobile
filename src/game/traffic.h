@@ -97,7 +97,27 @@ struct TrafficCar {
     bool cache = false;
     int deuxRoues = 0;                      // WFS-232 : 0 voiture ; 1 + indice dans DEUX_ROUES pour un deux-roues
     double inclinaison = 0, inclPrec = 0, chute = 0;   // WFS-232 (RG-04) : inclinaison (rad, + à droite), lissée ; avant le dernier pas
+    // WFS-541 (RG-01) : voiture accidentée qui se redresse en roulant (après la glissade) : vitesse signée le long de sa caisse
+    // (m/s, < 0 : marche arrière) et angle des roues avant (rad, + à droite) ; arretT : temps passé à l'arrêt (banc, RG-02)
+    bool redresse = false; double vRed = 0, braq = 0, arretT = 0;
+    double degageT = 0; int degageSens = 0;   // WFS-541 : bloquée pendant le redressement : elle part dans l'autre sens degageT s
 };
+
+// WFS-541 (RG-01, ANO-269) : une voiture du trafic heurtée glisse au plus REDRESSE_APRES_S (elle est arrêtée en ≈ 1 s : la
+// glissade freine à 0,55 × MAX_SPEED par seconde ; elle repart dès REDRESSE_ARRET_S à l'arrêt), puis se redresse en roulant
+// jusqu'à sa file, comme un conducteur qui repart après un accrochage : ≤ 15 km/h, 2,5 m/s² (démarrage franc, une berline fait
+// 0-50 km/h en ≈ 4 s), roues braquées de 35° au plus (rayon de braquage d'une berline : empattement ≈ 0,6 × longueur,
+// R = e / tan 35° ≈ 4 m) à 1 rad/s (volant tourné vite à la main), marche arrière (≤ 10 km/h) si elle regarde vers l'arrière. Pas remise dans sa file en RETRAIT_APRES_S : retirée, mais
+// seulement hors de la vue du joueur (> RETRAIT_DEVANT_M devant ou > RETRAIT_DERRIERE_M derrière : derrière la caméra de
+// poursuite, 9 m derrière la voiture, avant de la voiture retirée compris), et replacée loin devant comme la régulation WFS-281.
+// Un deux-roues couché ne se redresse pas (aucune animation du pilote qui se relève) : il est relevé hors de la vue, comme avant
+constexpr double REDRESSE_APRES_S = 2.5, REDRESSE_ARRET_S = 1.0, REDRESSE_V = 15 / 3.6, REDRESSE_V_AR = 10 / 3.6, REDRESSE_ACC = 2.5;
+constexpr double REDRESSE_BRAQ = 0.6108652381980153, REDRESSE_BRAQ_VIT = 1.0, REDRESSE_EMPATTEMENT = 0.6;
+constexpr double RETRAIT_APRES_S = 8, RETRAIT_DEVANT_M = 150, RETRAIT_DERRIERE_M = 15;
+// WFS-541 (RG-03, ANO-270) : contacts entre voitures du trafic : pénétration résiduelle visée (m) après la résolution d'un pas
+constexpr double JEU_TRAFIC_M = 0.01;
+// vrai si la position dz (m, relative au joueur, + devant) est hors de la vue du joueur (RG-01 : retrait jamais sous ses yeux)
+inline bool horsDeVue(double dzM) { return dzM > RETRAIT_DEVANT_M || dzM < -RETRAIT_DERRIERE_M; }
 
 // ---------- trafic vivant (WFS-67) : état d'affichage, calculé à partir de la simulation sans la modifier ----------
 // clignotants et feux de détresse (scene.js) : chaque voiture a son rythme, allumé 0,38 s sur 0,72 s
@@ -151,6 +171,9 @@ Emprise empriseTrafic(const TrafficCar& c, double dz);
 constexpr double JEU_CONTACT_M = 0.02;
 // banc seulement (WFS_AVANT_333=1, banc « penetration ») : chocs d'avant WFS-333, pour les captures « avant » ; faux dans le jeu
 extern bool g_avantWfs333;
+// banc seulement (WFS_AVANT_541=1, banc « trafic-541 ») : trafic d'avant WFS-541 (relèvement sur place à 60 m, aucun contact
+// entre voitures du trafic, caméra non masquée), pour les captures « avant » ; faux dans le jeu
+extern bool g_avant541;
 bool separerDuJoueur(const Player& pl, double& rd, double& x, double longueurM, double largeurM);
 
 class Traffic {
@@ -174,6 +197,16 @@ public:
     // pendant le compte à rebours (pas de chocs) : suit seulement la position relative des voitures (car.prevDz)
     void watch(const Player& pl);
     void separer(const Player& pl, TrafficCar& car);   // WFS-333 (RG-03) : voiture écartée de celle du joueur
+    // WFS-541 (RG-03) : contacts entre voitures du trafic (emprises dessinées) : aucune dans une autre à la fin du pas ; fixe :
+    // emprise d'une voiture qu'on ne déplace pas (le joueur, centrée en zFixe, unités), résolue dans les mêmes passes
+    void contacts(const Emprise* fixe = nullptr, double zFixe = 0);
+    // WFS-541 (RG-03) : écarte le trafic d'une voiture qu'on ne déplace jamais (police : ordre du 2026-11-14) ; e : son emprise
+    // (x en m, z = 0), placée à zRoute (unités, comme TrafficCar::z) ; rend le nombre de voitures écartées
+    int separerDe(const Emprise& e, double zRoute);
+    // WFS-541 (RG-01) : voiture du trafic replacée loin devant le joueur (hors de la vue), à une place libre de sa file
+    void placerLoin(TrafficCar& c, double playerPos);
+    // WFS-541 (RG-03) : faux seulement pour les références du jeu web (aucun contact entre voitures du trafic dans le jeu web)
+    bool contactsTrafic = true;
 
     std::vector<TrafficCar> cars;
     // WFS-281 (ANO-151, RG-02 ; décision du PO du 2026-11-08 02:18) : total de voitures fixé au chargement. Vrai (module du jeu) :
@@ -203,12 +236,14 @@ public:
     double facteurVoie(double z) const;             // WFS-243 : 1 hors des anneaux, FACTEUR_ANNEAU dedans (rampes entre les deux)
 private:
     double tirerZ(Mulberry32& R, int lane, double len, double playerPos) const;   // place libre devant le joueur (addCars)
-    void regulerDensite(double playerPos);   // WFS-281 (RG-02, RG-03) : pas de peloton qui se forme hors de la vue du joueur
+    void regulerDensite(double playerPos);
+    void redresser(TrafficCar& c, double h);   // WFS-541 (RG-01) : voiture accidentée qui se remet dans sa file en roulant   // WFS-281 (RG-02, RG-03) : pas de peloton qui se forme hors de la vue du joueur
     double regulT_ = 0;
     std::vector<TrafficCar> reserve_;   // WFS-281 : voitures de la montée de difficulté, préparées au chargement
     std::vector<std::pair<int64_t, int64_t>> anneaux_;   // WFS-243 : segments [entrée, sortie] de l'anneau de chaque rond-point
     Track* track_ = nullptr;
-    std::vector<double> gap_, lead_;        // voiture de devant de chaque voiture (calculées avant le pas)
+    std::vector<double> gap_, lead_;
+    std::vector<std::pair<double, int>> ordre_;   // WFS-541 : voitures triées le long de la route (contacts)        // voiture de devant de chaque voiture (calculées avant le pas)
     double scrapeCd_ = 0;
 };
 

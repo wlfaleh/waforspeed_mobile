@@ -311,6 +311,8 @@ public:
             poursuite::poser(p0, pl.dist + bancPoliceEcart_ / M, bancPoliceX_, pl.speed); p0.rdPrec = rdP; p0.xPrec = xP;
             for (size_t i = 1; i < police_.size(); i++) poursuite::poser(police_[i], pl.dist - 400 / M, police_[i].x, 0);   // les autres loin derrière
         }
+        if (tr) for (const Police& p : police_)   // WFS-541 (RG-03, accroche) : le trafic s'écarte de la police ; la police n'est jamais déplacée
+            tr->separerDe({p.x * RW, 0, p.h, carById(policeCar_).d.L / 2, carById(policeCar_).d.W / 2}, t.wrap(pl.position + (p.rd - pl.dist)));
         if (suivi_.size() != police_.size()) suivi_.resize(police_.size());   // WFS-452 (RG-03, RG-08) : braquage d'après le vrai
         for (size_t i = 0; i < police_.size(); i++)                          // mouvement ; WFS-540 : avec le vrai cap de la caisse
             suivi_[i].pas(police_[i].rd * M, police_[i].x * RW, police_[i].h, roues::courbureRoute(t, police_[i].rd), carById(policeCar_).d.wb, dt);

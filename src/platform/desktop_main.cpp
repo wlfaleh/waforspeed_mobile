@@ -337,6 +337,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> v; if (const char* l = std::getenv("WFS_VOITURES")) { std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }
         benchCockpitVitrine(g, r, out, v); return finir();
     }
+    if (banc == "trafic-541") { ui::chargerPolice(r); const int e = benchTrafic541(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-541 (accroche) : trafic de la Poursuite après les chocs
     if (banc == "penetration") { const int e = benchPenetration(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-333 (accroche) : aucune voiture dans celle du joueur
     if (banc == "police") { ui::chargerPolice(r); const int e = benchPolice(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-461 (accroche) : police plafonnée, contacts
     if (banc == "camion-542") { ui::chargerPolice(r); benchCamion542(g, r, out); return finir(); }   // WFS-542 (accroche) : vrai camion de la Poursuite
