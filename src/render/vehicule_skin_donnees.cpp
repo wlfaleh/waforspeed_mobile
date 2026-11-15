@@ -52,7 +52,8 @@ bool couleurs(int skin, float a[3], float b[3]) {
         {0.91f, 0.91f, 0.89f}, {0.10f, 0.11f, 0.125f},   // 1 Rallye
         {0.93f, 0.30f, 0.10f}, {0.06f, 0.06f, 0.07f},    // 2 Drift Tokyo (WFS-493)
         {0.0f, 0.90f, 1.0f}, {1.0f, 0.12f, 0.85f},       // 3 Néon nuit (WFS-493)
-        {0.85f, 0.86f, 0.84f}, {0.09f, 0.09f, 0.10f}};   // 4 Camouflage (WFS-493)
+        {0.85f, 0.86f, 0.84f}, {0.09f, 0.09f, 0.10f},    // 4 Camouflage (WFS-493)
+        {0.53f, 0.81f, 0.93f}, {0.93f, 0.93f, 0.92f}};   // 5 Bleu ciel (WFS-552) : bleu ciel, liserés blancs
     if (skin <= AUCUNE || skin > NOMBRE) return false;
     for (int c = 0; c < 3; c++) { a[c] = C[skin * 2][c]; b[c] = C[skin * 2 + 1][c]; }
     return true;

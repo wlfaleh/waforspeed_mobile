@@ -28,8 +28,8 @@ class SkinGarage : public PanneauGarage {
 public:
     static constexpr int NB = BOUTIQUE_SKINS + 1;   // « Aucune » puis les 4 skins
     SkinGarage() { for (int& s : skin_) s = -1; }
-    // ordre affiché → indice dans BOUTIQUE_SKINS_IDS (rallye, drifttokyo, neonnuit, camouflage) ; −1 = aucune
-    static constexpr int ORDRE[NB] = {-1, 0, 3, 1, 2};   // Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit
+    // ordre affiché → indice dans BOUTIQUE_SKINS_IDS (rallye, drifttokyo, neonnuit, camouflage, ciel) ; −1 = aucune
+    static constexpr int ORDRE[NB] = {-1, 0, 3, 1, 2, 4};   // Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit, Bleu ciel (WFS-552)
     static int catalogue(int ordre) { return ordre >= 0 && ordre < NB ? ORDRE[ordre] : -1; }
     static float hauteur(float k);       // hauteur de la rangée (boutons + ligne des prix + écart), pixels de l'interface
     static bool visible(int index);      // la voiture (indice dans CARS[]) a des skins : la rangée est montrée (RG-01)

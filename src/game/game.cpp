@@ -403,7 +403,7 @@ void Game::render(double time) {
     {
         fond_fige::Signature sig;
         sig.basse = r_->qualiteBasse; sig.ombres = r_->niveauOmbres; sig.echelle = r_->vk().renderScale; sig.msaa = (int)r_->vk().msaa; sig.nuit = fp.night;
-        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee, camMode == 2, fondAnime), sig));
+        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee && !sd.interface, camMode == 2, fondAnime), sig));   // WFS-552 (accroche) : parking du menu figé aussi
     }
     if (!r_->beginFrame(fp)) return;
     // WFS-329 (revue du lead dev) : tous les systèmes tournent encore quand le fond est figé (son, mesure des img/s, chauffe…) ;
@@ -442,7 +442,9 @@ void Game::render(double time) {
     }
     if (dessin3d) conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
+    if (dediee && sd.interface) view_.sceneDediee = false;   // WFS-552 (accroche) : interface du menu dessinée sur son parking
     systemsUi();
+    view_.sceneDediee = dediee;   // WFS-552 (accroche)
     r_->endFrame();
 }
 

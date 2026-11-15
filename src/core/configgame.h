@@ -26,7 +26,7 @@ inline constexpr const char* VOITURES_IDS[VOITURES_NB] = {"golf", "m4", "p911", 
 struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 + 1]; };
 // WFS-487 (RG-04) : identifiants du catalogue de personnalisation (section « boutique ») ; noms, couleurs et règles dans
 // src/game/personnalisation.* ; les 16 premières couleurs sont celles du garage actuel (PEINTURES de src/game/sauvegarde.h, même ordre)
-constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 4, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
+constexpr int BOUTIQUE_COULEURS = 28, BOUTIQUE_FINITIONS = 8, BOUTIQUE_SKINS = 5, BOUTIQUE_DESSINS = 5, BOUTIQUE_CLASSES = 6, SKIN_VOITURES_MAX = 160;
 constexpr int CADEAU_TRANCHES = 4;      // WFS-500 (RG-01) : tranches d'étoiles du cadeau du jour
 constexpr int BOUTIQUE_MEDAILLES = 3;   // WFS-498 (RG-02) : bronze, argent, or
 // WFS-510 (RG-01) : produits du market, dans l'ordre du catalogue ; ce sont aussi les identifiants des produits de la Play Console
@@ -38,7 +38,7 @@ inline constexpr const char* BOUTIQUE_COULEURS_IDS[BOUTIQUE_COULEURS] = {
     "blanc", "noir", "gris", "rouge", "bleu", "orange", "jaune", "vert", "nacre", "bleunuit", "anglais", "bordeaux", "sable", "violet", "turquoise", "taxi",
     "bleuelectrique", "vertacide", "orangefluo", "rose", "jaunecitron", "violetneon", "rougevif", "cyan", "vertmenthe", "magenta", "corail", "bleuciel"};
 inline constexpr const char* BOUTIQUE_FINITIONS_IDS[BOUTIQUE_FINITIONS] = {"brillant", "metallise", "nacree", "mat", "satine", "candy", "chrome", "cameleon"};
-inline constexpr const char* BOUTIQUE_SKINS_IDS[BOUTIQUE_SKINS] = {"rallye", "drifttokyo", "neonnuit", "camouflage"};
+inline constexpr const char* BOUTIQUE_SKINS_IDS[BOUTIQUE_SKINS] = {"rallye", "drifttokyo", "neonnuit", "camouflage", "ciel"};   // WFS-552 : « ciel » = skin Bleu ciel (« bleuciel » est déjà une couleur)
 inline constexpr const char* BOUTIQUE_DESSINS_IDS[BOUTIQUE_DESSINS] = {"essentiels", "numeros", "bandes", "flammes", "etoiles"};
 constexpr int SCORE_POURSUITE_MAX = 1000;   // borne de poursuite.score_depart, reprise par la relecture des records (sauvegarde)   // = Poursuite de src/game/camera_vue.h
 
@@ -120,9 +120,11 @@ struct ConfigJeu {
             {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}, {50, 0, 0}};
         int couleurSecondaire = 50;   // couleur secondaire (toit, rétroviseurs : WFS-488, 489)
         Objet finition[BOUTIQUE_FINITIONS] = {{0, 1, 0}, {100, 0, 0}, {150, 0, 0}, {150, 0, 0}, {150, 0, 0}, {250, 0, 0}, {400, 0, 0}, {400, 0, 0}};
-        Objet skin[BOUTIQUE_SKINS] = {{300, 0, 0}, {600, 0, 0}, {800, 0, 1}, {450, 0, 0}};   // Néon nuit : cadeau du jour / succès seulement
+        Objet skin[BOUTIQUE_SKINS] = {{300, 0, 0}, {600, 0, 0}, {800, 0, 1}, {450, 0, 0}, {500, 0, 0}};   // Néon nuit : cadeau du jour / succès seulement ; WFS-552 : Bleu ciel
         char skinVoitures[BOUTIQUE_SKINS][SKIN_VOITURES_MAX * 4 + 1] = {
-            "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia", "p208 abarth gt86 golf mustang giulia"};
+            // WFS-552 : la Cavallo SF-X (sf90) reçoit les 5 skins ; Bleu ciel (maquette 01 de la R19) sur les 7 voitures
+            "p208 abarth gt86 golf mustang giulia sf90", "p208 abarth gt86 golf mustang giulia sf90", "p208 abarth gt86 golf mustang giulia sf90",
+            "p208 abarth gt86 golf mustang giulia sf90", "p208 abarth gt86 golf mustang giulia sf90"};
         Objet dessins[BOUTIQUE_DESSINS] = {{0, 1, 0}, {150, 0, 0}, {200, 0, 0}, {250, 0, 0}, {300, 0, 0}};   // « essentiels » : les 10 autocollants gratuits
         // WFS-498 (RG-03, RG-04) : prix des voitures en étoiles (ordre de VOITURES_IDS) ; 0 = gratuite (p208, abarth, gt86) ;
         // x5, a45, elantra : retirées (VOITURES_RETIREES de src/game/cars.h), jamais vendues quel que soit leur prix. Total vendu : 24 350 ★
