@@ -1142,3 +1142,9 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 
 ### 2026-11-15 23:14:02 — WFS-550 : 2e revue de la PR #424, retour lead dev (lead-dev)
 Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments du chargement suivent le texte affiché (bornes 0 / 0,20 / 0,70 / 0,85 / 1, annonce de la ville par le système 99 seulement pendant un chargement), il y a un cas `test_jauges` par palier, et l'orange vient de `ui::ORANGE`. Les 5 captures du chargement sont regardées (10, 20, 70, 85 et 100 %) : le segment en cours correspond au texte. La branche est construite et `tests_cpu.sh` lancé : 149 réussis. **Refus sur un seul point** : la description de la PR sur GitHub n'a pas été mise à jour. Elle n'a pas de section « Tests CPU » (la section n'est que dans `qa/pr/WFS-550/pr.md`), et son tableau des captures est l'ancien. Correction attendue : coller `pr.md` à jour dans la description, sans nouveau commit.
+
+### 2026-11-15 23:14:20 — Début WFS-496 : atelier d'autocollants, attribué à Claude, agent dev3d (01Us6uCwHf) (po-scrum-master)
+- Demande : nouvelle session `@dev` (session_01Us6uCwHfmVNHGT7xVcZKgC), « @dev go », sans sujet choisi ; aucun ticket déjà reçu par cette session.
+- Choix : 1er ticket **P1** ⏳ Prêt permis à `@dev` = **WFS-496** (E18, priorité absolue 🚨, 9e du classement 📋 ; WFS-495 et 504 fusionnés). Passe avant WFS-554 et 553 (P2), cités par erreur dans les bandeaux précédents comme seuls restants.
+- Zone : E8 `src/ui/ecrans/**` (+ `tests/**`) ; accroche ≤ 10 lignes dans `src/ui/garage.cpp` (annoncée au journal) ; réutiliser les calques et la texture d'habillage de WFS-492 / 495 et la variable `WFS_AUTOCOLLANTS` de `game.cpp`. Règles : `regles-de-gestion/WFS-496.md`. Pas d'avis `@3d` obligatoire (épic E18, pas E15).
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-503, WFS-512 (P1), puis WFS-554, 553 (P2).
