@@ -360,3 +360,4 @@ demande utilisateur :
 
 - « Une seule tâche pour vérifier le travail mergé jusqu'à maintenant : a-t-il respecté à 100 % les maquettes 19 ? Si non, il corrige » (2026-11-15)
 ( PO, 2026-11-15 23:48:02 UTC : créé, **WFS-557** (P1, ⏳ Prêt), une seule tâche. Le développeur compare chaque maquette R19 au jeu, côte à côte, note ce qui est conforme ou pas, puis corrige tous les écarts. )
+( PO, 2026-11-15 23:49:27 UTC : compris. WFS-557 ne vérifie que **548, 549 et 552** (déjà fusionnés). **550 et 551** sont en cours : la règle « maquettes R19 à 100 %, sinon PR refusée » est écrite dans leurs règles, le lead dev l'applique. )

@@ -1201,3 +1201,5 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 ### 2026-11-15 23:48:02 — WFS-557 créé : vérification à 100 % du travail R19 fusionné contre les maquettes, et corrections (po-scrum-master)
 - Demande de l'utilisateur, une seule tâche. RG : `regles-de-gestion/WFS-557.md`.
 
+### 2026-11-15 23:49:27 — WFS-557 limité à 548, 549, 552 ; 550 et 551 refusés s'ils ne respectent pas les maquettes R19 à 100 % (po-scrum-master)
+
