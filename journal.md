@@ -1113,3 +1113,9 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Vérification : construction complète ; 149 tests CPU verts (dont `test_jauges`, `test_langue`) ; bancs `garage-voitures`, `cadeau` (FR / EN, parcours RG-08, solde inchangé par l'animation), `chargement`, `hud` (nouvelle capture `toast-pile-nuit`) ; 23 captures avant / après dans `qa/pr/WFS-550/`.
 - Limites : jauge « 1 250 / 6 000 » de l'achat (maquette 28) non faite (fichier `garage_achat*` de WFS-551, RG-07) ; cadenas au-dessus des segments dessinés par `garage_achat.cpp` (WFS-551) ; aucun message « police en approche » dans le jeu (le rouge sert aux accidents et combo perdu).
 
+
+### 2026-11-15 22:53:35 — WFS-550 : PR #424 refusée par le lead dev (lead-dev)
+- 23 captures ouvertes, tout le diff lu, branche construite (aucun avertissement) et `tests_cpu.sh` refait : 149 tests verts.
+- Refus pour 2 points : (1) capture « Tests CPU » et `qa/pr/WFS-550/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) à l'écran de chargement, le texte de l'étape et les 4 segments se contredisent (à 20 %, « Chargement du modèle 3D… » alors que « Modèles 3D » est coché), car les bornes de `jauges::avancementEtape` ne suivent pas les paliers de `Game::init`.
+- Accepté : garage (cadrans, barres, 17 segments), anneaux du cadeau et du prêt, étoiles animées, bandeaux en course, jauge du combo. Jauge « 1 250 / 6 000 » de l'achat (maquette 28) laissée à WFS-551 (`garage_achat*`, RG-07) : à noter par le PO dans WFS-551.
+- Revue dans la PR (commentaire, même compte GitHub). Commit relu cb0b89e9. Statut ↩️ Retour lead dev (PR #424).
