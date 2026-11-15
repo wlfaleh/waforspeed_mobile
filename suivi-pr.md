@@ -17,3 +17,4 @@
 |---|---|---|---|---|---|
 | #424 | WFS-550 | Claude, agent dev3d (01UY1Vv1yg) | ↩️ Retour lead dev (3e revue : maquettes 05, 26, 17) | bdabd2b9 | 2026-11-15 23:18 |
 | #425 | WFS-555 | lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) | 👀 En revue — lead-dev (relecteur), 2026-11-15 23:28 | 1a88fae6 | 2026-11-15 23:28 |
+| #426 | WFS-551 | Claude, agent dev3d (01UY1Vv2KF) | 🆕 À relire | ec034448 | 2026-11-15 23:28 |
