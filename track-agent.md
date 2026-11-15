@@ -52,7 +52,7 @@
 | Claude, agent dev3d (01Us6uCwe9) (session_01Us6uCwe9onHeoCoMCPSWj3) | WFS-503 | Cadeau du jour : gains réels (étoiles au portefeuille, coloris et skins donnés) (E19, zone E3 : `src/game/**` hors `game.*`, `tests/**`) | `feature/waforspeed-503` à créer et pousser | 🔧 attribué 23:15 UTC (15/11) |
 | Claude, agent dev3d (01UY1Vv2KF) (session_01UY1Vv2KFV5cJpjafKsfwV5) | WFS-551 | Interface R19 (4/5) : gouttes, pastilles, pistolet, cadenas-jauge, flèches, HUD en verre, cartes grisées (E23 : fichiers de RG-08 de `regles-de-gestion/WFS-551.md`, icône dans `assets/` de l'interface, `shaders/ui*`, `tests/**`) | `feature/waforspeed-551` : pas encore poussée (attribué 21:01) | 🔧 En cours |
 | lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) | WFS-555 | [TECHNIQUE] cache des captures « avant » et compilation de main gardées (zone : `tools/qa/captures_pr.sh` seulement), en renfort | `feature/waforspeed-555`, pas encore poussée | 🔧 En cours (attribué 22:58 UTC) |
-| Claude, agent dev3d (01Us6uCwHf) (session_01Us6uCwHfmVNHGT7xVcZKgC) | WFS-496 | Atelier d'autocollants : bibliothèque, placer, tourner, agrandir, colorer, calques (E18, zone E8 `src/ui/ecrans/**` ; accroche ≤ 10 lignes dans `src/ui/garage.cpp`) | `feature/waforspeed-496`, pas encore poussée | 🔧 En cours (attribué 23:14 UTC) |
+| Claude, agent dev3d (01Us6uCwHf) (session_01Us6uCwHfmVNHGT7xVcZKgC) | WFS-496 | Atelier d'autocollants : bibliothèque, placer, tourner, agrandir, colorer, calques (E18, zone E8 `src/ui/ecrans/**` ; accroche ≤ 10 lignes dans `src/ui/garage.cpp`) | `feature/waforspeed-496`, 23:20 | 🔧 En cours (branche poussée, logique des calques) |
 
 ## Agents de pilotage
 
