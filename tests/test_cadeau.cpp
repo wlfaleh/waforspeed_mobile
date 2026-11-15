@@ -3,12 +3,16 @@
 // → nouveau cadeau, deux ouvertures le même jour → la 2e refusée ; (f) heure reculée de 2 jours → aucun cadeau tant que l'heure du
 // dernier n'est pas repassée ; (g) sauvegarde écrite puis relue (toutes les clés), ancienne sauvegarde → cadeau disponible ;
 // (h) total des chances ≠ 100 refusé. En plus : calendrier, résultat écrit / relu, entrée faite depuis la sauvegarde.
+// WFS-503 (RG-05) : gains réels : étoiles créditées une seule fois ; coloris et skin possédés après le cadeau et après relance ;
+// tout possédé → étoiles ≥ 10 ; garantie avec toutes les skins possédées → voiture ; sauvegarde impossible → solde et possessions remis.
 #include <cmath>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include "../src/core/configgame.h"
 #include "../src/game/boutique.h"
 #include "../src/game/cadeau.h"
+#include "../src/game/personnalisation.h"
 using namespace wfs;
 using namespace wfs::cadeau;
 
@@ -267,6 +271,128 @@ int main() {
         bool m4 = false; for (const std::string& id : e.voituresPretables) if (id == "m4") m4 = true;
         // WFS-502 (RG-01) : un seul prêt à la fois : tant qu'un prêt est en attente ou actif, le tirage ne donne aucune voiture (repli)
         cas("entrée : prêt en cours → aucune voiture à prêter (WFS-502 RG-01), ni la voiture déjà prêtée", !m4 && e.voituresPretables.empty());
+    }
+
+    // ---- WFS-503 (RG-05) : gains réels, sur l'entrée faite depuis la sauvegarde (catalogue de WFS-487, voitures de WFS-498)
+    {
+        // relance du jeu : sauvegarde écrite en texte puis relue dans une partie neuve
+        // (Sauvegarde n'est pas copiable : fil d'écriture) → parties tenues par unique_ptr
+        using Partie = std::unique_ptr<Sauvegarde>;
+        auto neuve = [] { Partie p = std::make_unique<Sauvegarde>(); p->defauts(); return p; };
+        auto relance = [](const Sauvegarde& s) { Partie r = std::make_unique<Sauvegarde>(); r->lire(s.texte()); return r; };
+        // 1re graine (à partir de 1) dont le cadeau, ouvert sur une partie neuve, est du type voulu : déterministe (RG-10)
+        auto partieAvec = [&](Gain voulu, Partie& p, Resultat& r) {
+            for (uint32_t g = 1; g < 5000; g++) {
+                p = neuve();
+                Sauvegarde& s = *p;
+                const auto x = ouvrir(s, local(2026, 11, 13, 10, 0, 0, 3600), entreeDepuis(s), g);
+                if (x && x->gain == voulu && !x->repli) { r = *x; return true; }
+            }
+            return false;
+        };
+        Partie p; Resultat r;
+        {   // RG-01 : étoiles au portefeuille, une seule fois
+            const long long avant = neuve()->etoiles;
+            const bool trouve = partieAvec(Gain::Etoiles, p, r);
+            Sauvegarde& s = *p;
+            cas("RG-01 : étoiles du cadeau ajoutées au portefeuille (solde = avant + gain)", trouve && r.etoiles >= 10 && s.etoiles == avant + r.etoiles);
+            const long long apres = s.etoiles;
+            const auto deux = ouvrir(s, local(2026, 11, 13, 22, 0, 0, 3600), entreeDepuis(s), 9);
+            cas("RG-01 : 2e ouverture le même jour refusée, aucune étoile de plus", !deux && s.etoiles == apres);
+            const Partie tp = relance(s); const Sauvegarde& t = *tp;
+            cas("RG-01 : après relance, solde gardé et cadeau déjà ouvert (jamais crédité deux fois)",
+                t.etoiles == apres && etat(t.cadeau, local(2026, 11, 13, 23, 0, 0, 3600)) == Etat::DejaOuvert);
+        }
+        {   // RG-02 : coloris possédé par la voiture, pas appliqué
+            const bool trouve = partieAvec(Gain::Coloris, p, r);
+            Sauvegarde& s = *p;
+            const perso::Objet* o = perso::objet(r.objet);
+            const Partie np = neuve(); const Sauvegarde& n0 = *np;
+            cas("RG-02 : coloris tiré dans le catalogue, pas possédé avant le cadeau", trouve && o && !perso::possede(n0, *o, r.voiture));
+            cas("RG-02 : coloris possédé par sa voiture après le cadeau", o && perso::possede(s, *o, r.voiture));
+            const Partie tp = relance(s); const Sauvegarde& t = *tp;
+            cas("RG-02 : coloris toujours possédé après relance", o && perso::possede(t, *o, r.voiture));
+            cas("RG-02 : coloris gagné « nouveau », gardé après relance", estNouveau(s, r.voiture, r.objet) && estNouveau(t, r.voiture, r.objet) &&
+                t.texte().find("cadeau-nouveaux=" + r.voiture + ":" + r.objet) != std::string::npos);
+            const Partie vp = relance(t); Sauvegarde& v = *vp;
+            vu(v, r.voiture, r.objet);
+            const Partie wp = relance(v); const Sauvegarde& w = *wp;
+            cas("RG-02 : vu() → plus nouveau, gardé après relance (clé retirée), coloris toujours possédé", !estNouveau(v, r.voiture, r.objet) &&
+                !estNouveau(w, r.voiture, r.objet) && w.texte().find("cadeau-nouveaux") == std::string::npos && o && perso::possede(w, *o, r.voiture));
+            const perso::Aspect a = perso::aspectCourse(s, r.voiture), b = perso::aspectCourse(n0, r.voiture);
+            cas("RG-02 : coloris pas appliqué d'office (aspect de course inchangé, aucun choix noté)",
+                a.peinture == b.peinture && std::string(a.finition) == b.finition && !s.paint.count(r.voiture));
+        }
+        {   // RG-03 : skin donnée (donnerSkin), pas posée
+            const bool trouve = partieAvec(Gain::Skin, p, r);
+            Sauvegarde& s = *p;
+            const perso::Objet* o = perso::objet(r.objet);
+            cas("RG-03 : skin possédée par sa voiture après le cadeau, pas posée", trouve && o && o->type == perso::Type::Skin &&
+                perso::possede(s, *o, r.voiture) && !s.skin.count(r.voiture));
+            const Partie tp = relance(s); const Sauvegarde& t = *tp;
+            cas("RG-03 : skin toujours possédée après relance", o && perso::possede(t, *o, r.voiture));
+            cas("RG-03 : skin gagnée « nouvelle », gardée après relance", estNouveau(s, r.voiture, r.objet) && estNouveau(t, r.voiture, r.objet));
+            cas("RG-03 : une skin gagnée sort du tirage suivant", [&] {
+                for (const VoitureJoueur& j : entreeDepuis(t).voitures)
+                    if (j.id == r.voiture) for (const std::string& x : j.skins) if (x == r.objet) return false;
+                return true; }());
+        }
+        {   // RG-04 : skin « cadeau seulement » (Néon nuit) dans le tirage ; donner() refuse un objet déjà possédé ou d'une autre voiture
+            Sauvegarde n; n.defauts();
+            bool neon = false;
+            for (const VoitureJoueur& j : entreeDepuis(n).voitures) for (const std::string& x : j.skins) { const perso::Objet* o = perso::objet(x); if (o && perso::cadeau(*o)) neon = true; }
+            cas("RG-03 / RG-04 : les skins « cadeau seulement » font partie du tirage", neon);
+            Resultat c; c.gain = Gain::Coloris; c.voiture = "p208"; c.objet = "blanc";
+            Resultat inconnu; inconnu.gain = Gain::Skin; inconnu.voiture = "p208"; inconnu.objet = "pas-une-skin";
+            const long long e0 = n.etoiles; const auto p0 = n.possede;
+            cas("donner : objet gratuit (déjà possédé) ou inconnu refusé, rien de changé", !donner(n, c) && !donner(n, inconnu) && n.etoiles == e0 && n.possede == p0);
+        }
+        // partie où le joueur possède tout (coloris et skins de ses voitures) ; prêt en cours : aucune voiture à prêter
+        auto toutPossede = [&](Partie& p, bool skins, bool voitures) {
+            p = neuve(); Sauvegarde& s = *p;
+            for (const VoitureJoueur& j : entreeDepuis(s).voitures) {
+                for (const std::string& x : j.coloris) s.possede[j.id].insert(x);
+                if (skins) for (const std::string& x : j.skins) s.possede[j.id].insert(x);
+            }
+            if (voitures) s.cadeau.pretVoiture = "m4";
+        };
+        {
+            toutPossede(p, true, true); Sauvegarde& s = *p;
+            bool vide = true;
+            for (const VoitureJoueur& j : entreeDepuis(s).voitures) vide = vide && j.coloris.empty() && j.skins.empty();
+            bool etoiles = vide && entreeDepuis(s).voituresPretables.empty();
+            long long attendu = s.etoiles;
+            for (int jour = 0; jour < 60 && etoiles; jour++) {   // 60 jours : la garantie (30) passe aussi
+                const Instant t = {local(2026, 11, 13, 10, 0, 0, 3600).epoch + jour * 86400LL, 3600};
+                const auto x = ouvrir(s, t, entreeDepuis(s), 100 + (uint32_t)jour);
+                etoiles = x && x->gain == Gain::Etoiles && x->etoiles >= 10;
+                if (x) attendu += x->etoiles;
+            }
+            cas("RG-05 : tout possédé → étoiles ≥ 10 à chaque cadeau (60 jours, garantie comprise), toutes créditées", etoiles && s.etoiles == attendu);
+        }
+        {
+            toutPossede(p, true, false); Sauvegarde& s = *p;
+            s.cadeau.sansRare = config().cadeau.garantie - 1;   // ce cadeau est le 30e sans voiture ni skin
+            const auto x = ouvrir(s, local(2026, 11, 13, 10, 0, 0, 3600), entreeDepuis(s), 7);
+            cas("RG-05 : garantie avec toutes les skins possédées → voiture prêtée (WFS-502)", x && x->gain == Gain::Voiture && x->garantie &&
+                s.cadeau.pretVoiture == x->voiture && s.cadeau.sansRare == 0);
+        }
+        {   // RG-01 (sauvegarde impossible) : solde et possessions remis, rien de donné
+            Sauvegarde f;
+            f.charger("/dossier-qui-n-existe-pas/wfs-503/sauvegarde.txt");
+            const long long e0 = f.etoiles; const auto p0 = f.possede;
+            bool ok = true;
+            for (uint32_t g = 1; g <= 40; g++) ok = ok && !ouvrir(f, local(2026, 11, 13, 12, 0, 0, 3600), entreeDepuis(f), g) && f.etoiles == e0 && f.possede == p0;
+            cas("sauvegarde impossible à écrire : ni étoile ni objet donné (40 graines)", ok && f.cadeau.nouveaux.empty());
+        }
+        {   // cadeau-nouveaux : ancienne sauvegarde sans la clé lue sans erreur ; éléments mal écrits ignorés un à un
+            Sauvegarde a;
+            const bool lu = a.lire("version=1\ncar=m4\netoiles=40\n");
+            cas("ancienne sauvegarde sans cadeau-nouveaux : lue, rien de nouveau", lu && a.cadeau.nouveaux.empty() && a.texte().find("cadeau-nouveaux") == std::string::npos);
+            Sauvegarde m;
+            m.lire("version=1\ncadeau-nouveaux=golf:rose|<x>|:vide|gt86:|p208:neonnuit\n");
+            cas("cadeau-nouveaux : éléments mal écrits ignorés, les bons gardés", m.cadeau.nouveaux.size() == 2 && estNouveau(m, "golf", "rose") && estNouveau(m, "p208", "neonnuit"));
+        }
     }
 
     std::printf("%s : %d échec(s)\n", g_echecs ? "ÉCHEC" : "OK", g_echecs);
