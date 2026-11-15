@@ -405,7 +405,7 @@ private:
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
             // WFS-549 (RG-05, RG-07) : sélecteur de verre, choix actif = pilule blanche ; l'invité le voit grisé ; mêmes zones
             if (i == 0) ui::boutons::selecteurFond(r, bx, ly, 4 * bw + 3 * 6 * k, bhh, s.host() ? 1.f : 0.5f);
-            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 17 * k, !s.host() && !on);
+            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 17 * k, !s.host());
         }
         // joueurs (#players) : à droite
         const float px = std::max(zl + 620 * k, zr - 420 * k), pw = zr - px;
@@ -484,7 +484,7 @@ private:
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
             // WFS-549 (RG-05, RG-07) : sélecteur de verre, choix actif = pilule blanche ; l'invité le voit grisé ; mêmes zones
             if (i == 0) ui::boutons::selecteurFond(r, bx, ly, 4 * bw + 3 * 6 * k, bhh, s.host() ? 1.f : 0.5f);
-            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 18 * k, !s.host() && !on);
+            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 18 * k, !s.host());
         }
         // joueurs (#players) : colonne de droite de la carte
         const float px = xl + gauche + 24 * k, pw = xr - px;

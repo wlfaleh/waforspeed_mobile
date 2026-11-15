@@ -39,6 +39,12 @@ int main() {
     vec2 p[ui::boutons::MAX_SOMMETS];
     VERIFIE(ui::boutons::contourArrondi(p, 0, 0, 50, 30, 0) == 4, "rayon nul : 4 sommets");
     VERIFIE(ui::boutons::contourArrondi(p, 0, 0, 0, 30, 5) == 0, "largeur nulle : rien");
+    // revue #420, point 4 : états inactifs lisibles (WCAG 2.1, ≥ 4,5 : 1), y compris sur le fond le plus clair de chaque bouton
+    using namespace ui::boutons;
+    const unsigned fonds[] = {INACTIF_FOND_HAUT, INACTIF_FOND_BAS, INACTIF_CENTRE, INACTIF_VERRE};
+    for (unsigned f : fonds) VERIFIE(contraste(INACTIF_TEXTE, f) >= 4.5f, "inactif : texte %06X sur %06X = %.2f", INACTIF_TEXTE, f, contraste(INACTIF_TEXTE, f));
+    VERIFIE(contraste(0x0A0B10, 0x9499A6) >= 4.5f, "choix actif inactif : texte sombre sur pilule grise = %.2f", contraste(0x0A0B10, 0x9499A6));
+    VERIFIE(std::fabs(contraste(0xFFFFFF, 0x000000) - 21.f) < 0.01f, "formule du contraste : blanc / noir = %.2f", contraste(0xFFFFFF, 0x000000));
     if (echecs) { std::printf("test_boutons : %d échec(s)\n", echecs); return 1; }
     std::printf("test_boutons : OK\n");
     return 0;

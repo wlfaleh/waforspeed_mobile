@@ -141,6 +141,9 @@ bool toucherDiag(int id, float x, float y, double temps) {
 }
 bool g_boutonFrais = false;   // WFS-537 (accroche) : « Réglages » dessiné depuis la dernière lecture de boutonReglages
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
+// WFS-290 (RG-04) : bouton tenu (P_*) et doigt qui le tient ; WFS-549 : P_CREDITS, « Crédits » ouvert au relâcher
+enum { P_AUCUN, P_BOUTON, P_FERMER, P_CREDITS };
+int g_presse = P_AUCUN, g_doigt = -1;
 Zone g_credits;   // WFS-549 (RG-06) : « Crédits » à côté de « Conditions d'utilisation » (menu principal seulement : l'écran Crédits est celui du menu)
 bool g_creditsVisible = false;
 // WFS-308 (RG-05) : bouton vitré ; zone ≥ 44 dp. WFS-549 (RG-06) : bouton de verre (maquette 14), même taille ; « Crédits » à
@@ -152,7 +155,7 @@ float boutonCgu(Renderer& r, float x, float y, float h, float k) {
     if (!g_creditsVisible) { g_credits = {}; return w; }
     const std::string tc = ui::majuscules(ui::tr("credits.bouton")); const float wc = largeurMax(tp, "credits.bouton", 0.12f) + 28 * k, ecart = 10 * k;
     g_credits = {x - w - ecart - wc, y + (h - zh) / 2, wc, zh};
-    ui::boutons::verre(r, x - w - ecart - wc, y, wc, h, tc, 1, false, tp);
+    ui::boutons::verre(r, x - w - ecart - wc, y, wc, h, tc, 1, g_presse == P_CREDITS, tp);   // RG-08 : appuyé tant que le doigt est posé
     return w + ecart + wc;
 }
 // WFS-290 (RG-03, ANO-159) : cible d'appui de 48 dp et anti-rebond de 0,3 s : reglages_appui.h (calculs testés). Sur téléphone,
@@ -169,8 +172,6 @@ double g_dernierBasculement = -1e9;
 bool basculementPermis() { return appui::basculementPermis(maintenant(), g_dernierBasculement); }
 // WFS-290 (RG-04) : appui comme les choix du menu : le bouton s'éclaircit tant que le doigt est posé, l'action se fait au
 // relâcher dans la cible ; un doigt qui glisse hors de la cible annule l'appui
-enum { P_AUCUN, P_BOUTON, P_FERMER };
-int g_presse = P_AUCUN, g_doigt = -1;
 int g_onglet = O_AFFICHAGE;   // RG-03 : dernier onglet ouvert, gardé (clé « onglet » du fichier des réglages)
 Zone g_onglets[N_ONGLETS];
 // dessine la barre des onglets dans (x, y, w, h) : onglet actif comme un choix actif (fond cyan léger, trait et texte cyan),
@@ -331,23 +332,28 @@ public:
             g_etoiles.lever(t.id);   // WFS-546 : doigt levé, le prochain appui sur le bouton étoile crédite de nouveau
             if (t.id == g_doigt) {   // WFS-290 : « Fermer » au relâcher, dans sa cible
                 const bool vise = g_presse == P_FERMER && dansCible(g_fermer, t.x, t.y);
+                const int presse = g_presse;
                 g_doigt = -1; g_presse = P_AUCUN;
                 if (vise && !basculementPermis()) WFS_LOG("réglages : appui ignoré (moins de 0,3 s après l'ouverture)");
                 else if (vise) { g_ouvert = false; g_dernierBasculement = maintenant(); WFS_LOG("réglages : fermés"); }
+                // WFS-549 (RG-06, revue #420) : « Crédits » au relâcher dans sa zone, doigt déjà libéré (le Menu, avant les Réglages,
+                // garde ensuite tous les touchers de l'écran Crédits : ouvrir à l'appui laissait g_doigt bloqué et perdait l'appui suivant)
+                else if (presse == P_CREDITS && g_credits.contient(t.x, t.y) && g.ecran == Ecran::Menu) { WFS_LOG("réglages : « Crédits »"); credits::ouvrir(); }
             }
             if (cgu().ouvert()) cgu().toucher(t.id, t.x, t.y, false);
             return true;
         }
-        if (t.id == g_doigt) { if (g_presse == P_FERMER && !dansCible(g_fermer, t.x, t.y)) g_presse = P_AUCUN; return true; }   // doigt encore posé (glissé hors : annulé)
+        if (t.id == g_doigt) {   // doigt encore posé (glissé hors : annulé)
+            if ((g_presse == P_FERMER && !dansCible(g_fermer, t.x, t.y)) || (g_presse == P_CREDITS && !g_credits.contient(t.x, t.y))) g_presse = P_AUCUN;
+            return true;
+        }   // doigt encore posé (glissé hors : annulé)
         if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
         if (banc_telephone::protocoleOuvert()) return banc_telephone::toucherProtocole(t.x, t.y);   // WFS-420 : par-dessus le panneau
         if (banc_telephone::resultatsOuverts()) return banc_telephone::toucherResultats(t.x, t.y);
         if (g_diagOuvert) return toucherDiag(t.id, t.x, t.y, g.time);   // WFS-419 : menu caché par-dessus le panneau
         if (g_titre.contient(t.x, t.y)) { toucherTitre(); return true; }   // WFS-419 : 5 touchers ouvrent le menu caché
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); g_doigt = t.id; return true; }   // WFS-308 (RG-05)
-        if (g.ecran == Ecran::Menu && g_credits.contient(t.x, t.y)) {   // WFS-549 (RG-06) : écran Crédits actuel, par-dessus les Réglages
-            WFS_LOG("réglages : « Crédits »"); credits::ouvrir(); g_doigt = t.id; return true;
-        }
+        if (g.ecran == Ecran::Menu && g_credits.contient(t.x, t.y)) { g_doigt = t.id; g_presse = P_CREDITS; return true; }   // WFS-549 (RG-06) : ouvert au relâcher
         if (dansCible(g_fermer, t.x, t.y)) { g_doigt = t.id; g_presse = P_FERMER; return true; }   // WFS-290 : fermé au relâcher
         if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { g_doigt = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
         for (int o = 0; o < N_ONGLETS; o++) if (g_onglets[o].contient(t.x, t.y)) {   // WFS-291 : changement d'onglet, gardé
@@ -972,6 +978,23 @@ void benchReglagesOnglets(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) image();
     toucher(1, g_bouton); onglet(O_AFFICHAGE);
     capture("reglages-onglet-affichage-menu", "menu principal, onglet Affichage (5 lignes)");
+    // WFS-549 (RG-06, revue #420 point 2) : « Crédits » depuis les Réglages, « Retour », puis un appui dans les Réglages qui compte.
+    // Doigt n° 0 partout (1er doigt d'Android) : ouvrir les Crédits à l'appui laissait g_doigt = 0 bloqué et perdait cet appui.
+    {
+        auto doigt0 = [&](float x, float y) { attendre(24); g.onTouch({0, x, y, true}); image(); g.onTouch({0, x, y, false}); image(); };
+        doigt0(g_credits.x + g_credits.w / 2, g_credits.y + g_credits.h / 2);
+        capture("reglages-credits-ouverts", "« Crédits » touché depuis les Réglages : écran Crédits par-dessus");
+        WFS_LOG("réglages (WFS-549) : « Crédits » → écran Crédits %s", credits::ouvert() ? "ouvert" : "FERMÉ (ÉCHEC)");
+        float rx = 0, ry = 0;
+        if (credits::centreRetour(rx, ry)) doigt0(rx, ry);
+        capture("reglages-credits-retour", "« Retour » des Crédits : retour aux Réglages, toujours ouverts");
+        WFS_LOG("réglages (WFS-549) : « Retour » des Crédits → Crédits %s, Réglages %s", credits::ouvert() ? "OUVERTS (ÉCHEC)" : "fermés", g_ouvert ? "ouverts" : "FERMÉS (ÉCHEC)");
+        const Zone z = g_onglets[O_CONDUITE];
+        doigt0(z.x + z.w / 2, z.y + z.h / 2);
+        WFS_LOG("réglages (WFS-549) : 1er appui après les Crédits (onglet Conduite, doigt 0) → onglet %s : %s", ONGLETS[g_onglet],
+                g_onglet == O_CONDUITE ? "appui compté" : "APPUI PERDU (ÉCHEC)");
+        onglet(O_AFFICHAGE);
+    }
     toucher(2, g_fermer);
     WFS_LOG("réglages (WFS-291) : « Fermer » depuis Affichage → panneau %s", g_ouvert ? "OUVERT" : "fermé");
     g.allerA(Ecran::Course); for (int i = 0; i < 60 * 4; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 29) g.render(t); }

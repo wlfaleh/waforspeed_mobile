@@ -49,6 +49,23 @@ inline int contourArrondi(vec2* p, float x, float y, float w, float h, float ray
     return n;
 }
 
+// état inactif (revue #420, point 4) : jamais une simple transparence (texte illisible, bouton qui a l'air actif) ; couleurs pleines
+// neutres, contraste texte / fond ≥ 4,5 : 1 (vérifié par tests/test_boutons.cpp, formule WCAG 2.1)
+constexpr unsigned INACTIF_TEXTE = 0xB4B9C6,      // texte des boutons inactifs (prix, Start/Stop, sélecteurs)
+                   INACTIF_FOND_HAUT = 0x2C2F3A, INACTIF_FOND_BAS = 0x23262F,   // fond du bouton de prix inactif
+                   INACTIF_CENTRE = 0x15171D,     // centre sombre du Start/Stop inactif (bas du dégradé, le plus clair)
+                   INACTIF_LISERE = 0x5A5F6C,     // liseré éteint (gris au lieu d'orange)
+                   INACTIF_VERRE = 0x1A1C24;      // rangée de verre sur le panneau (pire cas du sélecteur, texte clair)
+// contraste WCAG 2.1 entre deux couleurs 0xRRGGBB (1 à 21)
+inline float contraste(unsigned a, unsigned b) {
+    auto lum = [](unsigned c) {
+        auto l = [](unsigned v) { const float s = v / 255.f; return s <= 0.04045f ? s / 12.92f : std::pow((s + 0.055f) / 1.055f, 2.4f); };
+        return 0.2126f * l((c >> 16) & 255) + 0.7152f * l((c >> 8) & 255) + 0.0722f * l(c & 255);
+    };
+    const float la = lum(a), lb = lum(b);
+    return (std::max(la, lb) + 0.05f) / (std::min(la, lb) + 0.05f);
+}
+
 // RG-01 : titre (une ligne, capitales) ; sousTitre facultatif (« ★ 6 000 », « Solo ») ; px = hauteur du titre (0 : d'après h)
 void startStop(Renderer& r, float x, float y, float w, float h, const std::string& titre, float op = 1, bool appuye = false,
                const std::string& sousTitre = "", float px = 0, bool grise = false);

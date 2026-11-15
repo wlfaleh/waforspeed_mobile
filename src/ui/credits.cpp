@@ -126,7 +126,6 @@ void dessiner(Renderer& r, float W, float H, const Marges& m) {
     g.retour = {px + pw - 24 * k - wr, by, wr, bh};
     const bool presse = g.doigt >= 0 && g.cible == RETOUR;
     ui::boutons::autocollant(r, g.retour.x, g.retour.y, g.retour.w, g.retour.h, tr, 1, presse, tp);   // WFS-549 (RG-02) : sortie, même rectangle
-    (void)twr;
     manette::focus(g.retour, true);
     ui::text(r, x0, by + (bh - 14 * k) / 2, 14 * k, ui::tr("credits.aide"), hex(MUTED), ui::GAUCHE, 0.02f, false);
     // cadre du texte défilant

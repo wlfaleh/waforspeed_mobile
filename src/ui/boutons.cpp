@@ -59,7 +59,8 @@ void iconeCroix(Renderer& r, float cx, float cy, float s, const vec4& c) {
 }
 
 // bague chrome + centre sombre : base du Start/Stop et de la pilule chrome ; rend l'épaisseur de la bague
-float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, bool appuye, const vec4& lisere, float lueurLisere) {
+float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, bool appuye, const vec4& lisere, float lueurLisere,
+                  bool inactif = false) {
     const float R = std::min(w, h) / 2;
     const float t = std::clamp(h * 0.085f, 3.f, 12.f);   // épaisseur de la bague chrome
     // reflet doux autour de la bague (lumière du parking sur le chrome)
@@ -71,7 +72,8 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
     // centre sombre (enfoncé à l'appui : plus clair)
     const float xi = x + t, yi = y + t, wi = w - 2 * t, hi = h - 2 * t, Ri = std::max(0.f, R - t);
     bord(r, xi - 1, yi - 1, wi + 2, hi + 2, Ri + 1, 1.5f, hex(0x101114, 0.95f * op));   // gorge entre la bague et le centre
-    if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x2A2E38, op), hex(0x1A1D25, op));
+    if (inactif) plein(r, xi, yi, wi, hi, Ri, hex(0x0C0D11, op), hex(INACTIF_CENTRE, op));
+    else if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x2A2E38, op), hex(0x1A1D25, op));
     else plein(r, xi, yi, wi, hi, Ri, hex(0x05060A, op), hex(0x15171D, op));
     // liseré allumé, un peu en retrait du bord du centre
     const float g = std::max(2.f, h * 0.035f), ep = std::max(1.5f, h * 0.022f);
@@ -79,7 +81,7 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
     vec2 p[MAX_SOMMETS];
     const int n = contourArrondi(p, xl, yl, wl, hl, Rl);
     const vec4 c{lisere.x, lisere.y, lisere.z, lisere.w * op};
-    dessin2d::halo(r, p, n, std::max(3.f, h * 0.06f), {c.x, c.y, c.z, lueurLisere * (appuye ? 1.4f : 1.f) * op});
+    if (lueurLisere > 0) dessin2d::halo(r, p, n, std::max(3.f, h * 0.06f), {c.x, c.y, c.z, lueurLisere * (appuye ? 1.4f : 1.f) * op});
     dessin2d::contour(r, p, n, ep, c);
     return t + g;
 }
@@ -88,9 +90,10 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
 
 void startStop(Renderer& r, float x, float y, float w, float h, const std::string& titre, float op, bool appuye,
                const std::string& sousTitre, float px, bool grise) {
-    if (grise) op *= 0.45f;
-    const float m = bagueChrome(r, x, y, w, h, op, appuye && !grise, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
-    const vec4 blanc = hex(TEXTE, op), orange = hex(appuye ? 0xFF8C33 : ACCENT, op);
+    // inactif : liseré éteint, sans lueur, texte et icône gris clair pleins (lisibles, contraste ≥ 4,5 : 1)
+    const float m = grise ? bagueChrome(r, x, y, w, h, op, false, hex(INACTIF_LISERE), 0, true)
+                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
+    const vec4 blanc = hex(grise ? INACTIF_TEXTE : TEXTE, op), orange = grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFF8C33 : ACCENT, op);
     const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m;
     if (px <= 0) px = std::min(hi * (sousTitre.empty() ? 0.42f : 0.34f), 40.f * h / 60.f);
     const bool rond = h >= w * 0.75f;   // bouton presque rond (maquettes 19, 27) : icône au-dessus du texte
@@ -120,11 +123,11 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
 }
 
 ZoneTexte startStopFond(Renderer& r, float x, float y, float w, float h, float op, bool appuye, bool grise) {
-    if (grise) op *= 0.45f;
-    const float m = bagueChrome(r, x, y, w, h, op, appuye && !grise, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
+    const float m = grise ? bagueChrome(r, x, y, w, h, op, false, hex(INACTIF_LISERE), 0, true)
+                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
     const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m, rayonInt = std::min(wi, hi) / 2;
     const float s = hi * 0.36f, xs = xi + rayonInt * 0.55f + s / 2;
-    iconeMarche(r, xs, y + h / 2, s, hex(appuye ? 0xFF8C33 : ACCENT, op));
+    iconeMarche(r, xs, y + h / 2, s, grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFF8C33 : ACCENT, op));
     const float x0 = xs + s / 2 + s * 0.3f, x1 = xi + wi - rayonInt * 0.55f;
     return {x0, std::max(0.f, x1 - x0)};
 }
@@ -166,12 +169,17 @@ void piluleChrome(Renderer& r, float x, float y, float w, float h, const std::st
 }
 
 void prix(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op, bool appuye, float px, bool grise) {
-    if (grise) op *= 0.45f;
     const float R = std::min(h * 0.28f, 14.f * h / 44.f);
+    if (px <= 0) px = h * 0.42f;
+    if (grise) {   // inactif (hors ligne, achat en cours) : bouton gris neutre, sans lueur, texte clair lisible
+        plein(r, x, y, w, h, R, hex(INACTIF_FOND_HAUT, op), hex(INACTIF_FOND_BAS, op));
+        bord(r, x, y, w, h, R, 1, {1, 1, 1, 0.12f * op});
+        ui::textBoite(r, x + w / 2, y + (h - px) / 2, w - h * 0.5f, px, px, texte, hex(INACTIF_TEXTE, op), ui::CENTRE, 0.06f, false, true);
+        return;
+    }
     lueur(r, x, y, w, h, R, std::max(4.f, h * 0.22f), hex(ACCENT, (appuye ? 0.55f : 0.35f) * op));
     plein(r, x, y, w, h, R, hex(appuye ? 0xFFA352 : 0xFF8A2E, op), hex(appuye ? 0xFF7A14 : ACCENT, op));
     bord(r, x, y, w, h, R, 1, hex(0xFFC08A, 0.8f * op));
-    if (px <= 0) px = h * 0.42f;
     ui::textBoite(r, x + w / 2, y + (h - px) / 2, w - h * 0.5f, px, px, texte, hex(ON_ACCENT, op), ui::CENTRE, 0.06f, false, true);
 }
 
@@ -183,8 +191,12 @@ void selecteurFond(Renderer& r, float x, float y, float w, float h, float op) {
 
 void selecteurChoix(Renderer& r, float x, float y, float w, float h, const std::string& texte, bool actif, float op, bool appuye,
                     float px, bool grise) {
-    if (grise) op *= 0.45f;
     if (px <= 0) px = h * 0.40f;
+    if (grise) {   // choix inactif (l'invité du salon) : texte gris clair plein, actif = pilule grise à texte sombre
+        if (actif) plein(r, x, y, w, h, h / 2, hex(0xA4A9B6, op), hex(0x9499A6, op));
+        ui::textBoite(r, x + w / 2, y + (h - px) / 2, w - h * 0.5f, px, px, texte, actif ? hex(ON_ACCENT, op) : hex(INACTIF_TEXTE, op), ui::CENTRE, 0.10f);
+        return;
+    }
     if (actif) {
         lueur(r, x, y, w, h, h / 2, std::max(3.f, h * 0.15f), {0, 0, 0, 0.35f * op});
         plein(r, x, y, w, h, h / 2, hex(0xFFFFFF, op), hex(appuye ? 0xD5D9E0 : 0xE9ECF1, op));

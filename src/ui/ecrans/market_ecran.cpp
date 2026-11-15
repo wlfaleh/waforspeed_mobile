@@ -132,7 +132,7 @@ void suivre() {
 }
 
 // bouton d'achat : orange (prix de Google), pressé, ou grisé (hors ligne, achat en cours)
-void boutonAchat(Renderer& r, int i, float x, float y, float w, float h, float k, float kb) {
+void boutonAchat(Renderer& r, int i, float x, float y, float w, float h, float k, float) {   // dernier argument (kb) : plus utilisé depuis WFS-549
     g.achat[i] = {x, y, w, h};
     const std::string prix = prixDe(i);
     const calcul::Bouton e = etatBouton(i);
@@ -147,7 +147,6 @@ void boutonAchat(Renderer& r, int i, float x, float y, float w, float h, float k
         const std::string t = ui::majuscules(ui::tr(enCours ? "market.patiente" : "market.acheter"));
         ui::boutons::prix(r, x, y, w, h, t, 1, false, 16 * k, true);
     }
-    (void)kb;
     manette::focus(g.achat[i]);
 }
 
