@@ -298,7 +298,7 @@ void nuage(Renderer& r, float cx, float cy, float u, const vec4& c) {
 }
 // WFS-551 (RG-07) : étiquette de verre en haut à gauche de la vignette (« À télécharger », « ✓ Installée »), sous le badge « Choisi »
 void etiquette(Renderer& r, float x, float y, float k, const std::string& t, const vec4& c, bool coche) {
-    const float px = 12 * k, w = ui::width(px, t, 0.14f) + 38 * k, h = 26 * k;
+    const float px = 12 * k, w = ui::width(px, t, 0.14f) * 1.08f + 44 * k, h = 26 * k;   // marge large : capitales accentuées
     verre::panneau(r, x, y, w, h, {h / 2, 1.2f * k, 1, false});
     const float ix = x + 16 * k, iy = y + h / 2;
     if (coche) { const vec2 p[3] = {{ix - 5 * k, iy}, {ix - 1.5f * k, iy + 4 * k}, {ix + 5 * k, iy - 4 * k}}; dessin2d::trait(r, p, 3, 2 * k, c); }
