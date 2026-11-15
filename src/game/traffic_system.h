@@ -34,5 +34,8 @@ void benchDeuxRoues(Game& g, Renderer& r, const std::string& outDir);
 // WFS-333 (RG-04) : banc « penetration » : choc latéral provoqué (vues Poursuite et Cockpit, Ville de nuit), puis accident
 // et voiture accidentée laissée derrière ; captures penetration-*.png ; rend le nombre d'écarts (voiture dans celle du joueur)
 int benchPenetration(Game& g, Renderer& r, const std::string& outDir);
+// WFS-541 : banc « trafic-541 » : SUV heurté qui se remet en route, bouchon et changement de file, bouchon serré vu de près
+// (Poursuite, Corniche de nuit) ; captures trafic541-*.png ; WFS_AVANT_541=1 : trafic d'avant (captures « avant ») ; rend les écarts
+int benchTrafic541(Game& g, Renderer& r, const std::string& outDir);
 
 } // namespace wfs

@@ -257,6 +257,8 @@ else()
   add_executable(test_pilote_file tests/test_pilote_file.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-339 : pilote des bancs, changement de file sans sortir de la chaussée
   add_executable(test_chocs_voitures tests/test_chocs_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-256 : jamais deux voitures l'une dans l'autre
   target_link_libraries(test_chocs_voitures Threads::Threads)
+  add_executable(test_trafic_chocs541 tests/test_trafic_chocs541.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-541 : trafic de la Poursuite après les chocs
+  target_link_libraries(test_trafic_chocs541 Threads::Threads)
   add_executable(test_penetration_voitures tests/test_penetration_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-333 : aucune voiture dans celle du joueur
   target_link_libraries(test_penetration_voitures Threads::Threads)
   add_executable(test_police_461 tests/test_police_461.cpp src/game/poursuite.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-461 : police plafonnée à sa fiche, contacts sans glisse

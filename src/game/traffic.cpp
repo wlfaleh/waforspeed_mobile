@@ -173,20 +173,27 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
     for (int i = begin; i < end; i++) {
         const TrafficCar& car = cars[(size_t)i];
         double gap = std::numeric_limits<double>::infinity(), leadSpeed = car.want;
+        bool accidentee = false;   // WFS-541 : la voiture de devant retenue est une accidentée
         const double tx = LANE_X[car.target];
         for (const auto& o : cars) {
             if (&o == &car || o.cache) continue;
-            if (std::abs(o.offset - car.offset) > LANE_HALF && std::abs(o.offset - tx) > LANE_HALF) continue;
+            if (o.crashed && contactsTrafic && !g_avant541) {
+                // WFS-541 (RG-02) : une voiture (ou un deux-roues couché) accidentée ne gêne que si sa carrosserie, tournée, est dans
+                // le couloir de la voiture (sa largeur + 30 cm de chaque côté) : sinon on passe à côté au lieu d'attendre sans fin
+                const double a = o.crashYaw, demiX = (o.len * M * std::abs(std::sin(a)) + o.w * 2 * RW * std::abs(std::cos(a))) / 2;
+                const double couloir = car.w * RW + demiX + 0.3;
+                if (std::abs(o.offset - car.offset) * RW > couloir && std::abs(o.offset - tx) * RW > couloir) continue;
+            } else if (std::abs(o.offset - car.offset) > LANE_HALF && std::abs(o.offset - tx) > LANE_HALF) continue;
             const double dz = track_->relZ(o.z - car.z);
             if (dz <= 0) continue;
             const double g = dz - (o.len + car.len) / 2;
-            if (g < gap) { gap = g; leadSpeed = o.speed; }
+            if (g < gap) { gap = g; leadSpeed = o.speed; accidentee = o.crashed; }
         }
         if (!pv.garage) {
             const double dz = track_->relZ(pv.position - car.z);
             if (dz > 0 && (std::abs(pv.playerX - car.offset) < LANE_HALF || std::abs(pv.playerX - tx) < LANE_HALF)) {
                 const double g = dz - (pv.myLen + car.len) / 2;
-                if (g < gap) { gap = g; leadSpeed = pv.speed; }
+                if (g < gap) { gap = g; leadSpeed = pv.speed; accidentee = false; }
             }
         }
         // WFS-136 (RG-03) : feu rouge (ou orange, s'il reste plus d'1 s de route avant la ligne) : la ligne d'arrêt est un
@@ -197,9 +204,9 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
             if (dz <= 0 || dz > 150 / M) continue;
             const trace::Feu f = trace::feuCarrefour(s.feu, sim);
             const double g = dz - car.len / 2;
-            if ((f == trace::Feu::Rouge || (f == trace::Feu::Orange && g > car.speed * 1.0)) && g < gap) { gap = g; leadSpeed = 0; }
+            if ((f == trace::Feu::Rouge || (f == trace::Feu::Orange && g > car.speed * 1.0)) && g < gap) { gap = g; leadSpeed = 0; accidentee = false; }
         }
-        gap_[(size_t)i] = gap; lead_[(size_t)i] = leadSpeed;
+        gap_[(size_t)i] = gap; lead_[(size_t)i] = leadSpeed; leadAcc_[(size_t)i] = accidentee;
     }
 }
 
@@ -221,41 +228,61 @@ double Traffic::facteurVoie(double z) const {
 // du début du pas ; le reste du pas (vitesses, changements de file) reste dans l'ordre du jeu web.
 void Traffic::step(double h, const TrafficView& pv) {
     const size_t n = cars.size();
-    gap_.resize(n); lead_.resize(n);
+    gap_.resize(n); lead_.resize(n); leadAcc_.resize(n);
     if (parallel) jobs().parallelFor((int)n, 16, [&](int b, int e) { findLeaders(pv, b, e); });
     for (size_t i = 0; i < n; i++) {
         TrafficCar& car = cars[i];
         if (car.crashed) {
             car.crashT += h;
-            car.speed = std::max(0.0, car.speed - MAX_SPEED * 0.55 * h);
-            car.offset = clampd(car.offset + car.crashVx * h, -1.12, 1.12);
-            car.crashVx *= std::max(0.0, 1 - 2.5 * h);
-            car.crashYaw += car.crashSpin * h; car.crashSpin *= std::max(0.0, 1 - 1.8 * h);
-            if (car.deuxRoues) {   // WFS-232 (RG-05) : chute sur le flanc du côté où il penchait (sinon du côté où il est poussé)
-                car.inclPrec = car.inclinaison;
-                const double sens = std::abs(car.inclinaison) > 1e-3 ? (car.inclinaison > 0 ? 1 : -1) : (car.crashVx >= 0 ? 1 : -1);
-                double a = std::max(std::abs(car.inclinaison), AMORCE_CHUTE);
-                if (a < TOMBE) {
-                    car.chute += 9.81 / HAUTEUR_CHUTE * std::sin(a) * h;
-                    a = std::min(TOMBE, a + car.chute * h);
-                    if (a >= TOMBE) car.chute = 0;   // posé au sol
-                }
-                car.inclinaison = sens * a;
+            // WFS-541 (RG-01) : surprise « accident » de la Poursuite (crashT < 0 au départ) et glissade : pas de redressement
+            // départ : arrêtée depuis REDRESSE_ARRET_S, ou glissade finie (REDRESSE_APRES_S) ; une fois partie, elle va au bout
+            const bool pret = car.crashT >= REDRESSE_APRES_S || (car.crashT >= REDRESSE_ARRET_S && car.arretT >= REDRESSE_ARRET_S);
+            if (car.crashT < REDRESSE_ARRET_S || car.deuxRoues || g_avant541) car.redresse = false;
+            else if (!car.redresse && pret) {
+                car.redresse = true; car.vRed = 0; car.braq = 0; car.crashVx = car.crashSpin = 0; car.speed = 0; car.degageT = 0;
+                car.crashYaw = std::remainder(car.crashYaw, 2 * std::numbers::pi);
+                // file visée, choisie une fois pour toutes (la plus proche) : pas d'hésitation entre deux files en chemin
+                const double kv = facteurVoie(car.z), droite = car.deuxRoues ? DROITE_VOIE : 0; double bd = 1e9;
+                for (int l = 0; l < LANES; l++) { const double d = std::abs((LANE_X[l] + droite) * kv - car.offset); if (d < bd) { bd = d; car.target = l; } }
             }
-            if (car.crashT > 7 && std::abs(track_->relZ(pv.position - car.z)) > 60 / M) {
-                car.crashed = false; car.speed = 0; car.signal = 0; car.pending = false;
-                car.inclinaison = car.inclPrec = car.chute = 0;   // WFS-232 : relevé (hors de la vue)
-                int best = 0; double bd = 9;
-                for (int l = 0; l < LANES; l++) { const double d = std::abs(LANE_X[l] - car.offset); if (d < bd) { bd = d; best = l; } }
-                car.lane = car.target = best;
+            if (car.redresse) redresser(car, h);
+            else {
+                car.speed = std::max(0.0, car.speed - MAX_SPEED * 0.55 * h);
+                car.offset = clampd(car.offset + car.crashVx * h, -1.12, 1.12);
+                car.crashVx *= std::max(0.0, 1 - 2.5 * h);
+                car.crashYaw += car.crashSpin * h; car.crashSpin *= std::max(0.0, 1 - 1.8 * h);
+                if (car.deuxRoues) {   // WFS-232 (RG-05) : chute sur le flanc du côté où il penchait (sinon du côté où il est poussé)
+                    car.inclPrec = car.inclinaison;
+                    const double sens = std::abs(car.inclinaison) > 1e-3 ? (car.inclinaison > 0 ? 1 : -1) : (car.crashVx >= 0 ? 1 : -1);
+                    double a = std::max(std::abs(car.inclinaison), AMORCE_CHUTE);
+                    if (a < TOMBE) {
+                        car.chute += 9.81 / HAUTEUR_CHUTE * std::sin(a) * h;
+                        a = std::min(TOMBE, a + car.chute * h);
+                        if (a >= TOMBE) car.chute = 0;   // posé au sol
+                    }
+                    car.inclinaison = sens * a;
+                }
+                car.z = track_->wrap(car.z + car.speed * h);
             }
             car.laneYaw = 0;
-            car.z = track_->wrap(car.z + car.speed * h);
+            car.arretT = std::abs(car.speed) * M < 0.5 && std::abs(car.vRed) < 0.5 ? car.arretT + h : 0;
+            // WFS-541 (RG-01) : pas remise en route en RETRAIT_APRES_S (coincée, de travers) : retirée hors de la vue seulement
+            // (avant : relevée sur place dès 60 m, sous les yeux du joueur, et jamais s'il restait à côté)
+            if (g_avant541) {   // banc seulement (captures « avant ») : relèvement de main, sur place dès 60 m
+                if (car.crashT > 7 && std::abs(track_->relZ(pv.position - car.z)) > 60 / M) {
+                    car.crashed = false; car.speed = 0; car.signal = 0; car.pending = false;
+                    car.inclinaison = car.inclPrec = car.chute = 0;
+                    int best = 0; double bd = 9;
+                    for (int l = 0; l < LANES; l++) { const double d = std::abs(LANE_X[l] - car.offset); if (d < bd) { bd = d; best = l; } }
+                    car.lane = car.target = best;
+                }
+            } else if (car.crashed && car.crashT > RETRAIT_APRES_S && horsDeVue(track_->relZ(car.z - pv.position) * M)) placerLoin(car, pv.position);
             continue;
         }
         if (car.traverse >= 0) { placerTraverse(car); continue; }   // WFS-136 : traversée du carrefour au rouge
         if (!parallel) findLeaders(pv, (int)i, (int)i + 1);
         const double gap = gap_[i], leadSpeed = lead_[i];
+        const bool derriereAccidentee = leadAcc_[i] != 0;
         // WFS-136 (RG-02, RG-04) : 40 km/h dans l'anneau, 60 km/h dans les épingles (aussi 30 m avant), +15 % sur l'autoroute ;
         // tracé 1 : want = car.want (facteur 1, limite infinie), le calcul du jeu web est inchangé
         double want = track_->sections().empty() ? car.want
@@ -274,9 +301,13 @@ void Traffic::step(double h, const TrafficView& pv) {
         const double safe = SAFE_MIN + car.speed * SAFE_TIME;
         double target = want;
         if (gap < safe) target = std::min(target, std::max(0.0, leadSpeed - (safe - gap) * 1.2));
+        // WFS-541 (RG-02) : une voiture qui déboîte de derrière une voiture accidentée avance au pas en
+        // braquant pour sortir, à DEBOITE_V (les contacts l'arrêtent contre une carrosserie : jamais de recouvrement)
+        const bool lent = contactsTrafic && !g_avant541, deboite = lent && car.target != car.lane && derriereAccidentee;
+        if (deboite) target = std::max(target, std::min(want, DEBOITE_V / M));
         const double acc = target > car.speed ? MAX_SPEED * 0.1 : MAX_SPEED * 0.7;
         car.speed = std::max(0.0, car.speed + clampd(target - car.speed, -acc * h, acc * h));
-        if (gap < 0.8 / M) car.speed = std::min(car.speed, leadSpeed * 0.95);
+        if (gap < 0.8 / M && !deboite) car.speed = std::min(car.speed, leadSpeed * 0.95);   // WFS-541 : sauf en déboîtant (contacts)
         // envie de changer de file (bloqué derrière plus lent, ou de temps en temps)
         car.think -= h;
         const double kv = facteurVoie(car.z);   // WFS-243 (RG-ANO-144) : files resserrées dans l'anneau, pas de changement de file
@@ -305,7 +336,10 @@ void Traffic::step(double h, const TrafficView& pv) {
         const double droite = car.deuxRoues ? DROITE_VOIE : 0;   // WFS-232 : deux-roues du côté droit de sa voie
         if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - (LANE_X[car.lane] + droite) * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
         const double d = (LANE_X[car.target] + droite) * kv - car.offset;
-        const double move = clampd(d, -0.5 * h, 0.5 * h);
+        // WFS-541 (RG-02) : une voiture ne se déplace de côté qu'en avançant (avant : 3,75 m/s de côté même arrêtée, caisse tournée
+        // de 90°) : au plus v · tan 35° (braquage d'une voiture au pas) ; à l'arrêt, rien ; au-delà de 19 km/h, rien ne change
+        const double latMax = lent ? std::min(0.5, car.speed * M * DEBOITE_TAN / RW) : 0.5;
+        const double move = clampd(d, -latMax * h, latMax * h);
         car.offset += move;
         car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, 1e-3));
         if (std::abs(d) < 0.01) { car.lane = car.target; if (!car.pending) car.signal = 0; }
@@ -316,7 +350,186 @@ void Traffic::step(double h, const TrafficView& pv) {
             const double pas = (inclinaisonEquilibre(car.speed * M, kappa) - car.inclinaison) * std::min(1.0, h * LISSAGE_INCLINAISON);
             car.inclinaison += std::clamp(pas, -ROULIS_MAX * h, ROULIS_MAX * h);   // roulis au plus 60°/s (pas d'à-coup)
         }
+        car.redresse = false; car.vRed = car.braq = 0;
+        car.arretT = car.speed * M < 0.5 ? car.arretT + h : 0;   // WFS-541 (RG-02) : temps à l'arrêt (banc)
     }
+    if (contactsTrafic && !g_avant541) contacts();   // WFS-541 (RG-03) : aucune voiture du trafic dans une autre à la fin du pas
+}
+
+// WFS-541 (RG-01) : redressement d'une voiture accidentée, en roulant (modèle bicyclette, cinématique : à 15 km/h au plus, les
+// pneus ne glissent pas) : cap de la caisse crashYaw (par rapport à la route, + à droite, laneYaw = 0 pendant l'accident),
+// vitesse signée vRed le long de la caisse, angle des roues braq. En avant : vise l'axe de sa file 6 m devant elle ; regard
+// vers l'arrière (cos cap < 0) : marche arrière, roues braquées du côté qui ramène le nez dans le sens de la route.
+void Traffic::redresser(TrafficCar& c, double h) {
+    const double kv = facteurVoie(c.z), droite = c.deuxRoues ? DROITE_VOIE : 0;
+    const int best = std::clamp(c.target, 0, LANES - 1);
+    const double xC = (LANE_X[best] + droite) * kv * RW;
+    double x = c.offset * RW, &cap = c.crashYaw;
+    // nez à plus de 50° de la route : manœuvre en plusieurs temps (comme un demi-tour en trois temps) : roues braquées à fond
+    // du côté qui ramène le nez dans le sens de la route, en avant puis en arrière (les deux tournent la caisse dans le même
+    // sens, et leurs écarts de côté s'annulent) ; on change de sens de marche 1,5 m après avoir passé l'axe de sa file.
+    // Nez à moins de 50° : en avant, poursuite de l'axe de sa file (« pure pursuit », point visé 4 m devant).
+    double braqVise, vVise;
+    const double sgCap = cap >= 0 ? 1 : -1, sgCote = std::sin(cap) >= 0 ? 1 : -1;
+    if (std::abs(cap) > 0.87) {
+        // sens de marche : celui où elle roule déjà (à l'arrêt : celui qui la rapproche de sa file)
+        int sens = c.vRed > 0 ? 1 : c.vRed < 0 ? -1 : ((xC - x) * sgCote >= 0 ? 1 : -1);
+        // passée de 1,5 m, ou au bord de la chaussée en s'en allant vers l'extérieur : on repart dans l'autre sens
+        if ((x - xC) * sens * sgCote > 1.5 || (std::abs(x) > RW && x * sens * sgCote > 0)) sens = -sens;
+        vVise = sens > 0 ? REDRESSE_V_AR : -REDRESSE_V_AR;
+        braqVise = -sens * sgCap * REDRESSE_BRAQ;
+    } else {
+        vVise = REDRESSE_V;
+        braqVise = clampd(2.0 * (std::atan2(xC - x, 4.0) - cap), -REDRESSE_BRAQ, REDRESSE_BRAQ);
+    }
+    // bloquée (contre une autre voiture, le joueur, la police) depuis 1,5 s : elle se dégage dans l'autre sens pendant 2 s,
+    // roues droites, comme un conducteur qui recule pour reprendre sa manœuvre
+    if (c.degageT <= 0 && c.arretT >= 1.5) { c.degageSens = vVise > 0 ? -1 : 1; c.degageT = 2.0; }
+    if (c.degageT > 0) { c.degageT -= h; vVise = c.degageSens * REDRESSE_V_AR; braqVise = 0; }
+    c.braq += clampd(braqVise - c.braq, -REDRESSE_BRAQ_VIT * h, REDRESSE_BRAQ_VIT * h);
+    // vitesse : 15 km/h en avant dans l'axe, 10 km/h pendant la manœuvre ; on change de sens en passant par l'arrêt
+    c.vRed += clampd(vVise - c.vRed, -REDRESSE_ACC * h, REDRESSE_ACC * h);
+    const double e = REDRESSE_EMPATTEMENT * c.len * M;   // empattement (m)
+    cap += c.vRed / e * std::tan(c.braq) * h;
+    x += c.vRed * std::sin(cap) * h;
+    c.offset = clampd(x / RW, -1.12, 1.12);
+    c.z = track_->wrap(c.z + c.vRed * std::cos(cap) * h / M);
+    c.speed = std::max(0.0, c.vRed * std::cos(cap)) / M;   // vitesse le long de la route (voitures de derrière, feux stop)
+    // dans sa file (à 10 cm près) et droite (3° près) : posée sur l'axe de sa file (écart invisible) et elle reprend sa route
+    if (c.vRed > 0 && std::abs(cap) < 0.05 && std::abs(xC - x) < 0.1) {
+        c.offset = c.prevOff = xC / RW;
+        c.crashed = c.redresse = c.pending = false; c.signal = 0; c.crashYaw = c.crashSpin = c.crashVx = 0; c.crashT = 0;
+        c.lane = c.target = best; c.speed = std::max(0.0, c.vRed) / M; c.vRed = c.braq = 0;
+    }
+}
+
+// WFS-541 (RG-03, ANO-270) : contacts entre voitures du trafic, sur les emprises dessinées (WFS-333 : rectangles orientés, tête-à-
+// queue d'une accidentée compris) : chaque paire qui se recouvre est écartée par la direction de moindre recouvrement (moitié
+// chacune ; une voiture qui traverse un carrefour, placée par l'horloge des feux, ne bouge pas) ; par l'arrière, la voiture de
+// derrière prend au plus la vitesse de celle de devant (choc mou). Quatre passes au plus : une voiture écartée contre une 3e (ou contre le joueur, fixe) est reprise.
+void Traffic::contacts(const Emprise* fixe, double zFixe) {
+    // balayage le long de la route : voitures triées par z (tableau gardé d'un pas à l'autre : aucune allocation en course),
+    // seules les voisines à moins de PORTEE_M sont comparées (et, au bout du tour, les premières avec les dernières)
+    constexpr double PORTEE_M = 12;
+    ordre_.clear();
+    for (size_t i = 0; i < cars.size(); i++) if (!cars[i].cache) ordre_.push_back({track_->wrap(cars[i].z), (int)i});
+    std::sort(ordre_.begin(), ordre_.end());
+    const size_t n = ordre_.size();
+    const double L = track_->length(), portee = PORTEE_M / M;
+    for (int passe = 0; passe < 4; passe++) {
+        bool bouge = false;
+        for (size_t ka = 0; ka < n; ka++) {
+            TrafficCar& A = cars[(size_t)ordre_[ka].second];
+            if (fixe) {   // voiture qu'on ne déplace pas (le joueur) : seule la voiture du trafic est écartée
+                const double dzF = track_->relZ(A.z - zFixe);
+                double nx = 0, nz = 0;
+                const double o = std::abs(dzF) * M < PORTEE_M ? recouvrement(*fixe, empriseTrafic(A, dzF), &nx, &nz) : -1;
+                if (o > 0) { A.offset += nx * (o + JEU_TRAFIC_M) / RW; A.z = track_->wrap(A.z + nz * (o + JEU_TRAFIC_M) / M); bouge = true; }
+            }
+            for (size_t pas = 1; pas < n; pas++) {
+                const size_t kb = (ka + pas) % n;
+                const double ecart = ordre_[kb].first - ordre_[ka].first + (kb < ka ? L : 0);
+                if (ecart > portee) break;
+                TrafficCar& B = cars[(size_t)ordre_[kb].second];
+                const double lim = (A.len + B.len) * M / 2 + (A.w + B.w) * RW + 0.1;   // demi-diagonales au plus
+                const double dz = track_->relZ(B.z - A.z);
+                if (std::abs(dz) * M > lim || std::abs(B.offset - A.offset) * RW > lim) continue;
+                double nx = 0, nz = 0;
+                const double o = recouvrement(empriseTrafic(A, 0), empriseTrafic(B, dz), &nx, &nz);
+                if (o <= 0) continue;
+                // qui bouge : pas la voiture qui traverse un carrefour (placée par l'horloge des feux) ; pas, de côté, une voiture
+                // qui roule au bord extérieur de ses files (borne ci-dessous) ; sinon, pas celle qui se redresse et reste bloquée
+                // depuis 3 s (les voitures qui la coincent lui laissent la place : sinon elle resterait arrêtée sans fin, RG-02)
+                if (A.traverse >= 0 && B.traverse >= 0) continue;
+                const bool cote = std::abs(nx) >= std::abs(nz);
+                auto auBord = [&](const TrafficCar& v, double sens) {
+                    if (v.crashed || !cote) return false;
+                    const double lim = LANE_X[LANES - 1] * facteurVoie(v.z) + 0.25 / RW - 0.02 / RW;
+                    return v.offset * sens >= lim;
+                };
+                double wa = A.traverse >= 0 || auBord(A, -nx) ? 0 : 1, wb = B.traverse >= 0 || auBord(B, nx) ? 0 : 1;
+                if (wa + wb == 0) wa = wb = 1;   // toutes deux au bord (impossible en pratique) : moitié chacune
+                if (wa > 0 && wb > 0) {
+                    const bool ra = A.redresse && A.arretT > 3, rb = B.redresse && B.arretT > 3;
+                    if (ra != rb) (ra ? wa : wb) = 0;
+                }
+                const double d = o + JEU_TRAFIC_M, fa = wa / (wa + wb), fb = 1 - fa;
+                A.offset -= nx * d * fa / RW; A.z = track_->wrap(A.z - nz * d * fa / M);
+                B.offset += nx * d * fb / RW; B.z = track_->wrap(B.z + nz * d * fb / M);
+                // une voiture qui roule normalement reste sur la chaussée de ses files : au plus 25 cm au-delà de la file extérieure
+                // (anneau d'un rond-point aux files resserrées compris, WFS-243) ; sa décision de changer de file ne change pas
+                for (TrafficCar* v : {&A, &B}) {
+                    if (v->crashed || std::abs(nx) < std::abs(nz)) continue;
+                    const double lim = LANE_X[LANES - 1] * facteurVoie(v->z) + 0.25 / RW;
+                    v->offset = clampd(v->offset, -lim, lim);
+                }
+                // coincées de côté (bord de la chaussée, bord des files) : ce qui reste se règle le long de la route
+                const double reste = recouvrement(empriseTrafic(A, 0), empriseTrafic(B, track_->relZ(B.z - A.z)));
+                if (reste > 0) {
+                    const double dzr = (reste + JEU_TRAFIC_M) / std::max(std::abs(nz), 0.3) * (nz >= 0 ? 1 : -1);
+                    A.z = track_->wrap(A.z - dzr * fa / M); B.z = track_->wrap(B.z + dzr * fb / M);
+                }
+                if (std::abs(nz) > std::abs(nx)) {   // l'une derrière l'autre (nz > 0 : B devant A)
+                    TrafficCar &derriere = nz > 0 ? A : B, &devant = nz > 0 ? B : A;
+                    derriere.speed = std::min(derriere.speed, devant.speed);
+                    if (derriere.redresse && derriere.vRed * std::cos(derriere.crashYaw) > 0) derriere.vRed = 0;
+                }
+                bouge = true;
+            }
+        }
+        if (!bouge) break;
+    }
+    // le joueur d'abord : à la fin, aucune voiture du trafic n'est dans la sienne (WFS-333), même coincée contre une autre
+    if (fixe)
+        for (const auto& [z, i] : ordre_) {
+            TrafficCar& A = cars[(size_t)i];
+            const double dzF = track_->relZ(A.z - zFixe);
+            if (std::abs(dzF) * M >= PORTEE_M) continue;
+            double nx = 0, nz = 0;
+            const double o = recouvrement(*fixe, empriseTrafic(A, dzF), &nx, &nz);
+            if (o > 0) { A.offset += nx * (o + JEU_TRAFIC_M) / RW; A.z = track_->wrap(A.z + nz * (o + JEU_TRAFIC_M) / M); }
+        }
+}
+
+int Traffic::separerDe(const Emprise& e, double zRoute) {
+    int k = 0;
+    if (g_avant541) return 0;   // banc seulement : captures « avant »
+    for (TrafficCar& c : cars) {
+        if (c.cache || c.traverse >= 0) continue;
+        const double dz = track_->relZ(c.z - zRoute);
+        if (std::abs(dz) * M > 12) continue;
+        double nx = 0, nz = 0;
+        const double o = recouvrement(e, empriseTrafic(c, dz), &nx, &nz);
+        if (o <= 0) continue;
+        c.offset += nx * (o + JEU_TRAFIC_M) / RW;
+        c.z = track_->wrap(c.z + nz * (o + JEU_TRAFIC_M) / M);
+        if (nz < 0 && std::abs(nz) > std::abs(nx)) c.speed *= 0.5;   // elle était derrière et l'a percutée : elle freine
+        k++;
+    }
+    return k;
+}
+
+void Traffic::placerLoin(TrafficCar& c, double playerPos) {
+    const double Lm = track_->length() * M;
+    Mulberry32 R(seed * 40503u + c.rng + (uint32_t)std::lround(sim * 60));
+    double z = c.z;
+    // tracé assez long (régulation WFS-281) : à plus de REGUL_LOIN_M, comme avant ; tracé court : au tiers du tour
+    const double loin = Lm >= 2 * REGUL_LOIN_M + 400 ? REGUL_LOIN_M : Lm / 3, plage = std::max(0.0, Lm - 2 * loin);
+    for (int essai = 0; essai < 24; essai++) {
+        z = track_->wrap(playerPos + (loin + R.next() * plage) / M);
+        bool libre = true;
+        for (const auto& o : cars)
+            if (&o != &c && o.lane == c.lane && std::abs(track_->relZ(o.z - z)) < (o.len + c.len) / 2 + 30 / M) { libre = false; break; }
+        if (libre) break;
+    }
+    c.z = c.zPrec = z;
+    c.target = c.lane; c.pending = false; c.signal = 0; c.laneYaw = c.yawPrec = 0;
+    c.offset = c.prevOff = c.offPrec = (LANE_X[c.lane] + (c.deuxRoues ? DROITE_VOIE : 0)) * facteurVoie(z);
+    c.speed = c.want;
+    c.prevDz = track_->relZ(z - playerPos);
+    // WFS-541 : une voiture accidentée retirée repart neuve (relevée, droite, roues droites)
+    c.crashed = c.redresse = false; c.crashT = c.crashYaw = c.crashSpin = c.crashVx = 0; c.vRed = c.braq = c.arretT = 0;
+    c.inclinaison = c.inclPrec = c.chute = 0;
 }
 
 // advanceTraffic() : pas fixes jusqu'à l'horloge (au plus 600 pas d'un coup)
@@ -353,21 +566,7 @@ void Traffic::regulerDensite(double playerPos) {
         if (n <= max) continue;
         std::sort(idx, idx + n, [&](int a, int b) { return cars[(size_t)a].want < cars[(size_t)b].want || (cars[(size_t)a].want == cars[(size_t)b].want && a < b); });
         for (int k = 0; k < n - max; k++) {
-            TrafficCar& c = cars[(size_t)idx[k]];
-            Mulberry32 R(seed * 40503u + c.rng + (uint32_t)std::lround(sim * 60));
-            double z = c.z;
-            for (int essai = 0; essai < 24; essai++) {
-                z = track_->wrap(playerPos + (REGUL_LOIN_M + R.next() * (Lm - 2 * REGUL_LOIN_M)) / M);
-                bool libre = true;
-                for (const auto& o : cars)
-                    if (&o != &c && o.lane == c.lane && std::abs(track_->relZ(o.z - z)) < (o.len + c.len) / 2 + 30 / M) { libre = false; break; }
-                if (libre) break;
-            }
-            c.z = c.zPrec = z;
-            c.target = c.lane; c.pending = false; c.signal = 0; c.laneYaw = c.yawPrec = 0;
-            c.offset = c.prevOff = c.offPrec = (LANE_X[c.lane] + (c.deuxRoues ? DROITE_VOIE : 0)) * facteurVoie(z);
-            c.speed = c.want;
-            c.prevDz = track_->relZ(z - (playerPos + PLAYER_Z));
+            placerLoin(cars[(size_t)idx[k]], playerPos);   // WFS-541 : même placement, mis en commun
         }
     }
 }
@@ -399,6 +598,7 @@ void Traffic::crash(TrafficCar& car, double impact, int side) {
 }
 
 bool g_avantWfs333 = false;
+bool g_avant541 = false;
 
 // WFS-333 : recouvrement de deux rectangles orientés par les 4 axes séparateurs (axes propres de chaque rectangle)
 double recouvrement(const Emprise& a, const Emprise& b, double* nx, double* nz) {
@@ -515,9 +715,15 @@ HitEvents Traffic::collide(Player& pl, double dt) {
     }
     // WFS-333 (RG-03) : dernière vérification, sur les emprises dessinées : une voiture repoussée contre une autre ou entrée
     // pendant le pas (glissade, tête-à-queue) ne reste jamais dans celle du joueur
-    if (dessine)
+    // WFS-541 (RG-03) : une voiture écartée du joueur contre une autre voiture du trafic n'y reste pas : contacts du trafic,
+    // puis écart du joueur repris (la voiture du joueur garde toujours la main)
+    if (dessine) {
+        const double pzFin = pl.position + PLAYER_Z;   // le joueur a pu être recalé par un choc par l'arrière (pz : avant les chocs)
         for (auto& car : cars)
-            if (!car.cache && std::abs(track_->relZ(car.z - pz)) * M < 12) separer(pl, car);
+            if (!car.cache && std::abs(track_->relZ(car.z - pzFin)) * M < 12) separer(pl, car);
+        if (contactsTrafic && !g_avant541) { const Emprise j = empriseJoueur(pl); contacts(&j, pzFin); }
+        for (auto& car : cars) car.prevDz = track_->relZ(car.z - pzFin);
+    }
     return ev;
 }
 
