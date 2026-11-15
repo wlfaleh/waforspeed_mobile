@@ -2075,3 +2075,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:58:39 — R19 : proposition pour l'interface de conduite (smart-brainstorming)
 - Demande de l'utilisateur : améliorer boutons et infos en course ; maquette `17-conduite-hud.jpg` et avant / après. Rien transmis au PO.
+
+### 2026-11-15 01:04:31 — R19 : interface de conduite corrigée (smart-brainstorming)
+- Retours de l'utilisateur : nitro gardé (couleur seulement), volant gardé, flèches retirées (autre mode), pédales refusées → cartes Frein / Gaz en verre. Rien transmis au PO.
