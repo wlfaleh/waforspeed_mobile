@@ -924,11 +924,17 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         verifier(!fs::exists(cheminPaquet(co, carte::FormatTexture::ASTC), ec) && cp.etat(co).etat == EtatCarte::Disponible, "Corniche supprimée → de nouveau « Télécharger »");
         imageMulti(4);
         captureJeu("paquets-terrain-apres-suppression", "Corniche supprimée : « X libérés », de nouveau « Télécharger »");
+        // WFS-551 (RG-07) : carte de nouveau à télécharger : « Rouler » éteint, l'appui ne lance rien
         rouler(co.c_str(), false);
+        verifier(g.ecran() == Ecran::Terrain && chargements == 1, "Corniche supprimée : « Rouler » éteint, aucune course lancée (WFS-551 RG-07)");
+        // secours de WFS-306 toujours en place : la même demande que « Rouler » (terrain.cpp, comme bench_changement_carte.cpp), faite
+        // directement, construit la Corniche par le code
+        auto demander = [&] { Game::demandes().carte = co.c_str(); Game::demandes().nuit = false; cible = co; imageMulti(4); };
+        demander();
         verifier(chargements == 2 && !paquetLu, "course suivante sur la Corniche : relue, construite par le code (secours)");
         // même carte, paquet inchangé : aucune reconstruction
         g.allerA(Ecran::Terrain); imageMulti(2);
-        rouler(co.c_str(), false);
+        demander();
         verifier(chargements == 2, "même carte, paquet inchangé : pas de reconstruction");
         Game::demandes().debutChargement = nullptr;
         cp.lier(nullptr, formats, 0);
