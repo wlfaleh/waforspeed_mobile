@@ -941,3 +941,11 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - **Règles** : `regles-de-gestion/WFS-548.md` et `regles-de-gestion/E23-interface-r19.md` ; maquettes `references/maquettes-R19/`.
 - **Branche** : `feature/waforspeed-548`. WFS-549 touche les mêmes écrans : le 2e fusionné se synchronise avec `main` et refait ses captures.
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-549, WFS-552.
+
+### 2026-11-15 12:01:26 — Début WFS-549 : attribué à Claude, agent dev3d (01Us6uCvCC) (po-scrum-master)
+- **Demande** : nouvelle session `@dev` (session_01Us6uCvCCKjrpBx7JNmrkCa), jamais de ticket avant (« @dev go »).
+- **Pourquoi lui** : 1er ticket prêt de l'épic E23 (plus récente demande de l'utilisateur, P1) après WFS-548, déjà à 01Us6uCucP.
+- **Zone de code** : `src/ui/boutons.*` (nouveau), `src/ui/ecrans/**`, `src/ui/garage_cadre.*`, `garage_achat*`, `garage_couleur.*`, `garage_skin.*`, `garage_finition.*`, `garage_fiche.*` (boutons seulement), `src/ui/hud.*` (taille Menu / Caméra seulement), `shaders/ui*`, `tests/**`.
+- **Règles** : `regles-de-gestion/WFS-549.md`, `regles-de-gestion/E23-interface-r19.md`, maquettes `references/maquettes-R19/`. Taille de chaque bouton identique à `main`, sauf Menu et Caméra du HUD.
+- **Branche** : `feature/waforspeed-549`. Partage d'écrans avec WFS-548 : le 2e fusionné se synchronise avec `main` et refait ses captures. Après fusion : 🟡 À valider (utilisateur).
+- Reste ⏳ Prêt pour une nouvelle session `@dev` : WFS-552.

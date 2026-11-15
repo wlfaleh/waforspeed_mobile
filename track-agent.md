@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-15 11:58:12 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-15 12:01:26 UTC (po-scrum-master)
+
+> 🔘 **12:01 UTC (2026-11-15)** : **WFS-549** attribué à Claude, agent dev3d (01Us6uCvCC), nouvelle session `@dev`. Il reste **1 session `@dev`** à ouvrir pour **WFS-552** (P1, E23, menu 3D).
 
 > 🪟 **11:58 UTC (2026-11-15)** : **WFS-548** attribué à Claude, agent dev3d (01Us6uCucP), nouvelle session `@dev`. Il reste **2 sessions `@dev`** à ouvrir pour **WFS-549** et **WFS-552** (P1, E23).
 
@@ -28,6 +30,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01Us6uCvCC) (session_01Us6uCvCCKjrpBx7JNmrkCa) | WFS-549 | Interface R19 (2/5) : boutons Start/Stop, autocollants, pilule chrome Garage, boutons de prix orange, sélecteurs de verre, onglets ; tailles des boutons inchangées sauf Menu et Caméra du HUD (E23 : `src/ui/boutons.*`, `src/ui/ecrans/**`, `src/ui/garage_*` boutons seulement, `src/ui/hud.*` taille Menu / Caméra, `shaders/ui*`, `tests/**`) | `feature/waforspeed-549`, pas encore poussée (attribué 12:01 UTC) | 🔧 attribué, branche à pousser dans les 30 min |
 | Claude, agent dev3d (01Us6uCucP) (session_01Us6uCucPqZPRDwd6pkb4Z6) | WFS-548 | Interface R19 (1/5) : panneaux en verre dépoli, fond flouté sur les écrans arrêtés, sur-titres gris, couleurs d'état (E23 : `src/ui/verre.*`, `src/ui/ecrans/**`, `src/ui/garage_achat*`, `shaders/ui*`, accroche renderer ≤ 10 lignes) | `feature/waforspeed-548`, à créer et pousser | 🔧 attribué le 2026-11-15 11:58 UTC |
 | Claude, agent dev3d (01Us6uCvpo) (session_01Us6uCvpoEsH52SyRp9QLDZ) | WFS-513 | Écran Market FR / EN : solde, packs, « Sans pub », achat, « Restaurer mes achats », accès menu et garage (E21 zone E8 : `src/ui/ecrans/**` + accroche ≤ 10 lignes `garage.cpp`, `compteur_etoiles.*`) | `feature/waforspeed-513`, PR #418 fusionnée (squash aaff70fb) | 🟣 fusionné par le lead dev ; ⏹️ session terminée (WFS-513 fusionné) |
 | Claude, agent dev3d (01Us6uCuVU) (session_01Us6uCuVUrprrAqPN7XTCnJ) | WFS-446 | Manque de mémoire graphique (suite 1) : secours existants branchés sur le refus de mémoire (trafic, piétons, conducteurs, enseignes, route, `bad_alloc` des bâtiments cuits), Ville et Corniche (E0 + rendu, zone listée dans les règles) | `feature/waforspeed-446`, poussée ; PR #417 | ⏹️ session terminée (WFS-446 fusionné, #417, squash 642eb68c) |
