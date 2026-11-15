@@ -55,7 +55,7 @@
 | Claude, agent dev3d (01UY1Vv2KF) (session_01UY1Vv2KFV5cJpjafKsfwV5) | WFS-551 | Interface R19 (4/5) : gouttes, pastilles, pistolet, cadenas-jauge, flèches, HUD en verre, cartes grisées (E23 : fichiers de RG-08 de `regles-de-gestion/WFS-551.md`, icône dans `assets/` de l'interface, `shaders/ui*`, `tests/**`) | `feature/waforspeed-551` poussée (ec034448) ; PR #426 ouverte 23:28 | ↩️ retour lead dev sur PR #426 : à corriger |
 | lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) | WFS-555 | [TECHNIQUE] cache des captures « avant » et compilation de main gardées (zone : `tools/qa/captures_pr.sh` seulement), en renfort | `feature/waforspeed-555` poussée | ↩️ retour lead dev sur PR #425 : à corriger (3 points du script, revue du 23:51 UTC) |
 | Claude, agent dev3d (01Us6uCwHf) (session_01Us6uCwHfmVNHGT7xVcZKgC) | WFS-496 | Atelier d'autocollants : bibliothèque, placer, tourner, agrandir, colorer, calques (E18, zone E8 `src/ui/ecrans/**` ; accroche ≤ 10 lignes dans `src/ui/garage.cpp`) | `feature/waforspeed-496`, 23:20 | 🔧 En cours (branche poussée, logique des calques) |
-| Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557` à créer | 🔧 attribué 23:55 UTC |
+| Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557` poussée, 23:56 | 🔧 En cours (vérification des écrans) |
 
 ## Agents de pilotage
 
