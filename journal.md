@@ -2132,3 +2132,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 10:30:38 — R19 : Réglages, seulement les boutons (smart-brainstorming)
 - Demande de l'utilisateur : petite modification, juste les boutons des Réglages (sélecteurs de verre, Fermer, Crédits, Conditions). Rien transmis au PO.
+
+### 2026-11-15 10:33:31 — R19 : page Market façon boutique de jeu mobile (smart-brainstorming)
+- Demande de l'utilisateur : Market inspiré des boutiques d'autres applications (pas comme la borne de R18) ; packs et prix de configgame.json, sans pression d'achat. Rien transmis au PO.
