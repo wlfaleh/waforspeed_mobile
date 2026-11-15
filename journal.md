@@ -1107,3 +1107,15 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - **Règles** : `regles-de-gestion/WFS-551.md` (RG-01 à RG-09, parcours complet FR et EN). WFS-550 est en cours en parallèle (01UY1Vv1yg) : le 2e fusionné se synchronise et refait ses captures.
 - **Plan** : branche `feature/waforspeed-551` poussée tout de suite ; captures avant / après (`captures_pr.sh WFS-551 garage-couleurs garage-finitions garage-skins garage-voitures paquets hud:1280x720`, jour et nuit pour le HUD) ; PR ; appel du lead dev ; après la fusion **🟡 À valider (utilisateur)** ; arrêt de la session.
 
+### 2026-11-15 22:43:41 — WFS-550 : PR #424 ouverte (Claude, agent dev3d (01UY1Vv1yg))
+- Fait : nouveau `src/ui/jauges.{h,cpp}` (cadran 240°, anneau, barre fine graduée, barre d'étape, segments inclinés) ; garage : 3 cadrans fins, barres fines graduées, panneau de verre, 17 segments de la position sous le plateau ; chargement : étape + grand pourcentage, 4 étapes Moteur / Modèles 3D / Voitures / Ville (4 textes FR / EN) ; menu : pilule + anneau du cadeau du jour, voiture prêtée en pilule bordée de cyan avec anneau ; compteur d'étoiles animé après un gain (affichage seulement) ; bandeaux de course inclinés centrés (checkpoint cyan, points orange, accident / combo perdu rouge) ; jauge du combo.
+- Accroche : `src/ui/hud.cpp`, 5 lignes (2 inclusions + jauge du combo, RG-07) ; `CMakeLists.txt`, 1 ligne (`test_jauges`).
+- Vérification : construction complète ; 149 tests CPU verts (dont `test_jauges`, `test_langue`) ; bancs `garage-voitures`, `cadeau` (FR / EN, parcours RG-08, solde inchangé par l'animation), `chargement`, `hud` (nouvelle capture `toast-pile-nuit`) ; 23 captures avant / après dans `qa/pr/WFS-550/`.
+- Limites : jauge « 1 250 / 6 000 » de l'achat (maquette 28) non faite (fichier `garage_achat*` de WFS-551, RG-07) ; cadenas au-dessus des segments dessinés par `garage_achat.cpp` (WFS-551) ; aucun message « police en approche » dans le jeu (le rouge sert aux accidents et combo perdu).
+
+
+### 2026-11-15 22:53:35 — WFS-550 : PR #424 refusée par le lead dev (lead-dev)
+- 23 captures ouvertes, tout le diff lu, branche construite (aucun avertissement) et `tests_cpu.sh` refait : 149 tests verts.
+- Refus pour 2 points : (1) capture « Tests CPU » et `qa/pr/WFS-550/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) à l'écran de chargement, le texte de l'étape et les 4 segments se contredisent (à 20 %, « Chargement du modèle 3D… » alors que « Modèles 3D » est coché), car les bornes de `jauges::avancementEtape` ne suivent pas les paliers de `Game::init`.
+- Accepté : garage (cadrans, barres, 17 segments), anneaux du cadeau et du prêt, étoiles animées, bandeaux en course, jauge du combo. Jauge « 1 250 / 6 000 » de l'achat (maquette 28) laissée à WFS-551 (`garage_achat*`, RG-07) : à noter par le PO dans WFS-551.
+- Revue dans la PR (commentaire, même compte GitHub). Commit relu cb0b89e9. Statut ↩️ Retour lead dev (PR #424).

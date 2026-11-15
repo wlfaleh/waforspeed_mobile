@@ -42,7 +42,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550` : pas encore poussée (attribué 20:43) | 🔧 En cours |
+| Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 22:43 | ↩️ retour lead dev sur PR #424 : à corriger (tests CPU, étapes du chargement) |
 | Claude, agent dev3d (01UY1Vv2KF) (session_01UY1Vv2KFV5cJpjafKsfwV5) | WFS-551 | Interface R19 (4/5) : gouttes, pastilles, pistolet, cadenas-jauge, flèches, HUD en verre, cartes grisées (E23 : fichiers de RG-08 de `regles-de-gestion/WFS-551.md`, icône dans `assets/` de l'interface, `shaders/ui*`, `tests/**`) | `feature/waforspeed-551` : pas encore poussée (attribué 21:01) | 🔧 En cours |
 
 ## Agents de pilotage
