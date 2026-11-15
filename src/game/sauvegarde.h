@@ -86,6 +86,7 @@ public:
     std::map<std::string, std::string> skin;                // skin-<voiture> (absente = aucune)
     std::set<std::string> skinsOffertes;                    // WFS-494 (RG-02) skins-offertes=a|b : voitures dont la skin offerte est déjà choisie
     std::map<std::string, std::string> creation;            // creation-<voiture> : habillage actif de l'atelier (WFS-497)
+    std::map<std::string, std::string> autocollants;        // WFS-496 (accroche) autocollants-<voiture> : calques de l'atelier ([a-z0-9,;!-], src/ui/ecrans/atelier_calques.h)
     int perso = 1;                                          // perso=1 : catalogue de WFS-487 en place (absente : sauvegarde d'avant, migrée)
     // WFS-498 (RG-01, RG-07, RG-08) : portefeuille et voitures (src/game/boutique.h) ; clé etoiles absente : sauvegarde d'avant, migrée (RG-09)
     long long etoiles = 0;                                  // etoiles=<entier ≥ 0> : solde d'étoiles ★
