@@ -15,6 +15,8 @@
 #include "ecrans/reglages.h"   // WFS-75 : miroirX (lecture seule)
 #include "minicarte.h"         // WFS-173 : banc de la mini-carte
 #include "text.h"
+#include "jauges.h"   // WFS-550 : jauge du combo
+#include "../core/configgame.h"   // WFS-550 : durée du combo
 #include "toasts.h"
 #include "../game/textes_course.h"   // WFS-506 : textes en français ou en anglais
 
@@ -169,7 +171,10 @@ public:
             if (c->combo > 1) {   // .combo : cyan, 16 px
                 static std::string tamponCombo;   // WFS-506 (RG-04)
                 char n[16]; std::snprintf(n, sizeof n, "%d", c->combo);
-                ui::text(r, xr, y + 66 * k, 16 * k, textes::remplir(tamponCombo, "hud.combo", n), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
+                // WFS-550 (RG-02, maquette 17) : jauge fine du temps restant du combo (cyan → orange), le texte à sa gauche
+                const float jw = 44 * k, dc = (float)config().score.comboDuree;
+                jauges::barreFine(r, xr - jw, y + 73 * k, jw, 3 * k, dc > 0 ? (float)(c->comboTimer / dc) : 0);
+                ui::text(r, xr - jw - 8 * k, y + 66 * k, 16 * k, textes::remplir(tamponCombo, "hud.combo", n), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
             }
         }
         const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));

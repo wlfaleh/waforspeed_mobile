@@ -40,6 +40,19 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
     r.uiQuad(q);
 }
 long long solde() { return boutique::solde(sauvegarde()); }
+
+// WFS-550 (RG-05, maquette 29) : animation d'un gain, affichage seulement (le solde enregistré n'est jamais touché ici).
+// Le compteur garde le dernier solde montré ; quand le solde enregistré monte (cadeau, fin de course, Market), au retour du
+// compteur à l'écran : des étoiles volent de la voiture vers la pilule, « +N » orange (gain réel), la pilule s'allume et compte
+// jusqu'au nouveau total en ≈ 1 s. Une baisse (achat) s'affiche tout de suite, sans animation.
+struct Gain {
+    long long vu = -1;            // dernier solde connu (−1 : rien vu depuis le lancement : pas d'animation au 1er affichage)
+    long long depart = 0, gain = 0;
+    double debut = -1;            // temps de la partie au début de l'animation (−1 : aucune)
+};
+Gain g_gain;
+constexpr double VOL = 0.65, COMPTE_DEBUT = 0.35, COMPTE = 1.0, FIN = 1.6;   // secondes
+constexpr int NB_ETOILES = 7;
 bool anglais() { return ui::langue::active() == ui::langue::Langue::Anglais; }
 } // namespace
 
@@ -48,12 +61,24 @@ void appuye(bool oui) { g_presse = oui; }
 namespace {
 
 // RG-07 : dessiné juste après « Réglages » (même image) ; a : opacité du fondu d'entrée du menu
+// solde à montrer à l'instant `t` (comptage rapide du départ au nouveau total, sortie douce), et avancement de l'animation
+long long soldeMontre(double t) {
+    const long long s = solde();
+    if (g_gain.vu < 0) g_gain.vu = s;
+    if (s > g_gain.vu) { g_gain.depart = g_gain.vu; g_gain.gain = s - g_gain.vu; g_gain.debut = t; }   // nouveau gain (ou cumul)
+    else if (s < g_gain.vu) g_gain.debut = -1;                                                       // dépense : tout de suite
+    g_gain.vu = s;
+    if (g_gain.debut < 0 || t < g_gain.debut || t - g_gain.debut >= FIN) { g_gain.debut = -1; return s; }
+    const float u = std::clamp((float)((t - g_gain.debut - COMPTE_DEBUT) / COMPTE), 0.f, 1.f), e = 1 - (1 - u) * (1 - u) * (1 - u);
+    return g_gain.depart + (long long)std::llround((double)(s - g_gain.depart) * e);
+}
+
 void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, float a) {
     const float W = g.uiWidth, H = g.uiHeight, kb = bh / 44.f;    // même unité que le bouton (44 px en 720 p)
     const float k = ui::petitEcran(W, H) ? ui::unitePetitEcran(W, H) : H / 720.f;
     g_dp = ui::pixelsParDp(W);
     const float tp = 15 * k, pad = 16 * kb, re = tp * 0.48f, ecart = 8 * kb;
-    const std::string t = score_fin::nombreEtoiles(solde(), anglais());
+    const std::string t = score_fin::nombreEtoiles(soldeMontre(g.time), anglais());
     const float tw = ui::width(tp, t, 0.06f), w = pad + 2 * re + ecart + tw + pad;
     const float x = bx - std::max(12 * kb, 10 * g_dp) - w, y = by, h = bh;   // ≥ 10 dp : les cibles élargies (4 dp) ne se touchent pas
     g_zone = {x, y, w, h};
@@ -61,8 +86,37 @@ void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, floa
     biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, op(BORD));
     biseau(r, x, y, w, h, 8 * kb, op(GLASS));
     if (g_presse) biseau(r, x, y, w, h, 8 * kb, op(VOILE));   // appuyé : voile cyan, comme « Réglages »
+    if (g_gain.debut >= 0) {   // WFS-550 (RG-05) : la pilule s'allume (liseré orange) pendant le comptage, puis s'éteint
+        const double age = g.time - g_gain.debut;
+        const float l = (float)std::clamp(std::min((age - VOL * 0.6) / 0.15, (FIN - age) / 0.3), 0.0, 1.0);
+        if (l > 0) {
+            biseau(r, x - 3 * kb, y - 3 * kb, w + 6 * kb, h + 6 * kb, 8 * kb, op(vec4{1.f, 106 / 255.f, 0.f, 0.25f * l}));
+            biseau(r, x - 1.5f * kb, y - 1.5f * kb, w + 3 * kb, h + 3 * kb, 8 * kb, op(vec4{1.f, 106 / 255.f, 0.f, 0.9f * l}));
+            biseau(r, x, y, w, h, 8 * kb, op(GLASS));
+        }
+    }
     score_fin::dessinerEtoile(r, x + pad + re, y + h / 2, re, op(ui::ORANGE));
     ui::text(r, std::round(x + pad + 2 * re + ecart), std::round(y + (h - tp) / 2), tp, t, op(TEXTE), ui::GAUCHE, 0.06f, false);
+    if (g_gain.debut >= 0) {
+        const double age = g.time - g_gain.debut;
+        // étoiles en vol : de la voiture (centre de l'écran) vers l'étoile de la pilule, en courbe, décalées de 50 ms
+        const vec2 de{W * 0.62f, H * 0.52f}, vers{x + pad + re, y + h / 2};
+        for (int i = 0; i < NB_ETOILES; i++) {
+            const double u0 = (age - 0.05 * i) / VOL;
+            if (u0 <= 0 || u0 >= 1) continue;
+            const float u = (float)u0, e = u * u * (3 - 2 * u);
+            const float cx = de.x + (vers.x - de.x) * e - std::sin(u * 3.14159f) * (40 + 12 * i) * k;   // arc vers la gauche
+            const float cy = de.y + (vers.y - de.y) * e;
+            const float rr = re * (0.7f + 0.5f * std::sin(u * 3.14159f)) * (1 - 0.08f * (i % 3));
+            score_fin::dessinerEtoile(r, cx, cy, rr, op(vec4{1.f, 106 / 255.f, 0.f, std::min(1.f, 4 * (1 - u))}));
+        }
+        // « +N » orange sous la pilule (valeur réelle du gain), qui apparaît puis s'efface à la fin
+        const float ap = (float)std::clamp(std::min(age / 0.15, (FIN - age) / 0.35), 0.0, 1.0);
+        if (ap > 0) {
+            const std::string plus = "+" + score_fin::nombreEtoiles(g_gain.gain, anglais());
+            ui::text(r, x + w / 2, y + h + 8 * kb - 6 * kb * (1 - ap), 20 * k, plus, op(vec4{1.f, 106 / 255.f, 0.f, ap}), ui::CENTRE, 0.02f, false, true);
+        }
+    }
 }
 
 class CompteurEtoiles final : public System {

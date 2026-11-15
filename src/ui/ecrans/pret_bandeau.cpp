@@ -7,9 +7,11 @@
 #include "textes_banc.h"      // banc « textes » (journal des textes de cet écran)
 #include "../garage.h"        // garageRegarder, garageOuvrirSur
 #include "../garage_achat.h"  // texteEtoiles (★ dessinée), texteDuree, nombreLangue
+#include "../jauges.h"   // WFS-550 (RG-03) : anneau du temps restant
 #include "../langue.h"
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../verre.h"    // WFS-550 (RG-03) : pilule de verre
 #include "../../core/configgame.h"
 #include "../../core/log.h"
 #include "../../game/boutique.h"
@@ -25,7 +27,6 @@ namespace {
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 const unsigned TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, ON_ACCENT = 0x0A0B10, TAG = 0xC9CDDA, DANGER = 0xFF1F4B;
-const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.86f}, BORD{1, 1, 1, 0.16f};
 
 struct Zone { float x = 0, y = 0, w = 0, h = 0; };
 Zone g_bandeau, g_bouton;
@@ -91,18 +92,17 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     // textes : titre (tag), phrase, bouton éventuel
     const std::string nom = nomVoiture(id);
     std::string titre, phrase, bouton;
-    unsigned lisere = ACCENT2;
     switch (cas) {
         case Cas::Attente: titre = ui::tr("pret.bandeau.titre", nom); phrase = ui::tr("pret.bandeau.attente", garage::texteDuree(pret::resteActivation(s.cadeau, t)));
                            bouton = "pret.bandeau.activer"; break;
         case Cas::Actif: titre = ui::tr("pret.bandeau.titre", nom); phrase = ui::tr("pret.bandeau.actif", garage::texteDuree(pret::restant(s.cadeau, t)));
-                         lisere = ACCENT; break;
+                         break;
         case Cas::Expire: {
             char h[16]; std::snprintf(h, sizeof h, "%g", config().cadeau.activationHeures);
-            titre = ui::tr("pret.bandeau.expire", nom); phrase = ui::tr("pret.bandeau.expire.aide", h); lisere = DANGER; g_messageVu = true; break;
+            titre = ui::tr("pret.bandeau.expire", nom); phrase = ui::tr("pret.bandeau.expire.aide", h); g_messageVu = true; break;
         }
         case Cas::Fin: titre = ui::tr("pret.bandeau.fin", nom); phrase = ui::tr("pret.garder", garage::nombreLangue(std::max(0, boutique::prixVoiture(id))));
-                       bouton = "pret.bandeau.garage"; lisere = ACCENT; g_messageVu = true; break;
+                       bouton = "pret.bandeau.garage"; g_messageVu = true; break;
         default: break;
     }
     titre = ui::majuscules(titre);
@@ -114,16 +114,23 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     float wTexte = 0;
     { const textes::NomPropre np; wTexte = ui::width(tp1, titre, 0.14f); }
     wTexte = std::max(wTexte, garage::largeurEtoiles(tp2, phrase));
-    const float w = pad + 4 * kb + wTexte + (bw > 0 ? 14 * kb + bw : 0) + pad;
+    // WFS-550 (RG-03, maquette 26) : pilule de verre bordée de cyan (rouge : prêt perdu, couleur d'état de WFS-548), anneau fin
+    // cyan → orange du temps restant à gauche (à activer : délai d'activation ; au volant : temps du prêt ; fin : vide)
+    const float ra = h * 0.30f, zoneAnneau = 2 * ra + 14 * kb;
+    const float w = pad + zoneAnneau + wTexte + (bw > 0 ? 14 * kb + bw : 0) + pad;
     const float x = W - m.droite - 16 * k - w, y = yProfil - 10 * k - h;
-    // .card : verre teinté, coin supérieur droit coupé, lisere à gauche (cyan : à faire ; orange : temps compté ; rouge : perdu)
-    const float b = 12 * kb;
-    const vec2 c[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};
-    dessin2d::polygone(r, c, 5, dessin2d::uni(GLASS));
-    dessin2d::contour(r, c, 5, std::max(1.f, kb), BORD);
-    if (presse && bw <= 0) dessin2d::polygone(r, c, 5, dessin2d::uni(hex(ACCENT2, 0.18f)));
-    r.uiRect(x, y, 3 * kb, h, hex(lisere));
-    const float xt = x + pad + 4 * kb;
+    verre::Style st; st.rayon = h / 2; st.lisere = 1.5f * kb; st.bord = cas == Cas::Expire ? DANGER : ACCENT2;
+    verre::panneau(r, x, y, w, h, st);
+    if (presse && bw <= 0) {   // appuyé : voile cyan dans la pilule
+        vec2 c[verre::NP_CONTOUR];
+        verre::contourArrondi(x, y, w, h, h / 2, c);
+        dessin2d::polygone(r, c, verre::NP_CONTOUR, dessin2d::uni(hex(ACCENT2, 0.18f)));
+    }
+    float fr = 0;
+    if (cas == Cas::Attente) fr = jauges::fractionRestant(pret::resteActivation(s.cadeau, t), (long long)(config().cadeau.activationHeures * 3600));
+    else if (cas == Cas::Actif) fr = jauges::fractionRestant(pret::restant(s.cadeau, t), (long long)(config().cadeau.pretHeures * 3600));
+    jauges::anneau(r, x + pad + ra, y + h / 2, ra, 2.5f * kb, fr);
+    const float xt = x + pad + zoneAnneau;
     { const textes::NomPropre np; ui::text(r, xt, y + 10 * kb, tp1, titre, hex(TAG), ui::GAUCHE, 0.14f, false); }   // nom de la voiture : inchangé en anglais
     garage::texteEtoiles(r, xt, y + 28 * kb, tp2, phrase, hex(cas == Cas::Expire ? MUTED : TEXTE), ui::GAUCHE);
     g_bandeau = {x, y, w, h};

@@ -4,6 +4,7 @@
 #include "../render/renderer.h"
 #include "langue.h"   // WFS-507 : textes par ui::tr
 #include "text.h"
+#include "verre.h"   // WFS-550 : panneau de verre de WFS-548
 
 namespace wfs::ecrans::garage::cadre {
 
@@ -32,12 +33,9 @@ void fleches(Renderer& r, const MiseEnPage& mp) {
 
 void fondPanneau(Renderer& r, const MiseEnPage& mp) {
     const float k = mp.k, op = mp.op;
-    {   // fond vitré d'un seul tenant, coin haut droit coupé (WFS-99, RG-06 : 14 px), bord supérieur
-        const float coin = 14 * k, px0 = mp.px0, px1 = mp.px1, py0 = mp.py0;
-        const vec2 p[5] = {{px0, py0}, {px1 - coin, py0}, {px1, py0 + coin}, {px1, py0 + mp.panelH}, {px0, py0 + mp.panelH}};
-        dessin2d::polygone(r, p, 5, dessin2d::uni({GLASS.x, GLASS.y, GLASS.z, GLASS.w * op}));
-        r.uiRect(px0, py0, px1 - px0 - coin, 1 * k, {BORD.x, BORD.y, BORD.z, BORD.w * op});
-    }
+    // WFS-550 (RG-01, maquette 13) : panneau de verre dépoli de WFS-548 (coins arrondis, liseré fin) ; même place, même taille
+    verre::Style st; st.rayon = 14 * k; st.lisere = 1.5f * (mp.H / 720.f); st.opacite = op;
+    verre::panneau(r, mp.px0, mp.py0, mp.px1 - mp.px0, mp.panelH, st);
 }
 
 void pied(Renderer& r, const MiseEnPage& mp, const CarDef& car, bool voiturePrete) {

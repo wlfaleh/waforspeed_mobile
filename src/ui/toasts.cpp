@@ -2,6 +2,7 @@
 #include "toasts.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>   // setenv (banc de nuit)
 #include <deque>
 #include "../core/log.h"
 #include "../core/system.h"
@@ -10,17 +11,20 @@
 #include "../render/renderer.h"
 #include "text.h"
 #include "langue.h"   // WFS-506 : bandeaux en français ou en anglais
+#include "../game/commandes_tactiles.h"   // WFS-550 : dessin2d::biseau (bandeaux inclinés)
 
 namespace wfs {
 namespace {
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
-const unsigned TEXTE = 0xF2F4F8, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF;
-const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f};   // --glass rgba(20,22,31,.72)
+const unsigned TEXTE = 0xF2F4F8, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SOMBRE = 0x0A0B10;
 
-// genre du bandeau (.toast, .toast.cp, .toast.bad) : couleur de la bordure gauche et de la valeur
+// genre du bandeau : WFS-550 (RG-06, maquette 30) : checkpoint en cyan, points (quasi-contact, combo, feu grillé) en orange,
+// police et mauvais coups (accident, combo perdu) en rouge
 enum Genre { NORMAL, CP, BAD };
-unsigned couleur(Genre g) { return g == CP ? ACCENT : g == BAD ? DANGER : ACCENT2; }
+unsigned couleur(Genre g) { return g == CP ? ACCENT2 : g == BAD ? DANGER : ACCENT; }
+// texte sombre sur le cyan et l'orange (contraste ≥ 4,5:1, design-street-racing), clair sur le rouge
+unsigned couleurTexte(Genre g) { return g == BAD ? TEXTE : SOMBRE; }
 
 struct Toast { std::string titre, valeur; Genre genre; double naissance = -1; };   // naissance : temps de la 1re image
 
@@ -63,32 +67,30 @@ public:
         // mêmes conditions que le HUD (WFS-27) : en course seulement
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
-        // RG-05 : pile à droite, sous le score (top = gouttière + 110 px) ; bord droit à gauche du bouton Nitro
-        // (cercle de 6,5 % de H en (0,90 W − marge droite ; 0,32 H), Game::drawControls) pour ne jamais le recouvrir
-        const float xr = bandeauxBordDroit(W, H, g.marges);   // WFS-173 : même formule, partagée avec la mini-carte
+        // WFS-550 (RG-06, maquette 30) : pile de bandeaux inclinés au centre de l'écran, sous la rangée du haut (même hauteur
+        // qu'avant, bandeauxHaut) ; ils glissent du haut et s'effacent ; fond assombri sans flou (aucun coût de rendu en course)
+        const float xc = W * 0.5f + (g.marges.gauche - g.marges.droite) / 2;
         float y = bandeauxHaut(H, g.marges);
-        const float tp = 18 * k, vp = 14 * k, padL = 14 * k, padR = 18 * k, padV = 8 * k, gap = 12 * k, h = padV * 2 + tp * 1.15f;
+        const float tp = 18 * k, vp = 16 * k, padL = 22 * k, padR = 26 * k, padV = 8 * k, gap = 10 * k, h = padV * 2 + tp * 1.15f;
+        const float biais = h * 0.176f;   // skewX(-10deg)
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;
             const double a = g.time - it->naissance;
             if (a >= VIE) { it = g_pile.erase(it); continue; }
-            // entrée : de +60 px à 0, opacité 0 → 1 (var(--ease) ≈ sortie douce) ; sortie : vers +40 px, opacité → 0 (ease-in)
-            float op = 1, dx = 0;
-            if (a < ENTREE) { const float e = 1 - std::pow(1 - (float)(a / ENTREE), 3.f); op = e; dx = 60 * k * (1 - e); }
-            if (a > SORTIE_DEBUT) {
-                const float s = std::min(1.f, (float)((a - SORTIE_DEBUT) / SORTIE)), e = s * s;
-                op = 1 - e; dx = 40 * k * e;
-            }
+            // entrée : glisse du haut (−24 px → 0), opacité 0 → 1 (sortie douce) ; sortie : s'efface sur place (ease-in)
+            float op = 1, dy = 0;
+            if (a < ENTREE) { const float e = 1 - std::pow(1 - (float)(a / ENTREE), 3.f); op = e; dy = -24 * k * (1 - e); }
+            if (a > SORTIE_DEBUT) { const float s = std::min(1.f, (float)((a - SORTIE_DEBUT) / SORTIE)); op = 1 - s * s; }
             const std::string titre = ui::majuscules(it->titre);
-            const float wt = ui::width(tp, titre, 0.06f), wv = it->valeur.empty() ? 0 : ui::width(vp, it->valeur);
-            const float w = padL + wt + (wv > 0 ? gap + wv : 0) + padR, x = xr - w + dx;
-            const vec4 bord = hex(couleur(it->genre), op);
-            r.uiRect(x, y, w, h, {GLASS.x, GLASS.y, GLASS.z, GLASS.w * op});
-            r.uiRect(x, y, 4 * k, h, bord);   // border-left 4 px
-            // titre 18 px en capitales (letter-spacing .06em) ; valeur 14 px alignée sur la ligne de base du titre
-            // WFS-48 : titre (.toast b) en italique
-            ui::text(r, std::round(x + padL), std::round(y + padV), tp, titre, hex(TEXTE, op), ui::GAUCHE, 0.06f, false, true);
-            if (wv > 0) ui::text(r, std::round(x + padL + wt + gap), std::round(y + padV + (tp - vp) * 0.8f), vp, it->valeur, bord, ui::GAUCHE, 0, false);
+            const float wt = ui::width(tp, titre, 0.06f), wv = it->valeur.empty() ? 0 : ui::width(vp, it->valeur, 0.02f);
+            const float w = padL + wt + (wv > 0 ? gap + wv : 0) + padR, x = xc - w / 2, yy = y + dy;
+            const vec4 fond = hex(couleur(it->genre), 0.92f * op), texte = hex(couleurTexte(it->genre), op);
+            // ombre assombrie (sans flou) puis bandeau de couleur incliné
+            dessin2d::biseau(r, x - 3 * k, yy - 2 * k, w + 6 * k, h + 6 * k, biais, dessin2d::uni(hex(SOMBRE, 0.45f * op)));
+            dessin2d::biseau(r, x, yy, w, h, biais, dessin2d::uni(fond));
+            // titre 18 px en capitales italiques (WFS-48) ; valeur 16 px à la suite, même ligne de base
+            ui::text(r, std::round(x + padL), std::round(yy + padV), tp, titre, texte, ui::GAUCHE, 0.06f, false, true);
+            if (wv > 0) ui::text(r, std::round(x + padL + wt + gap), std::round(yy + padV + (tp - vp) * 0.8f), vp, it->valeur, texte, ui::GAUCHE, 0.02f, false, true);
             y += h + 8 * k;   // gap 8 px
             ++it;
         }
@@ -148,6 +150,22 @@ void benchToasts(Game& g, Renderer& r, const std::string& out) {
     rouler(20);
     capture("toast-pile");
     g.shutdown();
+    // WFS-550 (RG-06, RG-02) : même pile de nuit, avec un combo ×2 (jauge du combo sous le score) : checkpoint, 2 quasi-contacts
+    setenv("WFS_MOMENT", "nuit", 1);
+    if (g.init(r, "golf", "ville")) {
+        g.setAutopilot(true); g.camMode = 0;
+        rouler(60 * 3 + 30);
+        g_pile.clear();
+        checkpoint();
+        rouler(20);
+        if (Course* c = activeCourseMut()) c->nearMiss();
+        rouler(20);
+        if (Course* c = activeCourseMut()) c->nearMiss();
+        rouler(10);
+        capture("toast-pile-nuit");
+        g.shutdown();
+    } else WFS_ERR("Bandeaux : chargement de nuit impossible");
+    unsetenv("WFS_MOMENT");
     courseBenchRules(false);
 }
 

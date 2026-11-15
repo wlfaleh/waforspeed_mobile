@@ -12,6 +12,7 @@
 #include "textes_banc.h"
 #include "../langue.h"
 #include "../../core/log.h"
+#include "../../game/boutique.h"   // WFS-550 : gain d'étoiles du banc
 #include "../../game/game.h"
 #include "../../game/pret.h"   // WFS-502
 #include "../../game/sauvegarde.h"
@@ -96,6 +97,16 @@ int benchCadeau(Game& g, Renderer& r, const std::string& out) {
         attendre(30); image();
         etape(!cadeau::disponible(sauvegarde().cadeau, heure), "menu : plus de cadeau (pastille partie)");
         capture("menu-attente", "menu", "menu sans cadeau : « Prochain cadeau dans 03:13 »");
+        {   // WFS-550 (RG-05, maquette 29) : gain de 23 ★ au menu → étoiles en vol, « +23 », total compté (3 images)
+            boutique::crediter(sauvegarde(), 23, "banc WFS-550");   // sauvegarde inactive du banc : rien n'est écrit
+            const long long attendu = boutique::solde(sauvegarde());
+            g.render(t);   // 1re image : le compteur voit le gain
+            const double debut = t;
+            const double moments[3] = {0.25, 0.70, 1.45};
+            for (int i = 0; i < 3; i++) { t = debut + moments[i]; capture("etoiles-gain-" + std::to_string(i + 1), "menu", "gain d'étoiles au menu (WFS-550)"); }
+            t = debut + 2.0; image();
+            etape(boutique::solde(sauvegarde()) == attendu, "animation du compteur : solde enregistré inchangé (WFS-550)");
+        }
         appuyer(5, "bouton");
         etape(ouvert() && detail::vue() == 2 && sauvegarde().cadeau.total == 1, "2e appui le même jour : écran d'attente, aucun 2e cadeau");
         capture("attente", "attente", "écran d'attente : compte à rebours et dernier gain réaffiché");
