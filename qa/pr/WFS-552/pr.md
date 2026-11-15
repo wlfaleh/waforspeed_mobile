@@ -11,7 +11,7 @@ R19, maquette 01 : derrière le menu, la voiture du joueur en gros plan dans le 
   - réglettes LED IP65 de 1 500 mm (boîtier, diffuseur opale bombé, embouts, clips inox) ;
   - sprinklers : collecteur DN 80 et antennes DN 25 rouges RAL 3000, suspentes M10 avec colliers, têtes pendantes en laiton à déflecteur denté.
   
-  Sources : NF P 91-100 (place 2,50 × 5,00 m, allée 6 m, hauteur libre ≥ 2,20 m), EN 12464-1 (75 lux dans l'allée, 50 lux sur les places), NF EN 12845 (sprinklers), DA-realisme § 3 (albédos). 29 172 triangles, 11 appels de dessin, tout construit au chargement (RG-05). Si la mémoire graphique manque, le menu garde le fond d'avant, sans planter (`essayerMesh`).
+  Sources : NF P 91-100 (place 2,50 × 5,00 m, allée 6 m, hauteur libre ≥ 2,20 m), EN 12464-1 (75 lux dans l'allée, 50 lux sur les places), NF EN 12845 (sprinklers), DA-realisme § 3 (albédos). 37 692 triangles (butées profilées comprises), 11 appels de dessin, tout construit au chargement (RG-05). Si la mémoire graphique manque, le menu garde le fond d'avant, sans planter (`essayerMesh`).
 - **Scène du menu** (`src/ui/ecrans/menu.cpp`) : le menu prend la scène dédiée. La voiture du joueur (sa vraie peinture, sa finition et sa skin, dessinées par Game) est garée en marche arrière dans le parking. La lumière est la même de jour et de nuit (RG-06), et le fond se fige après 1 s comme avant (WFS-329).
 - **Caméra rapprochée** (`src/ui/menu_parking_cadrage.*`, RG-04) : trois quarts avant gauche, caméra horizontale à 1 m. La distance est cherchée pour que la voiture ait la taille de la maquette (49 % de la hauteur en 2400 × 1080), sans dépasser la largeur permise. L'objectif est décentré pour placer la voiture à droite de la console, sans pencher la caméra : les poteaux restent verticaux.
 - **Caméléon** (`shaders/vehicule.glsl`, RG-03) : la peinture passe à deux teintes, la couleur choisie de face et sa teinte opposée (orange → bleu) sur les panneaux verticaux vus de biais. Le dessus (capot) garde la couleur de face, comme sur la maquette. Le mélange se fait sans passer par les couleurs intermédiaires, donc sans arc-en-ciel sur les galbes.
@@ -28,6 +28,19 @@ R19, maquette 01 : derrière le menu, la voiture du joueur en gros plan dans le 
   - parcours menu → garage → menu → course → menu ;
   - repli si la mémoire graphique manque ;
   - 37 à 42 i/s en 1280 × 720 une fois le fond posé (rendu logiciel).
+
+## Tests CPU
+Commit testé : `25107961` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build` ; journal complet : [`qa/pr/WFS-552/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-552/qa/pr/WFS-552/tests-cpu.log).
+```
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 145 test(s) réussi(s) en 343 s
+code de sortie : 0
+```
+Taille du décor (RG-05, journal du banc `menu3d`) : « menu (WFS-552) : parking souterrain préparé : 37692 triangles, 11 appels de dessin ».
+
+## Revue du lead dev (refus sur eb05307b)
+Corrigé dans 25107961 : nom « Bleu ciel » ajouté à `NOMS_SKINS` (`src/game/personnalisation.cpp`, contrôle dans `test_personnalisation`) ; voiture toujours à droite de la console (bord gauche à x NDC ≥ −0,26, seuil du test −0,28) ; journal des tests CPU joint.
 
 ## Limites et risques
 - Le changement du caméléon vaut pour **toutes** les voitures caméléon (ex. Golf rouge : rouge de face, cyan sur les flancs vus de biais ; avant : rouge → jaune-vert). Un flanc vu bien en face reste de la couleur choisie (angle 3) : c'est l'angle de vue qui fait le bleu.
