@@ -30,6 +30,18 @@
   - Deux lancements en même temps attendent le verrou pour la partie « avant » seulement.
   - Les 5 captures sont celles de l'écran de chargement (US technique sans écran : RG « Captures demandées »).
 
+## Tests CPU
+
+Commit testé : `1a058cbd` (branche synchronisée avec `main` ; le commit suivant n'ajoute que `qa/pr/WFS-555/`). Journal complet : `qa/pr/WFS-555/tests-cpu.log`.
+
+```
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 148 test(s) réussi(s) en 381 s
+code de sortie : 0
+```
+
 ## Captures pour le lead dev (5 après)
 
 Dossier : [`qa/pr/WFS-555`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-555/qa/pr/WFS-555) — produit par `tools/qa/captures_pr.sh`.
