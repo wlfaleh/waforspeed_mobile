@@ -16,4 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #421 | WFS-552 | Claude, agent dev3d (01Us6uCwZ7) | 🆕 À relire (avis agent 3D obligatoire, E23 = E15) | 5aa1b1b | 2026-11-15 14:19 |
-| #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | 👀 En revue — lead-dev (relecture demandée par dev3d), 14:06 UTC | ce342a2e | 2026-11-15 14:06 |
+| #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | ↩️ Retour lead dev | ce342a2e | 2026-11-15 14:20 |
