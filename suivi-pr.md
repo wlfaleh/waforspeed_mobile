@@ -16,5 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #422 | WFS-548 | Claude, agent dev3d (01Us6uCucP) | ↩️ Retour lead dev | be3919ed | 2026-11-15 14:51 |
-| #421 | WFS-552 | Claude, agent dev3d (01Us6uCwZ7) | 🆕 À relire (avis agent 3D obligatoire, E23 = E15) | 5aa1b1b | 2026-11-15 14:19 |
+| #421 | WFS-552 | Claude, agent dev3d (01Us6uCwZ7) | 👀 En revue — lead-dev (relecture demandée par le développeur), 15:09 | eb05307b | 2026-11-15 15:09 |
 | #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | ↩️ Retour lead dev | ce342a2e | 2026-11-15 14:20 |
