@@ -116,6 +116,8 @@ constexpr double REDRESSE_BRAQ = 0.6108652381980153, REDRESSE_BRAQ_VIT = 1.0, RE
 constexpr double RETRAIT_APRES_S = 8, RETRAIT_DEVANT_M = 150, RETRAIT_DERRIERE_M = 15;
 // WFS-541 (RG-03, ANO-270) : contacts entre voitures du trafic : pénétration résiduelle visée (m) après la résolution d'un pas
 constexpr double JEU_TRAFIC_M = 0.01;
+// WFS-541 (RG-02) : voiture qui déboîte au pas d'une file arrêtée : 7 km/h, déplacement de côté au plus v · tan 35° (braquage)
+constexpr double DEBOITE_V = 7 / 3.6, DEBOITE_TAN = 0.7002075382097097;
 // vrai si la position dz (m, relative au joueur, + devant) est hors de la vue du joueur (RG-01 : retrait jamais sous ses yeux)
 inline bool horsDeVue(double dzM) { return dzM > RETRAIT_DEVANT_M || dzM < -RETRAIT_DERRIERE_M; }
 
@@ -236,14 +238,15 @@ public:
     double facteurVoie(double z) const;             // WFS-243 : 1 hors des anneaux, FACTEUR_ANNEAU dedans (rampes entre les deux)
 private:
     double tirerZ(Mulberry32& R, int lane, double len, double playerPos) const;   // place libre devant le joueur (addCars)
-    void regulerDensite(double playerPos);
-    void redresser(TrafficCar& c, double h);   // WFS-541 (RG-01) : voiture accidentée qui se remet dans sa file en roulant   // WFS-281 (RG-02, RG-03) : pas de peloton qui se forme hors de la vue du joueur
+    void regulerDensite(double playerPos);   // WFS-281 (RG-02, RG-03) : pas de peloton qui se forme hors de la vue du joueur
+    void redresser(TrafficCar& c, double h);   // WFS-541 (RG-01) : voiture accidentée qui se remet dans sa file en roulant
     double regulT_ = 0;
     std::vector<TrafficCar> reserve_;   // WFS-281 : voitures de la montée de difficulté, préparées au chargement
     std::vector<std::pair<int64_t, int64_t>> anneaux_;   // WFS-243 : segments [entrée, sortie] de l'anneau de chaque rond-point
     Track* track_ = nullptr;
-    std::vector<double> gap_, lead_;
-    std::vector<std::pair<double, int>> ordre_;   // WFS-541 : voitures triées le long de la route (contacts)        // voiture de devant de chaque voiture (calculées avant le pas)
+    std::vector<double> gap_, lead_;        // voiture de devant de chaque voiture (calculées avant le pas)
+    std::vector<char> leadAcc_;             // WFS-541 : 1 si cette voiture de devant est accidentée
+    std::vector<std::pair<double, int>> ordre_;   // WFS-541 : voitures triées le long de la route (contacts)
     double scrapeCd_ = 0;
 };
 

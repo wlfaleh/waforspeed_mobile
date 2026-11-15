@@ -173,6 +173,7 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
     for (int i = begin; i < end; i++) {
         const TrafficCar& car = cars[(size_t)i];
         double gap = std::numeric_limits<double>::infinity(), leadSpeed = car.want;
+        bool accidentee = false;   // WFS-541 : la voiture de devant retenue est une accidentée
         const double tx = LANE_X[car.target];
         for (const auto& o : cars) {
             if (&o == &car || o.cache) continue;
@@ -186,13 +187,13 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
             const double dz = track_->relZ(o.z - car.z);
             if (dz <= 0) continue;
             const double g = dz - (o.len + car.len) / 2;
-            if (g < gap) { gap = g; leadSpeed = o.speed; }
+            if (g < gap) { gap = g; leadSpeed = o.speed; accidentee = o.crashed; }
         }
         if (!pv.garage) {
             const double dz = track_->relZ(pv.position - car.z);
             if (dz > 0 && (std::abs(pv.playerX - car.offset) < LANE_HALF || std::abs(pv.playerX - tx) < LANE_HALF)) {
                 const double g = dz - (pv.myLen + car.len) / 2;
-                if (g < gap) { gap = g; leadSpeed = pv.speed; }
+                if (g < gap) { gap = g; leadSpeed = pv.speed; accidentee = false; }
             }
         }
         // WFS-136 (RG-03) : feu rouge (ou orange, s'il reste plus d'1 s de route avant la ligne) : la ligne d'arrêt est un
@@ -203,9 +204,9 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
             if (dz <= 0 || dz > 150 / M) continue;
             const trace::Feu f = trace::feuCarrefour(s.feu, sim);
             const double g = dz - car.len / 2;
-            if ((f == trace::Feu::Rouge || (f == trace::Feu::Orange && g > car.speed * 1.0)) && g < gap) { gap = g; leadSpeed = 0; }
+            if ((f == trace::Feu::Rouge || (f == trace::Feu::Orange && g > car.speed * 1.0)) && g < gap) { gap = g; leadSpeed = 0; accidentee = false; }
         }
-        gap_[(size_t)i] = gap; lead_[(size_t)i] = leadSpeed;
+        gap_[(size_t)i] = gap; lead_[(size_t)i] = leadSpeed; leadAcc_[(size_t)i] = accidentee;
     }
 }
 
@@ -227,7 +228,7 @@ double Traffic::facteurVoie(double z) const {
 // du début du pas ; le reste du pas (vitesses, changements de file) reste dans l'ordre du jeu web.
 void Traffic::step(double h, const TrafficView& pv) {
     const size_t n = cars.size();
-    gap_.resize(n); lead_.resize(n);
+    gap_.resize(n); lead_.resize(n); leadAcc_.resize(n);
     if (parallel) jobs().parallelFor((int)n, 16, [&](int b, int e) { findLeaders(pv, b, e); });
     for (size_t i = 0; i < n; i++) {
         TrafficCar& car = cars[i];
@@ -281,6 +282,7 @@ void Traffic::step(double h, const TrafficView& pv) {
         if (car.traverse >= 0) { placerTraverse(car); continue; }   // WFS-136 : traversée du carrefour au rouge
         if (!parallel) findLeaders(pv, (int)i, (int)i + 1);
         const double gap = gap_[i], leadSpeed = lead_[i];
+        const bool derriereAccidentee = leadAcc_[i] != 0;
         // WFS-136 (RG-02, RG-04) : 40 km/h dans l'anneau, 60 km/h dans les épingles (aussi 30 m avant), +15 % sur l'autoroute ;
         // tracé 1 : want = car.want (facteur 1, limite infinie), le calcul du jeu web est inchangé
         double want = track_->sections().empty() ? car.want
@@ -299,9 +301,13 @@ void Traffic::step(double h, const TrafficView& pv) {
         const double safe = SAFE_MIN + car.speed * SAFE_TIME;
         double target = want;
         if (gap < safe) target = std::min(target, std::max(0.0, leadSpeed - (safe - gap) * 1.2));
+        // WFS-541 (RG-02) : une voiture qui déboîte de derrière une voiture accidentée avance au pas en
+        // braquant pour sortir, à DEBOITE_V (les contacts l'arrêtent contre une carrosserie : jamais de recouvrement)
+        const bool lent = contactsTrafic && !g_avant541, deboite = lent && car.target != car.lane && derriereAccidentee;
+        if (deboite) target = std::max(target, std::min(want, DEBOITE_V / M));
         const double acc = target > car.speed ? MAX_SPEED * 0.1 : MAX_SPEED * 0.7;
         car.speed = std::max(0.0, car.speed + clampd(target - car.speed, -acc * h, acc * h));
-        if (gap < 0.8 / M) car.speed = std::min(car.speed, leadSpeed * 0.95);
+        if (gap < 0.8 / M && !deboite) car.speed = std::min(car.speed, leadSpeed * 0.95);   // WFS-541 : sauf en déboîtant (contacts)
         // envie de changer de file (bloqué derrière plus lent, ou de temps en temps)
         car.think -= h;
         const double kv = facteurVoie(car.z);   // WFS-243 (RG-ANO-144) : files resserrées dans l'anneau, pas de changement de file
@@ -309,6 +315,7 @@ void Traffic::step(double h, const TrafficView& pv) {
             const double r = nextRand(car);
             car.think = 1.5 + r * 4;
             const bool blocked = gap < safe * 1.6 && leadSpeed < want * 0.85;
+            if (lent && blocked && car.speed * M < 1) car.think = 0.5;   // WFS-541 (RG-02) : arrêtée dans une file bloquée : elle regarde à côté toutes les 0,5 s
             if (blocked || r < 0.12) {
                 const int dir = nextRand(car) < 0.5 ? -1 : 1;
                 // d'abord le clignotant, le changement de file vient ~1 s plus tard
@@ -330,14 +337,12 @@ void Traffic::step(double h, const TrafficView& pv) {
         const double droite = car.deuxRoues ? DROITE_VOIE : 0;   // WFS-232 : deux-roues du côté droit de sa voie
         if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - (LANE_X[car.lane] + droite) * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
         const double d = (LANE_X[car.target] + droite) * kv - car.offset;
-        // WFS-541 (RG-02) : au pas, dans un bouchon, une voiture ne glisse pas de côté plus vite qu'elle ne roule (avant : 3,75 m/s
-        // de côté même arrêtée, caisse tournée de 90°) : au plus v · tan 17° + 0,6 m/s (au-delà de 38 km/h, rien ne change), et sa
-        // caisse ne tourne pas de plus de 20° (manœuvre lente pour sortir de la file)
-        const bool lent = contactsTrafic && !g_avant541;
-        const double latMax = lent ? std::min(0.5, (car.speed * M * 0.3 + 0.6) / RW) : 0.5;
+        // WFS-541 (RG-02) : une voiture ne se déplace de côté qu'en avançant (avant : 3,75 m/s de côté même arrêtée, caisse tournée
+        // de 90°) : au plus v · tan 35° (braquage d'une voiture au pas) ; à l'arrêt, rien ; au-delà de 19 km/h, rien ne change
+        const double latMax = lent ? std::min(0.5, car.speed * M * DEBOITE_TAN / RW) : 0.5;
         const double move = clampd(d, -latMax * h, latMax * h);
         car.offset += move;
-        car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, lent ? std::abs(move) * RW / 0.364 : 1e-3));   // tan 20° = 0,364
+        car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, 1e-3));
         if (std::abs(d) < 0.01) { car.lane = car.target; if (!car.pending) car.signal = 0; }
         car.z = track_->wrap(car.z + car.speed * h);
         if (car.deuxRoues) {   // WFS-232 (RG-04) : inclinaison d'équilibre dans la courbe, sans à-coup (filtre du premier ordre)
@@ -453,12 +458,11 @@ void Traffic::contacts(const Emprise* fixe, double zFixe) {
                 A.offset -= nx * d * fa / RW; A.z = track_->wrap(A.z - nz * d * fa / M);
                 B.offset += nx * d * fb / RW; B.z = track_->wrap(B.z + nz * d * fb / M);
                 // une voiture qui roule normalement reste sur la chaussée de ses files : au plus 25 cm au-delà de la file extérieure
-                // (anneau d'un rond-point aux files resserrées compris, WFS-243) ; poussée de côté : elle renonce à changer de file
+                // (anneau d'un rond-point aux files resserrées compris, WFS-243) ; sa décision de changer de file ne change pas
                 for (TrafficCar* v : {&A, &B}) {
                     if (v->crashed || std::abs(nx) < std::abs(nz)) continue;
                     const double lim = LANE_X[LANES - 1] * facteurVoie(v->z) + 0.25 / RW;
                     v->offset = clampd(v->offset, -lim, lim);
-                    if (v->target != v->lane) { v->target = v->lane; v->pending = false; v->signal = 0; }
                 }
                 // coincées de côté (bord de la chaussée, bord des files) : ce qui reste se règle le long de la route
                 const double reste = recouvrement(empriseTrafic(A, 0), empriseTrafic(B, track_->relZ(B.z - A.z)));

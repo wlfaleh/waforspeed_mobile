@@ -741,11 +741,13 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
     const char* seule = std::getenv("WFS_SCENE");
     auto scene = [&](const char* nom) { return !seule || !*seule || std::string(seule) == nom; };
     // ---------- 1. SUV heurté qui se remet en route ----------
-    if (scene("suv") && demarrer(VueCamera::Proche)) {
+    if (scene("heurtee") && demarrer(VueCamera::Proche)) {
         rouler(60 * 3, DriveInput{}); joueur.speed = 0;   // arrêté (comme coincé par la police)
         degager();
         const int fJ = joueur.playerX < -0.33 ? 0 : joueur.playerX > 0.33 ? 2 : 1;
-        const int k = poser(11, fJ, 40, 16);   // rrsport (WEB_CARS[16])
+        // m4 (WEB_CARS[8]) : dessinée avec son vrai modèle à ses vraies mesures. Le trafic ne charge que 4 modèles (WFS-13 :
+        // golf, m4, p911, gallardo) ; un « rrsport » du trafic serait dessiné avec la M4 étirée à sa longueur, pas en SUV
+        const int k = poser(11, fJ, 40, 8);
         libererPoses();
         if (k < 0) { WFS_ERR("trafic-541 : aucune voiture à poser"); ecarts++; }
         else {
@@ -753,11 +755,11 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
             Traffic::crash(TrafficSystem::active_->traffic_.cars[(size_t)k], 0.75, fJ == 2 ? -1 : 1);
             for (int img = 0; img < 14; img++) {
                 for (int i = 0; i < 45; i++) rouler(1, arret());
-                char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-suv-%02d", img); image(nom, {k});
+                char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-heurtee-%02d", img); image(nom, {k});
             }
             const TrafficCar& c = TrafficSystem::active_->traffic_.cars[(size_t)k];
-            WFS_LOG("trafic-541 (suv) : après 10,5 s : %s", c.crashed ? "toujours accidenté" : "reparti dans sa file");
-            if (!g_avant541 && c.crashed && !c.redresse) { WFS_ERR("trafic-541 (suv) : le SUV reste en travers"); ecarts++; }
+            WFS_LOG("trafic-541 (heurtee) : après 10,5 s : %s", c.crashed ? "toujours accidenté" : "reparti dans sa file");
+            if (!g_avant541 && c.crashed && !c.redresse) { WFS_ERR("trafic-541 (heurtee) : la voiture heurtée reste en travers"); ecarts++; }
         }
         finir();
     }

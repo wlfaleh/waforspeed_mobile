@@ -8,6 +8,7 @@
 //     sans animation du pilote qui se relève, ils ne sont relevés que hors de la vue, comme avant), aucune pénétration de plus de 5 cm entre deux
 //     voitures du trafic ni avec le joueur, à chaque pas (RG-03) ; coût CPU par image avec / sans les contacts (RG-05).
 //  C. RG-03 : le trafic s'écarte d'une voiture qu'on ne déplace pas (police) : separerDe ne bouge que le trafic.
+//  D. RG-02 : changement de file au pas derrière une voiture accidentée : aucun déplacement de côté à l'arrêt, repartie en 5 s.
 // usage : test_trafic_chocs541
 #include <algorithm>
 #include <chrono>
@@ -187,6 +188,31 @@ int main() {
         VERIFIE(pireTT <= 0.05, "banc : deux voitures du trafic l'une dans l'autre (%.3f m > 5 cm)", pireTT);
         VERIFIE(pireJ <= 0.05, "banc : une voiture du trafic dans celle du joueur (%.3f m > 5 cm)", pireJ);
         if (mode == 1) VERIFIE(arretMax <= 10, "banc : une voiture du trafic arrêtée %.1f s (> 10 s)", arretMax);
+    }
+    // ---------- D. RG-02 : changement de file au pas, derrière une voiture accidentée posée en travers ----------
+    // (retour du lead dev sur la PR #423) : jamais de déplacement de côté sans avancer (plus de 1 cm en un pas à 0 km/h), et
+    // la voiture arrêtée derrière l'accidentée repart en 5 s au plus, en avançant au pas dans la file voisine
+    for (int fAcc = 0; fAcc < 3; fAcc++) {
+        Traffic tr; tr.reset(t, 31 + fAcc, 6, 0); tr.clock = tr.sim = 0;
+        TrafficView pv; pv.position = t.wrap(1000 / M); pv.playerX = 0; pv.speed = 0; pv.myLen = 4.3 / M; pv.garage = true;
+        for (size_t i = 2; i < tr.cars.size(); i++) tr.cars[i].z = t.wrap(pv.position + (900 + 50 * i) / M);
+        TrafficCar &A = tr.cars[0], &B = tr.cars[1];
+        A.lane = A.target = fAcc; A.offset = LANE_X[fAcc]; A.z = t.wrap(pv.position + 60 / M); A.speed = 0;
+        A.crashed = true; A.crashT = -60; A.crashYaw = 0.6; A.crashSpin = A.crashVx = 0; A.deuxRoues = 0;
+        B.lane = B.target = fAcc; B.offset = LANE_X[fAcc]; B.z = t.wrap(pv.position + 35 / M); B.speed = B.want = 25 / 3.6 / M;
+        B.deuxRoues = 0; B.pending = false; B.think = 0;
+        double glisse = 0, arret = 0, cap = 0; bool passee = false;
+        for (int n = 0; n < 60 * 20 && !passee; n++) {
+            const double x0 = B.offset;
+            tr.step(T_STEP, pv); tr.sim += T_STEP;
+            if (B.speed * M < 1e-3) glisse = std::max(glisse, std::abs(B.offset - x0) * RW);
+            arret = std::max(arret, B.arretT); cap = std::max(cap, std::abs(B.laneYaw));
+            passee = t.relZ(B.z - A.z) * M > 6;
+        }
+        std::printf("D. accidentée dans la file %d : voiture derrière arrêtée %.1f s au plus, déplacement de côté à l'arrêt %.3f m, cap max %.0f°, %s\n",
+                    fAcc, arret, glisse, cap * 57.2958, passee ? "passée à côté" : "toujours derrière");
+        VERIFIE(glisse <= 0.01, "D. file %d : déplacement de côté sans avancer (%.3f m)", fAcc, glisse);
+        VERIFIE(passee && arret <= 5, "D. file %d : voiture bloquée derrière l'accidentée (arrêtée %.1f s)", fAcc, arret);
     }
     // ---------- C. trafic écarté d'une voiture qu'on ne déplace pas (police) ----------
     {
