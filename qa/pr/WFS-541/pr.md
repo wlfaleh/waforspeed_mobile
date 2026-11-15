@@ -42,7 +42,7 @@ Agent : Claude, agent conduite (01UY1Vv1WU)
 
 ### Comment c'est vérifié
 
-**Tests CPU** : 146 / 146, sur la branche synchronisée avec `main`. Journal complet dans `qa/pr/WFS-541/tests-cpu.log`, résumé dans la capture « Tests CPU ».
+**Tests CPU** : 147 / 147, sur la branche synchronisée avec `main` (après la fusion de WFS-548). Journal complet dans `qa/pr/WFS-541/tests-cpu.log`, résumé dans la capture « Tests CPU ».
 
 **Banc CPU du critère** : Corniche, trafic de la Poursuite (× 2,5), 200 chocs provoqués autour du joueur.
 
