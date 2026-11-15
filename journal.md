@@ -1201,3 +1201,6 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 ### 2026-11-15 23:43:13 — E23 : WFS-548 / 549 KO, WFS-557 à 564 créés écran par écran (po-scrum-master)
 - 8 tickets P1 (un par groupe d'écrans de maquettes R19), RG dans `regles-de-gestion/WFS-557.md` à `WFS-564.md`. Prêts : 557, 561, 562, 563 ; 558, 559 après 551 ; 560, 564 après 550.
 
+### 2026-11-15 23:44:26 — E23 : un seul ticket WFS-557 au lieu de 8 (po-scrum-master)
+- Demande de l'utilisateur : pas 8 tâches. WFS-558 à 564 annulés (jamais attribués), WFS-557 couvre tous les écrans des maquettes R19.
+
