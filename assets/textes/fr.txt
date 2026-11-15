@@ -211,6 +211,7 @@ chargement.surtitre=Sprint urbain · vraies voitures
 chargement.etape.moteur=Préparation du moteur
 chargement.etape.route=Construction de la route
 chargement.etape.modele=Chargement du modèle 3D…
+chargement.etape.voitures=Chargement des voitures
 chargement.etape.ville=Construction de la ville
 chargement.etape.paquets=Paquets de cartes
 chargement.segment.moteur=Moteur

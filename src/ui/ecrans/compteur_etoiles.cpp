@@ -53,6 +53,7 @@ struct Gain {
 Gain g_gain;
 constexpr double VOL = 0.65, COMPTE_DEBUT = 0.35, COMPTE = 1.0, FIN = 1.6;   // secondes
 constexpr int NB_ETOILES = 7;
+vec4 orange(float a) { vec4 c = ui::ORANGE; c.w = a; return c; }   // --accent, accent de la monnaie
 bool anglais() { return ui::langue::active() == ui::langue::Langue::Anglais; }
 } // namespace
 
@@ -90,8 +91,8 @@ void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, floa
         const double age = g.time - g_gain.debut;
         const float l = (float)std::clamp(std::min((age - VOL * 0.6) / 0.15, (FIN - age) / 0.3), 0.0, 1.0);
         if (l > 0) {
-            biseau(r, x - 3 * kb, y - 3 * kb, w + 6 * kb, h + 6 * kb, 8 * kb, op(vec4{1.f, 106 / 255.f, 0.f, 0.25f * l}));
-            biseau(r, x - 1.5f * kb, y - 1.5f * kb, w + 3 * kb, h + 3 * kb, 8 * kb, op(vec4{1.f, 106 / 255.f, 0.f, 0.9f * l}));
+            biseau(r, x - 3 * kb, y - 3 * kb, w + 6 * kb, h + 6 * kb, 8 * kb, op(orange(0.25f * l)));
+            biseau(r, x - 1.5f * kb, y - 1.5f * kb, w + 3 * kb, h + 3 * kb, 8 * kb, op(orange(0.9f * l)));
             biseau(r, x, y, w, h, 8 * kb, op(GLASS));
         }
     }
@@ -108,13 +109,13 @@ void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, floa
             const float cx = de.x + (vers.x - de.x) * e - std::sin(u * 3.14159f) * (40 + 12 * i) * k;   // arc vers la gauche
             const float cy = de.y + (vers.y - de.y) * e;
             const float rr = re * (0.7f + 0.5f * std::sin(u * 3.14159f)) * (1 - 0.08f * (i % 3));
-            score_fin::dessinerEtoile(r, cx, cy, rr, op(vec4{1.f, 106 / 255.f, 0.f, std::min(1.f, 4 * (1 - u))}));
+            score_fin::dessinerEtoile(r, cx, cy, rr, op(orange(std::min(1.f, 4 * (1 - u)))));
         }
         // « +N » orange sous la pilule (valeur réelle du gain), qui apparaît puis s'efface à la fin
         const float ap = (float)std::clamp(std::min(age / 0.15, (FIN - age) / 0.35), 0.0, 1.0);
         if (ap > 0) {
             const std::string plus = "+" + score_fin::nombreEtoiles(g_gain.gain, anglais());
-            ui::text(r, x + w / 2, y + h + 8 * kb - 6 * kb * (1 - ap), 20 * k, plus, op(vec4{1.f, 106 / 255.f, 0.f, ap}), ui::CENTRE, 0.02f, false, true);
+            ui::text(r, x + w / 2, y + h + 8 * kb - 6 * kb * (1 - ap), 20 * k, plus, op(orange(ap)), ui::CENTRE, 0.02f, false, true);
         }
     }
 }

@@ -18,6 +18,9 @@ Branche `feature/waforspeed-550` comparée à `origin/main` ; bancs : garage-voi
 | `pret-menu-attente-fr` | ![avant](avant-pret-menu-attente-fr.jpg) | ![après](apres-pret-menu-attente-fr.jpg) |
 | `pret-menu-expire-fr` | ![avant](avant-pret-menu-expire-fr.jpg) | ![après](apres-pret-menu-expire-fr.jpg) |
 | `chargement-1` | ![avant](avant-chargement-1.jpg) | ![après](apres-chargement-1.jpg) |
+| `chargement-route` | — | ![après](apres-chargement-route.jpg) |
+| `chargement-voitures` | — | ![après](apres-chargement-voitures.jpg) |
+| `chargement-ville` | — | ![après](apres-chargement-ville.jpg) |
 | `chargement-2` | ![avant](avant-chargement-2.jpg) | ![après](apres-chargement-2.jpg) |
 | `chargement-erreur` | ![avant](avant-chargement-erreur.jpg) | ![après](apres-chargement-erreur.jpg) |
 | `garage-voitures-en-golf-bloquee` | ![avant](avant-garage-voitures-en-golf-bloquee.jpg) | ![après](apres-garage-voitures-en-golf-bloquee.jpg) |

@@ -32,6 +32,7 @@ static const char* const ETAPES[][2] = {
     {"Préparation du moteur", "chargement.etape.moteur"},
     {"Construction de la route", "chargement.etape.route"},
     {"Chargement du modèle 3D…", "chargement.etape.modele"},
+    {"Chargement des voitures", "chargement.etape.voitures"},   // WFS-550 : étape « Voitures » (trafic)
     {"Construction de la ville", "chargement.etape.ville"},
     {"Paquets de cartes", "chargement.etape.paquets"},
 };
@@ -226,7 +227,7 @@ static void image(Renderer& r, float p, const std::string& lib, bool err) {
 }
 
 void Chargement::debut(Renderer& r, double depuis) {
-    r_ = &r; p_ = 0; n_ = 0; erreur_ = false;
+    r_ = &r; p_ = 0; n_ = 0; erreur_ = false; actif_ = true;
     libelle_ = "Préparation du moteur";
     t0_ = tEtape_ = nowSeconds();
     // première image tout de suite (fond + barre), puis police (≈ 0,1 à 0,9 s) et image complète à 0 %
@@ -255,12 +256,14 @@ void Chargement::progression(float p, const char* l) { chargement().etape(p, l);
 static bool g_fonduArme = false, g_fonduParti = false; static double g_fonduT0 = 0;
 
 void Chargement::fin() {
+    actif_ = false;
     etape(1, nullptr);   // 100 % : la dernière étape est finie
     WFS_LOG("chargement : total %s s", ui::decimal(nowSeconds() - t0_, 2).c_str());
     g_fonduArme = true; g_fonduParti = false;
 }
 
 void Chargement::erreur(bool quitter) {
+    actif_ = false;
     erreur_ = true; g_quitter = quitter; g_reessai = false; g_doigtErreur = -1;
     WFS_ERR("chargement : échec à l'étape « %s » — %s", libelle_.c_str(), MESSAGE_ECHEC);
     dessiner();
@@ -328,7 +331,10 @@ void benchChargement(Game& g, Renderer& r, const std::string& out, double depuis
     ch.apresImage = [&](int n) {
         if (n == 0) capture("chargement-0");
         if (n == 2) capture("chargement-1");
-        if (n == 4) capture("chargement-2");
+        if (n == 1) capture("chargement-route");     // WFS-550 : 10 %, segment Moteur en cours
+        if (n == 3) capture("chargement-voitures");  // WFS-550 : 70 %, segment Voitures en cours
+        if (n == 4) capture("chargement-ville");     // WFS-550 : 85 %, segment Ville en cours
+        if (n == 5) capture("chargement-2");
     };
     ch.debut(r, depuis);
     const bool ok = g.init(r, "golf", "ville", Chargement::progression);
@@ -359,5 +365,18 @@ void benchChargement(Game& g, Renderer& r, const std::string& out, double depuis
 } // namespace ecrans
 
 WFS_SYSTEM(ecrans::FonduChargement, 490)
+
+namespace ecrans {
+namespace {
+// WFS-550 (RG-02) : annonce de l'étape « Ville » pendant le chargement d'une partie, après le trafic (système 50) et juste avant la
+// ville et le décor (systèmes 100 et plus) ; rien hors d'un chargement affiché (debut → fin ou erreur)
+class AnnonceVille final : public System {
+public:
+    const char* name() const override { return "chargement-annonce-ville"; }
+    void init(Renderer&, const GameView&) override { if (chargement().actif()) Chargement::progression(0.85f, "Construction de la ville"); }
+};
+} // namespace
+} // namespace ecrans
+WFS_SYSTEM(ecrans::AnnonceVille, 99)
 
 } // namespace wfs

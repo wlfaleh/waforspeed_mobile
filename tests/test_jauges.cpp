@@ -1,6 +1,6 @@
 // WFS-550 (interface R19 3/5) : calculs des jauges communes de src/ui/jauges.h : fractions bornées (cadrans, anneaux, barres),
 // angles du cadran de 240° ouvert en bas, place des 17 segments de la position (segment affiché allongé, rangée centrée, le
-// nombre suit le catalogue), étapes du chargement (Moteur, Modèles 3D, Voitures, Ville) sur les bornes de Game::init.
+// nombre suit le catalogue), étapes du chargement (Moteur, Modèles 3D, Voitures, Ville) alignées sur les textes annoncés.
 #include <cmath>
 #include <cstdio>
 #include <limits>
@@ -41,10 +41,25 @@ int main() {
         cas("le nombre de segments suit le catalogue (5 voitures : 4 normaux + 1 allongé)", proche(largeurSegments(e5, 5, l, ec), 4 * l + 2.5f * l + 4 * ec));
         cas("aucune voiture : rangée vide", largeurSegments(e, 0, l, ec) == 0);
     }
-    // étapes du chargement (RG-02)
-    cas("chargement à 0 % : aucune étape commencée", avancementEtape(0, 0) == 0 && avancementEtape(0, 3) == 0);
-    cas("chargement à 64 % : Moteur et Modèles 3D finis, Voitures en cours, Ville à venir",
-        avancementEtape(0.64f, 0) == 1 && avancementEtape(0.64f, 1) == 1 && avancementEtape(0.64f, 2) > 0.8f && avancementEtape(0.64f, 2) < 1 && avancementEtape(0.64f, 3) == 0);
+    // étapes du chargement (RG-02) : à chaque palier annoncé, le segment en cours est celui du texte affiché (revue de la PR #424)
+    {
+        // étape en cours = 1re étape pas finie (comme chargement.cpp)
+        auto enCours = [](float p) { int e = 0; while (e < 3 && avancementEtape(p, e) >= 1) e++; return e; };
+        struct Palier { float p; const char* texte; int segment; };
+        const Palier paliers[] = {
+            {0.00f, "0 % « Préparation du moteur » → Moteur", 0},
+            {0.10f, "10 % « Construction de la route » → Moteur", 0},
+            {0.20f, "20 % « Chargement du modèle 3D… » → Modèles 3D", 1},
+            {0.70f, "70 % « Chargement des voitures » → Voitures", 2},
+            {0.85f, "85 % « Construction de la ville » → Ville", 3},
+        };
+        for (const Palier& q : paliers) {
+            bool ok = enCours(q.p) == q.segment;
+            for (int e = 0; e < q.segment; e++) ok = ok && avancementEtape(q.p, e) == 1;    // celles d'avant : finies
+            for (int e = q.segment; e < 4; e++) ok = ok && avancementEtape(q.p, e) < 1;     // celle-ci et les suivantes : pas finies
+            cas(q.texte, ok);
+        }
+    }
     cas("chargement à 100 % : les 4 étapes finies", avancementEtape(1, 0) == 1 && avancementEtape(1, 1) == 1 && avancementEtape(1, 2) == 1 && avancementEtape(1, 3) == 1);
     cas("étape hors de 0..3 : 0 (aucune lecture hors du tableau)", avancementEtape(0.5f, -1) == 0 && avancementEtape(0.5f, 4) == 0);
     std::printf("jauges : %d échec(s)\n", echecs);

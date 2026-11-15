@@ -211,6 +211,7 @@ chargement.surtitre=Street sprint · real cars
 chargement.etape.moteur=Starting the engine
 chargement.etape.route=Building the road
 chargement.etape.modele=Loading the 3D model…
+chargement.etape.voitures=Loading the cars
 chargement.etape.ville=Building the city
 chargement.etape.paquets=Map packs
 chargement.segment.moteur=Engine

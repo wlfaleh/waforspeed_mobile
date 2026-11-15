@@ -51,9 +51,14 @@ inline float largeurSegments(const Segment* etats, int n, float l, float e) {
     return p.x + p.l;
 }
 
-// RG-02 : chargement en 4 étapes (Moteur, Modèles 3D, Voitures, Ville), bornes de la progression envoyée par Game::init
-// (src/game/game.cpp : 0,10 route ; 0,20 modèle 3D de la voiture ; 0,70 ville). Étape en cours et avancement dans l'étape.
-constexpr float BORNES_CHARGEMENT[5] = {0.f, 0.10f, 0.20f, 0.70f, 1.f};
+// RG-02 : chargement en 4 étapes (Moteur, Modèles 3D, Voitures, Ville). Chaque segment commence au palier où son texte est
+// annoncé (revue de la PR #424 : le segment en cours correspond toujours au texte affiché) :
+//   0 % « Préparation du moteur » et 10 % « Construction de la route » → Moteur ;
+//   20 % « Chargement du modèle 3D… » (Game::init) → Modèles 3D ;
+//   70 % « Chargement des voitures » (Game::init, juste avant le trafic, système 50) → Voitures ;
+//   85 % « Construction de la ville » (système d'annonce 99 de chargement.cpp, juste avant la ville, système 100) → Ville.
+// Une étape n'est finie que quand la suivante est annoncée.
+constexpr float BORNES_CHARGEMENT[5] = {0.f, 0.20f, 0.70f, 0.85f, 1.f};
 inline float avancementEtape(float p, int etape) {   // 0 : pas commencée ; 1 : finie
     if (etape < 0 || etape > 3) return 0;
     return fraction(p, BORNES_CHARGEMENT[etape], BORNES_CHARGEMENT[etape + 1]);

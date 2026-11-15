@@ -37,9 +37,10 @@ public:
     float pourcent() const { return p_; }
     const std::string& libelle() const { return libelle_; }
     bool enErreur() const { return erreur_; }
+    bool actif() const { return actif_; }   // WFS-550 : entre debut() et fin() / erreur()
 private:
     Renderer* r_ = nullptr;
-    float p_ = 0; int n_ = 0; bool erreur_ = false;
+    float p_ = 0; int n_ = 0; bool erreur_ = false, actif_ = false;
     std::string libelle_;
     double t0_ = 0, tEtape_ = 0;
 };
