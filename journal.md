@@ -2018,3 +2018,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:03:14 — R19 : bouton Garage en pilule chrome (smart-brainstorming)
 - Choix n° 3 de l'utilisateur intégré au menu ; planche des 3 versions retirée. Rien transmis au PO.
+
+### 2026-11-15 00:05:50 — R19 : garage, exemple de voiture bloquée (smart-brainstorming)
+- Demande de l'utilisateur : voiture avec cadenas dans l'onglet Voiture (`15-garage-voiture-bloquee.jpg`). Rien transmis au PO.
