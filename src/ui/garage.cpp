@@ -23,6 +23,7 @@
 #include "garage_finition.h"
 #include "garage_skin.h"
 #include "ecrans/market_ecran.h"   // WFS-513 (accroche) : bouton et écran « Market »
+#include "ecrans/atelier.h"   // WFS-496 (accroche) : bouton et écran « Atelier »
 #include "verre.h"   // WFS-548 (accroche) : rien du garage sous une fenêtre de verre (verre::couvert)
 
 namespace wfs {
@@ -94,7 +95,7 @@ public:
 
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         if (g.ecran != Ecran::Garage) return false;
-        decor_.regler(fp, s, g, CARS[index_]);
+        decor_.regler(fp, s, g, CARS[index_]); atelier::camera(fp, s, g);   // WFS-496 (accroche) : caméra de l'atelier
         return true;
     }
 
@@ -103,9 +104,9 @@ public:
         decor_.dessiner(r, ficheDe(CARS[index_].id).glow);
         if (voiture_.ok) {   // RG-06 : que des vraies voitures, pas de silhouette provisoire
             const vec3 p = lin(PAINTS[peinture_[index_]].hex);
-            const mat4 M = translate({slide_ * 7, 0.08f, 0}) * rotateY(yaw_);
+            const mat4 M = translate({slide_ * 7, 0.08f, 0}) * rotateY(atelier::ouvert() ? 0.f : yaw_);   // WFS-496 (accroche) : voiture de face fixe dans l'atelier
             r.peinture2ProchaineVoiture(couleur_.code2(index_));   // WFS-489 (accroche) : toit et rétros montrés (voiture seulement : le renderer remet la couleur 2 à zéro après ce dessin)
-            skin_.apercu(r, voiture_, index_);   // WFS-494 (accroche) : aperçu de la skin montrée (RG-05)
+            if (!atelier::apercu(r, voiture_, CARS[index_].id, skin_.skin(index_))) skin_.apercu(r, voiture_, index_);   // WFS-494 (accroche) : aperçu de la skin montrée (RG-05) ; WFS-496 : autocollants
             const int f0 = r.finitionJoueur(); r.finitionJoueur(FinitionGarage::rendu(finition_.finition(index_)));   // WFS-491 (accroche) : aperçu de la finition (RG-02)
             r.dessinJoueur = true; r.draw(voiture_, M, &p); r.dessinJoueur = false; r.finitionJoueur(f0);   // voiture du joueur (finition, modèle complet), puis finition de la course remise
             plaque_joueur::dessiner(r, CARS[index_].id, M, g.night, vec3{M.at(0, 3), M.at(1, 3), M.at(2, 3)});   // WFS-483 (accroche) : plaque complète (RG-06)
@@ -118,6 +119,7 @@ public:
         // (sur Android, ses micro-mouvements arrivent aussi comme des appuis : la flèche sautait des voitures)
         if (appui_.consomme(t.id, t.down)) return true;
         if (market_ecran::ouvert()) return market_ecran::toucher(t.id, t.x, t.y, t.down);   // WFS-513 (accroche) : Market par-dessus le garage
+        if (atelier::ouvert()) return atelier::toucher(t, g);   // WFS-496 (accroche) : l'atelier garde tous les touchers
         if (FenetreAchatVoiture& f = achat_.fenetre(); f.ouverte()) {   // WFS-499 (accroche) : la fenêtre d'achat garde tous les touchers
             if (const int c = t.down ? f.appui(t.x, t.y) : -1; c >= 0) { appui_.prendre(t.id); if (c == f.CONFIRMER && f.confirmer()) { skin_.proposer(index_); if (g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); } else if (c == f.ANNULER) f.fermer(); }   // WFS-494 (accroche) : skin offerte à l'achat
             return true;
@@ -141,6 +143,7 @@ public:
             }
             if (doigt_ >= 0) return true;
             if (market_ecran::dansBoutonGarage(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("garage : « Market »"); market_ecran::ouvrir(Ecran::Garage); return true; }   // WFS-513 (accroche, RG-01)
+            if (atelier::dansBoutonGarage(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("garage : « Atelier »"); atelier::ouvrir(CARS[index_].id, skin_.skin(index_)); return true; }   // WFS-496 (accroche, RG-01)
             // boutons et panneaux, dans l'ordre d'avant le découpage : action à l'appui (comme les boutons de la pause)
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
@@ -161,7 +164,7 @@ public:
 
     // mise en page et enchaînement des panneaux, dans l'ordre de dessin d'avant le découpage (mêmes pixels)
     void drawUi(Renderer& r, const GameView& g) override {
-        if (g.ecran != Ecran::Garage || !ui::fontReady()) return;
+        if (g.ecran != Ecran::Garage || !ui::fontReady() || atelier::ouvert()) return;   // WFS-496 (accroche) : l'atelier dessine son écran
         if (t0_ < 0) t0_ = g.time;
         MiseEnPage mp;
         const float k = mp.k = g.uiHeight / 720.f;
@@ -191,6 +194,7 @@ public:
         skin_.dessiner(r, mp, e);           // rangée « Skin » (WFS-494)
         cadre::pied(r, mp, car, voiture_.ok);
         market_ecran::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, mp.op);   // WFS-513 (accroche, RG-01) : sous le solde d'étoiles
+        atelier::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, mp.op);   // WFS-496 (accroche, RG-01) : sous « Market »
         achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout
         skin_.dessinerFenetre(r, mp, index_);   // WFS-494 (accroche) : fenêtre de la skin offerte
     }
