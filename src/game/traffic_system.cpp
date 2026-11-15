@@ -680,7 +680,7 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         poursuiteBancPolice(true, -350, 0);
         return TrafficSystem::active_ != nullptr;
     };
-    auto finir = [&]() { poursuiteBancPolice(false, 0, 0); g.manette = DriveInput{}; g.modeManette = false; g.camMode = 0; poursuiteBancFixe(false); g.shutdown(); };
+    auto finir = [&]() { poursuiteBancPolice(false, 0, 0); g.orbitRecul = 6.5f; g.orbitHauteur = 1.7f; g.orbit = 0; g.manette = DriveInput{}; g.modeManette = false; g.camMode = 0; poursuiteBancFixe(false); g.shutdown(); };
     // pose une voiture du trafic lointaine (hors de la vue) à dzM devant le joueur, dans la file f, à kmh ; type : modèle du jeu web
     auto poser = [&](double dzM, int f, double kmh, int type = -1) -> int {
         Traffic& T = TrafficSystem::active_->traffic_; const Track& tk = *TrafficSystem::active_->track_;
@@ -773,6 +773,9 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         else {
             TrafficCar& ca = TrafficSystem::active_->traffic_.cars[(size_t)a];
             ca.crashed = true; ca.crashT = -30; ca.crashYaw = 0.6; ca.crashSpin = ca.crashVx = 0; ca.speed = 0;
+            // caméra haute devant la scène, 48 m devant le joueur (au-delà de la voiture accidentée), 13 m au-dessus, tournée vers
+            // lui : toute la file se voit, de face, entre la voiture accidentée et le joueur
+            { const Game::Vue v = g.calculerVue(t); g.camMode = 2; g.orbit = std::atan2(v.fwd.x, v.fwd.z) + 0.08f; g.orbitRecul = 48.f; g.orbitHauteur = 13.f; }
             for (int img = 0; img < 10; img++) {
                 for (int i = 0; i < 48; i++) rouler(1, arret());
                 char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-bouchon-%02d", img); image(nom, {a, b1, b2, b3});
