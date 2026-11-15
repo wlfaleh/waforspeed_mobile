@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | 🆕 À relire | ce342a2e | 2026-11-15 14:05 |
