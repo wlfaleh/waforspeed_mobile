@@ -26,7 +26,7 @@ namespace ecrans::garage {
 
 class SkinGarage : public PanneauGarage {
 public:
-    static constexpr int NB = BOUTIQUE_SKINS + 1;   // « Aucune » puis les 4 skins
+    static constexpr int NB = BOUTIQUE_SKINS + 1;   // « Aucune » puis les 5 skins (WFS-552)
     SkinGarage() { for (int& s : skin_) s = -1; }
     // ordre affiché → indice dans BOUTIQUE_SKINS_IDS (rallye, drifttokyo, neonnuit, camouflage, ciel) ; −1 = aucune
     static constexpr int ORDRE[NB] = {-1, 0, 3, 1, 2, 4};   // Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit, Bleu ciel (WFS-552)

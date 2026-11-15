@@ -59,7 +59,7 @@ int benchMenuParking(Game& g, Renderer& r, const std::string& out) {
     {
         const parking::Cadrage c = parking::cadrage(4.85f, 1.97f, 1.19f, (float)r.width() / (float)r.height());
         const parking::Emprise e = parking::emprise(c, 4.85f, 1.97f, 1.19f, (float)r.width() / (float)r.height());
-        verifier(e.xmin > -0.40f && e.xmax < 0.95f && e.ymin > -0.95f && e.ymax < 0.95f,
+        verifier(e.xmin > -0.28f && e.xmax < 0.95f && e.ymin > -0.95f && e.ymax < 0.95f,
                  "voiture entière dans l'image, à droite de la console (x NDC " + std::to_string(e.xmin) + " à " + std::to_string(e.xmax) + ", y " +
                  std::to_string(e.ymin) + " à " + std::to_string(e.ymax) + ")");
     }

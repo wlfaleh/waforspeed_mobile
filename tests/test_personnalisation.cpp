@@ -41,6 +41,9 @@ int main() {
             peintureDef("bleuelectrique")->hex == 0x0050ff && peintureDef("vertacide")->hex == 0x7fff00 && peintureDef("violetneon")->hex == 0x9d00ff &&
             peintureDef("bleuciel")->hex == 0x4fa8ff && peintureDef("corail")->hex == 0xff6f61);
         cas("identifiants uniques, catalogue lu sans problème", verifierCatalogue().empty());
+        bool noms = true;   // WFS-552 (revue du lead dev) : chaque objet a un nom (le cadeau du jour l'affiche quand la traduction manque)
+        for (const Objet& o : catalogue()) noms = noms && o.nom && *o.nom;
+        cas("chaque objet du catalogue a un nom (dont la skin Bleu ciel)", noms && !std::strcmp(objet("ciel")->nom, "Bleu ciel"));
     }
     // ---- prix (RG-03, WFS-498 RG-04 / RG-05)
     {

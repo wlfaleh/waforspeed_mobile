@@ -18,7 +18,8 @@ int main() {
         for (int i = 0; i < CAR_COUNT; i++) {
             const CarDef& c = CARS[i];
             const Emprise m = emprise(cadrage(c.d.L, c.d.W, c.d.H, e.aspect), c.d.L, c.d.W, c.d.H, e.aspect);
-            const bool ok1 = m.xmin > -0.40f && m.xmax < 0.95f && m.ymin > -0.95f && m.ymax < 0.95f;   // jamais sous la console (tiers gauche)
+            // console du menu : jusqu'à 36 % de la largeur (x NDC −0,28, maquette 01) ; la voiture commence à sa droite
+            const bool ok1 = m.xmin > -0.28f && m.xmax < 0.95f && m.ymin > -0.95f && m.ymax < 0.95f;
             const bool ok2 = (m.xmin + m.xmax) / 2 > 0.05f;
             const bool ok3 = (m.ymax - m.ymin) / 2 > e.hauteur;
             if (!(ok1 && ok2 && ok3) && !*pire) std::snprintf(pire, sizeof pire, " (%s : x %.2f..%.2f, y %.2f..%.2f)", c.id, m.xmin, m.xmax, m.ymin, m.ymax);

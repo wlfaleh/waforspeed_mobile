@@ -8,8 +8,8 @@ namespace {
 // maquette 01 (2400 × 1080) : la voiture occupe 49 % de la hauteur de l'image (du capot au bas des roues) et 44 % de sa largeur,
 // son centre à 58 % de la largeur et à 57 % de la hauteur (depuis le haut) ; la console du menu tient le tiers gauche
 constexpr float DEMI_HAUTEUR = 0.57f;   // demi-hauteur visée (NDC) : avis de l'agent 3D (PR #421), 15 % plus près que la maquette mesurée
-constexpr float DEMI_LARGEUR_MAX = 0.54f;   // demi-largeur au plus (NDC) : la voiture ne passe pas sous la console
-constexpr float CENTRE_X = 0.20f, CENTRE_Y = -0.12f;   // centre visé (NDC, y vers le haut)
+constexpr float DEMI_LARGEUR_MAX = 0.48f;   // demi-largeur au plus (NDC) : la voiture ne passe pas sous la console
+constexpr float CENTRE_X = 0.22f, CENTRE_Y = -0.12f;   // bord gauche de la voiture à x ≥ −0,26 : à droite de la console (revue du lead dev)   // centre visé (NDC, y vers le haut)
 constexpr float OEIL_Y = 1.0f;          // caméra à 1 m du sol, horizontale : verticales droites (piliers), objectif décentré
 
 Emprise mesurer(const Cadrage& c, float L, float W, float H, float aspect) {
