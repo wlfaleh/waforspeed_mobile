@@ -2126,3 +2126,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 10:27:05 — R19 : écran de chargement d'après l'existant (smart-brainstorming)
 - Demande de l'utilisateur : chargement inspiré de l'écran actuel (WFS-297) avec les nouveaux boutons ; états normal et erreur. Rien transmis au PO.
+
+### 2026-11-15 10:28:52 — R19 : chargement au lancement de l'application (smart-brainstorming)
+- Précision de l'utilisateur : écran de chargement de l'application, pas d'une course ; carte, mode et astuce retirés. Rien transmis au PO.
