@@ -2087,3 +2087,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:11:12 — R19 : boutons Menu et Caméra agrandis (smart-brainstorming)
 - Demande de l'utilisateur : Menu et Caméra plus grands dans l'interface de conduite. Rien transmis au PO.
+
+### 2026-11-15 01:13:13 — R19 : Menu et Caméra au style du GPS avec texte (smart-brainstorming)
+- Demande de l'utilisateur : même cadre que le GPS, icône pause + « MENU », icône caméra + vue active. Rien transmis au PO.
