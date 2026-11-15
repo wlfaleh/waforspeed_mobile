@@ -1130,3 +1130,31 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Sur accord direct de l'utilisateur dans la session lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) : « Ok ca me vas ta proposition … on l'applique toutes de suite ».
 - Règles 3 et 4 (déjà au bandeau de `TACHES.md` par le PO, 155f29a0) recopiées dans `CLAUDE.md`, `.claude/skills/lead-dev/SKILL.md` (point 2 de la revue) et `.claude/skills/agent-developer/references/checklist-livraison.md` (case `captures_pr.sh`).
 - Points 1 et 2 (cache) : WFS-555, en cours par le lead dev.
+
+### 2026-11-15 23:04:32 — WFS-550 : PR #424 corrigée après le refus du lead dev (Claude, agent dev3d (01UY1Vv1yg))
+- Point 1 : section « Tests CPU » et `qa/pr/WFS-550/tests-cpu.log` (149 réussis, 0 échec).
+- Point 2 : segments du chargement alignés sur les textes annoncés (Moteur 0 à 20 %, Modèles 3D 20 %, Voitures 70 %, Ville 85 %) ; **accroche d'1 ligne dans `src/game/game.cpp`** (annonce à 70 % : « Chargement des voitures », avant le trafic, système 50) ; « Construction de la ville » annoncée à 85 % par un système d'ordre 99 de `chargement.cpp`, seulement pendant un chargement affiché ; clé `chargement.etape.voitures` FR / EN ; `test_jauges` : un cas par palier ; captures du chargement refaites (10, 20, 70, 85, 100 %).
+- Commits 434b279e (corrections) et bdabd2b9 (synchronisation avec `main`) ; lead dev rappelé.
+
+### 2026-11-15 23:13:06 — Revue des PR WFS-550 et WFS-551 : maquettes comparées au code (lead-dev)
+- Ordre de l'utilisateur : « pour les PR 550 et 551 vous devez checker les maquettes aussi avec le code ». Ajouté au skill `lead-dev` (point 0 bis de la revue) et à `regles-de-gestion/WFS-550.md` et `WFS-551.md` : chaque maquette citée par les RG est ouverte et comparée au code et aux captures, une ligne par maquette dans la revue ; sinon pas de fusion. Message posté sur la PR #424 (WFS-550, en revue).
+
+
+### 2026-11-15 23:14:02 — WFS-550 : 2e revue de la PR #424, retour lead dev (lead-dev)
+Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments du chargement suivent le texte affiché (bornes 0 / 0,20 / 0,70 / 0,85 / 1, annonce de la ville par le système 99 seulement pendant un chargement), il y a un cas `test_jauges` par palier, et l'orange vient de `ui::ORANGE`. Les 5 captures du chargement sont regardées (10, 20, 70, 85 et 100 %) : le segment en cours correspond au texte. La branche est construite et `tests_cpu.sh` lancé : 149 réussis. **Refus sur un seul point** : la description de la PR sur GitHub n'a pas été mise à jour. Elle n'a pas de section « Tests CPU » (la section n'est que dans `qa/pr/WFS-550/pr.md`), et son tableau des captures est l'ancien. Correction attendue : coller `pr.md` à jour dans la description, sans nouveau commit.
+
+### 2026-11-15 23:14:20 — Début WFS-496 : atelier d'autocollants, attribué à Claude, agent dev3d (01Us6uCwHf) (po-scrum-master)
+- Demande : nouvelle session `@dev` (session_01Us6uCwHfmVNHGT7xVcZKgC), « @dev go », sans sujet choisi ; aucun ticket déjà reçu par cette session.
+- Choix : 1er ticket **P1** ⏳ Prêt permis à `@dev` = **WFS-496** (E18, priorité absolue 🚨, 9e du classement 📋 ; WFS-495 et 504 fusionnés). Passe avant WFS-554 et 553 (P2), cités par erreur dans les bandeaux précédents comme seuls restants.
+- Zone : E8 `src/ui/ecrans/**` (+ `tests/**`) ; accroche ≤ 10 lignes dans `src/ui/garage.cpp` (annoncée au journal) ; réutiliser les calques et la texture d'habillage de WFS-492 / 495 et la variable `WFS_AUTOCOLLANTS` de `game.cpp`. Règles : `regles-de-gestion/WFS-496.md`. Pas d'avis `@3d` obligatoire (épic E18, pas E15).
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-503, WFS-512 (P1), puis WFS-554, 553 (P2).
+
+### 2026-11-15 23:15:26 — WFS-550 : description de la PR #424 corrigée après la 2e revue (Claude, agent dev3d (01UY1Vv1yg))
+- Description de la PR remplacée par `qa/pr/WFS-550/pr.md` à jour (section « Tests CPU », 26 captures dont le chargement à 10, 70 et 85 %) ; aucun nouveau commit de code (bdabd2b9) ; lead dev rappelé.
+
+### 2026-11-15 23:15:29 — Début WFS-503 : cadeau du jour, gains réels, attribué à Claude, agent dev3d (01Us6uCwe9) (po-scrum-master)
+- Demande : nouvelle session `@dev` (dev-artiste-3d, session_01Us6uCwe9onHeoCoMCPSWj3), « @dev go », jamais de ticket avant : demande acceptée (un seul sujet par session).
+- Choix : WFS-496 venait d'être donné à la même minute à 01Us6uCwHf par une autre instance du PO ; 1er ticket **P1** ⏳ Prêt permis à `@dev` ensuite = **WFS-503** (E19, 11e du classement 📋 ; 501, 498, 487, 494 fusionnés). Une première attribution de WFS-554 (P2) préparée par cette instance n'a pas été envoyée (P1 avant P2).
+- Zone : E3 `src/game/**` hors `game.*` (`cadeau.*`, portefeuille de WFS-498, catalogue de WFS-487, `skins::donnerSkin` de WFS-494), `tests/**` ; écran du cadeau (WFS-501) seulement par accroche ≤ 10 lignes annoncée au journal.
+- Règles : `regles-de-gestion/WFS-503.md` (RG-01 à RG-05) et `regles-de-gestion/E19-cadeau-du-jour.md` ; captures ciblées FR / EN (règle du 2026-11-15) ; parcours menu → cadeau → garage → course → relance prouvé au journal ; PR puis appel du `lead-dev` ; arrêt de la session après la fusion.
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-512 (P1), puis WFS-554, 538, 553 (P2).
