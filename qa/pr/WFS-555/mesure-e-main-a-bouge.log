@@ -1,0 +1,13 @@
+1/4 compilation de la branche feature/waforspeed-555
+2/4 captures « après »
+  banc chargement 
+3/4 captures « avant » de origin/main (42bdd896d14fd07b6b3fb6b165aa51c4f2d0c277), cache <scratchpad>/cache
+  compilation incrémentale de main (42bdd896d14fd07b6b3fb6b165aa51c4f2d0c277) dans <scratchpad>/cache/main-src-6dbaaf336f59
+  banc chargement 
+4/4 réduction des captures dans qa/pr/WFS-555
+5 capture(s) « après » dans qa/pr/WFS-555 (README.md, pr.md)
+DUREE_e=54 s
+Captures « avant » : `origin/main` = `42bdd896d14fd07b6b3fb6b165aa51c4f2d0c277` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
+42bdd896d14fd07b6b3fb6b165aa51c4f2d0c277
+56cdb81fa6a73789d5ec5c72680a0a06ca3302b5
+main-src-6dbaaf336f59
