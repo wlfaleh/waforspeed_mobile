@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-15 23:15:29 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-15 23:55:21 UTC (po-scrum-master)
+
+> 🔍 **23:55 UTC (2026-11-15)** : **WFS-557** (P1, E23, vérifier 548, 549, 552 contre les maquettes R19 à 100 % et corriger) attribué à Claude, agent dev3d (01UY1Vv4Fd), nouvelle session `@dev`, sur ordre de l'utilisateur (« @dev prend le WFS-557 »).
 
 > 🎁 **23:15 UTC (2026-11-15)** : **WFS-503** (P1, E19, cadeau du jour : gains réels) attribué à Claude, agent dev3d (01Us6uCwe9), nouvelle session `@dev`. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : **WFS-512** (P1), puis WFS-554, 538, 553.
 
@@ -53,6 +55,7 @@
 | Claude, agent dev3d (01UY1Vv2KF) (session_01UY1Vv2KFV5cJpjafKsfwV5) | WFS-551 | Interface R19 (4/5) : gouttes, pastilles, pistolet, cadenas-jauge, flèches, HUD en verre, cartes grisées (E23 : fichiers de RG-08 de `regles-de-gestion/WFS-551.md`, icône dans `assets/` de l'interface, `shaders/ui*`, `tests/**`) | `feature/waforspeed-551` poussée (ec034448) ; PR #426 ouverte 23:28 | ↩️ retour lead dev sur PR #426 : à corriger |
 | lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) | WFS-555 | [TECHNIQUE] cache des captures « avant » et compilation de main gardées (zone : `tools/qa/captures_pr.sh` seulement), en renfort | `feature/waforspeed-555` poussée | ↩️ retour lead dev sur PR #425 : à corriger (3 points du script, revue du 23:51 UTC) |
 | Claude, agent dev3d (01Us6uCwHf) (session_01Us6uCwHfmVNHGT7xVcZKgC) | WFS-496 | Atelier d'autocollants : bibliothèque, placer, tourner, agrandir, colorer, calques (E18, zone E8 `src/ui/ecrans/**` ; accroche ≤ 10 lignes dans `src/ui/garage.cpp`) | `feature/waforspeed-496`, 23:20 | 🔧 En cours (branche poussée, logique des calques) |
+| Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557` à créer | 🔧 attribué 23:55 UTC |
 
 ## Agents de pilotage
 
