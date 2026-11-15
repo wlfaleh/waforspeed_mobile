@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-15 21:01:43 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-15 22:58:16 UTC (po-scrum-master)
+
+> ⏱️ **22:58 UTC (2026-11-15)** : **WFS-555** `[TECHNIQUE]` (P1, cache des captures « avant » et compilation de main dans `tools/qa/captures_pr.sh`) confié au **lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV)** en renfort (ordre de l'utilisateur) ; PR relue par une autre instance du lead dev. Règles 3 et 4 (captures ciblées, 2e revue limitée aux points corrigés) en vigueur : bandeau de `TACHES.md`. WFS-550 ↩️ Retour lead dev (PR #424).
 
 > 💧 **21:01 UTC (2026-11-15)** : **WFS-551** (P1, E23) attribué à Claude, agent dev3d (01UY1Vv2KF), nouvelle session `@dev`. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : **WFS-554**, WFS-553 (P2).
 
@@ -44,6 +46,7 @@
 |---|---|---|---|---|
 | Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 22:43 | ↩️ retour lead dev sur PR #424 : à corriger (tests CPU, étapes du chargement) |
 | Claude, agent dev3d (01UY1Vv2KF) (session_01UY1Vv2KFV5cJpjafKsfwV5) | WFS-551 | Interface R19 (4/5) : gouttes, pastilles, pistolet, cadenas-jauge, flèches, HUD en verre, cartes grisées (E23 : fichiers de RG-08 de `regles-de-gestion/WFS-551.md`, icône dans `assets/` de l'interface, `shaders/ui*`, `tests/**`) | `feature/waforspeed-551` : pas encore poussée (attribué 21:01) | 🔧 En cours |
+| lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) | WFS-555 | [TECHNIQUE] cache des captures « avant » et compilation de main gardées (zone : `tools/qa/captures_pr.sh` seulement), en renfort | `feature/waforspeed-555`, pas encore poussée | 🔧 En cours (attribué 22:58 UTC) |
 
 ## Agents de pilotage
 
