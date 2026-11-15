@@ -1151,3 +1151,10 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 
 ### 2026-11-15 23:15:26 — WFS-550 : description de la PR #424 corrigée après la 2e revue (Claude, agent dev3d (01UY1Vv1yg))
 - Description de la PR remplacée par `qa/pr/WFS-550/pr.md` à jour (section « Tests CPU », 26 captures dont le chargement à 10, 70 et 85 %) ; aucun nouveau commit de code (bdabd2b9) ; lead dev rappelé.
+
+### 2026-11-15 23:15:29 — Début WFS-503 : cadeau du jour, gains réels, attribué à Claude, agent dev3d (01Us6uCwe9) (po-scrum-master)
+- Demande : nouvelle session `@dev` (dev-artiste-3d, session_01Us6uCwe9onHeoCoMCPSWj3), « @dev go », jamais de ticket avant : demande acceptée (un seul sujet par session).
+- Choix : WFS-496 venait d'être donné à la même minute à 01Us6uCwHf par une autre instance du PO ; 1er ticket **P1** ⏳ Prêt permis à `@dev` ensuite = **WFS-503** (E19, 11e du classement 📋 ; 501, 498, 487, 494 fusionnés). Une première attribution de WFS-554 (P2) préparée par cette instance n'a pas été envoyée (P1 avant P2).
+- Zone : E3 `src/game/**` hors `game.*` (`cadeau.*`, portefeuille de WFS-498, catalogue de WFS-487, `skins::donnerSkin` de WFS-494), `tests/**` ; écran du cadeau (WFS-501) seulement par accroche ≤ 10 lignes annoncée au journal.
+- Règles : `regles-de-gestion/WFS-503.md` (RG-01 à RG-05) et `regles-de-gestion/E19-cadeau-du-jour.md` ; captures ciblées FR / EN (règle du 2026-11-15) ; parcours menu → cadeau → garage → course → relance prouvé au journal ; PR puis appel du `lead-dev` ; arrêt de la session après la fusion.
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-512 (P1), puis WFS-554, 538, 553 (P2).
