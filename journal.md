@@ -919,3 +919,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 ### 2026-11-15 10:42:37 — Archives automatiques (robot archives)
 - Journal : 220 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-13).
 - TACHES.md : 40 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-453, WFS-456, WFS-543, WFS-544, WFS-547, WFS-533, WFS-534, WFS-535, WFS-536, WFS-537, WFS-480, WFS-481, WFS-482, WFS-483, WFS-484, WFS-498, WFS-499, WFS-487, WFS-488, WFS-489, WFS-490, WFS-491, WFS-492, WFS-493, WFS-494, WFS-495, WFS-500, WFS-501, WFS-504, WFS-505, WFS-506, WFS-507, WFS-508, WFS-510, WFS-511, WFS-513, WFS-446, WFS-397, WFS-378, WFS-395).
+
+### 2026-11-15 10:53:37 — R19 : écrans complémentaires (smart-brainstorming)
+- Maquettes des 15 écrans qui manquaient, faites d'après les écrans actuels avec le nouveau modèle (verre, fonds floutés, Start/Stop, autocollants) : pause, création du profil, profil, conditions, salon du duel, réglages Conduite et Son, voiture prêtée, confirmation et manque d'étoiles, gain d'étoiles, messages en course, fins Course à 5, Poursuite et Duel. Images `references/maquettes-R19/19-…` à `33-…` et planche `19-33-ecrans-complementaires.jpg`, tableau R19 de `recommandations-smart-brain.md` complété. Proposition seulement : aucun code, aucun ticket.
