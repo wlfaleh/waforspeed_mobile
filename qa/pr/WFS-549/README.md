@@ -49,23 +49,23 @@ Branche `feature/waforspeed-549` comparée à `origin/main` ; bancs : menu1:1280
 | `creation-fr-rempli` | ![avant](avant-creation-fr-rempli.jpg) | ![après](apres-creation-fr-rempli.jpg) |
 | `creation-fr-repetition` | ![avant](avant-creation-fr-repetition.jpg) | ![après](apres-creation-fr-repetition.jpg) |
 | `creation-fr-vide` | ![avant](avant-creation-fr-vide.jpg) | ![après](apres-creation-fr-vide.jpg) |
-| `credits-debut` | ![avant](avant-credits-debut.jpg) | ![après](apres-credits-debut.jpg) |
-| `credits-deux-roues` | ![avant](avant-credits-deux-roues.jpg) | ![après](apres-credits-deux-roues.jpg) |
-| `credits-fin` | ![avant](avant-credits-fin.jpg) | ![après](apres-credits-fin.jpg) |
-| `credits-garage-giulia` | ![avant](avant-credits-garage-giulia.jpg) | ![après](apres-credits-garage-giulia.jpg) |
-| `credits-garage-golf` | ![avant](avant-credits-garage-golf.jpg) | ![après](apres-credits-garage-golf.jpg) |
-| `credits-garage-m4` | ![avant](avant-credits-garage-m4.jpg) | ![après](apres-credits-garage-m4.jpg) |
-| `credits-menu` | ![avant](avant-credits-menu.jpg) | ![après](apres-credits-menu.jpg) |
-| `credits-milieu` | ![avant](avant-credits-milieu.jpg) | ![après](apres-credits-milieu.jpg) |
-| `credits-native-app-glue` | ![avant](avant-credits-native-app-glue.jpg) | ![après](apres-credits-native-app-glue.jpg) |
-| `credits-retour-menu` | ![avant](avant-credits-retour-menu.jpg) | ![après](apres-credits-retour-menu.jpg) |
+| `credits-debut` | — (capture de main à venir) | ![après](apres-credits-debut.jpg) |
+| `credits-deux-roues` | — (capture de main à venir) | ![après](apres-credits-deux-roues.jpg) |
+| `credits-fin` | — (capture de main à venir) | ![après](apres-credits-fin.jpg) |
+| `credits-garage-giulia` | — (capture de main à venir) | ![après](apres-credits-garage-giulia.jpg) |
+| `credits-garage-golf` | — (capture de main à venir) | ![après](apres-credits-garage-golf.jpg) |
+| `credits-garage-m4` | — (capture de main à venir) | ![après](apres-credits-garage-m4.jpg) |
+| `credits-menu` | — (capture de main à venir) | ![après](apres-credits-menu.jpg) |
+| `credits-milieu` | — (capture de main à venir) | ![après](apres-credits-milieu.jpg) |
+| `credits-native-app-glue` | — (capture de main à venir) | ![après](apres-credits-native-app-glue.jpg) |
+| `credits-retour-menu` | — (capture de main à venir) | ![après](apres-credits-retour-menu.jpg) |
 | `garage-couleurs-p208-il-manque` | ![avant](avant-garage-couleurs-p208-il-manque.jpg) | ![après](apres-garage-couleurs-p208-il-manque.jpg) |
 | `garage-couleurs-p208-toit` | ![avant](avant-garage-couleurs-p208-toit.jpg) | ![après](apres-garage-couleurs-p208-toit.jpg) |
-| `garage-skins-en-gt86-fenetre-drift` | ![avant](avant-garage-skins-en-gt86-fenetre-drift.jpg) | ![après](apres-garage-skins-en-gt86-fenetre-drift.jpg) |
-| `garage-skins-en-gt86-fenetre` | ![avant](avant-garage-skins-en-gt86-fenetre.jpg) | ![après](apres-garage-skins-en-gt86-fenetre.jpg) |
-| `garage-skins-en-gt86-rangee` | ![avant](avant-garage-skins-en-gt86-rangee.jpg) | ![après](apres-garage-skins-en-gt86-rangee.jpg) |
-| `garage-skins-en-il-manque` | ![avant](avant-garage-skins-en-il-manque.jpg) | ![après](apres-garage-skins-en-il-manque.jpg) |
-| `garage-skins-en-neon` | ![avant](avant-garage-skins-en-neon.jpg) | ![après](apres-garage-skins-en-neon.jpg) |
+| `garage-skins-en-gt86-fenetre-drift` | — (capture de main à venir) | ![après](apres-garage-skins-en-gt86-fenetre-drift.jpg) |
+| `garage-skins-en-gt86-fenetre` | — (capture de main à venir) | ![après](apres-garage-skins-en-gt86-fenetre.jpg) |
+| `garage-skins-en-gt86-rangee` | — (capture de main à venir) | ![après](apres-garage-skins-en-gt86-rangee.jpg) |
+| `garage-skins-en-il-manque` | — (capture de main à venir) | ![après](apres-garage-skins-en-il-manque.jpg) |
+| `garage-skins-en-neon` | — (capture de main à venir) | ![après](apres-garage-skins-en-neon.jpg) |
 | `garage-skins-giulia-rallye` | ![avant](avant-garage-skins-giulia-rallye.jpg) | ![après](apres-garage-skins-giulia-rallye.jpg) |
 | `garage-skins-golf-achat-fenetre-offerte` | ![avant](avant-garage-skins-golf-achat-fenetre-offerte.jpg) | ![après](apres-garage-skins-golf-achat-fenetre-offerte.jpg) |
 | `garage-skins-golf-bon` | ![avant](avant-garage-skins-golf-bon.jpg) | ![après](apres-garage-skins-golf-bon.jpg) |
@@ -80,23 +80,23 @@ Branche `feature/waforspeed-549` comparée à `origin/main` ; bancs : menu1:1280
 | `garage-skins-parcours-p208-course` | ![avant](avant-garage-skins-parcours-p208-course.jpg) | ![après](apres-garage-skins-parcours-p208-course.jpg) |
 | `garage-skins-parcours-p208-retour-menu` | ![avant](avant-garage-skins-parcours-p208-retour-menu.jpg) | ![après](apres-garage-skins-parcours-p208-retour-menu.jpg) |
 | `garage-skins-relance-golf` | ![avant](avant-garage-skins-relance-golf.jpg) | ![après](apres-garage-skins-relance-golf.jpg) |
-| `garage-voitures-en-confirmation` | ![avant](avant-garage-voitures-en-confirmation.jpg) | ![après](apres-garage-voitures-en-confirmation.jpg) |
-| `garage-voitures-en-fin-essai-confirmation` | ![avant](avant-garage-voitures-en-fin-essai-confirmation.jpg) | ![après](apres-garage-voitures-en-fin-essai-confirmation.jpg) |
-| `garage-voitures-en-fin-essai` | ![avant](avant-garage-voitures-en-fin-essai.jpg) | ![après](apres-garage-voitures-en-fin-essai.jpg) |
-| `garage-voitures-en-golf-bloquee` | ![avant](avant-garage-voitures-en-golf-bloquee.jpg) | ![après](apres-garage-voitures-en-golf-bloquee.jpg) |
-| `garage-voitures-en-golf-essai-fait` | ![avant](avant-garage-voitures-en-golf-essai-fait.jpg) | ![après](apres-garage-voitures-en-golf-essai-fait.jpg) |
-| `garage-voitures-en-il-manque` | ![avant](avant-garage-voitures-en-il-manque.jpg) | ![après](apres-garage-voitures-en-il-manque.jpg) |
-| `garage-voitures-fin-essai-achetee` | ![avant](avant-garage-voitures-fin-essai-achetee.jpg) | ![après](apres-garage-voitures-fin-essai-achetee.jpg) |
-| `garage-voitures-fin-essai-confirmation` | ![avant](avant-garage-voitures-fin-essai-confirmation.jpg) | ![après](apres-garage-voitures-fin-essai-confirmation.jpg) |
-| `garage-voitures-fin-essai-m4` | ![avant](avant-garage-voitures-fin-essai-m4.jpg) | ![après](apres-garage-voitures-fin-essai-m4.jpg) |
-| `garage-voitures-m4-bloquee` | ![avant](avant-garage-voitures-m4-bloquee.jpg) | ![après](apres-garage-voitures-m4-bloquee.jpg) |
-| `garage-voitures-m4-confirmation` | ![avant](avant-garage-voitures-m4-confirmation.jpg) | ![après](apres-garage-voitures-m4-confirmation.jpg) |
-| `garage-voitures-m4-debloquee` | ![avant](avant-garage-voitures-m4-debloquee.jpg) | ![après](apres-garage-voitures-m4-debloquee.jpg) |
-| `garage-voitures-m4-essai-fait` | ![avant](avant-garage-voitures-m4-essai-fait.jpg) | ![après](apres-garage-voitures-m4-essai-fait.jpg) |
-| `garage-voitures-m4-il-manque` | ![avant](avant-garage-voitures-m4-il-manque.jpg) | ![après](apres-garage-voitures-m4-il-manque.jpg) |
-| `garage-voitures-p208` | ![avant](avant-garage-voitures-p208.jpg) | ![après](apres-garage-voitures-p208.jpg) |
-| `garage-voitures-relance-corsa` | ![avant](avant-garage-voitures-relance-corsa.jpg) | ![après](apres-garage-voitures-relance-corsa.jpg) |
-| `hud-arriere-nuit` | ![avant](avant-hud-arriere-nuit.jpg) | ![après](apres-hud-arriere-nuit.jpg) |
+| `garage-voitures-en-confirmation` | — (capture de main à venir) | ![après](apres-garage-voitures-en-confirmation.jpg) |
+| `garage-voitures-en-fin-essai-confirmation` | — (capture de main à venir) | ![après](apres-garage-voitures-en-fin-essai-confirmation.jpg) |
+| `garage-voitures-en-fin-essai` | — (capture de main à venir) | ![après](apres-garage-voitures-en-fin-essai.jpg) |
+| `garage-voitures-en-golf-bloquee` | — (capture de main à venir) | ![après](apres-garage-voitures-en-golf-bloquee.jpg) |
+| `garage-voitures-en-golf-essai-fait` | — (capture de main à venir) | ![après](apres-garage-voitures-en-golf-essai-fait.jpg) |
+| `garage-voitures-en-il-manque` | — (capture de main à venir) | ![après](apres-garage-voitures-en-il-manque.jpg) |
+| `garage-voitures-fin-essai-achetee` | — (capture de main à venir) | ![après](apres-garage-voitures-fin-essai-achetee.jpg) |
+| `garage-voitures-fin-essai-confirmation` | — (capture de main à venir) | ![après](apres-garage-voitures-fin-essai-confirmation.jpg) |
+| `garage-voitures-fin-essai-m4` | — (capture de main à venir) | ![après](apres-garage-voitures-fin-essai-m4.jpg) |
+| `garage-voitures-m4-bloquee` | — (capture de main à venir) | ![après](apres-garage-voitures-m4-bloquee.jpg) |
+| `garage-voitures-m4-confirmation` | — (capture de main à venir) | ![après](apres-garage-voitures-m4-confirmation.jpg) |
+| `garage-voitures-m4-debloquee` | — (capture de main à venir) | ![après](apres-garage-voitures-m4-debloquee.jpg) |
+| `garage-voitures-m4-essai-fait` | — (capture de main à venir) | ![après](apres-garage-voitures-m4-essai-fait.jpg) |
+| `garage-voitures-m4-il-manque` | — (capture de main à venir) | ![après](apres-garage-voitures-m4-il-manque.jpg) |
+| `garage-voitures-p208` | — (capture de main à venir) | ![après](apres-garage-voitures-p208.jpg) |
+| `garage-voitures-relance-corsa` | — (capture de main à venir) | ![après](apres-garage-voitures-relance-corsa.jpg) |
+| `hud-arriere-nuit` | — (capture de main à venir) | ![après](apres-hud-arriere-nuit.jpg) |
 | `hud-course` | ![avant](avant-hud-course.jpg) | ![après](apres-hud-course.jpg) |
 | `market-en-achat` | ![avant](avant-market-en-achat.jpg) | ![après](apres-market-en-achat.jpg) |
 | `market-en-attente` | ![avant](avant-market-en-attente.jpg) | ![après](apres-market-en-attente.jpg) |
@@ -123,23 +123,23 @@ Branche `feature/waforspeed-549` comparée à `origin/main` ; bancs : menu1:1280
 | `parcours-mode` | ![avant](avant-parcours-mode.jpg) | ![après](apres-parcours-mode.jpg) |
 | `pause-0` | ![avant](avant-pause-0.jpg) | ![après](apres-pause-0.jpg) |
 | `terrain-0` | ![avant](avant-terrain-0.jpg) | ![après](apres-terrain-0.jpg) |
-| `reglages-108` | ![avant](avant-reglages-108.jpg) | ![après](apres-reglages-108.jpg) |
-| `reglages-basse` | ![avant](avant-reglages-basse.jpg) | ![après](apres-reglages-basse.jpg) |
-| `reglages-commandes` | ![avant](avant-reglages-commandes.jpg) | ![après](apres-reglages-commandes.jpg) |
-| `reglages-menu` | ![avant](avant-reglages-menu.jpg) | ![après](apres-reglages-menu.jpg) |
-| `reglages-musique` | ![avant](avant-reglages-musique.jpg) | ![après](apres-reglages-musique.jpg) |
-| `reglages-pause` | ![avant](avant-reglages-pause.jpg) | ![après](apres-reglages-pause.jpg) |
-| `salon-accueil` | ![avant](avant-salon-accueil.jpg) | ![après](apres-salon-accueil.jpg) |
-| `salon-amis-fin` | ![avant](avant-salon-amis-fin.jpg) | ![après](apres-salon-amis-fin.jpg) |
-| `salon-amis` | ![avant](avant-salon-amis.jpg) | ![après](apres-salon-amis.jpg) |
-| `salon-code-efface` | ![avant](avant-salon-code-efface.jpg) | ![après](apres-salon-code-efface.jpg) |
-| `salon-code-saisi` | ![avant](avant-salon-code-saisi.jpg) | ![après](apres-salon-code-saisi.jpg) |
-| `salon-code` | ![avant](avant-salon-code.jpg) | ![après](apres-salon-code.jpg) |
-| `salon-derniers` | ![avant](avant-salon-derniers.jpg) | ![après](apres-salon-derniers.jpg) |
-| `salon-hors-ligne` | ![avant](avant-salon-hors-ligne.jpg) | ![après](apres-salon-hors-ligne.jpg) |
-| `salon-hote` | ![avant](avant-salon-hote.jpg) | ![après](apres-salon-hote.jpg) |
-| `salon-internet` | ![avant](avant-salon-internet.jpg) | ![après](apres-salon-internet.jpg) |
-| `salon-pret` | ![avant](avant-salon-pret.jpg) | ![après](apres-salon-pret.jpg) |
+| `reglages-108` | — (capture de main à venir) | ![après](apres-reglages-108.jpg) |
+| `reglages-basse` | — (capture de main à venir) | ![après](apres-reglages-basse.jpg) |
+| `reglages-commandes` | — (capture de main à venir) | ![après](apres-reglages-commandes.jpg) |
+| `reglages-menu` | — (capture de main à venir) | ![après](apres-reglages-menu.jpg) |
+| `reglages-musique` | — (capture de main à venir) | ![après](apres-reglages-musique.jpg) |
+| `reglages-pause` | — (capture de main à venir) | ![après](apres-reglages-pause.jpg) |
+| `salon-accueil` | — (capture de main à venir) | ![après](apres-salon-accueil.jpg) |
+| `salon-amis-fin` | — (capture de main à venir) | ![après](apres-salon-amis-fin.jpg) |
+| `salon-amis` | — (capture de main à venir) | ![après](apres-salon-amis.jpg) |
+| `salon-code-efface` | — (capture de main à venir) | ![après](apres-salon-code-efface.jpg) |
+| `salon-code-saisi` | — (capture de main à venir) | ![après](apres-salon-code-saisi.jpg) |
+| `salon-code` | — (capture de main à venir) | ![après](apres-salon-code.jpg) |
+| `salon-derniers` | — (capture de main à venir) | ![après](apres-salon-derniers.jpg) |
+| `salon-hors-ligne` | — (capture de main à venir) | ![après](apres-salon-hors-ligne.jpg) |
+| `salon-hote` | — (capture de main à venir) | ![après](apres-salon-hote.jpg) |
+| `salon-internet` | — (capture de main à venir) | ![après](apres-salon-internet.jpg) |
+| `salon-pret` | — (capture de main à venir) | ![après](apres-salon-pret.jpg) |
 | `paquets-bandeau-menu` | ![avant](avant-paquets-bandeau-menu.jpg) | ![après](apres-paquets-bandeau-menu.jpg) |
 | `paquets-bandeau-progression` | ![avant](avant-paquets-bandeau-progression.jpg) | ![après](apres-paquets-bandeau-progression.jpg) |
 | `paquets-coupure` | ![avant](avant-paquets-coupure.jpg) | ![après](apres-paquets-coupure.jpg) |
