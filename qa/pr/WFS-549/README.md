@@ -59,3 +59,5 @@ Branche `feature/waforspeed-549` comparée à `origin/main` ; bancs : menu1:1280
 | `reglages-onglet-conduite-pause` | ![avant](avant-reglages-onglet-conduite-pause.jpg) | ![après](apres-reglages-onglet-conduite-pause.jpg) |
 | `reglages-onglet-son-gaucher` | ![avant](avant-reglages-onglet-son-gaucher.jpg) | ![après](apres-reglages-onglet-son-gaucher.jpg) |
 | `reglages-onglet-son-pause` | ![avant](avant-reglages-onglet-son-pause.jpg) | ![après](apres-reglages-onglet-son-pause.jpg) |
+| `garage-couleurs-p208-il-manque` | ![avant](avant-garage-couleurs-p208-il-manque.jpg) | ![après](apres-garage-couleurs-p208-il-manque.jpg) |
+| `garage-couleurs-p208-toit` | ![avant](avant-garage-couleurs-p208-toit.jpg) | ![après](apres-garage-couleurs-p208-toit.jpg) |
