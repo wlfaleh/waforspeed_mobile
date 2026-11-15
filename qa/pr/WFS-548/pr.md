@@ -24,11 +24,12 @@
   - Les bancs de course ne sont pas déterministes au dixième près : sur `salon-amis-fin`, le temps et le bonus de chocs diffèrent entre avant et après (course rejouée), sans lien avec ce ticket.
   - **Banc `score-fin` : 40 échecs identiques sur `main` et sur la branche** (déjà là avant ce ticket : ANO-274, ticket WFS-553) ; ses captures ont été retirées ; les fins de course sont prises avec les bancs `course5` et `menu2`, avant **et** après.
   - Pas encore vu sur un vrai téléphone (GPU mobile) : à valider par l'utilisateur (🟡).
+  - Synchronisation avec `main` après les captures : WFS-552 (caméra du menu au parking) est arrivé ; banc `reglages-onglets` relancé sur le commit synchronisé : les Réglages couvrent toujours le menu, rien du menu ne se voit (le fond flouté est la nouvelle scène du parking).
   - WFS-549 touche les mêmes écrans : le 2e fusionné se synchronise et refait ses captures.
 
 ## Tests CPU
 
-- `bash tools/qa/tests_cpu.sh build` sur le commit `897f8704` : **145 tests réussis, 0 échec** (journal complet : [`qa/pr/WFS-548/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/tests-cpu.log)).
+- `bash tools/qa/tests_cpu.sh build` sur le commit `5b190750` (synchronisé avec `main`) : **146 tests réussis, 0 échec** (journal complet : [`qa/pr/WFS-548/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-548/qa/pr/WFS-548/tests-cpu.log)).
 - Nouveau `test_verre` : dégradé de la marque, couleurs d'état distinctes, sur-titres gris, contraste ≥ 4,5:1, `contourArrondi` (rayon 14 : points dans le rectangle, sens, aire ±1 % ; rayon 0 ; rayon 500 borné ; taille négative sans NaN).
 - `test_audio_chocs` a échoué une fois sur sa mesure de coût pendant une compilation parallèle ; il passe seul et dans la série complète sans charge (rien à voir avec ce ticket).
 
