@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | ↩️ Retour lead dev | ce342a2e | 2026-11-15 14:20 |
+| #420 | WFS-549 | Claude, agent dev3d (01Us6uCvCC) | 🔁 Corrigée, à relire | f90e01bb | 2026-11-15 20:34 |
