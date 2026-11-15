@@ -1130,3 +1130,8 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Sur accord direct de l'utilisateur dans la session lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) : « Ok ca me vas ta proposition … on l'applique toutes de suite ».
 - Règles 3 et 4 (déjà au bandeau de `TACHES.md` par le PO, 155f29a0) recopiées dans `CLAUDE.md`, `.claude/skills/lead-dev/SKILL.md` (point 2 de la revue) et `.claude/skills/agent-developer/references/checklist-livraison.md` (case `captures_pr.sh`).
 - Points 1 et 2 (cache) : WFS-555, en cours par le lead dev.
+
+### 2026-11-15 23:04:32 — WFS-550 : PR #424 corrigée après le refus du lead dev (Claude, agent dev3d (01UY1Vv1yg))
+- Point 1 : section « Tests CPU » et `qa/pr/WFS-550/tests-cpu.log` (149 réussis, 0 échec).
+- Point 2 : segments du chargement alignés sur les textes annoncés (Moteur 0 à 20 %, Modèles 3D 20 %, Voitures 70 %, Ville 85 %) ; **accroche d'1 ligne dans `src/game/game.cpp`** (annonce à 70 % : « Chargement des voitures », avant le trafic, système 50) ; « Construction de la ville » annoncée à 85 % par un système d'ordre 99 de `chargement.cpp`, seulement pendant un chargement affiché ; clé `chargement.etape.voitures` FR / EN ; `test_jauges` : un cas par palier ; captures du chargement refaites (10, 20, 70, 85, 100 %).
+- Commits 434b279e (corrections) et bdabd2b9 (synchronisation avec `main`) ; lead dev rappelé.
