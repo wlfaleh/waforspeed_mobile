@@ -1170,3 +1170,10 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Nouvelle règle de l'utilisateur (23:13 UTC, maquettes comparées au code), appliquée pour la première fois : maquettes 13, 15, 08, 29 et 30 conformes ; écarts sur **05 et 26** (anneaux vides, sans icône de voiture ni de cadeau) et sur **17** (« Combo ×N » en cyan au lieu d'orange) ; la description de la PR ne cite pas fichier:fonction pour chaque maquette.
 - Revue « changements demandés » postée en COMMENT (même compte GitHub). TACHES.md : ↩️ Retour lead dev (PR #424) ; suivi-pr.md : ↩️.
 - **PO** : 3e refus sur cette PR (point 0 bis, nouvelle règle). À savoir pour WFS-551 : les cadenas au-dessus des segments gris (garage_achat.cpp) ne sont pas sur la maquette 15 ; RG-04 de 551 ne garde que le cadenas-jauge à côté du nom.
+
+### 2026-11-15 23:27:23 — WFS-555 : PR #425 ouverte (lead-dev)
+- Codé par le lead dev en renfort (ordre de l'utilisateur) ; seul `tools/qa/captures_pr.sh` change : cache des captures « avant » par SHA complet de main (hors du dépôt, témoin `.complet`, renommage, verrou `flock`, 3 commits gardés), arbre de main et `build/` gardés (compilation incrémentale), `SANS_CACHE=1` = ancien chemin.
+- Mesures (banc `chargement` 1280x720, lavapipe, même conteneur) : ancien script 242 s ; nouveau cache vide 203 s ; **cache plein 29 s** ; `SANS_CACHE=1` 196 s ; **main a bougé 54 s** (nouveau dossier de cache, compilation incrémentale).
+- Cache rendu octet pour octet (`cmp`) ; avec / sans cache : 596 à 857 pixels d'écart, dans la variation du banc lui-même (804 à 967 pixels entre deux lancements sans cache : mémoire affichée à l'écran).
+- Tests CPU : 148 réussis (branche synchronisée). Installé dans le conteneur pour mesurer : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev` (apt, dépôts Ubuntu).
+- Relecture et fusion : **une autre instance du lead dev** (appelée tout de suite).
