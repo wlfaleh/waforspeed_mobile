@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-15 13:12:24 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-15 14:33:34 UTC (po-scrum-master)
+
+> 🧪 **14:33 UTC (2026-11-15)** : anomalie **ANO-274** (banc `score-fin` en retard sur le Market de WFS-513, 40 échecs) signalée par l'agent dev3d (01Us6uCucP) pendant WFS-548 ; ticket **WFS-553** `[TECHNIQUE]` ⏳ Prêt (P2) pour une **nouvelle session** `@dev`. 01Us6uCucP continue WFS-548 seul.
 
 > 🚗 **13:12 UTC (2026-11-15)** : **WFS-541** (P1, trafic de la Poursuite) attribué à Claude, agent conduite (01UY1Vv1WU), nouvelle session `@conduite`. Reste ⏳ Prêt pour une nouvelle session `@conduite` : **WFS-394**.
 
@@ -37,7 +39,7 @@
 | Claude, agent conduite (01UY1Vv1WU) (session_01UY1Vv1WUtoyPMiBqhjFrvU) | WFS-541 | Trafic de la Poursuite : voiture du trafic heurtée qui se remet en route (≤ 3 s arrêt, 8 s max sinon retirée hors de la vue), pas de bouchon sans fin, aucune voiture qui en traverse une autre (E3 : `src/game/traffic.*`, `src/game/traffic_system.*`, ≤ 10 lignes `poursuite_system.cpp`, `tests/**`) | `feature/waforspeed-541`, poussée 13:15 | 🔧 En cours (plan au journal) |
 | Claude, agent dev3d (01Us6uCvCC) (session_01Us6uCvCCKjrpBx7JNmrkCa) | WFS-549 | Interface R19 (2/5) : boutons Start/Stop, autocollants, pilule chrome Garage, boutons de prix orange, sélecteurs de verre, onglets ; tailles des boutons inchangées sauf Menu et Caméra du HUD (E23 : `src/ui/boutons.*`, `src/ui/ecrans/**`, `src/ui/garage_*` boutons seulement, `src/ui/hud.*` taille Menu / Caméra, `shaders/ui*`, `tests/**`) | `feature/waforspeed-549`, poussée ; PR #420 | ↩️ retour lead dev sur PR #420 : à corriger |
 | Claude, agent dev3d (01Us6uCwZ7) (session_01Us6uCwZ7SWYSgoD4LUfvxv) | WFS-552 | Interface R19 (5/5) : menu en 3D, Cavallo SF-X caméléon orange / bleu, skin bleu ciel, parking souterrain, caméra rapprochée ; aucune forme nue, avis `@3d` (E23 : `src/ui/ecrans/menu*`, `src/ui/garage_decor.*`, `assets/world/modeles/garage/**`, catalogue des skins si besoin, `tests/**`, accroche renderer ≤ 10 lignes) | `feature/waforspeed-552`, poussée (5aa1b1b) | 🔀 PR #421 ouverte le 2026-11-15 14:19 UTC, avis `@3d` puis lead dev demandés |
-| Claude, agent dev3d (01Us6uCucP) (session_01Us6uCucPqZPRDwd6pkb4Z6) | WFS-548 | Interface R19 (1/5) : panneaux en verre dépoli, fond flouté sur les écrans arrêtés, sur-titres gris, couleurs d'état (E23 : `src/ui/verre.*`, `src/ui/ecrans/**`, `src/ui/garage_achat*`, `shaders/ui*`, accroche renderer ≤ 10 lignes) | `feature/waforspeed-548`, à créer et pousser | 🔧 attribué le 2026-11-15 11:58 UTC |
+| Claude, agent dev3d (01Us6uCucP) (session_01Us6uCucPqZPRDwd6pkb4Z6) | WFS-548 | Interface R19 (1/5) : panneaux en verre dépoli, fond flouté sur les écrans arrêtés, sur-titres gris, couleurs d'état (E23 : `src/ui/verre.*`, `src/ui/ecrans/**`, `src/ui/garage_achat*`, `shaders/ui*`, accroche renderer ≤ 10 lignes) | `feature/waforspeed-548`, poussée 14:32 (be3919ed) | ↩️ retour lead dev sur PR #422 : à corriger (interface du dessous visible à travers le verre, tableau « POSITION » sur les fins Course à 5 et duel, capture Tests CPU) |
 
 ## Agents de pilotage
 
