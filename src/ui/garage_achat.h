@@ -17,6 +17,7 @@
 // Emplacements suivants : skins (WFS-494), skin offerte à l'achat d'une voiture (WFS-494, RG-04 de WFS-499).
 // Outils partagés avec la rangée des couleurs : étoile dessinée (la police n'a pas le caractère ★), texte avec ★, équivalents, cadenas.
 #pragma once
+#include <algorithm>
 #include <string>
 #include "garage_commun.h"
 #include "../core/configgame.h"   // WFS-491 : BOUTIQUE_FINITIONS_IDS
@@ -37,6 +38,16 @@ long long prixPastille(const Sauvegarde& s, const char* carId, int peinture, boo
 // WFS-499 (RG-01) : voiture bloquée = sauvegarde active, voiture vendue, ni gratuite ni achetée. Sans sauvegarde (bancs d'essai
 // des autres tickets, parcours de la CI), aucune voiture n'est bloquée : garage et courses comme avant.
 bool voitureBloquee(const Sauvegarde& s, const char* carId);
+// WFS-551 (RG-04, maquette 15) : cadenas-jauge d'une voiture bloquée, dessiné juste à côté de son nom (accroche de garage_fiche.cpp) :
+// anse chrome, corps de verre, arc fin cyan → orange autour de la serrure, rempli à `part` (solde / prix, 0..1) ; l'anse s'ouvre à 100 %.
+// (x, y) : coin haut gauche, h : hauteur (la largeur vaut 0,78 × h). Interface 2D.
+void cadenasJauge(Renderer& r, float x, float y, float h, float part, float op);
+// part de la jauge : solde / prix borné à [0, 1] (prix ≤ 0 : 1)
+inline float partJauge(long long solde, long long prix) {
+    if (prix <= 0) return 1;
+    const double p = (double)std::max(0LL, solde) / (double)prix;
+    return p >= 1 ? 1.f : (float)p;
+}
 // WFS-499 (RG-03) : la voiture affichée peut partir en essai gratuit (bloquée, essai jamais fait, pas en duel)
 bool essaiPossible(const Sauvegarde& s, const char* carId);
 

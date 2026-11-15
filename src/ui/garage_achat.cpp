@@ -88,14 +88,24 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     }
     ui::boutons::autocollant(r, bx, gy, bw, hg, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k);   // WFS-549 (RG-02) : sortie
     g_z.retour = {bx, gy, bw, hg};
+    // WFS-551 (RG-04, maquette 15) : voiture bloquée : « ★ solde / prix » (valeurs réelles) en bas, dans le coin, sous la colonne
+    // du bouton Acheter ; la carte « Voiture bloquée » laisse place au cadenas-jauge à côté du nom (garage_fiche.cpp)
+    if (bloquee && !pretAttente) {
+        const std::string t1 = "★ " + nombreLangue(boutique::solde(s)), t2 = " / " + nombreLangue(boutique::prixVoiture(car));
+        const float p1 = 20 * k, p2 = 14 * k, w1 = largeurEtoiles(p1, t1), w2 = ui::width(p2, t2), y0 = gy + hg + 8 * k;
+        const float x0 = bx + bw - w1 - w2;
+        texteEtoiles(r, x0, y0, p1, t1, hex(TEXTE, op), ui::GAUCHE);
+        ui::text(r, x0 + w1, y0 + p1 - p2 - 1 * k, p2, t2, hex(MUTED, op), ui::GAUCHE, 0, false);
+    }
     // WFS-499 (RG-01) : solde d'étoiles toujours affiché, en haut à droite du garage (au-dessus de la flèche « suivante »)
     texteEtoiles(r, mp.W - mp.gr, mp.gt + 6 * k, 14 * k, ui::majuscules(ui::tr("garage.solde", nombreLangue(boutique::solde(s)))), hex(TEXTE, op), ui::DROITE, 0.12f);
     // WFS-499 (RG-01) : cadenas juste au-dessus du point (vignette) de chaque voiture bloquée, entre l'étiquette du type et les
     // points (dessous, il passait sur le toit de la voiture en 4:3 : revue de la PR #404)
     for (int p = 0; p < voituresPermises().n; p++)
         if (const Zone& z = g_z.points[p]; z.w > 0 && voitureBloquee(s, CARS[voituresPermises().idx[p]].id)) cadenas(r, z.x + z.w / 2, z.y + 1 * k, 9 * k, op);
-    // WFS-499 (RG-01) : carte de la voiture bloquée, au-dessus du panneau, à droite : cadenas, prix, équivalents
-    if (bloquee) {
+    // WFS-499 (RG-01) : carte de la voiture bloquée, au-dessus du panneau, à droite : cadenas, prix, équivalents ; WFS-551 (RG-04) :
+    // remplacée par le cadenas-jauge et « ★ solde / prix », gardée seulement pour la voiture prêtée en attente (WFS-502)
+    if (bloquee && pretAttente) {
         const long long prix = boutique::prixVoiture(car);
         // WFS-502 (RG-01) : voiture prêtée pas encore activée : « Voiture prêtée » et « À activer dans 23 h 12 min » (carte de même largeur)
         const std::string t1 = nombreLangue(prix) + " ★";

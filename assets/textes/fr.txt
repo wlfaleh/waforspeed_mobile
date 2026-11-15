@@ -464,6 +464,10 @@ garage.chargement=Chargement…
 garage.couleur.principale=Principale
 garage.couleur.toit=Toit et rétros
 garage.couleur.comme=Comme la carrosserie
+# WFS-551 (RG-01) : rangées de gouttes par prix (prix lus dans configgame.json)
+garage.couleur.groupe.classiques=Classiques · gratuites
+garage.couleur.groupe.vives=Vives · {1} ★
+garage.couleur.groupe.speciales=Spéciales · {1} ★
 garage.acheter=Acheter {1} ★
 garage.solde=Solde : {1} ★
 garage.manque=Il te manque {1} ★
@@ -620,6 +624,10 @@ paquets.abime_deux=Le paquet téléchargé est abîmé (deux essais).
 paquets.echec=Le téléchargement a échoué.
 paquets.indisponible=Paquet indisponible
 paquets.connexion=Connexion nécessaire
+# WFS-551 (RG-07) : étiquettes de la vignette, « Rouler » éteint
+paquets.etiquette_telecharger=À télécharger
+paquets.etiquette_installee=Installée
+terrain.a_telecharger=Carte à télécharger
 unite.mo={1} Mo
 
 # ---- Score de la course (WFS-537, épic E22) : bloc « Score » de l'écran de fin et compteur d'étoiles du menu

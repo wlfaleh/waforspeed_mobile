@@ -464,6 +464,10 @@ garage.chargement=Loading…
 garage.couleur.principale=Body
 garage.couleur.toit=Roof & mirrors
 garage.couleur.comme=Same as body
+# WFS-551 (RG-01) : rangées de gouttes par prix (prix lus dans configgame.json)
+garage.couleur.groupe.classiques=Classics · free
+garage.couleur.groupe.vives=Bright · {1} ★
+garage.couleur.groupe.speciales=Special · {1} ★
 garage.acheter=Buy {1} ★
 garage.solde=Balance: {1} ★
 garage.manque=You need {1} more ★
@@ -620,6 +624,10 @@ paquets.abime_deux=The downloaded pack is damaged (two tries).
 paquets.echec=The download failed.
 paquets.indisponible=Pack unavailable
 paquets.connexion=Connection required
+# WFS-551 (RG-07) : étiquettes de la vignette, « Rouler » éteint
+paquets.etiquette_telecharger=To download
+paquets.etiquette_installee=Installed
+terrain.a_telecharger=Map to download
 unite.mo={1} MB
 
 # ---- Race score (WFS-537, epic E22): "Score" block of the end screen and star counter of the main menu

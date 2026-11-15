@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include "../render/renderer.h"
+#include "../game/boutique.h"   // WFS-551 (accroche) : solde et prix du cadenas-jauge
+#include "garage_achat.h"
 #include "ecrans/textes_banc.h"   // WFS-507 : noms propres notés à part (banc « textes »)
 #include "langue.h"   // WFS-507 : textes par ui::tr
 #include "text.h"
@@ -36,6 +38,9 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
             const std::string nm = ui::majuscules(modele(car));   // WFS-191 : nom de configgame.json
             if (const float nw = ui::width(np, nm); nw > W * 0.5f) np *= W * 0.5f / nw;   // WFS-191 (RG-08) : nom long réduit pour tenir
             ui::text(r, x, y, np, nm, hex(TEXTE, op), ui::GAUCHE, 0, true, true);
+            // WFS-551 (RG-04, accroche) : voiture bloquée : cadenas-jauge juste à côté du nom (solde / prix réels)
+            if (const Sauvegarde& sv = sauvegarde(); voitureBloquee(sv, car.id))
+                cadenasJauge(r, x + ui::width(np, nm) + np * 0.28f, y + np * 0.08f, np * 0.92f, partJauge(boutique::solde(sv), boutique::prixVoiture(car.id)), op);
         }
         y += np * 1.0f + 8 * k;
         // WFS-147 (ANO-47) : libellé de 13 px au moins (règle du HUD : 11 px du web portés à 13 px), calé au pixel entier

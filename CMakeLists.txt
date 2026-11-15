@@ -269,6 +269,7 @@ else()
   add_executable(test_hud_lisible tests/test_hud_lisible.cpp)   # WFS-245 : textes du HUD lisibles (tailles, surfaces, contrastes)
   add_executable(test_hud_boutons tests/test_hud_boutons.cpp)   # WFS-429 : boutons Menu et Caméra à côté du score, +5 %, sans recouvrement ; WFS-549 : × 1,5
   add_executable(test_boutons tests/test_boutons.cpp)   # WFS-549 : contour arrondi des boutons R19
+  add_executable(test_icones_r19 tests/test_icones_r19.cpp)   # WFS-551 : goutte, masques du pistolet, part du cadenas-jauge
   add_executable(test_bandeau_gps tests/test_bandeau_gps.cpp)   # WFS-245 (RG-09) : textes du bandeau de la carte GPS (tailles, place, toutes les consignes et rues)
   add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
   add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)

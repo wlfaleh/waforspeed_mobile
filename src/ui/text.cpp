@@ -10,6 +10,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../render/renderer.h"
+#include "garage_finition_pistolet.h"   // WFS-551 (accroche)
 #include "langue.h"   // WFS-504 : journal des textes affichés (banc « textes »), tables lues avec la police
 
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -84,6 +85,8 @@ bool load(Renderer& r) {
     if (F.glyphs.count(32)) { F.glyphs[160] = F.glyphs[32]; F.glyphs[0x202F] = F.glyphs[32]; F.glyphs[0x202F].adv *= 0.6f; }
     std::vector<uint8_t> rgba((size_t)ATLAS * ATLAS * 4);
     for (size_t i = 0; i < px.size(); i++) { uint8_t v = px[i]; rgba[i * 4] = rgba[i * 4 + 1] = rgba[i * 4 + 2] = rgba[i * 4 + 3] = v; }
+    // WFS-551 (RG-03, accroche) : icône du pistolet de l'utilisateur dans les canaux G, B, A libres de l'atlas (le texte lit R)
+    ecrans::garage::pistolet::ajouterAtlas(rgba.data(), ATLAS, y + rowH + 1);
     F.atlas = r.vk().uploadTexture(rgba.data(), ATLAS, ATLAS, false);
     r.uiSetFontAtlas(F.atlas);
     F.ready = true;

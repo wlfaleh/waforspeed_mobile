@@ -1,4 +1,5 @@
-// WaForSpeed — test WFS-429 : boutons « Menu » et « Caméra » de la course à côté du score, agrandis (5 %, puis × 1,5 : WFS-549).
+// WaForSpeed — test WFS-429 : boutons « Menu » et « Caméra » de la course, agrandis (5 %, puis × 1,5 : WFS-549) ; WFS-551 (RG-06) :
+// en haut au centre (avant : à côté du score).
 // Vérifie par le calcul (hud::mesuresBouton, hud::placerBoutons) : RG-01 (rangée [MENU] [CAMÉRA] [SCORE], écarts de 8 px,
 // centrés sur les 70 px du score), RG-02 (chaque dimension × 1,05), RG-04 (rien ne se recouvre : temps, score et combo,
 // carte GPS, bandeaux, commandes, nitro ; HUD de la poursuite) à 2400 × 1080 et 1600 × 720, avec et sans encoche, droitier
@@ -34,12 +35,15 @@ int main() {
                 // « MENU » et le plus long nom de vue (« COCKPIT », 7 lettres)
                 const float tp = hud::BOUTON_TEXTE * k * hud::BOUTON_ECHELLE;
                 hud::BoutonHud menu = hud::mesuresBouton(k, 4 * 0.85f * tp), cam = hud::mesuresBouton(k, 7 * 0.85f * tp);
-                hud::placerBoutons(e.W, e.H, m, menu, cam);
+                hud::placerBoutons(e.W, e.H, m, menu, cam, poursuite);
                 const float xScore = e.W - m.droite - 16 * k - 180 * k, yScore = m.haut + 14 * k;
                 char nom[96];
                 std::snprintf(nom, sizeof nom, "%.0f×%.0f encoche %.0f%s%s", e.W, e.H, e.encoche, gaucher ? " gaucher" : "", poursuite ? " poursuite" : "");
                 // RG-01 : ordre, écarts de 8 px, même rangée, centrés sur les 70 px du score
-                VERIFIE(std::fabs(cam.x + cam.w + 8 * k - xScore) < 0.01f, "%s : RG-01 : écart Caméra-score", nom);
+                // WFS-551 (RG-06) : la paire est centrée en haut de la zone sûre, à gauche du score sans le toucher
+                if (!poursuite) VERIFIE(std::fabs((menu.x + cam.x + cam.w) / 2 - (m.gauche + e.W - m.droite) / 2) < 0.01f, "%s : RG-06 : paire au centre", nom);
+                else VERIFIE(menu.x >= (m.gauche + e.W - m.droite) / 2 + 20 * e.H / 100 && cam.x + cam.w <= e.W - m.droite, "%s : RG-06 : poursuite : à droite du score de la poursuite", nom);
+                VERIFIE(cam.x + cam.w + 8 * k <= xScore, "%s : RG-06 : Caméra avant le score", nom);
                 VERIFIE(std::fabs(menu.x + menu.w + 8 * k - cam.x) < 0.01f, "%s : RG-01 : écart Menu-Caméra", nom);
                 VERIFIE(std::fabs(menu.y - cam.y) < 0.01f && std::fabs(cam.y + cam.h / 2 - (yScore + 35 * k)) < 0.01f,
                         "%s : RG-01 : rangée centrée sur le score", nom);

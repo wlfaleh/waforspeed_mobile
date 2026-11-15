@@ -172,7 +172,11 @@ public:
         if (verre::couvert()) { achat_.dessinerFenetre(r, mp); return; }   // WFS-548 (accroche) : Market ou fenêtre d'achat par-dessus : seule la scène floutée dessous
         cadre::voiles(r, mp);
         fiche_.dessiner(r, mp, e);   // .show-head : marque · index, nom, type + accroche, points des voitures
-        cadre::fleches(r, mp);
+        {   // WFS-551 (RG-05, accroche) : flèches précédent / suivant qui clignotent doucement (1 s, opacité 60 à 100 %), mêmes zones
+            MiseEnPage clignote = mp;
+            clignote.op *= 0.8f + 0.2f * (float)std::cos(2 * PI * (g.time - t0_));
+            cadre::fleches(r, clignote);
+        }
         // ---------- .show-panel : fiche, barres, peintures, boutons ----------
         mp.padX = 24 * k; mp.padY = 18 * k;
         mp.statH = 4 * 14 * k + 3 * 10 * k; mp.paintH = CouleurGarage::hauteur(k); mp.panelH = mp.padY * 2 + mp.statH + 14 * k + mp.paintH;   // WFS-489 (accroche) : ligne des prix
