@@ -1026,3 +1026,6 @@ Commit relu eb05307b. Avis agent 3D VALIDÉ ; 30 captures ouvertes, rendu confor
 - **Accroches hors zone (annoncées)** : `src/game/poursuite_system.cpp` (2 lignes : `separerDe` pour chaque voiture de police) ; `src/platform/desktop_main.cpp` (1 ligne : groupe `trafic-541`).
 - **Vérification** : tests CPU 145 / 145 (branche synchronisée) ; banc CPU 200 chocs (Corniche, trafic × 2,5) : pénétration 0,000 m, arrêt max 7,9 s, 0,090 ms par image (main 0,074) ; carambolage : pénétration ≤ 0,032 m ; captures avant / après regardées (32 + tests).
 - **Limites** : deux-roues couchés relevés seulement hors de la vue (comme avant) ; demi-tour d'une voiture tournée de plus de 90° jusqu'à 10 s ; après fusion 🟡 À valider (utilisateur).
+
+### 2026-11-15 16:23:56 — WFS-552 fusionné par le lead dev (lead-dev)
+PR #421 relue sur ecba9dfa (2e revue) : les deux défauts du refus sont corrigés (Tests CPU joints, nom « Bleu ciel »). Captures ouvertes, diff relu, construction et 145 tests CPU refaits (339 s, code 0), avis agent 3D « VALIDÉ ». Approbation postée en commentaire (même compte GitHub), fusion en squash 4594f3f7. Statut 🟡 À valider (utilisateur). Remarques non bloquantes : double commentaire `menu_parking_cadrage.cpp:12`, contact avec le bloc « Showroom » en 1280 × 720 (WFS-549), réserves A à C de l'agent 3D pour le PO.
