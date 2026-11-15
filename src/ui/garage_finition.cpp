@@ -189,7 +189,7 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
     // nom de la finition montrée (au-dessus du bouton rond) et, si elle n'est pas possédée, « aperçu » et ses équivalents (RC-E18-11)
     const long long prixSel = prixFinition(sv, e.finition, carId);
     nomMontre(r, mp, nomFinition(std::clamp(e.finition, 0, NB - 1)), prixSel > 0);
-    if (prixSel > 0) texteEtoiles(r, mp.cxBouton, mp.yNom + 44 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::CENTRE);
+    if (prixSel > 0) texteEtoiles(r, mp.cxBouton, mp.yNom + 48 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::CENTRE);
 }
 
 int FinitionGarage::appui(float x, float y) const {

@@ -72,7 +72,7 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     else onglets::boutonRond(r, cx, cy, R, ui::majuscules(ui::tr("garage.choisir")), "", op, false);
     g_z.choisir = {cx - R, cy - R, 2 * R, 2 * R};
     const bool pretAttente = bloquee && pret::etat(s.cadeau) == pret::Etat::EnAttente && s.cadeau.pretVoiture == car;   // WFS-502 (RG-01)
-    if (bloquee) {   // WFS-499 (RG-03) : « Essai gratuit » (info : cyan) puis « Essai déjà fait » (inactif) ; WFS-502 : « Activer le prêt »
+    if (bloquee && mp.onglet == ONGLET_VOITURE) {   // WFS-551 : onglet « Voiture » seulement (ailleurs, le nom montré est à cette place) ; WFS-499 (RG-03) : « Essai gratuit » (info : cyan) puis « Essai déjà fait » (inactif) ; WFS-502 : « Activer le prêt »
         // WFS-551 : bouton de verre au-dessus du bouton rond (la maquette 15 n'en montre pas : la fonction reste)
         const bool libre = pretAttente || essaiPossible(s, car);
         const std::string t = ui::majuscules(ui::tr(pretAttente ? "pret.garage.activer" : libre ? "garage.essai" : "garage.essai_fait"));

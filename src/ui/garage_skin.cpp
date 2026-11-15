@@ -269,7 +269,7 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
     const bool offerte = skins::offerteDue(sv, carId);
     const long long prixSel = prixSkin(sv, e.skin, carId);
     nomMontre(r, mp, nomSkin(e.skin), prixSel > 0);
-    const float wn = 200 * k, xn = std::min(mp.cxBouton - wn / 2, mp.W - mp.gr - wn), yb = mp.yNom + 44 * k;
+    const float wn = 200 * k, xn = std::min(mp.cxBouton - wn / 2, mp.W - mp.gr - wn), yb = mp.yNom + 48 * k;
     if (offerte || (e.skin >= 0 && skins::bonUtilisable(sv, carId, BOUTIQUE_SKINS_IDS[e.skin]))) {
         // RG-02 : « Choisis ta skin offerte » (orange : action principale) ; bon du market : « Utiliser un bon (N) » (cyan)
         const Zone z{xn, yb, wn, 24 * k};
