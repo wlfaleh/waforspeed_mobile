@@ -30,7 +30,7 @@ int main() {
     {
         int n[5] = {};
         for (const Objet& o : catalogue()) n[(int)o.type]++;
-        cas("28 couleurs, 1 couleur secondaire, 8 finitions, 4 skins, 5 packs d'autocollants", n[0] == 28 && n[1] == 1 && n[2] == 8 && n[3] == 4 && n[4] == 5);
+        cas("28 couleurs, 1 couleur secondaire, 8 finitions, 5 skins (WFS-552 : Bleu ciel), 5 packs d'autocollants", n[0] == 28 && n[1] == 1 && n[2] == 8 && n[3] == 5 && n[4] == 5);
         bool ordre = true;
         for (int i = 0; i < BOUTIQUE_COULEURS; i++) ordre = ordre && !std::strcmp(PEINTURES[i].id, BOUTIQUE_COULEURS_IDS[i]);
         cas("PEINTURES et boutique.couleurs dans le même ordre", ordre);
@@ -41,6 +41,9 @@ int main() {
             peintureDef("bleuelectrique")->hex == 0x0050ff && peintureDef("vertacide")->hex == 0x7fff00 && peintureDef("violetneon")->hex == 0x9d00ff &&
             peintureDef("bleuciel")->hex == 0x4fa8ff && peintureDef("corail")->hex == 0xff6f61);
         cas("identifiants uniques, catalogue lu sans problème", verifierCatalogue().empty());
+        bool noms = true;   // WFS-552 (revue du lead dev) : chaque objet a un nom (le cadeau du jour l'affiche quand la traduction manque)
+        for (const Objet& o : catalogue()) noms = noms && o.nom && *o.nom;
+        cas("chaque objet du catalogue a un nom (dont la skin Bleu ciel)", noms && !std::strcmp(objet("ciel")->nom, "Bleu ciel"));
     }
     // ---- prix (RG-03, WFS-498 RG-04 / RG-05)
     {
@@ -134,11 +137,11 @@ int main() {
         ConfigJeu c0; const BilanConfig b0 = lireConfig(defauts, "défauts", c0);
         cas("section boutique lue sans erreur", b0.erreurs == 0 && defauts.find("\"boutique\"") != std::string::npos);
         std::string t = remplacer(defauts, "\"rose\": {\n        \"prix\": 50", "\"rose\": {\n        \"prix\": -5");
-        t = remplacer(t, "\"voitures\": \"p208 abarth gt86 golf mustang giulia\"", "\"voitures\": \"\"");
+        t = remplacer(t, "\"voitures\": \"p208 abarth gt86 golf mustang giulia sf90\"", "\"voitures\": \"\"");
         ConfigJeu c; const BilanConfig b = lireConfig(t, "boutique mal écrite", c);
         int msg = 0; for (const std::string& m : b.messages) { msg += m.find("boutique.") == 0; std::printf("  %s\n", m.c_str()); }
         cas("prix négatif et liste vide refusés : valeur du code + message", b.erreurs == 2 && msg == 2 && c.boutique.couleur[19].prix == 50 &&
-            !std::strcmp(c.boutique.skinVoitures[0], "p208 abarth gt86 golf mustang giulia"));
+            !std::strcmp(c.boutique.skinVoitures[0], "p208 abarth gt86 golf mustang giulia sf90"));
         ConfigJeu d; lireConfig(remplacer(defauts, "\"rose\": {\n        \"prix\": 50", "\"rose\": {\n        \"prix\": 80"), "prix changé", d);
         const ConfigJeu sauve = config(); config() = d;
         cas("prix changé dans configgame.json sans recompiler : rose sur la Golf 120 ★", prix(O("rose"), "golf") == 120);

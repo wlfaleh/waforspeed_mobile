@@ -26,17 +26,17 @@ static bool possede(const Sauvegarde& s, const char* car, const char* id) { cons
 
 int main() {
     // RG-01 : ordre affiché et voitures
-    const char* attendu[] = {"rallye", "camouflage", "drifttokyo", "neonnuit"};
-    bool ordre = SkinGarage::NB == 5 && SkinGarage::catalogue(0) == -1;
-    for (int o = 1; o < 5; o++) ordre = ordre && !std::strcmp(BOUTIQUE_SKINS_IDS[SkinGarage::catalogue(o)], attendu[o - 1]);
-    cas("ordre : Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit", ordre);
-    cas("ordre hors bornes : aucune", SkinGarage::catalogue(-1) == -1 && SkinGarage::catalogue(5) == -1);
+    const char* attendu[] = {"rallye", "camouflage", "drifttokyo", "neonnuit", "ciel"};   // WFS-552 : Bleu ciel en dernier
+    bool ordre = SkinGarage::NB == 6 && SkinGarage::catalogue(0) == -1;
+    for (int o = 1; o < 6; o++) ordre = ordre && !std::strcmp(BOUTIQUE_SKINS_IDS[SkinGarage::catalogue(o)], attendu[o - 1]);
+    cas("ordre : Aucune, Rallye, Camouflage, Drift Tokyo, Néon nuit, Bleu ciel", ordre);
+    cas("ordre hors bornes : aucune", SkinGarage::catalogue(-1) == -1 && SkinGarage::catalogue(6) == -1);
     int avec = 0;
     for (int i = 0; i < CAR_COUNT; i++) avec += skins::aDesSkins(CARS[i].id);
-    cas("rangée visible pour les 6 voitures qui ont des skins (208, 500, GT86, Golf, Corvette C7, Giulia), pas pour la M4",
-        avec == 6 && skins::aDesSkins("p208") && skins::aDesSkins("abarth") && skins::aDesSkins("gt86") &&
-        skins::aDesSkins("golf") && skins::aDesSkins("mustang") && skins::aDesSkins("giulia") && !skins::aDesSkins("m4"));
-    cas("en vente : Rallye, Drift Tokyo, Camouflage (jamais Néon nuit)", skins::enVente("golf").size() == 3 && skins::enVente("m4").empty());
+    cas("rangée visible pour les 7 voitures qui ont des skins (208, 500, GT86, Golf, Corvette C7, Giulia, SF-X : WFS-552), pas pour la M4",
+        avec == 7 && skins::aDesSkins("p208") && skins::aDesSkins("abarth") && skins::aDesSkins("gt86") &&
+        skins::aDesSkins("golf") && skins::aDesSkins("mustang") && skins::aDesSkins("giulia") && skins::aDesSkins("sf90") && !skins::aDesSkins("m4"));
+    cas("en vente : Rallye, Drift Tokyo, Camouflage, Bleu ciel (jamais Néon nuit)", skins::enVente("golf").size() == 4 && skins::enVente("m4").empty());
     // prix : base × coefficient de la classe (configgame.json)
     cas("208 (gratuite, × 1) : Rallye 300, Camouflage 450, Drift Tokyo 600 ★",
         prix("rallye", "p208") == 300 && prix("camouflage", "p208") == 450 && prix("drifttokyo", "p208") == 600);

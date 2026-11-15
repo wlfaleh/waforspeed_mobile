@@ -442,22 +442,27 @@
       "rallye": {
         "prix": 300,
         "cadeau": 0,
-        "voitures": "p208 abarth gt86 golf mustang giulia"
+        "voitures": "p208 abarth gt86 golf mustang giulia sf90"
       },
       "drifttokyo": {
         "prix": 600,
         "cadeau": 0,
-        "voitures": "p208 abarth gt86 golf mustang giulia"
+        "voitures": "p208 abarth gt86 golf mustang giulia sf90"
       },
       "neonnuit": {
         "prix": 800,
         "cadeau": 1,
-        "voitures": "p208 abarth gt86 golf mustang giulia"
+        "voitures": "p208 abarth gt86 golf mustang giulia sf90"
       },
       "camouflage": {
         "prix": 450,
         "cadeau": 0,
-        "voitures": "p208 abarth gt86 golf mustang giulia"
+        "voitures": "p208 abarth gt86 golf mustang giulia sf90"
+      },
+      "ciel": {
+        "prix": 500,
+        "cadeau": 0,
+        "voitures": "p208 abarth gt86 golf mustang giulia sf90"
       }
     },
     "dessins": {

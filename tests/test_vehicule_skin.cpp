@@ -162,7 +162,28 @@ int main(int argc, char** argv) {
         lues493++;
     }
     VERIFIE(lues493 == 18, "%d textures WFS-493 lues sur 18", lues493);
+    // ---- WFS-552 : Bleu ciel (« ciel ») sur les 7 voitures, et les 4 skins d'avant sur la Cavallo SF-X (sf90)
+    int lues552 = 0;
+    auto lire552 = [&](const char* id, const char* skin, bool bandes) {
+        const std::string chemin = dossier + id + "-" + skin + ".etc2.ktx2";
+        std::ifstream in(chemin, std::ios::binary);
+        std::vector<uint8_t> b((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+        VERIFIE(!b.empty() && b.size() <= 1572864, "%s absente ou > 1,5 Mo (%zu octets)", chemin.c_str(), b.size());
+        ktx2::Fichier f; std::string err;
+        if (b.empty() || !ktx2::lire(b.data(), b.size(), f, err) || f.w != 1024 || f.h != 1024 || f.niveaux.size() != 11) { VERIFIE(false, "%s illisible", chemin.c_str()); return; }
+        if (bandes) {   // bandes du capot (A) à |x| = 0,165 m, peinture entre elles, liseré blanc (B) à |x| = 0,276 m, à 30 cm du bouclier
+            const Decode d = decoder(f);
+            int u, v;
+            pxDessus(0.165f, -2.0f, u, v); VERIFIE(d.r(u, v) > 240 && d.g(u, v) < 15, "%s : bande du capot : (%u, %u)", chemin.c_str(), d.r(u, v), d.g(u, v));
+            pxDessus(0.f, -2.0f, u, v); VERIFIE(d.r(u, v) < 15 && d.g(u, v) < 15, "%s : peinture entre les bandes : (%u, %u)", chemin.c_str(), d.r(u, v), d.g(u, v));
+            pxDessus(0.276f, -2.0f, u, v); VERIFIE(d.g(u, v) > 150, "%s : liseré blanc (12 mm ≈ 1,7 pixel : couverture partielle) : %u", chemin.c_str(), d.g(u, v));
+        }
+        lues552++;
+    };
+    for (const char* id : {"p208", "abarth", "gt86", "golf", "mustang", "giulia", "sf90"}) lire552(id, "ciel", true);
+    for (const char* skin : {"rallye", "drifttokyo", "neonnuit", "camouflage"}) lire552("sf90", skin, false);
+    VERIFIE(lues552 == 11, "%d textures WFS-552 lues sur 11", lues552);
     if (echecs) { std::printf("test_vehicule_skin : %d échec(s)\n", echecs); return 1; }
-    std::printf("test_vehicule_skin : OK (décodeur EAC, identifiants, codage, %d textures Rallye et %d textures Drift Tokyo, Néon nuit, Camouflage ≤ 1,5 Mo)\n", lues, lues493);
+    std::printf("test_vehicule_skin : OK (décodeur EAC, identifiants, codage, %d textures Rallye, %d textures Drift Tokyo, Néon nuit, Camouflage et %d textures WFS-552 ≤ 1,5 Mo)\n", lues, lues493, lues552);
     return 0;
 }
