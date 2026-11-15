@@ -1075,3 +1075,9 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - PR #423 fusionnée en squash par le lead dev (eed11f17) à la 2e revue ; statut 🟡 À valider (utilisateur) : à essayer sur l'APK de `main`, même parcours que les vidéos du 2026-11-13 (Poursuite, Corniche, nuit).
 - Remarque du lead dev retenue : capture « Tests CPU » prise avant le dernier commit (146 tests) alors que `tests-cpu.log` est au commit final (147) ; à prendre au commit final la prochaine fois.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-15 20:40:54 — WFS-549 fusionné par le lead dev (lead-dev)
+- PR #420 (commit relu f90e01bb) fusionnée en squash (c20f5c06) **sur ordre de l'utilisateur, après revue du code seul** (« Stop regarde que le code … si ok merge »). Le PR était pris 👀 depuis 20:34 par une autre instance du lead dev : l'ordre de l'utilisateur passe avant.
+- Diff lu en entier : boutons communs `src/ui/boutons.*`, zones de toucher inchangées, seule `hud::BOUTON_ECHELLE` passe à 1,5 (voulu, test mis à jour) ; points 2 (Crédits au relâcher) et 4 (inactifs lisibles, `test_boutons`) de la 1re revue corrigés. Captures pas rouvertes ; construction locale arrêtée avant la fin (ordre de l'utilisateur) : la CI de `main` fait foi.
+- Statut : 🟡 À valider (utilisateur). Ligne ajoutée à `qa/Check.md`, ligne #420 retirée de `suivi-pr.md`.
+
