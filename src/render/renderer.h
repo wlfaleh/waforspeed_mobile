@@ -243,7 +243,8 @@ public:
     // la scène de l'image précédente est encore valable (cibles non recréées), endFrame ne refait que la passe finale (relecture
     // de la scène HDR et du bloom gardés) et l'interface : même image, sans ombres, reflet, captures, scène ni bloom
     void figerScene(bool f) { figer_ = f; }
-    bool sceneFigee() const { return figer_ && sceneValide_; }
+    bool sceneFigee() const { return (figer_ || flouPret_) && sceneValide_; }   // WFS-548 : fond flouté calculé une fois, puis relu
+    float flouFond = 0.f;   // WFS-548 (RG-02, accroche E23) : fond flouté demandé pour l'image suivante (verre::fondFloute), remis à 0 à chaque image
     const ChronoImage& chronoImage() const { return chronoPrec_; }
     // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
     double gpuImageMs() const { return gpuImageMs_; }
@@ -394,6 +395,7 @@ private:
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
     ComptesImage comptes_, comptesPrec_;   // WFS-317 (I9)
     std::vector<ReleveVoiture> releve_;   // WFS-335 (RG-01)
+    bool flouImage_ = false, flouPret_ = false;   // WFS-548 : fond flouté à cette image ; image floutée gardée valable
     bool figer_ = false, sceneValide_ = false;   // WFS-329 : fond figé demandé ; image de scène HDR gardée valable
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;

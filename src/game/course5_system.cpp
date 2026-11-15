@@ -31,6 +31,7 @@
 #include "trace_cartes.h"
 #include "virages_banc.h"   // WFS-327 : épingles des lacets (banc ; WFS-379 : Campagne)
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
+#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
@@ -50,7 +51,7 @@ bool g_figerBanc = false;   // WFS-243 : banc : ordinateurs arrêtés là où le
 double g_bancVitesseKmh = 0, g_bancEpingleM = 0;
 std::vector<std::pair<double, int>> g_bancSuiveurs;   // WFS-450 (accroche) : banc : écart au joueur (m) et file de chaque ordinateur tenu
 
-const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
+const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
 vec3 lin(unsigned h) {
     auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
@@ -325,16 +326,15 @@ private:
     // (jamais « 2E ») ; tailles des boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
     void resultat(Renderer& r, float W, float H, float u, const std::vector<course5::Ligne>& ls) {
         const int rang = course5::position(ls);
-        r.uiRect(0, 0, W, H, FOND);
+        verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous le classement
         const float pw = 66 * u, ph = (34 + 6.5f * ls.size() + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        r.uiRect(px0, py0, pw, ph, SURFACE);
+        verre::panneau(r, px0, py0, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli
         score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
-        r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
         char km[16]; std::snprintf(km, sizeof km, "%d", kmCourse5());   // WFS-506 (RG-03)
         static std::string sur;
         textes::remplir(sur, "c5.surtitre", km);
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
+        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, verre::hexa(verre::SUR_TITRE), ui::CENTRE, 0.16f, false);   // WFS-548 (RG-03) : gris
         ui::text(r, W / 2, py0 + 7 * u, 9 * u, textes::titrePlace(rang), rang == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(ftJoueur_), TEXTE, ui::CENTRE, 0.f, false, true);
         float y = py0 + 24 * u;
@@ -345,7 +345,10 @@ private:
             if (!l.fini) tm = ui::decimal(std::max(0.0, l.d) * M / 1000, 2) + " km";   // WFS-242 : derrière la ligne : 0,00
             else if (i == 0 || tete < 0) tm = ui::chrono(l.ft);
             else tm = "+" + ui::decimal(l.ft - tete, 1) + " s";
-            const vec4 c = l.moi ? ui::ORANGE : TEXTE;
+            // WFS-548 (RG-05, maquette 31) : chaque ligne sur une tuile de verre ; ta ligne bordée et écrite en orange (toi)
+            { verre::Style st; st.rayon = 1.2f * u; st.lisere = std::max(1.f, 1.2f * H / 720.f); st.ombre = false; st.force = 0.6f; st.bord = l.moi ? verre::TOI : 0;
+              verre::panneau(r, px0 + 3.5f * u, y - 1.2f * u, pw - 7 * u, 5.8f * u, st); }
+            const vec4 c = l.moi ? verre::hexa(verre::TOI) : TEXTE;
             if (l.moi && !sauvegarde().actif()) ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false);   // « Pilote » / « Driver »
             else { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false); }   // WFS-506 : noms inventés
             ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, l.fini ? c : MUTED, ui::DROITE, 0.f, false);

@@ -23,6 +23,7 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../verre.h"   // WFS-548 (R19) : fenêtres de verre, sur-titres gris, couleurs d'état, fond flouté
 #include "../langue.h"   // WFS-505 : textes du salon en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
@@ -247,10 +248,12 @@ public:
         const float W = g.uiWidth, H = g.uiHeight, k = cp_ ? ui::unitePetitEcran(W, H) : H / 720.f;
         const Marges& mg = g.marges;
         const float zl = mg.gauche + (cp_ ? 24 : 32) * k, zr = W - mg.droite - (cp_ ? 24 : 32) * k;
-        r.uiRect(0, 0, W, H, hex(BG, 0.94f));
+        // WFS-548 (RG-02, maquette 23) : écran arrêté : fond flouté et assombri (avant : voile --bg à 94 %)
+        verre::fondFloute(r);
+        verre::assombrir(r, W, H, 0.72f);
         // en-tête (#lobby) : .eyebrow + .big (petit écran : resserré, @media (max-height: 520px) du web)
         const float hy = mg.haut + (cp_ ? 12 : 26) * k;
-        ui::text(r, zl, hy, (cp_ ? 12 : 13) * k, ui::majuscules(ui::tr("salon.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+        verre::surTitre(r, zl, hy, (cp_ ? 12 : 13) * k, ui::tr("salon.surtitre"));   // WFS-548 (RG-03) : gris
         ui::text(r, zl, hy + (cp_ ? 18 : 20) * k, (cp_ ? 28 : 44) * k, ui::majuscules(ui::tr("salon.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         g_inviter = {};
         // WFS-168 (RG-01) : boutons du bas à leur taille d'avant WFS-147, calés en bas de leur barre (même place)
@@ -359,7 +362,12 @@ private:
     void dessinerSalon(Renderer& r, const GameView& g, float zl, float zr, float y, float by, float bh, float k) {
         const duel::Session& s = duelSession();
         g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {}; for (Zone& z : g_derniers) z = {};
-        ui::text(r, zl, y, 12 * k, ui::majuscules(ui::tr("salon.code")), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        {   // WFS-548 (RG-01, maquette 23) : deux fenêtres de verre, réglages du salon à gauche, pilotes à droite (rien ne bouge)
+            const float pxc = std::max(zl + 620 * k, zr - 420 * k), haut = y - 16 * k, hc = by - 16 * k - haut;
+            verre::panneau(r, zl - 18 * k, haut, pxc - 28 * k - (zl - 18 * k), hc, {14 * k, 1.5f * g_kb});
+            verre::panneau(r, pxc - 14 * k, haut, zr - pxc + 28 * k, hc, {14 * k, 1.5f * g_kb});
+        }
+        verre::surTitre(r, zl, y, 12 * k, ui::tr("salon.code"));
         ui::text(r, zl, y + 16 * k, 72 * k, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
         const float cx = zl + ui::width(72 * k, ui::majuscules(s.code()), 0.18f) + 28 * k;
@@ -400,13 +408,14 @@ private:
         // joueurs (#players) : à droite
         const float px = std::max(zl + 620 * k, zr - 420 * k), pw = zr - px;
         float py = y;
-        ui::text(r, px, py, 12 * k, ui::majuscules(ui::tr("salon.pilotes")), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        verre::surTitre(r, px, py, 12 * k, ui::tr("salon.pilotes"));
         py += 22 * k;
         auto joueur = [&](const std::string& nom, bool pret, bool moi) {
-            r.uiRect(px, py, pw, 50 * k, GLASS);
-            r.uiRect(px, py, 3 * k, 50 * k, moi ? hex(ACCENT) : hex(ACCENT2));
-            ui::text(r, px + 16 * k, py + 14 * k, 20 * k, nom, moi ? hex(ACCENT) : hex(TEXTE), ui::GAUCHE, 0, false);
-            ui::text(r, px + pw - 16 * k, py + 17 * k, 14 * k, ui::majuscules(ui::tr(pret ? "salon.pret" : "salon.en_salon")), pret ? hex(0xB6FF00) : hex(MUTED), ui::DROITE, 0.12f, false);
+            // WFS-548 (RG-05) : tuile de verre ; toi en orange (liseré et pseudo), « Prêt » en vert
+            verre::Style st; st.rayon = 8 * k; st.lisere = 1.2f * g_kb; st.ombre = false; st.force = 0.6f; st.bord = moi ? verre::TOI : 0;
+            verre::panneau(r, px, py, pw, 50 * k, st);
+            ui::text(r, px + 16 * k, py + 14 * k, 20 * k, nom, moi ? verre::hexa(verre::TOI) : hex(TEXTE), ui::GAUCHE, 0, false);
+            ui::text(r, px + pw - 16 * k, py + 17 * k, 14 * k, ui::majuscules(ui::tr(pret ? "salon.pret" : "salon.en_salon")), pret ? verre::hexa(verre::PRET) : hex(MUTED), ui::DROITE, 0.12f, false);
             py += 58 * k;
         };
         joueur(ui::tr("salon.toi", s.nick()) + (s.host() ? " · " + ui::tr("salon.hote") : std::string()), s.status() == duel::Status::Ready, true);
@@ -432,10 +441,9 @@ private:
         g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {}; for (Zone& z : g_derniers) z = {};
         // WFS-168 : la carte garde sa hauteur de WFS-147 (barre du bas de 48 dp), seuls les boutons reprennent leur taille
         const float pad = 20 * k, haut = y - 12 * k, hc = by + bh - 48 * k - 12 * k - haut;
-        r.uiRect(zl, haut, zr - zl, hc, GLASS);
-        r.uiRect(zl, haut, 3 * k, hc, hex(ACCENT));
+        verre::panneau(r, zl, haut, zr - zl, hc, {12 * k, 1.5f * g_kb});   // WFS-548 (RG-01) : fenêtre de verre
         const float xl = zl + pad, xr = zr - pad, gauche = std::min(470 * k, (xr - xl) * 0.6f);   // colonne de gauche
-        ui::text(r, xl, y, 12 * k, ui::majuscules(ui::tr("salon.code")), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        verre::surTitre(r, xl, y, 12 * k, ui::tr("salon.code"));
         const float cpx = 48 * k;
         ui::text(r, xl, y + 16 * k, cpx, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
@@ -480,13 +488,14 @@ private:
         const float px = xl + gauche + 24 * k, pw = xr - px;
         float py = y;
         r.uiRect(px - 12 * k, y, 1 * k, ly + bhh - y, hex(TEXTE, 0.08f));   // séparation des deux colonnes
-        ui::text(r, px, py, 12 * k, ui::majuscules(ui::tr("salon.pilotes")), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        verre::surTitre(r, px, py, 12 * k, ui::tr("salon.pilotes"));
         py += 20 * k;
         auto joueur = [&](const std::string& nom, bool pret, bool moi) {
-            r.uiRect(px, py, pw, 48 * k, hex(SURFACE2, 0.6f));
-            r.uiRect(px, py, 3 * k, 48 * k, moi ? hex(ACCENT) : hex(ACCENT2));
-            ui::text(r, px + 14 * k, py + 15 * k, 18 * k, nom, moi ? hex(ACCENT) : hex(TEXTE), ui::GAUCHE, 0, false);
-            ui::text(r, px + pw - 14 * k, py + 18 * k, 12 * k, ui::majuscules(ui::tr(pret ? "salon.pret" : "salon.en_salon")), pret ? hex(0xB6FF00) : hex(MUTED), ui::DROITE, 0.12f, false);
+            // WFS-548 (RG-05) : tuile de verre ; toi en orange (liseré et pseudo), « Prêt » en vert
+            verre::Style st; st.rayon = 8 * k; st.lisere = 1.2f * g_kb; st.ombre = false; st.force = 0.6f; st.bord = moi ? verre::TOI : 0;
+            verre::panneau(r, px, py, pw, 48 * k, st);
+            ui::text(r, px + 14 * k, py + 15 * k, 18 * k, nom, moi ? verre::hexa(verre::TOI) : hex(TEXTE), ui::GAUCHE, 0, false);
+            ui::text(r, px + pw - 14 * k, py + 18 * k, 12 * k, ui::majuscules(ui::tr(pret ? "salon.pret" : "salon.en_salon")), pret ? verre::hexa(verre::PRET) : hex(MUTED), ui::DROITE, 0.12f, false);
             py += 54 * k;
         };
         joueur(ui::tr("salon.toi", s.nick()) + (s.host() ? " · " + ui::tr("salon.hote") : std::string()), s.status() == duel::Status::Ready, true);

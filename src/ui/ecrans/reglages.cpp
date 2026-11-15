@@ -29,6 +29,7 @@
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../text.h"
+#include "../verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, fond flouté
 #include "../langue.h"   // WFS-504 : textes dans la langue du joueur (ui::tr), réglage « Langue »
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "reglages_appui.h"   // WFS-290 : cible de 48 dp, anti-rebond
@@ -47,7 +48,7 @@ vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8)
 // jetons :root du jeu web (codes sRGB)
 const unsigned ACCENT_PRESSE = 0xFF9A4D;   // WFS-290 : orange éclairci d'un bouton appuyé
 const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SURFACE2 = 0x1E2130;
-const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.96f};
+const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f};
 
 struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
@@ -406,7 +407,9 @@ private:
     }
     // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
     void dessinerPanneau(Renderer& r, const GameView& g, float W, float H, float k) {
-        r.uiRect(0, 0, W, H, hex(BG, 0.86f));
+        // WFS-548 (RG-02, maquettes 14, 24, 25) : écran arrêté : fond flouté et assombri (avant : voile --bg à 86 %)
+        verre::fondFloute(r);
+        verre::assombrir(r, W, H, 0.72f);   // menu ou pause dessous : leur interface ne se voit plus au travers
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
@@ -414,11 +417,9 @@ private:
         // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement) ;
         // WFS-108 : 11 lignes → lignes de 30 px séparées de 5 px
         const float rowH = 30 * k, gap = 5 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)LIGNES_PLACE * (rowH + gap) + bh + 30 * k;
-        r.uiRect(px, py, pw, ph, SURFACE);
-        r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
+        verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * H / 720.f});   // WFS-548 (RG-01) : verre dépoli (plus de liseré cyan)
         const float x0 = px + 36 * k;
-        ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu")), hex(ACCENT2),
-                 ui::GAUCHE, 0.22f, false);
+        verre::surTitre(r, x0, py + 30 * k, 13 * k, ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu"));   // WFS-548 (RG-03)
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules(ui::tr("reglages.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         g_titre = {x0, py + 52 * k, ui::width(56 * k, ui::majuscules(ui::tr("reglages.titre")), 0.02f), 56 * k};   // WFS-419 : 5 touchers → menu caché
         boutonCgu(r, px + pw - 36 * k, py + 30 * k, 36 * k, k);   // WFS-308 (RG-05)
@@ -477,7 +478,9 @@ private:
     // 48 dp, l'écart compris, sans déborder sur la voisine), textes des choix en 14 dp, libellés en capitales 12 dp,
     // « Fermer » en haut à droite (48 dp), ligne « Rendu » en bas (14 dp) : tout tient dans 400 dp de haut, sans défilement.
     void dessinerPanneauPetit(Renderer& r, const GameView& g, float W, float H, float k) {
-        r.uiRect(0, 0, W, H, hex(BG, 0.86f));
+        // WFS-548 (RG-02, maquettes 14, 24, 25) : écran arrêté : fond flouté et assombri (avant : voile --bg à 86 %)
+        verre::fondFloute(r);
+        verre::assombrir(r, W, H, 0.72f);   // menu ou pause dessous : leur interface ne se voit plus au travers
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const int PAR_COL = (L_REGARD + 1) / 2;   // WFS-235 : « Regard cockpit » dans l'en-tête, les 12 autres lignes ne bougent pas
@@ -487,11 +490,9 @@ private:
         const float rowH = 42 * k, gap = 6 * k, haut = 66 * k, bh = 50 * kb;
         const float ph = haut + PAR_COL * (rowH + gap) + 36 * k;
         const float pw = std::min(zw - 16 * k, 900 * k), px = zl + (zw - pw) / 2, py = std::max(m.haut + 4 * k, (H - ph) / 2);
-        r.uiRect(px, py, pw, ph, SURFACE);
-        r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
+        verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * H / 720.f});   // WFS-548 (RG-01) : verre dépoli (plus de liseré cyan)
         const float x0 = px + 24 * k;
-        ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu")), hex(ACCENT2),
-                 ui::GAUCHE, 0.22f, false);
+        verre::surTitre(r, x0, py + 14 * k, 12 * k, ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu"));   // WFS-548 (RG-03)
         ui::text(r, x0, py + 30 * k, 30 * k, ui::majuscules(ui::tr("reglages.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         g_titre = {x0, py + 26 * k, ui::width(30 * k, ui::majuscules(ui::tr("reglages.titre")), 0.02f), 38 * k};   // WFS-419 : 5 touchers → menu caché
         {   // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau

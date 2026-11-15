@@ -80,7 +80,8 @@ vec4 passeBloom(int mode) {
         vec3 s = vec3(0.0);
         for (int i = 0; i < 4; i++) {
             vec2 o = vec2((i & 1) == 0 ? -1.0 : 1.0, (i & 2) == 0 ? -1.0 : 1.0) * px;
-            s += seuilBloom(min(texture(hdr, vUv * pc.bloom.w + o).rgb * pc.params.x, vec3(24.0)));   // WFS-246 : bloom.w = part de la scène dessinée
+            vec3 v = min(texture(hdr, vUv * pc.bloom.w + o).rgb * pc.params.x, vec3(24.0));   // WFS-246 : bloom.w = part de la scène dessinée
+            s += pc.params.y > 0.5 ? v : seuilBloom(v);   // WFS-548 (RG-02) : params.y = 1 : fond flouté, sans seuil (toute l'image)
         }
         return vec4(s * 0.25, 1.0);
     }
@@ -106,7 +107,10 @@ void main() {
     int mode = int(pc.bloom.x + 0.5);
     if (mode != 0) { outColor = passeBloom(mode); return; }
     vec2 uvS = vUv * (pc.bloom.w > 0.0 ? pc.bloom.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
-    vec3 c = visionNuit(texture(hdr, uvS).rgb, abs(pc.params.w), pc.bloom.y) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
+    // WFS-548 (RG-02) : params.z < 0 : écran arrêté, la scène est remplacée par la chaîne du bloom calculée sans seuil (somme des
+    // 5 niveaux flous, déjà exposée) : fond flouté ; −params.z = 1 / somme des poids des niveaux (même clarté que la scène)
+    vec3 scene = pc.params.z < 0.0 ? texture(bloomTex, vUv).rgb * (-pc.params.z) / max(pc.params.x, 1e-6) : texture(hdr, uvS).rgb;
+    vec3 c = visionNuit(scene, abs(pc.params.w), pc.bloom.y) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
     c = basseLumiereNuit(c, pc.params.w);   // WFS-276 : basses lumières de la nuit relevées (rien de jour ; params.w < 0 : Ville, rien)
     // léger halo autour des zones très lumineuses (soleil, reflets).
     // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
@@ -116,7 +120,7 @@ void main() {
     vec2 px = 1.0 / vec2(textureSize(hdr, 0));
     vec3 glow = vec3(0.0); float poids = 0.0;
     // WFS-419 : diagnostic « sans post » (bloom.z = 1 dans la passe finale, 0 par défaut) : halo des 16 lectures sauté
-    if (pc.bloom.z < 0.5) for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) {
+    if (pc.bloom.z < 0.5 && pc.params.z >= 0.0) for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) {
         vec2 o = vec2(i, j) * 2.0 - 3.5;   // WFS-382 : la nuit, prises pondérées par la distance (gaussienne) : halo rond, pas de carré
         float w = pc.params.w != 0.0 ? exp(-dot(o, o) / 6.0) : 1.0; poids += w;
         vec3 s = texture(hdr, uvS + o * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels

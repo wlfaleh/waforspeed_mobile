@@ -15,6 +15,7 @@
 #include "../core/system.h"
 #include "../game/boutique.h"
 #include "../game/commandes_tactiles.h"   // dessin2d : fond de la fenêtre
+#include "verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, fond flouté
 #include "../game/course.h"
 #include "../game/course5.h"              // modeCourse : pas d'essai en duel
 #include "../game/course_system.h"        // activeCourse : compte à rebours, écran de fin
@@ -46,8 +47,9 @@ void FenetreAchatVoiture::dessiner(Renderer& r, float W, float H, float k, float
     const Sauvegarde& s = sauvegarde();
     const CarDef& c = CARS[index_];
     const long long prix = std::max(0, boutique::prixVoiture(c.id)), solde = boutique::solde(s), manque = prix - solde;
-    // fond assombri : la fenêtre garde le regard et tous les touchers
-    r.uiRect(0, 0, W, H, {0.02f, 0.02f, 0.03f, 0.66f});
+    // fond flouté et assombri (WFS-548, RG-02, maquettes 27 et 28 : écran arrêté) : la fenêtre garde le regard et tous les touchers
+    verre::fondFloute(r);
+    verre::assombrir(r, W, H, 0.62f);
     const std::string nom = std::string(marque(c)) + " " + modele(c);   // WFS-191 : noms inventés
     const std::string titre = ui::majuscules(ui::tr("garage.achat_titre")), question = questionAchat(nom, prix);
     const std::string eq = texteEquivalentVoiture(prix), soldeT = ui::majuscules(ui::tr("garage.solde", nombreLangue(solde)));
@@ -62,14 +64,10 @@ void FenetreAchatVoiture::dessiner(Renderer& r, float W, float H, float k, float
     const float hManque = manque > 0 ? 40 * k + 14 * k : 0;
     const float h = 24 * k + 12 * k + 16 * k + pq + 14 * k + 14 * k + 12 * k + 13 * k + hManque + 24 * k + hb + 26 * k;
     const float x = gl + (wMax - w) / 2, y = gt + (H - gt - gb - h) / 2;
-    // .card : surface, coin supérieur droit coupé, liseré néon orange en haut (un seul accent)
-    const float b = 18 * k;
-    const vec2 p[5] = {{x, y}, {x + w - b, y}, {x + w, y + b}, {x + w, y + h}, {x, y + h}};
-    dessin2d::polygone(r, p, 5, dessin2d::uni(hex(0x14161F)));
-    dessin2d::contour(r, p, 5, std::max(1.f, k), BORD);
-    r.uiRect(x, y, w - b, 3 * k, hex(ACCENT));
+    // WFS-548 (RG-01, RG-03) : fenêtre de verre dépoli (avant : surface à coin coupé et liseré orange), sur-titre gris
+    verre::panneau(r, x, y, w, h, {14 * k, std::max(1.f, 1.5f * k)});
     float yy = y + 24 * k;
-    ui::text(r, x + w / 2, yy, 12 * k, titre, hex(ACCENT2), ui::CENTRE, 0.22f, false);   // .eyebrow cyan
+    verre::surTitre(r, x + w / 2, yy, 12 * k, titre, ui::CENTRE);
     yy += 12 * k + 16 * k;
     texteEtoiles(r, x + w / 2, yy, pq, question, hex(TEXTE), ui::CENTRE);
     yy += pq + 14 * k;
@@ -199,7 +197,7 @@ public:
         // modes (leur haut est à 10 % de l'écran au moins), libellé « Essai gratuit terminé » à sa gauche
         const float bw = 200 * k, hb = 52 * k, x = W - gr - bw, y = gt;
         const std::string lib = ui::majuscules(ui::tr("fin.essai_termine"));
-        ui::text(r, x - 14 * k, y + (hb - 16 * k) / 2, 16 * k, lib, hex(ACCENT2), ui::DROITE, 0.14f, false);
+        ui::text(r, x - 14 * k, y + (hb - 16 * k) / 2, 16 * k, lib, verre::hexa(verre::SUR_TITRE), ui::DROITE, 0.14f, false);   // WFS-548 (RG-03) : gris
         biseau(r, x, y, bw, hb, 14 * k, hex(ACCENT));
         const std::string t = ui::majuscules(ui::tr("garage.acheter", nombreLangue(prix)));
         float px = 20 * k;

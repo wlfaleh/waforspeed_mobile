@@ -18,6 +18,7 @@
 #include "../langue.h"
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../verre.h"   // WFS-548 (R19) : panneaux de verre, sur-titres gris, fond flouté
 
 namespace wfs {
 namespace ecrans {
@@ -220,8 +221,10 @@ void dessiner(Renderer& r, const GameView& g) {
     const float u = p.u, op = (float)std::clamp((g.time - g_e.tOuvert) / 0.25, 0.0, 1.0);   // fondu d'entrée de 250 ms
     const Saisie& s = g_e.saisie;
     const bool clignote = std::fmod(g.time - g_e.tOuvert, 1.0) < 0.6;
-    // fond : asphalte de nuit, presque opaque (le menu n'est pas dessiné dessous), lueur orange en bas à gauche
-    r.uiRect(0, 0, W, H, hex(BG, 0.80f + 0.14f * op));
+    // WFS-548 (RG-02, maquette 20) : écran arrêté : la scène derrière est floutée et assombrie (avant : fond presque opaque),
+    // lueur orange en bas à gauche gardée
+    verre::fondFloute(r);
+    verre::assombrir(r, W, H, 0.72f * op);
     {
         const vec4 a = hex(ACCENT, 0.10f * op), z = hex(ACCENT, 0);
         const UiVertex q[4] = {{0, H * 0.55f, -1, -1, z.x, z.y, z.z, 0}, {W * 0.5f, H * 0.55f, -1, -1, z.x, z.y, z.z, 0},
@@ -235,8 +238,15 @@ void dessiner(Renderer& r, const GameView& g) {
     const char* titre = g_e.modification ? "profil.modifier_titre" : "creation.titre";   // WFS-482 (RG-07)
     ui::textBoite(r, x + 14 * u, y, L - 14 * u, 34 * u, 30 * u, ui::majuscules(ui::tr(titre)), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
     y += 34 * u + 16 * u;
+    {   // WFS-548 (RG-01) : fenêtres de verre derrière les champs et derrière le clavier (maquette 20)
+        const float wp0 = std::min(L, 200 * u), hClavier = creation::LIGNES * p.touche + (creation::LIGNES - 1) * p.ecart;
+        const float lClavier = W - g.marges.droite - p.kx - (p.x0 - g.marges.gauche);
+        verre::Style st; st.rayon = 12 * u; st.lisere = 1.2f * u; st.opacite = op;
+        verre::panneau(r, x - 10 * u, y - 12 * u, L + 20 * u, 2 * 94 * u + wp0 * 110.f / 520.f + 26 * u, st);
+        verre::panneau(r, p.kx - 14 * u, p.ky - 14 * u, lClavier + 28 * u, hClavier + 28 * u, st);
+    }
     auto bloc = [&](Champ c, const char* libelle, Zone& z, const std::string& valeur, const char* indice, float esp) {
-        ui::textBoite(r, x, y, L, 14 * u, 12 * u, ui::majuscules(ui::tr(libelle)), hex(MUTED), ui::GAUCHE, 0.15f);
+        ui::textBoite(r, x, y, L, 14 * u, 12 * u, ui::majuscules(ui::tr(libelle)), verre::hexa(verre::SUR_TITRE), ui::GAUCHE, 0.22f);   // WFS-548 (RG-03)
         y += 14 * u + 4 * u;
         z = {x, y, L, 46 * u};
         champ(r, z, u, valeur, indice, s.champ() == c, clignote, esp);
