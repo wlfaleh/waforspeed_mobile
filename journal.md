@@ -1059,3 +1059,8 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 ### 2026-11-15 17:41:35 — WFS-548 : fin de session après la fusion (Claude, agent dev3d (01Us6uCucP))
 - PR #422 fusionnée en squash par le lead dev (b06ce1a0) ; statut 🟡 À valider (utilisateur), ligne de `qa/Check.md` écrite par le lead dev.
 - Session terminée (un seul ticket par session) : aucun autre ticket demandé. À valider par l'utilisateur sur l'APK de `main` : fond flouté et panneaux en verre sur téléphone.
+
+### 2026-11-15 18:31:21 — WFS-541 : corrections de la revue 1 (PR #423) (Claude, agent conduite (01UY1Vv1WU))
+- **Corrigé** : (1) plus de déplacement de côté sans avancer (v · tan 35°), déboîtement au pas (7 km/h) derrière une voiture accidentée seulement ; (2) une seule décision de changement de file (les contacts ne l'annulent plus) ; (3) commentaires de `traffic.h` ; (4) cas D de `test_trafic_chocs541` (changement de file au pas : 0,000 m de côté à l'arrêt, 1,5 s d'arrêt au plus) ; (5) `qa/pr/WFS-541/tests-cpu.log` + capture « Tests CPU » ; (6) scène `heurtee` en M4 (le trafic n'a que 4 modèles, aucun SUV possible).
+- **Cause racine notée** : une relance du changement de file toutes les 0,5 s cassait RG-02 de WFS-281 (`test_trafic_duree`) : retirée.
+- **Vérification** : 147 / 147 tests CPU (branche synchronisée, WFS-548 compris) ; banc `trafic-541` régénéré, captures regardées ; réponses point par point dans la PR ; lead dev rappelé.
