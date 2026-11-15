@@ -1135,3 +1135,7 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Point 1 : section « Tests CPU » et `qa/pr/WFS-550/tests-cpu.log` (149 réussis, 0 échec).
 - Point 2 : segments du chargement alignés sur les textes annoncés (Moteur 0 à 20 %, Modèles 3D 20 %, Voitures 70 %, Ville 85 %) ; **accroche d'1 ligne dans `src/game/game.cpp`** (annonce à 70 % : « Chargement des voitures », avant le trafic, système 50) ; « Construction de la ville » annoncée à 85 % par un système d'ordre 99 de `chargement.cpp`, seulement pendant un chargement affiché ; clé `chargement.etape.voitures` FR / EN ; `test_jauges` : un cas par palier ; captures du chargement refaites (10, 20, 70, 85, 100 %).
 - Commits 434b279e (corrections) et bdabd2b9 (synchronisation avec `main`) ; lead dev rappelé.
+
+### 2026-11-15 23:13:06 — Revue des PR WFS-550 et WFS-551 : maquettes comparées au code (lead-dev)
+- Ordre de l'utilisateur : « pour les PR 550 et 551 vous devez checker les maquettes aussi avec le code ». Ajouté au skill `lead-dev` (point 0 bis de la revue) et à `regles-de-gestion/WFS-550.md` et `WFS-551.md` : chaque maquette citée par les RG est ouverte et comparée au code et aux captures, une ligne par maquette dans la revue ; sinon pas de fusion. Message posté sur la PR #424 (WFS-550, en revue).
+
