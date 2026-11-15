@@ -1170,3 +1170,48 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Nouvelle règle de l'utilisateur (23:13 UTC, maquettes comparées au code), appliquée pour la première fois : maquettes 13, 15, 08, 29 et 30 conformes ; écarts sur **05 et 26** (anneaux vides, sans icône de voiture ni de cadeau) et sur **17** (« Combo ×N » en cyan au lieu d'orange) ; la description de la PR ne cite pas fichier:fonction pour chaque maquette.
 - Revue « changements demandés » postée en COMMENT (même compte GitHub). TACHES.md : ↩️ Retour lead dev (PR #424) ; suivi-pr.md : ↩️.
 - **PO** : 3e refus sur cette PR (point 0 bis, nouvelle règle). À savoir pour WFS-551 : les cadenas au-dessus des segments gris (garage_achat.cpp) ne sont pas sur la maquette 15 ; RG-04 de 551 ne garde que le cadenas-jauge à côté du nom.
+
+### 2026-11-15 23:27:23 — WFS-555 : PR #425 ouverte (lead-dev)
+- Codé par le lead dev en renfort (ordre de l'utilisateur) ; seul `tools/qa/captures_pr.sh` change : cache des captures « avant » par SHA complet de main (hors du dépôt, témoin `.complet`, renommage, verrou `flock`, 3 commits gardés), arbre de main et `build/` gardés (compilation incrémentale), `SANS_CACHE=1` = ancien chemin.
+- Mesures (banc `chargement` 1280x720, lavapipe, même conteneur) : ancien script 242 s ; nouveau cache vide 203 s ; **cache plein 29 s** ; `SANS_CACHE=1` 196 s ; **main a bougé 54 s** (nouveau dossier de cache, compilation incrémentale).
+- Cache rendu octet pour octet (`cmp`) ; avec / sans cache : 596 à 857 pixels d'écart, dans la variation du banc lui-même (804 à 967 pixels entre deux lancements sans cache : mémoire affichée à l'écran).
+- Tests CPU : 148 réussis (branche synchronisée). Installé dans le conteneur pour mesurer : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev` (apt, dépôts Ubuntu).
+- Relecture et fusion : **une autre instance du lead dev** (appelée tout de suite).
+
+### 2026-11-15 23:28:32 — WFS-551 : PR #426 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv2KF))
+- **Fait** (RG-01 à RG-07) : gouttes de peinture groupées par prix (config), pastilles de skin à motif, icône du pistolet de l'utilisateur teintée par finition, cadenas-jauge solde / prix à côté du nom d'une voiture bloquée, flèches du garage qui clignotent, HUD en verre (Menu / Caméra centrés, pédales et volant en verre sans texte, nitro anthracite, pause et vue caméra), cartes grisées avec retour de la couleur pendant le téléchargement, « Rouler » éteint sur une carte à télécharger, écran 18d restylé ; textes FR / EN.
+- **Icône** : `references/maquettes-R19/icone-pistolet-utilisateur.png` (fournie par l'utilisateur, SHA-256 167444ee878cd00395b6b06a9d7d77a1c0c92e286fb3416e280b6100cf4cc117) réduite en 256 px dans `assets/ui/icone-pistolet.png` (SHA-256 5f69fa16290b92dff4edaa14d7366661f315af60b7c253c2721edbab1889f0ea) ; rangée dans les canaux G/B/A libres de l'atlas de police, nouveau mode du shader `ui.frag` (u ≥ 3,5). Aucun téléchargement Internet.
+- **Accroches ≤ 10 lignes hors zone** : `src/ui/text.cpp` (rangement de l'icône dans l'atlas), `src/ui/garage_fiche.cpp` (cadenas-jauge après le nom, fichier de WFS-550), `src/ui/garage.cpp` (clignotement des flèches). Fichiers du HUD hors liste RG-08, touchés pour RG-06 : `src/game/commandes_tactiles.cpp`, `src/game/direction.cpp`, `src/ui/ecrans/pause.cpp`, `src/game/camera_vue.cpp`.
+- **Décisions** : groupes de couleurs lus dans `configgame.json` (Classiques et Vives existent aujourd'hui) ; carte « voiture bloquée » retirée hors attente (remplacée par le cadenas-jauge) ; banc `paquets` : le contrôle de WFS-306 qui roulait sur la Corniche supprimée vérifie maintenant « Rouler » éteint (RG-07), et le secours par le code reste vérifié par la demande directe (comme `bench_changement_carte.cpp`).
+- **Vérifié** : construction sans avertissement ; tests CPU : 149 réussis (branche synchronisée), dont `test_icones_r19` (nouveau) et `test_hud_boutons` (RG-06) ; bancs `garage-couleurs`, `garage-voitures`, `paquets`, `hud:1280x720` : 0 écart sur la branche et sur `main` ; 21 captures avant / après dans `qa/pr/WFS-551/`, regardées.
+- **Parcours RG-09 (FR / EN)** : menu → garage (Peinture, Finition, Skins, voiture bloquée, acheter : captures `garage-couleurs-*`, `garage-voitures-*`, versions `-en-`) → choix de la carte (télécharger, progression, installée, rouler : `paquets-terrain-*`) → course (Menu, Caméra, gaz, frein, nitro : `hud-*`) → pause → retour ; aucun écart aux bancs.
+- **Limites** : pas de banc séparé Finition / Skins (visibles sur les captures du garage) ; rendu Android non vu ici ; après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-15 23:39:13 — WFS-551 : PR #426 refusée par le lead dev (lead-dev)
+- Revue du commit ec034448 : 21 paires de captures ouvertes, tout le diff lu, construction refaite et 149 tests CPU OK. Refus aussi demandé par l'utilisateur (via le coordinateur) : le garage ne reprend pas les maquettes 06, 07, 16, 15 et 18d.
+- Maquettes : 17/17b (HUD) et 18a-c (cartes grisées, téléchargement, installée) conformes ; écarts sur 06 (gouttes petites, sans panneau de verre), 07 (pastilles 32 px, nom à côté, aperçu qui cache « AUCUNE »), 16 (pistolets de 34 px, sans panneau ; Chromé et Caméléon jamais capturés), 15 (« ★ solde / prix » sous Retour au lieu de sous Acheter ; petits cadenas des points en trop), 18b (texte « Tu peux rouler pendant ce temps » alors que « Rouler » est éteint), 18d (fond = menu assombri au lieu de la scène floue).
+- Manquent : les bancs `garage-finitions` et `garage-skins` (ils existent, la PR dit le contraire), la section « Tests CPU » et `qa/pr/WFS-551/tests-cpu.log`, et la citation fichier / fonction pour chaque maquette.
+- Refus posté en commentaire sur la PR (GitHub n'accepte pas « changements demandés » quand la PR est ouverte avec le même compte). Statut : ↩️ Retour lead dev (PR #426).
+
+### 2026-11-15 23:46:35 — WFS-550 : ordre de l'utilisateur, maquettes appliquées à 100 % (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « ta maquette tu l'appliques à 100 %, zéro erreur ». Il passe avant la RG commune de E23 « taille des boutons et textes inchangés » pour les écrans de WFS-550.
+- Refait (commit ec2db1c1) : cartes « Cadeau du jour » et « Voiture prêtée » aux mesures de la maquette 26 (nouvelles clés FR / EN cadeau.carte.*, pret.carte.*), bandeaux de course de la maquette 30 (droits, fondus, titre sombre, valeur blanche), combo de la maquette 17 (capitales orange, barre orange), cadrans du garage plus grands (13), barre arrondie du chargement (08), pilule arrondie du compteur d'étoiles (26, 29). Accroche dans `boutons.*` retirée (icône de voiture vue de face dessinée dans `pret_bandeau.cpp`).
+- Hors de mes fichiers et absent des maquettes : colonne Market / Profil / Crédits du menu (les cartes se posent à sa gauche) ; onglets du garage (13) et cadenas (15) : WFS-551.
+
+### 2026-11-15 23:48:02 — WFS-557 créé : vérification à 100 % du travail R19 fusionné contre les maquettes, et corrections (po-scrum-master)
+- Demande de l'utilisateur, une seule tâche. RG : `regles-de-gestion/WFS-557.md`.
+
+### 2026-11-15 23:49:27 — WFS-557 limité à 548, 549, 552 ; 550 et 551 refusés s'ils ne respectent pas les maquettes R19 à 100 % (po-scrum-master)
+
+
+### 2026-11-15 23:51:31 — WFS-555 : PR #425 refusée par le lead dev (lead-dev)
+- Revue par une autre instance du lead dev (le codeur était le lead dev en renfort), commit relu 1a88fae6, revue en commentaire (même compte GitHub).
+- Vérifié : 5 paires `chargement` ouvertes (identiques sauf la ligne « Mémoire »), diff entier, construction + 148 tests CPU (code 0), script relancé (199 s cache vide ; 56 s et 54 s après changement de main, compilation incrémentale), ménage à 3 commits. Critère « identique au pixel » accepté tel que prouvé (cache octet pour octet ; banc non déterministe) : à réécrire par le PO.
+- Défauts : (1) `preparer_main_src` peut faire `checkout --force --detach` dans le dépôt du développeur si l'arbre de main est cassé et le cache dans le dépôt (reproduit : branche quittée, modification perdue) ; (2) `WFS_CACHE_CAPTURES` relatif accepté : arbre de main créé dans le dépôt, « avant » absents, code 0 ; (3) arbre verrouillé non recréé (`fatal: missing but locked worktree`).
+- Remarque au PO : main bouge souvent par des commits de documents, le cache par SHA se relit rarement ; le gain vient surtout de la compilation incrémentale (≈ 200 s → ≈ 55 s).
+
+### 2026-11-15 23:55:21 — WFS-557 attribué à Claude, agent dev3d (01UY1Vv4Fd) (po-scrum-master)
+- Ordre de l'utilisateur : « @dev prend le WFS-557 ». Nouvelle session `@dev` (session_01UY1Vv4Fd1hq8E2LRsGZhgL), aucun ticket avant : attribution permise (un sujet par session).
+- Ticket : P1, E23, vérifier que WFS-548, 549 et 552 fusionnés respectent à 100 % les maquettes `references/maquettes-R19/`, et corriger. Règles : `regles-de-gestion/WFS-557.md` (RG-01 à RG-05).
+- Zone autorisée : les fichiers fusionnés de WFS-548, 549 et 552 (E5 `src/ui/**`, `shaders/ui*` ; E8 `src/ui/ecrans/**` ; menu 3D `menu*`, `garage_decor.*`, modèles du parking), plus `qa/pr/WFS-557/`. Interdit : les éléments de WFS-550 et 551 (en cours, RG-03).
+- Plan : captures 2400 × 1080 côte à côte avec chaque maquette, tableau `qa/pr/WFS-557/verification.md`, corrections, PR, avis agent 3D pour le menu 3D, lead dev (comparaison maquette ↔ code). Après fusion : 🟡 À valider (utilisateur).
