@@ -2123,3 +2123,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 10:24:49 — R19 : menu de nouveau au garage, écrans des cartes à télécharger (smart-brainstorming)
 - Demandes de l'utilisateur : menu remis au garage ; écrans des paquets de cartes (grisée, téléchargement, installée, mise à jour) inspirés de l'existant avec les nouveaux boutons (18a à 18d). Rien transmis au PO.
+
+### 2026-11-15 10:27:05 — R19 : écran de chargement d'après l'existant (smart-brainstorming)
+- Demande de l'utilisateur : chargement inspiré de l'écran actuel (WFS-297) avec les nouveaux boutons ; états normal et erreur. Rien transmis au PO.
