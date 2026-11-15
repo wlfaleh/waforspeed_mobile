@@ -21,7 +21,7 @@ Source : section « ## R19 » de `recommandations-smart-brain.md` (tableau des �
 ## Règles communes
 - 548 à 551 = **interface 2D** : skill `design-street-racing`, exemptée de la règle des formes géométriques (menus, HUD, boutons). 552 = **monde 3D** : règle des formes géométriques interdites, réalisme 99 % (`regles-de-gestion/DA-realisme.md`), skill `artiste-3d`, avis « VALIDÉ » de l'agent 3D dans la PR avant la fusion (comme E15).
 - **Taille des boutons inchangée** (ordre du 2026-11-06), sauf **Menu et Caméra du HUD**, agrandis (validé par l'utilisateur dans la R19, suite de l'exception WFS-429).
-- ~~Rien ne change dans la disposition~~ (erreur du PO, corrigée le 2026-11-15) : **chaque écran reproduit sa maquette R19** (disposition, éléments, proportions, couleurs) ; une capture côte à côte maquette / jeu par écran dans la PR ; le lead dev refuse tout écart de disposition. Les options et fonctions du jeu restent. Les textes restent en français et en anglais (E20 : `ui::tr`).
+- **Rien ne change dans les textes, la disposition et les options** des écrans, sauf ce que montre la maquette de chaque écran. Les textes restent en français et en anglais (E20 : `ui::tr`).
 - Un ticket par session, branche `feature/waforspeed-XX`, captures avant / après (`tools/qa/captures_pr.sh`, au moins 3), PR, relecture et fusion en squash par le lead dev, puis la session s'arrête. Gel iOS.
 - Tickets nés d'une demande de l'utilisateur sur ses écrans : après la fusion → **🟡 À valider (utilisateur)** sur l'APK de `main`.
 
