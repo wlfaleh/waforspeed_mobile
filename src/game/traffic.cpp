@@ -315,7 +315,6 @@ void Traffic::step(double h, const TrafficView& pv) {
             const double r = nextRand(car);
             car.think = 1.5 + r * 4;
             const bool blocked = gap < safe * 1.6 && leadSpeed < want * 0.85;
-            if (lent && blocked && car.speed * M < 1) car.think = 0.5;   // WFS-541 (RG-02) : arrêtée dans une file bloquée : elle regarde à côté toutes les 0,5 s
             if (blocked || r < 0.12) {
                 const int dir = nextRand(car) < 0.5 ? -1 : 1;
                 // d'abord le clignotant, le changement de file vient ~1 s plus tard
