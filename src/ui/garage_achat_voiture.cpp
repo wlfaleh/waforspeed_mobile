@@ -49,7 +49,7 @@ void FenetreAchatVoiture::dessiner(Renderer& r, float W, float H, float k, float
     const long long prix = std::max(0, boutique::prixVoiture(c.id)), solde = boutique::solde(s), manque = prix - solde;
     // fond flouté et assombri (WFS-548, RG-02, maquettes 27 et 28 : écran arrêté) : la fenêtre garde le regard et tous les touchers
     verre::fondFloute(r);
-    verre::assombrir(r, W, H, 0.62f);
+    verre::assombrir(r, W, H, 0.78f);   // garage ou écran de fin dessous : leur interface ne se voit plus au travers
     const std::string nom = std::string(marque(c)) + " " + modele(c);   // WFS-191 : noms inventés
     const std::string titre = ui::majuscules(ui::tr("garage.achat_titre")), question = questionAchat(nom, prix);
     const std::string eq = texteEquivalentVoiture(prix), soldeT = ui::majuscules(ui::tr("garage.solde", nombreLangue(solde)));
