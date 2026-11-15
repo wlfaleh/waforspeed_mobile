@@ -2060,3 +2060,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:41:07 — R19 : 4 styles d'icônes pour les couleurs (smart-brainstorming)
 - Demande de l'utilisateur : une icône par couleur (goutte, pistolet, pot, bombe) ; planche `references/maquettes-R19/options-icones-couleurs.jpg`, choix à faire. Rien transmis au PO.
+
+### 2026-11-15 00:43:13 — R19 : couleurs en gouttes de peinture (smart-brainstorming)
+- Choix de l'utilisateur (style 1, goutte) intégré à l'onglet Peinture ; planche des 4 styles retirée. Rien transmis au PO.
