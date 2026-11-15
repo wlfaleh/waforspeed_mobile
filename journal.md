@@ -2069,3 +2069,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:49:40 — R19 : skins en grandes pastilles, finitions en pistolets (smart-brainstorming)
 - Idées de l'utilisateur (image de référence d'un pistolet de peinture) : onglet Skins en grandes pastilles, onglet Finition en pistolets de carrossier. Rien transmis au PO.
+
+### 2026-11-15 00:52:28 — R19 : finitions avec l'icône de pistolet de l'utilisateur (smart-brainstorming)
+- Retour de l'utilisateur : utiliser son image ; icône reprise telle quelle, seul le godet et le jet changent de finition ; image gardée dans `references/maquettes-R19/icone-pistolet-utilisateur.png`. Rien transmis au PO.
