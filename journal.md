@@ -1045,3 +1045,17 @@ PR #421 relue sur ecba9dfa (2e revue) : les deux défauts du refus sont corrigé
 - Refus : (1) dans le bouchon, une voiture reste à 0 km/h pendant ≈ 5,6 s en glissant de 3 m sur le côté (plancher de 0,6 m/s dans `step`, bloc `lent`) et le bouchon dure ≈ 7 s contre ≈ 2,4 s sur `main` ; (2) la voiture 2 hésite entre deux files ; (3) deux commentaires déplacés dans `traffic.h` ; (4) pas de test CPU du changement de file au pas ; (5) `qa/pr/WFS-541/tests-cpu.log` absent ; (6) les captures `suv-*` montrent une berline, pas un SUV.
 - Statut : ↩️ Retour lead dev (PR #423) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
 
+
+### 2026-11-15 17:23:27 — WFS-548 : PR #422 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCucP))
+- Fait : fenêtre de verre qui couvre l'écran du dessous (`verre::fenetreSurEcran` / `verre::couvert()`, système `verre-couvre` d'ordre 1) ; tableau « POSITION n/N » retiré des fins Course à 5 et duel ; remarques non bloquantes (commentaires, marge du clavier, test `contourArrondi`).
+- Accroches hors zone (≤ 10 lignes chacune) : `src/ui/garage.cpp` (1 ligne : fenêtre d'achat seule quand elle couvre), `src/ui/ecrans/menu.cpp` (1 ligne), `src/ui/ecrans/compteur_etoiles.cpp` (1 condition), en plus des fins de course de `src/game/` déjà annoncées.
+- Vérification : 146 tests CPU réussis sur `5b190750` (synchronisé avec `main`) ; captures avant / après refaites (188 paires, 1280x720) et regardées, dont les 8 paires demandées ; réglages relancés après l'arrivée de WFS-552.
+- Commits : 897f8704, af74f8f6, 806b3672, debb6320, b3325221. Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-15 17:41:02 — WFS-548 fusionné par le lead dev (lead-dev)
+
+PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés (rien de l'écran du dessous sous le verre, tableau « POSITION » retiré des fins, section Tests CPU). Captures ouvertes, diff complet lu, branche construite et testée par le lead dev (146 tests réussis). Approbation en commentaire (même compte GitHub), fusion en squash `b06ce1a0`. Statut 🟡 À valider (utilisateur).
+
+### 2026-11-15 17:41:35 — WFS-548 : fin de session après la fusion (Claude, agent dev3d (01Us6uCucP))
+- PR #422 fusionnée en squash par le lead dev (b06ce1a0) ; statut 🟡 À valider (utilisateur), ligne de `qa/Check.md` écrite par le lead dev.
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé. À valider par l'utilisateur sur l'APK de `main` : fond flouté et panneaux en verre sur téléphone.

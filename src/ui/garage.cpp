@@ -23,6 +23,7 @@
 #include "garage_finition.h"
 #include "garage_skin.h"
 #include "ecrans/market_ecran.h"   // WFS-513 (accroche) : bouton et écran « Market »
+#include "verre.h"   // WFS-548 (accroche) : rien du garage sous une fenêtre de verre (verre::couvert)
 
 namespace wfs {
 namespace ecrans {
@@ -168,6 +169,7 @@ public:
         mp.gl = g.marges.gauche + 16 * k; mp.gr = g.marges.droite + 16 * k; mp.gt = g.marges.haut + 14 * k; mp.gb = g.marges.bas + 14 * k;
         const CarDef& car = CARS[index_];
         const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_), finition_.finition(index_), skin_.skin(index_)};   // WFS-489, WFS-491, WFS-494 (accroches)
+        if (verre::couvert()) { achat_.dessinerFenetre(r, mp); return; }   // WFS-548 (accroche) : Market ou fenêtre d'achat par-dessus : seule la scène floutée dessous
         cadre::voiles(r, mp);
         fiche_.dessiner(r, mp, e);   // .show-head : marque · index, nom, type + accroche, points des voitures
         cadre::fleches(r, mp);

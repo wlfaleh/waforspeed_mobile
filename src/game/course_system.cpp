@@ -30,11 +30,11 @@
 #include "../ui/ecrans/terrain.h"     // WFS-125 : banc (« Rouler »)
 #include "../ui/garage.h"             // WFS-125 : banc (« Choisir »)
 #include "poursuite.h"                // WFS-125 : banc (poursuite)
+#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
 // couleurs du skill design-street-racing (tokens.md), codes sRGB
-static const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f};     // --bg #0A0B10 (code sRGB, comme ui::CYAN), voile de l'écran de fin
 static bool g_rules = true;   // règles de course actives (voir courseBenchRules)
 static const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1};    // --text #F2F4F8
 static const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};  // --surface #14161F
@@ -256,20 +256,20 @@ private:
                 lecture_.e.size(), lecture_.duree());
     }
     void drawOver(Renderer& r, float W, float H, float u) {
-        r.uiRect(0, 0, W, H, FOND);
+        if (verre::couvert()) return;   // WFS-548 : fenêtre d'achat par-dessus : seule la scène floutée dessous
+        verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
         // WFS-101 (RG-04, ANO-36) : avec la sauvegarde (ligne « RECORD », badge si battu), mise en page aérée : statistiques
         // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px
         const bool rec = sauvegarde().actif();
         const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
         // WFS-537 (accroche) : avec le bloc « Score », panneau plus étroit en 16:9 (place du bloc à droite) ; boutons inchangés (centrés)
         const float pw = std::min({W * 0.86f, 120 * u, score_fin::affiche() ? W - 78 * u : W}), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
-        r.uiRect(px, py, pw, ph, SURFACE);
+        verre::panneau(r, px, py, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli (plus de liseré)
         score_fin::poser(px, py, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
-        r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
         const float cx = W / 2;
         // .eyebrow : cyan --accent-2, espacement 0,22 em
         static textes::Capitales tempsEcoule{"fin.temps_ecoule"};   // WFS-506 (RG-03)
-        ui::text(r, cx, py + 6 * u, 4.2f * u, tempsEcoule(), ui::CYAN, ui::CENTRE, 0.22f, false);
+        ui::text(r, cx, py + 6 * u, 4.2f * u, tempsEcoule(), verre::hexa(verre::SUR_TITRE), ui::CENTRE, 0.22f, false);   // WFS-548 (RG-03) : gris
         // .score-big : orange --accent avec halo (--glow-accent)
         halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u, true);
         ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false, true);

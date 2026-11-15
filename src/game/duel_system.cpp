@@ -23,11 +23,11 @@
 #include "traffic_system.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "textes_course.h"   // WFS-506 : duel en français ou en anglais
+#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin du duel au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
 // couleurs du skill design-street-racing (tokens.md), codes sRGB comme ui::CYAN
-static const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f};      // --bg #0A0B10
 static const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};   // --surface #14161F
 static const vec4 ETIQUETTE{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.78f}; // nameSprite : rgba(10,11,16,.78)
 static const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1};      // --text #F2F4F8
@@ -154,9 +154,9 @@ public:
         const bool attente = s.status() == duel::Status::Ready && overT_ >= 0.9;
         if (s.status() != duel::Status::Race && s.status() != duel::Status::Done && !attente) return;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
-        noms(r, g, u);
-        board(r, g, u);
-        if ((s.status() == duel::Status::Done || attente) && overT_ >= 0.9) resultat(r, W, H, u);
+        const bool fin = (s.status() == duel::Status::Done || attente) && overT_ >= 0.9;
+        if (!fin) { noms(r, g, u); board(r, g, u); }   // WFS-548 : noms et tableau de course pas dessinés sous le résultat (maquette 33)
+        if (fin && !verre::couvert()) resultat(r, W, H, u);   // WFS-548 : rien sous la fenêtre d'achat
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -253,14 +253,14 @@ private:
         const auto rows = s.results();
         int rank = 1; bool roule = false; size_t presents = 0;   // WFS-122 : les adversaires partis ne roulent plus
         for (size_t i = 0; i < rows.size(); i++) { if (rows[i].me) rank = (int)i + 1; if (!rows[i].done && !rows[i].parti) roule = true; if (!rows[i].parti) presents++; }
-        r.uiRect(0, 0, W, H, FOND);
+        verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
         const float pw = 64 * u, ph = (34 + 6.5f * rows.size()) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        r.uiRect(px0, py0, pw, ph, SURFACE);
+        verre::panneau(r, px0, py0, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli
         score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
         // WFS-506 (RG-03) : titres et résultats par ui::tr
         const std::string& sur = ui::tr(presents == 1 ? (rows.size() > 2 ? "duel.sur.partis" : "duel.sur.parti")
                                         : roule ? (presents > 2 ? "duel.sur.continue" : "duel.sur.roule") : "duel.sur.termine");
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
+        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, verre::hexa(verre::SUR_TITRE), ui::CENTRE, 0.16f, false);   // WFS-548 (RG-03) : gris
         const std::string titre = presents == 1 ? ui::tr("fin.arrive") : textes::titrePlace(rank);   // WFS-146 (RG-06) : « 2e PLACE », jamais « 2E »
         ui::text(r, W / 2, py0 + 7 * u, 9 * u, titre, rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(s.myFinish()), TEXTE, ui::CENTRE, 0.f, false, true);
@@ -274,7 +274,10 @@ private:
             else if (row.ft >= 9e9) tm = ui::tr("c5.arrive");
             else if (i == 0 || lead < 0) tm = ui::chrono(row.ft / 1000);
             else tm = "+" + ui::decimal((row.ft - lead) / 1000, 1) + " s";
-            const vec4 c = row.me ? ui::ORANGE : TEXTE;
+            // WFS-548 (RG-05, maquette 33) : chaque ligne sur une tuile de verre ; ta ligne bordée et écrite en orange (toi)
+            { verre::Style st; st.rayon = 1.2f * u; st.lisere = std::max(1.f, 1.2f * H / 720.f); st.ombre = false; st.force = 0.6f; st.bord = row.me ? verre::TOI : 0;
+              verre::panneau(r, px0 + 3.5f * u, y - 1.2f * u, pw - 7 * u, 5.8f * u, st); }
+            const vec4 c = row.me ? verre::hexa(verre::TOI) : TEXTE;
             { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + nomLigne(row), c, ui::GAUCHE, 0.f, false); }   // WFS-506
             ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, c, ui::DROITE, 0.f, false);
             y += 6.5f * u;

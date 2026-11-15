@@ -11,6 +11,7 @@
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, dégradé de la marque
 #include "../langue.h"   // WFS-505 : textes de l'écran de chargement en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
@@ -70,8 +71,8 @@ MiseEnPage miseEnPagePetit(float W, float H, float logoMax, float gap) {
 float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
     const float x = m.x, k = m.k, logo = m.logo, sur = m.sur, gap = m.gap, ligne = m.ligne;
     const bool police = ui::fontReady();   // première image : la police n'est pas encore construite (fond + barre)
-    // sur-titre .eyebrow : capitales cyan espacées de 0,22 em
-    if (police) ui::text(r, x, y, sur, ui::majuscules(ui::tr("chargement.surtitre")), hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
+    // sur-titre .eyebrow : capitales espacées de 0,22 em ; WFS-548 (RG-03, maquette 08) : gris (avant : cyan)
+    if (police) verre::surTitre(r, x, y, sur, ui::tr("chargement.surtitre"), ui::GAUCHE, op);
     y += sur + gap;
     if (police) {
         // logo « Wa<em>for</em> » / « Speed » : FOR en contour de 2 px (copies décalées, puis remplissage couleur du fond)
@@ -124,17 +125,17 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     float y = std::max(16 * k, (H - total) / 2);
     const bool police = ui::fontReady();
     y = dessinerBlocLogo(r, m, y, op);
-    // barre .cp-bar : fond --surface-2, remplissage dégradé cyan → orange (16 tranches sur la partie remplie)
+    {   // WFS-548 (RG-01, maquette 08) : fenêtre de verre dépoli autour de la barre, de l'étape et des chiffres (rien ne bouge)
+        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k, kb = H / 720.f;
+        const float bas = erreur ? txt + (cp ? 16 : 24) * k + 56 * kb : txt + 10 * k + 2 * tm + 4 * k;
+        verre::Style st; st.rayon = 14 * k; st.lisere = 1.5f * kb; st.opacite = op;
+        verre::panneau(r, x - 24 * k, y - 22 * k, largeur + 48 * k, barre + 10 * k + bas + 40 * k, st);
+    }
+    // barre .cp-bar : fond --surface-2, remplissage du dégradé de la marque cyan → orange (WFS-548, RG-04 : verre::barreMarque,
+    // un seul dégradé continu, mêmes couleurs qu'avant)
     r.uiRect(x, y, largeur, barre, hex(SURFACE2, op));
     const float plein = largeur * clampv(p, 0, 1);
-    const int N = 16;
-    for (int i = 0; i < N && plein > 0; i++) {
-        const float t = (i + 0.5f) / N;
-        const vec4 a = hex(ACCENT2, op), b = hex(ACCENT, op);
-        // tranches bord à bord, arrêtées au pixel (aucun recouvrement visible pendant le fondu)
-        const float x0 = std::floor(x + plein * i / N), x1 = i == N - 1 ? x + plein : std::floor(x + plein * (i + 1) / N);
-        if (x1 > x0) r.uiRect(x0, y, x1 - x0, barre, {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, op});
-    }
+    if (plein > 0) verre::barreMarque(r, x, y, plein, barre, op);
     y += barre + 10 * k;
     // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec
     if (!police) return;

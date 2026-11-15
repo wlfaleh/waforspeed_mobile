@@ -407,6 +407,7 @@ void Game::render(double time) {
         sig.basse = r_->qualiteBasse; sig.ombres = r_->niveauOmbres; sig.echelle = r_->vk().renderScale; sig.msaa = (int)r_->vk().msaa; sig.nuit = fp.night;
         r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee && !sd.interface, camMode == 2, fondAnime), sig));   // WFS-552 (accroche) : parking du menu figé aussi
     }
+    if (ecran_ == Ecran::Course && commandesActives()) r_->flouFond = 0.f;   // WFS-548 (RG-02, accroche E23) : jamais de fond flouté en course (1re image après « Reprendre » comprise ; écran de fin : flouté)
     if (!r_->beginFrame(fp)) return;
     // WFS-329 (revue du lead dev) : tous les systèmes tournent encore quand le fond est figé (son, mesure des img/s, chauffe…) ;
     // le moteur ignore alors leurs dessins 3D (Renderer::draw…) et ceux de Game ci-dessous (route, joueur, conducteurs)

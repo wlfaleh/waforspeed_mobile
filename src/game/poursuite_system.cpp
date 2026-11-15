@@ -42,6 +42,7 @@
 #include "traffic_system.h"
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
 #include "textes_course.h"   // WFS-506 : poursuite en français ou en anglais
+#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
@@ -61,7 +62,7 @@ bool g_bancSans338 = false;          // WFS-338 (banc) : sans les ajouts de WFS-
 // voiture existante repeinte (RG-03) : la 208 (la Golf si le joueur roule en 208)
 const char* policeCar(const Player* pl) { return pl && pl->car && !std::strcmp(pl->car->id, "p208") ? "golf" : "p208"; }
 
-const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
+const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
 const vec4 DANGER{1.f, 31 / 255.f, 75 / 255.f, 1}, BLEU{0.25f, 0.45f, 1.f, 1};
 vec3 lin(unsigned h) {
@@ -483,7 +484,7 @@ public:
         if (!actif_ || !ui::fontReady() || g.ecran != Ecran::Course || !g.player) return;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         const Course* c = activeCourse();
-        if (fini_ && overT_ >= 0.9) { resultat(r, W, H, u); return; }
+        if (fini_ && overT_ >= 0.9) { if (!verre::couvert()) resultat(r, W, H, u); return; }   // WFS-548 : rien sous la fenêtre d'achat
         if (!c || c->state == RaceState::Over) return;
         // RG-06 : en haut au centre : score (100 → 1), police (nombre de voitures), bandeau de surprise
         const float cx = (g.marges.gauche + W - g.marges.droite) / 2, y0 = g.marges.haut + 2 * u, pw = 40 * u, ph = 15.5f * u;
@@ -833,17 +834,16 @@ private:
     // WFS-141 (RG-03, ANO-59) : boutons parallélogrammes et liseré orange de la fin Checkpoint (biseauFin) ; tailles des
     // boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
     void resultat(Renderer& r, float W, float H, float u) {
-        r.uiRect(0, 0, W, H, FOND);
+        verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
         const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        r.uiRect(px0, py0, pw, ph, SURFACE);
+        verre::panneau(r, px0, py0, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli
         score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
-        r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
         static std::string sur;   // WFS-506 (RG-03) : « POURSUITE POLICE · 10 KM » / « POLICE PURSUIT · 10 KM »
         textes::remplir(sur, "police.surtitre", "10");   // valeur affichée inchangée (10 km)
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
+        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, verre::hexa(verre::SUR_TITRE), ui::CENTRE, 0.16f, false);   // WFS-548 (RG-03) : gris
         const bool v = etat_.gagne;
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::tr(v ? "fin.victoire" : "police.arrete"), v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::tr(v ? "fin.victoire" : "police.arrete"), v ? ui::ORANGE : verre::hexa(verre::PERTE), ui::CENTRE, 0.04f, false, true);   // WFS-548 (RG-05) : rouge = perte
         if (!v && etat_.parPolice) ui::text(r, W / 2, py0 + 16.2f * u, 2.6f * u, ui::tr("police.arrete_police"), TEXTE, ui::CENTRE, 0.16f, false);   // WFS-540 (RG-03)
         float y = py0 + 20 * u;
         auto ligne = [&](const std::string& a, const std::string& b) {
