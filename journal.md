@@ -2090,3 +2090,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:13:13 — R19 : Menu et Caméra au style du GPS avec texte (smart-brainstorming)
 - Demande de l'utilisateur : même cadre que le GPS, icône pause + « MENU », icône caméra + vue active. Rien transmis au PO.
+
+### 2026-11-15 01:15:29 — R19 : volant au style du GPS (smart-brainstorming)
+- Demande de l'utilisateur : même style que le GPS pour le cadre du volant. Rien transmis au PO.
