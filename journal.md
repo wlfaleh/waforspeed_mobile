@@ -2084,3 +2084,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:08:32 — R19 : Gaz et Frein d'aujourd'hui au style du GPS, sans texte (smart-brainstorming)
 - Choix de l'utilisateur : garder l'existant, style proche du GPS, enlever « FREIN » / « GAZ ». Planche des 3 versions retirée. Rien transmis au PO.
+
+### 2026-11-15 01:11:12 — R19 : boutons Menu et Caméra agrandis (smart-brainstorming)
+- Demande de l'utilisateur : Menu et Caméra plus grands dans l'interface de conduite. Rien transmis au PO.
