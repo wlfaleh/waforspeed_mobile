@@ -1148,3 +1148,56 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Choix : 1er ticket **P1** ⏳ Prêt permis à `@dev` = **WFS-496** (E18, priorité absolue 🚨, 9e du classement 📋 ; WFS-495 et 504 fusionnés). Passe avant WFS-554 et 553 (P2), cités par erreur dans les bandeaux précédents comme seuls restants.
 - Zone : E8 `src/ui/ecrans/**` (+ `tests/**`) ; accroche ≤ 10 lignes dans `src/ui/garage.cpp` (annoncée au journal) ; réutiliser les calques et la texture d'habillage de WFS-492 / 495 et la variable `WFS_AUTOCOLLANTS` de `game.cpp`. Règles : `regles-de-gestion/WFS-496.md`. Pas d'avis `@3d` obligatoire (épic E18, pas E15).
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-503, WFS-512 (P1), puis WFS-554, 553 (P2).
+
+### 2026-11-15 23:15:26 — WFS-550 : description de la PR #424 corrigée après la 2e revue (Claude, agent dev3d (01UY1Vv1yg))
+- Description de la PR remplacée par `qa/pr/WFS-550/pr.md` à jour (section « Tests CPU », 26 captures dont le chargement à 10, 70 et 85 %) ; aucun nouveau commit de code (bdabd2b9) ; lead dev rappelé.
+
+### 2026-11-15 23:15:29 — Début WFS-503 : cadeau du jour, gains réels, attribué à Claude, agent dev3d (01Us6uCwe9) (po-scrum-master)
+- Demande : nouvelle session `@dev` (dev-artiste-3d, session_01Us6uCwe9onHeoCoMCPSWj3), « @dev go », jamais de ticket avant : demande acceptée (un seul sujet par session).
+- Choix : WFS-496 venait d'être donné à la même minute à 01Us6uCwHf par une autre instance du PO ; 1er ticket **P1** ⏳ Prêt permis à `@dev` ensuite = **WFS-503** (E19, 11e du classement 📋 ; 501, 498, 487, 494 fusionnés). Une première attribution de WFS-554 (P2) préparée par cette instance n'a pas été envoyée (P1 avant P2).
+- Zone : E3 `src/game/**` hors `game.*` (`cadeau.*`, portefeuille de WFS-498, catalogue de WFS-487, `skins::donnerSkin` de WFS-494), `tests/**` ; écran du cadeau (WFS-501) seulement par accroche ≤ 10 lignes annoncée au journal.
+- Règles : `regles-de-gestion/WFS-503.md` (RG-01 à RG-05) et `regles-de-gestion/E19-cadeau-du-jour.md` ; captures ciblées FR / EN (règle du 2026-11-15) ; parcours menu → cadeau → garage → course → relance prouvé au journal ; PR puis appel du `lead-dev` ; arrêt de la session après la fusion.
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-512 (P1), puis WFS-554, 538, 553 (P2).
+
+### 2026-11-15 23:17:05 — Arbitrage WFS-503 : badge « Nouveau » au garage → WFS-556 (po-scrum-master)
+- Question de Claude, agent dev3d (01Us6uCwe9) : RG-02 de WFS-503 demande « Nouveau » au garage, qui n'existe pas et touche la zone E5.
+- Décision : **option 2**. WFS-503 livre seulement les données en E3 (clé `cadeau-nouveaux`, `estNouveau` / `vu`, tests CPU) ; aucun fichier `src/ui/garage_*` ni `assets/textes/**`.
+  Raison : `garage_couleur.*`, `garage_finition.*`, `garage_skin.*` sont tenus par WFS-551 (🔧) et la règle du 2026-11-13 est « un ticket à la fois par fichier de panneau ».
+- **WFS-556** créé (P1, E19, zone E5, `@dev`, ⏳ En attente de WFS-503 et 551) : badge « NOUVEAU » / « NEW » et appel de `vu()` au choix. Règles : `regles-de-gestion/WFS-556.md` ; RG-02 et critères de `regles-de-gestion/WFS-503.md` mis à jour.
+
+### 2026-11-15 23:18:17 — WFS-550 : 3e revue de la PR #424, refusée (lead-dev)
+- Commit relu bdabd2b9. Point de la 2e revue corrigé : la description de la PR contient la section « Tests CPU » et les 26 captures.
+- Nouvelle règle de l'utilisateur (23:13 UTC, maquettes comparées au code), appliquée pour la première fois : maquettes 13, 15, 08, 29 et 30 conformes ; écarts sur **05 et 26** (anneaux vides, sans icône de voiture ni de cadeau) et sur **17** (« Combo ×N » en cyan au lieu d'orange) ; la description de la PR ne cite pas fichier:fonction pour chaque maquette.
+- Revue « changements demandés » postée en COMMENT (même compte GitHub). TACHES.md : ↩️ Retour lead dev (PR #424) ; suivi-pr.md : ↩️.
+- **PO** : 3e refus sur cette PR (point 0 bis, nouvelle règle). À savoir pour WFS-551 : les cadenas au-dessus des segments gris (garage_achat.cpp) ne sont pas sur la maquette 15 ; RG-04 de 551 ne garde que le cadenas-jauge à côté du nom.
+
+### 2026-11-15 23:27:23 — WFS-555 : PR #425 ouverte (lead-dev)
+- Codé par le lead dev en renfort (ordre de l'utilisateur) ; seul `tools/qa/captures_pr.sh` change : cache des captures « avant » par SHA complet de main (hors du dépôt, témoin `.complet`, renommage, verrou `flock`, 3 commits gardés), arbre de main et `build/` gardés (compilation incrémentale), `SANS_CACHE=1` = ancien chemin.
+- Mesures (banc `chargement` 1280x720, lavapipe, même conteneur) : ancien script 242 s ; nouveau cache vide 203 s ; **cache plein 29 s** ; `SANS_CACHE=1` 196 s ; **main a bougé 54 s** (nouveau dossier de cache, compilation incrémentale).
+- Cache rendu octet pour octet (`cmp`) ; avec / sans cache : 596 à 857 pixels d'écart, dans la variation du banc lui-même (804 à 967 pixels entre deux lancements sans cache : mémoire affichée à l'écran).
+- Tests CPU : 148 réussis (branche synchronisée). Installé dans le conteneur pour mesurer : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev` (apt, dépôts Ubuntu).
+- Relecture et fusion : **une autre instance du lead dev** (appelée tout de suite).
+
+### 2026-11-15 23:28:32 — WFS-551 : PR #426 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv2KF))
+- **Fait** (RG-01 à RG-07) : gouttes de peinture groupées par prix (config), pastilles de skin à motif, icône du pistolet de l'utilisateur teintée par finition, cadenas-jauge solde / prix à côté du nom d'une voiture bloquée, flèches du garage qui clignotent, HUD en verre (Menu / Caméra centrés, pédales et volant en verre sans texte, nitro anthracite, pause et vue caméra), cartes grisées avec retour de la couleur pendant le téléchargement, « Rouler » éteint sur une carte à télécharger, écran 18d restylé ; textes FR / EN.
+- **Icône** : `references/maquettes-R19/icone-pistolet-utilisateur.png` (fournie par l'utilisateur, SHA-256 167444ee878cd00395b6b06a9d7d77a1c0c92e286fb3416e280b6100cf4cc117) réduite en 256 px dans `assets/ui/icone-pistolet.png` (SHA-256 5f69fa16290b92dff4edaa14d7366661f315af60b7c253c2721edbab1889f0ea) ; rangée dans les canaux G/B/A libres de l'atlas de police, nouveau mode du shader `ui.frag` (u ≥ 3,5). Aucun téléchargement Internet.
+- **Accroches ≤ 10 lignes hors zone** : `src/ui/text.cpp` (rangement de l'icône dans l'atlas), `src/ui/garage_fiche.cpp` (cadenas-jauge après le nom, fichier de WFS-550), `src/ui/garage.cpp` (clignotement des flèches). Fichiers du HUD hors liste RG-08, touchés pour RG-06 : `src/game/commandes_tactiles.cpp`, `src/game/direction.cpp`, `src/ui/ecrans/pause.cpp`, `src/game/camera_vue.cpp`.
+- **Décisions** : groupes de couleurs lus dans `configgame.json` (Classiques et Vives existent aujourd'hui) ; carte « voiture bloquée » retirée hors attente (remplacée par le cadenas-jauge) ; banc `paquets` : le contrôle de WFS-306 qui roulait sur la Corniche supprimée vérifie maintenant « Rouler » éteint (RG-07), et le secours par le code reste vérifié par la demande directe (comme `bench_changement_carte.cpp`).
+- **Vérifié** : construction sans avertissement ; tests CPU : 149 réussis (branche synchronisée), dont `test_icones_r19` (nouveau) et `test_hud_boutons` (RG-06) ; bancs `garage-couleurs`, `garage-voitures`, `paquets`, `hud:1280x720` : 0 écart sur la branche et sur `main` ; 21 captures avant / après dans `qa/pr/WFS-551/`, regardées.
+- **Parcours RG-09 (FR / EN)** : menu → garage (Peinture, Finition, Skins, voiture bloquée, acheter : captures `garage-couleurs-*`, `garage-voitures-*`, versions `-en-`) → choix de la carte (télécharger, progression, installée, rouler : `paquets-terrain-*`) → course (Menu, Caméra, gaz, frein, nitro : `hud-*`) → pause → retour ; aucun écart aux bancs.
+- **Limites** : pas de banc séparé Finition / Skins (visibles sur les captures du garage) ; rendu Android non vu ici ; après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-15 23:39:13 — WFS-551 : PR #426 refusée par le lead dev (lead-dev)
+- Revue du commit ec034448 : 21 paires de captures ouvertes, tout le diff lu, construction refaite et 149 tests CPU OK. Refus aussi demandé par l'utilisateur (via le coordinateur) : le garage ne reprend pas les maquettes 06, 07, 16, 15 et 18d.
+- Maquettes : 17/17b (HUD) et 18a-c (cartes grisées, téléchargement, installée) conformes ; écarts sur 06 (gouttes petites, sans panneau de verre), 07 (pastilles 32 px, nom à côté, aperçu qui cache « AUCUNE »), 16 (pistolets de 34 px, sans panneau ; Chromé et Caméléon jamais capturés), 15 (« ★ solde / prix » sous Retour au lieu de sous Acheter ; petits cadenas des points en trop), 18b (texte « Tu peux rouler pendant ce temps » alors que « Rouler » est éteint), 18d (fond = menu assombri au lieu de la scène floue).
+- Manquent : les bancs `garage-finitions` et `garage-skins` (ils existent, la PR dit le contraire), la section « Tests CPU » et `qa/pr/WFS-551/tests-cpu.log`, et la citation fichier / fonction pour chaque maquette.
+- Refus posté en commentaire sur la PR (GitHub n'accepte pas « changements demandés » quand la PR est ouverte avec le même compte). Statut : ↩️ Retour lead dev (PR #426).
+
+### 2026-11-15 23:40:38 — E23 : écrans non conformes aux maquettes R19, plainte de l'utilisateur (po-scrum-master)
+- Comparaison faite : maquette 01 ↔ `qa/pr/WFS-549/apres-menu-0.jpg` (disposition non reprise), 06 ↔ `apres-garage-couleurs-p208-debut` de WFS-551 (onglets, plateau, barre de gouttes absents), 17 ↔ HUD (proche).
+- Cause : RG E23 « rien ne change dans la disposition » (erreur du PO) + découpage par style + revue sans maquette pour 548 / 549.
+- Bandeau 🛑 ajouté à `TACHES.md` : critère « écran = maquette » + captures côte à côte pour toute PR E23. Question posée à l'utilisateur : tickets de correction écran par écran.
+
+### 2026-11-15 23:43:13 — E23 : WFS-548 / 549 KO, WFS-557 à 564 créés écran par écran (po-scrum-master)
+- 8 tickets P1 (un par groupe d'écrans de maquettes R19), RG dans `regles-de-gestion/WFS-557.md` à `WFS-564.md`. Prêts : 557, 561, 562, 563 ; 558, 559 après 551 ; 560, 564 après 550.
+
