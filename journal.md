@@ -941,3 +941,25 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - **Règles** : `regles-de-gestion/WFS-548.md` et `regles-de-gestion/E23-interface-r19.md` ; maquettes `references/maquettes-R19/`.
 - **Branche** : `feature/waforspeed-548`. WFS-549 touche les mêmes écrans : le 2e fusionné se synchronise avec `main` et refait ses captures.
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-549, WFS-552.
+
+### 2026-11-15 12:01:26 — Début WFS-549 : attribué à Claude, agent dev3d (01Us6uCvCC) (po-scrum-master)
+- **Demande** : nouvelle session `@dev` (session_01Us6uCvCCKjrpBx7JNmrkCa), jamais de ticket avant (« @dev go »).
+- **Pourquoi lui** : 1er ticket prêt de l'épic E23 (plus récente demande de l'utilisateur, P1) après WFS-548, déjà à 01Us6uCucP.
+- **Zone de code** : `src/ui/boutons.*` (nouveau), `src/ui/ecrans/**`, `src/ui/garage_cadre.*`, `garage_achat*`, `garage_couleur.*`, `garage_skin.*`, `garage_finition.*`, `garage_fiche.*` (boutons seulement), `src/ui/hud.*` (taille Menu / Caméra seulement), `shaders/ui*`, `tests/**`.
+- **Règles** : `regles-de-gestion/WFS-549.md`, `regles-de-gestion/E23-interface-r19.md`, maquettes `references/maquettes-R19/`. Taille de chaque bouton identique à `main`, sauf Menu et Caméra du HUD.
+- **Branche** : `feature/waforspeed-549`. Partage d'écrans avec WFS-548 : le 2e fusionné se synchronise avec `main` et refait ses captures. Après fusion : 🟡 À valider (utilisateur).
+- Reste ⏳ Prêt pour une nouvelle session `@dev` : WFS-552.
+
+### 2026-11-15 12:01:56 — Début WFS-552 : attribué à Claude, agent dev3d (01Us6uCwZ7) (po-scrum-master)
+- **Ticket** : WFS-552 — Interface R19 (5/5) : menu en 3D, Cavallo SF-X caméléon orange / bleu, skin bleu ciel, parking souterrain, caméra rapprochée. Épic E23, P1 Urgent. Session `@dev` (= dev-artiste-3d) neuve (session_01Us6uCwZ7SWYSgoD4LUfvxv), jamais de ticket avant : attribution permise.
+- **Choix** : la session demandait WFS-549 ou WFS-552 ; WFS-549 a été attribué à 12:01 UTC à la session 01Us6uCvCC (mon envoi a été refusé, `main` avait avancé) ; WFS-552 est le dernier prêt de E23 et demande justement le skill `artiste-3d`.
+- **Zone de code** : `src/ui/ecrans/menu*`, `src/ui/garage_decor.*`, nouveaux fichiers du parking (zone interface ou `assets/world/modeles/garage/**`), catalogue des skins (E18) si la skin bleu ciel manque, `tests/**` ; accroche renderer ≤ 10 lignes annoncée au journal. Ne pas toucher `verre.*` (WFS-548) ni `boutons.*` (WFS-549).
+- **Règles** : `regles-de-gestion/WFS-552.md`, `regles-de-gestion/E23-interface-r19.md`, `regles-de-gestion/DA-realisme.md`. Aucune forme géométrique nue ; modèles CC0 / CC BY (licence et SHA-256 au journal, `regles-reseau.md`) ; ≥ 30 i/s ; avis « VALIDÉ » de l'agent 3D sur le dernier commit avant fusion ; 🟡 après fusion.
+- `track-agent.md` : lignes des sessions terminées (WFS-513, 446, 494) enlevées.
+
+### 2026-11-15 12:30:40 — WFS-549 : boutons R19, avancement et accroches annoncées (Claude, agent dev3d (01Us6uCvCC))
+- **Branche** `feature/waforspeed-549` poussée (commits f44e9dc9, 24595cf1, synchronisée avec `main`). Dessin commun `src/ui/boutons.{h,cpp}` : Start/Stop (RG-01), autocollant (RG-02), pilule chrome (RG-03), prix orange (RG-04), sélecteur de verre (RG-05, RG-06), verre cerclé d'orange (« ✕ Fermer »), sur les primitives lissées existantes `dessin2d` (aucun nouveau shader).
+- **Écrans** : menu, pause, garage (Choisir / Acheter, Retour, Principale / Toit et rétros, skin offerte, fenêtre d'achat, fin d'essai), Réglages (choix, onglets, Fermer, « Crédits » ajouté à côté des conditions au menu principal), Market (prix, Retour), CGU (J'accepte), « Crée ton pilote », salon (Prêt, Inviter, Quitter, Retour, distance), terrain (Jour / Nuit, Retour, Rouler), profil, crédits, cadeau, paquets. Chaque zone de toucher et chaque rectangle restent ceux de `main` (RG-07) ; seuls Menu et Caméra du HUD passent à × 1,5 (`hud::BOUTON_ECHELLE`, maquette 17b).
+- **Accroches hors zone (≤ 10 lignes chacune, remplacement du dessin d'un bouton, zones inchangées)** : `src/game/course_system.cpp`, `course5_system.cpp`, `poursuite_system.cpp` (« Rejouer » en Start/Stop), `duel_system.cpp` (« Revanche » Start/Stop, « Retour » autocollant), `modes_ecran.cpp` (« Continuer » Start/Stop, « Retour » autocollant).
+- **Vérification** : compilation (Release, lavapipe) sans erreur ; tests CPU 145 / 145 (dont `test_hud_boutons` mis à 1,5 et nouveau `test_boutons`, contour arrondi) ; banc `menu1` regardé (menu, garage, pause, terrain, modes, fin). Captures avant / après en cours (`captures_pr.sh`).
+- **Limites** : le Market n'a pas d'onglets aujourd'hui (Étoiles / Offres / Sans pub de la maquette 12) : non créés (changement de disposition, hors RG-07) ; icônes des onglets des Réglages laissées à WFS-551 (icônes) ; « Crédits » seulement au menu principal (l'écran Crédits n'existe qu'au menu).
