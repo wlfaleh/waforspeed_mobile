@@ -1088,3 +1088,9 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Zone : fichiers de RG-07 (`garage_fiche.*`, `garage_cadre.*`, `toasts.*`, `cadeau_jour*`, `pret_bandeau*`, `compteur_etoiles*`, `chargement*`, nouveau `src/ui/jauges.*`), `shaders/ui*`, `tests/**` ; `hud.*` seulement l'appel de la jauge de combo (≤ 10 lignes). Interface 2D : skill `design-street-racing` ; pas d'avis agent 3D. Taille des boutons inchangée.
 - Critères : `regles-de-gestion/WFS-550.md` (RG-01 à RG-08, captures avant / après, parcours FR / EN). Après fusion : 🟡 À valider (utilisateur).
 - `track-agent.md` : lignes des sessions terminées (01Us6uCucP, 01Us6uCvCC, 01Us6uCwZ7, 01UY1Vv1WU) enlevées. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-551, puis WFS-554.
+
+### 2026-11-15 20:48:39 — WFS-549 : revue complète du lead dev sur f90e01bb (lead-dev)
+- Revue faite en parallèle de la fusion sur ordre de l'utilisateur (PR prise 👀 à 20:34) : même commit f90e01bb, même conclusion. Approbation « ✅ Approuvé par le lead dev » postée en commentaire sur la PR #420 (GitHub refuse APPROVE avec le même compte) ; squash c20f5c06.
+- Construction Release et `bash tools/qa/tests_cpu.sh build` refaits : **148 test(s) réussi(s)** ; avertissements seulement dans du code déjà sur `main`. Banc `reglages-onglets` relancé : « Crédits » → ouvert, « Retour » → Réglages ouverts, 1er appui (doigt 0) → « appui compté ».
+- Captures ouvertes : les 4 points du refus sur ce342a2e sont corrigés (tests-cpu.log, « Crédits » au relâcher, 185 captures des écrans touchés, inactifs lisibles). Remarques non bloquantes : « Inviter » jamais grisé hors ligne (comme sur `main`, description inexacte), quelques « avant » marqués « main à venir », commentaire en double dans `reglages.cpp`.
+- `qa/Check.md` complété ; statut 🟡 À valider (utilisateur) inchangé.
