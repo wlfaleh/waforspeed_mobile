@@ -998,3 +998,10 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - **Vérification** : 145 tests CPU réussis ; captures avant / après de 8 bancs (`captures_pr.sh`, FR et EN) + après seules (fins Course à 5, Poursuite, duel ; salon ; achat ; pause de nuit), dans `qa/pr/WFS-548/`.
 - **Limites** : seule la scène 3D est floutée (l'interface dessous est voilée, pas floutée) ; pas vu sur téléphone (🟡 après fusion).
 - **Anomalie trouvée, déjà sur `main`** : banc `score-fin` : 40 échecs identiques sur `main` et sur la branche (l'appui sur le compteur d'étoiles du menu n'ouvre plus le garage, puis le banc reste au garage et toutes ses fins de course Course à 5, Poursuite et duel échouent). Signalée au PO.
+
+### 2026-11-15 14:33:34 — ANO-274 et WFS-553 : banc `score-fin` en retard sur WFS-513 (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCucP), pendant WFS-548 (PR #422) : `WFS_BANC=score-fin` donne 40 échecs identiques sur `main` et sur sa branche (code 3) ; 1er échec « appui sur le compteur → garage (RG-09) ». Il ne le corrige pas (hors de son ticket) : bonne décision.
+- Constat du PO dans le code : le jeu fait ce qui était prévu (WFS-537 RG-09 : le compteur ouvre le garage **tant que** le Market n'existe pas ; WFS-513 fusionné, `menu.cpp` l. 107 ouvre le Market). Le banc attend encore `Ecran::Garage` et ne referme pas le Market : c'est le banc qui est en retard.
+- Le banc `score-fin` n'apparaît pas dans `build.yml` ni `matin.yml` (recherche « score ») : CI de `main` et bancs du matin non touchés ; pas d'US P1. À confirmer par le développeur (RG-05).
+- Créés : **ANO-274** (`anno.md`, 📋 Planifiée) et **WFS-553** `[TECHNIQUE]` (P2 Haute, E22, ⏳ Prêt, `@dev`, règles `regles-de-gestion/WFS-553.md`) : seul `src/game/score_fin_banc.cpp` change, aucun contrôle retiré. À donner à une **nouvelle session** `@dev` qui le demande (pas à 01Us6uCucP, qui garde son seul ticket WFS-548).
+

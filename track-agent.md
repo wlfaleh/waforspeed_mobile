@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-15 13:12:24 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-15 14:33:34 UTC (po-scrum-master)
+
+> 🧪 **14:33 UTC (2026-11-15)** : anomalie **ANO-274** (banc `score-fin` en retard sur le Market de WFS-513, 40 échecs) signalée par l'agent dev3d (01Us6uCucP) pendant WFS-548 ; ticket **WFS-553** `[TECHNIQUE]` ⏳ Prêt (P2) pour une **nouvelle session** `@dev`. 01Us6uCucP continue WFS-548 seul.
 
 > 🚗 **13:12 UTC (2026-11-15)** : **WFS-541** (P1, trafic de la Poursuite) attribué à Claude, agent conduite (01UY1Vv1WU), nouvelle session `@conduite`. Reste ⏳ Prêt pour une nouvelle session `@conduite` : **WFS-394**.
 
