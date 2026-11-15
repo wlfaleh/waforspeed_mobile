@@ -652,7 +652,7 @@ int benchPenetration(Game& g, Renderer& r, const std::string& out) {
 // WFS-541 : banc « trafic-541 » (WFS_AVANT_541=1 : trafic d'avant WFS-541, pour les captures « avant »). Poursuite, Corniche,
 // nuit, programme fixe, police et voiture du joueur réelles ; seules les voitures du trafic de chaque scène sont posées à la main.
 //  1. « suv » (RG-01, ANO-269) : le joueur arrêté dans sa file, un SUV du trafic (Range Rover Sport) à 14 m devant lui, à 50 km/h,
-//     part en tête-à-queue (choc provoqué) : 12 images, 0,75 s entre deux (9 s) ; avant : il reste en travers (le joueur est à
+//     part en tête-à-queue (choc provoqué) : 14 images, 0,75 s entre deux (10,5 s) ; avant : il reste en travers (le joueur est à
 //     moins de 60 m) ; après : il se redresse et repart dans sa file ;
 //  2. « bouchon » (RG-02) : une voiture accidentée posée en travers de la file du milieu, 3 voitures arrivent derrière elle à
 //     40 km/h : 10 images, 0,8 s entre deux ; elles s'arrêtent puis changent de file ;
@@ -751,12 +751,12 @@ int benchTrafic541(Game& g, Renderer& r, const std::string& out) {
         else {
             rouler(2, arret());
             Traffic::crash(TrafficSystem::active_->traffic_.cars[(size_t)k], 0.75, fJ == 2 ? -1 : 1);
-            for (int img = 0; img < 12; img++) {
+            for (int img = 0; img < 14; img++) {
                 for (int i = 0; i < 45; i++) rouler(1, arret());
                 char nom[64]; std::snprintf(nom, sizeof nom, "trafic541-suv-%02d", img); image(nom, {k});
             }
             const TrafficCar& c = TrafficSystem::active_->traffic_.cars[(size_t)k];
-            WFS_LOG("trafic-541 (suv) : après 9 s : %s", c.crashed ? "toujours accidenté" : "reparti dans sa file");
+            WFS_LOG("trafic-541 (suv) : après 10,5 s : %s", c.crashed ? "toujours accidenté" : "reparti dans sa file");
             if (!g_avant541 && c.crashed && !c.redresse) { WFS_ERR("trafic-541 (suv) : le SUV reste en travers"); ecarts++; }
         }
         finir();

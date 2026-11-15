@@ -331,11 +331,13 @@ void Traffic::step(double h, const TrafficView& pv) {
         if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - (LANE_X[car.lane] + droite) * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
         const double d = (LANE_X[car.target] + droite) * kv - car.offset;
         // WFS-541 (RG-02) : au pas, dans un bouchon, une voiture ne glisse pas de côté plus vite qu'elle ne roule (avant : 3,75 m/s
-        // de côté même arrêtée, caisse tournée de 90°) : au plus v · tan 17° + 0,3 m/s ; au-delà de 45 km/h, rien ne change
-        const double latMax = contactsTrafic && !g_avant541 ? std::min(0.5, (car.speed * M * 0.3 + 0.3) / RW) : 0.5;
+        // de côté même arrêtée, caisse tournée de 90°) : au plus v · tan 17° + 0,6 m/s (au-delà de 38 km/h, rien ne change), et sa
+        // caisse ne tourne pas de plus de 20° (manœuvre lente pour sortir de la file)
+        const bool lent = contactsTrafic && !g_avant541;
+        const double latMax = lent ? std::min(0.5, (car.speed * M * 0.3 + 0.6) / RW) : 0.5;
         const double move = clampd(d, -latMax * h, latMax * h);
         car.offset += move;
-        car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, 1e-3));
+        car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, lent ? std::abs(move) * RW / 0.364 : 1e-3));   // tan 20° = 0,364
         if (std::abs(d) < 0.01) { car.lane = car.target; if (!car.pending) car.signal = 0; }
         car.z = track_->wrap(car.z + car.speed * h);
         if (car.deuxRoues) {   // WFS-232 (RG-04) : inclinaison d'équilibre dans la courbe, sans à-coup (filtre du premier ordre)
@@ -713,10 +715,11 @@ HitEvents Traffic::collide(Player& pl, double dt) {
     // WFS-541 (RG-03) : une voiture écartée du joueur contre une autre voiture du trafic n'y reste pas : contacts du trafic,
     // puis écart du joueur repris (la voiture du joueur garde toujours la main)
     if (dessine) {
+        const double pzFin = pl.position + PLAYER_Z;   // le joueur a pu être recalé par un choc par l'arrière (pz : avant les chocs)
         for (auto& car : cars)
-            if (!car.cache && std::abs(track_->relZ(car.z - pz)) * M < 12) separer(pl, car);
-        if (contactsTrafic && !g_avant541) { const Emprise j = empriseJoueur(pl); contacts(&j, pz); }
-        for (auto& car : cars) car.prevDz = track_->relZ(car.z - pz);
+            if (!car.cache && std::abs(track_->relZ(car.z - pzFin)) * M < 12) separer(pl, car);
+        if (contactsTrafic && !g_avant541) { const Emprise j = empriseJoueur(pl); contacts(&j, pzFin); }
+        for (auto& car : cars) car.prevDz = track_->relZ(car.z - pzFin);
     }
     return ev;
 }
