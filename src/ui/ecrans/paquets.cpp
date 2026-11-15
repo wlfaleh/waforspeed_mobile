@@ -883,6 +883,10 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         imageMulti(30);
         verifier(cp.etat(co).etat == EtatCarte::Telechargement, "barre de progression sur la vignette");
         captureJeu("paquets-terrain-progression", "Corniche : barre, octets reçus, astuce, « Annuler » (jour)");
+        // WFS-551 (RG-07) : suite d'images du téléchargement : la couleur revient de gauche à droite (≈ 35 %, puis ≈ 60 %) ; 160 images
+        // de plus restent loin de la fin (≈ 320 images à plein débit) : la course sur la Ville, juste après, télécharge encore
+        imageMulti(80); captureJeu("paquets-terrain-progression-2", "Corniche en téléchargement : la couleur revient (≈ 35 %)");
+        imageMulti(80); captureJeu("paquets-terrain-progression-3", "Corniche en téléchargement : la couleur revient (≈ 60 %)");
         // RG-03 : course sur la Ville pendant le téléchargement (la Ville est déjà chargée : pas de reconstruction)
         rouler("ville", false);
         verifier(g.ecran() != Ecran::Terrain && chargements == 0, "« Rouler » sur la Ville (déjà chargée, jour) pendant le téléchargement : pas de reconstruction");
