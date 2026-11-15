@@ -31,7 +31,9 @@ static void trafic(const char* carte) {
     int accidentsCarte = 0;
     for (Aide aide : {Aide::Activee, Aide::Desactivee}) {
         double pire = 0, colleMax = 0; int chocs = 0, accidents = 0, toupies = 0;
-        for (uint32_t graine = 1; graine <= 6; graine++) {
+        // WFS-541 : 12 graines (avant : 6) : les voitures heurtées se redressent et repartent au lieu de rester devant le joueur,
+        // qui les heurtait encore et encore ; il faut plus de parcours pour garder plus de 50 contacts par cas
+        for (uint32_t graine = 1; graine <= 12; graine++) {
             Traffic tr; tr.parallel = false; tr.reset(t, graine, 60, 0);
             Player p; p.aide = aide; p.reset(carById("golf")); p.speed = 100 / 3.6 / M;
             Mulberry32 R(graine * 77);

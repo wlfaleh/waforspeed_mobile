@@ -176,7 +176,13 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
         const double tx = LANE_X[car.target];
         for (const auto& o : cars) {
             if (&o == &car || o.cache) continue;
-            if (std::abs(o.offset - car.offset) > LANE_HALF && std::abs(o.offset - tx) > LANE_HALF) continue;
+            if (o.crashed && contactsTrafic && !g_avant541) {
+                // WFS-541 (RG-02) : une voiture (ou un deux-roues couché) accidentée ne gêne que si sa carrosserie, tournée, est dans
+                // le couloir de la voiture (sa largeur + 30 cm de chaque côté) : sinon on passe à côté au lieu d'attendre sans fin
+                const double a = o.crashYaw, demiX = (o.len * M * std::abs(std::sin(a)) + o.w * 2 * RW * std::abs(std::cos(a))) / 2;
+                const double couloir = car.w * RW + demiX + 0.3;
+                if (std::abs(o.offset - car.offset) * RW > couloir && std::abs(o.offset - tx) * RW > couloir) continue;
+            } else if (std::abs(o.offset - car.offset) > LANE_HALF && std::abs(o.offset - tx) > LANE_HALF) continue;
             const double dz = track_->relZ(o.z - car.z);
             if (dz <= 0) continue;
             const double g = dz - (o.len + car.len) / 2;
@@ -422,11 +428,39 @@ void Traffic::contacts(const Emprise* fixe, double zFixe) {
                 double nx = 0, nz = 0;
                 const double o = recouvrement(empriseTrafic(A, 0), empriseTrafic(B, dz), &nx, &nz);
                 if (o <= 0) continue;
-                const double wa = A.traverse >= 0 ? 0 : 1, wb = B.traverse >= 0 ? 0 : 1;
-                if (wa + wb == 0) continue;
+                // qui bouge : pas la voiture qui traverse un carrefour (placée par l'horloge des feux) ; pas, de côté, une voiture
+                // qui roule au bord extérieur de ses files (borne ci-dessous) ; sinon, pas celle qui se redresse et reste bloquée
+                // depuis 3 s (les voitures qui la coincent lui laissent la place : sinon elle resterait arrêtée sans fin, RG-02)
+                if (A.traverse >= 0 && B.traverse >= 0) continue;
+                const bool cote = std::abs(nx) >= std::abs(nz);
+                auto auBord = [&](const TrafficCar& v, double sens) {
+                    if (v.crashed || !cote) return false;
+                    const double lim = LANE_X[LANES - 1] * facteurVoie(v.z) + 0.25 / RW - 0.02 / RW;
+                    return v.offset * sens >= lim;
+                };
+                double wa = A.traverse >= 0 || auBord(A, -nx) ? 0 : 1, wb = B.traverse >= 0 || auBord(B, nx) ? 0 : 1;
+                if (wa + wb == 0) wa = wb = 1;   // toutes deux au bord (impossible en pratique) : moitié chacune
+                if (wa > 0 && wb > 0) {
+                    const bool ra = A.redresse && A.arretT > 3, rb = B.redresse && B.arretT > 3;
+                    if (ra != rb) (ra ? wa : wb) = 0;
+                }
                 const double d = o + JEU_TRAFIC_M, fa = wa / (wa + wb), fb = 1 - fa;
                 A.offset -= nx * d * fa / RW; A.z = track_->wrap(A.z - nz * d * fa / M);
                 B.offset += nx * d * fb / RW; B.z = track_->wrap(B.z + nz * d * fb / M);
+                // une voiture qui roule normalement reste sur la chaussée de ses files : au plus 25 cm au-delà de la file extérieure
+                // (anneau d'un rond-point aux files resserrées compris, WFS-243) ; poussée de côté : elle renonce à changer de file
+                for (TrafficCar* v : {&A, &B}) {
+                    if (v->crashed || std::abs(nx) < std::abs(nz)) continue;
+                    const double lim = LANE_X[LANES - 1] * facteurVoie(v->z) + 0.25 / RW;
+                    v->offset = clampd(v->offset, -lim, lim);
+                    if (v->target != v->lane) { v->target = v->lane; v->pending = false; v->signal = 0; }
+                }
+                // coincées de côté (bord de la chaussée, bord des files) : ce qui reste se règle le long de la route
+                const double reste = recouvrement(empriseTrafic(A, 0), empriseTrafic(B, track_->relZ(B.z - A.z)));
+                if (reste > 0) {
+                    const double dzr = (reste + JEU_TRAFIC_M) / std::max(std::abs(nz), 0.3) * (nz >= 0 ? 1 : -1);
+                    A.z = track_->wrap(A.z - dzr * fa / M); B.z = track_->wrap(B.z + dzr * fb / M);
+                }
                 if (std::abs(nz) > std::abs(nx)) {   // l'une derrière l'autre (nz > 0 : B devant A)
                     TrafficCar &derriere = nz > 0 ? A : B, &devant = nz > 0 ? B : A;
                     derriere.speed = std::min(derriere.speed, devant.speed);
@@ -437,6 +471,16 @@ void Traffic::contacts(const Emprise* fixe, double zFixe) {
         }
         if (!bouge) break;
     }
+    // le joueur d'abord : à la fin, aucune voiture du trafic n'est dans la sienne (WFS-333), même coincée contre une autre
+    if (fixe)
+        for (const auto& [z, i] : ordre_) {
+            TrafficCar& A = cars[(size_t)i];
+            const double dzF = track_->relZ(A.z - zFixe);
+            if (std::abs(dzF) * M >= PORTEE_M) continue;
+            double nx = 0, nz = 0;
+            const double o = recouvrement(*fixe, empriseTrafic(A, dzF), &nx, &nz);
+            if (o > 0) { A.offset += nx * (o + JEU_TRAFIC_M) / RW; A.z = track_->wrap(A.z + nz * (o + JEU_TRAFIC_M) / M); }
+        }
 }
 
 int Traffic::separerDe(const Emprise& e, double zRoute) {
