@@ -30,7 +30,7 @@ struct Objet {
 };
 constexpr const char* ID_SECONDAIRE = "secondaire";   // droit de poser une couleur secondaire sur une voiture (WFS-488, 489)
 
-const std::vector<Objet>& catalogue();          // 28 couleurs, secondaire, 8 finitions, 4 skins, 5 packs
+const std::vector<Objet>& catalogue();          // 28 couleurs, secondaire, 8 finitions, 5 skins (WFS-552), 5 packs
 const Objet* objet(const std::string& id);      // nullptr si inconnu
 const Objet* couleur(const std::string& id);    // nullptr si ce n'est pas une couleur
 

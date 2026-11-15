@@ -127,7 +127,11 @@ const float FIN_NACRE_RUGOSITE = 0.30, FIN_NACRE_METAL = 0.25;   // mica enrobé
 const float FIN_CHROME_F0 = 0.60;         // chrome (chrome métal, n et k de Rakić 1998) : réflectance 0,55 à 0,65 dans le visible
 const float FIN_CHROME_RUGOSITE = 0.06;   // chrome poli (DA-realisme § 3 : 0,05 à 0,15, métal 1)
 const float FIN_CHROME_TEINTE = 0.15;     // part de la couleur choisie dans la teinte du chrome (au plus 15 % : il reste un miroir)
-const float FIN_CAMELEON_TOUR = 1.5;      // rotation de teinte de face → rasant (rad) : ex. rouge → orange → or → jaune-vert (décalage vers le bleu)
+// WFS-552 (R19, maquette 01) : caméléon à deux teintes : la couleur choisie de face, sa teinte opposée (+ 3,3 rad : orange 30° →
+// bleu ≈ 219°) sur les flancs vus de biais, passage entre 25 et 40 % d'incidence rasante (pigments à interférence « flip-flop » à
+// deux couleurs) ; mélange direct des deux teintes, sans passer par les couleurs intermédiaires (pas d'arc-en-ciel sur les galbes)
+const float FIN_CAMELEON_TOUR = 3.3;      // teinte du flop (rad depuis la couleur choisie)
+const float FIN_CAMELEON_DEBUT = 0.25, FIN_CAMELEON_FIN = 0.40;   // incidence rasante (1 − N·V) du début et de la fin du passage
 const float FIN_CANDY_RUGOSITE = 0.20, FIN_CANDY_METAL = 0.85;   // base argent sous le vernis teinté
 const float FIN_PAILLETTE = 0.0004;       // taille d'une cellule de paillette au plus près (m) : 0,4 mm (amas de paillettes de 20-40 µm)
 
@@ -141,7 +145,7 @@ vec3 chausseeReflechie(vec3 sun) {
 int skinPixel = 0;
 int lireFinition(inout float metal) {
     float k = floor(metal / 16.0);   // WFS-492 : skin (vehicule_skin.h) ; métal + 2 × finition < 16
-    skinPixel = int(clamp(k, 0.0, 5.0));   // WFS-495 : 5 = habillage cuit (skin + autocollants, SKIN_CUIT)
+    skinPixel = int(clamp(k, 0.0, 6.0));   // WFS-495 : 6 (WFS-552 ; 5 avant) = habillage cuit (skin + autocollants, SKIN_CUIT)
     metal -= 16.0 * k;
     float f = floor(metal * 0.5);
     metal -= 2.0 * f;
@@ -199,6 +203,7 @@ vec3 tournerTeinte(vec3 c, float a) {
 // teinte normalisée (canal le plus fort = 1) : couleur d'un vernis teinté ou d'un chrome teinté
 vec3 teinteNormee(vec3 c) { return c / max(max(c.r, max(c.g, c.b)), 1e-3); }
 
+float skinCouverture = 0.0;   // WFS-552 : part du pixel couverte par la skin (0 à 1), posée par habillage ; lue par le caméléon
 // surface sous le vernis : couleur (albedo), métal et rugosité selon la finition ; NoV = cosinus de la vue (flop, angle)
 void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float rough) {
     // angle pris sur la normale lissée du maillage (sans la carte de normales) : variation continue sur la carrosserie, sans
@@ -230,12 +235,22 @@ void finitionSurface(int fin, inout vec3 albedo, inout float metal, inout float 
         metal = 1.0; rough = FIN_CHROME_RUGOSITE;
     } else if (fin == FIN_CAMELEON) {
         // pigment à interférence sur base sombre : la teinte tourne avec l'angle de vue ; couleur sans teinte (gris, blanc,
-        // noir) : base violette (violet → rouge → or en rasant)
+        // noir) : base violette (violet de face, vert-jaune en rasant)
         float chroma = max(albedo.r, max(albedo.g, albedo.b)) - min(albedo.r, min(albedo.g, albedo.b));
         vec3 c = mix(vec3(0.20, 0.03, 0.42), albedo, smoothstep(0.05, 0.2, chroma));
-        // décalage vers le bleu en rasant (interférence en couche mince : la longueur d'onde renforcée raccourcit avec l'angle)
-        albedo = tournerTeinte(c, FIN_CAMELEON_TOUR * rasant);
-        metal = 0.75; rough = 0.20;
+        // WFS-552 : couleur choisie de face, teinte opposée en rasant (interférence en couche mince)
+        // WFS-552 : flop selon l'angle de vue autour de la voiture : les panneaux verticaux (flancs, boucliers) vus de biais virent
+        // au bleu ; le dessus (capot, pavillon), vu en rasant depuis une caméra basse, garde la couleur de face (maquette 01)
+        vec3 n = normalize(vNrm);
+        float vertical = smoothstep(0.55, 0.85, length(n.xz));
+        // avis de l'agent 3D (PR #421) : la skin (adhésif posé sur la peinture) ne change pas de teinte ; passage d'une teinte à
+        // l'autre à luminosité gardée (le mélange direct de deux teintes opposées passait par un gris terne)
+        float k = vertical * smoothstep(FIN_CAMELEON_DEBUT, FIN_CAMELEON_FIN, rasant) * (1.0 - skinCouverture);
+        vec3 f = tournerTeinte(c, FIN_CAMELEON_TOUR), m = mix(c, f, k);
+        float vm = mix(max(c.r, max(c.g, c.b)), max(f.r, max(f.g, f.b)), k);
+        albedo = m * (vm / max(max(m.r, max(m.g, m.b)), 1e-4));
+        // pigment à interférence sur base sombre, reflet coloré moins fort que le métallisé pur : 0,45 (skin : 0,10, film vinyle)
+        metal = mix(0.45, 0.10, skinCouverture); rough = 0.20;
     } else if (fin == FIN_CANDY) {
         // vernis teinté transparent sur base argent : le chemin dans le vernis s'allonge en biais (Beer-Lambert) → plus saturé
         // et plus sombre de biais, lumineux de face
@@ -274,11 +289,12 @@ const vec4 SKIN_FACES = vec4(872.0, 1024.0, 0.0, 1.0) / vec4(SKIN_T, SKIN_T, 1.0
 // couleurs A et B de chaque skin (codes sRGB 0..1 ; 0 = aucune) : Rallye = blanc de compétition, anthracite (dessin original, RG-05) ;
 // WFS-493 : Drift Tokyo = vermillon, noir ; Néon nuit = cyan, magenta ; Camouflage = blanc cassé, noir (posé à 72 % : le gris du fond)
 // (mêmes valeurs que COULEURS de tools/skins/generer.py)
-const vec3 SKIN_COULEURS[10] = vec3[10](vec3(0.0), vec3(0.0),
+const vec3 SKIN_COULEURS[12] = vec3[12](vec3(0.0), vec3(0.0),
     vec3(0.91, 0.91, 0.89), vec3(0.10, 0.11, 0.125),   // 1 Rallye
     vec3(0.93, 0.30, 0.10), vec3(0.06, 0.06, 0.07),     // 2 Drift Tokyo
     vec3(0.0, 0.90, 1.0), vec3(1.0, 0.12, 0.85),        // 3 Néon nuit
-    vec3(0.85, 0.86, 0.84), vec3(0.09, 0.09, 0.10));    // 4 Camouflage
+    vec3(0.85, 0.86, 0.84), vec3(0.09, 0.09, 0.10),     // 4 Camouflage
+    vec3(0.53, 0.81, 0.93), vec3(0.93, 0.93, 0.92));    // 5 Bleu ciel (WFS-552)
 // WFS-493 (RG-03) : Néon nuit : les filets émettent un peu de lumière la nuit seulement (F.misc.y), comme un adhésif lumineux :
 // luminance ≤ celle d'un feu arrière de position (E_POSITION = 1,6 × verre rouge, renderer.cpp : ≈ 0,36) : cyan 0,5 × 0,64 = 0,32,
 // magenta 0,5 × 0,27 = 0,14 ; aucune lumière projetée, aucun halo (seul le pixel du filet brille). Lu par scene.frag (accroche).
@@ -287,7 +303,7 @@ const float SKIN_NEON_E = 0.5;
 vec3 skinEmission = vec3(0.0);
 // WFS-495 : habillage cuit (skin éventuelle + autocollants, src/render/vehicule_autocollants.h) : texture RGBA, RGB = couleur en
 // codes sRGB, A = couverture (vrais adhésifs : ils suivent la carrosserie par la même projection, sous la finition et le vernis)
-const int SKIN_CUIT = 5;
+const int SKIN_CUIT = 6;   // WFS-552 : 5 → 6 (Bleu ciel = 5)
 // lecture d'une zone : (s, t) ∈ [0, 1]² dans la zone, bornés d'un demi-texel (pas de fuite vers la zone voisine) ; gradients donnés
 vec4 skinLire4(vec4 zone, vec2 st, vec2 gx, vec2 gy) {
     float hv = zone.y - zone.x, demi = 0.5 / SKIN_T;
@@ -315,6 +331,7 @@ vec3 habillageCuit(vec3 peinture) {   // mêmes projections et mêmes poids que 
         ? cuitLire(SKIN_FACES, vec2((SKIN_DX - q.x) * sf, (SKIN_H - q.y) * sy), vec2(-dqx.x * sf, -dqx.y * sy), vec2(-dqy.x * sf, -dqy.y * sy))
         : cuitLire(SKIN_FACES, vec2(0.5 + (q.x + SKIN_DX) * sf, (SKIN_H - q.y) * sy), vec2(dqx.x * sf, -dqx.y * sy), vec2(dqy.x * sf, -dqy.y * sy));
     vec4 c = flanc * w.x + dessus * w.y + face * w.z;
+    skinCouverture = clamp(c.a, 0.0, 1.0);   // WFS-552
     return peinture * (1.0 - c.a) + c.rgb;
 }
 vec3 habillage(vec3 peinture, int skin) {
@@ -338,6 +355,7 @@ vec3 habillage(vec3 peinture, int skin) {
     vec2 c = flanc * w.x + dessus * w.y + face * w.z;
     vec3 a = pow(SKIN_COULEURS[skin * 2], vec3(2.2)), b = pow(SKIN_COULEURS[skin * 2 + 1], vec3(2.2));   // sRGB → linéaire (comme hexColor)
     if (skin == SKIN_NEON) skinEmission = (a * c.r * (1.0 - c.g) + b * c.g) * (SKIN_NEON_E * F.misc.y);   // WFS-493 (RG-03)
+    skinCouverture = clamp(c.r + c.g, 0.0, 1.0);   // WFS-552
     return mix(mix(peinture, a, c.r), b, c.g);
 }
 // vitres (F_GLASS)

@@ -15,7 +15,7 @@ static_assert(NB_PEINTURES == BOUTIQUE_COULEURS, "WFS-487 : une entrée boutique
 namespace {
 // noms affichés (le français ; l'anglais viendra avec les écrans, WFS-504)
 const char* NOMS_FINITIONS[BOUTIQUE_FINITIONS] = {"Brillant", "Métallisé", "Nacré", "Mat", "Satiné", "Candy", "Chromé", "Caméléon"};
-const char* NOMS_SKINS[BOUTIQUE_SKINS] = {"Rallye", "Drift Tokyo", "Néon nuit", "Camouflage"};
+const char* NOMS_SKINS[BOUTIQUE_SKINS] = {"Rallye", "Drift Tokyo", "Néon nuit", "Camouflage", "Bleu ciel"};   // WFS-552 : Bleu ciel
 const char* NOMS_DESSINS[BOUTIQUE_DESSINS] = {"Essentiels", "Numéros et lettres", "Bandes", "Flammes et éclairs", "Étoiles et formes"};
 
 std::vector<Objet> fabriquer() {

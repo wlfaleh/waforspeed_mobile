@@ -43,6 +43,7 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
+    fondFige_ = {};   // WFS-552 (accroche) : nouvelle partie : le fond du menu est redessiné avant d'être figé (jamais l'image de la partie d'avant)
     memoire::debutChargement();   // WFS-297 (RG-06) : « Lus » du chargement de cette partie
     chargerConfig();   // WFS-128 : configgame.json lu à chaque partie (téléphone, APK ; PC : WFS_CONFIG ou ./configgame.json)
     if (r.gpuLogiciel()) {   // WFS-59 : émulateur de la QA → ombres du soleil coupées (dt et rendu : plafondDt, vk.cpp)
@@ -79,6 +80,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
 }
 
 void Game::setCar(const char* carId) {
+    fondFige_ = {};   // WFS-552 (accroche) : autre voiture : le parking du menu est redessiné avec elle
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &voiturePermise(carId);   // WFS-404 (RG-04, accroche) : voiture retirée (licence NC) ou inconnue → 1re voiture permise
     paint_ = hexColor(carDef_->paint);
@@ -403,8 +405,9 @@ void Game::render(double time) {
     {
         fond_fige::Signature sig;
         sig.basse = r_->qualiteBasse; sig.ombres = r_->niveauOmbres; sig.echelle = r_->vk().renderScale; sig.msaa = (int)r_->vk().msaa; sig.nuit = fp.night;
-        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee, camMode == 2, fondAnime), sig));
+        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee && !sd.interface, camMode == 2, fondAnime), sig));   // WFS-552 (accroche) : parking du menu figé aussi
     }
+    if (ecran_ == Ecran::Course && commandesActives()) r_->flouFond = 0.f;   // WFS-548 (RG-02, accroche E23) : jamais de fond flouté en course (1re image après « Reprendre » comprise ; écran de fin : flouté)
     if (!r_->beginFrame(fp)) return;
     // WFS-329 (revue du lead dev) : tous les systèmes tournent encore quand le fond est figé (son, mesure des img/s, chauffe…) ;
     // le moteur ignore alors leurs dessins 3D (Renderer::draw…) et ceux de Game ci-dessous (route, joueur, conducteurs)
@@ -442,7 +445,9 @@ void Game::render(double time) {
     }
     if (dessin3d) conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
+    if (dediee && sd.interface) view_.sceneDediee = false;   // WFS-552 (accroche) : interface du menu dessinée sur son parking
     systemsUi();
+    view_.sceneDediee = dediee;   // WFS-552 (accroche)
     r_->endFrame();
 }
 

@@ -449,6 +449,7 @@ struct Renderer::Bloom {
     VkDescriptorSet pre = VK_NULL_HANDLE, setH[N]{}, setV[N]{}, setUp[N]{};
     float force = 0;   // force de l'image (0 : chaîne non dessinée)
     // UnrealBloomPass : bloomFactors [1,0 ; 0,8 ; 0,6 ; 0,4 ; 0,2] mélangés au rayon 0,45 (lerpBloomFactor : mix(f, 1,2 − f, r))
+    static float sommePoids() { float s = 0; for (int i = 0; i < N; i++) s += poids(i); return s; }   // WFS-548 : h[0] = Σ poids × niveau flou
     static float poids(int i) { const float f = 1.0f - 0.2f * (float)i, r = 0.45f; return f + (1.2f - f - f) * r; }
 
     void creer(Renderer& R) {
@@ -558,7 +559,7 @@ struct Renderer::Bloom {
         VkRect2D sc{{0, 0}, {w[i], ht[i]}};
         vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, R.postPLayout_, 0, 1, &s, 0, nullptr);
-        struct { float rot[4]; float params[4]; float bloom[4]; } pp{{1, 0, 0, 1}, {R.exposure_, 0, 0, 0}, {mode, poidsNiveau, z, mode == 1 ? R.echelleDyn_ : 0.f}};   // WFS-246 : bloom.w = part de la scène lue
+        struct { float rot[4]; float params[4]; float bloom[4]; } pp{{1, 0, 0, 1}, {R.exposure_, R.flouImage_ ? 1.f : 0.f, 0, 0}, {mode, poidsNiveau, z, mode == 1 ? R.echelleDyn_ : 0.f}};   // WFS-246 : bloom.w = part de la scène lue
         vkCmdPushConstants(cb, R.postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);
         vkCmdDraw(cb, 3, 1, 0, 0);
         vkCmdEndRenderPass(cb);
@@ -1206,6 +1207,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
     if (bloom_) bloom_->force = gpuLogiciel() || diag::actif(diag::SANS_POST) ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);   // WFS-419 : « sans post »
+    { const bool f = flouFond > 0.f; flouFond = 0.f; if (f != flouImage_) { flouImage_ = f; flouPret_ = false; sceneValide_ = false; } if (f && bloom_) bloom_->force = 1.f; }   // WFS-548 (RG-02) : flou du bloom, sans seuil
     {
         const vec3 L = sd, up = std::fabs(L.y) > 0.99f ? vec3{1, 0, 0} : vec3{0, 1, 0};
         const mat4 V = lookAt(L, {0, 0, 0}, up);
@@ -1828,6 +1830,7 @@ void Renderer::endFrame() {
     // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène (+ bloom, WFS-100)
     if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 3);
     passes::apresScene(*this, r.cb);   // WFS-150 : post-traitement enfichable (avant la passe finale)
+    flouPret_ = flouImage_;   // WFS-548 : fond flouté prêt, relu tel quel aux images suivantes
     sceneValide_ = true;   // WFS-329 : scène HDR de cette image gardée (relue telle quelle si le fond est figé ensuite)
     }
 
@@ -1843,6 +1846,7 @@ void Renderer::endFrame() {
     pp.params[0] = exposure_; pp.params[1] = vk.swapSrgb ? 1.f : 0.f;
     // WFS-15 / WFS-100 : force du bloom (calculée en début d'image) ; seuil 1,0 et genou 0,5 dans post.frag
     pp.params[2] = bloom_ ? bloom_->force : 0.f;
+    if (flouImage_ && bloom_) pp.params[2] = -1.f / Bloom::sommePoids();   // WFS-548 : < 0 : la passe finale lit le bloom flouté à la place de la scène
     pp.params[3] = eclairage::kVisionNuit();   // WFS-230 (accroche E13) : vision de nuit (Purkinje) ; 0 de jour
     pp.bloom[1] = eclairage::lAdaptationNuit();   // WFS-214 (accroche E13, RG-05) : vision de nuit loin des lumières seulement
     pp.bloom[3] = echelleDyn_;   // WFS-246 (RG-07) : part de la cible de scène dessinée, agrandie à tout l'écran

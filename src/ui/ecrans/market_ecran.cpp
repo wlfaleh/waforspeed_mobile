@@ -16,6 +16,7 @@
 #include "../petit_ecran.h"
 #include "../text.h"
 #include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../verre.h"   // WFS-548 (R19) : fenêtre et tuiles de verre, sur-titre gris, fond flouté
 #include "market_ecran_calculs.h"   // calculs testés (tests/test_market_ecran.cpp)
 #include "creation_profil.h"   // rien par-dessus « Crée ton pilote »
 #include "reglages_appui.h"    // appui::dansCible : cibles de 48 dp
@@ -31,7 +32,7 @@ const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6
 const unsigned ACCENT_PRESSE = 0xFF9A4D;   // bouton orange sous le doigt (même teinte que le Profil et les Crédits)
 // teintes des médailles (icône de chaque pack, interface 2D) : bronze, argent, or, coffre (orange de la monnaie)
 const unsigned TEINTE_PACK[MARKET_PRODUITS] = {0xCD7F32, 0xC9CDDA, 0xFFC531, 0xFF6A00, 0x00E5FF, 0x00E5FF};
-const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.98f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
+const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 constexpr int DEBUTANT = MARKET_ETOILES, SANS_PUB = MARKET_ETOILES + 1;
 constexpr double DUREE_MESSAGE = 2.6;   // message affiché (s)
 
@@ -192,12 +193,12 @@ void coche(Renderer& r, float x, float y, float c, const vec4& col) {
 void carte(Renderer& r, int i, float x, float y, float w, float h, float k, float kb) {
     const market::Pack p = market::pack(i);
     const bool debutant = i == DEBUTANT;
-    r.uiRect(x, y, w, h, hex(SURFACE2, 0.92f));
-    if (debutant) {   // mis en avant : liseré orange tout autour
-        const float e = std::max(2.f, 2 * kb);
-        r.uiRect(x, y, w, e, hex(ACCENT)); r.uiRect(x, y + h - e, w, e, hex(ACCENT));
-        r.uiRect(x, y, e, h, hex(ACCENT)); r.uiRect(x + w - e, y, e, h, hex(ACCENT));
-    } else r.uiRect(x, y, w, 3 * k, hex(TEINTE_PACK[i]));   // liseré de la teinte de la médaille
+    // WFS-548 (RG-01, maquette 12) : tuile de verre ; pack débutant mis en avant : liseré orange tout autour ; autres : liseré
+    // clair et trait de la teinte de la médaille en haut, entre les coins arrondis
+    verre::Style st; st.rayon = 12 * k; st.lisere = debutant ? std::max(2.f, 2 * kb) : 1.2f * kb; st.ombre = false; st.force = 0.7f;
+    st.bord = debutant ? ACCENT : 0;
+    verre::panneau(r, x, y, w, h, st);
+    if (!debutant) r.uiRect(x + st.rayon, y, w - 2 * st.rayon, 3 * k, hex(TEINTE_PACK[i]));
     const float pad = 14 * k;
     // téléphone couché (environ 410 dp de haut) : carte basse ; le badge chevauche le bord du haut, la médaille rétrécit ou disparaît
     const bool compacte = h < 220 * k;
@@ -297,17 +298,17 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     g.dp = ui::pixelsParDp(W);
     const Sauvegarde& s = sauvegarde();
-    r.uiRect(0, 0, W, H, hex(BG, 0.85f + 0.15f * op));
-    // panneau (comme le Profil et les Crédits) : surface, liseré cyan en haut
+    // WFS-548 (RG-01, RG-02) : écran arrêté : fond flouté et assombri, fenêtre de verre dépoli (plus de liseré cyan)
+    verre::fenetreSurEcran(r);   // menu ou garage dessous : leur interface n'est plus dessinée (verre::couvert)
+    verre::assombrir(r, W, H, 0.55f * op);
     const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
     const float pw = std::min(zr - zl, 1100 * k), px = zl + (zr - zl - pw) / 2;
     const float py = m.haut + (cp ? 8 : 20) * k, ph = H - py - m.bas - (cp ? 8 : 20) * k;
-    r.uiRect(px, py, pw, ph, SURFACE);
-    r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));
+    verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * kb});
     const float x0 = px + 24 * k, x1 = px + pw - 24 * k;
     // ---- en-tête : sur-titre, titre, solde à droite (RG-02)
     float y = py + 14 * k;
-    ui::text(r, x0, y, 12 * k, ui::majuscules(ui::tr("market.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+    verre::surTitre(r, x0, y, 12 * k, ui::tr("market.surtitre"));   // WFS-548 (RG-03)
     r.uiRect(x0, y + 22 * k, 4 * k, 26 * k, hex(ACCENT));   // barre néon du titre
     ui::text(r, x0 + 14 * k, y + 18 * k, 30 * k, ui::majuscules(ui::tr("market.titre")), hex(TEXTE), ui::GAUCHE, 0.04f, true);
     g.soldeVu = g.solde.suivre(boutique::solde(s), temps);   // RG-03 : solde qui monte quand des étoiles arrivent
@@ -349,8 +350,8 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     ui::textBoite(r, x0, yMent, x1 - x0, 16 * k, 12 * k, ui::tr("market.mentions"), hex(MUTED), ui::GAUCHE, 0);
     const float sh = 60 * k, ys = yMent - 12 * k - sh;
     {   // « Sans pub » (RG-02) : à part, « Acheté » une fois possédé
-        r.uiRect(x0, ys, x1 - x0, sh, hex(SURFACE2, 0.92f));
-        r.uiRect(x0, ys, 4 * k, sh, hex(ACCENT2));
+        { verre::Style st; st.rayon = 12 * k; st.lisere = 1.2f * kb; st.ombre = false; st.force = 0.7f; verre::panneau(r, x0, ys, x1 - x0, sh, st); }   // WFS-548 : tuile de verre
+        r.uiRect(x0 + 2 * k, ys + 12 * k, 3 * k, sh - 24 * k, hex(ACCENT2));   // trait d'information (entre les coins arrondis)
         const float bw = 210 * k, bx = x1 - 14 * k - bw, bys = ys + (sh - 46 * kb) / 2;
         ui::textBoite(r, x0 + 20 * k, ys + 8 * k, bx - 20 * k - (x0 + 20 * k), 22 * k, 18 * k, ui::majuscules(nomPack(SANS_PUB)), hex(TEXTE), ui::GAUCHE, 0.08f);
         ui::textBoite(r, x0 + 20 * k, ys + 32 * k, bx - 20 * k - (x0 + 20 * k), 18 * k, 13 * k, ui::tr("market.sans_pub.desc"), hex(MUTED), ui::GAUCHE, 0);

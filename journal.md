@@ -991,3 +991,76 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 - Commit relu ce342a2e. Branche construite et testée par le lead dev (Release) : compilation sans erreur, **145 test(s) réussi(s)**. 57 paires de captures regardées : menu, pause, Réglages, garage, Market, CGU, terrain, modes, fin et HUD (Menu et Caméra × 1,5, sans recouvrement) conformes à la R19, rectangles inchangés.
 - **Défauts bloquants** : (1) capture des tests CPU absente (`tests-cpu.log`, section « Tests CPU ») ; (2) `reglages.cpp:348-349` : « Crédits » garde `g_doigt`, le relâcher va aux Crédits (Menu 450 avant Réglages 460), donc le 1er appui après le retour dans les Réglages est perdu ; (3) écrans modifiés sans capture : salon, fins du duel, de la Course à 5 et de la Poursuite, « Crée ton pilote », profil, cadeau, paquets, skin offerte, fenêtre d'achat, fin d'essai, Crédits ouverts depuis les Réglages ; (4) Market hors ligne : bouton inactif « Acheter / Buy » illisible (texte sombre sur orange atténué).
 - Revue postée dans la PR (en commentaire : GitHub refuse REQUEST_CHANGES avec le même compte). TACHES : ↩️ Retour lead dev (PR #420) ; track-agent et suivi-pr mis à jour. À signaler au PO : la maquette 12 a des onglets au Market, absents ici (hors RG-07), à trancher.
+
+### 2026-11-15 14:32:00 — WFS-548 : PR #422 ouverte, accroches annoncées (Claude, agent dev3d (01Us6uCucP))
+- **Fait** : `src/ui/verre.{h,cpp}` (panneau de verre dépoli, sur-titres gris, couleurs d'état, dégradé de la marque), fond flouté des écrans arrêtés, écrans de RG-06 au modèle R19 ; test `test_verre`.
+- **Accroches annoncées** : rendu `src/render/renderer.{h,cpp}` **8 lignes** (≤ 10, demande de flou `flouFond`, chaîne du bloom sans seuil, image floutée gardée comme le fond figé de WFS-329) et `shaders/post.frag` (mode 1 sans seuil, passe finale `params.z < 0`) ; `src/game/game.cpp` 1 ligne (jamais de flou en course) ; écrans de fin listés par RG-06 mais dessinés dans `src/game/` : `course_system.cpp`, `course5_system.cpp`, `poursuite_system.cpp`, `duel_system.cpp`, `score_fin.cpp` (voile → fond flouté, surface → `verre::panneau`, sur-titre gris), 3 à 8 lignes chacun.
+- **Vérification** : 145 tests CPU réussis ; captures avant / après de 8 bancs (`captures_pr.sh`, FR et EN) + après seules (fins Course à 5, Poursuite, duel ; salon ; achat ; pause de nuit), dans `qa/pr/WFS-548/`.
+- **Limites** : seule la scène 3D est floutée (l'interface dessous est voilée, pas floutée) ; pas vu sur téléphone (🟡 après fusion).
+- **Anomalie trouvée, déjà sur `main`** : banc `score-fin` : 40 échecs identiques sur `main` et sur la branche (l'appui sur le compteur d'étoiles du menu n'ouvre plus le garage, puis le banc reste au garage et toutes ses fins de course Course à 5, Poursuite et duel échouent). Signalée au PO.
+
+### 2026-11-15 14:33:34 — ANO-274 et WFS-553 : banc `score-fin` en retard sur WFS-513 (po-scrum-master)
+- Signalement de Claude, agent dev3d (01Us6uCucP), pendant WFS-548 (PR #422) : `WFS_BANC=score-fin` donne 40 échecs identiques sur `main` et sur sa branche (code 3) ; 1er échec « appui sur le compteur → garage (RG-09) ». Il ne le corrige pas (hors de son ticket) : bonne décision.
+- Constat du PO dans le code : le jeu fait ce qui était prévu (WFS-537 RG-09 : le compteur ouvre le garage **tant que** le Market n'existe pas ; WFS-513 fusionné, `menu.cpp` l. 107 ouvre le Market). Le banc attend encore `Ecran::Garage` et ne referme pas le Market : c'est le banc qui est en retard.
+- Le banc `score-fin` n'apparaît pas dans `build.yml` ni `matin.yml` (recherche « score ») : CI de `main` et bancs du matin non touchés ; pas d'US P1. À confirmer par le développeur (RG-05).
+- Créés : **ANO-274** (`anno.md`, 📋 Planifiée) et **WFS-553** `[TECHNIQUE]` (P2 Haute, E22, ⏳ Prêt, `@dev`, règles `regles-de-gestion/WFS-553.md`) : seul `src/game/score_fin_banc.cpp` change, aucun contrôle retiré. À donner à une **nouvelle session** `@dev` qui le demande (pas à 01Us6uCucP, qui garde son seul ticket WFS-548).
+
+
+### 2026-11-15 14:51:13 — WFS-548 : PR #422 refusée par le lead dev (lead-dev)
+- **Revue** du commit `be3919ed` : 152 captures ouvertes, tout le diff lu, branche synchronisée avec `main` construite et testée (145 tests CPU réussis, `test_verre` OK). Rendu bien fait (flou calculé une fois puis relu, net en course, 8 lignes dans le renderer).
+- **Refus** (revue postée en commentaire, GitHub refusant « changements demandés » avec le même compte) : (1) l'interface de l'écran du dessous se voit à travers le verre (logo du menu derrière « RÉGLAGES », garage à travers le Market, menu à travers les CGU, écran de fin autour de la fenêtre d'achat) ; (2) le tableau « POSITION n/N » (titre cyan) reste au premier plan sur les fins Course à 5 et duel ; (3) capture « Tests CPU » et `tests-cpu.log` absentes. Demandé aussi : des captures « avant » des fins de course prises sur `main` avec les bancs `course5` et `menu2`.
+- **Statut** : ↩️ Retour lead dev (PR #422) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-15 15:22:36 — WFS-552 : PR #421 refusée par le lead dev (lead-dev)
+Commit relu eb05307b. Avis agent 3D VALIDÉ ; 30 captures ouvertes, rendu conforme à la maquette 01, aucune forme nue, aucune régression vue. Branche synchronisée, construite et testée par le lead dev : 145 tests CPU réussis. Refus pour 2 points : (1) capture « Tests CPU » absente de la PR et `qa/pr/WFS-552/tests-cpu.log` manquant (règle du 2026-11-11) ; (2) `src/game/personnalisation.cpp:18` : `NOMS_SKINS` a 4 noms pour 5 skins, nom `nullptr` pour « ciel » (`std::string(o->nom)` dans `cadeau_jour.cpp:65` si la traduction manque). Remarques non bloquantes : réserves A à C de l'agent 3D, Golf un peu sous la console en 1280 × 720 (seuil de `test_menu_parking` trop large), triangles du parking au journal. Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/421
+
+### 2026-11-15 16:09:54 — WFS-552 : PR #421 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCwZ7))
+- **Refus du lead dev sur eb05307b** : (1) journal des tests CPU absent de la PR ; (2) 5e skin sans nom dans `NOMS_SKINS` (risque de plantage du cadeau du jour).
+- **Corrigé dans 25107961** : nom « Bleu ciel » dans `src/game/personnalisation.cpp` (**accroche annoncée** : 1 ligne, plus les commentaires de `personnalisation.h` et de `garage_skin.h`) et contrôle « chaque objet du catalogue a un nom » dans `test_personnalisation` ; cadrage resserré : la voiture reste à droite de la console (bord gauche à x NDC ≥ −0,26 ; seuil du test −0,28, remarque du lead dev sur la Golf en 1280 × 720).
+- **Tests CPU** sur 25107961 : 145 réussis, 0 échec (`qa/pr/WFS-552/tests-cpu.log`). Captures refaites (ecba9dfa). Décor : 37 692 triangles, 11 appels de dessin.
+- **Avis de l'agent 3D** sur eb05307 : VALIDÉ avec réserves mineures (zones jaunes du capot et sous la plaque, qui sont des pièces d'origine du modèle ; vernis ; variation du béton du voile du fond) : tâche séparée à proposer au PO. Nouvel avis demandé sur ecba9dfa, puis lead dev.
+
+### 2026-11-15 16:11:04 — WFS-541 : PR #423 ouverte, accroches annoncées (Claude, agent conduite (01UY1Vv1WU))
+- **Fait** : voitures du trafic heurtées qui se redressent en roulant (≤ 15 km/h, demi-tour en plusieurs temps), retrait seulement hors de la vue après 8 s ; contacts entre voitures du trafic à chaque pas (emprises WFS-333) ; trafic écarté de la police sans la déplacer ; voitures qui passent à côté d'une accidentée hors de leur couloir ; changement de file au pas sans glisse de côté ; voiture qui contient la caméra non dessinée ; banc `trafic-541` (avant : `WFS_AVANT_541=1`).
+- **Fichiers** : `src/game/traffic.{h,cpp}`, `src/game/traffic_system.{h,cpp}`, `tests/test_trafic_chocs541.cpp` (nouveau), `tests/test_penetration_voitures.cpp` (12 graines au lieu de 6, aucune borne changée), `CMakeLists.txt` (1 test).
+- **Accroches hors zone (annoncées)** : `src/game/poursuite_system.cpp` (2 lignes : `separerDe` pour chaque voiture de police) ; `src/platform/desktop_main.cpp` (1 ligne : groupe `trafic-541`).
+- **Vérification** : tests CPU 145 / 145 (branche synchronisée) ; banc CPU 200 chocs (Corniche, trafic × 2,5) : pénétration 0,000 m, arrêt max 7,9 s, 0,090 ms par image (main 0,074) ; carambolage : pénétration ≤ 0,032 m ; captures avant / après regardées (32 + tests).
+- **Limites** : deux-roues couchés relevés seulement hors de la vue (comme avant) ; demi-tour d'une voiture tournée de plus de 90° jusqu'à 10 s ; après fusion 🟡 À valider (utilisateur).
+
+### 2026-11-15 16:23:56 — WFS-552 fusionné par le lead dev (lead-dev)
+PR #421 relue sur ecba9dfa (2e revue) : les deux défauts du refus sont corrigés (Tests CPU joints, nom « Bleu ciel »). Captures ouvertes, diff relu, construction et 145 tests CPU refaits (339 s, code 0), avis agent 3D « VALIDÉ ». Approbation postée en commentaire (même compte GitHub), fusion en squash 4594f3f7. Statut 🟡 À valider (utilisateur). Remarques non bloquantes : double commentaire `menu_parking_cadrage.cpp:12`, contact avec le bloc « Showroom » en 1280 × 720 (WFS-549), réserves A à C de l'agent 3D pour le PO.
+
+### 2026-11-15 16:24:58 — Fin WFS-552 : session terminée (Claude, agent dev3d (01Us6uCwZ7))
+- PR #421 fusionnée en squash par le lead dev (4594f3f7) après l'avis « VALIDÉ » de l'agent 3D sur ecba9dfa ; ticket 🟡 À valider (utilisateur) sur l'APK de `main` ; ligne `qa/Check.md` ajoutée par le lead dev.
+- Réserves mineures transmises au PO pour une tâche séparée : (A) pièces jaunes d'origine de `sf90.wfm` (prises d'air du capot, crochet sous la plaque) qui ne prennent pas la skin ; (B) reflet du vernis trop concentré ; (C) béton du voile du fond trop uni (trous de banche, salissures) ; (D) en 1280 × 720 l'avant de la voiture touche le bloc « Showroom » (à revoir avec WFS-549) ; double commentaire `menu_parking_cadrage.cpp:12`.
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+### 2026-11-15 16:25:46 — WFS-554 créé : finitions du menu 3D de WFS-552 (po-scrum-master)
+- Sur information de Claude, agent dev3d (01Us6uCwZ7) (WFS-552 fusionné #421, 4594f3f7, 🟡, session terminée) : réserves mineures de l'agent 3D et du lead dev regroupées dans **ANO-275** (mineure) et **une seule tâche séparée WFS-554** (P2 Haute, E23, ⏳ Prêt, nouvelle session `@dev` = dev-artiste-3d, avis `@3d` avant fusion, 🟡 après), ordre permanent « on ne jette pas un travail pour un petit défaut ». Règles : `regles-de-gestion/WFS-554.md` — RG-01 pièces jaunes de `sf90.wfm` peignables par la skin, RG-02 reflet du vernis élargi, RG-03 plus de liseré violet du caméléon (toutes les voitures caméléon), RG-04 béton du voile (trous de banche, joints, salissures), RG-05 cadrage 1280 × 720 sans toucher le bloc « Showroom » (dans le cadrage 3D, pas dans la console de WFS-549), RG-06 double commentaire de `menu_parking_cadrage.cpp`.
+- Aucun ticket attribué (la session 01Us6uCwZ7 s'arrête, règle « un sujet par session »). Note ajoutée à `regles-de-gestion/WFS-552.md` : au moment de la validation de l'utilisateur sur l'APK, lui dire que le nouveau caméléon vaut pour toutes les voitures caméléon.
+
+### 2026-11-15 16:31:11 — WFS-541 refusé par le lead dev (PR #423) (lead-dev)
+- Revue du commit bf573504 : les 64 captures regardées (avant / après) ; tout le diff relu ; construction et tests CPU refaits sur la branche synchronisée avec `main` : 145 / 145 ; scène `bouchon` du banc `trafic-541` relancée par le lead dev.
+- Bon : RG-01 (le SUV se redresse et repart), RG-03 (plus aucune voiture dans une autre, scène `pres`), coût CPU +0,02 ms.
+- Refus : (1) dans le bouchon, une voiture reste à 0 km/h pendant ≈ 5,6 s en glissant de 3 m sur le côté (plancher de 0,6 m/s dans `step`, bloc `lent`) et le bouchon dure ≈ 7 s contre ≈ 2,4 s sur `main` ; (2) la voiture 2 hésite entre deux files ; (3) deux commentaires déplacés dans `traffic.h` ; (4) pas de test CPU du changement de file au pas ; (5) `qa/pr/WFS-541/tests-cpu.log` absent ; (6) les captures `suv-*` montrent une berline, pas un SUV.
+- Statut : ↩️ Retour lead dev (PR #423) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+
+### 2026-11-15 17:23:27 — WFS-548 : PR #422 corrigée après le retour du lead dev (Claude, agent dev3d (01Us6uCucP))
+- Fait : fenêtre de verre qui couvre l'écran du dessous (`verre::fenetreSurEcran` / `verre::couvert()`, système `verre-couvre` d'ordre 1) ; tableau « POSITION n/N » retiré des fins Course à 5 et duel ; remarques non bloquantes (commentaires, marge du clavier, test `contourArrondi`).
+- Accroches hors zone (≤ 10 lignes chacune) : `src/ui/garage.cpp` (1 ligne : fenêtre d'achat seule quand elle couvre), `src/ui/ecrans/menu.cpp` (1 ligne), `src/ui/ecrans/compteur_etoiles.cpp` (1 condition), en plus des fins de course de `src/game/` déjà annoncées.
+- Vérification : 146 tests CPU réussis sur `5b190750` (synchronisé avec `main`) ; captures avant / après refaites (188 paires, 1280x720) et regardées, dont les 8 paires demandées ; réglages relancés après l'arrivée de WFS-552.
+- Commits : 897f8704, af74f8f6, 806b3672, debb6320, b3325221. Réponse point par point dans la PR ; lead dev rappelé.
+
+### 2026-11-15 17:41:02 — WFS-548 fusionné par le lead dev (lead-dev)
+
+PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés (rien de l'écran du dessous sous le verre, tableau « POSITION » retiré des fins, section Tests CPU). Captures ouvertes, diff complet lu, branche construite et testée par le lead dev (146 tests réussis). Approbation en commentaire (même compte GitHub), fusion en squash `b06ce1a0`. Statut 🟡 À valider (utilisateur).
+
+### 2026-11-15 17:41:35 — WFS-548 : fin de session après la fusion (Claude, agent dev3d (01Us6uCucP))
+- PR #422 fusionnée en squash par le lead dev (b06ce1a0) ; statut 🟡 À valider (utilisateur), ligne de `qa/Check.md` écrite par le lead dev.
+- Session terminée (un seul ticket par session) : aucun autre ticket demandé. À valider par l'utilisateur sur l'APK de `main` : fond flouté et panneaux en verre sur téléphone.
+
+### 2026-11-15 18:31:21 — WFS-541 : corrections de la revue 1 (PR #423) (Claude, agent conduite (01UY1Vv1WU))
+- **Corrigé** : (1) plus de déplacement de côté sans avancer (v · tan 35°), déboîtement au pas (7 km/h) derrière une voiture accidentée seulement ; (2) une seule décision de changement de file (les contacts ne l'annulent plus) ; (3) commentaires de `traffic.h` ; (4) cas D de `test_trafic_chocs541` (changement de file au pas : 0,000 m de côté à l'arrêt, 1,5 s d'arrêt au plus) ; (5) `qa/pr/WFS-541/tests-cpu.log` + capture « Tests CPU » ; (6) scène `heurtee` en M4 (le trafic n'a que 4 modèles, aucun SUV possible).
+- **Cause racine notée** : une relance du changement de file toutes les 0,5 s cassait RG-02 de WFS-281 (`test_trafic_duree`) : retirée.
+- **Vérification** : 147 / 147 tests CPU (branche synchronisée, WFS-548 compris) ; banc `trafic-541` régénéré, captures regardées ; réponses point par point dans la PR ; lead dev rappelé.

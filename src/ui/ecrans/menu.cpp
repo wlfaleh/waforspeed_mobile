@@ -26,9 +26,14 @@
 #include "reglages.h"
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
+#include "../menu_parking.h"   // WFS-552 : parking souterrain derrière le menu
+#include <cstdlib>
+#include "../../game/track.h"
+#include "../../game/player.h"
 #include "../credits.h"   // WFS-406 (accroche E8) : bouton et écran « Crédits »
 #include "compteur_etoiles.h"   // WFS-537 (accroche) : compteur d'étoiles à côté de « Réglages »
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
+#include "../verre.h"   // WFS-548 : rien du menu sous une fenêtre de verre (verre::couvert)
 
 namespace wfs {
 namespace ecrans {
@@ -68,6 +73,21 @@ const Choix CHOIX[3] = {   // section #menu de index.html ; WFS-505 (RG-01) : cl
 class Menu : public System {
 public:
     const char* name() const override { return "menu"; }
+    // WFS-552 (RG-05) : parking préparé au chargement de la partie ; mémoire refusée → fond d'avant (scène de la course figée)
+    void init(Renderer& r, const GameView&) override { if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r); }
+    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); }
+    // WFS-552 (RG-01, RG-04, RG-06) : derrière le menu, la voiture du joueur (sa peinture, sa finition et sa skin, dessinées par
+    // Game) garée dans le parking souterrain, en caméra rapprochée ; l'interface du menu reste dessinée par-dessus
+    bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
+        if (g.ecran != Ecran::Menu || !parking_.pret() || !g.car || !g.player || !g.track) return false;
+        voiture_ = matriceVoiture(g);
+        parking_.regler(fp, s, g, *g.car, voiture_);
+        s.interface = true;
+        return true;
+    }
+    void render(Renderer& r, const GameView& g) override {
+        if (g.ecran == Ecran::Menu && g.sceneDediee && parking_.pret()) parking_.dessiner(r, voiture_);
+    }
     void onEcran(Ecran, Ecran nouveau, const GameView&) override {
         if (nouveau == Ecran::Menu) t0_ = -1;
         presse_ = -1; doigt_ = -1;
@@ -122,6 +142,7 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
         if (creationProfilOuverte()) { t0_ = -1; return; }   // WFS-481 (RG-02) : rien du menu sous la création du profil ; fondu d'entrée ensuite
+        if (verre::couvert()) return;   // WFS-548 : fenêtre de verre par-dessus (Réglages, CGU, Profil, Market) : seule la scène floutée se voit
         const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         if (t0_ < 0) t0_ = g.time;
         const float W = g.uiWidth, H = g.uiHeight, t = (float)(g.time - t0_);
@@ -210,6 +231,13 @@ public:
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
+    // repère de la voiture du joueur posée sur la piste (même calcul que Game::carMatrix : tracé lissé, cap, pente)
+    static mat4 matriceVoiture(const GameView& g) {
+        const TrackPoint p = g.track->pointLisse(g.player->dist, g.player->playerX * RW);
+        return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + g.player->heading + g.player->spinYaw)) * rotateX((float)p.slope);
+    }
+    parking::Parking parking_;   // WFS-552
+    mat4 voiture_ = mat4::identity();
     double t0_ = -1;
     bool finVue_ = false;
     int presse_ = -1, doigt_ = -1;   // choix à l'état pressé, doigt qui le tient (WFS-38)

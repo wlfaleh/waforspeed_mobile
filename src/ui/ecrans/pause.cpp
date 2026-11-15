@@ -11,6 +11,7 @@
 #include "../hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../text.h"
 #include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../verre.h"   // WFS-548 (R19) : panneau de verre, sur-titre gris, fond flouté
 #include "../langue.h"   // WFS-505 : textes de la pause en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
@@ -23,7 +24,7 @@ namespace {
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 // jetons :root du jeu web (codes sRGB)
-const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SURFACE2 = 0x1E2130;
+const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, ACCENT = 0xFF6A00, SURFACE2 = 0x1E2130;
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f};
 
 struct Zone {
@@ -105,10 +106,12 @@ private:
 
     // section #pause : voile, .eyebrow « Course en pause » (cyan), .big « Pause » (ANO-34), .actions : .btn + 2 × .btn--ghost
     void dessinerPause(Renderer& r, float W, float H, float k) {
-        r.uiRect(0, 0, W, H, hex(BG, 0.82f));
+        // WFS-548 (RG-01 à RG-03, maquette 19) : course floutée derrière (écran arrêté), voile léger, fenêtre de verre dépoli
+        // autour du titre et des boutons, sur-titre gris (plus de cyan) ; textes et place des boutons inchangés
+        verre::fondFloute(r);
+        verre::assombrir(r, W, H, 0.38f);
+        if (reglagesOuverts()) return;   // les Réglages ouverts par-dessus : leur fenêtre de verre seule (la pause se voyait au travers)
         const float cx = W / 2;
-        ui::text(r, cx, H * 0.24f, 14 * k, ui::majuscules(ui::tr("pause.surtitre")), hex(ACCENT2), ui::CENTRE, 0.22f, false);
-        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules(ui::tr("pause.titre")), hex(TEXTE), ui::CENTRE, 0.02f, false);
         // boutons de l'écran de fin (WFS-38 / WFS-57) : hauteur 10 % de H, biais 14 px, texte 5 % de H, espacement 0,12 em,
         // largeur = texte + 2 × 28 px ; rangée centrée, 2 % de H d'écart
         const float u = H / 100, bh = 10 * u, tp = 5 * u, gap = 2 * u;
@@ -120,6 +123,10 @@ private:
         }
         float x = cx - total / 2;
         const float y = H * 0.56f;
+        const float pw = std::max(total + 2 * 40 * k, W * 0.46f), py = H * 0.19f;
+        verre::panneau(r, cx - pw / 2, py, pw, y + bh + 4 * u - py, {14 * k, 1.5f * k});
+        verre::surTitre(r, cx, H * 0.24f, 14 * k, ui::tr("pause.surtitre"), ui::CENTRE);
+        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules(ui::tr("pause.titre")), hex(TEXTE), ui::CENTRE, 0.02f, false, true);
         for (int i = 0; i < 3; i++) {
             g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
             if (i == REPRENDRE) {   // WFS-549 (RG-01, RG-07) : action principale en bouton Start/Stop, même rectangle qu'avant
@@ -128,8 +135,13 @@ private:
                 continue;
             }
             biseau(r, x, y, wb[i], bh, 14 * k, hex(SURFACE2));
+            if (i == QUITTER) {   // WFS-548 (RG-05) : « Quitter la course » bordé de rouge (perte), dessin du bouton inchangé
+                const float b = 14 * k;
+                const vec2 q[4] = {{x + b, y}, {x + wb[i], y}, {x + wb[i] - b, y + bh}, {x, y + bh}};
+                dessin2d::contour(r, q, 4, 1.5f * k, verre::hexa(verre::PERTE));
+            }
             // texte à y + 2,6 % de H (centré dans 10 % : +0,1 % de H, comme avant) ; anglais plus long : police réduite de 20 % au plus
-            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), hex(TEXTE), ui::CENTRE, 0.12f, false);
+            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), i == QUITTER ? verre::hexa(verre::PERTE) : hex(TEXTE), ui::CENTRE, 0.12f, false);
             x += wb[i] + gap;
         }
     }

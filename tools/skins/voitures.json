@@ -5,5 +5,6 @@
   "gt86":    {"roue_av": -1.222, "roue_ar": 1.276, "rayon": 0.312, "bas": 0.33, "ceinture": 0.84, "porte": 0.45, "largeur": 0.89, "avant": -2.120, "arriere": 2.120, "toit": 1.29},
   "golf":    {"roue_av": -1.264, "roue_ar": 1.373, "rayon": 0.319, "bas": 0.34, "ceinture": 0.93, "porte": 0.38, "largeur": 0.895, "avant": -2.145, "arriere": 2.145, "toit": 1.46},
   "mustang": {"roue_av": -1.338, "roue_ar": 1.373, "rayon": 0.333, "bas": 0.30, "ceinture": 0.80, "porte": 0.40, "largeur": 0.94, "avant": -2.245, "arriere": 2.245, "toit": 1.24},
-  "giulia":  {"roue_av": -1.523, "roue_ar": 1.294, "rayon": 0.325, "bas": 0.34, "ceinture": 0.92, "porte": 0.36, "largeur": 0.935, "avant": -2.320, "arriere": 2.320, "toit": 1.43}
+  "giulia":  {"roue_av": -1.523, "roue_ar": 1.294, "rayon": 0.325, "bas": 0.34, "ceinture": 0.92, "porte": 0.36, "largeur": 0.935, "avant": -2.320, "arriere": 2.320, "toit": 1.43},
+  "sf90":    {"roue_av": -1.183, "roue_ar": 1.493, "rayon": 0.346, "bas": 0.28, "ceinture": 0.82, "porte": 0.40, "largeur": 0.985, "avant": -2.425, "arriere": 2.425, "toit": 1.19}
 }
