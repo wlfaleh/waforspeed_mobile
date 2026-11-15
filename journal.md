@@ -2066,3 +2066,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:45:59 — R19 : onglets Finition et Skins du garage (smart-brainstorming)
 - Demande de l'utilisateur : tabs Finition et Skins dans le style de l'onglet Peinture (gouttes) ; `16-garage-finition.jpg`, `07-garage-skin.jpg` remplacé. Rien transmis au PO.
+
+### 2026-11-15 00:49:40 — R19 : skins en grandes pastilles, finitions en pistolets (smart-brainstorming)
+- Idées de l'utilisateur (image de référence d'un pistolet de peinture) : onglet Skins en grandes pastilles, onglet Finition en pistolets de carrossier. Rien transmis au PO.
