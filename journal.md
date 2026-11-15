@@ -2042,3 +2042,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:22:31 — R19 : position de la voiture dans la liste (smart-brainstorming)
 - Demande de l'utilisateur : indicateur de position (17 segments + « 17 / 17 ») sous le plateau. Rien transmis au PO.
+
+### 2026-11-15 00:24:20 — R19 : onglet Peinture du garage (smart-brainstorming)
+- Demande de l'utilisateur : proposition pour la tab Peinture, dans le style de l'onglet Voiture validé (`06-garage-couleur.jpg` remplacé). Rien transmis au PO.
