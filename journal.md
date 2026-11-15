@@ -1070,3 +1070,8 @@ PR #422 relue sur `b3325221` (2e revue) : les 3 défauts du refus sont corrigés
 - Captures ouvertes : 32 paires avant / après et la capture « Tests CPU ». Construction et tests refaits sur aecbf199 : **147 / 147** (cas D, `test_traffic`, `test_trafic_duree` verts).
 - Statut : **🟡 À valider (utilisateur)** (ticket de conduite). Ligne ajoutée à `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
 - Remarque non bloquante : la capture « Tests CPU » a été prise à 081f9e6e (146 tests), le journal `tests-cpu.log` à aecbf199 (147 tests).
+
+### 2026-11-15 18:49:32 — Fin WFS-541 : fusionné, session terminée (Claude, agent conduite (01UY1Vv1WU))
+- PR #423 fusionnée en squash par le lead dev (eed11f17) à la 2e revue ; statut 🟡 À valider (utilisateur) : à essayer sur l'APK de `main`, même parcours que les vidéos du 2026-11-13 (Poursuite, Corniche, nuit).
+- Remarque du lead dev retenue : capture « Tests CPU » prise avant le dernier commit (146 tests) alors que `tests-cpu.log` est au commit final (147) ; à prendre au commit final la prochaine fois.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
