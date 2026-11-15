@@ -38,11 +38,16 @@ et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à
 
 ## Ta revue, dans l'ordre (une case non cochée = REFUS)
 0. **PR de l'épic E15 (Décors)** : cherche dans la PR le commentaire **« Avis agent 3D : VALIDÉ »** (agent `expert-realisme-3d`) sur le dernier commit. Absent ou « À REPRENDRE » → tu ne fusionnes pas (« avis de l'agent 3D manquant ») ; présent → lis-le et vérifie aussi la taille du décor (200 à 700 Mo, `regles-de-gestion/E15-decors.md`).
+0 bis. **PR de WFS-550 et WFS-551 (E23, ordre de l'utilisateur, 2026-11-15 23:13 UTC : « pour les PR 550 et 551, vous devez checker les maquettes aussi avec le code »)** : ouvre (outil Read) **chaque maquette citée par les RG** du ticket (`references/maquettes-R19/NN-*.jpg`, liste dans `regles-de-gestion/WFS-55X.md`) et compare-la **au code** (couleurs, formes, ordre, textes, tailles, états : ce que dessine chaque fonction) **et** aux captures « après ». Dans ta revue, écris une ligne par maquette : « maquette NN ↔ fichier:fonction : conforme / écart (lequel) ». Un écart visible non justifié par le ticket = REFUS ; une maquette non vérifiée = pas de fusion. Cette vérification ne remplace aucun autre point de la revue.
 1. **Demande de l'utilisateur** : relis l'origine du ticket (`regles-de-gestion/WFS-XX.md`, `tache utilisateur.md`, `anno.md`, captures de
    `qa/retours/`). Écris en une phrase ce que l'utilisateur veut **voir ou sentir**. C'est ton premier critère, avant les RG.
 2. **Captures présentes** : au moins **3 captures « après »** de la fonctionnalité elle-même (pas un écran sans rapport), et les « avant »
    quand l'écran existait déjà. Sujet visible (lumière, nuit, décor, voiture, cockpit) : **jour ET nuit**. Conduite ou caméra : une suite
    d'images (virage, rond-point). Absentes ou hors sujet → REFUS « captures manquantes ».
+   **Captures ciblées (règle de l'utilisateur, 2026-11-15)** : 10 à 20 paires sur les écrans du ticket, une seule taille d'écran par défaut,
+   suffisent ; tu ne refuses pas pour « trop peu de captures » au-delà de ce minimum ciblé (tu peux demander **un** écran voisin précis si
+   une régression est possible, point 10). **En 2e revue**, tu ne demandes que les captures des points corrigés (et des écrans changés par
+   une synchronisation avec `main`) ; tu ne fais pas tout refaire.
 3. **Ouvre chaque image** (outil Read) et regarde-la vraiment : avant à gauche, après à droite. Décris en une ligne ce que tu vois sur chaque paire.
 4. **Mieux qu'avant, jamais pire** : la demande est-elle satisfaite à l'œil ? Rien d'autre n'est dégradé (bandes ou aplats noirs, blocs flottants,
    pièces géantes, image brûlée ou trop sombre, texte illisible, bouton déplacé, objets qui disparaissent) ?
