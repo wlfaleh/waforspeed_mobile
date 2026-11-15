@@ -17,6 +17,7 @@
 #include "../petit_ecran.h"
 #include "../langue.h"
 #include "../text.h"
+#include "../verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, intertitres orange clair, fond flouté
 #include "cgu_appui.h"
 #include "reglages.h"
 
@@ -28,7 +29,7 @@ vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8)
 const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SURFACE2 = 0x1E2130,
                DANGER = 0xFF1F4B;
 const unsigned ACCENT_PRESSE = 0xFF9A4D;   // WFS-355 : « Accepter » sous le doigt (même teinte que les Réglages, WFS-290)
-const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.98f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
+const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 
 // texte d'un fichier : assets de l'APK (cgu/…, copiés par android/app/build.gradle), sinon store/ (PC, depuis la racine du dépôt)
 std::string lireTexte(const char* nom) {
@@ -128,15 +129,16 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     dp_ = ui::pixelsParDp(W);
-    r.uiRect(0, 0, W, H, hex(BG));
+    // WFS-548 (RG-02, maquette 22) : écran arrêté : scène floutée et assombrie derrière (sans scène : fond --bg presque opaque)
+    if (mode_ == Mode::Premier) r.uiRect(0, 0, W, H, hex(BG));   // 1er lancement : aucune scène derrière, fond --bg comme avant
+    else { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }   // ouvertes depuis les Réglages : menu ou pause dessous, couverts
     const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
     const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
     const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;
-    r.uiRect(px, py, pw, ph, SURFACE);
-    r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
+    verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * kb});   // WFS-548 (RG-01) : verre dépoli (plus de liseré cyan)
     const float x0 = px + 24 * k;
     const std::string sur = ui::tr(mode_ == Mode::Premier ? "cgu.surtitre.premier" : "cgu.surtitre.reglages", std::to_string(VERSION_CGU));
-    ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(sur), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+    verre::surTitre(r, x0, py + 14 * k, 12 * k, sur);   // WFS-548 (RG-03) : sur-titre gris
     const float tt = (cp ? 26 : 34) * k;
     ui::text(r, x0, py + 32 * k, tt, ui::majuscules(ui::tr("cgu.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
     const float haut = py + 32 * k + tt + 12 * k;
@@ -179,7 +181,7 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     // cadre du texte défilant
     const float tx = px + 20 * k, ty = haut, tw = pw - 40 * k, th = by - 14 * k - ty, pad = 14 * k;
     zTexte_ = {tx, ty, tw, th};
-    r.uiRect(tx, ty, tw, th, hex(BG, 0.65f));
+    { verre::Style st; st.rayon = 10 * k; st.lisere = kb; st.ombre = false; st.force = 0.45f; verre::panneau(r, tx, ty, tw, th, st); }   // WFS-548
     const float largeur = tw - 2 * pad - 12 * k;
     if (std::fabs(largeur - largeurPage_) > 0.5f || std::fabs(k - kPage_) > 1e-4f) mettreEnPage(largeur, k);
     const float vue = th - 2 * pad;
@@ -188,7 +190,8 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
     for (const Ligne& l : lignes_) {   // lignes entièrement visibles seulement (pas de découpe du texte par l'interface)
         const float y = l.y - defil_;
         if (y < 0 || y + l.taille * 1.2f > vue) continue;
-        const vec4 c = l.style == ParagrapheCgu::TITRE ? hex(ACCENT2) : l.style == ParagrapheCgu::SOUS_TITRE ? hex(ACCENT) : hex(TEXTE, 0.92f);
+        // WFS-548 (RG-03, maquette 22) : titre du texte en blanc, intertitres en orange clair (plus de cyan)
+        const vec4 c = l.style == ParagrapheCgu::TITRE ? hex(TEXTE) : l.style == ParagrapheCgu::SOUS_TITRE ? verre::hexa(verre::INTERTITRE) : hex(TEXTE, 0.92f);
         const std::string t = l.style == ParagrapheCgu::SOUS_TITRE ? ui::majuscules(l.texte) : l.texte;
         ui::text(r, tx + pad + l.x, ty + pad + y, l.taille, t, c, ui::GAUCHE, l.style == ParagrapheCgu::SOUS_TITRE ? 0.08f : 0.f, false);
     }

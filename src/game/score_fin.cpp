@@ -12,6 +12,7 @@
 #include "../ui/text.h"
 #include "commandes_tactiles.h"   // dessin2d::polygone (★)
 #include "score_fin_calc.h"
+#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs::score_fin {
 
@@ -73,6 +74,7 @@ private:
     bool sonJoue_ = false;
 
     void dessiner(Renderer& r, const GameView& g, double ecoule) {
+        if (verre::couvert()) return;   // WFS-548 : fenêtre d'achat par-dessus : seule la scène floutée dessous
         const Etat& e = g_etat;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         // RG-04 : à droite du panneau (à gauche s'il y a plus de place), jamais par-dessus ; trop étroit : tout est réduit (70 % au plus)
@@ -91,12 +93,11 @@ private:
         if (e.nouveauRecord) ch += 6 * s;                             // « Nouveau record ! »
         ch += 2.6f * s;                                               // marge basse
         const float y = std::max(g.marges.haut + bord, std::min(g_py, H - g.marges.bas - bord - ch));
-        r.uiRect(x, y, cw, ch, SURFACE);
+        verre::panneau(r, x, y, cw, ch, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli (plus de liseré)
         g_bloc[0] = x; g_bloc[1] = y; g_bloc[2] = cw; g_bloc[3] = ch;
-        r.uiRect(x, y, cw, 0.6f * u, ui::ORANGE);   // liseré néon des panneaux de fin
         const float xg = x + 3 * s, xd = x + cw - 3 * s, lw = cw - 6 * s;
         float yy = y + 3 * s;
-        ui::text(r, xg, yy, 2.8f * s, ui::majuscules(ui::tr("fin.score.titre")), ui::CYAN, ui::GAUCHE, 0.22f, false);
+        verre::surTitre(r, xg, yy, 2.8f * s, ui::tr("fin.score.titre"));   // WFS-548 (RG-03) : gris
         yy += 2.8f * s + 2.4f * s;
         if (e.detail) {
             const float pts = ui::width(3.2f * s, "+000");

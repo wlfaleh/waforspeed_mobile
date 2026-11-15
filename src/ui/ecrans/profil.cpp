@@ -11,6 +11,7 @@
 #include "../../game/course_system.h"   // banc : courseBenchRules, activeCourse
 #include "../../game/game.h"
 #include "../../game/commandes_tactiles.h"   // dessin2d (biseau)
+#include "../verre.h"   // WFS-548 (R19) : panneaux de verre, sur-titres gris, couleurs d'état, fond flouté
 #include "../../game/sauvegarde.h"
 #include "../../game/textes_course.h"         // ordinal (« 1re » / « 1st »), comme l'écran de fin
 #include "../../platform/manette.h"           // focus de la manette ; zone retour = touche Retour d'Android
@@ -31,7 +32,7 @@ vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8)
 // design-street-racing : fond, surface, accent orange (action : « Modifier »), cyan (information), textes
 const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF;
 const unsigned ACCENT_PRESSE = 0xFF9A4D;   // bouton orange sous le doigt (même teinte que les Crédits et les CGU)
-const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.98f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
+const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 
 struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
@@ -149,17 +150,17 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     g.dp = ui::pixelsParDp(W);
     const Sauvegarde& s = sauvegarde();
     const Profil& p = s.profil;
-    r.uiRect(0, 0, W, H, hex(BG, 0.85f + 0.15f * op));
-    // panneau (comme les Crédits) : surface, liseré cyan en haut
+    // WFS-548 (RG-01 à RG-03, maquette 21) : écran arrêté : fond flouté et assombri, fenêtre de verre dépoli (plus de liseré cyan)
+    verre::fenetreSurEcran(r);   // menu dessous : son interface n'est plus dessinée (verre::couvert)
+    verre::assombrir(r, W, H, 0.55f * op);
     const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
     const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
     const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;
-    r.uiRect(px, py, pw, ph, SURFACE);
-    r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));
+    verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * kb});
     const float x0 = px + 24 * k, x1 = px + pw - 24 * k;
     // ---- en-tête (RG-02) : sur-titre, pseudo, « Pilote depuis le … », plaque à droite
     float y = py + 14 * k;
-    ui::text(r, x0, y, 12 * k, ui::majuscules(ui::tr("profil.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+    verre::surTitre(r, x0, y, 12 * k, ui::tr("profil.surtitre"));
     const float wPlaque = 170 * k;
     const float largeurPseudo = x1 - wPlaque - 24 * k - (x0 + 14 * k);
     const float tPseudo = 30 * k;
@@ -185,12 +186,14 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
         const float cw = lg / 3, nh = 24 * k;
         for (int i = 0; i < 5; i++) {
             const float cx = x0 + (i % 3) * cw, cy = y + (i / 3) * (nh + 30 * k);
+            verre::Style tuile; tuile.rayon = 8 * k; tuile.lisere = kb; tuile.ombre = false; tuile.force = 0.55f;   // WFS-548 : tuile de verre
+            verre::panneau(r, cx - 8 * k, cy - 6 * k, cw - 4 * k, nh + 26 * k, tuile);
             ui::textBoite(r, cx, cy, cw - 10 * k, nh, nh, ch[i].valeur, hex(TEXTE), ui::GAUCHE, 0, false, true);
             ui::textBoite(r, cx, cy + nh + 2 * k, cw - 10 * k, 14 * k, 12 * k, ui::majuscules(ui::tr(ch[i].cle)), hex(MUTED), ui::GAUCHE, 0.10f);
         }
         y += 2 * (nh + 30 * k) + 2 * k;
     }
-    ui::text(r, x0, y, 12 * k, ui::majuscules(ui::tr("profil.records")), hex(ACCENT2), ui::GAUCHE, 0.15f, false);
+    verre::surTitre(r, x0, y, 12 * k, ui::tr("profil.records"));
     y += 20 * k;
     {
         struct Rec { std::string mode, valeur; };
@@ -202,7 +205,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
         }
     }
     y += 8 * k;
-    ui::text(r, x0, y, 12 * k, ui::majuscules(ui::tr("profil.voiture")), hex(ACCENT2), ui::GAUCHE, 0.15f, false);
+    verre::surTitre(r, x0, y, 12 * k, ui::tr("profil.voiture"));
     y += 20 * k;
     {
         const std::string id = p.voiturePreferee();
@@ -218,7 +221,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     // ---- colonne de droite : 20 dernières courses (RG-06), puis « Modifier » et « Retour » (RG-07, RG-01)
     const float rx = x0 + lg + 28 * k, rw = x1 - rx;
     const float bh = 50 * kb, by = py + ph - 14 * k - bh;
-    ui::text(r, rx, yCorps, 12 * k, ui::majuscules(ui::tr("profil.historique")), hex(ACCENT2), ui::GAUCHE, 0.15f, false);
+    verre::surTitre(r, rx, yCorps, 12 * k, ui::tr("profil.historique"));
     {
         const std::string n = std::to_string(p.dernieres.size()) + " / " + std::to_string(profil::HISTORIQUE_MAX);
         const textes::NomPropre np;   // compteur : chiffres seulement
@@ -226,7 +229,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     }
     const float ly = yCorps + 20 * k, lh = by - 12 * k - ly, pad = 6 * k;
     g.liste = {rx, ly, rw, lh};
-    r.uiRect(rx, ly, rw, lh, hex(BG, 0.65f));
+    { verre::Style tuile; tuile.rayon = 10 * k; tuile.lisere = kb; tuile.ombre = false; tuile.force = 0.55f; verre::panneau(r, rx, ly, rw, lh, tuile); }   // WFS-548
     const float hl = LIGNE_DP * k, vue = lh - 2 * pad;
     g.lignes = (int)p.dernieres.size();
     g.defilMax = std::max(0.f, g.lignes * hl - vue);
@@ -249,7 +252,9 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
                 ui::textBoite(r, lx, yl + 25 * k, lw - wr - 10 * k, 16 * k, 12 * k, ui::majuscules(nomVoiture(c.voiture)) + "  ·  " + date(c.date), hex(MUTED), ui::GAUCHE, 0.04f);
             }
             const bool bon = !c.quittee && (c.victoire || (c.mode == ModeJoue::Course5 && c.place == 1));
-            ui::textBoite(r, lx + lw, yl + 5 * k, wr, 18 * k, 15 * k, res, bon ? hex(ACCENT2) : hex(c.quittee ? MUTED : TEXTE), ui::DROITE, 0);
+            // WFS-548 (RG-05) : rouge = perte (duel perdu, arrêté par la police)
+            const bool perte = !c.quittee && !c.victoire && (c.mode == ModeJoue::Duel || c.mode == ModeJoue::Poursuite);
+            ui::textBoite(r, lx + lw, yl + 5 * k, wr, 18 * k, 15 * k, res, bon ? hex(ACCENT2) : perte ? verre::hexa(verre::PERTE) : hex(c.quittee ? MUTED : TEXTE), ui::DROITE, 0);
         }
         if (g.defilMax > 0) {   // ascenseur
             const float sx = rx + rw - 8 * k, hb = std::max(24 * k, vue * vue / (g.lignes * hl)), sy = ly + pad + (vue - hb) * (g.defil / g.defilMax);

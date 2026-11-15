@@ -32,6 +32,7 @@
 #include "../credits.h"   // WFS-406 (accroche E8) : bouton et écran « Crédits »
 #include "compteur_etoiles.h"   // WFS-537 (accroche) : compteur d'étoiles à côté de « Réglages »
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
+#include "../verre.h"   // WFS-548 : rien du menu sous une fenêtre de verre (verre::couvert)
 
 namespace wfs {
 namespace ecrans {
@@ -140,6 +141,7 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
         if (creationProfilOuverte()) { t0_ = -1; return; }   // WFS-481 (RG-02) : rien du menu sous la création du profil ; fondu d'entrée ensuite
+        if (verre::couvert()) return;   // WFS-548 : fenêtre de verre par-dessus (Réglages, CGU, Profil, Market) : seule la scène floutée se voit
         const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         if (t0_ < 0) t0_ = g.time;
         const float W = g.uiWidth, H = g.uiHeight, t = (float)(g.time - t0_);
