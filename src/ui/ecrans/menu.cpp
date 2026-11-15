@@ -12,6 +12,7 @@
 #include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../langue.h"   // WFS-505 : textes du menu en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
@@ -183,24 +184,15 @@ public:
         const float lw = std::min(460 * kb, m.largeur);   // WFS-168 : largeur d'avant WFS-147
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
-            const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
-            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + ecart);   // translateX(10px)
+            const bool presse = i == presse_;   // .mitem:active (WFS-38) : état pressé
+            const float x = m.x + dx, yi = y + i * (itemH + ecart);
             g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * kb, true};   // zone fixe : l'état pressé ne la déplace pas
             manette::focus(g_zones[i]);   // WFS-22
-            if (grise) a *= 0.45f;
-            // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
-            const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};
-            {   // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 10 bandes translucides qui se chevauchaient)
-                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * kb, yi + itemH}, {x, yi + itemH}};
-                dessin2d::polygone(r, p, 4, dessin2d::uni(fond));
-            }
-            const bool solo = i == SOLO;   // #startBtn : barre et titre orange
-            if (presse) {   // barre gauche cyan --accent-2 avec halo (0 0 12px rgba(0,229,255,.7))
-                for (int h = 3; h >= 1; h--) r.uiRect(x - 4 * k * h, yi - 2 * k * h, 3 * k + 8 * k * h, itemH + 4 * k * h, hex(ACCENT2, 0.12f * a));
-                r.uiRect(x, yi, 3 * k, itemH, hex(ACCENT2, a));
-            } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
-            ui::text(r, x + 22 * kb, yi + 12 * kb, (cp ? 21 : 26) * k, ui::majuscules(ui::tr(CHOIX[i].titre)), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
-            ui::text(r, x + 22 * kb, yi + 44 * kb, (cp ? 14 : 13) * k, ui::tr(CHOIX[i].desc), hex(MUTED, a), ui::GAUCHE, 0, false);
+            // WFS-549 (RG-01, RG-03, RG-07) : modèle R19 dans le même rectangle qu'avant (460 × 70) : « Course solo » et « Duel en
+            // ligne » en bouton Start/Stop, « Showroom » (ouvre le garage) en pilule chrome ; titre et description inchangés
+            const std::string titre = ui::majuscules(ui::tr(CHOIX[i].titre)), desc = ui::tr(CHOIX[i].desc);
+            if (i == SHOWROOM) ui::boutons::piluleChrome(r, x, yi, lw, itemH, titre, a, presse, (cp ? 21 : 24) * k, desc);
+            else ui::boutons::startStop(r, x, yi, lw, itemH, titre, a, presse, desc, (cp ? 19 : 22) * k);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------

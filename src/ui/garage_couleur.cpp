@@ -13,6 +13,7 @@
 #include "garage_achat.h"   // étoile, texte avec ★, équivalents
 #include "langue.h"
 #include "text.h"
+#include "boutons.h"   // WFS-549 : boutons au modèle R19
 
 namespace wfs::ecrans::garage {
 namespace {
@@ -65,13 +66,17 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
     const float yy = mp.y1 + mp.statH + 14 * k, s = PASTILLE * k, pas = (PASTILLE + ECART) * k;
     float cx = mp.px0 + mp.padX;
     // RG-02 : onglets « Principale » / « Toit et rétros » (à la place du libellé « Couleur »)
+    // WFS-549 (RG-05, RG-07) : sélecteur de verre (rangée commune, choix actif = pilule blanche), mêmes rectangles qu'avant
+    {
+        float wTot = 0;
+        for (int o = 0; o < 2; o++) wTot += ui::width(11 * k, ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale")), 0.14f) + 22 * k;
+        ui::boutons::selecteurFond(r, cx, yy, wTot + 6 * k, ONGLET_H * k, op);
+    }
     for (int o = 0; o < 2; o++) {
         const std::string t = ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale"));
         const float w = ui::width(11 * k, t, 0.14f) + 22 * k;
         const bool on = toit_ == (o == 1);
-        biseau(r, cx, yy, w, ONGLET_H * k, 5 * k, on ? hex(ACCENT2, op) : vec4{1, 1, 1, 0.08f * op});
-        biseau(r, cx + 2 * k, yy + 2 * k, w - 4 * k, ONGLET_H * k - 4 * k, 5 * k, on ? hex(SURFACE2, op) : hex(SURFACE2, 0.85f * op));
-        ui::text(r, cx + w / 2, yy + 9 * k, 11 * k, t, hex(on ? TEXTE : MUTED, op), ui::CENTRE, 0.14f, false);
+        ui::boutons::selecteurChoix(r, cx, yy, w, ONGLET_H * k, t, on, op, false, 11 * k);
         g_z.onglets[o] = {cx, yy - 4 * k, w, ONGLET_H * k + 8 * k};
         manette::focus(g_z.onglets[o]);
         cx += w + 6 * k;

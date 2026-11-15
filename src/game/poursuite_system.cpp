@@ -23,6 +23,7 @@
 #include "../ui/ecrans/terrain.h"   // RG-12 : « Rouler »
 #include "../ui/garage.h"           // RG-12 : « Choisir »   // banc : appels de dessin en qualité Basse
 #include "../ui/text.h"
+#include "../ui/boutons.h"   // WFS-549 (accroche E23) : boutons au modèle R19
 #include "../world/cartes_v2/carte_donnees.h"   // WFS-540 : adhérence de la chaussée (saison) pour la police
 #include "../world/conducteurs.h"   // WFS-338 (RG-06) : un policier au volant de chaque voiture de police
 #include "course5.h"
@@ -858,10 +859,9 @@ private:
         const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
         if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
-        biseauFin(r, rejouerZ_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);
         // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe, texte réduit de 20 % au plus s'il dépasse
         static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
-        ui::textBoite(r, rejouerZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libRejouer(), vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
+        ui::boutons::startStop(r, rejouerZ_.x, by, bw, bh, libRejouer(), 1, false, "", 3.4f * u);   // WFS-549 (RG-01) : même rectangle
         biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
         ui::textBoite(r, menuZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libMenu(), TEXTE, ui::CENTRE, 0.08f, false);
     }

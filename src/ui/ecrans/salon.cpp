@@ -23,6 +23,7 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../verre.h"   // WFS-548 (R19) : fenêtres de verre, sur-titres gris, couleurs d'état, fond flouté
 #include "../langue.h"   // WFS-505 : textes du salon en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
@@ -82,11 +83,20 @@ float g_kb = 1;
 // (texte en k ; marges et biais du bouton en g_kb : WFS-168)
 // WFS-505 (RG-01, RG-03, RC-E20-04) : texte de la clé dans la langue active ; largeur fixe, mesurée sur le texte français
 // (bouton identique dans les deux langues) ; texte anglais plus long : police réduite de 20 % au plus (ui::textBoite)
-Zone bouton(Renderer& r, float x, float y, float h, float k, const char* cle, bool plein, bool droite = false) {
+// WFS-549 (RG-01, RG-02, RG-04, RG-07) : style R19 du bouton, dessiné dans le même rectangle (taille inchangée)
+enum class Style { Ancien, StartStop, Autocollant, Prix };
+Zone bouton(Renderer& r, float x, float y, float h, float k, const char* cle, bool plein, bool droite = false, Style style = Style::Ancien,
+            bool appuye = false) {
     const float tp = 20 * k;
     const std::string t = ui::majuscules(ui::tr(cle));
     const float tw = ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Francais)), 0.12f);
     const float w = tw + 56 * g_kb, x0 = droite ? x - w : x;
+    switch (style) {
+        case Style::StartStop: ui::boutons::startStop(r, x0, y, w, h, t, 1, appuye, "", tp, !plein); return {x0, y, w, h};
+        case Style::Autocollant: ui::boutons::autocollant(r, x0, y, w, h, t, 1, appuye, tp); return {x0, y, w, h};
+        case Style::Prix: ui::boutons::prix(r, x0, y, w, h, t, 1, appuye, tp, !plein); return {x0, y, w, h};
+        case Style::Ancien: break;
+    }
     biseau(r, x0, y, w, h, 14 * g_kb, plein ? hex(ACCENT) : hex(SURFACE2));
     // place du texte : le bouton moins 14 de marge de chaque côté (le français garde ses 28 de marge, « READY » tient dans « PRÊT »)
     ui::textBoite(r, x0 + w / 2, y, w - 28 * g_kb, h, tp, t, plein ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
@@ -312,7 +322,7 @@ private:
             }
         }
         g_creer = bouton(r, zl, by, bh, k, "salon.creer", true);
-        g_retour = bouton(r, g_creer.x + g_creer.w + 10 * k, by, bh, k, "salon.retour", false);
+        g_retour = bouton(r, g_creer.x + g_creer.w + 10 * k, by, bh, k, "salon.retour", false, false, Style::Autocollant);
         dessinerCode(r, zr, y, k, by, bh);
     }
 
@@ -371,7 +381,7 @@ private:
         ui::text(r, zl, y + 16 * k, 72 * k, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
         const float cx = zl + ui::width(72 * k, ui::majuscules(s.code()), 0.18f) + 28 * k;
-        g_inviter = bouton(r, cx, y + 24 * k, 52 * k, k, "salon.inviter", true);
+        g_inviter = bouton(r, cx, y + 24 * k, 52 * k, k, "salon.inviter", true, false, Style::Prix);
         const duel::Transport* tr = s.transport();
         std::string sous = reseau::lienInvitation(s.code());
         if (tr && tr->expireDansMs() >= 0) {
@@ -401,9 +411,9 @@ private:
             const float bw = 84 * k, bx = zl + 150 * k + i * (bw + 6 * k), bhh = 40 * k;
             const bool on = s.km() == duel::KMS[i];
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
-            r.uiRect(bx, ly, bw, bhh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2, s.host() ? 1.f : 0.5f));
-            if (on) r.uiRect(bx, ly + bhh - 3 * k, bw, 3 * k, hex(ACCENT2));
-            ui::text(r, bx + bw / 2, ly + 11 * k, 17 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(ACCENT2) : hex(TEXTE, s.host() ? 1.f : 0.5f), ui::CENTRE, 0.06f, false);
+            // WFS-549 (RG-05, RG-07) : sélecteur de verre, choix actif = pilule blanche ; l'invité le voit grisé ; mêmes zones
+            if (i == 0) ui::boutons::selecteurFond(r, bx, ly, 4 * bw + 3 * 6 * k, bhh, s.host() ? 1.f : 0.5f);
+            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 17 * k, !s.host());
         }
         // joueurs (#players) : à droite
         const float px = std::max(zl + 620 * k, zr - 420 * k), pw = zr - px;
@@ -448,7 +458,7 @@ private:
         ui::text(r, xl, y + 16 * k, cpx, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
         const float ix = xl + ui::width(cpx, ui::majuscules(s.code()), 0.18f) + 24 * k;
-        g_inviter = bouton(r, ix, y + 16 * k, 52 * g_kb, k, "salon.inviter", true);   // WFS-168 : hauteur d'avant WFS-147
+        g_inviter = bouton(r, ix, y + 16 * k, 52 * g_kb, k, "salon.inviter", true, false, Style::Prix);   // WFS-168 : hauteur d'avant WFS-147
         const duel::Transport* tr = s.transport();
         std::string sous = reseau::lienInvitation(s.code());
         if (tr && tr->expireDansMs() >= 0) {
@@ -480,9 +490,9 @@ private:
             const float bx = xl + 110 * k + i * (bw + 6 * k);
             const bool on = s.km() == duel::KMS[i];
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
-            r.uiRect(bx, ly, bw, bhh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2, s.host() ? 1.f : 0.5f));
-            if (on) r.uiRect(bx, ly + bhh - 3 * g_kb, bw, 3 * g_kb, hex(ACCENT2));
-            ui::text(r, bx + bw / 2, ly + (bhh - 18 * k) / 2, 18 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(ACCENT2) : hex(TEXTE, s.host() ? 1.f : 0.5f), ui::CENTRE, 0.04f, false);
+            // WFS-549 (RG-05, RG-07) : sélecteur de verre, choix actif = pilule blanche ; l'invité le voit grisé ; mêmes zones
+            if (i == 0) ui::boutons::selecteurFond(r, bx, ly, 4 * bw + 3 * 6 * k, bhh, s.host() ? 1.f : 0.5f);
+            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 18 * k, !s.host());
         }
         // joueurs (#players) : colonne de droite de la carte
         const float px = xl + gauche + 24 * k, pw = xr - px;
@@ -522,11 +532,11 @@ private:
     }
     void boutonsSalon(Renderer& r, float zl, float by, float bh, float k) {
         const bool pret = duelSession().status() == duel::Status::Ready, hl = horsLigne();
-        g_pret = bouton(r, zl, by, bh, k, "salon.pret", !pret && !hl);   // prêt : bouton clair souligné de cyan (une touche l'annule)
-        if (pret && !hl) { r.uiRect(g_pret.x + 14 * k, by + bh - 3 * k, g_pret.w - 14 * k, 3 * k, hex(ACCENT2)); }
-        if (hl) { biseau(r, g_pret.x, by, g_pret.w, bh, 14 * g_kb, hex(BG, 0.6f)); g_reessayer = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "salon.reessayer", true); } else g_reessayer = {};
+        // WFS-549 (RG-01) : « Prêt » en bouton Start/Stop ; déjà prêt : bouton enfoncé (une touche l'annule) ; hors ligne : grisé
+        g_pret = bouton(r, zl, by, bh, k, "salon.pret", !hl, false, Style::StartStop, pret && !hl);
+        if (hl) g_reessayer = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "salon.reessayer", true); else g_reessayer = {};
         const Zone z = hl ? g_reessayer : g_pret; if (hl) g_pret = {};   // grisé : sans effet
-        g_quitter = bouton(r, z.x + z.w + 10 * k, by, bh, k, "salon.quitter", false);
+        g_quitter = bouton(r, z.x + z.w + 10 * k, by, bh, k, "salon.quitter", false, false, Style::Autocollant);   // WFS-549 (RG-02)
     }
     // WFS-112 : texte de l'état du lien (partagé par les deux mises en page du salon)
     static std::string etatLien(const reseau::TransportDouble& dbl, bool& warn) {

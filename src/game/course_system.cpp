@@ -12,6 +12,7 @@
 #include "../render/renderer.h"
 #include "../render/vehicule_plaques_autres.h"   // WFS-484 : plaques des autres voitures
 #include "../ui/text.h"
+#include "../ui/boutons.h"   // WFS-549 (accroche E23) : boutons au modèle R19
 #include "textes_course.h"   // WFS-506 : fin de course en français ou en anglais
 #include "course5.h"        // WFS-125 : mode de course (records par mode)
 #include "duel_system.h"    // WFS-125 : duel (aucun record)
@@ -288,10 +289,9 @@ private:
         if (rec) dessinerRecord(r, cx, py + 31.5f * u, by - 12 * s, u, ui::nombre(sauvegarde().best), nouveauRecord_);   // WFS-24 ; WFS-125 : commun aux modes
         rejouer_ = {bx, by, bw, bh};
         menu_ = {bx + bw + gap, by, mw, bh}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
-        biseau(r, rejouer_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
         // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe ; texte anglais réduit de 20 % au plus s'il dépasse (ui::textBoite)
         static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
-        ui::textBoite(r, rejouer_.x + bw / 2, by + 2.6f * u, bw - 28 * H / 720, 5 * u, 5 * u, libRejouer(), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
+        ui::boutons::startStop(r, rejouer_.x, by, bw, bh, libRejouer(), 1, false, "", 4.6f * u);   // WFS-549 (RG-01) : même rectangle
         biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
         ui::textBoite(r, menu_.x + mw / 2, by + 2.6f * u, mw - 28 * H / 720, 5 * u, 5 * u, libMenu(), TEXTE, ui::CENTRE, 0.12f, false);
     }

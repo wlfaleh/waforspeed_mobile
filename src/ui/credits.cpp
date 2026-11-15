@@ -13,6 +13,7 @@
 #include "garage.h"
 #include "petit_ecran.h"
 #include "text.h"
+#include "boutons.h"   // WFS-549 : boutons au modèle R19
 #include "langue.h"   // WFS-505 : écran « Crédits » en français ou en anglais
 #include "ecrans/textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 
@@ -124,8 +125,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m) {
     const float twr = ui::width(tp, ui::majuscules(ui::trLangue("credits.retour", ui::langue::Langue::Francais)), 0.12f), wr = twr + 56 * kb;
     g.retour = {px + pw - 24 * k - wr, by, wr, bh};
     const bool presse = g.doigt >= 0 && g.cible == RETOUR;
-    dessin2d::biseau(r, g.retour.x, g.retour.y, g.retour.w, g.retour.h, 14 * kb, dessin2d::uni(hex(presse ? ACCENT_PRESSE : ACCENT)));
-    ui::textBoite(r, g.retour.x + g.retour.w / 2, g.retour.y, twr, g.retour.h, tp, tr, hex(BG), ui::CENTRE, 0.12f, false);
+    ui::boutons::autocollant(r, g.retour.x, g.retour.y, g.retour.w, g.retour.h, tr, 1, presse, tp);   // WFS-549 (RG-02) : sortie, même rectangle
     manette::focus(g.retour, true);
     ui::text(r, x0, by + (bh - 14 * k) / 2, 14 * k, ui::tr("credits.aide"), hex(MUTED), ui::GAUCHE, 0.02f, false);
     // cadre du texte défilant

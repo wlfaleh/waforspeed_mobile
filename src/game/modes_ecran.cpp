@@ -17,6 +17,7 @@
 #include "../ui/garage.h"
 #include "course_system.h"
 #include "../ui/text.h"
+#include "../ui/boutons.h"   // WFS-549 (accroche E23) : boutons au modèle R19
 #include "../ui/langue.h"   // WFS-505 : textes du choix du mode en français ou en anglais
 #include "../ui/ecrans/textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "course5.h"
@@ -184,10 +185,9 @@ public:
         retour_ = {x0, by, bw, bh};
         continuer_ = {x0 + blocW - bw, by, bw, bh};
         manette::focus(retour_, true); manette::focus(continuer_);
-        r.uiRect(retour_.x, by, bw, bh, hex(0xFFFFFF, 0.10f));
-        ui::textBoite(r, retour_.x + bw / 2, by, bw - 3 * u, bh, 3.6f * u, ui::majuscules(ui::tr("modes.retour")), hex(TXT), ui::CENTRE, 0.08f, false);   // WFS-505 (RG-03)
-        r.uiRect(continuer_.x, by, bw, bh, hex(ACC));
-        ui::textBoite(r, continuer_.x + bw / 2, by, bw - 3 * u, bh, 3.6f * u, ui::majuscules(ui::tr("modes.continuer")), hex(BG), ui::CENTRE, 0.08f, false);
+        // WFS-549 (RG-01, RG-02) : « Retour » en autocollant, « Continuer » (le « Suivant » de la maquette 02) en Start/Stop ; mêmes rectangles
+        ui::boutons::autocollant(r, retour_.x, by, bw, bh, ui::majuscules(ui::tr("modes.retour")), 1, false, 3.6f * u);   // WFS-505 (RG-03)
+        ui::boutons::startStop(r, continuer_.x, by, bw, bh, ui::majuscules(ui::tr("modes.continuer")), 1, false, "", 3.4f * u);
     }
 
 private:

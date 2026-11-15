@@ -26,6 +26,7 @@
 #include "appui.h"
 #include "langue.h"
 #include "text.h"
+#include "boutons.h"   // WFS-549 : boutons au modèle R19
 
 namespace wfs::ecrans::garage {
 
@@ -87,12 +88,12 @@ void FenetreAchatVoiture::dessiner(Renderer& r, float W, float H, float k, float
     // boutons : Annuler (.btn--ghost 200 × 46) et Confirmer (.btn orange 200 × 52), tailles du garage (RG-06)
     const float rangee = manque > 0 ? bw : 2 * bw + gapB, xa = x + (w - rangee) / 2;
     zAnnuler_ = {xa, yy + (hb - hg) / 2, bw, hg};
-    biseau(r, zAnnuler_.x, zAnnuler_.y, bw, hg, 14 * k, hex(SURFACE2));
-    ui::textBoite(r, zAnnuler_.x + bw / 2, zAnnuler_.y, bw - 28 * k, hg, 16 * k, ui::majuscules(ui::tr("garage.annuler")), hex(TEXTE), ui::CENTRE, 0.1f, false);
+    // WFS-549 (RG-02, RG-07) : « Annuler » en autocollant, même rectangle qu'avant
+    ui::boutons::autocollant(r, zAnnuler_.x, zAnnuler_.y, bw, hg, ui::majuscules(ui::tr("garage.annuler")), 1, false, 17 * k);
     if (manque <= 0) {
         zConfirmer_ = {xa + bw + gapB, yy, bw, hb};
-        biseau(r, zConfirmer_.x, yy, bw, hb, 14 * k, hex(ACCENT));
-        ui::textBoite(r, zConfirmer_.x + bw / 2, yy, bw - 28 * k, hb, 20 * k, ui::majuscules(ui::tr("garage.confirmer")), hex(ON_ACCENT), ui::CENTRE, 0.1f, false);
+        // WFS-549 (RG-01) : confirmation de l'achat en bouton Start/Stop, même rectangle qu'avant
+        ui::boutons::startStop(r, zConfirmer_.x, yy, bw, hb, ui::majuscules(ui::tr("garage.confirmer")), 1, false, "", 19 * k);
         manette::focus(zConfirmer_);
     }
     manette::focus(zAnnuler_, true);
@@ -200,11 +201,12 @@ public:
         g_acheterFin = {x, y, bw, hb};
         if (verre::couvert()) { g_fenetreFin.dessiner(r, W, H, k, gl, gr, gt, gb); return; }   // WFS-548 : fenêtre ouverte : rien d'autre sous le verre
         ui::text(r, x - 14 * k, y + (hb - 16 * k) / 2, 16 * k, lib, verre::hexa(verre::SUR_TITRE), ui::DROITE, 0.14f, false);   // WFS-548 (RG-03) : gris
-        biseau(r, x, y, bw, hb, 14 * k, hex(ACCENT));
+        // WFS-549 (RG-01, RG-07) : « Acheter N ★ » en bouton Start/Stop, même rectangle (200 × 52), texte à droite de l'icône
+        const ui::boutons::ZoneTexte zt = ui::boutons::startStopFond(r, x, y, bw, hb);
         const std::string t = ui::majuscules(ui::tr("garage.acheter", nombreLangue(prix)));
-        float px = 20 * k;
-        if (const float lw = largeurEtoiles(px, t, 0.1f); lw > bw - 28 * k) px *= (bw - 28 * k) / lw;   // anglais plus long : police réduite
-        texteEtoiles(r, x + bw / 2, y + (hb - px) / 2 - 1 * k, px, t, hex(ON_ACCENT), ui::CENTRE, 0.1f);
+        float px = 19 * k;
+        if (const float lw = largeurEtoiles(px, t, 0.1f); lw > zt.w) px *= zt.w / lw;   // anglais plus long : police réduite
+        texteEtoiles(r, zt.x + zt.w / 2, y + (hb - px) / 2 - 1 * k, px, t, hex(TEXTE), ui::CENTRE, 0.1f);
         g_acheterFin = {x, y, bw, hb};
         manette::focus(g_acheterFin);
         g_fenetreFin.dessiner(r, W, H, k, gl, gr, gt, gb);

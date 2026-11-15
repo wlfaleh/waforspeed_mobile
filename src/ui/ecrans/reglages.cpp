@@ -29,6 +29,8 @@
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../credits.h"   // WFS-549 (RG-06) : « Crédits » à côté des conditions d'utilisation
 #include "../verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, fond flouté
 #include "../langue.h"   // WFS-504 : textes dans la langue du joueur (ui::tr), réglage « Langue »
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
@@ -140,10 +142,22 @@ bool toucherDiag(int id, float x, float y, double temps) {
 }
 bool g_boutonFrais = false;   // WFS-537 (accroche) : « Réglages » dessiné depuis la dernière lecture de boutonReglages
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager) ; WFS-308 : g_cgu, « Conditions d'utilisation »
-float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
+// WFS-290 (RG-04) : bouton tenu (P_*) et doigt qui le tient ; WFS-549 : P_CREDITS, « Crédits » ouvert au relâcher
+enum { P_AUCUN, P_BOUTON, P_FERMER, P_CREDITS };
+int g_presse = P_AUCUN, g_doigt = -1;
+Zone g_credits;   // WFS-549 (RG-06) : « Crédits » à côté de « Conditions d'utilisation » (menu principal seulement : l'écran Crédits est celui du menu)
+bool g_creditsVisible = false;
+// WFS-308 (RG-05) : bouton vitré ; zone ≥ 44 dp. WFS-549 (RG-06) : bouton de verre (maquette 14), même taille ; « Crédits » à
+// sa gauche au menu principal, de la même hauteur. Rend la largeur prise (les deux boutons et leur écart).
+float boutonCgu(Renderer& r, float x, float y, float h, float k) {
     const float tp = 13 * k; const std::string t = ui::majuscules(ui::tr("reglages.cgu")); const float w = largeurMax(tp, "reglages.cgu", 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
-    g_cgu = {x - w, y + (h - zh) / 2, w, zh}; biseau(r, x - w - 1, y - 1, w + 2, h + 2, 8 * k, BORD); biseau(r, x - w, y, w, h, 8 * k, GLASS);
-    ui::text(r, x - w / 2, y + (h - tp) / 2, tp, t, hex(ACCENT2), ui::CENTRE, 0.12f, false); return w;
+    g_cgu = {x - w, y + (h - zh) / 2, w, zh};
+    ui::boutons::verre(r, x - w, y, w, h, t, 1, false, tp);
+    if (!g_creditsVisible) { g_credits = {}; return w; }
+    const std::string tc = ui::majuscules(ui::tr("credits.bouton")); const float wc = largeurMax(tp, "credits.bouton", 0.12f) + 28 * k, ecart = 10 * k;
+    g_credits = {x - w - ecart - wc, y + (h - zh) / 2, wc, zh};
+    ui::boutons::verre(r, x - w - ecart - wc, y, wc, h, tc, 1, g_presse == P_CREDITS, tp);   // RG-08 : appuyé tant que le doigt est posé
+    return w + ecart + wc;
 }
 // WFS-290 (RG-03, ANO-159) : cible d'appui de 48 dp et anti-rebond de 0,3 s : reglages_appui.h (calculs testés). Sur téléphone,
 // « Réglages » est dessiné en 82 × 25 dp et « Fermer » en 88 × 29 dp : un doigt posé un peu à côté du dessin ne comptait pas
@@ -159,21 +173,19 @@ double g_dernierBasculement = -1e9;
 bool basculementPermis() { return appui::basculementPermis(maintenant(), g_dernierBasculement); }
 // WFS-290 (RG-04) : appui comme les choix du menu : le bouton s'éclaircit tant que le doigt est posé, l'action se fait au
 // relâcher dans la cible ; un doigt qui glisse hors de la cible annule l'appui
-enum { P_AUCUN, P_BOUTON, P_FERMER };
-int g_presse = P_AUCUN, g_doigt = -1;
 int g_onglet = O_AFFICHAGE;   // RG-03 : dernier onglet ouvert, gardé (clé « onglet » du fichier des réglages)
 Zone g_onglets[N_ONGLETS];
 // dessine la barre des onglets dans (x, y, w, h) : onglet actif comme un choix actif (fond cyan léger, trait et texte cyan),
 // les autres sur la surface ; zones de toucher = les onglets dessinés (h ≥ 40 dp sur téléphone)
-void dessinerOnglets(Renderer& r, float x, float y, float w, float h, float tp, float gapO, float trait) {
+void dessinerOnglets(Renderer& r, float x, float y, float w, float h, float tp, float gapO, float) {
     const float ow = (w - (N_ONGLETS - 1) * gapO) / N_ONGLETS;
     for (int o = 0; o < N_ONGLETS; o++) {
         const float ox = x + o * (ow + gapO);
         const bool on = o == g_onglet;
         g_onglets[o] = {ox, y, ow, h};
-        if (on) { r.uiRect(ox, y, ow, h, hex(ACCENT2, 0.16f)); r.uiRect(ox, y + h - trait, ow, trait, hex(ACCENT2)); }
-        else r.uiRect(ox, y, ow, h, hex(SURFACE2));
-        ui::textBoite(r, ox + ow / 2, y, ow, h, tp, ui::majuscules(ui::tr(ONGLETS_CLE[o])), on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, 0.12f);   // WFS-504 (RG-08)
+        // WFS-549 (RG-06, RG-07) : onglets en sélecteur de verre (onglet ouvert = pilule blanche, texte sombre), mêmes zones
+        if (o == 0) ui::boutons::selecteurFond(r, x, y, w, h);
+        ui::boutons::selecteurChoix(r, ox, y, ow, h, ui::majuscules(ui::tr(ONGLETS_CLE[o])), on, 1, false, tp);   // WFS-504 (RG-08)
     }
 }
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
@@ -321,20 +333,28 @@ public:
             g_etoiles.lever(t.id);   // WFS-546 : doigt levé, le prochain appui sur le bouton étoile crédite de nouveau
             if (t.id == g_doigt) {   // WFS-290 : « Fermer » au relâcher, dans sa cible
                 const bool vise = g_presse == P_FERMER && dansCible(g_fermer, t.x, t.y);
+                const int presse = g_presse;
                 g_doigt = -1; g_presse = P_AUCUN;
                 if (vise && !basculementPermis()) WFS_LOG("réglages : appui ignoré (moins de 0,3 s après l'ouverture)");
                 else if (vise) { g_ouvert = false; g_dernierBasculement = maintenant(); WFS_LOG("réglages : fermés"); }
+                // WFS-549 (RG-06, revue #420) : « Crédits » au relâcher dans sa zone, doigt déjà libéré (le Menu, avant les Réglages,
+                // garde ensuite tous les touchers de l'écran Crédits : ouvrir à l'appui laissait g_doigt bloqué et perdait l'appui suivant)
+                else if (presse == P_CREDITS && g_credits.contient(t.x, t.y) && g.ecran == Ecran::Menu) { WFS_LOG("réglages : « Crédits »"); credits::ouvrir(); }
             }
             if (cgu().ouvert()) cgu().toucher(t.id, t.x, t.y, false);
             return true;
         }
-        if (t.id == g_doigt) { if (g_presse == P_FERMER && !dansCible(g_fermer, t.x, t.y)) g_presse = P_AUCUN; return true; }   // doigt encore posé (glissé hors : annulé)
+        if (t.id == g_doigt) {   // doigt encore posé (glissé hors : annulé)
+            if ((g_presse == P_FERMER && !dansCible(g_fermer, t.x, t.y)) || (g_presse == P_CREDITS && !g_credits.contient(t.x, t.y))) g_presse = P_AUCUN;
+            return true;
+        }   // doigt encore posé (glissé hors : annulé)
         if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
         if (banc_telephone::protocoleOuvert()) return banc_telephone::toucherProtocole(t.x, t.y);   // WFS-420 : par-dessus le panneau
         if (banc_telephone::resultatsOuverts()) return banc_telephone::toucherResultats(t.x, t.y);
         if (g_diagOuvert) return toucherDiag(t.id, t.x, t.y, g.time);   // WFS-419 : menu caché par-dessus le panneau
         if (g_titre.contient(t.x, t.y)) { toucherTitre(); return true; }   // WFS-419 : 5 touchers ouvrent le menu caché
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); g_doigt = t.id; return true; }   // WFS-308 (RG-05)
+        if (g.ecran == Ecran::Menu && g_credits.contient(t.x, t.y)) { g_doigt = t.id; g_presse = P_CREDITS; return true; }   // WFS-549 (RG-06) : ouvert au relâcher
         if (dansCible(g_fermer, t.x, t.y)) { g_doigt = t.id; g_presse = P_FERMER; return true; }   // WFS-290 : fermé au relâcher
         if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { g_doigt = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
         for (int o = 0; o < N_ONGLETS; o++) if (g_onglets[o].contient(t.x, t.y)) {   // WFS-291 : changement d'onglet, gardé
@@ -378,6 +398,7 @@ public:
         g_dpAppui = ui::pixelsParDp(W);   // WFS-290 : cible des boutons en dp
         if (!g_ouvert && verre::couvert()) { g_bouton = {}; return; }   // WFS-548 : sous une fenêtre de verre (Profil, Market…) : pas de bouton
         if (!g_ouvert) { dessinerBouton(r, g, W, k, H / 720.f); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
+        g_creditsVisible = g.ecran == Ecran::Menu;   // WFS-549 (RG-06) : « Crédits » au menu principal (l'écran Crédits est celui du menu)
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
         // WFS-548 : sous les conditions d'utilisation, le panneau n'est pas dessiné (il se voyait à travers leur fenêtre de verre)
@@ -439,15 +460,11 @@ private:
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(ui::tr(LIGNES[l].libelle)), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = nChoix(l);
             float bx = px + pw - 36 * k - n * segW - (n - 1) * 6 * k;
+            ui::boutons::selecteurFond(r, bx, y, n * segW + (n - 1) * 6 * k, rowH);   // WFS-549 (RG-05) : rangée de verre
             for (int c = 0; c < n; c++) {
-                const bool on = valeur(l) == c;   // aria-pressed : fond cyan léger, bordure et texte cyan
+                const bool on = valeur(l) == c;   // WFS-549 (RG-05) : choix actif = pilule blanche, texte sombre ; mêmes zones qu'avant
                 g_choix[l][c] = {bx, y, segW, rowH};
-                if (on) {
-                    r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
-                    r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
-                } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
-                ui::textBoite(r, bx + segW / 2, y, segW - 8 * k, rowH, 15 * k, ui::majuscules(ui::tr(LIGNES[l].choix[c])), on ? hex(ACCENT2) : hex(TEXTE),
-                              ui::CENTRE, 0.08f);   // WFS-504 (RG-08) : réduit de 20 % au plus s'il ne tient pas
+                ui::boutons::selecteurChoix(r, bx, y, segW, rowH, ui::majuscules(ui::tr(LIGNES[l].choix[c])), on, 1, false, 15 * k);   // WFS-504 (RG-08)
                 bx += segW + 6 * k;
             }
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
@@ -471,8 +488,8 @@ private:
         if (!lm.empty()) { const float tm = std::min(12 * k, 12 * k * (fx - x0 - 8 * k) / std::max(ui::width(12 * k, lm, 0.f), 1.f)); g_mesure = {x0, fy, fx - x0 - 8 * k, bh};
                            ui::text(r, x0, fy + bh / 2 + 1 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
         ui::langue::journalTechnique(false);
-        biseau(r, fx, fy, fw, bh, 14 * k, g_presse == P_FERMER ? hex(ACCENT_PRESSE) : hex(ACCENT));   // WFS-290 (RG-04) : appuyé, plus clair
-        ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
+        // WFS-549 (RG-06, RG-07) : « ✕ Fermer » en bouton de verre cerclé d'orange, même rectangle ; WFS-290 (RG-04) : appuyé, plus vif
+        ui::boutons::verreOrange(r, fx, fy, fw, bh, ft, 1, g_presse == P_FERMER, tp);
     }
 
     // WFS-147 (RG-01, RG-02, RG-06, ANO-19) : téléphone couché (k = pixels par dp). Reprise de la mise en page petit écran de
@@ -502,8 +519,7 @@ private:
             const std::string ft = ui::majuscules(ui::tr("reglages.fermer"));
             const float fw = largeurMax(tp, "reglages.fermer", 0.12f) + 56 * kb, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
             g_fermer = {fx, fy, fw, bh};
-            biseau(r, fx, fy, fw, bh, 14 * kb, g_presse == P_FERMER ? hex(ACCENT_PRESSE) : hex(ACCENT));   // WFS-290 (RG-04) : appuyé, plus clair
-            ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
+            ui::boutons::verreOrange(r, fx, fy, fw, bh, ft, 1, g_presse == P_FERMER, tp);   // WFS-549 (RG-06) ; WFS-290 (RG-04) : appuyé
         }
         const float colGap = 24 * k, colW = (pw - 48 * k - colGap) / 2, libW = 104 * k, segGap = 6 * k;
         // WFS-291 : onglets dans l'en-tête, entre le titre et « Fermer » (place de « Regard cockpit », qui passe dans Affichage) ;
@@ -534,17 +550,12 @@ private:
             const float place = colW - libW, segW = std::min(segAvant, (place - 3 * segGap) / 4);   // même largeur pour 2 ou 4 choix
             const float cy = y + (rowH - choixH) / 2;   // choix centré dans sa ligne
             float bx = cx + colW - n * segW - (n - 1) * segGap;
+            ui::boutons::selecteurFond(r, bx, cy, n * segW + (n - 1) * segGap, choixH);   // WFS-549 (RG-05) : rangée de verre
             for (int c = 0; c < n; c++) {
-                const bool on = valeur(l) == c;   // aria-pressed : fond cyan léger, bordure et texte cyan
+                const bool on = valeur(l) == c;   // WFS-549 (RG-05) : choix actif = pilule blanche, texte sombre
                 g_choix[l][c] = {bx, cy, segW, choixH};   // WFS-168 : zone de toucher d'avant WFS-147 (le choix lui-même)
-                if (on) {
-                    r.uiRect(bx, cy, segW, choixH, hex(ACCENT2, 0.16f));
-                    r.uiRect(bx, cy + choixH - 3 * kb, segW, 3 * kb, hex(ACCENT2));
-                } else r.uiRect(bx, cy, segW, choixH, hex(SURFACE2));
                 const std::string ch = ui::majuscules(ui::tr(LIGNES[l].choix[c]));
-                float tp = 14 * k, esp = 0.06f;
-                if (ui::width(tp, ch, esp) > segW - 6 * k) esp = 0;   // texte serré plutôt que plus petit (RG-02 : 14 dp)
-                ui::textBoite(r, bx + segW / 2, cy, segW - 6 * k, choixH, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, esp);   // WFS-504 (RG-08) : puis 20 % au plus
+                ui::boutons::selecteurChoix(r, bx, cy, segW, choixH, ch, on, 1, false, 14 * k);   // WFS-504 (RG-08) : réduit de 20 % au plus
                 bx += segW + segGap;
             }
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
@@ -970,6 +981,23 @@ void benchReglagesOnglets(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) image();
     toucher(1, g_bouton); onglet(O_AFFICHAGE);
     capture("reglages-onglet-affichage-menu", "menu principal, onglet Affichage (5 lignes)");
+    // WFS-549 (RG-06, revue #420 point 2) : « Crédits » depuis les Réglages, « Retour », puis un appui dans les Réglages qui compte.
+    // Doigt n° 0 partout (1er doigt d'Android) : ouvrir les Crédits à l'appui laissait g_doigt = 0 bloqué et perdait cet appui.
+    {
+        auto doigt0 = [&](float x, float y) { attendre(24); g.onTouch({0, x, y, true}); image(); g.onTouch({0, x, y, false}); image(); };
+        doigt0(g_credits.x + g_credits.w / 2, g_credits.y + g_credits.h / 2);
+        capture("reglages-credits-ouverts", "« Crédits » touché depuis les Réglages : écran Crédits par-dessus");
+        WFS_LOG("réglages (WFS-549) : « Crédits » → écran Crédits %s", credits::ouvert() ? "ouvert" : "FERMÉ (ÉCHEC)");
+        float rx = 0, ry = 0;
+        if (credits::centreRetour(rx, ry)) doigt0(rx, ry);
+        capture("reglages-credits-retour", "« Retour » des Crédits : retour aux Réglages, toujours ouverts");
+        WFS_LOG("réglages (WFS-549) : « Retour » des Crédits → Crédits %s, Réglages %s", credits::ouvert() ? "OUVERTS (ÉCHEC)" : "fermés", g_ouvert ? "ouverts" : "FERMÉS (ÉCHEC)");
+        const Zone z = g_onglets[O_CONDUITE];
+        doigt0(z.x + z.w / 2, z.y + z.h / 2);
+        WFS_LOG("réglages (WFS-549) : 1er appui après les Crédits (onglet Conduite, doigt 0) → onglet %s : %s", ONGLETS[g_onglet],
+                g_onglet == O_CONDUITE ? "appui compté" : "APPUI PERDU (ÉCHEC)");
+        onglet(O_AFFICHAGE);
+    }
     toucher(2, g_fermer);
     WFS_LOG("réglages (WFS-291) : « Fermer » depuis Affichage → panneau %s", g_ouvert ? "OUVERT" : "fermé");
     g.allerA(Ecran::Course); for (int i = 0; i < 60 * 4; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 29) g.render(t); }

@@ -20,6 +20,7 @@
 #include "../langue.h"
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "creation_profil.h"   // formulaire de WFS-481 (« Modifier »), aperçu de la plaque
 #include "reglages_appui.h"    // appui::dansCible : cibles de 48 dp
 #include "textes_banc.h"       // banc « textes » : journal des textes de cet écran, noms propres
@@ -271,10 +272,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     const bool pRet = g.doigt >= 0 && g.cible == RETOUR, pMod = g.doigt >= 0 && g.cible == MODIFIER;
     dessin2d::biseau(r, g.modifier.x, by, wMod, bh, 14 * kb, dessin2d::uni(hex(pMod ? ACCENT_PRESSE : ACCENT)));
     ui::textBoite(r, g.modifier.x + wMod / 2, by, wMod - 40 * kb, bh, tp, ui::majuscules(ui::tr("profil.modifier")), hex(BG), ui::CENTRE, 0.12f);
-    dessin2d::biseau(r, g.retour.x - kb, by - kb, wRet + 2 * kb, bh + 2 * kb, 14 * kb, dessin2d::uni(BORD));
-    dessin2d::biseau(r, g.retour.x, by, wRet, bh, 14 * kb, dessin2d::uni(GLASS));
-    if (pRet) dessin2d::biseau(r, g.retour.x, by, wRet, bh, 14 * kb, dessin2d::uni(hex(ACCENT2, 0.22f)));
-    ui::textBoite(r, g.retour.x + wRet / 2, by, wRet - 40 * kb, bh, tp, ui::majuscules(ui::tr("profil.retour")), hex(ACCENT2), ui::CENTRE, 0.12f);
+    ui::boutons::autocollant(r, g.retour.x, by, wRet, bh, ui::majuscules(ui::tr("profil.retour")), 1, pRet, tp);   // WFS-549 (RG-02) : sortie, même rectangle
     // aide sous la colonne de gauche, seulement quand la liste dépasse son cadre
     if (g.defilMax > 0) ui::textBoite(r, x0, by, std::max(0.f, g.modifier.x - 16 * k - x0), bh, 12 * k, ui::tr("profil.aide"), hex(MUTED), ui::GAUCHE, 0);
     // manette : seules les zones de cet écran ; « Retour » est la zone retour (touche Retour d'Android, RG-01)

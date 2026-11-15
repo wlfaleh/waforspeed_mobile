@@ -10,6 +10,7 @@
 #include "../../render/renderer.h"
 #include "../hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../verre.h"   // WFS-548 (R19) : panneau de verre, sur-titre gris, fond flouté
 #include "../langue.h"   // WFS-505 : textes de la pause en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
@@ -128,14 +129,19 @@ private:
         ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules(ui::tr("pause.titre")), hex(TEXTE), ui::CENTRE, 0.02f, false, true);
         for (int i = 0; i < 3; i++) {
             g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
-            biseau(r, x, y, wb[i], bh, 14 * k, i == REPRENDRE ? hex(ACCENT) : hex(SURFACE2));
+            if (i == REPRENDRE) {   // WFS-549 (RG-01, RG-07) : action principale en bouton Start/Stop, même rectangle qu'avant
+                ui::boutons::startStop(r, x, y, wb[i], bh, ui::majuscules(ui::tr(TEXTES[i])), 1, false, "", tp * 0.9f);
+                x += wb[i] + gap;
+                continue;
+            }
+            biseau(r, x, y, wb[i], bh, 14 * k, hex(SURFACE2));
             if (i == QUITTER) {   // WFS-548 (RG-05) : « Quitter la course » bordé de rouge (perte), dessin du bouton inchangé
                 const float b = 14 * k;
                 const vec2 q[4] = {{x + b, y}, {x + wb[i], y}, {x + wb[i] - b, y + bh}, {x, y + bh}};
                 dessin2d::contour(r, q, 4, 1.5f * k, verre::hexa(verre::PERTE));
             }
             // texte à y + 2,6 % de H (centré dans 10 % : +0,1 % de H, comme avant) ; anglais plus long : police réduite de 20 % au plus
-            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), i == REPRENDRE ? hex(BG) : i == QUITTER ? verre::hexa(verre::PERTE) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), i == QUITTER ? verre::hexa(verre::PERTE) : hex(TEXTE), ui::CENTRE, 0.12f, false);
             x += wb[i] + gap;
         }
     }

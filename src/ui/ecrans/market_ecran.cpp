@@ -15,6 +15,7 @@
 #include "../langue.h"
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../verre.h"   // WFS-548 (R19) : fenêtre et tuiles de verre, sur-titre gris, fond flouté
 #include "market_ecran_calculs.h"   // calculs testés (tests/test_market_ecran.cpp)
 #include "creation_profil.h"   // rien par-dessus « Crée ton pilote »
@@ -132,21 +133,20 @@ void suivre() {
 }
 
 // bouton d'achat : orange (prix de Google), pressé, ou grisé (hors ligne, achat en cours)
-void boutonAchat(Renderer& r, int i, float x, float y, float w, float h, float k, float kb) {
+void boutonAchat(Renderer& r, int i, float x, float y, float w, float h, float k, float) {   // dernier argument (kb) : plus utilisé depuis WFS-549
     g.achat[i] = {x, y, w, h};
     const std::string prix = prixDe(i);
     const calcul::Bouton e = etatBouton(i);
     const bool actif = e == calcul::Bouton::Actif, presse = actif && g.doigt >= 0 && g.cible == i;
     const bool enCours = e == calcul::Bouton::Patiente;
     const float tp = 20 * k;
+    // WFS-549 (RG-04, RG-07, RG-08) : bouton de prix orange, texte sombre, même rectangle ; pressé : plus clair ; inactif : grisé
     if (actif) {
-        dessin2d::biseau(r, x, y, w, h, 12 * kb, dessin2d::uni(hex(presse ? ACCENT_PRESSE : ACCENT)));
         const textes::NomPropre np;   // prix donné par Google (monnaie du joueur) : rien à traduire
-        ui::textBoite(r, x + w / 2, y, w - 24 * kb, h, tp, prix, hex(BG), ui::CENTRE, 0.04f);
+        ui::boutons::prix(r, x, y, w, h, prix, 1, presse, tp);
     } else {
-        dessin2d::biseau(r, x, y, w, h, 12 * kb, dessin2d::uni(hex(SURFACE2)));
         const std::string t = ui::majuscules(ui::tr(enCours ? "market.patiente" : "market.acheter"));
-        ui::textBoite(r, x + w / 2, y, w - 24 * kb, h, 16 * k, t, hex(MUTED), ui::CENTRE, 0.10f);
+        ui::boutons::prix(r, x, y, w, h, t, 1, false, 16 * k, true);
     }
     manette::focus(g.achat[i]);
 }
@@ -333,11 +333,10 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     for (int b = 0; b < 2; b++) {
         const Zone& z = b == 0 ? g.restaurer : g.retour;
         const bool presse = b == 0 ? pRes : pRet;
-        dessin2d::biseau(r, z.x - kb, by - kb, z.w + 2 * kb, bh + 2 * kb, 14 * kb, dessin2d::uni(BORD));
-        dessin2d::biseau(r, z.x, by, z.w, bh, 14 * kb, dessin2d::uni(GLASS));
-        if (presse) dessin2d::biseau(r, z.x, by, z.w, bh, 14 * kb, dessin2d::uni(hex(ACCENT2, 0.22f)));
-        const vec4 c = b == 1 ? hex(ACCENT2) : hex(resActif ? TEXTE : MUTED);
-        ui::textBoite(r, z.x + z.w / 2, by, z.w - 32 * kb, bh, tp, ui::majuscules(ui::tr(b == 0 ? "market.restaurer" : "market.retour")), c, ui::CENTRE, 0.10f);
+        // WFS-549 (RG-02, RG-07) : « Retour » en autocollant ; « Restaurer mes achats » en bouton de verre ; mêmes rectangles
+        if (b == 1) { ui::boutons::autocollant(r, z.x, by, z.w, bh, ui::majuscules(ui::tr("market.retour")), 1, presse, tp); continue; }
+        const vec4 c = hex(resActif ? TEXTE : MUTED);
+        ui::boutons::verre(r, z.x, by, z.w, bh, ui::majuscules(ui::tr("market.restaurer")), 1, presse, tp, &c);
     }
     // RG-05 : hors ligne (aucune boutique ou aucun prix de Google) : une ligne à gauche des boutons
     bool unPrix = false;

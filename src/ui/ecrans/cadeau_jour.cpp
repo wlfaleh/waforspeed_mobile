@@ -1,6 +1,7 @@
 // WaForSpeed — écran du cadeau du jour (WFS-501) : voir cadeau_jour.h.
 #include "cadeau_jour.h"
 #include <algorithm>
+#include <cstring>
 #include <cmath>
 #include <optional>
 #include "reglages_appui.h"   // appui::dansCible : cible de 48 dp (comme les Réglages, les CGU et les Crédits)
@@ -9,6 +10,7 @@
 #include "../langue.h"
 #include "../petit_ecran.h"
 #include "../text.h"
+#include "../boutons.h"   // WFS-549 : boutons au modèle R19
 #include "../../core/log.h"
 #include "../../game/cars.h"
 #include "../../game/commandes_tactiles.h"   // dessin2d
@@ -169,6 +171,7 @@ void dessinerBoite(Renderer& r, float cx, float bas, float k, float t, float a) 
 // bouton du panneau : principal (orange en biseau, comme « Retour » des Crédits) ou secondaire (vitré à liseré cyan)
 void bouton(Renderer& r, const Zone& z, float kb, float tp, const char* cle, bool principal, bool presse, float largeurTexte) {
     const std::string t = ui::majuscules(ui::tr(cle));
+    if (std::strcmp(cle, "cadeau.retour") == 0) { ui::boutons::autocollant(r, z.x, z.y, z.w, z.h, t, 1, presse, tp); return; }   // WFS-549 (RG-02) : sortie
     if (principal) dessin2d::biseau(r, z.x, z.y, z.w, z.h, 14 * kb, dessin2d::uni(hex(presse ? ACCENT_PRESSE : ACCENT)));
     else {
         dessin2d::biseau(r, z.x - kb, z.y - kb, z.w + 2 * kb, z.h + 2 * kb, 14 * kb, dessin2d::uni(BORD));
