@@ -2036,3 +2036,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 00:19:36 — R19 : cadenas seul à côté du nom, étoiles près d'Acheter (smart-brainstorming)
 - Retour de l'utilisateur : seulement l'icône à côté du nom, les étoiles près du bouton Acheter. Rien transmis au PO.
+
+### 2026-11-15 00:20:54 — R19 : étoiles sous le bouton Acheter (smart-brainstorming)
+- Icône validée par l'utilisateur ; « ★ 1 250 / 6 000 » déplacé sous le bouton Acheter, dans le coin. Rien transmis au PO.
