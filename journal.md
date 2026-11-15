@@ -2114,3 +2114,6 @@ PR #419 (garage : skins, skin offerte, prix, skins du cadeau), 2e revue sur a53f
 
 ### 2026-11-15 01:29:08 — R19 : menu, seul l'arrière-plan passe à la Corniche (smart-brainstorming)
 - Retour de l'utilisateur : ne pas changer l'angle de la voiture ; angle, zoom et console remis, seul le fond (Corniche de nuit, bateaux) remplace le parking. Rien transmis au PO.
+
+### 2026-11-15 01:32:50 — R19 : menu devant la marina de nuit (smart-brainstorming)
+- Retour de l'utilisateur (« je ne vois pas la vue du port ») : fond remplacé par la marina de nuit (capture WFS-376), voiture inchangée. Rien transmis au PO.
