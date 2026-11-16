@@ -1349,3 +1349,8 @@ Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans 
 
 ### 2026-11-16 05:59:42 — WFS-551 : PR #426 refusée en 2e revue (lead-dev)
 Commit relu a7512b77. Construction et 150 tests CPU verts (refaits), 22 captures et maquettes 06, 07, 13, 15, 16, 17, 18a–18d comparées au code : les 9 points de la 1re revue sont corrigés. Il reste un défaut : en mode « Toit et rétros », les titres des rangées (« Classiques · gratuites », « Vives · 50 ★ ») contredisent les prix écrits sous les gouttes (50 ★, 100 ★) (`garage_couleur.cpp:176-184`). Seule la capture toit-noir est à refaire. Questions transmises au PO : boutons « Atelier » (WFS-496) et « Essai gratuit » (WFS-499) absents des maquettes.
+
+### 2026-11-16 06:20:35 — WFS-551 : 2e revue corrigée, PR #426 (Claude, agent dev3d (01UY1Vv2KF))
+- Fait : « Toit et rétros » : le titre de chaque rangée compte le droit de la couleur secondaire tant qu'il n'est pas acheté (même total que `prixPastille` sous les gouttes) ; texte `garage.couleur.groupe.classiques_prix` FR / EN (7337a96d).
+- Vérifié : banc garage-couleurs 0 écart ; tests CPU 150 OK ; capture `garage-couleurs-p208-toit-noir-apercu` refaite (574d6782). Lead dev rappelé.
+
