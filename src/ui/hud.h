@@ -49,13 +49,17 @@ inline BoutonHud mesuresBouton(float k, float largeurTexte) {
     b.w = b.marge + b.icone + b.ecartIcone + largeurTexte + b.marge;
     return b;
 }
-// RG-01 : pose les deux boutons mesurés (w, h remplis) à gauche du score ; calcul seul (vérifié par tests/test_hud_boutons.cpp)
-inline void placerBoutons(float W, float H, const Marges& m, BoutonHud& menu, BoutonHud& camera) {
+// RG-01 : pose les deux boutons mesurés (w, h remplis) ; calcul seul (vérifié par tests/test_hud_boutons.cpp).
+// WFS-551 (RG-06, maquettes 17 et 17b) : [MENU] [CAMÉRA] en haut au centre de la zone sûre (avant : à gauche du score), même hauteur
+// (centrés sur les 70 px du score sans combo), écart de 8 px ; la paire ne bouge pas pour un gaucher (encoche comprise).
+// Poursuite : le milieu du haut est pris par le score de la poursuite (40 % de la hauteur de large, poursuite_system.cpp) : la
+// paire se pose juste à sa droite, à la même hauteur.
+inline void placerBoutons(float W, float H, const Marges& m, BoutonHud& menu, BoutonHud& camera, bool poursuite = false) {
     const float k = H / 720.f, ecart = BOUTONS_ECART * k;
-    const float xScore = W - m.droite - GOUTTIERE_L * k - SCORE_L * k;         // bord gauche du score (hud.cpp)
     const float y = m.haut + GOUTTIERE_H * k + (SCORE_H * k - camera.h) / 2;    // centrés sur les 70 px du score sans combo
-    camera.x = xScore - ecart - camera.w; camera.y = y;
-    menu.x = camera.x - ecart - menu.w;   menu.y = y;
+    const float milieu = (m.gauche + W - m.droite) / 2, total = menu.w + ecart + camera.w;
+    menu.x = poursuite ? milieu + 20 * H / 100.f + ecart : milieu - total / 2;   menu.y = y;
+    camera.x = menu.x + menu.w + ecart;                                          camera.y = y;
 }
 } // namespace hud
 class Game;

@@ -303,7 +303,9 @@ public:
         else if (g_jour.contient(t.x, t.y)) { g_nuitChoisie = false; g_moment = modeSimple(false); WFS_LOG("terrain : Jour (%s)", atmosphere::nomMoment(g_moment)); }   // WFS-375 : sans défilement
         else if (g_nuit.contient(t.x, t.y)) { g_nuitChoisie = true; g_moment = modeSimple(true); WFS_LOG("terrain : Nuit (%s)", atmosphere::nomMoment(g_moment)); }   // WFS-375 : sans défilement
         else if (g_retour.contient(t.x, t.y)) { WFS_LOG("terrain : « Retour »"); g.allerA(Ecran::Menu); }
-        else if (g_rouler.contient(t.x, t.y)) {   // RG-03 : la partie est reconstruite sur la carte choisie, puis la course
+        else if (g_rouler.contient(t.x, t.y) && carteATelecharger(g_liste[(size_t)g_index].id)) {   // WFS-551 (RG-07) : « Rouler » éteint
+            WFS_LOG("terrain : « Rouler » éteint : %s pas encore téléchargée", g_liste[(size_t)g_index].id.c_str());
+        } else if (g_rouler.contient(t.x, t.y)) {   // RG-03 : la partie est reconstruite sur la carte choisie, puis la course
             WFS_LOG("terrain : « Rouler » sur %s (%s)", g_liste[(size_t)g_index].id.c_str(), g_nuitChoisie ? "nuit" : "jour");
             Game::demandes().carte = g_liste[(size_t)g_index].id.c_str(); Game::demandes().nuit = g_nuitChoisie;
             if (cartesPaquets().changee(g_liste[(size_t)g_index].id.c_str())) { Game::demandes().recharger = true; cartesPaquets().prise(g_liste[(size_t)g_index].id.c_str()); WFS_LOG("terrain : paquet de %s changé, carte relue", g_liste[(size_t)g_index].id.c_str()); }   // WFS-307 (RG-08)
@@ -458,7 +460,9 @@ public:
         for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
         // WFS-549 (RG-01, RG-02, RG-07) : « Retour » en autocollant, « Rouler » en bouton Start/Stop ; mêmes rectangles qu'avant
         ui::boutons::autocollant(r, bx, by, bw, bh, bt, 1, false, tp);
-        ui::boutons::startStop(r, rx, by, rw, bh, rt, 1, false, "", tp);
+        // WFS-551 (RG-07, maquette 18a) : carte pas encore téléchargée : « Rouler » éteint, « Carte à télécharger » dessous
+        const bool aTelecharger = carteATelecharger(c.id);
+        ui::boutons::startStop(r, rx, by, rw, bh, rt, 1, false, aTelecharger ? ui::tr("terrain.a_telecharger") : "", tp, aTelecharger);
     }
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités

@@ -28,6 +28,8 @@ constexpr float ITALIQUE_DEG = 12.f;
 void text(Renderer& r, float x, float y, float px, const std::string& utf8, const vec4& color, Align align = GAUCHE,
           float espacement = 0.f, bool ombre = true, bool italique = false);
 float width(float px, const std::string& utf8, float espacement = 0.f);
+// WFS-551 (maquettes R19, onglets du garage) : lettres en tube de néon (contour creux du champ de distance) jusqu'à contourNeon(false)
+void contourNeon(bool actif);
 // WFS-504 (RG-08) : texte posé dans un bouton ou une case de largeur « largeur » (x : bord gauche, centre ou bord droit selon
 // align ; y : haut de la case de hauteur « hauteur », texte centré verticalement). Trop large : la police est réduite jusqu'à 20 % ;
 // encore trop large : texte dessiné à 80 % et dépassement noté au journal du banc « textes » (échec). Rend la taille utilisée.

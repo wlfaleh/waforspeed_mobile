@@ -46,14 +46,14 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
     int doigt = 50;
     auto toucher = [&](float x, float y) { const int id = doigt++; g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); images(3); };
     auto toucherZone = [&](Zone z) {   // copie : toucher redessine l'écran (zones réécrites)
-        if (z.w > 0) toucher(z.x + z.w / 2, z.y + z.h / 2); return z.w > 0; };
+        if (z.w > 0) { toucher(z.x + z.w / 2, z.y + z.h / 2); } return z.w > 0; };
     auto fermer = [&]() { if (ouvert) g.shutdown(); ouvert = false; };
     auto ouvrirGarage = [&](const char* id) {
         fermer();
         if (!g.init(r, id, "ville")) { WFS_ERR("garage-couleurs : chargement impossible (%s)", id); return false; }
         ouvert = true; g.setAutopilot(false); g.camMode = 0;
         for (int i = 0; i < 30; i++) g.update(1.0 / 60);
-        g.allerA(Ecran::Garage); images(45);
+        g.allerA(Ecran::Garage); images(45); choisirOnglet(ONGLET_PEINTURE); images(2);   // WFS-551 : onglet « Peinture »
         return garageEnCours() != nullptr;
     };
     // touche la pastille p (indice dans PAINTS ; toit : onglet « Toit et rétros ») après l'avoir amenée par les chevrons
@@ -68,7 +68,9 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
     };
     auto bouton = [&](const char* nom) { float x, y; if (!garageBouton(nom, x, y)) return false; toucher(x, y); images(4); return true; };
     auto voiture = [&](const char* id) {
+        choisirOnglet(ONGLET_VOITURE); images(2);   // WFS-551 : flèches seulement sur l'onglet « Voiture » (maquettes 13, 15)
         for (int i = 0; i < CAR_COUNT && garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), id) != 0; i++) { bouton("suivant"); images(45); }
+        choisirOnglet(ONGLET_PEINTURE); images(2);
         return garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), id) == 0;
     };
     auto possede = [&](const char* car, const char* id) { const perso::Objet* o = perso::objet(id); return o && perso::possede(s, *o, car); };
@@ -81,7 +83,7 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
     images(4);
     capture("p208-debut", "208 : 28 couleurs, cadenas et prix des 20 couleurs payantes, solde 30 ★");
     if (const Zone& z = g_z.peintures[2]; z.w > 0) {   // glisser vers la gauche sur la rangée : défilement
-        const float x0 = z.x + z.w / 2, y0 = z.y + z.h / 2, d = r.height() * 0.9f;
+        const float x0 = z.x + z.w / 2, y0 = z.y + z.h / 2, d = r.height() * 1.5f;   // WFS-551 : gouttes plus grandes (pas de 56 px au lieu de 38) : glisser plus long
         g.onTouch({90, x0, y0, true}); image();
         for (int i = 1; i <= 20; i++) { g.onTouch({90, x0 - d * i / 20, y0, true}); image(); }
         g.onTouch({90, x0 - d, y0, false}); images(4);

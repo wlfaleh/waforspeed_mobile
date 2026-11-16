@@ -123,6 +123,17 @@ static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string
     else if (k == "cadeau-sans-rare") { if (entier(v, n) && n >= 0 && n <= 100000) c.sansRare = (int)n; }
     else if (k == "cadeau-total") { if (entier(v, n) && n >= 0 && n <= 1000000000LL) c.total = n; }
     else if (k == "cadeau-dernier") { if (resultatSur(v)) c.dernier = v; }
+    else if (k == "cadeau-nouveaux") {   // WFS-503 (RG-02) : « golf:rose|gt86:rallye » ; chaque élément mal écrit est ignoré
+        size_t d = 0;
+        while (d <= v.size() && c.nouveaux.size() < 256) {
+            const size_t f = std::min(v.find('|', d), v.size());
+            const std::string e = v.substr(d, f - d);
+            const size_t p = e.find(':');
+            if (p != std::string::npos && p > 0 && p + 1 < e.size() && e.size() <= 65 && e.find(';') == std::string::npos && resultatSur("x;" + e))
+                c.nouveaux.insert(e);
+            d = f + 1;
+        }
+    }
     else if (k == "pret-voiture") { if (voitureExiste(v)) c.pretVoiture = v; }
     else if (k == "pret-recu") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretRecu = n; }
     else if (k == "pret-fin") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretFin = n; }
@@ -136,7 +147,7 @@ static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear();
     map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
-    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1; skinsOffertes.clear();   // WFS-487 ; WFS-494
+    possede.clear(); possedeDessins.clear(); paint2.clear(); finition.clear(); skin.clear(); creation.clear(); perso = 1; skinsOffertes.clear(); autocollants.clear();   // WFS-487 ; WFS-494 ; WFS-496
     etoiles = 0; voituresPossedees.clear(); essais.clear();   // WFS-498
     market = EtatMarket{};   // WFS-510
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
@@ -175,6 +186,7 @@ std::string Sauvegarde::texte() const {
     for (const auto& [id, v] : skin) o << "skin-" << id << "=" << v << "\n";
     liste("skins-offertes", skinsOffertes);   // WFS-494 (RG-02)
     for (const auto& [id, v] : creation) o << "creation-" << id << "=" << v << "\n";
+    for (const auto& [id, v] : autocollants) o << "autocollants-" << id << "=" << v << "\n";   // WFS-496 (accroche)
     // WFS-498 (RG-01, RG-07, RG-08) : portefeuille (toujours écrit : sa présence marque une sauvegarde à jour), voitures, essais
     o << "etoiles=" << etoiles << "\n";
     liste("voitures-possedees", voituresPossedees);
@@ -215,6 +227,12 @@ std::string Sauvegarde::texte() const {
         if (!cadeau.jour.empty()) o << "cadeau-jour=" << cadeau.jour << "\n";
         o << "cadeau-sans-rare=" << cadeau.sansRare << "\n" << "cadeau-total=" << cadeau.total << "\n";
         if (!cadeau.dernier.empty()) o << "cadeau-dernier=" << cadeau.dernier << "\n";
+    }
+    if (!cadeau.nouveaux.empty()) {   // WFS-503 (RG-02) : absente tant qu'aucun objet gagné n'attend d'être vu
+        o << "cadeau-nouveaux=";
+        size_t i = 0;
+        for (const std::string& e : cadeau.nouveaux) o << (i++ ? "|" : "") << e;
+        o << "\n";
     }
     if (!cadeau.pretVoiture.empty())   // WFS-500 (RG-09) : déclarées ici, utilisées par WFS-502
         o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n"
@@ -293,6 +311,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k.rfind("finition-", 0) == 0) { const std::string id = k.substr(9); const perso::Objet* o = perso::objet(v); if (voitureExiste(id) && o && o->type == perso::Type::Finition) finition[id] = v; }
         else if (k == "skins-offertes") { for (const std::string& id : morceaux(v)) if (voitureExiste(id)) skinsOffertes.insert(id); }   // WFS-494 (RG-02)
         else if (k.rfind("skin-", 0) == 0) { const std::string id = k.substr(5); const perso::Objet* o = perso::objet(v); if (voitureExiste(id) && o && o->type == perso::Type::Skin) skin[id] = v; }
+        else if (k.rfind("autocollants-", 0) == 0) { const std::string id = k.substr(13); if (voitureExiste(id) && v.size() <= 1200 && v.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789,;!-") == std::string::npos) autocollants[id] = v; }   // WFS-496 (accroche)
         else if (k.rfind("creation-", 0) == 0) { const std::string id = k.substr(9); if (voitureExiste(id) && identifiantSur(v)) creation[id] = v; }
         else if (k.rfind("paint-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && peintureDef(v)) paint[id] = v; }
         else if (k == "map") { if (carteExiste(v)) map = v; }

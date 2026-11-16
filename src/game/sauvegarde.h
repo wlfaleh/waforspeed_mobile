@@ -68,6 +68,7 @@ struct EtatCadeau {
     long long pretRestantVu = 0;   // WFS-502 (RG-04) pret-restant-vu : dernier temps restant vu (s) : le temps restant ne remonte jamais
     std::string pretAvant;     // WFS-502 (RG-05) pret-avant : voiture choisie avant le prêt (rendue à la fin si la prêtée était choisie)
     std::string pretMessage;   // WFS-502 (RG-01, RG-05) pret-message : « expire;<voiture> » ou « fin;<voiture> », montré une fois au menu
+    std::set<std::string> nouveaux;   // WFS-503 (RG-02) cadeau-nouveaux=<voiture>:<objet>|… : objets gagnés pas encore vus au garage (badge : WFS-556)
     std::map<std::string, std::string> inconnues;   // autres clés cadeau-* / pret-* (version plus récente) : gardées telles quelles
 };
 
@@ -86,6 +87,7 @@ public:
     std::map<std::string, std::string> skin;                // skin-<voiture> (absente = aucune)
     std::set<std::string> skinsOffertes;                    // WFS-494 (RG-02) skins-offertes=a|b : voitures dont la skin offerte est déjà choisie
     std::map<std::string, std::string> creation;            // creation-<voiture> : habillage actif de l'atelier (WFS-497)
+    std::map<std::string, std::string> autocollants;        // WFS-496 (accroche) autocollants-<voiture> : calques de l'atelier ([a-z0-9,;!-], src/ui/ecrans/atelier_calques.h)
     int perso = 1;                                          // perso=1 : catalogue de WFS-487 en place (absente : sauvegarde d'avant, migrée)
     // WFS-498 (RG-01, RG-07, RG-08) : portefeuille et voitures (src/game/boutique.h) ; clé etoiles absente : sauvegarde d'avant, migrée (RG-09)
     long long etoiles = 0;                                  // etoiles=<entier ≥ 0> : solde d'étoiles ★

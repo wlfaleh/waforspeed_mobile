@@ -56,7 +56,8 @@ struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points
                Zone onglets[2], chevrons[2], toit[NB_PEINTURES + 1];   // WFS-489 : onglets, chevrons et pastilles « Toit et rétros »
                Zone finitions[BOUTIQUE_FINITIONS], chevronsFinition[2];   // WFS-491 : rangée « Finition » (ordre affiché) et ses chevrons
                Zone essai;                                               // WFS-499 : « Essai gratuit » d'une voiture bloquée
-               Zone skins[BOUTIQUE_SKINS + 1], chevronsSkin[2], actionSkin; };   // WFS-494 : rangée « Skin » (ordre affiché), chevrons, skin offerte ou bon
+               Zone skins[BOUTIQUE_SKINS + 1], chevronsSkin[2], actionSkin;   // WFS-494 : rangée « Skin » (ordre affiché), chevrons, skin offerte ou bon
+               Zone ongletsGarage[4]; };                                 // WFS-551 : onglets Voiture, Peinture, Finition, Skins (maquettes 06, 07, 13, 16)
 extern Zones g_z;
 
 // parallélogramme d'un seul tenant (WFS-99), haut décalé à droite de `biais`
@@ -73,7 +74,21 @@ struct MiseEnPage {
     float padX = 0, padY = 0, statH = 0, paintH = 0, panelH = 0;   // .show-panel : marges internes, hauteurs des rangées
     float px0 = 0, px1 = 0, py0 = 0, y1 = 0;    // .show-panel : bords, haut, haut du contenu
     float bx = 0, bw = 0;                       // colonne des boutons (Choisir, Retour) à droite du panneau
+    // WFS-551 (maquettes 06, 07, 13, 15, 16) : un onglet ouvert à la fois ; son panneau de verre est centré en bas, entre px0 et px1
+    // (bornes), du haut py0 sur panelH ; à droite, le bouton rond (centre cxBouton, cyBouton, rayon rBouton) et, au-dessus, le nom de
+    // l'objet montré (centré sur cxBouton, en yNom)
+    int onglet = 0;
+    std::string sousTitre;   // WFS-551 : ligne sous le nom (vide : accroche de la voiture)
+    float cxBouton = 0, cyBouton = 0, rBouton = 0, yNom = 0;
 };
+// WFS-551 : onglets du garage, dans l'ordre des maquettes
+enum OngletGarage { ONGLET_VOITURE, ONGLET_PEINTURE, ONGLET_FINITION, ONGLET_SKINS, NB_ONGLETS_GARAGE };
+int ongletGarage();              // onglet ouvert
+void choisirOnglet(int onglet);  // ouvre un onglet (appui sur l'onglet ; bancs et parcours)
+// WFS-551 : panneau de verre du bas de l'onglet ouvert, largeur w centrée dans [mp.px0, mp.px1] ; rend son bord gauche
+float panneauOnglet(Renderer& r, const MiseEnPage& mp, float w);
+// WFS-551 : nom de l'objet montré (au-dessus du bouton rond) et, si pas encore à soi, « aperçu · pas encore à toi »
+void nomMontre(Renderer& r, const MiseEnPage& mp, const std::string& nom, bool apercu);
 // état du garage lu par les panneaux
 struct EtatGarage {
     int index = 0;            // voiture affichée (indice dans CARS[])

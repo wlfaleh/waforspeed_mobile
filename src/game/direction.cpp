@@ -6,6 +6,7 @@
 #include <cmath>
 #include "../render/renderer.h"
 #include "commandes_tactiles.h"   // WFS-98 : dessin2d (bords lissés)
+#include "../ui/boutons.h"   // WFS-551 (RG-06) : contour arrondi
 #include "game.h"
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 
@@ -23,9 +24,10 @@ BoutonsFleches boutonsPlaces(float W, float H, const Marges& m) {   // WFS-75 : 
     b.xg += d; b.xd += d; return b; }
 
 // couleurs du skill design-street-racing (tokens.md, codes sRGB comme ui::CYAN)
-const vec4 VITRE_HAUT{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.62f};   // .steer-pad : linear-gradient(180deg, rgba(30,33,48,.62),
-const vec4 VITRE_BAS{14 / 255.f, 16 / 255.f, 24 / 255.f, 0.72f};    //   rgba(14,16,24,.72))
-const vec4 BORD{1.f, 1.f, 1.f, 0.1f};                                // 1px solid rgba(255,255,255,.1)
+// WFS-551 (RG-06, maquettes 17 et 17b) : verre gris des pédales et du GPS (avant : bleu nuit .steer-pad), coins arrondis
+const vec4 VITRE_HAUT{62 / 255.f, 64 / 255.f, 72 / 255.f, 0.70f};
+const vec4 VITRE_BAS{22 / 255.f, 23 / 255.f, 28 / 255.f, 0.82f};
+const vec4 BORD{1.f, 1.f, 1.f, 0.20f};
 const vec4 ACCENT2{0.f, 0.898f, 1.f, 1.f};                           // --accent-2 #00E5FF (appui, piste braquée, repère)
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1.f};        // --text #F2F4F8 (volant)
 const vec4 TEXTE_2{138 / 255.f, 144 / 255.f, 166 / 255.f, 1.f};      // --text-2 #8A90A6 (chevrons)
@@ -49,14 +51,14 @@ void rectangle(Renderer& r, float x, float y, float w, float h, const vec4& c) {
 void bouton(Renderer& r, float x, float y, float c, bool droite, bool appuye) {
     const float k = c / 76.f;   // 1 px CSS du bouton
     if (appuye) { const float d = c * 0.02f; x += d; y += d; c -= 2 * d; }   // .arrow-btn.down : transform: scale(.96)
-    const float b = c * 10.f / 76.f;
-    const vec2 p[4] = {{x + b, y}, {x + c, y}, {x + c - b, y + c}, {x, y + c}};
+    vec2 p[ui::boutons::MAX_SOMMETS];
+    const int n = ui::boutons::contourArrondi(p, x, y, c, c, c * 0.18f);   // WFS-551 (RG-06) : verre aux coins arrondis
     if (appuye) {   // fond cyan, box-shadow 0 0 16px rgba(0,229,255,.55)
-        dessin2d::halo(r, p, 4, 16 * k, alpha(ACCENT2, 0.4f));
-        dessin2d::polygone(r, p, 4, dessin2d::uni(ACCENT2));
+        dessin2d::halo(r, p, n, 16 * k, alpha(ACCENT2, 0.4f));
+        dessin2d::polygone(r, p, n, dessin2d::uni(ACCENT2));
     } else {
-        dessin2d::polygone(r, p, 4, {VITRE_HAUT, VITRE_BAS, y, y + c});
-        dessin2d::contour(r, p, 4, k, BORD);
+        dessin2d::polygone(r, p, n, {VITRE_HAUT, VITRE_BAS, y, y + c});
+        dessin2d::contour(r, p, n, 1.5f * k, BORD);
     }
     static const float G[6] = {15, 4.5f, 7.5f, 12, 15, 19.5f}, D[6] = {9, 4.5f, 16.5f, 12, 9, 19.5f};
     chevron(r, x + c / 2, y + c / 2, c * 38.f / 76.f, droite ? D : G, 3, appuye ? SUR_ACCENT : TEXTE_2);
@@ -68,11 +70,12 @@ void pave(Renderer& r, float W, float H, const Marges& m) {
     const Marges mc = ecrans::margesCommandes(m);
     const float k = uniteCommandes(W, H), w = std::round(156 * k), h = std::round(60 * k), y = std::round(H - mc.bas - 14 * k) - h;
     const float x = ecrans::miroirX(std::round(mc.gauche + 16 * k) + w / 2, W) - w / 2;   // WFS-75 : miroir sans retourner
-    const float cx = x + w / 2, cy = y + h / 2, b = 12 * k, s = directionBraquage(W);
+    const float cx = x + w / 2, cy = y + h / 2, s = directionBraquage(W);
     const bool appui = g_gl.id >= 0;
-    const vec2 p[4] = {{x + b, y}, {x + w, y}, {x + w - b, y + h}, {x, y + h}};
-    dessin2d::polygone(r, p, 4, {VITRE_HAUT, VITRE_BAS, y, y + h});
-    dessin2d::contour(r, p, 4, k, appui ? alpha(ACCENT2, 0.45f) : BORD);   // .steer-pad.active
+    vec2 p[ui::boutons::MAX_SOMMETS];
+    const int np = ui::boutons::contourArrondi(p, x, y, w, h, 14 * k);   // WFS-551 (RG-06) : pavé de verre aux coins arrondis
+    dessin2d::polygone(r, p, np, {VITRE_HAUT, VITRE_BAS, y, y + h});
+    dessin2d::contour(r, p, np, 1.5f * k, appui ? alpha(ACCENT2, 0.45f) : BORD);   // .steer-pad.active
     static const float G[6] = {14.5f, 5, 8, 12, 14.5f, 19}, D[6] = {9.5f, 5, 16, 12, 9.5f, 19};   // .steer-chev 20 px
     chevron(r, x + 18 * k, cy, 20 * k, G, 2.6f, TEXTE_2);
     chevron(r, x + w - 18 * k, cy, 20 * k, D, 2.6f, TEXTE_2);
@@ -93,7 +96,7 @@ void pave(Renderer& r, float W, float H, const Marges& m) {
     else dessin2d::couronne(r, kx, ky + 4 * k, 24 * k, 40 * k, {0, 0, 0, 0.35f}, {0, 0, 0, 0});          // 0 4px 14px noir
     // radial-gradient(circle at 50% 35%, #2a2e42, #12141d 70%), tourné avec le bouton
     dessin2d::disqueRadial(r, kx, ky, R, kx + sn * 8.4f * k, ky - cs * 8.4f * k, 32.1f * k,
-                           {42 / 255.f, 46 / 255.f, 66 / 255.f, 1}, {18 / 255.f, 20 / 255.f, 29 / 255.f, 1});
+                           {70 / 255.f, 72 / 255.f, 80 / 255.f, 1}, {24 / 255.f, 25 / 255.f, 30 / 255.f, 1});   // WFS-551 : verre gris
     dessin2d::anneau(r, kx, ky, R - k, R, appui ? ACCENT2 : vec4{1, 1, 1, 0.16f});
     // volant (index.html, viewBox 48 dessiné en 44 px) : jante r 19 trait 4, moyeu r 5,5, trois branches, repère cyan
     const float u = 44 * k / 48;

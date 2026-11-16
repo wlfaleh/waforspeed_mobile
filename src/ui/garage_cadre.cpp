@@ -42,7 +42,8 @@ void pied(Renderer& r, const MiseEnPage& mp, const CarDef& car, bool voiturePret
     const float W = mp.W, H = mp.H, k = mp.k, op = mp.op, gr = mp.gr, gb = mp.gb;
     // .show-credit : crédit du modèle (licence obligatoire), en bas à droite ; WFS-99 (RG-06, ANO-33) : capitales de
     // 10 px à 720p (taille 14 = capitales + jambages), #8A90A6, sous le panneau
-    ui::text(r, W - gr, H - gb - 17 * k, 14 * k, ui::tr("garage.credit", auteurDuCredit(car)), hex(MUTED, op), ui::DROITE, 0, false);   // WFS-191 (RG-03)
+    // WFS-551 (RG-13, accroche) : crédit CC BY gardé (obligation de licence), 11 px gris clair en bas à droite, sous le bouton rond
+    ui::text(r, W - gr, H - gb - 13 * k, 11 * k, ui::tr("garage.credit", auteurDuCredit(car)), hex(0xA3A8B5, op), ui::DROITE, 0, false);   // WFS-191 (RG-03)
     if (!voiturePrete) {   // .show-loading
         const std::string& l = ui::tr("chargement.etape.modele");   // WFS-507 : même clé que l'écran de chargement
         const float lw = ui::width(14 * k, l, 0.08f) + 36 * k;

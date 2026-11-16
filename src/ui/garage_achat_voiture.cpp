@@ -30,6 +30,39 @@
 
 namespace wfs::ecrans::garage {
 
+// ---------------------------------------------------------------- cadenas-jauge (WFS-551, RG-04)
+void cadenasJauge(Renderer& r, float x, float y, float h, float part, float op) {
+    const float w = h * 0.78f, cx = x + w / 2, ouvert = part >= 1 ? 1.f : 0.f;
+    const float yc = y + h * 0.40f, hc = h * 0.60f;   // corps : 60 % du bas
+    // anse chrome : deux arcs (sombre dessous, clair dessus) ; à 100 % elle monte et pivote (ouverte)
+    const float ra = w * 0.30f, ya = yc - h * 0.02f - ouvert * h * 0.12f, ep = std::max(1.5f, h * 0.10f);
+    const float dx = ouvert * ra * 0.9f;
+    dessin2d::arc(r, cx + dx, ya, ra, ep + std::max(1.f, h * 0.03f), -PI / 2, PI / 2, {0.12f, 0.13f, 0.16f, 0.9f * op});
+    dessin2d::arc(r, cx + dx, ya, ra, ep, -PI / 2, PI / 2, {0.86f, 0.88f, 0.92f, op});
+    dessin2d::arc(r, cx + dx, ya, ra, ep * 0.35f, -PI / 2.4f, -PI / 6, {1, 1, 1, 0.9f * op});   // reflet du chrome
+    const vec2 pieds[2][2] = {{{cx + dx - ra, ya}, {cx + dx - ra, yc + ep}}, {{cx + dx + ra, ya}, {cx + dx + ra, yc - (ouvert > 0 ? h * 0.1f : -ep)}}};
+    for (const auto& pd : pieds) dessin2d::trait(r, pd, 2, ep, {0.86f, 0.88f, 0.92f, op});
+    // corps de verre sombre, liseré clair, coins arrondis
+    vec2 c[ui::boutons::MAX_SOMMETS];
+    const int n = ui::boutons::contourArrondi(c, x, yc, w, hc, h * 0.12f);
+    dessin2d::polygone(r, c, n, {{0.20f, 0.22f, 0.28f, 0.92f * op}, {0.06f, 0.07f, 0.09f, 0.95f * op}, yc, yc + hc});
+    dessin2d::contour(r, c, n, std::max(1.f, h * 0.025f), {1, 1, 1, 0.35f * op});
+    // arc fin autour de la serrure : 270° (ouverture en bas), rempli de cyan → orange jusqu'à `part`, reste éteint
+    const float sx = cx, sy = yc + hc * 0.52f, rr = hc * 0.30f, e2 = std::max(1.2f, h * 0.05f);
+    const float a0 = -0.75f * PI, a1 = 0.75f * PI, af = a0 + (a1 - a0) * std::clamp(part, 0.f, 1.f);
+    dessin2d::arc(r, sx, sy, rr, e2, a0, a1, {1, 1, 1, 0.16f * op});
+    constexpr int SEG = 24;
+    for (int i = 0; i < SEG; i++) {
+        const float t0 = a0 + (a1 - a0) * i / SEG, t1 = a0 + (a1 - a0) * (i + 1) / SEG;
+        if (t0 >= af) break;
+        dessin2d::arc(r, sx, sy, rr, e2, t0, std::min(t1, af), verre::degradeMarque((float)i / (SEG - 1), op));
+    }
+    // serrure : rond et fente
+    r.uiCircle(sx, sy - rr * 0.18f, rr * 0.30f, {0.92f, 0.93f, 0.96f, op});
+    const vec2 fente[2] = {{sx, sy - rr * 0.1f}, {sx, sy + rr * 0.42f}};
+    dessin2d::trait(r, fente, 2, rr * 0.26f, {0.92f, 0.93f, 0.96f, op});
+}
+
 bool essaiPossible(const Sauvegarde& s, const char* carId) {
     const bool duel = modeCourse() == ModeCourse::Duel || duelSession().inRoom();   // RG-08 de WFS-498 : pas d'essai en duel
     return voitureBloquee(s, carId) && !duel && boutique::essaiDisponible(s, carId);

@@ -88,6 +88,8 @@ private:
 };
 CartesPaquets& cartesPaquets();
 // choix du terrain (terrain.cpp) : vignette de la carte (x, y, w, h ; k = pixels par dp)
+// WFS-551 (RG-07) : carte publiée pas encore installée (disponible, en file, en téléchargement, coupure, échec) : « Rouler » éteint
+bool carteATelecharger(const std::string& carte);
 void assombrirCarte(Renderer& r, const std::string& carte, float x, float y, float w, float h);   // RG-01 : paquet publié pas encore là
 void dessinerPaquetCarte(Renderer& r, const std::string& carte, float x, float y, float w, float h, float k, double maintenant);
 bool toucherPaquetCarte(const std::string& carte, int id, float x, float y, bool down, double maintenant);   // vrai : toucher pris

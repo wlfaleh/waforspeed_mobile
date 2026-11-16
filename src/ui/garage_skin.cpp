@@ -1,6 +1,7 @@
 // WaForSpeed — garage : rangée « Skin » et fenêtre de la skin offerte (WFS-494) : voir garage_skin.h.
 #include "garage_skin.h"
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -15,14 +16,17 @@
 #include "../render/vehicule_skin.h"
 #include "garage_achat.h"   // texte avec ★, équivalents, nombres
 #include "garage_finition.h"
+#include "garage_onglets.h"   // WFS-551 : panneau de l'onglet, nom montré
 #include "langue.h"
 #include "text.h"
 #include "boutons.h"   // WFS-549 : boutons au modèle R19
+#include "ecrans/atelier_calques.h"   // WFS-496 (accroche) : autocollants de l'atelier
 
 namespace wfs::ecrans::garage {
 namespace {
 // mesures de la rangée, unités de 720 px de haut (× k) : mêmes que la rangée des finitions (WFS-491)
-constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ECART = 8, ECHANTILLON = 18, NOM = 190, ESPACE_RANGEES = 10, CHEVRON = 16;
+constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ESPACE_RANGEES = 10, CHEVRON = 16;
+constexpr float GRANDE = 56, PAS_GRANDE = 72;   // WFS-551 (maquette 07) : diamètre d'une pastille de l'onglet « Skins », pas entre deux
 constexpr const int (&ORDRE)[SkinGarage::NB] = SkinGarage::ORDRE;
 
 const char* car(int index) { return CARS[std::clamp(index, 0, CAR_COUNT - 1)].id; }
@@ -47,6 +51,64 @@ dessin2d::Teinte echantillon(int s, unsigned peinture, float op, float y0, float
     return {c, vec4{c.x * 0.8f, c.y * 0.8f, c.z * 0.8f, op}, y0, y1};
 }
 
+// WFS-551 (RG-02) : polygone convexe du disque (cx, cy, R) coupé par la bande d0 ≤ (p − centre)·n ≤ d1 (n de direction `angle`) ;
+// découpe de Sutherland-Hodgman par deux demi-plans ; rend le nombre de sommets (≤ 64)
+int bandeDisque(vec2* out, float cx, float cy, float R, float angle, float d0, float d1) {
+    constexpr int N = 40;
+    vec2 a[64], b[64];
+    int n = N;
+    for (int i = 0; i < N; i++) { const float t = 2 * PI * i / N; a[i] = {cx + R * std::cos(t), cy + R * std::sin(t)}; }
+    const vec2 nn{std::cos(angle), std::sin(angle)};
+    auto couper = [&](vec2* src, int ns, vec2* dst, float lim, float sens) {   // garde sens × (d − lim) ≥ 0
+        int m = 0;
+        for (int i = 0; i < ns && m < 62; i++) {
+            const vec2 p = src[i], q = src[(i + 1) % ns];
+            const float dp = sens * (((p.x - cx) * nn.x + (p.y - cy) * nn.y) - lim), dq = sens * (((q.x - cx) * nn.x + (q.y - cy) * nn.y) - lim);
+            if (dp >= 0) dst[m++] = p;
+            if ((dp >= 0) != (dq >= 0)) { const float t = dp / (dp - dq); dst[m++] = {p.x + (q.x - p.x) * t, p.y + (q.y - p.y) * t}; }
+        }
+        return m;
+    };
+    n = couper(a, n, b, d0, 1);
+    n = couper(b, n, a, d1, -1);
+    for (int i = 0; i < n; i++) out[i] = a[i];
+    return n;
+}
+
+// WFS-551 (RG-02, maquette 07) : grande pastille ronde avec le motif de la skin (couleurs de vehicule_skin), reflet de verre
+void pastilleSkin(Renderer& r, float cx, float cy, float R, int s, unsigned peinture, float op) {
+    float a[3] = {0.08f, 0.08f, 0.09f}, b[3] = {0.9f, 0.9f, 0.9f};
+    const bool motif = s >= 0 && vehicule_skin::couleurs(vehicule_skin::depuisId(BOUTIQUE_SKINS_IDS[s]), a, b);
+    const vec4 A{a[0], a[1], a[2], op}, B{b[0], b[1], b[2], op};
+    const vec4 fond = motif ? A : hex(peinture, op);
+    // fond : dégradé radial (plus clair en haut à gauche) ; « Aucune » : la peinture montrée, bille brillante
+    dessin2d::disqueRadial(r, cx, cy, R, cx - R * 0.35f, cy - R * 0.4f, R * 1.3f,
+                           {std::min(1.f, fond.x * 0.6f + 0.25f), std::min(1.f, fond.y * 0.6f + 0.25f), std::min(1.f, fond.z * 0.6f + 0.25f), op},
+                           {fond.x * 0.55f, fond.y * 0.55f, fond.z * 0.55f, op});
+    vec2 p[64];
+    const std::string id = s >= 0 ? BOUTIQUE_SKINS_IDS[s] : "";
+    auto bande = [&](float ang, float d0, float d1, const vec4& c) {
+        const int n = bandeDisque(p, cx, cy, R, ang, d0 * R, d1 * R);
+        if (n >= 3) dessin2d::polygone(r, p, n, dessin2d::uni(c));
+    };
+    if (id == "rallye") {            // deux bandes verticales et une bande basse
+        bande(0, -0.30f, -0.12f, B); bande(0, 0.12f, 0.30f, B); bande(PI / 2, 0.55f, 0.72f, B);
+    } else if (id == "drifttokyo") { // bandes diagonales
+        bande(-PI / 3, -0.25f, 0.05f, B); bande(-PI / 3, 0.15f, 0.27f, {B.x * 0.3f, B.y * 0.3f, B.z * 0.3f, op});
+    } else if (id == "neonnuit") {   // traits fins lumineux
+        bande(-PI / 4, -0.30f, -0.20f, B); bande(-PI / 4, 0.05f, 0.14f, B); bande(-PI / 4, 0.34f, 0.41f, B);
+    } else if (id == "camouflage") { // taches
+        static constexpr float T[6][3] = {{-0.35f, -0.25f, 0.30f}, {0.30f, -0.35f, 0.22f}, {0.15f, 0.30f, 0.32f},
+                                          {-0.40f, 0.35f, 0.20f}, {0.50f, 0.10f, 0.18f}, {-0.05f, 0.0f, 0.16f}};
+        for (const auto& t : T) r.uiCircle(cx + t[0] * R, cy + t[1] * R, t[2] * R, B);
+    } else if (motif) {              // autre skin : une bande large de la 2e couleur
+        bande(PI / 2, 0.2f, 1.f, B);
+    }
+    // reflet de verre : arc clair en haut à gauche, petit éclat
+    dessin2d::arc(r, cx, cy, R * 0.78f, std::max(1.f, R * 0.09f), -2.4f, -1.2f, {1, 1, 1, 0.45f * op});
+    r.uiCircle(cx - R * 0.42f, cy - R * 0.5f, R * 0.08f, {1, 1, 1, 0.7f * op});
+}
+
 // skins de la fenêtre de la skin offerte : en vente pour cette voiture, dans l'ordre affiché de la rangée
 std::vector<int> skinsOffrables(const char* carId) {
     std::vector<int> v;
@@ -64,7 +126,7 @@ float SkinGarage::largeurBouton(float k) { return BOUTON_W * k; }
 
 bool SkinGarage::police(float k, float& px) {
     // même règle que les finitions (RG-04 de WFS-491, E20) : 12 px, réduite de 20 % au plus pour faire tenir le plus long nom
-    const float dispo = (BOUTON_W - ECHANTILLON - 7 - 6 - 6) * k;
+    const float dispo = (BOUTON_W - 32 - 2 - 4 - 6) * k;   // WFS-551 : bord, pastille de 32 px (police des noms gardée pour les tests), écart, marge droite
     float l = 0;
     for (int o = 0; o < NB; o++) l = std::max(l, ui::width(12 * k, ui::majuscules(nomSkin(ORDRE[o])), 0.06f));
     px = l > dispo ? std::max(12 * k * 0.8f, 12 * k * dispo / l) : 12 * k;
@@ -146,26 +208,25 @@ void SkinGarage::quitter(Renderer& r, const GameView& g, bool reposer) {
     // même choix que Game::setCar (WFS-492, WFS-495) : skin possédée de la voiture de la course ; bancs : WFS_SKIN, WFS_AUTOCOLLANTS
     const char* sk = std::getenv("WFS_SKIN") ? std::getenv("WFS_SKIN") : sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), g.car->id).skin : "";
     const char* ac = std::getenv("WFS_AUTOCOLLANTS");
-    vehicule_skin::poser(r, *g.modele, g.car->id, sk, ac ? ac : "");
+    vehicule_skin::poser(r, *g.modele, g.car->id, sk, ac ? std::string(ac) : atelier::calquesCourse(g.car->id));   // WFS-496 (accroche) : autocollants de l'atelier
 }
 
 // ---------- rangée « Skin » ----------
 void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) {
     viderZones();
     if (!visible(e.index)) return;
-    const float k = mp.k, op = mp.op, h = BOUTON_H * k, gap = ECART * k, w = BOUTON_W * k, pas = w + gap;
+    // WFS-551 (maquette 07) : panneau de verre de l'onglet « Skins » : « SKINS », puis une grande pastille ronde par skin, le nom
+    // dessous ; portée = anneau blanc ; aperçu = plus grande, anneau et halo orange ; cadenas sur celles à acheter
+    const float k = mp.k, op = mp.op, R0 = GRANDE * k / 2, pas = PAS_GRANDE * k, pad = 24 * k, ch = CHEVRON * k * 1.4f;
     const Sauvegarde& sv = sauvegarde();
     const char* carId = car(e.index);
-    const float yy = mp.y1 + mp.statH + 14 * k + mp.paintH + FinitionGarage::hauteur(k) + ESPACE_RANGEES * k;
-    float cx = mp.px0 + mp.padX;
-    const std::string titre = ui::majuscules(ui::tr("garage.skin"));
-    ui::text(r, cx, yy + 9 * k, 13 * k, titre, hex(MUTED, op), ui::GAUCHE, 0.16f, false);
-    // les boutons commencent au même x que ceux des finitions (titres de longueurs différentes : colonne alignée)
-    cx += std::max(ui::width(13 * k, titre, 0.16f), ui::width(13 * k, ui::majuscules(ui::tr("garage.finition")), 0.16f)) + 16 * k;
-    const float place = mp.bx - 32 * k - NOM * k - cx;
-    const bool defile = NB * pas - gap > place;
-    const float x0 = defile ? cx + CHEVRON * k : cx;
-    visibles_ = defile ? std::clamp((int)((place - 2 * CHEVRON * k + gap) / pas), 1, NB) : NB;
+    const float wMax = mp.px1 - mp.px0, wPlein = NB * pas + 2 * pad;
+    const bool defile = wPlein > wMax;
+    const float xp = panneauOnglet(r, mp, defile ? wMax : wPlein);
+    ui::text(r, xp + pad, mp.py0 + 14 * k, 11 * k, ui::majuscules(ui::tr("garage.onglet.skins")), hex(0xA3A8B5, op), ui::GAUCHE, 0.12f, false);
+    const float cx = xp + pad, pcy = mp.py0 + 40 * k + R0;
+    const float x0 = defile ? cx + ch : cx;
+    visibles_ = defile ? std::clamp((int)((wMax - 2 * pad - 2 * ch) / pas), 1, NB) : NB;
     int sel = 0;
     for (int o = 0; o < NB; o++) if (ORDRE[o] == e.skin) sel = o;
     if (sel != selVue_ || e.index != indexVu_) {   // nouvelle skin montrée ou autre voiture : la rendre visible
@@ -174,42 +235,45 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
         selVue_ = sel; indexVu_ = e.index;
     }
     premier_ = std::clamp(premier_, 0, NB - visibles_);
-    float px = 12 * k;
-    police(k, px);
-    for (int c = 0; c < 2; c++) {   // chevrons (seulement s'il reste des boutons de ce côté)
+    for (int c = 0; c < 2; c++) {   // chevrons (seulement s'il reste des pastilles de ce côté)
         const bool reste = c == 0 ? premier_ > 0 : premier_ + visibles_ < NB;
         if (!defile || !reste) continue;
-        const float xc = c == 0 ? cx + CHEVRON * k * 0.4f : x0 + visibles_ * pas - gap + CHEVRON * k * 0.6f, yc = yy + h / 2, d = c == 0 ? 1.f : -1.f;
-        const vec2 ch[3] = {{xc + 4 * k * d, yc - 8 * k}, {xc - 4 * k * d, yc}, {xc + 4 * k * d, yc + 8 * k}};
-        dessin2d::trait(r, ch, 3, 2.4f * k, hex(ACCENT2, op));
-        g_z.chevronsSkin[c] = {xc - CHEVRON * k * 0.6f, yy - 4 * k, CHEVRON * k * 1.2f, h + 8 * k};
+        const float xc = c == 0 ? cx + ch * 0.4f : x0 + visibles_ * pas + ch * 0.6f, d = c == 0 ? 1.f : -1.f;
+        const vec2 chv[3] = {{xc + 4 * k * d, pcy - 8 * k}, {xc - 4 * k * d, pcy}, {xc + 4 * k * d, pcy + 8 * k}};
+        dessin2d::trait(r, chv, 3, 2.4f * k, hex(ACCENT2, op));
+        g_z.chevronsSkin[c] = {xc - ch * 0.6f, pcy - R0 - 4 * k, ch * 1.2f, 2 * R0 + 8 * k};
         manette::focus(g_z.chevronsSkin[c]);
     }
     const unsigned peinture = PAINTS[std::clamp(e.peinture, 0, NB_PEINTURES - 1)].hex;
+    // WFS-551 (RG-02) : skin portée (sauvegarde) ; sans sauvegarde (banc), la skin montrée
+    int portee = sel;
+    if (sv.actif()) { const int sp = indiceSkin(perso::aspectCourse(sv, carId).skin); for (int o = 0; o < NB; o++) if (ORDRE[o] == sp) portee = o; }
     for (int o = premier_; o < premier_ + visibles_; o++) {
         const int s = ORDRE[o];
-        const float x = x0 + (o - premier_) * pas;
+        const float x = x0 + (o - premier_) * pas, pcx = x + pas / 2;
         const bool on = o == sel, aMoi = possedee(sv, s, carId), cadeau = !aMoi && cadeauSeul(s);
-        const long long prix = prixSkin(sv, s, carId);
-        if (on) biseau(r, x - 4 * k, yy - 4 * k, w + 8 * k, h + 8 * k, h * 0.18f, hex(ACCENT2, 0.35f * op));   // halo
-        biseau(r, x - 2 * k, yy - 2 * k, w + 4 * k, h + 4 * k, h * 0.18f, on ? hex(ACCENT2, op) : vec4{1, 1, 1, 0.08f * op});
-        biseau(r, x, yy, w, h, h * 0.18f, hex(SURFACE2, op));
-        const float es = ECHANTILLON * k, ex = x + 7 * k, ey = yy + (h - es) / 2;
-        dessin2d::biseau(r, ex, ey, es, es, es * 0.18f, echantillon(s, peinture, op, ey, ey + es));
-        if (!aMoi) cadenas(r, ex + es / 2 + es * 0.09f, ey + es * 0.55f, 11 * k, op);   // RG-01, RG-04 : non possédée
-        ui::text(r, ex + es + 6 * k, yy + (h - px) / 2 - 1 * k, px, ui::majuscules(nomSkin(s)), hex(on ? TEXTE : TAG, op), ui::GAUCHE, 0.06f, false);
-        if (prix > 0) texteEtoiles(r, x + w / 2, yy + h + 3 * k, 10 * k, ui::nombre(prix) + " ★", hex(TAG, op), ui::CENTRE);
-        else if (cadeau) ui::text(r, x + w / 2, yy + h + 3 * k, 10 * k, ui::tr("garage.skin.cadeau_court"), hex(ACCENT2, op), ui::CENTRE, 0, false);
-        g_z.skins[o] = {x - 4 * k, yy - 4 * k, w + 8 * k, (BOUTON_H + LIGNE_PRIX) * k + 8 * k};
+        const float R = (on ? 1.12f : 1.f) * R0;
+        if (on) dessin2d::couronne(r, pcx, pcy, R, R + 12 * k, hex(ACCENT, 0.45f * op), hex(ACCENT, 0));
+        pastilleSkin(r, pcx, pcy, R, s, peinture, op);
+        if (on) dessin2d::anneau(r, pcx, pcy, R - 0.4f * k, R + 2.4f * k, hex(ACCENT, op));
+        else if (o == portee) dessin2d::anneau(r, pcx, pcy, R - 0.2f * k, R + 2 * k, hex(TEXTE, op));
+        if (o == portee && on) dessin2d::anneau(r, pcx, pcy, R + 2.4f * k, R + 3.6f * k, hex(TEXTE, op));
+        if (!aMoi) cadenas(r, pcx + R * 0.66f, pcy + R * 0.62f, 13 * k, op);   // RG-02 : cadenas sur celles à acheter
+        const float yn = pcy + R0 * 1.12f + 8 * k;
+        ui::textBoite(r, pcx, yn, pas - 6 * k, 16 * k, 12 * k, nomSkin(s), hex(on ? ACCENT : TEXTE, op), ui::CENTRE, 0.02f, false);   // maquette 07 : aperçu en orange
+        if (cadeau) ui::text(r, pcx, yn + 17 * k, 10 * k, ui::tr("garage.skin.cadeau_court"), hex(ACCENT2, op), ui::CENTRE, 0, false);
+        g_z.skins[o] = {x, pcy - R0 - 8 * k, pas, 2 * R0 + 50 * k};
         manette::focus(g_z.skins[o]);   // WFS-80 : A = toucher
     }
-    // nom de la skin montrée ; dessous : « Utiliser un bon (N) », son prix et ses équivalents, ou « Bientôt dans le cadeau du jour »
-    const float xn = mp.bx - 32 * k - NOM * k + 10 * k, wn = NOM * k - 20 * k;
-    ui::textBoite(r, xn, yy - 2 * k, wn, 20 * k, 15 * k, nomSkin(e.skin), hex(TEXTE, op), ui::GAUCHE, 0, false);
+    // nom de la skin montrée (au-dessus du bouton rond) ; dessous : « Choisis ta skin offerte » ou « Utiliser un bon (N) », ses
+    // équivalents, ou « Bientôt dans le cadeau du jour »
     const bool offerte = skins::offerteDue(sv, carId);
+    const long long prixSel = prixSkin(sv, e.skin, carId);
+    nomMontre(r, mp, nomSkin(e.skin), prixSel > 0);
+    const float wn = 200 * k, xn = std::min(mp.cxBouton - wn / 2, mp.W - mp.gr - wn), yb = mp.cyBouton + mp.rBouton + 44 * k;   // sous le bouton rond et le solde
     if (offerte || (e.skin >= 0 && skins::bonUtilisable(sv, carId, BOUTIQUE_SKINS_IDS[e.skin]))) {
-        // RG-02 : « Choisis ta skin offerte » (orange : action principale de la rangée) ; bon du market : « Utiliser un bon (N) » (cyan)
-        const Zone z{xn, yy + 19 * k, wn, 22 * k};
+        // RG-02 : « Choisis ta skin offerte » (orange : action principale) ; bon du market : « Utiliser un bon (N) » (cyan)
+        const Zone z{xn, yb, wn, 24 * k};
         const unsigned c = offerte ? ACCENT : ACCENT2;
         biseau(r, z.x, z.y, z.w, z.h, 6 * k, hex(c, op));
         if (!offerte) biseau(r, z.x + 1.5f * k, z.y + 1.5f * k, z.w - 3 * k, z.h - 3 * k, 6 * k, hex(SURFACE2, op));
@@ -217,13 +281,10 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
         ui::textBoite(r, z.x + z.w / 2, z.y, z.w - 12 * k, z.h, 11 * k, ui::majuscules(t), hex(offerte ? ON_ACCENT : ACCENT2, op), ui::CENTRE, 0.1f, false);
         g_z.actionSkin = {z.x - 2 * k, z.y - 4 * k, z.w + 4 * k, z.h + 8 * k};
         manette::focus(g_z.actionSkin);
-    } else if (const long long p = prixSkin(sv, e.skin, carId); p > 0) {
-        texteEtoiles(r, xn, yy + 21 * k, 11 * k, texteEquivalent(p), hex(MUTED, op), ui::GAUCHE);
     } else if (!possedee(sv, e.skin, carId) && cadeauSeul(e.skin)) {
-        ui::textBoite(r, xn, yy + 19 * k, wn, 16 * k, 11 * k, ui::tr("garage.skin.cadeau"), hex(ACCENT2, op), ui::GAUCHE, 0, false);
+        ui::textBoite(r, mp.cxBouton, yb, wn, 16 * k, 11 * k, ui::tr("garage.skin.cadeau"), hex(ACCENT2, op), ui::CENTRE, 0, false);
     }
 }
-
 int SkinGarage::appui(float x, float y) const {
     if (g_z.actionSkin.contient(x, y)) return ACTION;
     for (int o = 0; o < NB; o++) if (g_z.skins[o].contient(x, y)) return o;
