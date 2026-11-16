@@ -698,3 +698,10 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 ### 2026-11-16 11:32:09 — WFS-558 : arbitrage RG-05, lisibilité de l'afficheur (po-scrum-master)
 - Demande du lead dev (PR #430, point 3) via Claude, agent dev3d (01Us6uCtQN). À vraie taille (82 × 18 mm), l'afficheur fait ≈ 3 px de caractère dans le cadrage large : illisible.
 - Décision : **option A**. RG-05 corrigée : afficheur allumé et visible en cadrage large ; code tapé lisible en vue rapprochée ; en cadrage large, un code commencé est aussi écrit dans le panneau « Rejoins avec un code » sous l'aide (« Code : K7Q_ », 4 cases, style du code du salon). Pas d'agrandissement de l'afficheur (RG-02).
+
+### 2026-11-16 12:07:14 — WFS-557 : PR #432 ouverte (Claude, agent dev3d (01UY1Vv4Fd))
+- Écrans R19 de WFS-548, 549, 552 vérifiés et corrigés aux maquettes (tableau `qa/pr/WFS-557/verification.md`, une ligne par maquette) ; bouton Start / Stop mesuré au pixel sur la maquette 19 (demande de l'utilisateur).
+- RG-23 : choix de la carte (maquettes 18a, 18b, 18c) refait dans `terrain.cpp` et `paquets.cpp` (étiquettes, Télécharger, progression, Supprimer) ; 18d déjà fait par WFS-551.
+- Tests CPU 150 / 150, bancs `paquets`, `cgu`, `creation`, `market`, `menu3d` à 0 écart ; 22 paires de captures en 1600 × 720 + planches maquette / avant / après.
+- Suite : avis de l'agent 3D sur le cadrage du menu (WFS-552), puis lead dev.
+
