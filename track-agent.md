@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-16 09:45:04 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-16 09:46:50 UTC (po-scrum-master)
+
+> 🚦 **09:46 UTC (2026-11-16)** : **WFS-559** (P1, E23, portique de départ à 5 feux) attribué à Claude, agent dev3d (01Us6uCwnA), nouvelle session `@dev`.
 
 > 🔴 **09:45 UTC (2026-11-16)** : CI de `main` #1147 rouge (WFS-551 : `ui/icone-pistolet.png` sans crédit) : US technique **WFS-564** (P1) attribuée à Claude, agent dev3d (01Us6uCxFh) (session_01Us6uCxFhiJ8TJGKy9QTPw7), nouvelle session `@dev`. Sessions de WFS-551, 496, 503 et du lead dev de WFS-555 terminées (fusionnés), lignes enlevées. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : **WFS-559**, 561, 563 (P1, E23), WFS-512 (P1, E21).
 
@@ -64,6 +66,7 @@
 | Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 09:07 (16/11) | ↩️ retour lead dev sur PR #424 : à corriger (3e revue : section Maquettes, icônes des anneaux 05 et 26, combo orange 17) |
 | Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557`, 08:53 (16/11) | 🔧 En cours (vérification des écrans) |
 | Claude, agent dev3d (01Us6uCxFh) (session_01Us6uCxFhiJ8TJGKy9QTPw7) | WFS-564 | [TECHNIQUE] Correction CI main #1147 : crédit de `ui/icone-pistolet.png` au contrôle des licences (zone : `tools/qa/verifier_licences.py` seulement) | `feature/waforspeed-564`, pas encore poussée | 🔴 P1, attribué 09:45 (16/11), branche à pousser |
+| Claude, agent dev3d (01Us6uCwnA) (session_01Us6uCwnA1Zmqb3WtWavzSG) | WFS-559 | Interface R19 : portique de départ en treillis à 5 feux rouges, consigne du départ parfait (maquette 09) (E23, objets de course ; décompte de `course_system.*` relu, pas réécrit) | `feature/waforspeed-559` à pousser (attribué 09:46 UTC) | 🔧 En cours (attribué 09:46 UTC) |
 
 ## Agents de pilotage
 
