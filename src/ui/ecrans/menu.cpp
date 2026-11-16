@@ -85,7 +85,19 @@ public:
         // de marque du jeu ») : la SF-X de la maquette 01 (orange, finition caméléon, skin bleu ciel) est la voiture de vitrine
         // du menu, quelle que soit la voiture du joueur (la course, le garage et la sauvegarde ne changent pas)
         if (parking_.pret() && !vitrine_.ok) {
-            if (loadCarModel(r, carById(VITRINE).file, vitrine_)) vehicule_skin::poser(r, vitrine_, VITRINE, "ciel");
+            if (loadCarModel(r, carById(VITRINE).file, vitrine_)) {
+                vehicule_skin::poser(r, vitrine_, VITRINE, "ciel");
+                // maquette 01 : pas de plaque sur la voiture de vitrine ; la plaque de la SF-X est sa propre pièce (matériau n° 9 de
+                // tools/plaques_voitures.mjs), retirée de cette copie seulement (la voiture de course garde ses plaques)
+                auto sansPlaque = [](std::vector<ModelPart>& v) { v.erase(std::remove_if(v.begin(), v.end(), [](const ModelPart& p) { return p.material == MATERIAU_PLAQUE || p.material == MATERIAU_PLAQUE_AVANT; }), v.end()); };
+                sansPlaque(vitrine_.parts); sansPlaque(vitrine_.partsLod);
+                for (auto& n : vitrine_.partsNiveaux) sansPlaque(n);
+                // maquette 01 : prises d'air du capot, crochet et détails jaunes d'origine (matériau n° 11) en bleu ciel, comme la skin
+                if (MATERIAU_JAUNE < vitrine_.mats.size()) {
+                    auto lin = [](float c) { return std::pow(c, 2.2f); };
+                    vitrine_.mats[MATERIAU_JAUNE].color = {lin(0x9A / 255.f), lin(0xDC / 255.f), lin(0xF2 / 255.f), 1};
+                }
+            }
             else WFS_ERR("menu : voiture de vitrine %s introuvable (la voiture du joueur reste affichée)", VITRINE);
         }
     }
@@ -258,6 +270,8 @@ private:
     }
     parking::Parking parking_;   // WFS-552
     static constexpr const char* VITRINE = "sf90";   // Cavallo SF-X (nom inventé du catalogue)
+    static constexpr uint32_t MATERIAU_PLAQUE = 9, MATERIAU_PLAQUE_AVANT = 53;   // plaques arrière et avant de sf90.wfm (tools/plaques_voitures.mjs)
+    static constexpr uint32_t MATERIAU_JAUNE = 11;      // détails jaunes d'origine de sf90.wfm (couleur 0,97 / 0,70 / 0,01)
     Model vitrine_;              // WFS-550 : voiture de vitrine du menu
     mat4 voiture_ = mat4::identity();
     double t0_ = -1;
