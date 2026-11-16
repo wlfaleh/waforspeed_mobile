@@ -22,7 +22,7 @@ namespace {
 constexpr float PASTILLE = 30, LIGNE_PRIX = 14, ONGLET_H = 30, CHEVRON = 16, SEUIL_GLISSE = 10;
 constexpr unsigned SUR_TITRE_GOUTTES = 0xA3A8B5;
 // WFS-551 (maquette 06) : gouttes en grand dans le panneau de verre de l'onglet « Peinture »
-constexpr float GOUTTE = 40, PAS_GOUTTE = 56, MARGE_PANNEAU = 28;   // WFS-551 : sur-titre gris de la R19 (verre::SUR_TITRE, WFS-548)
+constexpr float GOUTTE = 38, PAS_GOUTTE = 50, MARGE_PANNEAU = 28;   // WFS-551 : sur-titre gris de la R19 (verre::SUR_TITRE, WFS-548)
 
 const std::string& nomCouleur(int p) { return ui::tr(("couleur." + std::string(PAINTS[p].id)).c_str()); }
 

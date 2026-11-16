@@ -25,7 +25,7 @@ namespace wfs::ecrans::garage {
 namespace {
 // mesures de la rangée, unités de 720 px de haut (× k) : mêmes que la rangée des finitions (WFS-491)
 constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ESPACE_RANGEES = 10, CHEVRON = 16;
-constexpr float GRANDE = 60, PAS_GRANDE = 88;   // WFS-551 (maquette 07) : diamètre d'une pastille de l'onglet « Skins », pas entre deux
+constexpr float GRANDE = 56, PAS_GRANDE = 72;   // WFS-551 (maquette 07) : diamètre d'une pastille de l'onglet « Skins », pas entre deux
 constexpr const int (&ORDRE)[SkinGarage::NB] = SkinGarage::ORDRE;
 
 const char* car(int index) { return CARS[std::clamp(index, 0, CAR_COUNT - 1)].id; }
@@ -222,7 +222,7 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
     const float wMax = mp.px1 - mp.px0, wPlein = NB * pas + 2 * pad;
     const bool defile = wPlein > wMax;
     const float xp = panneauOnglet(r, mp, defile ? wMax : wPlein);
-    ui::text(r, xp + pad, mp.py0 + 14 * k, 11 * k, ui::majuscules(ui::tr("garage.skin")), hex(0xA3A8B5, op), ui::GAUCHE, 0.12f, false);
+    ui::text(r, xp + pad, mp.py0 + 14 * k, 11 * k, ui::majuscules(ui::tr("garage.onglet.skins")), hex(0xA3A8B5, op), ui::GAUCHE, 0.12f, false);
     const float cx = xp + pad, pcy = mp.py0 + 40 * k + R0;
     const float x0 = defile ? cx + ch : cx;
     visibles_ = defile ? std::clamp((int)((wMax - 2 * pad - 2 * ch) / pas), 1, NB) : NB;
@@ -259,7 +259,7 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
         if (o == portee && on) dessin2d::anneau(r, pcx, pcy, R + 2.4f * k, R + 3.6f * k, hex(TEXTE, op));
         if (!aMoi) cadenas(r, pcx + R * 0.66f, pcy + R * 0.62f, 13 * k, op);   // RG-02 : cadenas sur celles à acheter
         const float yn = pcy + R0 * 1.12f + 8 * k;
-        ui::textBoite(r, pcx, yn, pas - 6 * k, 16 * k, 12 * k, nomSkin(s), hex(on ? TEXTE : TAG, op), ui::CENTRE, 0.02f, false);
+        ui::textBoite(r, pcx, yn, pas - 6 * k, 16 * k, 12 * k, nomSkin(s), hex(on ? ACCENT : TEXTE, op), ui::CENTRE, 0.02f, false);   // maquette 07 : aperçu en orange
         if (cadeau) ui::text(r, pcx, yn + 17 * k, 10 * k, ui::tr("garage.skin.cadeau_court"), hex(ACCENT2, op), ui::CENTRE, 0, false);
         g_z.skins[o] = {x, pcy - R0 - 8 * k, pas, 2 * R0 + 50 * k};
         manette::focus(g_z.skins[o]);   // WFS-80 : A = toucher
@@ -269,7 +269,7 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
     const bool offerte = skins::offerteDue(sv, carId);
     const long long prixSel = prixSkin(sv, e.skin, carId);
     nomMontre(r, mp, nomSkin(e.skin), prixSel > 0);
-    const float wn = 200 * k, xn = std::min(mp.cxBouton - wn / 2, mp.W - mp.gr - wn), yb = mp.yNom + 48 * k;
+    const float wn = 200 * k, xn = std::min(mp.cxBouton - wn / 2, mp.W - mp.gr - wn), yb = mp.cyBouton + mp.rBouton + 44 * k;   // sous le bouton rond et le solde
     if (offerte || (e.skin >= 0 && skins::bonUtilisable(sv, carId, BOUTIQUE_SKINS_IDS[e.skin]))) {
         // RG-02 : « Choisis ta skin offerte » (orange : action principale) ; bon du market : « Utiliser un bon (N) » (cyan)
         const Zone z{xn, yb, wn, 24 * k};

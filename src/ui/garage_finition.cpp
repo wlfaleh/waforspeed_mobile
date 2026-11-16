@@ -19,7 +19,7 @@ namespace {
 // mesures de la rangée, unités de 720 px de haut (× k) ; mêmes hauteurs que la rangée des couleurs (RG-04)
 // WFS-551 (RG-03) : ICONE = côté du pistolet (déborde de 2 px en haut et en bas du bouton, dont la taille ne change pas)
 constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ICONE = 34, ESPACE_RANGEES = 10, CHEVRON = 16;
-constexpr float GRAND = 64, PAS_GRAND = 84;   // WFS-551 (maquette 16) : pistolet de l'onglet « Finition », pas entre deux
+constexpr float GRAND = 60, PAS_GRAND = 68;   // WFS-551 (maquette 16) : pistolet de l'onglet « Finition », pas entre deux
 constexpr const int (&ORDRE)[FinitionGarage::NB] = FinitionGarage::ORDRE;
 
 const char* car(int index) { return CARS[std::clamp(index, 0, CAR_COUNT - 1)].id; }
@@ -181,7 +181,7 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
             dessin2d::biseau(r, ex + t * 0.2f, ey + t * 0.2f, t * 0.6f, t * 0.6f, t * 0.1f, echantillon(f, peinture, op, ey, ey + t));
         }
         if (prix > 0) cadenas(r, ex + t * 0.30f, ey + t * 0.80f, 13 * k, op);   // RG-01 : non possédée (sous la poignée)
-        ui::textBoite(r, cxi, yy + es + 4 * k, pas - 6 * k, 16 * k, 12 * k, nomFinition(f), hex(on ? TEXTE : TAG, op), ui::CENTRE, 0.02f, false);
+        ui::textBoite(r, cxi, yy + es + 4 * k, pas - 6 * k, 16 * k, 12 * k, nomFinition(f), hex(on ? ACCENT : TEXTE, op), ui::CENTRE, 0.02f, false);   // maquette 16 : aperçu en orange
         if (o == portee) r.uiCircle(cxi, yy + es + 33 * k, 2.5f * k, hex(TEXTE, op));
         g_z.finitions[o] = {x, yy - 8 * k, pas, es + 40 * k};
         manette::focus(g_z.finitions[o]);   // WFS-80 : A = toucher

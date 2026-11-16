@@ -189,7 +189,7 @@ public:
         onglets::dessiner(r, mp);
         mp.panelH = 140 * k; mp.py0 = mp.H - mp.gb - 20 * k - mp.panelH;   // crédit du modèle (cadre::pied) dessous
         mp.rBouton = 56 * k; mp.cxBouton = std::min(mp.W * 0.881f, mp.W - mp.gr - mp.rBouton - 12 * k); mp.cyBouton = mp.py0 + 10 * k;
-        mp.yNom = mp.cyBouton - mp.rBouton - 84 * k;   // nom, « aperçu », puis une ligne (équivalents, skin offerte)
+        mp.yNom = mp.cyBouton - mp.rBouton - 46 * k;   // nom, « aperçu », puis une ligne (équivalents, skin offerte)
         mp.px0 = mp.gl + std::max(40 * k, mp.W * 0.05f) + 150 * k + 24 * k;   // à droite de « Retour »
         mp.px1 = mp.cxBouton - mp.rBouton - 24 * k;                           // à gauche du bouton rond
         mp.padX = 28 * k; mp.padY = 27 * k; mp.statH = 4 * 14 * k + 3 * 10 * k; mp.y1 = mp.py0 + mp.padY;
