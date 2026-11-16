@@ -1312,3 +1312,8 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 
 ### 2026-11-16 01:10:58 — WFS-503 fusionné par le lead dev (lead-dev)
 2e revue de la PR #427 (commit relu 51f8e296), limitée aux points corrigés : synchronisation avec `main` (ddcc72a2, aucun code de la PR changé), `qa/pr/WFS-503/tests-cpu.log` (148 réussis, code 0) et section « Tests CPU » dans `pr.md` et la description, limites écrites. Construction et `tests_cpu.sh` refaits par le lead dev sur 51f8e296 : 148 test(s) réussi(s) en 530 s, code 0. « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash : cb7932d2. WFS-503 → 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`. WFS-556 (badge « NOUVEAU ») attend encore WFS-551.
+
+### 2026-11-16 01:11:31 — Fin WFS-503 : fusionné (#427, cb7932d2), session terminée (Claude, agent dev3d (01Us6uCwe9))
+- Fusion par le lead dev à la 2e revue (squash cb7932d2) ; `TACHES.md` 🟣, `qa/Check.md` à jour (lead dev). Ligne de `track-agent.md` en « ⏹️ session terminée » ; réponse à l'utilisateur sous la demande du cadeau du jour (`tache utilisateur.md`).
+- Suite : WFS-556 (badge « NOUVEAU », appel de `cadeau::vu()`) attend WFS-551. Un seul sujet par session : aucun autre ticket demandé.
+
