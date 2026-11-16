@@ -9,8 +9,13 @@ namespace {
 // son centre à 58 % de la largeur et à 57 % de la hauteur (depuis le haut) ; la console du menu tient le tiers gauche
 constexpr float DEMI_HAUTEUR = 0.57f;   // demi-hauteur visée (NDC) : avis de l'agent 3D (PR #421), 15 % plus près que la maquette mesurée
 constexpr float DEMI_LARGEUR_MAX = 0.48f;   // demi-largeur au plus (NDC) : la voiture ne passe pas sous la console
-constexpr float CENTRE_X = 0.22f, CENTRE_Y = -0.12f;   // bord gauche de la voiture à x ≥ −0,26 : à droite de la console (revue du lead dev)   // centre visé (NDC, y vers le haut)
+// centre visé de la boîte de la voiture (NDC, y vers le haut) ; WFS-550 (maquette 01) : il met la voiture visible au centre mesuré sur
+// la maquette (0,15 ; −0,155) (avant : 0,22 ; −0,12, bord gauche à x ≥ −0,26)
+constexpr float CENTRE_X = 0.10f, CENTRE_Y = -0.21f;
 constexpr float OEIL_Y = 1.0f;          // caméra à 1 m du sol, horizontale : verticales droites (piliers), objectif décentré
+// WFS-550 (maquette 01, demandé et validé par l'utilisateur) : rapprochement de la caméra après le calcul de la boîte (la voiture
+// visible passe de 38 % à 49 % de la demi-hauteur), et bord gauche de la boîte au plus loin (la voiture visible arrive au bord de la console)
+constexpr float RAPPROCHE = 0.78f, BORD_GAUCHE = -0.62f;
 
 Emprise mesurer(const Cadrage& c, float L, float W, float H, float aspect) {
     const mat4 V = lookAt(c.oeil, c.cible, {0, 1, 0});
@@ -42,11 +47,19 @@ Cadrage cadrage(float L, float W, float H, float aspect, float cap) {
         const float h = (e.ymax - e.ymin) / 2, l = (e.xmax - e.xmin) / 2;
         d *= std::max(h / DEMI_HAUTEUR, l / DEMI_LARGEUR_MAX);   // taille apparente ≈ 1 / distance
     }
-    c.oeil = c.cible + vec3{-std::sin(cap) * d, 0, -std::cos(cap) * d};
-    c.decalage = c.decalageY = 0;
-    const Emprise e = mesurer(c, L, W, H, aspect);
-    c.decalage = CENTRE_X - (e.xmin + e.xmax) / 2;
-    c.decalageY = CENTRE_Y - (e.ymin + e.ymax) / 2;
+    // WFS-550 (maquette 01, ordre de l'utilisateur du 2026-11-16 : la voiture du menu exactement comme la maquette) : la boîte
+    // mesurée ci-dessus est plus grande que la voiture visible ; la voiture visible faisait 38 % de la demi-hauteur, la maquette
+    // en montre 49 % : la caméra se rapproche de 0,78, puis recule par pas de 3 % si la voiture sortirait de l'image (écrans étroits)
+    for (float z = RAPPROCHE; z <= 1.0001f; z += 0.03f) {
+        const float dz = d * std::min(z, 1.f);
+        c.oeil = c.cible + vec3{-std::sin(cap) * dz, 0, -std::cos(cap) * dz};
+        c.decalage = c.decalageY = 0;
+        const Emprise e = mesurer(c, L, W, H, aspect);
+        c.decalage = CENTRE_X - (e.xmin + e.xmax) / 2;
+        c.decalageY = CENTRE_Y - (e.ymin + e.ymax) / 2;
+        const float lx = (e.xmax - e.xmin) / 2, ly = (e.ymax - e.ymin) / 2;
+        if (CENTRE_X + lx < 0.95f && CENTRE_Y - ly > -0.95f && CENTRE_Y + ly < 0.95f && CENTRE_X - lx > BORD_GAUCHE) break;
+    }
     return c;
 }
 
