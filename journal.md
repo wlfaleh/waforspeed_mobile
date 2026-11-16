@@ -1193,11 +1193,58 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Manquent : les bancs `garage-finitions` et `garage-skins` (ils existent, la PR dit le contraire), la section « Tests CPU » et `qa/pr/WFS-551/tests-cpu.log`, et la citation fichier / fonction pour chaque maquette.
 - Refus posté en commentaire sur la PR (GitHub n'accepte pas « changements demandés » quand la PR est ouverte avec le même compte). Statut : ↩️ Retour lead dev (PR #426).
 
-### 2026-11-15 23:40:38 — E23 : écrans non conformes aux maquettes R19, plainte de l'utilisateur (po-scrum-master)
-- Comparaison faite : maquette 01 ↔ `qa/pr/WFS-549/apres-menu-0.jpg` (disposition non reprise), 06 ↔ `apres-garage-couleurs-p208-debut` de WFS-551 (onglets, plateau, barre de gouttes absents), 17 ↔ HUD (proche).
-- Cause : RG E23 « rien ne change dans la disposition » (erreur du PO) + découpage par style + revue sans maquette pour 548 / 549.
-- Bandeau 🛑 ajouté à `TACHES.md` : critère « écran = maquette » + captures côte à côte pour toute PR E23. Question posée à l'utilisateur : tickets de correction écran par écran.
+### 2026-11-15 23:46:35 — WFS-550 : ordre de l'utilisateur, maquettes appliquées à 100 % (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « ta maquette tu l'appliques à 100 %, zéro erreur ». Il passe avant la RG commune de E23 « taille des boutons et textes inchangés » pour les écrans de WFS-550.
+- Refait (commit ec2db1c1) : cartes « Cadeau du jour » et « Voiture prêtée » aux mesures de la maquette 26 (nouvelles clés FR / EN cadeau.carte.*, pret.carte.*), bandeaux de course de la maquette 30 (droits, fondus, titre sombre, valeur blanche), combo de la maquette 17 (capitales orange, barre orange), cadrans du garage plus grands (13), barre arrondie du chargement (08), pilule arrondie du compteur d'étoiles (26, 29). Accroche dans `boutons.*` retirée (icône de voiture vue de face dessinée dans `pret_bandeau.cpp`).
+- Hors de mes fichiers et absent des maquettes : colonne Market / Profil / Crédits du menu (les cartes se posent à sa gauche) ; onglets du garage (13) et cadenas (15) : WFS-551.
 
-### 2026-11-15 23:43:13 — E23 : WFS-548 / 549 KO, WFS-557 à 564 créés écran par écran (po-scrum-master)
-- 8 tickets P1 (un par groupe d'écrans de maquettes R19), RG dans `regles-de-gestion/WFS-557.md` à `WFS-564.md`. Prêts : 557, 561, 562, 563 ; 558, 559 après 551 ; 560, 564 après 550.
+### 2026-11-15 23:48:02 — WFS-557 créé : vérification à 100 % du travail R19 fusionné contre les maquettes, et corrections (po-scrum-master)
+- Demande de l'utilisateur, une seule tâche. RG : `regles-de-gestion/WFS-557.md`.
 
+### 2026-11-15 23:49:27 — WFS-557 limité à 548, 549, 552 ; 550 et 551 refusés s'ils ne respectent pas les maquettes R19 à 100 % (po-scrum-master)
+
+
+### 2026-11-15 23:51:31 — WFS-555 : PR #425 refusée par le lead dev (lead-dev)
+- Revue par une autre instance du lead dev (le codeur était le lead dev en renfort), commit relu 1a88fae6, revue en commentaire (même compte GitHub).
+- Vérifié : 5 paires `chargement` ouvertes (identiques sauf la ligne « Mémoire »), diff entier, construction + 148 tests CPU (code 0), script relancé (199 s cache vide ; 56 s et 54 s après changement de main, compilation incrémentale), ménage à 3 commits. Critère « identique au pixel » accepté tel que prouvé (cache octet pour octet ; banc non déterministe) : à réécrire par le PO.
+- Défauts : (1) `preparer_main_src` peut faire `checkout --force --detach` dans le dépôt du développeur si l'arbre de main est cassé et le cache dans le dépôt (reproduit : branche quittée, modification perdue) ; (2) `WFS_CACHE_CAPTURES` relatif accepté : arbre de main créé dans le dépôt, « avant » absents, code 0 ; (3) arbre verrouillé non recréé (`fatal: missing but locked worktree`).
+- Remarque au PO : main bouge souvent par des commits de documents, le cache par SHA se relit rarement ; le gain vient surtout de la compilation incrémentale (≈ 200 s → ≈ 55 s).
+
+### 2026-11-15 23:55:21 — WFS-557 attribué à Claude, agent dev3d (01UY1Vv4Fd) (po-scrum-master)
+- Ordre de l'utilisateur : « @dev prend le WFS-557 ». Nouvelle session `@dev` (session_01UY1Vv4Fd1hq8E2LRsGZhgL), aucun ticket avant : attribution permise (un sujet par session).
+- Ticket : P1, E23, vérifier que WFS-548, 549 et 552 fusionnés respectent à 100 % les maquettes `references/maquettes-R19/`, et corriger. Règles : `regles-de-gestion/WFS-557.md` (RG-01 à RG-05).
+- Zone autorisée : les fichiers fusionnés de WFS-548, 549 et 552 (E5 `src/ui/**`, `shaders/ui*` ; E8 `src/ui/ecrans/**` ; menu 3D `menu*`, `garage_decor.*`, modèles du parking), plus `qa/pr/WFS-557/`. Interdit : les éléments de WFS-550 et 551 (en cours, RG-03).
+- Plan : captures 2400 × 1080 côte à côte avec chaque maquette, tableau `qa/pr/WFS-557/verification.md`, corrections, PR, avis agent 3D pour le menu 3D, lead dev (comparaison maquette ↔ code). Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-15 23:59:57 — WFS-555 : PR #425 corrigée après le retour du lead dev (lead-dev)
+- 3 défauts de la revue sur 1a88fae6, corrigés dans c157d394 : (1) checkout seulement si l'arbre de main est sa propre racine git (plus jamais le dépôt parent) ; (2) cache rendu absolu, refus clair (code 2) s'il est dans le dépôt ; (3) arbre verrouillé déverrouillé puis recréé.
+- Essais refaits (`qa/pr/WFS-555/essais-revue-2.log`) : dépôt parent intact (branche et modification gardées), `.cache-rel` refusé sans rien créer, arbre verrouillé recréé ; 2 lancements normaux de `chargement` à code 0 (186 s, 188 s).
+- Réponses point par point dans la PR ; branche synchronisée (c19a70c4) ; autre instance du lead dev rappelée.
+
+### 2026-11-16 00:09:14 — WFS-555 fusionné par le lead dev (lead-dev)
+- 2e revue de la PR #425 (tête c19a70c4) par une autre instance du lead dev : diff `1a88fae6..c19a70c4` du script lu ; les 3 défauts sont corrigés.
+- Essais refaits : (1) arbre de main vide sans `.git` dans un dépôt parent → arbre recréé, dépôt parent intact (branche `principal`, ` M f.txt`), code 0 ; (2) `WFS_CACHE_CAPTURES=.cache-rel` et `build/../` → refus clair, code 2, rien créé ; relance avec cache plein : 26 s, 1 banc relu.
+- Captures `chargement` regardées (seule la mémoire change). « ✅ Approuvé » en commentaire (même compte GitHub), squash e4d96fde. Statut 🟣.
+- Non bloquant : `qa/pr/WFS-555/pr.md` réécrit par les essais (modèle « À REMPLIR ») ; `$TMPDIR/captures_pr.*` jamais effacés ; refus « cache dans le dépôt » limité à la racine de l'arbre courant ; idée de clé du cache sur le contenu du code (au PO).
+
+
+### 2026-11-16 00:10:01 — Fin WFS-555 : fusionné (#425, squash e4d96fde), session terminée (lead-dev)
+- `qa/pr/WFS-555/pr.md` remis sur main (il avait été réécrit en modèle vide par le dernier essai) : description complète + tableau de la 2e revue.
+- Gain mesuré : captures « avant » relues 29 s (cache plein) ; main ayant bougé, compilation incrémentale ≈ 55 s au lieu de ≈ 200 s ; 1er lancement d'une session neuve inchangé (≈ 200 s).
+- Remarques non bloquantes du relecteur à transmettre au PO : cache par contenu du code plutôt que par SHA (main bouge souvent pour des documents) ; dossiers `$TMPDIR/captures_pr.*` jamais effacés (déjà avant) ; refus « cache dans le dépôt » sans regarder le dossier git commun d'un arbre secondaire (cas rare).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-16 00:14:43 — Arbitrage WFS-557 : maquettes R19 à 100 %, boutons compris (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : règle « taille des boutons inchangée » (2026-11-06, E23, WFS-549 RG-07) contre l'ordre de l'utilisateur du 2026-11-15 23:46 « maquette à 100 %, zéro erreur ».
+- Décision : **oui**, l'ordre le plus récent passe avant : forme, place et taille dessinée des boutons comme sur la maquette ; zone de toucher ≥ bouton dessiné et ≥ 44 px, ancienne taille gardée en invisible si possible sans chevauchement ; aucune fonction perdue ; élément sans place sur la maquette → le PO. Écrit dans `regles-de-gestion/WFS-557.md` (RG-06 à RG-09). L'utilisateur peut changer cette décision.
+
+### 2026-11-16 00:15:10 — Arbitrage WFS-557 : 2e police Inter pour le texte courant (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : les maquettes R19 ont une police de texte courant (genre Inter) que le jeu n'a pas.
+- Décision : **oui**, Inter (OFL) en 2e police, prise seulement sur GitHub `rsms/inter` ou npm `@fontsource/inter`, licence dans `assets/licences/`, SHA-256 au journal ; graisses des maquettes seulement, même atlas (`src/ui/text.*`) ; titres, boutons, chiffres et HUD restent en Rajdhani. RG-10 à RG-13 de `regles-de-gestion/WFS-557.md`.
+
+### 2026-11-16 00:18:31 — WFS-503 : PR #427 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwe9))
+- Fait : `cadeau::donner()` appelé par `ouvrir()` avant la même écriture de la sauvegarde : étoiles au portefeuille (`boutique::crediter`, une fois), coloris ajouté à `possede-<voiture>` sans être posé, skin par `skins::donnerSkin` ; écriture impossible → état, solde et possessions remis. Clé nouvelle `cadeau-nouveaux` + `estNouveau()` / `vu()` (arbitrage du PO, badge au garage : WFS-556).
+- Fichiers : `src/game/cadeau.*`, `src/game/sauvegarde.*`, `src/game/cadeau_gains_banc.cpp` (nouveau banc `WFS_BANC=cadeau-gains`), `tests/test_cadeau.cpp` (20 cas RG-05), `CMakeLists.txt` (`skin_offerte.cpp` dans 6 tests). **Accroche annoncée** : 1 ligne + 1 include dans `src/platform/desktop_main.cpp` (groupe `cadeau-gains`). Aucun fichier `src/ui/**`.
+- Vérifié en local (lavapipe, branche synchronisée avec `main`) : `tests_cpu.sh build` 148 réussis, 0 échec ; banc `cadeau-gains` 0 écart en FR et en EN. Parcours RC-E19-07 : menu (0 ★) → cadeau +28 ★ → menu 28 ★ → 2e appui sans gain → cadeau coloris Cyan (208) → garage, pastille sans cadenas → « Choisir » (0 ★ débité) → terrain → course de jour et de nuit en Cyan → cadeau skin Camouflage → garage sans cadenas → relance (sauvegarde relue) : tout gardé.
+- Captures : `qa/pr/WFS-503/` (24 après, 4 paires avant / après du banc `cadeau`).
+- Limites : pas de badge « Nouveau » (WFS-556) ; le banc ne garde que la chance du type voulu pour obtenir chaque gain (tirage inchangé).
