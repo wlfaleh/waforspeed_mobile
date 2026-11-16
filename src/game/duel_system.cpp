@@ -1,6 +1,7 @@
 // WaForSpeed — module « duel » (WFS-21) : voir duel_system.h.
 #include "score_fin.h"   // WFS-537 (accroche) : bloc « Score » de l'écran de fin
 #include "duel_system.h"
+#include "../ui/resultats_parking.h"   // WFS-561 (accroche) : résultats dans le parking, tableau LED (maquette 11)
 #include <functional>
 #include <algorithm>
 #include <cmath>
@@ -68,6 +69,11 @@ public:
     void update(double dt, const GameView& vue) override {
         if (g_banc) g_banc->salon->now += dt * 1000;
         if (vue.ecran != Ecran::Course) { g_session.setPlaque(sauvegarde().profil.plaque); for (const duel::PeerView& p : g_session.others()) plaques_autres::plaqueDuel(p.id, duel::str(p.f, "pl")); }   // WFS-484 (accroche, RG-03) : salon
+        {   // WFS-561 (accroche, RG-04) : résultats de la manche sur le tableau LED du parking
+            const duel::Session& s = g_session;
+            const bool attente = s.status() == duel::Status::Ready && overT_ >= 0.9;
+            if (vue.ecran == Ecran::Course && s.inRoom() && (s.status() == duel::Status::Done || attente) && overT_ >= 0.9 && resultats3d::aRenouveler()) resultats3d::demander(tableau3d());
+        }
         if (!r_) return;
         for (const auto& [id, gh] : g_session.ghosts()) {
             if (models_.count(gh.car)) continue;
@@ -157,7 +163,30 @@ public:
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         const bool fin = (s.status() == duel::Status::Done || attente) && overT_ >= 0.9;
         if (!fin) { noms(r, g, u); board(r, g, u); }   // WFS-548 : noms et tableau de course pas dessinés sous le résultat (maquette 33)
-        if (fin && !verre::couvert()) resultat(r, W, H, u);   // WFS-548 : rien sous la fenêtre d'achat
+        if (fin && !verre::couvert()) { if (resultats3d::affiche()) resultat3d(r, g); else resultat(r, W, H, u); }   // WFS-561 : scène 3D, sinon fenêtre 2D (repli, RG-08)
+    }
+    // WFS-561 (accroche, RG-04 à RG-06) : maquette 11 : lignes réelles de la manche (2 à 4 pilotes), score, Retour et Revanche
+    static resultats3d::Tableau tableau3d() {
+        const duel::Session& s = g_session;
+        const auto rows = s.results();
+        resultats3d::Tableau t;
+        int rank = 1; for (size_t i = 0; i < rows.size(); i++) if (rows[i].me) rank = (int)i + 1;
+        t.titre = resultats3d::titreRang(rank, s.myFinish());
+        const double lead = !rows.empty() && rows[0].done && rows[0].ft < 9e9 ? rows[0].ft / 1000 : -1;
+        for (size_t i = 0; i < rows.size(); i++) {
+            const auto& row = rows[i];
+            const std::string texte = row.parti ? ui::tr("duel.parti") : row.done && row.ft >= 9e9 ? ui::tr("c5.arrive") : std::string();
+            t.lignes.push_back(resultats3d::ligneClassement((int)i + 1, row.me ? s.nick() : row.name, row.me, row.done, row.ft / 1000, lead, std::max(0.0, row.d) * 0.006 / 1000, texte));
+        }
+        return t;
+    }
+    void resultat3d(Renderer& r, const GameView& g) {
+        resultats3d::poserScore(g.uiWidth, g.uiHeight, g.marges.droite);
+        const bool attend = g_session.status() == duel::Status::Ready;
+        float zm[4], zb[4];
+        resultats3d::boutons(r, g.uiWidth, g.uiHeight, g.marges.gauche, g.marges.droite, ui::majuscules(ui::tr(attend ? "duel.pret" : "duel.revanche")), attend, zm, zb);
+        revanche_ = {zb[0], zb[1], zb[2], zb[3]}; menu_ = {zm[0], zm[1], zm[2], zm[3]};
+        for (int i = 0; i < 4; i++) { g_zones[i] = zb[i]; g_zonesMenu[i] = zm[i]; }
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {
