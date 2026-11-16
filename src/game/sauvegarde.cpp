@@ -123,6 +123,17 @@ static bool lireCleCadeau(EtatCadeau& c, const std::string& k, const std::string
     else if (k == "cadeau-sans-rare") { if (entier(v, n) && n >= 0 && n <= 100000) c.sansRare = (int)n; }
     else if (k == "cadeau-total") { if (entier(v, n) && n >= 0 && n <= 1000000000LL) c.total = n; }
     else if (k == "cadeau-dernier") { if (resultatSur(v)) c.dernier = v; }
+    else if (k == "cadeau-nouveaux") {   // WFS-503 (RG-02) : « golf:rose|gt86:rallye » ; chaque élément mal écrit est ignoré
+        size_t d = 0;
+        while (d <= v.size() && c.nouveaux.size() < 256) {
+            const size_t f = std::min(v.find('|', d), v.size());
+            const std::string e = v.substr(d, f - d);
+            const size_t p = e.find(':');
+            if (p != std::string::npos && p > 0 && p + 1 < e.size() && e.size() <= 65 && e.find(';') == std::string::npos && resultatSur("x;" + e))
+                c.nouveaux.insert(e);
+            d = f + 1;
+        }
+    }
     else if (k == "pret-voiture") { if (voitureExiste(v)) c.pretVoiture = v; }
     else if (k == "pret-recu") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretRecu = n; }
     else if (k == "pret-fin") { if (entier(v, n) && n >= 0 && n <= EPOCH_MAX) c.pretFin = n; }
@@ -216,6 +227,12 @@ std::string Sauvegarde::texte() const {
         if (!cadeau.jour.empty()) o << "cadeau-jour=" << cadeau.jour << "\n";
         o << "cadeau-sans-rare=" << cadeau.sansRare << "\n" << "cadeau-total=" << cadeau.total << "\n";
         if (!cadeau.dernier.empty()) o << "cadeau-dernier=" << cadeau.dernier << "\n";
+    }
+    if (!cadeau.nouveaux.empty()) {   // WFS-503 (RG-02) : absente tant qu'aucun objet gagné n'attend d'être vu
+        o << "cadeau-nouveaux=";
+        size_t i = 0;
+        for (const std::string& e : cadeau.nouveaux) o << (i++ ? "|" : "") << e;
+        o << "\n";
     }
     if (!cadeau.pretVoiture.empty())   // WFS-500 (RG-09) : déclarées ici, utilisées par WFS-502
         o << "pret-voiture=" << cadeau.pretVoiture << "\n" << "pret-recu=" << cadeau.pretRecu << "\n" << "pret-fin=" << cadeau.pretFin << "\n"
