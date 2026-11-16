@@ -132,7 +132,7 @@ private:
         g_boutons[QUITTER] = {x1 + w1 + gap, by, w2, bh};
         for (int i = 0; i < 3; i++) manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
         const Zone& z = g_boutons[REPRENDRE];
-        ui::boutons::startStop(r, z.x, z.y, z.w, z.h, ui::majuscules(ui::tr(TEXTES[REPRENDRE])), 1, false, "", 19 * k);
+        ui::boutons::startStop(r, z.x, z.y, z.w, z.h, ui::majuscules(ui::tr(TEXTES[REPRENDRE])), 1, false, "", 22 * k);
         const float tp = 22 * k;
         ui::boutons::verreIcone(r, x1, by, w1, bh, ui::boutons::Icone::Recommencer, ui::majuscules(ui::tr(TEXTES[RECOMMENCER])), 1, false, tp,
                                 {12 * k, 0, nullptr, 0.05f});

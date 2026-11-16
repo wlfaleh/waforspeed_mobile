@@ -58,30 +58,43 @@ void iconeCroix(Renderer& r, float cx, float cy, float s, const vec4& c) {
     dessin2d::trait(r, b, 2, ep, c);
 }
 
-// bague chrome + centre sombre : base du Start/Stop et de la pilule chrome ; rend l'épaisseur de la bague
+// bague chrome + centre sombre : base du Start/Stop et de la pilule chrome ; rend l'épaisseur de la bague.
+// WFS-557 (maquettes 01, 19, 20, 22 : bouton de démarrage comparé au zoom) : bague en métal sombre (gris acier, plus clair en
+// haut), mince (7 % du diamètre), fins reflets clairs sur le bord (haut gauche marqué, bas droit léger), ombre portée sombre ;
+// centre noir profond ; liseré fin (≈ 1,5 % du diamètre) orange doré, collé au bord du centre, sans halo.
 float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, bool appuye, const vec4& lisere, float lueurLisere,
                   bool inactif = false) {
     const float R = std::min(w, h) / 2;
-    const float t = std::clamp(h * 0.085f, 3.f, 12.f);   // épaisseur de la bague chrome
-    // reflet doux autour de la bague (lumière du parking sur le chrome)
-    lueur(r, x, y, w, h, R, std::max(4.f, h * 0.12f), {1, 1, 1, 0.10f * op});
-    // bague chrome : bord haut très clair, milieu gris, bas clair (reflet), comme un bouton de démarrage poli
-    plein(r, x, y, w, h, R, hex(0xD9DCE1, op), hex(0x4A4F59, op));   // WFS-557 : chrome plus sombre (maquettes 01, 08b, 19)
-    plein(r, x + t * 0.35f, y + h * 0.5f, w - t * 0.7f, h * 0.5f - t * 0.35f, std::max(0.f, R - t * 0.35f), hex(0x8A909B, 0), hex(0xD5D9E0, 0.25f * op));
-    bord(r, x, y, w, h, R, 1, hex(0x2A2D35, 0.9f * op));   // arête extérieure
-    // centre sombre (enfoncé à l'appui : plus clair)
+    const bool rond = std::fabs(w - h) < 1.f;
+    const float t = std::clamp(h * 0.07f, 3.f, 12.f);   // épaisseur de la bague
+    lueur(r, x, y + h * 0.02f, w, h, R, std::max(4.f, h * 0.08f), {0, 0, 0, 0.45f * op});   // ombre portée
+    plein(r, x, y, w, h, R, hex(0x9A9EA6, op), hex(0x2A2C31, op));                          // métal : clair en haut, sombre en bas
+    plein(r, x + t * 0.25f, y + t * 0.25f, w - t * 0.5f, h - t * 0.5f, std::max(0.f, R - t * 0.25f), hex(0x80848C, op), hex(0x222428, op));
+    bord(r, x, y, w, h, R, 1, hex(0x0E0F12, 0.9f * op));                                    // arête extérieure
+    if (rond) {   // reflets : arc fin et clair en haut à gauche, plus discret en bas à droite (0 = haut, sens horaire)
+        const float cx = x + w / 2, cy = y + h / 2, ep = std::max(1.f, h * 0.012f);
+        for (int i = 0; i < 4; i++) {   // bande claire et douce sur le haut de la bague (reflet du plafond), plus forte au milieu
+            const float e = 0.10f * PI * i;
+            dessin2d::arc(r, cx, cy, R - t * 0.45f, t * 0.75f, 1.62f * PI + e, 2.38f * PI - e, hex(0xFFFFFF, 0.10f * op));
+        }
+        dessin2d::arc(r, cx, cy, R - ep, ep, 1.66f * PI, 2.34f * PI, hex(0xF2F4F7, 0.55f * op));
+        dessin2d::arc(r, cx, cy, R - ep, ep, 0.45f * PI, 0.85f * PI, hex(0xC9CDD4, 0.45f * op));
+    } else {
+        plein(r, x + R * 0.5f, y + 1, w - R, std::max(1.f, h * 0.012f), 0, hex(0xF2F4F7, 0.6f * op), hex(0xF2F4F7, 0.6f * op));
+    }
+    // centre noir profond (enfoncé à l'appui : un peu plus clair)
     const float xi = x + t, yi = y + t, wi = w - 2 * t, hi = h - 2 * t, Ri = std::max(0.f, R - t);
-    bord(r, xi - 1, yi - 1, wi + 2, hi + 2, Ri + 1, 1.5f, hex(0x101114, 0.95f * op));   // gorge entre la bague et le centre
+    bord(r, xi - 1, yi - 1, wi + 2, hi + 2, Ri + 1, 1.2f, hex(0x050506, op));
     if (inactif) plein(r, xi, yi, wi, hi, Ri, hex(0x0C0D11, op), hex(INACTIF_CENTRE, op));
-    else if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x2A2E38, op), hex(0x1A1D25, op));
-    else plein(r, xi, yi, wi, hi, Ri, hex(0x05060A, op), hex(0x15171D, op));
-    // liseré allumé, un peu en retrait du bord du centre
-    const float g = std::max(2.f, h * 0.035f), ep = std::clamp(h * 0.016f, 1.5f, 3.f);   // WFS-557 : liseré fin des maquettes (01, 19)
+    else if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x1E2026, op), hex(0x131418, op));
+    else plein(r, xi, yi, wi, hi, Ri, hex(0x020203, op), hex(0x0B0B0D, op));
+    // liseré fin, presque collé au bord du centre
+    const float g = std::max(1.f, h * 0.008f), ep = std::clamp(h * 0.015f, 1.2f, 2.8f);
     const float xl = xi + g, yl = yi + g, wl = wi - 2 * g, hl = hi - 2 * g, Rl = std::max(0.f, Ri - g);
     vec2 p[MAX_SOMMETS];
     const int n = contourArrondi(p, xl, yl, wl, hl, Rl);
     const vec4 c{lisere.x, lisere.y, lisere.z, lisere.w * op};
-    if (lueurLisere > 0) dessin2d::halo(r, p, n, std::max(3.f, h * 0.06f), {c.x, c.y, c.z, lueurLisere * (appuye ? 1.4f : 1.f) * op});
+    if (lueurLisere > 0) dessin2d::halo(r, p, n, std::max(2.f, h * 0.02f), {c.x, c.y, c.z, 0.25f * lueurLisere * (appuye ? 1.6f : 1.f) * op});
     dessin2d::contour(r, p, n, ep, c);
     return t + g;
 }
@@ -92,14 +105,14 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
                const std::string& sousTitre, float px, bool grise) {
     // inactif : liseré éteint, sans lueur, texte et icône gris clair pleins (lisibles, contraste ≥ 4,5 : 1)
     const float m = grise ? bagueChrome(r, x, y, w, h, op, false, hex(INACTIF_LISERE), 0, true)
-                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
-    const vec4 blanc = hex(grise ? INACTIF_TEXTE : TEXTE, op), orange = grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFF8C33 : ACCENT, op);
+                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFFC070 : 0xF5A23C), 0.45f);   // WFS-557 : liseré orange doré
+    const vec4 blanc = hex(grise ? INACTIF_TEXTE : TEXTE, op), orange = grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFFB088 : 0xF28C5A, op);   // icône pêche (maquettes 01, 19)
     const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m;
     if (px <= 0) px = std::min(hi * (sousTitre.empty() ? 0.42f : 0.34f), 40.f * h / 60.f);
     const bool rond = h >= w * 0.75f;   // bouton presque rond (maquettes 19, 27) : icône au-dessus du texte
     const float rayonInt = std::min(wi, hi) / 2;
     if (rond) {
-        const float s = px * 0.75f, total = s + px * 0.25f + px + (sousTitre.empty() ? 0 : px * 0.8f);
+        const float s = px * 0.62f, total = s + px * 0.30f + px + (sousTitre.empty() ? 0 : px * 0.8f);
         float yy = y + h / 2 - total / 2;
         iconeMarche(r, x + w / 2, yy + s / 2, s, orange);
         yy += s + px * 0.25f;
@@ -124,10 +137,10 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
 
 ZoneTexte startStopFond(Renderer& r, float x, float y, float w, float h, float op, bool appuye, bool grise) {
     const float m = grise ? bagueChrome(r, x, y, w, h, op, false, hex(INACTIF_LISERE), 0, true)
-                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFF8C33 : ACCENT), 0.45f);
+                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFFC070 : 0xF5A23C), 0.45f);
     const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m, rayonInt = std::min(wi, hi) / 2;
     const float s = hi * 0.36f, xs = xi + rayonInt * 0.55f + s / 2;
-    iconeMarche(r, xs, y + h / 2, s, grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFF8C33 : ACCENT, op));
+    iconeMarche(r, xs, y + h / 2, s, grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFFB088 : 0xF28C5A, op));
     const float x0 = xs + s / 2 + s * 0.3f, x1 = xi + wi - rayonInt * 0.55f;
     return {x0, std::max(0.f, x1 - x0)};
 }
