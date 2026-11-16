@@ -23,8 +23,10 @@ void benchMiniCarte(Game& g, Renderer& r, const std::string& outDir);
 namespace minicarte {
 
 // ---- réglages du PO (regles-de-gestion/WFS-173.md), en pixels de référence 720 p (× k = H / 720) sauf mention
-constexpr float COTE = 150, COTE_MIN = 100, ECART = 8;      // RG-02 / RG-03
-constexpr float GOUTTIERE = 16, HAUT = 116, HAUT_POURSUITE = 14, MARGE_INT = 10;
+// WFS-557 (ordre de l'utilisateur du 2026-11-16 : maquettes R19 à 100 %, maquette 17) : panneau de guidage 189 × 149 (avant : carré
+// de 150), bord droit sur celui du score (23 du bord), haut à 151 ; COTE = hauteur, largeur = COTE × LARGEUR_SUR_HAUT
+constexpr float COTE = 149, COTE_MIN = 100, ECART = 8, LARGEUR_SUR_HAUT = 189.f / 149.f;   // RG-02 / RG-03
+constexpr float GOUTTIERE = 23, HAUT = 151, HAUT_POURSUITE = 14, MARGE_INT = 10;
 constexpr float ROUTE = 4;                                   // RG-05 : trait de la route
 constexpr float JOUEUR_L = 12, JOUEUR_W = 9, CONTOUR = 1.5f, DISQUE = 8, DAMIER = 10, CP_L = 16, CP_W = 3;
 constexpr double GPS_ARRIERE_M = 150, GPS_AVANT_M = 350, GPS_PAS_M = 5;   // RG-06
@@ -67,8 +69,8 @@ struct Obstacles { Cadre c[12]; int n = 0; void ajouter(const Cadre& x) { if (n 
 inline Obstacles obstacles(float W, float H, const Marges& m, bool poursuite, bool gaucher) {
     Obstacles o;
     const float k = H / 720.f, u = H / 100.f;
-    o.ajouter({m.gauche + 16 * k, m.haut + 14 * k, hud::TEMPS_L * k, hud::TEMPS_H * k});       // temps (hud.cpp ; WFS-245 : 236 × 84)
-    if (!poursuite) o.ajouter({W - m.droite - 16 * k - 180 * k, m.haut + 14 * k, 180 * k, 92 * k});   // score, combo compris
+    o.ajouter({m.gauche + hud::R19_GOUTTIERE_L * k, m.haut + hud::R19_GOUTTIERE_H * k, hud::TEMPS_L * k, hud::TEMPS_H * k});   // temps (hud.cpp ; WFS-557 : 276 × 80)
+    if (!poursuite) o.ajouter({W - m.droite - (hud::R19_GOUTTIERE_L + hud::SCORE_R19_L) * k, m.haut + hud::R19_GOUTTIERE_H * k, hud::SCORE_R19_L * k, hud::SCORE_R19_H_COMBO * k});   // score, combo compris
     else {
         const float cx = (m.gauche + W - m.droite) / 2;                                       // HUD de la poursuite (poursuite_system.cpp)
         o.ajouter({cx - 20 * u, m.haut + 2 * u, 40 * u, 15.5f * u});
@@ -84,20 +86,21 @@ inline Obstacles obstacles(float W, float H, const Marges& m, bool poursuite, bo
     return o;
 }
 
-// carré de la carte : bord droit sur celui du score, haut sous le score (ou à 14 k en poursuite) ; le côté diminue jusqu'à
-// laisser ECART × k avec chaque obstacle ; sous COTE_MIN × k : côté 0 (pas de carte)
+// panneau de la carte (WFS-557 : rectangle COTE × LARGEUR_SUR_HAUT de haut COTE) : bord droit sur celui du score, haut sous le
+// score (ou à 14 k en poursuite) ; la hauteur diminue (la largeur suit) jusqu'à laisser ECART × k avec chaque obstacle ; sous
+// COTE_MIN × k : 0 (pas de carte)
 inline Cadre placer(float W, float H, const Marges& m, const Obstacles& o, bool poursuite) {
     const float k = H / 720.f, e = ECART * k;
     const float droite = W - m.droite - GOUTTIERE * k, haut = m.haut + (poursuite ? HAUT_POURSUITE : HAUT) * k;
-    float cote = std::min({COTE * k, droite - m.gauche, H - m.bas - haut});
+    float cote = std::min({COTE * k, (droite - m.gauche) / LARGEUR_SUR_HAUT, H - m.bas - haut});
     for (int i = 0; i < o.n; i++) {
         const Cadre& c = o.c[i];
         const float x0 = c.x - e, x1 = c.x + c.w + e, y0 = c.y - e, y1 = c.y + c.h + e;
         if (droite <= x0 || haut >= y1) continue;            // obstacle à droite ou au-dessus du coin haut droit : jamais touché
-        cote = std::min(cote, std::max(droite - x1, y0 - haut));   // le carré reste à droite de l'obstacle, ou au-dessus
+        cote = std::min(cote, std::max((droite - x1) / LARGEUR_SUR_HAUT, y0 - haut));   // à droite de l'obstacle, ou au-dessus
     }
     if (cote < COTE_MIN * k) return {droite, haut, 0, 0};
-    return {droite - cote, haut, cote, cote};
+    return {droite - cote * LARGEUR_SUR_HAUT, haut, cote * LARGEUR_SUR_HAUT, cote};
 }
 inline bool recoupe(const Cadre& a, const Cadre& b, float ecart) {
     return a.w > 0 && b.w > 0 && a.x < b.x + b.w + ecart && b.x < a.x + a.w + ecart && a.y < b.y + b.h + ecart && b.y < a.y + a.h + ecart;

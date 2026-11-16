@@ -28,8 +28,9 @@ int main() {
     VERIFIE(hud::ARRIVEE_PX > hud::ETIQUETTE_PX, "RG-02 : distance plus grande que son étiquette");
     VERIFIE(hud::SCORE_PX > hud::ETIQUETTE_PX && hud::VITESSE_COCKPIT_PX > hud::ETIQUETTE_PX, "chiffres plus grands que les étiquettes");
     VERIFIE(hud::ETIQUETTE_PX < hud::CHRONO_PX && hud::ARRIVEE_PX < hud::CHRONO_PX, "le chrono reste le plus grand texte du panneau");
-    // RG-04 : panneau du temps : 3 lignes (chrono, ARRIVÉE, barre) dans la hauteur, surface ≤ avant (le score ne change pas)
-    const double haut = 10 + hud::CAPITALES * hud::CHRONO_PX + 9 + hud::CAPITALES * hud::ARRIVEE_PX + 7 + 6;
+    // RG-04 : panneau du temps dans sa hauteur, surface ≤ avant ; WFS-557 (maquette 17) : chrono (ligne de base à 41), segments de 61
+    // à 65, « CP n » (Inter 12, ligne de base à 66,3, jambages de 0,2 × 12) ; marge de 4 en bas
+    const double haut = 66.3 + 0.2 * hud::R19_CP_PX;
     VERIFIE(haut + 4 <= hud::TEMPS_H, "RG-04 : contenu du panneau du temps %.1f px de référence pour %.0f", haut, hud::TEMPS_H);
     const double avant = hud::AVANT_TEMPS_L * hud::AVANT_TEMPS_H, apres = hud::TEMPS_L * hud::TEMPS_H;
     std::printf("panneau du temps : %.0f px² de référence avant, %.0f après\n", avant, apres);

@@ -15,12 +15,12 @@ static int echecs = 0;
 static Cadre cadre(const hud::BoutonHud& b) { return {b.x, b.y, b.w, b.h}; }
 
 int main() {
-    // RG-02 : chaque dimension × BOUTON_ECHELLE ; WFS-549 (RG-07, maquette 17b) : 1,5 (40 → 60, 18 → 27, 14 → 21, 6 → 9, biais 8 → 12), à k = 1
+    // RG-02 : chaque dimension × BOUTON_ECHELLE ; WFS-549 (RG-07, maquette 17b) : 1,5 (40 → 60, 18 → 27, 14 → 21, biais 8 → 12), à k = 1 ; WFS-557 (maquette 17) : texte 29, écart icône-texte 10
     const hud::BoutonHud b1 = hud::mesuresBouton(1.f, 0.f);
     VERIFIE(std::fabs(b1.h - 60.f) < 1e-4f, "RG-02 : hauteur %.3f (attendu 60)", b1.h);
-    VERIFIE(std::fabs(b1.icone - 27.f) < 1e-4f && std::fabs(b1.texte - 21.f) < 1e-4f && std::fabs(b1.marge - 21.f) < 1e-4f,
-            "RG-02 : icône %.3f, texte %.3f, marge %.3f (attendu 27 / 21 / 21)", b1.icone, b1.texte, b1.marge);
-    VERIFIE(std::fabs(b1.ecartIcone - 9.f) < 1e-4f && std::fabs(b1.biais - 12.f) < 1e-4f, "RG-02 : écart %.3f, biais %.3f", b1.ecartIcone, b1.biais);
+    VERIFIE(std::fabs(b1.icone - 27.f) < 1e-4f && std::fabs(b1.texte - 29.f) < 1e-3f && std::fabs(b1.marge - 21.f) < 1e-4f,
+            "RG-02 : icône %.3f, texte %.3f, marge %.3f (attendu 27 / 29 / 21, WFS-557)", b1.icone, b1.texte, b1.marge);
+    VERIFIE(std::fabs(b1.ecartIcone - 10.f) < 1e-3f && std::fabs(b1.biais - 12.f) < 1e-4f, "RG-02 : écart %.3f, biais %.3f", b1.ecartIcone, b1.biais);
     VERIFIE(std::fabs(hud::BOUTON_ECHELLE - 1.5f) < 1e-6f, "RG-02 : échelle %.3f", hud::BOUTON_ECHELLE);
     VERIFIE(b1.h <= hud::SCORE_H, "WFS-549 : boutons pas plus hauts que le score (%.1f)", b1.h);
 
@@ -44,7 +44,7 @@ int main() {
                 if (!poursuite) VERIFIE(std::fabs((menu.x + cam.x + cam.w) / 2 - (m.gauche + e.W - m.droite) / 2) < 0.01f, "%s : RG-06 : paire au centre", nom);
                 else VERIFIE(menu.x >= (m.gauche + e.W - m.droite) / 2 + 20 * e.H / 100 && cam.x + cam.w <= e.W - m.droite, "%s : RG-06 : poursuite : à droite du score de la poursuite", nom);
                 VERIFIE(cam.x + cam.w + 8 * k <= xScore, "%s : RG-06 : Caméra avant le score", nom);
-                VERIFIE(std::fabs(menu.x + menu.w + 8 * k - cam.x) < 0.01f, "%s : RG-01 : écart Menu-Caméra", nom);
+                VERIFIE(std::fabs(menu.x + menu.w + hud::BOUTONS_ECART * k - cam.x) < 0.01f, "%s : RG-01 : écart Menu-Caméra", nom);
                 VERIFIE(std::fabs(menu.y - cam.y) < 0.01f && std::fabs(cam.y + cam.h / 2 - (yScore + 35 * k)) < 0.01f,
                         "%s : RG-01 : rangée centrée sur le score", nom);
                 VERIFIE(menu.x >= m.gauche && menu.y >= m.haut, "%s : boutons dans la zone sûre", nom);

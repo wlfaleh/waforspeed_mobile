@@ -24,6 +24,7 @@
 #include "cars.h"
 #include "commandes_tactiles.h"   // WFS-98 : dessin2d (biseau à bords lissés)
 #include "../ui/verre.h"   // WFS-551 (RG-06) : boutons de verre du HUD
+#include "../ui/boutons.h"   // WFS-557 : contour arrondi de l'icône appareil photo
 #include "course.h"
 #include "course_system.h"
 #include "game.h"
@@ -361,9 +362,16 @@ public:
         verre::panneau(r, x, y, w, h, {h * 0.22f, 1.5f * k, 1, false});
         const vec4 c = hex(TEXTE);
         const float ix = x + b.marge, iy = y + (h - ic) / 2, u = ic / 24;   // icône appareil photo (path de #camBtn, 24 × 24)
-        r.uiRect(ix + 3 * u, iy + 7 * u, 18 * u, 12 * u, c);
-        r.uiRect(ix + 8.6f * u, iy + 5 * u, 6.8f * u, 2 * u, c);
-        r.uiCircle(ix + 12 * u, iy + 13.5f * u, 3.3f * u, hex(BG, 0.9f));
+        // WFS-557 (maquette 17) : appareil photo au trait (corps arrondi, bosse du viseur, objectif en anneau), trait de 2
+        {
+            const float e = 2 * u;
+            vec2 corps[ui::boutons::MAX_SOMMETS];
+            const int n = ui::boutons::contourArrondi(corps, ix + 1.5f * u, iy + 6.5f * u, 21 * u, 14 * u, 2.5f * u);
+            dessin2d::contour(r, corps, n, e, c);
+            const vec2 bosse[4] = {{ix + 7.5f * u, iy + 6.5f * u}, {ix + 9 * u, iy + 3.5f * u}, {ix + 15 * u, iy + 3.5f * u}, {ix + 16.5f * u, iy + 6.5f * u}};
+            dessin2d::trait(r, bosse, 4, e, c);
+            dessin2d::anneau(r, ix + 12 * u, iy + 13.5f * u, 3.6f * u, 3.6f * u + e, c);
+        }
         ui::textBoite(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), ui::width(b.texte, t, 0.1f), b.texte, b.texte, nom, c,
                       ui::GAUCHE, 0.1f, false, true);
     }

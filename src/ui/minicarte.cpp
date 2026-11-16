@@ -30,6 +30,7 @@
 #include "ecrans/reglages.h"   // gaucher (lecture seule)
 #include "navigation.h"
 #include "text.h"
+#include "boutons.h"   // WFS-557 : panneau arrondi
 #include "../game/textes_course.h"   // WFS-506 : consignes en français ou en anglais
 
 namespace wfs {
@@ -39,6 +40,7 @@ using namespace minicarte;
 
 // codes sRGB comme uiRect ; teintes du HUD (hud.cpp) pour le bandeau et la flèche du joueur, aplats doux pour la carte (RG-01)
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
+const unsigned CYAN_GUIDAGE = 0x22E2F6;   // WFS-557 (maquette 17) : trait de l'itinéraire
 const unsigned TEXTE = 0xF2F4F8, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, DANGER = 0xFF1F4B, SOMBRE = 0x0A0B10;
 struct Palette { unsigned fond, batiment, batimentBord, verdure, foret, champs, eau, sable, gravier, bordure, route, itineraire, passe; float alpha; };
 // jour : carte claire (fond gris très pâle, verts et bleus doux) ; nuit : carte sombre, mêmes repères en teintes assourdies
@@ -193,39 +195,45 @@ private:
         const vec2 dr = droiteDe(tg, vect(tg, droite0));
         const float ch = std::cos((float)cap_), sh = std::sin((float)cap_);
         const vec2 haut = plus(fois(tg, ch), fois(dr, sh)), droite = moins(fois(dr, ch), fois(tg, sh));
-        const float ban = BANDEAU * k;
+        // WFS-557 (maquette 17) : la carte occupe le haut du panneau (96 sur 149), le guidage écrit est en bas ; joueur aux 2/3
+        const float u = carre.h / COTE;
         Vue v;
         v.R = {plan(t.point(s0, pl.playerX * RW)), haut, droite};
-        v.x0 = carre.x + 1; v.x1 = carre.x + carre.w - 1; v.y0 = carre.y + ban; v.y1 = carre.y + carre.h - 1;
-        v.joueurPx = {carre.x + carre.w / 2, v.y0 + 0.72f * (v.y1 - v.y0)};
+        v.x0 = carre.x + 1; v.x1 = carre.x + carre.w - 1; v.y0 = carre.y + 2 * u; v.y1 = carre.y + 98 * u;
+        v.joueurPx = {carre.x + carre.w / 2, carre.y + 64 * u};
         v.pxParM = (v.joueurPx.y - v.y0) / (float)avant_;
         g_etat.avantM = (float)avant_;
-        // fond de la carte
-        P.rect(carre.x, carre.y, carre.w, carre.h, hex(pal.fond, pal.alpha));
+        // WFS-557 (maquette 17) : panneau de verre gris sombre aux coins arrondis (avant : carte claire ou sombre à angles droits)
+        vec2 bord[ui::boutons::MAX_SOMMETS];
+        const int nb = ui::boutons::contourArrondi(bord, carre.x, carre.y, carre.w, carre.h, 14 * u);
+        dessin2d::halo(r, bord, nb, 10 * u, {0, 0, 0, 0.22f});
+        dessin2d::polygone(r, bord, nb, {hex(0x2B2D32, 0.80f), hex(0x2E2F31, 0.74f), carre.y, carre.y + carre.h});
+        P.sommets += 6 * nb;
         // abscisses de la route dans la fenêtre : de −0,5 à +1,5 fois la vue avant (les épingles et lacets reviennent dans le carré)
         const double sA = s0 - 0.5 * avant_ / M, sB = s0 + 1.5 * avant_ / M, ds = (sB - sA) / (ROUTE_N - 1);
-        abords(P, g, t, v, pal, sA, sB);
-        const float ep = ROUTE * k * 1.35f, epC = ep + 2.5f * k;
-        rues(P, t, v, pal, sA, sB, ep, epC, k);
+        // WFS-557 (maquette 17) : seulement l'itinéraire (ni îlots, ni verdure, ni rues : abords() et rues() ne sont plus dessinés),
+        // gaine grise de 15 et trait cyan de 5 avec une lueur
+        const float ep = 5 * u, epC = 15 * u;
         for (int i = 0; i < ROUTE_N; i++) ecran_[i] = ecranDe(v, plan(t.point(sA + ds * i, 0)));
-        bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, epC, hex(pal.bordure), true);   // bordure de la route
+        bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, epC, hex(0x56585D, 0.9f), true);   // gaine
+        bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, ep * 2, hex(ACCENT2, 0.25f), false);   // lueur cyan
         // RG-02 : partie passée en clair, itinéraire devant le joueur en couleur ; arrivée : l'itinéraire s'arrête sur la ligne
         const double fin = c.duelFinish > 0 ? c.duelFinish : 0;
         const int iJ = std::clamp((int)((s0 - sA) / ds), 0, ROUTE_N - 2);
         vec2 tr[ROUTE_N + 2]; int m = 0;
         for (int i = 0; i <= iJ; i++) tr[m++] = ecran_[i];
         tr[m++] = v.joueurPx;
-        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(pal.route), false);
+        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(CYAN_GUIDAGE), false);
         m = 0; tr[m++] = v.joueurPx;
         int iFin = ROUTE_N;
         if (fin > 0 && fin < sB) iFin = std::clamp((int)std::ceil((fin - sA) / ds), iJ + 1, ROUTE_N);
         for (int i = iJ + 1; i < iFin; i++) tr[m++] = ecran_[i];
         if (fin > 0 && fin < sB) tr[m++] = ecranDe(v, plan(t.point(fin, 0)));
-        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(pal.itineraire), false);
+        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(CYAN_GUIDAGE), false);
         if (iFin < ROUTE_N) {   // au-delà de l'arrivée : route ordinaire
             m = 0; tr[m++] = ecranDe(v, plan(t.point(fin, 0)));
             for (int i = iFin; i < ROUTE_N; i++) tr[m++] = ecran_[i];
-            bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(pal.route), false);
+            bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(CYAN_GUIDAGE), false);
         }
         g_etat.points = ROUTE_N;
         // checkpoint et arrivée (RG-02)
@@ -237,12 +245,9 @@ private:
         if (fin > 0 && fin > sA && fin < sB) { const vec2 p = ecranDe(v, plan(t.point(fin, 0))); if (dedans(p, DAMIER * k / 2)) arrivee(P, p, k); }
         signaux(P, r, g, c, t, v, k, poursuite, sA, sB, dt);
         joueur(P, v.joueurPx, (float)(pl.heading - cap_), k);   // la voiture vers le haut ; seul l'écart au cap lissé reste
-        bandeau(P, r, g, c, t, carre, k, pal);
-        nomRue(P, r, g, t, carre, k, pal);
-        // bordure de 1 px, angles droits (WFS-173, RG-05)
-        const vec4 bord{1, 1, 1, 0.08f};
-        P.rect(carre.x, carre.y, carre.w, 1, bord); P.rect(carre.x, carre.y + carre.h - 1, carre.w, 1, bord);
-        P.rect(carre.x, carre.y + 1, 1, carre.h - 2, bord); P.rect(carre.x + carre.w - 1, carre.y + 1, 1, carre.h - 2, bord);
+        guidage(P, r, g, c, t, carre, k);
+        (void)pal;
+        dessin2d::contour(r, bord, nb, 1.2f * u, {1, 1, 1, 0.16f});   // liseré clair (WFS-557)
     }
 
     void preparer(Track& t) {
@@ -429,6 +434,30 @@ private:
         g_etat.objets++;
     }
 
+    // ---- WFS-557 (maquette 17) : guidage écrit en bas du panneau : flèche de manœuvre blanche (22) à gauche, distance
+    // (Rajdhani gras italique 26,5, ligne de base à 123 du haut, à 49 du bord gauche) et consigne en dessous (Inter, gris clair,
+    // ligne de base à 139), réduite jusqu'à tenir sur une ligne
+    void guidage(Pinceau& P, Renderer& r, const GameView& g, const Course& c, Track& t, const Cadre& carre, float k) {
+        const Player& pl = *g.player;
+        const auto& secs = trace::sections(t);
+        const nav::Prochaine pr = nav::prochaine(secs, pl.dist, t.length(), c.duelFinish, M);
+        const float u = carre.h / COTE, x = carre.x, y = carre.y, w = carre.w;
+        fleche(P, pr.m, pr.sortie, {x + 23.6f * u, y + 121.6f * u}, 22 * u, k * u);
+        const std::string dist = pr.m == nav::Manoeuvre::Aucune ? std::string() : texteDistance(pr.distanceM);
+        const std::string cons = texteConsigne(pr), d = dist.empty() ? ui::tr("nav.tout_droit") : dist;
+        const float tx = x + 48.6f * u, lw = x + w - 8 * u - tx;
+        const float dp = taille(d, 26.5f * u, 18 * u, lw);
+        ui::text(r, tx, y + 122.7f * u - hud::BASE * dp, dp, ajuster(d, dp, lw), hex(TEXTE), ui::GAUCHE, 0, false, true);
+        float cp;
+        {
+            ui::AvecPolice inter(ui::Police::Inter);
+            cp = taille(cons, 13 * u, 10 * u, lw);
+            ui::text(r, tx, y + 139.3f * u - hud::INTER_BASE * cp, cp, ajuster(cons, cp, lw), hex(0xC8CBD2), ui::GAUCHE, 0, false);
+        }
+        g_etat.prochaine = pr; g_etat.consigne = cons; g_etat.distance = dist; g_etat.tailleDistance = dp; g_etat.tailleConsigne = cp;
+        if (pr.section >= 0 && pr.section + 1 < (int)secs.size())
+            g_etat.rueSuivante = nav::nomRue(g.map ? g.map->id : "", g.map ? g.map->seed : 0, pr.section + 1, secs[pr.section + 1].type, secs[pr.section + 1].autoroute);
+    }
     // ---- RG-02 : bandeau du prochain virage : flèche, distance arrondie, consigne ; rue suivante si la place le permet
     void bandeau(Pinceau& P, Renderer& r, const GameView& g, const Course& c, Track& t, const Cadre& carre, float k, const Palette& pal) {
         (void)pal;
@@ -567,7 +596,7 @@ private:
         const float l = JOUEUR_L * k, w = JOUEUR_W * k;
         const vec2 pointe = plus(p, fois(av, l * 0.6f)), base = moins(p, fois(av, l * 0.4f));
         const vec2 tri[3] = {pointe, plus(base, fois(dr, w / 2)), moins(base, fois(dr, w / 2))};
-        P.triangle(tri, hex(ACCENT), CONTOUR * k, hex(SOMBRE));
+        P.triangle(tri, hex(ACCENT), 0.6f * k, hex(ACCENT));   // WFS-557 (maquette 17) : triangle orange plein, sans contour sombre
     }
     void arrivee(Pinceau& P, vec2 p, float k) {   // damier 2 × 2
         const float d = DAMIER * k / 2;

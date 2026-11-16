@@ -12,12 +12,19 @@ namespace hud {
 // × k = hauteur / 720) :
 // RG-04 : panneau du temps en haut à gauche : largeur au moins TEMPS_L (plus si le texte le demande), hauteur TEMPS_H (avant :
 //         200 × 112), marge intérieure ; lu aussi par la carte (minicarte.h) ; score : 180 × 70 (92 avec le combo), inchangé
-constexpr float TEMPS_L = 236.f, TEMPS_H = 84.f, TEMPS_MARGE = 12.f, AVANT_TEMPS_L = 200.f, AVANT_TEMPS_H = 112.f;
+// WFS-557 (ordre de l'utilisateur du 2026-11-16 : maquettes R19 à 100 %, maquette 17) : 276 × 80 (avant : 236 × 84)
+constexpr float TEMPS_L = 276.f, TEMPS_H = 80.f, TEMPS_MARGE = 12.f, AVANT_TEMPS_L = 200.f, AVANT_TEMPS_H = 112.f;
 // RG-01 : capitales et chiffres de Rajdhani Bold = CAPITALES × la taille passée à ui::text (643 / 1 276 unités), ligne de base à
 //         BASE × la taille sous le haut de la boîte ; étiquettes 27 (avant : 11, porté à 13), valeur d'ARRIVÉE 40, chiffres du
 //         score 40 (avant 34), vitesse de la vue Cockpit 40 (avant 28), chrono 48 et vitesse du compteur 44 (inchangés)
 constexpr float CAPITALES = 0.504f, BASE = 0.7288f;
-constexpr float ETIQUETTE_PX = 27.f, ARRIVEE_PX = 40.f, SCORE_PX = 40.f, VITESSE_COCKPIT_PX = 40.f, CHRONO_PX = 48.f;
+constexpr float ETIQUETTE_PX = 27.f, ARRIVEE_PX = 40.f, SCORE_PX = 48.f, VITESSE_COCKPIT_PX = 40.f, CHRONO_PX = 50.f;
+// WFS-557 (maquette 17, mesurée sur l'image 2400 × 1080) : chrono 50 et score 48 (capitales de 25 et 24 px de référence) ;
+// étiquettes « TEMPS », « CP n », « SCORE », « KM/H » en Inter Medium 12 (capitales de 7,3 px de référence) ; panneaux du temps et
+// du score à 23 du bord et 19 du haut ; score 166 × 88 avec le combo, 166 × 64 sans
+constexpr float R19_ETIQUETTE_PX = 12.f, R19_CP_PX = 12.f, R19_GOUTTIERE_L = 23.f, R19_GOUTTIERE_H = 19.f;
+constexpr float SCORE_R19_L = 166.f, SCORE_R19_H = 64.f, SCORE_R19_H_COMBO = 88.f;
+constexpr float INTER_BASE = 0.8006f;   // ligne de base d'Inter : ascendante 1 984 / (1 984 + 494) unités, comme BASE pour Rajdhani
 // contraste ≥ 4,5 : 1 au pire (fond blanc derrière le panneau ; mélange en sRGB : image d'échange UNORM, vk.cpp) : étiquettes
 // ETIQUETTE sur FOND à FOND_ALPHA (5,9 : 1) ; dans le compteur, ETIQUETTE_ARC sur son disque (DISQUE à DISQUE_ALPHA, avant 0,55),
 // devant du blanc (voiture blanche derrière) : #D0D4DE (4,8 : 1) plutôt que le #C4C9D6 proposé (4,3 : 1 sur du blanc)
@@ -31,8 +38,10 @@ constexpr float SCORE_L = 180.f, SCORE_H = 70.f, SCORE_H_COMBO = 92.f, GOUTTIERE
 // WFS-429 (hauteur 40 → 60 px, mesurée sur la maquette : 62 px pour 720), toujours centrés sur les 70 px du score
 constexpr float BOUTON_ECHELLE = 1.5f;
 // .cam-btn avant WFS-429 : 40 px de haut, icône 18, marges 14, écart icône-texte 6, texte 14, biais 8 ; .hud-btns gap 8 px
-constexpr float BOUTON_H = 40.f, BOUTON_ICONE = 18.f, BOUTON_MARGE = 14.f, BOUTON_ECART_ICONE = 6.f, BOUTON_TEXTE = 14.f,
-                BOUTON_BIAIS = 8.f, BOUTONS_ECART = 8.f;
+// WFS-557 (ordre de l'utilisateur du 2026-11-16 : maquette 17 à 100 %, mesurée sur l'image 2400 × 1080) : MENU 138,7 × 60 et
+// ARRIÈRE 172 × 60, 33,3 entre eux : texte 29 (avant 21), écart icône-texte 10 (avant 9), écart entre les boutons 33,3 (avant 8)
+constexpr float BOUTON_H = 40.f, BOUTON_ICONE = 18.f, BOUTON_MARGE = 14.f, BOUTON_ECART_ICONE = 10.f / 1.5f, BOUTON_TEXTE = 29.f / 1.5f,
+                BOUTON_BIAIS = 8.f, BOUTONS_ECART = 33.3f;
 // un bouton dessiné : rectangle et mesures (pixels de l'interface, échelle k et BOUTON_ECHELLE comprises)
 struct BoutonHud { float x = 0, y = 0, w = 0, h = 0, icone = 0, marge = 0, ecartIcone = 0, texte = 0, biais = 0; };
 // RG-01 de WFS-429 : rangée [MENU] [CAMÉRA] [SCORE] en haut à droite, BOUTONS_ECART × k entre chaque, centrée en hauteur sur
