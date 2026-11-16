@@ -8,6 +8,8 @@
 #include "../core/system.h"
 #include "../game/course_system.h"
 #include "../game/game.h"
+#include "../game/poursuite.h"   // WFS-550 : police de la Poursuite (lecture seule)
+#include "../game/track.h"       // M (mètres par unité)
 #include "../render/renderer.h"
 #include "text.h"
 #include "langue.h"   // WFS-506 : bandeaux en français ou en anglais
@@ -29,9 +31,9 @@ struct Toast { std::string titre, valeur; Genre genre; double naissance = -1; };
 
 // durées du jeu web : toast-in 240 ms, toast-out 260 ms à 1,5 s, retiré à 1,9 s (setTimeout)
 constexpr double ENTREE = 0.24, SORTIE_DEBUT = 1.5, SORTIE = 0.26, VIE = 1.9;
-constexpr size_t PILE_MAX = 3;
+constexpr size_t PILE_MAX = 4;   // WFS-550 (maquette 30) : 4 bandeaux visibles
 
-std::deque<Toast> g_pile;   // le plus récent devant (prepend)
+std::deque<Toast> g_pile;   // WFS-550 : le plus récent à la fin (en bas de la pile, maquette 30)
 
 class Toasts : public System {
 public:
@@ -39,24 +41,27 @@ public:
 
     // après les règles de course (ordre 210) : compteurs de cette mise à jour comparés à ceux de la précédente
     // WFS-506 (RG-01) : textes pris dans la langue active au moment de l'événement (une fois par bandeau, pas à chaque image)
-    void update(double dt, const GameView&) override {
+    void update(double dt, const GameView& g) override {
         const Course* c = activeCourse();
         // RG-07 : pas de course, ou nouvelle course (Rejouer → décompte) : pile vidée, compteurs repris
         if (!c || c->state == RaceState::Count || c->timeLeft > 1e6) { g_pile.clear(); garder(c); return; }
         if (c->level > level_) {   // RG-02 : checkpoint (web : toast(`Checkpoint ${level}`, `+${add.toFixed(1)} s`, 'cp'))
             for (int n = level_ + 1; n <= c->level; n++)
-                pousser({ui::tr("toast.checkpoint", std::to_string(n)), "+" + ui::decimal(Course::checkpointBonus(n), 1) + " s", CP});
+                pousser({ui::tr("toast.checkpoint", std::to_string(n)), "+" + secondes(Course::checkpointBonus(n)) + " s", CP});   // maquette 30 : « +30 s »
         }
         // RG-03 : quasi-contact (web : « Quasi-contact ×N » si combo > 1, « +250×combo ») ; un bandeau par quasi-contact,
         // même si plusieurs tombent dans la même mise à jour (le combo de chacun : combo final − ceux qui suivent)
         for (int i = 0, d = c->nearCount - near_; i < d; i++) {
             const int combo = std::max(1, c->combo - (d - 1 - i));
-            pousser({combo > 1 ? ui::tr("toast.quasi_combo", std::to_string(combo)) : ui::tr("toast.quasi"), "+" + std::to_string(250 * combo), NORMAL});
+            // WFS-550 (maquette 30) : « QUASI-CONTACT +250 » puis, en combo, « COMBO ×3 +500 » à part (même total : 250 × combo)
+            pousser({ui::tr("toast.quasi"), "+250", NORMAL});
+            if (combo > 1) pousser({ui::tr("toast.combo", std::to_string(combo)), "+" + std::to_string(250 * (combo - 1)), NORMAL});
         }
         if (c->accidents > accidents_) pousser({ui::tr("toast.accident"), "", BAD});   // RG-04 : playerAccident
         // RG-04 : combo perdu sur un choc (bump) : combo > 1 remis à 0 avant la fin de son délai ; le délai écoulé
         // (comboTimer ≤ dt) remet aussi le combo à 0 mais sans bandeau, comme le jeu web
         else if (combo_ > 1 && c->combo == 0 && timer_ > dt + 1e-9) pousser({ui::tr("toast.combo_perdu"), "", BAD});
+        policeEnApproche(dt, g);
         garder(c);
     }
 
@@ -72,7 +77,7 @@ public:
         // aucun flou (aucun coût de rendu ajouté en course). Mesures de la maquette (1600 × 720) : 42 px de haut, 7 px d'écart.
         const float xc = W * 0.5f + (g.marges.gauche - g.marges.droite) / 2;
         float y = bandeauxHaut(H, g.marges);
-        const float tp = 21 * k, h = 42 * k, plein = 40 * k, fondu = 34 * k, gap = 9 * k;
+        const float tp = 27 * k, h = 44 * k, plein = 34 * k, fondu = 30 * k, gap = 6 * k;   // maquette 30 (720 px de haut)
         auto sommet = [](float x, float yy, const vec4& c) { return UiVertex{x, yy, -1, -1, c.x, c.y, c.z, c.w}; };
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;
@@ -103,9 +108,23 @@ public:
     void shutdown(Renderer&) override { g_pile.clear(); }
 
 private:
+    // « +30 s » quand le bonus est entier, sinon « +12,5 s » (maquette 30)
+    static std::string secondes(double v) { return std::fabs(v - std::round(v)) < 1e-6 ? std::to_string((long long)std::llround(v)) : ui::decimal(v, 1); }
+    // WFS-550 (maquette 30) : « POLICE EN APPROCHE » (rouge) dans la Poursuite, quand une voiture de police qui roule passe à moins
+    // de 60 m du joueur ; au plus un bandeau toutes les 8 s (lecture seule de la poursuite, aucune règle de jeu changée)
+    void policeEnApproche(double dt, const GameView& g) {
+        attentePolice_ = std::max(0.0, attentePolice_ - dt);
+        double rd[8]; bool fixe[8];
+        const int n = g.player ? poursuitePolice(rd, fixe, 8) : 0;
+        double d = 1e9;
+        for (int i = 0; i < n; i++) if (!fixe[i]) d = std::min(d, std::fabs(rd[i] - g.player->dist) * M);
+        if (d < 60 && dPolice_ >= 60 && attentePolice_ <= 0) { pousser({ui::tr("toast.police_approche"), "", BAD}); attentePolice_ = 8; }
+        dPolice_ = d;
+    }
+    double dPolice_ = 1e9, attentePolice_ = 0;
     void pousser(Toast t) {
-        g_pile.push_front(std::move(t));
-        while (g_pile.size() > PILE_MAX) g_pile.pop_back();
+        g_pile.push_back(std::move(t));   // WFS-550 (maquette 30) : le plus récent en bas de la pile
+        while (g_pile.size() > PILE_MAX) g_pile.pop_front();
     }
     void garder(const Course* c) {
         level_ = c ? c->level : 0; near_ = c ? c->nearCount : 0; accidents_ = c ? c->accidents : 0;
@@ -119,8 +138,8 @@ private:
 
 // WFS-136 (accroche A4) : bandeau demandé par un autre module (feu grillé, nouveaux tracés) ; même pile, même style
 void toasts::pousser(const std::string& titre, const std::string& valeur, int genre) {
-    g_pile.push_front({titre, valeur, genre == 1 ? CP : genre == 2 ? BAD : NORMAL});
-    while (g_pile.size() > PILE_MAX) g_pile.pop_back();
+    g_pile.push_back({titre, valeur, genre == 1 ? CP : genre == 2 ? BAD : NORMAL});
+    while (g_pile.size() > PILE_MAX) g_pile.pop_front();
 }
 
 WFS_SYSTEM(Toasts, 425)   // interface : après le HUD (420), avant le fondu du chargement (490)
@@ -153,6 +172,17 @@ void benchToasts(Game& g, Renderer& r, const std::string& out) {
     if (Course* c = activeCourseMut()) c->nearMiss();
     rouler(20);
     capture("toast-pile");
+    // WFS-550 (maquette 30) : checkpoint, quasi-contact, combo ×2, police en approche (bandeau rouge poussé comme par la Poursuite)
+    if (Course* c = activeCourseMut()) c->nearMiss();   // 1er quasi-contact (combo ×1), retiré de la pile : seul le combo ×2 est montré
+    rouler(5);
+    g_pile.clear();
+    checkpoint();
+    rouler(10);
+    if (Course* c = activeCourseMut()) c->nearMiss();   // 2e : « QUASI-CONTACT +250 » et « COMBO ×2 +250 »
+    rouler(5);
+    toasts::pousser(ui::tr("toast.police_approche"), "", 2);
+    rouler(15);
+    capture("toast-maquette");
     g.shutdown();
     // WFS-550 (RG-06, RG-02) : même pile de nuit, avec un combo ×2 (jauge du combo sous le score) : checkpoint, 2 quasi-contacts
     setenv("WFS_MOMENT", "nuit", 1);
