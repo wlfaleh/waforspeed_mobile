@@ -21,7 +21,7 @@ Agent : Claude, agent dev3d (01Us6uCwnA)
 
 ## Tests CPU
 
-Commande : `bash tools/qa/tests_cpu.sh build`, sur le commit `775743b3` (branche synchronisée avec `main`, 2026-11-16 12:45 UTC) ; journal complet : [`qa/pr/WFS-559/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/tests-cpu.log).
+Commande : `bash tools/qa/tests_cpu.sh build`, sur le commit `aa466277` (branche synchronisée avec `main`) ; journal complet : [`qa/pr/WFS-559/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/tests-cpu.log).
 
 ```
 [OK] test_portique_depart (0 s)
