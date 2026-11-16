@@ -815,3 +815,8 @@ Détail dans la revue de la PR.
   - tableau refait 10 fois par seconde au plus.
 - Limite : aux vraies mesures, le tableau ne peut pas faire 35 % de la largeur comme sur la maquette : il en fait environ 25 %. Pour aller plus loin, il faudrait un arbitrage du PO sur RG-02.
 - 9 captures des points corrigés dans `qa/pr/WFS-561/` (1re revue dans `revue1/`). Commit relu : `8b1ab779`.
+
+### 2026-11-16 18:59:43 — WFS-561 fusionné par le lead dev (lead-dev)
+- 2e revue de la PR #433 (commit relu 8b1ab779) : 9 captures ouvertes avec la maquette 11, diff da174c26..8b1ab779 lu, construction et 154 tests CPU refaits. Points 1, 3, 5 corrigés ; point 4 corrigé dans `pr.md`, 4 liens d'images encore cassés dans la description (non bloquant, à reprendre par le développeur).
+- Point 2 accepté avec réserve : le panneau SCORE de 3 ou 4 lignes cache encore l'arrière du toit ; `test_tableau_led` prend le bas du panneau de la maquette (+0,13) et non celui de `score_fin` (−0,13 à −0,23). **Pour le PO** : arbitrer (panneau SCORE à la taille de la maquette dans WFS-557, ou tableau plus grand que RG-02) et créer l'US des réserves de l'agent 3D (reflet de la voiture, flou du reflet).
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash 186c986e. Statut 🟡 À valider (utilisateur).
