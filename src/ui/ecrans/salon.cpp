@@ -836,9 +836,12 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Salon); pas(30);
     // WFS-558 : le salon de Nadia arrive par le réseau local après quelques annonces : on attend qu'il soit affiché (≤ 5 s)
     for (int i = 0; i < 300 && !(g_liste.size() && (!duel3d::vue().active || g_salons[0].w > 0)); i++) { pas(1); g.render(t); }
+    pas(2);   // annonces fraîches pour la capture (voir plus bas)
     capture("salon-accueil", "salon de Nadia listé");
     if (duel3d::vue().active) {   // WFS-558 (revue du lead dev, #430) : la tuile « Rejoindre Nadia » du panneau fait entrer dans son salon
-        g.render(t); const bool tuile = g_salons[0].w > 0; toucher(26, g_salons[0]); pas(10);
+        // le rendu logiciel du banc prend plusieurs secondes réelles par image : annonces de Nadia relues juste avant (sinon son
+        // salon « expire » entre deux images, ABSENCE_MS de reseau_udp.cpp)
+        pas(2); g.render(t); const bool tuile = g_salons[0].w > 0; toucher(26, g_salons[0]); pas(10);
         if (tuile && duelSession().inRoom() && duelSession().code() == "n4d1") WFS_LOG("salon (WFS-558) : tuile « Rejoindre Nadia » du panneau touchée → salon n4d1 rejoint : 0 écart");
         else WFS_ERR("salon (WFS-558) : tuile « Rejoindre Nadia » : %s, salon %s", tuile ? "touchée" : "ABSENTE", duelSession().inRoom() ? duelSession().code().c_str() : "non rejoint");
         duelSession().leave(); pas(10);
