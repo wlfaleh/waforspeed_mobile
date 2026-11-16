@@ -128,6 +128,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
+> ⚖️ **2026-11-16 01:05 UTC — Arbitrage WFS-550 / 551 / 557 (maquettes R19 à 100 %)** : onglets du garage (VOITURE / PEINTURE / FINITION / SKINS, panneau étroit de l'onglet Voiture) = **WFS-551** (déjà sur sa branche) ; WFS-550 en dessine seulement le contenu (cadrans, barres, 17 segments) ; le 2e fusionné montre 06, 07, 13, 15, 16 à 100 %. Menu (maquette 01, RG-16 de 557) **passe à WFS-550** : cartes collées au bord droit, colonne Market / Profil / Crédits retirée (Market = compteur d'étoiles, Profil = bloc RECORD, Crédits dans les Réglages).
+
 > 🖼️ **2026-11-16 01:01 UTC — WFS-562 créé (E23, P1, `@dev` + avis `@3d`, après WFS-557)** : vraies images des 3 modes de la maquette 02 (arbitrage RG-21 / RG-22 de WFS-557 : Distance et Difficulté seulement dans la carte du mode choisi qui s'en sert ; scène floutée en attendant les images).
 
 > 🏗️ **2026-11-16 00:57 UTC — WFS-558 à 561 créés (E23, P1, `@dev` + avis `@3d`)** : scènes 3D des maquettes R19 04 (duel), 09 (départ), 10 (arrivée, après 559) et 11 (résultats), jamais construites par 548 / 549 / 552 ; hors de WFS-557 (arbitrage RG-20, recommandation du développeur acceptée). Prêts pour de nouvelles sessions `@dev` : **558, 559, 561**.
