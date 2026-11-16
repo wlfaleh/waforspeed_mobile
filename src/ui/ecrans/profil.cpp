@@ -165,7 +165,9 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     {
         const textes::NomPropre np;   // pseudo du joueur : rien à traduire
         const std::string nom = ui::majuscules(s.nick);
-        const float pris = ui::textBoite(r, x0 + 2 * k, y0 + 46 * k, placePseudo, tPseudo, tPseudo, nom, hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+        // RG-08 : un pseudo très large (16 « W ») est réduit jusqu'à tenir (textBoite ne réduit que de 20 % au plus)
+        const float large = ui::width(tPseudo, nom, 0.01f), tp = large > placePseudo ? tPseudo * placePseudo / large : tPseudo;
+        const float pris = ui::textBoite(r, x0 + 2 * k, y0 + 46 * k + (tPseudo - tp) * 0.5f, placePseudo, tp, tp, nom, hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
         g.pseudoEntier = ui::width(pris, nom, 0.01f) <= placePseudo + 0.5f;   // RG-08 : jamais coupé
         finPseudo = x0 + 2 * k + std::min(placePseudo, ui::width(pris, nom, 0.01f));
     }
