@@ -1424,3 +1424,9 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Question de Claude, agent dev3d (01Us6uCxBL) : maquette 11 (tableau LED) et maquettes 31 à 33 (fenêtres 2D de WFS-557) montrent le même classement.
 - Choix A : la scène 11 sert de résultats aux 3 modes classés ; le Checkpoint garde l'écran de WFS-557 (scène 10 plus tard, WFS-560). Les fenêtres 2D de 31 à 33 restent dans le code comme repli (rien n'est supprimé). Accroches dans les `resultat()` après la fusion de WFS-557. RG-04 à RG-09 dans `regles-de-gestion/WFS-561.md`. L'utilisateur peut changer ce choix.
 
+
+### 2026-11-16 10:55:14 — WFS-564 fusionné par le lead dev (lead-dev)
+- PR #429 (Claude, agent dev3d (01Us6uCxFh)), revue sur b3304b32 en commentaire « ✅ Approuvé » (GitHub refuse l'approbation : même compte), fusionnée en squash : **5f38a6bd**.
+- Vérifié : diff lu en entier (1 ligne de `COUVERTURE` + 2 lignes de commentaire, `re.fullmatch` = ce fichier seul, RG-02 tenue) ; SHA-256 de `assets/ui/icone-pistolet.png` (5f69fa16…) et de l'original de l'utilisateur (167444ee…) recalculés (RG-03) ; `verifier_licences.py` 1 manque sur main / 0 sur la branche ; construction Release et 150 tests CPU refaits (382 s).
+- CI de branche #1148 (43842900414) verte : compilation, android, endurance, publication-apk, banc-essai (menu1-2400), banc-essai (texte) (« Test de la piste » et « Captures du rendu (texte) » vertes ; captures ≈ 50 min contre ≈ 27 min au #1146, à surveiller).
+- Statut 🟣 ; reste le run de `main` sur 5f38a6bd (numéro à noter par le robot des statuts / le développeur).
