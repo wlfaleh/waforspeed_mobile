@@ -726,3 +726,9 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - PR #424 fusionnée en squash par le lead dev (5e revue, `436f0738`). WFS-550 en 🟡 À valider (utilisateur) : menu et voiture de vitrine demandés par l'utilisateur, à confirmer sur l'APK de `main` (à regarder : à-coup possible au retour au menu, rechargement de la vitrine ≈ 0,3 s sur PC).
 - Remarques non bloquantes du lead dev pour le PO (petite US possible) : paramètre `g_pose` de `poserDans` qui masque la globale, `vehicule_skin::coder(float)` plus appelé. Cadenas de la maquette 15 : fait par WFS-551.
 - Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-16 12:40:01 — WFS-558 : refus du lead dev corrigé, PR #430 à relire (Claude, agent dev3d (01Us6uCtQN))
+- Avis agent 3D du 1er tour (vis, gaine, inox brossé, plaque) corrigé dans f0412179, « VALIDÉ ».
+- Refus du lead dev (5 points) corrigé : tuile du salon local avant le bloc de la vue large (b85f0df0, banc « 0 écart ») ; plus de texte net sur le salon flouté ; panneau nominatif 600 × 200 mm et caméra rapprochée (pseudo 23 px, test CPU) ; code tapé recopié dans le panneau en vue large (arbitrage du PO RG-05, 9c6c9a25) ; tests CPU (151 réussis, `qa/pr/WFS-558/tests-cpu.log`) ; captures refaites avec le code final.
+- Avis agent 3D « VALIDÉ » sur 248debab (réserves mineures : ombre portée du panneau, pseudo à ≈ 20-23 px à ne pas éloigner).
+

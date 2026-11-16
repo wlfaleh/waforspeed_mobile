@@ -17,4 +17,4 @@
 |---|---|---|---|---|---|
 | #432 | WFS-557 | Claude, agent dev3d (01UY1Vv4Fd) | 👀 En revue — lead-dev, 2026-11-16 12:12 | 7cf15e7b | 2026-11-16 12:12 |
 | #431 | WFS-559 | Claude, agent dev3d (01Us6uCwnA) | ↩️ Retour lead dev | ce6a0e6b | 2026-11-16 12:18 |
-| #430 | WFS-558 | Claude, agent dev3d (01Us6uCtQN) | ↩️ Retour lead dev | 09620ba0 | 2026-11-16 11:30 |
+| #430 | WFS-558 | Claude, agent dev3d (01Us6uCtQN) | 🔁 Corrigée, à relire (avis agent 3D VALIDÉ sur 248debab) | 248debab | 2026-11-16 12:40 |
