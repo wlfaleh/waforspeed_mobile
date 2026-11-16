@@ -24,16 +24,15 @@ vec3 refletSol(const vec3& E, const vec3& P) {
 mat4 parkingDepuisVoiture() { return rotateY(-LACET_VOITURE) * translate({-POSE_VOITURE.x, -POSE_VOITURE.y, -POSE_VOITURE.z}); }
 
 Camera camera(float aspect) {
-    // œil au bout de l'allée, au bord de la rangée d'en face (9,35 m devant la voiture, entre deux poteaux), à 1,28 m de haut ;
-    // regarde le mur du fond entre le tableau et la voiture. Cadrage ajusté sur la maquette 11 (image 2400 × 1080, en fraction
-    // de la demi-image) : tableau de −0,44 à +0,26 en largeur et de −0,42 à +0,40 en hauteur ; voiture de +0,23 à +0,76 et de
-    // −0,82 à +0,04 ; obtenu ici (Golf, de trois quarts avant) : tableau −0,54 à −0,06 et −0,21 à +0,32 (tableau aux vraies
-    // mesures, ≈ 3 × 1,5 m, à côté d'une voiture de 4,3 m) ; voiture −0,06 à +0,88 et −0,94 à +0,29. Angle vertical de 28° en
-    // 20:9 ; les écrans moins larges gardent la même largeur vue (angle horizontal constant)
+    // œil dans l'allée (≈ 9,8 m devant le voile), à 1,36 m de haut ; regarde le mur du fond à droite du tableau. Cadrage ajusté
+    // sur la maquette 11 (image 2400 × 1080, en fraction de la demi-image) : tableau de −0,44 à +0,26 en largeur et de −0,42 à
+    // +0,40 en hauteur, voiture de trois quarts avant à droite (+0,23 à +0,76) ; tableau aux vraies mesures (≈ 3 × 1,5 m, il ne
+    // peut pas être plus grand à côté d'une voiture de 4,3 m) : son emprise dans l'image est écrite par test_tableau_led. Angle
+    // vertical de 29° en 20:9 ; les écrans moins larges gardent la même largeur vue (angle horizontal constant)
     Camera c;
-    c.oeil = {1.92f, 1.28f, -9.35f};
-    c.cible = {-0.41f, 0.87f, Z_FOND};
-    const float demiH = std::tan(14.f * PI / 180.f) * (2400.f / 1080.f) / std::max(1.f, aspect);
+    c.oeil = {2.50f, 1.36f, -7.07f};
+    c.cible = {-1.75f, 1.17f, Z_FOND};
+    const float demiH = std::tan(14.6f * PI / 180.f) * (2400.f / 1080.f) / std::max(1.f, aspect);
     c.fovY = 2.f * std::atan(demiH);
     c.decalageY = 0.f;
     if (banc::panneau) { c.oeil = {CENTRE_TABLEAU.x - 0.9f, CENTRE_TABLEAU.y - 0.05f, faceZ() - 1.6f}; c.cible = {CENTRE_TABLEAU.x - 0.6f, CENTRE_TABLEAU.y + 0.25f, faceZ()}; c.fovY = 30.f * PI / 180.f; }

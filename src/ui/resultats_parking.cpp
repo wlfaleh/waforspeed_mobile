@@ -19,6 +19,8 @@
 #include "../core/system.h"
 #include "../game/cars.h"
 #include "../game/game.h"
+#include "../game/score_fin.h"
+#include "../game/textes_course.h"
 #include "../game/track.h"
 #include "../game/player.h"
 #include "../render/renderer.h"
@@ -326,7 +328,7 @@ private:
             // l'horizontal, avis de l'agent 3D), qui s'efface en s'éloignant du mur (fondu sur ≈ 1,5 m) ; Fresnel de l'eau rasante
             const vec3 q = refletSol(E, c);
             const float loin = std::max(0.f, Z_FOND - q.z);
-            tache(sommetsR_, indicesR_, E, c, RAYON_POINT * 7.5f, RAYON_POINT * 2.5f, AMBRE * (0.65f * std::exp(-loin / 1.5f)));
+            tache(sommetsR_, indicesR_, E, c, RAYON_POINT * 7.5f, RAYON_POINT * 2.5f, AMBRE * (1.20f * std::exp(-loin / 1.5f)));
         }
         courant_ = 1 - courant_;   // jamais le tampon de l'image d'avant
         if (sommetsP_.empty()) { points_[courant_].indexCount = 0; reflets_[courant_].indexCount = 0; return; }
@@ -363,6 +365,29 @@ void effacer() { g_pasDemande = -1000; g_actifPas = false; g_tableau = Tableau{}
 bool affiche() { return g_affiche; }
 bool prete() { return g_prete; }
 const std::string& titre() { return g_affiche ? g_tableau.titre : g_vide; }
+
+std::string titreMot(const std::string& mot, double secondes) { return ui::tr("resultats.titre", mot, ui::chrono(secondes)); }
+std::string titreRang(int rang, double secondes) {
+    std::string o;
+    return titreMot(rang == 1 ? ui::tr("resultats.rang1") : textes::ordinal(o, rang), secondes);   // maquette 11 : « 1er » (le pilote)
+}
+led::Ligne ligneClassement(int rang, const std::string& nom, bool moi, bool fini, double secondes, double teteSecondes, double distanceKm,
+                           const std::string& texte) {
+    led::Ligne l;
+    l.pos = std::to_string(rang);
+    l.pilote = moi ? ui::tr("resultats.toi", nom) : nom;
+    l.moi = moi;
+    if (!texte.empty()) { l.temps = texte; l.ecart = "—"; }
+    else if (!fini) { l.temps = ui::decimal(std::max(0.0, distanceKm), 2) + " KM"; l.ecart = "—"; }
+    else { l.temps = ui::chrono(secondes); l.ecart = rang == 1 || teteSecondes < 0 ? "—" : "+" + ui::decimal(std::max(0.0, secondes - teteSecondes), 1); }
+    return l;
+}
+void poserScore(float W, float H, float margeDroite) {
+    // maquette 11 (1600 × 720, k = H / 720) : bloc de 0,40 H de large, haut à 0,153 H, bord droit à 50 px de l'écran ; score_fin pose
+    // son bloc à droite du rectangle donné (écart 2,5 % de H, bord 1,5 %) : rectangle fictif qui finit juste avant
+    const float u = H / 100.f, cw = 0.40f * H, x1 = W - margeDroite - 1.5f * u - cw - 2.5f * u;
+    score_fin::poser(0, 0.153f * H, std::max(1.f, x1), 0.5f * H);
+}
 
 WFS_SYSTEM(Scene, 408)   // interface (400-499) : après le score (405) dont elle laisse le panneau, avant le HUD (420)
 

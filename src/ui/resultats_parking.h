@@ -38,6 +38,17 @@ bool prete();
 // titre du haut à gauche (« 1er · 2:05,4 ») : dessiné par la scène quand elle est affichée
 const std::string& titre();
 
+// ---- aides des accroches des modes (textes traduits, ui::tr) :
+// titre « 1er · 2:05,4 » / « 1st · 2:05.4 » (rang ≥ 1, temps en secondes) ; tete : mot du résultat à la place du rang (« VICTOIRE »)
+std::string titreRang(int rang, double secondes);
+std::string titreMot(const std::string& mot, double secondes);
+// ligne d'un classement (course à 5, duel) : le joueur « TOI · <pseudo> » ; arrivé : temps (le 1er) ou écart au 1er ; pas arrivé :
+// sa distance (« 1,76 KM », comme la maquette 31) ; texte (parti…) : à la place du temps
+led::Ligne ligneClassement(int rang, const std::string& nom, bool moi, bool fini, double secondes, double teteSecondes, double distanceKm,
+                           const std::string& texte = "");
+// maquette 11 : panneau du score (score_fin) en haut à droite, à la place de la fenêtre 2D des modes
+void poserScore(float W, float H, float margeDroite);
+
 // ---- placement (repère du parking de WFS-552 : celui de la voiture, mètres, y vers le haut, avant de la voiture vers −Z,
 // voile du fond en z = +2,75) ; calcul seul, testé par tests/test_tableau_led.cpp
 inline constexpr float CAISSON_L = 3.10f, CAISSON_H = 1.52f, CAISSON_P = 0.14f;   // caisson (m)
@@ -46,12 +57,12 @@ inline constexpr float Z_FOND = 5.00f / 2 + 0.25f;    // nu du voile du fond (me
 inline constexpr float Z_DOS = Z_FOND - ENTRAXE_MUR;   // dos du caisson
 inline constexpr float Z_AVANT = Z_DOS - CAISSON_P;    // nez du caisson (vers l'allée, −z)
 inline constexpr float Z_MASQUE = Z_AVANT + 0.002f;    // masque en retrait de 2 mm derrière le nez du caisson
-inline constexpr vec3 CENTRE_TABLEAU{1.57f, 1.06f, 0.f};                            // centre de la face (x, y) ; z : face (voir faceZ)
+inline constexpr vec3 CENTRE_TABLEAU{-0.12f, 1.06f, 0.f};                            // centre de la face (x, y) ; z : face (voir faceZ)
 float faceZ();                                                                    // plan des points (devant le masque)
-// voiture du joueur arrêtée en biais dans l'allée, devant le tableau (maquette 11 : vue de trois quarts avant) : position de son
+// voiture du joueur garée en biais à droite du tableau, l'arrière vers le mur (maquette 11 : vue de trois quarts avant) : position de son
 // centre et lacet (rad, rotateY) dans le repère du parking ; le parking est dessiné autour de la voiture, là où elle s'est arrêtée
-inline constexpr vec3 POSE_VOITURE{-1.23f, 0.f, -2.86f};
-inline constexpr float LACET_VOITURE = -50.f * 3.14159265f / 180.f;   // avant tourné de 50° vers la gauche de l'image
+inline constexpr vec3 POSE_VOITURE{-3.09f, 0.f, -0.35f};   // flanc arrière à 0,1 m du poteau (x = −4, z = 1,6)
+inline constexpr float LACET_VOITURE = -78.f * 3.14159265f / 180.f;   // avant tourné de 78° vers la gauche de l'image (40° de plus que la direction de l'œil : trois quarts)
 mat4 parkingDepuisVoiture();   // repère de la voiture → repère du parking (inverse de translate(POSE) × rotateY(LACET))
 // caméra fixe de l'écran : œil, point regardé, angle vertical (rad), décentrement vertical de l'objectif (NDC)
 struct Camera { vec3 oeil, cible; float fovY, decalageY; };
