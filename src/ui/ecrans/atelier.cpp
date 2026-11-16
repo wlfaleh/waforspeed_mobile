@@ -99,6 +99,7 @@ struct EtatEcran {
     std::map<std::string, std::vector<va::Contour>> contours;
 };
 EtatEcran g;
+std::string g_repose;   // banc : voiture de la course dont l'habillage a été reposé à la sortie du garage (rendre)
 
 const std::vector<va::Contour>& contoursDe(const std::string& id) {
     auto it = g.contours.find(id);
@@ -197,7 +198,7 @@ bool versPlan(va::Direction d, float sx, float sy, float& a, float& b) {
 }
 // côté de la voiture que montre la caméra : direction d'un nouveau calque
 va::Direction directionVue() {
-    if (g.phi > 0.9f) return va::Direction::Capot;
+    if (g.phi > 0.9f) return va::Direction::Toit;   // dessus : ancrage au milieu de la voiture (une bande de 2,5 m ne dépasse pas devant)
     const float s = std::sin(g.theta), c = std::cos(g.theta);
     if (std::fabs(s) >= std::fabs(c)) return s < 0 ? va::Direction::Gauche : va::Direction::Droite;
     return c < 0 ? va::Direction::Avant : va::Direction::Arriere;
@@ -409,7 +410,7 @@ void dessinerConfirmation(Renderer& r) {
     verre::assombrir(r, g.W, g.H, 0.45f);
     verre::panneau(r, x, y, w, h, {16 * k});
     ui::text(r, x + w / 2, y + 26 * k, 24 * k, ui::tr("atelier.confirmer.titre"), hex(TEXTE), ui::CENTRE);
-    ui::textBoite(r, x + 24 * k, y + 62 * k, w - 48 * k, 40 * k, 15 * k, ui::tr("atelier.confirmer.texte"), hex(MUTED), ui::CENTRE);
+    ui::textBoite(r, x + w / 2, y + 62 * k, w - 48 * k, 40 * k, 15 * k, ui::tr("atelier.confirmer.texte"), hex(MUTED), ui::CENTRE);   // CENTRE : x = centre de la case
     const float bw = 200 * k, bh = 50 * k, by = y + h - bh - 22 * k;
     g.confQuitter = {x + 30 * k, by, bw, bh}; g.confRester = {x + w - 30 * k - bw, by, bw, bh};
     ui::boutons::autocollant(r, g.confQuitter.x, by, bw, bh, ui::majuscules(ui::tr("atelier.quitter")), 1, g.cible == CONF_QUITTER, 17 * k);
@@ -457,7 +458,7 @@ void dessiner(Renderer& r, const GameView& v) {
     dessinerOutils(r, gl + qw + 24 * k, g.valider.x - 24 * k, by + 5 * k);
     if (g.palette) dessinerPalette(r); else g.fondPalette = Zone{};
     // message (RG-04 : « 20 calques au maximum »)
-    if (!g.message.empty() && g.maintenant - g.tMessage < DUREE_MESSAGE) {
+    if (!g.message.empty() && !g.confirmation && g.maintenant - g.tMessage < DUREE_MESSAGE) {
         const float tw = ui::width(16 * k, g.message) + 48 * k, tx = (W - tw) / 2, ty = gt + 52 * k;
         verre::panneau(r, tx, ty, tw, 40 * k, {10 * k, 1.5f, 1, true, ACCENT});
         ui::text(r, W / 2, ty + 11 * k, 16 * k, g.message, hex(TEXTE), ui::CENTRE);
@@ -546,7 +547,7 @@ void agir(int c) {
     case ANNULER: g.e.annuler(); break;
     case REFAIRE: g.e.refaire(); break;
     case VALIDER: valider(); break;
-    case QUITTER: if (g.e.modifie()) g.confirmation = true; else { WFS_LOG("atelier : « Quitter » (rien de changé)"); g.ouvert = false; } break;
+    case QUITTER: if (g.e.modifie()) { g.confirmation = true; g.message.clear(); } else { WFS_LOG("atelier : « Quitter » (rien de changé)"); g.ouvert = false; } break;
     case CONF_QUITTER: WFS_LOG("atelier : « Quitter » sans valider : changements oubliés"); g.confirmation = false; g.ouvert = false; break;
     case CONF_RESTER: g.confirmation = false; break;
     default: break;
@@ -616,6 +617,22 @@ bool apercu(Renderer& r, const Model& m, const char* carId, int skin) {
     g.poseEchec = !vehicule_skin::poser(r, m, carId, skinId, texte);
     g.poseCle = cle;
     return true;
+}
+
+void rendre(Renderer& r, const Model& m, const GameView& v, bool reposer) {
+    bool surCeModele = false;
+    for (uint32_t i = 0; m.ok && i < m.mats.size() && !surCeModele; i++) surCeModele = vehicule_skin::materiau(m, i) != nullptr;
+    if (!surCeModele) return;   // la texture d'habillage n'est pas sur la voiture du garage : rien à rendre
+    r.vk().waitIdle();          // l'aperçu peut être lu par une image en vol
+    vehicule_skin::liberer(r);
+    g.poseCle.clear();
+    if (!reposer || !v.modele || !v.car) return;
+    // même choix que Game::setCar (WFS-492, WFS-495) : skin possédée de la voiture de la course et ses autocollants ; bancs : WFS_SKIN, WFS_AUTOCOLLANTS
+    const char* sk = std::getenv("WFS_SKIN") ? std::getenv("WFS_SKIN") : sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), v.car->id).skin : "";
+    const char* ac = std::getenv("WFS_AUTOCOLLANTS");
+    vehicule_skin::poser(r, *v.modele, v.car->id, sk, ac ? std::string(ac) : calquesCourse(v.car->id));
+    g_repose = v.car->id;
+    WFS_LOG("atelier : sortie du garage : habillage de la course reposé sur %s (WFS-496)", v.car->id);
 }
 
 bool toucher(const Touch& t, const GameView& v) {
@@ -725,6 +742,7 @@ bool centre(const char* nom, float& x, float& y) {
     return true;
 }
 const std::string& message() { return g.message; }
+const std::string& reposeCourse() { return g_repose; }
 std::string texteAtelier() { return g.e.texteGarde(); }
 void choisirVue(int v) { choisirVueInterne(v); }
 bool versEcran(float a, float b, float& x, float& y) {

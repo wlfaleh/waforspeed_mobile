@@ -75,6 +75,7 @@ public:
             g_z.prev = g_z.next = Zone{};
             for (PanneauGarage* p : panneaux_) p->viderZones();
             if (r_) skin_.quitter(*r_, g, !(nouveau == Ecran::Menu && choisi_));   // WFS-494 (accroche) : la voiture de la course reprend sa skin (« Choisir » : Game::setCar)
+            if (r_) atelier::rendre(*r_, voiture_, g, !(nouveau == Ecran::Menu && choisi_));   // WFS-496 (accroche) : texture de l'aperçu de l'atelier rendue, celle de la course reposée
             liberer();   // mémoire rendue pendant la course
             // « Choisir » : Garage → Menu → Course, appliqués avant l'image suivante (le menu n'est jamais dessiné) ;
             // l'entrée en course depuis le menu remet la course à zéro (même chemin que « Recommencer » de la pause)

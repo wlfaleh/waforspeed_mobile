@@ -34,6 +34,9 @@ void camera(FrameParams& fp, SceneDediee& s, const GameView& g);
 // aperçu de la voiture du garage m (id carId, skin montrée) : atelier ouvert : calques visibles de l'atelier ; fermé : habillage
 // gardé (calquesCourse). Faux si aucun autocollant n'est à montrer (le garage montre alors sa skin, comme avant).
 bool apercu(Renderer& r, const Model& m, const char* carId, int skin);
+// sortie du garage : si l'aperçu de l'atelier habille encore la voiture du garage m, la texture est rendue, puis (reposer) celle
+// de la voiture de la course est reposée (skin possédée + autocollants : parking du menu ; une seule texture en mémoire)
+void rendre(Renderer& r, const Model& m, const GameView& g, bool reposer);
 
 // RG-01 : bouton « ATELIER » du garage, sous « MARKET » ; op : fondu d'entrée du garage
 void dessinerBoutonGarage(Renderer& r, float W, float H, const Marges& m, float op);
@@ -43,6 +46,7 @@ bool dansBoutonGarage(float x, float y);
 int benchAtelier(Game& g, Renderer& r, const std::string& out);
 bool centre(const char* nom, float& x, float& y);   // centre d'une zone à la dernière image (« bouton », « valider », « motif-3 »…)
 const std::string& message();                       // message montré à la dernière image (vide : aucun)
+const std::string& reposeCourse();                  // voiture de la course dont l'habillage a été reposé à la sortie du garage (rendre)
 std::string texteAtelier();                         // calques de l'atelier ouvert (texte gardé)
 void choisirVue(int v);                              // 0 gauche, 1 droite, 2 avant, 3 arrière, 4 dessus
 bool versEcran(float a, float b, float& x, float& y);   // point (cm) du plan du calque choisi → écran (banc : gestes simulés)

@@ -180,21 +180,33 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
     verifier(ouvert() && nCalques() == 20 && !centre("conf-rester", cx, cy), "touche Retour dans la confirmation : « Rester »");
     zone("quitter"); zone("conf-quitter"); images(10);
     verifier(!ouvert() && texteGarde("p208") == cinq, "« Quitter » sans valider : les 5 calques gardés ne changent pas");
+    // garage → « Retour » → menu : la voiture de la course reprend son habillage (texture de l'aperçu rendue)
+    {
+        float x, y;
+        if (garageBouton("retour", x, y)) toucher(x, y);
+        images(40);
+        const vehicule_skin::Etat e = vehicule_skin::etat();
+        verifier(g.ecran() == Ecran::Menu && reposeCourse() == "p208" && e.skin == vehicule_skin::CUIT && e.voiture == "p208" && e.calques >= 5 && e.textures == 1,
+                 "garage → « Retour » → menu : aperçu rendu, habillage de la course reposé (5 calques, 1 texture en mémoire)");
+        capture("menu-retour", "« Retour » au menu : la 208 du parking garde ses autocollants");
+        g.allerA(Ecran::Garage); images(45);
+    }
 
     if (complet) {
         // 4. parcours : « Choisir » → terrain → « Rouler » → course
-        setenv("WFS_MOMENT", "jour", 1);
+        s.tod = "jour"; s.moment = "midi";   // le terrain s'ouvre sur « Jour » (moment de la sauvegarde)
         float x, y;
         if (garageBouton("choisir", x, y)) toucher(x, y);
         images(20); g.render(t);
         if (ecrans::centreRouler(x, y)) toucher(x, y); else { WFS_ERR("atelier : « Rouler » absent (écran %s)", nomEcran(g.ecran())); ecarts++; }
         for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
         g.setAutopilot(true); images(300); g.setAutopilot(false);
+        const char* m = std::getenv("WFS_MOMENT");
+        verifier(m && std::strcmp(m, "jour") == 0, std::string("parcours : course de jour (moment de la course : ") + (m ? m : "?") + ")");
         verifier(g.ecran() == Ecran::Course && cuit("p208", 5), "« Choisir » → « Rouler » : la 208 roule avec ses 5 autocollants");
         capture("parcours-course", "parcours : la 208 en course de jour avec ses autocollants");
         g.allerA(Ecran::Garage); images(30);
         verifier(cuit("p208", 5), "retour au garage : autocollants toujours là");
-        unsetenv("WFS_MOMENT");
         // 5. 500 et GT86 habillées
         const struct { const char* id; } AUTRES[] = {{"abarth"}, {"gt86"}};
         for (const auto& v : AUTRES) {
@@ -202,12 +214,12 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
             zone("bouton"); images(10);
             poserMotif(4, "etoile-1"); zone("outil-3"); zone("outil-3");
             poserMotif(5, "lettre-a"); glisser(0, 0, -40, 10, false);
-            zone("vue-4"); images(6); poserMotif(0, "bande-large"); zone("outil-5"); zone("couleur-1");
+            zone("vue-4"); images(6); poserMotif(0, "bande-double"); zone("outil-5"); zone("couleur-0");   // bande double blanche sur le toit (vue en course)
             zone("vue-3"); images(6); poserMotif(1, "chiffre-2"); zone("outil-3"); zone("outil-3"); zone("outil-5"); zone("couleur-5");   // numéro orange à l'arrière (vu en course)
             zone("vue-0"); images(6);
             zone("valider"); images(20);
-            verifier(cuit(v.id, 4), std::string(v.id) + " : 4 calques gardés et cuits");
-            capture(std::string("garage-") + v.id, "garage : étoile, lettre A, bande noire sur le capot, numéro 2 orange à l'arrière");
+            verifier(cuit(v.id, 4) && texteGarde(v.id).find("bande-double,t,") != std::string::npos, std::string(v.id) + " : 4 calques gardés et cuits, bande double sur le toit");
+            capture(std::string("garage-") + v.id, "garage : étoile, lettre A, bande double blanche sur le toit, numéro 2 orange à l'arrière");
         }
         // relance
         fermerPartie();
