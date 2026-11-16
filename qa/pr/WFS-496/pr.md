@@ -45,7 +45,7 @@ Agent : Claude, agent dev3d (01Us6uCwHf)
     - Les autres motifs vont dans les packs de `configgame.h` : numéros et lettres, bandes, flammes et éclairs, étoiles et formes.
     - Un motif d'un pack non possédé ne se pose pas : la vente des packs est dans WFS-497. Le toucher affiche le message « Autocollant du pack « … » ».
 - **Comment c'est vérifié** :
-  - Tests CPU : 150 tests, dont `test_atelier` (41 cas). Le journal complet est dans `qa/pr/WFS-496/tests-cpu.log`.
+  - Tests CPU : 149 tests réussis, dont `test_atelier` (41 cas). Le journal complet est dans `qa/pr/WFS-496/tests-cpu.log`.
   - Banc `WFS_BANC=atelier` (1280 × 720) : **0 écart**. Tout s'y fait par de vrais touchers, avec une vraie sauvegarde :
     - garage, bouton, atelier ;
     - 5 calques : bande, numéro déplacé au doigt (60, 25 cm obtenus, 60, 25 attendus), flamme à deux doigts (20° et 140 % obtenus), éclair à droite en miroir, bande sur le capot ;
@@ -65,6 +65,18 @@ Agent : Claude, agent dev3d (01Us6uCwHf)
   - RC-E18-03 (images/s en Basse) n'est pas concerné en course : la texture d'habillage est celle de WFS-495, cuite au chargement. L'atelier ne cuit qu'au garage.
   - Les packs payants, le texte libre et « Mes créations » sont hors périmètre (WFS-497).
   - Pas d'avis `@3d` obligatoire (épic E18, pas E15).
+
+## Tests CPU
+
+Commit testé : `f57a6fee` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`, code de sortie 0 :
+
+```
+[OK] test_atelier (0 s)
+[OK] test_ville_sol (2 s)
+[OK] test_virages_fleches (0 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 149 test(s) réussi(s) en 378 s
+```
 
 ## Captures pour le lead dev (21 après, 1 paire avant / après)
 
