@@ -66,37 +66,39 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
                   bool inactif = false) {
     const float R = std::min(w, h) / 2;
     const bool rond = std::fabs(w - h) < 1.f;
-    const float t = std::clamp(h * 0.07f, 3.f, 12.f);   // épaisseur de la bague
+    const float t = std::clamp(h * 0.056f, 3.f, 11.f);   // épaisseur moyenne de la bague (maquette 19 : 7 px pour 128)
+    // WFS-557 (maquette 19 mesurée pixel par pixel) : bouton vu un peu d'en haut : le centre noir et le liseré descendent de 3 % du
+    // diamètre ; la bague est épaisse en haut et fine en bas
+    const float dy = rond ? h * 0.035f : 0.f;
     lueur(r, x, y + h * 0.02f, w, h, R, std::max(4.f, h * 0.08f), {0, 0, 0, 0.45f * op});   // ombre portée
-    plein(r, x, y, w, h, R, hex(0x9A9EA6, op), hex(0x2A2C31, op));                          // métal : clair en haut, sombre en bas
-    plein(r, x + t * 0.25f, y + t * 0.25f, w - t * 0.5f, h - t * 0.5f, std::max(0.f, R - t * 0.25f), hex(0x80848C, op), hex(0x222428, op));
+    plein(r, x, y, w, h, R, hex(0x55585E, op), hex(0x2A2E33, op));                          // métal sombre : #303236 sur les côtés
     bord(r, x, y, w, h, R, 1, hex(0x0E0F12, 0.9f * op));                                    // arête extérieure
-    if (rond) {   // reflets : arc fin et clair en haut à gauche, plus discret en bas à droite (0 = haut, sens horaire)
-        const float cx = x + w / 2, cy = y + h / 2, ep = std::max(1.f, h * 0.012f);
-        for (int i = 0; i < 4; i++) {   // bande claire et douce sur le haut de la bague (reflet du plafond), plus forte au milieu
-            const float e = 0.10f * PI * i;
-            dessin2d::arc(r, cx, cy, R - t * 0.45f, t * 0.75f, 1.62f * PI + e, 2.38f * PI - e, hex(0xFFFFFF, 0.10f * op));
+    if (rond) {   // reflet du plafond : bande blanche presque pure au milieu du haut de la bague, fondue sur les côtés (0 = haut)
+        const float cx = x + w / 2, cy = y + h / 2, rb = R - (t + dy) * 0.42f, eb = (t + dy) * 0.32f;
+        for (int i = 0; i < 10; i++) {   // 10 couches de plus en plus courtes : fondu doux aux deux bouts, blanc pur au milieu
+            const float demi = (0.46f - 0.035f * i) * PI;
+            dessin2d::arc(r, cx, cy, rb, eb * 1.3f, 2 * PI - demi, 2 * PI + demi, hex(0xFEFFFD, 0.17f * op));
         }
-        dessin2d::arc(r, cx, cy, R - ep, ep, 1.66f * PI, 2.34f * PI, hex(0xF2F4F7, 0.55f * op));
-        dessin2d::arc(r, cx, cy, R - ep, ep, 0.45f * PI, 0.85f * PI, hex(0xC9CDD4, 0.45f * op));
+        dessin2d::arc(r, cx, cy, R - 1.5f, 1.2f, 0.55f * PI, 0.95f * PI, hex(0x6A7072, 0.5f * op));   // éclat discret en bas à droite
     } else {
         plein(r, x + R * 0.5f, y + 1, w - R, std::max(1.f, h * 0.012f), 0, hex(0xF2F4F7, 0.6f * op), hex(0xF2F4F7, 0.6f * op));
     }
-    // centre noir profond (enfoncé à l'appui : un peu plus clair)
-    const float xi = x + t, yi = y + t, wi = w - 2 * t, hi = h - 2 * t, Ri = std::max(0.f, R - t);
-    bord(r, xi - 1, yi - 1, wi + 2, hi + 2, Ri + 1, 1.2f, hex(0x050506, op));
+    // centre noir pur (enfoncé à l'appui : un peu plus clair), descendu de dy
+    const float xi = x + t, yi = y + t + dy, wi = w - 2 * t, hi = h - 2 * t, Ri = std::max(0.f, R - t);
+    bord(r, xi - 2, yi - 2, wi + 4, hi + 4, Ri + 2, 2.5f, hex(0x2A2522, op));   // gorge sombre entre la bague et le liseré
     if (inactif) plein(r, xi, yi, wi, hi, Ri, hex(0x0C0D11, op), hex(INACTIF_CENTRE, op));
-    else if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x1E2026, op), hex(0x131418, op));
-    else plein(r, xi, yi, wi, hi, Ri, hex(0x020203, op), hex(0x0B0B0D, op));
-    // liseré fin, presque collé au bord du centre
-    const float g = std::max(1.f, h * 0.008f), ep = std::clamp(h * 0.015f, 1.2f, 2.8f);
+    else if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x1A1B1F, op), hex(0x101114, op));
+    else plein(r, xi, yi, wi, hi, Ri, hex(0x000000, op), hex(0x030303, op));
+    // liseré fin, collé au bord du centre ; plus pâle en haut (reflet), comme la maquette
+    const float g = std::max(1.f, h * 0.008f), ep = std::clamp(h * 0.018f, 1.2f, 3.f);
     const float xl = xi + g, yl = yi + g, wl = wi - 2 * g, hl = hi - 2 * g, Rl = std::max(0.f, Ri - g);
     vec2 p[MAX_SOMMETS];
     const int n = contourArrondi(p, xl, yl, wl, hl, Rl);
     const vec4 c{lisere.x, lisere.y, lisere.z, lisere.w * op};
-    if (lueurLisere > 0) dessin2d::halo(r, p, n, std::max(2.f, h * 0.02f), {c.x, c.y, c.z, 0.25f * lueurLisere * (appuye ? 1.6f : 1.f) * op});
+    if (lueurLisere > 0) dessin2d::halo(r, p, n, std::max(2.f, h * 0.02f), {c.x, c.y, c.z, 0.20f * lueurLisere * (appuye ? 1.6f : 1.f) * op});
     dessin2d::contour(r, p, n, ep, c);
-    return t + g;
+    if (rond && !inactif) dessin2d::arc(r, xl + wl / 2, yl + hl / 2, Rl - ep / 2, ep, 1.82f * PI, 2.18f * PI, hex(0xE6C48A, 0.8f * op));
+    return t + g;   // (le centre est en plus descendu de dy : startStop en tient compte)
 }
 
 } // namespace
@@ -105,7 +107,7 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
                const std::string& sousTitre, float px, bool grise) {
     // inactif : liseré éteint, sans lueur, texte et icône gris clair pleins (lisibles, contraste ≥ 4,5 : 1)
     const float m = grise ? bagueChrome(r, x, y, w, h, op, false, hex(INACTIF_LISERE), 0, true)
-                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFFC070 : 0xF5A23C), 0.45f);   // WFS-557 : liseré orange doré
+                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFFC070 : 0xE09B4A), 0.45f);   // WFS-557 : liseré orange doré (#E09B4A mesuré)
     const vec4 blanc = hex(grise ? INACTIF_TEXTE : TEXTE, op), orange = grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFFB088 : 0xF28C5A, op);   // icône pêche (maquettes 01, 19)
     const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m;
     if (px <= 0) px = std::min(hi * (sousTitre.empty() ? 0.42f : 0.34f), 40.f * h / 60.f);
@@ -113,7 +115,7 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
     const float rayonInt = std::min(wi, hi) / 2;
     if (rond) {
         const float s = px * 0.62f, total = s + px * 0.30f + px + (sousTitre.empty() ? 0 : px * 0.8f);
-        float yy = y + h / 2 - total / 2;
+        float yy = y + h / 2 - total / 2 - h * 0.05f;   // icône et texte un peu au-dessus du centre (maquette 19 mesurée)
         iconeMarche(r, x + w / 2, yy + s / 2, s, orange);
         yy += s + px * 0.25f;
         ui::textBoite(r, x + w / 2, yy, wi - rayonInt * 0.3f, px, px, titre, blanc, ui::CENTRE, 0.04f, false, true);
@@ -137,7 +139,7 @@ void startStop(Renderer& r, float x, float y, float w, float h, const std::strin
 
 ZoneTexte startStopFond(Renderer& r, float x, float y, float w, float h, float op, bool appuye, bool grise) {
     const float m = grise ? bagueChrome(r, x, y, w, h, op, false, hex(INACTIF_LISERE), 0, true)
-                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFFC070 : 0xF5A23C), 0.45f);
+                          : bagueChrome(r, x, y, w, h, op, appuye, hex(appuye ? 0xFFC070 : 0xE09B4A), 0.45f);
     const float xi = x + m, wi = w - 2 * m, hi = h - 2 * m, rayonInt = std::min(wi, hi) / 2;
     const float s = hi * 0.36f, xs = xi + rayonInt * 0.55f + s / 2;
     iconeMarche(r, xs, y + h / 2, s, grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFFB088 : 0xF28C5A, op));
