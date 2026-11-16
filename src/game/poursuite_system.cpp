@@ -240,7 +240,7 @@ public:
         if (nouveau == Ecran::Course) rejouer_ = false;
     }
     void update(double, const GameView& g) override {
-        if (actif_ && fini_ && overT_ >= 0.9 && g.ecran == Ecran::Course) resultats3d::demander(tableau3d());   // WFS-561 (accroche, RG-04)
+        if (actif_ && fini_ && overT_ >= 0.9 && g.ecran == Ecran::Course && resultats3d::aRenouveler()) resultats3d::demander(tableau3d());   // WFS-561 (accroche, RG-04)
         if (actif_ && policeCar_ != policeCar(g.player) && modele_.ok) { r_->vk().waitIdle(); r_->destroy(modele_); modele_ = Model{}; modeleEssaye_ = false;
             if (bandesMesh_.indexCount) { r_->destroy(bandesMesh_); bandesMesh_ = Mesh{}; } }   // WFS-460 : bandes de l'ancien modèle
         if (actif_) policeCar_ = policeCar(g.player);
@@ -836,8 +836,8 @@ private:
     // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu » ;
     // WFS-141 (RG-03, ANO-59) : boutons parallélogrammes et liseré orange de la fin Checkpoint (biseauFin) ; tailles des
     // boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
-    // WFS-561 (accroche, RG-04 à RG-06) : maquette 11 : lignes réelles de la Poursuite (toi, polices semées, chocs, score : les
-    // valeurs de la fenêtre 2D de la maquette 32), score en haut à droite, Menu et Rejouer
+    // WFS-561 (accroche, RG-04 à RG-06) : maquette 11 : lignes réelles de la Poursuite (toi, les voitures de police, les chocs :
+    // valeurs de la fenêtre 2D de la maquette 32 ; le score n'est que dans le panneau SCORE), Menu et Rejouer
     resultats3d::Tableau tableau3d() const {
         resultats3d::Tableau t;
         const bool v = etat_.gagne;
@@ -846,9 +846,8 @@ private:
         led::Ligne moi = resultats3d::ligneClassement(1, nom, true, true, ftJoueur_, -1, 0, v ? std::string() : ui::tr("police.arrete"));
         if (!v) moi.pos = "—";
         t.lignes.push_back(moi);
-        t.lignes.push_back({"", ui::tr("resultats.led.semees"), std::to_string(policeMobiles()), ""});
+        t.lignes.push_back({"", ui::tr("resultats.led.polices"), std::to_string(policeMobiles()), ""});   // même valeur que la fenêtre 2D (police.voitures)
         t.lignes.push_back({"", ui::tr("resultats.led.chocs"), std::to_string(etat_.chocsTrafic) + "/" + std::to_string(etat_.chocsGlissiere) + "/" + std::to_string(etat_.chocsPolice), ""});
-        t.lignes.push_back({"", ui::tr("resultats.led.score"), std::to_string(etat_.score), ""});
         return t;
     }
     void resultat3d(Renderer& r, const GameView& g) {

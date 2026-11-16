@@ -95,8 +95,23 @@ int main() {
         }
         char t[160]; std::snprintf(t, sizeof t, "%s : tableau entier dans l'image (x %.2f..%.2f, y %.2f..%.2f)", e.first, xmin, xmax, ymin, ymax);
         cas(t, entier);
-        cas(std::string(e.first) + " : tableau à gauche du centre, assez grand pour être lu (≥ 22 % de la largeur de l'image)", (xmin + xmax) / 2 < 0.f && (xmax - xmin) / 2 >= 0.22f);
+        cas(std::string(e.first) + " : tableau à gauche du centre, assez grand pour être lu (≥ 30 % de la largeur de l'image, maquette : 35 %)", (xmin + xmax) / 2 < 0.f && (xmax - xmin) / 2 >= 0.30f);
         float vx, vy;
+        {   // 2e revue du lead dev : la voiture (Golf, 4,29 × 1,79 × 1,46 m) reste sous le panneau SCORE (gauche à +0,61, bas à +0,16,
+            // maquette 11) et dans l'image ; en 2400 × 1080 seulement (le panneau SCORE a sa place de la maquette en 20:9)
+            bool sous = true, dedans = true; float cxmin = 9, cxmax = -9;
+            const float c0 = std::cos(resultats3d::LACET_VOITURE), s0 = std::sin(resultats3d::LACET_VOITURE);
+            for (float a : {-0.895f, 0.895f}) for (float b : {0.f, 1.46f}) for (float d : {-2.145f, 2.145f}) {
+                const vec3 p = resultats3d::POSE_VOITURE + vec3{a * c0 + d * s0, b, -a * s0 + d * c0};
+                float x, y;
+                if (!projeter(c, e.second, p, x, y)) { dedans = false; continue; }
+                cxmin = std::min(cxmin, x); cxmax = std::max(cxmax, x);
+                dedans = dedans && x < 0.95f && y > -0.97f;
+                if (x > 0.58f && y > 0.13f) sous = false;
+            }
+            char v[160]; std::snprintf(v, sizeof v, "%s : voiture entière (x %.2f..%.2f), sous le panneau SCORE", e.first, cxmin, cxmax);
+            cas(v, dedans && (e.second < 2.f || sous));
+        }
         cas(std::string(e.first) + " : voiture (centre de la place) à droite du tableau", projeter(c, e.second, resultats3d::POSE_VOITURE + vec3{0, 0.7f, 0}, vx, vy) && vx > xmax - 0.15f && vx < 0.9f);
         cas(std::string(e.first) + " : tableau au milieu de l'image en hauteur (±0,15 ; sol mouillé dessous, maquette 11 : −0,01)", std::fabs((ymin + ymax) / 2) < 0.15f && ymin > -0.6f);
     }

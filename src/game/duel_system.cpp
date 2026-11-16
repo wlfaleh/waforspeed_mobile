@@ -72,7 +72,7 @@ public:
         {   // WFS-561 (accroche, RG-04) : résultats de la manche sur le tableau LED du parking
             const duel::Session& s = g_session;
             const bool attente = s.status() == duel::Status::Ready && overT_ >= 0.9;
-            if (vue.ecran == Ecran::Course && s.inRoom() && (s.status() == duel::Status::Done || attente) && overT_ >= 0.9) resultats3d::demander(tableau3d());
+            if (vue.ecran == Ecran::Course && s.inRoom() && (s.status() == duel::Status::Done || attente) && overT_ >= 0.9 && resultats3d::aRenouveler()) resultats3d::demander(tableau3d());
         }
         if (!r_) return;
         for (const auto& [id, gh] : g_session.ghosts()) {

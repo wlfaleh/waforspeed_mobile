@@ -57,7 +57,8 @@ void pave(Geo& g, vec3 c, vec3 h, float ch) { mobilier::pave(Sortie(g), MONDE, c
 // ---- état partagé avec les modes (thread principal seulement)
 Tableau g_tableau;          // dernier tableau demandé
 bool g_change = false;      // le contenu a changé depuis les derniers points écrits
-// demande « vivante » : un mode la renouvelle à chaque pas (1/120 s) ; elle tient 4 pas (une image à 30 i/s), puis s'éteint
+// demande « vivante » : un mode la renouvelle au plus tous les 12 pas (1/120 s : 10 fois par seconde, remarque du lead dev) ;
+// elle tient 16 pas, puis s'éteint
 long long g_pas = 0, g_pasDemande = -1000;
 bool g_actifPas = false;    // demandé dans les 4 derniers pas (lu par scene())
 bool g_affiche = false;     // la scène a pris l'image en cours
@@ -106,7 +107,7 @@ public:
     }
     void shutdown(Renderer& r) override { r.vk().waitIdle(); liberer(r); parking_.shutdown(r); g_prete = false; g_affiche = false; }
     void onEcran(Ecran, Ecran, const GameView&) override { effacer(); }
-    void update(double, const GameView&) override { g_pas++; g_actifPas = g_pas - g_pasDemande <= 4; }
+    void update(double, const GameView&) override { g_pas++; g_actifPas = g_pas - g_pasDemande <= 16; }
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         g_affiche = false;
         if (!g_prete || !parking_.pret() || !g_actifPas || g.ecran != Ecran::Course || !g.car || !g.player || !g.track) return false;
@@ -361,6 +362,7 @@ void demander(const Tableau& t) {
 }
 void effacer() { g_pasDemande = -1000; g_actifPas = false; g_tableau = Tableau{}; g_change = true; }
 bool affiche() { return g_affiche; }
+bool aRenouveler() { return g_pas - g_pasDemande >= 12; }
 bool prete() { return g_prete; }
 const std::string& titre() { return g_affiche ? g_tableau.titre : g_vide; }
 

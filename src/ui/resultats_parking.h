@@ -28,6 +28,8 @@ struct Tableau { std::string titre; std::vector<led::Ligne> lignes; };
 
 // un mode montre ses résultats à ce pas (copie seulement si le contenu a changé : aucune allocation sinon)
 void demander(const Tableau& t);
+// vrai si la demande est à renouveler (12 pas depuis la dernière : le mode ne refait son tableau que 10 fois par seconde)
+bool aRenouveler();
 // course quittée, rejouée, retour au menu : plus de scène des résultats
 void effacer();
 // vrai si la scène 3D des résultats a pris l'image en cours (à lire dans drawUi) : le mode dessine alors seulement le panneau
@@ -60,12 +62,12 @@ inline constexpr float Z_FOND = 5.00f / 2 + 0.25f;    // nu du voile du fond (me
 inline constexpr float Z_DOS = Z_FOND - ENTRAXE_MUR;   // dos du caisson
 inline constexpr float Z_AVANT = Z_DOS - CAISSON_P;    // nez du caisson (vers l'allée, −z)
 inline constexpr float Z_MASQUE = Z_AVANT + 0.002f;    // masque en retrait de 2 mm derrière le nez du caisson
-inline constexpr vec3 CENTRE_TABLEAU{-0.12f, 1.06f, 0.f};                            // centre de la face (x, y) ; z : face (voir faceZ)
+inline constexpr vec3 CENTRE_TABLEAU{0.46f, 1.24f, 0.f};                            // centre de la face (x, y) ; z : face (voir faceZ)
 float faceZ();                                                                    // plan des points (devant le masque)
 // voiture du joueur garée en biais à droite du tableau, l'arrière vers le mur (maquette 11 : vue de trois quarts avant) : position de son
 // centre et lacet (rad, rotateY) dans le repère du parking ; le parking est dessiné autour de la voiture, là où elle s'est arrêtée
-inline constexpr vec3 POSE_VOITURE{-3.09f, 0.f, -0.35f};   // flanc arrière à 0,1 m du poteau (x = −4, z = 1,6)
-inline constexpr float LACET_VOITURE = -78.f * 3.14159265f / 180.f;   // avant tourné de 78° vers la gauche de l'image (40° de plus que la direction de l'œil : trois quarts)
+inline constexpr vec3 POSE_VOITURE{-1.14f, 0.f, 0.09f};   // arrière à 0,2 m de la bordure du fond, hors des butées et du poteau
+inline constexpr float LACET_VOITURE = -40.8f * 3.14159265f / 180.f;   // garée de travers, avant tourné vers la gauche de l'image (trois quarts)
 mat4 parkingDepuisVoiture();   // repère de la voiture → repère du parking (inverse de translate(POSE) × rotateY(LACET))
 // caméra fixe de l'écran : œil, point regardé, angle vertical (rad), décentrement vertical de l'objectif (NDC)
 struct Camera { vec3 oeil, cible; float fovY, decalageY; };

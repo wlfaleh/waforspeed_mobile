@@ -32,8 +32,8 @@
 #include "trace_cartes.h"
 #include "virages_banc.h"   // WFS-327 : épingles des lacets (banc ; WFS-379 : Campagne)
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
-#include "../ui/verre.h"
-#include "../ui/resultats_parking.h"   // WFS-561 (accroche) : résultats dans le parking, tableau LED (maquette 11)   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
+#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
+#include "../ui/resultats_parking.h"   // WFS-561 (accroche) : résultats dans le parking, tableau LED (maquette 11)
 
 namespace wfs {
 
@@ -80,7 +80,7 @@ public:
         if (nouveau == Ecran::Course) rejouer_ = false;
     }
     void update(double, const GameView& g) override {
-        if (actif_ && fini_ && overT_ >= 0.9 && g.player && g.ecran == Ecran::Course) resultats3d::demander(tableau3d(lignes(*g.player)));   // WFS-561 (accroche, RG-04)
+        if (actif_ && fini_ && overT_ >= 0.9 && g.player && g.ecran == Ecran::Course && resultats3d::aRenouveler()) resultats3d::demander(tableau3d(lignes(*g.player)));   // WFS-561 (accroche, RG-04)
         if (!r_) return;
         for (const course5::Ordinateur& o : os_) {   // modèles complets des 4 voitures (chargés une fois)
             if (models_.count(o.car)) continue;
