@@ -183,7 +183,8 @@ public:
         {   // WFS-551 (RG-05, maquettes 13, 15) : flèches pleines (bois / orange) qui clignotent doucement (1 s, opacité 80 à 100 %)
             MiseEnPage clignote = mp;
             clignote.op *= 0.8f + 0.2f * (float)std::cos(2 * PI * (g.time - t0_));
-            onglets::fleches(r, clignote);
+            if (mp.onglet == ONGLET_VOITURE) onglets::fleches(r, clignote);   // maquettes 06, 07, 16 : pas de flèches hors « Voiture »
+            else g_z.prev = g_z.next = Zone{};
         }
         // ---------- WFS-551 (maquettes 06, 07, 13, 15, 16) : onglets, un seul panneau de verre en bas, bouton rond à droite ----------
         onglets::dessiner(r, mp);

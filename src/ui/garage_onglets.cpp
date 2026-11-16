@@ -98,7 +98,7 @@ void boutonRond(Renderer& r, float cx, float cy, float R, const std::string& tit
 
 void fleches(Renderer& r, const MiseEnPage& mp) {
     // maquettes 13 et 15 : grosses flèches pleines à 46 % de la hauteur ; précédente en bois sombre, suivante en orange vif
-    const float k = mp.k, op = mp.op, w = 86 * k, h = 62 * k, y = mp.H * 0.46f - h / 2;
+    const float k = mp.k, op = mp.op, w = 74 * k, h = 54 * k, y = mp.H * 0.46f - h / 2;
     for (int s = 0; s < 2; s++) {
         const float x = s == 0 ? mp.gl + 12 * k : mp.W - mp.gr - 12 * k - w;
         auto X = [&](float u) { return s == 1 ? x + u * w : x + (1 - u) * w; };   // flèche gauche : miroir

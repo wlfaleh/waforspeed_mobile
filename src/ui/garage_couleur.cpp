@@ -116,7 +116,7 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
     // WFS-551 (maquette 06) : « Carrosserie » / « Toit et rétros » sous le nom de la voiture, à gauche
     {
         float cx = mp.gl + std::clamp(mp.W * 0.04f, 0.f, 64 * k);
-        const float sy = mp.gt + 184 * k;
+        const float sy = mp.gt + 150 * k;
         float wTot = 0;
         for (int o = 0; o < 2; o++) wTot += ui::width(11 * k, ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale")), 0.14f) + 22 * k;
         ui::boutons::selecteurFond(r, cx, sy, wTot + 6 * k, ONGLET_H * k, op);

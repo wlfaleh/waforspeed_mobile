@@ -87,7 +87,9 @@ int benchGarageSkins(Game& g, Renderer& r, const std::string& out) {
     };
     auto bouton = [&](const char* nom) { float x, y; if (!garageBouton(nom, x, y)) return false; toucher(x, y); images(4); return true; };
     auto voiture = [&](const char* id) {
+        choisirOnglet(ONGLET_VOITURE); images(2);   // WFS-551 : flèches seulement sur l'onglet « Voiture » (maquettes 13, 15)
         for (int i = 0; i < CAR_COUNT && garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), id) != 0; i++) { bouton("suivant"); images(45); }
+        choisirOnglet(ONGLET_SKINS); images(2);
         return garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), id) == 0;
     };
     auto possede = [&](const char* car, const char* id) { const perso::Objet* o = perso::objet(id); return o && perso::possede(s, *o, car); };
