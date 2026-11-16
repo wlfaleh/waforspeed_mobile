@@ -835,3 +835,10 @@ Détail dans la revue de la PR.
 - Fait : HUD (`hud.*`, `minicarte.*`, `commandes_tactiles.cpp`, `camera_vue.cpp`), cadeau (`cadeau_jour.*`), coffre 3D (`coffre_cadeau.*`, 2 288 triangles), accroche `SceneDediee::anime` (`system.h`, `game.cpp` : scène du menu non figée pendant le coffre), plaque « Menu » des résultats 3D (note de WFS-561).
 - Tests CPU : 154 réussis (`qa/pr/WFS-557/tests-cpu.log`). PR #432 : description et réponse point par point (e303da17).
 - À transmettre au PO : bancs `market` et `profil` en écart aussi sur main depuis WFS-550 (#424, boutons Market et Profil retirés du menu) ; `score-fin` et `cadeau-gains` en écart sur la branche (cause probable WFS-550 / 551, à confirmer) ; carte « voiture prêtée » du menu vide au banc (maquette 26).
+
+### 2026-11-16 23:39:20 — WFS-557 fusionné par le lead dev (lead-dev)
+- PR #432 (commit relu c8d8ca71) en 2e revue, **code seul sur ordre de l'utilisateur** (« c'est OK pour moi les photos, il regarde que le code ») : aucune capture redemandée.
+- Diff complet relu (coffre en bois 3D `src/ui/coffre_cadeau.*`, HUD, carte de guidage, pause, cadeau du jour, menu, Profil, bancs, tests). Accroches : `system.h`, `game.cpp`, `renderer.cpp:87` (`UI_MAX_VERTS` 8 192 → 32 768), `resultats_parking.cpp`. Pas de forme nue : le coffre est modélisé pièce par pièce.
+- Construction en Release et `tests_cpu.sh` refaits : **154 test(s) réussi(s)**. Revue « ✅ Approuvé » postée en commentaire (même compte GitHub), puis squash d85b1d60.
+- Remarques non bloquantes, pour une US de ménage (PO) : code mort dans `minicarte.cpp` (`abords`, `rues`, `bandeau`, `nomRue`) et `test_bandeau_gps` qui teste ce bandeau ; commentaire « ≈ 6 Mo » à doubler (2 images en vol) ; boutons ronds du menu non allégés ; rangée MENU / CAMÉRA centrée sur l'ancien panneau du score.
+- WFS-557 → 🟡 À valider (utilisateur) ; ligne #432 retirée de `suivi-pr.md` ; session du développeur terminée dans `track-agent.md`.
