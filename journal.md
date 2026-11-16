@@ -1298,3 +1298,8 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Question de Claude, agent dev3d (01UY1Vv4Fd) : les scènes 3D complètes des maquettes R19 04 (duel), 09 (départ), 10 (arrivée) et 11 (résultats) n'ont été construites par aucun ticket fusionné (548, 549, 552).
 - Décision (RG-20 de `regles-de-gestion/WFS-557.md`) : **oui**, recommandation acceptée. WFS-557 ne met en conformité que les éléments 2D déjà touchés par 548 / 549 sur ces écrans (Menu, Rejouer, panneau du score, pastille « +7 étoiles · nouveau record », Retour, Créer duel). Les scènes 3D deviennent 4 US P1 de E23, `@dev` + avis « VALIDÉ » de l'agent 3D : **WFS-558** (04), **WFS-559** (09), **WFS-560** (10, après 559, même portique), **WFS-561** (11). Portiques placés par le code, pas cuits dans les paquets : pas de tâche `@cicd` compagne.
 - Prêts pour de nouvelles sessions `@dev` : 558, 559, 561.
+
+### 2026-11-16 01:01:16 — Arbitrage WFS-557 : choix du mode (maquette 02) ; WFS-562 créé (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : Distance et Difficulté sans place sur la maquette 02 ; aucune image de mode dans le jeu.
+- RG-21 : recommandation acceptée. Distance et Difficulté gardées, en rangées de verre **seulement dans la carte du mode choisi qui s'en sert** (Course à 5, Poursuite) ; Checkpoint choisi = écran identique à la maquette.
+- RG-22 : dans WFS-557, scène 3D floutée dans chaque carte (provisoire) ; vraies images des modes, prises dans le jeu avec ses voitures sans marque, dans **WFS-562** (P1, E23, `@dev` + avis `@3d`, ⏳ En attente de WFS-557).
