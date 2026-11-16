@@ -52,7 +52,8 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(ACCENT2, op));   // .chip : fond cyan, skewX(-10deg)
         ui::text(r, std::round(x + 10 * k), std::round(y + cy), cp, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
         ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, ui::tr(("garage.accroche." + id).c_str()), hex(TAG, op), ui::GAUCHE, 0, true);
-        // WFS-551 (accroche, maquette 15) : points des voitures centrés sous le plateau, « 05 / 17 » à droite (au-dessus du panneau du bas)
+        // WFS-551 (accroche, maquette 15, RG-11 : la place seulement ; le dessin des 17 segments est à WFS-550) : centrés sous le plateau,
+        // « 05 / 17 » à droite (au-dessus du panneau du bas)
         const int nb = voituresPermises().n;   // WFS-404 : un point par voiture permise
         float largeur = 0;
         for (int i = 0; i < nb; i++) largeur += (nb > 10 ? (voituresPermises().idx[i] == e.index ? 34 : 16) : (voituresPermises().idx[i] == e.index ? 54 : 30)) * k + 6 * k;
@@ -62,9 +63,8 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         for (int i = 0; i < nb; i++) {   // .car-dots : 30 × 8, active 54 px cyan
             const bool on = voituresPermises().idx[i] == e.index;
             const float w = (nb > 10 ? (on ? 34 : 16) : (on ? 54 : 30)) * k;   // WFS-13 : 20 voitures sur une ligne
-            // WFS-551 (maquette 15) : tirets clairs, la voiture affichée en orange
-            if (on) biseau(r, px - 2 * k, y - 2 * k, w + 4 * k, 9 * k, 3 * k, hex(ACCENT, 0.30f * op));
-            biseau(r, px, y, w, 5 * k, 2 * k, on ? hex(ACCENT, op) : vec4{1, 1, 1, 0.55f * op});
+            if (on) biseau(r, px - 2 * k, y - 2 * k, w + 4 * k, 12 * k, 4 * k, hex(ACCENT2, 0.25f * op));
+            biseau(r, px, y, w, 8 * k, 3 * k, on ? hex(ACCENT2, op) : hex(SURFACE2, op));
             g_z.points[i] = {px, y - 10 * k, w, 28 * k};
             px += w + 6 * k;
         }
