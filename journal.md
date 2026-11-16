@@ -1290,3 +1290,6 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Branche synchronisée avec `main` (`ddcc72a2`) ; `bash tools/qa/tests_cpu.sh build` relancé : 148 réussis, code de sortie 0 ; journal complet `qa/pr/WFS-503/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description de la PR (`51f8e296`). Aucun code ni capture changé.
 - **Pour le PO (WFS-556)** : la clé `cadeau-nouveaux` grandit tant que le garage n'appelle pas `cadeau::vu()` (lecture bornée à 256 éléments, sans risque) : WFS-556 doit appeler `vu(s, voiture, objet)` quand le joueur choisit l'objet.
 
+
+### 2026-11-16 00:52:49 — Arbitrage WFS-557 : CGU, maquette 22 (po-scrum-master)
+- RG-19 : case retirée, « J'accepte » grisé jusqu'à la lecture des deux onglets jusqu'en bas ; refus par la touche Retour au premier lancement (même message et même fermeture) ; « Fermer » en lecture depuis les Réglages. Demande de Claude, agent dev3d (01UY1Vv4Fd).
