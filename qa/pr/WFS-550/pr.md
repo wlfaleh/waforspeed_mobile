@@ -38,6 +38,19 @@
 | **30** Messages en course | `toasts.cpp` : `Toasts::update` (combo, police en approche), `Toasts::drawUi` | conforme |
 | **28** Jauge d'achat | WFS-551 (tranché en 1re revue) | hors de cette PR |
 
+## 4e revue du lead dev : skin de la vitrine et performance
+
+- **Deux emplacements de skin** (`src/render/vehicule_skin.{h,cpp}` : `poserVitrine` / `libererVitrine`, `materiau` et `coder(m)` cherchent l'emplacement du modèle ; accroche d'1 ligne dans `renderer.cpp`) : la skin de la SF-X de vitrine ne libère plus celle du joueur, et une pose du joueur (course, prêt, garage, atelier) ne touche plus la vitrine. Journal des bancs : [`journal-skins.txt`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/journal-skins.txt).
+- **Vitrine seulement au menu** : chargée à la 1re image du menu, libérée en le quittant (`Menu::onEcran`) : 0 Mo et 0 ms pendant le chargement d'une partie et en course. Au menu : 274 à 301 ms et 98 Mo de mémoire graphique (banc PC, textures décodées sans compression).
+- **Chargement d'une partie** (banc `chargement`, 1280 × 720, 2 essais) : `main` 5,42 / 5,18 s ; branche 6,17 / 5,66 s. La vitrine n'y est plus ; l'écart vient de l'image de plus de l'écran de chargement (étape « Voitures », exigée en 2e revue), rendue sans GPU sur le banc PC (0,3 à 0,6 s par image ; quelques ms sur téléphone).
+
+| Capture (WFS_SKIN=ciel, skin achetée du joueur) | Avant (main) | Après (branche) |
+|---|---|---|
+| `hud-course` (golf du joueur en course) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/avant-hud-course.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/apres-hud-course.jpg?raw=true) |
+| `hud-solo-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/avant-hud-solo-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/apres-hud-solo-jour.jpg?raw=true) |
+| `pret-garage-actif-fr` (garage, prêt activé) | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/apres-pret-garage-actif-fr.jpg?raw=true) |
+| `pret-menu-actif-fr` (menu après prêt et garage : SF-X avec sa skin) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/avant-pret-menu-actif-fr.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550/apres-pret-menu-actif-fr.jpg?raw=true) |
+
 ## Captures pour le lead dev (20 après)
 
 Dossier : [`qa/pr/WFS-550`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-550/qa/pr/WFS-550) — produit par `tools/qa/captures_pr.sh`.
