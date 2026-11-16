@@ -48,7 +48,7 @@ int main() {
         const float aL = led::COLONNES * led::PAS, aH = led::RANGEES * led::PAS;
         cas("surface active " + std::to_string(aL) + " × " + std::to_string(aH) + " m, caisson ≈ 3 × 1,5 m (±5 %)",
             std::fabs(resultats3d::CAISSON_L - 3.0f) <= 0.15f && std::fabs(resultats3d::CAISSON_H - 1.5f) <= 0.075f && aL < resultats3d::CAISSON_L - 0.1f && aH < resultats3d::CAISSON_H - 0.1f);
-        cas("pas de 16 mm (P16), 31 caractères de 6 points par ligne, 6 lignes", led::PAS == 0.016f && led::NB_CAR == 31 && led::NB_LIGNES * led::LIGNE_PAS <= led::RANGEES + led::LIGNE_PAS - led::CAR_H);
+        cas("pas de 16 mm (P16), 30 caractères de 6 points par ligne, 3 points de marge, 6 lignes", led::PAS == 0.016f && led::NB_CAR == 30 && led::MARGE_G >= 3 && led::NB_LIGNES * led::LIGNE_PAS <= led::RANGEES + led::LIGNE_PAS - led::CAR_H);
     }
     // ---- mise en page
     {
@@ -58,8 +58,8 @@ int main() {
         std::vector<led::Point> pts;
         led::composer(fr, l, pts);
         bool dedans = true;
-        for (const led::Point& p : pts) dedans = dedans && p.c >= 0 && p.c < led::COLONNES && p.r >= 0 && p.r < led::RANGEES;
-        cas("maquette 11 (FR) : " + std::to_string(pts.size()) + " points allumés, tous dans la matrice 186 × 88", dedans && pts.size() > 500);
+        for (const led::Point& p : pts) dedans = dedans && p.c >= led::MARGE_G && p.c < led::COLONNES - led::MARGE_G && p.r >= 0 && p.r < led::RANGEES;
+        cas("maquette 11 (FR) : " + std::to_string(pts.size()) + " points allumés, tous dans la matrice 186 × 88, marges de 3 points comprises", dedans && pts.size() > 500);
         int lignesVues = 0;
         for (int k = 0; k < led::NB_LIGNES + 1; k++) {
             bool vu = false;
@@ -71,7 +71,7 @@ int main() {
             led::COL_POS.debut + led::COL_POS.largeur < led::COL_PILOTE.debut && led::COL_PILOTE.debut + led::COL_PILOTE.largeur < led::COL_TEMPS.debut + 1 &&
             led::COL_TEMPS.debut + led::COL_TEMPS.largeur < led::COL_ECART.debut + 1 && led::COL_ECART.debut + led::COL_ECART.largeur <= led::NB_CAR);
         std::vector<led::Point> p2;
-        cas("pseudo trop long coupé à 13 caractères", led::poserTexte("TOI · ABCDEFGHIJKLMNOP", led::COL_PILOTE.debut, led::COL_PILOTE.largeur, 1, p2) == 13);
+        cas("pseudo trop long coupé à 12 caractères", led::poserTexte("TOI · ABCDEFGHIJKLMNOP", led::COL_PILOTE.debut, led::COL_PILOTE.largeur, 1, p2) == 12);
         led::composer(en, l, pts);
         cas("en-tête anglais posé (DRIVER, TIME, GAP)", !pts.empty());
         // duel : 2 lignes ; Poursuite : lignes vides cachées

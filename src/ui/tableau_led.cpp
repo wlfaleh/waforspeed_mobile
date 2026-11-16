@@ -159,7 +159,7 @@ int poserTexte(std::string_view utf8, int debut, int largeur, int ligne, std::ve
         }
         for (int rr = 0; rr < 9; rr++)
             for (int k = 0; k < 5; k++)
-                if (g[rr] & (1u << (4 - k))) sortie.push_back({(int16_t)(col * CAR_L + k), (int16_t)(r0 + rr)});
+                if (g[rr] & (1u << (4 - k))) sortie.push_back({(int16_t)(MARGE_G + col * CAR_L + k), (int16_t)(r0 + rr)});
         col++; poses++;
     }
     return poses;

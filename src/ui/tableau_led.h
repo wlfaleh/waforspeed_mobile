@@ -6,7 +6,7 @@
 // police matricielle 5 × 7 points, la police des afficheurs à matrice de points (caractères des contrôleurs HD44780 et des
 // panneaux de gare), avec deux rangées au-dessus des capitales pour les accents (É, È, À…).
 // Matrice : 186 colonnes × 88 rangées → surface active 2,976 × 1,408 m ; caisson 3,10 × 1,52 m (≈ 3 × 1,5 m demandé).
-// Mise en page : 31 caractères de 6 points (5 + 1 d'espace) par ligne ; 6 lignes (en-tête + 5 pilotes) au pas de 14 rangées
+// Mise en page : 30 caractères de 6 points (5 + 1 d'espace) par ligne, 3 points de marge de chaque côté ; 6 lignes (en-tête + 5 pilotes) au pas de 14 rangées
 // (caractère de 10 rangées, accents compris, + 4 rangées d'interligne).
 #pragma once
 #include <cstdint>
@@ -19,13 +19,14 @@ namespace wfs::led {
 inline constexpr int COLONNES = 186, RANGEES = 88;   // points de la matrice
 inline constexpr float PAS = 0.016f;                 // pas des points (m), P16
 inline constexpr int CAR_L = 6, CAR_H = 10;          // cellule d'un caractère (points) : 5 + 1 d'espace ; 2 rangées d'accent + 7 + 1
-inline constexpr int NB_CAR = COLONNES / CAR_L;      // 31 caractères par ligne
+inline constexpr int NB_CAR = 30;                    // 30 caractères par ligne
+inline constexpr int MARGE_G = (COLONNES - NB_CAR * CAR_L + 1) / 2;   // 3 points libres à gauche et à droite (avis de l'agent 3D : marge au cadre)
 inline constexpr int LIGNE_PAS = 14, NB_LIGNES = 6;  // pas des lignes (rangées), en-tête + 5 pilotes
 inline constexpr int MARGE_HAUT = (RANGEES - (NB_LIGNES - 1) * LIGNE_PAS - (CAR_H - 1)) / 2;   // rangées libres au-dessus
 
 // colonnes du tableau (en caractères) : POS, PILOTE, TEMPS, ÉCART (maquette 11)
 struct Colonne { int debut, largeur; };
-inline constexpr Colonne COL_POS{0, 3}, COL_PILOTE{4, 13}, COL_TEMPS{18, 7}, COL_ECART{26, 5};
+inline constexpr Colonne COL_POS{0, 3}, COL_PILOTE{4, 12}, COL_TEMPS{17, 7}, COL_ECART{25, 5};
 
 struct Point { int16_t c, r; };   // point allumé : colonne (0 à gauche), rangée (0 en haut)
 

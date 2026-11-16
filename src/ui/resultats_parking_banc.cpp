@@ -112,6 +112,8 @@ int benchResultats(Game& g, Renderer& r, const std::string& out) {
         setenv("WFS_MOMENT", "nuit", 1);
         if (partie("golf")) {
             tab.titre = titre("resultats.rang1", "2:05,4");
+            tab.lignes = {{"1", ui::tr("resultats.toi", "LUME"), "2:05,4", "—", true}, {"2", "NADIA", "2:06,9", "+1,5"}, {"3", "VANTOR GT", "2:08,2", "+2,8"},
+                          {"4", "SELENE TS", "2:11,0", "+5,6"}, {"5", "SF-X", "2:13,7", "+8,3"}};
             capture("nuit", "partie de nuit : même parking (souterrain)");
         }
         unsetenv("WFS_MOMENT");

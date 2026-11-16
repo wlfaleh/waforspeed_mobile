@@ -69,6 +69,26 @@ bool memes(const Tableau& a, const Tableau& b) {
     return true;
 }
 
+// tache de reflet (quad additif couché sur le sol, couleur dans la normale) : image miroir du point lumineux P vue de l'œil E,
+// étirée de `allonge` vers l'œil (× la distance au sol vue de biais) et large de `large` ; rien si le reflet est sous l'œil
+void tache(std::vector<Vertex>& v, std::vector<uint32_t>& ix, const vec3& E, const vec3& P, float allonge, float large, const vec3& col) {
+    const vec3 q = refletSol(E, P);
+    vec3 vers{E.x - q.x, 0, E.z - q.z};
+    const float dh = std::sqrt(vers.x * vers.x + vers.z * vers.z);
+    if (dh < 0.1f) return;
+    vers = vers * (1.f / dh);
+    const vec3 lat{-vers.z, 0, vers.x};
+    const float a = allonge * dh / std::max(0.3f, E.y);   // plan presque rasant : la tache s'étire vers l'œil
+    const vec3 a0 = q - vers * a - lat * large, a1 = q - vers * a + lat * large, a2 = q + vers * a + lat * large, a3 = q + vers * a - lat * large;
+    const uint32_t j = (uint32_t)v.size();
+    const float y = 0.003f;   // juste au-dessus du vernis (aucun scintillement de profondeur)
+    v.push_back({a0.x, y, a0.z, col.x, col.y, col.z, 0, 0});
+    v.push_back({a1.x, y, a1.z, col.x, col.y, col.z, 1, 0});
+    v.push_back({a2.x, y, a2.z, col.x, col.y, col.z, 1, 1});
+    v.push_back({a3.x, y, a3.z, col.x, col.y, col.z, 0, 1});
+    ix.insert(ix.end(), {j, j + 2, j + 1, j, j + 3, j + 2});
+}
+
 class Scene : public System {
 public:
     const char* name() const override { return "resultats3d"; }
@@ -103,10 +123,19 @@ public:
         for (int k = 0; k < fp.spotCount; k++) {
             const vec3 p = inverseAffine(voiture_).transformPoint(fp.spots[k].pos);
             if (p.z < -9.f) fp.spots[k].intensity = 0;
-            else if (p.z < -3.f) fp.spots[k].intensity *= 0.45f;   // réglettes de l'allée : leur reflet net sur le sol verni (au bas de l'image) adouci
+            else if (p.z < -3.f) fp.spots[k].intensity *= 0.30f;   // réglettes de l'allée : leur reflet net sur le sol verni (au bas de l'image) adouci
         }
-        // lumière ambre du panneau sur le sol : portée par le reflet des points (ecrirePoints) ; pas de projecteur ponctuel, dont le
-        // reflet sur le sol verni faisait une traînée de lampe sous le panneau (un panneau LED est une source étendue)
+        // lumière ambre du panneau (≈ 150 cd/m² en moyenne sur la face allumée, avis de l'agent 3D) : lueur sur le voile autour du
+        // caisson (≈ 1 m) et douce sur le sol devant ; source large posée devant la face et tournée vers le mur, pour qu'aucun
+        // reflet de lampe ponctuelle ne se voie dans le sol verni (le reflet des points vient de ecrirePoints)
+        if (fp.spotCount >= FrameParams::SPOTS_MAX) fp.spotCount = FrameParams::SPOTS_MAX - 1;
+        {
+            FrameParams::Spot sp;
+            sp.pos = voiture_.transformPoint({CENTRE_TABLEAU.x, CENTRE_TABLEAU.y - 0.35f, faceZ() - 0.9f});
+            sp.target = voiture_.transformPoint({CENTRE_TABLEAU.x, CENTRE_TABLEAU.y - 0.2f, Z_FOND});
+            sp.color = AMBRE; sp.intensity = 0.22f; sp.distance = 3.2f; sp.angle = 1.75f; sp.penumbra = 1.0f; sp.decay = 2.0f;
+            fp.spots[fp.spotCount++] = sp;
+        }
         oeilParking_ = c.oeil;
         s.interface = true;   // l'interface des modes (score, boutons) reste dessinée par-dessus
         g_affiche = true;
@@ -121,6 +150,7 @@ public:
         for (int k = 0; k < NB_MATS; k++) if (mesh_[k].indexCount) r.draw(mesh_[k], mat_[k], voiture_);
         if (points_[courant_].indexCount) r.draw(points_[courant_], matPoint_, voiture_);
         if (reflets_[courant_].indexCount) r.draw(reflets_[courant_], matReflet_, voiture_);
+        if (refletsDecor_.indexCount) r.draw(refletsDecor_, matReflet_, voiture_);
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_affiche || g_tableau.titre.empty()) return;
@@ -158,7 +188,16 @@ private:
         for (int k = 0; k < 3; k++)
             for (float x : {cx - L + CADRE / 2, cx + L - CADRE / 2}) pave(g[PATTES], {x, cy - H + 0.25f + (CAISSON_H - 0.5f) * (float)k / 2.f, zv}, {0.004f, 0.004f, 0.0015f}, 0.0014f);
         // ---- masque noir : plaque de 3 mm entre les montants, visière au-dessus de chaque rangée de points
-        pave(g[MASQUE], {cx, cy, Z_MASQUE + 0.0015f}, {L - CADRE + 0.004f, H - CADRE + 0.004f, 0.0015f}, 0.0005f);
+        // face du masque : un quad texturé (points éteints, image préparée ici) qui couvre l'ouverture du cadre ; uv (0, 0) en haut
+        // à gauche vu de l'allée (x le plus grand, voir positionPoint)
+        {
+            const float x0 = cx - (L - CADRE + 0.004f), x1 = cx + (L - CADRE + 0.004f), y0 = cy - (H - CADRE + 0.004f), y1 = cy + (H - CADRE + 0.004f);
+            Geo& m = g[MASQUE];
+            m.v.push_back({x0, y0, Z_MASQUE, 0, 0, -1, 1, 1}); m.v.push_back({x1, y0, Z_MASQUE, 0, 0, -1, 0, 1});
+            m.v.push_back({x1, y1, Z_MASQUE, 0, 0, -1, 0, 0}); m.v.push_back({x0, y1, Z_MASQUE, 0, 0, -1, 1, 0});
+            m.i.insert(m.i.end(), {0u, 2u, 1u, 0u, 3u, 2u});
+            ouverture_[0] = x0; ouverture_[1] = x1; ouverture_[2] = y0; ouverture_[3] = y1;
+        }
         const float largeurActive = led::COLONNES * led::PAS;
         for (int rr = 0; rr < led::RANGEES; rr++) {
             const vec3 p = positionPoint(0, rr);
@@ -198,7 +237,29 @@ private:
             mat_[k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
         mat(CAISSON, lin(0x383E42), 0.45f, 0);   // aluminium thermolaqué RAL 7016, poudre satinée (diélectrique)
-        mat(MASQUE, lin(0x0C0C0D), 0.70f, 0);    // polycarbonate noir mat
+        {   // masque : polycarbonate noir (albédo 0,012) et LED éteintes (lentille ambre fumée vue de face : gris sombre, albédo ≈ 0,04,
+            // un peu brillante) ; 8 pixels par point, rien n'est recalculé pendant l'écran
+            const int PX = 8, w = (int)std::lround((ouverture_[1] - ouverture_[0]) / led::PAS * PX), h = (int)std::lround((ouverture_[3] - ouverture_[2]) / led::PAS * PX);
+            std::vector<uint8_t> px((size_t)w * (size_t)h * 4);
+            const vec3 p0 = positionPoint(0, 0);
+            for (int j = 0; j < h; j++)
+                for (int i = 0; i < w; i++) {
+                    const float x = ouverture_[1] - (i + 0.5f) / (float)w * (ouverture_[1] - ouverture_[0]);
+                    const float y = ouverture_[3] - (j + 0.5f) / (float)h * (ouverture_[3] - ouverture_[2]);
+                    const float fc = (p0.x - x) / led::PAS, fr = (p0.y - y) / led::PAS;   // colonne et rangée (réelles) du point le plus proche
+                    const int c = (int)std::lround(fc), rr = (int)std::lround(fr);
+                    bool led = c >= 0 && c < led::COLONNES && rr >= 0 && rr < led::RANGEES;
+                    const float d = std::hypot(fc - (float)c, fr - (float)rr) * led::PAS;
+                    led = led && d < RAYON_POINT * 0.9f;
+                    const uint8_t v = led ? 56 : 25;   // sRGB : 0,04 et 0,01 en linéaire
+                    uint8_t* q = &px[((size_t)j * (size_t)w + (size_t)i) * 4];
+                    q[0] = v; q[1] = (uint8_t)(led ? 50 : 25); q[2] = (uint8_t)(led ? 44 : 26); q[3] = 255;
+                }
+            imageMasque_ = r.vk().essayerUploadTexture(px.data(), (uint32_t)w, (uint32_t)h, true);
+            if (imageMasque_.img == VK_NULL_HANDLE) return false;
+            Material m; m.color = {1, 1, 1, 1}; m.rough = 0.45f; m.metal = 0;
+            mat_[MASQUE] = r.makeMaterial(m, &imageMasque_, nullptr, nullptr);
+        }
         mat(VISIERES, lin(0x101012), 0.60f, 0);  // visières noires injectées
         mat(PATTES, {0.56f, 0.57f, 0.58f}, 0.45f, 1);   // acier galvanisé, inox des vis
         Material mp; mp.color = {0.20f, 0.09f, 0.02f, 1}; mp.rough = 0.35f; mp.emissive = AMBRE * 7.f;   // LED allumée (lentille ambre)
@@ -206,6 +267,24 @@ private:
         Material mr; mr.flags = MAT_ADD | MAT_BLEND; mr.color = {1, 1, 1, 1};   // reflet : lumière ajoutée, couleur dans la normale
         matReflet_ = r.makeMaterial(mr, nullptr, nullptr, nullptr);
         matReflet_.flags |= MAT_ADD | MAT_BLEND;
+        // ---- reflets des réglettes de WFS-552 (même trame que menu_parking.cpp : allée tous les 4 m, places tous les 8 m) sur le
+        // sol mouillé : 10 taches par réglette de 1,5 m, étirées vers l'œil (caméra fixe de l'écran : préparé une fois)
+        {
+            Geo rg;
+            const vec3 E = camera(1.f).oeil;
+            auto reglette = [&](float x, float z) {
+                for (int k = 0; k < 10; k++) {
+                    const vec3 P{x - 0.70f + 1.40f * (float)k / 9.f, ecrans::parking::HAUTEUR_DALLE - 0.06f, z};
+                    if (P.z < E.z + 1.f) continue;   // derrière l'œil ou au-dessus de lui : pas vu dans le sol
+                    tache(rg.v, rg.i, E, P, 0.05f, 0.035f, vec3{1.0f, 0.93f, 0.84f} * 0.40f);
+                }
+            };
+            const float zA = (-ecrans::parking::PLACE_P / 2 + (-ecrans::parking::PLACE_P / 2 - ecrans::parking::ALLEE)) / 2;
+            for (float x = -18.f; x <= 18.f; x += 4.f) reglette(x, zA);
+            for (float x = -16.f; x <= 16.f; x += 8.f) reglette(x, 0.20f);
+            refletsDecor_ = r.essayerMesh(rg.v, rg.i);
+            if (refletsDecor_.vb.buf == VK_NULL_HANDLE) return false;
+        }
         return true;
     }
 
@@ -219,6 +298,10 @@ private:
         for (int b = 0; b < 2; b++) { points_[b] = Mesh{}; reflets_[b] = Mesh{}; }
         for (Material& m : mat_) m = Material{};
         matPoint_ = matReflet_ = Material{};
+        if (imageMasque_.img != VK_NULL_HANDLE) r.vk().destroy(imageMasque_);
+        imageMasque_ = Image{};
+        if (refletsDecor_.vb.buf != VK_NULL_HANDLE || refletsDecor_.ib.buf != VK_NULL_HANDLE) r.destroy(refletsDecor_);
+        refletsDecor_ = Mesh{};
         ecrit_ = false;
     }
 
@@ -239,25 +322,11 @@ private:
                 sommetsP_.push_back({c.x + RAYON_POINT * std::cos(t), c.y + RAYON_POINT * std::sin(t), c.z, 0, 0, -1, 0.5f, 0.5f});
             }
             for (uint32_t a = 0; a < 6; a++) indicesP_.insert(indicesP_.end(), {k0, k0 + 1 + (a + 1) % 6, k0 + 1 + a});
-            // reflet : image miroir du point sur le sol mouillé, vue de l'œil ; traînée vers l'œil, plus faible loin du mur
+            // reflet : image miroir du point sur le sol mouillé, vue de l'œil ; traînée floue vers l'œil (étalement vertical ≈ 3 fois
+            // l'horizontal, avis de l'agent 3D), qui s'efface en s'éloignant du mur (fondu sur ≈ 1,5 m) ; Fresnel de l'eau rasante
             const vec3 q = refletSol(E, c);
-            vec3 vers{E.x - q.x, 0, E.z - q.z};
-            const float dh = std::sqrt(vers.x * vers.x + vers.z * vers.z);
-            if (dh < 0.1f) continue;
-            vers = vers * (1.f / dh);
-            const vec3 lat{-vers.z, 0, vers.x};
-            const float allonge = RAYON_POINT * 2.6f * dh / std::max(0.3f, E.y);   // plan presque rasant : la tache s'étire vers l'œil
-            const float large = RAYON_POINT * 2.2f;
             const float loin = std::max(0.f, Z_FOND - q.z);
-            const vec3 col = AMBRE * (0.55f * std::exp(-loin / 3.2f));
-            const vec3 a0 = q - vers * allonge - lat * large, a1 = q - vers * allonge + lat * large, a2 = q + vers * allonge + lat * large, a3 = q + vers * allonge - lat * large;
-            const uint32_t j = (uint32_t)sommetsR_.size();
-            const float y = 0.003f;   // juste au-dessus du vernis (aucun scintillement de profondeur)
-            sommetsR_.push_back({a0.x, y, a0.z, col.x, col.y, col.z, 0, 0});
-            sommetsR_.push_back({a1.x, y, a1.z, col.x, col.y, col.z, 1, 0});
-            sommetsR_.push_back({a2.x, y, a2.z, col.x, col.y, col.z, 1, 1});
-            sommetsR_.push_back({a3.x, y, a3.z, col.x, col.y, col.z, 0, 1});
-            indicesR_.insert(indicesR_.end(), {j, j + 2, j + 1, j, j + 3, j + 2});
+            tache(sommetsR_, indicesR_, E, c, RAYON_POINT * 7.5f, RAYON_POINT * 2.5f, AMBRE * (0.65f * std::exp(-loin / 1.5f)));
         }
         courant_ = 1 - courant_;   // jamais le tampon de l'image d'avant
         if (sommetsP_.empty()) { points_[courant_].indexCount = 0; reflets_[courant_].indexCount = 0; return; }
@@ -272,6 +341,9 @@ private:
     Material matPoint_{}, matReflet_{};
     int courant_ = 0;
     bool ecrit_ = false;
+    float ouverture_[4]{};          // ouverture du cadre (x0, x1, y0, y1), repère du parking
+    Image imageMasque_{};           // points éteints du masque
+    Mesh refletsDecor_{};           // reflets des réglettes sur le sol (caméra fixe : préparés une fois)
     size_t trianglesTableau_ = 0;
     mat4 voiture_ = mat4::identity();   // repère du parking dans le monde (autour de la voiture du joueur)
     vec3 oeilParking_{};
