@@ -737,3 +737,9 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Points 1 à 5 de la 1re revue corrigés (code de la tuile, salon sans texte net, plaque 600 × 200 mm lisible, code dans le panneau, tests CPU 151, captures refaites) ; avis agent 3D VALIDÉ sur 248debab.
 - Refus : (A) conflit avec `main` dans `src/ui/ecrans/menu.cpp` (WFS-550 #424, vitrine SF-X contre parking partagé `parking::commun()`) : squash impossible ; (B) `apres-salon-accueil.jpg` sans la tuile « Rejoindre Nadia » (salon expiré pendant le rendu du banc).
 - Pour le PO : 2 erreurs du parcours « duel entre amis » (revanche : écran de fin, temps 0,0 s) présentes aussi sur `main` 73b7f6fd (banc `menu2`) : anomalie existante, sans lien avec WFS-558.
+
+### 2026-11-16 12:52:44 — WFS-557 : 1re revue de la PR #432, refusée (lead-dev)
+- Relu au commit 7cf15e7b : maquettes 01, 02, 03, 04, 08, 12, 14, 18a-c, 19 à 24, 31 ouvertes et comparées au code et aux captures ; diff entier lu ; branche construite, tests CPU 150 / 150 ; bancs textes-course, menu2, course5 (1600 × 720), cgu, profil (1280 × 720) rejoués.
+- Refus (6 points) : captures modes-choix et fin Checkpoint périmées (avant 3eaf6eb4) ; CGU coupées en 16:9 (« J'accepte » hors écran, cgu.cpp:147, k = H / 720) ; Market : carte Pack débutant sans image (maquette 12, non déclaré) ; salon : solde ★ absent (maquette 23) ; tests-cpu.log et section « Tests CPU » absents ; description (« 21 % plus grande ») à corriger. Capture du garage demandée (bague chrome partagée).
+- Pour le PO : banc menu2, parcours duel « Revanche » à 0,0 s en échec aussi sur main (088f306c), déjà signalé par la revue de #430.
+- La synchronisation avec main après WFS-550 est faite par le développeur (message du coordinateur) ; aucune fusion.
