@@ -46,8 +46,13 @@ inline constexpr float Z_FOND = 5.00f / 2 + 0.25f;    // nu du voile du fond (me
 inline constexpr float Z_DOS = Z_FOND - ENTRAXE_MUR;   // dos du caisson
 inline constexpr float Z_AVANT = Z_DOS - CAISSON_P;    // nez du caisson (vers l'allée, −z)
 inline constexpr float Z_MASQUE = Z_AVANT + 0.002f;    // masque en retrait de 2 mm derrière le nez du caisson
-inline constexpr vec3 CENTRE_TABLEAU{2.20f, 1.33f, 0.f};                            // centre de la face (x, y) ; z : face (voir faceZ)
+inline constexpr vec3 CENTRE_TABLEAU{1.57f, 1.06f, 0.f};                            // centre de la face (x, y) ; z : face (voir faceZ)
 float faceZ();                                                                    // plan des points (devant le masque)
+// voiture du joueur arrêtée en biais dans l'allée, devant le tableau (maquette 11 : vue de trois quarts avant) : position de son
+// centre et lacet (rad, rotateY) dans le repère du parking ; le parking est dessiné autour de la voiture, là où elle s'est arrêtée
+inline constexpr vec3 POSE_VOITURE{-1.23f, 0.f, -2.86f};
+inline constexpr float LACET_VOITURE = -50.f * 3.14159265f / 180.f;   // avant tourné de 50° vers la gauche de l'image
+mat4 parkingDepuisVoiture();   // repère de la voiture → repère du parking (inverse de translate(POSE) × rotateY(LACET))
 // caméra fixe de l'écran : œil, point regardé, angle vertical (rad), décentrement vertical de l'objectif (NDC)
 struct Camera { vec3 oeil, cible; float fovY, decalageY; };
 Camera camera(float aspect);

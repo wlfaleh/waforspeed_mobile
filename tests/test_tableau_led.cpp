@@ -95,9 +95,9 @@ int main() {
         }
         char t[160]; std::snprintf(t, sizeof t, "%s : tableau entier dans l'image (x %.2f..%.2f, y %.2f..%.2f)", e.first, xmin, xmax, ymin, ymax);
         cas(t, entier);
-        cas(std::string(e.first) + " : tableau à gauche du centre, assez grand pour être lu (≥ 28 % de la largeur)", (xmin + xmax) / 2 < 0.f && (xmax - xmin) / 2 >= 0.28f);
+        cas(std::string(e.first) + " : tableau à gauche du centre, assez grand pour être lu (≥ 22 % de la largeur de l'image)", (xmin + xmax) / 2 < 0.f && (xmax - xmin) / 2 >= 0.22f);
         float vx, vy;
-        cas(std::string(e.first) + " : voiture (centre de la place) à droite du tableau", projeter(c, e.second, {0, 0.7f, 0}, vx, vy) && vx > xmax - 0.15f && vx < 0.9f);
+        cas(std::string(e.first) + " : voiture (centre de la place) à droite du tableau", projeter(c, e.second, resultats3d::POSE_VOITURE + vec3{0, 0.7f, 0}, vx, vy) && vx > xmax - 0.15f && vx < 0.9f);
         cas(std::string(e.first) + " : tableau au-dessus du milieu de l'image (sol mouillé dessous)", (ymin + ymax) / 2 > 0.f);
     }
     // ---- reflet

@@ -21,19 +21,22 @@ vec3 refletSol(const vec3& E, const vec3& P) {
     return {E.x + (m.x - E.x) * t, 0.f, E.z + (m.z - E.z) * t};
 }
 
+mat4 parkingDepuisVoiture() { return rotateY(-LACET_VOITURE) * translate({-POSE_VOITURE.x, -POSE_VOITURE.y, -POSE_VOITURE.z}); }
+
 Camera camera(float aspect) {
-    // œil au bout de l'allée, à 9,5 m devant la voiture et un peu sur sa droite, à 1,45 m de haut ; regarde le mur du fond
-    // au milieu du tableau. Cadrage ajusté sur la maquette 11 (image 2400 × 1080, en fraction de la demi-image) : tableau de
-    // −0,44 à +0,26 en largeur et de −0,42 à +0,40 en hauteur ; voiture de +0,23 à +0,76 et de −0,82 à +0,04 ; obtenu ici :
-    // tableau −0,38 à +0,21 et −0,27 à +0,38 ; voiture (Golf) +0,16 à +0,78 et −0,92 à +0,11. Angle vertical de 22° en 20:9 ;
-    // les écrans moins larges gardent la même largeur vue (angle horizontal constant)
+    // œil au bout de l'allée, au bord de la rangée d'en face (9,35 m devant la voiture, entre deux poteaux), à 1,28 m de haut ;
+    // regarde le mur du fond entre le tableau et la voiture. Cadrage ajusté sur la maquette 11 (image 2400 × 1080, en fraction
+    // de la demi-image) : tableau de −0,44 à +0,26 en largeur et de −0,42 à +0,40 en hauteur ; voiture de +0,23 à +0,76 et de
+    // −0,82 à +0,04 ; obtenu ici (Golf, de trois quarts avant) : tableau −0,54 à −0,06 et −0,21 à +0,32 (tableau aux vraies
+    // mesures, ≈ 3 × 1,5 m, à côté d'une voiture de 4,3 m) ; voiture −0,06 à +0,88 et −0,94 à +0,29. Angle vertical de 28° en
+    // 20:9 ; les écrans moins larges gardent la même largeur vue (angle horizontal constant)
     Camera c;
-    c.oeil = {1.25f, 1.45f, -9.5f};
-    c.cible = {1.75f, 1.20f, Z_FOND};
-    const float demiH = std::tan(11.f * PI / 180.f) * (2400.f / 1080.f) / std::max(1.f, aspect);
+    c.oeil = {1.92f, 1.28f, -9.35f};
+    c.cible = {-0.41f, 0.87f, Z_FOND};
+    const float demiH = std::tan(14.f * PI / 180.f) * (2400.f / 1080.f) / std::max(1.f, aspect);
     c.fovY = 2.f * std::atan(demiH);
     c.decalageY = 0.f;
-    if (banc::panneau) { c.oeil = {CENTRE_TABLEAU.x - 0.9f, 1.25f, faceZ() - 1.6f}; c.cible = {CENTRE_TABLEAU.x - 0.6f, 1.55f, faceZ()}; c.fovY = 30.f * PI / 180.f; }
+    if (banc::panneau) { c.oeil = {CENTRE_TABLEAU.x - 0.9f, CENTRE_TABLEAU.y - 0.05f, faceZ() - 1.6f}; c.cible = {CENTRE_TABLEAU.x - 0.6f, CENTRE_TABLEAU.y + 0.25f, faceZ()}; c.fovY = 30.f * PI / 180.f; }
     return c;
 }
 

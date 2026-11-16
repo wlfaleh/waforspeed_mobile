@@ -86,7 +86,7 @@ public:
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         g_affiche = false;
         if (!g_prete || !g_actifPas || g.ecran != Ecran::Course || !g.car || !g.player || !g.track) return false;
-        voiture_ = matriceVoiture(g);
+        voiture_ = matriceVoiture(g) * parkingDepuisVoiture();   // repère du parking (la voiture y est arrêtée en biais, POSE_VOITURE)
         parking_.regler(fp, s, g, *g.car, voiture_);   // lumière du parking (réglettes, ambiance), comme le menu
         const float aspect = g.uiWidth / std::max(1.f, g.uiHeight);
         const Camera c = camera(aspect);
@@ -98,6 +98,13 @@ public:
         // maquette 11 : parking plus sombre que le menu (seules les réglettes de l'allée, le panneau allumé fait la lumière
         // chaude) : exposition baissée d'un tiers de diaphragme × 2 (0,63) ; même lumière de jour et de nuit (souterrain)
         fp.exposure *= 0.63f;
+        // réglettes de la rangée d'en face (au-dessus et derrière l'œil, z < −9 m) éteintes pour cet écran : leur lumière sur le
+        // sol verni tout près de l'œil voilait le bas de l'image (la maquette garde un sol sombre et mouillé devant le tableau)
+        for (int k = 0; k < fp.spotCount; k++) {
+            const vec3 p = inverseAffine(voiture_).transformPoint(fp.spots[k].pos);
+            if (p.z < -9.f) fp.spots[k].intensity = 0;
+            else if (p.z < -3.f) fp.spots[k].intensity *= 0.45f;   // réglettes de l'allée : leur reflet net sur le sol verni (au bas de l'image) adouci
+        }
         // lumière ambre du panneau sur le sol : portée par le reflet des points (ecrirePoints) ; pas de projecteur ponctuel, dont le
         // reflet sur le sol verni faisait une traînée de lampe sous le panneau (un panneau LED est une source étendue)
         oeilParking_ = c.oeil;
@@ -266,7 +273,7 @@ private:
     int courant_ = 0;
     bool ecrit_ = false;
     size_t trianglesTableau_ = 0;
-    mat4 voiture_ = mat4::identity();
+    mat4 voiture_ = mat4::identity();   // repère du parking dans le monde (autour de la voiture du joueur)
     vec3 oeilParking_{};
     std::vector<led::Point> allumes_;
     std::vector<Vertex> sommetsP_, sommetsR_;
