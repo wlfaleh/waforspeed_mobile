@@ -15,6 +15,12 @@
 #include "../core/log.h"
 #include "../game/game.h"
 #include "../game/sauvegarde.h"
+#include "../game/course.h"
+#include "../game/course5.h"
+#include "../game/course_system.h"
+#include "../game/duel_system.h"
+#include "../game/poursuite.h"
+#include "../game/boutique.h"
 #include "../render/renderer.h"
 #include "langue.h"
 #include "resultats_parking.h"
@@ -132,6 +138,100 @@ int benchResultats(Game& g, Renderer& r, const std::string& out) {
     }
     std::remove(chemin.c_str());
     WFS_LOG("resultats3d (WFS-561) : %d écart(s)", ecarts);
+    return ecarts;
+}
+
+// banc WFS_BANC=resultats3d-modes : vraies courses des 3 modes (pilote automatique, Golf possédée), FR puis EN : course à 5 gagnée
+// et finie 3e, Poursuite échappée et arrêtée, duel gagné (salon en mémoire) ; puis le repli (WFS_RESULTATS_SANS_3D : fenêtres 2D
+// des maquettes 31 à 33). Captures resultats3d-modes-<fr|en>-<cas>-<L>x<H> ; rend le nombre d'écarts.
+int benchResultatsModes(Game& g, Renderer& r, const std::string& out) {
+    int ecarts = 0;
+    auto verifier = [&](bool ok, const std::string& quoi) { WFS_LOG("resultats3d-modes (WFS-561) : %s : %s", ok ? "OK" : "ÉCART", quoi.c_str()); if (!ok) ecarts++; };
+    const std::string taille = std::to_string(r.width()) + "x" + std::to_string(r.height());
+    ui::chargerPolice(r);
+    const std::string chemin = out + "/resultats3d-modes-sauvegarde.txt";
+    std::remove(chemin.c_str());
+    Sauvegarde& s = sauvegarde();
+    s.charger(chemin);
+    for (int i = 0; i < CAR_COUNT; i++) s.voituresPossedees.insert(CARS[i].id);   // Golf possédée : pas d'essai gratuit (pas de garage à la fin)
+    s.car = "golf";
+    { std::string nick; s.profil.creer("Lume", "WFS", nick); s.nick = nick; }
+    s.enregistrer();
+    double t = 9000;
+    auto images = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; g.render(t); } };
+    auto finie = [&]() { const Course* c = activeCourse(); return c && c->state == RaceState::Over; };
+    auto jusquaFin = [&](int n) { for (int i = 0; i < n && !finie(); i++) { g.update(1.0 / 60); t += 1.0 / 60; } images(90); };
+    auto capture = [&](const std::string& nom, const char* quoi, bool scene3d) {
+        images(3);
+        r.capturePng(out + "/resultats3d-modes-" + nom + "-" + taille + ".png");
+        WFS_LOG("capture resultats3d-modes-%s-%s : %s (scène %s)", nom.c_str(), taille.c_str(), quoi, affiche() ? "3D" : "2D");
+        verifier(affiche() == scene3d, nom + std::string(" : ") + (scene3d ? "scène 3D des résultats" : "fenêtre 2D (repli)"));
+    };
+    auto demarrer = [&](ModeCourse m) {
+        modeCourse() = m; s.mode = poursuite::cleMode(m); s.km5 = kmCourse5();
+        if (!g.init(r, "golf", "ville")) { verifier(false, std::string("chargement ") + nomMode(m)); return false; }
+        g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course);
+        for (int i = 0; i < 8 * 60; i++) { g.update(1.0 / 60); t += 1.0 / 60; }
+        return true;
+    };
+    auto course5 = [&](const std::string& nom, const std::vector<std::pair<double, int>>& tenus, const char* quoi, bool scene3d) {
+        kmCourse5() = 2;
+        if (!demarrer(ModeCourse::Course5)) return;
+        course5BancSuiveurs(tenus);
+        for (int i = 0; i < 150 * 60 && !finie(); i++) {
+            const Course* c = activeCourse();
+            if (c && c->duelFinish > 0 && g.player().dist > c->duelFinish - 40 / M) course5BancSuiveurs({});
+            g.update(1.0 / 60); t += 1.0 / 60;
+        }
+        course5BancSuiveurs({});
+        jusquaFin(60);
+        verifier(finie(), nom + " : course à 5 finie");
+        capture(nom, quoi, scene3d);
+        float x, y;
+        verifier(course5Bouton("rejouer", x, y) && course5Bouton("menu", x, y), nom + " : « Rejouer » et « Menu » posés");
+        g.shutdown();
+    };
+    auto poursuiteFin = [&](const std::string& nom, int mode, const char* quoi, bool scene3d) {
+        poursuiteBancFixe(true);
+        if (demarrer(ModeCourse::Poursuite)) {
+            poursuiteBancFin(mode); jusquaFin(60 * 60);
+            verifier(finie(), nom + " : Poursuite finie");
+            capture(nom, quoi, scene3d);
+            g.shutdown();
+        }
+        poursuiteBancFixe(false);
+    };
+    auto duel = [&](const std::string& nom, bool scene3d) {
+        bool vu = false;
+        ecarts += benchDuelTextes(g, r, [&](const std::string& n) {
+            if (n != "duel-fin") return;
+            r.capturePng(out + "/resultats3d-modes-" + nom + "-" + taille + ".png");
+            WFS_LOG("capture resultats3d-modes-%s-%s : duel gagné (scène %s)", nom.c_str(), taille.c_str(), affiche() ? "3D" : "2D");
+            verifier(affiche() == scene3d, nom + " : duel");
+            vu = true;
+        }, true);
+        verifier(vu, nom + " : écran de fin du duel vu");
+    };
+    courseBenchRules(true);
+    for (const ui::langue::Choix lg : {ui::langue::Choix::Francais, ui::langue::Choix::Anglais}) {
+        ui::langue::choisir(lg);
+        const std::string c = ui::langue::code();
+        course5(c + "-course5-1er", {{-25, 0}, {-32, 1}, {-39, 2}, {-46, 1}}, "course à 5 gagnée (maquette 11)", true);
+        if (c == "fr") course5(c + "-course5-3e", {{30, 0}, {18, 1}, {-30, 2}, {-40, 1}}, "course à 5 finie 3e (deux adversaires derrière)", true);
+        poursuiteFin(c + "-poursuite-echappe", 2, "Poursuite échappée (saut à 150 m de l'arrivée)", true);
+        if (c == "fr") poursuiteFin(c + "-poursuite-arrete", 1, "Poursuite perdue (arrêté)", true);
+        duel(c + "-duel", true);
+    }
+    // repli (RG-08) : scène refusée → les fenêtres 2D des maquettes 31 à 33, inchangées
+    ui::langue::choisir(ui::langue::Choix::Francais);
+    setenv("WFS_RESULTATS_SANS_3D", "1", 1);
+    course5("fr-repli-course5", {{-25, 0}, {-32, 1}, {-39, 2}, {-46, 1}}, "repli : fenêtre 2D de la course à 5 (maquette 31)", false);
+    unsetenv("WFS_RESULTATS_SANS_3D");
+    courseBenchRules(false);
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
+    ui::langue::choisir(ui::langue::Choix::Automatique);
+    std::remove(chemin.c_str());
+    WFS_LOG("resultats3d-modes (WFS-561) : %d écart(s)", ecarts);
     return ecarts;
 }
 

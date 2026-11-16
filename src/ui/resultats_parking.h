@@ -79,6 +79,8 @@ vec3 refletSol(const vec3& E, const vec3& P);
 // banc WFS_BANC=resultats3d (resultats_parking_banc.cpp) : scène avec des résultats posés à la main (course à 5 1er et 3e,
 // duel, Poursuite ; FR et EN ; nuit ; gros plan du panneau ; repli) ; rend le nombre d'écarts
 int benchResultats(Game& g, Renderer& r, const std::string& out);
+// banc WFS_BANC=resultats3d-modes : vraies courses des 3 modes, FR et EN, et repli 2D (resultats_parking_banc.cpp)
+int benchResultatsModes(Game& g, Renderer& r, const std::string& out);
 
 } // namespace resultats3d
 } // namespace wfs

@@ -316,6 +316,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "pause") { ui::chargerPolice(r); ecrans::benchPause(g, r, out); return finir(); }   // WFS-429 (accroche) : bouton Menu et pause seuls
     if (banc == "menu3d") { const int e = ecrans::benchMenuParking(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-552 (accroche) : menu sur le parking souterrain
+    if (banc == "resultats3d-modes") { const int e = resultats3d::benchResultatsModes(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-561 (accroche) : vraies fins des 3 modes
     if (banc == "resultats3d") { const int e = resultats3d::benchResultats(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-561 (accroche) : résultats dans le parking, tableau LED
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "garage-voitures") { const int e = ecrans::benchGarageVoitures(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-499 (accroche) : voitures bloquées, achat confirmé, essai gratuit, relance
