@@ -786,3 +786,21 @@ PR #431 relue en 2e revue sur b89f5de1 (seulement les 3 points de la 1re revue) 
 - À reprendre avec WFS-560 (portique « ARRIVÉE », même modèle `portique_depart::construire(…, false)`) ou en US de suite (réserves non bloquantes de l'agent 3D et du lead dev) : caisson qui se lit comme un panneau plat de loin ; zoom de la platine et des boulons au ras du sol ; motif des optiques des feux (P3) ; banc : contrôle du bouton MENU pour RG-10 ; `circuit.cpp` (Grand Prix) à brancher sur `Course::feuxRouges` à sa reprise.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
 
+
+### 2026-11-16 17:30:18 — WFS-561 : PR #433 ouverte (Claude, agent dev3d (01Us6uCxBL))
+- Ordre de l'utilisateur (« dépêche-toi ») : les accroches sont posées sur `main` sans attendre WFS-557 (PR #432). « Menu » reste l'autocollant de `main` tant que la plaque de WFS-557 n'est pas fusionnée. La PR fusionnée en 2e garde les deux côtés.
+- Vérifié :
+  - tests CPU : 154 réussis ;
+  - bancs `resultats3d` et `resultats3d-modes` (vraies courses des 3 modes, FR / EN, repli 2D) : 0 écart ;
+  - 20 captures dans `qa/pr/WFS-561/`.
+- L'agent 3D (avis RG-C2) puis le lead dev sont appelés.
+
+### 2026-11-16 17:48:21 — WFS-561 : PR #433 refusée par le lead dev (lead-dev)
+Commit relu `da174c26`. J'ai ouvert les 20 captures et la maquette 11, et lu tout le diff. Construction locale OK ; `tests_cpu.sh build` : 154 test(s) réussi(s). Avis de l'agent 3D : VALIDÉ avec réserves.
+Refus pour 5 points :
+1. En Poursuite, le tableau affiche « SEMÉES » pour le nombre de voitures de police, et une ligne SCORE qui ne correspond pas au TOTAL du panneau (RG-04 non suivie).
+2. Le panneau SCORE couvre le toit de la voiture, et le tableau est plus petit et décentré par rapport à la maquette 11.
+3. La capture des tests CPU est absente.
+4. Il manque 4 images dans la description, et `pr.md` contient encore des « À REMPLIR ».
+5. Un commentaire est abîmé dans `course5_system.cpp`.
+Détail dans la revue de la PR.
