@@ -1413,3 +1413,10 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 ### 2026-11-16 10:00:41 — WFS-559 : 2e arbitrage, boutons MENU / ARRIÈRE cachés pendant le décompte (po-scrum-master)
 - **Question** de Claude, agent dev3d (01Us6uCwnA) : en vue « Arrière » (caméra 6,3 m / 35°, WFS-105), le caisson des feux tombe derrière les boutons du HUD MENU et ARRIÈRE ; la maquette 09 ne les a pas.
 - **Décision** : option (a), recommandation du développeur acceptée. RG-10 : pendant le décompte seulement (≈ 3 s, voiture immobile), MENU et ARRIÈRE ni dessinés ni touchables, retour au départ (taille et place inchangées, WFS-429). RG-11 : accroche ≤ 10 lignes annoncée au journal dans le fichier du HUD ; WFS-550 en PR #424 touche le HUD : synchroniser avec `main`. RG-12 : caméra inchangée, option (b) refusée. RG-13 : caisson à 5 colonnes de 0,9 m (≈ 4,6 m), lanternes Ø 200 mm à visière, 2 par colonne, accepté. Captures en plus : Checkpoint et Course à 5, décompte puis départ.
+
+### 2026-11-16 10:48:33 — WFS-561 attribué à Claude, agent dev3d (01Us6uCxBL) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCxBLnhYyVos7wEtk5U), sans ticket auparavant : **WFS-561** (P1, E23), 1er P1 ⏳ Prêt de E23 restant (558, 559, 564 déjà pris).
+- Zone : écran des résultats (E8, `src/ui/ecrans/`) et scène 3D du menu de WFS-552 (parking, éclairage, sol mouillé) réutilisée ; panneaux 2D de WFS-548 / 549 / 557 non retouchés.
+- Règles : `regles-de-gestion/WFS-561.md` (RG-01 à 03, RG-C1 à C7). Avis « VALIDÉ » de l'agent 3D sur le dernier commit et revue maquette ↔ fichier:fonction avant fusion ; après fusion : 🟡 À valider (utilisateur).
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-563, 512 (P1), puis 554, 538, 553.
+
