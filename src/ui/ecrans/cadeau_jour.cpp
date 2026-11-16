@@ -426,13 +426,13 @@ static std::string texteHMS(long long s) {
 // carte « Cadeau du jour » de la maquette (verre arrondi en pilule, anneau gradué cyan → orange autour du cadeau, « CADEAU DU
 // JOUR », compte à rebours en grand avec les secondes en orange, « avant le prochain · 30e garanti dans 12 j ») ; toute la carte
 // est le bouton. Mesures de la maquette 26 (1600 × 720) : 350 × 118, anneau de rayon 37 à 54 du bord gauche, texte à 117.
-// Elle remplace le bouton « Cadeau du jour » et se pose à gauche de la colonne Market / Profil / Crédits (absente des maquettes).
+// Elle remplace le bouton « Cadeau du jour », en bas à droite comme la maquette 01 (arbitrage du PO, WFS-550 RG-11).
 void placeCarte(float W, float H, const Marges& m, float& droite, float& haut) {
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
-    const float colonne = 18 * kb + largeurTexte(15 * k, "cadeau.bouton") + 18 * kb;   // largeur de l'ancien bouton (colonne de droite)
-    droite = W - m.droite - 16 * k - colonne - 12 * kb;
-    haut = H - m.bas - 22 * kb - 118 * kb;
+    (void)k;
+    droite = W - m.droite - 28 * kb;           // maquette 01 : collée au bord droit (28 px), en bas (20 px)
+    haut = H - m.bas - 20 * kb - 118 * kb;
 }
 
 void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse) {

@@ -54,7 +54,7 @@ float ease(float t) {
 }
 
 struct Choix { const char* titre; const char* desc; };
-enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3, CREDITS = 4, CADEAU = 5, COMPTEUR = 6, PROFIL = 7, PRET = 8, MARKET = 9 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles ; WFS-482 : « Profil »
+enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3 /* WFS-550 : bloc RECORD → Profil */, CREDITS = 4, CADEAU = 5, COMPTEUR = 6, PROFIL = 7, PRET = 8, MARKET = 9 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu) ; WFS-406 : bouton « Crédits » ; WFS-501 : « Cadeau du jour » ; WFS-537 : compteur d'étoiles ; WFS-482 : « Profil »
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
 Zone g_zones[4];
@@ -103,12 +103,9 @@ public:
         if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y, t.id) || toucheBandeauPaquets(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages (WFS-290 : et le doigt posé sur « Réglages ») ; WFS-306 : proposition des paquets
         if (choixModeOuvert()) { doigt_ = -1; presse_ = -1; return false; }   // WFS-110 : panneau des modes par-dessus
         int sous = choixSous(t.x, t.y);
-        if (sous < 0 && credits::dansBouton(t.x, t.y)) sous = CREDITS;   // WFS-406
         if (sous < 0 && cadeau_jour::dansBouton(t.x, t.y)) sous = CADEAU;   // WFS-501
         if (sous < 0 && compteur_etoiles::dans(t.x, t.y)) sous = COMPTEUR;   // WFS-537 (RG-09)
-        if (sous < 0 && profil_ecran::dansBouton(t.x, t.y)) sous = PROFIL;   // WFS-482 (RG-01)
         if (sous < 0 && pret_bandeau::dans(t.x, t.y)) sous = PRET;   // WFS-502
-        if (sous < 0 && market_ecran::dansBouton(t.x, t.y)) sous = MARKET;   // WFS-513 (RG-01)
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; presse_ = sous; }   // WFS-83 : « Duel en ligne » actif (plus grisé)
             else if (t.id == doigt_ && sous != presse_) presse_ = -1;               // glissé hors du choix : annulé
@@ -127,7 +124,7 @@ public:
         else if (choix == CREDITS) { WFS_LOG("menu : « Crédits »"); credits::ouvrir(); }   // WFS-406 (RG-02)
         else if (choix == COMPTEUR) { WFS_LOG("menu : compteur d'étoiles → Market"); market_ecran::ouvrir(Ecran::Menu); }   // WFS-537 (RG-09), WFS-513 : le compteur ouvre le Market
         else if (choix == MARKET) { WFS_LOG("menu : « Market »"); market_ecran::ouvrir(Ecran::Menu); }   // WFS-513 (RG-01)
-        else if (choix == TA_VOITURE) { WFS_LOG("menu : « Ta voiture »"); garageRegarder(); g.allerA(Ecran::Garage); }   // #myCarBtn
+        else if (choix == TA_VOITURE) { WFS_LOG("menu : « RECORD » → Profil"); profil_ecran::ouvrir(); }   // WFS-550 (RG-11) : le bloc RECORD ouvre le Profil
         return true;
     }
     // record de la session (RG-09) : meilleur score des courses terminées
@@ -167,67 +164,59 @@ public:
         if (market_ecran::ouvert()) return;   // WFS-513 : écran Market par-dessus (système MarketEcran, 469)
         if (profil_ecran::ouvert()) return;   // WFS-482 : écran Profil par-dessus (système ProfilEcran, 468)
         if (credits::ouvert()) return;   // WFS-406 : écran Crédits par-dessus (système Credits, 470) : rien du menu dessous
-        // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
-        // WFS-168 (RG-01) : taille des choix d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; textes en dp gardés
-        const float kb = H / 720.f;
-        const float itemH = 70 * kb, ecart = (cp ? 4 : 6) * k, listeH = 3 * itemH + 2 * ecart, piedH = (cp ? 40 : 44) * k;
-        const float aideP = (cp ? 14 : 16) * k, aideL = (cp ? 18 : 22) * k, aideH = 2 * aideL;
-        const float total = m.hauteurBloc + gap + listeH + gap + piedH + gap + aideH;
-        float y = std::max((cp ? 8 : 24) * k, (H - total) / 2);
-        // slide-in : 320 ms, de −36 px à 0, 40 ms de décalage entre les lignes
-        auto glisse = [&](int n, float& dx) { const float e = ease((t - 0.04f * n) / 0.32f); dx = -36 * k * (1 - e); return e * op; };
+        // ---------- WFS-550 (RG-11, maquette 01 ; ordre de l'utilisateur du 2026-11-15 : la maquette à 100 %) ----------
+        // logo sur une ligne en haut à gauche ; panneau sombre à gauche avec « COURSE SOLO » et « COURSE EN LIGNE » en boutons
+        // ronds et « GARAGE » en pilule chrome ; « RECORD » en bas à gauche (le toucher ouvre le Profil) ; compteur d'étoiles et
+        // engrenage en haut à droite (leurs systèmes) ; carte « Cadeau du jour » en bas à droite. Plus de Crédits (Réglages,
+        // maquette 14), de Market (toucher le compteur), de Profil (toucher RECORD), de sous-titres ni d'aide sur l'écran.
+        // Mesures relevées sur la maquette (2400 × 1080), en unités de 720 px de haut (kb).
+        (void)k; (void)gap; (void)m;
+        const float kb = H / 720.f, gl = g.marges.gauche, gb = g.marges.bas;
+        auto glisse = [&](int n, float& dx) { const float e = ease((t - 0.04f * n) / 0.32f); dx = -36 * kb * (1 - e); return e * op; };
         float dx;
         float a = glisse(0, dx);
-        MiseEnPage ml = m; ml.x += dx;
-        y = dessinerBlocLogo(r, ml, y, a);
-        // ---------- .menu-list : 3 choix (.mitem) ----------
-        const float lw = std::min(460 * kb, m.largeur);   // WFS-168 : largeur d'avant WFS-147
-        for (int i = 0; i < 3; i++) {
-            a = glisse(1 + i, dx);
-            const bool presse = i == presse_;   // .mitem:active (WFS-38) : état pressé
-            const float x = m.x + dx, yi = y + i * (itemH + ecart);
-            g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * kb, true};   // zone fixe : l'état pressé ne la déplace pas
-            manette::focus(g_zones[i]);   // WFS-22
-            // WFS-549 (RG-01, RG-03, RG-07) : modèle R19 dans le même rectangle qu'avant (460 × 70) : « Course solo » et « Duel en
-            // ligne » en bouton Start/Stop, « Showroom » (ouvre le garage) en pilule chrome ; titre et description inchangés
-            const std::string titre = ui::majuscules(ui::tr(CHOIX[i].titre)), desc = ui::tr(CHOIX[i].desc);
-            if (i == SHOWROOM) ui::boutons::piluleChrome(r, x, yi, lw, itemH, titre, a, presse, (cp ? 21 : 24) * k, desc);
-            else ui::boutons::startStop(r, x, yi, lw, itemH, titre, a, presse, desc, (cp ? 19 : 22) * k);
+        dessinerLogoLigne(r, gl + 50 * kb + dx, 36 * kb, 42 * kb, a);
+        // panneau sombre à coin coupé (haut droit), du bord gauche à 570
+        a = glisse(1, dx);
+        {
+            const float x1 = gl + 570 * kb + dx, y0 = 152 * kb, y1 = 616 * kb, coin = 46 * kb;
+            const vec2 p[5] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}, {x1, y1}, {0, y1}};
+            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x1B1D22, 0.94f * a), hex(0x0C0D10, 0.96f * a), y0, y1});
+            const vec2 bordHaut[3] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}};
+            dessin2d::trait(r, bordHaut, 3, 2 * kb, vec4{1, 1, 1, 0.22f * a});
+            const vec2 bordDroit[2] = {{x1, y0 + 14 * kb + coin}, {x1, y1}};
+            dessin2d::trait(r, bordDroit, 2, 1.5f * kb, vec4{1, 1, 1, 0.10f * a});
         }
-        y += listeH + gap;
-        // ---------- .menu-foot : record + ta voiture ----------
+        // deux boutons ronds (rayon 116, centres à 152 et 426, hauteur 316) et la pilule « GARAGE » (32 à 532, 440 à 596)
+        const float rb = 116 * kb;
+        for (int i = 0; i < 2; i++) {
+            a = glisse(2 + i, dx);
+            const float cx = gl + (i == 0 ? 152 : 426) * kb + dx, cy = 316 * kb;
+            g_zones[i] = {cx - rb, cy - rb, 2 * rb, 2 * rb, 0, true};
+            manette::focus(g_zones[i]);   // WFS-22
+            ui::boutons::startStop(r, cx - rb, cy - rb, 2 * rb, 2 * rb, ui::majuscules(ui::tr("menu.r19.course")), a, presse_ == i,
+                                   ui::majuscules(ui::tr(i == 0 ? "menu.r19.solo" : "menu.r19.en_ligne")), 31 * kb);
+        }
         a = glisse(4, dx);
         {
-            const float x = m.x + dx;
-            const float lp = (cp ? 12 : 11) * k, vp = (cp ? 20 : 22) * k, dv = (cp ? 15 : 16) * k;   // libellé, valeur
-            ui::text(r, x, y, lp, ui::majuscules(ui::tr("menu.record")), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
-            ui::text(r, x, y + dv, vp, g_best > 0 ? ui::nombre(g_best) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
-            const float x2 = x + std::max(ui::width(vp, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(lp, ui::majuscules(ui::tr("menu.record")), 0.16f)) + 28 * k;
-            const std::string nom = ui::majuscules(g.car ? modele(*g.car) : "—");
-            ui::text(r, x2, y, lp, ui::majuscules(ui::tr("menu.voiture")), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
-            const bool presse = presse_ == TA_VOITURE;   // #myCarBtn : appui = ouvre le garage (WFS-96)
-            { const textes::NomPropre np; ui::text(r, x2, y + dv, vp, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false); }   // WFS-505 : nom de la voiture (RC-E20-03)
-            const float nw = std::max(ui::width(vp, nom), ui::width(lp, ui::majuscules(ui::tr("menu.voiture")), 0.16f));
-            r.uiRect(x2, y + dv + vp + 2 * k, ui::width(vp, nom), 2 * k, hex(ACCENT2, a));   // border-bottom cyan de .mycar strong
-            g_zones[TA_VOITURE] = {x2 - 6 * kb, y - 6 * kb, nw + 12 * kb, 50 * kb, 0, true};   // WFS-168 : zone d'avant WFS-147 (44 + 6)
+            const float x = gl + 32 * kb + dx, y = 440 * kb, w = 500 * kb, h = 156 * kb;
+            g_zones[SHOWROOM] = {x, y, w, h, 0, true};
+            manette::focus(g_zones[SHOWROOM]);
+            ui::boutons::piluleChrome(r, x, y, w, h, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM, 50 * kb);
+        }
+        // RECORD (bas gauche) : libellé gris espacé, valeur en grand ; le toucher ouvre le Profil (records, maquette 21)
+        a = glisse(5, dx);
+        {
+            const float x = gl + 46 * kb + dx, y = H - gb - 82 * kb;
+            ui::text(r, x, y, 12 * kb, ui::majuscules(ui::tr("menu.record")), hex(MUTED, a), ui::GAUCHE, 0.22f, false);
+            const std::string v = g_best > 0 ? ui::nombre(g_best) : "—";
+            ui::text(r, x, y + 16 * kb, 34 * kb, v, hex(presse_ == TA_VOITURE ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false, true);
+            const float zw = std::max(110 * kb, ui::width(34 * kb, v) + 20 * kb);
+            g_zones[TA_VOITURE] = {x - 10 * kb, y - 10 * kb, zw, 70 * kb, 0, true};   // ≥ 44 px, sous « Garage » sans le chevaucher
             manette::focus(g_zones[TA_VOITURE]);
         }
-        y += piedH + gap;
-        // ---------- .intro.only-touch : aide des commandes tactiles ----------
-        a = glisse(5, dx);
-        // WFS-146 (RG-05, ANO-32) : la 1re ligne suit les réglages Direction et Gyroscope (taille, couleur, positions inchangées)
-        const bool fleches = reglagesRessenti().direction == ModeDirection::Fleches, gyro = gyroscopeActif();   // capteur présent et réglage non coupé
-        const char* volant = ui::tr(fleches ? (gyro ? "menu.aide.fleches_gyro" : "menu.aide.fleches")
-                                            : (gyro ? "menu.aide.glisser_gyro" : "menu.aide.glisser")).c_str();   // WFS-505 (RG-01)
-        ui::text(r, m.x + dx, y, aideP, volant, hex(INTRO, a), ui::GAUCHE, 0, false);
-        ui::text(r, m.x + dx, y + aideL, aideP, ui::tr("menu.aide.droite"), hex(INTRO, a), ui::GAUCHE, 0, false);
-        // WFS-406 (RG-02) : en bas à droite, style du bouton « Réglages ». WFS-415 (RG-05, accroche) : dessiné APRÈS les choix,
-        // pour que « Course solo » reste la 1re zone de la manette (manette::focus) et du parcours d'endurance (CI #993, #994)
-        credits::dessinerBouton(r, W, H, g.marges, presse_ == CREDITS);
-        cadeau_jour::dessinerBouton(r, W, H, g.marges, presse_ == CADEAU);   // WFS-501 (RG-01) : au-dessus de « Crédits »
-        profil_ecran::dessinerBouton(r, W, H, g.marges, presse_ == PROFIL);   // WFS-482 (RG-01) : au-dessus du « Cadeau du jour »
-        market_ecran::dessinerBouton(r, W, H, g.marges, presse_ == MARKET);   // WFS-513 (RG-01) : au-dessus de « Profil »
-        pret_bandeau::dessiner(r, W, H, g.marges, presse_ == PRET);   // WFS-502 (RG-01, RG-03, RG-05) : au-dessus de « Profil » (WFS-482)
+        cadeau_jour::dessinerBouton(r, W, H, g.marges, presse_ == CADEAU);   // carte « Cadeau du jour » (bas droit)
+        pret_bandeau::dessiner(r, W, H, g.marges, presse_ == PRET);         // carte « Voiture prêtée » au-dessus (maquette 26)
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
@@ -339,12 +328,12 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     capture("showroom-choisir", "retour au menu après « Choisir », nouvelle voiture sous « Ta voiture »");
     WFS_LOG("menu : « Choisir » depuis le Showroom → écran %s", nomEcran(g.ecran()));
     // « Ta voiture » (pied du menu) → garage en mode regarder ; « Retour » → menu
+    // WFS-550 (RG-11) : bloc « RECORD » → Profil ; puis fermé
     centre(TA_VOITURE, x, y); g.onTouch({12, x, y, true}); image(); g.onTouch({12, x, y, false});
     for (int i = 0; i < 30; i++) image();
-    WFS_LOG("menu : « Ta voiture » → écran %s", nomEcran(g.ecran()));
-    if (float gx, gy; garageBouton("retour", gx, gy)) { g.onTouch({13, gx, gy, true}); image(); g.onTouch({13, gx, gy, false}); }
+    WFS_LOG("menu : « RECORD » → Profil %s", profil_ecran::ouvert() ? "ouvert" : "NON ouvert (ÉCHEC)");
+    profil_ecran::fermer();
     for (int i = 0; i < 30; i++) image();
-    WFS_LOG("menu : « Retour » du garage → écran %s", nomEcran(g.ecran()));
     g.shutdown();
     unsetenv("WFS_MOMENT");   // WFS-41 : moment choisi à l'écran Terrain
     courseBenchRules(false);

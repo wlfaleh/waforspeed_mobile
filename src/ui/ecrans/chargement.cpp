@@ -45,6 +45,25 @@ static float clampv(float v, float a, float b) { return std::max(a, std::min(b, 
 #define WFS_VERSION "dev"   // WFS-279 : compilé sans CMake (valeur fixe du PC)
 #endif
 // WFS-146 (RG-10, ANO-39) : bouton de l'écran d'erreur (zone posée à la dernière image), doigt qui le tient, demande, libellé
+float dessinerLogoLigne(Renderer& r, float x, float y, float px, float op) {
+    if (!ui::fontReady()) return 0;
+    const float e = std::max(1.f, px * 0.035f);
+    ui::text(r, x, y, px, "WA", hex(TEXTE, op), ui::GAUCHE, -0.01f, false, true);
+    const float xf = x + ui::width(px, "WA", -0.01f);
+    for (int i = 0; i < 8; i++) {   // FOR en contour : copies décalées, puis remplissage couleur du fond
+        const float a = i * 0.785398f;
+        ui::text(r, xf + std::cos(a) * e, y + std::sin(a) * e, px, "FOR", hex(TEXTE, op), ui::GAUCHE, -0.01f, false, true);
+    }
+    ui::text(r, xf, y, px, "FOR", hex(BG, op), ui::GAUCHE, -0.01f, false, true);
+    const float xs = xf + ui::width(px, "FOR", -0.01f);
+    for (int i = 0; i < 4 && op >= 0.999f; i++) {   // halo orange de SPEED
+        const float a = 0.785398f + i * 1.570796f;
+        ui::text(r, xs + std::cos(a) * px * 0.06f, y + std::sin(a) * px * 0.06f, px, "SPEED", hex(ACCENT, 0.18f * op), ui::GAUCHE, -0.01f, false, true);
+    }
+    ui::text(r, xs, y, px, "SPEED", hex(ACCENT, op), ui::GAUCHE, -0.01f, false, true);
+    return xs + ui::width(px, "SPEED", -0.01f) - x;
+}
+
 static struct { float x = 0, y = 0, w = 0, h = 0; } g_reessayer;
 static int g_doigtErreur = -1; static bool g_reessai = false, g_quitter = false;
 
