@@ -1354,3 +1354,6 @@ Commit relu a7512b77. Construction et 150 tests CPU verts (refaits), 22 captures
 - Fait : « Toit et rétros » : le titre de chaque rangée compte le droit de la couleur secondaire tant qu'il n'est pas acheté (même total que `prixPastille` sous les gouttes) ; texte `garage.couleur.groupe.classiques_prix` FR / EN (7337a96d).
 - Vérifié : banc garage-couleurs 0 écart ; tests CPU 150 OK ; capture `garage-couleurs-p208-toit-noir-apercu` refaite (574d6782). Lead dev rappelé.
 
+### 2026-11-16 06:30:20 — WFS-551 fusionné par le lead dev (lead-dev)
+
+PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et rétros ») est corrigé dans 7337a96d (droit du toit compté dans le titre, comme `prixPastille`). Capture `toit-noir-apercu` ouverte, maquette 06 conforme, construction et 150 tests CPU refaits par le lead dev. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash **e1c86795**. Statut 🟡 À valider (utilisateur). Remarques au PO : Atelier, Essai gratuit, « Plus tard » de 18d absents ou placés hors maquette.
