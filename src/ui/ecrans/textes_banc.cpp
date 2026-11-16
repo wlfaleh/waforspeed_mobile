@@ -123,7 +123,7 @@ int benchMenusTextes(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture textes-%s-%s : %s %d %%%s", lg.c_str(), nom.c_str(), ch.libelle().c_str(), (int)std::lround(ch.pourcent() * 100), ch.enErreur() ? " (échec)" : "");
     };
     ch.debut(r, nowSeconds());
-    for (const char* e : {"Construction de la route", "Chargement du modèle 3D…", "Construction de la ville"}) ch.etape(ch.pourcent() + 0.25f, e);
+    for (const char* e : {"Construction de la route", "Chargement du modèle 3D…", "Chargement des voitures", "Construction de la ville"}) ch.etape(ch.pourcent() + 0.25f, e);
     noterChargement("chargement");
     ch.erreur(false);
     noterChargement("chargement-erreur");

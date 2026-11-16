@@ -32,6 +32,7 @@
 #include "../../platform/manette.h"   // WFS-517 (RG-06) : boutons du menu (banc du duel entre amis)
 #include "creation_profil.h"   // WFS-481 (accroche) : le lien d'invitation attend la création du profil
 #include "creation_profil_saisie.h"   // WFS-545 : FiltreAppuis (150 ms après chaque caractère du code)
+#include "../salon_parking.h"   // WFS-558 : scène 3D (parking, digicode, plaque du pseudo, 2e voiture)
 
 namespace wfs {
 namespace ecrans {
@@ -51,6 +52,9 @@ Zone g_touches[32], g_effacer, g_rejoindre;
 Zone g_inviter, g_reessayer;   // WFS-112 : « Inviter » (partage du lien) ; WFS-141 : « Réessayer » (relais injoignable)
 Zone g_derniers[3];            // WFS-122 (RG-01) : « Derniers adversaires » (toucher un nom : duel créé, « Inviter » ouvert)
 std::string g_saisie;
+} // namespace
+const std::string& duel3d::codeSaisi() { return g_saisie; }   // WFS-558 : code tapé, montré sur l'afficheur du digicode
+namespace {
 // WFS-545 RG-02 : 150 ms après chaque caractère du code (ou effacement) ; RG-01 (un doigt à la fois) : doigt_ de SalonSysteme
 creation::FiltreAppuis g_filtreCode;
 const reseau::TransportDouble* g_double = nullptr;   // transport du salon en cours (Wi-Fi local + Internet), si ouvert ici
@@ -193,6 +197,7 @@ public:
         Sauvegarde& sv = sauvegarde();
         const char* car = g.car ? g.car->id : "golf";
         if (!s.inRoom()) {
+            if (g_retour.contient(t.x, t.y) && duel3d::vue().active && duel3d::vue().proche) { WFS_LOG("salon : « Retour » : cadrage large"); duel3d::rapprocher(false); return true; }   // WFS-558 (RG-05)
             if (g_retour.contient(t.x, t.y)) { WFS_LOG("salon : « Retour »"); g.allerA(Ecran::Menu); return true; }
             int dernier = -1;   // WFS-122 (RG-01) : un dernier adversaire touché = « Créer un duel » puis « Inviter »
             for (int i = 0; i < 3; i++) if (g_derniers[i].contient(t.x, t.y) && i < (int)sv.adversaires.size()) dernier = i;
@@ -207,6 +212,18 @@ public:
                 }
                 return true;
             }
+            for (size_t i = 0; i < g_liste.size() && i < 4; i++)
+                if (g_salons[i].contient(t.x, t.y)) {   // joinRoom
+                    const std::string code = g_liste[i].code;
+                    s.join(std::make_unique<reseau::TransportUdp>(prise(), code), code, false, sv.nick, car, sv.peinture(car).c_str(), "");
+                    WFS_LOG("salon : rejoint %s (hôte %s)", code.c_str(), g_liste[i].hote.c_str());
+                    return true;
+                }
+            // WFS-558 (RG-05) : vue large : le digicode se touche pour s'approcher (après les tuiles du panneau, qui gardent leurs touchers)
+            if (duel3d::vue().active && !duel3d::vue().rapprochee()) {
+                if (duel3d::vue().digicode.contient(t.x, t.y) && !duel3d::vue().proche) duel3d::rapprocher(true);
+                return true;
+            }
             for (int i = 0; i < 32; i++)   // WFS-89 : saisie du code
                 if (g_touches[i].contient(t.x, t.y) && g_saisie.size() < 4) { if (g_filtreCode.accepter(g.time)) g_saisie += duel::CODE_CHARS[i]; return true; }
             if (g_effacer.contient(t.x, t.y)) { if (!g_saisie.empty() && g_filtreCode.accepter(g.time)) g_saisie.pop_back(); return true; }
@@ -217,13 +234,6 @@ public:
                 g_saisie.clear();
                 return true;
             }
-            for (size_t i = 0; i < g_liste.size() && i < 4; i++)
-                if (g_salons[i].contient(t.x, t.y)) {   // joinRoom
-                    const std::string code = g_liste[i].code;
-                    s.join(std::make_unique<reseau::TransportUdp>(prise(), code), code, false, sv.nick, car, sv.peinture(car).c_str(), "");
-                    WFS_LOG("salon : rejoint %s (hôte %s)", code.c_str(), g_liste[i].hote.c_str());
-                    return true;
-                }
             return true;
         }
         if (g_quitter.contient(t.x, t.y)) { WFS_LOG("salon : « Quitter le salon »"); s.leave(); return true; }
@@ -259,8 +269,8 @@ public:
         const Marges& mg = g.marges;
         const float zl = mg.gauche + (cp_ ? 24 : 32) * k, zr = W - mg.droite - (cp_ ? 24 : 32) * k;
         // WFS-548 (RG-02, maquette 23) : écran arrêté : fond flouté et assombri (avant : voile --bg à 94 %)
-        verre::fondFloute(r);
-        verre::assombrir(r, W, H, 0.55f);
+        // WFS-558 (RG-05, RG-08) : accueil sur la scène 3D nette (maquette 04) ; salon : la même scène, floutée (maquette 23)
+        if (!duel3d::vue().active || duelSession().inRoom()) { verre::fondFloute(r); verre::assombrir(r, W, H, 0.55f); }
         // en-tête (#lobby) : .eyebrow + .big (petit écran : resserré, @media (max-height: 520px) du web)
         const float hy = mg.haut + (cp_ ? 12 : 26) * k;
         verre::surTitre(r, zl, hy, (cp_ ? 12 : 13) * k, ui::tr("salon.surtitre"));   // WFS-548 (RG-03) : gris
@@ -279,6 +289,15 @@ private:
     void dessinerAccueil(Renderer& r, float zl, float zr, float y, float by, float bh, float k) {
         for (Zone& z : g_km) z = {};
         g_pret = g_quitter = {};
+        if (duel3d::vue().active) dessinerPanneau3d(r, zr, by, k);   // WFS-558 : maquette 04 (pseudo sur la plaque, listes dans le panneau)
+        else dessinerListes2d(r, zl, zr, y, by, k);
+        g_creer = bouton(r, zl, by, bh, k, "salon.creer", true);
+        g_retour = bouton(r, g_creer.x + g_creer.w + 10 * k, by, bh, k, "salon.retour", false, false, Style::Autocollant);
+        if (duel3d::vue().active) zonesDigicode(r, zr, by, bh, k); else dessinerCode(r, zr, y, k, by, bh);
+    }
+
+    // accueil d'avant WFS-558 (repli sans scène 3D) : pseudo, salons qui t'attendent, aide, derniers adversaires
+    void dessinerListes2d(Renderer& r, float zl, float zr, float y, float by, float k) {
         ui::text(r, zl, y, 12 * k, ui::majuscules(ui::tr("salon.pseudo")), hex(MUTED), ui::GAUCHE, 0.16f, false);
         ui::text(r, zl, y + 18 * k, (cp_ ? 24 : 28) * k, sauvegarde().nick, hex(TEXTE), ui::GAUCHE, 0, false, true);
         float ly = y + (cp_ ? 60 : 78) * k;
@@ -321,9 +340,76 @@ private:
                 ui::text(r, zl + lw - 18 * k, yy + (dh - 13 * k) / 2, 13 * k, ui::majuscules(ui::tr("salon.inviter")), hex(ACCENT2), ui::DROITE, 0.16f, false);
             }
         }
-        g_creer = bouton(r, zl, by, bh, k, "salon.creer", true);
-        g_retour = bouton(r, g_creer.x + g_creer.w + 10 * k, by, bh, k, "salon.retour", false, false, Style::Autocollant);
-        dessinerCode(r, zr, y, k, by, bh);
+    }
+
+    // WFS-558 (RG-07, maquette 04) : panneau de verre « Rejoins avec un code » en haut à droite, son aide, puis — seulement s'ils
+    // ne sont pas vides — « Salons à côté de toi » et « Derniers adversaires » (mêmes tuiles, mêmes touchers qu'avant) ; masqué en
+    // vue rapprochée du digicode. Le panneau grandit vers le bas, jamais plus bas que la moitié de l'écran (voiture, « Créer »).
+    void dessinerPanneau3d(Renderer& r, float zr, float by, float) {
+        const float k = g_kb;   // unité de la maquette 04 (H / 720) : même panneau sur téléphone et sur PC
+        for (Zone& z : g_salons) z = {};
+        for (Zone& z : g_derniers) z = {};
+        g_liste = reseau::salonsOuverts(*prise());
+        if (duel3d::vue().proche || duel3d::vue().t > 0.02f) return;
+        const float H = (float)r.height(), pw = 332 * k, pad = 16 * k, x = zr - pw, y = 0.153f * H, lw = pw - 2 * pad, lh = 44 * k;
+        const auto& adv = sauvegarde().adversaires;
+        const size_t ns = std::min<size_t>(g_liste.size(), 2), na = std::min<size_t>(adv.size(), 3);
+        float h = 82 * k;
+        const bool code = !g_saisie.empty();   // RG-05 (arbitrage du PO, 2026-11-16) : code commencé recopié sous l'aide
+        if (code) h += 46 * k;
+        if (ns) h += 22 * k + ns * (lh + 6 * k);
+        if (na) h += 22 * k + na * (lh + 6 * k);
+        h = std::min(h, std::max(82 * k, std::min(0.52f * H, by - 12 * k) - y));
+        verre::panneau(r, x, y, pw, h, {10 * k, 1.2f * g_kb});
+        ui::text(r, x + pad, y + 14 * k, 16 * k, ui::majuscules(ui::tr("salon.rejoins_code")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        ui::textBoite(r, x + pad, y + 40 * k, lw, 16 * k, 13 * k, ui::tr("salon.aide_digicode1"), hex(0xC9CDDA), ui::GAUCHE, 0, false);
+        ui::textBoite(r, x + pad, y + 58 * k, lw, 16 * k, 13 * k, ui::tr("salon.aide_digicode2"), hex(0xC9CDDA), ui::GAUCHE, 0, false);
+        float ly = y + 86 * k;
+        if (code) {   // « Code : K7Q_ » : 4 cases, caractères en orange comme le code du salon, case suivante soulignée en cyan
+            ui::text(r, x + pad, ly + 12 * k, 12 * k, ui::majuscules(ui::tr("salon.code_tape")), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            const float cw = 30 * k, ch = 36 * k, cx0 = x + pad + 70 * k;
+            for (int i = 0; i < 4; i++) {
+                const float cx = cx0 + i * (cw + 6 * k);
+                r.uiRect(cx, ly, cw, ch, GLASS);
+                r.uiRect(cx, ly + ch - 2 * k, cw, 2 * k, i == (int)g_saisie.size() ? hex(ACCENT2) : i < (int)g_saisie.size() ? hex(ACCENT) : hex(SURFACE2));
+                if (i < (int)g_saisie.size()) ui::text(r, cx + cw / 2, ly + 5 * k, 24 * k, ui::majuscules(g_saisie.substr((size_t)i, 1)), hex(ACCENT), ui::CENTRE, 0, false, true);
+            }
+            ly += 46 * k;
+        }
+        const float bas = y + h - 4 * k;
+        auto tuile = [&](Zone& z, const std::string& nom, const std::string& droite, unsigned bord, unsigned couleurDroite, float tailleDroite) {
+            if (ly + lh > bas) return false;
+            z = {x + pad, ly, lw, lh};
+            r.uiRect(z.x, z.y, z.w, z.h, GLASS);
+            r.uiRect(z.x, z.y, 3 * k, z.h, hex(bord));
+            ui::textBoite(r, z.x + 14 * k, z.y, z.w * 0.62f, z.h, 17 * k, ui::majuscules(nom), hex(TEXTE), ui::GAUCHE, 0.06f, false);
+            ui::text(r, z.x + z.w - 12 * k, z.y + (z.h - tailleDroite) / 2, tailleDroite, ui::majuscules(droite), hex(couleurDroite), ui::DROITE, 0.16f, false, tailleDroite > 16 * k);
+            ly += lh + 6 * k;
+            return true;
+        };
+        if (ns) {
+            ui::text(r, x + pad, ly, 12 * k, ui::majuscules(ui::tr("salon.a_cote")), hex(MUTED), ui::GAUCHE, 0.16f, false); ly += 20 * k;
+            for (size_t i = 0; i < ns; i++) if (!tuile(g_salons[i], ui::tr("salon.rejoindre_hote", g_liste[i].hote), g_liste[i].code, ACCENT2, ACCENT, 22 * k)) break;
+        }
+        if (na) {
+            ui::text(r, x + pad, ly, 12 * k, ui::majuscules(ui::tr("salon.derniers")), hex(MUTED), ui::GAUCHE, 0.16f, false); ly += 20 * k;
+            for (size_t i = 0; i < na; i++) if (!tuile(g_derniers[i], adv[i], ui::tr("salon.inviter"), ACCENT, ACCENT2, 13 * k)) break;
+        }
+    }
+
+    // WFS-558 (RG-01, RG-05, RG-06) : le digicode 3D est le clavier du code : ses touches (projetées à l'écran par duel3d) sont les
+    // zones des caractères, d'« effacer » et de « Rejoindre » (OK) ; vides en vue large (le toucher rapproche la caméra)
+    void zonesDigicode(Renderer&, float, float, float, float) {
+        for (Zone& z : g_touches) z = {};
+        g_effacer = g_rejoindre = {};
+        const duel3d::Vue& v = duel3d::vue();
+        auto zone = [](const duel3d::Rect& q) { return q.ok ? Zone{q.x, q.y, q.w, q.h} : Zone{}; };
+        for (int k = 0; k < 31; k++) {
+            const char* p = std::strchr(duel::CODE_CHARS, duel3d::caractere(k));
+            if (p) g_touches[p - duel::CODE_CHARS] = zone(v.touches[k]);
+        }
+        g_effacer = zone(v.touches[duel3d::EFFACER]);
+        if (g_saisie.size() == 4) g_rejoindre = zone(v.touches[duel3d::OK]);
     }
 
     // WFS-89 : « Rejoindre avec un code » (#codeIn / #joinBtn du jeu web) : 4 cases, clavier, effacer, « Rejoindre »
@@ -745,9 +831,24 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     capture("menu-duel", "« Duel en ligne » actif (plus grisé)");
     // salon-accueil : Nadia a créé un salon sur la Corniche de nuit ; il apparaît dans « Salons qui t'attendent »
     nadia.join(std::make_unique<reseau::TransportUdp>(pb, "n4d1"), "n4d1", true, "Nadia", "m4", "", "plage/nuit");
+    const auto advAvant = sauvegarde().adversaires;
+    sauvegarde().adversaires = {"Sam"};   // WFS-558 (RG-07) : un ancien adversaire simulé (listes non vides dans le panneau)
     g.allerA(Ecran::Salon); pas(30);
-    capture("salon-accueil", "salon de Nadia listé");
-    nadia.leave(); pas(10);
+    // WFS-558 : le salon de Nadia arrive par le réseau local après quelques annonces : on attend qu'il soit affiché (≤ 5 s)
+    for (int i = 0; i < 300 && !(g_liste.size() && (!duel3d::vue().active || g_salons[0].w > 0)); i++) { pas(1); g.render(t); }
+    // capture avec des annonces fraîches à chacune de ses deux images (le rendu logiciel prend plusieurs secondes réelles par image :
+    // sans cela, le salon de Nadia « expire » entre les deux, ABSENCE_MS de reseau_udp.cpp ; 2e revue du lead dev, #430)
+    pas(2); g.render(t); pas(2); g.render(t + 0.01); r.capturePng(out + "/salon-accueil.png");
+    WFS_LOG("capture salon-accueil : écran %s, salon de Nadia listé (%s)", nomEcran(g.ecran()), g_salons[0].w > 0 ? "tuile affichée" : "TUILE ABSENTE");
+    if (duel3d::vue().active) {   // WFS-558 (revue du lead dev, #430) : la tuile « Rejoindre Nadia » du panneau fait entrer dans son salon
+        // le rendu logiciel du banc prend plusieurs secondes réelles par image : annonces de Nadia relues juste avant (sinon son
+        // salon « expire » entre deux images, ABSENCE_MS de reseau_udp.cpp)
+        pas(2); g.render(t); const bool tuile = g_salons[0].w > 0; toucher(26, g_salons[0]); pas(10);
+        if (tuile && duelSession().inRoom() && duelSession().code() == "n4d1") WFS_LOG("salon (WFS-558) : tuile « Rejoindre Nadia » du panneau touchée → salon n4d1 rejoint : 0 écart");
+        else WFS_ERR("salon (WFS-558) : tuile « Rejoindre Nadia » : %s, salon %s", tuile ? "touchée" : "ABSENTE", duelSession().inRoom() ? duelSession().code().c_str() : "non rejoint");
+        duelSession().leave(); pas(10);
+    }
+    nadia.leave(); sauvegarde().adversaires = advAvant; pas(10);
     // salon-hote : je crée un salon, Nadia le rejoint
     g.render(t); toucher(1, g_creer);
     const std::string code = duelSession().code();
@@ -784,12 +885,19 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     g.setAutopilot(false);
     g.allerA(Ecran::Salon); pas(20);
     capture("salon-code", "bloc « Rejoindre avec un code » (4 cases vides, clavier)");
-    for (char c : std::string("k7qx")) {
+    // WFS-558 (RG-05) : scène 3D : un toucher sur le digicode rapproche la caméra (0,4 s), puis on tape sur ses touches
+    const bool en3d = duel3d::vue().active;
+    if (en3d) {
+        g.render(t); const duel3d::Rect q = duel3d::vue().digicode; toucher(29, Zone{q.x, q.y, q.w, q.h});
+        pas(8); capture("salon-digicode-glisse", "WFS-558 : caméra en route vers le digicode (0,13 s sur 0,4 s)");
+        pas(30); capture("salon-digicode-proche", "WFS-558 (RG-05) : vue rapprochée, digicode vide");
+    }
+    for (char c : std::string(en3d ? "k7q2" : "k7qx")) {
         const char* p = std::strchr(duel::CODE_CHARS, c);
         if (p) { g.render(t); toucher(30, g_touches[p - duel::CODE_CHARS]); }
     }
     capture("salon-code-saisi", "code K7QX saisi, « Rejoindre » actif");
-    const bool codeOk = g_saisie == "k7qx";
+    const bool codeOk = g_saisie == (en3d ? "k7q2" : "k7qx");
     // WFS-545 RG-01 / RG-02 : « effacer » posé, 10 mouvements du même doigt, puis un 2e doigt 50 ms après : un seul caractère retiré
     {
         g.render(t);
@@ -802,6 +910,14 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
         t += creation::FiltreAppuis::DELAI; pas(1);
     }
     const bool effaceUn = g_saisie == "k7q";
+    if (en3d) {   // WFS-558 (RG-05) : « Retour » ramène d'abord au cadrage large, sans quitter l'écran
+        g.render(t); toucher(28, g_retour); pas(30);
+        capture("salon-digicode-retour", "WFS-558 (RG-05) : « Retour » : cadrage large, code K7Q gardé sur l'afficheur");
+        const bool large = !duel3d::vue().proche && duel3d::vue().t < 0.02f && g.ecran() == Ecran::Salon;
+        if (large) WFS_LOG("salon (WFS-558) : « Retour » en vue rapprochée → cadrage large, écran Salon gardé : 0 écart");
+        else WFS_ERR("salon (WFS-558) : « Retour » en vue rapprochée : vue %s, écran %s", duel3d::vue().proche ? "rapprochée" : "large", nomEcran(g.ecran()));
+        g.render(t); const duel3d::Rect q = duel3d::vue().digicode; toucher(27, Zone{q.x, q.y, q.w, q.h}); pas(30);
+    }
     capture("salon-code-efface", "« effacer » maintenu (10 mouvements) puis 2e appui à 50 ms : un seul caractère retiré (K7Q)");
     if (codeOk && effaceUn) WFS_LOG("salon (WFS-545) : code K7QX saisi touche par touche (4 caractères), « effacer » maintenu + appui à 50 ms → K7Q : 0 écart");
     else WFS_ERR("salon (WFS-545) : saisie « %s » (attendu k7qx puis k7q), effacement %s", g_saisie.c_str(), effaceUn ? "ok" : "EN SÉRIE");

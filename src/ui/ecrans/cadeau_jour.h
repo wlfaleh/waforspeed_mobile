@@ -46,6 +46,8 @@ bool toucher(int id, float x, float y, bool down);   // toujours gardé (vrai) q
 // bouton « CADEAU DU JOUR » du menu (même style et même taille que « Crédits » et « Réglages »), au-dessus de « Crédits », en bas à
 // droite de la zone sûre ; pastille orange quand un cadeau attend, sinon « Prochain cadeau dans hh:mm » à sa gauche
 void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse);
+// WFS-550 (maquette 26) : bord droit et haut de la carte « Cadeau du jour » (la carte « Voiture prêtée » se pose au-dessus)
+void placeCarte(float W, float H, const Marges& m, float& droite, float& haut);
 bool dansBouton(float x, float y);
 
 // ---- banc d'essai (WFS_BANC=cadeau, RG-07) : WFS_CADEAU=etoiles|coloris|skin|voiture|chances|attente ne garde que ces captures ;

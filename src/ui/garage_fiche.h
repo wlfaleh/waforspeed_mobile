@@ -8,15 +8,18 @@ namespace wfs::ecrans::garage {
 
 class FicheGarage : public PanneauGarage {
 public:
-    // en-tête en haut à gauche et points des voitures permises (zones g_z.points)
+    // en-tête en haut à gauche
     void dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) override;
     // place (parmi les voitures permises) du point touché, -1 si aucun
     int appui(float x, float y) const override;
     void viderZones() override;
-    // .specs (Puissance, 0 à 100, Vitesse max) en haut du panneau ; renvoie l'abscisse où commencent les barres
+    // .specs (Puissance, 0 à 100, Vitesse max), en cadrans fins (WFS-550) ; renvoie l'abscisse où commencent les barres
     float specs(Renderer& r, const MiseEnPage& mp, const CarDef& car) const;
-    // .statlist : 4 barres sur 10, de `x` jusqu'à la colonne des boutons
+    // .statlist : 4 barres fines graduées sur 10 (WFS-550), de `x` jusqu'à la colonne des boutons
     void stats(Renderer& r, const MiseEnPage& mp, const CarDef& car, float x) const;
+private:
+    // WFS-550 (RG-04) : segments de la position sous le plateau, juste au-dessus du panneau (zones g_z.points) ; appelée par specs()
+    void position(Renderer& r, const MiseEnPage& mp, int index) const;
 };
 
 } // namespace wfs::ecrans::garage

@@ -385,6 +385,7 @@ int main(int argc, char** argv) {
     // machine), sinon reglages-menu et menu-duel montreraient le menu sans record (RG-08 : mêmes captures)
     if (menu2 && !menu1) sauvegarde().best = 955;
     if (menu2) { ecrans::benchReglages(g, r, out); ecrans::benchSalon(g, r, out); }
+    if (banc == "salon") { ecrans::benchSalon(g, r, out); return finir(); }   // WFS-558 (accroche) : salon du duel seul (captures ciblées)
     if (menu1 && benchParcours(g, r, out) > 0) { finir(); return 3; }   // WFS-115 : parcours menu → mode → garage → terrain → course
     if (menu1 || menu2) return finir();   // WFS-37, WFS-11, WFS-41, WFS-83
     // WFS-106 : un morceau tourne sans WFS_BANC, sous son nom ou sous celui de sa partie (partie1 / partie2)
