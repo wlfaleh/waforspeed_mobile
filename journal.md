@@ -1363,3 +1363,6 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Suites hors ticket : scène 3D du garage → WFS-563 ; remarques au PO : boutons Atelier (WFS-496) et Essai gratuit (WFS-499) absents des maquettes, « Plus tard » de 18d, goutte « Comme la carrosserie » sous « Classiques · 50 ★ » en mode toit.
 - Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
 
+### 2026-11-16 07:10:25 — Statuts automatiques, CI main #1147 (robot statuts)
+- Run rouge (push, commit e1c8679), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
