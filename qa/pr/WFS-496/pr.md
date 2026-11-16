@@ -68,14 +68,14 @@ Agent : Claude, agent dev3d (01Us6uCwHf)
 
 ## Tests CPU
 
-Commit testé : `c8a1afcf` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`, code de sortie 0 :
+Commit testé : `694c59bb` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`, code de sortie 0 :
 
 ```
 [OK] test_atelier (0 s)
 [OK] test_ville_sol (2 s)
 [OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 149 test(s) réussi(s) en 381 s
+tests CPU : 149 test(s) réussi(s) en 389 s
 ```
 
 ## Captures pour le lead dev (25 après, 1 paire avant / après ; 🔁 = refait pour la 2e revue)
