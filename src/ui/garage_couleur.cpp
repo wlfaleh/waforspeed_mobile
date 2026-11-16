@@ -166,6 +166,8 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
     const int porteeP = sv.actif() ? (porte.peinture ? peintureParId(porte.peinture->id) : -1) : e.peinture;
     const int porteeT = sv.actif() ? (porte.peinture2 ? peintureParId(porte.peinture2->id) + 1 : 0) : sel;
     int groupePrec = -2;
+    long long droitToit = 0;   // droit « Toit et rétros » de cette voiture, s'il reste à acheter
+    if (toit_) if (const perso::Objet* d = perso::objet(perso::ID_SECONDAIRE); d && !perso::possede(sv, *d, car)) droitToit = perso::prix(*d, car);
     for (int j = premier_; j < premier_ + visibles_ && j < n; j++) {
         const float x = x0 + (j - premier_) * pas;
         const bool comme = toit_ && j == 0;                     // « Comme la carrosserie »
@@ -176,10 +178,13 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
         const int gr = comme ? 0 : groupeCouleur(p);
         if (gr != groupePrec) {
             if (groupePrec >= -1) r.uiRect(x - ecart / 2 - 0.5f * k, yy - 26 * k, std::max(1.f, k), s + 30 * k, {1, 1, 1, 0.16f * op});
-            const int base = comme ? -1 : prixBase(p);
-            const std::string titre = gr == 0 ? ui::tr("garage.couleur.groupe.classiques")
-                : ui::tr(gr == 1 ? "garage.couleur.groupe.vives" : "garage.couleur.groupe.speciales",
-                         ui::nombre((long long)std::lround(base * perso::coefficient(car))));
+            const int base = comme ? 0 : std::max(0, prixBase(p));   // −1 = gratuite
+            // « Toit et rétros » : le titre compte aussi le droit de la couleur secondaire tant qu'il n'est pas acheté (même total
+            // que le prix écrit sous chaque goutte, prixPastille) ; revue du lead dev, 2e tour
+            const long long prixRangee = std::lround(base * perso::coefficient(car)) + droitToit;
+            const std::string titre = gr == 0 && prixRangee == 0 ? ui::tr("garage.couleur.groupe.classiques")
+                : ui::tr(gr == 0 ? "garage.couleur.groupe.classiques_prix" : gr == 1 ? "garage.couleur.groupe.vives" : "garage.couleur.groupe.speciales",
+                         ui::nombre(prixRangee));
             texteEtoiles(r, x, yy - 32 * k, 11 * k, ui::majuscules(titre), hex(SUR_TITRE_GOUTTES, op), ui::GAUCHE, 0.12f);
             groupePrec = gr;
         }

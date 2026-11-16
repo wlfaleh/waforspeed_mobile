@@ -466,6 +466,7 @@ garage.couleur.toit=Roof & mirrors
 garage.couleur.comme=Same as body
 # WFS-551 (RG-01) : rangées de gouttes par prix (prix lus dans configgame.json)
 garage.couleur.groupe.classiques=Classics · free
+garage.couleur.groupe.classiques_prix=Classics · {1} ★
 garage.couleur.groupe.vives=Bright · {1} ★
 garage.couleur.groupe.speciales=Special · {1} ★
 garage.acheter=Buy {1} ★
