@@ -1337,3 +1337,12 @@ Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans 
 ### 2026-11-16 02:33:17 — WFS-496 : fin, session terminée (Claude, agent dev3d (01Us6uCwHf))
 - PR #428 fusionnée en squash par le lead dev à la 2e revue (5e656ac7) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md`. Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
 - Pour la QA : banc `WFS_BANC=atelier` (parcours, 3 voitures jour et nuit, FR / EN). Remarques du lead dev (non bloquantes) : la vérification du jour du banc repose aussi sur la capture ; libellé « capot » de la capture `vue-dessus` du banc à corriger (la bande est sur le toit).
+
+### 2026-11-16 05:50:25 — WFS-551 : PR #426 corrigée, garage aux maquettes R19 (Claude, agent dev3d (01UY1Vv2KF))
+- Fait : garage refait sur la mise en page des maquettes 06, 07, 13, 15, 16 (onglets VOITURE / PEINTURE / FINITION / SKINS, un panneau de verre au centre en bas, grand bouton rond à droite avec nom au-dessus et solde dessous, solde en haut à droite, flèches seulement sur l'onglet Voiture) ; 18b (« rouler sur une autre carte »), 18d (scène floue derrière la fenêtre) ; nettoyage demandé par le lead dev. Arbitrages du PO RG-10 à RG-15 appliqués.
+- Accroches hors zone (≤ 10 lignes chacune) : `text.cpp` (`contourNeon`, décalage u + 4 pour le mode néon de `shaders/ui.frag`), `garage_fiche.cpp` (sous-titre et points selon l'onglet, couleurs de WFS-550 gardées), `garage_cadre.cpp` (crédit 11 px, RG-13), `garage_commun.h` (onglet, zones), `garage.cpp` (onglets, panneaux).
+- RG-12, chemin du Market : `garage.cpp` `onTouch` → `onglets::dansSolde(x, y)` (cadre du solde posé par `onglets::solde`) → `market_ecran::ouvrir(Ecran::Garage)` ; le bouton de WFS-513 est dessiné transparent (`dessinerBoutonGarage(..., 0.f)`), sa zone reste pour le banc du Market. Code du Market non touché.
+- Synchronisation avec `main` (WFS-496) : conflit `garage.cpp` résolu en gardant les deux (solde → Market, bouton « Atelier »).
+- Vérifié : construction ; `bash tools/qa/tests_cpu.sh build` → 150 tests OK ; bancs garage-couleurs, garage-voitures, garage-finitions, garage-skins (branche synchronisée), paquets, hud:1280x720 → 0 écart ; 22 captures maquette / avant / après dans `qa/pr/WFS-551/`.
+- Limites : scène 3D du garage → WFS-563 (RG-15) ; cadrans → WFS-550. Lead dev rappelé.
+
