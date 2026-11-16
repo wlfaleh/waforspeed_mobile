@@ -84,19 +84,20 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         g_z.essai = Zone{};
     }
     // WFS-551 (maquettes 13, 15, 16) : « Retour » en autocollant en bas à gauche
-    const float rw = 150 * k, rh = 50 * k, rx = mp.gl + std::max(40 * k, mp.W * 0.05f), ry = mp.py0 + mp.panelH / 2 - rh / 2;
-    ui::boutons::autocollant(r, rx, ry, rw, rh, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k);   // WFS-549 (RG-02) : sortie
+    const float rw = 126 * k, rh = 52 * k, rx = mp.gl + std::max(40 * k, mp.W * 0.05f), ry = mp.py0 + mp.panelH / 2 - rh / 2;
+    ui::boutons::autocollant(r, rx, ry, rw, rh, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k, ui::tr("reglages.surtitre.menu"));   // WFS-549 (RG-02) : sortie, « Menu principal » dessous
     g_z.retour = {rx, ry, rw, rh};
     // WFS-551 (maquettes 15, 16) : solde d'étoiles sous le bouton rond ; voiture bloquée : « ★ solde / prix » (valeurs réelles)
     {
         const std::string t1 = "★ " + nombreLangue(boutique::solde(s)), t2 = bloquee && !pretAttente ? " / " + nombreLangue(boutique::prixVoiture(car)) : "";
         const float p1 = 20 * k, p2 = 14 * k, w1 = largeurEtoiles(p1, t1), w2 = t2.empty() ? 0 : ui::width(p2, t2), y0 = cy + R + 18 * k;
         const float x0 = cx - (w1 + w2) / 2;
-        texteEtoiles(r, x0, y0, p1, t1, hex(TEXTE, op), ui::GAUCHE);
-        if (!t2.empty()) ui::text(r, x0 + w1, y0 + p1 - p2 - 1 * k, p2, t2, hex(MUTED, op), ui::GAUCHE, 0, false);
+        etoile(r, x0 + p1 * LARGEUR_ETOILE / 2, y0 + p1 * 0.52f, p1 * 0.42f, hex(ACCENT, op));   // maquettes : étoile orange
+        ui::text(r, x0 + p1 * LARGEUR_ETOILE, y0, p1, t1.substr(4), hex(TEXTE, op), ui::GAUCHE, 0, false, true);
+        if (!t2.empty()) ui::text(r, x0 + w1, y0 + p1 - p2 - 1 * k, p2, t2, hex(MUTED, op), ui::GAUCHE, 0, false, true);
     }
     // WFS-499 (RG-01) : solde d'étoiles toujours affiché, en haut à droite du garage (au-dessus de la flèche « suivante »)
-    texteEtoiles(r, mp.W - mp.gr, mp.gt + 6 * k, 14 * k, ui::majuscules(ui::tr("garage.solde", nombreLangue(boutique::solde(s)))), hex(TEXTE, op), ui::DROITE, 0.12f);
+    onglets::solde(r, mp, boutique::solde(s));   // WFS-551 (maquettes) : cadre de verre, étoile orange
     // WFS-551 (revue du lead dev, maquette 15) : plus de petits cadenas au-dessus des points des voitures : le cadenas-jauge est à
     // côté du nom de la voiture bloquée
     // WFS-499 (RG-01) : carte de la voiture bloquée, au-dessus du panneau, à droite : cadenas, prix, équivalents ; WFS-551 (RG-04) :

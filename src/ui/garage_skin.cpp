@@ -280,8 +280,6 @@ void SkinGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e
         ui::textBoite(r, z.x + z.w / 2, z.y, z.w - 12 * k, z.h, 11 * k, ui::majuscules(t), hex(offerte ? ON_ACCENT : ACCENT2, op), ui::CENTRE, 0.1f, false);
         g_z.actionSkin = {z.x - 2 * k, z.y - 4 * k, z.w + 4 * k, z.h + 8 * k};
         manette::focus(g_z.actionSkin);
-    } else if (prixSel > 0) {
-        texteEtoiles(r, mp.cxBouton, yb, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::CENTRE);
     } else if (!possedee(sv, e.skin, carId) && cadeauSeul(e.skin)) {
         ui::textBoite(r, mp.cxBouton, yb, wn, 16 * k, 11 * k, ui::tr("garage.skin.cadeau"), hex(ACCENT2, op), ui::CENTRE, 0, false);
     }

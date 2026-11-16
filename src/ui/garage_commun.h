@@ -78,6 +78,7 @@ struct MiseEnPage {
     // (bornes), du haut py0 sur panelH ; à droite, le bouton rond (centre cxBouton, cyBouton, rayon rBouton) et, au-dessus, le nom de
     // l'objet montré (centré sur cxBouton, en yNom)
     int onglet = 0;
+    std::string sousTitre;   // WFS-551 : ligne sous le nom (vide : accroche de la voiture)
     float cxBouton = 0, cyBouton = 0, rBouton = 0, yNom = 0;
 };
 // WFS-551 : onglets du garage, dans l'ordre des maquettes

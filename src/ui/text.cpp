@@ -19,6 +19,7 @@
 namespace wfs {
 namespace ui {
 namespace {
+float g_decalageNeon = 0;   // WFS-551 : + 4 sur u (shaders/ui.frag : contour néon)
 
 constexpr float BASE_PX = 48.f;          // taille de référence de l'atlas
 constexpr int PAD = 6, ATLAS = 1024;     // marge du champ de distance, côté de l'atlas
@@ -120,7 +121,7 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
         if (prev) pen += stbtt_GetCodepointKernAdvance(&F.info, prev, cp) * F.scale * s;
         if (r && g.w > 0) {
             const float gy = y + (F.ascent + g.yoff) * s, gh = g.h * s;   // bas du quad décalé de (pivot − bas) × pente
-            r->uiGlyph(x + pen + g.xoff * s + (pivot - gy - gh) * pente, gy, g.w * s, gh, g.u0, g.v0, g.u1, g.v1, c, gh * pente);
+            r->uiGlyph(x + pen + g.xoff * s + (pivot - gy - gh) * pente, gy, g.w * s, gh, g.u0 + g_decalageNeon, g.v0, g.u1 + g_decalageNeon, g.v1, c, gh * pente);   // WFS-551 : + 4 = contour néon
         }
         pen += g.adv * s + spacing * px;
         prev = cp;
@@ -133,6 +134,8 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
 bool fontReady() { return F.ready; }
 bool chargerPolice(Renderer& r) { return load(r); }
 void libererPolice(Renderer& r) { unload(r); }   // WFS-308 (accroche)
+
+void contourNeon(bool actif) { g_decalageNeon = actif ? 4.f : 0.f; }   // WFS-551
 
 float width(float px, const std::string& s, float spacing) {
     if (!F.ready) return 0;

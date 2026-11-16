@@ -208,7 +208,6 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
     const bool commeSel = toit_ && sel == 0;
     const long long prixSel = commeSel ? 0 : prixPastille(sv, car, toit_ ? sel - 1 : sel, toit_);   // même si la goutte est hors de la vue
     nomMontre(r, mp, commeSel ? ui::tr("garage.couleur.comme") : nomCouleur(toit_ ? sel - 1 : sel), prixSel > 0);
-    if (prixSel > 0) texteEtoiles(r, mp.cxBouton, mp.yNom + 48 * k, 11 * k, texteEquivalent(prixSel), hex(MUTED, op), ui::CENTRE);
 }
 
 int CouleurGarage::itemSous(float x, float y) const {

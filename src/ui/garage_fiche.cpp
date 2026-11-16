@@ -29,11 +29,12 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     {
         const float x = gl + std::clamp(W * 0.04f, 0.f, 64 * k);
         float y = gt + 8 * k;
-        float np = std::min(84 * k, std::max(40 * k, W * 0.07f * 0.8f));
+        float np = std::min(60 * k, std::max(40 * k, W * 0.07f * 0.8f));   // WFS-551 (maquettes) : nom de 60 px au plus
         {
             const textes::NomPropre nomPropre;   // WFS-507 : marque et modèle inventés, inchangés en anglais (RC-E20-03)
-            const std::string eb = ui::majuscules(marque(car)) + " · " + deuxChiffres(placeDe(e.index) + 1) + " / " + deuxChiffres(voituresPermises().n);
-            ui::text(r, x, y, 12 * k, eb, hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
+            // WFS-551 (accroche, maquettes 06, 07, 13, 15, 16) : la marque seule, en gris clair (la place « 05 / 17 » est sous le plateau)
+            const std::string eb = ui::majuscules(marque(car));
+            ui::text(r, x, y, 12 * k, eb, hex(0xC9CDDA, op), ui::GAUCHE, 0.22f, false);
             y += 22 * k;
             const std::string nm = ui::majuscules(modele(car));   // WFS-191 : nom de configgame.json
             if (const float nw = ui::width(np, nm); nw > W * 0.5f) np *= W * 0.5f / nw;   // WFS-191 (RG-08) : nom long réduit pour tenir
@@ -49,11 +50,12 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         const std::string body = ui::majuscules(ui::tr(("garage.type." + id).c_str()));
         const float cp = std::max(11 * k, 13.f), cy = cp > 11 * k ? (20 * k - cp) / 2 : 4 * k;
         const float cw = ui::width(cp, body, 0.16f) + 20 * k;
-        biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(ACCENT2, op));   // .chip : fond cyan, skewX(-10deg)
-        ui::text(r, std::round(x + 10 * k), std::round(y + cy), cp, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
-        ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, ui::tr(("garage.accroche." + id).c_str()), hex(TAG, op), ui::GAUCHE, 0, true);
+        biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(TEXTE, op));   // .chip : WFS-551 (accroche, maquettes) : étiquette blanche, texte noir
+        ui::text(r, std::round(x + 10 * k), std::round(y + cy), cp, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false, true);
+        ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, mp.sousTitre.empty() ? ui::tr(("garage.accroche." + id).c_str()) : mp.sousTitre, hex(TEXTE, op), ui::GAUCHE, 0, true);   // WFS-551 : couleur · finition · skin selon l'onglet
         // WFS-551 (accroche, maquette 15, RG-11 : la place seulement ; le dessin des 17 segments est à WFS-550) : centrés sous le plateau,
         // « 05 / 17 » à droite (au-dessus du panneau du bas)
+        if (mp.onglet != ONGLET_VOITURE) { viderZones(); return; }   // WFS-551 : maquettes 06, 07, 16 : pas de segments
         const int nb = voituresPermises().n;   // WFS-404 : un point par voiture permise
         float largeur = 0;
         for (int i = 0; i < nb; i++) largeur += (nb > 10 ? (voituresPermises().idx[i] == e.index ? 34 : 16) : (voituresPermises().idx[i] == e.index ? 54 : 30)) * k + 6 * k;

@@ -176,15 +176,16 @@ public:
         const EtatGarage e{index_, peinture_[index_], voiture_.ok, couleur_.peinture2(index_), finition_.finition(index_), skin_.skin(index_)};   // WFS-489, WFS-491, WFS-494 (accroches)
         if (verre::couvert()) { achat_.dessinerFenetre(r, mp); return; }   // WFS-548 (accroche) : Market ou fenêtre d'achat par-dessus : seule la scène floutée dessous
         cadre::voiles(r, mp);
-        fiche_.dessiner(r, mp, e);   // .show-head : marque · index, nom, type + accroche, points des voitures
-        {   // WFS-551 (RG-05, accroche) : flèches précédent / suivant qui clignotent doucement (1 s, opacité 60 à 100 %), mêmes zones
+        mp.onglet = ongletGarage();   // WFS-551 : la fiche (en-tête) suit l'onglet ouvert (ligne sous le nom, maquettes 06, 07, 16)
+        mp.sousTitre = sousTitre(e);
+        fiche_.dessiner(r, mp, e);   // .show-head : marque, nom, type + accroche (ou couleur · finition · skin)
+        {   // WFS-551 (RG-05, maquettes 13, 15) : flèches pleines (bois / orange) qui clignotent doucement (1 s, opacité 80 à 100 %)
             MiseEnPage clignote = mp;
             clignote.op *= 0.8f + 0.2f * (float)std::cos(2 * PI * (g.time - t0_));
-            cadre::fleches(r, clignote);
+            onglets::fleches(r, clignote);
         }
         // ---------- WFS-551 (maquettes 06, 07, 13, 15, 16) : onglets, un seul panneau de verre en bas, bouton rond à droite ----------
         onglets::dessiner(r, mp);
-        mp.onglet = ongletGarage();
         mp.panelH = 140 * k; mp.py0 = mp.H - mp.gb - 20 * k - mp.panelH;   // crédit du modèle (cadre::pied) dessous
         mp.rBouton = 56 * k; mp.cxBouton = std::min(mp.W * 0.881f, mp.W - mp.gr - mp.rBouton - 12 * k); mp.cyBouton = mp.py0 + 10 * k;
         mp.yNom = mp.cyBouton - mp.rBouton - 84 * k;   // nom, « aperçu », puis une ligne (équivalents, skin offerte)
@@ -261,6 +262,21 @@ private:
             s.enregistrer();
         }
         choisi_ = true; g.allerA(Ecran::Menu);
+    }
+    // WFS-551 (maquettes 06, 07, 16) : ligne sous le nom selon l'onglet : « Turquoise · brillant », « Bleu · aperçu Mat »,
+    // « Noir · aperçu skin Rallye » ; onglet « Voiture » : accroche de la voiture (chaîne vide)
+    std::string sousTitre(const EtatGarage& e) const {
+        const int o = ongletGarage();
+        if (o == ONGLET_VOITURE) return "";
+        const Manque m = manque(sauvegarde(), e);
+        auto apercu = [&](perso::Type t) { for (int i = 0; i < m.n; i++) if (m.objets[i]->type == t) return true; return false; };
+        const std::string c = ui::tr(("couleur." + std::string(PAINTS[e.peinture].id)).c_str());
+        const std::string f = ui::tr(("finition." + std::string(BOUTIQUE_FINITIONS_IDS[std::clamp(e.finition, 0, BOUTIQUE_FINITIONS - 1)])).c_str());
+        if (o == ONGLET_SKINS && e.skin >= 0)
+            return ui::tr(apercu(perso::Type::Skin) ? "garage.sous.apercu_skin" : "garage.sous.skin", c, ui::tr(("skin." + std::string(BOUTIQUE_SKINS_IDS[e.skin])).c_str()));
+        if (o == ONGLET_FINITION && apercu(perso::Type::Finition)) return ui::tr("garage.sous.apercu_finition", c, f);
+        std::string fm = f; if (!fm.empty() && fm[0] >= 'A' && fm[0] <= 'Z') fm[0] = (char)(fm[0] - 'A' + 'a');   // « brillant »
+        return ui::tr("garage.sous.couleur", c, fm);
     }
     void essayer(const GameView& g) { WFS_LOG("garage : « Essai gratuit » %s", CARS[index_].id); if (g.choisirVoiture) g.choisirVoiture(CARS[index_].id, lin(PAINTS[peinture_[index_]].hex)); g_regarder = false; choisi_ = true; g.allerA(Ecran::Menu); }   // WFS-499 (accroche) : « Choisir » sans garder la voiture dans la sauvegarde
 

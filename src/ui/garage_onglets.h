@@ -16,4 +16,9 @@ void viderZones();
 // grand bouton rond (Start/Stop de WFS-549, forme ronde) : titre, sous-titre facultatif (peut contenir « ★ ») ; grisé = inactif
 void boutonRond(Renderer& r, float cx, float cy, float R, const std::string& titre, const std::string& sousTitre, float op, bool grise);
 
+// flèches voiture précédente / suivante (maquettes 13, 15) ; pose g_z.prev, g_z.next
+void fleches(Renderer& r, const MiseEnPage& mp);
+// solde d'étoiles en haut à droite (cadre de verre, étoile orange)
+void solde(Renderer& r, const MiseEnPage& mp, long long etoiles);
+
 } // namespace wfs::ecrans::garage::onglets
