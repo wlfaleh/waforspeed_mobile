@@ -24,6 +24,7 @@
 #include "../ui/ecrans/cgu.h"
 #include "../ui/ecrans/compteur_etoiles.h"
 #include "../ui/ecrans/creation_profil.h"   // WFS-481 : écran « Crée ton pilote »
+#include "../ui/ecrans/market_ecran.h"   // WFS-557 : le compteur ouvre le Market (banc)
 #include "../ui/langue.h"
 #include "boutique.h"
 #include "course.h"
@@ -140,10 +141,10 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
             capture("score-parcours-" + code + "-menu");
             verifier(ecrans::compteur_etoiles::texteLecteur() == ui::tr(singulier(boutique::solde(s), code == "en") ? "menu.etoiles.lecteur.un" : "menu.etoiles.lecteur", nombreEtoiles(boutique::solde(s), code == "en")),
                      "parcours accueil → course → fin → menu : compteur = nouveau solde (RG-08)");
-            // ---------- 7. appui sur le compteur → garage (RG-09) ----------
+            // ---------- 7. appui sur le compteur → Market (RG-09 changée par WFS-513 / 537 : menu.cpp, « le compteur ouvre le Market ») ----------
             if (ecrans::compteur_etoiles::centre(x, y)) toucher(x, y);
             images(20);
-            verifier(g.ecran() == Ecran::Garage, "appui sur le compteur → garage (RG-09)");
+            verifier(ecrans::market_ecran::ouvert(), "appui sur le compteur → Market (RG-09, WFS-513)");
             g.shutdown();
         }
         // ---------- 3. course à 5 (2 km) gagnée ----------

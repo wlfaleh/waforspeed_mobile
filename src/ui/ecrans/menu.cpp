@@ -314,7 +314,7 @@ private:
 
 // WFS-505 (banc « textes ») : centre d'un choix du menu à la dernière image : « solo », « duel », « showroom »
 bool menuBouton(const std::string& nom, float& x, float& y) {
-    const int i = nom == "solo" ? SOLO : nom == "duel" ? DUEL : nom == "showroom" ? SHOWROOM : -1;
+    const int i = nom == "solo" ? SOLO : nom == "duel" ? DUEL : nom == "showroom" ? SHOWROOM : nom == "record" ? TA_VOITURE : -1;   // WFS-557 : « record » (bloc RECORD → Profil, WFS-550)
     if (i < 0 || !g_zones[i].ok) return false;
     x = g_zones[i].x + g_zones[i].w * 0.4f; y = g_zones[i].y + g_zones[i].h * 0.5f; return true;   // hors du coin coupé
 }

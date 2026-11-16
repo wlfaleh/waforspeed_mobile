@@ -84,7 +84,7 @@ static constexpr float SHADOW_BIAS = -0.0003f, SHADOW_NORMAL_BIAS = 0.035f;
 static constexpr VkFormat SHADOW_FORMAT = VK_FORMAT_D16_UNORM;
 
 static constexpr VkFormat HDR_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
-static constexpr size_t UI_MAX_VERTS = 6 * 8192;
+static constexpr size_t UI_MAX_VERTS = 6 * 32768;   // WFS-557 (accroche) : 8 192 dépassés au menu R19 (boutons chromés, cartes) : la fin de l'image était perdue ; 32 768 × 6 × 32 o ≈ 6 Mo
 // WFS-557 (accroche) : interface pleine : la suite de l'image est perdue ; noté une fois au journal (sinon invisible au banc)
 static bool uiPlein(size_t n) { static bool dit = false; if (n + 6 <= UI_MAX_VERTS) return false; if (!dit) { dit = true; WFS_WARN("interface : %zu quadrilatères, limite atteinte : la suite de l'image est perdue", UI_MAX_VERTS / 6); } return true; }
 static constexpr int QUADS_MAX = 4096;   // WFS-09 : quads transitoires par image (halos, tache des phares)

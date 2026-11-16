@@ -46,7 +46,7 @@ bool rectBloc(float& x, float& y, float& w, float& h);
 
 // banc WFS_BANC=score-fin (score_fin_banc.cpp) : vraies courses des 4 modes en français puis en anglais, sauvegarde active
 // (portefeuille), écrans de fin ; menu avec 0, 250 et 12 450 ★ ; parcours accueil → course → fin → « Menu » (compteur à
-// jour) ; appui sur le compteur → garage. Captures score-fin-<fr|en>-<mode>-<L>x<H>, score-menu-<fr|en>-<n>-<L>x<H>.
+// jour) ; appui sur le compteur → Market (WFS-513). Captures score-fin-<fr|en>-<mode>-<L>x<H>, score-menu-<fr|en>-<n>-<L>x<H>.
 // Rend le nombre d'écarts (0 : bon).
 int benchScoreFin(Game& g, Renderer& r, const std::string& out);
 

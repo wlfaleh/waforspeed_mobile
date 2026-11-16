@@ -58,7 +58,12 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     };
     int doigt = 120;
     auto appui = [&](float x, float y) { t += 0.2; gm.onTouch({doigt, x, y, true}); image(); gm.onTouch({doigt, x, y, false}); image(); doigt++; };
-    auto appuyer = [&](const char* nom) { float x, y; if (!centre(nom, x, y)) return false; appui(x, y); return true; };
+    // WFS-557 : depuis WFS-550 (maquette 01), le Market s'ouvre au menu par le compteur d'étoiles (plus de bouton « Market »)
+    auto appuyer = [&](const char* nom) {
+        float x, y;
+        if (std::string(nom) == "bouton" ? !compteur_etoiles::centre(x, y) : !centre(nom, x, y)) return false;
+        appui(x, y); return true;
+    };
     auto retourTelephone = [&]() { retourSysteme(gm, true, 0); image(); retourSysteme(gm, false, 0); images(3); };
     auto solde = [] { return boutique::solde(sauvegarde()); };
     const int OR = 2;
@@ -66,7 +71,7 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     gm.allerA(Ecran::Menu);
     images(60);
     capture("menu", "menu principal : bouton « Market » au-dessus de « Profil »");
-    verifier(appuyer("bouton"), "RG-01 : bouton « Market » dessiné au menu");
+    verifier(appuyer("bouton"), "RG-01 : compteur d'étoiles du menu → Market (WFS-550)");
     images(30);
     verifier(ouvert() && gm.ecran() == Ecran::Menu, "RG-01 : menu → Market");
     verifier(soldeAffiche() == 1250, "RG-02 : solde en haut (1 250 ★)");

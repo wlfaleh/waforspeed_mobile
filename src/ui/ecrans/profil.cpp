@@ -1,5 +1,6 @@
 // WaForSpeed — écran « Profil » (WFS-482) : voir profil.h.
 #include "profil.h"
+#include "menu.h"   // WFS-557 : bloc RECORD du menu (banc)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -373,14 +374,19 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     };
     int doigt = 70;
     auto appui = [&](float x, float y) { t += 0.2; gm.onTouch({doigt, x, y, true}); image(); gm.onTouch({doigt, x, y, false}); image(); doigt++; };
-    auto appuyer = [&](const char* nom) { float x, y; if (!centre(nom, x, y)) return false; appui(x, y); return true; };
+    // WFS-557 : depuis WFS-550 (maquette 01), le Profil s'ouvre par le bloc « RECORD » du menu (plus de bouton « Profil »)
+    auto appuyer = [&](const char* nom) {
+        float x, y;
+        if (std::string(nom) == "bouton" ? !menuBouton("record", x, y) : !centre(nom, x, y)) return false;
+        appui(x, y); return true;
+    };
     auto touche = [&](const std::string& nom) { float x, y; if (!centreCreationProfil(nom, x, y)) return false; appui(x, y); return true; };
     auto retourTelephone = [&]() { retourSysteme(gm, true, 0); image(); retourSysteme(gm, false, 0); images(3); };
     gm.allerA(Ecran::Menu);
     images(60);
     capture("menu", "menu principal : bouton « Profil » au-dessus de « Cadeau du jour »");
     // RG-01 : menu → Profil
-    verifier(appuyer("bouton"), "bouton « Profil » dessiné au menu");
+    verifier(appuyer("bouton"), "bloc « RECORD » du menu → Profil (WFS-550)");
     images(40);
     verifier(ouvert(), "RG-01 : menu → Profil");
     capture("neuf", "profil d'un joueur neuf : 0 course, records « — », liste vide");
