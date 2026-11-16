@@ -148,16 +148,16 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     else if (cas == Cas::Actif) fr = jauges::fractionRestant(pret::restant(s.cadeau, t), (long long)(config().cadeau.pretHeures * 3600));
     const float cx = x + 43 * kb, cy = y + h / 2, ra = 27 * kb;
     dessin2d::disqueRadial(r, cx, cy, ra - 3 * kb, cx, cy - ra * 0.3f, ra, hex(0x1A1C24, 0.95f), hex(0x0E0F14, 0.95f));
-    jauges::anneauGradue(r, cx, cy, ra, 4 * kb, fr, 1, -jauges::PI_J * 0.17f, 0);
+    jauges::anneauGradue(r, cx, cy, ra, 5 * kb, fr, 1, -jauges::PI_J * 0.17f, 0, false);
     voitureDeFace(r, cx, cy, 22 * kb, hex(TEXTE, 0.95f));
     const float xt = x + 88 * kb;
-    { const textes::NomPropre np; verre::surTitre(r, xt, y + 11 * kb, 10.5f * k, titre); }   // nom de la voiture : inchangé en anglais
+    { const textes::NomPropre np; verre::surTitre(r, xt, y + 9 * kb, 12.5f * k, titre); }   // nom de la voiture : inchangé en anglais
     if (!grand.empty()) {
-        const float gp = 24 * k;
-        ui::text(r, xt, y + 24 * kb, gp, grand, hex(TEXTE), ui::GAUCHE, 0, false, true);
-        ui::text(r, xt + ui::width(gp, grand) + 7 * kb, y + 24 * kb + gp * 0.28f, 16 * k, suite, hex(TAG), ui::GAUCHE, 0, false, true);
+        const float gp = 32 * k;
+        ui::text(r, xt, y + 20 * kb, gp, grand, hex(TEXTE), ui::GAUCHE, 0, false, true);
+        ui::text(r, xt + ui::width(gp, grand) + 8 * kb, y + 20 * kb + gp * 0.30f, 21 * k, suite, hex(TAG), ui::GAUCHE, 0, false, true);
     }
-    if (!aide.empty()) garage::texteEtoiles(r, xt, grand.empty() ? y + 34 * kb : y + 57 * kb, (grand.empty() ? 15 : 11) * k, aide, hex(grand.empty() ? TEXTE : MUTED), ui::GAUCHE);
+    if (!aide.empty()) garage::texteEtoiles(r, xt, grand.empty() ? y + 34 * kb : y + 56 * kb, (grand.empty() ? 15 : 13) * k, aide, hex(grand.empty() ? TEXTE : MUTED), ui::GAUCHE);
     g_bandeau = {x, y, w, h};
     if (bw > 0) {   // action principale de la carte (orange en biseau), à droite
         const float bx = x + w - 22 * kb - bw, by = y + (h - bh) / 2;

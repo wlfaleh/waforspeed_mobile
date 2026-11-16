@@ -460,14 +460,14 @@ void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse)
     const long long s = dispo ? 0 : secondesAvantProchain(c, ti);
     dessin2d::disqueRadial(r, cx, cy, ra - 4 * kb, cx, cy - ra * 0.3f, ra, hex(0x1A1C24, 0.95f), hex(0x0E0F14, 0.95f));
     const float f = dispo ? 1.f : s >= 0 ? jauges::fractionAttente(s, 86400) : 1.f;
-    jauges::anneauGradue(r, cx, cy, ra, 4.5f * kb, f, 1, jauges::PI_J * 1.25f, 24);   // départ en bas à gauche (maquette)
+    jauges::anneauGradue(r, cx, cy, ra, 6 * kb, f, 1, jauges::PI_J * 1.25f, 24);   // départ en bas à gauche (maquette)
     iconeCadeau(r, cx, cy, 26 * kb, hex(TEXTE, 0.95f));
     // textes
     const float tx = x + 117 * kb;
-    verre::surTitre(r, tx, y + 24 * kb, 11 * k, ui::tr("cadeau.bouton"));
+    verre::surTitre(r, tx, y + 21 * kb, 13 * k, ui::tr("cadeau.bouton"));   // tailles de la maquette 26 (720 px de haut)
     if (dispo) {
-        ui::text(r, tx, y + 42 * kb, 28 * k, ui::majuscules(ui::tr("cadeau.carte.dispo")), hex(ACCENT), ui::GAUCHE, 0, false, true);
-        ui::text(r, tx, y + 82 * kb, 11 * k, ui::tr("cadeau.carte.dispo.aide"), hex(MUTED), ui::GAUCHE, 0, false);
+        ui::text(r, tx, y + 38 * kb, 36 * k, ui::majuscules(ui::tr("cadeau.carte.dispo")), hex(ACCENT), ui::GAUCHE, 0, false, true);
+        ui::text(r, tx, y + 84 * kb, 13 * k, ui::tr("cadeau.carte.dispo.aide"), hex(MUTED), ui::GAUCHE, 0, false);
         // pastille : un cadeau attend
         const float rp = 7 * kb, pxp = x + w - h * 0.22f, pyp = y + h * 0.18f;
         dessin2d::couronne(r, pxp, pyp, rp, rp + 9 * kb, hex(ACCENT, 0.55f), hex(ACCENT, 0));
@@ -475,15 +475,15 @@ void dessinerBouton(Renderer& r, float W, float H, const Marges& m, bool presse)
     } else if (s >= 0) {
         // « 07:42:13 » : heures et minutes blanches, deux-points gris, secondes orange (maquette)
         const std::string t = texteHMS(s), hh = t.substr(0, 2), mm = t.substr(3, 2), ss = t.substr(6, 2);
-        const float tp = 32 * k, ty = y + 40 * kb;
+        const float tp = 44 * k, ty = y + 36 * kb;
         float xx = tx;
         auto morceau = [&](const std::string& m2, const vec4& col) { ui::text(r, xx, ty, tp, m2, col, ui::GAUCHE, 0, false, true); xx += ui::width(tp, m2); };
         morceau(hh, hex(TEXTE)); morceau(":", hex(MUTED)); morceau(mm, hex(TEXTE)); morceau(":", hex(MUTED)); morceau(ss, hex(0xFF9A4D));
         // « avant le prochain · 30e garanti dans 12 j » (gris, puis blanc)
         const std::string a1 = ui::tr("cadeau.carte.avant") + " · ";
         const int n = restantsGarantie(config().cadeau, c);
-        ui::text(r, tx, y + 82 * kb, 11 * k, a1, hex(MUTED), ui::GAUCHE, 0, false);
-        ui::text(r, tx + ui::width(11 * k, a1), y + 82 * kb, 11 * k, ui::tr("cadeau.carte.garanti", std::to_string(config().cadeau.garantie), std::to_string(std::max(1, n))), hex(TEXTE), ui::GAUCHE, 0, false);
+        ui::text(r, tx, y + 84 * kb, 13 * k, a1, hex(MUTED), ui::GAUCHE, 0, false);
+        ui::text(r, tx + ui::width(13 * k, a1), y + 84 * kb, 13 * k, ui::tr("cadeau.carte.garanti", std::to_string(config().cadeau.garantie), std::to_string(std::max(1, n))), hex(TEXTE), ui::GAUCHE, 0, false);
     } else {   // l'heure du téléphone a reculé : « Prochain cadeau bientôt »
         ui::text(r, tx, y + 48 * kb, 18 * k, ui::tr("cadeau.bientot"), hex(TEXTE), ui::GAUCHE, 0, false, true);
     }

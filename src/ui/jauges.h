@@ -73,7 +73,7 @@ void anneau(Renderer& r, float cx, float cy, float rayon, float ep, float f, flo
 // anneau des cartes du menu (maquettes 01, 05, 26) : piste sombre, remplissage dégradé tournant dans le sens inverse des
 // aiguilles depuis l'angle `depart` (cyan au départ, orange au bout), point clair au départ ; `graduations` : traits autour
 // (maquette du cadeau : 24, un plus long tous les 6) ; 0 : aucun
-void anneauGradue(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a, float depart, int graduations = 0);
+void anneauGradue(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a, float depart, int graduations = 0, bool point = true);
 // barre fine : fond de verre, remplissage du dégradé de la marque pris sur toute la largeur (le bout montre où on en est),
 // `graduations` traits fins (0 : aucun), bouts arrondis
 void barreFine(Renderer& r, float x, float y, float w, float h, float f, float a = 1, int graduations = 0);

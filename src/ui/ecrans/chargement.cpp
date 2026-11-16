@@ -142,7 +142,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     if (!erreur && police) {   // étape (blanche) à gauche, pourcentage en grand à droite, « % » en petit
         ui::text(r, x, y + 2 * k, 16 * k, libelleAffiche(libelle), hex(TEXTE, op), ui::GAUCHE);
         const std::string n = ui::nombre((long long)std::lround(pc * 100));
-        const float np = 34 * k, sp = 16 * k, sw = ui::width(sp, "%");
+        const float np = 40 * k, sp = 18 * k, sw = ui::width(sp, "%");
         ui::text(r, x + largeur - sw, y - 12 * k, np, n, hex(TEXTE, op), ui::DROITE, 0, false, true);
         ui::text(r, x + largeur, y - 12 * k + np - sp * 1.15f, sp, "%", hex(TEXTE, op), ui::DROITE, 0, false, true);
     }
@@ -158,6 +158,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
             verre::barreMarque(r, x + rr, y, plein - 2 * rr, barre, op);
             r.uiCircle(x + rr, y + rr, rr, verre::degradeMarque(0, op));
             r.uiCircle(x + plein - rr, y + rr, rr, verre::degradeMarque(1, op));
+            dessin2d::couronne(r, x + plein - rr, y + rr, rr, rr * 3.5f, hex(ACCENT, 0.45f * op), hex(ACCENT, 0));   // lueur orange du bout (maquette 08)
         }
     }
     y += barre;

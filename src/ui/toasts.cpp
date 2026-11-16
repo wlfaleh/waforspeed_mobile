@@ -82,7 +82,7 @@ public:
             float op = 1, dy = 0;
             if (a < ENTREE) { const float e = 1 - std::pow(1 - (float)(a / ENTREE), 3.f); op = e; dy = -24 * k * (1 - e); }
             if (a > SORTIE_DEBUT) { const float s2 = std::min(1.f, (float)((a - SORTIE_DEBUT) / SORTIE)); op = 1 - s2 * s2; }
-            const std::string titre = ui::majuscules(it->titre), valeur = ui::majuscules(it->valeur);
+            const std::string titre = ui::majuscules(it->titre), valeur = it->valeur;   // maquette 30 : « +30 s » (unité en minuscule)
             const float wt = ui::width(tp, titre, 0.06f), wv = valeur.empty() ? 0 : ui::width(tp, valeur, 0.04f), ecart = 10 * k;
             const float wtexte = wt + (wv > 0 ? ecart + wv : 0), w = wtexte + 2 * plein, x = xc - w / 2, yy = y + dy;
             const vec4 c1 = hex(couleur(it->genre), 0.92f * op), c0 = hex(couleur(it->genre), 0);

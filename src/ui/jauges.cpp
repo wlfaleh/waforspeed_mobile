@@ -48,21 +48,23 @@ void anneau(Renderer& r, float cx, float cy, float rayon, float ep, float f, flo
     if (f > 0) arcDegrade(r, cx, cy, rayon, ep, 0, 2 * PI_J * f, 0, 1, a);
 }
 
-void anneauGradue(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a, float depart, int graduations) {
+void anneauGradue(Renderer& r, float cx, float cy, float rayon, float ep, float f, float a, float depart, int graduations, bool point) {
     f = std::clamp(f, 0.f, 1.f);
     const float hw = ep / 2;
     dessin2d::anneau(r, cx, cy, rayon - hw, rayon + hw, vec4{1, 1, 1, 0.10f * a});
-    for (int i = 0; i < graduations; i++) {   // graduations fines, à l'extérieur
-        const float ang = 2 * PI_J * i / graduations, lg = (i % 6 == 0) ? 7.f : 3.5f, r0 = rayon + hw + ep * 1.2f;
-        const float ux = std::sin(ang), uy = -std::cos(ang), e1 = std::max(1.f, ep * 0.22f);
-        const vec2 t[2] = {{cx + ux * r0, cy + uy * r0}, {cx + ux * (r0 + lg * ep / 4.5f), cy + uy * (r0 + lg * ep / 4.5f)}};
-        dessin2d::trait(r, t, 2, e1, vec4{1, 1, 1, (i % 6 == 0 ? 0.55f : 0.28f) * a});
+    for (int i = 0; i < graduations; i++) {   // maquette 26 : 4 traits aux quarts, petits points entre eux, à l'extérieur
+        const float ang = 2 * PI_J * i / graduations, r0 = rayon + hw + ep * 1.1f;
+        const float ux = std::sin(ang), uy = -std::cos(ang);
+        if (i % 6 == 0) {
+            const vec2 t[2] = {{cx + ux * r0, cy + uy * r0}, {cx + ux * (r0 + ep * 1.3f), cy + uy * (r0 + ep * 1.3f)}};
+            dessin2d::trait(r, t, 2, std::max(1.f, ep * 0.25f), vec4{1, 1, 1, 0.45f * a});
+        } else r.uiCircle(cx + ux * (r0 + ep * 0.4f), cy + uy * (r0 + ep * 0.4f), std::max(0.6f, ep * 0.13f), vec4{1, 1, 1, 0.22f * a});
     }
     if (f <= 0) return;
     // sens inverse des aiguilles : de `depart` (cyan) à depart − 2π f (orange)
     arcDegrade(r, cx, cy, rayon, ep, depart - 2 * PI_J * f, depart, 1, 0, a);
     const float sx = cx + rayon * std::sin(depart), sy = cy - rayon * std::cos(depart);
-    r.uiCircle(sx, sy, ep * 0.95f, verre::hexa(0xFFB27A, a));   // point de départ (maquette : pastille claire)
+    if (point) r.uiCircle(sx, sy, ep * 0.95f, verre::hexa(0xFFB27A, a));   // point de départ (maquette du cadeau : pastille claire)
 }
 
 void barreFine(Renderer& r, float x, float y, float w, float h, float f, float a, int graduations) {
