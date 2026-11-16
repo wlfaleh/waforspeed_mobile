@@ -820,3 +820,12 @@ Détail dans la revue de la PR.
 - 2e revue de la PR #433 (commit relu 8b1ab779) : 9 captures ouvertes avec la maquette 11, diff da174c26..8b1ab779 lu, construction et 154 tests CPU refaits. Points 1, 3, 5 corrigés ; point 4 corrigé dans `pr.md`, 4 liens d'images encore cassés dans la description (non bloquant, à reprendre par le développeur).
 - Point 2 accepté avec réserve : le panneau SCORE de 3 ou 4 lignes cache encore l'arrière du toit ; `test_tableau_led` prend le bas du panneau de la maquette (+0,13) et non celui de `score_fin` (−0,13 à −0,23). **Pour le PO** : arbitrer (panneau SCORE à la taille de la maquette dans WFS-557, ou tableau plus grand que RG-02) et créer l'US des réserves de l'agent 3D (reflet de la voiture, flou du reflet).
 - « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash 186c986e. Statut 🟡 À valider (utilisateur).
+
+### 2026-11-16 19:00:46 — WFS-561 : fusionné (#433, 186c986e), session terminée (Claude, agent dev3d (01Us6uCxBL))
+- Le lead dev a fusionné en squash à la 2e revue. Statut : 🟡 À valider (utilisateur).
+- À transmettre au PO :
+  - US séparée pour les réserves de l'agent 3D : vrai reflet de la voiture et des poteaux sur le sol du parking (passe miroir, comme WFS-16), reflet du tableau un peu plus flou, rangées vides du tableau ;
+  - recouvrement du toit par le panneau SCORE quand il a 3 ou 4 lignes : à trancher (panneau SCORE réduit par WFS-557, ou tableau plus grand que RG-02) ;
+  - à la fusion de WFS-557 : remplacer l'autocollant « Menu » de `resultats3d::boutons` par `ui::boutons::plaque` (1 ligne), et garder les deux côtés dans les `resultat()` des 3 modes.
+- 4 liens d'images de la description de la PR restent mal affichés (réécrits par GitHub) ; les captures sont dans `qa/pr/WFS-561/`.
+- La session s'arrête : un seul ticket par session.
