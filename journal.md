@@ -732,3 +732,8 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Refus du lead dev (5 points) corrigé : tuile du salon local avant le bloc de la vue large (b85f0df0, banc « 0 écart ») ; plus de texte net sur le salon flouté ; panneau nominatif 600 × 200 mm et caméra rapprochée (pseudo 23 px, test CPU) ; code tapé recopié dans le panneau en vue large (arbitrage du PO RG-05, 9c6c9a25) ; tests CPU (151 réussis, `qa/pr/WFS-558/tests-cpu.log`) ; captures refaites avec le code final.
 - Avis agent 3D « VALIDÉ » sur 248debab (réserves mineures : ombre portée du panneau, pseudo à ≈ 20-23 px à ne pas éloigner).
 
+
+### 2026-11-16 12:43:25 — WFS-558 : 2e revue de la PR #430, refusée (lead-dev)
+- Points 1 à 5 de la 1re revue corrigés (code de la tuile, salon sans texte net, plaque 600 × 200 mm lisible, code dans le panneau, tests CPU 151, captures refaites) ; avis agent 3D VALIDÉ sur 248debab.
+- Refus : (A) conflit avec `main` dans `src/ui/ecrans/menu.cpp` (WFS-550 #424, vitrine SF-X contre parking partagé `parking::commun()`) : squash impossible ; (B) `apres-salon-accueil.jpg` sans la tuile « Rejoindre Nadia » (salon expiré pendant le rendu du banc).
+- Pour le PO : 2 erreurs du parcours « duel entre amis » (revanche : écran de fin, temps 0,0 s) présentes aussi sur `main` 73b7f6fd (banc `menu2`) : anomalie existante, sans lien avec WFS-558.
