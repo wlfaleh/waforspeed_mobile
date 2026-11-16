@@ -746,3 +746,12 @@ atelier.quitter=Exit
 atelier.rester=Stay
 atelier.confirmer.titre=Leave without applying?
 atelier.confirmer.texte=Your changes will be lost.
+
+# ---- 3D results, LED board in the car park (WFS-561, mock-up 11)
+resultats.led.pos=POS
+resultats.led.pilote=DRIVER
+resultats.led.temps=TIME
+resultats.led.ecart=GAP
+resultats.toi=YOU · {1}
+resultats.titre={1} · {2}
+resultats.rang1=1st

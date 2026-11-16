@@ -746,3 +746,12 @@ atelier.quitter=Quitter
 atelier.rester=Rester
 atelier.confirmer.titre=Quitter sans valider ?
 atelier.confirmer.texte=Tes changements seront perdus.
+
+# ---- Résultats en 3D, tableau LED du parking (WFS-561, maquette 11)
+resultats.led.pos=POS
+resultats.led.pilote=PILOTE
+resultats.led.temps=TEMPS
+resultats.led.ecart=ÉCART
+resultats.toi=TOI · {1}
+resultats.titre={1} · {2}
+resultats.rang1=1er
