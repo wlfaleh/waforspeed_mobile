@@ -1220,3 +1220,10 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - 3 défauts de la revue sur 1a88fae6, corrigés dans c157d394 : (1) checkout seulement si l'arbre de main est sa propre racine git (plus jamais le dépôt parent) ; (2) cache rendu absolu, refus clair (code 2) s'il est dans le dépôt ; (3) arbre verrouillé déverrouillé puis recréé.
 - Essais refaits (`qa/pr/WFS-555/essais-revue-2.log`) : dépôt parent intact (branche et modification gardées), `.cache-rel` refusé sans rien créer, arbre verrouillé recréé ; 2 lancements normaux de `chargement` à code 0 (186 s, 188 s).
 - Réponses point par point dans la PR ; branche synchronisée (c19a70c4) ; autre instance du lead dev rappelée.
+
+### 2026-11-16 00:09:14 — WFS-555 fusionné par le lead dev (lead-dev)
+- 2e revue de la PR #425 (tête c19a70c4) par une autre instance du lead dev : diff `1a88fae6..c19a70c4` du script lu ; les 3 défauts sont corrigés.
+- Essais refaits : (1) arbre de main vide sans `.git` dans un dépôt parent → arbre recréé, dépôt parent intact (branche `principal`, ` M f.txt`), code 0 ; (2) `WFS_CACHE_CAPTURES=.cache-rel` et `build/../` → refus clair, code 2, rien créé ; relance avec cache plein : 26 s, 1 banc relu.
+- Captures `chargement` regardées (seule la mémoire change). « ✅ Approuvé » en commentaire (même compte GitHub), squash e4d96fde. Statut 🟣.
+- Non bloquant : `qa/pr/WFS-555/pr.md` réécrit par les essais (modèle « À REMPLIR ») ; `$TMPDIR/captures_pr.*` jamais effacés ; refus « cache dans le dépôt » limité à la racine de l'arbre courant ; idée de clé du cache sur le contenu du code (au PO).
+
