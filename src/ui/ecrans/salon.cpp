@@ -836,8 +836,10 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Salon); pas(30);
     // WFS-558 : le salon de Nadia arrive par le réseau local après quelques annonces : on attend qu'il soit affiché (≤ 5 s)
     for (int i = 0; i < 300 && !(g_liste.size() && (!duel3d::vue().active || g_salons[0].w > 0)); i++) { pas(1); g.render(t); }
-    pas(2);   // annonces fraîches pour la capture (voir plus bas)
-    capture("salon-accueil", "salon de Nadia listé");
+    // capture avec des annonces fraîches à chacune de ses deux images (le rendu logiciel prend plusieurs secondes réelles par image :
+    // sans cela, le salon de Nadia « expire » entre les deux, ABSENCE_MS de reseau_udp.cpp ; 2e revue du lead dev, #430)
+    pas(2); g.render(t); pas(2); g.render(t + 0.01); r.capturePng(out + "/salon-accueil.png");
+    WFS_LOG("capture salon-accueil : écran %s, salon de Nadia listé (%s)", nomEcran(g.ecran()), g_salons[0].w > 0 ? "tuile affichée" : "TUILE ABSENTE");
     if (duel3d::vue().active) {   // WFS-558 (revue du lead dev, #430) : la tuile « Rejoindre Nadia » du panneau fait entrer dans son salon
         // le rendu logiciel du banc prend plusieurs secondes réelles par image : annonces de Nadia relues juste avant (sinon son
         // salon « expire » entre deux images, ABSENCE_MS de reseau_udp.cpp)

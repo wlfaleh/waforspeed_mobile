@@ -75,7 +75,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression) progression(0.20f, "Chargement du modèle 3D…");   // WFS-35
     setCar(carId);
     if (progression && !car_.ok) return false;   // WFS-35 : voiture introuvable, l'écran garde l'étape où l'erreur a eu lieu
-    if (progression) progression(0.70f, "Construction de la ville");   // WFS-35
+    if (progression) progression(0.70f, "Chargement des voitures");   // WFS-35 ; WFS-550 (accroche) : le trafic d'abord (système 50), la ville est annoncée à 85 % (chargement.cpp)
     systemsInit();
     return car_.ok;
 }
