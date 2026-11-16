@@ -30,6 +30,7 @@
 #include "../world/conducteurs.h"   // WFS-73 (accroche) : conducteurs dans les voitures
 #include "../world/cartes_v2/carte_donnees.h"   // WFS-346 (accroche) : saison de la carte
 #include "../world/sols.h"   // WFS-383 (accroche) : sol de la carte (sols.glsl)
+#include "../ui/ecrans/atelier_calques.h"   // WFS-496 (accroche) : autocollants de l'atelier
 
 namespace wfs {
 
@@ -93,8 +94,8 @@ void Game::setCar(const char* carId) {
     loadCarModel(*r_, std::string(carDef_->file), car_);
     {   // WFS-492 (accroche) : skin possédée de cette voiture (une seule texture d'habillage en mémoire) ; bancs : WFS_SKIN=<id>
         const char* sk = std::getenv("WFS_SKIN") ? std::getenv("WFS_SKIN") : sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), carDef_->id).skin : "";
-        const char* ac = std::getenv("WFS_AUTOCOLLANTS");   // WFS-495 (accroche) : autocollants cuits par-dessus (bancs ; l'atelier : WFS-496)
-        vehicule_skin::poser(*r_, car_, carDef_->id, sk, ac ? ac : "");
+        const char* ac = std::getenv("WFS_AUTOCOLLANTS");   // WFS-495 (accroche) : autocollants cuits par-dessus (bancs) ; WFS-496 (accroche) : sinon ceux de l'atelier
+        vehicule_skin::poser(*r_, car_, carDef_->id, sk, ac ? std::string(ac) : ecrans::atelier::calquesCourse(carDef_->id));
     }
     plaque_joueur::voiturePreparee(*r_, carDef_->id);   // WFS-483 (accroche) : porte-plaques et texte, avant la course
     player_.reset(*carDef_);
