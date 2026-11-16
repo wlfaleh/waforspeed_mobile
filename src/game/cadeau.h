@@ -1,5 +1,6 @@
 // WaForSpeed — cadeau du jour : tirage, garantie, replis, jour local, protection de l'heure, sauvegarde (WFS-500, épic E19, zone E3).
-// Logique seulement, sans écran (l'écran et l'animation : WFS-501 ; la voiture prêtée : WFS-502 ; le gain donné pour de vrai : WFS-503).
+// Logique seulement, sans écran (l'écran et l'animation : WFS-501 ; la voiture prêtée : WFS-502 ; le gain donné pour de vrai : WFS-503,
+// donner() appelé par ouvrir()).
 //
 // Règles (regles-de-gestion/WFS-500.md, règles communes RC-E19-01 à 07 dans regles-de-gestion/E19-cadeau-du-jour.md) :
 //   - un cadeau gratuit par jour : disponible si le jour local (minuit, heure du téléphone, décalage horaire du moment) de « maintenant »
@@ -20,6 +21,8 @@
 #include "../core/configgame.h"
 #include "../core/math.h"
 #include "sauvegarde.h"
+
+namespace wfs { class Game; class Renderer; }
 
 namespace wfs::cadeau {
 
@@ -69,11 +72,24 @@ bool lireResultat(const std::string& texte, Resultat& r);   // inverse de texte(
 // ---- tirage pur (testé par tests/test_cadeau.cpp) : sansRare est le compteur de la garantie, mis à jour (RG-05)
 Resultat tirer(const ConfigJeu::Cadeau& c, const Entree& e, int& sansRare, Mulberry32& hasard);
 
+// ---- gain donné pour de vrai (WFS-503) : étoiles au portefeuille (boutique::crediter, RG-01), coloris possédé par la voiture sans être
+// appliqué (RG-02), skin donnée par skins::donnerSkin (RG-03) ; voiture : prêt de WFS-502 (pret::recevoir, fait par ouvrir). La sauvegarde
+// n'est pas écrite ici. Faux si le gain est mal formé ou déjà à lui (objet inconnu, d'une autre voiture, déjà possédé) : rien de changé.
+bool donner(Sauvegarde& s, const Resultat& r);
+// WFS-503 (RG-02, arbitrage du PO) : un coloris ou une skin donné est « nouveau » (cadeau-nouveaux) tant que le joueur ne l'a pas vu au garage ;
+// vu() le retire (appelé par le garage au choix de l'objet : WFS-556). La sauvegarde n'est pas écrite ici.
+bool estNouveau(const Sauvegarde& s, const std::string& voiture, const std::string& objet);
+void vu(Sauvegarde& s, const std::string& voiture, const std::string& objet);
+
 // ---- ouvrir (RG-08) : rien (nullopt) si aucun cadeau n'est disponible ; sinon tire, met à jour s.cadeau (heure, décalage, jour,
-// garantie, total, dernier), écrit la sauvegarde puis rend le gain ; écriture impossible : rien (nullopt), état remis, le cadeau reste
-// disponible. Sauvegarde inactive (tests, bancs) : rien n'est écrit. Le gain n'est PAS donné au joueur ici.
+// garantie, total, dernier), DONNE le gain (donner, WFS-503) et écrit la sauvegarde dans la même écriture, puis rend le gain : jamais de
+// gain perdu ni doublé si le jeu est tué ; écriture impossible : rien (nullopt), état, solde et possessions remis, le cadeau reste
+// disponible. Sauvegarde inactive (tests, bancs) : rien n'est écrit.
 std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e, uint32_t graine);
 std::optional<Resultat> ouvrir(Sauvegarde& s);   // jeu : maintenant(), entreeDepuis(s), graine tirée à l'ouverture
+
+// ---- banc d'essai WFS_BANC=cadeau-gains (WFS-503, cadeau_gains_banc.cpp) : rend le nombre d'écarts
+int benchGains(Game& g, Renderer& r, const std::string& out);
 
 // ---- journal (banc WFS_BANC=sauvegarde)
 std::vector<std::string> bilan(const Sauvegarde& s, const Instant& t);

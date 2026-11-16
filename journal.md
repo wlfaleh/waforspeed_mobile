@@ -1280,3 +1280,40 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
   3. Le parcours RC-E18-09 est capturé de nuit alors qu'il est annoncé « de jour » (`WFS_MOMENT` ignoré par Choisir → Terrain → Rouler).
   4. Captures de la 3e voiture (500) absentes, et aucun autocollant reconnaissable en course.
 - Statut : ↩️ Retour lead dev (PR #428) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-16 00:42:34 — WFS-557 : téléchargement de la police Inter, avancement (Claude, agent dev3d (01UY1Vv4Fd))
+- Téléchargement (RG-10, `regles-reseau.md`) : https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip (dépôt public GitHub `rsms/inter`, version 4.1, licence SIL OFL 1.1), SHA-256 de l'archive `9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e`. Gardés : `Inter-Regular.ttf` (`40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82`), `Inter-Medium.ttf` (`97ad806f526e41546d46365bb3a393145f75b7b1568913db74549ad8b8dba872`), `LICENSE.txt` (`262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a`) ; rien n'a été exécuté. Licence dans `assets/licences/police-inter-OFL.txt`, crédit dans `CREDITS.txt` et `store/credits.md` (`verifier_licences.py` : 0 manque).
+- Fait sur `feature/waforspeed-557` (commit cb2f3112) : Inter dans le même atlas que Rajdhani (711 px sur 1024, Rajdhani placée en premier, pixels inchangés) ; pause (19), Réglages (14, 24, 25 : une seule mise en page, téléphone et PC), profil (21), création du profil (20, RG-14), chargement (08, 08b) refaits d'après les maquettes, comparés côte à côte au banc en 1600 × 720.
+- Limite signalée : maquette 20, touches de 62 × 52 px (≈ 4,7 mm sur le téléphone de 2400 × 1080) au lieu des 9 mm de WFS-481 ; zone de toucher jointive ≥ 44 px (arbitrage RG-07). À suivre : CGU (22, arbitrage attendu), Market (12, RG-18), achat (27, 28), menu (01, RG-16), autres écrans de WFS-549.
+
+### 2026-11-16 00:52:17 — WFS-503 : PR #427 corrigée après la 1re revue, lead dev rappelé (Claude, agent dev3d (01Us6uCwe9))
+- Branche synchronisée avec `main` (`ddcc72a2`) ; `bash tools/qa/tests_cpu.sh build` relancé : 148 réussis, code de sortie 0 ; journal complet `qa/pr/WFS-503/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description de la PR (`51f8e296`). Aucun code ni capture changé.
+- **Pour le PO (WFS-556)** : la clé `cadeau-nouveaux` grandit tant que le garage n'appelle pas `cadeau::vu()` (lecture bornée à 256 éléments, sans risque) : WFS-556 doit appeler `vu(s, voiture, objet)` quand le joueur choisit l'objet.
+
+
+### 2026-11-16 00:52:49 — Arbitrage WFS-557 : CGU, maquette 22 (po-scrum-master)
+- RG-19 : case retirée, « J'accepte » grisé jusqu'à la lecture des deux onglets jusqu'en bas ; refus par la touche Retour au premier lancement (même message et même fermeture) ; « Fermer » en lecture depuis les Réglages. Demande de Claude, agent dev3d (01UY1Vv4Fd).
+
+### 2026-11-16 00:57:48 — Arbitrage WFS-557 : scènes 3D des maquettes 04, 09, 10, 11 ; WFS-558 à 561 créés (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : les scènes 3D complètes des maquettes R19 04 (duel), 09 (départ), 10 (arrivée) et 11 (résultats) n'ont été construites par aucun ticket fusionné (548, 549, 552).
+- Décision (RG-20 de `regles-de-gestion/WFS-557.md`) : **oui**, recommandation acceptée. WFS-557 ne met en conformité que les éléments 2D déjà touchés par 548 / 549 sur ces écrans (Menu, Rejouer, panneau du score, pastille « +7 étoiles · nouveau record », Retour, Créer duel). Les scènes 3D deviennent 4 US P1 de E23, `@dev` + avis « VALIDÉ » de l'agent 3D : **WFS-558** (04), **WFS-559** (09), **WFS-560** (10, après 559, même portique), **WFS-561** (11). Portiques placés par le code, pas cuits dans les paquets : pas de tâche `@cicd` compagne.
+- Prêts pour de nouvelles sessions `@dev` : 558, 559, 561.
+
+### 2026-11-16 01:01:16 — Arbitrage WFS-557 : choix du mode (maquette 02) ; WFS-562 créé (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : Distance et Difficulté sans place sur la maquette 02 ; aucune image de mode dans le jeu.
+- RG-21 : recommandation acceptée. Distance et Difficulté gardées, en rangées de verre **seulement dans la carte du mode choisi qui s'en sert** (Course à 5, Poursuite) ; Checkpoint choisi = écran identique à la maquette.
+- RG-22 : dans WFS-557, scène 3D floutée dans chaque carte (provisoire) ; vraies images des modes, prises dans le jeu avec ses voitures sans marque, dans **WFS-562** (P1, E23, `@dev` + avis `@3d`, ⏳ En attente de WFS-557).
+
+### 2026-11-16 01:05:17 — Arbitrage WFS-550 / 551 / 557 : onglets du garage et colonne du menu (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv1yg) (WFS-550, PR #424 ↩️), après le KO de l'utilisateur (« ta maquette tu l'appliques à 100 %, zéro erreur »).
+- Onglets du garage : la recommandation (les faire dans 550) est **refusée** : WFS-551 les fait déjà sur sa branche (`src/ui/garage_onglets.*`, a6ce7ea8 : onglets, panneau unique, bouton rond). WFS-551 RG-10 : panneau étroit et centré de l'onglet Voiture (maquette 13), « Choisir / Acheter » rond hors du panneau, « Retour » en étiquette à gauche. WFS-550 RG-09 : seulement le contenu (cadrans, barres, 17 segments) dans la largeur donnée par 551. RG-10 / RG-11 : le 2e fusionné montre 06, 07, 13, 15, 16 à 100 %.
+- Colonne du menu : la recommandation (la monter au-dessus des cartes) est **refusée** (élément absent de la maquette). L'arbitrage RG-16 de WFS-557 (00:31) s'applique et **passe à WFS-550** (RG-11) : cartes collées au bord droit ; Crédits retiré du menu (Réglages, maquette 14) ; Market = toucher le compteur d'étoiles ; Profil = toucher le bloc RECORD ; sous-titres, « Ta voiture SF-X », aide retirés de l'écran. Branche de 557 sans changement du menu (vérifié) : WFS-557 n'y touche plus.
+- Sessions prévenues : WFS-551 (01UY1Vv2KF), WFS-557 (01UY1Vv4Fd).
+
+### 2026-11-16 01:10:58 — WFS-503 fusionné par le lead dev (lead-dev)
+2e revue de la PR #427 (commit relu 51f8e296), limitée aux points corrigés : synchronisation avec `main` (ddcc72a2, aucun code de la PR changé), `qa/pr/WFS-503/tests-cpu.log` (148 réussis, code 0) et section « Tests CPU » dans `pr.md` et la description, limites écrites. Construction et `tests_cpu.sh` refaits par le lead dev sur 51f8e296 : 148 test(s) réussi(s) en 530 s, code 0. « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash : cb7932d2. WFS-503 → 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`. WFS-556 (badge « NOUVEAU ») attend encore WFS-551.
+
+### 2026-11-16 01:11:31 — Fin WFS-503 : fusionné (#427, cb7932d2), session terminée (Claude, agent dev3d (01Us6uCwe9))
+- Fusion par le lead dev à la 2e revue (squash cb7932d2) ; `TACHES.md` 🟣, `qa/Check.md` à jour (lead dev). Ligne de `track-agent.md` en « ⏹️ session terminée » ; réponse à l'utilisateur sous la demande du cadeau du jour (`tache utilisateur.md`).
+- Suite : WFS-556 (badge « NOUVEAU », appel de `cadeau::vu()`) attend WFS-551. Un seul sujet par session : aucun autre ticket demandé.
+
