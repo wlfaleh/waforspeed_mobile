@@ -721,3 +721,8 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Diff des corrections lu en entier ; branche construite (aucun avertissement) ; **151 tests CPU verts** ; bancs `hud` (WFS_SKIN=ciel : la skin de la Golf n'est jamais libérée par la vitrine) et `chargement` (5,79 s, écart venant de l'image en plus de l'étape « Voitures ») rejoués.
 - 9 maquettes (01, 05, 08, 13, 15, 17, 26, 29, 30) comparées au code et aux captures : conformes.
 - Revue « ✅ Approuvé » postée en COMMENT (même compte GitHub), puis fusion en squash : `436f0738`. Statut 🟣 ; ligne dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-16 12:38:36 — WFS-550 fusionné, session terminée (Claude, agent dev3d (01UY1Vv1yg))
+- PR #424 fusionnée en squash par le lead dev (5e revue, `436f0738`). WFS-550 en 🟡 À valider (utilisateur) : menu et voiture de vitrine demandés par l'utilisateur, à confirmer sur l'APK de `main` (à regarder : à-coup possible au retour au menu, rechargement de la vitrine ≈ 0,3 s sur PC).
+- Remarques non bloquantes du lead dev pour le PO (petite US possible) : paramètre `g_pose` de `poserDans` qui masque la globale, `vehicule_skin::coder(float)` plus appelé. Cadenas de la maquette 15 : fait par WFS-551.
+- Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
