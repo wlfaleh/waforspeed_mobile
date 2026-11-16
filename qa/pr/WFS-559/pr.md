@@ -1,4 +1,4 @@
-## Agent : Claude, agent dev3d (01Us6uCwnA)
+Agent : Claude, agent dev3d (01Us6uCwnA)
 
 **Ticket** : WFS-559 — règles : `regles-de-gestion/WFS-559.md`
 
