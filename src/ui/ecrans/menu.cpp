@@ -28,6 +28,8 @@
 #include "../garage.h"   // WFS-11
 #include "../menu_parking.h"   // WFS-552 : parking souterrain derrière le menu
 #include "../../render/model_loader.h"        // WFS-550 : voiture de vitrine du menu
+#include "../../core/platform.h"               // WFS-550 : readAsset (photo du fond)
+#include "../../../third_party/stb/stb_image.h"
 #include "../../render/vehicule_skin.h"
 #include "../../render/vehicule_finitions.h"
 #include "../../render/vehicule_peinture2.h"
@@ -80,6 +82,15 @@ public:
     const char* name() const override { return "menu"; }
     // WFS-552 (RG-05) : parking préparé au chargement de la partie ; mémoire refusée → fond d'avant (scène de la course figée)
     void init(Renderer& r, const GameView&) override {
+        // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « pour l'instant mets la photo en fond ») : fond du menu = image de la
+        // maquette 01 (assets/ui/menu_fond.jpg, éléments d'interface effacés : le jeu les redessine) ; sans elle : parking en 3D
+        if (!fond_.view) {
+            std::vector<uint8_t> octets; int w = 0, h = 0, n = 0;
+            stbi_uc* px = readAsset("ui/menu_fond.jpg", octets) ? stbi_load_from_memory(octets.data(), (int)octets.size(), &w, &h, &n, 4) : nullptr;
+            if (px) { fond_ = r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, false); fondW_ = w; fondH_ = h; stbi_image_free(px); r.uiSetImageFond(fond_); }
+            else WFS_ERR("menu : fond ui/menu_fond.jpg illisible (parking en 3D à la place)");
+        }
+        if (fond_.view) return;   // la photo remplace le parking et la voiture de vitrine (rien de plus en mémoire)
         if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r);
         // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « la voiture dans le menu doit être exactement la même, c'est l'image
         // de marque du jeu ») : la SF-X de la maquette 01 (orange, finition caméléon, skin bleu ciel) est la voiture de vitrine
@@ -101,10 +112,18 @@ public:
             else WFS_ERR("menu : voiture de vitrine %s introuvable (la voiture du joueur reste affichée)", VITRINE);
         }
     }
-    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{}; }
+    void shutdown(Renderer& r) override {
+        r.vk().waitIdle(); parking_.shutdown(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{};
+        if (fond_.view) { r.uiSetImageFond(Image{}); r.vk().destroy(fond_); fond_ = Image{}; }
+    }
     // WFS-552 (RG-01, RG-04, RG-06) : derrière le menu, la voiture du joueur (sa peinture, sa finition et sa skin, dessinées par
     // Game) garée dans le parking souterrain, en caméra rapprochée ; l'interface du menu reste dessinée par-dessus
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
+        if (g.ecran == Ecran::Menu && fond_.view) {   // WFS-550 : photo en fond : scène vide (fond noir sous la photo), rien de 3D à dessiner
+            fp.skyTop = fp.skyHorizon = fp.ground = fp.fogColor = vec3{0, 0, 0}; fp.sunIntensity = 0; fp.shadows = false; fp.spotCount = 0;
+            s.route = s.joueur = s.commandes = false; s.interface = true;
+            return true;
+        }
         if (g.ecran != Ecran::Menu || !parking_.pret() || !g.car || !g.player || !g.track) return false;
         voiture_ = matriceVoiture(g);
         parking_.regler(fp, s, g, vitrine_.ok ? carById(VITRINE) : *g.car, voiture_);   // WFS-550 : cadrage sur la SF-X de vitrine
@@ -211,6 +230,13 @@ public:
         // Mesures relevées sur la maquette (2400 × 1080), en unités de 720 px de haut (kb).
         (void)k; (void)gap; (void)m;
         const float kb = H / 720.f, gl = g.marges.gauche, gb = g.marges.bas;
+        if (fond_.view && fondW_ > 0 && fondH_ > 0) {   // photo de la maquette en plein écran, recadrée (jamais déformée)
+            const float af = (float)fondW_ / fondH_, ae = W / H;
+            float u0 = 0, u1 = 1, v0 = 0, v1 = 1;
+            if (ae < af) { const float f = ae / af; u0 = 0; u1 = f; }   // écran plus étroit : on coupe à droite, la voiture reste à droite du panneau
+            else { const float f = af / ae; v0 = (1 - f) / 2; v1 = v0 + f; }
+            r.uiImageFond(0, 0, W, H, u0, v0, u1, v1, op);
+        }
         auto glisse = [&](int n, float& dx) { const float e = ease((t - 0.04f * n) / 0.32f); dx = -36 * kb * (1 - e); return e * op; };
         float dx;
         float a = glisse(0, dx);
@@ -220,7 +246,7 @@ public:
         {
             const float x1 = gl + 570 * kb + dx, y0 = 152 * kb, y1 = 616 * kb, coin = 46 * kb;
             const vec2 p[5] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}, {x1, y1}, {0, y1}};
-            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x1B1D22, 0.94f * a), hex(0x0C0D10, 0.96f * a), y0, y1});
+            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x1B1D22, a), hex(0x0C0D10, a), y0, y1});   // opaque : il couvre le panneau de la photo
             const vec2 bordHaut[3] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}};
             dessin2d::trait(r, bordHaut, 3, 2 * kb, vec4{1, 1, 1, 0.22f * a});
             const vec2 bordDroit[2] = {{x1, y0 + 14 * kb + coin}, {x1, y1}};
@@ -265,6 +291,7 @@ private:
         return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + g.player->heading + g.player->spinYaw)) * rotateX((float)p.slope);
     }
     parking::Parking parking_;   // WFS-552
+    Image fond_; int fondW_ = 0, fondH_ = 0;   // WFS-550 : photo du fond du menu (maquette 01)
     static constexpr const char* VITRINE = "sf90";   // Cavallo SF-X (nom inventé du catalogue)
     static constexpr uint32_t MATERIAU_PLAQUE = 9, MATERIAU_PLAQUE_AVANT = 53;   // plaques arrière et avant de sf90.wfm (tools/plaques_voitures.mjs)
     static constexpr uint32_t MATERIAU_JAUNE = 11;      // détails jaunes d'origine de sf90.wfm (couleur 0,97 / 0,70 / 0,01)

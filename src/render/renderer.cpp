@@ -1708,14 +1708,30 @@ void Renderer::uiSetFontAtlas(const Image& atlas) {
     }
     // WFS-100 (RG-W2, VUID-vkCmdDraw-None-08114) : jamais de vue nulle liée. Au redémarrage du moteur (changement de carte),
     // l'atlas n'existe pas encore : texture blanche 1 × 1 en attendant. Binding 1 (bloom de postLayout_) : blanc aussi.
+    atlasVue_ = atlas.view;   // WFS-550 : binding 1 = image de fond de l'interface (blanche sans image)
     VkDescriptorImageInfo ii[2] = {{sampler_, atlas.view ? atlas.view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-                                   {clampSampler_, white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
+                                   {clampSampler_, imageFondVue_ ? imageFondVue_ : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
     VkWriteDescriptorSet wr[2]{};
     for (int k = 0; k < 2; k++) {
         wr[k].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[k].dstSet = fontSet_; wr[k].dstBinding = (uint32_t)k;
         wr[k].descriptorCount = 1; wr[k].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[k].pImageInfo = &ii[k];
     }
     vkUpdateDescriptorSets(vk_->device, 2, wr, 0, nullptr);
+}
+
+void Renderer::uiSetImageFond(const Image& image) {
+    vk_->waitIdle();   // le jeu de descripteurs peut servir à une image en vol
+    imageFondVue_ = image.view;
+    Image atlas; atlas.view = atlasVue_;
+    uiSetFontAtlas(atlas);
+}
+
+// uv décalés de −3 : le shader d'interface lit l'image de fond (binding 1) ; a : opacité
+void Renderer::uiImageFond(float x, float y, float w, float h, float u0, float v0, float u1, float v1, float a) {
+    UiVertex p{x, y, u0 - 3, v0, 1, 1, 1, a}, q{x + w, y, u1 - 3, v0, 1, 1, 1, a},
+             s{x + w, y + h, u1 - 3, v1, 1, 1, 1, a}, t{x, y + h, u0 - 3, v1, 1, 1, 1, a};
+    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    ui_vtx_.insert(ui_vtx_.end(), {p, q, s, p, s, t});
 }
 
 void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais) {

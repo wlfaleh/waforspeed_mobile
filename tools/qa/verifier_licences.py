@@ -100,6 +100,7 @@ COUVERTURE = [
     (r"textures/route/.*", "Poly Haven", "routes-revetements.txt"), (r"textures/essai/.*", None, None),
     (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"textes/.*", None, None),
     (r"cars/skins/[\w-]+\.etc2\.ktx2", None, None),   # WFS-492 : skins dessinées par le projet (tools/skins/generer.py, police Rajdhani déjà créditée)
+    (r"ui/menu_fond\.jpg", None, None),   # WFS-550 : fond du menu tiré de la maquette 01 de l'utilisateur (rendu de la SF-X, modèle déjà crédité par cars.h)
     (r"profil/mots_interdits\.txt", None, None),   # WFS-533 : liste écrite pour le jeu (WFS-480, aucune liste extérieure recopiée)
 ]
 # identifiant de la voiture → fichier de licence (dossier du modèle dans le jeu web), quand le nom diffère
