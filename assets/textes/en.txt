@@ -269,6 +269,10 @@ salon.creer.titre=Create
 salon.creer.sous=Duel
 salon.retour=Back
 salon.rejoindre_code=Join with a code
+salon.rejoins_code=Join with a code
+salon.aide_digicode1=Type your friend's code on the keypad, then
+salon.aide_digicode2=OK. Or create a duel and send them the link.
+salon.code_tape=Code
 salon.rejoindre=Join
 salon.code=Room code
 salon.valable=code valid for {1} min
@@ -407,6 +411,10 @@ hud.kmh_arriere=R · km/h
 hud.nitro=Nitro
 hud.menu=Menu
 hud.gaz=Gas
+# WFS-559 (RG-08) : consigne sous les feux du portique de départ, pendant le décompte (mot du milieu en orange)
+depart.consigne.debut=Keep your finger on 
+depart.consigne.gaz=GAS
+depart.consigne.fin=: release the brakes on green for a perfect start
 hud.frein=Brake
 hud.fantome=Your best
 # toasts (src/ui/toasts.cpp)

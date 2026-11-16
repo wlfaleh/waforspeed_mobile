@@ -141,16 +141,8 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (!ui::fontReady() || g.ecran != Ecran::Course || restartReq_) return;   // WFS-38 : ni décompte ni fin sur le menu
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
-        // compte à rebours : chiffre énorme au centre (showCount du jeu web)
-        const std::string c = course_.countText();
-        if (!c.empty()) {
-            // .countdown span : chiffres --text #F2F4F8 avec halo cyan (0 0 30px rgba(0,229,255,.6)) ;
-            // .countdown.go : « GO » --accent orange avec halo orange (--glow-accent). Halo = copies transparentes autour.
-            const bool go = c == "GO";
-            const float px = 34 * u, x = W * 0.5f, y = H * 0.30f;
-            halo(r, x, y, px, c, go ? vec4{1.f, 0.416f, 0.f, 0.10f} : vec4{0.f, 0.898f, 1.f, 0.10f}, ui::CENTRE, 0.04f, px * 0.035f, true);
-            ui::text(r, x, y, px, c, go ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);   // WFS-48 : italique
-        }
+        // WFS-559 (RG-05) : plus de chiffres 3 / 2 / 1 au centre : les 5 feux du portique de départ les remplacent ; le « GO » et la
+        // consigne sous les feux sont dessinés par src/world/portique_depart.cpp (les bips de sfx.cpp ne changent pas)
         // écran de fin (endRace / section #over du jeu web), affiché 0,9 s après la fin
         if (course_.state == RaceState::Over && course_.overTimer >= 0.9 && course_.duelFinish <= 0) drawOver(r, W, H, u);   // WFS-21 : résultat du duel à part
     }

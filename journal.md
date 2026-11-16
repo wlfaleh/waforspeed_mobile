@@ -737,3 +737,34 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Points 1 à 5 de la 1re revue corrigés (code de la tuile, salon sans texte net, plaque 600 × 200 mm lisible, code dans le panneau, tests CPU 151, captures refaites) ; avis agent 3D VALIDÉ sur 248debab.
 - Refus : (A) conflit avec `main` dans `src/ui/ecrans/menu.cpp` (WFS-550 #424, vitrine SF-X contre parking partagé `parking::commun()`) : squash impossible ; (B) `apres-salon-accueil.jpg` sans la tuile « Rejoindre Nadia » (salon expiré pendant le rendu du banc).
 - Pour le PO : 2 erreurs du parcours « duel entre amis » (revanche : écran de fin, temps 0,0 s) présentes aussi sur `main` 73b7f6fd (banc `menu2`) : anomalie existante, sans lien avec WFS-558.
+
+### 2026-11-16 12:52:44 — WFS-557 : 1re revue de la PR #432, refusée (lead-dev)
+- Relu au commit 7cf15e7b : maquettes 01, 02, 03, 04, 08, 12, 14, 18a-c, 19 à 24, 31 ouvertes et comparées au code et aux captures ; diff entier lu ; branche construite, tests CPU 150 / 150 ; bancs textes-course, menu2, course5 (1600 × 720), cgu, profil (1280 × 720) rejoués.
+- Refus (6 points) : captures modes-choix et fin Checkpoint périmées (avant 3eaf6eb4) ; CGU coupées en 16:9 (« J'accepte » hors écran, cgu.cpp:147, k = H / 720) ; Market : carte Pack débutant sans image (maquette 12, non déclaré) ; salon : solde ★ absent (maquette 23) ; tests-cpu.log et section « Tests CPU » absents ; description (« 21 % plus grande ») à corriger. Capture du garage demandée (bague chrome partagée).
+- Pour le PO : banc menu2, parcours duel « Revanche » à 0,0 s en échec aussi sur main (088f306c), déjà signalé par la revue de #430.
+- La synchronisation avec main après WFS-550 est faite par le développeur (message du coordinateur) ; aucune fusion.
+
+### 2026-11-16 13:34:33 — WFS-559 : PR #431 corrigée après la revue du lead dev (Claude, agent dev3d (01Us6uCwnA))
+- Cause racine du point 2 : le système de la nuit (`nuit.cpp`, ordre 950) remet `fp.spotCount` à 0 après le portique (ordre 112) : la lumière de nuit des feux était effacée à chaque image. Elle est posée par `PortiqueDepartLumiere` (ordre 960), en cône, 0,003 par colonne, portée 12 m (réglé au banc sur le critère de l'agent 3D) ; le banc `portique-depart` vérifie qu'elle est posée (rouge au décompte, verte au GO).
+- Tests CPU : 152 réussis sur aa466277 (`qa/pr/WFS-559/tests-cpu.log`) ; banc `portique-depart` 2400 × 1080 : 0 écart ; captures de nuit refaites.
+- Avis agent 3D : VALIDÉ (avec réserves mineures, suivi WFS-560 / P3) sur b89f5de1 ; lead dev rappelé pour la 2e revue.
+
+
+### 2026-11-16 13:42:43 — WFS-558 fusionné par le lead dev (lead-dev)
+PR #430 (Claude, agent dev3d (01Us6uCtQN)) fusionnée en squash (c1149a60) à la 3e revue, revue sur 2df3c5c8 (« ✅ Approuvé » en commentaire, même compte GitHub). Points A (synchro WFS-550 : parking partagé + vitrine SF-X, shutdown sans double libération) et B (tuile de Nadia sur `salon-accueil`) vérifiés ; captures `menu-duel` avant / après identiques, `salon-accueil`, `salon-code` ouvertes ; construction et 152 tests CPU refaits sur 2df3c5c8. Avis agent 3D VALIDÉ. Statut 🟡 À valider (utilisateur). Au PO : 2 erreurs déjà présentes sur main dans le parcours « duel entre amis » du banc (revanche, temps 0,0 s).
+
+### 2026-11-16 13:43:18 — WFS-558 : fin, session terminée (Claude, agent dev3d (01Us6uCtQN))
+- PR #430 fusionnée en squash par le lead dev (c1149a60) à la 3e revue, après 2 refus (1 : salon local injoignable, texte net sur le flou, pseudo et code illisibles en vue large, tests CPU, capture ancienne ; 2 : conflit avec WFS-550, tuile de Nadia absente) ; avis agent 3D « VALIDÉ » sur le dernier commit.
+- Statut : 🟡 À valider (utilisateur) : à regarder sur le téléphone : écran « Duel en ligne » (parking, digicode, plaque du pseudo), toucher du digicode → vue rapprochée, saisie du code, « Retour », temps d'image (non mesuré ici).
+- Pour le PO (non bloquant) : 2 erreurs déjà présentes sur main dans le parcours « duel entre amis » du banc menu2 (temps 0,0 s à la revanche) ; réserves de l'agent 3D (ombre portée du panneau, reflet ponctuel de la réglette sur le pare-brise).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
+
+### 2026-11-16 14:00:29 — WFS-559 fusionné par le lead dev (lead-dev)
+PR #431 relue en 2e revue sur b89f5de1 (seulement les 3 points de la 1re revue) : tests CPU dans la PR, lumière de nuit posée par `PortiqueDepartLumiere` (ordre 960, après `nuit.cpp` qui vide les lumières), avis agent 3D VALIDÉ sur le dernier commit. Construction, 152 tests CPU, banc `portique-depart` (0 écart) refaits ; essai local avec main (WFS-558) : 153 tests réussis. « ✅ Approuvé » en commentaire, fusion en squash 83f5bb50. Statut 🟡 À valider (utilisateur) (RG-C7). WFS-560 (en attente de WFS-559) peut passer Prêt : au PO.
+
+### 2026-11-16 14:01:09 — WFS-559 : fin, PR #431 fusionnée, session terminée (Claude, agent dev3d (01Us6uCwnA))
+- PR #431 fusionnée en squash par le lead dev (83f5bb50) ; ticket 🟡 À valider (utilisateur) : à essayer sur l'APK de `main` (départ de course : portique, 5 feux rouges, verts au GO, consigne, boutons MENU / ARRIÈRE cachés pendant le décompte).
+- À reprendre avec WFS-560 (portique « ARRIVÉE », même modèle `portique_depart::construire(…, false)`) ou en US de suite (réserves non bloquantes de l'agent 3D et du lead dev) : caisson qui se lit comme un panneau plat de loin ; zoom de la platine et des boulons au ras du sol ; motif des optiques des feux (P3) ; banc : contrôle du bouton MENU pour RG-10 ; `circuit.cpp` (Grand Prix) à brancher sur `Course::feuxRouges` à sa reprise.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+

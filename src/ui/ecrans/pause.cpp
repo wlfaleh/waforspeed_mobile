@@ -42,7 +42,8 @@ const char* TEXTES[3] = {"pause.reprendre", "pause.recommencer", "pause.quitter"
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
-    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif();   // WFS-22 : masqué à la manette
+    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif()   // WFS-22 : masqué à la manette
+           && c->state != RaceState::Count;   // WFS-559 (accroche, RG-10) : caché pendant le décompte (maquette R19 09 : feux du portique visibles)
 }
 
 class Pause : public System {

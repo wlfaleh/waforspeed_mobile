@@ -95,6 +95,11 @@ double Course::scaleDt(double raw) {
     return raw * timeScale;
 }
 
+int Course::feuxRouges() const {   // WFS-559 (RG-06)
+    if (state != RaceState::Count || lastCount < 0) return 0;
+    return std::clamp((int)std::floor((clock + 3) / FEU_PAS_S + 1e-9) + 1, 1, FEUX_DEPART);
+}
+
 std::string Course::countText() const {
     if (state == RaceState::Count) return lastCount > 0 ? std::to_string(lastCount) : std::string();
     if (state == RaceState::Play && goShown > 0) return "GO";

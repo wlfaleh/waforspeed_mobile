@@ -269,6 +269,10 @@ salon.creer.titre=Créer
 salon.creer.sous=Duel
 salon.retour=Retour
 salon.rejoindre_code=Rejoindre avec un code
+salon.rejoins_code=Rejoins avec un code
+salon.aide_digicode1=Tape le code de ton ami sur le digicode, puis
+salon.aide_digicode2=OK. Ou crée un duel et envoie-lui le lien.
+salon.code_tape=Code
 salon.rejoindre=Rejoindre
 salon.code=Code du salon
 salon.valable=code valable {1} min
@@ -407,6 +411,10 @@ hud.kmh_arriere=R · km/h
 hud.nitro=Nitro
 hud.menu=Menu
 hud.gaz=Gaz
+# WFS-559 (RG-08) : consigne sous les feux du portique de départ, pendant le décompte (mot du milieu en orange)
+depart.consigne.debut=Garde le doigt sur 
+depart.consigne.gaz=GAZ
+depart.consigne.fin= : lâche les freins au vert pour un départ parfait
 hud.frein=Frein
 hud.fantome=Votre record
 # bandeaux (src/ui/toasts.cpp)
