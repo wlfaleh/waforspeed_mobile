@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-16 01:42:49 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-16 09:44:40 UTC (po-scrum-master)
+
+> 🅿️ **09:44 UTC (2026-11-16)** : **WFS-558** (P1, E23, scène 3D du duel en ligne) attribué à Claude, agent dev3d (01Us6uCtQN), nouvelle session `@dev`. Sessions 01Us6uCwHf (496), 01Us6uCwe9 (503), 01UY1Vv2KF (551) et lead-dev 555 : tickets fusionnés, lignes enlevées. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-559, 561, 563, puis 512.
 
 > ⚖️ **01:05 UTC (2026-11-16)** : arbitrage WFS-550 / 551 / 557 : onglets du garage à WFS-551 (déjà sur sa branche), contenu de l'onglet Voiture à WFS-550 ; menu (maquette 01, colonne Market / Profil / Crédits retirée) passe de WFS-557 à WFS-550.
 
@@ -56,11 +58,8 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01Us6uCtQN) (session_01Us6uCtQNFWC6KwvYiHKmMk) | WFS-558 | Interface R19 : scène 3D du duel en ligne, maquette 04 (E23 : `src/ui/ecrans/salon.*`, menu 3D de WFS-552) | `feature/waforspeed-558` à créer (attribué 09:44) | 🔧 En cours |
 | Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 23:15 | ↩️ retour lead dev sur PR #424 : à corriger (3e revue : section Maquettes, icônes des anneaux 05 et 26, combo orange 17) |
-| Claude, agent dev3d (01Us6uCwe9) (session_01Us6uCwe9onHeoCoMCPSWj3) | WFS-503 | Cadeau du jour : gains réels (étoiles au portefeuille, coloris et skins donnés) (E19, zone E3 : `src/game/**` hors `game.*`, `tests/**`) | `feature/waforspeed-503`, 00:52 (16/11) | ⏹️ session terminée (WFS-503 fusionné, #427, cb7932d2) |
-| Claude, agent dev3d (01UY1Vv2KF) (session_01UY1Vv2KFV5cJpjafKsfwV5) | WFS-551 | Interface R19 (4/5) : gouttes, pastilles, pistolet, cadenas-jauge, flèches, HUD en verre, cartes grisées (E23 : fichiers de RG-08 de `regles-de-gestion/WFS-551.md`, icône dans `assets/` de l'interface, `shaders/ui*`, `tests/**`) | `feature/waforspeed-551` ; PR #426 fusionnée (e1c86795) | ⏹️ session terminée (WFS-551 fusionné) |
-| lead-dev (session_01UY1Vv2AmFHmyurYWvyN3oV) | WFS-555 | [TECHNIQUE] cache des captures « avant » et compilation de main gardées (zone : `tools/qa/captures_pr.sh` seulement), en renfort | `feature/waforspeed-555` poussée | ⏹️ session terminée (WFS-555 fusionné, #425, squash e4d96fde, 2026-11-16 00:09 UTC) |
-| Claude, agent dev3d (01Us6uCwHf) (session_01Us6uCwHfmVNHGT7xVcZKgC) | | Atelier d'autocollants : bibliothèque, placer, tourner, agrandir, colorer, calques (E18, zone E8 `src/ui/ecrans/**` ; accroche ≤ 10 lignes dans `src/ui/garage.cpp`) | `feature/waforspeed-496`, 01:50 | ⏹️ session terminée (WFS-496 fusionné, #428, 02:33 UTC) |
 | Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557` poussée, 23:56 | 🔧 En cours (vérification des écrans) |
 
 ## Agents de pilotage

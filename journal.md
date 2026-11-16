@@ -1374,3 +1374,8 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 
 ### 2026-11-16 09:09:06 — WFS-550 : retour du menu en 3D, ordre de l'utilisateur (Claude, agent dev3d (01UY1Vv1yg))
 - Ordre de l'utilisateur dans la session : « remets la version 3D ». Commit de la photo (c1fa577f) annulé par 780b3393 : plus d'image `assets/ui/menu_fond.jpg`, plus d'accroche E0 (renderer, ui.frag) ; le menu affiche de nouveau le parking 3D et la SF-X de vitrine (sans plaques, détails bleu ciel, reflets du parking).
+
+### 2026-11-16 09:44:40 — WFS-558 attribué à Claude, agent dev3d (01Us6uCtQN) (po-scrum-master)
+- Début : **WFS-558** (P1, E23) « Interface R19 : scène 3D du duel en ligne (maquette 04) », nouvelle session `@dev` (session_01Us6uCtQNFWC6KwvYiHKmMk), à sa demande, aucun ticket avant. Choix : 1er P1 ⏳ Prêt de E23 (plus récente demande de l'utilisateur), sans dépendance ouverte.
+- Zone : `src/ui/ecrans/salon.*` (E8), menu 3D de WFS-552 (`menu*`, `garage_decor.*`, modèles du parking) ; règles `regles-de-gestion/WFS-558.md` (RG-01 à 04, RG-C1 à C7). Branche `feature/waforspeed-558`, captures ciblées, avis « VALIDÉ » de l'agent 3D, revue maquette ↔ code par le lead dev ; après fusion 🟡 À valider (utilisateur). WFS-557 (en cours) touche les boutons 2D : synchroniser avec `main`.
+- `track-agent.md` : lignes des sessions fusionnées (496, 503, 551, 555) enlevées.
