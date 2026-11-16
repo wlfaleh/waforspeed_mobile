@@ -1,0 +1,35 @@
+=== mesure b
+1/4 compilation de la branche feature/waforspeed-555
+2/4 captures « après »
+  banc chargement 
+3/4 captures « avant » de origin/main (56cdb81fa6a73789d5ec5c72680a0a06ca3302b5), cache <scratchpad>/cache
+  arbre de travail de main (re)créé dans <scratchpad>/cache/main-src-6dbaaf336f59
+  compilation incrémentale de main (56cdb81fa6a73789d5ec5c72680a0a06ca3302b5) dans <scratchpad>/cache/main-src-6dbaaf336f59
+  banc chargement 
+4/4 réduction des captures dans qa/pr/WFS-555
+5 capture(s) « après » dans qa/pr/WFS-555 (README.md, pr.md)
+DUREE_b=203 s
+Captures « avant » : `origin/main` = `56cdb81fa6a73789d5ec5c72680a0a06ca3302b5` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
+<scratchpad>/captures_pr.MOeYwJ
+=== mesure c
+1/4 compilation de la branche feature/waforspeed-555
+2/4 captures « après »
+  banc chargement 
+3/4 captures « avant » de origin/main (56cdb81fa6a73789d5ec5c72680a0a06ca3302b5), cache <scratchpad>/cache
+  banc chargement : captures « avant » relues dans le cache
+4/4 réduction des captures dans qa/pr/WFS-555
+5 capture(s) « après » dans qa/pr/WFS-555 (README.md, pr.md)
+DUREE_c=29 s
+Captures « avant » : `origin/main` = `56cdb81fa6a73789d5ec5c72680a0a06ca3302b5` ; cache : 1 banc(s) relu(s), 0 banc(s) rejoué(s) ; main compilé : non.
+<scratchpad>/captures_pr.7fDIKu
+=== mesure d
+1/4 compilation de la branche feature/waforspeed-555
+2/4 captures « après »
+  banc chargement 
+3/4 compilation de origin/main (56cdb81fa6a73789d5ec5c72680a0a06ca3302b5) depuis zéro et captures « avant » (SANS_CACHE=1)
+  banc chargement 
+4/4 réduction des captures dans qa/pr/WFS-555
+5 capture(s) « après » dans qa/pr/WFS-555 (README.md, pr.md)
+DUREE_d=196 s
+Captures « avant » : `origin/main` = `56cdb81fa6a73789d5ec5c72680a0a06ca3302b5` ; sans cache (SANS_CACHE=1), main compilé depuis zéro.
+<scratchpad>/captures_pr.bdNIat

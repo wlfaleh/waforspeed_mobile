@@ -1170,3 +1170,150 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Nouvelle règle de l'utilisateur (23:13 UTC, maquettes comparées au code), appliquée pour la première fois : maquettes 13, 15, 08, 29 et 30 conformes ; écarts sur **05 et 26** (anneaux vides, sans icône de voiture ni de cadeau) et sur **17** (« Combo ×N » en cyan au lieu d'orange) ; la description de la PR ne cite pas fichier:fonction pour chaque maquette.
 - Revue « changements demandés » postée en COMMENT (même compte GitHub). TACHES.md : ↩️ Retour lead dev (PR #424) ; suivi-pr.md : ↩️.
 - **PO** : 3e refus sur cette PR (point 0 bis, nouvelle règle). À savoir pour WFS-551 : les cadenas au-dessus des segments gris (garage_achat.cpp) ne sont pas sur la maquette 15 ; RG-04 de 551 ne garde que le cadenas-jauge à côté du nom.
+
+### 2026-11-15 23:27:23 — WFS-555 : PR #425 ouverte (lead-dev)
+- Codé par le lead dev en renfort (ordre de l'utilisateur) ; seul `tools/qa/captures_pr.sh` change : cache des captures « avant » par SHA complet de main (hors du dépôt, témoin `.complet`, renommage, verrou `flock`, 3 commits gardés), arbre de main et `build/` gardés (compilation incrémentale), `SANS_CACHE=1` = ancien chemin.
+- Mesures (banc `chargement` 1280x720, lavapipe, même conteneur) : ancien script 242 s ; nouveau cache vide 203 s ; **cache plein 29 s** ; `SANS_CACHE=1` 196 s ; **main a bougé 54 s** (nouveau dossier de cache, compilation incrémentale).
+- Cache rendu octet pour octet (`cmp`) ; avec / sans cache : 596 à 857 pixels d'écart, dans la variation du banc lui-même (804 à 967 pixels entre deux lancements sans cache : mémoire affichée à l'écran).
+- Tests CPU : 148 réussis (branche synchronisée). Installé dans le conteneur pour mesurer : `mesa-vulkan-drivers`, `glslc`, `libvulkan-dev` (apt, dépôts Ubuntu).
+- Relecture et fusion : **une autre instance du lead dev** (appelée tout de suite).
+
+### 2026-11-15 23:28:32 — WFS-551 : PR #426 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv2KF))
+- **Fait** (RG-01 à RG-07) : gouttes de peinture groupées par prix (config), pastilles de skin à motif, icône du pistolet de l'utilisateur teintée par finition, cadenas-jauge solde / prix à côté du nom d'une voiture bloquée, flèches du garage qui clignotent, HUD en verre (Menu / Caméra centrés, pédales et volant en verre sans texte, nitro anthracite, pause et vue caméra), cartes grisées avec retour de la couleur pendant le téléchargement, « Rouler » éteint sur une carte à télécharger, écran 18d restylé ; textes FR / EN.
+- **Icône** : `references/maquettes-R19/icone-pistolet-utilisateur.png` (fournie par l'utilisateur, SHA-256 167444ee878cd00395b6b06a9d7d77a1c0c92e286fb3416e280b6100cf4cc117) réduite en 256 px dans `assets/ui/icone-pistolet.png` (SHA-256 5f69fa16290b92dff4edaa14d7366661f315af60b7c253c2721edbab1889f0ea) ; rangée dans les canaux G/B/A libres de l'atlas de police, nouveau mode du shader `ui.frag` (u ≥ 3,5). Aucun téléchargement Internet.
+- **Accroches ≤ 10 lignes hors zone** : `src/ui/text.cpp` (rangement de l'icône dans l'atlas), `src/ui/garage_fiche.cpp` (cadenas-jauge après le nom, fichier de WFS-550), `src/ui/garage.cpp` (clignotement des flèches). Fichiers du HUD hors liste RG-08, touchés pour RG-06 : `src/game/commandes_tactiles.cpp`, `src/game/direction.cpp`, `src/ui/ecrans/pause.cpp`, `src/game/camera_vue.cpp`.
+- **Décisions** : groupes de couleurs lus dans `configgame.json` (Classiques et Vives existent aujourd'hui) ; carte « voiture bloquée » retirée hors attente (remplacée par le cadenas-jauge) ; banc `paquets` : le contrôle de WFS-306 qui roulait sur la Corniche supprimée vérifie maintenant « Rouler » éteint (RG-07), et le secours par le code reste vérifié par la demande directe (comme `bench_changement_carte.cpp`).
+- **Vérifié** : construction sans avertissement ; tests CPU : 149 réussis (branche synchronisée), dont `test_icones_r19` (nouveau) et `test_hud_boutons` (RG-06) ; bancs `garage-couleurs`, `garage-voitures`, `paquets`, `hud:1280x720` : 0 écart sur la branche et sur `main` ; 21 captures avant / après dans `qa/pr/WFS-551/`, regardées.
+- **Parcours RG-09 (FR / EN)** : menu → garage (Peinture, Finition, Skins, voiture bloquée, acheter : captures `garage-couleurs-*`, `garage-voitures-*`, versions `-en-`) → choix de la carte (télécharger, progression, installée, rouler : `paquets-terrain-*`) → course (Menu, Caméra, gaz, frein, nitro : `hud-*`) → pause → retour ; aucun écart aux bancs.
+- **Limites** : pas de banc séparé Finition / Skins (visibles sur les captures du garage) ; rendu Android non vu ici ; après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-15 23:39:13 — WFS-551 : PR #426 refusée par le lead dev (lead-dev)
+- Revue du commit ec034448 : 21 paires de captures ouvertes, tout le diff lu, construction refaite et 149 tests CPU OK. Refus aussi demandé par l'utilisateur (via le coordinateur) : le garage ne reprend pas les maquettes 06, 07, 16, 15 et 18d.
+- Maquettes : 17/17b (HUD) et 18a-c (cartes grisées, téléchargement, installée) conformes ; écarts sur 06 (gouttes petites, sans panneau de verre), 07 (pastilles 32 px, nom à côté, aperçu qui cache « AUCUNE »), 16 (pistolets de 34 px, sans panneau ; Chromé et Caméléon jamais capturés), 15 (« ★ solde / prix » sous Retour au lieu de sous Acheter ; petits cadenas des points en trop), 18b (texte « Tu peux rouler pendant ce temps » alors que « Rouler » est éteint), 18d (fond = menu assombri au lieu de la scène floue).
+- Manquent : les bancs `garage-finitions` et `garage-skins` (ils existent, la PR dit le contraire), la section « Tests CPU » et `qa/pr/WFS-551/tests-cpu.log`, et la citation fichier / fonction pour chaque maquette.
+- Refus posté en commentaire sur la PR (GitHub n'accepte pas « changements demandés » quand la PR est ouverte avec le même compte). Statut : ↩️ Retour lead dev (PR #426).
+
+### 2026-11-15 23:46:35 — WFS-550 : ordre de l'utilisateur, maquettes appliquées à 100 % (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « ta maquette tu l'appliques à 100 %, zéro erreur ». Il passe avant la RG commune de E23 « taille des boutons et textes inchangés » pour les écrans de WFS-550.
+- Refait (commit ec2db1c1) : cartes « Cadeau du jour » et « Voiture prêtée » aux mesures de la maquette 26 (nouvelles clés FR / EN cadeau.carte.*, pret.carte.*), bandeaux de course de la maquette 30 (droits, fondus, titre sombre, valeur blanche), combo de la maquette 17 (capitales orange, barre orange), cadrans du garage plus grands (13), barre arrondie du chargement (08), pilule arrondie du compteur d'étoiles (26, 29). Accroche dans `boutons.*` retirée (icône de voiture vue de face dessinée dans `pret_bandeau.cpp`).
+- Hors de mes fichiers et absent des maquettes : colonne Market / Profil / Crédits du menu (les cartes se posent à sa gauche) ; onglets du garage (13) et cadenas (15) : WFS-551.
+
+### 2026-11-15 23:48:02 — WFS-557 créé : vérification à 100 % du travail R19 fusionné contre les maquettes, et corrections (po-scrum-master)
+- Demande de l'utilisateur, une seule tâche. RG : `regles-de-gestion/WFS-557.md`.
+
+### 2026-11-15 23:49:27 — WFS-557 limité à 548, 549, 552 ; 550 et 551 refusés s'ils ne respectent pas les maquettes R19 à 100 % (po-scrum-master)
+
+
+### 2026-11-15 23:51:31 — WFS-555 : PR #425 refusée par le lead dev (lead-dev)
+- Revue par une autre instance du lead dev (le codeur était le lead dev en renfort), commit relu 1a88fae6, revue en commentaire (même compte GitHub).
+- Vérifié : 5 paires `chargement` ouvertes (identiques sauf la ligne « Mémoire »), diff entier, construction + 148 tests CPU (code 0), script relancé (199 s cache vide ; 56 s et 54 s après changement de main, compilation incrémentale), ménage à 3 commits. Critère « identique au pixel » accepté tel que prouvé (cache octet pour octet ; banc non déterministe) : à réécrire par le PO.
+- Défauts : (1) `preparer_main_src` peut faire `checkout --force --detach` dans le dépôt du développeur si l'arbre de main est cassé et le cache dans le dépôt (reproduit : branche quittée, modification perdue) ; (2) `WFS_CACHE_CAPTURES` relatif accepté : arbre de main créé dans le dépôt, « avant » absents, code 0 ; (3) arbre verrouillé non recréé (`fatal: missing but locked worktree`).
+- Remarque au PO : main bouge souvent par des commits de documents, le cache par SHA se relit rarement ; le gain vient surtout de la compilation incrémentale (≈ 200 s → ≈ 55 s).
+
+### 2026-11-15 23:55:21 — WFS-557 attribué à Claude, agent dev3d (01UY1Vv4Fd) (po-scrum-master)
+- Ordre de l'utilisateur : « @dev prend le WFS-557 ». Nouvelle session `@dev` (session_01UY1Vv4Fd1hq8E2LRsGZhgL), aucun ticket avant : attribution permise (un sujet par session).
+- Ticket : P1, E23, vérifier que WFS-548, 549 et 552 fusionnés respectent à 100 % les maquettes `references/maquettes-R19/`, et corriger. Règles : `regles-de-gestion/WFS-557.md` (RG-01 à RG-05).
+- Zone autorisée : les fichiers fusionnés de WFS-548, 549 et 552 (E5 `src/ui/**`, `shaders/ui*` ; E8 `src/ui/ecrans/**` ; menu 3D `menu*`, `garage_decor.*`, modèles du parking), plus `qa/pr/WFS-557/`. Interdit : les éléments de WFS-550 et 551 (en cours, RG-03).
+- Plan : captures 2400 × 1080 côte à côte avec chaque maquette, tableau `qa/pr/WFS-557/verification.md`, corrections, PR, avis agent 3D pour le menu 3D, lead dev (comparaison maquette ↔ code). Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-15 23:59:57 — WFS-555 : PR #425 corrigée après le retour du lead dev (lead-dev)
+- 3 défauts de la revue sur 1a88fae6, corrigés dans c157d394 : (1) checkout seulement si l'arbre de main est sa propre racine git (plus jamais le dépôt parent) ; (2) cache rendu absolu, refus clair (code 2) s'il est dans le dépôt ; (3) arbre verrouillé déverrouillé puis recréé.
+- Essais refaits (`qa/pr/WFS-555/essais-revue-2.log`) : dépôt parent intact (branche et modification gardées), `.cache-rel` refusé sans rien créer, arbre verrouillé recréé ; 2 lancements normaux de `chargement` à code 0 (186 s, 188 s).
+- Réponses point par point dans la PR ; branche synchronisée (c19a70c4) ; autre instance du lead dev rappelée.
+
+### 2026-11-16 00:09:14 — WFS-555 fusionné par le lead dev (lead-dev)
+- 2e revue de la PR #425 (tête c19a70c4) par une autre instance du lead dev : diff `1a88fae6..c19a70c4` du script lu ; les 3 défauts sont corrigés.
+- Essais refaits : (1) arbre de main vide sans `.git` dans un dépôt parent → arbre recréé, dépôt parent intact (branche `principal`, ` M f.txt`), code 0 ; (2) `WFS_CACHE_CAPTURES=.cache-rel` et `build/../` → refus clair, code 2, rien créé ; relance avec cache plein : 26 s, 1 banc relu.
+- Captures `chargement` regardées (seule la mémoire change). « ✅ Approuvé » en commentaire (même compte GitHub), squash e4d96fde. Statut 🟣.
+- Non bloquant : `qa/pr/WFS-555/pr.md` réécrit par les essais (modèle « À REMPLIR ») ; `$TMPDIR/captures_pr.*` jamais effacés ; refus « cache dans le dépôt » limité à la racine de l'arbre courant ; idée de clé du cache sur le contenu du code (au PO).
+
+
+### 2026-11-16 00:10:01 — Fin WFS-555 : fusionné (#425, squash e4d96fde), session terminée (lead-dev)
+- `qa/pr/WFS-555/pr.md` remis sur main (il avait été réécrit en modèle vide par le dernier essai) : description complète + tableau de la 2e revue.
+- Gain mesuré : captures « avant » relues 29 s (cache plein) ; main ayant bougé, compilation incrémentale ≈ 55 s au lieu de ≈ 200 s ; 1er lancement d'une session neuve inchangé (≈ 200 s).
+- Remarques non bloquantes du relecteur à transmettre au PO : cache par contenu du code plutôt que par SHA (main bouge souvent pour des documents) ; dossiers `$TMPDIR/captures_pr.*` jamais effacés (déjà avant) ; refus « cache dans le dépôt » sans regarder le dossier git commun d'un arbre secondaire (cas rare).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-16 00:14:43 — Arbitrage WFS-557 : maquettes R19 à 100 %, boutons compris (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : règle « taille des boutons inchangée » (2026-11-06, E23, WFS-549 RG-07) contre l'ordre de l'utilisateur du 2026-11-15 23:46 « maquette à 100 %, zéro erreur ».
+- Décision : **oui**, l'ordre le plus récent passe avant : forme, place et taille dessinée des boutons comme sur la maquette ; zone de toucher ≥ bouton dessiné et ≥ 44 px, ancienne taille gardée en invisible si possible sans chevauchement ; aucune fonction perdue ; élément sans place sur la maquette → le PO. Écrit dans `regles-de-gestion/WFS-557.md` (RG-06 à RG-09). L'utilisateur peut changer cette décision.
+
+### 2026-11-16 00:15:10 — Arbitrage WFS-557 : 2e police Inter pour le texte courant (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : les maquettes R19 ont une police de texte courant (genre Inter) que le jeu n'a pas.
+- Décision : **oui**, Inter (OFL) en 2e police, prise seulement sur GitHub `rsms/inter` ou npm `@fontsource/inter`, licence dans `assets/licences/`, SHA-256 au journal ; graisses des maquettes seulement, même atlas (`src/ui/text.*`) ; titres, boutons, chiffres et HUD restent en Rajdhani. RG-10 à RG-13 de `regles-de-gestion/WFS-557.md`.
+
+### 2026-11-16 00:18:31 — WFS-503 : PR #427 ouverte, lead dev appelé (Claude, agent dev3d (01Us6uCwe9))
+- Fait : `cadeau::donner()` appelé par `ouvrir()` avant la même écriture de la sauvegarde : étoiles au portefeuille (`boutique::crediter`, une fois), coloris ajouté à `possede-<voiture>` sans être posé, skin par `skins::donnerSkin` ; écriture impossible → état, solde et possessions remis. Clé nouvelle `cadeau-nouveaux` + `estNouveau()` / `vu()` (arbitrage du PO, badge au garage : WFS-556).
+- Fichiers : `src/game/cadeau.*`, `src/game/sauvegarde.*`, `src/game/cadeau_gains_banc.cpp` (nouveau banc `WFS_BANC=cadeau-gains`), `tests/test_cadeau.cpp` (20 cas RG-05), `CMakeLists.txt` (`skin_offerte.cpp` dans 6 tests). **Accroche annoncée** : 1 ligne + 1 include dans `src/platform/desktop_main.cpp` (groupe `cadeau-gains`). Aucun fichier `src/ui/**`.
+- Vérifié en local (lavapipe, branche synchronisée avec `main`) : `tests_cpu.sh build` 148 réussis, 0 échec ; banc `cadeau-gains` 0 écart en FR et en EN. Parcours RC-E19-07 : menu (0 ★) → cadeau +28 ★ → menu 28 ★ → 2e appui sans gain → cadeau coloris Cyan (208) → garage, pastille sans cadenas → « Choisir » (0 ★ débité) → terrain → course de jour et de nuit en Cyan → cadeau skin Camouflage → garage sans cadenas → relance (sauvegarde relue) : tout gardé.
+- Captures : `qa/pr/WFS-503/` (24 après, 4 paires avant / après du banc `cadeau`).
+- Limites : pas de badge « Nouveau » (WFS-556) ; le banc ne garde que la chance du type voulu pour obtenir chaque gain (tirage inchangé).
+
+### 2026-11-16 00:29:31 — WFS-496 : atelier d'autocollants, PR #428 ouverte (Claude, agent dev3d (01Us6uCwHf))
+- Fait : écran « Atelier » ouvert depuis le garage (bouton « ATELIER » sous « MARKET ») : 5 vues + rotation au doigt, bibliothèque (6 familles, 10 gratuits, cadenas et prix des packs), glisser = placer, deux doigts = tourner / agrandir, ± 5°, ± 5 %, miroir, 28 couleurs, supprimer, annuler / refaire (20 pas), 20 calques (monter, descendre, masquer), « Valider » (gardé + cuit par WFS-495), « Quitter » avec confirmation, touche Retour = Quitter ; FR / EN.
+- Choix (RG-02) : gratuits = bande-large, bande-double, chiffre-1 à 3, flamme-1, eclair-1, etoile-1, lettre-a, lettre-b ; autres motifs dans les packs de `configgame.h` (numeros, bandes, flammes, etoiles), non posables tant que le pack n'est pas possédé (vente : WFS-497).
+- Fichiers (zone E8) : `src/ui/ecrans/atelier.*`, `atelier_calques.*`, `atelier_banc.cpp`, `tests/test_atelier.cpp`, `assets/textes/fr.txt` / `en.txt` (clés `atelier.*`).
+- **Accroches annoncées (≤ 10 lignes chacune)** : `src/ui/garage.cpp` (8 lignes : bouton, touchers, caméra, aperçu, voiture fixe), `src/game/game.cpp` (2 : `WFS_AUTOCOLLANTS` sinon calques de l'atelier), `src/ui/garage_skin.cpp` (2 : retour au menu), `src/game/sauvegarde.*` (4 : clé `autocollants-<voiture>`), `src/platform/desktop_main.cpp` (2 : banc), `CMakeLists.txt` (1 : test).
+- Vérifié en local (lavapipe, branche synchronisée avec `main`) : tests CPU 149 réussis (dont `test_atelier`, 41 cas) ; banc `atelier` 0 écart (parcours RC-E18-09 garage → atelier → 5 calques → Valider → course de jour → retour → relance, 3 voitures jour et nuit, anglais, touche Retour) ; cuisson 43 à 56 ms sur PC, au garage seulement.
+- Captures : `qa/pr/WFS-496/` (21 après, 1 paire avant / après du garage).
+- Limites : blanc des autocollants gris-bleu sous les projecteurs du garage (rendu WFS-495) ; autocollants des flancs peu visibles de la caméra de poursuite.
+
+
+### 2026-11-16 00:31:13 — Arbitrage WFS-557 : éléments sans place sur les maquettes R19 (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) (RG-09). Décisions écrites dans `regles-de-gestion/WFS-557.md` (RG-14 à RG-18).
+- Plaque : suit le pseudo, toucher « Ta plaque » la modifie. Profil : « · record » si le score égale le record du mode ; aide de glissement retirée.
+- Menu : Crédits seulement dans les Réglages (maquette 14) ; compteur d'étoiles → Market ; bloc « RECORD » → Profil (pas de bouton ajouté) ; sous-titres, « Ta voiture » et aide retirés.
+- Pause : « CP 2 » sans total en Checkpoint. Market : apparence 100 % ; le pack débutant existe déjà (WFS-510, 511, 513), il est branché tel quel, grisé « Après ta 3e course » tant qu'il n'est pas proposé ; pas de nouvelle US.
+
+### 2026-11-16 00:39:16 — WFS-503 : PR #427 refusée par le lead dev (lead-dev)
+- Commit relu : 75d1f823. Les 28 captures ont été ouvertes et sont conformes : étoiles 0 → 28 ★ créditées une fois, coloris Cyan débloqué puis choisi, course de jour et de nuit, skin Camouflage débloquée, relance gardée ; paires du menu identiques à l'octet.
+- Diff lu en entier, sans défaut : donner() est fait dans la même écriture atomique, avec remise en cas d'échec ; la clé cadeau-nouveaux est bornée et compatible avec les anciennes sauvegardes.
+- Construction et tests refaits sur la branche + main : 148 tests réussis.
+- Refus pour un seul point : la capture « Tests CPU » manque dans la description et qa/pr/WFS-503/tests-cpu.log est absent (règle de l'utilisateur du 2026-11-11). Aucune capture à refaire.
+- Revue publiée en COMMENT sur la PR (GitHub refuse REQUEST_CHANGES pour le même compte).
+
+### 2026-11-16 00:40:08 — WFS-496 : PR #428 refusée par le lead dev (lead-dev)
+- Revue du commit `f414a234` : 22 captures ouvertes, tout le diff lu, branche construite et testée (149 tests CPU réussis, `test_atelier` 0 échec). Revue postée en COMMENT, car GitHub refuse REQUEST_CHANGES sur une PR du même compte.
+- Défauts bloquants :
+  1. Le texte de la fenêtre « Quitter sans valider ? » est dessiné hors de la fenêtre (`atelier.cpp`, `dessinerConfirmation` : `textBoite` CENTRE avec x = bord gauche).
+  2. Régression au menu : quand l'atelier a cuit l'aperçu, `SkinGarage::pose_` reste faux, donc la sortie Garage → Retour → menu ne repose pas la skin et les autocollants de la voiture de course.
+  3. Le parcours RC-E18-09 est capturé de nuit alors qu'il est annoncé « de jour » (`WFS_MOMENT` ignoré par Choisir → Terrain → Rouler).
+  4. Captures de la 3e voiture (500) absentes, et aucun autocollant reconnaissable en course.
+- Statut : ↩️ Retour lead dev (PR #428) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-16 00:42:34 — WFS-557 : téléchargement de la police Inter, avancement (Claude, agent dev3d (01UY1Vv4Fd))
+- Téléchargement (RG-10, `regles-reseau.md`) : https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip (dépôt public GitHub `rsms/inter`, version 4.1, licence SIL OFL 1.1), SHA-256 de l'archive `9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e`. Gardés : `Inter-Regular.ttf` (`40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82`), `Inter-Medium.ttf` (`97ad806f526e41546d46365bb3a393145f75b7b1568913db74549ad8b8dba872`), `LICENSE.txt` (`262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a`) ; rien n'a été exécuté. Licence dans `assets/licences/police-inter-OFL.txt`, crédit dans `CREDITS.txt` et `store/credits.md` (`verifier_licences.py` : 0 manque).
+- Fait sur `feature/waforspeed-557` (commit cb2f3112) : Inter dans le même atlas que Rajdhani (711 px sur 1024, Rajdhani placée en premier, pixels inchangés) ; pause (19), Réglages (14, 24, 25 : une seule mise en page, téléphone et PC), profil (21), création du profil (20, RG-14), chargement (08, 08b) refaits d'après les maquettes, comparés côte à côte au banc en 1600 × 720.
+- Limite signalée : maquette 20, touches de 62 × 52 px (≈ 4,7 mm sur le téléphone de 2400 × 1080) au lieu des 9 mm de WFS-481 ; zone de toucher jointive ≥ 44 px (arbitrage RG-07). À suivre : CGU (22, arbitrage attendu), Market (12, RG-18), achat (27, 28), menu (01, RG-16), autres écrans de WFS-549.
+
+### 2026-11-16 00:52:17 — WFS-503 : PR #427 corrigée après la 1re revue, lead dev rappelé (Claude, agent dev3d (01Us6uCwe9))
+- Branche synchronisée avec `main` (`ddcc72a2`) ; `bash tools/qa/tests_cpu.sh build` relancé : 148 réussis, code de sortie 0 ; journal complet `qa/pr/WFS-503/tests-cpu.log` et section « Tests CPU » dans `pr.md` et la description de la PR (`51f8e296`). Aucun code ni capture changé.
+- **Pour le PO (WFS-556)** : la clé `cadeau-nouveaux` grandit tant que le garage n'appelle pas `cadeau::vu()` (lecture bornée à 256 éléments, sans risque) : WFS-556 doit appeler `vu(s, voiture, objet)` quand le joueur choisit l'objet.
+
+
+### 2026-11-16 00:52:49 — Arbitrage WFS-557 : CGU, maquette 22 (po-scrum-master)
+- RG-19 : case retirée, « J'accepte » grisé jusqu'à la lecture des deux onglets jusqu'en bas ; refus par la touche Retour au premier lancement (même message et même fermeture) ; « Fermer » en lecture depuis les Réglages. Demande de Claude, agent dev3d (01UY1Vv4Fd).
+
+### 2026-11-16 00:57:48 — Arbitrage WFS-557 : scènes 3D des maquettes 04, 09, 10, 11 ; WFS-558 à 561 créés (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : les scènes 3D complètes des maquettes R19 04 (duel), 09 (départ), 10 (arrivée) et 11 (résultats) n'ont été construites par aucun ticket fusionné (548, 549, 552).
+- Décision (RG-20 de `regles-de-gestion/WFS-557.md`) : **oui**, recommandation acceptée. WFS-557 ne met en conformité que les éléments 2D déjà touchés par 548 / 549 sur ces écrans (Menu, Rejouer, panneau du score, pastille « +7 étoiles · nouveau record », Retour, Créer duel). Les scènes 3D deviennent 4 US P1 de E23, `@dev` + avis « VALIDÉ » de l'agent 3D : **WFS-558** (04), **WFS-559** (09), **WFS-560** (10, après 559, même portique), **WFS-561** (11). Portiques placés par le code, pas cuits dans les paquets : pas de tâche `@cicd` compagne.
+- Prêts pour de nouvelles sessions `@dev` : 558, 559, 561.
+
+### 2026-11-16 01:01:16 — Arbitrage WFS-557 : choix du mode (maquette 02) ; WFS-562 créé (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : Distance et Difficulté sans place sur la maquette 02 ; aucune image de mode dans le jeu.
+- RG-21 : recommandation acceptée. Distance et Difficulté gardées, en rangées de verre **seulement dans la carte du mode choisi qui s'en sert** (Course à 5, Poursuite) ; Checkpoint choisi = écran identique à la maquette.
+- RG-22 : dans WFS-557, scène 3D floutée dans chaque carte (provisoire) ; vraies images des modes, prises dans le jeu avec ses voitures sans marque, dans **WFS-562** (P1, E23, `@dev` + avis `@3d`, ⏳ En attente de WFS-557).
+
+### 2026-11-16 01:05:17 — Arbitrage WFS-550 / 551 / 557 : onglets du garage et colonne du menu (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv1yg) (WFS-550, PR #424 ↩️), après le KO de l'utilisateur (« ta maquette tu l'appliques à 100 %, zéro erreur »).
+- Onglets du garage : la recommandation (les faire dans 550) est **refusée** : WFS-551 les fait déjà sur sa branche (`src/ui/garage_onglets.*`, a6ce7ea8 : onglets, panneau unique, bouton rond). WFS-551 RG-10 : panneau étroit et centré de l'onglet Voiture (maquette 13), « Choisir / Acheter » rond hors du panneau, « Retour » en étiquette à gauche. WFS-550 RG-09 : seulement le contenu (cadrans, barres, 17 segments) dans la largeur donnée par 551. RG-10 / RG-11 : le 2e fusionné montre 06, 07, 13, 15, 16 à 100 %.
+- Colonne du menu : la recommandation (la monter au-dessus des cartes) est **refusée** (élément absent de la maquette). L'arbitrage RG-16 de WFS-557 (00:31) s'applique et **passe à WFS-550** (RG-11) : cartes collées au bord droit ; Crédits retiré du menu (Réglages, maquette 14) ; Market = toucher le compteur d'étoiles ; Profil = toucher le bloc RECORD ; sous-titres, « Ta voiture SF-X », aide retirés de l'écran. Branche de 557 sans changement du menu (vérifié) : WFS-557 n'y touche plus.
+- Sessions prévenues : WFS-551 (01UY1Vv2KF), WFS-557 (01UY1Vv4Fd).
+
+### 2026-11-16 01:10:58 — WFS-503 fusionné par le lead dev (lead-dev)
+2e revue de la PR #427 (commit relu 51f8e296), limitée aux points corrigés : synchronisation avec `main` (ddcc72a2, aucun code de la PR changé), `qa/pr/WFS-503/tests-cpu.log` (148 réussis, code 0) et section « Tests CPU » dans `pr.md` et la description, limites écrites. Construction et `tests_cpu.sh` refaits par le lead dev sur 51f8e296 : 148 test(s) réussi(s) en 530 s, code 0. « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash : cb7932d2. WFS-503 → 🟣 ; ligne retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`. WFS-556 (badge « NOUVEAU ») attend encore WFS-551.
+
+### 2026-11-16 01:11:31 — Fin WFS-503 : fusionné (#427, cb7932d2), session terminée (Claude, agent dev3d (01Us6uCwe9))
+- Fusion par le lead dev à la 2e revue (squash cb7932d2) ; `TACHES.md` 🟣, `qa/Check.md` à jour (lead dev). Ligne de `track-agent.md` en « ⏹️ session terminée » ; réponse à l'utilisateur sous la demande du cadeau du jour (`tache utilisateur.md`).
+- Suite : WFS-556 (badge « NOUVEAU », appel de `cadeau::vu()`) attend WFS-551. Un seul sujet par session : aucun autre ticket demandé.
+
