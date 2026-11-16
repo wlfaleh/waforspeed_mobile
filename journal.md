@@ -1420,3 +1420,7 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Règles : `regles-de-gestion/WFS-561.md` (RG-01 à 03, RG-C1 à C7). Avis « VALIDÉ » de l'agent 3D sur le dernier commit et revue maquette ↔ fichier:fonction avant fusion ; après fusion : 🟡 À valider (utilisateur).
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-563, 512 (P1), puis 554, 538, 553.
 
+### 2026-11-16 10:51:31 — Arbitrage WFS-561 : scène 11 = résultats de la course à 5, du duel et de la Poursuite (po-scrum-master)
+- Question de Claude, agent dev3d (01Us6uCxBL) : maquette 11 (tableau LED) et maquettes 31 à 33 (fenêtres 2D de WFS-557) montrent le même classement.
+- Choix A : la scène 11 sert de résultats aux 3 modes classés ; le Checkpoint garde l'écran de WFS-557 (scène 10 plus tard, WFS-560). Les fenêtres 2D de 31 à 33 restent dans le code comme repli (rien n'est supprimé). Accroches dans les `resultat()` après la fusion de WFS-557. RG-04 à RG-09 dans `regles-de-gestion/WFS-561.md`. L'utilisateur peut changer ce choix.
+
