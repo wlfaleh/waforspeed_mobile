@@ -1271,3 +1271,12 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Construction et tests refaits sur la branche + main : 148 tests réussis.
 - Refus pour un seul point : la capture « Tests CPU » manque dans la description et qa/pr/WFS-503/tests-cpu.log est absent (règle de l'utilisateur du 2026-11-11). Aucune capture à refaire.
 - Revue publiée en COMMENT sur la PR (GitHub refuse REQUEST_CHANGES pour le même compte).
+
+### 2026-11-16 00:40:08 — WFS-496 : PR #428 refusée par le lead dev (lead-dev)
+- Revue du commit `f414a234` : 22 captures ouvertes, tout le diff lu, branche construite et testée (149 tests CPU réussis, `test_atelier` 0 échec). Revue postée en COMMENT, car GitHub refuse REQUEST_CHANGES sur une PR du même compte.
+- Défauts bloquants :
+  1. Le texte de la fenêtre « Quitter sans valider ? » est dessiné hors de la fenêtre (`atelier.cpp`, `dessinerConfirmation` : `textBoite` CENTRE avec x = bord gauche).
+  2. Régression au menu : quand l'atelier a cuit l'aperçu, `SkinGarage::pose_` reste faux, donc la sortie Garage → Retour → menu ne repose pas la skin et les autocollants de la voiture de course.
+  3. Le parcours RC-E18-09 est capturé de nuit alors qu'il est annoncé « de jour » (`WFS_MOMENT` ignoré par Choisir → Terrain → Rouler).
+  4. Captures de la 3e voiture (500) absentes, et aucun autocollant reconnaissable en course.
+- Statut : ↩️ Retour lead dev (PR #428) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
