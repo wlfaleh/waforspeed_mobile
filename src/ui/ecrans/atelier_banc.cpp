@@ -18,6 +18,7 @@
 #include "../../core/log.h"
 #include "../../game/game.h"
 #include "../../game/sauvegarde.h"
+#include "../../game/course5.h"   // panneau des modes du menu
 #include "../../platform/retour_systeme.h"   // touche Retour du téléphone
 #include "../../render/renderer.h"
 #include "../../render/vehicule_skin.h"
@@ -189,6 +190,7 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
         const vehicule_skin::Etat e = vehicule_skin::etat();
         verifier(g.ecran() == Ecran::Menu && reposeCourse() == "p208" && e.skin == vehicule_skin::CUIT && e.voiture == "p208" && e.calques >= 5 && e.textures == 1,
                  "garage → « Retour » → menu : aperçu rendu, habillage de la course reposé (5 calques, 1 texture en mémoire)");
+        choixModeBanc(false); images(20);   // « Retour » ouvre le panneau des modes (WFS-115) : refermé pour voir le parking
         capture("menu-retour", "« Retour » au menu : la 208 du parking garde ses autocollants");
         g.allerA(Ecran::Garage); images(45);
     }
@@ -212,14 +214,14 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
         for (const auto& v : AUTRES) {
             if (!ouvrirGarage(v.id)) { ecarts++; continue; }
             zone("bouton"); images(10);
-            poserMotif(4, "etoile-1"); zone("outil-3"); zone("outil-3");
-            poserMotif(5, "lettre-a"); glisser(0, 0, -40, 10, false);
+            poserMotif(4, "etoile-1"); zone("outil-3"); zone("outil-3"); zone("outil-4");   // miroir : sur les deux flancs
+            poserMotif(5, "lettre-a"); glisser(0, 0, -40, 10, false); zone("outil-4");
             zone("vue-4"); images(6); poserMotif(0, "bande-double"); zone("outil-5"); zone("couleur-0");   // bande double blanche sur le toit (vue en course)
             zone("vue-3"); images(6); poserMotif(1, "chiffre-2"); zone("outil-3"); zone("outil-3"); zone("outil-5"); zone("couleur-5");   // numéro orange à l'arrière (vu en course)
             zone("vue-0"); images(6);
             zone("valider"); images(20);
             verifier(cuit(v.id, 4) && texteGarde(v.id).find("bande-double,t,") != std::string::npos, std::string(v.id) + " : 4 calques gardés et cuits, bande double sur le toit");
-            capture(std::string("garage-") + v.id, "garage : étoile, lettre A, bande double blanche sur le toit, numéro 2 orange à l'arrière");
+            capture(std::string("garage-") + v.id, "garage : étoile et lettre A sur les deux flancs (miroir), bande double blanche sur le toit, numéro 2 orange à l'arrière");
         }
         // relance
         fermerPartie();
