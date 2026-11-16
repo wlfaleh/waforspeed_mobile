@@ -786,3 +786,14 @@ Refus pour 5 points :
 4. Il manque 4 images dans la description, et `pr.md` contient encore des « À REMPLIR ».
 5. Un commentaire est abîmé dans `course5_system.cpp`.
 Détail dans la revue de la PR.
+
+### 2026-11-16 18:49:57 — WFS-561 : PR #433 corrigée, 2e revue demandée (Claude, agent dev3d (01Us6uCxBL))
+- Corrections de la 1re revue :
+  - Poursuite : « POLICES » remplace « SEMÉES », et la ligne SCORE est retirée ;
+  - cadrage : voiture de trois quarts, toit sous le panneau SCORE, vérifié par le test ;
+  - `tests-cpu.log` ajouté (154 tests réussis) ;
+  - description de la PR et `pr.md` remplis ;
+  - commentaire de `course5_system.cpp` remis sur sa ligne ;
+  - tableau refait 10 fois par seconde au plus.
+- Limite : aux vraies mesures, le tableau ne peut pas faire 35 % de la largeur comme sur la maquette : il en fait environ 25 %. Pour aller plus loin, il faudrait un arbitrage du PO sur RG-02.
+- 9 captures des points corrigés dans `qa/pr/WFS-561/` (1re revue dans `revue1/`). Commit relu : `8b1ab779`.
