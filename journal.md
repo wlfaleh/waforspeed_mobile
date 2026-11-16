@@ -1193,8 +1193,30 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Manquent : les bancs `garage-finitions` et `garage-skins` (ils existent, la PR dit le contraire), la section « Tests CPU » et `qa/pr/WFS-551/tests-cpu.log`, et la citation fichier / fonction pour chaque maquette.
 - Refus posté en commentaire sur la PR (GitHub n'accepte pas « changements demandés » quand la PR est ouverte avec le même compte). Statut : ↩️ Retour lead dev (PR #426).
 
-### 2026-11-15 23:40:38 — E23 : écrans non conformes aux maquettes R19, plainte de l'utilisateur (po-scrum-master)
-- Comparaison faite : maquette 01 ↔ `qa/pr/WFS-549/apres-menu-0.jpg` (disposition non reprise), 06 ↔ `apres-garage-couleurs-p208-debut` de WFS-551 (onglets, plateau, barre de gouttes absents), 17 ↔ HUD (proche).
-- Cause : RG E23 « rien ne change dans la disposition » (erreur du PO) + découpage par style + revue sans maquette pour 548 / 549.
-- Bandeau 🛑 ajouté à `TACHES.md` : critère « écran = maquette » + captures côte à côte pour toute PR E23. Question posée à l'utilisateur : tickets de correction écran par écran.
+### 2026-11-15 23:46:35 — WFS-550 : ordre de l'utilisateur, maquettes appliquées à 100 % (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « ta maquette tu l'appliques à 100 %, zéro erreur ». Il passe avant la RG commune de E23 « taille des boutons et textes inchangés » pour les écrans de WFS-550.
+- Refait (commit ec2db1c1) : cartes « Cadeau du jour » et « Voiture prêtée » aux mesures de la maquette 26 (nouvelles clés FR / EN cadeau.carte.*, pret.carte.*), bandeaux de course de la maquette 30 (droits, fondus, titre sombre, valeur blanche), combo de la maquette 17 (capitales orange, barre orange), cadrans du garage plus grands (13), barre arrondie du chargement (08), pilule arrondie du compteur d'étoiles (26, 29). Accroche dans `boutons.*` retirée (icône de voiture vue de face dessinée dans `pret_bandeau.cpp`).
+- Hors de mes fichiers et absent des maquettes : colonne Market / Profil / Crédits du menu (les cartes se posent à sa gauche) ; onglets du garage (13) et cadenas (15) : WFS-551.
 
+### 2026-11-15 23:48:02 — WFS-557 créé : vérification à 100 % du travail R19 fusionné contre les maquettes, et corrections (po-scrum-master)
+- Demande de l'utilisateur, une seule tâche. RG : `regles-de-gestion/WFS-557.md`.
+
+### 2026-11-15 23:49:27 — WFS-557 limité à 548, 549, 552 ; 550 et 551 refusés s'ils ne respectent pas les maquettes R19 à 100 % (po-scrum-master)
+
+
+### 2026-11-15 23:51:31 — WFS-555 : PR #425 refusée par le lead dev (lead-dev)
+- Revue par une autre instance du lead dev (le codeur était le lead dev en renfort), commit relu 1a88fae6, revue en commentaire (même compte GitHub).
+- Vérifié : 5 paires `chargement` ouvertes (identiques sauf la ligne « Mémoire »), diff entier, construction + 148 tests CPU (code 0), script relancé (199 s cache vide ; 56 s et 54 s après changement de main, compilation incrémentale), ménage à 3 commits. Critère « identique au pixel » accepté tel que prouvé (cache octet pour octet ; banc non déterministe) : à réécrire par le PO.
+- Défauts : (1) `preparer_main_src` peut faire `checkout --force --detach` dans le dépôt du développeur si l'arbre de main est cassé et le cache dans le dépôt (reproduit : branche quittée, modification perdue) ; (2) `WFS_CACHE_CAPTURES` relatif accepté : arbre de main créé dans le dépôt, « avant » absents, code 0 ; (3) arbre verrouillé non recréé (`fatal: missing but locked worktree`).
+- Remarque au PO : main bouge souvent par des commits de documents, le cache par SHA se relit rarement ; le gain vient surtout de la compilation incrémentale (≈ 200 s → ≈ 55 s).
+
+### 2026-11-15 23:55:21 — WFS-557 attribué à Claude, agent dev3d (01UY1Vv4Fd) (po-scrum-master)
+- Ordre de l'utilisateur : « @dev prend le WFS-557 ». Nouvelle session `@dev` (session_01UY1Vv4Fd1hq8E2LRsGZhgL), aucun ticket avant : attribution permise (un sujet par session).
+- Ticket : P1, E23, vérifier que WFS-548, 549 et 552 fusionnés respectent à 100 % les maquettes `references/maquettes-R19/`, et corriger. Règles : `regles-de-gestion/WFS-557.md` (RG-01 à RG-05).
+- Zone autorisée : les fichiers fusionnés de WFS-548, 549 et 552 (E5 `src/ui/**`, `shaders/ui*` ; E8 `src/ui/ecrans/**` ; menu 3D `menu*`, `garage_decor.*`, modèles du parking), plus `qa/pr/WFS-557/`. Interdit : les éléments de WFS-550 et 551 (en cours, RG-03).
+- Plan : captures 2400 × 1080 côte à côte avec chaque maquette, tableau `qa/pr/WFS-557/verification.md`, corrections, PR, avis agent 3D pour le menu 3D, lead dev (comparaison maquette ↔ code). Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-15 23:59:57 — WFS-555 : PR #425 corrigée après le retour du lead dev (lead-dev)
+- 3 défauts de la revue sur 1a88fae6, corrigés dans c157d394 : (1) checkout seulement si l'arbre de main est sa propre racine git (plus jamais le dépôt parent) ; (2) cache rendu absolu, refus clair (code 2) s'il est dans le dépôt ; (3) arbre verrouillé déverrouillé puis recréé.
+- Essais refaits (`qa/pr/WFS-555/essais-revue-2.log`) : dépôt parent intact (branche et modification gardées), `.cache-rel` refusé sans rien créer, arbre verrouillé recréé ; 2 lancements normaux de `chargement` à code 0 (186 s, 188 s).
+- Réponses point par point dans la PR ; branche synchronisée (c19a70c4) ; autre instance du lead dev rappelée.
