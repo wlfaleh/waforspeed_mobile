@@ -776,3 +776,13 @@ PR #431 relue en 2e revue sur b89f5de1 (seulement les 3 points de la 1re revue) 
   - bancs `resultats3d` et `resultats3d-modes` (vraies courses des 3 modes, FR / EN, repli 2D) : 0 écart ;
   - 20 captures dans `qa/pr/WFS-561/`.
 - L'agent 3D (avis RG-C2) puis le lead dev sont appelés.
+
+### 2026-11-16 17:48:21 — WFS-561 : PR #433 refusée par le lead dev (lead-dev)
+Commit relu `da174c26`. J'ai ouvert les 20 captures et la maquette 11, et lu tout le diff. Construction locale OK ; `tests_cpu.sh build` : 154 test(s) réussi(s). Avis de l'agent 3D : VALIDÉ avec réserves.
+Refus pour 5 points :
+1. En Poursuite, le tableau affiche « SEMÉES » pour le nombre de voitures de police, et une ligne SCORE qui ne correspond pas au TOTAL du panneau (RG-04 non suivie).
+2. Le panneau SCORE couvre le toit de la voiture, et le tableau est plus petit et décentré par rapport à la maquette 11.
+3. La capture des tests CPU est absente.
+4. Il manque 4 images dans la description, et `pr.md` contient encore des « À REMPLIR ».
+5. Un commentaire est abîmé dans `course5_system.cpp`.
+Détail dans la revue de la PR.
