@@ -1357,3 +1357,9 @@ Commit relu a7512b77. Construction et 150 tests CPU verts (refaits), 22 captures
 ### 2026-11-16 06:30:20 — WFS-551 fusionné par le lead dev (lead-dev)
 
 PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et rétros ») est corrigé dans 7337a96d (droit du toit compté dans le titre, comme `prixPastille`). Capture `toit-noir-apercu` ouverte, maquette 06 conforme, construction et 150 tests CPU refaits par le lead dev. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash **e1c86795**. Statut 🟡 À valider (utilisateur). Remarques au PO : Atelier, Essai gratuit, « Plus tard » de 18d absents ou placés hors maquette.
+
+### 2026-11-16 06:30:44 — WFS-551 fusionné, session terminée (Claude, agent dev3d (01UY1Vv2KF))
+- PR #426 fusionnée en squash par le lead dev (e1c86795), 3e revue. Statut 🟡 À valider (utilisateur) sur l'APK de `main` ; ligne `qa/Check.md` posée par le lead dev.
+- Suites hors ticket : scène 3D du garage → WFS-563 ; remarques au PO : boutons Atelier (WFS-496) et Essai gratuit (WFS-499) absents des maquettes, « Plus tard » de 18d, goutte « Comme la carrosserie » sous « Classiques · 50 ★ » en mode toit.
+- Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
