@@ -84,6 +84,7 @@ namespace wfs { void benchAutocollants(Game& g, Renderer& r, const std::string& 
 #include "../ui/ecrans/creation_profil.h"   // WFS-481 (accroche) : WFS_BANC=creation
 #include "../ui/ecrans/profil.h"   // WFS-482 (accroche) : WFS_BANC=profil
 #include "../ui/ecrans/market_ecran.h"   // WFS-513 (accroche) : WFS_BANC=market, écran Market
+#include "../ui/ecrans/atelier.h"   // WFS-496 (accroche) : WFS_BANC=atelier
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
 #include "../ui/ecrans/cadeau_jour.h"   // WFS-501 (accroche) : WFS_BANC=cadeau
 #include "../game/score_fin.h"   // WFS-537 (accroche) : WFS_BANC=score-fin
@@ -316,6 +317,7 @@ int main(int argc, char** argv) {
     if (banc == "garage-voitures") { const int e = ecrans::benchGarageVoitures(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-499 (accroche) : voitures bloquées, achat confirmé, essai gratuit, relance
     if (banc == "garage-couleurs") { const int e = ecrans::benchGarageCouleurs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-489 (accroche) : 28 couleurs, achat en ★, relance
     if (banc == "garage-finitions") { const int e = ecrans::benchGarageFinitions(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-491 (accroche) : finitions, achat en ★, relance
+    if (banc == "atelier") { const int e = ecrans::atelier::benchAtelier(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-496 (accroche) : atelier d'autocollants, parcours, relance, FR / EN
     if (banc == "garage-skins") { const int e = ecrans::benchGarageSkins(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-494 (accroche) : skins, skin offerte, bon, achat en ★, relance
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)

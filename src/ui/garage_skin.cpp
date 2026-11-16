@@ -20,6 +20,7 @@
 #include "langue.h"
 #include "text.h"
 #include "boutons.h"   // WFS-549 : boutons au modèle R19
+#include "ecrans/atelier_calques.h"   // WFS-496 (accroche) : autocollants de l'atelier
 
 namespace wfs::ecrans::garage {
 namespace {
@@ -207,7 +208,7 @@ void SkinGarage::quitter(Renderer& r, const GameView& g, bool reposer) {
     // même choix que Game::setCar (WFS-492, WFS-495) : skin possédée de la voiture de la course ; bancs : WFS_SKIN, WFS_AUTOCOLLANTS
     const char* sk = std::getenv("WFS_SKIN") ? std::getenv("WFS_SKIN") : sauvegarde().actif() ? perso::aspectCourse(sauvegarde(), g.car->id).skin : "";
     const char* ac = std::getenv("WFS_AUTOCOLLANTS");
-    vehicule_skin::poser(r, *g.modele, g.car->id, sk, ac ? ac : "");
+    vehicule_skin::poser(r, *g.modele, g.car->id, sk, ac ? std::string(ac) : atelier::calquesCourse(g.car->id));   // WFS-496 (accroche) : autocollants de l'atelier
 }
 
 // ---------- rangée « Skin » ----------
