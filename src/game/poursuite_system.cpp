@@ -841,7 +841,7 @@ private:
     resultats3d::Tableau tableau3d() const {
         resultats3d::Tableau t;
         const bool v = etat_.gagne;
-        t.titre = resultats3d::titreMot(ui::tr(v ? "fin.victoire" : "police.arrete"), ftJoueur_);
+        t.titre = resultats3d::titreMot(ui::tr(v ? "fin.victoire" : etat_.parPolice ? "police.arrete_police" : "police.arrete"), ftJoueur_);   // WFS-540 (RG-03) : texte gardé
         const std::string nom = sauvegarde().actif() ? sauvegarde().nick : ui::tr("c5.pilote");
         led::Ligne moi = resultats3d::ligneClassement(1, nom, true, true, ftJoueur_, -1, 0, v ? std::string() : ui::tr("police.arrete"));
         if (!v) moi.pos = "—";
