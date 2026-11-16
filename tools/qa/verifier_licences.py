@@ -102,6 +102,9 @@ COUVERTURE = [
     (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"fonts/Inter-.*\.ttf", "Inter", "police-inter-OFL.txt"), (r"textes/.*", None, None),
     (r"cars/skins/[\w-]+\.etc2\.ktx2", None, None),   # WFS-492 : skins dessinées par le projet (tools/skins/generer.py, police Rajdhani déjà créditée)
     (r"profil/mots_interdits\.txt", None, None),   # WFS-533 : liste écrite pour le jeu (WFS-480, aucune liste extérieure recopiée)
+    # WFS-564 : icône fournie par l'utilisateur (references/maquettes-R19/icone-pistolet-utilisateur.png, SHA-256 167444ee…),
+    # réduite en 256 px par WFS-551 (PR #426) ; aucun téléchargement Internet, aucune licence tierce. Ce fichier seul.
+    (r"ui/icone-pistolet\.png", None, None),
 ]
 # identifiant de la voiture → fichier de licence (dossier du modèle dans le jeu web), quand le nom diffère
 ALIAS = {"golf": "golf-8", "m4": "bmw-m4", "p911": "porsche-911", "gallardo": "lambo-gallardo"}
