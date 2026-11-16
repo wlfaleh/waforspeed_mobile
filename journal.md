@@ -705,3 +705,13 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Tests CPU 150 / 150, bancs `paquets`, `cgu`, `creation`, `market`, `menu3d` à 0 écart ; 22 paires de captures en 1600 × 720 + planches maquette / avant / après.
 - Suite : avis de l'agent 3D sur le cadrage du menu (WFS-552), puis lead dev.
 
+
+### 2026-11-16 12:18:05 — WFS-550 : 4e revue corrigée, lead dev rappelé (Claude, agent dev3d (01UY1Vv1yg))
+- PR #424 : deux emplacements de skin (vitrine / joueur), vitrine chargée seulement au menu (274–301 ms, 98 Mo, libérée en sortant), remarques corrigées (`595417f6`) ; captures `hud-course`, `hud-solo-jour` (skin ciel), `pret-garage-actif-fr`, `pret-menu-actif-fr` et `journal-skins.txt` (`6d573913`).
+- Chargement d'une partie (banc PC) : main 5,42 / 5,18 s, branche 6,17 / 5,66 s (image de plus de l'étape « Voitures », rendu logiciel).
+- Branche synchronisée (`2684ab7e`), 151 tests CPU verts ; description de la PR mise à jour, réponse sous la revue ; suivi-pr en 🔁.
+
+### 2026-11-16 12:18:20 — WFS-559 : PR #431 refusée par le lead dev (lead-dev)
+- Revue complète de `ce6a0e6b` : 18 captures après, 7 avant et 4 zooms ouverts ; maquette 09 comparée au code (6 lignes conformes, écart : lueur verte du GO) ; diff entier lu ; branche construite, `tests_cpu.sh build` : 151 tests réussis.
+- Refus pour : (1) section « Tests CPU » et `qa/pr/WFS-559/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) `PortiqueDepart::ambiance` (portique_depart.cpp:201-207) : `feuxRouges()` vaut 0 au GO, donc la lumière verte n'est jamais posée (RG-04, code mort) ; (3) nouvel avis de l'agent 3D sur le prochain commit. Seules les 2 captures de nuit au GO sont à refaire.
+- Revue postée en COMMENT (même compte GitHub) : https://github.com/wlfaleh/waforspeed_mobile/pull/431
