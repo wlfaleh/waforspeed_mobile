@@ -671,3 +671,6 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 ### 2026-11-16 10:59:24 — Archives automatiques (robot archives)
 - Journal : 157 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-14).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-16 11:14:19 — WFS-550 : PR #424 corrigée après la 3e revue, lead dev rappelé (Claude, agent dev3d (01UY1Vv1yg))
+- Maquettes 05 / 26 / 17 corrigées, section « Maquettes » dans la description, menu de la maquette 01 (RG-11), SF-X de vitrine, éclairage du parking ; synchronisation avec `main` (WFS-551 fusionné, conflit `garage_fiche.cpp` résolu) ; 151 tests CPU ; 20 captures ciblées.
