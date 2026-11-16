@@ -417,6 +417,7 @@ private:
     // .cam-btn : vitré, bordure 1 px, biais 8 px, 44 px de haut, « RÉGLAGES » ; en haut à droite de la zone sûre
     // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte et place gardés
     void dessinerBouton(Renderer& r, const GameView& g, float W, float k, float kb) {
+        if (g.ecran == Ecran::Menu) { dessinerEngrenage(r, g, W, kb); return; }   // WFS-550 (RG-11, maquette 01) : bouton rond
         const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
         const std::string t = ui::majuscules(ui::tr("reglages.bouton"));   // WFS-504
         const float tw = largeurMax(tp, "reglages.bouton", 0.12f), dx = (tw - ui::width(tp, t, 0.12f)) / 2;   // RC-E20-04 : taille fixe
@@ -427,6 +428,26 @@ private:
         biseau(r, x, y, w, h, 8 * kb, GLASS);
         if (g_presse == P_BOUTON) biseau(r, x, y, w, h, 8 * kb, hex(ACCENT2, 0.22f));   // WFS-290 (RG-04) : appuyé, voile cyan
         ui::text(r, std::round(x + pad + dx), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
+    }
+    // WFS-550 (RG-11, maquette 01) : au menu, « Réglages » est un bouton de verre rond (45 px) avec un engrenage, à 32 px du
+    // bord droit et 22 px du haut ; zone de toucher ≥ 48 dp par appui::dansCible (comme avant) ; ailleurs, bouton d'avant
+    void dessinerEngrenage(Renderer& r, const GameView& g, float W, float kb) {
+        const float d = 45 * kb, x = W - g.marges.droite - 32 * kb - d, y = g.marges.haut + 22 * kb, cx = x + d / 2, cy = y + d / 2;
+        g_bouton = {x, y, d, d};
+        g_boutonFrais = true;   // WFS-537 (accroche) : compteur d'étoiles posé à cette image
+        dessin2d::disqueRadial(r, cx, cy, d / 2, cx, cy - d * 0.2f, d * 0.6f, hex(0x2A2D36, 0.9f), hex(0x14161F, 0.9f));
+        dessin2d::anneau(r, cx, cy, d / 2 - 1.2f * kb, d / 2, vec4{1, 1, 1, 0.22f});
+        if (g_presse == P_BOUTON) dessin2d::disqueRadial(r, cx, cy, d / 2, cx, cy, d / 2, hex(ACCENT2, 0.25f), hex(ACCENT2, 0.15f));
+        // engrenage au trait : anneau, 8 dents, moyeu
+        const vec4 c{242 / 255.f, 244 / 255.f, 248 / 255.f, 0.95f};
+        const float ra = d * 0.17f, ep = std::max(1.3f, d * 0.05f);
+        dessin2d::anneau(r, cx, cy, ra - ep / 2, ra + ep / 2, c);
+        for (int i = 0; i < 8; i++) {
+            const float an = i * 0.785398f, sx = std::sin(an), sy = -std::cos(an);
+            const vec2 dent[2] = {{cx + sx * (ra + ep * 0.4f), cy + sy * (ra + ep * 0.4f)}, {cx + sx * (ra + ep * 1.7f), cy + sy * (ra + ep * 1.7f)}};
+            dessin2d::trait(r, dent, 2, ep * 1.3f, c);
+        }
+        dessin2d::anneau(r, cx, cy, ra * 0.35f - ep / 2, ra * 0.35f + ep / 2, c);
     }
     // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
     void dessinerPanneau(Renderer& r, const GameView& g, float W, float H, float k) {

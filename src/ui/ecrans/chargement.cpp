@@ -11,6 +11,7 @@
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../jauges.h"   // WFS-550 (RG-02) : 4 étapes du chargement
 #include "../verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, dégradé de la marque
 #include "../langue.h"   // WFS-505 : textes de l'écran de chargement en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
@@ -31,6 +32,7 @@ static const char* const ETAPES[][2] = {
     {"Préparation du moteur", "chargement.etape.moteur"},
     {"Construction de la route", "chargement.etape.route"},
     {"Chargement du modèle 3D…", "chargement.etape.modele"},
+    {"Chargement des voitures", "chargement.etape.voitures"},   // WFS-550 : étape « Voitures » (trafic)
     {"Construction de la ville", "chargement.etape.ville"},
     {"Paquets de cartes", "chargement.etape.paquets"},
 };
@@ -43,6 +45,25 @@ static float clampv(float v, float a, float b) { return std::max(a, std::min(b, 
 #define WFS_VERSION "dev"   // WFS-279 : compilé sans CMake (valeur fixe du PC)
 #endif
 // WFS-146 (RG-10, ANO-39) : bouton de l'écran d'erreur (zone posée à la dernière image), doigt qui le tient, demande, libellé
+float dessinerLogoLigne(Renderer& r, float x, float y, float px, float op) {
+    if (!ui::fontReady()) return 0;
+    const float e = std::max(1.f, px * 0.035f);
+    ui::text(r, x, y, px, "WA", hex(TEXTE, op), ui::GAUCHE, -0.01f, false, true);
+    const float xf = x + ui::width(px, "WA", -0.01f);
+    for (int i = 0; i < 8; i++) {   // FOR en contour : copies décalées, puis remplissage couleur du fond
+        const float a = i * 0.785398f;
+        ui::text(r, xf + std::cos(a) * e, y + std::sin(a) * e, px, "FOR", hex(TEXTE, op), ui::GAUCHE, -0.01f, false, true);
+    }
+    ui::text(r, xf, y, px, "FOR", hex(BG, op), ui::GAUCHE, -0.01f, false, true);
+    const float xs = xf + ui::width(px, "FOR", -0.01f);
+    for (int i = 0; i < 4 && op >= 0.999f; i++) {   // halo orange de SPEED
+        const float a = 0.785398f + i * 1.570796f;
+        ui::text(r, xs + std::cos(a) * px * 0.06f, y + std::sin(a) * px * 0.06f, px, "SPEED", hex(ACCENT, 0.18f * op), ui::GAUCHE, -0.01f, false, true);
+    }
+    ui::text(r, xs, y, px, "SPEED", hex(ACCENT, op), ui::GAUCHE, -0.01f, false, true);
+    return xs + ui::width(px, "SPEED", -0.01f) - x;
+}
+
 static struct { float x = 0, y = 0, w = 0, h = 0; } g_reessayer;
 static int g_doigtErreur = -1; static bool g_reessai = false, g_quitter = false;
 
@@ -120,23 +141,68 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     };
     reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.14f * op));
     reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.10f * op));
-    const float barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
-    const float total = m.hauteurBloc + gap + barre + 10 * k + txt;
+    const float barre = 8 * k, txt = 19 * k;   // WFS-550 (maquette 08) : barre de 8 px ; libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
+    // WFS-550 (RG-02, maquette 08) : hors échec, l'étape et le pourcentage passent au-dessus de la barre (pourcentage en grand à
+    // droite), puis 4 étapes en segments (Moteur, Modèles 3D, Voitures, Ville) sous la barre ; l'échec garde sa mise en page
+    const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k, te = 13 * k;
+    const float avantBarre = erreur ? 0 : txt + 14 * k;            // ligne « étape … 64 % » au-dessus de la barre
+    const float etapes = erreur ? 0 : 12 * k + 3 * k + 7 * k + te;  // segments (3 px) et leurs libellés sous la barre
+    const float total = m.hauteurBloc + gap + avantBarre + barre + etapes + 10 * k + txt;
     float y = std::max(16 * k, (H - total) / 2);
     const bool police = ui::fontReady();
     y = dessinerBlocLogo(r, m, y, op);
-    {   // WFS-548 (RG-01, maquette 08) : fenêtre de verre dépoli autour de la barre, de l'étape et des chiffres (rien ne bouge)
-        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k, kb = H / 720.f;
-        const float bas = erreur ? txt + (cp ? 16 : 24) * k + 56 * kb : txt + 10 * k + 2 * tm + 4 * k;
+    {   // WFS-548 (RG-01, maquette 08) : fenêtre de verre dépoli autour de la barre, de l'étape et des chiffres
+        const float kb = H / 720.f;
+        const float bas = erreur ? txt + (cp ? 16 : 24) * k + 56 * kb : etapes + 14 * k + 2 * tm + 4 * k;
         verre::Style st; st.rayon = 14 * k; st.lisere = 1.5f * kb; st.opacite = op;
-        verre::panneau(r, x - 24 * k, y - 22 * k, largeur + 48 * k, barre + 10 * k + bas + 40 * k, st);
+        verre::panneau(r, x - 24 * k, y - 22 * k, largeur + 48 * k, avantBarre + barre + 10 * k + bas + 40 * k, st);
     }
+    const float pc = clampv(p, 0, 1);
+    if (!erreur && police) {   // étape (blanche) à gauche, pourcentage en grand à droite, « % » en petit
+        ui::text(r, x, y + 2 * k, 16 * k, libelleAffiche(libelle), hex(TEXTE, op), ui::GAUCHE);
+        const std::string n = ui::nombre((long long)std::lround(pc * 100));
+        const float np = 40 * k, sp = 18 * k, sw = ui::width(sp, "%");
+        ui::text(r, x + largeur - sw, y - 12 * k, np, n, hex(TEXTE, op), ui::DROITE, 0, false, true);
+        ui::text(r, x + largeur, y - 12 * k + np - sp * 1.15f, sp, "%", hex(TEXTE, op), ui::DROITE, 0, false, true);
+    }
+    y += avantBarre;
     // barre .cp-bar : fond --surface-2, remplissage du dégradé de la marque cyan → orange (WFS-548, RG-04 : verre::barreMarque,
     // un seul dégradé continu, mêmes couleurs qu'avant)
-    r.uiRect(x, y, largeur, barre, hex(SURFACE2, op));
-    const float plein = largeur * clampv(p, 0, 1);
-    if (plein > 0) verre::barreMarque(r, x, y, plein, barre, op);
-    y += barre + 10 * k;
+    {   // WFS-550 (maquette 08) : barre aux bouts arrondis, piste sombre, remplissage du dégradé de la marque
+        const float rr = barre / 2;
+        const vec2 piste[2] = {{x + rr, y + rr}, {x + largeur - rr, y + rr}};
+        dessin2d::trait(r, piste, 2, barre, hex(SURFACE2, op));
+        const float plein = largeur * pc;
+        if (plein > 2 * rr) {
+            verre::barreMarque(r, x + rr, y, plein - 2 * rr, barre, op);
+            r.uiCircle(x + rr, y + rr, rr, verre::degradeMarque(0, op));
+            r.uiCircle(x + plein - rr, y + rr, rr, verre::degradeMarque(1, op));
+            dessin2d::couronne(r, x + plein - rr, y + rr, rr, rr * 3.5f, hex(ACCENT, 0.45f * op), hex(ACCENT, 0));   // lueur orange du bout (maquette 08)
+        }
+    }
+    y += barre;
+    if (!erreur) {   // WFS-550 (RG-02) : 4 étapes ; finie = segment blanc et coche cyan, en cours = orange, à venir = grise
+        static const char* const CLES[4] = {"chargement.segment.moteur", "chargement.segment.modeles", "chargement.segment.voitures", "chargement.segment.ville"};
+        const float ys = y + 12 * k, ecart = 10 * k, ls = (largeur - 3 * ecart) / 4;
+        int enCours = 0;
+        while (enCours < 3 && jauges::avancementEtape(pc, enCours) >= 1) enCours++;
+        for (int i = 0; i < 4; i++) {
+            const float xs = x + i * (ls + ecart), av = jauges::avancementEtape(pc, i);
+            const bool finie = av >= 1;
+            jauges::barreEtape(r, xs, ys, ls, 3 * k, av, i == enCours, op);
+            if (!police) continue;
+            float xt = xs;
+            if (finie) {   // coche cyan (trait lissé d'un seul tenant)
+                const vec2 c[3] = {{xs + 1 * k, ys + 15 * k}, {xs + 5 * k, ys + 19 * k}, {xs + 12 * k, ys + 11 * k}};
+                dessin2d::trait(r, c, 3, 2 * k, hex(ACCENT2, op));
+                xt += 18 * k;
+            }
+            const vec4 col = finie ? hex(TEXTE, op) : i == enCours ? hex(ACCENT, op) : hex(MUTED, op);
+            ui::text(r, xt, ys + 3 * k + 7 * k, te, ui::tr(CLES[i]), col, ui::GAUCHE, 0, false);
+        }
+        y += etapes;
+    }
+    y += 10 * k;
     // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec
     if (!police) return;
     // WFS-279 (RG-01) : version en petit, couleur discrète, coin bas droit libre (rien d'autre ne bouge) ; 14 dp sur téléphone (WFS-147)
@@ -155,11 +221,9 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
         ui::textBoite(r, x + bw / 2, by, tw, bh, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
     }
     else {
-        ui::text(r, x, y, txt, libelleAffiche(libelle) + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
-        // WFS-297 (RG-06) : données chargées et mémoire utilisée, en petit sous l'étape (pendant et à la fin du chargement)
-        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
-        ui::text(r, x, y + txt + 8 * k, tm, texteChargement(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
-        ui::text(r, x, y + txt + 10 * k + tm, tm, texteMemoire(true), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+        // WFS-297 (RG-06) : données chargées et mémoire utilisée, en petit sous les étapes (pendant et à la fin du chargement)
+        ui::text(r, x, y + 4 * k, tm, texteChargement(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+        ui::text(r, x, y + 6 * k + tm, tm, texteMemoire(true), hex(MUTED, op), ui::GAUCHE, 0.f, false);
     }
 }
 
@@ -191,7 +255,7 @@ static void image(Renderer& r, float p, const std::string& lib, bool err) {
 }
 
 void Chargement::debut(Renderer& r, double depuis) {
-    r_ = &r; p_ = 0; n_ = 0; erreur_ = false;
+    r_ = &r; p_ = 0; n_ = 0; erreur_ = false; actif_ = true;
     libelle_ = "Préparation du moteur";
     t0_ = tEtape_ = nowSeconds();
     // première image tout de suite (fond + barre), puis police (≈ 0,1 à 0,9 s) et image complète à 0 %
@@ -220,12 +284,14 @@ void Chargement::progression(float p, const char* l) { chargement().etape(p, l);
 static bool g_fonduArme = false, g_fonduParti = false; static double g_fonduT0 = 0;
 
 void Chargement::fin() {
+    actif_ = false;
     etape(1, nullptr);   // 100 % : la dernière étape est finie
     WFS_LOG("chargement : total %s s", ui::decimal(nowSeconds() - t0_, 2).c_str());
     g_fonduArme = true; g_fonduParti = false;
 }
 
 void Chargement::erreur(bool quitter) {
+    actif_ = false;
     erreur_ = true; g_quitter = quitter; g_reessai = false; g_doigtErreur = -1;
     WFS_ERR("chargement : échec à l'étape « %s » — %s", libelle_.c_str(), MESSAGE_ECHEC);
     dessiner();
@@ -293,7 +359,10 @@ void benchChargement(Game& g, Renderer& r, const std::string& out, double depuis
     ch.apresImage = [&](int n) {
         if (n == 0) capture("chargement-0");
         if (n == 2) capture("chargement-1");
-        if (n == 4) capture("chargement-2");
+        if (n == 1) capture("chargement-route");     // WFS-550 : 10 %, segment Moteur en cours
+        if (n == 3) capture("chargement-voitures");  // WFS-550 : 70 %, segment Voitures en cours
+        if (n == 4) capture("chargement-ville");     // WFS-550 : 85 %, segment Ville en cours
+        if (n == 5) capture("chargement-2");
     };
     ch.debut(r, depuis);
     const bool ok = g.init(r, "golf", "ville", Chargement::progression);
@@ -324,5 +393,18 @@ void benchChargement(Game& g, Renderer& r, const std::string& out, double depuis
 } // namespace ecrans
 
 WFS_SYSTEM(ecrans::FonduChargement, 490)
+
+namespace ecrans {
+namespace {
+// WFS-550 (RG-02) : annonce de l'étape « Ville » pendant le chargement d'une partie, après le trafic (système 50) et juste avant la
+// ville et le décor (systèmes 100 et plus) ; rien hors d'un chargement affiché (debut → fin ou erreur)
+class AnnonceVille final : public System {
+public:
+    const char* name() const override { return "chargement-annonce-ville"; }
+    void init(Renderer&, const GameView&) override { if (chargement().actif()) Chargement::progression(0.85f, "Construction de la ville"); }
+};
+} // namespace
+} // namespace ecrans
+WFS_SYSTEM(ecrans::AnnonceVille, 99)
 
 } // namespace wfs

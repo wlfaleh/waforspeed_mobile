@@ -62,11 +62,16 @@ bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSki
 // Cuisson sur le processeur (< 1 s, RG-03), jamais en course. Faux si rien n'est posé.
 bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin, const std::string& calques);
 void liberer(Renderer& r);   // texture et matériaux rendus (GPU arrêté : à l'appelant d'attendre la fin des images en vol)
+// WFS-550 (revue du lead dev, PR #424) : 2e emplacement, réservé à la voiture de vitrine du menu (SF-X, skin fixe) ; il n'est ni
+// libéré ni remplacé par poser / liberer (voiture du joueur, garage, atelier), et inversement : les deux skins tiennent ensemble
+bool poserVitrine(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin);
+void libererVitrine(Renderer& r);
 
 // matériau habillé de la pièce d'indice « materiau » du modèle m (peinture du joueur), sinon nullptr (aspect d'avant)
 const Material* materiau(const Model& m, uint32_t materiau);
 // métal codé (pc.params.x, déjà codé avec la finition) + 16 × numéro de la skin posée (CUIT si autocollants)
 float coder(float metalCode);
+float coder(float metalCode, const Model& m);   // WFS-550 : numéro de la skin de l'emplacement qui habille m (joueur ou vitrine)
 // WFS-495 : couleurs A et B d'une skin (codes sRGB 0..1), copie de SKIN_COULEURS de shaders/vehicule.glsl (contrôlée par
 // tests/test_vehicule_autocollants.cpp) ; faux si la skin n'a pas de couleurs
 bool couleurs(int skin, float a[3], float b[3]);
