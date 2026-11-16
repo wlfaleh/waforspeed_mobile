@@ -199,7 +199,7 @@ void iconeHayon(Renderer& r, float cx, float cy, float w, float ep, const vec4& 
     }
 }
 
-void rondMenu(Renderer& r, float cx, float cy, float k, const std::string& titre, const std::string& sousTitre, float op, bool appuye) {
+void rondMenu(Renderer& r, float cx, float cy, float k, const std::string& titre, const std::string& sousTitre, float op, bool appuye, bool grise) {
     const float R = 117 * k, Ri = 105 * k, Ra = 98 * k, D = PI / 180;   // bague (maquette 01 : 117 / 105), anneau orange (98)
     // ombre portée, puis halo blanc au-dessus et en haut à gauche (lumière du plafond sur le chrome)
     dessin2d::couronne(r, cx, cy + 6 * k, R - 6 * k, R + 16 * k, {0, 0, 0, 0.55f * op}, {0, 0, 0, 0});
@@ -221,11 +221,11 @@ void rondMenu(Renderer& r, float cx, float cy, float k, const std::string& titre
     dessin2d::disqueRadial(r, cx, cy, Ri, cx, cy - 30 * k, Ri * 1.15f, hex(appuye ? 0x3A3B3F : 0x2D2E31, op), hex(appuye ? 0x2E2F33 : 0x1F2023, op));
     dessin2d::couronne(r, cx, cy + Ri * 0.65f, 0, Ri * 0.45f, hex(0x4A4B4E, 0.30f * op), hex(0x4A4B4E, 0));
     // anneau orange fin (#F59A45), plus pâle en haut
-    dessin2d::arc(r, cx, cy, Ra, 2.6f * k, 0, 2 * PI, hex(appuye ? 0xFFB070 : 0xF59A45, op));
-    dessin2d::arc(r, cx, cy, Ra, 2.6f * k, -30 * D, 30 * D, hex(0xF2C9B3, 0.8f * op));
+    dessin2d::arc(r, cx, cy, Ra, 2.6f * k, 0, 2 * PI, grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFFB070 : 0xF59A45, op));
+    if (!grise) dessin2d::arc(r, cx, cy, Ra, 2.6f * k, -30 * D, 30 * D, hex(0xF2C9B3, 0.8f * op));
     // icône (−39), titre crème centré à −6, sous-titre gris centré à +22
-    iconeMarche(r, cx, cy - 39 * k, 24 * k, hex(appuye ? 0xFFB088 : 0xF28C5A, op));
-    ui::textBoite(r, cx, cy - 6 * k - 18 * k, 2 * Ra - 16 * k, 36 * k, 36 * k, titre, hex(0xEAD8D0, op), ui::CENTRE, 0.02f, false, true);
+    iconeMarche(r, cx, cy - 39 * k, 24 * k, grise ? hex(INACTIF_LISERE, op) : hex(appuye ? 0xFFB088 : 0xF28C5A, op));
+    ui::textBoite(r, cx, cy - 6 * k - 18 * k, 2 * Ra - 16 * k, 36 * k, 36 * k, titre, grise ? hex(INACTIF_TEXTE, op) : hex(0xEAD8D0, op), ui::CENTRE, 0.02f, false, true);
     if (!sousTitre.empty()) ui::textBoite(r, cx, cy + 22 * k - 12 * k, 2 * Ra - 30 * k, 24 * k, 24 * k, sousTitre, hex(0xC6C7CC, op), ui::CENTRE, 0.03f, false, true);
 }
 

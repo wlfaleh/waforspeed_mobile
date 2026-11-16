@@ -192,8 +192,8 @@ public:
         }
         // ---------- WFS-551 (maquettes 06, 07, 13, 15, 16) : onglets, un seul panneau de verre en bas, bouton rond à droite ----------
         onglets::dessiner(r, mp);
-        mp.panelH = 140 * k; mp.py0 = mp.H - mp.gb - 20 * k - mp.panelH;   // crédit du modèle (cadre::pied) dessous
-        mp.rBouton = 56 * k; mp.cxBouton = std::min(mp.W * 0.881f, mp.W - mp.gr - mp.rBouton - 12 * k); mp.cyBouton = mp.py0 + 10 * k;
+        mp.panelH = 140 * k; mp.py0 = mp.H - mp.gb - 8 * k - mp.panelH;   // WFS-557 : haut du panneau à 558 (maquettes 13, 15)   // crédit du modèle (cadre::pied) dessous
+        mp.rBouton = 58 * k; mp.cxBouton = std::min(mp.W * 0.881f, mp.W - mp.gr - mp.rBouton - 12 * k); mp.cyBouton = mp.py0 + 6 * k;   // WFS-557 : (1410, 564), rayon 58
         mp.yNom = mp.cyBouton - mp.rBouton - 46 * k;   // nom, « aperçu », puis une ligne (équivalents, skin offerte)
         mp.px0 = mp.gl + std::max(40 * k, mp.W * 0.05f) + 150 * k + 24 * k;   // à droite de « Retour »
         mp.px1 = mp.cxBouton - mp.rBouton - 24 * k;                           // à gauche du bouton rond
@@ -205,7 +205,7 @@ public:
         if (mp.onglet != ONGLET_SKINS) skin_.viderZones();
         if (mp.onglet == ONGLET_VOITURE) {   // maquettes 13 et 15 : fiche de la voiture (chiffres et 4 barres) dans le panneau
             MiseEnPage f = mp;
-            const float w = std::min(mp.W * 0.56f, mp.px1 - mp.px0);
+            const float w = std::min(894 * k, mp.px1 - mp.px0);   // WFS-557 : panneau de 894 (maquettes 13, 15)
             f.px0 = panneauOnglet(r, mp, w); f.px1 = f.px0 + w;
             f.bx = f.px1 - f.padX + 32 * k;   // fiche_.stats : fin des barres à bx − 32 (valeur alignée sur le bord du panneau)
             const float xStats = fiche_.specs(r, f, car);   // .specs : Puissance, 0 à 100, Vitesse max
