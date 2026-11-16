@@ -195,13 +195,9 @@ public:
         // .screen : fondu de 300 ms (screen-in) ; voile linear-gradient(100deg, .94 → .78 à 42 % → .12) ;
         // WFS-96 (RG-03) : dégradé par sommets (2 quadrilatères), plus de bandes visibles
         const float op = ease(t / 0.3f);
-        const vec4 bg = hex(BG);
-        const float xs[3] = {0, W * 0.42f, W}, as[3] = {0.94f * op, 0.78f * op, 0.12f * op};
-        for (int i = 0; i < 2; i++) {
-            const UiVertex q[4] = {{xs[i], 0, -1, -1, bg.x, bg.y, bg.z, as[i]}, {xs[i + 1], 0, -1, -1, bg.x, bg.y, bg.z, as[i + 1]},
-                                   {xs[i + 1], H, -1, -1, bg.x, bg.y, bg.z, as[i + 1]}, {xs[i], H, -1, -1, bg.x, bg.y, bg.z, as[i]}};
-            r.uiQuad(q);
-        }
+        // WFS-550 (maquette 01) : plus de voile sombre sur la scène (il assombrissait la voiture de vitrine de moitié) ; seul le
+        // panneau de gauche est sombre, comme sur la maquette
+        (void)BG;
         if (choixModeOuvert()) return;   // WFS-141 (RG-04, ANO-54) : panneau des modes ouvert : ni textes ni aide du menu dessous
         if (cadeau_jour::ouvert()) return;   // WFS-501 : écran du cadeau par-dessus (système CadeauJour, 466)
         if (market_ecran::ouvert()) return;   // WFS-513 : écran Market par-dessus (système MarketEcran, 469)

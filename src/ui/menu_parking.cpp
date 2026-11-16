@@ -389,7 +389,7 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
     fp.sunIntensity = 0; fp.ambient = 1; fp.shadows = false; fp.night = false;
     fp.feux = false; fp.mouille = false; fp.reflets = false;
     // lumière renvoyée par le béton (albédo 0,30) : ambiance grise, plus sombre vers le sol
-    fp.hemiSky = vec3{0.36f, 0.36f, 0.37f}; fp.hemiGround = vec3{0.08f, 0.08f, 0.08f}; fp.hemiIntensity = 0.20f;   // WFS-550 (maquette 01) : fond plus sombre (0,26 avant)
+    fp.hemiSky = vec3{0.36f, 0.36f, 0.37f}; fp.hemiGround = vec3{0.08f, 0.08f, 0.08f}; fp.hemiIntensity = 0.12f;   // WFS-550 (maquette 01) : fond plus sombre (0,26 avant)
     // réglettes : un projecteur large (≈ 120°) sous chaque réglette proche de la voiture, 4 000 K
     const vec3 led{1.0f, 0.93f, 0.84f};
     int n = 0;
@@ -402,9 +402,9 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
     };
     const float zA = (Z_ALLEE0 + Z_ALLEE1) / 2, y = HAUTEUR_DALLE - 0.08f;
     // WFS-550 (maquette 01) : voiture plus éclairée, murs du fond plus sombres (avant : 2,4 / 1,4 ; 3,2 / 1,0 ; 0,8)
-    for (float x : {-6.f, -2.f, 2.f, 6.f, 10.f, -10.f}) spot({x, y, zA}, std::fabs(x) < 3 ? 3.0f : 0.9f);   // les deux réglettes devant la voiture : sa face avant
-    for (float x : {0.f, 8.f, -8.f}) spot({x, y, 0.20f}, x == 0 ? 4.2f : 0.7f);   // réglette au-dessus de la voiture
-    for (float x : {0.f, 8.f}) spot({x, y, Z_ALLEE1 - PLACE_P / 2}, 0.5f);
+    for (float x : {-6.f, -2.f, 2.f, 6.f, 10.f, -10.f}) spot({x, y, zA}, std::fabs(x) < 3 ? 3.0f : 0.5f);   // les deux réglettes devant la voiture : sa face avant
+    for (float x : {0.f, 8.f, -8.f}) spot({x, y, 0.20f}, x == 0 ? 4.2f : 0.4f);   // réglette au-dessus de la voiture
+    for (float x : {0.f, 8.f}) spot({x, y, Z_ALLEE1 - PLACE_P / 2}, 0.3f);
     fp.spotCount = n;
     fp.bloom = 0.22f;   // avis de l'agent 3D : halo des réglettes resserré
     s.route = false; s.joueur = true; s.commandes = false; s.cible = cible;
